@@ -38,6 +38,7 @@ export function OperationControls() {
   const applyAmboDissectionToCurrent = useGeometryStore(
     (state) => state.applyAmboDissectionToCurrent,
   );
+  const resetWorkspace = useGeometryStore((state) => state.resetWorkspace);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
   const toggleCellVisibility = useGeometryStore((state) => state.toggleCellVisibility);
@@ -62,6 +63,13 @@ export function OperationControls() {
         Apply Ambo Dissection
       </button>
       <p className="mt-3 text-sm leading-5 text-stone-400">{operationStatus}</p>
+      <button
+        type="button"
+        onClick={resetWorkspace}
+        className="mt-4 h-10 w-full rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
+      >
+        Reset Workspace
+      </button>
       <div className="mt-4 grid gap-2 text-sm text-stone-300">
         <label className="flex items-center justify-between gap-3">
           Core cells

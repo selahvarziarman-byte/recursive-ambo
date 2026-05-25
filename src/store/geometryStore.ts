@@ -9,6 +9,12 @@ interface CellVisibility {
   showParentCells: boolean;
 }
 
+const defaultCellVisibility: CellVisibility = {
+  showCoreCells: true,
+  showResidueCells: true,
+  showParentCells: false,
+};
+
 interface GeometryState {
   selectedSeedKey: SeedKey;
   shapes: Record<ShapeId, Shape>;
@@ -18,6 +24,7 @@ interface GeometryState {
   selectedVertexId: VertexId | null;
   cellVisibility: CellVisibility;
   loadSeed: (seedKey: SeedKey) => void;
+  resetWorkspace: () => void;
   applyAmboDissectionToCurrent: () => void;
   selectShape: (shapeId: ShapeId) => void;
   selectCell: (cellId: CellId | null) => void;
@@ -37,11 +44,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   currentShapeId: initialShape.id,
   selectedCellId: null,
   selectedVertexId: null,
-  cellVisibility: {
-    showCoreCells: true,
-    showResidueCells: true,
-    showParentCells: false,
-  },
+  cellVisibility: defaultCellVisibility,
   loadSeed: (seedKey) => {
     const shape = createSeedShape(seedKey);
 
@@ -54,6 +57,21 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: shape.id,
       selectedCellId: null,
       selectedVertexId: null,
+      cellVisibility: defaultCellVisibility,
+    });
+  },
+  resetWorkspace: () => {
+    const shape = createSeedShape(get().selectedSeedKey);
+
+    set({
+      shapes: {
+        [shape.id]: shape,
+      },
+      shapeOrder: [shape.id],
+      currentShapeId: shape.id,
+      selectedCellId: null,
+      selectedVertexId: null,
+      cellVisibility: defaultCellVisibility,
     });
   },
   applyAmboDissectionToCurrent: () => {
