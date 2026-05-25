@@ -2,6 +2,7 @@ import { OrbitControls } from '@react-three/drei';
 import { Canvas, type ThreeEvent } from '@react-three/fiber';
 import { useMemo, useState } from 'react';
 import * as THREE from 'three';
+import { buildDualViewProxy } from '../lib/dualView';
 import { useGeometryStore } from '../store/geometryStore';
 import type { Cell, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
 
@@ -9,6 +10,7 @@ export function Workspace3D() {
   const shape = useGeometryStore((state) => state.shapes[state.currentShapeId]);
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
   const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
+  const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectCell = useGeometryStore((state) => state.selectCell);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
@@ -35,6 +37,7 @@ export function Workspace3D() {
           shape={shape}
           cellVisibility={cellVisibility}
           explodeAmount={explodeAmount}
+          dualViewEnabled={dualViewEnabled}
           selectedCellId={selectedCellId}
           hoveredCellId={hoveredCellId}
           onHoverCell={setHoveredCellId}
@@ -60,6 +63,7 @@ function Polyhedron({
   shape,
   cellVisibility,
   explodeAmount,
+  dualViewEnabled,
   selectedCellId,
   hoveredCellId,
   onHoverCell,
@@ -67,6 +71,7 @@ function Polyhedron({
   shape: Shape;
   cellVisibility: CellVisibility;
   explodeAmount: number;
+  dualViewEnabled: boolean;
   selectedCellId: string | null;
   hoveredCellId: string | null;
   onHoverCell: (cellId: string | null) => void;
@@ -92,6 +97,7 @@ function Polyhedron({
           onHoverCell={onHoverCell}
           displayOffset={displayOffsets.get(cell.id) ?? [0, 0, 0]}
           explodeAmount={explodeAmount}
+          dualViewEnabled={dualViewEnabled}
           renderIndex={index}
         />
       ))}
@@ -107,6 +113,7 @@ function CellMesh({
   onHoverCell,
   displayOffset,
   explodeAmount,
+  dualViewEnabled,
   renderIndex,
 }: {
   shape: Shape;
@@ -116,13 +123,29 @@ function CellMesh({
   onHoverCell: (cellId: string | null) => void;
   displayOffset: Vec3;
   explodeAmount: number;
+  dualViewEnabled: boolean;
   renderIndex: number;
 }) {
   const selectCell = useGeometryStore((state) => state.selectCell);
-  const faces = useMemo(() => facesForCell(shape, cell), [cell, shape]);
-  const faceGeometry = useMemo(() => createFaceGeometry(shape, faces), [faces, shape]);
-  const edgeGeometry = useMemo(() => createEdgeGeometry(shape, faces), [faces, shape]);
-  const style = cellStyle(cell, isSelected, isHovered, explodeAmount);
+  const renderGeometry = useMemo(
+    () => createCellRenderGeometry(shape, cell, dualViewEnabled),
+    [cell, dualViewEnabled, shape],
+  );
+  const faceGeometry = useMemo(
+    () => createFaceGeometry(renderGeometry.vertices, renderGeometry.faces),
+    [renderGeometry],
+  );
+  const edgeGeometry = useMemo(
+    () => createEdgeGeometry(renderGeometry.vertices, renderGeometry.faces),
+    [renderGeometry],
+  );
+  const style = cellStyle(
+    cell,
+    isSelected,
+    isHovered,
+    explodeAmount,
+    renderGeometry.mode,
+  );
 
   return (
     <group position={displayOffset}>
@@ -170,11 +193,13 @@ function CellMesh({
       <lineSegments geometry={edgeGeometry} raycast={() => null}>
         <lineBasicMaterial color={style.edgeColor} transparent opacity={style.edgeOpacity} />
       </lineSegments>
-      {cell.vertexIds.map((vertexId) => {
-        const vertex = shape.vertices[vertexId];
+      {renderGeometry.showVertexMarkers
+        ? cell.vertexIds.map((vertexId) => {
+            const vertex = shape.vertices[vertexId];
 
-        return vertex ? <VertexMarker key={`${cell.id}:${vertex.id}`} vertex={vertex} /> : null;
-      })}
+            return vertex ? <VertexMarker key={`${cell.id}:${vertex.id}`} vertex={vertex} /> : null;
+          })
+        : null}
     </group>
   );
 }
@@ -217,13 +242,72 @@ function VertexMarker({ vertex }: { vertex: Vertex }) {
   );
 }
 
-function createFaceGeometry(shape: Shape, faces: Face[]): THREE.BufferGeometry {
+interface RenderVertex {
+  id: string;
+  position: Vec3;
+}
+
+interface RenderFace {
+  id: string;
+  vertexIds: string[];
+}
+
+interface CellRenderGeometry {
+  vertices: RenderVertex[];
+  faces: RenderFace[];
+  mode: 'original' | 'dual-proxy' | 'dual-unsupported';
+  showVertexMarkers: boolean;
+}
+
+function createCellRenderGeometry(
+  shape: Shape,
+  cell: Cell,
+  dualViewEnabled: boolean,
+): CellRenderGeometry {
+  if (dualViewEnabled) {
+    const dualProxy = buildDualViewProxy(shape, cell);
+
+    if (dualProxy) {
+      return {
+        vertices: dualProxy.vertices,
+        faces: dualProxy.faces,
+        mode: 'dual-proxy',
+        showVertexMarkers: false,
+      };
+    }
+
+    return {
+      ...createOriginalRenderGeometry(shape, cell),
+      mode: 'dual-unsupported',
+      showVertexMarkers: false,
+    };
+  }
+
+  return createOriginalRenderGeometry(shape, cell);
+}
+
+function createOriginalRenderGeometry(shape: Shape, cell: Cell): CellRenderGeometry {
+  return {
+    vertices: Object.values(shape.vertices).map((vertex) => ({
+      id: vertex.id,
+      position: vertex.position,
+    })),
+    faces: facesForCell(shape, cell).map((face) => ({
+      id: face.id,
+      vertexIds: face.vertexIds,
+    })),
+    mode: 'original',
+    showVertexMarkers: true,
+  };
+}
+
+function createFaceGeometry(vertices: RenderVertex[], faces: RenderFace[]): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry();
   const positions: number[] = [];
   const indices: number[] = [];
   const vertexIndex = new Map<string, number>();
 
-  Object.values(shape.vertices).forEach((vertex, index) => {
+  vertices.forEach((vertex, index) => {
     vertexIndex.set(vertex.id, index);
     positions.push(...vertex.position);
   });
@@ -256,10 +340,11 @@ function createFaceGeometry(shape: Shape, faces: Face[]): THREE.BufferGeometry {
   return geometry;
 }
 
-function createEdgeGeometry(shape: Shape, faces: Face[]): THREE.BufferGeometry {
+function createEdgeGeometry(vertices: RenderVertex[], faces: RenderFace[]): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry();
   const positions: number[] = [];
   const edgeKeys = new Set<string>();
+  const vertexById = new Map(vertices.map((vertex) => [vertex.id, vertex]));
 
   for (const face of faces) {
     for (let index = 0; index < face.vertexIds.length; index += 1) {
@@ -272,8 +357,8 @@ function createEdgeGeometry(shape: Shape, faces: Face[]): THREE.BufferGeometry {
       }
 
       edgeKeys.add(key);
-      const vertexA = shape.vertices[a];
-      const vertexB = shape.vertices[b];
+      const vertexA = vertexById.get(a);
+      const vertexB = vertexById.get(b);
 
       if (vertexA && vertexB) {
         positions.push(...vertexA.position, ...vertexB.position);
@@ -410,22 +495,46 @@ function fallbackDirection(cellId: string): Vec3 {
   return normalizeVec3([Math.cos(angle), Math.sin(angle), z], [1, 0, 0]);
 }
 
-function cellStyle(cell: Cell, isSelected: boolean, isHovered: boolean, explodeAmount: number) {
+function cellStyle(
+  cell: Cell,
+  isSelected: boolean,
+  isHovered: boolean,
+  explodeAmount: number,
+  mode: CellRenderGeometry['mode'],
+) {
   if (isSelected) {
     return {
-      faceColor: '#f59e0b',
+      faceColor: mode === 'dual-proxy' ? '#c084fc' : '#f59e0b',
       faceOpacity: cell.kind === 'parent' ? 0.16 : 0.42,
-      edgeColor: '#fef3c7',
+      edgeColor: mode === 'dual-proxy' ? '#f5d0fe' : '#fef3c7',
       edgeOpacity: 1,
     };
   }
 
   if (isHovered) {
     return {
-      faceColor: '#fcd34d',
+      faceColor: mode === 'dual-proxy' ? '#d8b4fe' : '#fcd34d',
       faceOpacity: cell.kind === 'parent' ? 0.14 : 0.4,
-      edgeColor: '#fef3c7',
+      edgeColor: mode === 'dual-proxy' ? '#f5d0fe' : '#fef3c7',
       edgeOpacity: 0.98,
+    };
+  }
+
+  if (mode === 'dual-proxy') {
+    return {
+      faceColor: '#c084fc',
+      faceOpacity: 0.34,
+      edgeColor: '#f5d0fe',
+      edgeOpacity: 0.9,
+    };
+  }
+
+  if (mode === 'dual-unsupported') {
+    return {
+      faceColor: '#78716c',
+      faceOpacity: cell.kind === 'parent' ? 0.04 : 0.12,
+      edgeColor: '#d6d3d1',
+      edgeOpacity: 0.32,
     };
   }
 

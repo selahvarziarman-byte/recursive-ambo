@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { seedRegistry } from '../data/seeds';
+import { isDualViewSupportedCell } from '../lib/dualView';
 import { defaultOperation } from '../operations/registry';
 import { formatVec3 } from '../lib/shape';
 import { useGeometryStore } from '../store/geometryStore';
@@ -40,8 +41,10 @@ export function OperationControls() {
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
   const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
+  const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
   const toggleCellVisibility = useGeometryStore((state) => state.toggleCellVisibility);
   const setExplodeAmount = useGeometryStore((state) => state.setExplodeAmount);
+  const toggleDualView = useGeometryStore((state) => state.toggleDualView);
   const resetViewLayout = useGeometryStore((state) => state.resetViewLayout);
   const shape = useCurrentShape();
   const selectedCell = findCell(shape, selectedCellId);
@@ -102,6 +105,15 @@ export function OperationControls() {
         </label>
       </div>
       <div className="mt-4 border-t border-stone-800 pt-4">
+        <label className="mb-4 flex items-center justify-between gap-3 text-sm text-stone-300">
+          Dual View
+          <input
+            type="checkbox"
+            checked={dualViewEnabled}
+            onChange={toggleDualView}
+            className="h-4 w-4 accent-violet-300"
+          />
+        </label>
         <label className="grid gap-2 text-sm text-stone-300">
           <span className="flex items-center justify-between gap-3">
             Explode View
@@ -148,6 +160,7 @@ export function ObjectInspector() {
   const shape = useCurrentShape();
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
   const vertex = selectedVertexId ? shape.vertices[selectedVertexId] : null;
   const selectedCell = findCell(shape, selectedCellId);
   const selectedVertexCells = selectedVertexId
@@ -189,6 +202,16 @@ export function ObjectInspector() {
             </dd>
             <dt className="text-stone-500">Source op</dt>
             <dd className="text-stone-200">{selectedCell.sourceOperation}</dd>
+            {dualViewEnabled ? (
+              <>
+                <dt className="text-stone-500">View</dt>
+                <dd className="text-stone-200">
+                  {isDualViewSupportedCell(shape, selectedCell)
+                    ? 'Dual View active: displaying dual proxy'
+                    : 'Dual View active: original shown dimmed'}
+                </dd>
+              </>
+            ) : null}
           </dl>
         ) : (
           <p className="text-sm text-stone-500">Click a cell in the workspace to inspect it.</p>

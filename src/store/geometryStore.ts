@@ -11,6 +11,7 @@ interface CellVisibility {
 
 interface ViewLayout {
   explodeAmount: number;
+  dualViewEnabled: boolean;
 }
 
 const defaultCellVisibility: CellVisibility = {
@@ -21,6 +22,7 @@ const defaultCellVisibility: CellVisibility = {
 
 const defaultViewLayout: ViewLayout = {
   explodeAmount: 0,
+  dualViewEnabled: false,
 };
 
 interface GeometryState {
@@ -42,6 +44,7 @@ interface GeometryState {
   selectVertex: (vertexId: VertexId | null) => void;
   toggleCellVisibility: (key: keyof CellVisibility) => void;
   setExplodeAmount: (explodeAmount: number) => void;
+  toggleDualView: () => void;
   updateSelectedVertexData: (patch: Partial<VertexDataPacket>) => void;
 }
 
@@ -171,11 +174,20 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     }));
   },
   setExplodeAmount: (explodeAmount) => {
-    set({
+    set((state) => ({
       viewLayout: {
+        ...state.viewLayout,
         explodeAmount: Math.min(1, Math.max(0, explodeAmount)),
       },
-    });
+    }));
+  },
+  toggleDualView: () => {
+    set((state) => ({
+      viewLayout: {
+        ...state.viewLayout,
+        dualViewEnabled: !state.viewLayout.dualViewEnabled,
+      },
+    }));
   },
   updateSelectedVertexData: (patch) => {
     const { currentShapeId, selectedVertexId, shapes } = get();
