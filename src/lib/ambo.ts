@@ -7,6 +7,7 @@ import {
   makeMidpointVertexId,
   makeShapeId,
 } from './ids';
+import { deriveCompositePacket, packetSourceRef } from './packets';
 import { createDefaultVertexData, deriveEdges, midpoint } from './shape';
 
 type TetraCorners = [VertexId, VertexId, VertexId, VertexId];
@@ -55,6 +56,15 @@ function applyTetrahedronDissection(parent: Shape, sourceCell: Cell): Shape {
     const midpointId = makeMidpointVertexId(sourceCell.id, a, b);
     const sourceA = parent.vertices[a];
     const sourceB = parent.vertices[b];
+    const midpointPacket = deriveCompositePacket(
+      [
+        packetSourceRef('edge', edge.id, 'source-edge'),
+        packetSourceRef('vertex', a, 'endpoint'),
+        packetSourceRef('vertex', b, 'endpoint'),
+      ],
+      shapeId,
+      'derived-from-edge',
+    );
 
     midpointIds.set(canonicalEdgeKey(a, b), midpointId);
     vertices[midpointId] = {
@@ -63,6 +73,8 @@ function applyTetrahedronDissection(parent: Shape, sourceCell: Cell): Shape {
       data: createDefaultVertexData(
         `${sourceA.data.label}${sourceB.data.label}`,
         '#eab308',
+        {},
+        midpointPacket.lineage,
       ),
       createdBy: {
         shapeId,
@@ -206,12 +218,26 @@ function applyOctahedronDissection(parent: Shape, sourceCell: Cell): Shape {
     const midpointId = makeMidpointVertexId(sourceCell.id, a, b);
     const sourceA = parent.vertices[a];
     const sourceB = parent.vertices[b];
+    const midpointPacket = deriveCompositePacket(
+      [
+        packetSourceRef('edge', edge.id, 'source-edge'),
+        packetSourceRef('vertex', a, 'endpoint'),
+        packetSourceRef('vertex', b, 'endpoint'),
+      ],
+      shapeId,
+      'derived-from-edge',
+    );
 
     midpointIds.set(canonicalEdgeKey(a, b), midpointId);
     vertices[midpointId] = {
       id: midpointId,
       position: midpoint(sourceA.position, sourceB.position),
-      data: createDefaultVertexData(`${sourceA.data.label}${sourceB.data.label}`, '#eab308'),
+      data: createDefaultVertexData(
+        `${sourceA.data.label}${sourceB.data.label}`,
+        '#eab308',
+        {},
+        midpointPacket.lineage,
+      ),
       createdBy: {
         shapeId,
         operation: 'ambo-dissection',

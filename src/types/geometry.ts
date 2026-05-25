@@ -18,12 +18,36 @@ export type JsonValue =
   | JsonValue[]
   | { [key: string]: JsonValue };
 
+export type PacketHostKind = 'vertex' | 'edge' | 'face' | 'cell';
+
+export type PacketInheritanceMode =
+  | 'preserved'
+  | 'derived-from-vertex'
+  | 'derived-from-edge'
+  | 'derived-from-face'
+  | 'derived-from-cell'
+  | 'composite'
+  | 'default';
+
+export interface PacketSourceRef {
+  kind: PacketHostKind;
+  id: string;
+  role?: string;
+}
+
+export interface PacketLineage {
+  inheritanceMode: PacketInheritanceMode;
+  sources: PacketSourceRef[];
+  operationId?: string;
+}
+
 export interface VertexDataPacket {
   label: string;
   notes: string;
   color: string;
   tags: string[];
   custom: Record<string, JsonValue>;
+  lineage?: PacketLineage;
 }
 
 export interface VertexCreation {

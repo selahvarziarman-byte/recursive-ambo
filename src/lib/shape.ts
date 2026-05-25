@@ -1,17 +1,20 @@
 import type {
   Edge,
   Face,
+  PacketLineage,
   ShapeId,
   Vec3,
   VertexDataPacket,
   VertexId,
 } from '../types/geometry';
 import { canonicalEdgeKey, makeEdgeId } from './ids';
+import { defaultPacket } from './packets';
 
 export function createDefaultVertexData(
   label: string,
   color = '#22c55e',
   custom: VertexDataPacket['custom'] = {},
+  lineage?: PacketLineage,
 ): VertexDataPacket {
   return {
     label,
@@ -19,6 +22,7 @@ export function createDefaultVertexData(
     color,
     tags: [],
     custom,
+    ...defaultPacket(lineage),
   };
 }
 
