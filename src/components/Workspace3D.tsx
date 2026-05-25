@@ -3,11 +3,12 @@ import { Canvas, type ThreeEvent } from '@react-three/fiber';
 import { useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { useGeometryStore } from '../store/geometryStore';
-import type { Cell, Face, Shape, Vertex, VertexId } from '../types/geometry';
+import type { Cell, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
 
 export function Workspace3D() {
   const shape = useGeometryStore((state) => state.shapes[state.currentShapeId]);
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
+  const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectCell = useGeometryStore((state) => state.selectCell);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
@@ -33,6 +34,7 @@ export function Workspace3D() {
         <Polyhedron
           shape={shape}
           cellVisibility={cellVisibility}
+          explodeAmount={explodeAmount}
           selectedCellId={selectedCellId}
           hoveredCellId={hoveredCellId}
           onHoverCell={setHoveredCellId}
@@ -57,12 +59,14 @@ interface CellVisibility {
 function Polyhedron({
   shape,
   cellVisibility,
+  explodeAmount,
   selectedCellId,
   hoveredCellId,
   onHoverCell,
 }: {
   shape: Shape;
   cellVisibility: CellVisibility;
+  explodeAmount: number;
   selectedCellId: string | null;
   hoveredCellId: string | null;
   onHoverCell: (cellId: string | null) => void;
@@ -71,15 +75,10 @@ function Polyhedron({
     () => shape.cells.filter((cell) => isCellVisible(cell, cellVisibility)),
     [cellVisibility, shape.cells],
   );
-  const visibleVertexIds = useMemo(() => {
-    const ids = new Set<VertexId>();
-
-    visibleCells.forEach((cell) => {
-      cell.vertexIds.forEach((vertexId) => ids.add(vertexId));
-    });
-
-    return ids;
-  }, [visibleCells]);
+  const displayOffsets = useMemo(
+    () => computeCellDisplayOffsets(shape, explodeAmount),
+    [explodeAmount, shape],
+  );
 
   return (
     <group>
@@ -91,14 +90,11 @@ function Polyhedron({
           isSelected={cell.id === selectedCellId}
           isHovered={cell.id === hoveredCellId}
           onHoverCell={onHoverCell}
+          displayOffset={displayOffsets.get(cell.id) ?? [0, 0, 0]}
+          explodeAmount={explodeAmount}
           renderIndex={index}
         />
       ))}
-      {Object.values(shape.vertices)
-        .filter((vertex) => visibleVertexIds.has(vertex.id))
-        .map((vertex) => (
-          <VertexMarker key={vertex.id} vertex={vertex} />
-        ))}
     </group>
   );
 }
@@ -109,6 +105,8 @@ function CellMesh({
   isSelected,
   isHovered,
   onHoverCell,
+  displayOffset,
+  explodeAmount,
   renderIndex,
 }: {
   shape: Shape;
@@ -116,16 +114,18 @@ function CellMesh({
   isSelected: boolean;
   isHovered: boolean;
   onHoverCell: (cellId: string | null) => void;
+  displayOffset: Vec3;
+  explodeAmount: number;
   renderIndex: number;
 }) {
   const selectCell = useGeometryStore((state) => state.selectCell);
   const faces = useMemo(() => facesForCell(shape, cell), [cell, shape]);
   const faceGeometry = useMemo(() => createFaceGeometry(shape, faces), [faces, shape]);
   const edgeGeometry = useMemo(() => createEdgeGeometry(shape, faces), [faces, shape]);
-  const style = cellStyle(cell, isSelected, isHovered);
+  const style = cellStyle(cell, isSelected, isHovered, explodeAmount);
 
   return (
-    <group>
+    <group position={displayOffset}>
       <mesh geometry={faceGeometry}>
         <meshStandardMaterial
           color={style.faceColor}
@@ -170,6 +170,11 @@ function CellMesh({
       <lineSegments geometry={edgeGeometry} raycast={() => null}>
         <lineBasicMaterial color={style.edgeColor} transparent opacity={style.edgeOpacity} />
       </lineSegments>
+      {cell.vertexIds.map((vertexId) => {
+        const vertex = shape.vertices[vertexId];
+
+        return vertex ? <VertexMarker key={`${cell.id}:${vertex.id}`} vertex={vertex} /> : null;
+      })}
     </group>
   );
 }
@@ -303,7 +308,109 @@ function isCellVisible(cell: Cell, visibility: CellVisibility): boolean {
   return true;
 }
 
-function cellStyle(cell: Cell, isSelected: boolean, isHovered: boolean) {
+function computeCellDisplayOffsets(shape: Shape, explodeAmount: number): Map<string, Vec3> {
+  const offsets = new Map<string, Vec3>();
+
+  if (explodeAmount <= 0) {
+    shape.cells.forEach((cell) => offsets.set(cell.id, [0, 0, 0]));
+    return offsets;
+  }
+
+  const cellById = new Map(shape.cells.map((cell) => [cell.id, cell]));
+  const centroids = new Map(shape.cells.map((cell) => [cell.id, cellCentroid(shape, cell)]));
+  const visiting = new Set<string>();
+  const explodeDistance = explodeAmount * 0.9;
+
+  const offsetForCell = (cell: Cell): Vec3 => {
+    const existing = offsets.get(cell.id);
+
+    if (existing) {
+      return existing;
+    }
+
+    if (visiting.has(cell.id)) {
+      return [0, 0, 0];
+    }
+
+    visiting.add(cell.id);
+
+    const parentCell = cell.parentCellId ? cellById.get(cell.parentCellId) : null;
+    const parentOffset = parentCell ? offsetForCell(parentCell) : ([0, 0, 0] as Vec3);
+    const parentCentroid = parentCell ? centroids.get(parentCell.id) : null;
+    const cellCentroidValue = centroids.get(cell.id) ?? ([0, 0, 0] as Vec3);
+    const direction = parentCentroid
+      ? normalizeVec3(subtractVec3(cellCentroidValue, parentCentroid), fallbackDirection(cell.id))
+      : ([0, 0, 0] as Vec3);
+    const offset = addVec3(parentOffset, scaleVec3(direction, explodeDistance));
+
+    offsets.set(cell.id, offset);
+    visiting.delete(cell.id);
+
+    return offset;
+  };
+
+  shape.cells.forEach(offsetForCell);
+
+  return offsets;
+}
+
+function cellCentroid(shape: Shape, cell: Cell): Vec3 {
+  const positions = cell.vertexIds
+    .map((vertexId) => shape.vertices[vertexId]?.position)
+    .filter((position): position is Vec3 => Boolean(position));
+
+  if (!positions.length) {
+    return [0, 0, 0];
+  }
+
+  const sum = positions.reduce<Vec3>(
+    (accumulator, position) => [
+      accumulator[0] + position[0],
+      accumulator[1] + position[1],
+      accumulator[2] + position[2],
+    ],
+    [0, 0, 0],
+  );
+
+  return scaleVec3(sum, 1 / positions.length);
+}
+
+function subtractVec3(a: Vec3, b: Vec3): Vec3 {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+function addVec3(a: Vec3, b: Vec3): Vec3 {
+  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+}
+
+function scaleVec3([x, y, z]: Vec3, scale: number): Vec3 {
+  return [x * scale, y * scale, z * scale];
+}
+
+function normalizeVec3(vector: Vec3, fallback: Vec3): Vec3 {
+  const length = Math.hypot(vector[0], vector[1], vector[2]);
+
+  if (length < 0.0001) {
+    return fallback;
+  }
+
+  return scaleVec3(vector, 1 / length);
+}
+
+function fallbackDirection(cellId: string): Vec3 {
+  let hash = 0;
+
+  for (let index = 0; index < cellId.length; index += 1) {
+    hash = Math.imul(hash ^ cellId.charCodeAt(index), 2654435761);
+  }
+
+  const angle = ((hash >>> 0) / 4294967295) * Math.PI * 2;
+  const z = (((hash >>> 8) % 2000) / 1000 - 1) * 0.35;
+
+  return normalizeVec3([Math.cos(angle), Math.sin(angle), z], [1, 0, 0]);
+}
+
+function cellStyle(cell: Cell, isSelected: boolean, isHovered: boolean, explodeAmount: number) {
   if (isSelected) {
     return {
       faceColor: '#f59e0b',
@@ -343,9 +450,9 @@ function cellStyle(cell: Cell, isSelected: boolean, isHovered: boolean) {
   if (cell.kind === 'parent') {
     return {
       faceColor: '#a8a29e',
-      faceOpacity: 0.08,
+      faceOpacity: explodeAmount > 0 ? 0.035 : 0.08,
       edgeColor: '#fafaf9',
-      edgeOpacity: 0.38,
+      edgeOpacity: explodeAmount > 0 ? 0.18 : 0.38,
     };
   }
 

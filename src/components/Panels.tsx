@@ -41,7 +41,10 @@ export function OperationControls() {
   const resetWorkspace = useGeometryStore((state) => state.resetWorkspace);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
+  const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
   const toggleCellVisibility = useGeometryStore((state) => state.toggleCellVisibility);
+  const setExplodeAmount = useGeometryStore((state) => state.setExplodeAmount);
+  const resetViewLayout = useGeometryStore((state) => state.resetViewLayout);
   const shape = useCurrentShape();
   const selectedCell = findCell(shape, selectedCellId);
   const hasMissingSelection = selectedCellId !== null && !selectedCell;
@@ -95,6 +98,31 @@ export function OperationControls() {
             className="h-4 w-4 accent-stone-300"
           />
         </label>
+      </div>
+      <div className="mt-4 border-t border-stone-800 pt-4">
+        <label className="grid gap-2 text-sm text-stone-300">
+          <span className="flex items-center justify-between gap-3">
+            Explode View
+            <span className="font-mono text-xs text-stone-500">
+              {Math.round(explodeAmount * 100)}
+            </span>
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={Math.round(explodeAmount * 100)}
+            onChange={(event) => setExplodeAmount(Number(event.target.value) / 100)}
+            className="w-full accent-teal-300"
+          />
+        </label>
+        <button
+          type="button"
+          onClick={resetViewLayout}
+          className="mt-3 h-9 w-full rounded border border-stone-700 bg-stone-900 px-3 text-sm text-stone-200 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
+        >
+          Reset View Layout
+        </button>
       </div>
       <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
         <dt className="text-stone-500">Generation</dt>

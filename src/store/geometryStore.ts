@@ -9,10 +9,18 @@ interface CellVisibility {
   showParentCells: boolean;
 }
 
+interface ViewLayout {
+  explodeAmount: number;
+}
+
 const defaultCellVisibility: CellVisibility = {
   showCoreCells: true,
   showResidueCells: true,
   showParentCells: false,
+};
+
+const defaultViewLayout: ViewLayout = {
+  explodeAmount: 0,
 };
 
 interface GeometryState {
@@ -23,13 +31,16 @@ interface GeometryState {
   selectedCellId: CellId | null;
   selectedVertexId: VertexId | null;
   cellVisibility: CellVisibility;
+  viewLayout: ViewLayout;
   loadSeed: (seedKey: SeedKey) => void;
   resetWorkspace: () => void;
+  resetViewLayout: () => void;
   applyAmboDissectionToCurrent: () => void;
   selectShape: (shapeId: ShapeId) => void;
   selectCell: (cellId: CellId | null) => void;
   selectVertex: (vertexId: VertexId | null) => void;
   toggleCellVisibility: (key: keyof CellVisibility) => void;
+  setExplodeAmount: (explodeAmount: number) => void;
   updateSelectedVertexData: (patch: Partial<VertexDataPacket>) => void;
 }
 
@@ -45,6 +56,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   selectedCellId: null,
   selectedVertexId: null,
   cellVisibility: defaultCellVisibility,
+  viewLayout: defaultViewLayout,
   loadSeed: (seedKey) => {
     const shape = createSeedShape(seedKey);
 
@@ -58,6 +70,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       selectedCellId: null,
       selectedVertexId: null,
       cellVisibility: defaultCellVisibility,
+      viewLayout: defaultViewLayout,
     });
   },
   resetWorkspace: () => {
@@ -72,7 +85,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       selectedCellId: null,
       selectedVertexId: null,
       cellVisibility: defaultCellVisibility,
+      viewLayout: defaultViewLayout,
     });
+  },
+  resetViewLayout: () => {
+    set({ viewLayout: defaultViewLayout });
   },
   applyAmboDissectionToCurrent: () => {
     const { currentShapeId, selectedCellId, shapes, shapeOrder } = get();
@@ -140,6 +157,13 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
         [key]: !state.cellVisibility[key],
       },
     }));
+  },
+  setExplodeAmount: (explodeAmount) => {
+    set({
+      viewLayout: {
+        explodeAmount: Math.min(1, Math.max(0, explodeAmount)),
+      },
+    });
   },
   updateSelectedVertexData: (patch) => {
     const { currentShapeId, selectedVertexId, shapes } = get();
