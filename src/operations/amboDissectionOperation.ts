@@ -5,10 +5,11 @@ import type { GeometryOperation, OperationContext } from './types';
 export const amboDissectionOperation: GeometryOperation = {
   id: 'ambo-dissection',
   label: 'Ambo Dissection',
-  description: 'Dissect supported tetrahedron and octahedron cells.',
+  description: 'Dissect supported tetrahedron, octahedron, and cube cells.',
   supportedTargets: [
     { cellKind: 'seed', topology: 'tetrahedron' },
     { cellKind: 'seed', topology: 'octahedron' },
+    { cellKind: 'seed', topology: 'cube' },
     { cellKind: 'residue', topology: 'tetrahedron' },
     { cellKind: 'core', topology: 'octahedron' },
   ],
@@ -27,7 +28,7 @@ export const amboDissectionOperation: GeometryOperation = {
     const targetTopology = targetCell ? describeTargetTopology(targetCell) : null;
 
     if (targetTopology === 'cube') {
-      return 'Ambo Dissection for cube is not enabled yet.';
+      return 'Selected cube does not have valid ordered topology for Ambo Dissection.';
     }
 
     if (selectedCell?.kind === 'core') {

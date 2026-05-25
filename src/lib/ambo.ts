@@ -1,5 +1,6 @@
 import type {
   Cell,
+  CellTopology,
   Edge,
   Face,
   PacketLineage,
@@ -27,7 +28,7 @@ import {
 } from './packets';
 import { createDefaultVertexData, deriveEdges, getCellFaces, midpoint } from './shape';
 
-type SupportedAmboTopology = 'tetrahedron' | 'octahedron';
+type SupportedAmboTopology = 'tetrahedron' | 'octahedron' | 'cube';
 
 interface CellWithFaces extends Cell {
   faces: Face[];
@@ -59,7 +60,7 @@ export function applyAmboDissection(parent: Shape, targetCellId?: string | null)
   const topology = buildSupportedSourceTopology(parent, sourceCell);
 
   if (!topology) {
-    throw new Error('Ambo dissection currently supports tetrahedron cells and octahedron core cells.');
+    throw new Error('Ambo dissection currently supports tetrahedron, octahedron, and cube cells.');
   }
 
   return applyGenericAmboDissection(parent, topology);
@@ -113,6 +114,7 @@ function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Sh
   const parentCell: Cell = {
     id: parentCellId,
     kind: 'parent',
+    topology: sourceCell.topology,
     generationDepth: sourceCell.generationDepth,
     parentCellId: sourceCell.parentCellId,
     sourceOperation: sourceCell.sourceOperation,
@@ -220,6 +222,11 @@ function classifySupportedSourceTopology(
     faces.length === 8 &&
     edgeCount === 12 &&
     faceSizes.every((size) => size === 3);
+  const isCubeGeometry =
+    cell.vertexIds.length === 8 &&
+    faces.length === 6 &&
+    edgeCount === 12 &&
+    faceSizes.every((size) => size === 4);
 
   if (
     isTetrahedronGeometry &&
@@ -233,6 +240,10 @@ function classifySupportedSourceTopology(
     (cell.topology === 'octahedron' || (!cell.topology && cell.kind === 'core'))
   ) {
     return 'octahedron';
+  }
+
+  if (isCubeGeometry && cell.topology === 'cube') {
+    return 'cube';
   }
 
   return null;
@@ -312,11 +323,17 @@ function normalizeEdgesForCell(edges: Edge[], vertexIds: VertexId[]): Edge[] {
 }
 
 function hasValidVertexRings(topology: SourceTopology): boolean {
+  const expectedRingSize = getExpectedVertexRingSize(topology.sourceTopology);
+
   return topology.vertexIds.every((vertexId) => {
     const neighbors = topology.orderedNeighborsByVertex.get(vertexId) ?? [];
 
-    return neighbors.length >= 3;
+    return neighbors.length === expectedRingSize;
   });
+}
+
+function getExpectedVertexRingSize(sourceTopology: SupportedAmboTopology): number {
+  return sourceTopology === 'octahedron' ? 4 : 3;
 }
 
 function cloneParentVertices(vertices: Record<VertexId, Vertex>): Record<VertexId, Vertex> {
@@ -393,6 +410,7 @@ function createCoreCell(
   return {
     id: cellId,
     kind: 'core',
+    topology: getCoreTopology(topology.sourceTopology),
     generationDepth,
     parentCellId,
     sourceOperation: 'ambo-dissection',
@@ -422,6 +440,7 @@ function createResidueCell(
   return {
     id: cellId,
     kind: 'residue',
+    topology: getResidueTopology(topology.sourceTopology),
     generationDepth,
     parentCellId,
     sourceOperation: 'ambo-dissection',
@@ -440,6 +459,22 @@ function createResidueCell(
     ),
     faces,
   };
+}
+
+function getCoreTopology(sourceTopology: SupportedAmboTopology): CellTopology {
+  if (sourceTopology === 'tetrahedron') {
+    return 'octahedron';
+  }
+
+  return 'cuboctahedron';
+}
+
+function getResidueTopology(sourceTopology: SupportedAmboTopology): CellTopology {
+  if (sourceTopology === 'octahedron') {
+    return 'square-pyramid';
+  }
+
+  return 'tetrahedron';
 }
 
 function createResidueFaces(
