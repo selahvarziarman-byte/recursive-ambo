@@ -1,9 +1,12 @@
 import type {
+  Cell,
   Edge,
   Face,
   PacketLineage,
+  Shape,
   ShapeId,
   Vec3,
+  Vertex,
   VertexDataPacket,
   VertexId,
 } from '../types/geometry';
@@ -58,4 +61,22 @@ export function formatVec3([x, y, z]: Vec3): string {
 
 export function uniqueVertexIds(vertexIds: VertexId[]): VertexId[] {
   return Array.from(new Set(vertexIds));
+}
+
+export function getCellFaces(shape: Shape, cell: Cell): Face[] {
+  const faceIds = new Set(cell.faceIds);
+
+  return shape.faces.filter((face) => faceIds.has(face.id));
+}
+
+export function getCellVertices(shape: Shape, cell: Cell): Vertex[] {
+  return cell.vertexIds
+    .map((vertexId) => shape.vertices[vertexId])
+    .filter((vertex): vertex is Vertex => Boolean(vertex));
+}
+
+export function getFaceVertices(shape: Shape, face: Face): Vertex[] {
+  return face.vertexIds
+    .map((vertexId) => shape.vertices[vertexId])
+    .filter((vertex): vertex is Vertex => Boolean(vertex));
 }

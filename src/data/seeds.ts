@@ -1,5 +1,6 @@
 import type { SeedDefinition, SeedKey, Shape, Vertex } from '../types/geometry';
 import { makeCellId, makeGenerationId } from '../lib/ids';
+import { defaultPacket, deriveFaceLineage, packetSourceRef } from '../lib/packets';
 import { deriveEdges, createDefaultVertexData } from '../lib/shape';
 
 export const seedRegistry: Record<SeedKey, SeedDefinition> = {
@@ -51,11 +52,20 @@ export function createSeedShape(seedKey: SeedKey): Shape {
     seed.vertices.map((vertex) => [vertex.key, `vertex:${seed.key}:${vertex.key}`]),
   );
 
-  const faces = seed.faces.map((face) => ({
-    id: `face:${seed.key}:${face.key}`,
-    vertexIds: face.vertexKeys.map((key) => vertexIdsByKey[key]),
-    role: 'seed-face' as const,
-  }));
+  const faces = seed.faces.map((face) => {
+    const vertexIds = face.vertexKeys.map((key) => vertexIdsByKey[key]);
+
+    return {
+      id: `face:${seed.key}:${face.key}`,
+      vertexIds,
+      role: 'seed-face' as const,
+      lineage: deriveFaceLineage(
+        vertexIds.map((vertexId) => packetSourceRef('vertex', vertexId, 'seed-face-vertex')),
+        shapeId,
+        'composite',
+      ),
+    };
+  });
   const vertexIds = Object.keys(vertices);
   const faceIds = faces.map((face) => face.id);
   const seedCellId = makeCellId(shapeId, 'seed', seed.key, vertexIds);
@@ -79,6 +89,7 @@ export function createSeedShape(seedKey: SeedKey): Shape {
         faceIds,
         sourceVertexIds: [],
         sourceEdgeIds: [],
+        lineage: defaultPacket().lineage,
       },
     ],
     generations: [

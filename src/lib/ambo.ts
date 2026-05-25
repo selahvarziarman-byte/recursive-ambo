@@ -1,4 +1,13 @@
-import type { Cell, Edge, Face, Shape, Vertex, VertexDataPacket, VertexId } from '../types/geometry';
+import type {
+  Cell,
+  Edge,
+  Face,
+  PacketLineage,
+  Shape,
+  Vertex,
+  VertexDataPacket,
+  VertexId,
+} from '../types/geometry';
 import {
   canonicalEdgeKey,
   makeCellId,
@@ -7,8 +16,16 @@ import {
   makeMidpointVertexId,
   makeShapeId,
 } from './ids';
-import { deriveCompositePacket, packetSourceRef } from './packets';
-import { createDefaultVertexData, deriveEdges, midpoint } from './shape';
+import {
+  deriveCellLineage,
+  deriveCompositePacket,
+  deriveFaceLineage,
+  deriveFromParentCell,
+  deriveFromSourceFace,
+  deriveFromSourceVertex,
+  packetSourceRef,
+} from './packets';
+import { createDefaultVertexData, deriveEdges, getCellFaces, midpoint } from './shape';
 
 type TetraCorners = [VertexId, VertexId, VertexId, VertexId];
 type OctahedronVertexIds = [VertexId, VertexId, VertexId, VertexId, VertexId, VertexId];
@@ -96,6 +113,11 @@ function applyTetrahedronDissection(parent: Shape, sourceCell: Cell): Shape {
     faceIds: parentFaces.map((face) => face.id),
     sourceVertexIds: sourceCell.vertexIds,
     sourceEdgeIds: tetraEdges.map(([a, b]) => getParentEdge(edgeByKey, a, b).id),
+    lineage: deriveCellLineage(
+      [packetSourceRef('cell', sourceCell.id, 'source-cell')],
+      shapeId,
+      'preserved',
+    ),
   };
 
   const coreCell = createCoreCell(
@@ -258,6 +280,11 @@ function applyOctahedronDissection(parent: Shape, sourceCell: Cell): Shape {
     faceIds: parentFaces.map((face) => face.id),
     sourceVertexIds: sourceCell.vertexIds,
     sourceEdgeIds: octahedronEdges.map(([a, b]) => getParentEdge(edgeByKey, a, b).id),
+    lineage: deriveCellLineage(
+      [packetSourceRef('cell', sourceCell.id, 'source-cell')],
+      shapeId,
+      'preserved',
+    ),
   };
   const corners = sourceCell.vertexIds as OctahedronVertexIds;
   const coreCell = createCuboctahedronCoreCell(
@@ -372,7 +399,35 @@ function createParentCellFaces(
     role: 'parent-cell-face',
     sourceCellId: parentCellId,
     sourceFaceId: face.id,
+    lineage: deriveFromSourceFace(face.id, shapeId),
   }));
+}
+
+function deriveGeneratedFaceLineage(
+  operationId: string,
+  sourceFaceId?: string,
+  sourceVertexId?: VertexId,
+): PacketLineage {
+  if (sourceFaceId && sourceVertexId) {
+    return deriveFaceLineage(
+      [
+        packetSourceRef('face', sourceFaceId, 'source-face'),
+        packetSourceRef('vertex', sourceVertexId, 'source-vertex'),
+      ],
+      operationId,
+      'composite',
+    );
+  }
+
+  if (sourceFaceId) {
+    return deriveFromSourceFace(sourceFaceId, operationId);
+  }
+
+  if (sourceVertexId) {
+    return deriveFromSourceVertex(sourceVertexId, operationId);
+  }
+
+  return deriveFaceLineage([], operationId, 'default');
 }
 
 function createCoreCell(
@@ -402,6 +457,7 @@ function createCoreCell(
       role: 'dissection-core-face',
       sourceCellId: cellId,
       sourceFaceId: sourceFace.id,
+      lineage: deriveFromSourceFace(sourceFace.id, shapeId),
     });
   }
 
@@ -416,6 +472,7 @@ function createCoreCell(
       role: 'dissection-core-face',
       sourceCellId: cellId,
       sourceVertexId: corner,
+      lineage: deriveFromSourceVertex(corner, shapeId),
     });
   }
 
@@ -429,6 +486,7 @@ function createCoreCell(
     faceIds: faces.map((face) => face.id),
     sourceVertexIds: corners,
     sourceEdgeIds: tetraEdges.map(([a, b]) => getParentEdge(edgeByKey, a, b).id),
+    lineage: deriveFromParentCell(parentCellId, shapeId),
     faces,
   };
 }
@@ -462,6 +520,14 @@ function createResidueCell(
     sourceVertexIds: vertexIds,
     sourceEdgeIds: otherCorners.map((vertexId) => getParentEdge(edgeByKey, corner, vertexId).id),
     preservedVertexId: corner,
+    lineage: deriveCellLineage(
+      [
+        packetSourceRef('cell', parentCellId, 'parent-cell'),
+        packetSourceRef('vertex', corner, 'preserved-vertex'),
+      ],
+      shapeId,
+      'composite',
+    ),
     faces,
   };
 }
@@ -493,6 +559,7 @@ function createResidueFaces(
       sourceCellId: cellId,
       sourceFaceId: sourceFace?.id,
       sourceVertexId: corner,
+      lineage: deriveGeneratedFaceLineage(shapeId, sourceFace?.id, corner),
     });
   }
 
@@ -506,6 +573,7 @@ function createResidueFaces(
     role: 'dissection-residue-face',
     sourceCellId: cellId,
     sourceVertexId: corner,
+    lineage: deriveFromSourceVertex(corner, shapeId),
   });
 
   return faces;
@@ -541,6 +609,7 @@ function createCuboctahedronCoreCell(
       role: 'dissection-core-face',
       sourceCellId: cellId,
       sourceFaceId: sourceFace.id,
+      lineage: deriveFromSourceFace(sourceFace.id, shapeId),
     });
   }
 
@@ -554,6 +623,7 @@ function createCuboctahedronCoreCell(
       role: 'dissection-core-face',
       sourceCellId: cellId,
       sourceVertexId: corner,
+      lineage: deriveFromSourceVertex(corner, shapeId),
     });
   }
 
@@ -567,6 +637,7 @@ function createCuboctahedronCoreCell(
     faceIds: faces.map((face) => face.id),
     sourceVertexIds: corners,
     sourceEdgeIds: octahedronEdges.map(([a, b]) => getParentEdge(edgeByKey, a, b).id),
+    lineage: deriveFromParentCell(parentCellId, shapeId),
     faces,
   };
 }
@@ -603,6 +674,7 @@ function createSquarePyramidResidueCell(
       sourceCellId: cellId,
       sourceFaceId: sourceFace?.id,
       sourceVertexId: apex,
+      lineage: deriveGeneratedFaceLineage(shapeId, sourceFace?.id, apex),
     });
   }
 
@@ -612,6 +684,7 @@ function createSquarePyramidResidueCell(
     role: 'dissection-residue-face',
     sourceCellId: cellId,
     sourceVertexId: apex,
+    lineage: deriveFromSourceVertex(apex, shapeId),
   });
 
   return {
@@ -625,6 +698,14 @@ function createSquarePyramidResidueCell(
     sourceVertexIds: vertexIds,
     sourceEdgeIds: baseNeighbors.map((neighbor) => getParentEdge(edgeByKey, apex, neighbor).id),
     preservedVertexId: apex,
+    lineage: deriveCellLineage(
+      [
+        packetSourceRef('cell', parentCellId, 'parent-cell'),
+        packetSourceRef('vertex', apex, 'preserved-vertex'),
+      ],
+      shapeId,
+      'composite',
+    ),
     faces,
   };
 }
@@ -733,12 +814,6 @@ function getParentEdge(edgeByKey: Map<string, Edge>, a: VertexId, b: VertexId): 
   }
 
   return edge;
-}
-
-function getCellFaces(shape: Shape, cell: Cell): Face[] {
-  const faceIds = new Set(cell.faceIds);
-
-  return shape.faces.filter((face) => faceIds.has(face.id));
 }
 
 function getCellEdgeMap(shape: Shape, faces: Face[]): Map<string, Edge> {

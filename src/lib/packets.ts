@@ -3,10 +3,9 @@ import type {
   PacketInheritanceMode,
   PacketLineage,
   PacketSourceRef,
-  VertexDataPacket,
 } from '../types/geometry';
 
-type PacketLineageFields = Pick<VertexDataPacket, 'lineage'>;
+type PacketLineageFields = { lineage?: PacketLineage };
 
 export function packetSourceRef(
   kind: PacketHostKind,
@@ -44,6 +43,58 @@ export function deriveCompositePacket(
   return {
     lineage: makeLineage(mode, sources, operationId),
   };
+}
+
+export function deriveFaceLineage(
+  sources: PacketSourceRef[],
+  operationId: string,
+  mode: PacketInheritanceMode = 'composite',
+): PacketLineage {
+  return makeLineage(mode, sources, operationId);
+}
+
+export function deriveCellLineage(
+  sources: PacketSourceRef[],
+  operationId: string,
+  mode: PacketInheritanceMode = 'composite',
+): PacketLineage {
+  return makeLineage(mode, sources, operationId);
+}
+
+export function deriveFromSourceFace(
+  sourceFaceId: string,
+  operationId: string,
+  role = 'source-face',
+): PacketLineage {
+  return deriveFaceLineage(
+    [packetSourceRef('face', sourceFaceId, role)],
+    operationId,
+    'derived-from-face',
+  );
+}
+
+export function deriveFromSourceVertex(
+  sourceVertexId: string,
+  operationId: string,
+  role = 'source-vertex',
+): PacketLineage {
+  return deriveFaceLineage(
+    [packetSourceRef('vertex', sourceVertexId, role)],
+    operationId,
+    'derived-from-vertex',
+  );
+}
+
+export function deriveFromParentCell(
+  parentCellId: string,
+  operationId: string,
+  role = 'parent-cell',
+): PacketLineage {
+  return deriveCellLineage(
+    [packetSourceRef('cell', parentCellId, role)],
+    operationId,
+    'derived-from-cell',
+  );
 }
 
 function makeLineage(

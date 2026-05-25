@@ -18,6 +18,7 @@ export type JsonValue =
   | JsonValue[]
   | { [key: string]: JsonValue };
 
+export type PacketData = Record<string, JsonValue>;
 export type PacketHostKind = 'vertex' | 'edge' | 'face' | 'cell';
 
 export type PacketInheritanceMode =
@@ -46,7 +47,7 @@ export interface VertexDataPacket {
   notes: string;
   color: string;
   tags: string[];
-  custom: Record<string, JsonValue>;
+  custom: PacketData;
   lineage?: PacketLineage;
 }
 
@@ -82,6 +83,8 @@ export interface Face {
   id: FaceId;
   vertexIds: VertexId[];
   role: FaceRole;
+  data?: PacketData;
+  lineage?: PacketLineage;
   sourceCellId?: CellId;
   sourceFaceId?: FaceId;
   sourceVertexId?: VertexId;
@@ -107,6 +110,8 @@ export interface Cell {
   sourceVertexIds: VertexId[];
   sourceEdgeIds: EdgeId[];
   preservedVertexId?: VertexId;
+  data?: PacketData;
+  lineage?: PacketLineage;
 }
 
 export interface Generation {
