@@ -11,9 +11,13 @@ export function Workspace3D() {
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectCell = useGeometryStore((state) => state.selectCell);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
+  const [hoveredCellId, setHoveredCellId] = useState<string | null>(null);
+  const hoveredCell = hoveredCellId
+    ? shape.cells.find((cell) => cell.id === hoveredCellId) ?? null
+    : null;
 
   return (
-    <div className="h-full min-h-[440px] w-full bg-neutral-950">
+    <div className="relative h-full min-h-[440px] w-full bg-neutral-950">
       <Canvas
         camera={{ position: [3.2, 2.4, 3.8], fov: 45 }}
         onPointerMissed={() => {
@@ -30,9 +34,16 @@ export function Workspace3D() {
           shape={shape}
           cellVisibility={cellVisibility}
           selectedCellId={selectedCellId}
+          hoveredCellId={hoveredCellId}
+          onHoverCell={setHoveredCellId}
         />
         <OrbitControls makeDefault enableDamping dampingFactor={0.08} />
       </Canvas>
+      <div className="pointer-events-none absolute left-3 top-3 rounded border border-stone-800 bg-stone-950/85 px-3 py-2 text-xs text-stone-300 shadow-lg">
+        {hoveredCell
+          ? `Hovering ${hoveredCell.kind} cell, generation ${hoveredCell.generationDepth}`
+          : 'Hover a cell to preview selection'}
+      </div>
     </div>
   );
 }
@@ -47,10 +58,14 @@ function Polyhedron({
   shape,
   cellVisibility,
   selectedCellId,
+  hoveredCellId,
+  onHoverCell,
 }: {
   shape: Shape;
   cellVisibility: CellVisibility;
   selectedCellId: string | null;
+  hoveredCellId: string | null;
+  onHoverCell: (cellId: string | null) => void;
 }) {
   const visibleCells = useMemo(
     () => shape.cells.filter((cell) => isCellVisible(cell, cellVisibility)),
@@ -74,6 +89,8 @@ function Polyhedron({
           shape={shape}
           cell={cell}
           isSelected={cell.id === selectedCellId}
+          isHovered={cell.id === hoveredCellId}
+          onHoverCell={onHoverCell}
           renderIndex={index}
         />
       ))}
@@ -90,33 +107,25 @@ function CellMesh({
   shape,
   cell,
   isSelected,
+  isHovered,
+  onHoverCell,
   renderIndex,
 }: {
   shape: Shape;
   cell: Cell;
   isSelected: boolean;
+  isHovered: boolean;
+  onHoverCell: (cellId: string | null) => void;
   renderIndex: number;
 }) {
   const selectCell = useGeometryStore((state) => state.selectCell);
   const faces = useMemo(() => facesForCell(shape, cell), [cell, shape]);
   const faceGeometry = useMemo(() => createFaceGeometry(shape, faces), [faces, shape]);
   const edgeGeometry = useMemo(() => createEdgeGeometry(shape, faces), [faces, shape]);
-  const style = cellStyle(cell, isSelected);
+  const style = cellStyle(cell, isSelected, isHovered);
 
   return (
-    <group
-      onClick={(event) => {
-        event.stopPropagation();
-        selectCell(cell.id);
-      }}
-      onPointerEnter={(event) => {
-        event.stopPropagation();
-        document.body.style.cursor = 'pointer';
-      }}
-      onPointerLeave={() => {
-        document.body.style.cursor = 'auto';
-      }}
-    >
+    <group>
       <mesh geometry={faceGeometry}>
         <meshStandardMaterial
           color={style.faceColor}
@@ -128,7 +137,37 @@ function CellMesh({
           polygonOffsetFactor={-renderIndex * 0.25}
         />
       </mesh>
-      <lineSegments geometry={edgeGeometry}>
+      <mesh
+        geometry={faceGeometry}
+        onClick={(event) => {
+          event.stopPropagation();
+          selectCell(cell.id);
+        }}
+        onPointerMove={(event) => {
+          event.stopPropagation();
+          onHoverCell(cell.id);
+          document.body.style.cursor = 'pointer';
+        }}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          onHoverCell(cell.id);
+          document.body.style.cursor = 'pointer';
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation();
+          onHoverCell(null);
+          document.body.style.cursor = 'auto';
+        }}
+      >
+        <meshBasicMaterial
+          color="#ffffff"
+          depthWrite={false}
+          opacity={0.01}
+          side={THREE.DoubleSide}
+          transparent
+        />
+      </mesh>
+      <lineSegments geometry={edgeGeometry} raycast={() => null}>
         <lineBasicMaterial color={style.edgeColor} transparent opacity={style.edgeOpacity} />
       </lineSegments>
     </group>
@@ -264,13 +303,22 @@ function isCellVisible(cell: Cell, visibility: CellVisibility): boolean {
   return true;
 }
 
-function cellStyle(cell: Cell, isSelected: boolean) {
+function cellStyle(cell: Cell, isSelected: boolean, isHovered: boolean) {
   if (isSelected) {
     return {
       faceColor: '#f59e0b',
       faceOpacity: cell.kind === 'parent' ? 0.16 : 0.42,
       edgeColor: '#fef3c7',
       edgeOpacity: 1,
+    };
+  }
+
+  if (isHovered) {
+    return {
+      faceColor: '#fcd34d',
+      faceOpacity: cell.kind === 'parent' ? 0.14 : 0.4,
+      edgeColor: '#fef3c7',
+      edgeOpacity: 0.98,
     };
   }
 
