@@ -83,8 +83,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
 
     if (
       !currentShape ||
-      (selectedCellId !== null && !selectedCell) ||
-      (selectedCell !== null && selectedCell.kind !== 'seed' && selectedCell.kind !== 'residue')
+      (selectedCellId !== null && !selectedCell)
     ) {
       return;
     }

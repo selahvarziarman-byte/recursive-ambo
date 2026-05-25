@@ -45,10 +45,7 @@ export function OperationControls() {
   const shape = useCurrentShape();
   const selectedCell = findCell(shape, selectedCellId);
   const hasMissingSelection = selectedCellId !== null && !selectedCell;
-  const canApply =
-    !hasMissingSelection &&
-    (!selectedCell || selectedCell.kind === 'seed' || selectedCell.kind === 'residue') &&
-    canApplyAmboDissection(shape, selectedCellId);
+  const canApply = !hasMissingSelection && canApplyAmboDissection(shape, selectedCellId);
   const cellCounts = countCellsByKind(shape);
   const operationStatus = describeOperationStatus(shape, selectedCell, hasMissingSelection);
 
@@ -152,6 +149,8 @@ export function ObjectInspector() {
             <dd className="break-all font-mono text-xs text-stone-300">{selectedCell.id}</dd>
             <dt className="text-stone-500">Kind</dt>
             <dd className="text-stone-200">{selectedCell.kind}</dd>
+            <dt className="text-stone-500">Topology</dt>
+            <dd className="text-stone-200">{describeCellTopology(selectedCell)}</dd>
             <dt className="text-stone-500">Generation</dt>
             <dd className="text-stone-200">{selectedCell.generationDepth}</dd>
             <dt className="text-stone-500">Parent cell</dt>
@@ -397,12 +396,22 @@ function describeOperationStatus(
   }
 
   if (selectedCell?.kind === 'core') {
-    return 'Octahedron dissection is not implemented yet.';
+    if (canApplyAmboDissection(shape, selectedCell.id)) {
+      return 'Ready to dissect selected octahedron core.';
+    }
+
+    return selectedCell.vertexIds.length === 12
+      ? 'Cuboctahedron dissection is not implemented yet.'
+      : 'Core cell dissection is not implemented yet.';
   }
 
   if (selectedCell?.kind === 'residue') {
-    return canApplyAmboDissection(shape, selectedCell.id)
-      ? 'Ready to dissect selected residue tetrahedron.'
+    if (canApplyAmboDissection(shape, selectedCell.id)) {
+      return 'Ready to dissect selected residue tetrahedron.';
+    }
+
+    return selectedCell.vertexIds.length === 5
+      ? 'Square-pyramid dissection is not implemented yet.'
       : 'Selected residue cell is not a supported tetrahedron.';
   }
 
@@ -419,6 +428,30 @@ function describeOperationStatus(
   }
 
   return 'Select a cell to inspect. Further cell operations are not implemented yet.';
+}
+
+function describeCellTopology(cell: Cell): string {
+  if (cell.kind === 'seed') {
+    return 'tetrahedron';
+  }
+
+  if (cell.kind === 'core' && cell.vertexIds.length === 6) {
+    return 'octahedron';
+  }
+
+  if (cell.kind === 'core' && cell.vertexIds.length === 12) {
+    return 'cuboctahedron';
+  }
+
+  if (cell.kind === 'residue' && cell.vertexIds.length === 4) {
+    return 'tetrahedron';
+  }
+
+  if (cell.kind === 'residue' && cell.vertexIds.length === 5) {
+    return 'square pyramid';
+  }
+
+  return 'unknown';
 }
 
 function countCellsByKind(shape: Shape): Record<CellKind, number> {
