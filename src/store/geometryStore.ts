@@ -66,16 +66,16 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (
       !currentShape ||
       (selectedCellId !== null && !selectedCell) ||
-      (selectedCell !== null && selectedCell.kind !== 'seed')
+      (selectedCell !== null && selectedCell.kind !== 'seed' && selectedCell.kind !== 'residue')
     ) {
       return;
     }
 
-    if (!canApplyAmboDissection(currentShape)) {
+    if (!canApplyAmboDissection(currentShape, selectedCellId)) {
       return;
     }
 
-    const nextShape = applyAmboDissection(currentShape);
+    const nextShape = applyAmboDissection(currentShape, selectedCellId);
     const nextShapeOrder = shapeOrder.includes(nextShape.id)
       ? shapeOrder
       : [...shapeOrder, nextShape.id];

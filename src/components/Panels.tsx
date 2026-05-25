@@ -46,8 +46,8 @@ export function OperationControls() {
   const hasMissingSelection = selectedCellId !== null && !selectedCell;
   const canApply =
     !hasMissingSelection &&
-    (!selectedCell || selectedCell.kind === 'seed') &&
-    canApplyAmboDissection(shape);
+    (!selectedCell || selectedCell.kind === 'seed' || selectedCell.kind === 'residue') &&
+    canApplyAmboDissection(shape, selectedCellId);
   const cellCounts = countCellsByKind(shape);
   const operationStatus = describeOperationStatus(shape, selectedCell, hasMissingSelection);
 
@@ -393,14 +393,20 @@ function describeOperationStatus(
   }
 
   if (selectedCell?.kind === 'residue') {
-    return 'Residue tetrahedron dissection is not implemented yet.';
+    return canApplyAmboDissection(shape, selectedCell.id)
+      ? 'Ready to dissect selected residue tetrahedron.'
+      : 'Selected residue cell is not a supported tetrahedron.';
   }
 
   if (selectedCell?.kind === 'parent') {
     return 'Previous generation cells are inspection-only.';
   }
 
-  if (canApplyAmboDissection(shape)) {
+  if (selectedCell?.kind === 'seed' && canApplyAmboDissection(shape, selectedCell.id)) {
+    return 'Ready to dissect selected seed tetrahedron.';
+  }
+
+  if (!selectedCell && canApplyAmboDissection(shape)) {
     return 'Ready to dissect the seed tetrahedron.';
   }
 
