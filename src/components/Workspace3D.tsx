@@ -8,20 +8,29 @@ import type { Cell, Face, Shape, Vertex, VertexId } from '../types/geometry';
 export function Workspace3D() {
   const shape = useGeometryStore((state) => state.shapes[state.currentShapeId]);
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
+  const selectedCellId = useGeometryStore((state) => state.selectedCellId);
+  const selectCell = useGeometryStore((state) => state.selectCell);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
 
   return (
     <div className="h-full min-h-[440px] w-full bg-neutral-950">
       <Canvas
         camera={{ position: [3.2, 2.4, 3.8], fov: 45 }}
-        onPointerMissed={() => selectVertex(null)}
+        onPointerMissed={() => {
+          selectCell(null);
+          selectVertex(null);
+        }}
       >
         <color attach="background" args={['#0c0a09']} />
         <ambientLight intensity={0.62} />
         <directionalLight position={[4, 5, 3]} intensity={1.7} />
         <directionalLight position={[-3, -2, -4]} intensity={0.45} color="#67e8f9" />
         <gridHelper args={[6, 12, '#57534e', '#292524']} position={[0, -1.35, 0]} />
-        <Polyhedron shape={shape} cellVisibility={cellVisibility} />
+        <Polyhedron
+          shape={shape}
+          cellVisibility={cellVisibility}
+          selectedCellId={selectedCellId}
+        />
         <OrbitControls makeDefault enableDamping dampingFactor={0.08} />
       </Canvas>
     </div>
@@ -37,9 +46,11 @@ interface CellVisibility {
 function Polyhedron({
   shape,
   cellVisibility,
+  selectedCellId,
 }: {
   shape: Shape;
   cellVisibility: CellVisibility;
+  selectedCellId: string | null;
 }) {
   const visibleCells = useMemo(
     () => shape.cells.filter((cell) => isCellVisible(cell, cellVisibility)),
@@ -58,7 +69,13 @@ function Polyhedron({
   return (
     <group>
       {visibleCells.map((cell, index) => (
-        <CellMesh key={cell.id} shape={shape} cell={cell} renderIndex={index} />
+        <CellMesh
+          key={cell.id}
+          shape={shape}
+          cell={cell}
+          isSelected={cell.id === selectedCellId}
+          renderIndex={index}
+        />
       ))}
       {Object.values(shape.vertices)
         .filter((vertex) => visibleVertexIds.has(vertex.id))
@@ -72,19 +89,34 @@ function Polyhedron({
 function CellMesh({
   shape,
   cell,
+  isSelected,
   renderIndex,
 }: {
   shape: Shape;
   cell: Cell;
+  isSelected: boolean;
   renderIndex: number;
 }) {
+  const selectCell = useGeometryStore((state) => state.selectCell);
   const faces = useMemo(() => facesForCell(shape, cell), [cell, shape]);
   const faceGeometry = useMemo(() => createFaceGeometry(shape, faces), [faces, shape]);
   const edgeGeometry = useMemo(() => createEdgeGeometry(shape, faces), [faces, shape]);
-  const style = cellStyle(cell);
+  const style = cellStyle(cell, isSelected);
 
   return (
-    <group>
+    <group
+      onClick={(event) => {
+        event.stopPropagation();
+        selectCell(cell.id);
+      }}
+      onPointerEnter={(event) => {
+        event.stopPropagation();
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerLeave={() => {
+        document.body.style.cursor = 'auto';
+      }}
+    >
       <mesh geometry={faceGeometry}>
         <meshStandardMaterial
           color={style.faceColor}
@@ -232,7 +264,16 @@ function isCellVisible(cell: Cell, visibility: CellVisibility): boolean {
   return true;
 }
 
-function cellStyle(cell: Cell) {
+function cellStyle(cell: Cell, isSelected: boolean) {
+  if (isSelected) {
+    return {
+      faceColor: '#f59e0b',
+      faceOpacity: cell.kind === 'parent' ? 0.16 : 0.42,
+      edgeColor: '#fef3c7',
+      edgeOpacity: 1,
+    };
+  }
+
   if (cell.kind === 'core') {
     return {
       faceColor: '#67e8f9',

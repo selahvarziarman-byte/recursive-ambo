@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createSeedShape } from '../data/seeds';
 import { applyAmboDissection, canApplyAmboDissection } from '../lib/ambo';
-import type { SeedKey, Shape, ShapeId, VertexDataPacket, VertexId } from '../types/geometry';
+import type { CellId, SeedKey, Shape, ShapeId, VertexDataPacket, VertexId } from '../types/geometry';
 
 interface CellVisibility {
   showCoreCells: boolean;
@@ -14,11 +14,13 @@ interface GeometryState {
   shapes: Record<ShapeId, Shape>;
   shapeOrder: ShapeId[];
   currentShapeId: ShapeId;
+  selectedCellId: CellId | null;
   selectedVertexId: VertexId | null;
   cellVisibility: CellVisibility;
   loadSeed: (seedKey: SeedKey) => void;
   applyAmboDissectionToCurrent: () => void;
   selectShape: (shapeId: ShapeId) => void;
+  selectCell: (cellId: CellId | null) => void;
   selectVertex: (vertexId: VertexId | null) => void;
   toggleCellVisibility: (key: keyof CellVisibility) => void;
   updateSelectedVertexData: (patch: Partial<VertexDataPacket>) => void;
@@ -33,6 +35,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   },
   shapeOrder: [initialShape.id],
   currentShapeId: initialShape.id,
+  selectedCellId: null,
   selectedVertexId: null,
   cellVisibility: {
     showCoreCells: true,
@@ -49,14 +52,26 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       },
       shapeOrder: [shape.id],
       currentShapeId: shape.id,
+      selectedCellId: null,
       selectedVertexId: null,
     });
   },
   applyAmboDissectionToCurrent: () => {
-    const { currentShapeId, shapes, shapeOrder } = get();
+    const { currentShapeId, selectedCellId, shapes, shapeOrder } = get();
     const currentShape = shapes[currentShapeId];
+    const selectedCell = selectedCellId
+      ? currentShape?.cells.find((cell) => cell.id === selectedCellId) ?? null
+      : null;
 
-    if (!currentShape || !canApplyAmboDissection(currentShape)) {
+    if (
+      !currentShape ||
+      (selectedCellId !== null && !selectedCell) ||
+      (selectedCell !== null && selectedCell.kind !== 'seed')
+    ) {
+      return;
+    }
+
+    if (!canApplyAmboDissection(currentShape)) {
       return;
     }
 
@@ -72,6 +87,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       },
       shapeOrder: nextShapeOrder,
       currentShapeId: nextShape.id,
+      selectedCellId: null,
       selectedVertexId: null,
     });
   },
@@ -84,11 +100,18 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
 
     set((state) => ({
       currentShapeId: shapeId,
+      selectedCellId:
+        state.selectedCellId && shape.cells.some((cell) => cell.id === state.selectedCellId)
+          ? state.selectedCellId
+          : null,
       selectedVertexId:
         state.selectedVertexId && shape.vertices[state.selectedVertexId]
           ? state.selectedVertexId
           : null,
     }));
+  },
+  selectCell: (cellId) => {
+    set({ selectedCellId: cellId, selectedVertexId: null });
   },
   selectVertex: (vertexId) => {
     set({ selectedVertexId: vertexId });

@@ -3,7 +3,7 @@ import { seedRegistry } from '../data/seeds';
 import { canApplyAmboDissection } from '../lib/ambo';
 import { formatVec3 } from '../lib/shape';
 import { useGeometryStore } from '../store/geometryStore';
-import type { CellKind, JsonValue, Shape, VertexDataPacket } from '../types/geometry';
+import type { Cell, CellKind, JsonValue, Shape, VertexDataPacket } from '../types/geometry';
 import { Panel } from './Panel';
 
 export function SeedSelector() {
@@ -38,11 +38,18 @@ export function OperationControls() {
   const applyAmboDissectionToCurrent = useGeometryStore(
     (state) => state.applyAmboDissectionToCurrent,
   );
+  const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
   const toggleCellVisibility = useGeometryStore((state) => state.toggleCellVisibility);
   const shape = useCurrentShape();
-  const canApply = canApplyAmboDissection(shape);
+  const selectedCell = findCell(shape, selectedCellId);
+  const hasMissingSelection = selectedCellId !== null && !selectedCell;
+  const canApply =
+    !hasMissingSelection &&
+    (!selectedCell || selectedCell.kind === 'seed') &&
+    canApplyAmboDissection(shape);
   const cellCounts = countCellsByKind(shape);
+  const operationStatus = describeOperationStatus(shape, selectedCell, hasMissingSelection);
 
   return (
     <Panel title="Operation Controls">
@@ -54,6 +61,7 @@ export function OperationControls() {
       >
         Apply Ambo Dissection
       </button>
+      <p className="mt-3 text-sm leading-5 text-stone-400">{operationStatus}</p>
       <div className="mt-4 grid gap-2 text-sm text-stone-300">
         <label className="flex items-center justify-between gap-3">
           Core cells
@@ -103,8 +111,10 @@ export function OperationControls() {
 
 export function ObjectInspector() {
   const shape = useCurrentShape();
+  const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
   const vertex = selectedVertexId ? shape.vertices[selectedVertexId] : null;
+  const selectedCell = findCell(shape, selectedCellId);
   const selectedVertexCells = selectedVertexId
     ? shape.cells.filter((cell) => cell.vertexIds.includes(selectedVertexId))
     : [];
@@ -126,6 +136,27 @@ export function ObjectInspector() {
         <dt className="text-stone-500">Cells</dt>
         <dd className="text-stone-200">{formatCellCounts(cellCounts)}</dd>
       </dl>
+
+      <div className="mt-4 border-t border-stone-800 pt-4">
+        {selectedCell ? (
+          <dl className="grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+            <dt className="text-stone-500">Cell</dt>
+            <dd className="break-all font-mono text-xs text-stone-300">{selectedCell.id}</dd>
+            <dt className="text-stone-500">Kind</dt>
+            <dd className="text-stone-200">{selectedCell.kind}</dd>
+            <dt className="text-stone-500">Generation</dt>
+            <dd className="text-stone-200">{selectedCell.generationDepth}</dd>
+            <dt className="text-stone-500">Parent cell</dt>
+            <dd className="break-all font-mono text-xs text-stone-300">
+              {selectedCell.parentCellId ?? 'none'}
+            </dd>
+            <dt className="text-stone-500">Source op</dt>
+            <dd className="text-stone-200">{selectedCell.sourceOperation}</dd>
+          </dl>
+        ) : (
+          <p className="text-sm text-stone-500">Click a cell in the workspace to inspect it.</p>
+        )}
+      </div>
 
       <div className="mt-4 border-t border-stone-800 pt-4">
         {vertex ? (
@@ -338,6 +369,42 @@ function useCurrentShape() {
   const currentShapeId = useGeometryStore((state) => state.currentShapeId);
 
   return useMemo(() => shapes[currentShapeId], [currentShapeId, shapes]);
+}
+
+function findCell(shape: Shape, cellId: string | null): Cell | null {
+  if (!cellId) {
+    return null;
+  }
+
+  return shape.cells.find((cell) => cell.id === cellId) ?? null;
+}
+
+function describeOperationStatus(
+  shape: Shape,
+  selectedCell: Cell | null,
+  hasMissingSelection: boolean,
+): string {
+  if (hasMissingSelection) {
+    return 'Selected cell is no longer in the current workspace.';
+  }
+
+  if (selectedCell?.kind === 'core') {
+    return 'Octahedron dissection is not implemented yet.';
+  }
+
+  if (selectedCell?.kind === 'residue') {
+    return 'Residue tetrahedron dissection is not implemented yet.';
+  }
+
+  if (selectedCell?.kind === 'parent') {
+    return 'Previous generation cells are inspection-only.';
+  }
+
+  if (canApplyAmboDissection(shape)) {
+    return 'Ready to dissect the seed tetrahedron.';
+  }
+
+  return 'Select a cell to inspect. Further cell operations are not implemented yet.';
 }
 
 function countCellsByKind(shape: Shape): Record<CellKind, number> {

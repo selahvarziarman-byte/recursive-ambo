@@ -1,0 +1,594 @@
+diff --git a/src/components/Panels.tsx b/src/components/Panels.tsx
+index 8907d2f..67663a9 100644
+--- a/src/components/Panels.tsx
++++ b/src/components/Panels.tsx
+@@ -1,9 +1,9 @@
+ import { useEffect, useMemo, useState } from 'react';
+ import { seedRegistry } from '../data/seeds';
+-import { canApplyAmboDissection } from '../lib/ambo';
++import { canApplyAmboDissection, resolveDissectionTargetCell } from '../lib/ambo';
+ import { formatVec3 } from '../lib/shape';
+ import { useGeometryStore } from '../store/geometryStore';
+-import type { CellKind, JsonValue, Shape, VertexDataPacket } from '../types/geometry';
++import type { Cell, CellKind, JsonValue, Shape, VertexDataPacket } from '../types/geometry';
+ import { Panel } from './Panel';
+ 
+ export function SeedSelector() {
+@@ -38,10 +38,15 @@ export function OperationControls() {
+   const applyAmboDissectionToCurrent = useGeometryStore(
+     (state) => state.applyAmboDissectionToCurrent,
+   );
++  const resetWorkspace = useGeometryStore((state) => state.resetWorkspace);
++  const undoLastOperation = useGeometryStore((state) => state.undoLastOperation);
++  const selectedCellId = useGeometryStore((state) => state.selectedCellId);
+   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
+   const toggleCellVisibility = useGeometryStore((state) => state.toggleCellVisibility);
++  const shapeOrder = useGeometryStore((state) => state.shapeOrder);
+   const shape = useCurrentShape();
+-  const canApply = canApplyAmboDissection(shape);
++  const targetCell = resolveDissectionTargetCell(shape, selectedCellId);
++  const canApply = canApplyAmboDissection(shape, selectedCellId);
+   const cellCounts = countCellsByKind(shape);
+ 
+   return (
+@@ -54,6 +59,27 @@ export function OperationControls() {
+       >
+         Apply Ambo Dissection
+       </button>
++      <div className="mt-2 grid grid-cols-2 gap-2">
++        <button
++          type="button"
++          onClick={undoLastOperation}
++          disabled={shapeOrder.length <= 1}
++          className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm text-stone-200 transition hover:border-stone-500 disabled:cursor-not-allowed disabled:text-stone-600"
++        >
++          Undo
++        </button>
++        <button
++          type="button"
++          onClick={resetWorkspace}
++          className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm text-stone-200 transition hover:border-stone-500"
++        >
++          Reset
++        </button>
++      </div>
++      <dl className="mt-4 grid grid-cols-[84px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
++        <dt className="text-stone-500">Target</dt>
++        <dd className="truncate text-stone-200">{targetCell ? labelCell(targetCell) : 'none'}</dd>
++      </dl>
+       <div className="mt-4 grid gap-2 text-sm text-stone-300">
+         <label className="flex items-center justify-between gap-3">
+           Core cells
+@@ -103,8 +129,10 @@ export function OperationControls() {
+ 
+ export function ObjectInspector() {
+   const shape = useCurrentShape();
++  const selectedCellId = useGeometryStore((state) => state.selectedCellId);
+   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+   const vertex = selectedVertexId ? shape.vertices[selectedVertexId] : null;
++  const selectedCell = resolveDissectionTargetCell(shape, selectedCellId);
+   const selectedVertexCells = selectedVertexId
+     ? shape.cells.filter((cell) => cell.vertexIds.includes(selectedVertexId))
+     : [];
+@@ -127,6 +155,27 @@ export function ObjectInspector() {
+         <dd className="text-stone-200">{formatCellCounts(cellCounts)}</dd>
+       </dl>
+ 
++      <div className="mt-4 border-t border-stone-800 pt-4">
++        {selectedCell ? (
++          <dl className="grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
++            <dt className="text-stone-500">Cell</dt>
++            <dd className="break-all font-mono text-xs text-stone-300">{selectedCell.id}</dd>
++            <dt className="text-stone-500">Kind</dt>
++            <dd className="text-stone-200">{selectedCell.kind}</dd>
++            <dt className="text-stone-500">Generation</dt>
++            <dd className="text-stone-200">{selectedCell.generationDepth}</dd>
++            <dt className="text-stone-500">Parent cell</dt>
++            <dd className="break-all font-mono text-xs text-stone-300">
++              {selectedCell.parentCellId ?? 'none'}
++            </dd>
++            <dt className="text-stone-500">Source op</dt>
++            <dd className="text-stone-200">{selectedCell.sourceOperation}</dd>
++          </dl>
++        ) : (
++          <p className="text-sm text-stone-500">No cell selected.</p>
++        )}
++      </div>
++
+       <div className="mt-4 border-t border-stone-800 pt-4">
+         {vertex ? (
+           <dl className="grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+@@ -368,3 +417,7 @@ function formatCellCounts(counts: Record<CellKind, number>): string {
+     .map(([kind, count]) => `${kind}:${count}`)
+     .join(' ');
+ }
++
++function labelCell(cell: Cell): string {
++  return `${cell.kind} g${cell.generationDepth}`;
++}
+diff --git a/src/components/Workspace3D.tsx b/src/components/Workspace3D.tsx
+index 34b7c52..c2a28df 100644
+--- a/src/components/Workspace3D.tsx
++++ b/src/components/Workspace3D.tsx
+@@ -8,20 +8,29 @@ import type { Cell, Face, Shape, Vertex, VertexId } from '../types/geometry';
+ export function Workspace3D() {
+   const shape = useGeometryStore((state) => state.shapes[state.currentShapeId]);
+   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
++  const selectedCellId = useGeometryStore((state) => state.selectedCellId);
++  const selectCell = useGeometryStore((state) => state.selectCell);
+   const selectVertex = useGeometryStore((state) => state.selectVertex);
+ 
+   return (
+     <div className="h-full min-h-[440px] w-full bg-neutral-950">
+       <Canvas
+         camera={{ position: [3.2, 2.4, 3.8], fov: 45 }}
+-        onPointerMissed={() => selectVertex(null)}
++        onPointerMissed={() => {
++          selectCell(null);
++          selectVertex(null);
++        }}
+       >
+         <color attach="background" args={['#0c0a09']} />
+         <ambientLight intensity={0.62} />
+         <directionalLight position={[4, 5, 3]} intensity={1.7} />
+         <directionalLight position={[-3, -2, -4]} intensity={0.45} color="#67e8f9" />
+         <gridHelper args={[6, 12, '#57534e', '#292524']} position={[0, -1.35, 0]} />
+-        <Polyhedron shape={shape} cellVisibility={cellVisibility} />
++        <Polyhedron
++          shape={shape}
++          cellVisibility={cellVisibility}
++          selectedCellId={selectedCellId}
++        />
+         <OrbitControls makeDefault enableDamping dampingFactor={0.08} />
+       </Canvas>
+     </div>
+@@ -37,9 +46,11 @@ interface CellVisibility {
+ function Polyhedron({
+   shape,
+   cellVisibility,
++  selectedCellId,
+ }: {
+   shape: Shape;
+   cellVisibility: CellVisibility;
++  selectedCellId: string | null;
+ }) {
+   const visibleCells = useMemo(
+     () => shape.cells.filter((cell) => isCellVisible(cell, cellVisibility)),
+@@ -58,7 +69,13 @@ function Polyhedron({
+   return (
+     <group>
+       {visibleCells.map((cell, index) => (
+-        <CellMesh key={cell.id} shape={shape} cell={cell} renderIndex={index} />
++        <CellMesh
++          key={cell.id}
++          shape={shape}
++          cell={cell}
++          isSelected={cell.id === selectedCellId}
++          renderIndex={index}
++        />
+       ))}
+       {Object.values(shape.vertices)
+         .filter((vertex) => visibleVertexIds.has(vertex.id))
+@@ -72,19 +89,34 @@ function Polyhedron({
+ function CellMesh({
+   shape,
+   cell,
++  isSelected,
+   renderIndex,
+ }: {
+   shape: Shape;
+   cell: Cell;
++  isSelected: boolean;
+   renderIndex: number;
+ }) {
++  const selectCell = useGeometryStore((state) => state.selectCell);
+   const faces = useMemo(() => facesForCell(shape, cell), [cell, shape]);
+   const faceGeometry = useMemo(() => createFaceGeometry(shape, faces), [faces, shape]);
+   const edgeGeometry = useMemo(() => createEdgeGeometry(shape, faces), [faces, shape]);
+-  const style = cellStyle(cell);
++  const style = cellStyle(cell, isSelected);
+ 
+   return (
+-    <group>
++    <group
++      onClick={(event) => {
++        event.stopPropagation();
++        selectCell(cell.id);
++      }}
++      onPointerEnter={(event) => {
++        event.stopPropagation();
++        document.body.style.cursor = 'pointer';
++      }}
++      onPointerLeave={() => {
++        document.body.style.cursor = 'auto';
++      }}
++    >
+       <mesh geometry={faceGeometry}>
+         <meshStandardMaterial
+           color={style.faceColor}
+@@ -232,7 +264,16 @@ function isCellVisible(cell: Cell, visibility: CellVisibility): boolean {
+   return true;
+ }
+ 
+-function cellStyle(cell: Cell) {
++function cellStyle(cell: Cell, isSelected: boolean) {
++  if (isSelected) {
++    return {
++      faceColor: '#f59e0b',
++      faceOpacity: cell.kind === 'parent' ? 0.16 : 0.42,
++      edgeColor: '#fef3c7',
++      edgeOpacity: 1,
++    };
++  }
++
+   if (cell.kind === 'core') {
+     return {
+       faceColor: '#67e8f9',
+diff --git a/src/lib/ambo.ts b/src/lib/ambo.ts
+index a93342c..3344e93 100644
+--- a/src/lib/ambo.ts
++++ b/src/lib/ambo.ts
+@@ -11,30 +11,26 @@ import { createDefaultVertexData, deriveEdges, midpoint } from './shape';
+ 
+ type TetraCorners = [VertexId, VertexId, VertexId, VertexId];
+ 
+-export function canApplyAmboDissection(shape: Shape): boolean {
+-  const cell = shape.cells[0];
++export function canApplyAmboDissection(shape: Shape, targetCellId?: string | null): boolean {
++  const cell = resolveDissectionTargetCell(shape, targetCellId);
+ 
+-  return (
+-    shape.cells.length === 1 &&
+-    cell?.kind === 'seed' &&
+-    cell.vertexIds.length === 4 &&
+-    cell.faceIds.length === 4 &&
+-    shape.edges.length === 6
+-  );
++  return Boolean(cell && isDissectableTetraCell(shape, cell));
+ }
+ 
+-export function applyAmboDissection(parent: Shape): Shape {
+-  if (!canApplyAmboDissection(parent)) {
+-    throw new Error('Ambo dissection milestone currently supports exactly one seed tetrahedron.');
++export function applyAmboDissection(parent: Shape, targetCellId?: string | null): Shape {
++  const sourceCell = resolveDissectionTargetCell(parent, targetCellId);
++
++  if (!sourceCell || !isDissectableTetraCell(parent, sourceCell)) {
++    throw new Error('Ambo dissection currently supports seed and residue tetrahedron cells.');
+   }
+ 
+-  const generationDepth = parent.genealogy.generationDepth + 1;
++  const generationDepth = nextGenerationDepth(parent);
+   const shapeId = makeShapeId(parent.id, 'ambo-dissection', generationDepth);
+-  const sourceCell = parent.cells[0];
+   const parentCellId = makeCellId(shapeId, 'parent', sourceCell.id, sourceCell.vertexIds);
+   const corners = sourceCell.vertexIds as TetraCorners;
+   const tetraEdges = createTetraEdgePairs(corners);
+-  const edgeByKey = new Map(parent.edges.map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
++  const sourceFaces = facesForCell(parent, sourceCell);
++  const edgeByKey = getCellEdges(parent, sourceFaces);
+   const midpointIds = new Map<string, VertexId>();
+   const vertices = cloneParentVertices(parent.vertices);
+ 
+@@ -61,21 +57,21 @@ export function applyAmboDissection(parent: Shape): Shape {
+     };
+   }
+ 
+-  const parentFaces = createParentCellFaces(parent, shapeId, sourceCell, parentCellId);
++  const parentFaces = createParentCellFaces(shapeId, sourceCell, parentCellId, sourceFaces);
+   const parentCell: Cell = {
+     id: parentCellId,
+     kind: 'parent',
+-    generationDepth: parent.genealogy.generationDepth,
++    generationDepth: sourceCell.generationDepth,
+     parentCellId: sourceCell.parentCellId,
+-    sourceOperation: parent.genealogy.operation,
++    sourceOperation: sourceCell.sourceOperation,
+     vertexIds: sourceCell.vertexIds,
+     faceIds: parentFaces.map((face) => face.id),
+     sourceVertexIds: sourceCell.vertexIds,
+-    sourceEdgeIds: parent.edges.map((edge) => edge.id),
++    sourceEdgeIds: tetraEdges.map(([a, b]) => getParentEdge(edgeByKey, a, b).id),
+   };
+ 
+   const coreCell = createCoreCell(
+-    parent,
++    sourceFaces,
+     shapeId,
+     generationDepth,
+     parentCellId,
+@@ -86,7 +82,7 @@ export function applyAmboDissection(parent: Shape): Shape {
+   );
+   const residueCells = corners.map((corner) =>
+     createResidueCell(
+-      parent,
++      sourceFaces,
+       shapeId,
+       generationDepth,
+       parentCellId,
+@@ -98,8 +94,17 @@ export function applyAmboDissection(parent: Shape): Shape {
+   );
+   const generatedCells = [coreCell, ...residueCells];
+   const generatedFaces = generatedCells.flatMap((cellWithFaces) => cellWithFaces.faces);
+-  const cells = [parentCell, ...generatedCells.map(({ faces: _faces, ...cell }) => cell)];
+-  const faces = [...parentFaces, ...generatedFaces];
++  const replacedFaceIds = new Set(sourceCell.faceIds);
++  const cells = [
++    ...parent.cells.filter((cell) => cell.id !== sourceCell.id),
++    parentCell,
++    ...generatedCells.map(({ faces: _faces, ...cell }) => cell),
++  ];
++  const faces = [
++    ...parent.faces.filter((face) => !replacedFaceIds.has(face.id)),
++    ...parentFaces,
++    ...generatedFaces,
++  ];
+   const createdVertexIds = Array.from(midpointIds.values());
+   const createdAt = new Date().toISOString();
+ 
+@@ -139,6 +144,32 @@ interface CellWithFaces extends Cell {
+   faces: Face[];
+ }
+ 
++export function resolveDissectionTargetCell(
++  shape: Shape,
++  targetCellId?: string | null,
++): Cell | null {
++  if (targetCellId) {
++    return shape.cells.find((cell) => cell.id === targetCellId) ?? null;
++  }
++
++  return shape.cells.find((cell) => cell.kind === 'seed') ?? shape.cells[0] ?? null;
++}
++
++function nextGenerationDepth(shape: Shape): number {
++  return Math.max(...shape.generations.map((generation) => generation.depth), 0) + 1;
++}
++
++function isDissectableTetraCell(shape: Shape, cell: Cell): boolean {
++  const sourceFaces = facesForCell(shape, cell);
++
++  return (
++    (cell.kind === 'seed' || cell.kind === 'residue') &&
++    cell.vertexIds.length === 4 &&
++    sourceFaces.length === 4 &&
++    getCellEdges(shape, sourceFaces).size === 6
++  );
++}
++
+ function createTetraEdgePairs([a, b, c, d]: TetraCorners): Array<[VertexId, VertexId]> {
+   return [
+     [a, b],
+@@ -171,26 +202,22 @@ function cloneVertexData(data: VertexDataPacket): VertexDataPacket {
+ }
+ 
+ function createParentCellFaces(
+-  parent: Shape,
+   shapeId: string,
+   sourceCell: Cell,
+   parentCellId: string,
++  sourceFaces: Face[],
+ ): Face[] {
+-  return sourceCell.faceIds.map((sourceFaceId) => {
+-    const face = getFace(parent, sourceFaceId);
+-
+-    return {
+-      id: makeFaceId(shapeId, 'parent-cell-face', sourceFaceId, face.vertexIds),
++  return sourceFaces.map((face) => ({
++      id: makeFaceId(shapeId, 'parent-cell-face', face.id, face.vertexIds),
+       vertexIds: face.vertexIds,
+       role: 'parent-cell-face',
+       sourceCellId: parentCellId,
+-      sourceFaceId,
+-    };
+-  });
++      sourceFaceId: face.id,
++  }));
+ }
+ 
+ function createCoreCell(
+-  parent: Shape,
++  sourceFaces: Face[],
+   shapeId: string,
+   generationDepth: number,
+   parentCellId: string,
+@@ -203,7 +230,7 @@ function createCoreCell(
+   const cellId = makeCellId(shapeId, 'core', parentCellId, vertexIds);
+   const faces: Face[] = [];
+ 
+-  for (const sourceFace of parent.faces) {
++  for (const sourceFace of sourceFaces) {
+     if (sourceFace.vertexIds.length !== 3) {
+       continue;
+     }
+@@ -248,7 +275,7 @@ function createCoreCell(
+ }
+ 
+ function createResidueCell(
+-  parent: Shape,
++  sourceFaces: Face[],
+   shapeId: string,
+   generationDepth: number,
+   parentCellId: string,
+@@ -263,7 +290,7 @@ function createResidueCell(
+   );
+   const vertexIds = [corner, ...incidentMidpoints];
+   const cellId = makeCellId(shapeId, 'residue', corner, vertexIds);
+-  const faces = createResidueFaces(parent, shapeId, cellId, corner, otherCorners, midpointIds);
++  const faces = createResidueFaces(sourceFaces, shapeId, cellId, corner, otherCorners, midpointIds);
+ 
+   return {
+     id: cellId,
+@@ -281,7 +308,7 @@ function createResidueCell(
+ }
+ 
+ function createResidueFaces(
+-  parent: Shape,
++  sourceFaces: Face[],
+   shapeId: string,
+   cellId: string,
+   corner: VertexId,
+@@ -298,7 +325,7 @@ function createResidueFaces(
+       getMidpointId(midpointIds, corner, a),
+       getMidpointId(midpointIds, corner, b),
+     ];
+-    const sourceFace = findFaceContaining(parent, [corner, a, b]);
++    const sourceFace = findFaceContaining(sourceFaces, [corner, a, b]);
+ 
+     faces.push({
+       id: makeFaceId(shapeId, 'dissection-residue-face', `${cellId}:outer:${index}`, vertexIds),
+@@ -360,16 +387,23 @@ function getParentEdge(edgeByKey: Map<string, Edge>, a: VertexId, b: VertexId):
+   return edge;
+ }
+ 
+-function getFace(shape: Shape, faceId: string): Face {
+-  const face = shape.faces.find((candidate) => candidate.id === faceId);
++function facesForCell(shape: Shape, cell: Cell): Face[] {
++  const faceIds = new Set(cell.faceIds);
+ 
+-  if (!face) {
+-    throw new Error(`Missing face ${faceId}`);
+-  }
++  return shape.faces.filter((face) => faceIds.has(face.id));
++}
+ 
+-  return face;
++function getCellEdges(shape: Shape, faces: Face[]): Map<string, Edge> {
++  const derivedEdges = new Map(
++    deriveEdges(faces, shape.id).map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]),
++  );
++  const shapeEdges = new Map(shape.edges.map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
++
++  return new Map(
++    Array.from(derivedEdges).map(([key, edge]) => [key, shapeEdges.get(key) ?? edge]),
++  );
+ }
+ 
+-function findFaceContaining(shape: Shape, vertexIds: VertexId[]): Face | undefined {
+-  return shape.faces.find((face) => vertexIds.every((vertexId) => face.vertexIds.includes(vertexId)));
++function findFaceContaining(faces: Face[], vertexIds: VertexId[]): Face | undefined {
++  return faces.find((face) => vertexIds.every((vertexId) => face.vertexIds.includes(vertexId)));
+ }
+diff --git a/src/store/geometryStore.ts b/src/store/geometryStore.ts
+index f90b046..934ffac 100644
+--- a/src/store/geometryStore.ts
++++ b/src/store/geometryStore.ts
+@@ -1,7 +1,7 @@
+ import { create } from 'zustand';
+ import { createSeedShape } from '../data/seeds';
+ import { applyAmboDissection, canApplyAmboDissection } from '../lib/ambo';
+-import type { SeedKey, Shape, ShapeId, VertexDataPacket, VertexId } from '../types/geometry';
++import type { CellId, SeedKey, Shape, ShapeId, VertexDataPacket, VertexId } from '../types/geometry';
+ 
+ interface CellVisibility {
+   showCoreCells: boolean;
+@@ -14,11 +14,15 @@ interface GeometryState {
+   shapes: Record<ShapeId, Shape>;
+   shapeOrder: ShapeId[];
+   currentShapeId: ShapeId;
++  selectedCellId: CellId | null;
+   selectedVertexId: VertexId | null;
+   cellVisibility: CellVisibility;
+   loadSeed: (seedKey: SeedKey) => void;
+   applyAmboDissectionToCurrent: () => void;
++  resetWorkspace: () => void;
++  undoLastOperation: () => void;
+   selectShape: (shapeId: ShapeId) => void;
++  selectCell: (cellId: CellId | null) => void;
+   selectVertex: (vertexId: VertexId | null) => void;
+   toggleCellVisibility: (key: keyof CellVisibility) => void;
+   updateSelectedVertexData: (patch: Partial<VertexDataPacket>) => void;
+@@ -33,6 +37,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
+   },
+   shapeOrder: [initialShape.id],
+   currentShapeId: initialShape.id,
++  selectedCellId: null,
+   selectedVertexId: null,
+   cellVisibility: {
+     showCoreCells: true,
+@@ -49,21 +54,23 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
+       },
+       shapeOrder: [shape.id],
+       currentShapeId: shape.id,
++      selectedCellId: null,
+       selectedVertexId: null,
+     });
+   },
+   applyAmboDissectionToCurrent: () => {
+-    const { currentShapeId, shapes, shapeOrder } = get();
++    const { currentShapeId, selectedCellId, shapes, shapeOrder } = get();
+     const currentShape = shapes[currentShapeId];
+ 
+-    if (!currentShape || !canApplyAmboDissection(currentShape)) {
++    if (!currentShape || !canApplyAmboDissection(currentShape, selectedCellId)) {
+       return;
+     }
+ 
+-    const nextShape = applyAmboDissection(currentShape);
++    const nextShape = applyAmboDissection(currentShape, selectedCellId);
+     const nextShapeOrder = shapeOrder.includes(nextShape.id)
+       ? shapeOrder
+       : [...shapeOrder, nextShape.id];
++    const latestGeneration = nextShape.generations[nextShape.generations.length - 1];
+ 
+     set({
+       shapes: {
+@@ -72,6 +79,38 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
+       },
+       shapeOrder: nextShapeOrder,
+       currentShapeId: nextShape.id,
++      selectedCellId: latestGeneration.createdCellIds[0] ?? null,
++      selectedVertexId: null,
++    });
++  },
++  resetWorkspace: () => {
++    const shape = createSeedShape(get().selectedSeedKey);
++
++    set({
++      shapes: {
++        [shape.id]: shape,
++      },
++      shapeOrder: [shape.id],
++      currentShapeId: shape.id,
++      selectedCellId: null,
++      selectedVertexId: null,
++    });
++  },
++  undoLastOperation: () => {
++    const { currentShapeId, shapeOrder } = get();
++    const currentIndex = shapeOrder.indexOf(currentShapeId);
++
++    if (currentIndex <= 0) {
++      return;
++    }
++
++    const nextShapeOrder = shapeOrder.slice(0, currentIndex);
++    const previousShapeId = nextShapeOrder[nextShapeOrder.length - 1];
++
++    set({
++      shapeOrder: nextShapeOrder,
++      currentShapeId: previousShapeId,
++      selectedCellId: null,
+       selectedVertexId: null,
+     });
+   },
+@@ -84,12 +123,19 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
+ 
+     set((state) => ({
+       currentShapeId: shapeId,
++      selectedCellId:
++        state.selectedCellId && shape.cells.some((cell) => cell.id === state.selectedCellId)
++          ? state.selectedCellId
++          : null,
+       selectedVertexId:
+         state.selectedVertexId && shape.vertices[state.selectedVertexId]
+           ? state.selectedVertexId
+           : null,
+     }));
+   },
++  selectCell: (cellId) => {
++    set({ selectedCellId: cellId, selectedVertexId: null });
++  },
+   selectVertex: (vertexId) => {
+     set({ selectedVertexId: vertexId });
+   },
