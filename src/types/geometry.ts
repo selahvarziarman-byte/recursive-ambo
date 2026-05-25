@@ -9,6 +9,12 @@ export type SeedKey = string;
 
 export type OperationKind = 'seed' | 'ambo' | 'ambo-dissection';
 export type CellKind = 'seed' | 'parent' | 'core' | 'residue';
+export type SeedTopology = 'tetrahedron' | 'octahedron' | 'cube';
+export type CellTopology =
+  | SeedTopology
+  | 'cuboctahedron'
+  | 'square-pyramid'
+  | 'unknown';
 
 export type JsonValue =
   | string
@@ -102,6 +108,7 @@ export interface ShapeGenealogy {
 export interface Cell {
   id: CellId;
   kind: CellKind;
+  topology?: CellTopology;
   generationDepth: number;
   parentCellId: CellId | null;
   sourceOperation: OperationKind;
@@ -153,6 +160,7 @@ export interface SeedDefinition {
   key: SeedKey;
   label: string;
   description: string;
+  topology: SeedTopology;
   vertices: SeedVertexDefinition[];
   faces: SeedFaceDefinition[];
 }

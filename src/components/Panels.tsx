@@ -440,6 +440,10 @@ function findCell(shape: Shape, cellId: string | null): Cell | null {
 }
 
 function describeCellTopology(cell: Cell): string {
+  if (cell.topology) {
+    return cell.topology;
+  }
+
   if (cell.kind === 'seed') {
     return 'tetrahedron';
   }

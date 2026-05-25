@@ -1,4 +1,5 @@
 import { applyAmboDissection, canApplyAmboDissection } from '../lib/ambo';
+import type { Cell } from '../types/geometry';
 import type { GeometryOperation, OperationContext } from './types';
 
 export const amboDissectionOperation: GeometryOperation = {
@@ -7,6 +8,7 @@ export const amboDissectionOperation: GeometryOperation = {
   description: 'Dissect supported tetrahedron and octahedron cells.',
   supportedTargets: [
     { cellKind: 'seed', topology: 'tetrahedron' },
+    { cellKind: 'seed', topology: 'octahedron' },
     { cellKind: 'residue', topology: 'tetrahedron' },
     { cellKind: 'core', topology: 'octahedron' },
   ],
@@ -21,6 +23,12 @@ export const amboDissectionOperation: GeometryOperation = {
     }
 
     const { selectedCell } = context;
+    const targetCell = getTargetCell(context);
+    const targetTopology = targetCell ? describeTargetTopology(targetCell) : null;
+
+    if (targetTopology === 'cube') {
+      return 'Ambo Dissection for cube is not enabled yet.';
+    }
 
     if (selectedCell?.kind === 'core') {
       return selectedCell.vertexIds.length === 12
@@ -55,8 +63,10 @@ export const amboDissectionOperation: GeometryOperation = {
       return 'Ready to dissect selected residue tetrahedron.';
     }
 
-    if (context.selectedCell?.kind === 'seed') {
-      return 'Ready to dissect selected seed tetrahedron.';
+    const targetCell = getTargetCell(context);
+
+    if (targetCell?.kind === 'seed') {
+      return `Ready to dissect selected seed ${describeTargetTopology(targetCell) ?? 'cell'}.`;
     }
 
     return 'Ready to dissect the seed tetrahedron.';
@@ -72,4 +82,32 @@ export const amboDissectionOperation: GeometryOperation = {
 
 function hasMissingSelection({ selectedCellId, selectedCell }: OperationContext): boolean {
   return selectedCellId !== null && !selectedCell;
+}
+
+function getTargetCell({ shape, selectedCell }: OperationContext): Cell | null {
+  return selectedCell ?? shape.cells.find((cell) => cell.kind === 'seed') ?? null;
+}
+
+function describeTargetTopology(cell: Cell): string | null {
+  if (cell.topology) {
+    return cell.topology;
+  }
+
+  if (cell.kind === 'core' && cell.vertexIds.length === 6) {
+    return 'octahedron';
+  }
+
+  if (cell.kind === 'core' && cell.vertexIds.length === 12) {
+    return 'cuboctahedron';
+  }
+
+  if ((cell.kind === 'seed' || cell.kind === 'residue') && cell.vertexIds.length === 4) {
+    return 'tetrahedron';
+  }
+
+  if (cell.kind === 'residue' && cell.vertexIds.length === 5) {
+    return 'square-pyramid';
+  }
+
+  return null;
 }

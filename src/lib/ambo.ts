@@ -210,23 +210,27 @@ function classifySupportedSourceTopology(
   const faces = getCellFaces(shape, cell);
   const edgeCount = getCellEdgeMap(shape, faces).size;
   const faceSizes = faces.map((face) => face.vertexIds.length);
-
-  if (
-    (cell.kind === 'seed' || cell.kind === 'residue') &&
+  const isTetrahedronGeometry =
     cell.vertexIds.length === 4 &&
     faces.length === 4 &&
     edgeCount === 6 &&
-    faceSizes.every((size) => size === 3)
+    faceSizes.every((size) => size === 3);
+  const isOctahedronGeometry =
+    cell.vertexIds.length === 6 &&
+    faces.length === 8 &&
+    edgeCount === 12 &&
+    faceSizes.every((size) => size === 3);
+
+  if (
+    isTetrahedronGeometry &&
+    (cell.topology === 'tetrahedron' || (!cell.topology && (cell.kind === 'seed' || cell.kind === 'residue')))
   ) {
     return 'tetrahedron';
   }
 
   if (
-    cell.kind === 'core' &&
-    cell.vertexIds.length === 6 &&
-    faces.length === 8 &&
-    edgeCount === 12 &&
-    faceSizes.every((size) => size === 3)
+    isOctahedronGeometry &&
+    (cell.topology === 'octahedron' || (!cell.topology && cell.kind === 'core'))
   ) {
     return 'octahedron';
   }
