@@ -27,15 +27,26 @@ import {
 } from './packets';
 import { createDefaultVertexData, deriveEdges, getCellFaces, midpoint } from './shape';
 
-type TetraCorners = [VertexId, VertexId, VertexId, VertexId];
-type OctahedronVertexIds = [VertexId, VertexId, VertexId, VertexId, VertexId, VertexId];
+type SupportedAmboTopology = 'tetrahedron' | 'octahedron';
+
+interface CellWithFaces extends Cell {
+  faces: Face[];
+}
+
+interface SourceTopology {
+  cell: Cell;
+  sourceTopology: SupportedAmboTopology;
+  vertexIds: VertexId[];
+  faces: Face[];
+  edges: Edge[];
+  edgeByKey: Map<string, Edge>;
+  orderedNeighborsByVertex: Map<VertexId, VertexId[]>;
+}
 
 export function canApplyAmboDissection(shape: Shape, targetCellId?: string | null): boolean {
   const cell = getTargetCell(shape, targetCellId);
 
-  return Boolean(
-    cell && (isDissectableTetrahedronCell(shape, cell) || isDissectableOctahedronCell(shape, cell)),
-  );
+  return Boolean(cell && buildSupportedSourceTopology(shape, cell));
 }
 
 export function applyAmboDissection(parent: Shape, targetCellId?: string | null): Shape {
@@ -45,31 +56,26 @@ export function applyAmboDissection(parent: Shape, targetCellId?: string | null)
     throw new Error('No cell available for ambo dissection.');
   }
 
-  if (isDissectableTetrahedronCell(parent, sourceCell)) {
-    return applyTetrahedronDissection(parent, sourceCell);
+  const topology = buildSupportedSourceTopology(parent, sourceCell);
+
+  if (!topology) {
+    throw new Error('Ambo dissection currently supports tetrahedron cells and octahedron core cells.');
   }
 
-  if (isDissectableOctahedronCell(parent, sourceCell)) {
-    return applyOctahedronDissection(parent, sourceCell);
-  }
-
-  throw new Error('Ambo dissection currently supports tetrahedron cells and octahedron core cells.');
+  return applyGenericAmboDissection(parent, topology);
 }
 
-function applyTetrahedronDissection(parent: Shape, sourceCell: Cell): Shape {
+function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Shape {
+  const { cell: sourceCell } = topology;
   const generationDepth = sourceCell.generationDepth + 1;
   const shapeGenerationDepth = Math.max(parent.genealogy.generationDepth, generationDepth);
   const shapeId = makeShapeId(parent.id, 'ambo-dissection', shapeGenerationDepth);
   const parentCellId = makeCellId(shapeId, 'parent', sourceCell.id, sourceCell.vertexIds);
-  const corners = sourceCell.vertexIds as TetraCorners;
-  const tetraEdges = createTetraEdgePairs(corners);
-  const sourceFaces = getCellFaces(parent, sourceCell);
-  const edgeByKey = getCellEdgeMap(parent, sourceFaces);
   const midpointIds = new Map<string, VertexId>();
   const vertices = cloneParentVertices(parent.vertices);
 
-  for (const [a, b] of tetraEdges) {
-    const edge = getParentEdge(edgeByKey, a, b);
+  for (const edge of topology.edges) {
+    const [a, b] = edge.vertexIds;
     const midpointId = makeMidpointVertexId(sourceCell.id, a, b);
     const sourceA = parent.vertices[a];
     const sourceB = parent.vertices[b];
@@ -102,7 +108,8 @@ function applyTetrahedronDissection(parent: Shape, sourceCell: Cell): Shape {
     };
   }
 
-  const parentFaces = createParentCellFaces(shapeId, sourceCell, parentCellId, sourceFaces);
+  const parentFaces = createParentCellFaces(shapeId, parentCellId, topology.faces);
+  const sourceEdgeIds = topology.edges.map((edge) => edge.id);
   const parentCell: Cell = {
     id: parentCellId,
     kind: 'parent',
@@ -112,7 +119,7 @@ function applyTetrahedronDissection(parent: Shape, sourceCell: Cell): Shape {
     vertexIds: sourceCell.vertexIds,
     faceIds: parentFaces.map((face) => face.id),
     sourceVertexIds: sourceCell.vertexIds,
-    sourceEdgeIds: tetraEdges.map(([a, b]) => getParentEdge(edgeByKey, a, b).id),
+    sourceEdgeIds,
     lineage: deriveCellLineage(
       [packetSourceRef('cell', sourceCell.id, 'source-cell')],
       shapeId,
@@ -120,27 +127,9 @@ function applyTetrahedronDissection(parent: Shape, sourceCell: Cell): Shape {
     ),
   };
 
-  const coreCell = createCoreCell(
-    sourceFaces,
-    shapeId,
-    generationDepth,
-    parentCellId,
-    corners,
-    tetraEdges,
-    edgeByKey,
-    midpointIds,
-  );
-  const residueCells = corners.map((corner) =>
-    createResidueCell(
-      sourceFaces,
-      shapeId,
-      generationDepth,
-      parentCellId,
-      corners,
-      corner,
-      edgeByKey,
-      midpointIds,
-    ),
+  const coreCell = createCoreCell(topology, shapeId, generationDepth, parentCellId, midpointIds);
+  const residueCells = topology.vertexIds.map((sourceVertexId) =>
+    createResidueCell(topology, shapeId, generationDepth, parentCellId, sourceVertexId, midpointIds),
   );
   const generatedCells = [coreCell, ...residueCells];
   const generatedFaces = generatedCells.flatMap((cellWithFaces) => cellWithFaces.faces);
@@ -188,10 +177,6 @@ function applyTetrahedronDissection(parent: Shape, sourceCell: Cell): Shape {
       createdAt,
     },
   };
-}
-
-interface CellWithFaces extends Cell {
-  faces: Face[];
 }
 
 function getTargetCell(shape: Shape, targetCellId?: string | null): Cell | null {
@@ -199,172 +184,135 @@ function getTargetCell(shape: Shape, targetCellId?: string | null): Cell | null 
     return shape.cells.find((cell) => cell.id === targetCellId) ?? null;
   }
 
-  const seedCell = shape.cells.find((cell) => cell.kind === 'seed');
-
-  return seedCell ?? null;
+  return shape.cells.find((cell) => cell.kind === 'seed') ?? null;
 }
 
-function isDissectableTetrahedronCell(shape: Shape, cell: Cell): boolean {
-  if (cell.kind !== 'seed' && cell.kind !== 'residue') {
-    return false;
+function buildSupportedSourceTopology(shape: Shape, cell: Cell): SourceTopology | null {
+  const sourceTopology = classifySupportedSourceTopology(shape, cell);
+
+  if (!sourceTopology) {
+    return null;
   }
 
-  return cell.vertexIds.length === 4 && getCellFaces(shape, cell).length === 4;
+  const topology = buildSourceTopology(shape, cell, sourceTopology);
+
+  if (!topology || !hasValidVertexRings(topology)) {
+    return null;
+  }
+
+  return topology;
 }
 
-function isDissectableOctahedronCell(shape: Shape, cell: Cell): boolean {
-  const sourceFaces = getCellFaces(shape, cell);
+function classifySupportedSourceTopology(
+  shape: Shape,
+  cell: Cell,
+): SupportedAmboTopology | null {
+  const faces = getCellFaces(shape, cell);
+  const edgeCount = getCellEdgeMap(shape, faces).size;
+  const faceSizes = faces.map((face) => face.vertexIds.length);
 
-  return (
+  if (
+    (cell.kind === 'seed' || cell.kind === 'residue') &&
+    cell.vertexIds.length === 4 &&
+    faces.length === 4 &&
+    edgeCount === 6 &&
+    faceSizes.every((size) => size === 3)
+  ) {
+    return 'tetrahedron';
+  }
+
+  if (
     cell.kind === 'core' &&
     cell.vertexIds.length === 6 &&
-    sourceFaces.length === 8 &&
-    sourceFaces.every((face) => face.vertexIds.length === 3) &&
-    getCellEdgeMap(shape, sourceFaces).size === 12
-  );
-}
-
-function applyOctahedronDissection(parent: Shape, sourceCell: Cell): Shape {
-  const generationDepth = sourceCell.generationDepth + 1;
-  const shapeGenerationDepth = Math.max(parent.genealogy.generationDepth, generationDepth);
-  const shapeId = makeShapeId(parent.id, 'ambo-dissection', shapeGenerationDepth);
-  const parentCellId = makeCellId(shapeId, 'parent', sourceCell.id, sourceCell.vertexIds);
-  const sourceFaces = getCellFaces(parent, sourceCell);
-  const edgeByKey = getCellEdgeMap(parent, sourceFaces);
-  const octahedronEdges = Array.from(edgeByKey.values()).map((edge) => edge.vertexIds);
-  const midpointIds = new Map<string, VertexId>();
-  const vertices = cloneParentVertices(parent.vertices);
-
-  for (const [a, b] of octahedronEdges) {
-    const edge = getParentEdge(edgeByKey, a, b);
-    const midpointId = makeMidpointVertexId(sourceCell.id, a, b);
-    const sourceA = parent.vertices[a];
-    const sourceB = parent.vertices[b];
-    const midpointPacket = deriveCompositePacket(
-      [
-        packetSourceRef('edge', edge.id, 'source-edge'),
-        packetSourceRef('vertex', a, 'endpoint'),
-        packetSourceRef('vertex', b, 'endpoint'),
-      ],
-      shapeId,
-      'derived-from-edge',
-    );
-
-    midpointIds.set(canonicalEdgeKey(a, b), midpointId);
-    vertices[midpointId] = {
-      id: midpointId,
-      position: midpoint(sourceA.position, sourceB.position),
-      data: createDefaultVertexData(
-        `${sourceA.data.label}${sourceB.data.label}`,
-        '#eab308',
-        {},
-        midpointPacket.lineage,
-      ),
-      createdBy: {
-        shapeId,
-        operation: 'ambo-dissection',
-        sourceVertexIds: [a, b],
-        sourceEdgeId: edge.id,
-      },
-    };
+    faces.length === 8 &&
+    edgeCount === 12 &&
+    faceSizes.every((size) => size === 3)
+  ) {
+    return 'octahedron';
   }
 
-  const parentFaces = createParentCellFaces(shapeId, sourceCell, parentCellId, sourceFaces);
-  const parentCell: Cell = {
-    id: parentCellId,
-    kind: 'parent',
-    generationDepth: sourceCell.generationDepth,
-    parentCellId: sourceCell.parentCellId,
-    sourceOperation: sourceCell.sourceOperation,
-    vertexIds: sourceCell.vertexIds,
-    faceIds: parentFaces.map((face) => face.id),
-    sourceVertexIds: sourceCell.vertexIds,
-    sourceEdgeIds: octahedronEdges.map(([a, b]) => getParentEdge(edgeByKey, a, b).id),
-    lineage: deriveCellLineage(
-      [packetSourceRef('cell', sourceCell.id, 'source-cell')],
-      shapeId,
-      'preserved',
-    ),
-  };
-  const corners = sourceCell.vertexIds as OctahedronVertexIds;
-  const coreCell = createCuboctahedronCoreCell(
-    sourceFaces,
-    shapeId,
-    generationDepth,
-    parentCellId,
-    corners,
-    octahedronEdges,
-    edgeByKey,
-    midpointIds,
-  );
-  const residueCells = corners.map((corner) =>
-    createSquarePyramidResidueCell(
-      sourceFaces,
-      shapeId,
-      generationDepth,
-      parentCellId,
-      corner,
-      edgeByKey,
-      midpointIds,
-    ),
-  );
-  const generatedCells = [coreCell, ...residueCells];
-  const generatedFaces = generatedCells.flatMap((cellWithFaces) => cellWithFaces.faces);
-  const replacedFaceIds = new Set(sourceCell.faceIds);
-  const cells = [
-    ...parent.cells.filter((cell) => cell.id !== sourceCell.id),
-    parentCell,
-    ...generatedCells.map(({ faces: _faces, ...cell }) => cell),
-  ];
-  const faces = [
-    ...parent.faces.filter((face) => !replacedFaceIds.has(face.id)),
-    ...parentFaces,
-    ...generatedFaces,
-  ];
-  const createdVertexIds = Array.from(midpointIds.values());
-  const createdAt = new Date().toISOString();
+  return null;
+}
+
+function buildSourceTopology(
+  shape: Shape,
+  cell: Cell,
+  sourceTopology: SupportedAmboTopology,
+): SourceTopology | null {
+  const faces = getCellFaces(shape, cell);
+  const cellVertexIds = new Set(cell.vertexIds);
+
+  if (
+    cell.vertexIds.length < 4 ||
+    !faces.length ||
+    faces.some(
+      (face) =>
+        face.vertexIds.length < 3 ||
+        face.vertexIds.some((vertexId) => !cellVertexIds.has(vertexId) || !shape.vertices[vertexId]),
+    )
+  ) {
+    return null;
+  }
+
+  const edges = normalizeEdgesForCell(Array.from(getCellEdgeMap(shape, faces).values()), cell.vertexIds);
+  const edgeByKey = new Map(edges.map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
+  const orderedNeighborsByVertex = new Map<VertexId, VertexId[]>();
+
+  for (const vertexId of cell.vertexIds) {
+    const neighborRing = neighborRingAroundVertex(faces, vertexId);
+
+    if (!neighborRing || neighborRing.length < 3) {
+      return null;
+    }
+
+    if (neighborRing.some((neighborId) => !edgeByKey.has(canonicalEdgeKey(vertexId, neighborId)))) {
+      return null;
+    }
+
+    orderedNeighborsByVertex.set(vertexId, neighborRing);
+  }
 
   return {
-    id: shapeId,
-    name: `Ambo Dissection ${parent.name}`,
-    seedKey: parent.seedKey,
-    vertices,
-    edges: deriveEdges(faces, shapeId),
+    cell,
+    sourceTopology,
+    vertexIds: [...cell.vertexIds],
     faces,
-    cells,
-    generations: [
-      ...parent.generations,
-      {
-        id: makeGenerationId(shapeId, 'ambo-dissection', generationDepth),
-        depth: generationDepth,
-        sourceOperation: 'ambo-dissection',
-        parentShapeId: parent.id,
-        parentCellIds: [parentCellId],
-        createdCellIds: generatedCells.map((cell) => cell.id),
-        createdVertexIds,
-        createdAt,
-      },
-    ],
-    genealogy: {
-      parentShapeId: parent.id,
-      operation: 'ambo-dissection',
-      generationDepth: shapeGenerationDepth,
-      sourceVertexIds: sourceCell.vertexIds,
-      createdVertexIds,
-      createdAt,
-    },
+    edges,
+    edgeByKey,
+    orderedNeighborsByVertex,
   };
 }
 
-function createTetraEdgePairs([a, b, c, d]: TetraCorners): Array<[VertexId, VertexId]> {
-  return [
-    [a, b],
-    [a, c],
-    [a, d],
-    [b, c],
-    [b, d],
-    [c, d],
-  ];
+function normalizeEdgesForCell(edges: Edge[], vertexIds: VertexId[]): Edge[] {
+  const vertexOrder = new Map(vertexIds.map((vertexId, index) => [vertexId, index]));
+
+  return [...edges]
+    .map((edge) => {
+      const [a, b] = edge.vertexIds;
+      const orderA = vertexOrder.get(a) ?? Number.MAX_SAFE_INTEGER;
+      const orderB = vertexOrder.get(b) ?? Number.MAX_SAFE_INTEGER;
+      const vertexPair: [VertexId, VertexId] = orderA <= orderB ? [a, b] : [b, a];
+
+      return {
+        ...edge,
+        vertexIds: vertexPair,
+        sourceVertexIds: vertexPair,
+      };
+    })
+    .sort((edgeA, edgeB) => {
+      const [a1, b1] = edgeA.vertexIds.map((vertexId) => vertexOrder.get(vertexId) ?? 0);
+      const [a2, b2] = edgeB.vertexIds.map((vertexId) => vertexOrder.get(vertexId) ?? 0);
+
+      return a1 - a2 || b1 - b2 || edgeA.id.localeCompare(edgeB.id);
+    });
+}
+
+function hasValidVertexRings(topology: SourceTopology): boolean {
+  return topology.vertexIds.every((vertexId) => {
+    const neighbors = topology.orderedNeighborsByVertex.get(vertexId) ?? [];
+
+    return neighbors.length >= 3;
+  });
 }
 
 function cloneParentVertices(vertices: Record<VertexId, Vertex>): Record<VertexId, Vertex> {
@@ -389,7 +337,6 @@ function cloneVertexData(data: VertexDataPacket): VertexDataPacket {
 
 function createParentCellFaces(
   shapeId: string,
-  sourceCell: Cell,
   parentCellId: string,
   sourceFaces: Face[],
 ): Face[] {
@@ -401,6 +348,139 @@ function createParentCellFaces(
     sourceFaceId: face.id,
     lineage: deriveFromSourceFace(face.id, shapeId),
   }));
+}
+
+function createCoreCell(
+  topology: SourceTopology,
+  shapeId: string,
+  generationDepth: number,
+  parentCellId: string,
+  midpointIds: Map<string, VertexId>,
+): CellWithFaces {
+  const vertexIds = topology.edges.map((edge) => getMidpointId(midpointIds, ...edge.vertexIds));
+  const cellId = makeCellId(shapeId, 'core', parentCellId, vertexIds);
+  const faces: Face[] = [
+    ...topology.faces.map((sourceFace) => {
+      const faceVertexIds = midpointLoopForFace(sourceFace, midpointIds);
+
+      return {
+        id: makeFaceId(shapeId, 'dissection-core-face', sourceFace.id, faceVertexIds),
+        vertexIds: faceVertexIds,
+        role: 'dissection-core-face' as const,
+        sourceCellId: cellId,
+        sourceFaceId: sourceFace.id,
+        lineage: deriveFromSourceFace(sourceFace.id, shapeId),
+      };
+    }),
+    ...topology.vertexIds.map((sourceVertexId) => {
+      const faceVertexIds = midpointRingForVertex(topology, sourceVertexId, midpointIds);
+
+      return {
+        id: makeFaceId(shapeId, 'dissection-core-face', sourceVertexId, faceVertexIds),
+        vertexIds: faceVertexIds,
+        role: 'dissection-core-face' as const,
+        sourceCellId: cellId,
+        sourceVertexId,
+        lineage: deriveFromSourceVertex(sourceVertexId, shapeId),
+      };
+    }),
+  ];
+
+  return {
+    id: cellId,
+    kind: 'core',
+    generationDepth,
+    parentCellId,
+    sourceOperation: 'ambo-dissection',
+    vertexIds,
+    faceIds: faces.map((face) => face.id),
+    sourceVertexIds: topology.vertexIds,
+    sourceEdgeIds: topology.edges.map((edge) => edge.id),
+    lineage: deriveFromParentCell(parentCellId, shapeId),
+    faces,
+  };
+}
+
+function createResidueCell(
+  topology: SourceTopology,
+  shapeId: string,
+  generationDepth: number,
+  parentCellId: string,
+  sourceVertexId: VertexId,
+  midpointIds: Map<string, VertexId>,
+): CellWithFaces {
+  const neighborRing = getNeighborRing(topology, sourceVertexId);
+  const baseVertexIds = midpointRingForVertex(topology, sourceVertexId, midpointIds);
+  const vertexIds = [sourceVertexId, ...baseVertexIds];
+  const cellId = makeCellId(shapeId, 'residue', sourceVertexId, vertexIds);
+  const faces = createResidueFaces(topology, shapeId, cellId, sourceVertexId, neighborRing, midpointIds);
+
+  return {
+    id: cellId,
+    kind: 'residue',
+    generationDepth,
+    parentCellId,
+    sourceOperation: 'ambo-dissection',
+    vertexIds,
+    faceIds: faces.map((face) => face.id),
+    sourceVertexIds: vertexIds,
+    sourceEdgeIds: neighborRing.map((neighborId) => getParentEdge(topology, sourceVertexId, neighborId).id),
+    preservedVertexId: sourceVertexId,
+    lineage: deriveCellLineage(
+      [
+        packetSourceRef('cell', parentCellId, 'parent-cell'),
+        packetSourceRef('vertex', sourceVertexId, 'preserved-vertex'),
+      ],
+      shapeId,
+      'composite',
+    ),
+    faces,
+  };
+}
+
+function createResidueFaces(
+  topology: SourceTopology,
+  shapeId: string,
+  cellId: string,
+  sourceVertexId: VertexId,
+  neighborRing: VertexId[],
+  midpointIds: Map<string, VertexId>,
+): Face[] {
+  const faces: Face[] = [];
+
+  for (let index = 0; index < neighborRing.length; index += 1) {
+    const a = neighborRing[index];
+    const b = neighborRing[(index + 1) % neighborRing.length];
+    const vertexIds = [
+      sourceVertexId,
+      getMidpointId(midpointIds, sourceVertexId, a),
+      getMidpointId(midpointIds, sourceVertexId, b),
+    ];
+    const sourceFace = findFaceContaining(topology.faces, [sourceVertexId, a, b]);
+
+    faces.push({
+      id: makeFaceId(shapeId, 'dissection-residue-face', `${cellId}:side:${index}`, vertexIds),
+      vertexIds,
+      role: 'dissection-residue-face',
+      sourceCellId: cellId,
+      sourceFaceId: sourceFace?.id,
+      sourceVertexId,
+      lineage: deriveGeneratedFaceLineage(shapeId, sourceFace?.id, sourceVertexId),
+    });
+  }
+
+  const baseVertexIds = midpointRingForVertex(topology, sourceVertexId, midpointIds);
+
+  faces.push({
+    id: makeFaceId(shapeId, 'dissection-residue-face', `${cellId}:base`, baseVertexIds),
+    vertexIds: baseVertexIds,
+    role: 'dissection-residue-face',
+    sourceCellId: cellId,
+    sourceVertexId,
+    lineage: deriveFromSourceVertex(sourceVertexId, shapeId),
+  });
+
+  return faces;
 }
 
 function deriveGeneratedFaceLineage(
@@ -430,308 +510,55 @@ function deriveGeneratedFaceLineage(
   return deriveFaceLineage([], operationId, 'default');
 }
 
-function createCoreCell(
-  sourceFaces: Face[],
-  shapeId: string,
-  generationDepth: number,
-  parentCellId: string,
-  corners: TetraCorners,
-  tetraEdges: Array<[VertexId, VertexId]>,
-  edgeByKey: Map<string, Edge>,
-  midpointIds: Map<string, VertexId>,
-): CellWithFaces {
-  const vertexIds = tetraEdges.map(([a, b]) => getMidpointId(midpointIds, a, b));
-  const cellId = makeCellId(shapeId, 'core', parentCellId, vertexIds);
-  const faces: Face[] = [];
-
-  for (const sourceFace of sourceFaces) {
-    if (sourceFace.vertexIds.length !== 3) {
-      continue;
-    }
-
-    const faceVertexIds = midpointLoopForFace(sourceFace.vertexIds as [VertexId, VertexId, VertexId], midpointIds);
-
-    faces.push({
-      id: makeFaceId(shapeId, 'dissection-core-face', sourceFace.id, faceVertexIds),
-      vertexIds: faceVertexIds,
-      role: 'dissection-core-face',
-      sourceCellId: cellId,
-      sourceFaceId: sourceFace.id,
-      lineage: deriveFromSourceFace(sourceFace.id, shapeId),
-    });
-  }
-
-  for (const corner of corners) {
-    const faceVertexIds = corners
-      .filter((vertexId) => vertexId !== corner)
-      .map((vertexId) => getMidpointId(midpointIds, corner, vertexId));
-
-    faces.push({
-      id: makeFaceId(shapeId, 'dissection-core-face', corner, faceVertexIds),
-      vertexIds: faceVertexIds,
-      role: 'dissection-core-face',
-      sourceCellId: cellId,
-      sourceVertexId: corner,
-      lineage: deriveFromSourceVertex(corner, shapeId),
-    });
-  }
-
-  return {
-    id: cellId,
-    kind: 'core',
-    generationDepth,
-    parentCellId,
-    sourceOperation: 'ambo-dissection',
-    vertexIds,
-    faceIds: faces.map((face) => face.id),
-    sourceVertexIds: corners,
-    sourceEdgeIds: tetraEdges.map(([a, b]) => getParentEdge(edgeByKey, a, b).id),
-    lineage: deriveFromParentCell(parentCellId, shapeId),
-    faces,
-  };
-}
-
-function createResidueCell(
-  sourceFaces: Face[],
-  shapeId: string,
-  generationDepth: number,
-  parentCellId: string,
-  corners: TetraCorners,
-  corner: VertexId,
-  edgeByKey: Map<string, Edge>,
-  midpointIds: Map<string, VertexId>,
-): CellWithFaces {
-  const otherCorners = corners.filter((vertexId) => vertexId !== corner);
-  const incidentMidpoints = otherCorners.map((vertexId) =>
-    getMidpointId(midpointIds, corner, vertexId),
+function midpointLoopForFace(face: Face, midpointIds: Map<string, VertexId>): VertexId[] {
+  return face.vertexIds.map((vertexId, index) =>
+    getMidpointId(midpointIds, vertexId, face.vertexIds[(index + 1) % face.vertexIds.length]),
   );
-  const vertexIds = [corner, ...incidentMidpoints];
-  const cellId = makeCellId(shapeId, 'residue', corner, vertexIds);
-  const faces = createResidueFaces(sourceFaces, shapeId, cellId, corner, otherCorners, midpointIds);
-
-  return {
-    id: cellId,
-    kind: 'residue',
-    generationDepth,
-    parentCellId,
-    sourceOperation: 'ambo-dissection',
-    vertexIds,
-    faceIds: faces.map((face) => face.id),
-    sourceVertexIds: vertexIds,
-    sourceEdgeIds: otherCorners.map((vertexId) => getParentEdge(edgeByKey, corner, vertexId).id),
-    preservedVertexId: corner,
-    lineage: deriveCellLineage(
-      [
-        packetSourceRef('cell', parentCellId, 'parent-cell'),
-        packetSourceRef('vertex', corner, 'preserved-vertex'),
-      ],
-      shapeId,
-      'composite',
-    ),
-    faces,
-  };
 }
 
-function createResidueFaces(
-  sourceFaces: Face[],
-  shapeId: string,
-  cellId: string,
-  corner: VertexId,
-  otherCorners: VertexId[],
+function midpointRingForVertex(
+  topology: SourceTopology,
+  sourceVertexId: VertexId,
   midpointIds: Map<string, VertexId>,
-): Face[] {
-  const faces: Face[] = [];
-
-  for (let index = 0; index < otherCorners.length; index += 1) {
-    const a = otherCorners[index];
-    const b = otherCorners[(index + 1) % otherCorners.length];
-    const vertexIds = [
-      corner,
-      getMidpointId(midpointIds, corner, a),
-      getMidpointId(midpointIds, corner, b),
-    ];
-    const sourceFace = findFaceContaining(sourceFaces, [corner, a, b]);
-
-    faces.push({
-      id: makeFaceId(shapeId, 'dissection-residue-face', `${cellId}:outer:${index}`, vertexIds),
-      vertexIds,
-      role: 'dissection-residue-face',
-      sourceCellId: cellId,
-      sourceFaceId: sourceFace?.id,
-      sourceVertexId: corner,
-      lineage: deriveGeneratedFaceLineage(shapeId, sourceFace?.id, corner),
-    });
-  }
-
-  const internalFaceVertexIds = otherCorners.map((vertexId) =>
-    getMidpointId(midpointIds, corner, vertexId),
+): VertexId[] {
+  return getNeighborRing(topology, sourceVertexId).map((neighborId) =>
+    getMidpointId(midpointIds, sourceVertexId, neighborId),
   );
-
-  faces.push({
-    id: makeFaceId(shapeId, 'dissection-residue-face', `${cellId}:internal`, internalFaceVertexIds),
-    vertexIds: internalFaceVertexIds,
-    role: 'dissection-residue-face',
-    sourceCellId: cellId,
-    sourceVertexId: corner,
-    lineage: deriveFromSourceVertex(corner, shapeId),
-  });
-
-  return faces;
 }
 
-function createCuboctahedronCoreCell(
-  sourceFaces: Face[],
-  shapeId: string,
-  generationDepth: number,
-  parentCellId: string,
-  corners: OctahedronVertexIds,
-  octahedronEdges: Array<[VertexId, VertexId]>,
-  edgeByKey: Map<string, Edge>,
-  midpointIds: Map<string, VertexId>,
-): CellWithFaces {
-  const vertexIds = octahedronEdges.map(([a, b]) => getMidpointId(midpointIds, a, b));
-  const cellId = makeCellId(shapeId, 'core', parentCellId, vertexIds);
-  const faces: Face[] = [];
+function getNeighborRing(topology: SourceTopology, sourceVertexId: VertexId): VertexId[] {
+  const neighborRing = topology.orderedNeighborsByVertex.get(sourceVertexId);
 
-  for (const sourceFace of sourceFaces) {
-    if (sourceFace.vertexIds.length !== 3) {
-      continue;
-    }
-
-    const faceVertexIds = midpointLoopForFace(
-      sourceFace.vertexIds as [VertexId, VertexId, VertexId],
-      midpointIds,
-    );
-
-    faces.push({
-      id: makeFaceId(shapeId, 'dissection-core-face', sourceFace.id, faceVertexIds),
-      vertexIds: faceVertexIds,
-      role: 'dissection-core-face',
-      sourceCellId: cellId,
-      sourceFaceId: sourceFace.id,
-      lineage: deriveFromSourceFace(sourceFace.id, shapeId),
-    });
+  if (!neighborRing) {
+    throw new Error(`Missing incident edge ring for ${sourceVertexId}`);
   }
 
-  for (const corner of corners) {
-    const neighborRing = neighborRingAroundVertex(sourceFaces, corner);
-    const faceVertexIds = neighborRing.map((neighbor) => getMidpointId(midpointIds, corner, neighbor));
-
-    faces.push({
-      id: makeFaceId(shapeId, 'dissection-core-face', corner, faceVertexIds),
-      vertexIds: faceVertexIds,
-      role: 'dissection-core-face',
-      sourceCellId: cellId,
-      sourceVertexId: corner,
-      lineage: deriveFromSourceVertex(corner, shapeId),
-    });
-  }
-
-  return {
-    id: cellId,
-    kind: 'core',
-    generationDepth,
-    parentCellId,
-    sourceOperation: 'ambo-dissection',
-    vertexIds,
-    faceIds: faces.map((face) => face.id),
-    sourceVertexIds: corners,
-    sourceEdgeIds: octahedronEdges.map(([a, b]) => getParentEdge(edgeByKey, a, b).id),
-    lineage: deriveFromParentCell(parentCellId, shapeId),
-    faces,
-  };
+  return neighborRing;
 }
 
-function createSquarePyramidResidueCell(
-  sourceFaces: Face[],
-  shapeId: string,
-  generationDepth: number,
-  parentCellId: string,
-  apex: VertexId,
-  edgeByKey: Map<string, Edge>,
-  midpointIds: Map<string, VertexId>,
-): CellWithFaces {
-  const baseNeighbors = neighborRingAroundVertex(sourceFaces, apex);
-  const baseVertexIds = baseNeighbors.map((neighbor) => getMidpointId(midpointIds, apex, neighbor));
-  const vertexIds = [apex, ...baseVertexIds];
-  const cellId = makeCellId(shapeId, 'residue', apex, vertexIds);
-  const faces: Face[] = [];
-
-  for (let index = 0; index < baseNeighbors.length; index += 1) {
-    const a = baseNeighbors[index];
-    const b = baseNeighbors[(index + 1) % baseNeighbors.length];
-    const faceVertexIds = [
-      apex,
-      getMidpointId(midpointIds, apex, a),
-      getMidpointId(midpointIds, apex, b),
-    ];
-    const sourceFace = findFaceContaining(sourceFaces, [apex, a, b]);
-
-    faces.push({
-      id: makeFaceId(shapeId, 'dissection-residue-face', `${cellId}:side:${index}`, faceVertexIds),
-      vertexIds: faceVertexIds,
-      role: 'dissection-residue-face',
-      sourceCellId: cellId,
-      sourceFaceId: sourceFace?.id,
-      sourceVertexId: apex,
-      lineage: deriveGeneratedFaceLineage(shapeId, sourceFace?.id, apex),
-    });
-  }
-
-  faces.push({
-    id: makeFaceId(shapeId, 'dissection-residue-face', `${cellId}:base`, baseVertexIds),
-    vertexIds: baseVertexIds,
-    role: 'dissection-residue-face',
-    sourceCellId: cellId,
-    sourceVertexId: apex,
-    lineage: deriveFromSourceVertex(apex, shapeId),
-  });
-
-  return {
-    id: cellId,
-    kind: 'residue',
-    generationDepth,
-    parentCellId,
-    sourceOperation: 'ambo-dissection',
-    vertexIds,
-    faceIds: faces.map((face) => face.id),
-    sourceVertexIds: vertexIds,
-    sourceEdgeIds: baseNeighbors.map((neighbor) => getParentEdge(edgeByKey, apex, neighbor).id),
-    preservedVertexId: apex,
-    lineage: deriveCellLineage(
-      [
-        packetSourceRef('cell', parentCellId, 'parent-cell'),
-        packetSourceRef('vertex', apex, 'preserved-vertex'),
-      ],
-      shapeId,
-      'composite',
-    ),
-    faces,
-  };
-}
-
-function neighborRingAroundVertex(sourceFaces: Face[], center: VertexId): VertexId[] {
+function neighborRingAroundVertex(sourceFaces: Face[], center: VertexId): VertexId[] | null {
   const adjacency = new Map<VertexId, Set<VertexId>>();
 
   for (const face of sourceFaces) {
-    if (!face.vertexIds.includes(center)) {
+    const centerIndex = face.vertexIds.indexOf(center);
+
+    if (centerIndex === -1) {
       continue;
     }
 
-    const neighbors = face.vertexIds.filter((vertexId) => vertexId !== center);
+    const previous = face.vertexIds[(centerIndex - 1 + face.vertexIds.length) % face.vertexIds.length];
+    const next = face.vertexIds[(centerIndex + 1) % face.vertexIds.length];
 
-    if (neighbors.length === 2) {
-      connectRingNeighbors(adjacency, neighbors[0], neighbors[1]);
-    }
+    connectRingNeighbors(adjacency, previous, next);
+  }
+
+  if (adjacency.size < 3 || Array.from(adjacency.values()).some((neighbors) => neighbors.size !== 2)) {
+    return null;
   }
 
   const ring = walkNeighborRing(adjacency);
 
-  if (ring.length < 3) {
-    throw new Error(`Unable to order neighbor ring for ${center}`);
-  }
-
-  return ring;
+  return ring.length === adjacency.size ? ring : null;
 }
 
 function connectRingNeighbors(
@@ -778,18 +605,7 @@ function walkNeighborRing(adjacency: Map<VertexId, Set<VertexId>>): VertexId[] {
     current = next;
   }
 
-  return ordered.length === adjacency.size ? ordered : Array.from(adjacency.keys());
-}
-
-function midpointLoopForFace(
-  [a, b, c]: [VertexId, VertexId, VertexId],
-  midpointIds: Map<string, VertexId>,
-): VertexId[] {
-  return [
-    getMidpointId(midpointIds, a, b),
-    getMidpointId(midpointIds, b, c),
-    getMidpointId(midpointIds, c, a),
-  ];
+  return ordered;
 }
 
 function getMidpointId(
@@ -806,11 +622,11 @@ function getMidpointId(
   return midpointId;
 }
 
-function getParentEdge(edgeByKey: Map<string, Edge>, a: VertexId, b: VertexId): Edge {
-  const edge = edgeByKey.get(canonicalEdgeKey(a, b));
+function getParentEdge(topology: SourceTopology, a: VertexId, b: VertexId): Edge {
+  const edge = topology.edgeByKey.get(canonicalEdgeKey(a, b));
 
   if (!edge) {
-    throw new Error(`Missing tetrahedron edge ${a} -> ${b}`);
+    throw new Error(`Missing source edge ${a} -> ${b}`);
   }
 
   return edge;
