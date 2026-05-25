@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createSeedShape } from '../data/seeds';
-import { applyAmboDissection, canApplyAmboDissection } from '../lib/ambo';
+import { getOperation } from '../operations/registry';
 import type { CellId, SeedKey, Shape, ShapeId, VertexDataPacket, VertexId } from '../types/geometry';
 
 interface CellVisibility {
@@ -35,6 +35,7 @@ interface GeometryState {
   loadSeed: (seedKey: SeedKey) => void;
   resetWorkspace: () => void;
   resetViewLayout: () => void;
+  applyOperationToSelection: (operationId: string) => void;
   applyAmboDissectionToCurrent: () => void;
   selectShape: (shapeId: ShapeId) => void;
   selectCell: (cellId: CellId | null) => void;
@@ -91,25 +92,33 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   resetViewLayout: () => {
     set({ viewLayout: defaultViewLayout });
   },
-  applyAmboDissectionToCurrent: () => {
+  applyOperationToSelection: (operationId) => {
     const { currentShapeId, selectedCellId, shapes, shapeOrder } = get();
+    const operation = getOperation(operationId);
     const currentShape = shapes[currentShapeId];
     const selectedCell = selectedCellId
       ? currentShape?.cells.find((cell) => cell.id === selectedCellId) ?? null
       : null;
 
     if (
+      !operation ||
       !currentShape ||
       (selectedCellId !== null && !selectedCell)
     ) {
       return;
     }
 
-    if (!canApplyAmboDissection(currentShape, selectedCellId)) {
+    const context = {
+      shape: currentShape,
+      selectedCellId,
+      selectedCell,
+    };
+
+    if (!operation.canApply(context)) {
       return;
     }
 
-    const nextShape = applyAmboDissection(currentShape, selectedCellId);
+    const nextShape = operation.execute(context);
     const nextShapeOrder = shapeOrder.includes(nextShape.id)
       ? shapeOrder
       : [...shapeOrder, nextShape.id];
@@ -124,6 +133,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       selectedCellId: null,
       selectedVertexId: null,
     });
+  },
+  applyAmboDissectionToCurrent: () => {
+    get().applyOperationToSelection('ambo-dissection');
   },
   selectShape: (shapeId) => {
     const shape = get().shapes[shapeId];

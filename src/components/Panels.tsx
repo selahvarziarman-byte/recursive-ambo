@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { seedRegistry } from '../data/seeds';
-import { canApplyAmboDissection } from '../lib/ambo';
+import { defaultOperation } from '../operations/registry';
 import { formatVec3 } from '../lib/shape';
 import { useGeometryStore } from '../store/geometryStore';
 import type { Cell, CellKind, JsonValue, Shape, VertexDataPacket } from '../types/geometry';
@@ -35,9 +35,7 @@ export function SeedSelector() {
 }
 
 export function OperationControls() {
-  const applyAmboDissectionToCurrent = useGeometryStore(
-    (state) => state.applyAmboDissectionToCurrent,
-  );
+  const applyOperationToSelection = useGeometryStore((state) => state.applyOperationToSelection);
   const resetWorkspace = useGeometryStore((state) => state.resetWorkspace);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
@@ -47,20 +45,24 @@ export function OperationControls() {
   const resetViewLayout = useGeometryStore((state) => state.resetViewLayout);
   const shape = useCurrentShape();
   const selectedCell = findCell(shape, selectedCellId);
-  const hasMissingSelection = selectedCellId !== null && !selectedCell;
-  const canApply = !hasMissingSelection && canApplyAmboDissection(shape, selectedCellId);
+  const operation = defaultOperation;
+  const operationContext = { shape, selectedCellId, selectedCell };
+  const canApply = operation.canApply(operationContext);
   const cellCounts = countCellsByKind(shape);
-  const operationStatus = describeOperationStatus(shape, selectedCell, hasMissingSelection);
+  const operationStatus =
+    operation.getStatusMessage?.(operationContext) ??
+    operation.getDisabledReason(operationContext) ??
+    operation.description;
 
   return (
     <Panel title="Operation Controls">
       <button
         type="button"
-        onClick={applyAmboDissectionToCurrent}
+        onClick={() => applyOperationToSelection(operation.id)}
         disabled={!canApply}
         className="h-10 w-full rounded border border-amber-500/70 bg-amber-400 px-3 text-sm font-semibold text-stone-950 transition hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
       >
-        Apply Ambo Dissection
+        Apply {operation.label}
       </button>
       <p className="mt-3 text-sm leading-5 text-stone-400">{operationStatus}</p>
       <button
@@ -412,50 +414,6 @@ function findCell(shape: Shape, cellId: string | null): Cell | null {
   }
 
   return shape.cells.find((cell) => cell.id === cellId) ?? null;
-}
-
-function describeOperationStatus(
-  shape: Shape,
-  selectedCell: Cell | null,
-  hasMissingSelection: boolean,
-): string {
-  if (hasMissingSelection) {
-    return 'Selected cell is no longer in the current workspace.';
-  }
-
-  if (selectedCell?.kind === 'core') {
-    if (canApplyAmboDissection(shape, selectedCell.id)) {
-      return 'Ready to dissect selected octahedron core.';
-    }
-
-    return selectedCell.vertexIds.length === 12
-      ? 'Cuboctahedron dissection is not implemented yet.'
-      : 'Core cell dissection is not implemented yet.';
-  }
-
-  if (selectedCell?.kind === 'residue') {
-    if (canApplyAmboDissection(shape, selectedCell.id)) {
-      return 'Ready to dissect selected residue tetrahedron.';
-    }
-
-    return selectedCell.vertexIds.length === 5
-      ? 'Square-pyramid dissection is not implemented yet.'
-      : 'Selected residue cell is not a supported tetrahedron.';
-  }
-
-  if (selectedCell?.kind === 'parent') {
-    return 'Previous generation cells are inspection-only.';
-  }
-
-  if (selectedCell?.kind === 'seed' && canApplyAmboDissection(shape, selectedCell.id)) {
-    return 'Ready to dissect selected seed tetrahedron.';
-  }
-
-  if (!selectedCell && canApplyAmboDissection(shape)) {
-    return 'Ready to dissect the seed tetrahedron.';
-  }
-
-  return 'Select a cell to inspect. Further cell operations are not implemented yet.';
 }
 
 function describeCellTopology(cell: Cell): string {
