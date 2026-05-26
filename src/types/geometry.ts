@@ -11,7 +11,8 @@ export type OperationKind =
   | 'seed'
   | 'ambo'
   | 'ambo-dissection'
-  | 'pyritohedral-diagonalization';
+  | 'pyritohedral-diagonalization'
+  | 'dualization';
 export type CellKind = 'seed' | 'parent' | 'core' | 'residue';
 export type SeedTopology = 'tetrahedron' | 'octahedron' | 'cube';
 export type CellTopology =
@@ -19,6 +20,7 @@ export type CellTopology =
   | 'cuboctahedron'
   | 'rhombicuboctahedron'
   | 'pyritohedral-icosahedron'
+  | 'dodecahedron'
   | 'rectified-square-pyramid'
   | 'rectified-square-pyramid-ambo-core'
   | 'rectified-square-pyramid-ambo-core-ambo-core'
@@ -72,6 +74,8 @@ export interface VertexCreation {
   operation: OperationKind;
   sourceVertexIds: VertexId[];
   sourceEdgeId?: EdgeId;
+  sourceFaceId?: FaceId;
+  sourceCellId?: CellId;
 }
 
 export interface Vertex {
@@ -86,6 +90,7 @@ export interface Edge {
   vertexIds: [VertexId, VertexId];
   sourceVertexIds: [VertexId, VertexId];
   role?: EdgeRole;
+  sourceEdgeId?: EdgeId;
   sourceFaceId?: FaceId;
   sourceCellId?: CellId;
   lineage?: PacketLineage;
@@ -100,7 +105,8 @@ export type FaceRole =
   | 'dissection-residue-face'
   | 'parent-cell-face'
   | 'pyritohedral-preserved-face'
-  | 'pyritohedral-split-face';
+  | 'pyritohedral-split-face'
+  | 'dual-face-from-vertex';
 
 export interface Face {
   id: FaceId;

@@ -40,6 +40,10 @@ export function makeMidpointVertexId(parentCellId: CellId, a: VertexId, b: Verte
   return `vertex:mid:${stableHash(`${parentCellId}|midpoint|${canonicalEdgeKey(a, b)}`)}`;
 }
 
+export function makeDualVertexId(shapeId: ShapeId, sourceFaceId: FaceId): VertexId {
+  return `vertex:dual:${stableHash(`${shapeId}|dual|${sourceFaceId}`)}`;
+}
+
 export function makeFaceId(
   shapeId: ShapeId,
   role: string,
