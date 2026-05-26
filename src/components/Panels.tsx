@@ -10,6 +10,7 @@ import type {
   Face,
   JsonValue,
   PacketLineage,
+  PacketSourceRef,
   Shape,
   Vertex,
   VertexDataPacket,
@@ -47,9 +48,10 @@ interface WorkspaceCellRow {
 
 interface CellVertexRow {
   vertex: Vertex;
+  displayLabel: string;
   shortId: string;
   role: string;
-  packetPreview: string;
+  packetDetail: string | null;
   lineageSummary: string;
 }
 
@@ -64,7 +66,8 @@ interface CellFaceRow {
 interface CellEdgeRow {
   id: string;
   vertexIds: [VertexId, VertexId];
-  shortPair: string;
+  displayLabel: string;
+  secondaryLabel: string | null;
 }
 
 const topologyFilterOptions: Array<{ value: TopologyFilter; label: string }> = [
@@ -464,7 +467,7 @@ function SelectedCellSummary({
         <dt className="text-stone-500">Edges</dt>
         <dd className="text-right text-stone-200">{edgeCount}</dd>
         <dt className="text-stone-500">Lineage</dt>
-        <dd className="text-right text-stone-200">{formatCellLineageSummary(row.cell)}</dd>
+        <dd className="text-right text-stone-200">{formatCellLineageSummary(shape, row.cell)}</dd>
         <dt className="text-stone-500">Packet</dt>
         <dd className="text-right text-stone-200">{formatPacketDataSummary(row.cell.data)}</dd>
       </dl>
@@ -494,7 +497,7 @@ function CellComposition({
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
   const vertices = useMemo(() => getCellVertexRows(shape, cell), [cell, shape]);
-  const faceRows = useMemo(() => getCellFaceRows(faces), [faces]);
+  const faceRows = useMemo(() => getCellFaceRows(shape, faces), [faces, shape]);
 
   return (
     <div className="grid gap-4 border-t border-stone-800 pt-4">
@@ -516,12 +519,17 @@ function CellComposition({
               >
                 <span className="flex items-start justify-between gap-2">
                   <span className="min-w-0">
-                    <span className="block truncate font-mono text-xs text-stone-400">
+                    <span className="mt-1 block truncate text-stone-200">
+                      {row.displayLabel}
+                    </span>
+                    <span className="block truncate font-mono text-xs text-stone-500">
                       {row.shortId}
                     </span>
-                    <span className="mt-1 block truncate text-stone-200">
-                      {row.packetPreview}
-                    </span>
+                    {row.packetDetail ? (
+                      <span className="mt-1 block truncate text-xs text-stone-500">
+                        {row.packetDetail}
+                      </span>
+                    ) : null}
                   </span>
                   <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-xs text-stone-400">
                     {row.role}
@@ -567,10 +575,15 @@ function CellComposition({
           {edges.map((edge) => (
             <div
               key={edge.id}
-              className="truncate font-mono text-xs text-stone-400"
+              className="rounded border border-stone-900 bg-stone-950/70 px-2 py-1 text-xs text-stone-400"
               title={edge.vertexIds.join(' - ')}
             >
-              {edge.shortPair}
+              <span className="block truncate text-stone-300">{edge.displayLabel}</span>
+              {edge.secondaryLabel ? (
+                <span className="mt-0.5 block truncate font-mono text-[11px] text-stone-600">
+                  {edge.secondaryLabel}
+                </span>
+              ) : null}
             </div>
           ))}
         </div>
@@ -603,6 +616,8 @@ function SelectedVertexSummary({ vertexId, shape }: { vertexId: string; shape: S
   const vertex = shape.vertices[vertexId];
   const selectedVertexCells = shape.cells.filter((cell) => cell.vertexIds.includes(vertexId));
   const containingFaces = getContainingFaces(shape, vertexId);
+  const displayLabel = getVertexDisplayLabel(shape, vertexId);
+  const shortId = shortenId(vertexId);
 
   if (!vertex) {
     return null;
@@ -611,13 +626,18 @@ function SelectedVertexSummary({ vertexId, shape }: { vertexId: string; shape: S
   return (
     <dl className="mt-2 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-2 rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
       <dt className="text-stone-500">Vertex</dt>
-      <dd className="truncate font-mono text-xs text-stone-300">{shortenId(vertex.id)}</dd>
+      <dd className="min-w-0">
+        <span className="block truncate text-stone-200">{displayLabel}</span>
+        {displayLabel !== shortId ? (
+          <span className="block truncate font-mono text-xs text-stone-500">{shortId}</span>
+        ) : null}
+      </dd>
       <dt className="text-stone-500">Position</dt>
       <dd className="font-mono text-xs text-stone-300">{formatVec3(vertex.position)}</dd>
       <dt className="text-stone-500">Packet</dt>
       <dd className="truncate text-stone-200">{formatVertexPacketPreview(vertex)}</dd>
       <dt className="text-stone-500">Lineage</dt>
-      <dd className="text-stone-200">{formatVertexLineageSummary(vertex)}</dd>
+      <dd className="text-stone-200">{formatVertexLineageSummary(shape, vertex)}</dd>
       <dt className="text-stone-500">Cells</dt>
       <dd className="text-stone-200">{selectedVertexCells.length}</dd>
       <dt className="text-stone-500">Faces</dt>
@@ -1136,13 +1156,14 @@ function getCellEdges(shape: Shape, cell: Cell): CellEdgeRow[] {
         edges.set(key, {
           id: key,
           vertexIds: [a, b],
-          shortPair: `${shortenId(a)} - ${shortenId(b)}`,
+          displayLabel: formatEdgeRef(shape, [a, b]),
+          secondaryLabel: `${shortenId(a)} - ${shortenId(b)}`,
         });
       }
     }
   }
 
-  return Array.from(edges.values()).sort((a, b) => a.shortPair.localeCompare(b.shortPair));
+  return Array.from(edges.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
 }
 
 function getCellVertexRows(shape: Shape, cell: Cell): CellVertexRow[] {
@@ -1154,24 +1175,25 @@ function getCellVertexRows(shape: Shape, cell: Cell): CellVertexRow[] {
 
       return {
         vertex,
+        displayLabel: getVertexDisplayLabel(shape, vertex.id),
         shortId: shortenId(vertex.id),
         role,
-        packetPreview: formatVertexPacketPreview(vertex),
+        packetDetail: formatVertexPacketDetail(vertex),
         lineageSummary:
           role === 'preserved source'
             ? 'preserved source vertex'
-            : formatVertexLineageSummary(vertex),
+            : formatVertexLineageSummary(shape, vertex),
       };
     });
 }
 
-function getCellFaceRows(faces: Face[]): CellFaceRow[] {
+function getCellFaceRows(shape: Shape, faces: Face[]): CellFaceRow[] {
   return faces.map((face) => ({
     face,
     shortId: shortenId(face.id),
     size: face.vertexIds.length,
-    sourceRole: inferFaceSourceRole(face),
-    lineageSummary: formatFaceLineageSummary(face),
+    sourceRole: inferFaceSourceRole(shape, face),
+    lineageSummary: formatFaceLineageSummary(shape, face),
   }));
 }
 
@@ -1205,17 +1227,17 @@ function inferCellVertexRole(cell: Cell, vertex: Vertex): string {
   return 'unknown';
 }
 
-function inferFaceSourceRole(face: Face): string {
+function inferFaceSourceRole(shape: Shape, face: Face): string {
   if (face.role === 'seed-face') {
     return 'seed face';
   }
 
   if (face.sourceFaceId) {
-    return `derived from source face ${shortenId(face.sourceFaceId)}`;
+    return `derived from source face ${getFaceDisplayLabel(shape, face.sourceFaceId)}`;
   }
 
   if (face.sourceVertexId) {
-    return `derived from source vertex ${shortenId(face.sourceVertexId)}`;
+    return `derived from source vertex ${getVertexDisplayLabel(shape, face.sourceVertexId)}`;
   }
 
   return 'unknown';
@@ -1337,6 +1359,115 @@ function shortenId(id: string): string {
   return id.length > 34 ? `${id.slice(0, 18)}...${id.slice(-10)}` : id;
 }
 
+function getPacketDisplayLabel(packet: VertexDataPacket): string | null {
+  return (
+    getPacketDataString(packet.custom, 'title') ??
+    getMeaningfulText(packet.label) ??
+    getPacketDataString(packet.custom, 'name') ??
+    getPacketDataString(packet.custom, 'summary') ??
+    getPacketDataString(packet.custom, 'description') ??
+    getFirstMeaningfulLine(packet.notes)
+  );
+}
+
+function getPacketDataDisplayLabel(data: Cell['data']): string | null {
+  return (
+    getPacketDataString(data, 'title') ??
+    getPacketDataString(data, 'label') ??
+    getPacketDataString(data, 'name') ??
+    getPacketDataString(data, 'summary') ??
+    getPacketDataString(data, 'description') ??
+    getPacketDataString(data, 'notes')
+  );
+}
+
+function getVertexDisplayLabel(shape: Shape, vertexId: VertexId): string {
+  const vertex = shape.vertices[vertexId];
+
+  return vertex ? getPacketDisplayLabel(vertex.data) ?? shortenId(vertexId) : shortenId(vertexId);
+}
+
+function getFaceDisplayLabel(shape: Shape, faceId: string): string {
+  const face = shape.faces.find((candidate) => candidate.id === faceId);
+
+  return face ? getPacketDataDisplayLabel(face.data) ?? shortenId(faceId) : shortenId(faceId);
+}
+
+function getCellDisplayLabel(shape: Shape, cellId: string): string {
+  const cell = shape.cells.find((candidate) => candidate.id === cellId);
+  const packetLabel = getPacketDataDisplayLabel(cell?.data);
+
+  if (packetLabel) {
+    return packetLabel;
+  }
+
+  return cell ? `${describeCellTopology(cell)} ${shortenId(cell.id)}` : shortenId(cellId);
+}
+
+function formatVertexRef(shape: Shape, vertexId: VertexId): string {
+  return getVertexDisplayLabel(shape, vertexId);
+}
+
+function formatEdgeRef(shape: Shape, vertexIds: [VertexId, VertexId]): string {
+  return `${formatVertexRef(shape, vertexIds[0])} - ${formatVertexRef(shape, vertexIds[1])}`;
+}
+
+function formatSourceRef(shape: Shape, sourceRef: PacketSourceRef): string {
+  if (sourceRef.kind === 'vertex') {
+    return formatVertexRef(shape, sourceRef.id);
+  }
+
+  if (sourceRef.kind === 'edge') {
+    const edge = shape.edges.find((candidate) => candidate.id === sourceRef.id);
+
+    return edge ? formatEdgeRef(shape, edge.vertexIds) : shortenId(sourceRef.id);
+  }
+
+  if (sourceRef.kind === 'face') {
+    return getFaceDisplayLabel(shape, sourceRef.id);
+  }
+
+  return getCellDisplayLabel(shape, sourceRef.id);
+}
+
+function formatSourceRefs(shape: Shape, sources: PacketSourceRef[]): string {
+  if (!sources.length) {
+    return '';
+  }
+
+  const visibleSources = sources.slice(0, 3).map((source) => formatSourceRef(shape, source));
+  const remainingCount = sources.length - visibleSources.length;
+
+  return remainingCount > 0
+    ? `${visibleSources.join(', ')} + ${remainingCount} more`
+    : visibleSources.join(', ');
+}
+
+function getPacketDataString(data: Cell['data'], key: string): string | null {
+  if (!data) {
+    return null;
+  }
+
+  const value =
+    data[key] ??
+    Object.entries(data).find(([candidateKey]) => candidateKey.toLowerCase() === key)?.[1];
+
+  return typeof value === 'string' ? getMeaningfulText(value) : null;
+}
+
+function getMeaningfulText(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+
+  return trimmed ? trimmed : null;
+}
+
+function getFirstMeaningfulLine(value: string | undefined): string | null {
+  return value
+    ?.split(/\r?\n/)
+    .map((line) => line.trim())
+    .find(Boolean) ?? null;
+}
+
 function formatParentLabel(row: WorkspaceCellRow): string {
   if (!row.parentCellId) {
     return 'parent: none';
@@ -1348,13 +1479,18 @@ function formatParentLabel(row: WorkspaceCellRow): string {
 }
 
 function formatVertexPacketPreview(vertex: Vertex): string {
-  const parts = [vertex.data.label];
+  return getPacketDisplayLabel(vertex.data) ?? 'untitled packet';
+}
 
+function formatVertexPacketDetail(vertex: Vertex): string | null {
   if (vertex.data.tags.length) {
-    parts.push(vertex.data.tags.slice(0, 2).join(', '));
+    return vertex.data.tags.slice(0, 2).join(', ');
   }
 
-  return parts.filter(Boolean).join(' / ') || 'untitled packet';
+  const notesLine = getFirstMeaningfulLine(vertex.data.notes);
+  const displayLabel = getPacketDisplayLabel(vertex.data);
+
+  return notesLine && notesLine !== displayLabel ? notesLine : null;
 }
 
 function formatPacketDataSummary(data: Cell['data']): string {
@@ -1367,7 +1503,7 @@ function formatPacketDataSummary(data: Cell['data']): string {
   return `${keys.length} fields`;
 }
 
-function formatVertexLineageSummary(vertex: Vertex): string {
+function formatVertexLineageSummary(shape: Shape, vertex: Vertex): string {
   const lineage = vertex.data.lineage;
 
   if (!lineage) {
@@ -1388,20 +1524,23 @@ function formatVertexLineageSummary(vertex: Vertex): string {
     );
 
     if (endpoints.length >= 2) {
-      return `midpoint derived from edge ${shortenId(endpoints[0].id)} - ${shortenId(endpoints[1].id)}`;
+      return `midpoint derived from edge ${formatEdgeRef(shape, [
+        endpoints[0].id,
+        endpoints[1].id,
+      ])}`;
     }
 
     const sourceEdge = lineage.sources.find((source) => source.kind === 'edge');
 
     return sourceEdge
-      ? `midpoint derived from edge ${shortenId(sourceEdge.id)}`
+      ? `midpoint derived from edge ${formatSourceRef(shape, sourceEdge)}`
       : 'midpoint derived from edge';
   }
 
-  return formatLineageSummary(lineage);
+  return formatLineageSummary(shape, lineage);
 }
 
-function formatFaceLineageSummary(face: Face): string {
+function formatFaceLineageSummary(shape: Shape, face: Face): string {
   if (!face.lineage) {
     return face.role === 'seed-face' ? 'seed face' : 'lineage unknown';
   }
@@ -1410,7 +1549,7 @@ function formatFaceLineageSummary(face: Face): string {
     const sourceFace = findLineageSource(face.lineage, 'face');
 
     return sourceFace
-      ? `face derived from source face ${shortenId(sourceFace.id)}`
+      ? `face derived from source face ${formatSourceRef(shape, sourceFace)}`
       : 'face derived from source face';
   }
 
@@ -1418,7 +1557,7 @@ function formatFaceLineageSummary(face: Face): string {
     const sourceVertex = findLineageSource(face.lineage, 'vertex');
 
     return sourceVertex
-      ? `face derived from source vertex ${shortenId(sourceVertex.id)}`
+      ? `face derived from source vertex ${formatSourceRef(shape, sourceVertex)}`
       : 'face derived from source vertex';
   }
 
@@ -1426,10 +1565,10 @@ function formatFaceLineageSummary(face: Face): string {
     return 'seed face';
   }
 
-  return formatLineageSummary(face.lineage);
+  return formatLineageSummary(shape, face.lineage);
 }
 
-function formatCellLineageSummary(cell: Cell): string {
+function formatCellLineageSummary(shape: Shape, cell: Cell): string {
   if (!cell.lineage) {
     return 'lineage unknown';
   }
@@ -1438,7 +1577,7 @@ function formatCellLineageSummary(cell: Cell): string {
     const sourceCell = findLineageSource(cell.lineage, 'cell');
 
     return sourceCell
-      ? `cell derived from parent cell ${shortenId(sourceCell.id)}`
+      ? `cell derived from parent cell ${formatSourceRef(shape, sourceCell)}`
       : 'cell derived from parent cell';
   }
 
@@ -1450,25 +1589,27 @@ function formatCellLineageSummary(cell: Cell): string {
     return 'preserved source cell';
   }
 
-  return formatLineageSummary(cell.lineage);
+  return formatLineageSummary(shape, cell.lineage);
 }
 
 function findLineageSource(lineage: PacketLineage, kind: PacketLineage['sources'][number]['kind']) {
   return lineage.sources.find((source) => source.kind === kind);
 }
 
-function formatLineageSummary(lineage: PacketLineage | undefined): string {
+function formatLineageSummary(shape: Shape, lineage: PacketLineage | undefined): string {
   if (!lineage) {
     return 'lineage unknown';
   }
 
+  const sourceSummary = formatSourceRefs(shape, lineage.sources);
+
   if (lineage.inheritanceMode === 'composite') {
-    return 'composite lineage';
+    return sourceSummary ? `composite lineage from ${sourceSummary}` : 'composite lineage';
   }
 
-  const sourceCount = lineage.sources.length;
-
-  return `${lineage.inheritanceMode}${sourceCount ? `, ${sourceCount} sources` : ''}`;
+  return sourceSummary
+    ? `${lineage.inheritanceMode} from ${sourceSummary}`
+    : lineage.inheritanceMode;
 }
 
 function countCellsByKind(shape: Shape): Record<CellKind, number> {
@@ -1502,12 +1643,12 @@ function formatCellCounts(counts: Record<CellKind, number>): string {
 
 function formatHistoryTarget(entry: OperationHistoryEntry): string {
   if (entry.targetTopology && entry.targetCellId) {
-    return `${entry.targetTopology} - ${entry.targetCellId}`;
+    return `${entry.targetTopology} - ${shortenId(entry.targetCellId)}`;
   }
 
   if (entry.targetTopology) {
     return entry.targetTopology;
   }
 
-  return entry.targetCellId ?? entry.shapeId;
+  return shortenId(entry.targetCellId ?? entry.shapeId);
 }
