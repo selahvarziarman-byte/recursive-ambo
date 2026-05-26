@@ -3,9 +3,48 @@ import { seedRegistry } from '../data/seeds';
 import { isDualViewSupportedCell } from '../lib/dualView';
 import { defaultOperation } from '../operations/registry';
 import { formatVec3 } from '../lib/shape';
-import { useGeometryStore } from '../store/geometryStore';
+import { type OperationHistoryEntry, useGeometryStore } from '../store/geometryStore';
 import type { Cell, CellKind, JsonValue, Shape, VertexDataPacket } from '../types/geometry';
 import { Panel } from './Panel';
+
+type TopologyFilter =
+  | 'all'
+  | 'tetrahedron'
+  | 'octahedron'
+  | 'cube'
+  | 'cuboctahedron'
+  | 'square-pyramid'
+  | 'rhombicuboctahedron'
+  | 'rectified-square-pyramid'
+  | 'other';
+
+type OperabilityFilter = 'all' | 'operable' | 'disabled';
+
+interface WorkspaceCellRow {
+  cell: Cell;
+  id: string;
+  shortId: string;
+  topology: string;
+  kind: CellKind;
+  generationDepth: number;
+  parentCellId: string | null;
+  parentKnown: boolean;
+  childCount: number;
+  isOperable: boolean;
+  disabledReason: string | null;
+}
+
+const topologyFilterOptions: Array<{ value: TopologyFilter; label: string }> = [
+  { value: 'all', label: 'All' },
+  { value: 'tetrahedron', label: 'tetrahedron' },
+  { value: 'octahedron', label: 'octahedron' },
+  { value: 'cube', label: 'cube' },
+  { value: 'cuboctahedron', label: 'cuboctahedron' },
+  { value: 'square-pyramid', label: 'square-pyramid' },
+  { value: 'rhombicuboctahedron', label: 'rhombicuboctahedron' },
+  { value: 'rectified-square-pyramid', label: 'rectified-square-pyramid' },
+  { value: 'other', label: 'unknown/other' },
+];
 
 export function SeedSelector() {
   const selectedSeedKey = useGeometryStore((state) => state.selectedSeedKey);
@@ -38,6 +77,10 @@ export function SeedSelector() {
 export function OperationControls() {
   const applyOperationToSelection = useGeometryStore((state) => state.applyOperationToSelection);
   const resetWorkspace = useGeometryStore((state) => state.resetWorkspace);
+  const undoWorkspace = useGeometryStore((state) => state.undoWorkspace);
+  const redoWorkspace = useGeometryStore((state) => state.redoWorkspace);
+  const canUndo = useGeometryStore((state) => state.undoStack.length > 0);
+  const canRedo = useGeometryStore((state) => state.redoStack.length > 0);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
   const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
@@ -68,6 +111,24 @@ export function OperationControls() {
         Apply {operation.label}
       </button>
       <p className="mt-3 text-sm leading-5 text-stone-400">{operationStatus}</p>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={undoWorkspace}
+          disabled={!canUndo}
+          className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950 disabled:text-stone-600"
+        >
+          Undo
+        </button>
+        <button
+          type="button"
+          onClick={redoWorkspace}
+          disabled={!canRedo}
+          className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950 disabled:text-stone-600"
+        >
+          Redo
+        </button>
+      </div>
       <button
         type="button"
         onClick={resetWorkspace}
@@ -248,11 +309,154 @@ export function ObjectInspector() {
   );
 }
 
+export function WorkspaceTopologyBrowser() {
+  const shape = useCurrentShape();
+  const selectedCellId = useGeometryStore((state) => state.selectedCellId);
+  const selectCell = useGeometryStore((state) => state.selectCell);
+  const [topologyFilter, setTopologyFilter] = useState<TopologyFilter>('all');
+  const [operabilityFilter, setOperabilityFilter] = useState<OperabilityFilter>('all');
+  const rows = useMemo(() => getWorkspaceCellRows(shape), [shape]);
+  const filteredRows = useMemo(
+    () =>
+      rows.filter(
+        (row) =>
+          matchesTopologyFilter(row, topologyFilter) &&
+          matchesOperabilityFilter(row, operabilityFilter),
+      ),
+    [operabilityFilter, rows, topologyFilter],
+  );
+  const tree = useMemo(() => buildWorkspaceCellTree(filteredRows), [filteredRows]);
+
+  return (
+    <Panel title="Workspace Topology">
+      <div className="grid grid-cols-2 gap-2">
+        <label className="grid gap-1 text-xs text-stone-400">
+          Topology
+          <select
+            value={topologyFilter}
+            onChange={(event) => setTopologyFilter(event.target.value as TopologyFilter)}
+            className="h-9 rounded border border-stone-700 bg-stone-950 px-2 text-xs text-stone-100 outline-none focus:border-teal-400"
+          >
+            {topologyFilterOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="grid gap-1 text-xs text-stone-400">
+          Ambo
+          <select
+            value={operabilityFilter}
+            onChange={(event) => setOperabilityFilter(event.target.value as OperabilityFilter)}
+            className="h-9 rounded border border-stone-700 bg-stone-950 px-2 text-xs text-stone-100 outline-none focus:border-teal-400"
+          >
+            <option value="all">All</option>
+            <option value="operable">Operable</option>
+            <option value="disabled">Disabled</option>
+          </select>
+        </label>
+      </div>
+      <p className="mt-3 text-xs text-stone-500">
+        {filteredRows.length} of {rows.length} cells shown
+      </p>
+      <div className="mt-3 grid max-h-[420px] gap-2 overflow-y-auto pr-1">
+        {tree.roots.length ? (
+          tree.roots.map((row) => (
+            <WorkspaceCellTreeRow
+              key={row.id}
+              row={row}
+              childrenByParent={tree.childrenByParent}
+              depth={0}
+              selectedCellId={selectedCellId}
+              onSelect={selectCell}
+            />
+          ))
+        ) : (
+          <p className="text-sm text-stone-500">No cells match the current filters.</p>
+        )}
+      </div>
+    </Panel>
+  );
+}
+
+function WorkspaceCellTreeRow({
+  row,
+  childrenByParent,
+  depth,
+  selectedCellId,
+  onSelect,
+}: {
+  row: WorkspaceCellRow;
+  childrenByParent: Map<string, WorkspaceCellRow[]>;
+  depth: number;
+  selectedCellId: string | null;
+  onSelect: (cellId: string | null) => void;
+}) {
+  const children = childrenByParent.get(row.id) ?? [];
+  const isSelected = row.id === selectedCellId;
+
+  return (
+    <div className="grid gap-2">
+      <button
+        type="button"
+        onClick={() => onSelect(row.id)}
+        aria-pressed={isSelected}
+        style={{ paddingLeft: 12 + depth * 14 }}
+        className={`rounded border py-2 pr-3 text-left text-sm transition ${
+          isSelected
+            ? 'border-amber-300 bg-amber-300/10 text-amber-100'
+            : 'border-stone-800 bg-stone-950 text-stone-300 hover:border-stone-600'
+        }`}
+      >
+        <span className="flex items-start justify-between gap-2">
+          <span className="min-w-0">
+            <span className="block truncate font-medium text-stone-100">{row.topology}</span>
+            <span className="mt-1 block truncate font-mono text-xs text-stone-500">
+              {row.shortId}
+            </span>
+          </span>
+          <span
+            className={`shrink-0 rounded border px-2 py-0.5 text-xs ${
+              row.isOperable
+                ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200'
+                : 'border-stone-700 bg-stone-900 text-stone-500'
+            }`}
+            title={row.disabledReason ?? 'Ambo Dissection available'}
+          >
+            {row.isOperable ? 'Operable' : 'Disabled'}
+          </span>
+        </span>
+        <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-500">
+          <span>{row.kind}</span>
+          <span>g{row.generationDepth}</span>
+          <span>{row.childCount} children</span>
+        </span>
+        <span className="mt-1 block truncate text-xs text-stone-600">
+          {formatParentLabel(row)}
+        </span>
+      </button>
+      {children.map((child) => (
+        <WorkspaceCellTreeRow
+          key={child.id}
+          row={child}
+          childrenByParent={childrenByParent}
+          depth={depth + 1}
+          selectedCellId={selectedCellId}
+          onSelect={onSelect}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function GenealogyViewer() {
   const shapes = useGeometryStore((state) => state.shapes);
   const shapeOrder = useGeometryStore((state) => state.shapeOrder);
   const currentShapeId = useGeometryStore((state) => state.currentShapeId);
   const selectShape = useGeometryStore((state) => state.selectShape);
+  const operationHistory = useGeometryStore((state) => state.operationHistory);
+  const redoOperationHistory = useGeometryStore((state) => state.redoOperationHistory);
   const currentShape = shapes[currentShapeId];
 
   return (
@@ -291,6 +495,20 @@ export function GenealogyViewer() {
       </div>
       <div className="mt-4 border-t border-stone-800 pt-4">
         <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+          Operation History
+        </h3>
+        <OperationHistoryList entries={operationHistory} />
+        {redoOperationHistory.length ? (
+          <div className="mt-4">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+              Redo Branch
+            </h3>
+            <OperationHistoryList entries={redoOperationHistory} isRedoBranch />
+          </div>
+        ) : null}
+      </div>
+      <div className="mt-4 border-t border-stone-800 pt-4">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
           Cell History
         </h3>
         <div className="grid gap-2">
@@ -312,6 +530,44 @@ export function GenealogyViewer() {
         </div>
       </div>
     </Panel>
+  );
+}
+
+function OperationHistoryList({
+  entries,
+  isRedoBranch = false,
+}: {
+  entries: OperationHistoryEntry[];
+  isRedoBranch?: boolean;
+}) {
+  if (!entries.length) {
+    return <p className="text-sm text-stone-500">No operations yet.</p>;
+  }
+
+  return (
+    <div className="grid gap-2">
+      {entries.map((entry) => (
+        <div
+          key={entry.id}
+          className={`rounded border px-3 py-2 text-sm ${
+            isRedoBranch
+              ? 'border-stone-800 bg-stone-950/60 text-stone-500'
+              : 'border-stone-800 bg-stone-950 text-stone-300'
+          }`}
+        >
+          <span className="flex items-center justify-between gap-2">
+            <span className="font-medium text-stone-200">{entry.label}</span>
+            <span className="font-mono text-xs text-stone-500">g{entry.generationDepth}</span>
+          </span>
+          <span className="mt-1 block truncate font-mono text-xs text-stone-500">
+            {formatHistoryTarget(entry)}
+          </span>
+          <span className="mt-1 block text-xs text-stone-500">
+            {entry.producedCellCount} cells produced
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -461,10 +717,132 @@ function describeCellTopology(cell: Cell): string {
   }
 
   if (cell.kind === 'residue' && cell.vertexIds.length === 5) {
-    return 'square pyramid';
+    return 'square-pyramid';
   }
 
   return 'unknown';
+}
+
+function getWorkspaceCellRows(shape: Shape): WorkspaceCellRow[] {
+  const cellIds = new Set(shape.cells.map((cell) => cell.id));
+  const childCounts = shape.cells.reduce<Record<string, number>>((counts, cell) => {
+    if (!cell.parentCellId) {
+      return counts;
+    }
+
+    return {
+      ...counts,
+      [cell.parentCellId]: (counts[cell.parentCellId] ?? 0) + 1,
+    };
+  }, {});
+
+  return [...shape.cells]
+    .sort(compareCellsForBrowser)
+    .map((cell) => {
+      const operationContext = {
+        shape,
+        selectedCellId: cell.id,
+        selectedCell: cell,
+      };
+      const isOperable = defaultOperation.canApply(operationContext);
+
+      return {
+        cell,
+        id: cell.id,
+        shortId: shortenId(cell.id),
+        topology: describeCellTopology(cell),
+        kind: cell.kind,
+        generationDepth: cell.generationDepth,
+        parentCellId: cell.parentCellId,
+        parentKnown: Boolean(cell.parentCellId && cellIds.has(cell.parentCellId)),
+        childCount: childCounts[cell.id] ?? 0,
+        isOperable,
+        disabledReason: isOperable ? null : defaultOperation.getDisabledReason(operationContext),
+      };
+    });
+}
+
+function buildWorkspaceCellTree(rows: WorkspaceCellRow[]): {
+  roots: WorkspaceCellRow[];
+  childrenByParent: Map<string, WorkspaceCellRow[]>;
+} {
+  const visibleIds = new Set(rows.map((row) => row.id));
+  const roots: WorkspaceCellRow[] = [];
+  const childrenByParent = new Map<string, WorkspaceCellRow[]>();
+
+  for (const row of rows) {
+    if (row.parentCellId && visibleIds.has(row.parentCellId)) {
+      const siblings = childrenByParent.get(row.parentCellId) ?? [];
+
+      siblings.push(row);
+      childrenByParent.set(row.parentCellId, siblings);
+    } else {
+      roots.push(row);
+    }
+  }
+
+  roots.sort(compareRowsForBrowser);
+  childrenByParent.forEach((children) => children.sort(compareRowsForBrowser));
+
+  return { roots, childrenByParent };
+}
+
+function compareCellsForBrowser(a: Cell, b: Cell): number {
+  return (
+    a.generationDepth - b.generationDepth ||
+    describeCellTopology(a).localeCompare(describeCellTopology(b)) ||
+    a.kind.localeCompare(b.kind) ||
+    a.id.localeCompare(b.id)
+  );
+}
+
+function compareRowsForBrowser(a: WorkspaceCellRow, b: WorkspaceCellRow): number {
+  return (
+    a.generationDepth - b.generationDepth ||
+    a.topology.localeCompare(b.topology) ||
+    a.kind.localeCompare(b.kind) ||
+    a.id.localeCompare(b.id)
+  );
+}
+
+function matchesTopologyFilter(row: WorkspaceCellRow, filter: TopologyFilter): boolean {
+  if (filter === 'all') {
+    return true;
+  }
+
+  if (filter === 'other') {
+    return !topologyFilterOptions.some(
+      (option) => option.value !== 'all' && option.value !== 'other' && option.value === row.topology,
+    );
+  }
+
+  return row.topology === filter;
+}
+
+function matchesOperabilityFilter(row: WorkspaceCellRow, filter: OperabilityFilter): boolean {
+  if (filter === 'operable') {
+    return row.isOperable;
+  }
+
+  if (filter === 'disabled') {
+    return !row.isOperable;
+  }
+
+  return true;
+}
+
+function shortenId(id: string): string {
+  return id.length > 34 ? `${id.slice(0, 18)}...${id.slice(-10)}` : id;
+}
+
+function formatParentLabel(row: WorkspaceCellRow): string {
+  if (!row.parentCellId) {
+    return 'parent: none';
+  }
+
+  return row.parentKnown
+    ? `parent: ${shortenId(row.parentCellId)}`
+    : `parent unknown: ${shortenId(row.parentCellId)}`;
 }
 
 function countCellsByKind(shape: Shape): Record<CellKind, number> {
@@ -494,4 +872,16 @@ function formatCellCounts(counts: Record<CellKind, number>): string {
     .filter(([, count]) => count > 0)
     .map(([kind, count]) => `${kind}:${count}`)
     .join(' ');
+}
+
+function formatHistoryTarget(entry: OperationHistoryEntry): string {
+  if (entry.targetTopology && entry.targetCellId) {
+    return `${entry.targetTopology} - ${entry.targetCellId}`;
+  }
+
+  if (entry.targetTopology) {
+    return entry.targetTopology;
+  }
+
+  return entry.targetCellId ?? entry.shapeId;
 }
