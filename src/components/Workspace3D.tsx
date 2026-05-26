@@ -661,9 +661,9 @@ function computeCellDisplayOffsets(shape: Shape, explodeAmount: number): Map<str
   }
 
   const cellById = new Map(shape.cells.map((cell) => [cell.id, cell]));
-  const centroids = new Map(shape.cells.map((cell) => [cell.id, cellCentroid(shape, cell)]));
+  const metrics = computeCellLayoutMetrics(shape);
+  const childrenByParent = buildChildrenByParent(shape);
   const visiting = new Set<string>();
-  const explodeDistance = explodeAmount * 0.9;
 
   const offsetForCell = (cell: Cell): Vec3 => {
     const existing = offsets.get(cell.id);
@@ -679,13 +679,26 @@ function computeCellDisplayOffsets(shape: Shape, explodeAmount: number): Map<str
     visiting.add(cell.id);
 
     const parentCell = cell.parentCellId ? cellById.get(cell.parentCellId) : null;
-    const parentOffset = parentCell ? offsetForCell(parentCell) : ([0, 0, 0] as Vec3);
-    const parentCentroid = parentCell ? centroids.get(parentCell.id) : null;
-    const cellCentroidValue = centroids.get(cell.id) ?? ([0, 0, 0] as Vec3);
-    const direction = parentCentroid
-      ? normalizeVec3(subtractVec3(cellCentroidValue, parentCentroid), fallbackDirection(cell.id))
-      : ([0, 0, 0] as Vec3);
-    const offset = addVec3(parentOffset, scaleVec3(direction, explodeDistance));
+
+    if (!parentCell) {
+      offsets.set(cell.id, [0, 0, 0]);
+      visiting.delete(cell.id);
+      return [0, 0, 0];
+    }
+
+    const parentOffset = offsetForCell(parentCell);
+    const siblings = childrenByParent.get(parentCell.id) ?? [cell];
+    const siblingDirections = computeSiblingLayoutDirections(parentCell, siblings, metrics);
+    const direction =
+      siblingDirections.get(cell.id) ?? fallbackDirection(`${parentCell.id}:${cell.id}`);
+    const distance = computeExplodeDistance(
+      parentCell,
+      cell,
+      siblings.length,
+      metrics,
+      explodeAmount,
+    );
+    const offset = addVec3(parentOffset, scaleVec3(direction, distance));
 
     offsets.set(cell.id, offset);
     visiting.delete(cell.id);
@@ -696,6 +709,189 @@ function computeCellDisplayOffsets(shape: Shape, explodeAmount: number): Map<str
   shape.cells.forEach(offsetForCell);
 
   return offsets;
+}
+
+interface CellLayoutMetric {
+  centroid: Vec3;
+  radius: number;
+}
+
+interface SiblingDirection {
+  cell: Cell;
+  direction: Vec3;
+  anchorDirection: Vec3;
+  fallbackDirection: Vec3;
+  hasCentroidDirection: boolean;
+}
+
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+const MIN_LAYOUT_RADIUS = 0.04;
+
+function computeCellLayoutMetrics(shape: Shape): Map<string, CellLayoutMetric> {
+  return new Map(
+    shape.cells.map((cell) => {
+      const centroid = cellCentroid(shape, cell);
+
+      return [
+        cell.id,
+        {
+          centroid,
+          radius: cellRadius(shape, cell, centroid),
+        },
+      ];
+    }),
+  );
+}
+
+function buildChildrenByParent(shape: Shape): Map<string, Cell[]> {
+  const childrenByParent = new Map<string, Cell[]>();
+
+  for (const cell of shape.cells) {
+    if (!cell.parentCellId) {
+      continue;
+    }
+
+    childrenByParent.set(cell.parentCellId, [
+      ...(childrenByParent.get(cell.parentCellId) ?? []),
+      cell,
+    ]);
+  }
+
+  for (const children of childrenByParent.values()) {
+    children.sort(compareCellsForLayout);
+  }
+
+  return childrenByParent;
+}
+
+function computeSiblingLayoutDirections(
+  parentCell: Cell,
+  siblings: Cell[],
+  metrics: Map<string, CellLayoutMetric>,
+): Map<string, Vec3> {
+  const orderedSiblings = [...siblings].sort(compareCellsForLayout);
+  const parentMetric = getCellLayoutMetric(metrics, parentCell);
+  const initialDirections = orderedSiblings.map<SiblingDirection>((cell, index) => {
+    const cellMetric = getCellLayoutMetric(metrics, cell);
+    const centroidDelta = subtractVec3(cellMetric.centroid, parentMetric.centroid);
+    const centroidDistance = lengthVec3(centroidDelta);
+    const usefulDirectionDistance = Math.max(
+      0.0001,
+      Math.max(parentMetric.radius, cellMetric.radius, MIN_LAYOUT_RADIUS) * 0.025,
+    );
+    const fallback = siblingFallbackDirection(parentCell, cell, index, orderedSiblings.length);
+    const hasCentroidDirection = centroidDistance > usefulDirectionDistance;
+    const direction = hasCentroidDirection
+      ? scaleVec3(centroidDelta, 1 / centroidDistance)
+      : fallback;
+
+    return {
+      cell,
+      direction,
+      anchorDirection: direction,
+      fallbackDirection: fallback,
+      hasCentroidDirection,
+    };
+  });
+
+  return new Map(
+    spreadSiblingDirections(initialDirections).map(({ cell, direction }) => [cell.id, direction]),
+  );
+}
+
+function spreadSiblingDirections(directions: SiblingDirection[]): SiblingDirection[] {
+  if (directions.length <= 1) {
+    return directions;
+  }
+
+  const minimumDot = Math.cos(minimumSiblingAngle(directions.length));
+  const spreadDirections = directions.map((entry) => ({
+    ...entry,
+    direction: normalizeVec3(entry.direction, entry.fallbackDirection),
+  }));
+
+  for (let iteration = 0; iteration < 10; iteration += 1) {
+    for (let aIndex = 0; aIndex < spreadDirections.length; aIndex += 1) {
+      for (let bIndex = aIndex + 1; bIndex < spreadDirections.length; bIndex += 1) {
+        const a = spreadDirections[aIndex];
+        const b = spreadDirections[bIndex];
+        const dot = dotVec3(a.direction, b.direction);
+
+        if (dot <= minimumDot) {
+          continue;
+        }
+
+        const pushStrength = Math.min(0.42, (dot - minimumDot) * 0.5);
+        const pairSeed = `${a.cell.id}:${b.cell.id}:${iteration}`;
+        const pushA = tangentAwayDirection(
+          a.direction,
+          b.direction,
+          fallbackDirection(`spread:${pairSeed}:a`),
+        );
+        const pushB = tangentAwayDirection(
+          b.direction,
+          a.direction,
+          scaleVec3(pushA, -1),
+        );
+
+        a.direction = normalizeVec3(
+          addVec3(a.direction, scaleVec3(pushA, pushStrength)),
+          a.fallbackDirection,
+        );
+        b.direction = normalizeVec3(
+          addVec3(b.direction, scaleVec3(pushB, pushStrength)),
+          b.fallbackDirection,
+        );
+      }
+    }
+
+    for (const entry of spreadDirections) {
+      if (!entry.hasCentroidDirection) {
+        continue;
+      }
+
+      entry.direction = normalizeVec3(
+        addVec3(scaleVec3(entry.direction, 0.975), scaleVec3(entry.anchorDirection, 0.025)),
+        entry.fallbackDirection,
+      );
+    }
+  }
+
+  return spreadDirections;
+}
+
+function computeExplodeDistance(
+  parentCell: Cell,
+  cell: Cell,
+  siblingCount: number,
+  metrics: Map<string, CellLayoutMetric>,
+  explodeAmount: number,
+): number {
+  const parentRadius = Math.max(getCellLayoutMetric(metrics, parentCell).radius, MIN_LAYOUT_RADIUS);
+  const cellRadiusValue = Math.max(getCellLayoutMetric(metrics, cell).radius, MIN_LAYOUT_RADIUS);
+  const generationDepth = Math.max(0, cell.generationDepth);
+  const siblingPressure = Math.sqrt(Math.max(0, siblingCount - 1));
+  const radiusClearance = parentRadius * 0.32 + cellRadiusValue * 0.95;
+  const siblingClearance = Math.max(parentRadius, cellRadiusValue) * 0.11 * siblingPressure;
+  const generationClearance = (parentRadius + cellRadiusValue) * 0.08 * generationDepth;
+  const generationScale = 1 + generationDepth * 0.18;
+  const siblingScale = 1 + Math.log2(Math.max(1, siblingCount)) * 0.1;
+  const kindScale = cell.kind === 'core' ? 1.06 : 1;
+
+  return (
+    explodeAmount *
+    (radiusClearance + siblingClearance + generationClearance) *
+    generationScale *
+    siblingScale *
+    kindScale
+  );
+}
+
+function getCellLayoutMetric(
+  metrics: Map<string, CellLayoutMetric>,
+  cell: Cell,
+): CellLayoutMetric {
+  return metrics.get(cell.id) ?? { centroid: [0, 0, 0], radius: 0 };
 }
 
 function cellCentroid(shape: Shape, cell: Cell): Vec3 {
@@ -719,6 +915,85 @@ function cellCentroid(shape: Shape, cell: Cell): Vec3 {
   return scaleVec3(sum, 1 / positions.length);
 }
 
+function cellRadius(shape: Shape, cell: Cell, centroid: Vec3): number {
+  return cell.vertexIds.reduce((radius, vertexId) => {
+    const position = shape.vertices[vertexId]?.position;
+
+    if (!position) {
+      return radius;
+    }
+
+    return Math.max(radius, lengthVec3(subtractVec3(position, centroid)));
+  }, 0);
+}
+
+function compareCellsForLayout(a: Cell, b: Cell): number {
+  return (
+    a.generationDepth - b.generationDepth ||
+    cellKindLayoutOrder(a) - cellKindLayoutOrder(b) ||
+    (a.topology ?? '').localeCompare(b.topology ?? '') ||
+    a.id.localeCompare(b.id)
+  );
+}
+
+function cellKindLayoutOrder(cell: Cell): number {
+  if (cell.kind === 'core') {
+    return 0;
+  }
+
+  if (cell.kind === 'residue') {
+    return 1;
+  }
+
+  if (cell.kind === 'parent') {
+    return 2;
+  }
+
+  return 3;
+}
+
+function siblingFallbackDirection(
+  parentCell: Cell,
+  cell: Cell,
+  index: number,
+  siblingCount: number,
+): Vec3 {
+  if (siblingCount <= 1) {
+    return fallbackDirection(`${parentCell.id}:${cell.id}`);
+  }
+
+  const seed = `${parentCell.id}:${cell.id}:${index}:${siblingCount}`;
+  const z = 1 - (2 * (index + 0.5)) / siblingCount;
+  const radius = Math.sqrt(Math.max(0, 1 - z * z));
+  const angle = index * GOLDEN_ANGLE + stableAngle(seed);
+
+  return normalizeVec3(
+    [Math.cos(angle) * radius, z, Math.sin(angle) * radius],
+    fallbackDirection(seed),
+  );
+}
+
+function minimumSiblingAngle(siblingCount: number): number {
+  if (siblingCount <= 2) {
+    return Math.PI / 3;
+  }
+
+  return Math.max(Math.PI / 9, Math.min(Math.PI / 2.4, 2.1 / Math.sqrt(siblingCount)));
+}
+
+function tangentAwayDirection(direction: Vec3, awayFrom: Vec3, fallback: Vec3): Vec3 {
+  const projected = subtractVec3(direction, scaleVec3(awayFrom, dotVec3(direction, awayFrom)));
+
+  return normalizeVec3(projected, perpendicularDirection(direction, fallback));
+}
+
+function perpendicularDirection(axis: Vec3, fallback: Vec3): Vec3 {
+  const axisUnit = normalizeVec3(axis, [1, 0, 0]);
+  const projected = subtractVec3(fallback, scaleVec3(axisUnit, dotVec3(fallback, axisUnit)));
+
+  return normalizeVec3(projected, Math.abs(axisUnit[0]) < 0.8 ? [1, 0, 0] : [0, 1, 0]);
+}
+
 function subtractVec3(a: Vec3, b: Vec3): Vec3 {
   return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 }
@@ -731,27 +1006,46 @@ function scaleVec3([x, y, z]: Vec3, scale: number): Vec3 {
   return [x * scale, y * scale, z * scale];
 }
 
+function lengthVec3(vector: Vec3): number {
+  return Math.hypot(vector[0], vector[1], vector[2]);
+}
+
+function dotVec3(a: Vec3, b: Vec3): number {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
 function normalizeVec3(vector: Vec3, fallback: Vec3): Vec3 {
-  const length = Math.hypot(vector[0], vector[1], vector[2]);
+  const length = lengthVec3(vector);
 
   if (length < 0.0001) {
-    return fallback;
+    const fallbackLength = lengthVec3(fallback);
+
+    return fallbackLength < 0.0001 ? [1, 0, 0] : scaleVec3(fallback, 1 / fallbackLength);
   }
 
   return scaleVec3(vector, 1 / length);
 }
 
-function fallbackDirection(cellId: string): Vec3 {
-  let hash = 0;
+function stableAngle(seed: string): number {
+  return (hashString(seed) / 4294967295) * Math.PI * 2;
+}
 
-  for (let index = 0; index < cellId.length; index += 1) {
-    hash = Math.imul(hash ^ cellId.charCodeAt(index), 2654435761);
-  }
-
-  const angle = ((hash >>> 0) / 4294967295) * Math.PI * 2;
+function fallbackDirection(seed: string): Vec3 {
+  const hash = hashString(seed);
+  const angle = (hash / 4294967295) * Math.PI * 2;
   const z = (((hash >>> 8) % 2000) / 1000 - 1) * 0.35;
 
   return normalizeVec3([Math.cos(angle), Math.sin(angle), z], [1, 0, 0]);
+}
+
+function hashString(seed: string): number {
+  let hash = 0;
+
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = Math.imul(hash ^ seed.charCodeAt(index), 2654435761);
+  }
+
+  return hash >>> 0;
 }
 
 function isCellHoverTarget(target: InspectionHoverTarget | null, cellId: string): boolean {
