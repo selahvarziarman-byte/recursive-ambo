@@ -1,9 +1,13 @@
 import type {
   Cell,
+  CellId,
   Edge,
+  EdgeId,
   Face,
+  FaceId,
   PacketLineage,
   Shape,
+  ShapeId,
   Vec3,
   Vertex,
   VertexDataPacket,
@@ -16,6 +20,7 @@ import {
   makeFaceId,
   makeGenerationId,
   makeShapeId,
+  stableHash,
 } from './ids';
 import {
   deriveCellLineage,
@@ -52,6 +57,28 @@ interface DualEdgeMetadata {
   lineage: PacketLineage;
 }
 
+interface SemanticDualModelOptions {
+  dualModelId?: ShapeId;
+  dualCellGenerationDepth?: number;
+  dualCellParentCellId?: CellId | null;
+}
+
+export interface SemanticDualModel {
+  dualModelId: ShapeId;
+  sourceShapeId: ShapeId;
+  sourceCellId: CellId;
+  dualCell: Cell;
+  dualVertices: Record<VertexId, Vertex>;
+  dualFaces: Face[];
+  dualEdges: Edge[];
+  sourceFaceToDualVertex: Record<FaceId, VertexId>;
+  dualVertexToSourceFace: Record<VertexId, FaceId>;
+  sourceVertexToDualFace: Record<VertexId, FaceId>;
+  dualFaceToSourceVertex: Record<FaceId, VertexId>;
+  sourceEdgeToDualEdge: Record<EdgeId, EdgeId>;
+  dualEdgeToSourceEdge: Record<EdgeId, EdgeId>;
+}
+
 const EPSILON = 0.000001;
 
 export function canApplyDualization(shape: Shape, targetCellId?: string | null): boolean {
@@ -62,17 +89,37 @@ export function canApplyDualization(shape: Shape, targetCellId?: string | null):
   }
 
   try {
-    const topology = buildPyritohedralIcosahedronSourceTopology(shape, cell);
-
-    if (!topology) {
-      return false;
-    }
-
-    buildDualFaceEntries(shape, 'dualization:validation', topology.cell.id, topology, new Map());
+    buildSemanticDualModel(shape, cell.id);
     return true;
   } catch {
     return false;
   }
+}
+
+export function buildSemanticDualModel(
+  shape: Shape,
+  targetCellId: CellId,
+  options: SemanticDualModelOptions = {},
+): SemanticDualModel {
+  const sourceCell = getTargetCell(shape, targetCellId);
+
+  if (!sourceCell) {
+    throw new Error('No cell available for dualization.');
+  }
+
+  const topology = buildPyritohedralIcosahedronSourceTopology(shape, sourceCell);
+
+  if (!topology) {
+    throw new Error(
+      'Dualization currently supports structurally valid pyritohedral-icosahedron core cells only.',
+    );
+  }
+
+  return buildSemanticDualModelForTopology(shape, topology, {
+    dualModelId: options.dualModelId ?? makeDualUniverseModelId(shape.id, sourceCell.id),
+    dualCellGenerationDepth: options.dualCellGenerationDepth ?? sourceCell.generationDepth,
+    dualCellParentCellId: options.dualCellParentCellId ?? null,
+  });
 }
 
 export function applyDualization(parent: Shape, targetCellId?: string | null): Shape {
@@ -82,36 +129,101 @@ export function applyDualization(parent: Shape, targetCellId?: string | null): S
     throw new Error('No cell available for dualization.');
   }
 
-  const topology = buildPyritohedralIcosahedronSourceTopology(parent, sourceCell);
-
-  if (!topology) {
-    throw new Error(
-      'Dualization currently supports structurally valid pyritohedral-icosahedron core cells only.',
-    );
-  }
-
-  return applyPyritohedralIcosahedronDualization(parent, topology);
-}
-
-function applyPyritohedralIcosahedronDualization(
-  parent: Shape,
-  topology: DualizationSourceTopology,
-): Shape {
-  const { cell: sourceCell } = topology;
   const generationDepth = sourceCell.generationDepth + 1;
   const shapeGenerationDepth = Math.max(parent.genealogy.generationDepth, generationDepth);
   const shapeId = makeShapeId(parent.id, 'dualization', shapeGenerationDepth);
   const parentCellId = makeCellId(shapeId, 'parent', sourceCell.id, sourceCell.vertexIds);
-  const dualVertexEntries = createDualVertices(parent, shapeId, sourceCell.id, topology.faces);
+  const semanticModel = buildSemanticDualModel(parent, sourceCell.id, {
+    dualModelId: shapeId,
+    dualCellGenerationDepth: generationDepth,
+    dualCellParentCellId: parentCellId,
+  });
+
+  return materializeSemanticDualModel(
+    parent,
+    sourceCell,
+    semanticModel,
+    shapeId,
+    parentCellId,
+    generationDepth,
+    shapeGenerationDepth,
+  );
+}
+
+function buildSemanticDualModelForTopology(
+  shape: Shape,
+  topology: DualizationSourceTopology,
+  {
+    dualModelId,
+    dualCellGenerationDepth,
+    dualCellParentCellId,
+  }: Required<SemanticDualModelOptions>,
+): SemanticDualModel {
+  const { cell: sourceCell } = topology;
+  const dualVertexEntries = createDualVertices(shape, dualModelId, sourceCell.id, topology.faces);
   const dualVertexByFaceId = new Map(
     dualVertexEntries.map((entry) => [entry.sourceFace.id, entry]),
   );
-  const dualFaceEntries = buildDualFaceEntries(parent, shapeId, sourceCell.id, topology, dualVertexByFaceId);
-  const resultFaces = dualFaceEntries.map((entry) => entry.face);
+  const dualFaceEntries = buildDualFaceEntries(shape, dualModelId, sourceCell.id, topology, dualVertexByFaceId);
+  const dualFaces = dualFaceEntries.map((entry) => entry.face);
   const dualVertexIds = dualVertexEntries.map((entry) => entry.vertex.id);
-  const resultCellId = makeCellId(shapeId, 'core', sourceCell.id, dualVertexIds);
   const sourceEdgeIds = topology.edges.map((edge) => edge.id);
-  const parentFaces = createParentCellFaces(shapeId, parentCellId, topology.faces);
+  const dualEdgeMetadataByKey = buildDualEdgeMetadata(
+    dualModelId,
+    sourceCell.id,
+    topology,
+    dualVertexByFaceId,
+    dualFaces,
+  );
+  const dualEdges = deriveDualizationEdges(dualFaces, dualModelId, dualEdgeMetadataByKey);
+  const dualCell: Cell = {
+    id: makeCellId(dualModelId, 'core', sourceCell.id, dualVertexIds),
+    kind: 'core',
+    topology: 'dodecahedron',
+    generationDepth: dualCellGenerationDepth,
+    parentCellId: dualCellParentCellId,
+    sourceOperation: 'dualization',
+    vertexIds: dualVertexIds,
+    faceIds: dualFaces.map((face) => face.id),
+    sourceVertexIds: sourceCell.vertexIds,
+    sourceEdgeIds,
+    lineage: deriveCellLineage(
+      [packetSourceRef('cell', sourceCell.id, 'source-cell')],
+      dualModelId,
+      'derived-from-cell',
+    ),
+  };
+
+  return {
+    dualModelId,
+    sourceShapeId: shape.id,
+    sourceCellId: sourceCell.id,
+    dualCell,
+    dualVertices: Object.fromEntries(
+      dualVertexEntries.map((entry) => [entry.vertex.id, entry.vertex]),
+    ),
+    dualFaces,
+    dualEdges,
+    sourceFaceToDualVertex: mapSourceFacesToDualVertices(dualVertexEntries),
+    dualVertexToSourceFace: mapDualVerticesToSourceFaces(dualVertexEntries),
+    sourceVertexToDualFace: mapSourceVerticesToDualFaces(dualFaceEntries),
+    dualFaceToSourceVertex: mapDualFacesToSourceVertices(dualFaceEntries),
+    ...mapDualEdges(dualEdges),
+  };
+}
+
+function materializeSemanticDualModel(
+  parent: Shape,
+  sourceCell: Cell,
+  semanticModel: SemanticDualModel,
+  shapeId: ShapeId,
+  parentCellId: CellId,
+  generationDepth: number,
+  shapeGenerationDepth: number,
+): Shape {
+  const sourceFaces = getCellFaces(parent, sourceCell);
+  const sourceEdgeIds = semanticModel.dualCell.sourceEdgeIds;
+  const parentFaces = createParentCellFaces(shapeId, parentCellId, sourceFaces);
   const parentCell: Cell = {
     id: parentCellId,
     kind: 'parent',
@@ -129,47 +241,24 @@ function applyPyritohedralIcosahedronDualization(
       'preserved',
     ),
   };
-  const resultCell: Cell = {
-    id: resultCellId,
-    kind: 'core',
-    topology: 'dodecahedron',
-    generationDepth,
-    parentCellId,
-    sourceOperation: 'dualization',
-    vertexIds: dualVertexIds,
-    faceIds: resultFaces.map((face) => face.id),
-    sourceVertexIds: sourceCell.vertexIds,
-    sourceEdgeIds,
-    lineage: deriveCellLineage(
-      [packetSourceRef('cell', sourceCell.id, 'source-cell')],
-      shapeId,
-      'derived-from-cell',
-    ),
-  };
   const replacedFaceIds = new Set(sourceCell.faceIds);
   const faces = [
     ...parent.faces.filter((face) => !replacedFaceIds.has(face.id)),
     ...parentFaces,
-    ...resultFaces,
+    ...semanticModel.dualFaces,
   ];
-  const dualEdgeMetadataByKey = buildDualEdgeMetadata(
-    shapeId,
-    sourceCell.id,
-    topology,
-    dualVertexByFaceId,
-    resultFaces,
-  );
-  const edges = deriveDualizationEdges(faces, shapeId, dualEdgeMetadataByKey);
+  const edges = deriveMaterializedDualizationEdges(faces, shapeId, semanticModel.dualEdges);
   const vertices = {
     ...cloneParentVertices(parent.vertices),
-    ...Object.fromEntries(dualVertexEntries.map((entry) => [entry.vertex.id, entry.vertex])),
+    ...semanticModel.dualVertices,
   };
   const cells = [
     ...parent.cells.filter((cell) => cell.id !== sourceCell.id),
     parentCell,
-    resultCell,
+    semanticModel.dualCell,
   ];
   const createdAt = new Date().toISOString();
+  const createdVertexIds = semanticModel.dualCell.vertexIds;
 
   return {
     id: shapeId,
@@ -187,8 +276,8 @@ function applyPyritohedralIcosahedronDualization(
         sourceOperation: 'dualization',
         parentShapeId: parent.id,
         parentCellIds: [parentCellId],
-        createdCellIds: [resultCell.id],
-        createdVertexIds: dualVertexIds,
+        createdCellIds: [semanticModel.dualCell.id],
+        createdVertexIds,
         createdAt,
       },
     ],
@@ -197,7 +286,7 @@ function applyPyritohedralIcosahedronDualization(
       operation: 'dualization',
       generationDepth: shapeGenerationDepth,
       sourceVertexIds: sourceCell.vertexIds,
-      createdVertexIds: dualVertexIds,
+      createdVertexIds,
       createdAt,
     },
   };
@@ -209,6 +298,85 @@ function getTargetCell(shape: Shape, targetCellId?: string | null): Cell | null 
   }
 
   return shape.cells.find((cell) => cell.id === targetCellId) ?? null;
+}
+
+function makeDualUniverseModelId(sourceShapeId: ShapeId, sourceCellId: CellId): ShapeId {
+  return `shape:dual-universe:${stableHash(`${sourceShapeId}|${sourceCellId}|dual-universe`)}`;
+}
+
+function mapSourceFacesToDualVertices(
+  dualVertexEntries: DualVertexEntry[],
+): Record<FaceId, VertexId> {
+  const sourceFaceToDualVertex: Record<FaceId, VertexId> = {};
+
+  for (const entry of dualVertexEntries) {
+    sourceFaceToDualVertex[entry.sourceFace.id] = entry.vertex.id;
+  }
+
+  return sourceFaceToDualVertex;
+}
+
+function mapDualVerticesToSourceFaces(
+  dualVertexEntries: DualVertexEntry[],
+): Record<VertexId, FaceId> {
+  const dualVertexToSourceFace: Record<VertexId, FaceId> = {};
+
+  for (const entry of dualVertexEntries) {
+    dualVertexToSourceFace[entry.vertex.id] = entry.sourceFace.id;
+  }
+
+  return dualVertexToSourceFace;
+}
+
+function mapSourceVerticesToDualFaces(
+  dualFaceEntries: DualFaceEntry[],
+): Record<VertexId, FaceId> {
+  const sourceVertexToDualFace: Record<VertexId, FaceId> = {};
+
+  for (const entry of dualFaceEntries) {
+    sourceVertexToDualFace[entry.sourceVertexId] = entry.face.id;
+  }
+
+  return sourceVertexToDualFace;
+}
+
+function mapDualFacesToSourceVertices(
+  dualFaceEntries: DualFaceEntry[],
+): Record<FaceId, VertexId> {
+  const dualFaceToSourceVertex: Record<FaceId, VertexId> = {};
+
+  for (const entry of dualFaceEntries) {
+    dualFaceToSourceVertex[entry.face.id] = entry.sourceVertexId;
+  }
+
+  return dualFaceToSourceVertex;
+}
+
+function mapDualEdges(
+  dualEdges: Edge[],
+): Pick<SemanticDualModel, 'sourceEdgeToDualEdge' | 'dualEdgeToSourceEdge'> {
+  const sourceEdgeToDualEdge: Record<EdgeId, EdgeId> = {};
+  const dualEdgeToSourceEdge: Record<EdgeId, EdgeId> = {};
+
+  for (const edge of dualEdges) {
+    const sourceEdgeId = edge.sourceEdgeId;
+
+    if (!sourceEdgeId) {
+      throw new Error(`Dualization dual edge ${edge.id} is missing sourceEdgeId.`);
+    }
+
+    if (sourceEdgeToDualEdge[sourceEdgeId] || dualEdgeToSourceEdge[edge.id]) {
+      throw new Error('Dualization source edge correspondence is not one-to-one.');
+    }
+
+    sourceEdgeToDualEdge[sourceEdgeId] = edge.id;
+    dualEdgeToSourceEdge[edge.id] = sourceEdgeId;
+  }
+
+  return {
+    sourceEdgeToDualEdge,
+    dualEdgeToSourceEdge,
+  };
 }
 
 function buildPyritohedralIcosahedronSourceTopology(
@@ -612,6 +780,32 @@ function deriveDualizationEdges(
       sourceEdgeId: metadata.sourceEdge.id,
       sourceCellId: metadata.sourceCellId,
       lineage: metadata.lineage,
+    };
+  });
+}
+
+function deriveMaterializedDualizationEdges(
+  faces: Face[],
+  shapeId: ShapeId,
+  dualEdges: Edge[],
+): Edge[] {
+  const dualEdgeByKey = new Map(
+    dualEdges.map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]),
+  );
+
+  return deriveEdges(faces, shapeId).map((edge) => {
+    const dualEdge = dualEdgeByKey.get(canonicalEdgeKey(...edge.vertexIds));
+
+    if (!dualEdge) {
+      return edge;
+    }
+
+    return {
+      ...edge,
+      sourceEdgeId: dualEdge.sourceEdgeId,
+      sourceCellId: dualEdge.sourceCellId,
+      lineage: dualEdge.lineage,
+      data: dualEdge.data,
     };
   });
 }
