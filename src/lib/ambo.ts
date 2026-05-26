@@ -28,7 +28,7 @@ import {
 } from './packets';
 import { createDefaultVertexData, deriveEdges, getCellFaces, midpoint } from './shape';
 
-type SupportedAmboTopology = 'tetrahedron' | 'octahedron' | 'cube';
+type SupportedAmboTopology = 'tetrahedron' | 'octahedron' | 'cube' | 'cuboctahedron';
 
 interface CellWithFaces extends Cell {
   faces: Face[];
@@ -60,7 +60,9 @@ export function applyAmboDissection(parent: Shape, targetCellId?: string | null)
   const topology = buildSupportedSourceTopology(parent, sourceCell);
 
   if (!topology) {
-    throw new Error('Ambo dissection currently supports tetrahedron, octahedron, and cube cells.');
+    throw new Error(
+      'Ambo dissection currently supports tetrahedron, octahedron, cube, and cuboctahedron cells.',
+    );
   }
 
   return applyGenericAmboDissection(parent, topology);
@@ -227,6 +229,12 @@ function classifySupportedSourceTopology(
     faces.length === 6 &&
     edgeCount === 12 &&
     faceSizes.every((size) => size === 4);
+  const isCuboctahedronGeometry =
+    cell.vertexIds.length === 12 &&
+    faces.length === 14 &&
+    edgeCount === 24 &&
+    countFaceSizes(faceSizes, 3) === 8 &&
+    countFaceSizes(faceSizes, 4) === 6;
 
   if (
     isTetrahedronGeometry &&
@@ -244,6 +252,10 @@ function classifySupportedSourceTopology(
 
   if (isCubeGeometry && cell.topology === 'cube') {
     return 'cube';
+  }
+
+  if (isCuboctahedronGeometry && cell.topology === 'cuboctahedron') {
+    return 'cuboctahedron';
   }
 
   return null;
@@ -333,7 +345,11 @@ function hasValidVertexRings(topology: SourceTopology): boolean {
 }
 
 function getExpectedVertexRingSize(sourceTopology: SupportedAmboTopology): number {
-  return sourceTopology === 'octahedron' ? 4 : 3;
+  return sourceTopology === 'octahedron' || sourceTopology === 'cuboctahedron' ? 4 : 3;
+}
+
+function countFaceSizes(faceSizes: number[], targetSize: number): number {
+  return faceSizes.filter((size) => size === targetSize).length;
 }
 
 function cloneParentVertices(vertices: Record<VertexId, Vertex>): Record<VertexId, Vertex> {
@@ -466,11 +482,15 @@ function getCoreTopology(sourceTopology: SupportedAmboTopology): CellTopology {
     return 'octahedron';
   }
 
+  if (sourceTopology === 'cuboctahedron') {
+    return 'rhombicuboctahedron';
+  }
+
   return 'cuboctahedron';
 }
 
 function getResidueTopology(sourceTopology: SupportedAmboTopology): CellTopology {
-  if (sourceTopology === 'octahedron') {
+  if (sourceTopology === 'octahedron' || sourceTopology === 'cuboctahedron') {
     return 'square-pyramid';
   }
 

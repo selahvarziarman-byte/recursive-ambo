@@ -13,6 +13,7 @@ export type SeedTopology = 'tetrahedron' | 'octahedron' | 'cube';
 export type CellTopology =
   | SeedTopology
   | 'cuboctahedron'
+  | 'rhombicuboctahedron'
   | 'square-pyramid'
   | 'unknown';
 

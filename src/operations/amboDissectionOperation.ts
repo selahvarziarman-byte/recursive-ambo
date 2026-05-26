@@ -5,13 +5,14 @@ import type { GeometryOperation, OperationContext } from './types';
 export const amboDissectionOperation: GeometryOperation = {
   id: 'ambo-dissection',
   label: 'Ambo Dissection',
-  description: 'Dissect supported tetrahedron, octahedron, and cube cells.',
+  description: 'Dissect supported tetrahedron, octahedron, cube, and cuboctahedron cells.',
   supportedTargets: [
     { cellKind: 'seed', topology: 'tetrahedron' },
     { cellKind: 'seed', topology: 'octahedron' },
     { cellKind: 'seed', topology: 'cube' },
     { cellKind: 'residue', topology: 'tetrahedron' },
     { cellKind: 'core', topology: 'octahedron' },
+    { cellKind: 'core', topology: 'cuboctahedron' },
   ],
   canApply: (context) => canApplyAmboDissection(context.shape, context.selectedCellId),
   getDisabledReason: (context) => {
@@ -29,6 +30,18 @@ export const amboDissectionOperation: GeometryOperation = {
 
     if (targetTopology === 'cube') {
       return 'Selected cube does not have valid ordered topology for Ambo Dissection.';
+    }
+
+    if (targetTopology === 'cuboctahedron') {
+      return 'Selected cuboctahedron does not have valid ordered topology for Ambo Dissection.';
+    }
+
+    if (targetTopology === 'rhombicuboctahedron') {
+      return 'Ambo Dissection for rhombicuboctahedron is not enabled yet.';
+    }
+
+    if (targetTopology === 'square-pyramid') {
+      return 'Square-pyramid dissection is not implemented yet.';
     }
 
     if (selectedCell?.kind === 'core') {
@@ -57,7 +70,7 @@ export const amboDissectionOperation: GeometryOperation = {
     }
 
     if (context.selectedCell?.kind === 'core') {
-      return 'Ready to dissect selected octahedron core.';
+      return `Ready to dissect selected ${describeTargetTopology(context.selectedCell) ?? 'core'} core.`;
     }
 
     if (context.selectedCell?.kind === 'residue') {

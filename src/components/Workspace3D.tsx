@@ -157,7 +157,8 @@ function CellMesh({
           side={THREE.DoubleSide}
           transparent
           polygonOffset
-          polygonOffsetFactor={-renderIndex * 0.25}
+          polygonOffsetFactor={1 + renderIndex * 0.25}
+          polygonOffsetUnits={1}
         />
       </mesh>
       <mesh
