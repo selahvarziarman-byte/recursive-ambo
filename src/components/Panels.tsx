@@ -37,6 +37,7 @@ type TopologyFilter =
   | 'cube'
   | 'cuboctahedron'
   | 'pyritohedral-icosahedron'
+  | 'dodecahedron'
   | 'square-pyramid'
   | 'rhombicuboctahedron'
   | 'rectified-square-pyramid'
@@ -113,6 +114,7 @@ const topologyFilterOptions: Array<{ value: TopologyFilter; label: string }> = [
   { value: 'cube', label: 'cube' },
   { value: 'cuboctahedron', label: 'cuboctahedron' },
   { value: 'pyritohedral-icosahedron', label: 'pyritohedral-icosahedron' },
+  { value: 'dodecahedron', label: 'dodecahedron' },
   { value: 'square-pyramid', label: 'square-pyramid' },
   { value: 'rhombicuboctahedron', label: 'rhombicuboctahedron' },
   { value: 'rectified-square-pyramid', label: 'rectified-square-pyramid' },
@@ -1605,9 +1607,7 @@ function getCellEdges(shape: Shape, cell: Cell): CellEdgeRow[] {
           id: key,
           vertexIds: [a, b],
           displayLabel: formatEdgeRef(shape, [a, b]),
-          secondaryLabel: edge?.sourceFaceId
-            ? `${shortenId(a)} - ${shortenId(b)} | source face ${shortenId(edge.sourceFaceId)}`
-            : `${shortenId(a)} - ${shortenId(b)}`,
+          secondaryLabel: formatEdgeSecondaryLabel(edge, a, b),
           roleLabel: isConstructionDiagonal ? 'construction' : null,
         });
       }
@@ -1615,6 +1615,19 @@ function getCellEdges(shape: Shape, cell: Cell): CellEdgeRow[] {
   }
 
   return Array.from(edges.values()).sort((a, b) => a.displayLabel.localeCompare(b.displayLabel));
+}
+
+function formatEdgeSecondaryLabel(
+  edge: Shape['edges'][number] | undefined,
+  a: VertexId,
+  b: VertexId,
+): string {
+  const sourceLabels = [
+    edge?.sourceEdgeId ? `source edge ${shortenId(edge.sourceEdgeId)}` : null,
+    edge?.sourceFaceId ? `source face ${shortenId(edge.sourceFaceId)}` : null,
+  ].filter((label): label is string => Boolean(label));
+
+  return [`${shortenId(a)} - ${shortenId(b)}`, ...sourceLabels].join(' | ');
 }
 
 function getCellVertexRows(shape: Shape, cell: Cell): CellVertexRow[] {
