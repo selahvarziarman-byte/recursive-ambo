@@ -366,6 +366,8 @@ function SelectionPanel() {
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
   const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
+  const isolateSelectedCell = useGeometryStore((state) => state.viewLayout.isolateSelectedCell);
+  const toggleIsolateSelectedCell = useGeometryStore((state) => state.toggleIsolateSelectedCell);
   const selectedCell = findCell(shape, selectedCellId);
   const vertex = selectedVertexId ? shape.vertices[selectedVertexId] : null;
   const rows = useMemo(() => getWorkspaceCellRows(shape), [shape]);
@@ -398,6 +400,18 @@ function SelectionPanel() {
           <p className="mt-2 text-sm text-stone-500">No cell selected.</p>
         )}
       </div>
+      {selectedCell ? (
+        <label className="flex items-center justify-between gap-3 rounded border border-stone-800 bg-stone-950 px-3 py-2 text-sm text-stone-300">
+          Isolate selected cell
+          <input
+            type="checkbox"
+            checked={isolateSelectedCell}
+            onChange={toggleIsolateSelectedCell}
+            disabled={!selectedCell}
+            className="h-4 w-4 accent-amber-300 disabled:opacity-50"
+          />
+        </label>
+      ) : null}
       {selectedCell ? (
         <CellComposition
           shape={shape}
@@ -496,6 +510,7 @@ function CellComposition({
 }) {
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
   const vertices = useMemo(() => getCellVertexRows(shape, cell), [cell, shape]);
   const faceRows = useMemo(() => getCellFaceRows(shape, faces), [faces, shape]);
 
@@ -511,6 +526,8 @@ function CellComposition({
                 key={row.vertex.id}
                 type="button"
                 onClick={() => selectVertex(row.vertex.id)}
+                onPointerEnter={() => setHoverTarget({ kind: 'vertex', vertexId: row.vertex.id })}
+                onPointerLeave={() => setHoverTarget(null)}
                 className={`rounded border px-3 py-2 text-left text-sm transition ${
                   isSelected
                     ? 'border-amber-300 bg-amber-300/10 text-amber-100'
@@ -549,6 +566,8 @@ function CellComposition({
           {faceRows.map((row) => (
             <div
               key={row.face.id}
+              onPointerEnter={() => setHoverTarget({ kind: 'face', faceId: row.face.id })}
+              onPointerLeave={() => setHoverTarget(null)}
               className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-sm"
             >
               <span className="flex items-start justify-between gap-2">
@@ -575,6 +594,8 @@ function CellComposition({
           {edges.map((edge) => (
             <div
               key={edge.id}
+              onPointerEnter={() => setHoverTarget({ kind: 'edge', vertexIds: edge.vertexIds })}
+              onPointerLeave={() => setHoverTarget(null)}
               className="rounded border border-stone-900 bg-stone-950/70 px-2 py-1 text-xs text-stone-400"
               title={edge.vertexIds.join(' - ')}
             >

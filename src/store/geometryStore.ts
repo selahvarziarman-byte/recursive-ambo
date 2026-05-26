@@ -1,7 +1,16 @@
 import { create } from 'zustand';
 import { createSeedShape } from '../data/seeds';
 import { getOperation } from '../operations/registry';
-import type { Cell, CellId, SeedKey, Shape, ShapeId, VertexDataPacket, VertexId } from '../types/geometry';
+import type {
+  Cell,
+  CellId,
+  FaceId,
+  SeedKey,
+  Shape,
+  ShapeId,
+  VertexDataPacket,
+  VertexId,
+} from '../types/geometry';
 
 interface CellVisibility {
   showCoreCells: boolean;
@@ -12,7 +21,14 @@ interface CellVisibility {
 interface ViewLayout {
   explodeAmount: number;
   dualViewEnabled: boolean;
+  isolateSelectedCell: boolean;
 }
+
+export type InspectionHoverTarget =
+  | { kind: 'cell'; cellId: CellId }
+  | { kind: 'vertex'; vertexId: VertexId }
+  | { kind: 'edge'; vertexIds: [VertexId, VertexId] }
+  | { kind: 'face'; faceId: FaceId };
 
 interface WorkspaceSnapshot {
   selectedSeedKey: SeedKey;
@@ -44,6 +60,7 @@ const defaultCellVisibility: CellVisibility = {
 const defaultViewLayout: ViewLayout = {
   explodeAmount: 0,
   dualViewEnabled: false,
+  isolateSelectedCell: false,
 };
 
 const HISTORY_LIMIT = 50;
@@ -57,6 +74,7 @@ interface GeometryState {
   selectedVertexId: VertexId | null;
   cellVisibility: CellVisibility;
   viewLayout: ViewLayout;
+  hoverTarget: InspectionHoverTarget | null;
   undoStack: WorkspaceSnapshot[];
   redoStack: WorkspaceSnapshot[];
   operationHistory: OperationHistoryEntry[];
@@ -75,6 +93,8 @@ interface GeometryState {
   toggleCellVisibility: (key: keyof CellVisibility) => void;
   setExplodeAmount: (explodeAmount: number) => void;
   toggleDualView: () => void;
+  toggleIsolateSelectedCell: () => void;
+  setHoverTarget: (target: InspectionHoverTarget | null) => void;
   updateSelectedVertexData: (patch: Partial<VertexDataPacket>) => void;
 }
 
@@ -102,6 +122,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   selectedVertexId: null,
   cellVisibility: defaultCellVisibility,
   viewLayout: defaultViewLayout,
+  hoverTarget: null,
   undoStack: [],
   redoStack: [],
   operationHistory: [initialHistoryEntry],
@@ -132,6 +153,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       selectedVertexId: null,
       cellVisibility: defaultCellVisibility,
       viewLayout: defaultViewLayout,
+      hoverTarget: null,
       historySequence,
     });
   },
@@ -159,6 +181,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       selectedVertexId: null,
       cellVisibility: defaultCellVisibility,
       viewLayout: defaultViewLayout,
+      hoverTarget: null,
       historySequence,
     });
   },
@@ -180,6 +203,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       redoStack: nextRedoStack,
       operationHistory: state.operationHistory.slice(0, -1),
       redoOperationHistory: nextRedoHistory,
+      hoverTarget: null,
     });
   },
   redoWorkspace: () => {
@@ -200,10 +224,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       redoStack: state.redoStack.slice(1),
       operationHistory,
       redoOperationHistory: state.redoOperationHistory.slice(1),
+      hoverTarget: null,
     });
   },
   resetViewLayout: () => {
-    set({ viewLayout: defaultViewLayout });
+    set({ viewLayout: defaultViewLayout, hoverTarget: null });
   },
   applyOperationToSelection: (operationId) => {
     const state = get();
@@ -259,6 +284,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: nextShape.id,
       selectedCellId: null,
       selectedVertexId: null,
+      hoverTarget: null,
       historySequence,
     });
   },
@@ -282,6 +308,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
         state.selectedVertexId && shape.vertices[state.selectedVertexId]
           ? state.selectedVertexId
           : null,
+      hoverTarget: null,
     }));
   },
   selectCell: (cellId) => {
@@ -312,7 +339,19 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
         ...state.viewLayout,
         dualViewEnabled: !state.viewLayout.dualViewEnabled,
       },
+      hoverTarget: null,
     }));
+  },
+  toggleIsolateSelectedCell: () => {
+    set((state) => ({
+      viewLayout: {
+        ...state.viewLayout,
+        isolateSelectedCell: !state.viewLayout.isolateSelectedCell,
+      },
+    }));
+  },
+  setHoverTarget: (target) => {
+    set({ hoverTarget: target });
   },
   updateSelectedVertexData: (patch) => {
     const { currentShapeId, selectedVertexId, shapes } = get();

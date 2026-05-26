@@ -1,9 +1,9 @@
 import { OrbitControls } from '@react-three/drei';
 import { Canvas, type ThreeEvent } from '@react-three/fiber';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import * as THREE from 'three';
 import { buildDualViewProxy } from '../lib/dualView';
-import { useGeometryStore } from '../store/geometryStore';
+import { type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
 import type { Cell, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
 
 export function Workspace3D() {
@@ -11,13 +11,12 @@ export function Workspace3D() {
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
   const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
   const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
+  const isolateSelectedCell = useGeometryStore((state) => state.viewLayout.isolateSelectedCell);
+  const hoverTarget = useGeometryStore((state) => state.hoverTarget);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectCell = useGeometryStore((state) => state.selectCell);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
-  const [hoveredCellId, setHoveredCellId] = useState<string | null>(null);
-  const hoveredCell = hoveredCellId
-    ? shape.cells.find((cell) => cell.id === hoveredCellId) ?? null
-    : null;
+  const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
 
   return (
     <div className="relative h-full min-h-[440px] w-full bg-neutral-950">
@@ -26,6 +25,7 @@ export function Workspace3D() {
         onPointerMissed={() => {
           selectCell(null);
           selectVertex(null);
+          setHoverTarget(null);
         }}
       >
         <color attach="background" args={['#0c0a09']} />
@@ -38,16 +38,15 @@ export function Workspace3D() {
           cellVisibility={cellVisibility}
           explodeAmount={explodeAmount}
           dualViewEnabled={dualViewEnabled}
+          isolateSelectedCell={isolateSelectedCell}
           selectedCellId={selectedCellId}
-          hoveredCellId={hoveredCellId}
-          onHoverCell={setHoveredCellId}
+          hoverTarget={hoverTarget}
+          onHoverTarget={setHoverTarget}
         />
         <OrbitControls makeDefault enableDamping dampingFactor={0.08} />
       </Canvas>
       <div className="pointer-events-none absolute left-3 top-3 rounded border border-stone-800 bg-stone-950/85 px-3 py-2 text-xs text-stone-300 shadow-lg">
-        {hoveredCell
-          ? `Hovering ${hoveredCell.kind} cell, generation ${hoveredCell.generationDepth}`
-          : 'Hover a cell to preview selection'}
+        {formatHoverStatus(shape, hoverTarget)}
       </div>
     </div>
   );
@@ -64,17 +63,19 @@ function Polyhedron({
   cellVisibility,
   explodeAmount,
   dualViewEnabled,
+  isolateSelectedCell,
   selectedCellId,
-  hoveredCellId,
-  onHoverCell,
+  hoverTarget,
+  onHoverTarget,
 }: {
   shape: Shape;
   cellVisibility: CellVisibility;
   explodeAmount: number;
   dualViewEnabled: boolean;
+  isolateSelectedCell: boolean;
   selectedCellId: string | null;
-  hoveredCellId: string | null;
-  onHoverCell: (cellId: string | null) => void;
+  hoverTarget: InspectionHoverTarget | null;
+  onHoverTarget: (target: InspectionHoverTarget | null) => void;
 }) {
   const visibleCells = useMemo(
     () => shape.cells.filter((cell) => isCellVisible(cell, cellVisibility)),
@@ -93,8 +94,10 @@ function Polyhedron({
           shape={shape}
           cell={cell}
           isSelected={cell.id === selectedCellId}
-          isHovered={cell.id === hoveredCellId}
-          onHoverCell={onHoverCell}
+          isHovered={isCellHoverTarget(hoverTarget, cell.id)}
+          isDimmed={isolateSelectedCell && Boolean(selectedCellId) && cell.id !== selectedCellId}
+          hoverTarget={hoverTarget}
+          onHoverTarget={onHoverTarget}
           displayOffset={displayOffsets.get(cell.id) ?? [0, 0, 0]}
           explodeAmount={explodeAmount}
           dualViewEnabled={dualViewEnabled}
@@ -110,7 +113,9 @@ function CellMesh({
   cell,
   isSelected,
   isHovered,
-  onHoverCell,
+  isDimmed,
+  hoverTarget,
+  onHoverTarget,
   displayOffset,
   explodeAmount,
   dualViewEnabled,
@@ -120,7 +125,9 @@ function CellMesh({
   cell: Cell;
   isSelected: boolean;
   isHovered: boolean;
-  onHoverCell: (cellId: string | null) => void;
+  isDimmed: boolean;
+  hoverTarget: InspectionHoverTarget | null;
+  onHoverTarget: (target: InspectionHoverTarget | null) => void;
   displayOffset: Vec3;
   explodeAmount: number;
   dualViewEnabled: boolean;
@@ -139,10 +146,19 @@ function CellMesh({
     () => createEdgeGeometry(renderGeometry.vertices, renderGeometry.faces),
     [renderGeometry],
   );
+  const hoverFaceGeometry = useMemo(
+    () => createHoverFaceGeometry(renderGeometry, hoverTarget),
+    [hoverTarget, renderGeometry],
+  );
+  const hoverEdgeGeometry = useMemo(
+    () => createHoverEdgeGeometry(renderGeometry, hoverTarget),
+    [hoverTarget, renderGeometry],
+  );
   const style = cellStyle(
     cell,
     isSelected,
     isHovered,
+    isDimmed,
     explodeAmount,
     renderGeometry.mode,
   );
@@ -169,17 +185,17 @@ function CellMesh({
         }}
         onPointerMove={(event) => {
           event.stopPropagation();
-          onHoverCell(cell.id);
+          onHoverTarget({ kind: 'cell', cellId: cell.id });
           document.body.style.cursor = 'pointer';
         }}
         onPointerOver={(event) => {
           event.stopPropagation();
-          onHoverCell(cell.id);
+          onHoverTarget({ kind: 'cell', cellId: cell.id });
           document.body.style.cursor = 'pointer';
         }}
         onPointerOut={(event) => {
           event.stopPropagation();
-          onHoverCell(null);
+          onHoverTarget(null);
           document.body.style.cursor = 'auto';
         }}
       >
@@ -194,23 +210,72 @@ function CellMesh({
       <lineSegments geometry={edgeGeometry} raycast={() => null}>
         <lineBasicMaterial color={style.edgeColor} transparent opacity={style.edgeOpacity} />
       </lineSegments>
+      {hoverFaceGeometry ? (
+        <mesh geometry={hoverFaceGeometry} raycast={() => null}>
+          <meshBasicMaterial
+            color="#facc15"
+            depthWrite={false}
+            opacity={0.34}
+            polygonOffset
+            polygonOffsetFactor={-2}
+            polygonOffsetUnits={-2}
+            side={THREE.DoubleSide}
+            transparent
+          />
+        </mesh>
+      ) : null}
+      {hoverEdgeGeometry ? (
+        <lineSegments geometry={hoverEdgeGeometry} raycast={() => null}>
+          <lineBasicMaterial color="#fb923c" transparent opacity={1} />
+        </lineSegments>
+      ) : null}
       {renderGeometry.showVertexMarkers
         ? cell.vertexIds.map((vertexId) => {
             const vertex = shape.vertices[vertexId];
 
-            return vertex ? <VertexMarker key={`${cell.id}:${vertex.id}`} vertex={vertex} /> : null;
+            return vertex ? (
+              <VertexMarker
+                key={`${cell.id}:${vertex.id}`}
+                vertex={vertex}
+                cellIsSelected={isSelected}
+                cellIsHovered={isHovered}
+                isDimmed={isDimmed}
+              />
+            ) : null;
           })
         : null}
     </group>
   );
 }
 
-function VertexMarker({ vertex }: { vertex: Vertex }) {
+function VertexMarker({
+  vertex,
+  cellIsSelected,
+  cellIsHovered,
+  isDimmed,
+}: {
+  vertex: Vertex;
+  cellIsSelected: boolean;
+  cellIsHovered: boolean;
+  isDimmed: boolean;
+}) {
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
-  const [isHovered, setIsHovered] = useState(false);
+  const hoverTarget = useGeometryStore((state) => state.hoverTarget);
+  const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
   const isSelected = selectedVertexId === vertex.id;
-  const scale = isSelected ? 1.35 : isHovered ? 1.18 : 1;
+  const isHovered = isVertexHoverTarget(hoverTarget, vertex.id);
+  const scale = isSelected ? 1.85 : isHovered ? 1.6 : cellIsSelected ? 1.32 : cellIsHovered ? 1.18 : 1;
+  const opacity = isDimmed && !isSelected && !isHovered ? 0.28 : 1;
+  const markerColor = isSelected
+    ? '#f59e0b'
+    : isHovered
+      ? '#facc15'
+      : cellIsSelected
+        ? '#fef3c7'
+        : vertex.data.color;
+  const emissiveColor = isSelected || isHovered ? '#92400e' : cellIsSelected ? '#78350f' : '#000000';
+  const emissiveIntensity = isSelected ? 0.85 : isHovered ? 0.7 : cellIsSelected ? 0.35 : 0;
 
   const handleClick = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
@@ -224,20 +289,22 @@ function VertexMarker({ vertex }: { vertex: Vertex }) {
       onClick={handleClick}
       onPointerEnter={(event) => {
         event.stopPropagation();
-        setIsHovered(true);
+        setHoverTarget({ kind: 'vertex', vertexId: vertex.id });
         document.body.style.cursor = 'pointer';
       }}
       onPointerLeave={() => {
-        setIsHovered(false);
+        setHoverTarget(null);
         document.body.style.cursor = 'auto';
       }}
     >
       <sphereGeometry args={[0.075, 24, 16]} />
       <meshStandardMaterial
-        color={isSelected ? '#f59e0b' : vertex.data.color}
-        emissive={isSelected ? '#92400e' : '#000000'}
-        emissiveIntensity={isSelected ? 0.55 : 0}
+        color={markerColor}
+        emissive={emissiveColor}
+        emissiveIntensity={emissiveIntensity}
+        opacity={opacity}
         roughness={0.45}
+        transparent={opacity < 1}
       />
     </mesh>
   );
@@ -372,6 +439,60 @@ function createEdgeGeometry(vertices: RenderVertex[], faces: RenderFace[]): THRE
   return geometry;
 }
 
+function createHoverFaceGeometry(
+  renderGeometry: CellRenderGeometry,
+  hoverTarget: InspectionHoverTarget | null,
+): THREE.BufferGeometry | null {
+  if (hoverTarget?.kind !== 'face') {
+    return null;
+  }
+
+  const face = renderGeometry.faces.find((candidate) => candidate.id === hoverTarget.faceId);
+
+  return face ? createFaceGeometry(renderGeometry.vertices, [face]) : null;
+}
+
+function createHoverEdgeGeometry(
+  renderGeometry: CellRenderGeometry,
+  hoverTarget: InspectionHoverTarget | null,
+): THREE.BufferGeometry | null {
+  if (hoverTarget?.kind !== 'edge') {
+    return null;
+  }
+
+  const [a, b] = hoverTarget.vertexIds;
+
+  if (!facesContainEdge(renderGeometry.faces, a, b)) {
+    return null;
+  }
+
+  const vertexById = new Map(renderGeometry.vertices.map((vertex) => [vertex.id, vertex]));
+  const vertexA = vertexById.get(a);
+  const vertexB = vertexById.get(b);
+
+  if (!vertexA || !vertexB) {
+    return null;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute([...vertexA.position, ...vertexB.position], 3),
+  );
+
+  return geometry;
+}
+
+function facesContainEdge(faces: RenderFace[], a: string, b: string): boolean {
+  return faces.some((face) =>
+    face.vertexIds.some((vertexId, index) => {
+      const nextVertexId = face.vertexIds[(index + 1) % face.vertexIds.length];
+
+      return (vertexId === a && nextVertexId === b) || (vertexId === b && nextVertexId === a);
+    }),
+  );
+}
+
 function facesForCell(shape: Shape, cell: Cell): Face[] {
   const faceIds = new Set(cell.faceIds);
 
@@ -496,10 +617,57 @@ function fallbackDirection(cellId: string): Vec3 {
   return normalizeVec3([Math.cos(angle), Math.sin(angle), z], [1, 0, 0]);
 }
 
+function isCellHoverTarget(target: InspectionHoverTarget | null, cellId: string): boolean {
+  return target?.kind === 'cell' && target.cellId === cellId;
+}
+
+function isVertexHoverTarget(target: InspectionHoverTarget | null, vertexId: string): boolean {
+  if (!target) {
+    return false;
+  }
+
+  if (target.kind === 'vertex') {
+    return target.vertexId === vertexId;
+  }
+
+  return target.kind === 'edge' && target.vertexIds.includes(vertexId);
+}
+
+function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): string {
+  if (!target) {
+    return 'Hover a cell or inspector row to preview correspondence';
+  }
+
+  if (target.kind === 'cell') {
+    const cell = shape.cells.find((candidate) => candidate.id === target.cellId);
+
+    return cell
+      ? `Hovering ${cell.kind} cell, generation ${cell.generationDepth}`
+      : 'Hovering cell';
+  }
+
+  if (target.kind === 'vertex') {
+    return `Hovering vertex ${shortenSceneId(target.vertexId)}`;
+  }
+
+  if (target.kind === 'edge') {
+    return `Hovering edge ${shortenSceneId(target.vertexIds[0])} - ${shortenSceneId(
+      target.vertexIds[1],
+    )}`;
+  }
+
+  return `Hovering face ${shortenSceneId(target.faceId)}`;
+}
+
+function shortenSceneId(id: string): string {
+  return id.length > 30 ? `${id.slice(0, 14)}...${id.slice(-8)}` : id;
+}
+
 function cellStyle(
   cell: Cell,
   isSelected: boolean,
   isHovered: boolean,
+  isDimmed: boolean,
   explodeAmount: number,
   mode: CellRenderGeometry['mode'],
 ) {
@@ -518,6 +686,15 @@ function cellStyle(
       faceOpacity: cell.kind === 'parent' ? 0.14 : 0.4,
       edgeColor: mode === 'dual-proxy' ? '#f5d0fe' : '#fef3c7',
       edgeOpacity: 0.98,
+    };
+  }
+
+  if (isDimmed) {
+    return {
+      faceColor: mode === 'dual-proxy' ? '#6d28d9' : '#57534e',
+      faceOpacity: 0.045,
+      edgeColor: mode === 'dual-proxy' ? '#c4b5fd' : '#a8a29e',
+      edgeOpacity: 0.14,
     };
   }
 
