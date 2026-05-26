@@ -30,7 +30,15 @@ type TopologyFilter =
   | 'other';
 
 type OperabilityFilter = 'all' | 'operable' | 'disabled';
-type RightSidebarTab = 'workspace' | 'selection' | 'history';
+type RightSidebarTab = 'workspace' | 'selection' | 'packets' | 'history';
+type PacketWorkbenchFilter =
+  | 'unresolved-generated'
+  | 'all'
+  | 'generated-midpoints'
+  | 'source'
+  | 'empty'
+  | 'named';
+type PacketStatus = 'named' | 'annotated' | 'empty' | 'lineage-only';
 
 interface WorkspaceCellRow {
   cell: Cell;
@@ -70,6 +78,18 @@ interface CellEdgeRow {
   secondaryLabel: string | null;
 }
 
+interface PacketWorkbenchRow {
+  vertex: Vertex;
+  displayLabel: string;
+  shortId: string;
+  role: string;
+  status: PacketStatus;
+  containingCellCount: number;
+  containingFaceCount: number;
+  generationDepth: number | null;
+  lineageSummary: string;
+}
+
 const topologyFilterOptions: Array<{ value: TopologyFilter; label: string }> = [
   { value: 'all', label: 'All' },
   { value: 'tetrahedron', label: 'tetrahedron' },
@@ -80,6 +100,15 @@ const topologyFilterOptions: Array<{ value: TopologyFilter; label: string }> = [
   { value: 'rhombicuboctahedron', label: 'rhombicuboctahedron' },
   { value: 'rectified-square-pyramid', label: 'rectified-square-pyramid' },
   { value: 'other', label: 'unknown/other' },
+];
+
+const packetFilterOptions: Array<{ value: PacketWorkbenchFilter; label: string }> = [
+  { value: 'unresolved-generated', label: 'Unresolved generated' },
+  { value: 'all', label: 'All vertices' },
+  { value: 'generated-midpoints', label: 'Generated midpoints' },
+  { value: 'source', label: 'Preserved/source' },
+  { value: 'empty', label: 'Empty / unresolved' },
+  { value: 'named', label: 'Named packets' },
 ];
 
 export function SeedSelector() {
@@ -328,8 +357,8 @@ export function RightSidebar() {
 
   return (
     <div className="flex h-full min-h-[440px] flex-col">
-      <div className="grid grid-cols-3 border-b border-stone-800 bg-neutral-950 p-2">
-        {(['workspace', 'selection', 'history'] as RightSidebarTab[]).map((tab) => (
+      <div className="grid grid-cols-4 border-b border-stone-800 bg-neutral-950 p-2">
+        {(['workspace', 'selection', 'packets', 'history'] as RightSidebarTab[]).map((tab) => (
           <button
             key={tab}
             type="button"
@@ -347,6 +376,7 @@ export function RightSidebar() {
       <div className="min-h-0 flex-1 overflow-y-auto">
         {activeTab === 'workspace' ? <WorkspacePanel /> : null}
         {activeTab === 'selection' ? <SelectionPanel /> : null}
+        {activeTab === 'packets' ? <PacketsPanel /> : null}
         {activeTab === 'history' ? <HistoryPanel /> : null}
       </div>
     </div>
@@ -630,6 +660,163 @@ function SelectionSubsection({
       </h3>
       <div className="mt-2">{children}</div>
     </div>
+  );
+}
+
+function PacketsPanel() {
+  const shape = useCurrentShape();
+  const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const selectVertex = useGeometryStore((state) => state.selectVertex);
+  const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
+  const [filter, setFilter] = useState<PacketWorkbenchFilter>('unresolved-generated');
+  const rows = useMemo(() => getPacketWorkbenchRows(shape), [shape]);
+  const filteredRows = useMemo(() => filterPacketRows(rows, filter), [filter, rows]);
+  const unresolvedRows = useMemo(
+    () => rows.filter(isUnresolvedGeneratedPacketRow),
+    [rows],
+  );
+  const selectedRow = selectedVertexId
+    ? rows.find((row) => row.vertex.id === selectedVertexId) ?? null
+    : null;
+  const selectedIndex = selectedRow
+    ? unresolvedRows.findIndex((row) => row.vertex.id === selectedRow.vertex.id)
+    : -1;
+
+  const selectUnresolved = (direction: 1 | -1) => {
+    const nextRow =
+      direction > 0
+        ? findNextUnresolvedVertex(unresolvedRows, selectedVertexId)
+        : findPreviousUnresolvedVertex(unresolvedRows, selectedVertexId);
+
+    if (nextRow) {
+      selectVertex(nextRow.vertex.id);
+    }
+  };
+
+  return (
+    <section className="grid gap-4 p-4">
+      <div>
+        <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+          Packet Workbench
+        </h2>
+        <p className="mt-2 text-sm leading-5 text-stone-400">
+          {unresolvedRows.length} unresolved generated midpoint packets
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => selectUnresolved(-1)}
+          disabled={!unresolvedRows.length}
+          className="h-9 rounded border border-stone-700 bg-stone-900 px-2 text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950 disabled:text-stone-600"
+        >
+          Previous unresolved
+        </button>
+        <button
+          type="button"
+          onClick={() => selectUnresolved(1)}
+          disabled={!unresolvedRows.length}
+          className="h-9 rounded border border-stone-700 bg-stone-900 px-2 text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950 disabled:text-stone-600"
+        >
+          Next unresolved
+        </button>
+      </div>
+      {unresolvedRows.length && selectedIndex >= 0 ? (
+        <p className="text-xs text-stone-500">
+          unresolved {selectedIndex + 1} of {unresolvedRows.length}
+        </p>
+      ) : null}
+
+      <label className="grid gap-1 text-xs text-stone-400">
+        Filter
+        <select
+          value={filter}
+          onChange={(event) => setFilter(event.target.value as PacketWorkbenchFilter)}
+          className="h-9 rounded border border-stone-700 bg-stone-950 px-2 text-xs text-stone-100 outline-none focus:border-teal-400"
+        >
+          {packetFilterOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="grid max-h-[calc(100vh-29rem)] gap-2 overflow-y-auto pr-1">
+        {filteredRows.length ? (
+          filteredRows.map((row) => (
+            <PacketWorkbenchRowButton
+              key={row.vertex.id}
+              row={row}
+              isSelected={row.vertex.id === selectedVertexId}
+              onSelect={() => selectVertex(row.vertex.id)}
+              onHover={(isHovered) =>
+                setHoverTarget(isHovered ? { kind: 'vertex', vertexId: row.vertex.id } : null)
+              }
+            />
+          ))
+        ) : (
+          <p className="rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm text-stone-500">
+            {filter === 'unresolved-generated'
+              ? 'no unresolved generated midpoint packets.'
+              : 'No vertex packets match the current filter.'}
+          </p>
+        )}
+      </div>
+
+      <div className="border-t border-stone-800 pt-4">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+          Edit Selected Packet
+        </h2>
+        <div className="mt-3">
+          <VertexPacketEditorContent />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PacketWorkbenchRowButton({
+  row,
+  isSelected,
+  onSelect,
+  onHover,
+}: {
+  row: PacketWorkbenchRow;
+  isSelected: boolean;
+  onSelect: () => void;
+  onHover: (isHovered: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      onPointerEnter={() => onHover(true)}
+      onPointerLeave={() => onHover(false)}
+      className={`rounded border px-3 py-2 text-left text-sm transition ${
+        isSelected
+          ? 'border-amber-300 bg-amber-300/10 text-amber-100'
+          : 'border-stone-800 bg-stone-950 text-stone-300 hover:border-stone-600'
+      }`}
+    >
+      <span className="flex items-start justify-between gap-2">
+        <span className="min-w-0">
+          <span className="block truncate text-stone-100">{row.displayLabel}</span>
+          <span className="mt-0.5 block truncate font-mono text-xs text-stone-500">
+            {row.shortId}
+          </span>
+        </span>
+        <span className={packetStatusClassName(row.status)}>{formatPacketStatus(row.status)}</span>
+      </span>
+      <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-500">
+        <span>{row.role}</span>
+        <span>{row.generationDepth === null ? 'g?' : `g${row.generationDepth}`}</span>
+        <span>{row.containingCellCount} cells</span>
+        <span>{row.containingFaceCount} faces</span>
+      </span>
+      <span className="mt-2 block truncate text-xs text-stone-500">{row.lineageSummary}</span>
+    </button>
   );
 }
 
@@ -1218,8 +1405,249 @@ function getCellFaceRows(shape: Shape, faces: Face[]): CellFaceRow[] {
   }));
 }
 
+function getPacketWorkbenchRows(shape: Shape): PacketWorkbenchRow[] {
+  return Object.values(shape.vertices)
+    .map((vertex) => {
+      const containingCells = getContainingCells(shape, vertex.id);
+      const containingFaces = getContainingFaces(shape, vertex.id);
+
+      return {
+        vertex,
+        displayLabel: getVertexDisplayLabel(shape, vertex.id),
+        shortId: shortenId(vertex.id),
+        role: getVertexRole(vertex),
+        status: getVertexPacketStatus(shape, vertex),
+        containingCellCount: containingCells.length,
+        containingFaceCount: containingFaces.length,
+        generationDepth: getVertexGenerationDepth(containingCells),
+        lineageSummary: formatVertexLineageSummary(shape, vertex),
+      };
+    })
+    .sort(comparePacketRows);
+}
+
+function filterPacketRows(
+  rows: PacketWorkbenchRow[],
+  filter: PacketWorkbenchFilter,
+): PacketWorkbenchRow[] {
+  if (filter === 'all') {
+    return rows;
+  }
+
+  if (filter === 'unresolved-generated') {
+    return rows.filter(isUnresolvedGeneratedPacketRow);
+  }
+
+  if (filter === 'generated-midpoints') {
+    return rows.filter((row) => isGeneratedMidpointVertex(row.vertex));
+  }
+
+  if (filter === 'source') {
+    return rows.filter((row) => row.role === 'seed/source' || row.role === 'preserved source');
+  }
+
+  if (filter === 'empty') {
+    return rows.filter((row) => row.status === 'empty' || row.status === 'lineage-only');
+  }
+
+  return rows.filter((row) => row.status === 'named');
+}
+
+function isUnresolvedGeneratedPacketRow(row: PacketWorkbenchRow): boolean {
+  return (
+    isGeneratedMidpointVertex(row.vertex) &&
+    (row.status === 'empty' || row.status === 'lineage-only')
+  );
+}
+
+function findNextUnresolvedVertex(
+  rows: PacketWorkbenchRow[],
+  currentVertexId: VertexId | null,
+): PacketWorkbenchRow | null {
+  if (!rows.length) {
+    return null;
+  }
+
+  const currentIndex = currentVertexId
+    ? rows.findIndex((row) => row.vertex.id === currentVertexId)
+    : -1;
+
+  return rows[(currentIndex + 1 + rows.length) % rows.length];
+}
+
+function findPreviousUnresolvedVertex(
+  rows: PacketWorkbenchRow[],
+  currentVertexId: VertexId | null,
+): PacketWorkbenchRow | null {
+  if (!rows.length) {
+    return null;
+  }
+
+  const currentIndex = currentVertexId
+    ? rows.findIndex((row) => row.vertex.id === currentVertexId)
+    : -1;
+  const nextIndex = currentIndex >= 0 ? currentIndex - 1 : rows.length - 1;
+
+  return rows[(nextIndex + rows.length) % rows.length];
+}
+
+function getContainingCells(shape: Shape, vertexId: VertexId): Cell[] {
+  return shape.cells.filter((cell) => cell.vertexIds.includes(vertexId));
+}
+
 function getContainingFaces(shape: Shape, vertexId: VertexId): Face[] {
   return shape.faces.filter((face) => face.vertexIds.includes(vertexId));
+}
+
+function getVertexRole(vertex: Vertex): string {
+  if (isGeneratedMidpointVertex(vertex)) {
+    return 'generated midpoint';
+  }
+
+  if (vertex.data.lineage?.inheritanceMode === 'preserved') {
+    return 'preserved source';
+  }
+
+  if (
+    vertex.createdBy.operation === 'seed' ||
+    vertex.data.lineage?.inheritanceMode === 'default'
+  ) {
+    return 'seed/source';
+  }
+
+  return 'unknown';
+}
+
+function getVertexPacketStatus(shape: Shape, vertex: Vertex): PacketStatus {
+  if (hasNamedPacketContent(shape, vertex)) {
+    return 'named';
+  }
+
+  if (hasAnnotatedPacketContent(vertex.data)) {
+    return 'annotated';
+  }
+
+  if (isGeneratedMidpointVertex(vertex) && vertex.data.lineage) {
+    return 'lineage-only';
+  }
+
+  return 'empty';
+}
+
+function hasNamedPacketContent(shape: Shape, vertex: Vertex): boolean {
+  return Boolean(
+    getPacketDataString(vertex.data.custom, 'title') ||
+      getPacketDataString(vertex.data.custom, 'name') ||
+      getUserAuthoredPacketLabel(shape, vertex),
+  );
+}
+
+function hasAnnotatedPacketContent(packet: VertexDataPacket): boolean {
+  return Boolean(
+    getFirstMeaningfulLine(packet.notes) ||
+      getPacketDataString(packet.custom, 'summary') ||
+      getPacketDataString(packet.custom, 'description') ||
+      getPacketDataString(packet.custom, 'body') ||
+      packet.tags.length,
+  );
+}
+
+function getUserAuthoredPacketLabel(shape: Shape, vertex: Vertex): string | null {
+  const label = getMeaningfulText(vertex.data.label);
+
+  if (!label) {
+    return null;
+  }
+
+  return isAutoGeneratedMidpointLabel(shape, vertex, label) ? null : label;
+}
+
+function isAutoGeneratedMidpointLabel(shape: Shape, vertex: Vertex, label: string): boolean {
+  if (!isGeneratedMidpointVertex(vertex) || vertex.createdBy.sourceVertexIds.length < 2) {
+    return false;
+  }
+
+  const sourceLabels = vertex.createdBy.sourceVertexIds
+    .slice(0, 2)
+    .map((vertexId) => getMeaningfulText(shape.vertices[vertexId]?.data.label))
+    .filter((sourceLabel): sourceLabel is string => Boolean(sourceLabel));
+
+  if (sourceLabels.length < 2) {
+    return false;
+  }
+
+  const [a, b] = sourceLabels;
+  const autoLabels = new Set([`${a}${b}`, `${b}${a}`, `${a}-${b}`, `${b}-${a}`]);
+
+  return autoLabels.has(label);
+}
+
+function isGeneratedMidpointVertex(vertex: Vertex): boolean {
+  return (
+    Boolean(vertex.createdBy.sourceEdgeId) ||
+    vertex.data.lineage?.inheritanceMode === 'derived-from-edge'
+  );
+}
+
+function getVertexGenerationDepth(containingCells: Cell[]): number | null {
+  if (!containingCells.length) {
+    return null;
+  }
+
+  return Math.min(...containingCells.map((cell) => cell.generationDepth));
+}
+
+function comparePacketRows(a: PacketWorkbenchRow, b: PacketWorkbenchRow): number {
+  return (
+    packetStatusSortOrder(a.status) - packetStatusSortOrder(b.status) ||
+    a.role.localeCompare(b.role) ||
+    (a.generationDepth ?? Number.MAX_SAFE_INTEGER) -
+      (b.generationDepth ?? Number.MAX_SAFE_INTEGER) ||
+    a.displayLabel.localeCompare(b.displayLabel) ||
+    a.vertex.id.localeCompare(b.vertex.id)
+  );
+}
+
+function packetStatusSortOrder(status: PacketStatus): number {
+  if (status === 'lineage-only') {
+    return 0;
+  }
+
+  if (status === 'empty') {
+    return 1;
+  }
+
+  if (status === 'annotated') {
+    return 2;
+  }
+
+  return 3;
+}
+
+function formatPacketStatus(status: PacketStatus): string {
+  if (status === 'lineage-only') {
+    return 'lineage-only';
+  }
+
+  return status;
+}
+
+function packetStatusClassName(status: PacketStatus): string {
+  const base = 'shrink-0 rounded border px-2 py-0.5 text-xs';
+
+  if (status === 'named') {
+    return `${base} border-emerald-400/40 bg-emerald-400/10 text-emerald-200`;
+  }
+
+  if (status === 'annotated') {
+    return `${base} border-cyan-400/40 bg-cyan-400/10 text-cyan-200`;
+  }
+
+  if (status === 'lineage-only') {
+    return `${base} border-amber-400/40 bg-amber-400/10 text-amber-200`;
+  }
+
+  return `${base} border-stone-700 bg-stone-900 text-stone-500`;
 }
 
 function inferCellVertexRole(cell: Cell, vertex: Vertex): string {
