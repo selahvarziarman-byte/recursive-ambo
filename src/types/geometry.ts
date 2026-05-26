@@ -7,13 +7,18 @@ export type FaceId = string;
 export type EdgeId = string;
 export type SeedKey = string;
 
-export type OperationKind = 'seed' | 'ambo' | 'ambo-dissection';
+export type OperationKind =
+  | 'seed'
+  | 'ambo'
+  | 'ambo-dissection'
+  | 'pyritohedral-diagonalization';
 export type CellKind = 'seed' | 'parent' | 'core' | 'residue';
 export type SeedTopology = 'tetrahedron' | 'octahedron' | 'cube';
 export type CellTopology =
   | SeedTopology
   | 'cuboctahedron'
   | 'rhombicuboctahedron'
+  | 'pyritohedral-icosahedron'
   | 'rectified-square-pyramid'
   | 'rectified-square-pyramid-ambo-core'
   | 'rectified-square-pyramid-ambo-core-ambo-core'
@@ -30,6 +35,7 @@ export type JsonValue =
 
 export type PacketData = Record<string, JsonValue>;
 export type PacketHostKind = 'vertex' | 'edge' | 'face' | 'cell';
+export type EdgeRole = 'boundary' | 'construction-diagonal';
 
 export type PacketInheritanceMode =
   | 'preserved'
@@ -79,6 +85,11 @@ export interface Edge {
   id: EdgeId;
   vertexIds: [VertexId, VertexId];
   sourceVertexIds: [VertexId, VertexId];
+  role?: EdgeRole;
+  sourceFaceId?: FaceId;
+  sourceCellId?: CellId;
+  lineage?: PacketLineage;
+  data?: PacketData;
 }
 
 export type FaceRole =
@@ -87,7 +98,9 @@ export type FaceRole =
   | 'ambo-face-from-vertex'
   | 'dissection-core-face'
   | 'dissection-residue-face'
-  | 'parent-cell-face';
+  | 'parent-cell-face'
+  | 'pyritohedral-preserved-face'
+  | 'pyritohedral-split-face';
 
 export interface Face {
   id: FaceId;
