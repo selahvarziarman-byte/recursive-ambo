@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createSeedShape } from '../data/seeds';
+import { isCellActiveFrontier } from '../lib/cellLifecycle';
 import { getOperation } from '../operations/registry';
 import type {
   Cell,
@@ -252,8 +253,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       selectedCellId,
       selectedCell,
     };
+    const targetCell = selectedCell ?? currentShape.cells.find((cell) => cell.kind === 'seed') ?? null;
 
-    if (!operation.canApply(context)) {
+    if (!targetCell || !isCellActiveFrontier(currentShape, targetCell.id) || !operation.canApply(context)) {
       return;
     }
 
@@ -263,7 +265,6 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       : [...shapeOrder, nextShape.id];
     const latestGeneration = nextShape.generations[nextShape.generations.length - 1];
     const historySequence = state.historySequence + 1;
-    const targetCell = selectedCell ?? currentShape.cells.find((cell) => cell.kind === 'seed') ?? null;
     const entry = createHistoryEntry({
       id: makeHistoryEntryId(historySequence),
       label: operation.label,

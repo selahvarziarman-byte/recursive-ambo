@@ -1,4 +1,5 @@
 import { applyAmboDissection, canApplyAmboDissection } from '../lib/ambo';
+import { isCellActiveFrontier, isExpandedOrHistoricalCell } from '../lib/cellLifecycle';
 import type { Cell } from '../types/geometry';
 import type { GeometryOperation, OperationContext } from './types';
 
@@ -15,18 +16,35 @@ export const amboDissectionOperation: GeometryOperation = {
     { cellKind: 'core', topology: 'octahedron' },
     { cellKind: 'core', topology: 'cuboctahedron' },
   ],
-  canApply: (context) => canApplyAmboDissection(context.shape, context.selectedCellId),
+  canApply: (context) => {
+    const targetCell = getTargetCell(context);
+
+    return Boolean(
+      targetCell &&
+        isCellActiveFrontier(context.shape, targetCell.id) &&
+        canApplyAmboDissection(context.shape, targetCell.id),
+    );
+  },
   getDisabledReason: (context) => {
     if (hasMissingSelection(context)) {
       return 'Selected cell is no longer in the current workspace.';
     }
 
-    if (canApplyAmboDissection(context.shape, context.selectedCellId)) {
+    const { selectedCell } = context;
+    const targetCell = getTargetCell(context);
+
+    if (targetCell && isExpandedOrHistoricalCell(context.shape, targetCell)) {
+      return 'Cell has already been expanded.';
+    }
+
+    if (
+      targetCell &&
+      isCellActiveFrontier(context.shape, targetCell.id) &&
+      canApplyAmboDissection(context.shape, targetCell.id)
+    ) {
       return null;
     }
 
-    const { selectedCell } = context;
-    const targetCell = getTargetCell(context);
     const targetTopology = targetCell ? describeTargetTopology(targetCell) : null;
 
     if (targetTopology === 'cube') {

@@ -1,8 +1,20 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { seedRegistry } from '../data/seeds';
+import {
+  getCellChildCount,
+  getCellLifecycleStatus,
+  getCellLifecycleStatusLabel,
+  isCellActiveFrontier,
+  type CellLifecycleStatus,
+} from '../lib/cellLifecycle';
 import { isDualViewSupportedCell } from '../lib/dualView';
 import { defaultOperation } from '../operations/registry';
 import { formatVec3 } from '../lib/shape';
+import {
+  getTopologyFrontierRows,
+  type CellTopologySignature,
+  type TopologyFrontierGroup,
+} from '../lib/topologySignature';
 import { type OperationHistoryEntry, useGeometryStore } from '../store/geometryStore';
 import type {
   Cell,
@@ -50,6 +62,7 @@ interface WorkspaceCellRow {
   parentCellId: string | null;
   parentKnown: boolean;
   childCount: number;
+  lifecycleStatus: CellLifecycleStatus;
   isOperable: boolean;
   disabledReason: string | null;
 }
@@ -385,8 +398,9 @@ export function RightSidebar() {
 
 function WorkspacePanel() {
   return (
-    <section className="p-4">
+    <section className="grid gap-4 p-4">
       <WorkspaceTopologyContent />
+      <AmboSupportFrontier />
     </section>
   );
 }
@@ -502,6 +516,10 @@ function SelectedCellSummary({
         <dd className="text-right text-stone-200">{row.kind}</dd>
         <dt className="text-stone-500">Generation</dt>
         <dd className="text-right text-stone-200">{row.generationDepth}</dd>
+        <dt className="text-stone-500">Lifecycle</dt>
+        <dd className="text-right text-stone-200">
+          {getCellLifecycleStatusLabel(row.lifecycleStatus)}
+        </dd>
         <dt className="text-stone-500">Children</dt>
         <dd className="text-right text-stone-200">{row.childCount}</dd>
         <dt className="text-stone-500">Faces</dt>
@@ -1013,6 +1031,7 @@ function WorkspaceCellTreeRow({
 }) {
   const children = childrenByParent.get(row.id) ?? [];
   const isSelected = row.id === selectedCellId;
+  const isExpanded = row.lifecycleStatus !== 'active';
 
   return (
     <div className="grid gap-2">
@@ -1024,6 +1043,8 @@ function WorkspaceCellTreeRow({
         className={`rounded border py-2 pr-3 text-left text-sm transition ${
           isSelected
             ? 'border-amber-300 bg-amber-300/10 text-amber-100'
+            : isExpanded
+              ? 'border-stone-900 bg-stone-950/50 text-stone-500 hover:border-stone-700'
             : 'border-stone-800 bg-stone-950 text-stone-300 hover:border-stone-600'
         }`}
       >
@@ -1038,15 +1059,18 @@ function WorkspaceCellTreeRow({
             className={`shrink-0 rounded border px-2 py-0.5 text-xs ${
               row.isOperable
                 ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200'
+                : isExpanded
+                  ? 'border-amber-400/30 bg-amber-400/10 text-amber-200'
                 : 'border-stone-700 bg-stone-900 text-stone-500'
             }`}
             title={row.disabledReason ?? 'Ambo Dissection available'}
           >
-            {row.isOperable ? 'Operable' : 'Disabled'}
+            {row.isOperable ? 'Operable' : getCellLifecycleStatusLabel(row.lifecycleStatus)}
           </span>
         </span>
         <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-500">
           <span>{row.kind}</span>
+          <span>{getCellLifecycleStatusLabel(row.lifecycleStatus)}</span>
           <span>g{row.generationDepth}</span>
           <span>{row.childCount} children</span>
         </span>
@@ -1064,6 +1088,182 @@ function WorkspaceCellTreeRow({
           onSelect={onSelect}
         />
       ))}
+    </div>
+  );
+}
+
+function AmboSupportFrontier() {
+  const shape = useCurrentShape();
+  const selectCell = useGeometryStore((state) => state.selectCell);
+  const groups = useMemo(() => getTopologyFrontierRows(shape), [shape]);
+
+  return (
+    <div className="border-t border-stone-800 pt-4">
+      <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+        Ambo Support Frontier
+      </h2>
+      <div className="mt-3 grid gap-2">
+        {groups.map((group) => (
+          <AmboSupportFrontierRow
+            key={group.topology}
+            group={group}
+            shape={shape}
+            onSelectCell={selectCell}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AmboSupportFrontierRow({
+  group,
+  shape,
+  onSelectCell,
+}: {
+  group: TopologyFrontierGroup;
+  shape: Shape;
+  onSelectCell: (cellId: string | null) => void;
+}) {
+  const activeCells = group.cells.filter((cell) => isCellActiveFrontier(shape, cell.id));
+  const expandedCount = group.cells.length - activeCells.length;
+  const operationStatuses = activeCells.map((cell) => {
+    const context = { shape, selectedCellId: cell.id, selectedCell: cell };
+    const enabled = defaultOperation.canApply(context);
+
+    return {
+      enabled,
+      reason: enabled ? null : defaultOperation.getDisabledReason(context),
+    };
+  });
+  const enabledCount = operationStatuses.filter((status) => status.enabled).length;
+  const disabledActiveCount = activeCells.length - enabledCount;
+  const disabledReasons = Array.from(
+    new Set(
+      operationStatuses
+        .map((status) => status.reason)
+        .filter((reason): reason is string => Boolean(reason)),
+    ),
+  );
+  const signature = group.representative;
+  const readinessClassName =
+    signature.readinessStatus === 'enabled'
+      ? 'text-emerald-200'
+      : signature.readinessStatus.startsWith('blocked')
+        ? 'text-rose-200'
+        : 'text-amber-200';
+
+  return (
+    <details className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-sm">
+      <summary className="cursor-pointer list-none">
+        <span className="flex items-start justify-between gap-3">
+          <span className="min-w-0">
+            <span className="block truncate font-medium text-stone-100">{group.topology}</span>
+            <span className="mt-1 block text-xs text-stone-500">
+              {activeCells.length} active
+              {expandedCount ? `, ${expandedCount} expanded` : ''} -{' '}
+              {formatAmboStatus(enabledCount, activeCells.length)}
+            </span>
+          </span>
+          <span
+            className={`shrink-0 rounded border px-2 py-0.5 text-xs ${
+              enabledCount
+                ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200'
+                : 'border-stone-700 bg-stone-900 text-stone-500'
+            }`}
+          >
+            {activeCells.length ? (enabledCount ? 'enabled' : 'disabled') : 'historical'}
+          </span>
+        </span>
+        <span className="mt-2 block truncate text-xs text-stone-500">
+          {formatCompactSignature(signature)}
+          {group.signaturesVary ? ' - mixed signatures' : ''}
+        </span>
+        <span className={`mt-1 block truncate text-xs ${readinessClassName}`}>
+          {signature.readinessStatus}
+        </span>
+      </summary>
+
+      <div className="mt-3 grid gap-3 border-t border-stone-800 pt-3 text-xs">
+        {expandedCount ? (
+          <div className="rounded border border-stone-800 bg-stone-900/60 px-2 py-2 text-stone-400">
+            <span className="block text-stone-500">Lifecycle</span>
+            <span className="mt-1 block leading-5">
+              {activeCells.length} active frontier, {expandedCount} expanded/historical
+            </span>
+          </div>
+        ) : null}
+
+        {disabledReasons.length || (!activeCells.length && expandedCount) ? (
+          <div className="rounded border border-stone-800 bg-stone-900/60 px-2 py-2 text-stone-400">
+            <span className="block text-stone-500">Disabled reason</span>
+            <span className="mt-1 block leading-5">
+              {disabledReasons[0] ?? 'Cell has already been expanded.'}
+            </span>
+            {disabledReasons.length > 1 ? (
+              <span className="mt-1 block text-stone-600">
+                + {disabledReasons.length - 1} more reason
+                {disabledReasons.length === 2 ? '' : 's'}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+
+        <dl className="grid grid-cols-3 gap-2">
+          <MetricBox label="Vertices" value={signature.vertexCount} />
+          <MetricBox label="Edges" value={signature.edgeCount} />
+          <MetricBox label="Faces" value={signature.faceCount} />
+        </dl>
+        <dl className="grid grid-cols-2 gap-2">
+          <MetricBox label="Active disabled" value={disabledActiveCount} />
+          <MetricBox label="Expanded" value={expandedCount} />
+        </dl>
+
+        <dl className="grid gap-1 text-stone-400">
+          <dt className="text-stone-500">Face sizes</dt>
+          <dd>{formatHistogram(signature.faceSizeHistogram)}</dd>
+          <dt className="text-stone-500">Vertex degrees</dt>
+          <dd>{formatHistogram(signature.vertexDegreeHistogram)}</dd>
+          <dt className="text-stone-500">Generic readiness</dt>
+          <dd>{formatReadinessDetails(signature)}</dd>
+        </dl>
+
+        {signature.preview ? (
+          <div className="rounded border border-stone-800 bg-stone-900/60 px-2 py-2 text-stone-400">
+            <span className="block text-stone-500">Analytical output preview</span>
+            <span className="mt-1 block leading-5">
+              {signature.preview.midpointVertexCount} midpoint vertices,{' '}
+              {signature.preview.residueCellCount} residues,{' '}
+              {signature.preview.totalCoreFaceCount} core faces
+            </span>
+            <span className="mt-1 block leading-5">
+              core faces: {signature.preview.coreSourceFaceFaceCount} from faces +{' '}
+              {signature.preview.coreSourceVertexFaceCount} from vertices
+            </span>
+            <span className="mt-1 block leading-5">
+              residues: {signature.preview.residueTypes.join(', ')}
+            </span>
+            <span className="mt-1 block leading-5">{signature.preview.coreClassification}</span>
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={() => onSelectCell(group.cells[0]?.id ?? null)}
+          className="h-8 rounded border border-stone-700 bg-stone-900 px-2 text-xs text-stone-200 transition hover:border-stone-500 hover:bg-stone-800"
+        >
+          Select representative cell
+        </button>
+      </div>
+    </details>
+  );
+}
+
+function MetricBox({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded border border-stone-800 bg-stone-900/60 px-2 py-2">
+      <dt className="text-stone-500">{label}</dt>
+      <dd className="mt-1 text-stone-200">{value}</dd>
     </div>
   );
 }
@@ -1698,16 +1898,6 @@ function canonicalVertexPairKey(a: VertexId, b: VertexId): string {
 
 function getWorkspaceCellRows(shape: Shape): WorkspaceCellRow[] {
   const cellIds = new Set(shape.cells.map((cell) => cell.id));
-  const childCounts = shape.cells.reduce<Record<string, number>>((counts, cell) => {
-    if (!cell.parentCellId) {
-      return counts;
-    }
-
-    return {
-      ...counts,
-      [cell.parentCellId]: (counts[cell.parentCellId] ?? 0) + 1,
-    };
-  }, {});
 
   return [...shape.cells]
     .sort(compareCellsForBrowser)
@@ -1718,6 +1908,7 @@ function getWorkspaceCellRows(shape: Shape): WorkspaceCellRow[] {
         selectedCell: cell,
       };
       const isOperable = defaultOperation.canApply(operationContext);
+      const lifecycleStatus = getCellLifecycleStatus(shape, cell.id);
 
       return {
         cell,
@@ -1728,7 +1919,8 @@ function getWorkspaceCellRows(shape: Shape): WorkspaceCellRow[] {
         generationDepth: cell.generationDepth,
         parentCellId: cell.parentCellId,
         parentKnown: Boolean(cell.parentCellId && cellIds.has(cell.parentCellId)),
-        childCount: childCounts[cell.id] ?? 0,
+        childCount: getCellChildCount(shape, cell.id),
+        lifecycleStatus,
         isOperable,
         disabledReason: isOperable ? null : defaultOperation.getDisabledReason(operationContext),
       };
@@ -1806,6 +1998,48 @@ function matchesOperabilityFilter(row: WorkspaceCellRow, filter: OperabilityFilt
 
 function shortenId(id: string): string {
   return id.length > 34 ? `${id.slice(0, 18)}...${id.slice(-10)}` : id;
+}
+
+function formatAmboStatus(enabledCount: number, totalCount: number): string {
+  if (totalCount === 0) {
+    return 'no active frontier';
+  }
+
+  if (enabledCount === totalCount) {
+    return 'Ambo enabled';
+  }
+
+  if (enabledCount === 0) {
+    return 'Ambo disabled';
+  }
+
+  return `Ambo enabled for ${enabledCount} of ${totalCount}`;
+}
+
+function formatCompactSignature(signature: CellTopologySignature): string {
+  return `${signature.vertexCount}V ${signature.edgeCount}E ${signature.faceCount}F`;
+}
+
+function formatReadinessDetails(signature: CellTopologySignature): string {
+  if (!signature.readinessProblems.length) {
+    return [
+      signature.hasOrderedFaces ? 'ordered faces' : 'faces unavailable',
+      signature.hasValidDerivedEdges ? 'derived edges' : 'edges unavailable',
+      signature.hasValidVertexIncidentRings ? 'valid incident rings' : 'rings unavailable',
+    ].join(', ');
+  }
+
+  return signature.readinessProblems.join('; ');
+}
+
+function formatHistogram(histogramValue: Record<number, number>): string {
+  const entries = Object.entries(histogramValue).sort(([a], [b]) => Number(a) - Number(b));
+
+  if (!entries.length) {
+    return 'none';
+  }
+
+  return entries.map(([size, count]) => `${size}:${count}`).join(' ');
 }
 
 function getPacketDisplayLabel(packet: VertexDataPacket): string | null {
