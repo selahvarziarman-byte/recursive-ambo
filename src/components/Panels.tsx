@@ -8,7 +8,7 @@ import {
   type CellLifecycleStatus,
 } from '../lib/cellLifecycle';
 import { isDualViewSupportedCell } from '../lib/dualView';
-import { defaultOperation } from '../operations/registry';
+import { defaultOperation, registeredOperations } from '../operations/registry';
 import { formatVec3 } from '../lib/shape';
 import {
   getTopologyFrontierRows,
@@ -36,6 +36,7 @@ type TopologyFilter =
   | 'octahedron'
   | 'cube'
   | 'cuboctahedron'
+  | 'pyritohedral-icosahedron'
   | 'square-pyramid'
   | 'rhombicuboctahedron'
   | 'rectified-square-pyramid'
@@ -90,6 +91,7 @@ interface CellEdgeRow {
   vertexIds: [VertexId, VertexId];
   displayLabel: string;
   secondaryLabel: string | null;
+  roleLabel: string | null;
 }
 
 interface PacketWorkbenchRow {
@@ -110,6 +112,7 @@ const topologyFilterOptions: Array<{ value: TopologyFilter; label: string }> = [
   { value: 'octahedron', label: 'octahedron' },
   { value: 'cube', label: 'cube' },
   { value: 'cuboctahedron', label: 'cuboctahedron' },
+  { value: 'pyritohedral-icosahedron', label: 'pyritohedral-icosahedron' },
   { value: 'square-pyramid', label: 'square-pyramid' },
   { value: 'rhombicuboctahedron', label: 'rhombicuboctahedron' },
   { value: 'rectified-square-pyramid', label: 'rectified-square-pyramid' },
@@ -170,25 +173,45 @@ export function OperationControls() {
   const resetViewLayout = useGeometryStore((state) => state.resetViewLayout);
   const shape = useCurrentShape();
   const selectedCell = findCell(shape, selectedCellId);
-  const operation = defaultOperation;
   const operationContext = { shape, selectedCellId, selectedCell };
-  const canApply = operation.canApply(operationContext);
+  const operationRows = registeredOperations.map((operation) => {
+    const canApply = operation.canApply(operationContext);
+
+    return {
+      operation,
+      canApply,
+      status:
+        operation.getStatusMessage?.(operationContext) ??
+        operation.getDisabledReason(operationContext) ??
+        operation.description,
+    };
+  });
+  const availableOperationRows = operationRows.filter((row) => row.canApply);
+  const visibleOperationRows = availableOperationRows.length
+    ? availableOperationRows
+    : operationRows.filter((row) => row.operation.id === defaultOperation.id);
+  const primaryOperationRow = visibleOperationRows[0] ?? operationRows[0];
   const cellCounts = countCellsByKind(shape);
   const operationStatus =
-    operation.getStatusMessage?.(operationContext) ??
-    operation.getDisabledReason(operationContext) ??
-    operation.description;
+    availableOperationRows.length > 1
+      ? `${availableOperationRows.length} operations are available for the selected cell.`
+      : primaryOperationRow?.status;
 
   return (
     <Panel title="Operation Controls">
-      <button
-        type="button"
-        onClick={() => applyOperationToSelection(operation.id)}
-        disabled={!canApply}
-        className="h-10 w-full rounded border border-amber-500/70 bg-amber-400 px-3 text-sm font-semibold text-stone-950 transition hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
-      >
-        Apply {operation.label}
-      </button>
+      <div className="grid gap-2">
+        {visibleOperationRows.map(({ operation, canApply }) => (
+          <button
+            key={operation.id}
+            type="button"
+            onClick={() => applyOperationToSelection(operation.id)}
+            disabled={!canApply}
+            className="h-10 w-full rounded border border-amber-500/70 bg-amber-400 px-3 text-sm font-semibold text-stone-950 transition hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
+          >
+            Apply {operation.label}
+          </button>
+        ))}
+      </div>
       <p className="mt-3 text-sm leading-5 text-stone-400">{operationStatus}</p>
       <button
         type="button"
@@ -652,7 +675,14 @@ function CellComposition({
               className="rounded border border-stone-900 bg-stone-950/70 px-2 py-1 text-xs text-stone-400"
               title={edge.vertexIds.join(' - ')}
             >
-              <span className="block truncate text-stone-300">{edge.displayLabel}</span>
+              <span className="flex items-center justify-between gap-2">
+                <span className="min-w-0 truncate text-stone-300">{edge.displayLabel}</span>
+                {edge.roleLabel ? (
+                  <span className="shrink-0 rounded border border-rose-400/40 bg-rose-400/10 px-1.5 py-0.5 text-[10px] text-rose-200">
+                    {edge.roleLabel}
+                  </span>
+                ) : null}
+              </span>
               {edge.secondaryLabel ? (
                 <span className="mt-0.5 block truncate font-mono text-[11px] text-stone-600">
                   {edge.secondaryLabel}
@@ -1558,19 +1588,27 @@ function getCellFaces(shape: Shape, cell: Cell): Face[] {
 
 function getCellEdges(shape: Shape, cell: Cell): CellEdgeRow[] {
   const edges = new Map<string, CellEdgeRow>();
+  const shapeEdgesByKey = new Map(
+    shape.edges.map((edge) => [canonicalVertexPairKey(...edge.vertexIds), edge]),
+  );
 
   for (const face of getCellFaces(shape, cell)) {
     for (let index = 0; index < face.vertexIds.length; index += 1) {
       const a = face.vertexIds[index];
       const b = face.vertexIds[(index + 1) % face.vertexIds.length];
       const key = canonicalVertexPairKey(a, b);
+      const edge = shapeEdgesByKey.get(key);
+      const isConstructionDiagonal = edge?.role === 'construction-diagonal';
 
       if (!edges.has(key)) {
         edges.set(key, {
           id: key,
           vertexIds: [a, b],
           displayLabel: formatEdgeRef(shape, [a, b]),
-          secondaryLabel: `${shortenId(a)} - ${shortenId(b)}`,
+          secondaryLabel: edge?.sourceFaceId
+            ? `${shortenId(a)} - ${shortenId(b)} | source face ${shortenId(edge.sourceFaceId)}`
+            : `${shortenId(a)} - ${shortenId(b)}`,
+          roleLabel: isConstructionDiagonal ? 'construction' : null,
         });
       }
     }

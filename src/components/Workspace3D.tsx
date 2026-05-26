@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 import { buildDualViewProxy } from '../lib/dualView';
 import { type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
-import type { Cell, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
+import type { Cell, Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
 
 export function Workspace3D() {
   const shape = useGeometryStore((state) => state.shapes[state.currentShapeId]);
@@ -147,7 +147,21 @@ function CellMesh({
     [renderGeometry],
   );
   const edgeGeometry = useMemo(
-    () => createEdgeGeometry(renderGeometry.vertices, renderGeometry.faces),
+    () =>
+      createEdgeGeometry(
+        renderGeometry.vertices,
+        renderGeometry.edges,
+        (edge) => edge.role !== 'construction-diagonal',
+      ),
+    [renderGeometry],
+  );
+  const constructionDiagonalGeometry = useMemo(
+    () =>
+      createEdgeGeometry(
+        renderGeometry.vertices,
+        renderGeometry.edges,
+        (edge) => edge.role === 'construction-diagonal',
+      ),
     [renderGeometry],
   );
   const hoverFaceGeometry = useMemo(
@@ -211,9 +225,16 @@ function CellMesh({
           transparent
         />
       </mesh>
-      <lineSegments geometry={edgeGeometry} raycast={() => null}>
-        <lineBasicMaterial color={style.edgeColor} transparent opacity={style.edgeOpacity} />
-      </lineSegments>
+      {edgeGeometry ? (
+        <lineSegments geometry={edgeGeometry} raycast={() => null}>
+          <lineBasicMaterial color={style.edgeColor} transparent opacity={style.edgeOpacity} />
+        </lineSegments>
+      ) : null}
+      {constructionDiagonalGeometry ? (
+        <lineSegments geometry={constructionDiagonalGeometry} raycast={() => null}>
+          <lineBasicMaterial color="#fb7185" transparent opacity={Math.max(style.edgeOpacity, 0.92)} />
+        </lineSegments>
+      ) : null}
       {hoverFaceGeometry ? (
         <mesh geometry={hoverFaceGeometry} raycast={() => null}>
           <meshBasicMaterial
@@ -332,9 +353,15 @@ interface RenderFace {
   vertexIds: string[];
 }
 
+interface RenderEdge {
+  vertexIds: [string, string];
+  role?: Edge['role'];
+}
+
 interface CellRenderGeometry {
   vertices: RenderVertex[];
   faces: RenderFace[];
+  edges: RenderEdge[];
   mode: 'original' | 'dual-proxy' | 'dual-unsupported';
   showVertexMarkers: boolean;
 }
@@ -351,6 +378,7 @@ function createCellRenderGeometry(
       return {
         vertices: dualProxy.vertices,
         faces: dualProxy.faces,
+        edges: edgesForRenderFaces(dualProxy.faces),
         mode: 'dual-proxy',
         showVertexMarkers: false,
       };
@@ -367,15 +395,18 @@ function createCellRenderGeometry(
 }
 
 function createOriginalRenderGeometry(shape: Shape, cell: Cell): CellRenderGeometry {
+  const faces = facesForCell(shape, cell).map((face) => ({
+    id: face.id,
+    vertexIds: face.vertexIds,
+  }));
+
   return {
     vertices: Object.values(shape.vertices).map((vertex) => ({
       id: vertex.id,
       position: vertex.position,
     })),
-    faces: facesForCell(shape, cell).map((face) => ({
-      id: face.id,
-      vertexIds: face.vertexIds,
-    })),
+    faces,
+    edges: edgesForCell(shape, faces),
     mode: 'original',
     showVertexMarkers: true,
   };
@@ -420,35 +451,67 @@ function createFaceGeometry(vertices: RenderVertex[], faces: RenderFace[]): THRE
   return geometry;
 }
 
-function createEdgeGeometry(vertices: RenderVertex[], faces: RenderFace[]): THREE.BufferGeometry {
+function createEdgeGeometry(
+  vertices: RenderVertex[],
+  edges: RenderEdge[],
+  includeEdge: (edge: RenderEdge) => boolean,
+): THREE.BufferGeometry | null {
   const geometry = new THREE.BufferGeometry();
   const positions: number[] = [];
-  const edgeKeys = new Set<string>();
   const vertexById = new Map(vertices.map((vertex) => [vertex.id, vertex]));
 
-  for (const face of faces) {
-    for (let index = 0; index < face.vertexIds.length; index += 1) {
-      const a = face.vertexIds[index];
-      const b = face.vertexIds[(index + 1) % face.vertexIds.length];
-      const key = [a, b].sort().join('|');
-
-      if (edgeKeys.has(key)) {
-        continue;
-      }
-
-      edgeKeys.add(key);
-      const vertexA = vertexById.get(a);
-      const vertexB = vertexById.get(b);
-
-      if (vertexA && vertexB) {
-        positions.push(...vertexA.position, ...vertexB.position);
-      }
+  for (const edge of edges) {
+    if (!includeEdge(edge)) {
+      continue;
     }
+
+    const [a, b] = edge.vertexIds;
+    const vertexA = vertexById.get(a);
+    const vertexB = vertexById.get(b);
+
+    if (vertexA && vertexB) {
+      positions.push(...vertexA.position, ...vertexB.position);
+    }
+  }
+
+  if (!positions.length) {
+    return null;
   }
 
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
 
   return geometry;
+}
+
+function edgesForCell(shape: Shape, faces: RenderFace[]): RenderEdge[] {
+  const shapeEdgesByKey = new Map(shape.edges.map((edge) => [renderEdgeKey(edge.vertexIds), edge]));
+
+  return edgesForRenderFaces(faces).map((edge) => ({
+    ...edge,
+    role: shapeEdgesByKey.get(renderEdgeKey(edge.vertexIds))?.role,
+  }));
+}
+
+function edgesForRenderFaces(faces: RenderFace[]): RenderEdge[] {
+  const edges = new Map<string, RenderEdge>();
+
+  for (const face of faces) {
+    for (let index = 0; index < face.vertexIds.length; index += 1) {
+      const a = face.vertexIds[index];
+      const b = face.vertexIds[(index + 1) % face.vertexIds.length];
+      const key = renderEdgeKey([a, b]);
+
+      if (!edges.has(key)) {
+        edges.set(key, { vertexIds: [a, b] });
+      }
+    }
+  }
+
+  return Array.from(edges.values());
+}
+
+function renderEdgeKey([a, b]: [string, string]): string {
+  return [a, b].sort().join('|');
 }
 
 function createHoverFaceGeometry(

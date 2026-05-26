@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "diagnose:ambo": "node scripts/diagnose-ambo.cjs",
+    "diagnose:pyritohedral": "node scripts/diagnose-pyritohedral.cjs",
     "preview": "vite preview"
   },
   "dependencies": {

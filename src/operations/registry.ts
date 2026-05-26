@@ -1,7 +1,11 @@
 import { amboDissectionOperation } from './amboDissectionOperation';
+import { pyritohedralDiagonalizationOperation } from './pyritohedralDiagonalizationOperation';
 import type { GeometryOperation } from './types';
 
-export const registeredOperations: GeometryOperation[] = [amboDissectionOperation];
+export const registeredOperations: GeometryOperation[] = [
+  amboDissectionOperation,
+  pyritohedralDiagonalizationOperation,
+];
 
 export const operationRegistry: Record<string, GeometryOperation> = Object.fromEntries(
   registeredOperations.map((operation) => [operation.id, operation]),
