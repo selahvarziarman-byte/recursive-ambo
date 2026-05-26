@@ -359,6 +359,7 @@ function isCurrentlyEnabledTopology(topology: string): boolean {
     'cube',
     'cuboctahedron',
     'square-pyramid',
+    'rectified-square-pyramid',
   ].includes(topology);
 }
 
@@ -381,10 +382,32 @@ function getGenericAmboPreview(
     coreSourceVertexFaceCount: cell.vertexIds.length,
     totalCoreFaceCount: faceCount + cell.vertexIds.length,
     residueTypes,
-    coreClassification: isCurrentlyEnabledTopology(cell.topology ?? '')
-      ? 'classified by current Ambo support'
-      : 'core topology classification missing',
+    coreClassification: getExpectedCoreClassification(cell.topology ?? 'unknown'),
   };
+}
+
+function getExpectedCoreClassification(sourceTopology: string): string {
+  if (sourceTopology === 'tetrahedron') {
+    return 'core topology: octahedron';
+  }
+
+  if (sourceTopology === 'octahedron' || sourceTopology === 'cube') {
+    return 'core topology: cuboctahedron';
+  }
+
+  if (sourceTopology === 'cuboctahedron') {
+    return 'core topology: rhombicuboctahedron';
+  }
+
+  if (sourceTopology === 'square-pyramid') {
+    return 'core topology: rectified-square-pyramid';
+  }
+
+  if (sourceTopology === 'rectified-square-pyramid') {
+    return 'core topology: rectified-square-pyramid-ambo-core';
+  }
+
+  return 'core topology classification missing';
 }
 
 function residueTypeForDegree(degree: number): string {

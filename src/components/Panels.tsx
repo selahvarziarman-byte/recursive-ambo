@@ -39,6 +39,7 @@ type TopologyFilter =
   | 'square-pyramid'
   | 'rhombicuboctahedron'
   | 'rectified-square-pyramid'
+  | 'rectified-square-pyramid-ambo-core'
   | 'other';
 
 type OperabilityFilter = 'all' | 'operable' | 'disabled';
@@ -112,6 +113,10 @@ const topologyFilterOptions: Array<{ value: TopologyFilter; label: string }> = [
   { value: 'square-pyramid', label: 'square-pyramid' },
   { value: 'rhombicuboctahedron', label: 'rhombicuboctahedron' },
   { value: 'rectified-square-pyramid', label: 'rectified-square-pyramid' },
+  {
+    value: 'rectified-square-pyramid-ambo-core',
+    label: 'rectified-square-pyramid-ambo-core',
+  },
   { value: 'other', label: 'unknown/other' },
 ];
 

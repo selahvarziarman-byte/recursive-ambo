@@ -33,7 +33,8 @@ type SupportedAmboTopology =
   | 'octahedron'
   | 'cube'
   | 'cuboctahedron'
-  | 'square-pyramid';
+  | 'square-pyramid'
+  | 'rectified-square-pyramid';
 
 interface CellWithFaces extends Cell {
   faces: Face[];
@@ -66,7 +67,7 @@ export function applyAmboDissection(parent: Shape, targetCellId?: string | null)
 
   if (!topology) {
     throw new Error(
-      'Ambo dissection currently supports tetrahedron, octahedron, cube, cuboctahedron, and square-pyramid cells.',
+      'Ambo dissection currently supports tetrahedron, octahedron, cube, cuboctahedron, square-pyramid, and rectified-square-pyramid cells.',
     );
   }
 
@@ -217,8 +218,10 @@ function classifySupportedSourceTopology(
   cell: Cell,
 ): SupportedAmboTopology | null {
   const faces = getCellFaces(shape, cell);
-  const edgeCount = getCellEdgeMap(shape, faces).size;
+  const edgeMap = getCellEdgeMap(shape, faces);
+  const edgeCount = edgeMap.size;
   const faceSizes = faces.map((face) => face.vertexIds.length);
+  const vertexDegrees = degreeSequence(cell.vertexIds, Array.from(edgeMap.values()));
   const isTetrahedronGeometry =
     cell.vertexIds.length === 4 &&
     faces.length === 4 &&
@@ -246,6 +249,13 @@ function classifySupportedSourceTopology(
     edgeCount === 8 &&
     countFaceSizes(faceSizes, 3) === 4 &&
     countFaceSizes(faceSizes, 4) === 1;
+  const isRectifiedSquarePyramidGeometry =
+    cell.vertexIds.length === 8 &&
+    faces.length === 10 &&
+    edgeCount === 16 &&
+    countFaceSizes(faceSizes, 3) === 8 &&
+    countFaceSizes(faceSizes, 4) === 2 &&
+    countFaceSizes(vertexDegrees, 4) === 8;
 
   if (
     isTetrahedronGeometry &&
@@ -271,6 +281,10 @@ function classifySupportedSourceTopology(
 
   if (isSquarePyramidGeometry && cell.topology === 'square-pyramid') {
     return 'square-pyramid';
+  }
+
+  if (isRectifiedSquarePyramidGeometry && cell.topology === 'rectified-square-pyramid') {
+    return 'rectified-square-pyramid';
   }
 
   return null;
@@ -368,11 +382,27 @@ function hasValidVertexRings(topology: SourceTopology): boolean {
 }
 
 function getExpectedVertexRingSize(sourceTopology: SupportedAmboTopology): number {
-  return sourceTopology === 'octahedron' || sourceTopology === 'cuboctahedron' ? 4 : 3;
+  return sourceTopology === 'octahedron' ||
+    sourceTopology === 'cuboctahedron' ||
+    sourceTopology === 'rectified-square-pyramid'
+    ? 4
+    : 3;
 }
 
 function countFaceSizes(faceSizes: number[], targetSize: number): number {
   return faceSizes.filter((size) => size === targetSize).length;
+}
+
+function degreeSequence(vertexIds: VertexId[], edges: Edge[]): number[] {
+  const degrees = new Map(vertexIds.map((vertexId) => [vertexId, 0]));
+
+  for (const edge of edges) {
+    const [a, b] = edge.vertexIds;
+    degrees.set(a, (degrees.get(a) ?? 0) + 1);
+    degrees.set(b, (degrees.get(b) ?? 0) + 1);
+  }
+
+  return vertexIds.map((vertexId) => degrees.get(vertexId) ?? 0);
 }
 
 function cloneParentVertices(vertices: Record<VertexId, Vertex>): Record<VertexId, Vertex> {
@@ -513,6 +543,10 @@ function getCoreTopology(sourceTopology: SupportedAmboTopology): CellTopology {
     return 'rhombicuboctahedron';
   }
 
+  if (sourceTopology === 'rectified-square-pyramid') {
+    return 'rectified-square-pyramid-ambo-core';
+  }
+
   return 'cuboctahedron';
 }
 
@@ -524,7 +558,11 @@ function getResidueTopology(
     return sourceVertexDegree === 4 ? 'square-pyramid' : 'tetrahedron';
   }
 
-  if (sourceTopology === 'octahedron' || sourceTopology === 'cuboctahedron') {
+  if (
+    sourceTopology === 'octahedron' ||
+    sourceTopology === 'cuboctahedron' ||
+    sourceTopology === 'rectified-square-pyramid'
+  ) {
     return 'square-pyramid';
   }
 

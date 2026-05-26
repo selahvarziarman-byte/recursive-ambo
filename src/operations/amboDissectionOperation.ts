@@ -6,7 +6,7 @@ import type { GeometryOperation, OperationContext } from './types';
 export const amboDissectionOperation: GeometryOperation = {
   id: 'ambo-dissection',
   label: 'Ambo Dissection',
-  description: 'Dissect supported tetrahedron, octahedron, cube, cuboctahedron, and square-pyramid cells.',
+  description: 'Dissect supported tetrahedron, octahedron, cube, cuboctahedron, square-pyramid, and rectified-square-pyramid cells.',
   supportedTargets: [
     { cellKind: 'seed', topology: 'tetrahedron' },
     { cellKind: 'seed', topology: 'octahedron' },
@@ -15,6 +15,7 @@ export const amboDissectionOperation: GeometryOperation = {
     { cellKind: 'residue', topology: 'square-pyramid' },
     { cellKind: 'core', topology: 'octahedron' },
     { cellKind: 'core', topology: 'cuboctahedron' },
+    { cellKind: 'core', topology: 'rectified-square-pyramid' },
   ],
   canApply: (context) => {
     const targetCell = getTargetCell(context);
@@ -60,7 +61,11 @@ export const amboDissectionOperation: GeometryOperation = {
     }
 
     if (targetTopology === 'rectified-square-pyramid') {
-      return 'Ambo Dissection for rectified-square-pyramid is not enabled yet.';
+      return 'Selected rectified-square-pyramid does not have valid ordered topology for Ambo Dissection.';
+    }
+
+    if (targetTopology === 'rectified-square-pyramid-ambo-core') {
+      return 'Ambo Dissection for rectified-square-pyramid-ambo-core is not enabled yet.';
     }
 
     if (targetTopology === 'square-pyramid') {
@@ -144,6 +149,10 @@ function describeTargetTopology(cell: Cell): string | null {
 
   if (cell.kind === 'residue' && cell.vertexIds.length === 5) {
     return 'square-pyramid';
+  }
+
+  if (cell.kind === 'core' && cell.vertexIds.length === 16) {
+    return 'rectified-square-pyramid-ambo-core';
   }
 
   return null;

@@ -85,6 +85,7 @@ function Polyhedron({
     () => computeCellDisplayOffsets(shape, explodeAmount),
     [explodeAmount, shape],
   );
+  const vertexGenerations = useMemo(() => getVertexGenerations(shape), [shape]);
 
   return (
     <group>
@@ -98,6 +99,7 @@ function Polyhedron({
           isDimmed={isolateSelectedCell && Boolean(selectedCellId) && cell.id !== selectedCellId}
           hoverTarget={hoverTarget}
           onHoverTarget={onHoverTarget}
+          vertexGenerations={vertexGenerations}
           displayOffset={displayOffsets.get(cell.id) ?? [0, 0, 0]}
           explodeAmount={explodeAmount}
           dualViewEnabled={dualViewEnabled}
@@ -116,6 +118,7 @@ function CellMesh({
   isDimmed,
   hoverTarget,
   onHoverTarget,
+  vertexGenerations,
   displayOffset,
   explodeAmount,
   dualViewEnabled,
@@ -128,6 +131,7 @@ function CellMesh({
   isDimmed: boolean;
   hoverTarget: InspectionHoverTarget | null;
   onHoverTarget: (target: InspectionHoverTarget | null) => void;
+  vertexGenerations: Map<VertexId, number>;
   displayOffset: Vec3;
   explodeAmount: number;
   dualViewEnabled: boolean;
@@ -237,6 +241,7 @@ function CellMesh({
               <VertexMarker
                 key={`${cell.id}:${vertex.id}`}
                 vertex={vertex}
+                vertexGeneration={vertexGenerations.get(vertex.id) ?? 0}
                 cellIsSelected={isSelected}
                 cellIsHovered={isHovered}
                 isDimmed={isDimmed}
@@ -250,11 +255,13 @@ function CellMesh({
 
 function VertexMarker({
   vertex,
+  vertexGeneration,
   cellIsSelected,
   cellIsHovered,
   isDimmed,
 }: {
   vertex: Vertex;
+  vertexGeneration: number;
   cellIsSelected: boolean;
   cellIsHovered: boolean;
   isDimmed: boolean;
@@ -265,7 +272,12 @@ function VertexMarker({
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
   const isSelected = selectedVertexId === vertex.id;
   const isHovered = isVertexHoverTarget(hoverTarget, vertex.id);
-  const scale = isSelected ? 1.85 : isHovered ? 1.6 : cellIsSelected ? 1.32 : cellIsHovered ? 1.18 : 1;
+  const scale = getVertexMarkerScale(vertexGeneration, {
+    isSelected,
+    isHovered,
+    cellIsSelected,
+    cellIsHovered,
+  });
   const opacity = isDimmed && !isSelected && !isHovered ? 0.28 : 1;
   const markerColor = isSelected
     ? '#f59e0b'
@@ -491,6 +503,131 @@ function facesContainEdge(faces: RenderFace[], a: string, b: string): boolean {
       return (vertexId === a && nextVertexId === b) || (vertexId === b && nextVertexId === a);
     }),
   );
+}
+
+function getVertexGenerations(shape: Shape): Map<VertexId, number> {
+  const cache = new Map<VertexId, number>();
+  const visiting = new Set<VertexId>();
+  const fallbackGenerations = getContainingCellGenerationFallbacks(shape);
+
+  const resolveGeneration = (vertexId: VertexId): number => {
+    const cached = cache.get(vertexId);
+
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    if (visiting.has(vertexId)) {
+      return fallbackGenerations.get(vertexId) ?? 0;
+    }
+
+    const vertex = shape.vertices[vertexId];
+
+    if (!vertex) {
+      return fallbackGenerations.get(vertexId) ?? 0;
+    }
+
+    if (vertex.createdBy.operation === 'seed') {
+      cache.set(vertexId, 0);
+      return 0;
+    }
+
+    visiting.add(vertexId);
+
+    const sourceVertexIds = getVertexSourceIds(vertex);
+    const sourceGenerations = sourceVertexIds
+      .filter((sourceVertexId) => sourceVertexId !== vertexId && shape.vertices[sourceVertexId])
+      .map(resolveGeneration);
+    const generation = sourceGenerations.length
+      ? Math.max(...sourceGenerations) + 1
+      : fallbackGenerations.get(vertexId) ?? 0;
+
+    visiting.delete(vertexId);
+    cache.set(vertexId, generation);
+
+    return generation;
+  };
+
+  Object.keys(shape.vertices).forEach((vertexId) => resolveGeneration(vertexId));
+
+  return cache;
+}
+
+function getVertexSourceIds(vertex: Vertex): VertexId[] {
+  if (vertex.createdBy.sourceVertexIds.length) {
+    return vertex.createdBy.sourceVertexIds;
+  }
+
+  return (
+    vertex.data.lineage?.sources
+      .filter((source) => source.kind === 'vertex')
+      .map((source) => source.id) ?? []
+  );
+}
+
+function getContainingCellGenerationFallbacks(shape: Shape): Map<VertexId, number> {
+  const generations = new Map<VertexId, number>();
+
+  for (const cell of shape.cells) {
+    for (const vertexId of cell.vertexIds) {
+      const existing = generations.get(vertexId);
+
+      if (existing === undefined || cell.generationDepth < existing) {
+        generations.set(vertexId, cell.generationDepth);
+      }
+    }
+  }
+
+  return generations;
+}
+
+function getVertexMarkerScale(
+  generation: number,
+  {
+    isSelected,
+    isHovered,
+    cellIsSelected,
+    cellIsHovered,
+  }: {
+    isSelected: boolean;
+    isHovered: boolean;
+    cellIsSelected: boolean;
+    cellIsHovered: boolean;
+  },
+): number {
+  const baseScale = getVertexGenerationScale(generation);
+  const emphasisScale = isSelected
+    ? 1.8
+    : isHovered
+      ? 1.45
+      : cellIsSelected
+        ? 1.18
+        : cellIsHovered
+          ? 1.1
+          : 1;
+  const minimumScale = isSelected ? 0.72 : isHovered ? 0.58 : 0;
+
+  return Math.max(baseScale * emphasisScale, minimumScale);
+}
+
+function getVertexGenerationScale(generation: number): number {
+  if (generation <= 0) {
+    return 1;
+  }
+
+  if (generation === 1) {
+    return 0.75;
+  }
+
+  if (generation === 2) {
+    return 0.56;
+  }
+
+  if (generation === 3) {
+    return 0.42;
+  }
+
+  return 0.34;
 }
 
 function facesForCell(shape: Shape, cell: Cell): Face[] {
