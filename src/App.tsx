@@ -1,10 +1,7 @@
 import {
-  GenealogyViewer,
-  ObjectInspector,
   OperationControls,
+  RightSidebar,
   SeedSelector,
-  VertexDataPacketEditor,
-  WorkspaceTopologyBrowser,
 } from './components/Panels';
 import { Workspace3D } from './components/Workspace3D';
 
@@ -29,10 +26,7 @@ export default function App() {
         </section>
 
         <aside className="border-t border-stone-800 bg-stone-950 lg:border-l lg:border-t-0">
-          <ObjectInspector />
-          <WorkspaceTopologyBrowser />
-          <GenealogyViewer />
-          <VertexDataPacketEditor />
+          <RightSidebar />
         </aside>
       </main>
     </div>
