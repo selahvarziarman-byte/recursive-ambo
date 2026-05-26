@@ -1,4 +1,6 @@
 import type { Cell, Face, Shape, Vec3, Vertex } from '../types/geometry';
+import { isCellActiveFrontier } from './cellLifecycle';
+import { buildSemanticDualModel, type SemanticDualModel } from './dualization';
 import { stableHash } from './ids';
 import { getCellFaces, getCellVertices, getFaceVertices } from './shape';
 
@@ -30,6 +32,11 @@ export interface DualViewProxy {
   vertices: DualViewVertex[];
   faces: DualViewFace[];
 }
+
+export type DualUniverseViewModel =
+  | { kind: 'legacy-proxy'; proxy: DualViewProxy }
+  | { kind: 'semantic-model'; semanticModel: SemanticDualModel }
+  | { kind: 'unsupported'; reason: string };
 
 interface DualVertexEntry {
   face: Face;
@@ -65,6 +72,36 @@ export function describeDualViewTopology(shape: Shape, cell: Cell): DualViewDesc
 
 export function isDualViewSupportedCell(shape: Shape, cell: Cell): boolean {
   return Boolean(describeDualViewTopology(shape, cell).dual);
+}
+
+export function buildDualUniverseViewModel(shape: Shape, cell: Cell): DualUniverseViewModel {
+  if (isSemanticDualUniverseSource(shape, cell)) {
+    try {
+      return {
+        kind: 'semantic-model',
+        semanticModel: buildSemanticDualModel(shape, cell.id),
+      };
+    } catch {
+      return {
+        kind: 'unsupported',
+        reason: 'Semantic Dual Universe could not build a valid dodecahedron counterpart for this cell.',
+      };
+    }
+  }
+
+  const proxy = buildDualViewProxy(shape, cell);
+
+  if (proxy) {
+    return {
+      kind: 'legacy-proxy',
+      proxy,
+    };
+  }
+
+  return {
+    kind: 'unsupported',
+    reason: getDualUniverseUnsupportedReason(shape, cell),
+  };
 }
 
 export function buildDualViewProxy(shape: Shape, cell: Cell): DualViewProxy | null {
@@ -105,6 +142,28 @@ export function buildDualViewProxy(shape: Shape, cell: Cell): DualViewProxy | nu
     vertices: sourceFaces.map((face) => getDualVertex(dualVertexByFaceId, face.id).vertex),
     faces,
   };
+}
+
+function isSemanticDualUniverseSource(shape: Shape, cell: Cell): boolean {
+  return (
+    cell.kind === 'core' &&
+    cell.topology === 'pyritohedral-icosahedron' &&
+    isCellActiveFrontier(shape, cell.id)
+  );
+}
+
+function getDualUniverseUnsupportedReason(shape: Shape, cell: Cell): string {
+  if (cell.kind === 'core' && cell.topology === 'pyritohedral-icosahedron') {
+    return 'Semantic Dual Universe is available only for active pyritohedral-icosahedron core cells.';
+  }
+
+  const topology = describeDualViewTopology(shape, cell);
+
+  if (topology.source !== 'unknown') {
+    return `Dual Universe is not available for ${topology.source}.`;
+  }
+
+  return 'Dual Universe is not available for this cell topology.';
 }
 
 function createDualFace(

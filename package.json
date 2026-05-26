@@ -10,6 +10,7 @@
     "diagnose:pyritohedral": "node scripts/diagnose-pyritohedral.cjs",
     "diagnose:dualization": "node scripts/diagnose-dualization.cjs",
     "diagnose:dual-universe": "node scripts/diagnose-dual-universe.cjs",
+    "diagnose:dual-view": "node scripts/diagnose-dual-view.cjs",
     "preview": "vite preview"
   },
   "dependencies": {
