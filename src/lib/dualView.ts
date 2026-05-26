@@ -1,4 +1,4 @@
-import type { Cell, Face, Shape, Vec3, Vertex } from '../types/geometry';
+import type { Cell, Edge, Face, Shape, Vec3, Vertex } from '../types/geometry';
 import { isCellActiveFrontier } from './cellLifecycle';
 import { buildSemanticDualModel, type SemanticDualModel } from './dualization';
 import { stableHash } from './ids';
@@ -37,6 +37,47 @@ export type DualUniverseViewModel =
   | { kind: 'legacy-proxy'; proxy: DualViewProxy }
   | { kind: 'semantic-model'; semanticModel: SemanticDualModel }
   | { kind: 'unsupported'; reason: string };
+
+export interface DualUniverseRenderVertex {
+  id: string;
+  position: Vec3;
+}
+
+export interface DualUniverseRenderFace {
+  id: string;
+  vertexIds: string[];
+}
+
+export interface DualUniverseRenderEdge {
+  id?: string;
+  vertexIds: [string, string];
+  role?: Edge['role'];
+  sourceEdgeId?: string;
+  sourceCellId?: string;
+}
+
+export type DualUniverseRenderGeometry =
+  | {
+      kind: 'legacy-proxy';
+      topology: DualViewSupportedTopology;
+      vertices: DualUniverseRenderVertex[];
+      faces: DualUniverseRenderFace[];
+      edges: DualUniverseRenderEdge[];
+      viewModel: Extract<DualUniverseViewModel, { kind: 'legacy-proxy' }>;
+    }
+  | {
+      kind: 'semantic-model';
+      topology: 'dodecahedron';
+      vertices: DualUniverseRenderVertex[];
+      faces: DualUniverseRenderFace[];
+      edges: DualUniverseRenderEdge[];
+      viewModel: Extract<DualUniverseViewModel, { kind: 'semantic-model' }>;
+    }
+  | {
+      kind: 'unsupported';
+      reason: string;
+      viewModel: Extract<DualUniverseViewModel, { kind: 'unsupported' }>;
+    };
 
 interface DualVertexEntry {
   face: Face;
@@ -104,6 +145,57 @@ export function buildDualUniverseViewModel(shape: Shape, cell: Cell): DualUniver
   };
 }
 
+export function buildDualUniverseRenderGeometry(
+  shape: Shape,
+  cell: Cell,
+): DualUniverseRenderGeometry {
+  return projectDualUniverseViewModelToRenderGeometry(buildDualUniverseViewModel(shape, cell));
+}
+
+export function projectDualUniverseViewModelToRenderGeometry(
+  viewModel: DualUniverseViewModel,
+): DualUniverseRenderGeometry {
+  if (viewModel.kind === 'legacy-proxy') {
+    return {
+      kind: 'legacy-proxy',
+      topology: viewModel.proxy.topology,
+      vertices: viewModel.proxy.vertices,
+      faces: viewModel.proxy.faces,
+      edges: edgesForDualViewFaces(viewModel.proxy.faces),
+      viewModel,
+    };
+  }
+
+  if (viewModel.kind === 'semantic-model') {
+    return {
+      kind: 'semantic-model',
+      topology: 'dodecahedron',
+      vertices: Object.values(viewModel.semanticModel.dualVertices).map((vertex) => ({
+        id: vertex.id,
+        position: vertex.position,
+      })),
+      faces: viewModel.semanticModel.dualFaces.map((face) => ({
+        id: face.id,
+        vertexIds: face.vertexIds,
+      })),
+      edges: viewModel.semanticModel.dualEdges.map((edge) => ({
+        id: edge.id,
+        vertexIds: edge.vertexIds,
+        role: edge.role,
+        sourceEdgeId: edge.sourceEdgeId,
+        sourceCellId: edge.sourceCellId,
+      })),
+      viewModel,
+    };
+  }
+
+  return {
+    kind: 'unsupported',
+    reason: viewModel.reason,
+    viewModel,
+  };
+}
+
 export function buildDualViewProxy(shape: Shape, cell: Cell): DualViewProxy | null {
   const topology = describeDualViewTopology(shape, cell);
 
@@ -142,6 +234,24 @@ export function buildDualViewProxy(shape: Shape, cell: Cell): DualViewProxy | nu
     vertices: sourceFaces.map((face) => getDualVertex(dualVertexByFaceId, face.id).vertex),
     faces,
   };
+}
+
+function edgesForDualViewFaces(faces: DualUniverseRenderFace[]): DualUniverseRenderEdge[] {
+  const edges = new Map<string, DualUniverseRenderEdge>();
+
+  for (const face of faces) {
+    for (let index = 0; index < face.vertexIds.length; index += 1) {
+      const a = face.vertexIds[index];
+      const b = face.vertexIds[(index + 1) % face.vertexIds.length];
+      const key = [a, b].sort().join('|');
+
+      if (!edges.has(key)) {
+        edges.set(key, { vertexIds: [a, b] });
+      }
+    }
+  }
+
+  return Array.from(edges.values());
 }
 
 function isSemanticDualUniverseSource(shape: Shape, cell: Cell): boolean {

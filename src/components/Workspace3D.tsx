@@ -2,7 +2,10 @@ import { OrbitControls } from '@react-three/drei';
 import { Canvas, type ThreeEvent } from '@react-three/fiber';
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import { buildDualViewProxy } from '../lib/dualView';
+import {
+  buildDualUniverseRenderGeometry,
+  type DualUniverseRenderGeometry,
+} from '../lib/dualView';
 import { type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
 import type { Cell, Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
 
@@ -354,8 +357,11 @@ interface RenderFace {
 }
 
 interface RenderEdge {
+  id?: string;
   vertexIds: [string, string];
   role?: Edge['role'];
+  sourceEdgeId?: Edge['sourceEdgeId'];
+  sourceCellId?: Edge['sourceCellId'];
 }
 
 interface CellRenderGeometry {
@@ -363,7 +369,9 @@ interface CellRenderGeometry {
   faces: RenderFace[];
   edges: RenderEdge[];
   mode: 'original' | 'dual-proxy' | 'dual-unsupported';
+  topology?: string;
   showVertexMarkers: boolean;
+  dualUniverse?: DualUniverseRenderGeometry;
 }
 
 function createCellRenderGeometry(
@@ -372,15 +380,20 @@ function createCellRenderGeometry(
   dualViewEnabled: boolean,
 ): CellRenderGeometry {
   if (dualViewEnabled) {
-    const dualProxy = buildDualViewProxy(shape, cell);
+    const dualRenderGeometry = buildDualUniverseRenderGeometry(shape, cell);
 
-    if (dualProxy) {
+    if (
+      dualRenderGeometry.kind === 'legacy-proxy' ||
+      dualRenderGeometry.kind === 'semantic-model'
+    ) {
       return {
-        vertices: dualProxy.vertices,
-        faces: dualProxy.faces,
-        edges: edgesForRenderFaces(dualProxy.faces),
+        vertices: dualRenderGeometry.vertices,
+        faces: dualRenderGeometry.faces,
+        edges: dualRenderGeometry.edges,
         mode: 'dual-proxy',
+        topology: dualRenderGeometry.topology,
         showVertexMarkers: false,
+        dualUniverse: dualRenderGeometry,
       };
     }
 
@@ -388,6 +401,7 @@ function createCellRenderGeometry(
       ...createOriginalRenderGeometry(shape, cell),
       mode: 'dual-unsupported',
       showVertexMarkers: false,
+      dualUniverse: dualRenderGeometry,
     };
   }
 
