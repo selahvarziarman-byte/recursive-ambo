@@ -16,6 +16,7 @@ export type CellTopology =
   | 'rhombicuboctahedron'
   | 'rectified-square-pyramid'
   | 'rectified-square-pyramid-ambo-core'
+  | 'rectified-square-pyramid-ambo-core-ambo-core'
   | 'square-pyramid'
   | 'unknown';
 

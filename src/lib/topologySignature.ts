@@ -360,6 +360,7 @@ function isCurrentlyEnabledTopology(topology: string): boolean {
     'cuboctahedron',
     'square-pyramid',
     'rectified-square-pyramid',
+    'rectified-square-pyramid-ambo-core',
   ].includes(topology);
 }
 
@@ -405,6 +406,10 @@ function getExpectedCoreClassification(sourceTopology: string): string {
 
   if (sourceTopology === 'rectified-square-pyramid') {
     return 'core topology: rectified-square-pyramid-ambo-core';
+  }
+
+  if (sourceTopology === 'rectified-square-pyramid-ambo-core') {
+    return 'core topology: rectified-square-pyramid-ambo-core-ambo-core';
   }
 
   return 'core topology classification missing';

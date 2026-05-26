@@ -34,7 +34,8 @@ type SupportedAmboTopology =
   | 'cube'
   | 'cuboctahedron'
   | 'square-pyramid'
-  | 'rectified-square-pyramid';
+  | 'rectified-square-pyramid'
+  | 'rectified-square-pyramid-ambo-core';
 
 interface CellWithFaces extends Cell {
   faces: Face[];
@@ -67,7 +68,7 @@ export function applyAmboDissection(parent: Shape, targetCellId?: string | null)
 
   if (!topology) {
     throw new Error(
-      'Ambo dissection currently supports tetrahedron, octahedron, cube, cuboctahedron, square-pyramid, and rectified-square-pyramid cells.',
+      'Ambo dissection currently supports tetrahedron, octahedron, cube, cuboctahedron, square-pyramid, rectified-square-pyramid, and rectified-square-pyramid-ambo-core cells.',
     );
   }
 
@@ -256,6 +257,13 @@ function classifySupportedSourceTopology(
     countFaceSizes(faceSizes, 3) === 8 &&
     countFaceSizes(faceSizes, 4) === 2 &&
     countFaceSizes(vertexDegrees, 4) === 8;
+  const isRectifiedSquarePyramidAmboCoreGeometry =
+    cell.vertexIds.length === 16 &&
+    faces.length === 18 &&
+    edgeCount === 32 &&
+    countFaceSizes(faceSizes, 3) === 8 &&
+    countFaceSizes(faceSizes, 4) === 10 &&
+    countFaceSizes(vertexDegrees, 4) === 16;
 
   if (
     isTetrahedronGeometry &&
@@ -285,6 +293,13 @@ function classifySupportedSourceTopology(
 
   if (isRectifiedSquarePyramidGeometry && cell.topology === 'rectified-square-pyramid') {
     return 'rectified-square-pyramid';
+  }
+
+  if (
+    isRectifiedSquarePyramidAmboCoreGeometry &&
+    cell.topology === 'rectified-square-pyramid-ambo-core'
+  ) {
+    return 'rectified-square-pyramid-ambo-core';
   }
 
   return null;
@@ -384,7 +399,8 @@ function hasValidVertexRings(topology: SourceTopology): boolean {
 function getExpectedVertexRingSize(sourceTopology: SupportedAmboTopology): number {
   return sourceTopology === 'octahedron' ||
     sourceTopology === 'cuboctahedron' ||
-    sourceTopology === 'rectified-square-pyramid'
+    sourceTopology === 'rectified-square-pyramid' ||
+    sourceTopology === 'rectified-square-pyramid-ambo-core'
     ? 4
     : 3;
 }
@@ -547,6 +563,10 @@ function getCoreTopology(sourceTopology: SupportedAmboTopology): CellTopology {
     return 'rectified-square-pyramid-ambo-core';
   }
 
+  if (sourceTopology === 'rectified-square-pyramid-ambo-core') {
+    return 'rectified-square-pyramid-ambo-core-ambo-core';
+  }
+
   return 'cuboctahedron';
 }
 
@@ -561,7 +581,8 @@ function getResidueTopology(
   if (
     sourceTopology === 'octahedron' ||
     sourceTopology === 'cuboctahedron' ||
-    sourceTopology === 'rectified-square-pyramid'
+    sourceTopology === 'rectified-square-pyramid' ||
+    sourceTopology === 'rectified-square-pyramid-ambo-core'
   ) {
     return 'square-pyramid';
   }

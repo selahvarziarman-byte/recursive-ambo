@@ -6,7 +6,7 @@ import type { GeometryOperation, OperationContext } from './types';
 export const amboDissectionOperation: GeometryOperation = {
   id: 'ambo-dissection',
   label: 'Ambo Dissection',
-  description: 'Dissect supported tetrahedron, octahedron, cube, cuboctahedron, square-pyramid, and rectified-square-pyramid cells.',
+  description: 'Dissect supported tetrahedron, octahedron, cube, cuboctahedron, square-pyramid, rectified-square-pyramid, and rectified-square-pyramid-ambo-core cells.',
   supportedTargets: [
     { cellKind: 'seed', topology: 'tetrahedron' },
     { cellKind: 'seed', topology: 'octahedron' },
@@ -16,6 +16,7 @@ export const amboDissectionOperation: GeometryOperation = {
     { cellKind: 'core', topology: 'octahedron' },
     { cellKind: 'core', topology: 'cuboctahedron' },
     { cellKind: 'core', topology: 'rectified-square-pyramid' },
+    { cellKind: 'core', topology: 'rectified-square-pyramid-ambo-core' },
   ],
   canApply: (context) => {
     const targetCell = getTargetCell(context);
@@ -65,7 +66,7 @@ export const amboDissectionOperation: GeometryOperation = {
     }
 
     if (targetTopology === 'rectified-square-pyramid-ambo-core') {
-      return 'Ambo Dissection for rectified-square-pyramid-ambo-core is not enabled yet.';
+      return 'Selected rectified-square-pyramid-ambo-core does not have valid ordered topology for Ambo Dissection.';
     }
 
     if (targetTopology === 'square-pyramid') {
