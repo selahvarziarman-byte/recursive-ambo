@@ -5,12 +5,13 @@ import type { GeometryOperation, OperationContext } from './types';
 export const amboDissectionOperation: GeometryOperation = {
   id: 'ambo-dissection',
   label: 'Ambo Dissection',
-  description: 'Dissect supported tetrahedron, octahedron, cube, and cuboctahedron cells.',
+  description: 'Dissect supported tetrahedron, octahedron, cube, cuboctahedron, and square-pyramid cells.',
   supportedTargets: [
     { cellKind: 'seed', topology: 'tetrahedron' },
     { cellKind: 'seed', topology: 'octahedron' },
     { cellKind: 'seed', topology: 'cube' },
     { cellKind: 'residue', topology: 'tetrahedron' },
+    { cellKind: 'residue', topology: 'square-pyramid' },
     { cellKind: 'core', topology: 'octahedron' },
     { cellKind: 'core', topology: 'cuboctahedron' },
   ],
@@ -40,8 +41,12 @@ export const amboDissectionOperation: GeometryOperation = {
       return 'Ambo Dissection for rhombicuboctahedron is not enabled yet.';
     }
 
+    if (targetTopology === 'rectified-square-pyramid') {
+      return 'Ambo Dissection for rectified-square-pyramid is not enabled yet.';
+    }
+
     if (targetTopology === 'square-pyramid') {
-      return 'Square-pyramid dissection is not implemented yet.';
+      return 'Selected square-pyramid does not have valid ordered topology for Ambo Dissection.';
     }
 
     if (selectedCell?.kind === 'core') {
@@ -52,7 +57,7 @@ export const amboDissectionOperation: GeometryOperation = {
 
     if (selectedCell?.kind === 'residue') {
       return selectedCell.vertexIds.length === 5
-        ? 'Square-pyramid dissection is not implemented yet.'
+        ? 'Selected square-pyramid does not have valid ordered topology for Ambo Dissection.'
         : 'Selected residue cell is not a supported tetrahedron.';
     }
 
@@ -74,7 +79,7 @@ export const amboDissectionOperation: GeometryOperation = {
     }
 
     if (context.selectedCell?.kind === 'residue') {
-      return 'Ready to dissect selected residue tetrahedron.';
+      return `Ready to dissect selected ${describeTargetTopology(context.selectedCell) ?? 'residue'} residue.`;
     }
 
     const targetCell = getTargetCell(context);

@@ -14,6 +14,7 @@ export type CellTopology =
   | SeedTopology
   | 'cuboctahedron'
   | 'rhombicuboctahedron'
+  | 'rectified-square-pyramid'
   | 'square-pyramid'
   | 'unknown';
 
