@@ -24,6 +24,7 @@ export function Workspace3D() {
   const isolateSelectedCell = useGeometryStore((state) => state.viewLayout.isolateSelectedCell);
   const hoverTarget = useGeometryStore((state) => state.hoverTarget);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
+  const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
   const selectCell = useGeometryStore((state) => state.selectCell);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
@@ -41,10 +42,15 @@ export function Workspace3D() {
   );
   const selectedSceneBounds = useMemo(
     () =>
-      selectedCell && isCellVisible(selectedCell, cellVisibility)
-        ? computeCellSceneBounds(shape, selectedCell, explodeAmount, dualViewEnabled)
-        : null,
-    [cellVisibility, dualViewEnabled, explodeAmount, selectedCell, shape],
+      computeSelectedSceneBounds(
+        shape,
+        cellVisibility,
+        explodeAmount,
+        dualViewEnabled,
+        selectedCell,
+        selectedVertexId,
+      ),
+    [cellVisibility, dualViewEnabled, explodeAmount, selectedCell, selectedVertexId, shape],
   );
 
   return (
@@ -1448,6 +1454,41 @@ function computeCellSceneBounds(
     .map((vertex) => addVec3(vertex.position, displayOffset));
 
   return positionsToSceneBounds(positions);
+}
+
+function computeSelectedSceneBounds(
+  shape: Shape,
+  cellVisibility: CellVisibility,
+  explodeAmount: number,
+  dualViewEnabled: boolean,
+  selectedCell: Cell | null,
+  selectedVertexId: VertexId | null,
+): SceneBounds | null {
+  const displayOffsets = computeCellDisplayOffsets(shape, explodeAmount);
+  const selectedVertex = selectedVertexId ? shape.vertices[selectedVertexId] : null;
+
+  if (selectedVertex && selectedVertexId) {
+    const selectedCellContainsVertex =
+      selectedCell &&
+      isCellVisible(selectedCell, cellVisibility) &&
+      selectedCell.vertexIds.includes(selectedVertexId);
+    const containingCell =
+      (selectedCellContainsVertex ? selectedCell : null) ??
+      shape.cells.find(
+        (cell) => isCellVisible(cell, cellVisibility) && cell.vertexIds.includes(selectedVertexId),
+      );
+
+    if (containingCell) {
+      return {
+        center: addVec3(selectedVertex.position, displayOffsets.get(containingCell.id) ?? [0, 0, 0]),
+        radius: 0.85,
+      };
+    }
+  }
+
+  return selectedCell && isCellVisible(selectedCell, cellVisibility)
+    ? computeCellSceneBounds(shape, selectedCell, explodeAmount, dualViewEnabled)
+    : null;
 }
 
 function positionsToSceneBounds(positions: Vec3[]): SceneBounds {
