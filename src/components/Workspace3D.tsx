@@ -1,15 +1,16 @@
 import { OrbitControls } from '@react-three/drei';
 import { Canvas, type ThreeEvent } from '@react-three/fiber';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import {
   buildDualUniverseRenderGeometry,
   createDualEdgeInspectionTarget,
   createDualFaceInspectionTarget,
   createDualVertexInspectionTarget,
+  resolveDualInspectionTarget,
   type DualUniverseRenderGeometry,
 } from '../lib/dualView';
-import { type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
+import { type DualInspectionTarget, type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
 import type { Cell, Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
 
 export function Workspace3D() {
@@ -148,9 +149,14 @@ function CellMesh({
   const selectCell = useGeometryStore((state) => state.selectCell);
   const clearDualInspectionTarget = useGeometryStore((state) => state.clearDualInspectionTarget);
   const setDualInspectionTarget = useGeometryStore((state) => state.setDualInspectionTarget);
+  const dualInspectionTarget = useGeometryStore((state) => state.dualInspectionTarget);
   const renderGeometry = useMemo(
     () => createCellRenderGeometry(shape, cell, dualViewEnabled),
     [cell, dualViewEnabled, shape],
+  );
+  const sourceCounterpartHighlight = useMemo(
+    () => createSemanticSourceCounterpartHighlight(shape, cell, renderGeometry, dualInspectionTarget),
+    [cell, dualInspectionTarget, renderGeometry, shape],
   );
   const faceGeometry = useMemo(
     () => createFaceGeometry(renderGeometry.vertices, renderGeometry.faces),
@@ -290,6 +296,9 @@ function CellMesh({
       {renderGeometry.dualUniverse?.kind === 'semantic-model' ? (
         <SemanticDualInspectionTargets renderGeometry={renderGeometry} />
       ) : null}
+      {sourceCounterpartHighlight ? (
+        <SemanticSourceCounterpartHighlight highlight={sourceCounterpartHighlight} shape={shape} />
+      ) : null}
       {renderGeometry.showVertexMarkers
         ? cell.vertexIds.map((vertexId) => {
             const vertex = shape.vertices[vertexId];
@@ -407,6 +416,90 @@ interface CellRenderGeometry {
   dualUniverse?: DualUniverseRenderGeometry;
 }
 
+type SourceCounterpartHighlight =
+  | { kind: 'face'; face: RenderFace }
+  | { kind: 'vertex'; vertex: RenderVertex }
+  | { kind: 'edge'; edge: RenderEdge };
+
+function SemanticSourceCounterpartHighlight({
+  highlight,
+  shape,
+}: {
+  highlight: SourceCounterpartHighlight;
+  shape: Shape;
+}) {
+  if (highlight.kind === 'face') {
+    return <SemanticSourceFaceHighlight face={highlight.face} shape={shape} />;
+  }
+
+  if (highlight.kind === 'edge') {
+    return <SemanticSourceEdgeHighlight edge={highlight.edge} shape={shape} />;
+  }
+
+  return <SemanticSourceVertexHighlight vertex={highlight.vertex} />;
+}
+
+function SemanticSourceFaceHighlight({ face, shape }: { face: RenderFace; shape: Shape }) {
+  const vertices = useMemo(() => createShapeRenderVertices(shape), [shape]);
+  const faceGeometry = useMemo(() => createFaceGeometry(vertices, [face]), [face, vertices]);
+  const edgeGeometry = useMemo(
+    () => createEdgeGeometry(vertices, edgesForRenderFaces([face]), () => true),
+    [face, vertices],
+  );
+
+  return (
+    <>
+      <mesh geometry={faceGeometry} raycast={() => null}>
+        <meshBasicMaterial
+          color="#22d3ee"
+          depthWrite={false}
+          opacity={0.38}
+          polygonOffset
+          polygonOffsetFactor={-3}
+          polygonOffsetUnits={-3}
+          side={THREE.DoubleSide}
+          transparent
+        />
+      </mesh>
+      {edgeGeometry ? (
+        <lineSegments geometry={edgeGeometry} raycast={() => null}>
+          <lineBasicMaterial color="#67e8f9" transparent opacity={1} />
+        </lineSegments>
+      ) : null}
+    </>
+  );
+}
+
+function SemanticSourceVertexHighlight({ vertex }: { vertex: RenderVertex }) {
+  return (
+    <mesh position={vertex.position} raycast={() => null} scale={1.36}>
+      <sphereGeometry args={[0.09, 24, 16]} />
+      <meshStandardMaterial
+        color="#22d3ee"
+        emissive="#155e75"
+        emissiveIntensity={0.72}
+        opacity={0.92}
+        roughness={0.32}
+        transparent
+      />
+    </mesh>
+  );
+}
+
+function SemanticSourceEdgeHighlight({ edge, shape }: { edge: RenderEdge; shape: Shape }) {
+  const vertices = useMemo(() => createShapeRenderVertices(shape), [shape]);
+  const edgeGeometry = useMemo(
+    () => createEdgeGeometry(vertices, [edge], () => true),
+    [edge, vertices],
+  );
+
+  return edgeGeometry ? (
+    <lineSegments geometry={edgeGeometry} raycast={() => null}>
+      <lineBasicMaterial color="#22d3ee" transparent opacity={1} />
+    </lineSegments>
+  ) : null;
+}
+
 function SemanticDualInspectionTargets({
   renderGeometry,
 }: {
@@ -477,6 +570,16 @@ function SemanticDualVertexInspectionMarker({
   onInspect: () => void;
 }) {
   const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    if (!isHovered) {
+      return undefined;
+    }
+
+    return () => {
+      document.body.style.cursor = 'auto';
+    };
+  }, [isHovered]);
 
   return (
     <mesh
@@ -698,15 +801,71 @@ function createOriginalRenderGeometry(shape: Shape, cell: Cell): CellRenderGeome
   }));
 
   return {
-    vertices: Object.values(shape.vertices).map((vertex) => ({
-      id: vertex.id,
-      position: vertex.position,
-    })),
+    vertices: createShapeRenderVertices(shape),
     faces,
     edges: edgesForCell(shape, faces),
     mode: 'original',
     showVertexMarkers: true,
   };
+}
+
+function createSemanticSourceCounterpartHighlight(
+  shape: Shape,
+  cell: Cell,
+  renderGeometry: CellRenderGeometry,
+  target: DualInspectionTarget | null,
+): SourceCounterpartHighlight | null {
+  const semanticRenderGeometry =
+    renderGeometry.dualUniverse?.kind === 'semantic-model' ? renderGeometry.dualUniverse : null;
+
+  if (!target || !semanticRenderGeometry) {
+    return null;
+  }
+
+  const resolvedTarget = resolveDualInspectionTarget(shape, target);
+  const semanticModel = semanticRenderGeometry.viewModel.semanticModel;
+
+  if (
+    !resolvedTarget ||
+    resolvedTarget.sourceCell.id !== cell.id ||
+    resolvedTarget.semanticModel.sourceCellId !== semanticModel.sourceCellId ||
+    resolvedTarget.semanticModel.dualModelId !== semanticModel.dualModelId
+  ) {
+    return null;
+  }
+
+  if (resolvedTarget.kind === 'vertex') {
+    const sourceFace = resolvedTarget.sourceFace;
+
+    return sourceFace && cell.faceIds.includes(sourceFace.id)
+      ? { kind: 'face', face: { id: sourceFace.id, vertexIds: sourceFace.vertexIds } }
+      : null;
+  }
+
+  if (resolvedTarget.kind === 'face') {
+    const sourceVertex = resolvedTarget.sourceVertex;
+
+    return sourceVertex && cell.vertexIds.includes(sourceVertex.id)
+      ? { kind: 'vertex', vertex: { id: sourceVertex.id, position: sourceVertex.position } }
+      : null;
+  }
+
+  if (resolvedTarget.kind === 'edge') {
+    const sourceEdge = resolvedTarget.sourceEdge;
+
+    return sourceEdge && edgeBelongsToCell(shape, cell, sourceEdge.vertexIds)
+      ? { kind: 'edge', edge: { id: sourceEdge.id, vertexIds: sourceEdge.vertexIds } }
+      : null;
+  }
+
+  return null;
+}
+
+function createShapeRenderVertices(shape: Shape): RenderVertex[] {
+  return Object.values(shape.vertices).map((vertex) => ({
+    id: vertex.id,
+    position: vertex.position,
+  }));
 }
 
 function createFaceGeometry(vertices: RenderVertex[], faces: RenderFace[]): THREE.BufferGeometry {
@@ -856,13 +1015,19 @@ function createHoverEdgeGeometry(
 }
 
 function facesContainEdge(faces: RenderFace[], a: string, b: string): boolean {
-  return faces.some((face) =>
-    face.vertexIds.some((vertexId, index) => {
-      const nextVertexId = face.vertexIds[(index + 1) % face.vertexIds.length];
+  return faces.some((face) => faceContainsVertexPair(face.vertexIds, a, b));
+}
 
-      return (vertexId === a && nextVertexId === b) || (vertexId === b && nextVertexId === a);
-    }),
-  );
+function edgeBelongsToCell(shape: Shape, cell: Cell, [a, b]: [string, string]): boolean {
+  return facesForCell(shape, cell).some((face) => faceContainsVertexPair(face.vertexIds, a, b));
+}
+
+function faceContainsVertexPair(vertexIds: string[], a: string, b: string): boolean {
+  return vertexIds.some((vertexId, index) => {
+    const nextVertexId = vertexIds[(index + 1) % vertexIds.length];
+
+    return (vertexId === a && nextVertexId === b) || (vertexId === b && nextVertexId === a);
+  });
 }
 
 function getVertexGenerations(shape: Shape): Map<VertexId, number> {
