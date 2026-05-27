@@ -1,6 +1,6 @@
 import { OrbitControls } from '@react-three/drei';
-import { Canvas, type ThreeEvent } from '@react-three/fiber';
-import { useEffect, useMemo, useState } from 'react';
+import { Canvas, useThree, type ThreeEvent } from '@react-three/fiber';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import {
   buildDualUniverseRenderGeometry,
@@ -28,10 +28,17 @@ export function Workspace3D() {
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
   const clearDualInspectionTarget = useGeometryStore((state) => state.clearDualInspectionTarget);
+  const [fitViewRequest, setFitViewRequest] = useState(0);
+  const [resetCameraRequest, setResetCameraRequest] = useState(0);
+  const sceneBounds = useMemo(
+    () => computeVisibleSceneBounds(shape, cellVisibility, explodeAmount, dualViewEnabled),
+    [cellVisibility, dualViewEnabled, explodeAmount, shape],
+  );
 
   return (
-    <div className="relative h-full min-h-[440px] w-full bg-neutral-950">
+    <div className="relative h-full min-h-0 w-full bg-neutral-950">
       <Canvas
+        className="h-full w-full"
         camera={{ position: [3.2, 2.4, 3.8], fov: 45 }}
         onPointerMissed={() => {
           selectCell(null);
@@ -55,12 +62,146 @@ export function Workspace3D() {
           hoverTarget={hoverTarget}
           onHoverTarget={setHoverTarget}
         />
-        <OrbitControls makeDefault enableDamping dampingFactor={0.08} />
+        <SceneCameraControls
+          sceneBounds={sceneBounds}
+          fitViewRequest={fitViewRequest}
+          resetCameraRequest={resetCameraRequest}
+        />
       </Canvas>
       <div className="pointer-events-none absolute left-3 top-3 rounded border border-stone-800 bg-stone-950/85 px-3 py-2 text-xs text-stone-300 shadow-lg">
         {formatHoverStatus(shape, hoverTarget)}
       </div>
+      <div className="absolute right-3 top-3 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setFitViewRequest((request) => request + 1)}
+          className="rounded border border-stone-700 bg-stone-950/90 px-3 py-2 text-xs font-semibold text-stone-100 shadow-lg transition hover:border-teal-400 hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
+        >
+          Fit View
+        </button>
+        <button
+          type="button"
+          onClick={() => setResetCameraRequest((request) => request + 1)}
+          className="rounded border border-stone-700 bg-stone-950/90 px-3 py-2 text-xs font-semibold text-stone-100 shadow-lg transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-300"
+        >
+          Reset Camera
+        </button>
+      </div>
     </div>
+  );
+}
+
+interface SceneBounds {
+  center: Vec3;
+  radius: number;
+}
+
+interface OrbitControlsHandle {
+  target: THREE.Vector3;
+  update: () => void;
+}
+
+const DEFAULT_CAMERA_TARGET = new THREE.Vector3(0, 0, 0);
+const DEFAULT_CAMERA_POSITION = new THREE.Vector3(3.2, 2.4, 3.8);
+const MIN_CAMERA_DISTANCE = 3.8;
+
+function SceneCameraControls({
+  sceneBounds,
+  fitViewRequest,
+  resetCameraRequest,
+}: {
+  sceneBounds: SceneBounds;
+  fitViewRequest: number;
+  resetCameraRequest: number;
+}) {
+  const { camera, size } = useThree();
+  const controlsRef = useRef<OrbitControlsHandle | null>(null);
+  const boundsCenter = useMemo(() => vec3ToVector(sceneBounds.center), [sceneBounds.center]);
+
+  const updateCameraClipping = useCallback(
+    (distance: number) => {
+      if (!(camera instanceof THREE.PerspectiveCamera)) {
+        return;
+      }
+
+      camera.near = Math.max(0.01, distance / 1000);
+      camera.far = Math.max(1000, distance * 100);
+      camera.updateProjectionMatrix();
+    },
+    [camera],
+  );
+
+  const fitCameraToBounds = useCallback(
+    (mode: 'fit' | 'reset') => {
+      const controls = controlsRef.current;
+      const target = vec3ToVector(sceneBounds.center);
+      const radius = Math.max(sceneBounds.radius, 0.5);
+      const distance =
+        mode === 'fit'
+          ? getFitDistance(camera, radius, size.width / Math.max(1, size.height))
+          : Math.max(MIN_CAMERA_DISTANCE, radius * 3.1);
+      const direction =
+        mode === 'fit'
+          ? camera.position.clone().sub(controls?.target ?? target)
+          : DEFAULT_CAMERA_POSITION.clone().sub(DEFAULT_CAMERA_TARGET);
+      const safeDirection =
+        direction.lengthSq() > 0.000001
+          ? direction.normalize()
+          : DEFAULT_CAMERA_POSITION.clone().sub(DEFAULT_CAMERA_TARGET).normalize();
+
+      camera.position.copy(target.clone().add(safeDirection.multiplyScalar(distance)));
+      camera.lookAt(target);
+      updateCameraClipping(distance);
+
+      if (controls) {
+        controls.target.copy(target);
+        controls.update();
+      }
+    },
+    [camera, sceneBounds.center, sceneBounds.radius, size.height, size.width, updateCameraClipping],
+  );
+
+  useEffect(() => {
+    const controls = controlsRef.current;
+
+    if (!controls) {
+      return;
+    }
+
+    controls.target.copy(boundsCenter);
+    controls.update();
+  }, [boundsCenter]);
+
+  useEffect(() => {
+    if (fitViewRequest > 0) {
+      fitCameraToBounds('fit');
+    }
+  }, [fitCameraToBounds, fitViewRequest]);
+
+  useEffect(() => {
+    if (resetCameraRequest > 0) {
+      fitCameraToBounds('reset');
+    }
+  }, [fitCameraToBounds, resetCameraRequest]);
+
+  return (
+    <OrbitControls
+      ref={(controls) => {
+        controlsRef.current = controls as OrbitControlsHandle | null;
+      }}
+      makeDefault
+      enableDamping
+      dampingFactor={0.08}
+      enablePan
+      enableRotate
+      enableZoom
+      maxDistance={240}
+      minDistance={0.2}
+      panSpeed={0.9}
+      rotateSpeed={0.75}
+      screenSpacePanning
+      zoomSpeed={0.9}
+    />
   );
 }
 
@@ -1174,6 +1315,92 @@ function renderVertexFromVertex(vertex: Vertex): RenderVertex {
     id: vertex.id,
     position: vertex.position,
   };
+}
+
+function computeVisibleSceneBounds(
+  shape: Shape,
+  cellVisibility: CellVisibility,
+  explodeAmount: number,
+  dualViewEnabled: boolean,
+): SceneBounds {
+  const displayOffsets = computeCellDisplayOffsets(shape, explodeAmount);
+  const positions: Vec3[] = [];
+
+  for (const cell of shape.cells) {
+    if (!isCellVisible(cell, cellVisibility)) {
+      continue;
+    }
+
+    const renderGeometry = createCellRenderGeometry(shape, cell, dualViewEnabled);
+    const vertexById = new Map(renderGeometry.vertices.map((vertex) => [vertex.id, vertex]));
+    const referencedVertexIds = new Set<string>();
+
+    for (const face of renderGeometry.faces) {
+      face.vertexIds.forEach((vertexId) => referencedVertexIds.add(vertexId));
+    }
+
+    for (const edge of renderGeometry.edges) {
+      edge.vertexIds.forEach((vertexId) => referencedVertexIds.add(vertexId));
+    }
+
+    if (!referencedVertexIds.size) {
+      renderGeometry.vertices.forEach((vertex) => referencedVertexIds.add(vertex.id));
+    }
+
+    const displayOffset = displayOffsets.get(cell.id) ?? [0, 0, 0];
+
+    for (const vertexId of referencedVertexIds) {
+      const vertex = vertexById.get(vertexId);
+
+      if (vertex) {
+        positions.push(addVec3(vertex.position, displayOffset));
+      }
+    }
+  }
+
+  if (!positions.length) {
+    return { center: [0, 0, 0], radius: 2.4 };
+  }
+
+  const minimum = positions.reduce<Vec3>(
+    (current, position) => [
+      Math.min(current[0], position[0]),
+      Math.min(current[1], position[1]),
+      Math.min(current[2], position[2]),
+    ],
+    [Infinity, Infinity, Infinity],
+  );
+  const maximum = positions.reduce<Vec3>(
+    (current, position) => [
+      Math.max(current[0], position[0]),
+      Math.max(current[1], position[1]),
+      Math.max(current[2], position[2]),
+    ],
+    [-Infinity, -Infinity, -Infinity],
+  );
+  const center: Vec3 = scaleVec3(addVec3(minimum, maximum), 0.5);
+  const radius = positions.reduce(
+    (current, position) => Math.max(current, lengthVec3(subtractVec3(position, center))),
+    0,
+  );
+
+  return { center, radius: Math.max(radius, 1.2) };
+}
+
+function getFitDistance(camera: THREE.Camera, radius: number, aspect: number): number {
+  if (!(camera instanceof THREE.PerspectiveCamera)) {
+    return Math.max(MIN_CAMERA_DISTANCE, radius * 3.1);
+  }
+
+  const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+  const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * Math.max(0.1, aspect));
+  const fitFov = Math.max(0.1, Math.min(verticalFov, horizontalFov));
+
+  return Math.max(MIN_CAMERA_DISTANCE, (radius / Math.sin(fitFov / 2)) * 1.15);
+}
+
+function vec3ToVector([x, y, z]: Vec3): THREE.Vector3 {
+  return new THREE.Vector3(x, y, z);
 }
 
 function createFaceGeometry(vertices: RenderVertex[], faces: RenderFace[]): THREE.BufferGeometry {

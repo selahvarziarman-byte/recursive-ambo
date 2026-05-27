@@ -407,7 +407,7 @@ export function RightSidebar() {
   const [activeTab, setActiveTab] = useState<RightSidebarTab>('workspace');
 
   return (
-    <div className="flex h-full min-h-[440px] flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <div className="grid grid-cols-4 border-b border-stone-800 bg-neutral-950 p-2">
         {(['workspace', 'selection', 'packets', 'history'] as RightSidebarTab[]).map((tab) => (
           <button
