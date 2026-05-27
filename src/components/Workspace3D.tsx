@@ -416,10 +416,38 @@ interface CellRenderGeometry {
   dualUniverse?: DualUniverseRenderGeometry;
 }
 
+interface SourceFaceCounterpartHighlight {
+  kind: 'face';
+  face: RenderFace;
+  context: {
+    adjacentFaces: RenderFace[];
+    boundaryEdges: RenderEdge[];
+    cornerVertices: RenderVertex[];
+  };
+}
+
+interface SourceVertexCounterpartHighlight {
+  kind: 'vertex';
+  vertex: RenderVertex;
+  context: {
+    incidentEdges: RenderEdge[];
+    incidentFaces: RenderFace[];
+  };
+}
+
+interface SourceEdgeCounterpartHighlight {
+  kind: 'edge';
+  edge: RenderEdge;
+  context: {
+    adjacentFaces: RenderFace[];
+    endpointVertices: RenderVertex[];
+  };
+}
+
 type SourceCounterpartHighlight =
-  | { kind: 'face'; face: RenderFace }
-  | { kind: 'vertex'; vertex: RenderVertex }
-  | { kind: 'edge'; edge: RenderEdge };
+  | SourceFaceCounterpartHighlight
+  | SourceVertexCounterpartHighlight
+  | SourceEdgeCounterpartHighlight;
 
 function SemanticSourceCounterpartHighlight({
   highlight,
@@ -429,75 +457,216 @@ function SemanticSourceCounterpartHighlight({
   shape: Shape;
 }) {
   if (highlight.kind === 'face') {
-    return <SemanticSourceFaceHighlight face={highlight.face} shape={shape} />;
+    return <SemanticSourceFaceCounterpartHighlight highlight={highlight} shape={shape} />;
   }
 
   if (highlight.kind === 'edge') {
-    return <SemanticSourceEdgeHighlight edge={highlight.edge} shape={shape} />;
+    return <SemanticSourceEdgeCounterpartHighlight highlight={highlight} shape={shape} />;
   }
 
-  return <SemanticSourceVertexHighlight vertex={highlight.vertex} />;
+  return <SemanticSourceVertexCounterpartHighlight highlight={highlight} shape={shape} />;
 }
 
-function SemanticSourceFaceHighlight({ face, shape }: { face: RenderFace; shape: Shape }) {
+function SemanticSourceFaceCounterpartHighlight({
+  highlight,
+  shape,
+}: {
+  highlight: SourceFaceCounterpartHighlight;
+  shape: Shape;
+}) {
   const vertices = useMemo(() => createShapeRenderVertices(shape), [shape]);
-  const faceGeometry = useMemo(() => createFaceGeometry(vertices, [face]), [face, vertices]);
-  const edgeGeometry = useMemo(
-    () => createEdgeGeometry(vertices, edgesForRenderFaces([face]), () => true),
-    [face, vertices],
-  );
 
   return (
     <>
-      <mesh geometry={faceGeometry} raycast={() => null}>
-        <meshBasicMaterial
-          color="#22d3ee"
-          depthWrite={false}
-          opacity={0.38}
-          polygonOffset
-          polygonOffsetFactor={-3}
-          polygonOffsetUnits={-3}
-          side={THREE.DoubleSide}
-          transparent
-        />
-      </mesh>
-      {edgeGeometry ? (
-        <lineSegments geometry={edgeGeometry} raycast={() => null}>
-          <lineBasicMaterial color="#67e8f9" transparent opacity={1} />
-        </lineSegments>
-      ) : null}
+      <SemanticSourceFaceLayer
+        vertices={vertices}
+        faces={highlight.context.adjacentFaces}
+        color="#0891b2"
+        opacity={0.09}
+        polygonOffsetFactor={-4}
+      />
+      <SemanticSourceFaceLayer
+        vertices={vertices}
+        faces={[highlight.face]}
+        color="#22d3ee"
+        opacity={0.38}
+        polygonOffsetFactor={-3}
+      />
+      <SemanticSourceEdgeLayer
+        vertices={vertices}
+        edges={highlight.context.boundaryEdges}
+        color="#67e8f9"
+        opacity={1}
+      />
+      <SemanticSourceVertexMarkers
+        vertices={highlight.context.cornerVertices}
+        color="#67e8f9"
+        emissive="#155e75"
+        emissiveIntensity={0.32}
+        opacity={0.78}
+        radius={0.045}
+      />
     </>
   );
 }
 
-function SemanticSourceVertexHighlight({ vertex }: { vertex: RenderVertex }) {
+function SemanticSourceVertexCounterpartHighlight({
+  highlight,
+  shape,
+}: {
+  highlight: SourceVertexCounterpartHighlight;
+  shape: Shape;
+}) {
+  const vertices = useMemo(() => createShapeRenderVertices(shape), [shape]);
+
   return (
-    <mesh position={vertex.position} raycast={() => null} scale={1.36}>
-      <sphereGeometry args={[0.09, 24, 16]} />
-      <meshStandardMaterial
+    <>
+      <SemanticSourceFaceLayer
+        vertices={vertices}
+        faces={highlight.context.incidentFaces}
+        color="#0891b2"
+        opacity={0.1}
+        polygonOffsetFactor={-4}
+      />
+      <SemanticSourceEdgeLayer
+        vertices={vertices}
+        edges={highlight.context.incidentEdges}
+        color="#67e8f9"
+        opacity={0.58}
+      />
+      <SemanticSourceVertexMarkers
+        vertices={[highlight.vertex]}
         color="#22d3ee"
         emissive="#155e75"
         emissiveIntensity={0.72}
         opacity={0.92}
-        roughness={0.32}
+        radius={0.09}
+      />
+    </>
+  );
+}
+
+function SemanticSourceEdgeCounterpartHighlight({
+  highlight,
+  shape,
+}: {
+  highlight: SourceEdgeCounterpartHighlight;
+  shape: Shape;
+}) {
+  const vertices = useMemo(() => createShapeRenderVertices(shape), [shape]);
+
+  return (
+    <>
+      <SemanticSourceFaceLayer
+        vertices={vertices}
+        faces={highlight.context.adjacentFaces}
+        color="#0891b2"
+        opacity={0.11}
+        polygonOffsetFactor={-4}
+      />
+      <SemanticSourceVertexMarkers
+        vertices={highlight.context.endpointVertices}
+        color="#67e8f9"
+        emissive="#155e75"
+        emissiveIntensity={0.34}
+        opacity={0.8}
+        radius={0.052}
+      />
+      <SemanticSourceEdgeLayer vertices={vertices} edges={[highlight.edge]} color="#22d3ee" opacity={1} />
+    </>
+  );
+}
+
+function SemanticSourceFaceLayer({
+  vertices,
+  faces,
+  color,
+  opacity,
+  polygonOffsetFactor,
+}: {
+  vertices: RenderVertex[];
+  faces: RenderFace[];
+  color: string;
+  opacity: number;
+  polygonOffsetFactor: number;
+}) {
+  const faceGeometry = useMemo(() => createFaceGeometry(vertices, faces), [faces, vertices]);
+
+  if (!faces.length) {
+    return null;
+  }
+
+  return (
+    <mesh geometry={faceGeometry} raycast={() => null}>
+      <meshBasicMaterial
+        color={color}
+        depthWrite={false}
+        opacity={opacity}
+        polygonOffset
+        polygonOffsetFactor={polygonOffsetFactor}
+        polygonOffsetUnits={polygonOffsetFactor}
+        side={THREE.DoubleSide}
         transparent
       />
     </mesh>
   );
 }
 
-function SemanticSourceEdgeHighlight({ edge, shape }: { edge: RenderEdge; shape: Shape }) {
-  const vertices = useMemo(() => createShapeRenderVertices(shape), [shape]);
+function SemanticSourceEdgeLayer({
+  vertices,
+  edges,
+  color,
+  opacity,
+}: {
+  vertices: RenderVertex[];
+  edges: RenderEdge[];
+  color: string;
+  opacity: number;
+}) {
   const edgeGeometry = useMemo(
-    () => createEdgeGeometry(vertices, [edge], () => true),
-    [edge, vertices],
+    () => createEdgeGeometry(vertices, edges, () => true),
+    [edges, vertices],
   );
 
   return edgeGeometry ? (
     <lineSegments geometry={edgeGeometry} raycast={() => null}>
-      <lineBasicMaterial color="#22d3ee" transparent opacity={1} />
+      <lineBasicMaterial color={color} transparent opacity={opacity} />
     </lineSegments>
   ) : null;
+}
+
+function SemanticSourceVertexMarkers({
+  vertices,
+  color,
+  emissive,
+  emissiveIntensity,
+  opacity,
+  radius,
+}: {
+  vertices: RenderVertex[];
+  color: string;
+  emissive: string;
+  emissiveIntensity: number;
+  opacity: number;
+  radius: number;
+}) {
+  return (
+    <>
+      {vertices.map((vertex) => (
+        <mesh key={`source-context-vertex:${vertex.id}`} position={vertex.position} raycast={() => null}>
+          <sphereGeometry args={[radius, 24, 16]} />
+          <meshStandardMaterial
+            color={color}
+            emissive={emissive}
+            emissiveIntensity={emissiveIntensity}
+            opacity={opacity}
+            roughness={0.32}
+            transparent
+          />
+        </mesh>
+      ))}
+    </>
+  );
 }
 
 function SemanticDualInspectionTargets({
@@ -838,7 +1007,7 @@ function createSemanticSourceCounterpartHighlight(
     const sourceFace = resolvedTarget.sourceFace;
 
     return sourceFace && cell.faceIds.includes(sourceFace.id)
-      ? { kind: 'face', face: { id: sourceFace.id, vertexIds: sourceFace.vertexIds } }
+      ? createSourceFaceCounterpartHighlight(shape, cell, sourceFace)
       : null;
   }
 
@@ -846,7 +1015,7 @@ function createSemanticSourceCounterpartHighlight(
     const sourceVertex = resolvedTarget.sourceVertex;
 
     return sourceVertex && cell.vertexIds.includes(sourceVertex.id)
-      ? { kind: 'vertex', vertex: { id: sourceVertex.id, position: sourceVertex.position } }
+      ? createSourceVertexCounterpartHighlight(shape, cell, sourceVertex)
       : null;
   }
 
@@ -854,11 +1023,86 @@ function createSemanticSourceCounterpartHighlight(
     const sourceEdge = resolvedTarget.sourceEdge;
 
     return sourceEdge && edgeBelongsToCell(shape, cell, sourceEdge.vertexIds)
-      ? { kind: 'edge', edge: { id: sourceEdge.id, vertexIds: sourceEdge.vertexIds } }
+      ? createSourceEdgeCounterpartHighlight(shape, cell, sourceEdge)
       : null;
   }
 
   return null;
+}
+
+function createSourceFaceCounterpartHighlight(
+  shape: Shape,
+  cell: Cell,
+  sourceFace: Face,
+): SourceFaceCounterpartHighlight {
+  const sourceRenderFace = renderFaceFromFace(sourceFace);
+  const boundaryEdges = edgesForRenderFaces([sourceRenderFace]);
+  const adjacentFaces = facesForCell(shape, cell)
+    .filter(
+      (face) =>
+        face.id !== sourceFace.id &&
+        boundaryEdges.some((edge) => faceContainsVertexPair(face.vertexIds, ...edge.vertexIds)),
+    )
+    .map(renderFaceFromFace);
+  const cornerVertices = sourceFace.vertexIds
+    .map((vertexId) => shape.vertices[vertexId])
+    .filter((vertex): vertex is Vertex => Boolean(vertex))
+    .map(renderVertexFromVertex);
+
+  return {
+    kind: 'face',
+    face: sourceRenderFace,
+    context: {
+      adjacentFaces,
+      boundaryEdges,
+      cornerVertices,
+    },
+  };
+}
+
+function createSourceVertexCounterpartHighlight(
+  shape: Shape,
+  cell: Cell,
+  sourceVertex: Vertex,
+): SourceVertexCounterpartHighlight {
+  const incidentFaces = facesForCell(shape, cell)
+    .filter((face) => face.vertexIds.includes(sourceVertex.id))
+    .map(renderFaceFromFace);
+  const incidentEdges = edgesForRenderFaces(incidentFaces).filter((edge) =>
+    edge.vertexIds.includes(sourceVertex.id),
+  );
+
+  return {
+    kind: 'vertex',
+    vertex: renderVertexFromVertex(sourceVertex),
+    context: {
+      incidentEdges,
+      incidentFaces,
+    },
+  };
+}
+
+function createSourceEdgeCounterpartHighlight(
+  shape: Shape,
+  cell: Cell,
+  sourceEdge: Edge,
+): SourceEdgeCounterpartHighlight {
+  const adjacentFaces = facesForCell(shape, cell)
+    .filter((face) => faceContainsVertexPair(face.vertexIds, ...sourceEdge.vertexIds))
+    .map(renderFaceFromFace);
+  const endpointVertices = sourceEdge.vertexIds
+    .map((vertexId) => shape.vertices[vertexId])
+    .filter((vertex): vertex is Vertex => Boolean(vertex))
+    .map(renderVertexFromVertex);
+
+  return {
+    kind: 'edge',
+    edge: { id: sourceEdge.id, vertexIds: sourceEdge.vertexIds, role: sourceEdge.role },
+    context: {
+      adjacentFaces,
+      endpointVertices,
+    },
+  };
 }
 
 function createShapeRenderVertices(shape: Shape): RenderVertex[] {
@@ -866,6 +1110,20 @@ function createShapeRenderVertices(shape: Shape): RenderVertex[] {
     id: vertex.id,
     position: vertex.position,
   }));
+}
+
+function renderFaceFromFace(face: Face): RenderFace {
+  return {
+    id: face.id,
+    vertexIds: face.vertexIds,
+  };
+}
+
+function renderVertexFromVertex(vertex: Vertex): RenderVertex {
+  return {
+    id: vertex.id,
+    position: vertex.position,
+  };
 }
 
 function createFaceGeometry(vertices: RenderVertex[], faces: RenderFace[]): THREE.BufferGeometry {
