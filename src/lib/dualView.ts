@@ -1,4 +1,5 @@
 import type { Cell, Edge, Face, Shape, Vec3, Vertex } from '../types/geometry';
+import type { DualInspectionTarget } from '../store/geometryStore';
 import { isCellActiveFrontier } from './cellLifecycle';
 import { buildSemanticDualModel, type SemanticDualModel } from './dualization';
 import { stableHash } from './ids';
@@ -79,6 +80,39 @@ export type DualUniverseRenderGeometry =
       viewModel: Extract<DualUniverseViewModel, { kind: 'unsupported' }>;
     };
 
+export type ResolvedDualInspectionTarget =
+  | {
+      kind: 'cell';
+      target: Extract<DualInspectionTarget, { kind: 'cell' }>;
+      semanticModel: SemanticDualModel;
+      sourceCell: Cell;
+      dualCell: Cell;
+    }
+  | {
+      kind: 'vertex';
+      target: Extract<DualInspectionTarget, { kind: 'vertex' }>;
+      semanticModel: SemanticDualModel;
+      sourceCell: Cell;
+      dualVertex: Vertex;
+      sourceFace: Face | null;
+    }
+  | {
+      kind: 'face';
+      target: Extract<DualInspectionTarget, { kind: 'face' }>;
+      semanticModel: SemanticDualModel;
+      sourceCell: Cell;
+      dualFace: Face;
+      sourceVertex: Vertex | null;
+    }
+  | {
+      kind: 'edge';
+      target: Extract<DualInspectionTarget, { kind: 'edge' }>;
+      semanticModel: SemanticDualModel;
+      sourceCell: Cell;
+      dualEdge: Edge;
+      sourceEdge: Edge | null;
+    };
+
 interface DualVertexEntry {
   face: Face;
   vertex: DualViewVertex;
@@ -112,7 +146,7 @@ export function describeDualViewTopology(shape: Shape, cell: Cell): DualViewDesc
 }
 
 export function isDualViewSupportedCell(shape: Shape, cell: Cell): boolean {
-  return Boolean(describeDualViewTopology(shape, cell).dual);
+  return isSemanticDualUniverseSource(shape, cell) || Boolean(describeDualViewTopology(shape, cell).dual);
 }
 
 export function buildDualUniverseViewModel(shape: Shape, cell: Cell): DualUniverseViewModel {
@@ -193,6 +227,146 @@ export function projectDualUniverseViewModelToRenderGeometry(
     kind: 'unsupported',
     reason: viewModel.reason,
     viewModel,
+  };
+}
+
+export function createDualVertexInspectionTarget(
+  semanticModel: SemanticDualModel,
+  dualVertexId: string,
+): DualInspectionTarget | null {
+  const sourceFaceId = semanticModel.dualVertexToSourceFace[dualVertexId];
+
+  if (!sourceFaceId) {
+    return null;
+  }
+
+  return {
+    universe: 'dual',
+    kind: 'vertex',
+    sourceCellId: semanticModel.sourceCellId,
+    dualVertexId,
+    sourceFaceId,
+  };
+}
+
+export function createDualFaceInspectionTarget(
+  semanticModel: SemanticDualModel,
+  dualFaceId: string,
+): DualInspectionTarget | null {
+  const sourceVertexId = semanticModel.dualFaceToSourceVertex[dualFaceId];
+
+  if (!sourceVertexId) {
+    return null;
+  }
+
+  return {
+    universe: 'dual',
+    kind: 'face',
+    sourceCellId: semanticModel.sourceCellId,
+    dualFaceId,
+    sourceVertexId,
+  };
+}
+
+export function createDualEdgeInspectionTarget(
+  semanticModel: SemanticDualModel,
+  dualEdgeId: string,
+): DualInspectionTarget | null {
+  const sourceEdgeId = semanticModel.dualEdgeToSourceEdge[dualEdgeId];
+
+  if (!sourceEdgeId) {
+    return null;
+  }
+
+  return {
+    universe: 'dual',
+    kind: 'edge',
+    sourceCellId: semanticModel.sourceCellId,
+    dualEdgeId,
+    sourceEdgeId,
+  };
+}
+
+export function resolveDualInspectionTarget(
+  shape: Shape,
+  target: DualInspectionTarget,
+): ResolvedDualInspectionTarget | null {
+  const sourceCell = shape.cells.find((cell) => cell.id === target.sourceCellId);
+
+  if (!sourceCell) {
+    return null;
+  }
+
+  const viewModel = buildDualUniverseViewModel(shape, sourceCell);
+
+  if (viewModel.kind !== 'semantic-model') {
+    return null;
+  }
+
+  const { semanticModel } = viewModel;
+
+  if (target.kind === 'cell') {
+    return semanticModel.dualCell.id === target.dualCellId
+      ? {
+          kind: 'cell',
+          target,
+          semanticModel,
+          sourceCell,
+          dualCell: semanticModel.dualCell,
+        }
+      : null;
+  }
+
+  if (target.kind === 'vertex') {
+    const dualVertex = semanticModel.dualVertices[target.dualVertexId];
+    const sourceFaceId = semanticModel.dualVertexToSourceFace[target.dualVertexId];
+
+    if (!dualVertex || sourceFaceId !== target.sourceFaceId) {
+      return null;
+    }
+
+    return {
+      kind: 'vertex',
+      target,
+      semanticModel,
+      sourceCell,
+      dualVertex,
+      sourceFace: shape.faces.find((face) => face.id === target.sourceFaceId) ?? null,
+    };
+  }
+
+  if (target.kind === 'face') {
+    const dualFace = semanticModel.dualFaces.find((face) => face.id === target.dualFaceId);
+    const sourceVertexId = semanticModel.dualFaceToSourceVertex[target.dualFaceId];
+
+    if (!dualFace || sourceVertexId !== target.sourceVertexId) {
+      return null;
+    }
+
+    return {
+      kind: 'face',
+      target,
+      semanticModel,
+      sourceCell,
+      dualFace,
+      sourceVertex: shape.vertices[target.sourceVertexId] ?? null,
+    };
+  }
+
+  const dualEdge = semanticModel.dualEdges.find((edge) => edge.id === target.dualEdgeId);
+  const sourceEdgeId = semanticModel.dualEdgeToSourceEdge[target.dualEdgeId];
+
+  if (!dualEdge || sourceEdgeId !== target.sourceEdgeId) {
+    return null;
+  }
+
+  return {
+    kind: 'edge',
+    target,
+    semanticModel,
+    sourceCell,
+    dualEdge,
+    sourceEdge: shape.edges.find((edge) => edge.id === target.sourceEdgeId) ?? null,
   };
 }
 

@@ -5,6 +5,7 @@ import { getOperation } from '../operations/registry';
 import type {
   Cell,
   CellId,
+  EdgeId,
   FaceId,
   SeedKey,
   Shape,
@@ -12,6 +13,12 @@ import type {
   VertexDataPacket,
   VertexId,
 } from '../types/geometry';
+
+export type DualInspectionTarget =
+  | { universe: 'dual'; kind: 'cell'; sourceCellId: CellId; dualCellId: CellId }
+  | { universe: 'dual'; kind: 'vertex'; sourceCellId: CellId; dualVertexId: VertexId; sourceFaceId: FaceId }
+  | { universe: 'dual'; kind: 'face'; sourceCellId: CellId; dualFaceId: FaceId; sourceVertexId: VertexId }
+  | { universe: 'dual'; kind: 'edge'; sourceCellId: CellId; dualEdgeId: EdgeId; sourceEdgeId: EdgeId };
 
 interface CellVisibility {
   showCoreCells: boolean;
@@ -73,6 +80,7 @@ interface GeometryState {
   currentShapeId: ShapeId;
   selectedCellId: CellId | null;
   selectedVertexId: VertexId | null;
+  dualInspectionTarget: DualInspectionTarget | null;
   cellVisibility: CellVisibility;
   viewLayout: ViewLayout;
   hoverTarget: InspectionHoverTarget | null;
@@ -91,6 +99,8 @@ interface GeometryState {
   selectShape: (shapeId: ShapeId) => void;
   selectCell: (cellId: CellId | null) => void;
   selectVertex: (vertexId: VertexId | null) => void;
+  setDualInspectionTarget: (target: DualInspectionTarget | null) => void;
+  clearDualInspectionTarget: () => void;
   toggleCellVisibility: (key: keyof CellVisibility) => void;
   setExplodeAmount: (explodeAmount: number) => void;
   toggleDualView: () => void;
@@ -121,6 +131,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   currentShapeId: initialShape.id,
   selectedCellId: null,
   selectedVertexId: null,
+  dualInspectionTarget: null,
   cellVisibility: defaultCellVisibility,
   viewLayout: defaultViewLayout,
   hoverTarget: null,
@@ -152,6 +163,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: shape.id,
       selectedCellId: null,
       selectedVertexId: null,
+      dualInspectionTarget: null,
       cellVisibility: defaultCellVisibility,
       viewLayout: defaultViewLayout,
       hoverTarget: null,
@@ -180,6 +192,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: shape.id,
       selectedCellId: null,
       selectedVertexId: null,
+      dualInspectionTarget: null,
       cellVisibility: defaultCellVisibility,
       viewLayout: defaultViewLayout,
       hoverTarget: null,
@@ -205,6 +218,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       operationHistory: state.operationHistory.slice(0, -1),
       redoOperationHistory: nextRedoHistory,
       hoverTarget: null,
+      dualInspectionTarget: null,
     });
   },
   redoWorkspace: () => {
@@ -226,10 +240,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       operationHistory,
       redoOperationHistory: state.redoOperationHistory.slice(1),
       hoverTarget: null,
+      dualInspectionTarget: null,
     });
   },
   resetViewLayout: () => {
-    set({ viewLayout: defaultViewLayout, hoverTarget: null });
+    set({ viewLayout: defaultViewLayout, hoverTarget: null, dualInspectionTarget: null });
   },
   applyOperationToSelection: (operationId) => {
     const state = get();
@@ -285,6 +300,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: nextShape.id,
       selectedCellId: null,
       selectedVertexId: null,
+      dualInspectionTarget: null,
       hoverTarget: null,
       historySequence,
     });
@@ -309,14 +325,21 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
         state.selectedVertexId && shape.vertices[state.selectedVertexId]
           ? state.selectedVertexId
           : null,
+      dualInspectionTarget: null,
       hoverTarget: null,
     }));
   },
   selectCell: (cellId) => {
-    set({ selectedCellId: cellId, selectedVertexId: null });
+    set({ selectedCellId: cellId, selectedVertexId: null, dualInspectionTarget: null });
   },
   selectVertex: (vertexId) => {
-    set({ selectedVertexId: vertexId });
+    set({ selectedVertexId: vertexId, dualInspectionTarget: null });
+  },
+  setDualInspectionTarget: (target) => {
+    set({ dualInspectionTarget: target, selectedVertexId: null, hoverTarget: null });
+  },
+  clearDualInspectionTarget: () => {
+    set({ dualInspectionTarget: null });
   },
   toggleCellVisibility: (key) => {
     set((state) => ({
@@ -341,6 +364,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
         dualViewEnabled: !state.viewLayout.dualViewEnabled,
       },
       hoverTarget: null,
+      dualInspectionTarget: state.viewLayout.dualViewEnabled ? null : state.dualInspectionTarget,
     }));
   },
   toggleIsolateSelectedCell: () => {

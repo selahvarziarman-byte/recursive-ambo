@@ -7,7 +7,11 @@ import {
   isCellActiveFrontier,
   type CellLifecycleStatus,
 } from '../lib/cellLifecycle';
-import { isDualViewSupportedCell } from '../lib/dualView';
+import {
+  isDualViewSupportedCell,
+  resolveDualInspectionTarget,
+  type ResolvedDualInspectionTarget,
+} from '../lib/dualView';
 import { defaultOperation, registeredOperations } from '../operations/registry';
 import { formatVec3 } from '../lib/shape';
 import {
@@ -15,7 +19,11 @@ import {
   type CellTopologySignature,
   type TopologyFrontierGroup,
 } from '../lib/topologySignature';
-import { type OperationHistoryEntry, useGeometryStore } from '../store/geometryStore';
+import {
+  type DualInspectionTarget,
+  type OperationHistoryEntry,
+  useGeometryStore,
+} from '../store/geometryStore';
 import type {
   Cell,
   CellKind,
@@ -474,6 +482,7 @@ function SelectionPanel() {
           <p className="mt-2 text-sm text-stone-500">No cell selected.</p>
         )}
       </div>
+      <DualUniverseInspectionSection />
       {selectedCell ? (
         <label className="flex items-center justify-between gap-3 rounded border border-stone-800 bg-stone-950 px-3 py-2 text-sm text-stone-300">
           Isolate selected cell
@@ -505,6 +514,181 @@ function SelectionPanel() {
         </div>
       </div>
     </section>
+  );
+}
+
+function DualUniverseInspectionSection() {
+  const shape = useCurrentShape();
+  const dualInspectionTarget = useGeometryStore((state) => state.dualInspectionTarget);
+  const clearDualInspectionTarget = useGeometryStore((state) => state.clearDualInspectionTarget);
+  const resolvedTarget = useMemo(
+    () =>
+      dualInspectionTarget
+        ? resolveDualInspectionTarget(shape, dualInspectionTarget)
+        : null,
+    [dualInspectionTarget, shape],
+  );
+
+  if (!dualInspectionTarget) {
+    return null;
+  }
+
+  return (
+    <div className="rounded border border-violet-400/30 bg-violet-400/5 px-3 py-3 text-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-200">
+            Dual Universe Inspection
+          </h2>
+          <p className="mt-2 text-xs leading-5 text-stone-400">
+            Dual Universe inspection is read-only.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={clearDualInspectionTarget}
+          className="rounded border border-stone-700 bg-stone-950 px-2 py-1 text-xs text-stone-300 transition hover:border-stone-500 hover:text-stone-100"
+        >
+          Clear
+        </button>
+      </div>
+      {resolvedTarget ? (
+        <ResolvedDualInspectionDetails shape={shape} resolvedTarget={resolvedTarget} />
+      ) : (
+        <StaleDualInspectionDetails target={dualInspectionTarget} />
+      )}
+    </div>
+  );
+}
+
+function ResolvedDualInspectionDetails({
+  shape,
+  resolvedTarget,
+}: {
+  shape: Shape;
+  resolvedTarget: ResolvedDualInspectionTarget;
+}) {
+  if (resolvedTarget.kind === 'face') {
+    const packetSummary = resolvedTarget.sourceVertex
+      ? formatVertexPacketDetail(resolvedTarget.sourceVertex) ??
+        getPacketDisplayLabel(resolvedTarget.sourceVertex.data) ??
+        'untitled packet'
+      : 'source vertex unavailable';
+
+    return (
+      <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+        <InspectionDetail label="Entity" value="dual face" />
+        <InspectionDetail label="Dual face" value={resolvedTarget.dualFace.id} code />
+        <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+        <InspectionDetail label="Source vertex" value={resolvedTarget.target.sourceVertexId} code />
+        <InspectionDetail
+          label="Lineage"
+          value={resolvedTarget.dualFace.lineage?.inheritanceMode ?? 'none'}
+        />
+        <InspectionDetail
+          label="Dual vertices"
+          value={resolvedTarget.dualFace.vertexIds.join(', ')}
+          code
+        />
+        <InspectionDetail label="Packet" value={packetSummary} />
+      </dl>
+    );
+  }
+
+  if (resolvedTarget.kind === 'edge') {
+    return (
+      <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+        <InspectionDetail label="Entity" value="dual edge" />
+        <InspectionDetail label="Dual edge" value={resolvedTarget.dualEdge.id} code />
+        <InspectionDetail label="Source edge" value={resolvedTarget.target.sourceEdgeId} code />
+        <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+        <InspectionDetail
+          label="Lineage"
+          value={resolvedTarget.dualEdge.lineage?.inheritanceMode ?? 'none'}
+        />
+        <InspectionDetail
+          label="Dual vertices"
+          value={resolvedTarget.dualEdge.vertexIds.join(', ')}
+          code
+        />
+        <InspectionDetail
+          label="Source endpoints"
+          value={
+            resolvedTarget.sourceEdge
+              ? formatEdgeRef(shape, resolvedTarget.sourceEdge.vertexIds)
+              : 'source edge unavailable'
+          }
+        />
+      </dl>
+    );
+  }
+
+  if (resolvedTarget.kind === 'vertex') {
+    return (
+      <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+        <InspectionDetail label="Entity" value="dual vertex" />
+        <InspectionDetail label="Dual vertex" value={resolvedTarget.dualVertex.id} code />
+        <InspectionDetail label="Source face" value={resolvedTarget.target.sourceFaceId} code />
+        <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+        <InspectionDetail
+          label="Lineage"
+          value={resolvedTarget.dualVertex.data.lineage?.inheritanceMode ?? 'none'}
+        />
+        <InspectionDetail
+          label="Source face vertices"
+          value={resolvedTarget.sourceFace?.vertexIds.join(', ') ?? 'source face unavailable'}
+          code={Boolean(resolvedTarget.sourceFace)}
+        />
+        <InspectionDetail
+          label="Position"
+          value={formatVec3(resolvedTarget.dualVertex.position)}
+          code
+        />
+      </dl>
+    );
+  }
+
+  return (
+    <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+      <InspectionDetail label="Entity" value="dual cell" />
+      <InspectionDetail label="Dual cell" value={resolvedTarget.dualCell.id} code />
+      <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+      <InspectionDetail
+        label="Lineage"
+        value={resolvedTarget.dualCell.lineage?.inheritanceMode ?? 'none'}
+      />
+      <InspectionDetail label="Topology" value={resolvedTarget.dualCell.topology ?? 'unknown'} />
+    </dl>
+  );
+}
+
+function StaleDualInspectionDetails({ target }: { target: DualInspectionTarget }) {
+  return (
+    <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+      <InspectionDetail label="Entity" value={`stale dual ${target.kind}`} />
+      <InspectionDetail label="Source cell" value={target.sourceCellId} code />
+      <InspectionDetail
+        label="Status"
+        value="The source cell no longer produces a semantic Dual Universe model."
+      />
+    </dl>
+  );
+}
+
+function InspectionDetail({
+  label,
+  value,
+  code = false,
+}: {
+  label: string;
+  value: string;
+  code?: boolean;
+}) {
+  return (
+    <>
+      <dt className="text-stone-500">{label}</dt>
+      <dd className={`${code ? 'break-all font-mono text-xs' : ''} text-stone-200`}>{value}</dd>
+    </>
   );
 }
 

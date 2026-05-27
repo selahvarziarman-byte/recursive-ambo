@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 import {
   buildDualUniverseRenderGeometry,
+  createDualEdgeInspectionTarget,
+  createDualFaceInspectionTarget,
   type DualUniverseRenderGeometry,
 } from '../lib/dualView';
 import { type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
@@ -20,6 +22,7 @@ export function Workspace3D() {
   const selectCell = useGeometryStore((state) => state.selectCell);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
+  const clearDualInspectionTarget = useGeometryStore((state) => state.clearDualInspectionTarget);
 
   return (
     <div className="relative h-full min-h-[440px] w-full bg-neutral-950">
@@ -29,6 +32,7 @@ export function Workspace3D() {
           selectCell(null);
           selectVertex(null);
           setHoverTarget(null);
+          clearDualInspectionTarget();
         }}
       >
         <color attach="background" args={['#0c0a09']} />
@@ -141,6 +145,8 @@ function CellMesh({
   renderIndex: number;
 }) {
   const selectCell = useGeometryStore((state) => state.selectCell);
+  const clearDualInspectionTarget = useGeometryStore((state) => state.clearDualInspectionTarget);
+  const setDualInspectionTarget = useGeometryStore((state) => state.setDualInspectionTarget);
   const renderGeometry = useMemo(
     () => createCellRenderGeometry(shape, cell, dualViewEnabled),
     [cell, dualViewEnabled, shape],
@@ -175,6 +181,8 @@ function CellMesh({
     () => createHoverEdgeGeometry(renderGeometry, hoverTarget),
     [hoverTarget, renderGeometry],
   );
+  const usesSemanticDualInspectionTargets =
+    renderGeometry.dualUniverse?.kind === 'semantic-model';
   const style = cellStyle(
     cell,
     isSelected,
@@ -200,18 +208,39 @@ function CellMesh({
       </mesh>
       <mesh
         geometry={faceGeometry}
+        onPointerDown={(event) => {
+          if (!usesSemanticDualInspectionTargets) {
+            return;
+          }
+
+          event.stopPropagation();
+          const target = createSemanticDualFaceTargetFromEvent(renderGeometry, event.faceIndex);
+
+          if (target) {
+            setDualInspectionTarget(target);
+          }
+        }}
         onClick={(event) => {
           event.stopPropagation();
+          if (usesSemanticDualInspectionTargets) {
+            return;
+          }
+
+          clearDualInspectionTarget();
           selectCell(cell.id);
         }}
         onPointerMove={(event) => {
           event.stopPropagation();
-          onHoverTarget({ kind: 'cell', cellId: cell.id });
+          if (!usesSemanticDualInspectionTargets) {
+            onHoverTarget({ kind: 'cell', cellId: cell.id });
+          }
           document.body.style.cursor = 'pointer';
         }}
         onPointerOver={(event) => {
           event.stopPropagation();
-          onHoverTarget({ kind: 'cell', cellId: cell.id });
+          if (!usesSemanticDualInspectionTargets) {
+            onHoverTarget({ kind: 'cell', cellId: cell.id });
+          }
           document.body.style.cursor = 'pointer';
         }}
         onPointerOut={(event) => {
@@ -256,6 +285,9 @@ function CellMesh({
         <lineSegments geometry={hoverEdgeGeometry} raycast={() => null}>
           <lineBasicMaterial color="#fb923c" transparent opacity={1} />
         </lineSegments>
+      ) : null}
+      {renderGeometry.dualUniverse?.kind === 'semantic-model' ? (
+        <SemanticDualInspectionTargets renderGeometry={renderGeometry} />
       ) : null}
       {renderGeometry.showVertexMarkers
         ? cell.vertexIds.map((vertexId) => {
@@ -372,6 +404,206 @@ interface CellRenderGeometry {
   topology?: string;
   showVertexMarkers: boolean;
   dualUniverse?: DualUniverseRenderGeometry;
+}
+
+function SemanticDualInspectionTargets({
+  renderGeometry,
+}: {
+  renderGeometry: CellRenderGeometry;
+}) {
+  const setDualInspectionTarget = useGeometryStore((state) => state.setDualInspectionTarget);
+  const semanticRenderGeometry =
+    renderGeometry.dualUniverse?.kind === 'semantic-model' ? renderGeometry.dualUniverse : null;
+  const vertexById = useMemo(
+    () => new Map(renderGeometry.vertices.map((vertex) => [vertex.id, vertex])),
+    [renderGeometry.vertices],
+  );
+
+  if (!semanticRenderGeometry) {
+    return null;
+  }
+
+  const semanticModel = semanticRenderGeometry.viewModel.semanticModel;
+
+  return (
+    <>
+      {renderGeometry.faces.map((face) => {
+        const target = createDualFaceInspectionTarget(semanticModel, face.id);
+
+        return target ? (
+          <SemanticDualFaceInspectionTarget
+            key={`dual-face-hit:${face.id}`}
+            face={face}
+            renderGeometry={renderGeometry}
+            onInspect={() => setDualInspectionTarget(target)}
+          />
+        ) : null;
+      })}
+      {renderGeometry.edges.map((edge) => {
+        const target = edge.id
+          ? createDualEdgeInspectionTarget(semanticModel, edge.id)
+          : null;
+
+        return target ? (
+          <SemanticDualEdgeInspectionTarget
+            key={`dual-edge-hit:${edge.id}`}
+            edge={edge}
+            vertexById={vertexById}
+            onInspect={() => setDualInspectionTarget(target)}
+          />
+        ) : null;
+      })}
+    </>
+  );
+}
+
+function SemanticDualFaceInspectionTarget({
+  face,
+  renderGeometry,
+  onInspect,
+}: {
+  face: RenderFace;
+  renderGeometry: CellRenderGeometry;
+  onInspect: () => void;
+}) {
+  const geometry = useMemo(
+    () => createFaceGeometry(renderGeometry.vertices, [face]),
+    [face, renderGeometry.vertices],
+  );
+
+  return (
+    <mesh
+      geometry={geometry}
+      onPointerDown={(event) => {
+        event.stopPropagation();
+        onInspect();
+      }}
+      onPointerMove={(event) => {
+        event.stopPropagation();
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOver={(event) => {
+        event.stopPropagation();
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOut={(event) => {
+        event.stopPropagation();
+        document.body.style.cursor = 'auto';
+      }}
+    >
+      <meshBasicMaterial
+        color="#ffffff"
+        depthWrite={false}
+        opacity={0.001}
+        side={THREE.DoubleSide}
+        transparent
+      />
+    </mesh>
+  );
+}
+
+function SemanticDualEdgeInspectionTarget({
+  edge,
+  vertexById,
+  onInspect,
+}: {
+  edge: RenderEdge;
+  vertexById: Map<string, RenderVertex>;
+  onInspect: () => void;
+}) {
+  const transform = useMemo(() => {
+    const vertexA = vertexById.get(edge.vertexIds[0]);
+    const vertexB = vertexById.get(edge.vertexIds[1]);
+
+    if (!vertexA || !vertexB) {
+      return null;
+    }
+
+    const start = new THREE.Vector3(...vertexA.position);
+    const end = new THREE.Vector3(...vertexB.position);
+    const direction = end.clone().sub(start);
+    const length = direction.length();
+
+    if (length < 0.0001) {
+      return null;
+    }
+
+    return {
+      length,
+      position: start.add(end).multiplyScalar(0.5),
+      quaternion: new THREE.Quaternion().setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.normalize(),
+      ),
+    };
+  }, [edge.vertexIds, vertexById]);
+
+  if (!transform) {
+    return null;
+  }
+
+  return (
+    <mesh
+      position={transform.position}
+      quaternion={transform.quaternion}
+      onPointerDown={(event) => {
+        event.stopPropagation();
+        onInspect();
+      }}
+      onPointerMove={(event) => {
+        event.stopPropagation();
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOver={(event) => {
+        event.stopPropagation();
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOut={(event) => {
+        event.stopPropagation();
+        document.body.style.cursor = 'auto';
+      }}
+    >
+      <cylinderGeometry args={[0.035, 0.035, transform.length, 8, 1]} />
+      <meshBasicMaterial color="#ffffff" depthWrite={false} opacity={0.001} transparent />
+    </mesh>
+  );
+}
+
+function createSemanticDualFaceTargetFromEvent(
+  renderGeometry: CellRenderGeometry,
+  faceIndex: number | null | undefined,
+) {
+  const semanticRenderGeometry =
+    renderGeometry.dualUniverse?.kind === 'semantic-model' ? renderGeometry.dualUniverse : null;
+
+  if (!semanticRenderGeometry || faceIndex == null) {
+    return null;
+  }
+
+  const face = getRenderFaceForTriangleIndex(renderGeometry.faces, faceIndex);
+
+  return face
+    ? createDualFaceInspectionTarget(semanticRenderGeometry.viewModel.semanticModel, face.id)
+    : null;
+}
+
+function getRenderFaceForTriangleIndex(
+  faces: RenderFace[],
+  triangleIndex: number,
+): RenderFace | null {
+  let firstTriangleIndex = 0;
+
+  for (const face of faces) {
+    const triangleCount = Math.max(0, face.vertexIds.length - 2);
+
+    if (triangleIndex >= firstTriangleIndex && triangleIndex < firstTriangleIndex + triangleCount) {
+      return face;
+    }
+
+    firstTriangleIndex += triangleCount;
+  }
+
+  return null;
 }
 
 function createCellRenderGeometry(
