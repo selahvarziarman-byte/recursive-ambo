@@ -55,6 +55,7 @@ console.log('');
 
 verifyOperationRegistryBoundary();
 verifyLegacyProxyCoverage();
+verifyCuboctahedronCorrespondenceCoverage();
 verifyUnsupportedCoverage();
 verifyPyritohedralSemanticPolicy();
 verifyMaterializedDodecahedronSourcePolicy();
@@ -173,6 +174,73 @@ function verifyLegacyProxyCoverage() {
   }
 }
 
+function verifyCuboctahedronCorrespondenceCoverage() {
+  printDivider('cuboctahedron correspondence coverage');
+
+  for (const scenario of [
+    {
+      label: 'tetrahedron path cuboctahedron',
+      seedKey: 'tetrahedron',
+      amboSteps: [
+        step('tetrahedron seed', selectActiveCell({ kind: 'seed' })),
+        step('octahedron core', selectActiveCell({ kind: 'core', topology: 'octahedron' })),
+      ],
+    },
+    {
+      label: 'cube path cuboctahedron',
+      seedKey: 'cube',
+      amboSteps: [step('cube seed', selectActiveCell({ kind: 'seed' }))],
+    },
+  ]) {
+    let shape = createSeedShape(scenario.seedKey);
+
+    for (const scenarioStep of scenario.amboSteps) {
+      shape = applyAmbo(shape, scenarioStep.select(shape), scenarioStep.label);
+    }
+
+    const cell = requireActiveCell(shape, { kind: 'core', topology: 'cuboctahedron' });
+    const viewModel = buildDualUniverseViewModel(shape, cell);
+    const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
+    const fixture = {
+      seedKey: scenario.label,
+      expectedTopology: 'rhombic-dodecahedron',
+      expectedCounts: { vertices: 14, faces: 12, edges: 24 },
+      expectedFaceSizeHistogram: { 4: 12 },
+    };
+
+    expect(viewModel.kind === 'legacy-proxy', `${scenario.label}: expected correspondence view model`);
+    expect(renderGeometry.kind === 'legacy-proxy', `${scenario.label}: expected correspondence render geometry`);
+    expect(isDualViewSupportedCell(shape, cell), `${scenario.label}: cuboctahedron should now be Dual View supported`);
+
+    if (viewModel.kind === 'legacy-proxy') {
+      expect(
+        viewModel.proxy.topology === fixture.expectedTopology,
+        `${scenario.label}: expected rhombic-dodecahedron counterpart`,
+      );
+      verifyLegacyCorrespondenceModel(scenario.label, shape, cell, viewModel.proxy.correspondenceModel, fixture);
+      verifyCorrespondenceTargetResolution(shape, viewModel.proxy.correspondenceModel, scenario.label);
+    }
+
+    if (renderGeometry.kind === 'legacy-proxy') {
+      expect(renderGeometry.topology === fixture.expectedTopology, `${scenario.label}: wrong render topology`);
+      expect(renderGeometry.vertices.length === 14, `${scenario.label}: wrong render vertex count`);
+      expect(renderGeometry.edges.length === 24, `${scenario.label}: wrong render edge count`);
+      expect(renderGeometry.faces.length === 12, `${scenario.label}: wrong render face count`);
+      verifyRenderEdgesBackedByModel(
+        scenario.label,
+        renderGeometry.edges,
+        renderGeometry.viewModel.proxy.correspondenceModel,
+      );
+    }
+
+    logPolicy(
+      scenario.label,
+      'LEGACY_PROXY_OK',
+      'cuboctahedron -> rhombic-dodecahedron enabled through read-only correspondence model',
+    );
+  }
+}
+
 function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, fixture) {
   const sourceFaces = getCellFaces(shape, cell);
   const sourceEdges = getCellEdges(shape, cell);
@@ -195,6 +263,13 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, fixture) {
     model.dualEdges.every((edge) => Boolean(edge.id) && Boolean(edge.sourceEdgeId)),
     `${seedKey}: each correspondence dual edge must have sourceEdgeId`,
   );
+  if (fixture.expectedFaceSizeHistogram) {
+    expectSameHistogram(
+      `${seedKey}: dual face sizes`,
+      histogram(model.dualFaces.map((face) => face.vertexIds.length)),
+      fixture.expectedFaceSizeHistogram,
+    );
+  }
   verifyModelFaceEdgeCoherence(seedKey, model);
   verifyInverseMap(
     seedKey,
@@ -320,8 +395,6 @@ function verifyUnsupportedCoverage() {
     kind: 'core',
     topology: 'cuboctahedron',
   });
-
-  verifyUnsupportedCell(cubePath, cuboctahedron, 'cuboctahedron', 'UNSUPPORTED_PENDING_POLICY');
 
   cubePath = applyAmbo(cubePath, cuboctahedron, 'cuboctahedron core');
   const rhombicuboctahedron = requireActiveCell(cubePath, {
@@ -696,6 +769,36 @@ function expectSameSet(label, actual, expected) {
     actualValues.join(',') === expectedValues.join(','),
     `${label} mismatch expected=${expectedValues.join(',')} actual=${actualValues.join(',')}`,
   );
+}
+
+function expectSameHistogram(label, actual, expected) {
+  const actualEntries = formatHistogram(actual);
+  const expectedEntries = Object.entries(expected)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([size, count]) => `${size}:${count}`)
+    .join(',');
+
+  expect(
+    actualEntries === expectedEntries,
+    `${label} mismatch expected=${expectedEntries} actual=${actualEntries}`,
+  );
+}
+
+function histogram(values) {
+  const counts = new Map();
+
+  for (const value of values) {
+    counts.set(value, (counts.get(value) ?? 0) + 1);
+  }
+
+  return counts;
+}
+
+function formatHistogram(counts) {
+  return Array.from(counts.entries())
+    .sort((a, b) => Number(a[0]) - Number(b[0]))
+    .map(([size, count]) => `${size}:${count}`)
+    .join(',');
 }
 
 function verifyInverseMap(scenarioName, label, forward, reverse, expectedSources, expectedTargets) {

@@ -40,6 +40,19 @@ console.log('');
 verifyLegacyRender('tetrahedron', { topology: 'tetrahedron', vertices: 4, faces: 4, edges: 6 });
 verifyLegacyRender('octahedron', { topology: 'cube', vertices: 8, faces: 6, edges: 12 });
 verifyLegacyRender('cube', { topology: 'octahedron', vertices: 6, faces: 8, edges: 12 });
+verifyCuboctahedronRenderPath({
+  name: 'tetrahedron -> octahedron -> cuboctahedron',
+  seedKey: 'tetrahedron',
+  amboSteps: [
+    step('dissect tetrahedron seed', selectSeedCell),
+    step('dissect octahedron core', selectActiveCell({ kind: 'core', topology: 'octahedron' })),
+  ],
+});
+verifyCuboctahedronRenderPath({
+  name: 'cube -> cuboctahedron',
+  seedKey: 'cube',
+  amboSteps: [step('dissect cube seed', selectSeedCell)],
+});
 
 verifySemanticRenderScenario({
   name: 'tetrahedron -> octahedron -> cuboctahedron -> pyritohedral-icosahedron',
@@ -75,32 +88,62 @@ if (failures.length) {
 function verifyLegacyRender(seedKey, expected) {
   const shape = createSeedShape(seedKey);
   const cell = shape.cells[0];
+
+  verifyCorrespondenceRender(seedKey, shape, cell, expected);
+}
+
+function verifyCuboctahedronRenderPath(scenario) {
+  printDivider(scenario.name);
+
+  let shape = createSeedShape(scenario.seedKey);
+
+  for (const scenarioStep of scenario.amboSteps) {
+    shape = applyAmbo(shape, scenarioStep.select(shape), scenarioStep.label);
+  }
+
+  const cell = selectActiveCell({ kind: 'core', topology: 'cuboctahedron' })(shape);
+
+  if (!cell) {
+    recordFailure(`${scenario.name}: did not reach cuboctahedron`);
+    return;
+  }
+
+  verifyCorrespondenceRender(scenario.name, shape, cell, {
+    topology: 'rhombic-dodecahedron',
+    vertices: 14,
+    faces: 12,
+    edges: 24,
+    faceSizeHistogram: { 4: 12 },
+  });
+}
+
+function verifyCorrespondenceRender(label, shape, cell, expected) {
   const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
 
-  console.log(`legacy ${seedKey}: ${renderGeometry.kind}`);
-  expect(renderGeometry.kind === 'legacy-proxy', `${seedKey}: expected legacy render geometry`);
+  console.log(`correspondence ${label}: ${renderGeometry.kind}`);
+  expect(renderGeometry.kind === 'legacy-proxy', `${label}: expected legacy render geometry`);
 
   if (renderGeometry.kind !== 'legacy-proxy') {
     return;
   }
 
-  expect(renderGeometry.topology === expected.topology, `${seedKey}: wrong render topology`);
-  expect(renderGeometry.vertices.length === expected.vertices, `${seedKey}: wrong render vertex count`);
-  expect(renderGeometry.faces.length === expected.faces, `${seedKey}: wrong render face count`);
-  expect(renderGeometry.edges.length === expected.edges, `${seedKey}: wrong render edge count`);
+  expect(renderGeometry.topology === expected.topology, `${label}: wrong render topology`);
+  expect(renderGeometry.vertices.length === expected.vertices, `${label}: wrong render vertex count`);
+  expect(renderGeometry.faces.length === expected.faces, `${label}: wrong render face count`);
+  expect(renderGeometry.edges.length === expected.edges, `${label}: wrong render edge count`);
   expect(
     renderGeometry.edges.every((edge) => Boolean(edge.id) && Boolean(edge.sourceEdgeId)),
-    `${seedKey}: legacy render edges must come from the correspondence model`,
+    `${label}: legacy render edges must come from the correspondence model`,
   );
   verifyLegacyCorrespondenceModel(
-    seedKey,
+    label,
     shape,
     cell,
     renderGeometry.viewModel.proxy.correspondenceModel,
     expected,
   );
   verifyRenderEdgesBackedByModel(
-    seedKey,
+    label,
     renderGeometry.edges,
     renderGeometry.viewModel.proxy.correspondenceModel,
   );
@@ -125,6 +168,14 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, expected) 
   expectSameSet(seedKey, 'legacy sourceFaceToDualVertex source keys', Object.keys(model.sourceFaceToDualVertex), sourceFaceIds);
   expectSameSet(seedKey, 'legacy sourceVertexToDualFace source keys', Object.keys(model.sourceVertexToDualFace), sourceVertexIds);
   expectSameSet(seedKey, 'legacy sourceEdgeToDualEdge source keys', Object.keys(model.sourceEdgeToDualEdge), sourceEdgeIds);
+  if (expected.faceSizeHistogram) {
+    expectSameHistogram(
+      seedKey,
+      'dual face sizes',
+      histogram(model.dualFaces.map((face) => face.vertexIds.length)),
+      expected.faceSizeHistogram,
+    );
+  }
   verifyInverseMap(
     seedKey,
     'legacy sourceFaceToDualVertex',
@@ -438,6 +489,36 @@ function expectSameSet(scenarioName, label, actual, expected) {
     actualIds.join(',') === expectedIds.join(','),
     `${scenarioName}: ${label} mismatch expected=${expectedIds.join(',')} actual=${actualIds.join(',')}`,
   );
+}
+
+function expectSameHistogram(label, histogramLabel, actual, expected) {
+  const actualEntries = formatHistogram(actual);
+  const expectedEntries = Object.entries(expected)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([size, count]) => `${size}:${count}`)
+    .join(',');
+
+  expect(
+    actualEntries === expectedEntries,
+    `${label}: ${histogramLabel} mismatch expected=${expectedEntries} actual=${actualEntries}`,
+  );
+}
+
+function histogram(values) {
+  const counts = new Map();
+
+  for (const value of values) {
+    counts.set(value, (counts.get(value) ?? 0) + 1);
+  }
+
+  return counts;
+}
+
+function formatHistogram(counts) {
+  return Array.from(counts.entries())
+    .sort((a, b) => Number(a[0]) - Number(b[0]))
+    .map(([size, count]) => `${size}:${count}`)
+    .join(',');
 }
 
 function getBoundaryEdgeCounts(faces) {

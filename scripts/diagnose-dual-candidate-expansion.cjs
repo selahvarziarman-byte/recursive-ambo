@@ -115,7 +115,7 @@ function verifyCuboctahedronCandidatePath({ pathLabel, build }) {
   verifyCandidateModelCounts(pathLabel, shape, cell, sourceFaces, sourceEdges, model);
   verifyCandidateFaceEdgeCoherence(pathLabel, model);
   verifyCandidateSourceEdgeRule(pathLabel, model, sourceEdges, incidentFacesByEdgeKey);
-  verifyPolicyNonExpansion(pathLabel, shape, cell, model);
+  verifyPolicyEnabled(pathLabel, shape, cell, model);
 
   const dualFaceSizeHistogram = histogram(model.dualFaces.map((face) => face.vertexIds.length));
 
@@ -132,7 +132,7 @@ function verifyCuboctahedronCandidatePath({ pathLabel, build }) {
   console.log('correspondence maps: complete inverse maps');
   console.log('face/edge coherence: boundary edge set equals model dual edges');
   console.log('source edge rule: every source edge maps to its two incident source-face dual vertices');
-  console.log('POLICY_UNCHANGED: cuboctahedron remains unsupported in runtime Dual View');
+  console.log('POLICY_ENABLED: cuboctahedron -> rhombic-dodecahedron is enabled through DualCorrespondenceModel');
 }
 
 function verifyCandidateModelCounts(pathLabel, shape, cell, sourceFaces, sourceEdges, model) {
@@ -240,20 +240,60 @@ function verifyCandidateSourceEdgeRule(pathLabel, model, sourceEdges, incidentFa
   }
 }
 
-function verifyPolicyNonExpansion(pathLabel, shape, cell, model) {
+function verifyPolicyEnabled(pathLabel, shape, cell, model) {
   const viewModel = buildDualUniverseViewModel(shape, cell);
   const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
+  const candidateDualVertex = Object.values(model.dualVertices)[0];
   const candidateDualFace = model.dualFaces[0];
-  const fakeCandidateTarget = candidateDualFace
+  const candidateDualEdge = model.dualEdges[0];
+  const vertexTarget = candidateDualVertex
+    ? createDualCorrespondenceVertexInspectionTarget(model, candidateDualVertex.id)
+    : null;
+  const faceTarget = candidateDualFace
     ? createDualCorrespondenceFaceInspectionTarget(model, candidateDualFace.id)
     : null;
+  const edgeTarget = candidateDualEdge
+    ? createDualCorrespondenceEdgeInspectionTarget(model, candidateDualEdge.id)
+    : null;
+  const resolvedVertex = vertexTarget ? resolveDualInspectionTarget(shape, vertexTarget) : null;
+  const resolvedFace = faceTarget ? resolveDualInspectionTarget(shape, faceTarget) : null;
+  const resolvedEdge = edgeTarget ? resolveDualInspectionTarget(shape, edgeTarget) : null;
 
-  expect(viewModel.kind === 'unsupported', `${pathLabel}: runtime view model must still reject cuboctahedron`);
-  expect(renderGeometry.kind === 'unsupported', `${pathLabel}: runtime render geometry must still reject cuboctahedron`);
-  expect(Boolean(fakeCandidateTarget), `${pathLabel}: direct candidate target should be constructible for probe only`);
+  expect(viewModel.kind === 'legacy-proxy', `${pathLabel}: runtime view model should enable cuboctahedron`);
+  expect(renderGeometry.kind === 'legacy-proxy', `${pathLabel}: runtime render geometry should enable cuboctahedron`);
+
+  if (viewModel.kind === 'legacy-proxy') {
+    expect(
+      viewModel.proxy.topology === 'rhombic-dodecahedron',
+      `${pathLabel}: runtime view model should use rhombic-dodecahedron topology`,
+    );
+    expect(
+      viewModel.proxy.correspondenceModel.dualModelId === model.dualModelId,
+      `${pathLabel}: runtime model id should match direct candidate model id`,
+    );
+  }
+
+  if (renderGeometry.kind === 'legacy-proxy') {
+    expect(renderGeometry.topology === 'rhombic-dodecahedron', `${pathLabel}: wrong runtime render topology`);
+    expect(renderGeometry.vertices.length === 14, `${pathLabel}: wrong runtime render vertex count`);
+    expect(renderGeometry.edges.length === 24, `${pathLabel}: wrong runtime render edge count`);
+    expect(renderGeometry.faces.length === 12, `${pathLabel}: wrong runtime render face count`);
+  }
+
+  expect(Boolean(vertexTarget), `${pathLabel}: candidate vertex target should be constructible`);
+  expect(Boolean(faceTarget), `${pathLabel}: candidate face target should be constructible`);
+  expect(Boolean(edgeTarget), `${pathLabel}: candidate edge target should be constructible`);
   expect(
-    !fakeCandidateTarget || resolveDualInspectionTarget(shape, fakeCandidateTarget) === null,
-    `${pathLabel}: direct candidate target must not resolve through runtime policy`,
+    resolvedVertex?.kind === 'vertex' && resolvedVertex.modelKind === 'correspondence',
+    `${pathLabel}: runtime policy should resolve candidate dual vertex inspection`,
+  );
+  expect(
+    resolvedFace?.kind === 'face' && resolvedFace.modelKind === 'correspondence',
+    `${pathLabel}: runtime policy should resolve candidate dual face inspection`,
+  );
+  expect(
+    resolvedEdge?.kind === 'edge' && resolvedEdge.modelKind === 'correspondence',
+    `${pathLabel}: runtime policy should resolve candidate dual edge inspection`,
   );
 }
 

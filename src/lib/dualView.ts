@@ -5,7 +5,11 @@ import { buildSemanticDualModel, type SemanticDualModel } from './dualization';
 import { canonicalEdgeKey, stableHash } from './ids';
 import { getCellFaces, getCellVertices, getFaceVertices } from './shape';
 
-export type DualViewSupportedTopology = 'tetrahedron' | 'octahedron' | 'cube';
+export type DualViewSupportedTopology =
+  | 'tetrahedron'
+  | 'octahedron'
+  | 'cube'
+  | 'rhombic-dodecahedron';
 export type DualViewTopology =
   | DualViewSupportedTopology
   | 'cuboctahedron'
@@ -222,8 +226,15 @@ export function describeDualViewTopology(shape: Shape, cell: Cell): DualViewDesc
     return { source: 'cube', dual: 'octahedron' };
   }
 
-  if (cell.kind === 'core' && cell.vertexIds.length === 12) {
-    return { source: 'cuboctahedron' };
+  if (
+    cell.kind === 'core' &&
+    cell.topology === 'cuboctahedron' &&
+    cell.vertexIds.length === 12 &&
+    faces.length === 14 &&
+    faceSizes.filter((size) => size === 3).length === 8 &&
+    faceSizes.filter((size) => size === 4).length === 6
+  ) {
+    return { source: 'cuboctahedron', dual: 'rhombic-dodecahedron' };
   }
 
   if (cell.kind === 'residue' && cell.vertexIds.length === 5) {
