@@ -1,11 +1,12 @@
 import { OrbitControls } from '@react-three/drei';
 import { Canvas, type ThreeEvent } from '@react-three/fiber';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import * as THREE from 'three';
 import {
   buildDualUniverseRenderGeometry,
   createDualEdgeInspectionTarget,
   createDualFaceInspectionTarget,
+  createDualVertexInspectionTarget,
   type DualUniverseRenderGeometry,
 } from '../lib/dualView';
 import { type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
@@ -453,7 +454,57 @@ function SemanticDualInspectionTargets({
           />
         ) : null;
       })}
+      {renderGeometry.vertices.map((vertex) => {
+        const target = createDualVertexInspectionTarget(semanticModel, vertex.id);
+
+        return target ? (
+          <SemanticDualVertexInspectionMarker
+            key={`dual-vertex-marker:${vertex.id}`}
+            vertex={vertex}
+            onInspect={() => setDualInspectionTarget(target)}
+          />
+        ) : null;
+      })}
     </>
+  );
+}
+
+function SemanticDualVertexInspectionMarker({
+  vertex,
+  onInspect,
+}: {
+  vertex: RenderVertex;
+  onInspect: () => void;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <mesh
+      position={vertex.position}
+      scale={isHovered ? 1.24 : 1}
+      onPointerDown={(event) => {
+        event.stopPropagation();
+        onInspect();
+      }}
+      onPointerOver={(event) => {
+        event.stopPropagation();
+        setIsHovered(true);
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOut={(event) => {
+        event.stopPropagation();
+        setIsHovered(false);
+        document.body.style.cursor = 'auto';
+      }}
+    >
+      <sphereGeometry args={[0.058, 20, 14]} />
+      <meshStandardMaterial
+        color={isHovered ? '#f5d0fe' : '#e879f9'}
+        emissive="#86198f"
+        emissiveIntensity={isHovered ? 0.55 : 0.28}
+        roughness={0.38}
+      />
+    </mesh>
   );
 }
 
