@@ -13,6 +13,7 @@
     "diagnose:dual-view": "node scripts/diagnose-dual-view.cjs",
     "diagnose:dual-render-model": "node scripts/diagnose-dual-render-model.cjs",
     "diagnose:dual-inspection": "node scripts/diagnose-dual-inspection.cjs",
+    "diagnose:dual-coverage": "node scripts/diagnose-dual-coverage.cjs",
     "preview": "vite preview"
   },
   "dependencies": {
