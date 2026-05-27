@@ -56,6 +56,7 @@ console.log('');
 verifyOperationRegistryBoundary();
 verifyLegacyProxyCoverage();
 verifyCuboctahedronCorrespondenceCoverage();
+verifyRhombicuboctahedronCorrespondenceCoverage();
 verifyUnsupportedCoverage();
 verifyPyritohedralSemanticPolicy();
 verifyMaterializedDodecahedronSourcePolicy();
@@ -241,6 +242,77 @@ function verifyCuboctahedronCorrespondenceCoverage() {
   }
 }
 
+function verifyRhombicuboctahedronCorrespondenceCoverage() {
+  printDivider('rhombicuboctahedron correspondence coverage');
+
+  for (const scenario of [
+    {
+      label: 'tetrahedron path rhombicuboctahedron',
+      seedKey: 'tetrahedron',
+      amboSteps: [
+        step('tetrahedron seed', selectActiveCell({ kind: 'seed' })),
+        step('octahedron core', selectActiveCell({ kind: 'core', topology: 'octahedron' })),
+        step('cuboctahedron core', selectActiveCell({ kind: 'core', topology: 'cuboctahedron' })),
+      ],
+    },
+    {
+      label: 'cube path rhombicuboctahedron',
+      seedKey: 'cube',
+      amboSteps: [
+        step('cube seed', selectActiveCell({ kind: 'seed' })),
+        step('cuboctahedron core', selectActiveCell({ kind: 'core', topology: 'cuboctahedron' })),
+      ],
+    },
+  ]) {
+    let shape = createSeedShape(scenario.seedKey);
+
+    for (const scenarioStep of scenario.amboSteps) {
+      shape = applyAmbo(shape, scenarioStep.select(shape), scenarioStep.label);
+    }
+
+    const cell = requireActiveCell(shape, { kind: 'core', topology: 'rhombicuboctahedron' });
+    const viewModel = buildDualUniverseViewModel(shape, cell);
+    const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
+    const fixture = {
+      seedKey: scenario.label,
+      expectedTopology: 'deltoidal-icositetrahedron',
+      expectedCounts: { vertices: 26, faces: 24, edges: 48 },
+      expectedFaceSizeHistogram: { 4: 24 },
+    };
+
+    expect(viewModel.kind === 'correspondence-proxy', `${scenario.label}: expected correspondence view model`);
+    expect(renderGeometry.kind === 'correspondence-proxy', `${scenario.label}: expected correspondence render geometry`);
+    expect(isDualViewSupportedCell(shape, cell), `${scenario.label}: rhombicuboctahedron should now be Dual View supported`);
+
+    if (viewModel.kind === 'correspondence-proxy') {
+      expect(
+        viewModel.correspondenceProxy.topology === fixture.expectedTopology,
+        `${scenario.label}: expected deltoidal-icositetrahedron counterpart`,
+      );
+      verifyCorrespondenceModel(scenario.label, shape, cell, viewModel.correspondenceProxy.correspondenceModel, fixture);
+      verifyCorrespondenceTargetResolution(shape, viewModel.correspondenceProxy.correspondenceModel, scenario.label);
+    }
+
+    if (renderGeometry.kind === 'correspondence-proxy') {
+      expect(renderGeometry.topology === fixture.expectedTopology, `${scenario.label}: wrong render topology`);
+      expect(renderGeometry.vertices.length === 26, `${scenario.label}: wrong render vertex count`);
+      expect(renderGeometry.edges.length === 48, `${scenario.label}: wrong render edge count`);
+      expect(renderGeometry.faces.length === 24, `${scenario.label}: wrong render face count`);
+      verifyRenderEdgesBackedByModel(
+        scenario.label,
+        renderGeometry.edges,
+        renderGeometry.viewModel.correspondenceProxy.correspondenceModel,
+      );
+    }
+
+    logPolicy(
+      scenario.label,
+      'CORRESPONDENCE_PROXY_OK',
+      'rhombicuboctahedron -> deltoidal-icositetrahedron enabled through read-only correspondence model',
+    );
+  }
+}
+
 function verifyCorrespondenceModel(seedKey, shape, cell, model, fixture) {
   const sourceFaces = getCellFaces(shape, cell);
   const sourceEdges = getCellEdges(shape, cell);
@@ -388,21 +460,6 @@ function verifyRenderEdgesBackedByModel(label, renderEdges, model) {
 
 function verifyUnsupportedCoverage() {
   printDivider('unsupported intermediate/frontier coverage');
-
-  let cubePath = createSeedShape('cube');
-  cubePath = applyAmbo(cubePath, selectActiveCell({ kind: 'seed' })(cubePath), 'cube seed');
-  const cuboctahedron = requireActiveCell(cubePath, {
-    kind: 'core',
-    topology: 'cuboctahedron',
-  });
-
-  cubePath = applyAmbo(cubePath, cuboctahedron, 'cuboctahedron core');
-  const rhombicuboctahedron = requireActiveCell(cubePath, {
-    kind: 'core',
-    topology: 'rhombicuboctahedron',
-  });
-
-  verifyUnsupportedCell(cubePath, rhombicuboctahedron, 'rhombicuboctahedron', 'EXPLICITLY_FORBIDDEN');
 
   let rectifiedPath = createSeedShape('octahedron');
   rectifiedPath = applyAmbo(

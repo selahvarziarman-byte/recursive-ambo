@@ -9,10 +9,12 @@ export type DualViewSupportedTopology =
   | 'tetrahedron'
   | 'octahedron'
   | 'cube'
-  | 'rhombic-dodecahedron';
+  | 'rhombic-dodecahedron'
+  | 'deltoidal-icositetrahedron';
 export type DualViewTopology =
   | DualViewSupportedTopology
   | 'cuboctahedron'
+  | 'rhombicuboctahedron'
   | 'square-pyramid'
   | 'unknown';
 
@@ -235,6 +237,17 @@ export function describeDualViewTopology(shape: Shape, cell: Cell): DualViewDesc
     faceSizes.filter((size) => size === 4).length === 6
   ) {
     return { source: 'cuboctahedron', dual: 'rhombic-dodecahedron' };
+  }
+
+  if (
+    cell.kind === 'core' &&
+    cell.topology === 'rhombicuboctahedron' &&
+    cell.vertexIds.length === 24 &&
+    faces.length === 26 &&
+    faceSizes.filter((size) => size === 3).length === 8 &&
+    faceSizes.filter((size) => size === 4).length === 18
+  ) {
+    return { source: 'rhombicuboctahedron', dual: 'deltoidal-icositetrahedron' };
   }
 
   if (cell.kind === 'residue' && cell.vertexIds.length === 5) {

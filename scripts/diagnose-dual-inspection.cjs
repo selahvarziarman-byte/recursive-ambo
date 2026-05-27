@@ -242,6 +242,44 @@ function verifyCorrespondenceInspectionCoverage() {
     }
   }
 
+  for (const scenario of [
+    {
+      label: 'tetrahedron -> octahedron -> cuboctahedron -> rhombicuboctahedron',
+      seedKey: 'tetrahedron',
+      amboTopologies: ['seed', 'octahedron', 'cuboctahedron'],
+    },
+    {
+      label: 'cube -> cuboctahedron -> rhombicuboctahedron',
+      seedKey: 'cube',
+      amboTopologies: ['seed', 'cuboctahedron'],
+    },
+  ]) {
+    let shape = createSeedShape(scenario.seedKey);
+
+    for (const topology of scenario.amboTopologies) {
+      const targetCell =
+        topology === 'seed'
+          ? shape.cells.find((cell) => cell.kind === 'seed')
+          : findActiveCell(shape, { kind: 'core', topology });
+
+      assert(targetCell, `${scenario.label}: missing Ambo target ${topology}`);
+      shape = applyAmboDissection(shape, targetCell.id);
+    }
+
+    const sourceCell = findActiveCell(shape, { kind: 'core', topology: 'rhombicuboctahedron' });
+
+    assert(sourceCell, `${scenario.label}: missing rhombicuboctahedron`);
+
+    if (sourceCell) {
+      verifyCorrespondenceInspectionForCell(scenario.label, shape, sourceCell, {
+        topology: 'deltoidal-icositetrahedron',
+        vertices: 26,
+        edges: 48,
+        faces: 24,
+      });
+    }
+  }
+
   console.log('correspondence Dual View proxies reject stale semantic inspection targets');
 }
 
@@ -327,63 +365,49 @@ function verifyCorrespondenceInspectionForCell(label, shape, sourceCell, expecte
 }
 
 function verifyUnsupportedInspectionGuard() {
-  let shape = createSeedShape('tetrahedron');
+  let shape = createSeedShape('octahedron');
   const seedCell = shape.cells.find((cell) => cell.kind === 'seed');
 
-  assert(seedCell, 'unsupported guard: missing tetrahedron seed');
+  assert(seedCell, 'unsupported guard: missing octahedron seed');
   if (!seedCell) {
     return;
   }
   shape = applyAmboDissection(shape, seedCell.id);
 
-  const octahedron = findActiveCell(shape, { kind: 'core', topology: 'octahedron' });
-  assert(octahedron, 'unsupported guard: missing octahedron core');
-  if (!octahedron) {
-    return;
-  }
-  shape = applyAmboDissection(shape, octahedron.id);
-
-  const cuboctahedron = findActiveCell(shape, { kind: 'core', topology: 'cuboctahedron' });
-  assert(cuboctahedron, 'unsupported guard: missing cuboctahedron core');
-  if (!cuboctahedron) {
-    return;
-  }
-  shape = applyAmboDissection(shape, cuboctahedron.id);
-
-  const rhombicuboctahedron = findActiveCell(shape, {
-    kind: 'core',
-    topology: 'rhombicuboctahedron',
+  const squarePyramid = findActiveCell(shape, {
+    kind: 'residue',
+    topology: 'square-pyramid',
   });
 
-  assert(rhombicuboctahedron, 'unsupported guard: missing rhombicuboctahedron frontier');
+  assert(squarePyramid, 'unsupported guard: missing square-pyramid residue');
 
-  if (!rhombicuboctahedron) {
+  if (!squarePyramid) {
     return;
   }
 
-  const renderGeometry = buildDualUniverseRenderGeometry(shape, rhombicuboctahedron);
+  const renderGeometry = buildDualUniverseRenderGeometry(shape, squarePyramid);
 
   assert(
     renderGeometry.kind === 'unsupported',
-    'rhombicuboctahedron: expected unsupported Dual Universe render geometry',
+    'square-pyramid: expected unsupported Dual Universe render geometry',
   );
 
   const target = {
     universe: 'dual',
     modelKind: 'correspondence',
     kind: 'face',
-    sourceCellId: rhombicuboctahedron.id,
+    sourceCellId: squarePyramid.id,
     dualModelId: 'dual-model:unsupported',
     dualFaceId: 'dual:unsupported-face',
-    sourceVertexId: rhombicuboctahedron.vertexIds[0] ?? 'vertex:missing',
+    sourceVertexId: squarePyramid.vertexIds[0] ?? 'vertex:missing',
   };
 
   assert(
     resolveDualInspectionTarget(shape, target) === null,
-    'rhombicuboctahedron: unsupported Dual Universe unexpectedly resolved correspondence inspection',
+    'square-pyramid: unsupported Dual Universe unexpectedly resolved correspondence inspection',
   );
 
-  console.log('unsupported rhombicuboctahedron rejects correspondence inspection targets');
+  console.log('unsupported square-pyramid rejects correspondence inspection targets');
 }
 
 function verifySelectionBoundary() {

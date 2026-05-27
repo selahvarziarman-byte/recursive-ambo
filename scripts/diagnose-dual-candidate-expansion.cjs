@@ -56,6 +56,14 @@ verifyCuboctahedronCandidatePath({
   pathLabel: 'cube -> Ambo -> cuboctahedron',
   build: buildCuboctahedronFromCubePath,
 });
+verifyRhombicuboctahedronCandidatePath({
+  pathLabel: 'tetrahedron -> Ambo -> octahedron -> Ambo -> cuboctahedron -> Ambo -> rhombicuboctahedron',
+  build: buildRhombicuboctahedronFromTetrahedronPath,
+});
+verifyRhombicuboctahedronCandidatePath({
+  pathLabel: 'cube -> Ambo -> cuboctahedron -> Ambo -> rhombicuboctahedron',
+  build: buildRhombicuboctahedronFromCubePath,
+});
 verifyExistingDemoCorrespondenceRegression();
 verifySemanticDodecahedronRegression();
 
@@ -135,6 +143,70 @@ function verifyCuboctahedronCandidatePath({ pathLabel, build }) {
   console.log('POLICY_ENABLED: cuboctahedron -> rhombic-dodecahedron is enabled through DualCorrespondenceModel');
 }
 
+function verifyRhombicuboctahedronCandidatePath({ pathLabel, build }) {
+  printDivider(pathLabel);
+
+  const { shape, cell } = build();
+
+  if (!cell) {
+    return;
+  }
+
+  const beforeJson = JSON.stringify(shape);
+  const sourceFaces = getCellFaces(shape, cell);
+  const sourceEdges = getCellEdges(shape, cell);
+  const sourceFaceSizeHistogram = histogram(sourceFaces.map((face) => face.vertexIds.length));
+  const incidentFacesByEdgeKey = getIncidentFacesByEdgeKey(sourceFaces);
+
+  expect(cell.topology === 'rhombicuboctahedron', `${pathLabel}: expected rhombicuboctahedron source topology`);
+  expect(cell.vertexIds.length === 24, `${pathLabel}: expected 24 source vertices`);
+  expect(sourceEdges.length === 48, `${pathLabel}: expected 48 source edges`);
+  expect(sourceFaces.length === 26, `${pathLabel}: expected 26 source faces`);
+  expect(sourceFaceSizeHistogram.get(3) === 8, `${pathLabel}: expected 8 triangular source faces`);
+  expect(sourceFaceSizeHistogram.get(4) === 18, `${pathLabel}: expected 18 square source faces`);
+
+  for (const edge of sourceEdges) {
+    const incidentFaces = incidentFacesByEdgeKey.get(canonicalEdgeKey(...edge.vertexIds)) ?? [];
+    expect(
+      incidentFaces.length === 2,
+      `${pathLabel}: source edge ${edge.id} should have exactly two incident source faces`,
+    );
+  }
+
+  const model = buildDualCorrespondenceModel(shape, cell, 'deltoidal-icositetrahedron');
+
+  expect(Boolean(model), `${pathLabel}: direct rhombicuboctahedron candidate builder returned null`);
+
+  if (!model) {
+    return;
+  }
+
+  expect(JSON.stringify(shape) === beforeJson, `${pathLabel}: direct candidate builder mutated source shape`);
+  verifyRhombicuboctahedronModelCounts(pathLabel, shape, cell, sourceFaces, sourceEdges, model);
+  verifyCandidateFaceEdgeCoherence(pathLabel, model);
+  verifyCandidateSourceEdgeRule(pathLabel, model, sourceEdges, incidentFacesByEdgeKey);
+  verifyRhombicuboctahedronPolicyEnabled(pathLabel, shape, cell, model);
+
+  const dualFaceSizeHistogram = histogram(model.dualFaces.map((face) => face.vertexIds.length));
+
+  console.log(`source path: ${pathLabel}`);
+  console.log(
+    `source counts: ${cell.vertexIds.length}V ${sourceEdges.length}E ${sourceFaces.length}F; ` +
+      `face sizes ${formatHistogram(sourceFaceSizeHistogram)}`,
+  );
+  console.log(
+    `candidate deltoidal-icositetrahedron counts: ${Object.keys(model.dualVertices).length}V ` +
+      `${model.dualEdges.length}E ${model.dualFaces.length}F`,
+  );
+  console.log(`dual face-size histogram: ${formatHistogram(dualFaceSizeHistogram)}`);
+  console.log('correspondence maps: complete inverse maps');
+  console.log('face/edge coherence: boundary edge set equals model dual edges');
+  console.log('source edge rule: every source edge maps to its two incident source-face dual vertices');
+  console.log(
+    'POLICY_ENABLED: rhombicuboctahedron -> deltoidal-icositetrahedron is enabled through DualCorrespondenceModel',
+  );
+}
+
 function verifyCandidateModelCounts(pathLabel, shape, cell, sourceFaces, sourceEdges, model) {
   const sourceFaceIds = sourceFaces.map((face) => face.id).sort();
   const sourceVertexIds = [...cell.vertexIds].sort();
@@ -148,6 +220,64 @@ function verifyCandidateModelCounts(pathLabel, shape, cell, sourceFaces, sourceE
   expect(dualVertexIds.length === 14, `${pathLabel}: expected 14 candidate dual vertices`);
   expect(dualEdgeIds.length === 24, `${pathLabel}: expected 24 candidate dual edges`);
   expect(dualFaceIds.length === 12, `${pathLabel}: expected 12 candidate dual faces`);
+  expect(
+    model.dualFaces.every((face) => face.vertexIds.length === 4),
+    `${pathLabel}: every candidate dual face should be quadrilateral`,
+  );
+  expectNoDuplicates(`${pathLabel}: candidate dual vertex ids`, dualVertexIds);
+  expectNoDuplicates(`${pathLabel}: candidate dual face ids`, dualFaceIds);
+  expectNoDuplicates(`${pathLabel}: candidate dual edge ids`, dualEdgeIds);
+  verifyInverseMap(
+    pathLabel,
+    'candidate sourceFaceToDualVertex',
+    model.sourceFaceToDualVertex,
+    model.dualVertexToSourceFace,
+    sourceFaceIds,
+    dualVertexIds,
+  );
+  verifyInverseMap(
+    pathLabel,
+    'candidate sourceVertexToDualFace',
+    model.sourceVertexToDualFace,
+    model.dualFaceToSourceVertex,
+    sourceVertexIds,
+    dualFaceIds,
+  );
+  verifyInverseMap(
+    pathLabel,
+    'candidate sourceEdgeToDualEdge',
+    model.sourceEdgeToDualEdge,
+    model.dualEdgeToSourceEdge,
+    sourceEdgeIds,
+    dualEdgeIds,
+  );
+  expect(
+    Object.values(model.dualVertices).every((vertex) => Array.isArray(vertex.position) && vertex.position.length === 3),
+    `${pathLabel}: every candidate dual vertex should have a Vec3 position`,
+  );
+  expect(
+    model.dualFaces.every((face) => face.vertexIds.every((vertexId) => Boolean(model.dualVertices[vertexId]))),
+    `${pathLabel}: every candidate dual face vertex should exist in dualVertices`,
+  );
+  expect(
+    model.dualEdges.every((edge) => edge.vertexIds.every((vertexId) => Boolean(model.dualVertices[vertexId]))),
+    `${pathLabel}: every candidate dual edge vertex should exist in dualVertices`,
+  );
+}
+
+function verifyRhombicuboctahedronModelCounts(pathLabel, shape, cell, sourceFaces, sourceEdges, model) {
+  const sourceFaceIds = sourceFaces.map((face) => face.id).sort();
+  const sourceVertexIds = [...cell.vertexIds].sort();
+  const sourceEdgeIds = sourceEdges.map((edge) => edge.id).sort();
+  const dualVertexIds = Object.keys(model.dualVertices).sort();
+  const dualFaceIds = model.dualFaces.map((face) => face.id).sort();
+  const dualEdgeIds = model.dualEdges.map((edge) => edge.id).sort();
+
+  expect(model.sourceCellId === cell.id, `${pathLabel}: model source cell mismatch`);
+  expect(model.dualTopologyLabel === 'deltoidal-icositetrahedron', `${pathLabel}: model topology label mismatch`);
+  expect(dualVertexIds.length === 26, `${pathLabel}: expected 26 candidate dual vertices`);
+  expect(dualEdgeIds.length === 48, `${pathLabel}: expected 48 candidate dual edges`);
+  expect(dualFaceIds.length === 24, `${pathLabel}: expected 24 candidate dual faces`);
   expect(
     model.dualFaces.every((face) => face.vertexIds.length === 4),
     `${pathLabel}: every candidate dual face should be quadrilateral`,
@@ -278,6 +408,63 @@ function verifyPolicyEnabled(pathLabel, shape, cell, model) {
     expect(renderGeometry.vertices.length === 14, `${pathLabel}: wrong runtime render vertex count`);
     expect(renderGeometry.edges.length === 24, `${pathLabel}: wrong runtime render edge count`);
     expect(renderGeometry.faces.length === 12, `${pathLabel}: wrong runtime render face count`);
+  }
+
+  expect(Boolean(vertexTarget), `${pathLabel}: candidate vertex target should be constructible`);
+  expect(Boolean(faceTarget), `${pathLabel}: candidate face target should be constructible`);
+  expect(Boolean(edgeTarget), `${pathLabel}: candidate edge target should be constructible`);
+  expect(
+    resolvedVertex?.kind === 'vertex' && resolvedVertex.modelKind === 'correspondence',
+    `${pathLabel}: runtime policy should resolve candidate dual vertex inspection`,
+  );
+  expect(
+    resolvedFace?.kind === 'face' && resolvedFace.modelKind === 'correspondence',
+    `${pathLabel}: runtime policy should resolve candidate dual face inspection`,
+  );
+  expect(
+    resolvedEdge?.kind === 'edge' && resolvedEdge.modelKind === 'correspondence',
+    `${pathLabel}: runtime policy should resolve candidate dual edge inspection`,
+  );
+}
+
+function verifyRhombicuboctahedronPolicyEnabled(pathLabel, shape, cell, model) {
+  const viewModel = buildDualUniverseViewModel(shape, cell);
+  const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
+  const candidateDualVertex = Object.values(model.dualVertices)[0];
+  const candidateDualFace = model.dualFaces[0];
+  const candidateDualEdge = model.dualEdges[0];
+  const vertexTarget = candidateDualVertex
+    ? createDualCorrespondenceVertexInspectionTarget(model, candidateDualVertex.id)
+    : null;
+  const faceTarget = candidateDualFace
+    ? createDualCorrespondenceFaceInspectionTarget(model, candidateDualFace.id)
+    : null;
+  const edgeTarget = candidateDualEdge
+    ? createDualCorrespondenceEdgeInspectionTarget(model, candidateDualEdge.id)
+    : null;
+  const resolvedVertex = vertexTarget ? resolveDualInspectionTarget(shape, vertexTarget) : null;
+  const resolvedFace = faceTarget ? resolveDualInspectionTarget(shape, faceTarget) : null;
+  const resolvedEdge = edgeTarget ? resolveDualInspectionTarget(shape, edgeTarget) : null;
+
+  expect(viewModel.kind === 'correspondence-proxy', `${pathLabel}: runtime view model should enable rhombicuboctahedron`);
+  expect(renderGeometry.kind === 'correspondence-proxy', `${pathLabel}: runtime render geometry should enable rhombicuboctahedron`);
+
+  if (viewModel.kind === 'correspondence-proxy') {
+    expect(
+      viewModel.correspondenceProxy.topology === 'deltoidal-icositetrahedron',
+      `${pathLabel}: runtime view model should use deltoidal-icositetrahedron topology`,
+    );
+    expect(
+      viewModel.correspondenceProxy.correspondenceModel.dualModelId === model.dualModelId,
+      `${pathLabel}: runtime model id should match direct candidate model id`,
+    );
+  }
+
+  if (renderGeometry.kind === 'correspondence-proxy') {
+    expect(renderGeometry.topology === 'deltoidal-icositetrahedron', `${pathLabel}: wrong runtime render topology`);
+    expect(renderGeometry.vertices.length === 26, `${pathLabel}: wrong runtime render vertex count`);
+    expect(renderGeometry.edges.length === 48, `${pathLabel}: wrong runtime render edge count`);
+    expect(renderGeometry.faces.length === 24, `${pathLabel}: wrong runtime render face count`);
   }
 
   expect(Boolean(vertexTarget), `${pathLabel}: candidate vertex target should be constructible`);
@@ -478,6 +665,26 @@ function buildCuboctahedronFromCubePath() {
   return {
     shape,
     cell: requireActiveCell(shape, { kind: 'core', topology: 'cuboctahedron' }),
+  };
+}
+
+function buildRhombicuboctahedronFromTetrahedronPath() {
+  const { shape, cell } = buildCuboctahedronFromTetrahedronPath();
+  const nextShape = applyAmbo(shape, cell, 'cuboctahedron core');
+
+  return {
+    shape: nextShape,
+    cell: requireActiveCell(nextShape, { kind: 'core', topology: 'rhombicuboctahedron' }),
+  };
+}
+
+function buildRhombicuboctahedronFromCubePath() {
+  const { shape, cell } = buildCuboctahedronFromCubePath();
+  const nextShape = applyAmbo(shape, cell, 'cuboctahedron core');
+
+  return {
+    shape: nextShape,
+    cell: requireActiveCell(nextShape, { kind: 'core', topology: 'rhombicuboctahedron' }),
   };
 }
 

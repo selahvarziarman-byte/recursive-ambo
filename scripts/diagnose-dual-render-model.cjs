@@ -53,6 +53,23 @@ verifyCuboctahedronRenderPath({
   seedKey: 'cube',
   amboSteps: [step('dissect cube seed', selectSeedCell)],
 });
+verifyRhombicuboctahedronRenderPath({
+  name: 'tetrahedron -> octahedron -> cuboctahedron -> rhombicuboctahedron',
+  seedKey: 'tetrahedron',
+  amboSteps: [
+    step('dissect tetrahedron seed', selectSeedCell),
+    step('dissect octahedron core', selectActiveCell({ kind: 'core', topology: 'octahedron' })),
+    step('dissect cuboctahedron core', selectActiveCell({ kind: 'core', topology: 'cuboctahedron' })),
+  ],
+});
+verifyRhombicuboctahedronRenderPath({
+  name: 'cube -> cuboctahedron -> rhombicuboctahedron',
+  seedKey: 'cube',
+  amboSteps: [
+    step('dissect cube seed', selectSeedCell),
+    step('dissect cuboctahedron core', selectActiveCell({ kind: 'core', topology: 'cuboctahedron' })),
+  ],
+});
 
 verifySemanticRenderScenario({
   name: 'tetrahedron -> octahedron -> cuboctahedron -> pyritohedral-icosahedron',
@@ -68,8 +85,6 @@ verifySemanticRenderScenario({
   seedKey: 'cube',
   amboSteps: [step('dissect cube seed', selectSeedCell)],
 });
-
-verifyRhombicuboctahedronUnsupported();
 
 if (failures.length) {
   console.error('');
@@ -114,6 +129,31 @@ function verifyCuboctahedronRenderPath(scenario) {
     faces: 12,
     edges: 24,
     faceSizeHistogram: { 4: 12 },
+  });
+}
+
+function verifyRhombicuboctahedronRenderPath(scenario) {
+  printDivider(scenario.name);
+
+  let shape = createSeedShape(scenario.seedKey);
+
+  for (const scenarioStep of scenario.amboSteps) {
+    shape = applyAmbo(shape, scenarioStep.select(shape), scenarioStep.label);
+  }
+
+  const cell = selectActiveCell({ kind: 'core', topology: 'rhombicuboctahedron' })(shape);
+
+  if (!cell) {
+    recordFailure(`${scenario.name}: did not reach rhombicuboctahedron`);
+    return;
+  }
+
+  verifyCorrespondenceRender(scenario.name, shape, cell, {
+    topology: 'deltoidal-icositetrahedron',
+    vertices: 26,
+    faces: 24,
+    edges: 48,
+    faceSizeHistogram: { 4: 24 },
   });
 }
 
@@ -296,26 +336,6 @@ function verifySemanticRenderScenario(scenario) {
     `semantic render ${describeCell(sourceCell)} -> ${renderGeometry.topology} ` +
       `${renderGeometry.vertices.length}V ${renderGeometry.edges.length}E ${renderGeometry.faces.length}F`,
   );
-}
-
-function verifyRhombicuboctahedronUnsupported() {
-  printDivider('rhombicuboctahedron unsupported');
-
-  let shape = createSeedShape('cube');
-  shape = applyAmbo(shape, selectSeedCell(shape), 'cube seed');
-  shape = applyAmbo(shape, selectActiveCell({ kind: 'core', topology: 'cuboctahedron' })(shape), 'cuboctahedron core');
-
-  const rhombicuboctahedron = selectActiveCell({ kind: 'core', topology: 'rhombicuboctahedron' })(shape);
-
-  if (!rhombicuboctahedron) {
-    recordFailure('rhombicuboctahedron unsupported: did not reach rhombicuboctahedron');
-    return;
-  }
-
-  const renderGeometry = buildDualUniverseRenderGeometry(shape, rhombicuboctahedron);
-
-  console.log(`rhombicuboctahedron: ${renderGeometry.kind}`);
-  expect(renderGeometry.kind === 'unsupported', 'rhombicuboctahedron: expected unsupported render geometry');
 }
 
 function runPathToPyritohedralIcosahedron(scenario) {

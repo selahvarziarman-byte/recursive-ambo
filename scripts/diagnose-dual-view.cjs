@@ -56,6 +56,23 @@ verifyCuboctahedronCorrespondencePath({
   seedKey: 'cube',
   amboSteps: [step('dissect cube seed', selectSeedCell)],
 });
+verifyRhombicuboctahedronCorrespondencePath({
+  name: 'tetrahedron -> octahedron -> cuboctahedron -> rhombicuboctahedron',
+  seedKey: 'tetrahedron',
+  amboSteps: [
+    step('dissect tetrahedron seed', selectSeedCell),
+    step('dissect octahedron core', selectActiveCell({ kind: 'core', topology: 'octahedron' })),
+    step('dissect cuboctahedron core', selectActiveCell({ kind: 'core', topology: 'cuboctahedron' })),
+  ],
+});
+verifyRhombicuboctahedronCorrespondencePath({
+  name: 'cube -> cuboctahedron -> rhombicuboctahedron',
+  seedKey: 'cube',
+  amboSteps: [
+    step('dissect cube seed', selectSeedCell),
+    step('dissect cuboctahedron core', selectActiveCell({ kind: 'core', topology: 'cuboctahedron' })),
+  ],
+});
 
 verifySemanticScenario({
   name: 'tetrahedron -> octahedron -> cuboctahedron -> pyritohedral-icosahedron',
@@ -72,7 +89,6 @@ verifySemanticScenario({
   amboSteps: [step('dissect cube seed', selectSeedCell)],
 });
 
-verifyRhombicuboctahedronUnsupported();
 verifyRectifiedCoreCoreUnsupported();
 
 if (failures.length) {
@@ -118,6 +134,31 @@ function verifyCuboctahedronCorrespondencePath(scenario) {
     edges: 24,
     faces: 12,
     faceSizeHistogram: { 4: 12 },
+  });
+}
+
+function verifyRhombicuboctahedronCorrespondencePath(scenario) {
+  printDivider(scenario.name);
+
+  let shape = createSeedShape(scenario.seedKey);
+
+  for (const scenarioStep of scenario.amboSteps) {
+    shape = applyAmbo(shape, scenarioStep.select(shape), scenarioStep.label);
+  }
+
+  const cell = selectActiveCell({ kind: 'core', topology: 'rhombicuboctahedron' })(shape);
+
+  if (!cell) {
+    recordFailure(`${scenario.name}: did not reach rhombicuboctahedron`);
+    return;
+  }
+
+  verifyCorrespondenceCell(scenario.name, shape, cell, {
+    topology: 'deltoidal-icositetrahedron',
+    vertices: 26,
+    edges: 48,
+    faces: 24,
+    faceSizeHistogram: { 4: 24 },
   });
 }
 
@@ -319,24 +360,6 @@ function verifySemanticScenario(scenario) {
       `${Object.keys(semanticModel.dualVertices).length}V ${semanticModel.dualEdges.length}E ` +
       `${semanticModel.dualFaces.length}F`,
   );
-}
-
-function verifyRhombicuboctahedronUnsupported() {
-  printDivider('rhombicuboctahedron unsupported');
-
-  let shape = createSeedShape('tetrahedron');
-  shape = applyAmbo(shape, selectSeedCell(shape), 'tetrahedron seed');
-  shape = applyAmbo(shape, selectActiveCell({ kind: 'core', topology: 'octahedron' })(shape), 'octahedron core');
-  shape = applyAmbo(shape, selectActiveCell({ kind: 'core', topology: 'cuboctahedron' })(shape), 'cuboctahedron core');
-
-  const rhombicuboctahedron = selectActiveCell({ kind: 'core', topology: 'rhombicuboctahedron' })(shape);
-
-  if (!rhombicuboctahedron) {
-    recordFailure('rhombicuboctahedron unsupported: did not reach rhombicuboctahedron');
-    return;
-  }
-
-  verifyUnsupported(shape, rhombicuboctahedron, 'rhombicuboctahedron');
 }
 
 function verifyRectifiedCoreCoreUnsupported() {
