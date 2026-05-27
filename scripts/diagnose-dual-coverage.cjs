@@ -36,6 +36,9 @@ const { isCellActiveFrontier } = require(path.join(repoRoot, 'src/lib/cellLifecy
 const {
   buildDualUniverseRenderGeometry,
   buildDualUniverseViewModel,
+  createDualCorrespondenceEdgeInspectionTarget,
+  createDualCorrespondenceFaceInspectionTarget,
+  createDualCorrespondenceVertexInspectionTarget,
   createDualEdgeInspectionTarget,
   createDualFaceInspectionTarget,
   createDualVertexInspectionTarget,
@@ -123,6 +126,11 @@ function verifyLegacyProxyCoverage() {
         `${fixture.seedKey}: expected counterpart ${fixture.expectedTopology}`,
       );
       verifyLegacyCorrespondenceModel(fixture.seedKey, shape, cell, viewModel.proxy.correspondenceModel, fixture);
+      verifyCorrespondenceTargetResolution(
+        shape,
+        viewModel.proxy.correspondenceModel,
+        fixture.seedKey,
+      );
     }
 
     if (renderGeometry.kind === 'legacy-proxy') {
@@ -160,7 +168,7 @@ function verifyLegacyProxyCoverage() {
     logPolicy(
       fixture.seedKey,
       'LEGACY_PROXY_OK',
-      `counterpart ${fixture.expectedTopology}; semantic inspection disabled`,
+      `counterpart ${fixture.expectedTopology}; read-only correspondence inspection enabled`,
     );
   }
 }
@@ -211,6 +219,51 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, fixture) {
     model.dualEdgeToSourceEdge,
     sourceEdgeIds,
     dualEdgeIds,
+  );
+}
+
+function verifyCorrespondenceTargetResolution(shape, model, label) {
+  const dualVertex = Object.values(model.dualVertices)[0];
+  const dualFace = model.dualFaces[0];
+  const dualEdge = model.dualEdges[0];
+
+  const vertexTarget = dualVertex
+    ? createDualCorrespondenceVertexInspectionTarget(model, dualVertex.id)
+    : null;
+  const resolvedVertex = vertexTarget ? resolveDualInspectionTarget(shape, vertexTarget) : null;
+
+  expect(Boolean(vertexTarget), `${label}: expected correspondence vertex inspection target`);
+  expect(
+    resolvedVertex?.kind === 'vertex' &&
+      resolvedVertex.modelKind === 'correspondence' &&
+      resolvedVertex.target.sourceFaceId === model.dualVertexToSourceFace[dualVertex?.id],
+    `${label}: expected correspondence vertex target to resolve to source face`,
+  );
+
+  const faceTarget = dualFace
+    ? createDualCorrespondenceFaceInspectionTarget(model, dualFace.id)
+    : null;
+  const resolvedFace = faceTarget ? resolveDualInspectionTarget(shape, faceTarget) : null;
+
+  expect(Boolean(faceTarget), `${label}: expected correspondence face inspection target`);
+  expect(
+    resolvedFace?.kind === 'face' &&
+      resolvedFace.modelKind === 'correspondence' &&
+      resolvedFace.target.sourceVertexId === model.dualFaceToSourceVertex[dualFace?.id],
+    `${label}: expected correspondence face target to resolve to source vertex`,
+  );
+
+  const edgeTarget = dualEdge
+    ? createDualCorrespondenceEdgeInspectionTarget(model, dualEdge.id)
+    : null;
+  const resolvedEdge = edgeTarget ? resolveDualInspectionTarget(shape, edgeTarget) : null;
+
+  expect(Boolean(edgeTarget), `${label}: expected correspondence edge inspection target`);
+  expect(
+    resolvedEdge?.kind === 'edge' &&
+      resolvedEdge.modelKind === 'correspondence' &&
+      resolvedEdge.target.sourceEdgeId === model.dualEdgeToSourceEdge[dualEdge?.id],
+    `${label}: expected correspondence edge target to resolve to source edge`,
   );
 }
 
@@ -446,7 +499,7 @@ function verifyMaterializedDodecahedronSourcePolicy() {
   );
   expect(
     resolveDualInspectionTarget(dualizedShape, fakeStandaloneDualTarget(dodecahedron)) === null,
-    'dodecahedron source unexpectedly resolved semantic inspection target',
+    'dodecahedron source unexpectedly resolved correspondence inspection target',
   );
 
   logPolicy(
@@ -472,7 +525,7 @@ function verifyUnsupportedCell(shape, cell, label, status) {
   expect(!canApplyDualization(shape, cell.id), `${label}: should not be materialized-dualization capable`);
   expect(
     resolveDualInspectionTarget(shape, fakeStandaloneDualTarget(cell)) === null,
-    `${label}: unsupported cell unexpectedly resolved semantic inspection target`,
+    `${label}: unsupported cell unexpectedly resolved correspondence inspection target`,
   );
 
   logPolicy(label, status, 'no legacy proxy, semantic model, or materialized dualization path');
@@ -492,7 +545,10 @@ function verifySemanticTargetResolution(shape, semanticModel, kind, id, scenario
   const resolved = target ? resolveDualInspectionTarget(shape, target) : null;
 
   expect(Boolean(target), `${scenarioName}: expected semantic ${kind} inspection target`);
-  expect(resolved?.kind === kind, `${scenarioName}: expected resolved semantic ${kind} target`);
+  expect(
+    resolved?.kind === kind && resolved.modelKind === 'semantic',
+    `${scenarioName}: expected resolved semantic ${kind} target`,
+  );
 }
 
 function runPathToPyritohedralIcosahedron(scenario) {
@@ -580,8 +636,10 @@ function getCellEdges(shape, cell) {
 function fakeDualFaceTarget(sourceCell, renderGeometry) {
   return {
     universe: 'dual',
+    modelKind: 'semantic',
     kind: 'face',
     sourceCellId: sourceCell.id,
+    dualModelId: 'dual-model:legacy-proxy-mismatch',
     dualFaceId: renderGeometry.faces[0]?.id ?? 'dual:missing-face',
     sourceVertexId: sourceCell.vertexIds[0] ?? 'vertex:missing',
   };
@@ -590,8 +648,10 @@ function fakeDualFaceTarget(sourceCell, renderGeometry) {
 function fakeStandaloneDualTarget(sourceCell) {
   return {
     universe: 'dual',
+    modelKind: 'correspondence',
     kind: 'face',
     sourceCellId: sourceCell.id,
+    dualModelId: 'dual-model:policy-forbidden',
     dualFaceId: 'dual:policy-forbidden-face',
     sourceVertexId: sourceCell.vertexIds[0] ?? 'vertex:missing',
   };

@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import {
   buildDualUniverseRenderGeometry,
+  createDualCorrespondenceEdgeInspectionTarget,
+  createDualCorrespondenceFaceInspectionTarget,
+  createDualCorrespondenceVertexInspectionTarget,
   createDualEdgeInspectionTarget,
   createDualFaceInspectionTarget,
   createDualVertexInspectionTarget,
@@ -155,7 +158,7 @@ function CellMesh({
     [cell, dualViewEnabled, shape],
   );
   const sourceCounterpartHighlight = useMemo(
-    () => createSemanticSourceCounterpartHighlight(shape, cell, renderGeometry, dualInspectionTarget),
+    () => createSourceCounterpartHighlight(shape, cell, renderGeometry, dualInspectionTarget),
     [cell, dualInspectionTarget, renderGeometry, shape],
   );
   const faceGeometry = useMemo(
@@ -188,8 +191,9 @@ function CellMesh({
     () => createHoverEdgeGeometry(renderGeometry, hoverTarget),
     [hoverTarget, renderGeometry],
   );
-  const usesSemanticDualInspectionTargets =
-    renderGeometry.dualUniverse?.kind === 'semantic-model';
+  const usesDualInspectionTargets =
+    renderGeometry.dualUniverse?.kind === 'semantic-model' ||
+    renderGeometry.dualUniverse?.kind === 'legacy-proxy';
   const style = cellStyle(
     cell,
     isSelected,
@@ -216,12 +220,12 @@ function CellMesh({
       <mesh
         geometry={faceGeometry}
         onPointerDown={(event) => {
-          if (!usesSemanticDualInspectionTargets) {
+          if (!usesDualInspectionTargets) {
             return;
           }
 
           event.stopPropagation();
-          const target = createSemanticDualFaceTargetFromEvent(renderGeometry, event.faceIndex);
+          const target = createDualFaceTargetFromEvent(renderGeometry, event.faceIndex);
 
           if (target) {
             setDualInspectionTarget(target);
@@ -229,7 +233,7 @@ function CellMesh({
         }}
         onClick={(event) => {
           event.stopPropagation();
-          if (usesSemanticDualInspectionTargets) {
+          if (usesDualInspectionTargets) {
             return;
           }
 
@@ -238,14 +242,14 @@ function CellMesh({
         }}
         onPointerMove={(event) => {
           event.stopPropagation();
-          if (!usesSemanticDualInspectionTargets) {
+          if (!usesDualInspectionTargets) {
             onHoverTarget({ kind: 'cell', cellId: cell.id });
           }
           document.body.style.cursor = 'pointer';
         }}
         onPointerOver={(event) => {
           event.stopPropagation();
-          if (!usesSemanticDualInspectionTargets) {
+          if (!usesDualInspectionTargets) {
             onHoverTarget({ kind: 'cell', cellId: cell.id });
           }
           document.body.style.cursor = 'pointer';
@@ -293,11 +297,11 @@ function CellMesh({
           <lineBasicMaterial color="#fb923c" transparent opacity={1} />
         </lineSegments>
       ) : null}
-      {renderGeometry.dualUniverse?.kind === 'semantic-model' ? (
-        <SemanticDualInspectionTargets renderGeometry={renderGeometry} />
+      {usesDualInspectionTargets ? (
+        <DualInspectionTargets renderGeometry={renderGeometry} />
       ) : null}
       {sourceCounterpartHighlight ? (
-        <SemanticSourceCounterpartHighlight highlight={sourceCounterpartHighlight} shape={shape} />
+        <SourceCounterpartHighlightDisplay highlight={sourceCounterpartHighlight} shape={shape} />
       ) : null}
       {renderGeometry.showVertexMarkers
         ? cell.vertexIds.map((vertexId) => {
@@ -449,7 +453,7 @@ type SourceCounterpartHighlight =
   | SourceVertexCounterpartHighlight
   | SourceEdgeCounterpartHighlight;
 
-function SemanticSourceCounterpartHighlight({
+function SourceCounterpartHighlightDisplay({
   highlight,
   shape,
 }: {
@@ -457,17 +461,17 @@ function SemanticSourceCounterpartHighlight({
   shape: Shape;
 }) {
   if (highlight.kind === 'face') {
-    return <SemanticSourceFaceCounterpartHighlight highlight={highlight} shape={shape} />;
+    return <SourceFaceCounterpartHighlightDisplay highlight={highlight} shape={shape} />;
   }
 
   if (highlight.kind === 'edge') {
-    return <SemanticSourceEdgeCounterpartHighlight highlight={highlight} shape={shape} />;
+    return <SourceEdgeCounterpartHighlightDisplay highlight={highlight} shape={shape} />;
   }
 
-  return <SemanticSourceVertexCounterpartHighlight highlight={highlight} shape={shape} />;
+  return <SourceVertexCounterpartHighlightDisplay highlight={highlight} shape={shape} />;
 }
 
-function SemanticSourceFaceCounterpartHighlight({
+function SourceFaceCounterpartHighlightDisplay({
   highlight,
   shape,
 }: {
@@ -510,7 +514,7 @@ function SemanticSourceFaceCounterpartHighlight({
   );
 }
 
-function SemanticSourceVertexCounterpartHighlight({
+function SourceVertexCounterpartHighlightDisplay({
   highlight,
   shape,
 }: {
@@ -546,7 +550,7 @@ function SemanticSourceVertexCounterpartHighlight({
   );
 }
 
-function SemanticSourceEdgeCounterpartHighlight({
+function SourceEdgeCounterpartHighlightDisplay({
   highlight,
   shape,
 }: {
@@ -669,7 +673,7 @@ function SemanticSourceVertexMarkers({
   );
 }
 
-function SemanticDualInspectionTargets({
+function DualInspectionTargets({
   renderGeometry,
 }: {
   renderGeometry: CellRenderGeometry;
@@ -677,24 +681,31 @@ function SemanticDualInspectionTargets({
   const setDualInspectionTarget = useGeometryStore((state) => state.setDualInspectionTarget);
   const semanticRenderGeometry =
     renderGeometry.dualUniverse?.kind === 'semantic-model' ? renderGeometry.dualUniverse : null;
+  const correspondenceRenderGeometry =
+    renderGeometry.dualUniverse?.kind === 'legacy-proxy' ? renderGeometry.dualUniverse : null;
   const vertexById = useMemo(
     () => new Map(renderGeometry.vertices.map((vertex) => [vertex.id, vertex])),
     [renderGeometry.vertices],
   );
 
-  if (!semanticRenderGeometry) {
+  if (!semanticRenderGeometry && !correspondenceRenderGeometry) {
     return null;
   }
 
-  const semanticModel = semanticRenderGeometry.viewModel.semanticModel;
+  const semanticModel = semanticRenderGeometry?.viewModel.semanticModel ?? null;
+  const correspondenceModel = correspondenceRenderGeometry?.viewModel.proxy.correspondenceModel ?? null;
 
   return (
     <>
       {renderGeometry.faces.map((face) => {
-        const target = createDualFaceInspectionTarget(semanticModel, face.id);
+        const target = semanticModel
+          ? createDualFaceInspectionTarget(semanticModel, face.id)
+          : correspondenceModel
+            ? createDualCorrespondenceFaceInspectionTarget(correspondenceModel, face.id)
+            : null;
 
         return target ? (
-          <SemanticDualFaceInspectionTarget
+          <DualFaceInspectionTarget
             key={`dual-face-hit:${face.id}`}
             face={face}
             renderGeometry={renderGeometry}
@@ -704,11 +715,15 @@ function SemanticDualInspectionTargets({
       })}
       {renderGeometry.edges.map((edge) => {
         const target = edge.id
-          ? createDualEdgeInspectionTarget(semanticModel, edge.id)
+          ? semanticModel
+            ? createDualEdgeInspectionTarget(semanticModel, edge.id)
+            : correspondenceModel
+              ? createDualCorrespondenceEdgeInspectionTarget(correspondenceModel, edge.id)
+              : null
           : null;
 
         return target ? (
-          <SemanticDualEdgeInspectionTarget
+          <DualEdgeInspectionTarget
             key={`dual-edge-hit:${edge.id}`}
             edge={edge}
             vertexById={vertexById}
@@ -717,10 +732,14 @@ function SemanticDualInspectionTargets({
         ) : null;
       })}
       {renderGeometry.vertices.map((vertex) => {
-        const target = createDualVertexInspectionTarget(semanticModel, vertex.id);
+        const target = semanticModel
+          ? createDualVertexInspectionTarget(semanticModel, vertex.id)
+          : correspondenceModel
+            ? createDualCorrespondenceVertexInspectionTarget(correspondenceModel, vertex.id)
+            : null;
 
         return target ? (
-          <SemanticDualVertexInspectionMarker
+          <DualVertexInspectionMarker
             key={`dual-vertex-marker:${vertex.id}`}
             vertex={vertex}
             onInspect={() => setDualInspectionTarget(target)}
@@ -731,7 +750,7 @@ function SemanticDualInspectionTargets({
   );
 }
 
-function SemanticDualVertexInspectionMarker({
+function DualVertexInspectionMarker({
   vertex,
   onInspect,
 }: {
@@ -780,7 +799,7 @@ function SemanticDualVertexInspectionMarker({
   );
 }
 
-function SemanticDualFaceInspectionTarget({
+function DualFaceInspectionTarget({
   face,
   renderGeometry,
   onInspect,
@@ -825,7 +844,7 @@ function SemanticDualFaceInspectionTarget({
   );
 }
 
-function SemanticDualEdgeInspectionTarget({
+function DualEdgeInspectionTarget({
   edge,
   vertexById,
   onInspect,
@@ -892,21 +911,34 @@ function SemanticDualEdgeInspectionTarget({
   );
 }
 
-function createSemanticDualFaceTargetFromEvent(
+function createDualFaceTargetFromEvent(
   renderGeometry: CellRenderGeometry,
   faceIndex: number | null | undefined,
 ) {
   const semanticRenderGeometry =
     renderGeometry.dualUniverse?.kind === 'semantic-model' ? renderGeometry.dualUniverse : null;
+  const correspondenceRenderGeometry =
+    renderGeometry.dualUniverse?.kind === 'legacy-proxy' ? renderGeometry.dualUniverse : null;
 
-  if (!semanticRenderGeometry || faceIndex == null) {
+  if ((!semanticRenderGeometry && !correspondenceRenderGeometry) || faceIndex == null) {
     return null;
   }
 
   const face = getRenderFaceForTriangleIndex(renderGeometry.faces, faceIndex);
 
-  return face
-    ? createDualFaceInspectionTarget(semanticRenderGeometry.viewModel.semanticModel, face.id)
+  if (!face) {
+    return null;
+  }
+
+  if (semanticRenderGeometry) {
+    return createDualFaceInspectionTarget(semanticRenderGeometry.viewModel.semanticModel, face.id);
+  }
+
+  return correspondenceRenderGeometry
+    ? createDualCorrespondenceFaceInspectionTarget(
+        correspondenceRenderGeometry.viewModel.proxy.correspondenceModel,
+        face.id,
+      )
     : null;
 }
 
@@ -978,7 +1010,7 @@ function createOriginalRenderGeometry(shape: Shape, cell: Cell): CellRenderGeome
   };
 }
 
-function createSemanticSourceCounterpartHighlight(
+function createSourceCounterpartHighlight(
   shape: Shape,
   cell: Cell,
   renderGeometry: CellRenderGeometry,
@@ -986,21 +1018,39 @@ function createSemanticSourceCounterpartHighlight(
 ): SourceCounterpartHighlight | null {
   const semanticRenderGeometry =
     renderGeometry.dualUniverse?.kind === 'semantic-model' ? renderGeometry.dualUniverse : null;
+  const correspondenceRenderGeometry =
+    renderGeometry.dualUniverse?.kind === 'legacy-proxy' ? renderGeometry.dualUniverse : null;
 
-  if (!target || !semanticRenderGeometry) {
+  if (!target || (!semanticRenderGeometry && !correspondenceRenderGeometry)) {
     return null;
   }
 
   const resolvedTarget = resolveDualInspectionTarget(shape, target);
-  const semanticModel = semanticRenderGeometry.viewModel.semanticModel;
 
-  if (
-    !resolvedTarget ||
-    resolvedTarget.sourceCell.id !== cell.id ||
-    resolvedTarget.semanticModel.sourceCellId !== semanticModel.sourceCellId ||
-    resolvedTarget.semanticModel.dualModelId !== semanticModel.dualModelId
-  ) {
+  if (!resolvedTarget || resolvedTarget.sourceCell.id !== cell.id) {
     return null;
+  }
+
+  if (semanticRenderGeometry) {
+    const semanticModel = semanticRenderGeometry.viewModel.semanticModel;
+
+    if (
+      resolvedTarget.modelKind !== 'semantic' ||
+      resolvedTarget.semanticModel.sourceCellId !== semanticModel.sourceCellId ||
+      resolvedTarget.semanticModel.dualModelId !== semanticModel.dualModelId
+    ) {
+      return null;
+    }
+  } else if (correspondenceRenderGeometry) {
+    const correspondenceModel = correspondenceRenderGeometry.viewModel.proxy.correspondenceModel;
+
+    if (
+      resolvedTarget.modelKind !== 'correspondence' ||
+      resolvedTarget.correspondenceModel.sourceCellId !== correspondenceModel.sourceCellId ||
+      resolvedTarget.correspondenceModel.dualModelId !== correspondenceModel.dualModelId
+    ) {
+      return null;
+    }
   }
 
   if (resolvedTarget.kind === 'vertex') {

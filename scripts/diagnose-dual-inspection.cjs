@@ -27,6 +27,9 @@ const {
 const { isCellActiveFrontier } = require(path.join(repoRoot, 'src/lib/cellLifecycle.ts'));
 const {
   buildDualUniverseRenderGeometry,
+  createDualCorrespondenceEdgeInspectionTarget,
+  createDualCorrespondenceFaceInspectionTarget,
+  createDualCorrespondenceVertexInspectionTarget,
   createDualEdgeInspectionTarget,
   createDualFaceInspectionTarget,
   createDualVertexInspectionTarget,
@@ -51,8 +54,9 @@ verifyInspectionScenario({
   amboTopologies: ['seed'],
 });
 
-verifyLegacyInspectionGuards();
+verifyCorrespondenceInspectionCoverage();
 verifyUnsupportedInspectionGuard();
+verifySelectionBoundary();
 
 if (failures.length) {
   console.error('');
@@ -111,9 +115,12 @@ function verifyInspectionScenario({ name, seedKey, amboTopologies }) {
     const resolved = target ? resolveDualInspectionTarget(shape, target) : null;
 
     assert(target, `${name}: missing face inspection target for ${dualFace.id}`);
-    assert(resolved?.kind === 'face', `${name}: failed to resolve dual face ${dualFace.id}`);
+    assert(
+      resolved?.kind === 'face' && resolved.modelKind === 'semantic',
+      `${name}: failed to resolve semantic dual face ${dualFace.id}`,
+    );
 
-    if (resolved?.kind !== 'face') {
+    if (resolved?.kind !== 'face' || resolved.modelKind !== 'semantic') {
       continue;
     }
 
@@ -132,9 +139,12 @@ function verifyInspectionScenario({ name, seedKey, amboTopologies }) {
     const resolved = target ? resolveDualInspectionTarget(shape, target) : null;
 
     assert(target, `${name}: missing edge inspection target for ${dualEdge.id}`);
-    assert(resolved?.kind === 'edge', `${name}: failed to resolve dual edge ${dualEdge.id}`);
+    assert(
+      resolved?.kind === 'edge' && resolved.modelKind === 'semantic',
+      `${name}: failed to resolve semantic dual edge ${dualEdge.id}`,
+    );
 
-    if (resolved?.kind !== 'edge') {
+    if (resolved?.kind !== 'edge' || resolved.modelKind !== 'semantic') {
       continue;
     }
 
@@ -153,9 +163,12 @@ function verifyInspectionScenario({ name, seedKey, amboTopologies }) {
     const resolved = target ? resolveDualInspectionTarget(shape, target) : null;
 
     assert(target, `${name}: missing vertex inspection target for ${dualVertex.id}`);
-    assert(resolved?.kind === 'vertex', `${name}: failed to resolve dual vertex ${dualVertex.id}`);
+    assert(
+      resolved?.kind === 'vertex' && resolved.modelKind === 'semantic',
+      `${name}: failed to resolve semantic dual vertex ${dualVertex.id}`,
+    );
 
-    if (resolved?.kind !== 'vertex') {
+    if (resolved?.kind !== 'vertex' || resolved.modelKind !== 'semantic') {
       continue;
     }
 
@@ -183,7 +196,7 @@ function verifyInspectionScenario({ name, seedKey, amboTopologies }) {
   );
 }
 
-function verifyLegacyInspectionGuards() {
+function verifyCorrespondenceInspectionCoverage() {
   for (const seedKey of ['tetrahedron', 'octahedron', 'cube']) {
     const shape = createSeedShape(seedKey);
     const sourceCell = shape.cells[0];
@@ -194,21 +207,73 @@ function verifyLegacyInspectionGuards() {
       `${seedKey}: expected legacy Dual View render geometry`,
     );
 
-    const target = {
+    if (renderGeometry.kind !== 'legacy-proxy') {
+      continue;
+    }
+
+    const model = renderGeometry.viewModel.proxy.correspondenceModel;
+    const dualVertex = Object.values(model.dualVertices)[0];
+    const dualFace = model.dualFaces[0];
+    const dualEdge = model.dualEdges[0];
+
+    const vertexTarget = dualVertex
+      ? createDualCorrespondenceVertexInspectionTarget(model, dualVertex.id)
+      : null;
+    const resolvedVertex = vertexTarget ? resolveDualInspectionTarget(shape, vertexTarget) : null;
+
+    assert(vertexTarget, `${seedKey}: missing correspondence vertex inspection target`);
+    assert(
+      resolvedVertex?.kind === 'vertex' &&
+        resolvedVertex.modelKind === 'correspondence' &&
+        resolvedVertex.target.sourceFaceId === model.dualVertexToSourceFace[dualVertex?.id],
+      `${seedKey}: failed to resolve correspondence dual vertex`,
+    );
+
+    const faceTarget = dualFace
+      ? createDualCorrespondenceFaceInspectionTarget(model, dualFace.id)
+      : null;
+    const resolvedFace = faceTarget ? resolveDualInspectionTarget(shape, faceTarget) : null;
+
+    assert(faceTarget, `${seedKey}: missing correspondence face inspection target`);
+    assert(
+      resolvedFace?.kind === 'face' &&
+        resolvedFace.modelKind === 'correspondence' &&
+        resolvedFace.target.sourceVertexId === model.dualFaceToSourceVertex[dualFace?.id],
+      `${seedKey}: failed to resolve correspondence dual face`,
+    );
+
+    const edgeTarget = dualEdge
+      ? createDualCorrespondenceEdgeInspectionTarget(model, dualEdge.id)
+      : null;
+    const resolvedEdge = edgeTarget ? resolveDualInspectionTarget(shape, edgeTarget) : null;
+
+    assert(edgeTarget, `${seedKey}: missing correspondence edge inspection target`);
+    assert(
+      resolvedEdge?.kind === 'edge' &&
+        resolvedEdge.modelKind === 'correspondence' &&
+        resolvedEdge.target.sourceEdgeId === model.dualEdgeToSourceEdge[dualEdge?.id],
+      `${seedKey}: failed to resolve correspondence dual edge`,
+    );
+
+    const semanticTarget = {
       universe: 'dual',
+      modelKind: 'semantic',
       kind: 'face',
       sourceCellId: sourceCell.id,
-      dualFaceId: renderGeometry.kind === 'legacy-proxy' ? renderGeometry.faces[0]?.id ?? 'dual:missing' : 'dual:missing',
+      dualModelId: 'dual-model:legacy-proxy-mismatch',
+      dualFaceId: renderGeometry.faces[0]?.id ?? 'dual:missing',
       sourceVertexId: sourceCell.vertexIds[0] ?? 'vertex:missing',
     };
 
     assert(
-      resolveDualInspectionTarget(shape, target) === null,
+      resolveDualInspectionTarget(shape, semanticTarget) === null,
       `${seedKey}: legacy DualViewProxy unexpectedly resolved as semantic inspection`,
     );
+
+    console.log(`${seedKey}: correspondence vertex, face, and edge targets inspected`);
   }
 
-  console.log('legacy Dual View proxies reject semantic inspection targets');
+  console.log('legacy Dual View proxies reject stale semantic inspection targets');
 }
 
 function verifyUnsupportedInspectionGuard() {
@@ -255,18 +320,36 @@ function verifyUnsupportedInspectionGuard() {
 
   const target = {
     universe: 'dual',
+    modelKind: 'correspondence',
     kind: 'face',
     sourceCellId: rhombicuboctahedron.id,
+    dualModelId: 'dual-model:unsupported',
     dualFaceId: 'dual:unsupported-face',
     sourceVertexId: rhombicuboctahedron.vertexIds[0] ?? 'vertex:missing',
   };
 
   assert(
     resolveDualInspectionTarget(shape, target) === null,
-    'rhombicuboctahedron: unsupported Dual Universe unexpectedly resolved semantic inspection',
+    'rhombicuboctahedron: unsupported Dual Universe unexpectedly resolved correspondence inspection',
   );
 
-  console.log('unsupported rhombicuboctahedron rejects semantic inspection targets');
+  console.log('unsupported rhombicuboctahedron rejects correspondence inspection targets');
+}
+
+function verifySelectionBoundary() {
+  const dualViewSource = fs.readFileSync(path.join(repoRoot, 'src/lib/dualView.ts'), 'utf8');
+  const storeSource = fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts'), 'utf8');
+
+  assert(
+    !dualViewSource.includes('selectedVertexId'),
+    'dual inspection resolver/model path must not read selectedVertexId',
+  );
+  assert(
+    storeSource.includes('set({ dualInspectionTarget: target, selectedVertexId: null'),
+    'setDualInspectionTarget must keep dual inspection separate from primal selectedVertexId',
+  );
+
+  console.log('dual inspection targets remain separate from primal selectedVertexId');
 }
 
 function findActiveCell(shape, { kind, topology }) {

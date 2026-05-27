@@ -112,17 +112,29 @@ export type DualUniverseRenderGeometry =
       viewModel: Extract<DualUniverseViewModel, { kind: 'unsupported' }>;
     };
 
+type SemanticInspectionTarget<TKind extends DualInspectionTarget['kind']> = Extract<
+  DualInspectionTarget,
+  { modelKind: 'semantic'; kind: TKind }
+>;
+
+type CorrespondenceInspectionTarget<TKind extends 'vertex' | 'face' | 'edge'> = Extract<
+  DualInspectionTarget,
+  { modelKind: 'correspondence'; kind: TKind }
+>;
+
 export type ResolvedDualInspectionTarget =
   | {
       kind: 'cell';
-      target: Extract<DualInspectionTarget, { kind: 'cell' }>;
+      modelKind: 'semantic';
+      target: SemanticInspectionTarget<'cell'>;
       semanticModel: SemanticDualModel;
       sourceCell: Cell;
       dualCell: Cell;
     }
   | {
       kind: 'vertex';
-      target: Extract<DualInspectionTarget, { kind: 'vertex' }>;
+      modelKind: 'semantic';
+      target: SemanticInspectionTarget<'vertex'>;
       semanticModel: SemanticDualModel;
       sourceCell: Cell;
       dualVertex: Vertex;
@@ -130,7 +142,8 @@ export type ResolvedDualInspectionTarget =
     }
   | {
       kind: 'face';
-      target: Extract<DualInspectionTarget, { kind: 'face' }>;
+      modelKind: 'semantic';
+      target: SemanticInspectionTarget<'face'>;
       semanticModel: SemanticDualModel;
       sourceCell: Cell;
       dualFace: Face;
@@ -138,10 +151,38 @@ export type ResolvedDualInspectionTarget =
     }
   | {
       kind: 'edge';
-      target: Extract<DualInspectionTarget, { kind: 'edge' }>;
+      modelKind: 'semantic';
+      target: SemanticInspectionTarget<'edge'>;
       semanticModel: SemanticDualModel;
       sourceCell: Cell;
       dualEdge: Edge;
+      sourceEdge: Edge | null;
+    }
+  | {
+      kind: 'vertex';
+      modelKind: 'correspondence';
+      target: CorrespondenceInspectionTarget<'vertex'>;
+      correspondenceModel: DualCorrespondenceModel;
+      sourceCell: Cell;
+      dualVertex: DualCorrespondenceVertex;
+      sourceFace: Face | null;
+    }
+  | {
+      kind: 'face';
+      modelKind: 'correspondence';
+      target: CorrespondenceInspectionTarget<'face'>;
+      correspondenceModel: DualCorrespondenceModel;
+      sourceCell: Cell;
+      dualFace: DualCorrespondenceFace;
+      sourceVertex: Vertex | null;
+    }
+  | {
+      kind: 'edge';
+      modelKind: 'correspondence';
+      target: CorrespondenceInspectionTarget<'edge'>;
+      correspondenceModel: DualCorrespondenceModel;
+      sourceCell: Cell;
+      dualEdge: DualCorrespondenceEdge;
       sourceEdge: Edge | null;
     };
 
@@ -294,8 +335,10 @@ export function createDualVertexInspectionTarget(
 
   return {
     universe: 'dual',
+    modelKind: 'semantic',
     kind: 'vertex',
     sourceCellId: semanticModel.sourceCellId,
+    dualModelId: semanticModel.dualModelId,
     dualVertexId,
     sourceFaceId,
   };
@@ -313,8 +356,10 @@ export function createDualFaceInspectionTarget(
 
   return {
     universe: 'dual',
+    modelKind: 'semantic',
     kind: 'face',
     sourceCellId: semanticModel.sourceCellId,
+    dualModelId: semanticModel.dualModelId,
     dualFaceId,
     sourceVertexId,
   };
@@ -332,8 +377,73 @@ export function createDualEdgeInspectionTarget(
 
   return {
     universe: 'dual',
+    modelKind: 'semantic',
     kind: 'edge',
     sourceCellId: semanticModel.sourceCellId,
+    dualModelId: semanticModel.dualModelId,
+    dualEdgeId,
+    sourceEdgeId,
+  };
+}
+
+export function createDualCorrespondenceVertexInspectionTarget(
+  correspondenceModel: DualCorrespondenceModel,
+  dualVertexId: string,
+): DualInspectionTarget | null {
+  const sourceFaceId = correspondenceModel.dualVertexToSourceFace[dualVertexId];
+
+  if (!sourceFaceId || !correspondenceModel.dualVertices[dualVertexId]) {
+    return null;
+  }
+
+  return {
+    universe: 'dual',
+    modelKind: 'correspondence',
+    kind: 'vertex',
+    sourceCellId: correspondenceModel.sourceCellId,
+    dualModelId: correspondenceModel.dualModelId,
+    dualVertexId,
+    sourceFaceId,
+  };
+}
+
+export function createDualCorrespondenceFaceInspectionTarget(
+  correspondenceModel: DualCorrespondenceModel,
+  dualFaceId: string,
+): DualInspectionTarget | null {
+  const sourceVertexId = correspondenceModel.dualFaceToSourceVertex[dualFaceId];
+
+  if (!sourceVertexId || !correspondenceModel.dualFaces.some((face) => face.id === dualFaceId)) {
+    return null;
+  }
+
+  return {
+    universe: 'dual',
+    modelKind: 'correspondence',
+    kind: 'face',
+    sourceCellId: correspondenceModel.sourceCellId,
+    dualModelId: correspondenceModel.dualModelId,
+    dualFaceId,
+    sourceVertexId,
+  };
+}
+
+export function createDualCorrespondenceEdgeInspectionTarget(
+  correspondenceModel: DualCorrespondenceModel,
+  dualEdgeId: string,
+): DualInspectionTarget | null {
+  const sourceEdgeId = correspondenceModel.dualEdgeToSourceEdge[dualEdgeId];
+
+  if (!sourceEdgeId || !correspondenceModel.dualEdges.some((edge) => edge.id === dualEdgeId)) {
+    return null;
+  }
+
+  return {
+    universe: 'dual',
+    modelKind: 'correspondence',
+    kind: 'edge',
+    sourceCellId: correspondenceModel.sourceCellId,
+    dualModelId: correspondenceModel.dualModelId,
     dualEdgeId,
     sourceEdgeId,
   };
@@ -351,16 +461,27 @@ export function resolveDualInspectionTarget(
 
   const viewModel = buildDualUniverseViewModel(shape, sourceCell);
 
+  if (target.modelKind === 'correspondence') {
+    return viewModel.kind === 'legacy-proxy'
+      ? resolveDualCorrespondenceInspectionTarget(shape, sourceCell, viewModel.proxy.correspondenceModel, target)
+      : null;
+  }
+
   if (viewModel.kind !== 'semantic-model') {
     return null;
   }
 
   const { semanticModel } = viewModel;
 
+  if (semanticModel.dualModelId !== target.dualModelId) {
+    return null;
+  }
+
   if (target.kind === 'cell') {
     return semanticModel.dualCell.id === target.dualCellId
       ? {
           kind: 'cell',
+          modelKind: 'semantic',
           target,
           semanticModel,
           sourceCell,
@@ -379,6 +500,7 @@ export function resolveDualInspectionTarget(
 
     return {
       kind: 'vertex',
+      modelKind: 'semantic',
       target,
       semanticModel,
       sourceCell,
@@ -397,6 +519,7 @@ export function resolveDualInspectionTarget(
 
     return {
       kind: 'face',
+      modelKind: 'semantic',
       target,
       semanticModel,
       sourceCell,
@@ -414,8 +537,78 @@ export function resolveDualInspectionTarget(
 
   return {
     kind: 'edge',
+    modelKind: 'semantic',
     target,
     semanticModel,
+    sourceCell,
+    dualEdge,
+    sourceEdge: shape.edges.find((edge) => edge.id === target.sourceEdgeId) ?? null,
+  };
+}
+
+function resolveDualCorrespondenceInspectionTarget(
+  shape: Shape,
+  sourceCell: Cell,
+  correspondenceModel: DualCorrespondenceModel,
+  target: CorrespondenceInspectionTarget<'vertex' | 'face' | 'edge'>,
+): ResolvedDualInspectionTarget | null {
+  if (
+    correspondenceModel.sourceCellId !== sourceCell.id ||
+    correspondenceModel.dualModelId !== target.dualModelId
+  ) {
+    return null;
+  }
+
+  if (target.kind === 'vertex') {
+    const dualVertex = correspondenceModel.dualVertices[target.dualVertexId];
+    const sourceFaceId = correspondenceModel.dualVertexToSourceFace[target.dualVertexId];
+
+    if (!dualVertex || sourceFaceId !== target.sourceFaceId) {
+      return null;
+    }
+
+    return {
+      kind: 'vertex',
+      modelKind: 'correspondence',
+      target,
+      correspondenceModel,
+      sourceCell,
+      dualVertex,
+      sourceFace: shape.faces.find((face) => face.id === target.sourceFaceId) ?? null,
+    };
+  }
+
+  if (target.kind === 'face') {
+    const dualFace = correspondenceModel.dualFaces.find((face) => face.id === target.dualFaceId);
+    const sourceVertexId = correspondenceModel.dualFaceToSourceVertex[target.dualFaceId];
+
+    if (!dualFace || sourceVertexId !== target.sourceVertexId) {
+      return null;
+    }
+
+    return {
+      kind: 'face',
+      modelKind: 'correspondence',
+      target,
+      correspondenceModel,
+      sourceCell,
+      dualFace,
+      sourceVertex: shape.vertices[target.sourceVertexId] ?? null,
+    };
+  }
+
+  const dualEdge = correspondenceModel.dualEdges.find((edge) => edge.id === target.dualEdgeId);
+  const sourceEdgeId = correspondenceModel.dualEdgeToSourceEdge[target.dualEdgeId];
+
+  if (!dualEdge || sourceEdgeId !== target.sourceEdgeId) {
+    return null;
+  }
+
+  return {
+    kind: 'edge',
+    modelKind: 'correspondence',
+    target,
+    correspondenceModel,
     sourceCell,
     dualEdge,
     sourceEdge: shape.edges.find((edge) => edge.id === target.sourceEdgeId) ?? null,

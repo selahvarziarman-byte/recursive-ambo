@@ -533,15 +533,19 @@ function DualUniverseInspectionSection() {
     return null;
   }
 
+  const isCorrespondenceTarget = dualInspectionTarget.modelKind === 'correspondence';
+
   return (
     <div className="rounded border border-violet-400/30 bg-violet-400/5 px-3 py-3 text-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-200">
-            Dual Universe Inspection
+            {isCorrespondenceTarget ? 'Dual Correspondence Inspection' : 'Dual Universe Inspection'}
           </h2>
           <p className="mt-2 text-xs leading-5 text-stone-400">
-            Dual Universe inspection is read-only.
+            {isCorrespondenceTarget
+              ? 'Read-only correspondence model. This is not a generated Shape and does not edit packets.'
+              : 'Dual Universe inspection is read-only.'}
           </p>
         </div>
         <button
@@ -568,6 +572,15 @@ function ResolvedDualInspectionDetails({
   shape: Shape;
   resolvedTarget: ResolvedDualInspectionTarget;
 }) {
+  if (resolvedTarget.modelKind === 'correspondence') {
+    return (
+      <ResolvedDualCorrespondenceInspectionDetails
+        shape={shape}
+        resolvedTarget={resolvedTarget}
+      />
+    );
+  }
+
   if (resolvedTarget.kind === 'face') {
     const packetSummary = resolvedTarget.sourceVertex
       ? formatVertexPacketDetail(resolvedTarget.sourceVertex) ??
@@ -662,6 +675,86 @@ function ResolvedDualInspectionDetails({
   );
 }
 
+function ResolvedDualCorrespondenceInspectionDetails({
+  shape,
+  resolvedTarget,
+}: {
+  shape: Shape;
+  resolvedTarget: Extract<ResolvedDualInspectionTarget, { modelKind: 'correspondence' }>;
+}) {
+  if (resolvedTarget.kind === 'face') {
+    const packetSummary = resolvedTarget.sourceVertex
+      ? formatVertexPacketDetail(resolvedTarget.sourceVertex) ??
+        getPacketDisplayLabel(resolvedTarget.sourceVertex.data) ??
+        'untitled packet'
+      : 'source vertex unavailable';
+
+    return (
+      <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+        <InspectionDetail label="Entity" value="dual face" />
+        <InspectionDetail label="Model" value="read-only correspondence" />
+        <InspectionDetail label="Topology" value={resolvedTarget.correspondenceModel.dualTopologyLabel} />
+        <InspectionDetail label="Dual face" value={resolvedTarget.dualFace.id} code />
+        <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+        <InspectionDetail label="Source vertex" value={resolvedTarget.target.sourceVertexId} code />
+        <InspectionDetail
+          label="Dual vertices"
+          value={resolvedTarget.dualFace.vertexIds.join(', ')}
+          code
+        />
+        <InspectionDetail label="Source packet" value={packetSummary} />
+      </dl>
+    );
+  }
+
+  if (resolvedTarget.kind === 'edge') {
+    return (
+      <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+        <InspectionDetail label="Entity" value="dual edge" />
+        <InspectionDetail label="Model" value="read-only correspondence" />
+        <InspectionDetail label="Topology" value={resolvedTarget.correspondenceModel.dualTopologyLabel} />
+        <InspectionDetail label="Dual edge" value={resolvedTarget.dualEdge.id} code />
+        <InspectionDetail label="Source edge" value={resolvedTarget.target.sourceEdgeId} code />
+        <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+        <InspectionDetail
+          label="Dual vertices"
+          value={resolvedTarget.dualEdge.vertexIds.join(', ')}
+          code
+        />
+        <InspectionDetail
+          label="Source endpoints"
+          value={
+            resolvedTarget.sourceEdge
+              ? formatEdgeRef(shape, resolvedTarget.sourceEdge.vertexIds)
+              : 'source edge unavailable'
+          }
+        />
+      </dl>
+    );
+  }
+
+  return (
+    <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+      <InspectionDetail label="Entity" value="dual vertex" />
+      <InspectionDetail label="Model" value="read-only correspondence" />
+      <InspectionDetail label="Topology" value={resolvedTarget.correspondenceModel.dualTopologyLabel} />
+      <InspectionDetail label="Dual vertex" value={resolvedTarget.dualVertex.id} code />
+      <InspectionDetail label="Source face" value={resolvedTarget.target.sourceFaceId} code />
+      <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+      <InspectionDetail
+        label="Source face vertices"
+        value={resolvedTarget.sourceFace?.vertexIds.join(', ') ?? 'source face unavailable'}
+        code={Boolean(resolvedTarget.sourceFace)}
+      />
+      <InspectionDetail
+        label="Position"
+        value={formatVec3(resolvedTarget.dualVertex.position)}
+        code
+      />
+    </dl>
+  );
+}
+
 function StaleDualInspectionDetails({ target }: { target: DualInspectionTarget }) {
   return (
     <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
@@ -669,7 +762,11 @@ function StaleDualInspectionDetails({ target }: { target: DualInspectionTarget }
       <InspectionDetail label="Source cell" value={target.sourceCellId} code />
       <InspectionDetail
         label="Status"
-        value="The source cell no longer produces a semantic Dual Universe model."
+        value={
+          target.modelKind === 'correspondence'
+            ? 'The source cell no longer produces the selected read-only Dual Correspondence model.'
+            : 'The source cell no longer produces a semantic Dual Universe model.'
+        }
       />
     </dl>
   );

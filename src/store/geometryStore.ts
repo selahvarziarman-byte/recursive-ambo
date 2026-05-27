@@ -14,11 +14,30 @@ import type {
   VertexId,
 } from '../types/geometry';
 
+export type DualInspectionModelKind = 'semantic' | 'correspondence';
+
+type SemanticDualInspectionTargetBase = {
+  universe: 'dual';
+  modelKind: 'semantic';
+  sourceCellId: CellId;
+  dualModelId: ShapeId;
+};
+
+type CorrespondenceDualInspectionTargetBase = {
+  universe: 'dual';
+  modelKind: 'correspondence';
+  sourceCellId: CellId;
+  dualModelId: string;
+};
+
 export type DualInspectionTarget =
-  | { universe: 'dual'; kind: 'cell'; sourceCellId: CellId; dualCellId: CellId }
-  | { universe: 'dual'; kind: 'vertex'; sourceCellId: CellId; dualVertexId: VertexId; sourceFaceId: FaceId }
-  | { universe: 'dual'; kind: 'face'; sourceCellId: CellId; dualFaceId: FaceId; sourceVertexId: VertexId }
-  | { universe: 'dual'; kind: 'edge'; sourceCellId: CellId; dualEdgeId: EdgeId; sourceEdgeId: EdgeId };
+  | (SemanticDualInspectionTargetBase & { kind: 'cell'; dualCellId: CellId })
+  | (SemanticDualInspectionTargetBase & { kind: 'vertex'; dualVertexId: VertexId; sourceFaceId: FaceId })
+  | (SemanticDualInspectionTargetBase & { kind: 'face'; dualFaceId: FaceId; sourceVertexId: VertexId })
+  | (SemanticDualInspectionTargetBase & { kind: 'edge'; dualEdgeId: EdgeId; sourceEdgeId: EdgeId })
+  | (CorrespondenceDualInspectionTargetBase & { kind: 'vertex'; dualVertexId: VertexId; sourceFaceId: FaceId })
+  | (CorrespondenceDualInspectionTargetBase & { kind: 'face'; dualFaceId: FaceId; sourceVertexId: VertexId })
+  | (CorrespondenceDualInspectionTargetBase & { kind: 'edge'; dualEdgeId: EdgeId; sourceEdgeId: EdgeId });
 
 interface CellVisibility {
   showCoreCells: boolean;
