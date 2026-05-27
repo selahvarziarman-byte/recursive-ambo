@@ -29,7 +29,10 @@ const {
   canApplyPyritohedralDiagonalization,
 } = require(path.join(repoRoot, 'src/lib/pyritohedralDiagonalization.ts'));
 const { isCellActiveFrontier } = require(path.join(repoRoot, 'src/lib/cellLifecycle.ts'));
-const { buildDualUniverseViewModel } = require(path.join(repoRoot, 'src/lib/dualView.ts'));
+const {
+  buildDualUniverseRenderGeometry,
+  buildDualUniverseViewModel,
+} = require(path.join(repoRoot, 'src/lib/dualView.ts'));
 const { canonicalEdgeKey } = require(path.join(repoRoot, 'src/lib/ids.ts'));
 
 const failures = [];
@@ -77,9 +80,11 @@ function verifyLegacySeed(seedKey, expected) {
   const shape = createSeedShape(seedKey);
   const cell = shape.cells[0];
   const viewModel = buildDualUniverseViewModel(shape, cell);
+  const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
 
   console.log(`legacy ${seedKey}: ${viewModel.kind}`);
   expect(viewModel.kind === 'legacy-proxy', `${seedKey}: expected legacy-proxy`);
+  expect(renderGeometry.kind === 'legacy-proxy', `${seedKey}: expected legacy render geometry`);
 
   if (viewModel.kind !== 'legacy-proxy') {
     return;
@@ -88,6 +93,105 @@ function verifyLegacySeed(seedKey, expected) {
   expect(viewModel.proxy.topology === expected.topology, `${seedKey}: wrong legacy dual topology`);
   expect(viewModel.proxy.vertices.length === expected.vertices, `${seedKey}: wrong legacy vertex count`);
   expect(viewModel.proxy.faces.length === expected.faces, `${seedKey}: wrong legacy face count`);
+  verifyLegacyCorrespondenceModel(seedKey, shape, cell, viewModel.proxy.correspondenceModel, expected);
+
+  if (renderGeometry.kind === 'legacy-proxy') {
+    verifyRenderEdgesBackedByModel(seedKey, renderGeometry.edges, viewModel.proxy.correspondenceModel);
+  }
+}
+
+function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, expected) {
+  const sourceFaces = getCellFaces(shape, cell);
+  const sourceEdges = getCellEdges(shape, cell);
+  const sourceFaceIds = sourceFaces.map((face) => face.id).sort();
+  const sourceVertexIds = [...cell.vertexIds].sort();
+  const sourceEdgeIds = sourceEdges.map((edge) => edge.id).sort();
+  const dualVertexIds = Object.keys(model.dualVertices).sort();
+  const dualFaceIds = model.dualFaces.map((face) => face.id).sort();
+  const dualEdgeIds = model.dualEdges.map((edge) => edge.id).sort();
+
+  expect(model.sourceCellId === cell.id, `${seedKey}: correspondence model source cell mismatch`);
+  expect(model.dualTopologyLabel === expected.topology, `${seedKey}: correspondence model topology mismatch`);
+  expect(model.dualVertices && model.dualFaces && model.dualEdges, `${seedKey}: missing correspondence model geometry`);
+  expectNoDuplicates(`${seedKey}: dual vertex ids`, dualVertexIds);
+  expectNoDuplicates(`${seedKey}: dual face ids`, dualFaceIds);
+  expectNoDuplicates(`${seedKey}: dual edge ids`, dualEdgeIds);
+  expect(dualVertexIds.length === sourceFaces.length, `${seedKey}: wrong correspondence dual vertex count`);
+  expect(dualFaceIds.length === sourceVertexIds.length, `${seedKey}: wrong correspondence dual face count`);
+  expect(dualEdgeIds.length === sourceEdgeIds.length, `${seedKey}: wrong correspondence dual edge count`);
+  expect(
+    model.dualEdges.every((edge) => Boolean(edge.id) && Boolean(edge.sourceEdgeId)),
+    `${seedKey}: each correspondence dual edge must have an id and sourceEdgeId`,
+  );
+  verifyModelFaceEdgeCoherence(seedKey, model);
+  verifyInverseMap(
+    seedKey,
+    'legacy sourceFaceToDualVertex',
+    model.sourceFaceToDualVertex,
+    model.dualVertexToSourceFace,
+    sourceFaceIds,
+    dualVertexIds,
+  );
+  verifyInverseMap(
+    seedKey,
+    'legacy sourceVertexToDualFace',
+    model.sourceVertexToDualFace,
+    model.dualFaceToSourceVertex,
+    sourceVertexIds,
+    dualFaceIds,
+  );
+  verifyInverseMap(
+    seedKey,
+    'legacy sourceEdgeToDualEdge',
+    model.sourceEdgeToDualEdge,
+    model.dualEdgeToSourceEdge,
+    sourceEdgeIds,
+    dualEdgeIds,
+  );
+}
+
+function verifyModelFaceEdgeCoherence(label, model) {
+  const boundaryEdgeCounts = getBoundaryEdgeCounts(model.dualFaces);
+  const boundaryEdgeKeys = Array.from(boundaryEdgeCounts.keys()).sort();
+  const modelEdgeKeys = model.dualEdges.map((edge) => canonicalEdgeKey(...edge.vertexIds)).sort();
+
+  expectSameSet(label, 'dual face boundary edge keys', boundaryEdgeKeys, modelEdgeKeys);
+  expectNoDuplicates(`${label}: model dual edge vertex-pair keys`, modelEdgeKeys);
+
+  for (const edge of model.dualEdges) {
+    const key = canonicalEdgeKey(...edge.vertexIds);
+
+    expect(boundaryEdgeCounts.has(key), `${label}: model dual edge ${edge.id} missing from face boundary set`);
+  }
+
+  for (const [key, count] of boundaryEdgeCounts) {
+    expect(count === 2, `${label}: dual face boundary edge ${key} occurs ${count} times`);
+  }
+}
+
+function verifyRenderEdgesBackedByModel(label, renderEdges, model) {
+  const modelEdgesByKey = new Map(
+    model.dualEdges.map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]),
+  );
+  const renderEdgeKeys = renderEdges.map((edge) => canonicalEdgeKey(...edge.vertexIds)).sort();
+
+  expectSameSet(label, 'render edge keys', renderEdgeKeys, Array.from(modelEdgesByKey.keys()).sort());
+  expectNoDuplicates(`${label}: render edge vertex-pair keys`, renderEdgeKeys);
+
+  for (const renderEdge of renderEdges) {
+    const key = canonicalEdgeKey(...renderEdge.vertexIds);
+    const modelEdge = modelEdgesByKey.get(key);
+
+    expect(Boolean(modelEdge), `${label}: render edge ${key} is missing from correspondence model`);
+    expect(
+      !modelEdge || renderEdge.id === modelEdge.id,
+      `${label}: render edge ${key} id does not match correspondence model`,
+    );
+    expect(
+      !modelEdge || renderEdge.sourceEdgeId === modelEdge.sourceEdgeId,
+      `${label}: render edge ${key} sourceEdgeId does not match correspondence model`,
+    );
+  }
 }
 
 function verifySemanticScenario(scenario) {
@@ -403,6 +507,26 @@ function expectSameSet(scenarioName, label, actual, expected) {
     actualIds.join(',') === expectedIds.join(','),
     `${scenarioName}: ${label} mismatch expected=${expectedIds.join(',')} actual=${actualIds.join(',')}`,
   );
+}
+
+function getBoundaryEdgeCounts(faces) {
+  const edgeCounts = new Map();
+
+  for (const face of faces) {
+    for (let index = 0; index < face.vertexIds.length; index += 1) {
+      const a = face.vertexIds[index];
+      const b = face.vertexIds[(index + 1) % face.vertexIds.length];
+      const key = canonicalEdgeKey(a, b);
+
+      edgeCounts.set(key, (edgeCounts.get(key) ?? 0) + 1);
+    }
+  }
+
+  return edgeCounts;
+}
+
+function expectNoDuplicates(label, values) {
+  expect(new Set(values).size === values.length, `${label} contains duplicate ids`);
 }
 
 function formatEntries(record) {

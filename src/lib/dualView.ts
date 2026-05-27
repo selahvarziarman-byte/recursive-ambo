@@ -2,7 +2,7 @@ import type { Cell, Edge, Face, Shape, Vec3, Vertex } from '../types/geometry';
 import type { DualInspectionTarget } from '../store/geometryStore';
 import { isCellActiveFrontier } from './cellLifecycle';
 import { buildSemanticDualModel, type SemanticDualModel } from './dualization';
-import { stableHash } from './ids';
+import { canonicalEdgeKey, stableHash } from './ids';
 import { getCellFaces, getCellVertices, getFaceVertices } from './shape';
 
 export type DualViewSupportedTopology = 'tetrahedron' | 'octahedron' | 'cube';
@@ -27,11 +27,43 @@ export interface DualViewFace {
   vertexIds: string[];
 }
 
+export interface DualCorrespondenceVertex {
+  id: string;
+  position: Vec3;
+}
+
+export interface DualCorrespondenceFace {
+  id: string;
+  vertexIds: string[];
+}
+
+export interface DualCorrespondenceEdge {
+  id: string;
+  vertexIds: [string, string];
+  sourceEdgeId: string;
+}
+
+export interface DualCorrespondenceModel {
+  sourceCellId: string;
+  dualModelId: string;
+  dualTopologyLabel: string;
+  dualVertices: Record<string, DualCorrespondenceVertex>;
+  dualFaces: DualCorrespondenceFace[];
+  dualEdges: DualCorrespondenceEdge[];
+  sourceFaceToDualVertex: Record<string, string>;
+  dualVertexToSourceFace: Record<string, string>;
+  sourceVertexToDualFace: Record<string, string>;
+  dualFaceToSourceVertex: Record<string, string>;
+  sourceEdgeToDualEdge: Record<string, string>;
+  dualEdgeToSourceEdge: Record<string, string>;
+}
+
 export interface DualViewProxy {
   cellId: string;
   topology: DualViewSupportedTopology;
   vertices: DualViewVertex[];
   faces: DualViewFace[];
+  correspondenceModel: DualCorrespondenceModel;
 }
 
 export type DualUniverseViewModel =
@@ -118,6 +150,21 @@ interface DualVertexEntry {
   vertex: DualViewVertex;
 }
 
+interface DualFaceEntry {
+  sourceVertexId: string;
+  face: DualViewFace;
+}
+
+interface DualEdgeEntry {
+  sourceEdge: Edge;
+  edge: DualCorrespondenceEdge;
+}
+
+interface SourceEdgeEntry {
+  edge: Edge;
+  incidentFaces: [Face, Face];
+}
+
 export function describeDualViewTopology(shape: Shape, cell: Cell): DualViewDescription {
   const faces = getCellFaces(shape, cell);
   const faceSizes = faces.map((face) => face.vertexIds.length);
@@ -195,7 +242,12 @@ export function projectDualUniverseViewModelToRenderGeometry(
       topology: viewModel.proxy.topology,
       vertices: viewModel.proxy.vertices,
       faces: viewModel.proxy.faces,
-      edges: edgesForDualViewFaces(viewModel.proxy.faces),
+      edges: viewModel.proxy.correspondenceModel.dualEdges.map((edge) => ({
+        id: edge.id,
+        vertexIds: edge.vertexIds,
+        sourceEdgeId: edge.sourceEdgeId,
+        sourceCellId: viewModel.proxy.correspondenceModel.sourceCellId,
+      })),
       viewModel,
     };
   }
@@ -377,8 +429,45 @@ export function buildDualViewProxy(shape: Shape, cell: Cell): DualViewProxy | nu
     return null;
   }
 
+  const correspondenceModel = buildDualCorrespondenceModel(shape, cell, topology.dual);
+
+  if (!correspondenceModel) {
+    return null;
+  }
+
+  return {
+    cellId: cell.id,
+    topology: topology.dual,
+    vertices: Object.values(correspondenceModel.dualVertices),
+    faces: correspondenceModel.dualFaces,
+    correspondenceModel,
+  };
+}
+
+export function buildDualCorrespondenceModel(
+  shape: Shape,
+  cell: Cell,
+  dualTopologyLabel: string,
+): DualCorrespondenceModel | null {
   const sourceFaces = getCellFaces(shape, cell);
   const sourceVertices = getCellVertices(shape, cell);
+
+  if (
+    !sourceFaces.length ||
+    sourceFaces.length !== cell.faceIds.length ||
+    !sourceVertices.length ||
+    sourceVertices.length !== cell.vertexIds.length ||
+    sourceFaces.some((face) => !isWellFormedSourceFace(shape, cell, face))
+  ) {
+    return null;
+  }
+
+  const sourceEdgeEntries = buildSourceEdgeEntries(shape, sourceFaces);
+
+  if (!sourceEdgeEntries) {
+    return null;
+  }
+
   const sourceCentroid = averagePosition(sourceVertices.map((vertex) => vertex.position));
   const rawDualPositions = sourceFaces.map((face) => faceCentroid(shape, face));
   const scaleFactor = dualScaleFactor(
@@ -398,34 +487,178 @@ export function buildDualViewProxy(shape: Shape, cell: Cell): DualViewProxy | nu
     dualVertexByFaceId.set(face.id, { face, vertex });
   }
 
-  const faces = sourceVertices.map((sourceVertex) =>
-    createDualFace(shape, cell, sourceVertex, sourceFaces, sourceCentroid, dualVertexByFaceId),
+  const dualFaceEntries = sourceVertices.map((sourceVertex) =>
+    createDualFaceEntry(shape, cell, sourceVertex, sourceFaces, sourceCentroid, dualVertexByFaceId),
   );
+  const dualEdgeEntries = createDualEdgeEntries(cell, sourceEdgeEntries, dualVertexByFaceId);
+
+  if (!dualEdgeEntries) {
+    return null;
+  }
+
+  if (
+    dualFaceEntries.some((entry) => entry.face.vertexIds.length < 3) ||
+    hasDuplicateIds(Array.from(dualVertexByFaceId.values()).map((entry) => entry.vertex.id)) ||
+    hasDuplicateIds(dualFaceEntries.map((entry) => entry.face.id)) ||
+    hasDuplicateIds(dualEdgeEntries.map((entry) => entry.edge.id)) ||
+    !hasDualFaceEdgeCoherence(dualFaceEntries, dualEdgeEntries)
+  ) {
+    return null;
+  }
 
   return {
-    cellId: cell.id,
-    topology: topology.dual,
-    vertices: sourceFaces.map((face) => getDualVertex(dualVertexByFaceId, face.id).vertex),
-    faces,
+    sourceCellId: cell.id,
+    dualModelId: makeDualCorrespondenceModelId(cell.id, dualTopologyLabel),
+    dualTopologyLabel,
+    dualVertices: Object.fromEntries(
+      sourceFaces.map((face) => {
+        const vertex = getDualVertex(dualVertexByFaceId, face.id).vertex;
+
+        return [vertex.id, vertex];
+      }),
+    ),
+    dualFaces: dualFaceEntries.map((entry) => entry.face),
+    dualEdges: dualEdgeEntries.map((entry) => entry.edge),
+    sourceFaceToDualVertex: Object.fromEntries(
+      sourceFaces.map((face) => [face.id, getDualVertex(dualVertexByFaceId, face.id).vertex.id]),
+    ),
+    dualVertexToSourceFace: Object.fromEntries(
+      sourceFaces.map((face) => [getDualVertex(dualVertexByFaceId, face.id).vertex.id, face.id]),
+    ),
+    sourceVertexToDualFace: Object.fromEntries(
+      dualFaceEntries.map((entry) => [entry.sourceVertexId, entry.face.id]),
+    ),
+    dualFaceToSourceVertex: Object.fromEntries(
+      dualFaceEntries.map((entry) => [entry.face.id, entry.sourceVertexId]),
+    ),
+    sourceEdgeToDualEdge: Object.fromEntries(
+      dualEdgeEntries.map((entry) => [entry.sourceEdge.id, entry.edge.id]),
+    ),
+    dualEdgeToSourceEdge: Object.fromEntries(
+      dualEdgeEntries.map((entry) => [entry.edge.id, entry.sourceEdge.id]),
+    ),
   };
 }
 
-function edgesForDualViewFaces(faces: DualUniverseRenderFace[]): DualUniverseRenderEdge[] {
-  const edges = new Map<string, DualUniverseRenderEdge>();
+function isWellFormedSourceFace(shape: Shape, cell: Cell, face: Face): boolean {
+  const cellVertexIds = new Set(cell.vertexIds);
+  const faceVertexIds = new Set(face.vertexIds);
 
-  for (const face of faces) {
+  return (
+    face.vertexIds.length >= 3 &&
+    faceVertexIds.size === face.vertexIds.length &&
+    face.vertexIds.every((vertexId) => cellVertexIds.has(vertexId) && Boolean(shape.vertices[vertexId]))
+  );
+}
+
+function buildSourceEdgeEntries(shape: Shape, sourceFaces: Face[]): SourceEdgeEntry[] | null {
+  const sourceEdgeByKey = new Map(
+    shape.edges.map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]),
+  );
+  const incidentFacesByEdgeKey = new Map<string, Face[]>();
+
+  for (const face of sourceFaces) {
     for (let index = 0; index < face.vertexIds.length; index += 1) {
       const a = face.vertexIds[index];
       const b = face.vertexIds[(index + 1) % face.vertexIds.length];
-      const key = [a, b].sort().join('|');
+      const key = canonicalEdgeKey(a, b);
 
-      if (!edges.has(key)) {
-        edges.set(key, { vertexIds: [a, b] });
+      if (!sourceEdgeByKey.has(key)) {
+        return null;
       }
+
+      incidentFacesByEdgeKey.set(key, [...(incidentFacesByEdgeKey.get(key) ?? []), face]);
     }
   }
 
-  return Array.from(edges.values());
+  const entries: SourceEdgeEntry[] = [];
+
+  for (const [key, incidentFaces] of incidentFacesByEdgeKey) {
+    const edge = sourceEdgeByKey.get(key);
+
+    if (!edge || incidentFaces.length !== 2) {
+      return null;
+    }
+
+    entries.push({
+      edge,
+      incidentFaces: [incidentFaces[0], incidentFaces[1]],
+    });
+  }
+
+  return entries.sort((a, b) => a.edge.id.localeCompare(b.edge.id));
+}
+
+function createDualEdgeEntries(
+  cell: Cell,
+  sourceEdgeEntries: SourceEdgeEntry[],
+  dualVertexByFaceId: Map<string, DualVertexEntry>,
+): DualEdgeEntry[] | null {
+  return sourceEdgeEntries.map(({ edge: sourceEdge, incidentFaces }) => {
+    const dualVertexA = getDualVertex(dualVertexByFaceId, incidentFaces[0].id).vertex.id;
+    const dualVertexB = getDualVertex(dualVertexByFaceId, incidentFaces[1].id).vertex.id;
+    const vertexIds = [dualVertexA, dualVertexB].sort() as [string, string];
+
+    return {
+      sourceEdge,
+      edge: {
+        id: makeDualViewEdgeId(cell.id, sourceEdge.id, vertexIds),
+        vertexIds,
+        sourceEdgeId: sourceEdge.id,
+      },
+    };
+  });
+}
+
+function hasDualFaceEdgeCoherence(
+  dualFaceEntries: DualFaceEntry[],
+  dualEdgeEntries: DualEdgeEntry[],
+): boolean {
+  const boundaryEdgeCounts = new Map<string, number>();
+
+  for (const { face } of dualFaceEntries) {
+    for (let index = 0; index < face.vertexIds.length; index += 1) {
+      const a = face.vertexIds[index];
+      const b = face.vertexIds[(index + 1) % face.vertexIds.length];
+
+      if (a === b) {
+        return false;
+      }
+
+      const key = canonicalEdgeKey(a, b);
+      boundaryEdgeCounts.set(key, (boundaryEdgeCounts.get(key) ?? 0) + 1);
+    }
+  }
+
+  const dualEdgeKeys = new Set<string>();
+
+  for (const { edge } of dualEdgeEntries) {
+    const key = canonicalEdgeKey(...edge.vertexIds);
+
+    if (dualEdgeKeys.has(key)) {
+      return false;
+    }
+
+    dualEdgeKeys.add(key);
+  }
+
+  if (boundaryEdgeCounts.size !== dualEdgeKeys.size) {
+    return false;
+  }
+
+  for (const [key, count] of boundaryEdgeCounts) {
+    if (count !== 2 || !dualEdgeKeys.has(key)) {
+      return false;
+    }
+  }
+
+  for (const key of dualEdgeKeys) {
+    if (!boundaryEdgeCounts.has(key)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function isSemanticDualUniverseSource(shape: Shape, cell: Cell): boolean {
@@ -450,21 +683,24 @@ function getDualUniverseUnsupportedReason(shape: Shape, cell: Cell): string {
   return 'Dual Universe is not available for this cell topology.';
 }
 
-function createDualFace(
+function createDualFaceEntry(
   shape: Shape,
   cell: Cell,
   sourceVertex: Vertex,
   sourceFaces: Face[],
   sourceCentroid: Vec3,
   dualVertexByFaceId: Map<string, DualVertexEntry>,
-): DualViewFace {
+): DualFaceEntry {
   const incidentFaces = sourceFaces.filter((face) => face.vertexIds.includes(sourceVertex.id));
   const orderedFaces = orderIncidentFaces(shape, sourceVertex, incidentFaces, sourceCentroid);
   const vertexIds = orderedFaces.map((face) => getDualVertex(dualVertexByFaceId, face.id).vertex.id);
 
   return {
-    id: makeDualViewFaceId(cell.id, sourceVertex.id, vertexIds),
-    vertexIds,
+    sourceVertexId: sourceVertex.id,
+    face: {
+      id: makeDualViewFaceId(cell.id, sourceVertex.id, vertexIds),
+      vertexIds,
+    },
   };
 }
 
@@ -495,12 +731,20 @@ function faceAngle(shape: Shape, face: Face, origin: Vec3, u: Vec3, v: Vec3): nu
   return Math.atan2(dotVec3(projected, v), dotVec3(projected, u));
 }
 
+function makeDualCorrespondenceModelId(cellId: string, dualTopologyLabel: string): string {
+  return `dual-model:${stableHash(`${cellId}|${dualTopologyLabel}|dual-correspondence`)}`;
+}
+
 function makeDualViewVertexId(cellId: string, faceId: string): string {
   return `vertex:dual-view:${stableHash(`${cellId}|${faceId}`)}`;
 }
 
 function makeDualViewFaceId(cellId: string, sourceVertexId: string, vertexIds: string[]): string {
   return `face:dual-view:${stableHash(`${cellId}|${sourceVertexId}|${vertexIds.join('|')}`)}`;
+}
+
+function makeDualViewEdgeId(cellId: string, sourceEdgeId: string, vertexIds: [string, string]): string {
+  return `edge:dual-view:${stableHash(`${cellId}|${sourceEdgeId}|${vertexIds.join('|')}`)}`;
 }
 
 function getDualVertex(entries: Map<string, DualVertexEntry>, sourceFaceId: string): DualVertexEntry {
@@ -511,6 +755,10 @@ function getDualVertex(entries: Map<string, DualVertexEntry>, sourceFaceId: stri
   }
 
   return entry;
+}
+
+function hasDuplicateIds(ids: string[]): boolean {
+  return new Set(ids).size !== ids.length;
 }
 
 function faceCentroid(shape: Shape, face: Face): Vec3 {
