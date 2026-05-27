@@ -29,10 +29,22 @@ export function Workspace3D() {
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
   const clearDualInspectionTarget = useGeometryStore((state) => state.clearDualInspectionTarget);
   const [fitViewRequest, setFitViewRequest] = useState(0);
+  const [fitSelectedRequest, setFitSelectedRequest] = useState(0);
   const [resetCameraRequest, setResetCameraRequest] = useState(0);
+  const selectedCell = useMemo(
+    () => shape.cells.find((cell) => cell.id === selectedCellId) ?? null,
+    [selectedCellId, shape.cells],
+  );
   const sceneBounds = useMemo(
     () => computeVisibleSceneBounds(shape, cellVisibility, explodeAmount, dualViewEnabled),
     [cellVisibility, dualViewEnabled, explodeAmount, shape],
+  );
+  const selectedSceneBounds = useMemo(
+    () =>
+      selectedCell && isCellVisible(selectedCell, cellVisibility)
+        ? computeCellSceneBounds(shape, selectedCell, explodeAmount, dualViewEnabled)
+        : null,
+    [cellVisibility, dualViewEnabled, explodeAmount, selectedCell, shape],
   );
 
   return (
@@ -64,7 +76,9 @@ export function Workspace3D() {
         />
         <SceneCameraControls
           sceneBounds={sceneBounds}
+          selectedSceneBounds={selectedSceneBounds}
           fitViewRequest={fitViewRequest}
+          fitSelectedRequest={fitSelectedRequest}
           resetCameraRequest={resetCameraRequest}
         />
       </Canvas>
@@ -78,6 +92,14 @@ export function Workspace3D() {
           className="rounded border border-stone-700 bg-stone-950/90 px-3 py-2 text-xs font-semibold text-stone-100 shadow-lg transition hover:border-teal-400 hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
         >
           Fit View
+        </button>
+        <button
+          type="button"
+          onClick={() => setFitSelectedRequest((request) => request + 1)}
+          disabled={!selectedSceneBounds}
+          className="rounded border border-stone-700 bg-stone-950/90 px-3 py-2 text-xs font-semibold text-stone-100 shadow-lg transition hover:border-cyan-300 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950/70 disabled:text-stone-600"
+        >
+          Fit Selected
         </button>
         <button
           type="button"
@@ -107,11 +129,15 @@ const MIN_CAMERA_DISTANCE = 3.8;
 
 function SceneCameraControls({
   sceneBounds,
+  selectedSceneBounds,
   fitViewRequest,
+  fitSelectedRequest,
   resetCameraRequest,
 }: {
   sceneBounds: SceneBounds;
+  selectedSceneBounds: SceneBounds | null;
   fitViewRequest: number;
+  fitSelectedRequest: number;
   resetCameraRequest: number;
 }) {
   const { camera, size } = useThree();
@@ -132,10 +158,10 @@ function SceneCameraControls({
   );
 
   const fitCameraToBounds = useCallback(
-    (mode: 'fit' | 'reset') => {
+    (bounds: SceneBounds, mode: 'fit' | 'reset') => {
       const controls = controlsRef.current;
-      const target = vec3ToVector(sceneBounds.center);
-      const radius = Math.max(sceneBounds.radius, 0.5);
+      const target = vec3ToVector(bounds.center);
+      const radius = Math.max(bounds.radius, 0.5);
       const distance =
         mode === 'fit'
           ? getFitDistance(camera, radius, size.width / Math.max(1, size.height))
@@ -158,7 +184,7 @@ function SceneCameraControls({
         controls.update();
       }
     },
-    [camera, sceneBounds.center, sceneBounds.radius, size.height, size.width, updateCameraClipping],
+    [camera, size.height, size.width, updateCameraClipping],
   );
 
   useEffect(() => {
@@ -174,15 +200,21 @@ function SceneCameraControls({
 
   useEffect(() => {
     if (fitViewRequest > 0) {
-      fitCameraToBounds('fit');
+      fitCameraToBounds(sceneBounds, 'fit');
     }
-  }, [fitCameraToBounds, fitViewRequest]);
+  }, [fitCameraToBounds, fitViewRequest, sceneBounds]);
+
+  useEffect(() => {
+    if (fitSelectedRequest > 0 && selectedSceneBounds) {
+      fitCameraToBounds(selectedSceneBounds, 'fit');
+    }
+  }, [fitCameraToBounds, fitSelectedRequest, selectedSceneBounds]);
 
   useEffect(() => {
     if (resetCameraRequest > 0) {
-      fitCameraToBounds('reset');
+      fitCameraToBounds(sceneBounds, 'reset');
     }
-  }, [fitCameraToBounds, resetCameraRequest]);
+  }, [fitCameraToBounds, resetCameraRequest, sceneBounds]);
 
   return (
     <OrbitControls
@@ -1358,6 +1390,67 @@ function computeVisibleSceneBounds(
     }
   }
 
+  if (!positions.length) {
+    return { center: [0, 0, 0], radius: 2.4 };
+  }
+
+  const minimum = positions.reduce<Vec3>(
+    (current, position) => [
+      Math.min(current[0], position[0]),
+      Math.min(current[1], position[1]),
+      Math.min(current[2], position[2]),
+    ],
+    [Infinity, Infinity, Infinity],
+  );
+  const maximum = positions.reduce<Vec3>(
+    (current, position) => [
+      Math.max(current[0], position[0]),
+      Math.max(current[1], position[1]),
+      Math.max(current[2], position[2]),
+    ],
+    [-Infinity, -Infinity, -Infinity],
+  );
+  const center: Vec3 = scaleVec3(addVec3(minimum, maximum), 0.5);
+  const radius = positions.reduce(
+    (current, position) => Math.max(current, lengthVec3(subtractVec3(position, center))),
+    0,
+  );
+
+  return { center, radius: Math.max(radius, 1.2) };
+}
+
+function computeCellSceneBounds(
+  shape: Shape,
+  cell: Cell,
+  explodeAmount: number,
+  dualViewEnabled: boolean,
+): SceneBounds {
+  const displayOffset = computeCellDisplayOffsets(shape, explodeAmount).get(cell.id) ?? [0, 0, 0];
+  const renderGeometry = createCellRenderGeometry(shape, cell, dualViewEnabled);
+  const vertexById = new Map(renderGeometry.vertices.map((vertex) => [vertex.id, vertex]));
+  const referencedVertexIds = new Set<string>();
+
+  for (const face of renderGeometry.faces) {
+    face.vertexIds.forEach((vertexId) => referencedVertexIds.add(vertexId));
+  }
+
+  for (const edge of renderGeometry.edges) {
+    edge.vertexIds.forEach((vertexId) => referencedVertexIds.add(vertexId));
+  }
+
+  if (!referencedVertexIds.size) {
+    renderGeometry.vertices.forEach((vertex) => referencedVertexIds.add(vertex.id));
+  }
+
+  const positions = Array.from(referencedVertexIds)
+    .map((vertexId) => vertexById.get(vertexId))
+    .filter((vertex): vertex is RenderVertex => Boolean(vertex))
+    .map((vertex) => addVec3(vertex.position, displayOffset));
+
+  return positionsToSceneBounds(positions);
+}
+
+function positionsToSceneBounds(positions: Vec3[]): SceneBounds {
   if (!positions.length) {
     return { center: [0, 0, 0], radius: 2.4 };
   }

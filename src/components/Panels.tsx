@@ -32,6 +32,7 @@ import type {
   PacketLineage,
   PacketSourceRef,
   Shape,
+  Vec3,
   Vertex,
   VertexDataPacket,
   VertexId,
@@ -508,7 +509,13 @@ function SelectionPanel() {
         <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
           Vertex Packet
         </h2>
-        {vertex ? <SelectedVertexSummary vertexId={vertex.id} shape={shape} /> : null}
+        {vertex ? (
+          <SelectedVertexSummary
+            vertexId={vertex.id}
+            shape={shape}
+            selectedCell={selectedCell}
+          />
+        ) : null}
         <div className="mt-3">
           <VertexPacketEditorContent />
         </div>
@@ -1156,12 +1163,25 @@ function PacketWorkbenchRowButton({
   );
 }
 
-function SelectedVertexSummary({ vertexId, shape }: { vertexId: string; shape: Shape }) {
+function SelectedVertexSummary({
+  vertexId,
+  shape,
+  selectedCell,
+}: {
+  vertexId: string;
+  shape: Shape;
+  selectedCell: Cell | null;
+}) {
+  const selectVertex = useGeometryStore((state) => state.selectVertex);
   const vertex = shape.vertices[vertexId];
   const selectedVertexCells = shape.cells.filter((cell) => cell.vertexIds.includes(vertexId));
   const containingFaces = getContainingFaces(shape, vertexId);
   const displayLabel = getVertexDisplayLabel(shape, vertexId);
   const shortId = shortenId(vertexId);
+  const antipodalResult = useMemo(
+    () => findCellAntipodalVertices(shape, selectedCell, vertexId),
+    [selectedCell, shape, vertexId],
+  );
 
   if (!vertex) {
     return null;
@@ -1186,8 +1206,130 @@ function SelectedVertexSummary({ vertexId, shape }: { vertexId: string; shape: S
       <dd className="text-stone-200">{selectedVertexCells.length}</dd>
       <dt className="text-stone-500">Faces</dt>
       <dd className="text-stone-200">{containingFaces.length}</dd>
+      <dt className="text-stone-500">Antipodal</dt>
+      <dd className="min-w-0 text-stone-200">
+        <AntipodalVertexValue
+          result={antipodalResult}
+          shape={shape}
+          onSelectVertex={selectVertex}
+        />
+      </dd>
     </dl>
   );
+}
+
+type AntipodalVertexResult =
+  | { status: 'select-cell' }
+  | { status: 'outside-cell' }
+  | { status: 'matches'; vertices: Vertex[] };
+
+function AntipodalVertexValue({
+  result,
+  shape,
+  onSelectVertex,
+}: {
+  result: AntipodalVertexResult;
+  shape: Shape;
+  onSelectVertex: (vertexId: VertexId) => void;
+}) {
+  if (result.status === 'select-cell') {
+    return <span className="text-stone-500">select a cell</span>;
+  }
+
+  if (result.status === 'outside-cell') {
+    return <span className="text-stone-500">selected vertex outside selected cell</span>;
+  }
+
+  if (result.vertices.length === 0) {
+    return <span>none</span>;
+  }
+
+  if (result.vertices.length > 1) {
+    return (
+      <span className="break-words">
+        ambiguous: {result.vertices.map((vertex) => shortenId(vertex.id)).join(', ')}
+      </span>
+    );
+  }
+
+  const antipodalVertex = result.vertices[0];
+  const label = getVertexDisplayLabel(shape, antipodalVertex.id);
+  const shortId = shortenId(antipodalVertex.id);
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelectVertex(antipodalVertex.id)}
+      className="min-w-0 text-left text-teal-200 transition hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
+    >
+      <span className="block truncate">{label}</span>
+      <span className="block truncate font-mono text-xs text-stone-500">{shortId}</span>
+    </button>
+  );
+}
+
+function findCellAntipodalVertices(
+  shape: Shape,
+  cell: Cell | null,
+  vertexId: VertexId,
+): AntipodalVertexResult {
+  if (!cell) {
+    return { status: 'select-cell' };
+  }
+
+  if (!cell.vertexIds.includes(vertexId)) {
+    return { status: 'outside-cell' };
+  }
+
+  const selectedVertex = shape.vertices[vertexId];
+  const center = cellCentroidForAntipodes(shape, cell);
+
+  if (!selectedVertex || !center) {
+    return { status: 'matches', vertices: [] };
+  }
+
+  const radius = cellRadiusForAntipodes(shape, cell, center);
+  const tolerance = Math.max(1e-5, radius * 1e-4);
+  const reflected: Vec3 = [
+    2 * center[0] - selectedVertex.position[0],
+    2 * center[1] - selectedVertex.position[1],
+    2 * center[2] - selectedVertex.position[2],
+  ];
+  const vertices = cell.vertexIds
+    .filter((candidateId) => candidateId !== vertexId)
+    .map((candidateId) => shape.vertices[candidateId])
+    .filter((candidate): candidate is Vertex => Boolean(candidate))
+    .filter((candidate) => distanceVec3(candidate.position, reflected) <= tolerance);
+
+  return { status: 'matches', vertices };
+}
+
+function cellCentroidForAntipodes(shape: Shape, cell: Cell): Vec3 | null {
+  const positions = cell.vertexIds
+    .map((vertexId) => shape.vertices[vertexId]?.position)
+    .filter((position): position is Vec3 => Boolean(position));
+
+  if (!positions.length) {
+    return null;
+  }
+
+  return [
+    positions.reduce((sum, position) => sum + position[0], 0) / positions.length,
+    positions.reduce((sum, position) => sum + position[1], 0) / positions.length,
+    positions.reduce((sum, position) => sum + position[2], 0) / positions.length,
+  ];
+}
+
+function cellRadiusForAntipodes(shape: Shape, cell: Cell, center: Vec3): number {
+  return cell.vertexIds.reduce((radius, vertexId) => {
+    const position = shape.vertices[vertexId]?.position;
+
+    return position ? Math.max(radius, distanceVec3(position, center)) : radius;
+  }, 0);
+}
+
+function distanceVec3(a: Vec3, b: Vec3): number {
+  return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 }
 
 function HistoryPanel() {
