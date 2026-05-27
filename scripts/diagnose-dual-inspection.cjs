@@ -242,18 +242,18 @@ function verifyCorrespondenceInspectionCoverage() {
     }
   }
 
-  console.log('legacy Dual View proxies reject stale semantic inspection targets');
+  console.log('correspondence Dual View proxies reject stale semantic inspection targets');
 }
 
 function verifyCorrespondenceInspectionForCell(label, shape, sourceCell, expected) {
   const renderGeometry = buildDualUniverseRenderGeometry(shape, sourceCell);
 
   assert(
-    renderGeometry.kind === 'legacy-proxy',
-    `${label}: expected legacy Dual View render geometry`,
+    renderGeometry.kind === 'correspondence-proxy',
+    `${label}: expected correspondence Dual View render geometry`,
   );
 
-  if (renderGeometry.kind !== 'legacy-proxy') {
+  if (renderGeometry.kind !== 'correspondence-proxy') {
     return;
   }
 
@@ -264,7 +264,7 @@ function verifyCorrespondenceInspectionForCell(label, shape, sourceCell, expecte
     assert(renderGeometry.faces.length === expected.faces, `${label}: expected ${expected.faces} dual faces`);
   }
 
-  const model = renderGeometry.viewModel.proxy.correspondenceModel;
+  const model = renderGeometry.viewModel.correspondenceProxy.correspondenceModel;
   const dualVertex = Object.values(model.dualVertices)[0];
   const dualFace = model.dualFaces[0];
   const dualEdge = model.dualEdges[0];
@@ -313,14 +313,14 @@ function verifyCorrespondenceInspectionForCell(label, shape, sourceCell, expecte
     modelKind: 'semantic',
     kind: 'face',
     sourceCellId: sourceCell.id,
-    dualModelId: 'dual-model:legacy-proxy-mismatch',
+    dualModelId: 'dual-model:correspondence-proxy-mismatch',
     dualFaceId: renderGeometry.faces[0]?.id ?? 'dual:missing',
     sourceVertexId: sourceCell.vertexIds[0] ?? 'vertex:missing',
   };
 
   assert(
     resolveDualInspectionTarget(shape, semanticTarget) === null,
-    `${label}: legacy DualViewProxy unexpectedly resolved as semantic inspection`,
+    `${label}: correspondence proxy unexpectedly resolved as semantic inspection`,
   );
 
   console.log(`${label}: correspondence vertex, face, and edge targets inspected`);

@@ -193,7 +193,7 @@ function CellMesh({
   );
   const usesDualInspectionTargets =
     renderGeometry.dualUniverse?.kind === 'semantic-model' ||
-    renderGeometry.dualUniverse?.kind === 'legacy-proxy';
+    renderGeometry.dualUniverse?.kind === 'correspondence-proxy';
   const style = cellStyle(
     cell,
     isSelected,
@@ -682,7 +682,7 @@ function DualInspectionTargets({
   const semanticRenderGeometry =
     renderGeometry.dualUniverse?.kind === 'semantic-model' ? renderGeometry.dualUniverse : null;
   const correspondenceRenderGeometry =
-    renderGeometry.dualUniverse?.kind === 'legacy-proxy' ? renderGeometry.dualUniverse : null;
+    renderGeometry.dualUniverse?.kind === 'correspondence-proxy' ? renderGeometry.dualUniverse : null;
   const vertexById = useMemo(
     () => new Map(renderGeometry.vertices.map((vertex) => [vertex.id, vertex])),
     [renderGeometry.vertices],
@@ -693,7 +693,7 @@ function DualInspectionTargets({
   }
 
   const semanticModel = semanticRenderGeometry?.viewModel.semanticModel ?? null;
-  const correspondenceModel = correspondenceRenderGeometry?.viewModel.proxy.correspondenceModel ?? null;
+  const correspondenceModel = correspondenceRenderGeometry?.viewModel.correspondenceProxy.correspondenceModel ?? null;
 
   return (
     <>
@@ -918,7 +918,7 @@ function createDualFaceTargetFromEvent(
   const semanticRenderGeometry =
     renderGeometry.dualUniverse?.kind === 'semantic-model' ? renderGeometry.dualUniverse : null;
   const correspondenceRenderGeometry =
-    renderGeometry.dualUniverse?.kind === 'legacy-proxy' ? renderGeometry.dualUniverse : null;
+    renderGeometry.dualUniverse?.kind === 'correspondence-proxy' ? renderGeometry.dualUniverse : null;
 
   if ((!semanticRenderGeometry && !correspondenceRenderGeometry) || faceIndex == null) {
     return null;
@@ -936,7 +936,7 @@ function createDualFaceTargetFromEvent(
 
   return correspondenceRenderGeometry
     ? createDualCorrespondenceFaceInspectionTarget(
-        correspondenceRenderGeometry.viewModel.proxy.correspondenceModel,
+        correspondenceRenderGeometry.viewModel.correspondenceProxy.correspondenceModel,
         face.id,
       )
     : null;
@@ -970,7 +970,7 @@ function createCellRenderGeometry(
     const dualRenderGeometry = buildDualUniverseRenderGeometry(shape, cell);
 
     if (
-      dualRenderGeometry.kind === 'legacy-proxy' ||
+      dualRenderGeometry.kind === 'correspondence-proxy' ||
       dualRenderGeometry.kind === 'semantic-model'
     ) {
       return {
@@ -1019,7 +1019,7 @@ function createSourceCounterpartHighlight(
   const semanticRenderGeometry =
     renderGeometry.dualUniverse?.kind === 'semantic-model' ? renderGeometry.dualUniverse : null;
   const correspondenceRenderGeometry =
-    renderGeometry.dualUniverse?.kind === 'legacy-proxy' ? renderGeometry.dualUniverse : null;
+    renderGeometry.dualUniverse?.kind === 'correspondence-proxy' ? renderGeometry.dualUniverse : null;
 
   if (!target || (!semanticRenderGeometry && !correspondenceRenderGeometry)) {
     return null;
@@ -1042,7 +1042,7 @@ function createSourceCounterpartHighlight(
       return null;
     }
   } else if (correspondenceRenderGeometry) {
-    const correspondenceModel = correspondenceRenderGeometry.viewModel.proxy.correspondenceModel;
+    const correspondenceModel = correspondenceRenderGeometry.viewModel.correspondenceProxy.correspondenceModel;
 
     if (
       resolvedTarget.modelKind !== 'correspondence' ||

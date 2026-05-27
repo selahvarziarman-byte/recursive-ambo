@@ -93,7 +93,7 @@ function verifyOperationRegistryBoundary() {
 }
 
 function verifyLegacyProxyCoverage() {
-  printDivider('legacy proxy coverage');
+  printDivider('correspondence proxy coverage');
 
   for (const fixture of [
     {
@@ -117,58 +117,58 @@ function verifyLegacyProxyCoverage() {
     const viewModel = buildDualUniverseViewModel(shape, cell);
     const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
 
-    expect(viewModel.kind === 'legacy-proxy', `${fixture.seedKey}: expected legacy proxy view model`);
-    expect(renderGeometry.kind === 'legacy-proxy', `${fixture.seedKey}: expected legacy proxy render geometry`);
+    expect(viewModel.kind === 'correspondence-proxy', `${fixture.seedKey}: expected correspondence proxy view model`);
+    expect(renderGeometry.kind === 'correspondence-proxy', `${fixture.seedKey}: expected correspondence proxy render geometry`);
     expect(isDualViewSupportedCell(shape, cell), `${fixture.seedKey}: expected Dual View supported cell`);
 
-    if (viewModel.kind === 'legacy-proxy') {
+    if (viewModel.kind === 'correspondence-proxy') {
       expect(
-        viewModel.proxy.topology === fixture.expectedTopology,
+        viewModel.correspondenceProxy.topology === fixture.expectedTopology,
         `${fixture.seedKey}: expected counterpart ${fixture.expectedTopology}`,
       );
-      verifyLegacyCorrespondenceModel(fixture.seedKey, shape, cell, viewModel.proxy.correspondenceModel, fixture);
+      verifyCorrespondenceModel(fixture.seedKey, shape, cell, viewModel.correspondenceProxy.correspondenceModel, fixture);
       verifyCorrespondenceTargetResolution(
         shape,
-        viewModel.proxy.correspondenceModel,
+        viewModel.correspondenceProxy.correspondenceModel,
         fixture.seedKey,
       );
     }
 
-    if (renderGeometry.kind === 'legacy-proxy') {
+    if (renderGeometry.kind === 'correspondence-proxy') {
       expect(
         renderGeometry.topology === fixture.expectedTopology,
         `${fixture.seedKey}: expected render topology ${fixture.expectedTopology}`,
       );
       expect(
         renderGeometry.vertices.length === fixture.expectedCounts.vertices,
-        `${fixture.seedKey}: wrong legacy render vertex count`,
+        `${fixture.seedKey}: wrong correspondence render vertex count`,
       );
       expect(
         renderGeometry.faces.length === fixture.expectedCounts.faces,
-        `${fixture.seedKey}: wrong legacy render face count`,
+        `${fixture.seedKey}: wrong correspondence render face count`,
       );
       expect(
         renderGeometry.edges.length === fixture.expectedCounts.edges,
-        `${fixture.seedKey}: wrong legacy render edge count`,
+        `${fixture.seedKey}: wrong correspondence render edge count`,
       );
       expect(
         renderGeometry.edges.every((edge) => Boolean(edge.id) && Boolean(edge.sourceEdgeId)),
-        `${fixture.seedKey}: legacy render edges must come from correspondence model source edges`,
+        `${fixture.seedKey}: correspondence render edges must come from correspondence model source edges`,
       );
       verifyRenderEdgesBackedByModel(
         fixture.seedKey,
         renderGeometry.edges,
-        renderGeometry.viewModel.proxy.correspondenceModel,
+        renderGeometry.viewModel.correspondenceProxy.correspondenceModel,
       );
       expect(
         resolveDualInspectionTarget(shape, fakeDualFaceTarget(cell, renderGeometry)) === null,
-        `${fixture.seedKey}: legacy proxy unexpectedly resolved semantic inspection target`,
+        `${fixture.seedKey}: correspondence proxy unexpectedly resolved semantic inspection target`,
       );
     }
 
     logPolicy(
       fixture.seedKey,
-      'LEGACY_PROXY_OK',
+      'CORRESPONDENCE_PROXY_OK',
       `counterpart ${fixture.expectedTopology}; read-only correspondence inspection enabled`,
     );
   }
@@ -208,20 +208,20 @@ function verifyCuboctahedronCorrespondenceCoverage() {
       expectedFaceSizeHistogram: { 4: 12 },
     };
 
-    expect(viewModel.kind === 'legacy-proxy', `${scenario.label}: expected correspondence view model`);
-    expect(renderGeometry.kind === 'legacy-proxy', `${scenario.label}: expected correspondence render geometry`);
+    expect(viewModel.kind === 'correspondence-proxy', `${scenario.label}: expected correspondence view model`);
+    expect(renderGeometry.kind === 'correspondence-proxy', `${scenario.label}: expected correspondence render geometry`);
     expect(isDualViewSupportedCell(shape, cell), `${scenario.label}: cuboctahedron should now be Dual View supported`);
 
-    if (viewModel.kind === 'legacy-proxy') {
+    if (viewModel.kind === 'correspondence-proxy') {
       expect(
-        viewModel.proxy.topology === fixture.expectedTopology,
+        viewModel.correspondenceProxy.topology === fixture.expectedTopology,
         `${scenario.label}: expected rhombic-dodecahedron counterpart`,
       );
-      verifyLegacyCorrespondenceModel(scenario.label, shape, cell, viewModel.proxy.correspondenceModel, fixture);
-      verifyCorrespondenceTargetResolution(shape, viewModel.proxy.correspondenceModel, scenario.label);
+      verifyCorrespondenceModel(scenario.label, shape, cell, viewModel.correspondenceProxy.correspondenceModel, fixture);
+      verifyCorrespondenceTargetResolution(shape, viewModel.correspondenceProxy.correspondenceModel, scenario.label);
     }
 
-    if (renderGeometry.kind === 'legacy-proxy') {
+    if (renderGeometry.kind === 'correspondence-proxy') {
       expect(renderGeometry.topology === fixture.expectedTopology, `${scenario.label}: wrong render topology`);
       expect(renderGeometry.vertices.length === 14, `${scenario.label}: wrong render vertex count`);
       expect(renderGeometry.edges.length === 24, `${scenario.label}: wrong render edge count`);
@@ -229,19 +229,19 @@ function verifyCuboctahedronCorrespondenceCoverage() {
       verifyRenderEdgesBackedByModel(
         scenario.label,
         renderGeometry.edges,
-        renderGeometry.viewModel.proxy.correspondenceModel,
+        renderGeometry.viewModel.correspondenceProxy.correspondenceModel,
       );
     }
 
     logPolicy(
       scenario.label,
-      'LEGACY_PROXY_OK',
+      'CORRESPONDENCE_PROXY_OK',
       'cuboctahedron -> rhombic-dodecahedron enabled through read-only correspondence model',
     );
   }
 }
 
-function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, fixture) {
+function verifyCorrespondenceModel(seedKey, shape, cell, model, fixture) {
   const sourceFaces = getCellFaces(shape, cell);
   const sourceEdges = getCellEdges(shape, cell);
   const sourceFaceIds = sourceFaces.map((face) => face.id).sort();
@@ -273,7 +273,7 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, fixture) {
   verifyModelFaceEdgeCoherence(seedKey, model);
   verifyInverseMap(
     seedKey,
-    'legacy sourceFaceToDualVertex',
+    'correspondence sourceFaceToDualVertex',
     model.sourceFaceToDualVertex,
     model.dualVertexToSourceFace,
     sourceFaceIds,
@@ -281,7 +281,7 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, fixture) {
   );
   verifyInverseMap(
     seedKey,
-    'legacy sourceVertexToDualFace',
+    'correspondence sourceVertexToDualFace',
     model.sourceVertexToDualFace,
     model.dualFaceToSourceVertex,
     sourceVertexIds,
@@ -289,7 +289,7 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, fixture) {
   );
   verifyInverseMap(
     seedKey,
-    'legacy sourceEdgeToDualEdge',
+    'correspondence sourceEdgeToDualEdge',
     model.sourceEdgeToDualEdge,
     model.dualEdgeToSourceEdge,
     sourceEdgeIds,
@@ -567,7 +567,7 @@ function verifyMaterializedDodecahedronSourcePolicy() {
   expect(!isDualViewSupportedCell(dualizedShape, dodecahedron), 'dodecahedron source must not be Dual View supported');
   expect(!canApplyDualization(dualizedShape, dodecahedron.id), 'dodecahedron source must not dualize again');
   expect(
-    renderGeometry.kind !== 'legacy-proxy' || renderGeometry.topology !== 'icosahedron',
+    renderGeometry.kind !== 'correspondence-proxy' || renderGeometry.topology !== 'icosahedron',
     'dodecahedron source must not expose dodecahedron -> icosahedron Dual View behavior',
   );
   expect(
@@ -601,7 +601,7 @@ function verifyUnsupportedCell(shape, cell, label, status) {
     `${label}: unsupported cell unexpectedly resolved correspondence inspection target`,
   );
 
-  logPolicy(label, status, 'no legacy proxy, semantic model, or materialized dualization path');
+  logPolicy(label, status, 'no correspondence proxy, semantic model, or materialized dualization path');
 }
 
 function verifySemanticTargetResolution(shape, semanticModel, kind, id, scenarioName) {
@@ -712,7 +712,7 @@ function fakeDualFaceTarget(sourceCell, renderGeometry) {
     modelKind: 'semantic',
     kind: 'face',
     sourceCellId: sourceCell.id,
-    dualModelId: 'dual-model:legacy-proxy-mismatch',
+    dualModelId: 'dual-model:correspondence-proxy-mismatch',
     dualFaceId: renderGeometry.faces[0]?.id ?? 'dual:missing-face',
     sourceVertexId: sourceCell.vertexIds[0] ?? 'vertex:missing',
   };

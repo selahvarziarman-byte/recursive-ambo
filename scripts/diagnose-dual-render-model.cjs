@@ -121,9 +121,9 @@ function verifyCorrespondenceRender(label, shape, cell, expected) {
   const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
 
   console.log(`correspondence ${label}: ${renderGeometry.kind}`);
-  expect(renderGeometry.kind === 'legacy-proxy', `${label}: expected legacy render geometry`);
+  expect(renderGeometry.kind === 'correspondence-proxy', `${label}: expected correspondence render geometry`);
 
-  if (renderGeometry.kind !== 'legacy-proxy') {
+  if (renderGeometry.kind !== 'correspondence-proxy') {
     return;
   }
 
@@ -133,23 +133,23 @@ function verifyCorrespondenceRender(label, shape, cell, expected) {
   expect(renderGeometry.edges.length === expected.edges, `${label}: wrong render edge count`);
   expect(
     renderGeometry.edges.every((edge) => Boolean(edge.id) && Boolean(edge.sourceEdgeId)),
-    `${label}: legacy render edges must come from the correspondence model`,
+    `${label}: correspondence render edges must come from the correspondence model`,
   );
-  verifyLegacyCorrespondenceModel(
+  verifyCorrespondenceModel(
     label,
     shape,
     cell,
-    renderGeometry.viewModel.proxy.correspondenceModel,
+    renderGeometry.viewModel.correspondenceProxy.correspondenceModel,
     expected,
   );
   verifyRenderEdgesBackedByModel(
     label,
     renderGeometry.edges,
-    renderGeometry.viewModel.proxy.correspondenceModel,
+    renderGeometry.viewModel.correspondenceProxy.correspondenceModel,
   );
 }
 
-function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, expected) {
+function verifyCorrespondenceModel(seedKey, shape, cell, model, expected) {
   const sourceFaces = getCellFaces(shape, cell);
   const sourceEdges = getCellEdges(shape, cell);
   const sourceFaceIds = sourceFaces.map((face) => face.id).sort();
@@ -165,9 +165,9 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, expected) 
   expectNoDuplicates(`${seedKey}: dual face ids`, dualFaceIds);
   expectNoDuplicates(`${seedKey}: dual edge ids`, dualEdgeIds);
   verifyModelFaceEdgeCoherence(seedKey, model);
-  expectSameSet(seedKey, 'legacy sourceFaceToDualVertex source keys', Object.keys(model.sourceFaceToDualVertex), sourceFaceIds);
-  expectSameSet(seedKey, 'legacy sourceVertexToDualFace source keys', Object.keys(model.sourceVertexToDualFace), sourceVertexIds);
-  expectSameSet(seedKey, 'legacy sourceEdgeToDualEdge source keys', Object.keys(model.sourceEdgeToDualEdge), sourceEdgeIds);
+  expectSameSet(seedKey, 'correspondence sourceFaceToDualVertex source keys', Object.keys(model.sourceFaceToDualVertex), sourceFaceIds);
+  expectSameSet(seedKey, 'correspondence sourceVertexToDualFace source keys', Object.keys(model.sourceVertexToDualFace), sourceVertexIds);
+  expectSameSet(seedKey, 'correspondence sourceEdgeToDualEdge source keys', Object.keys(model.sourceEdgeToDualEdge), sourceEdgeIds);
   if (expected.faceSizeHistogram) {
     expectSameHistogram(
       seedKey,
@@ -178,7 +178,7 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, expected) 
   }
   verifyInverseMap(
     seedKey,
-    'legacy sourceFaceToDualVertex',
+    'correspondence sourceFaceToDualVertex',
     model.sourceFaceToDualVertex,
     model.dualVertexToSourceFace,
     sourceFaceIds,
@@ -186,7 +186,7 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, expected) 
   );
   verifyInverseMap(
     seedKey,
-    'legacy sourceVertexToDualFace',
+    'correspondence sourceVertexToDualFace',
     model.sourceVertexToDualFace,
     model.dualFaceToSourceVertex,
     sourceVertexIds,
@@ -194,7 +194,7 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, expected) 
   );
   verifyInverseMap(
     seedKey,
-    'legacy sourceEdgeToDualEdge',
+    'correspondence sourceEdgeToDualEdge',
     model.sourceEdgeToDualEdge,
     model.dualEdgeToSourceEdge,
     sourceEdgeIds,

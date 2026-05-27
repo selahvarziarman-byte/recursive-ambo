@@ -126,26 +126,26 @@ function verifyCorrespondenceCell(label, shape, cell, expected) {
   const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
 
   console.log(`correspondence ${label}: ${viewModel.kind}`);
-  expect(viewModel.kind === 'legacy-proxy', `${label}: expected legacy-proxy`);
-  expect(renderGeometry.kind === 'legacy-proxy', `${label}: expected legacy render geometry`);
+  expect(viewModel.kind === 'correspondence-proxy', `${label}: expected correspondence-proxy`);
+  expect(renderGeometry.kind === 'correspondence-proxy', `${label}: expected correspondence render geometry`);
 
-  if (viewModel.kind !== 'legacy-proxy') {
+  if (viewModel.kind !== 'correspondence-proxy') {
     return;
   }
 
-  expect(viewModel.proxy.topology === expected.topology, `${label}: wrong correspondence dual topology`);
-  expect(viewModel.proxy.vertices.length === expected.vertices, `${label}: wrong correspondence vertex count`);
-  expect(viewModel.proxy.faces.length === expected.faces, `${label}: wrong correspondence face count`);
-  expect(viewModel.proxy.correspondenceModel.dualEdges.length === expected.edges, `${label}: wrong correspondence edge count`);
-  verifyLegacyCorrespondenceModel(label, shape, cell, viewModel.proxy.correspondenceModel, expected);
+  expect(viewModel.correspondenceProxy.topology === expected.topology, `${label}: wrong correspondence dual topology`);
+  expect(viewModel.correspondenceProxy.vertices.length === expected.vertices, `${label}: wrong correspondence vertex count`);
+  expect(viewModel.correspondenceProxy.faces.length === expected.faces, `${label}: wrong correspondence face count`);
+  expect(viewModel.correspondenceProxy.correspondenceModel.dualEdges.length === expected.edges, `${label}: wrong correspondence edge count`);
+  verifyCorrespondenceModel(label, shape, cell, viewModel.correspondenceProxy.correspondenceModel, expected);
 
-  if (renderGeometry.kind === 'legacy-proxy') {
+  if (renderGeometry.kind === 'correspondence-proxy') {
     expect(renderGeometry.edges.length === expected.edges, `${label}: wrong render edge count`);
-    verifyRenderEdgesBackedByModel(label, renderGeometry.edges, viewModel.proxy.correspondenceModel);
+    verifyRenderEdgesBackedByModel(label, renderGeometry.edges, viewModel.correspondenceProxy.correspondenceModel);
   }
 }
 
-function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, expected) {
+function verifyCorrespondenceModel(seedKey, shape, cell, model, expected) {
   const sourceFaces = getCellFaces(shape, cell);
   const sourceEdges = getCellEdges(shape, cell);
   const sourceFaceIds = sourceFaces.map((face) => face.id).sort();
@@ -179,7 +179,7 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, expected) 
   verifyModelFaceEdgeCoherence(seedKey, model);
   verifyInverseMap(
     seedKey,
-    'legacy sourceFaceToDualVertex',
+    'correspondence sourceFaceToDualVertex',
     model.sourceFaceToDualVertex,
     model.dualVertexToSourceFace,
     sourceFaceIds,
@@ -187,7 +187,7 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, expected) 
   );
   verifyInverseMap(
     seedKey,
-    'legacy sourceVertexToDualFace',
+    'correspondence sourceVertexToDualFace',
     model.sourceVertexToDualFace,
     model.dualFaceToSourceVertex,
     sourceVertexIds,
@@ -195,7 +195,7 @@ function verifyLegacyCorrespondenceModel(seedKey, shape, cell, model, expected) 
   );
   verifyInverseMap(
     seedKey,
-    'legacy sourceEdgeToDualEdge',
+    'correspondence sourceEdgeToDualEdge',
     model.sourceEdgeToDualEdge,
     model.dualEdgeToSourceEdge,
     sourceEdgeIds,

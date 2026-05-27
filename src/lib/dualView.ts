@@ -62,7 +62,7 @@ export interface DualCorrespondenceModel {
   dualEdgeToSourceEdge: Record<string, string>;
 }
 
-export interface DualViewProxy {
+export interface DualCorrespondenceProxy {
   cellId: string;
   topology: DualViewSupportedTopology;
   vertices: DualViewVertex[];
@@ -71,7 +71,7 @@ export interface DualViewProxy {
 }
 
 export type DualUniverseViewModel =
-  | { kind: 'legacy-proxy'; proxy: DualViewProxy }
+  | { kind: 'correspondence-proxy'; correspondenceProxy: DualCorrespondenceProxy }
   | { kind: 'semantic-model'; semanticModel: SemanticDualModel }
   | { kind: 'unsupported'; reason: string };
 
@@ -95,12 +95,12 @@ export interface DualUniverseRenderEdge {
 
 export type DualUniverseRenderGeometry =
   | {
-      kind: 'legacy-proxy';
+      kind: 'correspondence-proxy';
       topology: DualViewSupportedTopology;
       vertices: DualUniverseRenderVertex[];
       faces: DualUniverseRenderFace[];
       edges: DualUniverseRenderEdge[];
-      viewModel: Extract<DualUniverseViewModel, { kind: 'legacy-proxy' }>;
+      viewModel: Extract<DualUniverseViewModel, { kind: 'correspondence-proxy' }>;
     }
   | {
       kind: 'semantic-model';
@@ -263,12 +263,12 @@ export function buildDualUniverseViewModel(shape: Shape, cell: Cell): DualUniver
     }
   }
 
-  const proxy = buildDualViewProxy(shape, cell);
+  const correspondenceProxy = buildDualCorrespondenceProxy(shape, cell);
 
-  if (proxy) {
+  if (correspondenceProxy) {
     return {
-      kind: 'legacy-proxy',
-      proxy,
+      kind: 'correspondence-proxy',
+      correspondenceProxy,
     };
   }
 
@@ -288,17 +288,17 @@ export function buildDualUniverseRenderGeometry(
 export function projectDualUniverseViewModelToRenderGeometry(
   viewModel: DualUniverseViewModel,
 ): DualUniverseRenderGeometry {
-  if (viewModel.kind === 'legacy-proxy') {
+  if (viewModel.kind === 'correspondence-proxy') {
     return {
-      kind: 'legacy-proxy',
-      topology: viewModel.proxy.topology,
-      vertices: viewModel.proxy.vertices,
-      faces: viewModel.proxy.faces,
-      edges: viewModel.proxy.correspondenceModel.dualEdges.map((edge) => ({
+      kind: 'correspondence-proxy',
+      topology: viewModel.correspondenceProxy.topology,
+      vertices: viewModel.correspondenceProxy.vertices,
+      faces: viewModel.correspondenceProxy.faces,
+      edges: viewModel.correspondenceProxy.correspondenceModel.dualEdges.map((edge) => ({
         id: edge.id,
         vertexIds: edge.vertexIds,
         sourceEdgeId: edge.sourceEdgeId,
-        sourceCellId: viewModel.proxy.correspondenceModel.sourceCellId,
+        sourceCellId: viewModel.correspondenceProxy.correspondenceModel.sourceCellId,
       })),
       viewModel,
     };
@@ -473,8 +473,8 @@ export function resolveDualInspectionTarget(
   const viewModel = buildDualUniverseViewModel(shape, sourceCell);
 
   if (target.modelKind === 'correspondence') {
-    return viewModel.kind === 'legacy-proxy'
-      ? resolveDualCorrespondenceInspectionTarget(shape, sourceCell, viewModel.proxy.correspondenceModel, target)
+    return viewModel.kind === 'correspondence-proxy'
+      ? resolveDualCorrespondenceInspectionTarget(shape, sourceCell, viewModel.correspondenceProxy.correspondenceModel, target)
       : null;
   }
 
@@ -626,7 +626,7 @@ function resolveDualCorrespondenceInspectionTarget(
   };
 }
 
-export function buildDualViewProxy(shape: Shape, cell: Cell): DualViewProxy | null {
+export function buildDualCorrespondenceProxy(shape: Shape, cell: Cell): DualCorrespondenceProxy | null {
   const topology = describeDualViewTopology(shape, cell);
 
   if (!topology.dual) {

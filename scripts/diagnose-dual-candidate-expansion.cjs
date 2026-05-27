@@ -259,21 +259,21 @@ function verifyPolicyEnabled(pathLabel, shape, cell, model) {
   const resolvedFace = faceTarget ? resolveDualInspectionTarget(shape, faceTarget) : null;
   const resolvedEdge = edgeTarget ? resolveDualInspectionTarget(shape, edgeTarget) : null;
 
-  expect(viewModel.kind === 'legacy-proxy', `${pathLabel}: runtime view model should enable cuboctahedron`);
-  expect(renderGeometry.kind === 'legacy-proxy', `${pathLabel}: runtime render geometry should enable cuboctahedron`);
+  expect(viewModel.kind === 'correspondence-proxy', `${pathLabel}: runtime view model should enable cuboctahedron`);
+  expect(renderGeometry.kind === 'correspondence-proxy', `${pathLabel}: runtime render geometry should enable cuboctahedron`);
 
-  if (viewModel.kind === 'legacy-proxy') {
+  if (viewModel.kind === 'correspondence-proxy') {
     expect(
-      viewModel.proxy.topology === 'rhombic-dodecahedron',
+      viewModel.correspondenceProxy.topology === 'rhombic-dodecahedron',
       `${pathLabel}: runtime view model should use rhombic-dodecahedron topology`,
     );
     expect(
-      viewModel.proxy.correspondenceModel.dualModelId === model.dualModelId,
+      viewModel.correspondenceProxy.correspondenceModel.dualModelId === model.dualModelId,
       `${pathLabel}: runtime model id should match direct candidate model id`,
     );
   }
 
-  if (renderGeometry.kind === 'legacy-proxy') {
+  if (renderGeometry.kind === 'correspondence-proxy') {
     expect(renderGeometry.topology === 'rhombic-dodecahedron', `${pathLabel}: wrong runtime render topology`);
     expect(renderGeometry.vertices.length === 14, `${pathLabel}: wrong runtime render vertex count`);
     expect(renderGeometry.edges.length === 24, `${pathLabel}: wrong runtime render edge count`);
@@ -309,13 +309,13 @@ function verifyExistingDemoCorrespondenceRegression() {
     const cell = shape.cells[0];
     const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
 
-    expect(renderGeometry.kind === 'legacy-proxy', `${fixture.seedKey}: expected legacy-proxy render geometry`);
+    expect(renderGeometry.kind === 'correspondence-proxy', `${fixture.seedKey}: expected correspondence-proxy render geometry`);
 
-    if (renderGeometry.kind !== 'legacy-proxy') {
+    if (renderGeometry.kind !== 'correspondence-proxy') {
       continue;
     }
 
-    const model = renderGeometry.viewModel.proxy.correspondenceModel;
+    const model = renderGeometry.viewModel.correspondenceProxy.correspondenceModel;
 
     expect(renderGeometry.topology === fixture.expectedTopology, `${fixture.seedKey}: runtime topology changed`);
     expect(renderGeometry.vertices.length === fixture.counts.vertices, `${fixture.seedKey}: runtime vertex count changed`);
