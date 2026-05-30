@@ -159,6 +159,10 @@ function SceneCameraControls({
 }) {
   const { camera, size } = useThree();
   const controlsRef = useRef<OrbitControlsHandle | null>(null);
+  const didInitializeControlsRef = useRef(false);
+  const handledFitViewRequestRef = useRef(fitViewRequest);
+  const handledFitSelectedRequestRef = useRef(fitSelectedRequest);
+  const handledResetCameraRequestRef = useRef(resetCameraRequest);
   const boundsCenter = useMemo(() => vec3ToVector(sceneBounds.center), [sceneBounds.center]);
 
   const updateCameraClipping = useCallback(
@@ -207,28 +211,36 @@ function SceneCameraControls({
   useEffect(() => {
     const controls = controlsRef.current;
 
-    if (!controls) {
+    if (!controls || didInitializeControlsRef.current) {
       return;
     }
 
     controls.target.copy(boundsCenter);
     controls.update();
+    didInitializeControlsRef.current = true;
   }, [boundsCenter]);
 
   useEffect(() => {
-    if (fitViewRequest > 0) {
+    if (fitViewRequest > handledFitViewRequestRef.current) {
+      handledFitViewRequestRef.current = fitViewRequest;
       fitCameraToBounds(sceneBounds, 'fit');
     }
   }, [fitCameraToBounds, fitViewRequest, sceneBounds]);
 
   useEffect(() => {
-    if (fitSelectedRequest > 0 && selectedSceneBounds) {
+    if (fitSelectedRequest > handledFitSelectedRequestRef.current) {
+      handledFitSelectedRequestRef.current = fitSelectedRequest;
+      if (!selectedSceneBounds) {
+        return;
+      }
+
       fitCameraToBounds(selectedSceneBounds, 'fit');
     }
   }, [fitCameraToBounds, fitSelectedRequest, selectedSceneBounds]);
 
   useEffect(() => {
-    if (resetCameraRequest > 0) {
+    if (resetCameraRequest > handledResetCameraRequestRef.current) {
+      handledResetCameraRequestRef.current = resetCameraRequest;
       fitCameraToBounds(sceneBounds, 'reset');
     }
   }, [fitCameraToBounds, resetCameraRequest, sceneBounds]);
