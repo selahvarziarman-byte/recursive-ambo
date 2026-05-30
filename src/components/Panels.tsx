@@ -111,6 +111,7 @@ interface PacketWorkbenchRow {
   shortId: string;
   role: string;
   status: PacketStatus;
+  containingCells: Cell[];
   containingCellCount: number;
   containingFaceCount: number;
   generationDepth: number | null;
@@ -1464,12 +1465,18 @@ function SelectionSubsection({
 
 function PacketsPanel() {
   const shape = useCurrentShape();
+  const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const selectCell = useGeometryStore((state) => state.selectCell);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
   const [filter, setFilter] = useState<PacketWorkbenchFilter>('unresolved-generated');
+  const [searchQuery, setSearchQuery] = useState('');
   const rows = useMemo(() => getPacketWorkbenchRows(shape), [shape]);
-  const filteredRows = useMemo(() => filterPacketRows(rows, filter), [filter, rows]);
+  const filteredRows = useMemo(
+    () => filterPacketRows(rows, filter).filter((row) => packetRowMatchesSearch(row, searchQuery)),
+    [filter, rows, searchQuery],
+  );
   const unresolvedRows = useMemo(
     () => rows.filter(isUnresolvedGeneratedPacketRow),
     [rows],
@@ -1490,6 +1497,18 @@ function PacketsPanel() {
     if (nextRow) {
       selectVertex(nextRow.vertex.id);
     }
+  };
+
+  const selectContainingCell = (row: PacketWorkbenchRow) => {
+    const containingCell = choosePacketContainingCell(row, selectedCellId);
+
+    if (!containingCell) {
+      return;
+    }
+
+    selectCell(containingCell.id);
+    selectVertex(row.vertex.id);
+    setHoverTarget(null);
   };
 
   return (
@@ -1527,20 +1546,35 @@ function PacketsPanel() {
         </p>
       ) : null}
 
-      <label className="grid gap-1 text-xs text-stone-400">
-        Filter
-        <select
-          value={filter}
-          onChange={(event) => setFilter(event.target.value as PacketWorkbenchFilter)}
-          className="h-9 rounded border border-stone-700 bg-stone-950 px-2 text-xs text-stone-100 outline-none focus:border-teal-400"
-        >
-          {packetFilterOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="grid gap-2">
+        <label className="grid gap-1 text-xs text-stone-400">
+          Search
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search label, notes, tags, custom data, id, lineage..."
+            className="h-9 rounded border border-stone-700 bg-stone-950 px-2 text-xs text-stone-100 outline-none placeholder:text-stone-600 focus:border-teal-400"
+          />
+        </label>
+        <label className="grid gap-1 text-xs text-stone-400">
+          Filter
+          <select
+            value={filter}
+            onChange={(event) => setFilter(event.target.value as PacketWorkbenchFilter)}
+            className="h-9 rounded border border-stone-700 bg-stone-950 px-2 text-xs text-stone-100 outline-none focus:border-teal-400"
+          >
+            {packetFilterOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="text-xs text-stone-500">
+          {filteredRows.length} shown / {rows.length} total
+        </p>
+      </div>
 
       <div className="grid max-h-[calc(100vh-29rem)] gap-2 overflow-y-auto pr-1">
         {filteredRows.length ? (
@@ -1549,7 +1583,9 @@ function PacketsPanel() {
               key={row.vertex.id}
               row={row}
               isSelected={row.vertex.id === selectedVertexId}
+              selectedCellId={selectedCellId}
               onSelect={() => selectVertex(row.vertex.id)}
+              onSelectContainingCell={() => selectContainingCell(row)}
               onHover={(isHovered) =>
                 setHoverTarget(isHovered ? { kind: 'vertex', vertexId: row.vertex.id } : null)
               }
@@ -1557,7 +1593,9 @@ function PacketsPanel() {
           ))
         ) : (
           <p className="rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm text-stone-500">
-            {filter === 'unresolved-generated'
+            {searchQuery.trim()
+              ? 'No vertex packets match the current filter and search.'
+              : filter === 'unresolved-generated'
               ? 'no unresolved generated midpoint packets.'
               : 'No vertex packets match the current filter.'}
           </p>
@@ -1579,43 +1617,66 @@ function PacketsPanel() {
 function PacketWorkbenchRowButton({
   row,
   isSelected,
+  selectedCellId,
   onSelect,
+  onSelectContainingCell,
   onHover,
 }: {
   row: PacketWorkbenchRow;
   isSelected: boolean;
+  selectedCellId: string | null;
   onSelect: () => void;
+  onSelectContainingCell: () => void;
   onHover: (isHovered: boolean) => void;
 }) {
+  const hasContainingCell = row.containingCells.length > 0;
+
   return (
-    <button
-      type="button"
-      onClick={onSelect}
+    <div
       onPointerEnter={() => onHover(true)}
       onPointerLeave={() => onHover(false)}
-      className={`rounded border px-3 py-2 text-left text-sm transition ${
+      className={`rounded border text-sm transition ${
         isSelected
           ? 'border-amber-300 bg-amber-300/10 text-amber-100'
           : 'border-stone-800 bg-stone-950 text-stone-300 hover:border-stone-600'
       }`}
     >
-      <span className="flex items-start justify-between gap-2">
-        <span className="min-w-0">
-          <span className="block truncate text-stone-100">{row.displayLabel}</span>
-          <span className="mt-0.5 block truncate font-mono text-xs text-stone-500">
-            {row.shortId}
+      <button
+        type="button"
+        onClick={onSelect}
+        className="w-full px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-amber-400"
+      >
+        <span className="flex items-start justify-between gap-2">
+          <span className="min-w-0">
+            <span className="block truncate text-stone-100">{row.displayLabel}</span>
+            <span className="mt-0.5 block truncate font-mono text-xs text-stone-500">
+              {row.shortId}
+            </span>
+          </span>
+          <span className={packetStatusClassName(row.status)}>
+            {formatPacketStatus(row.status)}
           </span>
         </span>
-        <span className={packetStatusClassName(row.status)}>{formatPacketStatus(row.status)}</span>
-      </span>
-      <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-500">
-        <span>{row.role}</span>
-        <span>{row.generationDepth === null ? 'g?' : `g${row.generationDepth}`}</span>
-        <span>{row.containingCellCount} cells</span>
-        <span>{row.containingFaceCount} faces</span>
-      </span>
-      <span className="mt-2 block truncate text-xs text-stone-500">{row.lineageSummary}</span>
-    </button>
+        <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-stone-500">
+          <span>{row.role}</span>
+          <span>{row.generationDepth === null ? 'g?' : `g${row.generationDepth}`}</span>
+          <span>{row.containingFaceCount} faces</span>
+        </span>
+        <span className="mt-2 block truncate text-xs text-stone-500">{row.lineageSummary}</span>
+      </button>
+      <div className="flex items-center justify-between gap-2 border-t border-stone-800/80 px-3 py-2 text-xs text-stone-500">
+        <span className="min-w-0 truncate">{formatPacketCellContext(row, selectedCellId)}</span>
+        {hasContainingCell ? (
+          <button
+            type="button"
+            onClick={onSelectContainingCell}
+            className="shrink-0 rounded border border-stone-700 bg-stone-900 px-2 py-1 text-[11px] font-semibold text-stone-200 transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          >
+            Select containing cell
+          </button>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -2543,7 +2604,9 @@ function getCellFaceRows(shape: Shape, faces: Face[]): CellFaceRow[] {
 function getPacketWorkbenchRows(shape: Shape): PacketWorkbenchRow[] {
   return Object.values(shape.vertices)
     .map((vertex) => {
-      const containingCells = getContainingCells(shape, vertex.id);
+      const containingCells = getContainingCells(shape, vertex.id).sort(
+        compareCellsForPacketContext,
+      );
       const containingFaces = getContainingFaces(shape, vertex.id);
 
       return {
@@ -2552,6 +2615,7 @@ function getPacketWorkbenchRows(shape: Shape): PacketWorkbenchRow[] {
         shortId: shortenId(vertex.id),
         role: getVertexRole(vertex),
         status: getVertexPacketStatus(shape, vertex),
+        containingCells,
         containingCellCount: containingCells.length,
         containingFaceCount: containingFaces.length,
         generationDepth: getVertexGenerationDepth(containingCells),
@@ -2586,6 +2650,103 @@ function filterPacketRows(
   }
 
   return rows.filter((row) => row.status === 'named');
+}
+
+function packetRowMatchesSearch(row: PacketWorkbenchRow, query: string): boolean {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  return getPacketRowSearchText(row).toLowerCase().includes(normalizedQuery);
+}
+
+function getPacketRowSearchText(row: PacketWorkbenchRow): string {
+  const { vertex } = row;
+  const lineageSources = vertex.data.lineage?.sources ?? [];
+  const fields: Array<string | null | undefined> = [
+    vertex.id,
+    row.shortId,
+    row.displayLabel,
+    row.role,
+    row.status,
+    row.lineageSummary,
+    vertex.data.label,
+    vertex.data.notes,
+    ...vertex.data.tags,
+    safeStringifyPacketCustomData(vertex.data.custom),
+    vertex.createdBy.operation,
+    ...vertex.createdBy.sourceVertexIds,
+    vertex.createdBy.sourceEdgeId,
+    vertex.createdBy.sourceFaceId,
+    vertex.createdBy.sourceCellId,
+    vertex.data.lineage?.inheritanceMode,
+    vertex.data.lineage?.operationId,
+    ...lineageSources.flatMap((source) => [source.kind, source.id, source.role]),
+  ];
+
+  return fields.filter(isPacketSearchField).join('\n');
+}
+
+function safeStringifyPacketCustomData(data: VertexDataPacket['custom']): string | null {
+  try {
+    return JSON.stringify(data);
+  } catch {
+    return null;
+  }
+}
+
+function isPacketSearchField(value: string | null | undefined): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function formatPacketCellContext(
+  row: PacketWorkbenchRow,
+  selectedCellId: string | null,
+): string {
+  const cellCountLabel = `${row.containingCellCount} ${
+    row.containingCellCount === 1 ? 'cell' : 'cells'
+  }`;
+  const selectedContainingCell = selectedCellId
+    ? row.containingCells.find((cell) => cell.id === selectedCellId)
+    : null;
+
+  if (selectedContainingCell) {
+    return `${cellCountLabel}; selected cell contains vertex`;
+  }
+
+  const firstContainingCell = row.containingCells[0];
+
+  if (firstContainingCell) {
+    return `${cellCountLabel}; first ${formatPacketContextCell(firstContainingCell)}`;
+  }
+
+  return cellCountLabel;
+}
+
+function choosePacketContainingCell(
+  row: PacketWorkbenchRow,
+  selectedCellId: string | null,
+): Cell | null {
+  const selectedContainingCell = selectedCellId
+    ? row.containingCells.find((cell) => cell.id === selectedCellId)
+    : null;
+
+  return selectedContainingCell ?? row.containingCells[0] ?? null;
+}
+
+function formatPacketContextCell(cell: Cell): string {
+  return `${cell.kind}/${describeCellTopology(cell)} g${cell.generationDepth}`;
+}
+
+function compareCellsForPacketContext(a: Cell, b: Cell): number {
+  return (
+    a.generationDepth - b.generationDepth ||
+    a.kind.localeCompare(b.kind) ||
+    describeCellTopology(a).localeCompare(describeCellTopology(b)) ||
+    a.id.localeCompare(b.id)
+  );
 }
 
 function isUnresolvedGeneratedPacketRow(row: PacketWorkbenchRow): boolean {
