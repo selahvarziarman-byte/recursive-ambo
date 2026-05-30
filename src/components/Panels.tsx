@@ -557,14 +557,17 @@ function SelectionPanel() {
           Cell
         </h2>
         {selectedCell && selectedCellRow ? (
-          <SelectedCellSummary
-            row={selectedCellRow}
-            faceCount={selectedCellFaces.length}
-            vertexCount={selectedCell.vertexIds.length}
-            edgeCount={selectedCellEdges.length}
-            dualViewEnabled={dualViewEnabled}
-            shape={shape}
-          />
+          <>
+            <SelectedCellSummary
+              row={selectedCellRow}
+              faceCount={selectedCellFaces.length}
+              vertexCount={selectedCell.vertexIds.length}
+              edgeCount={selectedCellEdges.length}
+              dualViewEnabled={dualViewEnabled}
+              shape={shape}
+            />
+            <CellLineageNavigation row={selectedCellRow} rows={rows} />
+          </>
         ) : (
           <p className="mt-2 text-sm text-stone-500">No cell selected.</p>
         )}
@@ -1003,6 +1006,120 @@ function SelectedCellSummary({
             : 'Dual View active: original shown dimmed'}
         </p>
       ) : null}
+    </div>
+  );
+}
+
+function CellLineageNavigation({
+  row,
+  rows,
+}: {
+  row: WorkspaceCellRow;
+  rows: WorkspaceCellRow[];
+}) {
+  const selectCell = useGeometryStore((state) => state.selectCell);
+  const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
+  const parentRow = row.cell.parentCellId
+    ? rows.find((candidate) => candidate.id === row.cell.parentCellId) ?? null
+    : null;
+  const childRows = rows.filter((candidate) => candidate.cell.parentCellId === row.id);
+  const parentStatus = row.cell.parentCellId
+    ? parentRow
+      ? `${parentRow.kind} ${parentRow.topology} ${parentRow.shortId}`
+      : `Parent missing: ${shortenId(row.cell.parentCellId)}`
+    : 'none';
+
+  function handleSelectCell(cellId: string) {
+    setHoverTarget(null);
+    selectCell(cellId);
+  }
+
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+          Lineage Navigation
+        </h3>
+        <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-xs text-stone-400">
+          {childRows.length} children
+        </span>
+      </div>
+
+      <dl className="mt-3 grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-2 text-xs">
+        <dt className="text-stone-500">Lifecycle</dt>
+        <dd className="text-stone-200">{getCellLifecycleStatusLabel(row.lifecycleStatus)}</dd>
+        <dt className="text-stone-500">Generation</dt>
+        <dd className="text-stone-200">g{row.generationDepth}</dd>
+        <dt className="text-stone-500">Source op</dt>
+        <dd className="text-stone-200">{row.cell.sourceOperation}</dd>
+        <dt className="text-stone-500">Children</dt>
+        <dd className="text-stone-200">{childRows.length}</dd>
+        <dt className="text-stone-500">Parent</dt>
+        <dd
+          className={`${parentRow ? 'text-stone-200' : 'text-stone-500'} truncate`}
+          title={parentRow?.id ?? row.cell.parentCellId ?? undefined}
+        >
+          {parentStatus}
+        </dd>
+      </dl>
+
+      <div className="mt-3 border-t border-stone-800 pt-3">
+        <div className="mb-2 text-xs font-semibold text-stone-500">Parent</div>
+        {parentRow ? (
+          <button
+            type="button"
+            onClick={() => handleSelectCell(parentRow.id)}
+            onPointerEnter={() => setHoverTarget({ kind: 'cell', cellId: parentRow.id })}
+            onPointerLeave={() => setHoverTarget(null)}
+            className="w-full rounded border border-stone-700 bg-stone-900 px-3 py-2 text-left text-xs text-stone-200 transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          >
+            <span className="block font-medium">
+              {parentRow.kind} {parentRow.topology} g{parentRow.generationDepth}
+            </span>
+            <span className="mt-1 block truncate font-mono text-[11px] text-stone-500">
+              {parentRow.shortId}
+            </span>
+          </button>
+        ) : (
+          <p className="text-xs text-stone-500">
+            {row.cell.parentCellId ? 'Parent unavailable in current shape.' : 'No parent cell.'}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-3 border-t border-stone-800 pt-3">
+        <div className="mb-2 text-xs font-semibold text-stone-500">Children</div>
+        {childRows.length ? (
+          <div className="grid max-h-44 gap-2 overflow-y-auto pr-1">
+            {childRows.map((childRow) => (
+              <button
+                key={childRow.id}
+                type="button"
+                onClick={() => handleSelectCell(childRow.id)}
+                onPointerEnter={() => setHoverTarget({ kind: 'cell', cellId: childRow.id })}
+                onPointerLeave={() => setHoverTarget(null)}
+                className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-left text-xs text-stone-300 transition hover:border-cyan-300 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              >
+                <span className="flex items-start justify-between gap-2">
+                  <span className="min-w-0">
+                    <span className="block font-medium text-stone-200">
+                      {childRow.kind} {childRow.topology} g{childRow.generationDepth}
+                    </span>
+                    <span className="mt-1 block truncate font-mono text-[11px] text-stone-500">
+                      {childRow.shortId}
+                    </span>
+                  </span>
+                  <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-1.5 py-0.5 text-[10px] text-stone-400">
+                    {getCellLifecycleStatusLabel(childRow.lifecycleStatus)}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-stone-500">No child cells.</p>
+        )}
+      </div>
     </div>
   );
 }
