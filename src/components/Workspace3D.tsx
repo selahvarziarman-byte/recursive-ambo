@@ -12,6 +12,7 @@ import {
   createDualVertexInspectionTarget,
   resolveDualInspectionTarget,
   type DualUniverseRenderGeometry,
+  type ResolvedDualInspectionTarget,
 } from '../lib/dualView';
 import { type DualInspectionTarget, type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
 import type { Cell, Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
@@ -25,6 +26,7 @@ export function Workspace3D() {
   const hoverTarget = useGeometryStore((state) => state.hoverTarget);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const dualInspectionTarget = useGeometryStore((state) => state.dualInspectionTarget);
   const selectCell = useGeometryStore((state) => state.selectCell);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
@@ -47,10 +49,19 @@ export function Workspace3D() {
         cellVisibility,
         explodeAmount,
         dualViewEnabled,
+        dualInspectionTarget,
         selectedCell,
         selectedVertexId,
       ),
-    [cellVisibility, dualViewEnabled, explodeAmount, selectedCell, selectedVertexId, shape],
+    [
+      cellVisibility,
+      dualInspectionTarget,
+      dualViewEnabled,
+      explodeAmount,
+      selectedCell,
+      selectedVertexId,
+      shape,
+    ],
   );
 
   return (
@@ -598,6 +609,11 @@ interface CellRenderGeometry {
   showVertexMarkers: boolean;
   dualUniverse?: DualUniverseRenderGeometry;
 }
+
+type RenderableDualUniverseRenderGeometry = Extract<
+  DualUniverseRenderGeometry,
+  { kind: 'semantic-model' | 'correspondence-proxy' }
+>;
 
 interface SourceFaceCounterpartHighlight {
   kind: 'face';
@@ -1461,9 +1477,18 @@ function computeSelectedSceneBounds(
   cellVisibility: CellVisibility,
   explodeAmount: number,
   dualViewEnabled: boolean,
+  dualInspectionTarget: DualInspectionTarget | null,
   selectedCell: Cell | null,
   selectedVertexId: VertexId | null,
 ): SceneBounds | null {
+  const dualInspectionBounds = dualInspectionTarget
+    ? computeDualInspectionSceneBounds(shape, dualInspectionTarget, explodeAmount)
+    : null;
+
+  if (dualInspectionBounds) {
+    return dualInspectionBounds;
+  }
+
   const displayOffsets = computeCellDisplayOffsets(shape, explodeAmount);
   const selectedVertex = selectedVertexId ? shape.vertices[selectedVertexId] : null;
 
@@ -1489,6 +1514,221 @@ function computeSelectedSceneBounds(
   return selectedCell && isCellVisible(selectedCell, cellVisibility)
     ? computeCellSceneBounds(shape, selectedCell, explodeAmount, dualViewEnabled)
     : null;
+}
+
+function computeDualInspectionSceneBounds(
+  shape: Shape,
+  target: DualInspectionTarget,
+  explodeAmount: number,
+): SceneBounds | null {
+  const resolvedTarget = resolveDualInspectionTarget(shape, target);
+
+  if (!resolvedTarget) {
+    return null;
+  }
+
+  const sourceCell = resolvedTarget.sourceCell;
+  const displayOffset =
+    computeCellDisplayOffsets(shape, explodeAmount).get(sourceCell.id) ?? [0, 0, 0];
+  const renderGeometry = buildDualUniverseRenderGeometry(shape, sourceCell);
+  const canUseRenderGeometry =
+    (resolvedTarget.modelKind === 'semantic' && renderGeometry.kind === 'semantic-model') ||
+    (resolvedTarget.modelKind === 'correspondence' && renderGeometry.kind === 'correspondence-proxy');
+
+  if (canUseRenderGeometry) {
+    const renderBounds = computeDualRenderTargetSceneBounds(renderGeometry, resolvedTarget, displayOffset);
+
+    if (renderBounds) {
+      return renderBounds;
+    }
+  }
+
+  return computeDualInspectionSourceFallbackBounds(shape, resolvedTarget, sourceCell, displayOffset);
+}
+
+function computeDualRenderTargetSceneBounds(
+  renderGeometry: DualUniverseRenderGeometry,
+  resolvedTarget: ResolvedDualInspectionTarget,
+  displayOffset: Vec3,
+): SceneBounds | null {
+  if (renderGeometry.kind === 'unsupported') {
+    return null;
+  }
+
+  if (resolvedTarget.kind === 'cell') {
+    return computeRenderGeometrySceneBounds(renderGeometry, displayOffset);
+  }
+
+  if (resolvedTarget.kind === 'vertex') {
+    return computeRenderVertexBounds(renderGeometry, resolvedTarget.dualVertex.id, displayOffset);
+  }
+
+  if (resolvedTarget.kind === 'face') {
+    return computeRenderFaceBounds(renderGeometry, resolvedTarget.dualFace.id, displayOffset);
+  }
+
+  return computeRenderEdgeBounds(renderGeometry, resolvedTarget.dualEdge.id, displayOffset);
+}
+
+function computeRenderGeometrySceneBounds(
+  renderGeometry: RenderableDualUniverseRenderGeometry,
+  displayOffset: Vec3,
+): SceneBounds | null {
+  const vertexById = new Map(renderGeometry.vertices.map((vertex) => [vertex.id, vertex]));
+  const referencedVertexIds = new Set<string>();
+
+  for (const face of renderGeometry.faces) {
+    face.vertexIds.forEach((vertexId) => referencedVertexIds.add(vertexId));
+  }
+
+  for (const edge of renderGeometry.edges) {
+    edge.vertexIds.forEach((vertexId) => referencedVertexIds.add(vertexId));
+  }
+
+  if (!referencedVertexIds.size) {
+    renderGeometry.vertices.forEach((vertex) => referencedVertexIds.add(vertex.id));
+  }
+
+  const positions = Array.from(referencedVertexIds)
+    .map((vertexId) => vertexById.get(vertexId))
+    .filter((vertex): vertex is RenderVertex => Boolean(vertex))
+    .map((vertex) => addVec3(vertex.position, displayOffset));
+
+  return positions.length ? positionsToSceneBounds(positions) : null;
+}
+
+function computeRenderVertexBounds(
+  renderGeometry: RenderableDualUniverseRenderGeometry,
+  vertexId: string,
+  displayOffset: Vec3,
+): SceneBounds | null {
+  const vertex = renderGeometry.vertices.find((candidate) => candidate.id === vertexId);
+
+  return vertex
+    ? {
+        center: addVec3(vertex.position, displayOffset),
+        radius: 0.85,
+      }
+    : null;
+}
+
+function computeRenderFaceBounds(
+  renderGeometry: RenderableDualUniverseRenderGeometry,
+  faceId: string,
+  displayOffset: Vec3,
+): SceneBounds | null {
+  const face = renderGeometry.faces.find((candidate) => candidate.id === faceId);
+
+  return face ? computeRenderVertexIdsBounds(renderGeometry, face.vertexIds, displayOffset) : null;
+}
+
+function computeRenderEdgeBounds(
+  renderGeometry: RenderableDualUniverseRenderGeometry,
+  edgeId: string,
+  displayOffset: Vec3,
+): SceneBounds | null {
+  const edge = renderGeometry.edges.find((candidate) => candidate.id === edgeId);
+
+  return edge ? computeRenderVertexIdsBounds(renderGeometry, edge.vertexIds, displayOffset) : null;
+}
+
+function computeRenderVertexIdsBounds(
+  renderGeometry: RenderableDualUniverseRenderGeometry,
+  vertexIds: string[],
+  displayOffset: Vec3,
+): SceneBounds | null {
+  const vertexById = new Map(renderGeometry.vertices.map((vertex) => [vertex.id, vertex]));
+  const positions = vertexIds
+    .map((vertexId) => vertexById.get(vertexId))
+    .filter((vertex): vertex is RenderVertex => Boolean(vertex))
+    .map((vertex) => addVec3(vertex.position, displayOffset));
+
+  return positions.length ? positionsToSceneBounds(positions) : null;
+}
+
+function computeDualInspectionSourceFallbackBounds(
+  shape: Shape,
+  resolvedTarget: ResolvedDualInspectionTarget,
+  sourceCell: Cell,
+  displayOffset: Vec3,
+): SceneBounds | null {
+  if (resolvedTarget.kind === 'vertex') {
+    return resolvedTarget.sourceFace
+      ? computeSourceFaceSceneBounds(shape, resolvedTarget.sourceFace, displayOffset)
+      : computeSourceCellSceneBounds(shape, sourceCell, displayOffset);
+  }
+
+  if (resolvedTarget.kind === 'face') {
+    return resolvedTarget.sourceVertex
+      ? {
+          center: addVec3(resolvedTarget.sourceVertex.position, displayOffset),
+          radius: 0.85,
+        }
+      : computeSourceCellSceneBounds(shape, sourceCell, displayOffset);
+  }
+
+  if (resolvedTarget.kind === 'edge') {
+    return resolvedTarget.sourceEdge
+      ? computeSourceEdgeSceneBounds(shape, resolvedTarget.sourceEdge, displayOffset)
+      : computeSourceCellSceneBounds(shape, sourceCell, displayOffset);
+  }
+
+  return computeSourceCellSceneBounds(shape, sourceCell, displayOffset);
+}
+
+function computeSourceCellSceneBounds(
+  shape: Shape,
+  cell: Cell,
+  displayOffset: Vec3,
+): SceneBounds | null {
+  const renderGeometry = createOriginalRenderGeometry(shape, cell);
+  const vertexById = new Map(renderGeometry.vertices.map((vertex) => [vertex.id, vertex]));
+  const referencedVertexIds = new Set<string>();
+
+  for (const face of renderGeometry.faces) {
+    face.vertexIds.forEach((vertexId) => referencedVertexIds.add(vertexId));
+  }
+
+  for (const edge of renderGeometry.edges) {
+    edge.vertexIds.forEach((vertexId) => referencedVertexIds.add(vertexId));
+  }
+
+  if (!referencedVertexIds.size) {
+    cell.vertexIds.forEach((vertexId) => referencedVertexIds.add(vertexId));
+  }
+
+  const positions = Array.from(referencedVertexIds)
+    .map((vertexId) => vertexById.get(vertexId))
+    .filter((vertex): vertex is RenderVertex => Boolean(vertex))
+    .map((vertex) => addVec3(vertex.position, displayOffset));
+
+  return positions.length ? positionsToSceneBounds(positions) : null;
+}
+
+function computeSourceFaceSceneBounds(
+  shape: Shape,
+  face: Face,
+  displayOffset: Vec3,
+): SceneBounds | null {
+  const positions = face.vertexIds
+    .map((vertexId) => shape.vertices[vertexId]?.position)
+    .filter((position): position is Vec3 => Boolean(position))
+    .map((position) => addVec3(position, displayOffset));
+
+  return positions.length ? positionsToSceneBounds(positions) : null;
+}
+
+function computeSourceEdgeSceneBounds(
+  shape: Shape,
+  edge: Edge,
+  displayOffset: Vec3,
+): SceneBounds | null {
+  const positions = edge.vertexIds
+    .map((vertexId) => shape.vertices[vertexId]?.position)
+    .filter((position): position is Vec3 => Boolean(position))
+    .map((position) => addVec3(position, displayOffset));
+
+  return positions.length ? positionsToSceneBounds(positions) : null;
 }
 
 function positionsToSceneBounds(positions: Vec3[]): SceneBounds {
