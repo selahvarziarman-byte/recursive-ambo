@@ -650,7 +650,10 @@ function DualUniverseInspectionSection() {
         </button>
       </div>
       {resolvedTarget ? (
-        <ResolvedDualInspectionDetails shape={shape} resolvedTarget={resolvedTarget} />
+        <>
+          <SourceNavigationActions resolvedTarget={resolvedTarget} />
+          <ResolvedDualInspectionDetails shape={shape} resolvedTarget={resolvedTarget} />
+        </>
       ) : (
         <StaleDualInspectionDetails target={dualInspectionTarget} />
       )}
@@ -845,6 +848,61 @@ function ResolvedDualCorrespondenceInspectionDetails({
         code
       />
     </dl>
+  );
+}
+
+function SourceNavigationActions({
+  resolvedTarget,
+}: {
+  resolvedTarget: ResolvedDualInspectionTarget;
+}) {
+  const selectCell = useGeometryStore((state) => state.selectCell);
+  const selectVertex = useGeometryStore((state) => state.selectVertex);
+  const clearDualInspectionTarget = useGeometryStore((state) => state.clearDualInspectionTarget);
+  const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
+  const sourceVertex = resolvedTarget.kind === 'face' ? resolvedTarget.sourceVertex : null;
+
+  function handleSelectSourceCell() {
+    setHoverTarget(null);
+    selectCell(resolvedTarget.sourceCell.id);
+    clearDualInspectionTarget();
+  }
+
+  function handleSelectSourceVertex() {
+    if (!sourceVertex) {
+      return;
+    }
+
+    setHoverTarget(null);
+    selectCell(resolvedTarget.sourceCell.id);
+    selectVertex(sourceVertex.id);
+    clearDualInspectionTarget();
+  }
+
+  return (
+    <div className="mt-3 border-t border-violet-400/20 pt-3">
+      <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-violet-200">
+        Source
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={handleSelectSourceCell}
+          className="rounded border border-stone-700 bg-stone-950 px-2.5 py-1.5 text-xs font-semibold text-stone-200 transition hover:border-cyan-300 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+        >
+          Select source cell
+        </button>
+        {sourceVertex ? (
+          <button
+            type="button"
+            onClick={handleSelectSourceVertex}
+            className="rounded border border-stone-700 bg-stone-950 px-2.5 py-1.5 text-xs font-semibold text-stone-200 transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          >
+            Select source vertex
+          </button>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
