@@ -25,11 +25,13 @@ const {
   canApplyAmboDissection,
 } = require(path.join(repoRoot, 'src/lib/ambo.ts'));
 const {
+  buildDiagonalizationMatrices,
+} = require(path.join(repoRoot, 'src/lib/diagonalizationMatrix.ts'));
+const {
   applyPyritohedralDiagonalization,
   canApplyPyritohedralDiagonalization,
 } = require(path.join(repoRoot, 'src/lib/pyritohedralDiagonalization.ts'));
 const { isCellActiveFrontier } = require(path.join(repoRoot, 'src/lib/cellLifecycle.ts'));
-const { canonicalEdgeKey } = require(path.join(repoRoot, 'src/lib/ids.ts'));
 
 const scenarios = [
   {
@@ -81,10 +83,14 @@ function runScenario(scenario) {
   }
 
   const { shape: sourceShape, sourceCell } = source;
-  const squareFaces = getCellFaces(sourceShape, sourceCell).filter((face) => face.vertexIds.length === 4);
+  const sourceSquareFaceIds = new Set(
+    getCellFaces(sourceShape, sourceCell)
+      .filter((face) => face.vertexIds.length === 4)
+      .map((face) => face.id),
+  );
 
   console.log(`source cell: ${describeCell(sourceCell)}`);
-  console.log(`source square faces: ${squareFaces.length}`);
+  console.log(`source square faces: ${sourceSquareFaceIds.size}`);
 
   if (!canApplyPyritohedralDiagonalization(sourceShape, sourceCell.id)) {
     recordFailure(`${scenario.name}: cuboctahedron source was not pyritohedral-ready`);
@@ -101,208 +107,106 @@ function runScenario(scenario) {
     return;
   }
 
-  const sourceBoundaryByKey = getCellBoundaryEdgeMap(sourceShape, sourceCell);
-  const resultEdgesByKey = new Map(resultShape.edges.map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
-  const constructionEdges = resultShape.edges.filter((edge) => edge.role === 'construction-diagonal');
-  const constructionEdgesBySourceFaceId = new Map();
-
-  for (const edge of constructionEdges) {
-    if (!edge.sourceFaceId) {
-      recordFailure(`${scenario.name}: construction diagonal ${edge.id} missing sourceFaceId`);
-      continue;
-    }
-
-    const existing = constructionEdgesBySourceFaceId.get(edge.sourceFaceId) ?? [];
-    existing.push(edge);
-    constructionEdgesBySourceFaceId.set(edge.sourceFaceId, existing);
-  }
-
+  const reports = buildDiagonalizationMatrices(resultShape, resultCell);
   let okCount = 0;
 
-  for (const face of squareFaces) {
-    const report = auditSquareMatrix({
-      scenarioName: scenario.name,
-      sourceShape,
-      resultEdgesByKey,
-      sourceBoundaryByKey,
-      constructionEdgesBySourceFaceId,
-      face,
-    });
+  if (reports.length !== sourceSquareFaceIds.size) {
+    recordFailure(
+      `${scenario.name}: expected ${sourceSquareFaceIds.size} matrix reports, found ${reports.length}`,
+    );
+  }
 
-    printMatrixReport(sourceShape, report);
+  for (const report of reports) {
+    printMatrixReport(resultShape, report);
+    verifyMatrixReport(scenario.name, report, sourceSquareFaceIds);
 
-    if (report.ok) {
+    if (report.status === 'ok') {
       okCount += 1;
-    } else {
-      recordFailure(`${scenario.name}: ${shortenId(face.id)} MATRIX_FAILED: ${report.problems.join('; ')}`);
     }
   }
 
-  console.log(`diagonalization matrices: ${okCount}/${squareFaces.length} MATRIX_OK`);
+  console.log(`diagonalization matrices: ${okCount}/${sourceSquareFaceIds.size} MATRIX_OK`);
 
-  if (okCount !== squareFaces.length) {
+  if (okCount !== sourceSquareFaceIds.size) {
     recordFailure(`${scenario.name}: expected every square-face matrix to reconstruct cleanly`);
   }
 }
 
-function auditSquareMatrix({
-  scenarioName,
-  sourceShape,
-  resultEdgesByKey,
-  sourceBoundaryByKey,
-  constructionEdgesBySourceFaceId,
-  face,
-}) {
-  const problems = [];
+function verifyMatrixReport(scenarioName, report, sourceSquareFaceIds) {
+  const chosenEntries = report.diagonalEntries.filter(
+    (entry) => entry.isChosenConstructionDiagonal,
+  );
+  const alternateEntries = report.diagonalEntries.filter((entry) => entry.isAlternateDiagonal);
 
-  if (face.vertexIds.length !== 4) {
-    problems.push(`expected 4 vertices, found ${face.vertexIds.length}`);
-  }
+  expect(
+    sourceSquareFaceIds.has(report.sourceSquareFaceId),
+    `${scenarioName}: report source face was not one of the source squares`,
+  );
+  expect(report.orderedVertexIds.length === 4, `${scenarioName}: report did not preserve 4 vertices`);
+  expect(
+    report.rows[0] === report.orderedVertexIds[0] &&
+      report.rows[1] === report.orderedVertexIds[1] &&
+      report.columns[0] === report.orderedVertexIds[2] &&
+      report.columns[1] === report.orderedVertexIds[3],
+    `${scenarioName}: report did not preserve [a,b] x [c,d] convention`,
+  );
+  expect(chosenEntries.length === 1, `${scenarioName}: expected exactly one chosen diagonal`);
+  expect(alternateEntries.length === 1, `${scenarioName}: expected exactly one alternate diagonal`);
+  expect(
+    chosenEntries[0]?.edgeRole === 'construction-diagonal',
+    `${scenarioName}: chosen diagonal missing construction-diagonal role`,
+  );
+  expect(
+    report.diagonalEntries.every((entry) => !entry.isBoundary),
+    `${scenarioName}: matrix diagonal entry was a boundary edge`,
+  );
+  expect(
+    report.offDiagonalEntries.every(
+      (entry) => entry.isBoundary && !entry.isChosenConstructionDiagonal,
+    ),
+    `${scenarioName}: off-diagonal entries were not boundary-only entries`,
+  );
+  expect(
+    report.implicitBoundaryEntries.every(
+      (entry) => entry.isBoundary && !entry.isChosenConstructionDiagonal,
+    ),
+    `${scenarioName}: implicit entries were not boundary-only entries`,
+  );
 
-  const [a, b, c, d] = face.vertexIds;
-  const vertexIds = [a, b, c, d].filter(Boolean);
-  const missingVertexIds = vertexIds.filter((vertexId) => !sourceShape.vertices[vertexId]);
-
-  if (missingVertexIds.length) {
-    problems.push(`missing vertices: ${missingVertexIds.map(shortenId).join(', ')}`);
-  }
-
-  const entries = {
-    ac: makeMatrixEntry('AC', [a, c]),
-    ad: makeMatrixEntry('AD', [a, d]),
-    bc: makeMatrixEntry('BC', [b, c]),
-    bd: makeMatrixEntry('BD', [b, d]),
-    ab: makeMatrixEntry('AB', [a, b]),
-    cd: makeMatrixEntry('CD', [c, d]),
-  };
-  const diagonalEntries = [entries.ac, entries.bd];
-  const offDiagonalEntries = [entries.ad, entries.bc];
-  const implicitEntries = [entries.ab, entries.cd];
-  const constructionEdges = constructionEdgesBySourceFaceId.get(face.id) ?? [];
-  const constructionKeys = new Set(constructionEdges.map((edge) => canonicalEdgeKey(...edge.vertexIds)));
-
-  for (const entry of Object.values(entries)) {
-    entry.sourceEdge = sourceBoundaryByKey.get(entry.key) ?? null;
-    entry.resultEdge = resultEdgesByKey.get(entry.key) ?? null;
-    entry.isBoundary = Boolean(entry.sourceEdge);
-    entry.isConstructionDiagonal = constructionKeys.has(entry.key);
-  }
-
-  const chosenDiagonalEntries = diagonalEntries.filter((entry) => entry.isConstructionDiagonal);
-  const alternateDiagonalEntries = diagonalEntries.filter((entry) => !entry.isConstructionDiagonal);
-  const diagonalBoundaryEntries = diagonalEntries.filter((entry) => entry.isBoundary);
-  const offDiagonalNonBoundaryEntries = offDiagonalEntries.filter((entry) => !entry.isBoundary);
-  const implicitNonBoundaryEntries = implicitEntries.filter((entry) => !entry.isBoundary);
-
-  if (constructionEdges.length !== 1) {
-    problems.push(`expected 1 construction diagonal for source square, found ${constructionEdges.length}`);
-  }
-
-  if (chosenDiagonalEntries.length !== 1) {
-    problems.push(`expected exactly one matrix diagonal chosen, found ${chosenDiagonalEntries.length}`);
-  }
-
-  for (const edge of constructionEdges) {
-    const key = canonicalEdgeKey(...edge.vertexIds);
-
-    if (!diagonalEntries.some((entry) => entry.key === key)) {
-      problems.push(`construction edge ${formatEntryVertexIds(sourceShape, edge.vertexIds)} is not AC or BD`);
-    }
-
-    if (edge.role !== 'construction-diagonal') {
-      problems.push(`chosen edge ${edge.id} missing construction-diagonal role`);
-    }
-  }
-
-  if (diagonalBoundaryEntries.length) {
-    problems.push(
-      `matrix diagonals were boundary edges: ${diagonalBoundaryEntries.map((entry) => entry.label).join(', ')}`,
+  if (report.problems.length) {
+    recordFailure(
+      `${scenarioName}: ${shortenId(report.sourceSquareFaceId)} MATRIX_FAILED: ${report.problems.join('; ')}`,
     );
   }
-
-  if (offDiagonalNonBoundaryEntries.length) {
-    problems.push(
-      `off-diagonal entries were not boundary edges: ${offDiagonalNonBoundaryEntries
-        .map((entry) => entry.label)
-        .join(', ')}`,
-    );
-  }
-
-  if (implicitNonBoundaryEntries.length) {
-    problems.push(
-      `implicit entries were not boundary edges: ${implicitNonBoundaryEntries
-        .map((entry) => entry.label)
-        .join(', ')}`,
-    );
-  }
-
-  if (alternateDiagonalEntries.length === 1 && alternateDiagonalEntries[0].isConstructionDiagonal) {
-    problems.push(`${alternateDiagonalEntries[0].label} was incorrectly marked chosen`);
-  }
-
-  for (const entry of offDiagonalEntries) {
-    if (entry.resultEdge?.role === 'construction-diagonal') {
-      problems.push(`${entry.label} boundary/off-diagonal entry was marked construction-diagonal`);
-    }
-  }
-
-  for (const entry of implicitEntries) {
-    if (entry.resultEdge?.role === 'construction-diagonal') {
-      problems.push(`${entry.label} implicit boundary entry was marked construction-diagonal`);
-    }
-  }
-
-  const chosen = chosenDiagonalEntries[0] ?? null;
-  const alternate = chosen ? diagonalEntries.find((entry) => entry.key !== chosen.key) ?? null : null;
-
-  return {
-    scenarioName,
-    face,
-    entries,
-    diagonalEntries,
-    offDiagonalEntries,
-    implicitEntries,
-    chosen,
-    alternate,
-    problems,
-    ok: problems.length === 0,
-  };
 }
 
 function printMatrixReport(shape, report) {
-  const [a, b, c, d] = report.face.vertexIds;
+  const [a, b, c, d] = report.orderedVertexIds;
   const { ac, ad, bc, bd } = report.entries;
   const columnC = formatVertexRef(shape, c).padEnd(18);
   const columnD = formatVertexRef(shape, d).padEnd(18);
 
   console.log('');
-  console.log(`square face: ${shortenId(report.face.id)}`);
-  console.log(`vertices: ${formatVertexRef(shape, a)} ${formatVertexRef(shape, b)} ${formatVertexRef(shape, c)} ${formatVertexRef(shape, d)}`);
+  console.log(`square face: ${shortenId(report.sourceSquareFaceId)}`);
+  console.log(
+    `vertices: ${formatVertexRef(shape, a)} ${formatVertexRef(shape, b)} ${formatVertexRef(
+      shape,
+      c,
+    )} ${formatVertexRef(shape, d)}`,
+  );
   console.log('matrix:');
   console.log(`       ${columnC} ${columnD}`);
   console.log(`${formatVertexRef(shape, a).padEnd(6)} ${formatMatrixCell(ac).padEnd(18)} ${formatMatrixCell(ad)}`);
   console.log(`${formatVertexRef(shape, b).padEnd(6)} ${formatMatrixCell(bc).padEnd(18)} ${formatMatrixCell(bd)}`);
-  console.log(`chosen: ${report.chosen ? report.chosen.label : 'none'}`);
-  console.log(`alternate: ${report.alternate ? report.alternate.label : 'none'}`);
+  console.log(`chosen: ${report.chosenEntry ? report.chosenEntry.label : 'none'}`);
+  console.log(`alternate: ${report.alternateEntry ? report.alternateEntry.label : 'none'}`);
   console.log(`off-diagonal boundary: ${report.offDiagonalEntries.map((entry) => entry.label).join(', ')}`);
-  console.log(`implicit boundary: ${report.implicitEntries.map((entry) => entry.label).join(', ')}`);
-  console.log(`status: ${report.ok ? 'MATRIX_OK' : `MATRIX_FAILED (${report.problems.join('; ')})`}`);
-}
-
-function makeMatrixEntry(label, vertexIds) {
-  return {
-    label,
-    vertexIds,
-    key: canonicalEdgeKey(...vertexIds),
-    sourceEdge: null,
-    resultEdge: null,
-    isBoundary: false,
-    isConstructionDiagonal: false,
-  };
+  console.log(`implicit boundary: ${report.implicitBoundaryEntries.map((entry) => entry.label).join(', ')}`);
+  console.log(`status: ${report.status === 'ok' ? 'MATRIX_OK' : `MATRIX_FAILED (${report.problems.join('; ')})`}`);
 }
 
 function formatMatrixCell(entry) {
-  const marker = entry.isConstructionDiagonal ? '*' : '';
+  const marker = entry.isChosenConstructionDiagonal ? '*' : '';
 
   return `${entry.label}${marker}`;
 }
@@ -362,23 +266,6 @@ function getCellFaces(shape, cell) {
   return cell.faceIds.map((faceId) => facesById.get(faceId)).filter(Boolean);
 }
 
-function getCellBoundaryEdgeMap(shape, cell) {
-  const edgesByKey = new Map(shape.edges.map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
-  const boundaryEdgesByKey = new Map();
-
-  for (const face of getCellFaces(shape, cell)) {
-    for (let index = 0; index < face.vertexIds.length; index += 1) {
-      const a = face.vertexIds[index];
-      const b = face.vertexIds[(index + 1) % face.vertexIds.length];
-      const key = canonicalEdgeKey(a, b);
-
-      boundaryEdgesByKey.set(key, edgesByKey.get(key) ?? { vertexIds: [a, b] });
-    }
-  }
-
-  return boundaryEdgesByKey;
-}
-
 function sortedCells(cells) {
   return [...cells].sort(
     (a, b) =>
@@ -404,10 +291,6 @@ function formatVertexRef(shape, vertexId) {
   return label && label.trim() ? label : shortenId(vertexId);
 }
 
-function formatEntryVertexIds(shape, vertexIds) {
-  return vertexIds.map((vertexId) => formatVertexRef(shape, vertexId)).join('-');
-}
-
 function printDivider(label) {
   console.log('');
   console.log(`=== ${label} ===`);
@@ -415,6 +298,12 @@ function printDivider(label) {
 
 function shortenId(id) {
   return id.length > 28 ? `${id.slice(0, 13)}...${id.slice(-8)}` : id;
+}
+
+function expect(condition, message) {
+  if (!condition) {
+    recordFailure(message);
+  }
 }
 
 function recordFailure(message) {
