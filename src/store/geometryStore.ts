@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { createSeedShape } from '../data/seeds';
 import { isCellActiveFrontier } from '../lib/cellLifecycle';
+import {
+  serializeWorkspaceSnapshot,
+  validateWorkspaceImport,
+  type PersistedWorkspaceV1,
+} from '../lib/workspacePersistence';
 import { getOperation } from '../operations/registry';
 import type {
   Cell,
@@ -126,6 +131,8 @@ interface GeometryState {
   toggleIsolateSelectedCell: () => void;
   setHoverTarget: (target: InspectionHoverTarget | null) => void;
   updateSelectedVertexData: (patch: Partial<VertexDataPacket>) => void;
+  exportWorkspace: () => PersistedWorkspaceV1;
+  importWorkspace: (workspace: PersistedWorkspaceV1) => void;
 }
 
 const initialShape = createSeedShape('tetrahedron');
@@ -428,6 +435,62 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
           },
         },
       },
+    });
+  },
+  exportWorkspace: () => {
+    const state = get();
+
+    return serializeWorkspaceSnapshot({
+      selectedSeedKey: state.selectedSeedKey,
+      shapes: state.shapes,
+      shapeOrder: state.shapeOrder,
+      currentShapeId: state.currentShapeId,
+      selectedCellId: state.selectedCellId,
+      selectedVertexId: state.selectedVertexId,
+      operationHistory: state.operationHistory,
+      historySequence: state.historySequence,
+      cellVisibility: state.cellVisibility,
+      viewLayout: state.viewLayout,
+    });
+  },
+  importWorkspace: (workspace) => {
+    const validation = validateWorkspaceImport(workspace);
+
+    if (!validation.ok) {
+      throw new Error(validation.errors.join('\n'));
+    }
+
+    const importedWorkspace = validation.workspace;
+    const currentShape = importedWorkspace.shapes[importedWorkspace.currentShapeId];
+    const selectedCellId =
+      importedWorkspace.selectedCellId &&
+      currentShape.cells.some((cell) => cell.id === importedWorkspace.selectedCellId)
+        ? importedWorkspace.selectedCellId
+        : null;
+    const selectedVertexId =
+      importedWorkspace.selectedVertexId &&
+      currentShape.vertices[importedWorkspace.selectedVertexId]
+        ? importedWorkspace.selectedVertexId
+        : null;
+
+    set({
+      selectedSeedKey: importedWorkspace.selectedSeedKey,
+      shapes: importedWorkspace.shapes,
+      shapeOrder: importedWorkspace.shapeOrder,
+      currentShapeId: importedWorkspace.currentShapeId,
+      selectedCellId,
+      selectedVertexId,
+      dualInspectionTarget: null,
+      cellVisibility: importedWorkspace.cellVisibility
+        ? { ...importedWorkspace.cellVisibility }
+        : defaultCellVisibility,
+      viewLayout: importedWorkspace.viewLayout ? { ...importedWorkspace.viewLayout } : defaultViewLayout,
+      hoverTarget: null,
+      undoStack: [],
+      redoStack: [],
+      operationHistory: importedWorkspace.operationHistory,
+      redoOperationHistory: [],
+      historySequence: importedWorkspace.historySequence,
     });
   },
 }));

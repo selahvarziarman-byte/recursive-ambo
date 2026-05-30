@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, type ReactNode, useEffect, useMemo, useState } from 'react';
 import { seedRegistry } from '../data/seeds';
 import {
   getCellChildCount,
@@ -19,6 +19,7 @@ import {
   type CellTopologySignature,
   type TopologyFrontierGroup,
 } from '../lib/topologySignature';
+import { parseWorkspaceImport } from '../lib/workspacePersistence';
 import {
   type DualInspectionTarget,
   type OperationHistoryEntry,
@@ -231,6 +232,7 @@ export function OperationControls() {
       >
         Reset Workspace
       </button>
+      <WorkspacePersistenceControls />
       <div className="mt-4 grid gap-2 text-sm text-stone-300">
         <label className="flex items-center justify-between gap-3">
           Core cells
@@ -309,6 +311,90 @@ export function OperationControls() {
         <dd className="text-right text-stone-200">{Object.keys(shape.vertices).length}</dd>
       </dl>
     </Panel>
+  );
+}
+
+function WorkspacePersistenceControls() {
+  const exportWorkspace = useGeometryStore((state) => state.exportWorkspace);
+  const importWorkspace = useGeometryStore((state) => state.importWorkspace);
+  const [status, setStatus] = useState<{ kind: 'success' | 'error'; message: string } | null>(null);
+
+  function handleExport() {
+    try {
+      const workspace = exportWorkspace();
+      const blob = new Blob([JSON.stringify(workspace, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = `platonic-engine-workspace-${formatWorkspaceTimestamp(new Date())}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setStatus({ kind: 'success', message: 'Workspace JSON exported.' });
+    } catch (error) {
+      setStatus({ kind: 'error', message: formatImportExportError(error) });
+    }
+  }
+
+  async function handleImport(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const parsedJson = JSON.parse(text);
+      const workspace = parseWorkspaceImport(parsedJson);
+
+      importWorkspace(workspace);
+      setStatus({ kind: 'success', message: 'Workspace JSON imported.' });
+    } catch (error) {
+      setStatus({ kind: 'error', message: formatImportExportError(error) });
+    } finally {
+      input.value = '';
+    }
+  }
+
+  return (
+    <div className="mt-4 border-t border-stone-800 pt-4">
+      <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+        Save / Load
+      </h3>
+      <div className="mt-3 grid gap-2">
+        <button
+          type="button"
+          onClick={handleExport}
+          className="h-9 w-full rounded border border-stone-700 bg-stone-900 px-3 text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
+        >
+          Export Workspace JSON
+        </button>
+        <label className="flex h-9 w-full cursor-pointer items-center justify-center rounded border border-stone-700 bg-stone-900 px-3 text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus-within:ring-2 focus-within:ring-stone-500">
+          Import Workspace JSON
+          <input
+            type="file"
+            accept=".json,application/json"
+            onChange={handleImport}
+            className="sr-only"
+          />
+        </label>
+      </div>
+      {status ? (
+        <p
+          className={`mt-3 text-sm leading-5 ${
+            status.kind === 'error' ? 'text-red-300' : 'text-stone-400'
+          }`}
+        >
+          {status.message}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
@@ -2477,6 +2563,24 @@ function matchesOperabilityFilter(row: WorkspaceCellRow, filter: OperabilityFilt
 
 function shortenId(id: string): string {
   return id.length > 34 ? `${id.slice(0, 18)}...${id.slice(-10)}` : id;
+}
+
+function formatWorkspaceTimestamp(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, '0');
+
+  return [
+    date.getFullYear(),
+    pad(date.getMonth() + 1),
+    pad(date.getDate()),
+    '-',
+    pad(date.getHours()),
+    pad(date.getMinutes()),
+    pad(date.getSeconds()),
+  ].join('');
+}
+
+function formatImportExportError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function formatAmboStatus(enabledCount: number, totalCount: number): string {

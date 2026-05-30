@@ -16,6 +16,7 @@
     "diagnose:dual-coverage": "node scripts/diagnose-dual-coverage.cjs",
     "diagnose:dual-candidate-expansion": "node scripts/diagnose-dual-candidate-expansion.cjs",
     "diagnose:rectified-dual-candidates": "node scripts/diagnose-rectified-dual-candidates.cjs",
+    "diagnose:workspace-persistence": "node scripts/diagnose-workspace-persistence.cjs",
     "preview": "vite preview"
   },
   "dependencies": {
