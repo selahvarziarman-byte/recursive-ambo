@@ -1,4 +1,11 @@
-import { type ChangeEvent, type ReactNode, useEffect, useMemo, useState } from 'react';
+import {
+  type ChangeEvent,
+  type KeyboardEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { seedRegistry } from '../data/seeds';
 import {
   getCellChildCount,
@@ -2377,49 +2384,148 @@ export function VertexDataPacketEditor() {
 function VertexPacketEditorContent() {
   const shape = useCurrentShape();
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const selectVertex = useGeometryStore((state) => state.selectVertex);
   const updateSelectedVertexData = useGeometryStore((state) => state.updateSelectedVertexData);
   const vertex = selectedVertexId ? shape.vertices[selectedVertexId] : null;
+  const [labelDraft, setLabelDraft] = useState('');
+  const [notesDraft, setNotesDraft] = useState('');
+  const [colorDraft, setColorDraft] = useState('#facc15');
+  const [tagsDraft, setTagsDraft] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
   const [customText, setCustomText] = useState('{}');
-  const [jsonError, setJsonError] = useState<string | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (vertex) {
+      setLabelDraft(vertex.data.label);
+      setNotesDraft(vertex.data.notes);
+      setColorDraft(vertex.data.color);
+      setTagsDraft(vertex.data.tags);
+      setTagInput('');
       setCustomText(JSON.stringify(vertex.data.custom, null, 2));
-      setJsonError(null);
+      setSaveMessage(null);
     }
-  }, [vertex?.id, vertex?.data.custom]);
+  }, [vertex?.id]);
+
+  const customValidation = useMemo(() => validateCustomPacketJson(customText), [customText]);
 
   if (!vertex) {
     return <p className="text-sm text-stone-500">No vertex selected.</p>;
   }
 
-  const updatePacket = (patch: Partial<VertexDataPacket>) => {
-    updateSelectedVertexData(patch);
+  const packetStatus = getVertexPacketStatus(shape, vertex);
+  const unresolvedRows = getPacketWorkbenchRows(shape).filter(isUnresolvedGeneratedPacketRow);
+
+  const addTag = () => {
+    const tag = tagInput.trim();
+
+    if (!tag) {
+      setTagInput('');
+      return;
+    }
+
+    if (!tagsDraft.some((existingTag) => existingTag.toLowerCase() === tag.toLowerCase())) {
+      setTagsDraft([...tagsDraft, tag]);
+    }
+
+    setTagInput('');
   };
 
-  const saveCustomJson = () => {
-    try {
-      const parsed = JSON.parse(customText) as JsonValue;
+  const removeTag = (tag: string) => {
+    setTagsDraft(tagsDraft.filter((existingTag) => existingTag !== tag));
+  };
 
-      if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
-        setJsonError('Custom data must be a JSON object.');
-        return;
-      }
-
-      updatePacket({ custom: parsed as Record<string, JsonValue> });
-      setJsonError(null);
-    } catch {
-      setJsonError('Custom data is not valid JSON.');
+  const handleTagInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      addTag();
     }
+  };
+
+  const saveDraft = (): { saved: boolean; nextRows: PacketWorkbenchRow[] } => {
+    const validation = validateCustomPacketJson(customText);
+
+    if (!validation.ok) {
+      setSaveMessage(validation.message);
+      return { saved: false, nextRows: [] };
+    }
+
+    const nextVertex: Vertex = {
+      ...vertex,
+      data: {
+        ...vertex.data,
+        label: labelDraft,
+        notes: notesDraft,
+        color: colorDraft,
+        tags: tagsDraft,
+        custom: validation.custom,
+      },
+    };
+    const nextShape: Shape = {
+      ...shape,
+      vertices: {
+        ...shape.vertices,
+        [vertex.id]: nextVertex,
+      },
+    };
+    const nextRows = getPacketWorkbenchRows(nextShape);
+
+    updateSelectedVertexData({
+      label: labelDraft,
+      notes: notesDraft,
+      color: colorDraft,
+      tags: tagsDraft,
+      custom: validation.custom,
+    });
+    setCustomText(JSON.stringify(validation.custom, null, 2));
+    setSaveMessage('Packet saved.');
+
+    return { saved: true, nextRows };
+  };
+
+  const saveAndNextUnresolved = () => {
+    const result = saveDraft();
+
+    if (!result.saved) {
+      return;
+    }
+
+    const nextRows = result.nextRows.filter(isUnresolvedGeneratedPacketRow);
+    const nextRow = findNextUnresolvedVertexAfterCurrent(nextRows, vertex.id);
+
+    if (nextRow) {
+      selectVertex(nextRow.vertex.id);
+      return;
+    }
+
+    const currentStillUnresolved = nextRows.some((row) => row.vertex.id === vertex.id);
+
+    setSaveMessage(
+      currentStillUnresolved
+        ? 'Packet saved. Current packet is still unresolved.'
+        : 'Packet saved. No unresolved generated midpoint packets remain.',
+    );
   };
 
   return (
     <div className="grid gap-3">
+      <div className="rounded border border-stone-800 bg-stone-950 px-3 py-3 text-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={packetStatusClassName(packetStatus)}>
+            {formatPacketStatus(packetStatus)}
+          </span>
+          <span className="rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-stone-300">
+            {formatVertexEditorOrigin(vertex)}
+          </span>
+        </div>
+        <p className="mt-2 truncate text-stone-500">{formatVertexLineageSummary(shape, vertex)}</p>
+      </div>
+
       <label className="grid gap-1 text-sm text-stone-300">
         Label
         <input
-          value={vertex.data.label}
-          onChange={(event) => updatePacket({ label: event.target.value })}
+          value={labelDraft}
+          onChange={(event) => setLabelDraft(event.target.value)}
           className="h-9 rounded border border-stone-700 bg-stone-950 px-3 text-stone-100 outline-none focus:border-teal-400"
         />
       </label>
@@ -2428,34 +2534,59 @@ function VertexPacketEditorContent() {
         Color
         <input
           type="color"
-          value={vertex.data.color}
-          onChange={(event) => updatePacket({ color: event.target.value })}
+          value={colorDraft}
+          onChange={(event) => setColorDraft(event.target.value)}
           className="h-10 w-full rounded border border-stone-700 bg-stone-950 p-1"
         />
       </label>
 
-      <label className="grid gap-1 text-sm text-stone-300">
+      <div className="grid gap-2 text-sm text-stone-300">
         Tags
-        <input
-          value={vertex.data.tags.join(', ')}
-          onChange={(event) =>
-            updatePacket({
-              tags: event.target.value
-                .split(',')
-                .map((tag) => tag.trim())
-                .filter(Boolean),
-            })
-          }
-          placeholder="comma, separated"
-          className="h-9 rounded border border-stone-700 bg-stone-950 px-3 text-stone-100 outline-none placeholder:text-stone-600 focus:border-teal-400"
-        />
-      </label>
+        <div className="flex gap-2">
+          <input
+            value={tagInput}
+            onChange={(event) => setTagInput(event.target.value)}
+            onKeyDown={handleTagInputKeyDown}
+            placeholder="Add tag"
+            className="h-9 min-w-0 flex-1 rounded border border-stone-700 bg-stone-950 px-3 text-stone-100 outline-none placeholder:text-stone-600 focus:border-teal-400"
+          />
+          <button
+            type="button"
+            onClick={addTag}
+            className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-xs font-semibold text-stone-100 transition hover:border-teal-400 hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
+          >
+            Add
+          </button>
+        </div>
+        <div className="flex min-h-8 flex-wrap gap-2">
+          {tagsDraft.length ? (
+            tagsDraft.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 rounded border border-stone-700 bg-stone-900 px-2 py-1 text-xs text-stone-200"
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => removeTag(tag)}
+                  className="text-stone-500 transition hover:text-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  aria-label={`Remove ${tag}`}
+                >
+                  x
+                </button>
+              </span>
+            ))
+          ) : (
+            <span className="text-xs text-stone-500">No tags.</span>
+          )}
+        </div>
+      </div>
 
       <label className="grid gap-1 text-sm text-stone-300">
         Notes
         <textarea
-          value={vertex.data.notes}
-          onChange={(event) => updatePacket({ notes: event.target.value })}
+          value={notesDraft}
+          onChange={(event) => setNotesDraft(event.target.value)}
           rows={4}
           className="resize-none rounded border border-stone-700 bg-stone-950 px-3 py-2 text-stone-100 outline-none focus:border-teal-400"
         />
@@ -2466,15 +2597,105 @@ function VertexPacketEditorContent() {
         <textarea
           value={customText}
           onChange={(event) => setCustomText(event.target.value)}
-          onBlur={saveCustomJson}
           spellCheck={false}
           rows={5}
           className="resize-none rounded border border-stone-700 bg-stone-950 px-3 py-2 font-mono text-xs text-stone-100 outline-none focus:border-teal-400"
         />
       </label>
-      {jsonError ? <p className="text-xs text-rose-300">{jsonError}</p> : null}
+      {!customValidation.ok ? <p className="text-xs text-rose-300">{customValidation.message}</p> : null}
+
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={saveDraft}
+          disabled={!customValidation.ok}
+          className="h-9 rounded border border-teal-500/60 bg-teal-400 px-3 text-sm font-semibold text-stone-950 transition hover:bg-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-200 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
+        >
+          Save packet
+        </button>
+        <button
+          type="button"
+          onClick={saveAndNextUnresolved}
+          disabled={!customValidation.ok || !unresolvedRows.length}
+          className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950 disabled:text-stone-600"
+        >
+          Save and next unresolved
+        </button>
+      </div>
+      {saveMessage ? (
+        <p
+          className={`text-xs ${
+            saveMessage.toLowerCase().includes('valid') ? 'text-rose-300' : 'text-stone-400'
+          }`}
+        >
+          {saveMessage}
+        </p>
+      ) : null}
     </div>
   );
+}
+
+type CustomPacketJsonValidation =
+  | { ok: true; custom: Record<string, JsonValue> }
+  | { ok: false; message: string };
+
+function validateCustomPacketJson(text: string): CustomPacketJsonValidation {
+  try {
+    const parsed = JSON.parse(text) as JsonValue;
+
+    if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
+      return { ok: false, message: 'Custom data must be a JSON object.' };
+    }
+
+    return { ok: true, custom: parsed as Record<string, JsonValue> };
+  } catch {
+    return { ok: false, message: 'Custom data is not valid JSON.' };
+  }
+}
+
+function findNextUnresolvedVertexAfterCurrent(
+  rows: PacketWorkbenchRow[],
+  currentVertexId: VertexId,
+): PacketWorkbenchRow | null {
+  if (!rows.length) {
+    return null;
+  }
+
+  const currentIndex = rows.findIndex((row) => row.vertex.id === currentVertexId);
+  const startIndex = currentIndex >= 0 ? currentIndex + 1 : 0;
+
+  for (let offset = 0; offset < rows.length; offset += 1) {
+    const row = rows[(startIndex + offset) % rows.length];
+
+    if (row.vertex.id !== currentVertexId) {
+      return row;
+    }
+  }
+
+  return null;
+}
+
+function formatVertexEditorOrigin(vertex: Vertex): string {
+  if (vertex.createdBy.operation === 'dualization') {
+    return 'dual/materialized vertex';
+  }
+
+  if (isGeneratedMidpointVertex(vertex)) {
+    return 'generated midpoint';
+  }
+
+  if (vertex.data.lineage?.inheritanceMode === 'preserved') {
+    return 'preserved source vertex';
+  }
+
+  if (
+    vertex.createdBy.operation === 'seed' ||
+    vertex.data.lineage?.inheritanceMode === 'default'
+  ) {
+    return 'seed/source vertex';
+  }
+
+  return `${vertex.createdBy.operation} vertex`;
 }
 
 function useCurrentShape() {
