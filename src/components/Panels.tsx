@@ -812,6 +812,119 @@ function describeDualFocusRelation(resolvedTarget: ResolvedDualInspectionTarget)
   return 'dual edge -> source edge';
 }
 
+function formatResolvedDualRelation(resolvedTarget: ResolvedDualInspectionTarget): string {
+  if (resolvedTarget.kind === 'cell') {
+    return `semantic ${describeCellTopology(resolvedTarget.dualCell)} -> source ${describeCellTopology(
+      resolvedTarget.sourceCell,
+    )} cell`;
+  }
+
+  return describeDualFocusRelation(resolvedTarget);
+}
+
+function formatDualModelLabel(resolvedTarget: ResolvedDualInspectionTarget): string {
+  return resolvedTarget.modelKind === 'correspondence'
+    ? 'read-only correspondence'
+    : 'semantic Dual Universe';
+}
+
+function formatCellSummary(cell: Cell): string {
+  return `${cell.kind}/${describeCellTopology(cell)} g${cell.generationDepth}`;
+}
+
+function formatCellCountsSummary(vertexCount: number, edgeCount: number, faceCount: number): string {
+  return `${vertexCount} vertices / ${edgeCount} edges / ${faceCount} faces`;
+}
+
+function formatFaceSummary(shape: Shape, face: Face): string {
+  const packetLabel = getPacketDataDisplayLabel(face.data);
+  const roleLabel = face.role.replace(/-/g, ' ');
+
+  return packetLabel
+    ? `${packetLabel} (${roleLabel}; ${shortenId(face.id)})`
+    : `${roleLabel}; ${shortenId(face.id)}`;
+}
+
+function formatFaceSourceRelation(shape: Shape, face: Face): string | null {
+  if (face.sourceVertexId) {
+    return `face from source vertex ${getVertexDisplayLabel(shape, face.sourceVertexId)}`;
+  }
+
+  if (face.sourceFaceId) {
+    return `face from source face ${getFaceDisplayLabel(shape, face.sourceFaceId)}`;
+  }
+
+  if (face.sourceCellId) {
+    return `face from source cell ${shortenId(face.sourceCellId)}`;
+  }
+
+  return null;
+}
+
+function formatVertexSummary(
+  shape: Shape,
+  vertexId: VertexId,
+  verticesById?: Record<string, Vertex>,
+): string {
+  const vertex = shape.vertices[vertexId] ?? verticesById?.[vertexId];
+
+  return vertex ? getPacketDisplayLabel(vertex.data) ?? shortenId(vertexId) : shortenId(vertexId);
+}
+
+function formatVertexIdListAsLabels(
+  shape: Shape,
+  vertexIds: string[],
+  separator = ', ',
+  verticesById?: Record<string, Vertex>,
+): string {
+  return vertexIds
+    .map((vertexId) => formatVertexSummary(shape, vertexId, verticesById))
+    .join(separator);
+}
+
+function formatVertexPacketSummary(shape: Shape, vertex: Vertex): string {
+  return joinUniqueDetailParts([
+    getPacketDisplayLabel(vertex.data) ?? shortenId(vertex.id),
+    getVertexRole(vertex),
+    formatVertexPacketDetail(vertex),
+    formatVertexLineageSummary(shape, vertex),
+  ]);
+}
+
+function joinUniqueDetailParts(parts: Array<string | null | undefined>): string {
+  const seen = new Set<string>();
+  const visibleParts: string[] = [];
+
+  for (const part of parts) {
+    const value = part?.trim();
+
+    if (!value || seen.has(value)) {
+      continue;
+    }
+
+    seen.add(value);
+    visibleParts.push(value);
+  }
+
+  return visibleParts.join(' | ');
+}
+
+function getDualInspectionTargetId(target: DualInspectionTarget): string {
+  if (target.kind === 'cell') {
+    return target.dualCellId;
+  }
+
+  if (target.kind === 'vertex') {
+    return target.dualVertexId;
+  }
+
+  if (target.kind === 'face') {
+    return target.dualFaceId;
+  }
+
+  return target.dualEdgeId;
+}
+
 function CurrentFocusDetail({
   label,
   value,
@@ -898,27 +1011,51 @@ function ResolvedDualInspectionDetails({
 
   if (resolvedTarget.kind === 'face') {
     const packetSummary = resolvedTarget.sourceVertex
-      ? formatVertexPacketDetail(resolvedTarget.sourceVertex) ??
-        getPacketDisplayLabel(resolvedTarget.sourceVertex.data) ??
-        'untitled packet'
+      ? formatVertexPacketSummary(shape, resolvedTarget.sourceVertex)
       : 'source vertex unavailable';
 
     return (
       <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
         <InspectionDetail label="Entity" value="dual face" />
-        <InspectionDetail label="Dual face" value={resolvedTarget.dualFace.id} code />
-        <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
-        <InspectionDetail label="Source vertex" value={resolvedTarget.target.sourceVertexId} code />
+        <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
+        <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
         <InspectionDetail
-          label="Lineage"
-          value={resolvedTarget.dualFace.lineage?.inheritanceMode ?? 'none'}
-        />
-        <InspectionDetail
-          label="Dual vertices"
-          value={resolvedTarget.dualFace.vertexIds.join(', ')}
-          code
+          label="Source vertex"
+          value={
+            resolvedTarget.sourceVertex
+              ? formatVertexSummary(shape, resolvedTarget.sourceVertex.id)
+              : shortenId(resolvedTarget.target.sourceVertexId)
+          }
         />
         <InspectionDetail label="Packet" value={packetSummary} />
+        <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+        <InspectionDetail
+          label="Dual vertices"
+          value={formatVertexIdListAsLabels(
+            shape,
+            resolvedTarget.dualFace.vertexIds,
+            ', ',
+            resolvedTarget.semanticModel.dualVertices,
+          )}
+        />
+        <InspectionDetail
+          label="Debug id"
+          value={shortenId(resolvedTarget.dualFace.id)}
+          code
+          title={resolvedTarget.dualFace.id}
+        />
+        <InspectionDetail
+          label="Source vertex id"
+          value={shortenId(resolvedTarget.target.sourceVertexId)}
+          code
+          title={resolvedTarget.target.sourceVertexId}
+        />
+        <InspectionDetail
+          label="Source cell id"
+          value={shortenId(resolvedTarget.target.sourceCellId)}
+          code
+          title={resolvedTarget.target.sourceCellId}
+        />
       </dl>
     );
   }
@@ -927,50 +1064,106 @@ function ResolvedDualInspectionDetails({
     return (
       <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
         <InspectionDetail label="Entity" value="dual edge" />
-        <InspectionDetail label="Dual edge" value={resolvedTarget.dualEdge.id} code />
-        <InspectionDetail label="Source edge" value={resolvedTarget.target.sourceEdgeId} code />
-        <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+        <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
+        <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
+        <InspectionDetail
+          label="Source edge"
+          value={
+            resolvedTarget.sourceEdge
+              ? formatEdgeRef(shape, resolvedTarget.sourceEdge.vertexIds)
+              : shortenId(resolvedTarget.target.sourceEdgeId)
+          }
+        />
+        <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+        <InspectionDetail
+          label="Dual edge"
+          value={formatVertexIdListAsLabels(
+            shape,
+            resolvedTarget.dualEdge.vertexIds,
+            ' - ',
+            resolvedTarget.semanticModel.dualVertices,
+          )}
+        />
         <InspectionDetail
           label="Lineage"
           value={resolvedTarget.dualEdge.lineage?.inheritanceMode ?? 'none'}
         />
         <InspectionDetail
-          label="Dual vertices"
-          value={resolvedTarget.dualEdge.vertexIds.join(', ')}
+          label="Debug id"
+          value={shortenId(resolvedTarget.dualEdge.id)}
           code
+          title={resolvedTarget.dualEdge.id}
         />
         <InspectionDetail
-          label="Source endpoints"
-          value={
-            resolvedTarget.sourceEdge
-              ? formatEdgeRef(shape, resolvedTarget.sourceEdge.vertexIds)
-              : 'source edge unavailable'
-          }
+          label="Source edge id"
+          value={shortenId(resolvedTarget.target.sourceEdgeId)}
+          code
+          title={resolvedTarget.target.sourceEdgeId}
+        />
+        <InspectionDetail
+          label="Source cell id"
+          value={shortenId(resolvedTarget.target.sourceCellId)}
+          code
+          title={resolvedTarget.target.sourceCellId}
         />
       </dl>
     );
   }
 
   if (resolvedTarget.kind === 'vertex') {
+    const sourceRelation = resolvedTarget.sourceFace
+      ? formatFaceSourceRelation(shape, resolvedTarget.sourceFace)
+      : null;
+
     return (
       <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
         <InspectionDetail label="Entity" value="dual vertex" />
-        <InspectionDetail label="Dual vertex" value={resolvedTarget.dualVertex.id} code />
-        <InspectionDetail label="Source face" value={resolvedTarget.target.sourceFaceId} code />
-        <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+        <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
+        <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
         <InspectionDetail
-          label="Lineage"
-          value={resolvedTarget.dualVertex.data.lineage?.inheritanceMode ?? 'none'}
+          label="Source face"
+          value={
+            resolvedTarget.sourceFace
+              ? formatFaceSummary(shape, resolvedTarget.sourceFace)
+              : shortenId(resolvedTarget.target.sourceFaceId)
+          }
         />
+        {sourceRelation ? <InspectionDetail label="Source relation" value={sourceRelation} /> : null}
         <InspectionDetail
-          label="Source face vertices"
-          value={resolvedTarget.sourceFace?.vertexIds.join(', ') ?? 'source face unavailable'}
-          code={Boolean(resolvedTarget.sourceFace)}
+          label="Face vertices"
+          value={
+            resolvedTarget.sourceFace
+              ? formatVertexIdListAsLabels(shape, resolvedTarget.sourceFace.vertexIds)
+              : 'source face unavailable'
+          }
         />
+        <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
         <InspectionDetail
-          label="Position"
-          value={formatVec3(resolvedTarget.dualVertex.position)}
+          label="Dual vertex"
+          value={formatVertexSummary(
+            shape,
+            resolvedTarget.dualVertex.id,
+            resolvedTarget.semanticModel.dualVertices,
+          )}
+        />
+        <InspectionDetail label="Position" value={formatVec3(resolvedTarget.dualVertex.position)} code />
+        <InspectionDetail
+          label="Debug id"
+          value={shortenId(resolvedTarget.dualVertex.id)}
           code
+          title={resolvedTarget.dualVertex.id}
+        />
+        <InspectionDetail
+          label="Source face id"
+          value={shortenId(resolvedTarget.target.sourceFaceId)}
+          code
+          title={resolvedTarget.target.sourceFaceId}
+        />
+        <InspectionDetail
+          label="Source cell id"
+          value={shortenId(resolvedTarget.target.sourceCellId)}
+          code
+          title={resolvedTarget.target.sourceCellId}
         />
       </dl>
     );
@@ -978,14 +1171,31 @@ function ResolvedDualInspectionDetails({
 
   return (
     <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-      <InspectionDetail label="Entity" value="dual cell" />
-      <InspectionDetail label="Dual cell" value={resolvedTarget.dualCell.id} code />
-      <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+      <InspectionDetail label="Entity" value="semantic dual cell" />
+      <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
+      <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
+      <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+      <InspectionDetail label="Dual cell" value={formatCellSummary(resolvedTarget.dualCell)} />
       <InspectionDetail
-        label="Lineage"
-        value={resolvedTarget.dualCell.lineage?.inheritanceMode ?? 'none'}
+        label="Counts"
+        value={formatCellCountsSummary(
+          resolvedTarget.dualCell.vertexIds.length,
+          resolvedTarget.semanticModel.dualEdges.length,
+          resolvedTarget.dualCell.faceIds.length,
+        )}
       />
-      <InspectionDetail label="Topology" value={resolvedTarget.dualCell.topology ?? 'unknown'} />
+      <InspectionDetail
+        label="Debug id"
+        value={shortenId(resolvedTarget.dualCell.id)}
+        code
+        title={resolvedTarget.dualCell.id}
+      />
+      <InspectionDetail
+        label="Source cell id"
+        value={shortenId(resolvedTarget.target.sourceCellId)}
+        code
+        title={resolvedTarget.target.sourceCellId}
+      />
     </dl>
   );
 }
@@ -999,25 +1209,50 @@ function ResolvedDualCorrespondenceInspectionDetails({
 }) {
   if (resolvedTarget.kind === 'face') {
     const packetSummary = resolvedTarget.sourceVertex
-      ? formatVertexPacketDetail(resolvedTarget.sourceVertex) ??
-        getPacketDisplayLabel(resolvedTarget.sourceVertex.data) ??
-        'untitled packet'
+      ? formatVertexPacketSummary(shape, resolvedTarget.sourceVertex)
       : 'source vertex unavailable';
 
     return (
       <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
         <InspectionDetail label="Entity" value="dual face" />
-        <InspectionDetail label="Model" value="read-only correspondence" />
-        <InspectionDetail label="Topology" value={resolvedTarget.correspondenceModel.dualTopologyLabel} />
-        <InspectionDetail label="Dual face" value={resolvedTarget.dualFace.id} code />
-        <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
-        <InspectionDetail label="Source vertex" value={resolvedTarget.target.sourceVertexId} code />
+        <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
+        <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
         <InspectionDetail
-          label="Dual vertices"
-          value={resolvedTarget.dualFace.vertexIds.join(', ')}
-          code
+          label="Source vertex"
+          value={
+            resolvedTarget.sourceVertex
+              ? formatVertexSummary(shape, resolvedTarget.sourceVertex.id)
+              : shortenId(resolvedTarget.target.sourceVertexId)
+          }
         />
         <InspectionDetail label="Source packet" value={packetSummary} />
+        <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+        <InspectionDetail
+          label="Dual topology"
+          value={resolvedTarget.correspondenceModel.dualTopologyLabel}
+        />
+        <InspectionDetail
+          label="Dual vertices"
+          value={formatVertexIdListAsLabels(shape, resolvedTarget.dualFace.vertexIds)}
+        />
+        <InspectionDetail
+          label="Debug id"
+          value={shortenId(resolvedTarget.dualFace.id)}
+          code
+          title={resolvedTarget.dualFace.id}
+        />
+        <InspectionDetail
+          label="Source vertex id"
+          value={shortenId(resolvedTarget.target.sourceVertexId)}
+          code
+          title={resolvedTarget.target.sourceVertexId}
+        />
+        <InspectionDetail
+          label="Source cell id"
+          value={shortenId(resolvedTarget.target.sourceCellId)}
+          code
+          title={resolvedTarget.target.sourceCellId}
+        />
       </dl>
     );
   }
@@ -1026,45 +1261,100 @@ function ResolvedDualCorrespondenceInspectionDetails({
     return (
       <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
         <InspectionDetail label="Entity" value="dual edge" />
-        <InspectionDetail label="Model" value="read-only correspondence" />
-        <InspectionDetail label="Topology" value={resolvedTarget.correspondenceModel.dualTopologyLabel} />
-        <InspectionDetail label="Dual edge" value={resolvedTarget.dualEdge.id} code />
-        <InspectionDetail label="Source edge" value={resolvedTarget.target.sourceEdgeId} code />
-        <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+        <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
+        <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
         <InspectionDetail
-          label="Dual vertices"
-          value={resolvedTarget.dualEdge.vertexIds.join(', ')}
-          code
-        />
-        <InspectionDetail
-          label="Source endpoints"
+          label="Source edge"
           value={
             resolvedTarget.sourceEdge
               ? formatEdgeRef(shape, resolvedTarget.sourceEdge.vertexIds)
-              : 'source edge unavailable'
+              : shortenId(resolvedTarget.target.sourceEdgeId)
           }
+        />
+        <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+        <InspectionDetail
+          label="Dual topology"
+          value={resolvedTarget.correspondenceModel.dualTopologyLabel}
+        />
+        <InspectionDetail
+          label="Dual edge"
+          value={formatVertexIdListAsLabels(shape, resolvedTarget.dualEdge.vertexIds, ' - ')}
+        />
+        <InspectionDetail
+          label="Debug id"
+          value={shortenId(resolvedTarget.dualEdge.id)}
+          code
+          title={resolvedTarget.dualEdge.id}
+        />
+        <InspectionDetail
+          label="Source edge id"
+          value={shortenId(resolvedTarget.target.sourceEdgeId)}
+          code
+          title={resolvedTarget.target.sourceEdgeId}
+        />
+        <InspectionDetail
+          label="Source cell id"
+          value={shortenId(resolvedTarget.target.sourceCellId)}
+          code
+          title={resolvedTarget.target.sourceCellId}
         />
       </dl>
     );
   }
 
+  const sourceRelation = resolvedTarget.sourceFace
+    ? formatFaceSourceRelation(shape, resolvedTarget.sourceFace)
+    : null;
+
   return (
     <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
       <InspectionDetail label="Entity" value="dual vertex" />
-      <InspectionDetail label="Model" value="read-only correspondence" />
-      <InspectionDetail label="Topology" value={resolvedTarget.correspondenceModel.dualTopologyLabel} />
-      <InspectionDetail label="Dual vertex" value={resolvedTarget.dualVertex.id} code />
-      <InspectionDetail label="Source face" value={resolvedTarget.target.sourceFaceId} code />
-      <InspectionDetail label="Source cell" value={resolvedTarget.target.sourceCellId} code />
+      <InspectionDetail label="Model" value={formatDualModelLabel(resolvedTarget)} />
+      <InspectionDetail label="Relation" value={formatResolvedDualRelation(resolvedTarget)} />
       <InspectionDetail
-        label="Source face vertices"
-        value={resolvedTarget.sourceFace?.vertexIds.join(', ') ?? 'source face unavailable'}
-        code={Boolean(resolvedTarget.sourceFace)}
+        label="Source face"
+        value={
+          resolvedTarget.sourceFace
+            ? formatFaceSummary(shape, resolvedTarget.sourceFace)
+            : shortenId(resolvedTarget.target.sourceFaceId)
+        }
+      />
+      {sourceRelation ? <InspectionDetail label="Source relation" value={sourceRelation} /> : null}
+      <InspectionDetail
+        label="Face vertices"
+        value={
+          resolvedTarget.sourceFace
+            ? formatVertexIdListAsLabels(shape, resolvedTarget.sourceFace.vertexIds)
+            : 'source face unavailable'
+        }
+      />
+      <InspectionDetail label="Source cell" value={formatCellSummary(resolvedTarget.sourceCell)} />
+      <InspectionDetail
+        label="Dual topology"
+        value={resolvedTarget.correspondenceModel.dualTopologyLabel}
       />
       <InspectionDetail
         label="Position"
         value={formatVec3(resolvedTarget.dualVertex.position)}
         code
+      />
+      <InspectionDetail
+        label="Debug id"
+        value={shortenId(resolvedTarget.dualVertex.id)}
+        code
+        title={resolvedTarget.dualVertex.id}
+      />
+      <InspectionDetail
+        label="Source face id"
+        value={shortenId(resolvedTarget.target.sourceFaceId)}
+        code
+        title={resolvedTarget.target.sourceFaceId}
+      />
+      <InspectionDetail
+        label="Source cell id"
+        value={shortenId(resolvedTarget.target.sourceCellId)}
+        code
+        title={resolvedTarget.target.sourceCellId}
       />
     </dl>
   );
@@ -1128,14 +1418,27 @@ function SourceNavigationActions({
 function StaleDualInspectionDetails({ target }: { target: DualInspectionTarget }) {
   return (
     <dl className="mt-3 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-      <InspectionDetail label="Entity" value={`stale dual ${target.kind}`} />
-      <InspectionDetail label="Source cell" value={target.sourceCellId} code />
+      <InspectionDetail label="Entity" value="stale dual inspection target" />
+      <InspectionDetail label="Model" value={target.modelKind} />
+      <InspectionDetail label="Target kind" value={target.kind} />
+      <InspectionDetail
+        label="Target id"
+        value={shortenId(getDualInspectionTargetId(target))}
+        code
+        title={getDualInspectionTargetId(target)}
+      />
+      <InspectionDetail
+        label="Source id"
+        value={shortenId(target.sourceCellId)}
+        code
+        title={target.sourceCellId}
+      />
       <InspectionDetail
         label="Status"
         value={
           target.modelKind === 'correspondence'
-            ? 'The source cell no longer produces the selected read-only Dual Correspondence model.'
-            : 'The source cell no longer produces a semantic Dual Universe model.'
+            ? 'source cell no longer produces this correspondence inspection model'
+            : 'source cell no longer produces this semantic inspection model'
         }
       />
     </dl>
@@ -1146,15 +1449,22 @@ function InspectionDetail({
   label,
   value,
   code = false,
+  title,
 }: {
   label: string;
   value: string;
   code?: boolean;
+  title?: string;
 }) {
   return (
     <>
       <dt className="text-stone-500">{label}</dt>
-      <dd className={`${code ? 'break-all font-mono text-xs' : ''} text-stone-200`}>{value}</dd>
+      <dd
+        className={`${code ? 'break-all font-mono text-xs text-stone-400' : 'break-words text-stone-200'} min-w-0`}
+        title={title}
+      >
+        {value}
+      </dd>
     </>
   );
 }
