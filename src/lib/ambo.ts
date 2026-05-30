@@ -28,6 +28,8 @@ import {
 } from './packets';
 import { createDefaultVertexData, deriveEdges, getCellFaces, midpoint } from './shape';
 
+const DEFAULT_MIDPOINT_COLOR = '#eab308';
+
 type SupportedAmboTopology =
   | 'tetrahedron'
   | 'octahedron'
@@ -105,7 +107,7 @@ function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Sh
       position: midpoint(sourceA.position, sourceB.position),
       data: createDefaultVertexData(
         `${sourceA.data.label}${sourceB.data.label}`,
-        '#eab308',
+        averageVertexColors(sourceA.data.color, sourceB.data.color),
         {},
         midpointPacket.lineage,
       ),
@@ -439,6 +441,41 @@ function cloneVertexData(data: VertexDataPacket): VertexDataPacket {
     tags: [...data.tags],
     custom: { ...data.custom },
   };
+}
+
+function averageVertexColors(colorA: string, colorB: string): string {
+  const rgbA = parseHexColor(colorA);
+  const rgbB = parseHexColor(colorB);
+
+  if (!rgbA || !rgbB) {
+    return DEFAULT_MIDPOINT_COLOR;
+  }
+
+  return formatHexColor([
+    Math.round((rgbA[0] + rgbB[0]) / 2),
+    Math.round((rgbA[1] + rgbB[1]) / 2),
+    Math.round((rgbA[2] + rgbB[2]) / 2),
+  ]);
+}
+
+function parseHexColor(color: string): [number, number, number] | null {
+  const match = /^#([0-9a-f]{6})$/i.exec(color);
+
+  if (!match) {
+    return null;
+  }
+
+  const hex = match[1];
+
+  return [
+    Number.parseInt(hex.slice(0, 2), 16),
+    Number.parseInt(hex.slice(2, 4), 16),
+    Number.parseInt(hex.slice(4, 6), 16),
+  ];
+}
+
+function formatHexColor(rgb: [number, number, number]): string {
+  return `#${rgb.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
 }
 
 function createParentCellFaces(

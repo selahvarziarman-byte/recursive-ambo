@@ -71,6 +71,7 @@ const scenarios = [
   },
 ];
 
+const DEFAULT_MIDPOINT_COLOR = '#eab308';
 const failures = [];
 
 console.log('Recursive Ambo topology diagnostics');
@@ -80,6 +81,8 @@ console.log('');
 for (const scenario of scenarios) {
   runScenario(scenario);
 }
+
+runMalformedColorFallbackCheck();
 
 if (failures.length) {
   console.error('');
@@ -144,6 +147,7 @@ function printGenerationSummary(label, shape) {
     getCellTopologyLabel,
   );
   const lineageSummary = getGeneratedMidpointLineageSummary(shape);
+  const colorSummary = getGeneratedMidpointColorSummary(shape);
 
   console.log(`\n[${label}]`);
   console.log(`shape: ${shape.id}`);
@@ -167,10 +171,19 @@ function printGenerationSummary(label, shape) {
   console.log(
     `generated midpoint packet lineage: ${lineageSummary.valid}/${lineageSummary.total} structurally valid`,
   );
+  console.log(
+    `generated midpoint color averaging: ${colorSummary.valid}/${colorSummary.total} structurally valid`,
+  );
 
   if (lineageSummary.invalid.length) {
     recordFailure(
       `${shape.id}: ${lineageSummary.invalid.length} generated midpoint vertex packet lineage issue(s)`,
+    );
+  }
+
+  if (colorSummary.invalid.length) {
+    recordFailure(
+      `${shape.id}: ${colorSummary.invalid.length} generated midpoint vertex color issue(s)`,
     );
   }
 
@@ -231,6 +244,125 @@ function getGeneratedMidpointLineageSummary(shape) {
     total: generatedMidpoints.length,
     valid,
   };
+}
+
+function getGeneratedMidpointColorSummary(shape) {
+  const generatedMidpoints = Object.values(shape.vertices).filter(
+    (vertex) => vertex.createdBy.operation === 'ambo-dissection' && vertex.createdBy.sourceEdgeId,
+  );
+  const invalid = [];
+  let valid = 0;
+
+  for (const vertex of generatedMidpoints) {
+    const [sourceAId, sourceBId] = vertex.createdBy.sourceVertexIds;
+    const sourceA = shape.vertices[sourceAId];
+    const sourceB = shape.vertices[sourceBId];
+
+    if (!sourceA || !sourceB) {
+      invalid.push(vertex.id);
+      continue;
+    }
+
+    const expectedColor = averageVertexColors(sourceA.data.color, sourceB.data.color);
+
+    if (vertex.data.color.toLowerCase() === expectedColor) {
+      valid += 1;
+    } else {
+      invalid.push(vertex.id);
+    }
+  }
+
+  return {
+    invalid,
+    total: generatedMidpoints.length,
+    valid,
+  };
+}
+
+function runMalformedColorFallbackCheck() {
+  const seedShape = createSeedShape('tetrahedron');
+  const targetCell = selectSeedCell(seedShape);
+
+  if (!targetCell) {
+    recordFailure('malformed endpoint color fallback: tetrahedron seed cell not found');
+    return;
+  }
+
+  const malformedVertexId = targetCell.vertexIds[0];
+  const malformedShape = {
+    ...seedShape,
+    vertices: {
+      ...seedShape.vertices,
+      [malformedVertexId]: {
+        ...seedShape.vertices[malformedVertexId],
+        data: {
+          ...seedShape.vertices[malformedVertexId].data,
+          color: 'malformed-color',
+        },
+      },
+    },
+  };
+  const nextShape = applyAmboDissection(malformedShape, targetCell.id);
+  const fallbackMidpoints = Object.values(nextShape.vertices).filter(
+    (vertex) =>
+      vertex.createdBy.operation === 'ambo-dissection' &&
+      vertex.createdBy.sourceVertexIds.includes(malformedVertexId),
+  );
+  const invalidFallbacks = fallbackMidpoints.filter(
+    (vertex) => vertex.data.color.toLowerCase() !== DEFAULT_MIDPOINT_COLOR,
+  );
+
+  if (!fallbackMidpoints.length) {
+    recordFailure('malformed endpoint color fallback: no incident midpoint vertices generated');
+    return;
+  }
+
+  if (invalidFallbacks.length) {
+    recordFailure(
+      `malformed endpoint color fallback: ${invalidFallbacks.length} midpoint vertex color issue(s)`,
+    );
+    return;
+  }
+
+  console.log('');
+  console.log(
+    `malformed endpoint color fallback: ${fallbackMidpoints.length}/${fallbackMidpoints.length} safely defaulted`,
+  );
+}
+
+function averageVertexColors(colorA, colorB) {
+  const rgbA = parseHexColor(colorA);
+  const rgbB = parseHexColor(colorB);
+
+  if (!rgbA || !rgbB) {
+    return DEFAULT_MIDPOINT_COLOR;
+  }
+
+  return formatHexColor([
+    Math.round((rgbA[0] + rgbB[0]) / 2),
+    Math.round((rgbA[1] + rgbB[1]) / 2),
+    Math.round((rgbA[2] + rgbB[2]) / 2),
+  ]);
+}
+
+function parseHexColor(color) {
+  const match = /^#([0-9a-f]{6})$/i.exec(color);
+
+  if (!match) {
+    return null;
+  }
+
+  const hex = match[1];
+
+  return [
+    Number.parseInt(hex.slice(0, 2), 16),
+    Number.parseInt(hex.slice(2, 4), 16),
+    Number.parseInt(hex.slice(4, 6), 16),
+  ];
+}
+
+function formatHexColor(rgb) {
+  return `#${rgb.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
 }
 
 function step(label, select) {
