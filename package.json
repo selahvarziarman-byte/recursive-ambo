@@ -15,6 +15,7 @@
     "diagnose:dual-inspection": "node scripts/diagnose-dual-inspection.cjs",
     "diagnose:dual-coverage": "node scripts/diagnose-dual-coverage.cjs",
     "diagnose:dual-candidate-expansion": "node scripts/diagnose-dual-candidate-expansion.cjs",
+    "diagnose:rectified-dual-candidates": "node scripts/diagnose-rectified-dual-candidates.cjs",
     "preview": "vite preview"
   },
   "dependencies": {
