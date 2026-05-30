@@ -568,21 +568,90 @@ function SelectionPanel() {
     () => buildDiagonalizationMatrices(shape, selectedCell),
     [selectedCell, shape],
   );
+  const sectionIndexEntries: SelectionSectionIndexEntry[] = [];
+
+  if (dualInspectionTarget) {
+    sectionIndexEntries.push({
+      id: 'selection-dual-inspection',
+      label: dualInspectionTarget.modelKind === 'correspondence' ? 'Dual' : 'Universe',
+    });
+  }
+
+  if (selectedCell) {
+    sectionIndexEntries.push({
+      id: 'selection-cell',
+      label: 'Cell',
+      count: `${selectedCell.vertexIds.length}V`,
+    });
+  }
+
+  if (vertex) {
+    sectionIndexEntries.push(
+      { id: 'selection-vertex', label: 'Vertex' },
+      { id: 'selection-packet', label: 'Packet' },
+    );
+  }
+
+  if (selectedCellRow) {
+    sectionIndexEntries.push({
+      id: 'selection-lineage',
+      label: 'Lineage',
+      count: selectedCellRow.childCount,
+    });
+  }
+
+  if (diagonalizationMatrices.length) {
+    sectionIndexEntries.push({
+      id: 'selection-matrix',
+      label: 'Matrix',
+      count: diagonalizationMatrices.length,
+    });
+  }
+
+  if (selectedCell) {
+    sectionIndexEntries.push({
+      id: 'selection-composition',
+      label: 'Composition',
+      count: selectedCell.vertexIds.length + selectedCellFaces.length + selectedCellEdges.length,
+    });
+  }
 
   return (
     <section className="grid gap-4 p-4">
-      <CurrentFocusCard
-        shape={shape}
-        dualInspectionTarget={dualInspectionTarget}
-        selectedCell={selectedCell}
-        selectedVertex={vertex}
-      />
-      <div>
-        <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-          Cell
-        </h2>
-        {selectedCell && selectedCellRow ? (
-          <>
+      <div id="selection-current-focus" className="scroll-mt-4">
+        <CurrentFocusCard
+          shape={shape}
+          dualInspectionTarget={dualInspectionTarget}
+          selectedCell={selectedCell}
+          selectedVertex={vertex}
+        />
+      </div>
+      <SelectionSectionIndex entries={sectionIndexEntries} />
+
+      {dualInspectionTarget ? (
+        <SidebarSection
+          id="selection-dual-inspection"
+          title={
+            dualInspectionTarget.modelKind === 'correspondence'
+              ? 'Dual Correspondence'
+              : 'Dual Inspection'
+          }
+          defaultOpen
+          resetKey={getDualInspectionTargetId(dualInspectionTarget)}
+        >
+          <DualUniverseInspectionSection />
+        </SidebarSection>
+      ) : null}
+
+      {selectedCell && selectedCellRow ? (
+        <SidebarSection
+          id="selection-cell"
+          title="Selected Cell"
+          count={`${selectedCell.vertexIds.length} vertices`}
+          defaultOpen
+          resetKey={selectedCell.id}
+        >
+          <div className="grid gap-3">
             <SelectedCellSummary
               row={selectedCellRow}
               faceCount={selectedCellFaces.length}
@@ -591,52 +660,173 @@ function SelectionPanel() {
               dualViewEnabled={dualViewEnabled}
               shape={shape}
             />
-            <CellLineageNavigation row={selectedCellRow} rows={rows} />
-          </>
-        ) : (
-          <p className="mt-2 text-sm text-stone-500">No cell selected.</p>
-        )}
-      </div>
-      {diagonalizationMatrices.length ? (
-        <DiagonalizationMatrixSection shape={shape} reports={diagonalizationMatrices} />
-      ) : null}
-      <DualUniverseInspectionSection />
-      {selectedCell ? (
-        <label className="flex items-center justify-between gap-3 rounded border border-stone-800 bg-stone-950 px-3 py-2 text-sm text-stone-300">
-          Isolate selected cell
-          <input
-            type="checkbox"
-            checked={isolateSelectedCell}
-            onChange={toggleIsolateSelectedCell}
-            disabled={!selectedCell}
-            className="h-4 w-4 accent-amber-300 disabled:opacity-50"
-          />
-        </label>
-      ) : null}
-      {selectedCell ? (
-        <CellComposition
-          shape={shape}
-          cell={selectedCell}
-          faces={selectedCellFaces}
-          edges={selectedCellEdges}
-        />
+            <label className="flex items-center justify-between gap-3 rounded border border-stone-800 bg-stone-950 px-3 py-2 text-sm text-stone-300">
+              Isolate selected cell
+              <input
+                type="checkbox"
+                checked={isolateSelectedCell}
+                onChange={toggleIsolateSelectedCell}
+                disabled={!selectedCell}
+                className="h-4 w-4 accent-amber-300 disabled:opacity-50"
+              />
+            </label>
+          </div>
+        </SidebarSection>
       ) : null}
 
-      <div className="border-t border-stone-800 pt-4">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-          Vertex Packet
-        </h2>
-        {vertex ? (
+      {vertex ? (
+        <SidebarSection
+          id="selection-vertex"
+          title="Selected Vertex"
+          defaultOpen
+          resetKey={vertex.id}
+        >
           <SelectedVertexSummary
             vertexId={vertex.id}
             shape={shape}
             selectedCell={selectedCell}
           />
-        ) : null}
-        <div className="mt-3">
+        </SidebarSection>
+      ) : null}
+
+      {vertex ? (
+        <SidebarSection
+          id="selection-packet"
+          title="Vertex Packet"
+          defaultOpen
+          resetKey={vertex.id}
+        >
           <VertexPacketEditorContent />
+        </SidebarSection>
+      ) : null}
+
+      {selectedCellRow ? (
+        <SidebarSection
+          id="selection-lineage"
+          title="Lineage"
+          count={`${selectedCellRow.childCount} children`}
+          defaultOpen={false}
+          resetKey={selectedCellRow.id}
+        >
+          <CellLineageNavigation row={selectedCellRow} rows={rows} />
+        </SidebarSection>
+      ) : null}
+
+      {diagonalizationMatrices.length ? (
+        <SidebarSection
+          id="selection-matrix"
+          title="Diagonalization Matrix"
+          count={diagonalizationMatrices.length}
+          defaultOpen
+          resetKey={`${selectedCell?.id ?? 'none'}:${diagonalizationMatrices.length}`}
+        >
+          <DiagonalizationMatrixSection shape={shape} reports={diagonalizationMatrices} />
+        </SidebarSection>
+      ) : null}
+
+      {selectedCell ? (
+        <SidebarSection
+          id="selection-composition"
+          title="Cell Composition"
+          count={`${selectedCellFaces.length}F / ${selectedCellEdges.length}E`}
+          defaultOpen={false}
+          resetKey={selectedCell.id}
+        >
+          <CellComposition
+            shape={shape}
+            cell={selectedCell}
+            faces={selectedCellFaces}
+            edges={selectedCellEdges}
+          />
+        </SidebarSection>
+      ) : null}
+    </section>
+  );
+}
+
+interface SelectionSectionIndexEntry {
+  id: string;
+  label: string;
+  count?: ReactNode;
+}
+
+function SelectionSectionIndex({ entries }: { entries: SelectionSectionIndexEntry[] }) {
+  if (!entries.length) {
+    return null;
+  }
+
+  return (
+    <nav
+      aria-label="Selection sections"
+      className="flex flex-wrap gap-2 rounded border border-stone-800 bg-stone-950 px-3 py-2 text-xs"
+    >
+      {entries.map((entry) => (
+        <a
+          key={entry.id}
+          href={`#${entry.id}`}
+          className="inline-flex items-center gap-1 rounded border border-stone-700 bg-stone-900 px-2 py-1 font-semibold text-stone-300 transition hover:border-teal-300 hover:text-teal-100 focus:outline-none focus:ring-2 focus:ring-teal-400"
+        >
+          {entry.label}
+          {entry.count !== undefined ? (
+            <span className="font-mono text-[10px] text-stone-500">{entry.count}</span>
+          ) : null}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+function SidebarSection({
+  id,
+  title,
+  count,
+  defaultOpen,
+  resetKey,
+  children,
+}: {
+  id: string;
+  title: string;
+  count?: ReactNode;
+  defaultOpen: boolean;
+  resetKey?: string;
+  children: ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const panelId = `${id}-content`;
+
+  useEffect(() => {
+    setIsOpen(defaultOpen);
+  }, [defaultOpen, resetKey]);
+
+  return (
+    <section id={id} className="scroll-mt-4 border-t border-stone-800 pt-3">
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls={panelId}
+        onClick={() => setIsOpen((current) => !current)}
+        className="flex w-full items-center justify-between gap-3 text-left focus:outline-none focus:ring-2 focus:ring-teal-500"
+      >
+        <span className="min-w-0">
+          <span className="block truncate text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+            {title}
+          </span>
+          {count !== undefined ? (
+            <span className="mt-1 block font-mono text-[11px] text-stone-600">{count}</span>
+          ) : null}
+        </span>
+        <span
+          aria-hidden="true"
+          className="grid h-6 w-6 shrink-0 place-items-center rounded border border-stone-700 bg-stone-900 font-mono text-xs text-stone-300"
+        >
+          {isOpen ? '-' : '+'}
+        </span>
+      </button>
+      {isOpen ? (
+        <div id={panelId} className="mt-3">
+          {children}
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }
@@ -1658,22 +1848,14 @@ function DiagonalizationMatrixSection({
   reports: DiagonalizationMatrixReport[];
 }) {
   return (
-    <div className="border-t border-stone-800 pt-4">
-      <h2 className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-        Diagonalization Matrix
-        <span className="font-mono text-[11px] tracking-normal text-stone-600">
-          {reports.length}
-        </span>
-      </h2>
-      <div className="mt-2 grid gap-2">
-        {reports.map((report) => (
-          <DiagonalizationMatrixCard
-            key={`${report.sourceSquareFaceId}:${report.displayFaceId}`}
-            shape={shape}
-            report={report}
-          />
-        ))}
-      </div>
+    <div className="grid gap-2">
+      {reports.map((report) => (
+        <DiagonalizationMatrixCard
+          key={`${report.sourceSquareFaceId}:${report.displayFaceId}`}
+          shape={shape}
+          report={report}
+        />
+      ))}
     </div>
   );
 }
@@ -1827,7 +2009,7 @@ function CellComposition({
   const faceRows = useMemo(() => getCellFaceRows(shape, faces), [faces, shape]);
 
   return (
-    <div className="grid gap-4 border-t border-stone-800 pt-4">
+    <div className="grid gap-4">
       <SelectionSubsection title="Cell Vertices" count={vertices.length}>
         <div className="grid max-h-56 gap-2 overflow-y-auto pr-1">
           {vertices.map((row) => {
