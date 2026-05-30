@@ -534,6 +534,7 @@ function SelectionPanel() {
   const shape = useCurrentShape();
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const dualInspectionTarget = useGeometryStore((state) => state.dualInspectionTarget);
   const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
   const isolateSelectedCell = useGeometryStore((state) => state.viewLayout.isolateSelectedCell);
   const toggleIsolateSelectedCell = useGeometryStore((state) => state.toggleIsolateSelectedCell);
@@ -552,6 +553,12 @@ function SelectionPanel() {
 
   return (
     <section className="grid gap-4 p-4">
+      <CurrentFocusCard
+        shape={shape}
+        dualInspectionTarget={dualInspectionTarget}
+        selectedCell={selectedCell}
+        selectedVertex={vertex}
+      />
       <div>
         <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
           Cell
@@ -610,6 +617,194 @@ function SelectionPanel() {
         </div>
       </div>
     </section>
+  );
+}
+
+function CurrentFocusCard({
+  shape,
+  dualInspectionTarget,
+  selectedCell,
+  selectedVertex,
+}: {
+  shape: Shape;
+  dualInspectionTarget: DualInspectionTarget | null;
+  selectedCell: Cell | null;
+  selectedVertex: Vertex | null;
+}) {
+  const resolvedDualTarget = useMemo(
+    () =>
+      dualInspectionTarget
+        ? resolveDualInspectionTarget(shape, dualInspectionTarget)
+        : null,
+    [dualInspectionTarget, shape],
+  );
+  const focus = getCurrentFocusDetails({
+    dualInspectionTarget,
+    resolvedDualTarget,
+    selectedCell,
+    selectedVertex,
+  });
+
+  return (
+    <div className="rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+            Current Focus
+          </h2>
+          <p className="mt-2 truncate text-sm font-medium text-stone-100">{focus.title}</p>
+        </div>
+        <span
+          className={`shrink-0 rounded border px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${focus.badgeClassName}`}
+        >
+          {focus.badge}
+        </span>
+      </div>
+      <dl className="mt-3 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-xs">
+        {focus.details.map((detail) => (
+          <CurrentFocusDetail
+            key={detail.label}
+            label={detail.label}
+            value={detail.value}
+            code={detail.code}
+          />
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+interface CurrentFocusDetailRow {
+  label: string;
+  value: string;
+  code?: boolean;
+}
+
+interface CurrentFocusDetails {
+  title: string;
+  badge: string;
+  badgeClassName: string;
+  details: CurrentFocusDetailRow[];
+}
+
+function getCurrentFocusDetails({
+  dualInspectionTarget,
+  resolvedDualTarget,
+  selectedCell,
+  selectedVertex,
+}: {
+  dualInspectionTarget: DualInspectionTarget | null;
+  resolvedDualTarget: ResolvedDualInspectionTarget | null;
+  selectedCell: Cell | null;
+  selectedVertex: Vertex | null;
+}): CurrentFocusDetails {
+  if (dualInspectionTarget) {
+    if (resolvedDualTarget) {
+      const sourceCell = resolvedDualTarget.sourceCell;
+
+      return {
+        title: 'Dual inspection focus',
+        badge: 'Dual',
+        badgeClassName: 'border-violet-400/40 bg-violet-400/10 text-violet-100',
+        details: [
+          { label: 'Model', value: resolvedDualTarget.modelKind },
+          { label: 'Entity', value: `dual ${resolvedDualTarget.kind}` },
+          {
+            label: 'Source',
+            value: `${sourceCell.kind}/${describeCellTopology(sourceCell)} g${sourceCell.generationDepth}`,
+          },
+          { label: 'Source id', value: shortenId(sourceCell.id), code: true },
+          { label: 'Relation', value: describeDualFocusRelation(resolvedDualTarget) },
+        ],
+      };
+    }
+
+    return {
+      title: 'Stale dual inspection target',
+      badge: 'Stale',
+      badgeClassName: 'border-rose-400/40 bg-rose-400/10 text-rose-100',
+      details: [
+        { label: 'Model', value: dualInspectionTarget.modelKind },
+        { label: 'Entity', value: `dual ${dualInspectionTarget.kind}` },
+        { label: 'Source id', value: shortenId(dualInspectionTarget.sourceCellId), code: true },
+        { label: 'Status', value: 'target no longer resolves in the current shape' },
+      ],
+    };
+  }
+
+  if (selectedVertex) {
+    const label = getPacketDisplayLabel(selectedVertex.data) ?? 'untitled vertex packet';
+    const cellHasVertex = selectedCell?.vertexIds.includes(selectedVertex.id) ?? false;
+    const context = selectedCell
+      ? cellHasVertex
+        ? `selected cell: ${selectedCell.kind}/${describeCellTopology(selectedCell)}`
+        : 'selected cell does not contain this vertex'
+      : 'no selected cell context';
+
+    return {
+      title: 'Primal vertex focus',
+      badge: 'Primal',
+      badgeClassName: 'border-cyan-400/40 bg-cyan-400/10 text-cyan-100',
+      details: [
+        { label: 'Label', value: label },
+        { label: 'Vertex id', value: shortenId(selectedVertex.id), code: true },
+        { label: 'Context', value: context },
+      ],
+    };
+  }
+
+  if (selectedCell) {
+    return {
+      title: 'Primal cell focus',
+      badge: 'Primal',
+      badgeClassName: 'border-amber-400/40 bg-amber-400/10 text-amber-100',
+      details: [
+        { label: 'Kind', value: selectedCell.kind },
+        { label: 'Topology', value: describeCellTopology(selectedCell) },
+        { label: 'Generation', value: String(selectedCell.generationDepth) },
+        { label: 'Cell id', value: shortenId(selectedCell.id), code: true },
+      ],
+    };
+  }
+
+  return {
+    title: 'No active selection or focus',
+    badge: 'None',
+    badgeClassName: 'border-stone-700 bg-stone-900 text-stone-400',
+    details: [{ label: 'Status', value: 'select a cell, vertex, or dual inspection target' }],
+  };
+}
+
+function describeDualFocusRelation(resolvedTarget: ResolvedDualInspectionTarget): string {
+  if (resolvedTarget.kind === 'cell') {
+    return 'dual cell -> source cell';
+  }
+
+  if (resolvedTarget.kind === 'vertex') {
+    return 'dual vertex -> source face';
+  }
+
+  if (resolvedTarget.kind === 'face') {
+    return 'dual face -> source vertex';
+  }
+
+  return 'dual edge -> source edge';
+}
+
+function CurrentFocusDetail({
+  label,
+  value,
+  code = false,
+}: {
+  label: string;
+  value: string;
+  code?: boolean;
+}) {
+  return (
+    <>
+      <dt className="text-stone-500">{label}</dt>
+      <dd className={`${code ? 'break-all font-mono' : ''} min-w-0 text-stone-200`}>{value}</dd>
+    </>
   );
 }
 

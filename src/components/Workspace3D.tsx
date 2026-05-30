@@ -2506,22 +2506,154 @@ function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): 
   if (target.kind === 'cell') {
     const cell = shape.cells.find((candidate) => candidate.id === target.cellId);
 
-    return cell
-      ? `Hovering ${cell.kind} cell, generation ${cell.generationDepth}`
-      : 'Hovering cell';
+    if (!cell) {
+      return 'Hovering cell';
+    }
+
+    const cellSummary = `${cell.kind}/${describeSceneCellTopology(cell)} g${cell.generationDepth}`;
+    const label = getScenePacketDataDisplayLabel(cell.data);
+
+    return label
+      ? `Hovering cell ${label} | ${cellSummary} | id: ${shortenSceneId(cell.id)}`
+      : `Hovering cell ${cellSummary} | id: ${shortenSceneId(cell.id)}`;
   }
 
   if (target.kind === 'vertex') {
-    return `Hovering vertex ${shortenSceneId(target.vertexId)}`;
+    const label = getSceneVertexLabel(shape, target.vertexId);
+
+    return label
+      ? `Hovering vertex ${label} | id: ${shortenSceneId(target.vertexId)}`
+      : `Hovering vertex ${shortenSceneId(target.vertexId)}`;
   }
 
   if (target.kind === 'edge') {
-    return `Hovering edge ${shortenSceneId(target.vertexIds[0])} - ${shortenSceneId(
+    const edge = findSceneEdge(shape, target.vertexIds);
+    const endpoints = `${formatSceneVertexRef(shape, target.vertexIds[0])} - ${formatSceneVertexRef(
+      shape,
       target.vertexIds[1],
     )}`;
+
+    if (!edge) {
+      return `Hovering edge ${endpoints}`;
+    }
+
+    const relation = describeSceneEdgeRelation(edge);
+
+    return relation
+      ? `Hovering edge ${endpoints} | ${relation} | id: ${shortenSceneId(edge.id)}`
+      : `Hovering edge ${endpoints} | id: ${shortenSceneId(edge.id)}`;
   }
 
-  return `Hovering face ${shortenSceneId(target.faceId)}`;
+  const face = shape.faces.find((candidate) => candidate.id === target.faceId);
+
+  if (!face) {
+    return `Hovering face ${shortenSceneId(target.faceId)}`;
+  }
+
+  const label = getScenePacketDataDisplayLabel(face.data);
+  const relation = describeSceneFaceRelation(shape, face);
+
+  return label
+    ? `Hovering face ${label} | ${relation} | id: ${shortenSceneId(face.id)}`
+    : `Hovering face ${relation} | id: ${shortenSceneId(face.id)}`;
+}
+
+function describeSceneCellTopology(cell: Cell): string {
+  if (cell.topology) {
+    return cell.topology;
+  }
+
+  return cell.kind === 'seed' ? 'tetrahedron' : 'unknown';
+}
+
+function findSceneEdge(shape: Shape, vertexIds: [VertexId, VertexId]): Edge | null {
+  const targetKey = renderEdgeKey(vertexIds);
+
+  return shape.edges.find((edge) => renderEdgeKey(edge.vertexIds) === targetKey) ?? null;
+}
+
+function getSceneVertexLabel(shape: Shape, vertexId: VertexId): string | null {
+  return getSceneMeaningfulText(shape.vertices[vertexId]?.data.label);
+}
+
+function formatSceneVertexRef(shape: Shape, vertexId: VertexId): string {
+  return getSceneVertexLabel(shape, vertexId) ?? shortenSceneId(vertexId);
+}
+
+function describeSceneFaceRelation(shape: Shape, face: Face): string {
+  const parts: string[] = [face.role];
+
+  if (face.sourceVertexId) {
+    parts.push(`source vertex ${formatSceneVertexRef(shape, face.sourceVertexId)}`);
+  }
+
+  if (face.sourceFaceId) {
+    parts.push(`source face ${shortenSceneId(face.sourceFaceId)}`);
+  }
+
+  if (!face.sourceVertexId && !face.sourceFaceId && face.vertexIds.length) {
+    const vertexLabels = face.vertexIds
+      .slice(0, 3)
+      .map((vertexId) => formatSceneVertexRef(shape, vertexId))
+      .join(', ');
+    const suffix = face.vertexIds.length > 3 ? ', ...' : '';
+
+    parts.push(`vertices ${vertexLabels}${suffix}`);
+  }
+
+  return parts.join(', ');
+}
+
+function describeSceneEdgeRelation(edge: Edge): string | null {
+  const parts = [];
+
+  if (edge.role) {
+    parts.push(edge.role);
+  }
+
+  if (edge.sourceEdgeId) {
+    parts.push(`source edge ${shortenSceneId(edge.sourceEdgeId)}`);
+  }
+
+  if (edge.sourceFaceId) {
+    parts.push(`source face ${shortenSceneId(edge.sourceFaceId)}`);
+  }
+
+  return parts.length ? parts.join(', ') : null;
+}
+
+function getScenePacketDataDisplayLabel(
+  data: Cell['data'] | Edge['data'] | Face['data'],
+): string | null {
+  return (
+    getScenePacketDataString(data, 'title') ??
+    getScenePacketDataString(data, 'label') ??
+    getScenePacketDataString(data, 'name') ??
+    getScenePacketDataString(data, 'summary') ??
+    getScenePacketDataString(data, 'description') ??
+    getScenePacketDataString(data, 'notes')
+  );
+}
+
+function getScenePacketDataString(
+  data: Cell['data'] | Edge['data'] | Face['data'],
+  key: string,
+): string | null {
+  return getSceneMeaningfulText(data?.[key]);
+}
+
+function getSceneMeaningfulText(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const firstLine = value.trim().split(/\r?\n/, 1)[0]?.trim();
+
+  if (!firstLine) {
+    return null;
+  }
+
+  return firstLine.length > 64 ? `${firstLine.slice(0, 61)}...` : firstLine;
 }
 
 function shortenSceneId(id: string): string {
