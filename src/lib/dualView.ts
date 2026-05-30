@@ -10,12 +10,19 @@ export type DualViewSupportedTopology =
   | 'octahedron'
   | 'cube'
   | 'rhombic-dodecahedron'
-  | 'deltoidal-icositetrahedron';
+  | 'deltoidal-icositetrahedron'
+  | 'dual-square-pyramid'
+  | 'dual-rectified-square-pyramid'
+  | 'dual-rectified-square-pyramid-ambo-core'
+  | 'dual-rectified-square-pyramid-ambo-core-ambo-core';
 export type DualViewTopology =
   | DualViewSupportedTopology
   | 'cuboctahedron'
   | 'rhombicuboctahedron'
   | 'square-pyramid'
+  | 'rectified-square-pyramid'
+  | 'rectified-square-pyramid-ambo-core'
+  | 'rectified-square-pyramid-ambo-core-ambo-core'
   | 'unknown';
 
 export interface DualViewDescription {
@@ -250,8 +257,54 @@ export function describeDualViewTopology(shape: Shape, cell: Cell): DualViewDesc
     return { source: 'rhombicuboctahedron', dual: 'deltoidal-icositetrahedron' };
   }
 
-  if (cell.kind === 'residue' && cell.vertexIds.length === 5) {
-    return { source: 'square-pyramid' };
+  if (
+    cell.kind === 'residue' &&
+    cell.topology === 'square-pyramid' &&
+    cell.vertexIds.length === 5 &&
+    faces.length === 5 &&
+    faceSizes.filter((size) => size === 3).length === 4 &&
+    faceSizes.filter((size) => size === 4).length === 1
+  ) {
+    return { source: 'square-pyramid', dual: 'dual-square-pyramid' };
+  }
+
+  if (
+    cell.kind === 'core' &&
+    cell.topology === 'rectified-square-pyramid' &&
+    cell.vertexIds.length === 8 &&
+    faces.length === 10 &&
+    faceSizes.filter((size) => size === 3).length === 8 &&
+    faceSizes.filter((size) => size === 4).length === 2
+  ) {
+    return { source: 'rectified-square-pyramid', dual: 'dual-rectified-square-pyramid' };
+  }
+
+  if (
+    cell.kind === 'core' &&
+    cell.topology === 'rectified-square-pyramid-ambo-core' &&
+    cell.vertexIds.length === 16 &&
+    faces.length === 18 &&
+    faceSizes.filter((size) => size === 3).length === 8 &&
+    faceSizes.filter((size) => size === 4).length === 10
+  ) {
+    return {
+      source: 'rectified-square-pyramid-ambo-core',
+      dual: 'dual-rectified-square-pyramid-ambo-core',
+    };
+  }
+
+  if (
+    cell.kind === 'core' &&
+    cell.topology === 'rectified-square-pyramid-ambo-core-ambo-core' &&
+    cell.vertexIds.length === 32 &&
+    faces.length === 34 &&
+    faceSizes.filter((size) => size === 3).length === 8 &&
+    faceSizes.filter((size) => size === 4).length === 26
+  ) {
+    return {
+      source: 'rectified-square-pyramid-ambo-core-ambo-core',
+      dual: 'dual-rectified-square-pyramid-ambo-core-ambo-core',
+    };
   }
 
   return { source: 'unknown' };

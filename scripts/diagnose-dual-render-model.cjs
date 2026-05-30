@@ -70,6 +70,7 @@ verifyRhombicuboctahedronRenderPath({
     step('dissect cuboctahedron core', selectActiveCell({ kind: 'core', topology: 'cuboctahedron' })),
   ],
 });
+verifyRectifiedBranchRenderPath();
 
 verifySemanticRenderScenario({
   name: 'tetrahedron -> octahedron -> cuboctahedron -> pyritohedral-icosahedron',
@@ -155,6 +156,101 @@ function verifyRhombicuboctahedronRenderPath(scenario) {
     edges: 48,
     faceSizeHistogram: { 4: 24 },
   });
+}
+
+function verifyRectifiedBranchRenderPath() {
+  printDivider('octahedron -> rectified branch render models');
+
+  let shape = createSeedShape('octahedron');
+  shape = applyAmbo(shape, selectSeedCell(shape), 'octahedron seed');
+
+  const squarePyramid = selectActiveCell({
+    kind: 'residue',
+    topology: 'square-pyramid',
+  })(shape);
+
+  if (!squarePyramid) {
+    recordFailure('rectified branch render: did not reach square-pyramid residue');
+    return;
+  }
+
+  verifyCorrespondenceRender('octahedron -> square-pyramid', shape, squarePyramid, {
+    topology: 'dual-square-pyramid',
+    vertices: 5,
+    faces: 5,
+    edges: 8,
+    faceSizeHistogram: { 3: 4, 4: 1 },
+  });
+
+  shape = applyAmbo(shape, squarePyramid, 'square-pyramid residue');
+
+  const rectifiedSquarePyramid = selectActiveCell({
+    kind: 'core',
+    topology: 'rectified-square-pyramid',
+  })(shape);
+
+  if (!rectifiedSquarePyramid) {
+    recordFailure('rectified branch render: did not reach rectified-square-pyramid core');
+    return;
+  }
+
+  verifyCorrespondenceRender('octahedron -> rectified-square-pyramid', shape, rectifiedSquarePyramid, {
+    topology: 'dual-rectified-square-pyramid',
+    vertices: 10,
+    faces: 8,
+    edges: 16,
+    faceSizeHistogram: { 4: 8 },
+  });
+
+  shape = applyAmbo(shape, rectifiedSquarePyramid, 'rectified-square-pyramid core');
+
+  const rectifiedAmboCore = selectActiveCell({
+    kind: 'core',
+    topology: 'rectified-square-pyramid-ambo-core',
+  })(shape);
+
+  if (!rectifiedAmboCore) {
+    recordFailure('rectified branch render: did not reach rectified-square-pyramid-ambo-core');
+    return;
+  }
+
+  verifyCorrespondenceRender(
+    'octahedron -> rectified-square-pyramid-ambo-core',
+    shape,
+    rectifiedAmboCore,
+    {
+      topology: 'dual-rectified-square-pyramid-ambo-core',
+      vertices: 18,
+      faces: 16,
+      edges: 32,
+      faceSizeHistogram: { 4: 16 },
+    },
+  );
+
+  shape = applyAmbo(shape, rectifiedAmboCore, 'rectified-square-pyramid-ambo-core core');
+
+  const rectifiedAmboCoreAmboCore = selectActiveCell({
+    kind: 'core',
+    topology: 'rectified-square-pyramid-ambo-core-ambo-core',
+  })(shape);
+
+  if (!rectifiedAmboCoreAmboCore) {
+    recordFailure('rectified branch render: did not reach rectified-square-pyramid-ambo-core-ambo-core');
+    return;
+  }
+
+  verifyCorrespondenceRender(
+    'octahedron -> rectified-square-pyramid-ambo-core-ambo-core',
+    shape,
+    rectifiedAmboCoreAmboCore,
+    {
+      topology: 'dual-rectified-square-pyramid-ambo-core-ambo-core',
+      vertices: 34,
+      faces: 32,
+      edges: 64,
+      faceSizeHistogram: { 4: 32 },
+    },
+  );
 }
 
 function verifyCorrespondenceRender(label, shape, cell, expected) {

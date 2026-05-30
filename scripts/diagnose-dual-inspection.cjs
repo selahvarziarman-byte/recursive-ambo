@@ -24,6 +24,9 @@ const { applyAmboDissection } = require(path.join(repoRoot, 'src/lib/ambo.ts'));
 const {
   applyPyritohedralDiagonalization,
 } = require(path.join(repoRoot, 'src/lib/pyritohedralDiagonalization.ts'));
+const {
+  applyDualization,
+} = require(path.join(repoRoot, 'src/lib/dualization.ts'));
 const { isCellActiveFrontier } = require(path.join(repoRoot, 'src/lib/cellLifecycle.ts'));
 const {
   buildDualUniverseRenderGeometry,
@@ -280,6 +283,109 @@ function verifyCorrespondenceInspectionCoverage() {
     }
   }
 
+  let rectifiedShape = createSeedShape('octahedron');
+  const octahedronSeed = rectifiedShape.cells.find((cell) => cell.kind === 'seed');
+
+  assert(octahedronSeed, 'rectified correspondence inspection: missing octahedron seed');
+  if (octahedronSeed) {
+    rectifiedShape = applyAmboDissection(rectifiedShape, octahedronSeed.id);
+
+    const squarePyramid = findActiveCell(rectifiedShape, {
+      kind: 'residue',
+      topology: 'square-pyramid',
+    });
+
+    assert(squarePyramid, 'rectified correspondence inspection: missing square-pyramid residue');
+    if (squarePyramid) {
+      verifyCorrespondenceInspectionForCell(
+        'octahedron -> square-pyramid',
+        rectifiedShape,
+        squarePyramid,
+        {
+          topology: 'dual-square-pyramid',
+          vertices: 5,
+          edges: 8,
+          faces: 5,
+        },
+      );
+
+      rectifiedShape = applyAmboDissection(rectifiedShape, squarePyramid.id);
+    }
+
+    const rectifiedSquarePyramid = findActiveCell(rectifiedShape, {
+      kind: 'core',
+      topology: 'rectified-square-pyramid',
+    });
+
+    assert(
+      rectifiedSquarePyramid,
+      'rectified correspondence inspection: missing rectified-square-pyramid core',
+    );
+    if (rectifiedSquarePyramid) {
+      verifyCorrespondenceInspectionForCell(
+        'octahedron -> rectified-square-pyramid',
+        rectifiedShape,
+        rectifiedSquarePyramid,
+        {
+          topology: 'dual-rectified-square-pyramid',
+          vertices: 10,
+          edges: 16,
+          faces: 8,
+        },
+      );
+
+      rectifiedShape = applyAmboDissection(rectifiedShape, rectifiedSquarePyramid.id);
+    }
+
+    const rectifiedAmboCore = findActiveCell(rectifiedShape, {
+      kind: 'core',
+      topology: 'rectified-square-pyramid-ambo-core',
+    });
+
+    assert(
+      rectifiedAmboCore,
+      'rectified correspondence inspection: missing rectified-square-pyramid-ambo-core',
+    );
+    if (rectifiedAmboCore) {
+      verifyCorrespondenceInspectionForCell(
+        'octahedron -> rectified-square-pyramid-ambo-core',
+        rectifiedShape,
+        rectifiedAmboCore,
+        {
+          topology: 'dual-rectified-square-pyramid-ambo-core',
+          vertices: 18,
+          edges: 32,
+          faces: 16,
+        },
+      );
+
+      rectifiedShape = applyAmboDissection(rectifiedShape, rectifiedAmboCore.id);
+    }
+
+    const rectifiedAmboCoreAmboCore = findActiveCell(rectifiedShape, {
+      kind: 'core',
+      topology: 'rectified-square-pyramid-ambo-core-ambo-core',
+    });
+
+    assert(
+      rectifiedAmboCoreAmboCore,
+      'rectified correspondence inspection: missing rectified-square-pyramid-ambo-core-ambo-core',
+    );
+    if (rectifiedAmboCoreAmboCore) {
+      verifyCorrespondenceInspectionForCell(
+        'octahedron -> rectified-square-pyramid-ambo-core-ambo-core',
+        rectifiedShape,
+        rectifiedAmboCoreAmboCore,
+        {
+          topology: 'dual-rectified-square-pyramid-ambo-core-ambo-core',
+          vertices: 34,
+          edges: 64,
+          faces: 32,
+        },
+      );
+    }
+  }
+
   console.log('correspondence Dual View proxies reject stale semantic inspection targets');
 }
 
@@ -365,49 +471,70 @@ function verifyCorrespondenceInspectionForCell(label, shape, sourceCell, expecte
 }
 
 function verifyUnsupportedInspectionGuard() {
-  let shape = createSeedShape('octahedron');
+  let shape = createSeedShape('cube');
   const seedCell = shape.cells.find((cell) => cell.kind === 'seed');
 
-  assert(seedCell, 'unsupported guard: missing octahedron seed');
+  assert(seedCell, 'unsupported guard: missing cube seed');
   if (!seedCell) {
     return;
   }
+
   shape = applyAmboDissection(shape, seedCell.id);
 
-  const squarePyramid = findActiveCell(shape, {
-    kind: 'residue',
-    topology: 'square-pyramid',
+  const cuboctahedron = findActiveCell(shape, {
+    kind: 'core',
+    topology: 'cuboctahedron',
   });
 
-  assert(squarePyramid, 'unsupported guard: missing square-pyramid residue');
-
-  if (!squarePyramid) {
+  assert(cuboctahedron, 'unsupported guard: missing cuboctahedron');
+  if (!cuboctahedron) {
     return;
   }
 
-  const renderGeometry = buildDualUniverseRenderGeometry(shape, squarePyramid);
+  shape = applyPyritohedralDiagonalization(shape, cuboctahedron.id);
+
+  const pyritohedralIcosahedron = findActiveCell(shape, {
+    kind: 'core',
+    topology: 'pyritohedral-icosahedron',
+  });
+
+  assert(pyritohedralIcosahedron, 'unsupported guard: missing pyritohedral-icosahedron');
+  if (!pyritohedralIcosahedron) {
+    return;
+  }
+
+  shape = applyDualization(shape, pyritohedralIcosahedron.id);
+
+  const dodecahedron = shape.cells.find((cell) => cell.topology === 'dodecahedron');
+
+  assert(dodecahedron, 'unsupported guard: missing materialized dodecahedron');
+  if (!dodecahedron) {
+    return;
+  }
+
+  const renderGeometry = buildDualUniverseRenderGeometry(shape, dodecahedron);
 
   assert(
     renderGeometry.kind === 'unsupported',
-    'square-pyramid: expected unsupported Dual Universe render geometry',
+    'dodecahedron: expected unsupported Dual Universe render geometry',
   );
 
   const target = {
     universe: 'dual',
     modelKind: 'correspondence',
     kind: 'face',
-    sourceCellId: squarePyramid.id,
+    sourceCellId: dodecahedron.id,
     dualModelId: 'dual-model:unsupported',
     dualFaceId: 'dual:unsupported-face',
-    sourceVertexId: squarePyramid.vertexIds[0] ?? 'vertex:missing',
+    sourceVertexId: dodecahedron.vertexIds[0] ?? 'vertex:missing',
   };
 
   assert(
     resolveDualInspectionTarget(shape, target) === null,
-    'square-pyramid: unsupported Dual Universe unexpectedly resolved correspondence inspection',
+    'dodecahedron: unsupported Dual Universe unexpectedly resolved correspondence inspection',
   );
 
-  console.log('unsupported square-pyramid rejects correspondence inspection targets');
+  console.log('unsupported dodecahedron rejects correspondence inspection targets');
 }
 
 function verifySelectionBoundary() {

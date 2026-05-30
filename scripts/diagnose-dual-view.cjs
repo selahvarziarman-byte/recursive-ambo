@@ -89,7 +89,7 @@ verifySemanticScenario({
   amboSteps: [step('dissect cube seed', selectSeedCell)],
 });
 
-verifyRectifiedCoreCoreUnsupported();
+verifyRectifiedBranchCorrespondencePath();
 
 if (failures.length) {
   console.error('');
@@ -362,57 +362,112 @@ function verifySemanticScenario(scenario) {
   );
 }
 
-function verifyRectifiedCoreCoreUnsupported() {
-  printDivider('rectified-square-pyramid-ambo-core-ambo-core unsupported');
+function verifyRectifiedBranchCorrespondencePath() {
+  printDivider('octahedron -> rectified branch correspondence proxies');
 
   let shape = createSeedShape('octahedron');
   shape = applyAmbo(shape, selectSeedCell(shape), 'octahedron seed');
+
+  const squarePyramid = selectActiveCell({
+    kind: 'residue',
+    topology: 'square-pyramid',
+  })(shape);
+
+  if (!squarePyramid) {
+    recordFailure('rectified branch correspondence: did not reach square-pyramid residue');
+    return;
+  }
+
+  verifyCorrespondenceCell('octahedron -> square-pyramid', shape, squarePyramid, {
+    topology: 'dual-square-pyramid',
+    vertices: 5,
+    edges: 8,
+    faces: 5,
+    faceSizeHistogram: { 3: 4, 4: 1 },
+  });
+
   shape = applyAmbo(
     shape,
-    selectActiveCell({ kind: 'residue', topology: 'square-pyramid' })(shape),
+    squarePyramid,
     'square-pyramid residue',
   );
+
+  const rectifiedSquarePyramid = selectActiveCell({
+    kind: 'core',
+    topology: 'rectified-square-pyramid',
+  })(shape);
+
+  if (!rectifiedSquarePyramid) {
+    recordFailure('rectified branch correspondence: did not reach rectified-square-pyramid core');
+    return;
+  }
+
+  verifyCorrespondenceCell('octahedron -> rectified-square-pyramid', shape, rectifiedSquarePyramid, {
+    topology: 'dual-rectified-square-pyramid',
+    vertices: 10,
+    edges: 16,
+    faces: 8,
+    faceSizeHistogram: { 4: 8 },
+  });
+
   shape = applyAmbo(
     shape,
-    selectActiveCell({ kind: 'core', topology: 'rectified-square-pyramid' })(shape),
+    rectifiedSquarePyramid,
     'rectified-square-pyramid core',
   );
+
+  const rectifiedAmboCore = selectActiveCell({
+    kind: 'core',
+    topology: 'rectified-square-pyramid-ambo-core',
+  })(shape);
+
+  if (!rectifiedAmboCore) {
+    recordFailure('rectified branch correspondence: did not reach rectified-square-pyramid-ambo-core');
+    return;
+  }
+
+  verifyCorrespondenceCell(
+    'octahedron -> rectified-square-pyramid-ambo-core',
+    shape,
+    rectifiedAmboCore,
+    {
+      topology: 'dual-rectified-square-pyramid-ambo-core',
+      vertices: 18,
+      edges: 32,
+      faces: 16,
+      faceSizeHistogram: { 4: 16 },
+    },
+  );
+
   shape = applyAmbo(
     shape,
-    selectActiveCell({ kind: 'core', topology: 'rectified-square-pyramid-ambo-core' })(shape),
+    rectifiedAmboCore,
     'rectified-square-pyramid-ambo-core core',
   );
 
-  const unsupportedCore = selectActiveCell({
+  const rectifiedAmboCoreAmboCore = selectActiveCell({
     kind: 'core',
     topology: 'rectified-square-pyramid-ambo-core-ambo-core',
   })(shape);
 
-  if (!unsupportedCore) {
+  if (!rectifiedAmboCoreAmboCore) {
     recordFailure(
-      'rectified-square-pyramid-ambo-core-ambo-core unsupported: did not reach unsupported core',
+      'rectified branch correspondence: did not reach rectified-square-pyramid-ambo-core-ambo-core',
     );
     return;
   }
 
-  verifyUnsupported(shape, unsupportedCore, 'rectified-square-pyramid-ambo-core-ambo-core');
-}
-
-function verifyUnsupported(shape, cell, label) {
-  let viewModel = null;
-
-  try {
-    viewModel = buildDualUniverseViewModel(shape, cell);
-  } catch (error) {
-    recordFailure(`${label}: unsupported adapter call threw ${error instanceof Error ? error.message : error}`);
-    return;
-  }
-
-  console.log(`${label}: ${viewModel.kind}`);
-  expect(viewModel.kind === 'unsupported', `${label}: expected unsupported`);
-  expect(
-    viewModel.kind !== 'unsupported' || Boolean(viewModel.reason),
-    `${label}: unsupported result missing reason`,
+  verifyCorrespondenceCell(
+    'octahedron -> rectified-square-pyramid-ambo-core-ambo-core',
+    shape,
+    rectifiedAmboCoreAmboCore,
+    {
+      topology: 'dual-rectified-square-pyramid-ambo-core-ambo-core',
+      vertices: 34,
+      edges: 64,
+      faces: 32,
+      faceSizeHistogram: { 4: 32 },
+    },
   );
 }
 

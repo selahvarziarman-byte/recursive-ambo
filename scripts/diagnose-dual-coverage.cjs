@@ -57,7 +57,7 @@ verifyOperationRegistryBoundary();
 verifyLegacyProxyCoverage();
 verifyCuboctahedronCorrespondenceCoverage();
 verifyRhombicuboctahedronCorrespondenceCoverage();
-verifyUnsupportedCoverage();
+verifyRectifiedBranchCorrespondenceCoverage();
 verifyPyritohedralSemanticPolicy();
 verifyMaterializedDodecahedronSourcePolicy();
 
@@ -343,6 +343,7 @@ function verifyCorrespondenceModel(seedKey, shape, cell, model, fixture) {
     );
   }
   verifyModelFaceEdgeCoherence(seedKey, model);
+  verifyCorrespondenceSourceEdgeRule(seedKey, model, sourceEdges, sourceFaces);
   verifyInverseMap(
     seedKey,
     'correspondence sourceFaceToDualVertex',
@@ -458,8 +459,37 @@ function verifyRenderEdgesBackedByModel(label, renderEdges, model) {
   }
 }
 
-function verifyUnsupportedCoverage() {
-  printDivider('unsupported intermediate/frontier coverage');
+function verifyCorrespondenceSourceEdgeRule(label, model, sourceEdges, sourceFaces) {
+  const incidentFacesByEdgeKey = getIncidentFacesByEdgeKey(sourceFaces);
+  const dualEdgesById = new Map(model.dualEdges.map((edge) => [edge.id, edge]));
+
+  for (const sourceEdge of sourceEdges) {
+    const sourceEdgeKey = canonicalEdgeKey(...sourceEdge.vertexIds);
+    const incidentFaces = incidentFacesByEdgeKey.get(sourceEdgeKey) ?? [];
+    const expectedDualVertexIds = incidentFaces
+      .map((face) => model.sourceFaceToDualVertex[face.id])
+      .filter(Boolean);
+    const dualEdgeId = model.sourceEdgeToDualEdge[sourceEdge.id];
+    const dualEdge = dualEdgesById.get(dualEdgeId);
+
+    expect(Boolean(dualEdgeId), `${label}: missing dual edge id for source edge ${sourceEdge.id}`);
+    expect(Boolean(dualEdge), `${label}: missing dual edge ${dualEdgeId} for source edge ${sourceEdge.id}`);
+    expect(
+      expectedDualVertexIds.length === 2,
+      `${label}: source edge ${sourceEdge.id} should map through two source faces`,
+    );
+
+    if (dualEdge && expectedDualVertexIds.length === 2) {
+      expect(
+        canonicalEdgeKey(...dualEdge.vertexIds) === canonicalEdgeKey(expectedDualVertexIds[0], expectedDualVertexIds[1]),
+        `${label}: dual edge ${dualEdge.id} does not connect the two incident source-face dual vertices`,
+      );
+    }
+  }
+}
+
+function verifyRectifiedBranchCorrespondenceCoverage() {
+  printDivider('rectified branch correspondence coverage');
 
   let rectifiedPath = createSeedShape('octahedron');
   rectifiedPath = applyAmbo(
@@ -473,7 +503,12 @@ function verifyUnsupportedCoverage() {
     topology: 'square-pyramid',
   });
 
-  verifyUnsupportedCell(rectifiedPath, squarePyramid, 'square-pyramid', 'UNSUPPORTED_PENDING_POLICY');
+  verifyRectifiedCorrespondenceCell(rectifiedPath, squarePyramid, {
+    label: 'square-pyramid',
+    expectedTopology: 'dual-square-pyramid',
+    expectedCounts: { vertices: 5, faces: 5, edges: 8 },
+    expectedFaceSizeHistogram: { 3: 4, 4: 1 },
+  });
 
   rectifiedPath = applyAmbo(rectifiedPath, squarePyramid, 'square-pyramid residue');
 
@@ -482,12 +517,12 @@ function verifyUnsupportedCoverage() {
     topology: 'rectified-square-pyramid',
   });
 
-  verifyUnsupportedCell(
-    rectifiedPath,
-    rectifiedSquarePyramid,
-    'rectified-square-pyramid',
-    'UNSUPPORTED_PENDING_POLICY',
-  );
+  verifyRectifiedCorrespondenceCell(rectifiedPath, rectifiedSquarePyramid, {
+    label: 'rectified-square-pyramid',
+    expectedTopology: 'dual-rectified-square-pyramid',
+    expectedCounts: { vertices: 10, faces: 8, edges: 16 },
+    expectedFaceSizeHistogram: { 4: 8 },
+  });
 
   rectifiedPath = applyAmbo(
     rectifiedPath,
@@ -500,12 +535,12 @@ function verifyUnsupportedCoverage() {
     topology: 'rectified-square-pyramid-ambo-core',
   });
 
-  verifyUnsupportedCell(
-    rectifiedPath,
-    rectifiedAmboCore,
-    'rectified-square-pyramid-ambo-core',
-    'UNSUPPORTED_PENDING_POLICY',
-  );
+  verifyRectifiedCorrespondenceCell(rectifiedPath, rectifiedAmboCore, {
+    label: 'rectified-square-pyramid-ambo-core',
+    expectedTopology: 'dual-rectified-square-pyramid-ambo-core',
+    expectedCounts: { vertices: 18, faces: 16, edges: 32 },
+    expectedFaceSizeHistogram: { 4: 16 },
+  });
 
   rectifiedPath = applyAmbo(
     rectifiedPath,
@@ -518,11 +553,61 @@ function verifyUnsupportedCoverage() {
     topology: 'rectified-square-pyramid-ambo-core-ambo-core',
   });
 
-  verifyUnsupportedCell(
-    rectifiedPath,
-    rectifiedAmboCoreAmboCore,
-    'rectified-square-pyramid-ambo-core-ambo-core',
-    'UNSUPPORTED_PENDING_POLICY',
+  verifyRectifiedCorrespondenceCell(rectifiedPath, rectifiedAmboCoreAmboCore, {
+    label: 'rectified-square-pyramid-ambo-core-ambo-core',
+    expectedTopology: 'dual-rectified-square-pyramid-ambo-core-ambo-core',
+    expectedCounts: { vertices: 34, faces: 32, edges: 64 },
+    expectedFaceSizeHistogram: { 4: 32 },
+  });
+}
+
+function verifyRectifiedCorrespondenceCell(shape, cell, fixture) {
+  expect(Boolean(cell), `${fixture.label}: expected reachable fixture cell`);
+
+  if (!cell) {
+    return;
+  }
+
+  const viewModel = buildDualUniverseViewModel(shape, cell);
+  const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
+
+  expect(viewModel.kind === 'correspondence-proxy', `${fixture.label}: expected correspondence view model`);
+  expect(renderGeometry.kind === 'correspondence-proxy', `${fixture.label}: expected correspondence render geometry`);
+  expect(isDualViewSupportedCell(shape, cell), `${fixture.label}: expected Dual View supported cell`);
+  expect(!canApplyDualization(shape, cell.id), `${fixture.label}: should not be materialized-dualization capable`);
+
+  if (viewModel.kind === 'correspondence-proxy') {
+    expect(
+      viewModel.correspondenceProxy.topology === fixture.expectedTopology,
+      `${fixture.label}: expected counterpart ${fixture.expectedTopology}`,
+    );
+    verifyCorrespondenceModel(fixture.label, shape, cell, viewModel.correspondenceProxy.correspondenceModel, fixture);
+    verifyCorrespondenceTargetResolution(shape, viewModel.correspondenceProxy.correspondenceModel, fixture.label);
+  }
+
+  if (renderGeometry.kind === 'correspondence-proxy') {
+    expect(renderGeometry.topology === fixture.expectedTopology, `${fixture.label}: wrong render topology`);
+    expect(
+      renderGeometry.vertices.length === fixture.expectedCounts.vertices,
+      `${fixture.label}: wrong render vertex count`,
+    );
+    expect(renderGeometry.edges.length === fixture.expectedCounts.edges, `${fixture.label}: wrong render edge count`);
+    expect(renderGeometry.faces.length === fixture.expectedCounts.faces, `${fixture.label}: wrong render face count`);
+    verifyRenderEdgesBackedByModel(
+      fixture.label,
+      renderGeometry.edges,
+      renderGeometry.viewModel.correspondenceProxy.correspondenceModel,
+    );
+    expect(
+      resolveDualInspectionTarget(shape, fakeDualFaceTarget(cell, renderGeometry)) === null,
+      `${fixture.label}: correspondence proxy unexpectedly resolved semantic inspection target`,
+    );
+  }
+
+  logPolicy(
+    fixture.label,
+    'CORRESPONDENCE_PROXY_OK',
+    `${fixture.label} -> ${fixture.expectedTopology} enabled through read-only correspondence model`,
   );
 }
 
@@ -639,28 +724,6 @@ function verifyMaterializedDodecahedronSourcePolicy() {
   );
 }
 
-function verifyUnsupportedCell(shape, cell, label, status) {
-  expect(Boolean(cell), `${label}: expected reachable fixture cell`);
-
-  if (!cell) {
-    return;
-  }
-
-  const viewModel = buildDualUniverseViewModel(shape, cell);
-  const renderGeometry = buildDualUniverseRenderGeometry(shape, cell);
-
-  expect(viewModel.kind === 'unsupported', `${label}: expected unsupported Dual View policy`);
-  expect(renderGeometry.kind === 'unsupported', `${label}: expected unsupported render geometry`);
-  expect(!isDualViewSupportedCell(shape, cell), `${label}: should not be Dual View supported`);
-  expect(!canApplyDualization(shape, cell.id), `${label}: should not be materialized-dualization capable`);
-  expect(
-    resolveDualInspectionTarget(shape, fakeStandaloneDualTarget(cell)) === null,
-    `${label}: unsupported cell unexpectedly resolved correspondence inspection target`,
-  );
-
-  logPolicy(label, status, 'no correspondence proxy, semantic model, or materialized dualization path');
-}
-
 function verifySemanticTargetResolution(shape, semanticModel, kind, id, scenarioName) {
   let target = null;
 
@@ -761,6 +824,22 @@ function getCellEdges(shape, cell) {
   }
 
   return Array.from(edges.values()).sort((a, b) => a.id.localeCompare(b.id));
+}
+
+function getIncidentFacesByEdgeKey(faces) {
+  const incidentFacesByEdgeKey = new Map();
+
+  for (const face of faces) {
+    for (let index = 0; index < face.vertexIds.length; index += 1) {
+      const a = face.vertexIds[index];
+      const b = face.vertexIds[(index + 1) % face.vertexIds.length];
+      const key = canonicalEdgeKey(a, b);
+
+      incidentFacesByEdgeKey.set(key, [...(incidentFacesByEdgeKey.get(key) ?? []), face]);
+    }
+  }
+
+  return incidentFacesByEdgeKey;
 }
 
 function fakeDualFaceTarget(sourceCell, renderGeometry) {
