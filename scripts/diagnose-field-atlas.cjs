@@ -23,6 +23,8 @@ const { createSeedShape } = require(path.join(repoRoot, 'src/data/seeds.ts'));
 const { applyAmboDissection } = require(path.join(repoRoot, 'src/lib/ambo.ts'));
 const {
   DEFAULT_FIELD_ATLAS_SOURCE_POLICY,
+  buildCellSurfaceRepresentativeSamplePoints,
+  buildCellSurfaceSourceDomain,
   buildFieldSourcePopulation,
   buildPolygonFaceSourceDomain,
   buildPolygonRepresentativeSamplePoints,
@@ -45,6 +47,7 @@ console.log(
 
 runTriangularReferenceDiagnostic();
 runPolygonalFaceReferenceDiagnostic();
+runCellSurfaceReferenceDiagnostic();
 runGeneratedChildSourceDiagnostic();
 
 if (failures.length) {
@@ -231,6 +234,11 @@ function runPolygonalFaceReferenceDiagnostic() {
       `${chart.chartId} should be marked computational-only`,
     );
     expectEqual(
+      chart.sourceFaceId,
+      domain.faceId,
+      `${chart.chartId} should preserve polygon source face provenance`,
+    );
+    expectEqual(
       chart.computationalSupport.kind,
       'polygon-centroid',
       `${chart.chartId} should use centroid as computational support`,
@@ -295,6 +303,231 @@ function runPolygonalFaceReferenceDiagnostic() {
     `polygon chart roles: ${Array.from(new Set(domain.computationalCharts.map((chart) => chart.semanticRole))).join(', ')}`,
   );
   console.log(`polygon representative samples: ${samples.length}`);
+}
+
+function runCellSurfaceReferenceDiagnostic() {
+  runTetrahedronCellSurfaceDiagnostic();
+  runCubeCellSurfaceDiagnostic();
+  runAmboGeneratedCellSurfaceDiagnostic();
+}
+
+function runTetrahedronCellSurfaceDiagnostic() {
+  const shape = createSeedShape('tetrahedron');
+  const before = JSON.stringify(shape);
+  const cell = shape.cells.find((candidate) => candidate.kind === 'seed');
+
+  if (!cell) {
+    recordFailure('tetrahedron seed cell was unavailable for cell-surface diagnostic');
+    return;
+  }
+
+  const domain = buildCellSurfaceSourceDomain(shape, cell.id);
+  const sources = buildFieldSourcePopulation(shape, domain);
+  const samplePoints = buildCellSurfaceRepresentativeSamplePoints(domain);
+  const samples = sampleFieldAtlasPoints(sources, samplePoints);
+  const uniqueSurfaceVertexIds = uniqueVertexIdsFromFaces(shape, cell.faceIds);
+  const directCharts = domain.surfaceCharts.filter(
+    (chart) => chart.kind === 'direct-triangle-face-chart',
+  );
+
+  expectEqual(domain.kind, 'cell-surface-reference', 'tetrahedron cell-surface domain kind');
+  expectEqual(domain.cellId, cell.id, 'tetrahedron cell-surface domain cell id');
+  expectEqual(
+    domain.faceIds.length,
+    cell.faceIds.length,
+    'tetrahedron cell-surface should preserve cell face ids',
+  );
+  expectEqual(
+    domain.vertexIds.length,
+    uniqueSurfaceVertexIds.length,
+    'tetrahedron cell-surface should collect unique surface vertices',
+  );
+  expectEqual(
+    sources.length,
+    uniqueSurfaceVertexIds.length,
+    'tetrahedron cell-surface source count should equal unique surface vertices',
+  );
+  expectEqual(
+    directCharts.length,
+    cell.faceIds.length,
+    'tetrahedron triangular faces should become direct face charts',
+  );
+  expectEqual(
+    domain.surfaceCharts.length,
+    cell.faceIds.length,
+    'tetrahedron face/chart count should match triangular surface faces',
+  );
+
+  for (const chart of directCharts) {
+    expectEqual(
+      chart.semanticRole,
+      'face-local',
+      `${chart.chartId} should be a direct face-local chart`,
+    );
+    expectEqual(
+      chart.support.kind,
+      'source-face',
+      `${chart.chartId} should mark source-face support`,
+    );
+
+    if (!domain.faceIds.includes(chart.sourceFaceId)) {
+      recordFailure(`${chart.chartId} source face was not in the cell-surface face set`);
+    }
+  }
+
+  assertSourcesMatchDomainPositions(sources, domain, 'tetrahedron cell-surface');
+  assertFieldSamplesAreFinite(samples, sources, 'tetrahedron cell-surface');
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('tetrahedron cell-surface diagnostic mutated the seed shape');
+  }
+
+  console.log(
+    `cell surface tetrahedron: faces=${domain.faceIds.length} sources=${sources.length} charts=${domain.surfaceCharts.length}`,
+  );
+}
+
+function runCubeCellSurfaceDiagnostic() {
+  const shape = createSeedShape('cube');
+  const before = JSON.stringify(shape);
+  const cell = shape.cells.find((candidate) => candidate.kind === 'seed');
+
+  if (!cell) {
+    recordFailure('cube seed cell was unavailable for cell-surface diagnostic');
+    return;
+  }
+
+  const domain = buildCellSurfaceSourceDomain(shape, cell.id);
+  const sources = buildFieldSourcePopulation(shape, domain);
+  const samplePoints = buildCellSurfaceRepresentativeSamplePoints(domain);
+  const samples = sampleFieldAtlasPoints(sources, samplePoints);
+  const uniqueSurfaceVertexIds = uniqueVertexIdsFromFaces(shape, cell.faceIds);
+  const faceCornerCount = countFaceCorners(shape, cell.faceIds);
+  const computationalCharts = domain.surfaceCharts.filter(
+    (chart) => chart.kind === 'computational-triangle-chart',
+  );
+  const directCharts = domain.surfaceCharts.filter(
+    (chart) => chart.kind === 'direct-triangle-face-chart',
+  );
+
+  expectEqual(domain.kind, 'cell-surface-reference', 'cube cell-surface domain kind');
+  expectEqual(domain.vertexIds.length, 8, 'cube cell-surface should use all 8 cube vertices');
+  expectEqual(
+    uniqueSurfaceVertexIds.length,
+    8,
+    'cube unique surface vertex count should be 8',
+  );
+  expectEqual(sources.length, 8, 'cube cell-surface should build 8 unique sources');
+  expectEqual(faceCornerCount, 24, 'cube face-corner count should show the duplication risk');
+  expectEqual(
+    directCharts.length,
+    0,
+    'cube square faces should not become direct triangular face charts',
+  );
+  expectEqual(
+    computationalCharts.length,
+    faceCornerCount,
+    'cube square faces should create one computational chart per face boundary edge',
+  );
+
+  for (const chart of computationalCharts) {
+    expectEqual(
+      chart.semanticRole,
+      'computational-only',
+      `${chart.chartId} should remain computational-only`,
+    );
+    expectEqual(
+      chart.computationalSupport.kind,
+      'polygon-centroid',
+      `${chart.chartId} should use centroid as computational support only`,
+    );
+
+    if (!domain.faceIds.includes(chart.sourceFaceId)) {
+      recordFailure(`${chart.chartId} source face was not in the cube cell-surface face set`);
+    }
+  }
+
+  assertSourcesMatchDomainPositions(sources, domain, 'cube cell-surface');
+  assertFieldSamplesAreFinite(samples, sources, 'cube cell-surface');
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('cube cell-surface diagnostic mutated the seed shape');
+  }
+
+  console.log(
+    `cell surface cube: faces=${domain.faceIds.length} unique sources=${sources.length}/${faceCornerCount} face-corners charts=${domain.surfaceCharts.length}`,
+  );
+  console.log(
+    `cell surface cube chart roles: ${Array.from(new Set(domain.surfaceCharts.map((chart) => chart.semanticRole))).join(', ')}`,
+  );
+}
+
+function runAmboGeneratedCellSurfaceDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for Ambo cell-surface diagnostic');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+  const generatedCell = amboShape.cells.find(
+    (cell) =>
+      cell.kind === 'core' &&
+      cell.sourceOperation === 'ambo-dissection' &&
+      cell.vertexIds.every((vertexId) => isAmboMidpointVertex(amboShape.vertices[vertexId])),
+  );
+
+  if (!generatedCell) {
+    recordFailure(
+      'no clean generated Ambo core cell was available for cell-surface source diagnostic',
+    );
+    return;
+  }
+
+  const domain = buildCellSurfaceSourceDomain(amboShape, generatedCell.id);
+  const sources = buildFieldSourcePopulation(amboShape, domain);
+  const samplePoints = buildCellSurfaceRepresentativeSamplePoints(domain);
+  const samples = sampleFieldAtlasPoints(sources, samplePoints);
+  const generatedMidpointSourceIds = sources
+    .filter((source) => source.sourceKind === 'ambo-midpoint-child')
+    .map((source) => source.vertexId);
+
+  expectEqual(domain.kind, 'cell-surface-reference', 'Ambo cell-surface domain kind');
+  expectEqual(
+    sources.length,
+    domain.vertexIds.length,
+    'Ambo generated cell should build one source per unique surface vertex',
+  );
+  expectEqual(
+    generatedMidpointSourceIds.length,
+    domain.vertexIds.length,
+    'Ambo generated cell surface should include generated midpoint children as sources',
+  );
+  expectEqual(
+    domain.vertexIds.length,
+    uniqueVertexIdsFromFaces(amboShape, generatedCell.faceIds).length,
+    'Ambo generated cell surface should dedupe vertices across faces',
+  );
+
+  for (const vertexId of domain.vertexIds) {
+    if (!generatedMidpointSourceIds.includes(vertexId)) {
+      recordFailure(`Ambo generated cell surface vertex ${vertexId} was not an active child source`);
+    }
+  }
+
+  assertSourcesMatchDomainPositions(sources, domain, 'Ambo generated cell-surface');
+  assertFieldSamplesAreFinite(samples, sources, 'Ambo generated cell-surface');
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('Ambo generated cell-surface diagnostic mutated the Ambo shape');
+  }
+
+  console.log(
+    `cell surface Ambo generated core: topology=${generatedCell.topology} sources=${generatedMidpointSourceIds.length}/${domain.vertexIds.length} charts=${domain.surfaceCharts.length}`,
+  );
 }
 
 function runGeneratedChildSourceDiagnostic() {
@@ -420,6 +653,56 @@ function expectFiniteComplex(value, label) {
   if (!value || !Number.isFinite(value.re) || !Number.isFinite(value.im)) {
     recordFailure(`${label} should be a finite complex value, got ${JSON.stringify(value)}`);
   }
+}
+
+function assertSourcesMatchDomainPositions(sources, domain, label) {
+  for (const source of sources) {
+    if (!sameVec3(source.position, domain.positions[source.sourceOrder])) {
+      recordFailure(`${label} source ${source.vertexId} did not use source-domain position`);
+    }
+  }
+}
+
+function assertFieldSamplesAreFinite(samples, sources, label) {
+  for (const sample of samples) {
+    expectFiniteComplex(sample.psi, `${label} ${sample.id} psi`);
+    expectFiniteNonnegative(sample.intensity, `${label} ${sample.id} intensity`);
+    expectFinite(sample.phase, `${label} ${sample.id} phase`);
+    expectEqual(
+      sample.contributionMagnitudes.length,
+      sources.length,
+      `${label} ${sample.id} contribution magnitude count`,
+    );
+    expectEqual(
+      sample.contributionRatios.length,
+      sources.length,
+      `${label} ${sample.id} contribution ratio count`,
+    );
+
+    const ratioSum = sample.contributionRatios.reduce((sum, ratio) => sum + ratio.value, 0);
+
+    expectApprox(ratioSum, 1, 1e-9, `${label} ${sample.id} contribution ratios should sum to 1`);
+  }
+}
+
+function uniqueVertexIdsFromFaces(shape, faceIds) {
+  return Array.from(
+    new Set(
+      faceIds.flatMap((faceId) => {
+        const face = shape.faces.find((candidate) => candidate.id === faceId);
+
+        return face ? face.vertexIds : [];
+      }),
+    ),
+  );
+}
+
+function countFaceCorners(shape, faceIds) {
+  return faceIds.reduce((sum, faceId) => {
+    const face = shape.faces.find((candidate) => candidate.id === faceId);
+
+    return sum + (face ? face.vertexIds.length : 0);
+  }, 0);
 }
 
 function sameVec3(a, b) {

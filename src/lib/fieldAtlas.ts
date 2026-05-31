@@ -1,4 +1,4 @@
-import type { FaceId, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
+import type { CellId, Face, FaceId, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
 
 export interface ComplexValue {
   re: number;
@@ -8,14 +8,34 @@ export interface ComplexValue {
 export type FieldSourceDomainKind =
   | 'triangle-reference'
   | 'polygon-face-reference'
+  | 'cell-surface-reference'
   | 'shape-vertices-reference';
 
 export type ComputationalChartSemanticRole = 'computational-only';
+export type DirectFaceChartSemanticRole = 'face-local';
+export type FieldChartSemanticRole =
+  | ComputationalChartSemanticRole
+  | DirectFaceChartSemanticRole;
+
+export interface DirectTriangleFaceChart {
+  kind: 'direct-triangle-face-chart';
+  semanticRole: DirectFaceChartSemanticRole;
+  chartId: string;
+  sourceFaceId: FaceId;
+  positions: [Vec3, Vec3, Vec3];
+  boundaryVertexIds: [VertexId, VertexId, VertexId];
+  sourceVertexIds: [VertexId, VertexId, VertexId];
+  support: {
+    kind: 'source-face';
+    faceId: FaceId;
+  };
+}
 
 export interface ComputationalTriangleChart {
   kind: 'computational-triangle-chart';
   semanticRole: ComputationalChartSemanticRole;
   chartId: string;
+  sourceFaceId: FaceId;
   positions: [Vec3, Vec3, Vec3];
   boundaryVertexIds: [VertexId, VertexId];
   sourceVertexIds: [VertexId, VertexId];
@@ -24,6 +44,8 @@ export interface ComputationalTriangleChart {
     position: Vec3;
   };
 }
+
+export type FieldSurfaceSampleChart = DirectTriangleFaceChart | ComputationalTriangleChart;
 
 export interface TriangleSourceDomain {
   kind: 'triangle-reference';
@@ -42,6 +64,16 @@ export interface PolygonFaceSourceDomain {
   computationalCharts: ComputationalTriangleChart[];
 }
 
+export interface CellSurfaceSourceDomain {
+  kind: 'cell-surface-reference';
+  id: string;
+  cellId: CellId;
+  faceIds: FaceId[];
+  vertexIds: VertexId[];
+  positions: Vec3[];
+  surfaceCharts: FieldSurfaceSampleChart[];
+}
+
 export interface ShapeVerticesSourceDomain {
   kind: 'shape-vertices-reference';
   id: string;
@@ -52,6 +84,7 @@ export interface ShapeVerticesSourceDomain {
 export type FieldSourceDomain =
   | TriangleSourceDomain
   | PolygonFaceSourceDomain
+  | CellSurfaceSourceDomain
   | ShapeVerticesSourceDomain;
 
 export type FieldAtlasSourceKind =
@@ -88,7 +121,7 @@ export interface FieldAtlasSamplePoint {
   localChartPosition?: [number, number];
   barycentric?: [number, number, number];
   chartId?: string;
-  chartSemanticRole?: ComputationalChartSemanticRole;
+  chartSemanticRole?: FieldChartSemanticRole;
 }
 
 export interface FieldSourceContribution {
@@ -112,7 +145,7 @@ export interface FieldAtlasSample {
   localChartPosition?: [number, number];
   barycentric?: [number, number, number];
   chartId?: string;
-  chartSemanticRole?: ComputationalChartSemanticRole;
+  chartSemanticRole?: FieldChartSemanticRole;
   psi: ComplexValue;
   intensity: number;
   phase: number;
@@ -126,7 +159,7 @@ export interface SampleFieldAtlasAtPointOptions {
   localChartPosition?: [number, number];
   barycentric?: [number, number, number];
   chartId?: string;
-  chartSemanticRole?: ComputationalChartSemanticRole;
+  chartSemanticRole?: FieldChartSemanticRole;
 }
 
 export const DEFAULT_FIELD_ATLAS_SOURCE_POLICY: FieldAtlasSourcePolicy = {
@@ -221,7 +254,65 @@ export function buildPolygonFaceSourceDomain(
     faceId: face.id,
     vertexIds,
     positions,
-    computationalCharts: buildCentroidFanComputationalCharts(face.id, vertexIds, positions, centroid),
+    computationalCharts: buildCentroidFanComputationalCharts(
+      face.id,
+      vertexIds,
+      positions,
+      centroid,
+      `field-chart:polygon-face:${face.id}:centroid-fan`,
+    ),
+  };
+}
+
+export function buildCellSurfaceSourceDomain(
+  shape: Shape,
+  cellId: CellId,
+): CellSurfaceSourceDomain {
+  const cell = shape.cells.find((candidate) => candidate.id === cellId);
+
+  if (!cell) {
+    throw new Error(`Cell ${cellId} was not found.`);
+  }
+
+  const faces = cell.faceIds.map((faceId) => {
+    const face = shape.faces.find((candidate) => candidate.id === faceId);
+
+    if (!face) {
+      throw new Error(`Cell ${cell.id} references missing face ${faceId}.`);
+    }
+
+    return face;
+  });
+  const vertexIds = uniqueVertexIds(
+    faces.flatMap((face) => {
+      if (face.vertexIds.length < 3) {
+        throw new Error(`Cell surface face ${face.id} needs at least three vertices.`);
+      }
+
+      return face.vertexIds.map((vertexId) => {
+        if (!shape.vertices[vertexId]) {
+          throw new Error(`Cell surface face ${face.id} references missing vertex ${vertexId}.`);
+        }
+
+        return vertexId;
+      });
+    }),
+  );
+
+  if (!vertexIds.length) {
+    throw new Error(`Cell ${cell.id} has no surface vertices.`);
+  }
+
+  return {
+    kind: 'cell-surface-reference',
+    id: `field-domain:cell-surface:${cell.id}`,
+    cellId: cell.id,
+    faceIds: [...cell.faceIds],
+    vertexIds,
+    positions: vertexIds.map((vertexId) => copyVec3(shape.vertices[vertexId].position)),
+    surfaceCharts: faces.flatMap((face) =>
+      buildFaceSurfaceCharts(shape, face, `field-chart:cell-surface:${cell.id}:face:${face.id}`),
+    ),
   };
 }
 
@@ -470,6 +561,43 @@ export function pointFromComputationalTriangleChart(
   };
 }
 
+export function buildCellSurfaceRepresentativeSamplePoints(
+  domain: CellSurfaceSourceDomain,
+): FieldAtlasSamplePoint[] {
+  const vertexSamplePoints = domain.vertexIds.map((vertexId, index) => ({
+    id: `cell-surface:vertex:${vertexId}`,
+    position: copyVec3(domain.positions[index]),
+  }));
+  const chartSamplePoints = domain.surfaceCharts.map((chart) => {
+    if (chart.kind === 'direct-triangle-face-chart') {
+      return pointFromDirectTriangleFaceChart(chart, [1 / 3, 1 / 3, 1 / 3], {
+        id: `cell-surface:face-centroid:${chart.sourceFaceId}`,
+      });
+    }
+
+    return pointFromComputationalTriangleChart(chart, [1 / 3, 1 / 3, 1 / 3], {
+      id: `cell-surface:chart-centroid:${chart.chartId}`,
+    });
+  });
+
+  return [...vertexSamplePoints, ...chartSamplePoints];
+}
+
+export function pointFromDirectTriangleFaceChart(
+  chart: DirectTriangleFaceChart,
+  barycentric: [number, number, number],
+  options: { id?: string } = {},
+): FieldAtlasSamplePoint {
+  return {
+    id: options.id ?? `cell-surface:direct-face-sample:${chart.chartId}`,
+    position: pointFromPositionsBarycentric(chart.positions, barycentric),
+    localChartPosition: [barycentric[1], barycentric[2]],
+    barycentric: [barycentric[0], barycentric[1], barycentric[2]],
+    chartId: chart.chartId,
+    chartSemanticRole: chart.semanticRole,
+  };
+}
+
 function resolveSourcePolicy(policy: FieldAtlasSourcePolicy): FieldAtlasSourcePolicy {
   return {
     name: policy.name.trim() || DEFAULT_FIELD_ATLAS_SOURCE_POLICY.name,
@@ -523,11 +651,47 @@ function squaredMagnitude(value: ComplexValue): number {
   return value.re * value.re + value.im * value.im;
 }
 
+function buildFaceSurfaceCharts(
+  shape: Shape,
+  face: Face,
+  chartIdPrefix: string,
+): FieldSurfaceSampleChart[] {
+  const vertexIds = [...face.vertexIds];
+  const positions = vertexIds.map((vertexId) => copyVec3(shape.vertices[vertexId].position));
+
+  if (vertexIds.length === 3) {
+    return [
+      {
+        kind: 'direct-triangle-face-chart',
+        semanticRole: 'face-local',
+        chartId: `${chartIdPrefix}:direct-triangle`,
+        sourceFaceId: face.id,
+        positions: [positions[0], positions[1], positions[2]],
+        boundaryVertexIds: [vertexIds[0], vertexIds[1], vertexIds[2]],
+        sourceVertexIds: [vertexIds[0], vertexIds[1], vertexIds[2]],
+        support: {
+          kind: 'source-face',
+          faceId: face.id,
+        },
+      },
+    ];
+  }
+
+  return buildCentroidFanComputationalCharts(
+    face.id,
+    vertexIds,
+    positions,
+    centroidVec3(positions),
+    `${chartIdPrefix}:centroid-fan`,
+  );
+}
+
 function buildCentroidFanComputationalCharts(
   faceId: FaceId,
   vertexIds: VertexId[],
   positions: Vec3[],
   centroid: Vec3,
+  chartIdPrefix: string,
 ): ComputationalTriangleChart[] {
   return vertexIds.map((vertexId, index) => {
     const nextIndex = (index + 1) % vertexIds.length;
@@ -536,7 +700,8 @@ function buildCentroidFanComputationalCharts(
     return {
       kind: 'computational-triangle-chart',
       semanticRole: 'computational-only',
-      chartId: `field-chart:polygon-face:${faceId}:centroid-fan:${index}`,
+      chartId: `${chartIdPrefix}:${index}`,
+      sourceFaceId: faceId,
       positions: [copyVec3(centroid), copyVec3(positions[index]), copyVec3(positions[nextIndex])],
       boundaryVertexIds: [vertexId, nextVertexId],
       sourceVertexIds: [vertexId, nextVertexId],
@@ -563,6 +728,10 @@ function pointFromPositionsBarycentric(
       positions[1][2] * barycentric[1] +
       positions[2][2] * barycentric[2],
   ];
+}
+
+function uniqueVertexIds(vertexIds: VertexId[]): VertexId[] {
+  return Array.from(new Set(vertexIds));
 }
 
 function centroidVec3(positions: Vec3[]): Vec3 {
