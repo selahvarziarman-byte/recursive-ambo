@@ -33,6 +33,7 @@ const {
   buildShapeVerticesSourceDomain,
   buildTriangleFaceSourceDomain,
   buildTriangleRepresentativeSamplePoints,
+  classifyClosedShapeSurfaceBoundary,
   sampleFieldAtlasPoints,
 } = require(path.join(repoRoot, 'src/lib/fieldAtlas.ts'));
 
@@ -465,11 +466,133 @@ function runAmboClosedShapeSurfaceDiagnostic() {
 
   const amboShape = applyAmboDissection(seedShape, seedCell.id);
   const before = JSON.stringify(amboShape);
+  const boundaryClassification = classifyClosedShapeSurfaceBoundary(amboShape);
+
+  if (boundaryClassification.status === 'unsupported') {
+    try {
+      buildClosedShapeSurfaceSourceDomain(amboShape);
+      recordFailure(
+        'generated closed-shape surface support returned a domain after boundary classification was unsupported',
+      );
+    } catch (_error) {
+      // Unsupported is acceptable here; the diagnostic should report it without pretending support.
+    }
+
+    console.log(
+      `closed shape Ambo generated surface: unsupported - ${boundaryClassification.reason}${formatOptionalDetails(
+        boundaryClassification.details,
+      )}`,
+    );
+
+    if (JSON.stringify(amboShape) !== before) {
+      recordFailure('generated closed-shape diagnostic mutated the Ambo shape');
+    }
+
+    return;
+  }
 
   try {
     const domain = buildClosedShapeSurfaceSourceDomain(amboShape);
     const sources = buildFieldSourcePopulation(amboShape, domain);
+    const samplePoints = buildClosedShapeSurfaceRepresentativeSamplePoints(domain);
+    const samples = sampleFieldAtlasPoints(sources, samplePoints);
+    const strategy = domain.surfaceSelectionStrategy;
     const childSources = sources.filter((source) => source.sourceKind === 'ambo-midpoint-child');
+    const sourceVertexIds = new Set(sources.map((source) => source.vertexId));
+    const boundaryFaceIds = boundaryClassification.boundaryFaces.map(
+      (boundaryFace) => boundaryFace.incidence.faceId,
+    );
+    const internalFaceIds = boundaryClassification.internalFaces.flatMap((internalFace) =>
+      internalFace.incidences.map((incidence) => incidence.faceId),
+    );
+    const boundaryVertexIds = uniqueVertexIdsFromFaces(amboShape, boundaryFaceIds);
+    const internalVertexIds = uniqueVertexIdsFromFaces(amboShape, internalFaceIds);
+    const internalOnlyVertexIds = internalVertexIds.filter(
+      (vertexId) => !boundaryVertexIds.includes(vertexId),
+    );
+    const boundaryMidpointVertexIds = boundaryVertexIds.filter((vertexId) =>
+      isAmboMidpointVertex(amboShape.vertices[vertexId]),
+    );
+
+    expectEqual(
+      strategy.kind,
+      'topological-cell-face-incidence',
+      'generated closed-shape should use structural cell-face incidence strategy',
+    );
+    expectEqual(
+      strategy.reliability,
+      'supported',
+      'generated closed-shape boundary strategy should be supported',
+    );
+    expectEqual(
+      strategy.boundaryFaceCount,
+      boundaryClassification.boundaryFaces.length,
+      'generated closed-shape boundary face count',
+    );
+    expectEqual(
+      strategy.internalFaceCount,
+      boundaryClassification.internalFaces.length,
+      'generated closed-shape internal face count',
+    );
+    expectEqual(
+      strategy.activeCellIds.length,
+      boundaryClassification.activeCellIds.length,
+      'generated closed-shape active cell count',
+    );
+    expectFiniteNonnegative(
+      strategy.boundaryFaceCount,
+      'generated closed-shape boundary face count should be finite',
+    );
+    expectFiniteNonnegative(
+      strategy.internalFaceCount,
+      'generated closed-shape internal face count should be finite',
+    );
+
+    if (strategy.boundaryFaceCount === 0) {
+      recordFailure('generated closed-shape boundary classifier found no boundary faces');
+    }
+
+    if (strategy.internalFaceCount === 0) {
+      recordFailure('generated Ambo closed-shape boundary classifier found no internal interface faces');
+    }
+
+    if (boundaryClassification.internalFaces.length > 0 && strategy.internalFaceCount === 0) {
+      recordFailure('generated closed-shape boundary classifier lost internal face incidences');
+    }
+
+    for (const faceId of internalFaceIds) {
+      if (domain.faceIds.includes(faceId)) {
+        recordFailure(`generated closed-shape included internal face ${faceId} as boundary`);
+      }
+    }
+
+    expectEqual(
+      domain.faceIds.length,
+      boundaryFaceIds.length,
+      'generated closed-shape domain should include each boundary face once',
+    );
+    expectEqual(
+      domain.vertexIds.length,
+      boundaryVertexIds.length,
+      'generated closed-shape domain should dedupe shared boundary vertices',
+    );
+    expectEqual(
+      sources.length,
+      boundaryVertexIds.length,
+      'generated closed-shape source count should equal unique boundary vertices',
+    );
+
+    for (const vertexId of boundaryVertexIds) {
+      if (!sourceVertexIds.has(vertexId)) {
+        recordFailure(`generated closed-shape boundary vertex ${vertexId} was not a source`);
+      }
+    }
+
+    for (const vertexId of internalOnlyVertexIds) {
+      if (sourceVertexIds.has(vertexId)) {
+        recordFailure(`internal-only vertex ${vertexId} became a closed-shape source`);
+      }
+    }
 
     if (!childSources.length) {
       recordFailure(
@@ -477,13 +600,20 @@ function runAmboClosedShapeSurfaceDiagnostic() {
       );
     }
 
+    expectEqual(
+      childSources.length,
+      boundaryMidpointVertexIds.length,
+      'generated closed-shape should include all boundary Ambo midpoint children as sources',
+    );
+
+    assertSourcesMatchDomainPositions(sources, domain, 'generated closed-shape surface');
+    assertFieldSamplesAreFinite(samples, sources, 'generated closed-shape surface');
+
     console.log(
-      `closed shape Ambo generated surface: supported strategy=${domain.surfaceSelectionStrategy.kind} child sources=${childSources.length}/${sources.length}`,
+      `closed shape Ambo generated surface: supported strategy=${strategy.kind} activeCells=${strategy.activeCellIds.length} boundaryFaces=${strategy.boundaryFaceCount} internalFaces=${strategy.internalFaceCount} sources=${sources.length} childSources=${childSources.length}/${boundaryMidpointVertexIds.length} charts=${domain.surfaceCharts.length}`,
     );
   } catch (error) {
-    console.log(
-      `closed shape Ambo generated surface: unsupported - missing reliable exterior-face metadata (${error.message})`,
-    );
+    recordFailure(`generated closed-shape surface was classified as supported but failed: ${error.message}`);
   }
 
   if (JSON.stringify(amboShape) !== before) {
@@ -903,6 +1033,10 @@ function formatNumber(value) {
 
 function formatNumberList(values) {
   return `[${values.map(formatNumber).join(', ')}]`;
+}
+
+function formatOptionalDetails(details) {
+  return details?.length ? ` (${details.join(' ')})` : '';
 }
 
 function shortenId(id) {

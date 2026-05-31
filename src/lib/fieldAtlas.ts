@@ -1,4 +1,15 @@
-import type { CellId, Face, FaceId, Shape, ShapeId, Vec3, Vertex, VertexId } from '../types/geometry';
+import type {
+  Cell,
+  CellId,
+  Face,
+  FaceId,
+  Shape,
+  ShapeId,
+  Vec3,
+  Vertex,
+  VertexId,
+} from '../types/geometry';
+import { getCellLifecycleStatus } from './cellLifecycle';
 
 export interface ComplexValue {
   re: number;
@@ -48,11 +59,55 @@ export interface ComputationalTriangleChart {
 
 export type FieldSurfaceSampleChart = DirectTriangleFaceChart | ComputationalTriangleChart;
 
-export interface ClosedShapeSurfaceSelectionStrategy {
+export interface SingleCellSeedSurfaceSelectionStrategy {
   kind: 'single-cell-seed-surface';
   reliability: 'supported';
   sourceCellId: CellId;
 }
+
+export interface TopologicalCellFaceIncidenceSelectionStrategy {
+  kind: 'topological-cell-face-incidence';
+  reliability: 'supported';
+  activeCellIds: CellId[];
+  boundaryFaceCount: number;
+  internalFaceCount: number;
+}
+
+export type ClosedShapeSurfaceSelectionStrategy =
+  | SingleCellSeedSurfaceSelectionStrategy
+  | TopologicalCellFaceIncidenceSelectionStrategy;
+
+export interface ClosedShapeFaceIncidence {
+  cellId: CellId;
+  faceId: FaceId;
+  faceRole: Face['role'];
+  vertexIds: VertexId[];
+}
+
+export interface ClosedShapeBoundaryFace {
+  faceKey: string;
+  incidence: ClosedShapeFaceIncidence;
+}
+
+export interface ClosedShapeInternalFace {
+  faceKey: string;
+  incidences: [ClosedShapeFaceIncidence, ClosedShapeFaceIncidence];
+}
+
+export type ClosedShapeSurfaceBoundaryClassification =
+  | {
+      status: 'supported';
+      strategyKind: 'topological-cell-face-incidence';
+      activeCellIds: CellId[];
+      boundaryFaces: ClosedShapeBoundaryFace[];
+      internalFaces: ClosedShapeInternalFace[];
+    }
+  | {
+      status: 'unsupported';
+      strategyKind: 'topological-cell-face-incidence';
+      reason: string;
+      details?: string[];
+    };
 
 export interface TriangleSourceDomain {
   kind: 'triangle-reference';
@@ -335,29 +390,204 @@ export function buildCellSurfaceSourceDomain(
   };
 }
 
-export function buildClosedShapeSurfaceSourceDomain(shape: Shape): ClosedShapeSurfaceSourceDomain {
-  const sourceCell = getSupportedClosedShapeSurfaceCell(shape);
+export function classifyClosedShapeSurfaceBoundary(
+  shape: Shape,
+): ClosedShapeSurfaceBoundaryClassification {
+  const activeCells = shape.cells.filter(
+    (cell) => getCellLifecycleStatus(shape, cell.id) === 'active',
+  );
 
-  if (!sourceCell) {
-    throw new Error(
-      'Closed-shape surface domains are currently supported only for single-cell seed shapes; generated or multi-cell shapes do not expose reliable exterior-face metadata.',
+  if (!activeCells.length) {
+    return unsupportedBoundaryClassification('Shape has no active cells to classify.');
+  }
+
+  const faceById = new Map(shape.faces.map((face) => [face.id, face]));
+  const incidenceByFaceKey = new Map<string, ClosedShapeFaceIncidence[]>();
+  const inactiveIncidenceByFaceKey = buildInactiveIncidenceByFaceKey(shape, activeCells);
+  const details: string[] = [];
+
+  for (const cell of activeCells) {
+    if (!cell.faceIds.length) {
+      details.push(`Active cell ${cell.id} has no faceIds.`);
+      continue;
+    }
+
+    const seenKeysForCell = new Set<string>();
+
+    for (const faceId of cell.faceIds) {
+      const face = faceById.get(faceId);
+
+      if (!face) {
+        details.push(`Active cell ${cell.id} references missing face ${faceId}.`);
+        continue;
+      }
+
+      const faceProblem = validateClassifiableFace(shape, cell, face);
+
+      if (faceProblem) {
+        details.push(faceProblem);
+        continue;
+      }
+
+      const faceKey = normalizedFaceVertexKey(face.vertexIds);
+
+      if (seenKeysForCell.has(faceKey)) {
+        details.push(`Active cell ${cell.id} repeats normalized face key ${faceKey}.`);
+        continue;
+      }
+
+      seenKeysForCell.add(faceKey);
+
+      const incidences = incidenceByFaceKey.get(faceKey) ?? [];
+
+      incidences.push({
+        cellId: cell.id,
+        faceId: face.id,
+        faceRole: face.role,
+        vertexIds: [...face.vertexIds],
+      });
+      incidenceByFaceKey.set(faceKey, incidences);
+    }
+  }
+
+  if (details.length) {
+    return unsupportedBoundaryClassification(
+      'Closed-shape surface boundary classification found invalid cell-face references.',
+      details,
     );
   }
 
-  const cellSurface = buildCellSurfaceSourceDomain(shape, sourceCell.id);
+  const boundaryFaces: ClosedShapeBoundaryFace[] = [];
+  const internalFaces: ClosedShapeInternalFace[] = [];
+  const ambiguousInactiveMatches: string[] = [];
+
+  for (const [faceKey, incidences] of incidenceByFaceKey) {
+    if (incidences.length === 1) {
+      const inactiveIncidences = inactiveIncidenceByFaceKey.get(faceKey) ?? [];
+
+      if (inactiveIncidences.length) {
+        ambiguousInactiveMatches.push(
+          `Boundary candidate ${incidences[0].faceId} on active cell ${incidences[0].cellId} also appears on non-active face(s) ${inactiveIncidences
+            .map((incidence) => incidence.faceId)
+            .join(', ')}.`,
+        );
+        continue;
+      }
+
+      boundaryFaces.push({ faceKey, incidence: incidences[0] });
+      continue;
+    }
+
+    if (incidences.length === 2) {
+      const [first, second] = incidences;
+
+      if (first.cellId === second.cellId) {
+        return unsupportedBoundaryClassification(
+          'Closed-shape surface boundary classification found duplicate face incidence within one cell.',
+          [`Cell ${first.cellId} has multiple incidences for normalized face key ${faceKey}.`],
+        );
+      }
+
+      internalFaces.push({ faceKey, incidences: [first, second] });
+      continue;
+    }
+
+    return unsupportedBoundaryClassification(
+      'Closed-shape surface boundary classification found non-manifold face incidence.',
+      [`Normalized face key ${faceKey} has ${incidences.length} active-cell incidences.`],
+    );
+  }
+
+  if (ambiguousInactiveMatches.length) {
+    return unsupportedBoundaryClassification(
+      'Closed-shape surface boundary classification found active boundary candidates that also occur on expanded or historical cells.',
+      ambiguousInactiveMatches,
+    );
+  }
+
+  if (!boundaryFaces.length) {
+    return unsupportedBoundaryClassification(
+      'Closed-shape surface boundary classification found no boundary faces.',
+    );
+  }
+
+  return {
+    status: 'supported',
+    strategyKind: 'topological-cell-face-incidence',
+    activeCellIds: activeCells.map((cell) => cell.id),
+    boundaryFaces,
+    internalFaces,
+  };
+}
+
+export function buildClosedShapeSurfaceSourceDomain(shape: Shape): ClosedShapeSurfaceSourceDomain {
+  const sourceCell = getSupportedClosedShapeSurfaceCell(shape);
+
+  if (sourceCell) {
+    const cellSurface = buildCellSurfaceSourceDomain(shape, sourceCell.id);
+
+    return {
+      kind: 'closed-shape-surface-reference',
+      id: `field-domain:closed-shape-surface:${shape.id}`,
+      shapeId: shape.id,
+      faceIds: cellSurface.faceIds,
+      vertexIds: cellSurface.vertexIds,
+      positions: cellSurface.positions.map(copyVec3),
+      surfaceCharts: cellSurface.surfaceCharts,
+      surfaceSelectionStrategy: {
+        kind: 'single-cell-seed-surface',
+        reliability: 'supported',
+        sourceCellId: sourceCell.id,
+      },
+    };
+  }
+
+  if (shape.genealogy.operation !== 'ambo-dissection') {
+    throw new Error(
+      `Closed-shape surface domains for ${shape.genealogy.operation} shapes are not supported yet.`,
+    );
+  }
+
+  const boundaryClassification = classifyClosedShapeSurfaceBoundary(shape);
+
+  if (boundaryClassification.status === 'unsupported') {
+    throw new Error(formatUnsupportedBoundaryClassification(boundaryClassification));
+  }
+
+  const boundaryFaceIds = boundaryClassification.boundaryFaces.map(
+    (boundaryFace) => boundaryFace.incidence.faceId,
+  );
+  const boundaryFaces = boundaryFaceIds.map((faceId) => {
+    const face = shape.faces.find((candidate) => candidate.id === faceId);
+
+    if (!face) {
+      throw new Error(`Closed-shape boundary references missing face ${faceId}.`);
+    }
+
+    return face;
+  });
+  const vertexIds = uniqueVertexIds(boundaryFaces.flatMap((face) => face.vertexIds));
 
   return {
     kind: 'closed-shape-surface-reference',
     id: `field-domain:closed-shape-surface:${shape.id}`,
     shapeId: shape.id,
-    faceIds: cellSurface.faceIds,
-    vertexIds: cellSurface.vertexIds,
-    positions: cellSurface.positions.map(copyVec3),
-    surfaceCharts: cellSurface.surfaceCharts,
+    faceIds: boundaryFaceIds,
+    vertexIds,
+    positions: vertexIds.map((vertexId) => copyVec3(shape.vertices[vertexId].position)),
+    surfaceCharts: boundaryFaces.flatMap((face) =>
+      buildFaceSurfaceCharts(
+        shape,
+        face,
+        `field-chart:closed-shape-surface:${shape.id}:face:${face.id}`,
+      ),
+    ),
     surfaceSelectionStrategy: {
-      kind: 'single-cell-seed-surface',
+      kind: 'topological-cell-face-incidence',
       reliability: 'supported',
-      sourceCellId: sourceCell.id,
+      activeCellIds: boundaryClassification.activeCellIds,
+      boundaryFaceCount: boundaryClassification.boundaryFaces.length,
+      internalFaceCount: boundaryClassification.internalFaces.length,
     },
   };
 }
@@ -727,6 +957,106 @@ function getSupportedClosedShapeSurfaceCell(shape: Shape) {
   const [cell] = shape.cells;
 
   return cell.kind === 'seed' ? cell : null;
+}
+
+function unsupportedBoundaryClassification(
+  reason: string,
+  details?: string[],
+): ClosedShapeSurfaceBoundaryClassification {
+  return {
+    status: 'unsupported',
+    strategyKind: 'topological-cell-face-incidence',
+    reason,
+    ...(details?.length ? { details } : {}),
+  };
+}
+
+function formatUnsupportedBoundaryClassification(
+  classification: Extract<ClosedShapeSurfaceBoundaryClassification, { status: 'unsupported' }>,
+): string {
+  const details = classification.details?.length
+    ? ` Details: ${classification.details.join(' ')}`
+    : '';
+
+  return `${classification.reason}${details}`;
+}
+
+function validateClassifiableFace(shape: Shape, cell: Cell, face: Face): string | null {
+  if (face.vertexIds.length < 3) {
+    return `Face ${face.id} on active cell ${cell.id} has fewer than three vertices.`;
+  }
+
+  const uniqueFaceVertexIds = new Set(face.vertexIds);
+
+  if (uniqueFaceVertexIds.size !== face.vertexIds.length) {
+    return `Face ${face.id} on active cell ${cell.id} repeats a vertex id.`;
+  }
+
+  const cellVertexIds = new Set(cell.vertexIds);
+
+  if (face.sourceCellId && face.sourceCellId !== cell.id) {
+    return `Face ${face.id} sourceCellId ${face.sourceCellId} conflicts with active cell ${cell.id}.`;
+  }
+
+  for (const vertexId of face.vertexIds) {
+    if (!shape.vertices[vertexId]) {
+      return `Face ${face.id} on active cell ${cell.id} references missing vertex ${vertexId}.`;
+    }
+
+    if (!cellVertexIds.has(vertexId)) {
+      return `Face ${face.id} references vertex ${vertexId} outside active cell ${cell.id}.`;
+    }
+  }
+
+  return null;
+}
+
+function buildInactiveIncidenceByFaceKey(
+  shape: Shape,
+  activeCells: Cell[],
+): Map<string, ClosedShapeFaceIncidence[]> {
+  const activeCellIds = new Set(activeCells.map((cell) => cell.id));
+  const faceById = new Map(shape.faces.map((face) => [face.id, face]));
+  const incidenceByFaceKey = new Map<string, ClosedShapeFaceIncidence[]>();
+
+  for (const cell of shape.cells) {
+    if (activeCellIds.has(cell.id)) {
+      continue;
+    }
+
+    for (const faceId of cell.faceIds) {
+      const face = faceById.get(faceId);
+
+      if (!face || !isFaceKeyComparable(shape, face)) {
+        continue;
+      }
+
+      const faceKey = normalizedFaceVertexKey(face.vertexIds);
+      const incidences = incidenceByFaceKey.get(faceKey) ?? [];
+
+      incidences.push({
+        cellId: cell.id,
+        faceId: face.id,
+        faceRole: face.role,
+        vertexIds: [...face.vertexIds],
+      });
+      incidenceByFaceKey.set(faceKey, incidences);
+    }
+  }
+
+  return incidenceByFaceKey;
+}
+
+function isFaceKeyComparable(shape: Shape, face: Face): boolean {
+  return (
+    face.vertexIds.length >= 3 &&
+    new Set(face.vertexIds).size === face.vertexIds.length &&
+    face.vertexIds.every((vertexId) => Boolean(shape.vertices[vertexId]))
+  );
+}
+
+function normalizedFaceVertexKey(vertexIds: VertexId[]): string {
+  return [...vertexIds].sort().join('\u001f');
 }
 
 function buildFaceSurfaceCharts(
