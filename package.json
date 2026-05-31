@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "diagnose:atomic-registry": "node scripts/diagnose-atomic-registry.cjs",
+    "diagnose:field-atlas": "node scripts/diagnose-field-atlas.cjs",
     "diagnose:field-sampler": "node scripts/diagnose-field-sampler.cjs",
     "diagnose:diagonalization-matrix": "node scripts/diagnose-diagonalization-matrix.cjs",
     "diagnose:ambo": "node scripts/diagnose-ambo.cjs",
