@@ -5,7 +5,25 @@ export interface ComplexValue {
   im: number;
 }
 
-export type FieldSourceDomainKind = 'triangle-reference' | 'shape-vertices-reference';
+export type FieldSourceDomainKind =
+  | 'triangle-reference'
+  | 'polygon-face-reference'
+  | 'shape-vertices-reference';
+
+export type ComputationalChartSemanticRole = 'computational-only';
+
+export interface ComputationalTriangleChart {
+  kind: 'computational-triangle-chart';
+  semanticRole: ComputationalChartSemanticRole;
+  chartId: string;
+  positions: [Vec3, Vec3, Vec3];
+  boundaryVertexIds: [VertexId, VertexId];
+  sourceVertexIds: [VertexId, VertexId];
+  computationalSupport: {
+    kind: 'polygon-centroid';
+    position: Vec3;
+  };
+}
 
 export interface TriangleSourceDomain {
   kind: 'triangle-reference';
@@ -15,6 +33,15 @@ export interface TriangleSourceDomain {
   faceId?: FaceId;
 }
 
+export interface PolygonFaceSourceDomain {
+  kind: 'polygon-face-reference';
+  id: string;
+  faceId: FaceId;
+  vertexIds: VertexId[];
+  positions: Vec3[];
+  computationalCharts: ComputationalTriangleChart[];
+}
+
 export interface ShapeVerticesSourceDomain {
   kind: 'shape-vertices-reference';
   id: string;
@@ -22,7 +49,10 @@ export interface ShapeVerticesSourceDomain {
   positions: Vec3[];
 }
 
-export type FieldSourceDomain = TriangleSourceDomain | ShapeVerticesSourceDomain;
+export type FieldSourceDomain =
+  | TriangleSourceDomain
+  | PolygonFaceSourceDomain
+  | ShapeVerticesSourceDomain;
 
 export type FieldAtlasSourceKind =
   | 'seed'
@@ -57,6 +87,8 @@ export interface FieldAtlasSamplePoint {
   position: Vec3;
   localChartPosition?: [number, number];
   barycentric?: [number, number, number];
+  chartId?: string;
+  chartSemanticRole?: ComputationalChartSemanticRole;
 }
 
 export interface FieldSourceContribution {
@@ -79,6 +111,8 @@ export interface FieldAtlasSample {
   position: Vec3;
   localChartPosition?: [number, number];
   barycentric?: [number, number, number];
+  chartId?: string;
+  chartSemanticRole?: ComputationalChartSemanticRole;
   psi: ComplexValue;
   intensity: number;
   phase: number;
@@ -91,6 +125,8 @@ export interface SampleFieldAtlasAtPointOptions {
   sampleId?: string;
   localChartPosition?: [number, number];
   barycentric?: [number, number, number];
+  chartId?: string;
+  chartSemanticRole?: ComputationalChartSemanticRole;
 }
 
 export const DEFAULT_FIELD_ATLAS_SOURCE_POLICY: FieldAtlasSourcePolicy = {
@@ -150,6 +186,42 @@ export function buildTriangleSourceDomain(
     vertexIds: [vertexIds[0], vertexIds[1], vertexIds[2]],
     positions,
     ...(options.faceId ? { faceId: options.faceId } : {}),
+  };
+}
+
+export function buildPolygonFaceSourceDomain(
+  shape: Shape,
+  faceId: FaceId,
+): PolygonFaceSourceDomain {
+  const face = shape.faces.find((candidate) => candidate.id === faceId);
+
+  if (!face) {
+    throw new Error(`Face ${faceId} was not found.`);
+  }
+
+  if (face.vertexIds.length < 3) {
+    throw new Error(`Face ${face.id} needs at least three boundary vertices for a polygon domain.`);
+  }
+
+  const vertexIds = [...face.vertexIds];
+  const positions = vertexIds.map((vertexId) => {
+    const vertex = shape.vertices[vertexId];
+
+    if (!vertex) {
+      throw new Error(`Polygon source-domain references missing vertex ${vertexId}.`);
+    }
+
+    return copyVec3(vertex.position);
+  });
+  const centroid = centroidVec3(positions);
+
+  return {
+    kind: 'polygon-face-reference',
+    id: `field-domain:polygon-face:${face.id}`,
+    faceId: face.id,
+    vertexIds,
+    positions,
+    computationalCharts: buildCentroidFanComputationalCharts(face.id, vertexIds, positions, centroid),
   };
 }
 
@@ -252,6 +324,8 @@ export function sampleFieldAtlasAtPoint(
     ...(options.barycentric
       ? { barycentric: [...options.barycentric] as [number, number, number] }
       : {}),
+    ...(options.chartId ? { chartId: options.chartId } : {}),
+    ...(options.chartSemanticRole ? { chartSemanticRole: options.chartSemanticRole } : {}),
     psi,
     intensity: squaredMagnitude(psi),
     phase: Math.atan2(psi.im, psi.re),
@@ -278,6 +352,8 @@ export function sampleFieldAtlasPoints(
       sampleId: point.id,
       localChartPosition: point.localChartPosition,
       barycentric: point.barycentric,
+      chartId: point.chartId,
+      chartSemanticRole: point.chartSemanticRole,
     }),
   );
 }
@@ -344,6 +420,56 @@ export function pointFromTriangleBarycentric(
   ];
 }
 
+export function buildPolygonRepresentativeSamplePoints(
+  domain: PolygonFaceSourceDomain,
+): FieldAtlasSamplePoint[] {
+  const vertexSamplePoints = domain.vertexIds.map((vertexId, index) => ({
+    id: `polygon:vertex:${vertexId}`,
+    position: copyVec3(domain.positions[index]),
+  }));
+  const edgeMidpointSamplePoints = domain.computationalCharts.map((chart) =>
+    pointFromComputationalTriangleChart(chart, [0, 0.5, 0.5], {
+      id: `polygon:edge-midpoint:${chart.boundaryVertexIds[0]}:${chart.boundaryVertexIds[1]}`,
+    }),
+  );
+  const chartCenterSamplePoints = domain.computationalCharts.map((chart) =>
+    pointFromComputationalTriangleChart(chart, [1 / 3, 1 / 3, 1 / 3], {
+      id: `polygon:chart-centroid:${chart.chartId}`,
+    }),
+  );
+  const centroidChart = domain.computationalCharts[0];
+  const centroidSamplePoint = centroidChart
+    ? pointFromComputationalTriangleChart(centroidChart, [1, 0, 0], {
+        id: `polygon:centroid:${domain.faceId}`,
+      })
+    : {
+        id: `polygon:centroid:${domain.faceId}`,
+        position: centroidVec3(domain.positions),
+      };
+
+  return [
+    ...vertexSamplePoints,
+    centroidSamplePoint,
+    ...edgeMidpointSamplePoints,
+    ...chartCenterSamplePoints,
+  ];
+}
+
+export function pointFromComputationalTriangleChart(
+  chart: ComputationalTriangleChart,
+  barycentric: [number, number, number],
+  options: { id?: string } = {},
+): FieldAtlasSamplePoint {
+  return {
+    id: options.id ?? `polygon:chart-sample:${chart.chartId}`,
+    position: pointFromPositionsBarycentric(chart.positions, barycentric),
+    localChartPosition: [barycentric[1], barycentric[2]],
+    barycentric: [barycentric[0], barycentric[1], barycentric[2]],
+    chartId: chart.chartId,
+    chartSemanticRole: chart.semanticRole,
+  };
+}
+
 function resolveSourcePolicy(policy: FieldAtlasSourcePolicy): FieldAtlasSourcePolicy {
   return {
     name: policy.name.trim() || DEFAULT_FIELD_ATLAS_SOURCE_POLICY.name,
@@ -395,6 +521,65 @@ function complexMagnitude(value: ComplexValue): number {
 
 function squaredMagnitude(value: ComplexValue): number {
   return value.re * value.re + value.im * value.im;
+}
+
+function buildCentroidFanComputationalCharts(
+  faceId: FaceId,
+  vertexIds: VertexId[],
+  positions: Vec3[],
+  centroid: Vec3,
+): ComputationalTriangleChart[] {
+  return vertexIds.map((vertexId, index) => {
+    const nextIndex = (index + 1) % vertexIds.length;
+    const nextVertexId = vertexIds[nextIndex];
+
+    return {
+      kind: 'computational-triangle-chart',
+      semanticRole: 'computational-only',
+      chartId: `field-chart:polygon-face:${faceId}:centroid-fan:${index}`,
+      positions: [copyVec3(centroid), copyVec3(positions[index]), copyVec3(positions[nextIndex])],
+      boundaryVertexIds: [vertexId, nextVertexId],
+      sourceVertexIds: [vertexId, nextVertexId],
+      computationalSupport: {
+        kind: 'polygon-centroid',
+        position: copyVec3(centroid),
+      },
+    };
+  });
+}
+
+function pointFromPositionsBarycentric(
+  positions: [Vec3, Vec3, Vec3],
+  barycentric: [number, number, number],
+): Vec3 {
+  return [
+    positions[0][0] * barycentric[0] +
+      positions[1][0] * barycentric[1] +
+      positions[2][0] * barycentric[2],
+    positions[0][1] * barycentric[0] +
+      positions[1][1] * barycentric[1] +
+      positions[2][1] * barycentric[2],
+    positions[0][2] * barycentric[0] +
+      positions[1][2] * barycentric[1] +
+      positions[2][2] * barycentric[2],
+  ];
+}
+
+function centroidVec3(positions: Vec3[]): Vec3 {
+  if (!positions.length) {
+    return [0, 0, 0];
+  }
+
+  const sum = positions.reduce<Vec3>(
+    (accumulator, position) => [
+      accumulator[0] + position[0],
+      accumulator[1] + position[1],
+      accumulator[2] + position[2],
+    ],
+    [0, 0, 0],
+  );
+
+  return [sum[0] / positions.length, sum[1] / positions.length, sum[2] / positions.length];
 }
 
 function distanceVec3(a: Vec3, b: Vec3): number {

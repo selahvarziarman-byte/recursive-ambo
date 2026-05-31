@@ -24,6 +24,8 @@ const { applyAmboDissection } = require(path.join(repoRoot, 'src/lib/ambo.ts'));
 const {
   DEFAULT_FIELD_ATLAS_SOURCE_POLICY,
   buildFieldSourcePopulation,
+  buildPolygonFaceSourceDomain,
+  buildPolygonRepresentativeSamplePoints,
   buildShapeVerticesSourceDomain,
   buildTriangleFaceSourceDomain,
   buildTriangleRepresentativeSamplePoints,
@@ -42,6 +44,7 @@ console.log(
 );
 
 runTriangularReferenceDiagnostic();
+runPolygonalFaceReferenceDiagnostic();
 runGeneratedChildSourceDiagnostic();
 
 if (failures.length) {
@@ -166,6 +169,132 @@ function runSourceDomainPositionAuthorityCheck(shape, domain) {
   if (sameVec3(sources[0].position, firstVertex.position)) {
     recordFailure('source population re-read the shape vertex position instead of the source-domain position');
   }
+}
+
+function runPolygonalFaceReferenceDiagnostic() {
+  const shape = createSeedShape('cube');
+  const before = JSON.stringify(shape);
+  const faceId = 'face:cube:bottom';
+  const face = shape.faces.find((candidate) => candidate.id === faceId);
+  const domain = buildPolygonFaceSourceDomain(shape, faceId);
+  const sources = buildFieldSourcePopulation(shape, domain);
+  const samplePoints = buildPolygonRepresentativeSamplePoints(domain);
+  const samples = sampleFieldAtlasPoints(sources, samplePoints);
+
+  if (!face) {
+    recordFailure(`${faceId} was unavailable for polygonal field-atlas diagnostic`);
+    return;
+  }
+
+  expectEqual(domain.kind, 'polygon-face-reference', 'polygon source-domain kind');
+  expectEqual(
+    domain.vertexIds.length,
+    face.vertexIds.length,
+    'polygon source-domain should use every boundary vertex',
+  );
+  expectEqual(
+    sources.length,
+    domain.vertexIds.length,
+    'polygon source population should include boundary vertices only',
+  );
+  expectEqual(
+    domain.computationalCharts.length,
+    domain.vertexIds.length,
+    'polygon centroid fan should create one computational chart per boundary edge',
+  );
+
+  for (const source of sources) {
+    if (!domain.vertexIds.includes(source.vertexId)) {
+      recordFailure(`polygon source ${source.vertexId} was not a boundary vertex`);
+    }
+
+    if (!sameVec3(source.position, domain.positions[source.sourceOrder])) {
+      recordFailure(`polygon source ${source.vertexId} did not use source-domain position`);
+    }
+  }
+
+  for (let index = 0; index < domain.computationalCharts.length; index += 1) {
+    const chart = domain.computationalCharts[index];
+    const expectedBoundary = [
+      domain.vertexIds[index],
+      domain.vertexIds[(index + 1) % domain.vertexIds.length],
+    ];
+
+    expectEqual(
+      chart.kind,
+      'computational-triangle-chart',
+      `${chart.chartId} should be a computational triangle chart`,
+    );
+    expectEqual(
+      chart.semanticRole,
+      'computational-only',
+      `${chart.chartId} should be marked computational-only`,
+    );
+    expectEqual(
+      chart.computationalSupport.kind,
+      'polygon-centroid',
+      `${chart.chartId} should use centroid as computational support`,
+    );
+    expectEqual(
+      chart.sourceVertexIds.length,
+      2,
+      `${chart.chartId} should reference only boundary source vertices`,
+    );
+
+    if (!sameArray(chart.sourceVertexIds, expectedBoundary)) {
+      recordFailure(
+        `${chart.chartId} should reference adjacent boundary vertices ${expectedBoundary.join(', ')}, got ${chart.sourceVertexIds.join(', ')}`,
+      );
+    }
+  }
+
+  const nonBoundarySources = sources.filter((source) => !domain.vertexIds.includes(source.vertexId));
+
+  expectEqual(
+    nonBoundarySources.length,
+    0,
+    'computational centroid or chart points must not become field sources',
+  );
+
+  for (const samplePoint of samplePoints.filter((point) => point.chartId)) {
+    expectEqual(
+      samplePoint.chartSemanticRole,
+      'computational-only',
+      `${samplePoint.id} should carry computational-only chart role`,
+    );
+  }
+
+  for (const sample of samples) {
+    expectFiniteComplex(sample.psi, `${sample.id} polygon psi`);
+    expectFiniteNonnegative(sample.intensity, `${sample.id} polygon intensity`);
+    expectFinite(sample.phase, `${sample.id} polygon phase`);
+    expectEqual(
+      sample.contributionMagnitudes.length,
+      sources.length,
+      `${sample.id} polygon contribution magnitude count`,
+    );
+    expectEqual(
+      sample.contributionRatios.length,
+      sources.length,
+      `${sample.id} polygon contribution ratio count`,
+    );
+
+    const ratioSum = sample.contributionRatios.reduce((sum, ratio) => sum + ratio.value, 0);
+
+    expectApprox(ratioSum, 1, 1e-9, `${sample.id} polygon contribution ratios should sum to 1`);
+  }
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('polygon field-atlas diagnostic mutated the cube shape');
+  }
+
+  console.log(
+    `polygon domain: ${shortenId(domain.faceId)} boundary=${domain.vertexIds.length} sources=${sources.length} computational charts=${domain.computationalCharts.length}`,
+  );
+  console.log(
+    `polygon chart roles: ${Array.from(new Set(domain.computationalCharts.map((chart) => chart.semanticRole))).join(', ')}`,
+  );
+  console.log(`polygon representative samples: ${samples.length}`);
 }
 
 function runGeneratedChildSourceDiagnostic() {
@@ -295,6 +424,10 @@ function expectFiniteComplex(value, label) {
 
 function sameVec3(a, b) {
   return Boolean(b) && a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+}
+
+function sameArray(a, b) {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
 }
 
 function formatComplex(value) {
