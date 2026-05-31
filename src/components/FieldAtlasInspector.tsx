@@ -10,6 +10,7 @@ import {
   type FieldAtlasSourceKind,
   type FieldSurfaceSampleChart,
 } from '../lib/fieldAtlas';
+import { useGeometryStore } from '../store/geometryStore';
 import type { Shape, VertexId } from '../types/geometry';
 
 interface FieldAtlasInspectorProps {
@@ -47,6 +48,12 @@ export function FieldAtlasInspector({
   shortenId,
 }: FieldAtlasInspectorProps) {
   const atlas = useMemo(() => buildInspectorModel(shape), [shape]);
+  const hoveredFieldAtlasSampleId = useGeometryStore(
+    (state) => state.hoveredFieldAtlasSampleId,
+  );
+  const setHoveredFieldAtlasSampleId = useGeometryStore(
+    (state) => state.setHoveredFieldAtlasSampleId,
+  );
 
   if (atlas.status === 'unsupported') {
     return (
@@ -126,6 +133,9 @@ export function FieldAtlasInspector({
             chart={sample.chartId ? atlas.chartById.get(sample.chartId) : undefined}
             formatVertexRef={formatVertexRef}
             shortenId={shortenId}
+            isHovered={hoveredFieldAtlasSampleId === sample.id}
+            onHoverStart={setHoveredFieldAtlasSampleId}
+            onHoverEnd={() => setHoveredFieldAtlasSampleId(null)}
           />
         ))}
       </div>
@@ -150,12 +160,18 @@ function SampleSummary({
   chart,
   formatVertexRef,
   shortenId,
+  isHovered,
+  onHoverStart,
+  onHoverEnd,
 }: {
   shape: Shape;
   sample: FieldAtlasSample;
   chart?: FieldSurfaceSampleChart;
   formatVertexRef: (vertexId: VertexId) => string;
   shortenId: (id: string) => string;
+  isHovered: boolean;
+  onHoverStart: (sampleId: string) => void;
+  onHoverEnd: () => void;
 }) {
   const topContributions = [...sample.contributionRatios]
     .sort((a, b) => b.value - a.value)
@@ -164,7 +180,19 @@ function SampleSummary({
     formatSourceVertexLabel(shape, vertexId, formatVertexRef);
 
   return (
-    <div className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-xs">
+    <div
+      className={`rounded border px-3 py-2 text-xs transition ${
+        isHovered
+          ? 'border-emerald-300/70 bg-emerald-400/10 shadow-[0_0_0_1px_rgba(110,231,183,0.22)]'
+          : 'border-stone-800 bg-stone-950'
+      }`}
+      data-field-atlas-sample-id={sample.id}
+      onFocus={() => onHoverStart(sample.id)}
+      onBlur={onHoverEnd}
+      onPointerEnter={() => onHoverStart(sample.id)}
+      onPointerLeave={onHoverEnd}
+      tabIndex={0}
+    >
       <div className="flex items-start justify-between gap-3">
         <span className="min-w-0">
           <span className="block truncate font-medium text-stone-200">

@@ -34,6 +34,9 @@ export function Workspace3D() {
   const selectCell = useGeometryStore((state) => state.selectCell);
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
+  const setHoveredFieldAtlasSampleId = useGeometryStore(
+    (state) => state.setHoveredFieldAtlasSampleId,
+  );
   const clearDualInspectionTarget = useGeometryStore((state) => state.clearDualInspectionTarget);
   const [fitViewRequest, setFitViewRequest] = useState(0);
   const [fitSelectedRequest, setFitSelectedRequest] = useState(0);
@@ -77,6 +80,7 @@ export function Workspace3D() {
           selectCell(null);
           selectVertex(null);
           setHoverTarget(null);
+          setHoveredFieldAtlasSampleId(null);
           clearDualInspectionTarget();
         }}
       >

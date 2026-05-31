@@ -111,6 +111,7 @@ interface GeometryState {
   cellVisibility: CellVisibility;
   viewLayout: ViewLayout;
   hoverTarget: InspectionHoverTarget | null;
+  hoveredFieldAtlasSampleId: string | null;
   undoStack: WorkspaceSnapshot[];
   redoStack: WorkspaceSnapshot[];
   operationHistory: OperationHistoryEntry[];
@@ -134,6 +135,7 @@ interface GeometryState {
   toggleIsolateSelectedCell: () => void;
   toggleFieldAtlasSamples: () => void;
   setHoverTarget: (target: InspectionHoverTarget | null) => void;
+  setHoveredFieldAtlasSampleId: (sampleId: string | null) => void;
   updateSelectedVertexData: (patch: Partial<VertexDataPacket>) => void;
   exportWorkspace: () => PersistedWorkspaceV1;
   importWorkspace: (workspace: PersistedWorkspaceV1) => void;
@@ -165,6 +167,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   cellVisibility: defaultCellVisibility,
   viewLayout: defaultViewLayout,
   hoverTarget: null,
+  hoveredFieldAtlasSampleId: null,
   undoStack: [],
   redoStack: [],
   operationHistory: [initialHistoryEntry],
@@ -197,6 +200,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       cellVisibility: defaultCellVisibility,
       viewLayout: defaultViewLayout,
       hoverTarget: null,
+      hoveredFieldAtlasSampleId: null,
       historySequence,
     });
   },
@@ -226,6 +230,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       cellVisibility: defaultCellVisibility,
       viewLayout: defaultViewLayout,
       hoverTarget: null,
+      hoveredFieldAtlasSampleId: null,
       historySequence,
     });
   },
@@ -248,6 +253,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       operationHistory: state.operationHistory.slice(0, -1),
       redoOperationHistory: nextRedoHistory,
       hoverTarget: null,
+      hoveredFieldAtlasSampleId: null,
       dualInspectionTarget: null,
     });
   },
@@ -270,11 +276,17 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       operationHistory,
       redoOperationHistory: state.redoOperationHistory.slice(1),
       hoverTarget: null,
+      hoveredFieldAtlasSampleId: null,
       dualInspectionTarget: null,
     });
   },
   resetViewLayout: () => {
-    set({ viewLayout: defaultViewLayout, hoverTarget: null, dualInspectionTarget: null });
+    set({
+      viewLayout: defaultViewLayout,
+      hoverTarget: null,
+      hoveredFieldAtlasSampleId: null,
+      dualInspectionTarget: null,
+    });
   },
   applyOperationToSelection: (operationId) => {
     const state = get();
@@ -332,6 +344,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       selectedVertexId: null,
       dualInspectionTarget: null,
       hoverTarget: null,
+      hoveredFieldAtlasSampleId: null,
       historySequence,
     });
   },
@@ -357,16 +370,27 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
           : null,
       dualInspectionTarget: null,
       hoverTarget: null,
+      hoveredFieldAtlasSampleId: null,
     }));
   },
   selectCell: (cellId) => {
-    set({ selectedCellId: cellId, selectedVertexId: null, dualInspectionTarget: null });
+    set({
+      selectedCellId: cellId,
+      selectedVertexId: null,
+      dualInspectionTarget: null,
+      hoveredFieldAtlasSampleId: null,
+    });
   },
   selectVertex: (vertexId) => {
-    set({ selectedVertexId: vertexId, dualInspectionTarget: null });
+    set({ selectedVertexId: vertexId, dualInspectionTarget: null, hoveredFieldAtlasSampleId: null });
   },
   setDualInspectionTarget: (target) => {
-    set({ dualInspectionTarget: target, selectedVertexId: null, hoverTarget: null });
+    set({
+      dualInspectionTarget: target,
+      selectedVertexId: null,
+      hoverTarget: null,
+      hoveredFieldAtlasSampleId: null,
+    });
   },
   clearDualInspectionTarget: () => {
     set({ dualInspectionTarget: null });
@@ -415,6 +439,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   },
   setHoverTarget: (target) => {
     set({ hoverTarget: target });
+  },
+  setHoveredFieldAtlasSampleId: (sampleId) => {
+    set({ hoveredFieldAtlasSampleId: sampleId });
   },
   updateSelectedVertexData: (patch) => {
     const { currentShapeId, selectedVertexId, shapes } = get();
@@ -500,6 +527,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
         ? normalizeViewLayout(importedWorkspace.viewLayout)
         : defaultViewLayout,
       hoverTarget: null,
+      hoveredFieldAtlasSampleId: null,
       undoStack: [],
       redoStack: [],
       operationHistory: importedWorkspace.operationHistory,

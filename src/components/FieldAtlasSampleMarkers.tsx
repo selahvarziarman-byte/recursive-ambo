@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import * as THREE from 'three';
+import { Html } from '@react-three/drei';
+import { useEffect, useMemo } from 'react';
 import {
   buildClosedShapeSurfaceRepresentativeSamplePoints,
   buildClosedShapeSurfaceSourceDomain,
@@ -7,6 +7,7 @@ import {
   sampleFieldAtlasPoints,
   type FieldAtlasSample,
 } from '../lib/fieldAtlas';
+import { useGeometryStore } from '../store/geometryStore';
 import type { Shape, Vec3 } from '../types/geometry';
 
 interface FieldAtlasSampleMarkersProps {
@@ -22,13 +23,25 @@ interface FieldAtlasMarker {
   color: string;
   emissive: string;
   emissiveIntensity: number;
+  intensity: number;
+  label: string;
   kind: 'source-vertex' | 'surface-sample';
 }
 
-const disabledRaycast: THREE.Object3D['raycast'] = () => undefined;
-
 export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMarkersProps) {
   const markers = useMemo(() => buildMarkerModel(shape, enabled), [enabled, shape]);
+  const hoveredFieldAtlasSampleId = useGeometryStore(
+    (state) => state.hoveredFieldAtlasSampleId,
+  );
+  const setHoveredFieldAtlasSampleId = useGeometryStore(
+    (state) => state.setHoveredFieldAtlasSampleId,
+  );
+
+  useEffect(() => {
+    if (!enabled && hoveredFieldAtlasSampleId) {
+      setHoveredFieldAtlasSampleId(null);
+    }
+  }, [enabled, hoveredFieldAtlasSampleId, setHoveredFieldAtlasSampleId]);
 
   if (!enabled || !markers.length) {
     return null;
@@ -36,29 +49,69 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
 
   return (
     <group>
-      {markers.map((marker) => (
-        <mesh
-          key={marker.id}
-          position={marker.position}
-          raycast={disabledRaycast}
-          renderOrder={18}
-        >
-          {marker.kind === 'source-vertex' ? (
-            <sphereGeometry args={[marker.radius, 18, 12]} />
-          ) : (
-            <octahedronGeometry args={[marker.radius, 0]} />
-          )}
-          <meshStandardMaterial
-            color={marker.color}
-            depthWrite={false}
-            emissive={marker.emissive}
-            emissiveIntensity={marker.emissiveIntensity}
-            opacity={marker.opacity}
-            roughness={0.38}
-            transparent
-          />
-        </mesh>
-      ))}
+      {markers.map((marker) => {
+        const isHovered = hoveredFieldAtlasSampleId === marker.id;
+        const markerScale = isHovered ? 1.85 : 1;
+
+        return (
+          <mesh
+            key={marker.id}
+            position={marker.position}
+            renderOrder={isHovered ? 24 : 18}
+            scale={markerScale}
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+            onPointerDown={(event) => {
+              event.stopPropagation();
+            }}
+            onPointerEnter={(event) => {
+              event.stopPropagation();
+              setHoveredFieldAtlasSampleId(marker.id);
+              document.body.style.cursor = 'default';
+            }}
+            onPointerLeave={(event) => {
+              event.stopPropagation();
+              clearHoveredSample(marker.id, setHoveredFieldAtlasSampleId);
+              document.body.style.cursor = 'auto';
+            }}
+            onPointerMove={(event) => {
+              event.stopPropagation();
+              setHoveredFieldAtlasSampleId(marker.id);
+            }}
+          >
+            {marker.kind === 'source-vertex' ? (
+              <sphereGeometry args={[marker.radius, 18, 12]} />
+            ) : (
+              <octahedronGeometry args={[marker.radius, 0]} />
+            )}
+            <meshStandardMaterial
+              color={isHovered ? '#fde68a' : marker.color}
+              depthWrite={false}
+              emissive={isHovered ? '#92400e' : marker.emissive}
+              emissiveIntensity={isHovered ? 0.92 : marker.emissiveIntensity}
+              opacity={isHovered ? 0.94 : marker.opacity}
+              roughness={0.38}
+              transparent
+            />
+            {isHovered ? (
+              <Html
+                center
+                distanceFactor={7}
+                position={[0, marker.radius * 3.2, 0]}
+                style={{ pointerEvents: 'none' }}
+              >
+                <div className="whitespace-nowrap rounded border border-emerald-300/50 bg-stone-950/95 px-2 py-1 text-[11px] leading-4 text-stone-100 shadow-lg">
+                  <span className="block font-medium text-emerald-100">{marker.label}</span>
+                  <span className="block font-mono text-stone-400">
+                    intensity {formatNumber(marker.intensity)}
+                  </span>
+                </div>
+              </Html>
+            ) : null}
+          </mesh>
+        );
+      })}
     </group>
   );
 }
@@ -92,12 +145,57 @@ function buildMarkerModel(shape: Shape, enabled: boolean): FieldAtlasMarker[] {
         color: isSourceVertexSample ? '#86efac' : '#67e8f9',
         emissive: isSourceVertexSample ? '#14532d' : '#164e63',
         emissiveIntensity: isSourceVertexSample ? 0.34 : 0.26,
+        intensity: sample.intensity,
+        label: formatSampleMarkerLabel(sample),
         kind: isSourceVertexSample ? 'source-vertex' : 'surface-sample',
       };
     });
   } catch {
     return [];
   }
+}
+
+function clearHoveredSample(
+  sampleId: string,
+  setHoveredFieldAtlasSampleId: (sampleId: string | null) => void,
+): void {
+  if (useGeometryStore.getState().hoveredFieldAtlasSampleId === sampleId) {
+    setHoveredFieldAtlasSampleId(null);
+  }
+}
+
+function formatSampleMarkerLabel(sample: FieldAtlasSample): string {
+  if (sample.id.startsWith('closed-shape-surface:vertex:')) {
+    return 'Vertex sample';
+  }
+
+  if (sample.id.startsWith('closed-shape-surface:face-centroid:')) {
+    return 'Face sample';
+  }
+
+  if (sample.chartSemanticRole === 'computational-only') {
+    return 'Chart sample';
+  }
+
+  return 'Surface sample';
+}
+
+function formatNumber(value: number): string {
+  if (!Number.isFinite(value)) {
+    return String(value);
+  }
+
+  if (value === 0) {
+    return '0';
+  }
+
+  const absoluteValue = Math.abs(value);
+
+  if (absoluteValue < 0.001 || absoluteValue >= 10000) {
+    return value.toExponential(2);
+  }
+
+  return value.toFixed(absoluteValue < 1 ? 4 : 3).replace(/\.?0+$/, '');
 }
 
 function getIntensityRange(samples: FieldAtlasSample[]): { min: number; max: number } {
