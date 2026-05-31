@@ -194,9 +194,13 @@ export function OperationControls() {
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
   const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
   const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
+  const showFieldAtlasSamples = useGeometryStore(
+    (state) => state.viewLayout.showFieldAtlasSamples,
+  );
   const toggleCellVisibility = useGeometryStore((state) => state.toggleCellVisibility);
   const setExplodeAmount = useGeometryStore((state) => state.setExplodeAmount);
   const toggleDualView = useGeometryStore((state) => state.toggleDualView);
+  const toggleFieldAtlasSamples = useGeometryStore((state) => state.toggleFieldAtlasSamples);
   const resetViewLayout = useGeometryStore((state) => state.resetViewLayout);
   const shape = useCurrentShape();
   const selectedCell = findCell(shape, selectedCellId);
@@ -285,6 +289,15 @@ export function OperationControls() {
             checked={dualViewEnabled}
             onChange={toggleDualView}
             className="h-4 w-4 accent-violet-300"
+          />
+        </label>
+        <label className="mb-4 flex items-center justify-between gap-3 text-sm text-stone-300">
+          Field Atlas Samples
+          <input
+            type="checkbox"
+            checked={showFieldAtlasSamples}
+            onChange={toggleFieldAtlasSamples}
+            className="h-4 w-4 accent-emerald-300"
           />
         </label>
         <label className="grid gap-2 text-sm text-stone-300">

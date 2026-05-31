@@ -16,6 +16,7 @@ import {
 } from '../lib/dualView';
 import { type DualInspectionTarget, type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
 import type { Cell, Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
+import { FieldAtlasSampleMarkers } from './FieldAtlasSampleMarkers';
 
 export function Workspace3D() {
   const shape = useGeometryStore((state) => state.shapes[state.currentShapeId]);
@@ -23,6 +24,9 @@ export function Workspace3D() {
   const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
   const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
   const isolateSelectedCell = useGeometryStore((state) => state.viewLayout.isolateSelectedCell);
+  const showFieldAtlasSamples = useGeometryStore(
+    (state) => state.viewLayout.showFieldAtlasSamples,
+  );
   const hoverTarget = useGeometryStore((state) => state.hoverTarget);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
@@ -91,6 +95,7 @@ export function Workspace3D() {
           hoverTarget={hoverTarget}
           onHoverTarget={setHoverTarget}
         />
+        <FieldAtlasSampleMarkers shape={shape} enabled={showFieldAtlasSamples} />
         <SceneCameraControls
           sceneBounds={sceneBounds}
           selectedSceneBounds={selectedSceneBounds}

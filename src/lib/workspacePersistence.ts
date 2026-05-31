@@ -13,6 +13,7 @@ export interface PersistedViewLayout {
   explodeAmount: number;
   dualViewEnabled: boolean;
   isolateSelectedCell: boolean;
+  showFieldAtlasSamples?: boolean;
 }
 
 export interface PersistedOperationHistoryEntry {
@@ -244,6 +245,8 @@ function isViewLayout(value: unknown): value is PersistedViewLayout {
     isRecord(value) &&
     typeof value.dualViewEnabled === 'boolean' &&
     typeof value.isolateSelectedCell === 'boolean' &&
+    (value.showFieldAtlasSamples === undefined ||
+      typeof value.showFieldAtlasSamples === 'boolean') &&
     typeof value.explodeAmount === 'number' &&
     Number.isFinite(value.explodeAmount)
   );

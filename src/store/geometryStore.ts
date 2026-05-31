@@ -4,6 +4,7 @@ import { isCellActiveFrontier } from '../lib/cellLifecycle';
 import {
   serializeWorkspaceSnapshot,
   validateWorkspaceImport,
+  type PersistedViewLayout,
   type PersistedWorkspaceV1,
 } from '../lib/workspacePersistence';
 import { getOperation } from '../operations/registry';
@@ -54,6 +55,7 @@ interface ViewLayout {
   explodeAmount: number;
   dualViewEnabled: boolean;
   isolateSelectedCell: boolean;
+  showFieldAtlasSamples: boolean;
 }
 
 export type InspectionHoverTarget =
@@ -93,6 +95,7 @@ const defaultViewLayout: ViewLayout = {
   explodeAmount: 0,
   dualViewEnabled: false,
   isolateSelectedCell: false,
+  showFieldAtlasSamples: false,
 };
 
 const HISTORY_LIMIT = 50;
@@ -129,6 +132,7 @@ interface GeometryState {
   setExplodeAmount: (explodeAmount: number) => void;
   toggleDualView: () => void;
   toggleIsolateSelectedCell: () => void;
+  toggleFieldAtlasSamples: () => void;
   setHoverTarget: (target: InspectionHoverTarget | null) => void;
   updateSelectedVertexData: (patch: Partial<VertexDataPacket>) => void;
   exportWorkspace: () => PersistedWorkspaceV1;
@@ -401,6 +405,14 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       },
     }));
   },
+  toggleFieldAtlasSamples: () => {
+    set((state) => ({
+      viewLayout: {
+        ...state.viewLayout,
+        showFieldAtlasSamples: !state.viewLayout.showFieldAtlasSamples,
+      },
+    }));
+  },
   setHoverTarget: (target) => {
     set({ hoverTarget: target });
   },
@@ -484,7 +496,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       cellVisibility: importedWorkspace.cellVisibility
         ? { ...importedWorkspace.cellVisibility }
         : defaultCellVisibility,
-      viewLayout: importedWorkspace.viewLayout ? { ...importedWorkspace.viewLayout } : defaultViewLayout,
+      viewLayout: importedWorkspace.viewLayout
+        ? normalizeViewLayout(importedWorkspace.viewLayout)
+        : defaultViewLayout,
       hoverTarget: null,
       undoStack: [],
       redoStack: [],
@@ -503,6 +517,16 @@ function captureWorkspaceSnapshot(state: GeometryState): WorkspaceSnapshot {
     currentShapeId: state.currentShapeId,
     selectedCellId: state.selectedCellId,
     selectedVertexId: state.selectedVertexId,
+  };
+}
+
+function normalizeViewLayout(viewLayout: PersistedViewLayout): ViewLayout {
+  return {
+    explodeAmount: viewLayout.explodeAmount,
+    dualViewEnabled: viewLayout.dualViewEnabled,
+    isolateSelectedCell: viewLayout.isolateSelectedCell,
+    showFieldAtlasSamples:
+      viewLayout.showFieldAtlasSamples ?? defaultViewLayout.showFieldAtlasSamples,
   };
 }
 
