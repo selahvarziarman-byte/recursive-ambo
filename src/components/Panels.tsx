@@ -19,6 +19,11 @@ import {
   type ResolvedDualInspectionTarget,
 } from '../lib/dualView';
 import { buildDiagonalizationMatrices } from '../lib/diagonalizationMatrix';
+import {
+  buildAtomicRegistryReport,
+  type AtomicRegistryReport,
+  type AtomicRegistryUnsupportedDetails,
+} from '../lib/atomicRegistry';
 import { defaultOperation, registeredOperations } from '../operations/registry';
 import { formatVec3 } from '../lib/shape';
 import {
@@ -563,6 +568,10 @@ function SelectionPanel() {
     () => buildDiagonalizationMatrices(shape, selectedCell),
     [selectedCell, shape],
   );
+  const atomicRegistryReport = useMemo(
+    () => (selectedVertexId ? buildAtomicRegistryReport(shape, selectedVertexId) : null),
+    [selectedVertexId, shape],
+  );
   const sectionIndexEntries: SelectionSectionIndexEntry[] = [];
 
   if (dualInspectionTarget) {
@@ -583,6 +592,7 @@ function SelectionPanel() {
   if (vertex) {
     sectionIndexEntries.push(
       { id: 'selection-vertex', label: 'Vertex' },
+      { id: 'selection-atomic-registry', label: 'Atomic' },
       { id: 'selection-packet', label: 'Packet' },
     );
   }
@@ -681,6 +691,17 @@ function SelectionPanel() {
             shape={shape}
             selectedCell={selectedCell}
           />
+        </SidebarSection>
+      ) : null}
+
+      {vertex && atomicRegistryReport ? (
+        <SidebarSection
+          id="selection-atomic-registry"
+          title="Atomic Registry"
+          defaultOpen
+          resetKey={vertex.id}
+        >
+          <AtomicRegistryLens shape={shape} report={atomicRegistryReport} />
         </SidebarSection>
       ) : null}
 
@@ -2236,6 +2257,205 @@ function SelectedVertexSummary({
       <SelectedVertexRelations shape={shape} selectedCell={selectedCell} vertexId={vertex.id} />
     </dl>
   );
+}
+
+function AtomicRegistryLens({
+  shape,
+  report,
+}: {
+  shape: Shape;
+  report: AtomicRegistryReport;
+}) {
+  if (report.status === 'unsupported') {
+    return (
+      <div className="rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
+        <dl className="grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-2">
+          <AtomicRegistryDetail label="Status" value="unsupported" />
+          <AtomicRegistryDetail label="Reason" value={report.reason} code />
+          <AtomicRegistryDetail label="Target" value={shortenId(report.targetVertexId)} code />
+          <AtomicRegistryUnsupportedDetailsRows details={report.details} />
+        </dl>
+      </div>
+    );
+  }
+
+  const projectionSourceLabels = Array.from(
+    new Set(
+      report.triangularFaceContexts.map((context) =>
+        formatAtomicVertexLabel(shape, context.projectionSourceVertexId),
+      ),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
+
+  return (
+    <div className="grid gap-3 rounded border border-stone-800 bg-stone-950 px-3 py-3 text-sm">
+      <dl className="grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-2">
+        <AtomicRegistryDetail label="Status" value="supported" />
+        <AtomicRegistryDetail
+          label="Source edge"
+          value={formatAtomicVertexIdList(shape, report.sourceEdge.vertexIds, ' - ')}
+        />
+        <AtomicRegistryDetail
+          label="Parents"
+          value={report.parentVertices
+            .map((vertex) => formatAtomicVertexLabel(shape, vertex.id))
+            .join(', ')}
+        />
+        <AtomicRegistryDetail
+          label="Projection"
+          value={projectionSourceLabels.join(', ')}
+        />
+        <AtomicRegistryDetail
+          label="Candidate"
+          value={report.candidateReadings.map((reading) => reading.kind).join(', ')}
+          code
+        />
+      </dl>
+
+      <div className="border-t border-stone-800 pt-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+          Triangular face contexts
+        </p>
+        <ul className="mt-2 grid gap-2">
+          {report.triangularFaceContexts.map((context, index) => {
+            const sourceEdgeLabel = formatAtomicVertexIdList(shape, report.sourceEdge.vertexIds, ' - ');
+            const sourceMidpointLabel = formatGeneratedMidpointLabel(
+              shape,
+              report.target.vertexId,
+            );
+            const projectionSourceLabel = formatAtomicVertexLabel(
+              shape,
+              context.projectionSourceVertexId,
+            );
+
+            return (
+              <li
+                key={`${context.generatedFaceId}:${context.projectionSourceVertexId}`}
+                className="rounded border border-stone-800 bg-neutral-950 px-3 py-3 text-xs text-stone-300"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-semibold text-stone-200">Context {index + 1}</p>
+                  <span className="shrink-0 rounded border border-amber-300/20 bg-amber-300/5 px-2 py-0.5 text-[11px] font-semibold text-amber-100">
+                    candidate
+                  </span>
+                </div>
+
+                <dl className="mt-2 grid grid-cols-[104px_minmax(0,1fr)] gap-x-3 gap-y-1.5">
+                  <AtomicRegistryDetail
+                    label="Source face"
+                    value={formatAtomicVertexIdList(shape, context.sourceFaceVertexIds, ' - ')}
+                  />
+                  <AtomicRegistryDetail label="Source edge" value={sourceEdgeLabel} />
+                  <AtomicRegistryDetail label="Projection" value={projectionSourceLabel} />
+                  <AtomicRegistryDetail
+                    label="Generated"
+                    value={formatGeneratedMidpointList(shape, context.generatedFaceVertexIds)}
+                  />
+                </dl>
+
+                <p className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2 text-stone-200">
+                  {sourceMidpointLabel} mediates {sourceEdgeLabel} under face-local projection from{' '}
+                  {projectionSourceLabel}.
+                </p>
+
+                <details className="mt-2 text-[11px] text-stone-500">
+                  <summary className="cursor-pointer select-none text-stone-500">
+                    Technical IDs
+                  </summary>
+                  <div className="mt-1 space-y-1 break-all font-mono">
+                    <div>source face: {shortenId(context.sourceFaceId)}</div>
+                    <div>generated face: {shortenId(context.generatedFaceId)}</div>
+                    <div>projection vertex: {shortenId(context.projectionSourceVertexId)}</div>
+                  </div>
+                </details>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <p className="rounded border border-amber-300/20 bg-amber-300/5 px-2 py-2 text-xs text-amber-100">
+        Candidate-level reading only; this is not final semantic truth.
+      </p>
+    </div>
+  );
+}
+
+function AtomicRegistryDetail({
+  label,
+  value,
+  code = false,
+}: {
+  label: string;
+  value: ReactNode;
+  code?: boolean;
+}) {
+  return (
+    <>
+      <dt className="text-stone-500">{label}</dt>
+      <dd className={`${code ? 'break-all font-mono text-xs' : ''} min-w-0 text-stone-200`}>
+        {value}
+      </dd>
+    </>
+  );
+}
+
+function AtomicRegistryUnsupportedDetailsRows({
+  details,
+}: {
+  details?: AtomicRegistryUnsupportedDetails;
+}) {
+  if (!details) {
+    return null;
+  }
+
+  return (
+    <>
+      {details.operation ? (
+        <AtomicRegistryDetail label="Operation" value={details.operation} code />
+      ) : null}
+      {details.sourceEdgeId ? (
+        <AtomicRegistryDetail label="Source edge" value={shortenId(details.sourceEdgeId)} code />
+      ) : null}
+      {details.sourceVertexIds?.length ? (
+        <AtomicRegistryDetail
+          label="Source vertices"
+          value={details.sourceVertexIds.join(', ')}
+          code
+        />
+      ) : null}
+      {details.faceIds?.length ? (
+        <AtomicRegistryDetail label="Faces" value={details.faceIds.map(shortenId).join(', ')} code />
+      ) : null}
+    </>
+  );
+}
+
+function formatAtomicVertexLabel(shape: Shape, vertexId: VertexId): string {
+  return formatVertexRef(shape, vertexId);
+}
+
+function formatAtomicVertexIdList(
+  shape: Shape,
+  vertexIds: VertexId[],
+  separator: string,
+): string {
+  return vertexIds.map((vertexId) => formatAtomicVertexLabel(shape, vertexId)).join(separator);
+}
+
+function formatGeneratedMidpointLabel(shape: Shape, vertexId: VertexId): string {
+  const vertex = shape.vertices[vertexId];
+  const sourceVertexIds = vertex?.createdBy.sourceVertexIds;
+
+  if (sourceVertexIds?.length === 2) {
+    return `mid(${formatAtomicVertexIdList(shape, sourceVertexIds, '-')})`;
+  }
+
+  return formatAtomicVertexLabel(shape, vertexId);
+}
+
+function formatGeneratedMidpointList(shape: Shape, vertexIds: VertexId[]): string {
+  return vertexIds.map((vertexId) => formatGeneratedMidpointLabel(shape, vertexId)).join(', ');
 }
 
 function HistoryPanel() {
