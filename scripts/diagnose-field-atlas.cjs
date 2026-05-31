@@ -23,6 +23,8 @@ const { createSeedShape } = require(path.join(repoRoot, 'src/data/seeds.ts'));
 const { applyAmboDissection } = require(path.join(repoRoot, 'src/lib/ambo.ts'));
 const {
   DEFAULT_FIELD_ATLAS_SOURCE_POLICY,
+  buildClosedShapeSurfaceRepresentativeSamplePoints,
+  buildClosedShapeSurfaceSourceDomain,
   buildCellSurfaceRepresentativeSamplePoints,
   buildCellSurfaceSourceDomain,
   buildFieldSourcePopulation,
@@ -48,6 +50,7 @@ console.log(
 runTriangularReferenceDiagnostic();
 runPolygonalFaceReferenceDiagnostic();
 runCellSurfaceReferenceDiagnostic();
+runClosedShapeSurfaceReferenceDiagnostic();
 runGeneratedChildSourceDiagnostic();
 
 if (failures.length) {
@@ -309,6 +312,183 @@ function runCellSurfaceReferenceDiagnostic() {
   runTetrahedronCellSurfaceDiagnostic();
   runCubeCellSurfaceDiagnostic();
   runAmboGeneratedCellSurfaceDiagnostic();
+}
+
+function runClosedShapeSurfaceReferenceDiagnostic() {
+  runTetrahedronClosedShapeSurfaceDiagnostic();
+  runCubeClosedShapeSurfaceDiagnostic();
+  runAmboClosedShapeSurfaceDiagnostic();
+}
+
+function runTetrahedronClosedShapeSurfaceDiagnostic() {
+  const shape = createSeedShape('tetrahedron');
+  const before = JSON.stringify(shape);
+  const seedCell = shape.cells.find((candidate) => candidate.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for closed-shape diagnostic');
+    return;
+  }
+
+  const domain = buildClosedShapeSurfaceSourceDomain(shape);
+  const sources = buildFieldSourcePopulation(shape, domain);
+  const samplePoints = buildClosedShapeSurfaceRepresentativeSamplePoints(domain);
+  const samples = sampleFieldAtlasPoints(sources, samplePoints);
+  const uniqueSurfaceVertexIds = uniqueVertexIdsFromFaces(shape, seedCell.faceIds);
+
+  expectEqual(domain.kind, 'closed-shape-surface-reference', 'tetrahedron closed-shape domain kind');
+  expectEqual(domain.shapeId, shape.id, 'tetrahedron closed-shape domain shape id');
+  expectEqual(
+    domain.surfaceSelectionStrategy.kind,
+    'single-cell-seed-surface',
+    'tetrahedron closed-shape selection strategy',
+  );
+  expectEqual(
+    domain.surfaceSelectionStrategy.reliability,
+    'supported',
+    'tetrahedron closed-shape selection reliability',
+  );
+  expectEqual(
+    domain.faceIds.length,
+    seedCell.faceIds.length,
+    'tetrahedron closed-shape face count should match seed cell surface',
+  );
+  expectEqual(
+    domain.vertexIds.length,
+    uniqueSurfaceVertexIds.length,
+    'tetrahedron closed-shape should collect unique surface vertices',
+  );
+  expectEqual(
+    sources.length,
+    uniqueSurfaceVertexIds.length,
+    'tetrahedron closed-shape source count should equal unique surface vertices',
+  );
+  expectEqual(
+    domain.surfaceCharts.length,
+    seedCell.faceIds.length,
+    'tetrahedron closed-shape chart count should match triangular faces',
+  );
+
+  assertSourcesMatchDomainPositions(sources, domain, 'tetrahedron closed-shape surface');
+  assertFieldSamplesAreFinite(samples, sources, 'tetrahedron closed-shape surface');
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('tetrahedron closed-shape diagnostic mutated the seed shape');
+  }
+
+  console.log(
+    `closed shape tetrahedron: strategy=${domain.surfaceSelectionStrategy.kind} faces=${domain.faceIds.length} sources=${sources.length} charts=${domain.surfaceCharts.length}`,
+  );
+}
+
+function runCubeClosedShapeSurfaceDiagnostic() {
+  const shape = createSeedShape('cube');
+  const before = JSON.stringify(shape);
+  const seedCell = shape.cells.find((candidate) => candidate.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('cube seed cell was unavailable for closed-shape diagnostic');
+    return;
+  }
+
+  const domain = buildClosedShapeSurfaceSourceDomain(shape);
+  const sources = buildFieldSourcePopulation(shape, domain);
+  const samplePoints = buildClosedShapeSurfaceRepresentativeSamplePoints(domain);
+  const samples = sampleFieldAtlasPoints(sources, samplePoints);
+  const uniqueSurfaceVertexIds = uniqueVertexIdsFromFaces(shape, seedCell.faceIds);
+  const faceCornerCount = countFaceCorners(shape, seedCell.faceIds);
+  const computationalCharts = domain.surfaceCharts.filter(
+    (chart) => chart.kind === 'computational-triangle-chart',
+  );
+  const directCharts = domain.surfaceCharts.filter(
+    (chart) => chart.kind === 'direct-triangle-face-chart',
+  );
+
+  expectEqual(domain.kind, 'closed-shape-surface-reference', 'cube closed-shape domain kind');
+  expectEqual(domain.shapeId, shape.id, 'cube closed-shape domain shape id');
+  expectEqual(
+    domain.surfaceSelectionStrategy.kind,
+    'single-cell-seed-surface',
+    'cube closed-shape selection strategy',
+  );
+  expectEqual(domain.vertexIds.length, 8, 'cube closed-shape should use all 8 cube vertices');
+  expectEqual(uniqueSurfaceVertexIds.length, 8, 'cube unique closed-surface vertex count should be 8');
+  expectEqual(sources.length, 8, 'cube closed-shape should build 8 unique sources');
+  expectEqual(faceCornerCount, 24, 'cube closed-shape face-corner count should show duplication risk');
+  expectEqual(
+    directCharts.length,
+    0,
+    'cube closed-shape square faces should not become direct triangular charts',
+  );
+  expectEqual(
+    computationalCharts.length,
+    faceCornerCount,
+    'cube closed-shape square faces should create one computational chart per face boundary edge',
+  );
+
+  for (const chart of computationalCharts) {
+    expectEqual(
+      chart.semanticRole,
+      'computational-only',
+      `${chart.chartId} should remain computational-only on cube closed surface`,
+    );
+    expectEqual(
+      chart.computationalSupport.kind,
+      'polygon-centroid',
+      `${chart.chartId} should use centroid as computational support only`,
+    );
+  }
+
+  assertSourcesMatchDomainPositions(sources, domain, 'cube closed-shape surface');
+  assertFieldSamplesAreFinite(samples, sources, 'cube closed-shape surface');
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('cube closed-shape diagnostic mutated the seed shape');
+  }
+
+  console.log(
+    `closed shape cube: strategy=${domain.surfaceSelectionStrategy.kind} unique sources=${sources.length}/${faceCornerCount} face-corners charts=${domain.surfaceCharts.length}`,
+  );
+  console.log(
+    `closed shape cube chart roles: ${Array.from(new Set(domain.surfaceCharts.map((chart) => chart.semanticRole))).join(', ')}`,
+  );
+}
+
+function runAmboClosedShapeSurfaceDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for generated closed-shape diagnostic');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+
+  try {
+    const domain = buildClosedShapeSurfaceSourceDomain(amboShape);
+    const sources = buildFieldSourcePopulation(amboShape, domain);
+    const childSources = sources.filter((source) => source.sourceKind === 'ambo-midpoint-child');
+
+    if (!childSources.length) {
+      recordFailure(
+        'generated closed-shape surface support returned a domain but did not include generated Ambo midpoint sources',
+      );
+    }
+
+    console.log(
+      `closed shape Ambo generated surface: supported strategy=${domain.surfaceSelectionStrategy.kind} child sources=${childSources.length}/${sources.length}`,
+    );
+  } catch (error) {
+    console.log(
+      `closed shape Ambo generated surface: unsupported - missing reliable exterior-face metadata (${error.message})`,
+    );
+  }
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('generated closed-shape diagnostic mutated the Ambo shape');
+  }
 }
 
 function runTetrahedronCellSurfaceDiagnostic() {

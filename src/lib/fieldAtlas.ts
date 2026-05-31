@@ -1,4 +1,4 @@
-import type { CellId, Face, FaceId, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
+import type { CellId, Face, FaceId, Shape, ShapeId, Vec3, Vertex, VertexId } from '../types/geometry';
 
 export interface ComplexValue {
   re: number;
@@ -9,6 +9,7 @@ export type FieldSourceDomainKind =
   | 'triangle-reference'
   | 'polygon-face-reference'
   | 'cell-surface-reference'
+  | 'closed-shape-surface-reference'
   | 'shape-vertices-reference';
 
 export type ComputationalChartSemanticRole = 'computational-only';
@@ -47,6 +48,12 @@ export interface ComputationalTriangleChart {
 
 export type FieldSurfaceSampleChart = DirectTriangleFaceChart | ComputationalTriangleChart;
 
+export interface ClosedShapeSurfaceSelectionStrategy {
+  kind: 'single-cell-seed-surface';
+  reliability: 'supported';
+  sourceCellId: CellId;
+}
+
 export interface TriangleSourceDomain {
   kind: 'triangle-reference';
   id: string;
@@ -74,6 +81,17 @@ export interface CellSurfaceSourceDomain {
   surfaceCharts: FieldSurfaceSampleChart[];
 }
 
+export interface ClosedShapeSurfaceSourceDomain {
+  kind: 'closed-shape-surface-reference';
+  id: string;
+  shapeId: ShapeId;
+  faceIds: FaceId[];
+  vertexIds: VertexId[];
+  positions: Vec3[];
+  surfaceCharts: FieldSurfaceSampleChart[];
+  surfaceSelectionStrategy: ClosedShapeSurfaceSelectionStrategy;
+}
+
 export interface ShapeVerticesSourceDomain {
   kind: 'shape-vertices-reference';
   id: string;
@@ -85,6 +103,7 @@ export type FieldSourceDomain =
   | TriangleSourceDomain
   | PolygonFaceSourceDomain
   | CellSurfaceSourceDomain
+  | ClosedShapeSurfaceSourceDomain
   | ShapeVerticesSourceDomain;
 
 export type FieldAtlasSourceKind =
@@ -313,6 +332,33 @@ export function buildCellSurfaceSourceDomain(
     surfaceCharts: faces.flatMap((face) =>
       buildFaceSurfaceCharts(shape, face, `field-chart:cell-surface:${cell.id}:face:${face.id}`),
     ),
+  };
+}
+
+export function buildClosedShapeSurfaceSourceDomain(shape: Shape): ClosedShapeSurfaceSourceDomain {
+  const sourceCell = getSupportedClosedShapeSurfaceCell(shape);
+
+  if (!sourceCell) {
+    throw new Error(
+      'Closed-shape surface domains are currently supported only for single-cell seed shapes; generated or multi-cell shapes do not expose reliable exterior-face metadata.',
+    );
+  }
+
+  const cellSurface = buildCellSurfaceSourceDomain(shape, sourceCell.id);
+
+  return {
+    kind: 'closed-shape-surface-reference',
+    id: `field-domain:closed-shape-surface:${shape.id}`,
+    shapeId: shape.id,
+    faceIds: cellSurface.faceIds,
+    vertexIds: cellSurface.vertexIds,
+    positions: cellSurface.positions.map(copyVec3),
+    surfaceCharts: cellSurface.surfaceCharts,
+    surfaceSelectionStrategy: {
+      kind: 'single-cell-seed-surface',
+      reliability: 'supported',
+      sourceCellId: sourceCell.id,
+    },
   };
 }
 
@@ -583,6 +629,28 @@ export function buildCellSurfaceRepresentativeSamplePoints(
   return [...vertexSamplePoints, ...chartSamplePoints];
 }
 
+export function buildClosedShapeSurfaceRepresentativeSamplePoints(
+  domain: ClosedShapeSurfaceSourceDomain,
+): FieldAtlasSamplePoint[] {
+  const vertexSamplePoints = domain.vertexIds.map((vertexId, index) => ({
+    id: `closed-shape-surface:vertex:${vertexId}`,
+    position: copyVec3(domain.positions[index]),
+  }));
+  const chartSamplePoints = domain.surfaceCharts.map((chart) => {
+    if (chart.kind === 'direct-triangle-face-chart') {
+      return pointFromDirectTriangleFaceChart(chart, [1 / 3, 1 / 3, 1 / 3], {
+        id: `closed-shape-surface:face-centroid:${chart.sourceFaceId}`,
+      });
+    }
+
+    return pointFromComputationalTriangleChart(chart, [1 / 3, 1 / 3, 1 / 3], {
+      id: `closed-shape-surface:chart-centroid:${chart.chartId}`,
+    });
+  });
+
+  return [...vertexSamplePoints, ...chartSamplePoints];
+}
+
 export function pointFromDirectTriangleFaceChart(
   chart: DirectTriangleFaceChart,
   barycentric: [number, number, number],
@@ -649,6 +717,16 @@ function complexMagnitude(value: ComplexValue): number {
 
 function squaredMagnitude(value: ComplexValue): number {
   return value.re * value.re + value.im * value.im;
+}
+
+function getSupportedClosedShapeSurfaceCell(shape: Shape) {
+  if (shape.cells.length !== 1 || shape.genealogy.operation !== 'seed') {
+    return null;
+  }
+
+  const [cell] = shape.cells;
+
+  return cell.kind === 'seed' ? cell : null;
 }
 
 function buildFaceSurfaceCharts(
