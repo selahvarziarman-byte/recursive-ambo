@@ -45,6 +45,12 @@ const {
   buildGradientDiagnostics,
   estimateChartSampleGradients,
 } = require(path.join(repoRoot, 'src/lib/fieldAtlasGradient.ts'));
+const {
+  buildChartPhaseDiagnostics,
+  buildPhaseDiagnostics,
+  estimateChartPhaseGradients,
+  unwrapChartSamplePhases,
+} = require(path.join(repoRoot, 'src/lib/fieldAtlasPhase.ts'));
 
 const failures = [];
 
@@ -63,6 +69,7 @@ runCellSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceSamplingDiagnostic();
 runClosedShapeSurfaceGradientDiagnostic();
+runClosedShapeSurfacePhaseDiagnostic();
 runGeneratedChildSourceDiagnostic();
 
 if (failures.length) {
@@ -346,6 +353,16 @@ function runClosedShapeSurfaceGradientDiagnostic() {
   runUnderdeterminedClosedShapeSurfaceGradientDiagnostic();
 }
 
+function runClosedShapeSurfacePhaseDiagnostic() {
+  console.log(
+    'phase diagnostics policy: chart-local-nearest-phase-unwrap-plane-v1; scope=chart-local-only; global continuity=none',
+  );
+  runSeedClosedShapeSurfacePhaseDiagnostic('tetrahedron');
+  runSeedClosedShapeSurfacePhaseDiagnostic('cube');
+  runAmboClosedShapeSurfacePhaseDiagnostic();
+  runUnderdeterminedClosedShapeSurfacePhaseDiagnostic();
+}
+
 function runSeedClosedShapeSurfaceSamplingDiagnostic(seedKey) {
   const shape = createSeedShape(seedKey);
   const before = JSON.stringify(shape);
@@ -573,6 +590,113 @@ function runUnderdeterminedClosedShapeSurfaceGradientDiagnostic() {
 
   console.log(
     `surface gradients underdetermined cap: charts=${gradientDiagnostics.chartDiagnostics.length} underdetermined=${countUnderdeterminedGradientCharts(gradientDiagnostics)}`,
+  );
+}
+
+function runSeedClosedShapeSurfacePhaseDiagnostic(seedKey) {
+  const shape = createSeedShape(seedKey);
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape);
+  const phaseDiagnostics = buildPhaseDiagnostics(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, `${seedKey} phase sampled closed-shape surface`);
+  assertPhaseDiagnostics(atlas, phaseDiagnostics, `${seedKey} surface phase diagnostics`, {
+    requireDeterminedCharts: true,
+  });
+
+  if (seedKey === 'cube') {
+    assertComputationalPhaseRolesStayNonSemantic(
+      atlas,
+      phaseDiagnostics,
+      'cube surface phase diagnostics',
+    );
+  }
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure(`${seedKey} surface phase diagnostic mutated the shape`);
+  }
+
+  console.log(
+    `surface phase ${seedKey}: charts=${phaseDiagnostics.chartDiagnostics.length} unwraps=${phaseDiagnostics.sampleUnwraps.length} estimates=${phaseDiagnostics.samplePhaseGradients.length} underdetermined=${countUnderdeterminedPhaseCharts(phaseDiagnostics)} scope=${phaseDiagnostics.scope} global=${phaseDiagnostics.globalContinuity}`,
+  );
+}
+
+function runAmboClosedShapeSurfacePhaseDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for generated surface phase diagnostic');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+  const boundaryClassification = classifyClosedShapeSurfaceBoundary(amboShape);
+
+  if (boundaryClassification.status === 'unsupported') {
+    console.log(
+      `surface phase Ambo generated surface: unsupported - ${boundaryClassification.reason}${formatOptionalDetails(
+        boundaryClassification.details,
+      )}`,
+    );
+
+    if (JSON.stringify(amboShape) !== before) {
+      recordFailure('generated surface phase diagnostic mutated the Ambo shape');
+    }
+
+    return;
+  }
+
+  const atlas = sampleClosedShapeSurfaceAtlas(amboShape);
+  const phaseDiagnostics = buildPhaseDiagnostics(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'generated surface phase sampled atlas');
+  assertPhaseDiagnostics(atlas, phaseDiagnostics, 'generated surface phase diagnostics', {
+    requireDeterminedCharts: true,
+  });
+  assertComputationalPhaseRolesStayNonSemantic(
+    atlas,
+    phaseDiagnostics,
+    'generated surface phase diagnostics',
+  );
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('generated surface phase diagnostic mutated the Ambo shape');
+  }
+
+  console.log(
+    `surface phase Ambo generated surface: charts=${phaseDiagnostics.chartDiagnostics.length} unwraps=${phaseDiagnostics.sampleUnwraps.length} estimates=${phaseDiagnostics.samplePhaseGradients.length} underdetermined=${countUnderdeterminedPhaseCharts(phaseDiagnostics)} scope=${phaseDiagnostics.scope} global=${phaseDiagnostics.globalContinuity}`,
+  );
+}
+
+function runUnderdeterminedClosedShapeSurfacePhaseDiagnostic() {
+  const shape = createSeedShape('cube');
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape, { maxSamples: 1 });
+  const phaseDiagnostics = buildPhaseDiagnostics(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'underdetermined surface phase sampled atlas');
+  assertPhaseDiagnostics(atlas, phaseDiagnostics, 'underdetermined surface phase diagnostics', {
+    requireUnderdeterminedChart: true,
+  });
+
+  if (!phaseDiagnostics.chartDiagnostics.every((diagnostic) => diagnostic.underdetermined)) {
+    recordFailure('underdetermined surface phase diagnostic guessed a chart phase gradient');
+  }
+
+  expectEqual(
+    phaseDiagnostics.samplePhaseGradients.length,
+    0,
+    'underdetermined surface phase diagnostic should not emit sample phase gradients',
+  );
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('underdetermined surface phase diagnostic mutated the cube shape');
+  }
+
+  console.log(
+    `surface phase underdetermined cap: charts=${phaseDiagnostics.chartDiagnostics.length} underdetermined=${countUnderdeterminedPhaseCharts(phaseDiagnostics)} scope=${phaseDiagnostics.scope} global=${phaseDiagnostics.globalContinuity}`,
   );
 }
 
@@ -1477,6 +1601,257 @@ function assertComputationalGradientRolesStayNonSemantic(atlas, gradientDiagnost
   }
 }
 
+function assertPhaseDiagnostics(atlas, phaseDiagnostics, label, options = {}) {
+  expectEqual(
+    phaseDiagnostics.method,
+    'chart-local-nearest-phase-unwrap-plane-v1',
+    `${label} phase method`,
+  );
+  expectEqual(phaseDiagnostics.scope, 'chart-local-only', `${label} phase scope`);
+  expectEqual(
+    phaseDiagnostics.globalContinuity,
+    'none',
+    `${label} global phase continuity claim`,
+  );
+  expectEqual(
+    phaseDiagnostics.chartDiagnostics.length,
+    atlas.domain.surfaceCharts.length,
+    `${label} chart diagnostic count`,
+  );
+
+  const chartDiagnostics = buildChartPhaseDiagnostics(atlas);
+  const samplePhaseGradientEstimates = estimateChartPhaseGradients(atlas);
+  const samplePhaseUnwraps = unwrapChartSamplePhases(atlas);
+
+  expectEqual(
+    chartDiagnostics.length,
+    phaseDiagnostics.chartDiagnostics.length,
+    `${label} chart phase diagnostics helper count`,
+  );
+  expectEqual(
+    samplePhaseGradientEstimates.length,
+    phaseDiagnostics.samplePhaseGradients.length,
+    `${label} sample phase gradient helper count`,
+  );
+  expectEqual(
+    samplePhaseUnwraps.length,
+    phaseDiagnostics.sampleUnwraps.length,
+    `${label} sample phase unwrap helper count`,
+  );
+
+  const chartById = new Map(atlas.domain.surfaceCharts.map((chart) => [chart.chartId, chart]));
+  const chartSummaryById = new Map(atlas.chartSummaries.map((summary) => [summary.chartId, summary]));
+  const diagnosticByChartId = new Map(
+    phaseDiagnostics.chartDiagnostics.map((diagnostic) => [diagnostic.chartId, diagnostic]),
+  );
+  const estimatedGradientTotal = phaseDiagnostics.chartDiagnostics.reduce(
+    (sum, diagnostic) => sum + diagnostic.estimatedGradientCount,
+    0,
+  );
+  const unwrappedSampleTotal = phaseDiagnostics.chartDiagnostics.reduce(
+    (sum, diagnostic) => sum + diagnostic.unwrappedSampleCount,
+    0,
+  );
+
+  expectEqual(
+    estimatedGradientTotal,
+    phaseDiagnostics.samplePhaseGradients.length,
+    `${label} estimated phase gradient count total`,
+  );
+  expectEqual(
+    unwrappedSampleTotal,
+    phaseDiagnostics.sampleUnwraps.length,
+    `${label} unwrapped sample count total`,
+  );
+
+  for (const chart of atlas.domain.surfaceCharts) {
+    const chartSummary = chartSummaryById.get(chart.chartId);
+    const diagnostic = diagnosticByChartId.get(chart.chartId);
+    const chartSampleCount = atlas.samples.filter((sample) => sample.chartId === chart.chartId).length;
+
+    if (!chartSummary) {
+      recordFailure(`${label} chart ${chart.chartId} had no sampled atlas chart summary`);
+    } else {
+      expectEqual(chartSummary.chartId, chart.chartId, `${label} chart summary id`);
+      expectEqual(
+        chartSummary.chartSemanticRole,
+        chart.semanticRole,
+        `${label} chart summary semantic role`,
+      );
+      expectEqual(
+        chartSummary.sourceFaceId,
+        chart.sourceFaceId,
+        `${label} chart summary source face provenance`,
+      );
+    }
+
+    if (!diagnostic) {
+      recordFailure(`${label} chart ${chart.chartId} had no phase diagnostic`);
+      continue;
+    }
+
+    expectEqual(diagnostic.chartId, chart.chartId, `${label} phase chart id`);
+    expectEqual(
+      diagnostic.chartSemanticRole,
+      chart.semanticRole,
+      `${label} phase chart semantic role`,
+    );
+    expectEqual(
+      diagnostic.sourceFaceId,
+      chart.sourceFaceId,
+      `${label} phase source face provenance`,
+    );
+    expectEqual(diagnostic.sampleCount, chartSampleCount, `${label} phase sample count`);
+    expectEqual(diagnostic.method, phaseDiagnostics.method, `${label} phase diagnostic method`);
+    expectEqual(diagnostic.scope, 'chart-local-only', `${label} phase diagnostic scope`);
+    expectEqual(
+      diagnostic.globalContinuity,
+      'none',
+      `${label} phase diagnostic global continuity claim`,
+    );
+
+    if (diagnostic.underdetermined) {
+      if (!diagnostic.underdeterminedReason) {
+        recordFailure(`${label} underdetermined chart ${chart.chartId} did not explain why`);
+      }
+
+      expectEqual(
+        diagnostic.estimatedGradientCount,
+        0,
+        `${label} underdetermined chart ${chart.chartId} estimated phase gradient count`,
+      );
+      continue;
+    }
+
+    expectEqual(
+      diagnostic.unwrappedSampleCount,
+      chartSampleCount,
+      `${label} ${chart.chartId} unwrapped sample count`,
+    );
+    expectFiniteNonnegative(
+      diagnostic.minPhaseGradientMagnitude,
+      `${label} ${chart.chartId} min phase gradient magnitude`,
+    );
+    expectFiniteNonnegative(
+      diagnostic.maxPhaseGradientMagnitude,
+      `${label} ${chart.chartId} max phase gradient magnitude`,
+    );
+    expectFiniteNonnegative(
+      diagnostic.averagePhaseGradientMagnitude,
+      `${label} ${chart.chartId} average phase gradient magnitude`,
+    );
+
+    if (diagnostic.minPhaseGradientMagnitude > diagnostic.maxPhaseGradientMagnitude) {
+      recordFailure(`${label} ${chart.chartId} phase gradient magnitude range is inverted`);
+    }
+
+    if (diagnostic.estimatedGradientCount <= 0) {
+      recordFailure(`${label} ${chart.chartId} did not emit any phase gradient estimates`);
+    }
+  }
+
+  for (const unwrap of phaseDiagnostics.sampleUnwraps) {
+    const chart = chartById.get(unwrap.chartId);
+
+    if (!chart) {
+      recordFailure(`${label} phase unwrap ${unwrap.sampleId} referenced unknown chart ${unwrap.chartId}`);
+      continue;
+    }
+
+    expectEqual(unwrap.chartSemanticRole, chart.semanticRole, `${label} ${unwrap.sampleId} chart role`);
+    expectEqual(unwrap.sourceFaceId, chart.sourceFaceId, `${label} ${unwrap.sampleId} source face`);
+    expectEqual(unwrap.localChartPosition.length, 2, `${label} ${unwrap.sampleId} local coord count`);
+    expectFinite(unwrap.wrappedPhase, `${label} ${unwrap.sampleId} wrapped phase`);
+    expectFinite(unwrap.unwrappedPhase, `${label} ${unwrap.sampleId} unwrapped phase`);
+    expectFinite(unwrap.phaseShiftTurns, `${label} ${unwrap.sampleId} phase shift turns`);
+    expectEqual(unwrap.method, phaseDiagnostics.method, `${label} ${unwrap.sampleId} method`);
+    expectEqual(unwrap.scope, 'chart-local-only', `${label} ${unwrap.sampleId} scope`);
+    expectEqual(unwrap.globalContinuity, 'none', `${label} ${unwrap.sampleId} global continuity`);
+
+    if (unwrap.wrappedPhase < -Math.PI - 1e-9 || unwrap.wrappedPhase > Math.PI + 1e-9) {
+      recordFailure(`${label} ${unwrap.sampleId} wrapped phase left [-pi, pi]`);
+    }
+  }
+
+  for (const estimate of phaseDiagnostics.samplePhaseGradients) {
+    const chart = chartById.get(estimate.chartId);
+
+    if (!chart) {
+      recordFailure(
+        `${label} sample phase gradient ${estimate.sampleId} referenced unknown chart ${estimate.chartId}`,
+      );
+      continue;
+    }
+
+    expectEqual(estimate.chartSemanticRole, chart.semanticRole, `${label} ${estimate.sampleId} chart role`);
+    expectEqual(estimate.sourceFaceId, chart.sourceFaceId, `${label} ${estimate.sampleId} source face`);
+    expectEqual(estimate.localChartPosition.length, 2, `${label} ${estimate.sampleId} local coord count`);
+    expectFinite(estimate.wrappedPhase, `${label} ${estimate.sampleId} wrapped phase`);
+    expectFinite(estimate.unwrappedPhase, `${label} ${estimate.sampleId} unwrapped phase`);
+    expectFinite(estimate.phaseGradient[0], `${label} ${estimate.sampleId} du phase gradient`);
+    expectFinite(estimate.phaseGradient[1], `${label} ${estimate.sampleId} dv phase gradient`);
+    expectFiniteNonnegative(
+      estimate.phaseGradientMagnitude,
+      `${label} ${estimate.sampleId} phase gradient magnitude`,
+    );
+    expectEqual(estimate.method, phaseDiagnostics.method, `${label} ${estimate.sampleId} method`);
+    expectEqual(estimate.scope, 'chart-local-only', `${label} ${estimate.sampleId} scope`);
+    expectEqual(estimate.globalContinuity, 'none', `${label} ${estimate.sampleId} global continuity`);
+  }
+
+  if (
+    options.requireDeterminedCharts &&
+    phaseDiagnostics.chartDiagnostics.some((diagnostic) => diagnostic.underdetermined)
+  ) {
+    recordFailure(`${label} unexpectedly reported underdetermined default chart phase gradients`);
+  }
+
+  if (
+    options.requireUnderdeterminedChart &&
+    !phaseDiagnostics.chartDiagnostics.some((diagnostic) => diagnostic.underdetermined)
+  ) {
+    recordFailure(`${label} did not report any underdetermined chart phase gradients`);
+  }
+}
+
+function assertComputationalPhaseRolesStayNonSemantic(atlas, phaseDiagnostics, label) {
+  const computationalChartIds = new Set(
+    atlas.domain.surfaceCharts
+      .filter((chart) => chart.kind === 'computational-triangle-chart')
+      .map((chart) => chart.chartId),
+  );
+
+  for (const diagnostic of phaseDiagnostics.chartDiagnostics) {
+    if (computationalChartIds.has(diagnostic.chartId)) {
+      expectEqual(
+        diagnostic.chartSemanticRole,
+        'computational-only',
+        `${label} computational phase diagnostic ${diagnostic.chartId} role`,
+      );
+    }
+  }
+
+  for (const unwrap of phaseDiagnostics.sampleUnwraps) {
+    if (computationalChartIds.has(unwrap.chartId)) {
+      expectEqual(
+        unwrap.chartSemanticRole,
+        'computational-only',
+        `${label} computational phase unwrap ${unwrap.sampleId} role`,
+      );
+    }
+  }
+
+  for (const estimate of phaseDiagnostics.samplePhaseGradients) {
+    if (computationalChartIds.has(estimate.chartId)) {
+      expectEqual(
+        estimate.chartSemanticRole,
+        'computational-only',
+        `${label} computational sample phase gradient ${estimate.sampleId} role`,
+      );
+    }
+  }
+}
+
 function assertSurfaceSampleProvenance(atlas, label) {
   const chartById = new Map(atlas.domain.surfaceCharts.map((chart) => [chart.chartId, chart]));
 
@@ -1658,6 +2033,10 @@ function formatOptionalDetails(details) {
 function countUnderdeterminedGradientCharts(gradientDiagnostics) {
   return gradientDiagnostics.chartDiagnostics.filter((diagnostic) => diagnostic.underdetermined)
     .length;
+}
+
+function countUnderdeterminedPhaseCharts(phaseDiagnostics) {
+  return phaseDiagnostics.chartDiagnostics.filter((diagnostic) => diagnostic.underdetermined).length;
 }
 
 function shortenId(id) {
