@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "diagnose:atomic-registry": "node scripts/diagnose-atomic-registry.cjs",
     "diagnose:field-source-child-contexts": "node scripts/diagnose-field-source-child-contexts.cjs",
+    "diagnose:field-source-quark-channels": "node scripts/diagnose-field-source-quark-channels.cjs",
     "diagnose:field-source-profiles": "node scripts/diagnose-field-source-profiles.cjs",
     "diagnose:field-atlas": "node scripts/diagnose-field-atlas.cjs",
     "diagnose:field-sampler": "node scripts/diagnose-field-sampler.cjs",
