@@ -21,6 +21,18 @@ export type FieldRouteGateCandidateKind =
   | 'gate-candidate'
   | 'route-candidate'
   | 'blocked-or-failed-route-candidate';
+export type FieldRouteGateCandidateSubtype =
+  | 'low-intensity-mixed-connective-sample'
+  | 'bounded-high-intensity-graph-path'
+  | 'computational-support-ambiguity'
+  | 'missing-seam-support'
+  | 'seam-crossing-bounded-path'
+  | 'chart-local-bounded-path';
+export type FieldRouteGateCandidateClaimStatus =
+  | 'heuristic-candidate'
+  | 'diagnostic-only'
+  | 'insufficient-for-confirmed-route'
+  | 'insufficient-for-confirmed-gate';
 export type FieldRouteGateCandidateReliability = 'bounded-diagnostic' | 'low-confidence';
 
 export interface FieldRouteGateCandidateOptions {
@@ -55,10 +67,26 @@ export interface FieldRouteGateContributionMixtureSummary {
   mixedSampleCount: number;
 }
 
+export interface FieldRouteGateCandidateEvidenceProfile {
+  relativeIntensityMin?: number;
+  relativeIntensityMax?: number;
+  averageRelativeIntensity?: number;
+  averageEffectiveSourceCount: number;
+  maxTopContributionRatio: number;
+  mixedSampleCount: number;
+  chartLocalEdgeCount: number;
+  seamEdgeCount: number;
+  computationalOnlySampleCount: number;
+  pathLength?: number;
+  endpointRelativeIntensities?: number[];
+}
+
 export interface FieldRouteGateCandidate {
   candidateId: string;
   candidateKind: FieldRouteGateCandidateKind;
+  candidateSubtype: FieldRouteGateCandidateSubtype;
   status: FieldRouteGateCandidateStatus;
+  claimStatus: FieldRouteGateCandidateClaimStatus;
   semanticStatus: FieldRouteGateCandidateSemanticStatus;
   topologyStatus: FieldRouteGateCandidateTopologyStatus;
   phaseContinuityStatus: FieldRouteGateCandidatePhaseContinuityStatus;
@@ -71,6 +99,7 @@ export interface FieldRouteGateCandidate {
   pathLength?: number;
   intensitySummary: FieldRouteGateIntensitySummary;
   contributionMixtureSummary: FieldRouteGateContributionMixtureSummary;
+  evidenceProfile: FieldRouteGateCandidateEvidenceProfile;
   reliability: FieldRouteGateCandidateReliability;
   reason: string;
 }
@@ -131,6 +160,12 @@ interface GraphNeighbor {
 interface BoundedPath {
   sampleIds: string[];
   edgeIds: string[];
+}
+
+interface EvidenceProfileOptions {
+  sampleIds?: readonly string[];
+  pathLength?: number;
+  endpointRelativeIntensities?: number[];
 }
 
 const METHOD: FieldRouteGateCandidateMethod = 'field-route-gate-candidates-v0';
@@ -221,6 +256,8 @@ function buildGateCandidates(
         candidate: buildCandidate({
           candidateId: `field-route-gate-candidate:v0:gate:${node.sampleId}`,
           candidateKind: 'gate-candidate',
+          candidateSubtype: 'low-intensity-mixed-connective-sample',
+          claimStatus: 'insufficient-for-confirmed-gate',
           sampleIds: involvedSampleIds,
           chartIds,
           chartSemanticRoles,
@@ -229,12 +266,17 @@ function buildGateCandidates(
           sourcePolicyNames: context.sourcePolicyNames,
           intensitySummary: summarizeIntensity([sample]),
           contributionMixtureSummary: mixture,
+          evidenceProfile: buildEvidenceProfile([sample], incidentEdges, context, {
+            sampleIds: involvedSampleIds,
+          }),
           reliability: seamEdgesInvolved ? 'bounded-diagnostic' : 'low-confidence',
           reason:
-            `Low relative intensity ${formatNumber(relativeIntensity)} with mixed source contribution ` +
+            'Heuristic gate candidate: low relative intensity plus mixed contribution at a locally connective graph node. ' +
+            `relativeIntensity=${formatNumber(relativeIntensity)}, ` +
             `effectiveSourceCount=${formatNumber(mixture.averageEffectiveSourceCount)}. ` +
             `Incident graph support includes ${chartLocalEdgeCount} chart-local edge(s) and ` +
-            `${seamEdgeCount} seam edge(s). Candidate-only, not a confirmed gate or semantic site.`,
+            `${seamEdgeCount} seam edge(s). Candidate-only, insufficient for confirmed gate; ` +
+            'not a confirmed gate or semantic site.',
         }),
         relativeIntensity,
         effectiveSourceCount: mixture.averageEffectiveSourceCount,
@@ -306,11 +348,19 @@ function buildRouteCandidates(
 
       const pathEdges = getEdgesForIds(path.edgeIds, context);
       const seamEdgesInvolved = pathEdges.some(isSeamAwareEdge);
+      const endpointRelativeIntensities = [
+        relativeIntensityOf(pathSamples[0], context.intensityRange),
+        relativeIntensityOf(pathSamples[pathSamples.length - 1], context.intensityRange),
+      ];
 
       candidates.push(
         buildCandidate({
           candidateId: `field-route-gate-candidate:v0:route:${candidates.length}:${path.sampleIds[0]}:${path.sampleIds[path.sampleIds.length - 1]}`,
           candidateKind: 'route-candidate',
+          candidateSubtype: seamEdgesInvolved
+            ? 'seam-crossing-bounded-path'
+            : 'chart-local-bounded-path',
+          claimStatus: 'insufficient-for-confirmed-route',
           sampleIds: path.sampleIds,
           chartIds: getChartIdsForSampleIds(path.sampleIds, context),
           chartSemanticRoles: getChartSemanticRolesForSampleIds(path.sampleIds, context),
@@ -320,12 +370,19 @@ function buildRouteCandidates(
           pathLength: path.edgeIds.length,
           intensitySummary: summarizeIntensity(pathSamples),
           contributionMixtureSummary: summarizeContributionMixture(pathSamples),
+          evidenceProfile: buildEvidenceProfile(pathSamples, pathEdges, context, {
+            sampleIds: path.sampleIds,
+            pathLength: path.edgeIds.length,
+            endpointRelativeIntensities,
+          }),
           reliability: seamEdgesInvolved ? 'bounded-diagnostic' : 'low-confidence',
           reason:
-            `Short bounded path of ${path.edgeIds.length} edge(s) between high-intensity samples ` +
-            `over the seam-aware graph. Path includes ${countSeamEdges(pathEdges)} seam edge(s) ` +
+            'Heuristic route candidate: bounded graph path between high-intensity endpoints. ' +
+            `Path length is ${path.edgeIds.length} edge(s) over the seam-aware graph, including ` +
+            `${countSeamEdges(pathEdges)} seam edge(s) ` +
             `and ${pathEdges.length - countSeamEdges(pathEdges)} chart-local edge(s). ` +
-            'Candidate-only, not a confirmed route, support region, or semantic site.',
+            'No monotonicity, phase compatibility, or cost optimality is claimed. ' +
+            'Candidate-only, insufficient for confirmed route; not a confirmed route, support region, or semantic site.',
         }),
       );
     }
@@ -350,6 +407,8 @@ function buildBlockedRouteCandidates(
       buildCandidate({
         candidateId: `field-route-gate-candidate:v0:blocked:${seamReason.reasonKind}`,
         candidateKind: 'blocked-or-failed-route-candidate',
+        candidateSubtype: 'missing-seam-support',
+        claimStatus: 'diagnostic-only',
         sampleIds: [],
         chartIds: [],
         chartSemanticRoles: [],
@@ -358,9 +417,12 @@ function buildBlockedRouteCandidates(
         sourcePolicyNames: context.sourcePolicyNames,
         intensitySummary: summarizeIntensity([]),
         contributionMixtureSummary: summarizeContributionMixture([]),
+        evidenceProfile: buildEvidenceProfile([], [], context),
         reliability: 'low-confidence',
         reason:
-          `${seamReason.reason} Blocked-or-failed route candidate only; no route/gate is confirmed.`,
+          `Blocked/failed route candidate: missing seam support. ${seamReason.reason} ` +
+          'This is a missing-support diagnostic, not an actual proved blockage. ' +
+          'Candidate only; no route/gate is confirmed.',
       }),
     );
   }
@@ -389,6 +451,8 @@ function buildBlockedRouteCandidates(
       buildCandidate({
         candidateId: `field-route-gate-candidate:v0:blocked:${edge.edgeId}`,
         candidateKind: 'blocked-or-failed-route-candidate',
+        candidateSubtype: 'computational-support-ambiguity',
+        claimStatus: 'diagnostic-only',
         sampleIds: [...edge.sampleIds],
         chartIds: getChartIdsForSampleIds(edge.sampleIds, context),
         chartSemanticRoles: getChartSemanticRolesForSampleIds(edge.sampleIds, context),
@@ -398,12 +462,16 @@ function buildBlockedRouteCandidates(
         pathLength: 1,
         intensitySummary: summarizeIntensity(samples),
         contributionMixtureSummary: summarizeContributionMixture(samples),
+        evidenceProfile: buildEvidenceProfile(samples, [edge], context, {
+          sampleIds: edge.sampleIds,
+          pathLength: 1,
+        }),
         reliability: 'low-confidence',
         reason:
-          `Candidate relation crosses computational-only chart support through a ${
+          `Blocked/failed route candidate: computational-only support ambiguity through a ${
             seamEdgesInvolved ? 'seam' : 'chart-local'
-          } edge. This preserves ambiguity as blocked-or-failed-route-candidate only, ` +
-          'not a confirmed route/gate or topology claim.',
+          } edge. This distinguishes chart-support ambiguity from an actual proved blockage. ` +
+          'Candidate only, not a proved obstruction, confirmed route/gate, or topology claim.',
       }),
     );
   }
@@ -653,6 +721,40 @@ function summarizeContributionMixture(
   };
 }
 
+function buildEvidenceProfile(
+  samples: SurfaceChartAtlasSample[],
+  edges: ClosedSurfaceSeamAwareSampleGraphEdge[],
+  context: CandidateBuildContext,
+  options: EvidenceProfileOptions = {},
+): FieldRouteGateCandidateEvidenceProfile {
+  const mixture = summarizeContributionMixture(samples);
+  const relativeIntensities = samples.map((sample) =>
+    relativeIntensityOf(sample, context.intensityRange),
+  );
+  const sampleIds = options.sampleIds ?? samples.map((sample) => sample.id);
+  const profile: FieldRouteGateCandidateEvidenceProfile = {
+    averageEffectiveSourceCount: mixture.averageEffectiveSourceCount,
+    maxTopContributionRatio: mixture.maxTopContributionRatio,
+    mixedSampleCount: mixture.mixedSampleCount,
+    chartLocalEdgeCount: edges.filter((edge) => !isSeamAwareEdge(edge)).length,
+    seamEdgeCount: edges.filter(isSeamAwareEdge).length,
+    computationalOnlySampleCount: countComputationalOnlySamples(sampleIds, context),
+    ...(typeof options.pathLength === 'number' ? { pathLength: options.pathLength } : {}),
+    ...(options.endpointRelativeIntensities
+      ? { endpointRelativeIntensities: [...options.endpointRelativeIntensities] }
+      : {}),
+  };
+
+  if (relativeIntensities.length) {
+    profile.relativeIntensityMin = Math.min(...relativeIntensities);
+    profile.relativeIntensityMax = Math.max(...relativeIntensities);
+    profile.averageRelativeIntensity =
+      relativeIntensities.reduce((sum, value) => sum + value, 0) / relativeIntensities.length;
+  }
+
+  return profile;
+}
+
 function getEffectiveSourceCount(sample: SurfaceChartAtlasSample): number {
   const ratioSquares = sample.contributionRatios.reduce(
     (sum, ratio) => sum + ratio.value * ratio.value,
@@ -719,6 +821,13 @@ function getChartSemanticRolesForSampleIds(
 
 function isComputationalOnlySample(sampleId: string, context: CandidateBuildContext): boolean {
   return context.nodeById.get(sampleId)?.chartSemanticRole === 'computational-only';
+}
+
+function countComputationalOnlySamples(
+  sampleIds: readonly string[],
+  context: CandidateBuildContext,
+): number {
+  return sampleIds.filter((sampleId) => isComputationalOnlySample(sampleId, context)).length;
 }
 
 function relativeIntensityOf(

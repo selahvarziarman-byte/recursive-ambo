@@ -2817,10 +2817,81 @@ function assertFieldRouteGateCandidate(candidate, report, sampleById, chartById,
   }
 
   if (
+    candidate.candidateSubtype !== 'low-intensity-mixed-connective-sample' &&
+    candidate.candidateSubtype !== 'bounded-high-intensity-graph-path' &&
+    candidate.candidateSubtype !== 'computational-support-ambiguity' &&
+    candidate.candidateSubtype !== 'missing-seam-support' &&
+    candidate.candidateSubtype !== 'seam-crossing-bounded-path' &&
+    candidate.candidateSubtype !== 'chart-local-bounded-path'
+  ) {
+    recordFailure(`${label} ${candidate.candidateId} used an unsupported candidate subtype`);
+  }
+
+  if (
+    candidate.claimStatus !== 'heuristic-candidate' &&
+    candidate.claimStatus !== 'diagnostic-only' &&
+    candidate.claimStatus !== 'insufficient-for-confirmed-route' &&
+    candidate.claimStatus !== 'insufficient-for-confirmed-gate'
+  ) {
+    recordFailure(`${label} ${candidate.candidateId} used an unsupported claim status`);
+  }
+
+  if (
     candidate.candidateKind === 'route-candidate' &&
     (typeof candidate.pathLength !== 'number' || candidate.pathLength <= 0)
   ) {
     recordFailure(`${label} ${candidate.candidateId} route candidate did not carry a path length`);
+  }
+
+  if (candidate.candidateKind === 'route-candidate') {
+    expectEqual(
+      candidate.claimStatus,
+      'insufficient-for-confirmed-route',
+      `${label} ${candidate.candidateId} route claim status`,
+    );
+
+    if (!candidate.reason.toLowerCase().includes('not a confirmed route')) {
+      recordFailure(`${label} ${candidate.candidateId} did not disclaim confirmed route status`);
+    }
+  }
+
+  if (candidate.candidateKind === 'gate-candidate') {
+    expectEqual(
+      candidate.claimStatus,
+      'insufficient-for-confirmed-gate',
+      `${label} ${candidate.candidateId} gate claim status`,
+    );
+
+    if (!candidate.reason.toLowerCase().includes('not a confirmed gate')) {
+      recordFailure(`${label} ${candidate.candidateId} did not disclaim confirmed gate status`);
+    }
+  }
+
+  if (candidate.candidateKind === 'blocked-or-failed-route-candidate') {
+    if (
+      candidate.candidateSubtype !== 'computational-support-ambiguity' &&
+      candidate.candidateSubtype !== 'missing-seam-support'
+    ) {
+      recordFailure(`${label} ${candidate.candidateId} blocked candidate did not explain its subtype`);
+    }
+
+    if (
+      candidate.candidateSubtype === 'computational-support-ambiguity' &&
+      !candidate.reason.toLowerCase().includes('computational-only support ambiguity')
+    ) {
+      recordFailure(`${label} ${candidate.candidateId} did not identify computational ambiguity`);
+    }
+
+    if (
+      candidate.candidateSubtype === 'missing-seam-support' &&
+      !candidate.reason.toLowerCase().includes('missing seam support')
+    ) {
+      recordFailure(`${label} ${candidate.candidateId} did not identify missing seam support`);
+    }
+
+    if (!candidate.reason.toLowerCase().includes('actual proved blockage')) {
+      recordFailure(`${label} ${candidate.candidateId} did not distinguish ambiguity from proved blockage`);
+    }
   }
 
   for (const sampleId of candidate.sampleIds) {
@@ -2873,6 +2944,8 @@ function assertFieldRouteGateCandidate(candidate, report, sampleById, chartById,
     `${label} ${candidate.candidateId} mixed sample count`,
   );
 
+  assertFieldRouteGateEvidenceProfile(candidate, label);
+
   if (candidate.reliability !== 'bounded-diagnostic' && candidate.reliability !== 'low-confidence') {
     recordFailure(`${label} ${candidate.candidateId} used unsupported reliability`);
   }
@@ -2881,8 +2954,77 @@ function assertFieldRouteGateCandidate(candidate, report, sampleById, chartById,
     recordFailure(`${label} ${candidate.candidateId} did not explain its reason`);
   }
 
-  if (!candidate.reason.includes('Candidate-only') && !candidate.reason.includes('candidate only')) {
+  if (!candidate.reason.toLowerCase().includes('candidate-only') && !candidate.reason.toLowerCase().includes('candidate only')) {
     recordFailure(`${label} ${candidate.candidateId} reason did not preserve candidate-only language`);
+  }
+}
+
+function assertFieldRouteGateEvidenceProfile(candidate, label) {
+  const profile = candidate.evidenceProfile;
+
+  if (!profile) {
+    recordFailure(`${label} ${candidate.candidateId} did not include an evidence profile`);
+    return;
+  }
+
+  for (const key of [
+    'relativeIntensityMin',
+    'relativeIntensityMax',
+    'averageRelativeIntensity',
+    'pathLength',
+  ]) {
+    if (profile[key] !== undefined) {
+      expectFiniteNonnegative(
+        profile[key],
+        `${label} ${candidate.candidateId} evidence ${key}`,
+      );
+    }
+  }
+
+  expectFiniteNonnegative(
+    profile.averageEffectiveSourceCount,
+    `${label} ${candidate.candidateId} evidence effective source count`,
+  );
+  expectFiniteNonnegative(
+    profile.maxTopContributionRatio,
+    `${label} ${candidate.candidateId} evidence top contribution ratio`,
+  );
+  expectFiniteNonnegative(
+    profile.mixedSampleCount,
+    `${label} ${candidate.candidateId} evidence mixed sample count`,
+  );
+  expectFiniteNonnegative(
+    profile.chartLocalEdgeCount,
+    `${label} ${candidate.candidateId} evidence chart-local edge count`,
+  );
+  expectFiniteNonnegative(
+    profile.seamEdgeCount,
+    `${label} ${candidate.candidateId} evidence seam edge count`,
+  );
+  expectFiniteNonnegative(
+    profile.computationalOnlySampleCount,
+    `${label} ${candidate.candidateId} evidence computational-only sample count`,
+  );
+
+  if (profile.endpointRelativeIntensities !== undefined) {
+    if (!Array.isArray(profile.endpointRelativeIntensities)) {
+      recordFailure(`${label} ${candidate.candidateId} endpoint relative intensities were not an array`);
+    } else {
+      for (const value of profile.endpointRelativeIntensities) {
+        expectFiniteNonnegative(
+          value,
+          `${label} ${candidate.candidateId} endpoint relative intensity`,
+        );
+      }
+    }
+  }
+
+  if (
+    profile.relativeIntensityMin !== undefined &&
+    profile.relativeIntensityMax !== undefined &&
+    profile.relativeIntensityMin > profile.relativeIntensityMax
+  ) {
+    recordFailure(`${label} ${candidate.candidateId} evidence relative intensity range is inverted`);
   }
 }
 
