@@ -25,6 +25,11 @@ import {
   type ChartPhaseDiagnostic,
   type FieldAtlasPhaseDiagnostics,
 } from '../lib/fieldAtlasPhase';
+import {
+  buildFieldFeatureReport,
+  type FieldFeatureReport,
+  type FieldFeatureReportObservation,
+} from '../lib/fieldAtlasFeatureReport';
 import { useGeometryStore } from '../store/geometryStore';
 import type { Shape, VertexId } from '../types/geometry';
 
@@ -122,6 +127,7 @@ export function FieldAtlasInspector({
   shortenId,
 }: FieldAtlasInspectorProps) {
   const atlas = useMemo(() => buildInspectorModel(shape), [shape]);
+  const fieldReport = useMemo(() => buildFieldFeatureReport(shape), [shape]);
   const [advancedDiagnosticsOpen, setAdvancedDiagnosticsOpen] = useState(false);
   const hoveredFieldAtlasSampleId = useGeometryStore(
     (state) => state.hoveredFieldAtlasSampleId,
@@ -139,6 +145,7 @@ export function FieldAtlasInspector({
           </span>
           <p className="mt-2 text-xs leading-5 text-stone-300">{atlas.reason}</p>
         </div>
+        <FieldReportSection report={fieldReport} />
         <AdvancedFieldDiagnosticsSection
           open={advancedDiagnosticsOpen}
           onOpenChange={setAdvancedDiagnosticsOpen}
@@ -200,6 +207,8 @@ export function FieldAtlasInspector({
         </div>
       </div>
 
+      <FieldReportSection report={fieldReport} />
+
       <div className="grid gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
           Sample Probes
@@ -228,6 +237,122 @@ export function FieldAtlasInspector({
       />
 
       <FieldAtlasDiagnosticNote />
+    </div>
+  );
+}
+
+function FieldReportSection({ report }: { report: FieldFeatureReport }) {
+  if (report.status === 'unsupported') {
+    return (
+      <div className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-xs">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+          Field Report
+        </h3>
+        <div className="mt-2 rounded border border-amber-400/30 bg-amber-400/10 px-2 py-2">
+          <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-amber-200">
+            Unsupported
+          </span>
+          <p className="mt-2 leading-5 text-stone-300">{report.reason}</p>
+        </div>
+        <dl className="mt-2 grid grid-cols-2 gap-2 text-xs">
+          <FieldAtlasMetric label="Method" value={report.method} />
+          <FieldAtlasMetric label="Scope" value={formatReportScope(report.scope)} />
+          <FieldAtlasMetric
+            label="Semantic"
+            value={formatReportSemanticStatus(report.semanticStatus)}
+          />
+          <FieldAtlasMetric
+            label="Global continuity"
+            value={formatReportGlobalContinuity(report.globalSurfaceContinuity)}
+          />
+        </dl>
+      </div>
+    );
+  }
+
+  const visibleObservations = report.observations.slice(0, 5);
+
+  return (
+    <div className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-xs">
+      <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Field Report
+      </h3>
+      <dl className="mt-2 grid grid-cols-2 gap-2 text-xs">
+        <FieldAtlasMetric
+          label="Semantic"
+          value={formatReportSemanticStatus(report.semanticStatus)}
+        />
+        <FieldAtlasMetric label="Scope" value={formatReportScope(report.scope)} />
+        <FieldAtlasMetric
+          label="Global continuity"
+          value={formatReportGlobalContinuity(report.globalSurfaceContinuity)}
+        />
+        <FieldAtlasMetric label="Sources" value={report.sourceSummary.totalSources} />
+        <FieldAtlasMetric label="Generated" value={report.sourceSummary.generatedSources} />
+        <FieldAtlasMetric
+          label="Ambo midpoints"
+          value={report.sourceSummary.amboMidpointSources}
+        />
+        <FieldAtlasMetric
+          label="Cancellation-like"
+          value={report.observationSummary.cancellationLikeCount}
+        />
+        <FieldAtlasMetric
+          label="High-intensity"
+          value={report.observationSummary.highIntensityAnchorCount}
+        />
+        <FieldAtlasMetric
+          label="Ambiguous sites"
+          value={report.observationSummary.ambiguousCount}
+        />
+      </dl>
+
+      <div className="mt-3 grid gap-2">
+        {visibleObservations.length ? (
+          visibleObservations.map((observation) => (
+            <FieldReportObservationRow
+              key={observation.observationId}
+              observation={observation}
+            />
+          ))
+        ) : (
+          <p className="rounded border border-stone-800 bg-stone-900 px-2 py-2 text-stone-500">
+            No report-candidate observations under the current report bounds.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FieldReportObservationRow({
+  observation,
+}: {
+  observation: FieldFeatureReportObservation;
+}) {
+  return (
+    <div className="rounded border border-stone-800 bg-stone-900 px-2 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="font-medium text-stone-200">
+          {formatReportObservationKind(observation.observationKind)}
+        </span>
+        <span className="font-mono text-[11px] text-stone-500">{observation.status}</span>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-stone-500">
+        <span>{formatReportSemanticStatus(observation.semanticStatus)}</span>
+        <span className="text-right font-mono">
+          rel {formatNumber(observation.relativeIntensity)}
+        </span>
+        <span className="font-mono">
+          eff {formatNumber(observation.effectiveSourceCount)}
+        </span>
+        <span className="text-right font-mono">
+          top {formatPercent(observation.topContributionRatio)}
+        </span>
+      </div>
+      <p className="mt-2 leading-5 text-stone-400">
+        {shortenReportReason(observation.reason)}
+      </p>
     </div>
   );
 }
@@ -1226,6 +1351,37 @@ function formatEdgeLabel(
 
 function formatChartRole(role: string): string {
   return role === 'computational-only' ? 'computational-only' : role;
+}
+
+function formatReportObservationKind(kind: FieldFeatureReportObservation['observationKind']): string {
+  switch (kind) {
+    case 'cancellation-like-site-candidate':
+      return 'Cancellation-like candidate';
+    case 'high-intensity-anchor-candidate':
+      return 'High-intensity anchor candidate';
+    case 'ambiguous-field-site':
+      return 'Ambiguous field-site candidate';
+    default:
+      return kind;
+  }
+}
+
+function formatReportSemanticStatus(status: string): string {
+  return status === 'not-semantic-naming' ? 'not semantic naming' : status;
+}
+
+function formatReportScope(scope: string): string {
+  return scope === 'chart-local-only' ? 'chart-local only' : scope;
+}
+
+function formatReportGlobalContinuity(globalSurfaceContinuity: string): string {
+  return globalSurfaceContinuity === 'none' ? 'none' : globalSurfaceContinuity;
+}
+
+function shortenReportReason(reason: string): string {
+  const compactReason = reason.replace(/\s+/g, ' ').trim();
+
+  return compactReason.length > 150 ? `${compactReason.slice(0, 147)}...` : compactReason;
 }
 
 function formatPhaseGradientStatus(
