@@ -51,6 +51,11 @@ const {
   estimateChartPhaseGradients,
   unwrapChartSamplePhases,
 } = require(path.join(repoRoot, 'src/lib/fieldAtlasPhase.ts'));
+const {
+  buildChartSampleGraph,
+  buildSurfaceSampleGraph,
+  summarizeSurfaceSampleGraph,
+} = require(path.join(repoRoot, 'src/lib/fieldAtlasSampleGraph.ts'));
 
 const failures = [];
 
@@ -68,6 +73,7 @@ runPolygonalFaceReferenceDiagnostic();
 runCellSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceSamplingDiagnostic();
+runClosedShapeSurfaceSampleGraphDiagnostic();
 runClosedShapeSurfaceGradientDiagnostic();
 runClosedShapeSurfacePhaseDiagnostic();
 runGeneratedChildSourceDiagnostic();
@@ -346,6 +352,16 @@ function runClosedShapeSurfaceSamplingDiagnostic() {
   runClosedShapeSurfaceSamplingBoundsDiagnostic();
 }
 
+function runClosedShapeSurfaceSampleGraphDiagnostic() {
+  console.log(
+    'sample graph policy: chart-local-barycentric-lattice-v1; scope=chart-local-only; global surface continuity=none',
+  );
+  runSeedClosedShapeSurfaceSampleGraphDiagnostic('tetrahedron');
+  runSeedClosedShapeSurfaceSampleGraphDiagnostic('cube');
+  runAmboClosedShapeSurfaceSampleGraphDiagnostic();
+  runBoundedClosedShapeSurfaceSampleGraphDiagnostic();
+}
+
 function runClosedShapeSurfaceGradientDiagnostic() {
   runSeedClosedShapeSurfaceGradientDiagnostic('tetrahedron');
   runSeedClosedShapeSurfaceGradientDiagnostic('cube');
@@ -483,6 +499,101 @@ function runClosedShapeSurfaceSamplingBoundsDiagnostic() {
 
   console.log(
     `sampled closed shape bounded cap: samples=${atlas.samples.length}/${atlas.options.maxSamples} subdivisions=${atlas.options.subdivisions}`,
+  );
+}
+
+function runSeedClosedShapeSurfaceSampleGraphDiagnostic(seedKey) {
+  const shape = createSeedShape(seedKey);
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape);
+  const graph = buildSurfaceSampleGraph(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, `${seedKey} sample graph sampled closed-shape surface`);
+  assertSurfaceSampleGraph(atlas, graph, `${seedKey} surface sample graph`, {
+    requireNoUnderconnectedCharts: true,
+  });
+
+  if (seedKey === 'cube') {
+    assertComputationalSampleGraphRolesStayNonSemantic(atlas, graph, 'cube surface sample graph');
+  }
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure(`${seedKey} surface sample graph diagnostic mutated the shape`);
+  }
+
+  console.log(
+    `surface sample graph ${seedKey}: charts=${graph.summary.chartCount} nodes=${graph.summary.totalNodeCount} edges=${graph.summary.totalEdgeCount} isolated=${graph.summary.isolatedNodeCount} strategy=${graph.adjacencyStrategy} scope=${graph.scope} global=${graph.globalSurfaceContinuity}`,
+  );
+}
+
+function runAmboClosedShapeSurfaceSampleGraphDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for generated surface sample graph diagnostic');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+  const boundaryClassification = classifyClosedShapeSurfaceBoundary(amboShape);
+
+  if (boundaryClassification.status === 'unsupported') {
+    console.log(
+      `surface sample graph Ambo generated surface: unsupported - ${boundaryClassification.reason}${formatOptionalDetails(
+        boundaryClassification.details,
+      )}`,
+    );
+
+    if (JSON.stringify(amboShape) !== before) {
+      recordFailure('generated surface sample graph diagnostic mutated the Ambo shape');
+    }
+
+    return;
+  }
+
+  const atlas = sampleClosedShapeSurfaceAtlas(amboShape);
+  const graph = buildSurfaceSampleGraph(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'generated surface sample graph sampled atlas');
+  assertSurfaceSampleGraph(atlas, graph, 'generated surface sample graph', {
+    requireNoUnderconnectedCharts: true,
+  });
+  assertComputationalSampleGraphRolesStayNonSemantic(atlas, graph, 'generated surface sample graph');
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('generated surface sample graph diagnostic mutated the Ambo shape');
+  }
+
+  console.log(
+    `surface sample graph Ambo generated surface: charts=${graph.summary.chartCount} nodes=${graph.summary.totalNodeCount} edges=${graph.summary.totalEdgeCount} isolated=${graph.summary.isolatedNodeCount} strategy=${graph.adjacencyStrategy} scope=${graph.scope} global=${graph.globalSurfaceContinuity}`,
+  );
+}
+
+function runBoundedClosedShapeSurfaceSampleGraphDiagnostic() {
+  const shape = createSeedShape('cube');
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape, { subdivisions: 8, maxSamples: 17 });
+  const graph = buildSurfaceSampleGraph(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'bounded surface sample graph sampled atlas');
+  assertSurfaceSampleGraph(atlas, graph, 'bounded surface sample graph', {
+    requireUnderconnectedChart: true,
+  });
+
+  if (graph.summary.totalNodeCount > atlas.options.maxSamples) {
+    recordFailure(
+      `bounded surface sample graph produced ${graph.summary.totalNodeCount} nodes over cap ${atlas.options.maxSamples}`,
+    );
+  }
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('bounded surface sample graph diagnostic mutated the cube shape');
+  }
+
+  console.log(
+    `surface sample graph bounded cap: nodes=${graph.summary.totalNodeCount}/${atlas.options.maxSamples} edges=${graph.summary.totalEdgeCount} underconnectedCharts=${graph.summary.underconnectedChartCount}`,
   );
 }
 
@@ -1411,6 +1522,250 @@ function assertSampledClosedShapeSurfaceAtlas(atlas, label) {
   assertComputationalSupportsAreNotSources(atlas, label);
 }
 
+function assertSurfaceSampleGraph(atlas, graph, label, options = {}) {
+  expectEqual(graph.scope, 'chart-local-only', `${label} graph scope`);
+  expectEqual(
+    graph.globalSurfaceContinuity,
+    'none',
+    `${label} graph global surface continuity claim`,
+  );
+  expectEqual(
+    graph.summary.scope,
+    'chart-local-only',
+    `${label} graph summary scope`,
+  );
+  expectEqual(
+    graph.summary.globalSurfaceContinuity,
+    'none',
+    `${label} graph summary global surface continuity claim`,
+  );
+  expectEqual(
+    graph.summary.chartCount,
+    atlas.domain.surfaceCharts.length,
+    `${label} graph chart count`,
+  );
+  expectEqual(graph.nodes.length, atlas.samples.length, `${label} graph node count`);
+  expectEqual(
+    graph.summary.totalNodeCount,
+    graph.nodes.length,
+    `${label} summary node count`,
+  );
+  expectEqual(
+    graph.summary.totalEdgeCount,
+    graph.edges.length,
+    `${label} summary edge count`,
+  );
+  expectEqual(
+    graph.summary.chartSummaries.length,
+    atlas.domain.surfaceCharts.length,
+    `${label} chart summary count`,
+  );
+
+  if (graph.nodes.length > atlas.options.maxSamples) {
+    recordFailure(
+      `${label} graph node count ${graph.nodes.length} exceeded sample cap ${atlas.options.maxSamples}`,
+    );
+  }
+
+  const summary = summarizeSurfaceSampleGraph(atlas);
+  expectEqual(summary.totalNodeCount, graph.summary.totalNodeCount, `${label} helper node count`);
+  expectEqual(summary.totalEdgeCount, graph.summary.totalEdgeCount, `${label} helper edge count`);
+  expectEqual(
+    summary.underconnectedChartCount,
+    graph.summary.underconnectedChartCount,
+    `${label} helper underconnected chart count`,
+  );
+
+  const chartById = new Map(atlas.domain.surfaceCharts.map((chart) => [chart.chartId, chart]));
+  const chartGraphById = new Map(graph.chartGraphs.map((chartGraph) => [chartGraph.chartId, chartGraph]));
+  const graphSummaryByChartId = new Map(
+    graph.summary.chartSummaries.map((chartSummary) => [chartSummary.chartId, chartSummary]),
+  );
+  const nodeById = new Map();
+  const duplicateNodeIds = new Set();
+
+  for (const node of graph.nodes) {
+    if (nodeById.has(node.sampleId)) {
+      duplicateNodeIds.add(node.sampleId);
+    }
+
+    nodeById.set(node.sampleId, node);
+  }
+
+  for (const duplicateNodeId of duplicateNodeIds) {
+    recordFailure(`${label} graph duplicated node ${duplicateNodeId}`);
+  }
+
+  for (const chart of atlas.domain.surfaceCharts) {
+    const chartGraph = chartGraphById.get(chart.chartId);
+    const chartSummary = graphSummaryByChartId.get(chart.chartId);
+    const helperChartGraph = buildChartSampleGraph(atlas, chart.chartId);
+
+    if (!chartGraph) {
+      recordFailure(`${label} missing chart graph ${chart.chartId}`);
+      continue;
+    }
+
+    if (!chartSummary) {
+      recordFailure(`${label} missing chart graph summary ${chart.chartId}`);
+      continue;
+    }
+
+    expectEqual(chartGraph.chartSemanticRole, chart.semanticRole, `${label} ${chart.chartId} graph role`);
+    expectEqual(chartGraph.sourceFaceId, chart.sourceFaceId, `${label} ${chart.chartId} graph source face`);
+    expectEqual(chartGraph.scope, 'chart-local-only', `${label} ${chart.chartId} graph scope`);
+    expectEqual(
+      chartGraph.globalSurfaceContinuity,
+      'none',
+      `${label} ${chart.chartId} graph global continuity`,
+    );
+    expectEqual(
+      chartGraph.adjacencyStrategy,
+      'chart-local-barycentric-lattice-v1',
+      `${label} ${chart.chartId} adjacency strategy`,
+    );
+    expectEqual(
+      helperChartGraph.summary.nodeCount,
+      chartGraph.summary.nodeCount,
+      `${label} ${chart.chartId} chart helper node count`,
+    );
+    expectEqual(
+      helperChartGraph.summary.edgeCount,
+      chartGraph.summary.edgeCount,
+      `${label} ${chart.chartId} chart helper edge count`,
+    );
+    expectEqual(chartSummary.chartSemanticRole, chart.semanticRole, `${label} ${chart.chartId} summary role`);
+    expectEqual(chartSummary.sourceFaceId, chart.sourceFaceId, `${label} ${chart.chartId} summary source face`);
+    expectEqual(
+      chartSummary.nodeCount,
+      chartGraph.nodes.length,
+      `${label} ${chart.chartId} summary node count`,
+    );
+    expectEqual(
+      chartSummary.edgeCount,
+      chartGraph.edges.length,
+      `${label} ${chart.chartId} summary edge count`,
+    );
+    expectEqual(
+      chartSummary.adjacencyStrategy,
+      'chart-local-barycentric-lattice-v1',
+      `${label} ${chart.chartId} summary adjacency strategy`,
+    );
+  }
+
+  for (const node of graph.nodes) {
+    const chart = chartById.get(node.chartId);
+
+    if (!chart) {
+      recordFailure(`${label} graph node ${node.sampleId} referenced unknown chart ${node.chartId}`);
+      continue;
+    }
+
+    expectEqual(node.chartSemanticRole, chart.semanticRole, `${label} ${node.sampleId} node chart role`);
+    expectEqual(node.sourceFaceId, chart.sourceFaceId, `${label} ${node.sampleId} node source face`);
+    expectEqual(node.localChartPosition.length, 2, `${label} ${node.sampleId} local coordinate count`);
+    expectEqual(node.barycentric.length, 3, `${label} ${node.sampleId} barycentric count`);
+    expectFiniteNonnegative(node.intensity, `${label} ${node.sampleId} node intensity`);
+    expectFinite(node.phase, `${label} ${node.sampleId} node phase`);
+    assertBarycentricLatticeMetadata(node, `${label} ${node.sampleId} graph node`);
+  }
+
+  const edgeIds = new Set();
+
+  for (const edge of graph.edges) {
+    if (edgeIds.has(edge.edgeId)) {
+      recordFailure(`${label} graph duplicated edge ${edge.edgeId}`);
+    }
+
+    edgeIds.add(edge.edgeId);
+
+    const firstNode = nodeById.get(edge.sampleIds[0]);
+    const secondNode = nodeById.get(edge.sampleIds[1]);
+
+    if (!firstNode || !secondNode) {
+      recordFailure(`${label} graph edge ${edge.edgeId} referenced a missing sample node`);
+      continue;
+    }
+
+    if (firstNode.sampleId === secondNode.sampleId) {
+      recordFailure(`${label} graph edge ${edge.edgeId} connects a sample to itself`);
+    }
+
+    expectEqual(firstNode.chartId, secondNode.chartId, `${label} ${edge.edgeId} edge same-chart endpoints`);
+    expectEqual(edge.chartId, firstNode.chartId, `${label} ${edge.edgeId} edge chart id`);
+    expectEqual(
+      edge.chartSemanticRole,
+      firstNode.chartSemanticRole,
+      `${label} ${edge.edgeId} edge chart role`,
+    );
+    expectEqual(
+      edge.sourceFaceId,
+      firstNode.sourceFaceId,
+      `${label} ${edge.edgeId} edge source face`,
+    );
+    expectEqual(edge.edgeKind, 'chart-local-neighbor', `${label} ${edge.edgeId} edge kind`);
+    expectFiniteNonnegative(edge.localDistance, `${label} ${edge.edgeId} local distance`);
+  }
+
+  if (options.requireNoUnderconnectedCharts && graph.summary.underconnectedChartCount !== 0) {
+    recordFailure(
+      `${label} unexpectedly reported ${graph.summary.underconnectedChartCount} underconnected chart(s)`,
+    );
+  }
+
+  if (options.requireUnderconnectedChart && graph.summary.underconnectedChartCount === 0) {
+    recordFailure(`${label} did not report an underconnected chart under bounded sampling`);
+  }
+}
+
+function assertComputationalSampleGraphRolesStayNonSemantic(atlas, graph, label) {
+  const computationalChartIds = new Set(
+    atlas.domain.surfaceCharts
+      .filter((chart) => chart.kind === 'computational-triangle-chart')
+      .map((chart) => chart.chartId),
+  );
+
+  for (const chartGraph of graph.chartGraphs) {
+    if (computationalChartIds.has(chartGraph.chartId)) {
+      expectEqual(
+        chartGraph.chartSemanticRole,
+        'computational-only',
+        `${label} computational chart graph ${chartGraph.chartId} role`,
+      );
+    }
+  }
+
+  for (const summary of graph.summary.chartSummaries) {
+    if (computationalChartIds.has(summary.chartId)) {
+      expectEqual(
+        summary.chartSemanticRole,
+        'computational-only',
+        `${label} computational graph summary ${summary.chartId} role`,
+      );
+    }
+  }
+
+  for (const node of graph.nodes) {
+    if (computationalChartIds.has(node.chartId)) {
+      expectEqual(
+        node.chartSemanticRole,
+        'computational-only',
+        `${label} computational graph node ${node.sampleId} role`,
+      );
+    }
+  }
+
+  for (const edge of graph.edges) {
+    if (computationalChartIds.has(edge.chartId)) {
+      expectEqual(
+        edge.chartSemanticRole,
+        'computational-only',
+        `${label} computational graph edge ${edge.edgeId} role`,
+      );
+    }
+  }
+}
+
 function assertGradientDiagnostics(atlas, gradientDiagnostics, label, options = {}) {
   expectEqual(
     gradientDiagnostics.method,
@@ -1894,6 +2249,7 @@ function assertSurfaceSampleProvenance(atlas, label) {
       1e-9,
       `${label} ${samplePoint.id} barycentric coordinates should sum to 1`,
     );
+    assertBarycentricLatticeMetadata(samplePoint, `${label} sample point ${samplePoint.id}`);
   }
 
   for (const sample of atlas.samples) {
@@ -1908,6 +2264,42 @@ function assertSurfaceSampleProvenance(atlas, label) {
     expectEqual(sample.sourceFaceId, chart.sourceFaceId, `${label} ${sample.id} source face`);
     expectEqual(sample.barycentric.length, 3, `${label} ${sample.id} barycentric count`);
     expectEqual(sample.localChartPosition.length, 2, `${label} ${sample.id} local coordinate count`);
+    assertBarycentricLatticeMetadata(sample, `${label} sample ${sample.id}`);
+  }
+}
+
+function assertBarycentricLatticeMetadata(value, label) {
+  if (!Array.isArray(value.barycentricIndices) || value.barycentricIndices.length !== 3) {
+    recordFailure(`${label} should carry three barycentric lattice indices`);
+    return;
+  }
+
+  if (!Number.isInteger(value.subdivisions) || value.subdivisions < 1) {
+    recordFailure(`${label} should carry a positive integer subdivision count`);
+    return;
+  }
+
+  for (const index of value.barycentricIndices) {
+    if (!Number.isInteger(index) || index < 0) {
+      recordFailure(`${label} barycentric lattice index should be a nonnegative integer`);
+    }
+  }
+
+  expectEqual(
+    value.barycentricIndices.reduce((sum, index) => sum + index, 0),
+    value.subdivisions,
+    `${label} barycentric lattice indices should sum to subdivisions`,
+  );
+
+  if (Array.isArray(value.barycentric) && value.barycentric.length === 3) {
+    value.barycentric.forEach((coordinate, index) => {
+      expectApprox(
+        coordinate,
+        value.barycentricIndices[index] / value.subdivisions,
+        1e-9,
+        `${label} barycentric coordinate ${index} should match lattice metadata`,
+      );
+    });
   }
 }
 

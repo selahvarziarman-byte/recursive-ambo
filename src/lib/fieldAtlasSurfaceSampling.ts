@@ -25,6 +25,8 @@ export interface SurfaceChartSamplePoint {
   position: Vec3;
   localChartPosition: [number, number];
   barycentric: [number, number, number];
+  barycentricIndices: [number, number, number];
+  subdivisions: number;
   chartId: string;
   chartSemanticRole: FieldChartSemanticRole;
   sourceFaceId: FaceId;
@@ -33,6 +35,8 @@ export interface SurfaceChartSamplePoint {
 export interface SurfaceChartAtlasSample extends FieldAtlasSample {
   localChartPosition: [number, number];
   barycentric: [number, number, number];
+  barycentricIndices: [number, number, number];
+  subdivisions: number;
   chartId: string;
   chartSemanticRole: FieldChartSemanticRole;
   sourceFaceId: FaceId;
@@ -106,6 +110,8 @@ export function sampleClosedShapeSurfaceAtlas(
       ...sample,
       localChartPosition: samplePoint.localChartPosition,
       barycentric: samplePoint.barycentric,
+      barycentricIndices: samplePoint.barycentricIndices,
+      subdivisions: samplePoint.subdivisions,
       chartId: samplePoint.chartId,
       chartSemanticRole: samplePoint.chartSemanticRole,
       sourceFaceId: samplePoint.sourceFaceId,
@@ -144,6 +150,8 @@ function buildSurfaceChartSamplePoint(
     position: pointFromPositionsBarycentric(chart.positions, barycentric),
     localChartPosition: [barycentric[1], barycentric[2]],
     barycentric,
+    barycentricIndices: barycentricSample.indices,
+    subdivisions: barycentricSample.subdivisions,
     chartId: chart.chartId,
     chartSemanticRole: chart.semanticRole,
     sourceFaceId: chart.sourceFaceId,
