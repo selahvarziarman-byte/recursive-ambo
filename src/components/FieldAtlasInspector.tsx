@@ -10,6 +10,11 @@ import {
   type FieldAtlasSourceKind,
   type FieldSurfaceSampleChart,
 } from '../lib/fieldAtlas';
+import {
+  sampleClosedShapeSurfaceAtlas,
+  type SampledClosedShapeSurfaceAtlas,
+  type SurfaceChartSampleSummary,
+} from '../lib/fieldAtlasSurfaceSampling';
 import { useGeometryStore } from '../store/geometryStore';
 import type { Shape, VertexId } from '../types/geometry';
 
@@ -35,6 +40,27 @@ type FieldAtlasInspectorModel =
       reason: string;
     };
 
+type SurfaceSamplingInspectorModel =
+  | {
+      status: 'supported';
+      atlas: SampledClosedShapeSurfaceAtlas;
+      intensityRange: NumericRange;
+      phaseRange: NumericRange;
+      directChartCount: number;
+      computationalChartCount: number;
+      allChartContributionRatiosValid: boolean;
+      chartById: Map<string, FieldSurfaceSampleChart>;
+    }
+  | {
+      status: 'unsupported';
+      reason: string;
+    };
+
+interface NumericRange {
+  min: number;
+  max: number;
+}
+
 const sourceKindOrder: FieldAtlasSourceKind[] = [
   'seed',
   'preserved',
@@ -48,6 +74,7 @@ export function FieldAtlasInspector({
   shortenId,
 }: FieldAtlasInspectorProps) {
   const atlas = useMemo(() => buildInspectorModel(shape), [shape]);
+  const surfaceSampling = useMemo(() => buildSurfaceSamplingModel(shape), [shape]);
   const hoveredFieldAtlasSampleId = useGeometryStore(
     (state) => state.hoveredFieldAtlasSampleId,
   );
@@ -64,6 +91,12 @@ export function FieldAtlasInspector({
           </span>
           <p className="mt-2 text-xs leading-5 text-stone-300">{atlas.reason}</p>
         </div>
+        <SurfaceSamplingSection
+          shape={shape}
+          model={surfaceSampling}
+          formatVertexRef={formatVertexRef}
+          shortenId={shortenId}
+        />
         <FieldAtlasDiagnosticNote />
       </div>
     );
@@ -120,6 +153,13 @@ export function FieldAtlasInspector({
           ))}
         </div>
       </div>
+
+      <SurfaceSamplingSection
+        shape={shape}
+        model={surfaceSampling}
+        formatVertexRef={formatVertexRef}
+        shortenId={shortenId}
+      />
 
       <div className="grid gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
@@ -234,6 +274,142 @@ function FieldAtlasDiagnosticNote() {
   );
 }
 
+function SurfaceSamplingSection({
+  shape,
+  model,
+  formatVertexRef,
+  shortenId,
+}: {
+  shape: Shape;
+  model: SurfaceSamplingInspectorModel;
+  formatVertexRef: (vertexId: VertexId) => string;
+  shortenId: (id: string) => string;
+}) {
+  if (model.status === 'unsupported') {
+    return (
+      <div className="rounded border border-amber-400/30 bg-amber-400/10 px-3 py-2">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-200">
+            Surface Sampling
+          </h3>
+          <span className="shrink-0 rounded border border-amber-300/40 bg-amber-300/10 px-2 py-0.5 text-[11px] text-amber-100">
+            unsupported
+          </span>
+        </div>
+        <p className="mt-2 text-xs leading-5 text-stone-300">{model.reason}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded border border-stone-800 bg-stone-950 px-3 py-2">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+            Surface Sampling
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-stone-500">
+            Bounded chart samples from closed geometry; computational charts are non-semantic.
+          </p>
+        </div>
+        <span className="shrink-0 rounded border border-emerald-400/40 bg-emerald-400/10 px-2 py-0.5 text-[11px] text-emerald-100">
+          supported
+        </span>
+      </div>
+
+      <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
+        <FieldAtlasMetric label="Subdivisions" value={model.atlas.options.subdivisions} />
+        <FieldAtlasMetric label="Max cap" value={model.atlas.options.maxSamples} />
+        <FieldAtlasMetric label="Samples" value={model.atlas.samples.length} />
+        <FieldAtlasMetric label="Charts" value={model.atlas.domain.surfaceCharts.length} />
+        <FieldAtlasMetric label="Direct charts" value={model.directChartCount} />
+        <FieldAtlasMetric label="Computational" value={model.computationalChartCount} />
+        <FieldAtlasMetric label="Sources" value={model.atlas.sources.length} />
+        <FieldAtlasMetric
+          label="Ratios"
+          value={model.allChartContributionRatiosValid ? 'all valid' : 'check diagnostic'}
+        />
+        <FieldAtlasMetric label="Intensity" value={formatRange(model.intensityRange)} />
+        <FieldAtlasMetric label="Phase" value={`${formatRange(model.phaseRange)} rad`} />
+      </dl>
+
+      <div className="mt-3 grid max-h-64 gap-2 overflow-y-auto pr-1">
+        {model.atlas.chartSummaries.map((summary) => (
+          <SurfaceChartSummaryRow
+            key={summary.chartId}
+            shape={shape}
+            summary={summary}
+            chart={model.chartById.get(summary.chartId)}
+            formatVertexRef={formatVertexRef}
+            shortenId={shortenId}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SurfaceChartSummaryRow({
+  shape,
+  summary,
+  chart,
+  formatVertexRef,
+  shortenId,
+}: {
+  shape: Shape;
+  summary: SurfaceChartSampleSummary;
+  chart?: FieldSurfaceSampleChart;
+  formatVertexRef: (vertexId: VertexId) => string;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="rounded border border-stone-800 bg-stone-900/70 px-3 py-2 text-xs">
+      <div className="flex items-start justify-between gap-3">
+        <span className="min-w-0">
+          <span className="block truncate font-medium text-stone-200">
+            {formatSurfaceChartLabel(shape, chart, summary, formatVertexRef, shortenId)}
+          </span>
+          <span className="mt-1 block truncate text-stone-500">
+            source face{' '}
+            {formatFaceBoundaryLabel(shape, summary.sourceFaceId, formatVertexRef, shortenId)}
+          </span>
+        </span>
+        <span
+          className={`shrink-0 rounded border px-2 py-0.5 text-[11px] ${
+            summary.chartSemanticRole === 'computational-only'
+              ? 'border-amber-400/40 bg-amber-400/10 text-amber-100'
+              : 'border-cyan-400/40 bg-cyan-400/10 text-cyan-100'
+          }`}
+        >
+          {formatChartRole(summary.chartSemanticRole)}
+        </span>
+      </div>
+
+      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-stone-400">
+        <dt>samples</dt>
+        <dd className="text-right font-mono text-stone-500">{summary.sampleCount}</dd>
+        <dt>intensity</dt>
+        <dd className="text-right font-mono text-stone-500">
+          {formatNumber(summary.minIntensity)} - {formatNumber(summary.maxIntensity)}
+        </dd>
+        <dt>phase</dt>
+        <dd className="text-right font-mono text-stone-500">
+          {formatNumber(summary.minPhase)} - {formatNumber(summary.maxPhase)}
+        </dd>
+        <dt>ratios</dt>
+        <dd className="text-right text-stone-500">
+          {summary.allContributionRatiosValid ? 'valid' : 'invalid'}
+        </dd>
+      </dl>
+
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-stone-600">
+        <span className="font-mono">chart {shortenId(summary.chartId)}</span>
+        <span className="font-mono">face {shortenId(summary.sourceFaceId)}</span>
+      </div>
+    </div>
+  );
+}
+
 function buildInspectorModel(shape: Shape): FieldAtlasInspectorModel {
   try {
     const domain = buildClosedShapeSurfaceSourceDomain(shape);
@@ -259,6 +435,34 @@ function buildInspectorModel(shape: Shape): FieldAtlasInspectorModel {
   }
 }
 
+function buildSurfaceSamplingModel(shape: Shape): SurfaceSamplingInspectorModel {
+  try {
+    const atlas = sampleClosedShapeSurfaceAtlas(shape);
+
+    return {
+      status: 'supported',
+      atlas,
+      intensityRange: getNumericRange(atlas.samples.map((sample) => sample.intensity)),
+      phaseRange: getNumericRange(atlas.samples.map((sample) => sample.phase)),
+      directChartCount: atlas.domain.surfaceCharts.filter(
+        (chart) => chart.kind === 'direct-triangle-face-chart',
+      ).length,
+      computationalChartCount: atlas.domain.surfaceCharts.filter(
+        (chart) => chart.semanticRole === 'computational-only',
+      ).length,
+      allChartContributionRatiosValid: atlas.chartSummaries.every(
+        (summary) => summary.allContributionRatiosValid,
+      ),
+      chartById: new Map(atlas.domain.surfaceCharts.map((chart) => [chart.chartId, chart])),
+    };
+  } catch (error) {
+    return {
+      status: 'unsupported',
+      reason: formatError(error),
+    };
+  }
+}
+
 function countSourceKinds(sources: FieldAtlasSource[]): Record<FieldAtlasSourceKind, number> {
   const counts: Record<FieldAtlasSourceKind, number> = {
     seed: 0,
@@ -274,15 +478,19 @@ function countSourceKinds(sources: FieldAtlasSource[]): Record<FieldAtlasSourceK
   return counts;
 }
 
-function getIntensityRange(samples: FieldAtlasSample[]): { min: number; max: number } {
-  if (!samples.length) {
+function getIntensityRange(samples: FieldAtlasSample[]): NumericRange {
+  return getNumericRange(samples.map((sample) => sample.intensity));
+}
+
+function getNumericRange(values: number[]): NumericRange {
+  if (!values.length) {
     return { min: 0, max: 0 };
   }
 
-  return samples.reduce(
-    (range, sample) => ({
-      min: Math.min(range.min, sample.intensity),
-      max: Math.max(range.max, sample.intensity),
+  return values.reduce(
+    (range, value) => ({
+      min: Math.min(range.min, value),
+      max: Math.max(range.max, value),
     }),
     { min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY },
   );
@@ -324,6 +532,29 @@ function formatSurfaceSelectionStrategy(
   }
 
   return `topological incidence (${strategy.boundaryFaceCount} boundary / ${strategy.internalFaceCount} internal)`;
+}
+
+function formatSurfaceChartLabel(
+  shape: Shape,
+  chart: FieldSurfaceSampleChart | undefined,
+  summary: SurfaceChartSampleSummary,
+  formatVertexRef: (vertexId: VertexId) => string,
+  shortenId: (id: string) => string,
+): string {
+  if (!chart) {
+    return `Chart ${shortenId(summary.chartId)}`;
+  }
+
+  if (chart.kind === 'computational-triangle-chart') {
+    return `Computational chart ${formatEdgeLabel(shape, chart.boundaryVertexIds, formatVertexRef)}`;
+  }
+
+  return `Face-local chart ${formatFaceBoundaryLabel(
+    shape,
+    chart.sourceFaceId,
+    formatVertexRef,
+    shortenId,
+  )}`;
 }
 
 function formatSourceKind(kind: FieldAtlasSourceKind): string {
@@ -426,7 +657,11 @@ function formatEdgeLabel(
 }
 
 function formatChartRole(role: string): string {
-  return role === 'computational-only' ? 'computational' : role;
+  return role === 'computational-only' ? 'computational-only' : role;
+}
+
+function formatRange(range: NumericRange): string {
+  return `${formatNumber(range.min)} - ${formatNumber(range.max)}`;
 }
 
 function formatNumber(value: number): string {
