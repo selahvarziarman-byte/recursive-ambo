@@ -56,6 +56,11 @@ const {
   buildSurfaceSampleGraph,
   summarizeSurfaceSampleGraph,
 } = require(path.join(repoRoot, 'src/lib/fieldAtlasSampleGraph.ts'));
+const {
+  buildIntensityCandidateDiagnostics,
+  findChartLocalIntensityExtrema,
+  findChartLocalNearNodeCandidates,
+} = require(path.join(repoRoot, 'src/lib/fieldAtlasIntensityCandidates.ts'));
 
 const failures = [];
 
@@ -74,6 +79,7 @@ runCellSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceSamplingDiagnostic();
 runClosedShapeSurfaceSampleGraphDiagnostic();
+runClosedShapeSurfaceIntensityCandidateDiagnostic();
 runClosedShapeSurfaceGradientDiagnostic();
 runClosedShapeSurfacePhaseDiagnostic();
 runGeneratedChildSourceDiagnostic();
@@ -362,6 +368,17 @@ function runClosedShapeSurfaceSampleGraphDiagnostic() {
   runBoundedClosedShapeSurfaceSampleGraphDiagnostic();
 }
 
+function runClosedShapeSurfaceIntensityCandidateDiagnostic() {
+  console.log(
+    'intensity candidate policy: chart-local-sample-graph-intensity-candidates-v1; scope=chart-local-only; global surface continuity=none; status=candidate-only',
+  );
+  runSeedClosedShapeSurfaceIntensityCandidateDiagnostic('tetrahedron');
+  runSeedClosedShapeSurfaceIntensityCandidateDiagnostic('cube');
+  runAmboClosedShapeSurfaceIntensityCandidateDiagnostic();
+  runBoundedClosedShapeSurfaceIntensityCandidateDiagnostic();
+  runCalibratedClosedShapeSurfaceNearNodeDiagnostic();
+}
+
 function runClosedShapeSurfaceGradientDiagnostic() {
   runSeedClosedShapeSurfaceGradientDiagnostic('tetrahedron');
   runSeedClosedShapeSurfaceGradientDiagnostic('cube');
@@ -594,6 +611,160 @@ function runBoundedClosedShapeSurfaceSampleGraphDiagnostic() {
 
   console.log(
     `surface sample graph bounded cap: nodes=${graph.summary.totalNodeCount}/${atlas.options.maxSamples} edges=${graph.summary.totalEdgeCount} underconnectedCharts=${graph.summary.underconnectedChartCount}`,
+  );
+}
+
+function runSeedClosedShapeSurfaceIntensityCandidateDiagnostic(seedKey) {
+  const shape = createSeedShape(seedKey);
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape, { subdivisions: 4 });
+  const candidateDiagnostics = buildIntensityCandidateDiagnostics(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, `${seedKey} intensity candidate sampled atlas`);
+  assertIntensityCandidateDiagnostics(
+    atlas,
+    candidateDiagnostics,
+    `${seedKey} surface intensity candidates`,
+    {
+      requireExtremaCandidates: true,
+    },
+  );
+
+  if (seedKey === 'cube') {
+    assertComputationalIntensityCandidateRolesStayNonSemantic(
+      atlas,
+      candidateDiagnostics,
+      'cube surface intensity candidates',
+    );
+  }
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure(`${seedKey} surface intensity candidate diagnostic mutated the shape`);
+  }
+
+  console.log(
+    `surface intensity candidates ${seedKey}: charts=${candidateDiagnostics.chartDiagnostics.length} extrema=${candidateDiagnostics.extremaCandidates.length} nearNodes=${candidateDiagnostics.nearNodeCandidates.length} scope=${candidateDiagnostics.scope} global=${candidateDiagnostics.globalSurfaceContinuity}`,
+  );
+}
+
+function runAmboClosedShapeSurfaceIntensityCandidateDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for generated intensity candidate diagnostic');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+  const boundaryClassification = classifyClosedShapeSurfaceBoundary(amboShape);
+
+  if (boundaryClassification.status === 'unsupported') {
+    console.log(
+      `surface intensity candidates Ambo generated surface: unsupported - ${boundaryClassification.reason}${formatOptionalDetails(
+        boundaryClassification.details,
+      )}`,
+    );
+
+    if (JSON.stringify(amboShape) !== before) {
+      recordFailure('generated intensity candidate diagnostic mutated the Ambo shape');
+    }
+
+    return;
+  }
+
+  const atlas = sampleClosedShapeSurfaceAtlas(amboShape);
+  const candidateDiagnostics = buildIntensityCandidateDiagnostics(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'generated intensity candidate sampled atlas');
+  assertIntensityCandidateDiagnostics(
+    atlas,
+    candidateDiagnostics,
+    'generated surface intensity candidates',
+    {
+      requireExtremaCandidates: true,
+    },
+  );
+  assertComputationalIntensityCandidateRolesStayNonSemantic(
+    atlas,
+    candidateDiagnostics,
+    'generated surface intensity candidates',
+  );
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('generated intensity candidate diagnostic mutated the Ambo shape');
+  }
+
+  console.log(
+    `surface intensity candidates Ambo generated surface: charts=${candidateDiagnostics.chartDiagnostics.length} extrema=${candidateDiagnostics.extremaCandidates.length} nearNodes=${candidateDiagnostics.nearNodeCandidates.length} scope=${candidateDiagnostics.scope} global=${candidateDiagnostics.globalSurfaceContinuity}`,
+  );
+}
+
+function runBoundedClosedShapeSurfaceIntensityCandidateDiagnostic() {
+  const shape = createSeedShape('cube');
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape, { subdivisions: 8, maxSamples: 17 });
+  const candidateDiagnostics = buildIntensityCandidateDiagnostics(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'bounded intensity candidate sampled atlas');
+  assertIntensityCandidateDiagnostics(
+    atlas,
+    candidateDiagnostics,
+    'bounded surface intensity candidates',
+    {
+      requireUnderconnectedChart: true,
+    },
+  );
+
+  if (candidateDiagnostics.sampleGraph.summary.totalNodeCount > atlas.options.maxSamples) {
+    recordFailure(
+      `bounded intensity candidates graph produced ${candidateDiagnostics.sampleGraph.summary.totalNodeCount} nodes over cap ${atlas.options.maxSamples}`,
+    );
+  }
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('bounded surface intensity candidate diagnostic mutated the cube shape');
+  }
+
+  console.log(
+    `surface intensity candidates bounded cap: samples=${atlas.samples.length}/${atlas.options.maxSamples} extrema=${candidateDiagnostics.extremaCandidates.length} nearNodes=${candidateDiagnostics.nearNodeCandidates.length} underconnectedCharts=${candidateDiagnostics.sampleGraph.summary.underconnectedChartCount}`,
+  );
+}
+
+function runCalibratedClosedShapeSurfaceNearNodeDiagnostic() {
+  const shape = createSeedShape('cube');
+  const before = JSON.stringify(shape);
+  const candidateOptions = {
+    nearNodeRelativeIntensityMax: 1,
+    minEffectiveSourceCount: 1,
+  };
+  const atlas = sampleClosedShapeSurfaceAtlas(shape, { subdivisions: 4 });
+  const candidateDiagnostics = buildIntensityCandidateDiagnostics(atlas, candidateOptions);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'calibrated near-node sampled atlas');
+  assertIntensityCandidateDiagnostics(
+    atlas,
+    candidateDiagnostics,
+    'calibrated surface near-node candidates',
+    {
+      candidateOptions,
+      requireExtremaCandidates: true,
+      requireNearNodeCandidate: true,
+    },
+  );
+  assertComputationalIntensityCandidateRolesStayNonSemantic(
+    atlas,
+    candidateDiagnostics,
+    'calibrated surface near-node candidates',
+  );
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('calibrated near-node diagnostic mutated the cube shape');
+  }
+
+  console.log(
+    `surface near-node calibrated: extrema=${candidateDiagnostics.extremaCandidates.length} nearNodes=${candidateDiagnostics.nearNodeCandidates.length} maxRelative=${candidateDiagnostics.options.nearNodeRelativeIntensityMax} minEffectiveSources=${candidateDiagnostics.options.minEffectiveSourceCount}`,
   );
 }
 
@@ -1764,6 +1935,601 @@ function assertComputationalSampleGraphRolesStayNonSemantic(atlas, graph, label)
       );
     }
   }
+}
+
+function assertIntensityCandidateDiagnostics(atlas, candidateDiagnostics, label, options = {}) {
+  expectEqual(
+    candidateDiagnostics.method,
+    'chart-local-sample-graph-intensity-candidates-v1',
+    `${label} candidate method`,
+  );
+  expectEqual(candidateDiagnostics.scope, 'chart-local-only', `${label} candidate scope`);
+  expectEqual(
+    candidateDiagnostics.globalSurfaceContinuity,
+    'none',
+    `${label} candidate global surface continuity claim`,
+  );
+  expectEqual(
+    candidateDiagnostics.thresholdPolicy,
+    'chart-local-relative-intensity-and-mixture-v1',
+    `${label} near-node threshold policy`,
+  );
+  expectEqual(
+    candidateDiagnostics.chartDiagnostics.length,
+    atlas.domain.surfaceCharts.length,
+    `${label} chart diagnostic count`,
+  );
+  expectEqual(
+    candidateDiagnostics.sampleGraph.summary.totalNodeCount,
+    atlas.samples.length,
+    `${label} candidate sample graph node count`,
+  );
+  expectEqual(
+    candidateDiagnostics.sampleGraph.scope,
+    'chart-local-only',
+    `${label} candidate sample graph scope`,
+  );
+  expectEqual(
+    candidateDiagnostics.sampleGraph.globalSurfaceContinuity,
+    'none',
+    `${label} candidate sample graph global continuity claim`,
+  );
+  expectFiniteNonnegative(
+    candidateDiagnostics.options.extremaTolerance,
+    `${label} extrema tolerance`,
+  );
+  expectFiniteNonnegative(
+    candidateDiagnostics.options.relativeIntensityEpsilon,
+    `${label} relative intensity epsilon`,
+  );
+  expectFiniteNonnegative(
+    candidateDiagnostics.options.nearNodeRelativeIntensityMax,
+    `${label} near-node relative intensity max`,
+  );
+  expectFiniteNonnegative(
+    candidateDiagnostics.options.minEffectiveSourceCount,
+    `${label} min effective source count`,
+  );
+
+  const helperOptions = options.candidateOptions ?? {};
+  const helperExtrema = findChartLocalIntensityExtrema(atlas, helperOptions);
+  const helperNearNodes = findChartLocalNearNodeCandidates(atlas, helperOptions);
+
+  expectEqual(
+    helperExtrema.length,
+    candidateDiagnostics.extremaCandidates.length,
+    `${label} helper extrema count`,
+  );
+  expectEqual(
+    helperNearNodes.length,
+    candidateDiagnostics.nearNodeCandidates.length,
+    `${label} helper near-node count`,
+  );
+
+  const chartById = new Map(atlas.domain.surfaceCharts.map((chart) => [chart.chartId, chart]));
+  const chartGraphById = new Map(
+    candidateDiagnostics.sampleGraph.chartGraphs.map((chartGraph) => [chartGraph.chartId, chartGraph]),
+  );
+  const sampleById = new Map(atlas.samples.map((sample) => [sample.id, sample]));
+  const nodeById = new Map(
+    candidateDiagnostics.sampleGraph.nodes.map((node) => [node.sampleId, node]),
+  );
+  const neighborsBySampleId = buildDiagnosticNeighborsBySampleId(candidateDiagnostics.sampleGraph);
+  const diagnosticByChartId = new Map(
+    candidateDiagnostics.chartDiagnostics.map((diagnostic) => [diagnostic.chartId, diagnostic]),
+  );
+  const extremaById = new Map(
+    candidateDiagnostics.extremaCandidates.map((candidate) => [candidate.candidateId, candidate]),
+  );
+
+  const extremaTotal = candidateDiagnostics.chartDiagnostics.reduce(
+    (sum, diagnostic) => sum + diagnostic.intensityExtremumCandidateCount,
+    0,
+  );
+  const nearNodeTotal = candidateDiagnostics.chartDiagnostics.reduce(
+    (sum, diagnostic) => sum + diagnostic.nearNodeCandidateCount,
+    0,
+  );
+
+  expectEqual(
+    extremaTotal,
+    candidateDiagnostics.extremaCandidates.length,
+    `${label} chart extrema count total`,
+  );
+  expectEqual(
+    nearNodeTotal,
+    candidateDiagnostics.nearNodeCandidates.length,
+    `${label} chart near-node count total`,
+  );
+  assertIntensityCandidateSummary(candidateDiagnostics, label);
+
+  for (const chart of atlas.domain.surfaceCharts) {
+    const diagnostic = diagnosticByChartId.get(chart.chartId);
+    const chartGraph = chartGraphById.get(chart.chartId);
+
+    if (!diagnostic) {
+      recordFailure(`${label} chart ${chart.chartId} had no intensity candidate diagnostic`);
+      continue;
+    }
+
+    if (!chartGraph) {
+      recordFailure(`${label} chart ${chart.chartId} had no candidate sample graph`);
+      continue;
+    }
+
+    expectEqual(diagnostic.chartSemanticRole, chart.semanticRole, `${label} ${chart.chartId} role`);
+    expectEqual(diagnostic.sourceFaceId, chart.sourceFaceId, `${label} ${chart.chartId} source face`);
+    expectEqual(diagnostic.sampleCount, chartGraph.nodes.length, `${label} ${chart.chartId} sample count`);
+    expectEqual(diagnostic.neighborEdgeCount, chartGraph.edges.length, `${label} ${chart.chartId} edge count`);
+    expectFiniteNonnegative(diagnostic.minIntensity, `${label} ${chart.chartId} min intensity`);
+    expectFiniteNonnegative(diagnostic.maxIntensity, `${label} ${chart.chartId} max intensity`);
+    expectFiniteNonnegative(
+      diagnostic.intensityRange,
+      `${label} ${chart.chartId} intensity range`,
+    );
+    expectFiniteNonnegative(
+      diagnostic.nearNodeRelativeIntensityMax,
+      `${label} ${chart.chartId} near-node relative intensity max`,
+    );
+    expectFiniteNonnegative(
+      diagnostic.minEffectiveSourceCount,
+      `${label} ${chart.chartId} min effective source count`,
+    );
+    expectEqual(diagnostic.method, candidateDiagnostics.method, `${label} ${chart.chartId} method`);
+    expectEqual(diagnostic.scope, 'chart-local-only', `${label} ${chart.chartId} scope`);
+    expectEqual(
+      diagnostic.globalSurfaceContinuity,
+      'none',
+      `${label} ${chart.chartId} global continuity claim`,
+    );
+
+    if (diagnostic.minIntensity > diagnostic.maxIntensity) {
+      recordFailure(`${label} ${chart.chartId} intensity range is inverted`);
+    }
+
+    if (diagnostic.underconnected && !diagnostic.underconnectedReason) {
+      recordFailure(`${label} underconnected chart ${chart.chartId} did not explain why`);
+    }
+  }
+
+  for (const candidate of candidateDiagnostics.extremaCandidates) {
+    assertIntensityCandidateBase(
+      atlas,
+      candidate,
+      sampleById,
+      nodeById,
+      neighborsBySampleId,
+      chartById,
+      candidateDiagnostics.options,
+      label,
+    );
+
+    expectEqual(
+      candidate.candidateKind,
+      'chart-local-intensity-extremum-candidate',
+      `${label} ${candidate.candidateId} kind`,
+    );
+
+    if (
+      candidate.extremumKind !== 'local-minimum-candidate' &&
+      candidate.extremumKind !== 'local-maximum-candidate'
+    ) {
+      recordFailure(`${label} ${candidate.candidateId} has unsupported extremum kind`);
+    }
+
+    if (candidate.comparison !== 'strict' && candidate.comparison !== 'plateau') {
+      recordFailure(`${label} ${candidate.candidateId} has unsupported comparison`);
+    }
+
+    expectFinite(
+      candidate.intensityMarginToNearestNeighbor,
+      `${label} ${candidate.candidateId} margin`,
+    );
+    assertExtremumCandidateNeighborComparison(
+      candidate,
+      neighborsBySampleId,
+      candidateDiagnostics.options.extremaTolerance,
+      label,
+    );
+  }
+
+  for (const candidate of candidateDiagnostics.nearNodeCandidates) {
+    assertIntensityCandidateBase(
+      atlas,
+      candidate,
+      sampleById,
+      nodeById,
+      neighborsBySampleId,
+      chartById,
+      candidateDiagnostics.options,
+      label,
+    );
+
+    expectEqual(
+      candidate.candidateKind,
+      'chart-local-near-node-candidate',
+      `${label} ${candidate.candidateId} kind`,
+    );
+    expectEqual(
+      candidate.thresholdPolicy,
+      'chart-local-relative-intensity-and-mixture-v1',
+      `${label} ${candidate.candidateId} threshold policy`,
+    );
+    expectFiniteNonnegative(
+      candidate.nearNodeRelativeIntensityMax,
+      `${label} ${candidate.candidateId} near-node relative intensity max`,
+    );
+    expectFiniteNonnegative(
+      candidate.minEffectiveSourceCount,
+      `${label} ${candidate.candidateId} min effective source count`,
+    );
+    expectFiniteNonnegative(
+      candidate.chartMinIntensity,
+      `${label} ${candidate.candidateId} chart min intensity`,
+    );
+    expectFiniteNonnegative(
+      candidate.chartMaxIntensity,
+      `${label} ${candidate.candidateId} chart max intensity`,
+    );
+
+    if (!candidate.derivedFromExtremumCandidateId) {
+      recordFailure(`${label} ${candidate.candidateId} did not reference a source extremum candidate`);
+    }
+
+    const sourceExtremum = extremaById.get(candidate.derivedFromExtremumCandidateId);
+
+    if (!sourceExtremum) {
+      recordFailure(
+        `${label} ${candidate.candidateId} referenced unknown source extremum ${candidate.derivedFromExtremumCandidateId}`,
+      );
+    } else {
+      expectEqual(
+        sourceExtremum.extremumKind,
+        'local-minimum-candidate',
+        `${label} ${candidate.candidateId} source extremum should be a local minimum`,
+      );
+    }
+
+    if (candidate.relativeIntensity > candidate.nearNodeRelativeIntensityMax + 1e-9) {
+      recordFailure(
+        `${label} ${candidate.candidateId} exceeded near-node relative intensity max ${candidate.nearNodeRelativeIntensityMax}`,
+      );
+    }
+
+    if (candidate.effectiveSourceCount < candidate.minEffectiveSourceCount - 1e-9) {
+      recordFailure(
+        `${label} ${candidate.candidateId} did not satisfy min effective source count ${candidate.minEffectiveSourceCount}`,
+      );
+    }
+  }
+
+  if (options.requireExtremaCandidates && candidateDiagnostics.extremaCandidates.length === 0) {
+    recordFailure(`${label} did not emit any chart-local intensity extrema candidates`);
+  }
+
+  if (options.requireNearNodeCandidate && candidateDiagnostics.nearNodeCandidates.length === 0) {
+    recordFailure(`${label} did not emit any chart-local near-node candidates`);
+  }
+
+  if (
+    options.requireUnderconnectedChart &&
+    candidateDiagnostics.sampleGraph.summary.underconnectedChartCount === 0
+  ) {
+    recordFailure(`${label} did not report an underconnected chart under bounded sampling`);
+  }
+}
+
+function assertIntensityCandidateSummary(candidateDiagnostics, label) {
+  const summary = candidateDiagnostics.summary;
+  const allCandidates = [
+    ...candidateDiagnostics.extremaCandidates,
+    ...candidateDiagnostics.nearNodeCandidates,
+  ];
+  const localMinimumCount = candidateDiagnostics.extremaCandidates.filter(
+    (candidate) => candidate.extremumKind === 'local-minimum-candidate',
+  ).length;
+  const localMaximumCount = candidateDiagnostics.extremaCandidates.filter(
+    (candidate) => candidate.extremumKind === 'local-maximum-candidate',
+  ).length;
+  const computationalOnlyCandidateCount = allCandidates.filter(
+    (candidate) => candidate.chartSemanticRole === 'computational-only',
+  ).length;
+
+  if (!summary) {
+    recordFailure(`${label} did not include a global intensity candidate summary`);
+    return;
+  }
+
+  expectEqual(
+    summary.chartCount,
+    candidateDiagnostics.chartDiagnostics.length,
+    `${label} summary chart count`,
+  );
+  expectEqual(
+    summary.totalCandidateCount,
+    allCandidates.length,
+    `${label} summary total candidate count`,
+  );
+  expectEqual(
+    summary.totalIntensityExtremumCandidateCount,
+    candidateDiagnostics.extremaCandidates.length,
+    `${label} summary extrema count`,
+  );
+  expectEqual(
+    summary.totalLocalMinimumCandidateCount,
+    localMinimumCount,
+    `${label} summary local minimum count`,
+  );
+  expectEqual(
+    summary.totalLocalMaximumCandidateCount,
+    localMaximumCount,
+    `${label} summary local maximum count`,
+  );
+  expectEqual(
+    summary.totalNearNodeCandidateCount,
+    candidateDiagnostics.nearNodeCandidates.length,
+    `${label} summary near-node count`,
+  );
+  expectEqual(
+    summary.computationalOnlyCandidateCount,
+    computationalOnlyCandidateCount,
+    `${label} summary computational-only candidate count`,
+  );
+  expectEqual(
+    summary.underconnectedChartCount,
+    candidateDiagnostics.sampleGraph.summary.underconnectedChartCount,
+    `${label} summary underconnected chart count`,
+  );
+  expectEqual(summary.method, candidateDiagnostics.method, `${label} summary method`);
+  expectEqual(summary.scope, 'chart-local-only', `${label} summary scope`);
+  expectEqual(
+    summary.globalSurfaceContinuity,
+    'none',
+    `${label} summary global continuity claim`,
+  );
+}
+
+function assertIntensityCandidateBase(
+  atlas,
+  candidate,
+  sampleById,
+  nodeById,
+  neighborsBySampleId,
+  chartById,
+  candidateOptions,
+  label,
+) {
+  const chart = chartById.get(candidate.chartId);
+  const sample = sampleById.get(candidate.sampleId);
+  const node = nodeById.get(candidate.sampleId);
+  const neighborNodes = neighborsBySampleId.get(candidate.sampleId) ?? [];
+
+  if (!chart) {
+    recordFailure(`${label} ${candidate.candidateId} referenced unknown chart ${candidate.chartId}`);
+    return;
+  }
+
+  if (!sample) {
+    recordFailure(`${label} ${candidate.candidateId} referenced unknown sample ${candidate.sampleId}`);
+    return;
+  }
+
+  if (!node) {
+    recordFailure(`${label} ${candidate.candidateId} referenced unknown graph node ${candidate.sampleId}`);
+    return;
+  }
+
+  expectEqual(candidate.chartSemanticRole, chart.semanticRole, `${label} ${candidate.candidateId} role`);
+  expectEqual(candidate.sourceFaceId, chart.sourceFaceId, `${label} ${candidate.candidateId} source face`);
+  expectEqual(candidate.confirmationStatus, 'candidate-only', `${label} ${candidate.candidateId} status`);
+  expectEqual(candidate.method, 'chart-local-sample-graph-intensity-candidates-v1', `${label} ${candidate.candidateId} method`);
+  expectEqual(candidate.scope, 'chart-local-only', `${label} ${candidate.candidateId} scope`);
+  expectEqual(
+    candidate.globalSurfaceContinuity,
+    'none',
+    `${label} ${candidate.candidateId} global continuity claim`,
+  );
+  expectEqual(candidate.localChartPosition.length, 2, `${label} ${candidate.candidateId} local coord count`);
+  expectEqual(candidate.barycentric.length, 3, `${label} ${candidate.candidateId} barycentric count`);
+  expectEqual(
+    candidate.contributionMagnitudes.length,
+    atlas.sources.length,
+    `${label} ${candidate.candidateId} contribution magnitude count`,
+  );
+  expectEqual(
+    candidate.contributionRatios.length,
+    atlas.sources.length,
+    `${label} ${candidate.candidateId} contribution ratio count`,
+  );
+  expectFiniteComplex(candidate.psi, `${label} ${candidate.candidateId} psi`);
+  expectFiniteNonnegative(candidate.intensity, `${label} ${candidate.candidateId} intensity`);
+  expectFinite(candidate.phase, `${label} ${candidate.candidateId} phase`);
+  expectFiniteNonnegative(
+    candidate.relativeIntensity,
+    `${label} ${candidate.candidateId} relative intensity`,
+  );
+  expectFiniteNonnegative(
+    candidate.neighborCount,
+    `${label} ${candidate.candidateId} neighbor count`,
+  );
+  expectFiniteNonnegative(
+    candidate.effectiveSourceCount,
+    `${label} ${candidate.candidateId} effective source count`,
+  );
+  expectFiniteNonnegative(
+    candidate.topContributionRatio,
+    `${label} ${candidate.candidateId} top contribution ratio`,
+  );
+
+  if (candidate.topContributionRatio > 1 + 1e-9) {
+    recordFailure(`${label} ${candidate.candidateId} top contribution ratio exceeded 1`);
+  }
+
+  if (typeof candidate.reason !== 'string' || !candidate.reason.trim()) {
+    recordFailure(`${label} ${candidate.candidateId} did not explain its selection reason`);
+  }
+
+  if (candidate.neighborSampleIds.length === 0 || neighborNodes.length === 0) {
+    recordFailure(`${label} ${candidate.candidateId} has no chart-local neighbors`);
+  }
+
+  expectEqual(
+    candidate.neighborCount,
+    neighborNodes.length,
+    `${label} ${candidate.candidateId} neighbor count should match graph neighbors`,
+  );
+
+  for (const neighborId of candidate.neighborSampleIds) {
+    if (!neighborNodes.some((neighbor) => neighbor.sampleId === neighborId)) {
+      recordFailure(`${label} ${candidate.candidateId} listed non-neighbor ${neighborId}`);
+    }
+  }
+
+  if (sample.chartId !== candidate.chartId) {
+    recordFailure(`${label} ${candidate.candidateId} sample is from a different chart`);
+  }
+
+  const chartSamples = atlas.samples.filter((chartSample) => chartSample.chartId === candidate.chartId);
+  const chartMinIntensity = chartSamples.reduce(
+    (minimum, chartSample) => Math.min(minimum, chartSample.intensity),
+    Number.POSITIVE_INFINITY,
+  );
+  const chartMaxIntensity = chartSamples.reduce(
+    (maximum, chartSample) => Math.max(maximum, chartSample.intensity),
+    Number.NEGATIVE_INFINITY,
+  );
+  const expectedRelativeIntensity =
+    (sample.intensity - chartMinIntensity) /
+    Math.max(
+      candidateOptions.relativeIntensityEpsilon,
+      chartMaxIntensity - chartMinIntensity,
+    );
+
+  expectApprox(
+    candidate.intensity,
+    sample.intensity,
+    1e-12,
+    `${label} ${candidate.candidateId} intensity should preserve sample intensity`,
+  );
+  expectApprox(
+    candidate.phase,
+    sample.phase,
+    1e-12,
+    `${label} ${candidate.candidateId} phase should preserve sample phase`,
+  );
+  expectApprox(
+    candidate.relativeIntensity,
+    expectedRelativeIntensity,
+    1e-9,
+    `${label} ${candidate.candidateId} relative intensity should be chart-local`,
+  );
+  expectApprox(
+    candidate.contributionRatios.reduce((sum, ratio) => sum + ratio.value, 0),
+    1,
+    1e-9,
+    `${label} ${candidate.candidateId} contribution ratios should sum to 1`,
+  );
+
+  const ratioValues = candidate.contributionRatios.map((ratio) => ratio.value);
+  const expectedEffectiveSourceCount =
+    1 / ratioValues.reduce((sum, ratio) => sum + ratio * ratio, 0);
+  const expectedTopContributionRatio = Math.max(...ratioValues);
+
+  expectApprox(
+    candidate.effectiveSourceCount,
+    expectedEffectiveSourceCount,
+    1e-9,
+    `${label} ${candidate.candidateId} effective source count`,
+  );
+  expectApprox(
+    candidate.topContributionRatio,
+    expectedTopContributionRatio,
+    1e-9,
+    `${label} ${candidate.candidateId} top contribution ratio`,
+  );
+}
+
+function assertExtremumCandidateNeighborComparison(
+  candidate,
+  neighborsBySampleId,
+  tolerance,
+  label,
+) {
+  const neighborNodes = neighborsBySampleId.get(candidate.sampleId) ?? [];
+
+  if (candidate.extremumKind === 'local-minimum-candidate') {
+    if (neighborNodes.some((neighbor) => candidate.intensity > neighbor.intensity + tolerance)) {
+      recordFailure(`${label} ${candidate.candidateId} is not a chart-local minimum candidate`);
+    }
+
+    if (!neighborNodes.some((neighbor) => candidate.intensity < neighbor.intensity - tolerance)) {
+      recordFailure(`${label} ${candidate.candidateId} has no higher chart-local neighbor`);
+    }
+
+    return;
+  }
+
+  if (neighborNodes.some((neighbor) => candidate.intensity < neighbor.intensity - tolerance)) {
+    recordFailure(`${label} ${candidate.candidateId} is not a chart-local maximum candidate`);
+  }
+
+  if (!neighborNodes.some((neighbor) => candidate.intensity > neighbor.intensity + tolerance)) {
+    recordFailure(`${label} ${candidate.candidateId} has no lower chart-local neighbor`);
+  }
+}
+
+function assertComputationalIntensityCandidateRolesStayNonSemantic(
+  atlas,
+  candidateDiagnostics,
+  label,
+) {
+  const computationalChartIds = new Set(
+    atlas.domain.surfaceCharts
+      .filter((chart) => chart.kind === 'computational-triangle-chart')
+      .map((chart) => chart.chartId),
+  );
+
+  for (const diagnostic of candidateDiagnostics.chartDiagnostics) {
+    if (computationalChartIds.has(diagnostic.chartId)) {
+      expectEqual(
+        diagnostic.chartSemanticRole,
+        'computational-only',
+        `${label} computational candidate diagnostic ${diagnostic.chartId} role`,
+      );
+    }
+  }
+
+  for (const candidate of [
+    ...candidateDiagnostics.extremaCandidates,
+    ...candidateDiagnostics.nearNodeCandidates,
+  ]) {
+    if (computationalChartIds.has(candidate.chartId)) {
+      expectEqual(
+        candidate.chartSemanticRole,
+        'computational-only',
+        `${label} computational candidate ${candidate.candidateId} role`,
+      );
+    }
+  }
+}
+
+function buildDiagnosticNeighborsBySampleId(graph) {
+  const nodeById = new Map(graph.nodes.map((node) => [node.sampleId, node]));
+  const neighborsBySampleId = new Map(graph.nodes.map((node) => [node.sampleId, []]));
+
+  for (const edge of graph.edges) {
+    const first = nodeById.get(edge.sampleIds[0]);
+    const second = nodeById.get(edge.sampleIds[1]);
+
+    if (!first || !second) {
+      continue;
+    }
+
+    neighborsBySampleId.get(first.sampleId)?.push(second);
+    neighborsBySampleId.get(second.sampleId)?.push(first);
+  }
+
+  return neighborsBySampleId;
 }
 
 function assertGradientDiagnostics(atlas, gradientDiagnostics, label, options = {}) {
