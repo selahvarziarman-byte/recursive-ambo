@@ -15,6 +15,11 @@ import {
   type SampledClosedShapeSurfaceAtlas,
   type SurfaceChartSampleSummary,
 } from '../lib/fieldAtlasSurfaceSampling';
+import {
+  buildGradientDiagnostics,
+  type ChartGradientDiagnostic,
+  type FieldAtlasGradientDiagnostics,
+} from '../lib/fieldAtlasGradient';
 import { useGeometryStore } from '../store/geometryStore';
 import type { Shape, VertexId } from '../types/geometry';
 
@@ -56,9 +61,33 @@ type SurfaceSamplingInspectorModel =
       reason: string;
     };
 
+type GradientDiagnosticsInspectorModel =
+  | {
+      status: 'supported';
+      diagnostics: FieldAtlasGradientDiagnostics;
+      chartById: Map<string, FieldSurfaceSampleChart>;
+      underdeterminedChartCount: number;
+      determinedChartCount: number;
+      intensityGradientMagnitude: NumericSummary;
+      phaseGradientStatus: string;
+    }
+  | {
+      status: 'unsupported';
+      reason: string;
+    };
+
 interface NumericRange {
   min: number;
   max: number;
+}
+
+interface NumericSummary extends NumericRange {
+  average: number;
+}
+
+interface SurfaceChartLabelSummary {
+  chartId: string;
+  sourceFaceId: string;
 }
 
 const sourceKindOrder: FieldAtlasSourceKind[] = [
@@ -75,6 +104,7 @@ export function FieldAtlasInspector({
 }: FieldAtlasInspectorProps) {
   const atlas = useMemo(() => buildInspectorModel(shape), [shape]);
   const surfaceSampling = useMemo(() => buildSurfaceSamplingModel(shape), [shape]);
+  const gradientDiagnostics = useMemo(() => buildGradientDiagnosticsModel(shape), [shape]);
   const hoveredFieldAtlasSampleId = useGeometryStore(
     (state) => state.hoveredFieldAtlasSampleId,
   );
@@ -94,6 +124,12 @@ export function FieldAtlasInspector({
         <SurfaceSamplingSection
           shape={shape}
           model={surfaceSampling}
+          formatVertexRef={formatVertexRef}
+          shortenId={shortenId}
+        />
+        <GradientDiagnosticsSection
+          shape={shape}
+          model={gradientDiagnostics}
           formatVertexRef={formatVertexRef}
           shortenId={shortenId}
         />
@@ -157,6 +193,13 @@ export function FieldAtlasInspector({
       <SurfaceSamplingSection
         shape={shape}
         model={surfaceSampling}
+        formatVertexRef={formatVertexRef}
+        shortenId={shortenId}
+      />
+
+      <GradientDiagnosticsSection
+        shape={shape}
+        model={gradientDiagnostics}
         formatVertexRef={formatVertexRef}
         shortenId={shortenId}
       />
@@ -410,6 +453,167 @@ function SurfaceChartSummaryRow({
   );
 }
 
+function GradientDiagnosticsSection({
+  shape,
+  model,
+  formatVertexRef,
+  shortenId,
+}: {
+  shape: Shape;
+  model: GradientDiagnosticsInspectorModel;
+  formatVertexRef: (vertexId: VertexId) => string;
+  shortenId: (id: string) => string;
+}) {
+  if (model.status === 'unsupported') {
+    return (
+      <div className="rounded border border-amber-400/30 bg-amber-400/10 px-3 py-2">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-200">
+            Gradient Diagnostics
+          </h3>
+          <span className="shrink-0 rounded border border-amber-300/40 bg-amber-300/10 px-2 py-0.5 text-[11px] text-amber-100">
+            unsupported
+          </span>
+        </div>
+        <p className="mt-2 text-xs leading-5 text-stone-300">{model.reason}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded border border-stone-800 bg-stone-950 px-3 py-2">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+            Gradient Diagnostics
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-stone-500">
+            Approximate chart-local intensity gradients; not feature extraction or semantic naming.
+          </p>
+        </div>
+        <span className="shrink-0 rounded border border-emerald-400/40 bg-emerald-400/10 px-2 py-0.5 text-[11px] text-emerald-100">
+          supported
+        </span>
+      </div>
+
+      <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
+        <FieldAtlasMetric label="Method" value={formatGradientMethod(model.diagnostics.method)} />
+        <FieldAtlasMetric label="Charts" value={model.diagnostics.chartDiagnostics.length} />
+        <FieldAtlasMetric label="Estimates" value={model.diagnostics.sampleGradients.length} />
+        <FieldAtlasMetric label="Underdetermined" value={model.underdeterminedChartCount} />
+        <FieldAtlasMetric label="Determined" value={model.determinedChartCount} />
+        <FieldAtlasMetric label="Phase gradient" value={model.phaseGradientStatus} />
+        <FieldAtlasMetric
+          label="Gradient min"
+          value={formatNumber(model.intensityGradientMagnitude.min)}
+        />
+        <FieldAtlasMetric
+          label="Gradient max"
+          value={formatNumber(model.intensityGradientMagnitude.max)}
+        />
+        <FieldAtlasMetric
+          label="Gradient avg"
+          value={formatNumber(model.intensityGradientMagnitude.average)}
+        />
+      </dl>
+
+      <div className="mt-3 grid max-h-64 gap-2 overflow-y-auto pr-1">
+        {model.diagnostics.chartDiagnostics.map((diagnostic) => (
+          <GradientChartDiagnosticRow
+            key={diagnostic.chartId}
+            shape={shape}
+            diagnostic={diagnostic}
+            chart={model.chartById.get(diagnostic.chartId)}
+            formatVertexRef={formatVertexRef}
+            shortenId={shortenId}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GradientChartDiagnosticRow({
+  shape,
+  diagnostic,
+  chart,
+  formatVertexRef,
+  shortenId,
+}: {
+  shape: Shape;
+  diagnostic: ChartGradientDiagnostic;
+  chart?: FieldSurfaceSampleChart;
+  formatVertexRef: (vertexId: VertexId) => string;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="rounded border border-stone-800 bg-stone-900/70 px-3 py-2 text-xs">
+      <div className="flex items-start justify-between gap-3">
+        <span className="min-w-0">
+          <span className="block truncate font-medium text-stone-200">
+            {formatSurfaceChartLabel(shape, chart, diagnostic, formatVertexRef, shortenId)}
+          </span>
+          <span className="mt-1 block truncate text-stone-500">
+            source face{' '}
+            {formatFaceBoundaryLabel(shape, diagnostic.sourceFaceId, formatVertexRef, shortenId)}
+          </span>
+        </span>
+        <span
+          className={`shrink-0 rounded border px-2 py-0.5 text-[11px] ${
+            diagnostic.chartSemanticRole === 'computational-only'
+              ? 'border-amber-400/40 bg-amber-400/10 text-amber-100'
+              : 'border-cyan-400/40 bg-cyan-400/10 text-cyan-100'
+          }`}
+        >
+          {formatChartRole(diagnostic.chartSemanticRole)}
+        </span>
+      </div>
+
+      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-stone-400">
+        <dt>samples</dt>
+        <dd className="text-right font-mono text-stone-500">{diagnostic.sampleCount}</dd>
+        <dt>estimates</dt>
+        <dd className="text-right font-mono text-stone-500">
+          {diagnostic.estimatedGradientCount}
+        </dd>
+        <dt>gradient</dt>
+        <dd className="text-right font-mono text-stone-500">
+          {diagnostic.underdetermined
+            ? 'undetermined'
+            : `${formatNumber(diagnostic.minIntensityGradientMagnitude)} - ${formatNumber(
+                diagnostic.maxIntensityGradientMagnitude,
+              )}`}
+        </dd>
+        <dt>average</dt>
+        <dd className="text-right font-mono text-stone-500">
+          {diagnostic.underdetermined
+            ? 'n/a'
+            : formatNumber(diagnostic.averageIntensityGradientMagnitude)}
+        </dd>
+        <dt>phase</dt>
+        <dd className="text-right text-stone-500">
+          {formatPhaseGradientStatus(diagnostic.phaseGradientStatus)}
+        </dd>
+        <dt>status</dt>
+        <dd className="text-right text-stone-500">
+          {diagnostic.underdetermined ? 'underdetermined' : 'determined'}
+        </dd>
+      </dl>
+
+      {diagnostic.underdeterminedReason ? (
+        <p className="mt-2 text-xs leading-5 text-amber-100/80">
+          {diagnostic.underdeterminedReason}
+        </p>
+      ) : null}
+
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-stone-600">
+        <span className="font-mono">chart {shortenId(diagnostic.chartId)}</span>
+        <span className="font-mono">face {shortenId(diagnostic.sourceFaceId)}</span>
+      </div>
+    </div>
+  );
+}
+
 function buildInspectorModel(shape: Shape): FieldAtlasInspectorModel {
   try {
     const domain = buildClosedShapeSurfaceSourceDomain(shape);
@@ -463,6 +667,31 @@ function buildSurfaceSamplingModel(shape: Shape): SurfaceSamplingInspectorModel 
   }
 }
 
+function buildGradientDiagnosticsModel(shape: Shape): GradientDiagnosticsInspectorModel {
+  try {
+    const sampledAtlas = sampleClosedShapeSurfaceAtlas(shape);
+    const diagnostics = buildGradientDiagnostics(sampledAtlas);
+    const determinedChartDiagnostics = diagnostics.chartDiagnostics.filter(
+      (diagnostic) => !diagnostic.underdetermined,
+    );
+
+    return {
+      status: 'supported',
+      diagnostics,
+      chartById: new Map(sampledAtlas.domain.surfaceCharts.map((chart) => [chart.chartId, chart])),
+      underdeterminedChartCount: diagnostics.chartDiagnostics.length - determinedChartDiagnostics.length,
+      determinedChartCount: determinedChartDiagnostics.length,
+      intensityGradientMagnitude: getChartGradientMagnitudeSummary(determinedChartDiagnostics),
+      phaseGradientStatus: formatGlobalPhaseGradientStatus(diagnostics),
+    };
+  } catch (error) {
+    return {
+      status: 'unsupported',
+      reason: formatError(error),
+    };
+  }
+}
+
 function countSourceKinds(sources: FieldAtlasSource[]): Record<FieldAtlasSourceKind, number> {
   const counts: Record<FieldAtlasSourceKind, number> = {
     seed: 0,
@@ -494,6 +723,28 @@ function getNumericRange(values: number[]): NumericRange {
     }),
     { min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY },
   );
+}
+
+function getChartGradientMagnitudeSummary(
+  diagnostics: ChartGradientDiagnostic[],
+): NumericSummary {
+  if (!diagnostics.length) {
+    return { min: 0, max: 0, average: 0 };
+  }
+
+  return {
+    min: Math.min(
+      ...diagnostics.map((diagnostic) => diagnostic.minIntensityGradientMagnitude),
+    ),
+    max: Math.max(
+      ...diagnostics.map((diagnostic) => diagnostic.maxIntensityGradientMagnitude),
+    ),
+    average:
+      diagnostics.reduce(
+        (sum, diagnostic) => sum + diagnostic.averageIntensityGradientMagnitude,
+        0,
+      ) / diagnostics.length,
+  };
 }
 
 function pickRepresentativeSamples(samples: FieldAtlasSample[]): FieldAtlasSample[] {
@@ -537,7 +788,7 @@ function formatSurfaceSelectionStrategy(
 function formatSurfaceChartLabel(
   shape: Shape,
   chart: FieldSurfaceSampleChart | undefined,
-  summary: SurfaceChartSampleSummary,
+  summary: SurfaceChartLabelSummary,
   formatVertexRef: (vertexId: VertexId) => string,
   shortenId: (id: string) => string,
 ): string {
@@ -555,6 +806,22 @@ function formatSurfaceChartLabel(
     formatVertexRef,
     shortenId,
   )}`;
+}
+
+function formatGradientMethod(method: string): string {
+  return method === 'chart-local-least-squares-plane-v1'
+    ? 'least-squares plane'
+    : method;
+}
+
+function formatGlobalPhaseGradientStatus(diagnostics: FieldAtlasGradientDiagnostics): string {
+  const statuses = new Set(
+    diagnostics.chartDiagnostics.map((diagnostic) =>
+      formatPhaseGradientStatus(diagnostic.phaseGradientStatus),
+    ),
+  );
+
+  return Array.from(statuses).join(', ') || 'none';
 }
 
 function formatSourceKind(kind: FieldAtlasSourceKind): string {
@@ -658,6 +925,12 @@ function formatEdgeLabel(
 
 function formatChartRole(role: string): string {
   return role === 'computational-only' ? 'computational-only' : role;
+}
+
+function formatPhaseGradientStatus(
+  status: ChartGradientDiagnostic['phaseGradientStatus'],
+): string {
+  return status.status === 'omitted' ? 'omitted' : status.status;
 }
 
 function formatRange(range: NumericRange): string {
