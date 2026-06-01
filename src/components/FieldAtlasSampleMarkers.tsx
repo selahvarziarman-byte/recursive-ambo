@@ -174,7 +174,7 @@ function formatSampleMarkerLabel(sample: FieldAtlasSample): string {
   }
 
   if (sample.chartSemanticRole === 'computational-only') {
-    return 'Chart sample';
+    return 'Surface probe';
   }
 
   return 'Surface sample';

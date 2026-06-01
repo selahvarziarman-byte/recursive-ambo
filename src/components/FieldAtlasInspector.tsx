@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import {
   buildClosedShapeSurfaceRepresentativeSamplePoints,
   buildClosedShapeSurfaceSourceDomain,
@@ -122,9 +122,7 @@ export function FieldAtlasInspector({
   shortenId,
 }: FieldAtlasInspectorProps) {
   const atlas = useMemo(() => buildInspectorModel(shape), [shape]);
-  const surfaceSampling = useMemo(() => buildSurfaceSamplingModel(shape), [shape]);
-  const gradientDiagnostics = useMemo(() => buildGradientDiagnosticsModel(shape), [shape]);
-  const phaseDiagnostics = useMemo(() => buildPhaseDiagnosticsModel(shape), [shape]);
+  const [advancedDiagnosticsOpen, setAdvancedDiagnosticsOpen] = useState(false);
   const hoveredFieldAtlasSampleId = useGeometryStore(
     (state) => state.hoveredFieldAtlasSampleId,
   );
@@ -141,21 +139,10 @@ export function FieldAtlasInspector({
           </span>
           <p className="mt-2 text-xs leading-5 text-stone-300">{atlas.reason}</p>
         </div>
-        <SurfaceSamplingSection
+        <AdvancedFieldDiagnosticsSection
+          open={advancedDiagnosticsOpen}
+          onOpenChange={setAdvancedDiagnosticsOpen}
           shape={shape}
-          model={surfaceSampling}
-          formatVertexRef={formatVertexRef}
-          shortenId={shortenId}
-        />
-        <GradientDiagnosticsSection
-          shape={shape}
-          model={gradientDiagnostics}
-          formatVertexRef={formatVertexRef}
-          shortenId={shortenId}
-        />
-        <PhaseDiagnosticsSection
-          shape={shape}
-          model={phaseDiagnostics}
           formatVertexRef={formatVertexRef}
           shortenId={shortenId}
         />
@@ -177,18 +164,13 @@ export function FieldAtlasInspector({
 
       <dl className="grid grid-cols-2 gap-2 text-xs">
         <FieldAtlasMetric label="Domain" value="closed-shape surface" />
-        <FieldAtlasMetric
-          label="Strategy"
-          value={formatSurfaceSelectionStrategy(atlas.domain.surfaceSelectionStrategy)}
-        />
         <FieldAtlasMetric label="Sources" value={atlas.sources.length} />
         <FieldAtlasMetric
-          label="Ambo children"
-          value={atlas.sourceKindCounts['ambo-midpoint-child']}
+          label="Generated"
+          value={countGeneratedSources(atlas.sourceKindCounts)}
         />
-        <FieldAtlasMetric label="Faces" value={atlas.domain.faceIds.length} />
-        <FieldAtlasMetric label="Charts" value={atlas.domain.surfaceCharts.length} />
-        <FieldAtlasMetric label="Samples" value={atlas.samples.length} />
+        <FieldAtlasMetric label="Surface faces" value={atlas.domain.faceIds.length} />
+        <FieldAtlasMetric label="Sample probes" value={atlas.samples.length} />
         <FieldAtlasMetric
           label="Intensity"
           value={`${formatNumber(atlas.intensityRange.min)} - ${formatNumber(
@@ -202,44 +184,25 @@ export function FieldAtlasInspector({
           Source Kinds
         </h3>
         <div className="mt-2 flex flex-wrap gap-2 text-xs">
-          {sourceKindOrder.map((kind) => (
-            <span
-              key={kind}
-              className="rounded border border-stone-800 bg-stone-900 px-2 py-1 text-stone-300"
-            >
-              {formatSourceKind(kind)}{' '}
-              <span className="font-mono text-stone-500">
-                {atlas.sourceKindCounts[kind]}
+          {sourceKindOrder
+            .filter((kind) => atlas.sourceKindCounts[kind] > 0)
+            .map((kind) => (
+              <span
+                key={kind}
+                className="rounded border border-stone-800 bg-stone-900 px-2 py-1 text-stone-300"
+              >
+                {formatSourceKind(kind)}{' '}
+                <span className="font-mono text-stone-500">
+                  {atlas.sourceKindCounts[kind]}
+                </span>
               </span>
-            </span>
-          ))}
+            ))}
         </div>
       </div>
 
-      <SurfaceSamplingSection
-        shape={shape}
-        model={surfaceSampling}
-        formatVertexRef={formatVertexRef}
-        shortenId={shortenId}
-      />
-
-      <GradientDiagnosticsSection
-        shape={shape}
-        model={gradientDiagnostics}
-        formatVertexRef={formatVertexRef}
-        shortenId={shortenId}
-      />
-
-      <PhaseDiagnosticsSection
-        shape={shape}
-        model={phaseDiagnostics}
-        formatVertexRef={formatVertexRef}
-        shortenId={shortenId}
-      />
-
       <div className="grid gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
-          Representative Samples
+          Sample Probes
         </h3>
         {atlas.representativeSamples.map((sample) => (
           <SampleSummary
@@ -256,6 +219,14 @@ export function FieldAtlasInspector({
         ))}
       </div>
 
+      <AdvancedFieldDiagnosticsSection
+        open={advancedDiagnosticsOpen}
+        onOpenChange={setAdvancedDiagnosticsOpen}
+        shape={shape}
+        formatVertexRef={formatVertexRef}
+        shortenId={shortenId}
+      />
+
       <FieldAtlasDiagnosticNote />
     </div>
   );
@@ -267,6 +238,82 @@ function FieldAtlasMetric({ label, value }: { label: string; value: ReactNode })
       <dt className="text-stone-500">{label}</dt>
       <dd className="mt-1 min-w-0 truncate text-stone-200">{value}</dd>
     </div>
+  );
+}
+
+function AdvancedFieldDiagnosticsSection({
+  open,
+  onOpenChange,
+  shape,
+  formatVertexRef,
+  shortenId,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  shape: Shape;
+  formatVertexRef: (vertexId: VertexId) => string;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <details
+      className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-xs"
+      open={open}
+      onToggle={(event) => onOpenChange(event.currentTarget.open)}
+    >
+      <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Advanced Field Diagnostics (Internal)
+      </summary>
+      {open ? (
+        <AdvancedFieldDiagnosticsContent
+          shape={shape}
+          formatVertexRef={formatVertexRef}
+          shortenId={shortenId}
+        />
+      ) : null}
+    </details>
+  );
+}
+
+function AdvancedFieldDiagnosticsContent({
+  shape,
+  formatVertexRef,
+  shortenId,
+}: {
+  shape: Shape;
+  formatVertexRef: (vertexId: VertexId) => string;
+  shortenId: (id: string) => string;
+}) {
+  const surfaceSampling = useMemo(() => buildSurfaceSamplingModel(shape), [shape]);
+  const gradientDiagnostics = useMemo(() => buildGradientDiagnosticsModel(shape), [shape]);
+  const phaseDiagnostics = useMemo(() => buildPhaseDiagnosticsModel(shape), [shape]);
+
+  return (
+    <>
+      <p className="mt-2 text-xs leading-5 text-stone-500">
+        Internal atlas scaffolding for model checks: bounded surface sampling, chart-local
+        gradients, and chart-local phase diagnostics.
+      </p>
+      <div className="mt-3 grid gap-3">
+        <SurfaceSamplingSection
+          shape={shape}
+          model={surfaceSampling}
+          formatVertexRef={formatVertexRef}
+          shortenId={shortenId}
+        />
+        <GradientDiagnosticsSection
+          shape={shape}
+          model={gradientDiagnostics}
+          formatVertexRef={formatVertexRef}
+          shortenId={shortenId}
+        />
+        <PhaseDiagnosticsSection
+          shape={shape}
+          model={phaseDiagnostics}
+          formatVertexRef={formatVertexRef}
+          shortenId={shortenId}
+        />
+      </div>
+    </>
   );
 }
 
@@ -318,11 +365,6 @@ function SampleSummary({
             intensity {formatNumber(sample.intensity)} / phase {formatNumber(sample.phase)} rad
           </span>
         </span>
-        {sample.chartSemanticRole ? (
-          <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-[11px] text-stone-400">
-            {formatChartRole(sample.chartSemanticRole)}
-          </span>
-        ) : null}
       </div>
       <div className="mt-2 grid gap-1">
         {topContributions.map((contribution) => (
@@ -944,6 +986,10 @@ function countSourceKinds(sources: FieldAtlasSource[]): Record<FieldAtlasSourceK
   return counts;
 }
 
+function countGeneratedSources(counts: Record<FieldAtlasSourceKind, number>): number {
+  return counts['generated-child'] + counts['ambo-midpoint-child'];
+}
+
 function getIntensityRange(samples: FieldAtlasSample[]): NumericRange {
   return getNumericRange(samples.map((sample) => sample.intensity));
 }
@@ -1024,16 +1070,6 @@ function pickRepresentativeSamples(samples: FieldAtlasSample[]): FieldAtlasSampl
   }
 
   return selected;
-}
-
-function formatSurfaceSelectionStrategy(
-  strategy: ClosedShapeSurfaceSourceDomain['surfaceSelectionStrategy'],
-): string {
-  if (strategy.kind === 'single-cell-seed-surface') {
-    return 'single-cell seed';
-  }
-
-  return `topological incidence (${strategy.boundaryFaceCount} boundary / ${strategy.internalFaceCount} internal)`;
 }
 
 function formatSurfaceChartLabel(
@@ -1129,7 +1165,7 @@ function formatSampleLabel(
   }
 
   if (chart?.kind === 'computational-triangle-chart') {
-    return `Chart center ${formatEdgeLabel(shape, chart.boundaryVertexIds, formatVertexRef)}`;
+    return `Surface probe ${formatEdgeLabel(shape, chart.boundaryVertexIds, formatVertexRef)}`;
   }
 
   if (chart?.kind === 'direct-triangle-face-chart') {
