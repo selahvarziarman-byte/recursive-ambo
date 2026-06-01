@@ -1,10 +1,12 @@
 import {
   buildClosedShapeSurfaceSourceDomain,
+  DEFAULT_FIELD_ATLAS_SOURCE_POLICY,
   buildFieldSourcePopulation,
   sampleFieldAtlasAtPoint,
   type ClosedShapeSurfaceSourceDomain,
   type FieldAtlasSample,
   type FieldAtlasSource,
+  type FieldAtlasSourcePolicy,
   type FieldChartSemanticRole,
   type FieldSurfaceSampleChart,
 } from './fieldAtlas';
@@ -13,11 +15,13 @@ import type { FaceId, Shape, Vec3 } from '../types/geometry';
 export interface SurfaceChartSamplingOptions {
   subdivisions?: number;
   maxSamples?: number;
+  sourcePolicy?: FieldAtlasSourcePolicy;
 }
 
 export interface ResolvedSurfaceChartSamplingOptions {
   subdivisions: number;
   maxSamples: number;
+  sourcePolicy: FieldAtlasSourcePolicy;
 }
 
 export interface SurfaceChartSamplePoint {
@@ -95,7 +99,7 @@ export function sampleClosedShapeSurfaceAtlas(
 ): SampledClosedShapeSurfaceAtlas {
   const resolvedOptions = resolveSurfaceChartSamplingOptions(options);
   const domain = buildClosedShapeSurfaceSourceDomain(shape);
-  const sources = buildFieldSourcePopulation(shape, domain);
+  const sources = buildFieldSourcePopulation(shape, domain, resolvedOptions.sourcePolicy);
   const samplePoints = buildSurfaceChartSamplePoints(domain, resolvedOptions);
   const samples = samplePoints.map((samplePoint) => {
     const sample = sampleFieldAtlasAtPoint(sources, samplePoint.position, {
@@ -134,6 +138,7 @@ export function resolveSurfaceChartSamplingOptions(
   return {
     subdivisions: clampInteger(options.subdivisions, DEFAULT_SUBDIVISIONS, 1, MAX_SUBDIVISIONS),
     maxSamples: clampInteger(options.maxSamples, DEFAULT_MAX_SAMPLES, 1, MAX_SAMPLE_CAP),
+    sourcePolicy: options.sourcePolicy ?? DEFAULT_FIELD_ATLAS_SOURCE_POLICY,
   };
 }
 

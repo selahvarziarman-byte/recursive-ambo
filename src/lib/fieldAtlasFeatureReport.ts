@@ -52,6 +52,7 @@ export interface FieldFeatureReportSourceSummary {
   totalSources: number;
   generatedSources: number;
   amboMidpointSources: number;
+  sourcePolicyNames: string[];
 }
 
 export interface FieldFeatureReportAtlasSummary {
@@ -94,6 +95,7 @@ export interface FieldFeatureReportObservation {
   topContributionRatio: number;
   status: FieldFeatureReportObservationStatus;
   semanticStatus: FieldFeatureReportSemanticStatus;
+  sourcePolicyNames: string[];
   scope: FieldFeatureReportScope;
   globalSurfaceContinuity: FieldFeatureReportGlobalSurfaceContinuity;
   reason: string;
@@ -176,16 +178,19 @@ export function buildFieldFeatureReportFromAtlas(
 ): SupportedFieldFeatureReport {
   const resolvedOptions = resolveFieldFeatureReportOptions(options);
   const sampleGraph = buildSurfaceSampleGraph(sampledAtlas);
+  const sourcePolicyNames = getSourcePolicyNames(sampledAtlas);
   const candidateDiagnostics = buildIntensityCandidateDiagnostics(
     sampledAtlas,
     resolvedOptions.intensityCandidates,
   );
   const cancellationLikeObservations = buildCancellationLikeObservations(
     candidateDiagnostics.nearNodeCandidates,
+    sourcePolicyNames,
     resolvedOptions,
   );
   const highIntensityAnchorObservations = buildHighIntensityAnchorObservations(
     candidateDiagnostics.extremaCandidates,
+    sourcePolicyNames,
     resolvedOptions,
   );
   const selectedCandidateIds = new Set(
@@ -200,6 +205,7 @@ export function buildFieldFeatureReportFromAtlas(
     ],
     sampleGraph,
     selectedCandidateIds,
+    sourcePolicyNames,
     resolvedOptions,
   );
   const observations = [
@@ -235,6 +241,7 @@ export function summarizeFieldFeatureReport(report: FieldFeatureReport): string 
     `ambiguous=${report.observationSummary.ambiguousCount}); ` +
     `sources=${report.sourceSummary.totalSources}, ` +
     `generated=${report.sourceSummary.generatedSources}, ` +
+    `sourcePolicies=${report.sourceSummary.sourcePolicyNames.join(', ') || 'none'}, ` +
     `charts=${report.atlasSummary.chartCount}, samples=${report.atlasSummary.sampleCount}; ` +
     `semantic=${report.semanticStatus}`
   );
@@ -242,6 +249,7 @@ export function summarizeFieldFeatureReport(report: FieldFeatureReport): string 
 
 function buildCancellationLikeObservations(
   nearNodeCandidates: ChartLocalNearNodeCandidate[],
+  sourcePolicyNames: string[],
   options: ResolvedFieldFeatureReportOptions,
 ): FieldFeatureReportObservation[] {
   return [...nearNodeCandidates]
@@ -255,6 +263,7 @@ function buildCancellationLikeObservations(
     .map((candidate) =>
       buildObservationFromCandidate(candidate, 'cancellation-like-site-candidate', {
         observationId: `field-observation:v0:cancellation-like:${candidate.candidateId}`,
+        sourcePolicyNames,
         reason:
           `Low chart-local relative intensity (${formatReportNumber(
             candidate.relativeIntensity,
@@ -268,6 +277,7 @@ function buildCancellationLikeObservations(
 
 function buildHighIntensityAnchorObservations(
   extremaCandidates: ChartLocalIntensityExtremumCandidate[],
+  sourcePolicyNames: string[],
   options: ResolvedFieldFeatureReportOptions,
 ): FieldFeatureReportObservation[] {
   return extremaCandidates
@@ -285,6 +295,7 @@ function buildHighIntensityAnchorObservations(
     .map((candidate) =>
       buildObservationFromCandidate(candidate, 'high-intensity-anchor-candidate', {
         observationId: `field-observation:v0:high-intensity-anchor:${candidate.candidateId}`,
+        sourcePolicyNames,
         reason:
           `Chart-local maximum has relativeIntensity=${formatReportNumber(
             candidate.relativeIntensity,
@@ -298,6 +309,7 @@ function buildAmbiguousObservations(
   candidates: FieldFeatureSourceCandidate[],
   sampleGraph: SurfaceSampleGraph,
   selectedCandidateIds: Set<string>,
+  sourcePolicyNames: string[],
   options: ResolvedFieldFeatureReportOptions,
 ): FieldFeatureReportObservation[] {
   const underconnectedChartIds = new Set(
@@ -325,6 +337,7 @@ function buildAmbiguousObservations(
     .map(({ candidate, reasons }) =>
       buildObservationFromCandidate(candidate, 'ambiguous-field-site', {
         observationId: `field-observation:v0:ambiguous:${candidate.candidateId}`,
+        sourcePolicyNames,
         reason: `${reasons.join(' ')} Stronger field-feature classification is deferred; this remains report-candidate only.`,
       }),
     );
@@ -335,6 +348,7 @@ function buildObservationFromCandidate(
   observationKind: FieldFeatureObservationKind,
   options: {
     observationId: string;
+    sourcePolicyNames: string[];
     reason: string;
   },
 ): FieldFeatureReportObservation {
@@ -362,6 +376,7 @@ function buildObservationFromCandidate(
     topContributionRatio: candidate.topContributionRatio,
     status: OBSERVATION_STATUS,
     semanticStatus: SEMANTIC_STATUS,
+    sourcePolicyNames: [...options.sourcePolicyNames],
     scope: SCOPE,
     globalSurfaceContinuity: GLOBAL_SURFACE_CONTINUITY,
     reason: options.reason,
@@ -378,6 +393,7 @@ function buildSourceSummary(
     totalSources: sampledAtlas.sources.length,
     generatedSources: sourceKindCounts['generated-child'] + amboMidpointSources,
     amboMidpointSources,
+    sourcePolicyNames: getSourcePolicyNames(sampledAtlas),
   };
 }
 
@@ -499,6 +515,16 @@ function countSourceKinds(
   }
 
   return counts;
+}
+
+function getSourcePolicyNames(sampledAtlas: SampledClosedShapeSurfaceAtlas): string[] {
+  return Array.from(
+    new Set(
+      sampledAtlas.sources
+        .map((source) => source.policyName.trim())
+        .filter((policyName) => policyName.length > 0),
+    ),
+  ).sort();
 }
 
 function getIntensityRange(values: number[]): { min: number; max: number } {

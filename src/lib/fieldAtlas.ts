@@ -175,6 +175,13 @@ export interface FieldAtlasSourcePolicy {
   attenuation: number;
 }
 
+interface FieldAtlasSourceParameters {
+  amplitude: number;
+  waveNumber: number;
+  phase: number;
+  attenuation: number;
+}
+
 export interface FieldAtlasSource {
   sourceId: string;
   vertexId: VertexId;
@@ -242,6 +249,11 @@ export const DEFAULT_FIELD_ATLAS_SOURCE_POLICY: FieldAtlasSourcePolicy = {
   waveNumber: Math.PI,
   phaseStep: (2 * Math.PI) / 3,
   attenuation: 0.05,
+};
+
+export const PARENT_INHERITANCE_FIELD_ATLAS_SOURCE_POLICY: FieldAtlasSourcePolicy = {
+  ...DEFAULT_FIELD_ATLAS_SOURCE_POLICY,
+  name: 'parent-inheritance-v1',
 };
 
 export function buildTriangleFaceSourceDomain(
@@ -609,6 +621,13 @@ export function buildFieldSourcePopulation(
   policy: FieldAtlasSourcePolicy = DEFAULT_FIELD_ATLAS_SOURCE_POLICY,
 ): FieldAtlasSource[] {
   const resolvedPolicy = resolveSourcePolicy(policy);
+  const domainVertexIds = new Set(domain.vertexIds);
+  const deterministicParametersByVertexId = new Map(
+    domain.vertexIds.map((vertexId, sourceOrder) => [
+      vertexId,
+      buildDeterministicSourceParameters(sourceOrder, resolvedPolicy),
+    ]),
+  );
 
   return domain.vertexIds.map((vertexId, sourceOrder) => {
     const vertex = shape.vertices[vertexId];
@@ -625,16 +644,25 @@ export function buildFieldSourcePopulation(
     }
 
     const label = vertex.data.label.trim();
+    const sourceKind = classifySourceKind(vertex);
+    const parameters = resolveSourceParameters(
+      vertex,
+      sourceKind,
+      sourceOrder,
+      domainVertexIds,
+      deterministicParametersByVertexId,
+      resolvedPolicy,
+    );
 
     return {
       sourceId: `field-source:${domain.id}:${vertexId}`,
       vertexId,
       position: copyVec3(position),
-      amplitude: resolvedPolicy.amplitude,
-      waveNumber: resolvedPolicy.waveNumber,
-      phase: normalizePhase(sourceOrder * resolvedPolicy.phaseStep),
-      attenuation: resolvedPolicy.attenuation,
-      sourceKind: classifySourceKind(vertex),
+      amplitude: parameters.amplitude,
+      waveNumber: parameters.waveNumber,
+      phase: parameters.phase,
+      attenuation: parameters.attenuation,
+      sourceKind,
       sourceOrder,
       policyName: resolvedPolicy.name,
       ...(label ? { label } : {}),
@@ -906,6 +934,62 @@ function resolveSourcePolicy(policy: FieldAtlasSourcePolicy): FieldAtlasSourcePo
   };
 }
 
+function resolveSourceParameters(
+  vertex: Vertex,
+  sourceKind: FieldAtlasSourceKind,
+  sourceOrder: number,
+  domainVertexIds: Set<VertexId>,
+  deterministicParametersByVertexId: Map<VertexId, FieldAtlasSourceParameters>,
+  policy: FieldAtlasSourcePolicy,
+): FieldAtlasSourceParameters {
+  const deterministicParameters = buildDeterministicSourceParameters(sourceOrder, policy);
+
+  if (
+    policy.name !== PARENT_INHERITANCE_FIELD_ATLAS_SOURCE_POLICY.name ||
+    (sourceKind !== 'generated-child' && sourceKind !== 'ambo-midpoint-child')
+  ) {
+    return deterministicParameters;
+  }
+
+  const parentVertexIds = vertex.createdBy.sourceVertexIds;
+
+  if (
+    !parentVertexIds.length ||
+    parentVertexIds.some((parentVertexId) => !domainVertexIds.has(parentVertexId))
+  ) {
+    return deterministicParameters;
+  }
+
+  const parentParameters = parentVertexIds
+    .map((parentVertexId) => deterministicParametersByVertexId.get(parentVertexId))
+    .filter(
+      (parameters): parameters is FieldAtlasSourceParameters => Boolean(parameters),
+    );
+
+  if (parentParameters.length !== parentVertexIds.length) {
+    return deterministicParameters;
+  }
+
+  return {
+    amplitude: averageNumbers(parentParameters.map((parameters) => parameters.amplitude)),
+    waveNumber: averageNumbers(parentParameters.map((parameters) => parameters.waveNumber)),
+    phase: circularMeanPhase(parentParameters.map((parameters) => parameters.phase)),
+    attenuation: averageNumbers(parentParameters.map((parameters) => parameters.attenuation)),
+  };
+}
+
+function buildDeterministicSourceParameters(
+  sourceOrder: number,
+  policy: FieldAtlasSourcePolicy,
+): FieldAtlasSourceParameters {
+  return {
+    amplitude: policy.amplitude,
+    waveNumber: policy.waveNumber,
+    phase: normalizePhase(sourceOrder * policy.phaseStep),
+    attenuation: policy.attenuation,
+  };
+}
+
 function classifySourceKind(vertex: Vertex): FieldAtlasSourceKind {
   if (
     vertex.createdBy.operation === 'ambo-dissection' &&
@@ -932,6 +1016,29 @@ function finiteNumber(value: number, fallback: number): number {
 
 function finiteNonnegative(value: number, fallback: number): number {
   return Number.isFinite(value) && value >= 0 ? value : fallback;
+}
+
+function averageNumbers(values: number[]): number {
+  if (!values.length) {
+    return 0;
+  }
+
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function circularMeanPhase(phases: number[]): number {
+  if (!phases.length) {
+    return 0;
+  }
+
+  const sinSum = phases.reduce((sum, phase) => sum + Math.sin(phase), 0);
+  const cosSum = phases.reduce((sum, phase) => sum + Math.cos(phase), 0);
+
+  if (Math.hypot(sinSum, cosSum) <= 1e-12) {
+    return normalizePhase(averageNumbers(phases));
+  }
+
+  return normalizePhase(Math.atan2(sinSum, cosSum));
 }
 
 function normalizePhase(value: number): number {

@@ -287,6 +287,10 @@ function FieldReportSection({ report }: { report: FieldFeatureReport }) {
           label="Global continuity"
           value={formatReportGlobalContinuity(report.globalSurfaceContinuity)}
         />
+        <FieldAtlasMetric
+          label="Source policy"
+          value={formatReportSourcePolicyNames(report.sourceSummary.sourcePolicyNames)}
+        />
         <FieldAtlasMetric label="Sources" value={report.sourceSummary.totalSources} />
         <FieldAtlasMetric label="Generated" value={report.sourceSummary.generatedSources} />
         <FieldAtlasMetric
@@ -1376,6 +1380,10 @@ function formatReportScope(scope: string): string {
 
 function formatReportGlobalContinuity(globalSurfaceContinuity: string): string {
   return globalSurfaceContinuity === 'none' ? 'none' : globalSurfaceContinuity;
+}
+
+function formatReportSourcePolicyNames(sourcePolicyNames: string[]): string {
+  return sourcePolicyNames.length ? sourcePolicyNames.join(', ') : 'none';
 }
 
 function shortenReportReason(reason: string): string {

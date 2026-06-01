@@ -23,6 +23,7 @@ const { createSeedShape } = require(path.join(repoRoot, 'src/data/seeds.ts'));
 const { applyAmboDissection } = require(path.join(repoRoot, 'src/lib/ambo.ts'));
 const {
   DEFAULT_FIELD_ATLAS_SOURCE_POLICY,
+  PARENT_INHERITANCE_FIELD_ATLAS_SOURCE_POLICY,
   buildClosedShapeSurfaceRepresentativeSamplePoints,
   buildClosedShapeSurfaceSourceDomain,
   buildCellSurfaceRepresentativeSamplePoints,
@@ -86,6 +87,7 @@ runClosedShapeSurfaceSamplingDiagnostic();
 runClosedShapeSurfaceSampleGraphDiagnostic();
 runClosedShapeSurfaceIntensityCandidateDiagnostic();
 runFieldFeatureReportDiagnostic();
+runFieldSourcePolicyComparisonDiagnostic();
 runClosedShapeSurfaceGradientDiagnostic();
 runClosedShapeSurfacePhaseDiagnostic();
 runGeneratedChildSourceDiagnostic();
@@ -393,6 +395,160 @@ function runFieldFeatureReportDiagnostic() {
   runSeedFieldFeatureReportDiagnostic('cube');
   runAmboFieldFeatureReportDiagnostic();
   runBoundedFieldFeatureReportDiagnostic();
+}
+
+function runFieldSourcePolicyComparisonDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for source policy comparison');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+  const deterministicAtlas = sampleClosedShapeSurfaceAtlas(amboShape);
+  const inheritedAtlas = sampleClosedShapeSurfaceAtlas(amboShape, {
+    sourcePolicy: PARENT_INHERITANCE_FIELD_ATLAS_SOURCE_POLICY,
+  });
+  const deterministicReport = buildFieldFeatureReportFromAtlas(deterministicAtlas);
+  const inheritedReport = buildFieldFeatureReportFromAtlas(inheritedAtlas);
+  const inheritedReportFromShape = buildFieldFeatureReport(amboShape, {
+    sampling: { sourcePolicy: PARENT_INHERITANCE_FIELD_ATLAS_SOURCE_POLICY },
+  });
+  const deterministicKinds = countDiagnosticSourceKinds(deterministicAtlas.sources);
+  const inheritedKinds = countDiagnosticSourceKinds(inheritedAtlas.sources);
+  const deterministicByVertexId = new Map(
+    deterministicAtlas.sources.map((source) => [source.vertexId, source]),
+  );
+  const inheritedDomainVertexIds = new Set(inheritedAtlas.domain.vertexIds);
+  const inheritableGeneratedSources = inheritedAtlas.sources.filter((source) => {
+    if (source.sourceKind !== 'generated-child' && source.sourceKind !== 'ambo-midpoint-child') {
+      return false;
+    }
+
+    const vertex = amboShape.vertices[source.vertexId];
+    const parentVertexIds = vertex?.createdBy.sourceVertexIds ?? [];
+
+    return (
+      parentVertexIds.length > 0 &&
+      parentVertexIds.every((vertexId) => inheritedDomainVertexIds.has(vertexId))
+    );
+  });
+  const phaseChangedGeneratedSources = inheritableGeneratedSources.filter((source) => {
+    const deterministicSource = deterministicByVertexId.get(source.vertexId);
+
+    return deterministicSource && !sameNumber(source.phase, deterministicSource.phase);
+  });
+
+  assertSampledClosedShapeSurfaceAtlas(
+    deterministicAtlas,
+    'deterministic source policy sampled atlas',
+  );
+  assertSampledClosedShapeSurfaceAtlas(
+    inheritedAtlas,
+    'parent-inheritance source policy sampled atlas',
+  );
+  assertFieldFeatureReport(
+    deterministicAtlas,
+    deterministicReport,
+    'deterministic source policy field feature report',
+  );
+  assertFieldFeatureReport(
+    inheritedAtlas,
+    inheritedReport,
+    'parent-inheritance source policy field feature report',
+  );
+  assertSupportedFieldFeatureReport(
+    inheritedReportFromShape,
+    'parent-inheritance source policy field feature report from shape',
+  );
+
+  expectEqual(
+    inheritedAtlas.domain.id,
+    deterministicAtlas.domain.id,
+    'source policy comparison should sample the same closed source-domain id',
+  );
+  expectEqual(
+    inheritedAtlas.sources.length,
+    deterministicAtlas.sources.length,
+    'source policy comparison source count',
+  );
+  expectEqual(
+    inheritedKinds['generated-child'] + inheritedKinds['ambo-midpoint-child'],
+    deterministicKinds['generated-child'] + deterministicKinds['ambo-midpoint-child'],
+    'source policy comparison generated child inclusion count',
+  );
+  expectEqual(
+    inheritedKinds['ambo-midpoint-child'],
+    deterministicKinds['ambo-midpoint-child'],
+    'source policy comparison Ambo midpoint inclusion count',
+  );
+  expectEqual(
+    getSourcePolicyNames(deterministicAtlas.sources).join(','),
+    DEFAULT_FIELD_ATLAS_SOURCE_POLICY.name,
+    'deterministic source policy name',
+  );
+  expectEqual(
+    getSourcePolicyNames(inheritedAtlas.sources).join(','),
+    PARENT_INHERITANCE_FIELD_ATLAS_SOURCE_POLICY.name,
+    'parent-inheritance source policy name',
+  );
+
+  if (
+    DEFAULT_FIELD_ATLAS_SOURCE_POLICY.name ===
+    PARENT_INHERITANCE_FIELD_ATLAS_SOURCE_POLICY.name
+  ) {
+    recordFailure('source policy comparison policy names did not differ');
+  }
+
+  if (!sameArray(deterministicAtlas.domain.vertexIds, inheritedAtlas.domain.vertexIds)) {
+    recordFailure('source policy comparison changed closed-domain source vertices');
+  }
+
+  if (!sameArray(deterministicAtlas.domain.faceIds, inheritedAtlas.domain.faceIds)) {
+    recordFailure('source policy comparison changed closed-domain faces');
+  }
+
+  if (!inheritableGeneratedSources.length) {
+    recordFailure(
+      'source policy comparison found no generated child with parent source vertices in-domain',
+    );
+  }
+
+  if (!phaseChangedGeneratedSources.length) {
+    recordFailure(
+      'parent-inheritance source policy did not alter any inheritable generated-child phase',
+    );
+  }
+
+  expectEqual(
+    deterministicReport.sourceSummary.sourcePolicyNames.join(','),
+    DEFAULT_FIELD_ATLAS_SOURCE_POLICY.name,
+    'deterministic report source policy summary',
+  );
+  expectEqual(
+    inheritedReport.sourceSummary.sourcePolicyNames.join(','),
+    PARENT_INHERITANCE_FIELD_ATLAS_SOURCE_POLICY.name,
+    'parent-inheritance report source policy summary',
+  );
+
+  if (inheritedReportFromShape.status === 'supported') {
+    expectEqual(
+      inheritedReportFromShape.sourceSummary.sourcePolicyNames.join(','),
+      PARENT_INHERITANCE_FIELD_ATLAS_SOURCE_POLICY.name,
+      'parent-inheritance report-from-shape source policy summary',
+    );
+  }
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('source policy comparison mutated the Ambo shape');
+  }
+
+  console.log(
+    `source policy comparison Ambo generated surface: sources=${inheritedAtlas.sources.length}/${deterministicAtlas.sources.length} generated=${inheritedKinds['generated-child'] + inheritedKinds['ambo-midpoint-child']} amboMidpoints=${inheritedKinds['ambo-midpoint-child']} policies=${getSourcePolicyNames(deterministicAtlas.sources).join(',')} -> ${getSourcePolicyNames(inheritedAtlas.sources).join(',')} phaseChanged=${phaseChangedGeneratedSources.length}/${inheritableGeneratedSources.length} observations=${deterministicReport.observationSummary.totalObservations}/${inheritedReport.observationSummary.totalObservations}`,
+  );
 }
 
 function runClosedShapeSurfaceGradientDiagnostic() {
@@ -1784,6 +1940,16 @@ function countDiagnosticSourceKinds(sources) {
   );
 }
 
+function getSourcePolicyNames(sources) {
+  return Array.from(
+    new Set(
+      sources
+        .map((source) => source.policyName)
+        .filter((policyName) => typeof policyName === 'string' && policyName.trim().length),
+    ),
+  ).sort();
+}
+
 function getDiagnosticIntensityRange(values) {
   const finiteValues = values.filter(Number.isFinite);
 
@@ -1836,6 +2002,11 @@ function assertSampledClosedShapeSurfaceAtlas(atlas, label) {
     atlas.sources.length,
     atlas.domain.vertexIds.length,
     `${label} source count should match domain vertices`,
+  );
+  expectEqual(
+    getSourcePolicyNames(atlas.sources).join(','),
+    atlas.options.sourcePolicy.name,
+    `${label} active source policy names`,
   );
 
   if (!Number.isInteger(atlas.samplePoints.length) || atlas.samplePoints.length < 0) {
@@ -2775,6 +2946,11 @@ function assertFieldFeatureReport(atlas, report, label, options = {}) {
     `${label} Ambo midpoint source summary`,
   );
   expectEqual(
+    report.sourceSummary.sourcePolicyNames.join(','),
+    getSourcePolicyNames(atlas.sources).join(','),
+    `${label} source policy summary`,
+  );
+  expectEqual(
     report.atlasSummary.chartCount,
     atlas.domain.surfaceCharts.length,
     `${label} atlas chart count`,
@@ -2942,6 +3118,11 @@ function assertFieldFeatureReportObservation(
     observation.semanticStatus,
     'not-semantic-naming',
     `${label} ${observation.observationId} semantic status`,
+  );
+  expectEqual(
+    observation.sourcePolicyNames.join(','),
+    getSourcePolicyNames(atlas.sources).join(','),
+    `${label} ${observation.observationId} source policy names`,
   );
   expectEqual(observation.scope, 'chart-local-only', `${label} ${observation.observationId} scope`);
   expectEqual(
@@ -3779,6 +3960,10 @@ function countFaceCorners(shape, faceIds) {
 
 function sameVec3(a, b) {
   return Boolean(b) && a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+}
+
+function sameNumber(a, b) {
+  return Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= 1e-12;
 }
 
 function sameArray(a, b) {
