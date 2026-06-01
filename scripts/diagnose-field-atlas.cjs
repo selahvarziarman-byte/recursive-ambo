@@ -36,6 +36,10 @@ const {
   classifyClosedShapeSurfaceBoundary,
   sampleFieldAtlasPoints,
 } = require(path.join(repoRoot, 'src/lib/fieldAtlas.ts'));
+const {
+  buildSurfaceChartSamplePoints,
+  sampleClosedShapeSurfaceAtlas,
+} = require(path.join(repoRoot, 'src/lib/fieldAtlasSurfaceSampling.ts'));
 
 const failures = [];
 
@@ -52,6 +56,7 @@ runTriangularReferenceDiagnostic();
 runPolygonalFaceReferenceDiagnostic();
 runCellSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceReferenceDiagnostic();
+runClosedShapeSurfaceSamplingDiagnostic();
 runGeneratedChildSourceDiagnostic();
 
 if (failures.length) {
@@ -319,6 +324,136 @@ function runClosedShapeSurfaceReferenceDiagnostic() {
   runTetrahedronClosedShapeSurfaceDiagnostic();
   runCubeClosedShapeSurfaceDiagnostic();
   runAmboClosedShapeSurfaceDiagnostic();
+}
+
+function runClosedShapeSurfaceSamplingDiagnostic() {
+  runSeedClosedShapeSurfaceSamplingDiagnostic('tetrahedron');
+  runSeedClosedShapeSurfaceSamplingDiagnostic('cube');
+  runAmboClosedShapeSurfaceSamplingDiagnostic();
+  runClosedShapeSurfaceSamplingBoundsDiagnostic();
+}
+
+function runSeedClosedShapeSurfaceSamplingDiagnostic(seedKey) {
+  const shape = createSeedShape(seedKey);
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape);
+  const directCharts = atlas.domain.surfaceCharts.filter(
+    (chart) => chart.kind === 'direct-triangle-face-chart',
+  );
+  const computationalCharts = atlas.domain.surfaceCharts.filter(
+    (chart) => chart.kind === 'computational-triangle-chart',
+  );
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, `${seedKey} sampled closed-shape surface`);
+
+  expectEqual(atlas.options.subdivisions, 2, `${seedKey} sampled surface default subdivisions`);
+  expectEqual(atlas.options.maxSamples, 512, `${seedKey} sampled surface default max samples`);
+
+  if (seedKey === 'tetrahedron') {
+    expectEqual(
+      directCharts.length,
+      atlas.domain.surfaceCharts.length,
+      'tetrahedron sampled surface should use direct face-local charts',
+    );
+  }
+
+  if (seedKey === 'cube') {
+    expectEqual(directCharts.length, 0, 'cube sampled surface should not use direct charts');
+    expectEqual(
+      computationalCharts.length,
+      atlas.domain.surfaceCharts.length,
+      'cube sampled surface should use computational charts for square faces',
+    );
+  }
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure(`${seedKey} sampled closed-shape surface mutated the shape`);
+  }
+
+  console.log(
+    `sampled closed shape ${seedKey}: charts=${atlas.domain.surfaceCharts.length} samples=${atlas.samples.length}/${atlas.options.maxSamples} subdivisions=${atlas.options.subdivisions}`,
+  );
+}
+
+function runAmboClosedShapeSurfaceSamplingDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for generated sampled surface diagnostic');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+  const boundaryClassification = classifyClosedShapeSurfaceBoundary(amboShape);
+
+  if (boundaryClassification.status === 'unsupported') {
+    console.log(
+      `sampled closed shape Ambo generated surface: unsupported - ${boundaryClassification.reason}${formatOptionalDetails(
+        boundaryClassification.details,
+      )}`,
+    );
+
+    if (JSON.stringify(amboShape) !== before) {
+      recordFailure('generated sampled closed-shape surface diagnostic mutated the Ambo shape');
+    }
+
+    return;
+  }
+
+  const atlas = sampleClosedShapeSurfaceAtlas(amboShape);
+  const childSources = atlas.sources.filter((source) => source.sourceKind === 'ambo-midpoint-child');
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'generated sampled closed-shape surface');
+
+  if (!childSources.length) {
+    recordFailure('generated sampled closed-shape surface did not include Ambo child sources');
+  }
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('generated sampled closed-shape surface diagnostic mutated the Ambo shape');
+  }
+
+  console.log(
+    `sampled closed shape Ambo generated surface: charts=${atlas.domain.surfaceCharts.length} samples=${atlas.samples.length}/${atlas.options.maxSamples} childSources=${childSources.length}`,
+  );
+}
+
+function runClosedShapeSurfaceSamplingBoundsDiagnostic() {
+  const shape = createSeedShape('cube');
+  const before = JSON.stringify(shape);
+  const maxSamples = 17;
+  const atlas = sampleClosedShapeSurfaceAtlas(shape, { subdivisions: 8, maxSamples });
+  const samplePoints = buildSurfaceChartSamplePoints(atlas.domain, {
+    subdivisions: atlas.options.subdivisions,
+    maxSamples,
+  });
+
+  expectEqual(atlas.options.subdivisions, 8, 'bounded sampled surface should keep requested subdivisions');
+  expectEqual(atlas.options.maxSamples, maxSamples, 'bounded sampled surface should keep requested cap');
+  expectEqual(atlas.samples.length, maxSamples, 'bounded sampled surface should honor maxSamples');
+  expectEqual(
+    samplePoints.length,
+    atlas.samplePoints.length,
+    'direct sampled surface point builder should match sampled atlas points under the same bounds',
+  );
+
+  if (atlas.samples.length > atlas.options.maxSamples) {
+    recordFailure(
+      `bounded sampled surface produced ${atlas.samples.length} samples over cap ${atlas.options.maxSamples}`,
+    );
+  }
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'bounded sampled closed-shape surface');
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('bounded sampled closed-shape surface diagnostic mutated the cube shape');
+  }
+
+  console.log(
+    `sampled closed shape bounded cap: samples=${atlas.samples.length}/${atlas.options.maxSamples} subdivisions=${atlas.options.subdivisions}`,
+  );
 }
 
 function runTetrahedronClosedShapeSurfaceDiagnostic() {
@@ -992,6 +1127,177 @@ function assertFieldSamplesAreFinite(samples, sources, label) {
     const ratioSum = sample.contributionRatios.reduce((sum, ratio) => sum + ratio.value, 0);
 
     expectApprox(ratioSum, 1, 1e-9, `${label} ${sample.id} contribution ratios should sum to 1`);
+  }
+}
+
+function assertSampledClosedShapeSurfaceAtlas(atlas, label) {
+  expectEqual(atlas.domain.kind, 'closed-shape-surface-reference', `${label} domain kind`);
+  expectEqual(
+    atlas.sources.length,
+    atlas.domain.vertexIds.length,
+    `${label} source count should match domain vertices`,
+  );
+
+  if (!Number.isInteger(atlas.samplePoints.length) || atlas.samplePoints.length < 0) {
+    recordFailure(`${label} sample point count should be a finite nonnegative integer`);
+  }
+
+  if (atlas.samplePoints.length > atlas.options.maxSamples) {
+    recordFailure(
+      `${label} sample point count ${atlas.samplePoints.length} exceeded cap ${atlas.options.maxSamples}`,
+    );
+  }
+
+  expectEqual(atlas.samples.length, atlas.samplePoints.length, `${label} sample count`);
+  expectEqual(
+    atlas.chartSummaries.length,
+    atlas.domain.surfaceCharts.length,
+    `${label} chart summary count`,
+  );
+  expectEqual(
+    atlas.chartSummaries.reduce((sum, summary) => sum + summary.sampleCount, 0),
+    atlas.samples.length,
+    `${label} chart summary sample count total`,
+  );
+
+  assertSourcesMatchDomainPositions(atlas.sources, atlas.domain, label);
+  assertFieldSamplesAreFinite(atlas.samples, atlas.sources, label);
+  assertSurfaceSampleProvenance(atlas, label);
+  assertComputationalChartsStayNonSemantic(atlas, label);
+  assertComputationalSupportsAreNotSources(atlas, label);
+}
+
+function assertSurfaceSampleProvenance(atlas, label) {
+  const chartById = new Map(atlas.domain.surfaceCharts.map((chart) => [chart.chartId, chart]));
+
+  for (const samplePoint of atlas.samplePoints) {
+    const chart = chartById.get(samplePoint.chartId);
+
+    if (!chart) {
+      recordFailure(`${label} sample point ${samplePoint.id} references unknown chart ${samplePoint.chartId}`);
+      continue;
+    }
+
+    expectEqual(
+      samplePoint.chartSemanticRole,
+      chart.semanticRole,
+      `${label} sample point ${samplePoint.id} chart semantic role`,
+    );
+    expectEqual(
+      samplePoint.sourceFaceId,
+      chart.sourceFaceId,
+      `${label} sample point ${samplePoint.id} source face provenance`,
+    );
+    expectEqual(
+      samplePoint.barycentric.length,
+      3,
+      `${label} sample point ${samplePoint.id} barycentric coordinate count`,
+    );
+    expectEqual(
+      samplePoint.localChartPosition.length,
+      2,
+      `${label} sample point ${samplePoint.id} local chart coordinate count`,
+    );
+
+    for (const coordinate of samplePoint.barycentric) {
+      expectFiniteNonnegative(coordinate, `${label} ${samplePoint.id} barycentric coordinate`);
+    }
+
+    expectApprox(
+      samplePoint.barycentric.reduce((sum, coordinate) => sum + coordinate, 0),
+      1,
+      1e-9,
+      `${label} ${samplePoint.id} barycentric coordinates should sum to 1`,
+    );
+  }
+
+  for (const sample of atlas.samples) {
+    const chart = chartById.get(sample.chartId);
+
+    if (!chart) {
+      recordFailure(`${label} sample ${sample.id} references unknown chart ${sample.chartId}`);
+      continue;
+    }
+
+    expectEqual(sample.chartSemanticRole, chart.semanticRole, `${label} ${sample.id} chart role`);
+    expectEqual(sample.sourceFaceId, chart.sourceFaceId, `${label} ${sample.id} source face`);
+    expectEqual(sample.barycentric.length, 3, `${label} ${sample.id} barycentric count`);
+    expectEqual(sample.localChartPosition.length, 2, `${label} ${sample.id} local coordinate count`);
+  }
+}
+
+function assertComputationalChartsStayNonSemantic(atlas, label) {
+  const computationalChartIds = new Set(
+    atlas.domain.surfaceCharts
+      .filter((chart) => chart.kind === 'computational-triangle-chart')
+      .map((chart) => chart.chartId),
+  );
+
+  for (const chart of atlas.domain.surfaceCharts) {
+    if (chart.kind === 'computational-triangle-chart') {
+      expectEqual(
+        chart.semanticRole,
+        'computational-only',
+        `${label} computational chart ${chart.chartId} semantic role`,
+      );
+    }
+  }
+
+  for (const samplePoint of atlas.samplePoints) {
+    if (computationalChartIds.has(samplePoint.chartId)) {
+      expectEqual(
+        samplePoint.chartSemanticRole,
+        'computational-only',
+        `${label} computational sample point ${samplePoint.id} role`,
+      );
+    }
+  }
+
+  for (const sample of atlas.samples) {
+    if (computationalChartIds.has(sample.chartId)) {
+      expectEqual(
+        sample.chartSemanticRole,
+        'computational-only',
+        `${label} computational sample ${sample.id} role`,
+      );
+    }
+  }
+
+  for (const summary of atlas.chartSummaries) {
+    if (computationalChartIds.has(summary.chartId)) {
+      expectEqual(
+        summary.chartSemanticRole,
+        'computational-only',
+        `${label} computational summary ${summary.chartId} role`,
+      );
+    }
+
+    if (!summary.allContributionRatiosValid) {
+      recordFailure(`${label} chart summary ${summary.chartId} reported invalid contribution ratios`);
+    }
+
+    expectFiniteNonnegative(summary.minIntensity, `${label} ${summary.chartId} min intensity`);
+    expectFiniteNonnegative(summary.maxIntensity, `${label} ${summary.chartId} max intensity`);
+    expectFinite(summary.minPhase, `${label} ${summary.chartId} min phase`);
+    expectFinite(summary.maxPhase, `${label} ${summary.chartId} max phase`);
+  }
+}
+
+function assertComputationalSupportsAreNotSources(atlas, label) {
+  const computationalSupports = atlas.domain.surfaceCharts
+    .filter((chart) => chart.kind === 'computational-triangle-chart')
+    .map((chart) => chart.computationalSupport.position);
+
+  for (const supportPosition of computationalSupports) {
+    if (atlas.sources.some((source) => sameVec3(source.position, supportPosition))) {
+      recordFailure(`${label} computational chart support became a field source`);
+    }
+  }
+
+  for (const source of atlas.sources) {
+    if (!atlas.domain.vertexIds.includes(source.vertexId)) {
+      recordFailure(`${label} source ${source.vertexId} is not a domain boundary vertex`);
+    }
   }
 }
 
