@@ -68,6 +68,9 @@ const {
   buildFieldFeatureReportFromAtlas,
   summarizeFieldFeatureReport,
 } = require(path.join(repoRoot, 'src/lib/fieldAtlasFeatureReport.ts'));
+const {
+  buildFieldRouteGateCandidateReport,
+} = require(path.join(repoRoot, 'src/lib/fieldAtlasRouteGateCandidates.ts'));
 
 const failures = [];
 
@@ -86,6 +89,7 @@ runCellSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceSamplingDiagnostic();
 runClosedShapeSurfaceSampleGraphDiagnostic();
+runFieldRouteGateCandidateDiagnostic();
 runClosedShapeSurfaceIntensityCandidateDiagnostic();
 runFieldFeatureReportDiagnostic();
 runFieldSourcePolicyComparisonDiagnostic();
@@ -387,6 +391,15 @@ function runClosedSurfaceSeamAwareSampleGraphDiagnostic() {
   });
   runSeedClosedSurfaceSeamAwareSampleGraphDiagnostic('cube');
   runAmboClosedSurfaceSeamAwareSampleGraphDiagnostic();
+}
+
+function runFieldRouteGateCandidateDiagnostic() {
+  console.log(
+    'field route/gate candidate policy: field-route-gate-candidates-v0; scope=closed-surface-seam-aware; status=candidate-only; semantic=not-semantic-naming; topology=not-topology-workspace; phase=not-global-phase-continuity',
+  );
+  runSeedFieldRouteGateCandidateDiagnostic('tetrahedron');
+  runSeedFieldRouteGateCandidateDiagnostic('cube');
+  runAmboFieldRouteGateCandidateDiagnostic();
 }
 
 function runClosedShapeSurfaceIntensityCandidateDiagnostic() {
@@ -875,6 +888,84 @@ function runAmboClosedSurfaceSeamAwareSampleGraphDiagnostic() {
 
   console.log(
     `seam-aware sample graph Ambo generated surface: nodes=${seamAwareGraph.summary.nodeCount} chartLocalEdges=${seamAwareGraph.summary.chartLocalEdgeCount} seamEdges=${seamAwareGraph.summary.seamEdgeCount} totalEdges=${seamAwareGraph.summary.totalEdgeCount} components=${seamAwareGraph.summary.connectedComponentCount} isolated=${seamAwareGraph.summary.isolatedNodeCount}`,
+  );
+}
+
+function runSeedFieldRouteGateCandidateDiagnostic(seedKey) {
+  const shape = createSeedShape(seedKey);
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape);
+  const seamAwareGraph = buildClosedSurfaceSeamAwareSampleGraph(atlas);
+  const report = buildFieldRouteGateCandidateReport(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(
+    atlas,
+    `${seedKey} route/gate candidate sampled closed-shape surface`,
+  );
+  assertFieldRouteGateCandidateReport(
+    atlas,
+    seamAwareGraph,
+    report,
+    `${seedKey} route/gate candidate report`,
+  );
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure(`${seedKey} route/gate candidate diagnostic mutated the shape`);
+  }
+
+  console.log(
+    `field route/gate candidates ${seedKey}: gates=${report.candidateSummary.gateCandidateCount} routes=${report.candidateSummary.routeCandidateCount} blocked=${report.candidateSummary.blockedRouteCandidateCount} seamAwareEdges=${report.graphSummary.seamEdgeCount} policy=${report.sourcePolicyNames.join(',') || 'none'}`,
+  );
+}
+
+function runAmboFieldRouteGateCandidateDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for generated route/gate candidate diagnostic');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+  const boundaryClassification = classifyClosedShapeSurfaceBoundary(amboShape);
+
+  if (boundaryClassification.status === 'unsupported') {
+    console.log(
+      `field route/gate candidates Ambo generated surface: unsupported - ${boundaryClassification.reason}${formatOptionalDetails(
+        boundaryClassification.details,
+      )}`,
+    );
+
+    if (JSON.stringify(amboShape) !== before) {
+      recordFailure('generated route/gate candidate diagnostic mutated the Ambo shape');
+    }
+
+    return;
+  }
+
+  const atlas = sampleClosedShapeSurfaceAtlas(amboShape);
+  const seamAwareGraph = buildClosedSurfaceSeamAwareSampleGraph(atlas);
+  const report = buildFieldRouteGateCandidateReport(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(
+    atlas,
+    'generated route/gate candidate sampled atlas',
+  );
+  assertFieldRouteGateCandidateReport(
+    atlas,
+    seamAwareGraph,
+    report,
+    'generated route/gate candidate report',
+  );
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('generated route/gate candidate diagnostic mutated the Ambo shape');
+  }
+
+  console.log(
+    `field route/gate candidates Ambo generated surface: gates=${report.candidateSummary.gateCandidateCount} routes=${report.candidateSummary.routeCandidateCount} blocked=${report.candidateSummary.blockedRouteCandidateCount} seamAwareEdges=${report.graphSummary.seamEdgeCount} policy=${report.sourcePolicyNames.join(',') || 'none'}`,
   );
 }
 
@@ -2577,6 +2668,221 @@ function assertClosedSurfaceSeamAwareSampleGraph(
         `${label} seam edge ${seamEdge.edgeId} exceeded geometric coincidence tolerance`,
       );
     }
+  }
+}
+
+function assertFieldRouteGateCandidateReport(atlas, seamAwareGraph, report, label) {
+  expectEqual(report.method, 'field-route-gate-candidates-v0', `${label} method`);
+  expectEqual(report.scope, 'closed-surface-seam-aware', `${label} scope`);
+  expectEqual(report.status, 'candidate-only', `${label} status`);
+  expectEqual(report.semanticStatus, 'not-semantic-naming', `${label} semantic status`);
+  expectEqual(report.topologyStatus, 'not-topology-workspace', `${label} topology status`);
+  expectEqual(
+    report.phaseContinuityStatus,
+    'not-global-phase-continuity',
+    `${label} phase continuity status`,
+  );
+  expectEqual(
+    report.sourcePolicyNames.join(','),
+    getSourcePolicyNames(atlas.sources).join(','),
+    `${label} source policy names`,
+  );
+  expectEqual(
+    report.graphSummary.graphKind,
+    seamAwareGraph.kind,
+    `${label} seam-aware graph kind`,
+  );
+  expectEqual(
+    report.graphSummary.strategy,
+    seamAwareGraph.strategy,
+    `${label} seam-aware graph strategy`,
+  );
+  expectEqual(
+    report.graphSummary.scope,
+    'closed-surface-seam-aware',
+    `${label} seam-aware graph scope`,
+  );
+  expectEqual(
+    report.graphSummary.semanticStatus,
+    'not-semantic-identity',
+    `${label} seam-aware graph semantic status`,
+  );
+  expectEqual(
+    report.graphSummary.topologyStatus,
+    'not-topology-workspace',
+    `${label} seam-aware graph topology status`,
+  );
+  expectEqual(
+    report.graphSummary.routeGateStatus,
+    'not-route-or-gate-extraction',
+    `${label} seam-aware graph route/gate substrate status`,
+  );
+  expectEqual(
+    report.graphSummary.phaseContinuityStatus,
+    'not-global-phase-continuity',
+    `${label} seam-aware graph phase continuity status`,
+  );
+  expectEqual(
+    report.graphSummary.nodeCount,
+    seamAwareGraph.summary.nodeCount,
+    `${label} graph node count`,
+  );
+  expectEqual(
+    report.graphSummary.chartLocalEdgeCount,
+    seamAwareGraph.summary.chartLocalEdgeCount,
+    `${label} graph chart-local edge count`,
+  );
+  expectEqual(
+    report.graphSummary.seamEdgeCount,
+    seamAwareGraph.summary.seamEdgeCount,
+    `${label} graph seam edge count`,
+  );
+  expectEqual(
+    report.graphSummary.totalEdgeCount,
+    seamAwareGraph.summary.totalEdgeCount,
+    `${label} graph total edge count`,
+  );
+  expectEqual(
+    report.candidateSummary.totalCandidateCount,
+    report.candidates.length,
+    `${label} candidate summary total`,
+  );
+
+  expectFiniteNonnegative(
+    report.candidateSummary.gateCandidateCount,
+    `${label} gate candidate count`,
+  );
+  expectFiniteNonnegative(
+    report.candidateSummary.routeCandidateCount,
+    `${label} route candidate count`,
+  );
+  expectFiniteNonnegative(
+    report.candidateSummary.blockedRouteCandidateCount,
+    `${label} blocked candidate count`,
+  );
+
+  if (report.candidateSummary.gateCandidateCount > report.options.maxGateCandidates) {
+    recordFailure(`${label} emitted too many gate candidates`);
+  }
+
+  if (report.candidateSummary.routeCandidateCount > report.options.maxRouteCandidates) {
+    recordFailure(`${label} emitted too many route candidates`);
+  }
+
+  if (
+    report.candidateSummary.blockedRouteCandidateCount >
+    report.options.maxBlockedRouteCandidates
+  ) {
+    recordFailure(`${label} emitted too many blocked route candidates`);
+  }
+
+  const sampleById = new Map(atlas.samples.map((sample) => [sample.id, sample]));
+  const chartById = new Map(atlas.domain.surfaceCharts.map((chart) => [chart.chartId, chart]));
+  const edgeById = new Map(seamAwareGraph.edges.map((edge) => [edge.edgeId, edge]));
+
+  for (const candidate of report.candidates) {
+    assertFieldRouteGateCandidate(candidate, report, sampleById, chartById, edgeById, label);
+  }
+}
+
+function assertFieldRouteGateCandidate(candidate, report, sampleById, chartById, edgeById, label) {
+  expectEqual(candidate.status, 'candidate-only', `${label} ${candidate.candidateId} status`);
+  expectEqual(
+    candidate.semanticStatus,
+    'not-semantic-naming',
+    `${label} ${candidate.candidateId} semantic status`,
+  );
+  expectEqual(
+    candidate.topologyStatus,
+    'not-topology-workspace',
+    `${label} ${candidate.candidateId} topology status`,
+  );
+  expectEqual(
+    candidate.phaseContinuityStatus,
+    'not-global-phase-continuity',
+    `${label} ${candidate.candidateId} phase continuity status`,
+  );
+  expectEqual(
+    candidate.sourcePolicyNames.join(','),
+    report.sourcePolicyNames.join(','),
+    `${label} ${candidate.candidateId} source policy names`,
+  );
+
+  if (
+    candidate.candidateKind !== 'gate-candidate' &&
+    candidate.candidateKind !== 'route-candidate' &&
+    candidate.candidateKind !== 'blocked-or-failed-route-candidate'
+  ) {
+    recordFailure(`${label} ${candidate.candidateId} used an unsupported candidate kind`);
+  }
+
+  if (
+    candidate.candidateKind === 'route-candidate' &&
+    (typeof candidate.pathLength !== 'number' || candidate.pathLength <= 0)
+  ) {
+    recordFailure(`${label} ${candidate.candidateId} route candidate did not carry a path length`);
+  }
+
+  for (const sampleId of candidate.sampleIds) {
+    if (!sampleById.has(sampleId)) {
+      recordFailure(`${label} ${candidate.candidateId} referenced missing sample ${sampleId}`);
+    }
+  }
+
+  for (const chartId of candidate.chartIds) {
+    if (!chartById.has(chartId)) {
+      recordFailure(`${label} ${candidate.candidateId} referenced missing chart ${chartId}`);
+    }
+  }
+
+  const candidateEdges = candidate.edgeIds
+    .map((edgeId) => edgeById.get(edgeId))
+    .filter(Boolean);
+
+  if (candidateEdges.length !== candidate.edgeIds.length) {
+    recordFailure(`${label} ${candidate.candidateId} referenced missing graph edge`);
+  }
+
+  expectEqual(
+    candidate.seamEdgesInvolved,
+    candidateEdges.some((edge) => edge.edgeKind === 'closed-surface-seam-neighbor'),
+    `${label} ${candidate.candidateId} seam edge flag`,
+  );
+  expectFiniteNonnegative(
+    candidate.intensitySummary.min,
+    `${label} ${candidate.candidateId} min intensity`,
+  );
+  expectFiniteNonnegative(
+    candidate.intensitySummary.max,
+    `${label} ${candidate.candidateId} max intensity`,
+  );
+  expectFiniteNonnegative(
+    candidate.intensitySummary.average,
+    `${label} ${candidate.candidateId} average intensity`,
+  );
+  expectFiniteNonnegative(
+    candidate.contributionMixtureSummary.averageEffectiveSourceCount,
+    `${label} ${candidate.candidateId} effective source count`,
+  );
+  expectFiniteNonnegative(
+    candidate.contributionMixtureSummary.maxTopContributionRatio,
+    `${label} ${candidate.candidateId} top contribution ratio`,
+  );
+  expectFiniteNonnegative(
+    candidate.contributionMixtureSummary.mixedSampleCount,
+    `${label} ${candidate.candidateId} mixed sample count`,
+  );
+
+  if (candidate.reliability !== 'bounded-diagnostic' && candidate.reliability !== 'low-confidence') {
+    recordFailure(`${label} ${candidate.candidateId} used unsupported reliability`);
+  }
+
+  if (typeof candidate.reason !== 'string' || !candidate.reason.trim()) {
+    recordFailure(`${label} ${candidate.candidateId} did not explain its reason`);
+  }
+
+  if (!candidate.reason.includes('Candidate-only') && !candidate.reason.includes('candidate only')) {
+    recordFailure(`${label} ${candidate.candidateId} reason did not preserve candidate-only language`);
   }
 }
 
