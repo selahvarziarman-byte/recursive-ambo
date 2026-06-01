@@ -61,6 +61,11 @@ const {
   findChartLocalIntensityExtrema,
   findChartLocalNearNodeCandidates,
 } = require(path.join(repoRoot, 'src/lib/fieldAtlasIntensityCandidates.ts'));
+const {
+  buildFieldFeatureReport,
+  buildFieldFeatureReportFromAtlas,
+  summarizeFieldFeatureReport,
+} = require(path.join(repoRoot, 'src/lib/fieldAtlasFeatureReport.ts'));
 
 const failures = [];
 
@@ -80,6 +85,7 @@ runClosedShapeSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceSamplingDiagnostic();
 runClosedShapeSurfaceSampleGraphDiagnostic();
 runClosedShapeSurfaceIntensityCandidateDiagnostic();
+runFieldFeatureReportDiagnostic();
 runClosedShapeSurfaceGradientDiagnostic();
 runClosedShapeSurfacePhaseDiagnostic();
 runGeneratedChildSourceDiagnostic();
@@ -377,6 +383,16 @@ function runClosedShapeSurfaceIntensityCandidateDiagnostic() {
   runAmboClosedShapeSurfaceIntensityCandidateDiagnostic();
   runBoundedClosedShapeSurfaceIntensityCandidateDiagnostic();
   runCalibratedClosedShapeSurfaceNearNodeDiagnostic();
+}
+
+function runFieldFeatureReportDiagnostic() {
+  console.log(
+    'field feature report policy: field-feature-report-v0; scope=chart-local-only; global surface continuity=none; semantic=not-semantic-naming; status=report-candidate',
+  );
+  runSeedFieldFeatureReportDiagnostic('tetrahedron');
+  runSeedFieldFeatureReportDiagnostic('cube');
+  runAmboFieldFeatureReportDiagnostic();
+  runBoundedFieldFeatureReportDiagnostic();
 }
 
 function runClosedShapeSurfaceGradientDiagnostic() {
@@ -765,6 +781,123 @@ function runCalibratedClosedShapeSurfaceNearNodeDiagnostic() {
 
   console.log(
     `surface near-node calibrated: extrema=${candidateDiagnostics.extremaCandidates.length} nearNodes=${candidateDiagnostics.nearNodeCandidates.length} maxRelative=${candidateDiagnostics.options.nearNodeRelativeIntensityMax} minEffectiveSources=${candidateDiagnostics.options.minEffectiveSourceCount}`,
+  );
+}
+
+function runSeedFieldFeatureReportDiagnostic(seedKey) {
+  const shape = createSeedShape(seedKey);
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape, { subdivisions: 4 });
+  const report = buildFieldFeatureReportFromAtlas(atlas, { sampling: { subdivisions: 4 } });
+  const reportFromShape = buildFieldFeatureReport(shape, { sampling: { subdivisions: 4 } });
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, `${seedKey} field feature report sampled atlas`);
+  assertFieldFeatureReport(atlas, report, `${seedKey} field feature report`);
+  assertSupportedFieldFeatureReport(reportFromShape, `${seedKey} field feature report from shape`);
+
+  if (seedKey === 'cube') {
+    assertComputationalFieldFeatureReportObservationsStayNonSemantic(
+      atlas,
+      report,
+      'cube field feature report',
+    );
+  }
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure(`${seedKey} field feature report diagnostic mutated the shape`);
+  }
+
+  console.log(`field feature report ${seedKey}: ${summarizeFieldFeatureReport(report)}`);
+}
+
+function runAmboFieldFeatureReportDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for generated field feature report diagnostic');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+  const boundaryClassification = classifyClosedShapeSurfaceBoundary(amboShape);
+
+  if (boundaryClassification.status === 'unsupported') {
+    console.log(
+      `field feature report Ambo generated surface: unsupported - ${boundaryClassification.reason}${formatOptionalDetails(
+        boundaryClassification.details,
+      )}`,
+    );
+
+    if (JSON.stringify(amboShape) !== before) {
+      recordFailure('generated field feature report diagnostic mutated the Ambo shape');
+    }
+
+    return;
+  }
+
+  const atlas = sampleClosedShapeSurfaceAtlas(amboShape);
+  const report = buildFieldFeatureReportFromAtlas(atlas);
+  const reportFromShape = buildFieldFeatureReport(amboShape);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'generated field feature report sampled atlas');
+  assertFieldFeatureReport(atlas, report, 'generated field feature report');
+  assertSupportedFieldFeatureReport(reportFromShape, 'generated field feature report from shape');
+  assertComputationalFieldFeatureReportObservationsStayNonSemantic(
+    atlas,
+    report,
+    'generated field feature report',
+  );
+
+  if (report.sourceSummary.amboMidpointSources === 0) {
+    recordFailure('generated field feature report did not include Ambo midpoint sources');
+  }
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('generated field feature report diagnostic mutated the Ambo shape');
+  }
+
+  console.log(
+    `field feature report Ambo generated surface: ${summarizeFieldFeatureReport(report)}`,
+  );
+}
+
+function runBoundedFieldFeatureReportDiagnostic() {
+  const shape = createSeedShape('cube');
+  const before = JSON.stringify(shape);
+  const options = {
+    sampling: { subdivisions: 4 },
+    intensityCandidates: {
+      nearNodeRelativeIntensityMax: 1,
+      minEffectiveSourceCount: 1,
+    },
+    maxCancellationLike: 2,
+    maxHighIntensityAnchors: 2,
+    maxAmbiguous: 2,
+    highIntensityRelativeMin: 0.75,
+  };
+  const atlas = sampleClosedShapeSurfaceAtlas(shape, options.sampling);
+  const report = buildFieldFeatureReportFromAtlas(atlas, options);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'bounded field feature report sampled atlas');
+  assertFieldFeatureReport(atlas, report, 'bounded field feature report', {
+    requireCancellationLikeObservation: true,
+    requireHighIntensityAnchorObservation: true,
+    requireAmbiguousObservation: true,
+  });
+  assertComputationalFieldFeatureReportObservationsStayNonSemantic(
+    atlas,
+    report,
+    'bounded field feature report',
+  );
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('bounded field feature report diagnostic mutated the cube shape');
+  }
+
+  console.log(
+    `field feature report bounded: observations=${report.observationSummary.totalObservations} cancellation=${report.observationSummary.cancellationLikeCount}/${report.options.maxCancellationLike} high=${report.observationSummary.highIntensityAnchorCount}/${report.options.maxHighIntensityAnchors} ambiguous=${report.observationSummary.ambiguousCount}/${report.options.maxAmbiguous}`,
   );
 }
 
@@ -1624,6 +1757,47 @@ function expectFiniteComplex(value, label) {
   if (!value || !Number.isFinite(value.re) || !Number.isFinite(value.im)) {
     recordFailure(`${label} should be a finite complex value, got ${JSON.stringify(value)}`);
   }
+}
+
+function expectFiniteVec3(value, label) {
+  if (
+    !Array.isArray(value) ||
+    value.length !== 3 ||
+    value.some((coordinate) => !Number.isFinite(coordinate))
+  ) {
+    recordFailure(`${label} should be a finite Vec3, got ${JSON.stringify(value)}`);
+  }
+}
+
+function countDiagnosticSourceKinds(sources) {
+  return sources.reduce(
+    (counts, source) => ({
+      ...counts,
+      [source.sourceKind]: counts[source.sourceKind] + 1,
+    }),
+    {
+      seed: 0,
+      preserved: 0,
+      'generated-child': 0,
+      'ambo-midpoint-child': 0,
+    },
+  );
+}
+
+function getDiagnosticIntensityRange(values) {
+  const finiteValues = values.filter(Number.isFinite);
+
+  if (!finiteValues.length) {
+    return { min: 0, max: 0 };
+  }
+
+  return finiteValues.reduce(
+    (range, value) => ({
+      min: Math.min(range.min, value),
+      max: Math.max(range.max, value),
+    }),
+    { min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY },
+  );
 }
 
 function assertSourcesMatchDomainPositions(sources, domain, label) {
@@ -2508,6 +2682,445 @@ function assertComputationalIntensityCandidateRolesStayNonSemantic(
         candidate.chartSemanticRole,
         'computational-only',
         `${label} computational candidate ${candidate.candidateId} role`,
+      );
+    }
+  }
+}
+
+function assertSupportedFieldFeatureReport(report, label) {
+  expectEqual(report.status, 'supported', `${label} status`);
+  expectEqual(report.method, 'field-feature-report-v0', `${label} method`);
+  expectEqual(report.scope, 'chart-local-only', `${label} scope`);
+  expectEqual(
+    report.globalSurfaceContinuity,
+    'none',
+    `${label} global surface continuity claim`,
+  );
+  expectEqual(report.semanticStatus, 'not-semantic-naming', `${label} semantic status`);
+
+  if (!report.sourceSummary) {
+    recordFailure(`${label} did not include a source summary`);
+  }
+
+  if (!report.atlasSummary) {
+    recordFailure(`${label} did not include an atlas summary`);
+  }
+
+  if (!Array.isArray(report.observations)) {
+    recordFailure(`${label} did not include an observation array`);
+  }
+}
+
+function assertFieldFeatureReport(atlas, report, label, options = {}) {
+  assertSupportedFieldFeatureReport(report, label);
+
+  if (report.status !== 'supported') {
+    return;
+  }
+
+  const graph = buildSurfaceSampleGraph(atlas);
+  const candidateDiagnostics = buildIntensityCandidateDiagnostics(
+    atlas,
+    report.options.intensityCandidates,
+  );
+  const sampleById = new Map(atlas.samples.map((sample) => [sample.id, sample]));
+  const chartById = new Map(atlas.domain.surfaceCharts.map((chart) => [chart.chartId, chart]));
+  const nearNodeById = new Map(
+    candidateDiagnostics.nearNodeCandidates.map((candidate) => [candidate.candidateId, candidate]),
+  );
+  const extremumById = new Map(
+    candidateDiagnostics.extremaCandidates.map((candidate) => [candidate.candidateId, candidate]),
+  );
+  const candidateById = new Map([
+    ...candidateDiagnostics.nearNodeCandidates.map((candidate) => [candidate.candidateId, candidate]),
+    ...candidateDiagnostics.extremaCandidates.map((candidate) => [candidate.candidateId, candidate]),
+  ]);
+  const underconnectedChartIds = new Set(
+    graph.summary.chartSummaries
+      .filter((summary) => summary.underconnected)
+      .map((summary) => summary.chartId),
+  );
+  const sourceKindCounts = countDiagnosticSourceKinds(atlas.sources);
+  const intensityRange = getDiagnosticIntensityRange(
+    atlas.samples.map((sample) => sample.intensity),
+  );
+  const cancellationLikeObservations = report.observations.filter(
+    (observation) =>
+      observation.observationKind === 'cancellation-like-site-candidate',
+  );
+  const highIntensityAnchorObservations = report.observations.filter(
+    (observation) =>
+      observation.observationKind === 'high-intensity-anchor-candidate',
+  );
+  const ambiguousObservations = report.observations.filter(
+    (observation) => observation.observationKind === 'ambiguous-field-site',
+  );
+  const computationalOnlyObservationCount = report.observations.filter(
+    (observation) => observation.chartSemanticRole === 'computational-only',
+  ).length;
+
+  expectEqual(
+    report.sourceSummary.totalSources,
+    atlas.sources.length,
+    `${label} source summary total`,
+  );
+  expectEqual(
+    report.sourceSummary.generatedSources,
+    sourceKindCounts['generated-child'] + sourceKindCounts['ambo-midpoint-child'],
+    `${label} generated source summary`,
+  );
+  expectEqual(
+    report.sourceSummary.amboMidpointSources,
+    sourceKindCounts['ambo-midpoint-child'],
+    `${label} Ambo midpoint source summary`,
+  );
+  expectEqual(
+    report.atlasSummary.chartCount,
+    atlas.domain.surfaceCharts.length,
+    `${label} atlas chart count`,
+  );
+  expectEqual(
+    report.atlasSummary.sampleCount,
+    atlas.samples.length,
+    `${label} atlas sample count`,
+  );
+  expectApprox(
+    report.atlasSummary.intensityRange.min,
+    intensityRange.min,
+    1e-12,
+    `${label} atlas min intensity`,
+  );
+  expectApprox(
+    report.atlasSummary.intensityRange.max,
+    intensityRange.max,
+    1e-12,
+    `${label} atlas max intensity`,
+  );
+  expectEqual(
+    report.atlasSummary.underconnectedChartCount,
+    graph.summary.underconnectedChartCount,
+    `${label} underconnected chart count`,
+  );
+  expectEqual(
+    report.atlasSummary.computationalOnlyChartCount,
+    atlas.domain.surfaceCharts.filter((chart) => chart.semanticRole === 'computational-only')
+      .length,
+    `${label} computational-only chart count`,
+  );
+  expectEqual(
+    report.observationSummary.totalObservations,
+    report.observations.length,
+    `${label} observation summary total`,
+  );
+  expectEqual(
+    report.observationSummary.cancellationLikeCount,
+    cancellationLikeObservations.length,
+    `${label} cancellation-like observation count`,
+  );
+  expectEqual(
+    report.observationSummary.highIntensityAnchorCount,
+    highIntensityAnchorObservations.length,
+    `${label} high-intensity observation count`,
+  );
+  expectEqual(
+    report.observationSummary.ambiguousCount,
+    ambiguousObservations.length,
+    `${label} ambiguous observation count`,
+  );
+  expectEqual(
+    report.observationSummary.computationalOnlyObservationCount,
+    computationalOnlyObservationCount,
+    `${label} computational-only observation count`,
+  );
+
+  expectFiniteNonnegative(
+    report.options.highIntensityRelativeMin,
+    `${label} high intensity relative min`,
+  );
+  expectFiniteNonnegative(
+    report.options.maxCancellationLike,
+    `${label} max cancellation-like observations`,
+  );
+  expectFiniteNonnegative(
+    report.options.maxHighIntensityAnchors,
+    `${label} max high-intensity observations`,
+  );
+  expectFiniteNonnegative(report.options.maxAmbiguous, `${label} max ambiguous observations`);
+
+  if (cancellationLikeObservations.length > report.options.maxCancellationLike) {
+    recordFailure(`${label} emitted too many cancellation-like observations`);
+  }
+
+  if (highIntensityAnchorObservations.length > report.options.maxHighIntensityAnchors) {
+    recordFailure(`${label} emitted too many high-intensity anchor observations`);
+  }
+
+  if (ambiguousObservations.length > report.options.maxAmbiguous) {
+    recordFailure(`${label} emitted too many ambiguous observations`);
+  }
+
+  if (
+    report.observations.length >
+    report.options.maxCancellationLike +
+      report.options.maxHighIntensityAnchors +
+      report.options.maxAmbiguous
+  ) {
+    recordFailure(`${label} emitted more observations than the combined option bounds`);
+  }
+
+  for (const observation of report.observations) {
+    assertFieldFeatureReportObservation(
+      atlas,
+      observation,
+      sampleById,
+      chartById,
+      candidateById,
+      nearNodeById,
+      extremumById,
+      underconnectedChartIds,
+      label,
+    );
+  }
+
+  if (
+    options.requireCancellationLikeObservation &&
+    cancellationLikeObservations.length === 0
+  ) {
+    recordFailure(`${label} did not emit a cancellation-like report observation`);
+  }
+
+  if (
+    options.requireHighIntensityAnchorObservation &&
+    highIntensityAnchorObservations.length === 0
+  ) {
+    recordFailure(`${label} did not emit a high-intensity anchor report observation`);
+  }
+
+  if (options.requireAmbiguousObservation && ambiguousObservations.length === 0) {
+    recordFailure(`${label} did not emit an ambiguous report observation`);
+  }
+}
+
+function assertFieldFeatureReportObservation(
+  atlas,
+  observation,
+  sampleById,
+  chartById,
+  candidateById,
+  nearNodeById,
+  extremumById,
+  underconnectedChartIds,
+  label,
+) {
+  const sample = sampleById.get(observation.sampleId);
+  const chart = chartById.get(observation.chartId);
+  const sourceCandidate = candidateById.get(observation.sourceCandidateId);
+
+  if (!sample) {
+    recordFailure(`${label} ${observation.observationId} referenced unknown sample ${observation.sampleId}`);
+    return;
+  }
+
+  if (!chart) {
+    recordFailure(`${label} ${observation.observationId} referenced unknown chart ${observation.chartId}`);
+    return;
+  }
+
+  if (!sourceCandidate) {
+    recordFailure(
+      `${label} ${observation.observationId} did not reference an internal source candidate`,
+    );
+    return;
+  }
+
+  expectEqual(
+    observation.status,
+    'report-candidate',
+    `${label} ${observation.observationId} report status`,
+  );
+  expectEqual(
+    observation.semanticStatus,
+    'not-semantic-naming',
+    `${label} ${observation.observationId} semantic status`,
+  );
+  expectEqual(observation.scope, 'chart-local-only', `${label} ${observation.observationId} scope`);
+  expectEqual(
+    observation.globalSurfaceContinuity,
+    'none',
+    `${label} ${observation.observationId} global continuity claim`,
+  );
+  expectEqual(observation.chartId, sample.chartId, `${label} ${observation.observationId} sample chart`);
+  expectEqual(
+    observation.chartSemanticRole,
+    chart.semanticRole,
+    `${label} ${observation.observationId} chart role`,
+  );
+  expectEqual(
+    observation.chartSemanticRole,
+    sample.chartSemanticRole,
+    `${label} ${observation.observationId} sample chart role`,
+  );
+  expectEqual(
+    observation.sourceFaceId,
+    chart.sourceFaceId,
+    `${label} ${observation.observationId} chart source face`,
+  );
+  expectEqual(
+    observation.sourceFaceId,
+    sample.sourceFaceId,
+    `${label} ${observation.observationId} sample source face`,
+  );
+  expectEqual(
+    observation.sourceCandidateKind,
+    sourceCandidate.candidateKind,
+    `${label} ${observation.observationId} source candidate kind`,
+  );
+  expectFiniteVec3(observation.position, `${label} ${observation.observationId} position`);
+  expectEqual(
+    observation.localChartPosition.length,
+    2,
+    `${label} ${observation.observationId} local chart position`,
+  );
+  expectFiniteNonnegative(
+    observation.intensity,
+    `${label} ${observation.observationId} intensity`,
+  );
+  expectFinite(observation.phase, `${label} ${observation.observationId} phase`);
+  expectFiniteNonnegative(
+    observation.relativeIntensity,
+    `${label} ${observation.observationId} relative intensity`,
+  );
+  expectFiniteNonnegative(
+    observation.effectiveSourceCount,
+    `${label} ${observation.observationId} effective source count`,
+  );
+  expectFiniteNonnegative(
+    observation.topContributionRatio,
+    `${label} ${observation.observationId} top contribution ratio`,
+  );
+
+  if (
+    observation.observationKind !== 'cancellation-like-site-candidate' &&
+    observation.observationKind !== 'high-intensity-anchor-candidate' &&
+    observation.observationKind !== 'ambiguous-field-site'
+  ) {
+    recordFailure(`${label} ${observation.observationId} has unsupported observation kind`);
+  }
+
+  if (typeof observation.reason !== 'string' || !observation.reason.trim()) {
+    recordFailure(`${label} ${observation.observationId} did not explain its report reason`);
+  }
+
+  expectApprox(
+    observation.intensity,
+    sourceCandidate.intensity,
+    1e-12,
+    `${label} ${observation.observationId} preserved candidate intensity`,
+  );
+  expectApprox(
+    observation.phase,
+    sourceCandidate.phase,
+    1e-12,
+    `${label} ${observation.observationId} preserved candidate phase`,
+  );
+  expectApprox(
+    observation.relativeIntensity,
+    sourceCandidate.relativeIntensity,
+    1e-12,
+    `${label} ${observation.observationId} preserved candidate relative intensity`,
+  );
+  expectApprox(
+    observation.effectiveSourceCount,
+    sourceCandidate.effectiveSourceCount,
+    1e-12,
+    `${label} ${observation.observationId} preserved candidate effective source count`,
+  );
+  expectApprox(
+    observation.topContributionRatio,
+    sourceCandidate.topContributionRatio,
+    1e-12,
+    `${label} ${observation.observationId} preserved candidate top contribution ratio`,
+  );
+
+  if (chart.semanticRole === 'computational-only') {
+    expectEqual(
+      observation.chartSemanticRole,
+      'computational-only',
+      `${label} ${observation.observationId} computational-only role`,
+    );
+  }
+
+  if (observation.observationKind === 'cancellation-like-site-candidate') {
+    if (!nearNodeById.has(observation.sourceCandidateId)) {
+      recordFailure(
+        `${label} ${observation.observationId} cancellation-like observation did not derive from a near-node candidate`,
+      );
+    }
+  }
+
+  if (observation.observationKind === 'high-intensity-anchor-candidate') {
+    const extremum = extremumById.get(observation.sourceCandidateId);
+
+    if (!extremum) {
+      recordFailure(
+        `${label} ${observation.observationId} high-intensity observation did not derive from an extremum candidate`,
+      );
+    } else {
+      expectEqual(
+        extremum.extremumKind,
+        'local-maximum-candidate',
+        `${label} ${observation.observationId} high-intensity source extremum`,
+      );
+      expectEqual(
+        observation.sourceExtremumKind,
+        'local-maximum-candidate',
+        `${label} ${observation.observationId} preserved source extremum kind`,
+      );
+    }
+  }
+
+  if (observation.observationKind === 'ambiguous-field-site') {
+    const boundaryLocal = sourceCandidate.barycentric.some(
+      (coordinate) => Math.abs(coordinate) <= 1e-12,
+    );
+    const ambiguousCondition =
+      underconnectedChartIds.has(observation.chartId) ||
+      observation.chartSemanticRole === 'computational-only' ||
+      boundaryLocal;
+
+    if (!ambiguousCondition) {
+      recordFailure(
+        `${label} ${observation.observationId} ambiguous observation lacked an underconnected, computational-only, or boundary-local reason`,
+      );
+    }
+  }
+
+  if (observation.topContributionRatio > 1 + 1e-9) {
+    recordFailure(`${label} ${observation.observationId} top contribution ratio exceeded 1`);
+  }
+
+  if (atlas.samples.every((candidate) => candidate.id !== observation.sampleId)) {
+    recordFailure(`${label} ${observation.observationId} did not preserve a sampled atlas id`);
+  }
+}
+
+function assertComputationalFieldFeatureReportObservationsStayNonSemantic(
+  atlas,
+  report,
+  label,
+) {
+  const computationalChartIds = new Set(
+    atlas.domain.surfaceCharts
+      .filter((chart) => chart.kind === 'computational-triangle-chart')
+      .map((chart) => chart.chartId),
+  );
+
+  for (const observation of report.observations) {
+    if (computationalChartIds.has(observation.chartId)) {
+      expectEqual(
+        observation.chartSemanticRole,
+        'computational-only',
+        `${label} computational observation ${observation.observationId} role`,
       );
     }
   }
