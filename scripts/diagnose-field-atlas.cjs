@@ -74,6 +74,9 @@ const {
 const {
   buildFieldSupportRegionCandidateReport,
 } = require(path.join(repoRoot, 'src/lib/fieldAtlasSupportRegionCandidates.ts'));
+const {
+  buildFieldEvidenceStabilityReportForShape,
+} = require(path.join(repoRoot, 'src/lib/fieldAtlasEvidenceStability.ts'));
 
 const failures = [];
 
@@ -94,6 +97,7 @@ runClosedShapeSurfaceSamplingDiagnostic();
 runClosedShapeSurfaceSampleGraphDiagnostic();
 runFieldRouteGateCandidateDiagnostic();
 runFieldSupportRegionCandidateDiagnostic();
+runFieldEvidenceStabilityDiagnostic();
 runClosedShapeSurfaceIntensityCandidateDiagnostic();
 runFieldFeatureReportDiagnostic();
 runFieldSourcePolicyComparisonDiagnostic();
@@ -413,6 +417,15 @@ function runFieldSupportRegionCandidateDiagnostic() {
   runSeedFieldSupportRegionCandidateDiagnostic('tetrahedron');
   runSeedFieldSupportRegionCandidateDiagnostic('cube');
   runAmboFieldSupportRegionCandidateDiagnostic();
+}
+
+function runFieldEvidenceStabilityDiagnostic() {
+  console.log(
+    'field evidence stability policy: field-evidence-stability-v0; status=diagnostic-only; semantic=not-semantic-naming; topology=not-topology-workspace; phase=not-global-phase-continuity',
+  );
+  runSeedFieldEvidenceStabilityDiagnostic('tetrahedron');
+  runSeedFieldEvidenceStabilityDiagnostic('cube');
+  runAmboFieldEvidenceStabilityDiagnostic();
 }
 
 function runClosedShapeSurfaceIntensityCandidateDiagnostic() {
@@ -1061,6 +1074,70 @@ function runAmboFieldSupportRegionCandidateDiagnostic() {
   console.log(
     `field support/region candidates Ambo generated surface: support=${report.candidateSummary.supportClassCandidateCount} regions=${report.candidateSummary.regionCandidateCount} constraints=${report.candidateSummary.constraintSiteCandidateCount} routeFailure=${report.candidateSummary.routeFailureRegionCandidateCount} policy=${report.sourcePolicyNames.join(',') || 'none'}`,
   );
+}
+
+function runSeedFieldEvidenceStabilityDiagnostic(seedKey) {
+  const shape = createSeedShape(seedKey);
+  const before = JSON.stringify(shape);
+  const report = buildFieldEvidenceStabilityReportForShape(shape, seedKey);
+
+  assertFieldEvidenceStabilityReport(
+    report,
+    `${seedKey} field evidence stability report`,
+  );
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure(`${seedKey} field evidence stability diagnostic mutated the shape`);
+  }
+
+  console.log(formatFieldEvidenceStabilityLine(seedKey, report));
+}
+
+function runAmboFieldEvidenceStabilityDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for generated field evidence stability diagnostic');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+  const boundaryClassification = classifyClosedShapeSurfaceBoundary(amboShape);
+
+  if (boundaryClassification.status === 'unsupported') {
+    recordFailure(
+      `generated field evidence stability diagnostic could not build an Ambo closed surface: ${boundaryClassification.reason}`,
+    );
+    console.log(
+      `field evidence stability Ambo generated surface: unsupported - ${boundaryClassification.reason}${formatOptionalDetails(
+        boundaryClassification.details,
+      )}`,
+    );
+
+    if (JSON.stringify(amboShape) !== before) {
+      recordFailure('generated field evidence stability diagnostic mutated the Ambo shape');
+    }
+
+    return;
+  }
+
+  const report = buildFieldEvidenceStabilityReportForShape(
+    amboShape,
+    'Ambo generated surface',
+  );
+
+  assertFieldEvidenceStabilityReport(
+    report,
+    'generated field evidence stability report',
+  );
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('generated field evidence stability diagnostic mutated the Ambo shape');
+  }
+
+  console.log(formatFieldEvidenceStabilityLine('Ambo generated surface', report));
 }
 
 function runSeedClosedShapeSurfaceIntensityCandidateDiagnostic(seedKey) {
@@ -3495,6 +3572,279 @@ function assertFieldSupportRegionEvidenceSummary(
   }
 }
 
+function assertFieldEvidenceStabilityReport(report, label) {
+  expectEqual(report.method, 'field-evidence-stability-v0', `${label} method`);
+  expectEqual(report.status, 'diagnostic-only', `${label} status`);
+  expectEqual(report.semanticStatus, 'not-semantic-naming', `${label} semantic status`);
+  expectEqual(report.topologyStatus, 'not-topology-workspace', `${label} topology status`);
+  expectEqual(
+    report.phaseContinuityStatus,
+    'not-global-phase-continuity',
+    `${label} phase continuity status`,
+  );
+
+  if (!sameArray(report.samplingSubdivisionsCompared, [1, 2, 3])) {
+    recordFailure(
+      `${label} should compare subdivisions 1,2,3; got ${report.samplingSubdivisionsCompared.join(',')}`,
+    );
+  }
+
+  if (
+    !report.sourcePoliciesCompared.includes(DEFAULT_FIELD_ATLAS_SOURCE_POLICY.name) ||
+    !report.sourcePoliciesCompared.includes(PARENT_INHERITANCE_FIELD_ATLAS_SOURCE_POLICY.name) ||
+    report.sourcePoliciesCompared.length !== 2
+  ) {
+    recordFailure(
+      `${label} should compare deterministic and parent-inheritance source policies; got ${report.sourcePoliciesCompared.join(',')}`,
+    );
+  }
+
+  expectEqual(
+    report.caseSummaries.length,
+    report.casesCompared.length,
+    `${label} case summary count`,
+  );
+  assertFieldEvidenceLayerSummaries(report.layerSummaries, `${label} top-level`);
+
+  for (const caseSummary of report.caseSummaries) {
+    assertFieldEvidenceCaseSummary(caseSummary, report, label);
+  }
+}
+
+function assertFieldEvidenceCaseSummary(caseSummary, report, label) {
+  expectEqual(
+    caseSummary.variantCount,
+    report.samplingSubdivisionsCompared.length * report.sourcePoliciesCompared.length,
+    `${label} ${caseSummary.caseLabel} variant count`,
+  );
+  expectEqual(
+    caseSummary.variants.length,
+    caseSummary.variantCount,
+    `${label} ${caseSummary.caseLabel} variant array count`,
+  );
+  assertFieldEvidenceCountVariances(
+    caseSummary.countVarianceByCandidateKind,
+    `${label} ${caseSummary.caseLabel}`,
+  );
+  assertFieldEvidenceLayerSummaries(
+    caseSummary.layerSummaries,
+    `${label} ${caseSummary.caseLabel}`,
+  );
+  assertFieldEvidenceSensitivitySummary(
+    caseSummary.sourcePolicySensitivity,
+    `${label} ${caseSummary.caseLabel} source-policy sensitivity`,
+  );
+  assertFieldEvidenceSensitivitySummary(
+    caseSummary.samplingSensitivity,
+    `${label} ${caseSummary.caseLabel} sampling sensitivity`,
+  );
+  assertFieldEvidenceMaxBucketSaturation(
+    caseSummary.maxBucketSaturation,
+    `${label} ${caseSummary.caseLabel} max-bucket saturation`,
+  );
+  assertFieldEvidenceStabilityLabels(
+    caseSummary.stabilityLabels,
+    `${label} ${caseSummary.caseLabel}`,
+  );
+
+  if (typeof caseSummary.computationalOnlyDependence !== 'boolean') {
+    recordFailure(`${label} ${caseSummary.caseLabel} did not record computational-only dependence`);
+  }
+
+  if (typeof caseSummary.seamEdgeDependence !== 'boolean') {
+    recordFailure(`${label} ${caseSummary.caseLabel} did not record seam-edge dependence`);
+  }
+
+  for (const variant of caseSummary.variants) {
+    assertFieldEvidenceVariantSummary(variant, report, label);
+  }
+}
+
+function assertFieldEvidenceVariantSummary(variant, report, label) {
+  expectEqual(variant.variantStatus, 'built', `${label} ${variant.variantId} variant status`);
+
+  if (!report.samplingSubdivisionsCompared.includes(variant.samplingSubdivisions)) {
+    recordFailure(`${label} ${variant.variantId} used an unexpected subdivision`);
+  }
+
+  if (!report.sourcePoliciesCompared.includes(variant.sourcePolicyName)) {
+    recordFailure(`${label} ${variant.variantId} used an unexpected source policy`);
+  }
+
+  if (!variant.sourcePolicyNames.includes(variant.sourcePolicyName)) {
+    recordFailure(`${label} ${variant.variantId} did not carry the active source policy name`);
+  }
+
+  expectFiniteNonnegative(variant.sampleCount, `${label} ${variant.variantId} sample count`);
+  expectFiniteNonnegative(variant.chartCount, `${label} ${variant.variantId} chart count`);
+  expectFiniteNonnegative(
+    variant.computationalOnlyCandidateCount,
+    `${label} ${variant.variantId} computational-only candidate count`,
+  );
+  expectFiniteNonnegative(
+    variant.seamInvolvedCandidateCount,
+    `${label} ${variant.variantId} seam-involved candidate count`,
+  );
+  assertFieldEvidenceMaxBucketSaturation(
+    variant.maxBucketSaturation,
+    `${label} ${variant.variantId} max-bucket saturation`,
+  );
+
+  expectEqual(
+    variant.layerSummaries.length,
+    3,
+    `${label} ${variant.variantId} layer summary count`,
+  );
+
+  for (const layerSummary of variant.layerSummaries) {
+    assertFieldEvidenceVariantLayerSummary(layerSummary, `${label} ${variant.variantId}`);
+  }
+}
+
+function assertFieldEvidenceVariantLayerSummary(layerSummary, label) {
+  assertFieldEvidenceLayerName(layerSummary.layer, `${label} layer`);
+  expectFiniteNonnegative(layerSummary.totalCount, `${label} ${layerSummary.layer} total count`);
+  expectFiniteNonnegative(
+    layerSummary.computationalOnlyCandidateCount,
+    `${label} ${layerSummary.layer} computational-only candidate count`,
+  );
+  expectFiniteNonnegative(
+    layerSummary.seamInvolvedCandidateCount,
+    `${label} ${layerSummary.layer} seam-involved candidate count`,
+  );
+  assertFieldEvidenceMaxBucketSaturation(
+    layerSummary.maxBucketSaturation,
+    `${label} ${layerSummary.layer} max-bucket saturation`,
+  );
+
+  for (const [countKey, value] of Object.entries(layerSummary.countsByKind)) {
+    expectFiniteNonnegative(value, `${label} ${layerSummary.layer} ${countKey} count`);
+  }
+}
+
+function assertFieldEvidenceLayerSummaries(layerSummaries, label) {
+  expectEqual(layerSummaries.length, 3, `${label} layer summary count`);
+
+  for (const layerSummary of layerSummaries) {
+    assertFieldEvidenceLayerName(layerSummary.layer, `${label} layer`);
+    assertFieldEvidenceCountVariances(
+      layerSummary.countVarianceByCandidateKind,
+      `${label} ${layerSummary.layer}`,
+    );
+    assertFieldEvidenceSensitivitySummary(
+      layerSummary.sourcePolicySensitivity,
+      `${label} ${layerSummary.layer} source-policy sensitivity`,
+    );
+    assertFieldEvidenceSensitivitySummary(
+      layerSummary.samplingSensitivity,
+      `${label} ${layerSummary.layer} sampling sensitivity`,
+    );
+    assertFieldEvidenceMaxBucketSaturation(
+      layerSummary.maxBucketSaturation,
+      `${label} ${layerSummary.layer} max-bucket saturation`,
+    );
+    assertFieldEvidenceStabilityLabels(
+      layerSummary.stabilityLabels,
+      `${label} ${layerSummary.layer}`,
+    );
+
+    if (typeof layerSummary.computationalOnlyDependence !== 'boolean') {
+      recordFailure(`${label} ${layerSummary.layer} did not record computational-only dependence`);
+    }
+
+    if (typeof layerSummary.seamEdgeDependence !== 'boolean') {
+      recordFailure(`${label} ${layerSummary.layer} did not record seam-edge dependence`);
+    }
+  }
+}
+
+function assertFieldEvidenceCountVariances(countVariances, label) {
+  if (!Array.isArray(countVariances) || !countVariances.length) {
+    recordFailure(`${label} did not include count variance entries`);
+    return;
+  }
+
+  for (const variance of countVariances) {
+    assertFieldEvidenceLayerName(variance.layer, `${label} variance layer`);
+    expectFiniteNonnegative(variance.min, `${label} ${variance.countKey} min variance`);
+    expectFiniteNonnegative(variance.max, `${label} ${variance.countKey} max variance`);
+
+    if (variance.min > variance.max) {
+      recordFailure(`${label} ${variance.countKey} variance range is inverted`);
+    }
+
+    if (typeof variance.changed !== 'boolean') {
+      recordFailure(`${label} ${variance.countKey} did not record changed flag`);
+    }
+  }
+}
+
+function assertFieldEvidenceSensitivitySummary(summary, label) {
+  if (!summary) {
+    recordFailure(`${label} was not recorded`);
+    return;
+  }
+
+  if (typeof summary.sensitive !== 'boolean') {
+    recordFailure(`${label} did not record a boolean sensitive flag`);
+  }
+
+  if (!Array.isArray(summary.changedKeys)) {
+    recordFailure(`${label} did not record changed keys`);
+  }
+}
+
+function assertFieldEvidenceMaxBucketSaturation(flags, label) {
+  if (!flags) {
+    recordFailure(`${label} was not recorded`);
+    return;
+  }
+
+  for (const key of [
+    'routeGateGatesReachedMax',
+    'routeGateRoutesReachedMax',
+    'routeGateBlockedReachedMax',
+    'supportRegionSupportClassesReachedMax',
+    'supportRegionRegionsReachedMax',
+    'supportRegionConstraintsReachedMax',
+    'supportRegionRouteFailuresReachedMax',
+    'anyMaxBucketSaturated',
+  ]) {
+    if (typeof flags[key] !== 'boolean') {
+      recordFailure(`${label} ${key} should be an explicit boolean`);
+    }
+  }
+}
+
+function assertFieldEvidenceStabilityLabels(labels, label) {
+  if (!Array.isArray(labels) || !labels.length) {
+    recordFailure(`${label} did not include stability labels`);
+    return;
+  }
+
+  for (const stabilityLabel of labels) {
+    if (
+      stabilityLabel !== 'stable-counts' &&
+      stabilityLabel !== 'sampling-sensitive' &&
+      stabilityLabel !== 'policy-sensitive' &&
+      stabilityLabel !== 'saturated' &&
+      stabilityLabel !== 'mixed-instability'
+    ) {
+      recordFailure(`${label} used unsupported stability label ${stabilityLabel}`);
+    }
+  }
+}
+
+function assertFieldEvidenceLayerName(layer, label) {
+  if (
+    layer !== 'field-feature-report-v0' &&
+    layer !== 'field-route-gate-candidates-v0' &&
+    layer !== 'field-support-region-candidates-v0'
+  ) {
+    recordFailure(`${label} used unsupported layer ${layer}`);
+  }
+}
+
 function assertComputationalSampleGraphRolesStayNonSemantic(atlas, graph, label) {
   const computationalChartIds = new Set(
     atlas.domain.surfaceCharts
@@ -5241,6 +5591,45 @@ function formatNumber(value) {
 
 function formatNumberList(values) {
   return `[${values.map(formatNumber).join(', ')}]`;
+}
+
+function formatFieldEvidenceStabilityLine(label, report) {
+  const caseSummary = report.caseSummaries[0];
+
+  if (!caseSummary) {
+    return `field evidence stability ${label}: variants=0 featureSensitive=no routeGateSensitive=no supportRegionSensitive=no saturated=no labels=none`;
+  }
+
+  return (
+    `field evidence stability ${label}: variants=${caseSummary.variantCount} ` +
+    `featureSensitive=${formatYesNo(
+      isEvidenceLayerSensitive(caseSummary, 'field-feature-report-v0'),
+    )} ` +
+    `routeGateSensitive=${formatYesNo(
+      isEvidenceLayerSensitive(caseSummary, 'field-route-gate-candidates-v0'),
+    )} ` +
+    `supportRegionSensitive=${formatYesNo(
+      isEvidenceLayerSensitive(caseSummary, 'field-support-region-candidates-v0'),
+    )} ` +
+    `saturated=${formatYesNo(caseSummary.maxBucketSaturation.anyMaxBucketSaturated)} ` +
+    `labels=${caseSummary.stabilityLabels.join(',') || 'none'}`
+  );
+}
+
+function isEvidenceLayerSensitive(caseSummary, layer) {
+  const layerSummary = caseSummary.layerSummaries.find(
+    (candidate) => candidate.layer === layer,
+  );
+
+  return Boolean(
+    layerSummary &&
+      (layerSummary.sourcePolicySensitivity.sensitive ||
+        layerSummary.samplingSensitivity.sensitive),
+  );
+}
+
+function formatYesNo(value) {
+  return value ? 'yes' : 'no';
 }
 
 function formatOptionalDetails(details) {
