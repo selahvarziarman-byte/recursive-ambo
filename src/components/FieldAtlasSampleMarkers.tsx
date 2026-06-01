@@ -7,6 +7,10 @@ import {
   sampleFieldAtlasPoints,
   type FieldAtlasSample,
 } from '../lib/fieldAtlas';
+import {
+  buildFieldFeatureReport,
+  type FieldFeatureReportObservation,
+} from '../lib/fieldAtlasFeatureReport';
 import { useGeometryStore } from '../store/geometryStore';
 import type { Shape, Vec3 } from '../types/geometry';
 
@@ -17,6 +21,7 @@ interface FieldAtlasSampleMarkersProps {
 
 interface FieldAtlasMarker {
   id: string;
+  hoverSampleId: string;
   position: Vec3;
   radius: number;
   opacity: number;
@@ -25,8 +30,11 @@ interface FieldAtlasMarker {
   emissiveIntensity: number;
   intensity: number;
   label: string;
-  kind: 'source-vertex' | 'surface-sample';
+  detailLabel?: string;
+  kind: 'source-vertex' | 'surface-sample' | 'report-observation';
 }
+
+const REPORT_MARKER_LIMIT = 5;
 
 export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMarkersProps) {
   const markers = useMemo(() => buildMarkerModel(shape, enabled), [enabled, shape]);
@@ -50,7 +58,7 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
   return (
     <group>
       {markers.map((marker) => {
-        const isHovered = hoveredFieldAtlasSampleId === marker.id;
+        const isHovered = hoveredFieldAtlasSampleId === marker.hoverSampleId;
         const markerScale = isHovered ? 1.85 : 1;
 
         return (
@@ -67,20 +75,20 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
             }}
             onPointerEnter={(event) => {
               event.stopPropagation();
-              setHoveredFieldAtlasSampleId(marker.id);
+              setHoveredFieldAtlasSampleId(marker.hoverSampleId);
               document.body.style.cursor = 'default';
             }}
             onPointerLeave={(event) => {
               event.stopPropagation();
-              clearHoveredSample(marker.id, setHoveredFieldAtlasSampleId);
+              clearHoveredSample(marker.hoverSampleId, setHoveredFieldAtlasSampleId);
               document.body.style.cursor = 'auto';
             }}
             onPointerMove={(event) => {
               event.stopPropagation();
-              setHoveredFieldAtlasSampleId(marker.id);
+              setHoveredFieldAtlasSampleId(marker.hoverSampleId);
             }}
           >
-            {marker.kind === 'source-vertex' ? (
+            {marker.kind === 'source-vertex' || marker.kind === 'report-observation' ? (
               <sphereGeometry args={[marker.radius, 18, 12]} />
             ) : (
               <octahedronGeometry args={[marker.radius, 0]} />
@@ -103,6 +111,9 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
               >
                 <div className="whitespace-nowrap rounded border border-emerald-300/50 bg-stone-950/95 px-2 py-1 text-[11px] leading-4 text-stone-100 shadow-lg">
                   <span className="block font-medium text-emerald-100">{marker.label}</span>
+                  {marker.detailLabel ? (
+                    <span className="block text-stone-300">{marker.detailLabel}</span>
+                  ) : null}
                   <span className="block font-mono text-stone-400">
                     intensity {formatNumber(marker.intensity)}
                   </span>
@@ -128,13 +139,13 @@ function buildMarkerModel(shape: Shape, enabled: boolean): FieldAtlasMarker[] {
     const samples = sampleFieldAtlasPoints(sources, samplePoints);
     const range = getIntensityRange(samples);
     const radiusBase = getMarkerRadiusBase(domain.positions);
-
-    return samples.map((sample) => {
+    const sampleMarkers = samples.map((sample) => {
       const normalizedIntensity = normalizeIntensity(sample.intensity, range);
       const isSourceVertexSample = sample.id.startsWith('closed-shape-surface:vertex:');
 
       return {
         id: sample.id,
+        hoverSampleId: sample.id,
         position: sample.position,
         radius: isSourceVertexSample
           ? radiusBase * (1.08 + normalizedIntensity * 0.18)
@@ -148,11 +159,42 @@ function buildMarkerModel(shape: Shape, enabled: boolean): FieldAtlasMarker[] {
         intensity: sample.intensity,
         label: formatSampleMarkerLabel(sample),
         kind: isSourceVertexSample ? 'source-vertex' : 'surface-sample',
-      };
+      } satisfies FieldAtlasMarker;
     });
+    const report = buildFieldFeatureReport(shape);
+    const reportMarkers =
+      report.status === 'supported'
+        ? report.observations
+            .slice(0, REPORT_MARKER_LIMIT)
+            .map((observation) => buildReportMarker(observation, radiusBase))
+        : [];
+
+    return [...sampleMarkers, ...reportMarkers];
   } catch {
     return [];
   }
+}
+
+function buildReportMarker(
+  observation: FieldFeatureReportObservation,
+  radiusBase: number,
+): FieldAtlasMarker {
+  return {
+    id: observation.observationId,
+    hoverSampleId: observation.sampleId,
+    position: copyVec3(observation.position),
+    radius: radiusBase * 1.22,
+    opacity: 0.82,
+    color: '#fbbf24',
+    emissive: '#78350f',
+    emissiveIntensity: 0.48,
+    intensity: observation.intensity,
+    label: formatReportMarkerLabel(observation),
+    detailLabel: `${observation.status}; ${formatReportSemanticStatus(
+      observation.semanticStatus,
+    )}`,
+    kind: 'report-observation',
+  };
 }
 
 function clearHoveredSample(
@@ -178,6 +220,23 @@ function formatSampleMarkerLabel(sample: FieldAtlasSample): string {
   }
 
   return 'Surface sample';
+}
+
+function formatReportMarkerLabel(observation: FieldFeatureReportObservation): string {
+  switch (observation.observationKind) {
+    case 'cancellation-like-site-candidate':
+      return 'cancellation-like candidate';
+    case 'high-intensity-anchor-candidate':
+      return 'high-intensity anchor candidate';
+    case 'ambiguous-field-site':
+      return 'ambiguous field-site candidate';
+    default:
+      return 'report-candidate';
+  }
+}
+
+function formatReportSemanticStatus(status: string): string {
+  return status === 'not-semantic-naming' ? 'not semantic naming' : status;
 }
 
 function formatNumber(value: number): string {
@@ -253,4 +312,8 @@ function getMarkerRadiusBase(positions: Vec3[]): number {
   );
 
   return Math.min(0.06, Math.max(0.032, extent * 0.018));
+}
+
+function copyVec3(position: Vec3): Vec3 {
+  return [position[0], position[1], position[2]];
 }

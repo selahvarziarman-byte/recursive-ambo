@@ -135,6 +135,11 @@ export function FieldAtlasInspector({
   const setHoveredFieldAtlasSampleId = useGeometryStore(
     (state) => state.setHoveredFieldAtlasSampleId,
   );
+  const clearHoveredFieldAtlasSampleId = (sampleId: string) => {
+    if (useGeometryStore.getState().hoveredFieldAtlasSampleId === sampleId) {
+      setHoveredFieldAtlasSampleId(null);
+    }
+  };
 
   if (atlas.status === 'unsupported') {
     return (
@@ -145,7 +150,12 @@ export function FieldAtlasInspector({
           </span>
           <p className="mt-2 text-xs leading-5 text-stone-300">{atlas.reason}</p>
         </div>
-        <FieldReportSection report={fieldReport} />
+        <FieldReportSection
+          report={fieldReport}
+          hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
+          onHoverSampleStart={setHoveredFieldAtlasSampleId}
+          onHoverSampleEnd={clearHoveredFieldAtlasSampleId}
+        />
         <AdvancedFieldDiagnosticsSection
           open={advancedDiagnosticsOpen}
           onOpenChange={setAdvancedDiagnosticsOpen}
@@ -207,7 +217,12 @@ export function FieldAtlasInspector({
         </div>
       </div>
 
-      <FieldReportSection report={fieldReport} />
+      <FieldReportSection
+        report={fieldReport}
+        hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
+        onHoverSampleStart={setHoveredFieldAtlasSampleId}
+        onHoverSampleEnd={clearHoveredFieldAtlasSampleId}
+      />
 
       <div className="grid gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
@@ -241,7 +256,17 @@ export function FieldAtlasInspector({
   );
 }
 
-function FieldReportSection({ report }: { report: FieldFeatureReport }) {
+function FieldReportSection({
+  report,
+  hoveredFieldAtlasSampleId,
+  onHoverSampleStart,
+  onHoverSampleEnd,
+}: {
+  report: FieldFeatureReport;
+  hoveredFieldAtlasSampleId: string | null;
+  onHoverSampleStart: (sampleId: string) => void;
+  onHoverSampleEnd: (sampleId: string) => void;
+}) {
   if (report.status === 'unsupported') {
     return (
       <div className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-xs">
@@ -317,6 +342,9 @@ function FieldReportSection({ report }: { report: FieldFeatureReport }) {
             <FieldReportObservationRow
               key={observation.observationId}
               observation={observation}
+              isHovered={hoveredFieldAtlasSampleId === observation.sampleId}
+              onHoverStart={onHoverSampleStart}
+              onHoverEnd={onHoverSampleEnd}
             />
           ))
         ) : (
@@ -331,11 +359,29 @@ function FieldReportSection({ report }: { report: FieldFeatureReport }) {
 
 function FieldReportObservationRow({
   observation,
+  isHovered,
+  onHoverStart,
+  onHoverEnd,
 }: {
   observation: FieldFeatureReportObservation;
+  isHovered: boolean;
+  onHoverStart: (sampleId: string) => void;
+  onHoverEnd: (sampleId: string) => void;
 }) {
   return (
-    <div className="rounded border border-stone-800 bg-stone-900 px-2 py-2">
+    <div
+      className={`rounded border px-2 py-2 transition ${
+        isHovered
+          ? 'border-amber-300/70 bg-amber-400/10 shadow-[0_0_0_1px_rgba(252,211,77,0.18)]'
+          : 'border-stone-800 bg-stone-900'
+      }`}
+      data-field-report-observation-id={observation.observationId}
+      onFocus={() => onHoverStart(observation.sampleId)}
+      onBlur={() => onHoverEnd(observation.sampleId)}
+      onPointerEnter={() => onHoverStart(observation.sampleId)}
+      onPointerLeave={() => onHoverEnd(observation.sampleId)}
+      tabIndex={0}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="font-medium text-stone-200">
           {formatReportObservationKind(observation.observationKind)}
