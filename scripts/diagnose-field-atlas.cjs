@@ -40,6 +40,11 @@ const {
   buildSurfaceChartSamplePoints,
   sampleClosedShapeSurfaceAtlas,
 } = require(path.join(repoRoot, 'src/lib/fieldAtlasSurfaceSampling.ts'));
+const {
+  buildChartGradientDiagnostics,
+  buildGradientDiagnostics,
+  estimateChartSampleGradients,
+} = require(path.join(repoRoot, 'src/lib/fieldAtlasGradient.ts'));
 
 const failures = [];
 
@@ -57,6 +62,7 @@ runPolygonalFaceReferenceDiagnostic();
 runCellSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceReferenceDiagnostic();
 runClosedShapeSurfaceSamplingDiagnostic();
+runClosedShapeSurfaceGradientDiagnostic();
 runGeneratedChildSourceDiagnostic();
 
 if (failures.length) {
@@ -333,6 +339,13 @@ function runClosedShapeSurfaceSamplingDiagnostic() {
   runClosedShapeSurfaceSamplingBoundsDiagnostic();
 }
 
+function runClosedShapeSurfaceGradientDiagnostic() {
+  runSeedClosedShapeSurfaceGradientDiagnostic('tetrahedron');
+  runSeedClosedShapeSurfaceGradientDiagnostic('cube');
+  runAmboClosedShapeSurfaceGradientDiagnostic();
+  runUnderdeterminedClosedShapeSurfaceGradientDiagnostic();
+}
+
 function runSeedClosedShapeSurfaceSamplingDiagnostic(seedKey) {
   const shape = createSeedShape(seedKey);
   const before = JSON.stringify(shape);
@@ -453,6 +466,113 @@ function runClosedShapeSurfaceSamplingBoundsDiagnostic() {
 
   console.log(
     `sampled closed shape bounded cap: samples=${atlas.samples.length}/${atlas.options.maxSamples} subdivisions=${atlas.options.subdivisions}`,
+  );
+}
+
+function runSeedClosedShapeSurfaceGradientDiagnostic(seedKey) {
+  const shape = createSeedShape(seedKey);
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape);
+  const gradientDiagnostics = buildGradientDiagnostics(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, `${seedKey} gradient sampled closed-shape surface`);
+  assertGradientDiagnostics(atlas, gradientDiagnostics, `${seedKey} surface gradients`, {
+    requireDeterminedCharts: true,
+  });
+
+  if (seedKey === 'cube') {
+    assertComputationalGradientRolesStayNonSemantic(
+      atlas,
+      gradientDiagnostics,
+      'cube surface gradients',
+    );
+  }
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure(`${seedKey} surface gradient diagnostic mutated the shape`);
+  }
+
+  console.log(
+    `surface gradients ${seedKey}: charts=${gradientDiagnostics.chartDiagnostics.length} estimates=${gradientDiagnostics.sampleGradients.length} underdetermined=${countUnderdeterminedGradientCharts(gradientDiagnostics)}`,
+  );
+}
+
+function runAmboClosedShapeSurfaceGradientDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for generated surface gradient diagnostic');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+  const boundaryClassification = classifyClosedShapeSurfaceBoundary(amboShape);
+
+  if (boundaryClassification.status === 'unsupported') {
+    console.log(
+      `surface gradients Ambo generated surface: unsupported - ${boundaryClassification.reason}${formatOptionalDetails(
+        boundaryClassification.details,
+      )}`,
+    );
+
+    if (JSON.stringify(amboShape) !== before) {
+      recordFailure('generated surface gradient diagnostic mutated the Ambo shape');
+    }
+
+    return;
+  }
+
+  const atlas = sampleClosedShapeSurfaceAtlas(amboShape);
+  const gradientDiagnostics = buildGradientDiagnostics(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'generated surface gradient sampled atlas');
+  assertGradientDiagnostics(atlas, gradientDiagnostics, 'generated surface gradients', {
+    requireDeterminedCharts: true,
+  });
+  assertComputationalGradientRolesStayNonSemantic(
+    atlas,
+    gradientDiagnostics,
+    'generated surface gradients',
+  );
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('generated surface gradient diagnostic mutated the Ambo shape');
+  }
+
+  console.log(
+    `surface gradients Ambo generated surface: charts=${gradientDiagnostics.chartDiagnostics.length} estimates=${gradientDiagnostics.sampleGradients.length} underdetermined=${countUnderdeterminedGradientCharts(gradientDiagnostics)}`,
+  );
+}
+
+function runUnderdeterminedClosedShapeSurfaceGradientDiagnostic() {
+  const shape = createSeedShape('cube');
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape, { maxSamples: 1 });
+  const gradientDiagnostics = buildGradientDiagnostics(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(atlas, 'underdetermined surface gradient sampled atlas');
+  assertGradientDiagnostics(atlas, gradientDiagnostics, 'underdetermined surface gradients', {
+    requireUnderdeterminedChart: true,
+  });
+
+  if (!gradientDiagnostics.chartDiagnostics.every((diagnostic) => diagnostic.underdetermined)) {
+    recordFailure('underdetermined surface gradient diagnostic guessed a chart gradient');
+  }
+
+  expectEqual(
+    gradientDiagnostics.sampleGradients.length,
+    0,
+    'underdetermined surface gradient diagnostic should not emit sample gradients',
+  );
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure('underdetermined surface gradient diagnostic mutated the cube shape');
+  }
+
+  console.log(
+    `surface gradients underdetermined cap: charts=${gradientDiagnostics.chartDiagnostics.length} underdetermined=${countUnderdeterminedGradientCharts(gradientDiagnostics)}`,
   );
 }
 
@@ -1167,6 +1287,196 @@ function assertSampledClosedShapeSurfaceAtlas(atlas, label) {
   assertComputationalSupportsAreNotSources(atlas, label);
 }
 
+function assertGradientDiagnostics(atlas, gradientDiagnostics, label, options = {}) {
+  expectEqual(
+    gradientDiagnostics.method,
+    'chart-local-least-squares-plane-v1',
+    `${label} gradient method`,
+  );
+  expectEqual(
+    gradientDiagnostics.chartDiagnostics.length,
+    atlas.domain.surfaceCharts.length,
+    `${label} chart diagnostic count`,
+  );
+
+  const chartDiagnostics = buildChartGradientDiagnostics(atlas);
+  const sampleGradientEstimates = estimateChartSampleGradients(atlas);
+
+  expectEqual(
+    chartDiagnostics.length,
+    gradientDiagnostics.chartDiagnostics.length,
+    `${label} chart diagnostics helper count`,
+  );
+  expectEqual(
+    sampleGradientEstimates.length,
+    gradientDiagnostics.sampleGradients.length,
+    `${label} sample gradient helper count`,
+  );
+
+  const chartById = new Map(atlas.domain.surfaceCharts.map((chart) => [chart.chartId, chart]));
+  const chartSummaryById = new Map(atlas.chartSummaries.map((summary) => [summary.chartId, summary]));
+  const diagnosticByChartId = new Map(
+    gradientDiagnostics.chartDiagnostics.map((diagnostic) => [diagnostic.chartId, diagnostic]),
+  );
+  const estimatedGradientTotal = gradientDiagnostics.chartDiagnostics.reduce(
+    (sum, diagnostic) => sum + diagnostic.estimatedGradientCount,
+    0,
+  );
+
+  expectEqual(
+    estimatedGradientTotal,
+    gradientDiagnostics.sampleGradients.length,
+    `${label} estimated gradient count total`,
+  );
+
+  for (const chart of atlas.domain.surfaceCharts) {
+    const chartSummary = chartSummaryById.get(chart.chartId);
+    const diagnostic = diagnosticByChartId.get(chart.chartId);
+    const chartSampleCount = atlas.samples.filter((sample) => sample.chartId === chart.chartId).length;
+
+    if (!chartSummary) {
+      recordFailure(`${label} chart ${chart.chartId} had no sampled atlas chart summary`);
+    } else {
+      expectEqual(chartSummary.chartId, chart.chartId, `${label} chart summary id`);
+      expectEqual(
+        chartSummary.chartSemanticRole,
+        chart.semanticRole,
+        `${label} chart summary semantic role`,
+      );
+      expectEqual(
+        chartSummary.sourceFaceId,
+        chart.sourceFaceId,
+        `${label} chart summary source face provenance`,
+      );
+    }
+
+    if (!diagnostic) {
+      recordFailure(`${label} chart ${chart.chartId} had no gradient diagnostic`);
+      continue;
+    }
+
+    expectEqual(diagnostic.chartId, chart.chartId, `${label} gradient chart id`);
+    expectEqual(
+      diagnostic.chartSemanticRole,
+      chart.semanticRole,
+      `${label} gradient chart semantic role`,
+    );
+    expectEqual(
+      diagnostic.sourceFaceId,
+      chart.sourceFaceId,
+      `${label} gradient source face provenance`,
+    );
+    expectEqual(diagnostic.sampleCount, chartSampleCount, `${label} gradient sample count`);
+    expectEqual(diagnostic.method, gradientDiagnostics.method, `${label} gradient diagnostic method`);
+    expectEqual(
+      diagnostic.phaseGradientStatus.status,
+      'omitted',
+      `${label} phase gradient status`,
+    );
+
+    if (diagnostic.underdetermined) {
+      if (!diagnostic.underdeterminedReason) {
+        recordFailure(`${label} underdetermined chart ${chart.chartId} did not explain why`);
+      }
+
+      expectEqual(
+        diagnostic.estimatedGradientCount,
+        0,
+        `${label} underdetermined chart ${chart.chartId} estimated gradient count`,
+      );
+      continue;
+    }
+
+    expectFiniteNonnegative(
+      diagnostic.minIntensityGradientMagnitude,
+      `${label} ${chart.chartId} min intensity gradient magnitude`,
+    );
+    expectFiniteNonnegative(
+      diagnostic.maxIntensityGradientMagnitude,
+      `${label} ${chart.chartId} max intensity gradient magnitude`,
+    );
+    expectFiniteNonnegative(
+      diagnostic.averageIntensityGradientMagnitude,
+      `${label} ${chart.chartId} average intensity gradient magnitude`,
+    );
+
+    if (diagnostic.minIntensityGradientMagnitude > diagnostic.maxIntensityGradientMagnitude) {
+      recordFailure(`${label} ${chart.chartId} gradient magnitude range is inverted`);
+    }
+
+    if (diagnostic.estimatedGradientCount <= 0) {
+      recordFailure(`${label} ${chart.chartId} did not emit any gradient estimates`);
+    }
+  }
+
+  for (const estimate of gradientDiagnostics.sampleGradients) {
+    const chart = chartById.get(estimate.chartId);
+
+    if (!chart) {
+      recordFailure(`${label} sample gradient ${estimate.sampleId} referenced unknown chart ${estimate.chartId}`);
+      continue;
+    }
+
+    expectEqual(estimate.chartSemanticRole, chart.semanticRole, `${label} ${estimate.sampleId} chart role`);
+    expectEqual(estimate.sourceFaceId, chart.sourceFaceId, `${label} ${estimate.sampleId} source face`);
+    expectEqual(estimate.localChartPosition.length, 2, `${label} ${estimate.sampleId} local coord count`);
+    expectFinite(estimate.intensityGradient[0], `${label} ${estimate.sampleId} du intensity gradient`);
+    expectFinite(estimate.intensityGradient[1], `${label} ${estimate.sampleId} dv intensity gradient`);
+    expectFiniteNonnegative(
+      estimate.intensityGradientMagnitude,
+      `${label} ${estimate.sampleId} intensity gradient magnitude`,
+    );
+    expectEqual(estimate.method, gradientDiagnostics.method, `${label} ${estimate.sampleId} method`);
+    expectEqual(
+      estimate.phaseGradientStatus.status,
+      'omitted',
+      `${label} ${estimate.sampleId} phase gradient status`,
+    );
+  }
+
+  if (
+    options.requireDeterminedCharts &&
+    gradientDiagnostics.chartDiagnostics.some((diagnostic) => diagnostic.underdetermined)
+  ) {
+    recordFailure(`${label} unexpectedly reported underdetermined default chart gradients`);
+  }
+
+  if (
+    options.requireUnderdeterminedChart &&
+    !gradientDiagnostics.chartDiagnostics.some((diagnostic) => diagnostic.underdetermined)
+  ) {
+    recordFailure(`${label} did not report any underdetermined chart gradients`);
+  }
+}
+
+function assertComputationalGradientRolesStayNonSemantic(atlas, gradientDiagnostics, label) {
+  const computationalChartIds = new Set(
+    atlas.domain.surfaceCharts
+      .filter((chart) => chart.kind === 'computational-triangle-chart')
+      .map((chart) => chart.chartId),
+  );
+
+  for (const diagnostic of gradientDiagnostics.chartDiagnostics) {
+    if (computationalChartIds.has(diagnostic.chartId)) {
+      expectEqual(
+        diagnostic.chartSemanticRole,
+        'computational-only',
+        `${label} computational gradient diagnostic ${diagnostic.chartId} role`,
+      );
+    }
+  }
+
+  for (const estimate of gradientDiagnostics.sampleGradients) {
+    if (computationalChartIds.has(estimate.chartId)) {
+      expectEqual(
+        estimate.chartSemanticRole,
+        'computational-only',
+        `${label} computational sample gradient ${estimate.sampleId} role`,
+      );
+    }
+  }
+}
+
 function assertSurfaceSampleProvenance(atlas, label) {
   const chartById = new Map(atlas.domain.surfaceCharts.map((chart) => [chart.chartId, chart]));
 
@@ -1343,6 +1653,11 @@ function formatNumberList(values) {
 
 function formatOptionalDetails(details) {
   return details?.length ? ` (${details.join(' ')})` : '';
+}
+
+function countUnderdeterminedGradientCharts(gradientDiagnostics) {
+  return gradientDiagnostics.chartDiagnostics.filter((diagnostic) => diagnostic.underdetermined)
+    .length;
 }
 
 function shortenId(id) {
