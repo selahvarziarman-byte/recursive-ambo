@@ -54,6 +54,7 @@ const {
 } = require(path.join(repoRoot, 'src/lib/fieldAtlasPhase.ts'));
 const {
   buildChartSampleGraph,
+  buildClosedSurfaceSeamAwareSampleGraph,
   buildSurfaceSampleGraph,
   summarizeSurfaceSampleGraph,
 } = require(path.join(repoRoot, 'src/lib/fieldAtlasSampleGraph.ts'));
@@ -374,6 +375,18 @@ function runClosedShapeSurfaceSampleGraphDiagnostic() {
   runSeedClosedShapeSurfaceSampleGraphDiagnostic('cube');
   runAmboClosedShapeSurfaceSampleGraphDiagnostic();
   runBoundedClosedShapeSurfaceSampleGraphDiagnostic();
+  runClosedSurfaceSeamAwareSampleGraphDiagnostic();
+}
+
+function runClosedSurfaceSeamAwareSampleGraphDiagnostic() {
+  console.log(
+    'seam-aware sample graph policy: geometric-boundary-coincidence-v0; scope=closed-surface-seam-aware; semantic=not-semantic-identity; topology=not-topology-workspace; routeGate=not-route-or-gate-extraction',
+  );
+  runSeedClosedSurfaceSeamAwareSampleGraphDiagnostic('tetrahedron', {
+    requireMoreConnectivityThanChartLocal: true,
+  });
+  runSeedClosedSurfaceSeamAwareSampleGraphDiagnostic('cube');
+  runAmboClosedSurfaceSeamAwareSampleGraphDiagnostic();
 }
 
 function runClosedShapeSurfaceIntensityCandidateDiagnostic() {
@@ -783,6 +796,85 @@ function runBoundedClosedShapeSurfaceSampleGraphDiagnostic() {
 
   console.log(
     `surface sample graph bounded cap: nodes=${graph.summary.totalNodeCount}/${atlas.options.maxSamples} edges=${graph.summary.totalEdgeCount} underconnectedCharts=${graph.summary.underconnectedChartCount}`,
+  );
+}
+
+function runSeedClosedSurfaceSeamAwareSampleGraphDiagnostic(seedKey, options = {}) {
+  const shape = createSeedShape(seedKey);
+  const before = JSON.stringify(shape);
+  const atlas = sampleClosedShapeSurfaceAtlas(shape);
+  const chartLocalGraph = buildSurfaceSampleGraph(atlas);
+  const seamAwareGraph = buildClosedSurfaceSeamAwareSampleGraph(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(
+    atlas,
+    `${seedKey} seam-aware sample graph sampled closed-shape surface`,
+  );
+  assertClosedSurfaceSeamAwareSampleGraph(
+    atlas,
+    chartLocalGraph,
+    seamAwareGraph,
+    `${seedKey} seam-aware sample graph`,
+    options,
+  );
+
+  if (JSON.stringify(shape) !== before) {
+    recordFailure(`${seedKey} seam-aware sample graph diagnostic mutated the shape`);
+  }
+
+  console.log(
+    `seam-aware sample graph ${seedKey}: nodes=${seamAwareGraph.summary.nodeCount} chartLocalEdges=${seamAwareGraph.summary.chartLocalEdgeCount} seamEdges=${seamAwareGraph.summary.seamEdgeCount} totalEdges=${seamAwareGraph.summary.totalEdgeCount} components=${seamAwareGraph.summary.connectedComponentCount} isolated=${seamAwareGraph.summary.isolatedNodeCount}`,
+  );
+}
+
+function runAmboClosedSurfaceSeamAwareSampleGraphDiagnostic() {
+  const seedShape = createSeedShape('tetrahedron');
+  const seedCell = seedShape.cells.find((cell) => cell.kind === 'seed');
+
+  if (!seedCell) {
+    recordFailure('tetrahedron seed cell was unavailable for generated seam-aware sample graph diagnostic');
+    return;
+  }
+
+  const amboShape = applyAmboDissection(seedShape, seedCell.id);
+  const before = JSON.stringify(amboShape);
+  const boundaryClassification = classifyClosedShapeSurfaceBoundary(amboShape);
+
+  if (boundaryClassification.status === 'unsupported') {
+    console.log(
+      `seam-aware sample graph Ambo generated surface: unsupported - ${boundaryClassification.reason}${formatOptionalDetails(
+        boundaryClassification.details,
+      )}`,
+    );
+
+    if (JSON.stringify(amboShape) !== before) {
+      recordFailure('generated seam-aware sample graph diagnostic mutated the Ambo shape');
+    }
+
+    return;
+  }
+
+  const atlas = sampleClosedShapeSurfaceAtlas(amboShape);
+  const chartLocalGraph = buildSurfaceSampleGraph(atlas);
+  const seamAwareGraph = buildClosedSurfaceSeamAwareSampleGraph(atlas);
+
+  assertSampledClosedShapeSurfaceAtlas(
+    atlas,
+    'generated seam-aware sample graph sampled atlas',
+  );
+  assertClosedSurfaceSeamAwareSampleGraph(
+    atlas,
+    chartLocalGraph,
+    seamAwareGraph,
+    'generated seam-aware sample graph',
+  );
+
+  if (JSON.stringify(amboShape) !== before) {
+    recordFailure('generated seam-aware sample graph diagnostic mutated the Ambo shape');
+  }
+
+  console.log(
+    `seam-aware sample graph Ambo generated surface: nodes=${seamAwareGraph.summary.nodeCount} chartLocalEdges=${seamAwareGraph.summary.chartLocalEdgeCount} seamEdges=${seamAwareGraph.summary.seamEdgeCount} totalEdges=${seamAwareGraph.summary.totalEdgeCount} components=${seamAwareGraph.summary.connectedComponentCount} isolated=${seamAwareGraph.summary.isolatedNodeCount}`,
   );
 }
 
@@ -1940,6 +2032,60 @@ function countDiagnosticSourceKinds(sources) {
   );
 }
 
+function countDiagnosticConnectedComponents(nodes, edges) {
+  if (!nodes.length) {
+    return 0;
+  }
+
+  const neighborsBySampleId = new Map(nodes.map((node) => [node.sampleId, []]));
+
+  for (const edge of edges) {
+    const [firstSampleId, secondSampleId] = edge.sampleIds;
+
+    neighborsBySampleId.get(firstSampleId)?.push(secondSampleId);
+    neighborsBySampleId.get(secondSampleId)?.push(firstSampleId);
+  }
+
+  const visited = new Set();
+  let componentCount = 0;
+
+  for (const node of nodes) {
+    if (visited.has(node.sampleId)) {
+      continue;
+    }
+
+    componentCount += 1;
+
+    const stack = [node.sampleId];
+
+    while (stack.length) {
+      const sampleId = stack.pop();
+
+      if (!sampleId || visited.has(sampleId)) {
+        continue;
+      }
+
+      visited.add(sampleId);
+
+      for (const neighborId of neighborsBySampleId.get(sampleId) ?? []) {
+        if (!visited.has(neighborId)) {
+          stack.push(neighborId);
+        }
+      }
+    }
+  }
+
+  return componentCount;
+}
+
+function countDiagnosticIsolatedNodes(nodes, edges) {
+  const connectedSampleIds = new Set(
+    edges.flatMap((edge) => [edge.sampleIds[0], edge.sampleIds[1]]),
+  );
+
+  return nodes.filter((node) => !connectedSampleIds.has(node.sampleId)).length;
+}
+
 function getSourcePolicyNames(sources) {
   return Array.from(
     new Set(
@@ -2231,6 +2377,206 @@ function assertSurfaceSampleGraph(atlas, graph, label, options = {}) {
 
   if (options.requireUnderconnectedChart && graph.summary.underconnectedChartCount === 0) {
     recordFailure(`${label} did not report an underconnected chart under bounded sampling`);
+  }
+}
+
+function assertClosedSurfaceSeamAwareSampleGraph(
+  atlas,
+  chartLocalGraph,
+  seamAwareGraph,
+  label,
+  options = {},
+) {
+  expectEqual(
+    seamAwareGraph.kind,
+    'closed-surface-seam-aware-sample-graph-v0',
+    `${label} graph kind`,
+  );
+  expectEqual(
+    seamAwareGraph.strategy,
+    'geometric-boundary-coincidence-v0',
+    `${label} seam strategy`,
+  );
+  expectEqual(
+    seamAwareGraph.scope,
+    'closed-surface-seam-aware',
+    `${label} graph scope`,
+  );
+  expectEqual(
+    seamAwareGraph.semanticStatus,
+    'not-semantic-identity',
+    `${label} semantic identity status`,
+  );
+  expectEqual(
+    seamAwareGraph.topologyStatus,
+    'not-topology-workspace',
+    `${label} topology workspace status`,
+  );
+  expectEqual(
+    seamAwareGraph.routeGateStatus,
+    'not-route-or-gate-extraction',
+    `${label} route/gate status`,
+  );
+  expectEqual(
+    seamAwareGraph.phaseContinuityStatus,
+    'not-global-phase-continuity',
+    `${label} phase continuity status`,
+  );
+  expectEqual(
+    seamAwareGraph.sourceChartLocalGraph.globalSurfaceContinuity,
+    'none',
+    `${label} source chart-local graph global continuity claim`,
+  );
+  expectEqual(
+    seamAwareGraph.nodes.length,
+    chartLocalGraph.nodes.length,
+    `${label} node count preserves chart-local nodes`,
+  );
+  expectEqual(
+    seamAwareGraph.chartLocalEdges.length,
+    chartLocalGraph.edges.length,
+    `${label} chart-local edge count`,
+  );
+  expectEqual(
+    seamAwareGraph.summary.nodeCount,
+    seamAwareGraph.nodes.length,
+    `${label} summary node count`,
+  );
+  expectEqual(
+    seamAwareGraph.summary.chartLocalEdgeCount,
+    seamAwareGraph.chartLocalEdges.length,
+    `${label} summary chart-local edge count`,
+  );
+  expectEqual(
+    seamAwareGraph.summary.seamEdgeCount,
+    seamAwareGraph.seamEdges.length,
+    `${label} summary seam edge count`,
+  );
+  expectEqual(
+    seamAwareGraph.summary.totalEdgeCount,
+    seamAwareGraph.edges.length,
+    `${label} summary total edge count`,
+  );
+  expectEqual(
+    seamAwareGraph.summary.chartsRepresented,
+    atlas.domain.surfaceCharts.length,
+    `${label} charts represented`,
+  );
+
+  expectFiniteNonnegative(
+    seamAwareGraph.summary.seamEdgeCount,
+    `${label} seam edge count`,
+  );
+  expectFiniteNonnegative(
+    seamAwareGraph.summary.totalEdgeCount,
+    `${label} total edge count`,
+  );
+  expectFiniteNonnegative(
+    seamAwareGraph.summary.connectedComponentCount,
+    `${label} connected component count`,
+  );
+  expectFiniteNonnegative(
+    seamAwareGraph.summary.isolatedNodeCount,
+    `${label} isolated node count`,
+  );
+
+  if (seamAwareGraph.summary.totalEdgeCount < seamAwareGraph.summary.chartLocalEdgeCount) {
+    recordFailure(`${label} total edge count fell below chart-local edge count`);
+  }
+
+  const chartLocalComponentCount = countDiagnosticConnectedComponents(
+    chartLocalGraph.nodes,
+    chartLocalGraph.edges,
+  );
+  const seamAwareComponentCount = countDiagnosticConnectedComponents(
+    seamAwareGraph.nodes,
+    seamAwareGraph.edges,
+  );
+
+  expectEqual(
+    seamAwareGraph.summary.connectedComponentCount,
+    seamAwareComponentCount,
+    `${label} connected component summary`,
+  );
+  expectEqual(
+    seamAwareGraph.summary.isolatedNodeCount,
+    countDiagnosticIsolatedNodes(seamAwareGraph.nodes, seamAwareGraph.edges),
+    `${label} isolated node summary`,
+  );
+
+  if (seamAwareGraph.summary.seamEdgeCount === 0) {
+    if (seamAwareGraph.seamReasons.length === 0) {
+      recordFailure(`${label} found no seam edges without an explicit reason`);
+    }
+  } else if (seamAwareGraph.seamReasons.length !== 0) {
+    recordFailure(`${label} reported seam reasons despite emitting seam edges`);
+  }
+
+  if (options.requireMoreConnectivityThanChartLocal) {
+    if (seamAwareGraph.summary.seamEdgeCount === 0) {
+      recordFailure(`${label} did not emit seam edges for the expected closed surface`);
+    }
+
+    if (seamAwareGraph.summary.connectedComponentCount >= chartLocalComponentCount) {
+      recordFailure(
+        `${label} did not improve connected component count over chart-local graph (${seamAwareGraph.summary.connectedComponentCount} >= ${chartLocalComponentCount})`,
+      );
+    }
+  } else if (seamAwareGraph.summary.seamEdgeCount === 0) {
+    recordFailure(`${label} did not emit seam edges for a supported closed surface`);
+  }
+
+  const nodeById = new Map(seamAwareGraph.nodes.map((node) => [node.sampleId, node]));
+  const seamEdgeIds = new Set();
+
+  for (const seamEdge of seamAwareGraph.seamEdges) {
+    if (seamEdgeIds.has(seamEdge.edgeId)) {
+      recordFailure(`${label} duplicated seam edge ${seamEdge.edgeId}`);
+    }
+
+    seamEdgeIds.add(seamEdge.edgeId);
+
+    const firstNode = nodeById.get(seamEdge.sampleIds[0]);
+    const secondNode = nodeById.get(seamEdge.sampleIds[1]);
+
+    if (!firstNode || !secondNode) {
+      recordFailure(`${label} seam edge ${seamEdge.edgeId} referenced a missing node`);
+      continue;
+    }
+
+    if (firstNode.chartId === secondNode.chartId) {
+      recordFailure(`${label} seam edge ${seamEdge.edgeId} connected samples within one chart`);
+    }
+
+    if (!firstNode.isChartBoundary || !secondNode.isChartBoundary) {
+      recordFailure(`${label} seam edge ${seamEdge.edgeId} used a non-boundary sample`);
+    }
+
+    expectEqual(
+      seamEdge.edgeKind,
+      'closed-surface-seam-neighbor',
+      `${label} ${seamEdge.edgeId} edge kind`,
+    );
+    expectEqual(
+      seamEdge.strategy,
+      'geometric-boundary-coincidence-v0',
+      `${label} ${seamEdge.edgeId} strategy`,
+    );
+    expectEqual(
+      seamEdge.semanticStatus,
+      'not-semantic-identity',
+      `${label} ${seamEdge.edgeId} semantic status`,
+    );
+    expectFiniteNonnegative(
+      seamEdge.worldDistance,
+      `${label} ${seamEdge.edgeId} world distance`,
+    );
+
+    if (seamEdge.worldDistance > 1e-9) {
+      recordFailure(
+        `${label} seam edge ${seamEdge.edgeId} exceeded geometric coincidence tolerance`,
+      );
+    }
   }
 }
 
