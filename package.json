@@ -20,6 +20,7 @@
     "diagnose:field-source-profile-aware-route-gate-candidates": "node scripts/diagnose-field-source-profile-aware-route-gate-candidates.cjs",
     "diagnose:field-source-profile-aware-shape-position-resolver": "node scripts/diagnose-field-source-profile-aware-shape-position-resolver.cjs",
     "diagnose:field-source-profile-aware-shape-resolved-surface-atlas": "node scripts/diagnose-field-source-profile-aware-shape-resolved-surface-atlas.cjs",
+    "diagnose:field-source-profile-aware-stack-summary": "node scripts/diagnose-field-source-profile-aware-stack-summary.cjs",
     "diagnose:field-source-profile-aware-support-region-candidates": "node scripts/diagnose-field-source-profile-aware-support-region-candidates.cjs",
     "diagnose:field-source-quark-channels": "node scripts/diagnose-field-source-quark-channels.cjs",
     "diagnose:field-source-profiles": "node scripts/diagnose-field-source-profiles.cjs",
