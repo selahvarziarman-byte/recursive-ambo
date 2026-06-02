@@ -7,6 +7,8 @@ import {
 } from './fieldSourceChildContexts';
 import {
   buildTetrahedralChildSourceProfileDerivationReport,
+  type FieldChildSourceProfileDerivation,
+  type FieldChildSourceProfileDerivationReport,
 } from './fieldSourceChildDerivations';
 import {
   buildTetrahedralChildProfileDegeneracyReport,
@@ -128,6 +130,51 @@ export interface ProfileAwareFieldAtlasTopContributionView
   magnitude?: number;
 }
 
+export interface ProfileAwareFieldAtlasChildSourceDerivationProbe {
+  childVertexId: string;
+  childRole: 'shared-90-pole';
+  sourceEdgeId: string;
+  sourceEdgeVertexIds: [string, string];
+  complementEdgeId?: string;
+  complementEdgeVertexIds?: [string, string];
+  antipodalChildVertexId?: string;
+  projectionVertexIds: string[];
+  grammarId: string;
+  mergeKind: string;
+  ratio: {
+    parentWeight: number;
+    projectionWeight: number;
+    childParent: number;
+    childProjection: number;
+    parentProjection: number;
+  };
+  quarkChannels: Array<{
+    channelId: string;
+    child90: string;
+    parent60: string;
+    projection30: string;
+    parentProfileId: string;
+    projectionProfileId: string;
+    parentWeight: number;
+    projectionWeight: number;
+    channelParameters: {
+      amplitude: number;
+      waveNumber: number;
+      phase: number;
+      attenuation: number;
+    };
+  }>;
+  derivedParameters?: {
+    amplitude: number;
+    waveNumber: number;
+    phase: number;
+    attenuation: number;
+  };
+  degeneracyStatuses: string[];
+  fallbackKind?: string;
+  fallbackReason?: string;
+}
+
 export interface ProfileAwareFieldAtlasSurfaceSampleMarker {
   sampleId: string;
   renderKind: 'surface-sample-marker';
@@ -239,6 +286,7 @@ export interface ProfileAwareFieldAtlasSourceProbe {
   antipodalChildVertexId?: string;
   degeneracyStatuses?: string[];
   candidateCaveats: string[];
+  childDerivation?: ProfileAwareFieldAtlasChildSourceDerivationProbe;
   semanticStatus: 'not-semantic-naming';
 }
 
@@ -417,6 +465,7 @@ export type ProfileAwareFieldAtlasViewModelRuntimeReport =
 interface BuiltProfileAwareSourceChain {
   profileAwarePolicyReport: ProfileAwareFieldSourcePolicyDiagnosticReport;
   adapterReport: ProfileAwareAtlasAdapterReport;
+  childDerivationReports: FieldChildSourceProfileDerivationReport[];
 }
 
 interface BuildProfileAwareFieldAtlasViewModelReportForShapeArgs {
@@ -469,7 +518,7 @@ function buildProfileAwareFieldAtlasViewModelReportForShape(
   const issues: ProfileAwareFieldAtlasViewModelIssue[] = [];
   const shape = args.shape;
   const beforeShapeJson = JSON.stringify(shape);
-  const { profileAwarePolicyReport, adapterReport } =
+  const { profileAwarePolicyReport, adapterReport, childDerivationReports } =
     buildProfileAwareSourceChain();
   const resolverReport =
     args.resolverReport ?? buildProfileAwareShapePositionResolverReport(shape);
@@ -545,12 +594,17 @@ function buildProfileAwareFieldAtlasViewModelReportForShape(
   const routeGateOverlaySummary = buildRouteGateOverlaySummary(routeGateReport);
   const supportRegionOverlaySummary =
     buildSupportRegionOverlaySummary(supportRegionReport);
+  const childDerivationByChildVertexId = buildChildDerivationProbeByChildVertexId({
+    childDerivationReports,
+    policyReport: profileAwarePolicyReport,
+  });
   const probeIndex = buildProbeIndex({
     sourceMarkers,
     surfaceSampleMarkers,
     sampledAtlas,
     featureOverlaySummary,
     featureObservations: featureReport.observations,
+    childDerivationByChildVertexId,
     routeGateOverlaySummary,
     supportRegionOverlaySummary,
   });
@@ -903,6 +957,94 @@ function buildProfileAwareSourceChain(): BuiltProfileAwareSourceChain {
   return {
     profileAwarePolicyReport,
     adapterReport,
+    childDerivationReports,
+  };
+}
+
+function buildChildDerivationProbeByChildVertexId(args: {
+  childDerivationReports: FieldChildSourceProfileDerivationReport[];
+  policyReport: ProfileAwareFieldSourcePolicyDiagnosticReport;
+}): Map<string, ProfileAwareFieldAtlasChildSourceDerivationProbe> {
+  const policySourceByVertexId = new Map(
+    args.policyReport.sources.map((source) => [source.vertexId, source]),
+  );
+  const childDerivationByChildVertexId =
+    new Map<string, ProfileAwareFieldAtlasChildSourceDerivationProbe>();
+
+  for (const report of args.childDerivationReports) {
+    if (!report.derivation) {
+      continue;
+    }
+
+    const policySource = policySourceByVertexId.get(report.childVertexId);
+
+    childDerivationByChildVertexId.set(
+      report.childVertexId,
+      buildChildDerivationProbe(
+        report.derivation,
+        policySource?.degeneracyStatuses ?? [],
+      ),
+    );
+  }
+
+  return childDerivationByChildVertexId;
+}
+
+function buildChildDerivationProbe(
+  derivation: FieldChildSourceProfileDerivation,
+  degeneracyStatuses: readonly string[],
+): ProfileAwareFieldAtlasChildSourceDerivationProbe {
+  return {
+    childVertexId: derivation.childVertexId,
+    childRole: derivation.childRole,
+    sourceEdgeId: derivation.sourceEdgeId,
+    sourceEdgeVertexIds: copyPair(derivation.sourceEdgeVertexIds),
+    complementEdgeId: derivation.complementEdgeId,
+    complementEdgeVertexIds: copyPair(derivation.complementEdgeVertexIds),
+    antipodalChildVertexId: derivation.antipodalChildVertexId,
+    projectionVertexIds: [...derivation.projectionVertexIds],
+    grammarId: derivation.grammarId,
+    mergeKind: derivation.mergeKind,
+    ratio: {
+      parentWeight: derivation.ratio.parentWeight,
+      projectionWeight: derivation.ratio.projectionWeight,
+      childParent: derivation.ratio.childParent,
+      childProjection: derivation.ratio.childProjection,
+      parentProjection: derivation.ratio.parentProjection,
+    },
+    quarkChannels: derivation.quarkChannels.map((channel) => ({
+      channelId: channel.channelId,
+      child90: channel.child90,
+      parent60: channel.parent60,
+      projection30: channel.projection30,
+      parentProfileId: channel.parentProfileId,
+      projectionProfileId: channel.projectionProfileId,
+      parentWeight: channel.parentWeight,
+      projectionWeight: channel.projectionWeight,
+      channelParameters: {
+        amplitude: channel.channelParameters.amplitude,
+        waveNumber: channel.channelParameters.waveNumber,
+        phase: channel.channelParameters.phase,
+        attenuation: channel.channelParameters.attenuation,
+      },
+    })),
+    ...(derivation.derivedParameters
+      ? {
+          derivedParameters: {
+            amplitude: derivation.derivedParameters.amplitude,
+            waveNumber: derivation.derivedParameters.waveNumber,
+            phase: derivation.derivedParameters.phase,
+            attenuation: derivation.derivedParameters.attenuation,
+          },
+        }
+      : {}),
+    degeneracyStatuses: [...degeneracyStatuses],
+    ...(derivation.fallback
+      ? {
+          fallbackKind: derivation.fallback.fallbackKind,
+          fallbackReason: derivation.fallback.reason,
+        }
+      : {}),
   };
 }
 
@@ -1156,6 +1298,10 @@ function buildProbeIndex(args: {
   sampledAtlas: SampledClosedShapeSurfaceAtlas | undefined;
   featureOverlaySummary: ProfileAwareFieldAtlasFeatureOverlaySummary;
   featureObservations: ProfileAwareFeatureObservationView[];
+  childDerivationByChildVertexId: Map<
+    string,
+    ProfileAwareFieldAtlasChildSourceDerivationProbe
+  >;
   routeGateOverlaySummary: ProfileAwareFieldAtlasRouteGateOverlaySummary;
   supportRegionOverlaySummary: ProfileAwareFieldAtlasSupportRegionOverlaySummary;
 }): ProfileAwareFieldAtlasProbeIndex {
@@ -1171,7 +1317,10 @@ function buildProbeIndex(args: {
   );
 
   for (const source of args.sourceMarkers) {
-    probes[source.probeRef] = buildSourceProbe(source);
+    probes[source.probeRef] = buildSourceProbe(
+      source,
+      args.childDerivationByChildVertexId,
+    );
   }
 
   for (const sampleMarker of args.surfaceSampleMarkers) {
@@ -1215,11 +1364,21 @@ function buildProbeIndex(args: {
 
 function buildSourceProbe(
   source: ProfileAwareFieldAtlasSourceMarker,
+  childDerivationByChildVertexId: Map<
+    string,
+    ProfileAwareFieldAtlasChildSourceDerivationProbe
+  >,
 ): ProfileAwareFieldAtlasSourceProbe {
+  const childDerivation = source.isGeneratedChildSource
+    ? childDerivationByChildVertexId.get(source.vertexId)
+    : undefined;
   const candidateCaveats = [
     ...(source.degeneracyStatuses ?? []).map(
       (status) => `degeneracy-status:${status}`,
     ),
+    ...(source.isGeneratedChildSource && !childDerivation
+      ? ['missing-child-derivation-probe']
+      : []),
   ];
 
   return {
@@ -1246,6 +1405,7 @@ function buildSourceProbe(
       ? { degeneracyStatuses: [...source.degeneracyStatuses] }
       : {}),
     candidateCaveats,
+    ...(childDerivation ? { childDerivation } : {}),
     semanticStatus: 'not-semantic-naming',
   };
 }
@@ -1545,4 +1705,8 @@ function getNumberRange(values: number[]): { min: number; max: number } {
 
 function copyVec3(position: Vec3): Vec3 {
   return [position[0], position[1], position[2]];
+}
+
+function copyPair(pair: [string, string]): [string, string] {
+  return [pair[0], pair[1]];
 }

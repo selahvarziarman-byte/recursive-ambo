@@ -32,6 +32,7 @@ import {
 } from '../lib/fieldAtlasFeatureReport';
 import {
   buildProfileAwareFieldAtlasViewModelRuntimeReport,
+  type ProfileAwareFieldAtlasChildSourceDerivationProbe,
   type ProfileAwareFieldAtlasFeatureMarker,
   type ProfileAwareFieldAtlasFeatureProbe,
   type ProfileAwareFieldAtlasProbe,
@@ -581,6 +582,12 @@ function ProfileAwareSourceProbeCard({
         />
         <FieldAtlasMetric label="Semantic" value={probe.semanticStatus} />
       </dl>
+      {probe.childDerivation ? (
+        <ProfileAwareChildSourceDerivationSection
+          derivation={probe.childDerivation}
+          shortenId={shortenId}
+        />
+      ) : null}
       {probe.candidateCaveats.length ? (
         <div className="rounded border border-stone-800 bg-stone-900 px-2 py-2">
           <h5 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
@@ -598,6 +605,154 @@ function ProfileAwareSourceProbeCard({
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function ProfileAwareChildSourceDerivationSection({
+  derivation,
+  shortenId,
+}: {
+  derivation: ProfileAwareFieldAtlasChildSourceDerivationProbe;
+  shortenId: (id: string) => string;
+}) {
+  const visibleChannels = derivation.quarkChannels.slice(0, 4);
+
+  return (
+    <div className="rounded border border-stone-800 bg-stone-900 px-2 py-2">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <h5 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+          Child Source Derivation
+        </h5>
+        <span className="rounded border border-cyan-400/30 bg-cyan-400/10 px-2 py-0.5 font-mono text-[11px] text-cyan-100">
+          {derivation.quarkChannels.length} channels
+        </span>
+      </div>
+
+      <dl className="mt-2 grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Child role" value={derivation.childRole} />
+        <FieldAtlasMetric label="Grammar" value={derivation.grammarId} />
+        <FieldAtlasMetric
+          label="Source edge"
+          value={`${shortenId(derivation.sourceEdgeId)} ${formatProbeIdList(
+            derivation.sourceEdgeVertexIds,
+            shortenId,
+          )}`}
+        />
+        <FieldAtlasMetric
+          label="Complement"
+          value={`${formatOptionalProbeId(
+            derivation.complementEdgeId,
+            shortenId,
+          )} ${formatProbeIdList(derivation.complementEdgeVertexIds ?? [], shortenId)}`}
+        />
+        <FieldAtlasMetric
+          label="Antipodal child"
+          value={formatOptionalProbeId(derivation.antipodalChildVertexId, shortenId)}
+        />
+        <FieldAtlasMetric label="Merge" value={derivation.mergeKind} />
+        <FieldAtlasMetric
+          label="Projection"
+          value={formatProbeIdList(derivation.projectionVertexIds, shortenId)}
+        />
+        <FieldAtlasMetric
+          label="Parent/projection"
+          value={`${formatNumber(derivation.ratio.parentWeight)} / ${formatNumber(
+            derivation.ratio.projectionWeight,
+          )}`}
+        />
+        <FieldAtlasMetric
+          label="Degeneracy"
+          value={formatStatusList(derivation.degeneracyStatuses)}
+        />
+        <FieldAtlasMetric
+          label="Fallback"
+          value={
+            derivation.fallbackKind
+              ? `${derivation.fallbackKind}: ${derivation.fallbackReason ?? 'n/a'}`
+              : 'none'
+          }
+        />
+      </dl>
+
+      {derivation.derivedParameters ? (
+        <dl className="mt-2 grid grid-cols-2 gap-2">
+          <FieldAtlasMetric
+            label="Derived amp"
+            value={formatNumber(derivation.derivedParameters.amplitude)}
+          />
+          <FieldAtlasMetric
+            label="Derived wave"
+            value={formatNumber(derivation.derivedParameters.waveNumber)}
+          />
+          <FieldAtlasMetric
+            label="Derived phase"
+            value={formatNumber(derivation.derivedParameters.phase)}
+          />
+          <FieldAtlasMetric
+            label="Derived atten"
+            value={formatNumber(derivation.derivedParameters.attenuation)}
+          />
+        </dl>
+      ) : null}
+
+      <div className="mt-3 grid gap-2">
+        <h6 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+          Quark Channels
+        </h6>
+        {visibleChannels.map((channel) => (
+          <ProfileAwareQuarkChannelRow
+            key={channel.channelId}
+            channel={channel}
+            shortenId={shortenId}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProfileAwareQuarkChannelRow({
+  channel,
+  shortenId,
+}: {
+  channel: ProfileAwareFieldAtlasChildSourceDerivationProbe['quarkChannels'][number];
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="rounded border border-stone-800 bg-stone-950 px-2 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="min-w-0 truncate font-mono text-[11px] text-stone-300">
+          {shortenId(channel.channelId)}
+        </span>
+        <span className="font-mono text-[11px] text-stone-500">
+          {shortenId(channel.parent60)}60 / {shortenId(channel.projection30)}30
+        </span>
+      </div>
+      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-stone-500">
+        <dt>parent profile</dt>
+        <dd className="text-right font-mono">{shortenId(channel.parentProfileId)}</dd>
+        <dt>projection profile</dt>
+        <dd className="text-right font-mono">
+          {shortenId(channel.projectionProfileId)}
+        </dd>
+        <dt>amplitude</dt>
+        <dd className="text-right font-mono">
+          {formatNumber(channel.channelParameters.amplitude)}
+        </dd>
+        <dt>wave number</dt>
+        <dd className="text-right font-mono">
+          {formatNumber(channel.channelParameters.waveNumber)}
+        </dd>
+        <dt>phase</dt>
+        <dd className="text-right font-mono">
+          {formatNumber(channel.channelParameters.phase)}
+        </dd>
+        <dt>attenuation</dt>
+        <dd className="text-right font-mono">
+          {formatNumber(channel.channelParameters.attenuation)}
+        </dd>
+      </dl>
     </div>
   );
 }
@@ -742,6 +897,17 @@ function formatOptionalProbeId(
   shortenId: (id: string) => string,
 ): string {
   return value ? shortenId(value) : 'n/a';
+}
+
+function formatProbeIdList(
+  values: readonly string[],
+  shortenId: (id: string) => string,
+): string {
+  return values.length ? values.map(shortenId).join(', ') : 'n/a';
+}
+
+function formatStatusList(values: readonly string[]): string {
+  return values.length ? values.join(', ') : 'none';
 }
 
 function formatOptionalNumber(value: number | undefined): string {

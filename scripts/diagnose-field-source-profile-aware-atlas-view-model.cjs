@@ -40,6 +40,7 @@ runSurfaceSampleMarkerDiagnostic();
 runFeatureMarkerDiagnostic();
 runRenderScaleDiagnostic();
 runProbeIndexDiagnostic();
+runChildSourceProbeDerivationDiagnostic();
 runCandidateSummaryCoherenceDiagnostic();
 runRouteSupportSummaryOnlyDiagnostic();
 runNoOldPolicyComparisonDiagnostic();
@@ -353,8 +354,6 @@ function runRenderScaleDiagnostic() {
 
 function runProbeIndexDiagnostic() {
   const report = buildProfileAwareFieldAtlasViewModelReport();
-  const firstSource = report.sourceMarkers[0];
-  const firstSample = report.surfaceSampleMarkers[0];
 
   expectEqual(
     report.probeIndex.sourceProbeCount,
@@ -373,12 +372,32 @@ function runProbeIndexDiagnostic() {
   );
   expectAtLeast(report.probeIndex.probeCount, 3, 'probe count');
 
-  if (!firstSource || !report.probeIndex.probes[firstSource.probeRef]) {
-    recordFailure('probe index: expected first source probe to resolve');
+  for (const marker of report.sourceMarkers) {
+    const probe = report.probeIndex.probes[marker.probeRef];
+
+    expectTruthy(probe, `${marker.sourceId} source probe resolves`);
+    expectEqual(probe && probe.probeKind, 'source', `${marker.sourceId} probe kind`);
+    expectEqual(
+      probe && probe.sourceId,
+      marker.sourceId,
+      `${marker.sourceId} probe source id`,
+    );
   }
 
-  if (!firstSample || !report.probeIndex.probes[firstSample.probeRef]) {
-    recordFailure('probe index: expected first sample probe to resolve');
+  for (const marker of report.surfaceSampleMarkers) {
+    const probe = report.probeIndex.probes[marker.probeRef];
+
+    expectTruthy(probe, `${marker.sampleId} sample probe resolves`);
+    expectEqual(
+      probe && probe.probeKind,
+      'surface-sample',
+      `${marker.sampleId} probe kind`,
+    );
+    expectEqual(
+      probe && probe.sampleId,
+      marker.sampleId,
+      `${marker.sampleId} probe sample id`,
+    );
   }
 
   for (const marker of report.featureOverlaySummary.featureMarkers) {
@@ -413,6 +432,114 @@ function runProbeIndexDiagnostic() {
   );
 
   console.log('probe index: PASS');
+}
+
+function runChildSourceProbeDerivationDiagnostic() {
+  const report = buildProfileAwareFieldAtlasViewModelReport();
+  const sourceProbes = report.sourceMarkers
+    .map((marker) => report.probeIndex.probes[marker.probeRef])
+    .filter((probe) => probe && probe.probeKind === 'source');
+  const generatedChildSourceProbes = sourceProbes.filter(
+    (probe) => probe.sourceKind === 'generated-child-derived',
+  );
+  const primalSourceProbes = sourceProbes.filter(
+    (probe) => probe.sourceKind === 'primal-assigned',
+  );
+
+  expectAtLeast(
+    generatedChildSourceProbes.length,
+    1,
+    'generated child source probes',
+  );
+
+  for (const probe of generatedChildSourceProbes) {
+    expectTruthy(probe.childDerivation, `${probe.sourceId} child derivation`);
+
+    if (probe.childDerivation) {
+      expectChildDerivationProbe(probe.childDerivation, probe.sourceId);
+    }
+  }
+
+  for (const probe of primalSourceProbes) {
+    expectNoOwnProperty(
+      probe,
+      'childDerivation',
+      `${probe.sourceId} primal childDerivation`,
+    );
+  }
+
+  console.log('child source derivation probes: PASS');
+}
+
+function expectChildDerivationProbe(derivation, label) {
+  expectEqual(derivation.childRole, 'shared-90-pole', `${label} child role`);
+  expectTruthy(derivation.sourceEdgeId, `${label} sourceEdgeId`);
+  expectEqual(
+    Array.isArray(derivation.sourceEdgeVertexIds) &&
+      derivation.sourceEdgeVertexIds.length,
+    2,
+    `${label} source edge vertex ids`,
+  );
+  expectTruthy(derivation.complementEdgeId, `${label} complementEdgeId`);
+  expectEqual(
+    Array.isArray(derivation.complementEdgeVertexIds) &&
+      derivation.complementEdgeVertexIds.length,
+    2,
+    `${label} complement edge vertex ids`,
+  );
+  expectTruthy(
+    derivation.antipodalChildVertexId,
+    `${label} antipodal child vertex id`,
+  );
+  expectEqual(
+    Array.isArray(derivation.projectionVertexIds) &&
+      derivation.projectionVertexIds.length,
+    2,
+    `${label} projection vertex ids`,
+  );
+  expectEqual(
+    typeof derivation.grammarId === 'string' &&
+      (derivation.grammarId.includes('tetrahedral') ||
+        derivation.grammarId.includes('profile-aware')),
+    true,
+    `${label} grammar id`,
+  );
+  expectEqual(derivation.mergeKind, 'four-channel-merge', `${label} merge kind`);
+  expectEqual(derivation.quarkChannels.length, 4, `${label} quark channel count`);
+  expectEqual(
+    Array.isArray(derivation.degeneracyStatuses),
+    true,
+    `${label} degeneracy statuses`,
+  );
+
+  for (const [key, value] of Object.entries(derivation.ratio)) {
+    expectFinite(value, `${label} ratio ${key}`);
+  }
+
+  for (const channel of derivation.quarkChannels) {
+    expectTruthy(channel.channelId, `${label} channel id`);
+    expectTruthy(channel.child90, `${label} channel child90`);
+    expectTruthy(channel.parent60, `${label} channel parent60`);
+    expectTruthy(channel.projection30, `${label} channel projection30`);
+    expectTruthy(channel.parentProfileId, `${label} channel parent profile`);
+    expectTruthy(
+      channel.projectionProfileId,
+      `${label} channel projection profile`,
+    );
+    expectFinite(channel.parentWeight, `${label} channel parent weight`);
+    expectFinite(channel.projectionWeight, `${label} channel projection weight`);
+    expectFiniteChannelParameters(
+      channel.channelParameters,
+      `${label} channel ${channel.channelId}`,
+    );
+  }
+
+  if (derivation.derivedParameters) {
+    expectFiniteChannelParameters(
+      derivation.derivedParameters,
+      `${label} derived parameters`,
+    );
+  }
 }
 
 function runCandidateSummaryCoherenceDiagnostic() {
@@ -603,6 +730,13 @@ function expectFiniteVec2(position, label) {
   for (let index = 0; index < 2; index += 1) {
     expectFinite(position[index], `${label}[${index}]`);
   }
+}
+
+function expectFiniteChannelParameters(parameters, label) {
+  expectFinite(parameters && parameters.amplitude, `${label} amplitude`);
+  expectFinite(parameters && parameters.waveNumber, `${label} waveNumber`);
+  expectFinite(parameters && parameters.phase, `${label} phase`);
+  expectFinite(parameters && parameters.attenuation, `${label} attenuation`);
 }
 
 function expectProfileAwareSourcePolicyNames(sourcePolicyNames, label) {

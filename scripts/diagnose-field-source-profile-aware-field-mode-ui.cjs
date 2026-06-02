@@ -267,6 +267,25 @@ function expectMarkerProbeContracts(viewModel) {
       marker.sourceId,
       `source marker ${marker.sourceId} probe source id`,
     );
+
+    if (probe && probe.sourceKind === 'generated-child-derived') {
+      expectTruthy(
+        probe.childDerivation,
+        `source marker ${marker.sourceId} child derivation`,
+      );
+
+      if (probe.childDerivation) {
+        expectChildDerivationProbe(probe.childDerivation, marker.sourceId);
+      }
+    }
+
+    if (probe && probe.sourceKind === 'primal-assigned') {
+      expectNoOwnProperty(
+        probe,
+        'childDerivation',
+        `source marker ${marker.sourceId} primal childDerivation`,
+      );
+    }
   }
 
   for (const marker of viewModel.surfaceSampleMarkers) {
@@ -314,6 +333,74 @@ function expectMarkerProbeContracts(viewModel) {
   }
 
   console.log('marker hover probe refs resolve: PASS');
+}
+
+function expectChildDerivationProbe(derivation, label) {
+  expectEqual(derivation.childRole, 'shared-90-pole', `${label} child role`);
+  expectTruthy(derivation.sourceEdgeId, `${label} source edge`);
+  expectEqual(
+    Array.isArray(derivation.sourceEdgeVertexIds) &&
+      derivation.sourceEdgeVertexIds.length,
+    2,
+    `${label} source edge vertex ids`,
+  );
+  expectTruthy(derivation.complementEdgeId, `${label} complement edge`);
+  expectEqual(
+    Array.isArray(derivation.complementEdgeVertexIds) &&
+      derivation.complementEdgeVertexIds.length,
+    2,
+    `${label} complement edge vertex ids`,
+  );
+  expectTruthy(derivation.antipodalChildVertexId, `${label} antipodal child`);
+  expectEqual(
+    Array.isArray(derivation.projectionVertexIds) &&
+      derivation.projectionVertexIds.length,
+    2,
+    `${label} projection vertex ids`,
+  );
+  expectEqual(
+    typeof derivation.grammarId === 'string' &&
+      (derivation.grammarId.includes('tetrahedral') ||
+        derivation.grammarId.includes('profile-aware')),
+    true,
+    `${label} grammar id`,
+  );
+  expectEqual(derivation.mergeKind, 'four-channel-merge', `${label} merge kind`);
+  expectEqual(derivation.quarkChannels.length, 4, `${label} quark channels`);
+  expectEqual(
+    Array.isArray(derivation.degeneracyStatuses),
+    true,
+    `${label} degeneracy statuses`,
+  );
+
+  for (const [key, value] of Object.entries(derivation.ratio)) {
+    expectFinite(value, `${label} ratio ${key}`);
+  }
+
+  for (const channel of derivation.quarkChannels) {
+    expectTruthy(channel.channelId, `${label} channel id`);
+    expectTruthy(channel.child90, `${label} channel child90`);
+    expectTruthy(channel.parent60, `${label} channel parent60`);
+    expectTruthy(channel.projection30, `${label} channel projection30`);
+    expectTruthy(channel.parentProfileId, `${label} channel parent profile`);
+    expectTruthy(
+      channel.projectionProfileId,
+      `${label} channel projection profile`,
+    );
+    expectFinite(channel.parentWeight, `${label} channel parent weight`);
+    expectFinite(channel.projectionWeight, `${label} channel projection weight`);
+    expectFiniteChannelParameters(
+      channel.channelParameters,
+      `${label} channel ${channel.channelId}`,
+    );
+  }
+
+  if (derivation.derivedParameters) {
+    expectFiniteChannelParameters(
+      derivation.derivedParameters,
+      `${label} derived parameters`,
+    );
+  }
 }
 
 function expectConservativeRuntimeFlags(report, label) {
@@ -391,6 +478,19 @@ function expectNoOwnProperty(value, property, label) {
 function expectTruthy(value, label) {
   if (!value) {
     recordFailure(`${label}: expected truthy value`);
+  }
+}
+
+function expectFiniteChannelParameters(parameters, label) {
+  expectFinite(parameters && parameters.amplitude, `${label} amplitude`);
+  expectFinite(parameters && parameters.waveNumber, `${label} waveNumber`);
+  expectFinite(parameters && parameters.phase, `${label} phase`);
+  expectFinite(parameters && parameters.attenuation, `${label} attenuation`);
+}
+
+function expectFinite(value, label) {
+  if (!Number.isFinite(value)) {
+    recordFailure(`${label}: expected finite number, got ${value}`);
   }
 }
 
