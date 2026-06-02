@@ -1,5 +1,5 @@
 import { createSeedShape } from '../data/seeds';
-import type { Vec3 } from '../types/geometry';
+import type { Shape, Vec3 } from '../types/geometry';
 import { applyAmboDissection } from './ambo';
 import {
   buildTetrahedralAmboChildContexts,
@@ -353,16 +353,88 @@ export interface ProfileAwareFieldAtlasViewModelReport {
   issues: ProfileAwareFieldAtlasViewModelIssue[];
 }
 
+export type ProfileAwareFieldAtlasViewModelRuntimeIssueCode =
+  | 'unsupported-shape-context'
+  | 'runtime-view-model-build-failed'
+  | 'unexpected-shape-mutation'
+  | 'runtime-view-model-input-shape-mismatch'
+  | 'runtime-view-model-policy-mismatch'
+  | 'runtime-view-model-boundary-mismatch';
+
+export interface ProfileAwareFieldAtlasViewModelRuntimeIssue {
+  code: ProfileAwareFieldAtlasViewModelRuntimeIssueCode;
+  message: string;
+  details?: Record<string, boolean | number | string | null>;
+}
+
+interface ProfileAwareFieldAtlasViewModelRuntimeBaseReport {
+  reportId: string;
+  method: 'profile-aware-field-atlas-view-model-runtime-boundary-v0';
+  diagnosticScope: 'profile-aware-current-shape-field-mode-boundary-only';
+  runtimeBoundaryStatus: 'supported' | 'unsupported';
+  sourcePolicyId: 'profile-aware-quark-child-inheritance-v0';
+  policyRelativityStatus: 'policy-relative';
+  contrastPolicyNote: 'old-policy-not-assumed-invariant';
+  integrationStatus: 'runtime-boundary-diagnostic-only';
+  runtimeIntegrationStatus: 'not-runtime-integrated';
+  uiExposureStatus: 'not-ui-exposed';
+  semanticStatus: 'not-semantic-naming';
+  topologyStatus: 'not-topology-workspace';
+  phaseContinuityStatus: 'not-global-phase-continuity';
+  shapeMutationStatus: 'not-shape-mutation';
+  packetWriteStatus: 'not-packet-writing';
+  fieldAtlasSourcePolicyMutationStatus: 'not-mutated';
+  fieldAtlasMutationStatus: 'not-mutated';
+  inputShapeId: string;
+  inputShapeSeedKey?: string;
+  inputShapeOperation: string;
+  inputShapeGenerationDepth: number;
+  issueCount: number;
+  ok: boolean;
+  issues: ProfileAwareFieldAtlasViewModelRuntimeIssue[];
+}
+
+export interface ProfileAwareFieldAtlasViewModelRuntimeSupportedReport
+  extends ProfileAwareFieldAtlasViewModelRuntimeBaseReport {
+  runtimeBoundaryStatus: 'supported';
+  viewModel: ProfileAwareFieldAtlasViewModelReport;
+  ok: boolean;
+}
+
+export interface ProfileAwareFieldAtlasViewModelRuntimeUnsupportedReport
+  extends ProfileAwareFieldAtlasViewModelRuntimeBaseReport {
+  runtimeBoundaryStatus: 'unsupported';
+  unsupportedReason: string;
+  unsupportedIssueCode: ProfileAwareFieldAtlasViewModelRuntimeIssueCode;
+  viewModel: null;
+  ok: false;
+}
+
+export type ProfileAwareFieldAtlasViewModelRuntimeReport =
+  | ProfileAwareFieldAtlasViewModelRuntimeSupportedReport
+  | ProfileAwareFieldAtlasViewModelRuntimeUnsupportedReport;
+
 interface BuiltProfileAwareSourceChain {
   profileAwarePolicyReport: ProfileAwareFieldSourcePolicyDiagnosticReport;
   adapterReport: ProfileAwareAtlasAdapterReport;
 }
 
+interface BuildProfileAwareFieldAtlasViewModelReportForShapeArgs {
+  shape: Shape;
+  reportIdSuffix: string;
+  resolverReport?: ProfileAwareShapePositionResolverReport;
+}
+
 const METHOD = 'profile-aware-field-atlas-view-model-diagnostic-v0';
 const DIAGNOSTIC_SCOPE = 'profile-aware-field-atlas-view-model-only';
+const RUNTIME_METHOD = 'profile-aware-field-atlas-view-model-runtime-boundary-v0';
+const RUNTIME_DIAGNOSTIC_SCOPE =
+  'profile-aware-current-shape-field-mode-boundary-only';
 const SOURCE_POLICY_ID = 'profile-aware-quark-child-inheritance-v0';
 const CONTRAST_POLICY_NOTE = 'old-policy-not-assumed-invariant';
 const ACTIVE_TETRAHEDRON_PRIMAL_VERTICES = ['A', 'B', 'C', 'D'];
+const RUNTIME_UNSUPPORTED_REASON =
+  'Profile-aware runtime view model currently supports only a tetrahedron seed-derived Shape after at least one Ambo dissection with resolvable A, B, C, D, and M_AB through M_CD positions.';
 
 const SURFACE_SAMPLING_OPTIONS = {
   subdivisions: 1,
@@ -383,12 +455,24 @@ const SUPPORT_REGION_OPTIONS = {
 };
 
 export function buildProfileAwareFieldAtlasViewModelReport(): ProfileAwareFieldAtlasViewModelReport {
-  const issues: ProfileAwareFieldAtlasViewModelIssue[] = [];
   const shape = applyAmboDissection(createSeedShape('tetrahedron'));
+
+  return buildProfileAwareFieldAtlasViewModelReportForShape({
+    shape,
+    reportIdSuffix: 'tetrahedron-one-ambo',
+  });
+}
+
+function buildProfileAwareFieldAtlasViewModelReportForShape(
+  args: BuildProfileAwareFieldAtlasViewModelReportForShapeArgs,
+): ProfileAwareFieldAtlasViewModelReport {
+  const issues: ProfileAwareFieldAtlasViewModelIssue[] = [];
+  const shape = args.shape;
   const beforeShapeJson = JSON.stringify(shape);
   const { profileAwarePolicyReport, adapterReport } =
     buildProfileAwareSourceChain();
-  const resolverReport = buildProfileAwareShapePositionResolverReport(shape);
+  const resolverReport =
+    args.resolverReport ?? buildProfileAwareShapePositionResolverReport(shape);
   const sourceCountMetadata = {
     fieldReadySourceCount: adapterReport.fieldReadySourceCount,
     fallbackChildSourceCount: adapterReport.fallbackChildSourceCount,
@@ -401,22 +485,22 @@ export function buildProfileAwareFieldAtlasViewModelReport(): ProfileAwareFieldA
     resolverReport,
     samplingOptions: SURFACE_SAMPLING_OPTIONS,
     sourceCountMetadata,
-    reportIdSuffix: 'profile-aware-atlas-view-model',
+    reportIdSuffix: args.reportIdSuffix,
   });
   const featureReport = buildProfileAwareFeatureReportDiagnosticReport({
     surfaceAtlasResult,
-    reportIdSuffix: 'profile-aware-atlas-view-model',
+    reportIdSuffix: args.reportIdSuffix,
   });
   const routeGateReport = buildProfileAwareRouteGateCandidateDiagnosticReport({
     surfaceAtlasResult,
     routeGateOptions: ROUTE_GATE_OPTIONS,
-    reportIdSuffix: 'profile-aware-atlas-view-model',
+    reportIdSuffix: args.reportIdSuffix,
   });
   const supportRegionReport =
     buildProfileAwareSupportRegionCandidateDiagnosticReport({
       surfaceAtlasResult,
       supportRegionOptions: SUPPORT_REGION_OPTIONS,
-      reportIdSuffix: 'profile-aware-atlas-view-model',
+      reportIdSuffix: args.reportIdSuffix,
     });
   const sampledAtlas = surfaceAtlasResult.sampledAtlas;
 
@@ -490,7 +574,7 @@ export function buildProfileAwareFieldAtlasViewModelReport(): ProfileAwareFieldA
   const issueCount = issues.length;
 
   return {
-    reportId: `${METHOD}:tetrahedron-one-ambo`,
+    reportId: `${METHOD}:${args.reportIdSuffix}`,
     method: METHOD,
     diagnosticScope: DIAGNOSTIC_SCOPE,
     productRole: 'field-mode-render-and-probe-contract',
@@ -550,6 +634,218 @@ export function buildProfileAwareFieldAtlasViewModelReport(): ProfileAwareFieldA
     issueCount,
     issues,
   };
+}
+
+export function buildProfileAwareFieldAtlasViewModelRuntimeReport(
+  shape: Shape,
+): ProfileAwareFieldAtlasViewModelRuntimeReport {
+  const beforeShapeJson = JSON.stringify(shape);
+  const resolverReport = buildProfileAwareShapePositionResolverReport(shape);
+
+  if (!resolverReport.ok || resolverReport.shapeContextStatus !== 'supported') {
+    const issues: ProfileAwareFieldAtlasViewModelRuntimeIssue[] = [
+      {
+        code: 'unsupported-shape-context',
+        message: RUNTIME_UNSUPPORTED_REASON,
+        details: {
+          resolverIssueCount: resolverReport.issueCount,
+          resolverShapeContextStatus: resolverReport.shapeContextStatus,
+        },
+      },
+    ];
+
+    appendRuntimeShapeMutationIssue(shape, beforeShapeJson, issues);
+
+    return buildUnsupportedRuntimeReport({
+      shape,
+      unsupportedIssueCode: 'unsupported-shape-context',
+      unsupportedReason: RUNTIME_UNSUPPORTED_REASON,
+      issues,
+    });
+  }
+
+  let viewModel: ProfileAwareFieldAtlasViewModelReport;
+
+  try {
+    viewModel = buildProfileAwareFieldAtlasViewModelReportForShape({
+      shape,
+      resolverReport,
+      reportIdSuffix: `runtime:${shape.id}`,
+    });
+  } catch (error) {
+    const issues: ProfileAwareFieldAtlasViewModelRuntimeIssue[] = [
+      {
+        code: 'runtime-view-model-build-failed',
+        message:
+          'Profile-aware runtime view model failed to build from the caller-supplied Shape.',
+        details: {
+          reason: error instanceof Error ? error.message : String(error),
+        },
+      },
+    ];
+
+    appendRuntimeShapeMutationIssue(shape, beforeShapeJson, issues);
+
+    return buildUnsupportedRuntimeReport({
+      shape,
+      unsupportedIssueCode: 'runtime-view-model-build-failed',
+      unsupportedReason:
+        'Profile-aware runtime view model build failed for the caller-supplied Shape.',
+      issues,
+    });
+  }
+
+  const issues: ProfileAwareFieldAtlasViewModelRuntimeIssue[] = [];
+
+  appendRuntimeShapeMutationIssue(shape, beforeShapeJson, issues);
+
+  if (viewModel.shapeId !== shape.id) {
+    issues.push({
+      code: 'runtime-view-model-input-shape-mismatch',
+      message:
+        'Profile-aware runtime view model did not preserve the caller-supplied Shape id.',
+      details: {
+        inputShapeId: shape.id,
+        viewModelShapeId: viewModel.shapeId,
+      },
+    });
+  }
+
+  if (viewModel.sourcePolicyId !== SOURCE_POLICY_ID) {
+    issues.push({
+      code: 'runtime-view-model-policy-mismatch',
+      message:
+        'Profile-aware runtime view model did not preserve the active source policy.',
+      details: {
+        expectedSourcePolicyId: SOURCE_POLICY_ID,
+        actualSourcePolicyId: viewModel.sourcePolicyId,
+      },
+    });
+  }
+
+  appendRuntimeBoundaryIssues(viewModel, issues);
+
+  const issueCount = issues.length;
+
+  return {
+    ...buildRuntimeBaseFields(shape),
+    reportId: `${RUNTIME_METHOD}:supported:${shape.id}`,
+    runtimeBoundaryStatus: 'supported',
+    viewModel,
+    issueCount,
+    ok: viewModel.ok && issueCount === 0,
+    issues,
+  };
+}
+
+function buildUnsupportedRuntimeReport(args: {
+  shape: Shape;
+  unsupportedIssueCode: ProfileAwareFieldAtlasViewModelRuntimeIssueCode;
+  unsupportedReason: string;
+  issues: ProfileAwareFieldAtlasViewModelRuntimeIssue[];
+}): ProfileAwareFieldAtlasViewModelRuntimeUnsupportedReport {
+  return {
+    ...buildRuntimeBaseFields(args.shape),
+    reportId: `${RUNTIME_METHOD}:unsupported:${args.shape.id}`,
+    runtimeBoundaryStatus: 'unsupported',
+    unsupportedReason: args.unsupportedReason,
+    unsupportedIssueCode: args.unsupportedIssueCode,
+    viewModel: null,
+    issueCount: args.issues.length,
+    ok: false,
+    issues: args.issues,
+  };
+}
+
+function buildRuntimeBaseFields(
+  shape: Shape,
+): Omit<
+  ProfileAwareFieldAtlasViewModelRuntimeBaseReport,
+  'reportId' | 'runtimeBoundaryStatus' | 'issueCount' | 'ok' | 'issues'
+> {
+  return {
+    method: RUNTIME_METHOD,
+    diagnosticScope: RUNTIME_DIAGNOSTIC_SCOPE,
+    sourcePolicyId: SOURCE_POLICY_ID,
+    policyRelativityStatus: 'policy-relative',
+    contrastPolicyNote: CONTRAST_POLICY_NOTE,
+    integrationStatus: 'runtime-boundary-diagnostic-only',
+    runtimeIntegrationStatus: 'not-runtime-integrated',
+    uiExposureStatus: 'not-ui-exposed',
+    semanticStatus: 'not-semantic-naming',
+    topologyStatus: 'not-topology-workspace',
+    phaseContinuityStatus: 'not-global-phase-continuity',
+    shapeMutationStatus: 'not-shape-mutation',
+    packetWriteStatus: 'not-packet-writing',
+    fieldAtlasSourcePolicyMutationStatus: 'not-mutated',
+    fieldAtlasMutationStatus: 'not-mutated',
+    inputShapeId: shape.id,
+    ...(shape.seedKey ? { inputShapeSeedKey: shape.seedKey } : {}),
+    inputShapeOperation: shape.genealogy.operation,
+    inputShapeGenerationDepth: shape.genealogy.generationDepth,
+  };
+}
+
+function appendRuntimeShapeMutationIssue(
+  shape: Shape,
+  beforeShapeJson: string,
+  issues: ProfileAwareFieldAtlasViewModelRuntimeIssue[],
+): void {
+  if (JSON.stringify(shape) === beforeShapeJson) {
+    return;
+  }
+
+  issues.push({
+    code: 'unexpected-shape-mutation',
+    message:
+      'Profile-aware runtime view model boundary unexpectedly mutated the caller-supplied Shape.',
+    details: {
+      shapeMutationDetected: true,
+    },
+  });
+}
+
+function appendRuntimeBoundaryIssues(
+  viewModel: ProfileAwareFieldAtlasViewModelReport,
+  issues: ProfileAwareFieldAtlasViewModelRuntimeIssue[],
+): void {
+  const mismatches = [
+    viewModel.policyRelativityStatus !== 'policy-relative',
+    viewModel.contrastPolicyNote !== CONTRAST_POLICY_NOTE,
+    viewModel.runtimeIntegrationStatus !== 'not-runtime-integrated',
+    viewModel.uiExposureStatus !== 'not-ui-exposed',
+    viewModel.semanticStatus !== 'not-semantic-naming',
+    viewModel.topologyStatus !== 'not-topology-workspace',
+    viewModel.phaseContinuityStatus !== 'not-global-phase-continuity',
+    viewModel.shapeMutationStatus !== 'not-shape-mutation',
+    viewModel.packetWriteStatus !== 'not-packet-writing',
+    viewModel.fieldAtlasSourcePolicyMutationStatus !== 'not-mutated',
+    viewModel.fieldAtlasMutationStatus !== 'not-mutated',
+  ];
+
+  if (!mismatches.some(Boolean)) {
+    return;
+  }
+
+  issues.push({
+    code: 'runtime-view-model-boundary-mismatch',
+    message:
+      'Profile-aware runtime view model did not preserve one or more boundary caveat flags.',
+    details: {
+      policyRelativityStatus: viewModel.policyRelativityStatus,
+      contrastPolicyNote: viewModel.contrastPolicyNote,
+      runtimeIntegrationStatus: viewModel.runtimeIntegrationStatus,
+      uiExposureStatus: viewModel.uiExposureStatus,
+      semanticStatus: viewModel.semanticStatus,
+      topologyStatus: viewModel.topologyStatus,
+      phaseContinuityStatus: viewModel.phaseContinuityStatus,
+      shapeMutationStatus: viewModel.shapeMutationStatus,
+      packetWriteStatus: viewModel.packetWriteStatus,
+      fieldAtlasSourcePolicyMutationStatus:
+        viewModel.fieldAtlasSourcePolicyMutationStatus,
+      fieldAtlasMutationStatus: viewModel.fieldAtlasMutationStatus,
+    },
+  });
 }
 
 function buildProfileAwareSourceChain(): BuiltProfileAwareSourceChain {
