@@ -30,6 +30,11 @@ import {
   type FieldFeatureReport,
   type FieldFeatureReportObservation,
 } from '../lib/fieldAtlasFeatureReport';
+import {
+  buildProfileAwareFieldAtlasViewModelRuntimeReport,
+  type ProfileAwareFieldAtlasFeatureMarker,
+  type ProfileAwareFieldAtlasViewModelRuntimeReport,
+} from '../lib/fieldSourceProfileAwareAtlasViewModel';
 import { useGeometryStore } from '../store/geometryStore';
 import type { Shape, VertexId } from '../types/geometry';
 
@@ -128,6 +133,10 @@ export function FieldAtlasInspector({
 }: FieldAtlasInspectorProps) {
   const atlas = useMemo(() => buildInspectorModel(shape), [shape]);
   const fieldReport = useMemo(() => buildFieldFeatureReport(shape), [shape]);
+  const profileAwareRuntimeReport = useMemo(
+    () => buildProfileAwareFieldAtlasViewModelRuntimeReport(shape),
+    [shape],
+  );
   const [advancedDiagnosticsOpen, setAdvancedDiagnosticsOpen] = useState(false);
   const hoveredFieldAtlasSampleId = useGeometryStore(
     (state) => state.hoveredFieldAtlasSampleId,
@@ -150,6 +159,13 @@ export function FieldAtlasInspector({
           </span>
           <p className="mt-2 text-xs leading-5 text-stone-300">{atlas.reason}</p>
         </div>
+        <ProfileAwareFieldModeRuntimeSection
+          report={profileAwareRuntimeReport}
+          hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
+          onHoverSampleStart={setHoveredFieldAtlasSampleId}
+          onHoverSampleEnd={clearHoveredFieldAtlasSampleId}
+          shortenId={shortenId}
+        />
         <FieldReportSection
           report={fieldReport}
           hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
@@ -178,6 +194,14 @@ export function FieldAtlasInspector({
           Closed-shape surface atlas from current raw geometry.
         </p>
       </div>
+
+      <ProfileAwareFieldModeRuntimeSection
+        report={profileAwareRuntimeReport}
+        hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
+        onHoverSampleStart={setHoveredFieldAtlasSampleId}
+        onHoverSampleEnd={clearHoveredFieldAtlasSampleId}
+        shortenId={shortenId}
+      />
 
       <dl className="grid grid-cols-2 gap-2 text-xs">
         <FieldAtlasMetric label="Domain" value="closed-shape surface" />
@@ -254,6 +278,185 @@ export function FieldAtlasInspector({
       <FieldAtlasDiagnosticNote />
     </div>
   );
+}
+
+function ProfileAwareFieldModeRuntimeSection({
+  report,
+  hoveredFieldAtlasSampleId,
+  onHoverSampleStart,
+  onHoverSampleEnd,
+  shortenId,
+}: {
+  report: ProfileAwareFieldAtlasViewModelRuntimeReport;
+  hoveredFieldAtlasSampleId: string | null;
+  onHoverSampleStart: (sampleId: string) => void;
+  onHoverSampleEnd: (sampleId: string) => void;
+  shortenId: (id: string) => string;
+}) {
+  if (report.runtimeBoundaryStatus === 'unsupported') {
+    return (
+      <div className="rounded border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-200">
+            Profile-aware Field Mode: unsupported
+          </h3>
+          <span className="rounded border border-amber-300/40 bg-amber-300/10 px-2 py-0.5 font-mono text-[11px] text-amber-100">
+            {report.unsupportedIssueCode}
+          </span>
+        </div>
+        <p className="mt-2 leading-5 text-stone-300">{report.unsupportedReason}</p>
+        <dl className="mt-2 grid grid-cols-2 gap-2">
+          <FieldAtlasMetric
+            label="Input seed"
+            value={report.inputShapeSeedKey ?? 'n/a'}
+          />
+          <FieldAtlasMetric label="Operation" value={report.inputShapeOperation} />
+          <FieldAtlasMetric
+            label="Generation"
+            value={report.inputShapeGenerationDepth}
+          />
+          <FieldAtlasMetric label="Semantic" value={report.semanticStatus} />
+          <FieldAtlasMetric label="Topology" value={report.topologyStatus} />
+          <FieldAtlasMetric label="Packet write" value={report.packetWriteStatus} />
+        </dl>
+      </div>
+    );
+  }
+
+  const viewModel = report.viewModel;
+  const visibleFeatureMarkers =
+    viewModel.featureOverlaySummary.featureMarkers.slice(0, 5);
+
+  return (
+    <div className="rounded border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-xs">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200">
+          Profile-aware Field Mode: supported
+        </h3>
+        <span className="rounded border border-emerald-300/40 bg-emerald-300/10 px-2 py-0.5 font-mono text-[11px] text-emerald-100">
+          {report.runtimeBoundaryStatus}
+        </span>
+      </div>
+
+      <dl className="mt-2 grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Source policy" value={report.sourcePolicyId} />
+        <FieldAtlasMetric label="Shape" value={shortenId(viewModel.shapeId)} />
+        <FieldAtlasMetric
+          label="Domain"
+          value={viewModel.domainId ? shortenId(viewModel.domainId) : 'n/a'}
+        />
+        <FieldAtlasMetric
+          label="Source markers"
+          value={viewModel.sourceMarkers.length}
+        />
+        <FieldAtlasMetric
+          label="Sample markers"
+          value={viewModel.surfaceSampleMarkers.length}
+        />
+        <FieldAtlasMetric
+          label="Feature markers"
+          value={viewModel.featureOverlaySummary.featureMarkers.length}
+        />
+        <FieldAtlasMetric
+          label="Route/gate"
+          value={viewModel.routeGateOverlaySummary.totalRouteGateCandidateCount}
+        />
+        <FieldAtlasMetric
+          label="Support/region"
+          value={
+            viewModel.supportRegionOverlaySummary.totalSupportRegionCandidateCount
+          }
+        />
+        <FieldAtlasMetric label="Policy" value={report.policyRelativityStatus} />
+        <FieldAtlasMetric label="Semantic" value={report.semanticStatus} />
+        <FieldAtlasMetric label="Topology" value={report.topologyStatus} />
+        <FieldAtlasMetric label="Overlay" value={viewModel.candidateOverlayStatus} />
+      </dl>
+
+      <div className="mt-3 grid gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+          Feature Markers
+        </h4>
+        {visibleFeatureMarkers.length ? (
+          visibleFeatureMarkers.map((marker) => (
+            <ProfileAwareFeatureMarkerRow
+              key={marker.featureId}
+              marker={marker}
+              reason={getProfileAwareFeatureReason(report, marker)}
+              isHovered={hoveredFieldAtlasSampleId === marker.sampleId}
+              onHoverStart={onHoverSampleStart}
+              onHoverEnd={onHoverSampleEnd}
+            />
+          ))
+        ) : (
+          <p className="rounded border border-stone-800 bg-stone-900 px-2 py-2 text-stone-500">
+            No profile-aware feature markers under the current runtime bounds.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ProfileAwareFeatureMarkerRow({
+  marker,
+  reason,
+  isHovered,
+  onHoverStart,
+  onHoverEnd,
+}: {
+  marker: ProfileAwareFieldAtlasFeatureMarker;
+  reason: string;
+  isHovered: boolean;
+  onHoverStart: (sampleId: string) => void;
+  onHoverEnd: (sampleId: string) => void;
+}) {
+  return (
+    <div
+      className={`rounded border px-2 py-2 transition ${
+        isHovered
+          ? 'border-amber-300/70 bg-amber-400/10 shadow-[0_0_0_1px_rgba(252,211,77,0.18)]'
+          : 'border-stone-800 bg-stone-900'
+      }`}
+      data-profile-aware-feature-marker-id={marker.featureId}
+      onFocus={() => onHoverStart(marker.sampleId)}
+      onBlur={() => onHoverEnd(marker.sampleId)}
+      onPointerEnter={() => onHoverStart(marker.sampleId)}
+      onPointerLeave={() => onHoverEnd(marker.sampleId)}
+      tabIndex={0}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="font-medium text-stone-200">
+          {formatReportObservationKind(marker.observationKind)}
+        </span>
+        <span className="font-mono text-[11px] text-stone-500">{marker.status}</span>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-stone-500">
+        <span className="font-mono">int {formatNumber(marker.intensity)}</span>
+        <span className="text-right font-mono">
+          rel {formatNumber(marker.relativeIntensity)}
+        </span>
+        <span className="font-mono">top ratio {formatPercent(marker.topContributionRatio)}</span>
+        <span className="text-right font-mono">{marker.semanticStatus}</span>
+      </div>
+      <p className="mt-2 leading-5 text-stone-400">
+        {shortenReportReason(reason || 'profile-aware feature observation marker')}
+      </p>
+    </div>
+  );
+}
+
+function getProfileAwareFeatureReason(
+  report: ProfileAwareFieldAtlasViewModelRuntimeReport,
+  marker: ProfileAwareFieldAtlasFeatureMarker,
+): string {
+  if (report.runtimeBoundaryStatus !== 'supported') {
+    return '';
+  }
+
+  const probe = report.viewModel.probeIndex.probes[marker.probeRef];
+
+  return probe?.probeKind === 'feature-observation' ? probe.reason : '';
 }
 
 function FieldReportSection({
@@ -1403,7 +1606,7 @@ function formatChartRole(role: string): string {
   return role === 'computational-only' ? 'computational-only' : role;
 }
 
-function formatReportObservationKind(kind: FieldFeatureReportObservation['observationKind']): string {
+function formatReportObservationKind(kind: string): string {
   switch (kind) {
     case 'cancellation-like-site-candidate':
       return 'Cancellation-like candidate';

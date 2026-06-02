@@ -14,6 +14,7 @@
     "diagnose:field-source-profile-aware-atlas-execution": "node scripts/diagnose-field-source-profile-aware-atlas-execution.cjs",
     "diagnose:field-source-profile-aware-atlas-view-model": "node scripts/diagnose-field-source-profile-aware-atlas-view-model.cjs",
     "diagnose:field-source-profile-aware-atlas-view-model-runtime": "node scripts/diagnose-field-source-profile-aware-atlas-view-model-runtime.cjs",
+    "diagnose:field-source-profile-aware-field-mode-ui": "node scripts/diagnose-field-source-profile-aware-field-mode-ui.cjs",
     "diagnose:field-source-profile-aware-evidence-stability": "node scripts/diagnose-field-source-profile-aware-evidence-stability.cjs",
     "diagnose:field-source-profile-aware-field-report": "node scripts/diagnose-field-source-profile-aware-field-report.cjs",
     "diagnose:field-source-profile-aware-feature-report": "node scripts/diagnose-field-source-profile-aware-feature-report.cjs",
