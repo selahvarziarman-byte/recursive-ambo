@@ -16,6 +16,7 @@
     "diagnose:field-source-profile-aware-feature-report": "node scripts/diagnose-field-source-profile-aware-feature-report.cjs",
     "diagnose:field-source-profile-aware-feature-stability": "node scripts/diagnose-field-source-profile-aware-feature-stability.cjs",
     "diagnose:field-source-profile-aware-policy": "node scripts/diagnose-field-source-profile-aware-policy.cjs",
+    "diagnose:field-source-profile-aware-route-gate-candidates": "node scripts/diagnose-field-source-profile-aware-route-gate-candidates.cjs",
     "diagnose:field-source-profile-aware-shape-position-resolver": "node scripts/diagnose-field-source-profile-aware-shape-position-resolver.cjs",
     "diagnose:field-source-profile-aware-shape-resolved-surface-atlas": "node scripts/diagnose-field-source-profile-aware-shape-resolved-surface-atlas.cjs",
     "diagnose:field-source-quark-channels": "node scripts/diagnose-field-source-quark-channels.cjs",
