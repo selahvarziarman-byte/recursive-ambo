@@ -8,7 +8,11 @@ import {
 } from './fieldAtlas';
 import {
   buildSurfaceChartSamplePoints,
+  type ResolvedSurfaceChartSamplingOptions,
+  type SampledClosedShapeSurfaceAtlas,
   type SurfaceChartAtlasSample,
+  type SurfaceChartSamplePoint,
+  type SurfaceChartSampleSummary,
   type SurfaceChartSamplingOptions,
 } from './fieldAtlasSurfaceSampling';
 import type { ProfileAwareAtlasSourceEntry } from './fieldSourceProfileAwareAtlasAdapter';
@@ -57,6 +61,11 @@ export interface BuildProfileAwareShapeResolvedSurfaceAtlasReportArgs {
   samplingOptions?: SurfaceChartSamplingOptions;
   sourceCountMetadata?: ProfileAwareShapeResolvedSurfaceAtlasSourceCountMetadata;
   reportIdSuffix?: string;
+}
+
+export interface ProfileAwareShapeResolvedSurfaceAtlasResult {
+  report: ProfileAwareShapeResolvedSurfaceAtlasReport;
+  sampledAtlas?: SampledClosedShapeSurfaceAtlas;
 }
 
 export interface ProfileAwareShapeResolvedSurfaceAtlasNumberSummary {
@@ -126,6 +135,12 @@ const DEFAULT_SURFACE_SAMPLE_BOUND = 96;
 export function buildProfileAwareShapeResolvedSurfaceAtlasReport(
   args: BuildProfileAwareShapeResolvedSurfaceAtlasReportArgs,
 ): ProfileAwareShapeResolvedSurfaceAtlasReport {
+  return buildProfileAwareShapeResolvedSurfaceAtlas(args).report;
+}
+
+export function buildProfileAwareShapeResolvedSurfaceAtlas(
+  args: BuildProfileAwareShapeResolvedSurfaceAtlasReportArgs,
+): ProfileAwareShapeResolvedSurfaceAtlasResult {
   const issues: ProfileAwareShapeResolvedSurfaceAtlasIssue[] = [];
   const samplingOptions = {
     subdivisions: args.samplingOptions?.subdivisions ?? DEFAULT_SURFACE_SUBDIVISIONS,
@@ -133,6 +148,7 @@ export function buildProfileAwareShapeResolvedSurfaceAtlasReport(
   };
   const sampleCountBound = samplingOptions.maxSamples;
   let domain: ClosedShapeSurfaceSourceDomain | undefined;
+  let samplePoints: SurfaceChartSamplePoint[] = [];
   let samples: SurfaceChartAtlasSample[] = [];
 
   if (!args.resolverReport.ok) {
@@ -170,7 +186,7 @@ export function buildProfileAwareShapeResolvedSurfaceAtlasReport(
   }
 
   if (args.resolverReport.ok && domain && executableSources.length > 0) {
-    const samplePoints = buildSurfaceChartSamplePoints(domain, samplingOptions);
+    samplePoints = buildSurfaceChartSamplePoints(domain, samplingOptions);
 
     if (samplePoints.length === 0) {
       issues.push({
@@ -230,41 +246,97 @@ export function buildProfileAwareShapeResolvedSurfaceAtlasReport(
   }
 
   const issueCount = issues.length;
+  const sampledAtlas =
+    domain && executableSources.length > 0 && samples.length > 0
+      ? {
+          domain,
+          sources: executableSources,
+          samplePoints,
+          samples,
+          chartSummaries: buildSurfaceChartSampleSummaries(domain, samples),
+          options: buildResolvedProfileAwareSamplingOptions(samplingOptions),
+        }
+      : undefined;
 
   return {
-    reportId: `${METHOD}:${args.reportIdSuffix ?? args.shape.id}`,
-    method: METHOD,
-    diagnosticScope: DIAGNOSTIC_SCOPE,
-    sourcePolicyId: SOURCE_POLICY_ID,
-    policyRelativityStatus: 'policy-relative',
-    contrastPolicyNote: CONTRAST_POLICY_NOTE,
-    shapeMutationStatus: 'not-shape-mutation',
-    packetWriteStatus: 'not-packet-writing',
-    fieldAtlasSourcePolicyMutationStatus: 'not-mutated',
-    fieldAtlasMutationStatus: 'not-mutated',
-    shapeId: args.shape.id,
-    ...(domain ? { domainId: domain.id, domainKind: domain.kind } : {}),
-    chartCount: domain?.surfaceCharts.length ?? 0,
-    sampleCount: samples.length,
-    sampleCountBound,
-    atlasInputSourceCount: args.atlasSources.length,
-    executableSourceCount: executableSources.length,
-    primalAtlasSourceCount: args.atlasSources.filter(
-      (source) => source.sourceKind === 'primal-assigned',
-    ).length,
-    childAtlasSourceCount: args.atlasSources.filter(
-      (source) => source.sourceKind === 'generated-child-derived',
-    ).length,
-    fallbackChildSourceCount: args.sourceCountMetadata?.fallbackChildSourceCount ?? 0,
-    unresolvedChildSourceCount:
-      args.sourceCountMetadata?.unresolvedChildSourceCount ?? 0,
-    degeneracyStatusCount: args.sourceCountMetadata?.degeneracyStatusCount ?? 0,
-    contributionRatioSummary: summarizeContributionRatios(samples),
-    intensitySummary: summarizeNumbers(samples.map((sample) => sample.intensity)),
-    phaseSummary: summarizeNumbers(samples.map((sample) => sample.phase)),
-    issueCount,
-    ok: issueCount === 0,
-    issues,
+    report: {
+      reportId: `${METHOD}:${args.reportIdSuffix ?? args.shape.id}`,
+      method: METHOD,
+      diagnosticScope: DIAGNOSTIC_SCOPE,
+      sourcePolicyId: SOURCE_POLICY_ID,
+      policyRelativityStatus: 'policy-relative',
+      contrastPolicyNote: CONTRAST_POLICY_NOTE,
+      shapeMutationStatus: 'not-shape-mutation',
+      packetWriteStatus: 'not-packet-writing',
+      fieldAtlasSourcePolicyMutationStatus: 'not-mutated',
+      fieldAtlasMutationStatus: 'not-mutated',
+      shapeId: args.shape.id,
+      ...(domain ? { domainId: domain.id, domainKind: domain.kind } : {}),
+      chartCount: domain?.surfaceCharts.length ?? 0,
+      sampleCount: samples.length,
+      sampleCountBound,
+      atlasInputSourceCount: args.atlasSources.length,
+      executableSourceCount: executableSources.length,
+      primalAtlasSourceCount: args.atlasSources.filter(
+        (source) => source.sourceKind === 'primal-assigned',
+      ).length,
+      childAtlasSourceCount: args.atlasSources.filter(
+        (source) => source.sourceKind === 'generated-child-derived',
+      ).length,
+      fallbackChildSourceCount: args.sourceCountMetadata?.fallbackChildSourceCount ?? 0,
+      unresolvedChildSourceCount:
+        args.sourceCountMetadata?.unresolvedChildSourceCount ?? 0,
+      degeneracyStatusCount: args.sourceCountMetadata?.degeneracyStatusCount ?? 0,
+      contributionRatioSummary: summarizeContributionRatios(samples),
+      intensitySummary: summarizeNumbers(samples.map((sample) => sample.intensity)),
+      phaseSummary: summarizeNumbers(samples.map((sample) => sample.phase)),
+      issueCount,
+      ok: issueCount === 0,
+      issues,
+    },
+    ...(sampledAtlas ? { sampledAtlas } : {}),
+  };
+}
+
+function buildSurfaceChartSampleSummaries(
+  domain: ClosedShapeSurfaceSourceDomain,
+  samples: SurfaceChartAtlasSample[],
+): SurfaceChartSampleSummary[] {
+  return domain.surfaceCharts.map((chart) => {
+    const chartSamples = samples.filter((sample) => sample.chartId === chart.chartId);
+    const intensitySummary = summarizeNumbers(
+      chartSamples.map((sample) => sample.intensity),
+    );
+    const phaseSummary = summarizeNumbers(chartSamples.map((sample) => sample.phase));
+
+    return {
+      chartId: chart.chartId,
+      chartSemanticRole: chart.semanticRole,
+      sourceFaceId: chart.sourceFaceId,
+      sampleCount: chartSamples.length,
+      minIntensity: intensitySummary.min ?? 0,
+      maxIntensity: intensitySummary.max ?? 0,
+      minPhase: phaseSummary.min ?? 0,
+      maxPhase: phaseSummary.max ?? 0,
+      allContributionRatiosValid: chartSamples.every(hasValidContributionRatios),
+    };
+  });
+}
+
+function buildResolvedProfileAwareSamplingOptions(options: {
+  subdivisions: number;
+  maxSamples: number;
+}): ResolvedSurfaceChartSamplingOptions {
+  return {
+    subdivisions: options.subdivisions,
+    maxSamples: options.maxSamples,
+    sourcePolicy: {
+      name: SOURCE_POLICY_ID,
+      amplitude: 0,
+      waveNumber: 0,
+      phaseStep: 0,
+      attenuation: 0,
+    },
   };
 }
 
@@ -458,6 +530,21 @@ function appendSurfaceSampleIssues(
       },
     });
   }
+}
+
+function hasValidContributionRatios(sample: SurfaceChartAtlasSample): boolean {
+  const ratioSum = sample.contributionRatios.reduce(
+    (sum, ratio) => sum + ratio.value,
+    0,
+  );
+
+  return (
+    sample.contributionRatios.every(
+      (ratio) => Number.isFinite(ratio.value) && ratio.value >= 0,
+    ) &&
+    Number.isFinite(ratioSum) &&
+    Math.abs(ratioSum - 1) <= RATIO_SUM_TOLERANCE
+  );
 }
 
 function summarizeNumbers(
