@@ -5,7 +5,9 @@ import {
   type FieldFeatureReportObservationStatus,
   type FieldFeatureReportSemanticStatus,
   type FieldFeatureReportMethod,
+  type FieldFeatureReportObservation,
 } from './fieldAtlasFeatureReport';
+import type { Vec3 } from '../types/geometry';
 import type { ProfileAwareShapeResolvedSurfaceAtlasResult } from './fieldSourceProfileAwareShapeResolvedSurfaceAtlas';
 
 export type ProfileAwareFeatureReportIssueCode =
@@ -15,6 +17,8 @@ export type ProfileAwareFeatureReportIssueCode =
   | 'feature-report-source-policy-mismatch'
   | 'feature-report-semantic-status-mismatch'
   | 'feature-report-observation-status-mismatch'
+  | 'feature-report-observation-semantic-status-mismatch'
+  | 'feature-report-observation-source-policy-mismatch'
   | 'feature-report-empty-chart-count'
   | 'feature-report-empty-sample-count'
   | 'feature-report-empty-source-count';
@@ -29,6 +33,28 @@ export interface BuildProfileAwareFeatureReportArgs {
   surfaceAtlasResult: ProfileAwareShapeResolvedSurfaceAtlasResult;
   featureReportOptions?: FieldFeatureReportOptions;
   reportIdSuffix?: string;
+}
+
+export interface ProfileAwareFeatureObservationView {
+  observationId: string;
+  observationKind: FieldFeatureReportObservation['observationKind'];
+  sampleId: string;
+  chartId: string;
+  chartSemanticRole: FieldFeatureReportObservation['chartSemanticRole'];
+  sourceFaceId: string;
+  position: Vec3;
+  localChartPosition: [number, number];
+  intensity: number;
+  phase: number;
+  relativeIntensity: number;
+  effectiveSourceCount: number;
+  topContributionRatio: number;
+  status: FieldFeatureReportObservationStatus;
+  semanticStatus: FieldFeatureReportSemanticStatus;
+  sourcePolicyNames: string[];
+  scope: FieldFeatureReportObservation['scope'];
+  globalSurfaceContinuity: FieldFeatureReportObservation['globalSurfaceContinuity'];
+  reason: string;
 }
 
 export interface ProfileAwareFeatureReportDiagnosticReport {
@@ -60,6 +86,7 @@ export interface ProfileAwareFeatureReportDiagnosticReport {
   degeneracyStatusCount: number;
   issueCount: number;
   ok: boolean;
+  observations: ProfileAwareFeatureObservationView[];
   issues: ProfileAwareFeatureReportIssue[];
 }
 
@@ -118,6 +145,9 @@ export function buildProfileAwareFeatureReportDiagnosticReport(
   }
 
   const issueCount = issues.length;
+  const observations = featureReport
+    ? featureReport.observations.map(buildFeatureObservationView)
+    : [];
 
   return {
     reportId: `${METHOD}:${args.reportIdSuffix ?? surfaceReport.reportId}`,
@@ -155,6 +185,7 @@ export function buildProfileAwareFeatureReportDiagnosticReport(
     degeneracyStatusCount: surfaceReport.degeneracyStatusCount,
     issueCount,
     ok: issueCount === 0,
+    observations,
     issues,
   };
 }
@@ -166,6 +197,12 @@ function appendFeatureReportIssues(
   const sourcePolicyNames = featureReport.sourceSummary.sourcePolicyNames;
   const nonCandidateObservationCount = featureReport.observations.filter(
     (observation) => observation.status !== OBSERVATION_STATUS,
+  ).length;
+  const semanticMismatchObservationCount = featureReport.observations.filter(
+    (observation) => observation.semanticStatus !== SEMANTIC_STATUS,
+  ).length;
+  const sourcePolicyMismatchObservationCount = featureReport.observations.filter(
+    (observation) => !isProfileAwareSourcePolicyList(observation.sourcePolicyNames),
   ).length;
 
   if (
@@ -204,6 +241,27 @@ function appendFeatureReportIssues(
     });
   }
 
+  if (semanticMismatchObservationCount > 0) {
+    issues.push({
+      code: 'feature-report-observation-semantic-status-mismatch',
+      message: 'Feature report produced observations outside not-semantic-naming status.',
+      details: {
+        semanticMismatchObservationCount,
+      },
+    });
+  }
+
+  if (sourcePolicyMismatchObservationCount > 0) {
+    issues.push({
+      code: 'feature-report-observation-source-policy-mismatch',
+      message:
+        'Feature report produced observations whose source policy metadata is not profile-aware.',
+      details: {
+        sourcePolicyMismatchObservationCount,
+      },
+    });
+  }
+
   if (featureReport.atlasSummary.chartCount <= 0) {
     issues.push({
       code: 'feature-report-empty-chart-count',
@@ -224,4 +282,44 @@ function appendFeatureReportIssues(
       message: 'Feature report source summary has no sources.',
     });
   }
+}
+
+function buildFeatureObservationView(
+  observation: FieldFeatureReportObservation,
+): ProfileAwareFeatureObservationView {
+  return {
+    observationId: observation.observationId,
+    observationKind: observation.observationKind,
+    sampleId: observation.sampleId,
+    chartId: observation.chartId,
+    chartSemanticRole: observation.chartSemanticRole,
+    sourceFaceId: observation.sourceFaceId,
+    position: copyVec3(observation.position),
+    localChartPosition: [
+      observation.localChartPosition[0],
+      observation.localChartPosition[1],
+    ],
+    intensity: observation.intensity,
+    phase: observation.phase,
+    relativeIntensity: observation.relativeIntensity,
+    effectiveSourceCount: observation.effectiveSourceCount,
+    topContributionRatio: observation.topContributionRatio,
+    status: observation.status,
+    semanticStatus: observation.semanticStatus,
+    sourcePolicyNames: [...observation.sourcePolicyNames],
+    scope: observation.scope,
+    globalSurfaceContinuity: observation.globalSurfaceContinuity,
+    reason: observation.reason,
+  };
+}
+
+function isProfileAwareSourcePolicyList(sourcePolicyNames: readonly string[]): boolean {
+  return (
+    sourcePolicyNames.length === 1 &&
+    sourcePolicyNames[0] === SOURCE_POLICY_ID
+  );
+}
+
+function copyVec3(position: Vec3): Vec3 {
+  return [position[0], position[1], position[2]];
 }

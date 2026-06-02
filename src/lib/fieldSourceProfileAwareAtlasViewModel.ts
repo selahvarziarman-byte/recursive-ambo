@@ -19,6 +19,7 @@ import {
 import {
   buildProfileAwareFeatureReportDiagnosticReport,
   type ProfileAwareFeatureReportDiagnosticReport,
+  type ProfileAwareFeatureObservationView,
 } from './fieldSourceProfileAwareFeatureReport';
 import {
   buildProfileAwareFieldSourcePolicyDiagnosticReport,
@@ -63,6 +64,7 @@ export type ProfileAwareFieldAtlasViewModelIssueCode =
   | 'source-marker-count-mismatch'
   | 'surface-sample-marker-count-mismatch'
   | 'probe-index-count-mismatch'
+  | 'feature-marker-count-mismatch'
   | 'feature-count-mismatch'
   | 'route-gate-count-mismatch'
   | 'support-region-count-mismatch'
@@ -143,6 +145,26 @@ export interface ProfileAwareFieldAtlasSurfaceSampleMarker {
   probeRef: string;
 }
 
+export interface ProfileAwareFieldAtlasFeatureMarker {
+  featureId: string;
+  renderKind: 'feature-observation-marker';
+  observationKind: ProfileAwareFeatureObservationView['observationKind'];
+  sampleId: string;
+  chartId: string;
+  sourceFaceId: string;
+  position: Vec3;
+  localChartPosition: [number, number];
+  intensity: number;
+  phase: number;
+  relativeIntensity: number;
+  effectiveSourceCount: number;
+  topContributionRatio: number;
+  status: ProfileAwareFeatureObservationView['status'];
+  semanticStatus: ProfileAwareFeatureObservationView['semanticStatus'];
+  sourcePolicyNames: string[];
+  probeRef: string;
+}
+
 export interface ProfileAwareFieldAtlasChartSummaryView {
   chartId: string;
   sourceFaceId: string;
@@ -167,14 +189,13 @@ export interface ProfileAwareFieldAtlasRenderScale {
 }
 
 export interface ProfileAwareFieldAtlasFeatureOverlaySummary {
-  overlayStatus: 'summary-only';
+  overlayStatus: 'feature-markers-available' | 'summary-only';
   observationStatus: ProfileAwareFeatureReportDiagnosticReport['observationStatus'];
   totalObservationCount: number;
   cancellationLikeObservationCount: number;
   highIntensityAnchorObservationCount: number;
   ambiguousObservationCount: number;
-  featureMarkers: [];
-  summaryProbeRef: 'feature:summary';
+  featureMarkers: ProfileAwareFieldAtlasFeatureMarker[];
 }
 
 export interface ProfileAwareFieldAtlasRouteGateOverlaySummary {
@@ -240,16 +261,38 @@ export interface ProfileAwareFieldAtlasSurfaceSampleProbe {
   semanticStatus: 'not-semantic-naming';
 }
 
-export interface ProfileAwareFieldAtlasSummaryProbe {
-  probeKind: 'feature-summary' | 'route-gate-summary' | 'support-region-summary';
+export interface ProfileAwareFieldAtlasFeatureProbe {
+  probeKind: 'feature-observation';
+  featureId: string;
+  observationKind: ProfileAwareFeatureObservationView['observationKind'];
+  sampleId: string;
+  chartId: string;
+  sourceFaceId: string;
+  position: Vec3;
+  localChartPosition: [number, number];
+  intensity: number;
+  phase: number;
+  relativeIntensity: number;
+  effectiveSourceCount: number;
+  topContributionRatio: number;
+  status: ProfileAwareFeatureObservationView['status'];
   semanticStatus: 'not-semantic-naming';
-  candidateStatus: 'report-candidate' | 'candidate-only';
+  sourcePolicyNames: string[];
+  reason: string;
+  linkedSampleProbeRef: string;
+}
+
+export interface ProfileAwareFieldAtlasSummaryProbe {
+  probeKind: 'route-gate-summary' | 'support-region-summary';
+  semanticStatus: 'not-semantic-naming';
+  candidateStatus: 'candidate-only';
   totalCount: number;
 }
 
 export type ProfileAwareFieldAtlasProbe =
   | ProfileAwareFieldAtlasSourceProbe
   | ProfileAwareFieldAtlasSurfaceSampleProbe
+  | ProfileAwareFieldAtlasFeatureProbe
   | ProfileAwareFieldAtlasSummaryProbe;
 
 export interface ProfileAwareFieldAtlasProbeIndex {
@@ -295,7 +338,7 @@ export interface ProfileAwareFieldAtlasViewModelReport {
   degeneracyStatusCount: number;
   renderModelStatus: 'renderable-diagnostic-model';
   probeModelStatus: 'probe-ready-diagnostic-model';
-  candidateOverlayStatus: 'candidate-overlay-summary-only';
+  candidateOverlayStatus: 'feature-markers-route-support-summary-only';
   sourceMarkers: ProfileAwareFieldAtlasSourceMarker[];
   sourceCaveatMarkers: ProfileAwareFieldAtlasSourceCaveatMarker[];
   surfaceSampleMarkers: ProfileAwareFieldAtlasSurfaceSampleMarker[];
@@ -423,6 +466,7 @@ export function buildProfileAwareFieldAtlasViewModelReport(): ProfileAwareFieldA
     surfaceSampleMarkers,
     sampledAtlas,
     featureOverlaySummary,
+    featureObservations: featureReport.observations,
     routeGateOverlaySummary,
     supportRegionOverlaySummary,
   });
@@ -484,7 +528,7 @@ export function buildProfileAwareFieldAtlasViewModelReport(): ProfileAwareFieldA
     degeneracyStatusCount: profileAwarePolicyReport.degeneracyStatusCount,
     renderModelStatus: 'renderable-diagnostic-model',
     probeModelStatus: 'probe-ready-diagnostic-model',
-    candidateOverlayStatus: 'candidate-overlay-summary-only',
+    candidateOverlayStatus: 'feature-markers-route-support-summary-only',
     sourceMarkers,
     sourceCaveatMarkers,
     surfaceSampleMarkers,
@@ -737,16 +781,45 @@ function buildRenderScale(
 function buildFeatureOverlaySummary(
   report: ProfileAwareFeatureReportDiagnosticReport,
 ): ProfileAwareFieldAtlasFeatureOverlaySummary {
+  const featureMarkers = report.observations.map(buildFeatureMarker);
+
   return {
-    overlayStatus: 'summary-only',
+    overlayStatus:
+      featureMarkers.length > 0 ? 'feature-markers-available' : 'summary-only',
     observationStatus: report.observationStatus,
     totalObservationCount: report.totalObservationCount,
     cancellationLikeObservationCount: report.cancellationLikeObservationCount,
     highIntensityAnchorObservationCount:
       report.highIntensityAnchorObservationCount,
     ambiguousObservationCount: report.ambiguousObservationCount,
-    featureMarkers: [],
-    summaryProbeRef: 'feature:summary',
+    featureMarkers,
+  };
+}
+
+function buildFeatureMarker(
+  observation: ProfileAwareFeatureObservationView,
+): ProfileAwareFieldAtlasFeatureMarker {
+  return {
+    featureId: observation.observationId,
+    renderKind: 'feature-observation-marker',
+    observationKind: observation.observationKind,
+    sampleId: observation.sampleId,
+    chartId: observation.chartId,
+    sourceFaceId: observation.sourceFaceId,
+    position: copyVec3(observation.position),
+    localChartPosition: [
+      observation.localChartPosition[0],
+      observation.localChartPosition[1],
+    ],
+    intensity: observation.intensity,
+    phase: observation.phase,
+    relativeIntensity: observation.relativeIntensity,
+    effectiveSourceCount: observation.effectiveSourceCount,
+    topContributionRatio: observation.topContributionRatio,
+    status: observation.status,
+    semanticStatus: observation.semanticStatus,
+    sourcePolicyNames: [...observation.sourcePolicyNames],
+    probeRef: `feature:${observation.observationId}`,
   };
 }
 
@@ -786,12 +859,19 @@ function buildProbeIndex(args: {
   surfaceSampleMarkers: ProfileAwareFieldAtlasSurfaceSampleMarker[];
   sampledAtlas: SampledClosedShapeSurfaceAtlas | undefined;
   featureOverlaySummary: ProfileAwareFieldAtlasFeatureOverlaySummary;
+  featureObservations: ProfileAwareFeatureObservationView[];
   routeGateOverlaySummary: ProfileAwareFieldAtlasRouteGateOverlaySummary;
   supportRegionOverlaySummary: ProfileAwareFieldAtlasSupportRegionOverlaySummary;
 }): ProfileAwareFieldAtlasProbeIndex {
   const probes: Record<string, ProfileAwareFieldAtlasProbe> = {};
   const sampleById = new Map(
     args.sampledAtlas?.samples.map((sample) => [sample.id, sample]) ?? [],
+  );
+  const observationById = new Map(
+    args.featureObservations.map((observation) => [
+      observation.observationId,
+      observation,
+    ]),
   );
 
   for (const source of args.sourceMarkers) {
@@ -804,12 +884,15 @@ function buildProbeIndex(args: {
     probes[sampleMarker.probeRef] = buildSurfaceSampleProbe(sampleMarker, sample);
   }
 
-  probes[args.featureOverlaySummary.summaryProbeRef] = {
-    probeKind: 'feature-summary',
-    semanticStatus: 'not-semantic-naming',
-    candidateStatus: args.featureOverlaySummary.observationStatus,
-    totalCount: args.featureOverlaySummary.totalObservationCount,
-  };
+  for (const featureMarker of args.featureOverlaySummary.featureMarkers) {
+    const observation = observationById.get(featureMarker.featureId);
+
+    probes[featureMarker.probeRef] = buildFeatureProbe(
+      featureMarker,
+      observation,
+    );
+  }
+
   probes[args.routeGateOverlaySummary.summaryProbeRef] = {
     probeKind: 'route-gate-summary',
     semanticStatus: 'not-semantic-naming',
@@ -827,7 +910,7 @@ function buildProbeIndex(args: {
     probeCount: Object.keys(probes).length,
     sourceProbeCount: args.sourceMarkers.length,
     sampleProbeCount: args.surfaceSampleMarkers.length,
-    featureProbeCount: 1,
+    featureProbeCount: args.featureOverlaySummary.featureMarkers.length,
     routeGateProbeCount: 1,
     supportRegionProbeCount: 1,
     probes,
@@ -898,6 +981,35 @@ function buildSurfaceSampleProbe(
       ? { dominantContributionRatio: marker.dominantContributionRatio }
       : {}),
     semanticStatus: 'not-semantic-naming',
+  };
+}
+
+function buildFeatureProbe(
+  marker: ProfileAwareFieldAtlasFeatureMarker,
+  observation: ProfileAwareFeatureObservationView | undefined,
+): ProfileAwareFieldAtlasFeatureProbe {
+  return {
+    probeKind: 'feature-observation',
+    featureId: marker.featureId,
+    observationKind: marker.observationKind,
+    sampleId: marker.sampleId,
+    chartId: marker.chartId,
+    sourceFaceId: marker.sourceFaceId,
+    position: copyVec3(marker.position),
+    localChartPosition: [
+      marker.localChartPosition[0],
+      marker.localChartPosition[1],
+    ],
+    intensity: marker.intensity,
+    phase: marker.phase,
+    relativeIntensity: marker.relativeIntensity,
+    effectiveSourceCount: marker.effectiveSourceCount,
+    topContributionRatio: marker.topContributionRatio,
+    status: marker.status,
+    semanticStatus: 'not-semantic-naming',
+    sourcePolicyNames: [...marker.sourcePolicyNames],
+    reason: observation?.reason ?? '',
+    linkedSampleProbeRef: `sample:${marker.sampleId}`,
   };
 }
 
@@ -996,7 +1108,9 @@ function appendViewModelIssues(
 
   if (
     args.probeIndex.sourceProbeCount !== args.sourceMarkers.length ||
-    args.probeIndex.sampleProbeCount !== args.surfaceSampleMarkers.length
+    args.probeIndex.sampleProbeCount !== args.surfaceSampleMarkers.length ||
+    args.probeIndex.featureProbeCount !==
+      args.featureOverlaySummary.featureMarkers.length
   ) {
     issues.push({
       code: 'probe-index-count-mismatch',
@@ -1008,6 +1122,24 @@ function appendViewModelIssues(
         sourceMarkerCount: args.sourceMarkers.length,
         sampleProbeCount: args.probeIndex.sampleProbeCount,
         surfaceSampleMarkerCount: args.surfaceSampleMarkers.length,
+        featureProbeCount: args.probeIndex.featureProbeCount,
+        featureMarkerCount: args.featureOverlaySummary.featureMarkers.length,
+      },
+    });
+  }
+
+  if (
+    args.featureOverlaySummary.featureMarkers.length !==
+    args.featureOverlaySummary.totalObservationCount
+  ) {
+    issues.push({
+      code: 'feature-marker-count-mismatch',
+      message:
+        'Profile-aware atlas view model feature marker count does not match feature observation count.',
+      layer: 'featureOverlaySummary',
+      details: {
+        featureMarkerCount: args.featureOverlaySummary.featureMarkers.length,
+        totalObservationCount: args.featureOverlaySummary.totalObservationCount,
       },
     });
   }

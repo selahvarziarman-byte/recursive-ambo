@@ -37,9 +37,11 @@ runBoundaryFlagDiagnostic();
 runViewModelStatusDiagnostic();
 runSourceMarkerDiagnostic();
 runSurfaceSampleMarkerDiagnostic();
+runFeatureMarkerDiagnostic();
 runRenderScaleDiagnostic();
 runProbeIndexDiagnostic();
 runCandidateSummaryCoherenceDiagnostic();
+runRouteSupportSummaryOnlyDiagnostic();
 runNoOldPolicyComparisonDiagnostic();
 runNoInvarianceClaimDiagnostic();
 runNoForbiddenClaimsDiagnostic();
@@ -161,7 +163,7 @@ function runViewModelStatusDiagnostic() {
   );
   expectEqual(
     report.candidateOverlayStatus,
-    'candidate-overlay-summary-only',
+    'feature-markers-route-support-summary-only',
     'candidate overlay status',
   );
 
@@ -260,6 +262,74 @@ function runSurfaceSampleMarkerDiagnostic() {
   console.log('surface sample markers: PASS');
 }
 
+function runFeatureMarkerDiagnostic() {
+  const report = buildProfileAwareFieldAtlasViewModelReport();
+  const feature = report.featureOverlaySummary;
+  const sampleIds = new Set(report.surfaceSampleMarkers.map((marker) => marker.sampleId));
+
+  if (feature.totalObservationCount > 0) {
+    expectAtLeast(feature.featureMarkers.length, 1, 'feature markers exist');
+    expectEqual(
+      feature.overlayStatus,
+      'feature-markers-available',
+      'feature marker overlay status',
+    );
+  }
+
+  expectEqual(
+    feature.featureMarkers.length,
+    feature.totalObservationCount,
+    'feature marker observation count',
+  );
+  expectEqual(
+    countFeatureKind(feature.featureMarkers, 'cancellation-like-site-candidate'),
+    feature.cancellationLikeObservationCount,
+    'cancellation-like feature marker count',
+  );
+  expectEqual(
+    countFeatureKind(feature.featureMarkers, 'high-intensity-anchor-candidate'),
+    feature.highIntensityAnchorObservationCount,
+    'high-intensity anchor feature marker count',
+  );
+  expectEqual(
+    countFeatureKind(feature.featureMarkers, 'ambiguous-field-site'),
+    feature.ambiguousObservationCount,
+    'ambiguous feature marker count',
+  );
+
+  for (const marker of feature.featureMarkers) {
+    expectFiniteVec3(marker.position, `${marker.featureId} position`);
+    expectFiniteVec2(
+      marker.localChartPosition,
+      `${marker.featureId} local chart position`,
+    );
+    expectFinite(marker.intensity, `${marker.featureId} intensity`);
+    expectFinite(marker.phase, `${marker.featureId} phase`);
+    expectFinite(marker.relativeIntensity, `${marker.featureId} relative intensity`);
+    expectFinite(
+      marker.topContributionRatio,
+      `${marker.featureId} top contribution ratio`,
+    );
+    expectEqual(marker.status, 'report-candidate', `${marker.featureId} status`);
+    expectEqual(
+      marker.semanticStatus,
+      'not-semantic-naming',
+      `${marker.featureId} semantic status`,
+    );
+    expectProfileAwareSourcePolicyNames(
+      marker.sourcePolicyNames,
+      `${marker.featureId} source policy names`,
+    );
+    expectTruthy(marker.probeRef, `${marker.featureId} probe ref`);
+
+    if (!sampleIds.has(marker.sampleId)) {
+      recordFailure(`${marker.featureId}: expected linked sample ${marker.sampleId}`);
+    }
+  }
+
+  console.log('feature markers: PASS');
+}
+
 function runRenderScaleDiagnostic() {
   const report = buildProfileAwareFieldAtlasViewModelReport();
   const scale = report.renderScale;
@@ -296,6 +366,11 @@ function runProbeIndexDiagnostic() {
     report.surfaceSampleMarkers.length,
     'sample probe count',
   );
+  expectEqual(
+    report.probeIndex.featureProbeCount,
+    report.featureOverlaySummary.featureMarkers.length,
+    'feature probe count',
+  );
   expectAtLeast(report.probeIndex.probeCount, 3, 'probe count');
 
   if (!firstSource || !report.probeIndex.probes[firstSource.probeRef]) {
@@ -306,10 +381,28 @@ function runProbeIndexDiagnostic() {
     recordFailure('probe index: expected first sample probe to resolve');
   }
 
-  expectTruthy(
-    report.probeIndex.probes['feature:summary'],
-    'feature summary probe',
-  );
+  for (const marker of report.featureOverlaySummary.featureMarkers) {
+    const probe = report.probeIndex.probes[marker.probeRef];
+
+    if (!probe) {
+      recordFailure(`${marker.featureId}: expected feature probe to resolve`);
+      continue;
+    }
+
+    expectEqual(probe.probeKind, 'feature-observation', `${marker.featureId} probe kind`);
+    expectEqual(
+      probe.linkedSampleProbeRef,
+      `sample:${marker.sampleId}`,
+      `${marker.featureId} linked sample probe ref`,
+    );
+    expectEqual(probe.status, 'report-candidate', `${marker.featureId} probe status`);
+    expectEqual(
+      probe.semanticStatus,
+      'not-semantic-naming',
+      `${marker.featureId} probe semantic status`,
+    );
+  }
+
   expectTruthy(
     report.probeIndex.probes['routeGate:summary'],
     'route/gate summary probe',
@@ -352,6 +445,33 @@ function runCandidateSummaryCoherenceDiagnostic() {
   );
 
   console.log('candidate summaries: PASS');
+}
+
+function runRouteSupportSummaryOnlyDiagnostic() {
+  const report = buildProfileAwareFieldAtlasViewModelReport();
+
+  expectEqual(
+    report.routeGateOverlaySummary.overlayStatus,
+    'summary-only',
+    'route/gate overlay status',
+  );
+  expectEqual(
+    report.supportRegionOverlaySummary.overlayStatus,
+    'summary-only',
+    'support/region overlay status',
+  );
+  expectEqual(
+    report.routeGateOverlaySummary.candidateRefs.length,
+    0,
+    'route/gate candidate refs',
+  );
+  expectEqual(
+    report.supportRegionOverlaySummary.candidateRefs.length,
+    0,
+    'support/region candidate refs',
+  );
+
+  console.log('route/gate and support/region summary-only: PASS');
 }
 
 function runNoOldPolicyComparisonDiagnostic() {
@@ -427,10 +547,10 @@ function printViewModelReport(label, report) {
     `  samples/charts: samples=${report.sampleCount} charts=${report.chartCount}`,
   );
   console.log(
-    `  overlays: features=${report.featureOverlaySummary.totalObservationCount} routeGate=${report.routeGateOverlaySummary.totalRouteGateCandidateCount} supportRegion=${report.supportRegionOverlaySummary.totalSupportRegionCandidateCount} status=${report.candidateOverlayStatus}`,
+    `  overlays: featureMarkers=${report.featureOverlaySummary.featureMarkers.length} routeGate=${report.routeGateOverlaySummary.totalRouteGateCandidateCount} supportRegion=${report.supportRegionOverlaySummary.totalSupportRegionCandidateCount} status=${report.candidateOverlayStatus}`,
   );
   console.log(
-    `  probes: source=${report.probeIndex.sourceProbeCount} sample=${report.probeIndex.sampleProbeCount} total=${report.probeIndex.probeCount}`,
+    `  probes: source=${report.probeIndex.sourceProbeCount} sample=${report.probeIndex.sampleProbeCount} feature=${report.probeIndex.featureProbeCount} total=${report.probeIndex.probeCount}`,
   );
   console.log(`  issues: ${report.issueCount}${formatIssueCounts(report)}`);
 }
@@ -472,6 +592,35 @@ function expectFiniteVec3(position, label) {
   for (let index = 0; index < 3; index += 1) {
     expectFinite(position[index], `${label}[${index}]`);
   }
+}
+
+function expectFiniteVec2(position, label) {
+  if (!Array.isArray(position) || position.length !== 2) {
+    recordFailure(`${label}: expected Vec2`);
+    return;
+  }
+
+  for (let index = 0; index < 2; index += 1) {
+    expectFinite(position[index], `${label}[${index}]`);
+  }
+}
+
+function expectProfileAwareSourcePolicyNames(sourcePolicyNames, label) {
+  if (
+    !Array.isArray(sourcePolicyNames) ||
+    sourcePolicyNames.length !== 1 ||
+    sourcePolicyNames[0] !== PROFILE_AWARE_SOURCE_POLICY_ID
+  ) {
+    recordFailure(
+      `${label}: expected exactly ${PROFILE_AWARE_SOURCE_POLICY_ID}, got ${
+        Array.isArray(sourcePolicyNames) ? sourcePolicyNames.join(',') : sourcePolicyNames
+      }`,
+    );
+  }
+}
+
+function countFeatureKind(markers, observationKind) {
+  return markers.filter((marker) => marker.observationKind === observationKind).length;
 }
 
 function expectFinite(value, label) {
