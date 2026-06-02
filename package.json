@@ -10,6 +10,7 @@
     "diagnose:field-source-child-contexts": "node scripts/diagnose-field-source-child-contexts.cjs",
     "diagnose:field-source-child-degeneracy": "node scripts/diagnose-field-source-child-degeneracy.cjs",
     "diagnose:field-source-child-derivations": "node scripts/diagnose-field-source-child-derivations.cjs",
+    "diagnose:field-source-profile-aware-atlas-adapter": "node scripts/diagnose-field-source-profile-aware-atlas-adapter.cjs",
     "diagnose:field-source-profile-aware-field-report": "node scripts/diagnose-field-source-profile-aware-field-report.cjs",
     "diagnose:field-source-profile-aware-policy": "node scripts/diagnose-field-source-profile-aware-policy.cjs",
     "diagnose:field-source-quark-channels": "node scripts/diagnose-field-source-quark-channels.cjs",
