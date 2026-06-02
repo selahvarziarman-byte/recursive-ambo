@@ -189,7 +189,7 @@ function buildSurfaceSampleMarker(
 
   return {
     id: `sample:${marker.sampleId}`,
-    hoverRef: marker.sampleId,
+    hoverRef: marker.probeRef,
     position: copyVec3(marker.position),
     radius: radiusBase * (0.78 + normalizedIntensity * 0.36),
     opacity: 0.46 + normalizedIntensity * 0.2,
@@ -210,7 +210,7 @@ function buildFeatureMarker(
 ): FieldAtlasMarker {
   return {
     id: `feature:${marker.featureId}`,
-    hoverRef: marker.sampleId,
+    hoverRef: marker.probeRef,
     position: copyVec3(marker.position),
     radius: radiusBase * 0.96,
     opacity: 0.86,

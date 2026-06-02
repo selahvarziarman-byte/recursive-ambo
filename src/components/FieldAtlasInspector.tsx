@@ -33,6 +33,11 @@ import {
 import {
   buildProfileAwareFieldAtlasViewModelRuntimeReport,
   type ProfileAwareFieldAtlasFeatureMarker,
+  type ProfileAwareFieldAtlasFeatureProbe,
+  type ProfileAwareFieldAtlasProbe,
+  type ProfileAwareFieldAtlasSourceProbe,
+  type ProfileAwareFieldAtlasSummaryProbe,
+  type ProfileAwareFieldAtlasSurfaceSampleProbe,
   type ProfileAwareFieldAtlasViewModelRuntimeReport,
 } from '../lib/fieldSourceProfileAwareAtlasViewModel';
 import { useGeometryStore } from '../store/geometryStore';
@@ -326,6 +331,9 @@ function ProfileAwareFieldModeRuntimeSection({
   const viewModel = report.viewModel;
   const visibleFeatureMarkers =
     viewModel.featureOverlaySummary.featureMarkers.slice(0, 5);
+  const activeProbe = hoveredFieldAtlasSampleId
+    ? viewModel.probeIndex.probes[hoveredFieldAtlasSampleId]
+    : undefined;
 
   return (
     <div className="rounded border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-xs">
@@ -383,7 +391,7 @@ function ProfileAwareFieldModeRuntimeSection({
               key={marker.featureId}
               marker={marker}
               reason={getProfileAwareFeatureReason(report, marker)}
-              isHovered={hoveredFieldAtlasSampleId === marker.sampleId}
+              isHovered={hoveredFieldAtlasSampleId === marker.probeRef}
               onHoverStart={onHoverSampleStart}
               onHoverEnd={onHoverSampleEnd}
             />
@@ -394,6 +402,12 @@ function ProfileAwareFieldModeRuntimeSection({
           </p>
         )}
       </div>
+
+      <ProfileAwareActiveProbeSection
+        hoverRef={hoveredFieldAtlasSampleId}
+        probe={activeProbe}
+        shortenId={shortenId}
+      />
     </div>
   );
 }
@@ -408,8 +422,8 @@ function ProfileAwareFeatureMarkerRow({
   marker: ProfileAwareFieldAtlasFeatureMarker;
   reason: string;
   isHovered: boolean;
-  onHoverStart: (sampleId: string) => void;
-  onHoverEnd: (sampleId: string) => void;
+  onHoverStart: (hoverRef: string) => void;
+  onHoverEnd: (hoverRef: string) => void;
 }) {
   return (
     <div
@@ -419,10 +433,10 @@ function ProfileAwareFeatureMarkerRow({
           : 'border-stone-800 bg-stone-900'
       }`}
       data-profile-aware-feature-marker-id={marker.featureId}
-      onFocus={() => onHoverStart(marker.sampleId)}
-      onBlur={() => onHoverEnd(marker.sampleId)}
-      onPointerEnter={() => onHoverStart(marker.sampleId)}
-      onPointerLeave={() => onHoverEnd(marker.sampleId)}
+      onFocus={() => onHoverStart(marker.probeRef)}
+      onBlur={() => onHoverEnd(marker.probeRef)}
+      onPointerEnter={() => onHoverStart(marker.probeRef)}
+      onPointerLeave={() => onHoverEnd(marker.probeRef)}
       tabIndex={0}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -457,6 +471,281 @@ function getProfileAwareFeatureReason(
   const probe = report.viewModel.probeIndex.probes[marker.probeRef];
 
   return probe?.probeKind === 'feature-observation' ? probe.reason : '';
+}
+
+function ProfileAwareActiveProbeSection({
+  hoverRef,
+  probe,
+  shortenId,
+}: {
+  hoverRef: string | null;
+  probe?: ProfileAwareFieldAtlasProbe;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-3 py-2">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+          Active Field Probe
+        </h4>
+        {probe ? (
+          <span className="rounded border border-cyan-400/40 bg-cyan-400/10 px-2 py-0.5 font-mono text-[11px] text-cyan-100">
+            {probe.probeKind}
+          </span>
+        ) : null}
+      </div>
+
+      {probe ? (
+        <div className="mt-2">
+          {renderProfileAwareProbeCard(probe, shortenId)}
+        </div>
+      ) : (
+        <p className="mt-2 rounded border border-stone-800 bg-stone-900 px-2 py-2 leading-5 text-stone-500">
+          Hover a profile-aware source, sample, or feature marker to inspect its field
+          payload.
+          {hoverRef ? (
+            <span className="mt-1 block font-mono text-stone-600">
+              no probe for {shortenId(hoverRef)}
+            </span>
+          ) : null}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function renderProfileAwareProbeCard(
+  probe: ProfileAwareFieldAtlasProbe,
+  shortenId: (id: string) => string,
+): ReactNode {
+  switch (probe.probeKind) {
+    case 'source':
+      return <ProfileAwareSourceProbeCard probe={probe} shortenId={shortenId} />;
+    case 'surface-sample':
+      return <ProfileAwareSurfaceSampleProbeCard probe={probe} shortenId={shortenId} />;
+    case 'feature-observation':
+      return <ProfileAwareFeatureProbeCard probe={probe} shortenId={shortenId} />;
+    case 'route-gate-summary':
+    case 'support-region-summary':
+      return <ProfileAwareSummaryProbeCard probe={probe} />;
+    default:
+      return null;
+  }
+}
+
+function ProfileAwareSourceProbeCard({
+  probe,
+  shortenId,
+}: {
+  probe: ProfileAwareFieldAtlasSourceProbe;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="grid gap-2">
+      <dl className="grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Probe kind" value={probe.probeKind} />
+        <FieldAtlasMetric label="Source" value={shortenId(probe.sourceId)} />
+        <FieldAtlasMetric label="Vertex" value={shortenId(probe.vertexId)} />
+        <FieldAtlasMetric label="Source kind" value={probe.sourceKind} />
+        <FieldAtlasMetric
+          label="Amplitude"
+          value={formatNumber(probe.emissionParameters.amplitude)}
+        />
+        <FieldAtlasMetric
+          label="Wave number"
+          value={formatNumber(probe.emissionParameters.waveNumber)}
+        />
+        <FieldAtlasMetric
+          label="Phase"
+          value={formatNumber(probe.emissionParameters.phase)}
+        />
+        <FieldAtlasMetric
+          label="Attenuation"
+          value={formatNumber(probe.emissionParameters.attenuation)}
+        />
+        <FieldAtlasMetric
+          label="Profile"
+          value={formatOptionalProbeId(probe.profileId, shortenId)}
+        />
+        <FieldAtlasMetric
+          label="Source edge"
+          value={formatOptionalProbeId(probe.sourceEdgeId, shortenId)}
+        />
+        <FieldAtlasMetric
+          label="Complement"
+          value={formatOptionalProbeId(probe.complementEdgeId, shortenId)}
+        />
+        <FieldAtlasMetric
+          label="Antipodal child"
+          value={formatOptionalProbeId(probe.antipodalChildVertexId, shortenId)}
+        />
+        <FieldAtlasMetric label="Semantic" value={probe.semanticStatus} />
+      </dl>
+      {probe.candidateCaveats.length ? (
+        <div className="rounded border border-stone-800 bg-stone-900 px-2 py-2">
+          <h5 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+            Candidate Caveats
+          </h5>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {probe.candidateCaveats.map((caveat) => (
+              <span
+                key={caveat}
+                className="rounded border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 font-mono text-[11px] text-amber-100"
+              >
+                {caveat}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ProfileAwareSurfaceSampleProbeCard({
+  probe,
+  shortenId,
+}: {
+  probe: ProfileAwareFieldAtlasSurfaceSampleProbe;
+  shortenId: (id: string) => string;
+}) {
+  const topContributions = probe.topContributions.slice(0, 4);
+
+  return (
+    <div className="grid gap-2">
+      <dl className="grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Probe kind" value={probe.probeKind} />
+        <FieldAtlasMetric label="Sample" value={shortenId(probe.sampleId)} />
+        <FieldAtlasMetric label="Chart" value={shortenId(probe.chartId)} />
+        <FieldAtlasMetric
+          label="Source face"
+          value={formatOptionalProbeId(probe.sourceFaceId, shortenId)}
+        />
+        <FieldAtlasMetric label="Intensity" value={formatNumber(probe.intensity)} />
+        <FieldAtlasMetric label="Phase" value={formatNumber(probe.phase)} />
+        <FieldAtlasMetric label="Psi re" value={formatNumber(probe.psi.re)} />
+        <FieldAtlasMetric label="Psi im" value={formatNumber(probe.psi.im)} />
+        <FieldAtlasMetric
+          label="Ratio sum"
+          value={formatNumber(probe.contributionRatioSum)}
+        />
+        <FieldAtlasMetric
+          label="Dominant source"
+          value={formatOptionalProbeId(probe.dominantContributionSourceId, shortenId)}
+        />
+        <FieldAtlasMetric
+          label="Dominant ratio"
+          value={formatOptionalNumber(probe.dominantContributionRatio)}
+        />
+        <FieldAtlasMetric label="Semantic" value={probe.semanticStatus} />
+      </dl>
+
+      <div className="rounded border border-stone-800 bg-stone-900 px-2 py-2">
+        <h5 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+          Top Contributions
+        </h5>
+        <div className="mt-2 grid gap-1">
+          {topContributions.length ? (
+            topContributions.map((contribution) => (
+              <div
+                key={contribution.sourceId}
+                className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 text-[11px] text-stone-400"
+              >
+                <span className="truncate font-mono">
+                  {shortenId(contribution.sourceId)}
+                </span>
+                <span className="truncate font-mono">
+                  {shortenId(contribution.vertexId)}
+                </span>
+                <span className="text-right font-mono text-stone-500">
+                  {formatPercent(contribution.value)}
+                  {typeof contribution.magnitude === 'number'
+                    ? ` / ${formatNumber(contribution.magnitude)}`
+                    : ''}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="text-stone-500">No contribution entries.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProfileAwareFeatureProbeCard({
+  probe,
+  shortenId,
+}: {
+  probe: ProfileAwareFieldAtlasFeatureProbe;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="grid gap-2">
+      <dl className="grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Probe kind" value={probe.probeKind} />
+        <FieldAtlasMetric label="Feature" value={shortenId(probe.featureId)} />
+        <FieldAtlasMetric label="Observation" value={probe.observationKind} />
+        <FieldAtlasMetric label="Sample" value={shortenId(probe.sampleId)} />
+        <FieldAtlasMetric label="Chart" value={shortenId(probe.chartId)} />
+        <FieldAtlasMetric label="Source face" value={shortenId(probe.sourceFaceId)} />
+        <FieldAtlasMetric label="Intensity" value={formatNumber(probe.intensity)} />
+        <FieldAtlasMetric label="Phase" value={formatNumber(probe.phase)} />
+        <FieldAtlasMetric
+          label="Relative"
+          value={formatNumber(probe.relativeIntensity)}
+        />
+        <FieldAtlasMetric
+          label="Effective count"
+          value={formatNumber(probe.effectiveSourceCount)}
+        />
+        <FieldAtlasMetric
+          label="Top ratio"
+          value={formatPercent(probe.topContributionRatio)}
+        />
+        <FieldAtlasMetric label="Status" value={probe.status} />
+        <FieldAtlasMetric label="Semantic" value={probe.semanticStatus} />
+        <FieldAtlasMetric
+          label="Linked sample"
+          value={shortenId(probe.linkedSampleProbeRef)}
+        />
+        <FieldAtlasMetric
+          label="Policy names"
+          value={formatReportSourcePolicyNames(probe.sourcePolicyNames)}
+        />
+      </dl>
+      <p className="rounded border border-stone-800 bg-stone-900 px-2 py-2 leading-5 text-stone-400">
+        {shortenReportReason(probe.reason)}
+      </p>
+    </div>
+  );
+}
+
+function ProfileAwareSummaryProbeCard({
+  probe,
+}: {
+  probe: ProfileAwareFieldAtlasSummaryProbe;
+}) {
+  return (
+    <dl className="grid grid-cols-2 gap-2">
+      <FieldAtlasMetric label="Probe kind" value={probe.probeKind} />
+      <FieldAtlasMetric label="Candidate status" value={probe.candidateStatus} />
+      <FieldAtlasMetric label="Total count" value={probe.totalCount} />
+      <FieldAtlasMetric label="Semantic" value={probe.semanticStatus} />
+    </dl>
+  );
+}
+
+function formatOptionalProbeId(
+  value: string | undefined,
+  shortenId: (id: string) => string,
+): string {
+  return value ? shortenId(value) : 'n/a';
+}
+
+function formatOptionalNumber(value: number | undefined): string {
+  return typeof value === 'number' ? formatNumber(value) : 'n/a';
 }
 
 function FieldReportSection({

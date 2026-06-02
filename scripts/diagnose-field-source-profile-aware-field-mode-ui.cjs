@@ -103,7 +103,7 @@ function runSupportedOneAmboTetrahedronContractDiagnostic() {
       true,
       'feature marker render kind',
     );
-    expectFeatureMarkersLinkToSamples(viewModel);
+    expectMarkerProbeContracts(viewModel);
 
     printSupportedReport('supported one-Ambo tetrahedron Field Mode UI', report);
   }
@@ -226,6 +226,11 @@ function runNoOldPolicyComparisonOrInvarianceDiagnostic() {
     'oldEvidenceStillHold',
     'matchesDefaultEvidence',
     'defaultPolicyInvariant',
+    'persistenceStatus',
+    'workspacePersistenceStatus',
+    'packetWritingStatus',
+    'semanticNamingStatus',
+    'topologyBehaviorStatus',
   ];
 
   for (const report of reports) {
@@ -243,10 +248,42 @@ function runNoOldPolicyComparisonOrInvarianceDiagnostic() {
   console.log('no old-policy comparison or invariance claim: PASS');
 }
 
-function expectFeatureMarkersLinkToSamples(viewModel) {
+function expectMarkerProbeContracts(viewModel) {
   const sampleIds = new Set(
     viewModel.surfaceSampleMarkers.map((marker) => marker.sampleId),
   );
+
+  for (const marker of viewModel.sourceMarkers) {
+    const probe = viewModel.probeIndex.probes[marker.probeRef];
+
+    expectTruthy(probe, `source marker ${marker.sourceId} probe`);
+    expectEqual(
+      probe && probe.probeKind,
+      'source',
+      `source marker ${marker.sourceId} probe kind`,
+    );
+    expectEqual(
+      probe && probe.sourceId,
+      marker.sourceId,
+      `source marker ${marker.sourceId} probe source id`,
+    );
+  }
+
+  for (const marker of viewModel.surfaceSampleMarkers) {
+    const probe = viewModel.probeIndex.probes[marker.probeRef];
+
+    expectTruthy(probe, `sample marker ${marker.sampleId} probe`);
+    expectEqual(
+      probe && probe.probeKind,
+      'surface-sample',
+      `sample marker ${marker.sampleId} probe kind`,
+    );
+    expectEqual(
+      probe && probe.sampleId,
+      marker.sampleId,
+      `sample marker ${marker.sampleId} probe sample id`,
+    );
+  }
 
   for (const marker of viewModel.featureOverlaySummary.featureMarkers) {
     expectEqual(
@@ -268,7 +305,15 @@ function expectFeatureMarkersLinkToSamples(viewModel) {
       `sample:${marker.sampleId}`,
       `feature marker ${marker.featureId} linked sample probe`,
     );
+    if (probe && probe.linkedSampleProbeRef) {
+      expectTruthy(
+        viewModel.probeIndex.probes[probe.linkedSampleProbeRef],
+        `feature marker ${marker.featureId} linked sample probe exists`,
+      );
+    }
   }
+
+  console.log('marker hover probe refs resolve: PASS');
 }
 
 function expectConservativeRuntimeFlags(report, label) {
