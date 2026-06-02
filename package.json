@@ -14,6 +14,7 @@
     "diagnose:field-source-profile-aware-atlas-execution": "node scripts/diagnose-field-source-profile-aware-atlas-execution.cjs",
     "diagnose:field-source-profile-aware-field-report": "node scripts/diagnose-field-source-profile-aware-field-report.cjs",
     "diagnose:field-source-profile-aware-policy": "node scripts/diagnose-field-source-profile-aware-policy.cjs",
+    "diagnose:field-source-profile-aware-shape-position-resolver": "node scripts/diagnose-field-source-profile-aware-shape-position-resolver.cjs",
     "diagnose:field-source-quark-channels": "node scripts/diagnose-field-source-quark-channels.cjs",
     "diagnose:field-source-profiles": "node scripts/diagnose-field-source-profiles.cjs",
     "diagnose:field-atlas": "node scripts/diagnose-field-atlas.cjs",
