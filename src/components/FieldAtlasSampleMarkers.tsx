@@ -38,6 +38,12 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
   const setHoveredFieldAtlasSampleId = useGeometryStore(
     (state) => state.setHoveredFieldAtlasSampleId,
   );
+  const pinnedFieldAtlasProbeRef = useGeometryStore(
+    (state) => state.pinnedFieldAtlasProbeRef,
+  );
+  const setPinnedFieldAtlasProbeRef = useGeometryStore(
+    (state) => state.setPinnedFieldAtlasProbeRef,
+  );
 
   useEffect(() => {
     if (!enabled && hoveredFieldAtlasSampleId) {
@@ -53,16 +59,18 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
     <group>
       {markers.map((marker) => {
         const isHovered = hoveredFieldAtlasSampleId === marker.hoverRef;
-        const markerScale = isHovered ? 1.85 : 1;
+        const isPinned = pinnedFieldAtlasProbeRef === marker.hoverRef;
+        const markerScale = isPinned ? 2.12 : isHovered ? 1.85 : 1;
 
         return (
           <mesh
             key={marker.id}
             position={marker.position}
-            renderOrder={isHovered ? 24 : 18}
+            renderOrder={isPinned ? 28 : isHovered ? 24 : 18}
             scale={markerScale}
             onClick={(event) => {
               event.stopPropagation();
+              setPinnedFieldAtlasProbeRef(isPinned ? null : marker.hoverRef);
             }}
             onPointerDown={(event) => {
               event.stopPropagation();
@@ -88,11 +96,11 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
               <sphereGeometry args={[marker.radius, 18, 12]} />
             )}
             <meshStandardMaterial
-              color={isHovered ? '#fde68a' : marker.color}
+              color={isPinned ? '#fef3c7' : isHovered ? '#fde68a' : marker.color}
               depthWrite={false}
-              emissive={isHovered ? '#92400e' : marker.emissive}
-              emissiveIntensity={isHovered ? 0.92 : marker.emissiveIntensity}
-              opacity={isHovered ? 0.94 : marker.opacity}
+              emissive={isPinned ? '#a16207' : isHovered ? '#92400e' : marker.emissive}
+              emissiveIntensity={isPinned ? 1.05 : isHovered ? 0.92 : marker.emissiveIntensity}
+              opacity={isPinned ? 0.98 : isHovered ? 0.94 : marker.opacity}
               roughness={0.38}
               transparent
             />

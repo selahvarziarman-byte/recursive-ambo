@@ -135,6 +135,12 @@ function verifyWorkspaceRoundTrip() {
     '2026-05-30T00:00:00.000Z',
   );
   const serialized = JSON.stringify(workspace, null, 2);
+
+  expect(
+    !serialized.includes('pinnedFieldAtlasProbeRef'),
+    'round trip: pinned field probe ref should not serialize',
+  );
+
   const parsedJson = JSON.parse(serialized);
   const validation = validateWorkspaceImport(parsedJson);
 
@@ -155,6 +161,8 @@ function verifyWorkspaceRoundTrip() {
     redoStack: [staleSnapshot],
     redoOperationHistory: [operationHistory[0]],
     hoverTarget: { kind: 'cell', cellId: seedShape.cells[0].id },
+    hoveredFieldAtlasSampleId: 'sample:stale',
+    pinnedFieldAtlasProbeRef: 'source:stale',
     dualInspectionTarget: {
       universe: 'dual',
       modelKind: 'correspondence',
@@ -204,6 +212,8 @@ function verifyWorkspaceRoundTrip() {
   expect(importedState.redoStack.length === 0, 'round trip: redo stack should be cleared');
   expect(importedState.redoOperationHistory.length === 0, 'round trip: redo operation history should be cleared');
   expect(importedState.hoverTarget === null, 'round trip: hover target should be cleared');
+  expect(importedState.hoveredFieldAtlasSampleId === null, 'round trip: field hover should be cleared');
+  expect(importedState.pinnedFieldAtlasProbeRef === null, 'round trip: pinned field probe should be cleared');
   expect(importedState.dualInspectionTarget === null, 'round trip: dual inspection target should be cleared');
 
   if (importedShape && importedCell) {

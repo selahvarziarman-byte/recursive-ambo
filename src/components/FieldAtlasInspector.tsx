@@ -150,6 +150,12 @@ export function FieldAtlasInspector({
   const setHoveredFieldAtlasSampleId = useGeometryStore(
     (state) => state.setHoveredFieldAtlasSampleId,
   );
+  const pinnedFieldAtlasProbeRef = useGeometryStore(
+    (state) => state.pinnedFieldAtlasProbeRef,
+  );
+  const clearPinnedFieldAtlasProbeRef = useGeometryStore(
+    (state) => state.clearPinnedFieldAtlasProbeRef,
+  );
   const clearHoveredFieldAtlasSampleId = (sampleId: string) => {
     if (useGeometryStore.getState().hoveredFieldAtlasSampleId === sampleId) {
       setHoveredFieldAtlasSampleId(null);
@@ -168,8 +174,10 @@ export function FieldAtlasInspector({
         <ProfileAwareFieldModeRuntimeSection
           report={profileAwareRuntimeReport}
           hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
+          pinnedFieldAtlasProbeRef={pinnedFieldAtlasProbeRef}
           onHoverSampleStart={setHoveredFieldAtlasSampleId}
           onHoverSampleEnd={clearHoveredFieldAtlasSampleId}
+          onClearPinnedProbe={clearPinnedFieldAtlasProbeRef}
           shortenId={shortenId}
         />
         <FieldReportSection
@@ -204,8 +212,10 @@ export function FieldAtlasInspector({
       <ProfileAwareFieldModeRuntimeSection
         report={profileAwareRuntimeReport}
         hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
+        pinnedFieldAtlasProbeRef={pinnedFieldAtlasProbeRef}
         onHoverSampleStart={setHoveredFieldAtlasSampleId}
         onHoverSampleEnd={clearHoveredFieldAtlasSampleId}
+        onClearPinnedProbe={clearPinnedFieldAtlasProbeRef}
         shortenId={shortenId}
       />
 
@@ -289,14 +299,18 @@ export function FieldAtlasInspector({
 function ProfileAwareFieldModeRuntimeSection({
   report,
   hoveredFieldAtlasSampleId,
+  pinnedFieldAtlasProbeRef,
   onHoverSampleStart,
   onHoverSampleEnd,
+  onClearPinnedProbe,
   shortenId,
 }: {
   report: ProfileAwareFieldAtlasViewModelRuntimeReport;
   hoveredFieldAtlasSampleId: string | null;
+  pinnedFieldAtlasProbeRef: string | null;
   onHoverSampleStart: (sampleId: string) => void;
   onHoverSampleEnd: (sampleId: string) => void;
+  onClearPinnedProbe: () => void;
   shortenId: (id: string) => string;
 }) {
   if (report.runtimeBoundaryStatus === 'unsupported') {
@@ -332,9 +346,20 @@ function ProfileAwareFieldModeRuntimeSection({
   const viewModel = report.viewModel;
   const visibleFeatureMarkers =
     viewModel.featureOverlaySummary.featureMarkers.slice(0, 5);
-  const activeProbe = hoveredFieldAtlasSampleId
+  const pinnedProbe = pinnedFieldAtlasProbeRef
+    ? viewModel.probeIndex.probes[pinnedFieldAtlasProbeRef]
+    : undefined;
+  const hoveredProbe = hoveredFieldAtlasSampleId
     ? viewModel.probeIndex.probes[hoveredFieldAtlasSampleId]
     : undefined;
+  const activeProbe = pinnedProbe ?? hoveredProbe;
+  const activeProbeRef: string | undefined = pinnedProbe
+    ? pinnedFieldAtlasProbeRef ?? undefined
+    : hoveredProbe
+      ? hoveredFieldAtlasSampleId ?? undefined
+      : undefined;
+  const activeProbeMode = pinnedProbe ? 'pinned' : hoveredProbe ? 'hovered' : undefined;
+  const pinnedProbeIsStale = Boolean(pinnedFieldAtlasProbeRef && !pinnedProbe);
 
   return (
     <div className="rounded border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-xs">
@@ -405,8 +430,12 @@ function ProfileAwareFieldModeRuntimeSection({
       </div>
 
       <ProfileAwareActiveProbeSection
-        hoverRef={hoveredFieldAtlasSampleId}
+        activeProbeRef={activeProbeRef}
+        activeProbeMode={activeProbeMode}
+        pinnedProbeRef={pinnedFieldAtlasProbeRef}
+        pinnedProbeIsStale={pinnedProbeIsStale}
         probe={activeProbe}
+        onClearPinnedProbe={onClearPinnedProbe}
         shortenId={shortenId}
       />
     </div>
@@ -475,26 +504,59 @@ function getProfileAwareFeatureReason(
 }
 
 function ProfileAwareActiveProbeSection({
-  hoverRef,
+  activeProbeRef,
+  activeProbeMode,
+  pinnedProbeRef,
+  pinnedProbeIsStale,
   probe,
+  onClearPinnedProbe,
   shortenId,
 }: {
-  hoverRef: string | null;
+  activeProbeRef?: string;
+  activeProbeMode?: 'pinned' | 'hovered';
+  pinnedProbeRef: string | null;
+  pinnedProbeIsStale: boolean;
   probe?: ProfileAwareFieldAtlasProbe;
+  onClearPinnedProbe: () => void;
   shortenId: (id: string) => string;
 }) {
+  const title =
+    activeProbeMode === 'pinned'
+      ? 'Pinned Field Probe'
+      : activeProbeMode === 'hovered'
+        ? 'Hovered Field Probe'
+        : 'Active Field Probe';
+
   return (
     <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-3 py-2">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
-          Active Field Probe
+          {title}
         </h4>
-        {probe ? (
-          <span className="rounded border border-cyan-400/40 bg-cyan-400/10 px-2 py-0.5 font-mono text-[11px] text-cyan-100">
-            {probe.probeKind}
-          </span>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          {probe ? (
+            <span className="rounded border border-cyan-400/40 bg-cyan-400/10 px-2 py-0.5 font-mono text-[11px] text-cyan-100">
+              {probe.probeKind}
+            </span>
+          ) : null}
+          {pinnedProbeRef ? (
+            <button
+              className="rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-[11px] text-stone-300 transition hover:border-amber-300/60 hover:text-amber-100"
+              type="button"
+              onClick={onClearPinnedProbe}
+            >
+              Clear pinned probe
+            </button>
+          ) : null}
+        </div>
       </div>
+
+      {pinnedProbeIsStale ? (
+        <p className="mt-2 rounded border border-amber-400/30 bg-amber-400/10 px-2 py-2 leading-5 text-amber-100/90">
+          Pinned probe {shortenId(pinnedProbeRef ?? '')} is not available in the current
+          profile-aware view model.
+        </p>
+      ) : null}
 
       {probe ? (
         <div className="mt-2">
@@ -504,9 +566,9 @@ function ProfileAwareActiveProbeSection({
         <p className="mt-2 rounded border border-stone-800 bg-stone-900 px-2 py-2 leading-5 text-stone-500">
           Hover a profile-aware source, sample, or feature marker to inspect its field
           payload.
-          {hoverRef ? (
+          {activeProbeRef ? (
             <span className="mt-1 block font-mono text-stone-600">
-              no probe for {shortenId(hoverRef)}
+              no probe for {shortenId(activeProbeRef)}
             </span>
           ) : null}
         </p>

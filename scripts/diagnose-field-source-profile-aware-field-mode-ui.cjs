@@ -104,6 +104,7 @@ function runSupportedOneAmboTetrahedronContractDiagnostic() {
       'feature marker render kind',
     );
     expectMarkerProbeContracts(viewModel);
+    expectSimulatedPinnedProbeRefsResolve(viewModel);
 
     printSupportedReport('supported one-Ambo tetrahedron Field Mode UI', report);
   }
@@ -333,6 +334,42 @@ function expectMarkerProbeContracts(viewModel) {
   }
 
   console.log('marker hover probe refs resolve: PASS');
+}
+
+function expectSimulatedPinnedProbeRefsResolve(viewModel) {
+  const sourceMarker = viewModel.sourceMarkers[0];
+  const sampleMarker = viewModel.surfaceSampleMarkers[0];
+  const featureMarker = viewModel.featureOverlaySummary.featureMarkers[0];
+
+  expectPinnedProbeRef(
+    viewModel,
+    sourceMarker && sourceMarker.probeRef,
+    'source',
+    'simulated source pinned ref',
+  );
+  expectPinnedProbeRef(
+    viewModel,
+    sampleMarker && sampleMarker.probeRef,
+    'surface-sample',
+    'simulated sample pinned ref',
+  );
+  expectPinnedProbeRef(
+    viewModel,
+    featureMarker && featureMarker.probeRef,
+    'feature-observation',
+    'simulated feature pinned ref',
+  );
+
+  console.log('simulated pinned probe refs resolve: PASS');
+}
+
+function expectPinnedProbeRef(viewModel, probeRef, expectedProbeKind, label) {
+  expectTruthy(probeRef, `${label} exists`);
+
+  const probe = probeRef ? viewModel.probeIndex.probes[probeRef] : undefined;
+
+  expectTruthy(probe, `${label} resolves`);
+  expectEqual(probe && probe.probeKind, expectedProbeKind, `${label} kind`);
 }
 
 function expectChildDerivationProbe(derivation, label) {
