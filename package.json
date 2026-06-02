@@ -12,6 +12,7 @@
     "diagnose:field-source-child-derivations": "node scripts/diagnose-field-source-child-derivations.cjs",
     "diagnose:field-source-profile-aware-atlas-adapter": "node scripts/diagnose-field-source-profile-aware-atlas-adapter.cjs",
     "diagnose:field-source-profile-aware-atlas-execution": "node scripts/diagnose-field-source-profile-aware-atlas-execution.cjs",
+    "diagnose:field-source-profile-aware-evidence-stability": "node scripts/diagnose-field-source-profile-aware-evidence-stability.cjs",
     "diagnose:field-source-profile-aware-field-report": "node scripts/diagnose-field-source-profile-aware-field-report.cjs",
     "diagnose:field-source-profile-aware-feature-report": "node scripts/diagnose-field-source-profile-aware-feature-report.cjs",
     "diagnose:field-source-profile-aware-feature-stability": "node scripts/diagnose-field-source-profile-aware-feature-stability.cjs",
