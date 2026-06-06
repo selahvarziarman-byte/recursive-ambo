@@ -33,6 +33,12 @@ const {
   repoRoot,
   'src/lib/fieldSourceProfileAwareEvidenceStability.ts',
 ));
+const {
+  buildProfileAwareRuntimeSupportPolicyReport,
+} = require(path.join(
+  repoRoot,
+  'src/lib/fieldSourceProfileAwareRuntimeSupportPolicy.ts',
+));
 
 const PROFILE_AWARE_SOURCE_POLICY_ID = 'profile-aware-quark-child-inheritance-v0';
 const SAMPLE_RENDER_MODES = ['family', 'intensity', 'phase', 'dominance'];
@@ -825,43 +831,27 @@ function runRuntimeSupportPolicyUiContractDiagnostic() {
       label: 'seed tetrahedron',
       shape: seedTetrahedron,
       expectedRuntimeStatus: 'unsupported',
-      expectedCriteria: {
-        'tetrahedron-seed': true,
-        'ambo-dissection-operation': false,
-        'minimum-generation-depth': false,
-        'created-vertices-present': true,
-      },
     },
     {
       label: 'one-Ambo tetrahedron',
       shape: oneAmboTetrahedron,
       expectedRuntimeStatus: 'supported',
-      expectedCriteria: {
-        'tetrahedron-seed': true,
-        'ambo-dissection-operation': true,
-        'minimum-generation-depth': true,
-        'created-vertices-present': true,
-      },
     },
     {
       label: 'cube',
       shape: cube,
       expectedRuntimeStatus: 'unsupported',
-      expectedCriteria: {
-        'tetrahedron-seed': false,
-      },
     },
   ];
 
   for (const testCase of cases) {
     const shapeSnapshot = JSON.stringify(testCase.shape);
+    const expectedCriteria = getExpectedRuntimeSupportCriteria(testCase.shape);
     const runtimeReport =
       buildProfileAwareFieldAtlasViewModelRuntimeReport(testCase.shape);
-    const runtimeStatusBefore = runtimeReport.runtimeBoundaryStatus;
-    const summary = buildProfileAwareRuntimeSupportPolicySummary(
-      runtimeReport,
-      testCase.shape,
-    );
+    const policyReport = buildProfileAwareRuntimeSupportPolicyReport(testCase.shape);
+    const runtimeAfter =
+      buildProfileAwareFieldAtlasViewModelRuntimeReport(testCase.shape);
 
     expectEqual(
       runtimeReport.runtimeBoundaryStatus,
@@ -869,44 +859,47 @@ function runRuntimeSupportPolicyUiContractDiagnostic() {
       `${testCase.label} runtime support status`,
     );
     expectEqual(
-      summary.supportStatus,
+      policyReport.supportStatus,
       testCase.expectedRuntimeStatus,
       `${testCase.label} policy support status`,
     );
     expectEqual(
       JSON.stringify(testCase.shape),
       shapeSnapshot,
-      `${testCase.label} support summary does not mutate shape`,
+      `${testCase.label} support policy does not mutate shape`,
     );
     expectEqual(
+      runtimeAfter.runtimeBoundaryStatus,
       runtimeReport.runtimeBoundaryStatus,
-      runtimeStatusBefore,
-      `${testCase.label} support summary does not alter runtime status`,
+      `${testCase.label} support policy does not alter runtime status`,
     );
     expectEqual(
-      summary.fallbackSupportStatus,
+      policyReport.shapeMutationStatus,
+      'not-shape-mutation',
+      `${testCase.label} shape mutation status`,
+    );
+    expectEqual(
+      policyReport.fallbackSupportStatus,
       'no-silent-fallback',
       `${testCase.label} fallback status`,
     );
     expectEqual(
-      summary.supportExpansionStatus,
+      policyReport.supportExpansionStatus,
       'not-expanded-this-branch',
       `${testCase.label} support expansion status`,
     );
 
-    for (const [criterionId, expectedPassed] of Object.entries(
-      testCase.expectedCriteria,
-    )) {
+    for (const [criterionId, expectedPassed] of Object.entries(expectedCriteria)) {
       expectRuntimeSupportCriterion(
-        summary,
+        policyReport,
         criterionId,
         expectedPassed,
         testCase.label,
       );
     }
 
-    expectRuntimeSupportExpansionCandidates(summary, testCase.label);
-    expectNoForbiddenRuntimeSupportPolicyProperties(summary, testCase.label);
+    expectRuntimeSupportExpansionCandidates(policyReport, testCase.label);
+    expectNoForbiddenRuntimeSupportPolicyProperties(policyReport, testCase.label);
   }
 
   console.log('runtime support policy UI contract: PASS');
@@ -2516,91 +2509,6 @@ function getProbeCounts(viewModel) {
   };
 }
 
-function buildProfileAwareRuntimeSupportPolicySummary(runtimeReport, shape) {
-  const createdVertexCount = shape.genealogy.createdVertexIds.length;
-  const unsupportedFields =
-    runtimeReport.runtimeBoundaryStatus === 'unsupported'
-      ? {
-          unsupportedIssueCode: runtimeReport.unsupportedIssueCode,
-          unsupportedReason: runtimeReport.unsupportedReason,
-        }
-      : {};
-
-  return {
-    policyId: 'profile-aware-runtime-support-policy-v0',
-    policyScope: 'current-shape-runtime-field-mode',
-    supportStatus: runtimeReport.runtimeBoundaryStatus,
-    inputShapeId: runtimeReport.inputShapeId,
-    seedKey: runtimeReport.inputShapeSeedKey,
-    operation: runtimeReport.inputShapeOperation,
-    generationDepth: runtimeReport.inputShapeGenerationDepth,
-    createdVertexCount,
-    criteria: [
-      {
-        id: 'tetrahedron-seed',
-        label: 'Tetrahedron seed',
-        passed: shape.seedKey === 'tetrahedron',
-        actual: shape.seedKey || null,
-        expected: 'tetrahedron',
-      },
-      {
-        id: 'ambo-dissection-operation',
-        label: 'Ambo dissection operation',
-        passed: shape.genealogy.operation === 'ambo-dissection',
-        actual: shape.genealogy.operation,
-        expected: 'ambo-dissection',
-      },
-      {
-        id: 'minimum-generation-depth',
-        label: 'Minimum generation depth',
-        passed: shape.genealogy.generationDepth >= 1,
-        actual: shape.genealogy.generationDepth,
-        expected: '>= 1',
-      },
-      {
-        id: 'created-vertices-present',
-        label: 'Created vertices present',
-        passed: createdVertexCount > 0,
-        actual: createdVertexCount,
-        expected: '> 0',
-      },
-    ],
-    expansionCandidates: [
-      {
-        id: 'other-seeds',
-        status: 'not-yet-supported',
-        note: 'Non-tetrahedron seed support remains outside the current runtime policy.',
-      },
-      {
-        id: 'selected-cell-contexts',
-        status: 'not-yet-supported',
-        note: 'Selected-cell runtime contexts are not part of this support policy.',
-      },
-      {
-        id: 'deeper-named-generation-support',
-        status: 'not-yet-supported',
-        note: 'Deeper named-generation support is reserved for an explicit future policy.',
-      },
-      {
-        id: 'multi-cell-contexts',
-        status: 'not-yet-supported',
-        note: 'Multi-cell runtime contexts are not expanded in this branch.',
-      },
-      {
-        id: 'editable-source-profile-assignment',
-        status: 'not-yet-supported',
-        note: 'Editable source-profile assignment remains unsupported here.',
-      },
-    ],
-    supportExpansionStatus: 'not-expanded-this-branch',
-    fallbackSupportStatus: 'no-silent-fallback',
-    semanticStatus: 'not-semantic-naming',
-    topologyStatus: 'not-topology-workspace',
-    packetWriteStatus: 'not-packet-writing',
-    ...unsupportedFields,
-  };
-}
-
 function buildProfileAwareSemanticHandoffSummary(
   runtimeReport,
   evidenceStabilityReport,
@@ -3046,6 +2954,16 @@ function getProfileAwareSemanticHandoffPressureKindOrder(kind) {
     default:
       return 3;
   }
+}
+
+function getExpectedRuntimeSupportCriteria(shape) {
+  return {
+    'tetrahedron-seed': shape.seedKey === 'tetrahedron',
+    'ambo-dissection-operation':
+      shape.genealogy.operation === 'ambo-dissection',
+    'minimum-generation-depth': shape.genealogy.generationDepth >= 1,
+    'created-vertices-present': shape.genealogy.createdVertexIds.length > 0,
+  };
 }
 
 function expectRuntimeSupportCriterion(summary, criterionId, expectedPassed, label) {

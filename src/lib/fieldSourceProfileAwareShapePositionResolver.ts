@@ -1,4 +1,5 @@
 import type { Shape, Vec3, Vertex, VertexId } from '../types/geometry';
+import { buildProfileAwareRuntimeSupportPolicyReport } from './fieldSourceProfileAwareRuntimeSupportPolicy';
 
 export type ProfileAwareShapePositionResolverIssueCode =
   | 'unsupported-shape-context'
@@ -243,29 +244,38 @@ function appendShapeContextIssues(
   shape: Shape,
   issues: ProfileAwareShapePositionResolverIssue[],
 ): ProfileAwareShapePositionResolverReport['shapeContextStatus'] {
-  const seedKeySupported = shape.seedKey === 'tetrahedron';
-  const operationSupported = shape.genealogy.operation === 'ambo-dissection';
-  const generationDepthSupported = shape.genealogy.generationDepth >= 1;
-  const createdVerticesSupported = shape.genealogy.createdVertexIds.length > 0;
+  const policyReport = buildProfileAwareRuntimeSupportPolicyReport(shape);
+  const seedKeySupported = getRuntimeSupportCriterionPassed(
+    policyReport,
+    'tetrahedron-seed',
+  );
+  const operationSupported = getRuntimeSupportCriterionPassed(
+    policyReport,
+    'ambo-dissection-operation',
+  );
+  const generationDepthSupported = getRuntimeSupportCriterionPassed(
+    policyReport,
+    'minimum-generation-depth',
+  );
+  const createdVerticesSupported = getRuntimeSupportCriterionPassed(
+    policyReport,
+    'created-vertices-present',
+  );
 
-  if (
-    seedKeySupported &&
-    operationSupported &&
-    generationDepthSupported &&
-    createdVerticesSupported
-  ) {
+  if (policyReport.supportStatus === 'supported') {
     return 'supported';
   }
 
   issues.push({
-    code: 'unsupported-shape-context',
+    code: policyReport.unsupportedIssueCode ?? 'unsupported-shape-context',
     message:
+      policyReport.unsupportedReason ??
       'Profile-aware Shape position resolution currently supports only a tetrahedron seed-derived Shape after at least one Ambo dissection.',
     details: {
-      seedKey: shape.seedKey ?? null,
-      operation: shape.genealogy.operation,
-      generationDepth: shape.genealogy.generationDepth,
-      createdVertexCount: shape.genealogy.createdVertexIds.length,
+      seedKey: policyReport.seedKey ?? null,
+      operation: policyReport.operation,
+      generationDepth: policyReport.generationDepth,
+      createdVertexCount: policyReport.createdVertexCount,
       seedKeySupported,
       operationSupported,
       generationDepthSupported,
@@ -274,6 +284,19 @@ function appendShapeContextIssues(
   });
 
   return 'unsupported';
+}
+
+function getRuntimeSupportCriterionPassed(
+  policyReport: ReturnType<typeof buildProfileAwareRuntimeSupportPolicyReport>,
+  criterionId:
+    | 'tetrahedron-seed'
+    | 'ambo-dissection-operation'
+    | 'minimum-generation-depth'
+    | 'created-vertices-present',
+): boolean {
+  return Boolean(
+    policyReport.criteria.find((criterion) => criterion.id === criterionId)?.passed,
+  );
 }
 
 function buildResolverReport(args: {
