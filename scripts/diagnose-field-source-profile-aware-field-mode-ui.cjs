@@ -48,6 +48,7 @@ runSourceLinkingContractDiagnostic();
 runEvidenceStabilityUiContractDiagnostic();
 runSemanticHandoffReadinessUiContractDiagnostic();
 runSemanticHandoffTransitionUiContractDiagnostic();
+runSemanticHandoffPressurePreviewUiContractDiagnostic();
 runUnsupportedSeedTetrahedronDiagnostic();
 runUnsupportedCubeDiagnostic();
 runConservativeBoundaryClaimDiagnostic();
@@ -1369,6 +1370,203 @@ function runSemanticHandoffTransitionUiContractDiagnostic() {
   console.log('semantic handoff transition UI contract: PASS');
 }
 
+function runSemanticHandoffPressurePreviewUiContractDiagnostic() {
+  const unsupportedRuntimeReport =
+    buildProfileAwareFieldAtlasViewModelRuntimeReport(createSeedShape('tetrahedron'));
+  const supportedRuntimeBefore = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+  const unsupportedRecords =
+    buildProfileAwareSemanticHandoffPressureRecords(unsupportedRuntimeReport);
+  const supportedRecords =
+    buildProfileAwareSemanticHandoffPressureRecords(supportedRuntimeBefore);
+  const viewModel = supportedRuntimeBefore.viewModel;
+  const probeCountsBefore = viewModel ? getProbeCounts(viewModel) : undefined;
+  const supportedRuntimeAfter = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+  const probeCountsAfter = supportedRuntimeAfter.viewModel
+    ? getProbeCounts(supportedRuntimeAfter.viewModel)
+    : undefined;
+
+  expectEqual(
+    unsupportedRecords.length,
+    0,
+    'semantic handoff pressure unsupported records',
+  );
+  expectTruthy(viewModel, 'semantic handoff pressure supported view model');
+
+  if (!viewModel) {
+    return;
+  }
+
+  const expectedRecordCount =
+    viewModel.featureOverlaySummary.featureMarkers.length +
+    viewModel.routeGateOverlaySummary.candidateMarkers.length +
+    viewModel.supportRegionOverlaySummary.candidateMarkers.length;
+
+  expectEqual(
+    supportedRecords.length,
+    expectedRecordCount,
+    'semantic handoff pressure record count',
+  );
+
+  for (const record of supportedRecords) {
+    expectTruthy(record.id, 'semantic handoff pressure record id');
+    expectEqual(
+      [
+        'feature-observation',
+        'route-gate-candidate',
+        'support-region-candidate',
+      ].includes(record.kind),
+      true,
+      `${record.id} semantic handoff pressure kind`,
+    );
+    expectTruthy(record.label, `${record.id} semantic handoff pressure label`);
+    expectTruthy(record.probeRef, `${record.id} semantic handoff pressure probe ref`);
+    expectEqual(
+      ['report-candidate', 'candidate-only'].includes(record.candidateStatus),
+      true,
+      `${record.id} semantic handoff pressure status`,
+    );
+    expectEqual(
+      record.semanticStatus,
+      'not-semantic-naming',
+      `${record.id} semantic handoff pressure semantic`,
+    );
+    expectEqual(
+      record.topologyStatus,
+      'not-topology-workspace',
+      `${record.id} semantic handoff pressure topology`,
+    );
+    expectTruthy(
+      record.pressureBasis,
+      `${record.id} semantic handoff pressure basis`,
+    );
+    expectTruthy(record.reason, `${record.id} semantic handoff pressure reason`);
+    expectEqual(
+      Array.isArray(record.caveats),
+      true,
+      `${record.id} semantic handoff pressure caveats`,
+    );
+    expectTruthy(
+      viewModel.probeIndex.probes[record.probeRef],
+      `${record.id} semantic handoff pressure probe resolves`,
+    );
+    expectNoForbiddenPressureRecordProperties(record);
+
+    switch (record.kind) {
+      case 'feature-observation':
+        expectEqual(
+          record.candidateStatus,
+          'report-candidate',
+          `${record.id} feature pressure status`,
+        );
+        expectEqual(
+          record.caveats.includes('report candidate'),
+          true,
+          `${record.id} feature pressure report caveat`,
+        );
+        expectEqual(
+          record.caveats.includes('not semantic naming'),
+          true,
+          `${record.id} feature pressure semantic caveat`,
+        );
+        expectEqual(
+          record.caveats.includes('not packet writing'),
+          true,
+          `${record.id} feature pressure packet caveat`,
+        );
+        break;
+      case 'route-gate-candidate':
+        expectEqual(
+          record.candidateStatus,
+          'candidate-only',
+          `${record.id} route/gate pressure status`,
+        );
+        expectEqual(
+          record.caveats.includes('not route confirmation'),
+          true,
+          `${record.id} route/gate pressure confirmation caveat`,
+        );
+        expectEqual(
+          record.caveats.includes('not route persistence'),
+          true,
+          `${record.id} route/gate pressure persistence caveat`,
+        );
+        expectEqual(
+          record.caveats.includes('not packet writing'),
+          true,
+          `${record.id} route/gate pressure packet caveat`,
+        );
+        break;
+      case 'support-region-candidate':
+        expectEqual(
+          record.candidateStatus,
+          'candidate-only',
+          `${record.id} support/region pressure status`,
+        );
+        expectEqual(
+          record.caveats.includes('not support/region confirmation'),
+          true,
+          `${record.id} support/region pressure confirmation caveat`,
+        );
+        expectEqual(
+          record.caveats.includes('not support/region persistence'),
+          true,
+          `${record.id} support/region pressure persistence caveat`,
+        );
+        expectEqual(
+          record.caveats.includes('not packet writing'),
+          true,
+          `${record.id} support/region pressure packet caveat`,
+        );
+        break;
+      default:
+        recordFailure(`${record.id} semantic handoff pressure unexpected kind`);
+        break;
+    }
+  }
+
+  expectTruthy(probeCountsBefore, 'semantic handoff pressure probe counts before');
+  expectTruthy(probeCountsAfter, 'semantic handoff pressure probe counts after');
+
+  if (probeCountsBefore && probeCountsAfter) {
+    expectEqual(
+      probeCountsAfter.sourceProbeCount,
+      probeCountsBefore.sourceProbeCount,
+      'semantic handoff pressure source probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.sampleProbeCount,
+      probeCountsBefore.sampleProbeCount,
+      'semantic handoff pressure sample probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.chartProbeCount,
+      probeCountsBefore.chartProbeCount,
+      'semantic handoff pressure chart probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.featureProbeCount,
+      probeCountsBefore.featureProbeCount,
+      'semantic handoff pressure feature probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.routeGateCandidateProbeCount,
+      probeCountsBefore.routeGateCandidateProbeCount,
+      'semantic handoff pressure route/gate probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.supportRegionCandidateProbeCount,
+      probeCountsBefore.supportRegionCandidateProbeCount,
+      'semantic handoff pressure support/region probe count unchanged',
+    );
+  }
+
+  console.log('semantic handoff pressure preview UI contract: PASS');
+}
+
 function runUnsupportedCubeDiagnostic() {
   runUnsupportedShapeDiagnostic(
     'unsupported cube Field Mode UI',
@@ -2242,6 +2440,167 @@ function getProfileAwareSemanticHandoffTransitionHints(
     default:
       return [];
   }
+}
+
+function buildProfileAwareSemanticHandoffPressureRecords(runtimeReport) {
+  if (runtimeReport.runtimeBoundaryStatus !== 'supported') {
+    return [];
+  }
+
+  const records = [];
+  const viewModel = runtimeReport.viewModel;
+
+  for (const marker of viewModel.featureOverlaySummary.featureMarkers) {
+    const probe = viewModel.probeIndex.probes[marker.probeRef];
+
+    records.push({
+      id: marker.featureId,
+      kind: 'feature-observation',
+      label: formatObservationKind(marker.observationKind),
+      probeRef: marker.probeRef,
+      candidateStatus: marker.status,
+      semanticStatus: marker.semanticStatus,
+      topologyStatus: 'not-topology-workspace',
+      pressureBasis: 'feature observation',
+      sampleCount: 1,
+      chartCount: 1,
+      intensity: marker.intensity,
+      relativeIntensity: marker.relativeIntensity,
+      reason:
+        probe && probe.probeKind === 'feature-observation'
+          ? probe.reason
+          : 'profile-aware feature observation marker',
+      caveats: [
+        'report candidate',
+        'not semantic naming',
+        'not topology workspace',
+        'not packet writing',
+      ],
+    });
+  }
+
+  for (const marker of viewModel.routeGateOverlaySummary.candidateMarkers) {
+    records.push({
+      id: marker.candidateId,
+      kind: 'route-gate-candidate',
+      label: `${formatCompactKind(marker.candidateKind)} / ${formatCompactKind(
+        marker.candidateSubtype,
+      )}`,
+      probeRef: marker.probeRef,
+      candidateStatus: marker.status,
+      semanticStatus: marker.semanticStatus,
+      topologyStatus: marker.topologyStatus,
+      pressureBasis: 'route/gate candidate pressure',
+      sampleCount: marker.sampleIds.length,
+      chartCount: marker.chartIds.length,
+      reliability: marker.reliability,
+      reason: marker.reason,
+      caveats: [
+        'candidate only',
+        'not route confirmation',
+        'not semantic naming',
+        'not topology workspace',
+        'not route persistence',
+        'not packet writing',
+      ],
+    });
+  }
+
+  for (const marker of viewModel.supportRegionOverlaySummary.candidateMarkers) {
+    records.push({
+      id: marker.candidateId,
+      kind: 'support-region-candidate',
+      label: `${formatCompactKind(marker.candidateKind)} / ${formatCompactKind(
+        marker.supportKind,
+      )}`,
+      probeRef: marker.probeRef,
+      candidateStatus: marker.status,
+      semanticStatus: marker.semanticStatus,
+      topologyStatus: marker.topologyStatus,
+      pressureBasis: 'support/region candidate pressure',
+      sampleCount: marker.sampleIds.length,
+      chartCount: marker.chartIds.length,
+      observationCount: marker.observationIds.length,
+      routeGateRefCount: marker.routeGateCandidateIds.length,
+      reliability: marker.reliability,
+      reason: marker.reason,
+      caveats: [
+        'candidate only',
+        'not support/region confirmation',
+        'not semantic naming',
+        'not topology workspace',
+        'not support/region persistence',
+        'not packet writing',
+      ],
+    });
+  }
+
+  return records.sort((first, second) => {
+    const kindDelta =
+      getProfileAwareSemanticHandoffPressureKindOrder(first.kind) -
+      getProfileAwareSemanticHandoffPressureKindOrder(second.kind);
+
+    return kindDelta || first.id.localeCompare(second.id);
+  });
+}
+
+function getProfileAwareSemanticHandoffPressureKindOrder(kind) {
+  switch (kind) {
+    case 'feature-observation':
+      return 0;
+    case 'route-gate-candidate':
+      return 1;
+    case 'support-region-candidate':
+      return 2;
+    default:
+      return 3;
+  }
+}
+
+function expectNoForbiddenPressureRecordProperties(record) {
+  const forbiddenProperties = [
+    'semanticName',
+    'topologyValidityStatus',
+    'packetWriteEnabled',
+    'handoffPacketWritten',
+    'routeGateConfirmedStatus',
+    'supportRegionConfirmedStatus',
+    'oldPolicyInvariantStatus',
+    'defaultPolicyComparisonStatus',
+    'candidateIdentityPersistenceStatus',
+    'routePersistenceStatus',
+    'supportRegionPersistenceStatus',
+    'semanticContinuityStatus',
+    'topologyContinuityStatus',
+    'fieldOntologyDeltaStatus',
+    'semanticScore',
+    'semanticRank',
+  ];
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(
+      record,
+      property,
+      `${record.id} semantic handoff pressure no ${property}`,
+    );
+  }
+}
+
+function formatObservationKind(kind) {
+  switch (kind) {
+    case 'cancellation-like-site-candidate':
+      return 'Cancellation-like candidate';
+    case 'high-intensity-anchor-candidate':
+      return 'High-intensity anchor candidate';
+    case 'ambiguous-field-site':
+      return 'Ambiguous field-site candidate';
+    default:
+      return kind;
+  }
+}
+
+function formatCompactKind(kind) {
+  return String(kind).replace(/-/g, ' ');
 }
 
 function getDominantSourceIdFromSampleMarker(marker) {

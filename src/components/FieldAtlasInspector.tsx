@@ -455,6 +455,8 @@ function ProfileAwareFieldModeRuntimeSection({
   onClearPinnedProbe: () => void;
   shortenId: (id: string) => string;
 }) {
+  const semanticHandoffPressureRecords =
+    buildProfileAwareSemanticHandoffPressureRecords(report);
   const fieldAtlasLayerVisibility = useGeometryStore(
     (state) => state.fieldAtlasLayerVisibility,
   );
@@ -499,6 +501,14 @@ function ProfileAwareFieldModeRuntimeSection({
         />
         <ProfileAwareSemanticHandoffTransitionSection
           transition={semanticHandoffTransition}
+        />
+        <ProfileAwareSemanticHandoffPressurePreviewSection
+          records={semanticHandoffPressureRecords}
+          hoveredProbeRef={hoveredFieldAtlasSampleId}
+          pinnedProbeRef={pinnedFieldAtlasProbeRef}
+          onHoverStart={onHoverSampleStart}
+          onHoverEnd={onHoverSampleEnd}
+          onTogglePinnedProbe={onTogglePinnedProbe}
         />
       </div>
     );
@@ -657,6 +667,15 @@ function ProfileAwareFieldModeRuntimeSection({
 
       <ProfileAwareSemanticHandoffTransitionSection
         transition={semanticHandoffTransition}
+      />
+
+      <ProfileAwareSemanticHandoffPressurePreviewSection
+        records={semanticHandoffPressureRecords}
+        hoveredProbeRef={hoveredFieldAtlasSampleId}
+        pinnedProbeRef={pinnedFieldAtlasProbeRef}
+        onHoverStart={onHoverSampleStart}
+        onHoverEnd={onHoverSampleEnd}
+        onTogglePinnedProbe={onTogglePinnedProbe}
       />
 
       <div className="mt-3 grid gap-2">
@@ -1367,6 +1386,31 @@ type ProfileAwareSemanticHandoffTransition = {
   handoffHints: string[];
 };
 
+type ProfileAwareSemanticHandoffPressureKind =
+  | 'feature-observation'
+  | 'route-gate-candidate'
+  | 'support-region-candidate';
+
+type ProfileAwareSemanticHandoffPressureRecord = {
+  id: string;
+  kind: ProfileAwareSemanticHandoffPressureKind;
+  label: string;
+  probeRef: string;
+  candidateStatus: 'report-candidate' | 'candidate-only';
+  semanticStatus: 'not-semantic-naming';
+  topologyStatus: 'not-topology-workspace';
+  pressureBasis: string;
+  sampleCount?: number;
+  chartCount?: number;
+  observationCount?: number;
+  routeGateRefCount?: number;
+  intensity?: number;
+  relativeIntensity?: number;
+  reliability?: string;
+  reason: string;
+  caveats: string[];
+};
+
 function ProfileAwareSemanticHandoffReadinessSection({
   summary,
 }: {
@@ -1526,6 +1570,161 @@ function ProfileAwareSemanticHandoffTransitionSection({
         persistence, or support/region persistence.
       </p>
     </div>
+  );
+}
+
+function ProfileAwareSemanticHandoffPressurePreviewSection({
+  records,
+  hoveredProbeRef,
+  pinnedProbeRef,
+  onHoverStart,
+  onHoverEnd,
+  onTogglePinnedProbe,
+}: {
+  records: ProfileAwareSemanticHandoffPressureRecord[];
+  hoveredProbeRef: string | null;
+  pinnedProbeRef: string | null;
+  onHoverStart: (hoverRef: string) => void;
+  onHoverEnd: (hoverRef: string) => void;
+  onTogglePinnedProbe: (probeRef: string) => void;
+}) {
+  const featureRecordCount = records.filter(
+    (record) => record.kind === 'feature-observation',
+  ).length;
+  const routeGateRecordCount = records.filter(
+    (record) => record.kind === 'route-gate-candidate',
+  ).length;
+  const supportRegionRecordCount = records.filter(
+    (record) => record.kind === 'support-region-candidate',
+  ).length;
+
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2">
+      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Semantic Handoff Pressure Preview
+      </h4>
+      <dl className="mt-2 grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Total records" value={records.length} />
+        <FieldAtlasMetric label="Feature records" value={featureRecordCount} />
+        <FieldAtlasMetric
+          label="Route/gate records"
+          value={routeGateRecordCount}
+        />
+        <FieldAtlasMetric
+          label="Support/region records"
+          value={supportRegionRecordCount}
+        />
+      </dl>
+
+      {records.length ? (
+        <div className="mt-2 grid gap-1">
+          {records.slice(0, 8).map((record) => (
+            <ProfileAwareSemanticHandoffPressureRecordRow
+              key={`${record.kind}:${record.id}`}
+              record={record}
+              isHovered={hoveredProbeRef === record.probeRef}
+              isPinned={pinnedProbeRef === record.probeRef}
+              onHoverStart={onHoverStart}
+              onHoverEnd={onHoverEnd}
+              onTogglePinnedProbe={onTogglePinnedProbe}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 rounded border border-stone-800 bg-stone-900 px-2 py-2 text-stone-500">
+          No semantic handoff pressure records are available for this Field Mode
+          runtime.
+        </p>
+      )}
+
+      <p className="mt-2 leading-5 text-stone-500">
+        Pressure records are read-only handoff candidates for later semantic
+        work; they are not semantic names, topology claims, or packet writes.
+      </p>
+    </div>
+  );
+}
+
+function ProfileAwareSemanticHandoffPressureRecordRow({
+  record,
+  isHovered,
+  isPinned,
+  onHoverStart,
+  onHoverEnd,
+  onTogglePinnedProbe,
+}: {
+  record: ProfileAwareSemanticHandoffPressureRecord;
+  isHovered: boolean;
+  isPinned: boolean;
+  onHoverStart: (hoverRef: string) => void;
+  onHoverEnd: (hoverRef: string) => void;
+  onTogglePinnedProbe: (probeRef: string) => void;
+}) {
+  return (
+    <button
+      className={`rounded border px-2 py-2 text-left transition ${
+        isPinned
+          ? 'border-cyan-300/70 bg-cyan-400/10 shadow-[0_0_0_1px_rgba(103,232,249,0.18)]'
+          : isHovered
+            ? 'border-amber-300/70 bg-amber-400/10 shadow-[0_0_0_1px_rgba(252,211,77,0.18)]'
+            : 'border-stone-800 bg-stone-900'
+      }`}
+      data-profile-aware-pressure-record-id={record.id}
+      onClick={() => onTogglePinnedProbe(record.probeRef)}
+      onFocus={() => onHoverStart(record.probeRef)}
+      onBlur={() => onHoverEnd(record.probeRef)}
+      onPointerEnter={() => onHoverStart(record.probeRef)}
+      onPointerLeave={() => onHoverEnd(record.probeRef)}
+      type="button"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="font-medium text-stone-200">{record.label}</span>
+        <span className="font-mono text-[11px] text-stone-500">
+          {record.kind}
+        </span>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-stone-500">
+        <span className="font-mono">{record.candidateStatus}</span>
+        <span className="text-right font-mono">
+          {record.reliability ?? record.pressureBasis}
+        </span>
+        {typeof record.sampleCount === 'number' ? (
+          <span className="font-mono">samples {record.sampleCount}</span>
+        ) : null}
+        {typeof record.chartCount === 'number' ? (
+          <span className="text-right font-mono">charts {record.chartCount}</span>
+        ) : null}
+        {typeof record.observationCount === 'number' ? (
+          <span className="font-mono">obs {record.observationCount}</span>
+        ) : null}
+        {typeof record.routeGateRefCount === 'number' ? (
+          <span className="text-right font-mono">
+            route/gate refs {record.routeGateRefCount}
+          </span>
+        ) : null}
+        {typeof record.intensity === 'number' ? (
+          <span className="font-mono">int {formatNumber(record.intensity)}</span>
+        ) : null}
+        {typeof record.relativeIntensity === 'number' ? (
+          <span className="text-right font-mono">
+            rel {formatNumber(record.relativeIntensity)}
+          </span>
+        ) : null}
+      </div>
+      <p className="mt-2 leading-5 text-stone-400">
+        {record.pressureBasis}; {shortenReportReason(record.reason)}
+      </p>
+      <div className="mt-2 flex flex-wrap gap-1 font-mono text-[11px] text-stone-500">
+        {record.caveats.slice(0, 3).map((caveat) => (
+          <span
+            key={caveat}
+            className="rounded border border-stone-800 bg-stone-950 px-1.5 py-0.5"
+          >
+            {caveat}
+          </span>
+        ))}
+      </div>
+    </button>
   );
 }
 
@@ -1787,6 +1986,125 @@ function getProfileAwareSemanticHandoffTransitionHints(
       return ['No previous shape in workspace sequence.'];
     default:
       return [];
+  }
+}
+
+function buildProfileAwareSemanticHandoffPressureRecords(
+  runtimeReport: ProfileAwareFieldAtlasViewModelRuntimeReport,
+): ProfileAwareSemanticHandoffPressureRecord[] {
+  if (runtimeReport.runtimeBoundaryStatus !== 'supported') {
+    return [];
+  }
+
+  const records: ProfileAwareSemanticHandoffPressureRecord[] = [];
+  const viewModel = runtimeReport.viewModel;
+
+  for (const marker of viewModel.featureOverlaySummary.featureMarkers) {
+    const probe = viewModel.probeIndex.probes[marker.probeRef];
+
+    records.push({
+      id: marker.featureId,
+      kind: 'feature-observation',
+      label: formatReportObservationKind(marker.observationKind),
+      probeRef: marker.probeRef,
+      candidateStatus: marker.status,
+      semanticStatus: marker.semanticStatus,
+      topologyStatus: 'not-topology-workspace',
+      pressureBasis: 'feature observation',
+      sampleCount: 1,
+      chartCount: 1,
+      intensity: marker.intensity,
+      relativeIntensity: marker.relativeIntensity,
+      reason:
+        probe?.probeKind === 'feature-observation'
+          ? probe.reason
+          : 'profile-aware feature observation marker',
+      caveats: [
+        'report candidate',
+        'not semantic naming',
+        'not topology workspace',
+        'not packet writing',
+      ],
+    });
+  }
+
+  for (const marker of viewModel.routeGateOverlaySummary.candidateMarkers) {
+    records.push({
+      id: marker.candidateId,
+      kind: 'route-gate-candidate',
+      label: `${formatRouteGateCandidateKind(marker.candidateKind)} / ${formatRouteGateCandidateKind(
+        marker.candidateSubtype,
+      )}`,
+      probeRef: marker.probeRef,
+      candidateStatus: marker.status,
+      semanticStatus: marker.semanticStatus,
+      topologyStatus: marker.topologyStatus,
+      pressureBasis: 'route/gate candidate pressure',
+      sampleCount: marker.sampleIds.length,
+      chartCount: marker.chartIds.length,
+      reliability: marker.reliability,
+      reason: marker.reason,
+      caveats: [
+        'candidate only',
+        'not route confirmation',
+        'not semantic naming',
+        'not topology workspace',
+        'not route persistence',
+        'not packet writing',
+      ],
+    });
+  }
+
+  for (const marker of viewModel.supportRegionOverlaySummary.candidateMarkers) {
+    records.push({
+      id: marker.candidateId,
+      kind: 'support-region-candidate',
+      label: `${formatSupportRegionCandidateKind(
+        marker.candidateKind,
+      )} / ${formatSupportKind(marker.supportKind)}`,
+      probeRef: marker.probeRef,
+      candidateStatus: marker.status,
+      semanticStatus: marker.semanticStatus,
+      topologyStatus: marker.topologyStatus,
+      pressureBasis: 'support/region candidate pressure',
+      sampleCount: marker.sampleIds.length,
+      chartCount: marker.chartIds.length,
+      observationCount: marker.observationIds.length,
+      routeGateRefCount: marker.routeGateCandidateIds.length,
+      reliability: marker.reliability,
+      reason: marker.reason,
+      caveats: [
+        'candidate only',
+        'not support/region confirmation',
+        'not semantic naming',
+        'not topology workspace',
+        'not support/region persistence',
+        'not packet writing',
+      ],
+    });
+  }
+
+  return records.sort((first, second) => {
+    const kindDelta =
+      getProfileAwareSemanticHandoffPressureKindOrder(first.kind) -
+      getProfileAwareSemanticHandoffPressureKindOrder(second.kind);
+
+    return kindDelta || first.id.localeCompare(second.id);
+  });
+}
+
+function getProfileAwareSemanticHandoffPressureKindOrder(
+  kind: ProfileAwareSemanticHandoffPressureKind,
+): number {
+  switch (kind) {
+    case 'feature-observation':
+      return 0;
+    case 'route-gate-candidate':
+      return 1;
+    case 'support-region-candidate':
+      return 2;
+    default:
+      return 3;
   }
 }
 
