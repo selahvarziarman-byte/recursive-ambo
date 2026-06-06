@@ -34,6 +34,7 @@ const failures = [];
 console.log('Field source profile-aware Field Mode UI diagnostics');
 
 runSupportedOneAmboTetrahedronContractDiagnostic();
+runLayerVisibilityContractDiagnostic();
 runUnsupportedSeedTetrahedronDiagnostic();
 runUnsupportedCubeDiagnostic();
 runConservativeBoundaryClaimDiagnostic();
@@ -139,6 +140,128 @@ function runUnsupportedSeedTetrahedronDiagnostic() {
     'unsupported seed tetrahedron Field Mode UI',
     createSeedShape('tetrahedron'),
   );
+}
+
+function runLayerVisibilityContractDiagnostic() {
+  const report = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+
+  if (!report.viewModel) {
+    recordFailure('layer visibility contract: supported view model missing');
+    return;
+  }
+
+  const viewModel = report.viewModel;
+  const familyCounts = getLayerFamilyCounts(viewModel);
+  const allVisible = simulateLayerVisibilityFilter(viewModel, {
+    sources: true,
+    samples: true,
+    features: true,
+    routeGateCandidates: true,
+    supportRegionCandidates: true,
+  });
+  const onlySources = simulateLayerVisibilityFilter(viewModel, {
+    sources: true,
+    samples: false,
+    features: false,
+    routeGateCandidates: false,
+    supportRegionCandidates: false,
+  });
+  const onlySamples = simulateLayerVisibilityFilter(viewModel, {
+    sources: false,
+    samples: true,
+    features: false,
+    routeGateCandidates: false,
+    supportRegionCandidates: false,
+  });
+  const allHidden = simulateLayerVisibilityFilter(viewModel, {
+    sources: false,
+    samples: false,
+    features: false,
+    routeGateCandidates: false,
+    supportRegionCandidates: false,
+  });
+
+  expectEqual(
+    allVisible.total,
+    familyCounts.total,
+    'layer visibility all-visible marker count',
+  );
+  expectEqual(
+    onlySources.total,
+    familyCounts.sources,
+    'layer visibility only-source marker count',
+  );
+  expectEqual(
+    onlySamples.total,
+    familyCounts.samples,
+    'layer visibility only-sample marker count',
+  );
+  expectEqual(allHidden.total, 0, 'layer visibility all-hidden marker count');
+  expectEqual(
+    allHidden.routeGateCandidates,
+    0,
+    'layer visibility route/gate hidden marker count',
+  );
+  expectEqual(
+    allHidden.supportRegionCandidates,
+    0,
+    'layer visibility support/region hidden marker count',
+  );
+
+  expectEqual(
+    viewModel.probeIndex.sourceProbeCount,
+    familyCounts.sources,
+    'layer visibility source probes remain',
+  );
+  expectEqual(
+    viewModel.probeIndex.sampleProbeCount,
+    familyCounts.samples,
+    'layer visibility sample probes remain',
+  );
+  expectEqual(
+    viewModel.probeIndex.featureProbeCount,
+    familyCounts.features,
+    'layer visibility feature probes remain',
+  );
+  expectEqual(
+    viewModel.probeIndex.routeGateCandidateProbeCount,
+    familyCounts.routeGateCandidates,
+    'layer visibility route/gate probes remain',
+  );
+  expectEqual(
+    viewModel.probeIndex.supportRegionCandidateProbeCount,
+    familyCounts.supportRegionCandidates,
+    'layer visibility support/region probes remain',
+  );
+  expectEqual(
+    viewModel.routeGateOverlaySummary.candidateMarkers.every(
+      (marker) =>
+        marker.status === 'candidate-only' &&
+        marker.semanticStatus === 'not-semantic-naming' &&
+        marker.topologyStatus === 'not-topology-workspace',
+    ),
+    true,
+    'layer visibility route/gate candidate caveats remain',
+  );
+  expectEqual(
+    viewModel.supportRegionOverlaySummary.candidateMarkers.every(
+      (marker) =>
+        marker.status === 'candidate-only' &&
+        marker.semanticStatus === 'not-semantic-naming' &&
+        marker.topologyStatus === 'not-topology-workspace',
+    ),
+    true,
+    'layer visibility support/region candidate caveats remain',
+  );
+  expectNoOwnProperty(
+    viewModel,
+    'fieldAtlasLayerVisibilityPersistenceStatus',
+    'view model no layer visibility persistence claim',
+  );
+
+  console.log('layer visibility filtering contract: PASS');
 }
 
 function runUnsupportedCubeDiagnostic() {
@@ -287,6 +410,8 @@ function runNoOldPolicyComparisonOrInvarianceDiagnostic() {
     'defaultPolicyInvariant',
     'persistenceStatus',
     'workspacePersistenceStatus',
+    'fieldAtlasLayerVisibilityPersistenceStatus',
+    'layerVisibilityPersistenceStatus',
     'packetWritingStatus',
     'semanticNamingStatus',
     'topologyBehaviorStatus',
@@ -532,6 +657,53 @@ function expectPinnedProbeRef(viewModel, probeRef, expectedProbeKind, label) {
 
   expectTruthy(probe, `${label} resolves`);
   expectEqual(probe && probe.probeKind, expectedProbeKind, `${label} kind`);
+}
+
+function getLayerFamilyCounts(viewModel) {
+  const counts = {
+    sources: viewModel.sourceMarkers.length,
+    samples: viewModel.surfaceSampleMarkers.length,
+    features: viewModel.featureOverlaySummary.featureMarkers.length,
+    routeGateCandidates:
+      viewModel.routeGateOverlaySummary.candidateMarkers.length,
+    supportRegionCandidates:
+      viewModel.supportRegionOverlaySummary.candidateMarkers.length,
+  };
+
+  return {
+    ...counts,
+    total:
+      counts.sources +
+      counts.samples +
+      counts.features +
+      counts.routeGateCandidates +
+      counts.supportRegionCandidates,
+  };
+}
+
+function simulateLayerVisibilityFilter(viewModel, visibility) {
+  const counts = getLayerFamilyCounts(viewModel);
+  const filteredCounts = {
+    sources: visibility.sources ? counts.sources : 0,
+    samples: visibility.samples ? counts.samples : 0,
+    features: visibility.features ? counts.features : 0,
+    routeGateCandidates: visibility.routeGateCandidates
+      ? counts.routeGateCandidates
+      : 0,
+    supportRegionCandidates: visibility.supportRegionCandidates
+      ? counts.supportRegionCandidates
+      : 0,
+  };
+
+  return {
+    ...filteredCounts,
+    total:
+      filteredCounts.sources +
+      filteredCounts.samples +
+      filteredCounts.features +
+      filteredCounts.routeGateCandidates +
+      filteredCounts.supportRegionCandidates,
+  };
 }
 
 function expectChildDerivationProbe(derivation, label) {

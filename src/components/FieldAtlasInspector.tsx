@@ -45,7 +45,10 @@ import {
   type ProfileAwareFieldAtlasSurfaceSampleProbe,
   type ProfileAwareFieldAtlasViewModelRuntimeReport,
 } from '../lib/fieldSourceProfileAwareAtlasViewModel';
-import { useGeometryStore } from '../store/geometryStore';
+import {
+  useGeometryStore,
+  type FieldAtlasLayerVisibility,
+} from '../store/geometryStore';
 import type { Shape, VertexId } from '../types/geometry';
 
 interface FieldAtlasInspectorProps {
@@ -329,6 +332,13 @@ function ProfileAwareFieldModeRuntimeSection({
   onClearPinnedProbe: () => void;
   shortenId: (id: string) => string;
 }) {
+  const fieldAtlasLayerVisibility = useGeometryStore(
+    (state) => state.fieldAtlasLayerVisibility,
+  );
+  const toggleFieldAtlasLayerVisibility = useGeometryStore(
+    (state) => state.toggleFieldAtlasLayerVisibility,
+  );
+
   if (report.runtimeBoundaryStatus === 'unsupported') {
     return (
       <div className="rounded border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs">
@@ -427,6 +437,20 @@ function ProfileAwareFieldModeRuntimeSection({
         <FieldAtlasMetric label="Overlay" value={viewModel.candidateOverlayStatus} />
       </dl>
 
+      <ProfileAwareLayerVisibilityControls
+        counts={{
+          sources: viewModel.sourceMarkers.length,
+          samples: viewModel.surfaceSampleMarkers.length,
+          features: viewModel.featureOverlaySummary.featureMarkers.length,
+          routeGateCandidates:
+            viewModel.routeGateOverlaySummary.candidateMarkers.length,
+          supportRegionCandidates:
+            viewModel.supportRegionOverlaySummary.candidateMarkers.length,
+        }}
+        visibility={fieldAtlasLayerVisibility}
+        onToggle={toggleFieldAtlasLayerVisibility}
+      />
+
       <div className="mt-3 grid gap-2">
         <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
           Feature Markers
@@ -506,6 +530,64 @@ function ProfileAwareFieldModeRuntimeSection({
         onClearPinnedProbe={onClearPinnedProbe}
         shortenId={shortenId}
       />
+    </div>
+  );
+}
+
+function ProfileAwareLayerVisibilityControls({
+  counts,
+  visibility,
+  onToggle,
+}: {
+  counts: Record<keyof FieldAtlasLayerVisibility, number>;
+  visibility: FieldAtlasLayerVisibility;
+  onToggle: (key: keyof FieldAtlasLayerVisibility) => void;
+}) {
+  const layers: Array<{
+    key: keyof FieldAtlasLayerVisibility;
+    label: string;
+  }> = [
+    { key: 'sources', label: 'Sources' },
+    { key: 'samples', label: 'Samples' },
+    { key: 'features', label: 'Features' },
+    { key: 'routeGateCandidates', label: 'Route/Gate' },
+    { key: 'supportRegionCandidates', label: 'Support/Region' },
+  ];
+
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2">
+      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Visible Layers
+      </h4>
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        {layers.map((layer) => {
+          const isVisible = visibility[layer.key];
+
+          return (
+            <button
+              key={layer.key}
+              className={`rounded border px-2 py-1.5 text-left transition ${
+                isVisible
+                  ? 'border-emerald-300/40 bg-emerald-400/10 text-emerald-100'
+                  : 'border-stone-800 bg-stone-900 text-stone-500'
+              }`}
+              data-profile-aware-layer-visibility={layer.key}
+              onClick={() => onToggle(layer.key)}
+              type="button"
+            >
+              <span className="flex items-center justify-between gap-2">
+                <span>{layer.label}</span>
+                <span className="font-mono text-[11px]">{counts[layer.key]}</span>
+              </span>
+              {!isVisible ? (
+                <span className="mt-1 block font-mono text-[10px] uppercase tracking-[0.12em]">
+                  hidden
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

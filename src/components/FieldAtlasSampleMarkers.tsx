@@ -8,7 +8,10 @@ import {
   type ProfileAwareFieldAtlasSupportRegionCandidateMarker,
   type ProfileAwareFieldAtlasSurfaceSampleMarker,
 } from '../lib/fieldSourceProfileAwareAtlasViewModel';
-import { useGeometryStore } from '../store/geometryStore';
+import {
+  useGeometryStore,
+  type FieldAtlasLayerVisibility,
+} from '../store/geometryStore';
 import type { Shape, Vec3 } from '../types/geometry';
 
 interface FieldAtlasSampleMarkersProps {
@@ -38,7 +41,13 @@ interface FieldAtlasMarker {
 }
 
 export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMarkersProps) {
-  const markers = useMemo(() => buildMarkerModel(shape, enabled), [enabled, shape]);
+  const fieldAtlasLayerVisibility = useGeometryStore(
+    (state) => state.fieldAtlasLayerVisibility,
+  );
+  const markers = useMemo(
+    () => buildMarkerModel(shape, enabled, fieldAtlasLayerVisibility),
+    [enabled, fieldAtlasLayerVisibility, shape],
+  );
   const hoveredFieldAtlasSampleId = useGeometryStore(
     (state) => state.hoveredFieldAtlasSampleId,
   );
@@ -136,7 +145,11 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
   );
 }
 
-function buildMarkerModel(shape: Shape, enabled: boolean): FieldAtlasMarker[] {
+function buildMarkerModel(
+  shape: Shape,
+  enabled: boolean,
+  layerVisibility: FieldAtlasLayerVisibility,
+): FieldAtlasMarker[] {
   if (!enabled) {
     return [];
   }
@@ -149,14 +162,28 @@ function buildMarkerModel(shape: Shape, enabled: boolean): FieldAtlasMarker[] {
     }
 
     const viewModel = runtimeReport.viewModel;
+    const sourceMarkers = layerVisibility.sources ? viewModel.sourceMarkers : [];
+    const surfaceSampleMarkers = layerVisibility.samples
+      ? viewModel.surfaceSampleMarkers
+      : [];
+    const featureMarkers = layerVisibility.features
+      ? viewModel.featureOverlaySummary.featureMarkers
+      : [];
+    const routeGateCandidateMarkers = layerVisibility.routeGateCandidates
+      ? viewModel.routeGateOverlaySummary.candidateMarkers
+      : [];
+    const supportRegionCandidateMarkers =
+      layerVisibility.supportRegionCandidates
+        ? viewModel.supportRegionOverlaySummary.candidateMarkers
+        : [];
     const positions = [
-      ...viewModel.sourceMarkers.map((marker) => marker.position),
-      ...viewModel.surfaceSampleMarkers.map((marker) => marker.position),
-      ...viewModel.featureOverlaySummary.featureMarkers.map((marker) => marker.position),
-      ...viewModel.routeGateOverlaySummary.candidateMarkers
+      ...sourceMarkers.map((marker) => marker.position),
+      ...surfaceSampleMarkers.map((marker) => marker.position),
+      ...featureMarkers.map((marker) => marker.position),
+      ...routeGateCandidateMarkers
         .map((marker) => marker.position)
         .filter((position): position is Vec3 => Boolean(position)),
-      ...viewModel.supportRegionOverlaySummary.candidateMarkers
+      ...supportRegionCandidateMarkers
         .map((marker) => marker.position)
         .filter((position): position is Vec3 => Boolean(position)),
     ];
@@ -167,17 +194,17 @@ function buildMarkerModel(shape: Shape, enabled: boolean): FieldAtlasMarker[] {
     };
 
     return [
-      ...viewModel.sourceMarkers.map((marker) => buildSourceMarker(marker, radiusBase)),
-      ...viewModel.surfaceSampleMarkers.map((marker) =>
+      ...sourceMarkers.map((marker) => buildSourceMarker(marker, radiusBase)),
+      ...surfaceSampleMarkers.map((marker) =>
         buildSurfaceSampleMarker(marker, radiusBase, intensityRange),
       ),
-      ...viewModel.featureOverlaySummary.featureMarkers.map((marker) =>
+      ...featureMarkers.map((marker) =>
         buildFeatureMarker(marker, radiusBase),
       ),
-      ...viewModel.routeGateOverlaySummary.candidateMarkers
+      ...routeGateCandidateMarkers
         .map((marker) => buildRouteGateCandidateMarker(marker, radiusBase))
         .filter((marker): marker is FieldAtlasMarker => Boolean(marker)),
-      ...viewModel.supportRegionOverlaySummary.candidateMarkers
+      ...supportRegionCandidateMarkers
         .map((marker) => buildSupportRegionCandidateMarker(marker, radiusBase))
         .filter((marker): marker is FieldAtlasMarker => Boolean(marker)),
     ];

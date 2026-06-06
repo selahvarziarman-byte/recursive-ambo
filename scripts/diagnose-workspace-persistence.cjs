@@ -140,8 +140,29 @@ function verifyWorkspaceRoundTrip() {
     !serialized.includes('pinnedFieldAtlasProbeRef'),
     'round trip: pinned field probe ref should not serialize',
   );
+  expect(
+    !serialized.includes('fieldAtlasLayerVisibility'),
+    'round trip: field atlas layer visibility should not serialize',
+  );
 
   const parsedJson = JSON.parse(serialized);
+  parsedJson.fieldAtlasLayerVisibility = {
+    sources: false,
+    samples: false,
+    features: false,
+    routeGateCandidates: false,
+    supportRegionCandidates: false,
+  };
+  parsedJson.viewLayout = {
+    ...parsedJson.viewLayout,
+    fieldAtlasLayerVisibility: {
+      sources: false,
+      samples: false,
+      features: false,
+      routeGateCandidates: false,
+      supportRegionCandidates: false,
+    },
+  };
   const validation = validateWorkspaceImport(parsedJson);
 
   expect(validation.ok, 'round trip: exported workspace should validate');
@@ -163,6 +184,13 @@ function verifyWorkspaceRoundTrip() {
     hoverTarget: { kind: 'cell', cellId: seedShape.cells[0].id },
     hoveredFieldAtlasSampleId: 'sample:stale',
     pinnedFieldAtlasProbeRef: 'source:stale',
+    fieldAtlasLayerVisibility: {
+      sources: false,
+      samples: false,
+      features: false,
+      routeGateCandidates: false,
+      supportRegionCandidates: false,
+    },
     dualInspectionTarget: {
       universe: 'dual',
       modelKind: 'correspondence',
@@ -214,6 +242,10 @@ function verifyWorkspaceRoundTrip() {
   expect(importedState.hoverTarget === null, 'round trip: hover target should be cleared');
   expect(importedState.hoveredFieldAtlasSampleId === null, 'round trip: field hover should be cleared');
   expect(importedState.pinnedFieldAtlasProbeRef === null, 'round trip: pinned field probe should be cleared');
+  expectDefaultFieldAtlasLayerVisibility(
+    importedState.fieldAtlasLayerVisibility,
+    'round trip: field atlas layer visibility should reset on import',
+  );
   expect(importedState.dualInspectionTarget === null, 'round trip: dual inspection target should be cleared');
 
   if (importedShape && importedCell) {
@@ -298,6 +330,24 @@ function printDivider(label) {
 function expect(condition, message) {
   if (!condition) {
     recordFailure(message);
+  }
+}
+
+function expectDefaultFieldAtlasLayerVisibility(visibility, label) {
+  expect(Boolean(visibility), label);
+
+  if (!visibility) {
+    return;
+  }
+
+  for (const key of [
+    'sources',
+    'samples',
+    'features',
+    'routeGateCandidates',
+    'supportRegionCandidates',
+  ]) {
+    expect(visibility[key] === true, `${label}: ${key} should be true`);
   }
 }
 
