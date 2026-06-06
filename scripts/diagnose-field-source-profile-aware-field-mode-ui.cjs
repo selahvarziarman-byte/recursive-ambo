@@ -37,6 +37,7 @@ console.log('Field source profile-aware Field Mode UI diagnostics');
 runSupportedOneAmboTetrahedronContractDiagnostic();
 runLayerVisibilityContractDiagnostic();
 runSampleRenderModeContractDiagnostic();
+runChartLinkingContractDiagnostic();
 runUnsupportedSeedTetrahedronDiagnostic();
 runUnsupportedCubeDiagnostic();
 runConservativeBoundaryClaimDiagnostic();
@@ -450,6 +451,145 @@ function runSampleRenderModeContractDiagnostic() {
   console.log('sample render mode data contract: PASS');
 }
 
+function runChartLinkingContractDiagnostic() {
+  const report = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+
+  if (!report.viewModel) {
+    recordFailure('chart linking contract: supported view model missing');
+    return;
+  }
+
+  const viewModel = report.viewModel;
+  const chartAnchorMarker = viewModel.chartOverlaySummary.chartAnchorMarkers[0];
+
+  expectEqual(report.runtimeBoundaryStatus, 'supported', 'chart linking boundary');
+  expectTruthy(chartAnchorMarker, 'chart linking anchor exists');
+
+  if (!chartAnchorMarker) {
+    return;
+  }
+
+  const chartProbe = viewModel.probeIndex.probes[chartAnchorMarker.probeRef];
+  const activeChartId = parseChartProbeRef(chartAnchorMarker.probeRef);
+  const probeCountsBefore = {
+    sampleProbeCount: viewModel.probeIndex.sampleProbeCount,
+    chartProbeCount: viewModel.probeIndex.chartProbeCount,
+    featureProbeCount: viewModel.probeIndex.featureProbeCount,
+    routeGateCandidateProbeCount:
+      viewModel.probeIndex.routeGateCandidateProbeCount,
+    supportRegionCandidateProbeCount:
+      viewModel.probeIndex.supportRegionCandidateProbeCount,
+  };
+  const samplesInChart = viewModel.surfaceSampleMarkers.filter(
+    (marker) => marker.chartId === activeChartId,
+  );
+  const featuresInChart = viewModel.featureOverlaySummary.featureMarkers.filter(
+    (marker) => marker.chartId === activeChartId,
+  );
+  const routeGateCandidatesInChart =
+    viewModel.routeGateOverlaySummary.candidateMarkers.filter((marker) =>
+      marker.chartIds.includes(activeChartId),
+    );
+  const supportRegionCandidatesInChart =
+    viewModel.supportRegionOverlaySummary.candidateMarkers.filter((marker) =>
+      marker.chartIds.includes(activeChartId),
+    );
+
+  expectEqual(
+    chartProbe && chartProbe.probeKind,
+    'chart-summary',
+    'chart linking anchor probe kind',
+  );
+  expectEqual(
+    activeChartId,
+    chartAnchorMarker.chartId,
+    'chart linking active chart id',
+  );
+  expectAtLeast(samplesInChart.length, 1, 'chart linking samples in chart');
+  expectEqual(
+    chartProbe && chartProbe.sampleCount,
+    samplesInChart.length,
+    'chart linking probe sample count',
+  );
+
+  if (chartProbe && chartProbe.probeKind === 'chart-summary') {
+    expectFinite(chartProbe.minIntensity, 'chart linking intensity min');
+    expectFinite(chartProbe.maxIntensity, 'chart linking intensity max');
+    expectFinite(chartProbe.minPhase, 'chart linking phase min');
+    expectFinite(chartProbe.maxPhase, 'chart linking phase max');
+  }
+
+  expectAtLeast(featuresInChart.length, 0, 'chart linking feature count computed');
+  expectAtLeast(
+    routeGateCandidatesInChart.length,
+    0,
+    'chart linking route/gate count computed',
+  );
+  expectAtLeast(
+    supportRegionCandidatesInChart.length,
+    0,
+    'chart linking support/region count computed',
+  );
+  expectEqual(
+    viewModel.probeIndex.sampleProbeCount,
+    probeCountsBefore.sampleProbeCount,
+    'chart linking sample probes unchanged',
+  );
+  expectEqual(
+    viewModel.probeIndex.chartProbeCount,
+    probeCountsBefore.chartProbeCount,
+    'chart linking chart probes unchanged',
+  );
+  expectEqual(
+    viewModel.probeIndex.featureProbeCount,
+    probeCountsBefore.featureProbeCount,
+    'chart linking feature probes unchanged',
+  );
+  expectEqual(
+    viewModel.probeIndex.routeGateCandidateProbeCount,
+    probeCountsBefore.routeGateCandidateProbeCount,
+    'chart linking route/gate probes unchanged',
+  );
+  expectEqual(
+    viewModel.probeIndex.supportRegionCandidateProbeCount,
+    probeCountsBefore.supportRegionCandidateProbeCount,
+    'chart linking support/region probes unchanged',
+  );
+  expectEqual(
+    report.shapeMutationStatus,
+    'not-shape-mutation',
+    'chart linking runtime shape mutation status',
+  );
+  expectEqual(
+    viewModel.shapeMutationStatus,
+    'not-shape-mutation',
+    'chart linking view model shape mutation status',
+  );
+
+  const forbiddenProperties = [
+    'chartSelectionPersistenceStatus',
+    'chartFocusPersistenceStatus',
+    'chartTopologyStatus',
+    'chartSemanticNamingStatus',
+    'chartHeatmapStatus',
+    'faceHeatmapStatus',
+    'chartMeshStatus',
+    'shaderStatus',
+    'topologyBehaviorStatus',
+    'semanticNamingStatus',
+    'packetWritingStatus',
+  ];
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(report, property, `chart linking runtime no ${property}`);
+    expectNoOwnProperty(viewModel, property, `chart linking view model no ${property}`);
+  }
+
+  console.log('chart linking contract: PASS');
+}
+
 function runUnsupportedCubeDiagnostic() {
   runUnsupportedShapeDiagnostic(
     'unsupported cube Field Mode UI',
@@ -600,9 +740,13 @@ function runNoOldPolicyComparisonOrInvarianceDiagnostic() {
     'layerVisibilityPersistenceStatus',
     'fieldAtlasSampleRenderModePersistenceStatus',
     'sampleRenderModePersistenceStatus',
+    'chartSelectionPersistenceStatus',
+    'chartFocusPersistenceStatus',
     'packetWritingStatus',
     'semanticNamingStatus',
     'topologyBehaviorStatus',
+    'chartTopologyStatus',
+    'chartSemanticNamingStatus',
     'chartHeatmapStatus',
     'faceHeatmapStatus',
     'chartMeshStatus',
@@ -905,6 +1049,16 @@ function expectPinnedProbeRef(viewModel, probeRef, expectedProbeKind, label) {
 
   expectTruthy(probe, `${label} resolves`);
   expectEqual(probe && probe.probeKind, expectedProbeKind, `${label} kind`);
+}
+
+function parseChartProbeRef(probeRef) {
+  const prefix = 'chart:';
+
+  if (typeof probeRef !== 'string' || !probeRef.startsWith(prefix)) {
+    return null;
+  }
+
+  return probeRef.slice(prefix.length);
 }
 
 function getLayerFamilyCounts(viewModel) {

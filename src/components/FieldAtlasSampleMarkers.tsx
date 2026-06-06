@@ -39,6 +39,8 @@ interface FieldAtlasMarker {
   detailLabel?: string;
   extraDetailLabels?: string[];
   sampleRenderMode?: FieldAtlasSampleRenderMode;
+  chartId?: string;
+  relatedChartIds?: string[];
   kind:
     | 'source-marker'
     | 'surface-sample-marker'
@@ -88,18 +90,51 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
     return null;
   }
 
+  const activeChartId =
+    parseChartProbeRef(pinnedFieldAtlasProbeRef) ??
+    parseChartProbeRef(hoveredFieldAtlasSampleId);
+
   return (
     <group>
       {markers.map((marker) => {
         const isHovered = hoveredFieldAtlasSampleId === marker.hoverRef;
         const isPinned = pinnedFieldAtlasProbeRef === marker.hoverRef;
-        const markerScale = isPinned ? 2.12 : isHovered ? 1.85 : 1;
+        const isActiveChartRelated =
+          Boolean(activeChartId) && isMarkerRelatedToChart(marker, activeChartId);
+        const markerScale = isPinned
+          ? 2.12
+          : isHovered
+            ? 1.85
+            : isActiveChartRelated
+              ? 1.32
+              : 1;
+        const markerRenderOrder = isPinned
+          ? 28
+          : isHovered
+            ? 24
+            : isActiveChartRelated
+              ? 21
+              : 18;
+        const markerOpacity = isPinned
+          ? 0.98
+          : isHovered
+            ? 0.94
+            : isActiveChartRelated
+              ? Math.min(0.92, marker.opacity + 0.18)
+              : marker.opacity;
+        const markerEmissiveIntensity = isPinned
+          ? 1.05
+          : isHovered
+            ? 0.92
+            : isActiveChartRelated
+              ? Math.min(0.82, marker.emissiveIntensity + 0.24)
+              : marker.emissiveIntensity;
 
         return (
           <mesh
             key={marker.id}
             position={marker.position}
-            renderOrder={isPinned ? 28 : isHovered ? 24 : 18}
+            renderOrder={markerRenderOrder}
             scale={markerScale}
             onClick={(event) => {
               event.stopPropagation();
@@ -132,8 +167,8 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
               color={isPinned ? '#fef3c7' : isHovered ? '#fde68a' : marker.color}
               depthWrite={false}
               emissive={isPinned ? '#a16207' : isHovered ? '#92400e' : marker.emissive}
-              emissiveIntensity={isPinned ? 1.05 : isHovered ? 0.92 : marker.emissiveIntensity}
-              opacity={isPinned ? 0.98 : isHovered ? 0.94 : marker.opacity}
+              emissiveIntensity={markerEmissiveIntensity}
+              opacity={markerOpacity}
               roughness={0.38}
               transparent
             />
@@ -315,6 +350,7 @@ function buildSurfaceSampleMarker(
     label: 'Surface sample marker',
     detailLabel: formatSurfaceSampleMarkerDetail(marker),
     sampleRenderMode,
+    chartId: marker.chartId,
     kind: 'surface-sample-marker',
   };
 }
@@ -350,6 +386,7 @@ function buildChartAnchorMarker(
         ? 'ratios valid'
         : 'ratios invalid',
     ],
+    chartId: marker.chartId,
     kind: 'chart-summary-anchor-marker',
   };
 }
@@ -371,6 +408,7 @@ function buildFeatureMarker(
     valueLabel: 'intensity',
     label: formatFeatureMarkerLabel(marker),
     detailLabel: `${marker.status}; ${formatMarkerStatus(marker.semanticStatus)}`,
+    chartId: marker.chartId,
     kind: 'feature-observation-marker',
   };
 }
@@ -396,6 +434,7 @@ function buildRouteGateCandidateMarker(
     valueLabel: 'intensity',
     label: 'Route/gate candidate anchor',
     detailLabel: `${marker.candidateKind}; ${marker.reliability}`,
+    relatedChartIds: [...marker.chartIds],
     kind: 'route-gate-candidate-anchor-marker',
   };
 }
@@ -421,6 +460,7 @@ function buildSupportRegionCandidateMarker(
     valueLabel: 'intensity',
     label: 'Support/region candidate anchor',
     detailLabel: `${marker.candidateKind}; ${marker.reliability}`,
+    relatedChartIds: [...marker.chartIds],
     kind: 'support-region-candidate-anchor-marker',
   };
 }
@@ -432,6 +472,30 @@ function clearHoveredRef(
   if (useGeometryStore.getState().hoveredFieldAtlasSampleId === hoverRef) {
     setHoveredFieldAtlasSampleId(null);
   }
+}
+
+function parseChartProbeRef(probeRef: string | null): string | null {
+  const prefix = 'chart:';
+
+  if (!probeRef?.startsWith(prefix)) {
+    return null;
+  }
+
+  return probeRef.slice(prefix.length);
+}
+
+function isMarkerRelatedToChart(
+  marker: FieldAtlasMarker,
+  activeChartId: string | null,
+): boolean {
+  if (!activeChartId) {
+    return false;
+  }
+
+  return (
+    marker.chartId === activeChartId ||
+    Boolean(marker.relatedChartIds?.includes(activeChartId))
+  );
 }
 
 function formatSourceMarkerDetail(marker: ProfileAwareFieldAtlasSourceMarker): string {

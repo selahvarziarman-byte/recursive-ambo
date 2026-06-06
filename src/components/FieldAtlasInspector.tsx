@@ -46,6 +46,7 @@ import {
   type ProfileAwareFieldAtlasSupportRegionCandidateMarker,
   type ProfileAwareFieldAtlasSupportRegionProbe,
   type ProfileAwareFieldAtlasSurfaceSampleProbe,
+  type ProfileAwareFieldAtlasViewModelReport,
   type ProfileAwareFieldAtlasViewModelRuntimeReport,
 } from '../lib/fieldSourceProfileAwareAtlasViewModel';
 import {
@@ -402,6 +403,16 @@ function ProfileAwareFieldModeRuntimeSection({
       : undefined;
   const activeProbeMode = pinnedProbe ? 'pinned' : hoveredProbe ? 'hovered' : undefined;
   const pinnedProbeIsStale = Boolean(pinnedFieldAtlasProbeRef && !pinnedProbe);
+  const activeChartProbe =
+    pinnedProbe?.probeKind === 'chart-summary'
+      ? pinnedProbe
+      : hoveredProbe?.probeKind === 'chart-summary'
+        ? hoveredProbe
+        : undefined;
+  const activeChartContext = buildProfileAwareActiveChartContext(
+    viewModel,
+    activeChartProbe,
+  );
 
   return (
     <div className="rounded border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-xs">
@@ -500,6 +511,11 @@ function ProfileAwareFieldModeRuntimeSection({
           </p>
         )}
       </div>
+
+      <ProfileAwareActiveChartContextSection
+        context={activeChartContext}
+        shortenId={shortenId}
+      />
 
       <div className="mt-3 grid gap-2">
         <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
@@ -779,6 +795,103 @@ function ProfileAwareChartAnchorRow({
   );
 }
 
+type ProfileAwareActiveChartContext = {
+  probe: ProfileAwareFieldAtlasChartProbe;
+  sampleMarkerCount: number;
+  featureMarkerCount: number;
+  routeGateCandidateCount: number;
+  supportRegionCandidateCount: number;
+  relatedSampleIds: string[];
+  relatedFeatureIds: string[];
+};
+
+function ProfileAwareActiveChartContextSection({
+  context,
+  shortenId,
+}: {
+  context: ProfileAwareActiveChartContext | null;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2">
+      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Active Chart Context
+      </h4>
+      {context ? (
+        <div className="mt-2 grid gap-2">
+          <dl className="grid grid-cols-2 gap-2">
+            <FieldAtlasMetric
+              label="Chart"
+              value={shortenId(context.probe.chartId)}
+            />
+            <FieldAtlasMetric
+              label="Source face"
+              value={shortenId(context.probe.sourceFaceId)}
+            />
+            <FieldAtlasMetric
+              label="Role"
+              value={formatChartRole(context.probe.chartSemanticRole)}
+            />
+            <FieldAtlasMetric label="Samples" value={context.sampleMarkerCount} />
+            <FieldAtlasMetric
+              label="Features"
+              value={context.featureMarkerCount}
+            />
+            <FieldAtlasMetric
+              label="Route/gate"
+              value={context.routeGateCandidateCount}
+            />
+            <FieldAtlasMetric
+              label="Support/region"
+              value={context.supportRegionCandidateCount}
+            />
+            <FieldAtlasMetric
+              label="Intensity"
+              value={`${formatNumber(context.probe.minIntensity)} - ${formatNumber(
+                context.probe.maxIntensity,
+              )}`}
+            />
+            <FieldAtlasMetric
+              label="Phase"
+              value={`${formatNumber(context.probe.minPhase)} - ${formatNumber(
+                context.probe.maxPhase,
+              )}`}
+            />
+            <FieldAtlasMetric
+              label="Ratios"
+              value={context.probe.allContributionRatiosValid ? 'valid' : 'invalid'}
+            />
+          </dl>
+          {context.relatedSampleIds.length || context.relatedFeatureIds.length ? (
+            <div className="grid gap-1 font-mono text-[11px] text-stone-500">
+              {context.relatedSampleIds.length ? (
+                <div>
+                  samples{' '}
+                  {context.relatedSampleIds.map((sampleId) => shortenId(sampleId)).join(', ')}
+                </div>
+              ) : null}
+              {context.relatedFeatureIds.length ? (
+                <div>
+                  features{' '}
+                  {context.relatedFeatureIds.map((featureId) => shortenId(featureId)).join(', ')}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+          <p className="leading-5 text-stone-500">
+            Chart context is sample/chart membership only; not topology or
+            semantic naming.
+          </p>
+        </div>
+      ) : (
+        <p className="mt-2 leading-5 text-stone-500">
+          Hover or pin a chart anchor to inspect linked chart context.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function ProfileAwareFeatureMarkerRow({
   marker,
   reason,
@@ -962,6 +1075,43 @@ function getProfileAwareFeatureReason(
   const probe = report.viewModel.probeIndex.probes[marker.probeRef];
 
   return probe?.probeKind === 'feature-observation' ? probe.reason : '';
+}
+
+function buildProfileAwareActiveChartContext(
+  viewModel: ProfileAwareFieldAtlasViewModelReport,
+  chartProbe: ProfileAwareFieldAtlasChartProbe | undefined,
+): ProfileAwareActiveChartContext | null {
+  if (!chartProbe) {
+    return null;
+  }
+
+  const activeChartId = chartProbe.chartId;
+  const sampleMarkers = viewModel.surfaceSampleMarkers.filter(
+    (marker) => marker.chartId === activeChartId,
+  );
+  const featureMarkers = viewModel.featureOverlaySummary.featureMarkers.filter(
+    (marker) => marker.chartId === activeChartId,
+  );
+  const routeGateCandidateMarkers =
+    viewModel.routeGateOverlaySummary.candidateMarkers.filter((marker) =>
+      marker.chartIds.includes(activeChartId),
+    );
+  const supportRegionCandidateMarkers =
+    viewModel.supportRegionOverlaySummary.candidateMarkers.filter((marker) =>
+      marker.chartIds.includes(activeChartId),
+    );
+
+  return {
+    probe: chartProbe,
+    sampleMarkerCount: sampleMarkers.length,
+    featureMarkerCount: featureMarkers.length,
+    routeGateCandidateCount: routeGateCandidateMarkers.length,
+    supportRegionCandidateCount: supportRegionCandidateMarkers.length,
+    relatedSampleIds: sampleMarkers.slice(0, 4).map((marker) => marker.sampleId),
+    relatedFeatureIds: featureMarkers
+      .slice(0, 4)
+      .map((marker) => marker.featureId),
+  };
 }
 
 function ProfileAwareActiveProbeSection({
