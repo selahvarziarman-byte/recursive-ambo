@@ -169,6 +169,14 @@ export function FieldAtlasInspector({
     () => buildProfileAwareFieldAtlasViewModelRuntimeReport(shape),
     [shape],
   );
+  const runtimeSupportPolicySummary = useMemo(
+    () =>
+      buildProfileAwareRuntimeSupportPolicySummary(
+        profileAwareRuntimeReport,
+        shape,
+      ),
+    [profileAwareRuntimeReport, shape],
+  );
   const profileAwareEvidenceStabilityReport = useMemo(
     () => buildProfileAwareEvidenceStabilityReport(),
     [],
@@ -263,6 +271,7 @@ export function FieldAtlasInspector({
     <div className="grid gap-3 text-sm">
       <ProfileAwareFieldModeRuntimeSection
         report={profileAwareRuntimeReport}
+        runtimeSupportPolicySummary={runtimeSupportPolicySummary}
         evidenceStabilityReport={profileAwareEvidenceStabilityReport}
         semanticHandoffSummary={currentSemanticHandoffSummary}
         semanticHandoffTransition={semanticHandoffTransition}
@@ -432,6 +441,7 @@ function LegacyFieldAtlasDiagnosticsSection({
 
 function ProfileAwareFieldModeRuntimeSection({
   report,
+  runtimeSupportPolicySummary,
   evidenceStabilityReport,
   semanticHandoffSummary,
   semanticHandoffTransition,
@@ -444,6 +454,7 @@ function ProfileAwareFieldModeRuntimeSection({
   shortenId,
 }: {
   report: ProfileAwareFieldAtlasViewModelRuntimeReport;
+  runtimeSupportPolicySummary: ProfileAwareRuntimeSupportPolicySummary;
   evidenceStabilityReport: ProfileAwareEvidenceStabilityReport;
   semanticHandoffSummary: ProfileAwareSemanticHandoffSummary;
   semanticHandoffTransition: ProfileAwareSemanticHandoffTransition;
@@ -502,6 +513,10 @@ function ProfileAwareFieldModeRuntimeSection({
           <FieldAtlasMetric label="Topology" value={report.topologyStatus} />
           <FieldAtlasMetric label="Packet write" value={report.packetWriteStatus} />
         </dl>
+        <ProfileAwareRuntimeSupportPolicySection
+          summary={runtimeSupportPolicySummary}
+          shortenId={shortenId}
+        />
         <ProfileAwareEvidenceStabilitySection
           report={evidenceStabilityReport}
           shortenId={shortenId}
@@ -612,6 +627,11 @@ function ProfileAwareFieldModeRuntimeSection({
         <FieldAtlasMetric label="Topology" value={report.topologyStatus} />
         <FieldAtlasMetric label="Overlay" value={viewModel.candidateOverlayStatus} />
       </dl>
+
+      <ProfileAwareRuntimeSupportPolicySection
+        summary={runtimeSupportPolicySummary}
+        shortenId={shortenId}
+      />
 
       <ProfileAwareLayerVisibilityControls
         counts={{
@@ -1365,6 +1385,140 @@ function getSaturatedEvidenceStabilityBucketLabels(
     .map(([, label]) => label);
 }
 
+type ProfileAwareRuntimeSupportPolicyStatus = 'supported' | 'unsupported';
+
+type ProfileAwareRuntimeSupportPolicyCriterionId =
+  | 'tetrahedron-seed'
+  | 'ambo-dissection-operation'
+  | 'minimum-generation-depth'
+  | 'created-vertices-present';
+
+type ProfileAwareRuntimeSupportExpansionCandidateId =
+  | 'other-seeds'
+  | 'selected-cell-contexts'
+  | 'deeper-named-generation-support'
+  | 'multi-cell-contexts'
+  | 'editable-source-profile-assignment';
+
+type ProfileAwareRuntimeSupportPolicySummary = {
+  policyId: 'profile-aware-runtime-support-policy-v0';
+  policyScope: 'current-shape-runtime-field-mode';
+  supportStatus: ProfileAwareRuntimeSupportPolicyStatus;
+  inputShapeId: string;
+  seedKey?: string;
+  operation: string;
+  generationDepth: number;
+  createdVertexCount: number;
+  criteria: Array<{
+    id: ProfileAwareRuntimeSupportPolicyCriterionId;
+    label: string;
+    passed: boolean;
+    actual: string | number | null;
+    expected: string;
+  }>;
+  unsupportedIssueCode?: string;
+  unsupportedReason?: string;
+  expansionCandidates: Array<{
+    id: ProfileAwareRuntimeSupportExpansionCandidateId;
+    status: 'not-yet-supported';
+    note: string;
+  }>;
+  supportExpansionStatus: 'not-expanded-this-branch';
+  fallbackSupportStatus: 'no-silent-fallback';
+  semanticStatus: 'not-semantic-naming';
+  topologyStatus: 'not-topology-workspace';
+  packetWriteStatus: 'not-packet-writing';
+};
+
+function ProfileAwareRuntimeSupportPolicySection({
+  summary,
+  shortenId,
+}: {
+  summary: ProfileAwareRuntimeSupportPolicySummary;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2">
+      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Profile-aware Runtime Support Policy
+      </h4>
+      <dl className="mt-2 grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Policy" value={summary.policyId} />
+        <FieldAtlasMetric label="Support" value={summary.supportStatus} />
+        <FieldAtlasMetric
+          label="Input shape"
+          value={shortenId(summary.inputShapeId)}
+        />
+        <FieldAtlasMetric label="Seed" value={summary.seedKey ?? 'n/a'} />
+        <FieldAtlasMetric label="Operation" value={summary.operation} />
+        <FieldAtlasMetric label="Generation" value={summary.generationDepth} />
+        <FieldAtlasMetric
+          label="Created vertices"
+          value={summary.createdVertexCount}
+        />
+        <FieldAtlasMetric
+          label="Support expansion"
+          value={summary.supportExpansionStatus}
+        />
+        <FieldAtlasMetric
+          label="Fallback"
+          value={summary.fallbackSupportStatus}
+        />
+      </dl>
+
+      <div className="mt-2 grid gap-1">
+        {summary.criteria.map((criterion) => (
+          <div
+            key={criterion.id}
+            className="rounded border border-stone-800 bg-stone-900 px-2 py-2"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-medium text-stone-300">
+                {criterion.label}
+              </span>
+              <span className="font-mono text-[11px] text-stone-500">
+                {formatYesNo(criterion.passed)}
+              </span>
+            </div>
+            <div className="mt-1 grid grid-cols-2 gap-2 font-mono text-[11px] text-stone-500">
+              <span>actual {criterion.actual ?? 'n/a'}</span>
+              <span className="text-right">expected {criterion.expected}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {summary.supportStatus === 'unsupported' ? (
+        <div className="mt-2 rounded border border-amber-300/30 bg-amber-300/10 px-2 py-2 text-amber-100">
+          <div className="font-mono text-[11px]">
+            {summary.unsupportedIssueCode ?? 'unsupported'}
+          </div>
+          <p className="mt-1 leading-5 text-stone-300">
+            {summary.unsupportedReason ?? 'Current shape is outside runtime policy.'}
+          </p>
+        </div>
+      ) : null}
+
+      <div className="mt-2 flex flex-wrap gap-1 font-mono text-[11px] text-stone-500">
+        {summary.expansionCandidates.map((candidate) => (
+          <span
+            key={candidate.id}
+            className="rounded border border-stone-800 bg-stone-900 px-1.5 py-0.5"
+            title={candidate.note}
+          >
+            {candidate.id}: {candidate.status}
+          </span>
+        ))}
+      </div>
+
+      <p className="mt-2 leading-5 text-stone-500">
+        Runtime support is policy-bound. This branch exposes the support
+        boundary only; it does not expand support or add fallback behavior.
+      </p>
+    </div>
+  );
+}
+
 type ProfileAwareSemanticHandoffReadiness =
   | 'not-available'
   | 'diagnostic-only'
@@ -1791,6 +1945,94 @@ function ProfileAwareSemanticHandoffPressureRecordRow({
       </div>
     </button>
   );
+}
+
+function buildProfileAwareRuntimeSupportPolicySummary(
+  runtimeReport: ProfileAwareFieldAtlasViewModelRuntimeReport,
+  shape: Shape,
+): ProfileAwareRuntimeSupportPolicySummary {
+  const createdVertexCount = shape.genealogy.createdVertexIds.length;
+  const unsupportedFields =
+    runtimeReport.runtimeBoundaryStatus === 'unsupported'
+      ? {
+          unsupportedIssueCode: runtimeReport.unsupportedIssueCode,
+          unsupportedReason: runtimeReport.unsupportedReason,
+        }
+      : {};
+
+  return {
+    policyId: 'profile-aware-runtime-support-policy-v0',
+    policyScope: 'current-shape-runtime-field-mode',
+    supportStatus: runtimeReport.runtimeBoundaryStatus,
+    inputShapeId: runtimeReport.inputShapeId,
+    seedKey: runtimeReport.inputShapeSeedKey,
+    operation: runtimeReport.inputShapeOperation,
+    generationDepth: runtimeReport.inputShapeGenerationDepth,
+    createdVertexCount,
+    criteria: [
+      {
+        id: 'tetrahedron-seed',
+        label: 'Tetrahedron seed',
+        passed: shape.seedKey === 'tetrahedron',
+        actual: shape.seedKey ?? null,
+        expected: 'tetrahedron',
+      },
+      {
+        id: 'ambo-dissection-operation',
+        label: 'Ambo dissection operation',
+        passed: shape.genealogy.operation === 'ambo-dissection',
+        actual: shape.genealogy.operation,
+        expected: 'ambo-dissection',
+      },
+      {
+        id: 'minimum-generation-depth',
+        label: 'Minimum generation depth',
+        passed: shape.genealogy.generationDepth >= 1,
+        actual: shape.genealogy.generationDepth,
+        expected: '>= 1',
+      },
+      {
+        id: 'created-vertices-present',
+        label: 'Created vertices present',
+        passed: createdVertexCount > 0,
+        actual: createdVertexCount,
+        expected: '> 0',
+      },
+    ],
+    expansionCandidates: [
+      {
+        id: 'other-seeds',
+        status: 'not-yet-supported',
+        note: 'Non-tetrahedron seed support remains outside the current runtime policy.',
+      },
+      {
+        id: 'selected-cell-contexts',
+        status: 'not-yet-supported',
+        note: 'Selected-cell runtime contexts are not part of this support policy.',
+      },
+      {
+        id: 'deeper-named-generation-support',
+        status: 'not-yet-supported',
+        note: 'Deeper named-generation support is reserved for an explicit future policy.',
+      },
+      {
+        id: 'multi-cell-contexts',
+        status: 'not-yet-supported',
+        note: 'Multi-cell runtime contexts are not expanded in this branch.',
+      },
+      {
+        id: 'editable-source-profile-assignment',
+        status: 'not-yet-supported',
+        note: 'Editable source-profile assignment remains unsupported here.',
+      },
+    ],
+    supportExpansionStatus: 'not-expanded-this-branch',
+    fallbackSupportStatus: 'no-silent-fallback',
+    semanticStatus: 'not-semantic-naming',
+    topologyStatus: 'not-topology-workspace',
+    packetWriteStatus: 'not-packet-writing',
+    ...unsupportedFields,
+  };
 }
 
 function ProfileAwareSemanticHandoffEnvelopePreviewSection({

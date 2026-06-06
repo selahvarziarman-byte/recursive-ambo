@@ -45,6 +45,7 @@ runLayerVisibilityContractDiagnostic();
 runSampleRenderModeContractDiagnostic();
 runChartLinkingContractDiagnostic();
 runSourceLinkingContractDiagnostic();
+runRuntimeSupportPolicyUiContractDiagnostic();
 runEvidenceStabilityUiContractDiagnostic();
 runSemanticHandoffReadinessUiContractDiagnostic();
 runSemanticHandoffTransitionUiContractDiagnostic();
@@ -813,6 +814,102 @@ function runSourceLinkingContractDiagnostic() {
   }
 
   console.log('source linking contract: PASS');
+}
+
+function runRuntimeSupportPolicyUiContractDiagnostic() {
+  const seedTetrahedron = createSeedShape('tetrahedron');
+  const oneAmboTetrahedron = applyAmboDissection(createSeedShape('tetrahedron'));
+  const cube = createSeedShape('cube');
+  const cases = [
+    {
+      label: 'seed tetrahedron',
+      shape: seedTetrahedron,
+      expectedRuntimeStatus: 'unsupported',
+      expectedCriteria: {
+        'tetrahedron-seed': true,
+        'ambo-dissection-operation': false,
+        'minimum-generation-depth': false,
+        'created-vertices-present': true,
+      },
+    },
+    {
+      label: 'one-Ambo tetrahedron',
+      shape: oneAmboTetrahedron,
+      expectedRuntimeStatus: 'supported',
+      expectedCriteria: {
+        'tetrahedron-seed': true,
+        'ambo-dissection-operation': true,
+        'minimum-generation-depth': true,
+        'created-vertices-present': true,
+      },
+    },
+    {
+      label: 'cube',
+      shape: cube,
+      expectedRuntimeStatus: 'unsupported',
+      expectedCriteria: {
+        'tetrahedron-seed': false,
+      },
+    },
+  ];
+
+  for (const testCase of cases) {
+    const shapeSnapshot = JSON.stringify(testCase.shape);
+    const runtimeReport =
+      buildProfileAwareFieldAtlasViewModelRuntimeReport(testCase.shape);
+    const runtimeStatusBefore = runtimeReport.runtimeBoundaryStatus;
+    const summary = buildProfileAwareRuntimeSupportPolicySummary(
+      runtimeReport,
+      testCase.shape,
+    );
+
+    expectEqual(
+      runtimeReport.runtimeBoundaryStatus,
+      testCase.expectedRuntimeStatus,
+      `${testCase.label} runtime support status`,
+    );
+    expectEqual(
+      summary.supportStatus,
+      testCase.expectedRuntimeStatus,
+      `${testCase.label} policy support status`,
+    );
+    expectEqual(
+      JSON.stringify(testCase.shape),
+      shapeSnapshot,
+      `${testCase.label} support summary does not mutate shape`,
+    );
+    expectEqual(
+      runtimeReport.runtimeBoundaryStatus,
+      runtimeStatusBefore,
+      `${testCase.label} support summary does not alter runtime status`,
+    );
+    expectEqual(
+      summary.fallbackSupportStatus,
+      'no-silent-fallback',
+      `${testCase.label} fallback status`,
+    );
+    expectEqual(
+      summary.supportExpansionStatus,
+      'not-expanded-this-branch',
+      `${testCase.label} support expansion status`,
+    );
+
+    for (const [criterionId, expectedPassed] of Object.entries(
+      testCase.expectedCriteria,
+    )) {
+      expectRuntimeSupportCriterion(
+        summary,
+        criterionId,
+        expectedPassed,
+        testCase.label,
+      );
+    }
+
+    expectRuntimeSupportExpansionCandidates(summary, testCase.label);
+    expectNoForbiddenRuntimeSupportPolicyProperties(summary, testCase.label);
+  }
+
+  console.log('runtime support policy UI contract: PASS');
 }
 
 function runEvidenceStabilityUiContractDiagnostic() {
@@ -2419,6 +2516,91 @@ function getProbeCounts(viewModel) {
   };
 }
 
+function buildProfileAwareRuntimeSupportPolicySummary(runtimeReport, shape) {
+  const createdVertexCount = shape.genealogy.createdVertexIds.length;
+  const unsupportedFields =
+    runtimeReport.runtimeBoundaryStatus === 'unsupported'
+      ? {
+          unsupportedIssueCode: runtimeReport.unsupportedIssueCode,
+          unsupportedReason: runtimeReport.unsupportedReason,
+        }
+      : {};
+
+  return {
+    policyId: 'profile-aware-runtime-support-policy-v0',
+    policyScope: 'current-shape-runtime-field-mode',
+    supportStatus: runtimeReport.runtimeBoundaryStatus,
+    inputShapeId: runtimeReport.inputShapeId,
+    seedKey: runtimeReport.inputShapeSeedKey,
+    operation: runtimeReport.inputShapeOperation,
+    generationDepth: runtimeReport.inputShapeGenerationDepth,
+    createdVertexCount,
+    criteria: [
+      {
+        id: 'tetrahedron-seed',
+        label: 'Tetrahedron seed',
+        passed: shape.seedKey === 'tetrahedron',
+        actual: shape.seedKey || null,
+        expected: 'tetrahedron',
+      },
+      {
+        id: 'ambo-dissection-operation',
+        label: 'Ambo dissection operation',
+        passed: shape.genealogy.operation === 'ambo-dissection',
+        actual: shape.genealogy.operation,
+        expected: 'ambo-dissection',
+      },
+      {
+        id: 'minimum-generation-depth',
+        label: 'Minimum generation depth',
+        passed: shape.genealogy.generationDepth >= 1,
+        actual: shape.genealogy.generationDepth,
+        expected: '>= 1',
+      },
+      {
+        id: 'created-vertices-present',
+        label: 'Created vertices present',
+        passed: createdVertexCount > 0,
+        actual: createdVertexCount,
+        expected: '> 0',
+      },
+    ],
+    expansionCandidates: [
+      {
+        id: 'other-seeds',
+        status: 'not-yet-supported',
+        note: 'Non-tetrahedron seed support remains outside the current runtime policy.',
+      },
+      {
+        id: 'selected-cell-contexts',
+        status: 'not-yet-supported',
+        note: 'Selected-cell runtime contexts are not part of this support policy.',
+      },
+      {
+        id: 'deeper-named-generation-support',
+        status: 'not-yet-supported',
+        note: 'Deeper named-generation support is reserved for an explicit future policy.',
+      },
+      {
+        id: 'multi-cell-contexts',
+        status: 'not-yet-supported',
+        note: 'Multi-cell runtime contexts are not expanded in this branch.',
+      },
+      {
+        id: 'editable-source-profile-assignment',
+        status: 'not-yet-supported',
+        note: 'Editable source-profile assignment remains unsupported here.',
+      },
+    ],
+    supportExpansionStatus: 'not-expanded-this-branch',
+    fallbackSupportStatus: 'no-silent-fallback',
+    semanticStatus: 'not-semantic-naming',
+    topologyStatus: 'not-topology-workspace',
+    packetWriteStatus: 'not-packet-writing',
+    ...unsupportedFields,
+  };
+}
+
 function buildProfileAwareSemanticHandoffSummary(
   runtimeReport,
   evidenceStabilityReport,
@@ -2863,6 +3045,85 @@ function getProfileAwareSemanticHandoffPressureKindOrder(kind) {
       return 2;
     default:
       return 3;
+  }
+}
+
+function expectRuntimeSupportCriterion(summary, criterionId, expectedPassed, label) {
+  const criterion = summary.criteria.find((item) => item.id === criterionId);
+
+  expectTruthy(criterion, `${label} ${criterionId} criterion exists`);
+
+  if (!criterion) {
+    return;
+  }
+
+  expectEqual(
+    criterion.passed,
+    expectedPassed,
+    `${label} ${criterionId} criterion passed`,
+  );
+}
+
+function expectRuntimeSupportExpansionCandidates(summary, label) {
+  const expectedCandidateIds = [
+    'other-seeds',
+    'selected-cell-contexts',
+    'deeper-named-generation-support',
+    'multi-cell-contexts',
+    'editable-source-profile-assignment',
+  ];
+
+  expectEqual(
+    summary.expansionCandidates.length,
+    expectedCandidateIds.length,
+    `${label} runtime support expansion candidate count`,
+  );
+
+  for (const candidateId of expectedCandidateIds) {
+    const candidate = summary.expansionCandidates.find(
+      (item) => item.id === candidateId,
+    );
+
+    expectTruthy(
+      candidate,
+      `${label} runtime support expansion ${candidateId} exists`,
+    );
+
+    if (!candidate) {
+      continue;
+    }
+
+    expectEqual(
+      candidate.status,
+      'not-yet-supported',
+      `${label} runtime support expansion ${candidateId} status`,
+    );
+  }
+}
+
+function expectNoForbiddenRuntimeSupportPolicyProperties(summary, label) {
+  const forbiddenProperties = [
+    'expandedSupportStatus',
+    'cubeSupportStatus',
+    'seedFieldModeSupportStatus',
+    'fallbackEnabled',
+    'silentFallbackStatus',
+    'arbitrarySourceProfileSupportStatus',
+    'editableSourceProfileStatus',
+    'persistenceStatus',
+    'semanticNamingStatus',
+    'topologyBehaviorStatus',
+    'packetWritingStatus',
+    'oldPolicyInvariantStatus',
+    'defaultPolicyComparisonStatus',
+  ];
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(
+      summary,
+      property,
+      `${label} runtime support policy no ${property}`,
+    );
   }
 }
 
