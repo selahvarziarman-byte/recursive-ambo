@@ -56,10 +56,11 @@ import {
 } from '../lib/fieldSourceProfileAwareAtlasViewModel';
 import {
   useGeometryStore,
+  type OperationHistoryEntry,
   type FieldAtlasLayerVisibility,
   type FieldAtlasSampleRenderMode,
 } from '../store/geometryStore';
-import type { Shape, VertexId } from '../types/geometry';
+import type { Shape, ShapeId, VertexId } from '../types/geometry';
 
 interface FieldAtlasInspectorProps {
   shape: Shape;
@@ -172,6 +173,65 @@ export function FieldAtlasInspector({
     () => buildProfileAwareEvidenceStabilityReport(),
     [],
   );
+  const shapes = useGeometryStore((state) => state.shapes);
+  const shapeOrder = useGeometryStore((state) => state.shapeOrder);
+  const currentShapeId = useGeometryStore((state) => state.currentShapeId);
+  const operationHistory = useGeometryStore((state) => state.operationHistory);
+  const currentShapeIndex = shapeOrder.indexOf(currentShapeId);
+  const previousShapeId =
+    currentShapeIndex > 0 ? shapeOrder[currentShapeIndex - 1] : undefined;
+  const previousShape = previousShapeId ? shapes[previousShapeId] : undefined;
+  const currentHistoryEntry = getLatestHistoryEntryForShape(
+    operationHistory,
+    currentShapeId,
+  );
+  const previousHistoryEntry = previousShapeId
+    ? getLatestHistoryEntryForShape(operationHistory, previousShapeId)
+    : undefined;
+  const previousProfileAwareRuntimeReport = useMemo(
+    () =>
+      previousShape
+        ? buildProfileAwareFieldAtlasViewModelRuntimeReport(previousShape)
+        : null,
+    [previousShape],
+  );
+  const currentSemanticHandoffSummary = useMemo(
+    () =>
+      buildProfileAwareSemanticHandoffSummary(
+        profileAwareRuntimeReport,
+        profileAwareEvidenceStabilityReport,
+      ),
+    [profileAwareEvidenceStabilityReport, profileAwareRuntimeReport],
+  );
+  const previousSemanticHandoffSummary = useMemo(
+    () =>
+      previousProfileAwareRuntimeReport
+        ? buildProfileAwareSemanticHandoffSummary(
+            previousProfileAwareRuntimeReport,
+            profileAwareEvidenceStabilityReport,
+          )
+        : null,
+    [previousProfileAwareRuntimeReport, profileAwareEvidenceStabilityReport],
+  );
+  const semanticHandoffTransition = useMemo(
+    () =>
+      buildProfileAwareSemanticHandoffTransition({
+        previousSummary: previousSemanticHandoffSummary,
+        currentSummary: currentSemanticHandoffSummary,
+        previousShapeId,
+        currentShapeId,
+        previousLabel: previousHistoryEntry?.label,
+        currentLabel: currentHistoryEntry?.label,
+      }),
+    [
+      currentHistoryEntry,
+      currentSemanticHandoffSummary,
+      currentShapeId,
+      previousHistoryEntry,
+      previousSemanticHandoffSummary,
+      previousShapeId,
+    ],
+  );
   const [advancedDiagnosticsOpen, setAdvancedDiagnosticsOpen] = useState(false);
   const hoveredFieldAtlasSampleId = useGeometryStore(
     (state) => state.hoveredFieldAtlasSampleId,
@@ -204,6 +264,8 @@ export function FieldAtlasInspector({
       <ProfileAwareFieldModeRuntimeSection
         report={profileAwareRuntimeReport}
         evidenceStabilityReport={profileAwareEvidenceStabilityReport}
+        semanticHandoffSummary={currentSemanticHandoffSummary}
+        semanticHandoffTransition={semanticHandoffTransition}
         hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
         pinnedFieldAtlasProbeRef={pinnedFieldAtlasProbeRef}
         onHoverSampleStart={setHoveredFieldAtlasSampleId}
@@ -371,6 +433,8 @@ function LegacyFieldAtlasDiagnosticsSection({
 function ProfileAwareFieldModeRuntimeSection({
   report,
   evidenceStabilityReport,
+  semanticHandoffSummary,
+  semanticHandoffTransition,
   hoveredFieldAtlasSampleId,
   pinnedFieldAtlasProbeRef,
   onHoverSampleStart,
@@ -381,6 +445,8 @@ function ProfileAwareFieldModeRuntimeSection({
 }: {
   report: ProfileAwareFieldAtlasViewModelRuntimeReport;
   evidenceStabilityReport: ProfileAwareEvidenceStabilityReport;
+  semanticHandoffSummary: ProfileAwareSemanticHandoffSummary;
+  semanticHandoffTransition: ProfileAwareSemanticHandoffTransition;
   hoveredFieldAtlasSampleId: string | null;
   pinnedFieldAtlasProbeRef: string | null;
   onHoverSampleStart: (sampleId: string) => void;
@@ -389,10 +455,6 @@ function ProfileAwareFieldModeRuntimeSection({
   onClearPinnedProbe: () => void;
   shortenId: (id: string) => string;
 }) {
-  const semanticHandoffSummary = buildProfileAwareSemanticHandoffSummary(
-    report,
-    evidenceStabilityReport,
-  );
   const fieldAtlasLayerVisibility = useGeometryStore(
     (state) => state.fieldAtlasLayerVisibility,
   );
@@ -434,6 +496,9 @@ function ProfileAwareFieldModeRuntimeSection({
         </dl>
         <ProfileAwareSemanticHandoffReadinessSection
           summary={semanticHandoffSummary}
+        />
+        <ProfileAwareSemanticHandoffTransitionSection
+          transition={semanticHandoffTransition}
         />
       </div>
     );
@@ -588,6 +653,10 @@ function ProfileAwareFieldModeRuntimeSection({
 
       <ProfileAwareSemanticHandoffReadinessSection
         summary={semanticHandoffSummary}
+      />
+
+      <ProfileAwareSemanticHandoffTransitionSection
+        transition={semanticHandoffTransition}
       />
 
       <div className="mt-3 grid gap-2">
@@ -1272,6 +1341,32 @@ type ProfileAwareSemanticHandoffSummary = {
   handoffHints: string[];
 };
 
+type ProfileAwareSemanticHandoffTransitionStatus =
+  | 'no-previous-shape'
+  | 'handoff-became-available'
+  | 'handoff-became-sensitive'
+  | 'handoff-remained-available'
+  | 'handoff-remained-sensitive'
+  | 'handoff-became-diagnostic-only'
+  | 'handoff-became-unavailable'
+  | 'handoff-remained-unavailable';
+
+type ProfileAwareSemanticHandoffTransition = {
+  status: ProfileAwareSemanticHandoffTransitionStatus;
+  previousShapeId?: ShapeId;
+  currentShapeId: ShapeId;
+  previousLabel?: string;
+  currentLabel?: string;
+  previousReadiness?: ProfileAwareSemanticHandoffReadiness;
+  currentReadiness: ProfileAwareSemanticHandoffReadiness;
+  featureCandidateDelta?: number;
+  routeGateCandidateDelta?: number;
+  supportRegionCandidateDelta?: number;
+  changedCountKeyDelta?: number;
+  caveats: string[];
+  handoffHints: string[];
+};
+
 function ProfileAwareSemanticHandoffReadinessSection({
   summary,
 }: {
@@ -1348,6 +1443,87 @@ function ProfileAwareSemanticHandoffReadinessSection({
       <p className="mt-2 leading-5 text-stone-500">
         Field handoff is a pressure/candidate summary for later semantic work;
         it is not semantic naming, topology, or packet writing.
+      </p>
+    </div>
+  );
+}
+
+function ProfileAwareSemanticHandoffTransitionSection({
+  transition,
+}: {
+  transition: ProfileAwareSemanticHandoffTransition;
+}) {
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2">
+      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Semantic Handoff Transition
+      </h4>
+      <dl className="mt-2 grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Transition" value={transition.status} />
+        <FieldAtlasMetric
+          label="Previous readiness"
+          value={transition.previousReadiness ?? 'n/a'}
+        />
+        <FieldAtlasMetric
+          label="Current readiness"
+          value={transition.currentReadiness}
+        />
+        <FieldAtlasMetric
+          label="Previous"
+          value={transition.previousLabel ?? transition.previousShapeId ?? 'n/a'}
+        />
+        <FieldAtlasMetric
+          label="Current"
+          value={transition.currentLabel ?? transition.currentShapeId}
+        />
+        <FieldAtlasMetric
+          label="Feature candidate delta"
+          value={formatSignedDelta(transition.featureCandidateDelta)}
+        />
+        <FieldAtlasMetric
+          label="Route/gate candidate delta"
+          value={formatSignedDelta(transition.routeGateCandidateDelta)}
+        />
+        <FieldAtlasMetric
+          label="Support/region candidate delta"
+          value={formatSignedDelta(transition.supportRegionCandidateDelta)}
+        />
+        <FieldAtlasMetric
+          label="Changed evidence key delta"
+          value={formatSignedDelta(transition.changedCountKeyDelta)}
+        />
+      </dl>
+
+      {transition.handoffHints.length ? (
+        <div className="mt-2 grid gap-1 text-stone-500">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.12em]">
+            Transition hints
+          </div>
+          {transition.handoffHints.slice(0, 4).map((hint) => (
+            <p key={hint} className="leading-5">
+              {hint}
+            </p>
+          ))}
+        </div>
+      ) : null}
+
+      {transition.caveats.length ? (
+        <div className="mt-2 flex flex-wrap gap-1 font-mono text-[11px] text-stone-500">
+          {transition.caveats.slice(0, 6).map((caveat) => (
+            <span
+              key={caveat}
+              className="rounded border border-stone-800 bg-stone-900 px-1.5 py-0.5"
+            >
+              {caveat}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <p className="mt-2 leading-5 text-stone-500">
+        Handoff transition compares readiness summaries only; it does not claim
+        candidate identity, semantic continuity, topology continuity, route
+        persistence, or support/region persistence.
       </p>
     </div>
   );
@@ -1446,6 +1622,172 @@ function buildProfileAwareSemanticHandoffSummary(
     caveats: baseCaveats,
     handoffHints,
   };
+}
+
+function buildProfileAwareSemanticHandoffTransition({
+  previousSummary,
+  currentSummary,
+  previousShapeId,
+  currentShapeId,
+  previousLabel,
+  currentLabel,
+}: {
+  previousSummary: ProfileAwareSemanticHandoffSummary | null;
+  currentSummary: ProfileAwareSemanticHandoffSummary;
+  previousShapeId?: ShapeId;
+  currentShapeId: ShapeId;
+  previousLabel?: string;
+  currentLabel?: string;
+}): ProfileAwareSemanticHandoffTransition {
+  const caveats = [
+    'readiness summaries only',
+    'no candidate identity',
+    'no semantic continuity',
+    'no topology continuity',
+    'no route persistence',
+    'no support/region persistence',
+  ];
+
+  if (!previousSummary) {
+    return {
+      status: 'no-previous-shape',
+      previousShapeId,
+      currentShapeId,
+      previousLabel,
+      currentLabel,
+      currentReadiness: currentSummary.readiness,
+      caveats,
+      handoffHints: ['No previous shape in workspace sequence.'],
+    };
+  }
+
+  const featureCandidateDelta =
+    currentSummary.featureCandidateCount - previousSummary.featureCandidateCount;
+  const routeGateCandidateDelta =
+    currentSummary.routeGateCandidateCount -
+    previousSummary.routeGateCandidateCount;
+  const supportRegionCandidateDelta =
+    currentSummary.supportRegionCandidateCount -
+    previousSummary.supportRegionCandidateCount;
+  const changedCountKeyDelta =
+    currentSummary.changedCountKeyCount - previousSummary.changedCountKeyCount;
+  const status = getProfileAwareSemanticHandoffTransitionStatus(
+    previousSummary.readiness,
+    currentSummary.readiness,
+  );
+  const handoffHints = getProfileAwareSemanticHandoffTransitionHints(
+    status,
+    previousSummary.readiness,
+    currentSummary.readiness,
+  );
+
+  return {
+    status,
+    previousShapeId,
+    currentShapeId,
+    previousLabel,
+    currentLabel,
+    previousReadiness: previousSummary.readiness,
+    currentReadiness: currentSummary.readiness,
+    featureCandidateDelta,
+    routeGateCandidateDelta,
+    supportRegionCandidateDelta,
+    changedCountKeyDelta,
+    caveats,
+    handoffHints,
+  };
+}
+
+function getProfileAwareSemanticHandoffTransitionStatus(
+  previousReadiness: ProfileAwareSemanticHandoffReadiness,
+  currentReadiness: ProfileAwareSemanticHandoffReadiness,
+): ProfileAwareSemanticHandoffTransitionStatus {
+  if (
+    previousReadiness === 'not-available' &&
+    currentReadiness === 'candidate-pressure-available'
+  ) {
+    return 'handoff-became-available';
+  }
+
+  if (
+    currentReadiness === 'candidate-pressure-sensitive' &&
+    previousReadiness !== 'candidate-pressure-sensitive'
+  ) {
+    return 'handoff-became-sensitive';
+  }
+
+  if (currentReadiness === 'not-available') {
+    return previousReadiness === 'not-available'
+      ? 'handoff-remained-unavailable'
+      : 'handoff-became-unavailable';
+  }
+
+  if (currentReadiness === 'diagnostic-only') {
+    return 'handoff-became-diagnostic-only';
+  }
+
+  if (
+    previousReadiness === 'candidate-pressure-sensitive' &&
+    currentReadiness === 'candidate-pressure-sensitive'
+  ) {
+    return 'handoff-remained-sensitive';
+  }
+
+  if (currentReadiness === 'candidate-pressure-available') {
+    return isProfileAwareCandidatePressureReadiness(previousReadiness)
+      ? 'handoff-remained-available'
+      : 'handoff-became-available';
+  }
+
+  return 'handoff-became-diagnostic-only';
+}
+
+function isProfileAwareCandidatePressureReadiness(
+  readiness: ProfileAwareSemanticHandoffReadiness,
+): boolean {
+  return (
+    readiness === 'candidate-pressure-available' ||
+    readiness === 'candidate-pressure-sensitive'
+  );
+}
+
+function getProfileAwareSemanticHandoffTransitionHints(
+  status: ProfileAwareSemanticHandoffTransitionStatus,
+  previousReadiness: ProfileAwareSemanticHandoffReadiness,
+  currentReadiness: ProfileAwareSemanticHandoffReadiness,
+): string[] {
+  if (
+    previousReadiness === 'candidate-pressure-sensitive' &&
+    currentReadiness === 'candidate-pressure-available'
+  ) {
+    return [
+      'Candidate pressure is still available and sensitivity decreased.',
+      'Treat deltas as handoff-pressure count changes only.',
+    ];
+  }
+
+  switch (status) {
+    case 'handoff-became-available':
+      return ['Candidate pressure became available for semantic handoff inspection.'];
+    case 'handoff-became-sensitive':
+      return [
+        'Candidate pressure is available, but the current handoff is sensitivity-marked.',
+      ];
+    case 'handoff-remained-available':
+      return ['Candidate pressure remained available across the workspace transition.'];
+    case 'handoff-remained-sensitive':
+      return ['Candidate pressure remained sensitivity-marked across the transition.'];
+    case 'handoff-became-diagnostic-only':
+      return ['Current Field Mode remains inspectable, but candidate pressure is absent.'];
+    case 'handoff-became-unavailable':
+      return ['Profile-aware Field Mode became unavailable for handoff inspection.'];
+    case 'handoff-remained-unavailable':
+      return ['Profile-aware Field Mode remained unavailable across the transition.'];
+    case 'no-previous-shape':
+      return ['No previous shape in workspace sequence.'];
+    default:
+      return [];
+  }
 }
 
 function ProfileAwareFeatureMarkerRow({
@@ -3744,8 +4086,31 @@ function formatReportSourcePolicyNames(sourcePolicyNames: string[]): string {
   return sourcePolicyNames.length ? sourcePolicyNames.join(', ') : 'none';
 }
 
+function getLatestHistoryEntryForShape(
+  operationHistory: OperationHistoryEntry[],
+  shapeId: ShapeId,
+): OperationHistoryEntry | undefined {
+  for (let index = operationHistory.length - 1; index >= 0; index -= 1) {
+    const entry = operationHistory[index];
+
+    if (entry.shapeId === shapeId) {
+      return entry;
+    }
+  }
+
+  return undefined;
+}
+
 function formatYesNo(value: boolean): string {
   return value ? 'yes' : 'no';
+}
+
+function formatSignedDelta(value: number | undefined): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 'n/a';
+  }
+
+  return value > 0 ? `+${value}` : String(value);
 }
 
 function formatProfileAwareStabilityLabel(label: string): string {

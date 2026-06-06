@@ -47,6 +47,7 @@ runChartLinkingContractDiagnostic();
 runSourceLinkingContractDiagnostic();
 runEvidenceStabilityUiContractDiagnostic();
 runSemanticHandoffReadinessUiContractDiagnostic();
+runSemanticHandoffTransitionUiContractDiagnostic();
 runUnsupportedSeedTetrahedronDiagnostic();
 runUnsupportedCubeDiagnostic();
 runConservativeBoundaryClaimDiagnostic();
@@ -1211,6 +1212,163 @@ function runSemanticHandoffReadinessUiContractDiagnostic() {
   console.log('semantic handoff readiness UI contract: PASS');
 }
 
+function runSemanticHandoffTransitionUiContractDiagnostic() {
+  const evidenceStabilityReport = buildProfileAwareEvidenceStabilityReport();
+  const unsupportedRuntimeReport =
+    buildProfileAwareFieldAtlasViewModelRuntimeReport(createSeedShape('tetrahedron'));
+  const supportedRuntimeBefore = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+  const probeCountsBefore = supportedRuntimeBefore.viewModel
+    ? getProbeCounts(supportedRuntimeBefore.viewModel)
+    : undefined;
+  const previousSummary = buildProfileAwareSemanticHandoffSummary(
+    unsupportedRuntimeReport,
+    evidenceStabilityReport,
+  );
+  const currentSummary = buildProfileAwareSemanticHandoffSummary(
+    supportedRuntimeBefore,
+    evidenceStabilityReport,
+  );
+  const transition = buildProfileAwareSemanticHandoffTransition({
+    previousSummary,
+    currentSummary,
+    previousShapeId: unsupportedRuntimeReport.inputShapeId,
+    currentShapeId: supportedRuntimeBefore.inputShapeId,
+    previousLabel: 'Seed: tetrahedron',
+    currentLabel: 'Ambo tetrahedron',
+  });
+  const noPreviousTransition = buildProfileAwareSemanticHandoffTransition({
+    previousSummary: null,
+    currentSummary,
+    currentShapeId: supportedRuntimeBefore.inputShapeId,
+    currentLabel: 'Ambo tetrahedron',
+  });
+  const supportedRuntimeAfter = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+  const probeCountsAfter = supportedRuntimeAfter.viewModel
+    ? getProbeCounts(supportedRuntimeAfter.viewModel)
+    : undefined;
+  const expectedTransitionStatus =
+    currentSummary.readiness === 'candidate-pressure-sensitive'
+      ? 'handoff-became-sensitive'
+      : 'handoff-became-available';
+
+  expectEqual(
+    transition.status,
+    expectedTransitionStatus,
+    'semantic handoff transition status',
+  );
+  expectFinite(
+    transition.featureCandidateDelta,
+    'semantic handoff transition feature delta',
+  );
+  expectFinite(
+    transition.routeGateCandidateDelta,
+    'semantic handoff transition route/gate delta',
+  );
+  expectFinite(
+    transition.supportRegionCandidateDelta,
+    'semantic handoff transition support/region delta',
+  );
+  expectFinite(
+    transition.changedCountKeyDelta,
+    'semantic handoff transition changed count key delta',
+  );
+
+  for (const caveat of [
+    'readiness summaries only',
+    'no candidate identity',
+    'no semantic continuity',
+    'no topology continuity',
+    'no route persistence',
+    'no support/region persistence',
+  ]) {
+    expectEqual(
+      transition.caveats.includes(caveat),
+      true,
+      `semantic handoff transition caveat ${caveat}`,
+    );
+  }
+
+  expectEqual(
+    noPreviousTransition.status,
+    'no-previous-shape',
+    'semantic handoff no previous transition',
+  );
+
+  const forbiddenProperties = [
+    'semanticName',
+    'semanticNamingStatus',
+    'topologyValidityStatus',
+    'topologyBehaviorStatus',
+    'packetWriteEnabled',
+    'handoffPacketWritten',
+    'routeGateConfirmedStatus',
+    'supportRegionConfirmedStatus',
+    'oldPolicyInvariantStatus',
+    'defaultPolicyComparisonStatus',
+    'candidateIdentityPersistenceStatus',
+    'routePersistenceStatus',
+    'supportRegionPersistenceStatus',
+    'semanticContinuityStatus',
+    'topologyContinuityStatus',
+    'fieldOntologyDeltaStatus',
+  ];
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(
+      transition,
+      property,
+      `semantic handoff transition no ${property}`,
+    );
+    expectNoOwnProperty(
+      noPreviousTransition,
+      property,
+      `semantic handoff no previous transition no ${property}`,
+    );
+  }
+
+  expectTruthy(probeCountsBefore, 'semantic handoff transition probe counts before');
+  expectTruthy(probeCountsAfter, 'semantic handoff transition probe counts after');
+
+  if (probeCountsBefore && probeCountsAfter) {
+    expectEqual(
+      probeCountsAfter.sourceProbeCount,
+      probeCountsBefore.sourceProbeCount,
+      'semantic handoff transition source probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.sampleProbeCount,
+      probeCountsBefore.sampleProbeCount,
+      'semantic handoff transition sample probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.chartProbeCount,
+      probeCountsBefore.chartProbeCount,
+      'semantic handoff transition chart probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.featureProbeCount,
+      probeCountsBefore.featureProbeCount,
+      'semantic handoff transition feature probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.routeGateCandidateProbeCount,
+      probeCountsBefore.routeGateCandidateProbeCount,
+      'semantic handoff transition route/gate probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.supportRegionCandidateProbeCount,
+      probeCountsBefore.supportRegionCandidateProbeCount,
+      'semantic handoff transition support/region probe count unchanged',
+    );
+  }
+
+  console.log('semantic handoff transition UI contract: PASS');
+}
+
 function runUnsupportedCubeDiagnostic() {
   runUnsupportedShapeDiagnostic(
     'unsupported cube Field Mode UI',
@@ -1927,6 +2085,163 @@ function buildProfileAwareSemanticHandoffSummary(
     caveats: baseCaveats,
     handoffHints,
   };
+}
+
+function buildProfileAwareSemanticHandoffTransition({
+  previousSummary,
+  currentSummary,
+  previousShapeId,
+  currentShapeId,
+  previousLabel,
+  currentLabel,
+}) {
+  const caveats = [
+    'readiness summaries only',
+    'no candidate identity',
+    'no semantic continuity',
+    'no topology continuity',
+    'no route persistence',
+    'no support/region persistence',
+  ];
+
+  if (!previousSummary) {
+    return {
+      status: 'no-previous-shape',
+      previousShapeId,
+      currentShapeId,
+      previousLabel,
+      currentLabel,
+      currentReadiness: currentSummary.readiness,
+      caveats,
+      handoffHints: ['No previous shape in workspace sequence.'],
+    };
+  }
+
+  const featureCandidateDelta =
+    currentSummary.featureCandidateCount - previousSummary.featureCandidateCount;
+  const routeGateCandidateDelta =
+    currentSummary.routeGateCandidateCount -
+    previousSummary.routeGateCandidateCount;
+  const supportRegionCandidateDelta =
+    currentSummary.supportRegionCandidateCount -
+    previousSummary.supportRegionCandidateCount;
+  const changedCountKeyDelta =
+    currentSummary.changedCountKeyCount - previousSummary.changedCountKeyCount;
+  const status = getProfileAwareSemanticHandoffTransitionStatus(
+    previousSummary.readiness,
+    currentSummary.readiness,
+  );
+  const handoffHints = getProfileAwareSemanticHandoffTransitionHints(
+    status,
+    previousSummary.readiness,
+    currentSummary.readiness,
+  );
+
+  return {
+    status,
+    previousShapeId,
+    currentShapeId,
+    previousLabel,
+    currentLabel,
+    previousReadiness: previousSummary.readiness,
+    currentReadiness: currentSummary.readiness,
+    featureCandidateDelta,
+    routeGateCandidateDelta,
+    supportRegionCandidateDelta,
+    changedCountKeyDelta,
+    caveats,
+    handoffHints,
+  };
+}
+
+function getProfileAwareSemanticHandoffTransitionStatus(
+  previousReadiness,
+  currentReadiness,
+) {
+  if (
+    previousReadiness === 'not-available' &&
+    currentReadiness === 'candidate-pressure-available'
+  ) {
+    return 'handoff-became-available';
+  }
+
+  if (
+    currentReadiness === 'candidate-pressure-sensitive' &&
+    previousReadiness !== 'candidate-pressure-sensitive'
+  ) {
+    return 'handoff-became-sensitive';
+  }
+
+  if (currentReadiness === 'not-available') {
+    return previousReadiness === 'not-available'
+      ? 'handoff-remained-unavailable'
+      : 'handoff-became-unavailable';
+  }
+
+  if (currentReadiness === 'diagnostic-only') {
+    return 'handoff-became-diagnostic-only';
+  }
+
+  if (
+    previousReadiness === 'candidate-pressure-sensitive' &&
+    currentReadiness === 'candidate-pressure-sensitive'
+  ) {
+    return 'handoff-remained-sensitive';
+  }
+
+  if (currentReadiness === 'candidate-pressure-available') {
+    return isProfileAwareCandidatePressureReadiness(previousReadiness)
+      ? 'handoff-remained-available'
+      : 'handoff-became-available';
+  }
+
+  return 'handoff-became-diagnostic-only';
+}
+
+function isProfileAwareCandidatePressureReadiness(readiness) {
+  return (
+    readiness === 'candidate-pressure-available' ||
+    readiness === 'candidate-pressure-sensitive'
+  );
+}
+
+function getProfileAwareSemanticHandoffTransitionHints(
+  status,
+  previousReadiness,
+  currentReadiness,
+) {
+  if (
+    previousReadiness === 'candidate-pressure-sensitive' &&
+    currentReadiness === 'candidate-pressure-available'
+  ) {
+    return [
+      'Candidate pressure is still available and sensitivity decreased.',
+      'Treat deltas as handoff-pressure count changes only.',
+    ];
+  }
+
+  switch (status) {
+    case 'handoff-became-available':
+      return ['Candidate pressure became available for semantic handoff inspection.'];
+    case 'handoff-became-sensitive':
+      return [
+        'Candidate pressure is available, but the current handoff is sensitivity-marked.',
+      ];
+    case 'handoff-remained-available':
+      return ['Candidate pressure remained available across the workspace transition.'];
+    case 'handoff-remained-sensitive':
+      return ['Candidate pressure remained sensitivity-marked across the transition.'];
+    case 'handoff-became-diagnostic-only':
+      return ['Current Field Mode remains inspectable, but candidate pressure is absent.'];
+    case 'handoff-became-unavailable':
+      return ['Profile-aware Field Mode became unavailable for handoff inspection.'];
+    case 'handoff-remained-unavailable':
+      return ['Profile-aware Field Mode remained unavailable across the transition.'];
+    case 'no-previous-shape':
+      return ['No previous shape in workspace sequence.'];
+    default:
+      return [];
+  }
 }
 
 function getDominantSourceIdFromSampleMarker(marker) {
