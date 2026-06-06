@@ -440,6 +440,11 @@ function ProfileAwareFieldModeRuntimeSection({
     viewModel,
     activeChartIds,
   );
+  const activeSourceId = getSourceIdFromProfileAwareProbe(activeProbe);
+  const activeSourceContext = buildProfileAwareActiveSourceContext(
+    viewModel,
+    activeSourceId,
+  );
 
   return (
     <div className="rounded border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-xs">
@@ -541,6 +546,11 @@ function ProfileAwareFieldModeRuntimeSection({
 
       <ProfileAwareActiveChartContextSection
         context={activeChartContext}
+        shortenId={shortenId}
+      />
+
+      <ProfileAwareActiveSourceContextSection
+        context={activeSourceContext}
         shortenId={shortenId}
       />
 
@@ -948,6 +958,95 @@ function ProfileAwareActiveChartContextSection({
   );
 }
 
+type ProfileAwareActiveSourceContext = {
+  sourceId: string;
+  sourceKind?: string;
+  vertexId?: string;
+  profileId?: string;
+  generatedChild: boolean;
+  sampleMarkerCount: number;
+  featureMarkerCount: number;
+  topSamples: Array<{
+    sampleId: string;
+    chartId: string;
+    contributionRatio: number;
+    intensity: number;
+  }>;
+};
+
+function ProfileAwareActiveSourceContextSection({
+  context,
+  shortenId,
+}: {
+  context: ProfileAwareActiveSourceContext | null;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2">
+      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Active Source Context
+      </h4>
+      {context ? (
+        <div className="mt-2 grid gap-2">
+          <dl className="grid grid-cols-2 gap-2">
+            <FieldAtlasMetric
+              label="Source"
+              value={shortenId(context.sourceId)}
+            />
+            <FieldAtlasMetric
+              label="Source kind"
+              value={context.sourceKind ?? 'n/a'}
+            />
+            <FieldAtlasMetric
+              label="Vertex"
+              value={context.vertexId ? shortenId(context.vertexId) : 'n/a'}
+            />
+            <FieldAtlasMetric
+              label="Profile"
+              value={context.profileId ? shortenId(context.profileId) : 'n/a'}
+            />
+            <FieldAtlasMetric
+              label="Generated child"
+              value={context.generatedChild ? 'yes' : 'no'}
+            />
+            <FieldAtlasMetric label="Samples" value={context.sampleMarkerCount} />
+            <FieldAtlasMetric
+              label="Features"
+              value={context.featureMarkerCount}
+            />
+          </dl>
+          {context.topSamples.length ? (
+            <div className="grid gap-1">
+              {context.topSamples.map((sample) => (
+                <div
+                  key={sample.sampleId}
+                  className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 font-mono text-[11px] text-stone-500"
+                >
+                  <span className="truncate">{shortenId(sample.sampleId)}</span>
+                  <span className="truncate">{shortenId(sample.chartId)}</span>
+                  <span className="text-right">
+                    {formatPercent(sample.contributionRatio)} /{' '}
+                    {formatNumber(sample.intensity)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          <p className="leading-5 text-stone-500">
+            Source context is contribution-mixture membership only; not semantic
+            naming or causal attribution.
+          </p>
+        </div>
+      ) : (
+        <p className="mt-2 leading-5 text-stone-500">
+          Hover or pin a source marker to inspect contribution context. Sample
+          probes can also expose a dominant source when available.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function ProfileAwareFeatureMarkerRow({
   marker,
   reason,
@@ -1131,6 +1230,91 @@ function getProfileAwareFeatureReason(
   const probe = report.viewModel.probeIndex.probes[marker.probeRef];
 
   return probe?.probeKind === 'feature-observation' ? probe.reason : '';
+}
+
+function getSourceIdFromProfileAwareProbe(
+  probe?: ProfileAwareFieldAtlasProbe,
+): string | undefined {
+  if (!probe) {
+    return undefined;
+  }
+
+  switch (probe.probeKind) {
+    case 'source':
+      return probe.sourceId;
+    case 'surface-sample':
+      return probe.dominantContributionSourceId;
+    case 'feature-observation':
+    case 'chart-summary':
+    case 'route-gate-candidate':
+    case 'support-region-candidate':
+    case 'route-gate-summary':
+    case 'support-region-summary':
+      return undefined;
+    default:
+      return undefined;
+  }
+}
+
+function buildProfileAwareActiveSourceContext(
+  viewModel: ProfileAwareFieldAtlasViewModelReport,
+  sourceId: string | undefined,
+): ProfileAwareActiveSourceContext | null {
+  if (!sourceId) {
+    return null;
+  }
+
+  const sourceProbe = Object.values(viewModel.probeIndex.probes).find(
+    (probe): probe is ProfileAwareFieldAtlasSourceProbe =>
+      probe.probeKind === 'source' && probe.sourceId === sourceId,
+  );
+  const matchingSamples = viewModel.surfaceSampleMarkers
+    .map((marker) => {
+      const contributionRatio = marker.contributionRatios.find(
+        (ratio) => ratio.sourceId === sourceId && ratio.value > 0,
+      );
+
+      return contributionRatio
+        ? {
+            sampleId: marker.sampleId,
+            chartId: marker.chartId,
+            contributionRatio: contributionRatio.value,
+            intensity: marker.intensity,
+          }
+        : null;
+    })
+    .filter(
+      (
+        sample,
+      ): sample is ProfileAwareActiveSourceContext['topSamples'][number] =>
+        Boolean(sample),
+    )
+    .sort(
+      (first, second) =>
+        second.contributionRatio - first.contributionRatio ||
+        first.sampleId.localeCompare(second.sampleId),
+    );
+  const matchingSampleIds = new Set(
+    matchingSamples.map((sample) => sample.sampleId),
+  );
+  const featureMarkerCount =
+    viewModel.featureOverlaySummary.featureMarkers.filter((marker) =>
+      matchingSampleIds.has(marker.sampleId),
+    ).length;
+
+  return {
+    sourceId,
+    ...(sourceProbe?.sourceKind ? { sourceKind: sourceProbe.sourceKind } : {}),
+    ...(sourceProbe?.vertexId ? { vertexId: sourceProbe.vertexId } : {}),
+    ...(sourceProbe?.profileId ? { profileId: sourceProbe.profileId } : {}),
+    generatedChild: Boolean(
+      sourceProbe?.sourceKind?.startsWith('generated-child') ||
+        sourceProbe?.childDerivation,
+    ),
+    sampleMarkerCount: matchingSamples.length,
+    featureMarkerCount,
+    topSamples: matchingSamples.slice(0, 4),
+  };
 }
 
 function getChartIdsFromProfileAwareProbe(

@@ -38,6 +38,7 @@ runSupportedOneAmboTetrahedronContractDiagnostic();
 runLayerVisibilityContractDiagnostic();
 runSampleRenderModeContractDiagnostic();
 runChartLinkingContractDiagnostic();
+runSourceLinkingContractDiagnostic();
 runUnsupportedSeedTetrahedronDiagnostic();
 runUnsupportedCubeDiagnostic();
 runConservativeBoundaryClaimDiagnostic();
@@ -584,6 +585,154 @@ function runChartLinkingContractDiagnostic() {
   }
 
   console.log('chart linking contract: PASS');
+}
+
+function runSourceLinkingContractDiagnostic() {
+  const report = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+
+  if (!report.viewModel) {
+    recordFailure('source linking contract: supported view model missing');
+    return;
+  }
+
+  const viewModel = report.viewModel;
+  const probeCountsBefore = {
+    sourceProbeCount: viewModel.probeIndex.sourceProbeCount,
+    sampleProbeCount: viewModel.probeIndex.sampleProbeCount,
+    chartProbeCount: viewModel.probeIndex.chartProbeCount,
+    featureProbeCount: viewModel.probeIndex.featureProbeCount,
+    routeGateCandidateProbeCount:
+      viewModel.probeIndex.routeGateCandidateProbeCount,
+    supportRegionCandidateProbeCount:
+      viewModel.probeIndex.supportRegionCandidateProbeCount,
+  };
+  const firstSourceMarker = viewModel.sourceMarkers[0];
+  const firstSourceProbe = firstSourceMarker
+    ? viewModel.probeIndex.probes[firstSourceMarker.probeRef]
+    : undefined;
+  const sourceMarkerWithContribution = findSourceMarkerWithSampleContribution(
+    viewModel,
+  );
+
+  expectEqual(report.runtimeBoundaryStatus, 'supported', 'source linking boundary');
+  expectTruthy(firstSourceMarker, 'source linking first source marker');
+  expectEqual(
+    firstSourceProbe && firstSourceProbe.probeKind,
+    'source',
+    'source linking first source probe kind',
+  );
+  expectTruthy(
+    sourceMarkerWithContribution,
+    'source linking source with sample contribution',
+  );
+
+  if (!sourceMarkerWithContribution) {
+    return;
+  }
+
+  const sourceProbe =
+    viewModel.probeIndex.probes[sourceMarkerWithContribution.probeRef];
+  const sourceContext = computeSourceContextCounts(
+    viewModel,
+    sourceMarkerWithContribution.sourceId,
+  );
+
+  expectEqual(
+    sourceProbe && sourceProbe.probeKind,
+    'source',
+    'source linking source probe kind',
+  );
+  expectEqual(
+    sourceProbe && sourceProbe.sourceId,
+    sourceMarkerWithContribution.sourceId,
+    'source linking source probe id',
+  );
+  expectAtLeast(
+    sourceContext.sampleMarkerCount,
+    1,
+    'source linking sample count',
+  );
+  expectAtLeast(
+    sourceContext.featureMarkerCount,
+    0,
+    'source linking feature count computable',
+  );
+
+  for (const sample of sourceContext.topSamples) {
+    expectFinite(sample.contributionRatio, `${sample.sampleId} source ratio`);
+    expectAtLeast(
+      sample.contributionRatio,
+      0,
+      `${sample.sampleId} nonnegative source ratio`,
+    );
+    expectFinite(sample.intensity, `${sample.sampleId} source linked intensity`);
+  }
+
+  expectEqual(
+    viewModel.probeIndex.sourceProbeCount,
+    probeCountsBefore.sourceProbeCount,
+    'source linking source probes unchanged',
+  );
+  expectEqual(
+    viewModel.probeIndex.sampleProbeCount,
+    probeCountsBefore.sampleProbeCount,
+    'source linking sample probes unchanged',
+  );
+  expectEqual(
+    viewModel.probeIndex.chartProbeCount,
+    probeCountsBefore.chartProbeCount,
+    'source linking chart probes unchanged',
+  );
+  expectEqual(
+    viewModel.probeIndex.featureProbeCount,
+    probeCountsBefore.featureProbeCount,
+    'source linking feature probes unchanged',
+  );
+  expectEqual(
+    viewModel.probeIndex.routeGateCandidateProbeCount,
+    probeCountsBefore.routeGateCandidateProbeCount,
+    'source linking route/gate probes unchanged',
+  );
+  expectEqual(
+    viewModel.probeIndex.supportRegionCandidateProbeCount,
+    probeCountsBefore.supportRegionCandidateProbeCount,
+    'source linking support/region probes unchanged',
+  );
+  expectEqual(
+    report.shapeMutationStatus,
+    'not-shape-mutation',
+    'source linking runtime shape mutation status',
+  );
+  expectEqual(
+    viewModel.shapeMutationStatus,
+    'not-shape-mutation',
+    'source linking view model shape mutation status',
+  );
+
+  const forbiddenProperties = [
+    'sourceSelectionPersistenceStatus',
+    'sourceFocusPersistenceStatus',
+    'sourceSemanticNamingStatus',
+    'sourceCausalAttributionStatus',
+    'sourceProfileEditingStatus',
+    'sourceSliderStatus',
+    'heatmapStatus',
+    'shaderStatus',
+    'graphEdgeDrawingStatus',
+    'routePathGeometryStatus',
+    'topologyBehaviorStatus',
+    'semanticNamingStatus',
+    'packetWritingStatus',
+  ];
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(report, property, `source linking runtime no ${property}`);
+    expectNoOwnProperty(viewModel, property, `source linking view model no ${property}`);
+  }
+
+  console.log('source linking contract: PASS');
 }
 
 function runUnsupportedCubeDiagnostic() {
@@ -1193,6 +1342,60 @@ function computeChartContextCounts(viewModel, chartIds) {
       viewModel.supportRegionOverlaySummary.candidateMarkers.filter((marker) =>
         marker.chartIds.some((chartId) => activeChartIdSet.has(chartId)),
       ).length,
+  };
+}
+
+function findSourceMarkerWithSampleContribution(viewModel) {
+  for (const sourceMarker of viewModel.sourceMarkers) {
+    const matchingSamples = viewModel.surfaceSampleMarkers.filter((marker) =>
+      marker.contributionRatios.some(
+        (ratio) =>
+          ratio.sourceId === sourceMarker.sourceId &&
+          Number.isFinite(ratio.value) &&
+          ratio.value > 0,
+      ),
+    );
+
+    if (matchingSamples.length > 0) {
+      return sourceMarker;
+    }
+  }
+
+  return undefined;
+}
+
+function computeSourceContextCounts(viewModel, sourceId) {
+  const topSamples = viewModel.surfaceSampleMarkers
+    .map((marker) => {
+      const contributionRatio = marker.contributionRatios.find(
+        (ratio) => ratio.sourceId === sourceId && ratio.value > 0,
+      );
+
+      return contributionRatio
+        ? {
+            sampleId: marker.sampleId,
+            chartId: marker.chartId,
+            contributionRatio: contributionRatio.value,
+            intensity: marker.intensity,
+          }
+        : null;
+    })
+    .filter((sample) => Boolean(sample))
+    .sort(
+      (first, second) =>
+        second.contributionRatio - first.contributionRatio ||
+        first.sampleId.localeCompare(second.sampleId),
+    );
+  const sampleIds = new Set(topSamples.map((sample) => sample.sampleId));
+  const featureMarkerCount =
+    viewModel.featureOverlaySummary.featureMarkers.filter((marker) =>
+      sampleIds.has(marker.sampleId),
+    ).length;
+
+  return {
+    sampleMarkerCount: topSamples.length,
+    featureMarkerCount,
+    topSamples: topSamples.slice(0, 4),
   };
 }
 

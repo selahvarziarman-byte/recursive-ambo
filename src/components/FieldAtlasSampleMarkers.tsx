@@ -41,6 +41,9 @@ interface FieldAtlasMarker {
   sampleRenderMode?: FieldAtlasSampleRenderMode;
   chartId?: string;
   relatedChartIds?: string[];
+  sourceId?: string;
+  relatedSourceIds?: string[];
+  sourceContributionRatios?: Array<{ sourceId: string; ratio: number }>;
   kind:
     | 'source-marker'
     | 'surface-sample-marker'
@@ -95,6 +98,11 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
     pinnedFieldAtlasProbeRef,
     hoveredFieldAtlasSampleId,
   );
+  const activeSourceId = getActiveSourceIdFromRefs(
+    markers,
+    pinnedFieldAtlasProbeRef,
+    hoveredFieldAtlasSampleId,
+  );
 
   return (
     <group>
@@ -104,33 +112,58 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
         const isActiveChartRelated =
           activeChartIds.length > 0 &&
           isMarkerRelatedToAnyChart(marker, activeChartIds);
+        const activeSourceContributionRatio = activeSourceId
+          ? getMarkerSourceContributionRatio(marker, activeSourceId)
+          : 0;
+        const isActiveSourceRelated =
+          Boolean(activeSourceId) &&
+          (marker.sourceId === activeSourceId || activeSourceContributionRatio > 0);
+        const sourceRelatedScale = isActiveSourceRelated
+          ? 1.22 + Math.min(0.28, activeSourceContributionRatio * 0.28)
+          : 1;
+        const relatedScale = Math.max(
+          isActiveChartRelated ? 1.32 : 1,
+          sourceRelatedScale,
+        );
         const markerScale = isPinned
           ? 2.12
           : isHovered
             ? 1.85
-            : isActiveChartRelated
-              ? 1.32
-              : 1;
+            : relatedScale;
         const markerRenderOrder = isPinned
           ? 28
           : isHovered
             ? 24
-            : isActiveChartRelated
+            : isActiveChartRelated || isActiveSourceRelated
               ? 21
               : 18;
         const markerOpacity = isPinned
           ? 0.98
           : isHovered
             ? 0.94
-            : isActiveChartRelated
-              ? Math.min(0.92, marker.opacity + 0.18)
+            : isActiveChartRelated || isActiveSourceRelated
+              ? Math.min(
+                  0.92,
+                  marker.opacity +
+                    (isActiveChartRelated ? 0.18 : 0) +
+                    (isActiveSourceRelated
+                      ? 0.1 + activeSourceContributionRatio * 0.12
+                      : 0),
+                )
               : marker.opacity;
         const markerEmissiveIntensity = isPinned
           ? 1.05
           : isHovered
             ? 0.92
-            : isActiveChartRelated
-              ? Math.min(0.82, marker.emissiveIntensity + 0.24)
+            : isActiveChartRelated || isActiveSourceRelated
+              ? Math.min(
+                  0.82,
+                  marker.emissiveIntensity +
+                    (isActiveChartRelated ? 0.24 : 0) +
+                    (isActiveSourceRelated
+                      ? 0.14 + activeSourceContributionRatio * 0.16
+                      : 0),
+                )
               : marker.emissiveIntensity;
 
         return (
@@ -211,6 +244,12 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
                       dominance {formatNumber(marker.dominanceRatio)}
                     </span>
                   ) : null}
+                  {isActiveSourceRelated && activeSourceContributionRatio > 0 ? (
+                    <span className="block font-mono text-stone-400">
+                      source contribution{' '}
+                      {formatNumber(activeSourceContributionRatio)}
+                    </span>
+                  ) : null}
                 </div>
               </Html>
             ) : null}
@@ -240,8 +279,9 @@ function buildMarkerModel(
 
     const viewModel = runtimeReport.viewModel;
     const sourceMarkers = layerVisibility.sources ? viewModel.sourceMarkers : [];
+    const allSurfaceSampleMarkers = viewModel.surfaceSampleMarkers;
     const surfaceSampleMarkers = layerVisibility.samples
-      ? viewModel.surfaceSampleMarkers
+      ? allSurfaceSampleMarkers
       : [];
     const chartAnchorMarkers = layerVisibility.charts
       ? viewModel.chartOverlaySummary.chartAnchorMarkers
@@ -275,6 +315,9 @@ function buildMarkerModel(
       min: viewModel.renderScale.intensityMin,
       max: viewModel.renderScale.intensityMax,
     };
+    const surfaceSampleMarkerById = new Map(
+      allSurfaceSampleMarkers.map((marker) => [marker.sampleId, marker]),
+    );
 
     return [
       ...sourceMarkers.map((marker) => buildSourceMarker(marker, radiusBase)),
@@ -291,7 +334,7 @@ function buildMarkerModel(
         .map((marker) => buildChartAnchorMarker(marker, radiusBase))
         .filter((marker): marker is FieldAtlasMarker => Boolean(marker)),
       ...featureMarkers.map((marker) =>
-        buildFeatureMarker(marker, radiusBase),
+        buildFeatureMarker(marker, radiusBase, surfaceSampleMarkerById),
       ),
       ...routeGateCandidateMarkers
         .map((marker) => buildRouteGateCandidateMarker(marker, radiusBase))
@@ -322,6 +365,7 @@ function buildSourceMarker(
     valueLabel: 'amplitude',
     label: 'Source marker',
     detailLabel: formatSourceMarkerDetail(marker),
+    sourceId: marker.sourceId,
     kind: 'source-marker',
   };
 }
@@ -354,6 +398,11 @@ function buildSurfaceSampleMarker(
     detailLabel: formatSurfaceSampleMarkerDetail(marker),
     sampleRenderMode,
     chartId: marker.chartId,
+    relatedSourceIds: marker.contributionRatios.map((ratio) => ratio.sourceId),
+    sourceContributionRatios: marker.contributionRatios.map((ratio) => ({
+      sourceId: ratio.sourceId,
+      ratio: ratio.value,
+    })),
     kind: 'surface-sample-marker',
   };
 }
@@ -397,7 +446,13 @@ function buildChartAnchorMarker(
 function buildFeatureMarker(
   marker: ProfileAwareFieldAtlasFeatureMarker,
   radiusBase: number,
+  surfaceSampleMarkerById: Map<
+    string,
+    ProfileAwareFieldAtlasSurfaceSampleMarker
+  >,
 ): FieldAtlasMarker {
+  const linkedSampleMarker = surfaceSampleMarkerById.get(marker.sampleId);
+
   return {
     id: `feature:${marker.featureId}`,
     hoverRef: marker.probeRef,
@@ -412,6 +467,19 @@ function buildFeatureMarker(
     label: formatFeatureMarkerLabel(marker),
     detailLabel: `${marker.status}; ${formatMarkerStatus(marker.semanticStatus)}`,
     chartId: marker.chartId,
+    ...(linkedSampleMarker
+      ? {
+          relatedSourceIds: linkedSampleMarker.contributionRatios.map(
+            (ratio) => ratio.sourceId,
+          ),
+          sourceContributionRatios: linkedSampleMarker.contributionRatios.map(
+            (ratio) => ({
+              sourceId: ratio.sourceId,
+              ratio: ratio.value,
+            }),
+          ),
+        }
+      : {}),
     kind: 'feature-observation-marker',
   };
 }
@@ -491,6 +559,19 @@ function getActiveChartIdsFromRefs(
   return getChartIdsFromMarkerRef(markers, hoveredProbeRef) ?? [];
 }
 
+function getActiveSourceIdFromRefs(
+  markers: FieldAtlasMarker[],
+  pinnedProbeRef: string | null,
+  hoveredProbeRef: string | null,
+): string | null {
+  return (
+    getSourceIdFromMarkerRef(markers, pinnedProbeRef) ??
+    getSourceIdFromProbeRef(pinnedProbeRef) ??
+    getSourceIdFromMarkerRef(markers, hoveredProbeRef) ??
+    getSourceIdFromProbeRef(hoveredProbeRef)
+  );
+}
+
 function getChartIdsFromMarkerRef(
   markers: FieldAtlasMarker[],
   probeRef: string | null,
@@ -518,6 +599,29 @@ function getChartIdsFromMarker(marker: FieldAtlasMarker): string[] {
   return marker.relatedChartIds ? [...marker.relatedChartIds] : [];
 }
 
+function getSourceIdFromMarkerRef(
+  markers: FieldAtlasMarker[],
+  probeRef: string | null,
+): string | null {
+  if (!probeRef) {
+    return null;
+  }
+
+  const marker = markers.find((candidate) => candidate.hoverRef === probeRef);
+
+  return marker?.sourceId ?? null;
+}
+
+function getSourceIdFromProbeRef(probeRef: string | null): string | null {
+  const prefix = 'source:';
+
+  if (!probeRef?.startsWith(prefix)) {
+    return null;
+  }
+
+  return probeRef.slice(prefix.length);
+}
+
 function parseChartProbeRef(probeRef: string): string | null {
   const prefix = 'chart:';
 
@@ -542,6 +646,21 @@ function isMarkerRelatedToAnyChart(
     Boolean(marker.chartId && activeChartIdSet.has(marker.chartId)) ||
     Boolean(marker.relatedChartIds?.some((chartId) => activeChartIdSet.has(chartId)))
   );
+}
+
+function getMarkerSourceContributionRatio(
+  marker: FieldAtlasMarker,
+  activeSourceId: string,
+): number {
+  const contribution = marker.sourceContributionRatios?.find(
+    (ratio) => ratio.sourceId === activeSourceId,
+  );
+
+  if (!contribution || !Number.isFinite(contribution.ratio)) {
+    return 0;
+  }
+
+  return Math.max(0, contribution.ratio);
 }
 
 function formatSourceMarkerDetail(marker: ProfileAwareFieldAtlasSourceMarker): string {
