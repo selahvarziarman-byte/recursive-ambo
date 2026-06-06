@@ -42,7 +42,7 @@ runRenderScaleDiagnostic();
 runProbeIndexDiagnostic();
 runChildSourceProbeDerivationDiagnostic();
 runCandidateSummaryCoherenceDiagnostic();
-runRouteGateCandidateOverlayDiagnostic();
+runRouteGateAndSupportRegionCandidateOverlayDiagnostic();
 runNoOldPolicyComparisonDiagnostic();
 runNoInvarianceClaimDiagnostic();
 runNoForbiddenClaimsDiagnostic();
@@ -164,7 +164,7 @@ function runViewModelStatusDiagnostic() {
   );
   expectEqual(
     report.candidateOverlayStatus,
-    'feature-and-route-gate-markers-support-summary-only',
+    'feature-route-gate-and-support-region-candidate-markers',
     'candidate overlay status',
   );
 
@@ -445,6 +445,21 @@ function runProbeIndexDiagnostic() {
     report.probeIndex.probes['supportRegion:summary'],
     'support/region summary probe',
   );
+  expectEqual(
+    report.probeIndex.supportRegionCandidateProbeCount,
+    report.supportRegionOverlaySummary.candidateMarkers.length,
+    'support/region candidate probe count',
+  );
+  expectEqual(
+    report.probeIndex.supportRegionSummaryProbeCount,
+    1,
+    'support/region summary probe count',
+  );
+  expectEqual(
+    report.probeIndex.supportRegionProbeCount,
+    report.supportRegionOverlaySummary.candidateMarkers.length + 1,
+    'support/region total probe count',
+  );
 
   console.log('probe index: PASS');
 }
@@ -589,9 +604,10 @@ function runCandidateSummaryCoherenceDiagnostic() {
   console.log('candidate summaries: PASS');
 }
 
-function runRouteGateCandidateOverlayDiagnostic() {
+function runRouteGateAndSupportRegionCandidateOverlayDiagnostic() {
   const report = buildProfileAwareFieldAtlasViewModelReport();
   const routeGate = report.routeGateOverlaySummary;
+  const supportRegion = report.supportRegionOverlaySummary;
 
   expectEqual(
     routeGate.overlayStatus,
@@ -656,17 +672,68 @@ function runRouteGateCandidateOverlayDiagnostic() {
   }
 
   expectEqual(
-    report.supportRegionOverlaySummary.overlayStatus,
-    'summary-only',
+    supportRegion.overlayStatus,
+    'support-region-candidate-anchors-available',
     'support/region overlay status',
   );
+  expectAtLeast(
+    supportRegion.candidateMarkers.length,
+    1,
+    'support/region candidate marker count',
+  );
   expectEqual(
-    report.supportRegionOverlaySummary.candidateRefs.length,
-    0,
+    supportRegion.candidateMarkers.length,
+    supportRegion.totalSupportRegionCandidateCount,
+    'support/region candidate marker total',
+  );
+  expectEqual(
+    supportRegion.candidateRefs.length,
+    supportRegion.candidateMarkers.length,
     'support/region candidate refs',
   );
 
-  console.log('route/gate candidate anchors and support/region summary-only: PASS');
+  for (const marker of supportRegion.candidateMarkers) {
+    const probe = report.probeIndex.probes[marker.probeRef];
+
+    expectEqual(
+      marker.renderKind,
+      'support-region-candidate-anchor-marker',
+      `${marker.candidateId} render kind`,
+    );
+    expectEqual(marker.status, 'candidate-only', `${marker.candidateId} status`);
+    expectEqual(
+      marker.semanticStatus,
+      'not-semantic-naming',
+      `${marker.candidateId} semantic status`,
+    );
+    expectEqual(
+      marker.topologyStatus,
+      'not-topology-workspace',
+      `${marker.candidateId} topology status`,
+    );
+    expectEqual(
+      marker.phaseContinuityStatus,
+      'not-global-phase-continuity',
+      `${marker.candidateId} phase continuity status`,
+    );
+    expectProfileAwareSourcePolicyNames(
+      marker.sourcePolicyNames,
+      `${marker.candidateId} source policy names`,
+    );
+    expectTruthy(marker.probeRef, `${marker.candidateId} probe ref`);
+    expectTruthy(probe, `${marker.candidateId} support/region probe resolves`);
+    expectEqual(
+      probe && probe.probeKind,
+      'support-region-candidate',
+      `${marker.candidateId} probe kind`,
+    );
+
+    if (marker.position) {
+      expectFiniteVec3(marker.position, `${marker.candidateId} anchor position`);
+    }
+  }
+
+  console.log('route/gate and support/region candidate anchors: PASS');
 }
 
 function runNoOldPolicyComparisonDiagnostic() {
@@ -720,12 +787,23 @@ function runNoInvarianceClaimDiagnostic() {
 
 function runNoForbiddenClaimsDiagnostic() {
   const report = buildProfileAwareFieldAtlasViewModelReport();
+  const forbiddenProperties = [
+    'supportRegionGeometryStatus',
+    'filledRegionGeometryStatus',
+    'meshRegionStatus',
+    'topologyBehaviorStatus',
+    'routePathGeometryStatus',
+  ];
 
   expectEqual(report.uiExposureStatus, 'not-ui-exposed', 'no UI exposure');
   expectEqual(report.semanticStatus, 'not-semantic-naming', 'no semantic naming');
   expectEqual(report.topologyStatus, 'not-topology-workspace', 'no topology');
   expectEqual(report.packetWriteStatus, 'not-packet-writing', 'no packet writing');
   expectEqual(report.shapeMutationStatus, 'not-shape-mutation', 'no shape mutation');
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(report, property, `view model no ${property}`);
+  }
 
   console.log('no forbidden claims: PASS');
 }
@@ -745,7 +823,7 @@ function printViewModelReport(label, report) {
     `  overlays: featureMarkers=${report.featureOverlaySummary.featureMarkers.length} routeGate=${report.routeGateOverlaySummary.totalRouteGateCandidateCount} supportRegion=${report.supportRegionOverlaySummary.totalSupportRegionCandidateCount} status=${report.candidateOverlayStatus}`,
   );
   console.log(
-    `  probes: source=${report.probeIndex.sourceProbeCount} sample=${report.probeIndex.sampleProbeCount} feature=${report.probeIndex.featureProbeCount} routeGate=${report.probeIndex.routeGateProbeCount} total=${report.probeIndex.probeCount}`,
+    `  probes: source=${report.probeIndex.sourceProbeCount} sample=${report.probeIndex.sampleProbeCount} feature=${report.probeIndex.featureProbeCount} routeGate=${report.probeIndex.routeGateProbeCount} supportRegion=${report.probeIndex.supportRegionProbeCount} total=${report.probeIndex.probeCount}`,
   );
   console.log(`  issues: ${report.issueCount}${formatIssueCounts(report)}`);
 }

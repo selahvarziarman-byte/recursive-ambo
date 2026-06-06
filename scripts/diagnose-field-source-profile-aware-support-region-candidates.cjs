@@ -71,6 +71,7 @@ const failures = [];
 console.log('Field source profile-aware support/region candidate diagnostics');
 
 runHappySupportRegionCandidateDiagnostic();
+runCandidateViewDiagnostic();
 runSurfaceAtlasFailureDiagnostic();
 runAdapterDefaultInputOnlyDiagnostic();
 runNoInvarianceClaimDiagnostic();
@@ -232,6 +233,92 @@ function runHappySupportRegionCandidateDiagnostic() {
   }
 
   printSupportRegionReport('happy support/region candidates', supportRegionReport);
+}
+
+function runCandidateViewDiagnostic() {
+  const { adapterReport } = buildBaseFixture();
+  const shape = applyAmboDissection(createSeedShape('tetrahedron'));
+  const resolverReport = buildProfileAwareShapePositionResolverReport(shape);
+  const surfaceAtlasResult = buildSurfaceAtlasResult({
+    adapterReport,
+    shape,
+    resolverReport,
+  });
+  const supportRegionReport = buildProfileAwareSupportRegionCandidateDiagnosticReport({
+    surfaceAtlasResult,
+    reportIdSuffix: 'candidate-views-profile-aware-support-region-candidates',
+  });
+
+  expectEqual(supportRegionReport.ok, true, 'candidate views report ok');
+  expectAtLeast(
+    supportRegionReport.candidateViews.length,
+    1,
+    'candidate views exist',
+  );
+  expectEqual(
+    supportRegionReport.candidateViews.length,
+    supportRegionReport.totalCandidateCount,
+    'candidate view count',
+  );
+
+  for (const candidate of supportRegionReport.candidateViews) {
+    expectTruthy(candidate.candidateId, 'candidate view id');
+    expectTruthy(candidate.candidateKind, `${candidate.candidateId} kind`);
+    expectTruthy(candidate.supportKind, `${candidate.candidateId} support kind`);
+    expectEqual(candidate.status, 'candidate-only', `${candidate.candidateId} status`);
+    expectEqual(
+      candidate.semanticStatus,
+      'not-semantic-naming',
+      `${candidate.candidateId} semantic status`,
+    );
+    expectEqual(
+      candidate.topologyStatus,
+      'not-topology-workspace',
+      `${candidate.candidateId} topology status`,
+    );
+    expectEqual(
+      candidate.phaseContinuityStatus,
+      'not-global-phase-continuity',
+      `${candidate.candidateId} phase continuity status`,
+    );
+    expectProfileAwareSourcePolicyNames(
+      candidate.sourcePolicyNames,
+      `${candidate.candidateId} source policy names`,
+    );
+    expectEqual(
+      Array.isArray(candidate.sampleIds),
+      true,
+      `${candidate.candidateId} sampleIds array`,
+    );
+    expectEqual(
+      Array.isArray(candidate.chartIds),
+      true,
+      `${candidate.candidateId} chartIds array`,
+    );
+    expectEqual(
+      Array.isArray(candidate.edgeIds),
+      true,
+      `${candidate.candidateId} edgeIds array`,
+    );
+    expectEqual(
+      Array.isArray(candidate.observationIds),
+      true,
+      `${candidate.candidateId} observationIds array`,
+    );
+    expectEqual(
+      Array.isArray(candidate.routeGateCandidateIds),
+      true,
+      `${candidate.candidateId} routeGateCandidateIds array`,
+    );
+    expectSupportRegionEvidenceSummary(
+      candidate.evidenceSummary,
+      `${candidate.candidateId} evidence summary`,
+    );
+    expectTruthy(candidate.reason, `${candidate.candidateId} reason`);
+    expectTruthy(candidate.reliability, `${candidate.candidateId} reliability`);
+  }
+
+  console.log('support/region candidate views: PASS');
 }
 
 function runSurfaceAtlasFailureDiagnostic() {
@@ -510,6 +597,55 @@ function expectIssueCode(report, code, label) {
 function expectNoOwnProperty(value, property, label) {
   if (Object.prototype.hasOwnProperty.call(value, property)) {
     recordFailure(`${label}: did not expect property ${property}`);
+  }
+}
+
+function expectTruthy(value, label) {
+  if (!value) {
+    recordFailure(`${label}: expected truthy value`);
+  }
+}
+
+function expectProfileAwareSourcePolicyNames(sourcePolicyNames, label) {
+  expectEqual(
+    Array.isArray(sourcePolicyNames),
+    true,
+    `${label} is an array`,
+  );
+  expectEqual(sourcePolicyNames.length, 1, `${label} length`);
+  expectEqual(
+    sourcePolicyNames[0],
+    PROFILE_AWARE_SOURCE_POLICY_ID,
+    `${label} value`,
+  );
+}
+
+function expectSupportRegionEvidenceSummary(evidenceSummary, label) {
+  expectTruthy(evidenceSummary, label);
+
+  if (!evidenceSummary) {
+    return;
+  }
+
+  for (const key of [
+    'sampleCount',
+    'chartCount',
+    'seamEdgeCount',
+    'chartLocalEdgeCount',
+    'averageIntensity',
+    'minIntensity',
+    'maxIntensity',
+    'averageEffectiveSourceCount',
+    'maxTopContributionRatio',
+    'fieldFeatureObservationCount',
+    'routeGateCandidateCount',
+    'computationalOnlySampleCount',
+  ]) {
+    expectEqual(
+      Number.isFinite(evidenceSummary[key]),
+      true,
+      `${label} ${key}`,
+    );
   }
 }
 

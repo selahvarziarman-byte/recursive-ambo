@@ -43,6 +43,7 @@ import {
 } from './fieldSourceProfileAwareShapeResolvedSurfaceAtlas';
 import {
   buildProfileAwareSupportRegionCandidateDiagnosticReport,
+  type ProfileAwareSupportRegionCandidateView,
   type ProfileAwareSupportRegionCandidateDiagnosticReport,
 } from './fieldSourceProfileAwareSupportRegionCandidates';
 import {
@@ -285,15 +286,41 @@ export interface ProfileAwareFieldAtlasRouteGateOverlaySummary {
 }
 
 export interface ProfileAwareFieldAtlasSupportRegionOverlaySummary {
-  overlayStatus: 'summary-only';
+  overlayStatus: 'support-region-candidate-anchors-available' | 'summary-only';
   candidateStatus: ProfileAwareSupportRegionCandidateDiagnosticReport['candidateStatus'];
   totalSupportRegionCandidateCount: number;
   supportClassCandidateCount: number;
   regionCandidateCount: number;
   constraintSiteCandidateCount: number;
   routeFailureRegionCandidateCount: number;
-  candidateRefs: [];
+  candidateMarkers: ProfileAwareFieldAtlasSupportRegionCandidateMarker[];
+  candidateRefs: string[];
   summaryProbeRef: 'supportRegion:summary';
+}
+
+export interface ProfileAwareFieldAtlasSupportRegionCandidateMarker {
+  candidateId: string;
+  renderKind: 'support-region-candidate-anchor-marker';
+  candidateKind: ProfileAwareSupportRegionCandidateView['candidateKind'];
+  supportKind: ProfileAwareSupportRegionCandidateView['supportKind'];
+  status: 'candidate-only';
+  semanticStatus: 'not-semantic-naming';
+  topologyStatus: 'not-topology-workspace';
+  phaseContinuityStatus: 'not-global-phase-continuity';
+  reliability: ProfileAwareSupportRegionCandidateView['reliability'];
+  sampleIds: string[];
+  chartIds: string[];
+  edgeIds: string[];
+  observationIds: string[];
+  routeGateCandidateIds: string[];
+  seamEdgesInvolved: boolean;
+  computationalOnlyInvolved: boolean;
+  anchorSampleId?: string;
+  position?: Vec3;
+  evidenceSummary: ProfileAwareSupportRegionCandidateView['evidenceSummary'];
+  sourcePolicyNames: string[];
+  reason: string;
+  probeRef: string;
 }
 
 export interface ProfileAwareFieldAtlasSourceProbe {
@@ -383,6 +410,30 @@ export interface ProfileAwareFieldAtlasRouteGateProbe {
   reason: string;
 }
 
+export interface ProfileAwareFieldAtlasSupportRegionProbe {
+  probeKind: 'support-region-candidate';
+  candidateId: string;
+  candidateKind: ProfileAwareFieldAtlasSupportRegionCandidateMarker['candidateKind'];
+  supportKind: ProfileAwareFieldAtlasSupportRegionCandidateMarker['supportKind'];
+  status: 'candidate-only';
+  semanticStatus: 'not-semantic-naming';
+  topologyStatus: 'not-topology-workspace';
+  phaseContinuityStatus: 'not-global-phase-continuity';
+  reliability: ProfileAwareFieldAtlasSupportRegionCandidateMarker['reliability'];
+  sampleIds: string[];
+  chartIds: string[];
+  edgeIds: string[];
+  observationIds: string[];
+  routeGateCandidateIds: string[];
+  seamEdgesInvolved: boolean;
+  computationalOnlyInvolved: boolean;
+  anchorSampleId?: string;
+  position?: Vec3;
+  evidenceSummary: ProfileAwareFieldAtlasSupportRegionCandidateMarker['evidenceSummary'];
+  sourcePolicyNames: string[];
+  reason: string;
+}
+
 export interface ProfileAwareFieldAtlasSummaryProbe {
   probeKind: 'route-gate-summary' | 'support-region-summary';
   semanticStatus: 'not-semantic-naming';
@@ -395,6 +446,7 @@ export type ProfileAwareFieldAtlasProbe =
   | ProfileAwareFieldAtlasSurfaceSampleProbe
   | ProfileAwareFieldAtlasFeatureProbe
   | ProfileAwareFieldAtlasRouteGateProbe
+  | ProfileAwareFieldAtlasSupportRegionProbe
   | ProfileAwareFieldAtlasSummaryProbe;
 
 export interface ProfileAwareFieldAtlasProbeIndex {
@@ -406,6 +458,8 @@ export interface ProfileAwareFieldAtlasProbeIndex {
   routeGateCandidateProbeCount: number;
   routeGateSummaryProbeCount: number;
   supportRegionProbeCount: number;
+  supportRegionCandidateProbeCount: number;
+  supportRegionSummaryProbeCount: number;
   probes: Record<string, ProfileAwareFieldAtlasProbe>;
 }
 
@@ -444,7 +498,8 @@ export interface ProfileAwareFieldAtlasViewModelReport {
   probeModelStatus: 'probe-ready-diagnostic-model';
   candidateOverlayStatus:
     | 'feature-markers-route-support-summary-only'
-    | 'feature-and-route-gate-markers-support-summary-only';
+    | 'feature-and-route-gate-markers-support-summary-only'
+    | 'feature-route-gate-and-support-region-candidate-markers';
   sourceMarkers: ProfileAwareFieldAtlasSourceMarker[];
   sourceCaveatMarkers: ProfileAwareFieldAtlasSourceCaveatMarker[];
   surfaceSampleMarkers: ProfileAwareFieldAtlasSurfaceSampleMarker[];
@@ -653,8 +708,10 @@ function buildProfileAwareFieldAtlasViewModelReportForShape(
     report: routeGateReport,
     surfaceSampleMarkers,
   });
-  const supportRegionOverlaySummary =
-    buildSupportRegionOverlaySummary(supportRegionReport);
+  const supportRegionOverlaySummary = buildSupportRegionOverlaySummary({
+    report: supportRegionReport,
+    surfaceSampleMarkers,
+  });
   const childDerivationByChildVertexId = buildChildDerivationProbeByChildVertexId({
     childDerivationReports,
     policyReport: profileAwarePolicyReport,
@@ -727,10 +784,10 @@ function buildProfileAwareFieldAtlasViewModelReportForShape(
     degeneracyStatusCount: profileAwarePolicyReport.degeneracyStatusCount,
     renderModelStatus: 'renderable-diagnostic-model',
     probeModelStatus: 'probe-ready-diagnostic-model',
-    candidateOverlayStatus:
-      routeGateOverlaySummary.candidateMarkers.length > 0
-        ? 'feature-and-route-gate-markers-support-summary-only'
-        : 'feature-markers-route-support-summary-only',
+    candidateOverlayStatus: buildCandidateOverlayStatus({
+      routeGateOverlaySummary,
+      supportRegionOverlaySummary,
+    }),
     sourceMarkers,
     sourceCaveatMarkers,
     surfaceSampleMarkers,
@@ -1407,20 +1464,90 @@ function buildRouteGateCandidateMarker(
   };
 }
 
-function buildSupportRegionOverlaySummary(
+function buildSupportRegionOverlaySummary(args: {
   report: ProfileAwareSupportRegionCandidateDiagnosticReport,
-): ProfileAwareFieldAtlasSupportRegionOverlaySummary {
+  surfaceSampleMarkers: ProfileAwareFieldAtlasSurfaceSampleMarker[];
+}): ProfileAwareFieldAtlasSupportRegionOverlaySummary {
+  const sampleMarkerById = new Map(
+    args.surfaceSampleMarkers.map((marker) => [marker.sampleId, marker]),
+  );
+  const candidateMarkers = args.report.candidateViews.map((candidate) =>
+    buildSupportRegionCandidateMarker(candidate, sampleMarkerById),
+  );
+
   return {
-    overlayStatus: 'summary-only',
-    candidateStatus: report.candidateStatus,
-    totalSupportRegionCandidateCount: report.totalCandidateCount,
-    supportClassCandidateCount: report.supportClassCandidateCount,
-    regionCandidateCount: report.regionCandidateCount,
-    constraintSiteCandidateCount: report.constraintSiteCandidateCount,
-    routeFailureRegionCandidateCount: report.routeFailureRegionCandidateCount,
-    candidateRefs: [],
+    overlayStatus:
+      candidateMarkers.length > 0
+        ? 'support-region-candidate-anchors-available'
+        : 'summary-only',
+    candidateStatus: args.report.candidateStatus,
+    totalSupportRegionCandidateCount: args.report.totalCandidateCount,
+    supportClassCandidateCount: args.report.supportClassCandidateCount,
+    regionCandidateCount: args.report.regionCandidateCount,
+    constraintSiteCandidateCount: args.report.constraintSiteCandidateCount,
+    routeFailureRegionCandidateCount:
+      args.report.routeFailureRegionCandidateCount,
+    candidateMarkers,
+    candidateRefs: candidateMarkers.map((marker) => marker.probeRef),
     summaryProbeRef: 'supportRegion:summary',
   };
+}
+
+function buildSupportRegionCandidateMarker(
+  candidate: ProfileAwareSupportRegionCandidateView,
+  sampleMarkerById: Map<string, ProfileAwareFieldAtlasSurfaceSampleMarker>,
+): ProfileAwareFieldAtlasSupportRegionCandidateMarker {
+  const resolvedSampleMarkers = candidate.sampleIds
+    .map((sampleId) => sampleMarkerById.get(sampleId))
+    .filter(
+      (
+        marker,
+      ): marker is ProfileAwareFieldAtlasSurfaceSampleMarker => Boolean(marker),
+    );
+  const anchorSampleId = resolvedSampleMarkers[0]?.sampleId;
+  const position = buildCentroid(
+    resolvedSampleMarkers.map((marker) => marker.position),
+  );
+
+  return {
+    candidateId: candidate.candidateId,
+    renderKind: 'support-region-candidate-anchor-marker',
+    candidateKind: candidate.candidateKind,
+    supportKind: candidate.supportKind,
+    status: 'candidate-only',
+    semanticStatus: 'not-semantic-naming',
+    topologyStatus: 'not-topology-workspace',
+    phaseContinuityStatus: 'not-global-phase-continuity',
+    reliability: candidate.reliability,
+    sampleIds: [...candidate.sampleIds],
+    chartIds: [...candidate.chartIds],
+    edgeIds: [...candidate.edgeIds],
+    observationIds: [...candidate.observationIds],
+    routeGateCandidateIds: [...candidate.routeGateCandidateIds],
+    seamEdgesInvolved: candidate.seamEdgesInvolved,
+    computationalOnlyInvolved: candidate.computationalOnlyInvolved,
+    ...(anchorSampleId ? { anchorSampleId } : {}),
+    ...(position ? { position } : {}),
+    evidenceSummary: copySupportRegionEvidenceSummary(candidate.evidenceSummary),
+    sourcePolicyNames: [...candidate.sourcePolicyNames],
+    reason: candidate.reason,
+    probeRef: `supportRegion:candidate:${candidate.candidateId}`,
+  };
+}
+
+function buildCandidateOverlayStatus(args: {
+  routeGateOverlaySummary: ProfileAwareFieldAtlasRouteGateOverlaySummary;
+  supportRegionOverlaySummary: ProfileAwareFieldAtlasSupportRegionOverlaySummary;
+}): ProfileAwareFieldAtlasViewModelReport['candidateOverlayStatus'] {
+  if (args.supportRegionOverlaySummary.candidateMarkers.length > 0) {
+    return 'feature-route-gate-and-support-region-candidate-markers';
+  }
+
+  if (args.routeGateOverlaySummary.candidateMarkers.length > 0) {
+    return 'feature-and-route-gate-markers-support-summary-only';
+  }
+
+  return 'feature-markers-route-support-summary-only';
 }
 
 function buildProbeIndex(args: {
@@ -1473,6 +1600,10 @@ function buildProbeIndex(args: {
     probes[marker.probeRef] = buildRouteGateProbe(marker);
   }
 
+  for (const marker of args.supportRegionOverlaySummary.candidateMarkers) {
+    probes[marker.probeRef] = buildSupportRegionProbe(marker);
+  }
+
   probes[args.routeGateOverlaySummary.summaryProbeRef] = {
     probeKind: 'route-gate-summary',
     semanticStatus: 'not-semantic-naming',
@@ -1496,7 +1627,11 @@ function buildProbeIndex(args: {
     routeGateCandidateProbeCount:
       args.routeGateOverlaySummary.candidateMarkers.length,
     routeGateSummaryProbeCount: 1,
-    supportRegionProbeCount: 1,
+    supportRegionProbeCount:
+      args.supportRegionOverlaySummary.candidateMarkers.length + 1,
+    supportRegionCandidateProbeCount:
+      args.supportRegionOverlaySummary.candidateMarkers.length,
+    supportRegionSummaryProbeCount: 1,
     probes,
   };
 }
@@ -1649,6 +1784,34 @@ function buildRouteGateProbe(
   };
 }
 
+function buildSupportRegionProbe(
+  marker: ProfileAwareFieldAtlasSupportRegionCandidateMarker,
+): ProfileAwareFieldAtlasSupportRegionProbe {
+  return {
+    probeKind: 'support-region-candidate',
+    candidateId: marker.candidateId,
+    candidateKind: marker.candidateKind,
+    supportKind: marker.supportKind,
+    status: 'candidate-only',
+    semanticStatus: 'not-semantic-naming',
+    topologyStatus: 'not-topology-workspace',
+    phaseContinuityStatus: 'not-global-phase-continuity',
+    reliability: marker.reliability,
+    sampleIds: [...marker.sampleIds],
+    chartIds: [...marker.chartIds],
+    edgeIds: [...marker.edgeIds],
+    observationIds: [...marker.observationIds],
+    routeGateCandidateIds: [...marker.routeGateCandidateIds],
+    seamEdgesInvolved: marker.seamEdgesInvolved,
+    computationalOnlyInvolved: marker.computationalOnlyInvolved,
+    ...(marker.anchorSampleId ? { anchorSampleId: marker.anchorSampleId } : {}),
+    ...(marker.position ? { position: copyVec3(marker.position) } : {}),
+    evidenceSummary: copySupportRegionEvidenceSummary(marker.evidenceSummary),
+    sourcePolicyNames: [...marker.sourcePolicyNames],
+    reason: marker.reason,
+  };
+}
+
 function buildTopContributions(
   sample: SurfaceChartAtlasSample | undefined,
 ): ProfileAwareFieldAtlasTopContributionView[] {
@@ -1751,7 +1914,12 @@ function appendViewModelIssues(
       args.routeGateOverlaySummary.candidateMarkers.length ||
     args.probeIndex.routeGateSummaryProbeCount !== 1 ||
     args.probeIndex.routeGateProbeCount !==
-      args.routeGateOverlaySummary.candidateMarkers.length + 1
+      args.routeGateOverlaySummary.candidateMarkers.length + 1 ||
+    args.probeIndex.supportRegionCandidateProbeCount !==
+      args.supportRegionOverlaySummary.candidateMarkers.length ||
+    args.probeIndex.supportRegionSummaryProbeCount !== 1 ||
+    args.probeIndex.supportRegionProbeCount !==
+      args.supportRegionOverlaySummary.candidateMarkers.length + 1
   ) {
     issues.push({
       code: 'probe-index-count-mismatch',
@@ -1771,6 +1939,13 @@ function appendViewModelIssues(
         routeGateSummaryProbeCount: args.probeIndex.routeGateSummaryProbeCount,
         routeGateCandidateMarkerCount:
           args.routeGateOverlaySummary.candidateMarkers.length,
+        supportRegionProbeCount: args.probeIndex.supportRegionProbeCount,
+        supportRegionCandidateProbeCount:
+          args.probeIndex.supportRegionCandidateProbeCount,
+        supportRegionSummaryProbeCount:
+          args.probeIndex.supportRegionSummaryProbeCount,
+        supportRegionCandidateMarkerCount:
+          args.supportRegionOverlaySummary.candidateMarkers.length,
       },
     });
   }
@@ -1871,6 +2046,24 @@ function appendViewModelIssues(
     });
   }
 
+  if (
+    args.supportRegionOverlaySummary.candidateMarkers.length !==
+    args.supportRegionOverlaySummary.totalSupportRegionCandidateCount
+  ) {
+    issues.push({
+      code: 'support-region-count-mismatch',
+      message:
+        'Profile-aware atlas view model support/region candidate marker count does not match total candidate count.',
+      layer: 'supportRegionOverlaySummary',
+      details: {
+        totalSupportRegionCandidateCount:
+          args.supportRegionOverlaySummary.totalSupportRegionCandidateCount,
+        candidateMarkerCount:
+          args.supportRegionOverlaySummary.candidateMarkers.length,
+      },
+    });
+  }
+
   if (args.shapeWasMutated) {
     issues.push({
       code: 'unexpected-shape-mutation',
@@ -1946,6 +2139,25 @@ function copyRouteGateEvidenceProfile(
           ],
         }
       : {}),
+  };
+}
+
+function copySupportRegionEvidenceSummary(
+  evidenceSummary: ProfileAwareSupportRegionCandidateView['evidenceSummary'],
+): ProfileAwareSupportRegionCandidateView['evidenceSummary'] {
+  return {
+    sampleCount: evidenceSummary.sampleCount,
+    chartCount: evidenceSummary.chartCount,
+    seamEdgeCount: evidenceSummary.seamEdgeCount,
+    chartLocalEdgeCount: evidenceSummary.chartLocalEdgeCount,
+    averageIntensity: evidenceSummary.averageIntensity,
+    minIntensity: evidenceSummary.minIntensity,
+    maxIntensity: evidenceSummary.maxIntensity,
+    averageEffectiveSourceCount: evidenceSummary.averageEffectiveSourceCount,
+    maxTopContributionRatio: evidenceSummary.maxTopContributionRatio,
+    fieldFeatureObservationCount: evidenceSummary.fieldFeatureObservationCount,
+    routeGateCandidateCount: evidenceSummary.routeGateCandidateCount,
+    computationalOnlySampleCount: evidenceSummary.computationalOnlySampleCount,
   };
 }
 

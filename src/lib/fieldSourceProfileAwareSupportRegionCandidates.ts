@@ -1,12 +1,16 @@
 import {
   buildFieldSupportRegionCandidateReport,
+  type FieldSupportRegionCandidateKind,
   type FieldSupportRegionCandidateMethod,
   type FieldSupportRegionCandidateOptions,
   type FieldSupportRegionCandidatePhaseContinuityStatus,
   type FieldSupportRegionCandidateReport,
+  type FieldSupportRegionCandidateReliability,
   type FieldSupportRegionCandidateSemanticStatus,
   type FieldSupportRegionCandidateStatus,
   type FieldSupportRegionCandidateTopologyStatus,
+  type FieldSupportRegionEvidenceSummary,
+  type FieldSupportRegionSupportKind,
 } from './fieldAtlasSupportRegionCandidates';
 import type { ProfileAwareShapeResolvedSurfaceAtlasResult } from './fieldSourceProfileAwareShapeResolvedSurfaceAtlas';
 
@@ -44,6 +48,27 @@ export interface BuildProfileAwareSupportRegionCandidateReportArgs {
   reportIdSuffix?: string;
 }
 
+export interface ProfileAwareSupportRegionCandidateView {
+  candidateId: string;
+  candidateKind: FieldSupportRegionCandidateKind;
+  supportKind: FieldSupportRegionSupportKind;
+  status: FieldSupportRegionCandidateStatus;
+  semanticStatus: FieldSupportRegionCandidateSemanticStatus;
+  topologyStatus: FieldSupportRegionCandidateTopologyStatus;
+  phaseContinuityStatus: FieldSupportRegionCandidatePhaseContinuityStatus;
+  sourcePolicyNames: string[];
+  sampleIds: string[];
+  chartIds: string[];
+  edgeIds: string[];
+  observationIds: string[];
+  routeGateCandidateIds: string[];
+  seamEdgesInvolved: boolean;
+  computationalOnlyInvolved: boolean;
+  evidenceSummary: FieldSupportRegionEvidenceSummary;
+  reason: string;
+  reliability: FieldSupportRegionCandidateReliability;
+}
+
 export interface ProfileAwareSupportRegionCandidateDiagnosticReport {
   reportId: string;
   method: 'profile-aware-support-region-candidates-diagnostic-v0';
@@ -72,6 +97,7 @@ export interface ProfileAwareSupportRegionCandidateDiagnosticReport {
   routeFailureRegionCandidateCount: number;
   nonCandidateStatusCount: number;
   invalidCandidateStatusCount: number;
+  candidateViews: ProfileAwareSupportRegionCandidateView[];
   chartCount: number;
   sampleCount: number;
   atlasInputSourceCount: number;
@@ -159,6 +185,9 @@ export function buildProfileAwareSupportRegionCandidateDiagnosticReport(
       (candidate) => candidate.status !== CANDIDATE_STATUS,
     ).length ?? 0;
   const invalidCandidateStatusCount = nonCandidateStatusCount;
+  const candidateViews = supportRegionReport
+    ? supportRegionReport.candidates.map(buildCandidateView)
+    : [];
   const issueCount = issues.length;
 
   return {
@@ -200,6 +229,7 @@ export function buildProfileAwareSupportRegionCandidateDiagnosticReport(
       supportRegionReport?.candidateSummary.routeFailureRegionCandidateCount ?? 0,
     nonCandidateStatusCount,
     invalidCandidateStatusCount,
+    candidateViews,
     chartCount: surfaceReport.chartCount,
     sampleCount: surfaceReport.sampleCount,
     atlasInputSourceCount: surfaceReport.atlasInputSourceCount,
@@ -427,6 +457,48 @@ function appendSupportRegionReportIssues(
         'Support/region diagnostic has no executable profile-aware sources.',
     });
   }
+}
+
+function buildCandidateView(
+  candidate: FieldSupportRegionCandidateReport['candidates'][number],
+): ProfileAwareSupportRegionCandidateView {
+  return {
+    candidateId: candidate.candidateId,
+    candidateKind: candidate.candidateKind,
+    supportKind: candidate.supportKind,
+    status: candidate.status,
+    semanticStatus: candidate.semanticStatus,
+    topologyStatus: candidate.topologyStatus,
+    phaseContinuityStatus: candidate.phaseContinuityStatus,
+    sourcePolicyNames: [...candidate.sourcePolicyNames],
+    sampleIds: [...candidate.sampleIds],
+    chartIds: [...candidate.chartIds],
+    edgeIds: [...candidate.edgeIds],
+    observationIds: [...candidate.observationIds],
+    routeGateCandidateIds: [...candidate.routeGateCandidateIds],
+    seamEdgesInvolved: candidate.seamEdgesInvolved,
+    computationalOnlyInvolved: candidate.computationalOnlyInvolved,
+    evidenceSummary: {
+      sampleCount: candidate.evidenceSummary.sampleCount,
+      chartCount: candidate.evidenceSummary.chartCount,
+      seamEdgeCount: candidate.evidenceSummary.seamEdgeCount,
+      chartLocalEdgeCount: candidate.evidenceSummary.chartLocalEdgeCount,
+      averageIntensity: candidate.evidenceSummary.averageIntensity,
+      minIntensity: candidate.evidenceSummary.minIntensity,
+      maxIntensity: candidate.evidenceSummary.maxIntensity,
+      averageEffectiveSourceCount:
+        candidate.evidenceSummary.averageEffectiveSourceCount,
+      maxTopContributionRatio:
+        candidate.evidenceSummary.maxTopContributionRatio,
+      fieldFeatureObservationCount:
+        candidate.evidenceSummary.fieldFeatureObservationCount,
+      routeGateCandidateCount: candidate.evidenceSummary.routeGateCandidateCount,
+      computationalOnlySampleCount:
+        candidate.evidenceSummary.computationalOnlySampleCount,
+    },
+    reason: candidate.reason,
+    reliability: candidate.reliability,
+  };
 }
 
 function isProfileAwareSourcePolicyList(sourcePolicyNames: readonly string[]): boolean {

@@ -40,6 +40,8 @@ import {
   type ProfileAwareFieldAtlasRouteGateProbe,
   type ProfileAwareFieldAtlasSourceProbe,
   type ProfileAwareFieldAtlasSummaryProbe,
+  type ProfileAwareFieldAtlasSupportRegionCandidateMarker,
+  type ProfileAwareFieldAtlasSupportRegionProbe,
   type ProfileAwareFieldAtlasSurfaceSampleProbe,
   type ProfileAwareFieldAtlasViewModelRuntimeReport,
 } from '../lib/fieldSourceProfileAwareAtlasViewModel';
@@ -362,6 +364,8 @@ function ProfileAwareFieldModeRuntimeSection({
     viewModel.featureOverlaySummary.featureMarkers.slice(0, 5);
   const visibleRouteGateCandidateMarkers =
     viewModel.routeGateOverlaySummary.candidateMarkers.slice(0, 5);
+  const visibleSupportRegionCandidateMarkers =
+    viewModel.supportRegionOverlaySummary.candidateMarkers.slice(0, 5);
   const pinnedProbe = pinnedFieldAtlasProbeRef
     ? viewModel.probeIndex.probes[pinnedFieldAtlasProbeRef]
     : undefined;
@@ -465,6 +469,30 @@ function ProfileAwareFieldModeRuntimeSection({
           <p className="rounded border border-stone-800 bg-stone-900 px-2 py-2 text-stone-500">
             No profile-aware route/gate candidate anchors under the current runtime
             bounds.
+          </p>
+        )}
+      </div>
+
+      <div className="mt-3 grid gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+          Support/Region Candidates
+        </h4>
+        {visibleSupportRegionCandidateMarkers.length ? (
+          visibleSupportRegionCandidateMarkers.map((marker) => (
+            <ProfileAwareSupportRegionCandidateRow
+              key={marker.candidateId}
+              marker={marker}
+              isHovered={hoveredFieldAtlasSampleId === marker.probeRef}
+              isPinned={pinnedFieldAtlasProbeRef === marker.probeRef}
+              onHoverStart={onHoverSampleStart}
+              onHoverEnd={onHoverSampleEnd}
+              onTogglePinnedProbe={onTogglePinnedProbe}
+            />
+          ))
+        ) : (
+          <p className="rounded border border-stone-800 bg-stone-900 px-2 py-2 text-stone-500">
+            No profile-aware support/region candidate anchors under the current
+            runtime bounds.
           </p>
         )}
       </div>
@@ -589,6 +617,71 @@ function ProfileAwareRouteGateCandidateRow({
   );
 }
 
+function ProfileAwareSupportRegionCandidateRow({
+  marker,
+  isHovered,
+  isPinned,
+  onHoverStart,
+  onHoverEnd,
+  onTogglePinnedProbe,
+}: {
+  marker: ProfileAwareFieldAtlasSupportRegionCandidateMarker;
+  isHovered: boolean;
+  isPinned: boolean;
+  onHoverStart: (hoverRef: string) => void;
+  onHoverEnd: (hoverRef: string) => void;
+  onTogglePinnedProbe: (probeRef: string) => void;
+}) {
+  return (
+    <button
+      className={`rounded border px-2 py-2 text-left transition ${
+        isPinned
+          ? 'border-cyan-300/70 bg-cyan-400/10 shadow-[0_0_0_1px_rgba(103,232,249,0.18)]'
+          : isHovered
+            ? 'border-amber-300/70 bg-amber-400/10 shadow-[0_0_0_1px_rgba(252,211,77,0.18)]'
+            : 'border-stone-800 bg-stone-900'
+      }`}
+      data-profile-aware-support-region-candidate-id={marker.candidateId}
+      onClick={() => onTogglePinnedProbe(marker.probeRef)}
+      onFocus={() => onHoverStart(marker.probeRef)}
+      onBlur={() => onHoverEnd(marker.probeRef)}
+      onPointerEnter={() => onHoverStart(marker.probeRef)}
+      onPointerLeave={() => onHoverEnd(marker.probeRef)}
+      type="button"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="font-medium text-stone-200">
+          {formatSupportRegionCandidateKind(marker.candidateKind)}
+        </span>
+        <span className="font-mono text-[11px] text-stone-500">
+          {marker.reliability}
+        </span>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-stone-500">
+        <span className="font-mono">{formatSupportKind(marker.supportKind)}</span>
+        <span className="text-right font-mono">
+          samples {marker.sampleIds.length}
+        </span>
+        <span className="font-mono">
+          observations {marker.observationIds.length}
+        </span>
+        <span className="text-right font-mono">
+          route/gate {marker.routeGateCandidateIds.length}
+        </span>
+        <span className="font-mono">
+          seam {marker.seamEdgesInvolved ? 'yes' : 'no'}
+        </span>
+        <span className="text-right font-mono">
+          computational {marker.computationalOnlyInvolved ? 'yes' : 'no'}
+        </span>
+      </div>
+      <p className="mt-2 leading-5 text-stone-400">
+        {shortenReportReason(marker.reason)}
+      </p>
+    </button>
+  );
+}
+
 function getProfileAwareFeatureReason(
   report: ProfileAwareFieldAtlasViewModelRuntimeReport,
   marker: ProfileAwareFieldAtlasFeatureMarker,
@@ -663,8 +756,9 @@ function ProfileAwareActiveProbeSection({
         </div>
       ) : (
         <p className="mt-2 rounded border border-stone-800 bg-stone-900 px-2 py-2 leading-5 text-stone-500">
-          Hover a profile-aware source, sample, feature marker, or route/gate
-          candidate anchor to inspect its field payload.
+          Hover a profile-aware source, sample, feature marker, route/gate
+          candidate anchor, or support/region candidate anchor to inspect its field
+          payload.
           {activeProbeRef ? (
             <span className="mt-1 block font-mono text-stone-600">
               no probe for {shortenId(activeProbeRef)}
@@ -689,6 +783,10 @@ function renderProfileAwareProbeCard(
       return <ProfileAwareFeatureProbeCard probe={probe} shortenId={shortenId} />;
     case 'route-gate-candidate':
       return <ProfileAwareRouteGateProbeCard probe={probe} shortenId={shortenId} />;
+    case 'support-region-candidate':
+      return (
+        <ProfileAwareSupportRegionProbeCard probe={probe} shortenId={shortenId} />
+      );
     case 'route-gate-summary':
     case 'support-region-summary':
       return <ProfileAwareSummaryProbeCard probe={probe} />;
@@ -1116,6 +1214,114 @@ function ProfileAwareRouteGateProbeCard({
   );
 }
 
+function ProfileAwareSupportRegionProbeCard({
+  probe,
+  shortenId,
+}: {
+  probe: ProfileAwareFieldAtlasSupportRegionProbe;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="grid gap-2">
+      <dl className="grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Probe kind" value={probe.probeKind} />
+        <FieldAtlasMetric label="Candidate" value={shortenId(probe.candidateId)} />
+        <FieldAtlasMetric
+          label="Kind"
+          value={formatSupportRegionCandidateKind(probe.candidateKind)}
+        />
+        <FieldAtlasMetric
+          label="Support kind"
+          value={formatSupportKind(probe.supportKind)}
+        />
+        <FieldAtlasMetric label="Status" value={probe.status} />
+        <FieldAtlasMetric label="Reliability" value={probe.reliability} />
+        <FieldAtlasMetric label="Semantic" value={probe.semanticStatus} />
+        <FieldAtlasMetric label="Topology" value={probe.topologyStatus} />
+        <FieldAtlasMetric label="Phase" value={probe.phaseContinuityStatus} />
+        <FieldAtlasMetric label="Samples" value={probe.sampleIds.length} />
+        <FieldAtlasMetric label="Charts" value={probe.chartIds.length} />
+        <FieldAtlasMetric label="Edges" value={probe.edgeIds.length} />
+        <FieldAtlasMetric
+          label="Observations"
+          value={probe.observationIds.length}
+        />
+        <FieldAtlasMetric
+          label="Route/gate refs"
+          value={probe.routeGateCandidateIds.length}
+        />
+        <FieldAtlasMetric
+          label="Seam involved"
+          value={probe.seamEdgesInvolved ? 'yes' : 'no'}
+        />
+        <FieldAtlasMetric
+          label="Computational only"
+          value={probe.computationalOnlyInvolved ? 'yes' : 'no'}
+        />
+        <FieldAtlasMetric
+          label="Anchor sample"
+          value={formatOptionalProbeId(probe.anchorSampleId, shortenId)}
+        />
+        <FieldAtlasMetric
+          label="Evidence samples"
+          value={probe.evidenceSummary.sampleCount}
+        />
+        <FieldAtlasMetric
+          label="Evidence charts"
+          value={probe.evidenceSummary.chartCount}
+        />
+        <FieldAtlasMetric
+          label="Seam edges"
+          value={probe.evidenceSummary.seamEdgeCount}
+        />
+        <FieldAtlasMetric
+          label="Chart-local edges"
+          value={probe.evidenceSummary.chartLocalEdgeCount}
+        />
+        <FieldAtlasMetric
+          label="Avg intensity"
+          value={formatNumber(probe.evidenceSummary.averageIntensity)}
+        />
+        <FieldAtlasMetric
+          label="Min intensity"
+          value={formatNumber(probe.evidenceSummary.minIntensity)}
+        />
+        <FieldAtlasMetric
+          label="Max intensity"
+          value={formatNumber(probe.evidenceSummary.maxIntensity)}
+        />
+        <FieldAtlasMetric
+          label="Avg source count"
+          value={formatNumber(probe.evidenceSummary.averageEffectiveSourceCount)}
+        />
+        <FieldAtlasMetric
+          label="Max top ratio"
+          value={formatPercent(probe.evidenceSummary.maxTopContributionRatio)}
+        />
+        <FieldAtlasMetric
+          label="Feature obs"
+          value={probe.evidenceSummary.fieldFeatureObservationCount}
+        />
+        <FieldAtlasMetric
+          label="Route/gate count"
+          value={probe.evidenceSummary.routeGateCandidateCount}
+        />
+        <FieldAtlasMetric
+          label="Computational samples"
+          value={probe.evidenceSummary.computationalOnlySampleCount}
+        />
+        <FieldAtlasMetric
+          label="Policy names"
+          value={formatReportSourcePolicyNames(probe.sourcePolicyNames)}
+        />
+      </dl>
+      <p className="rounded border border-stone-800 bg-stone-900 px-2 py-2 leading-5 text-stone-400">
+        {shortenReportReason(probe.reason)}
+      </p>
+    </div>
+  );
+}
+
 function ProfileAwareSummaryProbeCard({
   probe,
 }: {
@@ -1139,6 +1345,14 @@ function formatOptionalProbeId(
 }
 
 function formatRouteGateCandidateKind(kind: string): string {
+  return kind.replace(/-/g, ' ');
+}
+
+function formatSupportRegionCandidateKind(kind: string): string {
+  return kind.replace(/-/g, ' ');
+}
+
+function formatSupportKind(kind: string): string {
   return kind.replace(/-/g, ' ');
 }
 

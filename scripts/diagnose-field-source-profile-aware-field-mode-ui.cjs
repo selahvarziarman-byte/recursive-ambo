@@ -37,7 +37,7 @@ runSupportedOneAmboTetrahedronContractDiagnostic();
 runUnsupportedSeedTetrahedronDiagnostic();
 runUnsupportedCubeDiagnostic();
 runConservativeBoundaryClaimDiagnostic();
-runRouteGateCandidateOverlayDiagnostic();
+runRouteGateAndSupportRegionCandidateOverlayDiagnostic();
 runNoOldPolicyComparisonOrInvarianceDiagnostic();
 
 if (failures.length) {
@@ -89,6 +89,11 @@ function runSupportedOneAmboTetrahedronContractDiagnostic() {
       1,
       'route/gate candidate anchor count',
     );
+    expectAtLeast(
+      viewModel.supportRegionOverlaySummary.candidateMarkers.length,
+      1,
+      'support/region candidate anchor count',
+    );
     expectEqual(
       viewModel.sourceMarkers.every((marker) => marker.renderKind === 'source-marker'),
       true,
@@ -114,6 +119,13 @@ function runSupportedOneAmboTetrahedronContractDiagnostic() {
       ),
       true,
       'route/gate candidate marker render kind',
+    );
+    expectEqual(
+      viewModel.supportRegionOverlaySummary.candidateMarkers.every(
+        (marker) => marker.renderKind === 'support-region-candidate-anchor-marker',
+      ),
+      true,
+      'support/region candidate marker render kind',
     );
     expectMarkerProbeContracts(viewModel);
     expectSimulatedPinnedProbeRefsResolve(viewModel);
@@ -173,13 +185,13 @@ function runConservativeBoundaryClaimDiagnostic() {
   console.log('conservative Field Mode UI claims: PASS');
 }
 
-function runRouteGateCandidateOverlayDiagnostic() {
+function runRouteGateAndSupportRegionCandidateOverlayDiagnostic() {
   const report = buildProfileAwareFieldAtlasViewModelRuntimeReport(
     applyAmboDissection(createSeedShape('tetrahedron')),
   );
 
   if (!report.viewModel) {
-    recordFailure('route/support summary-only: supported view model missing');
+    recordFailure('route/support candidate anchors: supported view model missing');
     return;
   }
 
@@ -187,7 +199,7 @@ function runRouteGateCandidateOverlayDiagnostic() {
 
   expectEqual(
     viewModel.candidateOverlayStatus,
-    'feature-and-route-gate-markers-support-summary-only',
+    'feature-route-gate-and-support-region-candidate-markers',
     'candidate overlay status',
   );
   expectEqual(
@@ -207,12 +219,17 @@ function runRouteGateCandidateOverlayDiagnostic() {
   );
   expectEqual(
     viewModel.supportRegionOverlaySummary.overlayStatus,
-    'summary-only',
+    'support-region-candidate-anchors-available',
     'support/region overlay status',
+  );
+  expectAtLeast(
+    viewModel.supportRegionOverlaySummary.candidateMarkers.length,
+    1,
+    'support/region candidate markers',
   );
   expectEqual(
     viewModel.supportRegionOverlaySummary.candidateRefs.length,
-    0,
+    viewModel.supportRegionOverlaySummary.candidateMarkers.length,
     'support/region candidate refs',
   );
   expectEqual(
@@ -232,11 +249,21 @@ function runRouteGateCandidateOverlayDiagnostic() {
   );
   expectEqual(
     viewModel.probeIndex.supportRegionProbeCount,
+    viewModel.supportRegionOverlaySummary.candidateMarkers.length + 1,
+    'support/region total probes',
+  );
+  expectEqual(
+    viewModel.probeIndex.supportRegionCandidateProbeCount,
+    viewModel.supportRegionOverlaySummary.candidateMarkers.length,
+    'support/region candidate probes',
+  );
+  expectEqual(
+    viewModel.probeIndex.supportRegionSummaryProbeCount,
     1,
-    'support/region summary probe',
+    'support/region summary probes',
   );
 
-  console.log('route/gate candidate anchors and support/region summary-only: PASS');
+  console.log('route/gate and support/region candidate anchors: PASS');
 }
 
 function runNoOldPolicyComparisonOrInvarianceDiagnostic() {
@@ -263,6 +290,11 @@ function runNoOldPolicyComparisonOrInvarianceDiagnostic() {
     'packetWritingStatus',
     'semanticNamingStatus',
     'topologyBehaviorStatus',
+    'supportRegionGeometryStatus',
+    'filledRegionGeometryStatus',
+    'meshRegionStatus',
+    'graphEdgeDrawingStatus',
+    'routePathGeometryStatus',
   ];
 
   for (const report of reports) {
@@ -406,6 +438,48 @@ function expectMarkerProbeContracts(viewModel) {
     }
   }
 
+  for (const marker of viewModel.supportRegionOverlaySummary.candidateMarkers) {
+    const probe = viewModel.probeIndex.probes[marker.probeRef];
+
+    expectTruthy(probe, `support/region marker ${marker.candidateId} probe`);
+    expectEqual(
+      probe && probe.probeKind,
+      'support-region-candidate',
+      `support/region marker ${marker.candidateId} probe kind`,
+    );
+    expectEqual(
+      marker.status,
+      'candidate-only',
+      `support/region marker ${marker.candidateId} status`,
+    );
+    expectEqual(
+      marker.semanticStatus,
+      'not-semantic-naming',
+      `support/region marker ${marker.candidateId} semantic`,
+    );
+    expectEqual(
+      marker.topologyStatus,
+      'not-topology-workspace',
+      `support/region marker ${marker.candidateId} topology`,
+    );
+    expectEqual(
+      marker.phaseContinuityStatus,
+      'not-global-phase-continuity',
+      `support/region marker ${marker.candidateId} phase`,
+    );
+    expectProfileAwareSourcePolicyNames(
+      marker.sourcePolicyNames,
+      `support/region marker ${marker.candidateId} source policy names`,
+    );
+
+    if (marker.position) {
+      expectFiniteVec3(
+        marker.position,
+        `support/region marker ${marker.candidateId} anchor position`,
+      );
+    }
+  }
+
   console.log('marker hover probe refs resolve: PASS');
 }
 
@@ -414,6 +488,8 @@ function expectSimulatedPinnedProbeRefsResolve(viewModel) {
   const sampleMarker = viewModel.surfaceSampleMarkers[0];
   const featureMarker = viewModel.featureOverlaySummary.featureMarkers[0];
   const routeGateMarker = viewModel.routeGateOverlaySummary.candidateMarkers[0];
+  const supportRegionMarker =
+    viewModel.supportRegionOverlaySummary.candidateMarkers[0];
 
   expectPinnedProbeRef(
     viewModel,
@@ -438,6 +514,12 @@ function expectSimulatedPinnedProbeRefsResolve(viewModel) {
     routeGateMarker && routeGateMarker.probeRef,
     'route-gate-candidate',
     'simulated route/gate pinned ref',
+  );
+  expectPinnedProbeRef(
+    viewModel,
+    supportRegionMarker && supportRegionMarker.probeRef,
+    'support-region-candidate',
+    'simulated support/region pinned ref',
   );
 
   console.log('simulated pinned probe refs resolve: PASS');
@@ -572,7 +654,7 @@ function printSupportedReport(label, report) {
   console.log(`  input shape: ${report.inputShapeId}`);
   console.log(`  source policy: ${report.sourcePolicyId}`);
   console.log(
-    `  markers: source=${report.viewModel.sourceMarkers.length} sample=${report.viewModel.surfaceSampleMarkers.length} feature=${report.viewModel.featureOverlaySummary.featureMarkers.length} routeGate=${report.viewModel.routeGateOverlaySummary.candidateMarkers.length}`,
+    `  markers: source=${report.viewModel.sourceMarkers.length} sample=${report.viewModel.surfaceSampleMarkers.length} feature=${report.viewModel.featureOverlaySummary.featureMarkers.length} routeGate=${report.viewModel.routeGateOverlaySummary.candidateMarkers.length} supportRegion=${report.viewModel.supportRegionOverlaySummary.candidateMarkers.length}`,
   );
   console.log(
     `  candidate summaries: route/gate=${report.viewModel.routeGateOverlaySummary.totalRouteGateCandidateCount} support/region=${report.viewModel.supportRegionOverlaySummary.totalSupportRegionCandidateCount}`,
