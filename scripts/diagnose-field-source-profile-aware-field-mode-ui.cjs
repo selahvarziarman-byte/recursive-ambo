@@ -27,6 +27,12 @@ const {
   repoRoot,
   'src/lib/fieldSourceProfileAwareAtlasViewModel.ts',
 ));
+const {
+  buildProfileAwareEvidenceStabilityReport,
+} = require(path.join(
+  repoRoot,
+  'src/lib/fieldSourceProfileAwareEvidenceStability.ts',
+));
 
 const PROFILE_AWARE_SOURCE_POLICY_ID = 'profile-aware-quark-child-inheritance-v0';
 const SAMPLE_RENDER_MODES = ['family', 'intensity', 'phase', 'dominance'];
@@ -39,6 +45,7 @@ runLayerVisibilityContractDiagnostic();
 runSampleRenderModeContractDiagnostic();
 runChartLinkingContractDiagnostic();
 runSourceLinkingContractDiagnostic();
+runEvidenceStabilityUiContractDiagnostic();
 runUnsupportedSeedTetrahedronDiagnostic();
 runUnsupportedCubeDiagnostic();
 runConservativeBoundaryClaimDiagnostic();
@@ -804,6 +811,212 @@ function runSourceLinkingContractDiagnostic() {
   console.log('source linking contract: PASS');
 }
 
+function runEvidenceStabilityUiContractDiagnostic() {
+  const runtimeBefore = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+  const probeCountsBefore = runtimeBefore.viewModel
+    ? getProbeCounts(runtimeBefore.viewModel)
+    : undefined;
+  const report = buildProfileAwareEvidenceStabilityReport();
+  const runtimeAfter = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+  const probeCountsAfter = runtimeAfter.viewModel
+    ? getProbeCounts(runtimeAfter.viewModel)
+    : undefined;
+
+  expectEqual(report.ok, true, 'evidence stability UI report ok');
+  expectEqual(report.issueCount, 0, 'evidence stability UI issue count');
+  expectEqual(
+    report.method,
+    'profile-aware-evidence-stability-diagnostic-v0',
+    'evidence stability UI method',
+  );
+  expectEqual(
+    report.diagnosticScope,
+    'profile-aware-full-candidate-stack-stability-only',
+    'evidence stability UI diagnostic scope',
+  );
+  expectEqual(
+    report.sourcePolicyId,
+    PROFILE_AWARE_SOURCE_POLICY_ID,
+    'evidence stability UI source policy',
+  );
+  expectEqual(
+    report.policyRelativityStatus,
+    'policy-relative',
+    'evidence stability UI policy relativity',
+  );
+  expectEqual(
+    report.contrastPolicyNote,
+    'old-policy-not-assumed-invariant',
+    'evidence stability UI contrast policy note',
+  );
+  expectEqual(
+    report.semanticStatus,
+    'not-semantic-naming',
+    'evidence stability UI semantic status',
+  );
+  expectEqual(
+    report.topologyStatus,
+    'not-topology-workspace',
+    'evidence stability UI topology status',
+  );
+  expectEqual(
+    report.phaseContinuityStatus,
+    'not-global-phase-continuity',
+    'evidence stability UI phase continuity status',
+  );
+  expectEqual(
+    report.shapeMutationStatus,
+    'not-shape-mutation',
+    'evidence stability UI shape mutation status',
+  );
+  expectEqual(
+    report.packetWriteStatus,
+    'not-packet-writing',
+    'evidence stability UI packet write status',
+  );
+  expectAtLeast(report.variantCount, 1, 'evidence stability UI variant count');
+  expectAtLeast(
+    report.samplingVariantCount,
+    1,
+    'evidence stability UI sampling variant count',
+  );
+  expectAtLeast(
+    report.profileSetupVariantCount,
+    1,
+    'evidence stability UI profile setup variant count',
+  );
+  expectEqual(
+    report.variants.length,
+    report.variantCount,
+    'evidence stability UI variants length',
+  );
+  expectTruthy(
+    report.sensitivitySummary,
+    'evidence stability UI sensitivity summary',
+  );
+
+  if (report.sensitivitySummary) {
+    const summary = report.sensitivitySummary;
+    const expectedRangeKeys = [
+      'totalObservationCount',
+      'totalRouteGateCandidateCount',
+      'totalSupportRegionCandidateCount',
+      'cancellationLikeObservationCount',
+      'gateCandidateCount',
+      'supportClassCandidateCount',
+    ];
+
+    expectEqual(
+      Array.isArray(summary.changedCountKeys),
+      true,
+      'evidence stability UI changed count keys array',
+    );
+    expectEqual(
+      Array.isArray(summary.featureChangedCountKeys),
+      true,
+      'evidence stability UI feature changed keys array',
+    );
+    expectEqual(
+      Array.isArray(summary.routeGateChangedCountKeys),
+      true,
+      'evidence stability UI route/gate changed keys array',
+    );
+    expectEqual(
+      Array.isArray(summary.supportRegionChangedCountKeys),
+      true,
+      'evidence stability UI support/region changed keys array',
+    );
+
+    for (const key of expectedRangeKeys) {
+      if (Object.prototype.hasOwnProperty.call(summary.countRanges, key)) {
+        const range = summary.countRanges[key];
+
+        expectFinite(range && range.min, `evidence stability UI ${key} min`);
+        expectFinite(range && range.max, `evidence stability UI ${key} max`);
+        expectLessThanOrEqual(
+          range && range.min,
+          range && range.max,
+          `evidence stability UI ${key} range order`,
+        );
+      }
+    }
+
+    expectEqual(
+      typeof summary.maxBucketSaturation.anyMaxBucketSaturated,
+      'boolean',
+      'evidence stability UI max bucket saturation boolean',
+    );
+  }
+
+  expectTruthy(probeCountsBefore, 'evidence stability UI probe counts before');
+  expectTruthy(probeCountsAfter, 'evidence stability UI probe counts after');
+
+  if (probeCountsBefore && probeCountsAfter) {
+    expectEqual(
+      probeCountsAfter.sourceProbeCount,
+      probeCountsBefore.sourceProbeCount,
+      'evidence stability UI source probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.sampleProbeCount,
+      probeCountsBefore.sampleProbeCount,
+      'evidence stability UI sample probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.chartProbeCount,
+      probeCountsBefore.chartProbeCount,
+      'evidence stability UI chart probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.featureProbeCount,
+      probeCountsBefore.featureProbeCount,
+      'evidence stability UI feature probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.routeGateCandidateProbeCount,
+      probeCountsBefore.routeGateCandidateProbeCount,
+      'evidence stability UI route/gate probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.supportRegionCandidateProbeCount,
+      probeCountsBefore.supportRegionCandidateProbeCount,
+      'evidence stability UI support/region probe count unchanged',
+    );
+  }
+
+  const forbiddenProperties = [
+    'evidenceConfirmationStatus',
+    'confirmedStableStatus',
+    'oldPolicyInvariantStatus',
+    'defaultPolicyComparisonStatus',
+    'semanticNamingStatus',
+    'topologyBehaviorStatus',
+    'packetWritingStatus',
+    'shapeMutationDetected',
+    'persistenceStatus',
+    'workspacePersistenceStatus',
+    'stabilityPersistenceStatus',
+    'globalStabilityStateStatus',
+  ];
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(report, property, `evidence stability UI no ${property}`);
+    if (report.sensitivitySummary) {
+      expectNoOwnProperty(
+        report.sensitivitySummary,
+        property,
+        `evidence stability UI summary no ${property}`,
+      );
+    }
+  }
+
+  console.log('evidence stability UI contract: PASS');
+}
+
 function runUnsupportedCubeDiagnostic() {
   runUnsupportedShapeDiagnostic(
     'unsupported cube Field Mode UI',
@@ -1411,6 +1624,19 @@ function computeChartContextCounts(viewModel, chartIds) {
       viewModel.supportRegionOverlaySummary.candidateMarkers.filter((marker) =>
         marker.chartIds.some((chartId) => activeChartIdSet.has(chartId)),
       ).length,
+  };
+}
+
+function getProbeCounts(viewModel) {
+  return {
+    sourceProbeCount: viewModel.probeIndex.sourceProbeCount,
+    sampleProbeCount: viewModel.probeIndex.sampleProbeCount,
+    chartProbeCount: viewModel.probeIndex.chartProbeCount,
+    featureProbeCount: viewModel.probeIndex.featureProbeCount,
+    routeGateCandidateProbeCount:
+      viewModel.probeIndex.routeGateCandidateProbeCount,
+    supportRegionCandidateProbeCount:
+      viewModel.probeIndex.supportRegionCandidateProbeCount,
   };
 }
 

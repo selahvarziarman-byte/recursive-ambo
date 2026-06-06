@@ -31,6 +31,11 @@ import {
   type FieldFeatureReportObservation,
 } from '../lib/fieldAtlasFeatureReport';
 import {
+  buildProfileAwareEvidenceStabilityReport,
+  type ProfileAwareEvidenceStabilityCountKey,
+  type ProfileAwareEvidenceStabilityReport,
+} from '../lib/fieldSourceProfileAwareEvidenceStability';
+import {
   buildProfileAwareFieldAtlasViewModelRuntimeReport,
   type ProfileAwareFieldAtlasChartAnchorMarker,
   type ProfileAwareFieldAtlasChartProbe,
@@ -143,6 +148,14 @@ const sourceKindOrder: FieldAtlasSourceKind[] = [
   'generated-child',
   'ambo-midpoint-child',
 ];
+const evidenceStabilityRangeKeys: ProfileAwareEvidenceStabilityCountKey[] = [
+  'totalObservationCount',
+  'totalRouteGateCandidateCount',
+  'totalSupportRegionCandidateCount',
+  'cancellationLikeObservationCount',
+  'gateCandidateCount',
+  'supportClassCandidateCount',
+];
 
 export function FieldAtlasInspector({
   shape,
@@ -154,6 +167,10 @@ export function FieldAtlasInspector({
   const profileAwareRuntimeReport = useMemo(
     () => buildProfileAwareFieldAtlasViewModelRuntimeReport(shape),
     [shape],
+  );
+  const profileAwareEvidenceStabilityReport = useMemo(
+    () => buildProfileAwareEvidenceStabilityReport(),
+    [],
   );
   const [advancedDiagnosticsOpen, setAdvancedDiagnosticsOpen] = useState(false);
   const hoveredFieldAtlasSampleId = useGeometryStore(
@@ -186,6 +203,7 @@ export function FieldAtlasInspector({
     <div className="grid gap-3 text-sm">
       <ProfileAwareFieldModeRuntimeSection
         report={profileAwareRuntimeReport}
+        evidenceStabilityReport={profileAwareEvidenceStabilityReport}
         hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
         pinnedFieldAtlasProbeRef={pinnedFieldAtlasProbeRef}
         onHoverSampleStart={setHoveredFieldAtlasSampleId}
@@ -352,6 +370,7 @@ function LegacyFieldAtlasDiagnosticsSection({
 
 function ProfileAwareFieldModeRuntimeSection({
   report,
+  evidenceStabilityReport,
   hoveredFieldAtlasSampleId,
   pinnedFieldAtlasProbeRef,
   onHoverSampleStart,
@@ -361,6 +380,7 @@ function ProfileAwareFieldModeRuntimeSection({
   shortenId,
 }: {
   report: ProfileAwareFieldAtlasViewModelRuntimeReport;
+  evidenceStabilityReport: ProfileAwareEvidenceStabilityReport;
   hoveredFieldAtlasSampleId: string | null;
   pinnedFieldAtlasProbeRef: string | null;
   onHoverSampleStart: (sampleId: string) => void;
@@ -551,6 +571,11 @@ function ProfileAwareFieldModeRuntimeSection({
 
       <ProfileAwareActiveSourceContextSection
         context={activeSourceContext}
+        shortenId={shortenId}
+      />
+
+      <ProfileAwareEvidenceStabilitySection
+        report={evidenceStabilityReport}
         shortenId={shortenId}
       />
 
@@ -1045,6 +1070,171 @@ function ProfileAwareActiveSourceContextSection({
       )}
     </div>
   );
+}
+
+type ProfileAwareEvidenceStabilityMaxBucketFlags =
+  ProfileAwareEvidenceStabilityReport['sensitivitySummary']['maxBucketSaturation'];
+
+const evidenceStabilityBucketLabels: Array<
+  [keyof ProfileAwareEvidenceStabilityMaxBucketFlags, string]
+> = [
+  ['routeGateGatesReachedMax', 'route/gate gates'],
+  ['routeGateRoutesReachedMax', 'route/gate routes'],
+  ['routeGateBlockedReachedMax', 'route/gate blocked'],
+  ['supportRegionSupportClassesReachedMax', 'support classes'],
+  ['supportRegionRegionsReachedMax', 'support regions'],
+  ['supportRegionConstraintsReachedMax', 'constraints'],
+  ['supportRegionRouteFailuresReachedMax', 'route failures'],
+];
+
+function ProfileAwareEvidenceStabilitySection({
+  report,
+  shortenId,
+}: {
+  report: ProfileAwareEvidenceStabilityReport;
+  shortenId: (id: string) => string;
+}) {
+  const summary = report.sensitivitySummary;
+  const saturatedBuckets = getSaturatedEvidenceStabilityBucketLabels(
+    summary.maxBucketSaturation,
+  );
+  const visibleChangedKeys = summary.changedCountKeys.slice(0, 6);
+  const visibleRangeKeys = evidenceStabilityRangeKeys.filter((key) =>
+    Object.prototype.hasOwnProperty.call(summary.countRanges, key),
+  );
+
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2">
+      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Evidence Stability
+      </h4>
+      <dl className="mt-2 grid grid-cols-2 gap-2">
+        <FieldAtlasMetric
+          label="Status"
+          value={`${report.ok ? 'ok' : 'issues'} / ${report.issueCount}`}
+        />
+        <FieldAtlasMetric label="Variants" value={report.variantCount} />
+        <FieldAtlasMetric
+          label="Sampling variants"
+          value={report.samplingVariantCount}
+        />
+        <FieldAtlasMetric
+          label="Profile variants"
+          value={report.profileSetupVariantCount}
+        />
+        <FieldAtlasMetric
+          label="Sampling sensitive"
+          value={formatYesNo(summary.samplingSensitive)}
+        />
+        <FieldAtlasMetric
+          label="Profile sensitive"
+          value={formatYesNo(summary.profileSetupSensitive)}
+        />
+        <FieldAtlasMetric
+          label="Changed keys"
+          value={summary.changedCountKeys.length}
+        />
+        <FieldAtlasMetric
+          label="Feature keys"
+          value={summary.featureChangedCountKeys.length}
+        />
+        <FieldAtlasMetric
+          label="Route/gate keys"
+          value={summary.routeGateChangedCountKeys.length}
+        />
+        <FieldAtlasMetric
+          label="Support keys"
+          value={summary.supportRegionChangedCountKeys.length}
+        />
+        <FieldAtlasMetric
+          label="Max bucket saturated"
+          value={formatYesNo(summary.maxBucketSaturation.anyMaxBucketSaturated)}
+        />
+      </dl>
+
+      {visibleChangedKeys.length ? (
+        <div className="mt-2 flex flex-wrap gap-1 font-mono text-[11px] text-stone-500">
+          {visibleChangedKeys.map((key) => (
+            <span
+              key={key}
+              className="rounded border border-stone-800 bg-stone-900 px-1.5 py-0.5"
+            >
+              {key}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      {saturatedBuckets.length ? (
+        <div className="mt-2 font-mono text-[11px] text-stone-500">
+          buckets {saturatedBuckets.join(', ')}
+        </div>
+      ) : null}
+
+      <details className="mt-2 rounded border border-stone-800 bg-stone-900 px-2 py-2">
+        <summary className="cursor-pointer text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-500">
+          Count Ranges
+        </summary>
+        <div className="mt-2 grid gap-1 font-mono text-[11px] text-stone-500">
+          {visibleRangeKeys.map((key) => {
+            const range = summary.countRanges[key];
+
+            return (
+              <div
+                key={key}
+                className="grid grid-cols-[minmax(0,1fr)_auto] gap-2"
+              >
+                <span className="truncate">{key}</span>
+                <span>
+                  {formatNumber(range.min)}-{formatNumber(range.max)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </details>
+
+      {report.variants.length ? (
+        <div className="mt-2 grid gap-1">
+          {report.variants.slice(0, 4).map((variant) => (
+            <div
+              key={variant.variantId}
+              className="rounded border border-stone-800 bg-stone-900 px-2 py-1.5 font-mono text-[11px] text-stone-500"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2 text-stone-400">
+                <span>{shortenId(variant.variantId)}</span>
+                <span>{variant.ok ? 'ok' : `${variant.issueCount} issues`}</span>
+              </div>
+              <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1">
+                <span>subdivisions {variant.samplingSubdivisions}</span>
+                <span className="truncate">
+                  {formatProfileAwareStabilityLabel(variant.profileSetupLabel)}
+                </span>
+                <span>samples {variant.sampleCount}</span>
+                <span>obs {variant.totalObservationCount}</span>
+                <span>route/gate {variant.totalRouteGateCandidateCount}</span>
+                <span>support {variant.totalSupportRegionCandidateCount}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <p className="mt-2 leading-5 text-stone-500">
+        Stability is diagnostic sensitivity across bounded sampling/profile
+        variants; it is not a confirmation claim and does not compare against
+        old/default policy invariance.
+      </p>
+    </div>
+  );
+}
+
+function getSaturatedEvidenceStabilityBucketLabels(
+  flags: ProfileAwareEvidenceStabilityMaxBucketFlags,
+): string[] {
+  return evidenceStabilityBucketLabels
+    .filter(([key]) => flags[key])
+    .map(([, label]) => label);
 }
 
 function ProfileAwareFeatureMarkerRow({
@@ -3341,6 +3531,14 @@ function formatReportGlobalContinuity(globalSurfaceContinuity: string): string {
 
 function formatReportSourcePolicyNames(sourcePolicyNames: string[]): string {
   return sourcePolicyNames.length ? sourcePolicyNames.join(', ') : 'none';
+}
+
+function formatYesNo(value: boolean): string {
+  return value ? 'yes' : 'no';
+}
+
+function formatProfileAwareStabilityLabel(label: string): string {
+  return label.replace(/-profile-setup$/, '').replace(/-/g, ' ');
 }
 
 function shortenReportReason(reason: string): string {
