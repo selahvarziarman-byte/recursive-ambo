@@ -40,6 +40,10 @@ import {
   type ProfileAwareRuntimeSupportPolicyReport,
 } from '../lib/fieldSourceProfileAwareRuntimeSupportPolicy';
 import {
+  buildProfileAwareRuntimeSupportMatrixReport,
+  type ProfileAwareRuntimeSupportMatrixReport,
+} from '../lib/fieldSourceProfileAwareRuntimeSupportMatrix';
+import {
   buildProfileAwareFieldAtlasViewModelRuntimeReport,
   type ProfileAwareFieldAtlasChartAnchorMarker,
   type ProfileAwareFieldAtlasChartProbe,
@@ -177,6 +181,10 @@ export function FieldAtlasInspector({
     () => buildProfileAwareRuntimeSupportPolicyReport(shape),
     [shape],
   );
+  const runtimeSupportMatrixReport = useMemo(
+    () => buildProfileAwareRuntimeSupportMatrixReport(),
+    [],
+  );
   const profileAwareEvidenceStabilityReport = useMemo(
     () => buildProfileAwareEvidenceStabilityReport(),
     [],
@@ -272,6 +280,7 @@ export function FieldAtlasInspector({
       <ProfileAwareFieldModeRuntimeSection
         report={profileAwareRuntimeReport}
         runtimeSupportPolicyReport={runtimeSupportPolicyReport}
+        runtimeSupportMatrixReport={runtimeSupportMatrixReport}
         evidenceStabilityReport={profileAwareEvidenceStabilityReport}
         semanticHandoffSummary={currentSemanticHandoffSummary}
         semanticHandoffTransition={semanticHandoffTransition}
@@ -442,6 +451,7 @@ function LegacyFieldAtlasDiagnosticsSection({
 function ProfileAwareFieldModeRuntimeSection({
   report,
   runtimeSupportPolicyReport,
+  runtimeSupportMatrixReport,
   evidenceStabilityReport,
   semanticHandoffSummary,
   semanticHandoffTransition,
@@ -455,6 +465,7 @@ function ProfileAwareFieldModeRuntimeSection({
 }: {
   report: ProfileAwareFieldAtlasViewModelRuntimeReport;
   runtimeSupportPolicyReport: ProfileAwareRuntimeSupportPolicyReport;
+  runtimeSupportMatrixReport: ProfileAwareRuntimeSupportMatrixReport;
   evidenceStabilityReport: ProfileAwareEvidenceStabilityReport;
   semanticHandoffSummary: ProfileAwareSemanticHandoffSummary;
   semanticHandoffTransition: ProfileAwareSemanticHandoffTransition;
@@ -515,6 +526,7 @@ function ProfileAwareFieldModeRuntimeSection({
         </dl>
         <ProfileAwareRuntimeSupportPolicySection
           policyReport={runtimeSupportPolicyReport}
+          matrixReport={runtimeSupportMatrixReport}
           shortenId={shortenId}
         />
         <ProfileAwareEvidenceStabilitySection
@@ -630,6 +642,7 @@ function ProfileAwareFieldModeRuntimeSection({
 
       <ProfileAwareRuntimeSupportPolicySection
         policyReport={runtimeSupportPolicyReport}
+        matrixReport={runtimeSupportMatrixReport}
         shortenId={shortenId}
       />
 
@@ -1387,9 +1400,11 @@ function getSaturatedEvidenceStabilityBucketLabels(
 
 function ProfileAwareRuntimeSupportPolicySection({
   policyReport,
+  matrixReport,
   shortenId,
 }: {
   policyReport: ProfileAwareRuntimeSupportPolicyReport;
+  matrixReport: ProfileAwareRuntimeSupportMatrixReport;
   shortenId: (id: string) => string;
 }) {
   return (
@@ -1466,6 +1481,94 @@ function ProfileAwareRuntimeSupportPolicySection({
           </span>
         ))}
       </div>
+
+      <details className="mt-2 rounded border border-stone-800 bg-stone-900 px-2 py-2">
+        <summary className="cursor-pointer text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-500">
+          Runtime Support Matrix (Diagnostic)
+        </summary>
+        <dl className="mt-2 grid grid-cols-2 gap-2">
+          <FieldAtlasMetric label="Cases" value={matrixReport.caseCount} />
+          <FieldAtlasMetric
+            label="Runtime supported"
+            value={matrixReport.supportedRuntimeCaseCount}
+          />
+          <FieldAtlasMetric
+            label="Runtime unsupported"
+            value={matrixReport.unsupportedRuntimeCaseCount}
+          />
+          <FieldAtlasMetric
+            label="Construction failed"
+            value={matrixReport.constructionFailedCaseCount}
+          />
+          <FieldAtlasMetric
+            label="Not promoted"
+            value={matrixReport.notPromotedCandidateCount}
+          />
+          <FieldAtlasMetric
+            label="Policy/runtime mismatch"
+            value={matrixReport.policyRuntimeMismatchCount}
+          />
+          <FieldAtlasMetric
+            label="Support expansion"
+            value={matrixReport.supportExpansionStatus}
+          />
+          <FieldAtlasMetric
+            label="Fallback"
+            value={matrixReport.fallbackSupportStatus}
+          />
+        </dl>
+
+        <div className="mt-2 grid gap-1">
+          {matrixReport.cases.map((matrixCase) => (
+            <div
+              key={matrixCase.caseId}
+              className="rounded border border-stone-800 bg-stone-950 px-2 py-2"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-medium text-stone-300">
+                  {matrixCase.label}
+                </span>
+                <span className="font-mono text-[11px] text-stone-500">
+                  {matrixCase.caseClass}
+                </span>
+              </div>
+              <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 font-mono text-[11px] text-stone-500">
+                <span>construction {matrixCase.constructionStatus}</span>
+                <span className="text-right">
+                  promotion {matrixCase.promotionStatus}
+                </span>
+                <span>policy {matrixCase.policySupportStatus ?? 'n/a'}</span>
+                <span className="text-right">
+                  runtime {matrixCase.runtimeBoundaryStatus ?? 'n/a'}
+                </span>
+                {typeof matrixCase.generationDepth === 'number' ? (
+                  <span>generation {matrixCase.generationDepth}</span>
+                ) : null}
+                {matrixCase.targetCellKind || matrixCase.targetCellTopology ? (
+                  <span className="text-right">
+                    target {matrixCase.targetCellKind ?? 'cell'} /{' '}
+                    {matrixCase.targetCellTopology ?? 'n/a'}
+                  </span>
+                ) : null}
+                <span>
+                  mismatch {formatYesNo(matrixCase.policyRuntimeAgreement === false)}
+                </span>
+              </div>
+              {matrixCase.constructionFailureReason || matrixCase.unsupportedReason ? (
+                <p className="mt-2 leading-5 text-stone-500">
+                  {matrixCase.constructionFailureReason ??
+                    matrixCase.unsupportedReason}
+                </p>
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-2 leading-5 text-stone-500">
+          Matrix cases are diagnostic probes only. They do not expand runtime
+          support, promote candidates, or enable fallback behavior.
+        </p>
+      </details>
 
       <p className="mt-2 leading-5 text-stone-500">
         Runtime support is policy-bound. This branch exposes the support

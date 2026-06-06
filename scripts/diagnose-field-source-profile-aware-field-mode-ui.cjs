@@ -39,6 +39,12 @@ const {
   repoRoot,
   'src/lib/fieldSourceProfileAwareRuntimeSupportPolicy.ts',
 ));
+const {
+  buildProfileAwareRuntimeSupportMatrixReport,
+} = require(path.join(
+  repoRoot,
+  'src/lib/fieldSourceProfileAwareRuntimeSupportMatrix.ts',
+));
 
 const PROFILE_AWARE_SOURCE_POLICY_ID = 'profile-aware-quark-child-inheritance-v0';
 const SAMPLE_RENDER_MODES = ['family', 'intensity', 'phase', 'dominance'];
@@ -52,6 +58,7 @@ runSampleRenderModeContractDiagnostic();
 runChartLinkingContractDiagnostic();
 runSourceLinkingContractDiagnostic();
 runRuntimeSupportPolicyUiContractDiagnostic();
+runRuntimeSupportMatrixUiContractDiagnostic();
 runEvidenceStabilityUiContractDiagnostic();
 runSemanticHandoffReadinessUiContractDiagnostic();
 runSemanticHandoffTransitionUiContractDiagnostic();
@@ -903,6 +910,186 @@ function runRuntimeSupportPolicyUiContractDiagnostic() {
   }
 
   console.log('runtime support policy UI contract: PASS');
+}
+
+function runRuntimeSupportMatrixUiContractDiagnostic() {
+  const report = buildProfileAwareRuntimeSupportMatrixReport();
+  const expectedCaseIds = [
+    'seed-tetrahedron',
+    'one-ambo-tetrahedron',
+    'seed-cube',
+    'one-ambo-cube',
+    'tetrahedron-second-generation-default-attempt',
+    'tetrahedron-second-generation-core-cell',
+    'tetrahedron-second-generation-first-residue-cell',
+  ];
+
+  expectTruthy(report, 'runtime support matrix report builds');
+  expectEqual(
+    report.method,
+    'profile-aware-runtime-support-matrix-diagnostic-v0',
+    'runtime support matrix method',
+  );
+  expectEqual(
+    report.diagnosticScope,
+    'runtime-support-expansion-candidates-diagnostic-only',
+    'runtime support matrix scope',
+  );
+  expectEqual(
+    report.supportExpansionStatus,
+    'not-expanded-this-branch',
+    'runtime support matrix support expansion',
+  );
+  expectEqual(
+    report.fallbackSupportStatus,
+    'no-silent-fallback',
+    'runtime support matrix fallback',
+  );
+  expectEqual(
+    report.semanticStatus,
+    'not-semantic-naming',
+    'runtime support matrix semantic',
+  );
+  expectEqual(
+    report.topologyStatus,
+    'not-topology-workspace',
+    'runtime support matrix topology',
+  );
+  expectEqual(
+    report.packetWriteStatus,
+    'not-packet-writing',
+    'runtime support matrix packet write',
+  );
+  expectEqual(
+    report.caseCount,
+    report.cases.length,
+    'runtime support matrix case count',
+  );
+
+  for (const caseId of expectedCaseIds) {
+    expectTruthy(
+      getRuntimeSupportMatrixCase(report, caseId),
+      `runtime support matrix contains ${caseId}`,
+    );
+  }
+
+  const baselineCase = getRuntimeSupportMatrixCase(report, 'one-ambo-tetrahedron');
+  expectTruthy(baselineCase, 'runtime support matrix baseline exists');
+
+  if (baselineCase) {
+    expectEqual(
+      baselineCase.caseClass,
+      'current-baseline',
+      'runtime support matrix baseline class',
+    );
+    expectEqual(
+      baselineCase.constructionStatus,
+      'constructed',
+      'runtime support matrix baseline construction',
+    );
+    expectEqual(
+      baselineCase.promotionStatus,
+      'current-baseline',
+      'runtime support matrix baseline promotion',
+    );
+    expectEqual(
+      baselineCase.policySupportStatus,
+      'supported',
+      'runtime support matrix baseline policy',
+    );
+    expectEqual(
+      baselineCase.runtimeBoundaryStatus,
+      'supported',
+      'runtime support matrix baseline runtime',
+    );
+  }
+
+  const seedTetrahedronCase = getRuntimeSupportMatrixCase(
+    report,
+    'seed-tetrahedron',
+  );
+  expectTruthy(seedTetrahedronCase, 'runtime support matrix seed tetra exists');
+
+  if (seedTetrahedronCase) {
+    expectEqual(
+      seedTetrahedronCase.runtimeBoundaryStatus,
+      'unsupported',
+      'runtime support matrix seed tetra runtime',
+    );
+    expectEqual(
+      seedTetrahedronCase.promotionStatus,
+      'not-yet-supported',
+      'runtime support matrix seed tetra promotion',
+    );
+  }
+
+  const seedCubeCase = getRuntimeSupportMatrixCase(report, 'seed-cube');
+  expectTruthy(seedCubeCase, 'runtime support matrix seed cube exists');
+
+  if (seedCubeCase) {
+    expectEqual(
+      seedCubeCase.runtimeBoundaryStatus,
+      'unsupported',
+      'runtime support matrix seed cube runtime',
+    );
+    expectEqual(
+      seedCubeCase.promotionStatus,
+      'not-yet-supported',
+      'runtime support matrix seed cube promotion',
+    );
+  }
+
+  for (const matrixCase of report.cases.filter(
+    (candidate) => candidate.caseClass === 'expansion-candidate',
+  )) {
+    expectEqual(
+      ['not-promoted', 'construction-failed'].includes(
+        matrixCase.promotionStatus,
+      ),
+      true,
+      `${matrixCase.caseId} runtime support matrix candidate promotion`,
+    );
+    expectEqual(
+      matrixCase.promotionStatus === 'current-baseline',
+      false,
+      `${matrixCase.caseId} runtime support matrix candidate not baseline`,
+    );
+    expectEqual(
+      matrixCase.caveats.includes('not support expansion'),
+      true,
+      `${matrixCase.caseId} runtime support matrix expansion caveat`,
+    );
+    expectEqual(
+      matrixCase.caveats.includes('no silent fallback'),
+      true,
+      `${matrixCase.caseId} runtime support matrix fallback caveat`,
+    );
+
+    if (
+      matrixCase.caseId.startsWith('tetrahedron-second-generation') &&
+      matrixCase.constructionStatus === 'constructed' &&
+      matrixCase.runtimeBoundaryStatus === 'supported'
+    ) {
+      expectEqual(
+        matrixCase.promotionStatus,
+        'not-promoted',
+        `${matrixCase.caseId} runtime support matrix supported candidate not promoted`,
+      );
+      expectEqual(
+        matrixCase.caveats.includes('not named support policy'),
+        true,
+        `${matrixCase.caseId} runtime support matrix named policy caveat`,
+      );
+    }
+  }
+
+  expectNoForbiddenRuntimeSupportMatrixProperties(report);
+
+  for (const matrixCase of report.cases) {
+    expectNoForbiddenRuntimeSupportMatrixProperties(matrixCase, matrixCase.caseId);
+  }
+
+  console.log('runtime support matrix UI contract: PASS');
 }
 
 function runEvidenceStabilityUiContractDiagnostic() {
@@ -2966,6 +3153,10 @@ function getExpectedRuntimeSupportCriteria(shape) {
   };
 }
 
+function getRuntimeSupportMatrixCase(report, caseId) {
+  return report.cases.find((matrixCase) => matrixCase.caseId === caseId);
+}
+
 function expectRuntimeSupportCriterion(summary, criterionId, expectedPassed, label) {
   const criterion = summary.criteria.find((item) => item.id === criterionId);
 
@@ -3015,6 +3206,34 @@ function expectRuntimeSupportExpansionCandidates(summary, label) {
       candidate.status,
       'not-yet-supported',
       `${label} runtime support expansion ${candidateId} status`,
+    );
+  }
+}
+
+function expectNoForbiddenRuntimeSupportMatrixProperties(value, label = 'report') {
+  const forbiddenProperties = [
+    'expandedSupportStatus',
+    'promotedSupportStatus',
+    'selectedCellSupportEnabled',
+    'multiCellSupportEnabled',
+    'deeperGenerationSupportEnabled',
+    'cubeSupportEnabled',
+    'fallbackEnabled',
+    'silentFallbackStatus',
+    'editableSourceProfileStatus',
+    'persistenceStatus',
+    'semanticNamingStatus',
+    'topologyBehaviorStatus',
+    'packetWritingStatus',
+    'oldPolicyInvariantStatus',
+    'defaultPolicyComparisonStatus',
+  ];
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(
+      value,
+      property,
+      `${label} runtime support matrix no ${property}`,
     );
   }
 }
