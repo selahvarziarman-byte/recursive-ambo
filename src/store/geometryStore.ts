@@ -66,6 +66,12 @@ export interface FieldAtlasLayerVisibility {
   supportRegionCandidates: boolean;
 }
 
+export type FieldAtlasSampleRenderMode =
+  | 'family'
+  | 'intensity'
+  | 'phase'
+  | 'dominance';
+
 export type InspectionHoverTarget =
   | { kind: 'cell'; cellId: CellId }
   | { kind: 'vertex'; vertexId: VertexId }
@@ -114,6 +120,8 @@ const defaultFieldAtlasLayerVisibility: FieldAtlasLayerVisibility = {
   supportRegionCandidates: true,
 };
 
+const defaultFieldAtlasSampleRenderMode: FieldAtlasSampleRenderMode = 'family';
+
 const HISTORY_LIMIT = 50;
 
 interface GeometryState {
@@ -127,6 +135,7 @@ interface GeometryState {
   cellVisibility: CellVisibility;
   viewLayout: ViewLayout;
   fieldAtlasLayerVisibility: FieldAtlasLayerVisibility;
+  fieldAtlasSampleRenderMode: FieldAtlasSampleRenderMode;
   hoverTarget: InspectionHoverTarget | null;
   hoveredFieldAtlasSampleId: string | null;
   pinnedFieldAtlasProbeRef: string | null;
@@ -159,6 +168,10 @@ interface GeometryState {
     key: keyof FieldAtlasLayerVisibility,
   ) => void;
   resetFieldAtlasLayerVisibility: () => void;
+  setFieldAtlasSampleRenderMode: (
+    mode: FieldAtlasSampleRenderMode,
+  ) => void;
+  resetFieldAtlasSampleRenderMode: () => void;
   setHoverTarget: (target: InspectionHoverTarget | null) => void;
   setHoveredFieldAtlasSampleId: (sampleId: string | null) => void;
   setPinnedFieldAtlasProbeRef: (probeRef: string | null) => void;
@@ -194,6 +207,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   cellVisibility: defaultCellVisibility,
   viewLayout: defaultViewLayout,
   fieldAtlasLayerVisibility: defaultFieldAtlasLayerVisibility,
+  fieldAtlasSampleRenderMode: defaultFieldAtlasSampleRenderMode,
   hoverTarget: null,
   hoveredFieldAtlasSampleId: null,
   pinnedFieldAtlasProbeRef: null,
@@ -229,6 +243,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       cellVisibility: defaultCellVisibility,
       viewLayout: defaultViewLayout,
       fieldAtlasLayerVisibility: defaultFieldAtlasLayerVisibility,
+      fieldAtlasSampleRenderMode: defaultFieldAtlasSampleRenderMode,
       hoverTarget: null,
       hoveredFieldAtlasSampleId: null,
       pinnedFieldAtlasProbeRef: null,
@@ -261,6 +276,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       cellVisibility: defaultCellVisibility,
       viewLayout: defaultViewLayout,
       fieldAtlasLayerVisibility: defaultFieldAtlasLayerVisibility,
+      fieldAtlasSampleRenderMode: defaultFieldAtlasSampleRenderMode,
       hoverTarget: null,
       hoveredFieldAtlasSampleId: null,
       pinnedFieldAtlasProbeRef: null,
@@ -319,6 +335,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     set({
       viewLayout: defaultViewLayout,
       fieldAtlasLayerVisibility: defaultFieldAtlasLayerVisibility,
+      fieldAtlasSampleRenderMode: defaultFieldAtlasSampleRenderMode,
       hoverTarget: null,
       hoveredFieldAtlasSampleId: null,
       pinnedFieldAtlasProbeRef: null,
@@ -495,6 +512,12 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   resetFieldAtlasLayerVisibility: () => {
     set({ fieldAtlasLayerVisibility: defaultFieldAtlasLayerVisibility });
   },
+  setFieldAtlasSampleRenderMode: (mode) => {
+    set({ fieldAtlasSampleRenderMode: mode });
+  },
+  resetFieldAtlasSampleRenderMode: () => {
+    set({ fieldAtlasSampleRenderMode: defaultFieldAtlasSampleRenderMode });
+  },
   setHoverTarget: (target) => {
     set({ hoverTarget: target });
   },
@@ -591,6 +614,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
         ? normalizeViewLayout(importedWorkspace.viewLayout)
         : defaultViewLayout,
       fieldAtlasLayerVisibility: defaultFieldAtlasLayerVisibility,
+      fieldAtlasSampleRenderMode: defaultFieldAtlasSampleRenderMode,
       hoverTarget: null,
       hoveredFieldAtlasSampleId: null,
       pinnedFieldAtlasProbeRef: null,

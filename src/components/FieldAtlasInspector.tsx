@@ -36,6 +36,7 @@ import {
   type ProfileAwareFieldAtlasFeatureMarker,
   type ProfileAwareFieldAtlasFeatureProbe,
   type ProfileAwareFieldAtlasProbe,
+  type ProfileAwareFieldAtlasRenderScale,
   type ProfileAwareFieldAtlasRouteGateCandidateMarker,
   type ProfileAwareFieldAtlasRouteGateProbe,
   type ProfileAwareFieldAtlasSourceProbe,
@@ -48,6 +49,7 @@ import {
 import {
   useGeometryStore,
   type FieldAtlasLayerVisibility,
+  type FieldAtlasSampleRenderMode,
 } from '../store/geometryStore';
 import type { Shape, VertexId } from '../types/geometry';
 
@@ -338,6 +340,12 @@ function ProfileAwareFieldModeRuntimeSection({
   const toggleFieldAtlasLayerVisibility = useGeometryStore(
     (state) => state.toggleFieldAtlasLayerVisibility,
   );
+  const fieldAtlasSampleRenderMode = useGeometryStore(
+    (state) => state.fieldAtlasSampleRenderMode,
+  );
+  const setFieldAtlasSampleRenderMode = useGeometryStore(
+    (state) => state.setFieldAtlasSampleRenderMode,
+  );
 
   if (report.runtimeBoundaryStatus === 'unsupported') {
     return (
@@ -449,6 +457,12 @@ function ProfileAwareFieldModeRuntimeSection({
         }}
         visibility={fieldAtlasLayerVisibility}
         onToggle={toggleFieldAtlasLayerVisibility}
+      />
+
+      <ProfileAwareSampleRenderModeControls
+        mode={fieldAtlasSampleRenderMode}
+        onModeChange={setFieldAtlasSampleRenderMode}
+        renderScale={viewModel.renderScale}
       />
 
       <div className="mt-3 grid gap-2">
@@ -588,6 +602,82 @@ function ProfileAwareLayerVisibilityControls({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function ProfileAwareSampleRenderModeControls({
+  mode,
+  onModeChange,
+  renderScale,
+}: {
+  mode: FieldAtlasSampleRenderMode;
+  onModeChange: (mode: FieldAtlasSampleRenderMode) => void;
+  renderScale: ProfileAwareFieldAtlasRenderScale;
+}) {
+  const modes: Array<{
+    mode: FieldAtlasSampleRenderMode;
+    label: string;
+  }> = [
+    { mode: 'family', label: 'Family' },
+    { mode: 'intensity', label: 'Intensity' },
+    { mode: 'phase', label: 'Phase' },
+    { mode: 'dominance', label: 'Dominance' },
+  ];
+
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2">
+      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Sample Render Mode
+      </h4>
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        {modes.map((entry) => {
+          const isActive = entry.mode === mode;
+
+          return (
+            <button
+              key={entry.mode}
+              className={`rounded border px-2 py-1.5 text-left transition ${
+                isActive
+                  ? 'border-cyan-300/50 bg-cyan-400/10 text-cyan-100'
+                  : 'border-stone-800 bg-stone-900 text-stone-500'
+              }`}
+              data-profile-aware-sample-render-mode={entry.mode}
+              onClick={() => onModeChange(entry.mode)}
+              type="button"
+            >
+              {entry.label}
+            </button>
+          );
+        })}
+      </div>
+      <dl className="mt-2 grid gap-1 font-mono text-[11px] text-stone-400">
+        <div className="flex items-center justify-between gap-2">
+          <dt>intensity</dt>
+          <dd>
+            {formatNumber(renderScale.intensityMin)} -{' '}
+            {formatNumber(renderScale.intensityMax)}
+          </dd>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <dt>phase</dt>
+          <dd>
+            {formatNumber(renderScale.phaseMin)} -{' '}
+            {formatNumber(renderScale.phaseMax)}
+          </dd>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <dt>dominance</dt>
+          <dd>
+            {formatNumber(renderScale.dominantContributionRatioMin)} -{' '}
+            {formatNumber(renderScale.dominantContributionRatioMax)}
+          </dd>
+        </div>
+      </dl>
+      <p className="mt-2 leading-5 text-stone-500">
+        Phase is sample-local, not a global continuity claim. Dominance is a
+        contribution ratio, not semantic naming.
+      </p>
     </div>
   );
 }

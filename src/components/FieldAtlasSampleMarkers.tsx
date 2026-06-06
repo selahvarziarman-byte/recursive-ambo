@@ -3,6 +3,7 @@ import { useEffect, useMemo } from 'react';
 import {
   buildProfileAwareFieldAtlasViewModelRuntimeReport,
   type ProfileAwareFieldAtlasFeatureMarker,
+  type ProfileAwareFieldAtlasRenderScale,
   type ProfileAwareFieldAtlasRouteGateCandidateMarker,
   type ProfileAwareFieldAtlasSourceMarker,
   type ProfileAwareFieldAtlasSupportRegionCandidateMarker,
@@ -11,6 +12,7 @@ import {
 import {
   useGeometryStore,
   type FieldAtlasLayerVisibility,
+  type FieldAtlasSampleRenderMode,
 } from '../store/geometryStore';
 import type { Shape, Vec3 } from '../types/geometry';
 
@@ -29,9 +31,12 @@ interface FieldAtlasMarker {
   emissive: string;
   emissiveIntensity: number;
   intensity: number;
+  phase?: number;
+  dominanceRatio?: number;
   valueLabel: 'amplitude' | 'intensity';
   label: string;
   detailLabel?: string;
+  sampleRenderMode?: FieldAtlasSampleRenderMode;
   kind:
     | 'source-marker'
     | 'surface-sample-marker'
@@ -44,9 +49,18 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
   const fieldAtlasLayerVisibility = useGeometryStore(
     (state) => state.fieldAtlasLayerVisibility,
   );
+  const fieldAtlasSampleRenderMode = useGeometryStore(
+    (state) => state.fieldAtlasSampleRenderMode,
+  );
   const markers = useMemo(
-    () => buildMarkerModel(shape, enabled, fieldAtlasLayerVisibility),
-    [enabled, fieldAtlasLayerVisibility, shape],
+    () =>
+      buildMarkerModel(
+        shape,
+        enabled,
+        fieldAtlasLayerVisibility,
+        fieldAtlasSampleRenderMode,
+      ),
+    [enabled, fieldAtlasLayerVisibility, fieldAtlasSampleRenderMode, shape],
   );
   const hoveredFieldAtlasSampleId = useGeometryStore(
     (state) => state.hoveredFieldAtlasSampleId,
@@ -132,9 +146,25 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
                   {marker.detailLabel ? (
                     <span className="block text-stone-300">{marker.detailLabel}</span>
                   ) : null}
+                  {marker.sampleRenderMode ? (
+                    <span className="block text-stone-400">
+                      sample mode {marker.sampleRenderMode}
+                    </span>
+                  ) : null}
                   <span className="block font-mono text-stone-400">
                     {marker.valueLabel} {formatNumber(marker.intensity)}
                   </span>
+                  {typeof marker.phase === 'number' ? (
+                    <span className="block font-mono text-stone-400">
+                      phase {formatNumber(marker.phase)}
+                    </span>
+                  ) : null}
+                  {marker.sampleRenderMode === 'dominance' &&
+                  typeof marker.dominanceRatio === 'number' ? (
+                    <span className="block font-mono text-stone-400">
+                      dominance {formatNumber(marker.dominanceRatio)}
+                    </span>
+                  ) : null}
                 </div>
               </Html>
             ) : null}
@@ -149,6 +179,7 @@ function buildMarkerModel(
   shape: Shape,
   enabled: boolean,
   layerVisibility: FieldAtlasLayerVisibility,
+  sampleRenderMode: FieldAtlasSampleRenderMode,
 ): FieldAtlasMarker[] {
   if (!enabled) {
     return [];
@@ -196,7 +227,13 @@ function buildMarkerModel(
     return [
       ...sourceMarkers.map((marker) => buildSourceMarker(marker, radiusBase)),
       ...surfaceSampleMarkers.map((marker) =>
-        buildSurfaceSampleMarker(marker, radiusBase, intensityRange),
+        buildSurfaceSampleMarker(
+          marker,
+          radiusBase,
+          intensityRange,
+          viewModel.renderScale,
+          sampleRenderMode,
+        ),
       ),
       ...featureMarkers.map((marker) =>
         buildFeatureMarker(marker, radiusBase),
@@ -238,22 +275,29 @@ function buildSurfaceSampleMarker(
   marker: ProfileAwareFieldAtlasSurfaceSampleMarker,
   radiusBase: number,
   intensityRange: { min: number; max: number },
+  renderScale: ProfileAwareFieldAtlasRenderScale,
+  sampleRenderMode: FieldAtlasSampleRenderMode,
 ): FieldAtlasMarker {
-  const normalizedIntensity = normalizeIntensity(marker.intensity, intensityRange);
+  const style = buildSampleMarkerStyle(
+    marker,
+    radiusBase,
+    intensityRange,
+    renderScale,
+    sampleRenderMode,
+  );
 
   return {
     id: `sample:${marker.sampleId}`,
     hoverRef: marker.probeRef,
     position: copyVec3(marker.position),
-    radius: radiusBase * (0.78 + normalizedIntensity * 0.36),
-    opacity: 0.46 + normalizedIntensity * 0.2,
-    color: '#67e8f9',
-    emissive: '#164e63',
-    emissiveIntensity: 0.26,
+    ...style,
     intensity: marker.intensity,
+    phase: marker.phase,
+    dominanceRatio: marker.dominantContributionRatio,
     valueLabel: 'intensity',
     label: 'Surface sample marker',
     detailLabel: formatSurfaceSampleMarkerDetail(marker),
+    sampleRenderMode,
     kind: 'surface-sample-marker',
   };
 }
@@ -390,18 +434,189 @@ function formatNumber(value: number): string {
   return value.toFixed(absoluteValue < 1 ? 4 : 3).replace(/\.?0+$/, '');
 }
 
+function buildSampleMarkerStyle(
+  marker: ProfileAwareFieldAtlasSurfaceSampleMarker,
+  radiusBase: number,
+  intensityRange: { min: number; max: number },
+  renderScale: ProfileAwareFieldAtlasRenderScale,
+  sampleRenderMode: FieldAtlasSampleRenderMode,
+): Pick<
+  FieldAtlasMarker,
+  'radius' | 'opacity' | 'color' | 'emissive' | 'emissiveIntensity'
+> {
+  const normalizedIntensity = normalizeIntensity(marker.intensity, intensityRange);
+
+  if (sampleRenderMode === 'family') {
+    return {
+      radius: radiusBase * (0.78 + normalizedIntensity * 0.36),
+      opacity: 0.46 + normalizedIntensity * 0.2,
+      color: '#67e8f9',
+      emissive: '#164e63',
+      emissiveIntensity: 0.26,
+    };
+  }
+
+  if (sampleRenderMode === 'intensity') {
+    const bucket = getIntensityColorBucket(normalizedIntensity);
+
+    return {
+      radius: radiusBase * (0.72 + normalizedIntensity * 0.48),
+      opacity: 0.42 + normalizedIntensity * 0.32,
+      ...bucket,
+    };
+  }
+
+  if (sampleRenderMode === 'phase') {
+    const normalizedPhase = normalizeNumber(
+      marker.phase,
+      renderScale.phaseMin,
+      renderScale.phaseMax,
+      0.5,
+    );
+    const bucket = getPhaseColorBucket(normalizedPhase);
+
+    return {
+      radius: radiusBase * (0.88 + normalizedIntensity * 0.14),
+      opacity: 0.62,
+      ...bucket,
+    };
+  }
+
+  if (
+    typeof marker.dominantContributionRatio !== 'number' ||
+    !Number.isFinite(marker.dominantContributionRatio)
+  ) {
+    return {
+      radius: radiusBase * (0.82 + normalizedIntensity * 0.12),
+      opacity: 0.52,
+      color: '#cbd5e1',
+      emissive: '#334155',
+      emissiveIntensity: 0.18,
+    };
+  }
+
+  const normalizedDominance = normalizeNumber(
+    marker.dominantContributionRatio,
+    renderScale.dominantContributionRatioMin,
+    renderScale.dominantContributionRatioMax,
+    0.5,
+  );
+  const bucket = getDominanceColorBucket(normalizedDominance);
+
+  return {
+    radius: radiusBase * (0.74 + normalizedDominance * 0.44),
+    opacity: 0.44 + normalizedDominance * 0.34,
+    ...bucket,
+  };
+}
+
+function getIntensityColorBucket(
+  normalizedIntensity: number,
+): Pick<FieldAtlasMarker, 'color' | 'emissive' | 'emissiveIntensity'> {
+  if (normalizedIntensity < 0.34) {
+    return {
+      color: '#7dd3fc',
+      emissive: '#075985',
+      emissiveIntensity: 0.22,
+    };
+  }
+
+  if (normalizedIntensity < 0.68) {
+    return {
+      color: '#67e8f9',
+      emissive: '#164e63',
+      emissiveIntensity: 0.3,
+    };
+  }
+
+  return {
+    color: '#fef08a',
+    emissive: '#854d0e',
+    emissiveIntensity: 0.42,
+  };
+}
+
+function getPhaseColorBucket(
+  normalizedPhase: number,
+): Pick<FieldAtlasMarker, 'color' | 'emissive' | 'emissiveIntensity'> {
+  if (normalizedPhase < 0.34) {
+    return {
+      color: '#a78bfa',
+      emissive: '#4c1d95',
+      emissiveIntensity: 0.34,
+    };
+  }
+
+  if (normalizedPhase < 0.68) {
+    return {
+      color: '#60a5fa',
+      emissive: '#1e3a8a',
+      emissiveIntensity: 0.32,
+    };
+  }
+
+  return {
+    color: '#34d399',
+    emissive: '#064e3b',
+    emissiveIntensity: 0.34,
+  };
+}
+
+function getDominanceColorBucket(
+  normalizedDominance: number,
+): Pick<FieldAtlasMarker, 'color' | 'emissive' | 'emissiveIntensity'> {
+  if (normalizedDominance < 0.34) {
+    return {
+      color: '#cbd5e1',
+      emissive: '#334155',
+      emissiveIntensity: 0.2,
+    };
+  }
+
+  if (normalizedDominance < 0.68) {
+    return {
+      color: '#93c5fd',
+      emissive: '#1e3a8a',
+      emissiveIntensity: 0.34,
+    };
+  }
+
+  return {
+    color: '#fb7185',
+    emissive: '#7f1d1d',
+    emissiveIntensity: 0.4,
+  };
+}
+
+function normalizeNumber(
+  value: number,
+  min: number,
+  max: number,
+  fallback: number,
+): number {
+  if (
+    !Number.isFinite(value) ||
+    !Number.isFinite(min) ||
+    !Number.isFinite(max)
+  ) {
+    return fallback;
+  }
+
+  const span = max - min;
+
+  if (!Number.isFinite(span) || span <= 1e-9) {
+    return fallback;
+  }
+
+  return Math.min(1, Math.max(0, (value - min) / span));
+}
+
 function normalizeIntensity(intensity: number, range: { min: number; max: number }): number {
   if (!Number.isFinite(intensity)) {
     return 0;
   }
 
-  const span = range.max - range.min;
-
-  if (span <= 1e-9) {
-    return 0.45;
-  }
-
-  return Math.min(1, Math.max(0, (intensity - range.min) / span));
+  return normalizeNumber(intensity, range.min, range.max, 0.45);
 }
 
 function getMarkerRadiusBase(positions: Vec3[]): number {

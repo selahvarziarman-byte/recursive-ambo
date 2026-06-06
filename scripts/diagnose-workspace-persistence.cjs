@@ -144,8 +144,13 @@ function verifyWorkspaceRoundTrip() {
     !serialized.includes('fieldAtlasLayerVisibility'),
     'round trip: field atlas layer visibility should not serialize',
   );
+  expect(
+    !serialized.includes('fieldAtlasSampleRenderMode'),
+    'round trip: field atlas sample render mode should not serialize',
+  );
 
   const parsedJson = JSON.parse(serialized);
+  parsedJson.fieldAtlasSampleRenderMode = 'phase';
   parsedJson.fieldAtlasLayerVisibility = {
     sources: false,
     samples: false,
@@ -155,6 +160,7 @@ function verifyWorkspaceRoundTrip() {
   };
   parsedJson.viewLayout = {
     ...parsedJson.viewLayout,
+    fieldAtlasSampleRenderMode: 'dominance',
     fieldAtlasLayerVisibility: {
       sources: false,
       samples: false,
@@ -184,6 +190,7 @@ function verifyWorkspaceRoundTrip() {
     hoverTarget: { kind: 'cell', cellId: seedShape.cells[0].id },
     hoveredFieldAtlasSampleId: 'sample:stale',
     pinnedFieldAtlasProbeRef: 'source:stale',
+    fieldAtlasSampleRenderMode: 'dominance',
     fieldAtlasLayerVisibility: {
       sources: false,
       samples: false,
@@ -245,6 +252,10 @@ function verifyWorkspaceRoundTrip() {
   expectDefaultFieldAtlasLayerVisibility(
     importedState.fieldAtlasLayerVisibility,
     'round trip: field atlas layer visibility should reset on import',
+  );
+  expect(
+    importedState.fieldAtlasSampleRenderMode === 'family',
+    'round trip: field atlas sample render mode should reset on import',
   );
   expect(importedState.dualInspectionTarget === null, 'round trip: dual inspection target should be cleared');
 

@@ -29,12 +29,14 @@ const {
 ));
 
 const PROFILE_AWARE_SOURCE_POLICY_ID = 'profile-aware-quark-child-inheritance-v0';
+const SAMPLE_RENDER_MODES = ['family', 'intensity', 'phase', 'dominance'];
 const failures = [];
 
 console.log('Field source profile-aware Field Mode UI diagnostics');
 
 runSupportedOneAmboTetrahedronContractDiagnostic();
 runLayerVisibilityContractDiagnostic();
+runSampleRenderModeContractDiagnostic();
 runUnsupportedSeedTetrahedronDiagnostic();
 runUnsupportedCubeDiagnostic();
 runConservativeBoundaryClaimDiagnostic();
@@ -264,6 +266,135 @@ function runLayerVisibilityContractDiagnostic() {
   console.log('layer visibility filtering contract: PASS');
 }
 
+function runSampleRenderModeContractDiagnostic() {
+  const report = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+
+  if (!report.viewModel) {
+    recordFailure('sample render mode contract: supported view model missing');
+    return;
+  }
+
+  const viewModel = report.viewModel;
+  const renderScale = viewModel.renderScale;
+
+  expectEqual(
+    report.runtimeBoundaryStatus,
+    'supported',
+    'sample render mode supported boundary',
+  );
+  expectEqual(report.ok, true, 'sample render mode runtime ok');
+  expectFinite(renderScale.intensityMin, 'render scale intensity min');
+  expectFinite(renderScale.intensityMax, 'render scale intensity max');
+  expectFinite(renderScale.phaseMin, 'render scale phase min');
+  expectFinite(renderScale.phaseMax, 'render scale phase max');
+  expectFinite(
+    renderScale.dominantContributionRatioMin,
+    'render scale dominance min',
+  );
+  expectFinite(
+    renderScale.dominantContributionRatioMax,
+    'render scale dominance max',
+  );
+  expectLessThanOrEqual(
+    renderScale.intensityMin,
+    renderScale.intensityMax,
+    'render scale intensity order',
+  );
+  expectLessThanOrEqual(
+    renderScale.phaseMin,
+    renderScale.phaseMax,
+    'render scale phase order',
+  );
+  expectLessThanOrEqual(
+    renderScale.dominantContributionRatioMin,
+    renderScale.dominantContributionRatioMax,
+    'render scale dominance order',
+  );
+  expectEqual(
+    SAMPLE_RENDER_MODES.join('|'),
+    'family|intensity|phase|dominance',
+    'sample render mode availability',
+  );
+
+  for (const marker of viewModel.surfaceSampleMarkers) {
+    expectFinite(marker.intensity, `sample marker ${marker.sampleId} intensity`);
+    expectFinite(marker.phase, `sample marker ${marker.sampleId} phase`);
+    expectEqual(
+      Array.isArray(marker.contributionRatios) &&
+        marker.contributionRatios.length > 0,
+      true,
+      `sample marker ${marker.sampleId} contribution ratios present`,
+    );
+
+    for (const ratio of marker.contributionRatios) {
+      expectFinite(
+        ratio.value,
+        `sample marker ${marker.sampleId} contribution ratio value`,
+      );
+    }
+
+    if (typeof marker.dominantContributionRatio === 'number') {
+      expectFinite(
+        marker.dominantContributionRatio,
+        `sample marker ${marker.sampleId} dominant contribution ratio`,
+      );
+      expectAtLeast(
+        marker.dominantContributionRatio,
+        0,
+        `sample marker ${marker.sampleId} dominant contribution ratio non-negative`,
+      );
+    }
+  }
+
+  expectEqual(
+    viewModel.probeIndex.sampleProbeCount,
+    viewModel.surfaceSampleMarkers.length,
+    'sample render mode sample probes remain',
+  );
+  expectAtLeast(
+    viewModel.probeIndex.sourceProbeCount,
+    1,
+    'sample render mode source probes remain',
+  );
+  expectAtLeast(
+    viewModel.probeIndex.featureProbeCount,
+    1,
+    'sample render mode feature probes remain',
+  );
+  expectAtLeast(
+    viewModel.probeIndex.routeGateCandidateProbeCount,
+    1,
+    'sample render mode route/gate probes remain',
+  );
+  expectAtLeast(
+    viewModel.probeIndex.supportRegionCandidateProbeCount,
+    1,
+    'sample render mode support/region probes remain',
+  );
+
+  const forbiddenProperties = [
+    'fieldAtlasSampleRenderModePersistenceStatus',
+    'sampleRenderModePersistenceStatus',
+    'sampleRenderModeSemanticStatus',
+    'sampleRenderModeTopologyStatus',
+    'sampleRenderModePacketWriteStatus',
+    'sampleRenderModeShapeMutationStatus',
+  ];
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(report, property, `sample render mode runtime no ${property}`);
+    expectNoOwnProperty(
+      viewModel,
+      property,
+      `sample render mode view model no ${property}`,
+    );
+  }
+
+  console.log('sample render mode data contract: PASS');
+}
+
 function runUnsupportedCubeDiagnostic() {
   runUnsupportedShapeDiagnostic(
     'unsupported cube Field Mode UI',
@@ -412,6 +543,8 @@ function runNoOldPolicyComparisonOrInvarianceDiagnostic() {
     'workspacePersistenceStatus',
     'fieldAtlasLayerVisibilityPersistenceStatus',
     'layerVisibilityPersistenceStatus',
+    'fieldAtlasSampleRenderModePersistenceStatus',
+    'sampleRenderModePersistenceStatus',
     'packetWritingStatus',
     'semanticNamingStatus',
     'topologyBehaviorStatus',
@@ -893,6 +1026,12 @@ function expectFinite(value, label) {
 function expectAtLeast(actual, expectedMinimum, label) {
   if (actual < expectedMinimum) {
     recordFailure(`${label}: expected at least ${expectedMinimum}, got ${actual}`);
+  }
+}
+
+function expectLessThanOrEqual(actual, expectedMaximum, label) {
+  if (actual > expectedMaximum) {
+    recordFailure(`${label}: expected at most ${expectedMaximum}, got ${actual}`);
   }
 }
 
