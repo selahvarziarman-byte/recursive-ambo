@@ -90,9 +90,11 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
     return null;
   }
 
-  const activeChartId =
-    parseChartProbeRef(pinnedFieldAtlasProbeRef) ??
-    parseChartProbeRef(hoveredFieldAtlasSampleId);
+  const activeChartIds = getActiveChartIdsFromRefs(
+    markers,
+    pinnedFieldAtlasProbeRef,
+    hoveredFieldAtlasSampleId,
+  );
 
   return (
     <group>
@@ -100,7 +102,8 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
         const isHovered = hoveredFieldAtlasSampleId === marker.hoverRef;
         const isPinned = pinnedFieldAtlasProbeRef === marker.hoverRef;
         const isActiveChartRelated =
-          Boolean(activeChartId) && isMarkerRelatedToChart(marker, activeChartId);
+          activeChartIds.length > 0 &&
+          isMarkerRelatedToAnyChart(marker, activeChartIds);
         const markerScale = isPinned
           ? 2.12
           : isHovered
@@ -474,27 +477,70 @@ function clearHoveredRef(
   }
 }
 
-function parseChartProbeRef(probeRef: string | null): string | null {
+function getActiveChartIdsFromRefs(
+  markers: FieldAtlasMarker[],
+  pinnedProbeRef: string | null,
+  hoveredProbeRef: string | null,
+): string[] {
+  const pinnedChartIds = getChartIdsFromMarkerRef(markers, pinnedProbeRef);
+
+  if (pinnedChartIds) {
+    return pinnedChartIds;
+  }
+
+  return getChartIdsFromMarkerRef(markers, hoveredProbeRef) ?? [];
+}
+
+function getChartIdsFromMarkerRef(
+  markers: FieldAtlasMarker[],
+  probeRef: string | null,
+): string[] | null {
+  if (!probeRef) {
+    return null;
+  }
+
+  const marker = markers.find((candidate) => candidate.hoverRef === probeRef);
+
+  if (marker) {
+    return getChartIdsFromMarker(marker);
+  }
+
+  const chartId = parseChartProbeRef(probeRef);
+
+  return chartId ? [chartId] : null;
+}
+
+function getChartIdsFromMarker(marker: FieldAtlasMarker): string[] {
+  if (marker.chartId) {
+    return [marker.chartId];
+  }
+
+  return marker.relatedChartIds ? [...marker.relatedChartIds] : [];
+}
+
+function parseChartProbeRef(probeRef: string): string | null {
   const prefix = 'chart:';
 
-  if (!probeRef?.startsWith(prefix)) {
+  if (!probeRef.startsWith(prefix)) {
     return null;
   }
 
   return probeRef.slice(prefix.length);
 }
 
-function isMarkerRelatedToChart(
+function isMarkerRelatedToAnyChart(
   marker: FieldAtlasMarker,
-  activeChartId: string | null,
+  activeChartIds: string[],
 ): boolean {
-  if (!activeChartId) {
+  if (!activeChartIds.length) {
     return false;
   }
 
+  const activeChartIdSet = new Set(activeChartIds);
+
   return (
-    marker.chartId === activeChartId ||
-    Boolean(marker.relatedChartIds?.includes(activeChartId))
+    Boolean(marker.chartId && activeChartIdSet.has(marker.chartId)) ||
+    Boolean(marker.relatedChartIds?.some((chartId) => activeChartIdSet.has(chartId)))
   );
 }
 

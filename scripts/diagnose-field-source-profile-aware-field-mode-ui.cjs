@@ -463,6 +463,21 @@ function runChartLinkingContractDiagnostic() {
 
   const viewModel = report.viewModel;
   const chartAnchorMarker = viewModel.chartOverlaySummary.chartAnchorMarkers[0];
+  const sampleMarker = viewModel.surfaceSampleMarkers[0];
+  const featureMarker = viewModel.featureOverlaySummary.featureMarkers[0];
+  const routeGateMarker = viewModel.routeGateOverlaySummary.candidateMarkers[0];
+  const supportRegionMarker =
+    viewModel.supportRegionOverlaySummary.candidateMarkers[0];
+  const probeCountsBefore = {
+    sourceProbeCount: viewModel.probeIndex.sourceProbeCount,
+    sampleProbeCount: viewModel.probeIndex.sampleProbeCount,
+    chartProbeCount: viewModel.probeIndex.chartProbeCount,
+    featureProbeCount: viewModel.probeIndex.featureProbeCount,
+    routeGateCandidateProbeCount:
+      viewModel.probeIndex.routeGateCandidateProbeCount,
+    supportRegionCandidateProbeCount:
+      viewModel.probeIndex.supportRegionCandidateProbeCount,
+  };
 
   expectEqual(report.runtimeBoundaryStatus, 'supported', 'chart linking boundary');
   expectTruthy(chartAnchorMarker, 'chart linking anchor exists');
@@ -472,30 +487,8 @@ function runChartLinkingContractDiagnostic() {
   }
 
   const chartProbe = viewModel.probeIndex.probes[chartAnchorMarker.probeRef];
-  const activeChartId = parseChartProbeRef(chartAnchorMarker.probeRef);
-  const probeCountsBefore = {
-    sampleProbeCount: viewModel.probeIndex.sampleProbeCount,
-    chartProbeCount: viewModel.probeIndex.chartProbeCount,
-    featureProbeCount: viewModel.probeIndex.featureProbeCount,
-    routeGateCandidateProbeCount:
-      viewModel.probeIndex.routeGateCandidateProbeCount,
-    supportRegionCandidateProbeCount:
-      viewModel.probeIndex.supportRegionCandidateProbeCount,
-  };
-  const samplesInChart = viewModel.surfaceSampleMarkers.filter(
-    (marker) => marker.chartId === activeChartId,
-  );
-  const featuresInChart = viewModel.featureOverlaySummary.featureMarkers.filter(
-    (marker) => marker.chartId === activeChartId,
-  );
-  const routeGateCandidatesInChart =
-    viewModel.routeGateOverlaySummary.candidateMarkers.filter((marker) =>
-      marker.chartIds.includes(activeChartId),
-    );
-  const supportRegionCandidatesInChart =
-    viewModel.supportRegionOverlaySummary.candidateMarkers.filter((marker) =>
-      marker.chartIds.includes(activeChartId),
-    );
+  const chartAnchorChartIds = getChartIdsFromProfileAwareProbe(chartProbe);
+  const chartContext = computeChartContextCounts(viewModel, chartAnchorChartIds);
 
   expectEqual(
     chartProbe && chartProbe.probeKind,
@@ -503,14 +496,19 @@ function runChartLinkingContractDiagnostic() {
     'chart linking anchor probe kind',
   );
   expectEqual(
-    activeChartId,
+    chartAnchorChartIds.length,
+    1,
+    'chart linking chart anchor active chart id count',
+  );
+  expectEqual(
+    chartAnchorChartIds[0],
     chartAnchorMarker.chartId,
     'chart linking active chart id',
   );
-  expectAtLeast(samplesInChart.length, 1, 'chart linking samples in chart');
+  expectAtLeast(chartContext.sampleMarkerCount, 1, 'chart linking samples in chart');
   expectEqual(
     chartProbe && chartProbe.sampleCount,
-    samplesInChart.length,
+    chartContext.sampleMarkerCount,
     'chart linking probe sample count',
   );
 
@@ -521,16 +519,14 @@ function runChartLinkingContractDiagnostic() {
     expectFinite(chartProbe.maxPhase, 'chart linking phase max');
   }
 
-  expectAtLeast(featuresInChart.length, 0, 'chart linking feature count computed');
-  expectAtLeast(
-    routeGateCandidatesInChart.length,
-    0,
-    'chart linking route/gate count computed',
-  );
-  expectAtLeast(
-    supportRegionCandidatesInChart.length,
-    0,
-    'chart linking support/region count computed',
+  expectChartContextFromSampleMarker(viewModel, sampleMarker);
+  expectChartContextFromFeatureMarker(viewModel, featureMarker);
+  expectChartContextFromRouteGateMarker(viewModel, routeGateMarker);
+  expectChartContextFromSupportRegionMarker(viewModel, supportRegionMarker);
+  expectEqual(
+    viewModel.probeIndex.sourceProbeCount,
+    probeCountsBefore.sourceProbeCount,
+    'chart linking source probes unchanged',
   );
   expectEqual(
     viewModel.probeIndex.sampleProbeCount,
@@ -1051,14 +1047,153 @@ function expectPinnedProbeRef(viewModel, probeRef, expectedProbeKind, label) {
   expectEqual(probe && probe.probeKind, expectedProbeKind, `${label} kind`);
 }
 
-function parseChartProbeRef(probeRef) {
-  const prefix = 'chart:';
+function expectChartContextFromSampleMarker(viewModel, marker) {
+  expectTruthy(marker, 'chart linking sample marker exists');
 
-  if (typeof probeRef !== 'string' || !probeRef.startsWith(prefix)) {
-    return null;
+  if (!marker) {
+    return;
   }
 
-  return probeRef.slice(prefix.length);
+  const probe = viewModel.probeIndex.probes[marker.probeRef];
+  const chartIds = getChartIdsFromProfileAwareProbe(probe);
+  const context = computeChartContextCounts(viewModel, chartIds);
+
+  expectEqual(probe && probe.probeKind, 'surface-sample', 'sample chart probe kind');
+  expectEqual(
+    chartIds.includes(marker.chartId),
+    true,
+    'sample chart ids include sample chart',
+  );
+  expectEqual(
+    context.sampleMarkerCount,
+    viewModel.surfaceSampleMarkers.filter(
+      (sampleMarker) => sampleMarker.chartId === marker.chartId,
+    ).length,
+    'sample chart context sample count',
+  );
+}
+
+function expectChartContextFromFeatureMarker(viewModel, marker) {
+  expectTruthy(marker, 'chart linking feature marker exists');
+
+  if (!marker) {
+    return;
+  }
+
+  const probe = viewModel.probeIndex.probes[marker.probeRef];
+  const chartIds = getChartIdsFromProfileAwareProbe(probe);
+  const context = computeChartContextCounts(viewModel, chartIds);
+
+  expectEqual(
+    probe && probe.probeKind,
+    'feature-observation',
+    'feature chart probe kind',
+  );
+  expectEqual(
+    chartIds.includes(marker.chartId),
+    true,
+    'feature chart ids include feature chart',
+  );
+  expectAtLeast(
+    context.featureMarkerCount,
+    1,
+    'feature chart context feature count computed',
+  );
+}
+
+function expectChartContextFromRouteGateMarker(viewModel, marker) {
+  expectTruthy(marker, 'chart linking route/gate marker exists');
+
+  if (!marker) {
+    return;
+  }
+
+  const probe = viewModel.probeIndex.probes[marker.probeRef];
+  const chartIds = getChartIdsFromProfileAwareProbe(probe);
+  const context = computeChartContextCounts(viewModel, chartIds);
+
+  expectEqual(
+    probe && probe.probeKind,
+    'route-gate-candidate',
+    'route/gate chart probe kind',
+  );
+  expectEqual(
+    marker.chartIds.every((chartId) => chartIds.includes(chartId)),
+    true,
+    'route/gate active chart ids include candidate chart ids',
+  );
+  expectAtLeast(
+    context.routeGateCandidateCount,
+    1,
+    'route/gate chart context candidate count computed',
+  );
+}
+
+function expectChartContextFromSupportRegionMarker(viewModel, marker) {
+  expectTruthy(marker, 'chart linking support/region marker exists');
+
+  if (!marker) {
+    return;
+  }
+
+  const probe = viewModel.probeIndex.probes[marker.probeRef];
+  const chartIds = getChartIdsFromProfileAwareProbe(probe);
+  const context = computeChartContextCounts(viewModel, chartIds);
+
+  expectEqual(
+    probe && probe.probeKind,
+    'support-region-candidate',
+    'support/region chart probe kind',
+  );
+  expectEqual(
+    marker.chartIds.every((chartId) => chartIds.includes(chartId)),
+    true,
+    'support/region active chart ids include candidate chart ids',
+  );
+  expectAtLeast(
+    context.supportRegionCandidateCount,
+    1,
+    'support/region chart context candidate count computed',
+  );
+}
+
+function getChartIdsFromProfileAwareProbe(probe) {
+  if (!probe) {
+    return [];
+  }
+
+  switch (probe.probeKind) {
+    case 'chart-summary':
+    case 'surface-sample':
+    case 'feature-observation':
+      return [probe.chartId];
+    case 'route-gate-candidate':
+    case 'support-region-candidate':
+      return [...probe.chartIds];
+    default:
+      return [];
+  }
+}
+
+function computeChartContextCounts(viewModel, chartIds) {
+  const activeChartIdSet = new Set(chartIds);
+
+  return {
+    sampleMarkerCount: viewModel.surfaceSampleMarkers.filter((marker) =>
+      activeChartIdSet.has(marker.chartId),
+    ).length,
+    featureMarkerCount: viewModel.featureOverlaySummary.featureMarkers.filter(
+      (marker) => activeChartIdSet.has(marker.chartId),
+    ).length,
+    routeGateCandidateCount:
+      viewModel.routeGateOverlaySummary.candidateMarkers.filter((marker) =>
+        marker.chartIds.some((chartId) => activeChartIdSet.has(chartId)),
+      ).length,
+    supportRegionCandidateCount:
+      viewModel.supportRegionOverlaySummary.candidateMarkers.filter((marker) =>
+        marker.chartIds.some((chartId) => activeChartIdSet.has(chartId)),
+      ).length,
+  };
 }
 
 function getLayerFamilyCounts(viewModel) {
