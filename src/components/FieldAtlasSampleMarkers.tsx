@@ -3,6 +3,7 @@ import { useEffect, useMemo } from 'react';
 import {
   buildProfileAwareFieldAtlasViewModelRuntimeReport,
   type ProfileAwareFieldAtlasFeatureMarker,
+  type ProfileAwareFieldAtlasRouteGateCandidateMarker,
   type ProfileAwareFieldAtlasSourceMarker,
   type ProfileAwareFieldAtlasSurfaceSampleMarker,
 } from '../lib/fieldSourceProfileAwareAtlasViewModel';
@@ -27,7 +28,11 @@ interface FieldAtlasMarker {
   valueLabel: 'amplitude' | 'intensity';
   label: string;
   detailLabel?: string;
-  kind: 'source-marker' | 'surface-sample-marker' | 'feature-observation-marker';
+  kind:
+    | 'source-marker'
+    | 'surface-sample-marker'
+    | 'feature-observation-marker'
+    | 'route-gate-candidate-anchor-marker';
 }
 
 export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMarkersProps) {
@@ -146,6 +151,9 @@ function buildMarkerModel(shape: Shape, enabled: boolean): FieldAtlasMarker[] {
       ...viewModel.sourceMarkers.map((marker) => marker.position),
       ...viewModel.surfaceSampleMarkers.map((marker) => marker.position),
       ...viewModel.featureOverlaySummary.featureMarkers.map((marker) => marker.position),
+      ...viewModel.routeGateOverlaySummary.candidateMarkers
+        .map((marker) => marker.position)
+        .filter((position): position is Vec3 => Boolean(position)),
     ];
     const radiusBase = getMarkerRadiusBase(positions);
     const intensityRange = {
@@ -161,6 +169,9 @@ function buildMarkerModel(shape: Shape, enabled: boolean): FieldAtlasMarker[] {
       ...viewModel.featureOverlaySummary.featureMarkers.map((marker) =>
         buildFeatureMarker(marker, radiusBase),
       ),
+      ...viewModel.routeGateOverlaySummary.candidateMarkers
+        .map((marker) => buildRouteGateCandidateMarker(marker, radiusBase))
+        .filter((marker): marker is FieldAtlasMarker => Boolean(marker)),
     ];
   } catch {
     return [];
@@ -230,6 +241,31 @@ function buildFeatureMarker(
     label: formatFeatureMarkerLabel(marker),
     detailLabel: `${marker.status}; ${formatMarkerStatus(marker.semanticStatus)}`,
     kind: 'feature-observation-marker',
+  };
+}
+
+function buildRouteGateCandidateMarker(
+  marker: ProfileAwareFieldAtlasRouteGateCandidateMarker,
+  radiusBase: number,
+): FieldAtlasMarker | null {
+  if (!marker.position) {
+    return null;
+  }
+
+  return {
+    id: `route-gate-candidate:${marker.candidateId}`,
+    hoverRef: marker.probeRef,
+    position: copyVec3(marker.position),
+    radius: radiusBase * 1.08,
+    opacity: 0.82,
+    color: '#fda4af',
+    emissive: '#7f1d1d',
+    emissiveIntensity: 0.46,
+    intensity: marker.intensitySummary.average,
+    valueLabel: 'intensity',
+    label: 'Route/gate candidate anchor',
+    detailLabel: `${marker.candidateKind}; ${marker.reliability}`,
+    kind: 'route-gate-candidate-anchor-marker',
   };
 }
 

@@ -30,6 +30,7 @@ import {
 } from './fieldSourceProfileAwarePolicy';
 import {
   buildProfileAwareRouteGateCandidateDiagnosticReport,
+  type ProfileAwareRouteGateCandidateView,
   type ProfileAwareRouteGateCandidateDiagnosticReport,
 } from './fieldSourceProfileAwareRouteGateCandidates';
 import {
@@ -245,14 +246,41 @@ export interface ProfileAwareFieldAtlasFeatureOverlaySummary {
   featureMarkers: ProfileAwareFieldAtlasFeatureMarker[];
 }
 
+export interface ProfileAwareFieldAtlasRouteGateCandidateMarker {
+  candidateId: string;
+  renderKind: 'route-gate-candidate-anchor-marker';
+  candidateKind: ProfileAwareRouteGateCandidateView['candidateKind'];
+  candidateSubtype: ProfileAwareRouteGateCandidateView['candidateSubtype'];
+  status: 'candidate-only';
+  claimStatus: ProfileAwareRouteGateCandidateView['claimStatus'];
+  semanticStatus: 'not-semantic-naming';
+  topologyStatus: 'not-topology-workspace';
+  phaseContinuityStatus: 'not-global-phase-continuity';
+  reliability: ProfileAwareRouteGateCandidateView['reliability'];
+  sampleIds: string[];
+  chartIds: string[];
+  edgeIds: string[];
+  seamEdgesInvolved: boolean;
+  pathLength?: number;
+  anchorSampleId?: string;
+  position?: Vec3;
+  intensitySummary: ProfileAwareRouteGateCandidateView['intensitySummary'];
+  contributionMixtureSummary: ProfileAwareRouteGateCandidateView['contributionMixtureSummary'];
+  evidenceProfile: ProfileAwareRouteGateCandidateView['evidenceProfile'];
+  sourcePolicyNames: string[];
+  reason: string;
+  probeRef: string;
+}
+
 export interface ProfileAwareFieldAtlasRouteGateOverlaySummary {
-  overlayStatus: 'summary-only';
+  overlayStatus: 'route-gate-candidate-anchors-available' | 'summary-only';
   candidateStatus: ProfileAwareRouteGateCandidateDiagnosticReport['candidateStatus'];
   totalRouteGateCandidateCount: number;
   gateCandidateCount: number;
   routeCandidateCount: number;
   blockedRouteCandidateCount: number;
-  candidateRefs: [];
+  candidateMarkers: ProfileAwareFieldAtlasRouteGateCandidateMarker[];
+  candidateRefs: string[];
   summaryProbeRef: 'routeGate:summary';
 }
 
@@ -330,6 +358,31 @@ export interface ProfileAwareFieldAtlasFeatureProbe {
   linkedSampleProbeRef: string;
 }
 
+export interface ProfileAwareFieldAtlasRouteGateProbe {
+  probeKind: 'route-gate-candidate';
+  candidateId: string;
+  candidateKind: ProfileAwareFieldAtlasRouteGateCandidateMarker['candidateKind'];
+  candidateSubtype: ProfileAwareFieldAtlasRouteGateCandidateMarker['candidateSubtype'];
+  status: 'candidate-only';
+  claimStatus: ProfileAwareFieldAtlasRouteGateCandidateMarker['claimStatus'];
+  semanticStatus: 'not-semantic-naming';
+  topologyStatus: 'not-topology-workspace';
+  phaseContinuityStatus: 'not-global-phase-continuity';
+  reliability: ProfileAwareFieldAtlasRouteGateCandidateMarker['reliability'];
+  sampleIds: string[];
+  chartIds: string[];
+  edgeIds: string[];
+  seamEdgesInvolved: boolean;
+  pathLength?: number;
+  anchorSampleId?: string;
+  position?: Vec3;
+  intensitySummary: ProfileAwareFieldAtlasRouteGateCandidateMarker['intensitySummary'];
+  contributionMixtureSummary: ProfileAwareFieldAtlasRouteGateCandidateMarker['contributionMixtureSummary'];
+  evidenceProfile: ProfileAwareFieldAtlasRouteGateCandidateMarker['evidenceProfile'];
+  sourcePolicyNames: string[];
+  reason: string;
+}
+
 export interface ProfileAwareFieldAtlasSummaryProbe {
   probeKind: 'route-gate-summary' | 'support-region-summary';
   semanticStatus: 'not-semantic-naming';
@@ -341,6 +394,7 @@ export type ProfileAwareFieldAtlasProbe =
   | ProfileAwareFieldAtlasSourceProbe
   | ProfileAwareFieldAtlasSurfaceSampleProbe
   | ProfileAwareFieldAtlasFeatureProbe
+  | ProfileAwareFieldAtlasRouteGateProbe
   | ProfileAwareFieldAtlasSummaryProbe;
 
 export interface ProfileAwareFieldAtlasProbeIndex {
@@ -349,6 +403,8 @@ export interface ProfileAwareFieldAtlasProbeIndex {
   sampleProbeCount: number;
   featureProbeCount: number;
   routeGateProbeCount: number;
+  routeGateCandidateProbeCount: number;
+  routeGateSummaryProbeCount: number;
   supportRegionProbeCount: number;
   probes: Record<string, ProfileAwareFieldAtlasProbe>;
 }
@@ -386,7 +442,9 @@ export interface ProfileAwareFieldAtlasViewModelReport {
   degeneracyStatusCount: number;
   renderModelStatus: 'renderable-diagnostic-model';
   probeModelStatus: 'probe-ready-diagnostic-model';
-  candidateOverlayStatus: 'feature-markers-route-support-summary-only';
+  candidateOverlayStatus:
+    | 'feature-markers-route-support-summary-only'
+    | 'feature-and-route-gate-markers-support-summary-only';
   sourceMarkers: ProfileAwareFieldAtlasSourceMarker[];
   sourceCaveatMarkers: ProfileAwareFieldAtlasSourceCaveatMarker[];
   surfaceSampleMarkers: ProfileAwareFieldAtlasSurfaceSampleMarker[];
@@ -591,7 +649,10 @@ function buildProfileAwareFieldAtlasViewModelReportForShape(
     ? sampledAtlas.chartSummaries.map(buildChartSummary)
     : [];
   const featureOverlaySummary = buildFeatureOverlaySummary(featureReport);
-  const routeGateOverlaySummary = buildRouteGateOverlaySummary(routeGateReport);
+  const routeGateOverlaySummary = buildRouteGateOverlaySummary({
+    report: routeGateReport,
+    surfaceSampleMarkers,
+  });
   const supportRegionOverlaySummary =
     buildSupportRegionOverlaySummary(supportRegionReport);
   const childDerivationByChildVertexId = buildChildDerivationProbeByChildVertexId({
@@ -666,7 +727,10 @@ function buildProfileAwareFieldAtlasViewModelReportForShape(
     degeneracyStatusCount: profileAwarePolicyReport.degeneracyStatusCount,
     renderModelStatus: 'renderable-diagnostic-model',
     probeModelStatus: 'probe-ready-diagnostic-model',
-    candidateOverlayStatus: 'feature-markers-route-support-summary-only',
+    candidateOverlayStatus:
+      routeGateOverlaySummary.candidateMarkers.length > 0
+        ? 'feature-and-route-gate-markers-support-summary-only'
+        : 'feature-markers-route-support-summary-only',
     sourceMarkers,
     sourceCaveatMarkers,
     surfaceSampleMarkers,
@@ -1261,18 +1325,85 @@ function buildFeatureMarker(
   };
 }
 
-function buildRouteGateOverlaySummary(
+function buildRouteGateOverlaySummary(args: {
   report: ProfileAwareRouteGateCandidateDiagnosticReport,
-): ProfileAwareFieldAtlasRouteGateOverlaySummary {
+  surfaceSampleMarkers: ProfileAwareFieldAtlasSurfaceSampleMarker[];
+}): ProfileAwareFieldAtlasRouteGateOverlaySummary {
+  const sampleMarkerById = new Map(
+    args.surfaceSampleMarkers.map((marker) => [marker.sampleId, marker]),
+  );
+  const candidateMarkers = args.report.candidateViews.map((candidate) =>
+    buildRouteGateCandidateMarker(candidate, sampleMarkerById),
+  );
+
   return {
-    overlayStatus: 'summary-only',
-    candidateStatus: report.candidateStatus,
-    totalRouteGateCandidateCount: report.totalCandidateCount,
-    gateCandidateCount: report.gateCandidateCount,
-    routeCandidateCount: report.routeCandidateCount,
-    blockedRouteCandidateCount: report.blockedRouteCandidateCount,
-    candidateRefs: [],
+    overlayStatus:
+      candidateMarkers.length > 0
+        ? 'route-gate-candidate-anchors-available'
+        : 'summary-only',
+    candidateStatus: args.report.candidateStatus,
+    totalRouteGateCandidateCount: args.report.totalCandidateCount,
+    gateCandidateCount: args.report.gateCandidateCount,
+    routeCandidateCount: args.report.routeCandidateCount,
+    blockedRouteCandidateCount: args.report.blockedRouteCandidateCount,
+    candidateMarkers,
+    candidateRefs: candidateMarkers.map((marker) => marker.probeRef),
     summaryProbeRef: 'routeGate:summary',
+  };
+}
+
+function buildRouteGateCandidateMarker(
+  candidate: ProfileAwareRouteGateCandidateView,
+  sampleMarkerById: Map<string, ProfileAwareFieldAtlasSurfaceSampleMarker>,
+): ProfileAwareFieldAtlasRouteGateCandidateMarker {
+  const resolvedSampleMarkers = candidate.sampleIds
+    .map((sampleId) => sampleMarkerById.get(sampleId))
+    .filter(
+      (
+        marker,
+      ): marker is ProfileAwareFieldAtlasSurfaceSampleMarker => Boolean(marker),
+    );
+  const anchorSampleId = resolvedSampleMarkers[0]?.sampleId;
+  const position = buildCentroid(
+    resolvedSampleMarkers.map((marker) => marker.position),
+  );
+
+  return {
+    candidateId: candidate.candidateId,
+    renderKind: 'route-gate-candidate-anchor-marker',
+    candidateKind: candidate.candidateKind,
+    candidateSubtype: candidate.candidateSubtype,
+    status: 'candidate-only',
+    claimStatus: candidate.claimStatus,
+    semanticStatus: 'not-semantic-naming',
+    topologyStatus: 'not-topology-workspace',
+    phaseContinuityStatus: 'not-global-phase-continuity',
+    reliability: candidate.reliability,
+    sampleIds: [...candidate.sampleIds],
+    chartIds: [...candidate.chartIds],
+    edgeIds: [...candidate.edgeIds],
+    seamEdgesInvolved: candidate.seamEdgesInvolved,
+    ...(typeof candidate.pathLength === 'number'
+      ? { pathLength: candidate.pathLength }
+      : {}),
+    ...(anchorSampleId ? { anchorSampleId } : {}),
+    ...(position ? { position } : {}),
+    intensitySummary: {
+      min: candidate.intensitySummary.min,
+      max: candidate.intensitySummary.max,
+      average: candidate.intensitySummary.average,
+    },
+    contributionMixtureSummary: {
+      averageEffectiveSourceCount:
+        candidate.contributionMixtureSummary.averageEffectiveSourceCount,
+      maxTopContributionRatio:
+        candidate.contributionMixtureSummary.maxTopContributionRatio,
+      mixedSampleCount: candidate.contributionMixtureSummary.mixedSampleCount,
+    },
+    evidenceProfile: copyRouteGateEvidenceProfile(candidate.evidenceProfile),
+    sourcePolicyNames: [...candidate.sourcePolicyNames],
+    reason: candidate.reason,
+    probeRef: `routeGate:candidate:${candidate.candidateId}`,
   };
 }
 
@@ -1338,6 +1469,10 @@ function buildProbeIndex(args: {
     );
   }
 
+  for (const marker of args.routeGateOverlaySummary.candidateMarkers) {
+    probes[marker.probeRef] = buildRouteGateProbe(marker);
+  }
+
   probes[args.routeGateOverlaySummary.summaryProbeRef] = {
     probeKind: 'route-gate-summary',
     semanticStatus: 'not-semantic-naming',
@@ -1356,7 +1491,11 @@ function buildProbeIndex(args: {
     sourceProbeCount: args.sourceMarkers.length,
     sampleProbeCount: args.surfaceSampleMarkers.length,
     featureProbeCount: args.featureOverlaySummary.featureMarkers.length,
-    routeGateProbeCount: 1,
+    routeGateProbeCount:
+      args.routeGateOverlaySummary.candidateMarkers.length + 1,
+    routeGateCandidateProbeCount:
+      args.routeGateOverlaySummary.candidateMarkers.length,
+    routeGateSummaryProbeCount: 1,
     supportRegionProbeCount: 1,
     probes,
   };
@@ -1469,6 +1608,47 @@ function buildFeatureProbe(
   };
 }
 
+function buildRouteGateProbe(
+  marker: ProfileAwareFieldAtlasRouteGateCandidateMarker,
+): ProfileAwareFieldAtlasRouteGateProbe {
+  return {
+    probeKind: 'route-gate-candidate',
+    candidateId: marker.candidateId,
+    candidateKind: marker.candidateKind,
+    candidateSubtype: marker.candidateSubtype,
+    status: 'candidate-only',
+    claimStatus: marker.claimStatus,
+    semanticStatus: 'not-semantic-naming',
+    topologyStatus: 'not-topology-workspace',
+    phaseContinuityStatus: 'not-global-phase-continuity',
+    reliability: marker.reliability,
+    sampleIds: [...marker.sampleIds],
+    chartIds: [...marker.chartIds],
+    edgeIds: [...marker.edgeIds],
+    seamEdgesInvolved: marker.seamEdgesInvolved,
+    ...(typeof marker.pathLength === 'number'
+      ? { pathLength: marker.pathLength }
+      : {}),
+    ...(marker.anchorSampleId ? { anchorSampleId: marker.anchorSampleId } : {}),
+    ...(marker.position ? { position: copyVec3(marker.position) } : {}),
+    intensitySummary: {
+      min: marker.intensitySummary.min,
+      max: marker.intensitySummary.max,
+      average: marker.intensitySummary.average,
+    },
+    contributionMixtureSummary: {
+      averageEffectiveSourceCount:
+        marker.contributionMixtureSummary.averageEffectiveSourceCount,
+      maxTopContributionRatio:
+        marker.contributionMixtureSummary.maxTopContributionRatio,
+      mixedSampleCount: marker.contributionMixtureSummary.mixedSampleCount,
+    },
+    evidenceProfile: copyRouteGateEvidenceProfile(marker.evidenceProfile),
+    sourcePolicyNames: [...marker.sourcePolicyNames],
+    reason: marker.reason,
+  };
+}
+
 function buildTopContributions(
   sample: SurfaceChartAtlasSample | undefined,
 ): ProfileAwareFieldAtlasTopContributionView[] {
@@ -1566,7 +1746,12 @@ function appendViewModelIssues(
     args.probeIndex.sourceProbeCount !== args.sourceMarkers.length ||
     args.probeIndex.sampleProbeCount !== args.surfaceSampleMarkers.length ||
     args.probeIndex.featureProbeCount !==
-      args.featureOverlaySummary.featureMarkers.length
+      args.featureOverlaySummary.featureMarkers.length ||
+    args.probeIndex.routeGateCandidateProbeCount !==
+      args.routeGateOverlaySummary.candidateMarkers.length ||
+    args.probeIndex.routeGateSummaryProbeCount !== 1 ||
+    args.probeIndex.routeGateProbeCount !==
+      args.routeGateOverlaySummary.candidateMarkers.length + 1
   ) {
     issues.push({
       code: 'probe-index-count-mismatch',
@@ -1580,6 +1765,12 @@ function appendViewModelIssues(
         surfaceSampleMarkerCount: args.surfaceSampleMarkers.length,
         featureProbeCount: args.probeIndex.featureProbeCount,
         featureMarkerCount: args.featureOverlaySummary.featureMarkers.length,
+        routeGateProbeCount: args.probeIndex.routeGateProbeCount,
+        routeGateCandidateProbeCount:
+          args.probeIndex.routeGateCandidateProbeCount,
+        routeGateSummaryProbeCount: args.probeIndex.routeGateSummaryProbeCount,
+        routeGateCandidateMarkerCount:
+          args.routeGateOverlaySummary.candidateMarkers.length,
       },
     });
   }
@@ -1635,6 +1826,24 @@ function appendViewModelIssues(
         totalRouteGateCandidateCount:
           args.routeGateOverlaySummary.totalRouteGateCandidateCount,
         derivedRouteGateCandidateCount: routeGateTotal,
+      },
+    });
+  }
+
+  if (
+    args.routeGateOverlaySummary.candidateMarkers.length !==
+    args.routeGateOverlaySummary.totalRouteGateCandidateCount
+  ) {
+    issues.push({
+      code: 'route-gate-count-mismatch',
+      message:
+        'Profile-aware atlas view model route/gate candidate marker count does not match total candidate count.',
+      layer: 'routeGateOverlaySummary',
+      details: {
+        totalRouteGateCandidateCount:
+          args.routeGateOverlaySummary.totalRouteGateCandidateCount,
+        candidateMarkerCount:
+          args.routeGateOverlaySummary.candidateMarkers.length,
       },
     });
   }
@@ -1701,6 +1910,43 @@ function getNumberRange(values: number[]): { min: number; max: number } {
     }),
     { min: Number.POSITIVE_INFINITY, max: Number.NEGATIVE_INFINITY },
   );
+}
+
+function buildCentroid(positions: Vec3[]): Vec3 | undefined {
+  if (!positions.length) {
+    return undefined;
+  }
+
+  const sum = positions.reduce(
+    (total, position) =>
+      [
+        total[0] + position[0],
+        total[1] + position[1],
+        total[2] + position[2],
+      ] as Vec3,
+    [0, 0, 0] as Vec3,
+  );
+
+  return [
+    sum[0] / positions.length,
+    sum[1] / positions.length,
+    sum[2] / positions.length,
+  ];
+}
+
+function copyRouteGateEvidenceProfile(
+  evidenceProfile: ProfileAwareRouteGateCandidateView['evidenceProfile'],
+): ProfileAwareRouteGateCandidateView['evidenceProfile'] {
+  return {
+    ...evidenceProfile,
+    ...(evidenceProfile.endpointRelativeIntensities
+      ? {
+          endpointRelativeIntensities: [
+            ...evidenceProfile.endpointRelativeIntensities,
+          ],
+        }
+      : {}),
+  };
 }
 
 function copyVec3(position: Vec3): Vec3 {

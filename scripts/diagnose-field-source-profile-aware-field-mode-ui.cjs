@@ -37,7 +37,7 @@ runSupportedOneAmboTetrahedronContractDiagnostic();
 runUnsupportedSeedTetrahedronDiagnostic();
 runUnsupportedCubeDiagnostic();
 runConservativeBoundaryClaimDiagnostic();
-runRouteSupportSummaryOnlyDiagnostic();
+runRouteGateCandidateOverlayDiagnostic();
 runNoOldPolicyComparisonOrInvarianceDiagnostic();
 
 if (failures.length) {
@@ -84,6 +84,11 @@ function runSupportedOneAmboTetrahedronContractDiagnostic() {
       1,
       'feature marker count',
     );
+    expectAtLeast(
+      viewModel.routeGateOverlaySummary.candidateMarkers.length,
+      1,
+      'route/gate candidate anchor count',
+    );
     expectEqual(
       viewModel.sourceMarkers.every((marker) => marker.renderKind === 'source-marker'),
       true,
@@ -102,6 +107,13 @@ function runSupportedOneAmboTetrahedronContractDiagnostic() {
       ),
       true,
       'feature marker render kind',
+    );
+    expectEqual(
+      viewModel.routeGateOverlaySummary.candidateMarkers.every(
+        (marker) => marker.renderKind === 'route-gate-candidate-anchor-marker',
+      ),
+      true,
+      'route/gate candidate marker render kind',
     );
     expectMarkerProbeContracts(viewModel);
     expectSimulatedPinnedProbeRefsResolve(viewModel);
@@ -161,7 +173,7 @@ function runConservativeBoundaryClaimDiagnostic() {
   console.log('conservative Field Mode UI claims: PASS');
 }
 
-function runRouteSupportSummaryOnlyDiagnostic() {
+function runRouteGateCandidateOverlayDiagnostic() {
   const report = buildProfileAwareFieldAtlasViewModelRuntimeReport(
     applyAmboDissection(createSeedShape('tetrahedron')),
   );
@@ -175,13 +187,23 @@ function runRouteSupportSummaryOnlyDiagnostic() {
 
   expectEqual(
     viewModel.candidateOverlayStatus,
-    'feature-markers-route-support-summary-only',
+    'feature-and-route-gate-markers-support-summary-only',
     'candidate overlay status',
   );
   expectEqual(
     viewModel.routeGateOverlaySummary.overlayStatus,
-    'summary-only',
+    'route-gate-candidate-anchors-available',
     'route/gate overlay status',
+  );
+  expectAtLeast(
+    viewModel.routeGateOverlaySummary.candidateMarkers.length,
+    1,
+    'route/gate candidate markers',
+  );
+  expectEqual(
+    viewModel.routeGateOverlaySummary.candidateRefs.length,
+    viewModel.routeGateOverlaySummary.candidateMarkers.length,
+    'route/gate candidate refs',
   );
   expectEqual(
     viewModel.supportRegionOverlaySummary.overlayStatus,
@@ -189,23 +211,32 @@ function runRouteSupportSummaryOnlyDiagnostic() {
     'support/region overlay status',
   );
   expectEqual(
-    viewModel.routeGateOverlaySummary.candidateRefs.length,
-    0,
-    'route/gate candidate refs',
-  );
-  expectEqual(
     viewModel.supportRegionOverlaySummary.candidateRefs.length,
     0,
     'support/region candidate refs',
   );
-  expectEqual(viewModel.probeIndex.routeGateProbeCount, 1, 'route/gate summary probe');
+  expectEqual(
+    viewModel.probeIndex.routeGateCandidateProbeCount,
+    viewModel.routeGateOverlaySummary.candidateMarkers.length,
+    'route/gate candidate probes',
+  );
+  expectEqual(
+    viewModel.probeIndex.routeGateSummaryProbeCount,
+    1,
+    'route/gate summary probe',
+  );
+  expectEqual(
+    viewModel.probeIndex.routeGateProbeCount,
+    viewModel.routeGateOverlaySummary.candidateMarkers.length + 1,
+    'route/gate total probes',
+  );
   expectEqual(
     viewModel.probeIndex.supportRegionProbeCount,
     1,
     'support/region summary probe',
   );
 
-  console.log('route/gate and support/region summary-only: PASS');
+  console.log('route/gate candidate anchors and support/region summary-only: PASS');
 }
 
 function runNoOldPolicyComparisonOrInvarianceDiagnostic() {
@@ -333,6 +364,48 @@ function expectMarkerProbeContracts(viewModel) {
     }
   }
 
+  for (const marker of viewModel.routeGateOverlaySummary.candidateMarkers) {
+    const probe = viewModel.probeIndex.probes[marker.probeRef];
+
+    expectTruthy(probe, `route/gate marker ${marker.candidateId} probe`);
+    expectEqual(
+      probe && probe.probeKind,
+      'route-gate-candidate',
+      `route/gate marker ${marker.candidateId} probe kind`,
+    );
+    expectEqual(
+      marker.status,
+      'candidate-only',
+      `route/gate marker ${marker.candidateId} status`,
+    );
+    expectEqual(
+      marker.semanticStatus,
+      'not-semantic-naming',
+      `route/gate marker ${marker.candidateId} semantic`,
+    );
+    expectEqual(
+      marker.topologyStatus,
+      'not-topology-workspace',
+      `route/gate marker ${marker.candidateId} topology`,
+    );
+    expectEqual(
+      marker.phaseContinuityStatus,
+      'not-global-phase-continuity',
+      `route/gate marker ${marker.candidateId} phase`,
+    );
+    expectProfileAwareSourcePolicyNames(
+      marker.sourcePolicyNames,
+      `route/gate marker ${marker.candidateId} source policy names`,
+    );
+
+    if (marker.position) {
+      expectFiniteVec3(
+        marker.position,
+        `route/gate marker ${marker.candidateId} anchor position`,
+      );
+    }
+  }
+
   console.log('marker hover probe refs resolve: PASS');
 }
 
@@ -340,6 +413,7 @@ function expectSimulatedPinnedProbeRefsResolve(viewModel) {
   const sourceMarker = viewModel.sourceMarkers[0];
   const sampleMarker = viewModel.surfaceSampleMarkers[0];
   const featureMarker = viewModel.featureOverlaySummary.featureMarkers[0];
+  const routeGateMarker = viewModel.routeGateOverlaySummary.candidateMarkers[0];
 
   expectPinnedProbeRef(
     viewModel,
@@ -358,6 +432,12 @@ function expectSimulatedPinnedProbeRefsResolve(viewModel) {
     featureMarker && featureMarker.probeRef,
     'feature-observation',
     'simulated feature pinned ref',
+  );
+  expectPinnedProbeRef(
+    viewModel,
+    routeGateMarker && routeGateMarker.probeRef,
+    'route-gate-candidate',
+    'simulated route/gate pinned ref',
   );
 
   console.log('simulated pinned probe refs resolve: PASS');
@@ -492,7 +572,7 @@ function printSupportedReport(label, report) {
   console.log(`  input shape: ${report.inputShapeId}`);
   console.log(`  source policy: ${report.sourcePolicyId}`);
   console.log(
-    `  markers: source=${report.viewModel.sourceMarkers.length} sample=${report.viewModel.surfaceSampleMarkers.length} feature=${report.viewModel.featureOverlaySummary.featureMarkers.length}`,
+    `  markers: source=${report.viewModel.sourceMarkers.length} sample=${report.viewModel.surfaceSampleMarkers.length} feature=${report.viewModel.featureOverlaySummary.featureMarkers.length} routeGate=${report.viewModel.routeGateOverlaySummary.candidateMarkers.length}`,
   );
   console.log(
     `  candidate summaries: route/gate=${report.viewModel.routeGateOverlaySummary.totalRouteGateCandidateCount} support/region=${report.viewModel.supportRegionOverlaySummary.totalSupportRegionCandidateCount}`,
@@ -523,6 +603,31 @@ function expectFiniteChannelParameters(parameters, label) {
   expectFinite(parameters && parameters.waveNumber, `${label} waveNumber`);
   expectFinite(parameters && parameters.phase, `${label} phase`);
   expectFinite(parameters && parameters.attenuation, `${label} attenuation`);
+}
+
+function expectFiniteVec3(position, label) {
+  if (!Array.isArray(position) || position.length !== 3) {
+    recordFailure(`${label}: expected Vec3`);
+    return;
+  }
+
+  for (let index = 0; index < 3; index += 1) {
+    expectFinite(position[index], `${label}[${index}]`);
+  }
+}
+
+function expectProfileAwareSourcePolicyNames(sourcePolicyNames, label) {
+  expectEqual(
+    Array.isArray(sourcePolicyNames),
+    true,
+    `${label} is an array`,
+  );
+  expectEqual(sourcePolicyNames.length, 1, `${label} length`);
+  expectEqual(
+    sourcePolicyNames[0],
+    PROFILE_AWARE_SOURCE_POLICY_ID,
+    `${label} value`,
+  );
 }
 
 function expectFinite(value, label) {

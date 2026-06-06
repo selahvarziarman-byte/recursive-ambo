@@ -42,7 +42,7 @@ runRenderScaleDiagnostic();
 runProbeIndexDiagnostic();
 runChildSourceProbeDerivationDiagnostic();
 runCandidateSummaryCoherenceDiagnostic();
-runRouteSupportSummaryOnlyDiagnostic();
+runRouteGateCandidateOverlayDiagnostic();
 runNoOldPolicyComparisonDiagnostic();
 runNoInvarianceClaimDiagnostic();
 runNoForbiddenClaimsDiagnostic();
@@ -164,7 +164,7 @@ function runViewModelStatusDiagnostic() {
   );
   expectEqual(
     report.candidateOverlayStatus,
-    'feature-markers-route-support-summary-only',
+    'feature-and-route-gate-markers-support-summary-only',
     'candidate overlay status',
   );
 
@@ -426,6 +426,21 @@ function runProbeIndexDiagnostic() {
     report.probeIndex.probes['routeGate:summary'],
     'route/gate summary probe',
   );
+  expectEqual(
+    report.probeIndex.routeGateCandidateProbeCount,
+    report.routeGateOverlaySummary.candidateMarkers.length,
+    'route/gate candidate probe count',
+  );
+  expectEqual(
+    report.probeIndex.routeGateSummaryProbeCount,
+    1,
+    'route/gate summary probe count',
+  );
+  expectEqual(
+    report.probeIndex.routeGateProbeCount,
+    report.routeGateOverlaySummary.candidateMarkers.length + 1,
+    'route/gate total probe count',
+  );
   expectTruthy(
     report.probeIndex.probes['supportRegion:summary'],
     'support/region summary probe',
@@ -574,23 +589,76 @@ function runCandidateSummaryCoherenceDiagnostic() {
   console.log('candidate summaries: PASS');
 }
 
-function runRouteSupportSummaryOnlyDiagnostic() {
+function runRouteGateCandidateOverlayDiagnostic() {
   const report = buildProfileAwareFieldAtlasViewModelReport();
+  const routeGate = report.routeGateOverlaySummary;
 
   expectEqual(
-    report.routeGateOverlaySummary.overlayStatus,
-    'summary-only',
+    routeGate.overlayStatus,
+    'route-gate-candidate-anchors-available',
     'route/gate overlay status',
   );
+  expectAtLeast(
+    routeGate.candidateMarkers.length,
+    1,
+    'route/gate candidate marker count',
+  );
+  expectEqual(
+    routeGate.candidateMarkers.length,
+    routeGate.totalRouteGateCandidateCount,
+    'route/gate candidate marker total',
+  );
+  expectEqual(
+    routeGate.candidateRefs.length,
+    routeGate.candidateMarkers.length,
+    'route/gate candidate refs',
+  );
+
+  for (const marker of routeGate.candidateMarkers) {
+    const probe = report.probeIndex.probes[marker.probeRef];
+
+    expectEqual(
+      marker.renderKind,
+      'route-gate-candidate-anchor-marker',
+      `${marker.candidateId} render kind`,
+    );
+    expectEqual(marker.status, 'candidate-only', `${marker.candidateId} status`);
+    expectEqual(
+      marker.semanticStatus,
+      'not-semantic-naming',
+      `${marker.candidateId} semantic status`,
+    );
+    expectEqual(
+      marker.topologyStatus,
+      'not-topology-workspace',
+      `${marker.candidateId} topology status`,
+    );
+    expectEqual(
+      marker.phaseContinuityStatus,
+      'not-global-phase-continuity',
+      `${marker.candidateId} phase continuity status`,
+    );
+    expectProfileAwareSourcePolicyNames(
+      marker.sourcePolicyNames,
+      `${marker.candidateId} source policy names`,
+    );
+    expectTruthy(marker.probeRef, `${marker.candidateId} probe ref`);
+    expectTruthy(probe, `${marker.candidateId} route/gate probe resolves`);
+    expectEqual(
+      probe && probe.probeKind,
+      'route-gate-candidate',
+      `${marker.candidateId} probe kind`,
+    );
+
+    if (marker.position) {
+      expectFiniteVec3(marker.position, `${marker.candidateId} anchor position`);
+    }
+  }
+
   expectEqual(
     report.supportRegionOverlaySummary.overlayStatus,
     'summary-only',
     'support/region overlay status',
-  );
-  expectEqual(
-    report.routeGateOverlaySummary.candidateRefs.length,
-    0,
-    'route/gate candidate refs',
   );
   expectEqual(
     report.supportRegionOverlaySummary.candidateRefs.length,
@@ -598,7 +666,7 @@ function runRouteSupportSummaryOnlyDiagnostic() {
     'support/region candidate refs',
   );
 
-  console.log('route/gate and support/region summary-only: PASS');
+  console.log('route/gate candidate anchors and support/region summary-only: PASS');
 }
 
 function runNoOldPolicyComparisonDiagnostic() {
@@ -677,7 +745,7 @@ function printViewModelReport(label, report) {
     `  overlays: featureMarkers=${report.featureOverlaySummary.featureMarkers.length} routeGate=${report.routeGateOverlaySummary.totalRouteGateCandidateCount} supportRegion=${report.supportRegionOverlaySummary.totalSupportRegionCandidateCount} status=${report.candidateOverlayStatus}`,
   );
   console.log(
-    `  probes: source=${report.probeIndex.sourceProbeCount} sample=${report.probeIndex.sampleProbeCount} feature=${report.probeIndex.featureProbeCount} total=${report.probeIndex.probeCount}`,
+    `  probes: source=${report.probeIndex.sourceProbeCount} sample=${report.probeIndex.sampleProbeCount} feature=${report.probeIndex.featureProbeCount} routeGate=${report.probeIndex.routeGateProbeCount} total=${report.probeIndex.probeCount}`,
   );
   console.log(`  issues: ${report.issueCount}${formatIssueCounts(report)}`);
 }

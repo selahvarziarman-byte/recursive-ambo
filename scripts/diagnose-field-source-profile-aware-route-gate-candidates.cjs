@@ -71,6 +71,7 @@ const failures = [];
 console.log('Field source profile-aware route/gate candidate diagnostics');
 
 runHappyRouteGateCandidateDiagnostic();
+runCandidateViewDiagnostic();
 runSurfaceAtlasFailureDiagnostic();
 runAdapterDefaultInputOnlyDiagnostic();
 runNoInvarianceClaimDiagnostic();
@@ -224,6 +225,78 @@ function runHappyRouteGateCandidateDiagnostic() {
   }
 
   printRouteGateReport('happy route/gate candidates', routeGateReport);
+}
+
+function runCandidateViewDiagnostic() {
+  const { adapterReport } = buildBaseFixture();
+  const shape = applyAmboDissection(createSeedShape('tetrahedron'));
+  const resolverReport = buildProfileAwareShapePositionResolverReport(shape);
+  const surfaceAtlasResult = buildSurfaceAtlasResult({
+    adapterReport,
+    shape,
+    resolverReport,
+  });
+  const routeGateReport = buildProfileAwareRouteGateCandidateDiagnosticReport({
+    surfaceAtlasResult,
+    reportIdSuffix: 'candidate-views-profile-aware-route-gate-candidates',
+  });
+
+  expectEqual(routeGateReport.ok, true, 'candidate views report ok');
+  expectAtLeast(
+    routeGateReport.candidateViews.length,
+    1,
+    'candidate views exist',
+  );
+  expectEqual(
+    routeGateReport.candidateViews.length,
+    routeGateReport.totalCandidateCount,
+    'candidate view count',
+  );
+
+  for (const candidate of routeGateReport.candidateViews) {
+    expectTruthy(candidate.candidateId, 'candidate view id');
+    expectTruthy(candidate.candidateKind, `${candidate.candidateId} kind`);
+    expectTruthy(candidate.candidateSubtype, `${candidate.candidateId} subtype`);
+    expectEqual(candidate.status, 'candidate-only', `${candidate.candidateId} status`);
+    expectEqual(
+      candidate.semanticStatus,
+      'not-semantic-naming',
+      `${candidate.candidateId} semantic status`,
+    );
+    expectEqual(
+      candidate.topologyStatus,
+      'not-topology-workspace',
+      `${candidate.candidateId} topology status`,
+    );
+    expectEqual(
+      candidate.phaseContinuityStatus,
+      'not-global-phase-continuity',
+      `${candidate.candidateId} phase continuity status`,
+    );
+    expectProfileAwareSourcePolicyNames(
+      candidate.sourcePolicyNames,
+      `${candidate.candidateId} source policy names`,
+    );
+    expectExpectedRouteGateClaimStatus(candidate);
+    expectEqual(
+      Array.isArray(candidate.sampleIds),
+      true,
+      `${candidate.candidateId} sampleIds array`,
+    );
+    expectEqual(
+      Array.isArray(candidate.chartIds),
+      true,
+      `${candidate.candidateId} chartIds array`,
+    );
+    expectEqual(
+      Array.isArray(candidate.edgeIds),
+      true,
+      `${candidate.candidateId} edgeIds array`,
+    );
+    expectTruthy(candidate.reason, `${candidate.candidateId} reason`);
+  }
+
+  console.log('route/gate candidate views: PASS');
 }
 
 function runSurfaceAtlasFailureDiagnostic() {
@@ -502,6 +575,56 @@ function expectNoOwnProperty(value, property, label) {
   if (Object.prototype.hasOwnProperty.call(value, property)) {
     recordFailure(`${label}: did not expect property ${property}`);
   }
+}
+
+function expectTruthy(value, label) {
+  if (!value) {
+    recordFailure(`${label}: expected truthy value`);
+  }
+}
+
+function expectProfileAwareSourcePolicyNames(sourcePolicyNames, label) {
+  expectEqual(
+    Array.isArray(sourcePolicyNames),
+    true,
+    `${label} is an array`,
+  );
+  expectEqual(
+    sourcePolicyNames.length,
+    1,
+    `${label} length`,
+  );
+  expectEqual(
+    sourcePolicyNames[0],
+    PROFILE_AWARE_SOURCE_POLICY_ID,
+    `${label} value`,
+  );
+}
+
+function expectExpectedRouteGateClaimStatus(candidate) {
+  if (candidate.candidateKind === 'gate-candidate') {
+    expectEqual(
+      candidate.claimStatus,
+      'insufficient-for-confirmed-gate',
+      `${candidate.candidateId} gate claim status`,
+    );
+    return;
+  }
+
+  if (candidate.candidateKind === 'route-candidate') {
+    expectEqual(
+      candidate.claimStatus,
+      'insufficient-for-confirmed-route',
+      `${candidate.candidateId} route claim status`,
+    );
+    return;
+  }
+
+  expectEqual(
+    candidate.claimStatus,
+    'diagnostic-only',
+    `${candidate.candidateId} blocked/failed claim status`,
+  );
 }
 
 function expectAtLeast(actual, expectedMinimum, label) {

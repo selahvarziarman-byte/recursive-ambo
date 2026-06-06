@@ -1,13 +1,21 @@
 import {
   buildFieldRouteGateCandidateReport,
+  type FieldRouteGateCandidateClaimStatus,
+  type FieldRouteGateCandidateEvidenceProfile,
+  type FieldRouteGateCandidateKind,
   type FieldRouteGateCandidateMethod,
   type FieldRouteGateCandidateOptions,
   type FieldRouteGateCandidatePhaseContinuityStatus,
+  type FieldRouteGateCandidateReliability,
   type FieldRouteGateCandidateReport,
   type FieldRouteGateCandidateSemanticStatus,
   type FieldRouteGateCandidateStatus,
+  type FieldRouteGateCandidateSubtype,
   type FieldRouteGateCandidateTopologyStatus,
+  type FieldRouteGateContributionMixtureSummary,
+  type FieldRouteGateIntensitySummary,
 } from './fieldAtlasRouteGateCandidates';
+import type { FieldChartSemanticRole } from './fieldAtlas';
 import type { ProfileAwareShapeResolvedSurfaceAtlasResult } from './fieldSourceProfileAwareShapeResolvedSurfaceAtlas';
 
 export type ProfileAwareRouteGateCandidateIssueCode =
@@ -46,6 +54,29 @@ export interface BuildProfileAwareRouteGateCandidateReportArgs {
   reportIdSuffix?: string;
 }
 
+export interface ProfileAwareRouteGateCandidateView {
+  candidateId: string;
+  candidateKind: FieldRouteGateCandidateKind;
+  candidateSubtype: FieldRouteGateCandidateSubtype;
+  status: FieldRouteGateCandidateStatus;
+  claimStatus: FieldRouteGateCandidateClaimStatus;
+  semanticStatus: FieldRouteGateCandidateSemanticStatus;
+  topologyStatus: FieldRouteGateCandidateTopologyStatus;
+  phaseContinuityStatus: FieldRouteGateCandidatePhaseContinuityStatus;
+  sourcePolicyNames: string[];
+  sampleIds: string[];
+  chartIds: string[];
+  chartSemanticRoles: FieldChartSemanticRole[];
+  edgeIds: string[];
+  seamEdgesInvolved: boolean;
+  pathLength?: number;
+  intensitySummary: FieldRouteGateIntensitySummary;
+  contributionMixtureSummary: FieldRouteGateContributionMixtureSummary;
+  evidenceProfile: FieldRouteGateCandidateEvidenceProfile;
+  reliability: FieldRouteGateCandidateReliability;
+  reason: string;
+}
+
 export interface ProfileAwareRouteGateCandidateDiagnosticReport {
   reportId: string;
   method: 'profile-aware-route-gate-candidates-diagnostic-v0';
@@ -74,6 +105,7 @@ export interface ProfileAwareRouteGateCandidateDiagnosticReport {
   blockedRouteCandidateCount: number;
   nonCandidateStatusCount: number;
   invalidCandidateClaimStatusCount: number;
+  candidateViews: ProfileAwareRouteGateCandidateView[];
   chartCount: number;
   sampleCount: number;
   atlasInputSourceCount: number;
@@ -164,6 +196,9 @@ export function buildProfileAwareRouteGateCandidateDiagnosticReport(
   const invalidCandidateClaimStatusCount =
     routeGateReport?.candidates.filter((candidate) => !hasExpectedClaimStatus(candidate))
       .length ?? 0;
+  const candidateViews = routeGateReport
+    ? routeGateReport.candidates.map(buildCandidateView)
+    : [];
   const issueCount = issues.length;
 
   return {
@@ -203,6 +238,7 @@ export function buildProfileAwareRouteGateCandidateDiagnosticReport(
       routeGateReport?.candidateSummary.blockedRouteCandidateCount ?? 0,
     nonCandidateStatusCount,
     invalidCandidateClaimStatusCount,
+    candidateViews,
     chartCount: surfaceReport.chartCount,
     sampleCount: surfaceReport.sampleCount,
     atlasInputSourceCount: surfaceReport.atlasInputSourceCount,
@@ -441,6 +477,54 @@ function appendRouteGateReportIssues(
       message: 'Route/gate diagnostic has no executable profile-aware sources.',
     });
   }
+}
+
+function buildCandidateView(
+  candidate: FieldRouteGateCandidateReport['candidates'][number],
+): ProfileAwareRouteGateCandidateView {
+  return {
+    candidateId: candidate.candidateId,
+    candidateKind: candidate.candidateKind,
+    candidateSubtype: candidate.candidateSubtype,
+    status: candidate.status,
+    claimStatus: candidate.claimStatus,
+    semanticStatus: candidate.semanticStatus,
+    topologyStatus: candidate.topologyStatus,
+    phaseContinuityStatus: candidate.phaseContinuityStatus,
+    sourcePolicyNames: [...candidate.sourcePolicyNames],
+    sampleIds: [...candidate.sampleIds],
+    chartIds: [...candidate.chartIds],
+    chartSemanticRoles: [...candidate.chartSemanticRoles],
+    edgeIds: [...candidate.edgeIds],
+    seamEdgesInvolved: candidate.seamEdgesInvolved,
+    ...(typeof candidate.pathLength === 'number'
+      ? { pathLength: candidate.pathLength }
+      : {}),
+    intensitySummary: {
+      min: candidate.intensitySummary.min,
+      max: candidate.intensitySummary.max,
+      average: candidate.intensitySummary.average,
+    },
+    contributionMixtureSummary: {
+      averageEffectiveSourceCount:
+        candidate.contributionMixtureSummary.averageEffectiveSourceCount,
+      maxTopContributionRatio:
+        candidate.contributionMixtureSummary.maxTopContributionRatio,
+      mixedSampleCount: candidate.contributionMixtureSummary.mixedSampleCount,
+    },
+    evidenceProfile: {
+      ...candidate.evidenceProfile,
+      ...(candidate.evidenceProfile.endpointRelativeIntensities
+        ? {
+            endpointRelativeIntensities: [
+              ...candidate.evidenceProfile.endpointRelativeIntensities,
+            ],
+          }
+        : {}),
+    },
+    reliability: candidate.reliability,
+    reason: candidate.reason,
+  };
 }
 
 function isProfileAwareSourcePolicyList(sourcePolicyNames: readonly string[]): boolean {
