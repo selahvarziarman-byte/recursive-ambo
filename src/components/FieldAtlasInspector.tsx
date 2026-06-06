@@ -182,54 +182,8 @@ export function FieldAtlasInspector({
     );
   };
 
-  if (atlas.status === 'unsupported') {
-    return (
-      <div className="grid gap-3 text-sm">
-        <div className="rounded border border-amber-400/30 bg-amber-400/10 px-3 py-2">
-          <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-amber-200">
-            Unsupported
-          </span>
-          <p className="mt-2 text-xs leading-5 text-stone-300">{atlas.reason}</p>
-        </div>
-        <ProfileAwareFieldModeRuntimeSection
-          report={profileAwareRuntimeReport}
-          hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
-          pinnedFieldAtlasProbeRef={pinnedFieldAtlasProbeRef}
-          onHoverSampleStart={setHoveredFieldAtlasSampleId}
-          onHoverSampleEnd={clearHoveredFieldAtlasSampleId}
-          onTogglePinnedProbe={togglePinnedFieldAtlasProbeRef}
-          onClearPinnedProbe={clearPinnedFieldAtlasProbeRef}
-          shortenId={shortenId}
-        />
-        <FieldReportSection
-          report={fieldReport}
-          hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
-          onHoverSampleStart={setHoveredFieldAtlasSampleId}
-          onHoverSampleEnd={clearHoveredFieldAtlasSampleId}
-        />
-        <AdvancedFieldDiagnosticsSection
-          open={advancedDiagnosticsOpen}
-          onOpenChange={setAdvancedDiagnosticsOpen}
-          shape={shape}
-          formatVertexRef={formatVertexRef}
-          shortenId={shortenId}
-        />
-        <FieldAtlasDiagnosticNote />
-      </div>
-    );
-  }
-
   return (
     <div className="grid gap-3 text-sm">
-      <div className="rounded border border-emerald-400/30 bg-emerald-400/10 px-3 py-2">
-        <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200">
-          Supported
-        </span>
-        <p className="mt-2 text-xs leading-5 text-stone-300">
-          Closed-shape surface atlas from current raw geometry.
-        </p>
-      </div>
-
       <ProfileAwareFieldModeRuntimeSection
         report={profileAwareRuntimeReport}
         hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
@@ -241,69 +195,17 @@ export function FieldAtlasInspector({
         shortenId={shortenId}
       />
 
-      <dl className="grid grid-cols-2 gap-2 text-xs">
-        <FieldAtlasMetric label="Domain" value="closed-shape surface" />
-        <FieldAtlasMetric label="Sources" value={atlas.sources.length} />
-        <FieldAtlasMetric
-          label="Generated"
-          value={countGeneratedSources(atlas.sourceKindCounts)}
-        />
-        <FieldAtlasMetric label="Surface faces" value={atlas.domain.faceIds.length} />
-        <FieldAtlasMetric label="Sample probes" value={atlas.samples.length} />
-        <FieldAtlasMetric
-          label="Intensity"
-          value={`${formatNumber(atlas.intensityRange.min)} - ${formatNumber(
-            atlas.intensityRange.max,
-          )}`}
-        />
-      </dl>
-
-      <div className="rounded border border-stone-800 bg-stone-950 px-3 py-2">
-        <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
-          Source Kinds
-        </h3>
-        <div className="mt-2 flex flex-wrap gap-2 text-xs">
-          {sourceKindOrder
-            .filter((kind) => atlas.sourceKindCounts[kind] > 0)
-            .map((kind) => (
-              <span
-                key={kind}
-                className="rounded border border-stone-800 bg-stone-900 px-2 py-1 text-stone-300"
-              >
-                {formatSourceKind(kind)}{' '}
-                <span className="font-mono text-stone-500">
-                  {atlas.sourceKindCounts[kind]}
-                </span>
-              </span>
-            ))}
-        </div>
-      </div>
-
-      <FieldReportSection
-        report={fieldReport}
+      <LegacyFieldAtlasDiagnosticsSection
+        atlas={atlas}
+        fieldReport={fieldReport}
         hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
         onHoverSampleStart={setHoveredFieldAtlasSampleId}
         onHoverSampleEnd={clearHoveredFieldAtlasSampleId}
+        onClearHoveredSample={() => setHoveredFieldAtlasSampleId(null)}
+        shape={shape}
+        formatVertexRef={formatVertexRef}
+        shortenId={shortenId}
       />
-
-      <div className="grid gap-2">
-        <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
-          Sample Probes
-        </h3>
-        {atlas.representativeSamples.map((sample) => (
-          <SampleSummary
-            key={sample.id}
-            shape={shape}
-            sample={sample}
-            chart={sample.chartId ? atlas.chartById.get(sample.chartId) : undefined}
-            formatVertexRef={formatVertexRef}
-            shortenId={shortenId}
-            isHovered={hoveredFieldAtlasSampleId === sample.id}
-            onHoverStart={setHoveredFieldAtlasSampleId}
-            onHoverEnd={() => setHoveredFieldAtlasSampleId(null)}
-          />
-        ))}
-      </div>
 
       <AdvancedFieldDiagnosticsSection
         open={advancedDiagnosticsOpen}
@@ -315,6 +217,136 @@ export function FieldAtlasInspector({
 
       <FieldAtlasDiagnosticNote />
     </div>
+  );
+}
+
+function LegacyFieldAtlasDiagnosticsSection({
+  atlas,
+  fieldReport,
+  hoveredFieldAtlasSampleId,
+  onHoverSampleStart,
+  onHoverSampleEnd,
+  onClearHoveredSample,
+  shape,
+  formatVertexRef,
+  shortenId,
+}: {
+  atlas: FieldAtlasInspectorModel;
+  fieldReport: FieldFeatureReport;
+  hoveredFieldAtlasSampleId: string | null;
+  onHoverSampleStart: (sampleId: string) => void;
+  onHoverSampleEnd: (sampleId: string) => void;
+  onClearHoveredSample: () => void;
+  shape: Shape;
+  formatVertexRef: (vertexId: VertexId) => string;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <details className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-xs">
+      <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Legacy / Raw Field Diagnostics
+      </summary>
+      <p className="mt-2 leading-5 text-stone-500">
+        Older closed-surface field diagnostics retained for comparison and
+        internal development; profile-aware Field Mode above is the primary
+        product surface.
+      </p>
+
+      <div className="mt-3 grid gap-3">
+        {atlas.status === 'unsupported' ? (
+          <div className="rounded border border-amber-400/30 bg-amber-400/10 px-3 py-2">
+            <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-amber-200">
+              Unsupported
+            </span>
+            <p className="mt-2 text-xs leading-5 text-stone-300">
+              {atlas.reason}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="rounded border border-emerald-400/30 bg-emerald-400/10 px-3 py-2">
+              <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200">
+                Supported
+              </span>
+              <p className="mt-2 text-xs leading-5 text-stone-300">
+                Closed-shape surface atlas from current raw geometry.
+              </p>
+            </div>
+
+            <dl className="grid grid-cols-2 gap-2 text-xs">
+              <FieldAtlasMetric label="Domain" value="closed-shape surface" />
+              <FieldAtlasMetric label="Sources" value={atlas.sources.length} />
+              <FieldAtlasMetric
+                label="Generated"
+                value={countGeneratedSources(atlas.sourceKindCounts)}
+              />
+              <FieldAtlasMetric
+                label="Surface faces"
+                value={atlas.domain.faceIds.length}
+              />
+              <FieldAtlasMetric label="Sample probes" value={atlas.samples.length} />
+              <FieldAtlasMetric
+                label="Intensity"
+                value={`${formatNumber(atlas.intensityRange.min)} - ${formatNumber(
+                  atlas.intensityRange.max,
+                )}`}
+              />
+            </dl>
+
+            <div className="rounded border border-stone-800 bg-stone-950 px-3 py-2">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+                Source Kinds
+              </h3>
+              <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                {sourceKindOrder
+                  .filter((kind) => atlas.sourceKindCounts[kind] > 0)
+                  .map((kind) => (
+                    <span
+                      key={kind}
+                      className="rounded border border-stone-800 bg-stone-900 px-2 py-1 text-stone-300"
+                    >
+                      {formatSourceKind(kind)}{' '}
+                      <span className="font-mono text-stone-500">
+                        {atlas.sourceKindCounts[kind]}
+                      </span>
+                    </span>
+                  ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        <FieldReportSection
+          report={fieldReport}
+          hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
+          onHoverSampleStart={onHoverSampleStart}
+          onHoverSampleEnd={onHoverSampleEnd}
+        />
+
+        {atlas.status === 'supported' ? (
+          <div className="grid gap-2">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+              Sample Probes
+            </h3>
+            {atlas.representativeSamples.map((sample) => (
+              <SampleSummary
+                key={sample.id}
+                shape={shape}
+                sample={sample}
+                chart={
+                  sample.chartId ? atlas.chartById.get(sample.chartId) : undefined
+                }
+                formatVertexRef={formatVertexRef}
+                shortenId={shortenId}
+                isHovered={hoveredFieldAtlasSampleId === sample.id}
+                onHoverStart={onHoverSampleStart}
+                onHoverEnd={onClearHoveredSample}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </details>
   );
 }
 
