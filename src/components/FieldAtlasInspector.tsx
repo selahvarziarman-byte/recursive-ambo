@@ -457,6 +457,12 @@ function ProfileAwareFieldModeRuntimeSection({
 }) {
   const semanticHandoffPressureRecords =
     buildProfileAwareSemanticHandoffPressureRecords(report);
+  const semanticHandoffEnvelopePreview =
+    buildProfileAwareSemanticHandoffEnvelopePreview({
+      semanticHandoffSummary,
+      semanticHandoffTransition,
+      pressureRecords: semanticHandoffPressureRecords,
+    });
   const fieldAtlasLayerVisibility = useGeometryStore(
     (state) => state.fieldAtlasLayerVisibility,
   );
@@ -496,6 +502,10 @@ function ProfileAwareFieldModeRuntimeSection({
           <FieldAtlasMetric label="Topology" value={report.topologyStatus} />
           <FieldAtlasMetric label="Packet write" value={report.packetWriteStatus} />
         </dl>
+        <ProfileAwareEvidenceStabilitySection
+          report={evidenceStabilityReport}
+          shortenId={shortenId}
+        />
         <ProfileAwareSemanticHandoffReadinessSection
           summary={semanticHandoffSummary}
         />
@@ -509,6 +519,15 @@ function ProfileAwareFieldModeRuntimeSection({
           onHoverStart={onHoverSampleStart}
           onHoverEnd={onHoverSampleEnd}
           onTogglePinnedProbe={onTogglePinnedProbe}
+        />
+        <ProfileAwareSemanticHandoffEnvelopePreviewSection
+          preview={semanticHandoffEnvelopePreview}
+          hoveredProbeRef={hoveredFieldAtlasSampleId}
+          pinnedProbeRef={pinnedFieldAtlasProbeRef}
+          onHoverStart={onHoverSampleStart}
+          onHoverEnd={onHoverSampleEnd}
+          onTogglePinnedProbe={onTogglePinnedProbe}
+          shortenId={shortenId}
         />
       </div>
     );
@@ -676,6 +695,16 @@ function ProfileAwareFieldModeRuntimeSection({
         onHoverStart={onHoverSampleStart}
         onHoverEnd={onHoverSampleEnd}
         onTogglePinnedProbe={onTogglePinnedProbe}
+      />
+
+      <ProfileAwareSemanticHandoffEnvelopePreviewSection
+        preview={semanticHandoffEnvelopePreview}
+        hoveredProbeRef={hoveredFieldAtlasSampleId}
+        pinnedProbeRef={pinnedFieldAtlasProbeRef}
+        onHoverStart={onHoverSampleStart}
+        onHoverEnd={onHoverSampleEnd}
+        onTogglePinnedProbe={onTogglePinnedProbe}
+        shortenId={shortenId}
       />
 
       <div className="mt-3 grid gap-2">
@@ -1411,6 +1440,42 @@ type ProfileAwareSemanticHandoffPressureRecord = {
   caveats: string[];
 };
 
+type ProfileAwareSemanticHandoffEnvelopeStatus =
+  | 'not-available'
+  | 'diagnostic-only'
+  | 'candidate-pressure-available'
+  | 'candidate-pressure-sensitive';
+
+type ProfileAwareSemanticHandoffEnvelopePreview = {
+  envelopeStatus: ProfileAwareSemanticHandoffEnvelopeStatus;
+  currentReadiness: ProfileAwareSemanticHandoffReadiness;
+  transitionStatus: ProfileAwareSemanticHandoffTransitionStatus;
+  pressureRecordCount: number;
+  featurePressureRecordCount: number;
+  routeGatePressureRecordCount: number;
+  supportRegionPressureRecordCount: number;
+  topPressureRecords: Array<{
+    id: string;
+    kind: ProfileAwareSemanticHandoffPressureKind;
+    label: string;
+    probeRef: string;
+    candidateStatus: 'report-candidate' | 'candidate-only';
+    reliability?: string;
+  }>;
+  evidenceOk: boolean;
+  samplingSensitive: boolean;
+  profileSetupSensitive: boolean;
+  changedCountKeyCount: number;
+  semanticStatus: 'not-semantic-naming';
+  topologyStatus: 'not-topology-workspace';
+  packetWriteStatus: 'not-packet-writing';
+  exportStatus: 'not-exported';
+  persistenceStatus: 'not-persisted';
+  handoffMechanismStatus: 'preview-only';
+  caveats: string[];
+  handoffHints: string[];
+};
+
 function ProfileAwareSemanticHandoffReadinessSection({
   summary,
 }: {
@@ -1725,6 +1790,151 @@ function ProfileAwareSemanticHandoffPressureRecordRow({
         ))}
       </div>
     </button>
+  );
+}
+
+function ProfileAwareSemanticHandoffEnvelopePreviewSection({
+  preview,
+  hoveredProbeRef,
+  pinnedProbeRef,
+  onHoverStart,
+  onHoverEnd,
+  onTogglePinnedProbe,
+  shortenId,
+}: {
+  preview: ProfileAwareSemanticHandoffEnvelopePreview;
+  hoveredProbeRef: string | null;
+  pinnedProbeRef: string | null;
+  onHoverStart: (hoverRef: string) => void;
+  onHoverEnd: (hoverRef: string) => void;
+  onTogglePinnedProbe: (probeRef: string) => void;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2">
+      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Semantic Handoff Envelope Preview
+      </h4>
+      <dl className="mt-2 grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Envelope" value={preview.envelopeStatus} />
+        <FieldAtlasMetric label="Readiness" value={preview.currentReadiness} />
+        <FieldAtlasMetric label="Transition" value={preview.transitionStatus} />
+        <FieldAtlasMetric
+          label="Pressure records"
+          value={preview.pressureRecordCount}
+        />
+        <FieldAtlasMetric
+          label="Feature records"
+          value={preview.featurePressureRecordCount}
+        />
+        <FieldAtlasMetric
+          label="Route/gate records"
+          value={preview.routeGatePressureRecordCount}
+        />
+        <FieldAtlasMetric
+          label="Support/region records"
+          value={preview.supportRegionPressureRecordCount}
+        />
+        <FieldAtlasMetric
+          label="Evidence ok"
+          value={formatYesNo(preview.evidenceOk)}
+        />
+        <FieldAtlasMetric
+          label="Sampling sensitive"
+          value={formatYesNo(preview.samplingSensitive)}
+        />
+        <FieldAtlasMetric
+          label="Profile sensitive"
+          value={formatYesNo(preview.profileSetupSensitive)}
+        />
+        <FieldAtlasMetric
+          label="Changed keys"
+          value={preview.changedCountKeyCount}
+        />
+        <FieldAtlasMetric
+          label="Handoff mechanism"
+          value={preview.handoffMechanismStatus}
+        />
+        <FieldAtlasMetric label="Export" value={preview.exportStatus} />
+        <FieldAtlasMetric
+          label="Persistence"
+          value={preview.persistenceStatus}
+        />
+        <FieldAtlasMetric
+          label="Packet write"
+          value={preview.packetWriteStatus}
+        />
+      </dl>
+
+      {preview.topPressureRecords.length ? (
+        <div className="mt-2 grid gap-1">
+          {preview.topPressureRecords.map((record) => (
+            <button
+              key={`${record.kind}:${record.id}`}
+              className={`rounded border px-2 py-2 text-left transition ${
+                pinnedProbeRef === record.probeRef
+                  ? 'border-cyan-300/70 bg-cyan-400/10 shadow-[0_0_0_1px_rgba(103,232,249,0.18)]'
+                  : hoveredProbeRef === record.probeRef
+                    ? 'border-amber-300/70 bg-amber-400/10 shadow-[0_0_0_1px_rgba(252,211,77,0.18)]'
+                    : 'border-stone-800 bg-stone-900'
+              }`}
+              data-profile-aware-envelope-pressure-record-id={record.id}
+              onClick={() => onTogglePinnedProbe(record.probeRef)}
+              onFocus={() => onHoverStart(record.probeRef)}
+              onBlur={() => onHoverEnd(record.probeRef)}
+              onPointerEnter={() => onHoverStart(record.probeRef)}
+              onPointerLeave={() => onHoverEnd(record.probeRef)}
+              type="button"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-medium text-stone-200">{record.label}</span>
+                <span className="font-mono text-[11px] text-stone-500">
+                  {record.kind}
+                </span>
+              </div>
+              <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 font-mono text-[11px] text-stone-500">
+                <span>{record.candidateStatus}</span>
+                <span className="text-right">{record.reliability ?? 'probe ref'}</span>
+                <span className="col-span-2 truncate">
+                  {shortenId(record.probeRef)}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 rounded border border-stone-800 bg-stone-900 px-2 py-2 text-stone-500">
+          No top pressure refs are available for this envelope preview.
+        </p>
+      )}
+
+      {preview.handoffHints.length ? (
+        <div className="mt-2 grid gap-1 text-stone-500">
+          {preview.handoffHints.slice(0, 2).map((hint) => (
+            <p key={hint} className="leading-5">
+              {hint}
+            </p>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="mt-2 flex flex-wrap gap-1 font-mono text-[11px] text-stone-500">
+        {preview.caveats.slice(0, 8).map((caveat) => (
+          <span
+            key={caveat}
+            className="rounded border border-stone-800 bg-stone-900 px-1.5 py-0.5"
+          >
+            {caveat}
+          </span>
+        ))}
+      </div>
+
+      <p className="mt-2 leading-5 text-stone-500">
+        Envelope preview is a read-only object-shape for later semantic work; it
+        is not exported, persisted, packet-written, semantically named, or
+        topologically validated.
+      </p>
+    </div>
   );
 }
 
@@ -2091,6 +2301,94 @@ function buildProfileAwareSemanticHandoffPressureRecords(
 
     return kindDelta || first.id.localeCompare(second.id);
   });
+}
+
+function buildProfileAwareSemanticHandoffEnvelopePreview({
+  semanticHandoffSummary,
+  semanticHandoffTransition,
+  pressureRecords,
+}: {
+  semanticHandoffSummary: ProfileAwareSemanticHandoffSummary;
+  semanticHandoffTransition: ProfileAwareSemanticHandoffTransition;
+  pressureRecords: ProfileAwareSemanticHandoffPressureRecord[];
+}): ProfileAwareSemanticHandoffEnvelopePreview {
+  const envelopeStatus: ProfileAwareSemanticHandoffEnvelopeStatus =
+    semanticHandoffSummary.readiness;
+  const featurePressureRecordCount = pressureRecords.filter(
+    (record) => record.kind === 'feature-observation',
+  ).length;
+  const routeGatePressureRecordCount = pressureRecords.filter(
+    (record) => record.kind === 'route-gate-candidate',
+  ).length;
+  const supportRegionPressureRecordCount = pressureRecords.filter(
+    (record) => record.kind === 'support-region-candidate',
+  ).length;
+
+  return {
+    envelopeStatus,
+    currentReadiness: semanticHandoffSummary.readiness,
+    transitionStatus: semanticHandoffTransition.status,
+    pressureRecordCount: pressureRecords.length,
+    featurePressureRecordCount,
+    routeGatePressureRecordCount,
+    supportRegionPressureRecordCount,
+    topPressureRecords: pressureRecords.slice(0, 5).map((record) => ({
+      id: record.id,
+      kind: record.kind,
+      label: record.label,
+      probeRef: record.probeRef,
+      candidateStatus: record.candidateStatus,
+      reliability: record.reliability,
+    })),
+    evidenceOk: semanticHandoffSummary.evidenceOk,
+    samplingSensitive: semanticHandoffSummary.samplingSensitive,
+    profileSetupSensitive: semanticHandoffSummary.profileSetupSensitive,
+    changedCountKeyCount: semanticHandoffSummary.changedCountKeyCount,
+    semanticStatus: 'not-semantic-naming',
+    topologyStatus: 'not-topology-workspace',
+    packetWriteStatus: 'not-packet-writing',
+    exportStatus: 'not-exported',
+    persistenceStatus: 'not-persisted',
+    handoffMechanismStatus: 'preview-only',
+    caveats: [
+      'preview only',
+      'not exported',
+      'not persisted',
+      'not packet writing',
+      'not semantic naming',
+      'not topology workspace',
+      'no candidate identity',
+      'no route persistence',
+      'no support/region persistence',
+      'no semantic continuity',
+      'no topology continuity',
+    ],
+    handoffHints:
+      getProfileAwareSemanticHandoffEnvelopeHints(envelopeStatus),
+  };
+}
+
+function getProfileAwareSemanticHandoffEnvelopeHints(
+  envelopeStatus: ProfileAwareSemanticHandoffEnvelopeStatus,
+): string[] {
+  switch (envelopeStatus) {
+    case 'not-available':
+      return ['No semantic handoff envelope is available for this shape.'];
+    case 'diagnostic-only':
+      return [
+        'Envelope is diagnostic-only; no candidate pressure records are available.',
+      ];
+    case 'candidate-pressure-sensitive':
+      return [
+        'Envelope contains candidate pressure, but sensitivity caveats require cautious semantic follow-up.',
+      ];
+    case 'candidate-pressure-available':
+      return [
+        'Envelope contains candidate pressure records for later semantic inspection.',
+      ];
+    default:
+      return [];
+  }
 }
 
 function getProfileAwareSemanticHandoffPressureKindOrder(

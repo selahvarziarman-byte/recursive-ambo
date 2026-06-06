@@ -49,6 +49,7 @@ runEvidenceStabilityUiContractDiagnostic();
 runSemanticHandoffReadinessUiContractDiagnostic();
 runSemanticHandoffTransitionUiContractDiagnostic();
 runSemanticHandoffPressurePreviewUiContractDiagnostic();
+runSemanticHandoffEnvelopePreviewUiContractDiagnostic();
 runUnsupportedSeedTetrahedronDiagnostic();
 runUnsupportedCubeDiagnostic();
 runConservativeBoundaryClaimDiagnostic();
@@ -1567,6 +1568,234 @@ function runSemanticHandoffPressurePreviewUiContractDiagnostic() {
   console.log('semantic handoff pressure preview UI contract: PASS');
 }
 
+function runSemanticHandoffEnvelopePreviewUiContractDiagnostic() {
+  const evidenceStabilityReport = buildProfileAwareEvidenceStabilityReport();
+  const unsupportedRuntimeReport =
+    buildProfileAwareFieldAtlasViewModelRuntimeReport(createSeedShape('tetrahedron'));
+  const supportedRuntimeReport = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+  const unsupportedSummary = buildProfileAwareSemanticHandoffSummary(
+    unsupportedRuntimeReport,
+    evidenceStabilityReport,
+  );
+  const supportedSummary = buildProfileAwareSemanticHandoffSummary(
+    supportedRuntimeReport,
+    evidenceStabilityReport,
+  );
+  const unsupportedTransition = buildProfileAwareSemanticHandoffTransition({
+    previousSummary: null,
+    currentSummary: unsupportedSummary,
+    currentShapeId: unsupportedRuntimeReport.inputShapeId,
+    currentLabel: 'Seed tetrahedron',
+  });
+  const supportedTransition = buildProfileAwareSemanticHandoffTransition({
+    previousSummary: unsupportedSummary,
+    currentSummary: supportedSummary,
+    previousShapeId: unsupportedRuntimeReport.inputShapeId,
+    currentShapeId: supportedRuntimeReport.inputShapeId,
+    previousLabel: 'Seed tetrahedron',
+    currentLabel: 'Ambo tetrahedron',
+  });
+  const unsupportedPressureRecords =
+    buildProfileAwareSemanticHandoffPressureRecords(unsupportedRuntimeReport);
+  const supportedPressureRecords =
+    buildProfileAwareSemanticHandoffPressureRecords(supportedRuntimeReport);
+  const viewModel = supportedRuntimeReport.viewModel;
+  const probeCountsBefore = viewModel ? getProbeCounts(viewModel) : undefined;
+  const unsupportedEnvelope = buildProfileAwareSemanticHandoffEnvelopePreview({
+    semanticHandoffSummary: unsupportedSummary,
+    semanticHandoffTransition: unsupportedTransition,
+    pressureRecords: unsupportedPressureRecords,
+  });
+  const supportedEnvelope = buildProfileAwareSemanticHandoffEnvelopePreview({
+    semanticHandoffSummary: supportedSummary,
+    semanticHandoffTransition: supportedTransition,
+    pressureRecords: supportedPressureRecords,
+  });
+  const probeCountsAfter = viewModel ? getProbeCounts(viewModel) : undefined;
+
+  expectEqual(
+    unsupportedEnvelope.envelopeStatus,
+    'not-available',
+    'semantic handoff envelope unsupported status',
+  );
+  expectEqual(
+    unsupportedEnvelope.pressureRecordCount,
+    0,
+    'semantic handoff envelope unsupported pressure count',
+  );
+  expectEqual(
+    unsupportedEnvelope.exportStatus,
+    'not-exported',
+    'semantic handoff envelope unsupported export',
+  );
+  expectEqual(
+    unsupportedEnvelope.persistenceStatus,
+    'not-persisted',
+    'semantic handoff envelope unsupported persistence',
+  );
+  expectEqual(
+    unsupportedEnvelope.packetWriteStatus,
+    'not-packet-writing',
+    'semantic handoff envelope unsupported packet write',
+  );
+  expectEqual(
+    unsupportedEnvelope.handoffMechanismStatus,
+    'preview-only',
+    'semantic handoff envelope unsupported mechanism',
+  );
+
+  expectEqual(
+    supportedEnvelope.envelopeStatus,
+    supportedSummary.readiness,
+    'semantic handoff envelope supported status',
+  );
+  expectEqual(
+    supportedEnvelope.currentReadiness,
+    supportedSummary.readiness,
+    'semantic handoff envelope supported readiness',
+  );
+  expectTruthy(
+    supportedEnvelope.transitionStatus,
+    'semantic handoff envelope transition status',
+  );
+  expectEqual(
+    supportedEnvelope.pressureRecordCount,
+    supportedPressureRecords.length,
+    'semantic handoff envelope pressure count',
+  );
+  expectEqual(
+    supportedEnvelope.featurePressureRecordCount,
+    supportedPressureRecords.filter(
+      (record) => record.kind === 'feature-observation',
+    ).length,
+    'semantic handoff envelope feature count',
+  );
+  expectEqual(
+    supportedEnvelope.routeGatePressureRecordCount,
+    supportedPressureRecords.filter(
+      (record) => record.kind === 'route-gate-candidate',
+    ).length,
+    'semantic handoff envelope route/gate count',
+  );
+  expectEqual(
+    supportedEnvelope.supportRegionPressureRecordCount,
+    supportedPressureRecords.filter(
+      (record) => record.kind === 'support-region-candidate',
+    ).length,
+    'semantic handoff envelope support/region count',
+  );
+  expectLessThanOrEqual(
+    supportedEnvelope.topPressureRecords.length,
+    5,
+    'semantic handoff envelope top pressure limit',
+  );
+  expectTruthy(viewModel, 'semantic handoff envelope supported view model');
+
+  if (viewModel) {
+    for (const record of supportedEnvelope.topPressureRecords) {
+      expectTruthy(
+        viewModel.probeIndex.probes[record.probeRef],
+        `${record.id} semantic handoff envelope probe resolves`,
+      );
+    }
+  }
+
+  expectEqual(
+    supportedEnvelope.semanticStatus,
+    'not-semantic-naming',
+    'semantic handoff envelope semantic status',
+  );
+  expectEqual(
+    supportedEnvelope.topologyStatus,
+    'not-topology-workspace',
+    'semantic handoff envelope topology status',
+  );
+  expectEqual(
+    supportedEnvelope.packetWriteStatus,
+    'not-packet-writing',
+    'semantic handoff envelope packet write',
+  );
+  expectEqual(
+    supportedEnvelope.exportStatus,
+    'not-exported',
+    'semantic handoff envelope export',
+  );
+  expectEqual(
+    supportedEnvelope.persistenceStatus,
+    'not-persisted',
+    'semantic handoff envelope persistence',
+  );
+  expectEqual(
+    supportedEnvelope.handoffMechanismStatus,
+    'preview-only',
+    'semantic handoff envelope mechanism',
+  );
+
+  for (const envelope of [unsupportedEnvelope, supportedEnvelope]) {
+    for (const caveat of [
+      'preview only',
+      'not exported',
+      'not persisted',
+      'not packet writing',
+      'not semantic naming',
+      'not topology workspace',
+      'no candidate identity',
+      'no route persistence',
+      'no support/region persistence',
+      'no semantic continuity',
+      'no topology continuity',
+    ]) {
+      expectEqual(
+        envelope.caveats.includes(caveat),
+        true,
+        `semantic handoff envelope caveat ${caveat}`,
+      );
+    }
+
+    expectNoForbiddenEnvelopeProperties(envelope);
+  }
+
+  expectTruthy(probeCountsBefore, 'semantic handoff envelope probe counts before');
+  expectTruthy(probeCountsAfter, 'semantic handoff envelope probe counts after');
+
+  if (probeCountsBefore && probeCountsAfter) {
+    expectEqual(
+      probeCountsAfter.sourceProbeCount,
+      probeCountsBefore.sourceProbeCount,
+      'semantic handoff envelope source probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.sampleProbeCount,
+      probeCountsBefore.sampleProbeCount,
+      'semantic handoff envelope sample probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.chartProbeCount,
+      probeCountsBefore.chartProbeCount,
+      'semantic handoff envelope chart probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.featureProbeCount,
+      probeCountsBefore.featureProbeCount,
+      'semantic handoff envelope feature probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.routeGateCandidateProbeCount,
+      probeCountsBefore.routeGateCandidateProbeCount,
+      'semantic handoff envelope route/gate probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.supportRegionCandidateProbeCount,
+      probeCountsBefore.supportRegionCandidateProbeCount,
+      'semantic handoff envelope support/region probe count unchanged',
+    );
+  }
+
+  console.log('semantic handoff envelope preview UI contract: PASS');
+}
+
 function runUnsupportedCubeDiagnostic() {
   runUnsupportedShapeDiagnostic(
     'unsupported cube Field Mode UI',
@@ -2544,6 +2773,86 @@ function buildProfileAwareSemanticHandoffPressureRecords(runtimeReport) {
   });
 }
 
+function buildProfileAwareSemanticHandoffEnvelopePreview({
+  semanticHandoffSummary,
+  semanticHandoffTransition,
+  pressureRecords,
+}) {
+  const envelopeStatus = semanticHandoffSummary.readiness;
+  const featurePressureRecordCount = pressureRecords.filter(
+    (record) => record.kind === 'feature-observation',
+  ).length;
+  const routeGatePressureRecordCount = pressureRecords.filter(
+    (record) => record.kind === 'route-gate-candidate',
+  ).length;
+  const supportRegionPressureRecordCount = pressureRecords.filter(
+    (record) => record.kind === 'support-region-candidate',
+  ).length;
+
+  return {
+    envelopeStatus,
+    currentReadiness: semanticHandoffSummary.readiness,
+    transitionStatus: semanticHandoffTransition.status,
+    pressureRecordCount: pressureRecords.length,
+    featurePressureRecordCount,
+    routeGatePressureRecordCount,
+    supportRegionPressureRecordCount,
+    topPressureRecords: pressureRecords.slice(0, 5).map((record) => ({
+      id: record.id,
+      kind: record.kind,
+      label: record.label,
+      probeRef: record.probeRef,
+      candidateStatus: record.candidateStatus,
+      reliability: record.reliability,
+    })),
+    evidenceOk: semanticHandoffSummary.evidenceOk,
+    samplingSensitive: semanticHandoffSummary.samplingSensitive,
+    profileSetupSensitive: semanticHandoffSummary.profileSetupSensitive,
+    changedCountKeyCount: semanticHandoffSummary.changedCountKeyCount,
+    semanticStatus: 'not-semantic-naming',
+    topologyStatus: 'not-topology-workspace',
+    packetWriteStatus: 'not-packet-writing',
+    exportStatus: 'not-exported',
+    persistenceStatus: 'not-persisted',
+    handoffMechanismStatus: 'preview-only',
+    caveats: [
+      'preview only',
+      'not exported',
+      'not persisted',
+      'not packet writing',
+      'not semantic naming',
+      'not topology workspace',
+      'no candidate identity',
+      'no route persistence',
+      'no support/region persistence',
+      'no semantic continuity',
+      'no topology continuity',
+    ],
+    handoffHints: getProfileAwareSemanticHandoffEnvelopeHints(envelopeStatus),
+  };
+}
+
+function getProfileAwareSemanticHandoffEnvelopeHints(envelopeStatus) {
+  switch (envelopeStatus) {
+    case 'not-available':
+      return ['No semantic handoff envelope is available for this shape.'];
+    case 'diagnostic-only':
+      return [
+        'Envelope is diagnostic-only; no candidate pressure records are available.',
+      ];
+    case 'candidate-pressure-sensitive':
+      return [
+        'Envelope contains candidate pressure, but sensitivity caveats require cautious semantic follow-up.',
+      ];
+    case 'candidate-pressure-available':
+      return [
+        'Envelope contains candidate pressure records for later semantic inspection.',
+      ];
+    default:
+      return [];
+  }
+}
+
 function getProfileAwareSemanticHandoffPressureKindOrder(kind) {
   switch (kind) {
     case 'feature-observation':
@@ -2554,6 +2863,41 @@ function getProfileAwareSemanticHandoffPressureKindOrder(kind) {
       return 2;
     default:
       return 3;
+  }
+}
+
+function expectNoForbiddenEnvelopeProperties(envelope) {
+  const forbiddenProperties = [
+    'semanticName',
+    'semanticNamingStatus',
+    'topologyValidityStatus',
+    'topologyBehaviorStatus',
+    'packetWriteEnabled',
+    'handoffPacketWritten',
+    'exportedEnvelopeJson',
+    'exportButtonStatus',
+    'persistenceEnabled',
+    'workspacePersistenceStatus',
+    'routeGateConfirmedStatus',
+    'supportRegionConfirmedStatus',
+    'oldPolicyInvariantStatus',
+    'defaultPolicyComparisonStatus',
+    'candidateIdentityPersistenceStatus',
+    'routePersistenceStatus',
+    'supportRegionPersistenceStatus',
+    'semanticContinuityStatus',
+    'topologyContinuityStatus',
+    'fieldOntologyDeltaStatus',
+    'semanticScore',
+    'semanticRank',
+  ];
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(
+      envelope,
+      property,
+      `semantic handoff envelope no ${property}`,
+    );
   }
 }
 
