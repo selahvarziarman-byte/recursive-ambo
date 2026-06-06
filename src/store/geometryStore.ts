@@ -61,6 +61,7 @@ interface ViewLayout {
 export interface FieldAtlasLayerVisibility {
   sources: boolean;
   samples: boolean;
+  charts: boolean;
   features: boolean;
   routeGateCandidates: boolean;
   supportRegionCandidates: boolean;
@@ -115,6 +116,7 @@ const defaultViewLayout: ViewLayout = {
 const defaultFieldAtlasLayerVisibility: FieldAtlasLayerVisibility = {
   sources: true,
   samples: true,
+  charts: true,
   features: true,
   routeGateCandidates: true,
   supportRegionCandidates: true,

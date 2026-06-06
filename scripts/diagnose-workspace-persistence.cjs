@@ -154,6 +154,7 @@ function verifyWorkspaceRoundTrip() {
   parsedJson.fieldAtlasLayerVisibility = {
     sources: false,
     samples: false,
+    charts: false,
     features: false,
     routeGateCandidates: false,
     supportRegionCandidates: false,
@@ -164,6 +165,7 @@ function verifyWorkspaceRoundTrip() {
     fieldAtlasLayerVisibility: {
       sources: false,
       samples: false,
+      charts: false,
       features: false,
       routeGateCandidates: false,
       supportRegionCandidates: false,
@@ -194,6 +196,7 @@ function verifyWorkspaceRoundTrip() {
     fieldAtlasLayerVisibility: {
       sources: false,
       samples: false,
+      charts: false,
       features: false,
       routeGateCandidates: false,
       supportRegionCandidates: false,
@@ -354,6 +357,7 @@ function expectDefaultFieldAtlasLayerVisibility(visibility, label) {
   for (const key of [
     'sources',
     'samples',
+    'charts',
     'features',
     'routeGateCandidates',
     'supportRegionCandidates',

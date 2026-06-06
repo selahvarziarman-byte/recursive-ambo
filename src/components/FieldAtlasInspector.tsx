@@ -32,6 +32,8 @@ import {
 } from '../lib/fieldAtlasFeatureReport';
 import {
   buildProfileAwareFieldAtlasViewModelRuntimeReport,
+  type ProfileAwareFieldAtlasChartAnchorMarker,
+  type ProfileAwareFieldAtlasChartProbe,
   type ProfileAwareFieldAtlasChildSourceDerivationProbe,
   type ProfileAwareFieldAtlasFeatureMarker,
   type ProfileAwareFieldAtlasFeatureProbe,
@@ -378,6 +380,8 @@ function ProfileAwareFieldModeRuntimeSection({
   }
 
   const viewModel = report.viewModel;
+  const visibleChartAnchorMarkers =
+    viewModel.chartOverlaySummary.chartAnchorMarkers.slice(0, 5);
   const visibleFeatureMarkers =
     viewModel.featureOverlaySummary.featureMarkers.slice(0, 5);
   const visibleRouteGateCandidateMarkers =
@@ -449,6 +453,7 @@ function ProfileAwareFieldModeRuntimeSection({
         counts={{
           sources: viewModel.sourceMarkers.length,
           samples: viewModel.surfaceSampleMarkers.length,
+          charts: viewModel.chartOverlaySummary.chartAnchorMarkers.length,
           features: viewModel.featureOverlaySummary.featureMarkers.length,
           routeGateCandidates:
             viewModel.routeGateOverlaySummary.candidateMarkers.length,
@@ -464,6 +469,37 @@ function ProfileAwareFieldModeRuntimeSection({
         onModeChange={setFieldAtlasSampleRenderMode}
         renderScale={viewModel.renderScale}
       />
+
+      <div className="mt-3 grid gap-2">
+        <div>
+          <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+            Chart Summaries
+          </h4>
+          <p className="mt-1 leading-5 text-stone-500">
+            Chart anchors are sample centroids only; not face heatmaps or
+            topology.
+          </p>
+        </div>
+        {visibleChartAnchorMarkers.length ? (
+          visibleChartAnchorMarkers.map((marker) => (
+            <ProfileAwareChartAnchorRow
+              key={marker.chartId}
+              marker={marker}
+              isHovered={hoveredFieldAtlasSampleId === marker.probeRef}
+              isPinned={pinnedFieldAtlasProbeRef === marker.probeRef}
+              onHoverStart={onHoverSampleStart}
+              onHoverEnd={onHoverSampleEnd}
+              onTogglePinnedProbe={onTogglePinnedProbe}
+              shortenId={shortenId}
+            />
+          ))
+        ) : (
+          <p className="rounded border border-stone-800 bg-stone-900 px-2 py-2 text-stone-500">
+            No profile-aware chart summary anchors under the current runtime
+            bounds.
+          </p>
+        )}
+      </div>
 
       <div className="mt-3 grid gap-2">
         <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
@@ -563,6 +599,7 @@ function ProfileAwareLayerVisibilityControls({
   }> = [
     { key: 'sources', label: 'Sources' },
     { key: 'samples', label: 'Samples' },
+    { key: 'charts', label: 'Charts' },
     { key: 'features', label: 'Features' },
     { key: 'routeGateCandidates', label: 'Route/Gate' },
     { key: 'supportRegionCandidates', label: 'Support/Region' },
@@ -679,6 +716,66 @@ function ProfileAwareSampleRenderModeControls({
         contribution ratio, not semantic naming.
       </p>
     </div>
+  );
+}
+
+function ProfileAwareChartAnchorRow({
+  marker,
+  isHovered,
+  isPinned,
+  onHoverStart,
+  onHoverEnd,
+  onTogglePinnedProbe,
+  shortenId,
+}: {
+  marker: ProfileAwareFieldAtlasChartAnchorMarker;
+  isHovered: boolean;
+  isPinned: boolean;
+  onHoverStart: (hoverRef: string) => void;
+  onHoverEnd: (hoverRef: string) => void;
+  onTogglePinnedProbe: (probeRef: string) => void;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <button
+      className={`rounded border px-2 py-2 text-left transition ${
+        isPinned
+          ? 'border-amber-200/80 bg-amber-300/10 shadow-[0_0_0_1px_rgba(252,211,77,0.22)]'
+          : isHovered
+            ? 'border-violet-300/70 bg-violet-400/10 shadow-[0_0_0_1px_rgba(196,181,253,0.18)]'
+            : 'border-stone-800 bg-stone-900'
+      }`}
+      data-profile-aware-chart-anchor-id={marker.chartId}
+      onClick={() => onTogglePinnedProbe(marker.probeRef)}
+      onFocus={() => onHoverStart(marker.probeRef)}
+      onBlur={() => onHoverEnd(marker.probeRef)}
+      onPointerEnter={() => onHoverStart(marker.probeRef)}
+      onPointerLeave={() => onHoverEnd(marker.probeRef)}
+      type="button"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="font-medium text-stone-200">
+          {formatChartRole(marker.chartSemanticRole)}
+        </span>
+        <span className="font-mono text-[11px] text-stone-500">
+          samples {marker.sampleCount}
+        </span>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-stone-500">
+        <span className="font-mono">
+          face {shortenId(marker.sourceFaceId)}
+        </span>
+        <span className="text-right font-mono">
+          ratios {marker.allContributionRatiosValid ? 'valid' : 'invalid'}
+        </span>
+        <span className="font-mono">
+          int {formatNumber(marker.minIntensity)} - {formatNumber(marker.maxIntensity)}
+        </span>
+        <span className="text-right font-mono">
+          phase {formatNumber(marker.minPhase)} - {formatNumber(marker.maxPhase)}
+        </span>
+      </div>
+    </button>
   );
 }
 
@@ -928,9 +1025,9 @@ function ProfileAwareActiveProbeSection({
         </div>
       ) : (
         <p className="mt-2 rounded border border-stone-800 bg-stone-900 px-2 py-2 leading-5 text-stone-500">
-          Hover a profile-aware source, sample, feature marker, route/gate
-          candidate anchor, or support/region candidate anchor to inspect its field
-          payload.
+          Hover a profile-aware source, sample, chart anchor, feature marker,
+          route/gate candidate anchor, or support/region candidate anchor to
+          inspect its field payload.
           {activeProbeRef ? (
             <span className="mt-1 block font-mono text-stone-600">
               no probe for {shortenId(activeProbeRef)}
@@ -951,6 +1048,8 @@ function renderProfileAwareProbeCard(
       return <ProfileAwareSourceProbeCard probe={probe} shortenId={shortenId} />;
     case 'surface-sample':
       return <ProfileAwareSurfaceSampleProbeCard probe={probe} shortenId={shortenId} />;
+    case 'chart-summary':
+      return <ProfileAwareChartProbeCard probe={probe} shortenId={shortenId} />;
     case 'feature-observation':
       return <ProfileAwareFeatureProbeCard probe={probe} shortenId={shortenId} />;
     case 'route-gate-candidate':
@@ -1258,6 +1357,52 @@ function ProfileAwareSurfaceSampleProbeCard({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function ProfileAwareChartProbeCard({
+  probe,
+  shortenId,
+}: {
+  probe: ProfileAwareFieldAtlasChartProbe;
+  shortenId: (id: string) => string;
+}) {
+  return (
+    <div className="grid gap-2">
+      <dl className="grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Probe kind" value={probe.probeKind} />
+        <FieldAtlasMetric label="Chart" value={shortenId(probe.chartId)} />
+        <FieldAtlasMetric
+          label="Source face"
+          value={shortenId(probe.sourceFaceId)}
+        />
+        <FieldAtlasMetric
+          label="Role"
+          value={formatChartRole(probe.chartSemanticRole)}
+        />
+        <FieldAtlasMetric label="Samples" value={probe.sampleCount} />
+        <FieldAtlasMetric
+          label="Intensity min"
+          value={formatNumber(probe.minIntensity)}
+        />
+        <FieldAtlasMetric
+          label="Intensity max"
+          value={formatNumber(probe.maxIntensity)}
+        />
+        <FieldAtlasMetric label="Phase min" value={formatNumber(probe.minPhase)} />
+        <FieldAtlasMetric label="Phase max" value={formatNumber(probe.maxPhase)} />
+        <FieldAtlasMetric
+          label="Ratios"
+          value={probe.allContributionRatiosValid ? 'valid' : 'invalid'}
+        />
+        <FieldAtlasMetric label="Semantic" value={probe.semanticStatus} />
+        <FieldAtlasMetric label="Topology" value={probe.topologyStatus} />
+        <FieldAtlasMetric label="Phase" value={probe.phaseContinuityStatus} />
+      </dl>
+      <p className="rounded border border-stone-800 bg-stone-900 px-2 py-2 leading-5 text-stone-400">
+        Chart anchors are sample centroids only; not face heatmaps or topology.
+      </p>
     </div>
   );
 }

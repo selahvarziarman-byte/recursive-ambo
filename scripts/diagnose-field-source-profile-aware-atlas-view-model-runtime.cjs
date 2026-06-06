@@ -92,6 +92,16 @@ function runSupportedOneAmboTetrahedronDiagnostic() {
       1,
       'supported runtime surface sample markers',
     );
+    expectAtLeast(
+      report.viewModel.chartOverlaySummary.chartAnchorMarkers.length,
+      1,
+      'supported runtime chart anchor markers',
+    );
+    expectEqual(
+      report.viewModel.probeIndex.chartProbeCount,
+      report.viewModel.chartOverlaySummary.chartAnchorMarkers.length,
+      'supported runtime chart probe count',
+    );
 
     if (report.viewModel.featureOverlaySummary.totalObservationCount > 0) {
       expectAtLeast(
@@ -336,7 +346,7 @@ function printRuntimeReport(label, report) {
   if (report.viewModel) {
     console.log(`  view model shape: ${report.viewModel.shapeId}`);
     console.log(
-      `  markers: source=${report.viewModel.sourceMarkers.length} sample=${report.viewModel.surfaceSampleMarkers.length} feature=${report.viewModel.featureOverlaySummary.featureMarkers.length}`,
+      `  markers: source=${report.viewModel.sourceMarkers.length} sample=${report.viewModel.surfaceSampleMarkers.length} chart=${report.viewModel.chartOverlaySummary.chartAnchorMarkers.length} feature=${report.viewModel.featureOverlaySummary.featureMarkers.length}`,
     );
   } else {
     console.log(`  unsupported: ${report.unsupportedIssueCode}`);

@@ -2,6 +2,7 @@ import { Html } from '@react-three/drei';
 import { useEffect, useMemo } from 'react';
 import {
   buildProfileAwareFieldAtlasViewModelRuntimeReport,
+  type ProfileAwareFieldAtlasChartAnchorMarker,
   type ProfileAwareFieldAtlasFeatureMarker,
   type ProfileAwareFieldAtlasRenderScale,
   type ProfileAwareFieldAtlasRouteGateCandidateMarker,
@@ -36,10 +37,12 @@ interface FieldAtlasMarker {
   valueLabel: 'amplitude' | 'intensity';
   label: string;
   detailLabel?: string;
+  extraDetailLabels?: string[];
   sampleRenderMode?: FieldAtlasSampleRenderMode;
   kind:
     | 'source-marker'
     | 'surface-sample-marker'
+    | 'chart-summary-anchor-marker'
     | 'feature-observation-marker'
     | 'route-gate-candidate-anchor-marker'
     | 'support-region-candidate-anchor-marker';
@@ -146,6 +149,11 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
                   {marker.detailLabel ? (
                     <span className="block text-stone-300">{marker.detailLabel}</span>
                   ) : null}
+                  {marker.extraDetailLabels?.map((detail) => (
+                    <span key={detail} className="block text-stone-300">
+                      {detail}
+                    </span>
+                  ))}
                   {marker.sampleRenderMode ? (
                     <span className="block text-stone-400">
                       sample mode {marker.sampleRenderMode}
@@ -197,6 +205,9 @@ function buildMarkerModel(
     const surfaceSampleMarkers = layerVisibility.samples
       ? viewModel.surfaceSampleMarkers
       : [];
+    const chartAnchorMarkers = layerVisibility.charts
+      ? viewModel.chartOverlaySummary.chartAnchorMarkers
+      : [];
     const featureMarkers = layerVisibility.features
       ? viewModel.featureOverlaySummary.featureMarkers
       : [];
@@ -210,6 +221,9 @@ function buildMarkerModel(
     const positions = [
       ...sourceMarkers.map((marker) => marker.position),
       ...surfaceSampleMarkers.map((marker) => marker.position),
+      ...chartAnchorMarkers
+        .map((marker) => marker.position)
+        .filter((position): position is Vec3 => Boolean(position)),
       ...featureMarkers.map((marker) => marker.position),
       ...routeGateCandidateMarkers
         .map((marker) => marker.position)
@@ -235,6 +249,9 @@ function buildMarkerModel(
           sampleRenderMode,
         ),
       ),
+      ...chartAnchorMarkers
+        .map((marker) => buildChartAnchorMarker(marker, radiusBase))
+        .filter((marker): marker is FieldAtlasMarker => Boolean(marker)),
       ...featureMarkers.map((marker) =>
         buildFeatureMarker(marker, radiusBase),
       ),
@@ -299,6 +316,41 @@ function buildSurfaceSampleMarker(
     detailLabel: formatSurfaceSampleMarkerDetail(marker),
     sampleRenderMode,
     kind: 'surface-sample-marker',
+  };
+}
+
+function buildChartAnchorMarker(
+  marker: ProfileAwareFieldAtlasChartAnchorMarker,
+  radiusBase: number,
+): FieldAtlasMarker | null {
+  if (!marker.position) {
+    return null;
+  }
+
+  const averageIntensity = (marker.minIntensity + marker.maxIntensity) / 2;
+
+  return {
+    id: `chart:${marker.chartId}`,
+    hoverRef: marker.probeRef,
+    position: copyVec3(marker.position),
+    radius: radiusBase * 1.16,
+    opacity: marker.allContributionRatiosValid ? 0.76 : 0.56,
+    color: marker.chartSemanticRole === 'face-local' ? '#c4b5fd' : '#bfdbfe',
+    emissive: marker.chartSemanticRole === 'face-local' ? '#4c1d95' : '#1e3a8a',
+    emissiveIntensity: 0.38,
+    intensity: averageIntensity,
+    valueLabel: 'intensity',
+    label: 'Chart summary anchor',
+    detailLabel: `${formatChartSemanticRole(marker.chartSemanticRole)}; samples ${marker.sampleCount}`,
+    extraDetailLabels: [
+      `source face ${marker.sourceFaceId}`,
+      `intensity ${formatNumber(marker.minIntensity)} - ${formatNumber(marker.maxIntensity)}`,
+      `phase ${formatNumber(marker.minPhase)} - ${formatNumber(marker.maxPhase)}`,
+      marker.allContributionRatiosValid
+        ? 'ratios valid'
+        : 'ratios invalid',
+    ],
+    kind: 'chart-summary-anchor-marker',
   };
 }
 
@@ -414,6 +466,10 @@ function formatFeatureMarkerLabel(marker: ProfileAwareFieldAtlasFeatureMarker): 
 
 function formatMarkerStatus(status: string): string {
   return status === 'not-semantic-naming' ? 'not semantic naming' : status;
+}
+
+function formatChartSemanticRole(role: string): string {
+  return role.replace(/-/g, ' ');
 }
 
 function formatNumber(value: number): string {

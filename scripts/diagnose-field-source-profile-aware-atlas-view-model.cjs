@@ -37,6 +37,7 @@ runBoundaryFlagDiagnostic();
 runViewModelStatusDiagnostic();
 runSourceMarkerDiagnostic();
 runSurfaceSampleMarkerDiagnostic();
+runChartAnchorMarkerDiagnostic();
 runFeatureMarkerDiagnostic();
 runRenderScaleDiagnostic();
 runProbeIndexDiagnostic();
@@ -263,6 +264,74 @@ function runSurfaceSampleMarkerDiagnostic() {
   console.log('surface sample markers: PASS');
 }
 
+function runChartAnchorMarkerDiagnostic() {
+  const report = buildProfileAwareFieldAtlasViewModelReport();
+  const chartOverlay = report.chartOverlaySummary;
+
+  expectTruthy(chartOverlay, 'chart overlay summary exists');
+  expectEqual(
+    chartOverlay.chartAnchorMarkers.length,
+    report.chartSummaries.length,
+    'chart anchor marker count',
+  );
+  expectEqual(
+    chartOverlay.directChartCount + chartOverlay.computationalChartCount,
+    chartOverlay.chartAnchorMarkers.length,
+    'chart direct/computational total',
+  );
+  expectEqual(
+    chartOverlay.chartRefs.length,
+    chartOverlay.chartAnchorMarkers.length,
+    'chart refs count',
+  );
+
+  for (const marker of chartOverlay.chartAnchorMarkers) {
+    const probe = report.probeIndex.probes[marker.probeRef];
+
+    expectTruthy(marker.chartId, 'chart marker chart id');
+    expectEqual(
+      marker.renderKind,
+      'chart-summary-anchor-marker',
+      `${marker.chartId} render kind`,
+    );
+    expectTruthy(marker.sourceFaceId, `${marker.chartId} source face`);
+    expectTruthy(marker.chartSemanticRole, `${marker.chartId} semantic role`);
+    expectAtLeast(marker.sampleCount, 1, `${marker.chartId} sample count`);
+    expectFinite(marker.minIntensity, `${marker.chartId} min intensity`);
+    expectFinite(marker.maxIntensity, `${marker.chartId} max intensity`);
+    expectFinite(marker.minPhase, `${marker.chartId} min phase`);
+    expectFinite(marker.maxPhase, `${marker.chartId} max phase`);
+    expectEqual(
+      marker.semanticStatus,
+      'not-semantic-naming',
+      `${marker.chartId} semantic status`,
+    );
+    expectEqual(
+      marker.topologyStatus,
+      'not-topology-workspace',
+      `${marker.chartId} topology status`,
+    );
+    expectEqual(
+      marker.phaseContinuityStatus,
+      'not-global-phase-continuity',
+      `${marker.chartId} phase continuity status`,
+    );
+    expectTruthy(marker.probeRef, `${marker.chartId} probe ref`);
+    expectTruthy(probe, `${marker.chartId} chart probe resolves`);
+    expectEqual(
+      probe && probe.probeKind,
+      'chart-summary',
+      `${marker.chartId} chart probe kind`,
+    );
+
+    if (marker.position) {
+      expectFiniteVec3(marker.position, `${marker.chartId} anchor position`);
+    }
+  }
+
+  console.log('chart summary anchors: PASS');
+}
+
 function runFeatureMarkerDiagnostic() {
   const report = buildProfileAwareFieldAtlasViewModelReport();
   const feature = report.featureOverlaySummary;
@@ -366,6 +435,11 @@ function runProbeIndexDiagnostic() {
     'sample probe count',
   );
   expectEqual(
+    report.probeIndex.chartProbeCount,
+    report.chartOverlaySummary.chartAnchorMarkers.length,
+    'chart probe count',
+  );
+  expectEqual(
     report.probeIndex.featureProbeCount,
     report.featureOverlaySummary.featureMarkers.length,
     'feature probe count',
@@ -397,6 +471,22 @@ function runProbeIndexDiagnostic() {
       probe && probe.sampleId,
       marker.sampleId,
       `${marker.sampleId} probe sample id`,
+    );
+  }
+
+  for (const marker of report.chartOverlaySummary.chartAnchorMarkers) {
+    const probe = report.probeIndex.probes[marker.probeRef];
+
+    expectTruthy(probe, `${marker.chartId} chart probe resolves`);
+    expectEqual(
+      probe && probe.probeKind,
+      'chart-summary',
+      `${marker.chartId} probe kind`,
+    );
+    expectEqual(
+      probe && probe.chartId,
+      marker.chartId,
+      `${marker.chartId} probe chart id`,
     );
   }
 
@@ -788,6 +878,10 @@ function runNoInvarianceClaimDiagnostic() {
 function runNoForbiddenClaimsDiagnostic() {
   const report = buildProfileAwareFieldAtlasViewModelReport();
   const forbiddenProperties = [
+    'chartHeatmapStatus',
+    'faceHeatmapStatus',
+    'chartMeshStatus',
+    'shaderStatus',
     'supportRegionGeometryStatus',
     'filledRegionGeometryStatus',
     'meshRegionStatus',
@@ -823,7 +917,7 @@ function printViewModelReport(label, report) {
     `  overlays: featureMarkers=${report.featureOverlaySummary.featureMarkers.length} routeGate=${report.routeGateOverlaySummary.totalRouteGateCandidateCount} supportRegion=${report.supportRegionOverlaySummary.totalSupportRegionCandidateCount} status=${report.candidateOverlayStatus}`,
   );
   console.log(
-    `  probes: source=${report.probeIndex.sourceProbeCount} sample=${report.probeIndex.sampleProbeCount} feature=${report.probeIndex.featureProbeCount} routeGate=${report.probeIndex.routeGateProbeCount} supportRegion=${report.probeIndex.supportRegionProbeCount} total=${report.probeIndex.probeCount}`,
+    `  probes: source=${report.probeIndex.sourceProbeCount} sample=${report.probeIndex.sampleProbeCount} chart=${report.probeIndex.chartProbeCount} feature=${report.probeIndex.featureProbeCount} routeGate=${report.probeIndex.routeGateProbeCount} supportRegion=${report.probeIndex.supportRegionProbeCount} total=${report.probeIndex.probeCount}`,
   );
   console.log(`  issues: ${report.issueCount}${formatIssueCounts(report)}`);
 }

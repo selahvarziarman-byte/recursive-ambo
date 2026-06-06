@@ -80,8 +80,25 @@ function runSupportedOneAmboTetrahedronContractDiagnostic() {
       PROFILE_AWARE_SOURCE_POLICY_ID,
       'supported view model source policy',
     );
+    expectTruthy(viewModel.chartOverlaySummary, 'chart overlay summary exists');
+    expectEqual(
+      viewModel.chartOverlaySummary.chartAnchorMarkers.length,
+      viewModel.chartSummaries.length,
+      'chart overlay marker count',
+    );
+    expectEqual(
+      viewModel.chartOverlaySummary.directChartCount +
+        viewModel.chartOverlaySummary.computationalChartCount,
+      viewModel.chartOverlaySummary.chartAnchorMarkers.length,
+      'chart overlay direct/computational count',
+    );
     expectAtLeast(viewModel.sourceMarkers.length, 1, 'source marker count');
     expectAtLeast(viewModel.surfaceSampleMarkers.length, 1, 'sample marker count');
+    expectAtLeast(
+      viewModel.chartOverlaySummary.chartAnchorMarkers.length,
+      1,
+      'chart anchor marker count',
+    );
     expectAtLeast(
       viewModel.featureOverlaySummary.featureMarkers.length,
       1,
@@ -108,6 +125,13 @@ function runSupportedOneAmboTetrahedronContractDiagnostic() {
       ),
       true,
       'surface sample marker render kind',
+    );
+    expectEqual(
+      viewModel.chartOverlaySummary.chartAnchorMarkers.every(
+        (marker) => marker.renderKind === 'chart-summary-anchor-marker',
+      ),
+      true,
+      'chart anchor marker render kind',
     );
     expectEqual(
       viewModel.featureOverlaySummary.featureMarkers.every(
@@ -159,6 +183,7 @@ function runLayerVisibilityContractDiagnostic() {
   const allVisible = simulateLayerVisibilityFilter(viewModel, {
     sources: true,
     samples: true,
+    charts: true,
     features: true,
     routeGateCandidates: true,
     supportRegionCandidates: true,
@@ -166,6 +191,7 @@ function runLayerVisibilityContractDiagnostic() {
   const onlySources = simulateLayerVisibilityFilter(viewModel, {
     sources: true,
     samples: false,
+    charts: false,
     features: false,
     routeGateCandidates: false,
     supportRegionCandidates: false,
@@ -173,6 +199,15 @@ function runLayerVisibilityContractDiagnostic() {
   const onlySamples = simulateLayerVisibilityFilter(viewModel, {
     sources: false,
     samples: true,
+    charts: false,
+    features: false,
+    routeGateCandidates: false,
+    supportRegionCandidates: false,
+  });
+  const onlyCharts = simulateLayerVisibilityFilter(viewModel, {
+    sources: false,
+    samples: false,
+    charts: true,
     features: false,
     routeGateCandidates: false,
     supportRegionCandidates: false,
@@ -180,6 +215,7 @@ function runLayerVisibilityContractDiagnostic() {
   const allHidden = simulateLayerVisibilityFilter(viewModel, {
     sources: false,
     samples: false,
+    charts: false,
     features: false,
     routeGateCandidates: false,
     supportRegionCandidates: false,
@@ -199,6 +235,11 @@ function runLayerVisibilityContractDiagnostic() {
     onlySamples.total,
     familyCounts.samples,
     'layer visibility only-sample marker count',
+  );
+  expectEqual(
+    onlyCharts.total,
+    familyCounts.charts,
+    'layer visibility only-chart marker count',
   );
   expectEqual(allHidden.total, 0, 'layer visibility all-hidden marker count');
   expectEqual(
@@ -221,6 +262,11 @@ function runLayerVisibilityContractDiagnostic() {
     viewModel.probeIndex.sampleProbeCount,
     familyCounts.samples,
     'layer visibility sample probes remain',
+  );
+  expectEqual(
+    viewModel.probeIndex.chartProbeCount,
+    familyCounts.charts,
+    'layer visibility chart probes remain',
   );
   expectEqual(
     viewModel.probeIndex.featureProbeCount,
@@ -353,6 +399,11 @@ function runSampleRenderModeContractDiagnostic() {
     viewModel.surfaceSampleMarkers.length,
     'sample render mode sample probes remain',
   );
+  expectEqual(
+    viewModel.probeIndex.chartProbeCount,
+    viewModel.chartOverlaySummary.chartAnchorMarkers.length,
+    'sample render mode chart probes remain',
+  );
   expectAtLeast(
     viewModel.probeIndex.sourceProbeCount,
     1,
@@ -381,6 +432,10 @@ function runSampleRenderModeContractDiagnostic() {
     'sampleRenderModeTopologyStatus',
     'sampleRenderModePacketWriteStatus',
     'sampleRenderModeShapeMutationStatus',
+    'chartHeatmapStatus',
+    'faceHeatmapStatus',
+    'chartMeshStatus',
+    'shaderStatus',
   ];
 
   for (const property of forbiddenProperties) {
@@ -548,6 +603,10 @@ function runNoOldPolicyComparisonOrInvarianceDiagnostic() {
     'packetWritingStatus',
     'semanticNamingStatus',
     'topologyBehaviorStatus',
+    'chartHeatmapStatus',
+    'faceHeatmapStatus',
+    'chartMeshStatus',
+    'shaderStatus',
     'supportRegionGeometryStatus',
     'filledRegionGeometryStatus',
     'meshRegionStatus',
@@ -624,6 +683,55 @@ function expectMarkerProbeContracts(viewModel) {
       marker.sampleId,
       `sample marker ${marker.sampleId} probe sample id`,
     );
+  }
+
+  for (const marker of viewModel.chartOverlaySummary.chartAnchorMarkers) {
+    const probe = viewModel.probeIndex.probes[marker.probeRef];
+
+    expectTruthy(marker.chartId, 'chart marker chart id');
+    expectEqual(
+      marker.renderKind,
+      'chart-summary-anchor-marker',
+      `chart marker ${marker.chartId} render kind`,
+    );
+    expectTruthy(
+      marker.sourceFaceId,
+      `chart marker ${marker.chartId} source face id`,
+    );
+    expectTruthy(
+      marker.chartSemanticRole,
+      `chart marker ${marker.chartId} semantic role`,
+    );
+    expectAtLeast(marker.sampleCount, 1, `chart marker ${marker.chartId} samples`);
+    expectFinite(marker.minIntensity, `chart marker ${marker.chartId} min intensity`);
+    expectFinite(marker.maxIntensity, `chart marker ${marker.chartId} max intensity`);
+    expectFinite(marker.minPhase, `chart marker ${marker.chartId} min phase`);
+    expectFinite(marker.maxPhase, `chart marker ${marker.chartId} max phase`);
+    expectEqual(
+      marker.semanticStatus,
+      'not-semantic-naming',
+      `chart marker ${marker.chartId} semantic`,
+    );
+    expectEqual(
+      marker.topologyStatus,
+      'not-topology-workspace',
+      `chart marker ${marker.chartId} topology`,
+    );
+    expectEqual(
+      marker.phaseContinuityStatus,
+      'not-global-phase-continuity',
+      `chart marker ${marker.chartId} phase`,
+    );
+    expectTruthy(probe, `chart marker ${marker.chartId} probe`);
+    expectEqual(
+      probe && probe.probeKind,
+      'chart-summary',
+      `chart marker ${marker.chartId} probe kind`,
+    );
+
+    if (marker.position) {
+      expectFiniteVec3(marker.position, `chart marker ${marker.chartId} position`);
+    }
   }
 
   for (const marker of viewModel.featureOverlaySummary.featureMarkers) {
@@ -744,6 +852,7 @@ function expectMarkerProbeContracts(viewModel) {
 function expectSimulatedPinnedProbeRefsResolve(viewModel) {
   const sourceMarker = viewModel.sourceMarkers[0];
   const sampleMarker = viewModel.surfaceSampleMarkers[0];
+  const chartMarker = viewModel.chartOverlaySummary.chartAnchorMarkers[0];
   const featureMarker = viewModel.featureOverlaySummary.featureMarkers[0];
   const routeGateMarker = viewModel.routeGateOverlaySummary.candidateMarkers[0];
   const supportRegionMarker =
@@ -760,6 +869,12 @@ function expectSimulatedPinnedProbeRefsResolve(viewModel) {
     sampleMarker && sampleMarker.probeRef,
     'surface-sample',
     'simulated sample pinned ref',
+  );
+  expectPinnedProbeRef(
+    viewModel,
+    chartMarker && chartMarker.probeRef,
+    'chart-summary',
+    'simulated chart pinned ref',
   );
   expectPinnedProbeRef(
     viewModel,
@@ -796,6 +911,7 @@ function getLayerFamilyCounts(viewModel) {
   const counts = {
     sources: viewModel.sourceMarkers.length,
     samples: viewModel.surfaceSampleMarkers.length,
+    charts: viewModel.chartOverlaySummary.chartAnchorMarkers.length,
     features: viewModel.featureOverlaySummary.featureMarkers.length,
     routeGateCandidates:
       viewModel.routeGateOverlaySummary.candidateMarkers.length,
@@ -808,6 +924,7 @@ function getLayerFamilyCounts(viewModel) {
     total:
       counts.sources +
       counts.samples +
+      counts.charts +
       counts.features +
       counts.routeGateCandidates +
       counts.supportRegionCandidates,
@@ -819,6 +936,7 @@ function simulateLayerVisibilityFilter(viewModel, visibility) {
   const filteredCounts = {
     sources: visibility.sources ? counts.sources : 0,
     samples: visibility.samples ? counts.samples : 0,
+    charts: visibility.charts ? counts.charts : 0,
     features: visibility.features ? counts.features : 0,
     routeGateCandidates: visibility.routeGateCandidates
       ? counts.routeGateCandidates
@@ -833,6 +951,7 @@ function simulateLayerVisibilityFilter(viewModel, visibility) {
     total:
       filteredCounts.sources +
       filteredCounts.samples +
+      filteredCounts.charts +
       filteredCounts.features +
       filteredCounts.routeGateCandidates +
       filteredCounts.supportRegionCandidates,
@@ -959,7 +1078,7 @@ function printSupportedReport(label, report) {
   console.log(`  input shape: ${report.inputShapeId}`);
   console.log(`  source policy: ${report.sourcePolicyId}`);
   console.log(
-    `  markers: source=${report.viewModel.sourceMarkers.length} sample=${report.viewModel.surfaceSampleMarkers.length} feature=${report.viewModel.featureOverlaySummary.featureMarkers.length} routeGate=${report.viewModel.routeGateOverlaySummary.candidateMarkers.length} supportRegion=${report.viewModel.supportRegionOverlaySummary.candidateMarkers.length}`,
+    `  markers: source=${report.viewModel.sourceMarkers.length} sample=${report.viewModel.surfaceSampleMarkers.length} chart=${report.viewModel.chartOverlaySummary.chartAnchorMarkers.length} feature=${report.viewModel.featureOverlaySummary.featureMarkers.length} routeGate=${report.viewModel.routeGateOverlaySummary.candidateMarkers.length} supportRegion=${report.viewModel.supportRegionOverlaySummary.candidateMarkers.length}`,
   );
   console.log(
     `  candidate summaries: route/gate=${report.viewModel.routeGateOverlaySummary.totalRouteGateCandidateCount} support/region=${report.viewModel.supportRegionOverlaySummary.totalSupportRegionCandidateCount}`,
