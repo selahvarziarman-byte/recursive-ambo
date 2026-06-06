@@ -42,6 +42,8 @@ interface FieldAtlasMarker {
   chartId?: string;
   relatedChartIds?: string[];
   sourceId?: string;
+  dominantSourceId?: string;
+  dominantSourceRatio?: number;
   relatedSourceIds?: string[];
   sourceContributionRatios?: Array<{ sourceId: string; ratio: number }>;
   kind:
@@ -118,6 +120,15 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
         const isActiveSourceRelated =
           Boolean(activeSourceId) &&
           (marker.sourceId === activeSourceId || activeSourceContributionRatio > 0);
+        const isDominantSourceDriver =
+          isHovered &&
+          (marker.kind === 'surface-sample-marker' ||
+            marker.kind === 'feature-observation-marker') &&
+          Boolean(
+            marker.dominantSourceId &&
+              activeSourceId &&
+              marker.dominantSourceId === activeSourceId,
+          );
         const sourceRelatedScale = isActiveSourceRelated
           ? 1.22 + Math.min(0.28, activeSourceContributionRatio * 0.28)
           : 1;
@@ -238,10 +249,22 @@ export function FieldAtlasSampleMarkers({ shape, enabled }: FieldAtlasSampleMark
                       phase {formatNumber(marker.phase)}
                     </span>
                   ) : null}
+                  {isDominantSourceDriver && marker.dominantSourceId ? (
+                    <span className="block font-mono text-stone-400">
+                      dominant source {formatShortId(marker.dominantSourceId)}
+                    </span>
+                  ) : null}
                   {marker.sampleRenderMode === 'dominance' &&
                   typeof marker.dominanceRatio === 'number' ? (
                     <span className="block font-mono text-stone-400">
                       dominance {formatNumber(marker.dominanceRatio)}
+                    </span>
+                  ) : null}
+                  {isDominantSourceDriver &&
+                  marker.sampleRenderMode !== 'dominance' &&
+                  typeof marker.dominantSourceRatio === 'number' ? (
+                    <span className="block font-mono text-stone-400">
+                      dominance {formatNumber(marker.dominantSourceRatio)}
                     </span>
                   ) : null}
                   {isActiveSourceRelated && activeSourceContributionRatio > 0 ? (
@@ -366,6 +389,8 @@ function buildSourceMarker(
     label: 'Source marker',
     detailLabel: formatSourceMarkerDetail(marker),
     sourceId: marker.sourceId,
+    dominantSourceId: marker.sourceId,
+    dominantSourceRatio: 1,
     kind: 'source-marker',
   };
 }
@@ -398,6 +423,12 @@ function buildSurfaceSampleMarker(
     detailLabel: formatSurfaceSampleMarkerDetail(marker),
     sampleRenderMode,
     chartId: marker.chartId,
+    ...(marker.dominantContributionSourceId
+      ? { dominantSourceId: marker.dominantContributionSourceId }
+      : {}),
+    ...(typeof marker.dominantContributionRatio === 'number'
+      ? { dominantSourceRatio: marker.dominantContributionRatio }
+      : {}),
     relatedSourceIds: marker.contributionRatios.map((ratio) => ratio.sourceId),
     sourceContributionRatios: marker.contributionRatios.map((ratio) => ({
       sourceId: ratio.sourceId,
@@ -469,6 +500,17 @@ function buildFeatureMarker(
     chartId: marker.chartId,
     ...(linkedSampleMarker
       ? {
+          ...(linkedSampleMarker.dominantContributionSourceId
+            ? {
+                dominantSourceId: linkedSampleMarker.dominantContributionSourceId,
+              }
+            : {}),
+          ...(typeof linkedSampleMarker.dominantContributionRatio === 'number'
+            ? {
+                dominantSourceRatio:
+                  linkedSampleMarker.dominantContributionRatio,
+              }
+            : {}),
           relatedSourceIds: linkedSampleMarker.contributionRatios.map(
             (ratio) => ratio.sourceId,
           ),
@@ -564,12 +606,13 @@ function getActiveSourceIdFromRefs(
   pinnedProbeRef: string | null,
   hoveredProbeRef: string | null,
 ): string | null {
-  return (
-    getSourceIdFromMarkerRef(markers, pinnedProbeRef) ??
-    getSourceIdFromProbeRef(pinnedProbeRef) ??
-    getSourceIdFromMarkerRef(markers, hoveredProbeRef) ??
-    getSourceIdFromProbeRef(hoveredProbeRef)
-  );
+  const pinnedSourceId = getSourceIdFromRef(markers, pinnedProbeRef);
+
+  if (pinnedSourceId) {
+    return pinnedSourceId;
+  }
+
+  return getSourceIdFromRef(markers, hoveredProbeRef);
 }
 
 function getChartIdsFromMarkerRef(
@@ -609,7 +652,21 @@ function getSourceIdFromMarkerRef(
 
   const marker = markers.find((candidate) => candidate.hoverRef === probeRef);
 
-  return marker?.sourceId ?? null;
+  return marker ? getSourceIdFromMarker(marker) : null;
+}
+
+function getSourceIdFromRef(
+  markers: FieldAtlasMarker[],
+  probeRef: string | null,
+): string | null {
+  return (
+    getSourceIdFromMarkerRef(markers, probeRef) ??
+    getSourceIdFromProbeRef(probeRef)
+  );
+}
+
+function getSourceIdFromMarker(marker: FieldAtlasMarker): string | null {
+  return marker.sourceId ?? marker.dominantSourceId ?? null;
 }
 
 function getSourceIdFromProbeRef(probeRef: string | null): string | null {
@@ -717,6 +774,14 @@ function formatNumber(value: number): string {
   }
 
   return value.toFixed(absoluteValue < 1 ? 4 : 3).replace(/\.?0+$/, '');
+}
+
+function formatShortId(value: string): string {
+  if (value.length <= 18) {
+    return value;
+  }
+
+  return `${value.slice(0, 12)}...${value.slice(-4)}`;
 }
 
 function buildSampleMarkerStyle(

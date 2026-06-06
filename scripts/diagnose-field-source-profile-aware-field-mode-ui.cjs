@@ -638,6 +638,11 @@ function runSourceLinkingContractDiagnostic() {
     viewModel,
     sourceMarkerWithContribution.sourceId,
   );
+  const dominantSampleMarker = viewModel.surfaceSampleMarkers.find((marker) =>
+    getDominantSourceIdFromSampleMarker(marker),
+  );
+  const dominantFeatureContext =
+    findFeatureMarkerWithLinkedDominantSource(viewModel);
 
   expectEqual(
     sourceProbe && sourceProbe.probeKind,
@@ -660,14 +665,78 @@ function runSourceLinkingContractDiagnostic() {
     'source linking feature count computable',
   );
 
-  for (const sample of sourceContext.topSamples) {
-    expectFinite(sample.contributionRatio, `${sample.sampleId} source ratio`);
-    expectAtLeast(
-      sample.contributionRatio,
-      0,
-      `${sample.sampleId} nonnegative source ratio`,
+  expectSourceContextTopSamples(sourceContext, 'source linking source marker');
+
+  expectTruthy(
+    dominantSampleMarker,
+    'source linking dominant-source sample marker',
+  );
+
+  if (dominantSampleMarker) {
+    const sampleProbe = viewModel.probeIndex.probes[dominantSampleMarker.probeRef];
+    const sampleDominantSourceId =
+      getDominantSourceIdFromSampleMarker(dominantSampleMarker);
+    const derivedSourceId = getDominantSourceIdFromProbe(sampleProbe, viewModel);
+    const sampleSourceContext = computeSourceContextCounts(
+      viewModel,
+      derivedSourceId,
     );
-    expectFinite(sample.intensity, `${sample.sampleId} source linked intensity`);
+
+    expectEqual(
+      sampleProbe && sampleProbe.probeKind,
+      'surface-sample',
+      'source linking dominant sample probe kind',
+    );
+    expectEqual(
+      derivedSourceId,
+      sampleDominantSourceId,
+      'source linking dominant sample derived source id',
+    );
+    expectAtLeast(
+      sampleSourceContext.sampleMarkerCount,
+      1,
+      'source linking dominant sample context count',
+    );
+    expectSourceContextTopSamples(
+      sampleSourceContext,
+      'source linking dominant sample',
+    );
+  }
+
+  if (dominantFeatureContext) {
+    const derivedSourceId = getDominantSourceIdFromProbe(
+      dominantFeatureContext.featureProbe,
+      viewModel,
+    );
+    const featureSourceContext = computeSourceContextCounts(
+      viewModel,
+      derivedSourceId,
+    );
+
+    expectEqual(
+      dominantFeatureContext.featureProbe.probeKind,
+      'feature-observation',
+      'source linking dominant feature probe kind',
+    );
+    expectEqual(
+      dominantFeatureContext.linkedSampleProbe.probeKind,
+      'surface-sample',
+      'source linking dominant feature linked sample probe kind',
+    );
+    expectEqual(
+      derivedSourceId,
+      dominantFeatureContext.linkedSampleDominantSourceId,
+      'source linking dominant feature derived source id',
+    );
+    expectAtLeast(
+      featureSourceContext.sampleMarkerCount,
+      1,
+      'source linking dominant feature context count',
+    );
+  } else if (viewModel.featureOverlaySummary.featureMarkers.length > 0) {
+    console.log(
+      'source linking dominant feature context: PASS (no feature marker with linked dominant source)',
+    );
   }
 
   expectEqual(
@@ -1345,6 +1414,34 @@ function computeChartContextCounts(viewModel, chartIds) {
   };
 }
 
+function getDominantSourceIdFromSampleMarker(marker) {
+  return marker && marker.dominantContributionSourceId
+    ? marker.dominantContributionSourceId
+    : undefined;
+}
+
+function getDominantSourceIdFromProbe(probe, viewModel) {
+  if (!probe) {
+    return undefined;
+  }
+
+  switch (probe.probeKind) {
+    case 'source':
+      return probe.sourceId;
+    case 'surface-sample':
+      return probe.dominantContributionSourceId;
+    case 'feature-observation': {
+      const linkedProbe = viewModel.probeIndex.probes[probe.linkedSampleProbeRef];
+
+      return linkedProbe && linkedProbe.probeKind === 'surface-sample'
+        ? linkedProbe.dominantContributionSourceId
+        : undefined;
+    }
+    default:
+      return undefined;
+  }
+}
+
 function findSourceMarkerWithSampleContribution(viewModel) {
   for (const sourceMarker of viewModel.sourceMarkers) {
     const matchingSamples = viewModel.surfaceSampleMarkers.filter((marker) =>
@@ -1358,6 +1455,35 @@ function findSourceMarkerWithSampleContribution(viewModel) {
 
     if (matchingSamples.length > 0) {
       return sourceMarker;
+    }
+  }
+
+  return undefined;
+}
+
+function findFeatureMarkerWithLinkedDominantSource(viewModel) {
+  for (const featureMarker of viewModel.featureOverlaySummary.featureMarkers) {
+    const featureProbe = viewModel.probeIndex.probes[featureMarker.probeRef];
+
+    if (!featureProbe || featureProbe.probeKind !== 'feature-observation') {
+      continue;
+    }
+
+    const linkedSampleProbe =
+      viewModel.probeIndex.probes[featureProbe.linkedSampleProbeRef];
+
+    if (
+      linkedSampleProbe &&
+      linkedSampleProbe.probeKind === 'surface-sample' &&
+      linkedSampleProbe.dominantContributionSourceId
+    ) {
+      return {
+        featureMarker,
+        featureProbe,
+        linkedSampleProbe,
+        linkedSampleDominantSourceId:
+          linkedSampleProbe.dominantContributionSourceId,
+      };
     }
   }
 
@@ -1397,6 +1523,18 @@ function computeSourceContextCounts(viewModel, sourceId) {
     featureMarkerCount,
     topSamples: topSamples.slice(0, 4),
   };
+}
+
+function expectSourceContextTopSamples(context, label) {
+  for (const sample of context.topSamples) {
+    expectFinite(sample.contributionRatio, `${label} ${sample.sampleId} ratio`);
+    expectAtLeast(
+      sample.contributionRatio,
+      0,
+      `${label} ${sample.sampleId} nonnegative ratio`,
+    );
+    expectFinite(sample.intensity, `${label} ${sample.sampleId} intensity`);
+  }
 }
 
 function getLayerFamilyCounts(viewModel) {

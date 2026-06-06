@@ -440,7 +440,7 @@ function ProfileAwareFieldModeRuntimeSection({
     viewModel,
     activeChartIds,
   );
-  const activeSourceId = getSourceIdFromProfileAwareProbe(activeProbe);
+  const activeSourceId = getSourceIdFromProfileAwareProbe(activeProbe, viewModel);
   const activeSourceContext = buildProfileAwareActiveSourceContext(
     viewModel,
     activeSourceId,
@@ -1033,14 +1033,14 @@ function ProfileAwareActiveSourceContextSection({
             </div>
           ) : null}
           <p className="leading-5 text-stone-500">
-            Source context is contribution-mixture membership only; not semantic
-            naming or causal attribution.
+            Source context is derived from contribution-mixture membership; not
+            semantic naming or causal attribution.
           </p>
         </div>
       ) : (
         <p className="mt-2 leading-5 text-stone-500">
-          Hover or pin a source marker to inspect contribution context. Sample
-          probes can also expose a dominant source when available.
+          Hover or pin a source marker, or a sample/feature with a dominant
+          source, to inspect contribution context.
         </p>
       )}
     </div>
@@ -1233,7 +1233,8 @@ function getProfileAwareFeatureReason(
 }
 
 function getSourceIdFromProfileAwareProbe(
-  probe?: ProfileAwareFieldAtlasProbe,
+  probe: ProfileAwareFieldAtlasProbe | undefined,
+  viewModel: ProfileAwareFieldAtlasViewModelReport,
 ): string | undefined {
   if (!probe) {
     return undefined;
@@ -1245,6 +1246,10 @@ function getSourceIdFromProfileAwareProbe(
     case 'surface-sample':
       return probe.dominantContributionSourceId;
     case 'feature-observation':
+      return getDominantSourceIdFromLinkedSampleProbe(
+        probe.linkedSampleProbeRef,
+        viewModel,
+      );
     case 'chart-summary':
     case 'route-gate-candidate':
     case 'support-region-candidate':
@@ -1254,6 +1259,17 @@ function getSourceIdFromProfileAwareProbe(
     default:
       return undefined;
   }
+}
+
+function getDominantSourceIdFromLinkedSampleProbe(
+  linkedSampleProbeRef: string,
+  viewModel: ProfileAwareFieldAtlasViewModelReport,
+): string | undefined {
+  const linkedProbe = viewModel.probeIndex.probes[linkedSampleProbeRef];
+
+  return linkedProbe?.probeKind === 'surface-sample'
+    ? linkedProbe.dominantContributionSourceId
+    : undefined;
 }
 
 function buildProfileAwareActiveSourceContext(
