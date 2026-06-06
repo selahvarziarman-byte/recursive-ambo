@@ -46,6 +46,7 @@ runSampleRenderModeContractDiagnostic();
 runChartLinkingContractDiagnostic();
 runSourceLinkingContractDiagnostic();
 runEvidenceStabilityUiContractDiagnostic();
+runSemanticHandoffReadinessUiContractDiagnostic();
 runUnsupportedSeedTetrahedronDiagnostic();
 runUnsupportedCubeDiagnostic();
 runConservativeBoundaryClaimDiagnostic();
@@ -1017,6 +1018,199 @@ function runEvidenceStabilityUiContractDiagnostic() {
   console.log('evidence stability UI contract: PASS');
 }
 
+function runSemanticHandoffReadinessUiContractDiagnostic() {
+  const evidenceStabilityReport = buildProfileAwareEvidenceStabilityReport();
+  const unsupportedRuntimeReport =
+    buildProfileAwareFieldAtlasViewModelRuntimeReport(createSeedShape('tetrahedron'));
+  const supportedRuntimeBefore = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+  const probeCountsBefore = supportedRuntimeBefore.viewModel
+    ? getProbeCounts(supportedRuntimeBefore.viewModel)
+    : undefined;
+  const unsupportedSummary = buildProfileAwareSemanticHandoffSummary(
+    unsupportedRuntimeReport,
+    evidenceStabilityReport,
+  );
+  const supportedSummary = buildProfileAwareSemanticHandoffSummary(
+    supportedRuntimeBefore,
+    evidenceStabilityReport,
+  );
+  const supportedRuntimeAfter = buildProfileAwareFieldAtlasViewModelRuntimeReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+  const probeCountsAfter = supportedRuntimeAfter.viewModel
+    ? getProbeCounts(supportedRuntimeAfter.viewModel)
+    : undefined;
+  const supportedCandidateCount =
+    supportedSummary.featureCandidateCount +
+    supportedSummary.routeGateCandidateCount +
+    supportedSummary.supportRegionCandidateCount;
+  const stabilitySensitive =
+    evidenceStabilityReport.sensitivitySummary.samplingSensitive ||
+    evidenceStabilityReport.sensitivitySummary.profileSetupSensitive;
+
+  expectEqual(
+    unsupportedSummary.readiness,
+    'not-available',
+    'semantic handoff unsupported readiness',
+  );
+  expectEqual(
+    unsupportedSummary.fieldModeSupported,
+    false,
+    'semantic handoff unsupported field mode',
+  );
+  expectEqual(
+    unsupportedSummary.caveats.some(
+      (caveat) =>
+        caveat === unsupportedRuntimeReport.unsupportedIssueCode ||
+        caveat === unsupportedRuntimeReport.unsupportedReason,
+    ),
+    true,
+    'semantic handoff unsupported caveat',
+  );
+  expectEqual(
+    supportedSummary.fieldModeSupported,
+    true,
+    'semantic handoff supported field mode',
+  );
+  expectAtLeast(
+    supportedSummary.featureCandidateCount,
+    0,
+    'semantic handoff feature candidate count',
+  );
+  expectAtLeast(
+    supportedSummary.routeGateCandidateCount,
+    0,
+    'semantic handoff route/gate candidate count',
+  );
+  expectAtLeast(
+    supportedSummary.supportRegionCandidateCount,
+    0,
+    'semantic handoff support/region candidate count',
+  );
+  expectEqual(
+    supportedSummary.semanticStatus,
+    'not-semantic-naming',
+    'semantic handoff semantic status',
+  );
+  expectEqual(
+    supportedSummary.topologyStatus,
+    'not-topology-workspace',
+    'semantic handoff topology status',
+  );
+  expectEqual(
+    supportedSummary.packetWriteStatus,
+    'not-packet-writing',
+    'semantic handoff packet write status',
+  );
+
+  for (const caveat of [
+    'not semantic naming',
+    'not topology workspace',
+    'not packet writing',
+    'policy relative',
+  ]) {
+    expectEqual(
+      supportedSummary.caveats.includes(caveat),
+      true,
+      `semantic handoff caveat ${caveat}`,
+    );
+  }
+
+  if (supportedCandidateCount > 0 && stabilitySensitive) {
+    expectEqual(
+      supportedSummary.readiness,
+      'candidate-pressure-sensitive',
+      'semantic handoff sensitive candidate readiness',
+    );
+  }
+
+  if (supportedCandidateCount > 0 && !stabilitySensitive) {
+    expectEqual(
+      supportedSummary.readiness,
+      'candidate-pressure-available',
+      'semantic handoff available candidate readiness',
+    );
+  }
+
+  if (supportedCandidateCount === 0) {
+    expectEqual(
+      supportedSummary.readiness,
+      'diagnostic-only',
+      'semantic handoff diagnostic-only readiness',
+    );
+  }
+
+  const forbiddenProperties = [
+    'semanticName',
+    'semanticNamingStatus',
+    'topologyValidityStatus',
+    'topologyBehaviorStatus',
+    'packetWriteEnabled',
+    'handoffPacketWritten',
+    'routeGateConfirmedStatus',
+    'supportRegionConfirmedStatus',
+    'oldPolicyInvariantStatus',
+    'defaultPolicyComparisonStatus',
+    'transformationComparisonStatus',
+    'candidateIdentityPersistenceStatus',
+    'handoffPersistenceStatus',
+    'globalHandoffStateStatus',
+  ];
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(
+      unsupportedSummary,
+      property,
+      `semantic handoff unsupported no ${property}`,
+    );
+    expectNoOwnProperty(
+      supportedSummary,
+      property,
+      `semantic handoff supported no ${property}`,
+    );
+  }
+
+  expectTruthy(probeCountsBefore, 'semantic handoff probe counts before');
+  expectTruthy(probeCountsAfter, 'semantic handoff probe counts after');
+
+  if (probeCountsBefore && probeCountsAfter) {
+    expectEqual(
+      probeCountsAfter.sourceProbeCount,
+      probeCountsBefore.sourceProbeCount,
+      'semantic handoff source probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.sampleProbeCount,
+      probeCountsBefore.sampleProbeCount,
+      'semantic handoff sample probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.chartProbeCount,
+      probeCountsBefore.chartProbeCount,
+      'semantic handoff chart probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.featureProbeCount,
+      probeCountsBefore.featureProbeCount,
+      'semantic handoff feature probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.routeGateCandidateProbeCount,
+      probeCountsBefore.routeGateCandidateProbeCount,
+      'semantic handoff route/gate probe count unchanged',
+    );
+    expectEqual(
+      probeCountsAfter.supportRegionCandidateProbeCount,
+      probeCountsBefore.supportRegionCandidateProbeCount,
+      'semantic handoff support/region probe count unchanged',
+    );
+  }
+
+  console.log('semantic handoff readiness UI contract: PASS');
+}
+
 function runUnsupportedCubeDiagnostic() {
   runUnsupportedShapeDiagnostic(
     'unsupported cube Field Mode UI',
@@ -1637,6 +1831,101 @@ function getProbeCounts(viewModel) {
       viewModel.probeIndex.routeGateCandidateProbeCount,
     supportRegionCandidateProbeCount:
       viewModel.probeIndex.supportRegionCandidateProbeCount,
+  };
+}
+
+function buildProfileAwareSemanticHandoffSummary(
+  runtimeReport,
+  evidenceStabilityReport,
+) {
+  const samplingSensitive =
+    evidenceStabilityReport.sensitivitySummary.samplingSensitive;
+  const profileSetupSensitive =
+    evidenceStabilityReport.sensitivitySummary.profileSetupSensitive;
+  const sensitivityActive = samplingSensitive || profileSetupSensitive;
+  const baseCaveats = [
+    'not semantic naming',
+    'not topology workspace',
+    'not packet writing',
+    'policy relative',
+    'old policy not assumed invariant',
+    'candidates are candidates only',
+    'stability is sensitivity, not confirmation',
+  ];
+
+  if (runtimeReport.runtimeBoundaryStatus === 'unsupported') {
+    return {
+      readiness: 'not-available',
+      fieldModeSupported: false,
+      evidenceOk: evidenceStabilityReport.ok,
+      samplingSensitive,
+      profileSetupSensitive,
+      changedCountKeyCount:
+        evidenceStabilityReport.sensitivitySummary.changedCountKeys.length,
+      featureCandidateCount: 0,
+      routeGateCandidateCount: 0,
+      supportRegionCandidateCount: 0,
+      stableEnoughForInspection: false,
+      semanticStatus: runtimeReport.semanticStatus,
+      topologyStatus: runtimeReport.topologyStatus,
+      packetWriteStatus: runtimeReport.packetWriteStatus,
+      caveats: [
+        runtimeReport.unsupportedIssueCode,
+        runtimeReport.unsupportedReason,
+        ...baseCaveats,
+      ],
+      handoffHints: [
+        'Profile-aware Field Mode is not available for this shape.',
+      ],
+    };
+  }
+
+  const featureCandidateCount =
+    runtimeReport.viewModel.featureOverlaySummary.featureMarkers.length;
+  const routeGateCandidateCount =
+    runtimeReport.viewModel.routeGateOverlaySummary.candidateMarkers.length;
+  const supportRegionCandidateCount =
+    runtimeReport.viewModel.supportRegionOverlaySummary.candidateMarkers.length;
+  const candidateCount =
+    featureCandidateCount + routeGateCandidateCount + supportRegionCandidateCount;
+  const readiness =
+    candidateCount === 0
+      ? 'diagnostic-only'
+      : sensitivityActive
+        ? 'candidate-pressure-sensitive'
+        : 'candidate-pressure-available';
+  const handoffHints =
+    candidateCount === 0
+      ? [
+          'Field can be inspected, but no candidate pressure families are currently available.',
+        ]
+      : sensitivityActive
+        ? [
+            'Candidate pressure is available, but sensitivity flags require cautious handoff.',
+            'Review changed evidence counts before semantic or topological follow-up.',
+          ]
+        : [
+            'Candidate pressure families are available for later semantic inspection.',
+            'Use candidate counts as handoff pressure, not confirmation.',
+          ];
+
+  return {
+    readiness,
+    fieldModeSupported: true,
+    evidenceOk: evidenceStabilityReport.ok,
+    samplingSensitive,
+    profileSetupSensitive,
+    changedCountKeyCount:
+      evidenceStabilityReport.sensitivitySummary.changedCountKeys.length,
+    featureCandidateCount,
+    routeGateCandidateCount,
+    supportRegionCandidateCount,
+    stableEnoughForInspection: evidenceStabilityReport.ok && !sensitivityActive,
+    semanticStatus: runtimeReport.semanticStatus,
+    topologyStatus: runtimeReport.topologyStatus,
+    packetWriteStatus: runtimeReport.packetWriteStatus,
+    caveats: baseCaveats,
+    handoffHints,
   };
 }
 

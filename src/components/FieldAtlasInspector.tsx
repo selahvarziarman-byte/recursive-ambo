@@ -389,6 +389,10 @@ function ProfileAwareFieldModeRuntimeSection({
   onClearPinnedProbe: () => void;
   shortenId: (id: string) => string;
 }) {
+  const semanticHandoffSummary = buildProfileAwareSemanticHandoffSummary(
+    report,
+    evidenceStabilityReport,
+  );
   const fieldAtlasLayerVisibility = useGeometryStore(
     (state) => state.fieldAtlasLayerVisibility,
   );
@@ -428,6 +432,9 @@ function ProfileAwareFieldModeRuntimeSection({
           <FieldAtlasMetric label="Topology" value={report.topologyStatus} />
           <FieldAtlasMetric label="Packet write" value={report.packetWriteStatus} />
         </dl>
+        <ProfileAwareSemanticHandoffReadinessSection
+          summary={semanticHandoffSummary}
+        />
       </div>
     );
   }
@@ -577,6 +584,10 @@ function ProfileAwareFieldModeRuntimeSection({
       <ProfileAwareEvidenceStabilitySection
         report={evidenceStabilityReport}
         shortenId={shortenId}
+      />
+
+      <ProfileAwareSemanticHandoffReadinessSection
+        summary={semanticHandoffSummary}
       />
 
       <div className="mt-3 grid gap-2">
@@ -1235,6 +1246,206 @@ function getSaturatedEvidenceStabilityBucketLabels(
   return evidenceStabilityBucketLabels
     .filter(([key]) => flags[key])
     .map(([, label]) => label);
+}
+
+type ProfileAwareSemanticHandoffReadiness =
+  | 'not-available'
+  | 'diagnostic-only'
+  | 'candidate-pressure-available'
+  | 'candidate-pressure-sensitive';
+
+type ProfileAwareSemanticHandoffSummary = {
+  readiness: ProfileAwareSemanticHandoffReadiness;
+  fieldModeSupported: boolean;
+  evidenceOk: boolean;
+  samplingSensitive: boolean;
+  profileSetupSensitive: boolean;
+  changedCountKeyCount: number;
+  featureCandidateCount: number;
+  routeGateCandidateCount: number;
+  supportRegionCandidateCount: number;
+  stableEnoughForInspection: boolean;
+  semanticStatus: string;
+  topologyStatus: string;
+  packetWriteStatus: string;
+  caveats: string[];
+  handoffHints: string[];
+};
+
+function ProfileAwareSemanticHandoffReadinessSection({
+  summary,
+}: {
+  summary: ProfileAwareSemanticHandoffSummary;
+}) {
+  return (
+    <div className="mt-3 rounded border border-stone-800 bg-stone-950 px-2 py-2">
+      <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+        Semantic Handoff Readiness
+      </h4>
+      <dl className="mt-2 grid grid-cols-2 gap-2">
+        <FieldAtlasMetric label="Readiness" value={summary.readiness} />
+        <FieldAtlasMetric
+          label="Field Mode supported"
+          value={formatYesNo(summary.fieldModeSupported)}
+        />
+        <FieldAtlasMetric label="Evidence ok" value={formatYesNo(summary.evidenceOk)} />
+        <FieldAtlasMetric
+          label="Sampling sensitive"
+          value={formatYesNo(summary.samplingSensitive)}
+        />
+        <FieldAtlasMetric
+          label="Profile sensitive"
+          value={formatYesNo(summary.profileSetupSensitive)}
+        />
+        <FieldAtlasMetric
+          label="Changed keys"
+          value={summary.changedCountKeyCount}
+        />
+        <FieldAtlasMetric
+          label="Feature candidates"
+          value={summary.featureCandidateCount}
+        />
+        <FieldAtlasMetric
+          label="Route/gate candidates"
+          value={summary.routeGateCandidateCount}
+        />
+        <FieldAtlasMetric
+          label="Support/region candidates"
+          value={summary.supportRegionCandidateCount}
+        />
+        <FieldAtlasMetric
+          label="Stable enough for inspection"
+          value={formatYesNo(summary.stableEnoughForInspection)}
+        />
+      </dl>
+
+      {summary.handoffHints.length ? (
+        <div className="mt-2 grid gap-1 text-stone-500">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.12em]">
+            Handoff hints
+          </div>
+          {summary.handoffHints.slice(0, 4).map((hint) => (
+            <p key={hint} className="leading-5">
+              {hint}
+            </p>
+          ))}
+        </div>
+      ) : null}
+
+      {summary.caveats.length ? (
+        <div className="mt-2 flex flex-wrap gap-1 font-mono text-[11px] text-stone-500">
+          {summary.caveats.slice(0, 6).map((caveat) => (
+            <span
+              key={caveat}
+              className="rounded border border-stone-800 bg-stone-900 px-1.5 py-0.5"
+            >
+              {caveat}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <p className="mt-2 leading-5 text-stone-500">
+        Field handoff is a pressure/candidate summary for later semantic work;
+        it is not semantic naming, topology, or packet writing.
+      </p>
+    </div>
+  );
+}
+
+function buildProfileAwareSemanticHandoffSummary(
+  runtimeReport: ProfileAwareFieldAtlasViewModelRuntimeReport,
+  evidenceStabilityReport: ProfileAwareEvidenceStabilityReport,
+): ProfileAwareSemanticHandoffSummary {
+  const samplingSensitive =
+    evidenceStabilityReport.sensitivitySummary.samplingSensitive;
+  const profileSetupSensitive =
+    evidenceStabilityReport.sensitivitySummary.profileSetupSensitive;
+  const sensitivityActive = samplingSensitive || profileSetupSensitive;
+  const baseCaveats = [
+    'not semantic naming',
+    'not topology workspace',
+    'not packet writing',
+    'policy relative',
+    'old policy not assumed invariant',
+    'candidates are candidates only',
+    'stability is sensitivity, not confirmation',
+  ];
+
+  if (runtimeReport.runtimeBoundaryStatus === 'unsupported') {
+    return {
+      readiness: 'not-available',
+      fieldModeSupported: false,
+      evidenceOk: evidenceStabilityReport.ok,
+      samplingSensitive,
+      profileSetupSensitive,
+      changedCountKeyCount:
+        evidenceStabilityReport.sensitivitySummary.changedCountKeys.length,
+      featureCandidateCount: 0,
+      routeGateCandidateCount: 0,
+      supportRegionCandidateCount: 0,
+      stableEnoughForInspection: false,
+      semanticStatus: runtimeReport.semanticStatus,
+      topologyStatus: runtimeReport.topologyStatus,
+      packetWriteStatus: runtimeReport.packetWriteStatus,
+      caveats: [
+        runtimeReport.unsupportedIssueCode,
+        runtimeReport.unsupportedReason,
+        ...baseCaveats,
+      ],
+      handoffHints: [
+        'Profile-aware Field Mode is not available for this shape.',
+      ],
+    };
+  }
+
+  const featureCandidateCount =
+    runtimeReport.viewModel.featureOverlaySummary.featureMarkers.length;
+  const routeGateCandidateCount =
+    runtimeReport.viewModel.routeGateOverlaySummary.candidateMarkers.length;
+  const supportRegionCandidateCount =
+    runtimeReport.viewModel.supportRegionOverlaySummary.candidateMarkers.length;
+  const candidateCount =
+    featureCandidateCount + routeGateCandidateCount + supportRegionCandidateCount;
+  const readiness: ProfileAwareSemanticHandoffReadiness =
+    candidateCount === 0
+      ? 'diagnostic-only'
+      : sensitivityActive
+        ? 'candidate-pressure-sensitive'
+        : 'candidate-pressure-available';
+  const handoffHints =
+    candidateCount === 0
+      ? [
+          'Field can be inspected, but no candidate pressure families are currently available.',
+        ]
+      : sensitivityActive
+        ? [
+            'Candidate pressure is available, but sensitivity flags require cautious handoff.',
+            'Review changed evidence counts before semantic or topological follow-up.',
+          ]
+        : [
+            'Candidate pressure families are available for later semantic inspection.',
+            'Use candidate counts as handoff pressure, not confirmation.',
+          ];
+
+  return {
+    readiness,
+    fieldModeSupported: true,
+    evidenceOk: evidenceStabilityReport.ok,
+    samplingSensitive,
+    profileSetupSensitive,
+    changedCountKeyCount:
+      evidenceStabilityReport.sensitivitySummary.changedCountKeys.length,
+    featureCandidateCount,
+    routeGateCandidateCount,
+    supportRegionCandidateCount,
+    stableEnoughForInspection: evidenceStabilityReport.ok && !sensitivityActive,
+    semanticStatus: runtimeReport.semanticStatus,
+    topologyStatus: runtimeReport.topologyStatus,
+    packetWriteStatus: runtimeReport.packetWriteStatus,
+    caveats: baseCaveats,
+    handoffHints,
+  };
 }
 
 function ProfileAwareFeatureMarkerRow({
