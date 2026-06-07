@@ -7,6 +7,7 @@ const repoRoot = path.resolve(__dirname, '..');
 const panelPath = path.join(repoRoot, 'src/components/FieldCueV0Panel.tsx');
 const inspectorPath = path.join(repoRoot, 'src/components/FieldAtlasInspector.tsx');
 const registryPath = path.join(repoRoot, 'src/operations/registry.ts');
+const storePath = path.join(repoRoot, 'src/store/geometryStore.ts');
 const packagePath = path.join(repoRoot, 'package.json');
 
 const failures = [];
@@ -18,9 +19,10 @@ const inspectorSource = readRequiredFile(
   'FieldAtlasInspector component',
 );
 const registrySource = readRequiredFile(registryPath, 'operation registry');
+const storeSource = readRequiredFile(storePath, 'geometry store');
 const packageSource = readRequiredFile(packagePath, 'package.json');
 
-if (panelSource && inspectorSource && registrySource && packageSource) {
+if (panelSource && inspectorSource && registrySource && storeSource && packageSource) {
   expect(
     hasPackageScript(packageSource, 'diagnose:field-cue-v0-ui'),
     'package script',
@@ -28,9 +30,11 @@ if (panelSource && inspectorSource && registrySource && packageSource) {
   );
   expect(
     /FieldCueV0Panel/.test(inspectorSource) &&
-      /<FieldCueV0Panel\s+shape=\{shape\}\s*\/>/.test(inspectorSource),
+      /<FieldCueV0Panel[\s\S]*?shape=\{shape\}[\s\S]*?hoveredProbeRef=\{hoveredFieldAtlasSampleId\}[\s\S]*?pinnedProbeRef=\{pinnedFieldAtlasProbeRef\}[\s\S]*?onHoverStart=\{setHoveredFieldAtlasSampleId\}[\s\S]*?onHoverEnd=\{clearHoveredFieldAtlasSampleId\}[\s\S]*?onTogglePinnedProbe=\{togglePinnedFieldAtlasProbeRef\}[\s\S]*?\/>/.test(
+        inspectorSource,
+      ),
     'inspector render',
-    'FieldAtlasInspector renders FieldCueV0Panel with shape prop',
+    'FieldAtlasInspector renders FieldCueV0Panel with existing hover/pin props',
   );
   expect(
     /from\s+['"]\.\/FieldCueV0Panel['"]/.test(inspectorSource),
@@ -41,6 +45,43 @@ if (panelSource && inspectorSource && registrySource && packageSource) {
     /buildFieldCueV0Report/.test(panelSource),
     'report source',
     'panel uses buildFieldCueV0Report',
+  );
+  for (const propName of [
+    'hoveredProbeRef',
+    'pinnedProbeRef',
+    'onHoverStart',
+    'onHoverEnd',
+    'onTogglePinnedProbe',
+  ]) {
+    expect(
+      panelSource.includes(propName),
+      'probe prop boundary',
+      `FieldCueV0Panel accepts ${propName}`,
+    );
+  }
+  for (const phrase of [
+    'sourceProbeRef',
+    'relation.probeRef',
+    'sampleProbeRefs?.[0]',
+    'onHoverStart(probeRef)',
+    'onHoverEnd(probeRef)',
+    'onTogglePinnedProbe(probeRef)',
+  ]) {
+    expect(
+      panelSource.includes(phrase),
+      'probe interaction boundary',
+      `FieldCueV0Panel uses ${phrase}`,
+    );
+  }
+  expect(
+    !/useGeometryStore/.test(panelSource),
+    'store boundary',
+    'FieldCueV0Panel does not read or add store fields',
+  );
+  expect(
+    !/fieldCueV0|FieldCueV0/.test(storeSource),
+    'store boundary',
+    'geometry store has no FieldCueV0 store fields',
   );
   expect(
     /import\s+type\s+\{\s*Shape\s*\}\s+from\s+['"]\.\.\/types\/geometry['"]/.test(

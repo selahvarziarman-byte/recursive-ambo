@@ -257,6 +257,13 @@ function runEmittedSourceDiagnostic(report) {
       `${cue.siteId} emitted source or explicit unsupported state`,
     );
     expectTruthy(signature.tupleSummary, `${cue.siteId} tuple summary`);
+    if (typeof signature.sourceProbeRef !== 'undefined') {
+      expectEqual(
+        typeof signature.sourceProbeRef,
+        'string',
+        `${cue.siteId} source probe ref type`,
+      );
+    }
   }
 
   console.log('emitted source signatures: PASS');
@@ -275,6 +282,29 @@ function runCandidateMaturityDiagnostic(report) {
         ALLOWED_RELATION_MATURITIES.has(relation.relationMaturity),
         `${cue.siteId} relation ${relation.targetId} maturity`,
       );
+      if (typeof relation.probeRef !== 'undefined') {
+        expectEqual(
+          typeof relation.probeRef,
+          'string',
+          `${cue.siteId} relation ${relation.targetId} probe ref type`,
+        );
+        expectTruthy(
+          ALLOWED_RELATION_MATURITIES.has(relation.relationMaturity),
+          `${cue.siteId} relation ${relation.targetId} probe ref does not promote maturity`,
+        );
+      }
+      if (typeof relation.sampleProbeRefs !== 'undefined') {
+        expectArrayOfStrings(
+          relation.sampleProbeRefs,
+          `${cue.siteId} relation ${relation.targetId} sample probe refs`,
+        );
+      }
+      if (typeof relation.chartProbeRefs !== 'undefined') {
+        expectArrayOfStrings(
+          relation.chartProbeRefs,
+          `${cue.siteId} relation ${relation.targetId} chart probe refs`,
+        );
+      }
       expectTruthy(
         relation.meaningfulContributionRule,
         `${cue.siteId} relation ${relation.targetId} meaningful contribution rule`,
@@ -441,6 +471,19 @@ function expectArrayEqual(actual, expected, label) {
 
   if (actualJson !== expectedJson) {
     failures.push(`${label}: expected ${expectedJson}, got ${actualJson}`);
+  }
+}
+
+function expectArrayOfStrings(actual, label) {
+  if (!Array.isArray(actual)) {
+    failures.push(`${label}: expected array, got ${formatValue(actual)}`);
+    return;
+  }
+
+  for (const value of actual) {
+    if (typeof value !== 'string') {
+      failures.push(`${label}: expected string entries, got ${formatValue(value)}`);
+    }
   }
 }
 

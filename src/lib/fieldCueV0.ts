@@ -160,6 +160,7 @@ export interface FieldCueV0InheritanceAxis {
 export interface FieldCueV0EmittedSourceSignature {
   sourceId?: string;
   sourceKind?: ProfileAwareSourceEntry['sourceKind'];
+  sourceProbeRef?: string;
   fieldReady: boolean;
   profileId?: string;
   profileSystemId?: string;
@@ -179,6 +180,9 @@ export interface FieldCueV0CandidateRelation {
   sourceContributionRank?: number;
   sourceContributionBaseline?: number;
   meaningfulContributionRule: string;
+  probeRef?: string;
+  sampleProbeRefs?: string[];
+  chartProbeRefs?: string[];
   sampleIds: string[];
   chartIds: string[];
   reliability: FieldCueV0CandidateReliability;
@@ -313,6 +317,8 @@ interface CandidateRelationBuildArgs {
   relationKind: FieldCueV0RelationKind;
   samples: ProfileAwareFieldAtlasSurfaceSampleMarker[];
   chartIds: string[];
+  probeRef?: string;
+  chartProbeRefByChartId: Map<string, string>;
   reliability?: string;
   evidenceStabilityReport: ProfileAwareEvidenceStabilityReport;
   extraEvidence?: string[];
@@ -460,6 +466,15 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
             sourceChain.childDegeneracyReport,
           ),
         });
+  const sourceProbeRefBySourceId =
+    viewModel === null
+      ? new Map<string, string>()
+      : new Map(
+          viewModel.sourceMarkers.map((marker) => [
+            marker.sourceId,
+            marker.probeRef,
+          ]),
+        );
 
   const cues = EXPECTED_SITE_IDS.map((siteId) => {
     const childContext = childContextBySiteId.get(siteId);
@@ -495,6 +510,9 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
       childContext,
       childDerivationReport,
       childSource,
+      sourceProbeRef: childSource
+        ? sourceProbeRefBySourceId.get(childSource.sourceId)
+        : undefined,
       degeneracyStatuses:
         degeneracyObservationBySiteId.get(siteId)?.statuses ?? [],
       candidateRelations: candidateRelationsBySiteId.get(siteId) ?? [],
@@ -633,6 +651,7 @@ function buildCue(args: {
   childContext: TetrahedralAmboChildContext | undefined;
   childDerivationReport: FieldChildSourceProfileDerivationReport | undefined;
   childSource: ProfileAwareSourceEntry | undefined;
+  sourceProbeRef: string | undefined;
   degeneracyStatuses: ChildProfileDegeneracyStatus[];
   candidateRelations: FieldCueV0CandidateRelation[];
   evidenceStabilityReport: ProfileAwareEvidenceStabilityReport;
@@ -644,6 +663,7 @@ function buildCue(args: {
   const inheritanceAxis = buildInheritanceAxis(args);
   const emittedSourceSignature = buildEmittedSourceSignature({
     childSource: args.childSource,
+    sourceProbeRef: args.sourceProbeRef,
     derivedEmissionTuple: inheritanceAxis.derivedEmissionTuple,
     profileSystemId: args.profileSystemId,
     profileSetupId: args.profileSetupId,
@@ -798,6 +818,7 @@ function buildInheritanceAxis(args: {
 
 function buildEmittedSourceSignature(args: {
   childSource: ProfileAwareSourceEntry | undefined;
+  sourceProbeRef: string | undefined;
   derivedEmissionTuple: FieldCueV0EmissionTuple | undefined;
   profileSystemId: string;
   profileSetupId: string;
@@ -812,6 +833,7 @@ function buildEmittedSourceSignature(args: {
     ...(args.childSource?.sourceKind
       ? { sourceKind: args.childSource.sourceKind }
       : {}),
+    ...(args.sourceProbeRef ? { sourceProbeRef: args.sourceProbeRef } : {}),
     fieldReady,
     ...(args.childSource?.profileId ? { profileId: args.childSource.profileId } : {}),
     profileSystemId: args.childSource?.profileSystemId ?? args.profileSystemId,
@@ -836,6 +858,12 @@ function buildCandidateRelationsBySiteId(
       sample,
     ]),
   );
+  const chartProbeRefByChartId = new Map(
+    args.viewModel.chartOverlaySummary.chartAnchorMarkers.map((marker) => [
+      marker.chartId,
+      marker.probeRef,
+    ]),
+  );
 
   for (const siteId of EXPECTED_SITE_IDS) {
     const childSource = args.childSourceBySiteId.get(siteId);
@@ -854,6 +882,7 @@ function buildCandidateRelationsBySiteId(
         sampleById,
         childSource,
         childDegenerate,
+        chartProbeRefByChartId,
         evidenceStabilityReport: args.evidenceStabilityReport,
       });
 
@@ -868,6 +897,7 @@ function buildCandidateRelationsBySiteId(
         sampleById,
         childSource,
         childDegenerate,
+        chartProbeRefByChartId,
         evidenceStabilityReport: args.evidenceStabilityReport,
       });
 
@@ -883,6 +913,7 @@ function buildCandidateRelationsBySiteId(
         sampleById,
         childSource,
         childDegenerate,
+        chartProbeRefByChartId,
         evidenceStabilityReport: args.evidenceStabilityReport,
       });
 
@@ -902,6 +933,7 @@ function buildFeatureRelation(args: {
   sampleById: Map<string, ProfileAwareFieldAtlasSurfaceSampleMarker>;
   childSource: ProfileAwareSourceEntry;
   childDegenerate: boolean;
+  chartProbeRefByChartId: Map<string, string>;
   evidenceStabilityReport: ProfileAwareEvidenceStabilityReport;
 }): FieldCueV0CandidateRelation | null {
   const sample = args.sampleById.get(args.marker.sampleId);
@@ -914,6 +946,8 @@ function buildFeatureRelation(args: {
     relationKind: 'candidate-sample-contribution',
     samples: sample ? [sample] : [],
     chartIds: [args.marker.chartId],
+    probeRef: args.marker.probeRef,
+    chartProbeRefByChartId: args.chartProbeRefByChartId,
     evidenceStabilityReport: args.evidenceStabilityReport,
     extraEvidence: [
       `feature-observation-kind:${args.marker.observationKind}`,
@@ -931,6 +965,7 @@ function buildRouteGateRelation(args: {
   sampleById: Map<string, ProfileAwareFieldAtlasSurfaceSampleMarker>;
   childSource: ProfileAwareSourceEntry;
   childDegenerate: boolean;
+  chartProbeRefByChartId: Map<string, string>;
   evidenceStabilityReport: ProfileAwareEvidenceStabilityReport;
 }): FieldCueV0CandidateRelation | null {
   return buildCandidateRelationFromSamples({
@@ -947,6 +982,8 @@ function buildRouteGateRelation(args: {
         ): sample is ProfileAwareFieldAtlasSurfaceSampleMarker => Boolean(sample),
       ),
     chartIds: args.marker.chartIds,
+    probeRef: args.marker.probeRef,
+    chartProbeRefByChartId: args.chartProbeRefByChartId,
     reliability: args.marker.reliability,
     evidenceStabilityReport: args.evidenceStabilityReport,
     extraEvidence: [
@@ -966,6 +1003,7 @@ function buildSupportRegionRelation(args: {
   sampleById: Map<string, ProfileAwareFieldAtlasSurfaceSampleMarker>;
   childSource: ProfileAwareSourceEntry;
   childDegenerate: boolean;
+  chartProbeRefByChartId: Map<string, string>;
   evidenceStabilityReport: ProfileAwareEvidenceStabilityReport;
 }): FieldCueV0CandidateRelation | null {
   return buildCandidateRelationFromSamples({
@@ -982,6 +1020,8 @@ function buildSupportRegionRelation(args: {
         ): sample is ProfileAwareFieldAtlasSurfaceSampleMarker => Boolean(sample),
       ),
     chartIds: args.marker.chartIds,
+    probeRef: args.marker.probeRef,
+    chartProbeRefByChartId: args.chartProbeRefByChartId,
     reliability: args.marker.reliability,
     evidenceStabilityReport: args.evidenceStabilityReport,
     extraEvidence: [
@@ -1054,6 +1094,19 @@ function buildCandidateRelationFromSamples(
     dominantMatch || aboveBaselineMatch
       ? 'candidate-relation'
       : 'candidate-reference';
+  const sampleIds = meaningfulEvidence.map((evidence) => evidence.sample.sampleId);
+  const chartIds = uniqueStrings([
+    ...args.chartIds,
+    ...meaningfulEvidence.map((evidence) => evidence.sample.chartId),
+  ]);
+  const sampleProbeRefs = uniqueStrings(
+    meaningfulEvidence.map((evidence) => evidence.sample.probeRef),
+  );
+  const chartProbeRefs = uniqueStrings(
+    chartIds
+      .map((chartId) => args.chartProbeRefByChartId.get(chartId))
+      .filter((probeRef): probeRef is string => Boolean(probeRef)),
+  );
 
   return {
     targetId: args.targetId,
@@ -1078,11 +1131,11 @@ function buildCandidateRelationFromSamples(
     sourceContributionRank,
     sourceContributionBaseline,
     meaningfulContributionRule,
-    sampleIds: meaningfulEvidence.map((evidence) => evidence.sample.sampleId),
-    chartIds: uniqueStrings([
-      ...args.chartIds,
-      ...meaningfulEvidence.map((evidence) => evidence.sample.chartId),
-    ]),
+    ...(args.probeRef ? { probeRef: args.probeRef } : {}),
+    ...(sampleProbeRefs.length ? { sampleProbeRefs } : {}),
+    ...(chartProbeRefs.length ? { chartProbeRefs } : {}),
+    sampleIds,
+    chartIds,
     reliability: sensitivityActive
       ? 'sensitive'
       : normalizeCandidateReliability(args.reliability, dominantMatch),

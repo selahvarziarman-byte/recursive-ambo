@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { type KeyboardEvent, type MouseEvent, useMemo } from 'react';
 import {
   buildFieldCueV0Report,
   type FieldCueV0,
@@ -10,17 +10,55 @@ import type { Shape } from '../types/geometry';
 
 type FieldCueV0ShapeSupportStatus = 'supported' | 'unsupported';
 
-export function FieldCueV0Panel({ shape }: { shape: Shape }) {
+interface FieldCueV0PanelProps {
+  shape: Shape;
+  hoveredProbeRef: string | null;
+  pinnedProbeRef: string | null;
+  onHoverStart: (probeRef: string) => void;
+  onHoverEnd: (probeRef: string) => void;
+  onTogglePinnedProbe: (probeRef: string) => void;
+}
+
+interface FieldCueV0ProbeInteractionProps {
+  hoveredProbeRef: string | null;
+  pinnedProbeRef: string | null;
+  onHoverStart: (probeRef: string) => void;
+  onHoverEnd: (probeRef: string) => void;
+  onTogglePinnedProbe: (probeRef: string) => void;
+}
+
+export function FieldCueV0Panel({
+  shape,
+  hoveredProbeRef,
+  pinnedProbeRef,
+  onHoverStart,
+  onHoverEnd,
+  onTogglePinnedProbe,
+}: FieldCueV0PanelProps) {
   const supportStatus = getFieldCueV0ShapeSupportStatus(shape);
 
   if (supportStatus === 'unsupported') {
     return <FieldCueV0UnsupportedPanel shape={shape} />;
   }
 
-  return <SupportedFieldCueV0Panel />;
+  return (
+    <SupportedFieldCueV0Panel
+      hoveredProbeRef={hoveredProbeRef}
+      pinnedProbeRef={pinnedProbeRef}
+      onHoverStart={onHoverStart}
+      onHoverEnd={onHoverEnd}
+      onTogglePinnedProbe={onTogglePinnedProbe}
+    />
+  );
 }
 
-function SupportedFieldCueV0Panel() {
+function SupportedFieldCueV0Panel({
+  hoveredProbeRef,
+  pinnedProbeRef,
+  onHoverStart,
+  onHoverEnd,
+  onTogglePinnedProbe,
+}: FieldCueV0ProbeInteractionProps) {
   const report = useMemo(() => buildFieldCueV0Report(), []);
 
   return (
@@ -69,7 +107,15 @@ function SupportedFieldCueV0Panel() {
 
       <div className="mt-3 grid max-h-[34rem] gap-2 overflow-y-auto pr-1">
         {report.cues.map((cue) => (
-          <FieldCueV0Card key={cue.siteId} cue={cue} />
+          <FieldCueV0Card
+            key={cue.siteId}
+            cue={cue}
+            hoveredProbeRef={hoveredProbeRef}
+            pinnedProbeRef={pinnedProbeRef}
+            onHoverStart={onHoverStart}
+            onHoverEnd={onHoverEnd}
+            onTogglePinnedProbe={onTogglePinnedProbe}
+          />
         ))}
       </div>
     </section>
@@ -117,15 +163,45 @@ function getFieldCueV0ShapeSupportStatus(
     : 'unsupported';
 }
 
-function FieldCueV0Card({ cue }: { cue: FieldCueV0 }) {
+function FieldCueV0Card({
+  cue,
+  hoveredProbeRef,
+  pinnedProbeRef,
+  onHoverStart,
+  onHoverEnd,
+  onTogglePinnedProbe,
+}: {
+  cue: FieldCueV0;
+} & FieldCueV0ProbeInteractionProps) {
   const axis = cue.inheritanceAxis;
   const candidateAxis = cue.candidateFieldWorldAxis;
   const topRelations = [...candidateAxis.candidateRelations]
     .sort(compareCandidateRelations)
     .slice(0, 2);
+  const sourceProbeRef = cue.emittedSourceSignature.sourceProbeRef;
+  const sourceProbeState = getProbeInteractionState({
+    probeRef: sourceProbeRef,
+    hoveredProbeRef,
+    pinnedProbeRef,
+  });
+  const sourceProbeHandlers = buildProbeInteractionHandlers({
+    probeRef: sourceProbeRef,
+    onHoverStart,
+    onHoverEnd,
+    onTogglePinnedProbe,
+  });
 
   return (
-    <article className="rounded border border-stone-800 bg-stone-950 px-3 py-2">
+    <article
+      className={`rounded border px-3 py-2 transition-colors ${
+        sourceProbeState.isPinned
+          ? 'border-cyan-300/80 bg-cyan-950/40'
+          : sourceProbeState.isHovered
+            ? 'border-cyan-400/60 bg-cyan-950/25'
+            : 'border-stone-800 bg-stone-950'
+      } ${sourceProbeRef ? 'cursor-pointer' : ''}`}
+      {...sourceProbeHandlers}
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h4 className="font-mono text-sm font-semibold text-stone-100">
@@ -140,6 +216,9 @@ function FieldCueV0Card({ cue }: { cue: FieldCueV0 }) {
           generated-site cue
         </span>
       </div>
+      <p className="mt-1 text-[11px] text-stone-500">
+        {sourceProbeRef ? `source probe ${shortenId(sourceProbeRef)}` : 'no source probe ref'}
+      </p>
 
       <div className="mt-2 grid gap-2 sm:grid-cols-2">
         <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-stone-400">
@@ -221,6 +300,11 @@ function FieldCueV0Card({ cue }: { cue: FieldCueV0 }) {
               <FieldCueV0RelationRow
                 key={`${relation.targetKind}:${relation.targetId}:${relation.relationKind}`}
                 relation={relation}
+                hoveredProbeRef={hoveredProbeRef}
+                pinnedProbeRef={pinnedProbeRef}
+                onHoverStart={onHoverStart}
+                onHoverEnd={onHoverEnd}
+                onTogglePinnedProbe={onTogglePinnedProbe}
               />
             ))}
           </div>
@@ -254,11 +338,39 @@ function FieldCueV0Card({ cue }: { cue: FieldCueV0 }) {
 
 function FieldCueV0RelationRow({
   relation,
+  hoveredProbeRef,
+  pinnedProbeRef,
+  onHoverStart,
+  onHoverEnd,
+  onTogglePinnedProbe,
 }: {
   relation: FieldCueV0CandidateRelation;
-}) {
+} & FieldCueV0ProbeInteractionProps) {
+  const probeTarget = getRelationProbeTarget(relation);
+  const probeState = getProbeInteractionState({
+    probeRef: probeTarget?.probeRef,
+    hoveredProbeRef,
+    pinnedProbeRef,
+  });
+  const probeHandlers = buildProbeInteractionHandlers({
+    probeRef: probeTarget?.probeRef,
+    onHoverStart,
+    onHoverEnd,
+    onTogglePinnedProbe,
+    stopClickPropagation: true,
+  });
+
   return (
-    <div className="rounded border border-stone-800 bg-stone-950 px-2 py-1.5">
+    <div
+      className={`rounded border px-2 py-1.5 transition-colors ${
+        probeState.isPinned
+          ? 'border-cyan-300/80 bg-cyan-950/40'
+          : probeState.isHovered
+            ? 'border-cyan-400/60 bg-cyan-950/25'
+            : 'border-stone-800 bg-stone-950'
+      } ${probeTarget ? 'cursor-pointer' : ''}`}
+      {...probeHandlers}
+    >
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <span className="font-medium text-stone-200">
           {formatTargetKind(relation.targetKind)}
@@ -274,6 +386,11 @@ function FieldCueV0RelationRow({
         <span>rank {relation.sourceContributionRank ?? 'n/a'}</span>
         <span>rule {relation.meaningfulContributionRule}</span>
         <span>reliability {relation.reliability}</span>
+      </div>
+      <div className="mt-1 text-[11px] text-stone-600">
+        {probeTarget
+          ? `${probeTarget.label} ${shortenId(probeTarget.probeRef)}`
+          : 'no candidate probe ref'}
       </div>
     </div>
   );
@@ -294,6 +411,81 @@ function FieldCueV0Metric({
       <dd className="mt-1 font-mono text-sm text-stone-200">{value}</dd>
     </div>
   );
+}
+
+function getRelationProbeTarget(
+  relation: FieldCueV0CandidateRelation,
+): { probeRef: string; label: string } | null {
+  if (relation.probeRef) {
+    return { probeRef: relation.probeRef, label: 'candidate probe ref' };
+  }
+
+  const sampleProbeRef = relation.sampleProbeRefs?.[0];
+
+  return sampleProbeRef
+    ? { probeRef: sampleProbeRef, label: 'sample probe fallback' }
+    : null;
+}
+
+function getProbeInteractionState({
+  probeRef,
+  hoveredProbeRef,
+  pinnedProbeRef,
+}: {
+  probeRef: string | undefined;
+  hoveredProbeRef: string | null;
+  pinnedProbeRef: string | null;
+}) {
+  return {
+    isHovered: Boolean(probeRef && hoveredProbeRef === probeRef),
+    isPinned: Boolean(probeRef && pinnedProbeRef === probeRef),
+  };
+}
+
+function buildProbeInteractionHandlers({
+  probeRef,
+  onHoverStart,
+  onHoverEnd,
+  onTogglePinnedProbe,
+  stopClickPropagation = false,
+}: {
+  probeRef: string | undefined;
+  onHoverStart: (probeRef: string) => void;
+  onHoverEnd: (probeRef: string) => void;
+  onTogglePinnedProbe: (probeRef: string) => void;
+  stopClickPropagation?: boolean;
+}) {
+  if (!probeRef) {
+    return {};
+  }
+
+  return {
+    role: 'button',
+    tabIndex: 0,
+    onPointerEnter: () => onHoverStart(probeRef),
+    onPointerLeave: () => onHoverEnd(probeRef),
+    onFocus: () => onHoverStart(probeRef),
+    onBlur: () => onHoverEnd(probeRef),
+    onClick: (event: MouseEvent<HTMLElement>) => {
+      if (stopClickPropagation) {
+        event.stopPropagation();
+      }
+
+      onTogglePinnedProbe(probeRef);
+    },
+    onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+      if (event.key !== 'Enter' && event.key !== ' ') {
+        return;
+      }
+
+      if (stopClickPropagation) {
+        event.stopPropagation();
+      }
+
+      event.preventDefault();
+      onTogglePinnedProbe(probeRef);
+    },
+  };
 }
 
 function compareCandidateRelations(

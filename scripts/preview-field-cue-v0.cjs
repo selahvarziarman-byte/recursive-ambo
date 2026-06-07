@@ -132,6 +132,9 @@ function printCueCard(cue) {
   );
   console.log(`tuple: ${cue.emittedSourceSignature.tupleSummary}`);
   console.log(
+    `source probe: ${cue.emittedSourceSignature.sourceProbeRef ?? 'n/a'}`,
+  );
+  console.log(
     `degeneracy: ${formatList(axis.degeneracyStatuses, 'none')}`,
   );
   console.log(
@@ -148,7 +151,9 @@ function printCueCard(cue) {
       console.log(
         `  - ${relation.targetKind} ${shortenId(relation.targetId)} | ${relation.relationKind} | ${relation.relationMaturity} | ${relation.participationStatus} | ratio ${formatNumber(
           relation.sourceContributionRatio,
-        )} | rank ${relation.sourceContributionRank ?? 'n/a'} | rule ${
+        )} | rank ${relation.sourceContributionRank ?? 'n/a'} | probe ${formatRelationProbe(
+          relation,
+        )} | rule ${
           relation.meaningfulContributionRule
         } | reliability ${relation.reliability}`,
       );
@@ -228,6 +233,16 @@ function formatCountRecord(counts) {
 function formatNumber(value) {
   return typeof value === 'number' && Number.isFinite(value)
     ? Number.parseFloat(value.toFixed(4)).toString()
+    : 'n/a';
+}
+
+function formatRelationProbe(relation) {
+  if (relation.probeRef) {
+    return relation.probeRef;
+  }
+
+  return relation.sampleProbeRefs?.[0]
+    ? `sample-fallback:${relation.sampleProbeRefs[0]}`
     : 'n/a';
 }
 

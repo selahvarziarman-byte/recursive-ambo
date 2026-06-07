@@ -274,7 +274,14 @@ export function FieldAtlasInspector({
 
   return (
     <div className="grid gap-3 text-sm">
-      <FieldCueV0Panel shape={shape} />
+      <FieldCueV0Panel
+        shape={shape}
+        hoveredProbeRef={hoveredFieldAtlasSampleId}
+        pinnedProbeRef={pinnedFieldAtlasProbeRef}
+        onHoverStart={setHoveredFieldAtlasSampleId}
+        onHoverEnd={clearHoveredFieldAtlasSampleId}
+        onTogglePinnedProbe={togglePinnedFieldAtlasProbeRef}
+      />
 
       <ProfileAwareFieldModeRuntimeSection
         report={profileAwareRuntimeReport}
