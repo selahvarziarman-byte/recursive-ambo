@@ -73,6 +73,7 @@ import {
   type FieldAtlasSampleRenderMode,
 } from '../store/geometryStore';
 import type { Shape, ShapeId, VertexId } from '../types/geometry';
+import { FieldCueV0Panel } from './FieldCueV0Panel';
 
 interface FieldAtlasInspectorProps {
   shape: Shape;
@@ -273,6 +274,8 @@ export function FieldAtlasInspector({
 
   return (
     <div className="grid gap-3 text-sm">
+      <FieldCueV0Panel shape={shape} />
+
       <ProfileAwareFieldModeRuntimeSection
         report={profileAwareRuntimeReport}
         evidenceStabilityReport={profileAwareEvidenceStabilityReport}
