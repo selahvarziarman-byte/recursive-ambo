@@ -142,6 +142,71 @@ if (panelSource && inspectorSource && registrySource && storeSource && packageSo
   }
 
   for (const phrase of [
+    'Source signature',
+    'strength',
+    'frequency',
+    'phase',
+    'decay',
+    'what these numbers mean',
+  ]) {
+    expect(
+      panelSource.includes(phrase),
+      'source signature language',
+      `panel contains source-signature translation "${phrase}"`,
+    );
+  }
+
+  for (const phrase of [
+    'Signature birth',
+    'Quark channels',
+    'merged',
+  ]) {
+    expect(
+      panelSource.includes(phrase),
+      'signature birth language',
+      `panel contains signature-birth language "${phrase}"`,
+    );
+  }
+
+  for (const phrase of [
+    'unconfirmed cue',
+    'unstable evidence',
+    'read cautiously',
+    'weak field pressure',
+  ]) {
+    expect(
+      panelSource.includes(phrase),
+      'human warning language',
+      `panel contains human warning translation "${phrase}"`,
+    );
+  }
+
+  for (const pattern of [
+    /rule\s+\{relation\.meaningfulContributionRule\}/,
+    /reliability\s+\{relation\.reliability\}/,
+    /\{relation\.relationMaturity\}/,
+    /candidate probe ref/,
+    /source probe\s+\$\{shortenId\(sourceProbeRef\)\}/,
+  ]) {
+    expect(
+      !pattern.test(panelSource),
+      'diagnostic label boundary',
+      `panel avoids prominent raw diagnostic label pattern ${pattern}`,
+    );
+  }
+
+  expect(
+    !panelSource.includes('candidate-relation'),
+    'diagnostic label boundary',
+    'panel source avoids candidate-relation as rendered copy',
+  );
+  expect(
+    !panelSource.includes('reliability sensitive'),
+    'diagnostic label boundary',
+    'panel source avoids reliability sensitive as rendered copy',
+  );
+
+  for (const phrase of [
     'confirmed gate',
     'confirmed route',
     'confirmed region',

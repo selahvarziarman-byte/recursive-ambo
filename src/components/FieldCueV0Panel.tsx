@@ -3,8 +3,7 @@ import {
   buildFieldCueV0Report,
   type FieldCueV0,
   type FieldCueV0CandidateRelation,
-  type FieldCueV0RelationMaturity,
-  type FieldCueV0TargetKind,
+  type FieldCueV0ParticipationStatus,
 } from '../lib/fieldCueV0';
 import type { Shape } from '../types/geometry';
 
@@ -62,15 +61,15 @@ function SupportedFieldCueV0Panel({
   const report = useMemo(() => buildFieldCueV0Report(), []);
 
   return (
-    <section className="rounded border border-cyan-400/30 bg-cyan-950/20 px-3 py-2 text-xs">
+    <section className="rounded border border-cyan-400/25 bg-cyan-950/15 px-3 py-2 text-xs">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-cyan-100">
-            FieldCueV0 Generated-Site Cues
+            FieldCueV0: field witness for generated sites
           </h3>
           <p className="mt-1 leading-5 text-stone-400">
             {
-              'event-bound field witness; not semantic naming; not topology; not packet writing; not general field layer; candidate evidence only'
+              'Candidate evidence only; no auto-name; not topology; not semantic naming; not packet writing; not general field layer.'
             }
           </p>
         </div>
@@ -81,31 +80,11 @@ function SupportedFieldCueV0Panel({
               : 'border-amber-400/40 bg-amber-400/10 text-amber-100'
           }`}
         >
-          {report.ok ? 'report ok' : 'report issue'}
+          {report.ok ? 'ready' : 'issue'}
         </span>
       </div>
 
-      <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <FieldCueV0Metric label="Cues" value={report.cueCount} />
-        <FieldCueV0Metric label="Issues" value={report.issueCount} />
-        <FieldCueV0Metric
-          label="Candidate refs"
-          value={sumCandidateReferenceCounts(report.summary.candidateReferenceCountsByKind)}
-        />
-        <FieldCueV0Metric
-          label="Sensitive"
-          value={report.summary.sensitiveCueCount}
-        />
-      </dl>
-
-      {!report.ok ? (
-        <p className="mt-3 rounded border border-amber-400/30 bg-amber-400/10 px-3 py-2 leading-5 text-amber-100">
-          FieldCueV0 report has boundary issues; this panel remains read-only
-          and candidate-scoped.
-        </p>
-      ) : null}
-
-      <div className="mt-3 grid max-h-[34rem] gap-2 overflow-y-auto pr-1">
+      <div className="mt-3 grid max-h-[36rem] gap-2 overflow-y-auto pr-1">
         {report.cues.map((cue) => (
           <FieldCueV0Card
             key={cue.siteId}
@@ -137,7 +116,7 @@ function FieldCueV0UnsupportedPanel({ shape }: { shape: Shape }) {
           </p>
         </div>
         <span className="shrink-0 rounded border border-amber-300/40 bg-amber-300/10 px-2 py-0.5 font-mono text-[11px] text-amber-100">
-          unsupported
+          unavailable
         </span>
       </div>
 
@@ -190,14 +169,16 @@ function FieldCueV0Card({
     onHoverEnd,
     onTogglePinnedProbe,
   });
+  const primaryWarningStatus = pickPrimaryHumanWarningStatus(cue);
+  const candidateCount = candidateAxis.candidateReferenceCount;
 
   return (
     <article
       className={`rounded border px-3 py-2 transition-colors ${
         sourceProbeState.isPinned
-          ? 'border-cyan-300/80 bg-cyan-950/40'
+          ? 'border-cyan-300/70 bg-cyan-950/35'
           : sourceProbeState.isHovered
-            ? 'border-cyan-400/60 bg-cyan-950/25'
+            ? 'border-cyan-400/45 bg-cyan-950/25'
             : 'border-stone-800 bg-stone-950'
       } ${sourceProbeRef ? 'cursor-pointer' : ''}`}
       {...sourceProbeHandlers}
@@ -208,94 +189,91 @@ function FieldCueV0Card({
             {cue.siteId}
           </h4>
           <p className="mt-1 leading-5 text-stone-500">
-            {cue.participationStatus} | inheritance {axis.inheritanceStatus} |{' '}
             {shortStatus(cue.eventScopeStatus)} / {shortStatus(cue.generalityStatus)}
           </p>
         </div>
-        <span className="rounded border border-cyan-400/30 bg-cyan-400/10 px-2 py-0.5 text-[11px] text-cyan-100">
-          generated-site cue
+        <span className="rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-[11px] text-stone-300">
+          {getHumanWarningLabel(primaryWarningStatus)}
         </span>
       </div>
-      <p className="mt-1 text-[11px] text-stone-500">
-        {sourceProbeRef ? `source probe ${shortenId(sourceProbeRef)}` : 'no source probe ref'}
-      </p>
 
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-stone-400">
-          <dt>source edge</dt>
-          <dd className="text-right font-mono text-stone-300">
-            {axis.sourceEdgeId ?? 'n/a'}
-          </dd>
-          <dt>parents</dt>
-          <dd className="text-right font-mono text-stone-300">
-            {formatList(axis.parentVertexIds)}
-          </dd>
-          <dt>projections</dt>
-          <dd className="text-right font-mono text-stone-300">
-            {formatList(axis.projectionVertexIds)}
-          </dd>
-          <dt>complement</dt>
-          <dd className="text-right font-mono text-stone-300">
-            {axis.complementEdgeId ?? 'n/a'}
-          </dd>
-          <dt>antipodal child</dt>
-          <dd className="text-right font-mono text-stone-300">
-            {axis.antipodalChildSiteId ?? 'n/a'}
-          </dd>
-          <dt>child role</dt>
-          <dd className="text-right text-stone-300">{axis.childRole ?? 'n/a'}</dd>
-        </dl>
+      <div className="mt-3 grid gap-3 lg:grid-cols-[1.1fr_1fr]">
+        <div className="grid gap-2">
+          <div>
+            <h5 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+              Source signature
+            </h5>
+            <p className="mt-1 font-mono text-sm text-stone-100">
+              {formatSourceSignature(cue)}
+            </p>
+            <p className="mt-1 leading-5 text-stone-400">
+              {cue.emittedSourceSignature.emissionTuple
+                ? "This is the child's emitted wave signature in the field."
+                : 'V0 did not resolve numeric signature values for this child; read the warning below before naming.'}
+            </p>
+          </div>
 
-        <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-stone-400">
-          <dt>Quark channels</dt>
-          <dd className="text-right font-mono text-stone-300">
-            {axis.quarkChannelSummaries.length}
-          </dd>
-          <dt>pairs</dt>
-          <dd className="text-right font-mono text-stone-300">
-            {formatQuarkPairs(cue)}
-          </dd>
-          <dt>tuple</dt>
-          <dd className="text-right text-stone-300">
-            {cue.emittedSourceSignature.tupleSummary}
-          </dd>
-          <dt>degeneracy</dt>
-          <dd className="text-right text-stone-300">
-            {formatList(axis.degeneracyStatuses, 'none')}
-          </dd>
-        </dl>
-      </div>
-
-      <div className="mt-3 rounded border border-stone-800 bg-stone-900/60 px-3 py-2">
-        <div className="grid gap-1 text-stone-400 sm:grid-cols-2">
-          <span>
-            feature refs{' '}
-            <span className="font-mono text-stone-200">
-              {candidateAxis.featureObservationReferenceCount}
-            </span>
-          </span>
-          <span>
-            candidate route/gate refs{' '}
-            <span className="font-mono text-stone-200">
-              {candidateAxis.routeGateCandidateReferenceCount}
-            </span>
-          </span>
-          <span>
-            candidate support/region refs{' '}
-            <span className="font-mono text-stone-200">
-              {candidateAxis.supportRegionCandidateReferenceCount}
-            </span>
-          </span>
-          <span>
-            warnings{' '}
-            <span className="text-stone-200">
-              {formatList(cue.warningStatuses, 'none')}
-            </span>
-          </span>
+          <details
+            className="text-stone-500"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <summary className="cursor-pointer select-none text-[11px] uppercase tracking-[0.14em]">
+              what these numbers mean
+            </summary>
+            <dl className="mt-2 grid gap-1 leading-5 text-stone-400">
+              <div>
+                <dt className="inline font-medium text-stone-300">strength:</dt>{' '}
+                <dd className="inline">how strongly this source contributes before interference</dd>
+              </div>
+              <div>
+                <dt className="inline font-medium text-stone-300">frequency:</dt>{' '}
+                <dd className="inline">how quickly its wave oscillates over distance</dd>
+              </div>
+              <div>
+                <dt className="inline font-medium text-stone-300">phase:</dt>{' '}
+                <dd className="inline">where the wave starts in its cycle</dd>
+              </div>
+              <div>
+                <dt className="inline font-medium text-stone-300">decay:</dt>{' '}
+                <dd className="inline">how quickly it weakens with distance</dd>
+              </div>
+            </dl>
+          </details>
         </div>
 
+        <div>
+          <h5 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+            Signature birth
+          </h5>
+          <p className="mt-1 leading-5 text-stone-300">
+            {buildSignatureBirthSentence(cue)}
+          </p>
+          <p className="mt-1 font-mono text-[11px] text-stone-500">
+            Quark channels: {formatQuarkPairs(cue)}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-stone-400">
+        <span className="rounded bg-stone-900 px-2 py-0.5">
+          feature candidates {candidateAxis.featureObservationReferenceCount}
+        </span>
+        <span className="rounded bg-stone-900 px-2 py-0.5">
+          candidate route/gate {candidateAxis.routeGateCandidateReferenceCount}
+        </span>
+        <span className="rounded bg-stone-900 px-2 py-0.5">
+          candidate support/region {candidateAxis.supportRegionCandidateReferenceCount}
+        </span>
+        <span className="rounded bg-stone-900 px-2 py-0.5">
+          field links {candidateCount}
+        </span>
+      </div>
+
+      <div className="mt-3 grid gap-2">
+        <HumanWarnings cue={cue} />
+
         {topRelations.length ? (
-          <div className="mt-2 grid gap-2">
+          <div className="grid gap-1.5">
             {topRelations.map((relation) => (
               <FieldCueV0RelationRow
                 key={`${relation.targetKind}:${relation.targetId}:${relation.relationKind}`}
@@ -309,30 +287,48 @@ function FieldCueV0Card({
             ))}
           </div>
         ) : (
-          <p className="mt-2 leading-5 text-stone-500">
-            Missing candidate relations:{' '}
-            {formatList(candidateAxis.unsupportedCaveats, 'none')}
+          <p className="rounded bg-stone-900/70 px-2 py-1.5 leading-5 text-stone-500">
+            No measured candidate field relation is available for this child in V0.
           </p>
         )}
       </div>
 
-      <p className="mt-2 leading-5 text-stone-300">{cue.fieldPressureSummary}</p>
+      <p className="mt-3 leading-5 text-stone-300">{cue.fieldPressureSummary}</p>
 
-      <div className="mt-2 grid gap-1 text-stone-400">
-        {cue.namingQuestions.slice(0, 2).map((question, index) => (
-          <p key={`${cue.siteId}:question:${index}`} className="leading-5">
-            <span className="text-stone-500">Q{index + 1}.</span> {question}
-          </p>
-        ))}
-        <p className="leading-5">
-          <span className="text-stone-500">warnings:</span>{' '}
-          {formatList(cue.warnings, 'none')}
-        </p>
-        <p className="font-medium text-stone-500">
-          no auto-name; candidate-only; no topology; no packet write; not general
-        </p>
+      <p className="mt-2 leading-5 text-stone-400">
+        <span className="font-medium text-stone-300">Question for naming:</span>{' '}
+        {getHumanNamingQuestion(cue)}
+      </p>
+
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-stone-600">
+        <span>cue only | no auto-name | not topology</span>
+        <DiagnosticRefs sourceProbeRef={sourceProbeRef} />
       </div>
     </article>
+  );
+}
+
+function HumanWarnings({ cue }: { cue: FieldCueV0 }) {
+  const statuses = getHumanWarningStatuses(cue).slice(0, 3);
+
+  if (!statuses.length) {
+    return null;
+  }
+
+  return (
+    <div className="grid gap-1.5">
+      {statuses.map((status) => (
+        <div
+          key={status}
+          className="rounded bg-stone-900/70 px-2 py-1.5 leading-5 text-stone-400"
+        >
+          <span className="font-medium text-stone-200">
+            {getHumanWarningLabel(status)}
+          </span>
+          <span className="text-stone-500"> - {getHumanWarningSentence(status)}</span>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -362,37 +358,49 @@ function FieldCueV0RelationRow({
 
   return (
     <div
-      className={`rounded border px-2 py-1.5 transition-colors ${
+      className={`rounded px-2 py-1.5 transition-colors ${
         probeState.isPinned
-          ? 'border-cyan-300/80 bg-cyan-950/40'
+          ? 'bg-cyan-950/45 ring-1 ring-cyan-300/60'
           : probeState.isHovered
-            ? 'border-cyan-400/60 bg-cyan-950/25'
-            : 'border-stone-800 bg-stone-950'
+            ? 'bg-cyan-950/25 ring-1 ring-cyan-400/35'
+            : 'bg-stone-900/70'
       } ${probeTarget ? 'cursor-pointer' : ''}`}
       {...probeHandlers}
     >
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="font-medium text-stone-200">
-          {formatTargetKind(relation.targetKind)}
-        </span>
-        <span className="font-mono text-stone-500">
-          {shortenId(relation.targetId)}
-        </span>
-        <span className="text-stone-500">{relation.relationMaturity}</span>
-        <span className="text-stone-500">{relation.participationStatus}</span>
-      </div>
-      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-stone-500">
-        <span>ratio {formatNumber(relation.sourceContributionRatio)}</span>
+      <p className="leading-5 text-stone-300">{describeCandidateRelation(relation)}</p>
+      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-stone-500">
+        <span>share {formatPercent(relation.sourceContributionRatio)}</span>
         <span>rank {relation.sourceContributionRank ?? 'n/a'}</span>
-        <span>rule {relation.meaningfulContributionRule}</span>
-        <span>reliability {relation.reliability}</span>
+        <span>evidence {getEvidenceLabel(relation.meaningfulContributionRule)}</span>
+        <span>stability {getHumanWarningLabel(relation.participationStatus)}</span>
       </div>
-      <div className="mt-1 text-[11px] text-stone-600">
-        {probeTarget
-          ? `${probeTarget.label} ${shortenId(probeTarget.probeRef)}`
-          : 'no candidate probe ref'}
-      </div>
+      <details
+        className="mt-1 text-[11px] text-stone-600"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <summary className="cursor-pointer select-none">diagnostic refs</summary>
+        <div className="mt-1 grid gap-1 font-mono">
+          <span>target {shortenId(relation.targetId)}</span>
+          {probeTarget ? <span>marker {shortenId(probeTarget.probeRef)}</span> : null}
+        </div>
+      </details>
     </div>
+  );
+}
+
+function DiagnosticRefs({ sourceProbeRef }: { sourceProbeRef?: string }) {
+  if (!sourceProbeRef) {
+    return null;
+  }
+
+  return (
+    <details
+      className="text-stone-600"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <summary className="cursor-pointer select-none">diagnostic refs</summary>
+      <span className="mt-1 block font-mono">source {shortenId(sourceProbeRef)}</span>
+    </details>
   );
 }
 
@@ -417,13 +425,13 @@ function getRelationProbeTarget(
   relation: FieldCueV0CandidateRelation,
 ): { probeRef: string; label: string } | null {
   if (relation.probeRef) {
-    return { probeRef: relation.probeRef, label: 'candidate probe ref' };
+    return { probeRef: relation.probeRef, label: 'marker ref' };
   }
 
   const sampleProbeRef = relation.sampleProbeRefs?.[0];
 
   return sampleProbeRef
-    ? { probeRef: sampleProbeRef, label: 'sample probe fallback' }
+    ? { probeRef: sampleProbeRef, label: 'sample marker fallback' }
     : null;
 }
 
@@ -492,14 +500,6 @@ function compareCandidateRelations(
   left: FieldCueV0CandidateRelation,
   right: FieldCueV0CandidateRelation,
 ): number {
-  const maturityDelta =
-    relationMaturityRank(right.relationMaturity) -
-    relationMaturityRank(left.relationMaturity);
-
-  if (maturityDelta !== 0) {
-    return maturityDelta;
-  }
-
   const ratioDelta =
     (right.sourceContributionRatio ?? 0) - (left.sourceContributionRatio ?? 0);
 
@@ -510,12 +510,180 @@ function compareCandidateRelations(
   return (left.sourceContributionRank ?? 999) - (right.sourceContributionRank ?? 999);
 }
 
-function relationMaturityRank(maturity: FieldCueV0RelationMaturity): number {
-  return maturity === 'candidate-relation' ? 2 : 1;
+function formatSourceSignature(cue: FieldCueV0): string {
+  const tuple = cue.emittedSourceSignature.emissionTuple;
+
+  return [
+    `strength ${formatSignatureNumber(tuple?.amplitude)}`,
+    `frequency ${formatSignatureNumber(tuple?.waveNumber)}`,
+    `phase ${formatSignatureNumber(tuple?.phase)}`,
+    `decay ${formatSignatureNumber(tuple?.attenuation)}`,
+  ].join(' | ');
+}
+
+function buildSignatureBirthSentence(cue: FieldCueV0): string {
+  const axis = cue.inheritanceAxis;
+  const edge = axis.sourceEdgeId ?? 'this edge';
+  const projections = formatList(axis.projectionVertexIds, 'its projection sources');
+  const channelCount = axis.quarkChannelSummaries.length;
+  const mergeText = axis.mergeKind ? `${axis.mergeKind} ` : '';
+
+  return `Born on ${edge}; projected by ${projections}; ${channelCount} Quark channels merged through ${mergeText}into this source signature.`;
+}
+
+function describeCandidateRelation(relation: FieldCueV0CandidateRelation): string {
+  const targetText = getTargetDescription(relation.targetKind);
+  const evidenceText = getEvidenceDescription(relation.meaningfulContributionRule);
+
+  return `${targetText} ${evidenceText}`;
+}
+
+function getTargetDescription(kind: FieldCueV0CandidateRelation['targetKind']): string {
+  switch (kind) {
+    case 'route-gate-candidate':
+      return 'Touches a route/gate candidate.';
+    case 'support-region-candidate':
+      return 'Touches a support/region candidate.';
+    default:
+      return 'Touches a feature candidate.';
+  }
+}
+
+function getEvidenceDescription(rule: string): string {
+  switch (rule) {
+    case 'dominant-source-contribution':
+      return 'This child is the strongest contributor there.';
+    case 'source-ratio-at-least-baseline-times-1.25':
+      return 'Its share rises above the local baseline.';
+    case 'source-rank-top-3':
+      return 'It appears among the top contributors nearby.';
+    default:
+      return 'V0 has measured source contribution evidence.';
+  }
+}
+
+function getEvidenceLabel(rule: string): string {
+  switch (rule) {
+    case 'dominant-source-contribution':
+      return 'strongest';
+    case 'source-ratio-at-least-baseline-times-1.25':
+      return 'above baseline';
+    case 'source-rank-top-3':
+      return 'top-3';
+    default:
+      return 'measured';
+  }
+}
+
+function getHumanWarningStatuses(cue: FieldCueV0): FieldCueV0ParticipationStatus[] {
+  const statuses = [...cue.warningStatuses];
+
+  if (cue.candidateFieldWorldAxis.candidateReferenceCount > 0) {
+    statuses.push('candidate-only');
+  }
+
+  if (!statuses.length) {
+    statuses.push(cue.participationStatus);
+  }
+
+  return uniqueStatuses(statuses);
+}
+
+function pickPrimaryHumanWarningStatus(cue: FieldCueV0): FieldCueV0ParticipationStatus {
+  const statuses = getHumanWarningStatuses(cue);
+  const priority: FieldCueV0ParticipationStatus[] = [
+    'degenerate',
+    'misleading-risk',
+    'sensitive',
+    'saturated',
+    'weak',
+    'unsupported',
+    'not-applicable',
+    'candidate-only',
+    'not-yet-computed',
+  ];
+
+  return priority.find((status) => statuses.includes(status)) ?? cue.participationStatus;
+}
+
+function getHumanWarningLabel(status: FieldCueV0ParticipationStatus): string {
+  switch (status) {
+    case 'candidate-only':
+      return 'unconfirmed cue';
+    case 'sensitive':
+      return 'unstable evidence';
+    case 'saturated':
+      return 'crowded candidate set';
+    case 'degenerate':
+      return 'collapsed distinction';
+    case 'misleading-risk':
+      return 'read cautiously';
+    case 'weak':
+      return 'weak field pressure';
+    case 'unsupported':
+      return 'unavailable';
+    case 'not-applicable':
+      return 'not applicable';
+    case 'not-yet-computed':
+      return 'not computed';
+    default:
+      return 'available cue';
+  }
+}
+
+function getHumanWarningSentence(status: FieldCueV0ParticipationStatus): string {
+  switch (status) {
+    case 'candidate-only':
+      return 'measured relation only; not a stable field feature';
+    case 'sensitive':
+      return 'this cue changes across sampling/profile checks';
+    case 'saturated':
+      return 'candidate buckets are full, so counts are not very informative';
+    case 'degenerate':
+      return "this child's signature overlaps another child, often its antipode";
+    case 'misleading-risk':
+      return 'there is field evidence, but warning flags make it unsafe to overread';
+    case 'weak':
+      return 'the child has a source signature, but little useful field participation';
+    case 'unsupported':
+      return 'this cue is outside the supported V0 event';
+    case 'not-applicable':
+      return 'V0 cannot use this field relation here';
+    case 'not-yet-computed':
+      return 'the relation has not been computed in V0';
+    default:
+      return 'field evidence is available for inspection';
+  }
+}
+
+function getHumanNamingQuestion(cue: FieldCueV0): string {
+  const statuses = getHumanWarningStatuses(cue);
+
+  if (statuses.includes('degenerate')) {
+    return 'Does this site really differ from its antipode, or should naming be suspended?';
+  }
+
+  if (statuses.includes('weak')) {
+    return 'Does geometry carry the site without help from the field?';
+  }
+
+  if (
+    statuses.includes('sensitive') ||
+    statuses.includes('saturated') ||
+    statuses.includes('misleading-risk')
+  ) {
+    return 'Is the field cue stable enough to matter for naming?';
+  }
+
+  if (statuses.includes('candidate-only')) {
+    return 'Does this measured field pressure sharpen the site enough to name?';
+  }
+
+  return 'What, if anything, can dwell here?';
 }
 
 function formatList(values: readonly string[] | undefined, emptyLabel = 'n/a'): string {
-  return values && values.length ? values.join(', ') : emptyLabel;
+  return values && values.length ? values.join('/') : emptyLabel;
 }
 
 function formatQuarkPairs(cue: FieldCueV0): string {
@@ -523,29 +691,18 @@ function formatQuarkPairs(cue: FieldCueV0): string {
     .map((channel) => `${channel.parent60}/${channel.projection30}`)
     .slice(0, 4);
 
-  return formatList(pairs, 'none');
+  return pairs.length ? pairs.join(' | ') : 'none';
 }
 
-function sumCandidateReferenceCounts(
-  counts: Record<FieldCueV0TargetKind, number>,
-): number {
-  return Object.values(counts).reduce((sum, count) => sum + count, 0);
-}
-
-function formatTargetKind(kind: FieldCueV0CandidateRelation['targetKind']): string {
-  switch (kind) {
-    case 'route-gate-candidate':
-      return 'candidate route/gate';
-    case 'support-region-candidate':
-      return 'candidate support/region';
-    default:
-      return 'feature observation';
-  }
-}
-
-function formatNumber(value: number | undefined): string {
+function formatSignatureNumber(value: number | undefined): string {
   return typeof value === 'number' && Number.isFinite(value)
-    ? Number.parseFloat(value.toFixed(4)).toString()
+    ? value.toFixed(2)
+    : 'n/a';
+}
+
+function formatPercent(value: number | undefined): string {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? `${(value * 100).toFixed(1)}%`
     : 'n/a';
 }
 
@@ -562,4 +719,10 @@ function shortStatus(status: string): string {
     .replace('one-ambo-tetrahedron-proving-event', 'event-bound')
     .replace('not-general-field-layer', 'not-general')
     .replace('event-bound-profile-aware-prototype', 'event-bound');
+}
+
+function uniqueStatuses(
+  statuses: FieldCueV0ParticipationStatus[],
+): FieldCueV0ParticipationStatus[] {
+  return Array.from(new Set(statuses));
 }
