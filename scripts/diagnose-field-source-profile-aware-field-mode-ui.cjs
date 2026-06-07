@@ -45,6 +45,14 @@ const {
   repoRoot,
   'src/lib/fieldSourceProfileAwareRuntimeSupportMatrix.ts',
 ));
+const {
+  getProfileAwareRuntimeSupportPolicyRegistryEntry,
+  getProfileAwareRuntimeSupportPolicyRegistrySummary,
+  listProfileAwareRuntimeSupportPolicyRegistryEntries,
+} = require(path.join(
+  repoRoot,
+  'src/lib/fieldSourceProfileAwareRuntimeSupportPolicyRegistry.ts',
+));
 
 const PROFILE_AWARE_SOURCE_POLICY_ID = 'profile-aware-quark-child-inheritance-v0';
 const SAMPLE_RENDER_MODES = ['family', 'intensity', 'phase', 'dominance'];
@@ -58,7 +66,9 @@ runSampleRenderModeContractDiagnostic();
 runChartLinkingContractDiagnostic();
 runSourceLinkingContractDiagnostic();
 runRuntimeSupportPolicyUiContractDiagnostic();
+runRuntimeSupportPolicyRegistryUiContractDiagnostic();
 runRuntimeSupportMatrixUiContractDiagnostic();
+runRuntimeDiagnosticsExposureUiContractDiagnostic();
 runEvidenceStabilityUiContractDiagnostic();
 runSemanticHandoffReadinessUiContractDiagnostic();
 runSemanticHandoffTransitionUiContractDiagnostic();
@@ -912,6 +922,133 @@ function runRuntimeSupportPolicyUiContractDiagnostic() {
   console.log('runtime support policy UI contract: PASS');
 }
 
+function runRuntimeSupportPolicyRegistryUiContractDiagnostic() {
+  const summary = getProfileAwareRuntimeSupportPolicyRegistrySummary();
+  const entries = listProfileAwareRuntimeSupportPolicyRegistryEntries();
+  const requiredPolicyIds = [
+    'profile-aware-runtime-support-policy-v0',
+    'unsupported-seed-tetrahedron-control-v0',
+    'unsupported-seed-cube-control-v0',
+    'candidate-shape-level-cube-ambo-v0',
+    'candidate-shape-level-tetrahedron-second-generation-v0',
+    'candidate-selected-core-cell-tetrahedron-second-generation-v0',
+    'candidate-selected-residue-cell-tetrahedron-second-generation-v0',
+    'future-multi-cell-runtime-context-v0',
+    'future-editable-source-profile-assignment-v0',
+  ];
+
+  expectTruthy(summary, 'runtime support policy registry summary builds');
+  expectEqual(
+    summary.registryId,
+    'profile-aware-runtime-support-policy-registry-v0',
+    'runtime support policy registry id',
+  );
+  expectAtLeast(
+    summary.entryCount,
+    9,
+    'runtime support policy registry entry count',
+  );
+  expectAtLeast(
+    summary.currentBaselineCount,
+    1,
+    'runtime support policy registry baseline count',
+  );
+  expectAtLeast(
+    summary.candidateNotPromotedCount,
+    4,
+    'runtime support policy registry candidate count',
+  );
+  expectAtLeast(
+    summary.notYetSupportedCount,
+    2,
+    'runtime support policy registry not-yet-supported count',
+  );
+  expectAtLeast(
+    summary.unsupportedControlCount,
+    2,
+    'runtime support policy registry unsupported control count',
+  );
+  expectEqual(
+    summary.supportExpansionStatus,
+    'not-expanded-this-branch',
+    'runtime support policy registry support expansion',
+  );
+  expectEqual(
+    summary.fallbackSupportStatus,
+    'no-silent-fallback',
+    'runtime support policy registry fallback',
+  );
+  expectEqual(
+    summary.semanticStatus,
+    'not-semantic-naming',
+    'runtime support policy registry semantic',
+  );
+  expectEqual(
+    summary.topologyStatus,
+    'not-topology-workspace',
+    'runtime support policy registry topology',
+  );
+  expectEqual(
+    summary.packetWriteStatus,
+    'not-packet-writing',
+    'runtime support policy registry packet write',
+  );
+
+  for (const policyId of requiredPolicyIds) {
+    expectTruthy(
+      getProfileAwareRuntimeSupportPolicyRegistryEntry(policyId),
+      `runtime support policy registry contains ${policyId}`,
+    );
+  }
+
+  const oneAmboPolicyReport = buildProfileAwareRuntimeSupportPolicyReport(
+    applyAmboDissection(createSeedShape('tetrahedron')),
+  );
+  const seedTetraPolicyReport = buildProfileAwareRuntimeSupportPolicyReport(
+    createSeedShape('tetrahedron'),
+  );
+  const seedCubePolicyReport = buildProfileAwareRuntimeSupportPolicyReport(
+    createSeedShape('cube'),
+  );
+
+  expectEqual(
+    oneAmboPolicyReport.activeRegistryPolicyId,
+    'profile-aware-runtime-support-policy-v0',
+    'runtime support policy registry active baseline policy',
+  );
+  expectEqual(
+    seedTetraPolicyReport.activeRegistryPolicyId,
+    'unsupported-seed-tetrahedron-control-v0',
+    'runtime support policy registry active seed tetra policy',
+  );
+  expectEqual(
+    seedTetraPolicyReport.supportStatus,
+    'unsupported',
+    'runtime support policy registry seed tetra remains unsupported',
+  );
+  expectEqual(
+    seedCubePolicyReport.activeRegistryPolicyId,
+    'unsupported-seed-cube-control-v0',
+    'runtime support policy registry active seed cube policy',
+  );
+  expectEqual(
+    seedCubePolicyReport.supportStatus,
+    'unsupported',
+    'runtime support policy registry seed cube remains unsupported',
+  );
+
+  expectNoForbiddenRuntimeSupportPolicyRegistryProperties(summary, 'summary');
+
+  for (const entry of entries) {
+    expectNoForbiddenRuntimeSupportPolicyRegistryProperties(
+      entry,
+      entry.policyId,
+    );
+  }
+
+  console.log('runtime support policy registry UI contract: PASS');
+}
+
 function runRuntimeSupportMatrixUiContractDiagnostic() {
   const report = buildProfileAwareRuntimeSupportMatrixReport();
   const expectedCaseIds = [
@@ -1083,6 +1220,34 @@ function runRuntimeSupportMatrixUiContractDiagnostic() {
     }
   }
 
+  for (const matrixCase of report.cases) {
+    if (!matrixCase.candidatePolicyId) {
+      continue;
+    }
+
+    const registryEntry = getProfileAwareRuntimeSupportPolicyRegistryEntry(
+      matrixCase.candidatePolicyId,
+    );
+
+    expectTruthy(
+      registryEntry,
+      `${matrixCase.caseId} runtime support matrix policy id resolves`,
+    );
+
+    if (registryEntry) {
+      expectEqual(
+        matrixCase.candidatePolicyStatus,
+        registryEntry.status,
+        `${matrixCase.caseId} runtime support matrix policy status`,
+      );
+      expectEqual(
+        matrixCase.candidatePolicyLabel,
+        registryEntry.label,
+        `${matrixCase.caseId} runtime support matrix policy label`,
+      );
+    }
+  }
+
   expectNoForbiddenRuntimeSupportMatrixProperties(report);
 
   for (const matrixCase of report.cases) {
@@ -1090,6 +1255,85 @@ function runRuntimeSupportMatrixUiContractDiagnostic() {
   }
 
   console.log('runtime support matrix UI contract: PASS');
+}
+
+function runRuntimeDiagnosticsExposureUiContractDiagnostic() {
+  const sourcePath = path.join(repoRoot, 'src/components/FieldAtlasInspector.tsx');
+  const source = fs.readFileSync(sourcePath, 'utf8');
+  const primaryRuntimeSection = getSourceSliceBetween(
+    source,
+    'function ProfileAwareFieldModeRuntimeSection',
+    'function ProfileAwareLayerVisibilityControls',
+  );
+  const advancedDiagnosticsContent = getSourceSliceBetween(
+    source,
+    'function AdvancedFieldDiagnosticsContent',
+    'function SampleSummary',
+  );
+
+  expectTruthy(
+    primaryRuntimeSection,
+    'runtime diagnostics exposure primary section found',
+  );
+  expectTruthy(
+    advancedDiagnosticsContent,
+    'runtime diagnostics exposure advanced content found',
+  );
+
+  if (primaryRuntimeSection) {
+    for (const forbiddenPrimaryText of [
+      'ProfileAwareRuntimeSupportPolicySection',
+      'ProfileAwareRuntimeSupportInternalDiagnosticsSection',
+      'Runtime Support Matrix (Diagnostic)',
+      'Runtime Support Policy Registry',
+      'Policy/runtime mismatch',
+      'Candidate-not-promoted',
+      'Unsupported controls',
+      'Active policy',
+    ]) {
+      expectEqual(
+        primaryRuntimeSection.includes(forbiddenPrimaryText),
+        false,
+        `runtime diagnostics exposure primary omits ${forbiddenPrimaryText}`,
+      );
+    }
+  }
+
+  if (advancedDiagnosticsContent) {
+    expectEqual(
+      [
+        'ProfileAwareRuntimeSupportInternalDiagnosticsSection',
+        'ProfileAwareRuntimeSupportPolicySection',
+        'Runtime Support Matrix (Diagnostic)',
+      ].some((text) => advancedDiagnosticsContent.includes(text)),
+      true,
+      'runtime diagnostics exposure advanced contains internal support diagnostics',
+    );
+  }
+
+  expectEqual(
+    source.includes('ProfileAwareRuntimeAvailabilityNotice'),
+    true,
+    'runtime diagnostics exposure availability notice exists',
+  );
+  expectEqual(
+    source.includes('Runtime policy details are internal diagnostics') ||
+      source.includes('Internal diagnostics can explain the support boundary'),
+    true,
+    'runtime diagnostics exposure user-facing availability copy exists',
+  );
+  expectEqual(
+    source.includes('Runtime Support Matrix (Diagnostic)'),
+    true,
+    'runtime diagnostics exposure matrix diagnostics retained',
+  );
+  expectEqual(
+    source.includes('Runtime Support Policy Registry'),
+    true,
+    'runtime diagnostics exposure registry diagnostics retained',
+  );
+
+  console.log('runtime diagnostics exposure UI contract: PASS');
 }
 
 function runEvidenceStabilityUiContractDiagnostic() {
@@ -3157,6 +3401,22 @@ function getRuntimeSupportMatrixCase(report, caseId) {
   return report.cases.find((matrixCase) => matrixCase.caseId === caseId);
 }
 
+function getSourceSliceBetween(source, startMarker, endMarker) {
+  const startIndex = source.indexOf(startMarker);
+
+  if (startIndex < 0) {
+    return '';
+  }
+
+  const endIndex = source.indexOf(endMarker, startIndex + startMarker.length);
+
+  if (endIndex < 0) {
+    return source.slice(startIndex);
+  }
+
+  return source.slice(startIndex, endIndex);
+}
+
 function expectRuntimeSupportCriterion(summary, criterionId, expectedPassed, label) {
   const criterion = summary.criteria.find((item) => item.id === criterionId);
 
@@ -3234,6 +3494,37 @@ function expectNoForbiddenRuntimeSupportMatrixProperties(value, label = 'report'
       value,
       property,
       `${label} runtime support matrix no ${property}`,
+    );
+  }
+}
+
+function expectNoForbiddenRuntimeSupportPolicyRegistryProperties(
+  value,
+  label = 'registry',
+) {
+  const forbiddenProperties = [
+    'supportExpansionEnabled',
+    'promotedSupportStatus',
+    'selectedCellSupportEnabled',
+    'multiCellSupportEnabled',
+    'deeperGenerationSupportEnabled',
+    'cubeSupportEnabled',
+    'fallbackEnabled',
+    'silentFallbackStatus',
+    'editableSourceProfileStatus',
+    'persistenceStatus',
+    'semanticNamingStatus',
+    'topologyBehaviorStatus',
+    'packetWritingStatus',
+    'oldPolicyInvariantStatus',
+    'defaultPolicyComparisonStatus',
+  ];
+
+  for (const property of forbiddenProperties) {
+    expectNoOwnProperty(
+      value,
+      property,
+      `${label} runtime support policy registry no ${property}`,
     );
   }
 }

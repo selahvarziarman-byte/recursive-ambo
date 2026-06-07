@@ -44,6 +44,10 @@ import {
   type ProfileAwareRuntimeSupportMatrixReport,
 } from '../lib/fieldSourceProfileAwareRuntimeSupportMatrix';
 import {
+  getProfileAwareRuntimeSupportPolicyRegistrySummary,
+  type ProfileAwareRuntimeSupportPolicyRegistrySummary,
+} from '../lib/fieldSourceProfileAwareRuntimeSupportPolicyRegistry';
+import {
   buildProfileAwareFieldAtlasViewModelRuntimeReport,
   type ProfileAwareFieldAtlasChartAnchorMarker,
   type ProfileAwareFieldAtlasChartProbe,
@@ -177,14 +181,6 @@ export function FieldAtlasInspector({
     () => buildProfileAwareFieldAtlasViewModelRuntimeReport(shape),
     [shape],
   );
-  const runtimeSupportPolicyReport = useMemo(
-    () => buildProfileAwareRuntimeSupportPolicyReport(shape),
-    [shape],
-  );
-  const runtimeSupportMatrixReport = useMemo(
-    () => buildProfileAwareRuntimeSupportMatrixReport(),
-    [],
-  );
   const profileAwareEvidenceStabilityReport = useMemo(
     () => buildProfileAwareEvidenceStabilityReport(),
     [],
@@ -279,8 +275,6 @@ export function FieldAtlasInspector({
     <div className="grid gap-3 text-sm">
       <ProfileAwareFieldModeRuntimeSection
         report={profileAwareRuntimeReport}
-        runtimeSupportPolicyReport={runtimeSupportPolicyReport}
-        runtimeSupportMatrixReport={runtimeSupportMatrixReport}
         evidenceStabilityReport={profileAwareEvidenceStabilityReport}
         semanticHandoffSummary={currentSemanticHandoffSummary}
         semanticHandoffTransition={semanticHandoffTransition}
@@ -450,8 +444,6 @@ function LegacyFieldAtlasDiagnosticsSection({
 
 function ProfileAwareFieldModeRuntimeSection({
   report,
-  runtimeSupportPolicyReport,
-  runtimeSupportMatrixReport,
   evidenceStabilityReport,
   semanticHandoffSummary,
   semanticHandoffTransition,
@@ -464,8 +456,6 @@ function ProfileAwareFieldModeRuntimeSection({
   shortenId,
 }: {
   report: ProfileAwareFieldAtlasViewModelRuntimeReport;
-  runtimeSupportPolicyReport: ProfileAwareRuntimeSupportPolicyReport;
-  runtimeSupportMatrixReport: ProfileAwareRuntimeSupportMatrixReport;
   evidenceStabilityReport: ProfileAwareEvidenceStabilityReport;
   semanticHandoffSummary: ProfileAwareSemanticHandoffSummary;
   semanticHandoffTransition: ProfileAwareSemanticHandoffTransition;
@@ -524,11 +514,7 @@ function ProfileAwareFieldModeRuntimeSection({
           <FieldAtlasMetric label="Topology" value={report.topologyStatus} />
           <FieldAtlasMetric label="Packet write" value={report.packetWriteStatus} />
         </dl>
-        <ProfileAwareRuntimeSupportPolicySection
-          policyReport={runtimeSupportPolicyReport}
-          matrixReport={runtimeSupportMatrixReport}
-          shortenId={shortenId}
-        />
+        <ProfileAwareRuntimeAvailabilityNotice report={report} />
         <ProfileAwareEvidenceStabilitySection
           report={evidenceStabilityReport}
           shortenId={shortenId}
@@ -640,11 +626,7 @@ function ProfileAwareFieldModeRuntimeSection({
         <FieldAtlasMetric label="Overlay" value={viewModel.candidateOverlayStatus} />
       </dl>
 
-      <ProfileAwareRuntimeSupportPolicySection
-        policyReport={runtimeSupportPolicyReport}
-        matrixReport={runtimeSupportMatrixReport}
-        shortenId={shortenId}
-      />
+      <ProfileAwareRuntimeAvailabilityNotice report={report} />
 
       <ProfileAwareLayerVisibilityControls
         counts={{
@@ -1398,13 +1380,46 @@ function getSaturatedEvidenceStabilityBucketLabels(
     .map(([, label]) => label);
 }
 
-function ProfileAwareRuntimeSupportPolicySection({
+function ProfileAwareRuntimeAvailabilityNotice({
+  report,
+}: {
+  report: ProfileAwareFieldAtlasViewModelRuntimeReport;
+}) {
+  const supported = report.runtimeBoundaryStatus === 'supported';
+
+  return (
+    <div
+      className={`mt-3 rounded border px-2 py-2 ${
+        supported
+          ? 'border-emerald-300/30 bg-emerald-300/10 text-emerald-100'
+          : 'border-amber-300/30 bg-amber-300/10 text-amber-100'
+      }`}
+    >
+      <p className="leading-5">
+        {supported
+          ? 'Field Mode is available for this shape. Runtime policy details are internal diagnostics.'
+          : 'Field Mode is unavailable for this shape. Internal diagnostics can explain the support boundary.'}
+      </p>
+      {report.runtimeBoundaryStatus === 'unsupported' ? (
+        <p className="mt-1 leading-5 text-stone-300">
+          {report.unsupportedReason}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function ProfileAwareRuntimeSupportInternalDiagnosticsSection({
+  runtimeReport,
   policyReport,
   matrixReport,
+  registrySummary,
   shortenId,
 }: {
+  runtimeReport: ProfileAwareFieldAtlasViewModelRuntimeReport;
   policyReport: ProfileAwareRuntimeSupportPolicyReport;
   matrixReport: ProfileAwareRuntimeSupportMatrixReport;
+  registrySummary: ProfileAwareRuntimeSupportPolicyRegistrySummary;
   shortenId: (id: string) => string;
 }) {
   return (
@@ -1412,7 +1427,15 @@ function ProfileAwareRuntimeSupportPolicySection({
       <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
         Profile-aware Runtime Support Policy
       </h4>
+      <p className="mt-2 leading-5 text-stone-500">
+        Internal runtime diagnostics only. These tables do not expand support
+        and are not semantic-facing controls.
+      </p>
       <dl className="mt-2 grid grid-cols-2 gap-2">
+        <FieldAtlasMetric
+          label="Runtime boundary"
+          value={runtimeReport.runtimeBoundaryStatus}
+        />
         <FieldAtlasMetric label="Policy" value={policyReport.policyId} />
         <FieldAtlasMetric label="Support" value={policyReport.supportStatus} />
         <FieldAtlasMetric
@@ -1481,6 +1504,62 @@ function ProfileAwareRuntimeSupportPolicySection({
           </span>
         ))}
       </div>
+
+      <details className="mt-2 rounded border border-stone-800 bg-stone-900 px-2 py-2">
+        <summary className="cursor-pointer text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-500">
+          Runtime Support Policy Registry
+        </summary>
+        <dl className="mt-2 grid grid-cols-2 gap-2">
+          <FieldAtlasMetric
+            label="Registry"
+            value={registrySummary.registryId}
+          />
+          <FieldAtlasMetric
+            label="Entries"
+            value={registrySummary.entryCount}
+          />
+          <FieldAtlasMetric
+            label="Current baseline"
+            value={registrySummary.currentBaselineCount}
+          />
+          <FieldAtlasMetric
+            label="Candidate-not-promoted"
+            value={registrySummary.candidateNotPromotedCount}
+          />
+          <FieldAtlasMetric
+            label="Not-yet-supported"
+            value={registrySummary.notYetSupportedCount}
+          />
+          <FieldAtlasMetric
+            label="Unsupported controls"
+            value={registrySummary.unsupportedControlCount}
+          />
+          <FieldAtlasMetric
+            label="Support expansion"
+            value={registrySummary.supportExpansionStatus}
+          />
+          <FieldAtlasMetric
+            label="Fallback"
+            value={registrySummary.fallbackSupportStatus}
+          />
+          <FieldAtlasMetric
+            label="Active policy"
+            value={policyReport.activeRegistryPolicyId}
+          />
+          <FieldAtlasMetric
+            label="Active label"
+            value={policyReport.activeRegistryPolicyLabel}
+          />
+          <FieldAtlasMetric
+            label="Active status"
+            value={policyReport.activeRegistryPolicyStatus}
+          />
+        </dl>
+        <p className="mt-2 leading-5 text-stone-500">
+          Registry entries name support boundaries and candidates only. They do
+          not expand runtime support or enable fallback behavior.
+        </p>
+      </details>
 
       <details className="mt-2 rounded border border-stone-800 bg-stone-900 px-2 py-2">
         <summary className="cursor-pointer text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-500">
@@ -3941,6 +4020,22 @@ function AdvancedFieldDiagnosticsContent({
   formatVertexRef: (vertexId: VertexId) => string;
   shortenId: (id: string) => string;
 }) {
+  const profileAwareRuntimeReport = useMemo(
+    () => buildProfileAwareFieldAtlasViewModelRuntimeReport(shape),
+    [shape],
+  );
+  const runtimeSupportPolicyReport = useMemo(
+    () => buildProfileAwareRuntimeSupportPolicyReport(shape),
+    [shape],
+  );
+  const runtimeSupportMatrixReport = useMemo(
+    () => buildProfileAwareRuntimeSupportMatrixReport(),
+    [],
+  );
+  const runtimeSupportPolicyRegistrySummary = useMemo(
+    () => getProfileAwareRuntimeSupportPolicyRegistrySummary(),
+    [],
+  );
   const surfaceSampling = useMemo(() => buildSurfaceSamplingModel(shape), [shape]);
   const gradientDiagnostics = useMemo(() => buildGradientDiagnosticsModel(shape), [shape]);
   const phaseDiagnostics = useMemo(() => buildPhaseDiagnosticsModel(shape), [shape]);
@@ -3952,6 +4047,13 @@ function AdvancedFieldDiagnosticsContent({
         gradients, and chart-local phase diagnostics.
       </p>
       <div className="mt-3 grid gap-3">
+        <ProfileAwareRuntimeSupportInternalDiagnosticsSection
+          runtimeReport={profileAwareRuntimeReport}
+          policyReport={runtimeSupportPolicyReport}
+          matrixReport={runtimeSupportMatrixReport}
+          registrySummary={runtimeSupportPolicyRegistrySummary}
+          shortenId={shortenId}
+        />
         <SurfaceSamplingSection
           shape={shape}
           model={surfaceSampling}

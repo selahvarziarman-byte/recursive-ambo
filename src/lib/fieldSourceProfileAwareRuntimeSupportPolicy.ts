@@ -1,4 +1,8 @@
 import type { Shape } from '../types/geometry';
+import {
+  getProfileAwareRuntimeSupportPolicyRegistryEntry,
+  PROFILE_AWARE_RUNTIME_SUPPORT_POLICY_REGISTRY_ID,
+} from './fieldSourceProfileAwareRuntimeSupportPolicyRegistry';
 
 export const PROFILE_AWARE_RUNTIME_SUPPORT_POLICY_ID =
   'profile-aware-runtime-support-policy-v0';
@@ -35,6 +39,10 @@ export interface ProfileAwareRuntimeSupportExpansionCandidate {
 export interface ProfileAwareRuntimeSupportPolicyReport {
   policyId: typeof PROFILE_AWARE_RUNTIME_SUPPORT_POLICY_ID;
   method: 'profile-aware-runtime-support-policy-v0';
+  registryId: typeof PROFILE_AWARE_RUNTIME_SUPPORT_POLICY_REGISTRY_ID;
+  activeRegistryPolicyId: string;
+  activeRegistryPolicyStatus: string;
+  activeRegistryPolicyLabel: string;
   policyScope: 'current-shape-runtime-field-mode';
   supportStatus: ProfileAwareRuntimeSupportPolicyStatus;
   inputShapeId: string;
@@ -106,10 +114,22 @@ export function buildProfileAwareRuntimeSupportPolicyReport(
           unsupportedReason: UNSUPPORTED_SHAPE_CONTEXT_REASON,
         }
       : {};
+  const activeRegistryPolicyId = getActiveRuntimeSupportRegistryPolicyId(
+    shape,
+    supportStatus,
+  );
+  const activeRegistryPolicy = getProfileAwareRuntimeSupportPolicyRegistryEntry(
+    activeRegistryPolicyId,
+  );
   const seedKeyField = shape.seedKey ? { seedKey: shape.seedKey } : {};
   const report: ProfileAwareRuntimeSupportPolicyReport = {
     policyId: PROFILE_AWARE_RUNTIME_SUPPORT_POLICY_ID,
     method: METHOD,
+    registryId: PROFILE_AWARE_RUNTIME_SUPPORT_POLICY_REGISTRY_ID,
+    activeRegistryPolicyId,
+    activeRegistryPolicyStatus: activeRegistryPolicy?.status ?? 'unknown',
+    activeRegistryPolicyLabel:
+      activeRegistryPolicy?.label ?? 'Unknown runtime support registry policy',
     policyScope: POLICY_SCOPE,
     supportStatus,
     inputShapeId: shape.id,
@@ -159,4 +179,31 @@ export function buildProfileAwareRuntimeSupportPolicyReport(
   }
 
   return report;
+}
+
+function getActiveRuntimeSupportRegistryPolicyId(
+  shape: Shape,
+  supportStatus: ProfileAwareRuntimeSupportPolicyStatus,
+): string {
+  if (supportStatus === 'supported') {
+    return PROFILE_AWARE_RUNTIME_SUPPORT_POLICY_ID;
+  }
+
+  if (
+    shape.seedKey === 'tetrahedron' &&
+    shape.genealogy.operation === 'seed' &&
+    shape.genealogy.generationDepth === 0
+  ) {
+    return 'unsupported-seed-tetrahedron-control-v0';
+  }
+
+  if (
+    shape.seedKey === 'cube' &&
+    shape.genealogy.operation === 'seed' &&
+    shape.genealogy.generationDepth === 0
+  ) {
+    return 'unsupported-seed-cube-control-v0';
+  }
+
+  return PROFILE_AWARE_RUNTIME_SUPPORT_POLICY_ID;
 }

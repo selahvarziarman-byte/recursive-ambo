@@ -2,6 +2,7 @@ import { createSeedShape } from '../data/seeds';
 import { applyAmboDissection } from './ambo';
 import { buildProfileAwareFieldAtlasViewModelRuntimeReport } from './fieldSourceProfileAwareAtlasViewModel';
 import { buildProfileAwareRuntimeSupportPolicyReport } from './fieldSourceProfileAwareRuntimeSupportPolicy';
+import { getProfileAwareRuntimeSupportPolicyRegistryEntry } from './fieldSourceProfileAwareRuntimeSupportPolicyRegistry';
 import type { Cell, Shape } from '../types/geometry';
 
 export type ProfileAwareRuntimeSupportMatrixCaseClass =
@@ -27,6 +28,8 @@ export interface ProfileAwareRuntimeSupportMatrixCase {
   constructionStatus: ProfileAwareRuntimeSupportMatrixConstructionStatus;
   promotionStatus: ProfileAwareRuntimeSupportMatrixPromotionStatus;
   candidatePolicyId?: string;
+  candidatePolicyStatus?: string;
+  candidatePolicyLabel?: string;
   shapeId?: string;
   seedKey?: string;
   operation?: string;
@@ -88,6 +91,7 @@ export function buildProfileAwareRuntimeSupportMatrixReport(): ProfileAwareRunti
       label: 'Seed tetrahedron',
       caseClass: 'unsupported-control',
       promotionStatus: 'not-yet-supported',
+      candidatePolicyId: 'unsupported-seed-tetrahedron-control-v0',
       shape: seedTetrahedron,
       issues,
     }),
@@ -96,6 +100,7 @@ export function buildProfileAwareRuntimeSupportMatrixReport(): ProfileAwareRunti
       label: 'One-Ambo tetrahedron',
       caseClass: 'current-baseline',
       promotionStatus: 'current-baseline',
+      candidatePolicyId: 'profile-aware-runtime-support-policy-v0',
       shape: oneAmboTetrahedron,
       issues,
     }),
@@ -104,6 +109,7 @@ export function buildProfileAwareRuntimeSupportMatrixReport(): ProfileAwareRunti
       label: 'Seed cube',
       caseClass: 'unsupported-control',
       promotionStatus: 'not-yet-supported',
+      candidatePolicyId: 'unsupported-seed-cube-control-v0',
       shape: seedCube,
       issues,
     }),
@@ -201,7 +207,18 @@ function buildConstructedRuntimeSupportMatrixCase({
   const snapshot = JSON.stringify(shape);
   const policyReport = buildProfileAwareRuntimeSupportPolicyReport(shape);
   const runtimeReport = buildProfileAwareFieldAtlasViewModelRuntimeReport(shape);
+  const registryEntry = candidatePolicyId
+    ? getProfileAwareRuntimeSupportPolicyRegistryEntry(candidatePolicyId)
+    : undefined;
   const mutated = JSON.stringify(shape) !== snapshot;
+
+  if (candidatePolicyId && !registryEntry) {
+    issues.push({
+      code: 'missing-registry-policy',
+      message: 'Runtime support matrix case references an unknown registry policy.',
+      caseId,
+    });
+  }
 
   if (mutated) {
     issues.push({
@@ -218,6 +235,8 @@ function buildConstructedRuntimeSupportMatrixCase({
     constructionStatus: 'constructed',
     promotionStatus,
     candidatePolicyId,
+    candidatePolicyStatus: registryEntry?.status,
+    candidatePolicyLabel: registryEntry?.label,
     shapeId: shape.id,
     seedKey: shape.seedKey,
     operation: shape.genealogy.operation,
@@ -337,6 +356,9 @@ function buildConstructionFailedRuntimeSupportMatrixCase({
   constructionFailureReason: string;
   targetCell?: Cell;
 }): ProfileAwareRuntimeSupportMatrixCase {
+  const registryEntry =
+    getProfileAwareRuntimeSupportPolicyRegistryEntry(candidatePolicyId);
+
   return {
     caseId,
     label,
@@ -344,6 +366,8 @@ function buildConstructionFailedRuntimeSupportMatrixCase({
     constructionStatus,
     promotionStatus: 'construction-failed',
     candidatePolicyId,
+    candidatePolicyStatus: registryEntry?.status,
+    candidatePolicyLabel: registryEntry?.label,
     targetCellId: targetCell?.id,
     targetCellKind: targetCell?.kind,
     targetCellTopology: targetCell?.topology,
