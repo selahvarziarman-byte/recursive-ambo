@@ -74,6 +74,7 @@ import {
 } from '../store/geometryStore';
 import type { Shape, ShapeId, VertexId } from '../types/geometry';
 import { FieldCueV0Panel } from './FieldCueV0Panel';
+import { GeneratedSiteReadingV0Panel } from './GeneratedSiteReadingV0Panel';
 
 interface FieldAtlasInspectorProps {
   shape: Shape;
@@ -274,14 +275,26 @@ export function FieldAtlasInspector({
 
   return (
     <div className="grid gap-3 text-sm">
-      <FieldCueV0Panel
-        shape={shape}
-        hoveredProbeRef={hoveredFieldAtlasSampleId}
-        pinnedProbeRef={pinnedFieldAtlasProbeRef}
-        onHoverStart={setHoveredFieldAtlasSampleId}
-        onHoverEnd={clearHoveredFieldAtlasSampleId}
-        onTogglePinnedProbe={togglePinnedFieldAtlasProbeRef}
-      />
+      <GeneratedSiteReadingV0Panel shape={shape} />
+
+      <details className="rounded border border-cyan-400/20 bg-cyan-950/10 px-3 py-2 text-xs">
+        <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-[0.14em] text-cyan-100">
+          Field witness details
+        </summary>
+        <p className="mt-2 leading-5 text-stone-400">
+          FieldCueV0 source-signature and candidate details
+        </p>
+        <div className="mt-3">
+          <FieldCueV0Panel
+            shape={shape}
+            hoveredProbeRef={hoveredFieldAtlasSampleId}
+            pinnedProbeRef={pinnedFieldAtlasProbeRef}
+            onHoverStart={setHoveredFieldAtlasSampleId}
+            onHoverEnd={clearHoveredFieldAtlasSampleId}
+            onTogglePinnedProbe={togglePinnedFieldAtlasProbeRef}
+          />
+        </div>
+      </details>
 
       <ProfileAwareFieldModeRuntimeSection
         report={profileAwareRuntimeReport}
