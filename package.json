@@ -17,6 +17,7 @@
     "diagnose:field-source-profile-aware-field-mode-ui": "node scripts/diagnose-field-source-profile-aware-field-mode-ui.cjs",
     "diagnose:field-cue-v0": "node scripts/diagnose-field-cue-v0.cjs",
     "diagnose:field-cue-v0-ui": "node scripts/diagnose-field-cue-v0-ui.cjs",
+    "diagnose:generated-site-reading-v0": "node scripts/diagnose-generated-site-reading-v0.cjs",
     "diagnose:field-source-profile-aware-evidence-stability": "node scripts/diagnose-field-source-profile-aware-evidence-stability.cjs",
     "diagnose:field-source-profile-aware-field-report": "node scripts/diagnose-field-source-profile-aware-field-report.cjs",
     "diagnose:field-source-profile-aware-feature-report": "node scripts/diagnose-field-source-profile-aware-feature-report.cjs",
