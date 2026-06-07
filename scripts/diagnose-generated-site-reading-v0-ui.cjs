@@ -46,6 +46,18 @@ if (panelSource && inspectorSource && registrySource && storeSource && packageSo
     'inspector render',
     'FieldAtlasInspector renders GeneratedSiteReadingV0Panel with shape prop',
   );
+  const generatedPanelRenderIndex = inspectorSource.indexOf(
+    '<GeneratedSiteReadingV0Panel',
+  );
+  const fieldCuePanelRenderIndex = inspectorSource.indexOf('<FieldCueV0Panel');
+
+  expect(
+    generatedPanelRenderIndex !== -1 &&
+      fieldCuePanelRenderIndex !== -1 &&
+      generatedPanelRenderIndex < fieldCuePanelRenderIndex,
+    'inspector render order',
+    'GeneratedSiteReadingV0Panel renders before FieldCueV0Panel',
+  );
   expect(
     /<details[\s\S]*?<summary[\s\S]*?Field witness details[\s\S]*?<FieldCueV0Panel[\s\S]*?\/>[\s\S]*?<\/details>/.test(
       inspectorSource,
@@ -54,9 +66,16 @@ if (panelSource && inspectorSource && registrySource && storeSource && packageSo
     'FieldCueV0Panel is demoted inside Field witness details',
   );
   expect(
-    inspectorSource.includes('FieldCueV0 source-signature and candidate details'),
+    inspectorSource.includes('source signature, candidate links, probe highlighting'),
     'field witness demotion',
-    'FieldAtlasInspector includes FieldCueV0 source-signature detail text',
+    'FieldAtlasInspector includes FieldCueV0 collapsed summary detail text',
+  );
+  expect(
+    /<details[\s\S]*?<summary[\s\S]*?(Technical field diagnostics|Internal field diagnostics)[\s\S]*?<ProfileAwareFieldModeRuntimeSection[\s\S]*?\/>[\s\S]*?<\/details>/.test(
+      inspectorSource,
+    ),
+    'technical diagnostics demotion',
+    'ProfileAwareFieldModeRuntimeSection is demoted inside technical diagnostics details',
   );
   expect(
     /buildGeneratedSiteReadingV0Report/.test(panelSource),
@@ -99,18 +118,33 @@ if (panelSource && inspectorSource && registrySource && storeSource && packageSo
     );
   }
 
-  const lowerPanelSource = panelSource.toLowerCase();
   for (const phrase of [
-    'geometry witness',
-    'birth-law witness',
-    'field witness',
+    'Source signature',
+    'How the signature was derived',
+    'derivation details',
+    'Field contact',
+    'Naming pressure',
+    'field touchpoint',
+    'strength',
+    'frequency',
+    'phase',
+    'decay',
+  ]) {
+    expect(
+      panelSource.includes(phrase),
+      'generated-site reading flow language',
+      `panel contains generated-site reading flow language "${phrase}"`,
+    );
+  }
+
+  for (const phrase of [
     'human names',
     'question only',
   ]) {
     expect(
-      lowerPanelSource.includes(phrase),
-      'central witness language',
-      `panel contains central witness language "${phrase}"`,
+      panelSource.toLowerCase().includes(phrase),
+      'human naming boundary language',
+      `panel contains human naming boundary language "${phrase}"`,
     );
   }
 
@@ -125,6 +159,40 @@ if (panelSource && inspectorSource && registrySource && storeSource && packageSo
       panelSource.includes(phrase),
       'inheritance translation language',
       `panel contains inheritance translation "${phrase}"`,
+    );
+  }
+
+  expect(
+    /function\s+buildSiteSpecificNamingPrompt/.test(panelSource),
+    'site-specific naming prompt',
+    'panel contains buildSiteSpecificNamingPrompt helper',
+  );
+  expect(
+    !/humanNamingPrompt\.primaryNamingQuestion/.test(panelSource),
+    'site-specific naming prompt',
+    'panel does not render generic report primary naming question directly',
+  );
+  expect(
+    countOccurrences(
+      panelSource,
+      'What, if anything, can dwell at this generated site?',
+    ) <= 1,
+    'site-specific naming prompt',
+    'generic naming question appears only as fallback text',
+  );
+
+  for (const phrase of [
+    'candidate-relation',
+    'dominant-source-contribution',
+    'reliability sensitive',
+    'feature observation',
+    'handoff pressure',
+    'misleading-risk',
+  ]) {
+    expect(
+      !panelSource.toLowerCase().includes(phrase),
+      'primary diagnostic language boundary',
+      `panel avoids primary rendered diagnostic term "${phrase}"`,
     );
   }
 
@@ -232,6 +300,18 @@ function isAllowedNegatedPacketWrite(source, phrase, index) {
   const prefix = source.slice(Math.max(0, index - 4), index);
 
   return prefix.endsWith('no ');
+}
+
+function countOccurrences(source, phrase) {
+  let count = 0;
+  let searchIndex = source.indexOf(phrase);
+
+  while (searchIndex !== -1) {
+    count += 1;
+    searchIndex = source.indexOf(phrase, searchIndex + phrase.length);
+  }
+
+  return count;
 }
 
 function expect(condition, label, message) {

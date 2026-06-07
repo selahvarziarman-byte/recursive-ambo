@@ -1,24 +1,24 @@
 import { useMemo, useState } from 'react';
 import {
+  buildFieldCueV0Report,
+  type FieldCueV0,
+  type FieldCueV0EmissionTuple,
+} from '../lib/fieldCueV0';
+import {
   buildGeneratedSiteReadingV0Report,
   type GeneratedSiteReadingV0,
-  type GeneratedSiteReadingV0AmbiguityStatus,
   type GeneratedSiteReadingV0UsefulnessStatus,
 } from '../lib/generatedSiteReadingV0';
 import type { Shape } from '../types/geometry';
 
 type GeneratedSiteReadingV0ShapeSupportStatus = 'supported' | 'unsupported';
-type GeneratedSiteReadingV0WitnessKind = 'geometry' | 'birth-law' | 'field';
 
 interface GeneratedSiteReadingV0PanelProps {
   shape: Shape;
 }
 
-const WITNESS_KINDS: GeneratedSiteReadingV0WitnessKind[] = [
-  'geometry',
-  'birth-law',
-  'field',
-];
+const FALLBACK_NAMING_QUESTION =
+  'What, if anything, can dwell at this generated site?';
 
 export function GeneratedSiteReadingV0Panel({
   shape,
@@ -34,23 +34,33 @@ export function GeneratedSiteReadingV0Panel({
 
 function SupportedGeneratedSiteReadingV0Panel() {
   const report = useMemo(() => buildGeneratedSiteReadingV0Report(), []);
+  const fieldCueBySiteId = useMemo(
+    () =>
+      new Map(
+        buildFieldCueV0Report().cues.map((cue) => [cue.siteId, cue] as const),
+      ),
+    [],
+  );
   const [selectedSiteId, setSelectedSiteId] = useState(
     report.readings[0]?.siteId ?? '',
   );
   const selectedReading =
     report.readings.find((reading) => reading.siteId === selectedSiteId) ??
     report.readings[0];
+  const selectedCue = selectedReading
+    ? fieldCueBySiteId.get(selectedReading.siteId)
+    : undefined;
 
   return (
-    <section className="rounded border border-emerald-400/25 bg-emerald-950/15 px-3 py-2 text-xs">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <section className="rounded border border-emerald-400/20 bg-emerald-950/10 px-3 py-3 text-xs">
+      <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-100">
-            GeneratedSiteReadingV0: generated site reading
+            Generated-site reading
           </h3>
           <p className="mt-1 leading-5 text-stone-400">
-            Geometry, birth-law, and field witness the generated site; human
-            names; question only.
+            Choose a generated midpoint, read its source signature, then decide
+            whether naming pressure is strong enough for human judgment.
           </p>
         </div>
         <span
@@ -62,60 +72,41 @@ function SupportedGeneratedSiteReadingV0Panel() {
         >
           {report.ok ? 'ready' : 'issue'}
         </span>
-      </div>
+      </header>
 
-      <div className="mt-3 grid gap-2">
-        {report.readings.map((reading) => (
-          <button
-            key={reading.siteId}
-            type="button"
-            aria-pressed={reading.siteId === selectedReading?.siteId}
-            onClick={() => setSelectedSiteId(reading.siteId)}
-            className={`rounded border px-3 py-2 text-left transition-colors ${
-              reading.siteId === selectedReading?.siteId
-                ? 'border-emerald-300/70 bg-emerald-950/35'
-                : 'border-stone-800 bg-stone-950 hover:border-emerald-400/40 hover:bg-emerald-950/20'
-            }`}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-mono text-sm font-semibold text-stone-100">
+      <div className="mt-3 grid grid-cols-2 gap-1 sm:grid-cols-3">
+        {report.readings.map((reading) => {
+          const cue = fieldCueBySiteId.get(reading.siteId);
+          const selected = reading.siteId === selectedReading?.siteId;
+
+          return (
+            <button
+              key={reading.siteId}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => setSelectedSiteId(reading.siteId)}
+              className={`rounded border px-2 py-2 text-left transition-colors ${
+                selected
+                  ? 'border-emerald-300/70 bg-emerald-950/35'
+                  : 'border-stone-800 bg-stone-950 hover:border-emerald-400/40 hover:bg-emerald-950/20'
+              }`}
+            >
+              <span className="block font-mono text-sm font-semibold text-stone-100">
                 {reading.siteId}
               </span>
-              <span className="flex flex-wrap gap-1">
-                <span className="rounded bg-stone-900 px-2 py-0.5 text-[11px] text-stone-300">
-                  {getUsefulnessLabel(
-                    reading.readingUsefulness.readingUsefulnessStatus,
-                  )}
-                </span>
-                <span className="rounded bg-stone-900 px-2 py-0.5 text-[11px] text-stone-300">
-                  {getAmbiguityLabel(
-                    reading.ambiguityWitness.ambiguityStatus,
-                  )}
-                </span>
+              <span className="mt-1 block leading-4 text-stone-400">
+                {getCompactSiteLabel(reading, cue)}
               </span>
-            </div>
-            <p className="mt-1 leading-5 text-stone-400">
-              {buildStructuralLine(reading)}
-            </p>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {WITNESS_KINDS.map((kind) => (
-                <span
-                  key={kind}
-                  className="rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-[11px] text-stone-300"
-                >
-                  {getWitnessChipLabel(kind)}
-                </span>
-              ))}
-            </div>
-            <p className="mt-2 leading-5 text-emerald-100">
-              {getNamingQuestion(reading)}
-            </p>
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
 
       {selectedReading ? (
-        <GeneratedSiteReadingV0Detail reading={selectedReading} />
+        <GeneratedSiteReadingV0Detail
+          reading={selectedReading}
+          fieldCue={selectedCue}
+        />
       ) : null}
     </section>
   );
@@ -159,130 +150,150 @@ function GeneratedSiteReadingV0UnsupportedPanel({ shape }: { shape: Shape }) {
 
 function GeneratedSiteReadingV0Detail({
   reading,
+  fieldCue,
 }: {
   reading: GeneratedSiteReadingV0;
+  fieldCue: FieldCueV0 | undefined;
 }) {
-  const geometry = reading.geometryWitness;
-  const birthLaw = reading.atomicWitness;
-  const field = reading.fieldWitness;
-  const ambiguityWarnings = getAmbiguityWarningSummaries(reading);
-  const fieldWarnings = getFieldWarningLabels(reading);
+  const signature = getUsableSignature(fieldCue);
+  const signatureStatus = getSignatureStatusLabel(reading, fieldCue);
+  const fieldContactLabel = getFieldContactLabel(reading, fieldCue);
+  const secondaryQuestions = buildSecondaryQuestions(reading);
 
   return (
-    <div className="mt-3 grid gap-3 rounded border border-stone-800 bg-stone-950 px-3 py-3">
-      <div className="grid gap-3 lg:grid-cols-3">
-        <section>
-          <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
-            Geometry witness
+    <article className="mt-3 rounded border border-stone-800 bg-stone-950 px-3 py-3">
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h4 className="font-mono text-base font-semibold text-stone-100">
+            {reading.siteId}
           </h4>
           <p className="mt-1 leading-5 text-stone-300">
-            Source edge {geometry.sourceEdgeId ?? 'unknown'} from parents{' '}
-            {formatList(geometry.parentVertexIds)}; complement{' '}
-            {geometry.complementEdgeId ?? 'unknown'}; antipodal child{' '}
-            {geometry.antipodalChildSiteId ?? 'unknown'}.
+            {buildSiteStructuralPhrase(reading)}
+          </p>
+        </div>
+        <div className="flex max-w-full flex-wrap gap-1">
+          <span className="rounded bg-stone-900 px-2 py-0.5 text-[11px] text-stone-300">
+            {signatureStatus}
+          </span>
+          <span className="rounded bg-stone-900 px-2 py-0.5 text-[11px] text-stone-300">
+            {fieldContactLabel}
+          </span>
+        </div>
+      </header>
+
+      <div className="mt-4 grid gap-4">
+        <section>
+          <h5 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+            Source signature
+          </h5>
+          {signature ? (
+            <>
+              <dl className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <GeneratedSiteReadingV0Metric
+                  label="strength"
+                  value={formatSignatureValue(signature.amplitude)}
+                />
+                <GeneratedSiteReadingV0Metric
+                  label="frequency"
+                  value={formatSignatureValue(signature.waveNumber)}
+                />
+                <GeneratedSiteReadingV0Metric
+                  label="phase"
+                  value={formatSignatureValue(signature.phase)}
+                />
+                <GeneratedSiteReadingV0Metric
+                  label="decay"
+                  value={formatSignatureValue(signature.attenuation)}
+                />
+              </dl>
+              <p className="mt-2 leading-5 text-stone-400">
+                These are the wave parameters this child emits into the field.
+              </p>
+            </>
+          ) : (
+            <div className="mt-2 rounded border border-amber-400/25 bg-amber-400/10 px-3 py-2">
+              <p className="font-semibold text-amber-100">
+                No emitted wave signature in V0.
+              </p>
+              <p className="mt-1 leading-5 text-stone-300">
+                {describeMissingSignatureReason(reading, fieldCue)}
+              </p>
+            </div>
+          )}
+        </section>
+
+        <section>
+          <h5 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+            How the signature was derived
+          </h5>
+          <p className="mt-1 leading-5 text-stone-300">
+            {buildSignatureDerivationSentence(reading, fieldCue, Boolean(signature))}
           </p>
           <p className="mt-1 leading-5 text-stone-500">
-            {geometry.structuralRoleSummary}
+            Each channel weights the parent side more strongly than the
+            projection side; phase is merged circularly.
+          </p>
+          <details className="mt-2 rounded border border-stone-800 bg-stone-950/80 px-3 py-2">
+            <summary className="cursor-pointer select-none text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+              derivation details
+            </summary>
+            <dl className="mt-2 grid gap-2 leading-5 text-stone-400">
+              <GeneratedSiteReadingV0InlineMetric
+                label="channel pairs"
+                value={formatQuarkChannelPairs(fieldCue)}
+              />
+              <GeneratedSiteReadingV0InlineMetric
+                label="merge kind"
+                value={fieldCue?.inheritanceAxis.mergeKind ?? 'unavailable'}
+              />
+              <GeneratedSiteReadingV0InlineMetric
+                label="grammar"
+                value={
+                  fieldCue?.inheritanceAxis.inheritanceGrammarId ??
+                  'unavailable'
+                }
+              />
+            </dl>
+          </details>
+        </section>
+
+        <section>
+          <h5 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+            Field contact
+          </h5>
+          <p className="mt-1 leading-5 text-stone-300">
+            {describeFieldContact(reading, fieldCue)}
+          </p>
+          <p className="mt-1 leading-5 text-stone-500">
+            {describeFieldCandidateCounts(reading)}
           </p>
         </section>
 
         <section>
-          <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
-            Birth-law witness
-          </h4>
-          <p className="mt-1 leading-5 text-stone-300">
-            event-bound birth-law; child role {birthLaw.childRole ?? 'unknown'};
-            grammar {birthLaw.inheritanceGrammarId ?? 'unavailable'}; merge{' '}
-            {birthLaw.mergeKind ?? 'unavailable'}.
+          <h5 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+            Naming pressure
+          </h5>
+          <p className="mt-1 leading-5 text-emerald-100">
+            {buildSiteSpecificNamingPrompt(reading, fieldCue)}
           </p>
-          <p className="mt-1 leading-5 text-stone-400">
-            Projections {formatList(birthLaw.projectionVertexIds)}.{' '}
-            {birthLaw.birthLawSummary}
+          {secondaryQuestions.length ? (
+            <details className="mt-2 text-stone-400">
+              <summary className="cursor-pointer select-none text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+                more questions
+              </summary>
+              <ul className="mt-2 grid gap-1 leading-5">
+                {secondaryQuestions.map((question) => (
+                  <li key={question}>{question}</li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
+          <p className="mt-2 font-mono text-[11px] text-stone-500">
+            question only | human names | no packet write | not topology
           </p>
-        </section>
-
-        <section>
-          <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
-            Field witness
-          </h4>
-          <p className="mt-1 leading-5 text-stone-300">
-            {getFieldWitnessSentence(reading)}
-          </p>
-          <div className="mt-2 grid grid-cols-3 gap-2">
-            <GeneratedSiteReadingV0Metric
-              label="feature"
-              value={field.fieldCandidateReferenceCounts.feature}
-            />
-            <GeneratedSiteReadingV0Metric
-              label="candidate route/gate"
-              value={field.fieldCandidateReferenceCounts.routeGate}
-            />
-            <GeneratedSiteReadingV0Metric
-              label="candidate support/region"
-              value={field.fieldCandidateReferenceCounts.supportRegion}
-            />
-          </div>
         </section>
       </div>
-
-      <section>
-        <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
-          Field pressure
-        </h4>
-        <p className="mt-1 leading-5 text-stone-300">
-          {field.fieldPressureSummary ?? 'No field pressure summary available.'}
-        </p>
-        <div className="mt-2 flex flex-wrap gap-1">
-          {fieldWarnings.length ? (
-            fieldWarnings.map((warning) => (
-              <span
-                key={warning}
-                className="rounded bg-stone-900 px-2 py-0.5 text-[11px] text-stone-300"
-              >
-                {warning}
-              </span>
-            ))
-          ) : (
-            <span className="rounded bg-stone-900 px-2 py-0.5 text-[11px] text-stone-300">
-              no extra field warning
-            </span>
-          )}
-        </div>
-      </section>
-
-      <section>
-        <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
-          Ambiguity / warning
-        </h4>
-        <p className="mt-1 leading-5 text-stone-300">
-          {getAmbiguityLabel(reading.ambiguityWitness.ambiguityStatus)}
-        </p>
-        <ul className="mt-1 grid gap-1 leading-5 text-stone-400">
-          {ambiguityWarnings.map((warning) => (
-            <li key={warning}>{warning}</li>
-          ))}
-        </ul>
-      </section>
-
-      <section>
-        <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-500">
-          Naming prompt
-        </h4>
-        <p className="mt-1 leading-5 text-emerald-100">
-          {getNamingQuestion(reading)}
-        </p>
-        <ul className="mt-1 grid gap-1 leading-5 text-stone-400">
-          {reading.humanNamingPrompt.secondaryNamingQuestions
-            .slice(0, 2)
-            .map((question) => (
-              <li key={question}>{question}</li>
-            ))}
-        </ul>
-        <p className="mt-2 font-mono text-[11px] text-stone-500">
-          question only | human names | no packet write | not topology
-        </p>
-      </section>
-    </div>
+    </article>
   );
 }
 
@@ -296,122 +307,66 @@ function getGeneratedSiteReadingV0ShapeSupportStatus(
     : 'unsupported';
 }
 
-function getUsefulnessLabel(
-  status: GeneratedSiteReadingV0UsefulnessStatus,
+function getUsableSignature(
+  fieldCue: FieldCueV0 | undefined,
+): FieldCueV0EmissionTuple | undefined {
+  if (
+    fieldCue?.inheritanceAxis.inheritanceStatus !== 'complete' ||
+    !fieldCue.emittedSourceSignature.fieldReady
+  ) {
+    return undefined;
+  }
+
+  return fieldCue.emittedSourceSignature.emissionTuple;
+}
+
+function getCompactSiteLabel(
+  reading: GeneratedSiteReadingV0,
+  fieldCue: FieldCueV0 | undefined,
 ): string {
-  switch (status) {
-    case 'useful-for-human-inspection':
-      return 'inspectable';
-    case 'weak-field-pressure':
-      return 'weak field help';
-    case 'candidate-only':
-      return 'candidate pressure';
-    case 'degenerate-warning':
-      return 'collapsed distinction';
-    case 'unsupported':
-      return 'unsupported';
-    case 'misleading-risk':
-      return 'read cautiously';
-  }
+  return `${getUsefulnessLabel(
+    reading.readingUsefulness.readingUsefulnessStatus,
+  )}; ${getFieldContactLabel(reading, fieldCue)}`;
 }
 
-function getAmbiguityLabel(status: GeneratedSiteReadingV0AmbiguityStatus): string {
-  switch (status) {
-    case 'clear-enough-for-inspection':
-      return 'clear enough to inspect';
-    case 'candidate-only':
-      return 'candidate-only';
-    case 'degenerate':
-      return 'collapsed distinction';
-    case 'sensitive':
-      return 'unstable evidence';
-    case 'saturated':
-      return 'crowded candidate set';
-    case 'weak':
-      return 'weak pressure';
-    case 'unsupported':
-      return 'unsupported';
-    case 'misleading-risk':
-      return 'read cautiously';
-  }
-}
-
-function getWitnessChipLabel(kind: GeneratedSiteReadingV0WitnessKind): string {
-  switch (kind) {
-    case 'geometry':
-      return 'geometry';
-    case 'birth-law':
-      return 'birth-law';
-    case 'field':
-      return 'field';
-  }
-}
-
-function getFieldWitnessSentence(reading: GeneratedSiteReadingV0): string {
-  const field = reading.fieldWitness;
-  const cueStatus = getFieldCueStatusLabel(field.fieldCueStatus);
-  const participation = getParticipationLabel(field.fieldParticipationStatus);
-  const inheritance = getInheritanceLabel(field.fieldInheritanceStatus);
-
-  return `${cueStatus}; ${participation}; ${inheritance}.`;
-}
-
-function getNamingQuestion(reading: GeneratedSiteReadingV0): string {
-  return (
-    reading.humanNamingPrompt.primaryNamingQuestion ||
-    reading.fieldWitness.fieldNamingQuestions[0] ||
-    'What, if anything, can dwell at this generated site?'
+function getSignatureStatusLabel(
+  reading: GeneratedSiteReadingV0,
+  fieldCue: FieldCueV0 | undefined,
+): string {
+  return getInheritanceLabel(
+    fieldCue?.inheritanceAxis.inheritanceStatus ??
+      reading.fieldWitness.fieldInheritanceStatus,
   );
 }
 
-function buildStructuralLine(reading: GeneratedSiteReadingV0): string {
-  const geometry = reading.geometryWitness;
-
-  return `born on ${geometry.sourceEdgeId ?? 'unknown'}; complement ${
-    geometry.complementEdgeId ?? 'unknown'
-  }; antipode ${geometry.antipodalChildSiteId ?? 'unknown'}`;
-}
-
-function getFieldCueStatusLabel(status: string): string {
-  switch (status) {
-    case 'available':
-      return 'field cue available';
-    case 'unavailable':
-      return 'field cue unavailable';
-    case 'issue':
-      return 'field cue needs review';
-    default:
-      return formatStatusLabel(status);
+function getUsefulnessLabel(
+  status: GeneratedSiteReadingV0UsefulnessStatus,
+): string {
+  if (status === 'useful-for-human-inspection') {
+    return 'inspectable';
   }
-}
 
-function getParticipationLabel(status: string | undefined): string {
-  switch (status) {
-    case 'available':
-      return 'field pressure available';
-    case 'candidate-only':
-      return 'candidate pressure only';
-    case 'weak':
-      return 'weak field pressure';
-    case 'saturated':
-      return 'crowded candidate set';
-    case 'sensitive':
-      return 'unstable evidence';
-    case 'degenerate':
-      return 'collapsed source distinction';
-    case 'unsupported':
-      return 'field witness unsupported';
-    case 'misleading-risk':
-      return 'read field evidence cautiously';
-    case 'not-yet-computed':
-      return 'field witness not computed';
-    case 'not-applicable':
-      return 'field witness not applicable';
-    case undefined:
-      return 'field participation unavailable';
-    default:
-      return formatStatusLabel(status);
+  if (status === 'weak-field-pressure') {
+    return 'weak field help';
   }
+
+  if (status === 'candidate-only') {
+    return 'candidate pressure';
+  }
+
+  if (status === 'degenerate-warning') {
+    return 'collapsed distinction';
+  }
+
+  if (status === 'unsupported') {
+    return 'unsupported';
+  }
+
+  if (status.includes('misleading')) {
+    return 'read cautiously';
+  }
+
+  return formatStatusLabel(status);
 }
 
 function getInheritanceLabel(status: string | undefined): string {
@@ -433,101 +388,251 @@ function getInheritanceLabel(status: string | undefined): string {
   }
 }
 
-function getFieldWarningLabels(reading: GeneratedSiteReadingV0): string[] {
-  return uniqueStrings(
-    reading.fieldWitness.fieldWarningStatuses.map((status) =>
-      getParticipationLabel(status),
-    ),
-  ).slice(0, 3);
-}
-
-function getAmbiguityWarningSummaries(
+function getFieldContactLabel(
   reading: GeneratedSiteReadingV0,
-): string[] {
-  const summaries = [
-    summarizeAmbiguityStatus(reading.ambiguityWitness.ambiguityStatus),
-    ...reading.ambiguityWitness.ambiguityWarnings
-      .map(rewriteAmbiguityWarning)
-      .filter((warning): warning is string => Boolean(warning)),
-    ...reading.ambiguityWitness.unsupportedCaveats
-      .map(rewriteUnsupportedCaveat)
-      .filter((warning): warning is string => Boolean(warning)),
-  ];
-
-  return uniqueStrings(summaries).slice(0, 2);
-}
-
-function summarizeAmbiguityStatus(
-  status: GeneratedSiteReadingV0AmbiguityStatus,
+  fieldCue: FieldCueV0 | undefined,
 ): string {
-  switch (status) {
-    case 'clear-enough-for-inspection':
-      return 'clear enough for a naming attempt';
-    case 'candidate-only':
-      return 'candidate pressure only';
-    case 'degenerate':
-      return 'source distinction collapsed';
-    case 'sensitive':
-      return 'unstable field evidence';
-    case 'saturated':
-      return 'crowded candidate set';
-    case 'weak':
-      return 'weak field pressure';
-    case 'unsupported':
-      return 'reading unsupported in this V0 event';
-    case 'misleading-risk':
-      return 'field cue should be read cautiously';
-  }
-}
-
-function rewriteAmbiguityWarning(warning: string): string | null {
-  const lowerWarning = warning.toLowerCase();
-
-  if (lowerWarning.includes('degenerate')) {
+  if (isCollapsedReading(reading, fieldCue)) {
     return 'source distinction collapsed';
   }
 
-  if (lowerWarning.includes('misleading-risk')) {
-    return 'field cue should be read cautiously';
-  }
-
-  if (lowerWarning.includes('sensitive')) {
+  if (hasUnstableEvidence(reading, fieldCue)) {
     return 'unstable field evidence';
   }
 
-  if (lowerWarning.includes('saturated')) {
+  if (hasCrowdedCandidateSet(reading, fieldCue)) {
     return 'crowded candidate set';
   }
 
-  if (lowerWarning.includes('weak')) {
-    return 'weak field pressure';
+  if (reading.fieldWitness.fieldCandidateReferenceCounts.total === 0) {
+    return 'weak field help';
   }
 
-  if (lowerWarning.includes('unsupported') || lowerWarning.includes('unavailable')) {
-    return 'reading unsupported in this V0 event';
-  }
-
-  return warning.length <= 96 && !lowerWarning.includes('-status:')
-    ? warning
-    : null;
+  return 'measured field contact';
 }
 
-function rewriteUnsupportedCaveat(caveat: string): string | null {
-  const lowerCaveat = caveat.toLowerCase();
+function buildSiteStructuralPhrase(reading: GeneratedSiteReadingV0): string {
+  return `${reading.geometryWitness.sourceEdgeId ?? 'unknown'} child under ${formatProjectionVertices(
+    reading,
+  )} projection; antipode ${
+    reading.geometryWitness.antipodalChildSiteId ?? 'unknown'
+  }`;
+}
 
-  if (lowerCaveat.includes('unsupported')) {
-    return 'unsupported field evidence remains visible';
+function buildSignatureDerivationSentence(
+  reading: GeneratedSiteReadingV0,
+  fieldCue: FieldCueV0 | undefined,
+  hasUsableSignature: boolean,
+): string {
+  const siteId = reading.siteId;
+  const sourceEdge = reading.geometryWitness.sourceEdgeId ?? 'unknown edge';
+  const projections = formatProjectionVertices(reading);
+  const channelPairs = formatQuarkChannelPairs(fieldCue);
+
+  if (!fieldCue || channelPairs === 'unavailable') {
+    return `${siteId} is born on ${sourceEdge}. ${projections} act as projection sources. V0 does not expose channel-level derivation details for this site.`;
   }
 
-  if (lowerCaveat.includes('weak')) {
-    return 'weak field pressure';
+  const action = hasUsableSignature
+    ? 'The child signature is derived'
+    : 'V0 tests the child-source derivation';
+
+  return `${siteId} is born on ${sourceEdge}. ${projections} act as projection sources. ${action} from four Quark channels - ${channelPairs} - then merged into one emitted wave signature.`;
+}
+
+function describeMissingSignatureReason(
+  reading: GeneratedSiteReadingV0,
+  fieldCue: FieldCueV0 | undefined,
+): string {
+  const status =
+    fieldCue?.inheritanceAxis.inheritanceStatus ??
+    reading.fieldWitness.fieldInheritanceStatus;
+
+  if (status === 'fallback') {
+    const fallbackReason = fieldCue?.inheritanceAxis.fallbackReason;
+
+    return fallbackReason
+      ? `The child-source derivation fell back before a usable numeric signature was produced: ${formatStatusLabel(
+          fallbackReason,
+        )}.`
+      : 'The child-source derivation fell back before a usable numeric signature was produced.';
   }
 
-  if (lowerCaveat.includes('unavailable')) {
-    return 'reading unavailable for this witness';
+  if (status === 'unresolved') {
+    return 'The child-source derivation remained unresolved, so no usable numeric signature was produced.';
   }
 
-  return caveat.length <= 96 ? caveat : null;
+  if (status === 'degenerate') {
+    return 'The child-source derivation collapsed against another child, so its signature should not be read separately.';
+  }
+
+  if (status === 'unsupported') {
+    return 'The field witness does not support a source signature for this site in V0.';
+  }
+
+  return 'The child-source derivation did not produce a usable numeric signature.';
+}
+
+function describeFieldContact(
+  reading: GeneratedSiteReadingV0,
+  fieldCue: FieldCueV0 | undefined,
+): string {
+  const contactCount = reading.fieldWitness.fieldCandidateReferenceCounts.total;
+
+  if (isCollapsedReading(reading, fieldCue)) {
+    return 'The source distinction collapsed, so field contact should be read as an antipodal ambiguity rather than a separate structure.';
+  }
+
+  if (contactCount === 0) {
+    return 'The field finds little useful contact for this child.';
+  }
+
+  if (hasUnstableEvidence(reading, fieldCue)) {
+    return 'This child touches several measured field candidates, but the evidence is unstable across checks.';
+  }
+
+  if (hasDominantFieldContact(fieldCue)) {
+    return 'This child is the strongest contributor at some measured field touchpoints.';
+  }
+
+  if (hasCrowdedCandidateSet(reading, fieldCue)) {
+    return 'Candidate sets are crowded; counts should not be read as structure.';
+  }
+
+  return 'This child has measured field contact that can pressure a naming attempt.';
+}
+
+function describeFieldCandidateCounts(reading: GeneratedSiteReadingV0): string {
+  const counts = reading.fieldWitness.fieldCandidateReferenceCounts;
+
+  if (counts.total === 0) {
+    return 'field touchpoints: none found in V0.';
+  }
+
+  const countSummary = `field touchpoints: ${counts.feature} feature | ${counts.routeGate} route/gate candidates | ${counts.supportRegion} support/region candidates`;
+
+  if (
+    reading.fieldWitness.fieldWarningStatuses.includes('saturated') ||
+    reading.ambiguityWitness.ambiguityStatus === 'saturated'
+  ) {
+    return `${countSummary}. crowded candidate set; count is not itself meaningful.`;
+  }
+
+  if (hasUnstableEvidence(reading, undefined)) {
+    return `${countSummary}. unstable evidence; count is only a contact clue.`;
+  }
+
+  return `${countSummary}. count is a contact clue, not a mature structure.`;
+}
+
+function buildSiteSpecificNamingPrompt(
+  reading: GeneratedSiteReadingV0,
+  fieldCue: FieldCueV0 | undefined,
+): string {
+  const siteId = reading.siteId;
+  const sourceEdge = reading.geometryWitness.sourceEdgeId;
+  const complementEdge = reading.geometryWitness.complementEdgeId;
+  const antipode = reading.geometryWitness.antipodalChildSiteId;
+  const under = sourceEdge && complementEdge ? `${sourceEdge}-under-${complementEdge}` : '';
+  const hasSignature = Boolean(getUsableSignature(fieldCue));
+  const contactCount = reading.fieldWitness.fieldCandidateReferenceCounts.total;
+
+  if (isCollapsedReading(reading, fieldCue) && antipode) {
+    return `${siteId} may not separate cleanly from ${antipode}. Should these sites be named separately, or held as an antipodal ambiguity?`;
+  }
+
+  if (!hasSignature && sourceEdge && complementEdge) {
+    return `${siteId} is structurally readable as ${sourceEdge} under ${complementEdge}, but V0 has no emitted wave signature. Should naming rely on geometry alone, or remain suspended?`;
+  }
+
+  if (contactCount === 0 && sourceEdge && complementEdge) {
+    return `${siteId} is structurally readable as ${sourceEdge} under ${complementEdge}, but the field adds little pressure. Should naming rely on geometry alone?`;
+  }
+
+  if (hasSignature && hasUnstableEvidence(reading, fieldCue) && under) {
+    return `${siteId} has a derived ${under} wave signature, but field contact is unstable. Is there enough pressure to name it now, or should it remain suspended?`;
+  }
+
+  if (hasSignature && contactCount > 0 && under) {
+    return `${siteId} carries a derived source signature and measurable field contact. What concept could inhabit this ${under} position?`;
+  }
+
+  return FALLBACK_NAMING_QUESTION;
+}
+
+function buildSecondaryQuestions(reading: GeneratedSiteReadingV0): string[] {
+  return uniqueStrings([
+    ...reading.humanNamingPrompt.secondaryNamingQuestions,
+    ...reading.fieldWitness.fieldNamingQuestions,
+  ]).slice(0, 3);
+}
+
+function isCollapsedReading(
+  reading: GeneratedSiteReadingV0,
+  fieldCue: FieldCueV0 | undefined,
+): boolean {
+  return (
+    reading.ambiguityWitness.ambiguityStatus === 'degenerate' ||
+    fieldCue?.inheritanceAxis.inheritanceStatus === 'degenerate' ||
+    fieldCue?.warningStatuses.includes('degenerate') === true
+  );
+}
+
+function hasUnstableEvidence(
+  reading: GeneratedSiteReadingV0,
+  fieldCue: FieldCueV0 | undefined,
+): boolean {
+  return (
+    reading.ambiguityWitness.ambiguityStatus === 'sensitive' ||
+    reading.ambiguityWitness.ambiguityStatus.includes('misleading') ||
+    reading.fieldWitness.fieldWarningStatuses.includes('sensitive') ||
+    fieldCue?.warningStatuses.includes('sensitive') === true ||
+    fieldCue?.warningStatuses.some((status) => status.includes('misleading')) ===
+      true
+  );
+}
+
+function hasCrowdedCandidateSet(
+  reading: GeneratedSiteReadingV0,
+  fieldCue: FieldCueV0 | undefined,
+): boolean {
+  return (
+    reading.ambiguityWitness.ambiguityStatus === 'saturated' ||
+    reading.fieldWitness.fieldWarningStatuses.includes('saturated') ||
+    fieldCue?.warningStatuses.includes('saturated') === true
+  );
+}
+
+function hasDominantFieldContact(fieldCue: FieldCueV0 | undefined): boolean {
+  return (
+    fieldCue?.candidateFieldWorldAxis.candidateRelations.some((relation) =>
+      relation.relationKind.includes('dominant'),
+    ) === true
+  );
+}
+
+function formatProjectionVertices(reading: GeneratedSiteReadingV0): string {
+  const projections = reading.atomicWitness.projectionVertexIds.length
+    ? reading.atomicWitness.projectionVertexIds
+    : reading.geometryWitness.complementEdgeVertexIds;
+
+  return projections.length ? projections.join('/') : 'unknown';
+}
+
+function formatQuarkChannelPairs(fieldCue: FieldCueV0 | undefined): string {
+  const channels = fieldCue?.inheritanceAxis.quarkChannelSummaries ?? [];
+
+  if (!channels.length) {
+    return 'unavailable';
+  }
+
+  return channels
+    .map((channel) => `${channel.parent60}/${channel.projection30}`)
+    .join(', ');
+}
+
+function formatSignatureValue(value: number): string {
+  return Number.isFinite(value) ? value.toFixed(3) : 'n/a';
 }
 
 function GeneratedSiteReadingV0Metric({
@@ -547,8 +652,19 @@ function GeneratedSiteReadingV0Metric({
   );
 }
 
-function formatList(values: string[], emptyLabel = 'unknown'): string {
-  return values.length ? values.join(', ') : emptyLabel;
+function GeneratedSiteReadingV0InlineMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div>
+      <dt className="inline font-medium text-stone-300">{label}:</dt>{' '}
+      <dd className="inline">{value}</dd>
+    </div>
+  );
 }
 
 function formatStatusLabel(status: string): string {

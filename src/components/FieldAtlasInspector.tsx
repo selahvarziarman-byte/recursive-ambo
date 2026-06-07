@@ -282,7 +282,7 @@ export function FieldAtlasInspector({
           Field witness details
         </summary>
         <p className="mt-2 leading-5 text-stone-400">
-          FieldCueV0 source-signature and candidate details
+          source signature, candidate links, probe highlighting
         </p>
         <div className="mt-3">
           <FieldCueV0Panel
@@ -296,19 +296,30 @@ export function FieldAtlasInspector({
         </div>
       </details>
 
-      <ProfileAwareFieldModeRuntimeSection
-        report={profileAwareRuntimeReport}
-        evidenceStabilityReport={profileAwareEvidenceStabilityReport}
-        semanticHandoffSummary={currentSemanticHandoffSummary}
-        semanticHandoffTransition={semanticHandoffTransition}
-        hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
-        pinnedFieldAtlasProbeRef={pinnedFieldAtlasProbeRef}
-        onHoverSampleStart={setHoveredFieldAtlasSampleId}
-        onHoverSampleEnd={clearHoveredFieldAtlasSampleId}
-        onTogglePinnedProbe={togglePinnedFieldAtlasProbeRef}
-        onClearPinnedProbe={clearPinnedFieldAtlasProbeRef}
-        shortenId={shortenId}
-      />
+      <details className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-xs">
+        <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+          Technical field diagnostics: internal candidate machinery
+        </summary>
+        <p className="mt-2 leading-5 text-stone-500">
+          Internal field diagnostics: policy-relative candidate machinery, not
+          the generated-site reading surface.
+        </p>
+        <div className="mt-3">
+          <ProfileAwareFieldModeRuntimeSection
+            report={profileAwareRuntimeReport}
+            evidenceStabilityReport={profileAwareEvidenceStabilityReport}
+            semanticHandoffSummary={currentSemanticHandoffSummary}
+            semanticHandoffTransition={semanticHandoffTransition}
+            hoveredFieldAtlasSampleId={hoveredFieldAtlasSampleId}
+            pinnedFieldAtlasProbeRef={pinnedFieldAtlasProbeRef}
+            onHoverSampleStart={setHoveredFieldAtlasSampleId}
+            onHoverSampleEnd={clearHoveredFieldAtlasSampleId}
+            onTogglePinnedProbe={togglePinnedFieldAtlasProbeRef}
+            onClearPinnedProbe={clearPinnedFieldAtlasProbeRef}
+            shortenId={shortenId}
+          />
+        </div>
+      </details>
 
       <LegacyFieldAtlasDiagnosticsSection
         atlas={atlas}
