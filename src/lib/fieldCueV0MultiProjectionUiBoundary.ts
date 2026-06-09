@@ -5,7 +5,8 @@ import {
 
 export type FieldCueV0MultiProjectionUiBoundaryStatus =
   'multi-projection-fieldcue-boundary-ready';
-export type FieldCueV0MultiProjectionRenderStatus = 'not-rendered-this-branch';
+export type FieldCueV0MultiProjectionRenderStatus =
+  'boundary-consumed-by-mounted-display';
 export type FieldCueV0MultiProjectionGeneratedSiteBoundaryStatus =
   'blocked-not-consuming-fieldcue-yet';
 export type FieldCueV0MultiProjectionRuntimePromotionStatus = 'not-promoted';
@@ -141,7 +142,7 @@ const PARENT_GATE = 'Gate D2' as const;
 const FIELD_CUE_V0_UI_BOUNDARY_STATUS: FieldCueV0MultiProjectionUiBoundaryStatus =
   'multi-projection-fieldcue-boundary-ready';
 const FIELD_CUE_V0_RENDER_STATUS: FieldCueV0MultiProjectionRenderStatus =
-  'not-rendered-this-branch';
+  'boundary-consumed-by-mounted-display';
 const GENERATED_SITE_READING_BOUNDARY_STATUS: FieldCueV0MultiProjectionGeneratedSiteBoundaryStatus =
   'blocked-not-consuming-fieldcue-yet';
 const RUNTIME_PROMOTION_STATUS: FieldCueV0MultiProjectionRuntimePromotionStatus =
@@ -410,7 +411,7 @@ function buildIssues(args: {
   }
 
   if (
-    FIELD_CUE_V0_RENDER_STATUS !== 'not-rendered-this-branch' ||
+    FIELD_CUE_V0_RENDER_STATUS !== 'boundary-consumed-by-mounted-display' ||
     args.fieldCueReport?.fieldCueV0UiStatus !== 'not-ui-work'
   ) {
     issues.push({

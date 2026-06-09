@@ -342,7 +342,7 @@ function runUiBoundaryReportDiagnostic(report, sources) {
   );
   expectEqual(
     report.fieldCueV0RenderStatus,
-    'not-rendered-this-branch',
+    'boundary-consumed-by-mounted-display',
     'FieldCueV0 render status',
   );
   expectEqual(
@@ -575,11 +575,11 @@ function runUiBoundaryReportDiagnostic(report, sources) {
     'operation registry is not contaminated by D2 work',
   );
   expectEqual(
-    /fieldCueV0MultiProjectionUiBoundary|multiProjection|relationBoundaryRows/.test(
+    /fieldCueV0MultiProjectionUiBoundary|relationBoundaryRows/.test(
       sources.panelSource,
     ),
     false,
-    'React UI rendering did not change for D2 boundary payload',
+    'FieldCueV0Panel does not consume D2 boundary payload directly',
   );
 
   passes.push('FieldCueV0 UI multi-projection boundary report');
@@ -593,18 +593,22 @@ function runDisplayAdapterDiagnostic(report, sources) {
   );
   expectEqual(
     report.displayAdapterStatus,
-    'isolated-display-adapter-ready',
+    'mounted-display-adapter-ready',
     'display adapter status',
   );
-  expectEqual(report.displayMountStatus, 'not-mounted', 'display mount status');
+  expectEqual(
+    report.displayMountStatus,
+    'mounted-in-fieldcue-panel',
+    'display mount status',
+  );
   expectEqual(
     report.legacyUiStatus,
-    'legacy-ui-not-authoritative',
+    'legacy-ui-quarantined-not-authoritative',
     'legacy UI status',
   );
   expectEqual(
     report.fieldCueV0RenderStatus,
-    'adapter-ready-not-rendered-in-app',
+    'mounted-in-fieldcue-panel',
     'FieldCueV0 render status',
   );
   expectEqual(
@@ -637,7 +641,11 @@ function runDisplayAdapterDiagnostic(report, sources) {
     'not-adopted',
     'D3 reduction law adoption status',
   );
-  expectEqual(report.runtimePromotionStatus, 'not-promoted', 'runtime status');
+  expectEqual(
+    report.runtimePromotionStatus,
+    'fieldcue-display-mounted-generated-site-not-promoted',
+    'runtime status',
+  );
   expectEqual(report.semanticStatus, 'not-semantic-naming', 'semantic status');
   expectEqual(report.topologyStatus, 'not-topology-workspace', 'topology status');
   expectEqual(report.packetWriteStatus, 'not-packet-writing', 'packet write status');
@@ -653,7 +661,7 @@ function runDisplayAdapterDiagnostic(report, sources) {
   );
   expectEqual(
     report.recommendedNextGate,
-    'Gate D4 - FieldCueV0 Display Mount Decision',
+    'Gate D5 - GeneratedSiteReading Boundary Decision',
     'D3 recommended next gate',
   );
   expectEqual(report.integrityIssueCount, 0, 'D3 integrity issue count');
@@ -718,7 +726,7 @@ function runDisplayAdapterDiagnostic(report, sources) {
     true,
     'generatedSiteReadingBlocked',
   );
-  expectEqual(report.displaySummary.mountedInApp, false, 'mountedInApp');
+  expectEqual(report.displaySummary.mountedInApp, true, 'mountedInApp');
   expectEqual(
     report.displaySummary.legacyUiAuthoritative,
     false,
@@ -777,9 +785,32 @@ function runDisplayAdapterDiagnostic(report, sources) {
   }
 
   expect(
-    !/FieldCueV0MultiProjectionDisplay/.test(sources.panelSource),
-    'display component not mounted in FieldCueV0Panel',
-    'display component is mounted in FieldCueV0Panel',
+    /from\s+['"]\.\/FieldCueV0MultiProjectionDisplay['"]/.test(
+      sources.panelSource,
+    ),
+    'FieldCueV0Panel imports FieldCueV0MultiProjectionDisplay',
+    'FieldCueV0Panel does not import FieldCueV0MultiProjectionDisplay',
+  );
+  expect(
+    /buildFieldCueV0MultiProjectionDisplayAdapterReport/.test(
+      sources.panelSource,
+    ),
+    'FieldCueV0Panel uses buildFieldCueV0MultiProjectionDisplayAdapterReport',
+    'FieldCueV0Panel does not use buildFieldCueV0MultiProjectionDisplayAdapterReport',
+  );
+  expect(
+    /<FieldCueV0MultiProjectionDisplay\s+report=\{multiProjectionDisplayReport\}\s*\/>/.test(
+      sources.panelSource,
+    ),
+    'display component mounted in FieldCueV0Panel',
+    'display component is not mounted in FieldCueV0Panel',
+  );
+  expect(
+    /Legacy FieldCueV0 diagnostic details[\s\S]*not authoritative for the[\s\S]*multi-projection source-state regime/.test(
+      sources.panelSource,
+    ),
+    'legacy FieldCueV0 details are quarantined',
+    'legacy FieldCueV0 quarantine language missing',
   );
   expect(
     !/FieldCueV0MultiProjectionDisplay/.test(sources.inspectorSource),
@@ -888,6 +919,7 @@ function printCompactDisplayAdapterReport(report) {
   console.log(`displayAdapterStatus: ${report.displayAdapterStatus}`);
   console.log(`displayMountStatus: ${report.displayMountStatus}`);
   console.log(`legacyUiStatus: ${report.legacyUiStatus}`);
+  console.log(`fieldCueV0RenderStatus: ${report.fieldCueV0RenderStatus}`);
   console.log(
     `childDisplayRowCount: ${report.displaySummary.childDisplayRowCount}`,
   );
@@ -904,6 +936,10 @@ function printCompactDisplayAdapterReport(report) {
     `tupleLossWarningCount: ${report.displaySummary.tupleLossWarningCount}`,
   );
   console.log(`generatedSiteReadingV0Status: ${report.generatedSiteReadingV0Status}`);
+  console.log(
+    `generatedSiteReadingConsumptionStatus: ${report.generatedSiteReadingConsumptionStatus}`,
+  );
+  console.log(`runtimePromotionStatus: ${report.runtimePromotionStatus}`);
   console.log(`recommendedNextGate: ${report.recommendedNextGate}`);
   console.log('');
 }

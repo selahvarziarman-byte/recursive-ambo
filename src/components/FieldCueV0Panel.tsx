@@ -5,7 +5,9 @@ import {
   type FieldCueV0CandidateRelation,
   type FieldCueV0ParticipationStatus,
 } from '../lib/fieldCueV0';
+import { buildFieldCueV0MultiProjectionDisplayAdapterReport } from '../lib/fieldCueV0MultiProjectionDisplayAdapter';
 import type { Shape } from '../types/geometry';
+import { FieldCueV0MultiProjectionDisplay } from './FieldCueV0MultiProjectionDisplay';
 
 type FieldCueV0ShapeSupportStatus = 'supported' | 'unsupported';
 
@@ -59,44 +61,57 @@ function SupportedFieldCueV0Panel({
   onTogglePinnedProbe,
 }: FieldCueV0ProbeInteractionProps) {
   const report = useMemo(() => buildFieldCueV0Report(), []);
+  const multiProjectionDisplayReport = useMemo(
+    () => buildFieldCueV0MultiProjectionDisplayAdapterReport(),
+    [],
+  );
 
   return (
     <section className="rounded border border-cyan-400/25 bg-cyan-950/15 px-3 py-2 text-xs">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-cyan-100">
-            FieldCueV0: field witness for generated sites
-          </h3>
-          <p className="mt-1 leading-5 text-stone-400">
-            {
-              'Candidate evidence only; no auto-name; not topology; not semantic naming; not packet writing; not general field layer.'
-            }
-          </p>
-        </div>
-        <span
-          className={`shrink-0 rounded border px-2 py-0.5 font-mono text-[11px] ${
-            report.ok
-              ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-100'
-              : 'border-amber-400/40 bg-amber-400/10 text-amber-100'
-          }`}
-        >
-          {report.ok ? 'ready' : 'issue'}
-        </span>
-      </div>
+      <FieldCueV0MultiProjectionDisplay report={multiProjectionDisplayReport} />
 
-      <div className="mt-3 grid max-h-[36rem] gap-2 overflow-y-auto pr-1">
-        {report.cues.map((cue) => (
-          <FieldCueV0Card
-            key={cue.siteId}
-            cue={cue}
-            hoveredProbeRef={hoveredProbeRef}
-            pinnedProbeRef={pinnedProbeRef}
-            onHoverStart={onHoverStart}
-            onHoverEnd={onHoverEnd}
-            onTogglePinnedProbe={onTogglePinnedProbe}
-          />
-        ))}
-      </div>
+      <details className="mt-3 rounded border border-stone-800 bg-stone-950/70 px-3 py-2">
+        <summary className="cursor-pointer select-none text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-300">
+          Legacy FieldCueV0 diagnostic details - not authoritative for the
+          multi-projection source-state regime.
+        </summary>
+
+        <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-cyan-100">
+              FieldCueV0: field witness for generated sites
+            </h3>
+            <p className="mt-1 leading-5 text-stone-400">
+              {
+                'Candidate evidence only; no auto-name; not topology; not semantic naming; not packet writing; not general field layer.'
+              }
+            </p>
+          </div>
+          <span
+            className={`shrink-0 rounded border px-2 py-0.5 font-mono text-[11px] ${
+              report.ok
+                ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-100'
+                : 'border-amber-400/40 bg-amber-400/10 text-amber-100'
+            }`}
+          >
+            {report.ok ? 'ready' : 'issue'}
+          </span>
+        </div>
+
+        <div className="mt-3 grid max-h-[36rem] gap-2 overflow-y-auto pr-1">
+          {report.cues.map((cue) => (
+            <FieldCueV0Card
+              key={cue.siteId}
+              cue={cue}
+              hoveredProbeRef={hoveredProbeRef}
+              pinnedProbeRef={pinnedProbeRef}
+              onHoverStart={onHoverStart}
+              onHoverEnd={onHoverEnd}
+              onTogglePinnedProbe={onTogglePinnedProbe}
+            />
+          ))}
+        </div>
+      </details>
     </section>
   );
 }

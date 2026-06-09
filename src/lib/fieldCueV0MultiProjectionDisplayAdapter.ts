@@ -9,16 +9,17 @@ export type FieldCueV0MultiProjectionDisplayAdapterParentGate = 'Gate D3';
 export type FieldCueV0MultiProjectionDisplayAdapterSourceBoundaryGate =
   'Gate D2';
 export type FieldCueV0MultiProjectionDisplayAdapterStatus =
-  'isolated-display-adapter-ready';
-export type FieldCueV0MultiProjectionDisplayMountStatus = 'not-mounted';
+  'mounted-display-adapter-ready';
+export type FieldCueV0MultiProjectionDisplayMountStatus =
+  'mounted-in-fieldcue-panel';
 export type FieldCueV0MultiProjectionLegacyUiStatus =
-  'legacy-ui-not-authoritative';
-export type FieldCueV0MultiProjectionRenderStatus =
-  'adapter-ready-not-rendered-in-app';
+  'legacy-ui-quarantined-not-authoritative';
+export type FieldCueV0MultiProjectionRenderStatus = 'mounted-in-fieldcue-panel';
 export type FieldCueV0MultiProjectionGeneratedSiteReadingV0Status = 'blocked';
 export type FieldCueV0MultiProjectionGeneratedSiteReadingConsumptionStatus =
   'not-authorized';
-export type FieldCueV0MultiProjectionRuntimePromotionStatus = 'not-promoted';
+export type FieldCueV0MultiProjectionRuntimePromotionStatus =
+  'fieldcue-display-mounted-generated-site-not-promoted';
 export type FieldCueV0MultiProjectionSemanticStatus = 'not-semantic-naming';
 export type FieldCueV0MultiProjectionTopologyStatus = 'not-topology-workspace';
 export type FieldCueV0MultiProjectionPacketWriteStatus = 'not-packet-writing';
@@ -37,7 +38,7 @@ export type FieldCueV0MultiProjectionDisplayAdapterReadinessStatus =
   | 'fieldcue-multi-projection-display-adapter-ready'
   | 'fieldcue-multi-projection-display-adapter-failed';
 export type FieldCueV0MultiProjectionDisplayRecommendedNextGate =
-  | 'Gate D4 - FieldCueV0 Display Mount Decision'
+  | 'Gate D5 - GeneratedSiteReading Boundary Decision'
   | 'Gate D3-review'
   | 'Gate D2-revisit';
 
@@ -120,7 +121,7 @@ export interface FieldCueV0MultiProjectionDisplaySummary {
   tupleLossWarningCount: number;
   structuralChannelVisibleRowCount: number;
   generatedSiteReadingBlocked: true;
-  mountedInApp: false;
+  mountedInApp: true;
   legacyUiAuthoritative: false;
   displayAdapterReady: boolean;
 }
@@ -162,19 +163,19 @@ const PARENT_GATE: FieldCueV0MultiProjectionDisplayAdapterParentGate = 'Gate D3'
 const SOURCE_BOUNDARY_GATE: FieldCueV0MultiProjectionDisplayAdapterSourceBoundaryGate =
   'Gate D2';
 const DISPLAY_ADAPTER_STATUS: FieldCueV0MultiProjectionDisplayAdapterStatus =
-  'isolated-display-adapter-ready';
+  'mounted-display-adapter-ready';
 const DISPLAY_MOUNT_STATUS: FieldCueV0MultiProjectionDisplayMountStatus =
-  'not-mounted';
+  'mounted-in-fieldcue-panel';
 const LEGACY_UI_STATUS: FieldCueV0MultiProjectionLegacyUiStatus =
-  'legacy-ui-not-authoritative';
+  'legacy-ui-quarantined-not-authoritative';
 const FIELD_CUE_V0_RENDER_STATUS: FieldCueV0MultiProjectionRenderStatus =
-  'adapter-ready-not-rendered-in-app';
+  'mounted-in-fieldcue-panel';
 const GENERATED_SITE_READING_V0_STATUS: FieldCueV0MultiProjectionGeneratedSiteReadingV0Status =
   'blocked';
 const GENERATED_SITE_READING_CONSUMPTION_STATUS: FieldCueV0MultiProjectionGeneratedSiteReadingConsumptionStatus =
   'not-authorized';
 const RUNTIME_PROMOTION_STATUS: FieldCueV0MultiProjectionRuntimePromotionStatus =
-  'not-promoted';
+  'fieldcue-display-mounted-generated-site-not-promoted';
 const SEMANTIC_STATUS: FieldCueV0MultiProjectionSemanticStatus =
   'not-semantic-naming';
 const TOPOLOGY_STATUS: FieldCueV0MultiProjectionTopologyStatus =
@@ -336,7 +337,7 @@ function buildDisplaySummary(args: {
     tupleLossWarningCount,
     structuralChannelVisibleRowCount,
     generatedSiteReadingBlocked: true,
-    mountedInApp: false,
+    mountedInApp: true,
     legacyUiAuthoritative: false,
     displayAdapterReady:
       args.integrityIssueCount === 0 &&
@@ -450,17 +451,17 @@ function buildIntegrityIssues(args: {
     });
   }
 
-  if (DISPLAY_MOUNT_STATUS !== 'not-mounted') {
+  if (DISPLAY_MOUNT_STATUS !== 'mounted-in-fieldcue-panel') {
     issues.push({
       code: 'display-mounted-too-early',
-      message: 'The D3 display adapter must remain unmounted.',
+      message: 'The D4 display adapter must be mounted only in FieldCueV0Panel.',
     });
   }
 
-  if (LEGACY_UI_STATUS !== 'legacy-ui-not-authoritative') {
+  if (LEGACY_UI_STATUS !== 'legacy-ui-quarantined-not-authoritative') {
     issues.push({
       code: 'legacy-ui-treated-as-authoritative',
-      message: 'The legacy UI must not be authoritative for D3.',
+      message: 'The legacy UI must be quarantined and non-authoritative.',
     });
   }
 
@@ -504,7 +505,7 @@ function pickRecommendedNextGate(
     return 'Gate D3-review';
   }
 
-  return 'Gate D4 - FieldCueV0 Display Mount Decision';
+  return 'Gate D5 - GeneratedSiteReading Boundary Decision';
 }
 
 function relationClaimsRawFieldVisible(
