@@ -79,7 +79,29 @@ The accepted regime has these components:
 - Structural-channel recovery is accepted as a field-facing witness only under the declared multi-projection basis.
 - FieldCueV0 must later consume the split honestly if and when it is adapted.
 
-## 6. Rejected or demoted regimes
+## 6. Regime Acceptance vs Rule Adoption
+
+Gate C.5 accepts an architectural and source-state regime, not a final runtime reduction law.
+
+The accepted source-state regime says that source signatures must remain structured source states and must project into at least propagation and structural witnesses.
+
+The C.4L-D3 recovery of antipodality comes from the structural projection under a declared structural comparison basis. It is not recovery from raw propagated field behavior.
+
+It is not automatic discovery of unknown semantic features.
+
+It is not adoption of C4L-S2 as a universal law.
+
+The current structural relation is grounded in the tetrahedral complement / involution:
+
+- `c(AB)=CD`
+- `c(AC)=BD`
+- `c(AD)=BC`
+
+The structural-channel detector tests whether that relation can be made field-facing under anonymized structural comparison without leaking labels into detector input.
+
+FieldCueV0 must later consume this distinction explicitly.
+
+## 7. Rejected or demoted regimes
 
 Gate C.5 rejects scalar tuple behavior as a full source signature.
 
@@ -97,7 +119,7 @@ Gate C.5 rejects treating the structural channel as semantic naming.
 
 Gate C.5 rejects automatic FieldCueV0 unblocking.
 
-## 7. Acceptance criteria satisfied
+## 8. Acceptance criteria satisfied
 
 The accepted regime satisfies the Gate C.5 criteria because it:
 
@@ -111,7 +133,7 @@ The accepted regime satisfies the Gate C.5 criteria because it:
 - Keeps reduction law adoption separate from diagnostic witness status.
 - Keeps FieldCueV0 blocked until it can consume the projection split honestly.
 
-## 8. Limits of acceptance
+## 9. Limits of acceptance
 
 This acceptance does not prove that raw field behavior contains sufficient antipodal structure.
 
@@ -127,9 +149,9 @@ This acceptance does not unblock FieldCueV0.
 
 This acceptance authorizes only the use of multi-projection source-state regime v0 as the source-state basis for a later, separate FieldCueV0 adaptation branch.
 
-## 9. Gate C result
+## 10. Gate C result
 
-Gate C is accepted with strict limits.
+Gate C.5 accepts the source-state regime with strict limits.
 
 The accepted result is:
 
@@ -143,7 +165,7 @@ The reduction law status remains:
 
 `not-adopted`
 
-## 10. Gate D authorization
+## 11. Gate D authorization
 
 Gate D is authorized only as a later design and implementation sequence that preserves this Gate C.5 decision.
 
@@ -151,7 +173,7 @@ Gate D may design how FieldCueV0 should consume a multi-projection source-state 
 
 Gate D may not treat this memo as approval to read ordinary field behavior as source truth, to promote R4-S1 as a field law, or to infer semantic names from structural-channel recovery.
 
-## 11. FieldCueV0 remains blocked until adapted
+## 12. FieldCueV0 remains blocked until adapted
 
 FieldCueV0 remains blocked.
 
@@ -168,7 +190,7 @@ Until that adaptation exists and is separately reviewed, FieldCueV0 must not be 
 
 GeneratedSiteReadingV0 also remains blocked.
 
-## 12. Branch permissions after Gate C.5
+## 13. Branch permissions after Gate C.5
 
 After Gate C.5, a later branch may be opened for FieldCueV0 adaptation against the accepted multi-projection source-state regime v0.
 
@@ -176,7 +198,7 @@ That later branch may not silently change source policy, registry behavior, Gene
 
 Any later implementation must preserve the diagnostic distinction between propagation-facing behavior and structural-channel relation visibility.
 
-## 13. Compact binding statement
+## 14. Compact binding statement
 
 Gate C.5 accepts multi-projection source-state regime v0 as the source-state basis for later FieldCueV0 adaptation.
 
