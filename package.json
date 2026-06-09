@@ -26,6 +26,7 @@
     "diagnose:structured-source-state-field-behavior-recovery-v0": "node scripts/diagnose-structured-source-state-field-behavior-recovery-v0.cjs",
     "diagnose:structured-source-state-field-behavior-residual-v0": "node scripts/diagnose-structured-source-state-field-behavior-residual-v0.cjs",
     "diagnose:structured-source-state-candidate-reduction-law-comparison-v0": "node scripts/diagnose-structured-source-state-candidate-reduction-law-comparison-v0.cjs",
+    "diagnose:structured-source-state-multi-projection-structural-channel-v0": "node scripts/diagnose-structured-source-state-multi-projection-structural-channel-v0.cjs",
     "diagnose:source-signature-contract-audit-v0": "node scripts/diagnose-source-signature-contract-audit-v0.cjs",
     "diagnose:field-source-profile-aware-evidence-stability": "node scripts/diagnose-field-source-profile-aware-evidence-stability.cjs",
     "diagnose:field-source-profile-aware-field-report": "node scripts/diagnose-field-source-profile-aware-field-report.cjs",
