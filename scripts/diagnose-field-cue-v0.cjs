@@ -19,13 +19,12 @@ require.extensions['.ts'] = (module, filename) => {
 };
 
 const repoRoot = path.resolve(__dirname, '..');
+const diagnosticSourcePath = path.join(repoRoot, 'src/lib/fieldCueV0.ts');
+const registryPath = path.join(repoRoot, 'src/operations/registry.ts');
 const {
   buildFieldCueV0Report,
-} = require(path.join(repoRoot, 'src/lib/fieldCueV0.ts'));
-const { registeredOperations } = require(path.join(
-  repoRoot,
-  'src/operations/registry.ts',
-));
+} = require(diagnosticSourcePath);
+const { registeredOperations } = require(registryPath);
 
 const EXPECTED_SITE_IDS = ['M_AB', 'M_AC', 'M_AD', 'M_BC', 'M_BD', 'M_CD'];
 const FIELD_CUE_METHOD = 'field-cue-v0-diagnostic';
@@ -56,8 +55,17 @@ const failures = [];
 console.log('FieldCueV0 diagnostics');
 
 const report = buildFieldCueV0Report();
+const diagnosticSource = fs.readFileSync(diagnosticSourcePath, 'utf8');
+const runnerSource = fs.readFileSync(__filename, 'utf8');
+const registrySource = fs.readFileSync(registryPath, 'utf8');
+const diagnosticSources = {
+  diagnosticSource,
+  runnerSource,
+  registrySource,
+};
 
 runReportBoundaryDiagnostic(report);
+runMultiProjectionIntegrationDiagnostic(report, diagnosticSources);
 runCueCoverageDiagnostic(report);
 runCueBoundaryDiagnostic(report);
 runInheritanceDiagnostic(report);
@@ -189,6 +197,265 @@ function runReportBoundaryDiagnostic(report) {
   expectEqual(report.provingEventGenerationDepth, 1, 'event generation depth');
 
   console.log('report boundary: PASS');
+}
+
+function runMultiProjectionIntegrationDiagnostic(report, sources) {
+  const consumption = report.multiProjectionConsumption;
+
+  expectEqual(
+    report.diagnosticIntegrityStatus,
+    'pass',
+    'D1 diagnostic integrity status',
+  );
+  expectEqual(
+    report.fieldCueV0AdaptationStatus,
+    'multi-projection-consumption-integrated-diagnostic-only',
+    'FieldCueV0 D1 adaptation status',
+  );
+  expectEqual(
+    report.fieldCueV0RuntimeStatus,
+    'not-runtime-promoted',
+    'FieldCueV0 runtime promotion status',
+  );
+  expectEqual(report.fieldCueV0UiStatus, 'not-ui-work', 'FieldCueV0 UI status');
+  expectEqual(
+    report.generatedSiteReadingV0Status,
+    'blocked',
+    'GeneratedSiteReadingV0 remains blocked',
+  );
+  expectEqual(
+    report.sourceStateRegimeStatus,
+    'multi-projection-source-state-regime-accepted',
+    'source-state regime status',
+  );
+  expectEqual(
+    report.rawFieldWitnessStatus,
+    'failed-insufficient-not-source-signature',
+    'raw field witness status',
+  );
+  expectEqual(
+    report.structuralWitnessStatus,
+    'consumed-under-declared-basis',
+    'structural witness status',
+  );
+  expectEqual(
+    report.reductionLawAdoptionStatus,
+    'not-adopted',
+    'FieldCueV0 reduction law adoption status',
+  );
+  expectEqual(
+    report.recommendedNextGate,
+    'Gate D2 - FieldCueV0 UI/Generated-Site Boundary Plan',
+    'recommended next gate',
+  );
+
+  expectTruthy(consumption, 'FieldCueV0 consumes D0 adapter output');
+  expectEqual(
+    consumption.acceptedSourceStateRegimeId,
+    'multi-projection-source-state-v0',
+    'accepted source-state regime',
+  );
+  expectEqual(
+    consumption.sourceStateBasis,
+    'structured-source-state-signature',
+    'source-state basis',
+  );
+  expectEqual(
+    consumption.adapterConsumptionStatus,
+    'fieldcue-multi-projection-consumption-supported',
+    'adapter consumption status',
+  );
+  expectEqual(
+    consumption.consumedProjectionSummary.generatedChildProjectionCount,
+    6,
+    'generated child projection count',
+  );
+  expectEqual(
+    consumption.consumedProjectionSummary.propagationProjectionCount,
+    6,
+    'propagation projection count',
+  );
+  expectEqual(
+    consumption.consumedProjectionSummary.structuralProjectionCount,
+    6,
+    'structural projection count',
+  );
+  expectEqual(
+    consumption.consumedProjectionSummary.relationVisibilityRowCount,
+    3,
+    'relation visibility row count',
+  );
+  expectEqual(
+    consumption.consumedProjectionSummary.structuralOperationPairCount,
+    3,
+    'structural operation pair count',
+  );
+  expectEqual(
+    consumption.cueRowsByGeneratedChild.length,
+    6,
+    'child cue row count',
+  );
+  expectEqual(consumption.relationCueRows.length, 3, 'relation cue row count');
+
+  expectEqual(
+    consumption.cueRowsByGeneratedChild.every(
+      (row) =>
+        row.reductionHonesty.emittedTupleStatus ===
+          'propagation-facing-reduction-only' &&
+        row.reductionHonesty.sourceSignatureStatus ===
+          'structured-source-state-not-scalar-tuple' &&
+        row.reductionHonesty.tupleLossWarning === true,
+    ),
+    true,
+    'scalar tuple is not source signature',
+  );
+  expectEqual(
+    consumption.reductionHonestySummary.emittedTupleStatus,
+    'propagation-facing-reduction-only',
+    'reduction honesty emitted tuple status',
+  );
+  expectEqual(
+    consumption.reductionHonestySummary.sourceSignatureStatus,
+    'structured-source-state-not-scalar-tuple',
+    'reduction honesty source signature status',
+  );
+  expectEqual(
+    consumption.reductionHonestySummary.tupleReductionLossStatus,
+    'tuple-reduction-loss-warning-preserved',
+    'tuple reduction loss warning status',
+  );
+  expectEqual(
+    consumption.reductionHonestySummary.rawFieldBehaviorStatus,
+    'failed-insufficient',
+    'raw field behavior remains failed/insufficient',
+  );
+  expectEqual(
+    consumption.reductionHonestySummary.reductionLawAdoptionStatus,
+    'not-adopted',
+    'D0 reduction law adoption status',
+  );
+
+  for (const row of consumption.relationCueRows) {
+    expectTruthy(row.relationId, 'relation cue row relation id');
+    expectTruthy(row.leftChildSiteId, `${row.relationId} left child site id`);
+    expectTruthy(row.rightChildSiteId, `${row.relationId} right child site id`);
+    expectEqual(
+      row.sourceStateRelation,
+      'antipodal-opposition',
+      `${row.relationId} source-state relation`,
+    );
+    expectEqual(
+      row.rawFieldCueStatus,
+      'misleading-if-read-as-raw-field',
+      `${row.relationId} raw field cue status`,
+    );
+    expectEqual(
+      row.structuralChannelCueStatus,
+      'structural-channel-visible',
+      `${row.relationId} structural channel cue status`,
+    );
+    expectEqual(
+      row.depropagationCueStatus,
+      'depropagation-recoverable',
+      `${row.relationId} depropagation cue status`,
+    );
+    expectEqual(
+      row.relationVisibilityStatuses.includes('raw-field-visible'),
+      false,
+      `${row.relationId} raw-field-visible is not claimed`,
+    );
+    expectEqual(
+      row.relationVisibilityStatuses.includes(
+        'misleading-if-read-as-raw-field',
+      ),
+      true,
+      `${row.relationId} misleading warning status`,
+    );
+    expectEqual(
+      row.misleadingRisk,
+      true,
+      `${row.relationId} misleading risk`,
+    );
+    expectTruthy(
+      row.cueWarning.includes('Raw field visibility is not proven'),
+      `${row.relationId} raw field warning`,
+    );
+    expectTruthy(
+      row.cueWarning.includes('declared basis'),
+      `${row.relationId} declared basis warning`,
+    );
+    expectTruthy(
+      row.cueInterpretation.includes('not as raw propagated field recovery'),
+      `${row.relationId} raw recovery caveat`,
+    );
+    expectEqual(
+      row.depropagationCueStatus !== row.rawFieldCueStatus,
+      true,
+      `${row.relationId} depropagation remains distinct from raw visibility`,
+    );
+  }
+
+  expectEqual(
+    consumption.fieldCueBoundary.fieldCueV0Status,
+    'blocked-pending-multi-projection-adaptation',
+    'D0 FieldCueV0 boundary status',
+  );
+  expectEqual(
+    consumption.fieldCueBoundary.generatedSiteReadingV0Status,
+    'blocked',
+    'D0 GeneratedSiteReadingV0 boundary status',
+  );
+  expectEqual(
+    consumption.fieldCueBoundary.runtimePromotionStatus,
+    'not-promoted',
+    'D0 runtime promotion status',
+  );
+
+  expectEqual(
+    containsGeneratedSiteReadingV0Import(sources.diagnosticSource),
+    false,
+    'FieldCueV0 source does not import GeneratedSiteReadingV0',
+  );
+  expectEqual(
+    containsGeneratedSiteReadingV0Import(sources.runnerSource),
+    false,
+    'FieldCueV0 diagnostic does not import GeneratedSiteReadingV0',
+  );
+  expectEqual(
+    containsUiComponentImport(sources.diagnosticSource),
+    false,
+    'FieldCueV0 source does not import UI components',
+  );
+  expectEqual(
+    containsUiComponentImport(sources.runnerSource),
+    false,
+    'FieldCueV0 diagnostic does not import UI components',
+  );
+  expectEqual(
+    Object.keys(require.cache).some((modulePath) =>
+      /generatedSiteReadingV0/i.test(modulePath),
+    ),
+    false,
+    'FieldCueV0 diagnostic runtime did not load GeneratedSiteReadingV0',
+  );
+  expectEqual(
+    Object.keys(require.cache).some((modulePath) =>
+      /src[\\/]components[\\/]|FieldCueV0Panel|GeneratedSiteReadingV0Panel/i.test(
+        modulePath,
+      ),
+    ),
+    false,
+    'FieldCueV0 diagnostic runtime did not load UI components',
+  );
+  expectEqual(
+    /fieldCueV0MultiProjectionConsumption|Gate D1|Gate D2|multi[-_ ]?projection[-_ ]?consumption/i.test(
+      sources.registrySource,
+    ),
+    false,
+    'operation registry is not contaminated by D1 integration',
+  );
+
+  console.log('multi-projection D1 integration: PASS');
 }
 
 function runCueCoverageDiagnostic(report) {
@@ -663,6 +930,11 @@ function runCoherenceDiagnostic(report) {
   expectEqual(report.issueCount, report.issues.length, 'issue count coherence');
   expectEqual(report.summary.cueCount, report.cueCount, 'summary cue count');
   expectEqual(report.ok, report.issueCount === 0, 'ok coherence');
+  expectEqual(
+    report.diagnosticIntegrityStatus,
+    report.issueCount === 0 ? 'pass' : 'fail',
+    'diagnostic integrity coherence',
+  );
 
   const countedStatuses = report.cues.reduce((count, cue) => {
     count[cue.participationStatus] = (count[cue.participationStatus] ?? 0) + 1;
@@ -682,9 +954,26 @@ function runCoherenceDiagnostic(report) {
 
 function printCompactSummary(report) {
   const candidateCounts = report.summary.candidateReferenceCountsByKind;
+  const consumption = report.multiProjectionConsumption;
 
   console.log('');
   console.log('FieldCueV0 compact summary');
+  console.log(`diagnosticIntegrityStatus: ${report.diagnosticIntegrityStatus}`);
+  console.log(`fieldCueV0AdaptationStatus: ${report.fieldCueV0AdaptationStatus}`);
+  console.log(
+    `acceptedSourceStateRegimeId: ${consumption.acceptedSourceStateRegimeId}`,
+  );
+  console.log(`adapterConsumptionStatus: ${consumption.adapterConsumptionStatus}`);
+  console.log(`child cue row count: ${consumption.cueRowsByGeneratedChild.length}`);
+  console.log(`relation cue row count: ${consumption.relationCueRows.length}`);
+  console.log(`rawFieldWitnessStatus: ${report.rawFieldWitnessStatus}`);
+  console.log(`structuralWitnessStatus: ${report.structuralWitnessStatus}`);
+  console.log(`fieldCueV0RuntimeStatus: ${report.fieldCueV0RuntimeStatus}`);
+  console.log(
+    `generatedSiteReadingV0Status: ${report.generatedSiteReadingV0Status}`,
+  );
+  console.log(`recommendedNextGate: ${report.recommendedNextGate}`);
+  console.log('');
   console.log(`cue count: ${report.cueCount}`);
   console.log(
     `participation status counts: ${formatCounts(
@@ -699,6 +988,18 @@ function printCompactSummary(report) {
     `sensitive/saturated/misleading-risk: ${report.summary.sensitiveCueCount}/${report.summary.saturatedCueCount}/${report.summary.misleadingRiskCueCount}`,
   );
   console.log(`ok / issue count: ${report.ok} / ${report.issueCount}`);
+}
+
+function containsGeneratedSiteReadingV0Import(source) {
+  return /from\s+['"][^'"]*generatedSiteReadingV0|require\([^)]*generatedSiteReadingV0/i.test(
+    source,
+  );
+}
+
+function containsUiComponentImport(source) {
+  return /from\s+['"][^'"]*(?:components|FieldCueV0Panel|GeneratedSiteReadingV0Panel|\.tsx)|require\([^)]*(?:components|FieldCueV0Panel|GeneratedSiteReadingV0Panel|\.tsx)/i.test(
+    source,
+  );
 }
 
 function expectEqual(actual, expected, label) {

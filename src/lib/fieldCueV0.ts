@@ -34,6 +34,10 @@ import {
   type PythagoreanTetrachordQuarkRegimeV0Report,
   type PythagoreanTetrachordRatioSlot,
 } from './fieldSourcePythagoreanTetrachordQuarkRegimeV0';
+import {
+  buildFieldCueV0MultiProjectionConsumptionReport,
+  type FieldCueV0MultiProjectionConsumptionReport,
+} from './fieldCueV0MultiProjectionConsumption';
 
 export type FieldCueV0SiteId =
   | 'M_AB'
@@ -59,6 +63,21 @@ export type FieldCueV0SemanticStatus = 'not-semantic-naming';
 export type FieldCueV0TopologyStatus = 'not-topology-workspace';
 export type FieldCueV0PacketWriteStatus = 'not-packet-writing';
 export type FieldCueV0ShapeMutationStatus = 'not-shape-mutation';
+export type FieldCueV0DiagnosticIntegrityStatus = 'pass' | 'fail';
+export type FieldCueV0AdaptationStatus =
+  'multi-projection-consumption-integrated-diagnostic-only';
+export type FieldCueV0RuntimeStatus = 'not-runtime-promoted';
+export type FieldCueV0UiStatus = 'not-ui-work';
+export type FieldCueV0GeneratedSiteReadingV0Status = 'blocked';
+export type FieldCueV0SourceStateRegimeStatus =
+  'multi-projection-source-state-regime-accepted';
+export type FieldCueV0RawFieldWitnessStatus =
+  'failed-insufficient-not-source-signature';
+export type FieldCueV0StructuralWitnessStatus =
+  'consumed-under-declared-basis';
+export type FieldCueV0ReductionLawAdoptionStatus = 'not-adopted';
+export type FieldCueV0RecommendedNextGate =
+  'Gate D2 - FieldCueV0 UI/Generated-Site Boundary Plan';
 export type FieldCueV0InheritanceStatus =
   | 'complete'
   | 'fallback'
@@ -303,10 +322,34 @@ export interface FieldCueV0Issue {
     | 'missing-child-source'
     | 'missing-child-derivation'
     | 'invalid-cue-count'
-    | 'unexpected-cue-site-id';
+    | 'unexpected-cue-site-id'
+    | 'missing-multi-projection-consumption'
+    | 'multi-projection-consumption-not-supported'
+    | 'raw-field-marked-as-passed'
+    | 'scalar-tuple-treated-as-source-signature'
+    | 'missing-misleading-risk-warning'
+    | 'fieldcue-runtime-promoted-too-early'
+    | 'generated-site-reading-unblocked-too-early'
+    | 'generated-site-reading-import-detected'
+    | 'ui-import-detected'
+    | 'semantic-naming-leak'
+    | 'topology-leak'
+    | 'packet-writing-leak'
+    | 'operation-registry-contaminated';
   message: string;
   siteId?: string;
   details?: Record<string, boolean | number | string | null>;
+}
+
+export interface FieldCueV0MultiProjectionConsumptionSection {
+  acceptedSourceStateRegimeId: FieldCueV0MultiProjectionConsumptionReport['acceptedSourceStateRegimeId'];
+  sourceStateBasis: FieldCueV0MultiProjectionConsumptionReport['sourceStateBasis'];
+  adapterConsumptionStatus: FieldCueV0MultiProjectionConsumptionReport['adapterConsumptionStatus'];
+  consumedProjectionSummary: FieldCueV0MultiProjectionConsumptionReport['consumedProjectionSummary'];
+  reductionHonestySummary: FieldCueV0MultiProjectionConsumptionReport['reductionHonestySummary'];
+  cueRowsByGeneratedChild: FieldCueV0MultiProjectionConsumptionReport['cueRowsByGeneratedChild'];
+  relationCueRows: FieldCueV0MultiProjectionConsumptionReport['relationCueRows'];
+  fieldCueBoundary: FieldCueV0MultiProjectionConsumptionReport['fieldCueBoundary'];
 }
 
 export interface FieldCueV0Summary {
@@ -344,6 +387,16 @@ export interface FieldCueV0Report {
   topologyStatus: FieldCueV0TopologyStatus;
   packetWriteStatus: FieldCueV0PacketWriteStatus;
   shapeMutationStatus: FieldCueV0ShapeMutationStatus;
+  diagnosticIntegrityStatus: FieldCueV0DiagnosticIntegrityStatus;
+  fieldCueV0AdaptationStatus: FieldCueV0AdaptationStatus;
+  fieldCueV0RuntimeStatus: FieldCueV0RuntimeStatus;
+  fieldCueV0UiStatus: FieldCueV0UiStatus;
+  generatedSiteReadingV0Status: FieldCueV0GeneratedSiteReadingV0Status;
+  sourceStateRegimeStatus: FieldCueV0SourceStateRegimeStatus;
+  rawFieldWitnessStatus: FieldCueV0RawFieldWitnessStatus;
+  structuralWitnessStatus: FieldCueV0StructuralWitnessStatus;
+  reductionLawAdoptionStatus: FieldCueV0ReductionLawAdoptionStatus;
+  recommendedNextGate: FieldCueV0RecommendedNextGate;
   operationRegistryStatus: 'not-operation-registry-work';
   shapeId: string;
   provingEventOperation: 'ambo-dissection';
@@ -352,6 +405,7 @@ export interface FieldCueV0Report {
   cueCount: number;
   shapeMutationDetected: boolean;
   packetWriteDetected: false;
+  multiProjectionConsumption: FieldCueV0MultiProjectionConsumptionSection;
   cues: FieldCueV0[];
   summary: FieldCueV0Summary;
   issueCount: number;
@@ -423,6 +477,23 @@ const TOPOLOGY_STATUS: FieldCueV0TopologyStatus = 'not-topology-workspace';
 const PACKET_WRITE_STATUS: FieldCueV0PacketWriteStatus = 'not-packet-writing';
 const SHAPE_MUTATION_STATUS: FieldCueV0ShapeMutationStatus =
   'not-shape-mutation';
+const FIELD_CUE_V0_ADAPTATION_STATUS: FieldCueV0AdaptationStatus =
+  'multi-projection-consumption-integrated-diagnostic-only';
+const FIELD_CUE_V0_RUNTIME_STATUS: FieldCueV0RuntimeStatus =
+  'not-runtime-promoted';
+const FIELD_CUE_V0_UI_STATUS: FieldCueV0UiStatus = 'not-ui-work';
+const GENERATED_SITE_READING_V0_STATUS: FieldCueV0GeneratedSiteReadingV0Status =
+  'blocked';
+const SOURCE_STATE_REGIME_STATUS: FieldCueV0SourceStateRegimeStatus =
+  'multi-projection-source-state-regime-accepted';
+const RAW_FIELD_WITNESS_STATUS: FieldCueV0RawFieldWitnessStatus =
+  'failed-insufficient-not-source-signature';
+const STRUCTURAL_WITNESS_STATUS: FieldCueV0StructuralWitnessStatus =
+  'consumed-under-declared-basis';
+const REDUCTION_LAW_ADOPTION_STATUS: FieldCueV0ReductionLawAdoptionStatus =
+  'not-adopted';
+const RECOMMENDED_NEXT_GATE: FieldCueV0RecommendedNextGate =
+  'Gate D2 - FieldCueV0 UI/Generated-Site Boundary Plan';
 const EXPECTED_SITE_IDS: FieldCueV0SiteId[] = [
   'M_AB',
   'M_AC',
@@ -439,6 +510,8 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
   const runtimeReport =
     buildProfileAwareFieldAtlasViewModelRuntimeReport(canonicalShape);
   const evidenceStabilityReport = buildProfileAwareEvidenceStabilityReport();
+  const multiProjectionConsumptionReport =
+    buildFieldCueV0MultiProjectionConsumptionReport();
   const issues: FieldCueV0Issue[] = [];
   const shapeMutationDetected = JSON.stringify(canonicalShape) !== beforeShapeJson;
 
@@ -610,8 +683,20 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
     }
   }
 
+  const multiProjectionConsumption = buildMultiProjectionConsumptionSection(
+    multiProjectionConsumptionReport,
+  );
+  issues.push(
+    ...buildMultiProjectionIntegrationIssues({
+      multiProjectionConsumptionReport,
+      multiProjectionConsumption,
+    }),
+  );
+
   const summary = buildSummary(cues);
   const issueCount = issues.length;
+  const diagnosticIntegrityStatus: FieldCueV0DiagnosticIntegrityStatus =
+    issueCount === 0 ? 'pass' : 'fail';
 
   return {
     reportId: `${METHOD}:one-ambo-tetrahedron`,
@@ -631,6 +716,16 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
     topologyStatus: TOPOLOGY_STATUS,
     packetWriteStatus: PACKET_WRITE_STATUS,
     shapeMutationStatus: SHAPE_MUTATION_STATUS,
+    diagnosticIntegrityStatus,
+    fieldCueV0AdaptationStatus: FIELD_CUE_V0_ADAPTATION_STATUS,
+    fieldCueV0RuntimeStatus: FIELD_CUE_V0_RUNTIME_STATUS,
+    fieldCueV0UiStatus: FIELD_CUE_V0_UI_STATUS,
+    generatedSiteReadingV0Status: GENERATED_SITE_READING_V0_STATUS,
+    sourceStateRegimeStatus: SOURCE_STATE_REGIME_STATUS,
+    rawFieldWitnessStatus: RAW_FIELD_WITNESS_STATUS,
+    structuralWitnessStatus: STRUCTURAL_WITNESS_STATUS,
+    reductionLawAdoptionStatus: REDUCTION_LAW_ADOPTION_STATUS,
+    recommendedNextGate: RECOMMENDED_NEXT_GATE,
     operationRegistryStatus: 'not-operation-registry-work',
     shapeId: canonicalShape.id,
     provingEventOperation: 'ambo-dissection',
@@ -639,11 +734,12 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
     cueCount: cues.length,
     shapeMutationDetected,
     packetWriteDetected: false,
+    multiProjectionConsumption,
     cues,
     summary,
     issueCount,
     ok:
-      issueCount === 0 &&
+      diagnosticIntegrityStatus === 'pass' &&
       cues.length === EXPECTED_SITE_IDS.length &&
       !shapeMutationDetected &&
       runtimeReport.runtimeBoundaryStatus === 'supported' &&
@@ -653,6 +749,176 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
       evidenceStabilityReport.ok,
     issues,
   };
+}
+
+function buildMultiProjectionConsumptionSection(
+  report: FieldCueV0MultiProjectionConsumptionReport,
+): FieldCueV0MultiProjectionConsumptionSection {
+  return {
+    acceptedSourceStateRegimeId: report.acceptedSourceStateRegimeId,
+    sourceStateBasis: report.sourceStateBasis,
+    adapterConsumptionStatus: report.adapterConsumptionStatus,
+    consumedProjectionSummary: { ...report.consumedProjectionSummary },
+    reductionHonestySummary: { ...report.reductionHonestySummary },
+    cueRowsByGeneratedChild: report.cueRowsByGeneratedChild.map((row) => ({
+      ...row,
+      propagationCue: { ...row.propagationCue },
+      structuralCue: { ...row.structuralCue },
+      reductionHonesty: { ...row.reductionHonesty },
+    })),
+    relationCueRows: report.relationCueRows.map((row) => ({
+      ...row,
+      relationVisibilityStatuses: [...row.relationVisibilityStatuses],
+    })),
+    fieldCueBoundary: { ...report.fieldCueBoundary },
+  };
+}
+
+function buildMultiProjectionIntegrationIssues(args: {
+  multiProjectionConsumptionReport: FieldCueV0MultiProjectionConsumptionReport | null;
+  multiProjectionConsumption: FieldCueV0MultiProjectionConsumptionSection;
+}): FieldCueV0Issue[] {
+  const issues: FieldCueV0Issue[] = [];
+  const report = args.multiProjectionConsumptionReport;
+  const consumption = args.multiProjectionConsumption;
+
+  if (!report) {
+    issues.push({
+      code: 'missing-multi-projection-consumption',
+      message:
+        'FieldCueV0 did not receive the D0 multi-projection consumption adapter report.',
+    });
+    return issues;
+  }
+
+  if (
+    !report.ok ||
+    report.adapterConsumptionStatus !==
+      'fieldcue-multi-projection-consumption-supported'
+  ) {
+    issues.push({
+      code: 'multi-projection-consumption-not-supported',
+      message:
+        'FieldCueV0 consumed a D0 adapter report that is not supported.',
+      details: {
+        adapterSupported:
+          report.adapterConsumptionStatus ===
+          'fieldcue-multi-projection-consumption-supported',
+        adapterIssueCount: report.integrityIssueCount,
+      },
+    });
+  }
+
+  if (
+    consumption.relationCueRows.some(
+      (row) =>
+        row.rawFieldCueStatus === 'raw-field-visible' ||
+        row.relationVisibilityStatuses.includes('raw-field-visible'),
+    ) ||
+    RAW_FIELD_WITNESS_STATUS !== 'failed-insufficient-not-source-signature'
+  ) {
+    issues.push({
+      code: 'raw-field-marked-as-passed',
+      message:
+        'FieldCueV0 must not mark raw propagated field behavior as a passed structural witness.',
+    });
+  }
+
+  if (
+    consumption.reductionHonestySummary.emittedTupleStatus !==
+      'propagation-facing-reduction-only' ||
+    consumption.reductionHonestySummary.sourceSignatureStatus !==
+      'structured-source-state-not-scalar-tuple' ||
+    consumption.cueRowsByGeneratedChild.some(
+      (row) =>
+        row.reductionHonesty.emittedTupleStatus !==
+          'propagation-facing-reduction-only' ||
+        row.reductionHonesty.sourceSignatureStatus !==
+          'structured-source-state-not-scalar-tuple' ||
+        row.reductionHonesty.tupleLossWarning !== true,
+    )
+  ) {
+    issues.push({
+      code: 'scalar-tuple-treated-as-source-signature',
+      message:
+        'FieldCueV0 must keep the emitted tuple as propagation-facing reduction, not source signature.',
+    });
+  }
+
+  if (
+    consumption.relationCueRows.length === 0 ||
+    consumption.relationCueRows.some(
+      (row) =>
+        !row.misleadingRisk ||
+        !row.relationVisibilityStatuses.includes(
+          'misleading-if-read-as-raw-field',
+        ) ||
+        !row.cueWarning.includes('misleading-if-read-as-raw-field'),
+    )
+  ) {
+    issues.push({
+      code: 'missing-misleading-risk-warning',
+      message:
+        'FieldCueV0 must preserve misleading-if-read-as-raw-field relation warnings.',
+    });
+  }
+
+  if (
+    FIELD_CUE_V0_RUNTIME_STATUS !== 'not-runtime-promoted' ||
+    consumption.fieldCueBoundary.runtimePromotionStatus !== 'not-promoted'
+  ) {
+    issues.push({
+      code: 'fieldcue-runtime-promoted-too-early',
+      message:
+        'FieldCueV0 D1 is diagnostic/library integration only, not runtime promotion.',
+    });
+  }
+
+  if (
+    GENERATED_SITE_READING_V0_STATUS !== 'blocked' ||
+    consumption.fieldCueBoundary.generatedSiteReadingV0Status !== 'blocked'
+  ) {
+    issues.push({
+      code: 'generated-site-reading-unblocked-too-early',
+      message: 'GeneratedSiteReadingV0 must remain blocked after FieldCueV0 D1.',
+    });
+  }
+
+  if (report.semanticStatus !== 'not-semantic-naming') {
+    issues.push({
+      code: 'semantic-naming-leak',
+      message: 'FieldCueV0 D1 must not add semantic naming.',
+    });
+  }
+
+  if (report.topologyStatus !== 'not-topology-workspace') {
+    issues.push({
+      code: 'topology-leak',
+      message: 'FieldCueV0 D1 must not add topology.',
+    });
+  }
+
+  if (report.packetWriteStatus !== 'not-packet-writing') {
+    issues.push({
+      code: 'packet-writing-leak',
+      message: 'FieldCueV0 D1 must not write packets.',
+    });
+  }
+
+  if (
+    report.operationRegistryStatus !== 'not-operation-registry-work' ||
+    REDUCTION_LAW_ADOPTION_STATUS !== 'not-adopted' ||
+    consumption.reductionHonestySummary.reductionLawAdoptionStatus !==
+      'not-adopted'
+  ) {
+    issues.push({
+      code: 'operation-registry-contaminated',
+      message:
+        'FieldCueV0 D1 must not contaminate operation registry or adopt a reduction law.',
+    });
+  }
+
+  return issues;
 }
 
 function buildFieldCueV0SourceChain(): FieldCueV0SourceChain {
