@@ -23,6 +23,14 @@ const boundarySourcePath = path.join(
   repoRoot,
   'src/lib/fieldCueV0MultiProjectionUiBoundary.ts',
 );
+const displayAdapterSourcePath = path.join(
+  repoRoot,
+  'src/lib/fieldCueV0MultiProjectionDisplayAdapter.ts',
+);
+const displayComponentPath = path.join(
+  repoRoot,
+  'src/components/FieldCueV0MultiProjectionDisplay.tsx',
+);
 const panelPath = path.join(repoRoot, 'src/components/FieldCueV0Panel.tsx');
 const inspectorPath = path.join(repoRoot, 'src/components/FieldAtlasInspector.tsx');
 const registryPath = path.join(repoRoot, 'src/operations/registry.ts');
@@ -31,6 +39,9 @@ const packagePath = path.join(repoRoot, 'package.json');
 const {
   buildFieldCueV0MultiProjectionUiBoundaryReport,
 } = require(boundarySourcePath);
+const {
+  buildFieldCueV0MultiProjectionDisplayAdapterReport,
+} = require(displayAdapterSourcePath);
 
 const failures = [];
 const passes = [];
@@ -38,6 +49,14 @@ const passes = [];
 const boundarySource = readRequiredFile(
   boundarySourcePath,
   'FieldCueV0 multi-projection UI boundary source',
+);
+const displayAdapterSource = readRequiredFile(
+  displayAdapterSourcePath,
+  'FieldCueV0 multi-projection display adapter source',
+);
+const displayComponentSource = readRequiredFile(
+  displayComponentPath,
+  'FieldCueV0MultiProjectionDisplay component',
 );
 const panelSource = readRequiredFile(panelPath, 'FieldCueV0Panel component');
 const inspectorSource = readRequiredFile(
@@ -49,9 +68,12 @@ const storeSource = readRequiredFile(storePath, 'geometry store');
 const packageSource = readRequiredFile(packagePath, 'package.json');
 const runnerSource = fs.readFileSync(__filename, 'utf8');
 const boundaryReport = buildFieldCueV0MultiProjectionUiBoundaryReport();
+const displayAdapterReport = buildFieldCueV0MultiProjectionDisplayAdapterReport();
 
 if (
   boundarySource &&
+  displayAdapterSource &&
+  displayComponentSource &&
   panelSource &&
   inspectorSource &&
   registrySource &&
@@ -60,7 +82,18 @@ if (
 ) {
   runUiBoundaryReportDiagnostic(boundaryReport, {
     boundarySource,
+    displayAdapterSource,
+    displayComponentSource,
     panelSource,
+    inspectorSource,
+    runnerSource,
+    registrySource,
+  });
+  runDisplayAdapterDiagnostic(displayAdapterReport, {
+    displayAdapterSource,
+    displayComponentSource,
+    panelSource,
+    inspectorSource,
     runnerSource,
     registrySource,
   });
@@ -277,6 +310,7 @@ if (
 
 console.log('FieldCueV0 UI diagnostics');
 printCompactBoundaryReport(boundaryReport);
+printCompactDisplayAdapterReport(displayAdapterReport);
 for (const pass of passes) {
   console.log(`${pass}: PASS`);
 }
@@ -551,6 +585,275 @@ function runUiBoundaryReportDiagnostic(report, sources) {
   passes.push('FieldCueV0 UI multi-projection boundary report');
 }
 
+function runDisplayAdapterDiagnostic(report, sources) {
+  expectEqual(
+    report.diagnosticIntegrityStatus,
+    'pass',
+    'D3 diagnostic integrity status',
+  );
+  expectEqual(
+    report.displayAdapterStatus,
+    'isolated-display-adapter-ready',
+    'display adapter status',
+  );
+  expectEqual(report.displayMountStatus, 'not-mounted', 'display mount status');
+  expectEqual(
+    report.legacyUiStatus,
+    'legacy-ui-not-authoritative',
+    'legacy UI status',
+  );
+  expectEqual(
+    report.fieldCueV0RenderStatus,
+    'adapter-ready-not-rendered-in-app',
+    'FieldCueV0 render status',
+  );
+  expectEqual(
+    report.generatedSiteReadingV0Status,
+    'blocked',
+    'GeneratedSiteReadingV0 status',
+  );
+  expectEqual(
+    report.generatedSiteReadingConsumptionStatus,
+    'not-authorized',
+    'GeneratedSiteReading consumption status',
+  );
+  expectEqual(
+    report.acceptedSourceStateRegimeId,
+    'multi-projection-source-state-v0',
+    'D3 accepted source-state regime',
+  );
+  expectEqual(
+    report.rawFieldWitnessStatus,
+    'failed-insufficient-not-source-signature',
+    'D3 raw field witness status',
+  );
+  expectEqual(
+    report.structuralWitnessStatus,
+    'consumed-under-declared-basis',
+    'D3 structural witness status',
+  );
+  expectEqual(
+    report.reductionLawAdoptionStatus,
+    'not-adopted',
+    'D3 reduction law adoption status',
+  );
+  expectEqual(report.runtimePromotionStatus, 'not-promoted', 'runtime status');
+  expectEqual(report.semanticStatus, 'not-semantic-naming', 'semantic status');
+  expectEqual(report.topologyStatus, 'not-topology-workspace', 'topology status');
+  expectEqual(report.packetWriteStatus, 'not-packet-writing', 'packet write status');
+  expectEqual(
+    report.operationRegistryStatus,
+    'not-operation-registry-work',
+    'operation registry status',
+  );
+  expectEqual(
+    report.displayAdapterReadinessStatus,
+    'fieldcue-multi-projection-display-adapter-ready',
+    'display adapter readiness status',
+  );
+  expectEqual(
+    report.recommendedNextGate,
+    'Gate D4 - FieldCueV0 Display Mount Decision',
+    'D3 recommended next gate',
+  );
+  expectEqual(report.integrityIssueCount, 0, 'D3 integrity issue count');
+  expectEqual(report.ok, true, 'D3 report ok');
+
+  expectEqual(
+    report.headerModel.title,
+    'FieldCueV0 Multi-Projection Witness',
+    'display header title',
+  );
+  expectTruthy(
+    report.headerModel.subtitle.includes('not semantic naming'),
+    'display header names non-semantic boundary',
+  );
+  for (const badge of [
+    'multi-projection source-state',
+    'raw field insufficient',
+    'structural witness under declared basis',
+    'generated-site reading blocked',
+  ]) {
+    expect(
+      report.headerModel.statusBadges.includes(badge),
+      'display header badge',
+      `display header missing badge ${badge}`,
+    );
+  }
+
+  expectEqual(report.childDisplayRows.length, 6, 'child display row count');
+  expectEqual(report.relationDisplayRows.length, 3, 'relation display row count');
+  expectEqual(
+    report.displaySummary.childDisplayRowCount,
+    6,
+    'summary child display row count',
+  );
+  expectEqual(
+    report.displaySummary.relationDisplayRowCount,
+    3,
+    'summary relation display row count',
+  );
+  expectEqual(
+    report.displaySummary.rawFieldVisibleClaimCount,
+    0,
+    'rawFieldVisibleClaimCount',
+  );
+  expectEqual(
+    report.displaySummary.misleadingRiskRowCount,
+    3,
+    'misleadingRiskRowCount',
+  );
+  expectEqual(
+    report.displaySummary.tupleLossWarningCount,
+    6,
+    'tupleLossWarningCount',
+  );
+  expectEqual(
+    report.displaySummary.structuralChannelVisibleRowCount,
+    3,
+    'structuralChannelVisibleRowCount',
+  );
+  expectEqual(
+    report.displaySummary.generatedSiteReadingBlocked,
+    true,
+    'generatedSiteReadingBlocked',
+  );
+  expectEqual(report.displaySummary.mountedInApp, false, 'mountedInApp');
+  expectEqual(
+    report.displaySummary.legacyUiAuthoritative,
+    false,
+    'legacyUiAuthoritative',
+  );
+  expectEqual(
+    report.displaySummary.displayAdapterReady,
+    true,
+    'displayAdapterReady',
+  );
+
+  expectEqual(
+    report.childDisplayRows.every(
+      (row) =>
+        row.propagationLabel === 'Propagation witness' &&
+        row.structuralLabel === 'Structural witness' &&
+        row.reductionWarning.emittedTupleStatus ===
+          'propagation-facing-reduction-only' &&
+        row.reductionWarning.sourceSignatureStatus ===
+          'structured-source-state-not-scalar-tuple' &&
+        row.reductionWarning.tupleLossWarning === true &&
+        row.reductionWarning.displayWarningText ===
+          'The emitted tuple is not the full source signature.',
+    ),
+    true,
+    'child display rows preserve reduction warning',
+  );
+
+  for (const row of report.relationDisplayRows) {
+    expectTruthy(row.relationId, 'relation display row relation id');
+    expectEqual(
+      row.relationVisibilityStatuses.includes('raw-field-visible'),
+      false,
+      `${row.relationId} raw-field-visible is not claimed`,
+    );
+    expectEqual(
+      row.relationVisibilityStatuses.includes(
+        'misleading-if-read-as-raw-field',
+      ),
+      true,
+      `${row.relationId} misleading warning status`,
+    );
+    expectEqual(row.misleadingRisk, true, `${row.relationId} misleading risk`);
+    expectTruthy(
+      row.warningText.includes('Raw field visibility is not proven'),
+      `${row.relationId} raw field warning text`,
+    );
+    expectTruthy(
+      row.interpretationText.includes('under declared basis'),
+      `${row.relationId} declared basis interpretation`,
+    );
+    expectTruthy(
+      row.interpretationText.includes('not semantic naming'),
+      `${row.relationId} semantic naming caveat`,
+    );
+  }
+
+  expect(
+    !/FieldCueV0MultiProjectionDisplay/.test(sources.panelSource),
+    'display component not mounted in FieldCueV0Panel',
+    'display component is mounted in FieldCueV0Panel',
+  );
+  expect(
+    !/FieldCueV0MultiProjectionDisplay/.test(sources.inspectorSource),
+    'display component not mounted in FieldAtlasInspector',
+    'display component is mounted in FieldAtlasInspector',
+  );
+  expectEqual(
+    containsReactUiImport(sources.displayAdapterSource),
+    false,
+    'display adapter lib does not import React UI components',
+  );
+  expectEqual(
+    containsGeneratedSiteReadingV0Import(sources.displayAdapterSource),
+    false,
+    'display adapter lib does not import GeneratedSiteReadingV0',
+  );
+  expectEqual(
+    containsGeneratedSiteReadingV0Import(sources.displayComponentSource),
+    false,
+    'display component does not import GeneratedSiteReadingV0',
+  );
+  expectEqual(
+    /fieldAtlas/i.test(sources.displayComponentSource),
+    false,
+    'display component does not import fieldAtlas',
+  );
+  expectEqual(
+    /from\s+['"][^'"]*store|useGeometryStore|geometryStore/i.test(
+      sources.displayComponentSource,
+    ),
+    false,
+    'display component does not import store',
+  );
+  expectEqual(
+    /buildFieldCueV0Report|from\s+['"][^'"]*(?:fieldAtlas|generatedSiteReadingV0|store)|useGeometryStore/i.test(
+      sources.displayComponentSource,
+    ),
+    false,
+    'display component avoids builder/store/generated-site imports',
+  );
+  expectEqual(
+    /confirmed gate|confirmed route|confirmed region|confirmed loop|confirmed vortex|topology import|packet write/i.test(
+      sources.displayComponentSource,
+    ),
+    false,
+    'display component avoids legacy mature claims',
+  );
+  expectEqual(
+    Object.keys(require.cache).some((modulePath) =>
+      /generatedSiteReadingV0/i.test(modulePath),
+    ),
+    false,
+    'runtime cache did not load GeneratedSiteReadingV0 for D3',
+  );
+  expectEqual(
+    Object.keys(require.cache).some((modulePath) =>
+      /src[\\/]components[\\/]|FieldCueV0Panel|FieldAtlasInspector|GeneratedSiteReadingV0Panel/i.test(
+        modulePath,
+      ),
+    ),
+    false,
+    'runtime cache did not load React UI components for D3',
+  );
+  expectEqual(
+    /fieldCueV0MultiProjectionDisplayAdapter|FieldCueV0MultiProjectionDisplay|Gate D3|Gate D4/i.test(
+      sources.registrySource,
+    ),
+    false,
+    'operation registry is not contaminated by D3 work',
+  );
+
+  passes.push('FieldCueV0 multi-projection display adapter report');
+}
+
 function printCompactBoundaryReport(report) {
   console.log('FieldCueV0 UI boundary compact summary');
   console.log(`diagnosticIntegrityStatus: ${report.diagnosticIntegrityStatus}`);
@@ -575,6 +878,32 @@ function printCompactBoundaryReport(report) {
     `misleadingRiskRowCount: ${report.uiBoundarySummary.misleadingRiskRowCount}`,
   );
   console.log(`runtimePromotionStatus: ${report.runtimePromotionStatus}`);
+  console.log(`recommendedNextGate: ${report.recommendedNextGate}`);
+  console.log('');
+}
+
+function printCompactDisplayAdapterReport(report) {
+  console.log('FieldCueV0 display adapter compact summary');
+  console.log(`diagnosticIntegrityStatus: ${report.diagnosticIntegrityStatus}`);
+  console.log(`displayAdapterStatus: ${report.displayAdapterStatus}`);
+  console.log(`displayMountStatus: ${report.displayMountStatus}`);
+  console.log(`legacyUiStatus: ${report.legacyUiStatus}`);
+  console.log(
+    `childDisplayRowCount: ${report.displaySummary.childDisplayRowCount}`,
+  );
+  console.log(
+    `relationDisplayRowCount: ${report.displaySummary.relationDisplayRowCount}`,
+  );
+  console.log(
+    `rawFieldVisibleClaimCount: ${report.displaySummary.rawFieldVisibleClaimCount}`,
+  );
+  console.log(
+    `misleadingRiskRowCount: ${report.displaySummary.misleadingRiskRowCount}`,
+  );
+  console.log(
+    `tupleLossWarningCount: ${report.displaySummary.tupleLossWarningCount}`,
+  );
+  console.log(`generatedSiteReadingV0Status: ${report.generatedSiteReadingV0Status}`);
   console.log(`recommendedNextGate: ${report.recommendedNextGate}`);
   console.log('');
 }
