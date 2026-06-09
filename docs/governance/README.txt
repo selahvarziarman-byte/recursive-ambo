@@ -16,3 +16,13 @@ These documents govern current project direction. They are not backlogs, Codex p
 Event legibility before field expansion.
 
 The field-cue is the field’s witness inside the generated-site reading.
+
+###Current active correction:
+  Structured Source-State and Tuple-Reduction Amendment
+
+Superseded as active solution:
+  Pythagorean proving regime vital note
+
+Retained as controls:
+  uniform-circle fixture
+  Pythagorean tetrachord scalar baseline
