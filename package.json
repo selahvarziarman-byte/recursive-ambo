@@ -21,6 +21,7 @@
     "diagnose:generated-site-reading-v0-ui": "node scripts/diagnose-generated-site-reading-v0-ui.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
+    "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
     "diagnose:source-signature-contract-audit-v0": "node scripts/diagnose-source-signature-contract-audit-v0.cjs",
     "diagnose:field-source-profile-aware-evidence-stability": "node scripts/diagnose-field-source-profile-aware-evidence-stability.cjs",
     "diagnose:field-source-profile-aware-field-report": "node scripts/diagnose-field-source-profile-aware-field-report.cjs",
