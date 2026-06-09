@@ -20,6 +20,10 @@ export type ProfileAwareSourceReadiness =
   | 'fallback-not-field-ready'
   | 'unresolved-not-field-ready';
 
+export type ProfileAwareFieldSourcePolicyId =
+  | 'profile-aware-quark-child-inheritance-v0'
+  | 'pythagorean-tetrachord-quark-proving-policy-v0';
+
 export interface ProfileAwareSourceEntry {
   sourceId: string;
   vertexId: string;
@@ -28,7 +32,7 @@ export interface ProfileAwareSourceEntry {
   emissionParameters?: FieldSourceEmissionParameters;
   profileId?: string;
   profileSystemId?: string;
-  assignmentMode?: 'manual';
+  assignmentMode?: 'manual' | 'default-proving-fixture';
   sourceEdgeId?: string;
   complementEdgeId?: string;
   antipodalChildVertexId?: string;
@@ -77,7 +81,7 @@ export interface ProfileAwareFieldSourcePolicyDiagnosticReport {
   reportId: string;
   method: 'profile-aware-field-source-policy-diagnostic-v0';
   diagnosticScope: 'profile-aware-source-policy-diagnostic-only';
-  sourcePolicyId: 'profile-aware-quark-child-inheritance-v0';
+  sourcePolicyId: ProfileAwareFieldSourcePolicyId;
   fieldAtlasIntegrationStatus: 'not-integrated';
   shapeMutationStatus: 'not-shape-mutation';
   packetWriteStatus: 'not-packet-writing';

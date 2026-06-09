@@ -32,6 +32,10 @@ const METHOD = 'generated-site-reading-v0-diagnostic';
 const DIAGNOSTIC_SCOPE =
   'generated-site-reading-v0-one-ambo-tetrahedron-only';
 const READING_POLICY_ID = 'generated-site-reading-v0-one-ambo-tetrahedron';
+const PROVING_REGIME_ID = 'pythagorean-tetrachord-quark-regime-v0';
+const SOURCE_PROFILE_SYSTEM_ID = 'pythagorean-tetrachord-primal-profile-system-v0';
+const CHILD_INHERITANCE_GRAMMAR_ID =
+  'tetrahedral-quark-log-wave-number-inheritance-v0';
 const FORBIDDEN_MATURE_CLAIMS = [
   'confirmed gate',
   'confirmed route',
@@ -159,6 +163,81 @@ function runWitnessDiagnostic(report) {
       reading.fieldWitness.fieldCueId ||
         reading.fieldWitness.fieldCueStatus === 'unavailable',
       `${reading.siteId} field witness cue reference or unavailable status`,
+    );
+    expectEqual(
+      reading.fieldWitness.sourceRegimeId,
+      PROVING_REGIME_ID,
+      `${reading.siteId} source regime id`,
+    );
+    expectEqual(
+      reading.fieldWitness.sourceProfileSystemId,
+      SOURCE_PROFILE_SYSTEM_ID,
+      `${reading.siteId} source profile system id`,
+    );
+    expectEqual(
+      reading.fieldWitness.childInheritanceGrammarId,
+      CHILD_INHERITANCE_GRAMMAR_ID,
+      `${reading.siteId} child inheritance grammar id`,
+    );
+    expectEqual(
+      reading.fieldWitness.sourceSignatureStatus,
+      'field-ready',
+      `${reading.siteId} source signature status`,
+    );
+    expectEqual(
+      reading.fieldWitness.fieldInheritanceStatus,
+      'complete',
+      `${reading.siteId} field inheritance status`,
+    );
+    expectEqual(
+      reading.fieldWitness.baseWaveNumberCalibrationStatus,
+      'human-specified-v0',
+      `${reading.siteId} base wave-number calibration status`,
+    );
+    expectEqual(
+      reading.fieldWitness.pairSumUniquenessStatus,
+      'pass',
+      `${reading.siteId} pair-sum uniqueness status`,
+    );
+    expectEqual(
+      reading.fieldWitness.shellScalingApplication,
+      'record-only-v0',
+      `${reading.siteId} shell scaling application`,
+    );
+    expectIncludes(
+      reading.fieldWitness.activeDifferentiatingAxes ?? [],
+      'waveNumber',
+      `${reading.siteId} active axes include waveNumber`,
+    );
+    expectIncludes(
+      reading.fieldWitness.activeDifferentiatingAxes ?? [],
+      'phase',
+      `${reading.siteId} active axes include phase`,
+    );
+    expectIncludes(
+      reading.fieldWitness.neutralAxes ?? [],
+      'amplitude',
+      `${reading.siteId} neutral axes include amplitude`,
+    );
+    expectIncludes(
+      reading.fieldWitness.neutralAxes ?? [],
+      'attenuation',
+      `${reading.siteId} neutral axes include attenuation`,
+    );
+    expectEqual(
+      typeof reading.fieldWitness.childLogRatio,
+      'number',
+      `${reading.siteId} child logRatio`,
+    );
+    expectEqual(
+      typeof reading.fieldWitness.childRatio,
+      'number',
+      `${reading.siteId} child ratio`,
+    );
+    expectEqual(
+      typeof reading.fieldWitness.childWavelength,
+      'number',
+      `${reading.siteId} child wavelength`,
     );
     expectTruthy(
       reading.atomicWitness,

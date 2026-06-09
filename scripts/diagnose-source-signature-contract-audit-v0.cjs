@@ -25,6 +25,11 @@ const generatedSiteReadingPath = path.join(
   repoRoot,
   'src/lib/generatedSiteReadingV0.ts',
 );
+const componentPaths = [
+  path.join(repoRoot, 'src/components/GeneratedSiteReadingV0Panel.tsx'),
+  path.join(repoRoot, 'src/components/FieldCueV0Panel.tsx'),
+  path.join(repoRoot, 'src/components/FieldAtlasInspector.tsx'),
+];
 const {
   buildSourceSignatureContractAuditV0ComparisonReport,
   buildSourceSignatureContractAuditV0Report,
@@ -37,6 +42,7 @@ const provingReport = comparisonReport.provingCandidateRegime.report;
 const registrySource = readIfExists(registryPath);
 const fieldCueSource = readIfExists(fieldCuePath);
 const generatedSiteReadingSource = readIfExists(generatedSiteReadingPath);
+const componentSources = componentPaths.map(readIfExists);
 
 runAssertions({
   uniformReport,
@@ -45,6 +51,7 @@ runAssertions({
   registrySource,
   fieldCueSource,
   generatedSiteReadingSource,
+  componentSources,
 });
 printCompactSummary({
   uniformReport,
@@ -328,19 +335,26 @@ function runAssertions(args) {
     'Gate 1 source-signature proving status',
   );
   expectEqual(
+    comparisonReport.gate2DownstreamSourceIntegrationStatus,
+    'pass',
+    'Gate 2 downstream source integration status',
+  );
+  expectEqual(
     comparisonReport.downstreamSwitchStatus,
-    'not-switched-v0',
+    'field-cue-switched-generated-reading-inherits-v0',
     'downstream switch status',
   );
   expectEqual(
     /pythagorean|tetrachord/i.test(args.fieldCueSource),
-    false,
-    'FieldCueV0 source does not call Pythagorean module yet',
+    true,
+    'FieldCueV0 source calls Pythagorean proving regime',
   );
   expectEqual(
-    /pythagorean|tetrachord/i.test(args.generatedSiteReadingSource),
-    false,
-    'GeneratedSiteReadingV0 source does not call Pythagorean module yet',
+    /sourceRegimeId|sourceSignatureStatus|childInheritanceGrammarId/i.test(
+      args.generatedSiteReadingSource,
+    ),
+    true,
+    'GeneratedSiteReadingV0 propagates source-regime provenance',
   );
   expectEqual(
     /pythagorean|tetrachord|source[-_ ]?signature[-_ ]?contract|sourceSignatureContractAudit/i.test(
@@ -349,6 +363,15 @@ function runAssertions(args) {
     false,
     'operation registry has no proving regime registration',
   );
+  for (const [index, source] of args.componentSources.entries()) {
+    expectEqual(
+      /pythagorean|tetrachord|sourceRegimeId|sourceSignatureProvenance/i.test(
+        source,
+      ),
+      false,
+      `UI component ${index + 1} has no Gate 2 source-regime rendering changes`,
+    );
+  }
 }
 
 function printCompactSummary(args) {
@@ -468,6 +491,10 @@ function printCompactSummary(args) {
   console.log(
     `Gate 1 source-signature proving status: ${comparisonReport.gate1SourceSignatureProvingStatus}`,
   );
+  console.log(
+    `Gate 2 downstream source integration status: ${comparisonReport.gate2DownstreamSourceIntegrationStatus}`,
+  );
+  console.log(`downstream switch: ${comparisonReport.downstreamSwitchStatus}`);
   console.log(`comparison issue count: ${comparisonReport.issueCount}`);
 }
 

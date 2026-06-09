@@ -4,6 +4,12 @@ import {
   type TetrahedralAmboChildContext,
 } from './fieldSourceChildContexts';
 import type { FieldSourceEmissionParameters } from './fieldSourceProfiles';
+import type { ChildProfileDegeneracyStatus } from './fieldSourceChildDegeneracy';
+import type {
+  ProfileAwareFieldSourcePolicyDiagnosticReport,
+  ProfileAwareFieldSourcePolicyIssue,
+  ProfileAwareSourceEntry,
+} from './fieldSourceProfileAwarePolicy';
 import {
   QUARK_PARENT_WEIGHT,
   QUARK_PROJECTION_WEIGHT,
@@ -387,6 +393,126 @@ export function buildPythagoreanTetrachordQuarkRegimeV0Report(): PythagoreanTetr
     issueCount,
     issues,
     ok: issueCount === 0 && provingEventSignatureStatus === 'pass',
+  };
+}
+
+export function buildPythagoreanTetrachordProfileAwareSourcePolicyReport(
+  regimeReport: PythagoreanTetrachordQuarkRegimeV0Report =
+    buildPythagoreanTetrachordQuarkRegimeV0Report(),
+): ProfileAwareFieldSourcePolicyDiagnosticReport {
+  const issues: ProfileAwareFieldSourcePolicyIssue[] = [];
+  const primalSources = regimeReport.primalSourceTable.map(
+    (source): ProfileAwareSourceEntry => ({
+      sourceId: `field-source-profile-assignment:${source.vertexId}:${source.slotId}`,
+      vertexId: source.vertexId,
+      sourceKind: 'primal-assigned',
+      readiness: 'field-ready',
+      emissionParameters: copyEmissionParameters(source),
+      profileId: source.slotId,
+      profileSystemId: regimeReport.sourceProfileSystemId,
+      assignmentMode: source.assignmentMode,
+    }),
+  );
+  const childSources = regimeReport.childDerivationTable.map(
+    (child): ProfileAwareSourceEntry => {
+      const readiness = child.derivedTuple
+        ? 'field-ready'
+        : child.fallbackKind
+          ? 'fallback-not-field-ready'
+          : 'unresolved-not-field-ready';
+      const sourceKind = child.derivedTuple
+        ? 'generated-child-derived'
+        : child.fallbackKind
+          ? 'generated-child-fallback'
+          : 'generated-child-unresolved';
+      const degeneracyStatuses: ChildProfileDegeneracyStatus[] = child.derivedTuple
+        ? ['nondegenerate']
+        : child.localDerivationStatus === 'undefined-circular-mean'
+          ? ['undefined-circular-mean', 'phase-cancellation']
+          : ['fallback-used'];
+
+      if (!child.derivedTuple) {
+        issues.push({
+          code: 'child-source-missing-derived-parameters-without-fallback',
+          message: `Pythagorean child source ${child.childId} has no field-ready derived tuple.`,
+          vertexId: child.childId,
+        });
+      }
+
+      return {
+        sourceId: `profile-aware-child-source:${child.childId}`,
+        vertexId: child.childId,
+        sourceKind,
+        readiness,
+        ...(child.derivedTuple
+          ? { emissionParameters: copyEmissionParameters(child.derivedTuple) }
+          : {}),
+        profileId: `pythagorean-tetrachord-child-source:${child.childId}`,
+        profileSystemId: regimeReport.sourceProfileSystemId,
+        sourceEdgeId: child.sourceEdgeId,
+        complementEdgeId: child.complementEdgeId,
+        antipodalChildVertexId: child.antipodalChildId,
+        childRole: 'shared-90-pole',
+        childLocalStatus: child.localDerivationStatus,
+        ...(child.fallbackKind
+          ? {
+              fallbackKind: child.fallbackKind,
+              fallbackReason: child.fallbackReason,
+            }
+          : {}),
+        degeneracyStatuses,
+        sameAsAntipodalChildVertexIds: [],
+        sameAsOtherChildVertexIds: [],
+      };
+    },
+  );
+  const sources = [...primalSources, ...childSources];
+  const childSourceCount = childSources.length;
+  const derivedChildSourceCount = childSources.filter(
+    (source) => source.sourceKind === 'generated-child-derived',
+  ).length;
+  const fallbackChildSourceCount = childSources.filter(
+    (source) => source.sourceKind === 'generated-child-fallback',
+  ).length;
+  const unresolvedChildSourceCount = childSources.filter(
+    (source) => source.sourceKind === 'generated-child-unresolved',
+  ).length;
+  const fieldReadySourceCount = sources.filter(
+    (source) => source.readiness === 'field-ready',
+  ).length;
+
+  return {
+    reportId: `profile-aware-field-source-policy-diagnostic-v0:${regimeReport.provingRegimeId}`,
+    method: 'profile-aware-field-source-policy-diagnostic-v0',
+    diagnosticScope: 'profile-aware-source-policy-diagnostic-only',
+    sourcePolicyId: regimeReport.sourcePolicyId,
+    fieldAtlasIntegrationStatus: 'not-integrated',
+    shapeMutationStatus: 'not-shape-mutation',
+    packetWriteStatus: 'not-packet-writing',
+    profileSystemId: regimeReport.sourceProfileSystemId,
+    profileSetupId: `${regimeReport.sourceProfileSystemId}:default-proving-fixture`,
+    childInheritanceGrammarId: regimeReport.childInheritanceGrammarId,
+    primalSourceCount: primalSources.length,
+    assignedPrimalSourceCount: primalSources.length,
+    childContextCount: regimeReport.childDerivationTable.length,
+    childSourceCount,
+    derivedChildSourceCount,
+    fallbackChildSourceCount,
+    unresolvedChildSourceCount,
+    fieldReadySourceCount,
+    totalSourceEntryCount: sources.length,
+    degeneracyObservationCount: childSources.length,
+    degeneracyStatusCount: childSources.reduce(
+      (sum, source) => sum + (source.degeneracyStatuses?.length ?? 0),
+      0,
+    ),
+    sameAsAntipodalCount: 0,
+    sameAsOtherChildCount: 0,
+    fallbackCount: fallbackChildSourceCount,
+    issueCount: issues.length,
+    ok: issues.length === 0 && regimeReport.ok,
+    sources,
+    issues,
   };
 }
 
@@ -1045,6 +1171,17 @@ function normalizePhaseRadians(phase: number): number {
   const positive = normalized < 0 ? normalized + twoPi : normalized;
 
   return Object.is(positive, -0) ? 0 : positive;
+}
+
+function copyEmissionParameters(
+  parameters: FieldSourceEmissionParameters,
+): FieldSourceEmissionParameters {
+  return {
+    amplitude: parameters.amplitude,
+    waveNumber: parameters.waveNumber,
+    phase: parameters.phase,
+    attenuation: parameters.attenuation,
+  };
 }
 
 function requirePrimalSource(

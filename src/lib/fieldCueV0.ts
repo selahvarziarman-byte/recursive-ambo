@@ -6,11 +6,6 @@ import {
   type TetrahedralAmboChildContext,
 } from './fieldSourceChildContexts';
 import {
-  buildTetrahedralChildSourceProfileDerivationReport,
-  type FieldChildSourceProfileDerivationReport,
-} from './fieldSourceChildDerivations';
-import {
-  buildTetrahedralChildProfileDegeneracyReport,
   type ChildProfileDegeneracyStatus,
   type FieldSourceChildDegeneracyReport,
 } from './fieldSourceChildDegeneracy';
@@ -27,18 +22,18 @@ import {
   type ProfileAwareEvidenceStabilityReport,
 } from './fieldSourceProfileAwareEvidenceStability';
 import {
-  buildProfileAwareFieldSourcePolicyDiagnosticReport,
   type ProfileAwareFieldSourcePolicyDiagnosticReport,
   type ProfileAwareSourceEntry,
 } from './fieldSourceProfileAwarePolicy';
 import {
-  buildPrimalProfileAssignmentDiagnosticReport,
-  createTetrahedronFieldSourceProfileSetupFixture,
-  createTetrahedronPrimalProfileAssignmentFixture,
-  createUniformCirclePrimalProfileSystemFixture,
-  generateFieldSourceProfiles,
-} from './fieldSourceProfiles';
-import { buildTetrahedralQuarkChannelReport } from './fieldSourceQuarkChannels';
+  buildPythagoreanTetrachordProfileAwareSourcePolicyReport,
+  buildPythagoreanTetrachordQuarkRegimeV0Report,
+  type PythagoreanTetrachordChildDerivationRecord,
+  type PythagoreanTetrachordDifferentiatingAxis,
+  type PythagoreanTetrachordNeutralAxis,
+  type PythagoreanTetrachordQuarkRegimeV0Report,
+  type PythagoreanTetrachordRatioSlot,
+} from './fieldSourcePythagoreanTetrachordQuarkRegimeV0';
 
 export type FieldCueV0SiteId =
   | 'M_AB'
@@ -119,6 +114,55 @@ export interface FieldCueV0QuarkChannelSummary {
   parentWeight: number;
   projectionWeight: number;
   channelParameters: FieldCueV0EmissionTuple;
+  parentRatioLabel?: string;
+  projectionRatioLabel?: string;
+  parentLogRatio?: number;
+  projectionLogRatio?: number;
+  channelLogRatio?: number;
+  channelRatio?: number;
+  channelWavelength?: number;
+  channelDerivationLawId?: string;
+}
+
+export interface FieldCueV0SourceSignatureProvenance {
+  provingRegimeId: string;
+  sourceProfileSystemId: string;
+  childInheritanceGrammarId: string;
+  sourcePolicyId: string;
+  assignedHarmonicSlots: Array<{
+    vertexId: string;
+    slotId: string;
+    ratioLabel: string;
+    ratio: number;
+    logRatio: number;
+  }>;
+  baseWaveNumberCalibration: {
+    baseWaveNumberCalibrationStatus: string;
+    referenceEdgeLengthKind: string;
+    referenceEdgeLengthValue: number;
+    wavelengthToEdgeRatio: number;
+    edgeToWavelengthRatio: number;
+    referenceWavelength: number;
+    baseWaveNumber: number;
+  };
+  eventShellProvenance: {
+    parentSolid: string;
+    generatedCore: string;
+    parentShellRatio: number;
+    childShellRatio: number;
+    circumradiusContraction: number;
+    inradiusPreserved: boolean;
+    shellScalingApplication: string;
+  };
+  activeDifferentiatingAxes: PythagoreanTetrachordDifferentiatingAxis[];
+  neutralAxes: PythagoreanTetrachordNeutralAxis[];
+  pairSumUniquenessStatus: string;
+  childLogRatio?: number;
+  childRatio?: number;
+  childWavelength?: number;
+  childWaveNumber?: number;
+  childWaveNumberShellScalingApplied?: boolean;
+  childAttenuationShellScalingApplied?: boolean;
 }
 
 export interface FieldCueV0SiteScope {
@@ -148,6 +192,17 @@ export interface FieldCueV0InheritanceAxis {
   childRole?: 'shared-90-pole';
   inheritanceGrammarId?: string;
   mergeKind?: string;
+  provingRegimeId?: string;
+  childInheritanceGrammarId?: string;
+  childLogRatio?: number;
+  childRatio?: number;
+  childWavelength?: number;
+  baseWaveNumber?: number;
+  referenceWavelength?: number;
+  wavelengthToEdgeRatio?: number;
+  shellScalingApplication?: string;
+  activeDifferentiatingAxes?: PythagoreanTetrachordDifferentiatingAxis[];
+  neutralAxes?: PythagoreanTetrachordNeutralAxis[];
   quarkChannelSummaries: FieldCueV0QuarkChannelSummary[];
   derivedEmissionTuple?: FieldCueV0EmissionTuple;
   fallbackKind?: string;
@@ -225,6 +280,7 @@ export interface FieldCueV0 {
   siteScope: FieldCueV0SiteScope;
   inheritanceAxis: FieldCueV0InheritanceAxis;
   emittedSourceSignature: FieldCueV0EmittedSourceSignature;
+  sourceSignatureProvenance: FieldCueV0SourceSignatureProvenance;
   candidateFieldWorldAxis: FieldCueV0CandidateFieldWorldAxis;
   participationStatus: FieldCueV0ParticipationStatus;
   warningStatuses: FieldCueV0ParticipationStatus[];
@@ -273,6 +329,16 @@ export interface FieldCueV0Report {
   generalityStatus: FieldCueV0GeneralityStatus;
   portabilityStatus: FieldCueV0PortabilityStatus;
   sourcePolicyId: typeof SOURCE_POLICY_ID;
+  sourceSignatureProvenance: Omit<
+    FieldCueV0SourceSignatureProvenance,
+    | 'assignedHarmonicSlots'
+    | 'childLogRatio'
+    | 'childRatio'
+    | 'childWavelength'
+    | 'childWaveNumber'
+    | 'childWaveNumberShellScalingApplied'
+    | 'childAttenuationShellScalingApplied'
+  >;
   sourcePolicyStatus: FieldCueV0SourcePolicyStatus;
   semanticStatus: FieldCueV0SemanticStatus;
   topologyStatus: FieldCueV0TopologyStatus;
@@ -294,10 +360,11 @@ export interface FieldCueV0Report {
 }
 
 interface FieldCueV0SourceChain {
+  provingRegimeReport: PythagoreanTetrachordQuarkRegimeV0Report;
   profileSystemId: string;
   profileSetupId: string;
   childContexts: TetrahedralAmboChildContext[];
-  childDerivationReports: FieldChildSourceProfileDerivationReport[];
+  childDerivationRecords: PythagoreanTetrachordChildDerivationRecord[];
   childDegeneracyReport: FieldSourceChildDegeneracyReport;
   profileAwarePolicyReport: ProfileAwareFieldSourcePolicyDiagnosticReport;
 }
@@ -349,7 +416,7 @@ const FIELD_LAYER_STATUS: FieldCueV0FieldLayerStatus =
 const GENERALITY_STATUS: FieldCueV0GeneralityStatus =
   'not-general-field-layer';
 const PORTABILITY_STATUS: FieldCueV0PortabilityStatus = 'untested';
-const SOURCE_POLICY_ID = 'profile-aware-quark-child-inheritance-v0' as const;
+const SOURCE_POLICY_ID = 'pythagorean-tetrachord-quark-proving-policy-v0' as const;
 const SOURCE_POLICY_STATUS: FieldCueV0SourcePolicyStatus = 'policy-relative';
 const SEMANTIC_STATUS: FieldCueV0SemanticStatus = 'not-semantic-naming';
 const TOPOLOGY_STATUS: FieldCueV0TopologyStatus = 'not-topology-workspace';
@@ -364,7 +431,6 @@ const EXPECTED_SITE_IDS: FieldCueV0SiteId[] = [
   'M_BD',
   'M_CD',
 ];
-const ACTIVE_TETRAHEDRON_PRIMAL_VERTICES = ['A', 'B', 'C', 'D'];
 
 export function buildFieldCueV0Report(): FieldCueV0Report {
   const canonicalShape = applyAmboDissection(createSeedShape('tetrahedron'));
@@ -434,10 +500,10 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
   const childContextBySiteId = new Map(
     sourceChain.childContexts.map((context) => [context.childVertexId, context]),
   );
-  const childDerivationReportBySiteId = new Map(
-    sourceChain.childDerivationReports.map((report) => [
-      report.childVertexId,
-      report,
+  const childDerivationRecordBySiteId = new Map(
+    sourceChain.childDerivationRecords.map((record) => [
+      record.childId,
+      record,
     ]),
   );
   const childSourceBySiteId = new Map(
@@ -478,7 +544,7 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
 
   const cues = EXPECTED_SITE_IDS.map((siteId) => {
     const childContext = childContextBySiteId.get(siteId);
-    const childDerivationReport = childDerivationReportBySiteId.get(siteId);
+    const childDerivationRecord = childDerivationRecordBySiteId.get(siteId);
     const childSource = childSourceBySiteId.get(siteId);
 
     if (!childContext) {
@@ -497,7 +563,7 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
       });
     }
 
-    if (!childDerivationReport?.derivation) {
+    if (!childDerivationRecord) {
       issues.push({
         code: 'missing-child-derivation',
         message: `FieldCueV0 is missing child source derivation for ${siteId}.`,
@@ -508,7 +574,7 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
     return buildCue({
       siteId,
       childContext,
-      childDerivationReport,
+      childDerivationRecord,
       childSource,
       sourceProbeRef: childSource
         ? sourceProbeRefBySourceId.get(childSource.sourceId)
@@ -519,6 +585,7 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
       evidenceStabilityReport,
       profileSystemId: sourceChain.profileSystemId,
       profileSetupId: sourceChain.profileSetupId,
+      provingRegimeReport: sourceChain.provingRegimeReport,
     });
   });
 
@@ -556,6 +623,9 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
     generalityStatus: GENERALITY_STATUS,
     portabilityStatus: PORTABILITY_STATUS,
     sourcePolicyId: SOURCE_POLICY_ID,
+    sourceSignatureProvenance: buildReportSourceSignatureProvenance(
+      sourceChain.provingRegimeReport,
+    ),
     sourcePolicyStatus: SOURCE_POLICY_STATUS,
     semanticStatus: SEMANTIC_STATUS,
     topologyStatus: TOPOLOGY_STATUS,
@@ -586,70 +656,192 @@ export function buildFieldCueV0Report(): FieldCueV0Report {
 }
 
 function buildFieldCueV0SourceChain(): FieldCueV0SourceChain {
+  const provingRegimeReport = buildPythagoreanTetrachordQuarkRegimeV0Report();
   const vertexIds = createTetrahedralVertexFixture();
-  const profileSystem = createUniformCirclePrimalProfileSystemFixture();
-  const profiles = generateFieldSourceProfiles(profileSystem);
-  const assignments = createTetrahedronPrimalProfileAssignmentFixture(profiles);
-  const setup = createTetrahedronFieldSourceProfileSetupFixture(
-    profileSystem,
-    assignments,
-  );
-  const profileAssignmentReport = buildPrimalProfileAssignmentDiagnosticReport({
-    profileSystem,
-    setup,
-    activePrimalVertexIds: ACTIVE_TETRAHEDRON_PRIMAL_VERTICES,
-  });
-  const profileById = new Map(
-    profiles.map((profile) => [profile.profileId, profile]),
-  );
-  const profileByVertexId = new Map<string, (typeof profiles)[number]>();
-
-  for (const assignment of assignments) {
-    const profile = profileById.get(assignment.profileId);
-
-    if (profile) {
-      profileByVertexId.set(assignment.vertexId, profile);
-    }
-  }
-
   const childContexts = buildTetrahedralAmboChildContexts(vertexIds);
-  const childDerivationReports = childContexts.map((childContext) => {
-    const quarkChannelReport = buildTetrahedralQuarkChannelReport({
-      childContext,
-      profileByVertexId,
-    });
-
-    return buildTetrahedralChildSourceProfileDerivationReport({
-      childContext,
-      quarkChannelReport,
-    });
-  });
-  const childDegeneracyReport = buildTetrahedralChildProfileDegeneracyReport({
+  const childDerivationRecords = provingRegimeReport.childDerivationTable;
+  const childDegeneracyReport = buildPythagoreanChildDegeneracyReport({
     childContexts,
-    derivationReports: childDerivationReports,
+    childDerivationRecords,
   });
   const profileAwarePolicyReport =
-    buildProfileAwareFieldSourcePolicyDiagnosticReport({
-      profileAssignmentReport,
-      childContexts,
-      childDerivationReports,
-      childDegeneracyReport,
-    });
+    buildPythagoreanTetrachordProfileAwareSourcePolicyReport(provingRegimeReport);
 
   return {
-    profileSystemId: profileSystem.systemId,
-    profileSetupId: setup.setupId,
+    provingRegimeReport,
+    profileSystemId: provingRegimeReport.sourceProfileSystemId,
+    profileSetupId:
+      profileAwarePolicyReport.profileSetupId ??
+      `${provingRegimeReport.sourceProfileSystemId}:default-proving-fixture`,
     childContexts,
-    childDerivationReports,
+    childDerivationRecords,
     childDegeneracyReport,
     profileAwarePolicyReport,
   };
 }
 
+function buildPythagoreanChildDegeneracyReport(args: {
+  childContexts: TetrahedralAmboChildContext[];
+  childDerivationRecords: PythagoreanTetrachordChildDerivationRecord[];
+}): FieldSourceChildDegeneracyReport {
+  const childRecordById = new Map(
+    args.childDerivationRecords.map((record) => [record.childId, record]),
+  );
+  const observations = args.childContexts.map((context) => {
+    const childRecord = childRecordById.get(context.childVertexId);
+    const hasDerivedParameters = Boolean(childRecord?.derivedTuple);
+    const statuses: ChildProfileDegeneracyStatus[] = hasDerivedParameters
+      ? ['nondegenerate']
+      : childRecord?.localDerivationStatus === 'undefined-circular-mean'
+        ? ['undefined-circular-mean', 'phase-cancellation']
+        : ['fallback-used'];
+
+    return {
+      childVertexId: context.childVertexId,
+      sourceEdgeId: context.sourceEdgeId,
+      complementEdgeId: context.complementEdgeId,
+      antipodalChildVertexId: context.antipodalChildVertexId,
+      hasDerivedParameters,
+      statuses,
+      sameAsAntipodalChildVertexIds: [],
+      sameAsOtherChildVertexIds: [],
+    };
+  });
+
+  return {
+    reportId: `tetrahedral-child-profile-degeneracy-diagnostic-v0:pythagorean-tetrachord`,
+    method: 'tetrahedral-child-profile-degeneracy-diagnostic-v0',
+    diagnosticScope: 'pairwise-child-profile-degeneracy-only',
+    childCount: args.childContexts.length,
+    expectedChildCount: 6,
+    derivedChildCount: observations.filter(
+      (observation) => observation.hasDerivedParameters,
+    ).length,
+    fallbackChildCount: observations.filter((observation) =>
+      observation.statuses.includes('fallback-used'),
+    ).length,
+    undefinedCircularMeanChildCount: observations.filter((observation) =>
+      observation.statuses.includes('undefined-circular-mean'),
+    ).length,
+    phaseCancellationChildCount: observations.filter((observation) =>
+      observation.statuses.includes('phase-cancellation'),
+    ).length,
+    sameAsAntipodalCount: 0,
+    sameAsOtherChildCount: 0,
+    comparisonCount: 0,
+    antipodalPairCount: 3,
+    issueCount: 0,
+    ok: true,
+    observations,
+    comparisons: [],
+    issues: [],
+  };
+}
+
+function buildReportSourceSignatureProvenance(
+  report: PythagoreanTetrachordQuarkRegimeV0Report,
+): FieldCueV0Report['sourceSignatureProvenance'] {
+  const calibration = report.baseWaveNumberCalibration;
+  const shell = report.eventShellProvenance;
+
+  return {
+    provingRegimeId: report.provingRegimeId,
+    sourceProfileSystemId: report.sourceProfileSystemId,
+    childInheritanceGrammarId: report.childInheritanceGrammarId,
+    sourcePolicyId: report.sourcePolicyId,
+    baseWaveNumberCalibration: {
+      baseWaveNumberCalibrationStatus:
+        calibration.baseWaveNumberCalibrationStatus,
+      referenceEdgeLengthKind: calibration.referenceEdgeLengthKind,
+      referenceEdgeLengthValue: calibration.referenceEdgeLengthValue,
+      wavelengthToEdgeRatio: calibration.wavelengthToEdgeRatio,
+      edgeToWavelengthRatio: calibration.edgeToWavelengthRatio,
+      referenceWavelength: calibration.referenceWavelength,
+      baseWaveNumber: calibration.baseWaveNumber,
+    },
+    eventShellProvenance: {
+      parentSolid: shell.parentSolid,
+      generatedCore: shell.generatedCore,
+      parentShellRatio: shell.parentShellRatio,
+      childShellRatio: shell.childShellRatio,
+      circumradiusContraction: shell.circumradiusContraction,
+      inradiusPreserved: shell.inradiusPreserved,
+      shellScalingApplication: shell.shellScalingApplication,
+    },
+    activeDifferentiatingAxes: [...report.activeDifferentiatingAxes],
+    neutralAxes: [...report.neutralAxes],
+    pairSumUniquenessStatus:
+      report.pairSumUniquenessAudit.pairSumUniquenessStatus,
+  };
+}
+
+function buildCueSourceSignatureProvenance(args: {
+  provingRegimeReport: PythagoreanTetrachordQuarkRegimeV0Report;
+  childDerivationRecord: PythagoreanTetrachordChildDerivationRecord | undefined;
+  childContext: TetrahedralAmboChildContext | undefined;
+}): FieldCueV0SourceSignatureProvenance {
+  const reportProvenance = buildReportSourceSignatureProvenance(
+    args.provingRegimeReport,
+  );
+  const assignedHarmonicSlots = buildAssignedHarmonicSlots({
+    slots: args.provingRegimeReport.profileSlots,
+    vertexIds: args.childContext?.sourceEdgeVertexIds ?? [],
+  });
+  const child = args.childDerivationRecord;
+
+  return {
+    ...reportProvenance,
+    assignedHarmonicSlots,
+    ...(child?.childLogRatio !== undefined
+      ? { childLogRatio: child.childLogRatio }
+      : {}),
+    ...(child?.childRatio !== undefined ? { childRatio: child.childRatio } : {}),
+    ...(child?.childWavelength !== undefined
+      ? { childWavelength: child.childWavelength }
+      : {}),
+    ...(child?.childWaveNumber !== undefined
+      ? { childWaveNumber: child.childWaveNumber }
+      : {}),
+    ...(child
+      ? {
+          childWaveNumberShellScalingApplied:
+            child.childWaveNumberShellScalingApplied,
+          childAttenuationShellScalingApplied:
+            child.childAttenuationShellScalingApplied,
+        }
+      : {}),
+  };
+}
+
+function buildAssignedHarmonicSlots(args: {
+  slots: PythagoreanTetrachordRatioSlot[];
+  vertexIds: readonly string[];
+}): FieldCueV0SourceSignatureProvenance['assignedHarmonicSlots'] {
+  const slotByVertexId = new Map(
+    args.slots.map((slot) => [slot.assignedVertexId, slot]),
+  );
+
+  return args.vertexIds.flatMap((vertexId) => {
+    const slot = slotByVertexId.get(vertexId);
+
+    return slot
+      ? [
+          {
+            vertexId,
+            slotId: slot.slotId,
+            ratioLabel: slot.ratioLabel,
+            ratio: slot.ratio,
+            logRatio: slot.logRatio,
+          },
+        ]
+      : [];
+  });
+}
+
 function buildCue(args: {
   siteId: FieldCueV0SiteId;
   childContext: TetrahedralAmboChildContext | undefined;
-  childDerivationReport: FieldChildSourceProfileDerivationReport | undefined;
+  childDerivationRecord: PythagoreanTetrachordChildDerivationRecord | undefined;
   childSource: ProfileAwareSourceEntry | undefined;
   sourceProbeRef: string | undefined;
   degeneracyStatuses: ChildProfileDegeneracyStatus[];
@@ -657,9 +849,15 @@ function buildCue(args: {
   evidenceStabilityReport: ProfileAwareEvidenceStabilityReport;
   profileSystemId: string;
   profileSetupId: string;
+  provingRegimeReport: PythagoreanTetrachordQuarkRegimeV0Report;
 }): FieldCueV0 {
   const cueId = `${FIELD_CUE_POLICY_ID}:${args.siteId}`;
   const siteScope = buildSiteScope(cueId, args.siteId);
+  const sourceSignatureProvenance = buildCueSourceSignatureProvenance({
+    provingRegimeReport: args.provingRegimeReport,
+    childDerivationRecord: args.childDerivationRecord,
+    childContext: args.childContext,
+  });
   const inheritanceAxis = buildInheritanceAxis(args);
   const emittedSourceSignature = buildEmittedSourceSignature({
     childSource: args.childSource,
@@ -714,6 +912,7 @@ function buildCue(args: {
     siteScope,
     inheritanceAxis,
     emittedSourceSignature,
+    sourceSignatureProvenance,
     candidateFieldWorldAxis,
     participationStatus,
     warningStatuses,
@@ -749,56 +948,83 @@ function buildSiteScope(
 
 function buildInheritanceAxis(args: {
   childContext: TetrahedralAmboChildContext | undefined;
-  childDerivationReport: FieldChildSourceProfileDerivationReport | undefined;
+  childDerivationRecord: PythagoreanTetrachordChildDerivationRecord | undefined;
   childSource: ProfileAwareSourceEntry | undefined;
   degeneracyStatuses: ChildProfileDegeneracyStatus[];
+  provingRegimeReport: PythagoreanTetrachordQuarkRegimeV0Report;
 }): FieldCueV0InheritanceAxis {
-  const derivation = args.childDerivationReport?.derivation;
-  const derivedEmissionTuple = derivation?.derivedParameters
-    ? copyEmissionTuple(derivation.derivedParameters)
+  const record = args.childDerivationRecord;
+  const derivedEmissionTuple = record?.derivedTuple
+    ? copyEmissionTuple(record.derivedTuple)
     : undefined;
-  const fallbackKind = derivation?.fallback?.fallbackKind ?? args.childSource?.fallbackKind;
-  const fallbackReason = derivation?.fallback?.reason ?? args.childSource?.fallbackReason;
+  const fallbackKind = record?.fallbackKind ?? args.childSource?.fallbackKind;
+  const fallbackReason = record?.fallbackReason ?? args.childSource?.fallbackReason;
   const unresolved = !derivedEmissionTuple && !fallbackKind;
   const degeneracyStatuses = [...args.degeneracyStatuses];
+  const calibration = args.provingRegimeReport.baseWaveNumberCalibration;
 
   return {
-    sourceEdgeId: args.childContext?.sourceEdgeId ?? derivation?.sourceEdgeId,
+    sourceEdgeId: args.childContext?.sourceEdgeId ?? record?.sourceEdgeId,
     parentVertexIds: [
       ...(args.childContext?.sourceEdgeVertexIds ??
-        derivation?.sourceEdgeVertexIds ??
+        record?.sourceEdgeVertexIds ??
         []),
     ],
     projectionVertexIds: [
       ...(args.childContext?.projectionVertexIds ??
-        derivation?.projectionVertexIds ??
+        record?.projectionVertexIds ??
         []),
     ],
     complementEdgeId:
-      args.childContext?.complementEdgeId ?? derivation?.complementEdgeId,
+      args.childContext?.complementEdgeId ?? record?.complementEdgeId,
     complementEdgeVertexIds: [
       ...(args.childContext?.complementEdgeVertexIds ??
-        derivation?.complementEdgeVertexIds ??
+        record?.complementEdgeVertexIds ??
         []),
     ],
     antipodalChildSiteId:
       args.childContext?.antipodalChildVertexId ??
-      derivation?.antipodalChildVertexId,
-    childRole: args.childContext?.childRole ?? derivation?.childRole,
+      record?.antipodalChildId,
+    childRole: args.childContext?.childRole ?? 'shared-90-pole',
     inheritanceGrammarId:
-      args.childContext?.grammarTargetId ?? derivation?.grammarId,
-    mergeKind: args.childContext?.mergeTarget ?? derivation?.mergeKind,
+      record
+        ? args.provingRegimeReport.childInheritanceGrammarId
+        : args.childContext?.grammarTargetId,
+    provingRegimeId: args.provingRegimeReport.provingRegimeId,
+    childInheritanceGrammarId: args.provingRegimeReport.childInheritanceGrammarId,
+    ...(record?.childLogRatio !== undefined
+      ? { childLogRatio: record.childLogRatio }
+      : {}),
+    ...(record?.childRatio !== undefined ? { childRatio: record.childRatio } : {}),
+    ...(record?.childWavelength !== undefined
+      ? { childWavelength: record.childWavelength }
+      : {}),
+    baseWaveNumber: calibration.baseWaveNumber,
+    referenceWavelength: calibration.referenceWavelength,
+    wavelengthToEdgeRatio: calibration.wavelengthToEdgeRatio,
+    shellScalingApplication: args.provingRegimeReport.shellScalingApplication,
+    activeDifferentiatingAxes: [...args.provingRegimeReport.activeDifferentiatingAxes],
+    neutralAxes: [...args.provingRegimeReport.neutralAxes],
+    mergeKind: args.childContext?.mergeTarget ?? 'four-channel-merge',
     quarkChannelSummaries:
-      derivation?.quarkChannels.map((channel) => ({
+      record?.channels.map((channel) => ({
         channelId: channel.channelId,
-        child90: channel.child90,
+        child90: channel.childId,
         parent60: channel.parent60,
         projection30: channel.projection30,
-        parentProfileId: channel.parentProfileId,
-        projectionProfileId: channel.projectionProfileId,
+        parentProfileId: channel.parentSlotId,
+        projectionProfileId: channel.projectionSlotId,
         parentWeight: channel.parentWeight,
         projectionWeight: channel.projectionWeight,
-        channelParameters: copyEmissionTuple(channel.channelParameters),
+        channelParameters: copyEmissionTuple(channel.channelEmittedTuple),
+        parentRatioLabel: channel.parentRatioLabel,
+        projectionRatioLabel: channel.projectionRatioLabel,
+        parentLogRatio: channel.parentLogRatio,
+        projectionLogRatio: channel.projectionLogRatio,
+        channelLogRatio: channel.channelLogRatio,
+        channelRatio: channel.channelRatio,
+        channelWavelength: channel.channelWavelength,
+        channelDerivationLawId: channel.channelDerivationLawId,
       })) ?? [],
     ...(derivedEmissionTuple ? { derivedEmissionTuple } : {}),
     ...(fallbackKind ? { fallbackKind } : {}),

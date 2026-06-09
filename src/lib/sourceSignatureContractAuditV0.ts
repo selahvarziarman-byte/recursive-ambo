@@ -34,6 +34,14 @@ import {
   buildPythagoreanTetrachordQuarkRegimeV0Report,
   type PythagoreanTetrachordQuarkRegimeV0Report,
 } from './fieldSourcePythagoreanTetrachordQuarkRegimeV0';
+import {
+  buildFieldCueV0Report,
+  type FieldCueV0Report,
+} from './fieldCueV0';
+import {
+  buildGeneratedSiteReadingV0Report,
+  type GeneratedSiteReadingV0Report,
+} from './generatedSiteReadingV0';
 
 export type SourceSignatureContractAuditV0Method =
   'source-signature-contract-audit-v0';
@@ -218,6 +226,9 @@ export interface SourceSignatureContractAuditV0Report {
 
 export type SourceSignatureContractAuditV0ComparisonStatus = 'pass' | 'fail';
 export type SourceSignatureContractAuditV0Gate1Status = 'pass' | 'fail';
+export type SourceSignatureContractAuditV0Gate2Status = 'pass' | 'fail';
+export type SourceSignatureContractAuditV0DownstreamSwitchStatus =
+  'field-cue-switched-generated-reading-inherits-v0';
 export type SourceSignatureContractAuditV0ControlRole = 'bad-control';
 export type SourceSignatureContractAuditV0ControlExpectedFailureStatus =
   | 'failed-as-expected'
@@ -248,7 +259,16 @@ export interface SourceSignatureContractAuditV0ComparisonReport {
   };
   comparisonStatus: SourceSignatureContractAuditV0ComparisonStatus;
   gate1SourceSignatureProvingStatus: SourceSignatureContractAuditV0Gate1Status;
-  downstreamSwitchStatus: 'not-switched-v0';
+  gate2DownstreamSourceIntegrationStatus: SourceSignatureContractAuditV0Gate2Status;
+  downstreamSwitchStatus: SourceSignatureContractAuditV0DownstreamSwitchStatus;
+  downstreamReports: {
+    fieldCueOk: boolean;
+    generatedSiteReadingOk: boolean;
+    fieldCueCount: number;
+    generatedSiteReadingCount: number;
+    fieldReadyCueCount: number;
+    generatedFieldReadyReadingCount: number;
+  };
   semanticStatus: SourceSignatureContractAuditV0SemanticStatus;
   topologyStatus: SourceSignatureContractAuditV0TopologyStatus;
   packetWriteStatus: SourceSignatureContractAuditV0PacketWriteStatus;
@@ -393,6 +413,8 @@ export function buildSourceSignatureContractAuditV0ComparisonReport(): SourceSig
   const controlReport = buildSourceSignatureContractAuditV0Report();
   const provingCandidateReport =
     buildPythagoreanTetrachordQuarkRegimeV0Report();
+  const fieldCueReport = buildFieldCueV0Report();
+  const generatedSiteReadingReport = buildGeneratedSiteReadingV0Report();
   const expectedFailureStatus: SourceSignatureContractAuditV0ControlExpectedFailureStatus =
     controlReport.provingFixtureUsefulnessStatus === 'fail' &&
     controlReport.provingEventSignatureStatus === 'fail' &&
@@ -422,12 +444,20 @@ export function buildSourceSignatureContractAuditV0ComparisonReport(): SourceSig
   const issues = buildComparisonIssues({
     controlReport,
     provingCandidateReport,
+    fieldCueReport,
+    generatedSiteReadingReport,
     expectedFailureStatus,
     candidateStatus,
   });
+  const gate2DownstreamSourceIntegrationStatus: SourceSignatureContractAuditV0Gate2Status =
+    pickGate2DownstreamSourceIntegrationStatus({
+      fieldCueReport,
+      generatedSiteReadingReport,
+    });
   const comparisonStatus: SourceSignatureContractAuditV0ComparisonStatus =
     expectedFailureStatus === 'failed-as-expected' &&
     candidateStatus === 'pass' &&
+    gate2DownstreamSourceIntegrationStatus === 'pass' &&
     issues.length === 0
       ? 'pass'
       : 'fail';
@@ -450,7 +480,27 @@ export function buildSourceSignatureContractAuditV0ComparisonReport(): SourceSig
     },
     comparisonStatus,
     gate1SourceSignatureProvingStatus,
-    downstreamSwitchStatus: 'not-switched-v0',
+    gate2DownstreamSourceIntegrationStatus,
+    downstreamSwitchStatus: 'field-cue-switched-generated-reading-inherits-v0',
+    downstreamReports: {
+      fieldCueOk: fieldCueReport.ok,
+      generatedSiteReadingOk: generatedSiteReadingReport.ok,
+      fieldCueCount: fieldCueReport.cueCount,
+      generatedSiteReadingCount: generatedSiteReadingReport.readingCount,
+      fieldReadyCueCount: fieldCueReport.cues.filter(
+        (cue) =>
+          cue.sourceSignatureProvenance.provingRegimeId ===
+            provingCandidateReport.provingRegimeId &&
+          cue.inheritanceAxis.inheritanceStatus === 'complete' &&
+          cue.emittedSourceSignature.fieldReady,
+      ).length,
+      generatedFieldReadyReadingCount: generatedSiteReadingReport.readings.filter(
+        (reading) =>
+          reading.fieldWitness.sourceRegimeId ===
+            provingCandidateReport.provingRegimeId &&
+          reading.fieldWitness.sourceSignatureStatus === 'field-ready',
+      ).length,
+    },
     semanticStatus: SEMANTIC_STATUS,
     topologyStatus: TOPOLOGY_STATUS,
     packetWriteStatus: PACKET_WRITE_STATUS,
@@ -465,6 +515,8 @@ export function buildSourceSignatureContractAuditV0ComparisonReport(): SourceSig
 function buildComparisonIssues(args: {
   controlReport: SourceSignatureContractAuditV0Report;
   provingCandidateReport: PythagoreanTetrachordQuarkRegimeV0Report;
+  fieldCueReport: FieldCueV0Report;
+  generatedSiteReadingReport: GeneratedSiteReadingV0Report;
   expectedFailureStatus: SourceSignatureContractAuditV0ControlExpectedFailureStatus;
   candidateStatus: SourceSignatureContractAuditV0ProvingCandidateStatus;
 }): SourceSignatureContractAuditV0ComparisonIssue[] {
@@ -525,7 +577,63 @@ function buildComparisonIssues(args: {
     });
   }
 
+  if (
+    pickGate2DownstreamSourceIntegrationStatus({
+      fieldCueReport: args.fieldCueReport,
+      generatedSiteReadingReport: args.generatedSiteReadingReport,
+    }) !== 'pass'
+  ) {
+    issues.push({
+      code: 'gate-2-downstream-source-integration-failed',
+      message:
+        'FieldCueV0 and GeneratedSiteReadingV0 did not both expose field-ready Pythagorean source-signature provenance.',
+      details: {
+        fieldCueOk: args.fieldCueReport.ok,
+        generatedSiteReadingOk: args.generatedSiteReadingReport.ok,
+        fieldCueCount: args.fieldCueReport.cueCount,
+        generatedSiteReadingCount:
+          args.generatedSiteReadingReport.readingCount,
+      },
+    });
+  }
+
   return issues;
+}
+
+function pickGate2DownstreamSourceIntegrationStatus(args: {
+  fieldCueReport: FieldCueV0Report;
+  generatedSiteReadingReport: GeneratedSiteReadingV0Report;
+}): SourceSignatureContractAuditV0Gate2Status {
+  const fieldCueReady =
+    args.fieldCueReport.ok &&
+    args.fieldCueReport.sourcePolicyId ===
+      'pythagorean-tetrachord-quark-proving-policy-v0' &&
+    args.fieldCueReport.sourceSignatureProvenance.provingRegimeId ===
+      'pythagorean-tetrachord-quark-regime-v0' &&
+    args.fieldCueReport.cueCount === EXPECTED_CHILD_COUNT &&
+    args.fieldCueReport.cues.every(
+      (cue) =>
+        cue.sourceSignatureProvenance.provingRegimeId ===
+          'pythagorean-tetrachord-quark-regime-v0' &&
+        cue.inheritanceAxis.inheritanceStatus === 'complete' &&
+        cue.emittedSourceSignature.fieldReady &&
+        cue.sourceSignatureProvenance.childWaveNumberShellScalingApplied ===
+          false &&
+        cue.sourceSignatureProvenance.childAttenuationShellScalingApplied ===
+          false,
+    );
+  const generatedReadingReady =
+    args.generatedSiteReadingReport.ok &&
+    args.generatedSiteReadingReport.readingCount === EXPECTED_CHILD_COUNT &&
+    args.generatedSiteReadingReport.readings.every(
+      (reading) =>
+        reading.fieldWitness.sourceRegimeId ===
+          'pythagorean-tetrachord-quark-regime-v0' &&
+        reading.fieldWitness.sourceSignatureStatus === 'field-ready' &&
+        reading.fieldWitness.fieldInheritanceStatus === 'complete',
+    );
+
+  return fieldCueReady && generatedReadingReady ? 'pass' : 'fail';
 }
 
 function buildFixture(): SourceSignatureContractAuditV0Fixture {

@@ -81,6 +81,18 @@ export interface GeneratedSiteReadingV0FieldWitness {
   fieldCueId?: string;
   fieldParticipationStatus?: FieldCueV0ParticipationStatus;
   fieldInheritanceStatus?: string;
+  sourceRegimeId?: string;
+  sourceProfileSystemId?: string;
+  childInheritanceGrammarId?: string;
+  sourceSignatureStatus?: 'field-ready' | 'unavailable' | 'issue';
+  baseWaveNumberCalibrationStatus?: string;
+  pairSumUniquenessStatus?: string;
+  shellScalingApplication?: string;
+  activeDifferentiatingAxes?: string[];
+  neutralAxes?: string[];
+  childLogRatio?: number;
+  childRatio?: number;
+  childWavelength?: number;
   fieldPressureSummary?: string;
   fieldCandidateReferenceCounts: GeneratedSiteReadingV0FieldCandidateReferenceCounts;
   fieldWarningStatuses: FieldCueV0ParticipationStatus[];
@@ -423,12 +435,41 @@ function buildFieldWitness(
   }
 
   const candidateAxis = fieldCue.candidateFieldWorldAxis;
+  const sourceProvenance = fieldCue.sourceSignatureProvenance;
+  const sourceSignatureStatus =
+    fieldCue.inheritanceAxis.inheritanceStatus === 'complete' &&
+    fieldCue.emittedSourceSignature.fieldReady
+      ? 'field-ready'
+      : fieldCueReportOk
+        ? 'issue'
+        : 'unavailable';
 
   return {
     fieldCueStatus: fieldCueReportOk ? 'available' : 'issue',
     fieldCueId: fieldCue.cueId,
     fieldParticipationStatus: fieldCue.participationStatus,
     fieldInheritanceStatus: fieldCue.inheritanceAxis.inheritanceStatus,
+    sourceRegimeId: sourceProvenance.provingRegimeId,
+    sourceProfileSystemId: sourceProvenance.sourceProfileSystemId,
+    childInheritanceGrammarId: sourceProvenance.childInheritanceGrammarId,
+    sourceSignatureStatus,
+    baseWaveNumberCalibrationStatus:
+      sourceProvenance.baseWaveNumberCalibration
+        .baseWaveNumberCalibrationStatus,
+    pairSumUniquenessStatus: sourceProvenance.pairSumUniquenessStatus,
+    shellScalingApplication:
+      sourceProvenance.eventShellProvenance.shellScalingApplication,
+    activeDifferentiatingAxes: [...sourceProvenance.activeDifferentiatingAxes],
+    neutralAxes: [...sourceProvenance.neutralAxes],
+    ...(sourceProvenance.childLogRatio !== undefined
+      ? { childLogRatio: sourceProvenance.childLogRatio }
+      : {}),
+    ...(sourceProvenance.childRatio !== undefined
+      ? { childRatio: sourceProvenance.childRatio }
+      : {}),
+    ...(sourceProvenance.childWavelength !== undefined
+      ? { childWavelength: sourceProvenance.childWavelength }
+      : {}),
     fieldPressureSummary: fieldCue.fieldPressureSummary,
     fieldCandidateReferenceCounts: {
       total: candidateAxis.candidateReferenceCount,

@@ -31,7 +31,11 @@ const EXPECTED_SITE_IDS = ['M_AB', 'M_AC', 'M_AD', 'M_BC', 'M_BD', 'M_CD'];
 const FIELD_CUE_METHOD = 'field-cue-v0-diagnostic';
 const FIELD_CUE_SCOPE = 'field-cue-v0-one-ambo-tetrahedron-only';
 const FIELD_CUE_POLICY_ID = 'field-cue-v0-one-ambo-tetrahedron';
-const SOURCE_POLICY_ID = 'profile-aware-quark-child-inheritance-v0';
+const SOURCE_POLICY_ID = 'pythagorean-tetrachord-quark-proving-policy-v0';
+const PROVING_REGIME_ID = 'pythagorean-tetrachord-quark-regime-v0';
+const SOURCE_PROFILE_SYSTEM_ID = 'pythagorean-tetrachord-primal-profile-system-v0';
+const CHILD_INHERITANCE_GRAMMAR_ID =
+  'tetrahedral-quark-log-wave-number-inheritance-v0';
 const ALLOWED_RELATION_MATURITIES = new Set([
   'candidate-reference',
   'candidate-relation',
@@ -99,6 +103,63 @@ function runReportBoundaryDiagnostic(report) {
   );
   expectEqual(report.portabilityStatus, 'untested', 'report portability');
   expectEqual(report.sourcePolicyId, SOURCE_POLICY_ID, 'report source policy id');
+  expectEqual(
+    report.sourceSignatureProvenance.provingRegimeId,
+    PROVING_REGIME_ID,
+    'report proving regime id',
+  );
+  expectEqual(
+    report.sourceSignatureProvenance.sourceProfileSystemId,
+    SOURCE_PROFILE_SYSTEM_ID,
+    'report source profile system id',
+  );
+  expectEqual(
+    report.sourceSignatureProvenance.childInheritanceGrammarId,
+    CHILD_INHERITANCE_GRAMMAR_ID,
+    'report child inheritance grammar id',
+  );
+  expectEqual(
+    report.sourceSignatureProvenance.sourcePolicyId,
+    SOURCE_POLICY_ID,
+    'report source-signature provenance source policy id',
+  );
+  expectEqual(
+    report.sourceSignatureProvenance.baseWaveNumberCalibration
+      .baseWaveNumberCalibrationStatus,
+    'human-specified-v0',
+    'report base wave-number calibration status',
+  );
+  expectApprox(
+    report.sourceSignatureProvenance.baseWaveNumberCalibration
+      .wavelengthToEdgeRatio,
+    1 / 8,
+    'report wavelength to edge ratio',
+  );
+  expectEqual(
+    report.sourceSignatureProvenance.eventShellProvenance.shellScalingApplication,
+    'record-only-v0',
+    'report shell scaling application',
+  );
+  expectIncludes(
+    report.sourceSignatureProvenance.activeDifferentiatingAxes,
+    'waveNumber',
+    'report active axes include waveNumber',
+  );
+  expectIncludes(
+    report.sourceSignatureProvenance.activeDifferentiatingAxes,
+    'phase',
+    'report active axes include phase',
+  );
+  expectIncludes(
+    report.sourceSignatureProvenance.neutralAxes,
+    'amplitude',
+    'report neutral axes include amplitude',
+  );
+  expectIncludes(
+    report.sourceSignatureProvenance.neutralAxes,
+    'attenuation',
+    'report neutral axes include attenuation',
+  );
   expectEqual(
     report.sourcePolicyStatus,
     'policy-relative',
@@ -234,7 +295,111 @@ function runInheritanceDiagnostic(report) {
       axis.inheritanceGrammarId,
       `${cue.siteId} inheritance grammar`,
     );
+    expectEqual(
+      axis.inheritanceGrammarId,
+      CHILD_INHERITANCE_GRAMMAR_ID,
+      `${cue.siteId} Pythagorean inheritance grammar`,
+    );
     expectTruthy(axis.mergeKind, `${cue.siteId} merge kind`);
+    expectEqual(
+      axis.inheritanceStatus,
+      'complete',
+      `${cue.siteId} inheritance status complete`,
+    );
+    expectEqual(
+      axis.provingRegimeId,
+      PROVING_REGIME_ID,
+      `${cue.siteId} proving regime id`,
+    );
+    expectEqual(
+      axis.childInheritanceGrammarId,
+      CHILD_INHERITANCE_GRAMMAR_ID,
+      `${cue.siteId} child inheritance grammar id`,
+    );
+    expectEqual(
+      typeof axis.childLogRatio,
+      'number',
+      `${cue.siteId} child logRatio`,
+    );
+    expectEqual(typeof axis.childRatio, 'number', `${cue.siteId} child ratio`);
+    expectEqual(
+      typeof axis.childWavelength,
+      'number',
+      `${cue.siteId} child wavelength`,
+    );
+    expectEqual(
+      typeof axis.baseWaveNumber,
+      'number',
+      `${cue.siteId} base wave-number`,
+    );
+    expectEqual(
+      typeof axis.referenceWavelength,
+      'number',
+      `${cue.siteId} reference wavelength`,
+    );
+    expectApprox(
+      axis.wavelengthToEdgeRatio,
+      1 / 8,
+      `${cue.siteId} wavelength to edge ratio`,
+    );
+    expectEqual(
+      axis.shellScalingApplication,
+      'record-only-v0',
+      `${cue.siteId} shell scaling application`,
+    );
+    expectIncludes(
+      axis.activeDifferentiatingAxes ?? [],
+      'waveNumber',
+      `${cue.siteId} active axes include waveNumber`,
+    );
+    expectIncludes(
+      axis.activeDifferentiatingAxes ?? [],
+      'phase',
+      `${cue.siteId} active axes include phase`,
+    );
+    expectIncludes(
+      axis.neutralAxes ?? [],
+      'amplitude',
+      `${cue.siteId} neutral axes include amplitude`,
+    );
+    expectIncludes(
+      axis.neutralAxes ?? [],
+      'attenuation',
+      `${cue.siteId} neutral axes include attenuation`,
+    );
+
+    for (const channel of axis.quarkChannelSummaries) {
+      expectEqual(
+        typeof channel.parentLogRatio,
+        'number',
+        `${cue.siteId} ${channel.channelId} parent logRatio`,
+      );
+      expectEqual(
+        typeof channel.projectionLogRatio,
+        'number',
+        `${cue.siteId} ${channel.channelId} projection logRatio`,
+      );
+      expectEqual(
+        typeof channel.channelLogRatio,
+        'number',
+        `${cue.siteId} ${channel.channelId} channel logRatio`,
+      );
+      expectEqual(
+        typeof channel.channelRatio,
+        'number',
+        `${cue.siteId} ${channel.channelId} channel ratio`,
+      );
+      expectEqual(
+        typeof channel.channelWavelength,
+        'number',
+        `${cue.siteId} ${channel.channelId} channel wavelength`,
+      );
+      expectEqual(
+        channel.channelDerivationLawId,
+        CHILD_INHERITANCE_GRAMMAR_ID,
+        `${cue.siteId} ${channel.channelId} channel derivation law`,
+      );
+    }
   }
 
   console.log('inheritance axis: PASS');
@@ -244,6 +409,7 @@ function runEmittedSourceDiagnostic(report) {
   for (const cue of report.cues) {
     const signature = cue.emittedSourceSignature;
     const axis = cue.inheritanceAxis;
+    const provenance = cue.sourceSignatureProvenance;
     const hasEmission = Boolean(signature.emissionTuple);
     const hasExplicitUnsupportedState = [
       'fallback',
@@ -264,6 +430,102 @@ function runEmittedSourceDiagnostic(report) {
         `${cue.siteId} source probe ref type`,
       );
     }
+    expectEqual(signature.fieldReady, true, `${cue.siteId} field-ready signature`);
+    expectEqual(axis.inheritanceStatus, 'complete', `${cue.siteId} complete inheritance`);
+    expectEqual(axis.fallbackKind, undefined, `${cue.siteId} no fallback kind`);
+    expectEqual(axis.unresolved, false, `${cue.siteId} not unresolved`);
+    expectEqual(
+      provenance.provingRegimeId,
+      PROVING_REGIME_ID,
+      `${cue.siteId} source provenance regime`,
+    );
+    expectEqual(
+      provenance.sourceProfileSystemId,
+      SOURCE_PROFILE_SYSTEM_ID,
+      `${cue.siteId} source provenance profile system`,
+    );
+    expectEqual(
+      provenance.childInheritanceGrammarId,
+      CHILD_INHERITANCE_GRAMMAR_ID,
+      `${cue.siteId} source provenance child inheritance grammar`,
+    );
+    expectEqual(
+      provenance.baseWaveNumberCalibration.baseWaveNumberCalibrationStatus,
+      'human-specified-v0',
+      `${cue.siteId} base wave-number calibration status`,
+    );
+    expectApprox(
+      provenance.baseWaveNumberCalibration.wavelengthToEdgeRatio,
+      1 / 8,
+      `${cue.siteId} wavelength to edge ratio`,
+    );
+    expectEqual(
+      provenance.eventShellProvenance.shellScalingApplication,
+      'record-only-v0',
+      `${cue.siteId} shell scaling application`,
+    );
+    expectIncludes(
+      provenance.activeDifferentiatingAxes,
+      'waveNumber',
+      `${cue.siteId} active axes include waveNumber`,
+    );
+    expectIncludes(
+      provenance.activeDifferentiatingAxes,
+      'phase',
+      `${cue.siteId} active axes include phase`,
+    );
+    expectIncludes(
+      provenance.neutralAxes,
+      'amplitude',
+      `${cue.siteId} neutral axes include amplitude`,
+    );
+    expectIncludes(
+      provenance.neutralAxes,
+      'attenuation',
+      `${cue.siteId} neutral axes include attenuation`,
+    );
+
+    if (signature.emissionTuple) {
+      expectNotApprox(
+        signature.emissionTuple.waveNumber,
+        Math.PI,
+        `${cue.siteId} emitted wave-number is not old Math.PI fixture`,
+      );
+      expectApprox(
+        signature.emissionTuple.waveNumber,
+        provenance.baseWaveNumberCalibration.baseWaveNumber *
+          (provenance.childRatio ?? Number.NaN),
+        `${cue.siteId} emitted wave-number follows base * childRatio`,
+      );
+      expectNotApprox(
+        signature.emissionTuple.waveNumber,
+        provenance.baseWaveNumberCalibration.baseWaveNumber *
+          (provenance.childRatio ?? Number.NaN) *
+          Math.sqrt(3),
+        `${cue.siteId} emitted wave-number has no shell sqrt3 multiplier`,
+      );
+      expectApprox(
+        signature.emissionTuple.attenuation,
+        0.05,
+        `${cue.siteId} emitted attenuation remains neutral`,
+      );
+      expectNotApprox(
+        signature.emissionTuple.attenuation,
+        0.05 * Math.sqrt(3),
+        `${cue.siteId} emitted attenuation has no shell sqrt3 multiplier`,
+      );
+    }
+
+    expectEqual(
+      provenance.childWaveNumberShellScalingApplied,
+      false,
+      `${cue.siteId} child wave-number shell scaling flag`,
+    );
+    expectEqual(
+      provenance.childAttenuationShellScalingApplied,
+      false,
+      `${cue.siteId} child attenuation shell scaling flag`,
+    );
   }
 
   console.log('emitted source signatures: PASS');
@@ -442,6 +704,30 @@ function printCompactSummary(report) {
 function expectEqual(actual, expected, label) {
   if (actual !== expected) {
     failures.push(`${label}: expected ${formatValue(expected)}, got ${formatValue(actual)}`);
+  }
+}
+
+function expectApprox(actual, expected, label, tolerance = 1e-9) {
+  if (
+    !Number.isFinite(actual) ||
+    !Number.isFinite(expected) ||
+    Math.abs(actual - expected) > tolerance
+  ) {
+    failures.push(
+      `${label}: expected approximately ${formatValue(expected)}, got ${formatValue(actual)}`,
+    );
+  }
+}
+
+function expectNotApprox(actual, unexpected, label, tolerance = 1e-9) {
+  if (
+    Number.isFinite(actual) &&
+    Number.isFinite(unexpected) &&
+    Math.abs(actual - unexpected) <= tolerance
+  ) {
+    failures.push(
+      `${label}: expected not approximately ${formatValue(unexpected)}, got ${formatValue(actual)}`,
+    );
   }
 }
 
