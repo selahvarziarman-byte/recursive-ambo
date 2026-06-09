@@ -30,6 +30,10 @@ import {
   type QuarkChannelRecord,
   type TetrahedralQuarkChannelReport,
 } from './fieldSourceQuarkChannels';
+import {
+  buildPythagoreanTetrachordQuarkRegimeV0Report,
+  type PythagoreanTetrachordQuarkRegimeV0Report,
+} from './fieldSourcePythagoreanTetrachordQuarkRegimeV0';
 
 export type SourceSignatureContractAuditV0Method =
   'source-signature-contract-audit-v0';
@@ -212,6 +216,49 @@ export interface SourceSignatureContractAuditV0Report {
   };
 }
 
+export type SourceSignatureContractAuditV0ComparisonStatus = 'pass' | 'fail';
+export type SourceSignatureContractAuditV0Gate1Status = 'pass' | 'fail';
+export type SourceSignatureContractAuditV0ControlRole = 'bad-control';
+export type SourceSignatureContractAuditV0ControlExpectedFailureStatus =
+  | 'failed-as-expected'
+  | 'unexpected-pass';
+export type SourceSignatureContractAuditV0ProvingCandidateStatus =
+  | 'pass'
+  | 'fail';
+
+export interface SourceSignatureContractAuditV0ComparisonIssue {
+  code: string;
+  message: string;
+  details?: Record<string, boolean | number | string | null>;
+}
+
+export interface SourceSignatureContractAuditV0ComparisonReport {
+  reportId: string;
+  method: 'source-signature-contract-audit-v0-comparison';
+  diagnosticScope: SourceSignatureContractAuditV0DiagnosticScope;
+  controlRegime: {
+    controlRole: SourceSignatureContractAuditV0ControlRole;
+    report: SourceSignatureContractAuditV0Report;
+    expectedFailureStatus: SourceSignatureContractAuditV0ControlExpectedFailureStatus;
+  };
+  provingCandidateRegime: {
+    provingRegimeId: PythagoreanTetrachordQuarkRegimeV0Report['provingRegimeId'];
+    report: PythagoreanTetrachordQuarkRegimeV0Report;
+    candidateStatus: SourceSignatureContractAuditV0ProvingCandidateStatus;
+  };
+  comparisonStatus: SourceSignatureContractAuditV0ComparisonStatus;
+  gate1SourceSignatureProvingStatus: SourceSignatureContractAuditV0Gate1Status;
+  downstreamSwitchStatus: 'not-switched-v0';
+  semanticStatus: SourceSignatureContractAuditV0SemanticStatus;
+  topologyStatus: SourceSignatureContractAuditV0TopologyStatus;
+  packetWriteStatus: SourceSignatureContractAuditV0PacketWriteStatus;
+  shapeMutationStatus: SourceSignatureContractAuditV0ShapeMutationStatus;
+  operationRegistryStatus: SourceSignatureContractAuditV0OperationRegistryStatus;
+  issueCount: number;
+  issues: SourceSignatureContractAuditV0ComparisonIssue[];
+  ok: boolean;
+}
+
 interface SourceSignatureContractAuditV0Fixture {
   profileSystem: FieldSourceProfileSystem;
   profiles: FieldSourceProfile[];
@@ -340,6 +387,145 @@ export function buildSourceSignatureContractAuditV0Report(): SourceSignatureCont
       profileAwarePolicyIssueCount: fixture.policyReport.issueCount,
     },
   };
+}
+
+export function buildSourceSignatureContractAuditV0ComparisonReport(): SourceSignatureContractAuditV0ComparisonReport {
+  const controlReport = buildSourceSignatureContractAuditV0Report();
+  const provingCandidateReport =
+    buildPythagoreanTetrachordQuarkRegimeV0Report();
+  const expectedFailureStatus: SourceSignatureContractAuditV0ControlExpectedFailureStatus =
+    controlReport.provingFixtureUsefulnessStatus === 'fail' &&
+    controlReport.provingEventSignatureStatus === 'fail' &&
+    controlReport.humanLegibilityStatus === 'misleading'
+      ? 'failed-as-expected'
+      : 'unexpected-pass';
+  const candidateStatus: SourceSignatureContractAuditV0ProvingCandidateStatus =
+    provingCandidateReport.structuralContractStatus === 'pass' &&
+    provingCandidateReport.provingFixtureUsefulnessStatus === 'pass' &&
+    provingCandidateReport.provingEventSignatureStatus === 'pass' &&
+    provingCandidateReport.pairSumUniquenessAudit.pairSumUniquenessStatus ===
+      'pass' &&
+    provingCandidateReport.eventShellProvenance.eventShellProvenanceStatus ===
+      'pass' &&
+    provingCandidateReport.baseWaveNumberCalibration
+      .baseWaveNumberCalibrationAuditStatus === 'pass' &&
+    provingCandidateReport.childReadinessAudit.fieldReadyChildCount ===
+      EXPECTED_CHILD_COUNT &&
+    provingCandidateReport.childReadinessAudit.fallbackChildCount === 0 &&
+    provingCandidateReport.childReadinessAudit.unresolvedChildCount === 0 &&
+    provingCandidateReport.packetWriteStatus === PACKET_WRITE_STATUS &&
+    provingCandidateReport.shapeMutationStatus === SHAPE_MUTATION_STATUS &&
+    provingCandidateReport.topologyStatus === TOPOLOGY_STATUS &&
+    provingCandidateReport.operationRegistryStatus === OPERATION_REGISTRY_STATUS
+      ? 'pass'
+      : 'fail';
+  const issues = buildComparisonIssues({
+    controlReport,
+    provingCandidateReport,
+    expectedFailureStatus,
+    candidateStatus,
+  });
+  const comparisonStatus: SourceSignatureContractAuditV0ComparisonStatus =
+    expectedFailureStatus === 'failed-as-expected' &&
+    candidateStatus === 'pass' &&
+    issues.length === 0
+      ? 'pass'
+      : 'fail';
+  const gate1SourceSignatureProvingStatus: SourceSignatureContractAuditV0Gate1Status =
+    comparisonStatus === 'pass' ? 'pass' : 'fail';
+
+  return {
+    reportId: `${METHOD}:comparison:uniform-control-vs-pythagorean-tetrachord`,
+    method: 'source-signature-contract-audit-v0-comparison',
+    diagnosticScope: DIAGNOSTIC_SCOPE,
+    controlRegime: {
+      controlRole: 'bad-control',
+      report: controlReport,
+      expectedFailureStatus,
+    },
+    provingCandidateRegime: {
+      provingRegimeId: provingCandidateReport.provingRegimeId,
+      report: provingCandidateReport,
+      candidateStatus,
+    },
+    comparisonStatus,
+    gate1SourceSignatureProvingStatus,
+    downstreamSwitchStatus: 'not-switched-v0',
+    semanticStatus: SEMANTIC_STATUS,
+    topologyStatus: TOPOLOGY_STATUS,
+    packetWriteStatus: PACKET_WRITE_STATUS,
+    shapeMutationStatus: SHAPE_MUTATION_STATUS,
+    operationRegistryStatus: OPERATION_REGISTRY_STATUS,
+    issueCount: issues.length,
+    issues,
+    ok: comparisonStatus === 'pass',
+  };
+}
+
+function buildComparisonIssues(args: {
+  controlReport: SourceSignatureContractAuditV0Report;
+  provingCandidateReport: PythagoreanTetrachordQuarkRegimeV0Report;
+  expectedFailureStatus: SourceSignatureContractAuditV0ControlExpectedFailureStatus;
+  candidateStatus: SourceSignatureContractAuditV0ProvingCandidateStatus;
+}): SourceSignatureContractAuditV0ComparisonIssue[] {
+  const issues: SourceSignatureContractAuditV0ComparisonIssue[] = [];
+
+  if (args.expectedFailureStatus !== 'failed-as-expected') {
+    issues.push({
+      code: 'uniform-control-did-not-fail-as-expected',
+      message:
+        'Uniform-circle control must remain represented as the scalar-invariant bad control.',
+      details: {
+        provingFixtureUsefulnessStatus:
+          args.controlReport.provingFixtureUsefulnessStatus,
+        provingEventSignatureStatus:
+          args.controlReport.provingEventSignatureStatus,
+        humanLegibilityStatus: args.controlReport.humanLegibilityStatus,
+      },
+    });
+  }
+
+  if (args.candidateStatus !== 'pass') {
+    issues.push({
+      code: 'pythagorean-proving-candidate-failed',
+      message:
+        'Pythagorean tetrachord proving candidate did not pass all Gate 1 source-signature requirements.',
+      details: {
+        structuralContractStatus:
+          args.provingCandidateReport.structuralContractStatus,
+        provingFixtureUsefulnessStatus:
+          args.provingCandidateReport.provingFixtureUsefulnessStatus,
+        provingEventSignatureStatus:
+          args.provingCandidateReport.provingEventSignatureStatus,
+        issueCount: args.provingCandidateReport.issueCount,
+      },
+    });
+  }
+
+  if (
+    args.provingCandidateReport.baseWaveNumberCalibration
+      .baseWaveNumberCalibrationStatus !== 'human-specified-v0'
+  ) {
+    issues.push({
+      code: 'base-wave-number-calibration-not-human-specified',
+      message:
+        'Gate 1 requires the human-specified 1:8 edge/wavelength calibration.',
+    });
+  }
+
+  if (
+    args.provingCandidateReport.shellScalingApplication !== 'record-only-v0' ||
+    args.provingCandidateReport.eventShellProvenance.shellScalingApplication !==
+      'record-only-v0'
+  ) {
+    issues.push({
+      code: 'shell-scaling-not-record-only',
+      message:
+        'Gate 1 records tetrahedron to midpoint-octahedron shell provenance but does not apply shell scaling to emitted tuples.',
+    });
+  }
+
+  return issues;
 }
 
 function buildFixture(): SourceSignatureContractAuditV0Fixture {
