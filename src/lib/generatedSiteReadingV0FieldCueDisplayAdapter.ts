@@ -12,15 +12,15 @@ export type GeneratedSiteReadingV0FieldCueDisplayAdapterSourceGate = 'Gate D7';
 export type GeneratedSiteReadingV0FieldCueSourceBoundaryStatus =
   'fieldcue-evidence-ui-boundary-consumed';
 export type GeneratedSiteReadingV0FieldCueDisplayAdapterStatus =
-  'mounted-display-adapter-ready';
+  'internal-diagnostic-adapter-available';
 export type GeneratedSiteReadingV0FieldCueDisplayMountStatus =
-  'mounted-in-generated-site-reading-panel';
+  'hidden-in-internal-diagnostics';
 export type GeneratedSiteReadingV0LegacyGeneratedSiteUiStatus =
-  'legacy-generated-site-ui-quarantined-not-authoritative';
+  'diagnostic-ui-quarantined-not-product-surface';
 export type GeneratedSiteReadingV0FieldCueRenderStatus =
-  'mounted-in-generated-site-reading-panel';
+  'not-product-rendered';
 export type GeneratedSiteReadingV0FieldCueRuntimeStatus =
-  'diagnostic-library-display-mounted';
+  'diagnostic-library-internal-only';
 export type GeneratedSiteReadingV0FieldCueConsumptionStatus =
   'fieldcue-boundary-consumed-as-event-bound-evidence';
 export type GeneratedSiteReadingV0FieldCueEventBoundPrototypeStatus =
@@ -48,17 +48,23 @@ export type GeneratedSiteReadingV0FieldCueStructuralWitnessStatus =
 export type GeneratedSiteReadingV0FieldCueReductionLawAdoptionStatus =
   'not-adopted';
 export type GeneratedSiteReadingV0FieldCueRecommendedNextGate =
-  'Gate E0 - Field Layer Generalization Gap Review';
+  'Gate F0 - First-Stone Field Statement';
 export type GeneratedSiteReadingV0FieldCueMountReviewStatus =
-  'mounted-display-reviewed-event-bound-limits-visible';
+  'diagnostic-display-quarantined-from-product-ui';
 export type GeneratedSiteReadingV0VisiblePrototypeBoundaryStatus =
-  'visible-in-mounted-display';
+  'field-source-policy-visible-diagnostic-hidden';
 export type GeneratedSiteReadingV0LegacyQuarantineStatus =
-  'legacy-details-quarantined-not-authoritative';
+  'diagnostic-ui-quarantined-not-product-surface';
 export type GeneratedSiteReadingV0GeneralizationGapStatus =
-  'unresolved-main-field-layer-gap';
+  'visible-next-step-replaced-by-first-stone';
 export type GeneratedSiteReadingV0PostMountNextStepStatus =
-  'return-to-field-layer-generalization-gap';
+  'return-to-first-stone-field-statement';
+export type GeneratedSiteReadingV0ProductBoundaryStatus =
+  'product-boundary-restored';
+export type GeneratedSiteReadingV0VisibleGeneratedSiteReadingStatus =
+  'hidden-from-product-ui';
+export type GeneratedSiteReadingV0FirstStoneFieldStatementStatus =
+  'missing-next';
 export type GeneratedSiteReadingV0FieldCueDiagnosticIntegrityStatus =
   | 'pass'
   | 'fail';
@@ -125,7 +131,7 @@ export interface GeneratedSiteReadingV0FieldCueDisplaySummary {
   generalizedFieldLayerClaimCount: number;
   eventBoundPrototypeRowCount: number;
   notGeneralFieldLayerRowCount: number;
-  mountedInApp: true;
+  mountedInApp: false;
   legacyGeneratedSiteUiAuthoritative: false;
   displayAdapterReady: boolean;
 }
@@ -158,6 +164,9 @@ export interface GeneratedSiteReadingV0FieldCueDisplayAdapterReport {
   legacyQuarantineStatus: GeneratedSiteReadingV0LegacyQuarantineStatus;
   generalizationGapStatus: GeneratedSiteReadingV0GeneralizationGapStatus;
   postMountNextStepStatus: GeneratedSiteReadingV0PostMountNextStepStatus;
+  productBoundaryStatus: GeneratedSiteReadingV0ProductBoundaryStatus;
+  visibleGeneratedSiteReadingStatus: GeneratedSiteReadingV0VisibleGeneratedSiteReadingStatus;
+  firstStoneFieldStatementStatus: GeneratedSiteReadingV0FirstStoneFieldStatementStatus;
   recommendedNextGate: GeneratedSiteReadingV0FieldCueRecommendedNextGate;
   headerModel: GeneratedSiteReadingV0FieldCueDisplayHeaderModel;
   siteDisplayRows: GeneratedSiteReadingV0FieldCueSiteDisplayRow[];
@@ -179,15 +188,15 @@ const SOURCE_GATE: GeneratedSiteReadingV0FieldCueDisplayAdapterSourceGate =
 const SOURCE_BOUNDARY_STATUS: GeneratedSiteReadingV0FieldCueSourceBoundaryStatus =
   'fieldcue-evidence-ui-boundary-consumed';
 const DISPLAY_ADAPTER_STATUS: GeneratedSiteReadingV0FieldCueDisplayAdapterStatus =
-  'mounted-display-adapter-ready';
+  'internal-diagnostic-adapter-available';
 const DISPLAY_MOUNT_STATUS: GeneratedSiteReadingV0FieldCueDisplayMountStatus =
-  'mounted-in-generated-site-reading-panel';
+  'hidden-in-internal-diagnostics';
 const LEGACY_GENERATED_SITE_UI_STATUS: GeneratedSiteReadingV0LegacyGeneratedSiteUiStatus =
-  'legacy-generated-site-ui-quarantined-not-authoritative';
+  'diagnostic-ui-quarantined-not-product-surface';
 const GENERATED_SITE_READING_V0_RENDER_STATUS: GeneratedSiteReadingV0FieldCueRenderStatus =
-  'mounted-in-generated-site-reading-panel';
+  'not-product-rendered';
 const GENERATED_SITE_READING_V0_RUNTIME_STATUS: GeneratedSiteReadingV0FieldCueRuntimeStatus =
-  'diagnostic-library-display-mounted';
+  'diagnostic-library-internal-only';
 const FIELD_CUE_CONSUMPTION_STATUS: GeneratedSiteReadingV0FieldCueConsumptionStatus =
   'fieldcue-boundary-consumed-as-event-bound-evidence';
 const EVENT_BOUND_PROTOTYPE_STATUS: GeneratedSiteReadingV0FieldCueEventBoundPrototypeStatus =
@@ -215,17 +224,23 @@ const STRUCTURAL_WITNESS_STATUS: GeneratedSiteReadingV0FieldCueStructuralWitness
 const REDUCTION_LAW_ADOPTION_STATUS: GeneratedSiteReadingV0FieldCueReductionLawAdoptionStatus =
   'not-adopted';
 const RECOMMENDED_NEXT_GATE: GeneratedSiteReadingV0FieldCueRecommendedNextGate =
-  'Gate E0 - Field Layer Generalization Gap Review';
+  'Gate F0 - First-Stone Field Statement';
 const MOUNT_REVIEW_STATUS: GeneratedSiteReadingV0FieldCueMountReviewStatus =
-  'mounted-display-reviewed-event-bound-limits-visible';
+  'diagnostic-display-quarantined-from-product-ui';
 const VISIBLE_PROTOTYPE_BOUNDARY_STATUS: GeneratedSiteReadingV0VisiblePrototypeBoundaryStatus =
-  'visible-in-mounted-display';
+  'field-source-policy-visible-diagnostic-hidden';
 const LEGACY_QUARANTINE_STATUS: GeneratedSiteReadingV0LegacyQuarantineStatus =
-  'legacy-details-quarantined-not-authoritative';
+  'diagnostic-ui-quarantined-not-product-surface';
 const GENERALIZATION_GAP_STATUS: GeneratedSiteReadingV0GeneralizationGapStatus =
-  'unresolved-main-field-layer-gap';
+  'visible-next-step-replaced-by-first-stone';
 const POST_MOUNT_NEXT_STEP_STATUS: GeneratedSiteReadingV0PostMountNextStepStatus =
-  'return-to-field-layer-generalization-gap';
+  'return-to-first-stone-field-statement';
+const PRODUCT_BOUNDARY_STATUS: GeneratedSiteReadingV0ProductBoundaryStatus =
+  'product-boundary-restored';
+const VISIBLE_GENERATED_SITE_READING_STATUS: GeneratedSiteReadingV0VisibleGeneratedSiteReadingStatus =
+  'hidden-from-product-ui';
+const FIRST_STONE_FIELD_STATEMENT_STATUS: GeneratedSiteReadingV0FirstStoneFieldStatementStatus =
+  'missing-next';
 
 export function buildGeneratedSiteReadingV0FieldCueDisplayAdapterReport(
   boundaryReport: GeneratedSiteReadingV0FieldCueUiBoundaryReport | null =
@@ -285,6 +300,9 @@ export function buildGeneratedSiteReadingV0FieldCueDisplayAdapterReport(
     legacyQuarantineStatus: LEGACY_QUARANTINE_STATUS,
     generalizationGapStatus: GENERALIZATION_GAP_STATUS,
     postMountNextStepStatus: POST_MOUNT_NEXT_STEP_STATUS,
+    productBoundaryStatus: PRODUCT_BOUNDARY_STATUS,
+    visibleGeneratedSiteReadingStatus: VISIBLE_GENERATED_SITE_READING_STATUS,
+    firstStoneFieldStatementStatus: FIRST_STONE_FIELD_STATEMENT_STATUS,
     recommendedNextGate: RECOMMENDED_NEXT_GATE,
     headerModel,
     siteDisplayRows,
@@ -388,7 +406,7 @@ function buildDisplaySummary(args: {
     generalizedFieldLayerClaimCount,
     eventBoundPrototypeRowCount,
     notGeneralFieldLayerRowCount,
-    mountedInApp: true,
+    mountedInApp: false,
     legacyGeneratedSiteUiAuthoritative: false,
     displayAdapterReady:
       args.issueCount === 0 &&
@@ -537,34 +555,42 @@ function buildIntegrityIssues(args: {
 
   if (
     MOUNT_REVIEW_STATUS !==
-      'mounted-display-reviewed-event-bound-limits-visible' ||
-    VISIBLE_PROTOTYPE_BOUNDARY_STATUS !== 'visible-in-mounted-display' ||
-    GENERALIZATION_GAP_STATUS !== 'unresolved-main-field-layer-gap' ||
-    POST_MOUNT_NEXT_STEP_STATUS !== 'return-to-field-layer-generalization-gap'
+      'diagnostic-display-quarantined-from-product-ui' ||
+    VISIBLE_PROTOTYPE_BOUNDARY_STATUS !==
+      'field-source-policy-visible-diagnostic-hidden' ||
+    GENERALIZATION_GAP_STATUS !==
+      'visible-next-step-replaced-by-first-stone' ||
+    POST_MOUNT_NEXT_STEP_STATUS !==
+      'return-to-first-stone-field-statement' ||
+    PRODUCT_BOUNDARY_STATUS !== 'product-boundary-restored' ||
+    VISIBLE_GENERATED_SITE_READING_STATUS !== 'hidden-from-product-ui' ||
+    FIRST_STONE_FIELD_STATEMENT_STATUS !== 'missing-next'
   ) {
     issues.push({
       code: 'generalization-leak',
       message:
-        'D10 must keep the post-mount next step pointed at the field-layer generalization gap.',
+        'D11 must keep the diagnostic display hidden and point product work at the First-Stone field statement.',
     });
   }
 
-  if (DISPLAY_MOUNT_STATUS !== 'mounted-in-generated-site-reading-panel') {
+  if (DISPLAY_MOUNT_STATUS !== 'hidden-in-internal-diagnostics') {
     issues.push({
       code: 'display-mounted-too-early',
-      message: 'D9 display component must be mounted only in GeneratedSiteReadingV0Panel.',
+      message:
+        'D11 display diagnostics must be hidden from the default product UI.',
     });
   }
 
   if (
     LEGACY_GENERATED_SITE_UI_STATUS !==
-      'legacy-generated-site-ui-quarantined-not-authoritative' ||
+      'diagnostic-ui-quarantined-not-product-surface' ||
     LEGACY_QUARANTINE_STATUS !==
-      'legacy-details-quarantined-not-authoritative'
+      'diagnostic-ui-quarantined-not-product-surface'
   ) {
     issues.push({
       code: 'legacy-generated-site-ui-treated-as-authoritative',
-      message: 'D8 must keep legacy GeneratedSiteReadingV0 UI non-authoritative.',
+      message:
+        'D11 must keep GeneratedSiteReadingV0 diagnostic UI outside the product surface.',
     });
   }
 

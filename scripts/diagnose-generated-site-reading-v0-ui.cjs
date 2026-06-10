@@ -2,136 +2,208 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const ts = require('typescript');
-
-require.extensions['.ts'] = (module, filename) => {
-  const source = fs.readFileSync(filename, 'utf8');
-  const output = ts.transpileModule(source, {
-    compilerOptions: {
-      esModuleInterop: true,
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: filename,
-  }).outputText;
-
-  module._compile(output, filename);
-};
+const { spawnSync } = require('node:child_process');
 
 const repoRoot = path.resolve(__dirname, '..');
-const uiBoundaryPath = path.join(
+const policyPanelPath = path.join(
   repoRoot,
-  'src/lib/generatedSiteReadingV0FieldCueUiBoundary.ts',
-);
-const displayAdapterPath = path.join(
-  repoRoot,
-  'src/lib/generatedSiteReadingV0FieldCueDisplayAdapter.ts',
-);
-const displayComponentPath = path.join(
-  repoRoot,
-  'src/components/GeneratedSiteReadingV0FieldCueDisplay.tsx',
+  'src/components/FieldSourcePolicyV0Panel.tsx',
 );
 const generatedPanelPath = path.join(
   repoRoot,
   'src/components/GeneratedSiteReadingV0Panel.tsx',
 );
+const displayAdapterPath = path.join(
+  repoRoot,
+  'src/lib/generatedSiteReadingV0FieldCueDisplayAdapter.ts',
+);
 const inspectorPath = path.join(repoRoot, 'src/components/FieldAtlasInspector.tsx');
-const registryPath = path.join(repoRoot, 'src/operations/registry.ts');
 const packagePath = path.join(repoRoot, 'package.json');
-const {
-  buildGeneratedSiteReadingV0FieldCueUiBoundaryReport,
-} = require(uiBoundaryPath);
-const {
-  buildGeneratedSiteReadingV0FieldCueDisplayAdapterReport,
-} = require(displayAdapterPath);
 
-const REQUIRED_SITE_WARNINGS = [
-  'raw-field-visibility-not-proven',
-  'scalar-tuple-not-source-signature',
-  'structural-witness-under-declared-basis',
-  'not-semantic-naming',
+const REQUIRED_POLICY_PANEL_TEXT = [
+  'Field / Source Policy V0',
+  'Current seed key',
+  'Current operation',
+  'Current generation depth',
+  'Tetrahedron seed',
+  'One Ambo dissection',
+  'Generation depth 1',
+  'Six generated midpoint children',
+  'AB ↔ CD',
+  'AC ↔ BD',
+  'AD ↔ BC',
+  'Structured source state uses two projections',
+  'Propagation projection',
+  'amplitude',
+  'wave number',
+  'phase',
+  'attenuation',
+  'Structural projection',
+  'edge state',
+  'complement edge',
+  'antipodal child',
+  'axis pair',
+  'relation visibility',
+  'emitted tuple',
+  'propagation-facing projection',
+  'full source state',
+  'Raw field behavior did not recover structural relations by itself',
+  'declared structural source-state projection',
+  'This panel states the current field/source configuration',
+  'It does not assign generated-site interpretations',
+  'Manual labels and packets remain user-authored',
+  'Field topology is not being displayed as product structure',
+  'Next product task: First-Stone Field Statement',
 ];
-const REQUIRED_SITE_FORBIDDEN_INTERPRETATIONS = [
-  'do-not-read-as-site-name',
-  'do-not-read-as-final-site-meaning',
-  'do-not-read-as-raw-field-proof',
-  'do-not-read-as-semantic-truth',
-  'do-not-generalize-beyond-one-ambo-tetrahedron',
+
+const FORBIDDEN_POLICY_PANEL_TEXT = [
+  ['Naming', 'is', 'disabled'].join(' '),
+  'GeneratedSiteReadingV0 FieldCue Evidence',
+  'Carrier wave number',
+  'Carrier phase',
+  'Attenuation as row display',
+  'Feature observations as row display',
+  'Route/gate candidates as row display',
+  'Support/region candidates as row display',
+  'Forbidden Interpretations',
+  'What concept could inhabit',
+  'What, if anything, can dwell',
 ];
-const REQUIRED_RELATION_FORBIDDEN_INTERPRETATIONS = [
-  'do-not-read-as-raw-field-proof',
-  'do-not-read-as-semantic-name',
-  'do-not-read-as-generated-site-final-meaning',
-  'do-not-drop-misleading-risk',
+
+const REQUIRED_INTERNAL_ADAPTER_STATUSES = [
+  'internal-diagnostic-adapter-available',
+  'hidden-in-internal-diagnostics',
+  'diagnostic-ui-quarantined-not-product-surface',
+  'not-product-rendered',
+  'product-boundary-restored',
+  'hidden-from-product-ui',
+  'missing-next',
+  'Gate F0 - First-Stone Field Statement',
 ];
-const REQUIRED_D10_DISPLAY_PHRASES = [
-  'one-Ambo tetrahedron only',
-  'event-bound prototype',
-  'not general field layer',
-  'raw field visibility is not proven',
-  'emitted tuple is not full source signature',
-  'structural witness is under declared basis',
-  'not semantic naming',
-  'not site meaning',
-  'no auto-name',
-  'not final generated-site meaning',
-  'candidate field-feature evidence only',
-  'candidates, not confirmed topology',
+
+const FORBIDDEN_ADAPTER_STATUS_TEXT = [
+  "'disabled'",
+  'mounted-display-adapter-ready',
+  'mounted-in-generated-site-reading-panel',
+  'diagnostic-library-display-mounted',
+  'Gate E0 - Field Layer Generalization Gap Review',
 ];
+
+const FORBIDDEN_WORKTREE_PATHS = [
+  'package.json',
+  'docs',
+  'src/operations/registry.ts',
+  'src/lib/fieldAtlas.ts',
+  'src/store',
+];
+
+const LABEL_PACKET_EDITING_PATHS = [
+  'src/components/VertexPacketEditor.tsx',
+  'src/components/Panels.tsx',
+  'src/lib/packets.ts',
+];
+
 const failures = [];
 
-const uiBoundarySource = readRequiredFile(
-  uiBoundaryPath,
-  'GeneratedSiteReadingV0 FieldCue UI boundary library',
-);
-const displayAdapterSource = readRequiredFile(
-  displayAdapterPath,
-  'GeneratedSiteReadingV0 FieldCue display adapter library',
-);
-const displayComponentSource = readRequiredFile(
-  displayComponentPath,
-  'GeneratedSiteReadingV0 FieldCue display component',
+const policyPanelSource = readRequiredFile(
+  policyPanelPath,
+  'FieldSourcePolicyV0Panel component',
 );
 const generatedPanelSource = readRequiredFile(
   generatedPanelPath,
   'GeneratedSiteReadingV0Panel component',
 );
+const displayAdapterSource = readRequiredFile(
+  displayAdapterPath,
+  'GeneratedSiteReadingV0 FieldCue display adapter',
+);
 const inspectorSource = readRequiredFile(
   inspectorPath,
   'FieldAtlasInspector component',
 );
-const registrySource = readRequiredFile(registryPath, 'operation registry');
 const packageSource = readRequiredFile(packagePath, 'package.json');
-const runnerSource = fs.readFileSync(__filename, 'utf8');
-const uiBoundaryReport = buildGeneratedSiteReadingV0FieldCueUiBoundaryReport();
-const displayAdapterReport =
-  buildGeneratedSiteReadingV0FieldCueDisplayAdapterReport();
+
+const policyPanelExists = Boolean(policyPanelSource);
+const policyPanelImported = importsPolicyPanel(generatedPanelSource);
+const policyPanelReceivesShape = passesShapeToPolicyPanel(generatedPanelSource);
+const policyPanelShapeAware = [
+  'shape.seedKey',
+  'shape.genealogy.operation',
+  'shape.genealogy.generationDepth',
+].every((text) => policyPanelSource.includes(text));
+const generatedSiteDiagnosticHidden =
+  !rendersGeneratedSiteReadingFieldCueDisplay(generatedPanelSource) ||
+  hasClosedInternalGeneratedSiteDiagnosticDisclosure(generatedPanelSource);
+const fieldCueDiagnosticHidden =
+  hasClosedInternalFieldCueDiagnosticDisclosure(inspectorSource);
+const fieldPolicyVisible = [
+  'The current field layer is diagnostic/prototype-only',
+  'Raw field behavior did not recover structural relations by itself',
+  'declared structural source-state projection',
+  'Route/gate/support/region data remains internal candidate diagnostics',
+].every((text) => containsVisibleText(policyPanelSource, text));
+const sourcePolicyVisible = [
+  'Structured source state uses two projections',
+  'Propagation projection',
+  'Structural projection',
+  'propagation-facing projection',
+  'full source state',
+].every((text) => containsVisibleText(policyPanelSource, text));
+const productBoundaryRestored = [
+  'This panel states the current field/source configuration',
+  'It does not assign generated-site interpretations',
+  'Manual labels and packets remain user-authored',
+  'Field topology is not being displayed as product structure',
+  'Next product task: First-Stone Field Statement',
+].every((text) => containsVisibleText(policyPanelSource, text));
+const firstStoneFieldStatementMissing = containsVisibleText(
+  policyPanelSource,
+  'Next product task: First-Stone Field Statement',
+);
+const manualLabelEditingPreserved =
+  getChangedPaths(LABEL_PACKET_EDITING_PATHS).length === 0 &&
+  getChangedPaths(['src/store']).length === 0;
+const packetEditingPreserved =
+  getChangedPaths(LABEL_PACKET_EDITING_PATHS).length === 0 &&
+  getChangedPaths(['src/store']).length === 0;
 
 if (
-  uiBoundarySource &&
-  displayAdapterSource &&
-  displayComponentSource &&
+  policyPanelSource &&
   generatedPanelSource &&
+  displayAdapterSource &&
   inspectorSource &&
-  registrySource &&
   packageSource
 ) {
-  runD7BoundaryDiagnostic(uiBoundaryReport);
-  runD8DisplayAdapterDiagnostic(displayAdapterReport);
-  runD8DisplayPayloadDiagnostic(displayAdapterReport);
-  runSourceIsolationDiagnostic({
-    uiBoundarySource,
-    displayAdapterSource,
-    displayComponentSource,
-    generatedPanelSource,
-    inspectorSource,
-    registrySource,
-    packageSource,
-    runnerSource,
-  });
+  runD11R1Diagnostic();
 }
 
-printCompactReport(uiBoundaryReport, displayAdapterReport);
+const status = {
+  policyPanelStatus:
+    policyPanelExists && policyPanelImported
+      ? 'field-source-policy-visible'
+      : 'field-source-policy-missing',
+  shapeAwarenessStatus:
+    policyPanelReceivesShape && policyPanelShapeAware
+      ? 'current-shape-visible'
+      : 'missing',
+  generatedSiteDiagnosticDisplayStatus: generatedSiteDiagnosticHidden
+    ? 'hidden-from-product-ui'
+    : 'visible-in-product-ui',
+  fieldCueDiagnosticDisplayStatus: fieldCueDiagnosticHidden
+    ? 'hidden-from-product-ui'
+    : 'visible-in-product-ui',
+  manualLabelEditingStatus: manualLabelEditingPreserved
+    ? 'preserved'
+    : 'changed',
+  packetEditingStatus: packetEditingPreserved ? 'preserved' : 'changed',
+  productBoundaryStatus: productBoundaryRestored ? 'restored' : 'missing',
+  firstStoneFieldStatementStatus: firstStoneFieldStatementMissing
+    ? 'missing-next'
+    : 'missing',
+  recommendedNextGate: 'Gate F0 - First-Stone Field Statement',
+};
+
+printCompactReport(status);
 
 if (failures.length) {
   console.error('');
@@ -147,514 +219,132 @@ if (failures.length) {
   console.log('Diagnostics passed.');
 }
 
-function runD7BoundaryDiagnostic(report) {
+function runD11R1Diagnostic() {
+  expectEqual(policyPanelExists, true, 'FieldSourcePolicyV0Panel exists');
   expectEqual(
-    report.diagnosticIntegrityStatus,
-    'pass',
-    'D7 diagnostic integrity status',
-  );
-  expectEqual(
-    report.uiBoundaryReadinessStatus,
-    'generated-site-reading-fieldcue-ui-boundary-ready',
-    'D7 UI boundary readiness status',
-  );
-  expectEqual(
-    report.generatedSiteUiBoundaryStatus,
-    'fieldcue-evidence-ui-boundary-ready',
-    'D7 generated-site UI boundary status',
-  );
-  expectEqual(
-    report.generatedSiteReadingV0UiStatus,
-    'boundary-ready-not-rendered',
-    'D7 GeneratedSiteReadingV0 UI status',
-  );
-  expectEqual(
-    report.generatedSiteReadingV0RenderStatus,
-    'boundary-consumed-by-mounted-display',
-    'D7 GeneratedSiteReadingV0 render status',
-  );
-  expectEqual(
-    report.generatedSiteUiBoundarySummary.generatedSiteUiRowCount,
-    6,
-    'D7 generated-site UI row count',
-  );
-  expectEqual(
-    report.generatedSiteUiBoundarySummary.uniqueRelationUiRowCount,
-    3,
-    'D7 unique relation UI row count',
-  );
-  expectEqual(
-    report.generatedSiteUiBoundarySummary.renderAuthorized,
-    false,
-    'D7 render authorization',
-  );
-}
-
-function runD8DisplayAdapterDiagnostic(report) {
-  expectEqual(
-    report.method,
-    'generated-site-reading-v0-fieldcue-display-adapter',
-    'D8 method',
-  );
-  expectEqual(report.parentGate, 'Gate D8', 'D8 parent gate');
-  expectEqual(report.sourceGate, 'Gate D7', 'D8 source gate');
-  expectEqual(
-    report.sourceBoundaryStatus,
-    'fieldcue-evidence-ui-boundary-consumed',
-    'D8 source boundary status',
-  );
-  expectEqual(
-    report.displayAdapterStatus,
-    'mounted-display-adapter-ready',
-    'display adapter status',
-  );
-  expectEqual(
-    report.displayMountStatus,
-    'mounted-in-generated-site-reading-panel',
-    'display mount status',
-  );
-  expectEqual(
-    report.legacyGeneratedSiteUiStatus,
-    'legacy-generated-site-ui-quarantined-not-authoritative',
-    'legacy GeneratedSiteReadingV0 UI status',
-  );
-  expectEqual(
-    report.generatedSiteReadingV0RenderStatus,
-    'mounted-in-generated-site-reading-panel',
-    'GeneratedSiteReadingV0 render status',
-  );
-  expectEqual(
-    report.generatedSiteReadingV0RuntimeStatus,
-    'diagnostic-library-display-mounted',
-    'GeneratedSiteReadingV0 runtime status',
-  );
-  expectEqual(
-    report.fieldCueConsumptionStatus,
-    'fieldcue-boundary-consumed-as-event-bound-evidence',
-    'FieldCue consumption status',
-  );
-  expectEqual(
-    report.eventBoundPrototypeStatus,
-    'one-ambo-tetrahedron-prototype-only',
-    'event-bound prototype status',
-  );
-  expectEqual(
-    report.fieldLayerGeneralityStatus,
-    'not-general-field-layer',
-    'field layer generality status',
-  );
-  expectEqual(
-    report.fieldLayerEventScopeStatus,
-    'one-ambo-tetrahedron-proving-event-only',
-    'field layer event scope status',
-  );
-  expectEqual(
-    report.fieldFeatureEvidenceScope,
-    'field-feature-relations-only-not-site-meaning',
-    'field feature evidence scope',
-  );
-  expectEqual(report.semanticNamingStatus, 'not-auto-naming', 'semantic naming');
-  expectEqual(
-    report.finalMeaningStatus,
-    'not-final-site-meaning',
-    'final meaning status',
-  );
-  expectEqual(report.topologyStatus, 'not-topology-workspace', 'topology');
-  expectEqual(report.packetWriteStatus, 'not-packet-writing', 'packet writing');
-  expectEqual(
-    report.operationRegistryStatus,
-    'not-operation-registry-work',
-    'operation registry status',
-  );
-  expectEqual(
-    report.rawFieldWitnessStatus,
-    'failed-insufficient-not-source-signature',
-    'raw field witness status',
-  );
-  expectEqual(
-    report.structuralWitnessStatus,
-    'consumable-under-declared-basis-with-warning',
-    'structural witness status',
-  );
-  expectEqual(
-    report.reductionLawAdoptionStatus,
-    'not-adopted',
-    'reduction law adoption status',
-  );
-  expectEqual(
-    report.diagnosticIntegrityStatus,
-    'pass',
-    'D8 diagnostic integrity status',
-  );
-  expectEqual(
-    report.displayAdapterReadinessStatus,
-    'generated-site-reading-fieldcue-display-adapter-ready',
-    'D8 display adapter readiness status',
-  );
-  expectEqual(
-    report.recommendedNextGate,
-    'Gate E0 - Field Layer Generalization Gap Review',
-    'D10 recommended next gate',
-  );
-  expectEqual(
-    report.mountReviewStatus,
-    'mounted-display-reviewed-event-bound-limits-visible',
-    'D10 mount review status',
-  );
-  expectEqual(
-    report.visiblePrototypeBoundaryStatus,
-    'visible-in-mounted-display',
-    'D10 visible prototype boundary status',
-  );
-  expectEqual(
-    report.legacyQuarantineStatus,
-    'legacy-details-quarantined-not-authoritative',
-    'D10 legacy quarantine status',
-  );
-  expectEqual(
-    report.generalizationGapStatus,
-    'unresolved-main-field-layer-gap',
-    'D10 generalization gap status',
-  );
-  expectEqual(
-    report.postMountNextStepStatus,
-    'return-to-field-layer-generalization-gap',
-    'D10 post-mount next step status',
-  );
-  expectEqual(report.issueCount, 0, 'D8 issue count');
-  expectEqual(report.ok, true, 'D8 ok');
-}
-
-function runD8DisplayPayloadDiagnostic(report) {
-  expectEqual(
-    report.headerModel.title,
-    'GeneratedSiteReadingV0 FieldCue Evidence',
-    'header title',
-  );
-  expectEqual(
-    report.headerModel.subtitle.includes('Event-bound prototype evidence only') &&
-      report.headerModel.subtitle.includes('not generated-site meaning'),
+    policyPanelImported,
     true,
-    'header subtitle states event-bound evidence only and not meaning',
+    'GeneratedSiteReadingV0Panel imports FieldSourcePolicyV0Panel',
   );
-  for (const badge of [
-    'one-Ambo tetrahedron only',
-    'not general field layer',
-    'raw field insufficient',
-    'structural witness under declared basis',
-    'not semantic naming',
-  ]) {
-    expectEqual(
-      report.headerModel.statusBadges.includes(badge),
-      true,
-      `header badge ${badge}`,
-    );
-  }
-
-  const summary = report.displaySummary;
-
-  expectEqual(summary.siteDisplayRowCount, 6, 'site display row count');
-  expectEqual(summary.relationDisplayRowCount, 3, 'relation display row count');
   expectEqual(
-    summary.siteRelationEvidenceRowCount,
-    6,
-    'site relation evidence row count',
-  );
-  expectEqual(summary.rawFieldVisibleClaimCount, 0, 'raw field visible claim count');
-  expectEqual(
-    summary.misleadingRiskRelationCount,
-    3,
-    'misleading risk relation count',
-  );
-  expectEqual(summary.tupleLossWarningCount, 6, 'tuple loss warning count');
-  expectEqual(summary.semanticNamingClaimCount, 0, 'semantic naming claim count');
-  expectEqual(summary.finalMeaningClaimCount, 0, 'final meaning claim count');
-  expectEqual(
-    summary.generalizedFieldLayerClaimCount,
-    0,
-    'generalized field layer claim count',
-  );
-  expectEqual(summary.eventBoundPrototypeRowCount, 6, 'event-bound row count');
-  expectEqual(summary.notGeneralFieldLayerRowCount, 6, 'not-general row count');
-  expectEqual(summary.mountedInApp, true, 'mounted in app');
-  expectEqual(
-    summary.legacyGeneratedSiteUiAuthoritative,
-    false,
-    'legacy GeneratedSiteReadingV0 UI authoritative',
-  );
-  expectEqual(summary.displayAdapterReady, true, 'display adapter ready');
-
-  expectEqual(report.siteDisplayRows.length, 6, 'site display rows length');
-  expectEqual(
-    report.siteDisplayRows.every(
-      (row) =>
-        row.displayWarningText ===
-          'This is event-bound FieldCue evidence, not site meaning.' &&
-        row.eventBoundPrototypeStatus ===
-          'one-ambo-tetrahedron-prototype-only' &&
-        row.fieldLayerGeneralityStatus === 'not-general-field-layer' &&
-        row.fieldFeatureEvidenceScope ===
-          'field-feature-relations-only-not-site-meaning' &&
-        row.reductionDisplay.tupleLossWarning === true &&
-        arraysEqual(row.requiredWarnings, REQUIRED_SITE_WARNINGS) &&
-        arraysEqual(
-          row.forbiddenInterpretations,
-          REQUIRED_SITE_FORBIDDEN_INTERPRETATIONS,
-        ),
-    ),
+    policyPanelReceivesShape,
     true,
-    'site display rows preserve warnings and boundaries',
-  );
-
-  expectEqual(
-    report.relationDisplayRows.length,
-    3,
-    'relation display rows length',
+    'GeneratedSiteReadingV0Panel passes shape into FieldSourcePolicyV0Panel',
   );
   expectEqual(
-    report.relationDisplayRows.some(
-      (row) =>
-        row.rawFieldCueStatus === 'raw-field-visible' ||
-        row.relationVisibilityStatuses.includes('raw-field-visible'),
-    ),
-    false,
-    'no raw-field-visible claim',
-  );
-  expectEqual(
-    report.relationDisplayRows.every(
-      (row) =>
-        row.misleadingRisk === true &&
-        row.displayWarningText ===
-          'Do not read this relation as raw field proof, semantic name, or final generated-site meaning.' &&
-        row.warningText.includes('raw field proof') &&
-        row.warningText.includes('semantic name') &&
-        row.warningText.includes('final generated-site meaning') &&
-        arraysEqual(
-          row.forbiddenInterpretations,
-          REQUIRED_RELATION_FORBIDDEN_INTERPRETATIONS,
-        ),
-    ),
+    policyPanelShapeAware,
     true,
-    'relation display rows preserve misleading-risk and forbidden interpretations',
-  );
-}
-
-function runSourceIsolationDiagnostic(sources) {
-  expectEqual(
-    hasPackageScript(
-      sources.packageSource,
-      'diagnose:generated-site-reading-v0-ui',
-    ),
-    true,
-    'diagnose:generated-site-reading-v0-ui package script exists',
-  );
-  expectEqual(
-    /buildGeneratedSiteReadingV0FieldCueUiBoundaryReport/.test(
-      sources.displayAdapterSource,
-    ),
-    true,
-    'display adapter consumes D7 UI boundary',
-  );
-  expectEqual(
-    containsAdapterForbiddenImport(sources.displayAdapterSource),
-    false,
-    'display adapter avoids forbidden imports',
-  );
-  expectEqual(
-    containsReactUiImport(sources.displayAdapterSource),
-    false,
-    'display adapter lib does not import React UI components',
-  );
-  expectEqual(
-    /buildGeneratedSiteReadingV0FieldCueDisplayAdapterReport|buildGeneratedSiteReadingV0FieldCueUiBoundaryReport|buildGeneratedSiteReadingV0Report|buildFieldCueV0Report/.test(
-      sources.displayComponentSource,
-    ),
-    false,
-    'display component does not import builders',
-  );
-  expectEqual(
-    containsGeneratedSiteReadingV0ProperImport(sources.displayComponentSource),
-    false,
-    'display component does not import GeneratedSiteReadingV0 proper',
-  );
-  expectEqual(
-    containsFieldCueV0Import(sources.displayComponentSource),
-    false,
-    'display component does not import FieldCueV0',
-  );
-  expectEqual(
-    containsFieldAtlasImport(sources.displayComponentSource) ||
-      containsFieldAtlasImport(sources.displayAdapterSource) ||
-      containsFieldAtlasImport(sources.runnerSource),
-    false,
-    'no fieldAtlas import',
-  );
-  expectEqual(
-    containsStoreImport(sources.displayComponentSource) ||
-      containsStoreImport(sources.displayAdapterSource) ||
-      containsStoreImport(sources.runnerSource),
-    false,
-    'no store import',
-  );
-  expectEqual(
-    containsOperationRegistryImport(sources.displayComponentSource) ||
-      containsOperationRegistryImport(sources.displayAdapterSource),
-    false,
-    'display files do not import operation registry',
-  );
-  expectEqual(uiRuntimeModuleLoaded(), false, 'no runtime UI module is loaded');
-  expectEqual(
-    importsDisplayComponent(sources.generatedPanelSource),
-    true,
-    'GeneratedSiteReadingV0Panel imports GeneratedSiteReadingV0FieldCueDisplay',
-  );
-  expectEqual(
-    /buildGeneratedSiteReadingV0FieldCueDisplayAdapterReport/.test(
-      sources.generatedPanelSource,
-    ),
-    true,
-    'GeneratedSiteReadingV0Panel imports or uses display adapter builder',
-  );
-  expectEqual(
-    isDisplayMounted(sources.generatedPanelSource),
-    true,
-    'GeneratedSiteReadingV0Panel renders GeneratedSiteReadingV0FieldCueDisplay',
-  );
-  expectEqual(
-    isDisplayMounted(sources.inspectorSource) ||
-      importsDisplayComponent(sources.inspectorSource),
-    false,
-    'FieldAtlasInspector does not import or mount display component directly',
+    'FieldSourcePolicyV0Panel displays current shape seed/operation/generation',
   );
   expectEqual(
     /<GeneratedSiteReadingV0Panel\s+shape=\{shape\}\s*\/>/.test(
-      sources.inspectorSource,
+      inspectorSource,
     ),
     true,
     'FieldAtlasInspector still renders GeneratedSiteReadingV0Panel as before',
   );
   expectEqual(
-    sources.generatedPanelSource.includes(
-      'Legacy GeneratedSiteReadingV0 diagnostic details',
-    ) &&
-      sources.generatedPanelSource.includes('not authoritative') &&
-      sources.generatedPanelSource.includes('FieldCue evidence regime') &&
-      sources.generatedPanelSource.includes(
-        'retained for diagnostic comparison only',
-      ) &&
-      sources.generatedPanelSource.includes(
-        'not the authoritative FieldCue evidence display',
-      ) &&
-      /must not be\s+read as generated-site meaning/.test(
-        sources.generatedPanelSource,
-      ) &&
-      /<details[\s\S]*?<summary[\s\S]*?Legacy GeneratedSiteReadingV0 diagnostic details[\s\S]*?not authoritative[\s\S]*?<\/summary>/.test(
-        sources.generatedPanelSource,
-      ) &&
-      !/<details[^>]*\sopen(?:\s|>|=)/.test(sources.generatedPanelSource),
+    hasPackageScript(packageSource, 'diagnose:generated-site-reading-v0-ui'),
     true,
-    'legacy GeneratedSiteReadingV0 panel content is quarantined',
+    'diagnose:generated-site-reading-v0-ui package script exists',
   );
   expectEqual(
-    /generated-site-reading-v0-fieldcue-display|GeneratedSiteReadingV0FieldCueDisplay/i.test(
-      sources.registrySource,
-    ),
+    isDirectDefaultGeneratedSiteDisplayMount(generatedPanelSource),
     false,
-    'no operation registry contamination',
+    'GeneratedSiteReadingV0FieldCueDisplay is not visible by default',
   );
-  for (const phrase of REQUIRED_D10_DISPLAY_PHRASES) {
+  expectEqual(
+    generatedSiteDiagnosticHidden,
+    true,
+    'GeneratedSiteReadingV0 diagnostics are hidden from product UI',
+  );
+  expectEqual(
+    fieldCueDiagnosticHidden,
+    true,
+    'FieldCueV0 diagnostic wall is hidden from default UI',
+  );
+
+  for (const text of REQUIRED_POLICY_PANEL_TEXT) {
     expectEqual(
-      sources.displayComponentSource.includes(phrase),
+      containsVisibleText(policyPanelSource, text),
       true,
-      `display component visibly shows "${phrase}"`,
+      `visible policy panel contains "${text}"`,
     );
   }
-  for (const forbiddenPhrase of [
-    'confirmed gate',
-    'confirmed route',
-    'confirmed loop',
-    'confirmed vortex',
-    'confirmed region',
-    'confirmed topology',
-    'topology maturity',
-    'final site meaning',
-    'final generated-site meaning',
-    'semantic naming',
-    'semantic name',
-    'generated-site name',
-    'site meaning',
-  ]) {
+
+  for (const text of FORBIDDEN_POLICY_PANEL_TEXT) {
     expectEqual(
-      containsPositiveMatureClaim(sources.displayComponentSource, forbiddenPhrase),
+      containsVisibleText(policyPanelSource, text),
       false,
-      `display component avoids positive mature claim "${forbiddenPhrase}"`,
+      `visible policy panel omits "${text}"`,
     );
   }
+
+  for (const statusText of REQUIRED_INTERNAL_ADAPTER_STATUSES) {
+    expectEqual(
+      displayAdapterSource.includes(statusText),
+      true,
+      `display adapter contains status "${statusText}"`,
+    );
+  }
+
+  for (const statusText of FORBIDDEN_ADAPTER_STATUS_TEXT) {
+    expectEqual(
+      displayAdapterSource.includes(statusText),
+      false,
+      `display adapter avoids stale status "${statusText}"`,
+    );
+  }
+
+  expectEqual(
+    containsFieldAtlasImport(policyPanelSource),
+    false,
+    'policy panel has no fieldAtlas import',
+  );
+  expectEqual(
+    containsStoreImport(policyPanelSource),
+    false,
+    'policy panel has no store import',
+  );
+  expectEqual(
+    containsOperationRegistryImport(policyPanelSource),
+    false,
+    'policy panel has no operation registry import',
+  );
+  expectEqual(
+    getChangedPaths(FORBIDDEN_WORKTREE_PATHS).length,
+    0,
+    'no package/docs/registry/fieldAtlas/store changes',
+  );
+  expectEqual(
+    getChangedPaths(LABEL_PACKET_EDITING_PATHS).length,
+    0,
+    'no label/packet editing files changed',
+  );
+  expectEqual(manualLabelEditingPreserved, true, 'manual label editing preserved');
+  expectEqual(packetEditingPreserved, true, 'packet editing preserved');
 }
 
-function printCompactReport(uiBoundaryReport, displayAdapterReport) {
-  const boundarySummary = uiBoundaryReport.generatedSiteUiBoundarySummary;
-  const displaySummary = displayAdapterReport.displaySummary;
-
-  console.log('GeneratedSiteReadingV0 FieldCue UI diagnostics');
+function printCompactReport(reportStatus) {
+  console.log('GeneratedSiteReadingV0 D11-R1 UI diagnostics');
+  console.log(`policyPanelStatus = ${reportStatus.policyPanelStatus}`);
+  console.log(`shapeAwarenessStatus = ${reportStatus.shapeAwarenessStatus}`);
   console.log(
-    `diagnosticIntegrityStatus: ${uiBoundaryReport.diagnosticIntegrityStatus}`,
+    `generatedSiteDiagnosticDisplayStatus = ${reportStatus.generatedSiteDiagnosticDisplayStatus}`,
   );
   console.log(
-    `uiBoundaryReadinessStatus: ${uiBoundaryReport.uiBoundaryReadinessStatus}`,
+    `fieldCueDiagnosticDisplayStatus = ${reportStatus.fieldCueDiagnosticDisplayStatus}`,
   );
   console.log(
-    `generatedSiteUiBoundaryStatus: ${uiBoundaryReport.generatedSiteUiBoundaryStatus}`,
+    `manualLabelEditingStatus = ${reportStatus.manualLabelEditingStatus}`,
   );
+  console.log(`packetEditingStatus = ${reportStatus.packetEditingStatus}`);
+  console.log(`productBoundaryStatus = ${reportStatus.productBoundaryStatus}`);
   console.log(
-    `generatedSiteReadingV0UiStatus: ${uiBoundaryReport.generatedSiteReadingV0UiStatus}`,
+    `firstStoneFieldStatementStatus = ${reportStatus.firstStoneFieldStatementStatus}`,
   );
-  console.log(
-    `displayAdapterStatus: ${displayAdapterReport.displayAdapterStatus}`,
-  );
-  console.log(`displayMountStatus: ${displayAdapterReport.displayMountStatus}`);
-  console.log(
-    `legacyGeneratedSiteUiStatus: ${displayAdapterReport.legacyGeneratedSiteUiStatus}`,
-  );
-  console.log(
-    `generatedSiteReadingV0RenderStatus: ${displayAdapterReport.generatedSiteReadingV0RenderStatus}`,
-  );
-  console.log(`mountReviewStatus: ${displayAdapterReport.mountReviewStatus}`);
-  console.log(
-    `visiblePrototypeBoundaryStatus: ${displayAdapterReport.visiblePrototypeBoundaryStatus}`,
-  );
-  console.log(
-    `legacyQuarantineStatus: ${displayAdapterReport.legacyQuarantineStatus}`,
-  );
-  console.log(
-    `generalizationGapStatus: ${displayAdapterReport.generalizationGapStatus}`,
-  );
-  console.log(
-    `postMountNextStepStatus: ${displayAdapterReport.postMountNextStepStatus}`,
-  );
-  console.log(`siteDisplayRowCount: ${displaySummary.siteDisplayRowCount}`);
-  console.log(
-    `relationDisplayRowCount: ${displaySummary.relationDisplayRowCount}`,
-  );
-  console.log(`rawFieldVisibleClaimCount: ${displaySummary.rawFieldVisibleClaimCount}`);
-  console.log(
-    `misleadingRiskRelationCount: ${displaySummary.misleadingRiskRelationCount}`,
-  );
-  console.log(`tupleLossWarningCount: ${displaySummary.tupleLossWarningCount}`);
-  console.log(
-    `semanticNamingClaimCount: ${displaySummary.semanticNamingClaimCount}`,
-  );
-  console.log(
-    `finalMeaningClaimCount: ${displaySummary.finalMeaningClaimCount}`,
-  );
-  console.log(
-    `generalizedFieldLayerClaimCount: ${displaySummary.generalizedFieldLayerClaimCount}`,
-  );
-  console.log(`mountedInApp: ${displaySummary.mountedInApp}`);
-  console.log(
-    `recommendedNextGate: ${displayAdapterReport.recommendedNextGate}`,
-  );
-  console.log(`issue count: ${displayAdapterReport.issueCount}`);
+  console.log(`recommendedNextGate = ${reportStatus.recommendedNextGate}`);
+  console.log(`issue count = ${failures.length}`);
 }
 
 function readRequiredFile(filePath, label) {
@@ -664,6 +354,57 @@ function readRequiredFile(filePath, label) {
   }
 
   return fs.readFileSync(filePath, 'utf8');
+}
+
+function importsPolicyPanel(source) {
+  return /from\s+['"]\.\/FieldSourcePolicyV0Panel['"]/.test(source);
+}
+
+function passesShapeToPolicyPanel(source) {
+  return /<FieldSourcePolicyV0Panel\s+shape=\{shape\}\s*\/>/.test(source);
+}
+
+function rendersGeneratedSiteReadingFieldCueDisplay(source) {
+  return /<GeneratedSiteReadingV0FieldCueDisplay[\s/>]/.test(source);
+}
+
+function isDirectDefaultGeneratedSiteDisplayMount(source) {
+  return (
+    rendersGeneratedSiteReadingFieldCueDisplay(source) &&
+    !hasClosedInternalGeneratedSiteDiagnosticDisclosure(source)
+  );
+}
+
+function hasClosedInternalGeneratedSiteDiagnosticDisclosure(source) {
+  return (
+    /<details\b(?![^>]*\bopen\b)[^>]*>[\s\S]*?<summary[\s\S]*?Internal GeneratedSiteReadingV0 FieldCue diagnostics[\s\S]*?hidden from product UI[\s\S]*?<\/summary>[\s\S]*?<GeneratedSiteReadingV0FieldCueDisplay[\s/>]/.test(
+      source,
+    ) &&
+    !/<details[^>]*\sopen(?:\s|>|=)/.test(source)
+  );
+}
+
+function hasClosedInternalFieldCueDiagnosticDisclosure(source) {
+  const summaryIndex = source.indexOf('Internal FieldCueV0 diagnostics');
+  const fieldCuePanelIndex = source.indexOf('<FieldCueV0Panel', summaryIndex);
+  const detailsIndex = source.lastIndexOf('<details', summaryIndex);
+
+  if (summaryIndex === -1 || fieldCuePanelIndex === -1 || detailsIndex === -1) {
+    return false;
+  }
+
+  const detailsTagEnd = source.indexOf('>', detailsIndex);
+  const detailsTag = source.slice(detailsIndex, detailsTagEnd + 1);
+
+  return !/\bopen\b/.test(detailsTag);
+}
+
+function containsVisibleText(source, text) {
+  return normalizeText(source).includes(normalizeText(text));
+}
+
+function normalizeText(value) {
+  return value.replace(/\s+/g, ' ').trim();
 }
 
 function hasPackageScript(source, scriptName) {
@@ -678,30 +419,6 @@ function hasPackageScript(source, scriptName) {
     failures.push(`package.json parse failed: ${formatError(error)}`);
     return false;
   }
-}
-
-function containsAdapterForbiddenImport(source) {
-  return /from\s+['"][^'"]*(?:generatedSiteReadingV0['"]|generatedSiteReadingV0\.|fieldCueV0|generatedSiteReadingV0FieldCueBoundary|structuredSourceState|fieldAtlas|geometryStore|operations[\\/]registry|components[\\/])|require\(\s*['"][^'"]*(?:generatedSiteReadingV0['"]|generatedSiteReadingV0\.|fieldCueV0|generatedSiteReadingV0FieldCueBoundary|structuredSourceState|fieldAtlas|geometryStore|operations[\\/]registry|components[\\/])/i.test(
-    source,
-  );
-}
-
-function containsReactUiImport(source) {
-  return /from\s+['"][^'"]*(?:[/\\]components[/\\]|\.tsx|react)['"]|require\(\s*['"][^'"]*(?:[/\\]components[/\\]|\.tsx|react)['"]\s*\)/i.test(
-    source,
-  );
-}
-
-function containsGeneratedSiteReadingV0ProperImport(source) {
-  return /from\s+['"][^'"]*generatedSiteReadingV0(?:\.[cm]?[tj]sx?)?['"]|require\(\s*['"][^'"]*generatedSiteReadingV0(?:\.[cm]?[tj]sx?)?['"]\s*\)/i.test(
-    source,
-  );
-}
-
-function containsFieldCueV0Import(source) {
-  return /from\s+['"][^'"]*fieldCueV0(?:\.[cm]?[tj]sx?)?['"]|require\(\s*['"][^'"]*fieldCueV0(?:\.[cm]?[tj]sx?)?['"]\s*\)/i.test(
-    source,
-  );
 }
 
 function containsFieldAtlasImport(source) {
@@ -722,64 +439,26 @@ function containsOperationRegistryImport(source) {
   );
 }
 
-function uiRuntimeModuleLoaded() {
-  return Object.keys(require.cache).some((modulePath) =>
-    /src[\\/]components[\\/]|\.tsx$|node_modules[\\/]react[\\/]/i.test(
-      modulePath,
-    ),
-  );
-}
+function getChangedPaths(paths) {
+  const result = spawnSync('git', ['status', '--short', '--', ...paths], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+  });
 
-function isDisplayMounted(source) {
-  return /<GeneratedSiteReadingV0FieldCueDisplay[\s>]/.test(source);
-}
-
-function importsDisplayComponent(source) {
-  return /from\s+['"][^'"]*GeneratedSiteReadingV0FieldCueDisplay['"]/.test(
-    source,
-  );
-}
-
-function containsPositiveMatureClaim(source, phrase) {
-  const normalizedSource = source.replace(/\s+/g, ' ').toLowerCase();
-  const normalizedPhrase = phrase.toLowerCase();
-  let searchIndex = 0;
-
-  while (searchIndex < normalizedSource.length) {
-    const phraseIndex = normalizedSource.indexOf(normalizedPhrase, searchIndex);
-
-    if (phraseIndex === -1) {
-      return false;
-    }
-
-    const prefix = normalizedSource.slice(Math.max(0, phraseIndex - 96), phraseIndex);
-
-    if (!hasNegatingBoundary(prefix)) {
-      return true;
-    }
-
-    searchIndex = phraseIndex + normalizedPhrase.length;
+  if (result.error) {
+    failures.push(`git status failed: ${formatError(result.error)}`);
+    return [];
   }
 
-  return false;
-}
+  if (result.status !== 0) {
+    failures.push(`git status failed: ${result.stderr.trim()}`);
+    return [];
+  }
 
-function hasNegatingBoundary(prefix) {
-  return [
-    'not ',
-    'no ',
-    'do not read as ',
-    'must not be read as ',
-    'not confirmed ',
-    'candidates, not ',
-  ].some((boundary) => prefix.includes(boundary));
-}
-
-function arraysEqual(left, right) {
-  return (
-    left.length === right.length &&
-    left.every((value, index) => value === right[index])
-  );
+  return result.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 function expectEqual(actual, expected, label) {

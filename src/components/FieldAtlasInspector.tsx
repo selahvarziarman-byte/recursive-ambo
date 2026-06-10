@@ -279,7 +279,7 @@ export function FieldAtlasInspector({
 
       <details className="rounded border border-cyan-400/20 bg-cyan-950/10 px-3 py-2 text-xs">
         <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-[0.14em] text-cyan-100">
-          Field witness details
+          Internal FieldCueV0 diagnostics
         </summary>
         <p className="mt-2 leading-5 text-stone-400">
           source signature, candidate links, probe highlighting
