@@ -179,7 +179,7 @@ function runAssertions(report, sources) {
   expectEqual(report.summary.uiStatus, 'no-ui', 'UI status');
   expectEqual(
     report.summary.recommendedNextGate,
-    'S0 - Fano-Trison Semantic Residual Model Card',
+    'E0 - Finite Harmonic Emission Profile Library',
     'recommended next gate',
   );
   expectEqual(

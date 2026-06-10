@@ -81,7 +81,7 @@ export interface FanoOctonionicAssociatorProjectionTableV0Summary {
   semanticLabelStatus: 'not-attached-placeholders-only';
   emissionStatus: 'not-attached-in-a0';
   uiStatus: 'no-ui';
-  recommendedNextGate: 'S0 - Fano-Trison Semantic Residual Model Card';
+  recommendedNextGate: 'E0 - Finite Harmonic Emission Profile Library';
 }
 
 export interface FanoOctonionicAssociatorProjectionTableV0Issue {
@@ -321,7 +321,7 @@ function buildSummary(args: {
     semanticLabelStatus: 'not-attached-placeholders-only',
     emissionStatus: 'not-attached-in-a0',
     uiStatus: 'no-ui',
-    recommendedNextGate: 'S0 - Fano-Trison Semantic Residual Model Card',
+    recommendedNextGate: 'E0 - Finite Harmonic Emission Profile Library',
   };
 }
 
