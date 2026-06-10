@@ -25,6 +25,7 @@
     "diagnose:fano-octonionic-local-channel-table-v0": "node scripts/diagnose-fano-octonionic-local-channel-table-v0.cjs",
     "diagnose:fano-octonionic-associator-projection-table-v0": "node scripts/diagnose-fano-octonionic-associator-projection-table-v0.cjs",
     "diagnose:harmonic-emission-profiles-v0": "node scripts/diagnose-harmonic-emission-profiles-v0.cjs",
+    "diagnose:fano-octonionic-child-emission-envelope-v0": "node scripts/diagnose-fano-octonionic-child-emission-envelope-v0.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
