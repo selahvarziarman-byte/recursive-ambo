@@ -30,6 +30,7 @@
     "diagnose:fano-octonionic-spatial-support-projection-v0": "node scripts/diagnose-fano-octonionic-spatial-support-projection-v0.cjs",
     "diagnose:fano-octonionic-generational-field-update-v0": "node scripts/diagnose-fano-octonionic-generational-field-update-v0.cjs",
     "diagnose:octonion-vs-a3-medial-carrier-discriminator-v0": "node scripts/diagnose-octonion-vs-a3-medial-carrier-discriminator-v0.cjs",
+    "diagnose:medial-dual-equivariant-carrier-policy-model-card-v0": "node scripts/diagnose-medial-dual-equivariant-carrier-policy-model-card-v0.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
