@@ -21,6 +21,7 @@
     "diagnose:generated-site-reading-v0": "node scripts/diagnose-generated-site-reading-v0.cjs",
     "diagnose:generated-site-reading-v0-ui": "node scripts/diagnose-generated-site-reading-v0-ui.cjs",
     "diagnose:generated-site-reading-v0-fieldcue-boundary": "node scripts/diagnose-generated-site-reading-v0-fieldcue-boundary.cjs",
+    "diagnose:fano-octonionic-carrier-table-v0": "node scripts/diagnose-fano-octonionic-carrier-table-v0.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
