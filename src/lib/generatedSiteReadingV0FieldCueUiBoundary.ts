@@ -14,7 +14,7 @@ export type GeneratedSiteReadingV0FieldCueUiBoundaryStatus =
 export type GeneratedSiteReadingV0FieldCueUiStatus =
   'boundary-ready-not-rendered';
 export type GeneratedSiteReadingV0FieldCueRenderStatus =
-  'not-rendered-this-branch';
+  'boundary-consumed-by-mounted-display';
 export type GeneratedSiteReadingV0FieldCueRuntimeStatus =
   'diagnostic-library-consumption-only';
 export type GeneratedSiteReadingV0FieldCueConsumptionStatus =
@@ -198,7 +198,7 @@ const GENERATED_SITE_UI_BOUNDARY_STATUS: GeneratedSiteReadingV0FieldCueUiBoundar
 const GENERATED_SITE_READING_V0_UI_STATUS: GeneratedSiteReadingV0FieldCueUiStatus =
   'boundary-ready-not-rendered';
 const GENERATED_SITE_READING_V0_RENDER_STATUS: GeneratedSiteReadingV0FieldCueRenderStatus =
-  'not-rendered-this-branch';
+  'boundary-consumed-by-mounted-display';
 const GENERATED_SITE_READING_V0_RUNTIME_STATUS: GeneratedSiteReadingV0FieldCueRuntimeStatus =
   'diagnostic-library-consumption-only';
 const FIELD_CUE_CONSUMPTION_STATUS: GeneratedSiteReadingV0FieldCueConsumptionStatus =
@@ -647,7 +647,8 @@ function buildIntegrityIssues(args: {
 
   if (
     GENERATED_SITE_READING_V0_UI_STATUS !== 'boundary-ready-not-rendered' ||
-    GENERATED_SITE_READING_V0_RENDER_STATUS !== 'not-rendered-this-branch'
+    GENERATED_SITE_READING_V0_RENDER_STATUS !==
+      'boundary-consumed-by-mounted-display'
   ) {
     issues.push({
       code: 'ui-rendered-too-early',

@@ -9,6 +9,8 @@ import {
   type GeneratedSiteReadingV0,
   type GeneratedSiteReadingV0UsefulnessStatus,
 } from '../lib/generatedSiteReadingV0';
+import { GeneratedSiteReadingV0FieldCueDisplay } from './GeneratedSiteReadingV0FieldCueDisplay';
+import { buildGeneratedSiteReadingV0FieldCueDisplayAdapterReport } from '../lib/generatedSiteReadingV0FieldCueDisplayAdapter';
 import type { Shape } from '../types/geometry';
 
 type GeneratedSiteReadingV0ShapeSupportStatus = 'supported' | 'unsupported';
@@ -34,6 +36,10 @@ export function GeneratedSiteReadingV0Panel({
 
 function SupportedGeneratedSiteReadingV0Panel() {
   const report = useMemo(() => buildGeneratedSiteReadingV0Report(), []);
+  const fieldCueDisplayReport = useMemo(
+    () => buildGeneratedSiteReadingV0FieldCueDisplayAdapterReport(),
+    [],
+  );
   const fieldCueBySiteId = useMemo(
     () =>
       new Map(
@@ -52,62 +58,74 @@ function SupportedGeneratedSiteReadingV0Panel() {
     : undefined;
 
   return (
-    <section className="rounded border border-emerald-400/20 bg-emerald-950/10 px-3 py-3 text-xs">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-100">
-            Generated-site reading
-          </h3>
-          <p className="mt-1 leading-5 text-stone-400">
-            Choose a generated midpoint, read its source signature, then decide
-            whether naming pressure is strong enough for human judgment.
-          </p>
-        </div>
-        <span
-          className={`shrink-0 rounded border px-2 py-0.5 font-mono text-[11px] ${
-            report.ok
-              ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-100'
-              : 'border-amber-400/40 bg-amber-400/10 text-amber-100'
-          }`}
-        >
-          {report.ok ? 'ready' : 'issue'}
-        </span>
-      </header>
+    <section className="grid gap-3">
+      <GeneratedSiteReadingV0FieldCueDisplay report={fieldCueDisplayReport} />
 
-      <div className="mt-3 grid grid-cols-2 gap-1 sm:grid-cols-3">
-        {report.readings.map((reading) => {
-          const cue = fieldCueBySiteId.get(reading.siteId);
-          const selected = reading.siteId === selectedReading?.siteId;
+      <details className="rounded border border-stone-800 bg-stone-950/75 px-3 py-3 text-xs">
+        <summary className="cursor-pointer select-none text-[11px] font-semibold uppercase tracking-[0.14em] text-stone-400">
+          Legacy GeneratedSiteReadingV0 diagnostic details - not authoritative
+          for the FieldCue evidence regime.
+        </summary>
 
-          return (
-            <button
-              key={reading.siteId}
-              type="button"
-              aria-pressed={selected}
-              onClick={() => setSelectedSiteId(reading.siteId)}
-              className={`rounded border px-2 py-2 text-left transition-colors ${
-                selected
-                  ? 'border-emerald-300/70 bg-emerald-950/35'
-                  : 'border-stone-800 bg-stone-950 hover:border-emerald-400/40 hover:bg-emerald-950/20'
+        <section className="mt-3 rounded border border-emerald-400/20 bg-emerald-950/10 px-3 py-3">
+          <header className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-100">
+                Generated-site reading
+              </h3>
+              <p className="mt-1 leading-5 text-stone-400">
+                Choose a generated midpoint, read its source signature, then
+                decide whether naming pressure is strong enough for human
+                judgment.
+              </p>
+            </div>
+            <span
+              className={`shrink-0 rounded border px-2 py-0.5 font-mono text-[11px] ${
+                report.ok
+                  ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-100'
+                  : 'border-amber-400/40 bg-amber-400/10 text-amber-100'
               }`}
             >
-              <span className="block font-mono text-sm font-semibold text-stone-100">
-                {reading.siteId}
-              </span>
-              <span className="mt-1 block leading-4 text-stone-400">
-                {getCompactSiteLabel(reading, cue)}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              {report.ok ? 'ready' : 'issue'}
+            </span>
+          </header>
 
-      {selectedReading ? (
-        <GeneratedSiteReadingV0Detail
-          reading={selectedReading}
-          fieldCue={selectedCue}
-        />
-      ) : null}
+          <div className="mt-3 grid grid-cols-2 gap-1 sm:grid-cols-3">
+            {report.readings.map((reading) => {
+              const cue = fieldCueBySiteId.get(reading.siteId);
+              const selected = reading.siteId === selectedReading?.siteId;
+
+              return (
+                <button
+                  key={reading.siteId}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => setSelectedSiteId(reading.siteId)}
+                  className={`rounded border px-2 py-2 text-left transition-colors ${
+                    selected
+                      ? 'border-emerald-300/70 bg-emerald-950/35'
+                      : 'border-stone-800 bg-stone-950 hover:border-emerald-400/40 hover:bg-emerald-950/20'
+                  }`}
+                >
+                  <span className="block font-mono text-sm font-semibold text-stone-100">
+                    {reading.siteId}
+                  </span>
+                  <span className="mt-1 block leading-4 text-stone-400">
+                    {getCompactSiteLabel(reading, cue)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedReading ? (
+            <GeneratedSiteReadingV0Detail
+              reading={selectedReading}
+              fieldCue={selectedCue}
+            />
+          ) : null}
+        </section>
+      </details>
     </section>
   );
 }

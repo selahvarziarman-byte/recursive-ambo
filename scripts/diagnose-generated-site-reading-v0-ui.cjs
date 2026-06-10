@@ -156,7 +156,7 @@ function runD7BoundaryDiagnostic(report) {
   );
   expectEqual(
     report.generatedSiteReadingV0RenderStatus,
-    'not-rendered-this-branch',
+    'boundary-consumed-by-mounted-display',
     'D7 GeneratedSiteReadingV0 render status',
   );
   expectEqual(
@@ -191,23 +191,27 @@ function runD8DisplayAdapterDiagnostic(report) {
   );
   expectEqual(
     report.displayAdapterStatus,
-    'isolated-display-adapter-ready',
+    'mounted-display-adapter-ready',
     'display adapter status',
   );
-  expectEqual(report.displayMountStatus, 'not-mounted', 'display mount status');
+  expectEqual(
+    report.displayMountStatus,
+    'mounted-in-generated-site-reading-panel',
+    'display mount status',
+  );
   expectEqual(
     report.legacyGeneratedSiteUiStatus,
-    'legacy-generated-site-ui-not-authoritative',
+    'legacy-generated-site-ui-quarantined-not-authoritative',
     'legacy GeneratedSiteReadingV0 UI status',
   );
   expectEqual(
     report.generatedSiteReadingV0RenderStatus,
-    'adapter-ready-not-rendered-in-app',
+    'mounted-in-generated-site-reading-panel',
     'GeneratedSiteReadingV0 render status',
   );
   expectEqual(
     report.generatedSiteReadingV0RuntimeStatus,
-    'diagnostic-library-consumption-only',
+    'diagnostic-library-display-mounted',
     'GeneratedSiteReadingV0 runtime status',
   );
   expectEqual(
@@ -275,7 +279,7 @@ function runD8DisplayAdapterDiagnostic(report) {
   );
   expectEqual(
     report.recommendedNextGate,
-    'Gate D9 - GeneratedSiteReadingV0 FieldCue Display Mount Decision',
+    'Gate D10 - GeneratedSiteReadingV0 FieldCue Mount Review',
     'D8 recommended next gate',
   );
   expectEqual(report.issueCount, 0, 'D8 issue count');
@@ -333,7 +337,7 @@ function runD8DisplayPayloadDiagnostic(report) {
   );
   expectEqual(summary.eventBoundPrototypeRowCount, 6, 'event-bound row count');
   expectEqual(summary.notGeneralFieldLayerRowCount, 6, 'not-general row count');
-  expectEqual(summary.mountedInApp, false, 'mounted in app');
+  expectEqual(summary.mountedInApp, true, 'mounted in app');
   expectEqual(
     summary.legacyGeneratedSiteUiAuthoritative,
     false,
@@ -461,16 +465,45 @@ function runSourceIsolationDiagnostic(sources) {
   );
   expectEqual(uiRuntimeModuleLoaded(), false, 'no runtime UI module is loaded');
   expectEqual(
-    isDisplayMounted(sources.generatedPanelSource) ||
-      isDisplayMounted(sources.inspectorSource),
-    false,
-    'display component is not mounted in legacy panel or inspector',
+    importsDisplayComponent(sources.generatedPanelSource),
+    true,
+    'GeneratedSiteReadingV0Panel imports GeneratedSiteReadingV0FieldCueDisplay',
   );
   expectEqual(
-    importsDisplayComponent(sources.generatedPanelSource) ||
+    /buildGeneratedSiteReadingV0FieldCueDisplayAdapterReport/.test(
+      sources.generatedPanelSource,
+    ),
+    true,
+    'GeneratedSiteReadingV0Panel imports or uses display adapter builder',
+  );
+  expectEqual(
+    isDisplayMounted(sources.generatedPanelSource),
+    true,
+    'GeneratedSiteReadingV0Panel renders GeneratedSiteReadingV0FieldCueDisplay',
+  );
+  expectEqual(
+    isDisplayMounted(sources.inspectorSource) ||
       importsDisplayComponent(sources.inspectorSource),
     false,
-    'display component is not imported by legacy panel or inspector',
+    'FieldAtlasInspector does not import or mount display component directly',
+  );
+  expectEqual(
+    /<GeneratedSiteReadingV0Panel\s+shape=\{shape\}\s*\/>/.test(
+      sources.inspectorSource,
+    ),
+    true,
+    'FieldAtlasInspector still renders GeneratedSiteReadingV0Panel as before',
+  );
+  expectEqual(
+    sources.generatedPanelSource.includes(
+      'Legacy GeneratedSiteReadingV0 diagnostic details',
+    ) &&
+      sources.generatedPanelSource.includes('not authoritative') &&
+      /<details[\s\S]*?<summary[\s\S]*?Legacy GeneratedSiteReadingV0 diagnostic details[\s\S]*?not authoritative[\s\S]*?<\/summary>/.test(
+        sources.generatedPanelSource,
+      ),
+    true,
+    'legacy GeneratedSiteReadingV0 panel content is quarantined',
   );
   expectEqual(
     /generated-site-reading-v0-fieldcue-display|GeneratedSiteReadingV0FieldCueDisplay/i.test(
@@ -495,8 +528,8 @@ function runSourceIsolationDiagnostic(sources) {
     );
   }
   for (const forbiddenPattern of [
-    /final site meaning/i,
-    /semantic naming(?!\.)/i,
+    /(?<!not )final site meaning/i,
+    /(?<!not )semantic naming/i,
     /confirmed gates?|confirmed routes?|confirmed loops?|confirmed vortices|confirmed regions?/i,
     /topology maturity/i,
   ]) {
@@ -526,71 +559,38 @@ function printCompactReport(uiBoundaryReport, displayAdapterReport) {
     `generatedSiteReadingV0UiStatus: ${uiBoundaryReport.generatedSiteReadingV0UiStatus}`,
   );
   console.log(
-    `generatedSiteReadingV0RenderStatus: ${uiBoundaryReport.generatedSiteReadingV0RenderStatus}`,
+    `displayAdapterStatus: ${displayAdapterReport.displayAdapterStatus}`,
   );
-  console.log(
-    `generatedSiteUiRowCount: ${boundarySummary.generatedSiteUiRowCount}`,
-  );
-  console.log(
-    `uniqueRelationUiRowCount: ${boundarySummary.uniqueRelationUiRowCount}`,
-  );
-  console.log(
-    `siteRelationEvidenceRowCount: ${boundarySummary.siteRelationEvidenceRowCount}`,
-  );
-  console.log(
-    `rawFieldVisibleClaimCount: ${boundarySummary.rawFieldVisibleClaimCount}`,
-  );
-  console.log(
-    `misleadingRiskRelationCount: ${boundarySummary.misleadingRiskRelationCount}`,
-  );
-  console.log(`tupleLossWarningCount: ${boundarySummary.tupleLossWarningCount}`);
-  console.log(
-    `semanticNamingClaimCount: ${boundarySummary.semanticNamingClaimCount}`,
-  );
-  console.log(`finalMeaningClaimCount: ${boundarySummary.finalMeaningClaimCount}`);
-  console.log(
-    `generalizedFieldLayerClaimCount: ${boundarySummary.generalizedFieldLayerClaimCount}`,
-  );
-  console.log(
-    `eventBoundPrototypeStatus: ${uiBoundaryReport.eventBoundPrototypeStatus}`,
-  );
-  console.log(
-    `fieldLayerGeneralityStatus: ${uiBoundaryReport.fieldLayerGeneralityStatus}`,
-  );
-  console.log(`renderAuthorized: ${boundarySummary.renderAuthorized}`);
-  console.log(`recommendedNextGate: ${uiBoundaryReport.recommendedNextGate}`);
-  console.log(`issue count: ${uiBoundaryReport.issueCount}`);
-  console.log(`displayAdapterStatus: ${displayAdapterReport.displayAdapterStatus}`);
   console.log(`displayMountStatus: ${displayAdapterReport.displayMountStatus}`);
   console.log(
     `legacyGeneratedSiteUiStatus: ${displayAdapterReport.legacyGeneratedSiteUiStatus}`,
+  );
+  console.log(
+    `generatedSiteReadingV0RenderStatus: ${displayAdapterReport.generatedSiteReadingV0RenderStatus}`,
   );
   console.log(`siteDisplayRowCount: ${displaySummary.siteDisplayRowCount}`);
   console.log(
     `relationDisplayRowCount: ${displaySummary.relationDisplayRowCount}`,
   );
+  console.log(`rawFieldVisibleClaimCount: ${displaySummary.rawFieldVisibleClaimCount}`);
   console.log(
-    `display rawFieldVisibleClaimCount: ${displaySummary.rawFieldVisibleClaimCount}`,
+    `misleadingRiskRelationCount: ${displaySummary.misleadingRiskRelationCount}`,
+  );
+  console.log(`tupleLossWarningCount: ${displaySummary.tupleLossWarningCount}`);
+  console.log(
+    `semanticNamingClaimCount: ${displaySummary.semanticNamingClaimCount}`,
   );
   console.log(
-    `display misleadingRiskRelationCount: ${displaySummary.misleadingRiskRelationCount}`,
+    `finalMeaningClaimCount: ${displaySummary.finalMeaningClaimCount}`,
   );
   console.log(
-    `display tupleLossWarningCount: ${displaySummary.tupleLossWarningCount}`,
-  );
-  console.log(
-    `display semanticNamingClaimCount: ${displaySummary.semanticNamingClaimCount}`,
-  );
-  console.log(
-    `display finalMeaningClaimCount: ${displaySummary.finalMeaningClaimCount}`,
-  );
-  console.log(
-    `display generalizedFieldLayerClaimCount: ${displaySummary.generalizedFieldLayerClaimCount}`,
+    `generalizedFieldLayerClaimCount: ${displaySummary.generalizedFieldLayerClaimCount}`,
   );
   console.log(`mountedInApp: ${displaySummary.mountedInApp}`);
   console.log(
-    `display recommendedNextGate: ${displayAdapterReport.recommendedNextGate}`,
+    `recommendedNextGate: ${displayAdapterReport.recommendedNextGate}`,
   );
+  console.log(`issue count: ${displayAdapterReport.issueCount}`);
 }
 
 function readRequiredFile(filePath, label) {

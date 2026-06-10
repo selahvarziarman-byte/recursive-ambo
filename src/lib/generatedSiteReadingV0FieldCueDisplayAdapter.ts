@@ -12,14 +12,15 @@ export type GeneratedSiteReadingV0FieldCueDisplayAdapterSourceGate = 'Gate D7';
 export type GeneratedSiteReadingV0FieldCueSourceBoundaryStatus =
   'fieldcue-evidence-ui-boundary-consumed';
 export type GeneratedSiteReadingV0FieldCueDisplayAdapterStatus =
-  'isolated-display-adapter-ready';
-export type GeneratedSiteReadingV0FieldCueDisplayMountStatus = 'not-mounted';
+  'mounted-display-adapter-ready';
+export type GeneratedSiteReadingV0FieldCueDisplayMountStatus =
+  'mounted-in-generated-site-reading-panel';
 export type GeneratedSiteReadingV0LegacyGeneratedSiteUiStatus =
-  'legacy-generated-site-ui-not-authoritative';
+  'legacy-generated-site-ui-quarantined-not-authoritative';
 export type GeneratedSiteReadingV0FieldCueRenderStatus =
-  'adapter-ready-not-rendered-in-app';
+  'mounted-in-generated-site-reading-panel';
 export type GeneratedSiteReadingV0FieldCueRuntimeStatus =
-  'diagnostic-library-consumption-only';
+  'diagnostic-library-display-mounted';
 export type GeneratedSiteReadingV0FieldCueConsumptionStatus =
   'fieldcue-boundary-consumed-as-event-bound-evidence';
 export type GeneratedSiteReadingV0FieldCueEventBoundPrototypeStatus =
@@ -47,7 +48,7 @@ export type GeneratedSiteReadingV0FieldCueStructuralWitnessStatus =
 export type GeneratedSiteReadingV0FieldCueReductionLawAdoptionStatus =
   'not-adopted';
 export type GeneratedSiteReadingV0FieldCueRecommendedNextGate =
-  'Gate D9 - GeneratedSiteReadingV0 FieldCue Display Mount Decision';
+  'Gate D10 - GeneratedSiteReadingV0 FieldCue Mount Review';
 export type GeneratedSiteReadingV0FieldCueDiagnosticIntegrityStatus =
   | 'pass'
   | 'fail';
@@ -114,7 +115,7 @@ export interface GeneratedSiteReadingV0FieldCueDisplaySummary {
   generalizedFieldLayerClaimCount: number;
   eventBoundPrototypeRowCount: number;
   notGeneralFieldLayerRowCount: number;
-  mountedInApp: false;
+  mountedInApp: true;
   legacyGeneratedSiteUiAuthoritative: false;
   displayAdapterReady: boolean;
 }
@@ -163,15 +164,15 @@ const SOURCE_GATE: GeneratedSiteReadingV0FieldCueDisplayAdapterSourceGate =
 const SOURCE_BOUNDARY_STATUS: GeneratedSiteReadingV0FieldCueSourceBoundaryStatus =
   'fieldcue-evidence-ui-boundary-consumed';
 const DISPLAY_ADAPTER_STATUS: GeneratedSiteReadingV0FieldCueDisplayAdapterStatus =
-  'isolated-display-adapter-ready';
+  'mounted-display-adapter-ready';
 const DISPLAY_MOUNT_STATUS: GeneratedSiteReadingV0FieldCueDisplayMountStatus =
-  'not-mounted';
+  'mounted-in-generated-site-reading-panel';
 const LEGACY_GENERATED_SITE_UI_STATUS: GeneratedSiteReadingV0LegacyGeneratedSiteUiStatus =
-  'legacy-generated-site-ui-not-authoritative';
+  'legacy-generated-site-ui-quarantined-not-authoritative';
 const GENERATED_SITE_READING_V0_RENDER_STATUS: GeneratedSiteReadingV0FieldCueRenderStatus =
-  'adapter-ready-not-rendered-in-app';
+  'mounted-in-generated-site-reading-panel';
 const GENERATED_SITE_READING_V0_RUNTIME_STATUS: GeneratedSiteReadingV0FieldCueRuntimeStatus =
-  'diagnostic-library-consumption-only';
+  'diagnostic-library-display-mounted';
 const FIELD_CUE_CONSUMPTION_STATUS: GeneratedSiteReadingV0FieldCueConsumptionStatus =
   'fieldcue-boundary-consumed-as-event-bound-evidence';
 const EVENT_BOUND_PROTOTYPE_STATUS: GeneratedSiteReadingV0FieldCueEventBoundPrototypeStatus =
@@ -199,7 +200,7 @@ const STRUCTURAL_WITNESS_STATUS: GeneratedSiteReadingV0FieldCueStructuralWitness
 const REDUCTION_LAW_ADOPTION_STATUS: GeneratedSiteReadingV0FieldCueReductionLawAdoptionStatus =
   'not-adopted';
 const RECOMMENDED_NEXT_GATE: GeneratedSiteReadingV0FieldCueRecommendedNextGate =
-  'Gate D9 - GeneratedSiteReadingV0 FieldCue Display Mount Decision';
+  'Gate D10 - GeneratedSiteReadingV0 FieldCue Mount Review';
 
 export function buildGeneratedSiteReadingV0FieldCueDisplayAdapterReport(
   boundaryReport: GeneratedSiteReadingV0FieldCueUiBoundaryReport | null =
@@ -357,7 +358,7 @@ function buildDisplaySummary(args: {
     generalizedFieldLayerClaimCount,
     eventBoundPrototypeRowCount,
     notGeneralFieldLayerRowCount,
-    mountedInApp: false,
+    mountedInApp: true,
     legacyGeneratedSiteUiAuthoritative: false,
     displayAdapterReady:
       args.issueCount === 0 &&
@@ -504,16 +505,16 @@ function buildIntegrityIssues(args: {
     });
   }
 
-  if (DISPLAY_MOUNT_STATUS !== 'not-mounted') {
+  if (DISPLAY_MOUNT_STATUS !== 'mounted-in-generated-site-reading-panel') {
     issues.push({
       code: 'display-mounted-too-early',
-      message: 'D8 display component must remain unmounted.',
+      message: 'D9 display component must be mounted only in GeneratedSiteReadingV0Panel.',
     });
   }
 
   if (
     LEGACY_GENERATED_SITE_UI_STATUS !==
-    'legacy-generated-site-ui-not-authoritative'
+    'legacy-generated-site-ui-quarantined-not-authoritative'
   ) {
     issues.push({
       code: 'legacy-generated-site-ui-treated-as-authoritative',
