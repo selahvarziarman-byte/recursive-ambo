@@ -6,6 +6,12 @@ import {
   type FieldCueV0ParticipationStatus,
   type FieldCueV0SiteId,
 } from './fieldCueV0';
+import {
+  buildGeneratedSiteReadingV0FieldCueBoundaryReport,
+  type GeneratedSiteFieldCueRow,
+  type GeneratedSiteReadingV0FieldCueBoundaryReport,
+  type GeneratedSiteRelationEvidenceRow,
+} from './generatedSiteReadingV0FieldCueBoundary';
 
 export type GeneratedSiteReadingV0Method =
   'generated-site-reading-v0-diagnostic';
@@ -56,6 +62,33 @@ export type GeneratedSiteReadingV0UsefulnessStatus =
   | 'degenerate-warning'
   | 'unsupported'
   | 'misleading-risk';
+export type GeneratedSiteReadingV0FieldCueConsumptionStatus =
+  'fieldcue-boundary-consumed-as-event-bound-evidence';
+export type GeneratedSiteReadingV0EventBoundPrototypeStatus =
+  'one-ambo-tetrahedron-prototype-only';
+export type GeneratedSiteReadingV0FieldLayerGeneralityStatus =
+  'not-general-field-layer';
+export type GeneratedSiteReadingV0RuntimeStatus =
+  'diagnostic-library-consumption-only';
+export type GeneratedSiteReadingV0UiStatus = 'not-ui-work';
+export type GeneratedSiteReadingV0NamingStatus = 'not-auto-naming';
+export type GeneratedSiteReadingV0GeneralizationStatus =
+  'not-general-field-layer';
+export type GeneratedSiteReadingV0FieldLayerEventScopeStatus =
+  'one-ambo-tetrahedron-proving-event-only';
+export type GeneratedSiteReadingV0RecommendedNextGate =
+  'Gate D7 - GeneratedSiteReadingV0 FieldCue UI Boundary';
+export type GeneratedSiteReadingV0DiagnosticIntegrityStatus = 'pass' | 'fail';
+export type GeneratedSiteReadingV0FieldCueUseEligibility =
+  'eligible-for-generated-site-reading-as-warning-bearing-evidence';
+export type GeneratedSiteReadingV0FieldFeatureEvidenceScope =
+  'field-feature-relations-only-not-site-meaning';
+export type GeneratedSiteReadingV0FieldCueForbiddenInterpretation =
+  | 'do-not-read-as-site-name'
+  | 'do-not-read-as-final-site-meaning'
+  | 'do-not-read-as-raw-field-proof'
+  | 'do-not-read-as-semantic-truth'
+  | 'do-not-generalize-beyond-one-ambo-tetrahedron';
 
 export interface GeneratedSiteReadingV0GeometryWitness {
   birthOperation: 'ambo-dissection';
@@ -130,6 +163,64 @@ export interface GeneratedSiteReadingV0ReadingUsefulness {
   usefulnessSummary: string;
 }
 
+export interface GeneratedSiteReadingV0FieldCueConsumption {
+  sourceBoundaryMethod: GeneratedSiteReadingV0FieldCueBoundaryReport['method'];
+  sourceBoundaryGate: GeneratedSiteReadingV0FieldCueBoundaryReport['parentGate'];
+  fieldCueConsumptionStatus: GeneratedSiteReadingV0FieldCueConsumptionStatus;
+  eventBoundPrototypeStatus: GeneratedSiteReadingV0EventBoundPrototypeStatus;
+  fieldLayerGeneralityStatus: GeneratedSiteReadingV0FieldLayerGeneralityStatus;
+  portabilityStatus: GeneratedSiteReadingV0PortabilityStatus;
+  generatedSiteReadingPromotionStatus: GeneratedSiteReadingV0RuntimeStatus;
+  semanticNamingStatus: GeneratedSiteReadingV0NamingStatus;
+  topologyStatus: GeneratedSiteReadingV0TopologyStatus;
+  packetWriteStatus: GeneratedSiteReadingV0PacketWriteStatus;
+  rawFieldWitnessStatus: GeneratedSiteReadingV0FieldCueBoundaryReport['rawFieldWitnessStatus'];
+  structuralWitnessStatus: GeneratedSiteReadingV0FieldCueBoundaryReport['structuralWitnessStatus'];
+  reductionLawAdoptionStatus: GeneratedSiteReadingV0FieldCueBoundaryReport['reductionLawAdoptionStatus'];
+  fieldCueEvidenceRowCount: number;
+  fieldCueRelationEvidenceRowCount: number;
+  rawFieldVisibleClaimCount: number;
+  misleadingRiskRowCount: number;
+  tupleLossWarningCount: number;
+  semanticNamingClaimCount: number;
+}
+
+export interface GeneratedSiteReadingV0FieldCueEvidence {
+  childSiteId: string;
+  sourceStateId: string;
+  fieldCueEvidenceStatus: GeneratedSiteFieldCueRow['fieldCueEvidenceStatus'];
+  generatedSiteUseEligibility: GeneratedSiteReadingV0FieldCueUseEligibility;
+  eventBoundPrototypeStatus: GeneratedSiteReadingV0EventBoundPrototypeStatus;
+  fieldLayerGeneralityStatus: GeneratedSiteReadingV0FieldLayerGeneralityStatus;
+  propagationEvidence: GeneratedSiteFieldCueRow['propagationEvidence'];
+  structuralEvidence: GeneratedSiteFieldCueRow['structuralEvidence'];
+  reductionHonesty: GeneratedSiteFieldCueRow['reductionHonesty'];
+  requiredWarnings: GeneratedSiteFieldCueRow['requiredWarnings'];
+  fieldFeatureEvidenceScope: GeneratedSiteReadingV0FieldFeatureEvidenceScope;
+  forbiddenInterpretations: GeneratedSiteReadingV0FieldCueForbiddenInterpretation[];
+}
+
+export interface GeneratedSiteReadingV0FieldRelationEvidenceRow {
+  relationId: string;
+  pairedChildSiteId: string;
+  sourceStateRelation: GeneratedSiteRelationEvidenceRow['sourceStateRelation'];
+  rawFieldCueStatus: GeneratedSiteRelationEvidenceRow['rawFieldCueStatus'];
+  structuralChannelCueStatus: GeneratedSiteRelationEvidenceRow['structuralChannelCueStatus'];
+  depropagationCueStatus: GeneratedSiteRelationEvidenceRow['depropagationCueStatus'];
+  relationVisibilityStatuses: GeneratedSiteRelationEvidenceRow['relationVisibilityStatuses'];
+  misleadingRisk: boolean;
+  fieldCueWarning: string;
+  generatedSiteReadingWarning: string;
+  relationUseEligibility: GeneratedSiteRelationEvidenceRow['relationUseEligibility'];
+  forbiddenInterpretations: GeneratedSiteRelationEvidenceRow['forbiddenInterpretations'];
+}
+
+export interface GeneratedSiteReadingV0FieldRelationEvidence {
+  fieldFeatureEvidenceScope: GeneratedSiteReadingV0FieldFeatureEvidenceScope;
+  relationEvidenceRows: GeneratedSiteReadingV0FieldRelationEvidenceRow[];
+  relationEvidenceRowCount: number;
+}
+
 export interface GeneratedSiteReadingV0 {
   readingId: string;
   siteId: FieldCueV0SiteId;
@@ -148,6 +239,8 @@ export interface GeneratedSiteReadingV0 {
   ambiguityWitness: GeneratedSiteReadingV0AmbiguityWitness;
   humanNamingPrompt: GeneratedSiteReadingV0HumanNamingPrompt;
   readingUsefulness: GeneratedSiteReadingV0ReadingUsefulness;
+  fieldCueEvidence: GeneratedSiteReadingV0FieldCueEvidence;
+  fieldRelationEvidence: GeneratedSiteReadingV0FieldRelationEvidence;
 }
 
 export interface GeneratedSiteReadingV0Issue {
@@ -156,7 +249,23 @@ export interface GeneratedSiteReadingV0Issue {
     | 'field-cue-report-not-ok'
     | 'invalid-reading-count'
     | 'missing-field-cue'
-    | 'unexpected-reading-site-id';
+    | 'unexpected-reading-site-id'
+    | 'missing-fieldcue-boundary-report'
+    | 'fieldcue-boundary-report-not-ok'
+    | 'missing-fieldcue-consumption-section'
+    | 'missing-fieldcue-evidence-for-site'
+    | 'missing-field-relation-evidence'
+    | 'raw-field-visible-claim-leaked'
+    | 'missing-misleading-risk-warning'
+    | 'scalar-tuple-treated-as-source-signature'
+    | 'structural-witness-treated-as-semantic-naming'
+    | 'generated-site-name-leak'
+    | 'final-site-meaning-leak'
+    | 'topology-leak'
+    | 'packet-writing-leak'
+    | 'generalization-leak'
+    | 'generated-site-ui-promoted-too-early'
+    | 'operation-registry-contaminated';
   message: string;
   siteId?: string;
   details?: Record<string, boolean | number | string | null>;
@@ -190,6 +299,12 @@ export interface GeneratedSiteReadingV0Report {
   shapeMutationStatus: GeneratedSiteReadingV0ShapeMutationStatus;
   namingStateStatus: GeneratedSiteReadingV0NamingStateStatus;
   humanNamingAuthorityStatus: GeneratedSiteReadingV0HumanNamingAuthorityStatus;
+  generatedSiteReadingV0FieldCueConsumptionStatus: GeneratedSiteReadingV0FieldCueConsumptionStatus;
+  generatedSiteReadingV0RuntimeStatus: GeneratedSiteReadingV0RuntimeStatus;
+  generatedSiteReadingV0UiStatus: GeneratedSiteReadingV0UiStatus;
+  generatedSiteReadingV0NamingStatus: GeneratedSiteReadingV0NamingStatus;
+  generatedSiteReadingV0GeneralizationStatus: GeneratedSiteReadingV0GeneralizationStatus;
+  fieldLayerEventScopeStatus: GeneratedSiteReadingV0FieldLayerEventScopeStatus;
   operationRegistryStatus: 'not-operation-registry-work';
   shapeId: string;
   provingEventOperation: 'ambo-dissection';
@@ -198,8 +313,11 @@ export interface GeneratedSiteReadingV0Report {
   readingCount: number;
   shapeMutationDetected: boolean;
   packetWriteDetected: false;
+  fieldCueConsumption: GeneratedSiteReadingV0FieldCueConsumption;
   readings: GeneratedSiteReadingV0[];
   summary: GeneratedSiteReadingV0Summary;
+  diagnosticIntegrityStatus: GeneratedSiteReadingV0DiagnosticIntegrityStatus;
+  recommendedNextGate: GeneratedSiteReadingV0RecommendedNextGate;
   issueCount: number;
   ok: boolean;
   issues: GeneratedSiteReadingV0Issue[];
@@ -230,6 +348,36 @@ const NAMING_STATE_STATUS: GeneratedSiteReadingV0NamingStateStatus =
   'not-implemented';
 const HUMAN_NAMING_AUTHORITY_STATUS: GeneratedSiteReadingV0HumanNamingAuthorityStatus =
   'human-names';
+const FIELDCUE_CONSUMPTION_STATUS: GeneratedSiteReadingV0FieldCueConsumptionStatus =
+  'fieldcue-boundary-consumed-as-event-bound-evidence';
+const EVENT_BOUND_PROTOTYPE_STATUS: GeneratedSiteReadingV0EventBoundPrototypeStatus =
+  'one-ambo-tetrahedron-prototype-only';
+const FIELD_LAYER_GENERALITY_STATUS: GeneratedSiteReadingV0FieldLayerGeneralityStatus =
+  'not-general-field-layer';
+const GENERATED_SITE_READING_RUNTIME_STATUS: GeneratedSiteReadingV0RuntimeStatus =
+  'diagnostic-library-consumption-only';
+const GENERATED_SITE_READING_UI_STATUS: GeneratedSiteReadingV0UiStatus =
+  'not-ui-work';
+const GENERATED_SITE_READING_NAMING_STATUS: GeneratedSiteReadingV0NamingStatus =
+  'not-auto-naming';
+const GENERATED_SITE_READING_GENERALIZATION_STATUS: GeneratedSiteReadingV0GeneralizationStatus =
+  'not-general-field-layer';
+const FIELD_LAYER_EVENT_SCOPE_STATUS: GeneratedSiteReadingV0FieldLayerEventScopeStatus =
+  'one-ambo-tetrahedron-proving-event-only';
+const RECOMMENDED_NEXT_GATE: GeneratedSiteReadingV0RecommendedNextGate =
+  'Gate D7 - GeneratedSiteReadingV0 FieldCue UI Boundary';
+const GENERATED_SITE_USE_ELIGIBILITY: GeneratedSiteReadingV0FieldCueUseEligibility =
+  'eligible-for-generated-site-reading-as-warning-bearing-evidence';
+const FIELD_FEATURE_EVIDENCE_SCOPE: GeneratedSiteReadingV0FieldFeatureEvidenceScope =
+  'field-feature-relations-only-not-site-meaning';
+const FIELDCUE_FORBIDDEN_INTERPRETATIONS: GeneratedSiteReadingV0FieldCueForbiddenInterpretation[] =
+  [
+    'do-not-read-as-site-name',
+    'do-not-read-as-final-site-meaning',
+    'do-not-read-as-raw-field-proof',
+    'do-not-read-as-semantic-truth',
+    'do-not-generalize-beyond-one-ambo-tetrahedron',
+  ];
 const EXPECTED_SITE_IDS: FieldCueV0SiteId[] = [
   'M_AB',
   'M_AC',
@@ -243,10 +391,22 @@ export function buildGeneratedSiteReadingV0Report(): GeneratedSiteReadingV0Repor
   const canonicalShape = applyAmboDissection(createSeedShape('tetrahedron'));
   const beforeShapeJson = JSON.stringify(canonicalShape);
   const fieldCueReport = buildFieldCueV0Report();
+  const fieldCueBoundaryReport =
+    buildGeneratedSiteReadingV0FieldCueBoundaryReport(fieldCueReport);
   const issues: GeneratedSiteReadingV0Issue[] = [];
   const fieldCueBySiteId = new Map(
     fieldCueReport.cues.map((cue) => [cue.siteId, cue]),
   );
+  const fieldCueBoundaryRowsBySiteId = new Map(
+    fieldCueBoundaryReport.generatedSiteFieldCueRows.map((row) => [
+      row.childSiteId,
+      row,
+    ]),
+  );
+  const fieldRelationRowsBySiteId = buildFieldRelationRowsBySiteId(
+    fieldCueBoundaryReport.generatedSiteRelationEvidenceRows,
+  );
+  const fieldCueConsumption = buildFieldCueConsumption(fieldCueBoundaryReport);
 
   if (!fieldCueReport.ok) {
     issues.push({
@@ -261,6 +421,8 @@ export function buildGeneratedSiteReadingV0Report(): GeneratedSiteReadingV0Repor
 
   const readings = EXPECTED_SITE_IDS.map((siteId) => {
     const fieldCue = fieldCueBySiteId.get(siteId);
+    const fieldCueEvidenceRow = fieldCueBoundaryRowsBySiteId.get(siteId);
+    const fieldRelationEvidenceRows = fieldRelationRowsBySiteId.get(siteId) ?? [];
 
     if (!fieldCue) {
       issues.push({
@@ -270,10 +432,20 @@ export function buildGeneratedSiteReadingV0Report(): GeneratedSiteReadingV0Repor
       });
     }
 
+    if (!fieldCueEvidenceRow) {
+      issues.push({
+        code: 'missing-fieldcue-evidence-for-site',
+        message: `GeneratedSiteReadingV0 is missing D5 FieldCue evidence for ${siteId}.`,
+        siteId,
+      });
+    }
+
     return buildReading({
       siteId,
       fieldCue,
       fieldCueReportOk: fieldCueReport.ok,
+      fieldCueEvidenceRow,
+      fieldRelationEvidenceRows,
     });
   });
 
@@ -309,12 +481,23 @@ export function buildGeneratedSiteReadingV0Report(): GeneratedSiteReadingV0Repor
     }
   }
 
+  issues.push(
+    ...buildFieldCueConsumptionIssues({
+      fieldCueBoundaryReport,
+      fieldCueConsumption,
+      readings,
+    }),
+  );
+
   const issueCount = issues.length;
+  const diagnosticIntegrityStatus: GeneratedSiteReadingV0DiagnosticIntegrityStatus =
+    issueCount === 0 ? 'pass' : 'fail';
   const ok =
     issueCount === 0 &&
     readings.length === EXPECTED_SITE_IDS.length &&
     !shapeMutationDetected &&
-    fieldCueReport.ok;
+    fieldCueReport.ok &&
+    fieldCueBoundaryReport.ok;
   const summary = buildSummary(readings, issueCount, ok);
 
   return {
@@ -332,6 +515,14 @@ export function buildGeneratedSiteReadingV0Report(): GeneratedSiteReadingV0Repor
     shapeMutationStatus: SHAPE_MUTATION_STATUS,
     namingStateStatus: NAMING_STATE_STATUS,
     humanNamingAuthorityStatus: HUMAN_NAMING_AUTHORITY_STATUS,
+    generatedSiteReadingV0FieldCueConsumptionStatus:
+      FIELDCUE_CONSUMPTION_STATUS,
+    generatedSiteReadingV0RuntimeStatus: GENERATED_SITE_READING_RUNTIME_STATUS,
+    generatedSiteReadingV0UiStatus: GENERATED_SITE_READING_UI_STATUS,
+    generatedSiteReadingV0NamingStatus: GENERATED_SITE_READING_NAMING_STATUS,
+    generatedSiteReadingV0GeneralizationStatus:
+      GENERATED_SITE_READING_GENERALIZATION_STATUS,
+    fieldLayerEventScopeStatus: FIELD_LAYER_EVENT_SCOPE_STATUS,
     operationRegistryStatus: 'not-operation-registry-work',
     shapeId: canonicalShape.id,
     provingEventOperation: 'ambo-dissection',
@@ -340,8 +531,11 @@ export function buildGeneratedSiteReadingV0Report(): GeneratedSiteReadingV0Repor
     readingCount: readings.length,
     shapeMutationDetected,
     packetWriteDetected: false,
+    fieldCueConsumption,
     readings,
     summary,
+    diagnosticIntegrityStatus,
+    recommendedNextGate: RECOMMENDED_NEXT_GATE,
     issueCount,
     ok,
     issues,
@@ -352,6 +546,8 @@ function buildReading(args: {
   siteId: FieldCueV0SiteId;
   fieldCue: FieldCueV0 | undefined;
   fieldCueReportOk: boolean;
+  fieldCueEvidenceRow: GeneratedSiteFieldCueRow | undefined;
+  fieldRelationEvidenceRows: GeneratedSiteReadingV0FieldRelationEvidenceRow[];
 }): GeneratedSiteReadingV0 {
   const readingId = `${READING_POLICY_ID}:${args.siteId}`;
   const geometryWitness = buildGeometryWitness(args.fieldCue);
@@ -363,6 +559,13 @@ function buildReading(args: {
     fieldWitness,
     ambiguityWitness,
   });
+  const fieldCueEvidence = buildFieldCueEvidence({
+    siteId: args.siteId,
+    fieldCueEvidenceRow: args.fieldCueEvidenceRow,
+  });
+  const fieldRelationEvidence = buildFieldRelationEvidence(
+    args.fieldRelationEvidenceRows,
+  );
 
   return {
     readingId,
@@ -382,7 +585,444 @@ function buildReading(args: {
     ambiguityWitness,
     humanNamingPrompt,
     readingUsefulness,
+    fieldCueEvidence,
+    fieldRelationEvidence,
   };
+}
+
+function buildFieldCueConsumption(
+  boundaryReport: GeneratedSiteReadingV0FieldCueBoundaryReport,
+): GeneratedSiteReadingV0FieldCueConsumption {
+  const summary = boundaryReport.generatedSiteBoundarySummary;
+
+  return {
+    sourceBoundaryMethod: boundaryReport.method,
+    sourceBoundaryGate: boundaryReport.parentGate,
+    fieldCueConsumptionStatus: FIELDCUE_CONSUMPTION_STATUS,
+    eventBoundPrototypeStatus: EVENT_BOUND_PROTOTYPE_STATUS,
+    fieldLayerGeneralityStatus: FIELD_LAYER_GENERALITY_STATUS,
+    portabilityStatus: PORTABILITY_STATUS,
+    generatedSiteReadingPromotionStatus:
+      GENERATED_SITE_READING_RUNTIME_STATUS,
+    semanticNamingStatus: GENERATED_SITE_READING_NAMING_STATUS,
+    topologyStatus: TOPOLOGY_STATUS,
+    packetWriteStatus: PACKET_WRITE_STATUS,
+    rawFieldWitnessStatus: boundaryReport.rawFieldWitnessStatus,
+    structuralWitnessStatus: boundaryReport.structuralWitnessStatus,
+    reductionLawAdoptionStatus: boundaryReport.reductionLawAdoptionStatus,
+    fieldCueEvidenceRowCount: summary.childEvidenceRowCount,
+    fieldCueRelationEvidenceRowCount: summary.relationEvidenceRowCount,
+    rawFieldVisibleClaimCount: summary.rawFieldVisibleClaimCount,
+    misleadingRiskRowCount: summary.misleadingRiskRowCount,
+    tupleLossWarningCount: summary.tupleLossWarningCount,
+    semanticNamingClaimCount: summary.semanticNamingClaimCount,
+  };
+}
+
+function buildFieldCueEvidence(args: {
+  siteId: FieldCueV0SiteId;
+  fieldCueEvidenceRow: GeneratedSiteFieldCueRow | undefined;
+}): GeneratedSiteReadingV0FieldCueEvidence {
+  const row = args.fieldCueEvidenceRow;
+
+  return {
+    childSiteId: row?.childSiteId ?? args.siteId,
+    sourceStateId: row?.sourceStateId ?? 'missing-source-state',
+    fieldCueEvidenceStatus:
+      row?.fieldCueEvidenceStatus ?? 'available-as-bounded-fieldcue-evidence',
+    generatedSiteUseEligibility: GENERATED_SITE_USE_ELIGIBILITY,
+    eventBoundPrototypeStatus: EVENT_BOUND_PROTOTYPE_STATUS,
+    fieldLayerGeneralityStatus: FIELD_LAYER_GENERALITY_STATUS,
+    propagationEvidence: row?.propagationEvidence ?? {
+      carrierWaveNumber: 0,
+      carrierPhase: 0,
+      attenuation: 0,
+      rawPropagationStatus: 'missing-or-non-finite',
+      interpretation:
+        'ordinary-propagation-witness-not-full-source-signature',
+    },
+    structuralEvidence: row?.structuralEvidence ?? {
+      structuralProjectionStatus: 'missing-structural-relation',
+      relationCarrierStatus: 'source-state-structural-witness',
+      interpretation:
+        'structural-relation-witness-under-declared-basis',
+    },
+    reductionHonesty: row?.reductionHonesty ?? {
+      emittedTupleStatus: 'propagation-facing-reduction-only',
+      sourceSignatureStatus: 'structured-source-state-not-scalar-tuple',
+      tupleLossWarning: true,
+    },
+    requiredWarnings: [
+      ...(row?.requiredWarnings ?? [
+        'raw-field-visibility-not-proven',
+        'scalar-tuple-not-source-signature',
+        'structural-witness-under-declared-basis',
+        'not-semantic-naming',
+      ]),
+    ],
+    fieldFeatureEvidenceScope: FIELD_FEATURE_EVIDENCE_SCOPE,
+    forbiddenInterpretations: [...FIELDCUE_FORBIDDEN_INTERPRETATIONS],
+  };
+}
+
+function buildFieldRelationEvidence(
+  relationEvidenceRows: GeneratedSiteReadingV0FieldRelationEvidenceRow[],
+): GeneratedSiteReadingV0FieldRelationEvidence {
+  return {
+    fieldFeatureEvidenceScope: FIELD_FEATURE_EVIDENCE_SCOPE,
+    relationEvidenceRows: relationEvidenceRows.map((row) => ({
+      ...row,
+      relationVisibilityStatuses: [...row.relationVisibilityStatuses],
+      forbiddenInterpretations: [...row.forbiddenInterpretations],
+    })),
+    relationEvidenceRowCount: relationEvidenceRows.length,
+  };
+}
+
+function buildFieldRelationRowsBySiteId(
+  relationRows: GeneratedSiteRelationEvidenceRow[],
+): Map<string, GeneratedSiteReadingV0FieldRelationEvidenceRow[]> {
+  const rowsBySiteId = new Map<string, GeneratedSiteReadingV0FieldRelationEvidenceRow[]>();
+
+  for (const row of relationRows) {
+    addRelationRowForSite(rowsBySiteId, row.leftChildSiteId, {
+      relationId: row.relationId,
+      pairedChildSiteId: row.rightChildSiteId,
+      sourceStateRelation: row.sourceStateRelation,
+      rawFieldCueStatus: row.rawFieldCueStatus,
+      structuralChannelCueStatus: row.structuralChannelCueStatus,
+      depropagationCueStatus: row.depropagationCueStatus,
+      relationVisibilityStatuses: [...row.relationVisibilityStatuses],
+      misleadingRisk: row.misleadingRisk,
+      fieldCueWarning: row.fieldCueWarning,
+      generatedSiteReadingWarning: row.generatedSiteReadingWarning,
+      relationUseEligibility: row.relationUseEligibility,
+      forbiddenInterpretations: [...row.forbiddenInterpretations],
+    });
+    addRelationRowForSite(rowsBySiteId, row.rightChildSiteId, {
+      relationId: row.relationId,
+      pairedChildSiteId: row.leftChildSiteId,
+      sourceStateRelation: row.sourceStateRelation,
+      rawFieldCueStatus: row.rawFieldCueStatus,
+      structuralChannelCueStatus: row.structuralChannelCueStatus,
+      depropagationCueStatus: row.depropagationCueStatus,
+      relationVisibilityStatuses: [...row.relationVisibilityStatuses],
+      misleadingRisk: row.misleadingRisk,
+      fieldCueWarning: row.fieldCueWarning,
+      generatedSiteReadingWarning: row.generatedSiteReadingWarning,
+      relationUseEligibility: row.relationUseEligibility,
+      forbiddenInterpretations: [...row.forbiddenInterpretations],
+    });
+  }
+
+  return rowsBySiteId;
+}
+
+function addRelationRowForSite(
+  rowsBySiteId: Map<string, GeneratedSiteReadingV0FieldRelationEvidenceRow[]>,
+  siteId: string,
+  row: GeneratedSiteReadingV0FieldRelationEvidenceRow,
+): void {
+  const rows = rowsBySiteId.get(siteId) ?? [];
+
+  rows.push(row);
+  rowsBySiteId.set(siteId, rows);
+}
+
+function buildFieldCueConsumptionIssues(args: {
+  fieldCueBoundaryReport: GeneratedSiteReadingV0FieldCueBoundaryReport | null;
+  fieldCueConsumption: GeneratedSiteReadingV0FieldCueConsumption | null;
+  readings: GeneratedSiteReadingV0[];
+}): GeneratedSiteReadingV0Issue[] {
+  const issues: GeneratedSiteReadingV0Issue[] = [];
+  const boundaryReport = args.fieldCueBoundaryReport;
+  const consumption = args.fieldCueConsumption;
+
+  if (!boundaryReport) {
+    issues.push({
+      code: 'missing-fieldcue-boundary-report',
+      message: 'GeneratedSiteReadingV0 did not receive the Gate D5 boundary report.',
+    });
+  } else if (!boundaryReport.ok) {
+    issues.push({
+      code: 'fieldcue-boundary-report-not-ok',
+      message: 'The consumed Gate D5 FieldCue boundary report is not ok.',
+      details: {
+        boundaryIssueCount: boundaryReport.integrityIssueCount,
+      },
+    });
+  }
+
+  if (!consumption) {
+    issues.push({
+      code: 'missing-fieldcue-consumption-section',
+      message:
+        'GeneratedSiteReadingV0 did not build a FieldCue consumption section.',
+    });
+    return issues;
+  }
+
+  if (
+    consumption.sourceBoundaryMethod !==
+      'generated-site-reading-v0-fieldcue-boundary' ||
+    consumption.sourceBoundaryGate !== 'Gate D5' ||
+    consumption.fieldCueConsumptionStatus !== FIELDCUE_CONSUMPTION_STATUS
+  ) {
+    issues.push({
+      code: 'missing-fieldcue-consumption-section',
+      message:
+        'GeneratedSiteReadingV0 did not consume the Gate D5 FieldCue boundary as D6 evidence.',
+    });
+  }
+
+  if (
+    args.readings.some(
+      (reading) =>
+        reading.fieldCueEvidence.childSiteId !== reading.siteId ||
+        reading.fieldCueEvidence.fieldCueEvidenceStatus !==
+          'available-as-bounded-fieldcue-evidence' ||
+        reading.fieldCueEvidence.generatedSiteUseEligibility !==
+          GENERATED_SITE_USE_ELIGIBILITY ||
+        reading.fieldCueEvidence.fieldFeatureEvidenceScope !==
+          FIELD_FEATURE_EVIDENCE_SCOPE,
+    ) ||
+    consumption.fieldCueEvidenceRowCount !== 6
+  ) {
+    issues.push({
+      code: 'missing-fieldcue-evidence-for-site',
+      message:
+        'Every generated-site reading must carry bounded FieldCue evidence.',
+    });
+  }
+
+  if (
+    uniqueRelationEvidenceIds(args.readings).length !== 3 ||
+    consumption.fieldCueRelationEvidenceRowCount !== 3 ||
+    args.readings.some(
+      (reading) => reading.fieldRelationEvidence.relationEvidenceRowCount === 0,
+    )
+  ) {
+    issues.push({
+      code: 'missing-field-relation-evidence',
+      message:
+        'GeneratedSiteReadingV0 must carry the three warning-bearing relation evidence rows.',
+    });
+  }
+
+  if (
+    consumption.rawFieldVisibleClaimCount !== 0 ||
+    args.readings.some((reading) =>
+      reading.fieldRelationEvidence.relationEvidenceRows.some(
+        relationClaimsRawFieldVisible,
+      ),
+    )
+  ) {
+    issues.push({
+      code: 'raw-field-visible-claim-leaked',
+      message:
+        'GeneratedSiteReadingV0 must not claim raw propagated field visibility.',
+    });
+  }
+
+  if (
+    consumption.misleadingRiskRowCount !== 3 ||
+    args.readings.some((reading) =>
+      reading.fieldRelationEvidence.relationEvidenceRows.some(
+        (row) =>
+          !row.misleadingRisk ||
+          !row.relationVisibilityStatuses.includes(
+            'misleading-if-read-as-raw-field',
+          ) ||
+          !row.fieldCueWarning.includes('misleading-if-read-as-raw-field') ||
+          !row.forbiddenInterpretations.includes(
+            'do-not-drop-misleading-risk',
+          ),
+      ),
+    )
+  ) {
+    issues.push({
+      code: 'missing-misleading-risk-warning',
+      message:
+        'GeneratedSiteReadingV0 must preserve misleading-risk warnings.',
+    });
+  }
+
+  if (
+    consumption.tupleLossWarningCount !== 6 ||
+    args.readings.some(
+      (reading) =>
+        reading.fieldCueEvidence.reductionHonesty.emittedTupleStatus !==
+          'propagation-facing-reduction-only' ||
+        reading.fieldCueEvidence.reductionHonesty.sourceSignatureStatus !==
+          'structured-source-state-not-scalar-tuple' ||
+        reading.fieldCueEvidence.reductionHonesty.tupleLossWarning !== true,
+    )
+  ) {
+    issues.push({
+      code: 'scalar-tuple-treated-as-source-signature',
+      message:
+        'GeneratedSiteReadingV0 must keep scalar tuple output as a reduction warning.',
+    });
+  }
+
+  if (
+    consumption.semanticNamingClaimCount !== 0 ||
+    args.readings.some(readingTreatsStructuralEvidenceAsSemanticNaming)
+  ) {
+    issues.push({
+      code: 'structural-witness-treated-as-semantic-naming',
+      message:
+        'GeneratedSiteReadingV0 must not treat structural witness evidence as semantic naming.',
+    });
+  }
+
+  if (args.readings.some(readingHasGeneratedSiteNameLeak)) {
+    issues.push({
+      code: 'generated-site-name-leak',
+      message: 'GeneratedSiteReadingV0 must not produce generated-site names.',
+    });
+  }
+
+  if (args.readings.some(readingHasFinalSiteMeaningLeak)) {
+    issues.push({
+      code: 'final-site-meaning-leak',
+      message:
+        'GeneratedSiteReadingV0 must not produce final generated-site meaning.',
+    });
+  }
+
+  if (
+    consumption.topologyStatus !== 'not-topology-workspace' ||
+    args.readings.some(
+      (reading) => reading.topologyStatus !== 'not-topology-workspace',
+    )
+  ) {
+    issues.push({
+      code: 'topology-leak',
+      message: 'GeneratedSiteReadingV0 must not add topology maturity.',
+    });
+  }
+
+  if (
+    consumption.packetWriteStatus !== 'not-packet-writing' ||
+    args.readings.some(
+      (reading) => reading.packetWriteStatus !== 'not-packet-writing',
+    )
+  ) {
+    issues.push({
+      code: 'packet-writing-leak',
+      message: 'GeneratedSiteReadingV0 must not write packets.',
+    });
+  }
+
+  if (
+    consumption.eventBoundPrototypeStatus !== EVENT_BOUND_PROTOTYPE_STATUS ||
+    consumption.fieldLayerGeneralityStatus !== FIELD_LAYER_GENERALITY_STATUS ||
+    args.readings.some(
+      (reading) =>
+        reading.fieldCueEvidence.eventBoundPrototypeStatus !==
+          EVENT_BOUND_PROTOTYPE_STATUS ||
+        reading.fieldCueEvidence.fieldLayerGeneralityStatus !==
+          FIELD_LAYER_GENERALITY_STATUS,
+    )
+  ) {
+    issues.push({
+      code: 'generalization-leak',
+      message:
+        'GeneratedSiteReadingV0 FieldCue evidence must remain one-Ambo event-bound only.',
+    });
+  }
+
+  if (GENERATED_SITE_READING_UI_STATUS !== 'not-ui-work') {
+    issues.push({
+      code: 'generated-site-ui-promoted-too-early',
+      message: 'Gate D6 must not promote GeneratedSiteReadingV0 UI.',
+    });
+  }
+
+  if (
+    consumption.reductionLawAdoptionStatus !== 'not-adopted' ||
+    consumption.generatedSiteReadingPromotionStatus !==
+      GENERATED_SITE_READING_RUNTIME_STATUS
+  ) {
+    issues.push({
+      code: 'operation-registry-contaminated',
+      message:
+        'GeneratedSiteReadingV0 must not adopt a runtime law or contaminate operation registry work.',
+    });
+  }
+
+  return issues;
+}
+
+function relationClaimsRawFieldVisible(
+  row: GeneratedSiteReadingV0FieldRelationEvidenceRow,
+): boolean {
+  return (
+    row.rawFieldCueStatus === 'raw-field-visible' ||
+    row.relationVisibilityStatuses.includes('raw-field-visible')
+  );
+}
+
+function uniqueRelationEvidenceIds(
+  readings: GeneratedSiteReadingV0[],
+): string[] {
+  return Array.from(
+    new Set(
+      readings.flatMap((reading) =>
+        reading.fieldRelationEvidence.relationEvidenceRows.map(
+          (row) => row.relationId,
+        ),
+      ),
+    ),
+  );
+}
+
+function readingTreatsStructuralEvidenceAsSemanticNaming(
+  reading: GeneratedSiteReadingV0,
+): boolean {
+  return (
+    reading.semanticStatus !== 'not-semantic-naming' ||
+    reading.fieldCueEvidence.requiredWarnings.includes('not-semantic-naming') ===
+      false ||
+    reading.fieldCueEvidence.forbiddenInterpretations.includes(
+      'do-not-read-as-semantic-truth',
+    ) === false
+  );
+}
+
+function readingHasGeneratedSiteNameLeak(
+  reading: GeneratedSiteReadingV0,
+): boolean {
+  return hasForbiddenOwnKey(reading, [
+    'generatedSiteName',
+    'siteName',
+    'finalName',
+    'conceptName',
+    'semanticName',
+  ]);
+}
+
+function readingHasFinalSiteMeaningLeak(reading: GeneratedSiteReadingV0): boolean {
+  return hasForbiddenOwnKey(reading, [
+    'finalSiteMeaning',
+    'siteMeaning',
+    'finalMeaning',
+    'semanticMeaning',
+  ]);
+}
+
+function hasForbiddenOwnKey(
+  value: unknown,
+  forbiddenKeys: string[],
+): boolean {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  return forbiddenKeys.some((key) =>
+    Object.prototype.hasOwnProperty.call(value, key),
+  );
 }
 
 function buildGeometryWitness(
