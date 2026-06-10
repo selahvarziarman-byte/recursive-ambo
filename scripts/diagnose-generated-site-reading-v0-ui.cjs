@@ -64,6 +64,20 @@ const REQUIRED_RELATION_FORBIDDEN_INTERPRETATIONS = [
   'do-not-read-as-generated-site-final-meaning',
   'do-not-drop-misleading-risk',
 ];
+const REQUIRED_D10_DISPLAY_PHRASES = [
+  'one-Ambo tetrahedron only',
+  'event-bound prototype',
+  'not general field layer',
+  'raw field visibility is not proven',
+  'emitted tuple is not full source signature',
+  'structural witness is under declared basis',
+  'not semantic naming',
+  'not site meaning',
+  'no auto-name',
+  'not final generated-site meaning',
+  'candidate field-feature evidence only',
+  'candidates, not confirmed topology',
+];
 const failures = [];
 
 const uiBoundarySource = readRequiredFile(
@@ -279,8 +293,33 @@ function runD8DisplayAdapterDiagnostic(report) {
   );
   expectEqual(
     report.recommendedNextGate,
-    'Gate D10 - GeneratedSiteReadingV0 FieldCue Mount Review',
-    'D8 recommended next gate',
+    'Gate E0 - Field Layer Generalization Gap Review',
+    'D10 recommended next gate',
+  );
+  expectEqual(
+    report.mountReviewStatus,
+    'mounted-display-reviewed-event-bound-limits-visible',
+    'D10 mount review status',
+  );
+  expectEqual(
+    report.visiblePrototypeBoundaryStatus,
+    'visible-in-mounted-display',
+    'D10 visible prototype boundary status',
+  );
+  expectEqual(
+    report.legacyQuarantineStatus,
+    'legacy-details-quarantined-not-authoritative',
+    'D10 legacy quarantine status',
+  );
+  expectEqual(
+    report.generalizationGapStatus,
+    'unresolved-main-field-layer-gap',
+    'D10 generalization gap status',
+  );
+  expectEqual(
+    report.postMountNextStepStatus,
+    'return-to-field-layer-generalization-gap',
+    'D10 post-mount next step status',
   );
   expectEqual(report.issueCount, 0, 'D8 issue count');
   expectEqual(report.ok, true, 'D8 ok');
@@ -499,9 +538,20 @@ function runSourceIsolationDiagnostic(sources) {
       'Legacy GeneratedSiteReadingV0 diagnostic details',
     ) &&
       sources.generatedPanelSource.includes('not authoritative') &&
+      sources.generatedPanelSource.includes('FieldCue evidence regime') &&
+      sources.generatedPanelSource.includes(
+        'retained for diagnostic comparison only',
+      ) &&
+      sources.generatedPanelSource.includes(
+        'not the authoritative FieldCue evidence display',
+      ) &&
+      /must not be\s+read as generated-site meaning/.test(
+        sources.generatedPanelSource,
+      ) &&
       /<details[\s\S]*?<summary[\s\S]*?Legacy GeneratedSiteReadingV0 diagnostic details[\s\S]*?not authoritative[\s\S]*?<\/summary>/.test(
         sources.generatedPanelSource,
-      ),
+      ) &&
+      !/<details[^>]*\sopen(?:\s|>|=)/.test(sources.generatedPanelSource),
     true,
     'legacy GeneratedSiteReadingV0 panel content is quarantined',
   );
@@ -512,31 +562,32 @@ function runSourceIsolationDiagnostic(sources) {
     false,
     'no operation registry contamination',
   );
-  for (const phrase of [
-    'one-Ambo tetrahedron only',
-    'not general field layer',
-    'raw field visibility is not proven',
-    'emitted tuple is not full source signature',
-    'structural witness is under declared basis',
-    'not site meaning',
-    'No auto-name',
-  ]) {
+  for (const phrase of REQUIRED_D10_DISPLAY_PHRASES) {
     expectEqual(
       sources.displayComponentSource.includes(phrase),
       true,
       `display component visibly shows "${phrase}"`,
     );
   }
-  for (const forbiddenPattern of [
-    /(?<!not )final site meaning/i,
-    /(?<!not )semantic naming/i,
-    /confirmed gates?|confirmed routes?|confirmed loops?|confirmed vortices|confirmed regions?/i,
-    /topology maturity/i,
+  for (const forbiddenPhrase of [
+    'confirmed gate',
+    'confirmed route',
+    'confirmed loop',
+    'confirmed vortex',
+    'confirmed region',
+    'confirmed topology',
+    'topology maturity',
+    'final site meaning',
+    'final generated-site meaning',
+    'semantic naming',
+    'semantic name',
+    'generated-site name',
+    'site meaning',
   ]) {
     expectEqual(
-      forbiddenPattern.test(sources.displayComponentSource),
+      containsPositiveMatureClaim(sources.displayComponentSource, forbiddenPhrase),
       false,
-      `display component avoids forbidden positive language ${forbiddenPattern}`,
+      `display component avoids positive mature claim "${forbiddenPhrase}"`,
     );
   }
 }
@@ -567,6 +618,19 @@ function printCompactReport(uiBoundaryReport, displayAdapterReport) {
   );
   console.log(
     `generatedSiteReadingV0RenderStatus: ${displayAdapterReport.generatedSiteReadingV0RenderStatus}`,
+  );
+  console.log(`mountReviewStatus: ${displayAdapterReport.mountReviewStatus}`);
+  console.log(
+    `visiblePrototypeBoundaryStatus: ${displayAdapterReport.visiblePrototypeBoundaryStatus}`,
+  );
+  console.log(
+    `legacyQuarantineStatus: ${displayAdapterReport.legacyQuarantineStatus}`,
+  );
+  console.log(
+    `generalizationGapStatus: ${displayAdapterReport.generalizationGapStatus}`,
+  );
+  console.log(
+    `postMountNextStepStatus: ${displayAdapterReport.postMountNextStepStatus}`,
   );
   console.log(`siteDisplayRowCount: ${displaySummary.siteDisplayRowCount}`);
   console.log(
@@ -674,6 +738,41 @@ function importsDisplayComponent(source) {
   return /from\s+['"][^'"]*GeneratedSiteReadingV0FieldCueDisplay['"]/.test(
     source,
   );
+}
+
+function containsPositiveMatureClaim(source, phrase) {
+  const normalizedSource = source.replace(/\s+/g, ' ').toLowerCase();
+  const normalizedPhrase = phrase.toLowerCase();
+  let searchIndex = 0;
+
+  while (searchIndex < normalizedSource.length) {
+    const phraseIndex = normalizedSource.indexOf(normalizedPhrase, searchIndex);
+
+    if (phraseIndex === -1) {
+      return false;
+    }
+
+    const prefix = normalizedSource.slice(Math.max(0, phraseIndex - 96), phraseIndex);
+
+    if (!hasNegatingBoundary(prefix)) {
+      return true;
+    }
+
+    searchIndex = phraseIndex + normalizedPhrase.length;
+  }
+
+  return false;
+}
+
+function hasNegatingBoundary(prefix) {
+  return [
+    'not ',
+    'no ',
+    'do not read as ',
+    'must not be read as ',
+    'not confirmed ',
+    'candidates, not ',
+  ].some((boundary) => prefix.includes(boundary));
 }
 
 function arraysEqual(left, right) {

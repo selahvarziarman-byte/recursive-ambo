@@ -16,6 +16,15 @@ export function GeneratedSiteReadingV0FieldCueDisplay({
           This is not site meaning. No auto-name is produced. Raw field
           visibility is not proven.
         </p>
+        <p>
+          This is event-bound prototype, candidate field-feature evidence only:
+          one-Ambo tetrahedron only, not general field layer, not semantic
+          naming, not site meaning, no auto-name, and not final generated-site
+          meaning.
+        </p>
+        <p>
+          route/gate/support/region counts are candidates, not confirmed topology.
+        </p>
         <ul className="generated-site-fieldcue-display__badges">
           {report.headerModel.statusBadges.map((badge) => (
             <li key={badge}>{badge}</li>
@@ -25,6 +34,8 @@ export function GeneratedSiteReadingV0FieldCueDisplay({
           <li>raw field visibility is not proven</li>
           <li>emitted tuple is not full source signature</li>
           <li>structural witness is under declared basis</li>
+          <li>not semantic naming</li>
+          <li>not final generated-site meaning</li>
           <li>no auto-name</li>
         </ul>
       </header>
@@ -104,11 +115,16 @@ export function GeneratedSiteReadingV0FieldCueDisplay({
                 <dd>{row.fieldCandidateReferenceCounts.supportRegion}</dd>
               </div>
             </dl>
+            <p>
+              Field candidate counts are candidate counts only: feature,
+              route-gate, and support-region counts are not confirmed topology.
+            </p>
 
             <div className="generated-site-fieldcue-display__evidence-grid">
               <section aria-label={`${row.siteId} propagation evidence`}>
                 <h5>Propagation</h5>
                 <p>{row.propagationDisplay.warningText}</p>
+                <p>Raw field visibility is not proven.</p>
                 <dl>
                   <div>
                     <dt>Carrier wave number</dt>
@@ -132,6 +148,10 @@ export function GeneratedSiteReadingV0FieldCueDisplay({
               <section aria-label={`${row.siteId} structural evidence`}>
                 <h5>Structural Witness</h5>
                 <p>{row.structuralDisplay.warningText}</p>
+                <p>
+                  Structural evidence is under declared basis, not semantic
+                  truth.
+                </p>
                 <dl>
                   <div>
                     <dt>Projection</dt>
@@ -147,6 +167,7 @@ export function GeneratedSiteReadingV0FieldCueDisplay({
               <section aria-label={`${row.siteId} reduction warning`}>
                 <h5>Reduction Warning</h5>
                 <p>{row.reductionDisplay.warningText}</p>
+                <p>Emitted tuple is not full source signature.</p>
                 <dl>
                   <div>
                     <dt>Emitted tuple</dt>
@@ -194,6 +215,11 @@ export function GeneratedSiteReadingV0FieldCueDisplay({
               </h4>
               <p>{row.displayWarningText}</p>
               <p>{row.warningText}</p>
+              <p>
+                Relation evidence is warning-bearing; misleading-risk is
+                preserved. Do not read as raw field proof. Do not read as
+                semantic name. Do not read as final generated-site meaning.
+              </p>
             </header>
             <dl>
               <div>
