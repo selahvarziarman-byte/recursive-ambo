@@ -635,7 +635,7 @@ function buildIssues(args: {
   return issues;
 }
 
-function multiplyFanoUnits(
+export function multiplyFanoUnits(
   left: FanoUnitId,
   right: FanoUnitId,
 ): { productUnit: FanoUnitId; sign: FanoSign } {
