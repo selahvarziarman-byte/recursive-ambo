@@ -1,0 +1,4 @@
+SHA-256 commitment - Station IV-A sealed predictions
+algorithm: SHA-256
+hash: 
+full text revealed in the IV-A closing memo; verify by re-hashing the revealed file.
