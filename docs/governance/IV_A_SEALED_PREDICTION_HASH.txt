@@ -1,4 +1,4 @@
 SHA-256 commitment - Station IV-A sealed predictions
 algorithm: SHA-256
-hash: 
+hash: 3C846500F857EF4D14F7A3B7C1C65E8D69FA5D05AA6C0F1E5ACA601E2AB0A562
 full text revealed in the IV-A closing memo; verify by re-hashing the revealed file.
