@@ -35,6 +35,20 @@ Inheritance (binding premises, not reopened):
 
 ## 1. The campaign question
 
+Opening premise, binding per the Closure Consciousness Clause:
+
+```txt
+This campaign exists because the project possesses NO field law.
+Its predecessor proved a hub-scoped source-state carrier policy and
+proved that the accepted emission stack cannot carry it. The successor
+seeks the FIRST lawful carrier-borne field object — it improves nothing,
+because there is nothing of the required kind to improve. Success is not
+assumed; Gate 0 and the kill criteria exist because the absence may be
+the final answer for this algebra family.
+```
+
+The campaign question:
+
 ```txt
 Can an emission/propagation law be built over the proven carrier source
 state whose emitted field observables are rich enough that a LABEL-BLIND
@@ -201,8 +215,11 @@ basis-relative.
 
 ```txt
 This charter takes force when:
-  1. the predecessor campaign's closing verdict (post-D4) is ratified;
-  2. the D4 baseline is recorded into Station F-IV;
+  1. the predecessor campaign's closing verdict is ratified (D4 demoted to
+     an optional non-blocking note per the D4-Demotion Ruling);
+  2. the F-IV baseline is recorded — either the D4-note (if held) or the
+     archived artifact pair (baseline + revised reading + annex) with the
+     contamination caveat;
   3. the sovereign confirms campaign start;
   4. mothership issues the Gate 0 entry order.
 Until then it binds nothing and authorizes nothing.
