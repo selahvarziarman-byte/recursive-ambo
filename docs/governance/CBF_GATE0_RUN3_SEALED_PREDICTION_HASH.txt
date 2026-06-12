@@ -1,0 +1,4 @@
+SHA-256 commitment - CBF Gate 0 Run 3 sealed predictions (automorphism-gauge repair)
+algorithm: SHA-256
+hash: 1EEB2977FB914DEF90845709FD7546E1FAC2BE39650EAA7B7FC354E796665886
+revealed in the Gate-0 closing memo; verify by re-hashing.
