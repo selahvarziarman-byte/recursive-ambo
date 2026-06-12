@@ -155,9 +155,9 @@ Lieutenant (prompter/planner/auditor): Gate 0 Runs 2-3 complete and audited ACCE
   integrity 0, census/consistency/controls verified genuine); all three obligations met under
   the ruled gauge; seals revealed and reconciled; quaternionic caveat binding. Recommended:
   GATE 0 PASS (quaternionic).
-Mothership: ____ ratify GATE 0 = PASS (quaternionic) -> Station F-I authorized, caveat binding
-            ____ confirm seals verify against committed hashes
-            ____ return with changes  / ____ rule K1 -> Verdict F-C
+Mothership: [X] ratify GATE 0 = PASS (quaternionic) -> Station F-I authorized, caveat binding
+            [X] confirm seals verify against committed hashes (v1 superseded by v2 fork,
+                disclosed in-chain before the run; Run-3 seal separate)
 Human (Arman): confirm native `git status` = only the four Gate-0 files (Run 2 + Run 3 pairs);
   commit them and this memo to docs/governance/ on Claude-child; the two sealed files are
   revealed with this memo.
@@ -166,3 +166,66 @@ On ratification, the lieutenant prepares the Station F-I entry under fresh autho
 ```
 
 The observable was not granted out of hope. It was attacked — every bracketing, the full automorphism gauge globally and locally, four control families, a mock-scramble — and it survived as a quaternionic object. Where the octonion non-associativity was sought, it was found absent or ill-defined. That is the result: a real observable exists, and it is smaller than the campaign wants. Both halves go forward.
+
+---
+
+## 10. Mothership ratification addendum (2026-06-13)
+
+### 10.1 Independent verification
+
+```txt
+- both diagnostics re-run by mothership: integrity 0; every headline figure
+  reproduced (Q-confinement of all 12 lifts visible in raw output; bracketing
+  classes value-identical; census 645120 -> 1344 -> 168 with line-preservation
+  168/168 and the Run-2 orbit bijection; global 168/168 with covariance exact
+  on 3696/3696; random site-local 0/128 consistent; 1008 consistent non-global
+  gauges, all Re-preserving, probe witnesses in the ledger);
+- the quaternionic mechanism verified mathematically: each child lift is a
+  product of two primal-quadrangle units, and such products land on the
+  complement Fano line {e3,e5,e6}, which spans an associative quaternion
+  subalgebra — hub-internal holonomy words can never leave Q. The collapse
+  is structural, not accidental; the caveat is exactly right.
+```
+
+### 10.2 The gauge ruling, blessed on principle
+
+```txt
+The sovereign's gauge ruling is hereby blessed as principled, not protective:
+in bundle terms the gauge group is the fiber's STRUCTURE group — the
+automorphisms of the carrier algebra — and for a non-associative algebra,
+conjugation by arbitrary units is NOT an automorphism (the diagnostic itself
+shows random site-local conjugations are 0/128 structure-consistent: the
+"gauge" that broke Re was never a symmetry of the object). The legitimate
+gauge = the 168 collineations with their multiplicativity-tested sign-lifts —
+exhaustively derived, not assumed. And the process was clean in the only way
+that matters: the lieutenant's sealed prediction of conjugation-invariance
+FAILED, the failure forced the gauge-group question, the sovereign ruled, and
+Run 3 then tested the ruled gauge under NEW seals — with the local result
+coming out STRONGER than sealed. This is not goalpost-narrowing; it is
+discovering which goalposts were ever legitimate, driven by a disclosed miss.
+```
+
+### 10.3 F-I framing (the fork, flagged for the entry order — not decided here)
+
+```txt
+The hub's quaternionic collapse has a precise structural cause (10.1), which
+also names the only place genuinely octonionic content could live: loop
+classes that LEAVE Q — words mixing primal-quadrangle units with child-line
+units (e.g., loops traversing BIRTH edges of the carrier graph alongside
+hub-internal edges span the full octonions). F-I therefore opens on a fork:
+
+  (a) QUATERNIONIC-FIRST: design the broadcast for the validated observable
+      (Re of Q-holonomy) — modest, real, buildable on a proven object;
+  (b) OCTONIONIC EXTENSION: a Gate-0-grade validity contract for mixed/birth-
+      edge loop classes — where non-associativity is live, bracketing is NOT
+      saved by 2-generation, and the entire well-defined/gauge-invariant/
+      informative gauntlet must run again BEFORE any broadcast design.
+
+  These are not exclusive; (a) may proceed while (b) is contracted. What is
+  FORBIDDEN is building a broadcast on unvalidated mixed-loop observables —
+  that would be Gate 0's purpose, undone. The yellow flag of §6 stands: the
+  strong octonion-field thesis has no support from the hub holonomy, and
+  F-I documents must say so wherever they reach for it.
+```
+
+GATE 0 IS CLOSED: PASS (QUATERNIONIC). Station F-I is authorized.
