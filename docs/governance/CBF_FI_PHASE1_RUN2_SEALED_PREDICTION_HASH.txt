@@ -1,0 +1,4 @@
+SHA-256 commitment - CBF F-I Phase-1 Run-2 validity-gauntlet sealed predictions (per-class addendum; derives from 72E06795...)
+algorithm: SHA-256
+hash: 6D2E92048C4CABB6DF9272A56EEB2AA1C697442F7455EA94222B35FB7B74B31A
+revealed in the F-I Phase-1 memo; verify by re-hashing.
