@@ -1,4 +1,4 @@
 SHA-256 commitment - CBF Gate 0 sealed predictions
 algorithm: SHA-256
-hash: 
+hash: 66093643F040EE5E8124E3BB8A96164EB6B399EAEF719209FB53BDD1FCF862E1
 revealed in the Gate-0 closing memo; verify by re-hashing.
