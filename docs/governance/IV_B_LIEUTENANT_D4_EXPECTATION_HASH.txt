@@ -1,0 +1,4 @@
+SHA-256 commitment - IV-B lieutenant D4 expectation (non-determinative)
+algorithm: SHA-256
+hash: 277FB22E7DB90776ADC0FF8F7B68813287A360D1F55EC86D961CB3AD88457547
+revealed in the D4 memo.

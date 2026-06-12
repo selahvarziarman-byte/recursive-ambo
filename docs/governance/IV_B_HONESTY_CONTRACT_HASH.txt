@@ -1,0 +1,4 @@
+SHA-256 commitment - IV-B honesty contract
+algorithm: SHA-256
+hash: 95B20CB2831A76DE348A25DE4E9A1576D8083CC59B66479510EEB65F573052E1
+full text revealed in the D4 memo; verify by re-hashing the same file.
