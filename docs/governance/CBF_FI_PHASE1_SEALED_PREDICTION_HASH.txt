@@ -1,0 +1,4 @@
+SHA-256 commitment - CBF F-I Phase-1 (b) validity-contract sealed predictions
+algorithm: SHA-256
+hash: 72E06795CE7CE0ACE66517164DE52B910DEAE644548FEFCB564A424DACB261A8
+revealed in the F-I Phase-1 memo; verify by re-hashing.
