@@ -1,9 +1,9 @@
 # PlatonicEngine Carrier-Borne Field Campaign — Charter
-## DRAFT — NOT IN FORCE until the field-generalizability campaign closes with a ratified verdict
+## IN FORCE — finalized 2026-06-11 upon ratified predecessor closure and the sovereign's start confirmation
 
 Audience: the human (Arman, sovereign), mothership, the prompter/planner/auditor, and every future agent seated into the successor campaign.
 
-Status: DRAFT charter, mothership-authored in the parallel lane authorized by the New-Field Ruling (Option A confirmed 2026-06-11). It is finalized and issued only after the current campaign's closing verdict (post-D4) is ratified — the D4 outcome sets this campaign's human-fruit baseline and may sharpen Station F-IV. Nothing here authorizes implementation now.
+Status: BINDING campaign charter. Finalization conditions met 2026-06-11: (1) predecessor closing verdict ratified (`PLATONIC_ENGINE_CAMPAIGN_CLOSING_MEMO_FIELD_GENERALIZABILITY.md`); (2) F-IV baseline recorded as the archived dual-reading artifact pair + legibility annex, with the contamination caveat (D4-note declined); (3) sovereign start confirmation given; (4) Gate 0 entry order issued (`PLATONIC_ENGINE_CBF_GATE0_ENTRY_ORDER_OBSERVABLE_BEFORE_BROADCAST.md`). The filename retains "DRAFT" for history; this status line governs.
 
 Drafted: 2026-06-11.
 
