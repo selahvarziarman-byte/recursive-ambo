@@ -1,0 +1,4 @@
+SHA-256 commitment - CBF Gate 0 sealed predictions
+algorithm: SHA-256
+hash: 
+revealed in the Gate-0 closing memo; verify by re-hashing.
