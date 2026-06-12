@@ -1,4 +1,4 @@
-SHA-256 commitment - CBF Gate 0 sealed predictions
+SHA-256 commitment - CBF Gate 0 sealed predictions v2 (link-policy fork; supersedes v1)
 algorithm: SHA-256
-hash: 66093643F040EE5E8124E3BB8A96164EB6B399EAEF719209FB53BDD1FCF862E1
+hash: 662805DE6CA952E2BA1658DC43A25D37BDAEF423696F367170A471D7F29181FA
 revealed in the Gate-0 closing memo; verify by re-hashing.
