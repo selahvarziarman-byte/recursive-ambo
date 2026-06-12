@@ -1,0 +1,4 @@
+SHA-256 commitment - CBF F-I Phase-1 leaves-Q gating-proof sealed predictions
+algorithm: SHA-256
+hash: E659CBDF84ECA76150AB5DC61F58EDD7A7D0703330EF3CB9865FF1E0E9BC1360
+revealed in the F-I Phase-1 memo; verify by re-hashing.
