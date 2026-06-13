@@ -1,0 +1,19 @@
+PLATONIC ENGINE — W-2.A FIELD-REDUCTION SEALED PREDICTION HASH COMMITMENT
+Committed by: researcher. Date: 2026-06-13. Branch: team-arman.
+
+This file is the ONLY part of the W-2.A seal that belongs in the repo. A SHA-256 is one-way:
+it commits the prediction without revealing it. The prediction PLAINTEXT
+(PLATONIC_ENGINE_W2A_SEALED_PREDICTIONS.txt: the Addition-C bare-geometry recovery, the
+abelian-field obstruction, the residual, the recovery/sign predictions, the branch-selection
+prediction, and the FIELD-INACTIVE verdict-lean with its falsifier) is held OFF-REPO by the
+sovereign, so the W-2.B implementer cannot read the predicted values and tune a scorer to them
+(Rider A).
+
+SHA-256 (LF)   : 81cfc7b3fc475715d80869236294282a11472228a15921f24e0cff10143adb03
+SHA-256 (CRLF) : a3e3f0c937dbffc2e9e895e84a3fd84cd74b7e3c47d6cd5fa3fa528585a70f25
+
+Reveal + verify at W-2.C close (byte-preserved): sha256sum the revealed plaintext and match one
+of the above; the sovereign confirms the match NATIVELY (entry order section 2: both Proof-B
+chronology AND byte-preserved re-hash). The sealed prediction's CONTENT — the predicted values and
+the verdict-lean — lives only in the OFF-REPO plaintext, not here; the blind W-2.B build must not
+read it (Rider A / Rider B). It is reconciled against the run at W-2.C reveal.
