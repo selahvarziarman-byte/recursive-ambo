@@ -8,7 +8,7 @@ Status: **candidate-W model card — DRAFT, submitted for mothership audit. Not 
 
 Repo identity (mandatory preamble): canonical `C:\Dev\202cl\PlatonicEngine202`, branch `Claude-child`. Decoy `C:\Dev\PlatonicEngine` is NOT this project.
 
-Issued: 2026-06-13. By: researcher, under the Source-Regime Reset, the W-gate ruling, and the Mothership Acknowledgment (all 2026-06-13). Sealed predictions: `PLATONIC_ENGINE_W_GATE_W0_SEALED_PREDICTIONS.txt`, hash committed in `..._SEALED_PREDICTION_HASH.txt` (SHA-256 LF `28d6b0d6…48d8`).
+Issued: 2026-06-13. By: researcher, under the Source-Regime Reset, the W-gate ruling, and the Mothership Acknowledgment (all 2026-06-13). Sealed predictions: held **off-repo by the sovereign** (Rider A — the W-1 implementer must not read them); committed here only by one-way hash in `..._SEALED_PREDICTION_HASH.txt` (SHA-256 LF `28d6b0d6…48d8`).
 
 ---
 
@@ -82,9 +82,9 @@ branch set (exactly one will be selected by W-1):
             path b->c->d => b.(c.d)), the child read as a walk-in-progress not a finished unit.
   B-frame : frame-angular bracketing — the bracket is fixed by the A2-plane angular order
             of the consecutive walks (the same rule that orders the hexagon roots).
-each branch selects a DEFINITE Re in {+1,-1} on the sealed loop L* (§5); W-1 sweeps the
+each branch selects a definite holonomy branch on the sealed off-Q loop (§5); W-1 sweeps the
 three and reports which (if any) is gauge-equivariant. If none selects gauge-equivariantly,
-the prize fails (P5) and W collapses toward the quaternionic floor.
+the prize fails and W collapses toward the quaternionic floor.
 ```
 
 ---
@@ -115,38 +115,17 @@ L9 midpoint->flag map derived (Addition B)   hand-supply the map -> equivariance
 
 ---
 
-## 5. Sealed predictions (full text + hash in the sealed file; FLOOR and PRIZE)
+## 5. Sealed predictions (withheld off-repo; committed by hash; FLOOR and PRIZE)
 
-The frozen values are in `PLATONIC_ENGINE_W_GATE_W0_SEALED_PREDICTIONS.txt` (SHA-256 LF `28d6b0d6e3daa70a434708a980127c62709f3e82c81ee352f9f628a7d60448d8`). Summary:
+The frozen predictions are **held off-repo by the sovereign** and committed here only by one-way hash (`PLATONIC_ENGINE_W_GATE_W0_SEALED_PREDICTION_HASH.txt`; SHA-256 LF `28d6b0d6…48d8`). The plaintext is deliberately NOT in this repo so the W-1 implementer cannot read the predicted values and tune a scorer to them (Rider A); it is revealed and re-hashed at W-1 close. Only the STRUCTURE appears below.
 
-### 5.1 FLOOR check (W reproduces; W and W_0 agree) — F1–F7
+### 5.1 FLOOR check (W reproduces; W and W_0 agree) — structure
 
-Antipodality opposite-sign 6/6; square holonomy +1 / triangle closure (8); triad {+1,−1} per hexagon; 60° / edge=circumradius / 12 anchors / 4 great circles; hub holonomy Re ∈ {+1 triangles·squares, −1 hexagons}, links in Q={e3,e5,e6}; 168-gauge invariance; and **F7 hub bracketing-invariance** (every Q-confined loop has Re bracketing-value-set of cardinality 1 — independently reproduced: **0 / 1512** hub loops bracketing-dependent across the 24 S₄ labelings).
+W reproduces the ratified hub invariants on the anchored lineage: the Bench-2 order-2 (antipodality) and order-3 (triadic A₂ closure) signatures, the 60°/vector-equilibrium metric, the Gate-0 quaternionic Re-holonomy, the 168-Fano-gauge invariance, and — restated as a value — the Gate-0 confinement (every Q-confined hub loop is bracketing-invariant). The committed figures are the public R12/Gate-0 values; sealing them only fixes that W commits in advance rather than a scorer matching them.
 
-### 5.2 PRIZE check (the discriminator, Addition A) — P1–P6, W ≠ W_0
+### 5.2 PRIZE check (the discriminator, Addition A) — structure
 
-```txt
-P1  Loops that traverse BIRTH edges leave Q and are GENUINELY bracketing-dependent
-    (Re value-set cardinality >= 2; researcher enumerated 280 such loops, len<=6).
-    W: physical. W_0: ill-definedness to be discarded (its Policy-C verdict).
-
-P2  Sealed loop  L* = A -> M_AC -> M_AB -> M_AD -> A   (2 birth + 2 hub edges).
-    link word [ -e4, +e6, +e5, +e7 ]; five bracketings ->
-        ((ab)c)d [left = W_0] +1 | (a(bc))d -1 | (ab)(cd) +1 | a((bc)d) -1 | a(b(cd)) +1
-    Re value-set {+1,-1}, CARDINALITY 2. Left-association = +1, INVARIANT across all 24
-    S4 labelings (gauge-robust). The -1 branches group the two HUB links as a sub-product.
-
-P3  W_0 on L*:  +1, cardinality 1 (no genealogy; the -1 is invisible / discarded).
-P4  W   on L*:  cardinality 2, AND the walk frame SELECTS a definite branch (definite
-                Re in {+1,-1}) by a genealogy-derived, gauge-equivariant rule (Hole #2) —
-                turning Policy-C's discarded ambiguity into a DEFINED observable carrying a
-                real -1 that W_0 structurally cannot emit.
-P5  Kill: cardinality 1 -> W-FAIL (prize false, floor only). cardinality 2 but no
-          gauge-equivariant selection -> W-FAIL (decorative inversion = W_0 in costume).
-          Pass only if a derived rule selects the branch gauge-equivariantly.
-P6  Corroborating: birth-hexagon A->M_AB->B->M_BC->C->M_AC->A, left-assoc +1, value-set
-    {+1,-1} — a second off-Q witness, contrasting the four IN-Q A2 hexagons (cardinality 1).
-```
+The prize is a single mixed loop that traverses BIRTH edges and LEAVES Q. Structural claim (all values sealed): on the hub sector W and W_0 agree (bracketing-invariant); on the sealed off-Q loop the holonomy is bracketing-DEPENDENT, and W's walk frame SELECTS a definite branch by a genealogy-derived, gauge-equivariant rule (Hole #2), whereas W_0 — carrying no genealogy — sees only ill-definedness and discards it (its Policy-C verdict). W therefore emits a real holonomy value on that loop which W_0 structurally cannot. The specific loop, its link word, the per-bracketing values, the cardinalities, and the S₄-robustness counts are in the sealed file. **Kill:** if the sealed loop is bracketing-invariant → W-FAIL (floor only); if bracketing-dependent but no gauge-equivariant rule selects the branch → W-FAIL (decorative inversion = W_0 in costume).
 
 The discriminator is **continuous with ratified work**: it is precisely the *negation* of the Gate-0 confinement, off Q. Gate 0 proved the hub is bracketing-invariant (associative, quaternionic); W stakes its non-triviality on the claim that one edge out — across a birth edge — the bracketing becomes a *selected, physical* observable rather than discarded noise. If it does not, W earns nothing beyond the floor, and that is a real, publishable W-FAIL.
 
@@ -162,7 +141,7 @@ on-lineage (in Q)      Fano product                     SAME (coincides) -> floo
 reverse law            negation (assumed; was fragile)  Hole #1, sign DERIVED from (4)
 midpoint->flag map     by coincidence of count          DERIVED (Addition B), gauge-equivariant
 off-Q mixed loops      ill-defined -> discarded (Pol.C)  bracketing PHYSICAL -> selected observable
-L* holonomy            +1 (cardinality 1)               cardinality 2; -1 branch selected
+sealed off-Q loop      single value, ambiguity tossed   a definite branch selected [values sealed]
 field observable       one scalar/source -> IV-A death   relational/loop-borne (Addition C) [W-2]
 ```
 
@@ -180,8 +159,8 @@ W-1 VERDICTS this card enables:
                       branch selects the off-Q observable) AND every L-criterion's destructive
                       test fires. -> authorizes the W-2 field-observability sub-question.
   W-LOCAL-ONLY      : legitimate tetra->octa, fails or needs controlled extension octa->cubocta.
-  W-FAIL            : prize false (L* cardinality 1) or decorative (no gauge-equivariant
-                      selection) or a destructive test fails to fire. A real finding: the
+  W-FAIL            : prize false (sealed loop bracketing-invariant) or decorative (no gauge-
+                      equivariant selection) or a destructive test fails to fire. A real finding: the
                       walk inversion buys nothing beyond the quaternionic floor.
 NOT CLAIMED: that W is a field law; that the field is possessed; that legitimacy is proven.
   This card is an abduction to be tested. The field — the central object — remains absent.
