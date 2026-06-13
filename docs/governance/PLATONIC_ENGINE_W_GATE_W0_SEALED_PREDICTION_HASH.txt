@@ -1,0 +1,11 @@
+PLATONIC ENGINE — W-0 MODEL CARD SEALED PREDICTION HASH COMMITMENT
+Committed by: researcher. Date: 2026-06-13. Branch: Claude-child.
+Commits the frozen prediction file PLATONIC_ENGINE_W_GATE_W0_SEALED_PREDICTIONS.txt
+(FLOOR check F1-F7 + PRIZE discriminator P1-P6 + destructive controls D1-D3) before any W-1 diagnostic.
+
+SHA-256 (LF)   : 28d6b0d6e3daa70a434708a980127c62709f3e82c81ee352f9f628a7d60448d8
+SHA-256 (CRLF) : ea122b375a1ee2a8c4a4bcf8296db604a3f39e761dcb6e6cd35f4bba18f5a2a3
+
+Verify at W-1 close:  sha256sum PLATONIC_ENGINE_W_GATE_W0_SEALED_PREDICTIONS.txt
+The PRIZE (P1-P6) is the Addition-A constructive discriminator: walk-primitive W and unit-primitive W_0
+give DIFFERENT answers on the mixed off-Q loop L*. No W-1 scorer may hard-code these values (Rider A).
