@@ -4,3 +4,4 @@ dist
 .env
 .env.local
 *.log
+*_SEALED_PREDICTIONS.txt
