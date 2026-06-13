@@ -1,0 +1,17 @@
+PLATONIC ENGINE — HIGHER-FORM (ASSOCIATOR) GATE — SEALED PREDICTION HASH COMMITMENT
+Committed by: researcher. Date: 2026-06-14. Branch: team-arman.
+
+This file is the ONLY part of the seal that belongs in the repo. A SHA-256 is one-way: it commits the
+prediction without revealing it. The prediction PLAINTEXT
+(PLATONIC_ENGINE_HIGHERFORM_SEALED_PREDICTIONS.txt: the per-cell associator, the total Z2 flux, the
+frame-invariance, the non-triviality disposition, the control/branch predictions, and the verdict-lean)
+is held OFF-REPO by the sovereign and gitignored (*_SEALED_PREDICTIONS.txt), so the blind build cannot
+read the predicted values and tune a scorer to them (Rider A).
+
+SHA-256 (LF)   : f3d518f77ece01dde72e721e8b934b62ab4dca15fc041eb5506b671bfba7b3bc
+SHA-256 (CRLF) : d338f16ac26592bbc6d60807757efae618f6145968935d1a84985ec5b76200c3
+
+Reveal + verify at close (byte-preserved): sha256sum the revealed plaintext and match one of the above;
+the sovereign confirms the match NATIVELY. The sealed prediction is a CONSTRUCTIVE FALSIFIABLE claim
+about whether the realized octonion-associator class on the Ambo 3-cells is a non-trivial, frame-invariant,
+label-blind observable, or trivializes; the blind build reconciles it at close. No blind scorer may read it.
