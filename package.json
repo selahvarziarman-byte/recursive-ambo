@@ -59,6 +59,7 @@
     "diagnose:diagonalization-matrix": "node scripts/diagnose-diagonalization-matrix.cjs",
     "diagnose:ambo": "node scripts/diagnose-ambo.cjs",
     "diagnose:w-gate-root-frame-extraction-v0": "node scripts/diagnose-w-gate-root-frame-extraction-v0.cjs",
+    "diagnose:w-gate-root-frame-anti-staple-audit-v0": "node scripts/diagnose-w-gate-root-frame-anti-staple-audit-v0.cjs",
     "diagnose:pyritohedral": "node scripts/diagnose-pyritohedral.cjs",
     "diagnose:dualization": "node scripts/diagnose-dualization.cjs",
     "diagnose:dual-universe": "node scripts/diagnose-dual-universe.cjs",
