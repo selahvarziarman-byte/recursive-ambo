@@ -178,3 +178,25 @@ what this gate tests, falsifiably.
 ```
 
 The walk-primitive regime is legitimate, and its prize is the one thing W_0 cannot match. W-2 asks whether that thing can live in a field a blind observer reads and bare geometry cannot fake. The reduction, the controls, and the test are specified here; the researcher's prediction is sealed and falsifiable. The blind build decides, and the seal — revealed byte-preserved at close — shows whether the prediction held.
+
+---
+
+## 9. Maximality of R* — recorded per audit condition C4 (mothership-verified)
+
+```txt
+Recorded so a negative (if it lands) cannot later be dismissed as "you only tested the weakest field":
+
+- The prize's essence is BRACKETING-DEPENDENCE — it exists only because the holonomy word leaves Q
+  and octonion multiplication is non-associative.
+- A connection valued in ANY associative group (Z2, U(1), unit quaternions, SU(2), any Lie/finite
+  associative group) has BRACKETING-INVARIANT holonomy; it cannot carry bracketing-dependence at all.
+- To carry bracketing-dependence the transport must be NON-ASSOCIATIVE — i.e. the octonion/Moufang
+  carrier structure itself. Emitting that as a field is emitting the carriers = label leakage = a
+  staple. Forbidden.
+- The SELECTED Re (after the walk law picks a branch) is Z2-valued (a sign per loop). Any label-free
+  field carrying a Z2-valued target factors through its Z2 image; a richer associative group buys
+  nothing. So Z2 is the CEILING for a label-free relational field on this target.
+=> R* (the Z2 sign-holonomy field) is the principled MAXIMUM, not a motivated-weak choice. If R*
+   cannot carry the prize, no legitimate label-free relational field can. Its failure, if it fails,
+   is a real boundary, not a strawman. (Mothership W-2.A audit, section 2; condition C4.)
+```
