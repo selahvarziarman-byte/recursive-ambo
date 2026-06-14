@@ -57,7 +57,7 @@ Canonical branch:                 team-arman
 - DECOY: C:\Dev\PlatonicEngine   = a DIFFERENT repo. Ignore it entirely.
 ```
 
-Run this gate (native PowerShell) and print it verbatim BEFORE any edit and AGAIN before reporting:
+Run this gate (native PowerShell) and capture it verbatim BEFORE any edit and AGAIN before reporting:
 
 ```powershell
 pwd
@@ -109,7 +109,7 @@ README.md, ARCHITECTURE.md -> STALE May-prototype. Ignore.
 
 ## 3. What you may and may not touch (each mandate narrows further)
 
-Every mandate the engineer gives you will declare: parent target, goal, **allowed files (exact paths)**, **forbidden files**, diagnostics to run with expected statuses, the frozen list, and the audit/commit rule. Honor it literally. **Inside those allowed files and that goal you have room to work autonomously; outside them you do not go** — report instead (§8).
+Mandates reach you as a FILE at `.handoff/MANDATE_<name>.md` (the gitignored handoff channel, §11) — read the mandate from there; do not expect it pasted into the terminal. Every mandate will declare: parent target, goal, **allowed files (exact paths)**, **forbidden files**, diagnostics to run with expected statuses, the frozen list, and the audit/commit rule. Honor it literally. **Inside those allowed files and that goal you have room to work autonomously; outside them you do not go** — report instead (§8).
 
 IGNORE / do not edit — the closed-history dead stack (unless a mandate names it explicitly):
 
@@ -149,20 +149,21 @@ package.json: only the exact script line(s) a mandate authorizes — no dep chan
 
 ---
 
-## 5. Reporting protocol (at mandate completion, at any checkpoint you choose, and immediately on any STOP/escalation)
+## 5. Reporting protocol — WRITE IT TO A FILE, never flood the terminal
+
+Write your full report to `.handoff/REPORT_<name>.md` in the repo (the gitignored handoff channel — §11). Keep the **terminal to ONE line** (e.g. `report written to .handoff/REPORT_pkt2.md — diagnostics PASS, 3 files touched`). The engineer reads the report file AND the actual changed files from disk.
 
 ```txt
-1. Print the GATE (section 1) verbatim — before edits and before reporting.
-2. Run the declared diagnostics YOURSELF; paste their FULL output verbatim. Never substitute a summary.
-3. End with:
-     git status --short --untracked-files=all
-     git --no-pager diff                 (tracked changes)
-     full contents of EVERY new untracked file (they will not appear in the diff)
-4. State plainly: branch; files touched (only the allowed set?); diagnostics pass/fail; the steps you took
-   autonomously; anything you noticed that is out of scope.
-5. DO NOT commit, stage, or push. No commit before the engineer's audit — this is the boundary your
-   autonomy stops at. When authorized: exact-path `git add <paths>` ONLY — never `git add .`. The sovereign
-   commits (or authorizes you to), and the commit message must name the work honestly.
+Into the report FILE put:
+1. the GATE (section 1) verbatim — captured before edits and again after.
+2. the declared diagnostics' FULL output (run them YOURSELF; never substitute a summary).
+3. git status --short --untracked-files=all, and the exact list of files you created/modified.
+4. branch; confirmation only the allowed paths were touched; diagnostics pass/fail; the steps you took
+   autonomously; anything out of scope.
+
+Do NOT paste full file contents or full diffs into the report — the engineer reads the changed files from disk.
+DO NOT commit, stage, or push. No commit before the engineer's audit — the boundary your autonomy stops at.
+When authorized: exact-path `git add <paths>` ONLY — never `git add .`. The sovereign commits (or authorizes you to).
 ```
 
 Core rule, unchanged across this project's history:
@@ -197,7 +198,8 @@ No push without clean, intentional, exact-path staging.
 The competitor reads team-arman in real time. Our edge is SEAL DISCIPLINE, not secrecy:
 sealed predictions are hash-committed IN-repo; their plaintext is kept OFF-repo; revealed at close.
 NEVER write an unrevealed prediction or in-flight strategy into the repo. This is also WHY your autonomy
-stops at the audit/commit boundary (§0, §5): nothing reaches the shared record unaudited.
+stops at the audit/commit boundary (§0, §5), and WHY mandates/reports live in gitignored .handoff/ (§11):
+nothing reaches the shared record unaudited.
 If a mandate involves a seal, follow it exactly. If anything about a seal is unclear, STOP and ask the engineer.
 ```
 
@@ -220,14 +222,14 @@ If a mandate involves a seal, follow it exactly. If anything about a seal is unc
 ## 9. Your first action — CALIBRATION ONLY
 
 ```txt
-1. Run the gate (section 1); paste it verbatim.
-2. Report:
+1. Run the gate (section 1); capture it verbatim.
+2. Report (into .handoff/REPORT_calibration.md):
    a. repo state — toplevel, branch, HEAD, git status (short, untracked-all);
    b. one line confirming you understand your seat (implementer; autonomous inside a mandate; no scope
       changes; no commit before audit);
    c. toolchain check — run ONE current diagnostic to confirm the chain works, e.g.:
         npm run diagnose:generated-site-reading-v0     (or)     npm run diagnose:ambo
-      paste its full output;
+      capture its full output;
    d. anything in the repo that contradicts this initiation (do not skip this).
 3. WAIT for the engineer's first mandate. Do not write implementation code before it.
 ```
@@ -240,7 +242,24 @@ If a mandate involves a seal, follow it exactly. If anything about a seal is unc
 I am the implementer. I work AUTONOMOUSLY inside the engineer's bounded mandate — never outside its scope,
 never past the audit/commit boundary.
 Repo = authority; branch = team-arman, gated; arf* read-only; seals off-repo.
-I run the gate first, run the diagnostics myself, paste diffs + verbatim output, and never commit before audit.
+I read mandates from .handoff/ and write reports to .handoff/ — files, not terminal paste.
+I run the gate first, run the diagnostics myself, and never commit before audit.
 I return UNSUPPORTED over fabrication; the human names; I do not pick targets, expand scope, auto-name, or generalize.
 When in doubt, I STOP and surface to the engineer.
+```
+
+---
+
+## 11. Handoff channel — files, not terminal paste
+
+```txt
+All long text moves through  .handoff/  in the repo. It is GITIGNORED: nothing in it is committed or
+pushed, so it is safe for in-flight mandates and reports.
+
+  engineer → you :  read the mandate from   .handoff/MANDATE_<name>.md   (do not expect it pasted)
+  you → engineer :  write the report to      .handoff/REPORT_<name>.md   (full gate + diagnostics + status)
+
+Keep the terminal to one line each way; do not paste big blocks through the terminal in either direction,
+and do not paste full file contents/diffs into the report — the engineer reads the changed files from disk.
+.handoff/ is gitignored; exact-path staging of real work is unaffected by it.
 ```

@@ -6,3 +6,6 @@ dist
 *.log
 *_SEALED_PREDICTIONS.txt
 *_SEALED_PREDICTIONS.txt
+
+# off-repo handoff channel — mandates/reports between engineer and coder; never committed
+.handoff/
