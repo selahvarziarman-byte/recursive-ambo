@@ -19,7 +19,7 @@ require.extensions['.ts'] = (module, filename) => {
 };
 
 const repoRoot = path.resolve(__dirname, '..');
-// Requiring the real module is the mock-solution guard (assert 6): delete
+// Requiring the real module is the mock-solution guard: delete
 // generatedSitePacketV0.ts and this require throws.
 const {
   buildGeneratedSitePacketV0Report,
@@ -29,7 +29,7 @@ const { buildGeneratedSiteTrisonTriadV0Report } = require(
   path.join(repoRoot, 'src/lib/generatedSiteTrisonTriadV0.ts'),
 );
 
-// §2 / §5.3 hard-constraint blocklist: none of these may appear in the face.
+// Hard-constraint blocklist: none of these may appear in the face.
 const FACE_BLOCKLIST = [
   'not-',
   'candidate-',
@@ -90,13 +90,13 @@ const triadBySiteId = new Map(
   triadReport.triads.map((triad) => [triad.siteId, triad]),
 );
 
-console.log('GeneratedSitePacketV0 diagnostics');
+console.log('GeneratedSitePacketV0 diagnostics (minimal face)');
 console.log(`issues: ${report.issues.length}`);
 for (const issue of report.issues) {
   console.log(`  ! ${issue}`);
 }
 console.log('');
-console.log('--- one rendered face (audit can eyeball it) ---');
+console.log('--- one rendered minimal face (audit can eyeball it) ---');
 for (const line of renderPacketFace(report.packets[0])) {
   console.log(line);
 }
@@ -126,16 +126,7 @@ for (const packet of report.packets) {
   }
 }
 
-// Assert 2 — per-face shape.
-const TRISON_NOTE_ORDER = [
-  'Ω_A =',
-  'Ω_B =',
-  'Ω_A ↔ Ω_B',
-  'Λ =',
-  'X =',
-  'ρ_A =',
-  'accept iff',
-];
+// Assert 2 — minimal face shape: locator fields present; excavation apparatus gone.
 for (const packet of report.packets) {
   const face = packet.face;
   const parentNeighbours = face.namedNeighbours.filter(
@@ -145,6 +136,15 @@ for (const packet of report.packets) {
     (neighbour) => neighbour.role === 'opposite-axis',
   );
 
+  check(
+    `2. ${packet.trace.siteId} locator fields present`,
+    typeof face.siteDescription === 'string' &&
+      face.siteDescription.length > 0 &&
+      typeof face.readAcross === 'string' &&
+      face.readAcross.length > 0 &&
+      typeof face.howToName === 'string' &&
+      face.howToName.length > 0,
+  );
   check(
     `2. ${packet.trace.siteId} bornBetween has 2 parents`,
     face.bornBetween.length === 2,
@@ -156,16 +156,8 @@ for (const packet of report.packets) {
       oppositeNeighbours.length === 2,
   );
   check(
-    `2. ${packet.trace.siteId} excavation has 7 steps in Trison order`,
-    face.excavation.length === 7 &&
-      face.excavation.every((step, index) =>
-        step.note.startsWith(TRISON_NOTE_ORDER[index]),
-      ),
-  );
-  check(
-    `2. ${packet.trace.siteId} judgeYourCandidate non-empty`,
-    Array.isArray(face.judgeYourCandidate) &&
-      face.judgeYourCandidate.length > 0,
+    `2. ${packet.trace.siteId} excavation apparatus removed`,
+    !('excavation' in face) && !('judgeYourCandidate' in face),
   );
   check(
     `2. ${packet.trace.siteId} namingDecision === null`,
@@ -173,7 +165,8 @@ for (const packet of report.packets) {
   );
 }
 
-// Assert 3 — THE HARD-CONSTRAINT TEST: rendered faces carry no machinery.
+// Assert 3 — THE HARD-CONSTRAINT TEST: rendered faces carry no machinery, but
+// still carry the live concept labels.
 const allFaces = report.packets
   .map((packet) => renderPacketFace(packet).join('\n'))
   .join('\n');
@@ -186,18 +179,6 @@ check(
 check(
   '3. faces still carry the live concept labels A/B/C/D',
   ['A', 'B', 'C', 'D'].every((label) => allFaces.includes(label)),
-);
-check(
-  '3. faces still carry the radix question',
-  allFaces.includes('What world/horizon appears'),
-);
-check(
-  '3. faces still carry the loop-horizon question',
-  allFaces.includes('horizon Λ preserves'),
-);
-check(
-  '3. faces still carry the child question',
-  allFaces.includes('What concept X complements'),
 );
 
 // Assert 4 — the trace DOES carry the machinery (ids preserved, off the face).

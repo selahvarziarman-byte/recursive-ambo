@@ -1,40 +1,34 @@
-// generatedSitePacketV0 — the per-site packet, with a clean human FACE.
+// generatedSitePacketV0 — the per-site packet: a minimal human FACE + a
+// walled-off TRACE.
 //
 // Per one-Ambo tetrahedron generated site, assembles ONE packet:
-//   - a human-readable FACE: the product a person reads to NAME the site;
+//   - a minimal human FACE: a structural locator (where the site sits, who its
+//     named neighbours are) + a naming slot. It poses as NO semantic help.
 //   - a subordinate, walled-off TRACE: ids/lineage for downstream traceability.
 //
-// THE HARD CONSTRAINT (mandate §2): the face carries MEANING, never machinery.
-//   * State by structure, not by caveat. "Unnamed" = the naming slot is null —
-//     never a status label.
-//   * No coded ids in the face (no 'M_AB', vertex keys, oppositeMidpointId, …).
-//     Plain concept labels (A, B, C, D) and plain prose only. Coded ids live in
-//     the TRACE.
-//   * No dead-campaign vocabulary (field, tuple, source-state, pressure, …).
-//   * The Trison method's own notation (Ω, Λ, ⊕, ⊖, ↔; "radix completion / loop
-//     horizon / residual") is MEANING and stays. Implementation hygiene, coded
-//     ids, and dead-field words are stripped.
+// Refined CAL-2 (mothership-ratified): the excavation / Trisonized-Midwife path
+// is DROPPED from the human face. The system is a non-reasoning frame-filler;
+// placeholders + a non-reasoning system can only yield generic templates, and
+// prose dressing re-creates the templates-as-product failure. So the face is the
+// minimal structural locator only; the human is the sole namer/signer.
 //
-// Built from Pkt-2 (the triad) and Pkt-3 (the excavation frame) ONLY. No
-// field-polluted imports. In-memory report object — no persistence, no Shape
-// mutation, no auto-naming.
+// FACE rules (still enforced): state by structure, not by caveat ("Unnamed" =
+// the naming slot is null, never a status label); no coded ids in the face (they
+// live only in the TRACE); no dead-campaign vocabulary. A blocklist self-check
+// guards this; the diagnostic enforces it independently.
+//
+// Built from Pkt-2 (the triad) ONLY. trisonizedMidwifeReadingV0.ts remains in the
+// repo as the standalone method artifact but is no longer used here. In-memory
+// report object — no persistence, no Shape mutation, no auto-naming.
 
 import {
   buildGeneratedSiteTrisonTriadV0Report,
-  toTrisonFrameInput,
   type GeneratedSiteTrisonTriadV0,
 } from './generatedSiteTrisonTriadV0';
-import { buildTrisonizedMidwifeReadingFrameV0 } from './trisonizedMidwifeReadingV0';
 
 export interface PacketNamedNeighbour {
   label: string;
   role: 'parent' | 'opposite-axis';
-}
-
-export interface PacketExcavationStep {
-  question: string;
-  guidance: string;
-  note: string; // the Trison formula line (Ω_A = …)
 }
 
 export interface PacketNamingDecision {
@@ -48,8 +42,6 @@ export interface GeneratedSitePacketFaceV0 {
   readAcross: string;
   namedNeighbours: PacketNamedNeighbour[];
   howToName: string;
-  excavation: PacketExcavationStep[];
-  judgeYourCandidate: string[];
   namingDecision: PacketNamingDecision | null;
 }
 
@@ -75,9 +67,8 @@ export interface GeneratedSitePacketV0Report {
   issues: string[];
 }
 
-// Tokens that must NEVER appear in the rendered face (mandate §2 / §5.3).
-// Used for the module's own honesty self-check; the diagnostic enforces the
-// same floor independently.
+// Tokens that must NEVER appear in the rendered face. Module self-check; the
+// diagnostic enforces the same floor independently.
 const FACE_FORBIDDEN_TOKENS: string[] = [
   'not-',
   'candidate-',
@@ -117,58 +108,24 @@ const FACE_FORBIDDEN_TOKENS: string[] = [
   '∧',
 ];
 
-// Strip machinery from inherited Trison text while keeping the method's MEANING:
-//   - render the combined-J label (e.g. 'C∧D') as plain words;
-//   - drop the "(§…)" spec citations (hygiene, not naming help);
-//   - drop the word "pressure" (dead-field vocabulary), preserving the sense.
-function cleanForFace(text: string, jLabel: string, jWords: string): string {
-  return text
-    .split(jLabel)
-    .join(jWords)
-    .replace(/\s*\(§[^)]*\)/g, '')
-    .replace(/fake naming pressure/gi, 'a forced name')
-    .replace(/pressure/gi, 'fit')
-    .trim();
-}
-
-function cleanRubricLine(line: string, jLabel: string, jWords: string): string {
-  // Drop the leading "NN.N " section number so it reads as plain naming help.
-  return cleanForFace(line.replace(/^\d+\.\d+\s+/, ''), jLabel, jWords);
-}
-
 function buildFace(triad: GeneratedSiteTrisonTriadV0): GeneratedSitePacketFaceV0 {
   const parentALabel = triad.parentA.label;
   const parentBLabel = triad.parentB.label;
   const [oppositeC, oppositeD] = triad.sublatedJ.components;
   const oppositeCLabel = oppositeC.label;
   const oppositeDLabel = oppositeD.label;
-  const jLabel = triad.sublatedJ.label;
-  const jWords = `the pairing of ${oppositeCLabel} and ${oppositeDLabel}`;
-
-  const frame = buildTrisonizedMidwifeReadingFrameV0(toTrisonFrameInput(triad));
-  const excavation: PacketExcavationStep[] = frame.slots.map((slot) => ({
-    question: cleanForFace(slot.prompt, jLabel, jWords),
-    guidance: cleanForFace(slot.guidance, jLabel, jWords),
-    note: cleanForFace(slot.formula, jLabel, jWords),
-  }));
-  const judgeYourCandidate = frame.rubric.map((line) =>
-    cleanRubricLine(line, jLabel, jWords),
-  );
 
   return {
     siteDescription: `A new site born where the edge between ${parentALabel} and ${parentBLabel} is rectified — the first Ambo of the tetrahedron.`,
     bornBetween: [parentALabel, parentBLabel],
-    readAcross: `Read across from the opposite pairing of ${oppositeCLabel} and ${oppositeDLabel}.`,
+    readAcross: `The opposite pairing is ${oppositeCLabel} and ${oppositeDLabel}.`,
     namedNeighbours: [
       { label: parentALabel, role: 'parent' },
       { label: parentBLabel, role: 'parent' },
       { label: oppositeCLabel, role: 'opposite-axis' },
       { label: oppositeDLabel, role: 'opposite-axis' },
     ],
-    howToName:
-      'Answer the questions in order to find the concept that can dwell here.',
-    excavation,
-    judgeYourCandidate,
+    howToName: 'Name the concept that dwells here.',
     namingDecision: null,
   };
 }
@@ -211,12 +168,6 @@ export function buildGeneratedSitePacketV0Report(): GeneratedSitePacketV0Report 
   }
 
   for (const packet of packets) {
-    if (packet.face.excavation.length !== 7) {
-      issues.push(
-        `packet ${packet.trace.siteId} face has ${packet.face.excavation.length} excavation steps, expected 7`,
-      );
-    }
-
     if (packet.face.namedNeighbours.length !== 4) {
       issues.push(
         `packet ${packet.trace.siteId} face has ${packet.face.namedNeighbours.length} named neighbours, expected 4`,
@@ -240,7 +191,7 @@ export function buildGeneratedSitePacketV0Report(): GeneratedSitePacketV0Report 
   };
 }
 
-// CLEAN human worksheet — renders the FACE only, never the trace.
+// CLEAN human worksheet — renders the minimal FACE only, never the trace.
 export function renderPacketFace(packet: GeneratedSitePacketV0): string[] {
   const face = packet.face;
   const lines: string[] = [];
@@ -251,24 +202,11 @@ export function renderPacketFace(packet: GeneratedSitePacketV0): string[] {
   lines.push('');
   lines.push('Named neighbours:');
   for (const neighbour of face.namedNeighbours) {
-    const roleWords =
-      neighbour.role === 'parent' ? 'parent' : 'opposite axis';
+    const roleWords = neighbour.role === 'parent' ? 'parent' : 'opposite axis';
     lines.push(`  ${neighbour.label} (${roleWords})`);
   }
   lines.push('');
   lines.push(face.howToName);
-  lines.push('');
-  lines.push('Questions to work through, in order:');
-  face.excavation.forEach((step, index) => {
-    lines.push(`  ${index + 1}. ${step.question}`);
-    lines.push(`     ${step.note}`);
-    lines.push(`     ${step.guidance}`);
-  });
-  lines.push('');
-  lines.push('Is your name a good fit? Check it against:');
-  for (const criterion of face.judgeYourCandidate) {
-    lines.push(`  - ${criterion}`);
-  }
   lines.push('');
   if (face.namingDecision === null) {
     lines.push('Name: ______________________________');
