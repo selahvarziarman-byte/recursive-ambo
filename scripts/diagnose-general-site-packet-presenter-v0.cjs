@@ -192,8 +192,10 @@ function faceDiscipline(name, report, requiredLabels) {
     report.packets.every((packet) => packet.face.namingDecision === null),
   );
   check(
-    `${name}. report carries no 'one-ambo-tetrahedron-only' scope string`,
-    !JSON.stringify(report).includes('one-ambo-tetrahedron-only'),
+    `${name}. report exposes no scope-lock field (keys exactly methodId/seedKey/generatedSiteCount/packets/issues)`,
+    !('scope' in report) &&
+      JSON.stringify(Object.keys(report).sort()) ===
+        JSON.stringify(['generatedSiteCount', 'issues', 'methodId', 'packets', 'seedKey']),
   );
   check(`${name}. report.issues empty`, report.issues.length === 0);
 }

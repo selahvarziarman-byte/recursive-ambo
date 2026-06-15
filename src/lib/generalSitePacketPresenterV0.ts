@@ -5,9 +5,9 @@
 // validated minimal human FACE + a walled-off TRACE — for ANY supported seed,
 // not just the one-ambo tetrahedron.
 //
-// This supersedes the tetra-locked slice (generatedSitePacketV0 /
-// generatedSiteTrisonTriadV0) by reading the engine, not the slice. It is a THIN
-// reader: no new geometry, no scope expansion, no naming logic. Per midpoint the
+// It reads applyAmboDissection's output directly (not any per-site proving
+// pipeline). It is a THIN reader: no new geometry, no scope expansion, no naming
+// logic. Per midpoint the
 // engine already records its parents (createdBy.sourceVertexIds), its source edge
 // (createdBy.sourceEdgeId), its concatenated label, and its host lineage; the
 // presenter just locates the host cell and reports the structural neighbourhood.
@@ -62,7 +62,7 @@ export interface GeneralSitePacket {
 
 export interface GeneralSitePacketPresenterReport {
   methodId: 'general-site-packet-presenter-v0';
-  // Coverage by DATA, not a 'one-ambo-tetrahedron-only' lock.
+  // Coverage is described by DATA (seedKey + generatedSiteCount); no hard-coded scope lock.
   seedKey: string;
   generatedSiteCount: number;
   packets: GeneralSitePacket[];

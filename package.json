@@ -22,8 +22,6 @@
     "diagnose:generated-site-reading-v0-ui": "node scripts/diagnose-generated-site-reading-v0-ui.cjs",
     "diagnose:generated-site-reading-v0-fieldcue-boundary": "node scripts/diagnose-generated-site-reading-v0-fieldcue-boundary.cjs",
     "diagnose:trisonized-midwife-reading-v0": "node scripts/diagnose-trisonized-midwife-reading-v0.cjs",
-    "diagnose:generated-site-trison-triad-v0": "node scripts/diagnose-generated-site-trison-triad-v0.cjs",
-    "diagnose:generated-site-packet-v0": "node scripts/diagnose-generated-site-packet-v0.cjs",
     "diagnose:fano-octonionic-carrier-table-v0": "node scripts/diagnose-fano-octonionic-carrier-table-v0.cjs",
     "diagnose:fano-octonionic-local-channel-table-v0": "node scripts/diagnose-fano-octonionic-local-channel-table-v0.cjs",
     "diagnose:fano-octonionic-associator-projection-table-v0": "node scripts/diagnose-fano-octonionic-associator-projection-table-v0.cjs",
