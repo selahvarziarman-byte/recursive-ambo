@@ -50,7 +50,6 @@ import type {
   VertexId,
 } from '../types/geometry';
 import { DiagonalizationMatrixSection } from './DiagonalizationMatrixSection';
-import { FieldAtlasInspector } from './FieldAtlasInspector';
 import { Panel } from './Panel';
 import { GeneralSiteFacePanel } from './GeneralSiteFacePanel';
 import { SelectedVertexRelations } from './SelectedVertexRelations';
@@ -558,19 +557,6 @@ function WorkspacePanel() {
   return (
     <section className="grid gap-4 p-4">
       <WorkspaceTopologyContent />
-      <SidebarSection
-        id="workspace-field-atlas"
-        title="Field Atlas"
-        count="closed surface"
-        defaultOpen
-        resetKey={shape.id}
-      >
-        <FieldAtlasInspector
-          shape={shape}
-          formatVertexRef={(vertexId) => formatVertexRef(shape, vertexId)}
-          shortenId={shortenId}
-        />
-      </SidebarSection>
       <AmboSupportFrontier />
     </section>
   );
