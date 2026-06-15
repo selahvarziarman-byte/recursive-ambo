@@ -24,6 +24,7 @@ import {
   type AtomicRegistryReport,
   type AtomicRegistryUnsupportedDetails,
 } from '../lib/atomicRegistry';
+import { buildGeneralSitePacketPresenterReport, type GeneralSitePacket } from '../lib/generalSitePacketPresenterV0';
 import { defaultOperation, registeredOperations } from '../operations/registry';
 import { formatVec3 } from '../lib/shape';
 import {
@@ -51,7 +52,9 @@ import type {
 import { DiagonalizationMatrixSection } from './DiagonalizationMatrixSection';
 import { FieldAtlasInspector } from './FieldAtlasInspector';
 import { Panel } from './Panel';
+import { GeneralSiteFacePanel } from './GeneralSiteFacePanel';
 import { SelectedVertexRelations } from './SelectedVertexRelations';
+import { SiteTraceSlot } from './SiteTraceSlot';
 import { VertexPacketEditorContent } from './VertexPacketEditor';
 
 type TopologyFilter =
@@ -601,6 +604,14 @@ function SelectionPanel() {
     () => (selectedVertexId ? buildAtomicRegistryReport(shape, selectedVertexId) : null),
     [selectedVertexId, shape],
   );
+  const presenterReport = useMemo(() => buildGeneralSitePacketPresenterReport(shape), [shape]);
+  const sitePacket = useMemo<GeneralSitePacket | null>(
+    () =>
+      selectedVertexId
+        ? presenterReport.packets.find((packet) => packet.trace.siteId === selectedVertexId) ?? null
+        : null,
+    [presenterReport, selectedVertexId],
+  );
   const sectionIndexEntries: SelectionSectionIndexEntry[] = [];
 
   if (dualInspectionTarget) {
@@ -619,8 +630,14 @@ function SelectionPanel() {
   }
 
   if (vertex) {
+    sectionIndexEntries.push({ id: 'selection-vertex', label: 'Vertex' });
+    if (sitePacket) {
+      sectionIndexEntries.push(
+        { id: 'selection-face', label: 'Face' },
+        { id: 'selection-trace', label: 'Trace' },
+      );
+    }
     sectionIndexEntries.push(
-      { id: 'selection-vertex', label: 'Vertex' },
       { id: 'selection-atomic-registry', label: 'Atomic' },
       { id: 'selection-packet', label: 'Packet' },
     );
@@ -720,6 +737,18 @@ function SelectionPanel() {
             shape={shape}
             selectedCell={selectedCell}
           />
+        </SidebarSection>
+      ) : null}
+
+      {vertex && sitePacket ? (
+        <SidebarSection id="selection-face" title="Face" defaultOpen resetKey={vertex.id}>
+          <GeneralSiteFacePanel packet={sitePacket} />
+        </SidebarSection>
+      ) : null}
+
+      {vertex && sitePacket ? (
+        <SidebarSection id="selection-trace" title="Trace" defaultOpen={false} resetKey={vertex.id}>
+          <SiteTraceSlot />
         </SidebarSection>
       ) : null}
 
