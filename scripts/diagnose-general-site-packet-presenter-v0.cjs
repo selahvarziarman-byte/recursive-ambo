@@ -105,42 +105,29 @@ function allFacesText(report) {
   return report.packets.map((packet) => renderPacketFace(packet).join('\n')).join('\n');
 }
 
-// Independent host resolver — re-derives the host cell straight from the engine,
-// to cross-check the presenter's trace.hostCellId. Returns the edge-match id and
-// the vertex-containment id (smallest sourceVertexIds first); they must agree.
-function independentHostIds(shape, vertex) {
-  const parents = vertex.createdBy.sourceVertexIds;
-  const sourceEdgeId = vertex.createdBy.sourceEdgeId;
+function hostCheck(name, report, shape) {
   const parentCells = shape.cells.filter((cell) => cell.kind === 'parent');
-  const edgeHosts = parentCells.filter((cell) => cell.sourceEdgeIds.includes(sourceEdgeId));
-  const vertexHosts = parentCells
-    .filter((cell) => parents.every((parent) => cell.sourceVertexIds.includes(parent)))
-    .sort(
-      (a, b) =>
-        a.sourceVertexIds.length - b.sourceVertexIds.length || a.id.localeCompare(b.id),
-    );
-
-  return {
-    edgeId: edgeHosts.length === 1 ? edgeHosts[0].id : null,
-    vertexId: vertexHosts[0] ? vertexHosts[0].id : null,
-  };
-}
-
-function hostCrossCheck(name, report, shape) {
-  let agree = 0;
-
+  let ok = 0;
   for (const packet of report.packets) {
     const vertex = shape.vertices[packet.trace.siteId];
-    const { edgeId, vertexId } = independentHostIds(shape, vertex);
-
-    if (edgeId !== null && edgeId === vertexId && edgeId === packet.trace.hostCellId) {
-      agree += 1;
-    }
+    const parents = vertex.createdBy.sourceVertexIds;
+    const edgeHosts = parentCells.filter((cell) =>
+      cell.sourceEdgeIds.includes(vertex.createdBy.sourceEdgeId),
+    );
+    const independent = edgeHosts.length === 1 ? edgeHosts[0] : null;
+    const host = shape.cells.find((cell) => cell.id === packet.trace.hostCellId);
+    const sound =
+      independent &&
+      host &&
+      independent.id === packet.trace.hostCellId &&
+      parents.every((p) => host.sourceVertexIds.includes(p)) &&
+      JSON.stringify([...packet.trace.complementVertexIds].sort()) ===
+        JSON.stringify(host.sourceVertexIds.filter((id) => !parents.includes(id)).sort());
+    if (sound) ok += 1;
   }
-
   check(
-    `${name}. host edge-match === vertex-containment === trace.hostCellId for all ${report.packets.length} sites`,
-    agree === report.packets.length,
+    `${name}. host = unique edge-match, contains both parents, complement = host minus parents (${ok}/${report.packets.length})`,
+    ok === report.packets.length,
   );
 }
 
@@ -235,7 +222,7 @@ const siteCDm = reportA.packets.find((packet) => siteKey(packet) === 'CD');
 check('A. AB → complement {C,D}', Boolean(siteABm) && sortedJoin(acrossLabels(siteABm)) === 'C,D');
 check('A. CD → complement {A,B}', Boolean(siteCDm) && sortedJoin(acrossLabels(siteCDm)) === 'A,B');
 structuralConsistency('A', reportA, shapeA);
-hostCrossCheck('A', reportA, shapeA);
+hostCheck('A', reportA, shapeA);
 faceDiscipline('A', reportA, ['A', 'B', 'C', 'D']);
 
 // ===========================================================================
@@ -277,7 +264,7 @@ check(
   Boolean(childABAC) && sortedJoin(acrossLabels(childABAC)) === 'AD,BC,BD,CD',
 );
 structuralConsistency('B', reportB, shapeB);
-hostCrossCheck('B', reportB, shapeB);
+hostCheck('B', reportB, shapeB);
 faceDiscipline('B', reportB, ['A', 'B', 'C', 'D']);
 
 // ===========================================================================
@@ -304,7 +291,7 @@ check(
   reportC.packets.every((packet) => packet.trace.generationDepth === 1),
 );
 structuralConsistency('C', reportC, shapeC);
-hostCrossCheck('C', reportC, shapeC);
+hostCheck('C', reportC, shapeC);
 faceDiscipline('C', reportC, ['+X', '-X', '+Y', '-Y', '+Z', '-Z']);
 
 // ===========================================================================
@@ -331,8 +318,72 @@ check(
   reportD.packets.every((packet) => packet.trace.generationDepth === 1),
 );
 structuralConsistency('D', reportD, shapeD);
-hostCrossCheck('D', reportD, shapeD);
+hostCheck('D', reportD, shapeD);
 faceDiscipline('D', reportD, ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']);
+
+// ===== M6 — depth / portability confidence (deeper generations + varied shapes) =====
+// E — tetra gen-3 (seed -> octahedron core -> cuboctahedron core)
+const e1 = applyAmboDissection(createSeedShape('tetrahedron'));
+const e2 = applyAmboDissection(e1, e1.cells.find((c) => c.kind === 'core').id);
+const eCore2 = e2.cells.find((c) => c.kind === 'core');
+check('E. gen-2 core is cuboctahedron', Boolean(eCore2) && eCore2.topology === 'cuboctahedron');
+const shapeE = applyAmboDissection(e2, eCore2.id);
+const reportE = buildGeneralSitePacketPresenterReport(shapeE);
+console.log(`\nFIXTURE E (tetra gen-3) issues: ${reportE.issues.length}`);
+reportE.issues.forEach((i) => console.log(`  ! ${i}`));
+check('E. generatedSiteCount === 42 / 42 packets / issues 0',
+  reportE.generatedSiteCount === 42 && reportE.packets.length === 42 && reportE.issues.length === 0);
+{ const d = (n) => reportE.packets.filter((p) => p.trace.generationDepth === n).length;
+  const cs = (n) => reportE.packets.filter((p) => p.trace.complementVertexIds.length === n).length;
+  check('E. depths 6/12/24', d(1) === 6 && d(2) === 12 && d(3) === 24);
+  check('E. complement sizes 2/4/10 = 6/12/24', cs(2) === 6 && cs(4) === 12 && cs(10) === 24); }
+structuralConsistency('E', reportE, shapeE); hostCheck('E', reportE, shapeE);
+faceDiscipline('E', reportE, ['A', 'B', 'C', 'D']);
+
+// F — MULTI-DISSECTION (seed + core + a sibling residue): the case the old gate mis-resolved.
+const f1 = applyAmboDissection(createSeedShape('tetrahedron'));
+const f2 = applyAmboDissection(f1, f1.cells.find((c) => c.kind === 'core').id);
+const shapeF = applyAmboDissection(f2, f1.cells.find((c) => c.kind === 'residue').id);
+const reportF = buildGeneralSitePacketPresenterReport(shapeF);
+console.log(`\nFIXTURE F (multi-dissection) issues: ${reportF.issues.length}`);
+reportF.issues.forEach((i) => console.log(`  ! ${i}`));
+check('F. three parent cells', shapeF.cells.filter((c) => c.kind === 'parent').length === 3);
+check('F. 24 sites / 24 packets / ZERO unsupported (the fix)',
+  reportF.generatedSiteCount === 24 && reportF.packets.length === 24 && reportF.issues.length === 0);
+{ const d = (n) => reportF.packets.filter((p) => p.trace.generationDepth === n).length;
+  const cs = (n) => reportF.packets.filter((p) => p.trace.complementVertexIds.length === n).length;
+  check('F. depths 6/18', d(1) === 6 && d(2) === 18);
+  check('F. complement sizes 2/4 = 12/12', cs(2) === 12 && cs(4) === 12); }
+structuralConsistency('F', reportF, shapeF); hostCheck('F', reportF, shapeF);
+faceDiscipline('F', reportF, ['A', 'B', 'C', 'D']);
+
+// G — octahedron gen-2 ; H — cube gen-2 (different seeds, deeper)
+const shapeG = (() => { const g = applyAmboDissection(createSeedShape('octahedron'));
+  return applyAmboDissection(g, g.cells.find((c) => c.kind === 'core').id); })();
+const reportG = buildGeneralSitePacketPresenterReport(shapeG);
+check('G. octa gen-2: 36 sites, issues 0', reportG.generatedSiteCount === 36 && reportG.issues.length === 0);
+{ const cs = (n) => reportG.packets.filter((p) => p.trace.complementVertexIds.length === n).length;
+  check('G. complement sizes 4/10 = 12/24', cs(4) === 12 && cs(10) === 24); }
+hostCheck('G', reportG, shapeG); faceDiscipline('G', reportG, ['+X', '-X', '+Y', '-Y', '+Z', '-Z']);
+
+const shapeH = (() => { const h = applyAmboDissection(createSeedShape('cube'));
+  return applyAmboDissection(h, h.cells.find((c) => c.kind === 'core').id); })();
+const reportH = buildGeneralSitePacketPresenterReport(shapeH);
+check('H. cube gen-2: 36 sites, issues 0', reportH.generatedSiteCount === 36 && reportH.issues.length === 0);
+{ const cs = (n) => reportH.packets.filter((p) => p.trace.complementVertexIds.length === n).length;
+  check('H. complement sizes 6/10 = 12/24', cs(6) === 12 && cs(10) === 24); }
+hostCheck('H', reportH, shapeH); faceDiscipline('H', reportH, ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']);
+
+// I — square-pyramid family (dissect an octahedron residue -> complement size 3)
+const i1 = applyAmboDissection(createSeedShape('octahedron'));
+const iRes = i1.cells.find((c) => c.kind === 'residue');
+check('I. octa residue is a square-pyramid', Boolean(iRes) && iRes.topology === 'square-pyramid');
+const shapeI = applyAmboDissection(i1, iRes.id);
+const reportI = buildGeneralSitePacketPresenterReport(shapeI);
+check('I. 20 sites, issues 0', reportI.generatedSiteCount === 20 && reportI.issues.length === 0);
+{ const cs = (n) => reportI.packets.filter((p) => p.trace.complementVertexIds.length === n).length;
+  check('I. complement sizes 4/3 = 12/8', cs(4) === 12 && cs(3) === 8); }
+hostCheck('I', reportI, shapeI); faceDiscipline('I', reportI, ['+X', '-X', '+Y', '-Y', '+Z', '-Z']);
 
 // ===========================================================================
 // Eyeball: one seed/gen-neutral face from A, one from B (a gen-2 face).

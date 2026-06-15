@@ -120,12 +120,13 @@ function labelOf(shape: Shape, id: VertexId): string | null {
   return shape.vertices[id]?.data.label ?? null;
 }
 
-// Resolve a site's host cell from the engine. Primary resolution: the single
-// 'parent' cell whose sourceEdgeIds includes the site's sourceEdgeId. Cross-check
-// (must agree): the 'parent' cell whose sourceVertexIds contains both parents,
-// smallest sourceVertexIds if more than one. If the two resolutions disagree or
-// either fails to resolve, return null — the caller records an issue and marks
-// the site unsupported. NEVER fabricate a host.
+// Resolve a site's host cell from the engine by its source edge. Each ambo
+// midpoint's createdBy.sourceEdgeId belongs to exactly ONE 'parent' cell's
+// sourceEdgeIds — edge ids are unique to the dissection that created them, and
+// that cell necessarily contains both parents — so the edge-match host is unique
+// and correct (this holds across generations AND across overlapping sibling
+// dissections). If the edge does not resolve to exactly one parent cell, return
+// null: the caller records an issue and marks the site unsupported. NEVER fabricate.
 function resolveSite(
   parentCells: Cell[],
   parents: VertexId[],
@@ -134,26 +135,17 @@ function resolveSite(
   const edgeHosts = parentCells.filter((cell) =>
     cell.sourceEdgeIds.includes(sourceEdgeId),
   );
-  const vertexHosts = parentCells
-    .filter((cell) => parents.every((parent) => cell.sourceVertexIds.includes(parent)))
-    .sort(
-      (a, b) =>
-        a.sourceVertexIds.length - b.sourceVertexIds.length ||
-        a.id.localeCompare(b.id),
-    );
 
-  const hostByEdge = edgeHosts.length === 1 ? edgeHosts[0] : null;
-  const hostByVertex = vertexHosts[0] ?? null;
-
-  if (!hostByEdge || !hostByVertex || hostByEdge.id !== hostByVertex.id) {
+  if (edgeHosts.length !== 1) {
     return null;
   }
 
+  const host = edgeHosts[0];
   const parentSet = new Set(parents);
 
   return {
-    host: hostByEdge,
-    complementVertexIds: hostByEdge.sourceVertexIds.filter((id) => !parentSet.has(id)),
+    host,
+    complementVertexIds: host.sourceVertexIds.filter((id) => !parentSet.has(id)),
   };
 }
 
