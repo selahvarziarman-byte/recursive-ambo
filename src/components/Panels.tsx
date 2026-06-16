@@ -25,6 +25,7 @@ import {
   type AtomicRegistryUnsupportedDetails,
 } from '../lib/atomicRegistry';
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacket } from '../lib/generalSitePacketPresenterV0';
+import { buildSiteWitnessCatalogueV0, type SiteWitnesses } from '../lib/siteWitnessCatalogueV0';
 import { defaultOperation, registeredOperations } from '../operations/registry';
 import { formatVec3 } from '../lib/shape';
 import {
@@ -54,6 +55,7 @@ import { Panel } from './Panel';
 import { GeneralSiteFacePanel } from './GeneralSiteFacePanel';
 import { SelectedVertexRelations } from './SelectedVertexRelations';
 import { SiteTraceSlot } from './SiteTraceSlot';
+import { SiteWitnessTracePanel } from './SiteWitnessTracePanel';
 import { VertexPacketEditorContent } from './VertexPacketEditor';
 
 type TopologyFilter =
@@ -598,6 +600,14 @@ function SelectionPanel() {
         : null,
     [presenterReport, selectedVertexId],
   );
+  const witnessReport = useMemo(() => buildSiteWitnessCatalogueV0(shape), [shape]);
+  const siteWitness = useMemo<SiteWitnesses | null>(
+    () =>
+      selectedVertexId
+        ? witnessReport.sites.find((s) => s.siteId === selectedVertexId) ?? null
+        : null,
+    [witnessReport, selectedVertexId],
+  );
   const sectionIndexEntries: SelectionSectionIndexEntry[] = [];
 
   if (dualInspectionTarget) {
@@ -734,7 +744,7 @@ function SelectionPanel() {
 
       {vertex && sitePacket ? (
         <SidebarSection id="selection-trace" title="Trace" defaultOpen={false} resetKey={vertex.id}>
-          <SiteTraceSlot />
+          {siteWitness ? <SiteWitnessTracePanel witness={siteWitness} /> : <SiteTraceSlot />}
         </SidebarSection>
       ) : null}
 
