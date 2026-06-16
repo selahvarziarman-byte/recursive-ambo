@@ -115,6 +115,58 @@ check('issues empty on clean tetra g1+g2 shape', Array.isArray(cat2.issues) && c
 check('every site has a residual (all are 2-parent ambo sites)',
   cat2.sites.length === 18 && cat2.sites.every((s) => s.residual !== null));
 
+// ===================== MERGE: gem-axis ids carried (cat1 + cat2) ============
+const allAxes = [...cat1.shapeGems, ...cat2.shapeGems].flatMap((g) => g.gem.axes);
+check('gem-axis ids: every axis has memberIds.length === members.length',
+  allAxes.length > 0 &&
+    allAxes.every((ax) => Array.isArray(ax.memberIds) && ax.memberIds.length === ax.members.length));
+
+// ===================== MERGE: octahedron role (cat2 gen-1 sites) ============
+const gen1 = cat2.sites.filter((s) => s.abstraction.generationDepth === 1);
+check('octahedron role: every gen-1 site has 1 antipodality gemRole with 1 incident axis',
+  gen1.length === 6 &&
+    gen1.every((s) =>
+      s.gemRoles.length === 1 &&
+      s.gemRoles[0].topology === 'octahedron' &&
+      s.gemRoles[0].gemName === 'antipodality' &&
+      s.gemRoles[0].incidentAxes.length === 1));
+check('octahedron role: site AB single incident axis members === [AB,CD]',
+  AB && AB.gemRoles.length === 1 && eq(AB.gemRoles[0].incidentAxes[0].members, ['AB', 'CD']));
+const octaPairSet = new Set(['AB|CD', 'AC|BD', 'AD|BC']);
+check('octahedron role: each gen-1 site lies on its own opposite-edge pair (site in axis in {AB|CD,AC|BD,AD|BC})',
+  gen1.every((s) => {
+    const ax = s.gemRoles[0].incidentAxes[0];
+    return ax && octaPairSet.has(ax.members.join('|')) && ax.members.includes(s.label);
+  }));
+
+// ===================== MERGE: cuboctahedron role (cat2 gen-2 sites) ==========
+const gen2 = cat2.sites.filter((s) => s.abstraction.generationDepth === 2);
+const kindsOf = (role) => ({
+  tri: role.incidentAxes.filter((a) => a.kind === 'triangle-face').length,
+  sq: role.incidentAxes.filter((a) => a.kind === 'square-face').length,
+});
+check('cuboctahedron role: every gen-2 site has 1 A3/S4 gemRole with 4 incident axes (2 triangle + 2 square)',
+  gen2.length === 12 &&
+    gen2.every((s) => {
+      if (s.gemRoles.length !== 1) return false;
+      const r = s.gemRoles[0];
+      if (r.topology !== 'cuboctahedron' || r.gemName !== 'A3/S4-incidence' || r.incidentAxes.length !== 4) {
+        return false;
+      }
+      const k = kindsOf(r);
+      return k.tri === 2 && k.sq === 2;
+    }));
+const abacKinds = ABAC && ABAC.gemRoles.length === 1 ? kindsOf(ABAC.gemRoles[0]) : { tri: 0, sq: 0 };
+check('cuboctahedron role: site ABAC incident axes = 2 triangle-face + 2 square-face',
+  ABAC && ABAC.gemRoles.length === 1 && abacKinds.tri === 2 && abacKinds.sq === 2);
+
+// ===================== MERGE: honesty =======================================
+check('merge honesty: cat2.issues empty (no gem-cell vertex with zero incident axes)',
+  cat2.issues.length === 0);
+check('cat1 octahedron-only: all 6 sites have 1 gemRole with 1 incident axis',
+  cat1.sites.length === 6 &&
+    cat1.sites.every((s) => s.gemRoles.length === 1 && s.gemRoles[0].incidentAxes.length === 1));
+
 // ===================== eyeball: one fully-rendered record (ABAC) ============
 console.log('\n--- fully-rendered site-witness record: ABAC (gen-2, cuboctahedron core) ---');
 console.log(JSON.stringify(ABAC, null, 2));
@@ -122,6 +174,11 @@ console.log('\n--- shape gems present on shape2 ---');
 for (const g of cat2.shapeGems) {
   console.log(`  ${g.topology}: ${g.gem.gemName} (${g.gem.axes.length} axes)`);
 }
+
+console.log('\n--- MERGE eyeball: gemRoles for ABAC (gen-2, cuboctahedron A3/S4) ---');
+console.log(JSON.stringify(ABAC.gemRoles, null, 2));
+console.log('\n--- MERGE eyeball: gemRoles for AB (gen-1, octahedron antipodality) ---');
+console.log(JSON.stringify(AB.gemRoles, null, 2));
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
 process.exit(failures === 0 ? 0 : 1);

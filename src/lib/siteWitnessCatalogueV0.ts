@@ -55,17 +55,29 @@ export interface SiteWitnesses {
   residual: Residual | null;
   abstraction: Abstraction;
   adjacency: AdjacencyFace[];
+  gemRoles: SiteGemRole[];
 }
 
 export interface GemAxis {
   kind: string;
   members: string[];
+  memberIds: VertexId[];
 }
 
 export interface ShapeGem {
   gemName: string;
   fact: string;
   axes: GemAxis[];
+}
+
+// The MERGE: a site's concrete role in its host cell's gem — the gem's axes the
+// site lies on (matched by id). Kept a LIST so genuine multi-membership
+// (confluence: a vertex shared by >1 gem-cell) is reported, never collapsed.
+export interface SiteGemRole {
+  cellId: string;
+  topology: string;
+  gemName: string;
+  incidentAxes: GemAxis[];
 }
 
 export interface SiteWitnessCatalogueReport {
@@ -199,6 +211,7 @@ function octahedronGem(shape: Shape, cell: Cell): ShapeGem {
         axes.push({
           kind: 'antipodal-pair',
           members: [labelOf(shape, ids[i]), labelOf(shape, ids[j])].sort(),
+          memberIds: [ids[i], ids[j]],
         });
         used.add(ids[i]);
         used.add(ids[j]);
@@ -256,13 +269,15 @@ function cuboctahedronGem(shape: Shape, cell: Cell, faceById: Map<string, Face>)
     }
     used.add(i);
     used.add(best);
-    const members = labelsOf(
-      shape,
-      new Set<VertexId>([...descriptors[i].face.vertexIds, ...descriptors[best].face.vertexIds]),
-    );
+    const memberIdSet = new Set<VertexId>([
+      ...descriptors[i].face.vertexIds,
+      ...descriptors[best].face.vertexIds,
+    ]);
+    const members = labelsOf(shape, memberIdSet);
     axes.push({
       kind: descriptors[i].size === 3 ? 'triangle-face' : 'square-face',
       members,
+      memberIds: [...memberIdSet],
     });
   }
 
@@ -333,6 +348,17 @@ export function buildSiteWitnessCatalogueV0(shape: Shape): SiteWitnessCatalogueR
     issues.push(`presenter: ${presenterIssue}`);
   }
 
+  // §4b: assemble the per-shape gems BEFORE the per-site loop so each site can
+  // read them (pure reordering — identical gemForCell logic, just moved up).
+  const faceById = new Map<string, Face>(shape.faces.map((face) => [face.id, face]));
+  const shapeGems: { cellId: string; topology: string; gem: ShapeGem }[] = [];
+  for (const cell of shape.cells) {
+    const gem = gemForCell(shape, cell, faceById);
+    if (gem) {
+      shapeGems.push({ cellId: cell.id, topology: cell.topology ?? '', gem });
+    }
+  }
+
   const sites: SiteWitnesses[] = [];
 
   for (const packet of presenter.packets) {
@@ -367,25 +393,38 @@ export function buildSiteWitnessCatalogueV0(shape: Shape): SiteWitnessCatalogueR
       shedCount,
     };
 
+    // §4b: the MERGE — this site's role in each gem-bearing cell it belongs to.
+    // Match cell by id; incidence by memberIds (robust, no label collisions).
+    const gemRoles: SiteGemRole[] = [];
+    for (const entry of shapeGems) {
+      const cell = shape.cells.find((candidate) => candidate.id === entry.cellId);
+      if (cell && cell.vertexIds.includes(siteId)) {
+        const incidentAxes = entry.gem.axes.filter((axis) => axis.memberIds.includes(siteId));
+        gemRoles.push({
+          cellId: entry.cellId,
+          topology: entry.topology,
+          gemName: entry.gem.gemName,
+          incidentAxes,
+        });
+        if (incidentAxes.length === 0) {
+          issues.push(
+            `site ${siteId} is a vertex of gem-cell ${entry.cellId} but lies on no gem axis`,
+          );
+        }
+      }
+    }
+
     sites.push({
       siteId,
       label,
       residual,
       abstraction,
       adjacency: adjacencyFor(shape, siteId),
+      gemRoles,
     });
   }
 
   sites.sort((a, b) => a.siteId.localeCompare(b.siteId));
-
-  const faceById = new Map<string, Face>(shape.faces.map((face) => [face.id, face]));
-  const shapeGems: { cellId: string; topology: string; gem: ShapeGem }[] = [];
-  for (const cell of shape.cells) {
-    const gem = gemForCell(shape, cell, faceById);
-    if (gem) {
-      shapeGems.push({ cellId: cell.id, topology: cell.topology ?? '', gem });
-    }
-  }
 
   return {
     methodId: 'site-witness-catalogue-v0',
