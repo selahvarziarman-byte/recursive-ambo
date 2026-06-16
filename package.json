@@ -37,6 +37,7 @@
     "diagnose:p-simplex-relation-audited-sampling-v0": "node scripts/diagnose-p-simplex-relation-audited-sampling-v0.cjs",
     "diagnose:p-simplex-geometry-graph-sampling-k3-v0": "node scripts/diagnose-p-simplex-geometry-graph-sampling-k3-v0.cjs",
     "diagnose:p-simplex-child-local-probe-ledger-t7": "node scripts/diagnose-p-simplex-child-local-probe-ledger-t7.cjs",
+    "diagnose:p-simplex-minimal-geometry-position-vector-v0": "node scripts/diagnose-p-simplex-minimal-geometry-position-vector-v0.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
