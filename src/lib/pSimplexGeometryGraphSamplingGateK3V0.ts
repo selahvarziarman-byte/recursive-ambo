@@ -36,6 +36,14 @@ export type PSimplexK3Recommendation =
   | 'define-child-local-sampling-stencil-before-broader-geometry-sampling'
   | 'return-to-kernel-locality-policy';
 export type PSimplexK3Verdict = 'PASS' | 'PARTIAL' | 'FAIL';
+export type PSimplexK3CleanGateRule = 'alpha >= 0.90 unless neutral/cancelled';
+export type PSimplexK3AxialOffsetDirection = '+axis' | '-axis';
+export type PSimplexK3ThresholdMarginClass =
+  | 'exact-or-near-perfect'
+  | 'comfortably-clean'
+  | 'barely-clean'
+  | 'below-clean-threshold'
+  | 'neutral-or-cancelled';
 
 export interface PSimplexK3GeometrySourceRowV0 {
   sourceId: PSimplexPrimalSourceId | PSimplexChildSourceId;
@@ -117,6 +125,76 @@ export interface PSimplexK3ContinuityControlRowV0 {
   ok: boolean;
 }
 
+export interface PSimplexK3KernelRuleRowV0 {
+  sampleFamily: PSimplexK3SampleFamily;
+  kernelKind: PSimplexK3KernelKind;
+  ruleFormula: string;
+  graphDefinition?: string;
+  geometryPositionRule?: string;
+  axialOffsetRule?: string;
+  transverseTargetRule?: string;
+  siblingPolicy: string;
+  cleanGateRule: PSimplexK3CleanGateRule;
+  notes: string;
+}
+
+export interface PSimplexK3PerChildEvidenceRowV0 {
+  targetChild: PSimplexChildSourceId;
+  sampleFamily: PSimplexK3SampleFamily;
+  sampleId: string;
+  samplePositionType: string;
+  samplePosition: PSimplexVec3;
+  transverseTargetSibling?: PSimplexChildSourceId;
+  axialOffsetDirection?: PSimplexK3AxialOffsetDirection;
+  axialOffsetSize?: number;
+  sourceWeights: Record<string, number>;
+  relationClassWeights: Record<PSimplexRelationClass, number[]>;
+  graphDistances?: Record<string, number | null>;
+  graphWeights?: Record<string, number>;
+  phi: PSimplexVec3;
+  magnitude: number;
+  targetAxis: PSimplexVec3;
+  p: number;
+  transverseResidualVector: PSimplexVec3;
+  r: number;
+  alpha: number;
+  cleanThreshold: 0.9;
+  cleanThresholdMargin: number;
+  axisCompatible: boolean;
+  axisCompatibilityFailures: string[];
+  status: PSimplexSamplingStatus;
+  cleanReadingAllowed: boolean;
+  suppressionReason: string | null;
+  localitySensitive: boolean;
+  kernelArtifactRisk: boolean;
+}
+
+export interface PSimplexK3FamilyDistributionRowV0 {
+  sampleFamily: PSimplexK3SampleFamily;
+  sampleCount: number;
+  axisCompatibleCount: number;
+  axisIncompatibleCount: number;
+  cleanReadingAllowedCount: number;
+  suppressedReadingCount: number;
+  localitySensitiveCount: number;
+  kernelArtifactRiskCount: number;
+  statusCounts: Record<string, number>;
+  minAlpha: number;
+  maxAlpha: number;
+  minCleanThresholdMargin: number;
+  maxCleanThresholdMargin: number;
+}
+
+export interface PSimplexK3ThresholdMarginRowV0 {
+  sampleId: string;
+  targetChild: PSimplexChildSourceId;
+  sampleFamily: PSimplexK3SampleFamily;
+  alpha: number;
+  cleanThreshold: 0.9;
+  margin: number;
+  marginClass: PSimplexK3ThresholdMarginClass;
+}
+
 export interface PSimplexGeometryGraphSamplingGateK3SummaryV0 {
   activeSourceCount: number;
   targetChildCount: number;
@@ -163,6 +241,10 @@ export interface PSimplexGeometryGraphSamplingGateK3V0Report {
   k3VectorResultRows: PSimplexK3VectorResultRowV0[];
   k3LocalityAuditRows: PSimplexK3LocalityAuditRowV0[];
   continuityControlRows: PSimplexK3ContinuityControlRowV0[];
+  kernelRuleRows: PSimplexK3KernelRuleRowV0[];
+  perChildEvidenceRows: PSimplexK3PerChildEvidenceRowV0[];
+  familyDistributionRows: PSimplexK3FamilyDistributionRowV0[];
+  thresholdMarginRows: PSimplexK3ThresholdMarginRowV0[];
   summary: PSimplexGeometryGraphSamplingGateK3SummaryV0;
   finalRecommendation: PSimplexK3Recommendation;
   verdict: PSimplexK3Verdict;
@@ -200,6 +282,13 @@ interface GeometrySourceRecord extends SourceRecord {
 
 const PRIMAL_ORDER: readonly PSimplexPrimalSourceId[] = ['A', 'B', 'C', 'D'];
 const CHILD_ORDER: readonly PSimplexChildSourceId[] = ['M_AB', 'M_AC', 'M_AD', 'M_BC', 'M_BD', 'M_CD'];
+const K3_SAMPLE_FAMILIES: readonly PSimplexK3SampleFamily[] = [
+  'K3-G',
+  'K3-E',
+  'K3-A-primary',
+  'K3-A-complement',
+  'K3-T',
+];
 const RELATION_CLASSES: readonly PSimplexRelationClass[] = [
   'primary-child',
   'endpoint-parent',
@@ -235,6 +324,17 @@ export function buildPSimplexGeometryGraphSamplingGateK3V0Report(): PSimplexGeom
     buildK3LocalityAuditRow(sample, graphRows, k3VectorResultRows),
   );
   const continuityControlRows = buildContinuityControlRows(parentRelationReport);
+  const kernelRuleRows = buildKernelRuleRows();
+  const perChildEvidenceRows = buildPerChildEvidenceRows({
+    samples: k3SampleRows,
+    vectors: k3VectorResultRows,
+    audits: k3LocalityAuditRows,
+    graphRows,
+    targets: targetChildren,
+    sources: geometrySources,
+  });
+  const familyDistributionRows = buildFamilyDistributionRows(k3SampleRows, k3VectorResultRows, k3LocalityAuditRows);
+  const thresholdMarginRows = buildThresholdMarginRows(k3SampleRows, k3VectorResultRows);
   const parentVectorDiagnosticStillPasses = parentVectorReport.ok && parentVectorReport.integrityIssueCount === 0;
   const parentLocalityDiagnosticStillPasses =
     parentLocalityReport.ok && parentLocalityReport.integrityIssueCount === 0;
@@ -262,6 +362,10 @@ export function buildPSimplexGeometryGraphSamplingGateK3V0Report(): PSimplexGeom
     k3VectorResultRows,
     k3LocalityAuditRows,
     continuityControlRows,
+    kernelRuleRows,
+    perChildEvidenceRows,
+    familyDistributionRows,
+    thresholdMarginRows,
   });
   const finalRecommendation = chooseFinalRecommendation(k3SampleRows, k3LocalityAuditRows, integrityIssues);
   const verdict = classifyVerdict(integrityIssues, k3SampleRows, k3VectorResultRows, k3LocalityAuditRows);
@@ -291,6 +395,10 @@ export function buildPSimplexGeometryGraphSamplingGateK3V0Report(): PSimplexGeom
     k3VectorResultRows,
     k3LocalityAuditRows,
     continuityControlRows,
+    kernelRuleRows,
+    perChildEvidenceRows,
+    familyDistributionRows,
+    thresholdMarginRows,
     summary,
     finalRecommendation,
     verdict,
@@ -572,6 +680,170 @@ function buildK3LocalityAuditRow(
   };
 }
 
+function buildKernelRuleRows(): PSimplexK3KernelRuleRowV0[] {
+  return [
+    {
+      sampleFamily: 'K3-G',
+      kernelKind: 'graph-distance',
+      ruleFormula: 'K_s = 1 / (1 + graphDistance)',
+      graphDefinition:
+        'graph nodes = A,B,C,D,M_AB,M_AC,M_AD,M_BC,M_BD,M_CD; graph edges = each child M_ij connected to endpoint parents i,j; graph distance = BFS distance from target child',
+      siblingPolicy: 'one-endpoint sibling children are weighted by graph distance; no sibling is selected as a transverse target',
+      cleanGateRule: 'alpha >= 0.90 unless neutral/cancelled',
+      notes: 'Finite graph-distance kernel over the accumulated S<=1 source graph.',
+    },
+    {
+      sampleFamily: 'K3-E',
+      kernelKind: 'euclidean-radial',
+      ruleFormula: 'K_s(x) = 1 / (1 + distance(x, pos_s))',
+      geometryPositionRule: 'x = exact target child midpoint position',
+      siblingPolicy: 'all active sources are weighted radially from the exact target child position',
+      cleanGateRule: 'alpha >= 0.90 unless neutral/cancelled',
+      notes: 'Exact generated child midpoint probe using the same normalized tetrahedral geometry fixture.',
+    },
+    {
+      sampleFamily: 'K3-A-primary',
+      kernelKind: 'euclidean-radial',
+      ruleFormula: 'K_s(x) = 1 / (1 + distance(x, pos_s))',
+      geometryPositionRule: 'x = pos_ij + OFFSET * normalize(pos_ij)',
+      axialOffsetRule: 'OFFSET = 0.25 * |pos_ij|',
+      siblingPolicy: 'all active sources are weighted radially from the positive axial offset position',
+      cleanGateRule: 'alpha >= 0.90 unless neutral/cancelled',
+      notes: 'Positive child-axis offset probe; paired with K3-A-complement to test both axial sides.',
+    },
+    {
+      sampleFamily: 'K3-A-complement',
+      kernelKind: 'euclidean-radial',
+      ruleFormula: 'K_s(x) = 1 / (1 + distance(x, pos_s))',
+      geometryPositionRule: 'x = pos_ij - OFFSET * normalize(pos_ij)',
+      axialOffsetRule: 'OFFSET = 0.25 * |pos_ij|',
+      siblingPolicy: 'all active sources are weighted radially from the negative axial offset position',
+      cleanGateRule: 'alpha >= 0.90 unless neutral/cancelled',
+      notes: 'Negative child-axis offset probe; paired with K3-A-primary to test both axial sides.',
+    },
+    {
+      sampleFamily: 'K3-T',
+      kernelKind: 'euclidean-radial',
+      ruleFormula: 'K_s(x) = 1 / (1 + distance(x, pos_s))',
+      geometryPositionRule: 'x = midpoint(pos_targetChild, pos_sibling)',
+      transverseTargetRule: 'sibling = first one-endpoint sibling in canonical child order',
+      siblingPolicy: 'one deterministic transverse sibling is used for each target child, not all sibling options',
+      cleanGateRule: 'alpha >= 0.90 unless neutral/cancelled',
+      notes: 'Transverse stress probe used to expose locality sensitivity; suppression is expected when alpha drops below the clean threshold.',
+    },
+  ];
+}
+
+function buildPerChildEvidenceRows(args: {
+  samples: PSimplexK3SampleRowV0[];
+  vectors: PSimplexK3VectorResultRowV0[];
+  audits: PSimplexK3LocalityAuditRowV0[];
+  graphRows: PSimplexK3GraphRowV0[];
+  targets: TargetRecord[];
+  sources: GeometrySourceRecord[];
+}): PSimplexK3PerChildEvidenceRowV0[] {
+  return args.samples.map((sample) => {
+    const target = requireTarget(args.targets, sample.targetChild);
+    const vector = requireVectorResult(args.vectors, sample.sampleId);
+    const audit = requireLocalityAudit(args.audits, sample.sampleId);
+    const graphRowsForTarget = args.graphRows.filter((row) => row.targetChild === sample.targetChild);
+    const graphDistances =
+      sample.sampleFamily === 'K3-G'
+        ? orderedGraphRecord(graphRowsForTarget, 'graphDistance')
+        : undefined;
+    const graphWeights =
+      sample.sampleFamily === 'K3-G'
+        ? orderedGraphRecord(graphRowsForTarget, 'graphWeight')
+        : undefined;
+    const axialOffsetDirection = axialOffsetDirectionFor(sample.sampleFamily);
+    const axialOffsetSize = axialOffsetDirection ? cleanNumber(OFFSET_FACTOR * normVec3(target.geometryPosition)) : undefined;
+    const transverseTargetSibling =
+      sample.sampleFamily === 'K3-T' ? (firstSibling(target, args.sources).sourceId as PSimplexChildSourceId) : undefined;
+
+    return {
+      targetChild: sample.targetChild,
+      sampleFamily: sample.sampleFamily,
+      sampleId: sample.sampleId,
+      samplePositionType: sample.samplePositionType,
+      samplePosition: sample.samplePosition,
+      transverseTargetSibling,
+      axialOffsetDirection,
+      axialOffsetSize,
+      sourceWeights: cleanWeightRecord(sample.sourceWeights),
+      relationClassWeights: sample.relationClassWeights,
+      graphDistances,
+      graphWeights,
+      phi: vector.phi,
+      magnitude: vector.magnitude,
+      targetAxis: cleanVec3(target.targetAxis),
+      p: vector.axisProjection,
+      transverseResidualVector: vector.transverseResidualVector,
+      r: vector.transverseResidualMagnitude,
+      alpha: vector.axisAlignment,
+      cleanThreshold: AXIS_CLEAN_THRESHOLD,
+      cleanThresholdMargin: cleanNumber(vector.axisAlignment - AXIS_CLEAN_THRESHOLD),
+      axisCompatible: sample.axisCompatible,
+      axisCompatibilityFailures: sample.axisCompatibilityFailures,
+      status: vector.status,
+      cleanReadingAllowed: vector.cleanReadingAllowed,
+      suppressionReason: vector.suppressionReason,
+      localitySensitive: audit.localitySensitive,
+      kernelArtifactRisk: audit.kernelArtifactRisk,
+    };
+  });
+}
+
+function buildFamilyDistributionRows(
+  samples: PSimplexK3SampleRowV0[],
+  vectors: PSimplexK3VectorResultRowV0[],
+  audits: PSimplexK3LocalityAuditRowV0[],
+): PSimplexK3FamilyDistributionRowV0[] {
+  return K3_SAMPLE_FAMILIES.map((sampleFamily) => {
+    const familySamples = samplesForFamily(samples, sampleFamily);
+    const sampleIds = new Set(familySamples.map((sample) => sample.sampleId));
+    const familyVectors = vectors.filter((row) => sampleIds.has(row.sampleId));
+    const familyAudits = audits.filter((row) => sampleIds.has(row.sampleId));
+    const alphas = familyVectors.map((row) => row.axisAlignment);
+    const margins = familyVectors.map((row) => cleanNumber(row.axisAlignment - AXIS_CLEAN_THRESHOLD));
+
+    return {
+      sampleFamily,
+      sampleCount: familySamples.length,
+      axisCompatibleCount: familySamples.filter((row) => row.axisCompatible).length,
+      axisIncompatibleCount: familySamples.filter((row) => !row.axisCompatible).length,
+      cleanReadingAllowedCount: familyVectors.filter((row) => row.cleanReadingAllowed).length,
+      suppressedReadingCount: familyVectors.filter((row) => !row.cleanReadingAllowed).length,
+      localitySensitiveCount: familyAudits.filter((row) => row.localitySensitive).length,
+      kernelArtifactRiskCount: familyAudits.filter((row) => row.kernelArtifactRisk).length,
+      statusCounts: statusCounts(familyVectors),
+      minAlpha: cleanNumber(Math.min(...alphas)),
+      maxAlpha: cleanNumber(Math.max(...alphas)),
+      minCleanThresholdMargin: cleanNumber(Math.min(...margins)),
+      maxCleanThresholdMargin: cleanNumber(Math.max(...margins)),
+    };
+  });
+}
+
+function buildThresholdMarginRows(
+  samples: PSimplexK3SampleRowV0[],
+  vectors: PSimplexK3VectorResultRowV0[],
+): PSimplexK3ThresholdMarginRowV0[] {
+  return samples.map((sample) => {
+    const vector = requireVectorResult(vectors, sample.sampleId);
+    const margin = cleanNumber(vector.axisAlignment - AXIS_CLEAN_THRESHOLD);
+
+    return {
+      sampleId: sample.sampleId,
+      targetChild: sample.targetChild,
+      sampleFamily: sample.sampleFamily,
+      alpha: vector.axisAlignment,
+      cleanThreshold: AXIS_CLEAN_THRESHOLD,
+      margin,
+      marginClass: thresholdMarginClass(vector.magnitude, vector.axisAlignment),
+    };
+  });
+}
+
 function buildContinuityControlRows(
   relationReport: ReturnType<typeof buildPSimplexRelationAuditedSamplingDiagnosticV0Report>,
 ): PSimplexK3ContinuityControlRowV0[] {
@@ -686,6 +958,10 @@ function buildIntegrityIssues(args: {
   k3VectorResultRows: PSimplexK3VectorResultRowV0[];
   k3LocalityAuditRows: PSimplexK3LocalityAuditRowV0[];
   continuityControlRows: PSimplexK3ContinuityControlRowV0[];
+  kernelRuleRows: PSimplexK3KernelRuleRowV0[];
+  perChildEvidenceRows: PSimplexK3PerChildEvidenceRowV0[];
+  familyDistributionRows: PSimplexK3FamilyDistributionRowV0[];
+  thresholdMarginRows: PSimplexK3ThresholdMarginRowV0[];
 }): string[] {
   const issues = [...args.structuralIssues];
 
@@ -721,10 +997,26 @@ function buildIntegrityIssues(args: {
     issues.push(`Expected K3 sample count 30, got ${args.k3SampleRows.length}.`);
   }
 
-  for (const family of ['K3-G', 'K3-E', 'K3-A-primary', 'K3-A-complement', 'K3-T'] as const) {
+  for (const family of K3_SAMPLE_FAMILIES) {
     if (countSamples(args.k3SampleRows, family) !== 6) {
       issues.push(`Expected 6 ${family} samples.`);
     }
+  }
+
+  if (args.kernelRuleRows.length !== 5) {
+    issues.push(`Expected 5 kernel rule rows, got ${args.kernelRuleRows.length}.`);
+  }
+
+  if (args.perChildEvidenceRows.length !== 30) {
+    issues.push(`Expected 30 per-child evidence rows, got ${args.perChildEvidenceRows.length}.`);
+  }
+
+  if (args.familyDistributionRows.length !== 5) {
+    issues.push(`Expected 5 family distribution rows, got ${args.familyDistributionRows.length}.`);
+  }
+
+  if (args.thresholdMarginRows.length !== 30) {
+    issues.push(`Expected 30 threshold margin rows, got ${args.thresholdMarginRows.length}.`);
   }
 
   const graphSamples = samplesForFamily(args.k3SampleRows, 'K3-G');
@@ -755,6 +1047,74 @@ function buildIntegrityIssues(args: {
     issues.push('K3-T transverse samples were not all locality-sensitive kernel-artifact risks.');
   }
 
+  if (args.kernelRuleRows.some((row) => !row.ruleFormula || !row.siblingPolicy || row.cleanGateRule !== 'alpha >= 0.90 unless neutral/cancelled')) {
+    issues.push('At least one kernel rule row is missing its formula, sibling policy, or clean gate rule.');
+  }
+
+  const kernelRuleFamilies = new Set(args.kernelRuleRows.map((row) => row.sampleFamily));
+
+  if (K3_SAMPLE_FAMILIES.some((family) => !kernelRuleFamilies.has(family))) {
+    issues.push('Kernel rule rows do not cover every K3 sample family.');
+  }
+
+  const k3TRule = args.kernelRuleRows.find((row) => row.sampleFamily === 'K3-T');
+
+  if (
+    !k3TRule?.transverseTargetRule ||
+    !k3TRule.siblingPolicy.includes('one deterministic transverse sibling') ||
+    !k3TRule.siblingPolicy.includes('not all sibling options')
+  ) {
+    issues.push('K3-T kernel rule does not explicitly declare one deterministic sibling rather than all sibling options.');
+  }
+
+  if (args.perChildEvidenceRows.some((row) => evidenceRowHasMissingCoreObservable(row))) {
+    issues.push('At least one per-child evidence row is missing phi, p, r, alpha, relationClassWeights, or sourceWeights.');
+  }
+
+  if (
+    args.perChildEvidenceRows
+      .filter((row) => row.sampleFamily === 'K3-A-primary')
+      .some((row) => row.axialOffsetDirection !== '+axis')
+  ) {
+    issues.push('K3-A-primary evidence rows do not all report axialOffsetDirection=+axis.');
+  }
+
+  if (
+    args.perChildEvidenceRows
+      .filter((row) => row.sampleFamily === 'K3-A-complement')
+      .some((row) => row.axialOffsetDirection !== '-axis')
+  ) {
+    issues.push('K3-A-complement evidence rows do not all report axialOffsetDirection=-axis.');
+  }
+
+  if (
+    args.perChildEvidenceRows
+      .filter((row) => row.sampleFamily === 'K3-A-primary' || row.sampleFamily === 'K3-A-complement')
+      .some((row) => row.axialOffsetSize === undefined)
+  ) {
+    issues.push('K3-A evidence rows do not all report axialOffsetSize.');
+  }
+
+  if (
+    args.perChildEvidenceRows
+      .filter((row) => row.sampleFamily === 'K3-T')
+      .some((row) => !row.transverseTargetSibling)
+  ) {
+    issues.push('K3-T evidence rows do not all report transverseTargetSibling.');
+  }
+
+  if (
+    args.perChildEvidenceRows
+      .filter((row) => row.sampleFamily === 'K3-G')
+      .some((row) => !row.graphDistances || !row.graphWeights)
+  ) {
+    issues.push('K3-G evidence rows do not expose graphDistances and graphWeights.');
+  }
+
+  if (args.familyDistributionRows.some((row) => familyDistributionRowIsIncomplete(row))) {
+    issues.push('At least one family distribution row lacks statusCounts or threshold margin bounds.');
+  }
+
   if (
     vectorRowsForFamilies(args.k3SampleRows, args.k3VectorResultRows, ['K3-G', 'K3-E']).some(
       (row) => !row.cleanReadingAllowed,
@@ -777,6 +1137,17 @@ function buildIntegrityIssues(args: {
 
   if (statusValuesContainForbiddenTerms(args.k3VectorResultRows)) {
     issues.push('A K3 vector status contained forbidden vocabulary.');
+  }
+
+  if (
+    evidenceRowsContainForbiddenTerms(
+      args.kernelRuleRows,
+      args.perChildEvidenceRows,
+      args.familyDistributionRows,
+      args.thresholdMarginRows,
+    )
+  ) {
+    issues.push('A K3 evidence row contained forbidden vocabulary.');
   }
 
   return [...new Set(issues)];
@@ -1095,6 +1466,68 @@ function requireVectorResult(rows: PSimplexK3VectorResultRowV0[], sampleId: stri
   return row;
 }
 
+function requireLocalityAudit(rows: PSimplexK3LocalityAuditRowV0[], sampleId: string): PSimplexK3LocalityAuditRowV0 {
+  const row = rows.find((candidate) => candidate.sampleId === sampleId);
+
+  if (!row) {
+    throw new Error(`Missing K3 locality audit ${sampleId}.`);
+  }
+
+  return row;
+}
+
+function orderedGraphRecord<T extends 'graphDistance' | 'graphWeight'>(
+  rows: PSimplexK3GraphRowV0[],
+  key: T,
+): Record<string, PSimplexK3GraphRowV0[T]> {
+  return Object.fromEntries(
+    [...rows]
+      .sort((left, right) => sourceOrder(left.sourceId) - sourceOrder(right.sourceId))
+      .map((row) => [row.sourceId, row[key]]),
+  );
+}
+
+function axialOffsetDirectionFor(
+  sampleFamily: PSimplexK3SampleFamily,
+): PSimplexK3AxialOffsetDirection | undefined {
+  if (sampleFamily === 'K3-A-primary') {
+    return '+axis';
+  }
+
+  if (sampleFamily === 'K3-A-complement') {
+    return '-axis';
+  }
+
+  return undefined;
+}
+
+function statusCounts(rows: PSimplexK3VectorResultRowV0[]): Record<string, number> {
+  return rows.reduce<Record<string, number>>((counts, row) => {
+    counts[row.status] = (counts[row.status] ?? 0) + 1;
+    return counts;
+  }, {});
+}
+
+function thresholdMarginClass(magnitude: number, alpha: number): PSimplexK3ThresholdMarginClass {
+  if (magnitude <= EPSILON) {
+    return 'neutral-or-cancelled';
+  }
+
+  if (alpha >= 0.999) {
+    return 'exact-or-near-perfect';
+  }
+
+  if (alpha >= 0.95) {
+    return 'comfortably-clean';
+  }
+
+  if (alpha >= AXIS_CLEAN_THRESHOLD) {
+    return 'barely-clean';
+  }
+
+  return 'below-clean-threshold';
+}
+
 function countSamples(rows: PSimplexK3SampleRowV0[], family: PSimplexK3SampleFamily): number {
   return rows.filter((row) => row.sampleFamily === family).length;
 }
@@ -1137,6 +1570,27 @@ function vectorRowsForFamilies(
   return vectorRows.filter((row) => ids.has(row.sampleId));
 }
 
+function evidenceRowHasMissingCoreObservable(row: PSimplexK3PerChildEvidenceRowV0): boolean {
+  return (
+    !isVec3(row.phi) ||
+    !isFiniteNumber(row.p) ||
+    !isFiniteNumber(row.r) ||
+    !isFiniteNumber(row.alpha) ||
+    Object.keys(row.relationClassWeights).length === 0 ||
+    Object.keys(row.sourceWeights).length === 0
+  );
+}
+
+function familyDistributionRowIsIncomplete(row: PSimplexK3FamilyDistributionRowV0): boolean {
+  return (
+    Object.keys(row.statusCounts).length === 0 ||
+    !isFiniteNumber(row.minAlpha) ||
+    !isFiniteNumber(row.maxAlpha) ||
+    !isFiniteNumber(row.minCleanThresholdMargin) ||
+    !isFiniteNumber(row.maxCleanThresholdMargin)
+  );
+}
+
 function statusValuesContainForbiddenTerms(rows: PSimplexK3VectorResultRowV0[]): boolean {
   const forbidden = [
     'basin',
@@ -1153,6 +1607,55 @@ function statusValuesContainForbiddenTerms(rows: PSimplexK3VectorResultRowV0[]):
   ];
 
   return rows.some((row) => forbidden.some((term) => row.status.includes(term) || row.readabilityStatus.includes(term)));
+}
+
+function evidenceRowsContainForbiddenTerms(
+  kernelRuleRows: PSimplexK3KernelRuleRowV0[],
+  perChildEvidenceRows: PSimplexK3PerChildEvidenceRowV0[],
+  familyDistributionRows: PSimplexK3FamilyDistributionRowV0[],
+  thresholdMarginRows: PSimplexK3ThresholdMarginRowV0[],
+): boolean {
+  const forbidden = [
+    'basin',
+    'wall',
+    'complement-pressure',
+    'defect',
+    'route',
+    'walk',
+    'holonomy',
+    'vortex',
+    'dwelling',
+    'naming pressure',
+    'semantic interpretation',
+  ];
+  const values = [
+    ...kernelRuleRows.flatMap((row) => [
+      row.ruleFormula,
+      row.graphDefinition ?? '',
+      row.geometryPositionRule ?? '',
+      row.axialOffsetRule ?? '',
+      row.transverseTargetRule ?? '',
+      row.siblingPolicy,
+      row.notes,
+    ]),
+    ...perChildEvidenceRows.flatMap((row) => [
+      row.status,
+      row.suppressionReason ?? '',
+      ...row.axisCompatibilityFailures,
+    ]),
+    ...familyDistributionRows.flatMap((row) => [row.sampleFamily, ...Object.keys(row.statusCounts)]),
+    ...thresholdMarginRows.map((row) => row.marginClass),
+  ];
+
+  return values.some((value) => forbidden.some((term) => value.includes(term)));
+}
+
+function isVec3(value: PSimplexVec3): boolean {
+  return value.length === 3 && value.every(isFiniteNumber);
+}
+
+function isFiniteNumber(value: number): boolean {
+  return Number.isFinite(value);
 }
 
 function cleanWeightRecord(weights: Record<string, number>): Record<string, number> {
