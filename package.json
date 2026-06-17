@@ -42,6 +42,7 @@
     "diagnose:p-simplex-a3-residual-decomposition-ledger-t10": "node scripts/diagnose-p-simplex-a3-residual-decomposition-ledger-t10.cjs",
     "diagnose:p-simplex-vector-lg-potential-shape-ledger-t11": "node scripts/diagnose-p-simplex-vector-lg-potential-shape-ledger-t11.cjs",
     "diagnose:p-simplex-source-forced-vector-lg-response-ledger-t12": "node scripts/diagnose-p-simplex-source-forced-vector-lg-response-ledger-t12.cjs",
+    "diagnose:p-simplex-geometry-probe-source-forced-response-ledger-t13": "node scripts/diagnose-p-simplex-geometry-probe-source-forced-response-ledger-t13.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
