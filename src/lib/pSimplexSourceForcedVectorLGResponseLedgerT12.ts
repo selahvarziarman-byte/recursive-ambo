@@ -7,6 +7,28 @@ import {
   buildPSimplexVectorLGPotentialShapeLedgerT11Report,
   type PSimplexT11DirectionClassRow,
 } from './pSimplexVectorLGPotentialShapeLedgerT11';
+import {
+  buildSourceDrive,
+  compareFiniteResponseDirections,
+  PSIMPLEX_A3_AXIS_TO_A3_THRESHOLD,
+  PSIMPLEX_BODY_A3_TO_BODY_REFERENCE_THRESHOLD,
+  PSIMPLEX_BODY_AXIS_TO_BODY_THRESHOLD,
+  type PSimplexCandidateEnergy,
+} from './pSimplexResponseCore';
+import {
+  cleanNumber,
+  cleanVec3,
+  copyVec3,
+  dotVec3,
+  nearlyEqual,
+  PSIMPLEX_EPSILON,
+} from './pSimplexVectorMath';
+import {
+  pSimplexAnisotropyTerm,
+  PSIMPLEX_A3_ANISOTROPY,
+  PSIMPLEX_AXIS_ANISOTROPY,
+  PSIMPLEX_BODY_DIAGONAL_ANISOTROPY,
+} from './pSimplexVectorLGCore';
 
 export type PSimplexT12DriveCase = 'D0' | 'D1' | 'D2' | 'D3' | 'D4';
 export type PSimplexT12DriveClass =
@@ -184,21 +206,15 @@ interface StrengthSpec {
   s: number;
 }
 
-interface CandidateEnergy {
-  direction: PSimplexT12FiniteResponseDirectionRow;
-  energy: number;
-}
+type CandidateEnergy = PSimplexCandidateEnergy<PSimplexT12FiniteResponseDirectionRow>;
 
-const EPSILON = 1e-9;
-const AXIS_ANISOTROPY = 0;
-const A3_ANISOTROPY = 0.25;
-const BODY_DIAGONAL_ANISOTROPY = 1 / 3;
-const ONE_OVER_SQRT_TWO = 1 / Math.sqrt(2);
-const ONE_OVER_SQRT_THREE = 1 / Math.sqrt(3);
-const SQRT_TWO_OVER_THREE = Math.sqrt(2 / 3);
-const S_A3 = A3_ANISOTROPY / (1 - ONE_OVER_SQRT_TWO);
-const S_BODY_GLOBAL = BODY_DIAGONAL_ANISOTROPY / (1 - ONE_OVER_SQRT_THREE);
-const S_BODY_VS_A3 = (1 / 12) / (1 - SQRT_TWO_OVER_THREE);
+const EPSILON = PSIMPLEX_EPSILON;
+const AXIS_ANISOTROPY = PSIMPLEX_AXIS_ANISOTROPY;
+const A3_ANISOTROPY = PSIMPLEX_A3_ANISOTROPY;
+const BODY_DIAGONAL_ANISOTROPY = PSIMPLEX_BODY_DIAGONAL_ANISOTROPY;
+const S_A3 = PSIMPLEX_A3_AXIS_TO_A3_THRESHOLD;
+const S_BODY_GLOBAL = PSIMPLEX_BODY_AXIS_TO_BODY_THRESHOLD;
+const S_BODY_VS_A3 = PSIMPLEX_BODY_A3_TO_BODY_REFERENCE_THRESHOLD;
 const RESPONSE_STATUSES: readonly PSimplexT12ResponseStatus[] = [
   'unforced-axis-degenerate',
   'axis-locked-response',
@@ -294,7 +310,7 @@ function buildFiniteResponseDirectionRows(
     const responseDirectionClass = responseClassForT11Row(row);
     const source = responseSourceForT11Row(row);
     const expectedAnisotropy = expectedAnisotropyFor(responseDirectionClass);
-    const anisotropy = h(row.normalizedDirection);
+    const anisotropy = pSimplexAnisotropyTerm(row.normalizedDirection);
 
     return {
       responseDirectionId: row.directionId,
@@ -385,8 +401,7 @@ function buildSourceDriveRow(args: {
   J: PSimplexT9Vec3;
   expectedStatusFamily: string;
 }): PSimplexT12SourceDriveRow {
-  const normJ = normVec3(args.J);
-  const JHat = normJ > EPSILON ? scaleVec3(args.J, 1 / normJ) : null;
+  const sourceDrive = buildSourceDrive(args.J);
 
   return {
     driveId: args.driveId,
@@ -394,10 +409,13 @@ function buildSourceDriveRow(args: {
     driveClass: args.driveClass,
     source: args.source,
     J: cleanVec3(args.J),
-    JHat: JHat ? cleanVec3(JHat) : null,
-    normJ: cleanNumber(normJ),
+    JHat: sourceDrive.JHat ? cleanVec3(sourceDrive.JHat) : null,
+    normJ: cleanNumber(sourceDrive.normJ),
     expectedStatusFamily: args.expectedStatusFamily,
-    ok: args.driveCase === 'D0' ? normJ <= EPSILON && JHat === null : normJ > EPSILON && JHat !== null,
+    ok:
+      args.driveCase === 'D0'
+        ? sourceDrive.normJ <= EPSILON && sourceDrive.JHat === null
+        : sourceDrive.normJ > EPSILON && sourceDrive.JHat !== null,
   };
 }
 
@@ -447,19 +465,11 @@ function buildResponseComparisonRow(
   responseRows: PSimplexT12FiniteResponseDirectionRow[],
   strength: StrengthSpec,
 ): PSimplexT12ResponseComparisonRow {
-  const energies = responseRows.map((direction): CandidateEnergy => ({
-    direction,
-    energy: energyFor(direction, driveRow.JHat, strength.s),
-  }));
-  const minimumEnergy = Math.min(...energies.map((entry) => entry.energy));
-  const winners = energies.filter((entry) => Math.abs(entry.energy - minimumEnergy) <= EPSILON * 10);
-  const winningResponseDirectionIds = winners.map((entry) => entry.direction.responseDirectionId);
-  const winningResponseClasses = uniqueClasses(winners.map((entry) => entry.direction.responseDirectionClass));
-  const energyByResponseClass = {
-    axisWellMin: classMinimumEnergy(energies, 'axis-well'),
-    a3TransitionMin: classMinimumEnergy(energies, 'a3-transition'),
-    bodyDiagonalMin: classMinimumEnergy(energies, 'body-diagonal-high-mixing'),
-  };
+  const comparison = compareFiniteResponseDirections(responseRows, driveRow.JHat, strength.s, EPSILON * 10);
+  const winners = comparison.winningEntries;
+  const winningResponseDirectionIds = comparison.winningResponseDirectionIds;
+  const winningResponseClasses = comparison.winningResponseClasses;
+  const energyByResponseClass = comparison.energyByResponseClass;
   const responseStatus = classifyResponseStatus(driveRow, strength, winners);
   const ok = comparisonMatchesExpected(driveRow, strength, winners, responseStatus);
 
@@ -474,7 +484,7 @@ function buildResponseComparisonRow(
     comparedResponseDirectionCount: responseRows.length,
     winningResponseDirectionIds,
     winningResponseClasses,
-    minimumEnergy: cleanNumber(minimumEnergy),
+    minimumEnergy: cleanNumber(comparison.minimumEnergy),
     energyByResponseClass: {
       axisWellMin: cleanNumber(energyByResponseClass.axisWellMin),
       a3TransitionMin: cleanNumber(energyByResponseClass.a3TransitionMin),
@@ -516,14 +526,6 @@ function strengthsForDrive(driveCase: PSimplexT12DriveCase): StrengthSpec[] {
     { sLabel: 'exploratory-mid', s: 1 },
     { sLabel: 'exploratory-high', s: 2 },
   ];
-}
-
-function energyFor(
-  direction: PSimplexT12FiniteResponseDirectionRow,
-  JHat: PSimplexT9Vec3 | null,
-  s: number,
-): number {
-  return direction.anisotropy - (JHat ? s * dotVec3(JHat, direction.n) : 0);
 }
 
 function classifyResponseStatus(
@@ -941,16 +943,6 @@ function expectedAnisotropyFor(responseClass: PSimplexT12ResponseDirectionClass)
   return BODY_DIAGONAL_ANISOTROPY;
 }
 
-function h(n: PSimplexT9Vec3): number {
-  const [x, y, z] = n;
-
-  return x * x * y * y + y * y * z * z + z * z * x * x;
-}
-
-function classMinimumEnergy(energies: CandidateEnergy[], responseClass: PSimplexT12ResponseDirectionClass): number {
-  return Math.min(...energies.filter((entry) => entry.direction.responseDirectionClass === responseClass).map((entry) => entry.energy));
-}
-
 function uniqueClasses(values: PSimplexT12ResponseDirectionClass[]): PSimplexT12ResponseDirectionClass[] {
   return [...new Set(values)];
 }
@@ -960,38 +952,6 @@ function comparisonRowsForCase(
   driveCase: PSimplexT12DriveCase,
 ): PSimplexT12ResponseComparisonRow[] {
   return rows.filter((row) => row.driveCase === driveCase);
-}
-
-function dotVec3(left: PSimplexT9Vec3, right: PSimplexT9Vec3): number {
-  return left[0] * right[0] + left[1] * right[1] + left[2] * right[2];
-}
-
-function normVec3(value: PSimplexT9Vec3): number {
-  return Math.sqrt(dotVec3(value, value));
-}
-
-function scaleVec3(value: PSimplexT9Vec3, scale: number): PSimplexT9Vec3 {
-  return [value[0] * scale, value[1] * scale, value[2] * scale];
-}
-
-function copyVec3(value: PSimplexT9Vec3): PSimplexT9Vec3 {
-  return [value[0], value[1], value[2]];
-}
-
-function cleanVec3(value: PSimplexT9Vec3): PSimplexT9Vec3 {
-  return [cleanNumber(value[0]), cleanNumber(value[1]), cleanNumber(value[2])];
-}
-
-function cleanNumber(value: number): number {
-  if (Math.abs(value) <= EPSILON) {
-    return 0;
-  }
-
-  return Number(value.toFixed(12));
-}
-
-function nearlyEqual(left: number, right: number, epsilon = EPSILON): boolean {
-  return Math.abs(left - right) <= epsilon;
 }
 
 function forbiddenPositiveClaimAppears(

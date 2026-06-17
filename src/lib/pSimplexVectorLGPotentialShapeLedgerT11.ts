@@ -4,6 +4,33 @@ import {
   type PSimplexT9Vec3,
 } from './pSimplexA3CuboctaOrientedDifferenceLedgerT9';
 import { buildPSimplexA3ResidualDecompositionLedgerT10Report } from './pSimplexA3ResidualDecompositionLedgerT10';
+import {
+  applySignedCoordinatePermutation,
+  buildPSimplexBodyDiagonalDirections,
+  coordinatePermutations,
+  PSIMPLEX_COORDINATE_AXES,
+  PSIMPLEX_SIGN_FLIPS,
+  signToken,
+} from './pSimplexCoreGeometry';
+import {
+  allNearlyEqual,
+  cleanNumber,
+  cleanVec3,
+  nearlyEqual,
+  normalizeVec3,
+  PSIMPLEX_EPSILON,
+} from './pSimplexVectorMath';
+import {
+  classifyPotentialDirectionStatus,
+  PSIMPLEX_A3_ANISOTROPY,
+  PSIMPLEX_AXIS_ANISOTROPY,
+  PSIMPLEX_BODY_DIAGONAL_ANISOTROPY,
+  PSIMPLEX_LG_LAMBDA,
+  PSIMPLEX_LG_MU,
+  PSIMPLEX_LG_V,
+  pSimplexAnisotropyTerm,
+  pSimplexRadialTerm,
+} from './pSimplexVectorLGCore';
 
 export type PSimplexT11DirectionClass = 'axis' | 'a3-cubocta-root' | 'body-diagonal';
 export type PSimplexT11DirectionSource = 't9-child-axis' | 't9-oriented-root' | 'generated-body-diagonal';
@@ -166,24 +193,15 @@ export interface PSimplexVectorLGPotentialShapeLedgerT11Report {
   ok: boolean;
 }
 
-const EPSILON = 1e-9;
-const LAMBDA = 1;
-const MU = 1;
-const V = 1;
-const AXIS_ANISOTROPY = 0;
-const A3_ANISOTROPY = 0.25;
-const BODY_DIAGONAL_ANISOTROPY = 1 / 3;
-const AXES: ReadonlyArray<'x' | 'y' | 'z'> = ['x', 'y', 'z'];
-const SIGN_FLIPS: ReadonlyArray<[1 | -1, 1 | -1, 1 | -1]> = [
-  [1, 1, 1],
-  [1, 1, -1],
-  [1, -1, 1],
-  [1, -1, -1],
-  [-1, 1, 1],
-  [-1, 1, -1],
-  [-1, -1, 1],
-  [-1, -1, -1],
-];
+const EPSILON = PSIMPLEX_EPSILON;
+const LAMBDA = PSIMPLEX_LG_LAMBDA;
+const MU = PSIMPLEX_LG_MU;
+const V = PSIMPLEX_LG_V;
+const AXIS_ANISOTROPY = PSIMPLEX_AXIS_ANISOTROPY;
+const A3_ANISOTROPY = PSIMPLEX_A3_ANISOTROPY;
+const BODY_DIAGONAL_ANISOTROPY = PSIMPLEX_BODY_DIAGONAL_ANISOTROPY;
+const AXES = PSIMPLEX_COORDINATE_AXES;
+const SIGN_FLIPS = PSIMPLEX_SIGN_FLIPS;
 
 export function buildPSimplexVectorLGPotentialShapeLedgerT11Report(): PSimplexVectorLGPotentialShapeLedgerT11Report {
   const parentA3Report = buildPSimplexA3CuboctaOrientedDifferenceLedgerT9Report();
@@ -305,7 +323,7 @@ function buildDirectionClassRows(
         expectedStatus: 'a3-transition-direction',
       }),
     ),
-    ...buildBodyDiagonalDirections().map((row) =>
+    ...buildPSimplexBodyDiagonalDirections().map((row) =>
       buildDirectionClassRow({
         directionId: row.directionId,
         directionClass: 'body-diagonal',
@@ -327,10 +345,10 @@ function buildDirectionClassRow(args: {
   expectedStatus: Exclude<PSimplexT11DirectionStatus, 'unexpected-direction-level'>;
 }): PSimplexT11DirectionClassRow {
   const normalizedDirection = normalizeVec3(args.normalizedDirection);
-  const radial = radialTerm(normalizedDirection);
-  const anisotropy = anisotropyTerm(normalizedDirection);
+  const radial = pSimplexRadialTerm(normalizedDirection);
+  const anisotropy = pSimplexAnisotropyTerm(normalizedDirection);
   const value = radial + anisotropy;
-  const observedStatus = statusForAnisotropy(anisotropy);
+  const observedStatus = classifyPotentialDirectionStatus(anisotropy);
 
   return {
     directionId: args.directionId,
@@ -348,16 +366,6 @@ function buildDirectionClassRow(args: {
       nearlyEqual(anisotropy, args.expectedAnisotropy) &&
       observedStatus === args.expectedStatus,
   };
-}
-
-function buildBodyDiagonalDirections(): Array<{ directionId: string; normalizedDirection: PSimplexT9Vec3 }> {
-  const oneOverSqrtThree = 1 / Math.sqrt(3);
-  const signs: Array<[1 | -1, 1 | -1, 1 | -1]> = [...SIGN_FLIPS];
-
-  return signs.map(([x, y, z]) => ({
-    directionId: `body-diagonal-${signToken(x)}x-${signToken(y)}y-${signToken(z)}z`,
-    normalizedDirection: [x * oneOverSqrtThree, y * oneOverSqrtThree, z * oneOverSqrtThree],
-  }));
 }
 
 function buildAxisMinimaCheck(rows: PSimplexT11DirectionClassRow[]): PSimplexT11AxisMinimaCheck {
@@ -473,7 +481,7 @@ function buildSymmetryCheckRows(rows: PSimplexT11DirectionClassRow[]): PSimplexT
     SIGN_FLIPS.map((signFlips) => {
       const deviations = rows.map((row) => {
         const transformed = applySignedCoordinatePermutation(row.normalizedDirection, coordinatePermutation, signFlips);
-        const transformedAnisotropy = anisotropyTerm(transformed);
+        const transformedAnisotropy = pSimplexAnisotropyTerm(transformed);
 
         return Math.abs(transformedAnisotropy - row.anisotropyTerm);
       });
@@ -706,32 +714,6 @@ function recommendationForVerdict(verdict: PSimplexT11Verdict): PSimplexT11Final
   return 'return-to-potential-design';
 }
 
-function radialTerm(phi: PSimplexT9Vec3): number {
-  return LAMBDA * (normSquared(phi) - V * V) ** 2;
-}
-
-function anisotropyTerm(phi: PSimplexT9Vec3): number {
-  const [x, y, z] = phi;
-
-  return MU * (x * x * y * y + y * y * z * z + z * z * x * x);
-}
-
-function statusForAnisotropy(anisotropy: number): PSimplexT11DirectionStatus {
-  if (nearlyEqual(anisotropy, AXIS_ANISOTROPY)) {
-    return 'axis-well-direction';
-  }
-
-  if (nearlyEqual(anisotropy, A3_ANISOTROPY)) {
-    return 'a3-transition-direction';
-  }
-
-  if (nearlyEqual(anisotropy, BODY_DIAGONAL_ANISOTROPY)) {
-    return 'high-mixing-direction';
-  }
-
-  return 'unexpected-direction-level';
-}
-
 function requireDirectionRow(rows: PSimplexT11DirectionClassRow[], directionId: string): PSimplexT11DirectionClassRow {
   const row = rows.find((candidate) => candidate.directionId === directionId);
 
@@ -740,80 +722,6 @@ function requireDirectionRow(rows: PSimplexT11DirectionClassRow[], directionId: 
   }
 
   return row;
-}
-
-function coordinatePermutations<T>(values: T[]): T[][] {
-  if (values.length <= 1) {
-    return [values];
-  }
-
-  return values.flatMap((value, index) => {
-    const remaining = [...values.slice(0, index), ...values.slice(index + 1)];
-
-    return coordinatePermutations(remaining).map((permutation) => [value, ...permutation]);
-  });
-}
-
-function applySignedCoordinatePermutation(
-  value: PSimplexT9Vec3,
-  permutation: Array<'x' | 'y' | 'z'>,
-  signFlips: [1 | -1, 1 | -1, 1 | -1],
-): PSimplexT9Vec3 {
-  return [
-    signFlips[0] * value[axisIndex(permutation[0])],
-    signFlips[1] * value[axisIndex(permutation[1])],
-    signFlips[2] * value[axisIndex(permutation[2])],
-  ];
-}
-
-function axisIndex(axis: 'x' | 'y' | 'z'): 0 | 1 | 2 {
-  if (axis === 'x') {
-    return 0;
-  }
-
-  if (axis === 'y') {
-    return 1;
-  }
-
-  return 2;
-}
-
-function normalizeVec3(value: PSimplexT9Vec3): PSimplexT9Vec3 {
-  const norm = Math.sqrt(normSquared(value));
-
-  if (norm <= EPSILON) {
-    return [0, 0, 0];
-  }
-
-  return [value[0] / norm, value[1] / norm, value[2] / norm];
-}
-
-function normSquared(value: PSimplexT9Vec3): number {
-  return value[0] * value[0] + value[1] * value[1] + value[2] * value[2];
-}
-
-function allNearlyEqual(values: number[], expected: number): boolean {
-  return values.length > 0 && values.every((value) => nearlyEqual(value, expected));
-}
-
-function nearlyEqual(left: number, right: number): boolean {
-  return Math.abs(left - right) <= EPSILON;
-}
-
-function signToken(value: 1 | -1): string {
-  return value > 0 ? 'plus' : 'minus';
-}
-
-function cleanVec3(value: PSimplexT9Vec3): PSimplexT9Vec3 {
-  return [cleanNumber(value[0]), cleanNumber(value[1]), cleanNumber(value[2])];
-}
-
-function cleanNumber(value: number): number {
-  if (Math.abs(value) <= EPSILON) {
-    return 0;
-  }
-
-  return Number(value.toFixed(12));
 }
 
 function forbiddenPositiveClaimAppears(

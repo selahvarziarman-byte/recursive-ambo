@@ -13,6 +13,28 @@ import {
   buildPSimplexChildLocalGeometryPositionProbeLedgerT7Report,
   type PSimplexT7PerChildProbeLedgerRow,
 } from './pSimplexChildLocalGeometryPositionProbeLedgerT7';
+import {
+  compareChildProbeOrder,
+  expectedAxisDirectionIdForChild,
+  expectedAxisForChild,
+  isApprovedCleanProbeClass,
+  probeClassId,
+  PSIMPLEX_APPROVED_CLEAN_PROBE_CLASSES,
+  PSIMPLEX_CLEAN_AXIS_ALIGNMENT_THRESHOLD,
+  suppressionReasonForResidualControl,
+} from './pSimplexProbePolicy';
+import {
+  bestDirectionMatch,
+  buildSourceDrive,
+  compareFiniteResponseDirections,
+  type PSimplexBestDirectionMatch,
+} from './pSimplexResponseCore';
+import {
+  cleanNumber,
+  cleanVec3,
+  copyVec3,
+  PSIMPLEX_EPSILON,
+} from './pSimplexVectorMath';
 
 export type PSimplexT13Vec3 = PSimplexT12FiniteResponseDirectionRow['n'];
 export type PSimplexT13TargetChild = PSimplexT7PerChildProbeLedgerRow['targetChild'];
@@ -210,19 +232,9 @@ interface StrengthSpec {
   s: number;
 }
 
-interface CandidateEnergy {
-  direction: PSimplexT12FiniteResponseDirectionRow;
-  energy: number;
-}
-
-interface BestDirectionMatch {
-  directionId: string | null;
-  alignment: number;
-}
-
-const EPSILON = 1e-9;
-const AXIS_ALIGNMENT_THRESHOLD = 0.9;
-const APPROVED_PROBE_CLASSES: readonly PSimplexV0ApprovedProbeClass[] = ['G', 'E', 'A+', 'A-'];
+const EPSILON = PSIMPLEX_EPSILON;
+const AXIS_ALIGNMENT_THRESHOLD = PSIMPLEX_CLEAN_AXIS_ALIGNMENT_THRESHOLD;
+const APPROVED_PROBE_CLASSES = PSIMPLEX_APPROVED_CLEAN_PROBE_CLASSES;
 const SOURCE_DRIVE_CLASSES: readonly PSimplexT13SourceDriveClass[] = [
   'axis-aligned-drive',
   'a3-transition-drive',
@@ -246,15 +258,6 @@ const TRANSVERSE_CONTROL_STRENGTHS: readonly StrengthSpec[] = [
   { sLabel: 'exploratory-mid', s: 1 },
   { sLabel: 'exploratory-high', s: 2 },
 ];
-const EXPECTED_AXIS_BY_CHILD: Record<PSimplexT13TargetChild, PSimplexV0AxisSignature> = {
-  M_AB: '+x',
-  M_CD: '-x',
-  M_AC: '+y',
-  M_BD: '-y',
-  M_AD: '+z',
-  M_BC: '-z',
-};
-
 export function buildPSimplexGeometryProbeSourceForcedResponseLedgerT13Report(): PSimplexGeometryProbeSourceForcedResponseLedgerT13Report {
   const parentSourceForcedResponseReport = buildPSimplexSourceForcedVectorLGResponseLedgerT12Report();
   const parentMinimalGeometryReport = buildPSimplexMinimalGeometryPositionVectorDiagnosticV0Report();
@@ -351,13 +354,13 @@ function buildProbeSourceDriveRows(
   finiteResponseDirectionRows: PSimplexT12FiniteResponseDirectionRow[],
 ): PSimplexT13ProbeSourceDriveRow[] {
   const approvedRows = approvedProbeRows
-    .filter((row) => APPROVED_PROBE_CLASSES.includes(row.probeClass))
+    .filter((row) => isApprovedCleanProbeClass(row.probeClass))
     .map((row) => buildApprovedProbeSourceDriveRow(row, finiteResponseDirectionRows));
   const transverseRows = t7ProbeRows
     .filter((row) => row.probeClass === 'T')
     .map((row) => buildTransverseProbeSourceDriveRow(row, finiteResponseDirectionRows));
 
-  return [...approvedRows, ...transverseRows].sort(compareProbeSourceDriveRows);
+  return [...approvedRows, ...transverseRows].sort(compareChildProbeOrder);
 }
 
 function buildApprovedProbeSourceDriveRow(
@@ -386,7 +389,7 @@ function buildTransverseProbeSourceDriveRow(
     sourceKind: 'residual-control-transverse-probe',
     sourceDriveJ: row.phi,
     inheritedSuppressionReason:
-      row.suppressionReason ?? 'residual-control-transverse-probe-remains-diagnostic-only',
+      suppressionReasonForResidualControl(row.suppressionReason),
     finiteResponseDirectionRows,
   });
 }
@@ -401,10 +404,11 @@ function buildProbeSourceDriveRow(args: {
   finiteResponseDirectionRows: PSimplexT12FiniteResponseDirectionRow[];
 }): PSimplexT13ProbeSourceDriveRow {
   const sourceDriveJ = cleanVec3(args.sourceDriveJ);
-  const sourceDriveNorm = cleanNumber(normVec3(sourceDriveJ));
-  const sourceDriveJHat = normalizeVec3(sourceDriveJ);
-  const targetAxisSignature = EXPECTED_AXIS_BY_CHILD[args.targetChild];
-  const expectedAxisDirectionId = axisDirectionId(targetAxisSignature);
+  const runtimeSourceDrive = buildSourceDrive(sourceDriveJ);
+  const sourceDriveNorm = cleanNumber(runtimeSourceDrive.normJ);
+  const sourceDriveJHat = runtimeSourceDrive.JHat ? cleanVec3(runtimeSourceDrive.JHat) : null;
+  const targetAxisSignature = expectedAxisForChild(args.targetChild) as PSimplexV0AxisSignature;
+  const expectedAxisDirectionId = expectedAxisDirectionIdForChild(args.targetChild);
   const bestAxis = bestDirectionMatch(args.finiteResponseDirectionRows, 'axis-well', sourceDriveJHat);
   const bestA3 = bestDirectionMatch(args.finiteResponseDirectionRows, 'a3-transition', sourceDriveJHat);
   const bestBody = bestDirectionMatch(args.finiteResponseDirectionRows, 'body-diagonal-high-mixing', sourceDriveJHat);
@@ -459,18 +463,17 @@ function buildResponseEvaluationRow(
   strength: StrengthSpec,
   finiteResponseDirectionRows: PSimplexT12FiniteResponseDirectionRow[],
 ): PSimplexT13ResponseEvaluationRow {
-  const energies = finiteResponseDirectionRows.map((direction) => ({
-    direction,
-    energy: responseEnergy(direction.n, sourceDriveRow.sourceDriveJHat, strength.s),
-  }));
-  const minimumEnergy = Math.min(...energies.map((entry) => entry.energy));
-  const winningEntries = energies.filter((entry) => nearlyEqual(entry.energy, minimumEnergy));
-  const winningResponseDirectionIds = winningEntries.map((entry) => entry.direction.responseDirectionId);
-  const winningResponseClasses = uniqueClasses(winningEntries.map((entry) => entry.direction.responseDirectionClass));
+  const comparison = compareFiniteResponseDirections(
+    finiteResponseDirectionRows,
+    sourceDriveRow.sourceDriveJHat,
+    strength.s,
+  );
+  const winningResponseDirectionIds = comparison.winningResponseDirectionIds;
+  const winningResponseClasses = comparison.winningResponseClasses;
   const energyByResponseClass = {
-    axisWellMin: cleanNumber(classMinimumEnergy(energies, 'axis-well')),
-    a3TransitionMin: cleanNumber(classMinimumEnergy(energies, 'a3-transition')),
-    bodyDiagonalMin: cleanNumber(classMinimumEnergy(energies, 'body-diagonal-high-mixing')),
+    axisWellMin: cleanNumber(comparison.energyByResponseClass.axisWellMin),
+    a3TransitionMin: cleanNumber(comparison.energyByResponseClass.a3TransitionMin),
+    bodyDiagonalMin: cleanNumber(comparison.energyByResponseClass.bodyDiagonalMin),
   };
   const matchingChildAxisWon = winningResponseDirectionIds.includes(sourceDriveRow.expectedAxisDirectionId);
   const responseClass = classifyResponse(sourceDriveRow, winningResponseDirectionIds, winningResponseClasses);
@@ -479,8 +482,7 @@ function buildResponseEvaluationRow(
     sourceDriveRow.sourceKind === 'approved-clean-geometry-probe' && responseClass === 'clean-child-axis-response';
   const suppressionReason =
     sourceDriveRow.sourceKind === 'residual-control-transverse-probe'
-      ? sourceDriveRow.inheritedSuppressionReason ??
-        'residual-control-transverse-probe-remains-diagnostic-only'
+      ? suppressionReasonForResidualControl(sourceDriveRow.inheritedSuppressionReason)
       : null;
   const ok =
     sourceDriveRow.sourceKind === 'approved-clean-geometry-probe'
@@ -504,7 +506,7 @@ function buildResponseEvaluationRow(
     comparedResponseDirectionCount: finiteResponseDirectionRows.length,
     winningResponseDirectionIds,
     winningResponseClasses,
-    minimumEnergy: cleanNumber(minimumEnergy),
+    minimumEnergy: cleanNumber(comparison.minimumEnergy),
     energyByResponseClass,
     expectedAxisDirectionId: sourceDriveRow.expectedAxisDirectionId,
     matchingChildAxisWon,
@@ -522,7 +524,7 @@ function buildCleanChildAxisResponseRows(
 ): PSimplexT13CleanChildAxisResponseRow[] {
   return responseEvaluationRows
     .filter((row): row is PSimplexT13ResponseEvaluationRow & { probeClass: PSimplexV0ApprovedProbeClass } =>
-      APPROVED_PROBE_CLASSES.includes(row.probeClass as PSimplexV0ApprovedProbeClass),
+      isApprovedCleanProbeClass(row.probeClass),
     )
     .map((row) => ({
       targetChild: row.targetChild,
@@ -556,7 +558,7 @@ function buildResidualControlResponseRows(
       responseClass: row.responseClass,
       diagnosticOnly: true,
       cleanChildAxisResponseAllowed: false,
-      suppressionReason: row.suppressionReason ?? 'residual-control-transverse-probe-remains-diagnostic-only',
+      suppressionReason: suppressionReasonForResidualControl(row.suppressionReason),
       ok:
         !row.cleanChildAxisResponseAllowed &&
         row.responseClass !== 'clean-child-axis-response' &&
@@ -712,7 +714,7 @@ function buildSummary(args: {
     (row) => row.sourceKind === 'approved-clean-geometry-probe',
   );
   const approvedResponseRows = args.responseEvaluationRows.filter((row) =>
-    APPROVED_PROBE_CLASSES.includes(row.probeClass as PSimplexV0ApprovedProbeClass),
+    isApprovedCleanProbeClass(row.probeClass),
   );
 
   return {
@@ -809,7 +811,7 @@ function collectIntegrityIssues(args: {
 
   const failedApprovedResponseRows = args.responseEvaluationRows.filter(
     (row) =>
-      APPROVED_PROBE_CLASSES.includes(row.probeClass as PSimplexV0ApprovedProbeClass) &&
+      isApprovedCleanProbeClass(row.probeClass) &&
       (row.responseClass !== 'clean-child-axis-response' ||
         !row.matchingChildAxisWon ||
         !row.cleanChildAxisResponseAllowed ||
@@ -909,9 +911,9 @@ function strengthSpecsForSourceDrive(row: PSimplexT13ProbeSourceDriveRow): reado
 
 function classifySourceDrive(
   sourceDriveNorm: number,
-  bestAxis: BestDirectionMatch,
-  bestA3: BestDirectionMatch,
-  bestBody: BestDirectionMatch,
+  bestAxis: PSimplexBestDirectionMatch,
+  bestA3: PSimplexBestDirectionMatch,
+  bestBody: PSimplexBestDirectionMatch,
 ): PSimplexT13SourceDriveClass {
   if (sourceDriveNorm <= EPSILON) {
     return 'zero-drive';
@@ -991,125 +993,6 @@ function thresholdRelationFor(
   }
 
   return 'not-applicable';
-}
-
-function bestDirectionMatch(
-  finiteResponseDirectionRows: PSimplexT12FiniteResponseDirectionRow[],
-  responseClass: PSimplexT12ResponseDirectionClass,
-  sourceDriveJHat: PSimplexT13Vec3 | null,
-): BestDirectionMatch {
-  if (!sourceDriveJHat) {
-    return { directionId: null, alignment: 0 };
-  }
-
-  const classRows = finiteResponseDirectionRows.filter((row) => row.responseDirectionClass === responseClass);
-  const best = classRows.reduce<CandidateEnergy | null>((currentBest, row) => {
-    const energy = dotVec3(sourceDriveJHat, row.n);
-
-    if (!currentBest || energy > currentBest.energy) {
-      return { direction: row, energy };
-    }
-
-    return currentBest;
-  }, null);
-
-  return {
-    directionId: best?.direction.responseDirectionId ?? null,
-    alignment: best?.energy ?? 0,
-  };
-}
-
-function responseEnergy(n: PSimplexT13Vec3, sourceDriveJHat: PSimplexT13Vec3 | null, s: number): number {
-  return h(n) - (sourceDriveJHat ? s * dotVec3(sourceDriveJHat, n) : 0);
-}
-
-function h(n: PSimplexT13Vec3): number {
-  const [x, y, z] = n;
-
-  return x * x * y * y + y * y * z * z + z * z * x * x;
-}
-
-function classMinimumEnergy(energies: CandidateEnergy[], responseClass: PSimplexT12ResponseDirectionClass): number {
-  return Math.min(...energies.filter((entry) => entry.direction.responseDirectionClass === responseClass).map((entry) => entry.energy));
-}
-
-function uniqueClasses(values: PSimplexT12ResponseDirectionClass[]): PSimplexT12ResponseDirectionClass[] {
-  return [...new Set(values)];
-}
-
-function dotVec3(left: PSimplexT13Vec3, right: PSimplexT13Vec3): number {
-  return left[0] * right[0] + left[1] * right[1] + left[2] * right[2];
-}
-
-function normVec3(value: PSimplexT13Vec3): number {
-  return Math.sqrt(dotVec3(value, value));
-}
-
-function normalizeVec3(value: PSimplexT13Vec3): PSimplexT13Vec3 | null {
-  const magnitude = normVec3(value);
-
-  if (magnitude <= EPSILON) {
-    return null;
-  }
-
-  return cleanVec3([value[0] / magnitude, value[1] / magnitude, value[2] / magnitude]);
-}
-
-function copyVec3(value: PSimplexT13Vec3): PSimplexT13Vec3 {
-  return [value[0], value[1], value[2]];
-}
-
-function cleanVec3(value: PSimplexT13Vec3): PSimplexT13Vec3 {
-  return [cleanNumber(value[0]), cleanNumber(value[1]), cleanNumber(value[2])];
-}
-
-function cleanNumber(value: number): number {
-  if (Math.abs(value) <= EPSILON) {
-    return 0;
-  }
-
-  return Number(value.toFixed(12));
-}
-
-function nearlyEqual(left: number, right: number, epsilon = EPSILON): boolean {
-  return Math.abs(left - right) <= epsilon;
-}
-
-function axisDirectionId(axisSignature: PSimplexV0AxisSignature): string {
-  return `axis-${axisSignature}`;
-}
-
-function probeClassId(probeClass: PSimplexT13ProbeClass): string {
-  if (probeClass === 'A+') {
-    return 'A-plus';
-  }
-
-  if (probeClass === 'A-') {
-    return 'A-minus';
-  }
-
-  return probeClass;
-}
-
-function compareProbeSourceDriveRows(
-  left: PSimplexT13ProbeSourceDriveRow,
-  right: PSimplexT13ProbeSourceDriveRow,
-): number {
-  const childOrderDifference = childOrder(left.targetChild) - childOrder(right.targetChild);
-
-  if (childOrderDifference !== 0) {
-    return childOrderDifference;
-  }
-
-  return probeOrder(left.probeClass) - probeOrder(right.probeClass);
-}
-
-function childOrder(targetChild: PSimplexT13TargetChild): number {
-  return ['M_AB', 'M_AC', 'M_AD', 'M_BC', 'M_BD', 'M_CD'].indexOf(targetChild);
-}
-
-function probeOrder(probeClass: PSimplexT13ProbeClass): number {
-  return ['G', 'E', 'A+', 'A-', 'T'].indexOf(probeClass);
 }
 
 function copyFiniteDirectionRow(row: PSimplexT12FiniteResponseDirectionRow): PSimplexT12FiniteResponseDirectionRow {
