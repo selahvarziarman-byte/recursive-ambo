@@ -49,6 +49,7 @@
     "diagnose:p-simplex-a3-provisional-readout-ledger-t17": "node scripts/diagnose-p-simplex-a3-provisional-readout-ledger-t17.cjs",
     "diagnose:p-simplex-d3-body-diagonal-divergence-anatomy-ledger-t18": "node scripts/diagnose-p-simplex-d3-body-diagonal-divergence-anatomy-ledger-t18.cjs",
     "diagnose:p-simplex-d3-body-drive-branch-anatomy-ledger-t19": "node scripts/diagnose-p-simplex-d3-body-drive-branch-anatomy-ledger-t19.cjs",
+    "diagnose:p-simplex-forcing-scale-calibration-reachability-ledger-t20": "node scripts/diagnose-p-simplex-forcing-scale-calibration-reachability-ledger-t20.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
