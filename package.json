@@ -47,6 +47,7 @@
     "diagnose:p-simplex-bounded-relaxation-response-status-ledger-t15": "node scripts/diagnose-p-simplex-bounded-relaxation-response-status-ledger-t15.cjs",
     "diagnose:p-simplex-non-axis-threshold-sweep-readout-ledger-t16": "node scripts/diagnose-p-simplex-non-axis-threshold-sweep-readout-ledger-t16.cjs",
     "diagnose:p-simplex-a3-provisional-readout-ledger-t17": "node scripts/diagnose-p-simplex-a3-provisional-readout-ledger-t17.cjs",
+    "diagnose:p-simplex-d3-body-diagonal-divergence-anatomy-ledger-t18": "node scripts/diagnose-p-simplex-d3-body-diagonal-divergence-anatomy-ledger-t18.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
