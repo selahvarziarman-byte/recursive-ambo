@@ -335,6 +335,58 @@ let firstOctaVertexFigure = null;
   check('ALL g1: report.issues empty (P3 detail builds)', issuesEmpty);
 }
 
+// ===================== P4: per-target tally (registry v0 accounting) =========
+// Internal-consistency seals on the existing s2 cuboctahedron fixture (tetra
+// g1+g2): the tally must agree with a direct recount of report.sites[].readings.
+let s2TargetTally = null;
+let bTwinTargetTally = null;
+{
+  const tally = report.targetTally;
+  s2TargetTally = tally;
+  const allReadings = report.sites.flatMap((s) => s.readings);
+  const countKind = (k) => allReadings.filter((r) => r.contextKind === k).length;
+  const histSum = Object.values(tally.contextsByGeneratedFaceSize).reduce((a, b) => a + b, 0);
+
+  check('P4 s2: targetMidpointCount === report.sites.length', tally.targetMidpointCount === report.sites.length);
+  check('P4 s2: sum(contextsByGeneratedFaceSize) === total readings across all sites', histSum === allReadings.length);
+  check('P4 s2: triangleContextCount === (contextsByGeneratedFaceSize[3] || 0)',
+    tally.triangleContextCount === (tally.contextsByGeneratedFaceSize[3] || 0));
+  check('P4 s2: squareContextCount === (contextsByGeneratedFaceSize[4] || 0)',
+    tally.squareContextCount === (tally.contextsByGeneratedFaceSize[4] || 0));
+  check('P4 s2: contextsDroppedByLegacyAtomicRegistry === #face-coherence + #vertex-figure',
+    tally.contextsDroppedByLegacyAtomicRegistry === countKind('face-coherence') + countKind('vertex-figure'));
+  check('P4 s2: candidateTriangleReadings === #face-mediation readings',
+    tally.candidateTriangleReadings === countKind('face-mediation'));
+  check('P4 s2: candidateSquareReadings === #face-coherence readings',
+    tally.candidateSquareReadings === countKind('face-coherence'));
+  check("P4 s2: bTwinCollapsePolicy === 'none'", tally.bTwinCollapsePolicy === 'none');
+  check('P4 s2: bTwinGroupsSeen === 0 (nested single-cell-per-step chain — no B-twins)',
+    tally.bTwinGroupsSeen === 0);
+}
+
+// B-twin detection seal (researcher-specified fixture — exercises a NON-zero
+// count so the field is not vacuously sealed). Octahedron g1 -> dissect the core
+// -> dissect a gen-1 residue (shares a source edge with the core).
+{
+  const o0 = createSeedShape('octahedron');
+  const oSeed = o0.cells.find((c) => c.kind === 'seed');
+  const o1 = applyAmboDissection(o0, oSeed.id); // gen-1: cuboctahedron core + square-pyramid residues
+  const core1 = o1.cells.find((c) => c.topology === 'cuboctahedron'); // the gen-1 core
+  const o2 = applyAmboDissection(o1, core1.id); // ambo(core)
+  const res1 = o1.cells
+    .filter((c) => c.kind === 'residue')
+    .sort((a, b) => a.id.localeCompare(b.id))[0]; // a gen-1 residue (square-pyramid), deterministic
+  const o3 = applyAmboDissection(o2, res1.id); // ambo(residue) — shares a source edge with the core
+  const repBT = buildIncidenceTraceRegistry(o3);
+  bTwinTargetTally = repBT.targetTally;
+
+  // SEAL (researcher-measured). A mismatch is a FINDING for the engineer/
+  // researcher — do NOT coerce the field to fit the seal.
+  check('P4 B-twin fixture: repBT.targetTally.bTwinGroupsSeen === 4 (researcher-measured)',
+    repBT.targetTally.bTwinGroupsSeen === 4);
+  check('P4 B-twin fixture: repBT.issues empty', Array.isArray(repBT.issues) && repBT.issues.length === 0);
+}
+
 // ===================== eyeball: the full cuboctahedron cellBody =============
 console.log('\n--- full cuboctahedron cellBody (GlobalSquareResolution) ---');
 console.log(JSON.stringify(cubo, null, 2));
@@ -348,6 +400,12 @@ console.log('\n--- one face-coherence RelationalReading (cube g1) ---');
 console.log(JSON.stringify(firstCubeFaceCoherence, null, 2));
 console.log('\n--- one vertex-figure deg-4 RelationalReading (octa g1) ---');
 console.log(JSON.stringify(firstOctaVertexFigure, null, 2));
+
+// ===================== eyeball: P4 per-target tally =========================
+console.log('\n--- s2 targetTally (per-target tally; tetra g1+g2) ---');
+console.log(JSON.stringify(s2TargetTally, null, 2));
+console.log('\n--- B-twin-fixture targetTally (octa g1 -> core -> residue) ---');
+console.log(JSON.stringify(bTwinTargetTally, null, 2));
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
 process.exit(failures === 0 ? 0 : 1);

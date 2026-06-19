@@ -20,8 +20,14 @@
 //        and vertex-figure (degree + the deg-4 link to this cell's
 //        GlobalSquareResolution cellBody). GlueCoh (per-site manifold sanity)
 //        and face-coherence-n (n>4) detail are still DEFERRED.
-// The per-target tally is a LATER prompt; the report is shaped so it is added by
-// ADDING a field, never by reshaping.
+//   P4 — the per-target tally (`targetTally`, spec §5): an aggregate over all
+//        sites[].readings (a generated-face-size histogram + the size tallies +
+//        derivation-based candidate counts + the legacy-atomic-registry drop
+//        count) PLUS the PURE-LINEAGE B-twin group count (primal-multiset key;
+//        coincidence/position is the §7 heuristic, NOT the criterion). GlueCoh
+//        (per-site manifold sanity) remains a separate later prompt.
+// The report is shaped so each layer is added by ADDING a field, never by
+// reshaping.
 //
 // DERIVATION-AWARE taxonomy (spec §3 as amended): a dissection-core-face is
 // classified by WHICH CONSTRUCTOR made it, NOT by its own polygon size (size↔
@@ -116,6 +122,24 @@ export interface SiteIncidenceReading {
   vertexFigureCount: number; // # vertex-figure
 }
 
+// P4 — the per-target tally (spec §5). An aggregate over ALL sites[].readings,
+// plus the pure-lineage B-twin count. The SIZE tallies (triangle/squareContext
+// + the histogram) read the GENERATED-face size (medialCycle.length); the
+// candidate*Readings count by DERIVATION (contextKind) and are intentionally
+// distinct — they coincide on the octahedron, diverge on tetra/cube. The
+// registry NEVER collapses B-twins (bTwinCollapsePolicy is the literal 'none').
+export interface TargetTally {
+  targetMidpointCount: number; // = sites.length
+  triangleContextCount: number; // # readings with generated-face SIZE 3 (= contextsByGeneratedFaceSize[3])
+  squareContextCount: number; // # readings with generated-face SIZE 4 (= contextsByGeneratedFaceSize[4])
+  contextsByGeneratedFaceSize: Record<number, number>; // histogram: medialCycle.length -> # readings
+  contextsDroppedByLegacyAtomicRegistry: number; // = #face-coherence + #vertex-figure readings (researcher ruling)
+  candidateTriangleReadings: number; // # face-mediation readings (DERIVATION; 1-apex Trace△ each)
+  candidateSquareReadings: number; // # face-coherence readings (DERIVATION; counted ONCE/reading — both apexes live in the single Coh□)
+  bTwinGroupsSeen: number; // # lineage-classes with >=2 distinct scoped sites (PURE LINEAGE)
+  bTwinCollapsePolicy: 'none'; // literal — the registry never collapses B-twins
+}
+
 export interface IncidenceTraceRegistryReport {
   method: 'incidence-trace-registry-v0';
   scope: 'incidence-only';
@@ -124,7 +148,7 @@ export interface IncidenceTraceRegistryReport {
   packetWriteStatus: 'not-packet-writing';
   cellBodies: GlobalSquareResolution[]; // P1 populates this
   sites: SiteIncidenceReading[]; // P2 populates this
-  // P4 adds targetTally — additive, do not add now
+  targetTally: TargetTally; // P4 populates this
   issues: string[];
 }
 
@@ -513,6 +537,125 @@ function buildSiteReadings(shape: Shape, issues: string[]): SiteIncidenceReading
   return sites;
 }
 
+// PURE-LINEAGE B-twin key (spec §5 as ruled 2026-06-19). The lineage of a vertex
+// is its PRIMAL MULTISET: the multiset (with multiplicity) of its seed/source-less
+// ancestors, gathered by recursing createdBy.sourceVertexIds. A source-less vertex
+// (a seed, or any vertex with no sources) is its own primal with multiplicity 1;
+// otherwise the multiset-union over its sources. Position/coincidence is the §7
+// heuristic and is deliberately NOT consulted here. Memoized over a shared map;
+// lineage is a DAG so each vertex resolves once. Returned maps are never mutated
+// by callers (parents union into a fresh map), so sharing the memo is safe.
+function primalMultiset(
+  vertexId: string,
+  shape: Shape,
+  memo: Map<string, Map<string, number>>,
+): Map<string, number> {
+  const cached = memo.get(vertexId);
+  if (cached) {
+    return cached;
+  }
+  const vertex = shape.vertices[vertexId];
+  const sources = vertex?.createdBy.sourceVertexIds ?? [];
+  const result = new Map<string, number>();
+  if (!vertex || sources.length === 0) {
+    result.set(vertexId, 1); // a seed / source-less vertex is its own primal
+  } else {
+    for (const source of sources) {
+      for (const [primal, count] of primalMultiset(source, shape, memo)) {
+        result.set(primal, (result.get(primal) ?? 0) + count);
+      }
+    }
+  }
+  memo.set(vertexId, result);
+  return result;
+}
+
+// Canonical, stable string key for a primal multiset: sorted `id×count` terms.
+// Injective on distinct multisets (primal ids are unique by construction), so
+// two scoped sites collide iff their lineages are identical.
+function primalMultisetKey(multiset: Map<string, number>): string {
+  return [...multiset.entries()]
+    .map(([primal, count]) => `${primal}×${count}`)
+    .sort()
+    .join('|');
+}
+
+// P4 — the per-target tally (spec §5). Aggregates over ALL sites[].readings: a
+// generated-face-SIZE histogram (medialCycle.length) with its size tallies, the
+// DERIVATION-based candidate counts (by contextKind), and the count the legacy
+// atomic registry drops (face-coherence + vertex-figure). Plus the PURE-LINEAGE
+// B-twin group count. Every reading is counted exactly once; an unknown
+// contextKind is surfaced via issues[], never silently dropped.
+function buildTargetTally(
+  shape: Shape,
+  sites: SiteIncidenceReading[],
+  issues: string[],
+): TargetTally {
+  const contextsByGeneratedFaceSize: Record<number, number> = {};
+  let faceMediation = 0;
+  let faceCoherence = 0;
+  let vertexFigure = 0;
+
+  for (const site of sites) {
+    for (const reading of site.readings) {
+      const size = reading.medialCycle.length;
+      contextsByGeneratedFaceSize[size] = (contextsByGeneratedFaceSize[size] ?? 0) + 1;
+      switch (reading.contextKind) {
+        case 'face-mediation':
+          faceMediation += 1;
+          break;
+        case 'face-coherence':
+          faceCoherence += 1;
+          break;
+        case 'vertex-figure':
+          vertexFigure += 1;
+          break;
+        case 'face-coherence-n':
+          break; // a valid family, but neither a candidate*Reading nor a legacy drop
+        default:
+          issues.push(
+            `reading ${reading.support}/${reading.generatedFaceId}: unknown contextKind '${String(
+              reading.contextKind,
+            )}' (not one of the four); not tallied by derivation`,
+          );
+      }
+    }
+  }
+
+  // PURE-LINEAGE B-twin grouping: group scoped sites by primal-multiset key; a
+  // B-twin group is a lineage-class holding >= 2 distinct scoped site ids (sites
+  // are already scope-distinct, so class size == # distinct site ids).
+  const memo = new Map<string, Map<string, number>>();
+  const sitesByLineage = new Map<string, Set<string>>();
+  for (const site of sites) {
+    const key = primalMultisetKey(primalMultiset(site.scopedVertexId, shape, memo));
+    let bucket = sitesByLineage.get(key);
+    if (!bucket) {
+      bucket = new Set<string>();
+      sitesByLineage.set(key, bucket);
+    }
+    bucket.add(site.scopedVertexId);
+  }
+  let bTwinGroupsSeen = 0;
+  for (const ids of sitesByLineage.values()) {
+    if (ids.size >= 2) {
+      bTwinGroupsSeen += 1;
+    }
+  }
+
+  return {
+    targetMidpointCount: sites.length,
+    triangleContextCount: contextsByGeneratedFaceSize[3] ?? 0,
+    squareContextCount: contextsByGeneratedFaceSize[4] ?? 0,
+    contextsByGeneratedFaceSize,
+    contextsDroppedByLegacyAtomicRegistry: faceCoherence + vertexFigure,
+    candidateTriangleReadings: faceMediation,
+    candidateSquareReadings: faceCoherence,
+    bTwinGroupsSeen,
+    bTwinCollapsePolicy: 'none',
+  };
+}
+
 export function buildIncidenceTraceRegistry(shape: Shape): IncidenceTraceRegistryReport {
   const issues: string[] = [];
   const faceById = new Map<string, Face>(shape.faces.map((face) => [face.id, face]));
@@ -586,6 +729,7 @@ export function buildIncidenceTraceRegistry(shape: Shape): IncidenceTraceRegistr
   }
 
   const sites = buildSiteReadings(shape, issues);
+  const targetTally = buildTargetTally(shape, sites, issues);
 
   return {
     method: 'incidence-trace-registry-v0',
@@ -595,6 +739,7 @@ export function buildIncidenceTraceRegistry(shape: Shape): IncidenceTraceRegistr
     packetWriteStatus: 'not-packet-writing',
     cellBodies,
     sites,
+    targetTally,
     issues,
   };
 }
