@@ -224,6 +224,82 @@ check('buildLedgerFromDual (direct) matches the report ledger forward entry coun
 
   console.log('\n--- glued B-twin ResultSiteCertificate ---');
   console.log(JSON.stringify(gluedSite, null, 2));
+
+  // =================== P3: glue a DIFFERENT-lineage pair =====================
+  // Spec §7 + clause III (no fabricated identity): gluing two sites of DISTINCT
+  // lineage is lineage-heterogeneous — the conflict is RECORDED, no identity is
+  // invented, and the operation is flagged UNFAITHFUL. This is the load-bearing
+  // certificate firing in the OTHER direction, on the same fixture/machinery.
+  const sortedKeys = [...byLineage.keys()].sort(); // distinct lineage keys
+  const x = [...byLineage.get(sortedKeys[0])].sort()[0]; // a site of the first lineage
+  const y = [...byLineage.get(sortedKeys[1])].sort()[0]; // a site of a DIFFERENT lineage
+  const hetResultId = `glued-het:${[x, y].sort().join('|')}`;
+  const hetLedger = buildLedgerFromIdentification(midIds, (s) => (s === x || s === y ? hetResultId : s));
+  const hetCert = certifyFaithfulness(hetLedger, lineageOf);
+  const hetSite = hetCert.perResultSite.find((c) => c.resultSiteId === hetResultId);
+
+  check('P3 het: >= 2 distinct lineage keys exist', sortedKeys.length >= 2);
+  check('P3 het: x !== y AND lineageOf(x) !== lineageOf(y) (genuinely different lineage)',
+    Boolean(x) && Boolean(y) && x !== y && lineageOf(x) !== lineageOf(y));
+  check('P3 het: pullBack[hetResultId] is exactly the 2-set {x, y}',
+    Array.isArray(hetLedger.pullBack[hetResultId]) && sameSet(hetLedger.pullBack[hetResultId], [x, y]));
+  check('P3 het: hetSite.lineageHomogeneous === false', Boolean(hetSite) && hetSite.lineageHomogeneous === false);
+  check('P3 het: hetSite.inheritedLineage === null (NO fabricated identity — clause III)',
+    Boolean(hetSite) && hetSite.inheritedLineage === null);
+  check('P3 het: hetSite.lineageConflict is the 2-set { lineageOf(x), lineageOf(y) } (conflict RECORDED)',
+    Boolean(hetSite) && Array.isArray(hetSite.lineageConflict) &&
+      sameSet(hetSite.lineageConflict, [lineageOf(x), lineageOf(y)]));
+  check("P3 het: hetSite.status === 'lineage-heterogeneous' (NEVER 'unintelligible')",
+    Boolean(hetSite) && hetSite.status === 'lineage-heterogeneous');
+  check('P3 het: hetCert.heterogeneousCount === 1', hetCert.heterogeneousCount === 1);
+  check('P3 het: hetCert.resultSiteCount === 43', hetCert.resultSiteCount === 43);
+  check("P3 het: hetCert.operationStatus === 'UNFAITHFUL'", hetCert.operationStatus === 'UNFAITHFUL');
+
+  console.log('\n--- heterogeneous glue ResultSiteCertificate (conflict populated, inheritedLineage null) ---');
+  console.log(JSON.stringify(hetSite, null, 2));
+
+  // =================== P4: quotient by LINEAGE-EQUALITY ======================
+  // Spec §4 + §7: collapse every lineage-class to ONE site (resultOf = the
+  // lineage key) — the MAXIMAL faithful quotient. 44 sites -> 40 lineage-classes
+  // (the 4 B-twin doubletons collapse); scope survives as the set-valued
+  // pull-back, projecting scope × lineage |-> lineage.
+  const quotientLedger = buildLedgerFromIdentification(midIds, (s) => lineageOf(s)); // resultOf = the lineage key
+  const quotientCert = certifyFaithfulness(quotientLedger, lineageOf);
+  const quotientSets = Object.values(quotientLedger.pullBack);
+  const doubletons = quotientSets.filter((set) => set.length === 2);
+  const singletons = quotientSets.filter((set) => set.length === 1);
+
+  check('P4 quotient: resultSiteCount === 40 (44 sites -> 40 lineage-classes)', quotientCert.resultSiteCount === 40);
+  check("P4 quotient: every result-site status === 'lineage-homogeneous'",
+    quotientCert.perResultSite.every((c) => c.status === 'lineage-homogeneous'));
+  check('P4 quotient: heterogeneousCount === 0', quotientCert.heterogeneousCount === 0);
+  check("P4 quotient: operationStatus === 'FAITHFUL' (lineage-equality is the MAXIMAL faithful quotient)",
+    quotientCert.operationStatus === 'FAITHFUL');
+  check('P4 quotient: exactly 4 result classes have a 2-set pull-back (the 4 B-twin groups)',
+    doubletons.length === 4);
+  check('P4 quotient: the other 36 result classes are singletons (4*2 + 36 = 44)',
+    singletons.length === 36 && quotientSets.every((set) => set.length === 1 || set.length === 2));
+  check('P4 quotient: for every result, inheritedLineage === its resultSiteId (result id IS the lineage key)',
+    quotientCert.perResultSite.every((c) => c.inheritedLineage === c.resultSiteId));
+  check('P4 quotient: removedSilentCount === 0', quotientCert.removedSilentCount === 0);
+  check('P4 quotient: report.issues empty', Array.isArray(report.issues) && report.issues.length === 0);
+
+  console.log('\n--- lineage-quotient aggregate (resultSiteCount 40, 4 doubletons, FAITHFUL) ---');
+  console.log(
+    JSON.stringify(
+      {
+        resultSiteCount: quotientCert.resultSiteCount,
+        homogeneousCount: quotientCert.homogeneousCount,
+        heterogeneousCount: quotientCert.heterogeneousCount,
+        doubletonClasses: doubletons.length,
+        singletonClasses: singletons.length,
+        removedSilentCount: quotientCert.removedSilentCount,
+        operationStatus: quotientCert.operationStatus,
+      },
+      null,
+      2,
+    ),
+  );
 }
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
