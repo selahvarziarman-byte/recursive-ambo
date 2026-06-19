@@ -21,11 +21,18 @@
 //        GlobalSquareResolution cellBody). GlueCoh (per-site manifold sanity)
 //        and face-coherence-n (n>4) detail are still DEFERRED.
 //   P4 — the per-target tally (`targetTally`, spec §5): an aggregate over all
-//        sites[].readings (a generated-face-size histogram + the size tallies +
-//        derivation-based candidate counts + the legacy-atomic-registry drop
-//        count) PLUS the PURE-LINEAGE B-twin group count (primal-multiset key;
-//        coincidence/position is the §7 heuristic, NOT the criterion). GlueCoh
-//        (per-site manifold sanity) remains a separate later prompt.
+//        sites[].readings. As ruled 2026-06-19 (§A), SIZE and DERIVATION are
+//        SEPARATE axes: `coreFaceSizeCensus` ("<n>gon" -> count) is the raw size
+//        cross-check, while the authoritative DERIVATION triple is
+//        candidateTriangleReadings + candidateSquareReadings + vertexFigureCount.
+//        Also the PURE-LINEAGE B-twin group count (primal-multiset key;
+//        coincidence/position is the §7 heuristic, NOT the criterion).
+//   P5 — §A the `coreFaceSizeCensus` rename above (size tallies no longer
+//        masquerade as derivation counts), and §B `glueCoh`: the per-site
+//        MANIFOLD gate (researcher ruling — the broken §3 overlap clause is
+//        replaced by the vertex-LINK-is-a-single-cycle test). With P5 the
+//        registry covers spec §5 in full. face-coherence-n (n>4) detail is the
+//        only remaining DEFERRED item.
 // The report is shaped so each layer is added by ADDING a field, never by
 // reshaping.
 //
@@ -112,6 +119,21 @@ export interface RelationalReading {
   globalSquareResolutionLink: string | null; // deg-4 only: host cell's GlobalSquareResolution cellId
 }
 
+// P5 §B — GlueCoh-v2, the per-site MANIFOLD gate (researcher ruling 2026-06-19).
+// The original §3 clause `medial(R) ∩ medial(S) = {M_AB}` is BROKEN (adjacent
+// faces in a manifold fan legitimately share the site + the next fan-vertex). The
+// real test: the site's incident dissection-core-faces form a CLOSED FAN ⟺ its
+// vertex LINK is a single cycle. `status` is NAMED, never a bare failure:
+// 'no-core-context' is a retired midpoint (its core-faces consumed by a later
+// generation — the gate does not apply); 'non-manifold-overlap' fires only on a
+// non-manifold generation the engine never produces (and pushes an issues[] note).
+export interface SiteGlueCoh {
+  contextCount: number; // # incident dissection-core-faces (= readings.length)
+  linkVertexCount: number; // # distinct vertices in the link
+  linkIsSingleCycle: boolean; // every link-vertex deg 2, edges connected into ONE cycle covering all link-vertices
+  status: 'glued' | 'non-manifold-overlap' | 'no-core-context';
+}
+
 export interface SiteIncidenceReading {
   scopedVertexId: string; // = support (spec §2 scope: cell-keyed midpoint id)
   parents: [string, string]; // createdBy.sourceVertexIds (A, B)
@@ -120,22 +142,26 @@ export interface SiteIncidenceReading {
   triangleTraceCount: number; // # face-mediation (= atomicRegistry's count; one-for-one)
   squareTraceCount: number; // # face-coherence
   vertexFigureCount: number; // # vertex-figure
+  glueCoh: SiteGlueCoh; // P5 §B — the per-site manifold (vertex-link-cycle) gate
 }
 
-// P4 — the per-target tally (spec §5). An aggregate over ALL sites[].readings,
-// plus the pure-lineage B-twin count. The SIZE tallies (triangle/squareContext
-// + the histogram) read the GENERATED-face size (medialCycle.length); the
-// candidate*Readings count by DERIVATION (contextKind) and are intentionally
-// distinct — they coincide on the octahedron, diverge on tetra/cube. The
-// registry NEVER collapses B-twins (bTwinCollapsePolicy is the literal 'none').
+// P4 — the per-target tally (spec §5), as RULED by the researcher 2026-06-19
+// (§A size-census ruling): SIZE and DERIVATION are different axes and must not be
+// conflated. `coreFaceSizeCensus` is a raw generated-face-SIZE cross-check
+// (medialCycle.length). The AUTHORITATIVE accounting is the DERIVATION triple —
+// candidateTriangleReadings (face-mediation) + candidateSquareReadings
+// (face-coherence) + vertexFigureCount — which partitions the readings by which
+// constructor made each context. Their divergence (e.g. s2
+// coreFaceSizeCensus["4gon"]=24 vs candidateSquareReadings=0) is the intended
+// self-test that the classifier is NOT silently falling back to polygon size.
+// The registry NEVER collapses B-twins (bTwinCollapsePolicy is the literal 'none').
 export interface TargetTally {
   targetMidpointCount: number; // = sites.length
-  triangleContextCount: number; // # readings with generated-face SIZE 3 (= contextsByGeneratedFaceSize[3])
-  squareContextCount: number; // # readings with generated-face SIZE 4 (= contextsByGeneratedFaceSize[4])
-  contextsByGeneratedFaceSize: Record<number, number>; // histogram: medialCycle.length -> # readings
-  contextsDroppedByLegacyAtomicRegistry: number; // = #face-coherence + #vertex-figure readings (researcher ruling)
-  candidateTriangleReadings: number; // # face-mediation readings (DERIVATION; 1-apex Trace△ each)
-  candidateSquareReadings: number; // # face-coherence readings (DERIVATION; counted ONCE/reading — both apexes live in the single Coh□)
+  coreFaceSizeCensus: Record<string, number>; // SIZE cross-check: "<n>gon" -> # readings with medialCycle.length === n
+  candidateTriangleReadings: number; // DERIVATION: # face-mediation readings (1-apex Trace△ each)
+  candidateSquareReadings: number; // DERIVATION: # face-coherence readings (counted ONCE/reading — both apexes live in the single Coh□)
+  vertexFigureCount: number; // DERIVATION: # vertex-figure readings (completes the triple)
+  contextsDroppedByLegacyAtomicRegistry: number; // = candidateSquareReadings + vertexFigureCount (researcher ruling)
   bTwinGroupsSeen: number; // # lineage-classes with >=2 distinct scoped sites (PURE LINEAGE)
   bTwinCollapsePolicy: 'none'; // literal — the registry never collapses B-twins
 }
@@ -372,6 +398,81 @@ function faceCoherenceDetail(
   };
 }
 
+// P5 §B — build the site's vertex LINK and grade the manifold gate. For each
+// incident core-face's medialCycle, take the site M's two cyclic-adjacent
+// neighbours and add ONE undirected link-edge between them (the link-edge
+// opposite M). A clean closed fan of k faces yields a k-cycle: k distinct link-
+// vertices, every link-vertex degree exactly 2, one connected component. A finite
+// connected 2-regular graph IS a single cycle, so that triple is sufficient.
+// Honesty: 0 contexts -> 'no-core-context' (named, not a failure); a link that is
+// not a single cycle -> 'non-manifold-overlap' + an issues[] note.
+function buildSiteGlueCoh(
+  siteVertexId: string,
+  readings: RelationalReading[],
+  issues: string[],
+): SiteGlueCoh {
+  const contextCount = readings.length;
+  // Adjacency with multiplicity (each reading pushes one undirected edge as two
+  // half-edges) so a non-manifold double-edge shows up as a degree > 2.
+  const adjacency = new Map<string, string[]>();
+  const addHalfEdge = (from: string, to: string) => {
+    const list = adjacency.get(from);
+    if (list) {
+      list.push(to);
+    } else {
+      adjacency.set(from, [to]);
+    }
+  };
+
+  for (const reading of readings) {
+    const cycle = reading.medialCycle;
+    const index = cycle.indexOf(siteVertexId);
+    if (index < 0 || cycle.length < 3) {
+      continue; // M absent / degenerate face — contributes no link edge
+    }
+    const prev = cycle[(index - 1 + cycle.length) % cycle.length];
+    const next = cycle[(index + 1) % cycle.length];
+    addHalfEdge(prev, next);
+    addHalfEdge(next, prev);
+  }
+
+  const linkVertexCount = adjacency.size;
+  let linkIsSingleCycle = false;
+  if (contextCount >= 3 && linkVertexCount >= 3) {
+    const allDegree2 = [...adjacency.values()].every((neighbours) => neighbours.length === 2);
+    if (allDegree2) {
+      // One connected component covering every link-vertex ⇒ a single cycle.
+      const start = adjacency.keys().next().value as string;
+      const seen = new Set<string>([start]);
+      const stack = [start];
+      while (stack.length) {
+        const vertex = stack.pop() as string;
+        for (const neighbour of adjacency.get(vertex) ?? []) {
+          if (!seen.has(neighbour)) {
+            seen.add(neighbour);
+            stack.push(neighbour);
+          }
+        }
+      }
+      linkIsSingleCycle = seen.size === linkVertexCount;
+    }
+  }
+
+  let status: SiteGlueCoh['status'];
+  if (contextCount === 0) {
+    status = 'no-core-context';
+  } else if (linkIsSingleCycle) {
+    status = 'glued';
+  } else {
+    status = 'non-manifold-overlap';
+    issues.push(
+      `site ${siteVertexId}: GlueCoh link is not a single cycle (contextCount=${contextCount}, linkVertexCount=${linkVertexCount}); non-manifold-overlap`,
+    );
+  }
+
+  return { contextCount, linkVertexCount, linkIsSingleCycle, status };
+}
+
 // The per-site relational-reading layer (P2 spine + P3 detail). For each scoped
 // midpoint, emit one RelationalReading per dissection-core-face containing it,
 // classified by the derivation-aware taxonomy; face-mediation (Trace△),
@@ -530,6 +631,7 @@ function buildSiteReadings(shape: Shape, issues: string[]): SiteIncidenceReading
       triangleTraceCount: readings.filter((r) => r.contextKind === 'face-mediation').length,
       squareTraceCount: readings.filter((r) => r.contextKind === 'face-coherence').length,
       vertexFigureCount: readings.filter((r) => r.contextKind === 'vertex-figure').length,
+      glueCoh: buildSiteGlueCoh(midpoint.id, readings, issues),
     });
   }
 
@@ -580,26 +682,28 @@ function primalMultisetKey(multiset: Map<string, number>): string {
     .join('|');
 }
 
-// P4 — the per-target tally (spec §5). Aggregates over ALL sites[].readings: a
-// generated-face-SIZE histogram (medialCycle.length) with its size tallies, the
-// DERIVATION-based candidate counts (by contextKind), and the count the legacy
-// atomic registry drops (face-coherence + vertex-figure). Plus the PURE-LINEAGE
-// B-twin group count. Every reading is counted exactly once; an unknown
-// contextKind is surfaced via issues[], never silently dropped.
+// P4 — the per-target tally (spec §5, §A size-census ruling). Aggregates over
+// ALL sites[].readings: the generated-face-SIZE census ("<n>gon" -> count), the
+// DERIVATION triple (face-mediation / face-coherence / vertex-figure by
+// contextKind), and the count the legacy atomic registry drops (= face-coherence
+// + vertex-figure). Plus the PURE-LINEAGE B-twin group count. Every reading is
+// counted exactly once; an unknown contextKind is surfaced via issues[], never
+// silently dropped. The census is a SIZE cross-check; the candidate*/vertexFigure
+// counts are the DERIVATION semantics — their divergence is the intended self-test.
 function buildTargetTally(
   shape: Shape,
   sites: SiteIncidenceReading[],
   issues: string[],
 ): TargetTally {
-  const contextsByGeneratedFaceSize: Record<number, number> = {};
+  const coreFaceSizeCensus: Record<string, number> = {};
   let faceMediation = 0;
   let faceCoherence = 0;
   let vertexFigure = 0;
 
   for (const site of sites) {
     for (const reading of site.readings) {
-      const size = reading.medialCycle.length;
-      contextsByGeneratedFaceSize[size] = (contextsByGeneratedFaceSize[size] ?? 0) + 1;
+      const sizeKey = `${reading.medialCycle.length}gon`;
+      coreFaceSizeCensus[sizeKey] = (coreFaceSizeCensus[sizeKey] ?? 0) + 1;
       switch (reading.contextKind) {
         case 'face-mediation':
           faceMediation += 1;
@@ -645,12 +749,11 @@ function buildTargetTally(
 
   return {
     targetMidpointCount: sites.length,
-    triangleContextCount: contextsByGeneratedFaceSize[3] ?? 0,
-    squareContextCount: contextsByGeneratedFaceSize[4] ?? 0,
-    contextsByGeneratedFaceSize,
-    contextsDroppedByLegacyAtomicRegistry: faceCoherence + vertexFigure,
+    coreFaceSizeCensus,
     candidateTriangleReadings: faceMediation,
     candidateSquareReadings: faceCoherence,
+    vertexFigureCount: vertexFigure,
+    contextsDroppedByLegacyAtomicRegistry: faceCoherence + vertexFigure,
     bTwinGroupsSeen,
     bTwinCollapsePolicy: 'none',
   };

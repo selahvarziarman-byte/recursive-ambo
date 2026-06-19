@@ -345,20 +345,24 @@ let bTwinTargetTally = null;
   s2TargetTally = tally;
   const allReadings = report.sites.flatMap((s) => s.readings);
   const countKind = (k) => allReadings.filter((r) => r.contextKind === k).length;
-  const histSum = Object.values(tally.contextsByGeneratedFaceSize).reduce((a, b) => a + b, 0);
+  const censusSum = Object.values(tally.coreFaceSizeCensus).reduce((a, b) => a + b, 0);
 
   check('P4 s2: targetMidpointCount === report.sites.length', tally.targetMidpointCount === report.sites.length);
-  check('P4 s2: sum(contextsByGeneratedFaceSize) === total readings across all sites', histSum === allReadings.length);
-  check('P4 s2: triangleContextCount === (contextsByGeneratedFaceSize[3] || 0)',
-    tally.triangleContextCount === (tally.contextsByGeneratedFaceSize[3] || 0));
-  check('P4 s2: squareContextCount === (contextsByGeneratedFaceSize[4] || 0)',
-    tally.squareContextCount === (tally.contextsByGeneratedFaceSize[4] || 0));
-  check('P4 s2: contextsDroppedByLegacyAtomicRegistry === #face-coherence + #vertex-figure',
-    tally.contextsDroppedByLegacyAtomicRegistry === countKind('face-coherence') + countKind('vertex-figure'));
-  check('P4 s2: candidateTriangleReadings === #face-mediation readings',
+  // §A: census is a SIZE cross-check; the candidate*/vertexFigure counts are DERIVATION.
+  check('P5 §A s2: sum(coreFaceSizeCensus) === total readings across all sites', censusSum === allReadings.length);
+  check('P5 §A s2: contextsDroppedByLegacyAtomicRegistry === candidateSquareReadings + vertexFigureCount',
+    tally.contextsDroppedByLegacyAtomicRegistry === tally.candidateSquareReadings + tally.vertexFigureCount);
+  check('P5 §A s2: candidateTriangleReadings === #face-mediation readings',
     tally.candidateTriangleReadings === countKind('face-mediation'));
-  check('P4 s2: candidateSquareReadings === #face-coherence readings',
+  check('P5 §A s2: candidateSquareReadings === #face-coherence readings',
     tally.candidateSquareReadings === countKind('face-coherence'));
+  check('P5 §A s2: vertexFigureCount === #vertex-figure readings',
+    tally.vertexFigureCount === countKind('vertex-figure'));
+  check('P5 §A s2: candidateTriangle + candidateSquare + vertexFigure === total readings (derivation triple partitions)',
+    tally.candidateTriangleReadings + tally.candidateSquareReadings + tally.vertexFigureCount === allReadings.length);
+  // §A divergence self-test: SIZE != DERIVATION (proves the derivation axis does real work).
+  check('P5 §A s2: DIVERGENCE — coreFaceSizeCensus["4gon"] === 24 AND candidateSquareReadings === 0',
+    tally.coreFaceSizeCensus['4gon'] === 24 && tally.candidateSquareReadings === 0);
   check("P4 s2: bTwinCollapsePolicy === 'none'", tally.bTwinCollapsePolicy === 'none');
   check('P4 s2: bTwinGroupsSeen === 0 (nested single-cell-per-step chain — no B-twins)',
     tally.bTwinGroupsSeen === 0);
@@ -387,6 +391,72 @@ let bTwinTargetTally = null;
   check('P4 B-twin fixture: repBT.issues empty', Array.isArray(repBT.issues) && repBT.issues.length === 0);
 }
 
+// ===================== P5 §B: GlueCoh-v2 per-site manifold gate =============
+// g1 (every seed): each site's incident core-faces form a closed fan of 4 ->
+// the vertex link is a single 4-cycle -> status 'glued'.
+let firstGluedSite = null;
+for (const seed of ['tetrahedron', 'octahedron', 'cube']) {
+  const sh = g1(seed);
+  const rep = buildIncidenceTraceRegistry(sh);
+  let allGlued = rep.sites.length > 0;
+  for (const site of rep.sites) {
+    const gc = site.glueCoh;
+    if (
+      !(
+        gc &&
+        gc.contextCount === 4 &&
+        gc.linkVertexCount === 4 &&
+        gc.linkIsSingleCycle === true &&
+        gc.status === 'glued'
+      )
+    ) {
+      allGlued = false;
+    }
+    if (!firstGluedSite && gc && gc.status === 'glued') firstGluedSite = site;
+  }
+  const S = seed === 'tetrahedron' ? 'TETRA' : seed === 'octahedron' ? 'OCTA' : 'CUBE';
+  check(`${S} g1: every site glueCoh {contextCount:4, linkVertexCount:4, linkIsSingleCycle:true, status:'glued'}`, allGlued);
+}
+
+// s2 (tetra g1+g2): a MIX — retired gen-1 midpoints have 0 core-contexts
+// ('no-core-context'); live midpoints are 'glued' single cycles.
+{
+  let ok = report.sites.length > 0;
+  let noCore = 0;
+  let glued = 0;
+  for (const site of report.sites) {
+    const gc = site.glueCoh;
+    if (gc.contextCount === 0) {
+      noCore += 1;
+      if (gc.status !== 'no-core-context') ok = false;
+    } else {
+      glued += 1;
+      if (!(gc.status === 'glued' && gc.linkIsSingleCycle === true)) ok = false;
+    }
+  }
+  check('P5 §B s2: every site is (0 ctx -> no-core-context) OR (>0 ctx -> glued single-cycle)', ok);
+  check('P5 §B s2: MIX present — >=1 no-core-context AND >=1 glued (both branches exercised)',
+    noCore >= 1 && glued >= 1);
+}
+
+// ALL fixtures: no site is 'non-manifold-overlap'; report.issues stays empty.
+{
+  let noOverlap = true;
+  let issuesEmpty = true;
+  const fixtures = [report];
+  for (const seed of ['tetrahedron', 'octahedron', 'cube']) {
+    fixtures.push(buildIncidenceTraceRegistry(g1(seed)));
+  }
+  for (const rep of fixtures) {
+    if (!(Array.isArray(rep.issues) && rep.issues.length === 0)) issuesEmpty = false;
+    for (const site of rep.sites) {
+      if (site.glueCoh.status === 'non-manifold-overlap') noOverlap = false;
+    }
+  }
+  check('P5 §B ALL fixtures: NO site status === non-manifold-overlap', noOverlap);
+  check('P5 §B ALL fixtures: report.issues empty (glueCoh builds clean)', issuesEmpty);
+}
+
 // ===================== eyeball: the full cuboctahedron cellBody =============
 console.log('\n--- full cuboctahedron cellBody (GlobalSquareResolution) ---');
 console.log(JSON.stringify(cubo, null, 2));
@@ -406,6 +476,21 @@ console.log('\n--- s2 targetTally (per-target tally; tetra g1+g2) ---');
 console.log(JSON.stringify(s2TargetTally, null, 2));
 console.log('\n--- B-twin-fixture targetTally (octa g1 -> core -> residue) ---');
 console.log(JSON.stringify(bTwinTargetTally, null, 2));
+
+// ===================== eyeball: P5 §B one glued site's glueCoh =============
+console.log('\n--- one glued SiteIncidenceReading.glueCoh (g1) ---');
+console.log(JSON.stringify(firstGluedSite ? firstGluedSite.glueCoh : null, null, 2));
+console.log('\n--- s2 glueCoh status split (no-core-context vs glued) ---');
+console.log(
+  JSON.stringify(
+    report.sites.reduce((acc, s) => {
+      acc[s.glueCoh.status] = (acc[s.glueCoh.status] || 0) + 1;
+      return acc;
+    }, {}),
+    null,
+    2,
+  ),
+);
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
 process.exit(failures === 0 ? 0 : 1);
