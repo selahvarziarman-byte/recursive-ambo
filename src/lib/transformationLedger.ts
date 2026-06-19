@@ -34,6 +34,11 @@
 // mutates a `Shape`, and runs no simulated primitive.
 
 import type { SemanticDualModel } from './dualization';
+import type { Shape } from '../types/geometry';
+// The lineage homogeneity criterion is the SHARED single-source primitive
+// (src/lib/lineage.ts) — the same definition the registry uses for its B-twin
+// grouping key, so the transformation-side and generation-side never drift.
+import { primalMultiset, primalMultisetKey } from './lineage';
 
 export interface TransformationLedger {
   forward: Record<string, string | null>; // each source site id -> its result site id, or null (cut/removed) — a PARTIAL function
@@ -93,6 +98,37 @@ export function buildLedgerFromDual(model: SemanticDualModel): TransformationLed
     pullBack[dualEdgeId] = [sourceEdgeId];
   }
 
+  return { forward, pullBack };
+}
+
+// A lineage-key function over a Shape's sites, memoized — reuses the shared
+// primitive (src/lib/lineage.ts), so the ledger's homogeneity criterion is the
+// SAME lineage definition the registry's B-twin grouping uses. The returned
+// closure carries its own memo (lineage is a DAG; each site resolves once).
+export function shapeLineageOf(shape: Shape): (siteId: string) => string {
+  const memo = new Map<string, Map<string, number>>();
+  return (siteId) => primalMultisetKey(primalMultiset(siteId, shape, memo));
+}
+
+// Build a ledger from a PROPOSED identification over source site ids (a SIMULATED
+// glue/cut — spec §8: no operation is built; we only read an identification over
+// existing sites). `resultOf(s)` = the result id s maps to; sites sharing a result
+// are GLUED; `resultOf(s) === null` CUTS s. `forward` is the identification;
+// `pullBack[r]` is the SET of sources that landed on r (set-valued — the glue's
+// multi-source pull-back is exactly where the certificate becomes load-bearing).
+export function buildLedgerFromIdentification(
+  sourceSiteIds: string[],
+  resultOf: (siteId: string) => string | null,
+): TransformationLedger {
+  const forward: Record<string, string | null> = {};
+  const pullBack: Record<string, string[]> = {};
+  for (const sourceSiteId of sourceSiteIds) {
+    const resultSiteId = resultOf(sourceSiteId);
+    forward[sourceSiteId] = resultSiteId;
+    if (resultSiteId !== null) {
+      (pullBack[resultSiteId] ??= []).push(sourceSiteId);
+    }
+  }
   return { forward, pullBack };
 }
 

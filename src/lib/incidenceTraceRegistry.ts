@@ -69,6 +69,10 @@
 
 import type { Cell, Face, Shape, VertexId } from '../types/geometry';
 import { canonicalEdgeKey } from './ids';
+// Lineage is the CANONICAL single-source primitive (src/lib/lineage.ts) — the
+// registry's B-twin grouping key and the ledger's homogeneity criterion share it
+// so the two never drift. Moved here, not re-derived.
+import { primalMultiset, primalMultisetKey } from './lineage';
 
 export interface GlobalSquareResolution {
   // spec §4 + §5 "per cell/body"
@@ -637,49 +641,6 @@ function buildSiteReadings(shape: Shape, issues: string[]): SiteIncidenceReading
 
   sites.sort((a, b) => a.scopedVertexId.localeCompare(b.scopedVertexId));
   return sites;
-}
-
-// PURE-LINEAGE B-twin key (spec §5 as ruled 2026-06-19). The lineage of a vertex
-// is its PRIMAL MULTISET: the multiset (with multiplicity) of its seed/source-less
-// ancestors, gathered by recursing createdBy.sourceVertexIds. A source-less vertex
-// (a seed, or any vertex with no sources) is its own primal with multiplicity 1;
-// otherwise the multiset-union over its sources. Position/coincidence is the §7
-// heuristic and is deliberately NOT consulted here. Memoized over a shared map;
-// lineage is a DAG so each vertex resolves once. Returned maps are never mutated
-// by callers (parents union into a fresh map), so sharing the memo is safe.
-function primalMultiset(
-  vertexId: string,
-  shape: Shape,
-  memo: Map<string, Map<string, number>>,
-): Map<string, number> {
-  const cached = memo.get(vertexId);
-  if (cached) {
-    return cached;
-  }
-  const vertex = shape.vertices[vertexId];
-  const sources = vertex?.createdBy.sourceVertexIds ?? [];
-  const result = new Map<string, number>();
-  if (!vertex || sources.length === 0) {
-    result.set(vertexId, 1); // a seed / source-less vertex is its own primal
-  } else {
-    for (const source of sources) {
-      for (const [primal, count] of primalMultiset(source, shape, memo)) {
-        result.set(primal, (result.get(primal) ?? 0) + count);
-      }
-    }
-  }
-  memo.set(vertexId, result);
-  return result;
-}
-
-// Canonical, stable string key for a primal multiset: sorted `id×count` terms.
-// Injective on distinct multisets (primal ids are unique by construction), so
-// two scoped sites collide iff their lineages are identical.
-function primalMultisetKey(multiset: Map<string, number>): string {
-  return [...multiset.entries()]
-    .map(([primal, count]) => `${primal}×${count}`)
-    .sort()
-    .join('|');
 }
 
 // P4 — the per-target tally (spec §5, §A size-census ruling). Aggregates over

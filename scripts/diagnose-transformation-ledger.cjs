@@ -21,9 +21,13 @@ require.extensions['.ts'] = (module, filename) => {
 const repoRoot = path.resolve(__dirname, '..');
 // Requiring the real ledger module is the mock-solution guard: delete
 // transformationLedger.ts and this require throws.
-const { buildTransformationLedgerReport, buildLedgerFromDual } = require(
-  path.join(repoRoot, 'src/lib/transformationLedger.ts'),
-);
+const {
+  buildTransformationLedgerReport,
+  buildLedgerFromDual,
+  buildLedgerFromIdentification,
+  certifyFaithfulness,
+  shapeLineageOf,
+} = require(path.join(repoRoot, 'src/lib/transformationLedger.ts'));
 const { createSeedShape } = require(path.join(repoRoot, 'src/data/seeds.ts'));
 const { applyAmboDissection } = require(path.join(repoRoot, 'src/lib/ambo.ts'));
 const { applyPyritohedralDiagonalization } = require(
@@ -154,6 +158,73 @@ console.log(JSON.stringify(cert.perResultSite[0], null, 2));
 const directLedger = buildLedgerFromDual(model);
 check('buildLedgerFromDual (direct) matches the report ledger forward entry count',
   Object.keys(directLedger.forward).length === forwardKeys.length);
+
+// ===================== P2: the glue (B-twin) simulation =====================
+// Spec §7: "glue, B-twin pair: same lineage, different scope -> lineage-
+// homogeneous; lineage survives, scope -> 2-set." Build the registry's verified
+// B-twin fixture (4 B-twin groups), simulate gluing one real B-twin pair, and
+// certify with the SHARED shapeLineageOf — the multi-source pull-back is where
+// the certificate first becomes load-bearing.
+{
+  const o0 = createSeedShape('octahedron');
+  const o1 = applyAmboDissection(o0, o0.cells.find((c) => c.kind === 'seed').id);
+  const core1 = o1.cells.find((c) => c.topology === 'cuboctahedron');
+  const o2 = applyAmboDissection(o1, core1.id);
+  const res1 = o1.cells
+    .filter((c) => c.kind === 'residue')
+    .sort((a, b) => a.id.localeCompare(b.id))[0];
+  const o3 = applyAmboDissection(o2, res1.id);
+  const midIds = Object.values(o3.vertices)
+    .filter((v) => v.createdBy.operation === 'ambo-dissection' && v.createdBy.sourceVertexIds.length === 2)
+    .map((v) => v.id);
+  const lineageOf = shapeLineageOf(o3);
+
+  // Group midpoints by lineage key; a class of size >= 2 is a B-twin group.
+  const byLineage = new Map();
+  for (const id of midIds) {
+    const key = lineageOf(id);
+    if (!byLineage.has(key)) byLineage.set(key, []);
+    byLineage.get(key).push(id);
+  }
+  const bTwinClasses = [...byLineage.values()].filter((ids) => ids.length >= 2);
+  // Deterministic pick: first B-twin class (by sorted lineage key), first two sorted members.
+  const sortedClasses = [...byLineage.entries()].sort((x, y) => x[0].localeCompare(y[0]));
+  const firstBTwin = sortedClasses.find(([, ids]) => ids.length >= 2);
+  const pair = firstBTwin ? [...firstBTwin[1]].sort() : [];
+  const a = pair[0];
+  const b = pair[1];
+
+  const gluedResultId = `glued:${[a, b].sort().join('|')}`;
+  const ledger = buildLedgerFromIdentification(midIds, (s) => (s === a || s === b ? gluedResultId : s));
+  const gluedCert = certifyFaithfulness(ledger, lineageOf);
+  const gluedSite = gluedCert.perResultSite.find((c) => c.resultSiteId === gluedResultId);
+
+  const sameSet = (arr, set) => {
+    const sa = new Set(arr);
+    return sa.size === set.length && set.every((x) => sa.has(x));
+  };
+
+  check('GLUE fixture: midIds.length === 44', midIds.length === 44);
+  check('GLUE fixture: >= 4 lineage classes of size >= 2 (the 4 B-twin groups)', bTwinClasses.length >= 4);
+  check('GLUE pair: a !== b (DIFFERENT scope)', Boolean(a) && Boolean(b) && a !== b);
+  check('GLUE pair: lineageOf(a) === lineageOf(b) (SAME lineage — a real B-twin)',
+    Boolean(a) && Boolean(b) && lineageOf(a) === lineageOf(b));
+  check('GLUE: pullBack[gluedResultId] is exactly the 2-set {a, b}',
+    Array.isArray(ledger.pullBack[gluedResultId]) && sameSet(ledger.pullBack[gluedResultId], [a, b]));
+  check('GLUE: glued result lineageHomogeneous === true', Boolean(gluedSite) && gluedSite.lineageHomogeneous === true);
+  check('GLUE: glued result inheritedLineage === lineageOf(a)',
+    Boolean(gluedSite) && gluedSite.inheritedLineage === lineageOf(a));
+  check('GLUE: glued result lineageConflict === null', Boolean(gluedSite) && gluedSite.lineageConflict === null);
+  check("GLUE: glued result status === 'lineage-homogeneous'",
+    Boolean(gluedSite) && gluedSite.status === 'lineage-homogeneous');
+  check('GLUE: cert.resultSiteCount === 43 (44 sources, one pair glued)', gluedCert.resultSiteCount === 43);
+  check('GLUE: cert.heterogeneousCount === 0', gluedCert.heterogeneousCount === 0);
+  check('GLUE: cert.removedSilentCount === 0', gluedCert.removedSilentCount === 0);
+  check("GLUE: cert.operationStatus === 'FAITHFUL'", gluedCert.operationStatus === 'FAITHFUL');
+
+  console.log('\n--- glued B-twin ResultSiteCertificate ---');
+  console.log(JSON.stringify(gluedSite, null, 2));
+}
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
 process.exit(failures === 0 ? 0 : 1);
