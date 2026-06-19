@@ -204,6 +204,137 @@ for (const seed of ['tetrahedron', 'octahedron']) {
   check('ALL g1: every face-mediation medialCycle has 3 distinct midpoint ids', anyChecked && allMedial3);
 }
 
+// ===================== P3: per-reading DETAIL (face-coherence + vertex-figure) ====
+// Sealed numbers grounded by the researcher's probe.
+let firstCubeFaceCoherence = null;
+let firstOctaVertexFigure = null;
+
+// --- CUBE g1: face-coherence (Trace□ + Coh□) detail ---
+{
+  const sh = g1('cube');
+  const rep = buildIncidenceTraceRegistry(sh);
+  const vById = sh.vertices;
+  let any = false;
+  let cand2 = true;
+  let real = true;
+  let notParent = true;
+  let oppReal = true;
+  let oppMedial = true;
+  let routesOk = true;
+  let cohStatus = true;
+  let cohRes = true;
+  for (const site of rep.sites) {
+    const parents = new Set(site.parents);
+    for (const r of site.readings) {
+      if (r.contextKind !== 'face-coherence') continue;
+      any = true;
+      if (Array.isArray(r.candidateApexes) && r.candidateApexes.length === 2) {
+        if (!r.candidateApexes.every((v) => Boolean(vById[v]))) real = false;
+        if (r.candidateApexes.some((v) => parents.has(v))) notParent = false;
+      } else {
+        cand2 = false;
+      }
+      if (!(r.opposite && vById[r.opposite] && vById[r.opposite].createdBy.operation === 'ambo-dissection')) {
+        oppReal = false;
+      }
+      if (!(r.opposite && Array.isArray(r.medialCycle) && r.medialCycle.includes(r.opposite))) {
+        oppMedial = false;
+      }
+      if (!(Array.isArray(r.routes) && r.routes.length === 2 && r.routes.every((p) => Array.isArray(p)))) {
+        routesOk = false;
+      }
+      if (!(r.coh && r.coh.status === 'two-candidate-apexes')) cohStatus = false;
+      if (!(r.coh && r.coh.resolution === 'deferred-to-source-square-diagonalization')) cohRes = false;
+      if (!firstCubeFaceCoherence) firstCubeFaceCoherence = r;
+    }
+  }
+  check('CUBE g1: face-coherence readings exist', any);
+  check('CUBE g1: every face-coherence candidateApexes.length === 2', any && cand2);
+  check('CUBE g1: every candidateApex is a real source vertex', any && real);
+  check('CUBE g1: no candidateApex equals a parent', any && notParent);
+  check('CUBE g1: every opposite is a real generated midpoint', any && oppReal);
+  check('CUBE g1: every opposite ∈ its reading medialCycle', any && oppMedial);
+  check('CUBE g1: every routes is a length-2 array of source-vertex paths', any && routesOk);
+  check("CUBE g1: every coh.status === 'two-candidate-apexes'", any && cohStatus);
+  check("CUBE g1: every coh.resolution === 'deferred-to-source-square-diagonalization'", any && cohRes);
+}
+
+// --- OCTA g1: vertex-figure deg-4 -> GlobalSquareResolution link ---
+{
+  const sh = g1('octahedron');
+  const rep = buildIncidenceTraceRegistry(sh);
+  const cuboBody = rep.cellBodies.find((b) => b.cellTopology === 'cuboctahedron');
+  let any = false;
+  let deg4 = true;
+  let linkOk = true;
+  for (const site of rep.sites) {
+    for (const r of site.readings) {
+      if (r.contextKind !== 'vertex-figure') continue;
+      any = true;
+      if (r.degree !== 4) deg4 = false;
+      if (!(cuboBody && r.globalSquareResolutionLink === cuboBody.cellId)) linkOk = false;
+      if (!firstOctaVertexFigure) firstOctaVertexFigure = r;
+    }
+  }
+  check('OCTA g1: vertex-figure readings exist', any);
+  check('OCTA g1: every vertex-figure degree === 4', any && deg4);
+  check('OCTA g1: a cuboctahedron cellBody is present', Boolean(cuboBody));
+  check('OCTA g1: every vertex-figure globalSquareResolutionLink === cuboctahedron cellBody cellId', any && linkOk);
+  check('OCTA g1: that cuboctahedron cellBody.matchingCount === 2', Boolean(cuboBody) && cuboBody.matchingCount === 2);
+}
+
+// --- TETRA g1: vertex-figure deg-3 -> no GSR link ---
+{
+  const sh = g1('tetrahedron');
+  const rep = buildIncidenceTraceRegistry(sh);
+  let any = false;
+  let deg3 = true;
+  let linkNull = true;
+  for (const site of rep.sites) {
+    for (const r of site.readings) {
+      if (r.contextKind !== 'vertex-figure') continue;
+      any = true;
+      if (r.degree !== 3) deg3 = false;
+      if (r.globalSquareResolutionLink !== null) linkNull = false;
+    }
+  }
+  check('TETRA g1: vertex-figure readings exist', any);
+  check('TETRA g1: every vertex-figure degree === 3', any && deg3);
+  check('TETRA g1: every vertex-figure globalSquareResolutionLink === null', any && linkNull);
+}
+
+// --- ALL seeds: face-mediation readings keep every P3 field null (P2 shape preserved); issues empty ---
+{
+  let anyFm = false;
+  let allNull = true;
+  let issuesEmpty = true;
+  for (const seed of ['tetrahedron', 'octahedron', 'cube']) {
+    const sh = g1(seed);
+    const rep = buildIncidenceTraceRegistry(sh);
+    if (!(Array.isArray(rep.issues) && rep.issues.length === 0)) issuesEmpty = false;
+    for (const site of rep.sites) {
+      for (const r of site.readings) {
+        if (r.contextKind !== 'face-mediation') continue;
+        anyFm = true;
+        if (
+          !(
+            r.candidateApexes === null &&
+            r.opposite === null &&
+            r.routes === null &&
+            r.coh === null &&
+            r.degree === null &&
+            r.globalSquareResolutionLink === null
+          )
+        ) {
+          allNull = false;
+        }
+      }
+    }
+  }
+  check('ALL g1: face-mediation readings keep candidateApexes/opposite/routes/coh/degree/globalSquareResolutionLink === null', anyFm && allNull);
+  check('ALL g1: report.issues empty (P3 detail builds)', issuesEmpty);
+}
+
 // ===================== eyeball: the full cuboctahedron cellBody =============
 console.log('\n--- full cuboctahedron cellBody (GlobalSquareResolution) ---');
 console.log(JSON.stringify(cubo, null, 2));
@@ -211,6 +342,12 @@ console.log(JSON.stringify(cubo, null, 2));
 // ===================== eyeball: one face-mediation site (tetra g1) ==========
 console.log('\n--- one face-mediation SiteIncidenceReading (tetra g1 midpoint) ---');
 console.log(JSON.stringify(firstTetraFaceMediationSite, null, 2));
+
+// ===================== eyeball: P3 detail readings ==========================
+console.log('\n--- one face-coherence RelationalReading (cube g1) ---');
+console.log(JSON.stringify(firstCubeFaceCoherence, null, 2));
+console.log('\n--- one vertex-figure deg-4 RelationalReading (octa g1) ---');
+console.log(JSON.stringify(firstOctaVertexFigure, null, 2));
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
 process.exit(failures === 0 ? 0 : 1);

@@ -12,10 +12,14 @@
 //        `per cell/body` rows of §5). UNCHANGED by P2.
 //   P2 — the per-site relational-reading layer (`sites`), with the DERIVATION-
 //        AWARE `contextKind` taxonomy (mothership ruling 2026-06-19) and the
-//        face-mediation member (Trace△ = apex + medialCycle) FULLY populated.
-//        The other three kinds (face-coherence / face-coherence-n / vertex-
-//        figure) are RECORDED but their detail (candidateApexes, opposite,
-//        degree, …) is DEFERRED to P3 — never silently dropped.
+//        face-mediation member (Trace△ = apex + medialCycle) fully populated.
+//   P3 — the per-reading DETAIL for the two non-mediation families (researcher
+//        ruling 2026-06-19): face-coherence (Trace□ candidateApexes / opposite /
+//        routes + the Coh□ certificate — resolution DEFERRED one generation UP
+//        to the SOURCE square's diagonalization, decoupled from this cell's GSR)
+//        and vertex-figure (degree + the deg-4 link to this cell's
+//        GlobalSquareResolution cellBody). GlueCoh (per-site manifold sanity)
+//        and face-coherence-n (n>4) detail are still DEFERRED.
 // The per-target tally is a LATER prompt; the report is shaped so it is added by
 // ADDING a field, never by reshaping.
 //
@@ -72,6 +76,17 @@ export interface GlobalSquareResolution {
 // classification (spec §3 as amended); see the file header.
 export type ContextKind = 'face-mediation' | 'face-coherence' | 'face-coherence-n' | 'vertex-figure';
 
+// P3 — Coh□ certificate (spec §3). The local square certificate is NEVER
+// "incoherent"/"fail": it is `two-candidate-apexes` (normal — the two apexes are
+// apex-symmetric; no edge-symmetric local rule prefers one) or `degenerate-square`
+// (named; source not a clean 4-cycle / C==D — never observed). The apex-pair's
+// resolution is DEFERRED one generation UP, to diagonalizing the SOURCE square
+// (Trace□ → Trace△); it is decoupled from this cell's vertex-figure GSR.
+export interface CohCertificate {
+  status: 'two-candidate-apexes' | 'degenerate-square';
+  resolution: 'deferred-to-source-square-diagonalization';
+}
+
 export interface RelationalReading {
   support: string; // scoped midpoint id (M_AB)
   generatedFaceId: string; // the dissection-core-face this reading is read through
@@ -81,7 +96,14 @@ export interface RelationalReading {
   // face-mediation (Trace△) — FULLY populated in P2:
   apex: string | null; // resolved source-triangle vertex NOT in the midpoint's parents {A,B}
   medialCycle: string[]; // the generated core-face's midpoint cycle (= its vertexIds)
-  // face-coherence / vertex-figure detail (candidateApexes, opposite, degree, …) — P3
+  // face-coherence (Trace□ + Coh□) — populated in P3 (null for all other kinds):
+  candidateApexes: string[] | null; // {C,D} — the two source-square vertices NOT in {A,B}
+  opposite: string | null; // generated midpoint of source edge C–D (∈ medialCycle)
+  routes: [string[], string[]] | null; // boundary paths [[A,B,C],[A,D,C]] as source-vertex ids
+  coh: CohCertificate | null; // the local square certificate
+  // vertex-figure — populated in P3 (null for all other kinds):
+  degree: number | null; // the vertex-figure face's vertex count (= source-vertex degree)
+  globalSquareResolutionLink: string | null; // deg-4 only: host cell's GlobalSquareResolution cellId
 }
 
 export interface SiteIncidenceReading {
@@ -232,11 +254,106 @@ function findSourceFaceCandidates(
     .sort(compareById);
 }
 
-// The per-site relational-reading layer (P2). For each scoped midpoint, emit one
-// RelationalReading per dissection-core-face containing it, classified by the
-// derivation-aware taxonomy; the face-mediation (Trace△) member is fully
-// populated. Honesty: every context is graded and counted; no context is
-// silently dropped; an apex is never fabricated.
+// The researcher's ruled Coh□ resolution: the apex-pair resolves one generation
+// UP, by diagonalizing the SOURCE square (Trace□ → Trace△). NOT this cell's GSR.
+const COH_RESOLUTION = 'deferred-to-source-square-diagonalization' as const;
+
+// P3 face-coherence (Trace□ + Coh□) detail. `sourceFace` is the RESOLVED source
+// square (its vertexIds are the 4 corners in cyclic order); `parents` = {A,B},
+// a cyclic-adjacent corner pair. Returns candidateApexes {C,D}, opposite =
+// mid(C,D), routes [[A,B,C],[A,D,C]], and the Coh□ certificate. Any structural
+// surprise (unresolved / non-4-cycle / parents not an edge / missing opposite)
+// is surfaced via issues[] and graded `degenerate-square` — never fabricated.
+function faceCoherenceDetail(
+  sourceFace: Face | null,
+  parents: [string, string],
+  medialCycle: string[],
+  shape: Shape,
+  issues: string[],
+  faceId: string,
+): {
+  candidateApexes: string[] | null;
+  opposite: string | null;
+  routes: [string[], string[]] | null;
+  coh: CohCertificate;
+} {
+  const degenerate = (note: string) => {
+    issues.push(`dissection-core-face ${faceId}: ${note}`);
+    return {
+      candidateApexes: null,
+      opposite: null,
+      routes: null,
+      coh: { status: 'degenerate-square' as const, resolution: COH_RESOLUTION },
+    };
+  };
+
+  if (!sourceFace || sourceFace.vertexIds.length !== 4) {
+    return degenerate(
+      `face-coherence source square ${sourceFace ? `${sourceFace.id} is a ${sourceFace.vertexIds.length}-gon` : 'did not resolve'} (expected a 4-cycle)`,
+    );
+  }
+  const square = sourceFace.vertexIds;
+  if (new Set(square).size !== 4) {
+    return degenerate(`face-coherence source square ${sourceFace.id} is not a clean 4-cycle (repeated vertex)`);
+  }
+
+  const [a, b] = parents;
+  const indexOfA = square.indexOf(a);
+  if (indexOfA < 0) {
+    return degenerate(`face-coherence parent ${a} is not a corner of source square ${sourceFace.id}`);
+  }
+  // Rotate the cycle to start at A; A's neighbours are square'[1] and square'[3].
+  const rotated = [0, 1, 2, 3].map((k) => square[(indexOfA + k) % 4]);
+  let c: string;
+  let d: string;
+  if (b === rotated[1]) {
+    c = rotated[2]; // diagonal to A
+    d = rotated[3];
+  } else if (b === rotated[3]) {
+    c = rotated[2];
+    d = rotated[1];
+  } else {
+    return degenerate(
+      `face-coherence parents {${a},${b}} are not a cyclic-adjacent edge of source square ${sourceFace.id}`,
+    );
+  }
+  if (c === d) {
+    return degenerate(`face-coherence candidate apexes collapsed (C==D) on source square ${sourceFace.id}`);
+  }
+
+  const candidateApexes = [c, d];
+  // Cell-scoped: opposite = mid(C,D) drawn from THIS face's own medialCycle (the
+  // four midpoints of this source square), so it can never resolve to another
+  // cell's midpoint that shares the {C,D} parent-pair (engineer fix, finding #1).
+  const cdKey = canonicalEdgeKey(c, d);
+  const opposite =
+    medialCycle.find((m) => {
+      const sv = shape.vertices[m]?.createdBy.sourceVertexIds;
+      return Array.isArray(sv) && sv.length === 2 && canonicalEdgeKey(sv[0], sv[1]) === cdKey;
+    }) ?? null;
+  if (!opposite) {
+    issues.push(
+      `dissection-core-face ${faceId}: face-coherence opposite mid(${c},${d}) not found in this face's medialCycle`,
+    );
+  }
+  const routes: [string[], string[]] = [
+    [a, b, c],
+    [a, d, c],
+  ];
+  return {
+    candidateApexes,
+    opposite,
+    routes,
+    coh: { status: 'two-candidate-apexes', resolution: COH_RESOLUTION },
+  };
+}
+
+// The per-site relational-reading layer (P2 spine + P3 detail). For each scoped
+// midpoint, emit one RelationalReading per dissection-core-face containing it,
+// classified by the derivation-aware taxonomy; face-mediation (Trace△),
+// face-coherence (Trace□ + Coh□), and vertex-figure detail are populated.
+// Honesty: every context is graded and counted; no context is silently dropped;
+// nothing (apex, apex-pair, opposite) is fabricated.
 function buildSiteReadings(shape: Shape, issues: string[]): SiteIncidenceReading[] {
   const faceById = new Map<string, Face>(shape.faces.map((face) => [face.id, face]));
   const cellById = new Map<string, Cell>(shape.cells.map((cell) => [cell.id, cell]));
@@ -287,6 +404,7 @@ function buildSiteReadings(shape: Shape, issues: string[]): SiteIncidenceReading
       }
 
       if (hasSourceVertex) {
+        const degree = medialCycle.length; // = vertex-figure face vertex count = source-vertex degree
         readings.push({
           support: midpoint.id,
           generatedFaceId: face.id,
@@ -295,6 +413,15 @@ function buildSiteReadings(shape: Shape, issues: string[]): SiteIncidenceReading
           contextKind: 'vertex-figure',
           apex: null,
           medialCycle,
+          candidateApexes: null,
+          opposite: null,
+          routes: null,
+          coh: null,
+          degree,
+          // deg-4 vertex-figure links to its host cell's GlobalSquareResolution
+          // (P1 cellBody): the in-cell diagonal policy. The face's sourceCellId
+          // is that core cell, == one of report.cellBodies[].cellId.
+          globalSquareResolutionLink: degree === 4 ? (face.sourceCellId ?? null) : null,
         });
         continue;
       }
@@ -338,6 +465,20 @@ function buildSiteReadings(shape: Shape, issues: string[]): SiteIncidenceReading
         }
       }
 
+      // P3 face-coherence (Trace□ + Coh□) detail; null for face-mediation and
+      // face-coherence-n (n>4 detail deferred).
+      let candidateApexes: string[] | null = null;
+      let opposite: string | null = null;
+      let routes: [string[], string[]] | null = null;
+      let coh: CohCertificate | null = null;
+      if (contextKind === 'face-coherence') {
+        const detail = faceCoherenceDetail(sourceFace, parents, medialCycle, shape, issues, face.id);
+        candidateApexes = detail.candidateApexes;
+        opposite = detail.opposite;
+        routes = detail.routes;
+        coh = detail.coh;
+      }
+
       readings.push({
         support: midpoint.id,
         generatedFaceId: face.id,
@@ -346,6 +487,12 @@ function buildSiteReadings(shape: Shape, issues: string[]): SiteIncidenceReading
         contextKind,
         apex,
         medialCycle,
+        candidateApexes,
+        opposite,
+        routes,
+        coh,
+        degree: null,
+        globalSquareResolutionLink: null,
       });
     }
 
