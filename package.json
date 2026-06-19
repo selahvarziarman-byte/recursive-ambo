@@ -55,6 +55,7 @@
     "diagnose:p-simplex-generated-site-support-activation-law-ledger-t23": "node scripts/diagnose-p-simplex-generated-site-support-activation-law-ledger-t23.cjs",
     "diagnose:p-simplex-p2-sqrt3-generated-site-germ-convention-ledger-t24": "node scripts/diagnose-p-simplex-p2-sqrt3-generated-site-germ-convention-ledger-t24.cjs",
     "diagnose:p-simplex-p2-rho-germ-convention-body-shadow-response-sector-audit-t25": "node scripts/diagnose-p-simplex-p2-rho-germ-convention-body-shadow-response-sector-audit-t25.cjs",
+    "diagnose:p-simplex-p2-one-third-germ-susceptibility-axis-well-response-audit-t26": "node scripts/diagnose-p-simplex-p2-one-third-germ-susceptibility-axis-well-response-audit-t26.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
