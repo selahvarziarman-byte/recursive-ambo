@@ -300,6 +300,104 @@ check('buildLedgerFromDual (direct) matches the report ledger forward entry coun
       2,
     ),
   );
+
+  // =================== P5 §A: CUT — logged loss is FAITHFUL, silent is not ====
+  // Spec §3 clause II: a cut source (image ∅) is always RECORDED in perCutSource;
+  // it is then GRADED — a LOGGED removal (in removedLog) is faithful, a SILENT
+  // drop (absent from removedLog) is UNFAITHFUL. The source NEVER silently
+  // vanishes from the ledger. Same cut ledger, certified twice.
+  const cutSite = [...midIds].sort()[0]; // deterministic
+  const cutLedger = buildLedgerFromIdentification(midIds, (s) => (s === cutSite ? null : s)); // s -> null is the CUT
+  const loggedCert = certifyFaithfulness(cutLedger, lineageOf, [cutSite]); // removal LOGGED
+  const silentCert = certifyFaithfulness(cutLedger, lineageOf, []); // removal NOT logged
+
+  check('P5 §A cut: cutLedger.forward[cutSite] === null', cutLedger.forward[cutSite] === null);
+  check('P5 §A cut: cutSite is NOT a key of cutLedger.pullBack (it has no result)',
+    !Object.prototype.hasOwnProperty.call(cutLedger.pullBack, cutSite));
+  check('P5 §A cut: loggedCert RECORDS the cut source (one perCutSource entry, removed:true)',
+    loggedCert.perCutSource.length === 1 &&
+      loggedCert.perCutSource[0].sourceSiteId === cutSite &&
+      loggedCert.perCutSource[0].removed === true);
+  check('P5 §A cut: silentCert RECORDS the cut source too (recorded either way — never a silent vanish)',
+    silentCert.perCutSource.length === 1 &&
+      silentCert.perCutSource[0].sourceSiteId === cutSite &&
+      silentCert.perCutSource[0].removed === true);
+  check("P5 §A cut: LOGGED removal -> removedLoggedCount 1 / removedSilentCount 0 / operationStatus 'FAITHFUL'",
+    loggedCert.removedLoggedCount === 1 &&
+      loggedCert.removedSilentCount === 0 &&
+      loggedCert.perCutSource[0].logged === true &&
+      loggedCert.operationStatus === 'FAITHFUL');
+  check("P5 §A cut: SILENT drop -> removedSilentCount 1 / removedLoggedCount 0 / operationStatus 'UNFAITHFUL'",
+    silentCert.removedSilentCount === 1 &&
+      silentCert.removedLoggedCount === 0 &&
+      silentCert.perCutSource[0].logged === false &&
+      silentCert.operationStatus === 'UNFAITHFUL');
+  check('P5 §A cut: both certs resultSiteCount === 43 (44 sources, one cut -> 43 mapped results)',
+    loggedCert.resultSiteCount === 43 && silentCert.resultSiteCount === 43);
+  check('P5 §A cut: both certs heterogeneousCount === 0',
+    loggedCert.heterogeneousCount === 0 && silentCert.heterogeneousCount === 0);
+
+  console.log('\n--- cut perCutSource: logged vs silent (same removed source, differ only in `logged`) ---');
+  console.log(JSON.stringify({ logged: loggedCert.perCutSource[0], silent: silentCert.perCutSource[0] }, null, 2));
+
+  // =================== P5 §B: the COINCIDENCE COROLLARY ======================
+  // Spec §5/§7 — a CERTIFIED HEURISTIC, NEVER the law. On THIS body, B-twins
+  // (the same edge amboed in two cells) land at the IDENTICAL midpoint position,
+  // so the lineage partition and the position partition coincide. We MEASURE this
+  // equivalence; we do NOT use coincidence as a criterion. It is a MEASURED,
+  // geometry-dependent corollary (verified, not proven): coincidence PROPOSES
+  // identifications, the lineage-homogeneity certificate RATIFIES them. Under a
+  // degenerate seed where distinct lineages share a point, the coincidence
+  // shortcut would fail but the LAW survives — it flags the heterogeneous class.
+  const posKey = (id) => o3.vertices[id].position.map((n) => n.toFixed(9)).join(','); // exact: B-twin midpoints are equal
+  const classOf = (keyFn) => {
+    const m = new Map();
+    for (const id of midIds) {
+      const k = keyFn(id);
+      if (!m.has(k)) m.set(k, []);
+      m.get(k).push(id);
+    }
+    return m;
+  };
+  const lineageClasses = classOf(lineageOf);
+  const positionClasses = classOf(posKey);
+  const sortedClass = (id, m, keyFn) => [...m.get(keyFn(id))].sort();
+  const arrEq = (p, q) => p.length === q.length && p.every((v, i) => v === q[i]);
+
+  let partitionsCoincide = midIds.length > 0;
+  for (const id of midIds) {
+    if (!arrEq(sortedClass(id, lineageClasses, lineageOf), sortedClass(id, positionClasses, posKey))) {
+      partitionsCoincide = false;
+    }
+  }
+  check('P5 §B coincidence: lineage-class === position-class for EVERY site (lineage-equal <=> position-coincident, both directions)',
+    partitionsCoincide);
+  check('P5 §B: lineageClasses.size === positionClasses.size === 40 (the 4 B-twin classes are the 4 coincident pairs)',
+    lineageClasses.size === 40 && positionClasses.size === 40);
+
+  // PROPOSAL -> RATIFICATION: the position-PROPOSED glue is FAITHFUL and equals
+  // the lineage quotient (40 classes) — coincidence proposes, the law ratifies.
+  const posQuotient = certifyFaithfulness(buildLedgerFromIdentification(midIds, posKey), lineageOf);
+  check('P5 §B PROPOSAL->RATIFICATION: position-proposed quotient resultSiteCount === 40',
+    posQuotient.resultSiteCount === 40);
+  check("P5 §B: position-proposed quotient operationStatus === 'FAITHFUL' (the law RATIFIES the coincidence proposal)",
+    posQuotient.operationStatus === 'FAITHFUL');
+  check('P5 §B: position-proposed quotient heterogeneousCount === 0', posQuotient.heterogeneousCount === 0);
+
+  console.log('\n--- coincidence corollary: lineage vs position partitions + position-quotient ---');
+  console.log(
+    JSON.stringify(
+      {
+        lineageClasses: lineageClasses.size,
+        positionClasses: positionClasses.size,
+        partitionsCoincide,
+        posQuotientResultSiteCount: posQuotient.resultSiteCount,
+        posQuotientOperationStatus: posQuotient.operationStatus,
+      },
+      null,
+      2,
+    ),
+  );
 }
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
