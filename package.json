@@ -59,6 +59,7 @@
     "diagnose:p-simplex-p2-one-third-nonlinear-axis-branch-continuation-audit-t27": "node scripts/diagnose-p-simplex-p2-one-third-nonlinear-axis-branch-continuation-audit-t27.cjs",
     "diagnose:p-simplex-p2-one-third-six-site-convention2-germ-pressure-witness-map-t28a": "node scripts/diagnose-p-simplex-p2-one-third-six-site-convention2-germ-pressure-witness-map-t28a.cjs",
     "diagnose:p-simplex-cross-projection-provenance-eligibility-preflight-t28c0": "node scripts/diagnose-p-simplex-cross-projection-provenance-eligibility-preflight-t28c0.cjs",
+    "diagnose:p-simplex-axis-transverse-discrimination-survival-metric-t28c1": "node scripts/diagnose-p-simplex-axis-transverse-discrimination-survival-metric-t28c1.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
