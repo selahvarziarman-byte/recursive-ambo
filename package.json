@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "diagnose:atomic-registry": "node scripts/diagnose-atomic-registry.cjs",
     "diagnose:incidence-trace-registry": "node scripts/diagnose-incidence-trace-registry.cjs",
+    "diagnose:transformation-ledger": "node scripts/diagnose-transformation-ledger.cjs",
     "diagnose:field-source-child-contexts": "node scripts/diagnose-field-source-child-contexts.cjs",
     "diagnose:field-source-child-degeneracy": "node scripts/diagnose-field-source-child-degeneracy.cjs",
     "diagnose:field-source-child-derivations": "node scripts/diagnose-field-source-child-derivations.cjs",
