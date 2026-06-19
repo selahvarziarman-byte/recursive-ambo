@@ -57,6 +57,7 @@
     "diagnose:p-simplex-p2-rho-germ-convention-body-shadow-response-sector-audit-t25": "node scripts/diagnose-p-simplex-p2-rho-germ-convention-body-shadow-response-sector-audit-t25.cjs",
     "diagnose:p-simplex-p2-one-third-germ-susceptibility-axis-well-response-audit-t26": "node scripts/diagnose-p-simplex-p2-one-third-germ-susceptibility-axis-well-response-audit-t26.cjs",
     "diagnose:p-simplex-p2-one-third-nonlinear-axis-branch-continuation-audit-t27": "node scripts/diagnose-p-simplex-p2-one-third-nonlinear-axis-branch-continuation-audit-t27.cjs",
+    "diagnose:p-simplex-p2-one-third-six-site-convention2-germ-pressure-witness-map-t28a": "node scripts/diagnose-p-simplex-p2-one-third-six-site-convention2-germ-pressure-witness-map-t28a.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
