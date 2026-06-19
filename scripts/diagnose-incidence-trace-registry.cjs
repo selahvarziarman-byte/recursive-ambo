@@ -26,6 +26,10 @@ const { buildIncidenceTraceRegistry } = require(
 );
 const { createSeedShape } = require(path.join(repoRoot, 'src/data/seeds.ts'));
 const { applyAmboDissection } = require(path.join(repoRoot, 'src/lib/ambo.ts'));
+// atomicRegistry is the REGRESSION ANCHOR — imported ONLY by the diagnostic (the
+// module under test must NOT import it). Trace△ (face-mediation) readings are
+// checked one-for-one against its supported edge-mediation contexts.
+const { buildAtomicRegistryReport } = require(path.join(repoRoot, 'src/lib/atomicRegistry.ts'));
 
 let failures = 0;
 function check(label, condition) {
@@ -36,6 +40,22 @@ function check(label, condition) {
     failures += 1;
   }
 }
+
+// g1 = the gen-1 ambo-dissection of a seed's seed-cell.
+const g1 = (seed) => {
+  const sh = createSeedShape(seed);
+  const c = sh.cells.find((x) => x.kind === 'seed');
+  return applyAmboDissection(sh, c.id);
+};
+const scopedMidpoints = (sh) =>
+  Object.values(sh.vertices).filter(
+    (v) => v.createdBy.operation === 'ambo-dissection' && v.createdBy.sourceVertexIds.length === 2,
+  );
+const sameSet = (a, b) => {
+  const sa = new Set(a);
+  const sb = new Set(b);
+  return sa.size === sb.size && [...sa].every((x) => sb.has(x));
+};
 
 // ---- fixtures: tetra g1 (dissect seed) + g2 (dissect the gen-1 octa core) ----
 const s1 = applyAmboDissection(createSeedShape('tetrahedron'));
@@ -73,9 +93,124 @@ check('every square-pyramid residue cellBody has status === not-applicable-by-co
 check('report.issues is empty on clean tetra g1+g2 shape',
   Array.isArray(report.issues) && report.issues.length === 0);
 
+// ===================== P2: per-site Trace△ ONE-FOR-ONE (3 seeds) =============
+// For each seed's g1, build the registry and compare face-mediation to the
+// REAL atomicRegistry per scoped midpoint. tetra & octa: atomicRegistry
+// SUPPORTED (2 triangle contexts each). cube: atomicRegistry UNSUPPORTED
+// (non-triangular-context) — its square contexts are exactly what Trace□ serves.
+
+function faceMediationReadings(site) {
+  return site.readings.filter((r) => r.contextKind === 'face-mediation');
+}
+
+// --- supported seeds: tetra & octa ---
+let firstTetraFaceMediationSite = null;
+for (const seed of ['tetrahedron', 'octahedron']) {
+  const sh = g1(seed);
+  const rep = buildIncidenceTraceRegistry(sh);
+  const mids = scopedMidpoints(sh);
+
+  let allTriCount2 = mids.length > 0;
+  let allOneForOne = mids.length > 0;
+  let allApexSetMatch = mids.length > 0;
+  let allPairsMatch = mids.length > 0;
+  let allVf2 = mids.length > 0;
+  let allSq0 = mids.length > 0;
+
+  for (const mid of mids) {
+    const site = rep.sites.find((s) => s.scopedVertexId === mid.id);
+    const ar = buildAtomicRegistryReport(sh, mid.id);
+    if (!site || ar.status !== 'supported') {
+      allTriCount2 = allOneForOne = allApexSetMatch = allPairsMatch = allVf2 = allSq0 = false;
+      break;
+    }
+    const fm = faceMediationReadings(site);
+    if (site.triangleTraceCount !== 2) allTriCount2 = false;
+    if (site.triangleTraceCount !== ar.triangularFaceContexts.length) allOneForOne = false;
+
+    const fmApexes = fm.map((r) => r.apex);
+    const arProj = ar.candidateReadings[0].projectionSourceVertexIds;
+    if (!sameSet(fmApexes, arProj)) allApexSetMatch = false;
+
+    // every face-mediation (generatedFaceId, sourceFaceId) matches an atomicRegistry context
+    const arPairs = new Set(
+      ar.triangularFaceContexts.map((c) => `${c.generatedFaceId}|${c.sourceFaceId}`),
+    );
+    if (!fm.every((r) => arPairs.has(`${r.generatedFaceId}|${r.sourceFaceId}`))) allPairsMatch = false;
+
+    if (site.vertexFigureCount !== 2) allVf2 = false;
+    if (site.squareTraceCount !== 0) allSq0 = false;
+
+    if (seed === 'tetrahedron' && !firstTetraFaceMediationSite && fm.length) {
+      firstTetraFaceMediationSite = site;
+    }
+  }
+
+  const S = seed === 'tetrahedron' ? 'TETRA' : 'OCTA';
+  check(`${S} g1: every midpoint triangleTraceCount === 2`, allTriCount2);
+  check(`${S} g1: triangleTraceCount === atomicRegistry.triangularFaceContexts.length (one-for-one)`, allOneForOne);
+  check(`${S} g1: set(face-mediation apexes) === set(atomicRegistry projectionSourceVertexIds)`, allApexSetMatch);
+  check(`${S} g1: every (generatedFaceId, sourceFaceId) matches an atomicRegistry context`, allPairsMatch);
+  check(`${S} g1: every midpoint vertexFigureCount === 2`, allVf2);
+  check(`${S} g1: every midpoint squareTraceCount === 0`, allSq0);
+  check(`${S} g1: report.issues empty`, Array.isArray(rep.issues) && rep.issues.length === 0);
+}
+
+// --- unsupported seed: cube (atomicRegistry rejects as non-triangular-context) ---
+{
+  const sh = g1('cube');
+  const rep = buildIncidenceTraceRegistry(sh);
+  const mids = scopedMidpoints(sh);
+
+  let allTri0 = mids.length > 0;
+  let allUnsupported = mids.length > 0;
+  let allSq2 = mids.length > 0;
+  let allVf2 = mids.length > 0;
+
+  for (const mid of mids) {
+    const site = rep.sites.find((s) => s.scopedVertexId === mid.id);
+    const ar = buildAtomicRegistryReport(sh, mid.id);
+    if (!site) {
+      allTri0 = allUnsupported = allSq2 = allVf2 = false;
+      break;
+    }
+    if (site.triangleTraceCount !== 0) allTri0 = false;
+    if (!(ar.status === 'unsupported' && ar.reason === 'non-triangular-context')) allUnsupported = false;
+    if (site.squareTraceCount !== 2) allSq2 = false;
+    if (site.vertexFigureCount !== 2) allVf2 = false;
+  }
+
+  check('CUBE g1: every midpoint triangleTraceCount === 0', allTri0);
+  check("CUBE g1: atomicRegistry status === 'unsupported' && reason === 'non-triangular-context'", allUnsupported);
+  check('CUBE g1: every midpoint squareTraceCount === 2', allSq2);
+  check('CUBE g1: every midpoint vertexFigureCount === 2', allVf2);
+  check('CUBE g1: report.issues empty', Array.isArray(rep.issues) && rep.issues.length === 0);
+}
+
+// --- ALL: every face-mediation medialCycle has 3 distinct midpoint ids ---
+{
+  let allMedial3 = true;
+  let anyChecked = false;
+  for (const seed of ['tetrahedron', 'octahedron', 'cube']) {
+    const sh = g1(seed);
+    const rep = buildIncidenceTraceRegistry(sh);
+    for (const site of rep.sites) {
+      for (const r of faceMediationReadings(site)) {
+        anyChecked = true;
+        if (!(Array.isArray(r.medialCycle) && new Set(r.medialCycle).size === 3)) allMedial3 = false;
+      }
+    }
+  }
+  check('ALL g1: every face-mediation medialCycle has 3 distinct midpoint ids', anyChecked && allMedial3);
+}
+
 // ===================== eyeball: the full cuboctahedron cellBody =============
 console.log('\n--- full cuboctahedron cellBody (GlobalSquareResolution) ---');
 console.log(JSON.stringify(cubo, null, 2));
+
+// ===================== eyeball: one face-mediation site (tetra g1) ==========
+console.log('\n--- one face-mediation SiteIncidenceReading (tetra g1 midpoint) ---');
+console.log(JSON.stringify(firstTetraFaceMediationSite, null, 2));
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
 process.exit(failures === 0 ? 0 : 1);
