@@ -51,6 +51,7 @@
     "diagnose:p-simplex-d3-body-drive-branch-anatomy-ledger-t19": "node scripts/diagnose-p-simplex-d3-body-drive-branch-anatomy-ledger-t19.cjs",
     "diagnose:p-simplex-forcing-scale-calibration-reachability-ledger-t20": "node scripts/diagnose-p-simplex-forcing-scale-calibration-reachability-ledger-t20.cjs",
     "diagnose:p-simplex-a3-residual-origin-decomposition-ledger-t21": "node scripts/diagnose-p-simplex-a3-residual-origin-decomposition-ledger-t21.cjs",
+    "diagnose:p-simplex-generated-site-a3-residual-activation-ledger-t22": "node scripts/diagnose-p-simplex-generated-site-a3-residual-activation-ledger-t22.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
