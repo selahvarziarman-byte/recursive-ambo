@@ -65,6 +65,7 @@
     "diagnose:p-simplex-k3-sampling-family-asymmetry-control-audit-t28e": "node scripts/diagnose-p-simplex-k3-sampling-family-asymmetry-control-audit-t28e.cjs",
     "diagnose:p-simplex-k3-stabilizer-orbit-verification-t28j-lab": "node scripts/diagnose-p-simplex-k3-stabilizer-orbit-verification-t28j-lab.cjs",
     "diagnose:p-simplex-cuboctahedral-vector-equilibrium-portability-t28m": "node scripts/diagnose-p-simplex-cuboctahedral-vector-equilibrium-portability-t28m.cjs",
+    "diagnose:p-simplex-cuboctahedral-s4-direct-bridge-t28n0": "node scripts/diagnose-p-simplex-cuboctahedral-s4-direct-bridge-t28n0.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
