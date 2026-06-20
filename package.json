@@ -61,6 +61,7 @@
     "diagnose:p-simplex-cross-projection-provenance-eligibility-preflight-t28c0": "node scripts/diagnose-p-simplex-cross-projection-provenance-eligibility-preflight-t28c0.cjs",
     "diagnose:p-simplex-axis-transverse-discrimination-survival-metric-t28c1": "node scripts/diagnose-p-simplex-axis-transverse-discrimination-survival-metric-t28c1.cjs",
     "diagnose:p-simplex-k3-local-atd-decomposition-v-blindness-audit-t28d": "node scripts/diagnose-p-simplex-k3-local-atd-decomposition-v-blindness-audit-t28d.cjs",
+    "diagnose:p-simplex-k3-sampling-family-asymmetry-control-audit-t28e": "node scripts/diagnose-p-simplex-k3-sampling-family-asymmetry-control-audit-t28e.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
