@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "diagnose:event-bound-field-witness-consolidation-ledger-v0": "node scripts/diagnose-event-bound-field-witness-consolidation-ledger-v0.cjs",
     "diagnose:atomic-registry": "node scripts/diagnose-atomic-registry.cjs",
     "diagnose:field-source-child-contexts": "node scripts/diagnose-field-source-child-contexts.cjs",
     "diagnose:field-source-child-degeneracy": "node scripts/diagnose-field-source-child-degeneracy.cjs",
