@@ -33,6 +33,17 @@
 //        replaced by the vertex-LINK-is-a-single-cycle test). With P5 the
 //        registry covers spec §5 in full. face-coherence-n (n>4) detail is the
 //        only remaining DEFERRED item.
+//   P7 — charter layer (1): `glueCoh` is UPGRADED from a boolean manifold gate
+//        into a DECOMPOSER (signed-pull-back junction charter §1/§2). The same
+//        vertex-link adjacency is partitioned by the pure, exported
+//        `decomposeLink` into strata (manifold pieces walled at junctions),
+//        junction loci (degree>2 branches), and a `pinch` flag (>1 component),
+//        yielding a FOUR-VALUED `valence` (no-context / boundary / interior /
+//        junction). The old binary `non-manifold-overlap` status — which fused
+//        valence-1 boundary (a legal bounded manifold) with valence->2 junction —
+//        is RETIRED. A junction is a NORMAL RECORDED outcome
+//        (instruments-not-guards), never an issues[] anomaly. The through-pairing
+//        ACROSS a junction is DEFERRED (charter §4 — hook only, no policy).
 // The report is shaped so each layer is added by ADDING a field, never by
 // reshaping.
 //
@@ -123,19 +134,60 @@ export interface RelationalReading {
   globalSquareResolutionLink: string | null; // deg-4 only: host cell's GlobalSquareResolution cellId
 }
 
-// P5 §B — GlueCoh-v2, the per-site MANIFOLD gate (researcher ruling 2026-06-19).
-// The original §3 clause `medial(R) ∩ medial(S) = {M_AB}` is BROKEN (adjacent
-// faces in a manifold fan legitimately share the site + the next fan-vertex). The
-// real test: the site's incident dissection-core-faces form a CLOSED FAN ⟺ its
-// vertex LINK is a single cycle. `status` is NAMED, never a bare failure:
-// 'no-core-context' is a retired midpoint (its core-faces consumed by a later
-// generation — the gate does not apply); 'non-manifold-overlap' fires only on a
-// non-manifold generation the engine never produces (and pushes an issues[] note).
+// P5 §B / P7 — GlueCoh, the per-site MANIFOLD gate, UPGRADED into a DECOMPOSER
+// (signed-pull-back junction charter §1/§2). The original §3 clause
+// `medial(R) ∩ medial(S) = {M_AB}` was BROKEN (adjacent faces in a manifold fan
+// legitimately share the site + the next fan-vertex); the real test reads the
+// site's vertex LINK. P7 generalizes the single boolean into a PARTITION of that
+// link, read directly off the adjacency graph (policy-free):
+//   - a STRATUM is a maximal connected manifold piece, walled off at junctions
+//     (the link cut at its junction loci — a junction is a WALL; the stratum
+//     stops there). `closed` = a single cycle (all internal degree 2); else a
+//     bounded arc (degree-1 ends).
+//   - a JUNCTION LOCUS is a degree>2 link-vertex (a branch); a PINCH is a link
+//     with >1 connected component (a multi-sheet vertex-junction).
+//   - `valence` is the FOUR-VALUED site classification (charter §2): no-context
+//     (0 contexts) / boundary (a free arc, valence 1 — kept MANIFOLD) / interior
+//     (one closed cycle, valence 2) / junction (any degree>2 locus OR pinch).
+// `status` is NAMED, never a bare failure: 'no-core-context' is a retired
+// midpoint (its core-faces consumed by a later generation — the gate does not
+// apply). The old binary 'non-manifold-overlap' is RETIRED: it fused valence-1
+// boundary (a legal bounded manifold) with valence->2 junction. A junction is a
+// NORMAL RECORDED outcome (instruments-not-guards), NOT an issues[] anomaly.
+export type LinkValence = 'no-context' | 'boundary' | 'interior' | 'junction';
+
+export interface LinkStratum {
+  vertices: string[]; // the stratum's link-vertices, sorted
+  closed: boolean; // single cycle (all internal degree 2) vs bounded arc (degree-1 ends)
+}
+
+export interface JunctionLocus {
+  at: string; // the degree>2 link-vertex (a branch junction)
+  degree: number; // # sheets meeting there (= the link-vertex degree)
+}
+
+// The pure decomposition of a vertex link, read off the adjacency graph ALONE.
+export interface LinkDecomposition {
+  strata: LinkStratum[]; // connected manifold pieces, walled at the junction loci
+  junctionLoci: JunctionLocus[]; // degree>2 link-vertices (branch junctions), sorted by `at`
+  pinch: boolean; // the link has >1 connected component (a multi-sheet vertex-junction)
+  valence: LinkValence; // four-valued site classification (charter §2)
+  // THE HOOK (charter §4 — DEFERRED): threading sheets THROUGH a degree-d junction
+  // is the (d−1)!! sheet-matching = GlobalSquareResolution one valence up, built
+  // only on named-material pressure. Strata are WALLED, never threaded — no
+  // pairing policy is authored here. See the charter §4 deferral.
+  throughPairingStatus: 'deferred';
+}
+
 export interface SiteGlueCoh {
   contextCount: number; // # incident dissection-core-faces (= readings.length)
   linkVertexCount: number; // # distinct vertices in the link
-  linkIsSingleCycle: boolean; // every link-vertex deg 2, edges connected into ONE cycle covering all link-vertices
-  status: 'glued' | 'non-manifold-overlap' | 'no-core-context';
+  linkIsSingleCycle: boolean; // back-compat: === (valence === 'interior')
+  strata: LinkStratum[]; // P7 — the link's manifold pieces (walled at junctions)
+  junctionLoci: JunctionLocus[]; // P7 — degree>2 branch loci
+  pinch: boolean; // P7 — >1 link component (a multi-sheet vertex-junction)
+  valence: LinkValence; // P7 — four-valued (no-context/boundary/interior/junction)
+  status: 'glued' | 'boundary' | 'junction' | 'no-core-context';
 }
 
 export interface SiteIncidenceReading {
@@ -402,19 +454,101 @@ function faceCoherenceDetail(
   };
 }
 
-// P5 §B — build the site's vertex LINK and grade the manifold gate. For each
-// incident core-face's medialCycle, take the site M's two cyclic-adjacent
-// neighbours and add ONE undirected link-edge between them (the link-edge
-// opposite M). A clean closed fan of k faces yields a k-cycle: k distinct link-
-// vertices, every link-vertex degree exactly 2, one connected component. A finite
-// connected 2-regular graph IS a single cycle, so that triple is sufficient.
-// Honesty: 0 contexts -> 'no-core-context' (named, not a failure); a link that is
-// not a single cycle -> 'non-manifold-overlap' + an issues[] note.
-function buildSiteGlueCoh(
-  siteVertexId: string,
-  readings: RelationalReading[],
-  issues: string[],
-): SiteGlueCoh {
+// P7 — the PURE decomposer (signed-pull-back junction charter §1). Operates on a
+// vertex-link adjacency graph ALONE: no shape, no readings, no naming. Reads three
+// things directly off the graph (policy-free) — per-vertex degree, the connected
+// components, and the components AFTER cutting at junction loci — and emits the
+// partition. A junction is a WALL: cutting removes the degree>2 loci (and their
+// incident edges), so each remaining component is a stratum that stops at the
+// wall. `closed` = a single cycle (every in-stratum degree 2); else a bounded arc.
+// `pinch` is measured on the FULL graph (>1 component). The four-valued `valence`
+// follows charter §2. Nothing is chosen; nothing throws.
+export function decomposeLink(adjacency: Map<string, string[]>): LinkDecomposition {
+  const vertices = [...adjacency.keys()];
+  const n = vertices.length;
+  const degreeOf = (v: string): number => (adjacency.get(v) ?? []).length;
+
+  // Junction loci: degree>2 link-vertices (branch junctions), sorted by `at`.
+  const junctionLoci: JunctionLocus[] = vertices
+    .filter((v) => degreeOf(v) > 2)
+    .map((v) => ({ at: v, degree: degreeOf(v) }))
+    .sort((a, b) => a.at.localeCompare(b.at));
+  const junctionSet = new Set<string>(junctionLoci.map((locus) => locus.at));
+
+  // pinch: the FULL link (nothing cut) has >1 connected component.
+  const pinch = connectedComponents(adjacency, vertices, new Set<string>()).length > 1;
+
+  // Strata: connected components of the link CUT at its junction loci. Excluding
+  // the junction vertices walls the strata; the within-cut degree ignores edges to
+  // a junction, so a fan-arm that was degree 2 becomes a degree-1-ended arc.
+  const cutDegreeOf = (v: string): number =>
+    (adjacency.get(v) ?? []).filter((w) => !junctionSet.has(w)).length;
+  const strata: LinkStratum[] = connectedComponents(adjacency, vertices, junctionSet)
+    .map((comp) => ({
+      vertices: [...comp].sort((a, b) => a.localeCompare(b)),
+      closed: comp.length > 0 && comp.every((v) => cutDegreeOf(v) === 2),
+    }))
+    .sort((a, b) => (a.vertices[0] ?? '').localeCompare(b.vertices[0] ?? ''));
+
+  const allDegree2 = n > 0 && vertices.every((v) => degreeOf(v) === 2);
+
+  let valence: LinkValence;
+  if (n === 0) {
+    valence = 'no-context'; // 0 contexts — no link formed
+  } else if (junctionLoci.length > 0 || pinch) {
+    valence = 'junction'; // a degree>2 branch OR a multi-sheet pinch
+  } else if (n >= 3 && allDegree2) {
+    valence = 'interior'; // one closed cycle covering every link-vertex
+  } else {
+    valence = 'boundary'; // one component, a degree-1 end, no degree>2 (a free arc)
+  }
+
+  return { strata, junctionLoci, pinch, valence, throughPairingStatus: 'deferred' };
+}
+
+// Connected components over the adjacency graph, optionally EXCLUDING a set of
+// vertices (and every edge incident to them). Excluded vertices are never visited
+// and never traversed through — this is how the strata are walled at the junction
+// loci. Returns one vertex-id array per component.
+function connectedComponents(
+  adjacency: Map<string, string[]>,
+  vertices: string[],
+  exclude: Set<string>,
+): string[][] {
+  const seen = new Set<string>(exclude);
+  const components: string[][] = [];
+  for (const start of vertices) {
+    if (seen.has(start)) {
+      continue;
+    }
+    const comp: string[] = [];
+    const stack = [start];
+    seen.add(start);
+    while (stack.length) {
+      const vertex = stack.pop() as string;
+      comp.push(vertex);
+      for (const neighbour of adjacency.get(vertex) ?? []) {
+        if (!seen.has(neighbour)) {
+          seen.add(neighbour);
+          stack.push(neighbour);
+        }
+      }
+    }
+    components.push(comp);
+  }
+  return components;
+}
+
+// P7 — build the site's vertex-link adjacency exactly as before, then DECOMPOSE
+// it. For each incident core-face's medialCycle, take the site M's two cyclic-
+// adjacent neighbours and add ONE undirected link-edge between them (the link edge
+// opposite M). `decomposeLink` reads the partition off that graph. `status` maps
+// the four-valued valence: 0 contexts -> 'no-core-context' (retired midpoint);
+// interior -> 'glued'; boundary -> 'boundary'; junction -> 'junction'. A junction
+// is RECORDED in the decomposition, never flagged as an issues[] anomaly
+// (instruments-not-guards). `linkIsSingleCycle` is kept for back-compat
+// (=== interior).
+function buildSiteGlueCoh(siteVertexId: string, readings: RelationalReading[]): SiteGlueCoh {
   const contextCount = readings.length;
   // Adjacency with multiplicity (each reading pushes one undirected edge as two
   // half-edges) so a non-manifold double-edge shows up as a degree > 2.
@@ -441,40 +575,34 @@ function buildSiteGlueCoh(
   }
 
   const linkVertexCount = adjacency.size;
-  let linkIsSingleCycle = false;
-  if (contextCount >= 3 && linkVertexCount >= 3) {
-    const allDegree2 = [...adjacency.values()].every((neighbours) => neighbours.length === 2);
-    if (allDegree2) {
-      // One connected component covering every link-vertex ⇒ a single cycle.
-      const start = adjacency.keys().next().value as string;
-      const seen = new Set<string>([start]);
-      const stack = [start];
-      while (stack.length) {
-        const vertex = stack.pop() as string;
-        for (const neighbour of adjacency.get(vertex) ?? []) {
-          if (!seen.has(neighbour)) {
-            seen.add(neighbour);
-            stack.push(neighbour);
-          }
-        }
-      }
-      linkIsSingleCycle = seen.size === linkVertexCount;
-    }
-  }
+  const decomposition = decomposeLink(adjacency);
 
   let status: SiteGlueCoh['status'];
   if (contextCount === 0) {
     status = 'no-core-context';
-  } else if (linkIsSingleCycle) {
+  } else if (decomposition.valence === 'interior') {
     status = 'glued';
+  } else if (decomposition.valence === 'boundary') {
+    status = 'boundary';
+  } else if (decomposition.valence === 'junction') {
+    status = 'junction';
   } else {
-    status = 'non-manifold-overlap';
-    issues.push(
-      `site ${siteVertexId}: GlueCoh link is not a single cycle (contextCount=${contextCount}, linkVertexCount=${linkVertexCount}); non-manifold-overlap`,
-    );
+    // valence 'no-context' with contextCount > 0: every reading was degenerate
+    // (M absent / cycle < 3), so no link formed. Not an anomaly — record as no
+    // core context (defensive; the rigid substrate never produces it).
+    status = 'no-core-context';
   }
 
-  return { contextCount, linkVertexCount, linkIsSingleCycle, status };
+  return {
+    contextCount,
+    linkVertexCount,
+    linkIsSingleCycle: decomposition.valence === 'interior',
+    strata: decomposition.strata,
+    junctionLoci: decomposition.junctionLoci,
+    pinch: decomposition.pinch,
+    valence: decomposition.valence,
+    status,
+  };
 }
 
 // The per-site relational-reading layer (P2 spine + P3 detail). For each scoped
@@ -635,7 +763,7 @@ function buildSiteReadings(shape: Shape, issues: string[]): SiteIncidenceReading
       triangleTraceCount: readings.filter((r) => r.contextKind === 'face-mediation').length,
       squareTraceCount: readings.filter((r) => r.contextKind === 'face-coherence').length,
       vertexFigureCount: readings.filter((r) => r.contextKind === 'vertex-figure').length,
-      glueCoh: buildSiteGlueCoh(midpoint.id, readings, issues),
+      glueCoh: buildSiteGlueCoh(midpoint.id, readings),
     });
   }
 

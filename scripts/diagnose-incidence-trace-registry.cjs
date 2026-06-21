@@ -21,7 +21,7 @@ require.extensions['.ts'] = (module, filename) => {
 const repoRoot = path.resolve(__dirname, '..');
 // Requiring the real registry module is the mock-solution guard: delete
 // incidenceTraceRegistry.ts and this require throws.
-const { buildIncidenceTraceRegistry } = require(
+const { buildIncidenceTraceRegistry, decomposeLink } = require(
   path.join(repoRoot, 'src/lib/incidenceTraceRegistry.ts'),
 );
 const { createSeedShape } = require(path.join(repoRoot, 'src/data/seeds.ts'));
@@ -457,6 +457,175 @@ for (const seed of ['tetrahedron', 'octahedron', 'cube']) {
   check('P5 §B ALL fixtures: report.issues empty (glueCoh builds clean)', issuesEmpty);
 }
 
+// ===================== P7 §B: four-valued split on SYNTHETIC links ===========
+// Feed explicit adjacency Maps DIRECTLY to decomposeLink. These STAND IN for
+// post-identification (quotient) links — the rigid substrate never produces them
+// (§C proves it). Each edge is added as TWO half-edges (undirected), exactly the
+// way buildSiteGlueCoh builds the real link. The committed 'non-manifold-overlap'
+// FUSED boundary (valence 1) with branch/pinch (valence >2); this SPLITS them —
+// boundary lands 'boundary' (MANIFOLD), branch/pinch land 'junction'.
+const undirected = (edges) => {
+  const m = new Map();
+  const add = (a, b) => {
+    const list = m.get(a);
+    if (list) list.push(b);
+    else m.set(a, [b]);
+  };
+  for (const [a, b] of edges) {
+    add(a, b);
+    add(b, a);
+  }
+  return m;
+};
+
+// (1) closed 4-cycle a-b-c-d-a (all deg 2, 1 comp) -> interior
+{
+  const dec = decomposeLink(undirected([['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a']]));
+  check('P7 §B closed-4cycle: strata.length === 1', dec.strata.length === 1);
+  check('P7 §B closed-4cycle: strata[0].closed === true', Boolean(dec.strata[0]) && dec.strata[0].closed === true);
+  check('P7 §B closed-4cycle: strata[0].vertices === {a,b,c,d}',
+    Boolean(dec.strata[0]) && dec.strata[0].vertices.length === 4 && sameSet(dec.strata[0].vertices, ['a', 'b', 'c', 'd']));
+  check('P7 §B closed-4cycle: junctionLoci.length === 0', dec.junctionLoci.length === 0);
+  check('P7 §B closed-4cycle: pinch === false', dec.pinch === false);
+  check("P7 §B closed-4cycle: valence === 'interior'", dec.valence === 'interior');
+  check("P7 §B closed-4cycle: throughPairingStatus === 'deferred' (hook only)", dec.throughPairingStatus === 'deferred');
+}
+
+// (2) boundary arc a-b-c (deg 1,2,1; 1 comp, open) -> boundary (kept MANIFOLD)
+{
+  const dec = decomposeLink(undirected([['a', 'b'], ['b', 'c']]));
+  check('P7 §B boundary-arc: strata.length === 1', dec.strata.length === 1);
+  check('P7 §B boundary-arc: strata[0].closed === false (a bounded arc)', Boolean(dec.strata[0]) && dec.strata[0].closed === false);
+  check('P7 §B boundary-arc: strata[0].vertices === {a,b,c}',
+    Boolean(dec.strata[0]) && dec.strata[0].vertices.length === 3 && sameSet(dec.strata[0].vertices, ['a', 'b', 'c']));
+  check('P7 §B boundary-arc: junctionLoci.length === 0', dec.junctionLoci.length === 0);
+  check('P7 §B boundary-arc: pinch === false', dec.pinch === false);
+  check("P7 §B boundary-arc: valence === 'boundary' (NOT junction — the split)", dec.valence === 'boundary');
+}
+
+// (3) branch: center j + three length-2 arms j-a1-a2 / j-b1-b2 / j-c1-c2 (j deg 3) -> junction
+{
+  const dec = decomposeLink(
+    undirected([['j', 'a1'], ['a1', 'a2'], ['j', 'b1'], ['b1', 'b2'], ['j', 'c1'], ['c1', 'c2']]),
+  );
+  check('P7 §B branch: strata.length === 3 (the walled arcs)', dec.strata.length === 3);
+  check('P7 §B branch: every stratum is a bounded arc (closed === false)',
+    dec.strata.length === 3 && dec.strata.every((s) => s.closed === false));
+  check('P7 §B branch: every stratum has exactly 2 vertices (a length-2 arm)',
+    dec.strata.length === 3 && dec.strata.every((s) => s.vertices.length === 2));
+  check('P7 §B branch: no stratum contains the junction j (it is a WALL)',
+    dec.strata.every((s) => !s.vertices.includes('j')));
+  check('P7 §B branch: junctionLoci.length === 1', dec.junctionLoci.length === 1);
+  check("P7 §B branch: junctionLoci[0] === {at:'j', degree:3}",
+    Boolean(dec.junctionLoci[0]) && dec.junctionLoci[0].at === 'j' && dec.junctionLoci[0].degree === 3);
+  check('P7 §B branch: pinch === false (j joins all arms — one component)', dec.pinch === false);
+  check("P7 §B branch: valence === 'junction'", dec.valence === 'junction');
+}
+
+// (4) pinch: two disjoint triangles {a,b,c},{d,e,f} (all deg 2, 2 comps) -> junction
+{
+  const dec = decomposeLink(
+    undirected([['a', 'b'], ['b', 'c'], ['c', 'a'], ['d', 'e'], ['e', 'f'], ['f', 'd']]),
+  );
+  check('P7 §B pinch: strata.length === 2', dec.strata.length === 2);
+  check('P7 §B pinch: both strata closed === true', dec.strata.length === 2 && dec.strata.every((s) => s.closed === true));
+  check('P7 §B pinch: junctionLoci.length === 0 (no degree>2 — it is a vertex-pinch)', dec.junctionLoci.length === 0);
+  check('P7 §B pinch: pinch === true (2 connected components)', dec.pinch === true);
+  check("P7 §B pinch: valence === 'junction'", dec.valence === 'junction');
+}
+
+// THE SPLIT, stated once: boundary and branch/pinch land on DIFFERENT valences.
+{
+  const boundary = decomposeLink(undirected([['a', 'b'], ['b', 'c']]));
+  const branch = decomposeLink(undirected([['j', 'a1'], ['a1', 'a2'], ['j', 'b1'], ['b1', 'b2'], ['j', 'c1'], ['c1', 'c2']]));
+  const pinch = decomposeLink(undirected([['a', 'b'], ['b', 'c'], ['c', 'a'], ['d', 'e'], ['e', 'f'], ['f', 'd']]));
+  check('P7 §B SPLIT: boundary.valence !== branch.valence !== (it is no longer fused)',
+    boundary.valence === 'boundary' && branch.valence === 'junction' && pinch.valence === 'junction' && boundary.valence !== branch.valence);
+}
+
+// ===================== P7 §C: REGRESSION — rigid substrate has NO junctions ==
+// Across every built body the diagnostic uses (tetra/octa/cube g1 AND the multi-
+// gen octa -> ambo -> ambo(core) -> ambo(residue) fixture), the rigid vertex-link
+// is ALWAYS one closed cycle: valence 'interior', status 'glued', a single closed
+// stratum, no junction loci, no pinch. Retired midpoints (0 contexts) ->
+// 'no-core-context'. HONESTY: a real site with contextCount 1 or 2 (neither 0 nor
+// a >=3 closed fan) is NOT force-bucketed — it is collected and reported.
+let p7RegressionFindings = [];
+{
+  const o0 = createSeedShape('octahedron');
+  const oSeed = o0.cells.find((c) => c.kind === 'seed');
+  const o1 = applyAmboDissection(o0, oSeed.id);
+  const core1 = o1.cells.find((c) => c.topology === 'cuboctahedron');
+  const o2 = applyAmboDissection(o1, core1.id);
+  const res1 = o1.cells
+    .filter((c) => c.kind === 'residue')
+    .sort((a, b) => a.id.localeCompare(b.id))[0];
+  const o3 = applyAmboDissection(o2, res1.id);
+
+  const fixtures = [
+    ['TETRA g1', buildIncidenceTraceRegistry(g1('tetrahedron'))],
+    ['OCTA g1', buildIncidenceTraceRegistry(g1('octahedron'))],
+    ['CUBE g1', buildIncidenceTraceRegistry(g1('cube'))],
+    ['octa->ambo->ambo(core)->ambo(residue)', buildIncidenceTraceRegistry(o3)],
+  ];
+
+  let allInteriorOk = true;
+  let allRetiredOk = true;
+  let noBoundary = true;
+  let noJunction = true;
+  let anyInterior = false;
+  let anyRetired = false;
+  const oddContextSites = []; // contextCount 1 or 2 — a finding, never force-bucketed
+
+  for (const [name, rep] of fixtures) {
+    for (const site of rep.sites) {
+      const gc = site.glueCoh;
+      if (gc.contextCount === 0) {
+        anyRetired = true;
+        if (gc.status !== 'no-core-context') allRetiredOk = false;
+      } else if (gc.contextCount >= 3) {
+        anyInterior = true;
+        if (
+          !(
+            gc.status === 'glued' &&
+            gc.valence === 'interior' &&
+            Array.isArray(gc.strata) &&
+            gc.strata.length === 1 &&
+            gc.strata[0].closed === true &&
+            Array.isArray(gc.junctionLoci) &&
+            gc.junctionLoci.length === 0 &&
+            gc.pinch === false
+          )
+        ) {
+          allInteriorOk = false;
+        }
+      } else {
+        oddContextSites.push(
+          `${name}:${site.scopedVertexId}(ctx=${gc.contextCount},valence=${gc.valence},status=${gc.status})`,
+        );
+      }
+      if (gc.valence === 'boundary' || gc.status === 'boundary') noBoundary = false;
+      if (gc.valence === 'junction' || gc.status === 'junction') noJunction = false;
+    }
+  }
+  p7RegressionFindings = oddContextSites;
+
+  check('P7 §C: contextCount>=3 sites exist (regression is non-vacuous)', anyInterior);
+  check('P7 §C: retired (0-context) sites exist (the multi-gen fixture)', anyRetired);
+  check('P7 §C: every contextCount>=3 site is glued/interior/1-closed-stratum/0-junction/no-pinch', allInteriorOk);
+  check("P7 §C: every retired (0-context) site is 'no-core-context'", allRetiredOk);
+  check('P7 §C: NO real site is boundary (the rigid link is never a free arc)', noBoundary);
+  check('P7 §C: NO real site is junction (the rigid link is never a branch/pinch)', noJunction);
+  check(
+    `P7 §C: NO real site has contextCount 1 or 2 (honesty — finding count: ${oddContextSites.length})`,
+    oddContextSites.length === 0,
+  );
+  if (oddContextSites.length) {
+    console.log('FINDING (P7 §C) — unexpected rigid-substrate boundary / odd-context sites:');
+    for (const s of oddContextSites) console.log('  ' + s);
+  }
+}
+
 // ===================== eyeball: the full cuboctahedron cellBody =============
 console.log('\n--- full cuboctahedron cellBody (GlobalSquareResolution) ---');
 console.log(JSON.stringify(cubo, null, 2));
@@ -478,7 +647,7 @@ console.log('\n--- B-twin-fixture targetTally (octa g1 -> core -> residue) ---')
 console.log(JSON.stringify(bTwinTargetTally, null, 2));
 
 // ===================== eyeball: P5 §B one glued site's glueCoh =============
-console.log('\n--- one glued SiteIncidenceReading.glueCoh (g1) ---');
+console.log('\n--- one glued SiteIncidenceReading.glueCoh (g1; now carries strata/junctionLoci/pinch/valence) ---');
 console.log(JSON.stringify(firstGluedSite ? firstGluedSite.glueCoh : null, null, 2));
 console.log('\n--- s2 glueCoh status split (no-core-context vs glued) ---');
 console.log(
@@ -490,6 +659,29 @@ console.log(
     null,
     2,
   ),
+);
+
+// ===================== eyeball: P7 §B junction decompositions ===============
+console.log('\n--- P7 §B branch decomposition (junction; 3 walled arcs, one deg-3 locus) ---');
+console.log(
+  JSON.stringify(
+    decomposeLink(undirected([['j', 'a1'], ['a1', 'a2'], ['j', 'b1'], ['b1', 'b2'], ['j', 'c1'], ['c1', 'c2']])),
+    null,
+    2,
+  ),
+);
+console.log('\n--- P7 §B pinch decomposition (junction; two closed strata, pinch=true) ---');
+console.log(
+  JSON.stringify(
+    decomposeLink(undirected([['a', 'b'], ['b', 'c'], ['c', 'a'], ['d', 'e'], ['e', 'f'], ['f', 'd']])),
+    null,
+    2,
+  ),
+);
+console.log('\n--- P7 §B boundary-arc decomposition (boundary; one open stratum, kept MANIFOLD) ---');
+console.log(JSON.stringify(decomposeLink(undirected([['a', 'b'], ['b', 'c']])), null, 2));
+console.log(
+  `\n--- P7 §C rigid-substrate odd-context (ctx 1|2) findings: ${p7RegressionFindings.length} ---`,
 );
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
