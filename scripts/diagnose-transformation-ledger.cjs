@@ -27,6 +27,9 @@ const {
   buildLedgerFromIdentification,
   certifyFaithfulness,
   shapeLineageOf,
+  buildSignedIdentification,
+  boundarySign,
+  certifyOrientation,
 } = require(path.join(repoRoot, 'src/lib/transformationLedger.ts'));
 const { createSeedShape } = require(path.join(repoRoot, 'src/data/seeds.ts'));
 const { applyAmboDissection } = require(path.join(repoRoot, 'src/lib/ambo.ts'));
@@ -483,6 +486,127 @@ check('buildLedgerFromDual (direct) matches the report ledger forward entry coun
 
   console.log('\n--- size-3 heterogeneous ResultSiteCertificate (3-key lineageConflict) ---');
   console.log(JSON.stringify(het3Site, null, 2));
+
+  // =================== P8 §A: the SIGNED pull-back (a per-element sign) =======
+  // charter §1.2 / ADR 0001. The signed ledger's UNSIGNED projection is identical
+  // to the committed builder's — the sign is purely ADDITIONAL. Reuse the B-twin
+  // homogeneous glue (a,b -> one result) with signOf injecting a SIMULATED flip on
+  // b, so the signed view is non-trivial while pullBack stays byte-identical.
+  const sg = `sg:${a}`;
+  const signedResultOf = (s) => (s === a || s === b ? sg : s);
+  const signA = (s) => (s === b ? -1 : 1); // simulated flip on b (the gated flip-glue)
+  const signedLedger = buildSignedIdentification(midIds, signedResultOf, signA);
+  const unsignedLedger = buildLedgerFromIdentification(midIds, signedResultOf);
+  const deepEq = (p, q) => JSON.stringify(p) === JSON.stringify(q);
+
+  check('P8 §A: signed.pullBack DEEP-EQUALS buildLedgerFromIdentification().pullBack (unsigned projection identical)',
+    deepEq(signedLedger.pullBack, unsignedLedger.pullBack));
+  check('P8 §A: signed.forward DEEP-EQUALS the unsigned forward', deepEq(signedLedger.forward, unsignedLedger.forward));
+  check('P8 §A: signedPullBack[r] sources (ignoring sign) === pullBack[r] for EVERY result r (views agree on membership)',
+    Object.keys(signedLedger.pullBack).every((r) =>
+      signedLedger.signedPullBack[r].length === signedLedger.pullBack[r].length &&
+      sameSet(signedLedger.signedPullBack[r].map((e) => e.source), signedLedger.pullBack[r])));
+  check('P8 §A: signedPullBack[sg] is the 2-set {a,b}; b carries the simulated flip (-1), a is +1',
+    Array.isArray(signedLedger.signedPullBack[sg]) &&
+      sameSet(signedLedger.signedPullBack[sg].map((e) => e.source), [a, b]) &&
+      signedLedger.signedPullBack[sg].find((e) => e.source === b).sign === -1 &&
+      signedLedger.signedPullBack[sg].find((e) => e.source === a).sign === 1);
+  const signedProjCert = certifyFaithfulness({ forward: signedLedger.forward, pullBack: signedLedger.pullBack }, lineageOf);
+  const unsignedCert = certifyFaithfulness(unsignedLedger, lineageOf);
+  check('P8 §A: certifyFaithfulness on the signed projection === the unsigned build cert (sign-agnostic, committed fn reused)',
+    deepEq(signedProjCert, unsignedCert));
+
+  // =================== P8 §B: the sign is READ OFF the substrate ==============
+  // charter §1.2. B-twins a,b share the SAME oriented source edge -> +1
+  // (orientation-PRESERVING, the substrate-derived case). The reversal branch is
+  // exercised on a SYNTHETIC reversed edge (the engine produces no [B,A]).
+  const edgeA = o3.vertices[a].createdBy.sourceVertexIds;
+  const edgeB = o3.vertices[b].createdBy.sourceVertexIds;
+  check('P8 §B: a,b createdBy.sourceVertexIds are the SAME source edge (same 2-set)',
+    edgeA.length === 2 && edgeB.length === 2 && sameSet(edgeA, edgeB));
+  check('P8 §B: boundarySign(a, b, o3) === +1 (B-twins share [A,B] order -> orientation-PRESERVING)',
+    boundarySign(a, b, o3) === 1);
+  const synthShape = {
+    vertices: {
+      p: { createdBy: { sourceVertexIds: [edgeA[0], edgeA[1]] } },
+      q: { createdBy: { sourceVertexIds: [edgeA[1], edgeA[0]] } }, // REVERSED order [B,A]
+    },
+  };
+  check('P8 §B: boundarySign detects reversal -> -1 (same edge, reversed reference order — the simulated flip-glue)',
+    boundarySign('p', 'q', synthShape) === -1);
+  check('P8 §B: boundarySign(p, p, synth) === +1 (same order — sanity, the preserving default)',
+    boundarySign('p', 'p', synthShape) === 1);
+
+  // =================== P8 §C: w₁ over CYCLES (signs COMPOSE) =================
+  // charter §1.2/§3. Build a signed ledger over a handful of real sites with
+  // signOf injecting the simulated flips, then certify orientation over SYNTHETIC
+  // cycles. netSign = PRODUCT of the cycle's signs; w1 = 1 iff ANY cycle is -1; a
+  // two-flip cycle COMPOSES to +1 (the Klein-vs-Möbius distinction). NO pull-back
+  // SET is ever flagged inconsistent — only whole cycles carry a verdict.
+  const cSources = [...midIds].sort().slice(0, 5); // 5 real sites
+  const flipSet = new Set([cSources[1], cSources[3]]); // simulate flips on two
+  const signC = (s) => (flipSet.has(s) ? -1 : 1);
+  const signedC = buildSignedIdentification(cSources, (s) => `r:${s}`, signC);
+
+  const allPlus = certifyOrientation(signedC, [[cSources[0], cSources[2], cSources[4]]]);
+  const oneMinus = certifyOrientation(signedC, [[cSources[0], cSources[1], cSources[2]]]); // one flip (cSources[1])
+  const twoMinus = certifyOrientation(signedC, [[cSources[1], cSources[3]]]); // two flips -> compose
+  const mixedCycles = certifyOrientation(signedC, [
+    [cSources[0], cSources[2]], // +1
+    [cSources[0], cSources[1], cSources[2]], // -1 -> drives w1
+  ]);
+
+  check('P8 §C all-+1 cycle: netSign +1, orientable true, w1 0 (an orientable loop — cylinder/torus)',
+    allPlus.perCycle[0].netSign === 1 && allPlus.perCycle[0].orientable === true &&
+      allPlus.w1 === 0 && allPlus.nonOrientable === false);
+  check('P8 §C ONE -1 cycle: netSign -1, orientable false, w1 1, nonOrientable true (Möbius/Klein/RPn — FAITHFUL DATA)',
+    oneMinus.perCycle[0].netSign === -1 && oneMinus.perCycle[0].orientable === false &&
+      oneMinus.w1 === 1 && oneMinus.nonOrientable === true);
+  check('P8 §C TWO -1 cycle: netSign +1, orientable true, w1 0 (the two flips COMPOSE/cancel — signs compose)',
+    twoMinus.perCycle[0].netSign === 1 && twoMinus.perCycle[0].orientable === true && twoMinus.w1 === 0);
+  check('P8 §C: w1 === 1 iff ANY cycle is -1 (mixed: one +1 cycle and one -1 cycle -> w1 1)',
+    mixedCycles.w1 === 1 && mixedCycles.perCycle[0].netSign === 1 && mixedCycles.perCycle[1].netSign === -1);
+  check('P8 §C: certifyOrientation flags NO pull-back set inconsistent — keys are exactly {perCycle,w1,nonOrientable}',
+    sameSet(Object.keys(oneMinus), ['perCycle', 'w1', 'nonOrientable']));
+
+  // =================== P8 §D: orientation is DATA, not a clash ===============
+  // charter §3 (RULED). A NON-ORIENTABLE (w1=1) but lineage-HOMOGENEOUS glue stays
+  // FAITHFUL — orientation never enters the clash accounting. The two certificates
+  // are ORTHOGONAL: faithfulness reads pullBack, certifyOrientation reads
+  // signedPullBack; neither reads the other. The committed cert fields are unchanged.
+  const dGlue = buildSignedIdentification(midIds, signedResultOf, signA); // a:+1, b:-1 (simulated flip)
+  const dFaith = certifyFaithfulness({ forward: dGlue.forward, pullBack: dGlue.pullBack }, lineageOf);
+  const dOrient = certifyOrientation(dGlue, [[a, b]]); // a:+1 * b:-1 -> netSign -1 -> non-orientable
+
+  check('P8 §D: the glue is NON-ORIENTABLE (w1 === 1) — a is +1, b is the simulated flip',
+    dOrient.w1 === 1 && dOrient.nonOrientable === true);
+  check("P8 §D: yet operationStatus === 'FAITHFUL' (orientation is faithful DATA; w1!=0 does NOT make it unfaithful)",
+    dFaith.operationStatus === 'FAITHFUL' && dFaith.heterogeneousCount === 0 && dFaith.removedSilentCount === 0);
+  const dGlueFlipped = buildSignedIdentification(midIds, signedResultOf, () => -1); // flip EVERY sign
+  const dFaithFlipped = certifyFaithfulness({ forward: dGlueFlipped.forward, pullBack: dGlueFlipped.pullBack }, lineageOf);
+  check('P8 §D: faithfulness is sign-AGNOSTIC (flipping every sign yields the IDENTICAL FaithfulnessCertificate)',
+    deepEq(dFaith, dFaithFlipped));
+  check('P8 §D: operationStatus is EXACTLY (heterogeneousCount===0 AND removedSilentCount===0) — no sign term enters',
+    dFaith.operationStatus === (dFaith.heterogeneousCount === 0 && dFaith.removedSilentCount === 0 ? 'FAITHFUL' : 'UNFAITHFUL'));
+  check('P8 §D: FaithfulnessCertificate keys are the committed 8 (NO sign/orientation/w1 field added to the clash layer)',
+    sameSet(Object.keys(dFaith), ['perResultSite', 'perCutSource', 'resultSiteCount', 'homogeneousCount',
+      'heterogeneousCount', 'removedLoggedCount', 'removedSilentCount', 'operationStatus']));
+  check('P8 §D: OrientationCertificate is key-DISJOINT from FaithfulnessCertificate (orthogonal layers)',
+    Object.keys(dOrient).every((k) => !Object.keys(dFaith).includes(k)));
+
+  console.log('\n--- P8 signed pull-back + w1 (orientation as faithful data) ---');
+  console.log(
+    JSON.stringify(
+      {
+        signedPullBack_sg: signedLedger.signedPullBack[sg],
+        boundarySign_ab: boundarySign(a, b, o3),
+        cycleW1: { allPlus: allPlus.w1, oneMinus: oneMinus.w1, twoMinus: twoMinus.w1, mixed: mixedCycles.w1 },
+        nonOrientable_but_faithful: { w1: dOrient.w1, operationStatus: dFaith.operationStatus },
+      },
+      null,
+      2,
+    ),
+  );
 }
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);

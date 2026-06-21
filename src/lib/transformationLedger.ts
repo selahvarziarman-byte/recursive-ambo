@@ -273,3 +273,112 @@ export function buildTransformationLedgerReport(
     issues,
   };
 }
+
+// ===========================================================================
+// P8 (charter layer 2) — the SIGNED pull-back + w₁ (orientation as faithful data)
+// ===========================================================================
+// Authority: docs/governance/PLATONIC_ENGINE_SIGNED_PULLBACK_JUNCTION_CHARTER.md
+// §1(2) / §3 / §5 / §6 + ADR 0001 (a flip-glue carries a sign). This block is
+// PURELY ADDITIVE: the committed faithfulness law above — TransformationLedger,
+// FaithfulnessCertificate, buildLedgerFromIdentification, certifyFaithfulness — is
+// BYTE-UNCHANGED. Orientation is a NEW, ORTHOGONAL layer; the clash-set gains NO
+// third class (charter §3): faithfulness reads the UNSIGNED pullBack
+// (sources/lineage), certifyOrientation reads the SIGNED pullBack (signs/cycles),
+// and NEITHER reads the other. GATED (charter §5): a SIMULATED signed
+// identification over existing sites; the orientation-reversing flip is simulated
+// (the engine produces no [B,A]); w₁ runs over SYNTHETIC cycles (the real
+// incidence-web cycles arrive when the closure driver is built). A junction is a
+// >2-valent pull-back — set-valued at the vertex (P6 §B), signed-non-manifold at
+// the edge (here).
+
+// §A — the signed pull-back: a per-element sign (ADR 0001; charter §1.2).
+export interface SignedPullBackElement {
+  source: string; // a source site id absorbed into the result
+  sign: 1 | -1; // its orientation relative to the result (+ preserving, − reversing)
+}
+
+export interface SignedTransformationLedger {
+  forward: Record<string, string | null>; // identical to the unsigned ledger's forward
+  pullBack: Record<string, string[]>; // the UNSIGNED set — exactly what the committed certifier reads, UNCHANGED
+  signedPullBack: Record<string, SignedPullBackElement[]>; // the SAME sets, each element signed (the orientation layer)
+}
+
+// Build a signed ledger from a PROPOSED signed identification over source sites.
+// `pullBack` is built EXACTLY as buildLedgerFromIdentification does (same order,
+// same push) so the committed certifier is reused VERBATIM on the unsigned
+// projection; `signedPullBack[r]` carries the same sources in the same order, each
+// tagged signOf(source). GATED: no operation is built; the sign/flip is simulated.
+export function buildSignedIdentification(
+  sourceSiteIds: string[],
+  resultOf: (siteId: string) => string | null,
+  signOf: (siteId: string) => 1 | -1,
+): SignedTransformationLedger {
+  const forward: Record<string, string | null> = {};
+  const pullBack: Record<string, string[]> = {};
+  const signedPullBack: Record<string, SignedPullBackElement[]> = {};
+  for (const sourceSiteId of sourceSiteIds) {
+    const resultSiteId = resultOf(sourceSiteId);
+    forward[sourceSiteId] = resultSiteId;
+    if (resultSiteId !== null) {
+      (pullBack[resultSiteId] ??= []).push(sourceSiteId);
+      (signedPullBack[resultSiteId] ??= []).push({ source: sourceSiteId, sign: signOf(sourceSiteId) });
+    }
+  }
+  return { forward, pullBack, signedPullBack };
+}
+
+// §B — the sign is READ OFF the substrate (grounded, not arbitrary; charter §1.2).
+// Compare two edge-midpoints' oriented source edges (createdBy.sourceVertexIds =
+// the oriented edge [A,B]): the SAME edge in the SAME order -> +1 (orientation-
+// preserving); the same edge in REVERSED order [B,A] -> -1 (orientation-reversing,
+// a flip). No detected reversal (different edges / missing data) -> +1 (the
+// identity/preserving default; -1 fires ONLY on a detected same-edge reversal).
+// GATED: the engine produces no [B,A], so the -1 branch stands in for a flip-glue.
+export function boundarySign(siteId: string, refSiteId: string, shape: Shape): 1 | -1 {
+  const edgeOf = (id: string): string[] => shape.vertices[id]?.createdBy?.sourceVertexIds ?? [];
+  const edge = edgeOf(siteId);
+  const ref = edgeOf(refSiteId);
+  if (edge.length === 2 && ref.length === 2) {
+    if (edge[0] === ref[0] && edge[1] === ref[1]) return 1; // same oriented edge
+    if (edge[0] === ref[1] && edge[1] === ref[0]) return -1; // reversed -> a flip
+  }
+  return 1; // no reversal detected -> orientation-preserving
+}
+
+// §C — w₁ over CYCLES (a cocycle; signs COMPOSE; charter §1.2 / §3).
+export interface OrientationCertificate {
+  perCycle: { cycle: string[]; netSign: 1 | -1; orientable: boolean }[];
+  w1: 0 | 1; // 0 = orientable (every cycle +1); 1 = non-orientable (some cycle −1)
+  nonOrientable: boolean; // === (w1 === 1) — recorded as FAITHFUL DATA, never a clash
+}
+
+// certifyOrientation reads ONLY the signed layer. Each cycle is a loop of source
+// ids (a loop in the gluing/incidence web — SYNTHETIC in v0); its `netSign` is the
+// PRODUCT of those sources' signs (each source maps to one result, so its sign is
+// well-defined); `orientable` = (netSign === +1); `w1 = 1` iff ANY cycle is −1.
+// A single pull-back SET is NEVER flagged "inconsistent" — (non)orientability is a
+// GLOBAL cycle property ONLY (charter §1.2). A source absent from the signed
+// ledger (e.g. a cut) contributes +1 (no reversal).
+export function certifyOrientation(
+  ledger: SignedTransformationLedger,
+  cycles: string[][],
+): OrientationCertificate {
+  const signOfSource = new Map<string, 1 | -1>();
+  for (const elements of Object.values(ledger.signedPullBack)) {
+    for (const element of elements) {
+      signOfSource.set(element.source, element.sign);
+    }
+  }
+
+  const perCycle = cycles.map((cycle) => {
+    let net = 1;
+    for (const source of cycle) {
+      net *= signOfSource.get(source) ?? 1;
+    }
+    const netSign: 1 | -1 = net < 0 ? -1 : 1;
+    return { cycle, netSign, orientable: netSign === 1 };
+  });
+
+  const w1: 0 | 1 = perCycle.some((cycleResult) => cycleResult.netSign === -1) ? 1 : 0;
+  return { perCycle, w1, nonOrientable: w1 === 1 };
+}
