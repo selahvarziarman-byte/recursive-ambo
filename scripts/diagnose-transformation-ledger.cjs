@@ -398,6 +398,91 @@ check('buildLedgerFromDual (direct) matches the report ledger forward entry coun
       2,
     ),
   );
+
+  // =================== P6 §A: MIXED operation (glue + cut at once) ===========
+  // Spec §3/§6: one ledger can carry BOTH a glue AND a cut. operationStatus must
+  // be the AND of clause I (no heterogeneity) and clause II (no silent drop) —
+  // faithful only when BOTH hold; either alone fails it. Three cases isolate the
+  // clauses. Cut site `c` is chosen distinct from every glued site.
+  const c = [...midIds].sort().find((s) => s !== a && s !== b && s !== x && s !== y);
+
+  // (1) homogeneous glue (a,b) + LOGGED cut (c) -> FAITHFUL (both clauses satisfied)
+  const mix1 = buildLedgerFromIdentification(midIds, (s) => (s === a || s === b ? `g:${a}` : s === c ? null : s));
+  const mix1Cert = certifyFaithfulness(mix1, lineageOf, [c]);
+  // (2) homogeneous glue (a,b) + SILENT cut (c) -> UNFAITHFUL by clause II ALONE (same ledger, cut not logged)
+  const mix2Cert = certifyFaithfulness(mix1, lineageOf, []);
+  // (3) heterogeneous glue (x,y) + LOGGED cut (c) -> UNFAITHFUL by clause I ALONE (cut is logged)
+  const mix3 = buildLedgerFromIdentification(midIds, (s) => (s === x || s === y ? `g:${x}` : s === c ? null : s));
+  const mix3Cert = certifyFaithfulness(mix3, lineageOf, [c]);
+
+  check('P6 §A mixed: cut site c is distinct from every glued site (a,b,x,y)',
+    Boolean(c) && c !== a && c !== b && c !== x && c !== y);
+  check('P6 §A mixed: mix1 carries BOTH — pullBack[g:a] is the 2-set {a,b} AND forward[c] === null',
+    Array.isArray(mix1.pullBack[`g:${a}`]) && sameSet(mix1.pullBack[`g:${a}`], [a, b]) &&
+      mix1.forward[c] === null);
+  check('P6 §A mixed: the cut c is RECORDED in mix1Cert.perCutSource (removed:true)',
+    mix1Cert.perCutSource.some((e) => e.sourceSiteId === c && e.removed === true));
+  check("P6 §A (1) glue+LOGGED-cut -> FAITHFUL (het 0, silent 0, logged 1)",
+    mix1Cert.heterogeneousCount === 0 && mix1Cert.removedSilentCount === 0 &&
+      mix1Cert.removedLoggedCount === 1 && mix1Cert.operationStatus === 'FAITHFUL');
+  check("P6 §A (2) glue+SILENT-cut -> UNFAITHFUL by clause II ALONE (het 0, silent 1)",
+    mix2Cert.heterogeneousCount === 0 && mix2Cert.removedSilentCount === 1 &&
+      mix2Cert.operationStatus === 'UNFAITHFUL');
+  check("P6 §A (3) HET-glue+LOGGED-cut -> UNFAITHFUL by clause I ALONE (het 1, silent 0)",
+    mix3Cert.heterogeneousCount === 1 && mix3Cert.removedSilentCount === 0 &&
+      mix3Cert.operationStatus === 'UNFAITHFUL');
+  check('P6 §A mixed: all three resultSiteCount === 42 (44; one pair glued -1; one cut -1)',
+    mix1Cert.resultSiteCount === 42 && mix2Cert.resultSiteCount === 42 && mix3Cert.resultSiteCount === 42);
+  // The failing clause DIFFERS between (2) and (3): (2) fails clause II (silent cut),
+  // (3) fails clause I (heterogeneous glue) — operationStatus is exactly het===0 AND silent===0.
+  check('P6 §A mixed: mix2 fails via clause II while mix3 fails via clause I (different clause each)',
+    mix2Cert.removedSilentCount === 1 && mix2Cert.heterogeneousCount === 0 &&
+      mix3Cert.heterogeneousCount === 1 && mix3Cert.removedSilentCount === 0);
+
+  console.log('\n--- mixed operation: three certs {het, silent, status} ---');
+  console.log(
+    JSON.stringify(
+      {
+        mix1_glue_loggedCut: { het: mix1Cert.heterogeneousCount, silent: mix1Cert.removedSilentCount, status: mix1Cert.operationStatus },
+        mix2_glue_silentCut: { het: mix2Cert.heterogeneousCount, silent: mix2Cert.removedSilentCount, status: mix2Cert.operationStatus },
+        mix3_hetGlue_loggedCut: { het: mix3Cert.heterogeneousCount, silent: mix3Cert.removedSilentCount, status: mix3Cert.operationStatus },
+      },
+      null,
+      2,
+    ),
+  );
+
+  // =================== P6 §B: heterogeneous pull-back of size 3 ==============
+  // Spec §3/§6: the homogeneity check generalizes beyond a pair. Glue three sites
+  // of THREE distinct lineages into one result -> a 3-way conflict that is
+  // RECORDED in full (size-3 lineageConflict), not silently collapsed to 2, and
+  // still no fabricated identity (inheritedLineage null).
+  const keys3 = [...byLineage.keys()].sort();
+  const x3 = [...byLineage.get(keys3[0])].sort()[0];
+  const y3 = [...byLineage.get(keys3[1])].sort()[0];
+  const z3 = [...byLineage.get(keys3[2])].sort()[0];
+  const het3Id = `g3:${[x3, y3, z3].sort().join('|')}`;
+  const het3Ledger = buildLedgerFromIdentification(midIds, (s) => (s === x3 || s === y3 || s === z3 ? het3Id : s));
+  const het3Cert = certifyFaithfulness(het3Ledger, lineageOf);
+  const het3Site = het3Cert.perResultSite.find((cc) => cc.resultSiteId === het3Id);
+
+  check('P6 §B het3: >= 3 distinct lineage keys; lineageOf(x3),lineageOf(y3),lineageOf(z3) are 3 DISTINCT keys',
+    keys3.length >= 3 && new Set([lineageOf(x3), lineageOf(y3), lineageOf(z3)]).size === 3);
+  check('P6 §B het3: pullBack[het3Id] is exactly the 3-set {x3, y3, z3}',
+    Array.isArray(het3Ledger.pullBack[het3Id]) && sameSet(het3Ledger.pullBack[het3Id], [x3, y3, z3]));
+  check('P6 §B het3: het3Site.lineageHomogeneous === false', Boolean(het3Site) && het3Site.lineageHomogeneous === false);
+  check('P6 §B het3: het3Site.inheritedLineage === null (no fabricated identity)',
+    Boolean(het3Site) && het3Site.inheritedLineage === null);
+  check('P6 §B het3: lineageConflict is the 3-set { lineageOf(x3),lineageOf(y3),lineageOf(z3) } (>2-way conflict, not collapsed)',
+    Boolean(het3Site) && Array.isArray(het3Site.lineageConflict) && het3Site.lineageConflict.length === 3 &&
+      sameSet(het3Site.lineageConflict, [lineageOf(x3), lineageOf(y3), lineageOf(z3)]));
+  check("P6 §B het3: heterogeneousCount === 1; operationStatus === 'UNFAITHFUL'",
+    het3Cert.heterogeneousCount === 1 && het3Cert.operationStatus === 'UNFAITHFUL');
+  check('P6 §B het3: resultSiteCount === 42 (44 sources, three glued into one -> -2)',
+    het3Cert.resultSiteCount === 42);
+
+  console.log('\n--- size-3 heterogeneous ResultSiteCertificate (3-key lineageConflict) ---');
+  console.log(JSON.stringify(het3Site, null, 2));
 }
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
