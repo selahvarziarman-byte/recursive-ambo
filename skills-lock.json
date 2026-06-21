@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "skills": {
+    "decision-mapping": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/in-progress/decision-mapping/SKILL.md",
+      "computedHash": "ee24375d97fdf6eeb14def6480ab577b75c7e1bfdf62290f8636bd1fdc63cb1a"
+    },
+    "design-an-interface": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/deprecated/design-an-interface/SKILL.md",
+      "computedHash": "f3f225914515407b8224e8ec6187db337c5e65bad0703936a0acb3f802947a7d"
+    },
+    "grill-with-docs": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/grill-with-docs/SKILL.md",
+      "computedHash": "559d4de044394b86af53a5cedd2d3a689770088c3c5361646c91f5d7ea59f78a"
+    },
+    "handoff": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/handoff/SKILL.md",
+      "computedHash": "b7c38b5061b73217e5478f9446fc403be17ce311d4c23a108cc37b5b4604fa37"
+    },
+    "improve-codebase-architecture": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
+      "computedHash": "4c4d2b6da48482c1a054aca0e09eafd61cdcbebe2bda10abd3f355bf5f6fc57c"
+    },
+    "prototype": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/prototype/SKILL.md",
+      "computedHash": "7bbb6ed6a73eb555026a79cc29e3ff9b26765637109f8974aba6c6f86cff85e6"
+    },
+    "qa": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/deprecated/qa/SKILL.md",
+      "computedHash": "a608d889794ef7f21a5dd31d96ca502b5e6f27b466ada759a3bf9846a2e6b236"
+    },
+    "writing-fragments": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/in-progress/writing-fragments/SKILL.md",
+      "computedHash": "248bdd9334033ab044dfe29458866f9b2353a8006416e00d1058a3914981ae6e"
+    }
+  }
+}
