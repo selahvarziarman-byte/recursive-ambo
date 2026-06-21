@@ -2,7 +2,7 @@
 
 The Topological Module is the Platonic Engine's **purely structural layer** — metric stripped below, and above it the **user's mind** rather than any semantic engine-stage — where ambo's named material, continued from the **bijective regime** into the **lossy regime**, is transformed by **orientation-aware boundary-identifications** into the **manifold zoo**, and each operation's **structural consequence** is traced both **atomically** (a signed relation among placeholders) and **systemically** (a fixpoint closure through the metric-free web). The engine delivers this as **structural content — which *is* the semantics**; the user **mirrors** it into meaning, which is the framework's sole end (a **prosthesis for thinking**). It never mints names — the "life of concepts" is a life of placeholders and relations that the user reads as meaning.
 
-This file is a glossary — the language of the module's picture, not its implementation. Status: **opening sentence endorsed by the sovereign 2026-06-21** (the gap "why topology?" is closed; see ADRs 0001–0005). Terms marked _(firm)_ are sovereign-endorsed.
+This file is a glossary — the language of the module's picture, not its implementation. Status: **read-back-ratified by mothership + engineer + researcher, 2026-06-21** (the "why topology?" gap closed and shared; see ADRs 0001–0007). Terms marked _(firm)_ are sovereign-endorsed.
 
 ## Language
 
@@ -64,18 +64,32 @@ A rung of the Ladder: level n = dimension n, emblem the n-sphere Sⁿ. Each leve
 A geometric form inhabiting a level — the "living" unit of the module, whose form *represents* a relation. The inhabitants are the closed/bounded manifolds built by identifying an imported cell's boundary (orientation-preserving *or* reversing), closed under products: lines, circles, strips, tori, **Möbius bands, Klein bottles, RPⁿ**, and their products.
 _Avoid_: "object", "shape" (use life-shape).
 
-**Manifold factory** _(firm)_:
-The module produces *manifolds only* — closed or bounded — never branched / non-manifold complexes, wedges, or open-ended gluings (ADR 0002).
+**Manifold-strata factory** _(firm)_:
+The **life-shapes** are manifolds (still classifiable); the **relations** may include **junctions** (>2 sheets meeting). A junction is **recorded** — decomposed into manifold strata + a junction locus — never excluded (ADR 0006 supersedes ADR 0002's manifold-only exclusion). `GlueCoh` is a **decomposer**, not a gate. The governing principle is uniform: **instruments, not guards** — a certifier records, never excludes or aborts (ADR 0004 + 0006).
 
 ### Operations
 
 **Operation** _(firm)_:
 The move that builds or alters a life-shape: an imported cell (fundamental polytope) modulo a **boundary-identification pattern**, closed under **products**. The zoo-builders — **glue** (orientation-preserving → cylinder, torus), **flip-glue** (orientation-reversing → Möbius, Klein, RPⁿ), **collapse** (a whole boundary → sphere), **product** — plus **cut** (the ledger's removal: a source maps to ∅, a logged loss). All GATED (unbuilt); the ledger/closure that would certify them is built.
 
+### Valence & faithfulness — the two axes
+
+**Valence** _(firm)_:
+Per locus of the **post-identification link**: `1 = boundary` (a free edge from a cut) · `2 = interior` · `>2 = junction` (d sheets meet). Valence ≤2 is manifold; >2 is a **junction**, recorded (not excluded). Junctions arise only post-identification — the rigid substrate link is always one closed cycle (valence 2). `GlueCoh` emits the **partition** (strata + loci), not a boolean (ADR 0006).
+
+**Two orthogonal axes** _(firm)_:
+**Valence** (manifold ↔ junction) is a *structural* property, always **recorded**; **faithfulness** (lineage-homogeneous ↔ heterogeneous; logged ↔ silent) is where **clashes** live. They are orthogonal — a junction may be homogeneous or heterogeneous. Orientation is *faithful data* (w₁ on the strata, a signed incident set at junctions). **A junction is recorded structure, never a clash.**
+
+**Stratum** _(firm)_:
+A maximal connected **manifold piece**, walled off by junctions — the post-identification link cut at its junction loci. `GlueCoh` delivers it directly: **policy-free, free at the base.** The junction is a *wall*; a stratum stops there (ADR 0007).
+
+**Through-pairing** _(firm)_:
+Threading a stratum *through* a degree-d junction — a separate, optional re-assembly. The `(d−1)!!` sheet-matching is a genuine **named-policy** choice the sign never fixes (flip-glue legality keeps every matching legal; the sign only labels each pair's fold — verified d=4/6/8). It is **`GlobalSquareResolution` generalized** to d-sheet junctions — same machinery, one valence up. Three orthogonal layers: canonical strata (incidence, free) · sign (faithful data) · through-pairing (deferred named policy) (ADR 0007).
+
 ### The trace
 
 **Atomic trace** _(firm)_:
-One row of the module's record = **(which placeholders are identified, with orientation/sign)** + **(support from → support to)** + **(the operation)**. It is Ground Plan §5.4's trace plus the orientation bit the non-orientable zoo forces. NEED: the committed faithfulness ledger carries the identification (the pull-back *set*) but not yet the sign — its set-valued pull-back must become a *signed* identification.
+One row of the module's record = **(which placeholders are identified, with orientation/sign)** + **(support from → support to)** + **(the operation)**. It is Ground Plan §5.4's trace plus the orientation bit the non-orientable zoo forces. **NEED (load-bearing next-build):** orientation is already carried in the **substrate** (the oriented boundaries / face windings); the gap is the **ledger's pull-back**, which must become a *signed* identification. Confirmed independently by both technical seats — the only NEED blocking the non-orientable half of the zoo, and a certifier upgrade (operations stay gated).
 
 **Systemic trace** _(firm)_:
 What one atomic relation **forces** across the rest of the ambo universe. Structural in two senses at once — *not metric* (the embedding-specific bends are secondary) and *not semantic* (meaning is deferred downstream). Its deliverable is the **structural consequence**.
@@ -84,7 +98,7 @@ What one atomic relation **forces** across the rest of the ambo universe. Struct
 The combinatorial/topological part of a relation's systemic effect — the forced identifications, lineage-class merges, and clashes — as opposed to the metric bends. What the module wants "first and foremost." Lives in the engine's metric-free data (lineage + incidence), never in positions; that is why it is independent of how the rigid substrate happens to bend.
 
 **Systemic closure** _(firm)_:
-The mechanism of the systemic trace: propagate the new relation as a **closure to a fixpoint** through the metric-free web — the lineage web (where x's/y's primal-multiset recurs) and the incidence web (the cells they bound) — each forced identification possibly forcing the next. Per-step checks reuse the **built certifiers**: faithfulness flags a lineage-heterogeneous forced identification, `GlueCoh` flags one that breaks manifoldness. The closure *driver* is unbuilt; the certifiers it calls are built (ADR 0004).
+The mechanism of the systemic trace: **incidence forces, the certifiers check.** A new relation propagates as a **closure to a fixpoint** driven by **incidence** (gluing forces boundary cells to coincide; each forced identification may force the next through the incidence web). The **built certifiers are an overlay, not the forcing** — faithfulness (lineage-homogeneity) and `GlueCoh` (manifoldness) are consumed **per-step as annotations** and summarised as an **end-state verdict**; they are **instruments, not guards** — a clash annotates, it never aborts and never forces a merge. The lineage web must **not** force merges: that would auto-merge B-twins (same lineage, different scope) and break **co-location ≠ identity**. The lineage check rides on `multiset = lineage` (verified to 62 leaves, proof open) — operationally sound; completeness inherits that obligation. The closure *driver* is unbuilt; the certifiers it calls are built (ADR 0004).
 
 **Rigid substrate** _(firm)_:
 The ambo/dual output as received — a fixed metric structure with definite angles and distances. The module **breaks its rigidity** to operate; it is the thing deformed, not the deliverable.
@@ -97,9 +111,11 @@ The embedding-specific deformation a relation forces on the rigid substrate. Par
 
 ## Open threads
 
-The "why topology?" and "identity" gaps are closed (see ADRs 0001–0005); these remain:
+The "why topology?" and "identity" gaps are closed and the picture is **read-back-ratified by all three seats** (see ADRs 0001–0007); these remain:
 
-- **The bridge (M5/M7), re-read** — under the corrected framing, "human-naming" is the *user's mirror*, not an engine stage, so the bridge's M5-naming / M7-lift need **redrawing**, not just drawing. Open.
+- **NEED (next-build, CHARTER-READY) — the signed pull-back + junction decomposer (one build).** The ledger's set-valued pull-back must become a *signed* identification, and `GlueCoh` must emit a **partition** (manifold strata + junction loci) instead of a boolean — one build (a junction is a >2-valent pull-back: set-valued at the vertex, signed-non-manifold at the edge). The stratum gate is **ruled** (ADR 0007): build canonical strata + signed pull-back in one stroke (policy-free); defer the through-pairing as **GSR generalized**. Certifier upgrade, operations gated.
+- **GATE (researcher's to rule) — sign-contradiction: clash or level?** Is an orientation contradiction the orientation-analogue of lineage-heterogeneity (a **clash**), or does it mean the shape was built **one rung over** on the ladder (a **level-distinction**)? This ruling gates the signed-pull-back design; routed to the researcher, not settled here. (Read-back leans **clash**; ADR 0007 reinforces it — the sign is the faithfulness layer, orthogonal to valence/level and to the pairing-policy — but the mothership has not yet formally ruled.)
+- **The bridge (M5/M7), re-read** — "human-naming" is the *user's mirror*, not an engine stage, so the bridge's M5-naming / M7-lift need **redrawing**. Open.
 - **NEED — the closure driver** — the systemic-closure propagation engine is unbuilt (the certifiers it calls are built; operations remain GATED).
 
 ## Example dialogue
