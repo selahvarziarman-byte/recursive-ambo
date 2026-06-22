@@ -530,3 +530,89 @@ export function assertOpSet(forcingPaths: number[][]): OpClass {
   if (direction === 1) return 'pure-∂ᵀ';
   return 'pure-∂'; // direction === -1, or vacuous (all single-element paths) → the ∂ identity
 }
+
+// ---------------------------------------------------------------------------
+// step 3b — the COLLAPSE closure (pure-∂ — the boundary-quotient D²/∂D²)
+// ---------------------------------------------------------------------------
+// Researcher ruling (2026-06-22): collapse is the boundary-quotient D²/∂D² = S², a
+// pure-∂ QUOTIENT (the "dimension-disjoint hybrid" characterization is RETRACTED).
+// The WHOLE boundary subcomplex — edges AND vertices — collapses to ONE apex point:
+//   - every other boundary vertex is identified into the apex (a 0-cell merge);
+//   - every boundary edge dim-DROPS into the apex (its endpoints are already the apex,
+//     so the edge is a degenerate self-loop and is absorbed — pure-∂ degenerate-cleanup
+//     the merge itself created, NOT a cut-style ∂ᵀ kill of a healthy co-boundary).
+// Every forcing path is strictly DECREASING (a 1→0 hop: edge ⤵ apex), so assertOpSet
+// classifies collapse 'pure-∂'. The FACE SURVIVES — it becomes the S² 2-cell whose
+// entire boundary is attached to the apex: μ 9→2, χ = 1−0+1 = 2. NOTE: the committed
+// surface-zoo op (vertices-only, edges left as self-loops → χ=−2, a non-manifold wedge)
+// is NOT called or modified here; this is the cascade's own correct boundary-quotient.
+
+export interface CollapseTrace {
+  apex: string; // the apex (a chosen boundary vertex) the whole boundary collapses to
+  collapsedVertices: string[]; // the OTHER boundary vertices merged into apex (sorted; excludes apex)
+  collapsedEdges: string[]; // the boundary edges dim-DROPPED into apex (sorted)
+  survivingFace: string; // F — the surviving 2-cell (the S² face); collapse NEVER removes the face
+  forcedCollapses: Array<{ dim: number; cell: string; path: string[] }>; // provenance; every path DECREASING
+  mu: { before: number; after: number };
+  chi: number; // V − E + F of the collapsed universe (= 2 for S²)
+  passes: number;
+}
+
+export function runCollapseCascade(shape: Shape, face: Face): CollapseTrace {
+  const verts = [...new Set(face.vertexIds)];
+  const edges = boundaryOfFace(shape, face); // [{ id, from, to }]
+  const edgeIds = [...new Set(edges.map((e) => e.id))];
+  const muBefore = 1 + edgeIds.length + verts.length;
+
+  // apex = the sorted-first boundary vertex (deterministic).
+  const apex = [...verts].sort((a, b) => a.localeCompare(b))[0];
+  const label = (d: number, id: string): string => `${d}:${id}`;
+
+  const collapsedEdgeSet = new Set<string>();
+  const collapsedVertexSet = new Set<string>(); // non-apex vertices absorbed into apex
+  const forcedCollapses: Array<{ dim: number; cell: string; path: string[] }> = [];
+
+  // The boundary-quotient as a fixpoint closure, seeded by the boundary EDGES (like glue).
+  let passes = 0;
+  let changed = true;
+  let queue: typeof edges = [...edges];
+  while (changed) {
+    passes += 1;
+    changed = false;
+    while (queue.length) {
+      const e = queue.shift() as (typeof edges)[number];
+      if (collapsedEdgeSet.has(e.id)) continue; // idempotent
+      collapsedEdgeSet.add(e.id);
+      changed = true;
+      // the edge dim-drops onto the apex 0-cell — a strictly DECREASING 1→0 path.
+      forcedCollapses.push({ dim: 1, cell: e.id, path: [label(1, e.id), label(0, apex)] });
+      // it FORCES each non-apex endpoint into the apex (the edge ⤵ vertex, also 1→0).
+      for (const v of [e.from, e.to]) {
+        if (v === apex) continue; // the apex is the union TARGET, never a forced step (no 0→0 hop)
+        if (collapsedVertexSet.has(v)) continue;
+        collapsedVertexSet.add(v);
+        forcedCollapses.push({ dim: 0, cell: v, path: [label(1, e.id), label(0, v)] });
+      }
+    }
+    if (changed) queue = [...edges]; // confirming re-sweep
+  }
+
+  const collapsedVertices = [...collapsedVertexSet].sort((a, b) => a.localeCompare(b));
+  const collapsedEdges = [...collapsedEdgeSet].sort((a, b) => a.localeCompare(b));
+  const vAfter = verts.length - collapsedVertices.length; // 1 (the apex)
+  const eAfter = edgeIds.length - collapsedEdges.length; // 0 (all edges dim-dropped)
+  const fAfter = 1; // the surviving face
+  const muAfter = fAfter + eAfter + vAfter;
+  const chi = vAfter - eAfter + fAfter;
+
+  return {
+    apex,
+    collapsedVertices,
+    collapsedEdges,
+    survivingFace: face.id,
+    forcedCollapses,
+    mu: { before: muBefore, after: muAfter },
+    chi,
+    passes,
+  };
+}

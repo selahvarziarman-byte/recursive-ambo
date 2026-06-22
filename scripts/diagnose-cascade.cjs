@@ -38,6 +38,7 @@ const {
   certifyCascadeOrientation,
   runCutCascade,
   assertOpSet,
+  runCollapseCascade,
 } = req('src/lib/cascadeDriver.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
 const { getCellFaces } = req('src/lib/shape.ts');
@@ -274,9 +275,51 @@ console.log('\n----- §F discipline -----');
 check('§F derive-only: JSON.stringify(tetra) byte-identical before/after the cut run', JSON.stringify(tetra) === tetraSnapshot);
 check('§F NO collapse hybrid: assertOpSet only ever returns pure-∂ / pure-∂ᵀ (or throws) — no third class', assertOpSet(rotDimPaths) !== 'hybrid' && assertOpSet(cutDimPaths) !== 'hybrid');
 
+// ===================== §G — collapse boundary-quotient (D²/∂D² = S²) =====================
+console.log('\n----- §G collapse boundary-quotient: cube bottom face → S² -----');
+const cl = runCollapseCascade(shape, F1); // F1 = the cube bottom face [a,d,c,b]
+const collapseDimPaths = cl.forcedCollapses.map((r) => r.path.map((l) => parseInt(l.split(':')[0], 10)));
+
+check('§G1 cl.mu.before === 9 (1 face + 4 edges + 4 vertices; single-face universe)', cl.mu.before === 9);
+check('§G2 boundary-quotient: 3 non-apex vertices collapsed + ALL 4 boundary edges dim-dropped to the apex', cl.collapsedVertices.length === 3 && cl.collapsedEdges.length === 4 && !cl.collapsedVertices.includes(cl.apex));
+check('§G3 the FACE SURVIVES: survivingFace === F.id (collapse never removes the 2-cell — contrast cut)', cl.survivingFace === F1.id);
+check('§G4 cl.mu.after === 2 (F=1, E=0, V=1 apex) AND cl.chi === 2 — S²; μ strictly decreased (9 → 2)', cl.mu.after === 2 && cl.chi === 2 && cl.mu.after < cl.mu.before);
+check('§G5 pure-∂: every collapse path is DECREASING [1,0] (edge→apex drop, NOT an upward ∂ᵀ kill)', collapseDimPaths.every((p) => p.length === 2 && p[0] === 1 && p[1] === 0) && assertOpSet(collapseDimPaths) === 'pure-∂');
+
+// §G6 CONTRAST — the naive same-dim merge gives μ 9→3 / χ=1 (cone), re-derived via runCascade chain seed
+const clEdgeByKey = new Map();
+for (const e of shape.edges) clEdgeByKey.set(eKey(e.vertexIds[0], e.vertexIds[1]), e);
+const fv = F1.vertexIds;
+const chainEdges = faceEdgePairs(F1).map(([a, b]) => clEdgeByKey.get(eKey(a, b)).id);
+const chainSeed = {
+  matches: [
+    { dim: 1, a: chainEdges[0], b: chainEdges[1], boundary: [[fv[0], fv[1]], [fv[1], fv[2]]], sign: 1 },
+    { dim: 1, a: chainEdges[1], b: chainEdges[2], boundary: [[fv[1], fv[2]], [fv[2], fv[3]]], sign: 1 },
+    { dim: 1, a: chainEdges[2], b: chainEdges[3], boundary: [[fv[2], fv[3]], [fv[3], fv[0]]], sign: 1 },
+  ],
+};
+const naive = runCascade(shape, [F1], chainSeed);
+const naiveChi = naive.partition[0].length - naive.partition[1].length + naive.partition[2].length;
+check('§G6 CONTRAST: naive same-dim merge → μ 9→3, χ=1 (cone/disk), NOT S²; the edge dim-drop is what gives χ=2', naive.mu.after === 3 && naiveChi === 1);
+
+// §G7 fixpoint + idempotent + derive-only
+check('§G7 fixpoint finite + idempotent (a re-run gives the identical μ 9→2)', Number.isFinite(cl.passes) && JSON.stringify(runCollapseCascade(shape, F1).mu) === JSON.stringify(cl.mu));
+note(`READ-ACTUALS: apex=${cl.apex} | collapsedVertices=${JSON.stringify(cl.collapsedVertices.map(shortId))} | collapsedEdges=${cl.collapsedEdges.length} (all) | μ 9→2, χ=2 (S²) | survivingFace=${cl.survivingFace} | naive-merge μ→3 χ=1 (cone)`);
+
+// ===================== §E5/§E6 — the op-set now has THREE pure-∂ + one pure-∂ᵀ =========
+console.log('\n----- §E5/§E6 op-set: collapse joins glue as pure-∂ -----');
+check('§E5 assertOpSet(collapse forcedCollapses dim-paths) === pure-∂ (op-set = pure-∂ {glue, flip-glue, collapse} + pure-∂ᵀ {cut})', assertOpSet(collapseDimPaths) === 'pure-∂');
+check('§E6 NO hybrid inhabitant: collapse routes to pure-∂ (NOT fail-loud); assertOpSet returns only pure-∂/pure-∂ᵀ or throws', assertOpSet(collapseDimPaths) === 'pure-∂' && assertOpSet(cutDimPaths) === 'pure-∂ᵀ' && assertOpSet(rotDimPaths) === 'pure-∂');
+
+// ===================== §F2 — collapseFace untouched =====================
+console.log('\n----- §F2 discipline: committed collapseFace untouched -----');
+const driverSource = fs.readFileSync(path.join(repoRoot, 'src/lib/cascadeDriver.ts'), 'utf8');
+check('§F2 committed collapseFace NOT called/referenced in cascadeDriver.ts (grep)', !/collapseFace/.test(driverSource));
+check('§F2 derive-only: JSON.stringify(shape) byte-identical after the collapse runs', JSON.stringify(shape) === shapeSnapshot);
+
 // ===================== SUMMARY =====================
 console.log('');
-console.log(`--- cascade (2a closure + 2b orientation + 3 removal/op-set): ${failures === 0 ? 'no failures' : failures + ' FAIL'} ---`);
+console.log(`--- cascade (2a closure + 2b orientation + 3 removal/op-set + 3b collapse): ${failures === 0 ? 'no failures' : failures + ' FAIL'} ---`);
 console.log('');
 if (failures === 0) {
   console.log('ALL PASS');
