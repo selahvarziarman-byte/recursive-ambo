@@ -562,29 +562,7 @@ function connectedComponents(
 // (=== interior).
 function buildSiteGlueCoh(siteVertexId: string, readings: RelationalReading[]): SiteGlueCoh {
   const contextCount = readings.length;
-  // Adjacency with multiplicity (each reading pushes one undirected edge as two
-  // half-edges) so a non-manifold double-edge shows up as a degree > 2.
-  const adjacency = new Map<string, string[]>();
-  const addHalfEdge = (from: string, to: string) => {
-    const list = adjacency.get(from);
-    if (list) {
-      list.push(to);
-    } else {
-      adjacency.set(from, [to]);
-    }
-  };
-
-  for (const reading of readings) {
-    const cycle = reading.medialCycle;
-    const index = cycle.indexOf(siteVertexId);
-    if (index < 0 || cycle.length < 3) {
-      continue; // M absent / degenerate face — contributes no link edge
-    }
-    const prev = cycle[(index - 1 + cycle.length) % cycle.length];
-    const next = cycle[(index + 1) % cycle.length];
-    addHalfEdge(prev, next);
-    addHalfEdge(next, prev);
-  }
+  const adjacency = buildVertexLinkAdjacency(siteVertexId, readings);
 
   const linkVertexCount = adjacency.size;
   const decomposition = decomposeLink(adjacency);
@@ -615,6 +593,44 @@ function buildSiteGlueCoh(siteVertexId: string, readings: RelationalReading[]): 
     valence: decomposition.valence,
     status,
   };
+}
+
+// Build the site's vertex-link adjacency from its relational readings (extracted
+// from buildSiteGlueCoh, behaviour-preserving). For each reading, take the site M's
+// two cyclic-adjacent neighbours in the medialCycle and add ONE undirected link-edge
+// between them (pushed as BOTH half-edges `prev↔next`). Multiplicity is preserved, so
+// a non-manifold double-edge shows up as a degree > 2; the skip (`index < 0 ||
+// cycle.length < 3`) drops M-absent / degenerate faces. Exported so the cascade
+// driver can rebuild links on post-cascade material from the same construction.
+export function buildVertexLinkAdjacency(
+  siteVertexId: string,
+  readings: RelationalReading[],
+): Map<string, string[]> {
+  // Adjacency with multiplicity (each reading pushes one undirected edge as two
+  // half-edges) so a non-manifold double-edge shows up as a degree > 2.
+  const adjacency = new Map<string, string[]>();
+  const addHalfEdge = (from: string, to: string) => {
+    const list = adjacency.get(from);
+    if (list) {
+      list.push(to);
+    } else {
+      adjacency.set(from, [to]);
+    }
+  };
+
+  for (const reading of readings) {
+    const cycle = reading.medialCycle;
+    const index = cycle.indexOf(siteVertexId);
+    if (index < 0 || cycle.length < 3) {
+      continue; // M absent / degenerate face — contributes no link edge
+    }
+    const prev = cycle[(index - 1 + cycle.length) % cycle.length];
+    const next = cycle[(index + 1) % cycle.length];
+    addHalfEdge(prev, next);
+    addHalfEdge(next, prev);
+  }
+
+  return adjacency;
 }
 
 // The per-site relational-reading layer (P2 spine + P3 detail). For each scoped
