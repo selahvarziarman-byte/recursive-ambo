@@ -31,11 +31,17 @@ require.extensions['.ts'] = (module, filename) => {
 const repoRoot = path.resolve(__dirname, '..');
 const req = (p) => require(path.join(repoRoot, p));
 
-const { runCascade, buildJoinSeed, buildSelfGlueSeed, certifyCascadeOrientation } = req(
-  'src/lib/cascadeDriver.ts',
-);
+const {
+  runCascade,
+  buildJoinSeed,
+  buildSelfGlueSeed,
+  certifyCascadeOrientation,
+  runCutCascade,
+  assertOpSet,
+} = req('src/lib/cascadeDriver.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
 const { getCellFaces } = req('src/lib/shape.ts');
+const { faceEdgePairs } = req('src/lib/surfaceOperations.ts');
 
 let failures = 0;
 function check(label, condition) {
@@ -213,9 +219,64 @@ check('§B-discipline certifyOrientation is NOT imported/called in cascadeDriver
 check('§B-discipline the cascade w1 comes from certifyCascadeOrientation (the 2-colouring) ONLY', typeof certifyCascadeOrientation === 'function');
 check('§B-discipline derive-only: JSON.stringify(shape) byte-identical after all 2b runs', JSON.stringify(shape) === shapeSnapshot);
 
+// ===================== §D — Cut (∂ᵀ) micro-case =====================
+console.log('\n----- §D Cut (∂ᵀ) micro-case: single tetra face, cut one boundary edge -----');
+const tetra = createSeedShape('tetrahedron');
+const tetraSnapshot = JSON.stringify(tetra);
+const tF = tetra.faces[0]; // face:tetrahedron:abc, vertices a,b,c
+// cutEdge = boundaryOfFace(F)[1] (the b–c edge) — replicate via faceEdgePairs + edge lookup
+const tEdgeByKey = new Map();
+const eKey = (u, v) => [u, v].sort((a, b) => a.localeCompare(b)).join('|');
+for (const e of tetra.edges) tEdgeByKey.set(eKey(e.vertexIds[0], e.vertexIds[1]), e);
+const tPairs = faceEdgePairs(tF);
+const cutEdge = tEdgeByKey.get(eKey(tPairs[1][0], tPairs[1][1])).id;
+const cut = runCutCascade(tetra, [tF], [cutEdge]);
+
+check('§D1 mu.before === 7 (1 face + 3 edges + 3 vertices; single-face universe)', cut.mu.before === 7);
+check('§D2 removed === { the cut edge (dim 1), F (dim 2) } — the in-universe coface forced', cut.removed[1].length === 1 && cut.removed[1][0] === cutEdge && cut.removed[2].length === 1 && cut.removed[2][0] === tF.id);
+check('§D3 the OTHER 2 boundary edges and ALL 3 vertices STAND (a cut forces nothing downward)', cut.removed[0].length === 0 && cut.removed[1].length === 1);
+check('§D4 mu.after === 5 (F=0, E=2, V=3); μ strictly decreased (7 → 5); no cell created', cut.mu.after === 5 && cut.mu.after < cut.mu.before);
+// §D5 direction pure-∂ᵀ: every forced removal exactly one dim UP; passes finite; fixpoint
+const cutDimPaths = cut.forcedRemovals.map((r) => r.path.map((l) => parseInt(l.split(':')[0], 10)));
+check('§D5 pure-∂ᵀ: every forced removal is one dim UP (edge → face); NO downward removal; fixpoint finite', assertOpSet(cutDimPaths) === 'pure-∂ᵀ' && cut.removed[0].length === 0 && cut.passes === 2);
+// §D6 removal-honesty: F logged with provenance path 1 → 2; cut edge in the log as seed
+const fRemoval = cut.forcedRemovals.find((r) => r.cell === tF.id);
+const seedRemoval = cut.forcedRemovals.find((r) => r.cell === cutEdge);
+check('§D6 removal-honesty: F is logged with provenance (cut-edge → coface F, dims 1 → 2)', Boolean(fRemoval) && fRemoval.path.length === 2 && fRemoval.path[0].startsWith('1:') && fRemoval.path[1].startsWith('2:'));
+check('§D6 the cut edge itself is in the log as the seed removal (dim 1, single-label path)', Boolean(seedRemoval) && seedRemoval.path.length === 1 && seedRemoval.dim === 1);
+// §D7 CONTRAST: full tetra has 2 cofaces for that edge; the universe restricts to 1
+const fullCofaces = tetra.faces.filter((f) => f.vertexIds.includes(tPairs[1][0]) && f.vertexIds.includes(tPairs[1][1]));
+check('§D7 CONTRAST: in the FULL closed tetra that edge has 2 cofaces; the single-face universe restricts to 1', fullCofaces.length === 2);
+note(`READ-ACTUALS: F=${tF.id} | cutEdge=${cutEdge} (b–c) | forced coface=${cut.removed[2][0]} | μ ${cut.mu.before}→${cut.mu.after} | full-tetra cofaces=${fullCofaces.length} (${fullCofaces.map((f) => f.id.split(':').pop()).join(',')}) vs universe=1`);
+
+// ===================== §E — the op-set invariant =====================
+console.log('\n----- §E op-set invariant (classify by forcing-path dimension monotonicity) -----');
+const rotDimPaths = rot.forcedMerges.map((m) => m.path.map((l) => parseInt(l.split(':')[0], 10)));
+check('§E1 assertOpSet(Case-A rotation identification dim-paths) === pure-∂ (path-dims strictly decrease)', assertOpSet(rotDimPaths) === 'pure-∂');
+check('§E2 assertOpSet(Cut-micro-case removal dim-paths) === pure-∂ᵀ (path-dims strictly increase)', assertOpSet(cutDimPaths) === 'pure-∂ᵀ');
+let threwMixed = false;
+let threwJump = false;
+try {
+  assertOpSet([[0, 1, 0]]);
+} catch (e) {
+  threwMixed = /unclassified op/.test(e.message);
+}
+try {
+  assertOpSet([[0, 2]]);
+} catch (e) {
+  threwJump = /unclassified op/.test(e.message);
+}
+check('§E3 fail-loud: assertOpSet([[0,1,0]]) THROWS (internally mixed) AND assertOpSet([[0,2]]) THROWS (+2 jump)', threwMixed && threwJump);
+check('§E4 neither mode creates a cell: Case A μ 18→10 by merges, Cut μ 7→5 by removals; μ only decreases', rot.mu.before === 18 && rot.mu.after === 10 && cut.mu.before === 7 && cut.mu.after === 5);
+
+// ===================== §F — discipline =====================
+console.log('\n----- §F discipline -----');
+check('§F derive-only: JSON.stringify(tetra) byte-identical before/after the cut run', JSON.stringify(tetra) === tetraSnapshot);
+check('§F NO collapse hybrid: assertOpSet only ever returns pure-∂ / pure-∂ᵀ (or throws) — no third class', assertOpSet(rotDimPaths) !== 'hybrid' && assertOpSet(cutDimPaths) !== 'hybrid');
+
 // ===================== SUMMARY =====================
 console.log('');
-console.log(`--- cascade (Case A closure + 2b orientation): ${failures === 0 ? 'no failures' : failures + ' FAIL'} ---`);
+console.log(`--- cascade (2a closure + 2b orientation + 3 removal/op-set): ${failures === 0 ? 'no failures' : failures + ' FAIL'} ---`);
 console.log('');
 if (failures === 0) {
   console.log('ALL PASS');

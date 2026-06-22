@@ -400,3 +400,133 @@ export function certifyCascadeOrientation(
 
   return { w1, nonOrientable: w1 === 1, conflict };
 }
+
+// ---------------------------------------------------------------------------
+// step 3 — the REMOVAL closure (∂ᵀ — strictly UPWARD, the dual of the 2a closure)
+// ---------------------------------------------------------------------------
+// The mirror image of the identification closure: a cut REMOVES a cell and FORCES the
+// removal of every COFACE (a cell one dimension UP whose ∂ contains the cut cell) —
+// cut an edge, its faces fall; cut a vertex, its edges fall. Strictly upward (d → d+1):
+// a cut NEVER touches a cell's own boundary (cutting an edge keeps its endpoints).
+// Faces have no coface in the universe → terminal. No cell is created; μ strictly
+// decreases by exactly |removed|. The 2a `runCascade` is NOT reused — this is its dual.
+
+export interface ForcedRemoval {
+  dim: number; // dimension of the removed cell (2 = face, 1 = edge, 0 = vertex)
+  cell: string; // the removed cell id
+  path: string[]; // provenance: the chain of `d:cell` labels from a seed cut UP to here
+}
+
+export interface RemovalTrace {
+  removed: Record<number, string[]>; // per-dimension removed cell ids (each list sorted)
+  forcedRemovals: ForcedRemoval[]; // every removal (seed cuts + forced cofaces) with its path
+  mu: { before: number; after: number };
+  passes: number; // sweeps to the fixpoint (last sweep removes nothing new)
+}
+
+export function runCutCascade(shape: Shape, seedFaces: Face[], cuts: string[]): RemovalTrace {
+  // Universe = the SAME subcomplex as runCascade (faces + boundary edges + vertices).
+  const faceIds = new Set(seedFaces.map((f) => f.id));
+  const edgeList = [...new Set(seedFaces.flatMap((f) => boundaryOfFace(shape, f).map((e) => e.id)))];
+  const edgeIds = new Set(edgeList);
+  const vertexIds = new Set(seedFaces.flatMap((f) => [...f.vertexIds]));
+  const muBefore = faceIds.size + edgeIds.size + vertexIds.size;
+
+  const dimOf = (id: string): number =>
+    faceIds.has(id) ? 2 : edgeIds.has(id) ? 1 : vertexIds.has(id) ? 0 : -1;
+
+  // coface maps (within the universe): edge → its faces; vertex → its edges.
+  const edgeToFaces = new Map<string, string[]>();
+  for (const f of seedFaces) {
+    for (const e of boundaryOfFace(shape, f)) {
+      (edgeToFaces.get(e.id) ?? edgeToFaces.set(e.id, []).get(e.id)!).push(f.id);
+    }
+  }
+  const vertexToEdges = new Map<string, string[]>();
+  for (const edgeId of edgeIds) {
+    const [u, v] = boundaryOfEdge(shape, edgeId);
+    if (vertexIds.has(u)) (vertexToEdges.get(u) ?? vertexToEdges.set(u, []).get(u)!).push(edgeId);
+    if (vertexIds.has(v)) (vertexToEdges.get(v) ?? vertexToEdges.set(v, []).get(v)!).push(edgeId);
+  }
+  const cofaceOf = (id: string, d: number): string[] => {
+    if (d === 1) return [...new Set(edgeToFaces.get(id) ?? [])]; // edge → faces
+    if (d === 0) return [...new Set(vertexToEdges.get(id) ?? [])]; // vertex → edges
+    return []; // face → no coface in this universe (terminal)
+  };
+
+  const label = (d: number, id: string): string => `${d}:${id}`;
+  const removed = new Set<string>();
+  const forcedRemovals: ForcedRemoval[] = [];
+  interface QueuedRemoval {
+    dim: number;
+    cell: string;
+    path: string[];
+  }
+  const seedQueue = (): QueuedRemoval[] =>
+    cuts.map((c) => ({ dim: dimOf(c), cell: c, path: [label(dimOf(c), c)] }));
+  const queue: QueuedRemoval[] = seedQueue();
+
+  let passes = 0;
+  let changed = true;
+  while (changed) {
+    passes += 1;
+    changed = false;
+    while (queue.length) {
+      const item = queue.shift() as QueuedRemoval;
+      if (removed.has(item.cell)) continue; // already removed — idempotent
+      removed.add(item.cell);
+      changed = true;
+      forcedRemovals.push({ dim: item.dim, cell: item.cell, path: item.path });
+      // FORCE every coface one dimension UP (strictly upward ∂ᵀ).
+      for (const coface of cofaceOf(item.cell, item.dim)) {
+        const cofaceDim = item.dim + 1;
+        queue.push({
+          dim: cofaceDim,
+          cell: coface,
+          path: [...item.path, label(cofaceDim, coface)],
+        });
+      }
+    }
+    if (changed) for (const q of seedQueue()) queue.push(q); // confirming re-sweep
+  }
+
+  const removedByDim: Record<number, string[]> = { 0: [], 1: [], 2: [] };
+  for (const id of removed) {
+    const d = dimOf(id);
+    if (d >= 0) removedByDim[d].push(id);
+  }
+  for (const d of [0, 1, 2]) removedByDim[d].sort((a, b) => a.localeCompare(b));
+  const muAfter =
+    faceIds.size - removedByDim[2].length +
+    (edgeIds.size - removedByDim[1].length) +
+    (vertexIds.size - removedByDim[0].length);
+
+  return { removed: removedByDim, forcedRemovals, mu: { before: muBefore, after: muAfter }, passes };
+}
+
+// ---------------------------------------------------------------------------
+// step 3 — the OP-SET INVARIANT (Q4): classify by forcing-path dimension monotonicity
+// ---------------------------------------------------------------------------
+// Each forcing path moves by exactly ∓1 per hop. All paths strictly DECREASING →
+// 'pure-∂' (the identification closure); all strictly INCREASING → 'pure-∂ᵀ' (the
+// removal closure). Anything else — a hop ≠ ∓1, an internally mixed path, or both
+// directions present across paths — is an UNCLASSIFIED op and THROWS. The
+// dimension-disjoint hybrid (collapse) is DEFERRED; failing loudly is the sealed
+// behaviour for now. Single-element paths (a seed cell, no hop) are vacuous.
+export type OpClass = 'pure-∂' | 'pure-∂ᵀ';
+
+export function assertOpSet(forcingPaths: number[][]): OpClass {
+  const unclassified = 'op-set: unclassified op (neither pure-∂ nor pure-∂ᵀ)';
+  let direction = 0; // -1 = decreasing (∂), +1 = increasing (∂ᵀ), 0 = unset
+  for (const path of forcingPaths) {
+    for (let i = 1; i < path.length; i += 1) {
+      const hop = path[i] - path[i - 1];
+      if (hop !== 1 && hop !== -1) throw new Error(unclassified); // not a unit hop
+      const dir = hop > 0 ? 1 : -1;
+      if (direction === 0) direction = dir;
+      else if (direction !== dir) throw new Error(unclassified); // both directions present
+    }
+  }
+  if (direction === 1) return 'pure-∂ᵀ';
+  return 'pure-∂'; // direction === -1, or vacuous (all single-element paths) → the ∂ identity
+}
