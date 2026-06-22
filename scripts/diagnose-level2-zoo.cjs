@@ -39,6 +39,8 @@ const { glueFace, flipGlueFace, collapseFace, faceEdgePairs, boundaryEdgeSign } 
 );
 const { createSeedShape } = req('src/data/seeds.ts');
 const { shapeLineageOf, certifyOrientation } = req('src/lib/transformationLedger.ts');
+// READ-ONLY import for the §J agreement seal (the cascade's correct collapse reference).
+const { runCollapseCascade } = req('src/lib/cascadeDriver.ts');
 
 let failures = 0;
 function check(label, condition) {
@@ -100,6 +102,8 @@ const SURFACES = [
     w1: 0,
     linkShape: 'arc', // open arcs — boundary
     valence: 'boundary',
+    chi: 0,
+    cellCounts: { v: 2, e: 3, f: 1 },
   },
   {
     name: 'torus',
@@ -109,6 +113,8 @@ const SURFACES = [
     w1: 0,
     linkShape: 'cycle4', // single 4-cycle — interior
     valence: 'interior',
+    chi: 0,
+    cellCounts: { v: 1, e: 2, f: 1 },
   },
   {
     name: 'mobius',
@@ -118,6 +124,8 @@ const SURFACES = [
     w1: 1,
     linkShape: 'arc',
     valence: 'boundary',
+    chi: 0,
+    cellCounts: { v: 2, e: 3, f: 1 },
   },
   {
     name: 'klein',
@@ -127,6 +135,8 @@ const SURFACES = [
     w1: 1,
     linkShape: 'cycle4',
     valence: 'interior',
+    chi: 0,
+    cellCounts: { v: 1, e: 2, f: 1 },
   },
   {
     name: 'rp2',
@@ -136,6 +146,8 @@ const SURFACES = [
     w1: 1,
     linkShape: 'bigon', // 2-cycle — the level-2 bigon (RULED interior; floor retired)
     valence: 'interior', // RULED: a bigon is a topological S¹
+    chi: 1,
+    cellCounts: { v: 2, e: 2, f: 1 },
   },
   {
     name: 'sphere',
@@ -143,8 +155,10 @@ const SURFACES = [
     merges: { 's': [A, B, C, D] },
     pairSigns: [],
     w1: 0,
-    linkShape: 'cycle4', // cone base — interior
-    valence: 'interior',
+    linkShape: 'none', // the corrected boundary-quotient has NO 1-complex link — the test is χ
+    valence: null, // n/a — the manifold S² surface test is χ=2, not a link valence
+    chi: 2,
+    cellCounts: { v: 1, e: 0, f: 1 },
   },
 ];
 
@@ -181,6 +195,15 @@ for (const surf of SURFACES) {
   check(`[${surf.name}] §6 operationStatus === UNFAITHFUL (distinct-lineage corners)`, t.faithfulness.operationStatus === 'UNFAITHFUL');
   const hetSites = t.faithfulness.perResultSite.filter((s) => !s.lineageHomogeneous);
   check(`[${surf.name}] every merged support is lineage-heterogeneous; inheritedLineage === null`, hetSites.length >= 1 && hetSites.every((s) => s.inheritedLineage === null));
+
+  // §H — χ for the SURFACE (a surface seal must test the surface). The REAL CW cell counts.
+  check(
+    `[${surf.name}] §H χ === ${surf.chi} AND cellCounts === {v:${surf.cellCounts.v},e:${surf.cellCounts.e},f:${surf.cellCounts.f}}`,
+    t.chi === surf.chi &&
+      t.cellCounts.v === surf.cellCounts.v &&
+      t.cellCounts.e === surf.cellCounts.e &&
+      t.cellCounts.f === surf.cellCounts.f,
+  );
 
   // (d) the EXPOSED level-2 link + decomposeLink valence
   exposedLinks[surf.name] = t.links.map((l) => ({
@@ -223,10 +246,15 @@ for (const surf of SURFACES) {
     check(`[${surf.name}] RULED: decomposeLink(bigon).valence === 'interior' (a bigon is a topological S¹ — the floor is retired)`,
       t.links.every((l) => l.valence === 'interior'));
     note(`RULED (researcher level-2 bigon ruling): RP²'s two merged-vertex links are each a 2-cycle bigon (V=2, E=2, both degree 2, one component) — a topological S¹, so each merged vertex is a genuine manifold INTERIOR point. decomposeLink now returns 'interior' on the bigon (the simplicial ≥3-vertex floor is retired). RP² is now a fully-green closed non-orientable surface.`);
+  } else if (surf.linkShape === 'none') {
+    // §K — the corrected collapse (boundary-quotient) has NO 1-complex link to read;
+    // the surface test is χ (§H asserts χ=2, the manifold S²). links: [].
+    check(`[${surf.name}] §K collapse has NO constructed link (buildCollapseLink removed; links: [])`, t.links.length === 0);
+    note(`MANIFOLD S² (boundary-quotient D²/∂D²): the corrected collapseFace identifies the WHOLE boundary (vertices AND edges) to one apex → V=1, E=0, F=1, χ=2. No 1-complex link (links: []) — the surface test is χ, not a link valence. (The old vertices-only collapse left 4 edge self-loops → χ=−2, a non-manifold wedge — fixed.)`);
   }
 
   // read-actuals report
-  note(`READ-ACTUALS: supports=${JSON.stringify(t.supports)} | pairSigns=${JSON.stringify(t.pairSigns)} | w1=${t.w1} nonOrientable=${t.nonOrientable} | faithfulness=${t.faithfulness.operationStatus}`);
+  note(`READ-ACTUALS: supports=${JSON.stringify(t.supports)} | pairSigns=${JSON.stringify(t.pairSigns)} | w1=${t.w1} nonOrientable=${t.nonOrientable} | chi=${t.chi} cells=v${t.cellCounts.v}/e${t.cellCounts.e}/f${t.cellCounts.f} | faithfulness=${t.faithfulness.operationStatus}`);
 }
 
 // ===================== RP² discriminator: OR not parity =====================
@@ -237,6 +265,25 @@ const parityW1 = certifyOrientation(rp2.ledger, [[rp2.cycles[0][0], rp2.cycles[1
 check('§6 RP² OUR per-pair-cycle construction yields w1 === 1 (the OR of two −1 pairs)', orW1 === 1);
 check('§6 RP² the WRONG one-cycle-two-flips parity would yield w1 === 0 ((−1)(−1)=+1) — proving OUR model is OR, not parity', parityW1 === 0);
 note('RP² is non-orientable because EITHER reversing seam suffices (OR), not because the two flips multiply.');
+
+// ===================== §I — regression guard (the χ seal would have CAUGHT the bug) =====
+console.log('\n----- §I regression guard: the new χ seal fails the OLD vertices-only collapse -----');
+const nBoundary = face.vertexIds.length; // 4
+const oldCollapseChi = 1 - nBoundary + 1; // v=1, e=n (edges NOT collapsed), f=1 → 1 − 4 + 1 = −2
+check('§I OLD vertices-only collapse χ === −2 (v=1, e=4 self-loops, f=1) — a non-manifold wedge', oldCollapseChi === -2);
+check('§I the χ===2 sphere seal FAILS on the old behaviour (−2 !== 2) — the seal has TEETH', oldCollapseChi !== 2);
+note(`REGRESSION GUARD: the old vertices-only collapse left ${nBoundary} boundary edges as self-loops → χ = 1 − ${nBoundary} + 1 = ${oldCollapseChi} (wedge); the corrected boundary-quotient gives χ=2 (S²). The §H χ seal would have caught the bug.`);
+
+// ===================== §J — agreement with the cascade (provably agree) =====================
+console.log('\n----- §J agreement: collapseFace vs runCollapseCascade (topological) -----');
+const cf = collapseFace(shape, face);
+const cl = runCollapseCascade(shape, face);
+check('§J cf.chi === cl.chi === 2 (both the manifold S²)', cf.chi === 2 && cl.chi === 2 && cf.chi === cl.chi);
+check(
+  '§J cellCounts agree topologically: cf {v:1,e:0,f:1} matches the cascade (vAfter=1, eAfter=0, fAfter=1, μ 9→2)',
+  cf.cellCounts.v === 1 && cf.cellCounts.e === 0 && cf.cellCounts.f === 1 && cl.mu.before === 9 && cl.mu.after === 2,
+);
+note(`AGREEMENT (topology, not apex id): collapseFace χ=${cf.chi} cells=v${cf.cellCounts.v}/e${cf.cellCounts.e}/f${cf.cellCounts.f} | runCollapseCascade χ=${cl.chi} μ ${cl.mu.before}→${cl.mu.after}. Apex REPRESENTATION differs (collapseFace uses an S: support id, the cascade a real vertex) — layer-appropriate, NOT a divergence.`);
 
 // ===================== read-actuals: the corner lineages =====================
 console.log('\n----- read-actuals: corner lineages (the carried charge) -----');

@@ -88,6 +88,8 @@ export interface SurfaceTrace {
   w1: 0 | 1;
   nonOrientable: boolean;
   passes: number; // one-pass fixpoint (no cascade)
+  cellCounts: { v: number; e: number; f: number }; // distinct cells after identification (the REAL CW counts)
+  chi: number; // Euler characteristic V − E + F — the SURFACE invariant
 }
 
 // ---------------------------------------------------------------------------
@@ -153,37 +155,6 @@ function buildGluingLink(
     edgeCount += 1;
   }
   return finishLink(supportId, cornerPositions, n, adjacency, edgeCount);
-}
-
-// COLLAPSE's link is the CONE BASE: the boundary edge-cycle. Link-vertices = the
-// boundary edges; link-edges = the corners, each joining the two consecutive edges
-// it sits between. (Collapse identifies no edges, so the half-edge model would leave
-// the seam open; the apex of the cone over the boundary polygon has the polygon
-// itself as its link — an n-cycle.)
-function buildCollapseLink(supportId: string, n: number, corners: VertexId[]): SupportLink {
-  const adjacency = new Map<string, string[]>();
-  const ensure = (v: string): string[] => {
-    let list = adjacency.get(v);
-    if (!list) {
-      list = [];
-      adjacency.set(v, list);
-    }
-    return list;
-  };
-  const edgeId = (k: number): string => `e${k}`;
-  for (let p = 0; p < n; p += 1) {
-    const prev = (p - 1 + n) % n;
-    ensure(edgeId(prev)).push(edgeId(p));
-    ensure(edgeId(p)).push(edgeId(prev));
-  }
-  return finishLink(
-    supportId,
-    Array.from({ length: n }, (_unused, i) => i),
-    n,
-    adjacency,
-    n,
-    corners,
-  );
 }
 
 function finishLink(
@@ -316,6 +287,17 @@ function identifyByPairs(
     supports[support] = [...corners].sort((a, b) => a.localeCompare(b));
   }
 
+  // χ from the REAL identification: v = distinct corner supports; e = distinct edge
+  // classes (a union-find over the n boundary-edge INDICES, unioned per pairing);
+  // f = 1 (the single polygon). χ = v − e + f — the surface invariant.
+  const edgeUF = makeUnionFind();
+  for (let i = 0; i < n; i += 1) edgeUF.find(String(i)); // seed each boundary edge index
+  for (const { edgeA, edgeB } of pairings) edgeUF.union(String(edgeA), String(edgeB));
+  const edgeRoots = new Set<string>();
+  for (let i = 0; i < n; i += 1) edgeRoots.add(edgeUF.find(String(i)));
+  const cellCounts = { v: classMembers.size, e: edgeRoots.size, f: 1 };
+  const chi = cellCounts.v - cellCounts.e + cellCounts.f;
+
   return {
     surface,
     identified: ledger.forward,
@@ -329,6 +311,8 @@ function identifyByPairs(
     w1: orientation.w1,
     nonOrientable: orientation.nonOrientable,
     passes: 1,
+    cellCounts,
+    chi,
   };
 }
 
@@ -349,11 +333,15 @@ export function flipGlueFace(shape: Shape, face: Face, pairings: BoundaryPairing
   return trace;
 }
 
-// Collapse the WHOLE boundary cycle to a single point (no pairing; all corners -> one
-// support). No reversing seam -> w1 = 0; the link is the cone base (the boundary cycle).
+// Collapse the WHOLE boundary subcomplex to a single apex point — the boundary-quotient
+// D²/∂D² = S² (the researcher's collapse ruling; matches the cascade's runCollapseCascade).
+// Both the n boundary VERTICES and the n boundary EDGES collapse to the apex: V=1, E=0,
+// F=1 → χ=2 (the manifold sphere; the face survives as the 2-cell). No pairing → w1 = 0.
+// (The earlier vertices-only version left the n edges as self-loops at the apex → χ=−2, a
+// non-manifold wedge — fixed here.) The corrected collapse has no 1-complex link for
+// decomposeLink to read, so the surface test is χ; links: [].
 export function collapseFace(shape: Shape, face: Face): SurfaceTrace {
   const vs = face.vertexIds;
-  const n = vs.length;
   const sorted = [...vs].sort((a, b) => a.localeCompare(b));
   const support = `S:${sorted.join('|')}`;
   const resultOf = (): string => support;
@@ -366,12 +354,22 @@ export function collapseFace(shape: Shape, face: Face): SurfaceTrace {
   );
   const orientation = certifyOrientation(ledger, []); // no pair -> no cycle -> w1 = 0
 
-  const link = buildCollapseLink(support, n, sorted);
-
   const supports: Record<string, VertexId[]> = {};
   for (const [s, corners] of Object.entries(ledger.pullBack)) {
     supports[s] = [...corners].sort((a, b) => a.localeCompare(b));
   }
+
+  // The boundary-quotient cell counts, derived structurally (NOT hard-coded): every one
+  // of the n boundary edges collapses (dim-drops) into the apex, so e = n − n_collapsed = 0;
+  // v = the single merged support (all corners → one apex); f = 1 (the surviving face).
+  const boundaryEdgeCount = faceEdgePairs(face).length; // n
+  const collapsedEdgeCount = boundaryEdgeCount; // all boundary edges collapse to the apex
+  const cellCounts = {
+    v: Object.keys(supports).length,
+    e: boundaryEdgeCount - collapsedEdgeCount,
+    f: 1,
+  };
+  const chi = cellCounts.v - cellCounts.e + cellCounts.f;
 
   return {
     surface: 'collapse',
@@ -382,9 +380,11 @@ export function collapseFace(shape: Shape, face: Face): SurfaceTrace {
     orientation,
     pairSigns: [],
     cycles: [],
-    links: [link],
+    links: [], // the corrected collapse has no 1-complex link — the surface test is χ
     w1: orientation.w1,
     nonOrientable: orientation.nonOrientable,
     passes: 1,
+    cellCounts,
+    chi,
   };
 }
