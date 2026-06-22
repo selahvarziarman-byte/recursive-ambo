@@ -72,6 +72,7 @@
     "diagnose:p-simplex-cuboctahedral-ve-standard-potential-probe-t28r": "node scripts/diagnose-p-simplex-cuboctahedral-ve-standard-potential-probe-t28r.cjs",
     "diagnose:p-simplex-vector-native-two-sector-residual-tension-preflight-t28s1": "node scripts/diagnose-p-simplex-vector-native-two-sector-residual-tension-preflight-t28s1.cjs",
     "diagnose:p-simplex-vector-native-incidence-operator-audit-t28s2": "node scripts/diagnose-p-simplex-vector-native-incidence-operator-audit-t28s2.cjs",
+    "diagnose:p-simplex-signed-square-hex-sector-coupling-audit-t28s3": "node scripts/diagnose-p-simplex-signed-square-hex-sector-coupling-audit-t28s3.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
