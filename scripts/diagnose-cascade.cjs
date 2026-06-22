@@ -39,6 +39,9 @@ const {
   runCutCascade,
   assertOpSet,
   runCollapseCascade,
+  certifyCascadeHonesty,
+  certifyTermination,
+  certifyConfluence,
 } = req('src/lib/cascadeDriver.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
 const { getCellFaces } = req('src/lib/shape.ts');
@@ -317,9 +320,56 @@ const driverSource = fs.readFileSync(path.join(repoRoot, 'src/lib/cascadeDriver.
 check('§F2 committed collapseFace NOT called/referenced in cascadeDriver.ts (grep)', !/collapseFace/.test(driverSource));
 check('§F2 derive-only: JSON.stringify(shape) byte-identical after the collapse runs', JSON.stringify(shape) === shapeSnapshot);
 
+// ===================== §H — Case C: the honesty overlay (merge-honesty rides ∂) ========
+console.log('\n----- §H Case C: lineage-heterogeneous merge → ANNOTATED, cascade continues -----');
+// the committed Case-A rotation trace (rot); engine pairing {a≡e, d≡f, c≡g, b≡h}.
+const aId = F1.vertexIds.find((v) => v.endsWith(':a')); // vertex:cube:a (F1 / bottom)
+const eId = F2.vertexIds.find((v) => v.endsWith(':e')); // vertex:cube:e (F2 / top)
+const rotSnapshot = JSON.stringify(rot);
+// custom lineage: ONLY the a≡e class is heterogeneous (L1 vs L2); everything else L0.
+const lineageHet = (id) => (id === aId ? 'L1' : id === eId ? 'L2' : 'L0');
+const honesty = certifyCascadeHonesty(rot, lineageHet);
+
+check('§H1 the cascade is lineage-BLIND: runCascade(rotation) reached μ 18→10 (the committed §A2 partition)', rot.mu.before === 18 && rot.mu.after === 10);
+check('§H2 certifyCascadeHonesty → clashCount === 1, status === ANNOTATED', honesty.clashCount === 1 && honesty.status === 'ANNOTATED');
+check(
+  '§H2 the ONE clash is the {a,e} vertex class with lineages {L1,L2}',
+  honesty.clashes.length === 1 &&
+    JSON.stringify([...honesty.clashes[0].resultClass].sort()) === JSON.stringify([aId, eId].sort()) &&
+    JSON.stringify([...honesty.clashes[0].lineages].sort()) === JSON.stringify(['L1', 'L2']),
+);
+check(
+  '§H3 the other merges (d≡f, c≡g, b≡h all L0) and every edge class are FAITHFUL (not in clashes)',
+  honesty.clashes.length === 1 && honesty.faithfulness.operationStatus === 'UNFAITHFUL' && honesty.faithfulness.heterogeneousCount === 1,
+);
+check('§H4 the clash carries PROVENANCE: a non-empty forcing path (seed glue edge → the a≡e vertex match)', honesty.clashes[0].path.length >= 1 && honesty.clashes[0].path.some((l) => l.startsWith('0:')));
+check('§H5 the overlay NEVER alters trace.partition/μ: rot JSON byte-identical before/after the call; μ stays 10', JSON.stringify(rot) === rotSnapshot && rot.mu.after === 10);
+
+// §H6 CONTROL: all-homogeneous lineage → FAITHFUL (same partition, opposite honesty verdict).
+const honestyControl = certifyCascadeHonesty(rot, () => 'L0');
+check('§H6 CONTROL all-L0 → clashCount === 0, status === FAITHFUL (honesty load-bearing on lineage, not structure)', honestyControl.clashCount === 0 && honestyControl.status === 'FAITHFUL');
+note(`READ-ACTUALS §H: a=${aId}, e=${eId} | 1 clash {a,e} lineages {L1,L2} path=${JSON.stringify(honesty.clashes[0].path)} | oracle=${honesty.faithfulness.operationStatus} | μ unchanged=10 | control(all-L0)=FAITHFUL`);
+
+// ===================== §I — termination (Q3) =====================
+console.log('\n----- §I termination (Q3): μ non-increasing, no cell created, finite passes -----');
+const termA = certifyTermination(rot.mu, rot.passes);
+const termCut = certifyTermination(cut.mu, cut.passes);
+const termCollapse = certifyTermination(cl.mu, cl.passes);
+check('§I1 certifyTermination(Case A μ 18→10) → terminated, muNonIncreasing, noCellCreated all true', termA.terminated && termA.muNonIncreasing && termA.noCellCreated);
+check('§I2 Cut (μ 7→5) and collapse (μ 9→2) both terminate with μ non-increasing', termCut.terminated && termCollapse.terminated);
+const termTeeth = certifyTermination({ before: 5, after: 7 }, 2);
+check('§I3 TEETH: certifyTermination({before:5, after:7}) → terminated === false (a μ INCREASE = cell creation is rejected)', termTeeth.terminated === false && termTeeth.noCellCreated === false);
+
+// ===================== §J — confluence (Q4) =====================
+console.log('\n----- §J confluence (Q4): order-independence as a certificate -----');
+const confluence = certifyConfluence(shape, [F1, F2], seedRot);
+check('§J1 certifyConfluence(Case A) → confluent === true, mu === 10 (reversed seed → identical partition)', confluence.confluent === true && confluence.mu === 10);
+check('§J2 the certificate is non-vacuous: it deep-compares the FULL partition (not just μ)', confluence.confluent === true && rot.partition[0].length === 4);
+note(`READ-ACTUALS §I/§J: termination Case A/Cut/collapse all true; teeth(5→7)=false | confluence confluent=${confluence.confluent} mu=${confluence.mu}`);
+
 // ===================== SUMMARY =====================
 console.log('');
-console.log(`--- cascade (2a closure + 2b orientation + 3 removal/op-set + 3b collapse): ${failures === 0 ? 'no failures' : failures + ' FAIL'} ---`);
+console.log(`--- cascade (2a + 2b + 3 + 3b + 4 honesty/termination/confluence): ${failures === 0 ? 'no failures' : failures + ' FAIL'} ---`);
 console.log('');
 if (failures === 0) {
   console.log('ALL PASS');

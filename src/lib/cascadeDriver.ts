@@ -17,6 +17,13 @@
 
 import type { Edge, Face, Shape, VertexId } from '../types/geometry';
 import { faceEdgePairs } from './surfaceOperations';
+// READ-ONLY (step 4): the committed faithfulness law is the honesty overlay's clash
+// oracle — single-sourced, never reimplemented (the single-source-the-law lesson).
+import {
+  certifyFaithfulness,
+  buildLedgerFromIdentification,
+  type FaithfulnessCertificate,
+} from './transformationLedger';
 
 // A cell-identification carrying its attaching map (boundary correspondence) and sign.
 export interface CellMatch {
@@ -615,4 +622,116 @@ export function runCollapseCascade(shape: Shape, face: Face): CollapseTrace {
     chi,
     passes,
   };
+}
+
+// ---------------------------------------------------------------------------
+// step 4 — the HONESTY OVERLAY (Case C) + termination/confluence certificates
+// ---------------------------------------------------------------------------
+// ADR 0004: incidence FORCES, the certifiers CHECK. The closure (runCascade) already
+// forced the partition lineage-BLIND; honesty rides ON TOP of ∂ as a READ-ONLY
+// annotation — it NEVER mutates the partition/μ and the cascade NEVER aborts. The
+// clash oracle is the COMMITTED faithfulness law (certifyFaithfulness +
+// buildLedgerFromIdentification), single-sourced, never reimplemented.
+
+export interface HonestyCert {
+  status: 'FAITHFUL' | 'ANNOTATED'; // ANNOTATED iff ≥1 clash
+  clashCount: number; // number of lineage-heterogeneous merged classes
+  clashes: Array<{ resultClass: string[]; lineages: string[]; path: string[] }>;
+  faithfulness: FaithfulnessCertificate; // the committed certifier's verdict (the oracle)
+}
+
+// Merge-honesty (Case C): annotate each lineage-heterogeneous forced merge via the
+// committed faithfulness certifier. Read-only over `trace` — the partition was already
+// forced by runCascade; this only CHECKS and ANNOTATES, computed AFTER the closure.
+export function certifyCascadeHonesty(
+  trace: CascadeTrace,
+  lineageOf: (id: string) => string,
+): HonestyCert {
+  // Build a ledger from the trace's partition: each cell ↦ its class representative
+  // (the sorted-first member, matching the partition's canonical rep).
+  const sources: string[] = [];
+  const repOf = new Map<string, string>();
+  for (const dim of [0, 1, 2]) {
+    for (const cls of trace.partition[dim] ?? []) {
+      const rep = cls[0];
+      for (const cell of cls) {
+        sources.push(cell);
+        repOf.set(cell, rep);
+      }
+    }
+  }
+  const ledger = buildLedgerFromIdentification(sources, (cell) => repOf.get(cell) ?? cell);
+  const faithfulness = certifyFaithfulness(
+    { forward: ledger.forward, pullBack: ledger.pullBack },
+    lineageOf,
+  );
+
+  // The heterogeneous result sites ARE the clashes — attach provenance from forcedMerges.
+  const clashes = faithfulness.perResultSite
+    .filter((site) => !site.lineageHomogeneous)
+    .map((site) => {
+      const resultClass = [...site.pullBackScopes].sort((a, b) => a.localeCompare(b));
+      const classSet = new Set(resultClass);
+      const merge = trace.forcedMerges.find((m) => classSet.has(m.a) || classSet.has(m.b));
+      return {
+        resultClass,
+        lineages: site.lineageConflict ?? [...new Set(resultClass.map(lineageOf))],
+        path: merge ? merge.path : [],
+      };
+    });
+
+  return {
+    status: clashes.length > 0 ? 'ANNOTATED' : 'FAITHFUL',
+    clashCount: clashes.length,
+    clashes,
+    faithfulness,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// step 4 — TERMINATION (Q3) + CONFLUENCE (Q4) as reusable certificates
+// ---------------------------------------------------------------------------
+export interface TerminationCert {
+  terminated: boolean;
+  muNonIncreasing: boolean;
+  noCellCreated: boolean;
+  passes: number;
+}
+
+// Q3: μ only ever drops (the universe is fixed — no cell created), and the closure
+// settles in finitely many passes. A pure verdict over the common {mu, passes} shape,
+// so it works for any op trace (identification / removal / collapse).
+export function certifyTermination(
+  mu: { before: number; after: number },
+  passes: number,
+): TerminationCert {
+  const muNonIncreasing = mu.after <= mu.before;
+  const noCellCreated = mu.after <= mu.before; // a μ increase would mean a cell was created
+  return {
+    terminated: muNonIncreasing && Number.isFinite(passes) && passes >= 1,
+    muNonIncreasing,
+    noCellCreated,
+    passes,
+  };
+}
+
+export interface ConfluenceCert {
+  confluent: boolean;
+  mu: number;
+}
+
+// Q4: order-independence. Re-run the closure with the seed matches REVERSED and verify
+// the final partition is identical (deep-equal) and μ unchanged — formalizes the §A7
+// ad-hoc confluence check as a reusable certifier.
+export function certifyConfluence(
+  shape: Shape,
+  seedFaces: Face[],
+  seed: CascadeSeed,
+): ConfluenceCert {
+  const forward = runCascade(shape, seedFaces, seed);
+  const reversed = runCascade(shape, seedFaces, { matches: [...seed.matches].reverse() });
+  const confluent =
+    JSON.stringify(forward.partition) === JSON.stringify(reversed.partition) &&
+    forward.mu.after === reversed.mu.after;
+  return { confluent, mu: forward.mu.after };
 }
