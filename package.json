@@ -74,6 +74,7 @@
     "diagnose:p-simplex-vector-native-incidence-operator-audit-t28s2": "node scripts/diagnose-p-simplex-vector-native-incidence-operator-audit-t28s2.cjs",
     "diagnose:p-simplex-signed-square-hex-sector-coupling-audit-t28s3": "node scripts/diagnose-p-simplex-signed-square-hex-sector-coupling-audit-t28s3.cjs",
     "diagnose:p-simplex-sector-coupled-loop-standard-projector-audit-t28s4": "node scripts/diagnose-p-simplex-sector-coupled-loop-standard-projector-audit-t28s4.cjs",
+    "diagnose:p-simplex-site-level-support-candidacy-audit-t28s5": "node scripts/diagnose-p-simplex-site-level-support-candidacy-audit-t28s5.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
