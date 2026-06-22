@@ -1,0 +1,11 @@
+Cascade driver — acceptance seal commitment (v2, orientation-corrected)
+
+Engineer/prompter seal, ratifying the researcher's v2 orientation ruling (Q1 JOIN/χ=2, Q2 face-2-coloring statistic, Q3 flip = single-face Möbius). Sealed 2026-06-22, BEFORE any cascade-driver code is written.
+
+SHA-256 of the canonical plaintext acceptance seal (off-repo: .handoff/CASCADE_DRIVER_ACCEPTANCE_SEAL_v2.md):
+
+029f1d99fb1ade3e5f88e73ee328d4c9285842f70e59a09616210006e8dacf2a
+
+The built cascade driver must reproduce the EXACT outcomes whose seal hashes to the above — Case A (glue/JOIN → μ 18→10, S², w₁=0, both φ), Case B (single-face flip-glue → Möbius, w₁=1 RECORDED not aborted; control cylinder w₁=0), Case C (heterogeneous forced merge annotated, cascade continues to μ=10), the cut (∂ᵀ) micro-case, and the Q3/Q4 invariants (no cell-creation, op-set pure-∂/∂ᵀ/dimension-disjoint, confluence, the 2-coloring orientation statistic).
+
+Plaintext is OFF-REPO (OPSEC — predictions kept off a competitor-readable branch); this hash is the sole on-repo commitment. The audit compares the built driver against the off-repo plaintext, whose integrity this hash attests.
