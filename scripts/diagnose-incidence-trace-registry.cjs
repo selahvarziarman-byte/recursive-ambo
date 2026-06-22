@@ -543,6 +543,40 @@ const undirected = (edges) => {
     boundary.valence === 'boundary' && branch.valence === 'junction' && pinch.valence === 'junction' && boundary.valence !== branch.valence);
 }
 
+// ===================== §A: the ≥3 floor is RETIRED (researcher level-2 bigon ruling) =====
+// interior ⟺ a single cycle S¹ at ANY length (every link-vertex degree 2, one
+// component) — the simplicial ≥3-vertex floor is dropped. A bigon (length 2) and a
+// self-loop (length 1) are legitimate S¹s; arcs / branches / pinches stay rejected.
+{
+  // BIGON: 2 vertices, 2 edges between them, both degree 2, one component -> interior (was 'boundary').
+  const bigon = decomposeLink(undirected([['a', 'b'], ['a', 'b']]));
+  check('§A bigon: valence === interior (was boundary under the ≥3 floor — the ruling)', bigon.valence === 'interior');
+  check('§A bigon: 2 vertices, both degree 2', bigon.strata.length === 1 && sameSet(bigon.strata[0].vertices, ['a', 'b']));
+  check('§A bigon: junctionLoci.length === 0 && pinch === false (a genuine single cycle)', bigon.junctionLoci.length === 0 && bigon.pinch === false);
+  check('§A bigon: strata[0].closed === true (the cycle is closed)', Boolean(bigon.strata[0]) && bigon.strata[0].closed === true);
+
+  // SELF-LOOP: 1 vertex with a loop edge, degree 2, one component -> interior (S¹ length 1).
+  const selfLoop = decomposeLink(undirected([['a', 'a']]));
+  check('§A self-loop: valence === interior (S¹ length 1 — the ruling)', selfLoop.valence === 'interior');
+  check('§A self-loop: 1 vertex, degree 2, one component', selfLoop.strata.length === 1 && selfLoop.strata[0].vertices.length === 1 && selfLoop.junctionLoci.length === 0 && selfLoop.pinch === false);
+
+  // STILL REJECTED — arc (degree-1 ends) stays boundary.
+  const arc = decomposeLink(undirected([['a', 'b'], ['b', 'c']]));
+  check('§A still-rejected ARC: valence === boundary (degree-1 ends, not a cycle)', arc.valence === 'boundary');
+
+  // STILL REJECTED — figure-8 (one degree-4 branch vertex: two loops at one vertex) stays junction.
+  const fig8 = decomposeLink(undirected([['a', 'a'], ['a', 'a']]));
+  check('§A still-rejected FIGURE-8: valence === junction (one degree-4 branch vertex)', fig8.valence === 'junction' && fig8.junctionLoci.length === 1 && fig8.junctionLoci[0].degree === 4);
+
+  // STILL REJECTED — two disjoint loops (2 components, all degree 2) stays junction via pinch.
+  const twoLoops = decomposeLink(undirected([['a', 'a'], ['b', 'b']]));
+  check('§A still-rejected TWO-DISJOINT-LOOPS: valence === junction (pinch — 2 components)', twoLoops.valence === 'junction' && twoLoops.pinch === true && twoLoops.junctionLoci.length === 0);
+
+  // UNCHANGED — a ≥3 cycle (triangle) stays interior (the floor-drop changes nothing here).
+  const triangle = decomposeLink(undirected([['a', 'b'], ['b', 'c'], ['c', 'a']]));
+  check('§A unchanged ≥3 cycle (triangle): valence === interior', triangle.valence === 'interior' && triangle.junctionLoci.length === 0 && triangle.pinch === false);
+}
+
 // ===================== P7 §C: REGRESSION — rigid substrate has NO junctions ==
 // Across every built body the diagnostic uses (tetra/octa/cube g1 AND the multi-
 // gen octa -> ambo -> ambo(core) -> ambo(residue) fixture), the rigid vertex-link

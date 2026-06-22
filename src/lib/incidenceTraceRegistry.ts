@@ -463,6 +463,18 @@ function faceCoherenceDetail(
 // wall. `closed` = a single cycle (every in-stratum degree 2); else a bounded arc.
 // `pinch` is measured on the FULL graph (>1 component). The four-valued `valence`
 // follows charter §2. Nothing is chosen; nothing throws.
+//
+// INTERIOR = the topological circle test: link `= S¹` ⟺ every link-vertex has
+// degree exactly 2 AND there is one connected component — a single cycle at ANY
+// length ≥ 1 (a self-loop S¹ length 1, a bigon length 2, a triangle/square length
+// ≥ 3). The earlier `≥ 3`-vertex floor was a SIMPLICIAL ARTIFACT: a simplicial
+// complex cannot realize a 2-cycle, so "≥ 3" was a correct proxy for "is a cycle"
+// only on simplicial surfaces. This engine is a CW complex, and module quotients
+// realize minimal cell structures whose links are bigons / self-loops — legitimate
+// `S¹`s. Per the researcher's level-2 bigon ruling, the floor is retired in favour
+// of the topological single-cycle test (this is the `S¹` member of the
+// dimension-indexed classifier; the level-1 `classifyLevel1Link` already tests the
+// `S⁰` degree directly with no count floor — the one uniform `Sⁿ⁻¹` principle).
 export function decomposeLink(adjacency: Map<string, string[]>): LinkDecomposition {
   const vertices = [...adjacency.keys()];
   const n = vertices.length;
@@ -497,8 +509,8 @@ export function decomposeLink(adjacency: Map<string, string[]>): LinkDecompositi
     valence = 'no-context'; // 0 contexts — no link formed
   } else if (junctionLoci.length > 0 || pinch) {
     valence = 'junction'; // a degree>2 branch OR a multi-sheet pinch
-  } else if (n >= 3 && allDegree2) {
-    valence = 'interior'; // one closed cycle covering every link-vertex
+  } else if (allDegree2) {
+    valence = 'interior'; // a single cycle S¹ at ANY length (degree-2, one component) — NO simplicial floor
   } else {
     valence = 'boundary'; // one component, a degree-1 end, no degree>2 (a free arc)
   }

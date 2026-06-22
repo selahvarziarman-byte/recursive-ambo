@@ -134,8 +134,8 @@ const SURFACES = [
     merges: { 's1': [A, C], 's2': [B, D] },
     pairSigns: [-1, -1],
     w1: 1,
-    linkShape: 'bigon', // 2-cycle — the level-2 bigon (watch-item 1, deferred)
-    valence: null, // NOT asserted — surfaced
+    linkShape: 'bigon', // 2-cycle — the level-2 bigon (RULED interior; floor retired)
+    valence: 'interior', // RULED: a bigon is a topological S¹
   },
   {
     name: 'sphere',
@@ -213,13 +213,16 @@ for (const surf of SURFACES) {
         l.decomposition.pinch === false));
     check(`[${surf.name}] decomposeLink(link).valence === 'boundary' (free-edge arc)`, t.links.every((l) => l.valence === 'boundary'));
   } else if (surf.linkShape === 'bigon') {
-    // WATCH-ITEM 1 — the level-2 bigon. Assert the FACT (2-cycle), do NOT assert interior/boundary.
-    check(`[${surf.name}] WATCH-ITEM 1: each merged link IS a 2-cycle BIGON (V=2, E=2, both degree 2, one component)`,
+    // The level-2 bigon — RULED interior (researcher level-2 bigon ruling; the ≥3
+    // floor in decomposeLink is retired). Keep the 2-cycle FACT seal AND assert interior.
+    check(`[${surf.name}] each merged link IS a 2-cycle BIGON (V=2, E=2, both degree 2, one component)`,
       t.links.length === 2 && t.links.every((l) =>
         l.vertexCount === 2 && l.edgeCount === 2 &&
         Object.values(l.degrees).every((d) => d === 2) &&
         l.decomposition.pinch === false));
-    note(`SURFACED (deferred): RP²'s merged-vertex link is a 2-cycle bigon. decomposeLink returns '${t.links[0].valence}' on it (its level-2/S¹ interior floor is ≥3 vertices), so interior/boundary is NOT asserted here — the level-2 bigon is the open researcher question (the analogue of the level-1 degree-2 ruling). RP²'s ledger / faithfulness / w1 still seal green; only its valence is the surfaced finding.`);
+    check(`[${surf.name}] RULED: decomposeLink(bigon).valence === 'interior' (a bigon is a topological S¹ — the floor is retired)`,
+      t.links.every((l) => l.valence === 'interior'));
+    note(`RULED (researcher level-2 bigon ruling): RP²'s two merged-vertex links are each a 2-cycle bigon (V=2, E=2, both degree 2, one component) — a topological S¹, so each merged vertex is a genuine manifold INTERIOR point. decomposeLink now returns 'interior' on the bigon (the simplicial ≥3-vertex floor is retired). RP² is now a fully-green closed non-orientable surface.`);
   }
 
   // read-actuals report
