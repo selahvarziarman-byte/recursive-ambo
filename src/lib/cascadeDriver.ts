@@ -255,3 +255,148 @@ export function buildJoinSeed(
   }
   return { matches };
 }
+
+// SELF-GLUE seed (step 2b, Case B): glue ONE pair of OPPOSITE boundary edges of a
+// SINGLE face to each other (the 2-cell survives — a self-glue of its boundary, not a
+// 2-cell merge). `control` (sign +1, crossed correspondence) → cylinder; `flip`
+// (sign −1, parallel correspondence) → Möbius. The two modes differ ONLY in which
+// vertex correspondence the one edge-match carries (the sign); the merge-count / μ /
+// fixpoint are identical, but the resulting partition orients the doubly-met edge
+// oppositely (cylinder) vs identically (Möbius).
+export function buildSelfGlueSeed(
+  shape: Shape,
+  face: Face,
+  mode: 'control' | 'flip',
+): CascadeSeed {
+  const v = face.vertexIds;
+  const n = v.length;
+  const edges = boundaryOfFace(shape, face);
+  const opp = Math.floor(n / 2); // the opposite edge index (square: 2)
+  const e0 = edges[0]; // (v[0], v[1])
+  const eOpp = edges[opp]; // (v[opp], v[opp+1])
+  const sign: 1 | -1 = mode === 'control' ? 1 : -1;
+  // control = crossed (cylinder): v0 ↦ v[opp+1], v1 ↦ v[opp]  (antiparallel seam)
+  // flip    = parallel (Möbius):  v0 ↦ v[opp],   v1 ↦ v[opp+1] (parallel seam)
+  const boundary: Array<[string, string]> =
+    mode === 'control'
+      ? [
+          [v[0], v[(opp + 1) % n]],
+          [v[1], v[opp]],
+        ]
+      : [
+          [v[0], v[opp]],
+          [v[1], v[(opp + 1) % n]],
+        ];
+  return { matches: [{ dim: 1, a: e0.id, b: eOpp.id, boundary, sign }] };
+}
+
+// ---------------------------------------------------------------------------
+// step 2b — the orientation overlay (Q2: the face-orientation 2-colouring of w₁)
+// ---------------------------------------------------------------------------
+// The cascade's w₁ is the FACE-ORIENTATION 2-COLOURING (a parity-union-find over the
+// surviving faces via their shared interior edges, self-loops included) — NOT a
+// boundary-cycle sign-product (Q2 ruled that degenerate for shared boundaries; this
+// module never calls P8's surface-zoo sign-product certifier). Two faces meeting an
+// interior edge in OPPOSITE induced directions are already consistent (the river-banks
+// rule, parity 0);
+// SAME direction means one must flip (parity 1). w₁ = 1 iff the colouring is forced
+// into a contradiction — an odd cycle of constraints, OR a single face forced opposite
+// to itself (a parity-1 self-loop, the Möbius signature). The induced direction is read
+// off each face's oriented boundary (faceEdgePairs) mapped through the cascade
+// partition (the partition carries the seed sign's effect).
+
+export interface OrientationCert {
+  w1: 0 | 1; // 0 = orientable (2-colouring consistent); 1 = non-orientable (a contradiction)
+  nonOrientable: boolean; // === (w1 === 1)
+  conflict: { edgeClass: string; faces: [string, string] } | null; // the first conflicting edge-class
+}
+
+// parity-union-find: each node carries a parity bit relative to its class root.
+function makeParityUnionFind(nodes: string[]) {
+  const parent = new Map<string, string>();
+  const parity = new Map<string, 0 | 1>(); // parity from node to its parent
+  for (const x of nodes) {
+    parent.set(x, x);
+    parity.set(x, 0);
+  }
+  const find = (x: string): { root: string; par: 0 | 1 } => {
+    const p = parent.get(x) as string;
+    if (p === x) return { root: x, par: 0 };
+    const up = find(p);
+    const composed = ((parity.get(x) as number) ^ up.par) as 0 | 1;
+    parent.set(x, up.root);
+    parity.set(x, composed);
+    return { root: up.root, par: composed };
+  };
+  // union a,b with required relative parity `rel`. Returns false on contradiction.
+  const union = (a: string, b: string, rel: 0 | 1): boolean => {
+    const fa = find(a);
+    const fb = find(b);
+    if (fa.root === fb.root) {
+      return ((fa.par ^ fb.par) as 0 | 1) === rel; // already related — must agree
+    }
+    parent.set(fa.root, fb.root);
+    parity.set(fa.root, ((fa.par ^ rel ^ fb.par) as 0 | 1));
+    return true;
+  };
+  return { find, union };
+}
+
+export function certifyCascadeOrientation(
+  shape: Shape,
+  seedFaces: Face[],
+  trace: CascadeTrace,
+): OrientationCert {
+  // class representatives (sorted-first member) per dimension.
+  const rootOf = (classes: string[][], id: string): string => {
+    for (const cls of classes) if (cls.includes(id)) return cls[0];
+    return id;
+  };
+  const vertexClassOf = (v: string): string => rootOf(trace.partition[0], v);
+  const edgeClassOf = (e: string): string => rootOf(trace.partition[1], e);
+  const faceClassOf = (f: string): string => rootOf(trace.partition[2], f);
+
+  const edgeByKey = new Map<string, Edge>();
+  for (const edge of shape.edges) edgeByKey.set(edgeKey(edge.vertexIds[0], edge.vertexIds[1]), edge);
+
+  // gather, per edge-class, the (face, induced direction) traversals.
+  const traversals = new Map<string, Array<{ face: string; dir: [string, string] }>>();
+  for (const face of seedFaces) {
+    const faceNode = faceClassOf(face.id);
+    for (const [from, to] of faceEdgePairs(face)) {
+      const realEdge = edgeByKey.get(edgeKey(from, to));
+      if (!realEdge) continue;
+      const eClass = edgeClassOf(realEdge.id);
+      const dir: [string, string] = [vertexClassOf(from), vertexClassOf(to)];
+      (traversals.get(eClass) ?? traversals.set(eClass, []).get(eClass)!).push({ face: faceNode, dir });
+    }
+  }
+
+  const faceNodes = [...new Set(seedFaces.map((f) => faceClassOf(f.id)))];
+  const puf = makeParityUnionFind(faceNodes);
+
+  let w1: 0 | 1 = 0;
+  let conflict: OrientationCert['conflict'] = null;
+  for (const eClass of [...traversals.keys()].sort()) {
+    const recs = traversals.get(eClass) as Array<{ face: string; dir: [string, string] }>;
+    if (recs.length !== 2) continue; // boundary (1 traversal) — no orientation constraint
+    const [r1, r2] = recs;
+    const same = r1.dir[0] === r2.dir[0] && r1.dir[1] === r2.dir[1];
+    const rel: 0 | 1 = same ? 1 : 0; // same induced direction → must flip (1); opposite → consistent (0)
+    if (r1.face === r2.face) {
+      // self-loop: a single face meeting the edge twice. parity-1 → Möbius (a face forced opposite to itself).
+      if (rel === 1 && w1 === 0) {
+        w1 = 1;
+        conflict = { edgeClass: eClass, faces: [r1.face, r2.face] };
+      }
+    } else {
+      const consistent = puf.union(r1.face, r2.face, rel);
+      if (!consistent && w1 === 0) {
+        w1 = 1;
+        conflict = { edgeClass: eClass, faces: [r1.face, r2.face] };
+      }
+    }
+  }
+
+  return { w1, nonOrientable: w1 === 1, conflict };
+}

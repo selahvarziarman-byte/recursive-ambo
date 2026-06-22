@@ -31,7 +31,9 @@ require.extensions['.ts'] = (module, filename) => {
 const repoRoot = path.resolve(__dirname, '..');
 const req = (p) => require(path.join(repoRoot, p));
 
-const { runCascade, buildJoinSeed } = req('src/lib/cascadeDriver.ts');
+const { runCascade, buildJoinSeed, buildSelfGlueSeed, certifyCascadeOrientation } = req(
+  'src/lib/cascadeDriver.ts',
+);
 const { createSeedShape } = req('src/data/seeds.ts');
 const { getCellFaces } = req('src/lib/shape.ts');
 
@@ -155,12 +157,65 @@ check(
 // ===================== §A (discipline) — derive-only =====================
 console.log('\n----- discipline -----');
 check('derive-only: JSON.stringify(shape) byte-identical before/after all runs', JSON.stringify(shape) === shapeSnapshot);
-check('no orientation computed: the trace carries no w1 field (sign recorded on matches only)', !('w1' in rot) && !('orientation' in rot));
+check('the closure TRACE carries no w1 field (orientation is a SEPARATE cert, not baked into the trace)', !('w1' in rot) && !('orientation' in rot));
 note(`READ-ACTUALS: F1=${F1.id}, F2=${F2.id} | rotation μ 18→10, reflection μ 18→10 | faces survive=${rot.partition[2].length} | passes=${rot.passes} | confluence=identical`);
+
+// ===================== §B-orient (Case A) — the JOIN glue is ORIENTABLE, both φ ======
+console.log('\n----- §B-orient (Case A orientation, w₁ via the 2-colouring) -----');
+const rotOrient = certifyCascadeOrientation(shape, [F1, F2], rot);
+const refOrient = certifyCascadeOrientation(shape, [F1, F2], ref);
+check('§B-orient ROTATION φ → w1 === 0 (the two faces 2-colour consistently across their 4 interior edges)', rotOrient.w1 === 0);
+check('§B-orient ROTATION φ → nonOrientable === false, conflict === null', rotOrient.nonOrientable === false && rotOrient.conflict === null);
+check('§B-orient REFLECTION φ → w1 === 0 (orientable S²)', refOrient.w1 === 0);
+check('§B-orient REFLECTION φ → nonOrientable === false, conflict === null', refOrient.nonOrientable === false && refOrient.conflict === null);
+note(`READ-ACTUALS: both φ orientable (S² pillowcase, χ=2) — rotation w1=${rotOrient.w1}, reflection w1=${refOrient.w1}.`);
+
+// ===================== §C-orient (Case B) — single-face flip-glue → Möbius ===========
+console.log('\n----- §C-orient (Case B: self-glue one opposite-edge pair of ONE face) -----');
+const bottom = F1; // a single cube face [a,d,c,b]
+const ctrlSeed = buildSelfGlueSeed(shape, bottom, 'control');
+const flipSeed = buildSelfGlueSeed(shape, bottom, 'flip');
+const ctrl = runCascade(shape, [bottom], ctrlSeed);
+const flip = runCascade(shape, [bottom], flipSeed);
+const ctrlOrient = certifyCascadeOrientation(shape, [bottom], ctrl);
+const flipOrient = certifyCascadeOrientation(shape, [bottom], flip);
+
+// the face SURVIVES (count stays 1) — a self-glue of its boundary, not a 2-cell merge
+check('§C-orient the single face SURVIVES in both modes (face count stays 1)', ctrl.partition[2].length === 1 && flip.partition[2].length === 1);
+
+// FLIP → Möbius: w1=1 RECORDED, conflict is a parity-1 self-loop; the cascade CONTINUES
+check('§C-orient FLIP → w1 === 1, nonOrientable === true (Möbius)', flipOrient.w1 === 1 && flipOrient.nonOrientable === true);
+check('§C-orient FLIP → conflict !== null and is a SELF-LOOP (one face forced opposite to itself)', flipOrient.conflict !== null && flipOrient.conflict.faces[0] === flipOrient.conflict.faces[1]);
+check('§C-orient FLIP → the cascade RECORDS w1=1 and CONTINUES: runCascade still reached its fixpoint (no abort/throw)', flip.passes >= 1 && Number.isFinite(flip.passes) && flip.mu.after === 6);
+
+// CONTROL → cylinder: w1=0
+check('§C-orient CONTROL → w1 === 0, nonOrientable === false (cylinder, orientable)', ctrlOrient.w1 === 0 && ctrlOrient.nonOrientable === false);
+check('§C-orient CONTROL → conflict === null', ctrlOrient.conflict === null);
+
+// the ONLY difference is the seed sign: merges/μ/fixpoint identical, orientation verdict opposite
+check(
+  '§C-orient flip vs control: IDENTICAL μ (9→6), face count, and passes — the closure is sign-blind',
+  JSON.stringify(ctrl.mu) === JSON.stringify(flip.mu) &&
+    ctrl.mu.before === 9 && ctrl.mu.after === 6 &&
+    ctrl.partition[2].length === flip.partition[2].length &&
+    ctrl.passes === flip.passes,
+);
+check(
+  '§C-orient the orientation statistic is load-bearing on the SIGN: same combinatorics, opposite w1 (0 vs 1)',
+  ctrlOrient.w1 === 0 && flipOrient.w1 === 1,
+);
+note(`READ-ACTUALS Case B: control(cylinder) w1=0 vmerges=${ctrl.partition[0].map((c) => c.map(shortId).join('~')).join(',')} | flip(Möbius) w1=1 vmerges=${flip.partition[0].map((c) => c.map(shortId).join('~')).join(',')} | conflict edgeClass=${flipOrient.conflict.edgeClass}`);
+
+// ===================== §B-discipline =====================
+console.log('\n----- §B-discipline -----');
+const driverSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/cascadeDriver.ts'), 'utf8');
+check('§B-discipline certifyOrientation is NOT imported/called in cascadeDriver.ts (grep proves it)', !/certifyOrientation/.test(driverSrc));
+check('§B-discipline the cascade w1 comes from certifyCascadeOrientation (the 2-colouring) ONLY', typeof certifyCascadeOrientation === 'function');
+check('§B-discipline derive-only: JSON.stringify(shape) byte-identical after all 2b runs', JSON.stringify(shape) === shapeSnapshot);
 
 // ===================== SUMMARY =====================
 console.log('');
-console.log(`--- cascade (Case A): ${failures === 0 ? 'no failures' : failures + ' FAIL'} ---`);
+console.log(`--- cascade (Case A closure + 2b orientation): ${failures === 0 ? 'no failures' : failures + ' FAIL'} ---`);
 console.log('');
 if (failures === 0) {
   console.log('ALL PASS');
