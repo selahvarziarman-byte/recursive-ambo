@@ -1,128 +1,112 @@
 # Topological Module — Context
 
-The Topological Module is the Platonic Engine's **purely structural layer** — metric stripped below, and above it the **user's mind** rather than any semantic engine-stage — where ambo's named material, continued from the **bijective regime** into the **lossy regime**, is transformed by **orientation-aware boundary-identifications** into the **manifold zoo**, and each operation's **structural consequence** is traced both **atomically** (a signed relation among placeholders) and **systemically** (a fixpoint closure through the metric-free web). The engine delivers this as **structural content — which *is* the semantics**; the user **mirrors** it into meaning, which is the framework's sole end (a **prosthesis for thinking**). It never mints names — the "life of concepts" is a life of placeholders and relations that the user reads as meaning.
+The Topological Module is a **generative playground**: a standalone structural space where **forms** (labelled cell-complexes) are **born from forms** — the engine's identity calculus run *generatively*. Two or more forms combine into a child that carries a lineage from its parents; one form transformed in place is the *unary* sub-case (the reductive "transformer" we first built). The metric is stripped below it and **meaning is left to the user's mind above it** — the engine delivers honest structure; the human reads it. Material enters by **invocation** (a primitive shape from scratch) or by **loading** a saved snapshot of an entity from an ambo **universe**; many universes can meet here, each piece still tracing home.
 
-This file is a glossary — the language of the module's picture, not its implementation. Status: **read-back-ratified by mothership + engineer + researcher, 2026-06-21** (the "why topology?" gap closed and shared; see ADRs 0001–0007). Terms marked _(firm)_ are sovereign-endorsed.
+This file is a glossary — the language of the module's picture, not its implementation. Status: **redrafted to the generative picture 2026-06-23 (sovereign-grilled, designer-drafted) — pending mothership ratification (scope) and the researcher's investigation of the one open structural question.** Terms _(firm)_ are sovereign-endorsed. ADRs 0001–0007 are **re-situated** (their structural mechanics stand; the reductive framing becomes the unary sub-case — ADR 0008).
 
 ## Language
 
-### Regimes — the continuation from ambo/dual
+### The playground and its sources
 
-**Bijective regime** _(firm)_:
-The ambo/dual universe, where every operation preserves identity: ambo only *adds* (a midpoint per edge, discharging nothing) and the dual is a *bijection*. No site is ever merged or lost.
-_Avoid_: "primal world" (reserve that for the seed).
+**Playground** _(firm)_:
+The module itself — a **standalone** structural space, independent of any one ambo universe (Ground Plan §4.5), where forms live, combine, and are recorded. It holds **snapshots**, not live links.
 
-**Lossy regime** _(firm)_:
-The Topological Module: operations are permitted to be non-injective or non-total — they may merge, collapse, or remove. The module *is* the engine's identity calculus continued into this regime.
-_Avoid_: "destructive"; "mutation" (it does not mutate the source Shape).
+**Form** _(firm)_:
+The unit that lives in the playground — a labelled **cell-complex** (a life-shape: line, circle, square, Möbius, torus, Klein, …). The manifold zoo (ADR 0001/0002/0006) is the catalogue of possible forms.
 
-**Hinge** _(firm)_:
-The dualisation operation — the *last* bijective operation and the template the lossy ledger generalises (its six bijective maps become a set-valued pull-back). The boundary between the two regimes.
+**Invocation** _(firm)_:
+Introducing a primitive form **from scratch** (a line, a square — dim-1 up) and labelling its vertices. Its vertices are **source-less primals** — the engine's seed mechanism generalised below the 3D seeds (`lineage.ts` already treats a source-less vertex as its own primal). The genealogy roots at the invocation.
 
-### The living material
+**Load / Snapshot** _(firm)_:
+Importing a saved entity (a face, cell, or edge) from an ambo universe as a **self-contained snapshot** — its structure, its inert labels, and its lineage roots all travel with it. Snapshot, never live link (Ground Plan §5.3).
 
-**Placeholder** _(firm)_:
-The carried structural identity of an imported atom — its `scope × lineage` from ambo — standing for an entity *before any name*. The module's currency is placeholders, never names.
-_Avoid_: name, label, concept (at this layer).
+**Universe** _(firm)_:
+A saved ambo run — a "naming-process" — and a source of loadable material. Identified by an **opaque id** (pure provenance, a name not a doorway). Many universes can be loaded into one playground; they stay **sealed from each other except by a glue the user performs** (recorded with both provenances).
 
-**Name** _(firm)_:
-The user's **mirror-label** for a structure — what a human (or agent) using the framework calls what they see. Never minted by the engine; it may be parked in a packet field (`label`/`notes`) but is **inert** to structural computation.
-_Avoid_: implying the engine "produces" or "assigns" names; using "name" for a placeholder, a lineage, or ambo's concatenated vertex label.
+**Provenance / namespaced primal** _(firm)_:
+Every lineage root is tagged by its source — `(universe-id, primalKey)` or `(invocation-id, …)`. This is the **only** structural extension the multi-universe feature needs: it keeps sources distinct (universe-1's "A" ≠ universe-2's "A"), so **co-location ≠ identity holds across universes**.
 
-**Relation** _(firm)_:
-The content a topological operation creates among placeholders — e.g. closing a line into a circle creates the relation {x ↔ y}. It is *carried by* a geometric form that **represents** it: the form is the presentation, the relation is the content. Orientation-**reversing** identifications make the relation **signed/twisted** (a flip), not bare identity.
+### Birth and the operations
 
-**Concept** _(firm)_:
-In "the life of concepts," a *concept* is a **placeholder together with the relations it inhabits** — not an authored name (a name is the user's mirror). The "life" is the career of placeholders-and-relations through the module's operations.
-
-### Identity & the mirror
-
-**Structural identity** _(firm)_:
-`scope × lineage` — the *only* identity the engine has: which site this is, and what derivation made it. The registry's and ledger's sole notion of "identity." Inside the framework, unqualified "identity" means this.
-
-**Identification** _(firm)_:
-The structural **event** of gluing placeholders into one shared support (co-location). The module's operation; the ledger records it as a pull-back set. Not "identity" — the act, not the property.
-
-**Semantic identity** _(firm)_:
-The **mirror** of structural identity in the mind of the user (or agent). *Not* computed by the engine; it lives outside it. The cardinal law **"co-location ≠ identity"** = the engine's structural co-location (an identification) does **not** dictate the user's mirrored judgment of sameness.
-
-**Mirror** _(firm)_:
-The reflection of the engine's structural content as *meaning* in the user's mind. The engine's whole duty is to deliver **honest** structure so the mirror is trustworthy — which is *why* the faithfulness/honesty discipline exists (don't feed the mirror lies).
-
-**Intelligible (the north star)** _(firm)_:
-"Intelligible after transformation" = the transformed **structure** is honest and legible enough that the user's **mirror** forms cleanly. A property of the delivered structure and its trace — never a meaning the engine outputs. The module's **success-criterion**: deliver an honest, complete trace; intelligibility is mirror-ability, not semantic production.
-
-### The ladder
-
-**Ladder** _(firm)_:
-The module's spine of ascent — the **sphere ladder** S⁰ → S¹ → S² → … . Imported material climbs it (see **Operation**).
-
-**Level** _(firm)_:
-A rung of the Ladder: level n = dimension n, emblem the n-sphere Sⁿ. Each level hosts a *family* of n-dimensional life-shapes — level 1: line, circle; level 2: square, strip, torus, Klein bottle, Möbius, RP² (emblem S²). The sphere *marks* the level and is itself an inhabitant.
-
-**Life-shape** _(firm)_:
-A geometric form inhabiting a level — the "living" unit of the module, whose form *represents* a relation. The inhabitants are the closed/bounded manifolds built by identifying an imported cell's boundary (orientation-preserving *or* reversing), closed under products: lines, circles, strips, tori, **Möbius bands, Klein bottles, RPⁿ**, and their products.
-_Avoid_: "object", "shape" (use life-shape).
-
-**Manifold-strata factory** _(firm)_:
-The **life-shapes** are manifolds (still classifiable); the **relations** may include **junctions** (>2 sheets meeting). A junction is **recorded** — decomposed into manifold strata + a junction locus — never excluded (ADR 0006 supersedes ADR 0002's manifold-only exclusion). `GlueCoh` is a **decomposer**, not a gate. The governing principle is uniform: **instruments, not guards** — a certifier records, never excludes or aborts (ADR 0004 + 0006).
-
-### Operations
+**Birth** _(firm)_:
+A combination of **two or more** forms into a **new** form; the parents are consumed. (Two Möbius → a Klein.) The child's sites pull back into all parents; its lineage traces to all their roots.
 
 **Operation** _(firm)_:
-The move that builds or alters a life-shape: an imported cell (fundamental polytope) modulo a **boundary-identification pattern**, closed under **products**. The zoo-builders — **glue** (orientation-preserving → cylinder, torus), **flip-glue** (orientation-reversing → Möbius, Klein, RPⁿ), **collapse** (a whole boundary → sphere), **product** — plus **cut** (the ledger's removal: a source maps to ∅, a logged loss). All GATED (unbuilt); the ledger/closure that would certify them is built.
+The move that builds or alters a form — **the built set, reused, with no new family**. *Within* one form (unary): glue / flip-glue / collapse / cut. *Between* forms (arity ≥ 2): birth = the same boundary-identification applied to the disjoint union, plus **product**. The **boundary-matching** (the GSR machinery) is the only compatibility gate. (ADR 0008.)
 
-### Valence & faithfulness — the two axes
+**Metabolism** _(firm)_:
+A **unary** operation — one form changed in place (square → Möbius); the form keeps its identity. This is the reductive "transformer," now the unary sub-case of the playground.
 
-**Valence** _(firm)_:
-Per locus of the **post-identification link**: `1 = boundary` (a free edge from a cut) · `2 = interior` · `>2 = junction` (d sheets meet). Valence ≤2 is manifold; >2 is a **junction**, recorded (not excluded). Junctions arise only post-identification — the rigid substrate link is always one closed cycle (valence 2). `GlueCoh` emits the **partition** (strata + loci), not a boolean (ADR 0006).
+**Parent / pull-back** _(firm)_:
+A child site's **pull-back set is its parents** — the source sites it came from. The committed ledger's pull-back *is* the parent-pointer; the genealogy is that ledger read forwards.
 
-**Two orthogonal axes** _(firm)_:
-**Valence** (manifold ↔ junction) is a *structural* property, always **recorded**; **faithfulness** (lineage-homogeneous ↔ heterogeneous; logged ↔ silent) is where **clashes** live. They are orthogonal — a junction may be homogeneous or heterogeneous. Orientation is *faithful data* (w₁ on the strata, a signed incident set at junctions). **A junction is recorded structure, never a clash.**
+**Lineage** _(firm)_:
+The carried **charge** — a form's primal multiset (its source-less roots, now `(source, primalKey)`). **Carried, not minted**: a born form inherits its parents' lineage (unlike an ambo midpoint, which mints a fresh one).
 
-**Stratum** _(firm)_:
-A maximal connected **manifold piece**, walled off by junctions — the post-identification link cut at its junction loci. `GlueCoh` delivers it directly: **policy-free, free at the base.** The junction is a *wall*; a stratum stops there (ADR 0007).
+### The genealogy — the standing object
 
-**Through-pairing** _(firm)_:
-Threading a stratum *through* a degree-d junction — a separate, optional re-assembly. The `(d−1)!!` sheet-matching is a genuine **named-policy** choice the sign never fixes (flip-glue legality keeps every matching legal; the sign only labels each pair's fold — verified d=4/6/8). It is **`GlobalSquareResolution` generalized** to d-sheet junctions — same machinery, one valence up. Three orthogonal layers: canonical strata (incidence, free) · sign (faithful data) · through-pairing (deferred named policy) (ADR 0007).
+**Genealogy / DAG** _(firm)_:
+The record of who-was-born-from-whom and who-died — the playground's **persistent state and real product**. Forms are transient; the genealogy is what lasts and what the user reads.
 
-### The trace
+**Population vs record** _(firm)_:
+The live **population** (cast) is **non-monotone** — consumptive, it shrinks on each birth (parents don't survive). The **genealogy** (record) is strictly **monotone-growing** — every birth and death adds a node.
 
-**Atomic trace** _(firm)_:
-One row of the module's record = **(which placeholders are identified, with orientation/sign)** + **(support from → support to)** + **(the operation)**. It is Ground Plan §5.4's trace plus the orientation bit the non-orientable zoo forces. **NEED (load-bearing next-build):** orientation is already carried in the **substrate** (the oriented boundaries / face windings); the gap is the **ledger's pull-back**, which must become a *signed* identification. Confirmed independently by both technical seats — the only NEED blocking the non-orientable half of the zoo, and a certifier upgrade (operations stay gated).
+**Depth (the arrow)** _(firm)_:
+The only monotone — every operation makes a child deeper than its inputs; descent is irreversible (the engine's `generationDepth`, lifted to forms). **Complexity/level is free** — combine and product raise it, collapse and cut lower it; ascent is a choice, not a law.
 
-**Systemic trace** _(firm)_:
-What one atomic relation **forces** across the rest of the ambo universe. Structural in two senses at once — *not metric* (the embedding-specific bends are secondary) and *not semantic* (meaning is deferred downstream). Its deliverable is the **structural consequence**.
+**A form's life** _(firm)_:
+Its arc through the DAG: born (a frontier form) → consumed into a child, or cut (it dies) — its descent recorded forever. "The life of concepts."
 
-**Structural consequence** _(firm)_:
-The combinatorial/topological part of a relation's systemic effect — the forced identifications, lineage-class merges, and clashes — as opposed to the metric bends. What the module wants "first and foremost." Lives in the engine's metric-free data (lineage + incidence), never in positions; that is why it is independent of how the rigid substrate happens to bend.
+### The forms (the zoo) — re-situated, structural mechanics intact
 
-**Systemic closure** _(firm)_:
-The mechanism of the systemic trace: **incidence forces, the certifiers check.** A new relation propagates as a **closure to a fixpoint** driven by **incidence** (gluing forces boundary cells to coincide; each forced identification may force the next through the incidence web). The **built certifiers are an overlay, not the forcing** — faithfulness (lineage-homogeneity) and `GlueCoh` (manifoldness) are consumed **per-step as annotations** and summarised as an **end-state verdict**; they are **instruments, not guards** — a clash annotates, it never aborts and never forces a merge. The lineage web must **not** force merges: that would auto-merge B-twins (same lineage, different scope) and break **co-location ≠ identity**. The lineage check rides on `multiset = lineage` (verified to 62 leaves, proof open) — operationally sound; completeness inherits that obligation. The closure *driver* is unbuilt; the certifiers it calls are built (ADR 0004).
+**Manifold-strata factory** _(firm)_:
+Forms are manifolds (classifiable); relations may include junctions, recorded as strata + loci (ADR 0006). `GlueCoh` is a decomposer, not a gate. Principle: **instruments, not guards** (ADR 0004/0006).
 
-**Rigid substrate** _(firm)_:
-The ambo/dual output as received — a fixed metric structure with definite angles and distances. The module **breaks its rigidity** to operate; it is the thing deformed, not the deliverable.
+**Ladder / Level** _(firm)_:
+The complexity coordinate — the sphere ladder Sⁿ, level n = dimension (ADR 0001). A coordinate forms **move along, not the spine**: births can raise it, collapses lower it.
 
-**De-rigidification** _(firm)_:
-Releasing the rigid embedding so an operation (e.g. edge → circle) can happen. The *means*; the structural consequence is the *end*.
+**Valence / Stratum / Through-pairing** _(firm)_:
+Per-locus valence {1 boundary · 2 interior · >2 junction}; a stratum = the canonical component; the through-pairing = `GlobalSquareResolution` generalised (ADR 0006/0007). Unchanged.
 
-**Bend / break** _(secondary)_:
-The embedding-specific deformation a relation forces on the rigid substrate. Part of the meaning, but secondary — and must NOT be rebuilt as a metric "field" (closed verdict).
+### The reading, and the wall
 
-## Open threads
+**Structural semantics / the Mirror** _(firm)_:
+The engine produces **structural content, which *is* the semantics**; **meaning** is its reflection in the user's mind (ADR 0005). The framework's sole end is a **prosthesis for thinking**. Names are the user's mirror, never minted by the engine.
 
-The "why topology?" and "identity" gaps are closed and the picture is **read-back-ratified by all three seats** (see ADRs 0001–0007); these remain:
+**The five structural necessities** _(firm)_:
+What the structure must carry **completely and honestly** so the reading is possible — all structural, meaning rides on top: (1) **descent** recoverable (the pull-back); (2) each identification carries its **orientation/sign** (w₁); (3) **incidence** preserved (local links); (4) **invariants** computable (orientability, genus); (5) the **whole assembled complex** with its signed loops.
 
-- **NEED (next-build, CHARTER-READY) — the signed pull-back + junction decomposer (one build).** The ledger's set-valued pull-back must become a *signed* identification, and `GlueCoh` must emit a **partition** (manifold strata + junction loci) instead of a boolean — one build (a junction is a >2-valent pull-back: set-valued at the vertex, signed-non-manifold at the edge). The stratum gate is **ruled** (ADR 0007): build canonical strata + signed pull-back in one stroke (policy-free); defer the through-pairing as **GSR generalized**. Certifier upgrade, operations gated.
-- **GATE (researcher's to rule) — sign-contradiction: clash or level?** Is an orientation contradiction the orientation-analogue of lineage-heterogeneity (a **clash**), or does it mean the shape was built **one rung over** on the ladder (a **level-distinction**)? This ruling gates the signed-pull-back design; routed to the researcher, not settled here. (Read-back leans **clash**; ADR 0007 reinforces it — the sign is the faithfulness layer, orthogonal to valence/level and to the pairing-policy — but the mothership has not yet formally ruled.)
-- **The bridge (M5/M7), re-read** — "human-naming" is the *user's mirror*, not an engine stage, so the bridge's M5-naming / M7-lift need **redrawing**. Open.
-- **NEED — the closure driver** — the systemic-closure propagation engine is unbuilt (the certifiers it calls are built; operations remain GATED).
+**Contradictory constellation = a signed loop** _(firm — the locked reading)_:
+Operationally, a **signed loop in the assembled complex** (a closed walk whose edge-signs multiply to −1). On the reading side, the human's mirror reads it as "a contradictory system of propositions tied together." The reading word **never crosses** to an operation.
+
+**Intelligible (the north star)** _(firm)_:
+"Intelligible after transformation" = the delivered structure is honest and legible enough that the user's mirror forms cleanly. **Mirror-ability**, never a meaning the engine outputs.
+
+**The wall** _(firm)_:
+Meaning-words (argument, contradiction, proposition, …) live on the **reading** side and **never enter an operation's definition**. Operations use only the structural column below. Building meaning into operations is forbidden — the lesson behind dropping "resolution."
+
+## Reading ↔ structure — the translation table
+
+Left is the *reading* (the mirror — fine in examples). Right is the *only* thing an operation ever touches.
+
+| reading (the mirror) | structure (the operations) |
+|---|---|
+| argument | a **form** (a labelled cell-complex) |
+| proposition | a **vertex** (0-cell) |
+| inference | an **edge** (1-cell) |
+| coherent / consistent inference | orientation-**preserving** identification (sign +1, w₁=0) |
+| contradiction / "the twist" | orientation-**reversing** identification (sign −1, flip-glue, w₁=1) |
+| "a contradictory constellation" | a **signed loop in the assembled complex** |
+| dialectical moment ("ready to be solved") | a **non-orientable form** (a stabilised w₁=1 complex) |
+| "solving" / resolution | **— nothing**; reading-only, no operation |
+| birth / "combine up" / composing arguments | a **combination operation** between forms (boundary-glue / product) |
+| parents / "remembers its parents" | the **pull-back set** |
+| genealogy / decoder | the **lineage DAG** (transitive descent to the roots) |
+| "the life of concepts" | a form's **arc through the DAG** |
 
 ## Example dialogue
 
-— "Import edge AB as a line, then close it into a circle. What did we name?"
-— "Nothing. x and y are *placeholders* — AB's endpoints by their lineage, not names. The circle is the *form*; what it *represents* is the *relation* {x ↔ y}."
-— "And the trace is that relation?"
-— "Two traces. Atomically, xRy. Systemically, what xRy does to every other configuration in the ambo universe. The geometry you see is the representative of the atomic one."
-— "When does it get a name?"
-— "Later — and not by the engine at all. The module delivers honest structure; *you* read it as meaning. Naming is your mirror, not the engine's output."
+— "Load a face from universe-1 and a face from universe-2, then glue them."
+— "Two forms, two provenances. The child's sites pull back into both — its lineage carries `(u1,…)` and `(u2,…)` roots. They never auto-identified; *you* glued them, and the record keeps both."
+— "And if a loop in the result comes back flipped?"
+— "Structurally, a signed loop with product −1. You may read that as a contradiction tying the two worlds' propositions together — but the operation only ever saw a signed loop. The reading is yours; the structure is ours."
