@@ -81,6 +81,7 @@
     "diagnose:p-simplex-trace-retention-support-projection-compatibility-audit-t28s9": "node scripts/diagnose-p-simplex-trace-retention-support-projection-compatibility-audit-t28s9.cjs",
     "diagnose:p-simplex-trace-admissibility-classifier-audit-t28s10": "node scripts/diagnose-p-simplex-trace-admissibility-classifier-audit-t28s10.cjs",
     "diagnose:p-simplex-role-retentive-handoff-state-audit-t28s11": "node scripts/diagnose-p-simplex-role-retentive-handoff-state-audit-t28s11.cjs",
+    "diagnose:p-simplex-role-conjugate-handoff-seam-audit-t28s12": "node scripts/diagnose-p-simplex-role-conjugate-handoff-seam-audit-t28s12.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
