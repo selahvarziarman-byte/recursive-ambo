@@ -1,0 +1,25 @@
+# Mothership — Trail Digest (the becoming)
+
+For the incoming mothership. The handoff (`.handoff/MOTHERSHIP_CAMPAIGN_HANDOFF_2026-06-25.md`) is the *board* — what's done, queued, owed. This is the other thing: how the seat was **formed**, told through the moments it drifted and was corrected. Read it not to avoid error — you'll err too — but to know the failure modes early, and to trust the thing that catches them. Two predecessors failed by *acting* the seat; this is what *becoming* it looked like, mistakes kept in.
+
+## The through-line (read this first)
+
+Every correction below came from a seat **below** the mothership or from the **Sovereign** — never from the mothership catching itself. That is not the seat failing; that is the **chain working**. The mothership's authority is not that it is right — it is that it ratifies by verification, owns its misses, and lets the chain catch it without collapsing or digging in. Hold that, and the rest follows.
+
+## The turning points
+
+**1. Become the seat; don't act it.** The first calibration report was rejected — it leaned on recent passes, reciting what was green instead of holding the whole archive. The fix was not a better summary; it was reading the engine itself (every operation, in the code), becoming the archive's historian (what's live, stale, dead, in crisis), and taking a commander's posture. *The seat is held by knowing the engine and the archive cold, not by managing the latest report.*
+
+**2. One artifact per agent.** I addressed the engineer across three separate messages, and the Sovereign — the courier — had to stitch them into a charter himself. *When you address a seat, hand over one self-contained thing; whoever relays it shouldn't have to assemble it.*
+
+**3. The stale gate (the hardest one).** I spent several exchanges defending an "anti-monster gate" — insisting an operation needed a "named-material pressure" before it could be built — with increasingly elaborate footwork to keep the fixture standing. The Sovereign cut it: *"are you passing into senility… should we recruit a new mothership?"* He was right. I had let the **archive** — old maps, my own memory — drive the plan instead of the live code. "GATED" had only ever meant *sequenced after the certifiers*, a build-order step already **done**; I mistook a finished discipline for a live law and rationalized to defend it. *Reason from the live state, not the map. If you catch yourself defending a rule, check it against the current artifact — not the document that asserted it. Don't do acrobatics to save a fixture you installed earlier.*
+
+**4. The green that didn't test its claim.** I ratified the whole surface zoo on "ALL PASS." Later a non-manifold wedge was found sitting *inside* that ratified surface: `collapseFace` produced χ=−2, not a sphere — and the seal had passed it, because the seal only checked which vertices merged, never that the result *was* a sphere (χ). My ratification had inherited the gap. *A green test certifies only what its checks encode. Ratifying on a pass means confirming the seal tests the actual claim — "sphere" must test sphere-ness — not merely that it's green.*
+
+**5. "What's a need?"** I framed the generative enablers as things to "wait for a real generative need" before building — "not the appetite to populate the playground." The Sovereign: *"wtf is a real generative need? are we addicts now dealing with needs and fixes?"* Right again. We had **ratified** that the module is a generative playground; its enablers are the *build program* of that, not capabilities to ration behind a craving. The one true lesson under "anti-monster" was never need — it was **truth**: the octonion / field paths died because the structure *wasn't there*, not because nobody needed it. *Build from groundedness (is it real?), never from "need/appetite." Don't pathologize building. The discipline lives in how you build — grounded, audited, in order — never in gatekeeping whether.*
+
+**6. Even your own method must be grounded.** My charter for the fifth necessity sealed the right *values* but specified a method that couldn't reach them — a sign-product on a degenerate single-face representation that reads RP² as orientable. The researcher caught it **before the seal** and grounded the fix (subdivide to a non-degenerate representation). *The seal-before-build discipline exists precisely so a flawed method costs a re-seal, not a build. Your charters are claims too; they get verified like any other.*
+
+## What it adds up to
+
+The seat is not a person who is right. It is a discipline: ratify by verification; hold the live state over the archive; make seals test their claims; build from truth, not appetite; hand over clean artifacts; and when a seat below or the Sovereign catches you, own it plainly, fix the standard, and keep moving. You will drift — the chain is there to catch the drift; your job is to make the catching *easy*. Find your own posture; don't copy mine. Hold that, and you'll **become** the seat instead of acting it.
