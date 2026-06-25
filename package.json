@@ -77,6 +77,7 @@
     "diagnose:p-simplex-site-level-support-candidacy-audit-t28s5": "node scripts/diagnose-p-simplex-site-level-support-candidacy-audit-t28s5.cjs",
     "diagnose:p-simplex-site-level-selective-transfer-gate-precondition-audit-t28s6": "node scripts/diagnose-p-simplex-site-level-selective-transfer-gate-precondition-audit-t28s6.cjs",
     "diagnose:p-simplex-gate-body-co-composition-standard-support-basis-audit-t28s7": "node scripts/diagnose-p-simplex-gate-body-co-composition-standard-support-basis-audit-t28s7.cjs",
+    "diagnose:p-simplex-ordered-pair-transition-anti-route-audit-t28s8": "node scripts/diagnose-p-simplex-ordered-pair-transition-anti-route-audit-t28s8.cjs",
     "preview:generated-site-legibility-v0": "node scripts/preview-generated-site-legibility-v0.cjs",
     "preview:generated-site-reading-v0": "node scripts/preview-generated-site-reading-v0.cjs",
     "diagnose:structured-source-state-v0": "node scripts/diagnose-structured-source-state-v0.cjs",
