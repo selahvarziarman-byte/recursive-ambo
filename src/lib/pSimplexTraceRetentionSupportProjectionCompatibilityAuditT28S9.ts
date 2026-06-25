@@ -226,6 +226,13 @@ export interface InvalidityControlRow {
     | 'trace-order-collapse-falsely-admitted'
     | 'row-order-dependence-detected';
   maxError: number;
+  canonicalSquareObjectOrder?: string[];
+  shuffledSquareObjectOrder?: string[];
+  canonicalHexObjectOrder?: string[];
+  shuffledHexObjectOrder?: string[];
+  supportProjectionOrderShuffled?: boolean;
+  traceOrderPreserved?: boolean;
+  supportObjectIdComparisonPreserved?: boolean;
   status: InvalidityControlRow['observedStatus'];
 }
 
@@ -1031,24 +1038,44 @@ function buildComplementAxisTraceIdentitySummary(rows: readonly ComplementAxisTr
 function buildInvalidityControlRows(tokenById: Map<string, TraceToken>, tokenByOrderedPairId: Map<string, TraceToken>): InvalidityControlRow[] {
   const [x, y, z] = BODY_IDS;
   const twoStepTokenIds = [tokenIdFor(x, y), tokenIdFor(y, z)];
-  const rowOrderPreserved =
-    traceIdentity(twoStepTokenIds) === traceIdentity([...twoStepTokenIds]) &&
-    compareSupportProjection(
-      supportProjectionForTokenIds(twoStepTokenIds, tokenById),
-      supportProjectionForTokenIds([requiredToken(tokenByOrderedPairId, orderedPairIdFor(x, z)).tokenId], tokenById),
-    ) <= EPSILON;
+  const canonicalSupportProjection = supportProjectionForTokenIds(twoStepTokenIds, tokenById);
+  const directTelescopedSupportProjection = supportProjectionForTokenIds([requiredToken(tokenByOrderedPairId, orderedPairIdFor(x, z)).tokenId], tokenById);
+  const shuffledSupportProjection = shuffleSupportProjectionObjectOrder(canonicalSupportProjection);
+  const canonicalSquareObjectOrder = Object.keys(canonicalSupportProjection.square);
+  const shuffledSquareObjectOrder = Object.keys(shuffledSupportProjection.square);
+  const canonicalHexObjectOrder = Object.keys(canonicalSupportProjection.hex);
+  const shuffledHexObjectOrder = Object.keys(shuffledSupportProjection.hex);
+  const supportProjectionOrderShuffled =
+    !sameOrderedIds(canonicalSquareObjectOrder, shuffledSquareObjectOrder) &&
+    !sameOrderedIds(canonicalHexObjectOrder, shuffledHexObjectOrder);
+  const traceOrderPreserved = traceIdentity(twoStepTokenIds) === traceIdentity([tokenIdFor(x, y), tokenIdFor(y, z)]);
+  const supportObjectIdComparisonMaxError = Math.max(
+    compareSupportProjection(shuffledSupportProjection, canonicalSupportProjection),
+    compareSupportProjection(shuffledSupportProjection, directTelescopedSupportProjection),
+  );
+  const supportObjectIdComparisonPreserved = supportObjectIdComparisonMaxError <= EPSILON;
+  const rowOrderPreserved = supportProjectionOrderShuffled && traceOrderPreserved && supportObjectIdComparisonPreserved;
   return [
     invalidityControlRow('N0', 'scalar-magnitude-trace', 'invalid-scalar-collapse', 'invalid-scalar-collapse', 0),
     invalidityControlRow('N1', 'equal-scalar-body-weights', 'invalid-scalar-collapse', 'invalid-scalar-collapse', 0),
     invalidityControlRow('N2', 'sector-collapsed-support-projection', 'invalid-sector-collapse', 'invalid-sector-collapse', 0),
     invalidityControlRow('N3', 'unordered-token-set-treated-as-ordered-ledger', 'invalid-trace-order-collapse', 'invalid-trace-order-collapse', 0),
-    invalidityControlRow(
-      'N4',
-      'row-order-shuffled-projection-with-trace-order-preserved',
-      'support-classification-unchanged-trace-order-unchanged',
-      rowOrderPreserved ? 'support-classification-unchanged-trace-order-unchanged' : 'row-order-dependence-detected',
-      0,
-    ),
+    {
+      ...invalidityControlRow(
+        'N4',
+        'row-order-shuffled-projection-with-trace-order-preserved',
+        'support-classification-unchanged-trace-order-unchanged',
+        rowOrderPreserved ? 'support-classification-unchanged-trace-order-unchanged' : 'row-order-dependence-detected',
+        supportObjectIdComparisonMaxError,
+      ),
+      canonicalSquareObjectOrder,
+      shuffledSquareObjectOrder,
+      canonicalHexObjectOrder,
+      shuffledHexObjectOrder,
+      supportProjectionOrderShuffled,
+      traceOrderPreserved,
+      supportObjectIdComparisonPreserved,
+    },
   ];
 }
 
@@ -1078,7 +1105,12 @@ function buildInvalidityControlSummary(rows: readonly InvalidityControlRow[]): I
   const scalarFailed = scalarRows.some((row) => row.observedStatus !== 'invalid-scalar-collapse');
   const sectorFailed = sectorRows.some((row) => row.observedStatus !== 'invalid-sector-collapse');
   const traceOrderFailed = traceOrderRows.some((row) => row.observedStatus !== 'invalid-trace-order-collapse');
-  const rowOrderFailed = rowOrderRows.some((row) => row.observedStatus !== 'support-classification-unchanged-trace-order-unchanged');
+  const rowOrderFailed = rowOrderRows.some((row) =>
+    row.observedStatus !== 'support-classification-unchanged-trace-order-unchanged' ||
+    row.supportProjectionOrderShuffled !== true ||
+    row.traceOrderPreserved !== true ||
+    row.supportObjectIdComparisonPreserved !== true,
+  );
   return {
     rowCount: rows.length,
     passCount: passRows.length,
@@ -1086,7 +1118,12 @@ function buildInvalidityControlSummary(rows: readonly InvalidityControlRow[]): I
     scalarCollapsePassCount: scalarRows.filter((row) => row.observedStatus === 'invalid-scalar-collapse').length,
     sectorCollapsePassCount: sectorRows.filter((row) => row.observedStatus === 'invalid-sector-collapse').length,
     traceOrderCollapsePassCount: traceOrderRows.filter((row) => row.observedStatus === 'invalid-trace-order-collapse').length,
-    rowOrderPassCount: rowOrderRows.filter((row) => row.observedStatus === 'support-classification-unchanged-trace-order-unchanged').length,
+    rowOrderPassCount: rowOrderRows.filter((row) =>
+      row.observedStatus === 'support-classification-unchanged-trace-order-unchanged' &&
+      row.supportProjectionOrderShuffled === true &&
+      row.traceOrderPreserved === true &&
+      row.supportObjectIdComparisonPreserved === true,
+    ).length,
     maxError: maxOf(rows.map((row) => row.maxError)),
     status: scalarFailed
       ? 'scalar-collapse-falsely-admitted'
@@ -1340,6 +1377,13 @@ function scaleSupportProjection(projection: SupportProjection, scale: number): S
   };
 }
 
+function shuffleSupportProjectionObjectOrder(projection: SupportProjection): SupportProjection {
+  return {
+    square: reverseProjectionRecordObjectOrder(projection.square),
+    hex: reverseProjectionRecordObjectOrder(projection.hex),
+  };
+}
+
 function compareSupportProjection(left: SupportProjection, right: SupportProjection): number {
   return Math.max(compareProjectionRecords(left.square, right.square), compareProjectionRecords(left.hex, right.hex));
 }
@@ -1364,6 +1408,10 @@ function addProjectionRecords(left: Record<string, Vec3>, right: Record<string, 
 
 function scaleProjectionRecord(record: Record<string, Vec3>, scale: number): Record<string, Vec3> {
   return Object.fromEntries(Object.entries(record).map(([id, value]) => [id, scaleVec3(value, scale)]));
+}
+
+function reverseProjectionRecordObjectOrder(record: Record<string, Vec3>): Record<string, Vec3> {
+  return Object.fromEntries(Object.entries(record).reverse());
 }
 
 function zeroProjectionRecord(ids: readonly string[]): Record<string, Vec3> {
@@ -1428,6 +1476,10 @@ function traceIdFor(tokenIds: readonly string[]): string {
 
 function traceIdentity(tokenIds: readonly string[]): string {
   return tokenIds.join('|');
+}
+
+function sameOrderedIds(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((id, index) => id === right[index]);
 }
 
 function distinctOrderedTriples(): Array<[GateBodyId, GateBodyId, GateBodyId]> {
