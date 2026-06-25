@@ -1,0 +1,5 @@
+# ENABLER-1 multiform load-and-assemble — R2 sealed expected values (v2: +§4.3 carried-not-minted) — SHA-256 of off-repo plaintext.
+# Plaintext (off-repo, gitignored): .handoff/ENABLER_1_MULTIFORM_ASSEMBLE_R2_SEALED_VALUES.md
+# Re-sealed per Senior review (added §4.3 carried-not-minted; re-derived all values through real modules over a real assembled shape).
+# Sealed at team-arman 675b97c; the four sealed modules are byte-identical e775ce3..675b97c (verified). Sealed before the coder builds.
+1f22717e07c729c31c3151d17d5bd6f35bd5fa4296b522664f00dc4f80d71fbb
