@@ -54,6 +54,14 @@ export interface SeamSourceRow {
   incomingTokenId: string;
   outgoingTokenId: string;
   lab11HandoffStateId: string;
+  incomingRole: string;
+  outgoingRole: string;
+  incomingCoefficientAtSharedBody: number;
+  outgoingCoefficientAtSharedBody: number;
+  supportNetAtSharedBody: number;
+  traceRetainsIncomingRole: boolean;
+  traceRetainsOutgoingRole: boolean;
+  roleDistinctionRetained: boolean;
   lab11Status: string;
   status: string;
 }
@@ -430,6 +438,24 @@ const REQUIRED_FALSIFIER_IDS = [
   'F25',
   'F26',
 ] as const;
+const REQUIRED_CONTROL_IDS = [
+  'C0',
+  'C1',
+  'C2',
+  'C3',
+  'C4',
+  'C5',
+  'C6',
+  'C7',
+  'C8',
+  'C9',
+  'C10',
+  'C11',
+  'C12',
+  'C13',
+  'C14',
+  'C15',
+] as const;
 
 export function buildPSimplexRoleConjugateHandoffSeamAuditT28S12Report(): PSimplexRoleConjugateHandoffSeamAuditT28S12Report {
   const lab11Report = buildPSimplexRoleRetentiveHandoffStateAuditT28S11Report();
@@ -467,8 +493,6 @@ export function buildPSimplexRoleConjugateHandoffSeamAuditT28S12Report(): PSimpl
   const antiRouteLanguageBoundarySummary = summarizeRows(antiRouteLanguageBoundaryRows, 'seam-anti-route-boundary-pass', 'seam-anti-route-boundary-failed');
   const boundaryRows = buildBoundaryRows();
   const controlRows = buildControlRows({
-    parentAccepted: parentLab11Accepted(lab11Report),
-    seamSourceSummary,
     roleConjugateSeamClassificationSummary,
     seamConditionIndependenceSummary,
     directShortcutNoSeamSummary,
@@ -478,10 +502,9 @@ export function buildPSimplexRoleConjugateHandoffSeamAuditT28S12Report(): PSimpl
     cycleMultiSeamSummary,
     seamReversalSummary,
     shortcutHistorySeamDistinctionSummary,
-    complementAxisSeamIdentitySummary,
+    invalidityControlRows,
     invalidityControlSummary,
     antiRouteLanguageBoundarySummary,
-    boundaryRows,
   });
   const falsifierRows = buildFalsifierRows({
     lab11Report,
@@ -673,6 +696,14 @@ function buildSeamSourceRows(lab11Report: S11Report): SeamSourceRow[] {
     incomingTokenId: row.incomingTokenId,
     outgoingTokenId: row.outgoingTokenId,
     lab11HandoffStateId: row.handoffStateId,
+    incomingRole: row.incomingRole,
+    outgoingRole: row.outgoingRole,
+    incomingCoefficientAtSharedBody: row.incomingCoefficientAtSharedBody,
+    outgoingCoefficientAtSharedBody: row.outgoingCoefficientAtSharedBody,
+    supportNetAtSharedBody: row.supportNetAtSharedBody,
+    traceRetainsIncomingRole: row.traceRetainsIncomingRole,
+    traceRetainsOutgoingRole: row.traceRetainsOutgoingRole,
+    roleDistinctionRetained: row.roleDistinctionRetained,
     lab11Status: row.status,
     status: row.status === 'role-retentive-handoff-state-constructed' ? 'role-conjugate-seam-source-ready' : 'role-conjugate-seam-source-missing',
   }));
@@ -1139,8 +1170,6 @@ function buildAntiRouteLanguageBoundaryRows(): AntiRouteLanguageBoundaryRow[] {
 }
 
 function buildControlRows(args: {
-  parentAccepted: boolean;
-  seamSourceSummary: Summary;
   roleConjugateSeamClassificationSummary: Summary;
   seamConditionIndependenceSummary: Summary;
   directShortcutNoSeamSummary: Summary;
@@ -1150,29 +1179,44 @@ function buildControlRows(args: {
   cycleMultiSeamSummary: Summary;
   seamReversalSummary: Summary;
   shortcutHistorySeamDistinctionSummary: Summary;
-  complementAxisSeamIdentitySummary: Summary;
+  invalidityControlRows: readonly InvalidityControlRow[];
   invalidityControlSummary: Summary;
   antiRouteLanguageBoundarySummary: Summary;
-  boundaryRows: readonly BoundaryRow[];
 }): ControlRow[] {
-  const boundaryStatus = requiredBoundaryMissing(args.boundaryRows) || boundaryPromotionDetected(args.boundaryRows) ? 'boundary-failed' : 'boundary-pass';
+  const invalidityStatus = (kind: string) => args.invalidityControlRows.find((row) => row.invalidityKind === kind)?.observedStatus ?? 'missing';
+  const scalarStatus = args.invalidityControlRows
+    .filter((row) => row.invalidityKind === 'scalar-magnitude-seam' || row.invalidityKind === 'equal-scalar-body-weights')
+    .filter((row) => row.observedStatus === 'invalid-scalar-collapse')
+    .length === 2
+    ? 'invalid-scalar-collapse'
+    : 'scalar-seam-falsely-admitted';
+  const partialStatus = args.invalidityControlRows
+    .filter((row) =>
+      row.invalidityKind === 'same-body-only-seam-inference' ||
+      row.invalidityKind === 'opposite-sign-only-seam-inference' ||
+      row.invalidityKind === 'role-co-presence-only-seam-inference',
+    )
+    .filter((row) => row.observedStatus === 'invalid-partial-seam-condition')
+    .length === 3
+    ? 'invalid-partial-seam-condition'
+    : 'partial-seam-condition-falsely-admitted';
   return [
-    controlRow('C0', 'Lab-11 parent', 'lab-11-parent-accepted', args.parentAccepted ? 'lab-11-parent-accepted' : 'lab-11-parent-not-accepted', 1, 0),
-    controlRow('C1', 'seam source extraction', 'role-conjugate-seam-source-ready', args.seamSourceSummary.status, args.seamSourceSummary.rowCount, args.seamSourceSummary.maxError),
-    controlRow('C2', 'role-conjugate seam classification', 'role-conjugate-handoff-seam-classification-pass', args.roleConjugateSeamClassificationSummary.status, args.roleConjugateSeamClassificationSummary.rowCount, args.roleConjugateSeamClassificationSummary.maxError),
-    controlRow('C3', 'seam condition independence', 'partial-seam-condition-rejected', args.seamConditionIndependenceSummary.status, args.seamConditionIndependenceSummary.rowCount, args.seamConditionIndependenceSummary.maxError),
-    controlRow('C4', 'direct shortcut no seam', 'direct-shortcut-no-seam-pass', args.directShortcutNoSeamSummary.status, args.directShortcutNoSeamSummary.rowCount, args.directShortcutNoSeamSummary.maxError),
-    controlRow('C5', 'non-composable no seam', 'non-composable-no-seam-pass', args.nonComposableNoSeamSummary.status, args.nonComposableNoSeamSummary.rowCount, args.nonComposableNoSeamSummary.maxError),
-    controlRow('C6', 'support projection only no seam', 'support-projection-only-seam-rejected', args.supportProjectionOnlyNoSeamSummary.status, args.supportProjectionOnlyNoSeamSummary.rowCount, args.supportProjectionOnlyNoSeamSummary.maxError),
-    controlRow('C7', 'backtrack seam classification', 'backtrack-seam-not-route-not-loop', args.backtrackSeamClassificationSummary.status, args.backtrackSeamClassificationSummary.rowCount, args.backtrackSeamClassificationSummary.maxError),
-    controlRow('C8', 'cycle multi seam', 'cycle-multi-seam-not-loop-not-route', args.cycleMultiSeamSummary.status, args.cycleMultiSeamSummary.rowCount, args.cycleMultiSeamSummary.maxError),
-    controlRow('C9', 'seam reversal', 'role-conjugate-seam-reversal-compatible', args.seamReversalSummary.status, args.seamReversalSummary.rowCount, args.seamReversalSummary.maxError),
-    controlRow('C10', 'shortcut history seam distinction', 'shortcut-history-seam-distinction-pass', args.shortcutHistorySeamDistinctionSummary.status, args.shortcutHistorySeamDistinctionSummary.rowCount, args.shortcutHistorySeamDistinctionSummary.maxError),
-    controlRow('C11', 'complement axis seam identity', 'complement-axis-seam-identity-preserved', args.complementAxisSeamIdentitySummary.status, args.complementAxisSeamIdentitySummary.rowCount, args.complementAxisSeamIdentitySummary.maxError),
-    controlRow('C12', 'seam invalidity controls', 'seam-invalidity-controls-pass', args.invalidityControlSummary.status, args.invalidityControlSummary.rowCount, args.invalidityControlSummary.maxError),
-    controlRow('C13', 'anti-route language scan', 'seam-anti-route-boundary-pass', args.antiRouteLanguageBoundarySummary.status, args.antiRouteLanguageBoundarySummary.rowCount, 0),
-    controlRow('C14', 'boundary rows', 'boundary-pass', boundaryStatus, args.boundaryRows.length, 0),
-    controlRow('C15', 'falsifier rows', 'falsifiers-clear', 'falsifiers-clear', REQUIRED_FALSIFIER_IDS.length, 0),
+    controlRow('C0', 'open-composable seam classification', 'role-conjugate-handoff-seam-classification-pass', args.roleConjugateSeamClassificationSummary.status, args.roleConjugateSeamClassificationSummary.rowCount, args.roleConjugateSeamClassificationSummary.maxError),
+    controlRow('C1', 'seam condition independence', 'partial-seam-condition-rejected', args.seamConditionIndependenceSummary.status, args.seamConditionIndependenceSummary.rowCount, args.seamConditionIndependenceSummary.maxError),
+    controlRow('C2', 'direct shortcut', 'direct-shortcut-no-seam-pass', args.directShortcutNoSeamSummary.status, args.directShortcutNoSeamSummary.rowCount, args.directShortcutNoSeamSummary.maxError),
+    controlRow('C3', 'non-composable token sequence', 'non-composable-no-seam-pass', args.nonComposableNoSeamSummary.status, args.nonComposableNoSeamSummary.rowCount, args.nonComposableNoSeamSummary.maxError),
+    controlRow('C4', 'support-projection-only inference', 'support-projection-only-seam-rejected', args.supportProjectionOnlyNoSeamSummary.status, args.supportProjectionOnlyNoSeamSummary.rowCount, args.supportProjectionOnlyNoSeamSummary.maxError),
+    controlRow('C5', 'backtrack', 'backtrack-seam-not-route-not-loop', args.backtrackSeamClassificationSummary.status, args.backtrackSeamClassificationSummary.rowCount, args.backtrackSeamClassificationSummary.maxError),
+    controlRow('C6', 'cycle', 'cycle-multi-seam-not-loop-not-route', args.cycleMultiSeamSummary.status, args.cycleMultiSeamSummary.rowCount, args.cycleMultiSeamSummary.maxError),
+    controlRow('C7', 'reversal', 'role-conjugate-seam-reversal-compatible', args.seamReversalSummary.status, args.seamReversalSummary.rowCount, args.seamReversalSummary.maxError),
+    controlRow('C8', 'shortcut-history relation', 'shortcut-history-seam-distinction-pass', args.shortcutHistorySeamDistinctionSummary.status, args.shortcutHistorySeamDistinctionSummary.rowCount, args.shortcutHistorySeamDistinctionSummary.maxError),
+    controlRow('C9', 'scalar seam', 'invalid-scalar-collapse', scalarStatus, 2, args.invalidityControlSummary.maxError),
+    controlRow('C10', 'sector-collapsed seam', 'invalid-sector-collapse', invalidityStatus('sector-collapsed-seam'), 1, args.invalidityControlSummary.maxError),
+    controlRow('C11', 'trace-order collapse', 'invalid-trace-order-collapse', invalidityStatus('trace-order-collapsed-seam'), 1, args.invalidityControlSummary.maxError),
+    controlRow('C12', 'site-address double-counting', 'invalid-site-address-duplication', invalidityStatus('site-address-double-counting'), 1, args.invalidityControlSummary.maxError),
+    controlRow('C13', 'partial seam inference', 'invalid-partial-seam-condition', partialStatus, 3, args.invalidityControlSummary.maxError),
+    controlRow('C14', 'row/order shuffle', 'classification-unchanged-seam-retained', invalidityStatus('row-order-shuffled-valid-seam'), 1, args.invalidityControlSummary.maxError),
+    controlRow('C15', 'anti-route language scan', 'seam-anti-route-boundary-pass', args.antiRouteLanguageBoundarySummary.status, args.antiRouteLanguageBoundarySummary.rowCount, 0),
   ];
 }
 
@@ -1236,12 +1280,12 @@ function buildFalsifierRows(args: {
     falsifier('F17', 'Seam reversal fails.', args.seamReversalSummary.status !== 'role-conjugate-seam-reversal-compatible', `reversal=${args.seamReversalSummary.status}.`),
     falsifier('F18', 'Shortcut-history seam distinction fails.', args.shortcutHistorySeamDistinctionSummary.status !== 'shortcut-history-seam-distinction-pass', `shortcutHistory=${args.shortcutHistorySeamDistinctionSummary.status}.`),
     falsifier('F19', 'Complement-axis seam identity fails.', args.complementAxisSeamIdentitySummary.status !== 'complement-axis-seam-identity-preserved', `complement=${args.complementAxisSeamIdentitySummary.status}.`),
-    falsifier('F20', 'Scalar seam is admitted.', args.invalidityControlSummary.scalarCollapsePassCount !== 2, `scalarPass=${args.invalidityControlSummary.scalarCollapsePassCount}.`),
-    falsifier('F21', 'Sector-collapsed seam is admitted.', args.invalidityControlSummary.sectorCollapsePassCount !== 1, `sectorPass=${args.invalidityControlSummary.sectorCollapsePassCount}.`),
-    falsifier('F22', 'Trace-order collapse is admitted.', args.invalidityControlSummary.traceOrderCollapsePassCount !== 1, `traceOrderPass=${args.invalidityControlSummary.traceOrderCollapsePassCount}.`),
-    falsifier('F23', 'Site-address duplication is admitted.', args.invalidityControlSummary.siteAddressDuplicationPassCount !== 1, `sitePass=${args.invalidityControlSummary.siteAddressDuplicationPassCount}.`),
-    falsifier('F24', 'Row/order dependence appears.', args.invalidityControlSummary.rowOrderPassCount !== 1, `rowOrderPass=${args.invalidityControlSummary.rowOrderPassCount}.`),
-    falsifier('F25', 'Anti-route boundary fails.', args.antiRouteLanguageBoundarySummary.status !== 'seam-anti-route-boundary-pass' || controlFailed(args.controlRows, 'C13'), `boundary=${args.antiRouteLanguageBoundarySummary.status}; C13=${controlStatus(args.controlRows, 'C13')}.`),
+    falsifier('F20', 'Site-address double-counting is admitted.', controlFailed(args.controlRows, 'C12'), `C12=${controlStatus(args.controlRows, 'C12')}.`),
+    falsifier('F21', 'Scalar seam is admitted.', controlFailed(args.controlRows, 'C9'), `C9=${controlStatus(args.controlRows, 'C9')}.`),
+    falsifier('F22', 'Sector-collapsed seam is admitted.', controlFailed(args.controlRows, 'C10'), `C10=${controlStatus(args.controlRows, 'C10')}.`),
+    falsifier('F23', 'Trace-order collapse is admitted.', controlFailed(args.controlRows, 'C11'), `C11=${controlStatus(args.controlRows, 'C11')}.`),
+    falsifier('F24', 'Row/order dependence appears.', controlFailed(args.controlRows, 'C14'), `C14=${controlStatus(args.controlRows, 'C14')}.`),
+    falsifier('F25', 'Anti-route boundary fails.', args.antiRouteLanguageBoundarySummary.status !== 'seam-anti-route-boundary-pass' || controlFailed(args.controlRows, 'C15'), `boundary=${args.antiRouteLanguageBoundarySummary.status}; C15=${controlStatus(args.controlRows, 'C15')}.`),
     falsifier('F26', 'Runtime/UI/packet/Shape mutation appears.', false, 'Lab-12 is additive diagnostic source, diagnostic script, and package script only.'),
   ];
 }
@@ -1322,6 +1366,7 @@ function buildIntegrityIssues(args: {
   const issues: string[] = [];
   if (!parentLab11Accepted(args.lab11Report)) issues.push('Lab-11 parent missing/not accepted');
   if (args.seamSourceRows.length !== 6 || args.seamSourceSummary.status !== 'role-conjugate-seam-source-ready') issues.push('seam source rows failed');
+  if (args.seamSourceRows.some((row) => !seamSourceEvidenceValid(row))) issues.push('seam source row missing or violating Lab-11 handoff-state evidence');
   if (args.roleConjugateSeamClassificationRows.length !== 6 || args.roleConjugateSeamClassificationSummary.status !== 'role-conjugate-handoff-seam-classification-pass') issues.push('role-conjugate seam classification rows failed');
   if (args.roleConjugateSeamClassificationRows.some((row) => row.primarySeamClass !== 'role-conjugate-handoff-seam')) issues.push('primary seam class mismatch');
   if (args.roleConjugateSeamClassificationRows.some((row) => row.localContinuityStatus !== 'handoff-continuity-precondition-admissible')) issues.push('local continuity status mismatch');
@@ -1340,7 +1385,7 @@ function buildIntegrityIssues(args: {
   if (args.invalidityControlRows.length !== 10 || args.invalidityControlSummary.status !== 'seam-invalidity-controls-pass') issues.push('invalidity control rows failed');
   if (args.invalidityControlRows.some((row) => row.invalidityKind === 'row-order-shuffled-valid-seam' && (row.supportProjectionOrderShuffled !== true || row.supportObjectIdComparisonPreserved !== true || row.traceOrderPreserved !== true || row.seamRetained !== true))) issues.push('row/order shuffle control is missing or ineffective');
   if (args.antiRouteLanguageBoundaryRows.length !== 15 || args.antiRouteLanguageBoundarySummary.status !== 'seam-anti-route-boundary-pass') issues.push('anti-route boundary rows failed');
-  if (args.controlRows.length !== 16 || args.controlRows.some((row) => row.status !== 'control-pass')) issues.push('control row missing or failed');
+  if (args.controlRows.length !== REQUIRED_CONTROL_IDS.length || requiredControlMissing(args.controlRows) || args.controlRows.some((row) => row.status !== 'control-pass')) issues.push('control row missing or failed');
   if (requiredBoundaryMissing(args.boundaryRows) || boundaryPromotionDetected(args.boundaryRows)) issues.push('required boundary missing or promoted');
   if (REQUIRED_FALSIFIER_IDS.some((id) => !args.falsifierRows.some((row) => row.falsifierId === id)) || args.falsifierRows.some((row) => row.triggered)) issues.push('required falsifier missing or triggered');
   const expectedVerdict = classifyFinalVerdict({
@@ -1595,6 +1640,23 @@ function allSeamConditionsPass(row: RoleConjugateSeamClassificationRow): boolean
 
 function requiredSeamVocabularyPresent(values: readonly string[]): boolean {
   return SEAM_VOCABULARY.every((value) => values.includes(value));
+}
+
+function seamSourceEvidenceValid(row: SeamSourceRow): boolean {
+  return row.incomingRole === 'incoming-target-role' &&
+    row.outgoingRole === 'outgoing-source-role' &&
+    row.incomingCoefficientAtSharedBody === 1 &&
+    row.outgoingCoefficientAtSharedBody === -1 &&
+    row.supportNetAtSharedBody === 0 &&
+    row.traceRetainsIncomingRole === true &&
+    row.traceRetainsOutgoingRole === true &&
+    row.roleDistinctionRetained === true &&
+    row.lab11Status === 'role-retentive-handoff-state-constructed' &&
+    row.status === 'role-conjugate-seam-source-ready';
+}
+
+function requiredControlMissing(rows: readonly ControlRow[]): boolean {
+  return REQUIRED_CONTROL_IDS.some((id) => !rows.some((row) => row.controlId === id && row.status === 'control-pass'));
 }
 
 function requiredBoundaryMissing(rows: readonly BoundaryRow[]): boolean {
