@@ -150,7 +150,7 @@ export function loadForm(builder: FormBuilder, source = ''): Shape {
 // 'ambo' (the one kind whose canonical form is a vertex DERIVED from multiple source
 // vertices) as a neutral, derived (non-'seed', non-primal) placeholder consistent with
 // carried-not-minted. [Flagged for the auditor — see REPORT findings.]
-const ASSEMBLY_CHILD_OPERATION: OperationKind = 'ambo';
+const ASSEMBLY_CHILD_OPERATION: OperationKind = 'assemble';
 
 const ASSEMBLED_SHAPE_ID: ShapeId = 'shape:multiform:assembly';
 

@@ -12,7 +12,13 @@ export type OperationKind =
   | 'ambo'
   | 'ambo-dissection'
   | 'pyritohedral-diagonalization'
-  | 'dualization';
+  | 'dualization'
+  | 'invoke'
+  | 'glue'
+  | 'flip-glue'
+  | 'collapse'
+  | 'cut'
+  | 'assemble';
 export type CellKind = 'seed' | 'parent' | 'core' | 'residue';
 export type SeedTopology = 'tetrahedron' | 'octahedron' | 'cube';
 export type CellTopology =
