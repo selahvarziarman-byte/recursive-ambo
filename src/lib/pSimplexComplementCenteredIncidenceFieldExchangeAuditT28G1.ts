@@ -934,40 +934,64 @@ function buildAdjointEigenvalueRows(cells: readonly Cell[]): AdjointEigenvalueRo
 }
 
 function buildExchangeEnergyRows(cells: readonly Cell[]): ExchangeEnergyRow[] {
-  return cells.flatMap((cell) => [0, 1, 2].map((testIndex) => {
-    const edgeState = deterministicSection(cell.edges.length, 3, 1000 + testIndex + cell.vertices.length);
-    const contextState = deterministicSection(cell.vertices.length, 3, 2000 + testIndex + cell.edges.length);
-    const edgeProbe = deterministicSection(cell.edges.length, 3, 3000 + testIndex + cell.edges.length);
-    const contextProbe = deterministicSection(cell.vertices.length, 3, 4000 + testIndex + cell.vertices.length);
-    const LxEdge = scaleSection(matrixSectionMultiply(transpose(cell.D), contextState), -1);
-    const LxContext = matrixSectionMultiply(cell.D, edgeState);
-    const LyEdge = scaleSection(matrixSectionMultiply(transpose(cell.D), contextProbe), -1);
-    const LyContext = matrixSectionMultiply(cell.D, edgeProbe);
-    const skewAdjointValue =
-      sectionInner(LxEdge, edgeProbe) +
-      sectionInner(LxContext, contextProbe) +
-      sectionInner(edgeState, LyEdge) +
-      sectionInner(contextState, LyContext);
-    const etaDot = LxEdge;
-    const zetaDot = LxContext;
-    const energyDerivative = sectionInner(edgeState, etaDot) + sectionInner(contextState, zetaDot);
-    const skewAdjointMaxError = Math.abs(skewAdjointValue);
-    const energyDerivativeAbs = Math.abs(energyDerivative);
-    const status = skewAdjointMaxError > EPSILON
-      ? 'exchange-operator-not-skew-adjoint'
-      : energyDerivativeAbs > EPSILON
-        ? 'field-exchange-energy-not-conserved'
-        : 'skew-adjoint-field-exchange-energy-pass';
-    return {
-      cellId: cell.cellId,
-      pairingPolicy: PAIRING_POLICY,
-      testStateId: `deterministic-state-${testIndex}`,
-      skewAdjointMaxError: cleanNumber(skewAdjointMaxError),
-      energyDerivative: cleanNumber(energyDerivative),
-      energyDerivativeAbs: cleanNumber(energyDerivativeAbs),
-      status,
-    };
-  }));
+  return cells.flatMap((cell) => [
+    buildExchangeEnergyRow(
+      cell,
+      'coordinate-mode-state',
+      cell.eta,
+      cell.zeta,
+      deterministicSection(cell.edges.length, 3, 5000 + cell.edges.length),
+      deterministicSection(cell.vertices.length, 3, 6000 + cell.vertices.length),
+    ),
+    ...[0, 1, 2].map((testIndex) =>
+      buildExchangeEnergyRow(
+        cell,
+        `deterministic-state-${testIndex}`,
+        deterministicSection(cell.edges.length, 3, 1000 + testIndex + cell.vertices.length),
+        deterministicSection(cell.vertices.length, 3, 2000 + testIndex + cell.edges.length),
+        deterministicSection(cell.edges.length, 3, 3000 + testIndex + cell.edges.length),
+        deterministicSection(cell.vertices.length, 3, 4000 + testIndex + cell.vertices.length),
+      ),
+    ),
+  ]);
+}
+
+function buildExchangeEnergyRow(
+  cell: Cell,
+  testStateId: string,
+  edgeState: readonly Vec3[],
+  contextState: readonly Vec3[],
+  edgeProbe: readonly Vec3[],
+  contextProbe: readonly Vec3[],
+): ExchangeEnergyRow {
+  const LxEdge = scaleSection(matrixSectionMultiply(transpose(cell.D), contextState), -1);
+  const LxContext = matrixSectionMultiply(cell.D, edgeState);
+  const LyEdge = scaleSection(matrixSectionMultiply(transpose(cell.D), contextProbe), -1);
+  const LyContext = matrixSectionMultiply(cell.D, edgeProbe);
+  const skewAdjointValue =
+    sectionInner(LxEdge, edgeProbe) +
+    sectionInner(LxContext, contextProbe) +
+    sectionInner(edgeState, LyEdge) +
+    sectionInner(contextState, LyContext);
+  const etaDot = LxEdge;
+  const zetaDot = LxContext;
+  const energyDerivative = sectionInner(edgeState, etaDot) + sectionInner(contextState, zetaDot);
+  const skewAdjointMaxError = Math.abs(skewAdjointValue);
+  const energyDerivativeAbs = Math.abs(energyDerivative);
+  const status = skewAdjointMaxError > EPSILON
+    ? 'exchange-operator-not-skew-adjoint'
+    : energyDerivativeAbs > EPSILON
+      ? 'field-exchange-energy-not-conserved'
+      : 'skew-adjoint-field-exchange-energy-pass';
+  return {
+    cellId: cell.cellId,
+    pairingPolicy: PAIRING_POLICY,
+    testStateId,
+    skewAdjointMaxError: cleanNumber(skewAdjointMaxError),
+    energyDerivative: cleanNumber(energyDerivative),
+    energyDerivativeAbs: cleanNumber(energyDerivativeAbs),
+    status,
+  };
 }
 
 function buildExchangeFrequencyRows(rows: readonly AdjointEigenvalueRow[]): ExchangeFrequencyRow[] {
@@ -1317,7 +1341,7 @@ function buildIntegrityIssues(args: {
   if (args.pseudoinverseProjectorRows.length !== 3 || args.pseudoinverseProjectorSummary.status !== 'pseudoinverse-projector-law-pass') issues.push('pseudoinverse projector rows failed');
   if (args.pseudoinverseProjectorRows.find((row) => row.cellId === 'tetrahedron')?.tetraExactLoopRecoveryStatus !== 'tetrahedral-exact-loop-projector-recovered') issues.push('tetra exact-loop projector not recovered');
   if (args.adjointEigenvalueRows.length !== 3 || args.adjointEigenvalueSummary.status !== 'adjoint-return-eigenvalue-pass') issues.push('adjoint eigenvalue rows failed');
-  if (args.exchangeEnergyRows.some((row) => row.status !== 'skew-adjoint-field-exchange-energy-pass') || args.exchangeEnergySummary.status !== 'skew-adjoint-field-exchange-energy-pass') issues.push('exchange energy rows failed');
+  if (!exchangeEnergyCoveragePass(args.exchangeEnergyRows) || args.exchangeEnergySummary.status !== 'skew-adjoint-field-exchange-energy-pass') issues.push('exchange energy rows failed');
   if (args.exchangeFrequencyRows.length !== 3 || args.exchangeFrequencySummary.status !== 'sealed-exchange-frequency-pass') issues.push('exchange frequencies failed');
   if (args.relabelingCovarianceRows.length < 14 || args.relabelingCovarianceSummary.status !== 'relabeling-covariance-pass') issues.push('relabeling covariance failed');
   if (args.hardCodedComplementControlRows.length !== 2 || args.hardCodedComplementControlSummary.status !== 'no-hard-coded-complement-table-pass') issues.push('hard-coded complement controls failed');
@@ -1350,6 +1374,18 @@ function buildIntegrityIssues(args: {
   });
   if (expectedVerdict !== args.finalVerdict) issues.push('final verdict inconsistent with precedence');
   return unique(issues);
+}
+
+function exchangeEnergyCoveragePass(rows: readonly ExchangeEnergyRow[]): boolean {
+  if (rows.length !== 12) return false;
+  return (['tetrahedron', 'cube', 'octahedron'] as const).every((cellId) => {
+    const cellRows = rows.filter((row) => row.cellId === cellId);
+    const coordinateModeCount = cellRows.filter((row) => row.testStateId === 'coordinate-mode-state').length;
+    const deterministicCount = cellRows.filter((row) => /^deterministic-state-\d+$/.test(row.testStateId)).length;
+    return coordinateModeCount === 1 &&
+      deterministicCount >= 3 &&
+      cellRows.every((row) => row.status === 'skew-adjoint-field-exchange-energy-pass');
+  });
 }
 
 function expectedEdgeCount(cellId: CellId): number {
