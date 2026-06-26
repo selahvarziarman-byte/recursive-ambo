@@ -1,0 +1,4 @@
+# ENABLER-2 persistent genealogy DAG + OperationKind — R-E2-3 sealed expected values (v0) — SHA-256 of off-repo plaintext.
+# Plaintext (off-repo, gitignored): .handoff/ENABLER_2_GENEALOGY_DAG_SEALED_VALUES.md
+# Reconciled two-branch canonical example; all values re-derived through the real committed modules. team-arman @ 5e43db8. Sealed before the coder builds.
+1b9fb513ffeeb7e356c232803b441dea52a65204a33fb548d2198f2f7e5f36be
