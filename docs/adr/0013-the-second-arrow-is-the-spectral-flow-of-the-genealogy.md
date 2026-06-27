@@ -25,3 +25,15 @@ The skew-adjoint exchange (hollow), the driven-relaxation (coarse), and `Connect
 
 ## Build & routing
 Layer 0 is canon. **Layer 1 is sanctioned to be built by the engineer as a labeled probe — after Enabler 2**, since it reads E2's per-incidence registry seam. The canonical language stays in terms of Layer 0; `ψ` never enters an ADR clause. `CONTEXT.md` gains the Layer-0 glossary (the connection, holonomy, spectral flow, the second arrow) as a follow-on. Commit: Arman (native).
+
+---
+
+## Addendum 2 (2026-06-27) — the field is a complementary half, not a shadow; the WITNESS is the target
+
+The original framing here (Layer 1 = the merge; the field = a measurement instrument / shadow; the dynamics "hollow") is **corrected** — by the researcher's confession (read their substrate at last; named the kill-bias) and mothership verification. The "hollow" rulings were sound as **math** but built on a kill-bias, an unread substrate, and — decisively — a **simply-connected domain**. *Mothership-verified:* the same orientation connection reads trivial on their sphere-domain (cuboctahedron, χ=2 = S², H₁=0) and **nontrivial on our w₁=1 cycle** (holonomy −1, no zero mode). **Hollow was domain-dependence, not a dead field.**
+
+Therefore:
+- **The field / spectral line is a complete complementary HALF** — a metric / vector frame (their S₄-equivariant order parameter + connection `κ`) — not a dressing or a shadow. It reached our own disciplines (equivariance guard, ∃-vs-∀ over-fit ledger, connection-on-a-vector-fiber) independently; it is the other half of one mind's object.
+- **The merge's first-class target is the WITNESS:** the field's vector frame + connection transported around **our** w₁=1 cycles (Möbius / Klein / any flip-glued form), yielding a non-hollow holonomy (a half-vortex / U(1)-lift) **neither half produces alone**. Grounded as a **design** with a verified mechanism; **not yet a result** — gated on the witness ∃-test (the Witness Charter; the where-test law, ADR 0014).
+- **Layer 1 (the connection-wave instrument) is re-situated as the SECONDARY measurement layer** — the instrument-only, trivial-domain reading; the *shadow* of the merge. Built (Sovereign), **unaudited**; its cross-office audit is deferred behind the witness. Real and honest, but not the target.
+- **Layer 0 stands.** The witness is the holonomy **enriched** — from a Z/2 bit to a vector vortex — by the field's metric frame on our topology. The canon is still written in Layer-0 terms; the witness enters canon only on a firing ∃-test.
