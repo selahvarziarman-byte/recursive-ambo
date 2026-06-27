@@ -1,0 +1,6 @@
+# Witness ∃-test — pre-registration commitment (SHA-256 of the off-repo sealed plaintext).
+# Plaintext (OFF-REPO; mothership + sovereign hold): WITNESS_SEAL_CANONICAL.txt — 1572 bytes, ASCII/LF; hash the bytes as-is, no re-encoding.
+# Mothership-verified 2026-06-27: sha256(WITNESS_SEAL_CANONICAL.txt) === this hash on the exact raw bytes. The prediction is DERIVED (forced by our committed w₁: Möbius [1], torus [0,0], RP² [1], Klein [0,1]).
+# SUPERSEDES the void c44d9ce8… (an in-memory blob, never delivered — did not hash any held file).
+# Sealed before the engineer's blind run. The engineer runs the value-free packet; the mothership unseals against the held plaintext and ratifies the WHOLE pattern by verification.
+6ab3b5bd305aabc0c5c2d065e0261af065abe1795701d4cc8fcca251c8237aae
