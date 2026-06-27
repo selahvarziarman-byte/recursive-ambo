@@ -2,7 +2,7 @@
 
 The Topological Module is a **generative playground**: a standalone structural space where **forms** (labelled cell-complexes) are **born from forms** — the engine's identity calculus run *generatively*. Two or more forms combine into a child that carries a lineage from its parents; one form transformed in place is the *unary* sub-case (the reductive "transformer" we first built). The metric is stripped below it and **meaning is left to the user's mind above it** — the engine delivers honest structure; the human reads it. Material enters by **invocation** (a primitive shape from scratch) or by **loading** a saved snapshot of an entity from an ambo **universe**; many universes can meet here, each piece still tracing home.
 
-This file is a glossary — the language of the module's picture, not its implementation. Status: **redrafted to the generative picture 2026-06-23 (sovereign-grilled, designer-drafted) — pending mothership ratification (scope) and the researcher's investigation of the one open structural question.** Terms _(firm)_ are sovereign-endorsed. ADRs 0001–0007 are **re-situated** (their structural mechanics stand; the reductive framing becomes the unary sub-case — ADR 0008).
+This file is a glossary — the language of the module's picture, not its implementation. Status: **redrafted to the generative picture 2026-06-23 (sovereign-grilled), ratified, and extended 2026-06-27 with the spectral column — the second arrow and the law-vs-instrument field (ADRs 0008–0013).** Terms _(firm)_ are sovereign-endorsed. ADRs 0001–0007 are **re-situated** (their structural mechanics stand; the reductive framing becomes the unary sub-case — ADR 0008).
 
 ## Language
 
@@ -84,6 +84,20 @@ Operationally, a **signed loop in the assembled complex** (a closed walk whose e
 
 **The wall** _(firm)_:
 Meaning-words (argument, contradiction, proposition, …) live on the **reading** side and **never enter an operation's definition**. Operations use only the structural column below. Building meaning into operations is forbidden — the lesson behind dropping "resolution."
+
+### The spectral reading — the second arrow and the field _(firm — ADR 0012/0013)_
+
+**The spectral column** _(firm)_:
+A **second reading** of the one assembled complex, on the **same incidence** the topological reading already uses — no new substrate. It reads the **complex, never the form**: the response spectrum `γ` distinguishes complexes that are the *same form* (tetra, octa, cube are all S² yet give `2/3, 1/2, 4/9`), so the spectral data is **never a form-invariant**, and the honest datum is the eigenvalue *set*, not a single `γ`.
+
+**The connection `U` — the law** _(firm)_:
+The **orientation–genealogy connection**: the committed signed pull-back / orientation sign (`U ∈ {±1}`, lifting to `U(1)×SO(3)` along the genealogy). Derived, parameter-free. Its two **complementary** invariants are the law — **holonomy** `Hol = ∏U` around a loop (needs `H₁≠0`; `Hol = −1` is exactly `w₁ = 1`) and **spectral flow** `SF` along the genealogy (needs a birth; the eigenvalues flow irreversibly as a form is born). `w₁` is the **Z/2 shadow** of both.
+
+**The second arrow** _(firm)_:
+Not a new arrow — **genealogical depth (the one arrow) read spectrally**. Frozen, the spectral column is a static complex-level reading; read *along* the genealogy it is the **field**. The topological arrow *is* the time; the spectral reading along it *is* the field; `w₁` is its shadow.
+
+**Law vs instrument — the wall, again** _(firm)_:
+The "field" is two layers that must never be confused. **Layer 0** — the invariant above (connection, holonomy, spectral flow) — is the **law**, derived, and the *only* thing written into canon. **Layer 1** — the connection-wave field `ψ` — is a **measurement instrument** (iron filings): declared, labelled, admitted only if it **tracks** the invariant (reproduces it, invents nothing, survives stripping). **No canonical clause is ever written in terms of `ψ`.** The instrument reveals the law; it is never mistaken for it — the same discipline as the meaning-wall.
 
 ## Reading ↔ structure — the translation table
 

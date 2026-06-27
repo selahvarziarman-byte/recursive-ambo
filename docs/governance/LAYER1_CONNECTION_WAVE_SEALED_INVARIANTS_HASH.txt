@@ -1,0 +1,4 @@
+# LAYER-1 connection-wave instrument — sealed LAYER-0 invariants (v0; never raw psi) — SHA-256 of off-repo plaintext.
+# Plaintext (off-repo, gitignored): .handoff/LAYER1_CONNECTION_WAVE_SEALED_INVARIANTS.md
+# Re-derived through the real committed modules + a flat connection-Laplacian on the committed holonomy class. team-arman @ 5adc0cf. Sealed before the coder builds.
+e676dfee0d22af67606dcec7e799fcb213dad9a8dc3e9f6d9e472d04e4a118e1
