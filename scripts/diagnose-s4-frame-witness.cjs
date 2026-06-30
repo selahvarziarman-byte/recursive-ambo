@@ -342,8 +342,70 @@ check('derive-only: the ambo Shape JSON is byte-identical after all reads', JSON
 note(`asserted: buildability + 4 falsifiers-absent + honesty-budget + raw observables — NEVER a predicted winding.`);
 
 // ===========================================================================
+// [7] §5.8 Σ = PD(φ) — the gauge-INVARIANT item-5 class (additive refinement, ADR 0015).
+//     Cross-check [Σ]·[γ] === perCycleW1 per basis cycle (NON-circular: M from geometry,
+//     [Σ] from the dual chain — never perCycleW1, never Σ_{e∈γ}φ(e)); gauge-invariant.
+//     Σ is emitted ALONGSIDE the BFS flip-support (§5.4 F3), which stays the labeled witness.
+// ===========================================================================
+console.log('\n----- [7] §5.8 Σ = PD(φ) — gauge-invariant class (cross-check · non-circularity · gauge-invariance) -----');
+const sigmaForms = [
+  { name: 'w₁=1 intrinsic', complex: asmFlip.complex, sealCanon: [1] },
+  { name: 'w₁=0 cylinder', complex: cylinder, sealCanon: [0] },
+  { name: 'Klein (both cycles)', complex: klein, sealCanon: [0, 1] },
+  { name: 'H₁=0 bare seed (S²)', complex: sphere, sealCanon: [] },
+];
+const sigmaOf = {};
+for (const f of sigmaForms) {
+  const { cert, debug } = analyzeGlobalW1(f.complex);
+  const pw = debug.perCycleW1.map((x) => x & 1);
+  const Sg = frame.poincareDualClass(f.complex, debug.basisCycles, pw);
+  sigmaOf[f.name] = { Sg, pw, basisCycles: debug.basisCycles, w1Class: cert.w1Class };
+  if (Sg.vacuous) {
+    check(`§5.8 ${f.name}: H₁=0 → Σ vacuous (no basis cycle; never fabricated)`, f.sealCanon.length === 0 && eq(pw, []) && Sg.pairing === null);
+    note(`${f.name}: Σ vacuous (perCycleW1=[])`);
+  } else {
+    check(
+      `§5.8 ${f.name}: [Σ]·[γ] === perCycleW1 per basis cycle (committed) ; w1Class === sealed ${JSON.stringify(f.sealCanon)}`,
+      eq(Sg.pairing, pw) && eq(cert.w1Class, f.sealCanon),
+    );
+    note(`${f.name}: [Σ]=${JSON.stringify(Sg.sigmaClass)} M=${JSON.stringify(Sg.intersectionForm)} → [Σ]·[γ]=${JSON.stringify(Sg.pairing)} === perCycleW1=${JSON.stringify(pw)} (w1Class=${JSON.stringify(Sg ? sigmaOf[f.name].w1Class : null)}) | φ flip-edges=${JSON.stringify(Sg.flipEdges)}`);
+  }
+}
+
+// NON-CIRCULARITY (the senior's hardest guard) — two structural proofs:
+const kS = sigmaOf['Klein (both cycles)'].Sg;
+const kPW = sigmaOf['Klein (both cycles)'].pw;
+// (a) the Klein SWAP: [Σ] ≠ perCycleW1, yet [Σ]·[γ] === perCycleW1 because the OFF-DIAGONAL M
+//     mixes. A tautology (pairing := perCycleW1, or Σ_{e∈γ}φ(e)) could never produce this.
+check('§5.8 NON-CIRCULAR (a): Klein [Σ] ≠ perCycleW1, off-diagonal M does the work (not a tautology)', !eq(kS.sigmaClass, kPW) && kS.intersectionForm[0][1] === 1 && eq(kS.pairing, kPW));
+// (b) the pairing is a pure ℤ/2 matrix product of (M from geometry) × ([Σ] from the dual
+//     chain). Recompute M from the surface ALONE — intersectionForm(basisCycles, subdivide(complex))
+//     reads only the faces, never perCycleW1/φ — and recompute the pairing; both must agree.
+const Mgeom = frame.intersectionForm(sigmaOf['Klein (both cycles)'].basisCycles, frame.subdivide(klein));
+const pairingRecomputed = frame.intersectionPairing(kS.sigmaClass, kS.intersectionForm);
+check('§5.8 NON-CIRCULAR (b): M = intersectionForm(geometry) only ; pairing = (M·[Σ]) recomputed (no perCycleW1, no Σφ)', eq(Mgeom, kS.intersectionForm) && eq(pairingRecomputed, kS.pairing));
+note(`Klein swap: [Σ]=${JSON.stringify(kS.sigmaClass)} ≠ perCycleW1=${JSON.stringify(kPW)} ; M=${JSON.stringify(kS.intersectionForm)} (off-diag=1) ; M·[Σ]=${JSON.stringify(kS.pairing)} === perCycleW1`);
+
+// GAUGE-INVARIANCE: a SECOND flat gauge (ℤ/2 transform φ'(e)=φ(e)⊕g(u)⊕g(v)) → the SAME
+// [Σ]·[γ] value while the flip-edge SET moves. (Cylinder has a non-self-loop edge, so the
+// transform is non-trivial; the intrinsic/Klein AssembledComplex flat gauge is unique.)
+const cDbg = analyzeGlobalW1(cylinder).debug;
+const cPW = cDbg.perCycleW1.map((x) => x & 1);
+const cBase = frame.poincareDualClass(cylinder, cDbg.basisCycles, cPW);
+const cFlipV = cylinder.vertices[0];
+const cGauged = frame.poincareDualClass(cylinder, cDbg.basisCycles, cPW, (v) => (v === cFlipV ? 1 : 0));
+check('§5.8 GAUGE-INVARIANT: a 2nd flat gauge gives the SAME [Σ]·[γ] while the flip-edge SET differs', eq(cBase.pairing, cGauged.pairing) && !eq([...cBase.flipEdges].sort(), [...cGauged.flipEdges].sort()));
+note(`cylinder: gauge-A φ flip-edges=${JSON.stringify(cBase.flipEdges)} → gauge-B φ flip-edges=${JSON.stringify(cGauged.flipEdges)} ; [Σ]·[γ]=${JSON.stringify(cBase.pairing)}==${JSON.stringify(cGauged.pairing)} (invariant)`);
+
+// F3 UNCHANGED + FIRED RESULT UNTOUCHED: the BFS flip-support stays the labeled item-5
+// witness (non-empty ⟺ winding); Σ is added ALONGSIDE it; item-4 winding is byte-unchanged.
+check('§5.8 F3 UNCHANGED: the BFS flip-support is still the item-5 witness (non-empty ⟺ winding)', r1.witness.localized === true && r3.witness.localized === false && r4.witness.localized === false);
+check('§5.8 FIRED RESULT UNTOUCHED: item-4 winding unchanged (intrinsic flipped ; cylinder aligned ; S² vacuous)', r1.winding.windingClass === 1 && r3.winding.windingClass === 0 && r4.winding.vacuous === true);
+note(`item-5 now reports BOTH: BFS flip-support {${witnessLabels(r1.witness.witnessSites).join(',')}} (gauge representative) + Σ class [Σ]=${JSON.stringify(sigmaOf['w₁=1 intrinsic'].Sg.sigmaClass)} (gauge-invariant).`);
+
+// ===========================================================================
 console.log(
-  `\n--- S₄ frame witness runner (buildability · forced frame · raw table · falsifiers F1–F4 · §3-watch · LABEL): ${
+  `\n--- S₄ frame witness runner (buildability · forced frame · raw table · falsifiers F1–F4 · §3-watch · LABEL · Σ=PD(φ) gauge-invariant cross-check): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
   } ---`,
 );
