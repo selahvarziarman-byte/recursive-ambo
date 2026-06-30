@@ -1,0 +1,4 @@
+# ITEM-5 refinement — Σ = PD(φ) ∈ H₁(form; ℤ/2) — sealed cross-check [Σ]·[γ]===perCycleW1 + the NON-CIRCULAR construction (v0) — SHA-256 of off-repo plaintext.
+# Plaintext (off-repo, gitignored): .handoff/ITEM5_SIGMA_PD_SEALED_VALUES.md
+# Additive (ADR 0015): emit Σ alongside the BFS F3 witness; fired result + definition untouched; globalW1 reused not edited. team-arman @ 4e25ce4. Sealed before the build.
+084605ed35677924e03ced252bb7d4c483942e44c63411a42caddbcc78772e93
