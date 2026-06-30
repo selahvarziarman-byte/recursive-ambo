@@ -1,0 +1,14 @@
+# Second arrow (spectral flow) — pre-registration commitment (SHA-256 of the off-repo sealed plaintext).
+# Plaintext (OFF-REPO; mothership + sovereign hold): SF_SEAL_CANONICAL.txt — hash the bytes as-is (LF, ASCII), no re-encoding.
+#
+# Mothership-verified 2026-06-30 — reproduced ALL canonical numbers myself on the committed
+# signedLaplacian (L_U = D − A_U), not on the researcher's report:
+#   ker stage0/A/B/B' = 1/1/0/1 ; SF_A=0 (F5 no spurious dim-flow) ; SF_B=1 ; PATH=1 (F4 additive) ;
+#   CONTROL B'=0 ; minEig(B frustrated)=0.382 = 2−2cos(pi/5) ; Z/2 shadow SF mod 2 = w1.
+#   Crux convention SOUND: SF = dim ker(L_U^parent) − dim ker(L_U^child); L_U is PSD, so the only flow
+#   through 0 is the kernel ⇒ SF = endpoint Δker, homotopy-invariant. Layer-0, parameter-free.
+#   NO Poincaré duality — SF ⟂ the item-5 Σ=PD object; both land in parallel (no PD→SF sequencing).
+#
+# Sealed before the engineer's blind run. The engineer reproduces the PATTERN blind on the committed
+# operator; the mothership unseals against the held plaintext and ratifies the whole pattern by verification.
+88759ebe24e8001310e85ed613b71d3f964b352530707701fc64d70d2c143f6b
