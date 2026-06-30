@@ -1,0 +1,4 @@
+# WITNESS RUNNER (S4 frame, items 4-5) — sealed BUILDABILITY + falsifiers-absent + honesty-budget (v0; BLIND, no predicted winding) — SHA-256 of off-repo plaintext.
+# Plaintext (off-repo, gitignored): .handoff/WITNESS_RUNNER_S4_FRAME_SEALED_INTEGRITY.md
+# The mothership holds the prediction (6ab3b5bd...). This seal fixes the test's integrity, never the result. team-arman @ 4f76858. Sealed before the run.
+0e6dbd4574dc7b555d202b5a96d8f3442340613ba1302bfb37e3de52fd1561f6
