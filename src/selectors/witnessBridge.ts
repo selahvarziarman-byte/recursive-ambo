@@ -32,6 +32,7 @@ import { analyzeGlobalW1, type AssembledComplex } from '../lib/globalW1';
 import {
   buildCellFrame,
   buildSiteFrames,
+  poincareDualClass,
   runFrameWitness,
   transportDirector,
   type SiteFrame,
@@ -175,6 +176,12 @@ export interface KnownSeam {
   edgeSigns: Sign[]; // committed flat-gauge U_e over the X_K 6-cycle
   witness: SiteWitness; // committed runFrameWitness witness (flipEdges/witnessSites over loop indices)
   windingSign: Sign | null; // committed ∏U around the loop (−1 = the director flips: the seam)
+  // ADR 0017 / M1a-v2 exposure (ADDITIVE · derive-only): the committed gauge-INVARIANT seam
+  // class Σ = PD(φ), read straight from the committed `poincareDualClass`. The connection-
+  // modulated director (directorFieldV0) reads these to set the disclination's magnitude
+  // (Σ nontrivial ⇒ holonomy 1; vacuous ⇒ 0) and a Σ-representative cut. Recomputed: nothing.
+  sigmaClass: number[] | null; // committed [Σ] over basisCycles (ℤ/2 invariant); null ⇔ vacuous (orientable)
+  sigmaChainEdges: string[]; // a committed Σ-representative cut (subdivision edge ids; a gauge representative)
 }
 
 // Construct the witness's intrinsic seam via the committed self-glue, run the committed
@@ -202,7 +209,11 @@ export function buildKnownSeam(form: KnownForm = buildKnownForm()): KnownSeam {
 
   // the committed holonomy class of the glued seam, read straight from analyzeGlobalW1.
   const { complex, w1: cascadeW1 } = assembledFromCascade(F0, intrinsicFace, 'flip');
-  const perCycleW1 = analyzeGlobalW1(complex).debug.perCycleW1;
+  const w1Analysis = analyzeGlobalW1(complex);
+  const perCycleW1 = w1Analysis.debug.perCycleW1;
+  // Σ = PD(φ) — the committed gauge-INVARIANT seam class (read via the committed
+  // poincareDualClass; NEVER recomputed). Vacuous ⇔ orientable (the control's discriminator).
+  const sigma = poincareDualClass(complex, w1Analysis.debug.basisCycles, perCycleW1);
 
   // the committed flat gauge + the two committed observables on the X_K cycle.
   const cycle = cycleGraph(6);
@@ -217,6 +228,8 @@ export function buildKnownSeam(form: KnownForm = buildKnownForm()): KnownSeam {
     edgeSigns: result.edgeSigns,
     witness: result.witness,
     windingSign: result.winding.windingSign,
+    sigmaClass: sigma.sigmaClass,
+    sigmaChainEdges: sigma.sigmaChainEdges,
   };
 }
 
@@ -238,6 +251,13 @@ export interface RenderState {
   w1: number[]; // committed perCycleW1 ([1])
   seamEdges: Array<{ a: string; b: string }>; // the committed U_e=−1 flip edges, joined to siteIds
   windingSign: Sign | null; // committed ∏U (−1)
+  // ADR 0017 / M1a-v2 (ADDITIVE · derive-only): the committed Σ=PD(φ) invariant + connection.
+  // The connection-modulated director field reads these — Σ sets the disclination's magnitude
+  // (nontrivial ⇒ holonomy 1, vacuous ⇒ 0) and a Σ-representative cut; edgeSigns is the
+  // committed flat gauge whose ∏ = windingSign. Existing fields above are byte-unchanged.
+  sigmaClass: number[] | null; // committed [Σ] over basisCycles (ℤ/2 invariant); null ⇔ vacuous (orientable)
+  sigmaChainEdges: string[]; // a committed Σ-representative cut (a gauge representative)
+  edgeSigns: Sign[]; // committed flat-gauge U_e on the X_K 6-cycle (the connection holonomy)
 }
 
 // The falsifiable first render-state. Builds F0 ONCE and joins the committed per-site output
@@ -273,5 +293,13 @@ export function buildKnownSeamRenderState(): RenderState {
     b: seam.orderedSiteIds[b],
   }));
 
-  return { sites, w1: seam.perCycleW1, seamEdges, windingSign: seam.windingSign };
+  return {
+    sites,
+    w1: seam.perCycleW1,
+    seamEdges,
+    windingSign: seam.windingSign,
+    sigmaClass: seam.sigmaClass,
+    sigmaChainEdges: seam.sigmaChainEdges,
+    edgeSigns: seam.edgeSigns,
+  };
 }

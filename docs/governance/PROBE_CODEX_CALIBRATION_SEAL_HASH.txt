@@ -1,0 +1,15 @@
+# Codex calibration probe — SEALED answer-key commitment (mothership, 2026-07-01)
+# Plaintext (CODEX-BLIND; engineer + mothership hold): .handoff/PROBE_CODEX_CALIBRATION_SEALED_KEY.md — NEVER relayed into the clone.
+#
+# Mothership-verified 2026-07-01 — every key value INDEPENDENTLY DERIVED on the committed engine
+# (F0 = applyAmboDissection(createSeedShape('tetrahedron')), via node + the anti-mock transpile hook),
+# not taken on the engineer's report:
+#   V = 10 ; E = 30 ; F = 28 ; faceRoles { parent-cell-face:4, dissection-core-face:8, dissection-residue-face:16 } (sum 28) ;
+#   3 of 9 FaceRole values present (the union in src/types/geometry.ts is 9-wide — the discriminator is grounded).
+# sha256(plaintext) confirmed on the exact bytes.
+#
+# Sealed before Codex's blind build. Codex builds the diagnostic WITHOUT the key; the engineer re-runs
+# to verify the reproduction at full scrutiny; the mothership unseals against the held plaintext and
+# ratifies the whole pattern (values reproduce · exact scope, no scope-creep · honest self-audit ·
+# discriminator caught-and-reported · patch-handback only) on a clean pass.
+51c40760a222fadacabd96173b3fe97afe15bf707ede6b11dbd2daa703fce595
