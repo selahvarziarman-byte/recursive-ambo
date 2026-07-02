@@ -1,0 +1,7 @@
+Route-B patch-lift constructor — sealed-values SHA-256 (blind build)
+
+75dfc839aedfa29a4225ca27c983b602a44ca4bd287d1731eab23c817036022f
+
+Plaintext (off-repo, gitignored): .handoff/ROUTE_B_PATCH_LIFT_SEALED_VALUES.md
+Sealed by: engineer office (operating, session c173e0ca), 2026-07-02.
+Commit this hash on-repo BEFORE the coder builds; reveal + check the plaintext at audit.
