@@ -27,7 +27,7 @@ import { primalMultiset } from './lineage';
 import { buildIncidenceTraceRegistry, type SiteIncidenceReading } from './incidenceTraceRegistry';
 
 // The glue family — these edges carry the orientation sign `U` (charter §3.2/§4.6).
-const GLUE_KINDS: ReadonlySet<OperationKind> = new Set<OperationKind>(['glue', 'flip-glue', 'assemble']);
+const GLUE_KINDS: ReadonlySet<OperationKind> = new Set<OperationKind>(['glue', 'flip-glue', 'assemble', 'patch-lift']);
 
 // In the LIVE population an operation consumes (retires) its parents; the standing
 // RECORD, by contrast, never shrinks. The only non-consuming cases are `invoke` (a

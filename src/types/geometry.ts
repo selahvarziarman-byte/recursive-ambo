@@ -18,7 +18,8 @@ export type OperationKind =
   | 'flip-glue'
   | 'collapse'
   | 'cut'
-  | 'assemble';
+  | 'assemble'
+  | 'patch-lift';
 export type CellKind = 'seed' | 'parent' | 'core' | 'residue';
 export type SeedTopology = 'tetrahedron' | 'octahedron' | 'cube';
 export type CellTopology =
