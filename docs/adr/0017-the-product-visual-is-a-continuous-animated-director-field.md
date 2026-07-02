@@ -1,5 +1,7 @@
 # 0017 — The product visual is a continuous animated director-field, not a glyph witness
 
+> **⚠ ABORTED / SUPERSEDED (sovereign, 2026-07-01).** The field render is dead. The octonionic (layer 2) and scalar (layer 1) field layers are **field-inactive / under moratorium** per the sealed record (Station IV-A, the sovereign-confirmed W-gate closure), so there is no rich field to render. The volumetric director-field render is **aborted**. The live layer-3 structure (the witness, orientation, the two arrows) is instead **surfaced as per-site packets in the UI** — see `.handoff/RELAY_TO_ENGINEER_LAYER3_SITE_PACKETS.md`. Everything below is retained as history; its render intent no longer governs.
+
 Status: **Accepted** — sovereign design directive, 2026-06-30. Governs the whole UI / render arc built on the engine→UI bridge.
 
 ## Context
@@ -35,3 +37,8 @@ M1b's first render drifted into a **diagnostic** — a rounded noise-LIC *sphere
 3. **Verification stays HEADLESS.** The falsifiable linking-holonomy (`Hol=−1` flip / `+1` control) is the invariant and the *gate* — it lives in `scripts/diagnose-*`, off-screen, never as on-screen furniture. It is what is TRUE, not what is RENDERED.
 
 **The distinction to hold (both offices, and Codex):** the **proof** and the **product** are different artifacts. The linking holonomy is the proof (headless); the felt reversal in the flowing field on the faceted form is the product. **Render the phenomenon; keep the proof headless. Never literalize "felt" into a marker.** (Corrected build: `.handoff/PROMPT_DIRECTOR_FIELD_M1b_V2_VISUAL_CORRECTION.md` — engineer-released on the ruling, mothership-confirmed aligned.)
+
+## Amendment 3 (2026-07-01 — sovereign-ruled, mothership-owned): the medium is the VOLUME, not a surface — M1b + M2 merge
+The faceted-*surface* M1b (M1b-v2) was built, and Arman viewed it at `?field` and **rejected it**: a surface texture on facets always reads as a **textured shell** (brushed-metal per-face stripes), and a phase-line always reads as a **drawn seam** — not a living field. Arman ruled the target is the **volume**, verbatim: *"octahedral volume carrying a living twisted director field, with the surface as its visible boundary trace."*
+
+**The correction:** the surface-first stage is **retired**; **M1b and M2 merge into ONE volumetric render.** Do not sequence "surface, then interior" — **raymarch the translucent octahedral volume** with the field seen *through* it (a baked 3D director texture; advected striations accumulated with translucency), the surface emerging as the **boundary trace** of the interior field. The **only** change from Amendment 2 is **surface → volume**; everything else carries forward unchanged — the faceted form, flow-first, the `w₁` twist **felt through the depth** (never drawn), no furniture, verification **headless** in `diagnose-*`, derive-only reuse of the ratified `n = R(α)·n₀` sampler. Codex build-prompt: `.handoff/PROMPT_CODEX_DIRECTOR_FIELD_VOLUMETRIC.md` (mothership-confirmed aligned — the phenomenon written as *felt*, never as a proof).

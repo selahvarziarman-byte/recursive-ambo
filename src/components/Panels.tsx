@@ -53,6 +53,7 @@ import type {
 import { DiagonalizationMatrixSection } from './DiagonalizationMatrixSection';
 import { Panel } from './Panel';
 import { GeneralSiteFacePanel } from './GeneralSiteFacePanel';
+import { Layer3WitnessPanel } from './Layer3WitnessPanel';
 import { SelectedVertexRelations } from './SelectedVertexRelations';
 import { SiteTraceSlot } from './SiteTraceSlot';
 import { SiteWitnessTracePanel } from './SiteWitnessTracePanel';
@@ -639,6 +640,8 @@ function SelectionPanel() {
     );
   }
 
+  sectionIndexEntries.push({ id: 'selection-layer3-witness', label: 'Layer 3' });
+
   if (selectedCellRow) {
     sectionIndexEntries.push({
       id: 'selection-lineage',
@@ -747,6 +750,15 @@ function SelectionPanel() {
           {siteWitness ? <SiteWitnessTracePanel witness={siteWitness} /> : <SiteTraceSlot />}
         </SidebarSection>
       ) : null}
+
+      <SidebarSection
+        id="selection-layer3-witness"
+        title="Layer 3 Witness"
+        defaultOpen
+        resetKey="committed-witness-form"
+      >
+        <Layer3WitnessPanel />
+      </SidebarSection>
 
       {vertex && atomicRegistryReport ? (
         <SidebarSection
