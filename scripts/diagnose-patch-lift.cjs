@@ -150,7 +150,17 @@ check('§5.4 DAG integrity ACCEPTED over [T, S, L] (acyclic && lineage ⊆ paren
 check('§5.4 DAG recovers L.parents === [S] (single parent, read forward)', eq(lNode.parents, [S.id]));
 check("§5.4 DAG edge S->L carries operation === 'patch-lift'", Boolean(slEdge) && slEdge.operation === 'patch-lift');
 check('§5.4 patch-lift is registered in the merge-birth family: edge S->L carries U === seamSign(w1)', slEdge.U === seamSign(w1Bit));
-note(`DAG: L.depth=${lNode.depth} parents=${JSON.stringify(lNode.parents)} edge U=${slEdge.U} (w1 bit=${w1Bit}, derived)`);
+// Mothership ruling "Route-B patch-lift RATIFIED; NON-CONSUMING": a lift reads a
+// sub-region and leaves the source byte-unchanged, so it must NOT retire S.
+check(
+  '§5.4 patch-lift is NON-CONSUMING: S stays in the LIVE population (record still gains L + the S->L edge)',
+  dag.liveAtEnd.includes(S.id) &&
+    dag.record.some((event) => event.kind === 'birth' && event.node === L.id) &&
+    !dag.record.some((event) => event.kind === 'death' && event.operation === 'patch-lift') &&
+    Boolean(slEdge) &&
+    slEdge.death === false,
+);
+note(`DAG: L.depth=${lNode.depth} parents=${JSON.stringify(lNode.parents)} edge U=${slEdge.U} (w1 bit=${w1Bit}, derived) liveAtEnd=${JSON.stringify(dag.liveAtEnd)}`);
 
 // ===== [5] manifold soundness + the MEASURED invariants =====
 console.log('\n----- [5] MANIFOLD SOUNDNESS + INVARIANTS (χ, w₁ measured, blind) -----');

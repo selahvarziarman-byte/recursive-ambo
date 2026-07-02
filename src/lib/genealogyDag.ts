@@ -30,9 +30,12 @@ import { buildIncidenceTraceRegistry, type SiteIncidenceReading } from './incide
 const GLUE_KINDS: ReadonlySet<OperationKind> = new Set<OperationKind>(['glue', 'flip-glue', 'assemble', 'patch-lift']);
 
 // In the LIVE population an operation consumes (retires) its parents; the standing
-// RECORD, by contrast, never shrinks. The only non-consuming cases are `invoke` (a
-// from-scratch birth — no parent) and, once it exists, `product` (E3 — deferred).
-const NON_CONSUMING: ReadonlySet<OperationKind> = new Set<OperationKind>(['invoke']);
+// RECORD, by contrast, never shrinks. The non-consuming cases are `invoke` (a
+// from-scratch birth — no parent), `patch-lift` (a lift READS a sub-region and
+// leaves the source byte-unchanged — the source stays live; mothership ruling
+// "Route-B patch-lift RATIFIED; NON-CONSUMING"), and, once it exists, `product`
+// (E3 — deferred).
+const NON_CONSUMING: ReadonlySet<OperationKind> = new Set<OperationKind>(['invoke', 'patch-lift']);
 
 export interface GenealogyNode {
   id: ShapeId;
