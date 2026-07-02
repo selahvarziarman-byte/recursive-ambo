@@ -1,0 +1,8 @@
+L3b rich-field texture — sealed-values SHA-256 (reproduce-the-seal build)
+
+7816849b135875225d22a714dcb5e9abaa6c05fac0018b18849b9d8b3e65e7e6
+
+Plaintext (off-repo, gitignored): .handoff/L3B_RICH_FIELD_SEALED_VALUES.md
+Derivation source: RESEARCHER_CALIBRATION_S3_RICH_FIELD_RULING_V3 §2 (researcher-derived).
+Sealed by: engineer office (operating, c173e0ca), 2026-07-03.
+Commit this hash on-repo BEFORE the coder builds; the coder reproduces the values from the current committed engine and STOPS-and-surfaces on mismatch; reveal + check at audit.
