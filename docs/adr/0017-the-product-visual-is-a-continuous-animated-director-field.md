@@ -1,6 +1,8 @@
 # 0017 — The product visual is a continuous animated director-field, not a glyph witness
 
 > **⚠ ABORTED / SUPERSEDED (sovereign, 2026-07-01).** The field render is dead. The octonionic (layer 2) and scalar (layer 1) field layers are **field-inactive / under moratorium** per the sealed record (Station IV-A, the sovereign-confirmed W-gate closure), so there is no rich field to render. The volumetric director-field render is **aborted**. The live layer-3 structure (the witness, orientation, the two arrows) is instead **surfaced as per-site packets in the UI** — see `.handoff/RELAY_TO_ENGINEER_LAYER3_SITE_PACKETS.md`. Everything below is retained as history; its render intent no longer governs.
+>
+> **↻ UPDATE (2026-07-02): a field render is REOPENED — but a DIFFERENT object, see ADR 0018.** The abort of *this* ADR's continuous decorative **director-field** stands. What reopened (sovereign-authorized) is the honest, derivable, **defect-bearing `L_U` interior-content section** (the disclination `Σ` displayed *because it is the content*, never as furniture). The Amendment-2 guard carries into it: verification stays headless; the defect is content, not a marker.
 
 Status: **Accepted** — sovereign design directive, 2026-06-30. Governs the whole UI / render arc built on the engine→UI bridge.
 
