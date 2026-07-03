@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { loadForm, type FormBuilder } from '../lib/multiform';
-import type { CellId, Shape, ShapeId, VertexId } from '../types/geometry';
+import { getPlaygroundOperation } from '../playground/playgroundOperations';
+import type { CellId, FaceId, Shape, ShapeId, VertexId } from '../types/geometry';
 
 export interface PlaygroundProvenance {
   source: string | null;
-  origin: 'invoked' | 'loaded';
+  origin: 'invoked' | 'loaded' | 'operated';
 }
 
 export interface PlaygroundForm {
@@ -18,6 +19,7 @@ interface PlaygroundSnapshot {
   currentFormId: ShapeId | null;
   selectedCellId: CellId | null;
   selectedVertexId: VertexId | null;
+  selectedFaceId: FaceId | null;
 }
 
 interface PlaygroundState extends PlaygroundSnapshot {
@@ -26,6 +28,8 @@ interface PlaygroundState extends PlaygroundSnapshot {
   selectForm: (shapeId: ShapeId | null) => void;
   selectCell: (cellId: CellId | null) => void;
   selectVertex: (vertexId: VertexId | null) => void;
+  selectFace: (faceId: FaceId | null) => void;
+  applyOperationToSelection: (operationId: string) => Shape;
   removeForm: (shapeId: ShapeId) => void;
   resetPlayground: () => void;
 }
@@ -60,6 +64,7 @@ function createInitialPlaygroundSnapshot(): PlaygroundSnapshot {
     currentFormId: plain.id,
     selectedCellId: null,
     selectedVertexId: null,
+    selectedFaceId: null,
   };
 }
 
@@ -106,6 +111,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
           currentFormId: null,
           selectedCellId: null,
           selectedVertexId: null,
+          selectedFaceId: null,
         };
       }
 
@@ -125,6 +131,11 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
         selectedVertexId:
           state.selectedVertexId && form.shape.vertices[state.selectedVertexId]
             ? state.selectedVertexId
+            : null,
+        selectedFaceId:
+          state.selectedFaceId &&
+          form.shape.faces.some((face) => face.id === state.selectedFaceId)
+            ? state.selectedFaceId
             : null,
       };
     });
@@ -151,6 +162,48 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
       };
     });
   },
+  selectFace: (faceId) => {
+    set((state) => {
+      const form = state.currentFormId ? state.forms[state.currentFormId] : null;
+
+      return {
+        selectedFaceId:
+          faceId && form?.shape.faces.some((face) => face.id === faceId) ? faceId : null,
+      };
+    });
+  },
+  // G5.1 — apply a registry operation to the current form + selected face: the
+  // committed op runs, G5.0 materializes the certificate, and the BORN child
+  // joins the store carrying its single-parent genealogy (parentShapeId = the
+  // source form), so `buildGenealogyDag` over the store's forms records the
+  // birth. The source form is never mutated (derive-only; the child is new).
+  applyOperationToSelection: (operationId) => {
+    const state = get();
+    const form = state.currentFormId ? state.forms[state.currentFormId] : null;
+    if (!form) {
+      throw new Error('playgroundStore: no form selected — nothing to operate on');
+    }
+    const selectedFace =
+      (state.selectedFaceId &&
+        form.shape.faces.find((face) => face.id === state.selectedFaceId)) ||
+      null;
+    const operation = getPlaygroundOperation(operationId);
+    const context = {
+      form: form.shape,
+      selectedFaceId: state.selectedFaceId,
+      selectedFace,
+    };
+    if (!operation.canApply(context)) {
+      throw new Error(
+        `playgroundStore: operation "${operationId}" is not applicable — ${operation.getDisabledReason(context) ?? 'ineligible selection'}`,
+      );
+    }
+    const born = operation.execute(context);
+
+    get().addForm(born, { source: operation.id, origin: 'operated' });
+
+    return born;
+  },
   removeForm: (shapeId) => {
     set((state) => {
       if (!state.forms[shapeId]) {
@@ -168,6 +221,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
         currentFormId,
         selectedCellId: state.currentFormId === shapeId ? null : state.selectedCellId,
         selectedVertexId: state.currentFormId === shapeId ? null : state.selectedVertexId,
+        selectedFaceId: state.currentFormId === shapeId ? null : state.selectedFaceId,
       };
     });
   },

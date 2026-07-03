@@ -4,6 +4,7 @@ import {
 } from '../store/playgroundStore';
 import type { ShapeId } from '../types/geometry';
 import { PlaygroundInvokePanel } from './PlaygroundInvokePanel';
+import { PlaygroundOperationsPanel } from './PlaygroundOperationsPanel';
 import { PlaygroundViewport } from './PlaygroundViewport';
 
 export function Playground() {
@@ -30,6 +31,7 @@ export function Playground() {
       <div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)_280px]">
         <aside className="min-h-0 overflow-y-auto border-r border-stone-800 bg-stone-950">
           <PlaygroundInvokePanel />
+          <PlaygroundOperationsPanel />
           <div className="border-b border-stone-800 px-4 py-3">
             <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
               Forms
