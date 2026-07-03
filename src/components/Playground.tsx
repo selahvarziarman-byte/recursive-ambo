@@ -5,6 +5,7 @@ import {
 import type { ShapeId } from '../types/geometry';
 import { BornFormView, FieldFormView } from './BornFormView';
 import { PlaygroundGenealogyView } from './PlaygroundGenealogyView';
+import { PlaygroundInvariantsPanel } from './PlaygroundInvariantsPanel';
 import { PlaygroundInvokePanel } from './PlaygroundInvokePanel';
 import { PlaygroundOperationsPanel } from './PlaygroundOperationsPanel';
 import { PlaygroundViewport } from './PlaygroundViewport';
@@ -109,12 +110,14 @@ export function Playground() {
           )}
         </section>
 
-        <aside className="min-h-0 border-l border-stone-800 bg-stone-950">
+        <aside className="min-h-0 overflow-y-auto border-l border-stone-800 bg-stone-950">
           <div className="border-b border-stone-800 px-4 py-3">
             <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
               Inspector
             </h2>
           </div>
+          {/* E2 — the selected form's topology, read from the committed certifiers */}
+          <PlaygroundInvariantsPanel />
         </aside>
       </div>
     </main>
