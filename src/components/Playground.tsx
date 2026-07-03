@@ -3,6 +3,7 @@ import {
   type PlaygroundForm,
 } from '../store/playgroundStore';
 import type { ShapeId } from '../types/geometry';
+import { BornFormView } from './BornFormView';
 import { PlaygroundInvokePanel } from './PlaygroundInvokePanel';
 import { PlaygroundOperationsPanel } from './PlaygroundOperationsPanel';
 import { PlaygroundViewport } from './PlaygroundViewport';
@@ -54,12 +55,33 @@ export function Playground() {
           </div>
         </aside>
 
-        <section className="min-h-0">
-          <PlaygroundViewport
-            shape={currentForm?.shape ?? null}
-            selectedVertexId={selectedVertexId}
-            onSelectVertex={selectVertex}
-          />
+        <section className="relative min-h-0">
+          {currentForm?.provenance.origin === 'operated' ? (
+            // G5.2: a BORN form renders as the real surface its gluing word names
+            // (immersion + identification + field), or the pre-quotient patch when
+            // unclassified; the primitive viewport only if its parent left the store.
+            <BornFormView
+              born={currentForm.shape}
+              parent={
+                currentForm.shape.genealogy.parentShapeId
+                  ? forms[currentForm.shape.genealogy.parentShapeId]?.shape ?? null
+                  : null
+              }
+              fallback={
+                <PlaygroundViewport
+                  shape={currentForm.shape}
+                  selectedVertexId={selectedVertexId}
+                  onSelectVertex={selectVertex}
+                />
+              }
+            />
+          ) : (
+            <PlaygroundViewport
+              shape={currentForm?.shape ?? null}
+              selectedVertexId={selectedVertexId}
+              onSelectVertex={selectVertex}
+            />
+          )}
         </section>
 
         <aside className="min-h-0 border-l border-stone-800 bg-stone-950">

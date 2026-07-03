@@ -91,17 +91,22 @@ function linkValences(shape) {
   return results;
 }
 
-// The ratified class targets (standard — no seal on this mandate).
+// The ratified class targets (standard — no seal on this mandate). G5.2 Part A
+// adds the OPEN surfaces (cylinder/Möbius — the committed level-2 zoo values);
+// their rims (grid rows j=0/j=R, the free edges) must read valence 'boundary',
+// everything else 'interior'.
 const TARGETS = {
-  torus: { chi: 0, nonOrientable: false, b1: 2, w1Class: [0, 0] },
-  klein: { chi: 0, nonOrientable: true, b1: 2, w1Class: [0, 1] },
-  rp2: { chi: 1, nonOrientable: true, b1: 1, w1Class: [1] },
+  torus: { chi: 0, nonOrientable: false, b1: 2, w1Class: [0, 0], open: false },
+  klein: { chi: 0, nonOrientable: true, b1: 2, w1Class: [0, 1], open: false },
+  rp2: { chi: 1, nonOrientable: true, b1: 1, w1Class: [1], open: false },
+  cylinder: { chi: 0, nonOrientable: false, b1: 1, w1Class: [0], open: true },
+  mobius: { chi: 0, nonOrientable: true, b1: 1, w1Class: [1], open: true },
 };
 const DIAG_RESOLUTION = 8; // small enough for the committed GF(2) H₁ pipeline
 
 console.log('R0 surface immersion: degenerate-boundary surfaces -> subdivided immersed Shapes\n');
 
-for (const surface of ['torus', 'klein', 'rp2']) {
+for (const surface of ['torus', 'klein', 'rp2', 'cylinder', 'mobius']) {
   const target = TARGETS[surface];
   console.log(`----- [${surface}] R=${DIAG_RESOLUTION} (word-glued quotient, immersed) -----`);
   const { shape, correspondence } = immerseSurface({ surface, resolution: DIAG_RESOLUTION });
@@ -121,9 +126,23 @@ for (const surface of ['torus', 'klein', 'rp2']) {
   note(`V=${V} E=${E} F=${F} | χ(shape)=${V - E + F} χ(subdivided)=${debug.euler} | b₁=${cert.b1} w1Class=${JSON.stringify(cert.w1Class)} nonOrientable=${cert.nonOrientable}`);
   note(`subdivision cellCounts=${JSON.stringify(debug.cellCounts)}`);
 
-  // closed combinatorial manifold: every vertex link one interior cycle.
+  // links: closed → every vertex link one interior cycle; open → the RIM (any
+  // class touching a free row j=0/j=R that was NOT identified away) reads
+  // 'boundary', everything else 'interior'.
   const links = linkValences(shape);
-  check(`${surface}: every vertex link single-component interior (${links.length} vertices)`, links.length === V && links.every((l) => l.valence === 'interior' && l.strata === 1 && !l.pinch));
+  if (!target.open) {
+    check(`${surface}: every vertex link single-component interior (${links.length} vertices)`, links.length === V && links.every((l) => l.valence === 'interior' && l.strata === 1 && !l.pinch));
+  } else {
+    const rimVertexIds = new Set(
+      Object.entries(correspondence.vertexClasses)
+        .filter(([, refs]) => refs.some((ref) => ref.j === 0 || ref.j === DIAG_RESOLUTION))
+        .map(([vertexId]) => vertexId),
+    );
+    const rimLinks = links.filter((l) => rimVertexIds.has(l.vertexId));
+    const interiorLinks = links.filter((l) => !rimVertexIds.has(l.vertexId));
+    check(`${surface}: every RIM vertex link reads 'boundary' (free edge; ${rimLinks.length} rim vertices)`, rimLinks.length > 0 && rimLinks.every((l) => l.valence === 'boundary'));
+    check(`${surface}: every non-rim vertex link reads 'interior' (${interiorLinks.length})`, interiorLinks.every((l) => l.valence === 'interior' && l.strata === 1 && !l.pinch));
+  }
 
   // the quotient correspondence is complete + consistent.
   const gridPoints = (R + 1) * (R + 1);

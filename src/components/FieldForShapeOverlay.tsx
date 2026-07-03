@@ -17,7 +17,7 @@
 // n-gon faces (zoo quads, lift triangles). `mountShapeFieldPreview` is the dev
 // harness (permanent UI wiring is G5).
 
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Canvas } from '@react-three/fiber';
 import { Line, OrbitControls } from '@react-three/drei';
@@ -139,9 +139,10 @@ export interface ShapeFieldViewProps {
   shape: Shape; // the DISPLAY shape (the form itself, or its pre-quotient patch)
   field: ShapeField;
   vertexClassOf?: Record<string, string>; // display vertex id → quotient class (identity if absent)
+  children?: ReactNode; // extra in-canvas layers (e.g. the L2 identification overlay — G5.2)
 }
 
-export function ShapeFieldView({ title, shape, field, vertexClassOf }: ShapeFieldViewProps) {
+export function ShapeFieldView({ title, shape, field, vertexClassOf, children }: ShapeFieldViewProps) {
   const model = useMemo(
     () => buildFieldModel(shape, field, vertexClassOf),
     [shape, field, vertexClassOf],
@@ -188,6 +189,7 @@ export function ShapeFieldView({ title, shape, field, vertexClassOf }: ShapeFiel
             renderOrder={10}
           />
         ) : null}
+        {children}
         <OrbitControls makeDefault enableDamping dampingFactor={0.08} target={model.center} />
       </Canvas>
       <div

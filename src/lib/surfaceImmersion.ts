@@ -43,7 +43,14 @@
 import type { Face, FaceId, Shape, ShapeId, Vec3, Vertex, VertexId } from '../types/geometry';
 import { createDefaultVertexData, deriveEdges } from './shape';
 
-export type ImmersedSurfaceKey = 'torus' | 'klein' | 'rp2';
+// G5.2 Part A (additive): the OPEN surfaces join the catalogue — the gluing word
+// wraps ONE direction only (single-pair glue/flip-glue births): 'cylinder'
+// (columns identified preserving; rows free — two rim circles) and 'mobius'
+// (columns identified REVERSED; rows free — one rim circle through the
+// half-twist). Same subdivide→identify→immerse pattern, same gluing-consistency
+// guard; their rims read decomposeLink valence 'boundary' (free edges), the
+// interior 'interior'.
+export type ImmersedSurfaceKey = 'torus' | 'klein' | 'rp2' | 'cylinder' | 'mobius';
 
 export interface SurfaceImmersionSpec {
   surface: ImmersedSurfaceKey;
@@ -71,10 +78,14 @@ export interface SurfaceImmersion {
   correspondence: QuotientCorrespondence;
 }
 
+// Perimeter reading [bottom, right, top, left]; capitals = inverse; for the open
+// surfaces `b` is the one glued pair and `a`/`c` are FREE (rim) edges.
 const WORDS: Record<ImmersedSurfaceKey, string> = {
   torus: 'abAB',
   klein: 'abaB',
   rp2: 'abab',
+  cylinder: 'abcB',
+  mobius: 'abcb',
 };
 
 // How far identified grid points' immersion positions may drift apart before we
@@ -113,6 +124,26 @@ export function immersionPosition(surface: ImmersedSurfaceKey, u: number, v: num
     const half = theta / 2;
     const r = C + Math.cos(half) * Math.sin(vv) - Math.sin(half) * Math.sin(2 * vv);
     return [S * r * Math.cos(theta), S * (Math.sin(half) * Math.sin(vv) + Math.cos(half) * Math.sin(2 * vv)), S * r * Math.sin(theta)];
+  }
+
+  if (surface === 'cylinder') {
+    // the tube: the u-wrap is periodic (trivially consistent with the preserving
+    // column identification); v is OPEN — the two rims are free circles.
+    const Rc = 2.2;
+    const H = 2.6;
+    const theta = 2 * Math.PI * u;
+    return [Rc * Math.cos(theta), H * (v - 0.5), Rc * Math.sin(theta)];
+  }
+
+  if (surface === 'mobius') {
+    // the half-twist band: M(θ+2π, v) = M(θ, 1−v) — exactly the reversed column
+    // identification (0,j) ~ (R, R−j); v is OPEN — one rim circle through the twist.
+    const Rm = 2.4;
+    const W = 1.7;
+    const theta = 2 * Math.PI * u;
+    const w = (v - 0.5) * W;
+    const r = Rm + w * Math.cos(theta / 2);
+    return [r * Math.cos(theta), w * Math.sin(theta / 2), r * Math.sin(theta)];
   }
 
   // rp2 — the cross-cap. Square → disk radially (sup-norm radius, so the
@@ -159,19 +190,24 @@ function makeUnionFind() {
 }
 
 // The boundary identifications the gluing word induces on the (R+1)² grid:
-//   torus abAB: (i,0)~(i,R) and (0,j)~(R,j)         — both wraps preserving;
-//   klein abaB: (i,0)~(i,R) and (0,j)~(R,R−j)       — one preserving, one reversed;
-//   rp2   abab: (i,0)~(R−i,R) and (0,j)~(R,R−j)     — both reversed (perimeter-antipodal).
+//   torus    abAB: (i,0)~(i,R) and (0,j)~(R,j)       — both wraps preserving;
+//   klein    abaB: (i,0)~(i,R) and (0,j)~(R,R−j)     — one preserving, one reversed;
+//   rp2      abab: (i,0)~(R−i,R) and (0,j)~(R,R−j)   — both reversed (perimeter-antipodal);
+//   cylinder abcB: (0,j)~(R,j) ONLY                  — one preserving wrap; rows FREE (two rims);
+//   mobius   abcb: (0,j)~(R,R−j) ONLY                — one reversed wrap; rows FREE (one rim).
 function applyIdentifications(surface: ImmersedSurfaceKey, R: number, union: (a: string, b: string) => void): void {
-  for (let i = 0; i <= R; i += 1) {
-    if (surface === 'rp2') {
-      union(gridKey(i, 0), gridKey(R - i, R));
-    } else {
-      union(gridKey(i, 0), gridKey(i, R));
+  const open = surface === 'cylinder' || surface === 'mobius';
+  if (!open) {
+    for (let i = 0; i <= R; i += 1) {
+      if (surface === 'rp2') {
+        union(gridKey(i, 0), gridKey(R - i, R));
+      } else {
+        union(gridKey(i, 0), gridKey(i, R));
+      }
     }
   }
   for (let j = 0; j <= R; j += 1) {
-    if (surface === 'torus') {
+    if (surface === 'torus' || surface === 'cylinder') {
       union(gridKey(0, j), gridKey(R, j));
     } else {
       union(gridKey(0, j), gridKey(R, R - j));
