@@ -61,11 +61,16 @@ const cubeSnapshot = JSON.stringify(cube);
 const face = cube.faces[0];
 const P = (edgeA, edgeB, mode) => ({ edgeA, edgeB, mode });
 
+// linkMode: 'interior' (closed manifold) · 'boundary' (open — every support sits
+// on a free rim edge on the single-face zoo) · 'none' (collapse — the χ test).
 const CASES = [
-  { name: 'torus', trace: () => glueFace(cube, face, [P(0, 2, 'preserving'), P(1, 3, 'preserving')]), chi: 0, w1: 0, b1: 2, w1Class: [0, 0], closed: true },
-  { name: 'klein', trace: () => flipGlueFace(cube, face, [P(0, 2, 'preserving'), P(1, 3, 'reversing')]), chi: 0, w1: 1, b1: 2, w1Class: [0, 1], closed: true },
-  { name: 'rp2', trace: () => flipGlueFace(cube, face, [P(0, 2, 'reversing'), P(1, 3, 'reversing')]), chi: 1, w1: 1, b1: 1, w1Class: [1], closed: true },
-  { name: 'sphere (collapse)', trace: () => collapseFace(cube, face), chi: 2, w1: 0, b1: 0, w1Class: [], closed: false },
+  { name: 'torus', trace: () => glueFace(cube, face, [P(0, 2, 'preserving'), P(1, 3, 'preserving')]), chi: 0, w1: 0, b1: 2, w1Class: [0, 0], linkMode: 'interior' },
+  { name: 'klein', trace: () => flipGlueFace(cube, face, [P(0, 2, 'preserving'), P(1, 3, 'reversing')]), chi: 0, w1: 1, b1: 2, w1Class: [0, 1], linkMode: 'interior' },
+  { name: 'rp2', trace: () => flipGlueFace(cube, face, [P(0, 2, 'reversing'), P(1, 3, 'reversing')]), chi: 1, w1: 1, b1: 1, w1Class: [1], linkMode: 'interior' },
+  { name: 'sphere (collapse)', trace: () => collapseFace(cube, face), chi: 2, w1: 0, b1: 0, w1Class: [], linkMode: 'none' },
+  // Part 1 (sanctioned open-certificate fix): the single-pair OPEN surfaces now materialize.
+  { name: 'cylinder', trace: () => glueFace(cube, face, [P(0, 2, 'preserving')]), chi: 0, w1: 0, b1: 1, w1Class: [0], linkMode: 'boundary' },
+  { name: 'mobius', trace: () => flipGlueFace(cube, face, [P(0, 2, 'reversing')]), chi: 0, w1: 1, b1: 1, w1Class: [1], linkMode: 'boundary' },
 ];
 
 console.log('G5.0 materializer: committed op certificates -> real forms, verified independently\n');
@@ -88,10 +93,13 @@ for (const testCase of CASES) {
   const independentW1 = cert.nonOrientable ? 1 : 0;
   check(`${testCase.name}: independent w₁ (committed globalW1Class on the complex) === trace.w1 === ${testCase.w1}`, independentW1 === trace.w1 && independentW1 === testCase.w1);
   check(`${testCase.name}: b₁ === ${testCase.b1}, w1Class === ${JSON.stringify(testCase.w1Class)}`, cert.b1 === testCase.b1 && eq(cert.w1Class, testCase.w1Class));
-  if (testCase.closed) {
+  if (testCase.linkMode === 'interior') {
     check(`${testCase.name}: every vertex link single-component interior (closed combinatorial manifold)`, result.links.length === V && result.links.every((l) => l.valence === 'interior' && l.decomposition.strata.length === 1 && !l.decomposition.pinch));
     const traceValences = trace.links.map((l) => l.valence);
     check(`${testCase.name}: link valences match the trace's own links certificate`, traceValences.every((v) => v === 'interior'));
+  } else if (testCase.linkMode === 'boundary') {
+    check(`${testCase.name}: every rim vertex link reads 'boundary' (free edges kept open)`, result.links.length === V && result.links.every((l) => l.valence === 'boundary'));
+    check(`${testCase.name}: link valences match the trace's own links certificate ('boundary')`, trace.links.every((l) => l.valence === 'boundary'));
   } else {
     check(`${testCase.name}: collapse carries no 1-complex link (committed precedent — the surface test is χ)`, result.links.length === 0 && E === 0 && trace.links.length === 0);
   }
@@ -108,14 +116,14 @@ for (const testCase of CASES) {
   check(`${testCase.name}: un-merged vertices retained verbatim (createdBy untouched)`, retained.every((id) => eq(L.vertices[id].createdBy, cube.vertices[id].createdBy)));
 
   // (3) single-parent genealogy + the committed DAG
-  const expectedOp = { torus: 'glue', klein: 'flip-glue', rp2: 'flip-glue', 'sphere (collapse)': 'collapse' }[testCase.name];
+  const expectedOp = { torus: 'glue', klein: 'flip-glue', rp2: 'flip-glue', 'sphere (collapse)': 'collapse', cylinder: 'glue', mobius: 'flip-glue' }[testCase.name];
   check(`${testCase.name}: genealogy single-parent (parent=${'cube'}, op='${expectedOp}', depth+1)`, L.genealogy.parentShapeId === cube.id && L.genealogy.operation === expectedOp && L.genealogy.generationDepth === cube.genealogy.generationDepth + 1);
   const dag = buildGenealogyDag([cube, L]);
   const node = dag.nodes.find((x) => x.id === L.id);
   check(`${testCase.name}: the birth registers cleanly in the committed DAG (accepted; parents=[cube])`, dag.integrity.accepted === true && eq(node.parents, [cube.id]));
 
   note(`V=${V} E=${E} F=${F} χ=${chiShape} | b₁=${cert.b1} w1Class=${JSON.stringify(cert.w1Class)} | pairings=${JSON.stringify(result.pairings)}`);
-  table.push({ name: testCase.name, V, E, F, chi: chiShape, traceChi: trace.chi, w1: independentW1, traceW1: trace.w1, links: testCase.closed ? 'interior×' + V : '(χ-test)' });
+  table.push({ name: testCase.name, V, E, F, chi: chiShape, traceChi: trace.chi, w1: independentW1, traceW1: trace.w1, links: testCase.linkMode === 'interior' ? 'interior×' + V : testCase.linkMode === 'boundary' ? 'boundary×' + V : '(χ-test)' });
   console.log('');
 }
 

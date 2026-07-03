@@ -7,19 +7,25 @@
 // form's PROPER render (immersion + identification + field) is G5.2 — here it
 // appears and selects.
 
+import { useState } from 'react';
 import { usePlaygroundStore } from '../store/playgroundStore';
 import {
   PLAYGROUND_OPERATIONS,
+  canAssemblePair,
+  getAssemblePairDisabledReason,
   type PlaygroundOperationContext,
 } from '../playground/playgroundOperations';
 
 export function PlaygroundOperationsPanel() {
   const forms = usePlaygroundStore((state) => state.forms);
+  const formOrder = usePlaygroundStore((state) => state.formOrder);
   const currentFormId = usePlaygroundStore((state) => state.currentFormId);
   const selectedFaceId = usePlaygroundStore((state) => state.selectedFaceId);
   const selectFace = usePlaygroundStore((state) => state.selectFace);
   const applyOperationToSelection = usePlaygroundStore((state) => state.applyOperationToSelection);
+  const applyAssembleToSelection = usePlaygroundStore((state) => state.applyAssembleToSelection);
   const selectForm = usePlaygroundStore((state) => state.selectForm);
+  const [assembleWithId, setAssembleWithId] = useState<string>('');
 
   const currentForm = currentFormId ? forms[currentFormId] ?? null : null;
   if (!currentForm) return null;
@@ -35,6 +41,15 @@ export function PlaygroundOperationsPanel() {
   const handleApply = (operationId: string) => {
     const born = applyOperationToSelection(operationId);
     selectForm(born.id);
+  };
+
+  // G3 — the arity-2 birth: current form (A) + a picked second form (B).
+  const assembleWith = assembleWithId ? forms[assembleWithId]?.shape ?? null : null;
+  const assembleApplicable = canAssemblePair(shape, assembleWith);
+  const assembleReason = assembleApplicable ? null : getAssemblePairDisabledReason(shape, assembleWith);
+  const handleAssemble = () => {
+    const child = applyAssembleToSelection(assembleWithId);
+    selectForm(child.id);
   };
 
   return (
@@ -60,6 +75,42 @@ export function PlaygroundOperationsPanel() {
             ))}
           </select>
         </label>
+        <label className="grid gap-1 border-t border-stone-900 pt-2">
+          <span className="text-[11px] uppercase tracking-wide text-stone-500">
+            Assemble with (form B)
+          </span>
+          <select
+            value={assembleWithId}
+            onChange={(event) => setAssembleWithId(event.target.value)}
+            className="w-full rounded border border-stone-800 bg-stone-900 px-2 py-1.5 font-mono text-xs text-stone-200 focus:border-teal-400 focus:outline-none"
+          >
+            <option value="">— none —</option>
+            {formOrder
+              .filter((id) => id !== currentFormId)
+              .map((id) => (
+                <option key={id} value={id}>
+                  {forms[id]?.shape.name} ({id})
+                </option>
+              ))}
+          </select>
+        </label>
+        <div className="grid gap-1">
+          <button
+            type="button"
+            disabled={!assembleApplicable}
+            onClick={handleAssemble}
+            className={`w-full rounded border px-3 py-2 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-teal-400 ${
+              assembleApplicable
+                ? 'border-stone-800 bg-stone-900 text-stone-300 hover:border-stone-600 hover:bg-stone-800'
+                : 'cursor-not-allowed border-stone-900 bg-stone-950 text-stone-600'
+            }`}
+          >
+            Assemble (arity-2 birth)
+          </button>
+          {assembleReason ? (
+            <span className="px-1 text-[11px] leading-snug text-stone-600">{assembleReason}</span>
+          ) : null}
+        </div>
         {PLAYGROUND_OPERATIONS.map((operation) => {
           const applicable = operation.canApply(context);
           const reason = applicable ? null : operation.getDisabledReason(context);

@@ -50,7 +50,13 @@ import { createDefaultVertexData, deriveEdges } from './shape';
 // half-twist). Same subdivide→identify→immerse pattern, same gluing-consistency
 // guard; their rims read decomposeLink valence 'boundary' (free edges), the
 // interior 'interior'.
-export type ImmersedSurfaceKey = 'torus' | 'klein' | 'rp2' | 'cylinder' | 'mobius';
+//
+// C1 (additive): 'sphere' — the COLLAPSE target (D²/∂D² = S²; no gluing word).
+// The u-wrap closes the longitudes and each POLE ROW collapses to its point;
+// pole-adjacent grid cells become real TRIANGLES of the quotient (not a
+// degeneracy — the strict quad guard stays for every worded surface). Closed,
+// orientable: χ=2, w₁ trivial, every link interior.
+export type ImmersedSurfaceKey = 'torus' | 'klein' | 'rp2' | 'cylinder' | 'mobius' | 'sphere';
 
 export interface SurfaceImmersionSpec {
   surface: ImmersedSurfaceKey;
@@ -86,6 +92,7 @@ const WORDS: Record<ImmersedSurfaceKey, string> = {
   rp2: 'abab',
   cylinder: 'abcB',
   mobius: 'abcb',
+  sphere: '', // NO gluing word — the collapse target (pole rows collapse; u wraps)
 };
 
 // How far identified grid points' immersion positions may drift apart before we
@@ -146,6 +153,17 @@ export function immersionPosition(surface: ImmersedSurfaceKey, u: number, v: num
     return [r * Math.cos(theta), w * Math.sin(theta / 2), r * Math.sin(theta)];
   }
 
+  if (surface === 'sphere') {
+    // the round sphere (the collapse target): the u-wrap is periodic; at each
+    // pole (v=0 / v=1) sin φ vanishes, so the whole pole ROW maps to its one
+    // point — the row-collapse identification is consistent by construction.
+    const Rs = 2.2;
+    const theta = 2 * Math.PI * u;
+    const phi = Math.PI * v;
+    const s = Math.sin(phi);
+    return [Rs * s * Math.cos(theta), Rs * Math.cos(phi), Rs * s * Math.sin(theta)];
+  }
+
   // rp2 — the cross-cap. Square → disk radially (sup-norm radius, so the
   // square's perimeter-antipodal identification becomes the disk's
   // boundary-antipodal one), then the standard cross-cap map, whose boundary
@@ -196,6 +214,18 @@ function makeUnionFind() {
 //   cylinder abcB: (0,j)~(R,j) ONLY                  — one preserving wrap; rows FREE (two rims);
 //   mobius   abcb: (0,j)~(R,R−j) ONLY                — one reversed wrap; rows FREE (one rim).
 function applyIdentifications(surface: ImmersedSurfaceKey, R: number, union: (a: string, b: string) => void): void {
+  if (surface === 'sphere') {
+    // no gluing word: the u-wrap closes the longitudes; each POLE ROW collapses
+    // to its single point (the collapse target — closed, orientable).
+    for (let j = 0; j <= R; j += 1) {
+      union(gridKey(0, j), gridKey(R, j));
+    }
+    for (let i = 0; i < R; i += 1) {
+      union(gridKey(i, 0), gridKey(i + 1, 0));
+      union(gridKey(i, R), gridKey(i + 1, R));
+    }
+    return;
+  }
   const open = surface === 'cylinder' || surface === 'mobius';
   if (!open) {
     for (let i = 0; i <= R; i += 1) {
@@ -221,8 +251,10 @@ function applyIdentifications(surface: ImmersedSurfaceKey, R: number, union: (a:
 
 export function immerseSurface(spec: SurfaceImmersionSpec): SurfaceImmersion {
   const { surface, resolution: R } = spec;
-  if (!WORDS[surface]) {
-    throw new Error(`surfaceImmersion: unknown surface "${surface}" (expected torus | klein | rp2)`);
+  if (WORDS[surface] === undefined) {
+    throw new Error(
+      `surfaceImmersion: unknown surface "${surface}" (expected torus | klein | rp2 | cylinder | mobius | sphere)`,
+    );
   }
   if (!Number.isInteger(R) || R < 4) {
     throw new Error(`surfaceImmersion: resolution ${R} — the subdivision needs an integer resolution >= 4`);
@@ -297,13 +329,18 @@ export function immerseSurface(spec: SurfaceImmersionSpec): SurfaceImmersion {
   const faceCells: Record<FaceId, { i: number; j: number }> = {};
   for (let i = 0; i < R; i += 1) {
     for (let j = 0; j < R; j += 1) {
-      const cycle = [
+      const quad = [
         gridVertexTo[gridKey(i, j)],
         gridVertexTo[gridKey(i + 1, j)],
         gridVertexTo[gridKey(i + 1, j + 1)],
         gridVertexTo[gridKey(i, j + 1)],
       ];
-      if (new Set(cycle).size !== 4) {
+      // sphere ONLY: a pole-row cell's two pole corners are ONE vertex of the
+      // quotient — the cell is a real TRIANGLE (cyclic consecutive-duplicate
+      // dedup), not a degeneracy. Every worded surface keeps the strict quad.
+      const cycle =
+        surface === 'sphere' ? quad.filter((v, k) => v !== quad[(k + 1) % quad.length]) : quad;
+      if (new Set(cycle).size !== cycle.length || cycle.length < 3) {
         throw new Error(
           `surfaceImmersion: ${surface} R=${R} grid cell (${i},${j}) degenerates under the identification (repeated vertex)`,
         );

@@ -101,12 +101,14 @@ const TARGETS = {
   rp2: { chi: 1, nonOrientable: true, b1: 1, w1Class: [1], open: false },
   cylinder: { chi: 0, nonOrientable: false, b1: 1, w1Class: [0], open: true },
   mobius: { chi: 0, nonOrientable: true, b1: 1, w1Class: [1], open: true },
+  // C1: the collapse target — closed orientable, NO gluing word (word '').
+  sphere: { chi: 2, nonOrientable: false, b1: 0, w1Class: [], open: false },
 };
 const DIAG_RESOLUTION = 8; // small enough for the committed GF(2) H₁ pipeline
 
 console.log('R0 surface immersion: degenerate-boundary surfaces -> subdivided immersed Shapes\n');
 
-for (const surface of ['torus', 'klein', 'rp2', 'cylinder', 'mobius']) {
+for (const surface of ['torus', 'klein', 'rp2', 'cylinder', 'mobius', 'sphere']) {
   const target = TARGETS[surface];
   console.log(`----- [${surface}] R=${DIAG_RESOLUTION} (word-glued quotient, immersed) -----`);
   const { shape, correspondence } = immerseSurface({ surface, resolution: DIAG_RESOLUTION });
@@ -157,7 +159,11 @@ for (const surface of ['torus', 'klein', 'rp2', 'cylinder', 'mobius']) {
   check(`${surface}: every grid point lands on a real shape vertex`, Object.values(correspondence.gridVertexTo).every((id) => Boolean(shape.vertices[id])));
   check(`${surface}: identifications land ONLY on boundary grid points (interior stays singleton)`, interiorSingletons && multiClasses.length > 0);
   check(`${surface}: faceCells covers all R² faces`, Object.keys(correspondence.faceCells).length === R * R && F === R * R);
-  check(`${surface}: gluing word recorded (${correspondence.word})`, typeof correspondence.word === 'string' && correspondence.word.length === 4);
+  check(
+    `${surface}: gluing word recorded ("${correspondence.word}")`,
+    typeof correspondence.word === 'string' &&
+      (surface === 'sphere' ? correspondence.word === '' : correspondence.word.length === 4),
+  );
   note(`classes=${Object.keys(correspondence.vertexClasses).length} (merged: ${multiClasses.length}) word=${correspondence.word}`);
 
   // the immersion respects the gluings — INDEPENDENT recheck via the exported map.
@@ -192,9 +198,11 @@ for (const bad of [3, 2.5, 0]) {
   }
   check(`resolution ${bad} is rejected loudly`, threw);
 }
+// (C1 mechanical tooth update: 'sphere' USED to be the unknown-key probe — it is
+// now a real surface, so the probe key moved to a still-unknown one.)
 let badSurface = false;
 try {
-  immerseSurface({ surface: 'sphere', resolution: 8 });
+  immerseSurface({ surface: 'plane', resolution: 8 });
 } catch (error) {
   badSurface = String(error.message).includes('unknown surface');
 }

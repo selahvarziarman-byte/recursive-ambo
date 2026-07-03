@@ -17,21 +17,30 @@
 //        1 pair  — preserving → cylinder ; reversing → möbius
 //        2 pairs — {pres,pres} → torus ; {pres,rev} → klein ; {rev,rev} → rp2
 //   3. ROUTES: 'immersion' (the R0/Part-A immersion renders it, carrying L2
-//      identification + field) · 'patch' (the pre-quotient-patch display — the
-//      field-integration precedent; honest, never a crash, never a dot) ·
-//      'raw' (no parent in the store — nothing better exists; last resort).
+//      identification + field; C2: a replay-verified COLLAPSE routes here as
+//      'sphere' — no word, the collapse target) · 'direct' (C2: a replay-verified
+//      CUT — real positions pass through; the form renders itself, no immersion) ·
+//      'patch' (the pre-quotient-patch display — the field-integration precedent;
+//      honest, never a crash, never a dot) · 'raw' (no parent in the store —
+//      nothing better exists; last resort).
 //
 // Pure + react-free (the diagnostic requires it through the anti-mock hook).
 // DERIVE-ONLY: committed ops + the committed G5.0 materializer by import.
 
 import type { Face, Shape, VertexId } from '../types/geometry';
 import {
+  collapseFace,
   flipGlueFace,
   glueFace,
   type BoundaryPairing,
   type SurfaceTrace,
 } from '../lib/surfaceOperations';
-import { materializeSurfaceResult, type MaterializedSurface } from '../lib/materializeOperation';
+import { cutCell } from '../lib/cutOperation';
+import {
+  materializeCutResult,
+  materializeSurfaceResult,
+  type MaterializedSurface,
+} from '../lib/materializeOperation';
 import type { ImmersedSurfaceKey } from '../lib/surfaceImmersion';
 
 // Parse the materializer's deterministic pairing suffix off a born id:
@@ -60,13 +69,25 @@ export interface BornSurfaceRecovery {
 
 // Recover the born form's identification and REPLAY-VERIFY it: the committed op
 // with the parsed pairings must reproduce the born form byte-for-byte.
+// C2: 'collapse' recoveries carry NO pairings (no word) — the committed collapse
+// itself is replayed and byte-compared.
 export function recoverBornSurface(born: Shape, parent: Shape | null): BornSurfaceRecovery | null {
   if (!parent || born.genealogy.parentShapeId !== parent.id) return null;
   const operation = born.genealogy.operation;
-  if (operation !== 'glue' && operation !== 'flip-glue') return null;
+  if (operation !== 'glue' && operation !== 'flip-glue' && operation !== 'collapse') return null;
   if (born.faces.length !== 1) return null;
   const parentFace = parent.faces.find((face) => face.id === born.faces[0].id);
   if (!parentFace) return null;
+  if (operation === 'collapse') {
+    try {
+      const trace = collapseFace(parent, parentFace);
+      const materialized = materializeSurfaceResult(parent, parentFace, trace);
+      if (JSON.stringify(materialized.shape) !== JSON.stringify(born)) return null;
+      return { pairings: [], trace, materialized, parentFace };
+    } catch {
+      return null;
+    }
+  }
   const pairings = parsePairingSuffix(born.id);
   if (!pairings) return null;
   try {
@@ -104,6 +125,7 @@ export function classifyGluingWord(
 
 export type BornFormRoute =
   | { kind: 'immersion'; surface: ImmersedSurfaceKey; recovery: BornSurfaceRecovery }
+  | { kind: 'direct' } // C2 — cut: real positions pass through; render the form itself (no immersion)
   | {
       kind: 'patch'; // the pre-quotient-patch display (the field-integration precedent)
       parent: Shape;
@@ -115,8 +137,27 @@ export type BornFormRoute =
 export function routeBornForm(born: Shape, parent: Shape | null): BornFormRoute {
   const recovery = recoverBornSurface(born, parent);
   if (recovery) {
-    const surface = classifyGluingWord(recovery.pairings, recovery.parentFace.vertexIds.length);
+    // C2: a collapse recovery has no word — it routes to the SPHERE (the collapse
+    // target); worded recoveries classify by the v0 map as before.
+    const surface =
+      born.genealogy.operation === 'collapse'
+        ? ('sphere' as const)
+        : classifyGluingWord(recovery.pairings, recovery.parentFace.vertexIds.length);
     if (surface) return { kind: 'immersion', surface, recovery };
+  }
+  // C2 — a CUT renders DIRECTLY (its vertices/edges pass through verbatim, real
+  // positions — no immersion), REPLAY-VERIFIED: the one parent face the born form
+  // lost is re-cut through the committed op and byte-compared.
+  if (parent && born.genealogy.parentShapeId === parent.id && born.genealogy.operation === 'cut') {
+    const missing = parent.faces.filter((pf) => !born.faces.some((bf) => bf.id === pf.id));
+    if (missing.length === 1) {
+      try {
+        const replay = materializeCutResult(parent, cutCell(parent, missing[0]));
+        if (JSON.stringify(replay) === JSON.stringify(born)) return { kind: 'direct' };
+      } catch {
+        // fall through to the honest fallbacks
+      }
+    }
   }
   if (parent && born.genealogy.parentShapeId === parent.id) {
     const displayFaces = born.faces

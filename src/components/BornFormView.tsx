@@ -11,15 +11,22 @@
 //                 badged to their quotient classes. Honest, never a crash,
 //                 never a dot. Field-free (an unclassified quotient's complex is
 //                 not recoverable here — nothing is faked).
+//   'direct'    — C2, cut: the born form's vertices/edges pass through verbatim
+//                 (REAL positions) — the primitive viewport IS the honest render,
+//                 labelled so the cut reads as a cut (nothing immersed, nothing
+//                 minted).
 //   'raw'       — no parent in the store: the caller keeps its primitive
 //                 viewport (nothing better exists; surfaced in the label).
+//
+// C2: a replay-verified COLLAPSE routes as 'immersion' with surface 'sphere' —
+// no gluing word (the collapse target), hence the op-routed title.
 
 import { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Shape, Vec3 } from '../types/geometry';
-import { immerseSurface } from '../lib/surfaceImmersion';
+import { immerseSurface, type ImmersedSurfaceKey } from '../lib/surfaceImmersion';
 import { computeFieldForShape } from '../lib/fieldForShape';
 import { ShapeFieldView } from './FieldForShapeOverlay';
 import { SurfaceIdentificationOverlay } from './SurfaceIdentificationOverlay';
@@ -37,7 +44,7 @@ function BornImmersionView({
   surface,
 }: {
   title: string;
-  surface: 'torus' | 'klein' | 'rp2' | 'cylinder' | 'mobius';
+  surface: ImmersedSurfaceKey;
 }) {
   const immersion = useMemo(
     () => immerseSurface({ surface, resolution: IMMERSION_RESOLUTION }),
@@ -47,7 +54,7 @@ function BornImmersionView({
 
   return (
     <ShapeFieldView
-      title={`${title} → ${surface} (word-routed immersion)`}
+      title={`${title} → ${surface} (${surface === 'sphere' ? 'collapse-routed' : 'word-routed'} immersion)`}
       shape={immersion.shape}
       field={field}
     >
@@ -161,6 +168,32 @@ function BornPatchView({
   );
 }
 
+// G3 — the assembled (multi-parent) child: not a fundamental-polygon word, so no
+// immersion; it has REAL positions and (in the committed assemble representation —
+// identification ledger-recorded, faces un-rewritten) a bridge-translatable
+// complex, so it renders with its FIELD via the reused ShapeFieldView, per the
+// measured gate. Anything the field pipeline refuses (parallel classes) falls to
+// the provided fallback — honest, never a crash.
+export function FieldFormView({
+  title,
+  shape,
+  fallback = null,
+}: {
+  title: string;
+  shape: Shape;
+  fallback?: React.ReactNode;
+}) {
+  const field = useMemo(() => {
+    try {
+      return computeFieldForShape(shape);
+    } catch {
+      return null;
+    }
+  }, [shape]);
+  if (!field) return <>{fallback}</>;
+  return <ShapeFieldView title={title} shape={shape} field={field} />;
+}
+
 export interface BornFormViewProps {
   born: Shape;
   parent: Shape | null;
@@ -171,6 +204,33 @@ export function BornFormView({ born, parent, fallback = null }: BornFormViewProp
   const route = useMemo(() => routeBornForm(born, parent), [born, parent]);
   if (route.kind === 'immersion') {
     return <BornImmersionView title={born.name} surface={route.surface} />;
+  }
+  if (route.kind === 'direct') {
+    // C2 — cut: real positions pass through; the primitive viewport (the caller's
+    // fallback renders the born shape itself) IS the honest render, labelled.
+    return (
+      <div style={{ position: 'relative', height: '100%', minHeight: 0 }}>
+        {fallback}
+        <div
+          style={{
+            position: 'absolute',
+            left: 12,
+            top: 12,
+            padding: '8px 10px',
+            borderRadius: 6,
+            background: 'rgba(12,10,9,0.88)',
+            border: '1px solid #292524',
+            color: '#d6d3d1',
+            fontFamily: 'monospace',
+            fontSize: 12,
+            lineHeight: 1.6,
+          }}
+        >
+          <div style={{ fontWeight: 700 }}>{born.name} — cut (direct render)</div>
+          <div>the removed 2-cell is a logged loss; the boundary passes through (now free)</div>
+        </div>
+      </div>
+    );
   }
   if (route.kind === 'patch') {
     return <BornPatchView title={born.name} route={route} />;

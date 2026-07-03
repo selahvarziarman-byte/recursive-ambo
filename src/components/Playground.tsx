@@ -3,7 +3,8 @@ import {
   type PlaygroundForm,
 } from '../store/playgroundStore';
 import type { ShapeId } from '../types/geometry';
-import { BornFormView } from './BornFormView';
+import { BornFormView, FieldFormView } from './BornFormView';
+import { PlaygroundGenealogyView } from './PlaygroundGenealogyView';
 import { PlaygroundInvokePanel } from './PlaygroundInvokePanel';
 import { PlaygroundOperationsPanel } from './PlaygroundOperationsPanel';
 import { PlaygroundViewport } from './PlaygroundViewport';
@@ -53,10 +54,26 @@ export function Playground() {
               ) : null;
             })}
           </div>
+          {/* D2 — the standing genealogy (ADR 0009), alongside the Forms list */}
+          <PlaygroundGenealogyView />
         </aside>
 
         <section className="relative min-h-0">
-          {currentForm?.provenance.origin === 'operated' ? (
+          {currentForm?.provenance.origin === 'born' ? (
+            // G3: an assembled (multi-parent) child — real positions, no polygon
+            // word: render with its field; primitive viewport if the field refuses.
+            <FieldFormView
+              title={currentForm.shape.name}
+              shape={currentForm.shape}
+              fallback={
+                <PlaygroundViewport
+                  shape={currentForm.shape}
+                  selectedVertexId={selectedVertexId}
+                  onSelectVertex={selectVertex}
+                />
+              }
+            />
+          ) : currentForm?.provenance.origin === 'operated' ? (
             // G5.2: a BORN form renders as the real surface its gluing word names
             // (immersion + identification + field), or the pre-quotient patch when
             // unclassified; the primitive viewport only if its parent left the store.

@@ -152,7 +152,13 @@ export function loadForm(builder: FormBuilder, source = ''): Shape {
 // carried-not-minted. [Flagged for the auditor — see REPORT findings.]
 const ASSEMBLY_CHILD_OPERATION: OperationKind = 'assemble';
 
-const ASSEMBLED_SHAPE_ID: ShapeId = 'shape:multiform:assembly';
+// D1 (sanctioned): the id PREFIX — the full assembled shape id is derived in
+// `assemble` DETERMINISTICALLY from (input forms + identification), so the same
+// inputs reproduce the same id (derive-only holds) and DISTINCT assemblies mint
+// DISTINCT ids (two births coexist in one store / genealogy DAG). LINEAGE-INERT:
+// `lineage.primalMultiset` reads `createdBy.sourceVertexIds`, never the container
+// shape id — every R2-sealed lineage value is unchanged by this derivation.
+const ASSEMBLED_SHAPE_ID_PREFIX: ShapeId = 'shape:multiform:assembly';
 
 export interface VertexMerge {
   resultId: VertexId; // the child the identified parents collapse to (e.g. "A*")
@@ -184,6 +190,13 @@ export function assemble(forms: Shape[], identification: BoundaryIdentification)
   if (forms.length < 2) {
     throw new Error(`multiform.assemble: arity must be >= 2 (got ${forms.length})`);
   }
+
+  // D1: the child's identity is fixed by its inputs (see ASSEMBLED_SHAPE_ID_PREFIX).
+  const assembledShapeId: ShapeId = [
+    ASSEMBLED_SHAPE_ID_PREFIX,
+    forms.map((form) => form.id).join('+'),
+    identification.merges.map((merge) => `${merge.resultId}=${merge.sources.join('~')}`).join(';'),
+  ].join(':');
 
   // (1) DISJOINT-UNION — vertices (form order), edges, faces. Ids are already disjoint by
   // namespacing; we VERIFY that (fail loud on any collision) rather than assume it.
@@ -238,7 +251,7 @@ export function assemble(forms: Shape[], identification: BoundaryIdentification)
       position: centroid(merge.sources.map((source) => vertices[source].position)),
       data: createDefaultVertexData(merge.resultId),
       createdBy: {
-        shapeId: ASSEMBLED_SHAPE_ID,
+        shapeId: assembledShapeId,
         operation: ASSEMBLY_CHILD_OPERATION,
         sourceVertexIds: [...merge.sources],
       },
@@ -249,7 +262,7 @@ export function assemble(forms: Shape[], identification: BoundaryIdentification)
   const ledger = buildLedgerFromIdentification(sourceSiteIds, resultOf);
 
   const shape: Shape = {
-    id: ASSEMBLED_SHAPE_ID,
+    id: assembledShapeId,
     name: `assembly(${forms.map((form) => form.name).join('+')})`,
     vertices,
     edges,

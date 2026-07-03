@@ -6,9 +6,10 @@
 // + committed G5.0 materializer) ROUTES to the correct immersion class — the
 // classifier derived from the committed pairings/pairSigns, never per-op; the
 // recovery is REPLAY-VERIFIED (a foreign id never routes); anything unclassified
-// (non-opposite pairing, collapse) falls back to the pre-quotient PATCH (no dot,
+// (e.g. a non-opposite pairing) falls back to the pre-quotient PATCH (no dot,
 // no throw); no parent in the store → 'raw' (surfaced). The immersion each class
-// routes to actually BUILDS (Part A + R0).
+// routes to actually BUILDS (Part A + R0). C2: a replay-verified collapse routes
+// to the SPHERE immersion (the collapse target — upgraded from the patch fallback).
 //
 // Anti-mock: requiring the REAL TS modules through the transpile hook is the guard.
 
@@ -72,29 +73,21 @@ for (const entry of TWO_PAIR) {
   check(`§1 ${entry.name}: classifyGluingWord(pairings) === '${entry.expected}'`, classifyGluingWord(entry.pairings, 4) === entry.expected);
   routedTable.push({ word: entry.pairings.map((p) => `${p.edgeA}-${p.edgeB}${p.mode[0]}`).join(':'), signs: JSON.stringify(trace.pairSigns), routed: route.kind === 'immersion' ? route.surface : route.kind });
 }
-// (b) SINGLE-PAIR words — the (soon) single-pair registry ops: the CLASSIFIER is
-// proven ready against the committed pairSigns; end-to-end materialization is NOT
-// possible today — FINDING (surfaced, guard held): G5.0's pairing reconstruction
-// requires every boundary edge paired (`remaining.length !== 0`), so an OPEN
-// (partial-pairing) certificate is refused ("NO pairing reproduces this trace").
-// materializeOperation is byte-unchanged per THIS mandate's guard; the one-line
-// completeness fix needs its own sanction (reported for the engineer).
+// (b) SINGLE-PAIR words — end-to-end since the sanctioned G5.0 open-certificate
+// fix: an open (partial-pairing) certificate materializes with FREE rim edges,
+// so cylinder/Möbius born forms route to their Part-A immersions.
 const SINGLE_PAIR = [
   { name: 'single preserving → cylinder', op: glueFace, pairings: [P(0, 2, 'preserving')], expected: 'cylinder', signs: [1] },
   { name: 'single reversing → mobius', op: flipGlueFace, pairings: [P(0, 2, 'reversing')], expected: 'mobius', signs: [-1] },
 ];
 for (const entry of SINGLE_PAIR) {
   const trace = entry.op(parent, face, entry.pairings);
+  const born = materializeSurfaceResult(parent, face, trace).shape;
+  const route = routeBornForm(born, parent);
   const signsMatch = JSON.stringify(trace.pairSigns) === JSON.stringify(entry.signs);
-  check(`§1 ${entry.name}: committed pairSigns ${JSON.stringify(trace.pairSigns)}; classifier ready`, signsMatch && classifyGluingWord(entry.pairings, 4) === entry.expected);
-  let openRefused = false;
-  try {
-    materializeSurfaceResult(parent, face, trace);
-  } catch (error) {
-    openRefused = String(error.message).includes('NO pairing reproduces');
-  }
-  check(`§1 ${entry.name}: FINDING — G5.0 refuses the open (partial-pairing) certificate today (surfaced, not patched: the guard holds)`, openRefused);
-  routedTable.push({ word: entry.pairings.map((p) => `${p.edgeA}-${p.edgeB}${p.mode[0]}`).join(':'), signs: JSON.stringify(trace.pairSigns), routed: `${entry.expected} (classifier ready; materializer gap — finding)` });
+  check(`§1 ${entry.name}: committed pairSigns ${JSON.stringify(trace.pairSigns)}; routed 'immersion'/${entry.expected} (END-TO-END since the sanctioned fix)`, signsMatch && route.kind === 'immersion' && route.surface === entry.expected);
+  check(`§1 ${entry.name}: classifyGluingWord(pairings) === '${entry.expected}'`, classifyGluingWord(entry.pairings, 4) === entry.expected);
+  routedTable.push({ word: entry.pairings.map((p) => `${p.edgeA}-${p.edgeB}${p.mode[0]}`).join(':'), signs: JSON.stringify(trace.pairSigns), routed: route.kind === 'immersion' ? route.surface : route.kind });
 }
 
 // each routed class's immersion BUILDS (Part A + R0) — the render target exists.
@@ -131,10 +124,13 @@ try {
 check('§3 a non-opposite word is UNCLASSIFIED → patch fallback (no throw)', !adjacentThrew && adjacentRoute.kind === 'patch');
 check('§3 the patch carries the parent face + the quotient classes (renderable — not a dot)', adjacentRoute.kind === 'patch' && adjacentRoute.displayFaces.length === 1 && adjacentRoute.displayFaces[0].id === face.id && Object.keys(adjacentRoute.vertexClassOf).length > 0);
 check('§3 classifyGluingWord rejects the non-opposite structure', classifyGluingWord([P(0, 1, 'reversing'), P(2, 3, 'reversing')], 4) === null);
-// (b) collapse — a surface op outside the glue family: recovery declines → patch.
+// (b) collapse — C2 UPGRADE (this row asserted the honest 'patch' fallback until
+// the sphere immersion landed): a replay-verified collapse now routes to the SPHERE.
 const collapseBorn = materializeSurfaceResult(parent, face, collapseFace(parent, face)).shape;
 const collapseRoute = routeBornForm(collapseBorn, parent);
-check("§3 a collapse born form routes to 'patch' (op outside the glue family; honest fallback)", collapseRoute.kind === 'patch');
+check("§3 a collapse born form routes to the 'sphere' immersion (C2 — the collapse target)", collapseRoute.kind === 'immersion' && collapseRoute.surface === 'sphere');
+// a FOREIGN collapse claim (a parent that never collapsed to this form) still declines:
+check('§3 a foreign collapse claim never routes to an immersion (replay declines)', routeBornForm({ ...collapseBorn, genealogy: { ...collapseBorn.genealogy, parentShapeId: wrongParent.id } }, wrongParent).kind !== 'immersion');
 // (c) no parent in the store → 'raw' (the caller keeps its primitive viewport).
 check("§3 no parent → 'raw' (surfaced last resort)", routeBornForm(rp2Born, null).kind === 'raw');
 

@@ -1,11 +1,17 @@
 import { create } from 'zustand';
 import { loadForm, type FormBuilder } from '../lib/multiform';
-import { getPlaygroundOperation } from '../playground/playgroundOperations';
+import {
+  ASSEMBLE_OPERATION_ID,
+  canAssemblePair,
+  executeAssemblePair,
+  getAssemblePairDisabledReason,
+  getPlaygroundOperation,
+} from '../playground/playgroundOperations';
 import type { CellId, FaceId, Shape, ShapeId, VertexId } from '../types/geometry';
 
 export interface PlaygroundProvenance {
   source: string | null;
-  origin: 'invoked' | 'loaded' | 'operated';
+  origin: 'invoked' | 'loaded' | 'operated' | 'born';
 }
 
 export interface PlaygroundForm {
@@ -30,6 +36,7 @@ interface PlaygroundState extends PlaygroundSnapshot {
   selectVertex: (vertexId: VertexId | null) => void;
   selectFace: (faceId: FaceId | null) => void;
   applyOperationToSelection: (operationId: string) => Shape;
+  applyAssembleToSelection: (secondFormId: ShapeId) => Shape;
   removeForm: (shapeId: ShapeId) => void;
   resetPlayground: () => void;
 }
@@ -203,6 +210,28 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     get().addForm(born, { source: operation.id, origin: 'operated' });
 
     return born;
+  },
+  // G3 — the arity-2 birth: assemble the CURRENT form (A) with a second form (B)
+  // via the committed `assemble` and the v0 canonical identification. The child
+  // is a multi-parent shape-root carrying BOTH parents through the committed
+  // ledger/pull-back; `buildGenealogyDag` over the store recovers ancestors {A,B}.
+  applyAssembleToSelection: (secondFormId) => {
+    const state = get();
+    const formA = state.currentFormId ? state.forms[state.currentFormId] : null;
+    const formB = state.forms[secondFormId] ?? null;
+    if (!formA) {
+      throw new Error('playgroundStore: no form selected — assemble needs a current form (A)');
+    }
+    if (!canAssemblePair(formA.shape, formB?.shape ?? null)) {
+      throw new Error(
+        `playgroundStore: assemble is not applicable — ${getAssemblePairDisabledReason(formA.shape, formB?.shape ?? null) ?? 'ineligible pair'}`,
+      );
+    }
+    const child = executeAssemblePair(formA.shape, (formB as PlaygroundForm).shape);
+
+    get().addForm(child, { source: ASSEMBLE_OPERATION_ID, origin: 'born' });
+
+    return child;
   },
   removeForm: (shapeId) => {
     set((state) => {

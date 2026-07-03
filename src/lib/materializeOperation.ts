@@ -156,10 +156,12 @@ function reconstructPairings(form: Shape, face: Face, trace: SurfaceTrace): Boun
   const want = traceSignature(trace);
   const matches: BoundaryPairing[][] = [];
 
-  // assign each pairing an edgeB from the free edges (tiny search; n <= 8 ⇒ ≤ 4! = 24)
+  // assign each pairing an edgeB from the free edges (tiny search; n <= 8 ⇒ ≤ 4! = 24).
+  // Edges left UNASSIGNED are FREE RIM edges (an OPEN certificate — cylinder/Möbius):
+  // full coverage is NOT required (the G5.2 finding, fixed under this sanction) —
+  // the replay verification still pins the identification exactly.
   const assign = (i: number, remaining: number[], acc: BoundaryPairing[]): void => {
     if (i === pairCount) {
-      if (remaining.length !== 0) return;
       const candidate = acc.map((p) => ({ ...p }));
       const op = trace.surface === 'flip-glue' ? flipGlueFace : glueFace;
       const replay = op(form, face, candidate);
