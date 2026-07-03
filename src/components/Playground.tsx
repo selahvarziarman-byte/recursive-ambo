@@ -14,8 +14,10 @@ export function Playground() {
   const formOrder = usePlaygroundStore((state) => state.formOrder);
   const currentFormId = usePlaygroundStore((state) => state.currentFormId);
   const selectedVertexId = usePlaygroundStore((state) => state.selectedVertexId);
+  const selectedFaceId = usePlaygroundStore((state) => state.selectedFaceId);
   const selectForm = usePlaygroundStore((state) => state.selectForm);
   const selectVertex = usePlaygroundStore((state) => state.selectVertex);
+  const selectFace = usePlaygroundStore((state) => state.selectFace);
   const currentForm = currentFormId ? forms[currentFormId] ?? null : null;
 
   return (
@@ -70,6 +72,8 @@ export function Playground() {
                   shape={currentForm.shape}
                   selectedVertexId={selectedVertexId}
                   onSelectVertex={selectVertex}
+                  selectedFaceId={selectedFaceId}
+                  onSelectFace={selectFace}
                 />
               }
             />
@@ -89,6 +93,8 @@ export function Playground() {
                   shape={currentForm.shape}
                   selectedVertexId={selectedVertexId}
                   onSelectVertex={selectVertex}
+                  selectedFaceId={selectedFaceId}
+                  onSelectFace={selectFace}
                 />
               }
             />
@@ -97,6 +103,8 @@ export function Playground() {
               shape={currentForm?.shape ?? null}
               selectedVertexId={selectedVertexId}
               onSelectVertex={selectVertex}
+              selectedFaceId={selectedFaceId}
+              onSelectFace={selectFace}
             />
           )}
         </section>

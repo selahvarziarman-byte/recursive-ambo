@@ -7,6 +7,14 @@ import {
   getAssemblePairDisabledReason,
   getPlaygroundOperation,
 } from '../playground/playgroundOperations';
+import {
+  executeAssembleWithEdges,
+  executeCustomGlue,
+  validateAssembleEdges,
+  validateCustomPairings,
+  type AssembleEdgeChoice,
+} from '../playground/customGluing';
+import type { BoundaryPairing } from '../lib/surfaceOperations';
 import type { CellId, FaceId, Shape, ShapeId, VertexId } from '../types/geometry';
 
 export interface PlaygroundProvenance {
@@ -36,7 +44,8 @@ interface PlaygroundState extends PlaygroundSnapshot {
   selectVertex: (vertexId: VertexId | null) => void;
   selectFace: (faceId: FaceId | null) => void;
   applyOperationToSelection: (operationId: string) => Shape;
-  applyAssembleToSelection: (secondFormId: ShapeId) => Shape;
+  applyCustomGlueToSelection: (pairings: BoundaryPairing[]) => Shape;
+  applyAssembleToSelection: (secondFormId: ShapeId, edgeChoice?: AssembleEdgeChoice) => Shape;
   removeForm: (shapeId: ShapeId) => void;
   resetPlayground: () => void;
 }
@@ -211,11 +220,38 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
 
     return born;
   },
+  // C4 — the interactive gluing-picker: an ARBITRARY boundary-edge pairing on
+  // the selected face (unpaired edges stay free — an open surface), through the
+  // committed ops + G5.0 materializer. The pure `customGluing` layer gates it
+  // (this action throws loudly on an invalid choice; the UI disables first).
+  applyCustomGlueToSelection: (pairings) => {
+    const state = get();
+    const form = state.currentFormId ? state.forms[state.currentFormId] : null;
+    if (!form) {
+      throw new Error('playgroundStore: no form selected — nothing to glue');
+    }
+    const selectedFace =
+      (state.selectedFaceId &&
+        form.shape.faces.find((face) => face.id === state.selectedFaceId)) ||
+      null;
+    const reason = validateCustomPairings(selectedFace, pairings);
+    if (reason) {
+      throw new Error(`playgroundStore: custom glue is not applicable — ${reason}`);
+    }
+    const born = executeCustomGlue(form.shape, selectedFace as NonNullable<typeof selectedFace>, pairings);
+
+    get().addForm(born, { source: 'glue-custom', origin: 'operated' });
+
+    return born;
+  },
   // G3 — the arity-2 birth: assemble the CURRENT form (A) with a second form (B)
   // via the committed `assemble` and the v0 canonical identification. The child
   // is a multi-parent shape-root carrying BOTH parents through the committed
   // ledger/pull-back; `buildGenealogyDag` over the store recovers ancestors {A,B}.
-  applyAssembleToSelection: (secondFormId) => {
+  // C4 — an optional edgeChoice picks WHICH boundary edge of A and of B the
+  // merge identifies (endpoint-parallel or reversed); omitted → the canonical
+  // default, byte-identical to the pre-C4 path.
+  applyAssembleToSelection: (secondFormId, edgeChoice) => {
     const state = get();
     const formA = state.currentFormId ? state.forms[state.currentFormId] : null;
     const formB = state.forms[secondFormId] ?? null;
@@ -227,7 +263,15 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
         `playgroundStore: assemble is not applicable — ${getAssemblePairDisabledReason(formA.shape, formB?.shape ?? null) ?? 'ineligible pair'}`,
       );
     }
-    const child = executeAssemblePair(formA.shape, (formB as PlaygroundForm).shape);
+    if (edgeChoice) {
+      const reason = validateAssembleEdges(formA.shape, formB?.shape ?? null, edgeChoice);
+      if (reason) {
+        throw new Error(`playgroundStore: assemble edge choice is not applicable — ${reason}`);
+      }
+    }
+    const child = edgeChoice
+      ? executeAssembleWithEdges(formA.shape, (formB as PlaygroundForm).shape, edgeChoice)
+      : executeAssemblePair(formA.shape, (formB as PlaygroundForm).shape);
 
     get().addForm(child, { source: ASSEMBLE_OPERATION_ID, origin: 'born' });
 

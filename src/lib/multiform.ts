@@ -272,7 +272,12 @@ export function assemble(forms: Shape[], identification: BoundaryIdentification)
     genealogy: {
       parentShapeId: null,
       operation: ASSEMBLY_CHILD_OPERATION,
-      generationDepth: 1,
+      // D5 (sanctioned): the ADR 0009 arrow — the child is STRICTLY deeper than
+      // every input form, so assemblies of assemblies land at their true
+      // generation. Two depth-0 forms still yield 1 (the R2 base case,
+      // unchanged). LINEAGE-INERT: depth is read by the DAG layer only, never
+      // by `primalMultiset`/the ledger — the sealed lineage values are untouched.
+      generationDepth: Math.max(...forms.map((form) => form.genealogy.generationDepth)) + 1,
       sourceVertexIds: sourceSiteIds,
       createdVertexIds: [...childIds],
       createdAt: '',

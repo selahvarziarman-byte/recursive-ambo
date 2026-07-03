@@ -2,12 +2,15 @@ import { OrbitControls } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import type { Face, Shape, Vec3, VertexId } from '../types/geometry';
+import type { Face, FaceId, Shape, Vec3, VertexId } from '../types/geometry';
 
 interface PlaygroundViewportProps {
   shape: Shape | null;
   selectedVertexId: VertexId | null;
   onSelectVertex: (vertexId: VertexId | null) => void;
+  // C5 — click-to-select-face: optional so face-less callers keep today's shape.
+  selectedFaceId?: FaceId | null;
+  onSelectFace?: (faceId: FaceId | null) => void;
 }
 
 interface SceneBounds {
@@ -19,8 +22,12 @@ export function PlaygroundViewport({
   shape,
   selectedVertexId,
   onSelectVertex,
+  selectedFaceId = null,
+  onSelectFace,
 }: PlaygroundViewportProps) {
-  const faceGeometry = useMemo(() => (shape ? createFaceGeometry(shape) : null), [shape]);
+  // C5 — one mesh PER FACE (each its own raycast target), replacing the single
+  // merged face geometry: click a face → it becomes the op target.
+  const faceMeshes = useMemo(() => (shape ? createPerFaceGeometries(shape) : []), [shape]);
   const edgeGeometry = useMemo(() => (shape ? createEdgeGeometry(shape) : null), [shape]);
   const bounds = useMemo(() => (shape ? computeSceneBounds(shape) : null), [shape]);
 
@@ -40,7 +47,10 @@ export function PlaygroundViewport({
           position: getCameraPosition(bounds),
           fov: 45,
         }}
-        onPointerMissed={() => onSelectVertex(null)}
+        onPointerMissed={() => {
+          onSelectVertex(null);
+          onSelectFace?.(null); // C5 — empty space deselects the face too
+        }}
       >
         <color attach="background" args={['#0c0a09']} />
         <ambientLight intensity={0.62} />
@@ -48,17 +58,38 @@ export function PlaygroundViewport({
         <directionalLight position={[-3, -2, -4]} intensity={0.45} color="#67e8f9" />
         <gridHelper args={[6, 12, '#57534e', '#292524']} position={[0, -1.35, 0]} />
 
-        {faceGeometry ? (
-          <mesh geometry={faceGeometry}>
-            <meshStandardMaterial
-              color="#67e8f9"
-              opacity={0.34}
-              roughness={0.82}
-              side={THREE.DoubleSide}
-              transparent
-            />
-          </mesh>
-        ) : null}
+        {faceMeshes.map(({ face, geometry }) => {
+          const isSelected = face.id === selectedFaceId;
+          return (
+            <mesh
+              key={face.id}
+              geometry={geometry}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSelectFace?.(face.id);
+              }}
+              onPointerEnter={(event) => {
+                if (!onSelectFace) return;
+                event.stopPropagation();
+                document.body.style.cursor = 'pointer';
+              }}
+              onPointerLeave={() => {
+                if (!onSelectFace) return;
+                document.body.style.cursor = 'auto';
+              }}
+            >
+              <meshStandardMaterial
+                color={isSelected ? '#5eead4' : '#67e8f9'}
+                opacity={isSelected ? 0.55 : 0.34}
+                emissive={isSelected ? '#134e4a' : '#000000'}
+                emissiveIntensity={isSelected ? 0.9 : 0}
+                roughness={0.82}
+                side={THREE.DoubleSide}
+                transparent
+              />
+            </mesh>
+          );
+        })}
         {edgeGeometry ? (
           <lineSegments geometry={edgeGeometry} raycast={() => null}>
             <lineBasicMaterial color="#cffafe" transparent opacity={0.92} />
@@ -110,27 +141,36 @@ export function PlaygroundViewport({
         />
       </Canvas>
       <div className="pointer-events-none absolute left-3 top-3 rounded border border-stone-800 bg-stone-950/85 px-3 py-2 text-xs text-stone-300 shadow-lg">
-        {selectedVertexId ? `Selected vertex ${selectedVertexId}` : 'Select a vertex in the playground form'}
+        <div>
+          {selectedVertexId
+            ? `Selected vertex ${selectedVertexId}`
+            : 'Select a vertex in the playground form'}
+        </div>
+        {onSelectFace ? (
+          <div className={selectedFaceId ? 'text-teal-300' : 'text-stone-500'}>
+            {selectedFaceId
+              ? `Selected face ${selectedFaceId}`
+              : 'Click a face to target it (empty space deselects)'}
+          </div>
+        ) : null}
       </div>
     </div>
   );
 }
 
-function createFaceGeometry(shape: Shape): THREE.BufferGeometry | null {
-  const positions: number[] = [];
-
+// C5 — one geometry per face, so each face is its own raycast/select target.
+function createPerFaceGeometries(shape: Shape): { face: Face; geometry: THREE.BufferGeometry }[] {
+  const meshes: { face: Face; geometry: THREE.BufferGeometry }[] = [];
   for (const face of shape.faces) {
+    const positions: number[] = [];
     appendFaceTriangles(shape, face, positions);
+    if (!positions.length) continue;
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.computeVertexNormals();
+    meshes.push({ face, geometry });
   }
-
-  if (!positions.length) {
-    return null;
-  }
-
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geometry.computeVertexNormals();
-  return geometry;
+  return meshes;
 }
 
 function appendFaceTriangles(shape: Shape, face: Face, positions: number[]): void {
