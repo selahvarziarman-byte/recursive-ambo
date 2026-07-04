@@ -14,6 +14,11 @@ import {
   validateCustomPairings,
   type AssembleEdgeChoice,
 } from '../playground/customGluing';
+import {
+  deserializeSnapshot,
+  serializeSnapshot,
+  type PlaygroundSnapshotFile,
+} from '../playground/snapshot';
 import type { BoundaryPairing } from '../lib/surfaceOperations';
 import type { CellId, FaceId, Shape, ShapeId, VertexId } from '../types/geometry';
 
@@ -34,6 +39,7 @@ interface PlaygroundSnapshot {
   selectedCellId: CellId | null;
   selectedVertexId: VertexId | null;
   selectedFaceId: FaceId | null;
+  snapshots: PlaygroundSnapshotFile[]; // E1 — the in-app snapshot list (session-scoped)
 }
 
 interface PlaygroundState extends PlaygroundSnapshot {
@@ -46,6 +52,8 @@ interface PlaygroundState extends PlaygroundSnapshot {
   applyOperationToSelection: (operationId: string) => Shape;
   applyCustomGlueToSelection: (pairings: BoundaryPairing[]) => Shape;
   applyAssembleToSelection: (secondFormId: ShapeId, edgeChoice?: AssembleEdgeChoice) => Shape;
+  saveFormAsSnapshot: (formId: ShapeId) => PlaygroundSnapshotFile;
+  loadSnapshot: (file: PlaygroundSnapshotFile, loadSource?: string) => Shape;
   removeForm: (shapeId: ShapeId) => void;
   resetPlayground: () => void;
 }
@@ -81,6 +89,7 @@ function createInitialPlaygroundSnapshot(): PlaygroundSnapshot {
     selectedCellId: null,
     selectedVertexId: null,
     selectedFaceId: null,
+    snapshots: [],
   };
 }
 
@@ -276,6 +285,24 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     get().addForm(child, { source: ASSEMBLE_OPERATION_ID, origin: 'born' });
 
     return child;
+  },
+  // E1 — snapshot save/load (ADR 0010): a self-contained serialization out, a
+  // source-namespaced form in (`origin:'loaded'`; the source is a NAME). The
+  // pure `snapshot` module owns the format + the co-location ≠ identity
+  // namespacing (the committed multiform mechanism, reused).
+  saveFormAsSnapshot: (formId) => {
+    const form = get().forms[formId];
+    if (!form) {
+      throw new Error(`playgroundStore: no form "${formId}" to snapshot`);
+    }
+    const file = serializeSnapshot(form.shape, form.provenance.source ?? 'playground');
+    set((state) => ({ snapshots: [...state.snapshots, file] }));
+    return file;
+  },
+  loadSnapshot: (file, loadSource) => {
+    const { shape, provenance } = deserializeSnapshot(file, loadSource);
+    get().addForm(shape, provenance);
+    return shape;
   },
   removeForm: (shapeId) => {
     set((state) => {

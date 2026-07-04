@@ -7,6 +7,7 @@ import { BornFormView, FieldFormView } from './BornFormView';
 import { PlaygroundGenealogyView } from './PlaygroundGenealogyView';
 import { PlaygroundInvariantsPanel } from './PlaygroundInvariantsPanel';
 import { PlaygroundInvokePanel } from './PlaygroundInvokePanel';
+import { PlaygroundSnapshotPanel } from './PlaygroundSnapshotPanel';
 import { PlaygroundOperationsPanel } from './PlaygroundOperationsPanel';
 import { PlaygroundViewport } from './PlaygroundViewport';
 
@@ -118,6 +119,8 @@ export function Playground() {
           </div>
           {/* E2 — the selected form's topology, read from the committed certifiers */}
           <PlaygroundInvariantsPanel />
+          {/* E1 — self-contained snapshot save/load across universes (ADR 0010) */}
+          <PlaygroundSnapshotPanel />
         </aside>
       </div>
     </main>
