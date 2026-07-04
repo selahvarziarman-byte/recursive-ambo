@@ -152,9 +152,35 @@ check('③ the shared vertex-link counts: V=6 E=6 F=2 (3 ends + 3 corner-arcs + 
 note(`③ EMITTED SEAL — shared vertex-link: components=${sharedVertexFailure.components} χ=${sharedVertexFailure.chi} counts=${JSON.stringify(sharedVertexLink.counts)}`);
 note(`③ raw-boundary noise: ${pinchBReport.failures.length - 1} further failures (open-complex boundary — every raw corner is a disk χ=1, every boundary edge an arc)`);
 
-// ===== ④ deferred =====
-console.log('\n----- [④] (deferred) connected non-sphere vertex-link (FAIL(b2)-by-χ) -----');
-note('④ NOT in the researcher re-issue — a DEFERRED VALIDATION GAP, to be co-derived with the researcher once the extractor exists (this build). The b2-χ clause is exercised only by the pinch fixtures\' raw boundary disks (χ=1), not by a connected CLOSED non-sphere link.');
+// ===== ④ the (b2)-χ case — RESEARCHER-PINNED, ENGINEER-VERIFIED (the twist) =====
+console.log('\n----- [④] CASE-4 (b2-χ): twisted opposite-face pairing — connected TORUS vertex-link -----');
+// coordinates normalized to {0,1}³ (committed positions are ±1); the researcher's
+// directional A→B coordinate bijections, all mode 'preserving':
+const coordOf = (id) => positionOf.get(id).map((x) => (x > 0 ? 1 : 0)).join('');
+const coordMap = (faceA, faceB, table) => {
+  const byCoord = new Map(faceB.cycle.map((id) => [coordOf(id), id]));
+  const map = {};
+  for (const u of faceA.cycle) {
+    const target = byCoord.get(table[coordOf(u)]);
+    if (!target) throw new Error(`case-4 map: no faceB vertex at coord ${table[coordOf(u)]}`);
+    map[u] = target;
+  }
+  return map;
+};
+const CASE4_PATTERN = [
+  { faceA: LEFT.id, faceB: RIGHT.id, mode: 'preserving', map: coordMap(LEFT, RIGHT, { '000': '100', '010': '110', '011': '111', '001': '101' }) },
+  { faceA: FRONT.id, faceB: BACK.id, mode: 'preserving', map: coordMap(FRONT, BACK, { '000': '110', '100': '111', '101': '011', '001': '010' }) },
+  { faceA: BOTTOM.id, faceB: TOP.id, mode: 'preserving', map: coordMap(BOTTOM, TOP, { '000': '111', '100': '011', '110': '001', '010': '101' }) },
+];
+const case4 = glueFaces(cube, CASE4_PATTERN);
+check('④ glueFaces builds the twisted pattern (well-formed square bijections; no throw)', Boolean(case4));
+check('④ counts {v:1, e:2, f:3, c:1}, Tier-1 χ = 1 (pseudomanifold — χ≠0 cross-confirms not-a-manifold)', eq(case4.counts, { v: 1, e: 2, f: 3, c: 1 }) && case4.chi === 1);
+const case4Report = classifyLevel3Soundness(case4);
+check("④ clause (a) PASSES: every edge-link 'interior' (both classes)", case4Report.edgeLinks.length === 2 && case4Report.edgeLinks.every((l) => l.decomposition.valence === 'interior'));
+const case4Vertex = case4Report.vertexLinks[0];
+check('④ the ONE vertex-link is a connected TORUS: counts {v:4, e:12, f:8}, χ=0, components=1', case4Report.vertexLinks.length === 1 && eq(case4Vertex.counts, { v: 4, e: 12, f: 8 }) && case4Vertex.chi === 0 && case4Vertex.components === 1);
+check("④ gate: sound=false with EXACTLY one failure — clause 'b2-chi' {components:1, chi:0}; NO (a), NO b2-connectivity", case4Report.sound === false && case4Report.failures.length === 1 && case4Report.failures[0].clause === 'b2-chi' && case4Report.failures[0].components === 1 && case4Report.failures[0].chi === 0);
+note(`④ SEALED — vertex-link ${JSON.stringify(case4Vertex.counts)} χ=${case4Vertex.chi} components=${case4Vertex.components}; failures=${JSON.stringify(case4Report.failures.map((f) => f.clause))}`);
 
 // ===== teeth: well-formedness + op contracts =====
 console.log('\n----- [teeth] WELL-FORMEDNESS + CONTRACTS -----');
@@ -182,7 +208,7 @@ check('tooth: flipGlueFaces refuses an all-preserving pattern', throws(() => fli
 check('tooth: a face pairing with ITSELF refuses', throws(() => glueFaces(cube, [{ faceA: LEFT.id, faceB: LEFT.id, mode: 'preserving', map: {} }, T3_PATTERN[1], T3_PATTERN[2]]), 'itself'));
 
 console.log(
-  `\n--- level-3 Build 1 (3-torus PASS · PINCH-A FAIL(a) 'junction' · PINCH-B FAIL(b2)-connectivity χ=2 · teeth): ${
+  `\n--- level-3 gate (3-torus PASS · PINCH-A FAIL(a) 'junction' · PINCH-B FAIL(b2)-connectivity χ=2 · CASE-4 FAIL(b2)-χ torus-link · teeth): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
   } ---`,
 );
