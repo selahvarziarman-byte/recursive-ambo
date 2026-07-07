@@ -13,7 +13,28 @@
 // `shape.genealogy.generationDepth`); integrity is carried through, never hidden.
 
 import type { OperationKind, Shape, ShapeId } from '../types/geometry';
-import { buildGenealogyDag } from '../lib/genealogyDag';
+import { ancestorsOf, buildGenealogyDag, type GenealogyDag, type GenealogyEdge } from '../lib/genealogyDag';
+
+// Q3 / D6-view — the DEFAULT rendering draws DIRECT-parent edges only. The
+// committed `buildGenealogyDag` recovers parents from the carried-root
+// pull-back, so a deep assembled child also gets DIRECT edges to its
+// grandparents (their created vertices ride in its shape-level sources). The
+// view transitively REDUCES those — LOSSLESSLY: an edge (p → c) is dropped iff
+// some OTHER parent q of c already reaches p (so reachability, and the
+// committed `carriedRoots` attribute, preserve the full material ancestry —
+// it is just not drawn by default). `buildGenealogyDag` stays byte-unchanged;
+// this is view-layer, exported pure for the diagnostic.
+export function transitiveReduceEdges(dag: GenealogyDag): GenealogyEdge[] {
+  return dag.edges.filter(
+    (edge) =>
+      !dag.edges.some(
+        (other) =>
+          other.child === edge.child &&
+          other.parent !== edge.parent &&
+          ancestorsOf(dag, other.parent).includes(edge.parent),
+      ),
+  );
+}
 
 export interface GenealogyViewNode {
   id: ShapeId;
@@ -86,7 +107,8 @@ export function layoutGenealogy(shapes: Shape[]): GenealogyViewModel {
   }
 
   const nodeAt = new Map(nodes.map((node) => [node.id, node]));
-  const edges: GenealogyViewEdge[] = dag.edges.map((edge) => {
+  // Q3 — the default view draws the transitively-REDUCED (direct-parent) edges.
+  const edges: GenealogyViewEdge[] = transitiveReduceEdges(dag).map((edge) => {
     const parent = nodeAt.get(edge.parent);
     const child = nodeAt.get(edge.child);
     if (!parent || !child) {

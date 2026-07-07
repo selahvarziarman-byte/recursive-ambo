@@ -44,6 +44,9 @@ import {
 import { cutCell } from '../lib/cutOperation';
 import { materializeCutResult, materializeSurfaceResult } from '../lib/materializeOperation';
 import { assemble, type BoundaryIdentification } from '../lib/multiform';
+import { previewSurfaceDual, surfaceDual } from '../lib/surfaceDual';
+import { recoverBornSurface } from './bornFormRouting';
+import type { AssembledComplex } from '../lib/globalW1';
 
 export interface PlaygroundSelection {
   faceId: FaceId | null;
@@ -53,6 +56,10 @@ export interface PlaygroundOperationContext {
   form: Shape;
   selectedFaceId: FaceId | null;
   selectedFace: Face | null;
+  // Q6/dual (additive, optional): the form's parent when it is in the store —
+  // a QUOTIENT born form's faithful complex is only reachable by replay
+  // recovery against its parent (the G5.2 route). Face-targeted ops ignore it.
+  parentShape?: Shape | null;
 }
 
 export interface PlaygroundOperation {
@@ -256,6 +263,35 @@ export const cutFaceOperation: PlaygroundOperation = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// Q6 — the surface (Poincaré) dual: a WHOLE-FORM op (face selection ignored).
+// Gated by the committed decomposeLink soundness inside `surfaceDual` (refuses
+// bounded / non-manifold / pinched inputs with the reason). A quotient born
+// form's faithful complex is recovered by replay against its parent.
+// ---------------------------------------------------------------------------
+
+function faithfulComplexFor(form: Shape, parentShape: Shape | null | undefined): AssembledComplex | undefined {
+  const recovery = recoverBornSurface(form, parentShape ?? null);
+  return recovery ? recovery.materialized.complex : undefined;
+}
+
+export const surfaceDualOperation: PlaygroundOperation = {
+  id: 'dual',
+  label: 'Dual (surface Poincaré)',
+  description:
+    'The n=2 Poincaré dual of a sound closed surface — faces↔vertices, edges self-paired; χ/w₁/genus preserved; M** = M. Refuses bounded/non-manifold forms.',
+  canApply: (context) =>
+    previewSurfaceDual(context.form, { complex: faithfulComplexFor(context.form, context.parentShape) }).ok,
+  getDisabledReason: (context) => {
+    const probe = previewSurfaceDual(context.form, {
+      complex: faithfulComplexFor(context.form, context.parentShape),
+    });
+    return probe.ok ? null : probe.reason;
+  },
+  execute: (context) =>
+    surfaceDual(context.form, { complex: faithfulComplexFor(context.form, context.parentShape) }).shape,
+};
+
 export const PLAYGROUND_OPERATIONS: PlaygroundOperation[] = [
   glueTorusOperation,
   glueCylinderOperation,
@@ -264,6 +300,7 @@ export const PLAYGROUND_OPERATIONS: PlaygroundOperation[] = [
   flipGlueMobiusOperation,
   collapseSphereOperation,
   cutFaceOperation,
+  surfaceDualOperation, // Q6 — the reflective axis
 ];
 
 export function getPlaygroundOperation(id: string): PlaygroundOperation {

@@ -11,15 +11,20 @@
 //   ② CROSS-CHECKS: w₁ ⟺ H₃ (orientable ⟺ H₃=Z); the orientation foundation's
 //     per-gluing bits ARE w₁'s support (mod-2 shadow); mode ⟺ derived bit (the
 //     §3 convention) on every sealed pattern; Tier-1 vs the S² gate.
-//   ③ NEGATIVE tooth: the z-pair re-mapped order-preserving (step +1 — a
-//     combinatorial reflection of the gluing) with mode 'reversing' via
-//     flipGlueFaces → the obstruction FIRES: w₁=1, the z-gluing is the support,
-//     H₃=0. Soundness measured and reported separately (no topological claim).
+//   ③ the RATIFIED TOPOLOGICAL-TORSION VALIDATION CASE (researcher-pinned
+//     identity): the z-pair re-mapped order-preserving (step +1, mode
+//     'reversing', flipGlueFaces) builds the MAPPING TORUS OF THE T²-SWAP
+//     φ(x,y) = (y,x) — a T²-bundle over S¹, a non-orientable flat (Bieberbach)
+//     3-manifold (the S²-gate PASS is structural: a fiber bundle is a genuine
+//     closed 3-manifold). The obstruction fires (w₁=1, the z-gluing the
+//     support, H₃=0) and the Tier-3 SNF→torsion readout reads its Z/2.
 //   ④ SNF unit tests (the torsion READOUT in isolation — the 3-torus's zero
 //     maps cannot exercise it): [[2]]→Z/2 · diag(1,3)→Z/3 · [[2,4],[4,2]]→[2,6]
 //     · the hand-written RP² cellular complex → H₁ = Z/2 through the full
-//     homology readout. The TOPOLOGICAL torsion form (lens/quaternionic) stays
-//     a researcher co-derivation — OWED, not faked.
+//     homology readout. With ③ ratified, the Z/2-torsion validation gap is
+//     CLOSED inside Option-A (cube) scope; odd Z/p (p>2) and lens L(p,q) still
+//     need non-cube (order-p) domains — the cube's face-symmetry is D₄
+//     (orders 1/2/4 only; the softened tower §5 note).
 //   ⑤ byte-unchanged guards + suite (report-level).
 //
 // Anti-mock: requiring the REAL TS modules through the transpile hook is the guard.
@@ -108,10 +113,11 @@ check('② orientable ⟺ H₃ = Z (Tier-2 agrees with Tier-3)', (tower.w1.w1 ==
 check("② the foundation's mod-2 shadow IS w₁'s support (non-reversing gluings ≡ support; here none)", tower.w1.support.every((s) => s.reversesInducedOrientation === false) && tower.w1.support.length === tower.w1.gluings.filter((g) => !g.reversesInducedOrientation).length);
 check('② Tier-1 sits alongside the S² gate (sound ∧ χ=0 — no contradiction flag)', tower.gate.sound === true && tower.chiConsistent === true);
 
-// ===== ③ the NEGATIVE tooth (the obstruction fires) =====
-console.log('\n----- [③] NEGATIVE TOOTH (a reversing gluing — w₁ ≠ 0, H₃ = 0) -----');
+// ===== ③ the RATIFIED topological-torsion case (+ the reversal tooth) =====
+console.log('\n----- [③] THE RATIFIED TORSION CASE: mapping torus of the T²-swap (w₁ ≠ 0, H₃ = 0, Z/2 in H₂) -----');
 // the z-pair re-mapped ORDER-PRESERVING (step +1): bottom cycle [a,d,c,b] → top
-// cycle [e,f,g,h] in order — a combinatorial reflection of the translation gluing.
+// cycle [e,f,g,h] in order — in coordinates the gluing is (x,y,0) ↦ (y,x,1):
+// the mapping torus of the orientation-reversing SWAP φ(x,y) = (y,x) of T².
 const zReflected = {
   faceA: BOTTOM.id,
   faceB: TOP.id,
@@ -125,14 +131,19 @@ check('③ the obstruction FIRES: w₁ = 1, non-orientable, frustration witnesse
 check('③ the SUPPORT records exactly the z-gluing (non-reversing: step·εA·εB = +1)', twistedTower.w1.support.length === 1 && twistedTower.w1.support[0].faceA === BOTTOM.id && twistedTower.w1.support[0].faceB === TOP.id);
 check("③ the §3 convention holds here too: mode 'reversing' ⟺ NOT reverses-induced (modeConsistent on all three)", twistedTower.w1.gluings.every((g) => g.modeConsistent === true));
 check('③ Tier-3 agrees: H₃ = 0 (the non-reversing gluing leaves a ±2 in ∂₃ — ker = 0)', twistedTower.homology.H3.free === 0 && twistedTower.homology.ranks.d3 === 1);
-// MEASURED-THEN-PINNED (the Build-1 config-seal authority): the twisted form
-// came out SOUND — the mandate's preferred branch (a sound non-orientable cube
-// form) landed. Full tuple pinned; the manifold reading (consistent with the
-// mapping torus of the T² swap (x,y)↦(y,x): H₁ = Z ⊕ coker(A−I) = Z²; the
-// non-orientable w₁-torsion Z/2 in H₂) is flagged for researcher co-derivation.
-check('③ (measured-then-pinned) the twisted form is SOUND — S² gate PASS, χ=0 consistent', twistedTower.sound === true && twistedTower.gate.failures.length === 0 && twistedTower.chiConsistent === true && twisted.chi === 0);
-check('③ (measured-then-pinned) its tuple: H₀=Z, H₁=Z², H₂=Z ⊕ Z/2, H₃=0 — REAL torsion on a SOUND form', twistedTower.homology.H0.pretty === 'Z' && twistedTower.homology.H1.pretty === 'Z^2' && twistedTower.homology.H2.pretty === 'Z ⊕ Z/2' && twistedTower.homology.H3.pretty === '0' && twistedTower.homology.torsionFree === false);
-note(`③ EMITTED (unpinned-by-researcher, measured here): counts=${JSON.stringify(twisted.counts)} χ=${twisted.chi} sound=${twistedTower.sound} · w₁=1 · H₁=${twistedTower.homology.H1.pretty} H₂=${twistedTower.homology.H2.pretty} H₃=${twistedTower.homology.H3.pretty} · ∂₃=(0,2,0)ᵀ — the Z/2 is the standard w₁-torsion of a non-orientable closed 3-manifold; RESEARCHER PINNING OWED for the manifold identification`);
+// THE RATIFIED TOPOLOGICAL-TORSION VALIDATION CASE (researcher-pinned identity:
+// the mapping torus of the T²-swap — a non-orientable flat Bieberbach
+// 3-manifold; the S²-gate PASS is structural, a fiber bundle IS a closed
+// 3-manifold). This exercises the Tier-3 SNF→torsion readout on a GENUINE
+// closed 3-manifold from inside Option-A (cube) scope — the Z/2-torsion
+// validation gap is CLOSED. Identity grounding (confirmed three ways —
+// committed SNF · Wang sequence · chain check): H₂ = Z ⊕ Z/2 with
+// Z/2 = coker(φ★ − 1 on H₂(T²)) = coker(−2); the torsion lives in H₂, NOT H₁ —
+// the fingerprint of the SWAP (a midline reflection would put Z/2 in H₁ → K²×S¹).
+// Odd Z/p (p>2) / lens L(p,q) still need non-cube order-p domains (cube = D₄).
+check('③ (RATIFIED: mapping torus of the T²-swap) the form is SOUND — S² gate PASS, χ=0 consistent', twistedTower.sound === true && twistedTower.gate.failures.length === 0 && twistedTower.chiConsistent === true && twisted.chi === 0);
+check('③ (RATIFIED) its tuple: H₀=Z, H₁=Z², H₂=Z ⊕ Z/2, H₃=0 — the topological-torsion witness', twistedTower.homology.H0.pretty === 'Z' && twistedTower.homology.H1.pretty === 'Z^2' && twistedTower.homology.H2.pretty === 'Z ⊕ Z/2' && twistedTower.homology.H3.pretty === '0' && twistedTower.homology.torsionFree === false);
+note(`③ THE RATIFIED CASE (researcher-pinned): mapping torus of φ(x,y)=(y,x) on T² — counts=${JSON.stringify(twisted.counts)} χ=${twisted.chi} sound=${twistedTower.sound} · w₁=1 · H₁=${twistedTower.homology.H1.pretty} H₂=${twistedTower.homology.H2.pretty} H₃=${twistedTower.homology.H3.pretty} · ∂₃=(0,2,0)ᵀ — Z/2 = coker(φ★−1 on H₂(T²)) = coker(−2), in H₂ not H₁ (the swap's fingerprint)`);
 
 // ===== ④ the SNF readout in ISOLATION (the branch the 3-torus cannot reach) =====
 console.log('\n----- [④] SNF UNIT TESTS (torsion readout validated in isolation) -----');
@@ -146,7 +157,7 @@ check('④ snf rejects non-integer entries loudly', (() => { try { smithNormalFo
 // level-3 form (the topological level-3 torsion example is owed to the researcher).
 const rp2 = computeIntegerHomology({ n0: 1, n1: 1, n2: 1, n3: 0 }, [[0]], [[2]], [[]]);
 check('④ the hand-written RP² chain reads H₀=Z, H₁=Z/2, H₂=0 through the full readout', rp2.H0.pretty === 'Z' && rp2.H1.pretty === 'Z/2' && rp2.H2.pretty === '0' && rp2.torsionFree === false);
-note('④ the TOPOLOGICAL torsion form (lens space / quaternionic — non-cube or unpinned) remains a researcher co-derivation — OWED, not faked here.');
+note('④ Z/2-torsion validation gap: CLOSED in-scope by the ratified ③ case (the T²-swap mapping torus). Odd Z/p (p>2) and lens L(p,q) still need non-cube order-p domains — the cube face-symmetry is D₄ (orders 1/2/4 only).');
 
 console.log(
   `\n--- level-3 Build 2 (3-torus tuple · cross-checks · reversal tooth · SNF isolation): ${

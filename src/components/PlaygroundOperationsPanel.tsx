@@ -63,6 +63,10 @@ export function PlaygroundOperationsPanel() {
     form: shape,
     selectedFaceId: selectedFace ? selectedFace.id : null,
     selectedFace,
+    // Q6 — whole-form ops (dual) may need the parent for quotient recovery
+    parentShape: shape.genealogy.parentShapeId
+      ? forms[shape.genealogy.parentShapeId]?.shape ?? null
+      : null,
   };
 
   const handleApply = (operationId: string) => {

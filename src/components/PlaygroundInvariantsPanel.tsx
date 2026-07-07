@@ -55,7 +55,23 @@ export function PlaygroundInvariantsPanel() {
                 : 'n-a'
             }
           />
-          <Row label="b₁" value={readout.cert ? String(readout.cert.b1) : 'n-a'} />
+          <Row
+            label="b₁"
+            value={
+              readout.level1
+                ? `${readout.level1.b1} (level-1: E−V+c)`
+                : readout.cert
+                  ? String(readout.cert.b1)
+                  : 'n-a'
+            }
+            accent={readout.level1 ? 'good' : undefined}
+          />
+          {readout.level1 ? (
+            <Row
+              label="H₀"
+              value={`${readout.level1.components === 1 ? 'Z' : `Z^${readout.level1.components}`} · torsion-free (level-1)`}
+            />
+          ) : null}
           <Row label="boundary" value={readout.boundary ?? 'n-a'} />
           <Row
             label="class"

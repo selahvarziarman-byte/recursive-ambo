@@ -38,6 +38,37 @@ export interface FormInvariantsReadout {
   chiCertified: number | null; // the certifier's own euler (agrees with chi on faithful complexes)
   boundary: 'closed' | 'open' | 'non-manifold' | null; // slot-incidence over the complex
   classification: string; // honest — "open / n-a" where the closed classification does not apply
+  level1?: Level1Reading; // Q5 — present iff the form is FACE-LESS (a 1-complex skeleton)
+}
+
+// Q5 — the invariant tower's level-1 rung, applied downward: a face-less
+// 1-complex has H₀ = Z^c and H₁ = Z^{b₁} with b₁ = E − V + c (cycle rank),
+// torsion-free. Pure counting + union-find — the committed surface certifier
+// stays out of domain here (this is a SEPARATE level-1 readout, not a patch
+// to it); the surface-specific rows (genus / w₁ / orientability) stay n-a.
+export interface Level1Reading {
+  components: number; // c — connected components (isolated vertices included)
+  b1: number; // E − V + c
+}
+
+export function level1Betti(shape: Shape): Level1Reading {
+  const parent = new Map<string, string>();
+  const find = (x: string): string => {
+    if (!parent.has(x)) parent.set(x, x);
+    let root = x;
+    while (parent.get(root) !== root) root = parent.get(root) as string;
+    return root;
+  };
+  for (const id of Object.keys(shape.vertices)) find(id);
+  for (const edge of shape.edges) {
+    parent.set(find(edge.vertexIds[0]), find(edge.vertexIds[1]));
+  }
+  const roots = new Set<string>();
+  for (const id of Object.keys(shape.vertices)) roots.add(find(id));
+  const v = Object.keys(shape.vertices).length;
+  const e = shape.edges.length;
+  const components = roots.size;
+  return { components, b1: e - v + components };
 }
 
 // The shape's cells → an AssembledComplex, ONLY when the translation is faithful:
@@ -98,6 +129,9 @@ export function readFormInvariants(shape: Shape, parent: Shape | null = null): F
     f: shape.faces.length,
   };
   const chi = cells.v - cells.e + cells.f;
+  // Q5 — a face-less form is a 1-complex: its level-1 reading rides every branch
+  // (it needs no faithful 2-complex — plain counting over the shape's own cells).
+  const level1 = cells.f === 0 ? level1Betti(shape) : undefined;
 
   // the faithful complex: direct translation, else the replay-verified recovery.
   let complexSource: FormInvariantsReadout['complexSource'] = null;
@@ -120,7 +154,11 @@ export function readFormInvariants(shape: Shape, parent: Shape | null = null): F
       cert: null,
       chiCertified: null,
       boundary: null,
-      classification: 'n-a (no faithful complex — w₁/b₁ un-certified)',
+      classification:
+        cells.f === 0
+          ? 'n-a (no 2-cells — not a surface complex)'
+          : 'n-a (no faithful complex — w₁/b₁ un-certified)',
+      ...(level1 ? { level1 } : {}),
     };
   }
 
@@ -137,6 +175,7 @@ export function readFormInvariants(shape: Shape, parent: Shape | null = null): F
       chiCertified: null,
       boundary: null,
       classification: 'n-a (no 2-cells — not a surface complex)',
+      ...(level1 ? { level1 } : {}),
     };
   }
 

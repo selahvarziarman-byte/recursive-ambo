@@ -33,9 +33,11 @@ const GLUE_KINDS: ReadonlySet<OperationKind> = new Set<OperationKind>(['glue', '
 // RECORD, by contrast, never shrinks. The non-consuming cases are `invoke` (a
 // from-scratch birth — no parent), `patch-lift` (a lift READS a sub-region and
 // leaves the source byte-unchanged — the source stays live; mothership ruling
-// "Route-B patch-lift RATIFIED; NON-CONSUMING"), and, once it exists, `product`
-// (E3 — deferred).
-const NON_CONSUMING: ReadonlySet<OperationKind> = new Set<OperationKind>(['invoke', 'patch-lift']);
+// "Route-B patch-lift RATIFIED; NON-CONSUMING"), `dualization` (the surface
+// Poincaré dual REFLECTS its source — M and M* coexist; mothership ruling
+// Q6/ADR 0020 "single-parent NON-consuming birth", sanctioned 2026-07-04), and,
+// once it exists, `product` (E3 — deferred).
+const NON_CONSUMING: ReadonlySet<OperationKind> = new Set<OperationKind>(['invoke', 'patch-lift', 'dualization']);
 
 export interface GenealogyNode {
   id: ShapeId;

@@ -217,6 +217,10 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
       form: form.shape,
       selectedFaceId: state.selectedFaceId,
       selectedFace,
+      // Q6 — whole-form ops (dual) may need the parent for quotient recovery
+      parentShape: form.shape.genealogy.parentShapeId
+        ? state.forms[form.shape.genealogy.parentShapeId]?.shape ?? null
+        : null,
     };
     if (!operation.canApply(context)) {
       throw new Error(

@@ -55,9 +55,10 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 console.log('C1+C2 op-set completion: every metabolism op births a properly-routed form\n');
 
-// The completed registry, in panel order.
-const REGISTRY_IDS = ['glue-torus', 'glue-cylinder', 'flip-glue-klein', 'flip-glue', 'flip-glue-mobius', 'collapse-sphere', 'cut'];
-check('§0 the registry carries the COMPLETE op-set (7 ops, panel order)', eq(PLAYGROUND_OPERATIONS.map((op) => op.id), REGISTRY_IDS));
+// The completed registry, in panel order. (Q6 mechanical update: the ratified
+// surface-dual op joins the set — its own seal lives in diagnose-surface-dual.)
+const REGISTRY_IDS = ['glue-torus', 'glue-cylinder', 'flip-glue-klein', 'flip-glue', 'flip-glue-mobius', 'collapse-sphere', 'cut', 'dual'];
+check('§0 the registry carries the COMPLETE op-set (8 ops, panel order)', eq(PLAYGROUND_OPERATIONS.map((op) => op.id), REGISTRY_IDS));
 
 // ===== [1] per-op end-to-end on the canonical 4-gon (REAL store pipeline) =====
 console.log('\n----- [1] PER-OP PIPELINE (4-gon; store -> registry -> G5.0 -> routeBornForm) -----');
