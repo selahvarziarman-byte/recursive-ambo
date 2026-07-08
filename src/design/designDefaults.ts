@@ -194,9 +194,54 @@ export const manuscriptDefaults = {
   },
   layout: {
     resolution: 16, // construction-grid resolution — `?manuscript` runs NO field pipeline, so the BornFormView R=6 budget does not apply (that ceiling is the field's ~n³, not the immersion's)
-    spacing: 8.5, // x-distance between forms (five now: the trio + the certified open cores)
-    cameraPosition: [0, 6, 30] as const,
-    captionDrop: 4.6, // how far below a form its caption card hangs
+    spacing: 8.5, // base x-distance between forms within a band (scaled per band)
+    cameraPosition: [0, 0, 46] as const, // frames the three stacked registers
+    captionDrop: 4.6, // how far below a form its name label hangs (in form-local units)
+  },
+  // Phase 2a — the ambient WORLD (dimension-stratified registers; CONTEXT "the
+  // through-line" + the reference bands). Layout/drift are craft: exact
+  // placement "settles in the live build" — the designer dials from here.
+  // NON-KNOB (unchanged law): WHAT populates the bands and WHICH marks a form
+  // carries come from worldModel/inkedFormModel — no knob adds or removes a
+  // form or a mark; these scalars only place and pace the drawings.
+  world: {
+    bands: {
+      // warm-paper tones deepening down the registers (reference bands)
+      dim1Tone: '#ede7d6',
+      dim2Tone: '#e8e1cc',
+      dim3Tone: '#e2d9c1',
+      labelInk: '#6b6047',
+      width: 200, // band plane width (world units)
+      depth: -8, // band plane z (behind the forms)
+    },
+    rows: {
+      dim1Y: 10.5, // band y-centers (top → bottom registers)
+      dim2Y: 0,
+      dim3Y: -10.5,
+      dim1Height: 6,
+      dim2Height: 13,
+      dim3Height: 7,
+      dim1Scale: 2.1, // per-band form scale (the cut n-gons are radius-0.8 seeds)
+      dim2Scale: 0.62, // six immersions side by side
+      dim3Scale: 1.6, // the cube seed domain
+      dim1Spacing: 3.4, // per-band spacing between form centers (pre-scale multiplier applies to dim2 via layout.spacing)
+      dim3Spacing: 8,
+    },
+    drift: {
+      // the living manuscript breathes — never busy, never a screensaver
+      enabled: true,
+      amplitude: 0.22, // world units of gentle wander
+      speed: 0.05, // radians/sec of the drift phase
+    },
+    skeleton: {
+      lineWidth: 2.6, // dim-1 pen weight (px — bare curves read as solid ink)
+    },
+    domain: {
+      lineWidth: 2, // dim-3 wireframe pen weight (px)
+      markRadius: 0.13, // face-identification stud size (cube-local units)
+      // one hue per identified face-pair (three pairs on T³) — manuscript inks
+      markColors: ['#b0561b', '#3e6db4', '#6d8f3e'],
+    },
   },
   lighting: {
     ambientIntensity: 0.92, // flat, paper-like light

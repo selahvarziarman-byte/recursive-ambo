@@ -1,122 +1,90 @@
-// ManuscriptView — the `?manuscript` dev view (Manuscript Phase 1.5): the
-// faithfulness trio (torus · sphere · RP²) PLUS the certified open cores
-// (cylinder · Möbius — researcher ruling: a b₁=1 open surface must draw its
-// one generator) as inked drawings on warm paper (design ADR 0001; visual
-// target outputs/playground_reference.png + outputs/torus_hatched_study.png).
+// ManuscriptView — the `?manuscript` dev view (Manuscript Phase 2a): the
+// AMBIENT WORLD — a warm-paper manuscript stratified into dimension registers
+// (reference: outputs/playground_reference.png bands), populated from
+// worldModel with the full available catalogue as inked drawings, gently
+// drifting (the living manuscript; CONTEXT "the through-line" — this is the
+// register you INHABIT; the specimen-on-select analytic register is 2b).
 //
-// The Leva craft panel mounts HERE (engineer ruling on calibration flag 1,
-// 2026-07-08: tune the manuscript in-place; `designDefaults.manuscriptDefaults`
-// stays the shared source of truth; DesignWorkbench untouched).
+//   dim 1 · loops      — cut-born 1-complexes (real positions; level1Betti H₁)
+//   dim 2 · surfaces   — the six committed immersions through the UNCHANGED
+//                        Phase-1/1.5 InkedForm (Klein now among them: a + b,
+//                        one free + one ℤ/2 torsion class)
+//   dim 3 · manifolds  — the 3-torus as its FUNDAMENTAL DOMAIN (identified
+//                        cube wireframe + pairing marks; never a solid body)
 //
-// NON-KNOBS (the one law): WHICH generator loops exist and WHAT the
-// construction lines are is decided by inkedFormModel from the committed
-// correspondence + the committed certifier — no control below can add or
-// remove a mark. Hatching is TONE (capped, banded) — its knobs style shading,
-// never structure. The caption's numbers are the committed certifiers'
-// readout, never typed in.
+// The Leva craft panel mounts HERE (the standing flag-1 ruling). NON-KNOBS
+// (the one law): WHAT populates the bands and WHICH marks a form carries come
+// from worldModel/inkedFormModel; the knobs place, tone, and pace the page —
+// they cannot add or remove a form or a mark. Labels show model/certifier
+// values verbatim; the full analytic reading is 2b's specimen.
 
-import { useMemo } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Html, OrbitControls } from '@react-three/drei';
 import { Leva, useControls } from 'leva';
+import type { Group } from 'three';
 import { manuscriptDefaults } from '../design/designDefaults';
-import { buildInkedFormModel, type GeneratorLoop, type InkedFormModel } from './inkedFormModel';
+import { buildManuscriptWorld } from './worldModel';
 import { InkedForm, type InkedFormCraft, type InkedFormLighting } from './InkedForm';
+import { InkedSkeleton } from './InkedSkeleton';
+import { InkedDomain } from './InkedDomain';
 
-const FORMS = ['torus', 'sphere', 'rp2', 'cylinder', 'mobius'] as const;
-type FormKey = (typeof FORMS)[number];
-
-const TITLES: Record<FormKey, string> = {
+const DIM2_TITLES: Record<string, string> = {
   torus: 'Torus (T²)',
-  sphere: 'Sphere (S²)',
+  klein: 'Klein bottle (K²)',
   rp2: 'RP² (cross-cap)',
+  sphere: 'Sphere (S²)',
   cylinder: 'Cylinder',
   mobius: 'Möbius band',
 };
 
-// what each drawn loop IS on this immersion (reference-card language; the loop
-// itself comes from the model — these strings only name it)
-const LOOP_READINGS: Record<FormKey, Record<string, string>> = {
-  torus: { a: 'a — longitude', b: 'b — meridian' },
-  sphere: {},
-  rp2: { 'a·b': 'a·b — the ℤ/2 generator' },
-  cylinder: { core: 'core — the ℤ generator (certified)' },
-  mobius: { core: 'core — the ℤ generator (certified)' },
-};
-
-function CaptionCard({
-  model,
-  craft,
-  paper,
+// deterministic gentle wander — phase from the population index (golden angle),
+// clock-driven; never random, dial-able, never a screensaver
+function Drift({
+  index,
+  enabled,
+  amplitude,
+  speed,
+  children,
 }: {
-  model: InkedFormModel;
-  craft: InkedFormCraft;
-  paper: { cardBackground: string; cardBorder: string; cardInk: string };
+  index: number;
+  enabled: boolean;
+  amplitude: number;
+  speed: number;
+  children: React.ReactNode;
 }) {
-  const inv = model.invariants;
-  const word = model.immersion.correspondence.word;
-  const swatch = (loop: GeneratorLoop) =>
-    loop.letters.length === 1 && loop.letters[0] === 'b' ? craft.generatorColorB : craft.generatorColorA;
-  const row: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    gap: 12,
-    borderTop: `1px solid ${paper.cardBorder}55`,
-    paddingTop: 3,
-    marginTop: 3,
-  };
+  const ref = useRef<Group>(null);
+  useFrame(({ clock }) => {
+    const group = ref.current;
+    if (!group) return;
+    if (!enabled || amplitude <= 0) {
+      group.position.set(0, 0, 0);
+      return;
+    }
+    const t = clock.elapsedTime * speed * Math.PI * 2 + index * 2.3999632297;
+    group.position.set(Math.sin(t) * amplitude, Math.sin(t * 0.83 + 1.3) * amplitude * 0.6, 0);
+  });
+  return <group ref={ref}>{children}</group>;
+}
+
+function FormLabel({
+  position,
+  title,
+  sub,
+  ink,
+}: {
+  position: [number, number, number];
+  title: string;
+  sub: string;
+  ink: string;
+}) {
   return (
-    <div
-      style={{
-        width: 228,
-        padding: '10px 12px',
-        borderRadius: 3,
-        background: paper.cardBackground,
-        border: `1px solid ${paper.cardBorder}`,
-        boxShadow: '0 1px 4px rgba(58, 51, 38, 0.14)',
-        color: paper.cardInk,
-        fontFamily: 'Georgia, "Times New Roman", serif',
-        fontSize: 13,
-        lineHeight: 1.45,
-      }}
-    >
-      <div style={{ fontSize: 15, fontWeight: 700 }}>{TITLES[model.surface as FormKey]}</div>
-      <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.75, marginBottom: 4 }}>
-        {word === '' ? 'collapse target · no gluing word' : `gluing word · ${word}`}
+    <Html center position={position} distanceFactor={13} zIndexRange={[40, 0]} style={{ pointerEvents: 'none' }}>
+      <div style={{ textAlign: 'center', color: ink, fontFamily: 'Georgia, "Times New Roman", serif', whiteSpace: 'nowrap' }}>
+        <div style={{ fontSize: 12.5, fontWeight: 700 }}>{title}</div>
+        <div style={{ fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.72 }}>{sub}</div>
       </div>
-      <div style={row}>
-        <span>Euler χ</span>
-        <b>{inv.chi}</b>
-      </div>
-      <div style={row}>
-        <span>orientable</span>
-        <b>{inv.cert ? (inv.cert.nonOrientable ? 'no' : 'yes') : 'n-a'}</b>
-      </div>
-      <div style={row}>
-        <span>class</span>
-        <b style={{ textAlign: 'right' }}>{inv.classification}</b>
-      </div>
-      <div style={row}>
-        <span>H₁</span>
-        <b>{model.h1Label ?? 'n-a'}</b>
-      </div>
-      <div style={{ marginTop: 7 }}>
-        {model.loops.length ? (
-          model.loops.map((loop) => (
-            <div key={loop.label} style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 2 }}>
-              <span style={{ width: 14, height: 4, background: swatch(loop), borderRadius: 2 }} />
-              <span style={{ fontSize: 12 }}>
-                {LOOP_READINGS[model.surface as FormKey][loop.label] ?? loop.label}
-              </span>
-            </div>
-          ))
-        ) : (
-          <div style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.72 }}>
-            no generator loops — H₁ = 0
-          </div>
-        )}
-      </div>
-    </div>
+    </Html>
   );
 }
 
@@ -165,6 +133,21 @@ export default function ManuscriptView() {
     ambient: { value: d.lighting.ambientIntensity, min: 0, max: 2, step: 0.02 },
     key: { value: d.lighting.keyIntensity, min: 0, max: 2, step: 0.02 },
   });
+  const bandsCtl = useControls('world · bands', {
+    dim1Tone: d.world.bands.dim1Tone,
+    dim2Tone: d.world.bands.dim2Tone,
+    dim3Tone: d.world.bands.dim3Tone,
+  });
+  const scaleCtl = useControls('world · scale', {
+    dim1Scale: { value: d.world.rows.dim1Scale, min: 0.5, max: 4, step: 0.1 },
+    dim2Scale: { value: d.world.rows.dim2Scale, min: 0.3, max: 1.2, step: 0.02 },
+    dim3Scale: { value: d.world.rows.dim3Scale, min: 0.5, max: 3, step: 0.1 },
+  });
+  const driftCtl = useControls('world · drift', {
+    enabled: d.world.drift.enabled,
+    amplitude: { value: d.world.drift.amplitude, min: 0, max: 0.8, step: 0.01 },
+    speed: { value: d.world.drift.speed, min: 0, max: 0.25, step: 0.005 },
+  });
 
   const craft: InkedFormCraft = {
     bodyColor: bodyCtl.color,
@@ -196,10 +179,11 @@ export default function ManuscriptView() {
   };
 
   // the committed engine does all the deriving; the view only places the results
-  const models = useMemo(
-    () => FORMS.map((surface) => buildInkedFormModel({ surface, resolution: layoutCtl.resolution })),
-    [layoutCtl.resolution],
-  );
+  const world = useMemo(() => buildManuscriptWorld(layoutCtl.resolution), [layoutCtl.resolution]);
+
+  const rows = d.world.rows;
+  const bands = d.world.bands;
+  const centered = (k: number, n: number, gap: number): number => (k - (n - 1) / 2) * gap;
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: paper.background }}>
@@ -214,20 +198,122 @@ export default function ManuscriptView() {
           intensity={lightingCtl.key}
           color="#fff6e5"
         />
-        {models.map((model, k) => (
-          <group key={model.surface} position={[(k - (FORMS.length - 1) / 2) * layoutCtl.spacing, 0, 0]}>
-            <InkedForm model={model} craft={craft} lighting={lighting} />
+
+        {/* the registers — warm-paper tones deepening down the page */}
+        {(
+          [
+            { tone: bandsCtl.dim1Tone, y: rows.dim1Y, h: rows.dim1Height, label: 'dim 1 · loops' },
+            { tone: bandsCtl.dim2Tone, y: rows.dim2Y, h: rows.dim2Height, label: 'dim 2 · surfaces' },
+            { tone: bandsCtl.dim3Tone, y: rows.dim3Y, h: rows.dim3Height, label: 'dim 3 · manifolds' },
+          ] as const
+        ).map((band) => (
+          <group key={band.label}>
+            <mesh position={[0, band.y, bands.depth]} renderOrder={-20}>
+              <planeGeometry args={[bands.width, band.h]} />
+              <meshBasicMaterial color={band.tone} depthWrite={false} />
+            </mesh>
             <Html
-              center
-              position={[0, -d.layout.captionDrop, 0]}
-              distanceFactor={11}
+              position={[-27, band.y + band.h / 2 - 0.9, bands.depth + 0.1]}
+              distanceFactor={13}
               zIndexRange={[40, 0]}
               style={{ pointerEvents: 'none' }}
             >
-              <CaptionCard model={model} craft={craft} paper={d.paper} />
+              <div
+                style={{
+                  color: bands.labelInk,
+                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontStyle: 'italic',
+                  fontSize: 12,
+                  whiteSpace: 'nowrap',
+                  opacity: 0.85,
+                }}
+              >
+                {band.label}
+              </div>
             </Html>
           </group>
         ))}
+
+        {/* dim 1 — bare skeletons (their ink IS the real edge set) */}
+        {world.dim1.map((model, k) => (
+          <group
+            key={model.key}
+            position={[centered(k, world.dim1.length, rows.dim1Spacing * scaleCtl.dim1Scale), rows.dim1Y, 0]}
+          >
+            <Drift index={k} enabled={driftCtl.enabled} amplitude={driftCtl.amplitude} speed={driftCtl.speed}>
+              <group scale={scaleCtl.dim1Scale}>
+                <InkedSkeleton model={model} color={craft.silhouetteColor} lineWidth={d.world.skeleton.lineWidth} />
+              </group>
+              <FormLabel
+                position={[0, -1.35 * scaleCtl.dim1Scale - 0.7, 0]}
+                title={model.title}
+                sub={`H₁ = ${model.h1Label ?? 'n-a'} · b₁ ${model.invariants.level1?.b1 ?? '—'}`}
+                ink={d.paper.titleInk}
+              />
+            </Drift>
+          </group>
+        ))}
+
+        {/* dim 2 — the six immersions through the unchanged InkedForm */}
+        {world.dim2.map((model, k) => (
+          <group
+            key={model.surface}
+            position={[
+              centered(k, world.dim2.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2),
+              rows.dim2Y,
+              0,
+            ]}
+          >
+            <Drift
+              index={k + 7}
+              enabled={driftCtl.enabled}
+              amplitude={driftCtl.amplitude}
+              speed={driftCtl.speed}
+            >
+              <group scale={scaleCtl.dim2Scale}>
+                <InkedForm model={model} craft={craft} lighting={lighting} />
+              </group>
+              <FormLabel
+                position={[0, -d.layout.captionDrop * scaleCtl.dim2Scale - 0.9, 0]}
+                title={DIM2_TITLES[model.surface] ?? model.surface}
+                sub={`${model.immersion.correspondence.word === '' ? 'no gluing word' : model.immersion.correspondence.word} · H₁ = ${model.h1Label ?? 'n-a'}`}
+                ink={d.paper.titleInk}
+              />
+            </Drift>
+          </group>
+        ))}
+
+        {/* dim 3 — fundamental domains, never solid bodies */}
+        {world.dim3.map((model, k) => (
+          <group
+            key={model.key}
+            position={[centered(k, world.dim3.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0]}
+          >
+            <Drift
+              index={k + 19}
+              enabled={driftCtl.enabled}
+              amplitude={driftCtl.amplitude}
+              speed={driftCtl.speed}
+            >
+              <group scale={scaleCtl.dim3Scale}>
+                <InkedDomain
+                  model={model}
+                  inkColor={craft.silhouetteColor}
+                  lineWidth={d.world.domain.lineWidth}
+                  markColors={d.world.domain.markColors}
+                  markRadius={d.world.domain.markRadius}
+                />
+              </group>
+              <FormLabel
+                position={[0, -1.6 * scaleCtl.dim3Scale - 0.9, 0]}
+                title={model.title}
+                sub={`H₁ = ${model.tower.homology.H1.pretty} · χ ${model.tower.chi} · ${model.pairs.length} face-pairs`}
+                ink={d.paper.titleInk}
+              />
+            </Drift>
+          </group>
+        ))}
+
         <OrbitControls makeDefault enableDamping dampingFactor={0.08} />
       </Canvas>
       <div
@@ -241,13 +327,13 @@ export default function ManuscriptView() {
         }}
       >
         <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: 0.2 }}>
-          the inked manuscript — phase 1.5
+          the inked manuscript — phase 2a
         </div>
         <div style={{ fontSize: 12.5, fontStyle: 'italic', opacity: 0.78 }}>
-          the faithfulness trio + the certified open cores · every visible mark is a value the engine computed
+          the ambient world · dimension registers · every visible mark is a value the engine computed
         </div>
         <div style={{ fontSize: 11, fontFamily: 'ui-monospace, monospace', opacity: 0.55, marginTop: 3 }}>
-          ?manuscript · dev view · Leva dials craft only — loops/grid are not knobs; hatching is capped tone
+          ?manuscript · dev view · Leva dials craft only — population/marks are not knobs
         </div>
       </div>
       <Leva collapsed={false} />
