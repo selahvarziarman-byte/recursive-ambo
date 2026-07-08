@@ -11,6 +11,7 @@ import './styles.css';
 // Workspace3D's render path is untouched. Routes:
 //   ?playground                 → the standalone playground shell
 //   ?design                     → the designer instrument workbench (Leva/perf; lazy-loaded, dev-tooling)
+//   ?manuscript                 → the inked-manuscript Phase-1 view (warm paper + the faithful trio; lazy-loaded)
 //   ?field   or   ?witness       → the living director-field render (n = R(α)·n₀) — the product visual
 //   ?witness&debug               → the WitnessRenderV0 glyph, DEMOTED to an off-by-default debug overlay
 const params =
@@ -18,6 +19,7 @@ const params =
 const dev = import.meta.env.DEV;
 const showPlayground = dev && params.has('playground');
 const showDesign = dev && params.has('design');
+const showManuscript = dev && params.has('manuscript');
 const showGlyphDebug = dev && params.has('witness') && params.has('debug');
 const showField = dev && !showGlyphDebug && (params.has('field') || params.has('witness'));
 
@@ -25,12 +27,17 @@ const showField = dev && !showGlyphDebug && (params.has('field') || params.has('
 // production build the dynamic import is unreachable, so the workbench chunk
 // (leva / r3f-perf) is not even emitted — strictly dead in prod.
 const DesignWorkbench = dev ? React.lazy(() => import('./design/DesignWorkbench')) : null;
+const ManuscriptView = dev ? React.lazy(() => import('./manuscript/ManuscriptView')) : null;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     {showDesign && DesignWorkbench ? (
       <React.Suspense fallback={null}>
         <DesignWorkbench />
+      </React.Suspense>
+    ) : showManuscript && ManuscriptView ? (
+      <React.Suspense fallback={null}>
+        <ManuscriptView />
       </React.Suspense>
     ) : showPlayground ? (
       <Playground />

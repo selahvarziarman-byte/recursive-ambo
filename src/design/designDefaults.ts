@@ -121,3 +121,68 @@ export const faithfulnessGuards = {
   nodeTol: 1e-4,
   antinodeTol: 1e-9,
 } as const;
+
+// ---------------------------------------------------------------------------
+// manuscript — Phase 1 of the inked-manuscript language (design ADR 0001,
+// mothership-ratified 2026-07-08). Craft scalars ONLY, the designer's live
+// tuning surface for the `?manuscript` view; the Leva panel mounts in
+// ManuscriptView itself (engineer ruling on calibration flag 1 — Phase 1
+// leaves DesignWorkbench untouched; mirroring these into `?design` is a later
+// one-line sanction). Defaults aim at the blessed reference
+// (`outputs/playground_reference.png`) — the designer refines from here.
+//
+// NON-KNOBS (the one law — never dialled, deliberately absent below): WHICH
+// generator loops exist (derived in src/manuscript/inkedFormModel.ts from
+// correspondence.word + gridVertexTo — sphere none, torus a+b, RP² the closed
+// a·b) and WHAT the construction lines are (the committed shape's real
+// subdivision edges). Craft styles the marks the engine carries; it cannot
+// add or remove one.
+export const manuscriptDefaults = {
+  paper: {
+    background: '#e9e2cf', // the warm parchment ground (reference field tone)
+    titleInk: '#2a2419',
+    cardBackground: '#f4efe1',
+    cardBorder: '#c9bfa6',
+    cardInk: '#3a3326',
+  },
+  body: {
+    color: '#f5f0e2', // cream body, a step lighter than the ground
+    opacity: 0.8, // translucent — the far construction lines stay visible (never opaque/photoreal)
+    roughness: 0.9,
+  },
+  construction: {
+    color: '#6b6047', // graphite
+    opacity: 0.38, // the depth-tested (visible-side) pass
+    ghostOpacity: 0.12, // the hidden-line pass — the SAME real edges, fainter, depth-test off (a drawing shows its far construction faintly; no new marks)
+  },
+  silhouette: {
+    color: '#262014', // dark ink
+    weight: 0.045, // world-units inverted-hull thickness (drei Outlines)
+    opacity: 0.9,
+  },
+  generators: {
+    a: '#c2811d', // warm orange — the reference's a → longitude
+    b: '#3e6db4', // manuscript blue — the reference's b → meridian
+    lineWidth: 3.5,
+    depthTest: false, // committed L2 overlay precedent — the RP² generator stays legible ON the cross-cap
+    renderOrder: 10,
+  },
+  hatching: {
+    // reserved knobs for the designer's craft pass (silhouette/hatching quality
+    // is designer-owned; Phase 1 keeps the body translucent + unhatched, and
+    // does NOT Leva-bind these — binding a no-op knob would itself be a lie).
+    density: 0,
+    opacity: 0,
+  },
+  layout: {
+    resolution: 16, // construction-grid resolution — `?manuscript` runs NO field pipeline, so the BornFormView R=6 budget does not apply (that ceiling is the field's ~n³, not the immersion's)
+    spacing: 9.5, // x-distance between the trio
+    cameraPosition: [0, 6, 22] as const,
+    captionDrop: 4.6, // how far below a form its caption card hangs
+  },
+  lighting: {
+    ambientIntensity: 0.92, // flat, paper-like light
+    keyIntensity: 0.5, // gentle modelling only — shading must not read as photoreal volume
+    keyPosition: [4, 6, 3] as const,
+  },
+};
