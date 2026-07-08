@@ -14,15 +14,24 @@
 //     generator), while a and b are individually OPEN arcs (the L2 selectors'
 //     own `closed:false` reading) — the cross-cap does not erase it;
 //   · klein  (abaB): two closed loops (selector totality beyond the trio);
-//   · cylinder / mobius (open): ZERO loops — the single glued letter is an arc
-//     between distinct rim classes and free letters are never marks (their real
-//     core-circle generator is NOT an identified-boundary curve — the honest gap
-//     is noted, not painted over).
+//   · cylinder / mobius (open, Phase 1.5 Part A — researcher ruling): ONE
+//     CERTIFIED core each. The word carries no closed identified cycle, so the
+//     core comes from the committed certifier itself: the shape bridges to an
+//     AssembledComplex, `analyzeGlobalW1(…, {subdivide:false})` yields the H₁
+//     basis in REAL shape-edge ids, validated against the committed subdivided
+//     certificate (b₁ / w₁Class / orientability agree), ordered into a simple
+//     closed path. Teeth here: the bridge's own subdivided cert must equal the
+//     committed readFormInvariants cert (bridge equivalence), raw and
+//     subdivided must agree, the drawn core must be a simple closed cycle of
+//     real committed edges, count === certified b₁ === 1.
 // Plus: the caption invariants are the COMMITTED certifiers' values verbatim
 // (readFormInvariants → χ / w₁ certificate / b₁ / classification), and the H₁
 // label is classification arithmetic on certified values, 𝔽₂-consistent with
-// cert.b1. A word-blanking probe proves the selector reads the WORD, not the
-// surface name. Run at R=8 and R=16 — lengths scale with the correspondence.
+// cert.b1 (open bounded surfaces: free ℤ^{b₁} — wedge of circles). A
+// word-blanking probe proves the word-loop selector reads the WORD, not the
+// surface name; a craft-purity probe proves hatching (renderer tone) has no
+// channel into the model. Run at R=8 and R=16 — lengths scale with the
+// correspondence.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -49,10 +58,13 @@ const { immerseSurface } = req('src/lib/surfaceImmersion.ts');
 const { selectIdentifiedLoops } = req('src/playground/identificationAnnotation.ts');
 const { canonicalEdgeKey } = req('src/lib/ids.ts');
 const { readFormInvariants } = req('src/playground/formInvariants.ts');
+const { analyzeGlobalW1 } = req('src/lib/globalW1.ts');
 const {
   buildInkedFormModel,
   deriveGeneratorLoops,
+  deriveOpenCoreLoops,
   h1LabelFromCertified,
+  toAssembledComplex,
 } = req('src/manuscript/inkedFormModel.ts');
 
 let failures = 0;
@@ -189,17 +201,48 @@ for (const R of [8, 16]) {
   check("klein: caption H₁ = 'ℤ ⊕ ℤ/2'", model.h1Label === 'ℤ ⊕ ℤ/2');
 }
 
-// ----- open surfaces: no identified closed generator → NONE drawn -----------
+// ----- open surfaces (Part A): ONE certified core each ----------------------
 for (const surface of ['cylinder', 'mobius']) {
-  const R = 8;
-  console.log(`----- [${surface}] R=${R} (open — honest none) -----`);
-  const model = buildInkedFormModel({ surface, resolution: R });
-  const inv = model.invariants;
-  check(`${surface}: ZERO loops (glued letter is an arc between distinct rim classes; free letters are never marks)`,
-    model.loops.length === 0);
-  check(`${surface}: boundary reads open → caption H₁ label honestly n-a`,
-    inv.boundary === 'open' && model.h1Label === null);
-  note(`the real core-circle generator (b₁=${inv.cert ? inv.cert.b1 : 'n-a'}) is NOT an identified-boundary curve — not drawable from this correspondence, so not drawn`);
+  for (const R of [8, 16]) {
+    console.log(`----- [${surface}] R=${R} (open — the certified core) -----`);
+    const model = buildInkedFormModel({ surface, resolution: R });
+    const { shape, correspondence } = model.immersion;
+    const inv = model.invariants;
+    check(`${surface}: the WORD derives no loop (glued letter an arc; free letters never marks)`,
+      deriveGeneratorLoops(correspondence).length === 0);
+    check(`${surface}: exactly ONE drawn loop — the certified core`,
+      model.loops.length === 1 && model.loops[0].label === 'core');
+    const core = model.loops[0];
+    check(`${surface}: the core is a CLOSED cycle of real committed edges`,
+      Boolean(core && closedOnRealEdges(core, shape)));
+    check(`${surface}: core provenance — basisEdgeIds are real shape edges and match the drawn path`,
+      Boolean(core && core.basisEdgeIds &&
+        setEq(new Set(core.basisEdgeIds.map((id) => {
+          const e = shape.edges.find((x) => x.id === id);
+          return e ? canonicalEdgeKey(e.vertexIds[0], e.vertexIds[1]) : 'MISSING';
+        })), loopEdgeKeys(core))));
+    // the certification chain, re-run independently: bridge equivalence + raw/sub agreement
+    const complex = toAssembledComplex(shape);
+    const sub = analyzeGlobalW1(complex);
+    const raw = analyzeGlobalW1(complex, { subdivide: false });
+    check(`${surface}: BRIDGE TOOTH — the bridge's subdivided cert === the committed readFormInvariants cert`,
+      Boolean(inv.cert && sub.cert.b1 === inv.cert.b1 &&
+        sub.cert.nonOrientable === inv.cert.nonOrientable &&
+        JSON.stringify(sub.cert.w1Class) === JSON.stringify(inv.cert.w1Class) &&
+        sub.cert.nonDegenerate === inv.cert.nonDegenerate));
+    check(`${surface}: raw/subdivided certificates AGREE (b₁, w₁Class, orientability)`,
+      raw.cert.b1 === sub.cert.b1 &&
+      raw.cert.nonOrientable === sub.cert.nonOrientable &&
+      JSON.stringify(raw.cert.w1Class) === JSON.stringify(sub.cert.w1Class));
+    check(`${surface}: certifier — b₁=1, w₁Class=${surface === 'mobius' ? '[1] (the core reverses orientation)' : '[0]'}`,
+      Boolean(inv.cert && inv.cert.b1 === 1 &&
+        JSON.stringify(inv.cert.w1Class) === (surface === 'mobius' ? '[1]' : '[0]') &&
+        inv.cert.nonOrientable === (surface === 'mobius')));
+    check(`${surface}: drawn loop count === certified b₁ (1)`, inv.cert && model.loops.length === inv.cert.b1);
+    check(`${surface}: caption H₁ = 'ℤ' (open bounded → free ℤ^{b₁}, wedge arithmetic)`,
+      inv.boundary === 'open' && model.h1Label === 'ℤ');
+    note(`core: ${core ? core.vertexPath.length - 1 : '?'} edges (simple closed) | sub perCycleW1=${JSON.stringify(sub.debug.perCycleW1)} | classification: ${inv.classification}`);
+  }
 }
 
 // ----- the anti-hardcode probe: the selector reads the WORD ------------------
@@ -215,7 +258,7 @@ for (const surface of ['cylinder', 'mobius']) {
 {
   console.log('----- [caption] the shown invariants are the committed certifiers, verbatim -----');
   let verbatim = true;
-  for (const surface of ['torus', 'sphere', 'rp2']) {
+  for (const surface of ['torus', 'sphere', 'rp2', 'cylinder', 'mobius']) {
     const model = buildInkedFormModel({ surface, resolution: 16 });
     const fresh = readFormInvariants(model.immersion.shape);
     verbatim = verbatim &&
@@ -227,7 +270,20 @@ for (const surface of ['cylinder', 'mobius']) {
       (model.invariants.cert && model.invariants.cert.b1) === (fresh.cert && fresh.cert.b1) &&
       model.h1Label === h1LabelFromCertified(fresh);
   }
-  check('caption: model invariants + H₁ label === an independent readFormInvariants pass', verbatim);
+  check('caption: model invariants + H₁ label === an independent readFormInvariants pass (all five forms)', verbatim);
+}
+
+// ----- craft purity: hatching (tone) has NO channel into the model ------------
+{
+  console.log('----- [craft purity] hatching is renderer tone — the model cannot see it -----');
+  // the model builders take (spec) / (correspondence) / (shape, cert) ONLY — no
+  // craft parameter exists in their signatures; two independent builds agree.
+  const one = buildInkedFormModel({ surface: 'mobius', resolution: 8 });
+  const two = buildInkedFormModel({ surface: 'mobius', resolution: 8 });
+  check('craft purity: model builders take no craft input (arity: build=1, loops=1, cores=2)',
+    buildInkedFormModel.length === 1 && deriveGeneratorLoops.length === 1 && deriveOpenCoreLoops.length === 2);
+  check('craft purity: two independent builds derive identical loop sets',
+    JSON.stringify(one.loops) === JSON.stringify(two.loops));
 }
 
 console.log(

@@ -132,11 +132,12 @@ export const faithfulnessGuards = {
 // (`outputs/playground_reference.png`) — the designer refines from here.
 //
 // NON-KNOBS (the one law — never dialled, deliberately absent below): WHICH
-// generator loops exist (derived in src/manuscript/inkedFormModel.ts from
-// correspondence.word + gridVertexTo — sphere none, torus a+b, RP² the closed
-// a·b) and WHAT the construction lines are (the committed shape's real
+// generator loops exist (derived in src/manuscript/inkedFormModel.ts — sphere
+// none, torus a+b, RP² the closed a·b from correspondence.word + gridVertexTo;
+// cylinder/Möbius their ONE `globalW1`-certified core, researcher ruling
+// 2026-07-08) and WHAT the construction lines are (the committed shape's real
 // subdivision edges). Craft styles the marks the engine carries; it cannot
-// add or remove one.
+// add or remove one. (Hatching is TONE — capped, banded shading; not a mark.)
 export const manuscriptDefaults = {
   paper: {
     background: '#e9e2cf', // the warm parchment ground (reference field tone)
@@ -149,6 +150,7 @@ export const manuscriptDefaults = {
     color: '#f5f0e2', // cream body, a step lighter than the ground
     opacity: 0.8, // translucent — the far construction lines stay visible (never opaque/photoreal)
     roughness: 0.9,
+    prepassOffsetUnits: 3, // depth-prepass polygonOffset units (designer craft item 5: 2–4 quiets the RP² pinch z-fight)
   },
   construction: {
     color: '#6b6047', // graphite
@@ -157,27 +159,43 @@ export const manuscriptDefaults = {
   },
   silhouette: {
     color: '#262014', // dark ink
-    weight: 0.045, // world-units inverted-hull thickness (drei Outlines)
+    // "drawn with one pen" (designer craft item 4): constant SCREEN-space weight.
+    // The hull's world displacement = form bounding-radius × screenspacePx × the
+    // calibration constant in InkedForm — all forms read as one pen width at the
+    // default camera (true per-frame distance invariance = a later refinement).
+    screenspacePx: 1.75,
     opacity: 0.9,
   },
   generators: {
-    a: '#c2811d', // warm orange — the reference's a → longitude
+    a: '#c2811d', // warm orange — the reference's a → longitude (also the a·b + certified-core ink)
     b: '#3e6db4', // manuscript blue — the reference's b → meridian
     lineWidth: 3.5,
-    depthTest: false, // committed L2 overlay precedent — the RP² generator stays legible ON the cross-cap
+    // two-pass treatment (designer craft item 2, mirroring the construction lines):
+    // a NEAR pass (depth-tested, full colour) + a HIDDEN pass (depth-test off,
+    // faint — the drafting hidden-line convention). Same real loop, no new mark;
+    // replaces Phase 1's blanket depthTest:false.
+    ghostOpacity: 0.3,
     renderOrder: 10,
   },
   hatching: {
-    // reserved knobs for the designer's craft pass (silhouette/hatching quality
-    // is designer-owned; Phase 1 keeps the body translucent + unhatched, and
-    // does NOT Leva-bind these — binding a no-op knob would itself be a lie).
-    density: 0,
-    opacity: 0,
+    // the designer's round-1 spec (RELAY_DESIGNER_TO_ENGINEER_MANUSCRIPT_CRAFT_1;
+    // target: outputs/torus_hatched_study.png): screen-space diagonal ink SHADING,
+    // masked by the body's key-light term — lit → none, shadow → single hatch,
+    // deep shadow → cross-hatch. TONE only: unlike the lines and loops it derives
+    // from no correspondence; its one guard is the ANTI-PHOTOREAL CAP — opacity
+    // capped per stroke and banded, never a smooth tonal volume.
+    spacingPx: 7.5, // screen-space stroke pitch
+    opacity: 0.4, // max graphite opacity per stroke (THE CAP — the Leva range stops at 0.5)
+    weightPx: 1, // stroke line-weight
+    color: '#61563f', // graphite, a step darker than construction
+    angleDeg: 45, // the hatch diagonal
+    shadowStart: 0.8, // shading-term threshold where single-hatch begins
+    crossStart: 0.66, // threshold where cross-hatch begins
   },
   layout: {
     resolution: 16, // construction-grid resolution — `?manuscript` runs NO field pipeline, so the BornFormView R=6 budget does not apply (that ceiling is the field's ~n³, not the immersion's)
-    spacing: 9.5, // x-distance between the trio
-    cameraPosition: [0, 6, 22] as const,
+    spacing: 8.5, // x-distance between forms (five now: the trio + the certified open cores)
+    cameraPosition: [0, 6, 30] as const,
     captionDrop: 4.6, // how far below a form its caption card hangs
   },
   lighting: {
