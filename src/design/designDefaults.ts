@@ -233,6 +233,20 @@ export const manuscriptDefaults = {
       amplitude: 0.22, // world units of gentle wander
       speed: 0.05, // radians/sec of the drift phase
     },
+    // Phase 2b — the specimen on select (rise-and-sink + the analytic reading).
+    // Motion / recede / emphasis are craft; THE ONE RULE is not a knob: the
+    // reading exists only while a form is selected (summoned, never ambient),
+    // and every card value is a committed certifier's, verbatim.
+    specimen: {
+      riseZ: 20, // world z the specimen lifts to (toward the reader)
+      riseY: 0, // it centers on the page midline
+      riseScale: 1.7, // magnification on top of its band scale
+      damping: 3.2, // MathUtils.damp lambda — the calm of rise-and-sink
+      recedeOpacity: 0.35, // ambient material opacities while a specimen is up
+      recedeColorFade: 0.55, // ambient inks fade toward the paper tone (0 none · 1 vanish)
+      loopWidthFactor: 1.7, // the specimen's certified loops light up by width…
+      loopGhostOpacity: 0.45, // …and their hidden pass lifts (still the SAME loops — nothing redrawn)
+    },
     skeleton: {
       lineWidth: 2.6, // dim-1 pen weight (px — bare curves read as solid ink)
     },

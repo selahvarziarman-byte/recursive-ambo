@@ -1,33 +1,41 @@
-// ManuscriptView — the `?manuscript` dev view (Manuscript Phase 2a): the
-// AMBIENT WORLD — a warm-paper manuscript stratified into dimension registers
-// (reference: outputs/playground_reference.png bands), populated from
-// worldModel with the full available catalogue as inked drawings, gently
-// drifting (the living manuscript; CONTEXT "the through-line" — this is the
-// register you INHABIT; the specimen-on-select analytic register is 2b).
+// ManuscriptView — the `?manuscript` dev view (Manuscript Phase 2b): the TWO
+// REGISTERS (CONTEXT "the through-line") —
+//   · the AMBIENT WORLD (2a): warm-paper dimension registers, the available
+//     catalogue as inked drawings, gently drifting — the register you inhabit;
+//   · the SPECIMEN (2b): click a form → it RISES out of its band toward the
+//     reader, the world recedes, and the ANALYTIC READING is summoned — the
+//     committed certifiers' invariants on a manuscript card, the form's
+//     already-drawn certified generators lit up and named, the twist (w₁) read
+//     where the certifier says non-orientable. Click paper / Esc / another
+//     form → it SINKS and the reading clears.
 //
-//   dim 1 · loops      — cut-born 1-complexes (real positions; level1Betti H₁)
-//   dim 2 · surfaces   — the six committed immersions through the UNCHANGED
-//                        Phase-1/1.5 InkedForm (Klein now among them: a + b,
-//                        one free + one ℤ/2 torsion class)
-//   dim 3 · manifolds  — the 3-torus as its FUNDAMENTAL DOMAIN (identified
-//                        cube wireframe + pairing marks; never a solid body)
+// THE ONE RULE (CONTEXT · ADR 0017): the fiction never impersonates the proof
+// — the reading exists ONLY while a form is selected (summoned, never ambient
+// furniture; specimenModel builds it on select from the committed certifiers,
+// verbatim). Rise/recede/emphasis are CRAFT on the same unchanged drawings:
+// InkedForm/InkedSkeleton/InkedDomain render byte-unchanged; emphasis goes
+// through their existing craft/colour props and redraws NOTHING.
 //
-// The Leva craft panel mounts HERE (the standing flag-1 ruling). NON-KNOBS
-// (the one law): WHAT populates the bands and WHICH marks a form carries come
-// from worldModel/inkedFormModel; the knobs place, tone, and pace the page —
-// they cannot add or remove a form or a mark. Labels show model/certifier
-// values verbatim; the full analytic reading is 2b's specimen.
+// NON-KNOBS (the one law): WHAT populates the bands, WHICH marks a form
+// carries, and WHAT the card says come from worldModel/inkedFormModel/
+// specimenModel — the knobs place, tone, pace, and stage only.
 
-import { useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Html, OrbitControls } from '@react-three/drei';
 import { Leva, useControls } from 'leva';
-import type { Group } from 'three';
+import { MathUtils, type Group } from 'three';
 import { manuscriptDefaults } from '../design/designDefaults';
 import { buildManuscriptWorld } from './worldModel';
 import { InkedForm, type InkedFormCraft, type InkedFormLighting } from './InkedForm';
 import { InkedSkeleton } from './InkedSkeleton';
 import { InkedDomain } from './InkedDomain';
+import {
+  readDomainSpecimen,
+  readSkeletonSpecimen,
+  readSurfaceSpecimen,
+  type SpecimenReading,
+} from './specimenModel';
 
 const DIM2_TITLES: Record<string, string> = {
   torus: 'Torus (T²)',
@@ -37,6 +45,19 @@ const DIM2_TITLES: Record<string, string> = {
   cylinder: 'Cylinder',
   mobius: 'Möbius band',
 };
+
+// craft-level colour recede: mix an ink toward the paper tone (pure, deterministic)
+function fadeToward(hex: string, paperHex: string, t: number): string {
+  const parse = (h: string): [number, number, number] => {
+    const s = h.replace('#', '');
+    return [parseInt(s.slice(0, 2), 16), parseInt(s.slice(2, 4), 16), parseInt(s.slice(4, 6), 16)];
+  };
+  const [r1, g1, b1] = parse(hex);
+  const [r2, g2, b2] = parse(paperHex);
+  const mix = (a: number, b: number): number => Math.round(a + (b - a) * t);
+  const to2 = (n: number): string => n.toString(16).padStart(2, '0');
+  return `#${to2(mix(r1, r2))}${to2(mix(g1, g2))}${to2(mix(b1, b2))}`;
+}
 
 // deterministic gentle wander — phase from the population index (golden angle),
 // clock-driven; never random, dial-able, never a screensaver
@@ -67,17 +88,56 @@ function Drift({
   return <group ref={ref}>{children}</group>;
 }
 
+// the rise-and-sink: damp the wrapper from its band slot toward the specimen
+// stage (and back) — calm, deterministic (MathUtils.damp), designer-dialled
+function SpecimenLift({
+  home,
+  isSpecimen,
+  riseTo,
+  riseScale,
+  damping,
+  children,
+}: {
+  home: [number, number, number];
+  isSpecimen: boolean;
+  riseTo: [number, number, number];
+  riseScale: number;
+  damping: number;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<Group>(null);
+  useFrame((_, delta) => {
+    const group = ref.current;
+    if (!group) return;
+    const target = isSpecimen ? riseTo : home;
+    const targetScale = isSpecimen ? riseScale : 1;
+    group.position.x = MathUtils.damp(group.position.x, target[0], damping, delta);
+    group.position.y = MathUtils.damp(group.position.y, target[1], damping, delta);
+    group.position.z = MathUtils.damp(group.position.z, target[2], damping, delta);
+    const s = MathUtils.damp(group.scale.x, targetScale, damping, delta);
+    group.scale.setScalar(s);
+  });
+  return (
+    <group ref={ref} position={home}>
+      {children}
+    </group>
+  );
+}
+
 function FormLabel({
   position,
   title,
   sub,
   ink,
+  hidden,
 }: {
   position: [number, number, number];
   title: string;
   sub: string;
   ink: string;
+  hidden: boolean;
 }) {
+  if (hidden) return null;
   return (
     <Html center position={position} distanceFactor={13} zIndexRange={[40, 0]} style={{ pointerEvents: 'none' }}>
       <div style={{ textAlign: 'center', color: ink, fontFamily: 'Georgia, "Times New Roman", serif', whiteSpace: 'nowrap' }}>
@@ -85,6 +145,98 @@ function FormLabel({
         <div style={{ fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.72 }}>{sub}</div>
       </div>
     </Html>
+  );
+}
+
+// the specimen card — manuscript-styled, rendered IFF a reading is summoned
+function SpecimenCard({
+  reading,
+  paper,
+  generatorInks,
+}: {
+  reading: SpecimenReading;
+  paper: { cardBackground: string; cardBorder: string; cardInk: string };
+  generatorInks: { a: string; b: string };
+}) {
+  const row: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 14,
+    borderTop: `1px solid ${paper.cardBorder}55`,
+    padding: '4px 0 3px',
+  };
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        right: 14,
+        top: 64,
+        width: 264,
+        padding: '13px 15px',
+        borderRadius: 3,
+        background: paper.cardBackground,
+        border: `1px solid ${paper.cardBorder}`,
+        boxShadow: '0 2px 9px rgba(58, 51, 38, 0.2)',
+        color: paper.cardInk,
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: 13.5,
+        lineHeight: 1.5,
+      }}
+    >
+      <div style={{ fontSize: 11, letterSpacing: 1.2, opacity: 0.6, fontVariant: 'small-caps' }}>on select</div>
+      <div style={{ fontSize: 17, fontWeight: 700 }}>{reading.title}</div>
+      <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.72, marginBottom: 7 }}>
+        {reading.subtitle}
+      </div>
+      {reading.rows.map((r) => (
+        <div key={r.label} style={row}>
+          <span style={{ opacity: 0.85 }}>{r.label}</span>
+          <b style={{ textAlign: 'right', fontWeight: r.emphasize ? 800 : 600 }}>{r.value}</b>
+        </div>
+      ))}
+      {reading.twist ? (
+        <div
+          style={{
+            marginTop: 8,
+            padding: '5px 8px',
+            border: `1px solid ${generatorInks.a}66`,
+            borderRadius: 3,
+            fontStyle: 'italic',
+            fontSize: 12.5,
+          }}
+        >
+          {reading.twist}
+        </div>
+      ) : null}
+      <div style={{ marginTop: 9 }}>
+        {reading.legend.length ? (
+          reading.legend.map((entry) => (
+            <div key={entry.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
+              <span
+                style={{
+                  width: 15,
+                  height: 4,
+                  background: entry.ink === 'b' ? generatorInks.b : generatorInks.a,
+                  borderRadius: 2,
+                }}
+              />
+              <span style={{ fontSize: 12.5 }}>{entry.text}</span>
+            </div>
+          ))
+        ) : (
+          <div style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.72 }}>
+            {reading.kind === 'surface'
+              ? 'no generator loops — H₁ = 0'
+              : reading.kind === 'skeleton'
+                ? 'the drawn ink IS the cycle set'
+                : 'pairing marks shown; H₁ read from the tower'}
+          </div>
+        )}
+      </div>
+      <div style={{ marginTop: 10, fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.5 }}>
+        esc · click paper — the specimen sinks, the reading clears
+      </div>
+    </div>
   );
 }
 
@@ -148,8 +300,17 @@ export default function ManuscriptView() {
     amplitude: { value: d.world.drift.amplitude, min: 0, max: 0.8, step: 0.01 },
     speed: { value: d.world.drift.speed, min: 0, max: 0.25, step: 0.005 },
   });
+  const specimenCtl = useControls('specimen · rise', {
+    riseZ: { value: d.world.specimen.riseZ, min: 8, max: 28, step: 0.5 },
+    riseScale: { value: d.world.specimen.riseScale, min: 1, max: 2.6, step: 0.05 },
+    damping: { value: d.world.specimen.damping, min: 1, max: 7, step: 0.1 },
+    recedeOpacity: { value: d.world.specimen.recedeOpacity, min: 0.05, max: 1, step: 0.01 },
+    recedeColorFade: { value: d.world.specimen.recedeColorFade, min: 0, max: 1, step: 0.01 },
+    loopWidthFactor: { value: d.world.specimen.loopWidthFactor, min: 1, max: 3, step: 0.05 },
+    loopGhostOpacity: { value: d.world.specimen.loopGhostOpacity, min: 0, max: 1, step: 0.05 },
+  });
 
-  const craft: InkedFormCraft = {
+  const baseCraft: InkedFormCraft = {
     bodyColor: bodyCtl.color,
     bodyOpacity: bodyCtl.opacity,
     bodyRoughness: bodyCtl.roughness,
@@ -178,18 +339,128 @@ export default function ManuscriptView() {
     keyPosition: d.lighting.keyPosition,
   };
 
+  // ----- selection: the specimen is SUMMONED state, nothing more -------------
+  const [selected, setSelected] = useState<string | null>(null);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') setSelected(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+  const pick = useCallback((id: string) => setSelected((cur) => (cur === id ? null : id)), []);
+  const anySelected = selected !== null;
+
   // the committed engine does all the deriving; the view only places the results
   const world = useMemo(() => buildManuscriptWorld(layoutCtl.resolution), [layoutCtl.resolution]);
+
+  // the analytic reading — built ON SELECT from the committed certifiers'
+  // readouts (specimenModel), cleared on deselect: summoned, never ambient
+  const reading = useMemo<SpecimenReading | null>(() => {
+    if (!selected) return null;
+    const [band, key] = selected.split(':');
+    if (band === 'dim1') {
+      const model = world.dim1.find((m) => m.key === key);
+      return model ? readSkeletonSpecimen(model) : null;
+    }
+    if (band === 'dim2') {
+      const model = world.dim2.find((m) => m.surface === key);
+      return model ? readSurfaceSpecimen(model) : null;
+    }
+    const model = world.dim3.find((m) => m.key === key);
+    return model ? readDomainSpecimen(model) : null;
+  }, [selected, world]);
+
+  // craft staging: the world recedes behind a specimen; the specimen's already-
+  // drawn certified loops light up (width/ghost only — nothing redrawn)
+  const recededCraft: InkedFormCraft = useMemo(() => {
+    const f = specimenCtl.recedeColorFade;
+    const o = specimenCtl.recedeOpacity;
+    return {
+      ...baseCraft,
+      bodyOpacity: baseCraft.bodyOpacity * o,
+      constructionOpacity: baseCraft.constructionOpacity * o,
+      constructionGhostOpacity: baseCraft.constructionGhostOpacity * o,
+      silhouetteOpacity: baseCraft.silhouetteOpacity * o,
+      silhouetteColor: fadeToward(baseCraft.silhouetteColor, paper.background, f),
+      constructionColor: fadeToward(baseCraft.constructionColor, paper.background, f),
+      generatorColorA: fadeToward(baseCraft.generatorColorA, paper.background, f),
+      generatorColorB: fadeToward(baseCraft.generatorColorB, paper.background, f),
+      hatchOpacity: baseCraft.hatchOpacity * o,
+      hatchColor: fadeToward(baseCraft.hatchColor, paper.background, f),
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseCraft, specimenCtl.recedeColorFade, specimenCtl.recedeOpacity, paper.background]);
+  const specimenCraft: InkedFormCraft = useMemo(
+    () => ({
+      ...baseCraft,
+      generatorLineWidth: baseCraft.generatorLineWidth * specimenCtl.loopWidthFactor,
+      generatorGhostOpacity: specimenCtl.loopGhostOpacity,
+    }),
+    [baseCraft, specimenCtl.loopWidthFactor, specimenCtl.loopGhostOpacity],
+  );
+  const craftFor = (id: string): InkedFormCraft =>
+    selected === id ? specimenCraft : anySelected ? recededCraft : baseCraft;
+  const inkFor = (id: string, ink: string): string =>
+    selected === id || !anySelected ? ink : fadeToward(ink, paper.background, specimenCtl.recedeColorFade);
 
   const rows = d.world.rows;
   const bands = d.world.bands;
   const centered = (k: number, n: number, gap: number): number => (k - (n - 1) / 2) * gap;
+  const riseTo: [number, number, number] = [0, d.world.specimen.riseY, specimenCtl.riseZ];
+
+  const selectable = (
+    id: string,
+    home: [number, number, number],
+    driftIndex: number,
+    label: { title: string; sub: string; drop: number },
+    children: React.ReactNode,
+  ): React.ReactNode => (
+    <SpecimenLift
+      key={id}
+      home={home}
+      isSpecimen={selected === id}
+      riseTo={riseTo}
+      riseScale={specimenCtl.riseScale}
+      damping={specimenCtl.damping}
+    >
+      <Drift
+        index={driftIndex}
+        enabled={driftCtl.enabled && selected !== id}
+        amplitude={driftCtl.amplitude}
+        speed={driftCtl.speed}
+      >
+        <group
+          onClick={(event) => {
+            event.stopPropagation();
+            pick(id);
+          }}
+          onPointerOver={() => {
+            document.body.style.cursor = 'pointer';
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = 'auto';
+          }}
+        >
+          {children}
+        </group>
+        <FormLabel
+          position={[0, label.drop, 0]}
+          title={label.title}
+          sub={label.sub}
+          ink={inkFor(id, d.paper.titleInk)}
+          hidden={selected === id}
+        />
+      </Drift>
+    </SpecimenLift>
+  );
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: paper.background }}>
       <Canvas
         camera={{ position: [...d.layout.cameraPosition], fov: 45 }}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
+        onPointerMissed={() => setSelected(null)}
       >
         <color attach="background" args={[paper.background]} />
         <ambientLight intensity={lightingCtl.ambient} />
@@ -235,84 +506,69 @@ export default function ManuscriptView() {
         ))}
 
         {/* dim 1 — bare skeletons (their ink IS the real edge set) */}
-        {world.dim1.map((model, k) => (
-          <group
-            key={model.key}
-            position={[centered(k, world.dim1.length, rows.dim1Spacing * scaleCtl.dim1Scale), rows.dim1Y, 0]}
-          >
-            <Drift index={k} enabled={driftCtl.enabled} amplitude={driftCtl.amplitude} speed={driftCtl.speed}>
-              <group scale={scaleCtl.dim1Scale}>
-                <InkedSkeleton model={model} color={craft.silhouetteColor} lineWidth={d.world.skeleton.lineWidth} />
-              </group>
-              <FormLabel
-                position={[0, -1.35 * scaleCtl.dim1Scale - 0.7, 0]}
-                title={model.title}
-                sub={`H₁ = ${model.h1Label ?? 'n-a'} · b₁ ${model.invariants.level1?.b1 ?? '—'}`}
-                ink={d.paper.titleInk}
+        {world.dim1.map((model, k) =>
+          selectable(
+            `dim1:${model.key}`,
+            [centered(k, world.dim1.length, rows.dim1Spacing * scaleCtl.dim1Scale), rows.dim1Y, 0],
+            k,
+            {
+              title: model.title,
+              sub: `H₁ = ${model.h1Label ?? 'n-a'} · b₁ ${model.invariants.level1?.b1 ?? '—'}`,
+              drop: -1.35 * scaleCtl.dim1Scale - 0.7,
+            },
+            <group scale={scaleCtl.dim1Scale}>
+              <InkedSkeleton
+                model={model}
+                color={inkFor(`dim1:${model.key}`, silhouetteCtl.color)}
+                lineWidth={d.world.skeleton.lineWidth}
               />
-            </Drift>
-          </group>
-        ))}
+            </group>,
+          ),
+        )}
 
         {/* dim 2 — the six immersions through the unchanged InkedForm */}
-        {world.dim2.map((model, k) => (
-          <group
-            key={model.surface}
-            position={[
+        {world.dim2.map((model, k) =>
+          selectable(
+            `dim2:${model.surface}`,
+            [
               centered(k, world.dim2.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2),
               rows.dim2Y,
               0,
-            ]}
-          >
-            <Drift
-              index={k + 7}
-              enabled={driftCtl.enabled}
-              amplitude={driftCtl.amplitude}
-              speed={driftCtl.speed}
-            >
-              <group scale={scaleCtl.dim2Scale}>
-                <InkedForm model={model} craft={craft} lighting={lighting} />
-              </group>
-              <FormLabel
-                position={[0, -d.layout.captionDrop * scaleCtl.dim2Scale - 0.9, 0]}
-                title={DIM2_TITLES[model.surface] ?? model.surface}
-                sub={`${model.immersion.correspondence.word === '' ? 'no gluing word' : model.immersion.correspondence.word} · H₁ = ${model.h1Label ?? 'n-a'}`}
-                ink={d.paper.titleInk}
-              />
-            </Drift>
-          </group>
-        ))}
+            ],
+            k + 7,
+            {
+              title: DIM2_TITLES[model.surface] ?? model.surface,
+              sub: `${model.immersion.correspondence.word === '' ? 'no gluing word' : model.immersion.correspondence.word} · H₁ = ${model.h1Label ?? 'n-a'}`,
+              drop: -d.layout.captionDrop * scaleCtl.dim2Scale - 0.9,
+            },
+            <group scale={scaleCtl.dim2Scale}>
+              <InkedForm model={model} craft={craftFor(`dim2:${model.surface}`)} lighting={lighting} />
+            </group>,
+          ),
+        )}
 
         {/* dim 3 — fundamental domains, never solid bodies */}
-        {world.dim3.map((model, k) => (
-          <group
-            key={model.key}
-            position={[centered(k, world.dim3.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0]}
-          >
-            <Drift
-              index={k + 19}
-              enabled={driftCtl.enabled}
-              amplitude={driftCtl.amplitude}
-              speed={driftCtl.speed}
-            >
-              <group scale={scaleCtl.dim3Scale}>
-                <InkedDomain
-                  model={model}
-                  inkColor={craft.silhouetteColor}
-                  lineWidth={d.world.domain.lineWidth}
-                  markColors={d.world.domain.markColors}
-                  markRadius={d.world.domain.markRadius}
-                />
-              </group>
-              <FormLabel
-                position={[0, -1.6 * scaleCtl.dim3Scale - 0.9, 0]}
-                title={model.title}
-                sub={`H₁ = ${model.tower.homology.H1.pretty} · χ ${model.tower.chi} · ${model.pairs.length} face-pairs`}
-                ink={d.paper.titleInk}
+        {world.dim3.map((model, k) =>
+          selectable(
+            `dim3:${model.key}`,
+            [centered(k, world.dim3.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0],
+            k + 19,
+            {
+              title: model.title,
+              sub: `H₁ = ${model.tower.homology.H1.pretty} · χ ${model.tower.chi} · ${model.pairs.length} face-pairs`,
+              drop: -1.6 * scaleCtl.dim3Scale - 0.9,
+            },
+            <group scale={scaleCtl.dim3Scale}>
+              <InkedDomain
+                model={model}
+                inkColor={inkFor(`dim3:${model.key}`, silhouetteCtl.color)}
+                lineWidth={d.world.domain.lineWidth}
+                markColors={d.world.domain.markColors}
+                markRadius={d.world.domain.markRadius}
               />
-            </Drift>
-          </group>
-        ))}
+            </group>,
+          ),
+        )}
 
         <OrbitControls makeDefault enableDamping dampingFactor={0.08} />
       </Canvas>
@@ -327,16 +583,23 @@ export default function ManuscriptView() {
         }}
       >
         <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: 0.2 }}>
-          the inked manuscript — phase 2a
+          the inked manuscript — phase 2b
         </div>
         <div style={{ fontSize: 12.5, fontStyle: 'italic', opacity: 0.78 }}>
-          the ambient world · dimension registers · every visible mark is a value the engine computed
+          the two registers · the world you inhabit; the proof you summon
         </div>
         <div style={{ fontSize: 11, fontFamily: 'ui-monospace, monospace', opacity: 0.55, marginTop: 3 }}>
-          ?manuscript · dev view · Leva dials craft only — population/marks are not knobs
+          ?manuscript · dev view · click a form → the specimen rises · esc sinks it
         </div>
       </div>
-      <Leva collapsed={false} />
+      {reading ? (
+        <SpecimenCard
+          reading={reading}
+          paper={d.paper}
+          generatorInks={{ a: generatorsCtl.a, b: generatorsCtl.b }}
+        />
+      ) : null}
+      <Leva collapsed />
     </div>
   );
 }
