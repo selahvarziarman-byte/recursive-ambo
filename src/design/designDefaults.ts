@@ -270,6 +270,11 @@ export const manuscriptDefaults = {
       pencilBodyOpacity: 0.08, // the consumed body settles to a whisper; its lines stay
       stemmaWidth: 1.2, // the ink stemma line (px) — INK, not gold (the ratified ruling)
       stemmaOpacity: 0.55,
+      // craft round-2 (designer call, relay §2): birth is a WORLD event — the
+      // child settles ambient (no auto-rise; the specimen stays summoned-by-
+      // click) and announces itself with a brief pulse. UX only — no mark.
+      birthCueDuration: 1.4, // seconds
+      birthCueRadius: 3.4, // world units the pulse expands to
     },
   },
   lighting: {

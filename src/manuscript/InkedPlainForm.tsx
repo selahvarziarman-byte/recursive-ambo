@@ -1,18 +1,24 @@
-// InkedPlainForm — Manuscript Phase 3a: the plain-ink renderer for WRITTEN
-// forms with REAL constructed positions and no immersion route (invoked
-// primitives; dual-born shapes). Draws exactly what the committed Shape
-// carries: a translucent cream body over its real faces + the real edges in
-// graphite (near + hidden-line ghost passes — the InkedForm conventions,
-// craft-prop compatible). Deliberately NO loop marks: drawing a certified
-// representative basis on arbitrary operated complexes is the researcher's
-// standing Option-B item — the specimen card reads the certified values, the
-// drawing stays honest. NO silhouette hull either (flat/polyhedral written
-// material at starter craft; designer refines).
+// InkedPlainForm — Manuscript Phase 3a/follow-on: the plain-ink renderer for
+// WRITTEN forms with REAL constructed positions and no immersion route
+// (invoked primitives; dual-born shapes; assemble children). Draws exactly
+// what the committed Shape carries: a translucent cream body over its real
+// faces + the real edges in graphite (near + hidden-line ghost passes — the
+// InkedForm conventions, craft-prop compatible).
+//
+// OPTION B (the follow-on; researcher ruling Q-M1): when the caller passes
+// `generators` — the CERTIFIED basis polylines derived by optionBModel
+// (globalW1's own basis cycles, canonically barycentric-placed) — they draw
+// in generator ink with the same two-pass treatment as InkedForm's loops.
+// This component adds NO mark of its own: it renders exactly the polylines
+// given (b₁=0 callers pass none and the drawing stays bare, unchanged).
+// Still NO silhouette hull (flat/polyhedral starter craft; designer refines).
 
 import { useMemo } from 'react';
+import { Line } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Shape, Vec3 } from '../types/geometry';
 import type { InkedFormCraft } from './InkedForm';
+import type { CertifiedGenerator } from './optionBModel';
 
 function buildBodyGeometry(shape: Shape): THREE.BufferGeometry | null {
   const ids = Object.keys(shape.vertices).sort();
@@ -52,14 +58,27 @@ function buildEdgeGeometry(shape: Shape): THREE.BufferGeometry | null {
 export function InkedPlainForm({
   shape,
   craft,
+  generators,
   position = [0, 0, 0],
 }: {
   shape: Shape;
   craft: InkedFormCraft;
+  generators?: CertifiedGenerator[]; // the certified Option-B basis (optionBModel), verbatim
   position?: Vec3;
 }) {
   const body = useMemo(() => buildBodyGeometry(shape), [shape]);
   const edges = useMemo(() => buildEdgeGeometry(shape), [shape]);
+  const generatorLines = useMemo(
+    () =>
+      (generators ?? []).flatMap((generator, k) =>
+        generator.polylines.map((polyline, j) => ({
+          key: `${generator.label}:${j}`,
+          points: polyline.map((p) => [...p] as [number, number, number]),
+          ink: k % 2 === 0 ? 'a' : 'b', // alternate the two generator inks by class index (craft)
+        })),
+      ),
+    [generators],
+  );
 
   return (
     <group position={position}>
@@ -109,6 +128,28 @@ export function InkedPlainForm({
           ) : null}
         </>
       ) : null}
+      {generatorLines.map((line) => (
+        <group key={line.key}>
+          {craft.generatorGhostOpacity > 0 ? (
+            <Line
+              points={line.points}
+              color={line.ink === 'b' ? craft.generatorColorB : craft.generatorColorA}
+              lineWidth={craft.generatorLineWidth}
+              transparent
+              opacity={craft.generatorGhostOpacity}
+              depthTest={false}
+              depthWrite={false}
+              renderOrder={9}
+            />
+          ) : null}
+          <Line
+            points={line.points}
+            color={line.ink === 'b' ? craft.generatorColorB : craft.generatorColorA}
+            lineWidth={craft.generatorLineWidth}
+            renderOrder={10}
+          />
+        </group>
+      ))}
     </group>
   );
 }

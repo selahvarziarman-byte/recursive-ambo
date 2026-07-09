@@ -24,7 +24,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html, Line, OrbitControls } from '@react-three/drei';
 import { Leva, useControls } from 'leva';
-import { MathUtils, Raycaster, Vector2, type Camera, type Group } from 'three';
+import {
+  MathUtils,
+  Raycaster,
+  Vector2,
+  type Camera,
+  type Group,
+  type Mesh,
+  type MeshBasicMaterial,
+} from 'three';
 import { manuscriptDefaults } from '../design/designDefaults';
 import { buildManuscriptWorld } from './worldModel';
 import { InkedForm, type InkedFormCraft, type InkedFormLighting } from './InkedForm';
@@ -64,12 +72,48 @@ import {
   readGenesis,
   type ShelfEntry,
 } from './genesisModel';
+import { deriveOptionBGenerators, type OptionBReading } from './optionBModel';
 
 // hands the live R3F camera up to the DOM layer (shelf drag-drop unprojection)
 function CameraGrab({ onReady }: { onReady: (camera: Camera) => void }) {
   const camera = useThree((state) => state.camera);
   useEffect(() => onReady(camera), [camera, onReady]);
   return null;
+}
+
+// craft round-2: the birth-cue — a brief expanding pulse where the child
+// settled (UX only, adds no mark; deterministic frame-delta timing, no clocks)
+function BirthCuePulse({
+  center,
+  duration,
+  maxRadius,
+  color,
+  onDone,
+}: {
+  center: [number, number, number];
+  duration: number;
+  maxRadius: number;
+  color: string;
+  onDone: () => void;
+}) {
+  const ref = useRef<Mesh>(null);
+  const elapsed = useRef(0);
+  useFrame((_, delta) => {
+    elapsed.current += delta;
+    const p = Math.min(1, elapsed.current / Math.max(0.1, duration));
+    const mesh = ref.current;
+    if (mesh) {
+      mesh.scale.setScalar(0.25 + p * maxRadius);
+      (mesh.material as MeshBasicMaterial).opacity = 0.85 * (1 - p);
+    }
+    if (p >= 1) onDone();
+  });
+  return (
+    <mesh ref={ref} position={center} renderOrder={5}>
+      <ringGeometry args={[0.86, 1, 48]} />
+      <meshBasicMaterial color={color} transparent depthWrite={false} />
+    </mesh>
+  );
 }
 
 const DIM2_TITLES: Record<string, string> = {
@@ -339,6 +383,8 @@ export default function ManuscriptView() {
     pencilTone: manuscriptDefaults.world.genesis.pencilTone,
     stemmaWidth: { value: manuscriptDefaults.world.genesis.stemmaWidth, min: 0.5, max: 3, step: 0.1 },
     stemmaOpacity: { value: manuscriptDefaults.world.genesis.stemmaOpacity, min: 0, max: 1, step: 0.05 },
+    cueDuration: { value: manuscriptDefaults.world.genesis.birthCueDuration, min: 0.4, max: 3, step: 0.1 },
+    cueRadius: { value: manuscriptDefaults.world.genesis.birthCueRadius, min: 1, max: 6, step: 0.2 },
   });
   const specimenCtl = useControls('specimen · rise', {
     riseZ: { value: d.world.specimen.riseZ, min: 8, max: 28, step: 0.5 },
@@ -393,6 +439,8 @@ export default function ManuscriptView() {
   const [shelf, setShelf] = useState<Array<{ entry: ShelfEntry; placed: boolean }>>([]);
   const dragIndexRef = useRef<number | null>(null);
   const cameraRef = useRef<Camera | null>(null);
+  // craft round-2: the birth-cue (the child settles AMBIENT; the cue announces it)
+  const [birthCue, setBirthCue] = useState<{ key: number; home: [number, number, number] } | null>(null);
   const closeMenus = useCallback(() => {
     setInvokeMenu(null);
     setFormMenu(null);
@@ -434,6 +482,25 @@ export default function ManuscriptView() {
   // the committed engine does all the deriving; the view only places the results
   const world = useMemo(() => buildManuscriptWorld(layoutCtl.resolution), [layoutCtl.resolution]);
 
+  // ----- Option B (follow-on): certified generators for plain-rendered forms —
+  // globalW1's own basis cycles, canonically barycentric-placed (optionBModel);
+  // derived once per written shape; b₁=0 forms carry none (unchanged)
+  const optionBByShape = useMemo(() => {
+    const map = new Map<string, OptionBReading>();
+    for (const entry of written) {
+      if (entry.form.render.mode !== 'plain') continue;
+      const shape = entry.form.render.shape;
+      try {
+        map.set(shape.id, deriveOptionBGenerators(shape));
+      } catch {
+        // a bridge-refused complex (e.g. the degenerate self-loop dual of a
+        // born single-face surface) draws NO marks — its card already reads
+        // the honest n-a; nothing is invented, nothing crashes
+      }
+    }
+    return map;
+  }, [written]);
+
   // the analytic reading — built ON SELECT from the committed certifiers'
   // readouts (specimenModel/writtenFormModel), cleared on deselect: summoned,
   // never ambient
@@ -460,11 +527,23 @@ export default function ManuscriptView() {
         const base = readSkeletonSpecimen(render.model);
         return { ...base, title: entry.form.title, subtitle: entry.form.provenance };
       }
-      return readPlainSpecimen(entry.form.title, entry.form.provenance, render.invariants, render.h1Label);
+      const base = readPlainSpecimen(entry.form.title, entry.form.provenance, render.invariants, render.h1Label);
+      // Option B: name the drawn certified generators in the summoned legend
+      const optionB = optionBByShape.get(render.shape.id);
+      return optionB && optionB.b1 > 0
+        ? {
+            ...base,
+            legend: optionB.generators.map((generator, k) => ({
+              key: generator.label,
+              text: `${generator.label} — certified H₁ generator (globalW1 basis)`,
+              ink: (k % 2 === 0 ? 'a' : 'b') as 'a' | 'b',
+            })),
+          }
+        : base;
     }
     const model = world.dim3.find((m) => m.key === key);
     return model ? readDomainSpecimen(model) : null;
-  }, [selected, world, written]);
+  }, [selected, world, written, optionBByShape]);
 
   // ----- 3a: the op target + the committed availability + the apply path -----
   const rows = d.world.rows;
@@ -638,7 +717,10 @@ export default function ManuscriptView() {
     ];
     setWritten((cur) => [...cur, { form: result.born, home }]);
     setCombineWith(null);
-    setSelected(`w:${result.born.id}`);
+    // the designer's call (craft round-2): birth is a WORLD event — the child
+    // settles ambient with a brief cue; the specimen stays summoned-by-click
+    setSelected(null);
+    setBirthCue({ key: seqRef.current, home });
     setOpNotice(null);
   }, [combineGate]);
 
@@ -892,6 +974,18 @@ export default function ManuscriptView() {
           />
         ))}
 
+        {/* the birth-cue: a brief pulse where the child settled (UX, no mark) */}
+        {birthCue ? (
+          <BirthCuePulse
+            key={birthCue.key}
+            center={birthCue.home}
+            duration={genesisCtl.cueDuration}
+            maxRadius={genesisCtl.cueRadius}
+            color={generatorsCtl.a}
+            onDone={() => setBirthCue(null)}
+          />
+        ) : null}
+
         {/* the registers — warm-paper tones deepening down the page */}
         {(
           [
@@ -1040,7 +1134,11 @@ export default function ManuscriptView() {
               </group>
             ) : (
               <group scale={scaleCtl.dim1Scale}>
-                <InkedPlainForm shape={render.shape} craft={craftFor(id, entry.form.shape.id)} />
+                <InkedPlainForm
+                  shape={render.shape}
+                  craft={craftFor(id, entry.form.shape.id)}
+                  generators={optionBByShape.get(render.shape.id)?.generators}
+                />
               </group>
             ),
           );
