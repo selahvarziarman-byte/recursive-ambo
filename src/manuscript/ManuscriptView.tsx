@@ -21,10 +21,10 @@
 // specimenModel — the knobs place, tone, pace, and stage only.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Html, OrbitControls } from '@react-three/drei';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Html, Line, OrbitControls } from '@react-three/drei';
 import { Leva, useControls } from 'leva';
-import { MathUtils, type Group } from 'three';
+import { MathUtils, Raycaster, Vector2, type Camera, type Group } from 'three';
 import { manuscriptDefaults } from '../design/designDefaults';
 import { buildManuscriptWorld } from './worldModel';
 import { InkedForm, type InkedFormCraft, type InkedFormLighting } from './InkedForm';
@@ -46,7 +46,31 @@ import {
   type WrittenForm,
 } from './writtenFormModel';
 import { InkedPlainForm } from './InkedPlainForm';
-import { FormOpsMenu, InvokePalette, OperationsDock } from './ManuscriptChrome';
+import {
+  BirthGatePanel,
+  FormOpsMenu,
+  InvokePalette,
+  OperationsDock,
+  RecordStrip,
+  SourcesShelf,
+} from './ManuscriptChrome';
+import {
+  birthChild,
+  birthGateFor,
+  footRecord,
+  genesisStoryShapes,
+  loadUniverseSnapshot,
+  placeShelfEntry,
+  readGenesis,
+  type ShelfEntry,
+} from './genesisModel';
+
+// hands the live R3F camera up to the DOM layer (shelf drag-drop unprojection)
+function CameraGrab({ onReady }: { onReady: (camera: Camera) => void }) {
+  const camera = useThree((state) => state.camera);
+  useEffect(() => onReady(camera), [camera, onReady]);
+  return null;
+}
 
 const DIM2_TITLES: Record<string, string> = {
   torus: 'Torus (T²)',
@@ -311,6 +335,11 @@ export default function ManuscriptView() {
     amplitude: { value: d.world.drift.amplitude, min: 0, max: 0.8, step: 0.01 },
     speed: { value: d.world.drift.speed, min: 0, max: 0.25, step: 0.005 },
   });
+  const genesisCtl = useControls('genesis · memory', {
+    pencilTone: manuscriptDefaults.world.genesis.pencilTone,
+    stemmaWidth: { value: manuscriptDefaults.world.genesis.stemmaWidth, min: 0.5, max: 3, step: 0.1 },
+    stemmaOpacity: { value: manuscriptDefaults.world.genesis.stemmaOpacity, min: 0, max: 1, step: 0.05 },
+  });
   const specimenCtl = useControls('specimen · rise', {
     riseZ: { value: d.world.specimen.riseZ, min: 8, max: 28, step: 0.5 },
     riseScale: { value: d.world.specimen.riseScale, min: 1, max: 2.6, step: 0.05 },
@@ -352,12 +381,18 @@ export default function ManuscriptView() {
 
   // ----- selection: the specimen is SUMMONED state, nothing more -------------
   const [selected, setSelected] = useState<string | null>(null);
+  // 3b: the second selection of the combine pair (shift-click)
+  const [combineWith, setCombineWith] = useState<string | null>(null);
   // ----- 3a: written material (invoked + op-born — REAL committed Shapes) ----
   const [written, setWritten] = useState<Array<{ form: WrittenForm; home: [number, number, number] }>>([]);
   const seqRef = useRef(1);
   const [invokeMenu, setInvokeMenu] = useState<{ x: number; y: number; world: [number, number] } | null>(null);
   const [formMenu, setFormMenu] = useState<{ x: number; y: number; id: string } | null>(null);
   const [opNotice, setOpNotice] = useState<string | null>(null);
+  // ----- 3b: the sources shelf (committed snapshot loads) --------------------
+  const [shelf, setShelf] = useState<Array<{ entry: ShelfEntry; placed: boolean }>>([]);
+  const dragIndexRef = useRef<number | null>(null);
+  const cameraRef = useRef<Camera | null>(null);
   const closeMenus = useCallback(() => {
     setInvokeMenu(null);
     setFormMenu(null);
@@ -366,6 +401,7 @@ export default function ManuscriptView() {
     const onKey = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
         setSelected(null);
+        setCombineWith(null);
         closeMenus();
       }
     };
@@ -377,7 +413,22 @@ export default function ManuscriptView() {
       window.removeEventListener('mousedown', onDown);
     };
   }, [closeMenus]);
-  const pick = useCallback((id: string) => setSelected((cur) => (cur === id ? null : id)), []);
+  // click selects the specimen; SHIFT-click a second form arms the combine pair
+  const pick = useCallback((id: string, shiftKey = false) => {
+    if (shiftKey) {
+      setSelected((cur) => {
+        if (cur && cur !== id) {
+          setCombineWith(id);
+          return cur;
+        }
+        setCombineWith(null);
+        return id;
+      });
+      return;
+    }
+    setCombineWith(null);
+    setSelected((cur) => (cur === id ? null : id));
+  }, []);
   const anySelected = selected !== null;
 
   // the committed engine does all the deriving; the view only places the results
@@ -515,6 +566,173 @@ export default function ManuscriptView() {
     [invokeMenu, closeMenus],
   );
 
+  // ----- 3b: the genesis reading — ONE committed DAG feeds pentimento + -----
+  // ----- stemma + the foot-record (nothing hand-kept) ------------------------
+  const genesis = useMemo(() => readGenesis(genesisStoryShapes(written)), [written]);
+  const pentimentoShapeIds = genesis?.pentimentoIds ?? new Set<string>();
+  const nameOfShapeId = useMemo(() => {
+    const names = new Map<string, string>();
+    world.dim1.forEach((m) => names.set(m.shape.id, m.title));
+    world.dim2.forEach((m) => names.set(m.immersion.shape.id, DIM2_TITLES[m.surface] ?? m.surface));
+    world.dim3.forEach((m) => names.set(m.shape.id, m.title));
+    written.forEach((w) => names.set(w.form.shape.id, w.form.title));
+    return names;
+  }, [world, written]);
+  const recordEntries = useMemo(
+    () => (genesis ? footRecord(genesis, (id) => nameOfShapeId.get(id) ?? id) : []),
+    [genesis, nameOfShapeId],
+  );
+  // shape.id → the page slot (for stemma endpoints), over world + written
+  const homeOfShapeId = useMemo(() => {
+    const homes = new Map<string, [number, number, number]>();
+    world.dim1.forEach((m, k) =>
+      homes.set(m.shape.id, [centered(k, world.dim1.length, rows.dim1Spacing * scaleCtl.dim1Scale), rows.dim1Y, 0]),
+    );
+    world.dim2.forEach((m, k) =>
+      homes.set(m.immersion.shape.id, [
+        centered(k, world.dim2.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2),
+        rows.dim2Y,
+        0,
+      ]),
+    );
+    world.dim3.forEach((m, k) =>
+      homes.set(m.shape.id, [centered(k, world.dim3.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0]),
+    );
+    written.forEach((w) => homes.set(w.form.shape.id, w.home));
+    return homes;
+  }, [world, written, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing]);
+  // the stemma: the committed reduced edges whose endpoints are on the page
+  const stemmaLines = useMemo(() => {
+    if (!genesis) return [];
+    return genesis.reducedEdges
+      .map((edge) => {
+        const from = homeOfShapeId.get(edge.parent);
+        const to = homeOfShapeId.get(edge.child);
+        return from && to ? { key: `${edge.parent}->${edge.child}`, from, to } : null;
+      })
+      .filter((line): line is { key: string; from: [number, number, number]; to: [number, number, number] } =>
+        Boolean(line),
+      );
+  }, [genesis, homeOfShapeId]);
+
+  // ----- 3b: birth (the committed assemble behind the visible gate) ----------
+  const combineGate = useMemo(() => {
+    if (!selected || !combineWith) return null;
+    const a = targetFor(selected);
+    const b = targetFor(combineWith);
+    if (!a || !b) return null;
+    return { a, b, gate: birthGateFor(a.shape, b.shape) };
+  }, [selected, combineWith, targetFor]);
+  const handleCombine = useCallback((): void => {
+    if (!combineGate) return;
+    const result = birthChild(combineGate.a.shape, combineGate.b.shape, seqRef.current);
+    if (!result.ok) {
+      setOpNotice(`assemble: ${result.reason}`);
+      return;
+    }
+    seqRef.current += 1;
+    const home: [number, number, number] = [
+      (combineGate.a.home[0] + combineGate.b.home[0]) / 2,
+      Math.min(combineGate.a.home[1], combineGate.b.home[1]) - 4,
+      0,
+    ];
+    setWritten((cur) => [...cur, { form: result.born, home }]);
+    setCombineWith(null);
+    setSelected(`w:${result.born.id}`);
+    setOpNotice(null);
+  }, [combineGate]);
+
+  // ----- 3b: the sources shelf (committed snapshot loads + drag-to-place) ----
+  const handleLoadFiles = useCallback((files: FileList): void => {
+    for (const file of Array.from(files)) {
+      file
+        .text()
+        .then((text) => {
+          const entry = loadUniverseSnapshot(JSON.parse(text));
+          setShelf((cur) => [...cur, { entry, placed: false }]);
+          setOpNotice(null);
+        })
+        .catch((error: unknown) => {
+          setOpNotice(`load: ${error instanceof Error ? error.message : String(error)}`);
+        });
+    }
+  }, []);
+  const worldPointFromClient = useCallback((clientX: number, clientY: number): [number, number] => {
+    const camera = cameraRef.current;
+    if (!camera) return [0, -4];
+    const ndc = new Vector2((clientX / window.innerWidth) * 2 - 1, -(clientY / window.innerHeight) * 2 + 1);
+    const raycaster = new Raycaster();
+    raycaster.setFromCamera(ndc, camera);
+    const { origin, direction } = raycaster.ray;
+    if (Math.abs(direction.z) < 1e-9) return [0, -4];
+    const t = -origin.z / direction.z; // the z=0 sheet
+    return [origin.x + t * direction.x, origin.y + t * direction.y];
+  }, []);
+  const handleShelfDrop = useCallback(
+    (clientX: number, clientY: number): void => {
+      const index = dragIndexRef.current;
+      dragIndexRef.current = null;
+      if (index === null) return;
+      const item = shelf[index];
+      if (!item || item.placed || !item.entry.placeable) return;
+      if (written.some((w) => w.form.shape.id === item.entry.loaded.shape.id)) {
+        setOpNotice(`load: "${item.entry.title}" is already on the sheet (one placement per loaded form)`);
+        return;
+      }
+      const [x, y] = worldPointFromClient(clientX, clientY);
+      const form = placeShelfEntry(item.entry, seqRef.current);
+      seqRef.current += 1;
+      setWritten((cur) => [...cur, { form, home: [x, y, 0] }]);
+      setShelf((cur) => cur.map((s, k) => (k === index ? { ...s, placed: true } : s)));
+      setSelected(`w:${form.id}`);
+      setOpNotice(null);
+    },
+    [shelf, written, worldPointFromClient],
+  );
+  const shelfUniverses = useMemo(() => {
+    const bySource = new Map<string, Array<{ index: number; entry: ShelfEntry; placed: boolean }>>();
+    shelf.forEach((item, index) => {
+      const list = bySource.get(item.entry.source) ?? [];
+      list.push({ index, entry: item.entry, placed: item.placed });
+      bySource.set(item.entry.source, list);
+    });
+    return [...bySource.entries()].map(([source, entries]) => ({ source, entries }));
+  }, [shelf]);
+
+  // ----- craft staging with the pentimento (the DAG's consumed, in pencil) ---
+  const pencilCraft: InkedFormCraft = useMemo(
+    () => ({
+      ...baseCraft,
+      bodyOpacity: d.world.genesis.pencilBodyOpacity,
+      constructionColor: genesisCtl.pencilTone,
+      constructionOpacity: 0.5,
+      constructionGhostOpacity: 0.14,
+      silhouetteColor: genesisCtl.pencilTone,
+      silhouetteOpacity: 0.75,
+      generatorColorA: genesisCtl.pencilTone,
+      generatorColorB: genesisCtl.pencilTone,
+      generatorLineWidth: baseCraft.generatorLineWidth * 0.7,
+      generatorGhostOpacity: 0.12,
+      hatchOpacity: 0,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [baseCraft, genesisCtl.pencilTone, d.world.genesis.pencilBodyOpacity],
+  );
+  const craftFor = (id: string, shapeId: string): InkedFormCraft =>
+    pentimentoShapeIds.has(shapeId)
+      ? pencilCraft // the REALLY-consumed settle to graphite — legible, not a fade
+      : selected === id
+        ? specimenCraft
+        : anySelected
+          ? recededCraft
+          : baseCraft;
+  const inkFor = (id: string, shapeId: string, ink: string): string =>
+    pentimentoShapeIds.has(shapeId)
+      ? genesisCtl.pencilTone
+      : selected === id || !anySelected
+        ? ink
+        : fadeToward(ink, paper.background, specimenCtl.recedeColorFade);
+
   // craft staging: the world recedes behind a specimen; the specimen's already-
   // drawn certified loops light up (width/ghost only — nothing redrawn)
   const recededCraft: InkedFormCraft = useMemo(() => {
@@ -543,15 +761,14 @@ export default function ManuscriptView() {
     }),
     [baseCraft, specimenCtl.loopWidthFactor, specimenCtl.loopGhostOpacity],
   );
-  const craftFor = (id: string): InkedFormCraft =>
-    selected === id ? specimenCraft : anySelected ? recededCraft : baseCraft;
-  const inkFor = (id: string, ink: string): string =>
-    selected === id || !anySelected ? ink : fadeToward(ink, paper.background, specimenCtl.recedeColorFade);
+  // craftFor / inkFor are defined after the 3b genesis block (they read the
+  // pentimento set — the DAG's really-consumed population)
 
   const riseTo: [number, number, number] = [0, d.world.specimen.riseY, specimenCtl.riseZ];
 
   const selectable = (
     id: string,
+    shapeId: string,
     home: [number, number, number],
     driftIndex: number,
     label: { title: string; sub: string; drop: number },
@@ -574,7 +791,7 @@ export default function ManuscriptView() {
         <group
           onClick={(event) => {
             event.stopPropagation();
-            pick(id);
+            pick(id, event.nativeEvent.shiftKey);
           }}
           onContextMenu={(event) => {
             event.stopPropagation();
@@ -595,7 +812,7 @@ export default function ManuscriptView() {
           position={[0, label.drop, 0]}
           title={label.title}
           sub={label.sub}
-          ink={inkFor(id, d.paper.titleInk)}
+          ink={inkFor(id, shapeId, d.paper.titleInk)}
           hidden={selected === id}
         />
       </Drift>
@@ -606,6 +823,11 @@ export default function ManuscriptView() {
     <div
       style={{ position: 'fixed', inset: 0, background: paper.background }}
       onContextMenu={(event) => event.preventDefault()}
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={(event) => {
+        event.preventDefault();
+        handleShelfDrop(event.clientX, event.clientY);
+      }}
     >
       <Canvas
         camera={{ position: [...d.layout.cameraPosition], fov: 45 }}
@@ -630,6 +852,7 @@ export default function ManuscriptView() {
           onClick={(event) => {
             event.stopPropagation();
             setSelected(null);
+            setCombineWith(null);
             closeMenus();
           }}
           onContextMenu={(event) => {
@@ -646,6 +869,28 @@ export default function ManuscriptView() {
           <planeGeometry args={[bands.width, 90]} />
           <meshBasicMaterial colorWrite={false} depthWrite={false} />
         </mesh>
+
+        <CameraGrab
+          onReady={(camera) => {
+            cameraRef.current = camera;
+          }}
+        />
+
+        {/* the INK STEMMA — the committed (Q3-reduced) GenealogyEdges, drawn
+            parent→child on the sheet (ink, not gold; the real edge, no decor) */}
+        {stemmaLines.map((line) => (
+          <Line
+            key={line.key}
+            points={[
+              [line.from[0], line.from[1], -1.5],
+              [line.to[0], line.to[1], -1.5],
+            ]}
+            color={silhouetteCtl.color}
+            lineWidth={genesisCtl.stemmaWidth}
+            transparent
+            opacity={genesisCtl.stemmaOpacity}
+          />
+        ))}
 
         {/* the registers — warm-paper tones deepening down the page */}
         {(
@@ -686,6 +931,7 @@ export default function ManuscriptView() {
         {world.dim1.map((model, k) =>
           selectable(
             `dim1:${model.key}`,
+            model.shape.id,
             [centered(k, world.dim1.length, rows.dim1Spacing * scaleCtl.dim1Scale), rows.dim1Y, 0],
             k,
             {
@@ -696,7 +942,7 @@ export default function ManuscriptView() {
             <group scale={scaleCtl.dim1Scale}>
               <InkedSkeleton
                 model={model}
-                color={inkFor(`dim1:${model.key}`, silhouetteCtl.color)}
+                color={inkFor(`dim1:${model.key}`, model.shape.id, silhouetteCtl.color)}
                 lineWidth={d.world.skeleton.lineWidth}
               />
             </group>,
@@ -707,6 +953,7 @@ export default function ManuscriptView() {
         {world.dim2.map((model, k) =>
           selectable(
             `dim2:${model.surface}`,
+            model.immersion.shape.id,
             [
               centered(k, world.dim2.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2),
               rows.dim2Y,
@@ -719,7 +966,11 @@ export default function ManuscriptView() {
               drop: -d.layout.captionDrop * scaleCtl.dim2Scale - 0.9,
             },
             <group scale={scaleCtl.dim2Scale}>
-              <InkedForm model={model} craft={craftFor(`dim2:${model.surface}`)} lighting={lighting} />
+              <InkedForm
+                model={model}
+                craft={craftFor(`dim2:${model.surface}`, model.immersion.shape.id)}
+                lighting={lighting}
+              />
             </group>,
           ),
         )}
@@ -728,6 +979,7 @@ export default function ManuscriptView() {
         {world.dim3.map((model, k) =>
           selectable(
             `dim3:${model.key}`,
+            model.shape.id,
             [centered(k, world.dim3.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0],
             k + 19,
             {
@@ -738,7 +990,7 @@ export default function ManuscriptView() {
             <group scale={scaleCtl.dim3Scale}>
               <InkedDomain
                 model={model}
-                inkColor={inkFor(`dim3:${model.key}`, silhouetteCtl.color)}
+                inkColor={inkFor(`dim3:${model.key}`, model.shape.id, silhouetteCtl.color)}
                 lineWidth={d.world.domain.lineWidth}
                 markColors={d.world.domain.markColors}
                 markRadius={d.world.domain.markRadius}
@@ -766,24 +1018,29 @@ export default function ManuscriptView() {
                 : -1.35 * scaleCtl.dim1Scale - 0.7;
           return selectable(
             id,
+            entry.form.shape.id,
             entry.home,
             30 + k,
             { title: entry.form.title, sub, drop },
             render.mode === 'immersion' ? (
               <group scale={scaleCtl.dim2Scale}>
-                <InkedForm model={render.model} craft={craftFor(id)} lighting={lighting} />
+                <InkedForm
+                  model={render.model}
+                  craft={craftFor(id, entry.form.shape.id)}
+                  lighting={lighting}
+                />
               </group>
             ) : render.mode === 'skeleton' ? (
               <group scale={scaleCtl.dim1Scale}>
                 <InkedSkeleton
                   model={render.model}
-                  color={inkFor(id, silhouetteCtl.color)}
+                  color={inkFor(id, entry.form.shape.id, silhouetteCtl.color)}
                   lineWidth={d.world.skeleton.lineWidth}
                 />
               </group>
             ) : (
               <group scale={scaleCtl.dim1Scale}>
-                <InkedPlainForm shape={render.shape} craft={craftFor(id)} />
+                <InkedPlainForm shape={render.shape} craft={craftFor(id, entry.form.shape.id)} />
               </group>
             ),
           );
@@ -802,13 +1059,13 @@ export default function ManuscriptView() {
         }}
       >
         <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: 0.2 }}>
-          the inked manuscript — phase 3a
+          the inked manuscript — phase 3b
         </div>
         <div style={{ fontSize: 12.5, fontStyle: 'italic', opacity: 0.78 }}>
-          the workshop · act at the edges, read on the form · every transform is the real engine
+          the whole manuscript · inhabited, summoned, written in — and remembered
         </div>
         <div style={{ fontSize: 11, fontFamily: 'ui-monospace, monospace', opacity: 0.55, marginTop: 3 }}>
-          ?manuscript · right-click paper → invoke · select + dock glyph → the committed op · right-click a form → inline ops
+          ?manuscript · shift-click a second form → the combine gate · the record runs at the foot · load universes from the shelf
         </div>
       </div>
       {opNotice ? (
@@ -816,7 +1073,7 @@ export default function ManuscriptView() {
           style={{
             position: 'absolute',
             left: '50%',
-            bottom: 78,
+            bottom: 118,
             transform: 'translateX(-50%)',
             padding: '4px 10px',
             borderRadius: 3,
@@ -857,13 +1114,31 @@ export default function ManuscriptView() {
           onApply={(operationId) => applyOp(operationId, formMenu.id)}
         />
       ) : null}
-      {reading ? (
+      {combineGate ? (
+        <BirthGatePanel
+          aTitle={combineGate.a.title}
+          bTitle={combineGate.b.title}
+          gate={combineGate.gate}
+          paper={d.paper}
+          accent={generatorsCtl.a}
+          onCombine={handleCombine}
+        />
+      ) : reading ? (
         <SpecimenCard
           reading={reading}
           paper={d.paper}
           generatorInks={{ a: generatorsCtl.a, b: generatorsCtl.b }}
         />
       ) : null}
+      <RecordStrip entries={recordEntries} accepted={genesis?.accepted ?? true} paper={d.paper} />
+      <SourcesShelf
+        universes={shelfUniverses}
+        paper={d.paper}
+        onLoadFiles={handleLoadFiles}
+        onDragEntry={(index) => {
+          dragIndexRef.current = index;
+        }}
+      />
       <Leva collapsed />
     </div>
   );

@@ -262,6 +262,15 @@ export const manuscriptDefaults = {
     chrome: {
       spawnOffset: 6, // where an op-born form lands relative to its parent (x)
     },
+    // Phase 3b — the memory (birth · record · shelf). Craft only: WHICH forms
+    // are pentimenti is the DAG's own consumed population; the stemma/record
+    // ARE the committed (Q3-reduced) GenealogyEdges — no knob invents lineage.
+    genesis: {
+      pencilTone: '#8a8069', // the pentimento graphite — legible underdrawing, never a fade
+      pencilBodyOpacity: 0.08, // the consumed body settles to a whisper; its lines stay
+      stemmaWidth: 1.2, // the ink stemma line (px) — INK, not gold (the ratified ruling)
+      stemmaOpacity: 0.55,
+    },
   },
   lighting: {
     ambientIntensity: 0.92, // flat, paper-like light

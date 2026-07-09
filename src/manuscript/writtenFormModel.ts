@@ -255,12 +255,22 @@ export function readPlainSpecimen(
   invariants: FormInvariantsReadout,
   h1Label: string | null,
 ): SpecimenReading {
+  // the χ row never over-claims: "(certified)" only when the certifier AGREES
+  // with the explicit-cell count; where they differ (e.g. an assemble child,
+  // whose explicit cells carry the minted merge supports alongside the carried
+  // originals) BOTH numbers show, each named
+  const chiValue =
+    invariants.chiCertified === null
+      ? `${invariants.chi}`
+      : invariants.chiCertified === invariants.chi
+        ? `${invariants.chi} (certified)`
+        : `${invariants.chi} explicit · ${invariants.chiCertified} certified`;
   return {
     kind: 'surface',
     title,
     subtitle: provenance,
     rows: [
-      { label: 'Euler χ', value: `${invariants.chi}${invariants.chiCertified !== null ? ' (certified)' : ''}` },
+      { label: 'Euler χ', value: chiValue },
       { label: 'orientable', value: invariants.cert ? (invariants.cert.nonOrientable ? 'no' : 'yes') : 'n-a' },
       { label: 'class', value: invariants.classification },
       { label: 'w₁ class', value: invariants.cert ? `[${invariants.cert.w1Class.join(', ')}]` : 'n-a' },
