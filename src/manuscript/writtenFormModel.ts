@@ -12,7 +12,8 @@
 // reimplements any surface op. The canonical op target is the form's FIRST
 // face (single-face invoked primitives have exactly one; on multi-face forms
 // the committed eligibility gates speak for themselves — e.g. chaining onto a
-// born quotient face is refused with the committed "not yet ruled" reason).
+// born quotient face runs the COMPOSED word per the Q-M2 unfreeze, and its
+// exception paths refuse with the committed reasons).
 //
 // A born form's RENDER is routed by the committed `routeBornForm` (replay-
 // verified against the parent — a stale id never routes):

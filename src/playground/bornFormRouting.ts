@@ -88,12 +88,18 @@ export function recoverBornSurface(born: Shape, parent: Shape | null): BornSurfa
       return null;
     }
   }
+  // Q-M2 (2026-07-09): a CHAINED birth id appends the COMPOSED word (the birth
+  // pairs prepended to the new ones) after its face segment, and the parse walk
+  // stops there — so this is exactly the word the birth ran, for chains and
+  // first-generation births alike.
   const pairings = parsePairingSuffix(born.id);
   if (!pairings) return null;
   try {
     const op = operation === 'flip-glue' ? flipGlueFace : glueFace;
     const trace = op(parent, parentFace, pairings);
-    const materialized = materializeSurfaceResult(parent, parentFace, trace);
+    // the declared-pairings path: a composed word may re-glue an identified
+    // slot pair, which the reconstruction search rightly forbids per word.
+    const materialized = materializeSurfaceResult(parent, parentFace, trace, pairings);
     if (JSON.stringify(materialized.shape) !== JSON.stringify(born)) return null;
     return { pairings, trace, materialized, parentFace };
   } catch {
@@ -137,10 +143,20 @@ export type BornFormRoute =
 export function routeBornForm(born: Shape, parent: Shape | null): BornFormRoute {
   const recovery = recoverBornSurface(born, parent);
   if (recovery) {
+    // Q-M2 (2026-07-09): the v0 word/collapse map PRESUPPOSES a first-generation
+    // parent face — on a QUOTIENT face (repeated corner classes) the same word
+    // COMPOSES with the prior identification and names a DIFFERENT surface
+    // (rim-to-rim on a cylinder-born face is a torus, not a cylinder; collapse
+    // of a quotient polygon is not D²/∂D²), so classification honestly ABSTAINS
+    // and the born form takes the patch/raw fallback — the trace certificate
+    // still speaks for the invariants.
+    const parentFaceFirstGeneration =
+      new Set(recovery.parentFace.vertexIds).size === recovery.parentFace.vertexIds.length;
     // C2: a collapse recovery has no word — it routes to the SPHERE (the collapse
     // target); worded recoveries classify by the v0 map as before.
-    const surface =
-      born.genealogy.operation === 'collapse'
+    const surface = !parentFaceFirstGeneration
+      ? null
+      : born.genealogy.operation === 'collapse'
         ? ('sphere' as const)
         : classifyGluingWord(recovery.pairings, recovery.parentFace.vertexIds.length);
     if (surface) return { kind: 'immersion', surface, recovery };

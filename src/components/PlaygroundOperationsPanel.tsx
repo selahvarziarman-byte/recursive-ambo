@@ -99,7 +99,7 @@ export function PlaygroundOperationsPanel() {
           ok: false as const,
           reason: pairingRows.length === 0 ? 'Add an edge pair to begin.' : 'Complete every pair row.',
         }
-      : previewCustomGlue(shape, selectedFace, chosenPairings);
+      : previewCustomGlue(shape, selectedFace, chosenPairings, context.parentShape);
   const handleCustomGlue = () => {
     const born = applyCustomGlueToSelection(chosenPairings);
     selectForm(born.id);

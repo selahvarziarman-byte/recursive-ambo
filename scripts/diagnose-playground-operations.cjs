@@ -103,10 +103,13 @@ check('§2.2 a 3-gon face is INELIGIBLE (odd) — canApply false, reason given, 
 const noFaceContext = { form: triangle, selectedFaceId: null, selectedFace: null };
 check('§2.2 no selected face — canApply false, reason given', flipGlueOperation.canApply(noFaceContext) === false && flipGlueOperation.getDisabledReason(noFaceContext) === 'Select a face to operate on.');
 // the born form's own carried face is a REPEATED-VERTEX quotient cycle —
-// chaining onto it is un-ruled upstream territory, gated in v0 (never thrown).
+// Q-M2 (ruled): chaining COMPOSES the birth word with the new one, which needs
+// the parent for the replay-verified recovery. WITHOUT it the op refuses
+// honestly (a slot-level run would be unfaithful); the with-parent composition
+// is ratified in diagnose-chaining-composition.cjs.
 const bornFace = born.faces[0];
 const bornContext = { form: born, selectedFaceId: bornFace.id, selectedFace: bornFace };
-check('§2.2 the born quotient face (repeated corners) is INELIGIBLE in v0 — gated with a reason', flipGlueOperation.canApply(bornContext) === false && String(flipGlueOperation.getDisabledReason(bornContext)).includes('not yet ruled'));
+check('§2.2 the born quotient face WITHOUT its parent refuses honestly (Q-M2: the composition needs the replay-verified birth word)', flipGlueOperation.canApply(bornContext) === false && String(flipGlueOperation.getDisabledReason(bornContext)).includes('not replay-recoverable'));
 let storeThrew = false;
 try {
   usePlaygroundStore.getState().selectForm(triangle.id);

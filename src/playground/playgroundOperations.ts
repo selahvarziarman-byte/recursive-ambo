@@ -82,42 +82,182 @@ export function canonicalFlipGluePairing(face: Face): BoundaryPairing[] {
   }));
 }
 
-// Eligible: an even n-gon (n ≥ 4) with DISTINCT corners. A repeated-vertex cycle
-// (a materialized fundamental polygon) is excluded in v0 — the committed ops'
-// corner union-find works over ids, and its semantics on repeated-vertex faces
-// is un-ruled upstream territory (chaining onto quotient faces: flagged, not shipped).
-const flipGlueEligible = (face: Face | null): face is Face =>
-  Boolean(
-    face &&
-      face.vertexIds.length >= 4 &&
-      face.vertexIds.length % 2 === 0 &&
-      new Set(face.vertexIds).size === face.vertexIds.length,
+// ---------------------------------------------------------------------------
+// Q-M2 (sanctioned engine-faithfulness edit, 2026-07-09) — chaining onto a born
+// quotient face is LEGAL (composition of identifications; researcher ruling,
+// mothership-ratified). The old blanket "not yet ruled" refusal is replaced by
+// three principled paths:
+//   PATH 1 (generic)     — a sound born form with a non-degenerate face: ALLOW.
+//                          The op composes the identification (the id-keyed
+//                          union-find + the ledger's pull-back compose by
+//                          construction); the committed GATE (decomposeLink in
+//                          the trace/materializer) decides soundness — an
+//                          instrument, not a guard (ADR 0004/0006).
+//   PATH 2 (degenerate)  — the prior identification collapsed the face's OWN
+//                          boundary to a wedge at ONE point (all corners one
+//                          class — e.g. the minimal torus): the COARSE op is
+//                          ill-posed; refuse WITH the path — subdivide first
+//                          (ADR 0018 interior content), then operate.
+//   PATH 3 (junction)    — the prior identification left a JUNCTION on this
+//                          face (probed by the committed parent replay —
+//                          recoverBornSurface — reading the birth trace's own
+//                          link verdicts): threading an identification through
+//                          a junction needs GSR / through-pairing (ADR 0007) —
+//                          a principled DEFERRED refusal.
+// ---------------------------------------------------------------------------
+
+export type FaceChainPath =
+  | { path: 'first-generation' | 'generic-quotient'; reason: null; priorPairings: BoundaryPairing[] }
+  | {
+      path: 'degenerate-boundary' | 'junction-crossing' | 'word-unrecoverable' | 'parallel-classes-deferred';
+      reason: string;
+      priorPairings: null;
+    };
+
+export function degenerateBoundaryReason(face: Face): string {
+  return (
+    `Face boundary is degenerate — the prior identification collapsed all ${face.vertexIds.length} corners to one point ` +
+    '(a wedge of circles; no non-degenerate boundary cycle of edge-classes to operate on). ' +
+    'Subdivide first (ADR 0018 — operate on the subdivided complex, e.g. the committed immersion at resolution ≥ 4), then apply the op to a subdivided face.'
   );
+}
+
+export const JUNCTION_CROSSING_REASON =
+  'junction-crossing — GSR path deferred (ADR 0007: the prior identification left a junction on this face; threading a further identification through it needs the through-pairing machinery).';
+
+export const WORD_UNRECOVERABLE_REASON =
+  'Face carries identified (repeated) corners but its birth word is not replay-recoverable here — the chain composes the birth identification with the new one, which needs the parent form and a replay-verified glue/flip-glue birth (Q-M2). Provide the parent, or operate on a first-generation face.';
+
+export const PARALLEL_CLASSES_REASON =
+  'Face carries parallel identified edge-classes (distinct classes sharing both endpoints) — the carried-edge correspondence of a further identification is ambiguous on this cell structure; deferred (subdivide first, ADR 0018, or operate on a face without parallel classes).';
+
+export function classifyFaceChainPath(
+  face: Face,
+  form: Shape,
+  parentShape?: Shape | null,
+): FaceChainPath {
+  const vs = face.vertexIds;
+  const distinct = new Set(vs);
+  if (distinct.size === vs.length) return { path: 'first-generation', reason: null, priorPairings: [] };
+  // PATH 2 — the boundary collapsed to a wedge at a single point
+  if (distinct.size === 1) {
+    return { path: 'degenerate-boundary', reason: degenerateBoundaryReason(face), priorPairings: null };
+  }
+  // The composition needs the born form's OWN birth word, replay-VERIFIED
+  // (recoverBornSurface byte-compares the re-materialized shape) — identifying
+  // ops compose it with the new word so the op acts on the quotient, not on
+  // the polygon slots (Q-M2: quotient-of-a-quotient = one composed word).
+  const recovery = recoverBornSurface(form, parentShape ?? null);
+  if (!recovery) {
+    return { path: 'word-unrecoverable', reason: WORD_UNRECOVERABLE_REASON, priorPairings: null };
+  }
+  // PATH 3 — the born form's OWN birth verdict: a junction/pinch link at a
+  // support this face carries (minted-id reconstruction mirrors the
+  // materializer's `mat:<sorted ~-joined>` exactly).
+  const junctionOnFace = recovery.trace.links.some((link) => {
+    if (link.valence !== 'junction' && !link.decomposition.pinch) return false;
+    const mintedId = `mat:${[...link.corners].sort((a, b) => a.localeCompare(b)).join('~')}`;
+    return vs.includes(mintedId);
+  });
+  if (junctionOnFace) {
+    return { path: 'junction-crossing', reason: JUNCTION_CROSSING_REASON, priorPairings: null };
+  }
+  // PARALLEL CLASSES — two slots with the same endpoint key that the birth word
+  // did NOT identify are distinct edge-classes sharing both endpoints; the
+  // materializer's carried-edge lookup (endpoint-keyed) cannot tell them apart,
+  // so a further identification on this face is deferred rather than mis-carried.
+  const n = vs.length;
+  const slotUF = new Map<number, number>();
+  const findSlot = (x: number): number => {
+    let root = x;
+    while ((slotUF.get(root) ?? root) !== root) root = slotUF.get(root) as number;
+    return root;
+  };
+  for (let k = 0; k < n; k += 1) slotUF.set(k, k);
+  for (const { edgeA, edgeB } of recovery.pairings) {
+    slotUF.set(findSlot(edgeA), findSlot(edgeB));
+  }
+  const slotsByKey = new Map<string, number[]>();
+  for (let k = 0; k < n; k += 1) {
+    const key = [vs[k], vs[(k + 1) % n]].sort((a, b) => a.localeCompare(b)).join('|');
+    (slotsByKey.get(key) ?? slotsByKey.set(key, []).get(key)!).push(k);
+  }
+  for (const slots of slotsByKey.values()) {
+    const roots = new Set(slots.map((k) => findSlot(k)));
+    if (roots.size > 1) {
+      return { path: 'parallel-classes-deferred', reason: PARALLEL_CLASSES_REASON, priorPairings: null };
+    }
+  }
+  // PATH 1 — generic quotient: allow; the composed word is returned for the op
+  // to prepend, and the gate judges the result.
+  return { path: 'generic-quotient', reason: null, priorPairings: recovery.pairings };
+}
+
+// The chain gates per op family (null = the op may proceed):
+// — IDENTIFYING ops (glue / flip-glue words) need the birth word to compose,
+//   so every non-generic path refuses with its reason.
+// — WHOLE-FACE ops (collapse / cut) are composition-immune (collapse crushes
+//   the whole boundary to a point — any polygon/∂ is S² regardless of the prior
+//   identification; cut removes the 2-cell and carries the 1-skeleton verbatim),
+//   so they proceed even where the word is unrecoverable or classes run
+//   parallel; only the two mandated refusals (degenerate wedge, junction) hold.
+function wordChainGate(context: PlaygroundOperationContext): FaceChainPath | null {
+  if (!context.selectedFace) return null;
+  return classifyFaceChainPath(context.selectedFace, context.form, context.parentShape);
+}
+
+function wordChainReason(context: PlaygroundOperationContext): string | null {
+  return wordChainGate(context)?.reason ?? null;
+}
+
+function wholeFaceChainReason(context: PlaygroundOperationContext): string | null {
+  const classified = wordChainGate(context);
+  if (!classified) return null;
+  return classified.path === 'degenerate-boundary' || classified.path === 'junction-crossing'
+    ? classified.reason
+    : null;
+}
+
+// Eligible: an even n-gon (n ≥ 4) whose chain path allows operating (Q-M2:
+// quotient faces are LEGAL on the generic path; the two exception paths carry
+// their own principled reasons below).
+const flipGlueShapeEligible = (face: Face | null): face is Face =>
+  Boolean(face && face.vertexIds.length >= 4 && face.vertexIds.length % 2 === 0);
 
 export const flipGlueOperation: PlaygroundOperation = {
   id: 'flip-glue',
   label: 'Flip-glue → RP² (antipodal)',
   description:
     'Self-glue the selected face: each boundary edge to its opposite, reversed — the committed flipGlueFace, materialized into a born form.',
-  canApply: ({ selectedFace }) => flipGlueEligible(selectedFace),
-  getDisabledReason: ({ form, selectedFaceId, selectedFace }) => {
+  canApply: (context) =>
+    flipGlueShapeEligible(context.selectedFace) && wordChainReason(context) === null,
+  getDisabledReason: (context) => {
+    const { form, selectedFaceId, selectedFace } = context;
     if (!form) return 'No form selected.';
     if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
+    const chainReason = wordChainReason(context);
+    if (chainReason) return chainReason;
+    // captured BEFORE the type-guard check (its negative branch narrows to never)
     const edgeCount = selectedFace.vertexIds.length;
-    const distinct = new Set(selectedFace.vertexIds).size === edgeCount;
-    if (!flipGlueEligible(selectedFace)) {
-      return distinct
-        ? `Face has ${edgeCount} edges — the antipodal pairing needs an even count ≥ 4.`
-        : 'Face carries identified (repeated) corners — operating on quotient faces is not yet ruled.';
+    if (!flipGlueShapeEligible(selectedFace)) {
+      return `Face has ${edgeCount} edges — the antipodal pairing needs an even count ≥ 4.`;
     }
     return null;
   },
-  execute: ({ form, selectedFace }) => {
-    if (!flipGlueEligible(selectedFace)) {
+  execute: (context) => {
+    const { form, selectedFace } = context;
+    const classified = wordChainGate(context);
+    if (!flipGlueShapeEligible(selectedFace) || !classified || classified.reason !== null) {
       throw new Error('playgroundOperations: flip-glue executed on an ineligible face');
     }
-    const trace = flipGlueFace(form, selectedFace, canonicalFlipGluePairing(selectedFace));
-    return materializeSurfaceResult(form, selectedFace, trace).shape;
+    // Q-M2: the born form's replay-verified birth word composes with the new
+    // one (empty for a first-generation face — the committed path verbatim);
+    // the wrapper is picked by the COMPOSED word's modes (the committed
+    // flip-iff-reversing convention) and the materializer replay-verifies it.
+    const composed = [...classified.priorPairings, ...canonicalFlipGluePairing(selectedFace)];
+    const op = composed.some((p) => p.mode === 'reversing') ? flipGlueFace : glueFace;
+    const trace = op(form, selectedFace, composed);
+    return materializeSurfaceResult(form, selectedFace, trace, composed).shape;
   },
 };
 
@@ -135,34 +275,40 @@ interface WordOperationSpec {
 }
 
 function makeWordOperation(spec: WordOperationSpec): PlaygroundOperation {
-  const eligible = (face: Face | null): face is Face =>
-    flipGlueEligible(face) && (!spec.exactlyFour || face.vertexIds.length === 4);
+  const shapeEligible = (face: Face | null): face is Face =>
+    flipGlueShapeEligible(face) && (!spec.exactlyFour || face.vertexIds.length === 4);
   return {
     id: spec.id,
     label: spec.label,
     description: spec.description,
-    canApply: ({ selectedFace }) => eligible(selectedFace),
-    getDisabledReason: ({ form, selectedFaceId, selectedFace }) => {
+    canApply: (context) =>
+      shapeEligible(context.selectedFace) && wordChainReason(context) === null,
+    getDisabledReason: (context) => {
+      const { form, selectedFaceId, selectedFace } = context;
       if (!form) return 'No form selected.';
       if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
+      const chainReason = wordChainReason(context);
+      if (chainReason) return chainReason;
       // captured BEFORE the type-guard check (its negative branch narrows to never)
       const edgeCount = selectedFace.vertexIds.length;
-      const distinct = new Set(selectedFace.vertexIds).size === edgeCount;
-      if (eligible(selectedFace)) return null;
-      if (!distinct) {
-        return 'Face carries identified (repeated) corners — operating on quotient faces is not yet ruled.';
-      }
+      if (shapeEligible(selectedFace)) return null;
       return spec.exactlyFour
         ? `Face has ${edgeCount} edges — this double-pair word needs exactly 4.`
         : `Face has ${edgeCount} edges — the single-pair word needs an even count ≥ 4.`;
     },
-    execute: ({ form, selectedFace }) => {
-      if (!eligible(selectedFace)) {
+    execute: (context) => {
+      const { form, selectedFace } = context;
+      const classified = wordChainGate(context);
+      if (!shapeEligible(selectedFace) || !classified || classified.reason !== null) {
         throw new Error(`playgroundOperations: ${spec.id} executed on an ineligible face`);
       }
-      const op = spec.kind === 'glue' ? glueFace : flipGlueFace;
-      const trace = op(form, selectedFace, spec.pairings(selectedFace));
-      return materializeSurfaceResult(form, selectedFace, trace).shape;
+      // Q-M2: compose the replay-verified birth word with this op's word (empty
+      // prior on a first-generation face — the committed path verbatim); the
+      // wrapper follows the COMPOSED word's modes (flip iff any reversing).
+      const composed = [...classified.priorPairings, ...spec.pairings(selectedFace)];
+      const op = composed.some((p) => p.mode === 'reversing') ? flipGlueFace : glueFace;
+      const trace = op(form, selectedFace, composed);
+      return materializeSurfaceResult(form, selectedFace, trace, composed).shape;
     },
   };
 }
@@ -217,20 +363,21 @@ export const flipGlueMobiusOperation = makeWordOperation({
 // C2 — collapse (→ S²) and cut (the removal)
 // ---------------------------------------------------------------------------
 
-// Distinct corners required (the standing freeze: operating on quotient faces is
-// un-ruled); collapse and cut are otherwise n-free — the committed ops carry them.
-const wholeFaceEligible = (face: Face | null): face is Face =>
-  Boolean(
-    face &&
-      face.vertexIds.length >= 2 &&
-      new Set(face.vertexIds).size === face.vertexIds.length,
-  );
+// Whole-face ops (collapse, cut) are n-free — the committed ops carry them. Q-M2:
+// quotient faces operate on the generic path (these ops are composition-immune —
+// see the chain-gate comment above); the degenerate / junction paths refuse
+// with their principled reasons (classifyFaceChainPath above).
+const wholeFaceShapeEligible = (face: Face | null): face is Face =>
+  Boolean(face && face.vertexIds.length >= 2);
 
-const wholeFaceReason = ({ form, selectedFaceId, selectedFace }: PlaygroundOperationContext): string | null => {
+const wholeFaceReason = (context: PlaygroundOperationContext): string | null => {
+  const { form, selectedFaceId, selectedFace } = context;
   if (!form) return 'No form selected.';
   if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
-  if (wholeFaceEligible(selectedFace)) return null;
-  return 'Face carries identified (repeated) corners — operating on quotient faces is not yet ruled.';
+  const chainReason = wholeFaceChainReason(context);
+  if (chainReason) return chainReason;
+  if (!wholeFaceShapeEligible(selectedFace)) return 'Face needs at least 2 boundary edges.';
+  return null;
 };
 
 export const collapseSphereOperation: PlaygroundOperation = {
@@ -238,10 +385,12 @@ export const collapseSphereOperation: PlaygroundOperation = {
   label: 'Collapse → Sphere (D²/∂D²)',
   description:
     'Collapse the WHOLE face boundary to one apex — the committed collapseFace (χ=2, the manifold sphere), materialized into a born form.',
-  canApply: ({ selectedFace }) => wholeFaceEligible(selectedFace),
+  canApply: (context) =>
+    wholeFaceShapeEligible(context.selectedFace) && wholeFaceChainReason(context) === null,
   getDisabledReason: wholeFaceReason,
-  execute: ({ form, selectedFace }) => {
-    if (!wholeFaceEligible(selectedFace)) {
+  execute: (context) => {
+    const { form, selectedFace } = context;
+    if (!wholeFaceShapeEligible(selectedFace) || wholeFaceChainReason(context) !== null) {
       throw new Error('playgroundOperations: collapse-sphere executed on an ineligible face');
     }
     return materializeSurfaceResult(form, selectedFace, collapseFace(form, selectedFace)).shape;
@@ -253,10 +402,12 @@ export const cutFaceOperation: PlaygroundOperation = {
   label: 'Cut (remove the 2-cell)',
   description:
     'Remove the selected open 2-cell — the committed cutCell (a LOGGED loss; the boundary passes through, now free), materialized directly.',
-  canApply: ({ selectedFace }) => wholeFaceEligible(selectedFace),
+  canApply: (context) =>
+    wholeFaceShapeEligible(context.selectedFace) && wholeFaceChainReason(context) === null,
   getDisabledReason: wholeFaceReason,
-  execute: ({ form, selectedFace }) => {
-    if (!wholeFaceEligible(selectedFace)) {
+  execute: (context) => {
+    const { form, selectedFace } = context;
+    if (!wholeFaceShapeEligible(selectedFace) || wholeFaceChainReason(context) !== null) {
       throw new Error('playgroundOperations: cut executed on an ineligible face');
     }
     return materializeCutResult(form, cutCell(form, selectedFace));

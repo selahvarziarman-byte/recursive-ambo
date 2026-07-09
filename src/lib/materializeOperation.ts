@@ -117,29 +117,11 @@ function traceSignature(trace: SurfaceTrace): string {
   });
 }
 
-function reconstructPairings(form: Shape, face: Face, trace: SurfaceTrace): BoundaryPairing[] {
-  const n = face.vertexIds.length;
-  const pairCount = trace.pairSigns.length;
-  if (pairCount === 0) return [];
-  if (n > 8) {
-    throw new Error(
-      `materializeOperation: pairing reconstruction is guarded to n <= 8 boundary edges (got ${n}) — un-searched territory`,
-    );
-  }
-  // edgeA per pairing: the committed trace.cycles[i] = [vs[edgeA_i]] (the pair's rep corner).
-  const edgeAs = trace.cycles.map((cycle, i) => {
-    const index = face.vertexIds.indexOf(cycle[0]);
-    if (cycle.length !== 1 || index < 0) {
-      throw new Error(`materializeOperation: trace cycle ${i} does not name a face corner — not a level-2 trace`);
-    }
-    return index;
-  });
-  const modes = trace.pairSigns.map((sign) => (sign === 1 ? 'preserving' : 'reversing') as BoundaryPairing['mode']);
-
-  // the committed ops' own documented contracts, ENFORCED (a relabelled
-  // certificate lies only in its name — replay cannot catch it, this does):
-  // glueFace = "every pair orientation-PRESERVING (+1)"; flipGlueFace = "at
-  // least one pair orientation-REVERSING (−1)".
+// the committed ops' own documented contracts, ENFORCED (a relabelled
+// certificate lies only in its name — replay cannot catch it, this does):
+// glueFace = "every pair orientation-PRESERVING (+1)"; flipGlueFace = "at
+// least one pair orientation-REVERSING (−1)".
+function enforceModeContracts(trace: SurfaceTrace): void {
   if (trace.surface === 'glue' && trace.pairSigns.some((sign) => sign === -1)) {
     throw new Error(
       "materializeOperation: a 'glue' certificate carrying a reversing (−1) pair sign violates the committed glueFace contract — refusing to materialize",
@@ -150,34 +132,99 @@ function reconstructPairings(form: Shape, face: Face, trace: SurfaceTrace): Boun
       "materializeOperation: a 'flip-glue' certificate with NO reversing pair violates the committed flipGlueFace contract — refusing to materialize",
     );
   }
+}
 
-  const used = new Set(edgeAs);
-  const free = Array.from({ length: n }, (_x, k) => k).filter((k) => !used.has(k));
+// Q-M2 (sanctioned, 2026-07-09): the caller may DECLARE the pairings it ran —
+// a COMPOSED chained word (the born form's birth pairs prepended to the new
+// ones) may re-glue an already-identified slot pair, which the search below
+// rightly forbids per single word (its used-set). Declared pairings get the
+// SAME teeth: the committed op is replayed with them and the trace signature
+// byte-compared — a wrong or tampered declaration refuses loudly.
+function verifyDeclaredPairings(
+  form: Shape,
+  face: Face,
+  trace: SurfaceTrace,
+  declared: BoundaryPairing[],
+): BoundaryPairing[] {
+  enforceModeContracts(trace);
+  const candidate = declared.map((p) => ({ ...p }));
+  const op = trace.surface === 'flip-glue' ? flipGlueFace : glueFace;
+  let replay: SurfaceTrace;
+  try {
+    replay = op(form, face, candidate);
+  } catch (error) {
+    throw new Error(
+      `materializeOperation: the declared pairings do not replay through the committed op (${(error as Error).message}) — refusing to materialize`,
+    );
+  }
+  if (traceSignature(replay) !== traceSignature(trace)) {
+    throw new Error(
+      'materializeOperation: the declared pairings do not reproduce this trace through the committed op — refusing to materialize',
+    );
+  }
+  return candidate;
+}
+
+function reconstructPairings(form: Shape, face: Face, trace: SurfaceTrace): BoundaryPairing[] {
+  const n = face.vertexIds.length;
+  const pairCount = trace.pairSigns.length;
+  if (pairCount === 0) return [];
+  if (n > 8) {
+    throw new Error(
+      `materializeOperation: pairing reconstruction is guarded to n <= 8 boundary edges (got ${n}) — un-searched territory`,
+    );
+  }
+  // edgeA per pairing: the committed trace.cycles[i] = [vs[edgeA_i]] (the pair's
+  // rep corner). Q-M2 (sanctioned): on a QUOTIENT face the rep corner class may
+  // occupy SEVERAL slots — search edgeA over ALL its occurrences (n ≤ 8 keeps
+  // the search tiny); the replay signature pins the true assignment. On a
+  // first-generation face each corner occurs once — the old behavior exactly.
+  const edgeACandidates = trace.cycles.map((cycle, i) => {
+    const occurrences = face.vertexIds
+      .map((v, k) => (v === cycle[0] ? k : -1))
+      .filter((k) => k >= 0);
+    if (cycle.length !== 1 || occurrences.length === 0) {
+      throw new Error(`materializeOperation: trace cycle ${i} does not name a face corner — not a level-2 trace`);
+    }
+    return occurrences;
+  });
+  const modes = trace.pairSigns.map((sign) => (sign === 1 ? 'preserving' : 'reversing') as BoundaryPairing['mode']);
+  enforceModeContracts(trace);
+
   const want = traceSignature(trace);
   const matches: BoundaryPairing[][] = [];
 
-  // assign each pairing an edgeB from the free edges (tiny search; n <= 8 ⇒ ≤ 4! = 24).
-  // Edges left UNASSIGNED are FREE RIM edges (an OPEN certificate — cylinder/Möbius):
+  // assign each pairing an (edgeA, edgeB) slot pair — edgeA over the rep corner's
+  // occurrences, edgeB over the still-unused slots (tiny search; n <= 8). Edges
+  // left UNASSIGNED are FREE RIM edges (an OPEN certificate — cylinder/Möbius):
   // full coverage is NOT required (the G5.2 finding, fixed under this sanction) —
-  // the replay verification still pins the identification exactly.
-  const assign = (i: number, remaining: number[], acc: BoundaryPairing[]): void => {
+  // the replay verification still pins the identification exactly. Replays that
+  // the committed op itself refuses are simply not matches (never a crash here).
+  const assign = (i: number, used: Set<number>, acc: BoundaryPairing[]): void => {
     if (i === pairCount) {
       const candidate = acc.map((p) => ({ ...p }));
       const op = trace.surface === 'flip-glue' ? flipGlueFace : glueFace;
-      const replay = op(form, face, candidate);
+      let replay: SurfaceTrace;
+      try {
+        replay = op(form, face, candidate);
+      } catch {
+        return;
+      }
       if (traceSignature(replay) === want) matches.push(candidate);
       return;
     }
-    for (let j = 0; j < remaining.length; j += 1) {
-      const edgeB = remaining[j];
-      assign(
-        i + 1,
-        remaining.filter((_x, jj) => jj !== j),
-        [...acc, { edgeA: edgeAs[i], edgeB, mode: modes[i] }],
-      );
+    for (const edgeA of edgeACandidates[i]) {
+      if (used.has(edgeA)) continue;
+      for (let edgeB = 0; edgeB < n; edgeB += 1) {
+        if (edgeB === edgeA || used.has(edgeB)) continue;
+        const nextUsed = new Set(used);
+        nextUsed.add(edgeA);
+        nextUsed.add(edgeB);
+        assign(i + 1, nextUsed, [...acc, { edgeA, edgeB, mode: modes[i] }]);
+      }
     }
   };
-  assign(0, free, []);
+  assign(0, new Set<number>(), []);
 
   if (matches.length === 0) {
     throw new Error(
@@ -185,8 +232,10 @@ function reconstructPairings(form: Shape, face: Face, trace: SurfaceTrace): Boun
     );
   }
   // multiple matches would have IDENTICAL trace signatures — the same identification;
-  // pick deterministically (sorted by edgeB sequence).
-  matches.sort((a, b) => a.map((p) => p.edgeB).join(',').localeCompare(b.map((p) => p.edgeB).join(',')));
+  // pick deterministically (sorted by the (edgeA,edgeB) sequence).
+  matches.sort((a, b) =>
+    a.map((p) => `${p.edgeA}-${p.edgeB}`).join(',').localeCompare(b.map((p) => `${p.edgeA}-${p.edgeB}`).join(',')),
+  );
   return matches[0];
 }
 
@@ -198,6 +247,7 @@ export function materializeSurfaceResult(
   form: Shape,
   face: Face,
   trace: SurfaceTrace,
+  declaredPairings?: BoundaryPairing[],
 ): MaterializedSurface {
   const operation = SURFACE_OPERATION[trace.surface];
   if (!operation) {
@@ -206,8 +256,15 @@ export function materializeSurfaceResult(
   const vs = face.vertexIds;
   const n = vs.length;
 
-  // COLLAPSE is replay-verified directly (no pairings to reconstruct).
-  const pairings = trace.surface === 'collapse' ? [] : reconstructPairings(form, face, trace);
+  // COLLAPSE is replay-verified directly (no pairings to reconstruct). Declared
+  // pairings (Q-M2 composed chained words) are replay-verified; otherwise the
+  // committed search reconstructs them from the trace.
+  const pairings =
+    trace.surface === 'collapse'
+      ? []
+      : declaredPairings
+        ? verifyDeclaredPairings(form, face, trace, declaredPairings)
+        : reconstructPairings(form, face, trace);
   if (trace.surface === 'collapse') {
     const replay = collapseFace(form, face);
     if (traceSignature(replay) !== traceSignature(trace)) {

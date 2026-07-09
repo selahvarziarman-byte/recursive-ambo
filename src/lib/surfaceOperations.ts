@@ -197,10 +197,18 @@ function identifyByPairs(
   const n = vs.length;
   const edges = faceEdgePairs(face);
 
+  // Q-M2 (sanctioned, 2026-07-09): a BORN QUOTIENT face repeats corner CLASSES
+  // in its cycle. The identification COMPOSES over the distinct class ids (the
+  // union-find is id-keyed, so every occurrence of a class moves together —
+  // quotient-of-a-quotient); the ledger below is seeded per DISTINCT class so
+  // the pull-back carries each absorbed site once. Positions/links keep every
+  // occurrence (each corner wedge contributes to its support's link).
+  const cornerIds = [...new Set(vs)];
+
   // (1) ENACT — union corners and half-edges per the pairings' correspondence.
   const cornerUF = makeUnionFind();
   const endUF = makeUnionFind();
-  vs.forEach((v) => cornerUF.find(v)); // seed all corners as their own class
+  cornerIds.forEach((v) => cornerUF.find(v)); // seed all corner classes as their own class
   for (const { edgeA, edgeB, mode } of pairings) {
     const ai = edgeA;
     const bj = edgeB;
@@ -219,9 +227,10 @@ function identifyByPairs(
     }
   }
 
-  // support id for a corner = its class, canonicalised by sorted member vertex ids.
+  // support id for a corner = its class, canonicalised by sorted member vertex ids
+  // (distinct ids only — a repeated occurrence is the SAME class member).
   const classMembers = new Map<string, VertexId[]>();
-  for (const v of vs) {
+  for (const v of cornerIds) {
     const root = cornerUF.find(v);
     (classMembers.get(root) ?? classMembers.set(root, []).get(root)!).push(v);
   }
@@ -249,14 +258,19 @@ function identifyByPairs(
     // ONE singleton cycle PER pair, carrying THAT pair's sign (the mandated OR model —
     // never two flips in one cycle, never a parity over all pairs). Rep = edgeA's tail
     // corner (distinct across our configured pairs).
+    // Q-M2 (sanctioned, 2026-07-09): a COMPOSED word (a chained identification —
+    // the born form's birth pairs prepended to the new ones) may repeat a tail
+    // corner across pairs (a quotient face repeats classes). The OR model must
+    // never let a later +1 overwrite a recorded flip: −1 STICKS. For every
+    // committed single-word op the reps are distinct, so this is byte-inert.
     const rep = vs[edgeA];
-    repSign.set(rep, sign);
+    repSign.set(rep, repSign.get(rep) === -1 ? -1 : sign);
     cycles.push([rep]);
   }
 
-  // (3) CHECK — reuse the committed certifiers UNCHANGED.
+  // (3) CHECK — reuse the committed certifiers UNCHANGED (seeded per distinct class).
   const signOf = (v: string): 1 | -1 => repSign.get(v) ?? 1;
-  const ledger = buildSignedIdentification([...vs], resultOf, signOf);
+  const ledger = buildSignedIdentification([...cornerIds], resultOf, signOf);
   const lineageOf = shapeLineageOf(shape);
   const faithfulness = certifyFaithfulness(
     { forward: ledger.forward, pullBack: ledger.pullBack },
@@ -342,11 +356,14 @@ export function flipGlueFace(shape: Shape, face: Face, pairings: BoundaryPairing
 // decomposeLink to read, so the surface test is χ; links: [].
 export function collapseFace(shape: Shape, face: Face): SurfaceTrace {
   const vs = face.vertexIds;
-  const sorted = [...vs].sort((a, b) => a.localeCompare(b));
+  // Q-M2 (sanctioned): distinct corner classes only — a quotient face repeats
+  // class ids in its cycle; the collapse absorbs each class once.
+  const cornerIds = [...new Set(vs)];
+  const sorted = [...cornerIds].sort((a, b) => a.localeCompare(b));
   const support = `S:${sorted.join('|')}`;
   const resultOf = (): string => support;
   const signOf = (): 1 | -1 => 1;
-  const ledger = buildSignedIdentification([...vs], resultOf, signOf);
+  const ledger = buildSignedIdentification([...cornerIds], resultOf, signOf);
   const lineageOf = shapeLineageOf(shape);
   const faithfulness = certifyFaithfulness(
     { forward: ledger.forward, pullBack: ledger.pullBack },

@@ -140,7 +140,10 @@ check('§3 edge reuse gated', String(validateCustomPairings(A.faces[0], [P(0, 2,
 check('§3 out-of-range gated', String(validateCustomPairings(A.faces[0], [P(0, 9, 'preserving')])).includes('integers in [0, 3]'));
 check('§3 empty pairing gated', String(validateCustomPairings(A.faces[0], [])).includes('at least one'));
 const torusBorn = usePlaygroundStore.getState().forms[bornIds[0]].shape;
-check('§3 a QUOTIENT face (repeated corners) is gated — the standing freeze', String(validateCustomPairings(torusBorn.faces[0], [P(0, 2, 'preserving')])).includes('not yet ruled'));
+// Q-M2 (ruled): quotient faces CHAIN via composition (diagnose-chaining-composition);
+// the torus-born face is the DEGENERATE case — all corners one class — refused
+// WITH the subdivide-first path (ADR 0018), the mandated exception.
+check('§3 a DEGENERATE quotient face (all corners one class) refuses with the subdivide-first path (Q-M2)', (() => { const r = String(validateCustomPairings(torusBorn.faces[0], [P(0, 2, 'preserving')])); return /degenerate/.test(r) && /Subdivide first/.test(r); })());
 const big = usePlaygroundStore.getState().invokeForm(nGon(10), 'ubig');
 check('§3 n > 8 gated (the committed reconstruction guard, surfaced as a reason)', String(validateCustomPairings(big.faces[0], [P(0, 5, 'preserving')])).includes('guarded to 8'));
 let storeThrew = false;

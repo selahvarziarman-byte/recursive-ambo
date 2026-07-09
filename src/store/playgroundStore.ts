@@ -247,11 +247,21 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
       (state.selectedFaceId &&
         form.shape.faces.find((face) => face.id === state.selectedFaceId)) ||
       null;
-    const reason = validateCustomPairings(selectedFace, pairings);
+    // Q-M2 — chaining onto a born quotient face composes with the birth word,
+    // recovered by replay against the parent (same provisioning as the registry ops)
+    const parentShape = form.shape.genealogy.parentShapeId
+      ? state.forms[form.shape.genealogy.parentShapeId]?.shape ?? null
+      : null;
+    const reason = validateCustomPairings(selectedFace, pairings, form.shape, parentShape);
     if (reason) {
       throw new Error(`playgroundStore: custom glue is not applicable — ${reason}`);
     }
-    const born = executeCustomGlue(form.shape, selectedFace as NonNullable<typeof selectedFace>, pairings);
+    const born = executeCustomGlue(
+      form.shape,
+      selectedFace as NonNullable<typeof selectedFace>,
+      pairings,
+      parentShape,
+    );
 
     get().addForm(born, { source: 'glue-custom', origin: 'operated' });
 

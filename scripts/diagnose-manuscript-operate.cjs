@@ -14,10 +14,13 @@
 //     generator sets — torus 2 · klein 2 · rp2 1 · cylinder core · sphere 0),
 //     cut borns to the level-1-certified skeleton, dual borns to plain ink
 //     over REAL positions with certifier-verbatim card values.
-//   · GATING is the committed reason, verbatim: ineligible words, chaining
-//     onto born quotient faces ("not yet ruled"), dual on bounded forms,
-//     cut on face-less skeletons — all refused with getDisabledReason's text,
-//     never thrown at the UI.
+//   · GATING is the committed reason, verbatim: ineligible words, dual on
+//     bounded forms, cut on face-less skeletons — all refused with
+//     getDisabledReason's text, never thrown at the UI. Chaining onto a born
+//     quotient face is RULED (Q-M2 unfreeze): the ENGINE runs the composed
+//     word (ratified in diagnose-chaining-composition), and the manuscript
+//     fail-honestly refuses to DRAW the patch-routed born (bookkeeping
+//     positions — the disclosed render gap), never a crash.
 //   · Sources are never mutated (derive-only): the target square is
 //     byte-unchanged after every operation.
 
@@ -172,8 +175,14 @@ const square = invokePrimitive('square', 2);
     !torusOnPentagon.ok && torusOnPentagon.reason === committedReason && /exactly 4/.test(torusOnPentagon.reason));
   const cylinderBorn = applyPlaygroundOperationTo('glue-cylinder', square.shape, null, 42, R);
   const chain = applyPlaygroundOperationTo('glue-cylinder', cylinderBorn.born.shape, square.shape, 43, R);
-  check("chaining onto a born quotient face: the committed 'not yet ruled' refusal",
-    !chain.ok && /not yet ruled/.test(chain.reason));
+  // Q-M2 unfreeze: the ENGINE now allows and runs the chain (composition of
+  // identifications — ratified in diagnose-chaining-composition); the born
+  // form routes 'patch' (quotient bookkeeping positions) and THIS model
+  // refuses to draw it — fail-honest in the chrome, never a crash.
+  check('chaining onto a born quotient face: the engine ALLOWS (Q-M2), the manuscript refuses only the DRAWING (patch route, fail-honest)',
+    getPlaygroundOperation('glue-cylinder').canApply(
+      operationContextFor(cylinderBorn.born.shape, square.shape)) === true &&
+    !chain.ok && /refusing to draw/.test(chain.reason));
   const dualOnDisk = applyPlaygroundOperationTo('dual', square.shape, null, 44, R);
   const dualReason = getPlaygroundOperation('dual').getDisabledReason(operationContextFor(square.shape, null));
   check('dual on a bounded disk: refused with the committed preview reason',
