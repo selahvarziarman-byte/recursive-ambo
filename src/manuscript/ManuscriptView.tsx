@@ -36,6 +36,17 @@ import {
   readSurfaceSpecimen,
   type SpecimenReading,
 } from './specimenModel';
+import type { Shape } from '../types/geometry';
+import { PRIMITIVE_CATALOGUE } from '../playground/primitiveCatalogue';
+import {
+  applyPlaygroundOperationTo,
+  invokePrimitive,
+  operationAvailabilityFor,
+  readPlainSpecimen,
+  type WrittenForm,
+} from './writtenFormModel';
+import { InkedPlainForm } from './InkedPlainForm';
+import { FormOpsMenu, InvokePalette, OperationsDock } from './ManuscriptChrome';
 
 const DIM2_TITLES: Record<string, string> = {
   torus: 'Torus (T²)',
@@ -341,13 +352,31 @@ export default function ManuscriptView() {
 
   // ----- selection: the specimen is SUMMONED state, nothing more -------------
   const [selected, setSelected] = useState<string | null>(null);
+  // ----- 3a: written material (invoked + op-born — REAL committed Shapes) ----
+  const [written, setWritten] = useState<Array<{ form: WrittenForm; home: [number, number, number] }>>([]);
+  const seqRef = useRef(1);
+  const [invokeMenu, setInvokeMenu] = useState<{ x: number; y: number; world: [number, number] } | null>(null);
+  const [formMenu, setFormMenu] = useState<{ x: number; y: number; id: string } | null>(null);
+  const [opNotice, setOpNotice] = useState<string | null>(null);
+  const closeMenus = useCallback(() => {
+    setInvokeMenu(null);
+    setFormMenu(null);
+  }, []);
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') setSelected(null);
+      if (event.key === 'Escape') {
+        setSelected(null);
+        closeMenus();
+      }
     };
+    const onDown = (): void => closeMenus(); // menus stopPropagation on their own mousedown
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+    window.addEventListener('mousedown', onDown);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('mousedown', onDown);
+    };
+  }, [closeMenus]);
   const pick = useCallback((id: string) => setSelected((cur) => (cur === id ? null : id)), []);
   const anySelected = selected !== null;
 
@@ -355,7 +384,8 @@ export default function ManuscriptView() {
   const world = useMemo(() => buildManuscriptWorld(layoutCtl.resolution), [layoutCtl.resolution]);
 
   // the analytic reading — built ON SELECT from the committed certifiers'
-  // readouts (specimenModel), cleared on deselect: summoned, never ambient
+  // readouts (specimenModel/writtenFormModel), cleared on deselect: summoned,
+  // never ambient
   const reading = useMemo<SpecimenReading | null>(() => {
     if (!selected) return null;
     const [band, key] = selected.split(':');
@@ -367,9 +397,123 @@ export default function ManuscriptView() {
       const model = world.dim2.find((m) => m.surface === key);
       return model ? readSurfaceSpecimen(model) : null;
     }
+    if (band === 'w') {
+      const entry = written.find((w) => w.form.id === key);
+      if (!entry) return null;
+      const render = entry.form.render;
+      if (render.mode === 'immersion') {
+        const base = readSurfaceSpecimen(render.model);
+        return { ...base, title: entry.form.title, subtitle: `${entry.form.provenance} · ${base.subtitle}` };
+      }
+      if (render.mode === 'skeleton') {
+        const base = readSkeletonSpecimen(render.model);
+        return { ...base, title: entry.form.title, subtitle: entry.form.provenance };
+      }
+      return readPlainSpecimen(entry.form.title, entry.form.provenance, render.invariants, render.h1Label);
+    }
     const model = world.dim3.find((m) => m.key === key);
     return model ? readDomainSpecimen(model) : null;
-  }, [selected, world]);
+  }, [selected, world, written]);
+
+  // ----- 3a: the op target + the committed availability + the apply path -----
+  const rows = d.world.rows;
+  const bands = d.world.bands;
+  const centered = (k: number, n: number, gap: number): number => (k - (n - 1) / 2) * gap;
+
+  const targetFor = useCallback(
+    (id: string | null): { shape: Shape; parent: Shape | null; title: string; home: [number, number, number] } | null => {
+      if (!id) return null;
+      const [band, key] = id.split(':');
+      if (band === 'dim1') {
+        const k = world.dim1.findIndex((m) => m.key === key);
+        if (k < 0) return null;
+        const m = world.dim1[k];
+        return {
+          shape: m.shape,
+          parent: null,
+          title: m.title,
+          home: [centered(k, world.dim1.length, rows.dim1Spacing * scaleCtl.dim1Scale), rows.dim1Y, 0],
+        };
+      }
+      if (band === 'dim2') {
+        const k = world.dim2.findIndex((m) => m.surface === key);
+        if (k < 0) return null;
+        const m = world.dim2[k];
+        return {
+          shape: m.immersion.shape,
+          parent: null,
+          title: DIM2_TITLES[m.surface] ?? m.surface,
+          home: [centered(k, world.dim2.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2), rows.dim2Y, 0],
+        };
+      }
+      if (band === 'dim3') {
+        const k = world.dim3.findIndex((m) => m.key === key);
+        if (k < 0) return null;
+        const m = world.dim3[k];
+        return {
+          shape: m.shape,
+          parent: null,
+          title: m.title,
+          home: [centered(k, world.dim3.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0],
+        };
+      }
+      const entry = written.find((w) => w.form.id === key);
+      return entry
+        ? { shape: entry.form.shape, parent: entry.form.parentShape, title: entry.form.title, home: entry.home }
+        : null;
+    },
+    [world, written, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing],
+  );
+
+  const availability = useMemo(() => {
+    const target = targetFor(selected);
+    return operationAvailabilityFor(target?.shape ?? null, target?.parent ?? null);
+  }, [selected, targetFor]);
+  const menuAvailability = useMemo(() => {
+    if (!formMenu) return [];
+    const target = targetFor(formMenu.id);
+    return operationAvailabilityFor(target?.shape ?? null, target?.parent ?? null);
+  }, [formMenu, targetFor]);
+
+  const applyOp = useCallback(
+    (operationId: string, targetId: string | null = selected): void => {
+      const target = targetFor(targetId ?? selected);
+      if (!target) return;
+      const result = applyPlaygroundOperationTo(
+        operationId,
+        target.shape,
+        target.parent,
+        seqRef.current,
+        layoutCtl.resolution,
+      );
+      closeMenus();
+      if (!result.ok) {
+        setOpNotice(`${operationId}: ${result.reason}`);
+        return;
+      }
+      seqRef.current += 1;
+      setOpNotice(null);
+      setWritten((cur) => [
+        ...cur,
+        { form: result.born, home: [target.home[0] + d.world.chrome.spawnOffset, target.home[1], 0] },
+      ]);
+      setSelected(`w:${result.born.id}`);
+    },
+    [selected, targetFor, layoutCtl.resolution, closeMenus, d.world.chrome.spawnOffset],
+  );
+
+  const handleInvoke = useCallback(
+    (catalogueKey: string): void => {
+      if (!invokeMenu) return;
+      const form = invokePrimitive(catalogueKey, seqRef.current);
+      seqRef.current += 1;
+      setWritten((cur) => [...cur, { form, home: [invokeMenu.world[0], invokeMenu.world[1], 0] }]);
+      setSelected(`w:${form.id}`);
+      setOpNotice(null);
+      closeMenus();
+    },
+    [invokeMenu, closeMenus],
+  );
 
   // craft staging: the world recedes behind a specimen; the specimen's already-
   // drawn certified loops light up (width/ghost only — nothing redrawn)
@@ -404,9 +548,6 @@ export default function ManuscriptView() {
   const inkFor = (id: string, ink: string): string =>
     selected === id || !anySelected ? ink : fadeToward(ink, paper.background, specimenCtl.recedeColorFade);
 
-  const rows = d.world.rows;
-  const bands = d.world.bands;
-  const centered = (k: number, n: number, gap: number): number => (k - (n - 1) / 2) * gap;
   const riseTo: [number, number, number] = [0, d.world.specimen.riseY, specimenCtl.riseZ];
 
   const selectable = (
@@ -435,6 +576,12 @@ export default function ManuscriptView() {
             event.stopPropagation();
             pick(id);
           }}
+          onContextMenu={(event) => {
+            event.stopPropagation();
+            event.nativeEvent.preventDefault();
+            setFormMenu({ x: event.nativeEvent.clientX, y: event.nativeEvent.clientY, id });
+            setInvokeMenu(null);
+          }}
           onPointerOver={() => {
             document.body.style.cursor = 'pointer';
           }}
@@ -456,7 +603,10 @@ export default function ManuscriptView() {
   );
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: paper.background }}>
+    <div
+      style={{ position: 'fixed', inset: 0, background: paper.background }}
+      onContextMenu={(event) => event.preventDefault()}
+    >
       <Canvas
         camera={{ position: [...d.layout.cameraPosition], fov: 45 }}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
@@ -469,6 +619,33 @@ export default function ManuscriptView() {
           intensity={lightingCtl.key}
           color="#fff6e5"
         />
+
+        {/* the PAPER catcher — invisible, behind the forms, in front of the
+            bands: left-click = sink the specimen; right-click = invoke real
+            material HERE (the palette opens at the cursor, the primitive
+            lands at the hit point) */}
+        <mesh
+          position={[0, 0, -5]}
+          renderOrder={-15}
+          onClick={(event) => {
+            event.stopPropagation();
+            setSelected(null);
+            closeMenus();
+          }}
+          onContextMenu={(event) => {
+            event.stopPropagation();
+            event.nativeEvent.preventDefault();
+            setInvokeMenu({
+              x: event.nativeEvent.clientX,
+              y: event.nativeEvent.clientY,
+              world: [event.point.x, event.point.y],
+            });
+            setFormMenu(null);
+          }}
+        >
+          <planeGeometry args={[bands.width, 90]} />
+          <meshBasicMaterial colorWrite={false} depthWrite={false} />
+        </mesh>
 
         {/* the registers — warm-paper tones deepening down the page */}
         {(
@@ -570,6 +747,48 @@ export default function ManuscriptView() {
           ),
         )}
 
+        {/* WRITTEN material — invoked primitives + op-born forms (REAL committed
+            Shapes; renders routed by the committed bornFormRouting) */}
+        {written.map((entry, k) => {
+          const id = `w:${entry.form.id}`;
+          const render = entry.form.render;
+          const sub =
+            render.mode === 'immersion'
+              ? `${render.model.immersion.correspondence.word === '' ? 'no gluing word' : render.model.immersion.correspondence.word} · H₁ = ${render.model.h1Label ?? 'n-a'}`
+              : render.mode === 'skeleton'
+                ? `H₁ = ${render.model.h1Label ?? 'n-a'} · b₁ ${render.model.invariants.level1?.b1 ?? '—'}`
+                : `H₁ = ${render.h1Label ?? 'n-a'}`;
+          const drop =
+            render.mode === 'immersion'
+              ? -d.layout.captionDrop * scaleCtl.dim2Scale - 0.9
+              : render.mode === 'skeleton'
+                ? -1.35 * scaleCtl.dim1Scale - 0.7
+                : -1.35 * scaleCtl.dim1Scale - 0.7;
+          return selectable(
+            id,
+            entry.home,
+            30 + k,
+            { title: entry.form.title, sub, drop },
+            render.mode === 'immersion' ? (
+              <group scale={scaleCtl.dim2Scale}>
+                <InkedForm model={render.model} craft={craftFor(id)} lighting={lighting} />
+              </group>
+            ) : render.mode === 'skeleton' ? (
+              <group scale={scaleCtl.dim1Scale}>
+                <InkedSkeleton
+                  model={render.model}
+                  color={inkFor(id, silhouetteCtl.color)}
+                  lineWidth={d.world.skeleton.lineWidth}
+                />
+              </group>
+            ) : (
+              <group scale={scaleCtl.dim1Scale}>
+                <InkedPlainForm shape={render.shape} craft={craftFor(id)} />
+              </group>
+            ),
+          );
+        })}
+
         <OrbitControls makeDefault enableDamping dampingFactor={0.08} />
       </Canvas>
       <div
@@ -583,15 +802,61 @@ export default function ManuscriptView() {
         }}
       >
         <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: 0.2 }}>
-          the inked manuscript — phase 2b
+          the inked manuscript — phase 3a
         </div>
         <div style={{ fontSize: 12.5, fontStyle: 'italic', opacity: 0.78 }}>
-          the two registers · the world you inhabit; the proof you summon
+          the workshop · act at the edges, read on the form · every transform is the real engine
         </div>
         <div style={{ fontSize: 11, fontFamily: 'ui-monospace, monospace', opacity: 0.55, marginTop: 3 }}>
-          ?manuscript · dev view · click a form → the specimen rises · esc sinks it
+          ?manuscript · right-click paper → invoke · select + dock glyph → the committed op · right-click a form → inline ops
         </div>
       </div>
+      {opNotice ? (
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            bottom: 78,
+            transform: 'translateX(-50%)',
+            padding: '4px 10px',
+            borderRadius: 3,
+            background: d.paper.cardBackground,
+            border: `1px solid ${d.paper.cardBorder}`,
+            color: d.paper.cardInk,
+            fontFamily: 'ui-monospace, monospace',
+            fontSize: 11.5,
+            maxWidth: 560,
+          }}
+        >
+          {opNotice}
+        </div>
+      ) : null}
+      <OperationsDock
+        availability={availability}
+        hasTarget={targetFor(selected) !== null}
+        paper={d.paper}
+        accent={generatorsCtl.a}
+        onApply={(operationId) => applyOp(operationId)}
+      />
+      {invokeMenu ? (
+        <InvokePalette
+          x={invokeMenu.x}
+          y={invokeMenu.y}
+          primitives={PRIMITIVE_CATALOGUE}
+          paper={d.paper}
+          onInvoke={handleInvoke}
+        />
+      ) : null}
+      {formMenu ? (
+        <FormOpsMenu
+          x={formMenu.x}
+          y={formMenu.y}
+          title={targetFor(formMenu.id)?.title ?? 'form'}
+          availability={menuAvailability}
+          paper={d.paper}
+          onApply={(operationId) => applyOp(operationId, formMenu.id)}
+        />
+      ) : null}
       {reading ? (
         <SpecimenCard
           reading={reading}

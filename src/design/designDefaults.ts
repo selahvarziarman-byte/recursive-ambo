@@ -256,6 +256,12 @@ export const manuscriptDefaults = {
       // one hue per identified face-pair (three pairs on T³) — manuscript inks
       markColors: ['#b0561b', '#3e6db4', '#6d8f3e'],
     },
+    // Phase 3a — the operating chrome. Placement/pacing craft only; the
+    // OPERATIONS themselves are the committed PlaygroundOperation registry
+    // (writtenFormModel) — no knob invents or alters a transform.
+    chrome: {
+      spawnOffset: 6, // where an op-born form lands relative to its parent (x)
+    },
   },
   lighting: {
     ambientIntensity: 0.92, // flat, paper-like light
