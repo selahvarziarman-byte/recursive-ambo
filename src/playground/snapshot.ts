@@ -21,7 +21,7 @@
 //
 // DERIVE-ONLY · committed modules by import; no invariant recomputed.
 
-import type { Edge, Face, Shape, Vertex, VertexId } from '../types/geometry';
+import type { Cell, Edge, Face, Generation, Shape, Vertex, VertexId } from '../types/geometry';
 
 // The reserved `primalMultisetKey` characters — the committed
 // `multiform.assertKeySafe` precedent (replicated here because the committed
@@ -135,12 +135,34 @@ export function deserializeSnapshot(
     vertexIds: face.vertexIds.map(ns),
   }));
 
+  // P1b (additive): CELLS + GENERATIONS load coherently too — ambo shapes
+  // carry them (2D playground forms have empty arrays: byte-unaffected). The
+  // committed rule namespaces every VERTEX-ID occurrence; cell/face/edge/
+  // generation IDS are the shape's own id-spaces and stay VERBATIM exactly as
+  // the committed `face.id`/`edge.id` above do — prefixing `cell.faceIds`
+  // while `face.id` stays verbatim would CREATE danglers, the opposite of
+  // coherence. Lineage id-refs (`sourceEdgeIds`, `parentCellIds`, generation
+  // `parentShapeId`) are names, not doorways — kept verbatim, the same way
+  // `createdBy.shapeId` is.
+  const cells: Cell[] = (original.cells ?? []).map((cell) => ({
+    ...cell,
+    vertexIds: cell.vertexIds.map(ns),
+    sourceVertexIds: cell.sourceVertexIds.map(ns),
+    ...(cell.preservedVertexId ? { preservedVertexId: ns(cell.preservedVertexId) } : {}),
+  }));
+  const generations: Generation[] = (original.generations ?? []).map((generation) => ({
+    ...generation,
+    createdVertexIds: generation.createdVertexIds.map(ns),
+  }));
+
   const shape: Shape = {
     ...original,
     id: `snapshot:${source}:${original.id}`,
     vertices,
     edges,
     faces,
+    cells,
+    generations,
     genealogy: {
       ...original.genealogy,
       // re-rooted: the parent lives in the SOURCE universe (a name, not a doorway).

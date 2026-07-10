@@ -72,6 +72,7 @@ import {
   readGenesis,
   type ShelfEntry,
 } from './genesisModel';
+import { useLiftStore } from '../store/liftStore';
 import { deriveOptionBGenerators, type OptionBReading } from './optionBModel';
 
 // hands the live R3F camera up to the DOM layer (shelf drag-drop unprojection)
@@ -723,6 +724,25 @@ export default function ManuscriptView() {
     setBirthCue({ key: seqRef.current, home });
     setOpNotice(null);
   }, [combineGate]);
+
+  // ----- P1b: the ambo→manuscript lift channel ------------------------------
+  // Drain lifted snapshots onto the shelf through the COMMITTED load — the
+  // exact same ingestion as the file picker below. Runs on mount (the channel
+  // is durable while the Manuscript is unvisited) and on every push.
+  const liftQueue = useLiftStore((state) => state.queue);
+  useEffect(() => {
+    if (liftQueue.length === 0) return;
+    const items = useLiftStore.getState().drain();
+    for (const item of items) {
+      try {
+        const entry = loadUniverseSnapshot(item.file);
+        setShelf((cur) => [...cur, { entry, placed: false }]);
+        setOpNotice(null);
+      } catch (error) {
+        setOpNotice(`lift: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+  }, [liftQueue]);
 
   // ----- 3b: the sources shelf (committed snapshot loads + drag-to-place) ----
   const handleLoadFiles = useCallback((files: FileList): void => {

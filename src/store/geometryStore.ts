@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { createSeedShape } from '../data/seeds';
 import { isCellActiveFrontier } from '../lib/cellLifecycle';
+import { liftSubComplex } from '../lib/subComplexLift';
+import { serializeSnapshot } from '../playground/snapshot';
+import { useLiftStore } from './liftStore';
 import {
   serializeWorkspaceSnapshot,
   validateWorkspaceImport,
@@ -153,6 +156,7 @@ interface GeometryState {
   resetViewLayout: () => void;
   applyOperationToSelection: (operationId: string) => void;
   applyAmboDissectionToCurrent: () => void;
+  liftSelectionToManuscript: () => string;
   selectShape: (shapeId: ShapeId) => void;
   selectCell: (cellId: CellId | null) => void;
   selectVertex: (vertexId: VertexId | null) => void;
@@ -404,6 +408,32 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       pinnedFieldAtlasProbeRef: null,
       historySequence,
     });
+  },
+  // P1b — the granular ambo→manuscript save: lift the selected entity's
+  // downward closure as a self-contained sub-Shape, serialize it through the
+  // COMMITTED snapshot path (sourceId = this shape's id — the provenance tag),
+  // and push it onto the shared lift channel for the Manuscript shelf to
+  // drain. The ambo original is NEVER mutated (the extraction is a fresh
+  // restriction; nothing here writes back). Throws honest reasons (no
+  // selection / the precondition) — the UI gates and shows them.
+  liftSelectionToManuscript: () => {
+    const { currentShapeId, shapes, selectedCellId, selectedVertexId } = get();
+    const shape = shapes[currentShapeId];
+    if (!shape) {
+      throw new Error('geometryStore: no current shape to lift from');
+    }
+    const selection = selectedCellId
+      ? { kind: 'cell' as const, id: selectedCellId }
+      : selectedVertexId
+        ? { kind: 'vertex' as const, id: selectedVertexId }
+        : null;
+    if (!selection) {
+      throw new Error('geometryStore: select a cell or a vertex to lift');
+    }
+    const lifted = liftSubComplex(shape, [selection]);
+    const file = serializeSnapshot(lifted.shape, shape.id);
+    useLiftStore.getState().push({ title: lifted.title, file });
+    return lifted.title;
   },
   applyAmboDissectionToCurrent: () => {
     get().applyOperationToSelection('ambo-dissection');

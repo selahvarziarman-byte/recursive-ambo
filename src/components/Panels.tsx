@@ -196,6 +196,10 @@ export function OperationControls() {
   const applyOperationToSelection = useGeometryStore((state) => state.applyOperationToSelection);
   const resetWorkspace = useGeometryStore((state) => state.resetWorkspace);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
+  const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const liftSelectionToManuscript = useGeometryStore((state) => state.liftSelectionToManuscript);
+  // P1b — the granular save's honest one-line outcome (lifted / refused)
+  const [liftNotice, setLiftNotice] = useState<string | null>(null);
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
   const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
   const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
@@ -249,6 +253,33 @@ export function OperationControls() {
         ))}
       </div>
       <p className="mt-3 text-sm leading-5 text-stone-400">{operationStatus}</p>
+      {/* P1b — the granular ambo→manuscript save: lift the selected entity's
+          downward closure onto the Manuscript shelf (ADR 0010; the ambo
+          original is never mutated). Floor UI = the committed cell/vertex
+          selection; face/edge lifts ride the same pure layer. */}
+      <button
+        type="button"
+        onClick={() => {
+          try {
+            const title = liftSelectionToManuscript();
+            setLiftNotice(`lifted “${title}” → the Manuscript shelf`);
+          } catch (error) {
+            setLiftNotice(error instanceof Error ? error.message : String(error));
+          }
+        }}
+        disabled={!selectedCellId && !selectedVertexId}
+        title={
+          selectedCellId || selectedVertexId
+            ? 'Lift the selection’s downward closure onto the Manuscript shelf (source-tagged; the ambo original is untouched)'
+            : 'Select a cell or a vertex to lift'
+        }
+        className="mt-3 h-10 w-full rounded border border-stone-600 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-400 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
+      >
+        Lift selection → Manuscript
+      </button>
+      {liftNotice ? (
+        <p className="mt-2 text-xs leading-4 text-stone-400">{liftNotice}</p>
+      ) : null}
       <button
         type="button"
         onClick={resetWorkspace}
