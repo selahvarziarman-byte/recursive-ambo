@@ -1,18 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import AppShell from './AppShell';
 import { DirectorFieldRenderV0 } from './components/DirectorFieldRenderV0';
 import { Playground } from './components/Playground';
 import { WitnessRenderV0 } from './components/WitnessRenderV0';
 import './styles.css';
 
 // dev-only mount (ADR 0017, M1b). `import.meta.env.DEV` makes these branches DEAD in a production
-// build (Vite folds it to `false`), so the default path always renders the unchanged App —
+// build (Vite folds it to `false`), so the default path always renders the production shell —
+// P1a (ADR 0010): AppShell = the two REAL modules behind one [ Ambo Universe ] ⇄ [ Manuscript ]
+// switcher (keep-both-mounted visibility toggle; default = Ambo Universe, the prior prod default).
 // Workspace3D's render path is untouched. Routes:
-//   ?playground                 → the standalone playground shell
+//   (default, no flag)          → AppShell: Ambo Universe ⇄ Manuscript (production)
+//   ?playground                 → the standalone playground shell (dev)
 //   ?design                     → the designer instrument workbench (Leva/perf; lazy-loaded, dev-tooling)
-//   ?manuscript                 → the inked-manuscript Phase-1 view (warm paper + the faithful trio; lazy-loaded)
-//   ?field   or   ?witness       → the living director-field render (n = R(α)·n₀) — the product visual
+//   ?manuscript                 → the standalone inked-manuscript view (dev; lazy-loaded)
+//   ?field   or   ?witness       → the living director-field render (n = R(α)·n₀) — P-FIELD folds it into the specimen
 //   ?witness&debug               → the WitnessRenderV0 glyph, DEMOTED to an off-by-default debug overlay
 const params =
   typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
@@ -46,7 +49,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     ) : showField ? (
       <DirectorFieldRenderV0 />
     ) : (
-      <App />
+      <AppShell />
     )}
   </React.StrictMode>,
 );
