@@ -902,8 +902,10 @@ export default function ManuscriptView() {
   );
 
   return (
+    // P1a-craft: absolute (not fixed) — the module fills the SHELL's content
+    // area below the shared header bar; all its absolute chrome stays relative.
     <div
-      style={{ position: 'fixed', inset: 0, background: paper.background }}
+      style={{ position: 'absolute', inset: 0, background: paper.background }}
       onContextMenu={(event) => event.preventDefault()}
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
@@ -1146,26 +1148,9 @@ export default function ManuscriptView() {
 
         <OrbitControls makeDefault enableDamping dampingFactor={0.08} />
       </Canvas>
-      <div
-        style={{
-          position: 'absolute',
-          left: 18,
-          top: 14,
-          color: d.paper.titleInk,
-          fontFamily: 'Georgia, "Times New Roman", serif',
-          pointerEvents: 'none',
-        }}
-      >
-        <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: 0.2 }}>
-          the inked manuscript — phase 3b
-        </div>
-        <div style={{ fontSize: 12.5, fontStyle: 'italic', opacity: 0.78 }}>
-          the whole manuscript · inhabited, summoned, written in — and remembered
-        </div>
-        <div style={{ fontSize: 11, fontFamily: 'ui-monospace, monospace', opacity: 0.55, marginTop: 3 }}>
-          ?manuscript · shift-click a second form → the combine gate · the record runs at the foot · load universes from the shelf
-        </div>
-      </div>
+      {/* P1a-craft: the dev title overlay is gone — the shared shell bar names
+          the app, the toggle names the section. (The shift-click combine hint
+          died with it; its proper return is a real help affordance, later.) */}
       {opNotice ? (
         <div
           style={{
