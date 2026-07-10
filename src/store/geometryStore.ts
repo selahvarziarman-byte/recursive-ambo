@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createSeedShape } from '../data/seeds';
 import { isCellActiveFrontier } from '../lib/cellLifecycle';
-import { liftSubComplex } from '../lib/subComplexLift';
+import { liftSubComplex, type LiftSelection } from '../lib/subComplexLift';
 import { serializeSnapshot } from '../playground/snapshot';
 import { useLiftStore } from './liftStore';
 import {
@@ -136,6 +136,10 @@ interface GeometryState {
   currentShapeId: ShapeId;
   selectedCellId: CellId | null;
   selectedVertexId: VertexId | null;
+  // multi-region lift (P1b follow-on): the SET of entities picked for lifting
+  // (shift-click; all four kinds). Distinct from the single inspection
+  // selection above, which stays unchanged.
+  liftSelection: LiftSelection[];
   dualInspectionTarget: DualInspectionTarget | null;
   cellVisibility: CellVisibility;
   viewLayout: ViewLayout;
@@ -157,6 +161,8 @@ interface GeometryState {
   applyOperationToSelection: (operationId: string) => void;
   applyAmboDissectionToCurrent: () => void;
   liftSelectionToManuscript: () => string;
+  toggleLiftSelection: (selection: LiftSelection) => void;
+  clearLiftSelection: () => void;
   selectShape: (shapeId: ShapeId) => void;
   selectCell: (cellId: CellId | null) => void;
   selectVertex: (vertexId: VertexId | null) => void;
@@ -209,6 +215,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   currentShapeId: initialShape.id,
   selectedCellId: null,
   selectedVertexId: null,
+  liftSelection: [],
   dualInspectionTarget: null,
   cellVisibility: defaultCellVisibility,
   viewLayout: defaultViewLayout,
@@ -245,6 +252,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: shape.id,
       selectedCellId: null,
       selectedVertexId: null,
+      liftSelection: [],
       dualInspectionTarget: null,
       cellVisibility: defaultCellVisibility,
       viewLayout: defaultViewLayout,
@@ -278,6 +286,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: shape.id,
       selectedCellId: null,
       selectedVertexId: null,
+      liftSelection: [],
       dualInspectionTarget: null,
       cellVisibility: defaultCellVisibility,
       viewLayout: defaultViewLayout,
@@ -303,6 +312,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
 
     set({
       ...restoreWorkspaceSnapshot(previousSnapshot),
+      liftSelection: [],
       undoStack: state.undoStack.slice(0, -1),
       redoStack: nextRedoStack,
       operationHistory: state.operationHistory.slice(0, -1),
@@ -327,6 +337,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
 
     set({
       ...restoreWorkspaceSnapshot(nextSnapshot),
+      liftSelection: [],
       undoStack,
       redoStack: state.redoStack.slice(1),
       operationHistory,
@@ -402,6 +413,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: nextShape.id,
       selectedCellId: null,
       selectedVertexId: null,
+      liftSelection: [],
       dualInspectionTarget: null,
       hoverTarget: null,
       hoveredFieldAtlasSampleId: null,
@@ -409,31 +421,62 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       historySequence,
     });
   },
-  // P1b — the granular ambo→manuscript save: lift the selected entity's
-  // downward closure as a self-contained sub-Shape, serialize it through the
-  // COMMITTED snapshot path (sourceId = this shape's id — the provenance tag),
-  // and push it onto the shared lift channel for the Manuscript shelf to
-  // drain. The ambo original is NEVER mutated (the extraction is a fresh
-  // restriction; nothing here writes back). Throws honest reasons (no
-  // selection / the precondition) — the UI gates and shows them.
+  // P1b — the granular ambo→manuscript save: lift the selection's downward
+  // closure as a self-contained sub-Shape, serialize it through the COMMITTED
+  // snapshot path (sourceId = this shape's id — the provenance tag), and push
+  // it onto the shared lift channel for the Manuscript shelf to drain. The
+  // ambo original is NEVER mutated (the extraction is a fresh restriction;
+  // nothing here writes back). Throws honest reasons (no selection / the
+  // precondition) — the UI gates and shows them.
+  //
+  // Multi-region (the P1b follow-on): a non-empty `liftSelection` SET lifts as
+  // ONE sub-complex; an empty set falls back to the single inspection-selected
+  // cell/vertex (the original P1b behavior, unchanged). A successful set lift
+  // clears the set.
   liftSelectionToManuscript: () => {
-    const { currentShapeId, shapes, selectedCellId, selectedVertexId } = get();
+    const { currentShapeId, shapes, selectedCellId, selectedVertexId, liftSelection } = get();
     const shape = shapes[currentShapeId];
     if (!shape) {
       throw new Error('geometryStore: no current shape to lift from');
     }
-    const selection = selectedCellId
-      ? { kind: 'cell' as const, id: selectedCellId }
-      : selectedVertexId
-        ? { kind: 'vertex' as const, id: selectedVertexId }
-        : null;
-    if (!selection) {
-      throw new Error('geometryStore: select a cell or a vertex to lift');
+    const selections: LiftSelection[] =
+      liftSelection.length > 0
+        ? liftSelection
+        : selectedCellId
+          ? [{ kind: 'cell', id: selectedCellId }]
+          : selectedVertexId
+            ? [{ kind: 'vertex', id: selectedVertexId }]
+            : [];
+    if (selections.length === 0) {
+      throw new Error(
+        'geometryStore: select a cell or a vertex to lift (or shift-click a region into the lift set)',
+      );
     }
-    const lifted = liftSubComplex(shape, [selection]);
+    const lifted = liftSubComplex(shape, selections);
     const file = serializeSnapshot(lifted.shape, shape.id);
     useLiftStore.getState().push({ title: lifted.title, file });
+    if (liftSelection.length > 0) {
+      set({ liftSelection: [] });
+    }
     return lifted.title;
+  },
+  // toggle one entity in/out of the multi-region lift set (identity = kind+id)
+  toggleLiftSelection: (selection) => {
+    set((state) => {
+      const present = state.liftSelection.some(
+        (s) => s.kind === selection.kind && s.id === selection.id,
+      );
+      return {
+        liftSelection: present
+          ? state.liftSelection.filter(
+              (s) => !(s.kind === selection.kind && s.id === selection.id),
+            )
+          : [...state.liftSelection, selection],
+      };
+    });
+  },
+  clearLiftSelection: () => {
+    set({ liftSelection: [] });
   },
   applyAmboDissectionToCurrent: () => {
     get().applyOperationToSelection('ambo-dissection');
@@ -447,6 +490,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
 
     set((state) => ({
       currentShapeId: shapeId,
+      liftSelection: [],
       selectedCellId:
         state.selectedCellId && shape.cells.some((cell) => cell.id === state.selectedCellId)
           ? state.selectedCellId
@@ -636,6 +680,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       shapes: importedWorkspace.shapes,
       shapeOrder: importedWorkspace.shapeOrder,
       currentShapeId: importedWorkspace.currentShapeId,
+      liftSelection: [],
       selectedCellId,
       selectedVertexId,
       dualInspectionTarget: null,

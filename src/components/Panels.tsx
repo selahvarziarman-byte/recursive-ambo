@@ -34,6 +34,7 @@ import {
   type TopologyFrontierGroup,
 } from '../lib/topologySignature';
 import { parseWorkspaceImport } from '../lib/workspacePersistence';
+import { downwardClosure, validateLiftSelection } from '../lib/subComplexLift';
 import {
   type DualInspectionTarget,
   type OperationHistoryEntry,
@@ -200,6 +201,8 @@ export function OperationControls() {
   const liftSelectionToManuscript = useGeometryStore((state) => state.liftSelectionToManuscript);
   // P1b — the granular save's honest one-line outcome (lifted / refused)
   const [liftNotice, setLiftNotice] = useState<string | null>(null);
+  const liftSelection = useGeometryStore((state) => state.liftSelection);
+  const clearLiftSelection = useGeometryStore((state) => state.clearLiftSelection);
   const cellVisibility = useGeometryStore((state) => state.cellVisibility);
   const explodeAmount = useGeometryStore((state) => state.viewLayout.explodeAmount);
   const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
@@ -212,6 +215,31 @@ export function OperationControls() {
   const toggleFieldAtlasSamples = useGeometryStore((state) => state.toggleFieldAtlasSamples);
   const resetViewLayout = useGeometryStore((state) => state.resetViewLayout);
   const shape = useCurrentShape();
+  // multi-region lift: the running set + the LIVE connectivity verdict (the
+  // P1b validator over the auto-completed downward closure — it can only ever
+  // refuse for disconnected; closure never refuses by construction)
+  const liftRegion = useMemo(() => {
+    if (liftSelection.length === 0) return null;
+    const counts = new Map<string, number>();
+    for (const s of liftSelection) counts.set(s.kind, (counts.get(s.kind) ?? 0) + 1);
+    const summary = [...counts.entries()]
+      .map(([kind, n]) => `${n} ${kind}${n > 1 ? 's' : ''}`)
+      .join(' · ');
+    try {
+      const closure = downwardClosure(shape, liftSelection);
+      const reason = validateLiftSelection(shape, closure);
+      return { summary, closure, reason };
+    } catch (error) {
+      return {
+        summary,
+        closure: null,
+        reason: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }, [liftSelection, shape]);
+  const liftDisabled = liftRegion
+    ? Boolean(liftRegion.reason)
+    : !selectedCellId && !selectedVertexId;
   const selectedCell = findCell(shape, selectedCellId);
   const operationContext = { shape, selectedCellId, selectedCell };
   const operationRows = registeredOperations.map((operation) => {
@@ -253,10 +281,37 @@ export function OperationControls() {
         ))}
       </div>
       <p className="mt-3 text-sm leading-5 text-stone-400">{operationStatus}</p>
-      {/* P1b — the granular ambo→manuscript save: lift the selected entity's
+      {/* P1b — the granular ambo→manuscript save: lift the selection's
           downward closure onto the Manuscript shelf (ADR 0010; the ambo
-          original is never mutated). Floor UI = the committed cell/vertex
-          selection; face/edge lifts ride the same pure layer. */}
+          original is never mutated). Multi-region (the follow-on): shift-click
+          faces/vertices in the 3D view (shift+alt = whole cell) and face/edge
+          rows in the Selection tab to build a REGION; empty region = the
+          committed single cell/vertex fallback. */}
+      {liftRegion ? (
+        <div className="mt-3 rounded border border-emerald-700/50 bg-stone-900 px-3 py-2 text-xs">
+          <span className="flex items-center justify-between gap-2">
+            <span className="font-semibold text-emerald-300">
+              Lift region: {liftRegion.summary}
+            </span>
+            <button
+              type="button"
+              onClick={clearLiftSelection}
+              className="shrink-0 rounded border border-stone-600 px-2 py-0.5 text-xs text-stone-300 transition hover:border-stone-400 hover:text-stone-100"
+            >
+              clear
+            </button>
+          </span>
+          {liftRegion.reason ? (
+            <span className="mt-1.5 block leading-4 text-rose-300">{liftRegion.reason}</span>
+          ) : liftRegion.closure ? (
+            <span className="mt-1.5 block leading-4 text-stone-400">
+              connected — closes to {liftRegion.closure.vertexIds.length}V ·{' '}
+              {liftRegion.closure.edgeIds.length}E · {liftRegion.closure.faceIds.length}F
+              {liftRegion.closure.cellIds.length ? ` · ${liftRegion.closure.cellIds.length} cell(s)` : ''}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
       <button
         type="button"
         onClick={() => {
@@ -267,15 +322,17 @@ export function OperationControls() {
             setLiftNotice(error instanceof Error ? error.message : String(error));
           }
         }}
-        disabled={!selectedCellId && !selectedVertexId}
+        disabled={liftDisabled}
         title={
-          selectedCellId || selectedVertexId
-            ? 'Lift the selection’s downward closure onto the Manuscript shelf (source-tagged; the ambo original is untouched)'
-            : 'Select a cell or a vertex to lift'
+          liftRegion
+            ? liftRegion.reason ?? 'Lift the picked region (auto-closed) onto the Manuscript shelf'
+            : selectedCellId || selectedVertexId
+              ? 'Lift the selection’s downward closure onto the Manuscript shelf (source-tagged; the ambo original is untouched)'
+              : 'Select a cell or a vertex — or shift-click a region — to lift'
         }
         className="mt-3 h-10 w-full rounded border border-stone-600 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-400 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
       >
-        Lift selection → Manuscript
+        Lift {liftRegion ? 'region' : 'selection'} → Manuscript
       </button>
       {liftNotice ? (
         <p className="mt-2 text-xs leading-4 text-stone-400">{liftNotice}</p>
@@ -1967,6 +2024,11 @@ function CellComposition({
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
+  // multi-region lift: shift-click any row toggles the entity into the set
+  const toggleLiftSelection = useGeometryStore((state) => state.toggleLiftSelection);
+  const liftSelection = useGeometryStore((state) => state.liftSelection);
+  const inLiftSet = (kind: 'face' | 'edge' | 'vertex', id: string) =>
+    liftSelection.some((s) => s.kind === kind && s.id === id);
   const vertices = useMemo(() => getCellVertexRows(shape, cell), [cell, shape]);
   const faceRows = useMemo(() => getCellFaceRows(shape, faces), [faces, shape]);
 
@@ -1976,18 +2038,28 @@ function CellComposition({
         <div className="grid max-h-56 gap-2 overflow-y-auto pr-1">
           {vertices.map((row) => {
             const isSelected = row.vertex.id === selectedVertexId;
+            const isLifted = inLiftSet('vertex', row.vertex.id);
 
             return (
               <button
                 key={row.vertex.id}
                 type="button"
-                onClick={() => selectVertex(row.vertex.id)}
+                onClick={(event) => {
+                  if (event.shiftKey) {
+                    toggleLiftSelection({ kind: 'vertex', id: row.vertex.id });
+                    return;
+                  }
+                  selectVertex(row.vertex.id);
+                }}
                 onPointerEnter={() => setHoverTarget({ kind: 'vertex', vertexId: row.vertex.id })}
                 onPointerLeave={() => setHoverTarget(null)}
+                title="click: inspect · shift-click: toggle in the lift region"
                 className={`rounded border px-3 py-2 text-left text-sm transition ${
-                  isSelected
-                    ? 'border-amber-300 bg-amber-300/10 text-amber-100'
-                    : 'border-stone-800 bg-stone-950 text-stone-300 hover:border-stone-600'
+                  isLifted
+                    ? 'border-emerald-400 bg-emerald-400/10 text-emerald-100'
+                    : isSelected
+                      ? 'border-amber-300 bg-amber-300/10 text-amber-100'
+                      : 'border-stone-800 bg-stone-950 text-stone-300 hover:border-stone-600'
                 }`}
               >
                 <span className="flex items-start justify-between gap-2">
@@ -2022,9 +2094,17 @@ function CellComposition({
           {faceRows.map((row) => (
             <div
               key={row.face.id}
+              onClick={(event) => {
+                if (event.shiftKey) toggleLiftSelection({ kind: 'face', id: row.face.id });
+              }}
               onPointerEnter={() => setHoverTarget({ kind: 'face', faceId: row.face.id })}
               onPointerLeave={() => setHoverTarget(null)}
-              className="rounded border border-stone-800 bg-stone-950 px-3 py-2 text-sm"
+              title="shift-click: toggle in the lift region"
+              className={`cursor-pointer rounded border px-3 py-2 text-sm ${
+                inLiftSet('face', row.face.id)
+                  ? 'border-emerald-400 bg-emerald-400/10'
+                  : 'border-stone-800 bg-stone-950'
+              }`}
             >
               <span className="flex items-start justify-between gap-2">
                 <span className="min-w-0">
@@ -2050,10 +2130,17 @@ function CellComposition({
           {edges.map((edge) => (
             <div
               key={edge.id}
+              onClick={(event) => {
+                if (event.shiftKey) toggleLiftSelection({ kind: 'edge', id: edge.id });
+              }}
               onPointerEnter={() => setHoverTarget({ kind: 'edge', vertexIds: edge.vertexIds })}
               onPointerLeave={() => setHoverTarget(null)}
-              className="rounded border border-stone-900 bg-stone-950/70 px-2 py-1 text-xs text-stone-400"
-              title={edge.vertexIds.join(' - ')}
+              className={`cursor-pointer rounded border px-2 py-1 text-xs text-stone-400 ${
+                inLiftSet('edge', edge.id)
+                  ? 'border-emerald-400 bg-emerald-400/10'
+                  : 'border-stone-900 bg-stone-950/70'
+              }`}
+              title={`${edge.vertexIds.join(' - ')} · shift-click: toggle in the lift region`}
             >
               <span className="flex items-center justify-between gap-2">
                 <span className="min-w-0 truncate text-stone-300">{edge.displayLabel}</span>

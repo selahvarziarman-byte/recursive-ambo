@@ -15,6 +15,7 @@ import {
   type ResolvedDualInspectionTarget,
 } from '../lib/dualView';
 import { type DualInspectionTarget, type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
+import type { LiftSelection } from '../lib/subComplexLift';
 import type { Cell, Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
 
 export function Workspace3D() {
@@ -355,9 +356,16 @@ function CellMesh({
   const clearDualInspectionTarget = useGeometryStore((state) => state.clearDualInspectionTarget);
   const setDualInspectionTarget = useGeometryStore((state) => state.setDualInspectionTarget);
   const dualInspectionTarget = useGeometryStore((state) => state.dualInspectionTarget);
+  // multi-region lift (P1b follow-on): shift-click picks entities into the set
+  const liftSelection = useGeometryStore((state) => state.liftSelection);
+  const toggleLiftSelection = useGeometryStore((state) => state.toggleLiftSelection);
   const renderGeometry = useMemo(
     () => createCellRenderGeometry(shape, cell, dualViewEnabled),
     [cell, dualViewEnabled, shape],
+  );
+  const liftHighlight = useMemo(
+    () => createLiftHighlightGeometry(shape, cell, renderGeometry, liftSelection),
+    [cell, liftSelection, renderGeometry, shape],
   );
   const sourceCounterpartHighlight = useMemo(
     () => createSourceCounterpartHighlight(shape, cell, renderGeometry, dualInspectionTarget),
@@ -439,6 +447,25 @@ function CellMesh({
             return;
           }
 
+          // multi-region lift: shift-click toggles the FACE under the cursor
+          // into the lift set (the existing triangle→face mapping — no new
+          // raycasting); shift+alt toggles the whole CELL. Plain click keeps
+          // the committed inspection select.
+          if (event.shiftKey) {
+            if (event.altKey) {
+              toggleLiftSelection({ kind: 'cell', id: cell.id });
+              return;
+            }
+            const pickedFace =
+              event.faceIndex == null
+                ? null
+                : getRenderFaceForTriangleIndex(renderGeometry.faces, event.faceIndex);
+            if (pickedFace) {
+              toggleLiftSelection({ kind: 'face', id: pickedFace.id });
+            }
+            return;
+          }
+
           clearDualInspectionTarget();
           selectCell(cell.id);
         }}
@@ -499,6 +526,26 @@ function CellMesh({
           <lineBasicMaterial color="#fb923c" transparent opacity={1} />
         </lineSegments>
       ) : null}
+      {/* multi-region lift: the selected-for-lift region (emerald overlay) */}
+      {liftHighlight.faceGeometry ? (
+        <mesh geometry={liftHighlight.faceGeometry} raycast={() => null}>
+          <meshBasicMaterial
+            color="#34d399"
+            depthWrite={false}
+            opacity={0.3}
+            polygonOffset
+            polygonOffsetFactor={-3}
+            polygonOffsetUnits={-3}
+            side={THREE.DoubleSide}
+            transparent
+          />
+        </mesh>
+      ) : null}
+      {liftHighlight.edgeGeometry ? (
+        <lineSegments geometry={liftHighlight.edgeGeometry} raycast={() => null}>
+          <lineBasicMaterial color="#10b981" transparent opacity={1} />
+        </lineSegments>
+      ) : null}
       {usesDualInspectionTargets ? (
         <DualInspectionTargets renderGeometry={renderGeometry} />
       ) : null}
@@ -542,6 +589,10 @@ function VertexMarker({
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const hoverTarget = useGeometryStore((state) => state.hoverTarget);
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
+  const toggleLiftSelection = useGeometryStore((state) => state.toggleLiftSelection);
+  const isLiftSelected = useGeometryStore((state) =>
+    state.liftSelection.some((s) => s.kind === 'vertex' && s.id === vertex.id),
+  );
   const isSelected = selectedVertexId === vertex.id;
   const isHovered = isVertexHoverTarget(hoverTarget, vertex.id);
   const scale = getVertexMarkerScale(vertexGeneration, {
@@ -551,18 +602,32 @@ function VertexMarker({
     cellIsHovered,
   });
   const opacity = isDimmed && !isSelected && !isHovered ? 0.28 : 1;
-  const markerColor = isSelected
-    ? '#f59e0b'
-    : isHovered
-      ? '#facc15'
+  const markerColor = isLiftSelected
+    ? '#34d399'
+    : isSelected
+      ? '#f59e0b'
+      : isHovered
+        ? '#facc15'
+        : cellIsSelected
+          ? '#fef3c7'
+          : vertex.data.color;
+  const emissiveColor = isLiftSelected
+    ? '#065f46'
+    : isSelected || isHovered
+      ? '#92400e'
       : cellIsSelected
-        ? '#fef3c7'
-        : vertex.data.color;
-  const emissiveColor = isSelected || isHovered ? '#92400e' : cellIsSelected ? '#78350f' : '#000000';
-  const emissiveIntensity = isSelected ? 0.85 : isHovered ? 0.7 : cellIsSelected ? 0.35 : 0;
+        ? '#78350f'
+        : '#000000';
+  const emissiveIntensity = isLiftSelected ? 0.7 : isSelected ? 0.85 : isHovered ? 0.7 : cellIsSelected ? 0.35 : 0;
 
   const handleClick = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
+    // multi-region lift: shift-click toggles the vertex into the lift set;
+    // plain click keeps the committed inspection select.
+    if (event.shiftKey) {
+      toggleLiftSelection({ kind: 'vertex', id: vertex.id });
+      return;
+    }
     selectVertex(vertex.id);
   };
 
@@ -1933,6 +1998,50 @@ function createHoverEdgeGeometry(
   );
 
   return geometry;
+}
+
+// multi-region lift (P1b follow-on): the selected-for-lift overlay on THIS
+// cell — faces in the set (or all of a set-selected cell's faces) + edges in
+// the set that run along this cell's faces. Same construction as the hover
+// overlays above; purely visual (raycast disabled at the render site).
+function createLiftHighlightGeometry(
+  shape: Shape,
+  cell: Cell,
+  renderGeometry: CellRenderGeometry,
+  liftSelection: LiftSelection[],
+): { faceGeometry: THREE.BufferGeometry | null; edgeGeometry: THREE.BufferGeometry | null } {
+  if (liftSelection.length === 0 || renderGeometry.dualUniverse) {
+    return { faceGeometry: null, edgeGeometry: null };
+  }
+  const cellSelected = liftSelection.some((s) => s.kind === 'cell' && s.id === cell.id);
+  const faceIds = new Set(
+    liftSelection.filter((s) => s.kind === 'face').map((s) => s.id),
+  );
+  const faces = renderGeometry.faces.filter((face) => cellSelected || faceIds.has(face.id));
+  const faceGeometry = faces.length
+    ? createFaceGeometry(renderGeometry.vertices, faces)
+    : null;
+
+  const liftedEdges = liftSelection
+    .filter((s) => s.kind === 'edge')
+    .map((s) => shape.edges.find((edge) => edge.id === s.id))
+    .filter((edge): edge is Shape['edges'][number] => Boolean(edge))
+    .filter((edge) => facesContainEdge(renderGeometry.faces, edge.vertexIds[0], edge.vertexIds[1]));
+  let edgeGeometry: THREE.BufferGeometry | null = null;
+  if (liftedEdges.length) {
+    const vertexById = new Map(renderGeometry.vertices.map((vertex) => [vertex.id, vertex]));
+    const positions: number[] = [];
+    for (const edge of liftedEdges) {
+      const a = vertexById.get(edge.vertexIds[0]);
+      const b = vertexById.get(edge.vertexIds[1]);
+      if (a && b) positions.push(...a.position, ...b.position);
+    }
+    if (positions.length) {
+      edgeGeometry = new THREE.BufferGeometry();
+      edgeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    }
+  }
+  return { faceGeometry, edgeGeometry };
 }
 
 function facesContainEdge(faces: RenderFace[], a: string, b: string): boolean {
