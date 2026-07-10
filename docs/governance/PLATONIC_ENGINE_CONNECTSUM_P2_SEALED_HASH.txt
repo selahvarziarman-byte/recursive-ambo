@@ -1,0 +1,20 @@
+PLATONIC ENGINE — connectedSum / P2 (T² # T² → genus-2) · SEALED PREDICTION HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_CONNECTSUM_P2.md` (gitignored plaintext):
+
+    e4318b0284943ee3bd6fba9d8443b04d72670caa4f01c3a3993a7b6c16580277
+
+Sealed 2026-07-10 by the engineer seat, canonicalizing the researcher's co-derived
+cell-level seal (RESEARCHER_SEAL_CONNECTSUM_P2_CELL_LEVEL.md), independently
+mothership-RATIFIED (RELAY_MOTHERSHIP_CONNECTSUM_SEAL_RATIFIED_BUILD_BLIND.md).
+
+Protocol (seal-before-build): committed on-repo BEFORE the build to prove the seal
+predates it. The coder builds the P2 assemble-D3-enactment + connectedSum macro
+BLIND to the plaintext. The engineer unseals + runs a full-scrutiny audit; the
+mothership co-ratifies (unseal + re-run) before Arman commits the build.
+
+Sealed target (plaintext off-repo): T² # T² → genus-2 (χ=−2, w₁=0, b₀=1, b₁=4,
+b₂=1, H₁=Z⁴, manifold gate PASS) as the ENACTED quotient — vs the pre-glue union
+(disconnected + bounded). The D3-enactment discriminator is connectivity + boundary
++ b₂ (+ w₁), NOT χ / F / b₁ (all three coincide at −2 / 16 / 4).
