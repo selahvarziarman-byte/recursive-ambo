@@ -303,6 +303,10 @@ check('the sewn birth renders in the MANUSCRIPT as an honest CLASS BODY: genus 1
 
 // ===== [g] no-regression byte-guards ===========================================
 console.log('\n----- [g] the committed machinery is byte-unchanged -----');
+// ACQUISITION-CHAIN wiring (2026-07-11, mothership-required, sanctioned):
+// `formInvariants.ts` and `surfaceClassifier.ts` LEFT this guard — the chain
+// (direct → word/cut → identify recovery) is wired into their acquisition
+// sites, ratified in diagnose-acquisition-chain.cjs. Everything else stays.
 const guarded = [
   'src/lib/surfaceOperations.ts',
   'src/lib/materializeOperation.ts',
@@ -315,9 +319,7 @@ const guarded = [
   'src/lib/surfaceImmersion.ts',
   'src/playground/customGluing.ts',
   'src/playground/bornFormRouting.ts',
-  'src/playground/formInvariants.ts',
   'src/playground/snapshot.ts',
-  'src/manuscript/surfaceClassifier.ts',
   'src/manuscript/inkedFormModel.ts',
   'src/manuscript/optionBModel.ts',
 ];

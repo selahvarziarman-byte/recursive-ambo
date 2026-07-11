@@ -69,7 +69,8 @@
 
 import type { Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
 import { flipGlueFace, glueFace, type BoundaryPairing } from './surfaceOperations';
-import { materializeSurfaceResult } from './materializeOperation';
+import { materializeCutResult, materializeSurfaceResult } from './materializeOperation';
+import { cutCell } from './cutOperation';
 import {
   buildLedgerFromIdentification,
   type TransformationLedger,
@@ -77,6 +78,7 @@ import {
 import { decomposeLink, type LinkValence } from './incidenceTraceRegistry';
 import { createDefaultVertexData } from './shape';
 import { canonicalEdgeKey } from './ids';
+import { recoverBornSurface } from '../playground/bornFormRouting';
 import type { AssembledComplex } from './globalW1';
 
 export type IdentifyMode = 'preserving' | 'reversing';
@@ -388,6 +390,13 @@ function identifyOnComplex(
   cycleB: string[],
   modes: IdentifyMode[],
 ): IdentifiedComplex {
+  // the enactment rewrites shape faces and complex faces in step — every
+  // acquisition source keeps them index-aligned (asserted, never assumed)
+  if (complex.faces.length !== form.faces.length) {
+    throw new Error(
+      `complexIdentification: the acquired complex carries ${complex.faces.length} faces for a ${form.faces.length}-face shape — misaligned acquisition, refusing`,
+    );
+  }
   const edgeById = new Map(complex.edges.map((e) => [e.id, e]));
   const k = cycleA.length;
   for (const id of [...cycleA, ...cycleB]) {
@@ -581,6 +590,7 @@ export function identify(
   cycleA: string[],
   cycleB: string[],
   mode: IdentifyMode | IdentifyMode[],
+  ancestry: Shape | Shape[] | null = null,
 ): IdentifiedComplex {
   if (cycleA.length === 0 || cycleA.length !== cycleB.length) {
     throw new Error(
@@ -593,32 +603,127 @@ export function identify(
     // enactment (byte-identical by construction; reuse, never fork)
     return identifyOnSingleFace(form, cycleA, cycleB, modes);
   }
-  let complex: AssembledComplex;
-  try {
-    complex = directComplexOf(form); // the direct bridge, committed rules verbatim
-  } catch (error) {
+  // the ACQUISITION CHAIN (mothership-required): direct → word/cut recovery →
+  // identify recovery, recursively — a form born of identify is identify-able
+  // again (pass its ancestry; with none, only direct-readable forms resolve —
+  // the committed behavior, byte-identical)
+  const acquired = acquireComplex(form, ancestry);
+  if (!acquired) {
     throw new Error(
-      `complexIdentification: the form's complex is not directly readable (${error instanceof Error ? error.message : String(error)}) — a form whose faithful complex only exists by replay cannot be identified on through this path (refusing honestly)`,
+      'complexIdentification: the form\'s faithful complex is not acquirable — the direct bridge refuses it and no replay recovery reaches it' +
+        (normalizeAncestry(ancestry).length === 0 ? ' (pass the form\'s ancestry for chained recovery)' : '') +
+        ' — refusing honestly',
     );
   }
-  return identifyOnComplex(form, complex, cycleA, cycleB, modes);
+  return identifyOnComplex(form, acquired.complex, cycleA, cycleB, modes);
 }
 
 // ---------------------------------------------------------------------------
 // the recovery — replay + byte-compare (the committed recoverBornSurface idiom)
 // ---------------------------------------------------------------------------
 
-export function recoverIdentifiedComplex(born: Shape, parent: Shape | null): IdentifiedComplex | null {
+export function recoverIdentifiedComplex(
+  born: Shape,
+  parent: Shape | null,
+  ancestry: Shape | Shape[] | null = null,
+): IdentifiedComplex | null {
   if (!parent || born.genealogy.parentShapeId !== parent.id) return null;
   const spec = parseIdentificationSuffix(born.id);
   if (!spec) return null;
   try {
-    const replay = identify(parent, spec.cycleA, spec.cycleB, spec.modes);
+    // the replay may itself need the parent's ancestry (a sewn form born of a
+    // sewn form — the chain across generations); the born shape is excluded
+    // from the replay lineage so a crafted genealogy cycle exhausts finitely
+    const lineage = normalizeAncestry(ancestry).filter((s) => s.id !== born.id);
+    const replay = identify(parent, spec.cycleA, spec.cycleB, spec.modes, lineage);
     if (JSON.stringify(replay.shape) !== JSON.stringify(born)) return null;
     return replay;
   } catch {
     return null;
   }
+}
+
+// ---------------------------------------------------------------------------
+// THE ACQUISITION CHAIN (mothership-required): a form's faithful complex,
+// resolved DIRECT → else the committed word/collapse replay recovery → else
+// the CUT derivation (the child's complex is the parent's, chain-acquired,
+// minus the one removed face — replay-verified first) → else the IDENTIFY
+// replay recovery — RECURSIVELY across generations (recovering a sewn form
+// may need its parent's complex, which may itself need recovery). Without
+// this chain, a form born of `identify` whose shape the direct bridge
+// refuses (self-loops / parallel classes — the bridge is RIGHT to refuse
+// them) would read as "no faithful complex" everywhere downstream: the op
+// would generalize identification across forms but not across generations
+// of itself. The `ancestry` is the ancestor shapes the caller can supply
+// (a single parent, or the deeper lineage for multi-generation chains);
+// each recursion step consumes lineage, so the walk is finite by
+// construction. NOTE (held): the committed direct bridge's refusals are
+// NEVER weakened here — the bridge is right; the chain is what was missing.
+// ---------------------------------------------------------------------------
+
+export type ComplexAcquisitionSource = 'direct' | 'recovered' | 'cut-derived' | 'identified';
+
+export interface AcquiredComplex {
+  complex: AssembledComplex;
+  source: ComplexAcquisitionSource;
+}
+
+const normalizeAncestry = (ancestry: Shape | Shape[] | null | undefined): Shape[] =>
+  !ancestry ? [] : Array.isArray(ancestry) ? ancestry : [ancestry];
+
+export function acquireComplex(
+  shape: Shape,
+  ancestry: Shape | Shape[] | null = null,
+  seen: Set<string> = new Set(),
+): AcquiredComplex | null {
+  if (seen.has(shape.id)) return null; // a lineage cycle — refuse honestly
+  seen.add(shape.id);
+  // (1) the committed direct bridge (its refusals stand — quotient shapes
+  // fail by design and chain on)
+  try {
+    return { complex: directComplexOf(shape), source: 'direct' };
+  } catch {
+    // not endpoint-representable — the chain continues
+  }
+  const lineage = normalizeAncestry(ancestry);
+  const parent = lineage.find((candidate) => candidate.id === shape.genealogy.parentShapeId) ?? null;
+  // (2) the committed word/collapse replay recovery (one hop, verbatim)
+  const word = recoverBornSurface(shape, parent);
+  if (word) return { complex: word.materialized.complex, source: 'recovered' };
+  // (3) a CUT birth: replay-verify through the committed cut, then derive the
+  // complex from the PARENT's (chain-acquired — recursion) by dropping the
+  // removed face's boundary at the parent's face index (complex faces are
+  // index-aligned with shape faces on every acquisition source)
+  if (parent && shape.genealogy.operation === 'cut') {
+    const missing = parent.faces.filter((pf) => !shape.faces.some((cf) => cf.id === pf.id));
+    if (missing.length === 1) {
+      try {
+        const replay = materializeCutResult(parent, cutCell(parent, missing[0]));
+        if (JSON.stringify(replay) === JSON.stringify(shape)) {
+          const parentAcquired = acquireComplex(parent, lineage, seen);
+          if (parentAcquired) {
+            const cutIndex = parent.faces.findIndex((pf) => pf.id === missing[0].id);
+            return {
+              complex: {
+                ...parentAcquired.complex,
+                faces: parentAcquired.complex.faces.filter((_face, k) => k !== cutIndex),
+              },
+              source: 'cut-derived',
+            };
+          }
+        }
+      } catch {
+        // the committed cut replay refused — not a faithful cut child
+      }
+    }
+  }
+  // (4) an IDENTIFY birth: the replay recovery (recursive — the replay
+  // acquires the parent's complex through this same chain)
+  if (parent && parseIdentificationSuffix(shape.id)) {
+    const identified = recoverIdentifiedComplex(shape, parent, lineage);
+    if (identified) return { complex: identified.complex, source: 'identified' };
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -694,15 +799,26 @@ export function sewBoundaryCircles(
   mode: IdentifyMode,
   circleIndexA = 0,
   circleIndexB = 1,
+  ancestry: Shape | Shape[] | null = null,
 ): IdentifiedComplex {
-  let complex: AssembledComplex;
-  try {
-    complex = directComplexOf(form);
-  } catch (error) {
+  // a single-face QUOTIENT keeps its committed route (the word chain owns it);
+  // every other bridge-refused form resolves through the ACQUISITION CHAIN
+  if (form.faces.length === 1) {
+    try {
+      directComplexOf(form);
+    } catch (error) {
+      throw new Error(
+        `complexIdentification: sew needs the explicit complex (${error instanceof Error ? error.message : String(error)}) — a single-face quotient sews its rims through the committed word ops (the composed chain)`,
+      );
+    }
+  }
+  const acquired = acquireComplex(form, ancestry);
+  if (!acquired) {
     throw new Error(
-      `complexIdentification: sew needs the explicit complex (${error instanceof Error ? error.message : String(error)}) — a single-face quotient sews its rims through the committed word ops (the composed chain)`,
+      'complexIdentification: sew needs the form\'s faithful complex — the direct bridge refuses it and no replay recovery reaches it (pass the form\'s ancestry for chained recovery)',
     );
   }
+  const complex = acquired.complex;
   const circles = walkBoundaryCircles(complex);
   if (!circles) {
     throw new Error('complexIdentification: the free 1-skeleton is not a disjoint union of coherent circles — nothing to sew');
@@ -721,5 +837,5 @@ export function sewBoundaryCircles(
     );
   }
   const cycleB = mode === 'preserving' ? [...b.edgeIds].reverse() : [...b.edgeIds];
-  return identify(form, a.edgeIds, cycleB, mode);
+  return identify(form, a.edgeIds, cycleB, mode, ancestry); // the ancestry threads through (the chain across generations)
 }

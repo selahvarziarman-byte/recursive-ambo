@@ -39,6 +39,7 @@
 import type { Shape } from '../types/geometry';
 import { analyzeGlobalW1, type AssembledComplex, type GlobalW1Cert } from '../lib/globalW1';
 import { decomposeLink } from '../lib/incidenceTraceRegistry';
+import { acquireComplex } from '../lib/complexIdentification';
 import { recoverBornSurface } from '../playground/bornFormRouting';
 import { toAssembledComplex } from './inkedFormModel';
 
@@ -48,9 +49,15 @@ import { toAssembledComplex } from './inkedFormModel';
 
 export type ComplexSource = 'direct' | 'recovered';
 
+// ACQUISITION-CHAIN wiring (mothership-required, 2026-07-11, sanctioned):
+// `parent` widens additively to an ANCESTRY (single parent = the committed
+// call shape, byte-identical; an array = the deeper lineage for
+// multi-generation chains). After the committed word/collapse recovery, the
+// chain (direct → word/cut → identify recovery, recursive) resolves sewn
+// forms whose shapes the — correctly refusing — bridge cannot read.
 export function acquireFaithfulComplex(
   shape: Shape,
-  parent: Shape | null,
+  parent: Shape | Shape[] | null,
 ): { complex: AssembledComplex; source: ComplexSource } | null {
   try {
     return { complex: toAssembledComplex(shape), source: 'direct' };
@@ -58,8 +65,12 @@ export function acquireFaithfulComplex(
     // quotient forms fail the direct bridge by design — try the committed
     // replay-verified recovery (parsed birth word, byte-compared replay)
   }
-  const recovery = recoverBornSurface(shape, parent);
+  const lineage = parent === null ? [] : Array.isArray(parent) ? parent : [parent];
+  const directParent = lineage.find((s) => s.id === shape.genealogy.parentShapeId) ?? null;
+  const recovery = recoverBornSurface(shape, directParent);
   if (recovery) return { complex: recovery.materialized.complex, source: 'recovered' };
+  const chained = acquireComplex(shape, lineage);
+  if (chained) return { complex: chained.complex, source: 'recovered' };
   return null;
 }
 
@@ -297,7 +308,7 @@ export type FormClassification =
   | { ok: true; complexSource: ComplexSource; components: ClassifiedComponent[] }
   | { ok: false; reason: string; junctionEdgeIds?: string[]; junctionVertexIds?: string[] };
 
-export function classifyForm(shape: Shape, parent: Shape | null = null): FormClassification {
+export function classifyForm(shape: Shape, parent: Shape | Shape[] | null = null): FormClassification {
   const acquired = acquireFaithfulComplex(shape, parent);
   if (!acquired) {
     return {

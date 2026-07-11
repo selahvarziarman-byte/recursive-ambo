@@ -45,7 +45,7 @@ import { cutCell } from '../lib/cutOperation';
 import { materializeCutResult, materializeSurfaceResult } from '../lib/materializeOperation';
 import { assemble, type BoundaryIdentification } from '../lib/multiform';
 import { previewSurfaceDual, surfaceDual } from '../lib/surfaceDual';
-import { sewBoundaryCircles, type IdentifyMode } from '../lib/complexIdentification';
+import { acquireComplex, sewBoundaryCircles, type IdentifyMode } from '../lib/complexIdentification';
 import { recoverBornSurface } from './bornFormRouting';
 import { acquireFaithfulComplex, readBoundary } from '../manuscript/surfaceClassifier';
 import type { AssembledComplex } from '../lib/globalW1';
@@ -495,7 +495,12 @@ export const cutFaceOperation: PlaygroundOperation = {
 
 function faithfulComplexFor(form: Shape, parentShape: Shape | null | undefined): AssembledComplex | undefined {
   const recovery = recoverBornSurface(form, parentShape ?? null);
-  return recovery ? recovery.materialized.complex : undefined;
+  if (recovery) return recovery.materialized.complex;
+  // ACQUISITION-CHAIN wiring (2026-07-11): a sewn/cut-born form whose shape the
+  // bridge refuses still resolves through the chain (one-hop ancestry here —
+  // the registry context carries the direct parent)
+  const chained = acquireComplex(form, parentShape ?? null);
+  return chained ? chained.complex : undefined;
 }
 
 export const surfaceDualOperation: PlaygroundOperation = {
@@ -529,10 +534,20 @@ export const surfaceDualOperation: PlaygroundOperation = {
 // sewn by the Q-M2 composed chain — glue/flip-glue on the face).
 // ---------------------------------------------------------------------------
 
-function sewEligibilityReason(form: Shape): string | null {
-  const acquired = acquireFaithfulComplex(form, null);
-  if (!acquired || acquired.source !== 'direct') {
-    return 'Sewing reads the explicit complex — a single-face quotient sews its rims through the committed word ops (the composed chain).';
+// ACQUISITION-CHAIN wiring (2026-07-11): the eligibility now acquires through
+// the chain (direct → word/cut → identify recovery) with the context's parent
+// as one-hop ancestry — a form BORN of sewing is sew-able again (the closed
+// promise). A single-face quotient keeps its committed route to the word ops.
+function sewEligibilityReason(form: Shape, parentShape: Shape | null = null): string | null {
+  if (form.faces.length === 1) {
+    const direct = acquireFaithfulComplex(form, null);
+    if (!direct || direct.source !== 'direct') {
+      return 'Sewing reads the explicit complex — a single-face quotient sews its rims through the committed word ops (the composed chain).';
+    }
+  }
+  const acquired = acquireFaithfulComplex(form, parentShape);
+  if (!acquired) {
+    return 'The form\'s faithful complex is not acquirable here — provide its parent (the ancestry) so the chain can recover it.';
   }
   const boundary = readBoundary(acquired.complex);
   if (!boundary.circlesAreDisjoint) {
@@ -552,16 +567,17 @@ function makeSewOperation(mode: IdentifyMode): PlaygroundOperation {
       mode === 'preserving'
         ? "Identify the form's first two boundary circles orientation-COMPATIBLY (opposite wedge directions on the merged seam) — the general complex identification; the committed gate judges."
         : "Identify the form's first two boundary circles orientation-INCOMPATIBLY (same wedge direction — the flip seam) — the general complex identification; the committed gate judges.",
-    canApply: (context) => Boolean(context.form) && sewEligibilityReason(context.form) === null,
+    canApply: (context) =>
+      Boolean(context.form) && sewEligibilityReason(context.form, context.parentShape ?? null) === null,
     getDisabledReason: (context) => {
       if (!context.form) return 'No form selected.';
-      return sewEligibilityReason(context.form);
+      return sewEligibilityReason(context.form, context.parentShape ?? null);
     },
     execute: (context) => {
-      if (!context.form || sewEligibilityReason(context.form) !== null) {
+      if (!context.form || sewEligibilityReason(context.form, context.parentShape ?? null) !== null) {
         throw new Error(`playgroundOperations: sew-boundary-${mode} executed on an ineligible form`);
       }
-      return sewBoundaryCircles(context.form, mode).shape;
+      return sewBoundaryCircles(context.form, mode, 0, 1, context.parentShape ?? null).shape;
     },
   };
 }

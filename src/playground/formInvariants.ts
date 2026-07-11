@@ -34,6 +34,7 @@ import {
 } from '../lib/globalW1';
 import { canonicalEdgeKey } from '../lib/ids';
 import { recoverBornSurface } from './bornFormRouting';
+import { acquireComplex } from '../lib/complexIdentification';
 
 export interface FormInvariantsReadout {
   cells: { v: number; e: number; f: number }; // the shape's explicit cells
@@ -151,7 +152,10 @@ function boundaryOf(complex: AssembledComplex): 'closed' | 'open' | 'non-manifol
   return open ? 'open' : 'closed'; // edge-less complexes (the collapse sphere) read closed vacuously
 }
 
-export function readFormInvariants(shape: Shape, parent: Shape | null = null): FormInvariantsReadout {
+export function readFormInvariants(
+  shape: Shape,
+  parent: Shape | Shape[] | null = null,
+): FormInvariantsReadout {
   const cells = {
     v: Object.keys(shape.vertices).length,
     e: shape.edges.length,
@@ -162,16 +166,33 @@ export function readFormInvariants(shape: Shape, parent: Shape | null = null): F
   // (it needs no faithful 2-complex — plain counting over the shape's own cells).
   const level1 = cells.f === 0 ? level1Betti(shape) : undefined;
 
+  // ACQUISITION-CHAIN wiring (mothership-required, 2026-07-11, sanctioned):
+  // `parent` widens additively to an ANCESTRY (a single parent — every
+  // committed call site, byte-identical behavior — or the deeper lineage for
+  // multi-generation chains). The direct parent still feeds the committed
+  // word/collapse recovery exactly as before; where THAT fails, the chain
+  // (direct → word/cut → identify recovery, recursive) resolves the complex —
+  // a sewn form whose shape the (correctly refusing) bridge cannot read stays
+  // certifiable across generations.
+  const lineage = parent === null ? [] : Array.isArray(parent) ? parent : [parent];
+  const directParent = lineage.find((s) => s.id === shape.genealogy.parentShapeId) ?? null;
+
   // the faithful complex: direct translation, else the replay-verified recovery.
   let complexSource: FormInvariantsReadout['complexSource'] = null;
   let complex: AssembledComplex | null = tryDirectComplex(shape);
   if (complex) {
     complexSource = 'direct';
   } else {
-    const recovery = recoverBornSurface(shape, parent);
+    const recovery = recoverBornSurface(shape, directParent);
     if (recovery) {
       complex = recovery.materialized.complex;
       complexSource = 'recovered';
+    } else {
+      const chained = acquireComplex(shape, lineage);
+      if (chained) {
+        complex = chained.complex;
+        complexSource = 'recovered'; // a replay recovery, chained — the honest tag
+      }
     }
   }
 
