@@ -1,0 +1,28 @@
+PLATONIC ENGINE — the general COMPLEX-IDENTIFICATION op · SEALED PREDICTION HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_COMPLEX_IDENTIFICATION.md` (gitignored plaintext):
+
+    c8525ad02de682fe19d648c9b8da50b3154d15b8a51c41eb217c05930f9edaa4
+
+Sealed 2026-07-11 by the engineer seat, canonicalizing the researcher's ruling +
+seal (RESEARCHER_RULING_COMPLEX_IDENTIFICATION_G1_G4.md, grounded), plus the
+engineer's own byte-identical single-face reduction seal.
+
+Protocol (seal-before-build): committed on-repo BEFORE the build to prove the seal
+predates it. The coder builds the general complex-identification op BLIND to the
+plaintext. The engineer unseals + runs a full-scrutiny audit; the mothership
+co-ratifies (and rules G5 — whether the named polygon word-ops survive as
+catalogue shortcuts over the general op) before Arman commits.
+
+Sealed target (plaintext off-repo), in brief:
+  · cylinder rims identified — PRESERVING -> TORUS (chi=0, w1=0);
+                               REVERSING  -> KLEIN (chi=0, w1=1). The mode BITES
+    because a self-rim seam is NON-SEPARATING (it is INERT on a SEPARATING seam,
+    e.g. connectedSum — the anti-over-claim law).
+  · FALSIFIER: endpoint-keyed enactment corrupts chi (3 / 1, non-manifold) by
+    fusing parallel edge classes — the enactment MUST carry explicit SIGNED edge
+    classes and merge ONLY the declared classes ("identify" MEANS merge).
+  · interior identification is LEGAL and GATE-REFUSED, never pre-refused.
+  · the general op must reproduce the five committed single-face word-ops
+    BYTE-IDENTICALLY (a polygon is a one-face complex).
