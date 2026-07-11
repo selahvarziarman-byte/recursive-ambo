@@ -1,0 +1,33 @@
+PLATONIC ENGINE — the REGISTRY UNBOUNDING · SEALED PREDICTION HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_REGISTRY_UNBOUNDING.md` (gitignored):
+
+    b0b64446b02362fe9ad088d7b6d88712c133b97b1f42fb2c54d55eeb61ad5985
+
+Sealed 2026-07-11 by the engineer seat. Mothership-REQUIRED-NEXT: "The promise is
+closed in the ENGINE. It is not yet closed where it is LIVED. A user who can take
+one hop cannot beget forms without end — they can only be told that they can,
+while the proof of it lives headless in a diagnostic." (ADR 0017 Amdt 2: the
+product is the phenomenon, not the proof; the user meets the registry, not the
+primitive.)
+
+FIRST SEAL WRITTEN UNDER THE NEW STANDING DOCTRINE (mothership, 2026-07-11):
+  "A seal must PROVE its own trap-sensitivity. It must exhibit, in the seal, the
+   wrong mechanism visibly failing on the sealed representative. A seal that the
+   wrong mechanism would also pass is not a seal — it is a coincidence."
+Accordingly the seal EXHIBITS the wrong mechanism (the current one-hop ancestry)
+FAILING on the sealed representative: acquiring the generation-2 form (a CUT of a
+SEWN torus) needs identify-replay against the GRANDPARENT tube, which one hop does
+not supply — so it refuses "no faithful complex". The diagnostic must show that
+control FAILING alongside the full chain RESOLVING it. If the one-hop control
+passes, the fixture is trap-blind and the seal is void.
+
+Sealed target: the registry (playgroundStore + the manuscript's writtenFormModel)
+must walk the REAL lineage chain and pass the FULL ancestry, so a person firing
+ops through the UI can walk >= 3 generations (tube -> sew -> cut -> cut -> re-sew,
+depth 4) with no "no faithful complex" refusal. The fix belongs in the REGISTRY:
+the committed ENGINE (acquireComplex, the bridge and its refusals, the certifiers,
+the gate, the ledger) must stay BYTE-UNCHANGED. Fabricating an ancestry (handing
+the acquisition every form in the store rather than the form's real ancestors) is
+a HARD FAIL.
