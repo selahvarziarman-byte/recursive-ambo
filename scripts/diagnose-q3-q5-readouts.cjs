@@ -71,7 +71,11 @@ const reduced = transitiveReduceEdges(dag);
 
 const incomingFull = (id) => dag.edges.filter((e) => e.child === id).map((e) => e.parent).sort();
 const incomingReduced = (id) => reduced.filter((e) => e.child === id).map((e) => e.parent).sort();
-check('Q3 the committed DAG carries the grandparent depth-skips (F4 ← 4 parents; F5 ← 6 — every ancestor is a DIRECT edge)', incomingFull(F4.id).length === 4 && incomingFull(F5.id).length === 6);
+// P2 (enacted assemble): ancestry composes THROUGH NAMES level-by-level — F5
+// carries no vertex of F3's minting (F3's children were absorbed into F4's),
+// so F3 is reachable TRANSITIVELY (F5 -> F4 -> F3; the LOSSLESS check below
+// pins reachability === committed ancestorsOf), not by a direct edge.
+check('Q3 the committed DAG carries the depth-skips the shapes still CARRY (F4 ← 4 parents; F5 ← 5 — F3 rides transitively, lossless below)', incomingFull(F4.id).length === 4 && incomingFull(F5.id).length === 5);
 check('Q3 REDUCED: F4 draws ONLY its immediate parents {F3, Fx}', eq(incomingReduced(F4.id), [F3.id, Fx.id].sort()));
 check('Q3 REDUCED: F5 draws ONLY its immediate parents {F4, Fy}', eq(incomingReduced(F5.id), [F4.id, Fy.id].sort()));
 check('Q3 REDUCED: F3 keeps both root parents (nothing below to skip)', eq(incomingReduced(F3.id), [F1.id, F2.id].sort()));
@@ -93,7 +97,10 @@ const reducedAncestors = (start) => {
 };
 check('Q3 LOSSLESS: reduced reachability === committed ancestorsOf for EVERY node', shapes.every((s) => eq(reducedAncestors(s.id), ancestorsOf(dag, s.id))));
 const f4Node = dag.nodes.find((n) => n.id === F4.id);
-check('Q3 carriedRoots intact on the DAG node (grandparent material still recorded)', f4Node.carriedRoots.includes('u1:v0') && f4Node.carriedRoots.includes('u2:v0') && f4Node.carriedRoots.includes('ux:v0'));
+// P2: F4's roots now name what F4 CARRIES — the absorbed depth-1 child and
+// Fx's absorbed corner ride as NAMES (the absent-source primal rule); u1:v0 /
+// u2:v0 live one level up, on F3's node (the ledger keeps the full descent).
+check('Q3 carriedRoots on the DAG node name the ENACTED carry (the depth-1 child + ux:v0 as names; the deeper roots live on F3)', f4Node.carriedRoots.includes('asm:u1:v0+u2:v0') && f4Node.carriedRoots.includes('ux:v0') && !f4Node.carriedRoots.includes('u1:v0'));
 check('Q3 the committed buildGenealogyDag output is BYTE-UNCHANGED by the reduction', JSON.stringify(dag.edges) === dagSnapshot);
 const model = layoutGenealogy(shapes);
 check('Q3 the VIEW draws the reduced set (layout edges === reduced triples)', eq(model.edges.map((e) => `${e.parent}>${e.child}`).sort(), reduced.map((e) => `${e.parent}>${e.child}`).sort()));

@@ -126,8 +126,12 @@ const B = usePlaygroundStore.getState().invokeForm(nGon(4), 'ub');
 usePlaygroundStore.getState().selectForm(A.id);
 const assembly = usePlaygroundStore.getState().applyAssembleToSelection(B.id);
 const asmReadout = readFormInvariants(assembly);
-check('assembled child (identification ledger-recorded, faces un-rewritten): χ=4 as-represented, open / n-a — honest', asmReadout.chi === 4 && asmReadout.boundary === 'open' && asmReadout.classification === 'open / n-a');
-note(`assembly readout: χ=${asmReadout.chi} (V ${asmReadout.cells.v} − E ${asmReadout.cells.e} + F ${asmReadout.cells.f}) — the pre-identification union + minted seam vertices`);
+// P2 (enacted assemble): the identification is APPLIED to the structure —
+// two squares sharing one enacted seam edge: V=6, E=7, F=2 -> chi=1, an open
+// disk pair (previously the pre-glue union read chi=4 with the minted seam
+// children stapled on — the D3 defect, fixed).
+check('assembled child (identification ENACTED — P2): χ=1 (V6−E7+F2), open / n-a — the quotient, honestly', asmReadout.chi === 1 && asmReadout.cells.v === 6 && asmReadout.cells.e === 7 && asmReadout.boundary === 'open' && asmReadout.classification === 'open / n-a');
+note(`assembly readout: χ=${asmReadout.chi} (V ${asmReadout.cells.v} − E ${asmReadout.cells.e} + F ${asmReadout.cells.f}) — the ENACTED quotient (P2): one seam edge, absorbed sources gone`);
 
 // ===== [3] the readout is a PASSTHROUGH (field-by-field equality with the cert object) =====
 console.log('\n----- [3] PASSTHROUGH (no massage between certifier and readout) -----');

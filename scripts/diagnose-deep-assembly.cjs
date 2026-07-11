@@ -116,7 +116,15 @@ for (const merge of canonicalAssembleIdentification(F3, Fx).merges) {
   );
   note(`${merge.resultId}: ${primalMultisetKey(ms)}`);
 }
-check('§3 a CARRIED depth-1 merge keeps its lineage inside F4 (u1:v0×1|u2:v0×1)', primalMultisetKey(primalMultiset('asm:u1:v0+u2:v0', F4, new Map())) === 'u1:v0×1|u2:v0×1');
+// P2 (enacted assemble): the depth-1 child is ABSORBED into the depth-2 merge
+// (it is a SOURCE of F4's identification, so it leaves F4's vertex record —
+// the enactment). Its lineage lives where it is CARRIED: in F3. Inside F4 the
+// composition proceeds THROUGH NAMES level-by-level (an absent source is its
+// own primal — the committed absent-source rule); the full multi-parent
+// descent stays in the LEDGER (the pull-back checks above).
+check('§3 the depth-1 merge keeps its lineage where it is CARRIED (in F3: u1:v0×1|u2:v0×1); in F4 it is enacted INTO the depth-2 child (P2)',
+  primalMultisetKey(primalMultiset('asm:u1:v0+u2:v0', F3, new Map())) === 'u1:v0×1|u2:v0×1' &&
+  !F4.vertices['asm:u1:v0+u2:v0']);
 
 // ===== [4] the STORE path (re-assembling an assembly is no longer rejected) =====
 console.log('\n----- [4] THE STORE PATH (applyAssembleToSelection on an assembly; D2 lays it out) -----');

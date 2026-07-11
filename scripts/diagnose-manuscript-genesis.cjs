@@ -87,13 +87,17 @@ const c = invokePrimitive('triangle', 3);
   check('the child is a multi-parent ROOT (parentShapeId null — committed semantics) with real carried positions',
     mine.ok && mine.born.shape.genealogy.parentShapeId === null &&
     Object.values(mine.born.shape.vertices).every((v) => v.position.every((x) => Number.isFinite(x))));
-  check('the child card is HONEST where explicit ≠ certified: χ 4 explicit (the minted asm merge supports live beside the carried originals) · 2 certified — both shown, neither over-claimed',
+  // P2 (enacted assemble): the earlier "4 explicit · 2 certified" mismatch is
+  // RESOLVED exactly as the P2 charter predicted — the child's structure now
+  // IS the quotient (V6−E7+F2 -> chi=1), so explicit === certified and the
+  // card claims "(certified)" honestly.
+  check('the child card after the D3 fix: explicit === certified (χ 1) — the assemble-child mismatch is RESOLVED, the card claims (certified)',
     mine.ok && mine.born.render.mode === 'plain' &&
-    mine.born.render.invariants.chi === 4 && mine.born.render.invariants.chiCertified === 2 &&
+    mine.born.render.invariants.chi === 1 && mine.born.render.invariants.chiCertified === 1 &&
     (() => {
       const { readPlainSpecimen } = req('src/manuscript/writtenFormModel.ts');
       const reading = readPlainSpecimen(mine.born.title, mine.born.provenance, mine.born.render.invariants, mine.born.render.h1Label);
-      return reading.rows.find((r) => r.label === 'Euler χ').value === '4 explicit · 2 certified';
+      return reading.rows.find((r) => r.label === 'Euler χ').value === '1 (certified)';
     })());
   const sameGate = birthGateFor(a.shape, a.shape);
   check("gate: the SAME form twice → the committed 'Pick a DIFFERENT form' reason, verbatim",

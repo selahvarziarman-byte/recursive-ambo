@@ -206,8 +206,11 @@ console.log('\n----- discipline -----');
 const plain = loadForm(squareForm);
 check('§4.7 no-provenance: loadForm() keeps PLAIN ids (vertex "A" present; no "u1:A")', Boolean(plain.vertices['A']) && !plain.vertices['u1:A']);
 check('derive-only: assembled shape JSON byte-identical before/after all reads', JSON.stringify(asm) === asmSnapshot);
-check('anti-mock: nothing auto-glued by name — only the 2 explicit merges produced children (A*,B*)', Object.keys(asm.vertices).length === 10 && Boolean(asm.vertices['A*']) && Boolean(asm.vertices['B*']));
-note(`assembled vertices=${Object.keys(asm.vertices).length} (8 roots + A* + B*)`);
+// P2 (enacted assemble): the identification is APPLIED — the 4 absorbed
+// sources leave the vertex record and the 2 children replace them (8 - 4 + 2
+// = 6). Nothing auto-glues by name: exactly the 2 explicit merges enacted.
+check('anti-mock: nothing auto-glued by name — only the 2 explicit merges enacted children (A*,B*); absorbed sources replaced (P2)', Object.keys(asm.vertices).length === 6 && Boolean(asm.vertices['A*']) && Boolean(asm.vertices['B*']) && !asm.vertices['u1:A'] && !asm.vertices['u2:A']);
+note(`assembled vertices=${Object.keys(asm.vertices).length} (4 untouched roots + A* + B*; the 4 absorbed sources enacted away — P2)`);
 
 console.log(
   `\n--- multiform load-and-assemble (§4.1-4.6 + §4.3 carried-not-minted + §4.5 tooth): ${

@@ -77,7 +77,13 @@ const loadedDefault = deserializeSnapshot(snap); // under the snapshot's own sou
 const L = loadedDefault.shape;
 check('§1 cells preserved (V/E/F counts equal)', Object.keys(L.vertices).length === Object.keys(A.vertices).length && L.edges.length === A.edges.length && L.faces.length === A.faces.length);
 check('§1 every vertex id is source-prefixed (origin:v0 …)', Object.keys(L.vertices).every((id) => id.startsWith('origin:')) && Boolean(L.vertices['origin:v0']));
-check('§1 edges are CARRIED, never re-derived (edge ids verbatim; endpoints prefixed)', eq(L.edges.map((e) => e.id), A.edges.map((e) => e.id)) && eq(L.edges.map((e) => e.vertexIds), A.edges.map((e) => e.vertexIds.map((v) => `origin:${v}`))));
+// P2: the namespacing rule is COMPLETE — the ids the loaded shape OWNS
+// (edge/face ids included) prefix together with every ref to them, so two
+// loads under different names are FULLY id-disjoint (the enacted assemble
+// fail-louds on collisions; loaded universes are actually distinct). The
+// STRUCTURE is still carried, never re-derived: same edges in the same
+// order, prefixed 1:1.
+check('§1 edges are CARRIED, never re-derived (edge ids + endpoints prefixed 1:1, same order — P2 full namespacing)', eq(L.edges.map((e) => e.id), A.edges.map((e) => `origin:${e.id}`)) && eq(L.edges.map((e) => e.vertexIds), A.edges.map((e) => e.vertexIds.map((v) => `origin:${v}`))));
 check('§1 faces prefixed in slot order', eq(L.faces.map((f) => f.vertexIds), A.faces.map((f) => f.vertexIds.map((v) => `origin:${v}`))));
 check('§1 the loaded form re-roots (parentShapeId null) with namespaced genealogy ids', L.genealogy.parentShapeId === null && eq(L.genealogy.createdVertexIds, A.genealogy.createdVertexIds.map((v) => `origin:${v}`)));
 check('§1 the loaded shape id is per-source distinct', L.id === `snapshot:origin:${A.id}`);
@@ -129,7 +135,7 @@ const torusBorn = usePlaygroundStore.getState().applyCustomGlueToSelection([
 const bornFile = usePlaygroundStore.getState().saveFormAsSnapshot(torusBorn.id);
 const loadedBorn = deserializeSnapshot(bornFile, 'u9').shape;
 const mintedId = Object.keys(loadedBorn.vertices)[0];
-check('§4 the quotient cells survive VERBATIM (1 vertex, 2 edge classes, 1 face — nothing re-derived)', Object.keys(loadedBorn.vertices).length === 1 && loadedBorn.edges.length === 2 && loadedBorn.faces.length === 1 && eq(loadedBorn.edges.map((e) => e.id), torusBorn.edges.map((e) => e.id)));
+check('§4 the quotient cells survive CARRIED (1 vertex, 2 edge classes, 1 face — nothing re-derived; ids prefixed 1:1 per P2)', Object.keys(loadedBorn.vertices).length === 1 && loadedBorn.edges.length === 2 && loadedBorn.faces.length === 1 && eq(loadedBorn.edges.map((e) => e.id), torusBorn.edges.map((e) => `u9:${e.id}`)));
 check('§4 carried lineage survives with roots PREFIXED (the union of u9:… corners)', keyOf(loadedBorn, mintedId) === ['u9:ua:v0', 'u9:ua:v1', 'u9:ua:v2', 'u9:ua:v3'].map((r) => `${r}×1`).join('|'));
 const orphanDag = buildGenealogyDag([loadedBorn]);
 check('§4 (measured, surfaced) WITHOUT its home universe the DAG honestly REJECTS the orphan lineage (ghost sources)', orphanDag.integrity.accepted === false && orphanDag.integrity.violations.some((v) => v.includes('ghost source')));

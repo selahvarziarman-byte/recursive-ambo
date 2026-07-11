@@ -204,6 +204,13 @@ export function assemble(forms: Shape[], identification: BoundaryIdentification)
   const sourceSiteIds: VertexId[] = []; // form order — fixes the pull-back push order
   const edges: Edge[] = [];
   const faces: Face[] = [];
+  // P2: the disjointness guard covers ALL id spaces — duplicate edge/face ids
+  // across forms (e.g. two snapshot loads of the SAME source, whose edge/face
+  // ids the committed loader keeps verbatim) would silently FUSE in every
+  // id-keyed consumer downstream (boundary reading, the certifier). Fail loud,
+  // exactly like the committed vertex guard above it.
+  const edgeIds = new Set<string>();
+  const faceIds = new Set<string>();
   for (const form of forms) {
     for (const id of Object.keys(form.vertices)) {
       if (vertices[id]) {
@@ -211,6 +218,18 @@ export function assemble(forms: Shape[], identification: BoundaryIdentification)
       }
       vertices[id] = form.vertices[id];
       sourceSiteIds.push(id);
+    }
+    for (const edge of form.edges) {
+      if (edgeIds.has(edge.id)) {
+        throw new Error(`multiform.assemble: edge id collision "${edge.id}" — forms are not id-disjoint`);
+      }
+      edgeIds.add(edge.id);
+    }
+    for (const face of form.faces) {
+      if (faceIds.has(face.id)) {
+        throw new Error(`multiform.assemble: face id collision "${face.id}" — forms are not id-disjoint`);
+      }
+      faceIds.add(face.id);
     }
     edges.push(...form.edges);
     faces.push(...form.faces);
@@ -261,12 +280,75 @@ export function assemble(forms: Shape[], identification: BoundaryIdentification)
   // (4) the LEDGER — the COMMITTED builder over the union's source sites (form order).
   const ledger = buildLedgerFromIdentification(sourceSiteIds, resultOf);
 
+  // (5) P2 (sanctioned, 2026-07-10) — the D3 ENACTMENT: the returned shape IS
+  // the quotient, not the pre-glue union with a ledger stapled on. This
+  // generalizes the committed single-face materializeSurfaceResult rebuild
+  // (endpoints/cycles rewritten through resultOf; identified seam edge-classes
+  // de-duplicated) to the multi-face union:
+  //   · absorbed sources leave the vertex record — the minted children replace
+  //     them (they were unreferenced before; that was the defect);
+  //   · every edge endpoint and face cycle is rewritten through resultOf —
+  //     merges are VERTEX-ID-keyed, so parents that are themselves enacted
+  //     quotients (born forms) compose automatically: their birth words are
+  //     already applied in their materialized structure, and this further
+  //     identification stacks on top (the multi-parent analogue of the Q-M2
+  //     composed word — quotient-of-quotients, enacted);
+  //   · the SEAM edges de-duplicate: FREE edges of the union (incident to <2
+  //     faces) whose endpoints are all merge sources and whose rewritten
+  //     endpoint pairs coincide are ONE edge-class in the quotient (each brings
+  //     its face wedge; two wedges → a manifold interior seam). Interior edges
+  //     never merge (parallel interior classes stay parallel — a quotient
+  //     form's bigons survive). More than two wedges on one seam class is NOT
+  //     refused — the committed link gate reads it as a junction downstream
+  //     (instruments, not guards).
+  for (const merge of identification.merges) {
+    for (const source of merge.sources) {
+      delete vertices[source];
+    }
+  }
+  const edgeKeyOf = (u: VertexId, v: VertexId): string => (u < v ? `${u}|${v}` : `${v}|${u}`);
+  // union-wide face incidence per UNORDERED original endpoint pair (free = <2)
+  const faceWedgeCount = new Map<string, number>();
+  for (const face of faces) {
+    const cycle = face.vertexIds;
+    for (let k = 0; k < cycle.length; k += 1) {
+      const key = edgeKeyOf(cycle[k], cycle[(k + 1) % cycle.length]);
+      faceWedgeCount.set(key, (faceWedgeCount.get(key) ?? 0) + 1);
+    }
+  }
+  const seamClassCarrier = new Map<string, Edge>(); // rewritten pair -> the carrier edge
+  const enactedEdges: Edge[] = [];
+  for (const edge of edges) {
+    const [u, v] = edge.vertexIds;
+    const rewritten: [VertexId, VertexId] = [resultOf(u), resultOf(v)];
+    const isSeamCandidate =
+      resultOfMap.has(u) &&
+      resultOfMap.has(v) &&
+      (faceWedgeCount.get(edgeKeyOf(u, v)) ?? 0) < 2;
+    if (isSeamCandidate) {
+      const seamKey = edgeKeyOf(rewritten[0], rewritten[1]);
+      const carrier = seamClassCarrier.get(seamKey);
+      if (carrier) {
+        continue; // absorbed into the seam class the carrier represents
+      }
+      const seamEdge: Edge = { ...edge, vertexIds: rewritten };
+      seamClassCarrier.set(seamKey, seamEdge);
+      enactedEdges.push(seamEdge);
+      continue;
+    }
+    enactedEdges.push({ ...edge, vertexIds: rewritten });
+  }
+  const enactedFaces: Face[] = faces.map((face) => ({
+    ...face,
+    vertexIds: face.vertexIds.map((vertexId) => resultOf(vertexId)),
+  }));
+
   const shape: Shape = {
     id: assembledShapeId,
     name: `assembly(${forms.map((form) => form.name).join('+')})`,
     vertices,
-    edges,
-    faces,
+    edges: enactedEdges,
+    faces: enactedFaces,
     cells: [],
     generations: [],
     genealogy: {
