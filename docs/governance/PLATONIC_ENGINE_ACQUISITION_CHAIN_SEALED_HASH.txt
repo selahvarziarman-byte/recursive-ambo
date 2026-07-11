@@ -1,0 +1,28 @@
+PLATONIC ENGINE — the ACQUISITION-CHAIN wiring · SEALED PREDICTION HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_ACQUISITION_CHAIN.md` (gitignored plaintext):
+
+    d88d41de824b96534cc0285805d8d3491d41d5c48287ab15c35beba04917f73c
+
+Sealed 2026-07-11 by the engineer seat. Mothership-REQUIRED
+(RELAY_MOTHERSHIP_COMPLEX_IDENTIFICATION_CORATIFIED_G5_RULED.md, section 3):
+"until that line lands, the op generalized identification across forms but not
+across generations of itself — the promise is still half-open."
+
+Protocol (seal-before-build): committed on-repo BEFORE the build to prove the seal
+predates it. The coder builds BLIND. The engineer unseals + audits; the mothership
+co-ratifies before Arman commits.
+
+Sealed target (plaintext off-repo), in brief:
+  · The rep is DELIBERATELY TRAP-SENSITIVE (the lesson from the last seal): the
+    obvious 4x4 sewn torus is trap-BLIND (the direct bridge reads it, so the seal
+    would pass even with the chain unwired). The seal is pinned instead on the
+    HEIGHT-1 TUBE's sew, whose result carries PARALLEL EDGE CLASSES — the direct
+    bridge REFUSES it, so it is acquirable ONLY through replay/recovery. On this
+    rep an unwired chain CANNOT pass.
+  · The chain must acquire that sewn torus anyway (recovery), certify it, let it
+    be CUT, and — the flagship — let a form BORN OF SEWING BE RE-SEWN, with the
+    ledger descending through every generation.
+  · HARD FAIL if the "fix" weakens the committed bridge's refusal of parallel
+    classes / self-loops. The bridge is right; the CHAIN is what is missing.
