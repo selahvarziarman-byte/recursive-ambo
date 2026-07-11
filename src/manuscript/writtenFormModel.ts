@@ -105,6 +105,9 @@ export const DOCK_OPERATION_GROUPS: ReadonlyArray<{
   { key: 'collapse', label: 'collapse', operationIds: ['collapse-sphere'] },
   { key: 'cut', label: 'cut', operationIds: ['cut'] },
   { key: 'dualize', label: 'dualize', operationIds: ['dual'] },
+  // the general complex identification's boundary sub-family (sanctioned,
+  // 2026-07-11) — sew two rims of a COMPLEX (the word ops fold polygons)
+  { key: 'sew', label: 'sew', operationIds: ['sew-boundary-preserving', 'sew-boundary-reversing'] },
 ];
 
 const IMMERSION_TITLES: Record<string, string> = {

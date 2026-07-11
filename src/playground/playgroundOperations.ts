@@ -45,7 +45,9 @@ import { cutCell } from '../lib/cutOperation';
 import { materializeCutResult, materializeSurfaceResult } from '../lib/materializeOperation';
 import { assemble, type BoundaryIdentification } from '../lib/multiform';
 import { previewSurfaceDual, surfaceDual } from '../lib/surfaceDual';
+import { sewBoundaryCircles, type IdentifyMode } from '../lib/complexIdentification';
 import { recoverBornSurface } from './bornFormRouting';
+import { acquireFaithfulComplex, readBoundary } from '../manuscript/surfaceClassifier';
 import type { AssembledComplex } from '../lib/globalW1';
 
 export interface PlaygroundSelection {
@@ -509,6 +511,60 @@ export const surfaceDualOperation: PlaygroundOperation = {
     surfaceDual(context.form, { complex: faithfulComplexFor(context.form, context.parentShape) }).shape,
 };
 
+// ---------------------------------------------------------------------------
+// the general complex-identification op's meaningful sub-family (sanctioned,
+// 2026-07-11): SEW two boundary circles — the arity-1 self sibling of
+// `connectedSum`. Eligibility reads the committed P-IMMERSE boundary-circle
+// counter (`surfaceClassifier.readBoundary`) over the form's faithful DIRECT
+// complex; the sew itself is `lib/complexIdentification` (enact → the
+// committed gate judges — instruments, not guards). Whole-form, like dual
+// (face selection ignored). The canonical v0 choice: the FIRST TWO circles in
+// deterministic smallest-edge-id order — the interactive circle picker is a
+// later refinement (the canonicalAssembleIdentification idiom). A
+// single-face quotient refuses toward the committed word ops (its rims are
+// sewn by the Q-M2 composed chain — glue/flip-glue on the face).
+// ---------------------------------------------------------------------------
+
+function sewEligibilityReason(form: Shape): string | null {
+  const acquired = acquireFaithfulComplex(form, null);
+  if (!acquired || acquired.source !== 'direct') {
+    return 'Sewing reads the explicit complex — a single-face quotient sews its rims through the committed word ops (the composed chain).';
+  }
+  const boundary = readBoundary(acquired.complex);
+  if (!boundary.circlesAreDisjoint) {
+    return 'The free 1-skeleton is not a disjoint union of circles — nothing to sew.';
+  }
+  if (boundary.circles < 2) {
+    return `The form has ${boundary.circles} boundary circle${boundary.circles === 1 ? '' : 's'} — sewing needs two.`;
+  }
+  return null;
+}
+
+function makeSewOperation(mode: IdentifyMode): PlaygroundOperation {
+  return {
+    id: `sew-boundary-${mode}`,
+    label: mode === 'preserving' ? 'Sew rims (preserving)' : 'Sew rims (reversing)',
+    description:
+      mode === 'preserving'
+        ? "Identify the form's first two boundary circles orientation-COMPATIBLY (opposite wedge directions on the merged seam) — the general complex identification; the committed gate judges."
+        : "Identify the form's first two boundary circles orientation-INCOMPATIBLY (same wedge direction — the flip seam) — the general complex identification; the committed gate judges.",
+    canApply: (context) => Boolean(context.form) && sewEligibilityReason(context.form) === null,
+    getDisabledReason: (context) => {
+      if (!context.form) return 'No form selected.';
+      return sewEligibilityReason(context.form);
+    },
+    execute: (context) => {
+      if (!context.form || sewEligibilityReason(context.form) !== null) {
+        throw new Error(`playgroundOperations: sew-boundary-${mode} executed on an ineligible form`);
+      }
+      return sewBoundaryCircles(context.form, mode).shape;
+    },
+  };
+}
+
+export const sewBoundaryPreservingOperation = makeSewOperation('preserving');
+export const sewBoundaryReversingOperation = makeSewOperation('reversing');
+
 export const PLAYGROUND_OPERATIONS: PlaygroundOperation[] = [
   glueTorusOperation,
   glueCylinderOperation,
@@ -518,6 +574,8 @@ export const PLAYGROUND_OPERATIONS: PlaygroundOperation[] = [
   collapseSphereOperation,
   cutFaceOperation,
   surfaceDualOperation, // Q6 — the reflective axis
+  sewBoundaryPreservingOperation, // the general complex identification (boundary sub-family)
+  sewBoundaryReversingOperation,
 ];
 
 export function getPlaygroundOperation(id: string): PlaygroundOperation {

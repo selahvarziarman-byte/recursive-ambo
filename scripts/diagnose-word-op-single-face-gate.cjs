@@ -181,9 +181,13 @@ check('the degenerate minimal torus still refuses with the COMMITTED degenerate 
     degenerateBoundaryReason(torusBornPair.born.faces[0]));
 check('singleFaceGateReason is null on every single-face form above (the gate is structurally inert there)',
   [square, hexagon, ...births.map((b) => b.born)].every((f) => singleFaceGateReason(f) === null));
-check('the un-gated ops are exactly cut + dual (the registry carries 8 ops; 6 are gated word ops)',
-  PLAYGROUND_OPERATIONS.length === 8 &&
-  PLAYGROUND_OPERATIONS.filter((op) => !WORD_OPS.includes(op.id)).map((op) => op.id).sort().join(',') === 'cut,dual');
+// (10 ops since 2026-07-11: the two sanctioned SEW entries joined — they are
+// FOR complexes, so they are exactly NOT single-face-gated; ratified in
+// diagnose-complex-identification)
+check('the un-gated ops are exactly cut + dual + the two sew entries (the registry carries 10 ops; 6 are gated word ops)',
+  PLAYGROUND_OPERATIONS.length === 10 &&
+  PLAYGROUND_OPERATIONS.filter((op) => !WORD_OPS.includes(op.id)).map((op) => op.id).sort().join(',') ===
+    'cut,dual,sew-boundary-preserving,sew-boundary-reversing');
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

@@ -192,8 +192,10 @@ const square = invokePrimitive('square', 2);
   check('dual on a bounded disk: refused with the committed preview reason',
     !dualOnDisk.ok && dualOnDisk.reason === dualReason && dualOnDisk.reason.length > 0);
   const noTarget = operationAvailabilityFor(null, null);
+  // (10 ops since 2026-07-11 — the two sanctioned SEW entries joined the
+  // registry; ratified in diagnose-complex-identification)
   check("no selection: every dock op disabled with 'Select a form first.'",
-    noTarget.length === 8 && noTarget.every((op) => !op.enabled && op.reason === 'Select a form first.'));
+    noTarget.length === 10 && noTarget.every((op) => !op.enabled && op.reason === 'Select a form first.'));
   const onSquare = operationAvailabilityFor(square.shape, null);
   check('on an invoked square: the word/collapse/cut ops enabled, dual honestly disabled',
     onSquare.filter((op) => op.enabled).map((op) => op.id).sort().join(',') ===
