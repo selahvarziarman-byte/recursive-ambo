@@ -74,6 +74,8 @@ import {
 } from './genesisModel';
 import { useLiftStore } from '../store/liftStore';
 import { deriveOptionBGenerators, type OptionBReading } from './optionBModel';
+import { readClassBodySpecimen } from './classBodyModel';
+import type { Vec3 } from '../types/geometry';
 
 // hands the live R3F camera up to the DOM layer (shelf drag-drop unprojection)
 function CameraGrab({ onReady }: { onReady: (camera: Camera) => void }) {
@@ -502,6 +504,27 @@ export default function ManuscriptView() {
     return map;
   }, [written]);
 
+  // P-IMMERSE §5 — the marked junction: the classifier's own junction edge ids
+  // (carried on the plain render) become segments over the shape's REAL
+  // positions; the ink is a knobbed craft constant, the SET is the model's
+  const junctionSegmentsByShape = useMemo(() => {
+    const map = new Map<string, Vec3[][]>();
+    for (const entry of written) {
+      const render = entry.form.render;
+      if (render.mode !== 'plain' || !render.junctionEdgeIds?.length) continue;
+      const wanted = new Set(render.junctionEdgeIds);
+      const segments: Vec3[][] = [];
+      for (const edge of render.shape.edges) {
+        if (!wanted.has(edge.id)) continue;
+        const u = render.shape.vertices[edge.vertexIds[0]]?.position;
+        const v = render.shape.vertices[edge.vertexIds[1]]?.position;
+        if (u && v) segments.push([[...u], [...v]]);
+      }
+      if (segments.length) map.set(render.shape.id, segments);
+    }
+    return map;
+  }, [written]);
+
   // the analytic reading — built ON SELECT from the committed certifiers'
   // readouts (specimenModel/writtenFormModel), cleared on deselect: summoned,
   // never ambient
@@ -527,6 +550,11 @@ export default function ManuscriptView() {
       if (render.mode === 'skeleton') {
         const base = readSkeletonSpecimen(render.model);
         return { ...base, title: entry.form.title, subtitle: entry.form.provenance };
+      }
+      if (render.mode === 'classBody') {
+        // P-IMMERSE: the form's OWN certified invariants + the honest frame +
+        // the body's drawn certified generators, named (classBodyModel)
+        return readClassBodySpecimen(entry.form.title, entry.form.provenance, render.model);
       }
       const base = readPlainSpecimen(entry.form.title, entry.form.provenance, render.invariants, render.h1Label);
       // Option B: name the drawn certified generators in the summoned legend
@@ -1125,9 +1153,11 @@ export default function ManuscriptView() {
               ? `${render.model.immersion.correspondence.word === '' ? 'no gluing word' : render.model.immersion.correspondence.word} · H₁ = ${render.model.h1Label ?? 'n-a'}`
               : render.mode === 'skeleton'
                 ? `H₁ = ${render.model.h1Label ?? 'n-a'} · b₁ ${render.model.invariants.level1?.b1 ?? '—'}`
-                : `H₁ = ${render.h1Label ?? 'n-a'}`;
+                : render.mode === 'classBody'
+                  ? `H₁ = ${render.model.h1Label ?? 'n-a'} · class body`
+                  : `H₁ = ${render.h1Label ?? 'n-a'}`;
           const drop =
-            render.mode === 'immersion'
+            render.mode === 'immersion' || render.mode === 'classBody'
               ? -d.layout.captionDrop * scaleCtl.dim2Scale - 0.9
               : render.mode === 'skeleton'
                 ? -1.35 * scaleCtl.dim1Scale - 0.7
@@ -1154,12 +1184,36 @@ export default function ManuscriptView() {
                   lineWidth={d.world.skeleton.lineWidth}
                 />
               </group>
+            ) : render.mode === 'classBody' ? (
+              // P-IMMERSE: the honest representative — one self-certified body
+              // per connected component, each carrying ITS committed Option-B
+              // generators (the model derived them; no view invention)
+              <group scale={scaleCtl.dim2Scale}>
+                {render.model.components.map((component, ci) => (
+                  <InkedPlainForm
+                    key={`${id}:c${ci}`}
+                    shape={component.body}
+                    craft={craftFor(id, entry.form.shape.id)}
+                    generators={component.optionB.generators}
+                    position={component.offset}
+                  />
+                ))}
+              </group>
             ) : (
               <group scale={scaleCtl.dim1Scale}>
                 <InkedPlainForm
                   shape={render.shape}
                   craft={craftFor(id, entry.form.shape.id)}
                   generators={optionBByShape.get(render.shape.id)?.generators}
+                  junction={
+                    junctionSegmentsByShape.has(render.shape.id)
+                      ? {
+                          segments: junctionSegmentsByShape.get(render.shape.id) as Vec3[][],
+                          color: d.world.junction.color,
+                          lineWidth: d.world.junction.lineWidth,
+                        }
+                      : undefined
+                  }
                 />
               </group>
             ),

@@ -27,9 +27,20 @@
 //                 marks (drawing a certified representative set on arbitrary
 //                 operated complexes is the researcher's standing Option-B
 //                 item — the specimen card still reads the certified values).
-//   'patch'/'raw' routes (minted quotient positions — never render geometry)
-//                 are UNREACHABLE for the canonical registry ops; this module
-//                 THROWS on them rather than draw bookkeeping positions.
+//                 A NON-MANIFOLD plain form (the certifier's own 'non-manifold'
+//                 boundary reading) additionally carries the classifier's
+//                 junction edge ids so the render MARKS the flaw (P-IMMERSE §5
+//                 — the construction shows its junction, never a fake body).
+//   'patch'/'raw' routes (minted quotient positions — never render geometry):
+//                 P-IMMERSE — the ABSTAIN falls. These forms' invariants ARE
+//                 certified (the direct bridge or the replay-verified
+//                 recovery), so they route to the CLASS BODY: classify from
+//                 the committed certificates, build a self-certifying
+//                 standard body, draw the committed Option-B generators ON
+//                 the body (count === certified b₁). Refusals (non-manifold /
+//                 unclassifiable / un-certified) throw the classifier's
+//                 honest reason verbatim — surfaced by the chrome, never a
+//                 fabricated class, never bookkeeping positions drawn.
 //
 // DERIVE-ONLY · ADDITIVE: committed modules by import; playgroundOperations /
 // bornFormRouting / InkedForm / certifiers stay byte-unchanged.
@@ -51,6 +62,8 @@ import {
 } from './inkedFormModel';
 import { h1LabelFromLevel1 } from './worldModel';
 import type { SpecimenReading } from './specimenModel';
+import { buildClassBodyModel, type ClassBodyModel } from './classBodyModel';
+import { acquireFaithfulComplex, readBoundary } from './surfaceClassifier';
 
 export interface WrittenSkeletonModel {
   key: string;
@@ -63,7 +76,14 @@ export interface WrittenSkeletonModel {
 export type WrittenRender =
   | { mode: 'immersion'; model: InkedFormModel }
   | { mode: 'skeleton'; model: WrittenSkeletonModel }
-  | { mode: 'plain'; shape: Shape; invariants: FormInvariantsReadout; h1Label: string | null };
+  | {
+      mode: 'plain';
+      shape: Shape;
+      invariants: FormInvariantsReadout;
+      h1Label: string | null;
+      junctionEdgeIds?: string[]; // present iff the certifier reads non-manifold — the render marks these
+    }
+  | { mode: 'classBody'; model: ClassBodyModel }; // P-IMMERSE — the honest representative body
 
 export interface WrittenForm {
   id: string; // the manuscript-side handle (w<seq>)
@@ -194,7 +214,9 @@ export function applyPlaygroundOperationTo(
       ? `${IMMERSION_TITLES[render.model.surface] ?? render.model.surface} — born`
       : render.mode === 'skeleton'
         ? 'Skeleton — cut-born'
-        : `${operation.label.split(' ')[0]} — born`;
+        : render.mode === 'classBody'
+          ? `${render.model.components.map((c) => c.label).join(' + ')} — born`
+          : `${operation.label.split(' ')[0]} — born`;
   return {
     ok: true,
     born: {
@@ -237,13 +259,34 @@ export function routeWrittenRender(born: Shape, parent: Shape | null, resolution
   // (surfaceDual writes operation 'dualization' with REAL barycentric positions)
   if (route.kind === 'direct' || born.genealogy.operation === 'dualization' || born.genealogy.operation === 'seed') {
     const invariants = readFormInvariants(born);
-    return { mode: 'plain', shape: born, invariants, h1Label: h1LabelFromCertified(invariants) };
+    // P-IMMERSE §5: a non-manifold construction renders ITSELF (real positions)
+    // with its junction edge classes MARKED — the classifier's own slot reading
+    // names them; a form whose complex cannot even bridge simply carries none.
+    let junctionEdgeIds: string[] | undefined;
+    if (invariants.boundary === 'non-manifold') {
+      const acquired = acquireFaithfulComplex(born, parent);
+      if (acquired) {
+        const ids = readBoundary(acquired.complex).junctionEdgeIds;
+        if (ids.length > 0) junctionEdgeIds = ids;
+      }
+    }
+    return {
+      mode: 'plain',
+      shape: born,
+      invariants,
+      h1Label: h1LabelFromCertified(invariants),
+      ...(junctionEdgeIds ? { junctionEdgeIds } : {}),
+    };
   }
   // 'patch' / 'raw': minted quotient positions — bookkeeping, never geometry.
-  // Unreachable for the canonical registry ops; refuse loudly rather than draw it.
-  throw new Error(
-    `writtenFormModel: born form "${born.id}" routes to '${route.kind}' — its positions are quotient bookkeeping, refusing to draw`,
-  );
+  // P-IMMERSE: the ABSTAIN falls — the form's invariants are still CERTIFIED
+  // (recovered/direct complex), so it gets the honest CLASS BODY: classify
+  // from the committed certificates, build the self-certifying representative,
+  // draw the committed Option-B generators on it. Where the classifier refuses
+  // (non-manifold / unclassifiable χ / un-certified) the refusal throws
+  // verbatim and the chrome surfaces it — never a fabricated class, never
+  // bookkeeping positions drawn.
+  return { mode: 'classBody', model: buildClassBodyModel(born, parent) };
 }
 
 // ---------------------------------------------------------------------------

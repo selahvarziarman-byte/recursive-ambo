@@ -12,10 +12,18 @@
 //      and the result byte-compared to the born form — a stale or foreign id
 //      never routes (returns null → fallback).
 //   2. CLASSIFIES the word: the v0-reachable map, derived from the pairings'
-//      MODES over the OPPOSITE-EDGE structure (edgeB ≡ edgeA + n/2 — anything
-//      else is un-mapped and falls back honestly):
-//        1 pair  — preserving → cylinder ; reversing → möbius
-//        2 pairs — {pres,pres} → torus ; {pres,rev} → klein ; {rev,rev} → rp2
+//      MODES over the OPPOSITE-EDGE structure — CLAIMING ONLY ITS PROVABLE
+//      DOMAIN (P-IMMERSE flag sweep, 2026-07-11, sanctioned):
+//        1 pair, ANY even n — preserving → cylinder ; reversing → möbius
+//          (a disk with ONE pair of disjoint boundary arcs identified IS an
+//          annulus/möbius whatever the polygon — the C1/C2-ratified
+//          generalized open-surface path, kept);
+//        2 pairs, n = 4 ONLY — {pres,pres} → torus ; {pres,rev} → klein ;
+//          {rev,rev} → rp2 (on n ≥ 6 two opposite pairs leave FREE edges — a
+//          BOUNDED surface; the 2-preserving-pair hexagon is a bounded
+//          genus-1, and mapping it to the closed torus immersion was an
+//          immersion lie — the map now ABSTAINS there and the generic
+//          classifier's class body reads the TRUE class).
 //   3. ROUTES: 'immersion' (the R0/Part-A immersion renders it, carrying L2
 //      identification + field; C2: a replay-verified COLLAPSE routes here as
 //      'sphere' — no word, the collapse target) · 'direct' (C2: a replay-verified
@@ -109,6 +117,16 @@ export function recoverBornSurface(born: Shape, parent: Shape | null): BornSurfa
 
 // The v0-reachable word → surface-class map, derived from the pairings' modes
 // over the OPPOSITE-EDGE structure. Anything else → null (unmapped; fallback).
+// P-IMMERSE flag sweep (2026-07-11, sanctioned): the map claims ONLY what it
+// can PROVE. The single-pair claim holds for ANY even polygon (one identified
+// pair of disjoint boundary arcs on a disk is an annulus/möbius regardless of
+// n — the C1/C2-ratified generalized open-surface path, verified per birth in
+// diagnose-op-set-completion) and is KEPT. The two-pair claim holds ONLY on
+// the 4-gon: on n ≥ 6 two opposite pairs leave free edges — a BOUNDED surface
+// (the 2-preserving-pair hexagon is a bounded genus-1, not the closed torus)
+// — so mapping those to torus/klein/rp2 was an immersion lie; the map now
+// abstains there and the generic classifier (surfaceClassifier → classBody)
+// reads the true class. Never route a word to an immersion it does not name.
 export function classifyGluingWord(
   pairings: BoundaryPairing[],
   faceEdgeCount: number,
@@ -121,7 +139,7 @@ export function classifyGluingWord(
   if (!opposite) return null;
   const reversingCount = pairings.filter((p) => p.mode === 'reversing').length;
   if (pairings.length === 1) return reversingCount === 0 ? 'cylinder' : 'mobius';
-  if (pairings.length === 2) {
+  if (pairings.length === 2 && n === 4) {
     if (reversingCount === 0) return 'torus';
     if (reversingCount === 1) return 'klein';
     return 'rp2';

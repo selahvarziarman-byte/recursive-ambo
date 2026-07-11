@@ -256,6 +256,12 @@ export const manuscriptDefaults = {
       // one hue per identified face-pair (three pairs on T³) — manuscript inks
       markColors: ['#b0561b', '#3e6db4', '#6d8f3e'],
     },
+    // P-IMMERSE — the honest non-manifold flag: WHICH edges are junctions is
+    // the classifier's slot-count reading (>2 face wedges); the knob is ink only.
+    junction: {
+      color: '#8a2f24', // the junction overdraw — a warning red-brown, never a generator ink
+      lineWidth: 3.4, // px — heavier than construction so the flaw is unmissable
+    },
     // Phase 3a — the operating chrome. Placement/pacing craft only; the
     // OPERATIONS themselves are the committed PlaygroundOperation registry
     // (writtenFormModel) — no knob invents or alters a transform.

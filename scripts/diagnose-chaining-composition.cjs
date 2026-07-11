@@ -27,7 +27,10 @@
 //       run); parallel identified edge-classes → deferred (the carried-edge
 //       correspondence is ambiguous); the v0 word classifier ABSTAINS on
 //       quotient parents (patch fallback, no immersion lie); the manuscript
-//       runs the engine but refuses to DRAW bookkeeping positions (fail-honest).
+//       runs the engine and draws the honest CLASS BODY (P-IMMERSE 2026-07-11
+//       — the disclosed render gap CLOSED: bookkeeping positions are still
+//       never drawn; the body is a self-certifying representative of the
+//       certified class carrying the committed Option-B generators).
 //
 // Anti-mock: requiring the REAL TS modules through the transpile hook is the guard.
 
@@ -247,10 +250,15 @@ check('§5 the v0 word classifier ABSTAINS on a quotient parent face: the chaine
 check('§5 the preview classifier abstains too (surface null on a quotient face) while the trace χ/w₁ still speak',
   preview.ok && preview.preview.surface === null);
 const chainWritten = applyPlaygroundOperationTo('glue-cylinder', born1, sq, 90, 8);
-check('§5 the manuscript RUNS the engine (registry canApply TRUE with the parent) but refuses to DRAW bookkeeping positions — fail-honest, never a crash, never a mock',
+// P-IMMERSE (2026-07-11, disclosed): the fail-honest render GAP is CLOSED — the
+// manuscript still never draws bookkeeping positions; the patch-routed chain now
+// renders the honest CLASS BODY (classified from the certified invariants; the
+// re-glued seam pair counts once, so this chain composes to the cylinder class).
+check('§5 the manuscript RUNS the engine (registry canApply TRUE with the parent) and draws the CLASS BODY — bookkeeping positions still never drawn (P-IMMERSE; this used to refuse)',
   getPlaygroundOperation('glue-cylinder').canApply(ctxOf(born1, sq)) === true &&
-  !chainWritten.ok && /refusing to draw/.test(chainWritten.reason));
-note(`manuscript render gap (disclosed): ${chainWritten.ok ? '—' : chainWritten.reason.slice(chainWritten.reason.indexOf('routes to'))}`);
+  chainWritten.ok && chainWritten.born.render.mode === 'classBody' &&
+  chainWritten.born.render.model.components[0].label === 'genus 0 · 2 boundary circles');
+note(`manuscript chained render (P-IMMERSE): "${chainWritten.ok ? chainWritten.born.title : '—'}"`);
 
 console.log(
   failures === 0

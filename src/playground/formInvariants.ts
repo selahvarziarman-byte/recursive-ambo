@@ -7,7 +7,12 @@
 //   · genus / cross-caps — ARITHMETIC on (χ, orientability) for CLOSED certified
 //     surfaces only (g = (2−χ)/2 orientable; k = 2−χ non-orientable); anything
 //     open, non-manifold, or un-certified reads "open / n-a" — no fake closed
-//     classification.
+//     classification. P-IMMERSE flag sweep (2026-07-11, sanctioned): the closed
+//     arithmetic also assumes CONNECTEDNESS — χ is additive, so a DISJOINT
+//     union would fabricate a single class (two disjoint tori, χ=0, read
+//     "genus 1"); a disconnected complex now reads an honest
+//     "n-a (disconnected — N components; classify per component)" instead.
+//     Connected readings are byte-identical to before.
 //
 // The faithful complex is obtained honestly or not at all:
 //   'direct'    — the shape's cells bridge-translate cleanly (unique endpoint
@@ -104,6 +109,30 @@ function tryDirectComplex(shape: Shape): AssembledComplex | null {
   };
 }
 
+// P-IMMERSE flag sweep (2026-07-11, sanctioned): the component count over the
+// complex's 1-skeleton (the level1Betti union-find idiom, expressed for the
+// complex) — the closed classification arithmetic below is only valid on a
+// CONNECTED surface, and this is the gate that keeps a disjoint union from
+// fabricating a single class. Deliberately local: the committed certifier
+// stays layered below the manuscript classifier, which owns the richer
+// per-component classification.
+function complexComponentCount(complex: AssembledComplex): number {
+  const parent = new Map<string, string>();
+  const find = (x: string): string => {
+    if (!parent.has(x)) parent.set(x, x);
+    let root = x;
+    while (parent.get(root) !== root) root = parent.get(root) as string;
+    return root;
+  };
+  for (const vertex of complex.vertices) find(vertex);
+  for (const edge of complex.edges) {
+    parent.set(find(edge.u), find(edge.v));
+  }
+  const roots = new Set<string>();
+  for (const vertex of complex.vertices) roots.add(find(vertex));
+  return roots.size;
+}
+
 // Boundary reading over the complex: an interior edge sits in exactly TWO face
 // slots; one slot = a free (rim) edge; more than two = non-manifold incidence.
 function boundaryOf(complex: AssembledComplex): 'closed' | 'open' | 'non-manifold' {
@@ -182,11 +211,21 @@ export function readFormInvariants(shape: Shape, parent: Shape | null = null): F
   const { cert, debug } = analyzeGlobalW1(complex);
   const boundary = boundaryOf(complex);
 
+  // P-IMMERSE flag sweep (2026-07-11, sanctioned): disconnection is detected
+  // BEFORE the closed class arithmetic — χ is additive over components, so the
+  // single-class formulas below would fabricate a class a disjoint union does
+  // not have (two disjoint tori: χ=0 → "genus 1"). The refusal names the
+  // component count; the per-component classification lives in the manuscript
+  // classifier. Connected forms take exactly the branches they always took.
+  const components = complexComponentCount(complex);
+
   let classification: string;
   if (boundary === 'non-manifold') {
     classification = 'n-a (non-manifold edge incidence)';
   } else if (boundary === 'open') {
     classification = 'open / n-a'; // no fake closed classification
+  } else if (components > 1) {
+    classification = `n-a (disconnected — ${components} components; classify per component)`;
   } else if (!cert.nonOrientable) {
     const twoMinusChi = 2 - chi;
     classification =

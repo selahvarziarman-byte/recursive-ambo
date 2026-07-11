@@ -12,6 +12,11 @@
 // This component adds NO mark of its own: it renders exactly the polylines
 // given (b₁=0 callers pass none and the drawing stays bare, unchanged).
 // Still NO silhouette hull (flat/polyhedral starter craft; designer refines).
+//
+// P-IMMERSE §5 (the honest non-manifold flag): when the caller passes
+// `junction` — the CLASSIFIER's own junction edge segments (>2 face wedges)
+// — they overdraw in the junction ink, two passes, so the flaw is unmissable.
+// Which edges are junctions is the model's reading; the ink is craft.
 
 import { useMemo } from 'react';
 import { Line } from '@react-three/drei';
@@ -59,11 +64,13 @@ export function InkedPlainForm({
   shape,
   craft,
   generators,
+  junction,
   position = [0, 0, 0],
 }: {
   shape: Shape;
   craft: InkedFormCraft;
   generators?: CertifiedGenerator[]; // the certified Option-B basis (optionBModel), verbatim
+  junction?: { segments: Vec3[][]; color: string; lineWidth: number }; // the classifier's junction edges, marked
   position?: Vec3;
 }) {
   const body = useMemo(() => buildBodyGeometry(shape), [shape]);
@@ -147,6 +154,26 @@ export function InkedPlainForm({
             color={line.ink === 'b' ? craft.generatorColorB : craft.generatorColorA}
             lineWidth={craft.generatorLineWidth}
             renderOrder={10}
+          />
+        </group>
+      ))}
+      {(junction?.segments ?? []).map((segment, k) => (
+        <group key={`junction:${k}`}>
+          <Line
+            points={segment.map((p) => [...p] as [number, number, number])}
+            color={junction ? junction.color : '#000000'}
+            lineWidth={junction ? junction.lineWidth : 1}
+            transparent
+            opacity={0.4}
+            depthTest={false}
+            depthWrite={false}
+            renderOrder={11}
+          />
+          <Line
+            points={segment.map((p) => [...p] as [number, number, number])}
+            color={junction ? junction.color : '#000000'}
+            lineWidth={junction ? junction.lineWidth : 1}
+            renderOrder={12}
           />
         </group>
       ))}

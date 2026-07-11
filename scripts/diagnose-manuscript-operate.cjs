@@ -19,8 +19,9 @@
 //     getDisabledReason's text, never thrown at the UI. Chaining onto a born
 //     quotient face is RULED (Q-M2 unfreeze): the ENGINE runs the composed
 //     word (ratified in diagnose-chaining-composition), and the manuscript
-//     fail-honestly refuses to DRAW the patch-routed born (bookkeeping
-//     positions — the disclosed render gap), never a crash.
+//     draws the honest CLASS BODY for the patch-routed born (P-IMMERSE
+//     2026-07-11 — the disclosed render gap CLOSED; bookkeeping positions
+//     are still never drawn: the body is a self-certifying representative).
 //   · Sources are never mutated (derive-only): the target square is
 //     byte-unchanged after every operation.
 
@@ -175,14 +176,17 @@ const square = invokePrimitive('square', 2);
     !torusOnPentagon.ok && torusOnPentagon.reason === committedReason && /exactly 4/.test(torusOnPentagon.reason));
   const cylinderBorn = applyPlaygroundOperationTo('glue-cylinder', square.shape, null, 42, R);
   const chain = applyPlaygroundOperationTo('glue-cylinder', cylinderBorn.born.shape, square.shape, 43, R);
-  // Q-M2 unfreeze: the ENGINE now allows and runs the chain (composition of
-  // identifications — ratified in diagnose-chaining-composition); the born
-  // form routes 'patch' (quotient bookkeeping positions) and THIS model
-  // refuses to draw it — fail-honest in the chrome, never a crash.
-  check('chaining onto a born quotient face: the engine ALLOWS (Q-M2), the manuscript refuses only the DRAWING (patch route, fail-honest)',
+  // Q-M2 unfreeze: the ENGINE allows and runs the chain (composition of
+  // identifications — ratified in diagnose-chaining-composition). P-IMMERSE
+  // (2026-07-11, disclosed): the render gap is CLOSED — the patch-routed born
+  // now draws the honest CLASS BODY (the certified class + the committed
+  // Option-B generators on a self-certifying representative); bookkeeping
+  // positions are still never drawn.
+  check('chaining onto a born quotient face: the engine ALLOWS (Q-M2) and the manuscript draws the CLASS BODY (P-IMMERSE — it used to refuse the drawing)',
     getPlaygroundOperation('glue-cylinder').canApply(
       operationContextFor(cylinderBorn.born.shape, square.shape)) === true &&
-    !chain.ok && /refusing to draw/.test(chain.reason));
+    chain.ok && chain.born.render.mode === 'classBody' &&
+    chain.born.render.model.components[0].label === 'genus 0 · 2 boundary circles');
   const dualOnDisk = applyPlaygroundOperationTo('dual', square.shape, null, 44, R);
   const dualReason = getPlaygroundOperation('dual').getDisabledReason(operationContextFor(square.shape, null));
   check('dual on a bounded disk: refused with the committed preview reason',
