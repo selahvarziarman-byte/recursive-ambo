@@ -442,16 +442,41 @@ const guarded = [
   'src/manuscript/specimenModel.ts',
   'src/manuscript/genesisModel.ts',
 ];
+// CR-INSENSITIVE comparison (mothership-ruled fix, 2026-07-11): the old
+// `git diff` idiom was line-ending-sensitive and FALSE-FAILED on CRLF-drifted
+// checkouts (three consecutive audits cried wolf on incidenceTraceRegistry).
+// Strip CR from BOTH sides — the HEAD blob and the working file — and compare
+// content. The guard's TEETH are self-tested right below: it must still fail
+// on a genuine one-character edit (a guard that cannot fail is worse than one
+// that false-fails).
+const crStrip = (s) => s.replace(/\r/g, '');
+const headContentOf = (file) =>
+  execSync(`git show HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
 let dirty = [];
 try {
-  const out = execSync(`git diff --name-only HEAD -- ${guarded.join(' ')}`, { cwd: repoRoot, encoding: 'utf8' }).trim();
-  dirty = out ? out.split(/\r?\n/) : [];
+  for (const file of guarded) {
+    const head = crStrip(headContentOf(file));
+    const work = crStrip(fs.readFileSync(path.join(repoRoot, file), 'utf8'));
+    if (head !== work) dirty.push(file);
+  }
 } catch (e) {
-  dirty = [`git failed: ${e.message}`];
+  dirty = [`guard failed to read: ${e.message}`];
 }
-check('immersions · globalW1 · link gate · engine · Option B · InkedForm/InkedDomain · worldModel: all byte-unchanged vs HEAD (formInvariants/bornFormRouting carry the SANCTIONED sweep edits; playgroundOperations/customGluing the SANCTIONED single-face gate — each ratified in its own diagnostic)',
+check('immersions · globalW1 · link gate · engine · Option B · InkedForm/InkedDomain · worldModel: all byte-unchanged vs HEAD, CR-insensitively (formInvariants/bornFormRouting carry the SANCTIONED sweep edits; playgroundOperations/customGluing the SANCTIONED single-face gate — each ratified in its own diagnostic)',
   dirty.length === 0);
 if (dirty.length) note(`dirty: ${dirty.join(', ')}`);
+// THE GUARD STILL BITES (the mandated self-test): a synthetic one-character
+// content change IN MEMORY must fail the comparison; the true content must
+// pass even when re-expressed with CRLF endings (the false-fail is dead).
+const sentinel = 'src/lib/incidenceTraceRegistry.ts'; // the very file that cried wolf
+const sentinelHead = crStrip(headContentOf(sentinel));
+const flipAt = 100;
+const mutated = sentinelHead.slice(0, flipAt) + (sentinelHead[flipAt] === 'X' ? 'Y' : 'X') + sentinelHead.slice(flipAt + 1);
+check('the fixed guard still BITES: a genuine one-character edit (synthesized in memory) FAILS the comparison, on a file that stays guarded',
+  guarded.includes(sentinel) && crStrip(mutated) !== sentinelHead && mutated.length === sentinelHead.length);
+check('…and never false-fails again: the true content passes both as-is AND re-expressed with CRLF line endings',
+  crStrip(sentinelHead.replace(/\n/g, '\r\n')) === sentinelHead &&
+  crStrip(fs.readFileSync(path.join(repoRoot, sentinel), 'utf8')) === sentinelHead);
 check('the splitter sees ONE component on every closed body above (sanity of the component machinery)',
   splitComplexComponents(acquireFaithfulComplex(fc.body, null).complex).length === 1 &&
   splitComplexComponents(acquireFaithfulComplex(n3c.body, null).complex).length === 1);

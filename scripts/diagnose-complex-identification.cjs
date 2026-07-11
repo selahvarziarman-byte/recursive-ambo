@@ -321,16 +321,34 @@ const guarded = [
   'src/manuscript/inkedFormModel.ts',
   'src/manuscript/optionBModel.ts',
 ];
+// CR-INSENSITIVE comparison (mothership-ruled fix, 2026-07-11): strip CR from
+// BOTH sides (HEAD blob + working file) before comparing — a CRLF-drifted
+// checkout must not false-fail the guard. The teeth are self-tested below.
+const crStrip = (s) => s.replace(/\r/g, '');
+const headContentOf = (file) =>
+  execSync(`git show HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
 let dirty = [];
 try {
-  const out = execSync(`git diff --name-only HEAD -- ${guarded.join(' ')}`, { cwd: repoRoot, encoding: 'utf8' }).trim();
-  dirty = out ? out.split(/\r?\n/) : [];
+  for (const file of guarded) {
+    const head = crStrip(headContentOf(file));
+    const work = crStrip(fs.readFileSync(path.join(repoRoot, file), 'utf8'));
+    if (head !== work) dirty.push(file);
+  }
 } catch (e) {
-  dirty = [`git failed: ${e.message}`];
+  dirty = [`guard failed to read: ${e.message}`];
 }
-check('word ops · chaining · assemble/connectedSum · cut · certifiers · the gate · the counter: byte-unchanged vs HEAD',
+check('word ops · chaining · assemble/connectedSum · cut · certifiers · the gate · the counter: byte-unchanged vs HEAD, CR-insensitively',
   dirty.length === 0);
 if (dirty.length) note(`dirty: ${dirty.join(', ')}`);
+// THE GUARD STILL BITES (the mandated self-test — do not neuter):
+const sentinel = 'src/lib/incidenceTraceRegistry.ts';
+const sentinelHead = crStrip(headContentOf(sentinel));
+const mutated = sentinelHead.slice(0, 100) + (sentinelHead[100] === 'X' ? 'Y' : 'X') + sentinelHead.slice(101);
+check('the fixed guard still BITES on a genuine one-character in-memory edit — and the true content passes even CRLF-re-expressed',
+  guarded.includes(sentinel) &&
+  crStrip(mutated) !== sentinelHead &&
+  crStrip(sentinelHead.replace(/\n/g, '\r\n')) === sentinelHead &&
+  crStrip(fs.readFileSync(path.join(repoRoot, sentinel), 'utf8')) === sentinelHead);
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

@@ -92,11 +92,16 @@ check('fixture: its selected face has distinct corners — the chain path alone 
 check('every word op refuses the assemble child: canApply === false, all six',
   WORD_OPS.every((id) => getPlaygroundOperation(id).canApply(childCtx) === false));
 const childReason = getPlaygroundOperation('glue-torus').getDisabledReason(childCtx);
-check('the reason is honest and specific: names the count (2 faces), the fundamental-polygon bound, and the complex route',
+// (message REROUTED 2026-07-11 on the mothership's §2c ruling — the general
+// complex-identification op now EXISTS, so the refusal stopped apologizing
+// ("not yet ruled") and became a ROUTE: name the word's honest scope, point
+// at identify / sew-boundary-*. The gate's MECHANICS are unchanged.)
+check('the reason is honest and specific: names the word\'s scope, the count (2 faces), and ROUTES to the complex ops',
   typeof childReason === 'string' &&
-  childReason.includes('fundamental-polygon operation') &&
-  childReason.includes('the form has 2 faces') &&
-  childReason.includes('not yet ruled') &&
+  childReason.includes('addressed to the slots of ONE polygon') &&
+  childReason.includes('COMPLEX (2 faces)') &&
+  childReason.includes('Sew its boundary instead') &&
+  childReason.includes('sew-boundary') &&
   childReason.includes('cut / combine'));
 check('all six word ops speak the SAME family reason on the child',
   WORD_OPS.every((id) => getPlaygroundOperation(id).getDisabledReason(childCtx) === childReason));
@@ -106,7 +111,7 @@ const g2Ctx = ctxOf(genus2);
 check('the 30-face connectedSum genus-2 refuses too — the reason names 30',
   genus2.faces.length === 30 &&
   WORD_OPS.every((id) => getPlaygroundOperation(id).canApply(g2Ctx) === false) &&
-  String(getPlaygroundOperation('glue-cylinder').getDisabledReason(g2Ctx)).includes('the form has 30 faces'));
+  String(getPlaygroundOperation('glue-cylinder').getDisabledReason(g2Ctx)).includes('COMPLEX (30 faces)'));
 let forcedThrew = false;
 try {
   getPlaygroundOperation('glue-torus').execute(g2Ctx);
@@ -117,7 +122,7 @@ check('forcing execute anyway throws LOUDLY (the guard re-checks; no face-discar
 // the custom-glue seam — the same materializer, the same gate
 const customReason = validateCustomPairings(genus2.faces[0], [P(0, 2, 'preserving')], genus2);
 check('the CUSTOM-glue seam refuses the same way: validateCustomPairings returns the identical family reason',
-  customReason === singleFaceGateReason(genus2) && String(customReason).includes('the form has 30 faces'));
+  customReason === singleFaceGateReason(genus2) && String(customReason).includes('COMPLEX (30 faces)'));
 const preview = previewCustomGlue(genus2, genus2.faces[0], [P(0, 2, 'preserving')]);
 check('previewCustomGlue: not ok, same reason (the Apply button is exactly honest)',
   preview.ok === false && preview.reason === customReason);
@@ -125,7 +130,7 @@ let customThrew = false;
 try {
   executeCustomGlue(genus2, genus2.faces[0], [P(0, 2, 'preserving')]);
 } catch (error) {
-  customThrew = /fundamental-polygon operation/.test(String(error.message));
+  customThrew = /addressed to the slots of ONE polygon/.test(String(error.message));
 }
 check('executeCustomGlue throws the gate reason — no custom-word path around the guard', customThrew);
 

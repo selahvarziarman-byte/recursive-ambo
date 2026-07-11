@@ -135,7 +135,8 @@ export const PARALLEL_CLASSES_REASON =
 
 // ---------------------------------------------------------------------------
 // The word-op SINGLE-FACE gate (engineer-chartered, 2026-07-11 — kills a live
-// structural lie). Every op that routes through `materializeSurfaceResult` is
+// structural lie; message rerouted same day on the mothership's §2c ruling).
+// Every op that routes through `materializeSurfaceResult` is
 // FUNDAMENTAL-POLYGON-BOUND at every level: `identifyByPairs` addresses
 // pairings by polygon slot index and computes cellCounts { v, e, f: 1 } (the
 // single polygon — f = 1 hardcoded), and the materializer emits exactly ONE
@@ -143,17 +144,20 @@ export const PARALLEL_CLASSES_REASON =
 // op would return a single-polygon quotient and SILENTLY DISCARD every other
 // face — a child that claims to be the form's offspring but is a fragment of
 // one of its faces (reachable today: the combine gate births a multi-face
-// assemble child and the dock offers the word ops on it). Until the general
-// complex-identification op is ruled (routed to the researcher), these ops
-// refuse multi-face forms OUT LOUD. `cut` / `assemble` / `connectedSum`
-// generalize (they carry the WHOLE complex) and are deliberately NOT gated.
+// assemble child and the dock offers the word ops on it).
+// THE GATE DOES NOT RETIRE now that the general complex-identification op
+// exists (co-ratified): a polygon word (abAB) is SLOT-ADDRESSED to one
+// polygon — on a 30-face genus-2 there is no polygon and the word DENOTES
+// NOTHING. The gate is the word's honest scope, not an implementation gap;
+// its refusal is a ROUTE to the ops that do act on complexes — `identify` /
+// the `sew-boundary-*` registry entries (and `cut` / `assemble` /
+// `connectedSum`, which were never gated: they carry the WHOLE complex).
 // ---------------------------------------------------------------------------
 export function singleFaceGateReason(form: Shape): string | null {
   if (form.faces.length === 1) return null;
   return (
-    `This is a fundamental-polygon operation (it materializes the one identified polygon) — the form has ${form.faces.length} faces. ` +
-    'Operating on a COMPLEX is a different operation and is not yet ruled: the general complex-identification op is in definition (researcher). ' +
-    'Use cut / combine (connected sum) on a complex; they operate on the whole complex.'
+    `A word (e.g. abAB) is addressed to the slots of ONE polygon — this form is a COMPLEX (${form.faces.length} faces), where the word denotes nothing. ` +
+    'Sew its boundary instead: use identify / the sew-boundary-* ops, which act on the whole complex. (Or cut / combine.)'
   );
 }
 
