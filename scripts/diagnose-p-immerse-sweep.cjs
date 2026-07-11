@@ -30,15 +30,16 @@
 //      itself reverse anything (translation map + 'reversing' label = the
 //      SAME manifold; a genuinely reversing pairing needs a REFLECTED map).
 //      Asserted from the source AND re-measured through the committed tower.
-//   §d THE SWEEP IS REAL — the two sanctioned files (and the doc-edited
-//      faceIdentification) ARE modified vs HEAD; the P-IMMERSE §i guard list
-//      no longer pins them (asserted from the diagnostic's own source).
+//   §d THE SWEEP IS REAL — the three seams CARRY their edits
+//      (content-asserted, so the check holds before AND after the commit —
+//      a working-tree `git diff` check would invert the moment Arman
+//      commits); the P-IMMERSE §i guard list no longer pins the sanctioned
+//      files (asserted from the diagnostic's own source).
 //
 // Anti-mock: requiring the REAL TS modules through the transpile hook is the guard.
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { execSync } = require('node:child_process');
 const ts = require('typescript');
 
 require.extensions['.ts'] = (module, filename) => {
@@ -228,18 +229,14 @@ check('measured: the REFLECTED map is what actually reverses (non-orientable, H�
 
 // ===== [d] the sweep is real (guard bookkeeping) ================================
 console.log('\n----- [d] the sanctioned edits are real; the guard list reflects them -----');
-let touched = [];
-try {
-  const out = execSync(
-    'git diff --name-only HEAD -- src/playground/formInvariants.ts src/playground/bornFormRouting.ts src/lib/faceIdentification.ts',
-    { cwd: repoRoot, encoding: 'utf8' },
-  ).trim();
-  touched = out ? out.split(/\r?\n/) : [];
-} catch (e) {
-  touched = [];
-}
-check('formInvariants · bornFormRouting · faceIdentification are the (only) modules this sweep touched — all three modified vs HEAD',
-  touched.length === 3);
+// content-asserted (NOT a working-tree git check, which would invert the moment
+// the set is committed): each seam carries its sweep edit verbatim.
+const fiSrc = fs.readFileSync(path.join(repoRoot, 'src/playground/formInvariants.ts'), 'utf8');
+const bfrSrc = fs.readFileSync(path.join(repoRoot, 'src/playground/bornFormRouting.ts'), 'utf8');
+check('the three seams CARRY their edits: the disconnected refusal branch (formInvariants), the 4-gon-only two-pair guard (bornFormRouting), the mode doc line (§c asserted it on faceIdentification)',
+  fiSrc.includes('disconnected — ${components} components; classify per component') &&
+  bfrSrc.includes('pairings.length === 2 && n === 4') &&
+  modeDocRegion.includes('the TOPOLOGY is determined by'));
 const immerseDiag = fs.readFileSync(path.join(repoRoot, 'scripts/diagnose-p-immerse.cjs'), 'utf8');
 check('the diagnose-p-immerse §i byte-guard no longer pins the two sanctioned files (and says why)',
   !immerseDiag.includes("'src/playground/formInvariants.ts',") &&

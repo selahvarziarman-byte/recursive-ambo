@@ -41,11 +41,13 @@
 //      now renders as a classBody genus-1 (it used to THROW).
 //   §i BYTE-GUARDS — the committed immersions, Option B, globalW1, the link
 //      gate, the renderers (InkedForm/InkedDomain), worldModel, and the engine
-//      are unchanged vs HEAD. (`formInvariants` / `bornFormRouting` left the
-//      guard 2026-07-11: the engineer-chartered flag sweep edits them — the
-//      connectivity-honest classification; the v0 map narrowed to its
+//      are unchanged vs HEAD. (Two sanctioned departures, 2026-07-11:
+//      `formInvariants` / `bornFormRouting` left the guard for the flag sweep
+//      — the connectivity-honest classification; the v0 map narrowed to its
 //      PROVABLE domain (two-pair claims 4-gon-only; the ratified single-pair
-//      open path kept) — ratified in diagnose-p-immerse-sweep.cjs.)
+//      open path kept) — ratified in diagnose-p-immerse-sweep.cjs;
+//      `playgroundOperations` / `customGluing` for the word-op single-face
+//      gate — ratified in diagnose-word-op-single-face-gate.cjs.)
 //
 // Anti-mock: requiring the REAL TS modules through the transpile hook is the guard.
 
@@ -418,7 +420,11 @@ console.log('\n----- [i] no-regression: the committed instruments are byte-uncha
 // them (the connectivity-honest classification string; the v0 word map
 // narrowed to its PROVABLE domain — two-pair claims 4-gon-only, the ratified
 // single-pair open path kept). Their new behavior is ratified in
-// diagnose-p-immerse-sweep.cjs; everything else stays guarded.
+// diagnose-p-immerse-sweep.cjs.
+// Word-op single-face gate (2026-07-11, sanctioned): `playgroundOperations.ts`
+// and `customGluing.ts` LEFT this guard too — the engineer-chartered gate
+// makes the fundamental-polygon ops refuse multi-face forms (ratified in
+// diagnose-word-op-single-face-gate.cjs). Everything else stays guarded.
 const guarded = [
   'src/lib/surfaceImmersion.ts',
   'src/lib/globalW1.ts',
@@ -427,8 +433,6 @@ const guarded = [
   'src/lib/connectedSum.ts',
   'src/lib/cutOperation.ts',
   'src/lib/materializeOperation.ts',
-  'src/playground/customGluing.ts',
-  'src/playground/playgroundOperations.ts',
   'src/playground/snapshot.ts',
   'src/manuscript/optionBModel.ts',
   'src/manuscript/inkedFormModel.ts',
@@ -445,7 +449,7 @@ try {
 } catch (e) {
   dirty = [`git failed: ${e.message}`];
 }
-check('immersions · globalW1 · link gate · engine · Option B · InkedForm/InkedDomain · worldModel: all byte-unchanged vs HEAD (formInvariants/bornFormRouting carry the SANCTIONED sweep edits — ratified in diagnose-p-immerse-sweep)',
+check('immersions · globalW1 · link gate · engine · Option B · InkedForm/InkedDomain · worldModel: all byte-unchanged vs HEAD (formInvariants/bornFormRouting carry the SANCTIONED sweep edits; playgroundOperations/customGluing the SANCTIONED single-face gate — each ratified in its own diagnostic)',
   dirty.length === 0);
 if (dirty.length) note(`dirty: ${dirty.join(', ')}`);
 check('the splitter sees ONE component on every closed body above (sanity of the component machinery)',

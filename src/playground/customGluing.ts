@@ -29,6 +29,7 @@ import {
   classifyFaceChainPath,
   degenerateBoundaryReason,
   getAssemblePairDisabledReason,
+  singleFaceGateReason,
   WORD_UNRECOVERABLE_REASON,
 } from './playgroundOperations';
 
@@ -71,6 +72,16 @@ export function validateCustomPairings(
   parentShape?: Shape | null,
 ): string | null {
   if (!face) return 'Select a face to glue.';
+  // Word-op single-face gate (engineer-chartered, 2026-07-11): the custom glue
+  // routes through the SAME fundamental-polygon materializer as the registry
+  // word ops (one identified polygon out; every other face silently discarded)
+  // — a multi-face form refuses with the identical family reason. The gate is
+  // form-level; the committed two-argument (face, pairings) validation calls
+  // cannot check it, but every LIVE seam (preview / execute / the picker UI)
+  // passes the form and is gated here.
+  if (form && form.faces.length !== 1) {
+    return singleFaceGateReason(form);
+  }
   const n = face.vertexIds.length;
   if (new Set(face.vertexIds).size !== n) {
     if (form) {

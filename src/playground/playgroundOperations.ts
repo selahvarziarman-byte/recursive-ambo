@@ -131,6 +131,30 @@ export const WORD_UNRECOVERABLE_REASON =
 export const PARALLEL_CLASSES_REASON =
   'Face carries parallel identified edge-classes (distinct classes sharing both endpoints) — the carried-edge correspondence of a further identification is ambiguous on this cell structure; deferred (subdivide first, ADR 0018, or operate on a face without parallel classes).';
 
+// ---------------------------------------------------------------------------
+// The word-op SINGLE-FACE gate (engineer-chartered, 2026-07-11 — kills a live
+// structural lie). Every op that routes through `materializeSurfaceResult` is
+// FUNDAMENTAL-POLYGON-BOUND at every level: `identifyByPairs` addresses
+// pairings by polygon slot index and computes cellCounts { v, e, f: 1 } (the
+// single polygon — f = 1 hardcoded), and the materializer emits exactly ONE
+// face ("repeats ARE the fundamental polygon"). On a multi-face form such an
+// op would return a single-polygon quotient and SILENTLY DISCARD every other
+// face — a child that claims to be the form's offspring but is a fragment of
+// one of its faces (reachable today: the combine gate births a multi-face
+// assemble child and the dock offers the word ops on it). Until the general
+// complex-identification op is ruled (routed to the researcher), these ops
+// refuse multi-face forms OUT LOUD. `cut` / `assemble` / `connectedSum`
+// generalize (they carry the WHOLE complex) and are deliberately NOT gated.
+// ---------------------------------------------------------------------------
+export function singleFaceGateReason(form: Shape): string | null {
+  if (form.faces.length === 1) return null;
+  return (
+    `This is a fundamental-polygon operation (it materializes the one identified polygon) — the form has ${form.faces.length} faces. ` +
+    'Operating on a COMPLEX is a different operation and is not yet ruled: the general complex-identification op is in definition (researcher). ' +
+    'Use cut / combine (connected sum) on a complex; they operate on the whole complex.'
+  );
+}
+
 export function classifyFaceChainPath(
   face: Face,
   form: Shape,
@@ -230,11 +254,17 @@ export const flipGlueOperation: PlaygroundOperation = {
   description:
     'Self-glue the selected face: each boundary edge to its opposite, reversed — the committed flipGlueFace, materialized into a born form.',
   canApply: (context) =>
-    flipGlueShapeEligible(context.selectedFace) && wordChainReason(context) === null,
+    singleFaceGateReason(context.form) === null &&
+    flipGlueShapeEligible(context.selectedFace) &&
+    wordChainReason(context) === null,
   getDisabledReason: (context) => {
     const { form, selectedFaceId, selectedFace } = context;
     if (!form) return 'No form selected.';
     if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
+    // the single-face gate is FORM-level and fires before any face-level path
+    // (on single-face forms it is null — every existing reason is unchanged)
+    const gateReason = singleFaceGateReason(form);
+    if (gateReason) return gateReason;
     const chainReason = wordChainReason(context);
     if (chainReason) return chainReason;
     // captured BEFORE the type-guard check (its negative branch narrows to never)
@@ -247,7 +277,12 @@ export const flipGlueOperation: PlaygroundOperation = {
   execute: (context) => {
     const { form, selectedFace } = context;
     const classified = wordChainGate(context);
-    if (!flipGlueShapeEligible(selectedFace) || !classified || classified.reason !== null) {
+    if (
+      singleFaceGateReason(form) !== null ||
+      !flipGlueShapeEligible(selectedFace) ||
+      !classified ||
+      classified.reason !== null
+    ) {
       throw new Error('playgroundOperations: flip-glue executed on an ineligible face');
     }
     // Q-M2: the born form's replay-verified birth word composes with the new
@@ -282,11 +317,16 @@ function makeWordOperation(spec: WordOperationSpec): PlaygroundOperation {
     label: spec.label,
     description: spec.description,
     canApply: (context) =>
-      shapeEligible(context.selectedFace) && wordChainReason(context) === null,
+      singleFaceGateReason(context.form) === null &&
+      shapeEligible(context.selectedFace) &&
+      wordChainReason(context) === null,
     getDisabledReason: (context) => {
       const { form, selectedFaceId, selectedFace } = context;
       if (!form) return 'No form selected.';
       if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
+      // the single-face gate is FORM-level and fires before any face-level path
+      const gateReason = singleFaceGateReason(form);
+      if (gateReason) return gateReason;
       const chainReason = wordChainReason(context);
       if (chainReason) return chainReason;
       // captured BEFORE the type-guard check (its negative branch narrows to never)
@@ -299,7 +339,12 @@ function makeWordOperation(spec: WordOperationSpec): PlaygroundOperation {
     execute: (context) => {
       const { form, selectedFace } = context;
       const classified = wordChainGate(context);
-      if (!shapeEligible(selectedFace) || !classified || classified.reason !== null) {
+      if (
+        singleFaceGateReason(form) !== null ||
+        !shapeEligible(selectedFace) ||
+        !classified ||
+        classified.reason !== null
+      ) {
         throw new Error(`playgroundOperations: ${spec.id} executed on an ineligible face`);
       }
       // Q-M2: compose the replay-verified birth word with this op's word (empty
@@ -380,17 +425,38 @@ const wholeFaceReason = (context: PlaygroundOperationContext): string | null => 
   return null;
 };
 
+// collapse routes through `materializeSurfaceResult` (a word op in the gate's
+// sense) — the single-face gate applies; `cut` below stays ungated (it carries
+// the whole complex through `materializeCutResult`).
+const collapseDisabledReason = (context: PlaygroundOperationContext): string | null => {
+  const { form, selectedFaceId, selectedFace } = context;
+  if (!form) return 'No form selected.';
+  if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
+  const gateReason = singleFaceGateReason(form);
+  if (gateReason) return gateReason;
+  const chainReason = wholeFaceChainReason(context);
+  if (chainReason) return chainReason;
+  if (!wholeFaceShapeEligible(selectedFace)) return 'Face needs at least 2 boundary edges.';
+  return null;
+};
+
 export const collapseSphereOperation: PlaygroundOperation = {
   id: 'collapse-sphere',
   label: 'Collapse → Sphere (D²/∂D²)',
   description:
     'Collapse the WHOLE face boundary to one apex — the committed collapseFace (χ=2, the manifold sphere), materialized into a born form.',
   canApply: (context) =>
-    wholeFaceShapeEligible(context.selectedFace) && wholeFaceChainReason(context) === null,
-  getDisabledReason: wholeFaceReason,
+    singleFaceGateReason(context.form) === null &&
+    wholeFaceShapeEligible(context.selectedFace) &&
+    wholeFaceChainReason(context) === null,
+  getDisabledReason: collapseDisabledReason,
   execute: (context) => {
     const { form, selectedFace } = context;
-    if (!wholeFaceShapeEligible(selectedFace) || wholeFaceChainReason(context) !== null) {
+    if (
+      singleFaceGateReason(form) !== null ||
+      !wholeFaceShapeEligible(selectedFace) ||
+      wholeFaceChainReason(context) !== null
+    ) {
       throw new Error('playgroundOperations: collapse-sphere executed on an ineligible face');
     }
     return materializeSurfaceResult(form, selectedFace, collapseFace(form, selectedFace)).shape;
