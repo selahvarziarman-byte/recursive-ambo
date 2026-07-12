@@ -1,0 +1,39 @@
+PLATONIC ENGINE — the DIFFERENTIAL ORACLE for identifyOnComplex · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_DIFFERENTIAL_ORACLE.md` (gitignored):
+
+    8da7daab96521cb1f8196a942c6c87364c0f458df39c3200a8c364ad85e8d839
+
+Sealed 2026-07-12 by the engineer seat. Mothership-chartered as the TOP ITEM.
+
+WHY IT EXISTS. `identifyOnComplex` — the general enactment that runs every
+multi-face sew, every re-sew, and the entire depth-4 generative closure — has
+NEVER been checked against an independent implementation. We believed the
+five-word byte-compare was that check. It was not: at HEAD, `identify()`
+delegates every single-face form to the polygon machinery
+(complexIdentification.ts:601 -> identifyOnSingleFace, returning
+`via: 'committed-word'`). The compare was byte-identical BY CONSTRUCTION. It
+never executed the enactment and could not have failed for ANY enactment. The
+engineer reported that construction as a discovery ("the decisive pin"); the
+mothership canonized it. The instrument recorded its own vacuity in a field
+named `via`, and neither senior asked what it meant.
+
+THE SEAL THEREFORE CARRIES TWO CLAUSES — one for each way we have been fooled:
+
+  CLAUSE 1 — EXECUTE WHAT YOU WITNESS (new, from this failure):
+    A seal must PROVE that the code path it claims to test was actually taken.
+    Every oracle-checked case MUST assert `via === 'general'`. Had this clause
+    existed, the five-word compare would have failed its own assertion on day one.
+
+  CLAUSE 2 — PROVE TRAP-SENSITIVITY, PLURALLY (the standing doctrine, strengthened):
+    One wrong mechanism is not enough. An oracle written by reading the enactment
+    would still catch a DIFFERENT algorithm while faithfully inheriting the
+    enactment's OWN bugs. The oracle must visibly catch a BATTERY of >= 5 distinct
+    deliberate enactment mutations. Any mutation it fails to catch means it
+    inherited the implementation: THE ORACLE IS VOID and must be rewritten from
+    the spec (ADR 0021 §§3-5), never from the code.
+
+A disagreement between oracle and enactment must NEVER be resolved by editing the
+oracle to match. A disagreement is a FINDING — it may mean the enactment has been
+wrong since the day it shipped, which is exactly what this build exists to discover.
