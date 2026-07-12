@@ -34,7 +34,7 @@
 // DERIVE-ONLY · ADDITIVE: committed ops + G5.0 consumed by import; no engine
 // math recomputed here.
 
-import type { Face, FaceId, Shape } from '../types/geometry';
+import type { Face, FaceId, Shape, ShapeId } from '../types/geometry';
 import {
   collapseFace,
   flipGlueFace,
@@ -62,7 +62,42 @@ export interface PlaygroundOperationContext {
   // a QUOTIENT born form's faithful complex is only reachable by replay
   // recovery against its parent (the G5.2 route). Face-targeted ops ignore it.
   parentShape?: Shape | null;
+  // REGISTRY UNBOUNDING (mothership-required, 2026-07-11): the form's FULL
+  // REAL lineage (immediate parent first — `resolveLineage`), matching the
+  // Shape[] the engine's acquisition chain accepts. `parentShape` stays the
+  // immediate parent (the committed one-hop consumers — the Q-M2 chain gate —
+  // are one-hop BY DESIGN and unchanged); acquisition consumers prefer
+  // `ancestry` where present. Never a fabricated list: real ancestors only.
+  ancestry?: Shape[];
 }
+
+// The REAL lineage walk: resolve `genealogy.parentShapeId` recursively through
+// a caller-supplied lookup (the store's forms; the manuscript's page). Returns
+// the ancestor shapes, immediate parent first. Seen-guarded — a broken or
+// CYCLIC lineage terminates with what it could honestly reach (the engine's
+// acquisition then refuses on its own if the chain is short). This walker
+// never fabricates: only shapes the form actually descends from are returned.
+export function resolveLineage(
+  shape: Shape,
+  lookup: (id: ShapeId) => Shape | null | undefined,
+): Shape[] {
+  const lineage: Shape[] = [];
+  const seen = new Set<ShapeId>([shape.id]);
+  let parentId = shape.genealogy.parentShapeId;
+  while (parentId && !seen.has(parentId)) {
+    seen.add(parentId);
+    const parent = lookup(parentId) ?? null;
+    if (!parent) break;
+    lineage.push(parent);
+    parentId = parent.genealogy.parentShapeId;
+  }
+  return lineage;
+}
+
+// the acquisition provisioning an op context carries: the full ancestry where
+// the registry resolved one, else the committed one-hop parent
+const provisioningOf = (context: PlaygroundOperationContext): Shape | Shape[] | null =>
+  context.ancestry ?? context.parentShape ?? null;
 
 export interface PlaygroundOperation {
   id: string;
@@ -493,13 +528,18 @@ export const cutFaceOperation: PlaygroundOperation = {
 // form's faithful complex is recovered by replay against its parent.
 // ---------------------------------------------------------------------------
 
-function faithfulComplexFor(form: Shape, parentShape: Shape | null | undefined): AssembledComplex | undefined {
-  const recovery = recoverBornSurface(form, parentShape ?? null);
+function faithfulComplexFor(
+  form: Shape,
+  provisioning: Shape | Shape[] | null | undefined,
+): AssembledComplex | undefined {
+  const lineage = !provisioning ? [] : Array.isArray(provisioning) ? provisioning : [provisioning];
+  const directParent = lineage.find((s) => s.id === form.genealogy.parentShapeId) ?? null;
+  const recovery = recoverBornSurface(form, directParent);
   if (recovery) return recovery.materialized.complex;
-  // ACQUISITION-CHAIN wiring (2026-07-11): a sewn/cut-born form whose shape the
-  // bridge refuses still resolves through the chain (one-hop ancestry here —
-  // the registry context carries the direct parent)
-  const chained = acquireComplex(form, parentShape ?? null);
+  // ACQUISITION-CHAIN wiring (2026-07-11; UNBOUNDED 2026-07-11): a sewn/cut-born
+  // form whose shape the bridge refuses resolves through the chain — with the
+  // FULL ancestry where the registry resolved one (the registry unbounding)
+  const chained = acquireComplex(form, lineage);
   return chained ? chained.complex : undefined;
 }
 
@@ -509,15 +549,15 @@ export const surfaceDualOperation: PlaygroundOperation = {
   description:
     'The n=2 Poincaré dual of a sound closed surface — faces↔vertices, edges self-paired; χ/w₁/genus preserved; M** = M. Refuses bounded/non-manifold forms.',
   canApply: (context) =>
-    previewSurfaceDual(context.form, { complex: faithfulComplexFor(context.form, context.parentShape) }).ok,
+    previewSurfaceDual(context.form, { complex: faithfulComplexFor(context.form, provisioningOf(context)) }).ok,
   getDisabledReason: (context) => {
     const probe = previewSurfaceDual(context.form, {
-      complex: faithfulComplexFor(context.form, context.parentShape),
+      complex: faithfulComplexFor(context.form, provisioningOf(context)),
     });
     return probe.ok ? null : probe.reason;
   },
   execute: (context) =>
-    surfaceDual(context.form, { complex: faithfulComplexFor(context.form, context.parentShape) }).shape,
+    surfaceDual(context.form, { complex: faithfulComplexFor(context.form, provisioningOf(context)) }).shape,
 };
 
 // ---------------------------------------------------------------------------
@@ -534,18 +574,22 @@ export const surfaceDualOperation: PlaygroundOperation = {
 // sewn by the Q-M2 composed chain — glue/flip-glue on the face).
 // ---------------------------------------------------------------------------
 
-// ACQUISITION-CHAIN wiring (2026-07-11): the eligibility now acquires through
-// the chain (direct → word/cut → identify recovery) with the context's parent
-// as one-hop ancestry — a form BORN of sewing is sew-able again (the closed
-// promise). A single-face quotient keeps its committed route to the word ops.
-function sewEligibilityReason(form: Shape, parentShape: Shape | null = null): string | null {
+// ACQUISITION-CHAIN wiring (2026-07-11; UNBOUNDED same day): the eligibility
+// acquires through the chain (direct → word/cut → identify recovery) with the
+// FULL ancestry the registry resolved — a form BORN of sewing is sew-able
+// again, at any generation. A single-face quotient keeps its committed route
+// to the word ops.
+function sewEligibilityReason(
+  form: Shape,
+  provisioning: Shape | Shape[] | null = null,
+): string | null {
   if (form.faces.length === 1) {
     const direct = acquireFaithfulComplex(form, null);
     if (!direct || direct.source !== 'direct') {
       return 'Sewing reads the explicit complex — a single-face quotient sews its rims through the committed word ops (the composed chain).';
     }
   }
-  const acquired = acquireFaithfulComplex(form, parentShape);
+  const acquired = acquireFaithfulComplex(form, provisioning);
   if (!acquired) {
     return 'The form\'s faithful complex is not acquirable here — provide its parent (the ancestry) so the chain can recover it.';
   }
@@ -568,16 +612,16 @@ function makeSewOperation(mode: IdentifyMode): PlaygroundOperation {
         ? "Identify the form's first two boundary circles orientation-COMPATIBLY (opposite wedge directions on the merged seam) — the general complex identification; the committed gate judges."
         : "Identify the form's first two boundary circles orientation-INCOMPATIBLY (same wedge direction — the flip seam) — the general complex identification; the committed gate judges.",
     canApply: (context) =>
-      Boolean(context.form) && sewEligibilityReason(context.form, context.parentShape ?? null) === null,
+      Boolean(context.form) && sewEligibilityReason(context.form, provisioningOf(context)) === null,
     getDisabledReason: (context) => {
       if (!context.form) return 'No form selected.';
-      return sewEligibilityReason(context.form, context.parentShape ?? null);
+      return sewEligibilityReason(context.form, provisioningOf(context));
     },
     execute: (context) => {
-      if (!context.form || sewEligibilityReason(context.form, context.parentShape ?? null) !== null) {
+      if (!context.form || sewEligibilityReason(context.form, provisioningOf(context)) !== null) {
         throw new Error(`playgroundOperations: sew-boundary-${mode} executed on an ineligible form`);
       }
-      return sewBoundaryCircles(context.form, mode, 0, 1, context.parentShape ?? null).shape;
+      return sewBoundaryCircles(context.form, mode, 0, 1, provisioningOf(context)).shape;
     },
   };
 }

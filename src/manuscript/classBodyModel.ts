@@ -84,7 +84,10 @@ function bodyNamespace(formId: string): string {
   return `clsbody-${h.toString(36)}`;
 }
 
-export function buildClassBodyModel(shape: Shape, parent: Shape | null): ClassBodyModel {
+// REGISTRY UNBOUNDING (2026-07-11): `parent` widens additively to the form's
+// REAL lineage — the classifier's acquisition chain then certifies forms whose
+// complexes need multi-generation replay (single-parent calls byte-identical).
+export function buildClassBodyModel(shape: Shape, parent: Shape | Shape[] | null): ClassBodyModel {
   const classification = classifyForm(shape, parent);
   if (!classification.ok) {
     // the honest flags, verbatim — the chrome surfaces this reason (§5:

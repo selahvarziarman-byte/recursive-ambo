@@ -147,14 +147,23 @@ export function invokePrimitive(catalogueKey: string, seq: number): WrittenForm 
 // the committed operation application (the SAME contract the playground runs)
 // ---------------------------------------------------------------------------
 
-// the canonical manuscript op target: the form's first face (see header)
-export function operationContextFor(shape: Shape, parentShape: Shape | null): PlaygroundOperationContext {
+// the canonical manuscript op target: the form's first face (see header).
+// REGISTRY UNBOUNDING (mothership-required, 2026-07-11): the context carries
+// the form's FULL REAL lineage where the caller resolved one (the view walks
+// it over the page's own shapes) — the acquisition chain then reaches every
+// generation; `parentShape` stays the immediate parent (gen-1 byte-identical).
+export function operationContextFor(
+  shape: Shape,
+  parentShape: Shape | null,
+  ancestry?: Shape[],
+): PlaygroundOperationContext {
   const face = shape.faces[0] ?? null;
   return {
     form: shape,
     selectedFaceId: face ? face.id : null,
     selectedFace: face,
     parentShape,
+    ...(ancestry ? { ancestry } : {}),
   };
 }
 
@@ -169,12 +178,13 @@ export interface OperationAvailability {
 export function operationAvailabilityFor(
   shape: Shape | null,
   parentShape: Shape | null,
+  ancestry?: Shape[],
 ): OperationAvailability[] {
   return PLAYGROUND_OPERATIONS.map((op) => {
     if (!shape) {
       return { id: op.id, label: op.label, description: op.description, enabled: false, reason: 'Select a form first.' };
     }
-    const context = operationContextFor(shape, parentShape);
+    const context = operationContextFor(shape, parentShape, ancestry);
     const enabled = op.canApply(context);
     return {
       id: op.id,
@@ -196,17 +206,21 @@ export function applyPlaygroundOperationTo(
   targetParent: Shape | null,
   seq: number,
   resolution: number,
+  targetAncestry?: Shape[],
 ): ApplyResult {
   const operation = getPlaygroundOperation(operationId); // the committed registry — throws on unknown ids
-  const context = operationContextFor(targetShape, targetParent);
+  const context = operationContextFor(targetShape, targetParent, targetAncestry);
   if (!operation.canApply(context)) {
     return { ok: false, reason: operation.getDisabledReason(context) ?? 'Not applicable to this form.' };
   }
   let bornShape: Shape;
   let render: WrittenRender;
+  // the born child's ancestry = its target plus the target's own lineage —
+  // the render/certification acquisition then reaches every generation
+  const bornAncestry = [targetShape, ...(targetAncestry ?? (targetParent ? [targetParent] : []))];
   try {
     bornShape = operation.execute(context); // ← THE COMMITTED CALL, verbatim
-    render = routeWrittenRender(bornShape, targetShape, resolution);
+    render = routeWrittenRender(bornShape, bornAncestry, resolution);
   } catch (error) {
     // a contract surprise (canApply true but the engine refused) surfaces
     // verbatim — fail-honest in the chrome, never a crash, never a mock
@@ -238,15 +252,25 @@ export function applyPlaygroundOperationTo(
 // render routing — the committed routeBornForm decides; we refuse bookkeeping
 // ---------------------------------------------------------------------------
 
-export function routeWrittenRender(born: Shape, parent: Shape | null, resolution: number): WrittenRender {
-  const route = routeBornForm(born, parent);
+export function routeWrittenRender(
+  born: Shape,
+  parent: Shape | Shape[] | null,
+  resolution: number,
+): WrittenRender {
+  // REGISTRY UNBOUNDING (2026-07-11): `parent` widens additively to the born
+  // form's REAL lineage (immediate parent first). The committed one-hop
+  // consumers (routeBornForm's replay) take the direct parent exactly as
+  // before; the acquisition consumers take the whole chain.
+  const lineage = parent === null ? [] : Array.isArray(parent) ? parent : [parent];
+  const directParent = lineage.find((s) => s.id === born.genealogy.parentShapeId) ?? null;
+  const route = routeBornForm(born, directParent);
   if (route.kind === 'immersion') {
     // the committed replay-verified word → the full certified inked model
     return { mode: 'immersion', model: buildInkedFormModel({ surface: route.surface, resolution }) };
   }
   if (route.kind === 'direct' && born.faces.length === 0) {
     // the cut-born skeleton: real pass-through positions, level-1 H₁
-    const invariants = readFormInvariants(born);
+    const invariants = readFormInvariants(born, lineage);
     return {
       mode: 'skeleton',
       model: {
@@ -261,13 +285,15 @@ export function routeWrittenRender(born: Shape, parent: Shape | null, resolution
   // real constructed positions (dual-born; direct with faces) → plain ink
   // (surfaceDual writes operation 'dualization' with REAL barycentric positions)
   if (route.kind === 'direct' || born.genealogy.operation === 'dualization' || born.genealogy.operation === 'seed') {
-    const invariants = readFormInvariants(born);
+    // the lineage rides into the readout (a bridge-refused CUT child certifies
+    // through the chain; direct-readable forms read identically to before)
+    const invariants = readFormInvariants(born, lineage);
     // P-IMMERSE §5: a non-manifold construction renders ITSELF (real positions)
     // with its junction edge classes MARKED — the classifier's own slot reading
     // names them; a form whose complex cannot even bridge simply carries none.
     let junctionEdgeIds: string[] | undefined;
     if (invariants.boundary === 'non-manifold') {
-      const acquired = acquireFaithfulComplex(born, parent);
+      const acquired = acquireFaithfulComplex(born, lineage);
       if (acquired) {
         const ids = readBoundary(acquired.complex).junctionEdgeIds;
         if (ids.length > 0) junctionEdgeIds = ids;
@@ -289,7 +315,7 @@ export function routeWrittenRender(born: Shape, parent: Shape | null, resolution
   // (non-manifold / unclassifiable χ / un-certified) the refusal throws
   // verbatim and the chrome surfaces it — never a fabricated class, never
   // bookkeeping positions drawn.
-  return { mode: 'classBody', model: buildClassBodyModel(born, parent) };
+  return { mode: 'classBody', model: buildClassBodyModel(born, lineage) };
 }
 
 // ---------------------------------------------------------------------------

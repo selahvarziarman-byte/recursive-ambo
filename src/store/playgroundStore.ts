@@ -6,6 +6,7 @@ import {
   executeAssemblePair,
   getAssemblePairDisabledReason,
   getPlaygroundOperation,
+  resolveLineage,
 } from '../playground/playgroundOperations';
 import {
   executeAssembleWithEdges,
@@ -213,14 +214,18 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
         form.shape.faces.find((face) => face.id === state.selectedFaceId)) ||
       null;
     const operation = getPlaygroundOperation(operationId);
+    // REGISTRY UNBOUNDING (mothership-required, 2026-07-11): walk the REAL
+    // lineage chain through the store's forms (never the store's population —
+    // ancestors only) and pass the FULL ancestry; the immediate parent rides
+    // `parentShape` exactly as before (gen-1 behavior byte-identical).
+    const ancestry = resolveLineage(form.shape, (id) => state.forms[id]?.shape);
     const context = {
       form: form.shape,
       selectedFaceId: state.selectedFaceId,
       selectedFace,
       // Q6 — whole-form ops (dual) may need the parent for quotient recovery
-      parentShape: form.shape.genealogy.parentShapeId
-        ? state.forms[form.shape.genealogy.parentShapeId]?.shape ?? null
-        : null,
+      parentShape: ancestry[0] ?? null,
+      ancestry,
     };
     if (!operation.canApply(context)) {
       throw new Error(
@@ -248,10 +253,11 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
         form.shape.faces.find((face) => face.id === state.selectedFaceId)) ||
       null;
     // Q-M2 — chaining onto a born quotient face composes with the birth word,
-    // recovered by replay against the parent (same provisioning as the registry ops)
-    const parentShape = form.shape.genealogy.parentShapeId
-      ? state.forms[form.shape.genealogy.parentShapeId]?.shape ?? null
-      : null;
+    // recovered by replay against the parent. REGISTRY UNBOUNDING (2026-07-11):
+    // the parent is the head of the REAL lineage walk (identical to the old
+    // one-hop lookup when the parent is in the store — the custom-glue path is
+    // polygon-domain and one-hop BY DESIGN, but the walk is one code path).
+    const parentShape = resolveLineage(form.shape, (id) => state.forms[id]?.shape)[0] ?? null;
     const reason = validateCustomPairings(selectedFace, pairings, form.shape, parentShape);
     if (reason) {
       throw new Error(`playgroundStore: custom glue is not applicable — ${reason}`);

@@ -53,6 +53,7 @@ import {
   readPlainSpecimen,
   type WrittenForm,
 } from './writtenFormModel';
+import { resolveLineage } from '../playground/playgroundOperations';
 import { InkedPlainForm } from './InkedPlainForm';
 import {
   BirthGatePanel,
@@ -579,8 +580,25 @@ export default function ManuscriptView() {
   const bands = d.world.bands;
   const centered = (k: number, n: number, gap: number): number => (k - (n - 1) / 2) * gap;
 
+  // REGISTRY UNBOUNDING (2026-07-11): the page's shape lookup — the REAL
+  // lineage walk resolves each target's full ancestry over the world's and
+  // the written forms' shapes (parents included), never a fabricated list.
+  const shapeById = useMemo(() => {
+    const map = new Map<string, Shape>();
+    world.dim1.forEach((m) => map.set(m.shape.id, m.shape));
+    world.dim2.forEach((m) => map.set(m.immersion.shape.id, m.immersion.shape));
+    world.dim3.forEach((m) => map.set(m.shape.id, m.shape));
+    written.forEach((w) => {
+      map.set(w.form.shape.id, w.form.shape);
+      if (w.form.parentShape) map.set(w.form.parentShape.id, w.form.parentShape);
+    });
+    return map;
+  }, [world, written]);
+
   const targetFor = useCallback(
-    (id: string | null): { shape: Shape; parent: Shape | null; title: string; home: [number, number, number] } | null => {
+    (
+      id: string | null,
+    ): { shape: Shape; parent: Shape | null; ancestry: Shape[]; title: string; home: [number, number, number] } | null => {
       if (!id) return null;
       const [band, key] = id.split(':');
       if (band === 'dim1') {
@@ -590,6 +608,7 @@ export default function ManuscriptView() {
         return {
           shape: m.shape,
           parent: null,
+          ancestry: [],
           title: m.title,
           home: [centered(k, world.dim1.length, rows.dim1Spacing * scaleCtl.dim1Scale), rows.dim1Y, 0],
         };
@@ -601,6 +620,7 @@ export default function ManuscriptView() {
         return {
           shape: m.immersion.shape,
           parent: null,
+          ancestry: [],
           title: DIM2_TITLES[m.surface] ?? m.surface,
           home: [centered(k, world.dim2.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2), rows.dim2Y, 0],
         };
@@ -612,26 +632,35 @@ export default function ManuscriptView() {
         return {
           shape: m.shape,
           parent: null,
+          ancestry: [],
           title: m.title,
           home: [centered(k, world.dim3.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0],
         };
       }
       const entry = written.find((w) => w.form.id === key);
-      return entry
-        ? { shape: entry.form.shape, parent: entry.form.parentShape, title: entry.form.title, home: entry.home }
-        : null;
+      if (!entry) return null;
+      // the REAL lineage walk (registry unbounding): the full ancestor chain
+      // over the page's own shapes — the acquisition reaches every generation
+      const ancestry = resolveLineage(entry.form.shape, (shapeId) => shapeById.get(shapeId));
+      return {
+        shape: entry.form.shape,
+        parent: entry.form.parentShape,
+        ancestry,
+        title: entry.form.title,
+        home: entry.home,
+      };
     },
-    [world, written, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing],
+    [world, written, shapeById, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing],
   );
 
   const availability = useMemo(() => {
     const target = targetFor(selected);
-    return operationAvailabilityFor(target?.shape ?? null, target?.parent ?? null);
+    return operationAvailabilityFor(target?.shape ?? null, target?.parent ?? null, target?.ancestry);
   }, [selected, targetFor]);
   const menuAvailability = useMemo(() => {
     if (!formMenu) return [];
     const target = targetFor(formMenu.id);
-    return operationAvailabilityFor(target?.shape ?? null, target?.parent ?? null);
+    return operationAvailabilityFor(target?.shape ?? null, target?.parent ?? null, target?.ancestry);
   }, [formMenu, targetFor]);
 
   const applyOp = useCallback(
@@ -644,6 +673,7 @@ export default function ManuscriptView() {
         target.parent,
         seqRef.current,
         layoutCtl.resolution,
+        target.ancestry,
       );
       closeMenus();
       if (!result.ok) {
