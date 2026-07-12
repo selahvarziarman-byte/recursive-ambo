@@ -90,6 +90,11 @@ export interface WrittenForm {
   title: string;
   shape: Shape; // the REAL committed Shape (invoked or born) — never a mock
   parentShape: Shape | null; // the op source (null for invoked primitives)
+  // COMBINE IS THE CONNECTED SUM (2026-07-12, additive): a MULTI-parent birth
+  // (connect-sum — `parentShapeId` null by design) carries BOTH parents here,
+  // committed argument order, so the genesis story reaches them even off-page
+  // (one-of-two entering the story is the designer's forbidden lie).
+  parentShapes?: Shape[];
   opId: string | null; // the committed operation id that birthed it (null = invoked)
   provenance: string; // human line for the card ("invoked primitive" / the op label)
   render: WrittenRender;

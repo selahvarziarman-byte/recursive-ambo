@@ -151,12 +151,71 @@ export function FormOpsMenu({
 
 // ---------------------------------------------------------------------------
 // 3b — the BIRTH GATE panel (two forms selected → the committed legality,
-// visible: the combine affordance when legal, the committed reason when not)
+// visible: the combine affordance when legal, the committed reason when not).
+// COMBINE IS THE CONNECTED SUM (2026-07-12): the door runs the co-ratified
+// connectedSum, and THE PERSON PICKS THE PORT FACE ON EACH FORM — the gate
+// refuses by name until both are picked; there is NO default (faces[0] would
+// be an array-order artifact) and NO mode choice (inert: the seam separates).
 // ---------------------------------------------------------------------------
+
+export interface PortFaceChoice {
+  id: string; // the committed face id — the value the door consumes
+  label: string; // honest display (the id + corner count)
+}
+
+function PortFacePicker({
+  formTitle,
+  faces,
+  picked,
+  onPick,
+  paper,
+}: {
+  formTitle: string;
+  faces: PortFaceChoice[];
+  picked: string;
+  onPick: (faceId: string) => void;
+  paper: ChromePaper;
+}) {
+  return (
+    <label style={{ display: 'block', marginTop: 7, fontSize: 11.5 }}>
+      <span style={{ opacity: 0.7 }}>port face on {formTitle}</span>
+      <select
+        value={picked}
+        onChange={(e) => onPick(e.target.value)}
+        onMouseDown={(e) => e.stopPropagation()}
+        style={{
+          display: 'block',
+          width: '100%',
+          marginTop: 2,
+          padding: '3px 4px',
+          fontFamily: 'ui-monospace, monospace',
+          fontSize: 10.5,
+          background: paper.cardBackground,
+          color: paper.cardInk,
+          border: `1px solid ${paper.cardBorder}`,
+          borderRadius: 3,
+        }}
+      >
+        <option value="">— pick the port face —</option>
+        {faces.map((face) => (
+          <option key={face.id} value={face.id}>
+            {face.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
 
 export function BirthGatePanel({
   aTitle,
   bTitle,
+  aFaces,
+  bFaces,
+  portA,
+  portB,
+  onPickA,
+  onPickB,
   gate,
   paper,
   accent,
@@ -164,6 +223,12 @@ export function BirthGatePanel({
 }: {
   aTitle: string;
   bTitle: string;
+  aFaces: PortFaceChoice[];
+  bFaces: PortFaceChoice[];
+  portA: string; // picked face id ('' = not yet picked — the gate refuses)
+  portB: string;
+  onPickA: (faceId: string) => void;
+  onPickB: (faceId: string) => void;
   gate: BirthGate;
   paper: ChromePaper;
   accent: string;
@@ -188,13 +253,15 @@ export function BirthGatePanel({
       }}
     >
       <div style={{ fontSize: 11, letterSpacing: 1.2, opacity: 0.6, fontVariant: 'small-caps' }}>
-        birth — the legal-combine gate
+        birth — the connect-sum gate
       </div>
       <div style={{ marginTop: 4 }}>
         <b>{aTitle}</b>
-        <span style={{ opacity: 0.65 }}> + </span>
+        <span style={{ opacity: 0.65 }}> # </span>
         <b>{bTitle}</b>
       </div>
+      <PortFacePicker formTitle={aTitle} faces={aFaces} picked={portA} onPick={onPickA} paper={paper} />
+      <PortFacePicker formTitle={bTitle} faces={bFaces} picked={portB} onPick={onPickB} paper={paper} />
       {gate.legal ? (
         <button
           type="button"
@@ -216,7 +283,7 @@ export function BirthGatePanel({
             cursor: 'pointer',
           }}
         >
-          combine — the committed assemble
+          combine — the connected sum
         </button>
       ) : (
         <div

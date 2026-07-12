@@ -404,12 +404,11 @@ const guarded = [
   'src/lib/surfaceImmersion.ts',
   'src/playground/customGluing.ts',
   'src/playground/bornFormRouting.ts',
-  // MULTI-PARENT DAG WALK (engineer-chartered, sanctioned 2026-07-12):
-  // `playgroundOperations.ts` LEFT this guard — the registry-layer
-  // `resolveLineage` walker gained the multi-parent (site-provenance) branch,
-  // ratified in diagnose-multiparent-dag-walk.cjs (single-parent walks
-  // byte-identical; the canonical-wedge engine fix this file witnesses is
-  // untouched).
+  // `playgroundOperations.ts` left this guard for the sanctioned multi-parent
+  // walker edit (2026-07-12, ratified in diagnose-multiparent-dag-walk.cjs)
+  // and was RESTORED the same day once that build reached HEAD (04a1c5f) —
+  // the live entry below guards it again, as it must be.
+  'src/playground/playgroundOperations.ts',
   'src/playground/formInvariants.ts',
   'src/playground/snapshot.ts',
   'src/manuscript/surfaceClassifier.ts',

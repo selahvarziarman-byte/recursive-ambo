@@ -65,7 +65,7 @@ import {
 } from './ManuscriptChrome';
 import {
   birthChild,
-  birthGateFor,
+  combineGateFor,
   footRecord,
   genesisStoryShapes,
   loadUniverseSnapshot,
@@ -433,6 +433,11 @@ export default function ManuscriptView() {
   const [selected, setSelected] = useState<string | null>(null);
   // 3b: the second selection of the combine pair (shift-click)
   const [combineWith, setCombineWith] = useState<string | null>(null);
+  // COMBINE IS THE CONNECTED SUM (2026-07-12): the person's picked PORT FACE
+  // per page form (page key → committed face id). No default is ever taken —
+  // the gate refuses until both sides are picked (faces[0] would be an
+  // array-order artifact in the seam's location).
+  const [portFaces, setPortFaces] = useState<Record<string, string>>({});
   // ----- 3a: written material (invoked + op-born — REAL committed Shapes) ----
   const [written, setWritten] = useState<Array<{ form: WrittenForm; home: [number, number, number] }>>([]);
   const seqRef = useRef(1);
@@ -761,19 +766,37 @@ export default function ManuscriptView() {
       );
   }, [genesis, homeOfShapeId]);
 
-  // ----- 3b: birth (the committed assemble behind the visible gate) ----------
+  // ----- 3b: birth (the co-ratified CONNECTED SUM behind the visible gate; ---
+  // ----- the person picks the port face on each form — never faces[0]) -------
   const combineGate = useMemo(() => {
     if (!selected || !combineWith) return null;
     const a = targetFor(selected);
     const b = targetFor(combineWith);
     if (!a || !b) return null;
-    return { a, b, gate: birthGateFor(a.shape, b.shape) };
-  }, [selected, combineWith, targetFor]);
+    const portFaceA = a.shape.faces.find((face) => face.id === portFaces[selected]) ?? null;
+    const portFaceB = b.shape.faces.find((face) => face.id === portFaces[combineWith]) ?? null;
+    return {
+      a,
+      b,
+      aKey: selected,
+      bKey: combineWith,
+      portFaceA,
+      portFaceB,
+      gate: combineGateFor(a.shape, b.shape, portFaceA, portFaceB),
+    };
+  }, [selected, combineWith, targetFor, portFaces]);
   const handleCombine = useCallback((): void => {
     if (!combineGate) return;
-    const result = birthChild(combineGate.a.shape, combineGate.b.shape, seqRef.current);
+    const result = birthChild(
+      combineGate.a.shape,
+      combineGate.b.shape,
+      seqRef.current,
+      combineGate.portFaceA,
+      combineGate.portFaceB,
+      layoutCtl.resolution,
+    );
     if (!result.ok) {
-      setOpNotice(`assemble: ${result.reason}`);
+      setOpNotice(`connect-sum: ${result.reason}`);
       return;
     }
     seqRef.current += 1;
@@ -789,7 +812,7 @@ export default function ManuscriptView() {
     setSelected(null);
     setBirthCue({ key: seqRef.current, home });
     setOpNotice(null);
-  }, [combineGate]);
+  }, [combineGate, layoutCtl.resolution]);
 
   // ----- P1b: the ambo→manuscript lift channel ------------------------------
   // Drain lifted snapshots onto the shelf through the COMMITTED load — the
@@ -1313,6 +1336,22 @@ export default function ManuscriptView() {
         <BirthGatePanel
           aTitle={combineGate.a.title}
           bTitle={combineGate.b.title}
+          aFaces={combineGate.a.shape.faces.map((face) => ({
+            id: face.id,
+            label: `${face.id} · ${face.vertexIds.length} corners`,
+          }))}
+          bFaces={combineGate.b.shape.faces.map((face) => ({
+            id: face.id,
+            label: `${face.id} · ${face.vertexIds.length} corners`,
+          }))}
+          portA={combineGate.portFaceA?.id ?? ''}
+          portB={combineGate.portFaceB?.id ?? ''}
+          onPickA={(faceId) =>
+            setPortFaces((cur) => ({ ...cur, [combineGate.aKey]: faceId }))
+          }
+          onPickB={(faceId) =>
+            setPortFaces((cur) => ({ ...cur, [combineGate.bKey]: faceId }))
+          }
           gate={combineGate.gate}
           paper={d.paper}
           accent={generatorsCtl.a}

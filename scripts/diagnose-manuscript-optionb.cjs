@@ -95,10 +95,20 @@ const closedFinite = (polyline) =>
   const square = invokePrimitive('square', 10);
   const disk = deriveOptionBGenerators(square.shape);
   check('an invoked square (disk): b₁=0 → ZERO generators', disk.b1 === 0 && disk.generators.length === 0);
-  const other = invokePrimitive('square', 11);
-  const child = birthChild(square.shape, other.shape, 12);
+  // COMBINE IS THE CONNECTED SUM (sanctioned 2026-07-12): the combine door now
+  // runs the co-ratified connectedSum with PICKED port faces — two squares
+  // (single-face) refuse honestly, so the b₁=0 multi-parent fixture is the
+  // ratified door's own: S² # S² = S² (genus 0, b₁=0), ports picked by hand.
+  const { serializeSnapshot: obSer, deserializeSnapshot: obDeser } = req('src/playground/snapshot.ts');
+  const sphereOf = (prefix) => obDeser(obSer(immerseSurface({ surface: 'sphere', resolution: 4 }).shape, prefix)).shape;
+  const sphA = sphereOf('obA');
+  const sphB = sphereOf('obB');
+  // matched 4-corner ports (the sphere's pole faces are triangles — a 3-edge
+  // rim against a 4-edge rim refuses honestly; the picked disks must match)
+  const quadOf = (shape) => shape.faces.find((f) => f.vertexIds.length === 4 && new Set(f.vertexIds).size === 4);
+  const child = birthChild(sphA, sphB, 12, quadOf(sphA), quadOf(sphB), 8);
   const assembled = deriveOptionBGenerators(child.born.shape);
-  check('the assemble child: b₁=0 → ZERO generators', assembled.b1 === 0 && assembled.generators.length === 0);
+  check('the connect-sum child S²#S² (the ratified door, ports picked): b₁=0 → ZERO generators', assembled.b1 === 0 && assembled.generators.length === 0);
 }
 
 // ----- THE RATIFICATION: torus Option B reproduces Option A -------------------

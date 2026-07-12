@@ -440,7 +440,12 @@ const guarded = [
   'src/manuscript/InkedDomain.tsx',
   'src/manuscript/worldModel.ts',
   'src/manuscript/specimenModel.ts',
-  'src/manuscript/genesisModel.ts',
+  // COMBINE IS THE CONNECTED SUM (engineer-chartered, sanctioned 2026-07-12):
+  // `genesisModel.ts` LEFT this guard — the combine door now runs the
+  // co-ratified `connectedSum` (person-picked port faces, gate-by-name) and
+  // the story collector reaches BOTH parents of a multi-parent birth;
+  // ratified in diagnose-combine-is-connected-sum.cjs and the recut
+  // diagnose-manuscript-genesis.cjs. Everything else stays frozen.
 ];
 // CR-INSENSITIVE comparison (mothership-ruled fix, 2026-07-11): the old
 // `git diff` idiom was line-ending-sensitive and FALSE-FAILED on CRLF-drifted
