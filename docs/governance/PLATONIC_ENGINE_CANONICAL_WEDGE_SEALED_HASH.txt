@@ -1,0 +1,93 @@
+PLATONIC ENGINE — the CANONICAL WEDGE (killing the array-order dependence
+in identifyOnComplex) · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_CANONICAL_WEDGE.md` (gitignored):
+
+    6b623e0f7aa6f8928db3b98c57149e83bf7ac26fe0c76252695e822afca679da
+
+Sealed 2026-07-12 by the engineer seat. Researcher-pinned (ADR 0021 §6.0-bis);
+mothership-chartered. The coder builds BLIND.
+
+WHY IT EXISTS. `identifyOnComplex` — the general enactment behind every
+multi-face sew, every re-sew, and the whole depth-4 generative closure — takes
+its mode reference from `wedgeDirections(complex)`, which is FIRST-WRITER-WINS
+over `complex.faces`. On an INTERIOR edge the two wedges traverse oppositely,
+so the reference is whichever face happens to be listed first in the array.
+
+MEASURED: rotating the faces array — a PURE RELABELLING, zero topological
+content — yields TWO distinct merge partitions. On a shared-endpoint pair chi
+MOVES (0 -> -1); on a disjoint-endpoint pair chi is BLIND and only the DEGREE
+SEQUENCE separates the two objects. A shipped operation that is not a function
+of its own input.
+
+FREE edges have ONE wedge, hence no ambiguity — which is exactly why every
+sealed surface (rims, sewBoundaryCircles, connectedSum, the depth-4 chain) was
+never affected and nothing ever moved. The fix is NOT a sign change. It is:
+"stop using array order as the reference where the wedge is ambiguous."
+
+THE RULE (researcher, derived — not chosen):
+
+    sigma = -s_A * s_B
+
+  where s_X is the sign with which X's CANONICAL WEDGE traverses X's STORED
+  arrow, and the CANONICAL WEDGE is the incident wedge on the face of SMALLEST
+  COMMITTED FACE-ID — never by array position.
+
+  Valence 1: the canonical wedge IS the only wedge -> reduces EXACTLY to the
+    shipped free-edge rule. The free case FALLS OUT; it is not an exception.
+    Free-edge behaviour must not move by one byte.
+  Valence 2: every symmetric function of the wedge signs is CONSTANT
+    (s1*s2 = -1, s1+s2 = 0), so orientation-compatibility carries ZERO
+    information. The interior mode has NO orientation semantics: it is a
+    deterministic NAMING over a gate-recorded junction (ADR 0006).
+
+  THE FORM UNIFIES; THE MEANING DOES NOT. At valence 1 the rule is DERIVED. At
+  valence 2 the selector is an ARBITRARY TIEBREAK — arbitrary by necessity —
+  and saying so IS the content of the rule.
+
+TWO SENIORS, TWO GAUGE ERRORS. The ratified pin ("preserving = ALIGNED stored
+arrows") and the engineer's correction ("preserving = ANTI-ALIGNED") are BOTH
+gauge-dependent: each is true only under one storage convention. The engine
+mints each edge's arrow from the first face citing it, so a free edge always
+has s = +1 — an UNSTATED, UNENFORCED invariant. Both offices mistook how we
+happen to write the edges down for what the mode means. The rule that survives
+is the one neither proposed, and the code has been quietly running it on free
+edges since day one.
+
+  LAW: independent of the code is NOT independent of your own assumptions.
+
+THE SEAL CARRIES THREE CLAUSES, EACH PROVING ITS OWN TEETH:
+
+  CLAUSE 1 — EXECUTE WHAT YOU WITNESS: every case asserts `via === 'general'`.
+
+  CLAUSE 2 — TRAP-SENSITIVITY, PLURALLY: the mutation battery, plus an
+    array-order mutant VISIBLY FAILING the relabelling test and a fixed-sign
+    mutant VISIBLY FAILING the re-storage test.
+
+  CLAUSE 3 — RE-STORAGE INVARIANCE (hardened): re-store a PROPER, NON-UNIFORM
+    SUBSET of edges (flip [u,v] and the dir of every citing slot — zero
+    content) chosen so it SPLITS an identified pair (s_A*s_B: +1 -> -1). The
+    result must not move by one byte. AND it must prove its teeth: a fixed-sign
+    enactment must visibly FAIL on the chosen subset, and the UNIFORM flip must
+    visibly FAIL TO CATCH it. A subset a fixed-sign rule survives is not a
+    witness. (Clause 3 as first drafted was satisfiable by a vacuous test; the
+    hardening is the mothership's THIRD STANDING CLAUSE — a parametric seal
+    must pin its own strength, because a clause that CAN be satisfied by a weak
+    instance WILL be.)
+
+THE TWO INVARIANCE CLAUSES ARE INDEPENDENT — NEITHER SUBSUMES THE OTHER:
+  the RE-STORAGE clause is BLIND to the array-order bug (sigma = -s_A*s_B is
+  gauge-invariant whichever wedge you reference, so long as you reference one);
+  the RELABELLING clause is BLIND to the raw fixed-sign bug (it never reads a
+  wedge at all). A seal carrying only one of them PASSES A WRONG MECHANISM.
+  Both are required, and the seal must demonstrate each one's blindness to the
+  other's bug — or a future refactor will drop one as redundant.
+
+KNOWN GAP, REFUSED NOT GUESSED: if an edge's two wedges lie on the SAME face,
+"smallest committed face-id" selects a face but NOT a wedge. This is REACHABLE
+(identifying two edges of one cylinder face yields exactly that). The build
+THROWS a named refusal. The obvious tiebreaks are traps and are FORBIDDEN:
+`dir`-based selection IS the raw stored-arrow reference (fails re-storage);
+slot-index selection is ROTATION-dependent (the array-order bug one level
+down). The tiebreak is a researcher pin, routed and owed.

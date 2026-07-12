@@ -238,12 +238,15 @@ check('gen-1 byte-identity: every registry op reads the SAME canApply/getDisable
     );
   }));
 // DIFFERENTIAL ORACLE §7 (mothership-ruled, sanctioned 2026-07-12):
-// `complexIdentification.ts` LEFT this guard for a COMMENT-ONLY edit — the
-// delegation-truth pin (identify()'s single-face path delegates to the
-// committed word machinery BY CONSTRUCTION; the five-word compare witnesses
-// the ADAPTER, never the enactment). diagnose-identify-oracle.cjs proves the
-// edit is comment-only: the TRANSPILED JS is byte-identical to HEAD's.
-// Everything else stays frozen.
+// `complexIdentification.ts` LEFT this guard for the COMMENT-ONLY
+// delegation-truth pin (identify()'s single-face path delegates BY
+// CONSTRUCTION; the five-word compare witnesses the ADAPTER, never the
+// enactment). CANONICAL WEDGE (researcher-pinned ADR 0021 §6.0-bis,
+// sanctioned same day): it now ALSO carries that mandate's BEHAVIORAL fix —
+// the mode reference is the canonical wedge (smallest committed face-id),
+// never face-array order — ratified in diagnose-canonical-wedge.cjs (this
+// diagnostic's own registry walk below re-proves the sealed free-edge
+// surfaces unmoved). Everything else stays frozen.
 const guarded = [
   'src/lib/surfaceOperations.ts',
   'src/lib/materializeOperation.ts',
@@ -273,7 +276,7 @@ try {
 } catch (e) {
   dirty = [`guard failed to read: ${e.message}`];
 }
-check('THE ENGINE IS BYTE-UNCHANGED (the hard line): the bridge · formInvariants · surfaceClassifier · certifiers · gate · ledger · word ops — all frozen, CR-insensitively (complexIdentification carries the SANCTIONED comment-only delegation-truth pin, its transpiled JS proven byte-identical in diagnose-identify-oracle.cjs; the registry layer alone carried THIS build)',
+check('THE ENGINE IS BYTE-UNCHANGED (the hard line): the bridge · formInvariants · surfaceClassifier · certifiers · gate · ledger · word ops — all frozen, CR-insensitively (complexIdentification carries the SANCTIONED delegation-truth pin + the researcher-pinned CANONICAL-WEDGE fix, each ratified in its own diagnostic; the registry layer alone carried THIS build)',
   dirty.length === 0);
 if (dirty.length) note(`dirty: ${dirty.join(', ')}`);
 

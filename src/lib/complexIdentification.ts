@@ -23,6 +23,11 @@
 //        in OPPOSITE directions (orientation-compatible); REVERSING = the
 //        SAME direction. Per-pair modes are accepted (a committed word like
 //        the Klein abaB mixes them — the single-face reduction demands it).
+//        The REFERENCE SIGN of each declared edge is its CANONICAL WEDGE —
+//        the wedge on the face of smallest COMMITTED face-id, never a
+//        face-array position (researcher-pinned, ADR 0021 §6.0-bis; the
+//        selector inside identifyOnComplex states the full rule and refuses
+//        the un-ruled same-face tiebreak by name).
 //        ⚠ ANTI-OVER-CLAIM LAW: the mode BITES iff the seam is
 //        NON-SEPARATING; it is INERT iff the seam SEPARATES. A form's own two
 //        boundary circles glue along a non-separating seam, so here the mode
@@ -198,9 +203,13 @@ const normalizeModes = (mode: IdentifyMode | IdentifyMode[], k: number): Identif
 };
 
 // the wedge direction of an edge: the direction its FIRST face slot traverses
-// it (+1: u→v). Free edges have exactly one wedge; on interior edges the first
-// slot is the deterministic reference (the gate refuses those seams anyway).
-// A slot-less (dangling) edge reads +1 — deterministic, disclosed.
+// it (+1: u→v). Free edges have exactly one wedge, so the value is exact; on
+// interior edges the first slot is an ARRAY-ORDER artifact, which is why this
+// map is consumed ONLY by the free-edge boundary walker (walkBoundaryCircles)
+// — the identification's mode reference is the CANONICAL WEDGE selector inside
+// `identifyOnComplex` (researcher-pinned, ADR 0021 §6.0-bis, 2026-07-12),
+// NEVER this scan. A slot-less (dangling) edge reads +1 — deterministic,
+// disclosed.
 function wedgeDirections(complex: AssembledComplex): Map<string, 1 | -1> {
   const dir = new Map<string, 1 | -1>();
   for (const face of complex.faces) {
@@ -422,10 +431,68 @@ function identifyOnComplex(
     if (inB.has(id)) throw new Error(`complexIdentification: edge class "${id}" appears in BOTH walks — a class cannot be identified with itself`);
   }
 
-  const wedgeDir = wedgeDirections(complex);
+  // ---------------------------------------------------------------------------
+  // THE CANONICAL WEDGE (researcher-pinned, ADR 0021 §6.0-bis; engineer-
+  // chartered 2026-07-12). The mode's reference sign s_X is the sign with which
+  // X's CANONICAL WEDGE traverses X's STORED arrow, and the canonical wedge is
+  // the incident wedge on the face of SMALLEST COMMITTED FACE-ID (localeCompare)
+  // — NEVER a face-array position: `complex.faces` records are anonymous, their
+  // order is storage, not structure, and an array-order reference makes the
+  // operation a function of the complex AND how it happens to be listed (the
+  // measured bug: rotating `shape.faces` — a pure relabelling — changed the
+  // merge partition). The alignment assert above pins index i ↔ form.faces[i].id,
+  // so the committed identity is available without touching the complex type.
+  // On a FREE (1-wedge) edge this reduces EXACTLY to the single wedge — the
+  // shipped, derived rule (σ = −s_A·s_B on a preserving pair), which is why no
+  // sealed surface moves by a byte. The rule is invariant under face
+  // relabelling AND under re-storage (flip a stored arrow and s flips with it,
+  // selecting the same physical pairing) — a FIXED sign is neither.
+  //
+  // MEANING (researcher-ruled; load-bearing, not decoration): the INTERIOR mode
+  // has NO orientation semantics. At valence 2 every symmetric function of the
+  // two wedge signs is constant (s₁·s₂ = −1, s₁+s₂ = 0), so
+  // "orientation-compatibility" carries ZERO information there; the interior
+  // mode is a deterministic NAMING over a gate-recorded junction (ADR 0006),
+  // and this selector is an arbitrary tiebreak — arbitrary BY NECESSITY.
+  // THE FORM UNIFIES; THE MEANING DOES NOT: valence 1 is DERIVED (torus vs
+  // Klein); valence 2 is STIPULATED (a name). No future reader may import the
+  // free-edge meaning into the interior case.
+  //
+  // ⛔ NOT TOTAL, by ruling: if BOTH wedges of a declared edge lie on ONE face
+  // (a face citing the edge twice), "smallest face-id" picks a face but not a
+  // wedge — REFUSE by name; the tiebreak is a researcher pin not yet ruled.
+  // (The obvious tiebreaks are traps: a dir-based pick IS the raw stored-arrow
+  // reference and fails re-storage; a slot-index pick is rotation-dependent —
+  // the array-order bug one level down.)
+  const wedgesOfEdge = new Map<string, Array<{ faceId: string; dir: 1 | -1 }>>();
+  complex.faces.forEach((face, faceIndex) => {
+    const faceId = form.faces[faceIndex].id;
+    for (const slot of face.boundary) {
+      const list = wedgesOfEdge.get(slot.edge);
+      const wedge = { faceId, dir: slot.dir };
+      if (list) list.push(wedge);
+      else wedgesOfEdge.set(slot.edge, [wedge]);
+    }
+  });
+  const canonicalDirOf = (id: string): 1 | -1 => {
+    const wedges = wedgesOfEdge.get(id) ?? [];
+    if (wedges.length === 0) return 1; // dangling — deterministic, disclosed (unchanged)
+    if (wedges.length === 1) return wedges[0].dir; // FREE — the derived rule, byte-identical
+    const canonicalFaceId = wedges.reduce(
+      (min, wedge) => (wedge.faceId.localeCompare(min) < 0 ? wedge.faceId : min),
+      wedges[0].faceId,
+    );
+    const onCanonicalFace = wedges.filter((wedge) => wedge.faceId === canonicalFaceId);
+    if (onCanonicalFace.length > 1) {
+      throw new Error(
+        `complexIdentification: the canonical wedge is ambiguous — both wedges of edge "${id}" lie on face "${canonicalFaceId}"; the tiebreak is a researcher pin not yet ruled`,
+      );
+    }
+    return onCanonicalFace[0].dir;
+  };
   const orient = (id: string): [VertexId, VertexId] => {
     const e = edgeById.get(id) as { id: string; u: string; v: string };
-    return (wedgeDir.get(id) ?? 1) === 1 ? [e.u, e.v] : [e.v, e.u];
+    return canonicalDirOf(id) === 1 ? [e.u, e.v] : [e.v, e.u];
   };
 
   // (1) vertex merges per pair, by the ruled wedge-direction convention (G3)
@@ -505,12 +572,12 @@ function identifyOnComplex(
     mergedIdOfB.set(cycleB[i], mergedId);
     seamEdgeIds.push(mergedId);
     // b's written (u,v) orientation vs the carrier a's, under the merge —
-    // derived STRUCTURALLY from the wedge directions and the mode (an
+    // derived STRUCTURALLY from the CANONICAL wedge signs and the mode (an
     // endpoint comparison would be ambiguous on self-loop seams):
     //   preserving maps tail_b↦head_a (anti) ⇒ aligned iff s_a·s_b = −1
     //   reversing maps tail_b↦tail_a (par)  ⇒ aligned iff s_a·s_b = +1
-    const sA = wedgeDir.get(cycleA[i]) ?? 1;
-    const sB = wedgeDir.get(cycleB[i]) ?? 1;
+    const sA = canonicalDirOf(cycleA[i]);
+    const sB = canonicalDirOf(cycleB[i]);
     flipOfB.set(cycleB[i], ((modes[i] === 'preserving' ? -1 : 1) * sA * sB) as 1 | -1);
   }
   const enactedEdges: Array<{ id: string; u: string; v: string }> = [];

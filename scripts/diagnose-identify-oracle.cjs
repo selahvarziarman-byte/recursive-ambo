@@ -41,8 +41,11 @@
 //   §b the trap-sensitive parallel-class rep (the height-1 tube — its sewn
 //      torus carries PARALLEL seam classes, the route-B condition).
 //   §c interior identification — the merged 4-wedge class, the gate refusal;
-//      compare restricted to the direction-free structure (the flagged spec
-//      ambiguity), disclosed.
+//      the FULL byte-structure compared: the direction reference is now
+//      researcher-PINNED (the CANONICAL WEDGE, ADR 0021 §6.0-bis — the gap
+//      this oracle originally flagged, answered), the oracle computes the
+//      interior merge partition FROM THE SPEC, and the last unwitnessed
+//      corner of `identifyOnComplex` is closed.
 //   §d a genuine multi-face complex at scale (the 8×1 tube whose canonical
 //      sew lands the n/2 seam — an 8-long parallel-class seam).
 //   §e THE DEPTH-4 CHAIN (tube → sew → cut → cut → re-sew), the oracle
@@ -125,12 +128,17 @@ const setKey = (members) => [...members].sort((a, b) => a.localeCompare(b)).join
 //        (If this derivation had the convention backwards, §a's external
 //        grounding — the certifier reading TORUS on the oracle's own
 //        preserving output — would fail. The spec's outcomes arbitrate.)
-//   [SPEC GAP — flagged, not resolved]: for an INTERIOR edge (≥2 wedges) the
-//        spec pins no direction reference, and the choice changes which vertex
-//        pairs merge. The oracle refuses to guess: such pairs still MERGE
-//        their classes [§3], but vertex unions and signs for them are marked
-//        UNPINNED and the compare restricts to the direction-free structure.
-//        This is a question for the researcher, recorded in the report.
+//   [§6.0-bis] THE CANONICAL WEDGE (researcher-pinned 2026-07-12 — the gap
+//        this oracle originally FLAGGED as "a question for the researcher",
+//        now answered): the reference sign s_X of a declared edge is the sign
+//        with which its CANONICAL WEDGE — the incident wedge on the face of
+//        SMALLEST COMMITTED FACE-ID, never an array position — traverses its
+//        stored arrow. On a FREE edge this reduces to the unique wedge (the
+//        derived rule). The selector is NOT TOTAL: if both wedges of a
+//        declared edge lie on ONE face, REFUSE (that tiebreak is a researcher
+//        pin not yet ruled). Without the committed face-id vocabulary the
+//        oracle still refuses to guess (the pre-pin restriction path,
+//        retained deliberately as the record of the discipline).
 //
 // BLINDNESS DISCLOSURE: the oracle below cites only the spec clauses above.
 // The builder's context did carry `identifyOnComplex`'s source from an earlier
@@ -157,7 +165,7 @@ function makeUF() {
   return { find, union: (a, b) => parent.set(find(a), find(b)) };
 }
 
-function oracleQuotient(input, cycleA, cycleB, modes) {
+function oracleQuotient(input, cycleA, cycleB, modes, faceIds = null) {
   // ---- the op contract on inputs (matched, distinct, disjoint, on-complex) --
   if (cycleA.length === 0 || cycleA.length !== cycleB.length || modes.length !== cycleA.length) {
     throw new Error('oracle: walks must be matched and non-empty, one mode per pair');
@@ -178,13 +186,30 @@ function oracleQuotient(input, cycleA, cycleB, modes) {
       wedgesOf.get(slot.edge).push({ f, k, dir: slot.dir });
     });
   });
-  // wArrow(e): the traversal of e by its UNIQUE wedge — pinned only for FREE
-  // edges [math above]; interior ⇒ null (the flagged spec gap).
-  const wArrowOf = (id) => {
+  // the REFERENCE WEDGE of a declared edge [§6.0-bis]: FREE ⇒ its unique
+  // wedge (the derived rule); INTERIOR ⇒ the CANONICAL WEDGE — the wedge on
+  // the face of smallest COMMITTED face-id (never array position), REFUSING
+  // when both wedges lie on that one face (the un-ruled tiebreak). Without
+  // the face-id vocabulary the oracle refuses to guess (null — the pre-pin
+  // restriction path, retained deliberately).
+  const refWedgeOf = (id) => {
     const w = wedgesOf.get(id);
-    if (w.length !== 1) return null;
+    if (w.length === 0) return null;
+    if (w.length === 1) return w[0];
+    if (!faceIds) return null;
+    const withIds = w.map((x) => ({ ...x, faceId: faceIds[x.f] }));
+    const minFaceId = withIds.reduce((m, x) => (x.faceId.localeCompare(m) < 0 ? x.faceId : m), withIds[0].faceId);
+    const onMin = withIds.filter((x) => x.faceId === minFaceId);
+    if (onMin.length > 1) {
+      throw new Error(`oracle: the canonical wedge is ambiguous — both wedges of edge "${id}" lie on face "${minFaceId}"`);
+    }
+    return onMin[0];
+  };
+  const refArrowOf = (id) => {
+    const wedge = refWedgeOf(id);
+    if (wedge === null) return null;
     const e = edgeById.get(id);
-    return w[0].dir === 1 ? [e.u, e.v] : [e.v, e.u];
+    return wedge.dir === 1 ? [e.u, e.v] : [e.v, e.u];
   };
 
   // ---- [§3] merge the DECLARED classes, pairwise; [math] vertex unions ------
@@ -196,10 +221,10 @@ function oracleQuotient(input, cycleA, cycleB, modes) {
   for (let i = 0; i < cycleA.length; i += 1) {
     const a = cycleA[i];
     const b = cycleB[i];
-    const arrowA = wArrowOf(a);
-    const arrowB = wArrowOf(b);
+    const arrowA = refArrowOf(a);
+    const arrowB = refArrowOf(b);
     const pinned = arrowA !== null && arrowB !== null;
-    if (!pinned) restrictions.push(`pair ${i} (${a} ≡ ${b}): interior-edge direction reference is UNPINNED by the spec`);
+    if (!pinned) restrictions.push(`pair ${i} (${a} ≡ ${b}): interior-edge reference needs the committed face-id vocabulary (§6.0-bis) — none was given`);
     if (pinned) {
       if (modes[i] === 'preserving') {
         // anti-parallel seam: tail(A)~head(B), head(A)~tail(B)
@@ -212,7 +237,7 @@ function oracleQuotient(input, cycleA, cycleB, modes) {
     }
     const cls = {
       members: [a, b],
-      refWedgeDir: new Map(pinned ? [[a, wedgesOf.get(a)[0].dir], [b, wedgesOf.get(b)[0].dir]] : []),
+      refWedgeDir: new Map(pinned ? [[a, refWedgeOf(a).dir], [b, refWedgeOf(b).dir]] : []),
       tau: new Map(pinned ? [[a, 1], [b, modes[i] === 'preserving' ? -1 : 1]] : []),
       gaugeRep: a,
       pinned,
@@ -264,7 +289,7 @@ function oracleQuotient(input, cycleA, cycleB, modes) {
       const e = edgeById.get(cls.gaugeRep);
       cls.arrow = [pi(e.u), pi(e.v)];
     } else if (cls.pinned) {
-      const a = wArrowOf(cls.gaugeRep);
+      const a = refArrowOf(cls.gaugeRep);
       cls.arrow = [pi(a[0]), pi(a[1])];
     } else {
       const e = edgeById.get(cls.gaugeRep); // endpoints as a SET are still spec-true
@@ -428,8 +453,8 @@ function compareIdentification(oracle, enact, opts = {}) {
     if (!enactEdge) continue;
     const endpoints = [vToC.get(enactEdge.u), vToC.get(enactEdge.v)];
     if (!cls.pinned) {
-      // the flagged spec gap: endpoints only as a SET, no sign leg
-      if (opts.edgeSideOnly !== true) notes.push(`class ${cls.key}: sign legs restricted (unpinned interior reference)`);
+      // no face-id vocabulary was given: endpoints only as a SET, no sign leg
+      notes.push(`class ${cls.key}: sign legs restricted (no committed face-id vocabulary)`);
       continue;
     }
     const oracleArrow = cls.arrow;
@@ -473,15 +498,6 @@ function compareIdentification(oracle, enact, opts = {}) {
     if (!eq(mapIds(enact.gate.junctionEdgeIds), oracle.junctionKeys)) failed.add('gate-sets');
   }
 
-  if (opts.edgeSideOnly === true) {
-    // the interior case: only the direction-free legs count (disclosed)
-    for (const leg of ['vertex-partition', 'slot-dirs', 'shape-cycles', 'ledger', 'counts', 'gate-sets']) failed.delete(leg);
-    if (enact.gate) {
-      const mapIds = (ids) => [...ids].map((id) => eToC.get(id) ?? `?${id}`).sort();
-      if (!eq(mapIds(enact.gate.junctionEdgeIds), oracle.junctionKeys)) failed.add('gate-sets');
-    }
-  }
-
   return { agree: failed.size === 0, failed: [...failed].sort(), notes, eToC, vToC, cToE };
 }
 
@@ -512,7 +528,7 @@ console.log('\n----- [a] cylinder rims: preserving → torus · reversing → Kl
 const runAgreement = (form, mode, inputComplex, inputFaces) => {
   const sewn = sewBoundaryCircles(form, mode);
   const walks = { cycleA: sewn.spec.cycleA, cycleB: sewn.spec.cycleB, modes: sewn.spec.modes };
-  const oracle = oracleQuotient(inputComplex, walks.cycleA, walks.cycleB, walks.modes);
+  const oracle = oracleQuotient(inputComplex, walks.cycleA, walks.cycleB, walks.modes, inputFaces.map((f) => f.id));
   const cmp = compareIdentification(oracle, sewn, { inputShapeFaces: inputFaces });
   return { sewn, oracle, cmp, walks };
 };
@@ -574,7 +590,7 @@ check('…and the oracle\'s OWN tube quotient certifies the 4×1 torus: χ=0, w�
   })());
 
 // ═════ [c] interior identification — the flagged spec gap, restricted ════════
-console.log('\n----- [c] interior identification: enacted, gate-refused; compare restricted to the direction-free structure -----');
+console.log('\n----- [c] interior identification: enacted, gate-refused; the FULL byte-structure witnessed (the §6.0-bis pin) -----');
 const cylC = copyOf(immerseSurface({ surface: 'cylinder', resolution: 4 }).shape, 'orC');
 const cylCAcq = acquireFaithfulComplex(cylC, null);
 const wedgeCount = new Map();
@@ -582,18 +598,22 @@ for (const e of cylCAcq.complex.edges) wedgeCount.set(e.id, 0);
 for (const f of cylCAcq.complex.faces) for (const s of f.boundary) wedgeCount.set(s.edge, (wedgeCount.get(s.edge) ?? 0) + 1);
 const interiorIds = cylCAcq.complex.edges.filter((e) => wedgeCount.get(e.id) === 2).map((e) => e.id);
 const interiorResult = identify(cylC, [interiorIds[0]], [interiorIds[5]], 'preserving');
-const interiorOracle = oracleQuotient(cylCAcq.complex, [interiorIds[0]], [interiorIds[5]], ['preserving']);
-const interiorCmp = compareIdentification(interiorOracle, interiorResult, { edgeSideOnly: true });
-check("interior identification: via === 'general'; the oracle predicts the SAME merged 4-wedge junction class and the same slot partition; the gate refuses as predicted",
+const interiorOracle = oracleQuotient(cylCAcq.complex, [interiorIds[0]], [interiorIds[5]], ['preserving'], cylC.faces.map((f) => f.id));
+const interiorCmp = compareIdentification(interiorOracle, interiorResult, { inputShapeFaces: cylC.faces });
+check("interior identification, UN-RESTRICTED (the §6.0-bis pin landed): via === 'general'; the oracle — computing the interior merge partition FROM THE SPEC (the canonical wedge) — agrees on the FULL byte-structure, the merged class carries 4 wedges, and the gate refuses as predicted. The last unwitnessed corner of identifyOnComplex is CLOSED",
   interiorResult.via === 'general' &&
   interiorOracle.junctionKeys.length === 1 &&
   interiorOracle.wedgeCountOf.get(interiorOracle.junctionKeys[0]) === 4 &&
+  interiorOracle.restrictions.length === 0 &&
   interiorCmp.agree &&
   interiorResult.gate.manifold === false);
 showDisagreement('interior', interiorCmp);
-check('…the SPEC GAP is on the record, not silently filled: the oracle marks the interior pair\'s direction reference UNPINNED (docs/adr/0021 §§3–5 pin no reference wedge for a 2-wedge edge) — the vertex/sign legs are restricted and the question goes to the researcher',
-  interiorOracle.restrictions.length === 1 && /UNPINNED/.test(interiorOracle.restrictions[0]));
-note(`restriction: ${interiorOracle.restrictions[0]}`);
+check('…and the gap→pin HISTORY stays on the record: WITHOUT the committed face-id vocabulary the oracle still refuses to guess the interior reference (the pre-pin restriction path this build once flagged to the researcher)',
+  (() => {
+    const noVocab = oracleQuotient(cylCAcq.complex, [interiorIds[0]], [interiorIds[5]], ['preserving']);
+    return noVocab.restrictions.length === 1 && /face-id vocabulary/.test(noVocab.restrictions[0]);
+  })());
+note(`interior agreement: legs all green; oracle junction ${interiorOracle.junctionKeys[0]} (4 wedges)`);
 
 // ═════ [d]+[e] the 8×1 tube and THE DEPTH-4 CHAIN ════════════════════════════
 console.log('\n----- [d]/[e] the depth-4 chain on the 8×1 tube: the oracle maintains ITS OWN complex through every generation -----');
@@ -680,7 +700,7 @@ const gen4Of = (mode) => {
   const sewn = sewBoundaryCircles(C2, mode, 0, 1, [C1, S1, tube81]);
   const walksA = sewn.spec.cycleA.map(eBij);
   const walksB = sewn.spec.cycleB.map(eBij);
-  const oracle = oracleQuotient(oracleGen3.assembled, walksA, walksB, sewn.spec.modes);
+  const oracle = oracleQuotient(oracleGen3.assembled, walksA, walksB, sewn.spec.modes, C2.faces.map((f) => f.id));
   const cmp = compareIdentification(oracle, sewn, {
     inputShapeFaces: C2.faces,
     translate: { v: vBij },
@@ -760,7 +780,7 @@ const mutantCase = (label, replacements, runCase, expectedLegs) => {
 const cylinderCase = (mutant) => {
   const cylM = copyOf(immerseSurface({ surface: 'cylinder', resolution: 4 }).shape, 'orA'); // same namespace: same fixture bytes
   const sewn = mutant.sewBoundaryCircles(cylM, 'preserving');
-  const oracle = oracleQuotient(cylAcq.complex, sewn.spec.cycleA, sewn.spec.cycleB, sewn.spec.modes);
+  const oracle = oracleQuotient(cylAcq.complex, sewn.spec.cycleA, sewn.spec.cycleB, sewn.spec.modes, cylM.faces.map((f) => f.id));
   return { sewn, oracle, cmpOpts: { inputShapeFaces: cylM.faces } };
 };
 const tubeCase = (mutant) => {
@@ -773,7 +793,7 @@ const tubeCase = (mutant) => {
     faces: [0, 1, 2, 3].map((i) => ({ vertexIds: [`a${i}`, `a${(i + 1) % 4}`, `b${(i + 1) % 4}`, `b${i}`] })),
   }), 'tb');
   const sewn = mutant.sewBoundaryCircles(tubeM, 'preserving');
-  const oracle = oracleQuotient(tubeAcq.complex, sewn.spec.cycleA, sewn.spec.cycleB, sewn.spec.modes);
+  const oracle = oracleQuotient(tubeAcq.complex, sewn.spec.cycleA, sewn.spec.cycleB, sewn.spec.modes, tubeM.faces.map((f) => f.id));
   return { sewn, oracle, cmpOpts: { inputShapeFaces: tubeM.faces } };
 };
 
@@ -828,22 +848,17 @@ console.log('\n----- [g] no-regression: the oracle lives HERE; the engine is byt
 const crStrip = (s) => s.replace(/\r/g, '');
 const headContentOf = (file) =>
   execSync(`git show HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
-// complexIdentification carries ONLY the §7-sanctioned DELEGATION-TRUTH
-// comments (mothership-ruled): the TRANSPILED JS — comments stripped
-// (`removeComments: true`; the default transpile PRESERVES them, which this
-// guard itself caught on its first run) — must be byte-identical to HEAD's,
-// proving the edit is comment-only, zero behavior.
-const transpiled = (source) =>
-  ts.transpileModule(crStrip(source), {
-    compilerOptions: { ...TRANSPILE_OPTIONS.compilerOptions, removeComments: true },
-    fileName: 'ci.ts',
-  }).outputText;
-const ciHeadSource = headContentOf('src/lib/complexIdentification.ts');
-check('complexIdentification.ts: the §7 delegation-truth pin is COMMENT-ONLY — the transpiled JS (comments stripped) is byte-identical to HEAD\'s',
-  transpiled(fs.readFileSync(ciPath, 'utf8')) === transpiled(ciHeadSource));
-check('…and the transpile-identity guard BITES on code while forgiving comments: a one-token in-memory CODE edit changes the transpiled JS; a pure comment edit does not',
-  transpiled(ciHeadSource.replace('cycleA.length !== cycleB.length', 'cycleA.length === cycleB.length')) !== transpiled(ciHeadSource) &&
-  transpiled(`// bite-test comment\n${ciHeadSource}`) === transpiled(ciHeadSource));
+// CANONICAL WEDGE (researcher-pinned ADR 0021 §6.0-bis, engineer-chartered
+// 2026-07-12, sanctioned): `complexIdentification.ts` carries that mandate's
+// BEHAVIORAL fix — the mode reference of a declared edge is the CANONICAL
+// WEDGE (smallest committed face-id), never the face-array order. Ratified in
+// diagnose-canonical-wedge.cjs: free-edge surfaces and the depth-4 chain are
+// byte-compared against HEAD's own enactment there (unmoved to the byte); the
+// interior merge partition is relabelling- AND re-storage-invariant; and §c
+// above witnesses the interior case against this oracle in full. (The
+// differential-oracle build's transpile-identity guard proved THAT build's
+// engine edit comment-only; it retired WITH that truth when this sanctioned
+// behavioral fix landed.)
 const guarded = [
   'src/lib/surfaceOperations.ts',
   'src/lib/materializeOperation.ts',
