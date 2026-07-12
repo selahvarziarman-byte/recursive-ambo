@@ -20,11 +20,17 @@
 //      enactment is load-bearing, not decorative.
 //   §c INTERIOR identification — ENACTED (G1: never pre-refused), the merged
 //      class carries 4 wedges, and the GATE refuses naming the junction.
-//   §d ★ THE SINGLE-FACE REDUCTION — on an invoked square, the general op
-//      reproduces the committed word-op result BYTE-IDENTICALLY (shape,
-//      complex, ledger, invariants) for ALL FIVE committed words: torus
-//      (abAB), Klein (abaB), RP² (abab), cylinder (abcB), Möbius (abcb) —
-//      the Klein's MIXED word rides the op's per-pair modes.
+//   §d ★ THE SINGLE-FACE ADAPTER (delegation truth pinned 2026-07-12,
+//      mothership-ruled): identify()'s single-face path DELEGATES to the
+//      committed word machinery BY CONSTRUCTION (`via: 'committed-word'`,
+//      asserted below), so this section witnesses the ADAPTER — the
+//      edge-walk → slot resolution and the mode convention — reproducing the
+//      committed word-op result byte-identically (shape, complex, ledger,
+//      invariants) for ALL FIVE words: torus (abAB), Klein (abaB), RP²
+//      (abab), cylinder (abcB), Möbius (abcb); the Klein's MIXED word rides
+//      the per-pair modes. It is NOT — and must never again be described
+//      as — a witness of the general enactment (`identifyOnComplex`): the
+//      enactment's independent witness is diagnose-identify-oracle.cjs.
 //   §e RE-CERTIFICATION — the born identification replays + byte-compares
 //      (foreign parents rejected); the recovered complex certifies through
 //      the committed certifier + classifier; the sewn torus even
@@ -217,8 +223,13 @@ check('…and the GATE refuses, NAMING the junction class (instruments, not guar
   String(interiorResult.gate.refusal).includes(interiorResult.seamEdgeIds[0]));
 note(`gate: ${String(interiorResult.gate.refusal).slice(0, 120)}…`);
 
-// ===== [d] ★ the single-face reduction (the seal) ==============================
-console.log('\n----- [d] the five committed words, byte-identical through the general op -----');
+// ===== [d] ★ the single-face ADAPTER (delegation — the five-word compare) =====
+// DELEGATION TRUTH (mothership-ruled, 2026-07-12): `mine.via ===
+// 'committed-word'` below is the plain marker that BOTH sides of this compare
+// run the SAME committed machinery — the adapter is what this witnesses;
+// `identifyOnComplex` never executes here and is witnessed by the
+// differential oracle (diagnose-identify-oracle.cjs), never by this section.
+console.log('\n----- [d] the five committed words through the single-face ADAPTER (delegation — witnesses the adapter, never the enactment) -----');
 const WORDS = [
   { id: 'glue-cylinder', word: 'cylinder (abcB)', arcsA: [0], arcsB: [2], modes: ['preserving'] },
   { id: 'flip-glue-mobius', word: 'Möbius (abcb)', arcsA: [0], arcsB: [2], modes: ['reversing'] },

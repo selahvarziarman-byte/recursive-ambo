@@ -59,6 +59,17 @@
 // shared domain, because on that domain they ARE the same code. A single-face
 // QUOTIENT refuses toward the committed word ops (their Q-M2 composed chain
 // owns that path — this module never duplicates the chain gate).
+// ⚠ THE DELEGATION TRUTH (mothership-ruled, pinned 2026-07-12): BECAUSE the
+// single-face path IS the committed machinery, any byte-agreement measured
+// through it (the five-word compare in diagnose-complex-identification §d;
+// `via: 'committed-word'`) witnesses the ADAPTER — the edge-walk → slot
+// resolution and the mode convention — and NEVER the general enactment
+// (`identifyOnComplex`). It must never again be described as a witness of
+// the enactment. The enactment's independent witness is the DIFFERENTIAL
+// ORACLE (scripts/diagnose-identify-oracle.cjs): a spec-derived reference
+// quotient (docs/adr/0021 §§3–5) agreeing on the full byte-structure across
+// the sew/chain battery, trap-sensitive against five distinct deliberate
+// mutations, with every witnessed case asserting `via === 'general'`.
 //
 // DERIVE-ONLY · SANCTIONED ADDITION: committed modules by import
 // (`buildLedgerFromIdentification`, `decomposeLink`, the word ops, the
@@ -599,8 +610,11 @@ export function identify(
   }
   const modes = normalizeModes(mode, cycleA.length);
   if (form.faces.length === 1) {
-    // the polygon IS a one-face complex — the committed word machinery is its
-    // enactment (byte-identical by construction; reuse, never fork)
+    // the polygon IS a one-face complex — DELEGATION BY CONSTRUCTION: the
+    // committed word machinery is its enactment (via: 'committed-word').
+    // Byte-agreement through this branch witnesses the ADAPTER, never
+    // `identifyOnComplex` — the enactment's independent witness is the
+    // differential oracle (diagnose-identify-oracle.cjs; 2026-07-12).
     return identifyOnSingleFace(form, cycleA, cycleB, modes);
   }
   // the ACQUISITION CHAIN (mothership-required): direct → word/cut recovery →

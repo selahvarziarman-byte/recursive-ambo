@@ -237,8 +237,14 @@ check('gen-1 byte-identity: every registry op reads the SAME canApply/getDisable
       op.getDisabledReason(ctxNoAncestry) === op.getDisabledReason(ctxEmptyAncestry)
     );
   }));
+// DIFFERENTIAL ORACLE §7 (mothership-ruled, sanctioned 2026-07-12):
+// `complexIdentification.ts` LEFT this guard for a COMMENT-ONLY edit — the
+// delegation-truth pin (identify()'s single-face path delegates to the
+// committed word machinery BY CONSTRUCTION; the five-word compare witnesses
+// the ADAPTER, never the enactment). diagnose-identify-oracle.cjs proves the
+// edit is comment-only: the TRANSPILED JS is byte-identical to HEAD's.
+// Everything else stays frozen.
 const guarded = [
-  'src/lib/complexIdentification.ts',
   'src/lib/surfaceOperations.ts',
   'src/lib/materializeOperation.ts',
   'src/lib/transformationLedger.ts',
@@ -267,7 +273,7 @@ try {
 } catch (e) {
   dirty = [`guard failed to read: ${e.message}`];
 }
-check('THE ENGINE IS BYTE-UNCHANGED (the hard line): complexIdentification · the bridge · formInvariants · surfaceClassifier · certifiers · gate · ledger · word ops — all frozen, CR-insensitively (the registry layer alone carries this build)',
+check('THE ENGINE IS BYTE-UNCHANGED (the hard line): the bridge · formInvariants · surfaceClassifier · certifiers · gate · ledger · word ops — all frozen, CR-insensitively (complexIdentification carries the SANCTIONED comment-only delegation-truth pin, its transpiled JS proven byte-identical in diagnose-identify-oracle.cjs; the registry layer alone carried THIS build)',
   dirty.length === 0);
 if (dirty.length) note(`dirty: ${dirty.join(', ')}`);
 
