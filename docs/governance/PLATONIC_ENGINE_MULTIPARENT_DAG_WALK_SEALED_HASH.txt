@@ -1,0 +1,83 @@
+PLATONIC ENGINE — the MULTI-PARENT DAG WALK (closing the connectedSum join)
+SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_MULTIPARENT_DAG_WALK.md` (gitignored):
+
+    2758838afdce2e440c9fd245daeaec6686f439725686747b3749a75c95d89ddb
+
+Sealed 2026-07-12 by the engineer seat. Baseline commit ef704d0. The coder
+builds BLIND. Full-scrutiny audit + mothership co-ratification.
+
+WHY IT EXISTS. `resolveLineage` walks `genealogy.parentShapeId` in a while-loop
+— ONE link. An assemble / connectedSum child carries `parentShapeId: null`
+(multiform.ts: "null BECAUSE IT IS SINGLE-VALUED"). Measured on a
+connectedSum(T-squared, T-squared) child:
+
+    resolveLineage(child)            ->  0 ancestors — BOTH PARENTS UNREACHABLE
+    buildGenealogyDag([...])         ->  2 parents, 2 edges, integrity accepted
+    child.genealogy.sourceVertexIds  ->  32 sites: 16 tracing to A, 16 to B
+
+  THE RECORD IS COMPLETE AND CORRECT. THE WALKER CANNOT REACH IT.
+  What is chain-shaped is the WALKER, not the RECORD.
+
+The recovery mechanism is already committed in genealogyDag.ts: a candidate
+parent m is a parent of child c iff c's `sourceVertexIds` intersect m's
+`createdVertexIds`. Its own comment: "No second parentage model is invented;
+both signals are committed ShapeGenealogy fields." And `ancestorsOf(dag, id)` —
+the DAG-shaped reachability walk — ALREADY EXISTS and nothing consumes it.
+
+WHAT IT COSTS. Consumers: playgroundStore.ts:221 (ancestry), :260 (parentShape
+= ancestry[0]), and ManuscriptView.tsx:644 (the ancestry the manuscript DRAWS).
+The ratified design language (design ADR 0001) says birth = pencil-pentimento
+PARENTS + ink-stemma lineage. A connect-sum child HAS two parents — 16 source
+sites from each — AND THE MANUSCRIPT DRAWS NONE. (Honest scope: the acquisition
+chain does not break here — the direct bridge accepts the genus-2 child — so
+the bite is the lineage the PERSON is shown, plus the latent failure the moment
+a connect-sum child is itself bridge-refused.)
+
+THE TRAP INSIDE THE FIX — THE CANONICAL-WEDGE BUG, ONE LEVEL UP.
+`GenealogyNode.parents` is documented "read forward (INPUT ORDER)". Measured
+across 6 permutations of the store array:
+
+    ancestor SET   -> 1  {A,B}          INVARIANT
+    ancestor ORDER -> 2  [A,B] / [B,A]  MOVES WITH THE STORE ARRAY ORDER
+
+And the order is load-bearing (playgroundStore:260 takes ancestry[0]; the
+manuscript draws parents in order). A DAG-shaped walker that naively inherits
+that input-order `parents` list would trade a BLIND walker for an
+ARRAY-ORDER-DEPENDENT one — the exact bug ef704d0 just buried. THE ORDER MUST
+COME FROM COMMITTED IDENTITY: the child's committed birth id encodes the
+argument order (…csum:mpA:…+mpB:… — A before B).
+
+THE SEAL CARRIES FOUR CLAUSES, EACH PROVING ITS OWN TEETH:
+
+  CLAUSE 1 — EXECUTE WHAT YOU WITNESS: every multi-parent case asserts it took
+    the multi-parent path (assemble birth, parentShapeId === null, walker
+    returns 2). A case resolving through the single-parent pointer is not a
+    witness of the join.
+
+  CLAUSE 2 — TRAP-SENSITIVITY, AND CARRY THE WRONG MECHANISM IN-MEMORY: the
+    single-parent walker is carried as an IN-MEMORY mutant, never read from
+    `git show HEAD` (this build CHANGES resolveLineage, so HEAD's copy
+    evaporates on commit — precisely the defect that got the canonical-wedge
+    first cut rejected). It must visibly FAIL: 0 ancestors where 2 are owed.
+    AND the carried mutant must be proven BYTE-IDENTICAL to the real committed
+    resolveLineage — checkable only BEFORE the commit. A strawman mutant
+    witnesses nothing.
+
+  CLAUSE 3 — ORDER INVARIANCE (new): sweep >= 6 store-array permutations; the
+    ancestor order must not move. Teeth: an input-order walker must VISIBLY
+    FAIL the sweep (2 distinct orders -> must become 1).
+
+  CLAUSE 4 — SINGLE-PARENT NON-MOVEMENT (the highest bar; the analogue of
+    free-edge non-movement): on every committed single-parent form — the whole
+    zoo, every born form, the depth-4 chain at every generation — the new
+    walker's output must be BYTE-IDENTICAL to HEAD's. Any movement on a
+    single-parent chain is a HARD FAIL: the change is wrong, not the chain.
+
+NOT THE BUILD'S TO DECIDE: whether a two-parent birth draws TWO pentimento
+ghosts is a DESIGNER + MOTHERSHIP question. The build delivers the DATA (both
+parents, ordered, faithful) and routes the render. If the existing render
+cannot honestly draw two parents, it says so and hands back — it does not fake
+one.

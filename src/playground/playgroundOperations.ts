@@ -34,7 +34,7 @@
 // DERIVE-ONLY · ADDITIVE: committed ops + G5.0 consumed by import; no engine
 // math recomputed here.
 
-import type { Face, FaceId, Shape, ShapeId } from '../types/geometry';
+import type { Face, FaceId, Shape, ShapeId, VertexId } from '../types/geometry';
 import {
   collapseFace,
   flipGlueFace,
@@ -71,25 +71,77 @@ export interface PlaygroundOperationContext {
   ancestry?: Shape[];
 }
 
-// The REAL lineage walk: resolve `genealogy.parentShapeId` recursively through
-// a caller-supplied lookup (the store's forms; the manuscript's page). Returns
-// the ancestor shapes, immediate parent first. Seen-guarded — a broken or
-// CYCLIC lineage terminates with what it could honestly reach (the engine's
-// acquisition then refuses on its own if the chain is short). This walker
-// never fabricates: only shapes the form actually descends from are returned.
+// The REAL lineage walk — DAG-shaped (MULTI-PARENT DAG WALK, engineer-
+// chartered 2026-07-12; the record was always complete, the walker was
+// chain-shaped). Returns the ancestor shapes, NEAREST GENERATION FIRST,
+// seen-guarded (a diamond ancestor appears once; a broken or CYCLIC lineage
+// terminates with what it could honestly reach). This walker never
+// fabricates: only shapes the form actually descends from are returned.
+//
+// PARENTS OF ONE NODE — the two committed `ShapeGenealogy` signals, exactly
+// as `genealogyDag.ts` reads them ("no second parentage model is invented"):
+//   · `parentShapeId` set (single-valued) → THE pointer, alone — the
+//     committed chain arrow, resolved through `lookup`. Byte-identical to the
+//     shipped walk on every single-parent chain (the highest bar).
+//   · `parentShapeId === null` with source sites (assemble / connectedSum —
+//     null BY DESIGN because the field is single-valued) → the committed
+//     SITE-PROVENANCE rule: a candidate m is a parent iff the child's
+//     `sourceVertexIds` intersect m's `createdVertexIds`.
+//     ⚠ THE ORDER COMES FROM COMMITTED IDENTITY, NEVER THE STORE ARRAY: the
+//     parents sort by the first index of any of their minted sites in the
+//     child's `sourceVertexIds` — which `multiform.assemble` enumerates in
+//     FORM (argument) ORDER ("form order — fixes the pull-back push order"),
+//     the same order the committed birth id embeds (`…:idA+idB:…`). A walker
+//     ordered by candidate-array position would trade a blind walker for an
+//     array-order-dependent one — the exact bug ef704d0 buried, one level up.
+//     For a multi-parent child, `ancestry[0]` is therefore parent A — the
+//     committed first argument — deterministically.
+// `candidates` is the population site-provenance may draw parents from (the
+// store's shapes; the manuscript page's shapes). With none supplied, a
+// multi-parent child honestly resolves no parents (the pre-join behavior).
 export function resolveLineage(
   shape: Shape,
   lookup: (id: ShapeId) => Shape | null | undefined,
+  candidates: Shape[] = [],
 ): Shape[] {
+  const parentsOf = (node: Shape): Shape[] => {
+    if (node.genealogy.parentShapeId) {
+      const parent = lookup(node.genealogy.parentShapeId) ?? null;
+      return parent ? [parent] : [];
+    }
+    const sources = node.genealogy.sourceVertexIds;
+    if (sources.length === 0) return []; // a true root
+    const sourceIndex = new Map<VertexId, number>();
+    sources.forEach((siteId, k) => {
+      if (!sourceIndex.has(siteId)) sourceIndex.set(siteId, k);
+    });
+    const found: Array<{ parent: Shape; at: number }> = [];
+    for (const candidate of candidates) {
+      if (candidate.id === node.id) continue;
+      let at = Infinity;
+      for (const minted of candidate.genealogy.createdVertexIds) {
+        const k = sourceIndex.get(minted);
+        if (k !== undefined && k < at) at = k;
+      }
+      if (at !== Infinity) found.push({ parent: candidate, at });
+    }
+    found.sort((a, b) => a.at - b.at);
+    return found.map((entry) => entry.parent);
+  };
   const lineage: Shape[] = [];
   const seen = new Set<ShapeId>([shape.id]);
-  let parentId = shape.genealogy.parentShapeId;
-  while (parentId && !seen.has(parentId)) {
-    seen.add(parentId);
-    const parent = lookup(parentId) ?? null;
-    if (!parent) break;
-    lineage.push(parent);
-    parentId = parent.genealogy.parentShapeId;
+  let frontier: Shape[] = [shape];
+  while (frontier.length > 0) {
+    const next: Shape[] = [];
+    for (const node of frontier) {
+      for (const parent of parentsOf(node)) {
+        if (seen.has(parent.id)) continue;
+        seen.add(parent.id);
+        lineage.push(parent);
+        next.push(parent);
+      }
+    }
+    frontier = next;
   }
   return lineage;
 }

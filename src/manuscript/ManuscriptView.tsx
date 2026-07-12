@@ -640,8 +640,16 @@ export default function ManuscriptView() {
       const entry = written.find((w) => w.form.id === key);
       if (!entry) return null;
       // the REAL lineage walk (registry unbounding): the full ancestor chain
-      // over the page's own shapes — the acquisition reaches every generation
-      const ancestry = resolveLineage(entry.form.shape, (shapeId) => shapeById.get(shapeId));
+      // over the page's own shapes — the acquisition reaches every generation.
+      // MULTI-PARENT DAG WALK (2026-07-12): the page's shapes ride along as
+      // the candidate population, so a two-parent birth (assemble /
+      // connectedSum — parentShapeId null by design) receives BOTH parents,
+      // committed-birth order, where it received none.
+      const ancestry = resolveLineage(
+        entry.form.shape,
+        (shapeId) => shapeById.get(shapeId),
+        [...shapeById.values()],
+      );
       return {
         shape: entry.form.shape,
         parent: entry.form.parentShape,

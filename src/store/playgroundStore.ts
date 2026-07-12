@@ -218,7 +218,12 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     // lineage chain through the store's forms (never the store's population —
     // ancestors only) and pass the FULL ancestry; the immediate parent rides
     // `parentShape` exactly as before (gen-1 behavior byte-identical).
-    const ancestry = resolveLineage(form.shape, (id) => state.forms[id]?.shape);
+    // MULTI-PARENT DAG WALK (2026-07-12): the store's shapes ride along as the
+    // CANDIDATE population so an assemble/connectedSum child (parentShapeId
+    // null by design) recovers BOTH parents by the committed site-provenance
+    // rule — still ancestors only, never the population as ancestry.
+    const candidates = Object.values(state.forms).map((entry) => entry.shape);
+    const ancestry = resolveLineage(form.shape, (id) => state.forms[id]?.shape, candidates);
     const context = {
       form: form.shape,
       selectedFaceId: state.selectedFaceId,
@@ -257,7 +262,15 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     // the parent is the head of the REAL lineage walk (identical to the old
     // one-hop lookup when the parent is in the store — the custom-glue path is
     // polygon-domain and one-hop BY DESIGN, but the walk is one code path).
-    const parentShape = resolveLineage(form.shape, (id) => state.forms[id]?.shape)[0] ?? null;
+    // MULTI-PARENT DAG WALK (2026-07-12): candidates ride along (one code
+    // path); for a multi-parent child ancestry[0] is deterministically parent
+    // A (the committed first argument) — such children are multi-face and the
+    // single-face gate refuses them here regardless.
+    const parentShape = resolveLineage(
+      form.shape,
+      (id) => state.forms[id]?.shape,
+      Object.values(state.forms).map((entry) => entry.shape),
+    )[0] ?? null;
     const reason = validateCustomPairings(selectedFace, pairings, form.shape, parentShape);
     if (reason) {
       throw new Error(`playgroundStore: custom glue is not applicable — ${reason}`);
