@@ -227,8 +227,8 @@ check('measured: a "reversing" LABEL over the SAME translation map yields the SA
 check('measured: the REFLECTED map is what actually reverses (non-orientable, H₁ = Z² ⊕ Z/2, sound)',
   tRefl.sound && !tRefl.orientable && tRefl.homology.H1.pretty === 'Z^2 ⊕ Z/2');
 
-// ===== [d] the sweep is real (guard bookkeeping) ================================
-console.log('\n----- [d] the sanctioned edits are real; the guard list reflects them -----');
+// ===== [d] the sweep is real (freeze bookkeeping) ===============================
+console.log('\n----- [d] the sanctioned edits are real; the engine freeze covers them -----');
 // content-asserted (NOT a working-tree git check, which would invert the moment
 // the set is committed): each seam carries its sweep edit verbatim.
 const fiSrc = fs.readFileSync(path.join(repoRoot, 'src/playground/formInvariants.ts'), 'utf8');
@@ -237,11 +237,27 @@ check('the three seams CARRY their edits: the disconnected refusal branch (formI
   fiSrc.includes('disconnected — ${components} components; classify per component') &&
   bfrSrc.includes('pairings.length === 2 && n === 4') &&
   modeDocRegion.includes('the TOPOLOGY is determined by'));
+// THE ENGINE FREEZE MANIFEST (engineer-chartered 2026-07-12, built
+// 2026-07-13): the original leg here pinned the sibling's carve-out
+// disclosure ('LEFT this guard') — the very treadmill mechanism the manifest
+// kills (a sanctioned change punched a silent, permanent hole). The truth is
+// now STRONGER and inverted: the two sweep-edited files are FROZEN at their
+// post-sweep hashes in docs/governance/ENGINE_FREEZE_MANIFEST.txt — no
+// carve-out exists or is needed — and the sibling freezes the engine through
+// the shared checker.
 const immerseDiag = fs.readFileSync(path.join(repoRoot, 'scripts/diagnose-p-immerse.cjs'), 'utf8');
-check('the diagnose-p-immerse §i byte-guard no longer pins the two sanctioned files (and says why)',
-  !immerseDiag.includes("'src/playground/formInvariants.ts',") &&
-  !immerseDiag.includes("'src/playground/bornFormRouting.ts',") &&
-  immerseDiag.includes('LEFT this guard'));
+const { checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
+const sweepFreeze = checkEngineFreeze();
+const sweepBiteFi = checkEngineFreeze({ overrides: { 'src/playground/formInvariants.ts': fiSrc + '\n// drift' } });
+const sweepBiteBfr = checkEngineFreeze({ overrides: { 'src/playground/bornFormRouting.ts': bfrSrc + '\n// drift' } });
+check('the two sanctioned files are back under coverage — FROZEN at their post-sweep hashes by the ENGINE FREEZE MANIFEST (ok at baseline; an in-memory edit to EACH is caught naming exactly it) — and diagnose-p-immerse freezes the engine through the shared checker, carve-outs extinct',
+  sweepFreeze.ok === true &&
+  sweepFreeze.frozen.includes('src/playground/formInvariants.ts') &&
+  sweepFreeze.frozen.includes('src/playground/bornFormRouting.ts') &&
+  sweepBiteFi.ok === false && sweepBiteFi.drifted.length === 1 && sweepBiteFi.drifted[0] === 'src/playground/formInvariants.ts' &&
+  sweepBiteBfr.ok === false && sweepBiteBfr.drifted.length === 1 && sweepBiteBfr.drifted[0] === 'src/playground/bornFormRouting.ts' &&
+  immerseDiag.includes('checkEngineFreeze(') &&
+  !immerseDiag.includes('LEFT this guard'));
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

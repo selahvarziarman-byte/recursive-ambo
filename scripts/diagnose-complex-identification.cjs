@@ -314,54 +314,29 @@ check('the sewn birth renders in the MANUSCRIPT as an honest CLASS BODY: genus 1
 
 // ===== [g] no-regression byte-guards ===========================================
 console.log('\n----- [g] the committed machinery is byte-unchanged -----');
-// ACQUISITION-CHAIN wiring (2026-07-11, mothership-required, sanctioned):
-// `formInvariants.ts` and `surfaceClassifier.ts` LEFT this guard — the chain
-// (direct → word/cut → identify recovery) is wired into their acquisition
-// sites, ratified in diagnose-acquisition-chain.cjs. Everything else stays.
-const guarded = [
-  'src/lib/surfaceOperations.ts',
-  'src/lib/materializeOperation.ts',
-  'src/lib/transformationLedger.ts',
-  'src/lib/incidenceTraceRegistry.ts',
-  'src/lib/globalW1.ts',
-  'src/lib/multiform.ts',
-  'src/lib/connectedSum.ts',
-  'src/lib/cutOperation.ts',
-  'src/lib/surfaceImmersion.ts',
-  'src/playground/customGluing.ts',
-  'src/playground/bornFormRouting.ts',
-  'src/playground/snapshot.ts',
-  'src/manuscript/inkedFormModel.ts',
-  'src/manuscript/optionBModel.ts',
-];
-// CR-INSENSITIVE comparison (mothership-ruled fix, 2026-07-11): strip CR from
-// BOTH sides (HEAD blob + working file) before comparing — a CRLF-drifted
-// checkout must not false-fail the guard. The teeth are self-tested below.
-const crStrip = (s) => s.replace(/\r/g, '');
-const headContentOf = (file) =>
-  execSync(`git show HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
-let dirty = [];
-try {
-  for (const file of guarded) {
-    const head = crStrip(headContentOf(file));
-    const work = crStrip(fs.readFileSync(path.join(repoRoot, file), 'utf8'));
-    if (head !== work) dirty.push(file);
-  }
-} catch (e) {
-  dirty = [`guard failed to read: ${e.message}`];
-}
-check('word ops · chaining · assemble/connectedSum · cut · certifiers · the gate · the counter: byte-unchanged vs HEAD, CR-insensitively',
-  dirty.length === 0);
-if (dirty.length) note(`dirty: ${dirty.join(', ')}`);
-// THE GUARD STILL BITES (the mandated self-test — do not neuter):
-const sentinel = 'src/lib/incidenceTraceRegistry.ts';
-const sentinelHead = crStrip(headContentOf(sentinel));
-const mutated = sentinelHead.slice(0, 100) + (sentinelHead[100] === 'X' ? 'Y' : 'X') + sentinelHead.slice(101);
-check('the fixed guard still BITES on a genuine one-character in-memory edit — and the true content passes even CRLF-re-expressed',
-  guarded.includes(sentinel) &&
-  crStrip(mutated) !== sentinelHead &&
-  crStrip(sentinelHead.replace(/\n/g, '\r\n')) === sentinelHead &&
-  crStrip(fs.readFileSync(path.join(repoRoot, sentinel), 'utf8')) === sentinelHead);
+// THE ENGINE FREEZE MANIFEST (engineer-chartered 2026-07-12): the old
+// per-diagnostic HEAD-differential guard REQUIRED A HOLE IN ITSELF to permit
+// any sanctioned change (a carve-out — silent, and permanent unless a human
+// remembered; `playgroundOperations.ts` ended up guarded by NOBODY). The
+// engine is now frozen by ONE on-repo manifest of content hashes
+// (docs/governance/ENGINE_FREEZE_MANIFEST.txt): a sanctioned change is a
+// one-line hash update in the SAME commit, and coverage never lapses. The
+// shared checker READS the manifest and can never write it.
+const { checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
+const freeze = checkEngineFreeze();
+check('THE ENGINE FREEZE MANIFEST: all 27 frozen engine files match their manifest hashes and every source file under the engine roots is classified — drifted [] · missing [] · unlisted []',
+  freeze.ok === true && freeze.checked === 27 &&
+  freeze.drifted.length === 0 && freeze.missing.length === 0 && freeze.unlisted.length === 0);
+if (!freeze.ok) note(`drifted: [${freeze.drifted}] · missing: [${freeze.missing}] · unlisted: [${freeze.unlisted}]`);
+// THE FREEZE CHECK STILL BITES (stub-proof — a checker that cannot fail is dead):
+const FREEZE_SENTINEL = 'src/lib/incidenceTraceRegistry.ts';
+const sentinelContent = fs.readFileSync(path.join(repoRoot, FREEZE_SENTINEL), 'utf8');
+const sentinelFlipped = sentinelContent.slice(0, 100) + (sentinelContent[100] === 'X' ? 'Y' : 'X') + sentinelContent.slice(101);
+const freezeBite = checkEngineFreeze({ overrides: { [FREEZE_SENTINEL]: sentinelFlipped } });
+const freezeCrlf = checkEngineFreeze({ overrides: { [FREEZE_SENTINEL]: sentinelContent.replace(/\r/g, '').replace(/\n/g, '\r\n') } });
+check('…and the freeze check still BITES: a one-character in-memory mutation of the sentinel FAILS it (exactly that file drifts) while the CRLF re-expression PASSES (CR-insensitive — no false wolf)',
+  freezeBite.ok === false && freezeBite.drifted.length === 1 && freezeBite.drifted[0] === FREEZE_SENTINEL &&
+  freezeCrlf.ok === true);
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

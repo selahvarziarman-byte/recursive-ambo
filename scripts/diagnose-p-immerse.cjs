@@ -415,73 +415,30 @@ if (chained.ok && chained.born.render.mode === 'classBody') {
 
 // ===== [i] byte-guards ==========================================================
 console.log('\n----- [i] no-regression: the committed instruments are byte-unchanged -----');
-// P-IMMERSE flag sweep (2026-07-11, sanctioned): `formInvariants.ts` and
-// `bornFormRouting.ts` LEFT this guard — the engineer-chartered sweep edits
-// them (the connectivity-honest classification string; the v0 word map
-// narrowed to its PROVABLE domain — two-pair claims 4-gon-only, the ratified
-// single-pair open path kept). Their new behavior is ratified in
-// diagnose-p-immerse-sweep.cjs.
-// Word-op single-face gate (2026-07-11, sanctioned): `playgroundOperations.ts`
-// and `customGluing.ts` LEFT this guard too — the engineer-chartered gate
-// makes the fundamental-polygon ops refuse multi-face forms (ratified in
-// diagnose-word-op-single-face-gate.cjs). Everything else stays guarded.
-const guarded = [
-  'src/lib/surfaceImmersion.ts',
-  'src/lib/globalW1.ts',
-  'src/lib/incidenceTraceRegistry.ts',
-  'src/lib/multiform.ts',
-  'src/lib/connectedSum.ts',
-  'src/lib/cutOperation.ts',
-  'src/lib/materializeOperation.ts',
-  'src/playground/snapshot.ts',
-  'src/manuscript/optionBModel.ts',
-  'src/manuscript/inkedFormModel.ts',
-  'src/manuscript/InkedForm.tsx',
-  'src/manuscript/InkedDomain.tsx',
-  'src/manuscript/worldModel.ts',
-  'src/manuscript/specimenModel.ts',
-  // COMBINE IS THE CONNECTED SUM (engineer-chartered, sanctioned 2026-07-12):
-  // `genesisModel.ts` LEFT this guard — the combine door now runs the
-  // co-ratified `connectedSum` (person-picked port faces, gate-by-name) and
-  // the story collector reaches BOTH parents of a multi-parent birth;
-  // ratified in diagnose-combine-is-connected-sum.cjs and the recut
-  // diagnose-manuscript-genesis.cjs. Everything else stays frozen.
-];
-// CR-INSENSITIVE comparison (mothership-ruled fix, 2026-07-11): the old
-// `git diff` idiom was line-ending-sensitive and FALSE-FAILED on CRLF-drifted
-// checkouts (three consecutive audits cried wolf on incidenceTraceRegistry).
-// Strip CR from BOTH sides — the HEAD blob and the working file — and compare
-// content. The guard's TEETH are self-tested right below: it must still fail
-// on a genuine one-character edit (a guard that cannot fail is worse than one
-// that false-fails).
-const crStrip = (s) => s.replace(/\r/g, '');
-const headContentOf = (file) =>
-  execSync(`git show HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
-let dirty = [];
-try {
-  for (const file of guarded) {
-    const head = crStrip(headContentOf(file));
-    const work = crStrip(fs.readFileSync(path.join(repoRoot, file), 'utf8'));
-    if (head !== work) dirty.push(file);
-  }
-} catch (e) {
-  dirty = [`guard failed to read: ${e.message}`];
-}
-check('immersions · globalW1 · link gate · engine · Option B · InkedForm/InkedDomain · worldModel: all byte-unchanged vs HEAD, CR-insensitively (formInvariants/bornFormRouting carry the SANCTIONED sweep edits; playgroundOperations/customGluing the SANCTIONED single-face gate — each ratified in its own diagnostic)',
-  dirty.length === 0);
-if (dirty.length) note(`dirty: ${dirty.join(', ')}`);
-// THE GUARD STILL BITES (the mandated self-test): a synthetic one-character
-// content change IN MEMORY must fail the comparison; the true content must
-// pass even when re-expressed with CRLF endings (the false-fail is dead).
-const sentinel = 'src/lib/incidenceTraceRegistry.ts'; // the very file that cried wolf
-const sentinelHead = crStrip(headContentOf(sentinel));
-const flipAt = 100;
-const mutated = sentinelHead.slice(0, flipAt) + (sentinelHead[flipAt] === 'X' ? 'Y' : 'X') + sentinelHead.slice(flipAt + 1);
-check('the fixed guard still BITES: a genuine one-character edit (synthesized in memory) FAILS the comparison, on a file that stays guarded',
-  guarded.includes(sentinel) && crStrip(mutated) !== sentinelHead && mutated.length === sentinelHead.length);
-check('…and never false-fails again: the true content passes both as-is AND re-expressed with CRLF line endings',
-  crStrip(sentinelHead.replace(/\n/g, '\r\n')) === sentinelHead &&
-  crStrip(fs.readFileSync(path.join(repoRoot, sentinel), 'utf8')) === sentinelHead);
+// THE ENGINE FREEZE MANIFEST (engineer-chartered 2026-07-12): the old
+// per-diagnostic HEAD-differential guard REQUIRED A HOLE IN ITSELF to permit
+// any sanctioned change (a carve-out — silent, and permanent unless a human
+// remembered; `playgroundOperations.ts` ended up guarded by NOBODY, and this
+// guard alone had accumulated FOUR carve-out disclosures). The engine is now
+// frozen by ONE on-repo manifest of content hashes
+// (docs/governance/ENGINE_FREEZE_MANIFEST.txt): a sanctioned change is a
+// one-line hash update in the SAME commit, and coverage never lapses. The
+// shared checker READS the manifest and can never write it.
+const { checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
+const freeze = checkEngineFreeze();
+check('THE ENGINE FREEZE MANIFEST: all 27 frozen engine files match their manifest hashes and every source file under the engine roots is classified — drifted [] · missing [] · unlisted []',
+  freeze.ok === true && freeze.checked === 27 &&
+  freeze.drifted.length === 0 && freeze.missing.length === 0 && freeze.unlisted.length === 0);
+if (!freeze.ok) note(`drifted: [${freeze.drifted}] · missing: [${freeze.missing}] · unlisted: [${freeze.unlisted}]`);
+// THE FREEZE CHECK STILL BITES (stub-proof — a checker that cannot fail is dead):
+const FREEZE_SENTINEL = 'src/lib/incidenceTraceRegistry.ts'; // the very file that once cried wolf
+const sentinelContent = fs.readFileSync(path.join(repoRoot, FREEZE_SENTINEL), 'utf8');
+const sentinelFlipped = sentinelContent.slice(0, 100) + (sentinelContent[100] === 'X' ? 'Y' : 'X') + sentinelContent.slice(101);
+const freezeBite = checkEngineFreeze({ overrides: { [FREEZE_SENTINEL]: sentinelFlipped } });
+const freezeCrlf = checkEngineFreeze({ overrides: { [FREEZE_SENTINEL]: sentinelContent.replace(/\r/g, '').replace(/\n/g, '\r\n') } });
+check('…and the freeze check still BITES: a one-character in-memory mutation of the sentinel FAILS it (exactly that file drifts) while the CRLF re-expression PASSES (CR-insensitive — no false wolf)',
+  freezeBite.ok === false && freezeBite.drifted.length === 1 && freezeBite.drifted[0] === FREEZE_SENTINEL &&
+  freezeCrlf.ok === true);
 check('the splitter sees ONE component on every closed body above (sanity of the component machinery)',
   splitComplexComponents(acquireFaithfulComplex(fc.body, null).complex).length === 1 &&
   splitComplexComponents(acquireFaithfulComplex(n3c.body, null).complex).length === 1);

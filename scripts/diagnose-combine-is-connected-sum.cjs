@@ -319,60 +319,31 @@ if (headHasOldDoor) {
 
 // ═════ [i] guards ═════════════════════════════════════════════════════════════
 console.log('\n----- [i] no-regression: the door is manuscript-layer; the macro and the engine are frozen -----');
-const crStrip = (s) => s.replace(/\r/g, '');
-const headContentOf = (file) =>
-  execSync(`git show HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
-// `genesisModel.ts` (the door), `writtenFormModel.ts` (the additive
-// parentShapes field), `ManuscriptView.tsx` / `ManuscriptChrome.tsx` (the
-// port-face picker) carry THIS mandate's sanctioned edits — ratified above.
-// Everything the door RUNS is frozen:
-const guarded = [
-  'src/lib/connectedSum.ts', // the co-ratified macro — consumed BY IMPORT, byte-unchanged
-  'src/lib/multiform.ts',
-  'src/lib/genealogyDag.ts',
-  'src/lib/complexIdentification.ts',
-  'src/lib/surfaceOperations.ts',
-  'src/lib/materializeOperation.ts',
-  'src/lib/transformationLedger.ts',
-  'src/lib/incidenceTraceRegistry.ts',
-  'src/lib/globalW1.ts',
-  'src/lib/cutOperation.ts',
-  'src/lib/surfaceImmersion.ts',
-  // `playgroundOperations.ts` LEAVES this guard for the REFUSAL-ORDER re-cut
-  // (engineer-chartered 2026-07-13: the FORM-level single-face gate fires
-  // BEFORE the selection-level face prompt — order only, every string
-  // committed; ratified in diagnose-the-person-picks-the-face.cjs section
-  // [t]). Restore it when that re-cut reaches HEAD.
-  'src/playground/customGluing.ts',
-  'src/playground/bornFormRouting.ts',
-  'src/playground/formInvariants.ts',
-  'src/playground/snapshot.ts',
-  'src/playground/genealogyLayout.ts',
-  'src/manuscript/surfaceClassifier.ts',
-  'src/manuscript/classBodyModel.ts',
-  'src/manuscript/standardBodies.ts',
-  'src/manuscript/inkedFormModel.ts',
-  'src/manuscript/optionBModel.ts',
-];
-let dirty = [];
-try {
-  for (const file of guarded) {
-    if (crStrip(headContentOf(file)) !== crStrip(fs.readFileSync(path.join(repoRoot, file), 'utf8'))) dirty.push(file);
-  }
-} catch (e) {
-  dirty = [`guard failed to read: ${e.message}`];
-}
-check('connectedSum · multiform · genealogyDag · the engine · certifiers · classifiers · the registry: byte-unchanged vs HEAD, CR-insensitively (the door reuses, never forks)',
-  dirty.length === 0);
-if (dirty.length) note(`dirty: ${dirty.join(', ')}`);
-const sentinel = 'src/lib/incidenceTraceRegistry.ts';
-const sentinelHead = crStrip(headContentOf(sentinel));
-const mutated = sentinelHead.slice(0, 100) + (sentinelHead[100] === 'X' ? 'Y' : 'X') + sentinelHead.slice(101);
-check('the byte-guard still BITES on a genuine one-character in-memory edit — and the true content passes even CRLF-re-expressed',
-  guarded.includes(sentinel) &&
-  crStrip(mutated) !== sentinelHead &&
-  crStrip(sentinelHead.replace(/\n/g, '\r\n')) === sentinelHead &&
-  crStrip(fs.readFileSync(path.join(repoRoot, sentinel), 'utf8')) === sentinelHead);
+// THE ENGINE FREEZE MANIFEST (engineer-chartered 2026-07-12): the old
+// per-diagnostic HEAD-differential guard REQUIRED A HOLE IN ITSELF to permit
+// any sanctioned change (a carve-out — silent, and permanent unless a human
+// remembered; `playgroundOperations.ts` ended up guarded by NOBODY). The
+// engine is now frozen by ONE on-repo manifest of content hashes
+// (docs/governance/ENGINE_FREEZE_MANIFEST.txt): a sanctioned change is a
+// one-line hash update in the SAME commit, and coverage never lapses. The
+// shared checker READS the manifest and can never write it. (§h's
+// `git show HEAD:` read above is a DIFFERENT mechanism — the carried
+// mutants' HEAD-state-aware fidelity — and stays.)
+const { checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
+const freeze = checkEngineFreeze();
+check('THE ENGINE FREEZE MANIFEST: all 27 frozen engine files match their manifest hashes and every source file under the engine roots is classified — drifted [] · missing [] · unlisted []',
+  freeze.ok === true && freeze.checked === 27 &&
+  freeze.drifted.length === 0 && freeze.missing.length === 0 && freeze.unlisted.length === 0);
+if (!freeze.ok) note(`drifted: [${freeze.drifted}] · missing: [${freeze.missing}] · unlisted: [${freeze.unlisted}]`);
+// THE FREEZE CHECK STILL BITES (stub-proof — a checker that cannot fail is dead):
+const FREEZE_SENTINEL = 'src/lib/incidenceTraceRegistry.ts';
+const sentinelContent = fs.readFileSync(path.join(repoRoot, FREEZE_SENTINEL), 'utf8');
+const sentinelFlipped = sentinelContent.slice(0, 100) + (sentinelContent[100] === 'X' ? 'Y' : 'X') + sentinelContent.slice(101);
+const freezeBite = checkEngineFreeze({ overrides: { [FREEZE_SENTINEL]: sentinelFlipped } });
+const freezeCrlf = checkEngineFreeze({ overrides: { [FREEZE_SENTINEL]: sentinelContent.replace(/\r/g, '').replace(/\n/g, '\r\n') } });
+check('…and the freeze check still BITES: a one-character in-memory mutation of the sentinel FAILS it (exactly that file drifts) while the CRLF re-expression PASSES (CR-insensitive — no false wolf)',
+  freezeBite.ok === false && freezeBite.drifted.length === 1 && freezeBite.drifted[0] === FREEZE_SENTINEL &&
+  freezeCrlf.ok === true);
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);
