@@ -425,12 +425,18 @@ if (!headModelSrc.includes('depth[idx] = travel + best.t;')) {
     ));
   note(`removed: ${removedLines.length} lines (all echoFade) · added: ${addedLines.length} lines (depth + the re-cut comments); HEAD lacks both edits — the diff proof ran LIVE`);
 } else {
-  // POST-COMMIT: HEAD carries both sanctioned edits — the diff proof ran
-  // pre-commit while it could; assert the world is as that proof left it.
-  check('★ CLAUSE 4 — POST-COMMIT: HEAD carries the depth buffer and no tracer fade, and apertureModel matches it line for line (the diff proof ran pre-commit; this branch retires onto its own detection, as designed)',
-    removedLines.length === 0 && addedLines.length === 0 &&
-    !headModelSrc.includes('Math.pow(craft.echoFade'));
-  note('HEAD carries the re-cut — the pre-commit diff-proof branch has retired, as designed');
+  // POST-COMMIT (recut 2026-07-14, the folded-edge mandate): the line-exact
+  // diff claim retired with the ink's commit (7ff4fff) — later SANCTIONED
+  // mandates (the folded-edge verdict door) legitimately touch apertureModel
+  // again. This branch pins the ink's MARKERS, which must never regress:
+  // the depth buffer present, the tracer fade extinct — in HEAD and working.
+  const workModelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
+  check('★ CLAUSE 4 — POST-COMMIT: HEAD and the working apertureModel both carry the ink\'s markers — the depth buffer present, the tracer fade (Math.pow(craft.echoFade…)) extinct in both (the line-exact diff proof ran pre-commit and retired with the ink\'s commit; later sanctioned mandates may add, never regress)',
+    headModelSrc.includes('depth[idx] = travel + best.t;') &&
+    !headModelSrc.includes('Math.pow(craft.echoFade') &&
+    workModelSrc.includes('depth[idx] = travel + best.t;') &&
+    !stripComments(workModelSrc).includes('Math.pow(craft.echoFade'));
+  note('HEAD carries the ink re-cut — the line-exact branch retired with its commit; the markers stand');
 }
 const t3Committed = buildThreeTorusDomain();
 const rowFor = (a, b) => {
@@ -458,6 +464,12 @@ const inkAllowed = new Set([
   'src/manuscript/ApertureView.tsx',
   'src/manuscript/ManuscriptView.tsx',
   'src/manuscript/apertureModel.ts',
+  // THE FOLDED EDGE (2026-07-14, ADR 0022): that mandate's sanctioned surface
+  // rides the same working tree — the gate's folded-edge verdict + the
+  // gate-first tower order + the verdict door; ratified in
+  // diagnose-the-folded-edge.cjs.
+  'src/lib/level3SoundnessGate.ts',
+  'src/lib/level3Invariants.ts',
 ]);
 const inkMoved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

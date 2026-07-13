@@ -31,8 +31,37 @@ export interface Level3InvariantTower {
   gate: Level3SoundnessReport;
 }
 
-export function level3InvariantTower(complex: Level3Complex): Level3InvariantTower {
+// THE FOLDED EDGE (ADR 0022, 2026-07-14): a folded edge class (the gate's
+// 'folded-edge' reading — the identification is NOT FREE; the quotient is an
+// ORBIFOLD) makes the oriented tower unreadable: a folded cell has no
+// consistent orientation, so w₁/homology CANNOT be read on this cell
+// structure. The verdict asserts EXACTLY the non-freeness and nothing more.
+export interface Level3FoldedVerdict {
+  folded: true;
+  sound: false;
+  chi: number; // Build 1's Tier-1 value — still real (no orientation needed)
+  foldedEdgeClasses: string[]; // the class reps whose ends coincide (the fold loci)
+  gate: Level3SoundnessReport;
+}
+
+export type Level3TowerReading = { folded: false; tower: Level3InvariantTower } | Level3FoldedVerdict;
+
+// THE ORDER IS THE FIX (ADR 0022): the GATE runs BEFORE the orientation
+// reader, so a folded complex is a VERDICT here and level3Orientation never
+// sees it — its own throw survives one layer deeper as an unreachable-from-
+// the-door programmer-guard.
+export function readLevel3Tower(complex: Level3Complex): Level3TowerReading {
   const gate = classifyLevel3Soundness(complex);
+  const foldedEdgeClasses = gate.failures
+    .filter((f): f is Extract<typeof f, { kind: 'folded-edge' }> => f.kind === 'folded-edge')
+    .map((f) => f.edgeClass);
+  if (foldedEdgeClasses.length > 0) {
+    return { folded: true, sound: false, chi: complex.chi, foldedEdgeClasses, gate };
+  }
+  return { folded: false, tower: towerFromGate(complex, gate) };
+}
+
+function towerFromGate(complex: Level3Complex, gate: Level3SoundnessReport): Level3InvariantTower {
   const oriented = buildOrientedChainComplex(complex);
   const w1 = readLevel3W1(complex, oriented);
   const homology = computeIntegerHomology(
@@ -60,4 +89,17 @@ export function level3InvariantTower(complex: Level3Complex): Level3InvariantTow
     oriented,
     gate,
   };
+}
+
+export function level3InvariantTower(complex: Level3Complex): Level3InvariantTower {
+  const reading = readLevel3Tower(complex);
+  if (reading.folded) {
+    // the gate-first programmer-guard (ADR 0022): the DOOR routes through
+    // readLevel3Tower and never lands here; anything that does gets the
+    // verdict's name, not the orientation reader's stack trace.
+    throw new Error(
+      `level3Invariants: the S² gate reads folded edge class(es) ${reading.foldedEdgeClasses.join(', ')} — the identification is not free (an orbifold verdict, kind 'folded-edge'); the oriented tower cannot be built on a folded cell structure. Route through readLevel3Tower for the verdict.`,
+    );
+  }
+  return reading.tower;
 }

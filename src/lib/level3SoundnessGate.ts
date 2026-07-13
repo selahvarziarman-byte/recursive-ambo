@@ -25,6 +25,19 @@ import {
 
 export type Level3Failure =
   | {
+      // THE FOLDED EDGE (ADR 0022, 2026-07-14): the identification maps this
+      // edge class onto its own reverse, fixing its midpoint — the action is
+      // NOT FREE, so the quotient is an ORBIFOLD. A VERDICT, not a crash.
+      // This asserts EXACTLY the non-freeness and NOTHING MORE: whether the
+      // underlying space is also a manifold is the SUBDIVIDED gate's question
+      // (a π-rotation fold can carry a manifold; a reflection fold a mirror
+      // boundary). Detected HERE, before the orientation reader ever sees the
+      // complex — the order is the fix.
+      kind: 'folded-edge';
+      edgeClass: string;
+      memberEdgeIds: string[];
+    }
+  | {
       kind: 'edge-link';
       clause: 'a';
       edgeClass: string;
@@ -49,6 +62,31 @@ export interface Level3SoundnessReport {
 
 export function classifyLevel3Soundness(complex: Level3Complex): Level3SoundnessReport {
   const failures: Level3Failure[] = [];
+
+  // THE FOLDED EDGE (ADR 0022) — read FIRST (the refusal-order law: the
+  // non-freeness verdict precedes the link readings; it is what makes the
+  // oriented tower unreadable on this cell structure). The same cheap test
+  // level3Orientation's programmer-guard uses — tails-together AND
+  // tail-to-head, i.e. the class rep's two directed ends land in ONE end
+  // class — as a READING, never an exception.
+  const edgeGroups = new Map<string, { id: string; a: string; b: string }[]>();
+  for (const edge of complex.originalEdges) {
+    const root = complex.edgeClassOf(edge.id);
+    const list = edgeGroups.get(root);
+    if (list) list.push(edge);
+    else edgeGroups.set(root, [edge]);
+  }
+  for (const members of edgeGroups.values()) {
+    members.sort((x, y) => x.id.localeCompare(y.id));
+    const rep = members[0];
+    if (complex.endClassOf(rep.id, rep.a) === complex.endClassOf(rep.id, rep.b)) {
+      failures.push({
+        kind: 'folded-edge',
+        edgeClass: rep.id,
+        memberEdgeIds: members.map((m) => m.id),
+      });
+    }
+  }
 
   const edgeLinks = extractEdgeLinks(complex).map((reading) => {
     const decomposition = decomposeLink(reading.adjacency);

@@ -448,6 +448,12 @@ const ALLOWED_SRC_CHANGES = new Set([
   // change PURELY ADDITIVE (HEAD a line-subsequence of the working file).
   'src/manuscript/apertureModel.ts',
   'src/manuscript/ApertureView.tsx',
+  // THE FOLDED EDGE (2026-07-14, ADR 0022, sealed 82e98032…5b6e): the gate's
+  // folded-edge verdict + the gate-first tower order — ratified in
+  // diagnose-the-folded-edge.cjs (its Clause 4 proves the 415 non-folded
+  // pairings byte-identical).
+  'src/lib/level3SoundnessGate.ts',
+  'src/lib/level3Invariants.ts',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults (the aperture model + view are NEW files); NOT ONE model, renderer, certifier or engine file moved — dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 27',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

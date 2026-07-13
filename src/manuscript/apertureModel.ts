@@ -49,7 +49,15 @@
 // InkedDomain are BYTE-UNCHANGED — the register inversion is view-layer.
 
 import type { Shape, Vec3 } from '../types/geometry';
-import { readSeedCell, type FacePairing, type Level3SeedCell } from '../lib/faceIdentification';
+import {
+  flipGlueFaces,
+  glueFaces,
+  readSeedCell,
+  type FacePairing,
+  type Level3SeedCell,
+} from '../lib/faceIdentification';
+import { readLevel3Tower } from '../lib/level3Invariants';
+import type { Level3SoundnessReport } from '../lib/level3SoundnessGate';
 import { buildFormDomain } from './formDomainModel';
 import type { DomainModel } from './worldModel';
 
@@ -377,16 +385,30 @@ export function aperturePairingRefusal(seedShape: Shape, rows: AperturePairRow[]
   return null;
 }
 
-/**
- * Glue: resolve each row's picked candidate, DERIVE its mode from the map's
- * witnessed fit, RECORD it, and hand the pattern to the committed door
- * (`buildFormDomain` → glueFaces/flipGlueFaces per the level-3 contracts →
- * the tower certifies; the S² gate refuses by name through `tower.sound`).
- */
-export function buildPersonDomain(seedShape: Shape, rows: AperturePairRow[], key: string, title: string): DomainModel {
+// THE FOLDED EDGE (ADR 0022, researcher-ruled wall — verbatim; it asserts
+// EXACTLY the non-freeness and nothing more, and carries its cure):
+export const foldedEdgeWall = (edgeClass: string): string =>
+  `This identification is not free: it folds edge class ${edgeClass} onto its own reverse, fixing its midpoint. ` +
+  `The quotient is an orbifold — it carries a fold locus — not a free-quotient manifold. ` +
+  `Its invariants cannot be read on this cell structure (a folded cell has no consistent orientation); ` +
+  `subdivide to resolve the fold, and the gate will read it.`;
+
+export interface FoldedEdgeVerdict {
+  folded: true;
+  key: string;
+  title: string;
+  chi: number;
+  foldedEdgeClasses: string[];
+  gate: Level3SoundnessReport;
+  wall: string; // the researcher-ruled wall, naming the fold locus and the cure
+}
+
+export type PersonDomainVerdict = { folded: false; domain: DomainModel } | FoldedEdgeVerdict;
+
+function resolvePersonPairings(seedShape: Shape, rows: AperturePairRow[]): FacePairing[] {
   const refusal = aperturePairingRefusal(seedShape, rows);
   if (refusal) throw new Error(`apertureModel: ${refusal}`);
-  const pairings: FacePairing[] = rows.map((row) => {
+  return rows.map((row) => {
     const candidates = dihedralMapCandidates(seedShape, row.faceA as string, row.faceB as string);
     const candidate = candidates.find((c) => c.key === row.candidateKey);
     if (!candidate) throw new Error(`apertureModel: unknown map candidate ${row.candidateKey}`);
@@ -397,7 +419,54 @@ export function buildPersonDomain(seedShape: Shape, rows: AperturePairRow[], key
       map: candidate.map,
     };
   });
-  return buildFormDomain(seedShape, pairings, key, title);
+}
+
+/**
+ * Glue, as a VERDICT (ADR 0022): resolve each row's picked candidate (mode
+ * DERIVED from the map's witnessed fit, RECORDED), enact the identification,
+ * and read the tower GATE-FIRST. A folded edge class is a verdict — the
+ * identification is not free; the quotient is an ORBIFOLD — refused BY NAME
+ * with the researcher's wall (which carries its cure: subdivide). Zero
+ * throws escape this door. The sound path runs the COMMITTED `buildFormDomain`
+ * verbatim — byte-identical to the pre-verdict route.
+ */
+export function buildPersonDomainVerdict(
+  seedShape: Shape,
+  rows: AperturePairRow[],
+  key: string,
+  title: string,
+): PersonDomainVerdict {
+  const pairings = resolvePersonPairings(seedShape, rows);
+  const seed = readSeedCell(seedShape);
+  const complex = pairings.some((p) => p.mode === 'reversing')
+    ? flipGlueFaces(seed, pairings)
+    : glueFaces(seed, pairings);
+  const reading = readLevel3Tower(complex);
+  if (reading.folded) {
+    return {
+      folded: true,
+      key,
+      title,
+      chi: reading.chi,
+      foldedEdgeClasses: reading.foldedEdgeClasses,
+      gate: reading.gate,
+      wall: foldedEdgeWall(reading.foldedEdgeClasses[0]),
+    };
+  }
+  return { folded: false, domain: buildFormDomain(seedShape, pairings, key, title) };
+}
+
+/**
+ * The DomainModel-or-throw door (kept for callers that demand a domain): on
+ * a folded verdict it throws the WALL — named, gate-first — never the
+ * orientation reader's stack trace.
+ */
+export function buildPersonDomain(seedShape: Shape, rows: AperturePairRow[], key: string, title: string): DomainModel {
+  const verdict = buildPersonDomainVerdict(seedShape, rows, key, title);
+  if (verdict.folded) {
+    throw new Error(`apertureModel: ${verdict.wall}`);
+  }
+  return verdict.domain;
 }
 
 // ---------------------------------------------------------------------------
