@@ -404,8 +404,13 @@ check('the SPECIMEN carries the relocated fundamental domain + pairings + tower:
       viewSrc.includes('<ApertureBody')
     );
   })());
-check('the CRAFT SURFACE is exposed, not dialed by the builder: tone curve · contour weight · echo fade · per-object tones live in APERTURE_CRAFT_DEFAULTS + designDefaults.world.aperture + a Leva folder the DESIGNER owns (source-asserted); the ink stays manuscript grey-on-paper (no light source colour, no photoreal material anywhere in the model)',
-  ['toneGamma', 'contourWeight', 'echoFade', 'maskTone', 'coilTone', 'scaffoldTone', 'formTone'].every((k) => k in A.APERTURE_CRAFT_DEFAULTS) &&
+// RE-CUT (THE INK's double-fade fix, 2026-07-14): echoFade LEFT the tracer's
+// craft — one dial, one home (the ink, on the marks); value carries darkness
+// only. The craft surface still holds the tracer's own dials.
+check('the CRAFT SURFACE is exposed, not dialed by the builder: tone curve · contour weight · per-object tones live in APERTURE_CRAFT_DEFAULTS + designDefaults.world.aperture + a Leva folder the DESIGNER owns (source-asserted); echoFade lives in ONE home — the INK\'s defaults, not the tracer\'s (the double-fade re-cut); the ink stays manuscript grey-on-paper (no photoreal material anywhere in the model)',
+  ['toneGamma', 'contourWeight', 'maskTone', 'coilTone', 'scaffoldTone', 'formTone'].every((k) => k in A.APERTURE_CRAFT_DEFAULTS) &&
+  !('echoFade' in A.APERTURE_CRAFT_DEFAULTS) &&
+  'echoFade' in req('src/manuscript/apertureInk.ts').APERTURE_INK_DEFAULTS &&
   fs.readFileSync(path.join(repoRoot, 'src/design/designDefaults.ts'), 'utf8').includes('aperture: {') &&
   viewSrc.includes("useControls('world · aperture'") &&
   !/specular|metalness|roughness|MeshStandard|pointLight|spotLight/.test(modelSrc));
@@ -436,6 +441,13 @@ const ALLOWED_SRC_CHANGES = new Set([
   'src/design/designDefaults.ts',
   'src/manuscript/ManuscriptChrome.tsx',
   'src/manuscript/ManuscriptView.tsx',
+  // THE INK (engineer-chartered 2026-07-14, sealed 5c430603…9f7e): the ink
+  // mandate's sanctioned surface — the additive depth buffer in the tracer
+  // and the re-inked view wrap (the void is paper; the line carries the
+  // form). Ratified in diagnose-the-ink.cjs; its Clause 4 proves the model
+  // change PURELY ADDITIVE (HEAD a line-subsequence of the working file).
+  'src/manuscript/apertureModel.ts',
+  'src/manuscript/ApertureView.tsx',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults (the aperture model + view are NEW files); NOT ONE model, renderer, certifier or engine file moved — dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 27',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

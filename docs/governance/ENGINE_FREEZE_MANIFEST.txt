@@ -164,6 +164,7 @@ NOT_FROZEN src/manuscript/InkedSkeleton.tsx — render seam beside the frozen In
 NOT_FROZEN src/manuscript/ManuscriptChrome.tsx — manuscript chrome seam under active mandate churn — ratified per-build by its own witnesses
 NOT_FROZEN src/manuscript/ManuscriptView.tsx — manuscript view seam under active mandate churn — ratified per-build by its own witnesses
 NOT_FROZEN src/manuscript/OperationGlyphs.tsx — glyph chrome (visual only) — not engine logic
+NOT_FROZEN src/manuscript/apertureInk.ts — THE INK's react-free recipe (2026-07-14 mandate): the void is paper, the line carries the form — contour · gated hatch · alpha rim; ratified by diagnose-the-ink.cjs
 NOT_FROZEN src/manuscript/apertureModel.ts — THE APERTURE's react-free core (2026-07-13 mandate): map menu · witnessed deck fit · recession-law geometry · gate · room · image-space tracer — ratified by diagnose-the-aperture.cjs; freeze candidate once the mandate lands
 NOT_FROZEN src/manuscript/formDomainModel.ts — manuscript model outside the chartered freeze set — not yet ruled frozen
 NOT_FROZEN src/manuscript/writtenFormModel.ts — the operating-context model — churned by sanctioned mandates (three in 2026-07 alone); ratified per-build

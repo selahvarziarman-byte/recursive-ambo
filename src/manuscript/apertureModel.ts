@@ -669,7 +669,8 @@ export interface ApertureCraft {
   level: number; // transport depth (bounded — linear, never an orbit enumeration)
   toneGamma: number; // tone curve
   contourWeight: number; // silhouette-edge darkening
-  echoFade: number; // per-transport dimming (0..1 multiplier per echo)
+  // NO echoFade here (THE INK re-cut, 2026-07-14): the echo fade lives in ONE
+  // place — the ink, applied to the MARKS. value carries darkness only.
   maskTone: number;
   coilTone: number;
   scaffoldTone: number;
@@ -680,7 +681,6 @@ export const APERTURE_CRAFT_DEFAULTS: ApertureCraft = {
   level: 6,
   toneGamma: 1.25,
   contourWeight: 0.55,
-  echoFade: 0.88,
   maskTone: 1.0,
   coilTone: 0.92,
   scaffoldTone: 0.28,
@@ -708,6 +708,10 @@ export interface ApertureTrace {
   echo: Uint8Array; // transports before the hit
   mirrored: Int8Array; // sign of det(accumulated word) at the hit
   material: Int8Array;
+  // THE INK (2026-07-14, additive): accumulated ray travel at the hit
+  // (transport legs summed + the final segment) — the contour's fold detector
+  // (a near copy crossing a far one is a depth discontinuity, not a hit/material one)
+  depth: Float32Array;
   counts: ApertureTraceCounts;
 }
 
@@ -799,6 +803,7 @@ export function traceAperture(options: {
   const echoBuf = new Uint8Array(W * H);
   const mirrored = new Int8Array(W * H);
   const material = new Int8Array(W * H);
+  const depth = new Float32Array(W * H);
 
   let transports = 0;
   let litPixels = 0;
@@ -910,6 +915,7 @@ export function traceAperture(options: {
       let v: V3 = norm(add(add(mulS(fwd, FL), mulS(right, px - W / 2 + 0.5)), mulS(up, -(py - H / 2 + 0.5))));
       let g: DeckTransform = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]; // the accumulated deck word
       let echo = 0;
+      let travel = 0;
       for (let step = 0; step <= LEVEL; step += 1) {
         // the exit face of Δ along the ray
         let tExit = Infinity;
@@ -962,7 +968,11 @@ export function traceAperture(options: {
           const facing = Math.abs(dot(best.n, v));
           let tone = 0.14 + 0.86 * lambert;
           tone *= 1 - craft.contourWeight * (1 - facing) * (1 - facing); // contour weight — line-art rim, not photoreal light
-          tone *= Math.pow(craft.echoFade, echo); // echo fade — depth in transports, not fog
+          // THE INK re-cut (2026-07-14): NO echo fade here — value is raw
+          // shading (how dark is this surface), never distance (how far is
+          // this copy). DISTANCE is carried by the ink's fade, on the marks;
+          // a tracer-side fade would bake "far" into "dark" and the hatch
+          // would shade distance as if it were shadow.
           const objectTone =
             best.mat === APERTURE_MATERIALS.MASK
               ? craft.maskTone
@@ -980,6 +990,7 @@ export function traceAperture(options: {
           echoBuf[idx] = echo;
           mirrored[idx] = deckDet(g) < 0 ? -1 : 1;
           material[idx] = best.mat;
+          depth[idx] = travel + best.t;
           litPixels += 1;
           if (!best.scaffold) recordCopy(best.mat, g);
           break;
@@ -1003,6 +1014,7 @@ export function traceAperture(options: {
         p = add(p, mulS(v, 1e-5));
         transports += 1;
         echo += 1;
+        travel += tExit;
       }
     }
   }
@@ -1025,6 +1037,7 @@ export function traceAperture(options: {
     echo: echoBuf,
     mirrored,
     material,
+    depth,
     counts: {
       transports,
       litPixels,

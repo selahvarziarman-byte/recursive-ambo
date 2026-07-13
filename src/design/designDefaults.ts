@@ -266,14 +266,28 @@ export const manuscriptDefaults = {
       level: 6, // transport depth (bounded; linear in depth, never an orbit enumeration)
       toneGamma: 1.25, // the tone curve
       contourWeight: 0.55, // silhouette-edge darkening — line art, not photoreal light
-      echoFade: 0.88, // per-transport dimming (depth in echoes)
+      // THE INK (designer's spec, 2026-07-14): exponential decay was right,
+      // 0.88 left a soup of distant copies — 0.63 (τ≈2.2) dissolves them
+      echoFade: 0.63,
       maskTone: 1.0, // per-object tone — the two-faced mask
       coilTone: 0.92, // — the right-handed coil (+ its axis)
       scaffoldTone: 0.28, // — the cell's own edges: faint scaffolding AT MOST
       formTone: 0.95, // — the person's placed form
       rimSeed: 3, // the hand of the cut (same seed, same tear)
-      interiorInk: '#2a251c', // the deep tone of the interior void
+      interiorInk: '#2a251c', // THE LINE colour — never a fill (the void is paper)
       size: 3.6, // aperture plane size (world units)
+      // THE INK's own dials (designer-owned; exposed, not dialed) — the void
+      // is paper, the line carries the form, tone is a guest:
+      contourEchoFade: 0.68, // the line outlives the tone by a beat
+      contourGain: 1.9, // contour = the primary mark
+      contourBlur: 0.6, // px
+      hatchAngleA: 36, // degrees
+      hatchAngleB: -46, // degrees
+      hatchPeriod: 5, // px
+      hatchWidth: 1.5, // px
+      hatchThresholdA: 0.5, // hatch only where genuinely dark
+      hatchThresholdB: 0.74, // the second, steeper family
+      darkSolid: 0.9, // the mask's dark material (inert today — real openings; arms when a dark-material mask lands)
     },
     // P-IMMERSE — the honest non-manifold flag: WHICH edges are junctions is
     // the classifier's slot-count reading (>2 face wedges); the knob is ink only.

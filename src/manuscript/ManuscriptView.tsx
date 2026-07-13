@@ -407,12 +407,27 @@ export default function ManuscriptView() {
     level: { value: d.world.aperture.level, min: 2, max: 8, step: 1 },
     toneGamma: { value: d.world.aperture.toneGamma, min: 0.5, max: 2.5, step: 0.05 },
     contourWeight: { value: d.world.aperture.contourWeight, min: 0, max: 1, step: 0.05 },
-    echoFade: { value: d.world.aperture.echoFade, min: 0.5, max: 1, step: 0.01 },
+    echoFade: { value: d.world.aperture.echoFade, min: 0.3, max: 1, step: 0.01 },
     maskTone: { value: d.world.aperture.maskTone, min: 0, max: 1.4, step: 0.02 },
     coilTone: { value: d.world.aperture.coilTone, min: 0, max: 1.4, step: 0.02 },
     scaffoldTone: { value: d.world.aperture.scaffoldTone, min: 0, max: 1, step: 0.02 },
     formTone: { value: d.world.aperture.formTone, min: 0, max: 1.4, step: 0.02 },
     rimSeed: { value: d.world.aperture.rimSeed, min: 0, max: 12, step: 1 },
+  });
+  // THE INK's dials (designer's spec 2026-07-14 — exposed, not dialed): the
+  // void is paper, the line carries the form; none of these reaches the
+  // tracer — the ink moves no copy.
+  const inkCtl = useControls('world · aperture ink', {
+    contourEchoFade: { value: d.world.aperture.contourEchoFade, min: 0.3, max: 1, step: 0.01 },
+    contourGain: { value: d.world.aperture.contourGain, min: 0.5, max: 4, step: 0.05 },
+    contourBlur: { value: d.world.aperture.contourBlur, min: 0.1, max: 2, step: 0.05 },
+    hatchAngleA: { value: d.world.aperture.hatchAngleA, min: -90, max: 90, step: 1 },
+    hatchAngleB: { value: d.world.aperture.hatchAngleB, min: -90, max: 90, step: 1 },
+    hatchPeriod: { value: d.world.aperture.hatchPeriod, min: 2, max: 12, step: 0.5 },
+    hatchWidth: { value: d.world.aperture.hatchWidth, min: 0.5, max: 6, step: 0.25 },
+    hatchThresholdA: { value: d.world.aperture.hatchThresholdA, min: 0, max: 1, step: 0.02 },
+    hatchThresholdB: { value: d.world.aperture.hatchThresholdB, min: 0, max: 1, step: 0.02 },
+    darkSolid: { value: d.world.aperture.darkSolid, min: 0, max: 1, step: 0.02 },
   });
   const driftCtl = useControls('world · drift', {
     enabled: d.world.drift.enabled,
@@ -541,6 +556,7 @@ export default function ManuscriptView() {
   const [apertureRows, setApertureRows] = useState<AperturePairRow[]>(emptyApertureRows);
   const [apertureNotice, setApertureNotice] = useState<string | null>(null);
   const [placedForms, setPlacedForms] = useState<Record<string, string>>({});
+  const [displacedRooms, setDisplacedRooms] = useState<Record<string, boolean>>({});
   const dim3All = useMemo(() => [...world.dim3, ...builtDomains], [world, builtDomains]);
 
   // ----- Option B (follow-on): certified generators for plain-rendered forms —
@@ -665,7 +681,14 @@ export default function ManuscriptView() {
         }
         const placedId = placedForms[model.key];
         const placedShape = placedId ? shapeById.get(placedId) ?? null : null;
-        const scene = buildApertureScene(model.shape, placedShape);
+        // BOUND 1 (mothership): the mask and coil are DEFAULTS, not permanent
+        // furniture — a placed form can DISPLACE them (the scene recomposes
+        // from the same committed pieces: the form's mesh, the cell's rods).
+        const base = buildApertureScene(model.shape, placedShape);
+        const scene =
+          placedShape && displacedRooms[model.key]
+            ? { meshes: base.meshes.slice(1), capsules: [], rods: base.rods, rodRadius: base.rodRadius }
+            : base;
         const trace = traceAperture({
           deck: gate.deck,
           scene,
@@ -675,7 +698,8 @@ export default function ManuscriptView() {
             level: apertureCtl.level,
             toneGamma: apertureCtl.toneGamma,
             contourWeight: apertureCtl.contourWeight,
-            echoFade: apertureCtl.echoFade,
+            // echoFade deliberately absent (THE INK re-cut): the fade is the
+            // ink's alone — the tracer's value carries darkness, never distance
             maskTone: apertureCtl.maskTone,
             coilTone: apertureCtl.coilTone,
             scaffoldTone: apertureCtl.scaffoldTone,
@@ -1388,6 +1412,17 @@ export default function ManuscriptView() {
                   interiorInk: d.world.aperture.interiorInk,
                   rimSeed: apertureCtl.rimSeed,
                   size: d.world.aperture.size,
+                  echoFade: apertureCtl.echoFade,
+                  contourEchoFade: inkCtl.contourEchoFade,
+                  contourGain: inkCtl.contourGain,
+                  contourBlur: inkCtl.contourBlur,
+                  hatchAngleA: inkCtl.hatchAngleA,
+                  hatchAngleB: inkCtl.hatchAngleB,
+                  hatchPeriod: inkCtl.hatchPeriod,
+                  hatchWidth: inkCtl.hatchWidth,
+                  hatchThresholdA: inkCtl.hatchThresholdA,
+                  hatchThresholdB: inkCtl.hatchThresholdB,
+                  darkSolid: inkCtl.darkSolid,
                 }}
               />
               {summoned ? (
@@ -1631,6 +1666,26 @@ export default function ManuscriptView() {
               </option>
             ))}
           </select>
+          <label
+            style={{
+              display: 'block',
+              marginTop: 7,
+              fontSize: 11,
+              opacity: placedForms[selectedDim3.key] ? 0.9 : 0.45,
+            }}
+          >
+            <input
+              type="checkbox"
+              disabled={!placedForms[selectedDim3.key]}
+              checked={Boolean(displacedRooms[selectedDim3.key])}
+              onChange={(e) =>
+                setDisplacedRooms((cur) => ({ ...cur, [selectedDim3.key]: e.target.checked }))
+              }
+              onMouseDown={(e) => e.stopPropagation()}
+              style={{ marginRight: 6 }}
+            />
+            displace the inhabitants — the mask and coil are defaults, not furniture
+          </label>
         </div>
       ) : null}
       <OperationsDock
