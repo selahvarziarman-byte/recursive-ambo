@@ -77,13 +77,16 @@ import {
   aperturePairingRefusal,
   buildAperture,
   buildApertureScene,
-  buildPersonDomain,
+  buildPersonDomainVerdict,
   describeCandidate,
   dihedralMapCandidates,
   traceAperture,
   type AperturePairRow,
 } from './apertureModel';
 import { createSeedShape } from '../data/seeds';
+// THE PROBES (2026-07-14): the real scans — the mask, held in a hand. The
+// mask does recurrence; THE HAND does chirality (a face is its own mirror).
+import { buildProbeMeshes } from './apertureProbes';
 import {
   birthChild,
   combineGateFor,
@@ -409,7 +412,7 @@ export default function ManuscriptView() {
     contourWeight: { value: d.world.aperture.contourWeight, min: 0, max: 1, step: 0.05 },
     echoFade: { value: d.world.aperture.echoFade, min: 0.3, max: 1, step: 0.01 },
     maskTone: { value: d.world.aperture.maskTone, min: 0, max: 1.4, step: 0.02 },
-    coilTone: { value: d.world.aperture.coilTone, min: 0, max: 1.4, step: 0.02 },
+    handTone: { value: d.world.aperture.handTone, min: 0, max: 1.4, step: 0.02 },
     scaffoldTone: { value: d.world.aperture.scaffoldTone, min: 0, max: 1, step: 0.02 },
     formTone: { value: d.world.aperture.formTone, min: 0, max: 1.4, step: 0.02 },
     rimSeed: { value: d.world.aperture.rimSeed, min: 0, max: 12, step: 1 },
@@ -428,6 +431,8 @@ export default function ManuscriptView() {
     hatchThresholdA: { value: d.world.aperture.hatchThresholdA, min: 0, max: 1, step: 0.02 },
     hatchThresholdB: { value: d.world.aperture.hatchThresholdB, min: 0, max: 1, step: 0.02 },
     darkSolid: { value: d.world.aperture.darkSolid, min: 0, max: 1, step: 0.02 },
+    creaseThreshold: { value: d.world.aperture.creaseThreshold, min: 0.05, max: 1.5, step: 0.01 },
+    depthBreakThreshold: { value: d.world.aperture.depthBreakThreshold, min: 0.005, max: 0.3, step: 0.005 },
   });
   const driftCtl = useControls('world · drift', {
     enabled: d.world.drift.enabled,
@@ -557,6 +562,7 @@ export default function ManuscriptView() {
   const [apertureNotice, setApertureNotice] = useState<string | null>(null);
   const [placedForms, setPlacedForms] = useState<Record<string, string>>({});
   const [displacedRooms, setDisplacedRooms] = useState<Record<string, boolean>>({});
+  const probeMeshes = useMemo(() => buildProbeMeshes(), []);
   const dim3All = useMemo(() => [...world.dim3, ...builtDomains], [world, builtDomains]);
 
   // ----- Option B (follow-on): certified generators for plain-rendered forms —
@@ -681,13 +687,14 @@ export default function ManuscriptView() {
         }
         const placedId = placedForms[model.key];
         const placedShape = placedId ? shapeById.get(placedId) ?? null : null;
-        // BOUND 1 (mothership): the mask and coil are DEFAULTS, not permanent
+        // BOUND 1 (mothership): the probes are DEFAULTS, not permanent
         // furniture — a placed form can DISPLACE them (the scene recomposes
         // from the same committed pieces: the form's mesh, the cell's rods).
-        const base = buildApertureScene(model.shape, placedShape);
+        const probes = [...probeMeshes.maskShells, probeMeshes.hand];
+        const base = buildApertureScene(model.shape, placedShape, probes);
         const scene =
           placedShape && displacedRooms[model.key]
-            ? { meshes: base.meshes.slice(1), capsules: [], rods: base.rods, rodRadius: base.rodRadius }
+            ? { meshes: base.meshes.slice(probes.length), capsules: [], rods: base.rods, rodRadius: base.rodRadius }
             : base;
         const trace = traceAperture({
           deck: gate.deck,
@@ -701,7 +708,7 @@ export default function ManuscriptView() {
             // echoFade deliberately absent (THE INK re-cut): the fade is the
             // ink's alone — the tracer's value carries darkness, never distance
             maskTone: apertureCtl.maskTone,
-            coilTone: apertureCtl.coilTone,
+            handTone: apertureCtl.handTone,
             scaffoldTone: apertureCtl.scaffoldTone,
             formTone: apertureCtl.formTone,
           },
@@ -748,7 +755,17 @@ export default function ManuscriptView() {
     try {
       builtCountRef.current += 1;
       const n = builtCountRef.current;
-      const domain = buildPersonDomain(cubeSeed, apertureRows, `built-${n}`, `built 3-manifold ${n}`);
+      // THE FOLDED EDGE (ADR 0022): the door returns a VERDICT — a folded
+      // identification is not free (an orbifold), refused BY NAME with the
+      // researcher's wall; nothing joins the world and the aperture draws
+      // nothing. Zero throws escape this door.
+      const verdict = buildPersonDomainVerdict(cubeSeed, apertureRows, `built-${n}`, `built 3-manifold ${n}`);
+      if (verdict.folded) {
+        builtCountRef.current -= 1; // no domain was born
+        setApertureNotice(verdict.wall);
+        return;
+      }
+      const domain = verdict.domain;
       setBuiltDomains((cur) => [...cur, domain]);
       setApertureNotice(
         domain.tower.sound
@@ -758,7 +775,7 @@ export default function ManuscriptView() {
       setApertureRows(emptyApertureRows());
     } catch (error) {
       builtCountRef.current -= 1;
-      // the engine's own refusal (e.g. a folded edge class), surfaced verbatim
+      // a door-level refusal (an incomplete matching, an unknown candidate) — named
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
     }
   }, [cubeSeed, apertureRows]);
@@ -1423,6 +1440,8 @@ export default function ManuscriptView() {
                   hatchThresholdA: inkCtl.hatchThresholdA,
                   hatchThresholdB: inkCtl.hatchThresholdB,
                   darkSolid: inkCtl.darkSolid,
+                  creaseThreshold: inkCtl.creaseThreshold,
+                  depthBreakThreshold: inkCtl.depthBreakThreshold,
                 }}
               />
               {summoned ? (

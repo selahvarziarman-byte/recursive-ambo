@@ -166,6 +166,8 @@ NOT_FROZEN src/manuscript/ManuscriptView.tsx — manuscript view seam under acti
 NOT_FROZEN src/manuscript/OperationGlyphs.tsx — glyph chrome (visual only) — not engine logic
 NOT_FROZEN src/manuscript/apertureInk.ts — THE INK's react-free recipe (2026-07-14 mandate): the void is paper, the line carries the form — contour · gated hatch · alpha rim; ratified by diagnose-the-ink.cjs
 NOT_FROZEN src/manuscript/apertureModel.ts — THE APERTURE's react-free core (2026-07-13 mandate): map menu · witnessed deck fit · recession-law geometry · gate · room · image-space tracer — ratified by diagnose-the-aperture.cjs; freeze candidate once the mandate lands
+NOT_FROZEN src/manuscript/apertureProbeAssets.ts — THE PROBES' real scans, baked (2026-07-14 mandate): exact Float32/Uint32 base64 of the designer's .obj scans — witness-verified equal to the source files; generated once, never regenerated silently
+NOT_FROZEN src/manuscript/apertureProbes.ts — THE PROBES' mounts (2026-07-14 mandate): the mask split rim-to-rim, the hand placed by rotation only (det(R)>0 THROWS) — ratified by diagnose-the-probes.cjs
 NOT_FROZEN src/manuscript/formDomainModel.ts — manuscript model outside the chartered freeze set — not yet ruled frozen
 NOT_FROZEN src/manuscript/writtenFormModel.ts — the operating-context model — churned by sanctioned mandates (three in 2026-07 alone); ratified per-build
 NOT_FROZEN src/playground/identificationAnnotation.ts — playground annotation layer outside the chartered freeze set — not yet ruled frozen

@@ -264,13 +264,19 @@ const t3Verdict = A.buildPersonDomainVerdict(cube, t3Rows, 'p-t3', 'T³');
 const flipVerdict = A.buildPersonDomainVerdict(cube, [{ ...t3Rows[0], candidateKey: lrReflected[0].key }, t3Rows[1], t3Rows[2]], 'p-flip', 'FLIP');
 const t3Gate = A.buildAperture(t3Verdict.domain);
 const flipGate = A.buildAperture(flipVerdict.domain);
-const scene = A.buildApertureScene(cube, null);
+// RECUT (THE PROBES, 2026-07-14): the room's inhabitants are the real scans
+// now (the coil is retired; the HAND is the only chirality counter) and the
+// SHAPE is the seal: zero LEFT on T³, a large fraction on the reflected space.
+const PROBES = req('src/manuscript/apertureProbes.ts');
+const probeMeshes = PROBES.buildProbeMeshes();
+const scene = A.buildApertureScene(cube, null, [...probeMeshes.maskShells, probeMeshes.hand]);
 const traceT3 = A.traceAperture({ deck: t3Gate.deck, scene, width: 110, height: 110 });
 const traceFlip = A.traceAperture({ deck: flipGate.deck, scene, width: 110, height: 110 });
-check('…and the SEALED COUNTS stand through the verdict door: a door-built T³ → 0 reversed coils; a door-built reflected space (w₁=1, H₁=Z²⊕Z/2) → 8 coils visible, 2 LEFT-handed — the aperture\'s render inputs unmoved',
-  traceT3.counts.coilCopiesMirrored === 0 &&
-  traceFlip.counts.coilCopiesVisible === 8 && traceFlip.counts.coilCopiesMirrored === 2);
-note(`T³ coils ${traceT3.counts.coilCopiesVisible} (0 mirrored) · FLIP coils ${traceFlip.counts.coilCopiesVisible} (${traceFlip.counts.coilCopiesMirrored} left-handed)`);
+check('…and the SEALED SHAPE stands through the verdict door: a door-built T³ → ZERO LEFT hands; a door-built reflected space (w₁=1, H₁=Z²⊕Z/2) → LEFT hands a large fraction (≥ 25%) of the visible — the aperture\'s render inputs unmoved',
+  traceT3.counts.handCopiesMirrored === 0 && traceT3.counts.handCopiesVisible > 0 &&
+  traceFlip.counts.handCopiesMirrored > 0 &&
+  traceFlip.counts.handCopiesMirrored / traceFlip.counts.handCopiesVisible >= 0.25);
+note(`T³ hands ${traceT3.counts.handCopiesVisible} (0 LEFT) · FLIP hands ${traceFlip.counts.handCopiesVisible} (${traceFlip.counts.handCopiesMirrored} LEFT)`);
 
 // ═════ [h] the diff surface + the freeze ═════════════════════════════════════════
 console.log('\n----- [h] the sanctioned surface, CR-insensitively; the freeze holds -----');
@@ -283,6 +289,11 @@ const allowed = new Set([
   'src/lib/level3Invariants.ts',
   'src/manuscript/apertureModel.ts',
   'src/manuscript/ManuscriptView.tsx',
+  // THE PROBES (2026-07-14, sealed 8fcb8d42…4a69): that mandate's sanctioned
+  // surface rides the same working tree — the crease ink, the 0620 defaults;
+  // ratified in diagnose-the-probes.cjs.
+  'src/manuscript/apertureInk.ts',
+  'src/design/designDefaults.ts',
 ]);
 const moved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

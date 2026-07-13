@@ -528,10 +528,14 @@ export function buildAperture(domain: DomainModel): ApertureGate {
 // THE ROOM — default inhabitants (furniture, not engine forms) + the person's form
 // ---------------------------------------------------------------------------
 
+// THE PROBES (2026-07-14): the coil and its axis are RETIRED — a face is
+// bilaterally symmetric and can never carry chirality, so the HAND does
+// (the Capitolini pointing hand; mirror-IoU 0.081 — a LEFT hand is
+// unmistakable). The mask does recurrence + the corridors. Two jobs,
+// genuinely two.
 export const APERTURE_MATERIALS = {
   MASK: 0,
-  COIL: 1,
-  AXIS: 2,
+  HAND: 1,
   SCAFFOLD: 3,
   FORM: 4,
 } as const;
@@ -549,133 +553,10 @@ export interface Capsule {
   material: number;
 }
 
-/**
- * The two-faced MASK — a real modelled asset (a Janus theatre mask: the +y
- * face smiles, the −y face grieves; REAL eye and mouth openings cut through
- * the shell; a crest ridge over the crown; a chin keel below). Never a blank
- * back — a face looks back down every corridor, and the aspects seen down
- * ±x (double-nosed profiles), ±y (the two faces) and ±z (crest / keel) are
- * what tell the decks apart. Built as a triangle mesh, not primitive blobs.
- */
-export function buildMaskMesh(): TriMesh {
-  const NR = 22; // polar rows (0 = crown, NR = chin)
-  const NC = 36; // azimuth columns around z
-  const RX = 0.27;
-  const RY = 0.105; // thin in y — the two faces look along ±y
-  const RZ = 0.375;
-  const CENTER: V3 = [0, 0, 0.30];
-
-  // feature fields in (azimuth φ from +x, polar ψ from +z), per face side
-  const faceSide = (phi: number): 1 | -1 => (Math.sin(phi) >= 0 ? 1 : -1); // +1 = the +y (smiling) face
-  // how deep into a face the point is (1 at the face's pole φ=±π/2, 0 at the profile seams)
-  const faceness = (phi: number): number => Math.abs(Math.sin(phi));
-
-  const inEllipse = (u: number, v: number, cu: number, cv: number, ru: number, rv: number): boolean => {
-    const du = u - cu;
-    const dv = v - cv;
-    return (du * du) / (ru * ru) + (dv * dv) / (rv * rv) <= 1;
-  };
-
-  // openings are cut where BOTH quad corners fall inside a feature region
-  const isOpening = (phi: number, psi: number): boolean => {
-    const s = faceSide(phi);
-    if (faceness(phi) < 0.35) return false; // seams and profiles stay closed
-    const facePhi = s > 0 ? Math.PI / 2 : -Math.PI / 2;
-    const u = (phi - facePhi + Math.PI * 3) % (Math.PI * 2) - Math.PI; // azimuth offset within the face
-    // EYES — two almond openings, upper third
-    const eyePsi = Math.PI * 0.40;
-    if (inEllipse(u, psi, -0.52, eyePsi, 0.26, 0.16)) return true;
-    if (inEllipse(u, psi, 0.52, eyePsi, 0.26, 0.16)) return true;
-    // MOUTH — a crescent opening, lower third; the smile curves up (+y),
-    // the grief curves down (−y): the crescent's centre shifts with |u|
-    const mouthPsi = Math.PI * 0.66;
-    const bend = (s > 0 ? -1 : 1) * 0.10 * (1 - Math.min(1, (u / 0.55) * (u / 0.55)));
-    if (inEllipse(u, psi, 0, mouthPsi + bend, 0.50, 0.075)) return true;
-    return false;
-  };
-
-  // sculpt: radial displacement (nose out along the face normal, brow ridge,
-  // crest over the crown, chin keel)
-  const displaced = (phi: number, psi: number): V3 => {
-    const s = faceSide(phi);
-    const f = faceness(phi);
-    const facePhi = s > 0 ? Math.PI / 2 : -Math.PI / 2;
-    const u = (phi - facePhi + Math.PI * 3) % (Math.PI * 2) - Math.PI;
-    let bump = 0;
-    // the NOSE — a ridge at face centre, mid-height, pushed out along ±y
-    const nose = Math.exp(-((u / 0.24) ** 2)) * Math.exp(-(((psi - Math.PI * 0.52) / 0.22) ** 2));
-    bump += 0.55 * nose * f;
-    // the BROW — a shallow ridge above the eyes
-    const brow = Math.exp(-(((psi - Math.PI * 0.31) / 0.10) ** 2)) * Math.min(1, Math.abs(u) < 0.9 ? 1 : 0);
-    bump += 0.16 * brow * f;
-    // the CREST — a fin over the crown, in the x=0 plane (tells +z apart)
-    const crest = Math.exp(-((Math.cos(phi) / 0.28) ** 2)) * Math.exp(-((psi / 0.30) ** 2));
-    bump += 0.5 * crest;
-    // the CHIN KEEL — a shorter fin below (tells −z apart, differently)
-    const keel = Math.exp(-((Math.cos(phi) / 0.20) ** 2)) * Math.exp(-(((psi - Math.PI) / 0.22) ** 2));
-    bump += 0.28 * keel;
-    const r: V3 = [
-      RX * Math.sin(psi) * Math.cos(phi) * (1 + 0.0 * bump),
-      RY * Math.sin(psi) * Math.sin(phi) * (1 + bump),
-      RZ * Math.cos(psi),
-    ];
-    return add(CENTER, r);
-  };
-
-  const positions: V3[] = [];
-  const index = new Map<string, number>();
-  const vertexAt = (i: number, j: number): number => {
-    const key = `${i}|${j % NC}`;
-    const got = index.get(key);
-    if (got !== undefined) return got;
-    const psi = (Math.PI * i) / NR;
-    const phi = (2 * Math.PI * (j % NC)) / NC;
-    const id = positions.length;
-    positions.push(displaced(phi, psi));
-    index.set(key, id);
-    return id;
-  };
-  const tris: [number, number, number][] = [];
-  for (let i = 0; i < NR; i += 1) {
-    for (let j = 0; j < NC; j += 1) {
-      const psiMid = (Math.PI * (i + 0.5)) / NR;
-      const phiMid = (2 * Math.PI * (j + 0.5)) / NC;
-      if (isOpening(phiMid, psiMid)) continue; // a REAL opening — the quad is not built
-      const a = vertexAt(i, j);
-      const b = vertexAt(i + 1, j);
-      const c = vertexAt(i + 1, j + 1);
-      const dv = vertexAt(i, j + 1);
-      if (i > 0) tris.push([a, b, c]);
-      if (i < NR - 1) tris.push([a, c, dv]);
-    }
-  }
-  return { positions, tris, material: APERTURE_MATERIALS.MASK };
-}
-
-/**
- * The RIGHT-HANDED COIL beneath the mask — chirality with no ink: θ rises
- * with z (the right-hand rule's geometric content). Its mirror image is a
- * left-handed coil, and everyone can see it. NO arrows, NO field lines.
- */
-export function buildCoilCapsules(): Capsule[] {
-  const capsules: Capsule[] = [];
-  const A: V3 = [0, 0, -0.42];
-  const B: V3 = [0, 0, 0.10];
-  capsules.push({ a: [0, 0, -0.46], b: [0, 0, 0.13], r: 0.02, material: APERTURE_MATERIALS.AXIS });
-  const turns = 3;
-  const R = 0.155;
-  const N = 84;
-  let prev: V3 | null = null;
-  for (let i = 0; i <= N; i += 1) {
-    const t = i / N;
-    const theta = 2 * Math.PI * turns * t;
-    const z = A[2] + (B[2] - A[2]) * t;
-    const p: V3 = [R * Math.cos(theta), R * Math.sin(theta), z]; // right-handed: θ rises with z
-    if (prev) capsules.push({ a: prev, b: p, r: 0.026, material: APERTURE_MATERIALS.COIL });
-    prev = p;
-  }
-  return capsules;
-}
+// (THE PROBES, 2026-07-14: `buildMaskMesh` — the modelled stand-in — and
+// `buildCoilCapsules` — the coil — are RETIRED. The room's probes are the
+// REAL SCANS, mounted in `apertureProbes.ts` and injected into
+// `buildApertureScene` — the mask held in a hand.)
 
 /** The person's own form, placed in the room: any positioned, faced Shape, fan-triangulated. */
 export function meshFromShape(shape: Shape, center: V3, maxSize: number): TriMesh | null {
@@ -714,16 +595,18 @@ export interface ApertureScene {
   rodRadius: number;
 }
 
-/** The scene is built ONCE — no copy of any object is ever materialized. */
-export function buildApertureScene(seedShape: Shape, placedShape: Shape | null): ApertureScene {
-  const meshes: TriMesh[] = [buildMaskMesh()];
+/** The scene is built ONCE — no copy of any object is ever materialized.
+ * THE PROBES (2026-07-14) are INJECTED (the real scans, mounted in
+ * apertureProbes.ts): the mask's two shells + the pointing hand. */
+export function buildApertureScene(seedShape: Shape, placedShape: Shape | null, probes: TriMesh[]): ApertureScene {
+  const meshes: TriMesh[] = [...probes];
   if (placedShape) {
     const placed = meshFromShape(placedShape, [0.30, 0.27, -0.10], 0.42);
     if (placed) meshes.push(placed);
   }
   const positions = new Map(Object.values(seedShape.vertices).map((v) => [v.id, v.position as V3]));
   const rods: [V3, V3][] = shapeEdges(seedShape).map(([a, b]) => [positions.get(a) as V3, positions.get(b) as V3]);
-  return { meshes, capsules: buildCoilCapsules(), rods, rodRadius: 0.011 };
+  return { meshes, capsules: [], rods, rodRadius: 0.011 };
 }
 
 function shapeEdges(shape: Shape): [string, string][] {
@@ -741,7 +624,7 @@ export interface ApertureCraft {
   // NO echoFade here (THE INK re-cut, 2026-07-14): the echo fade lives in ONE
   // place — the ink, applied to the MARKS. value carries darkness only.
   maskTone: number;
-  coilTone: number;
+  handTone: number; // THE PROBES: the hand replaced the retired coil
   scaffoldTone: number;
   formTone: number;
 }
@@ -751,7 +634,7 @@ export const APERTURE_CRAFT_DEFAULTS: ApertureCraft = {
   toneGamma: 1.25,
   contourWeight: 0.55,
   maskTone: 1.0,
-  coilTone: 0.92,
+  handTone: 0.92,
   scaffoldTone: 0.28,
   formTone: 0.95,
 };
@@ -760,10 +643,14 @@ export interface ApertureTraceCounts {
   transports: number; // Clause 1: the image-space transport RAN
   litPixels: number;
   lostRays: number;
+  // THE PROBES (2026-07-14): the mask counts RECURRENCE only — a face is
+  // bilaterally symmetric and carries no chirality, so there is NO mask
+  // mirrored-count (a mask-based chirality counter would be true for one map
+  // and false for the next: a lie in general). THE HAND is the only
+  // chirality counter.
   maskCopiesVisible: number;
-  maskCopiesMirrored: number;
-  coilCopiesVisible: number;
-  coilCopiesMirrored: number;
+  handCopiesVisible: number;
+  handCopiesMirrored: number; // "N of the M hands you can see are LEFT — count them"
   formCopiesVisible: number;
   formCopiesMirrored: number;
   minCopyPixels: number;
@@ -781,6 +668,10 @@ export interface ApertureTrace {
   // (transport legs summed + the final segment) — the contour's fold detector
   // (a near copy crossing a far one is a depth discontinuity, not a hit/material one)
   depth: Float32Array;
+  // THE PROBES (2026-07-14, additive): the shading normal at the hit — a hand
+  // is nothing but creases: the gaps between fingers are SHALLOW depth steps
+  // but SHARP normal steps; without this the hand renders as a mitten.
+  normal: Float32Array; // 3 × W×H
   counts: ApertureTraceCounts;
 }
 
@@ -838,6 +729,19 @@ function buildBvh(mesh: TriMesh): { nodes: BvhNode[]; order: number[] } {
   return { nodes, order };
 }
 
+// THE PROBES (2026-07-14): the real scans carry ~522k triangles — the BVH is
+// built ONCE per mesh and cached (pure derivation of the mesh; the scene is
+// still never copied).
+const bvhCache = new WeakMap<TriMesh, { nodes: BvhNode[]; order: number[] }>();
+const bvhOf = (mesh: TriMesh): { nodes: BvhNode[]; order: number[] } => {
+  let cached = bvhCache.get(mesh);
+  if (!cached) {
+    cached = buildBvh(mesh);
+    bvhCache.set(mesh, cached);
+  }
+  return cached;
+};
+
 export function traceAperture(options: {
   deck: DeckEntry[];
   scene: ApertureScene;
@@ -857,15 +761,19 @@ export function traceAperture(options: {
   const scene = options.scene;
   const minCopyPixels = options.minCopyPixels ?? Math.max(18, Math.round((W * H) / 900));
 
-  const eye: V3 = options.eye ?? [-0.33, -0.35, 0.06];
-  const fwd = norm(options.forward ?? [0.62, 0.76, 0.05]);
+  // THE PROBES (2026-07-14): the default frame looks down the diagonal so the
+  // x-corridor's odd-word copies are IN VIEW — the FLIP's reflected generator
+  // lives on x, and a frame that hides odd-x copies hides every LEFT hand
+  // (measured: the old frame showed 0 of 6 LEFT on the reflected space).
+  const eye: V3 = options.eye ?? [-0.38, -0.3, -0.05];
+  const fwd = norm(options.forward ?? [0.8, 0.55, 0.12]);
   const right = norm(cross(fwd, [0, 0, 1]));
   const up = cross(right, fwd);
-  const FOV = ((options.fovDegrees ?? 74) * Math.PI) / 180;
+  const FOV = ((options.fovDegrees ?? 80) * Math.PI) / 180;
   const FL = H / 2 / Math.tan(FOV / 2);
   const keyLight = norm([-0.38, -0.62, 0.66]);
 
-  const bvhs = scene.meshes.map((mesh) => ({ mesh, bvh: buildBvh(mesh) }));
+  const bvhs = scene.meshes.map((mesh) => ({ mesh, bvh: bvhOf(mesh) }));
 
   const hit = new Uint8Array(W * H);
   const value = new Float32Array(W * H);
@@ -873,6 +781,7 @@ export function traceAperture(options: {
   const mirrored = new Int8Array(W * H);
   const material = new Int8Array(W * H);
   const depth = new Float32Array(W * H);
+  const normal = new Float32Array(3 * W * H);
 
   let transports = 0;
   let litPixels = 0;
@@ -1045,13 +954,11 @@ export function traceAperture(options: {
           const objectTone =
             best.mat === APERTURE_MATERIALS.MASK
               ? craft.maskTone
-              : best.mat === APERTURE_MATERIALS.COIL
-                ? craft.coilTone
-                : best.mat === APERTURE_MATERIALS.AXIS
-                  ? craft.coilTone
-                  : best.mat === APERTURE_MATERIALS.FORM
-                    ? craft.formTone
-                    : craft.scaffoldTone;
+              : best.mat === APERTURE_MATERIALS.HAND
+                ? craft.handTone
+                : best.mat === APERTURE_MATERIALS.FORM
+                  ? craft.formTone
+                  : craft.scaffoldTone;
           tone *= objectTone;
           tone = Math.pow(Math.max(0, Math.min(1, tone)), craft.toneGamma); // the tone curve
           hit[idx] = best.scaffold ? 2 : 1;
@@ -1060,6 +967,9 @@ export function traceAperture(options: {
           mirrored[idx] = deckDet(g) < 0 ? -1 : 1;
           material[idx] = best.mat;
           depth[idx] = travel + best.t;
+          normal[3 * idx] = best.n[0];
+          normal[3 * idx + 1] = best.n[1];
+          normal[3 * idx + 2] = best.n[2];
           litPixels += 1;
           if (!best.scaffold) recordCopy(best.mat, g);
           break;
@@ -1095,7 +1005,7 @@ export function traceAperture(options: {
     return { visible: visible.length, mirroredCount: visible.filter((w) => w.det < 0).length };
   };
   const mask = countCopies(APERTURE_MATERIALS.MASK);
-  const coil = countCopies(APERTURE_MATERIALS.COIL);
+  const hand = countCopies(APERTURE_MATERIALS.HAND);
   const form = countCopies(APERTURE_MATERIALS.FORM);
 
   return {
@@ -1107,14 +1017,14 @@ export function traceAperture(options: {
     mirrored,
     material,
     depth,
+    normal,
     counts: {
       transports,
       litPixels,
       lostRays,
-      maskCopiesVisible: mask.visible,
-      maskCopiesMirrored: mask.mirroredCount,
-      coilCopiesVisible: coil.visible,
-      coilCopiesMirrored: coil.mirroredCount,
+      maskCopiesVisible: mask.visible, // recurrence only — no mask chirality claim, ever
+      handCopiesVisible: hand.visible,
+      handCopiesMirrored: hand.mirroredCount,
       formCopiesVisible: form.visible,
       formCopiesMirrored: form.mirroredCount,
       minCopyPixels,
@@ -1127,10 +1037,14 @@ export function traceAperture(options: {
 // ---------------------------------------------------------------------------
 
 export function apertureCaption(geometry: ApertureGeometry, counts: ApertureTraceCounts): string {
+  // COUNTABLE, and honest about occlusion: hidden copies are omitted because
+  // the person cannot SEE them — the caption counts what the eye can count.
+  // The mask line carries NO chirality claim (a face is its own mirror);
+  // THE HAND is the only chirality counter.
   const parts = [
     `${geometry.kind === 'E3' ? 'E³' : geometry.kind} · n=[${geometry.n.join(',')}]`,
-    `orbit: ${counts.maskCopiesVisible} mask${counts.maskCopiesVisible === 1 ? '' : 's'}${counts.maskCopiesMirrored > 0 ? ` (${counts.maskCopiesMirrored} mirrored)` : ''}`,
-    `${counts.coilCopiesVisible} coil${counts.coilCopiesVisible === 1 ? '' : 's'}${counts.coilCopiesMirrored > 0 ? ` (${counts.coilCopiesMirrored} left-handed)` : ' (all right-handed)'}`,
+    `orbit (visible): ${counts.maskCopiesVisible} mask${counts.maskCopiesVisible === 1 ? '' : 's'}`,
+    `${counts.handCopiesMirrored} of the ${counts.handCopiesVisible} hands are LEFT — count them`,
   ];
   if (counts.formCopiesVisible > 0) {
     parts.push(`${counts.formCopiesVisible} of the placed form${counts.formCopiesMirrored > 0 ? ` (${counts.formCopiesMirrored} mirrored)` : ''}`);

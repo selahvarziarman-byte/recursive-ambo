@@ -49,7 +49,10 @@ export interface ApertureInkStyle {
   hatchThresholdA: number; // ≈0.50
   hatchThresholdB: number; // ≈0.74
   darkSolid: number; // ≈0.90 — the mask's dark material (inert today; see above)
-  depthContourThreshold: number; // ≈0.22 — Δdepth that counts as a fold
+  // THE PROBES (2026-07-14, designer 0620): a hand is nothing but creases —
+  // the gaps between fingers are SHALLOW depth steps but SHARP normal steps.
+  creaseThreshold: number; // ≈0.50 — |Δnormal| across neighbours; THIS draws the fingers
+  depthBreakThreshold: number; // ≈0.035 — |Δdepth| (0.30-era coarseness rendered the hand a MITTEN)
   darkMaterialId: number | null; // which material is "dark" — none in the shipped scene
 }
 
@@ -59,8 +62,8 @@ export const APERTURE_INK_DEFAULTS: ApertureInkStyle = {
   rimSeed: 3,
   echoFade: 0.63,
   contourEchoFade: 0.68,
-  contourGain: 1.9,
-  contourBlur: 0.6,
+  contourGain: 1.85, // designer 0620
+  contourBlur: 0.5, // designer 0620
   hatchAngleA: 36,
   hatchAngleB: -46,
   hatchPeriod: 5,
@@ -68,7 +71,8 @@ export const APERTURE_INK_DEFAULTS: ApertureInkStyle = {
   hatchThresholdA: 0.5,
   hatchThresholdB: 0.74,
   darkSolid: 0.9,
-  depthContourThreshold: 0.22,
+  creaseThreshold: 0.5, // designer 0620
+  depthBreakThreshold: 0.035, // designer 0620 — was 0.30-class, far too coarse
   darkMaterialId: null,
 };
 
@@ -90,27 +94,44 @@ export function renderApertureInk(trace: ApertureTrace, styleIn: Partial<Apertur
   const paper = hexToRgb(style.paperColor);
   const line = hexToRgb(style.interiorInk);
 
-  // ---- 2. CONTOUR — where the ray's story changes between neighbours -------
-  // raw edges: compare each pixel with its right and down neighbour. A change
-  // in hit/material/mirrored, or a depth jump past the fold threshold, is a
-  // story break. THE LINE LIVES ON THE FORM SIDE ONLY — Clause 1 is absolute
-  // (every un-hit pixel is EXACTLY paper), so a silhouette marks its hit
-  // pixel, and an internal break (both hit) marks both sides.
+  // ---- 2. CONTOUR — THREE terms, not two (THE PROBES, designer 0620) --------
+  // A hand is nothing but creases: the gaps between fingers are SHALLOW depth
+  // steps but SHARP normal steps — without the crease term the hand renders
+  // as a MITTEN. Per neighbour pair:
+  //   silhouette = hit / no-hit boundary                     weight 1.00
+  //   crease     = |Δnormal| > creaseThreshold               weight 0.85
+  //   depthBreak = |Δdepth|  > depthBreakThreshold           weight 0.80
+  //   mirrorEdge = |Δmirrored| > 0                           weight 0.80
+  // THE LINE LIVES ON THE FORM SIDE ONLY — Clause 1 is absolute (every un-hit
+  // pixel is EXACTLY paper): a silhouette marks its hit pixel; internal
+  // breaks (both hit) mark both sides. Weighted max, then blur + gain.
   const edge = new Float32Array(W * H);
+  const { normal } = trace;
+  const mark = (i: number, w: number): void => {
+    if (edge[i] < w) edge[i] = w;
+  };
   const markPair = (a: number, b: number): void => {
     if (hit[a] !== hit[b]) {
-      // silhouette: only the form side takes the mark
-      edge[hit[a] !== 0 ? a : b] = 1;
+      mark(hit[a] !== 0 ? a : b, 1); // silhouette: only the form side takes the mark
       return;
     }
     if (hit[a] === 0) return; // two void pixels share no story
-    if (
-      material[a] !== material[b] ||
-      mirrored[a] !== mirrored[b] ||
-      Math.abs(depth[a] - depth[b]) > style.depthContourThreshold
-    ) {
-      edge[a] = 1;
-      edge[b] = 1;
+    const dn = Math.hypot(
+      normal[3 * a] - normal[3 * b],
+      normal[3 * a + 1] - normal[3 * b + 1],
+      normal[3 * a + 2] - normal[3 * b + 2],
+    );
+    if (dn > style.creaseThreshold) {
+      mark(a, 0.85); // the crease — THIS draws the fingers
+      mark(b, 0.85);
+    }
+    if (Math.abs(depth[a] - depth[b]) > style.depthBreakThreshold) {
+      mark(a, 0.8);
+      mark(b, 0.8);
+    }
+    if (mirrored[a] !== mirrored[b]) {
+      mark(a, 0.8);
+      mark(b, 0.8);
     }
   };
   for (let y = 0; y < H; y += 1) {

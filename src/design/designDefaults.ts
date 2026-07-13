@@ -269,8 +269,8 @@ export const manuscriptDefaults = {
       // THE INK (designer's spec, 2026-07-14): exponential decay was right,
       // 0.88 left a soup of distant copies — 0.63 (τ≈2.2) dissolves them
       echoFade: 0.63,
-      maskTone: 1.0, // per-object tone — the two-faced mask
-      coilTone: 0.92, // — the right-handed coil (+ its axis)
+      maskTone: 1.0, // per-object tone — the scanned two-faced mask
+      handTone: 0.92, // — the Capitolini pointing hand (THE PROBES: the coil is retired; the hand does chirality)
       scaffoldTone: 0.28, // — the cell's own edges: faint scaffolding AT MOST
       formTone: 0.95, // — the person's placed form
       rimSeed: 3, // the hand of the cut (same seed, same tear)
@@ -279,8 +279,12 @@ export const manuscriptDefaults = {
       // THE INK's own dials (designer-owned; exposed, not dialed) — the void
       // is paper, the line carries the form, tone is a guest:
       contourEchoFade: 0.68, // the line outlives the tone by a beat
-      contourGain: 1.9, // contour = the primary mark
-      contourBlur: 0.6, // px
+      contourGain: 1.85, // contour = the primary mark (designer 0620)
+      contourBlur: 0.5, // px (designer 0620)
+      // THE PROBES (designer 0620): the crease draws the fingers — sharp
+      // normal steps over shallow depth steps; without it, a mitten.
+      creaseThreshold: 0.5, // |Δnormal|
+      depthBreakThreshold: 0.035, // |Δdepth| — the 0.30-class value was far too coarse
       hatchAngleA: 36, // degrees
       hatchAngleB: -46, // degrees
       hatchPeriod: 5, // px

@@ -58,9 +58,15 @@ const req = (p) => require(path.join(repoRoot, p));
 const { createSeedShape } = req('src/data/seeds.ts');
 const A = req('src/manuscript/apertureModel.ts');
 const INK = req('src/manuscript/apertureInk.ts');
+// THE PROBES (2026-07-14): the room's inhabitants are the real scans now —
+// injected into buildApertureScene; the coil is retired and the HAND carries
+// chirality. This witness's scene calls and count pins recut accordingly.
+const PROBES = req('src/manuscript/apertureProbes.ts');
 const { buildThreeTorusDomain } = req('src/manuscript/worldModel.ts');
 const { readDomainSpecimen } = req('src/manuscript/specimenModel.ts');
 const { immerseSurface } = req('src/lib/surfaceImmersion.ts');
+const probeMeshes = PROBES.buildProbeMeshes();
+const probeList = [...probeMeshes.maskShells, probeMeshes.hand];
 
 let failures = 0;
 const check = (name, cond) => {
@@ -78,7 +84,7 @@ const cube = createSeedShape('cube');
 const faceId = (k) => `face:cube:${k}`;
 const t3 = buildThreeTorusDomain();
 const t3Gate = A.buildAperture(t3);
-const scene = A.buildApertureScene(cube, null);
+const scene = A.buildApertureScene(cube, null, probeList);
 const TRACE_W = 110;
 const traceT3 = A.traceAperture({ deck: t3Gate.deck, scene, width: TRACE_W, height: TRACE_W });
 const W = traceT3.width;
@@ -229,6 +235,37 @@ note(`near fold pairs (same material, Δdepth > 0.22, echo ≤ 3): ${foldPairs} 
 console.log('\n----- [d] no smooth gradient: a lit interior is PAPER; marks are gated, never ramped (battery 3) -----');
 // among hit pixels far from any story break, below the hatch threshold:
 // EXACTLY paper (tone never fills — the anti-photograph)
+// RECUT (THE PROBES, 2026-07-14): "far from any story break" now means far
+// from any MARK the three-term contour lays — the witness replicates the
+// ink's own mark map (silhouette on the form side; crease/depthBreak/
+// mirrorEdge on both sides, thresholds 0.50 / 0.035) and asks for a mark-free
+// 2px neighbourhood (the blur radius is 1px; 2px is margin).
+const markMap = new Uint8Array(W * H);
+{
+  const markBreakPair = (a, b) => {
+    if (traceT3.hit[a] !== traceT3.hit[b]) {
+      markMap[traceT3.hit[a] !== 0 ? a : b] = 1;
+      return;
+    }
+    if (traceT3.hit[a] === 0) return;
+    const dn = Math.hypot(
+      traceT3.normal[3 * a] - traceT3.normal[3 * b],
+      traceT3.normal[3 * a + 1] - traceT3.normal[3 * b + 1],
+      traceT3.normal[3 * a + 2] - traceT3.normal[3 * b + 2],
+    );
+    if (dn > 0.5 || Math.abs(traceT3.depth[a] - traceT3.depth[b]) > 0.035 || traceT3.mirrored[a] !== traceT3.mirrored[b]) {
+      markMap[a] = 1;
+      markMap[b] = 1;
+    }
+  };
+  for (let y = 0; y < H; y += 1) {
+    for (let x = 0; x < W; x += 1) {
+      const i = y * W + x;
+      if (x + 1 < W) markBreakPair(i, i + 1);
+      if (y + 1 < H) markBreakPair(i, i + W);
+    }
+  }
+}
 const isEdgy = (i) => {
   const x = i % W;
   const y = (i - x) / W;
@@ -237,10 +274,7 @@ const isEdgy = (i) => {
       const xx = x + dx;
       const yy = y + dy;
       if (xx < 0 || yy < 0 || xx >= W || yy >= H) return true;
-      const j = yy * W + xx;
-      if (traceT3.hit[j] !== traceT3.hit[i] || (traceT3.hit[j] !== 0 && (traceT3.material[j] !== traceT3.material[i] || traceT3.mirrored[j] !== traceT3.mirrored[i] || Math.abs(traceT3.depth[j] - traceT3.depth[i]) > 0.22))) {
-        return true;
-      }
+      if (markMap[yy * W + xx]) return true;
     }
   }
   return false;
@@ -362,17 +396,19 @@ note(`dials swept: ${Object.keys(DIAL_EXTREMES).join(' · ')}`);
 // ═════ [g] BOUND 1 — the probes are furniture: displaceable, and absent from the specimen ═
 console.log('\n----- [g] bound 1: the mask and coil are DEFAULTS — the person\'s form can displace them; the specimen never reports them (battery 6) -----');
 const torus = immerseSurface({ surface: 'torus', resolution: 14 });
-const base = A.buildApertureScene(cube, torus.shape);
-const displacedScene = { meshes: base.meshes.slice(1), capsules: [], rods: base.rods, rodRadius: base.rodRadius };
+const base = A.buildApertureScene(cube, torus.shape, probeList);
+// RECUT (THE PROBES, 2026-07-14): displacement drops ALL probes (the mask's
+// two shells + the hand), leaving the person's form alone
+const displacedScene = { meshes: base.meshes.slice(probeList.length), capsules: [], rods: base.rods, rodRadius: base.rodRadius };
 const displacedTrace = A.traceAperture({ deck: t3Gate.deck, scene: displacedScene, width: 96, height: 96 });
 check('DISPLACEMENT proven: the room recomposed with the person\'s torus ALONE (the same committed pieces — no model change) traces to ZERO masks, ZERO coils, and the form seen as copies — the inhabitants are defaults, not permanent furniture',
-  displacedTrace.counts.maskCopiesVisible === 0 && displacedTrace.counts.coilCopiesVisible === 0 &&
+  displacedTrace.counts.maskCopiesVisible === 0 && displacedTrace.counts.handCopiesVisible === 0 &&
   displacedTrace.counts.formCopiesVisible > 0);
-note(`displaced room: masks ${displacedTrace.counts.maskCopiesVisible} · coils ${displacedTrace.counts.coilCopiesVisible} · the form ${displacedTrace.counts.formCopiesVisible}`);
+note(`displaced room: masks ${displacedTrace.counts.maskCopiesVisible} · hands ${displacedTrace.counts.handCopiesVisible} · the form ${displacedTrace.counts.formCopiesVisible}`);
 const manuscriptViewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
 check('…and the person HOLDS the displacement (view-layer, source-asserted): the placement panel carries the displace control, and the scene recomposes without touching apertureModel',
   manuscriptViewSrc.includes('displace the inhabitants') &&
-  manuscriptViewSrc.includes('meshes: base.meshes.slice(1), capsules: []'));
+  manuscriptViewSrc.includes('meshes: base.meshes.slice(probes.length), capsules: []'));
 const specimenReading = JSON.stringify(readDomainSpecimen(t3));
 check('THE SPECIMEN NEVER REPORTS THE FURNITURE: the domain specimen reading (byte-unchanged specimenModel) contains no mask and no coil token — the probe counts caption the WORLD only',
   !/mask|coil/i.test(specimenReading));
@@ -451,9 +487,12 @@ const personFlip = A.buildPersonDomain(cube, [{ ...t3Rows[0], candidateKey: lrRe
 const flipGate = A.buildAperture(personFlip);
 const traceFlip = A.traceAperture({ deck: flipGate.deck, scene, width: TRACE_W, height: TRACE_W });
 check('the SEALED COUNTS stand to the number: T³ → 0 reversed coils; the reflected space → 8 coils visible, 2 LEFT-handed (the depth buffer added nothing and moved nothing)',
-  traceT3.counts.coilCopiesMirrored === 0 &&
-  traceFlip.counts.coilCopiesVisible === 8 && traceFlip.counts.coilCopiesMirrored === 2);
-note(`T³ coils ${traceT3.counts.coilCopiesVisible} (0 mirrored) · FLIP coils ${traceFlip.counts.coilCopiesVisible} (${traceFlip.counts.coilCopiesMirrored} left-handed)`);
+  // RECUT (THE PROBES, 2026-07-14): the coil is RETIRED — the HAND is the
+  // only chirality counter, and the SHAPE is the seal (zero vs a large fraction)
+  traceT3.counts.handCopiesMirrored === 0 && traceT3.counts.handCopiesVisible > 0 &&
+  traceFlip.counts.handCopiesMirrored > 0 &&
+  traceFlip.counts.handCopiesMirrored / traceFlip.counts.handCopiesVisible >= 0.25);
+note(`T³ hands ${traceT3.counts.handCopiesVisible} (0 LEFT) · FLIP hands ${traceFlip.counts.handCopiesVisible} (${traceFlip.counts.handCopiesMirrored} LEFT)`);
 // the CR-insensitive diff surface (the aperture witness's re-cut idiom, reused)
 const { sha256OfCrStripped, checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
 const headBlobOf = (file) => execSync(`git cat-file blob HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
@@ -470,6 +509,10 @@ const inkAllowed = new Set([
   // diagnose-the-folded-edge.cjs.
   'src/lib/level3SoundnessGate.ts',
   'src/lib/level3Invariants.ts',
+  // THE PROBES (2026-07-14, sealed 8fcb8d42…4a69): the real-scan room — the
+  // crease contour (this file), the normal buffer + probe scene (the model);
+  // ratified in diagnose-the-probes.cjs.
+  'src/manuscript/apertureInk.ts',
 ]);
 const inkMoved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

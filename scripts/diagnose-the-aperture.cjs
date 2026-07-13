@@ -244,7 +244,12 @@ check('…and WITNESS (2) is exactly what catches it: the mutant isometry FIXES 
     }
   })());
 // the render consequence: the mutant deck shows ZERO mirrored coils, ever
-const scene = A.buildApertureScene(cube, null);
+// THE PROBES (2026-07-14): the room's inhabitants are the real scans,
+// injected — the mask's two shells + the pointing hand (the coil is retired;
+// the HAND is the only chirality counter). Ratified in diagnose-the-probes.cjs.
+const PROBES = req('src/manuscript/apertureProbes.ts');
+const probeList = [...PROBES.buildProbeMeshes().maskShells, PROBES.buildProbeMeshes().hand];
+const scene = A.buildApertureScene(cube, null, probeList);
 const t3Gate = A.buildAperture(personT3);
 const flipDeckWitnessed = witnessedGate.deck;
 const flipDeckMutant = [
@@ -254,17 +259,17 @@ const flipDeckMutant = [
 ];
 const traceFlipWitnessed = A.traceAperture({ deck: flipDeckWitnessed, scene, width: TRACE_W, height: TRACE_W });
 const traceFlipMutant = A.traceAperture({ deck: flipDeckMutant, scene, width: TRACE_W, height: TRACE_W });
-check('★ the trap\'s cost ON THE GLASS: with the carried 4-coplanar deck the reflected space shows ZERO mirrored coils (the person would never see the reversal); with the witnessed deck the mirrored coils are THERE and counted',
-  traceFlipMutant.counts.coilCopiesMirrored === 0 && traceFlipWitnessed.counts.coilCopiesMirrored > 0);
-note(`witnessed FLIP: ${traceFlipWitnessed.counts.coilCopiesVisible} coils visible, ${traceFlipWitnessed.counts.coilCopiesMirrored} LEFT-handed · mutant: ${traceFlipMutant.counts.coilCopiesVisible} coils, ${traceFlipMutant.counts.coilCopiesMirrored} mirrored`);
+check('★ the trap\'s cost ON THE GLASS: with the carried 4-coplanar deck the reflected space shows ZERO LEFT hands (the person would never see the reversal); with the witnessed deck the LEFT hands are THERE and counted (recut: the hand replaced the retired coil — THE PROBES)',
+  traceFlipMutant.counts.handCopiesMirrored === 0 && traceFlipWitnessed.counts.handCopiesMirrored > 0);
+note(`witnessed FLIP: ${traceFlipWitnessed.counts.handCopiesVisible} hands visible, ${traceFlipWitnessed.counts.handCopiesMirrored} LEFT · mutant: ${traceFlipMutant.counts.handCopiesVisible} hands, ${traceFlipMutant.counts.handCopiesMirrored} mirrored`);
 
 // ═════ [e] CLAUSE 1 + CLAUSE 3 — transported light; w₁ counted in coils ══════════
 console.log('\n----- [e] the aperture: image-space transport ran; the space shows its own w₁ — counted in COILS -----');
 const traceT3 = A.traceAperture({ deck: t3Gate.deck, scene, width: TRACE_W, height: TRACE_W });
-check('CLAUSE 1 — EXECUTE WHAT YOU WITNESS: the T³ trace TRANSPORTED (transports ≫ 0, zero lost rays) and the room is POPULATED — the mask and the coil are seen as COPIES down the corridors (both counts > 0), the person\'s light doing the copying',
+check('CLAUSE 1 — EXECUTE WHAT YOU WITNESS: the T³ trace TRANSPORTED (transports ≫ 0, zero lost rays) and the room is POPULATED — the mask and the hand are seen as COPIES down the corridors (both counts > 0), the person\'s light doing the copying',
   traceT3.counts.transports > 1000 && traceT3.counts.lostRays === 0 &&
-  traceT3.counts.maskCopiesVisible > 0 && traceT3.counts.coilCopiesVisible > 0);
-note(`T³ at ${TRACE_W}²: transports ${traceT3.counts.transports} · masks ${traceT3.counts.maskCopiesVisible} · coils ${traceT3.counts.coilCopiesVisible} (min copy ${traceT3.counts.minCopyPixels}px)`);
+  traceT3.counts.maskCopiesVisible > 0 && traceT3.counts.handCopiesVisible > 0);
+note(`T³ at ${TRACE_W}²: transports ${traceT3.counts.transports} · masks ${traceT3.counts.maskCopiesVisible} · hands ${traceT3.counts.handCopiesVisible} (min copy ${traceT3.counts.minCopyPixels}px)`);
 const oneRay = A.traceAperture({
   deck: t3Gate.deck,
   scene,
@@ -291,8 +296,8 @@ check('⛔ NEVER OBJECT-SPACE: the scene is built ONCE and no copy is ever mater
       eq(softTone.counts, hardTone.counts)
     );
   })());
-check('★ CLAUSE 3 — THE SPACE SHOWS ITS OWN w₁, COUNTED: T³ (w₁=0) → ZERO reversed coils; the reflected map (w₁=1) → mirrored coils > 0. Counts of COILS — the caption never prints a pixel fraction',
-  traceT3.counts.coilCopiesMirrored === 0 && traceFlipWitnessed.counts.coilCopiesMirrored > 0 &&
+check('★ CLAUSE 3 — THE SPACE SHOWS ITS OWN w₁, COUNTED: T³ (w₁=0) → ZERO LEFT hands; the reflected map (w₁=1) → LEFT hands > 0 (the hand is the only chirality counter — a face is its own mirror). The caption never prints a pixel fraction',
+  traceT3.counts.handCopiesMirrored === 0 && traceFlipWitnessed.counts.handCopiesMirrored > 0 &&
   !A.apertureCaption(t3Gate.geometry, traceT3.counts).includes('%') &&
   !A.apertureCaption(t3Gate.geometry, traceT3.counts).includes('px'));
 note(`caption (T³): "${A.apertureCaption(t3Gate.geometry, traceT3.counts)}"`);
@@ -305,20 +310,12 @@ const stripComments = (src) =>
 const modelCode = stripComments(modelSrc);
 const viewCode = stripComments(viewSrc);
 const chromeCode = stripComments(chromeSrc);
-check('the coil IS right-handed geometry, not a diagram: θ rises with z along EVERY capsule of the helix (measured), and no arrow construct exists in the room\'s code (comment-stripped source: no arrow, no cone, no arrowhead)',
-  (() => {
-    const capsules = A.buildCoilCapsules().filter((c) => c.material === A.APERTURE_MATERIALS.COIL);
-    let rises = 0;
-    for (const c of capsules) {
-      const t0 = Math.atan2(c.a[1], c.a[0]);
-      const t1 = Math.atan2(c.b[1], c.b[0]);
-      let dTheta = t1 - t0;
-      while (dTheta <= -Math.PI) dTheta += 2 * Math.PI;
-      while (dTheta > Math.PI) dTheta -= 2 * Math.PI;
-      if (dTheta > 0 && c.b[2] > c.a[2]) rises += 1;
-    }
-    return capsules.length > 50 && rises === capsules.length && !/arrow|arrowhead|coneGeometry/i.test(modelCode);
-  })());
+// RECUT (THE PROBES, 2026-07-14): the coil is RETIRED — chirality is the
+// HAND's job (a real scan, not a diagram). No arrow construct anywhere.
+check('the chirality probe is REAL GEOMETRY, not a diagram: the retired coil is gone from the model (no buildCoilCapsules survives), the hand is a scanned mesh with six figures of triangles, and no arrow construct exists in the room\'s code (comment-stripped: no arrow, no cone, no arrowhead)',
+  !modelCode.includes('buildCoilCapsules') &&
+  probeList[2].tris.length > 100000 &&
+  !/arrow|arrowhead|coneGeometry/i.test(modelCode));
 check('SAY ORBIT, NEVER π₁: the caption says "orbit"; no π₁ survives in the aperture model\'s, view\'s, or chrome\'s CODE (comment-stripped — the certified specimen reading "H₁ (= π₁ abelianized)" is specimenModel\'s committed row, untouched, and not the orbit caption)',
   A.apertureCaption(t3Gate.geometry, traceT3.counts).includes('orbit') &&
   !modelCode.includes('π₁') && !viewCode.includes('π₁') && !chromeCode.includes('π₁'));
@@ -376,22 +373,22 @@ check('the view DRAWS NOTHING behind a refused gate: ApertureBody renders null w
 // ═════ [g] battery 6 — the person PUTS A FORM IN THE ROOM ════════════════════════
 console.log('\n----- [g] the person\'s own form, placed: the light carries it down every corridor (battery 6) -----');
 const torus = immerseSurface({ surface: 'torus', resolution: 14 });
-const sceneWithForm = A.buildApertureScene(cube, torus.shape);
+const sceneWithForm = A.buildApertureScene(cube, torus.shape, probeList);
 const traceWithForm = A.traceAperture({ deck: t3Gate.deck, scene: sceneWithForm, width: TRACE_W, height: TRACE_W });
-check('the committed torus immersion PLACED in the T³ room: the scene carries exactly one more mesh (built once), the form is SEEN as copies (> 0 counted), and the caption counts it as OBJECTS',
-  sceneWithForm.meshes.length === 2 &&
+check('the committed torus immersion PLACED in the T³ room: the scene carries exactly one more mesh than the probes (built once), the form is SEEN as copies (> 0 counted), and the caption counts it as OBJECTS',
+  sceneWithForm.meshes.length === probeList.length + 1 &&
   traceWithForm.counts.formCopiesVisible > 0 &&
   A.apertureCaption(t3Gate.geometry, traceWithForm.counts).includes('of the placed form'));
 note(`with the torus placed: ${traceWithForm.counts.formCopiesVisible} copies of the form visible · caption: "${A.apertureCaption(t3Gate.geometry, traceWithForm.counts)}"`);
 
 // ═════ [h] battery 3 · 4 · 9 — populated room · the relocated specimen · the craft surface ═
 console.log('\n----- [h] the registers invert; the room is furnished; the craft surface is the designer\'s (battery 3 · 4 · 9) -----');
-const mask = A.buildMaskMesh();
-check('the room\'s two default inhabitants are REAL modelled things: the two-faced mask is a triangle MESH (hundreds of triangles, real eye/mouth openings — not primitive blobs), the coil a capsule helix — and the scaffold tone defaults FAINT (at most scaffolding: below every object tone)',
-  mask.tris.length > 400 && mask.positions.length > 200 &&
+// RECUT (THE PROBES, 2026-07-14): the inhabitants are the REAL SCANS now.
+check('the room\'s inhabitants are REAL SCANS, not primitives: the mask\'s two mounted shells carry six figures of triangles each, the hand over a hundred thousand — and the scaffold tone defaults FAINT (at most scaffolding: below every object tone)',
+  probeList[0].tris.length > 100000 && probeList[1].tris.length > 100000 && probeList[2].tris.length > 100000 &&
   A.APERTURE_CRAFT_DEFAULTS.scaffoldTone < 0.5 &&
   A.APERTURE_CRAFT_DEFAULTS.scaffoldTone < A.APERTURE_CRAFT_DEFAULTS.maskTone &&
-  A.APERTURE_CRAFT_DEFAULTS.scaffoldTone < A.APERTURE_CRAFT_DEFAULTS.coilTone);
+  A.APERTURE_CRAFT_DEFAULTS.scaffoldTone < A.APERTURE_CRAFT_DEFAULTS.handTone);
 check('the SPECIMEN carries the relocated fundamental domain + pairings + tower: readDomainSpecimen (BYTE-UNCHANGED specimenModel) still reads S² gate · χ · orientable · H₁ · CW counts · face-pairs, and the view mounts the committed InkedDomain ONLY summoned-on-select (exactly one mount, inside the summoned branch, beside the aperture)',
   (() => {
     const reading = readDomainSpecimen(personT3);
@@ -408,7 +405,7 @@ check('the SPECIMEN carries the relocated fundamental domain + pairings + tower:
 // craft — one dial, one home (the ink, on the marks); value carries darkness
 // only. The craft surface still holds the tracer's own dials.
 check('the CRAFT SURFACE is exposed, not dialed by the builder: tone curve · contour weight · per-object tones live in APERTURE_CRAFT_DEFAULTS + designDefaults.world.aperture + a Leva folder the DESIGNER owns (source-asserted); echoFade lives in ONE home — the INK\'s defaults, not the tracer\'s (the double-fade re-cut); the ink stays manuscript grey-on-paper (no photoreal material anywhere in the model)',
-  ['toneGamma', 'contourWeight', 'maskTone', 'coilTone', 'scaffoldTone', 'formTone'].every((k) => k in A.APERTURE_CRAFT_DEFAULTS) &&
+  ['toneGamma', 'contourWeight', 'maskTone', 'handTone', 'scaffoldTone', 'formTone'].every((k) => k in A.APERTURE_CRAFT_DEFAULTS) &&
   !('echoFade' in A.APERTURE_CRAFT_DEFAULTS) &&
   'echoFade' in req('src/manuscript/apertureInk.ts').APERTURE_INK_DEFAULTS &&
   fs.readFileSync(path.join(repoRoot, 'src/design/designDefaults.ts'), 'utf8').includes('aperture: {') &&
@@ -454,6 +451,9 @@ const ALLOWED_SRC_CHANGES = new Set([
   // pairings byte-identical).
   'src/lib/level3SoundnessGate.ts',
   'src/lib/level3Invariants.ts',
+  // THE PROBES (2026-07-14, sealed 8fcb8d42…4a69): the real-scan room — the
+  // crease contour rides apertureInk; ratified in diagnose-the-probes.cjs.
+  'src/manuscript/apertureInk.ts',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults (the aperture model + view are NEW files); NOT ONE model, renderer, certifier or engine file moved — dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 27',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&
