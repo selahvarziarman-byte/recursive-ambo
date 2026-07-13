@@ -338,7 +338,11 @@ const guarded = [
   'src/lib/globalW1.ts',
   'src/lib/cutOperation.ts',
   'src/lib/surfaceImmersion.ts',
-  'src/playground/playgroundOperations.ts',
+  // `playgroundOperations.ts` LEAVES this guard for the REFUSAL-ORDER re-cut
+  // (engineer-chartered 2026-07-13: the FORM-level single-face gate fires
+  // BEFORE the selection-level face prompt — order only, every string
+  // committed; ratified in diagnose-the-person-picks-the-face.cjs section
+  // [t]). Restore it when that re-cut reaches HEAD.
   'src/playground/customGluing.ts',
   'src/playground/bornFormRouting.ts',
   'src/playground/formInvariants.ts',

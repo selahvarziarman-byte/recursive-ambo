@@ -60,6 +60,7 @@ import {
   FormOpsMenu,
   InvokePalette,
   OperationsDock,
+  PortFacePicker,
   RecordStrip,
   SourcesShelf,
 } from './ManuscriptChrome';
@@ -666,19 +667,33 @@ export default function ManuscriptView() {
     [world, written, shapeById, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing],
   );
 
+  // THE PERSON PICKS THE FACE (2026-07-12): the picked port/op face per page
+  // form rides into every availability/apply context — never a faces[0]
+  // default (a single-face form needs no pick; the model takes its only face)
   const availability = useMemo(() => {
     const target = targetFor(selected);
-    return operationAvailabilityFor(target?.shape ?? null, target?.parent ?? null, target?.ancestry);
-  }, [selected, targetFor]);
+    return operationAvailabilityFor(
+      target?.shape ?? null,
+      target?.parent ?? null,
+      target?.ancestry,
+      selected ? portFaces[selected] ?? null : null,
+    );
+  }, [selected, targetFor, portFaces]);
   const menuAvailability = useMemo(() => {
     if (!formMenu) return [];
     const target = targetFor(formMenu.id);
-    return operationAvailabilityFor(target?.shape ?? null, target?.parent ?? null, target?.ancestry);
-  }, [formMenu, targetFor]);
+    return operationAvailabilityFor(
+      target?.shape ?? null,
+      target?.parent ?? null,
+      target?.ancestry,
+      portFaces[formMenu.id] ?? null,
+    );
+  }, [formMenu, targetFor, portFaces]);
 
   const applyOp = useCallback(
     (operationId: string, targetId: string | null = selected): void => {
-      const target = targetFor(targetId ?? selected);
+      const key = targetId ?? selected;
+      const target = targetFor(key);
       if (!target) return;
       const result = applyPlaygroundOperationTo(
         operationId,
@@ -687,6 +702,7 @@ export default function ManuscriptView() {
         seqRef.current,
         layoutCtl.resolution,
         target.ancestry,
+        key ? portFaces[key] ?? null : null,
       );
       closeMenus();
       if (!result.ok) {
@@ -701,8 +717,25 @@ export default function ManuscriptView() {
       ]);
       setSelected(`w:${result.born.id}`);
     },
-    [selected, targetFor, layoutCtl.resolution, closeMenus, d.world.chrome.spawnOffset],
+    [selected, targetFor, layoutCtl.resolution, closeMenus, d.world.chrome.spawnOffset, portFaces],
   );
+
+  // the op-face picker for a selected MULTI-face form (the committed reused
+  // picker; nothing preselected — the person picks, or the face-consuming op
+  // stays honestly unavailable)
+  const selectedFacePick = useMemo(() => {
+    if (!selected || combineWith) return null;
+    const target = targetFor(selected);
+    if (!target || target.shape.faces.length <= 1) return null;
+    return {
+      title: target.title,
+      faces: target.shape.faces.map((face) => ({
+        id: face.id,
+        label: `${face.id} · ${face.vertexIds.length} corners`,
+      })),
+      picked: portFaces[selected] ?? '',
+    };
+  }, [selected, combineWith, targetFor, portFaces]);
 
   const handleInvoke = useCallback(
     (catalogueKey: string): void => {
@@ -1304,6 +1337,39 @@ export default function ManuscriptView() {
           }}
         >
           {opNotice}
+        </div>
+      ) : null}
+      {selectedFacePick && selected ? (
+        <div
+          style={{
+            position: 'absolute',
+            left: 14,
+            top: 64,
+            width: 250,
+            padding: '11px 13px',
+            borderRadius: 3,
+            background: d.paper.cardBackground,
+            border: `1px solid ${d.paper.cardBorder}`,
+            boxShadow: '0 2px 9px rgba(58, 51, 38, 0.2)',
+            color: d.paper.cardInk,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 12.5,
+            lineHeight: 1.45,
+          }}
+        >
+          <div style={{ fontSize: 11, letterSpacing: 1.2, opacity: 0.6, fontVariant: 'small-caps' }}>
+            the person picks the face
+          </div>
+          <div style={{ marginTop: 3, fontSize: 11, opacity: 0.75 }}>
+            cut consumes the face YOU pick — no default is taken
+          </div>
+          <PortFacePicker
+            formTitle={selectedFacePick.title}
+            faces={selectedFacePick.faces}
+            picked={selectedFacePick.picked}
+            onPick={(faceId) => setPortFaces((cur) => ({ ...cur, [selected]: faceId }))}
+            paper={d.paper}
+          />
         </div>
       ) : null}
       <OperationsDock

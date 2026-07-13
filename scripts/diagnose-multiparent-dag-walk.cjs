@@ -319,10 +319,16 @@ const storeShapes = storeState.formOrder.map((id) => storeState.forms[id].shape)
 const storeWalk = resolveLineage(storeCut, (id) => storeState.forms[id]?.shape, storeShapes);
 check('the REAL store operates ON a connect-sum child (cut applies through applyOperationToSelection — its context now carries ancestry [A, B]) and the born cut\'s store-walked lineage is [csum, A, B]',
   eq(ids(storeWalk), [csum.id, A.id, B.id]));
+// THE PERSON PICKS THE FACE (sanctioned 2026-07-12): a face-consuming op on a
+// MULTI-face form now needs the person's picked face — the un-picked cut
+// refuses with the committed reason (never a silent faces[0]); the picked cut
+// proceeds. Both pinned here as a live cross-witness.
 const availability = operationAvailabilityFor(csum, null, [A, B]);
-const manuscriptCut = applyPlaygroundOperationTo('cut', csum, null, 77, 8, [A, B]);
-check('the MANUSCRIPT boundary receives 2 ancestors where it received 0 and does not break: availability computes (10 ops), and applying cut to the two-parent child through the written model succeeds',
+const unpickedCut = applyPlaygroundOperationTo('cut', csum, null, 77, 8, [A, B]);
+const manuscriptCut = applyPlaygroundOperationTo('cut', csum, null, 77, 8, [A, B], csum.faces[4].id);
+check('the MANUSCRIPT boundary receives 2 ancestors where it received 0 and does not break: availability computes (10 ops); the UN-PICKED cut on the 30-face child refuses with the committed reason, and the PICKED cut succeeds',
   Array.isArray(availability) && availability.length === 10 &&
+  unpickedCut.ok === false && /Select a face/.test(unpickedCut.reason) &&
   manuscriptCut.ok === true);
 note(`ManuscriptView:644's walk on this child: ${resolveLineage(csum, lookup, candidates).length} ancestors (was 0) — the render layer itself is untouched (designer ADR 0003 governs the N-pentimenti draw)`);
 

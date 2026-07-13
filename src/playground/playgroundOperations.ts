@@ -239,6 +239,16 @@ export const PARALLEL_CLASSES_REASON =
 // its refusal is a ROUTE to the ops that do act on complexes — `identify` /
 // the `sew-boundary-*` registry entries (and `cut` / `assemble` /
 // `connectedSum`, which were never gated: they carry the WHOLE complex).
+//
+// THE REFUSAL-ORDER LAW (engineer-chartered, 2026-07-13): a refusal must name
+// the reason that CANNOT be cured before the one that can. This gate is
+// FORM-level and unconditional — no face pick changes it — so every
+// getDisabledReason that consults it checks it BEFORE the selection-level
+// 'Select a face to operate on.' prompt. A prompt the person can satisfy,
+// offered when satisfying it changes nothing, is a false promise, and it
+// buries the reroute (identify / the sew-boundary-* ops) this gate exists to
+// hand them. (`cut` keeps its face prompt first: it has no form-level gate —
+// picking a face genuinely enables it.)
 // ---------------------------------------------------------------------------
 export function singleFaceGateReason(form: Shape): string | null {
   if (form.faces.length === 1) return null;
@@ -353,11 +363,13 @@ export const flipGlueOperation: PlaygroundOperation = {
   getDisabledReason: (context) => {
     const { form, selectedFaceId, selectedFace } = context;
     if (!form) return 'No form selected.';
-    if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
     // the single-face gate is FORM-level and fires before any face-level path
+    // — THE REFUSAL-ORDER LAW (2026-07-13, at singleFaceGateReason): no pick
+    // cures it, so the curable face prompt must not front-run it
     // (on single-face forms it is null — every existing reason is unchanged)
     const gateReason = singleFaceGateReason(form);
     if (gateReason) return gateReason;
+    if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
     const chainReason = wordChainReason(context);
     if (chainReason) return chainReason;
     // captured BEFORE the type-guard check (its negative branch narrows to never)
@@ -416,10 +428,11 @@ function makeWordOperation(spec: WordOperationSpec): PlaygroundOperation {
     getDisabledReason: (context) => {
       const { form, selectedFaceId, selectedFace } = context;
       if (!form) return 'No form selected.';
-      if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
       // the single-face gate is FORM-level and fires before any face-level path
+      // — THE REFUSAL-ORDER LAW (2026-07-13, at singleFaceGateReason)
       const gateReason = singleFaceGateReason(form);
       if (gateReason) return gateReason;
+      if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
       const chainReason = wordChainReason(context);
       if (chainReason) return chainReason;
       // captured BEFORE the type-guard check (its negative branch narrows to never)
@@ -524,9 +537,11 @@ const wholeFaceReason = (context: PlaygroundOperationContext): string | null => 
 const collapseDisabledReason = (context: PlaygroundOperationContext): string | null => {
   const { form, selectedFaceId, selectedFace } = context;
   if (!form) return 'No form selected.';
-  if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
+  // the single-face gate is FORM-level and fires before any face-level path
+  // — THE REFUSAL-ORDER LAW (2026-07-13, at singleFaceGateReason)
   const gateReason = singleFaceGateReason(form);
   if (gateReason) return gateReason;
+  if (!selectedFaceId || !selectedFace) return 'Select a face to operate on.';
   const chainReason = wholeFaceChainReason(context);
   if (chainReason) return chainReason;
   if (!wholeFaceShapeEligible(selectedFace)) return 'Face needs at least 2 boundary edges.';

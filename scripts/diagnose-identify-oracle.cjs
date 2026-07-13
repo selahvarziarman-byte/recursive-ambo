@@ -872,10 +872,13 @@ const guarded = [
   'src/playground/customGluing.ts',
   'src/playground/bornFormRouting.ts',
   // `playgroundOperations.ts` left this guard for the sanctioned multi-parent
-  // walker edit (2026-07-12, ratified in diagnose-multiparent-dag-walk.cjs)
-  // and was RESTORED the same day once that build reached HEAD (04a1c5f) —
-  // the live entry below guards it again, as it must be.
-  'src/playground/playgroundOperations.ts',
+  // walker edit (2026-07-12, ratified in diagnose-multiparent-dag-walk.cjs),
+  // was RESTORED once that build reached HEAD (04a1c5f), and LEAVES it again
+  // for the REFUSAL-ORDER re-cut (engineer-chartered 2026-07-13: the
+  // FORM-level single-face gate fires BEFORE the selection-level face prompt
+  // — order only, every string committed; ratified in
+  // diagnose-the-person-picks-the-face.cjs section [t]). Restore it when that
+  // re-cut reaches HEAD.
   'src/playground/formInvariants.ts',
   'src/playground/snapshot.ts',
   'src/manuscript/surfaceClassifier.ts',

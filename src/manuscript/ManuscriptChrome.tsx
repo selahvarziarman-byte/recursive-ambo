@@ -163,7 +163,7 @@ export interface PortFaceChoice {
   label: string; // honest display (the id + corner count)
 }
 
-function PortFacePicker({
+export function PortFacePicker({
   formTitle,
   faces,
   picked,

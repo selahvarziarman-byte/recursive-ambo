@@ -45,7 +45,7 @@
 // DERIVE-ONLY · ADDITIVE: committed modules by import; playgroundOperations /
 // bornFormRouting / InkedForm / certifiers stay byte-unchanged.
 
-import type { Shape } from '../types/geometry';
+import type { FaceId, Shape } from '../types/geometry';
 import { loadForm } from '../lib/multiform';
 import { PRIMITIVE_CATALOGUE } from '../playground/primitiveCatalogue';
 import {
@@ -152,7 +152,18 @@ export function invokePrimitive(catalogueKey: string, seq: number): WrittenForm 
 // the committed operation application (the SAME contract the playground runs)
 // ---------------------------------------------------------------------------
 
-// the canonical manuscript op target: the form's first face (see header).
+// THE PERSON PICKS THE FACE (engineer-chartered 2026-07-12 — the last
+// array-order default the person could touch): the manuscript op context no
+// longer defaults to the form's first face. A SINGLE face IS the context —
+// one face is not a choice, so the whole word-op zoo stays byte-identical.
+// On a MULTI-face form the context carries the PERSON'S picked face or no
+// face at all — the face-consuming op the person can reach (`cut`) then
+// refuses with the committed reason until a face is picked; `dual` and the
+// sew ops are face-independent and unchanged; the word ops (and `collapse`)
+// are single-face gated and unchanged. NEVER a silent first-face default:
+// the boundary a cut leaves is a drawn mark, and its location must not move
+// with the faces array (the same defect the port-face gate killed at the
+// combine door).
 // REGISTRY UNBOUNDING (mothership-required, 2026-07-11): the context carries
 // the form's FULL REAL lineage where the caller resolved one (the view walks
 // it over the page's own shapes) — the acquisition chain then reaches every
@@ -161,12 +172,25 @@ export function operationContextFor(
   shape: Shape,
   parentShape: Shape | null,
   ancestry?: Shape[],
+  pickedFaceId?: FaceId | null,
 ): PlaygroundOperationContext {
-  const face = shape.faces[0] ?? null;
+  if (shape.faces.length === 1) {
+    const [onlyFace] = shape.faces; // the ONLY face — not a choice, no array-order ambiguity
+    return {
+      form: shape,
+      selectedFaceId: onlyFace.id,
+      selectedFace: onlyFace,
+      parentShape,
+      ...(ancestry ? { ancestry } : {}),
+    };
+  }
+  const picked = pickedFaceId
+    ? shape.faces.find((face) => face.id === pickedFaceId) ?? null
+    : null;
   return {
     form: shape,
-    selectedFaceId: face ? face.id : null,
-    selectedFace: face,
+    selectedFaceId: picked ? picked.id : null,
+    selectedFace: picked,
     parentShape,
     ...(ancestry ? { ancestry } : {}),
   };
@@ -184,12 +208,13 @@ export function operationAvailabilityFor(
   shape: Shape | null,
   parentShape: Shape | null,
   ancestry?: Shape[],
+  pickedFaceId?: FaceId | null,
 ): OperationAvailability[] {
   return PLAYGROUND_OPERATIONS.map((op) => {
     if (!shape) {
       return { id: op.id, label: op.label, description: op.description, enabled: false, reason: 'Select a form first.' };
     }
-    const context = operationContextFor(shape, parentShape, ancestry);
+    const context = operationContextFor(shape, parentShape, ancestry, pickedFaceId);
     const enabled = op.canApply(context);
     return {
       id: op.id,
@@ -212,9 +237,10 @@ export function applyPlaygroundOperationTo(
   seq: number,
   resolution: number,
   targetAncestry?: Shape[],
+  pickedFaceId?: FaceId | null,
 ): ApplyResult {
   const operation = getPlaygroundOperation(operationId); // the committed registry — throws on unknown ids
-  const context = operationContextFor(targetShape, targetParent, targetAncestry);
+  const context = operationContextFor(targetShape, targetParent, targetAncestry, pickedFaceId);
   if (!operation.canApply(context)) {
     return { ok: false, reason: operation.getDisabledReason(context) ?? 'Not applicable to this form.' };
   }
