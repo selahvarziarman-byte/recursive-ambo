@@ -256,6 +256,25 @@ export const manuscriptDefaults = {
       // one hue per identified face-pair (three pairs on T³) — manuscript inks
       markColors: ['#b0561b', '#3e6db4', '#6d8f3e'],
     },
+    // THE APERTURE (engineer-chartered 2026-07-13, designer-ruled ADR 0004):
+    // the dim-3 WORLD register is a hand-cut hole showing the interior —
+    // image-space transported, populated (mask + coil). EVERY dial below is
+    // the CRAFT SURFACE the designer owns; the pixels themselves are the
+    // engine's (traceAperture) and no knob invents or moves a copy.
+    aperture: {
+      resolution: 168, // trace raster (px) — countable copies, not pixel fetish
+      level: 6, // transport depth (bounded; linear in depth, never an orbit enumeration)
+      toneGamma: 1.25, // the tone curve
+      contourWeight: 0.55, // silhouette-edge darkening — line art, not photoreal light
+      echoFade: 0.88, // per-transport dimming (depth in echoes)
+      maskTone: 1.0, // per-object tone — the two-faced mask
+      coilTone: 0.92, // — the right-handed coil (+ its axis)
+      scaffoldTone: 0.28, // — the cell's own edges: faint scaffolding AT MOST
+      formTone: 0.95, // — the person's placed form
+      rimSeed: 3, // the hand of the cut (same seed, same tear)
+      interiorInk: '#2a251c', // the deep tone of the interior void
+      size: 3.6, // aperture plane size (world units)
+    },
     // P-IMMERSE — the honest non-manifold flag: WHICH edges are junctions is
     // the classifier's slot-count reading (>2 face wedges); the knob is ink only.
     junction: {

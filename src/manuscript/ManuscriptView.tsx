@@ -34,7 +34,7 @@ import {
   type MeshBasicMaterial,
 } from 'three';
 import { manuscriptDefaults } from '../design/designDefaults';
-import { buildManuscriptWorld } from './worldModel';
+import { buildManuscriptWorld, type DomainModel } from './worldModel';
 import { InkedForm, type InkedFormCraft, type InkedFormLighting } from './InkedForm';
 import { InkedSkeleton } from './InkedSkeleton';
 import { InkedDomain } from './InkedDomain';
@@ -56,6 +56,7 @@ import {
 import { resolveLineage } from '../playground/playgroundOperations';
 import { InkedPlainForm } from './InkedPlainForm';
 import {
+  ApertureGatePanel,
   BirthGatePanel,
   FormOpsMenu,
   InvokePalette,
@@ -63,7 +64,26 @@ import {
   PortFacePicker,
   RecordStrip,
   SourcesShelf,
+  type AperturePairRowView,
 } from './ManuscriptChrome';
+// THE APERTURE (engineer-chartered 2026-07-13, designer-ruled ADR 0004): the
+// person builds a 3-manifold (map-picked pairs — the mode is DERIVED, never
+// chosen) and stands inside it — image-space transport on the engine's own
+// gluing isometries; the registers invert (world = the aperture; specimen =
+// the relocated fundamental domain + pairings + tower).
+import { ApertureBody } from './ApertureView';
+import {
+  apertureCaption,
+  aperturePairingRefusal,
+  buildAperture,
+  buildApertureScene,
+  buildPersonDomain,
+  describeCandidate,
+  dihedralMapCandidates,
+  traceAperture,
+  type AperturePairRow,
+} from './apertureModel';
+import { createSeedShape } from '../data/seeds';
 import {
   birthChild,
   combineGateFor,
@@ -379,6 +399,21 @@ export default function ManuscriptView() {
     dim2Scale: { value: d.world.rows.dim2Scale, min: 0.3, max: 1.2, step: 0.02 },
     dim3Scale: { value: d.world.rows.dim3Scale, min: 0.5, max: 3, step: 0.1 },
   });
+  // THE APERTURE'S CRAFT SURFACE (mandate §5.9 — exposed, the DESIGNER dials
+  // it; no knob invents or moves a copy: the pixels are the engine's own
+  // transported light, these shape only the ink laid over its values)
+  const apertureCtl = useControls('world · aperture', {
+    resolution: { value: d.world.aperture.resolution, min: 96, max: 224, step: 8 },
+    level: { value: d.world.aperture.level, min: 2, max: 8, step: 1 },
+    toneGamma: { value: d.world.aperture.toneGamma, min: 0.5, max: 2.5, step: 0.05 },
+    contourWeight: { value: d.world.aperture.contourWeight, min: 0, max: 1, step: 0.05 },
+    echoFade: { value: d.world.aperture.echoFade, min: 0.5, max: 1, step: 0.01 },
+    maskTone: { value: d.world.aperture.maskTone, min: 0, max: 1.4, step: 0.02 },
+    coilTone: { value: d.world.aperture.coilTone, min: 0, max: 1.4, step: 0.02 },
+    scaffoldTone: { value: d.world.aperture.scaffoldTone, min: 0, max: 1, step: 0.02 },
+    formTone: { value: d.world.aperture.formTone, min: 0, max: 1.4, step: 0.02 },
+    rimSeed: { value: d.world.aperture.rimSeed, min: 0, max: 12, step: 1 },
+  });
   const driftCtl = useControls('world · drift', {
     enabled: d.world.drift.enabled,
     amplitude: { value: d.world.drift.amplitude, min: 0, max: 0.8, step: 0.01 },
@@ -491,6 +526,22 @@ export default function ManuscriptView() {
 
   // the committed engine does all the deriving; the view only places the results
   const world = useMemo(() => buildManuscriptWorld(layoutCtl.resolution), [layoutCtl.resolution]);
+  // THE APERTURE: the person's OWN built 3-manifolds join the dim-3 register
+  // beside the committed T³ (worldModel byte-unchanged; the door is the
+  // committed buildFormDomain behind buildPersonDomain).
+  const cubeSeed = useMemo(() => createSeedShape('cube'), []);
+  const [builtDomains, setBuiltDomains] = useState<DomainModel[]>([]);
+  const builtCountRef = useRef(0);
+  const [apertureOpen, setApertureOpen] = useState(false);
+  const emptyApertureRows = (): AperturePairRow[] => [
+    { faceA: null, faceB: null, candidateKey: null },
+    { faceA: null, faceB: null, candidateKey: null },
+    { faceA: null, faceB: null, candidateKey: null },
+  ];
+  const [apertureRows, setApertureRows] = useState<AperturePairRow[]>(emptyApertureRows);
+  const [apertureNotice, setApertureNotice] = useState<string | null>(null);
+  const [placedForms, setPlacedForms] = useState<Record<string, string>>({});
+  const dim3All = useMemo(() => [...world.dim3, ...builtDomains], [world, builtDomains]);
 
   // ----- Option B (follow-on): certified generators for plain-rendered forms —
   // globalW1's own basis cycles, canonically barycentric-placed (optionBModel);
@@ -577,9 +628,9 @@ export default function ManuscriptView() {
           }
         : base;
     }
-    const model = world.dim3.find((m) => m.key === key);
+    const model = dim3All.find((m) => m.key === key);
     return model ? readDomainSpecimen(model) : null;
-  }, [selected, world, written, optionBByShape]);
+  }, [selected, world, written, optionBByShape, dim3All]);
 
   // ----- 3a: the op target + the committed availability + the apply path -----
   const rows = d.world.rows;
@@ -593,13 +644,110 @@ export default function ManuscriptView() {
     const map = new Map<string, Shape>();
     world.dim1.forEach((m) => map.set(m.shape.id, m.shape));
     world.dim2.forEach((m) => map.set(m.immersion.shape.id, m.immersion.shape));
-    world.dim3.forEach((m) => map.set(m.shape.id, m.shape));
+    dim3All.forEach((m) => map.set(m.shape.id, m.shape));
     written.forEach((w) => {
       map.set(w.form.shape.id, w.form.shape);
       if (w.form.parentShape) map.set(w.form.parentShape.id, w.form.parentShape);
     });
     return map;
-  }, [world, written]);
+  }, [world, written, dim3All]);
+
+  // THE APERTURE per dim-3 domain: the GATE first (unsound · non-E³ ambient ·
+  // fit refusal ⇒ DRAW NOTHING, SAY SO — the refusal IS the caption), else the
+  // image-space trace — the room populated by the mask, the coil, and whatever
+  // form the person placed. Copies are what the light does, never drawn.
+  const apertures = useMemo(
+    () =>
+      dim3All.map((model) => {
+        const gate = buildAperture(model);
+        if (!gate.ok) {
+          return { key: model.key, gate, trace: null, caption: gate.reason };
+        }
+        const placedId = placedForms[model.key];
+        const placedShape = placedId ? shapeById.get(placedId) ?? null : null;
+        const scene = buildApertureScene(model.shape, placedShape);
+        const trace = traceAperture({
+          deck: gate.deck,
+          scene,
+          width: apertureCtl.resolution,
+          height: apertureCtl.resolution,
+          craft: {
+            level: apertureCtl.level,
+            toneGamma: apertureCtl.toneGamma,
+            contourWeight: apertureCtl.contourWeight,
+            echoFade: apertureCtl.echoFade,
+            maskTone: apertureCtl.maskTone,
+            coilTone: apertureCtl.coilTone,
+            scaffoldTone: apertureCtl.scaffoldTone,
+            formTone: apertureCtl.formTone,
+          },
+        });
+        return { key: model.key, gate, trace, caption: apertureCaption(gate.geometry, trace.counts) };
+      }),
+    [dim3All, placedForms, shapeById, apertureCtl],
+  );
+  // the gate panel's rows with the MAP MENU — the face's own dihedral orbit;
+  // each option prints its vertex correspondence + the DERIVED mode (recorded,
+  // never chosen — the knob that lies does not exist here)
+  const apertureRowViews = useMemo((): AperturePairRowView[] => {
+    const allFaces = cubeSeed.faces.map((f) => ({ id: f.id, label: f.id.split(':').pop() as string }));
+    const usedElsewhere = (rowIndex: number, except: 'A' | 'B'): Set<string> => {
+      const used = new Set<string>();
+      apertureRows.forEach((row, i) => {
+        if (row.faceA && !(i === rowIndex && except === 'A')) used.add(row.faceA);
+        if (row.faceB && !(i === rowIndex && except === 'B')) used.add(row.faceB);
+      });
+      return used;
+    };
+    return apertureRows.map((row, i) => {
+      const takenA = usedElsewhere(i, 'A');
+      const takenB = usedElsewhere(i, 'B');
+      const mapChoices =
+        row.faceA && row.faceB && row.faceA !== row.faceB
+          ? dihedralMapCandidates(cubeSeed, row.faceA, row.faceB).map((c) => ({
+              key: c.key,
+              label: describeCandidate(c),
+            }))
+          : [];
+      return {
+        faceA: row.faceA ?? '',
+        faceB: row.faceB ?? '',
+        mapKey: row.candidateKey ?? '',
+        faceChoicesA: allFaces.filter((f) => !takenA.has(f.id) || f.id === row.faceA),
+        faceChoicesB: allFaces.filter((f) => !takenB.has(f.id) || f.id === row.faceB),
+        mapChoices,
+      };
+    });
+  }, [apertureRows, cubeSeed]);
+  const apertureRefusal = useMemo(() => aperturePairingRefusal(cubeSeed, apertureRows), [cubeSeed, apertureRows]);
+  const handleApertureGlue = useCallback(() => {
+    try {
+      builtCountRef.current += 1;
+      const n = builtCountRef.current;
+      const domain = buildPersonDomain(cubeSeed, apertureRows, `built-${n}`, `built 3-manifold ${n}`);
+      setBuiltDomains((cur) => [...cur, domain]);
+      setApertureNotice(
+        domain.tower.sound
+          ? `glued — H₁ ${domain.tower.homology.H1.pretty} · the aperture opens in the dim-3 band`
+          : 'glued — the S² gate refuses this pattern; the band says so and draws nothing',
+      );
+      setApertureRows(emptyApertureRows());
+    } catch (error) {
+      builtCountRef.current -= 1;
+      // the engine's own refusal (e.g. a folded edge class), surfaced verbatim
+      setApertureNotice(`the engine refused: ${(error as Error).message}`);
+    }
+  }, [cubeSeed, apertureRows]);
+  const selectedDim3 = useMemo(
+    () => (selected && selected.startsWith('dim3:') ? dim3All.find((m) => `dim3:${m.key}` === selected) ?? null : null),
+    [selected, dim3All],
+  );
+  const placeableForms = useMemo(() => {
+    const out: { id: string; label: string }[] = [];
+    written.forEach((w) => out.push({ id: w.form.shape.id, label: w.form.title }));
+    world.dim2.forEach((m) => out.push({ id: m.immersion.shape.id, label: m.surface }));
+    return out;
+  }, [written, world]);
 
   const targetFor = useCallback(
     (
@@ -632,15 +780,15 @@ export default function ManuscriptView() {
         };
       }
       if (band === 'dim3') {
-        const k = world.dim3.findIndex((m) => m.key === key);
+        const k = dim3All.findIndex((m) => m.key === key);
         if (k < 0) return null;
-        const m = world.dim3[k];
+        const m = dim3All[k];
         return {
           shape: m.shape,
           parent: null,
           ancestry: [],
           title: m.title,
-          home: [centered(k, world.dim3.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0],
+          home: [centered(k, dim3All.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0],
         };
       }
       const entry = written.find((w) => w.form.id === key);
@@ -664,7 +812,7 @@ export default function ManuscriptView() {
         home: entry.home,
       };
     },
-    [world, written, shapeById, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing],
+    [world, written, shapeById, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing, dim3All],
   );
 
   // THE PERSON PICKS THE FACE (2026-07-12): the picked port/op face per page
@@ -758,10 +906,10 @@ export default function ManuscriptView() {
     const names = new Map<string, string>();
     world.dim1.forEach((m) => names.set(m.shape.id, m.title));
     world.dim2.forEach((m) => names.set(m.immersion.shape.id, DIM2_TITLES[m.surface] ?? m.surface));
-    world.dim3.forEach((m) => names.set(m.shape.id, m.title));
+    dim3All.forEach((m) => names.set(m.shape.id, m.title));
     written.forEach((w) => names.set(w.form.shape.id, w.form.title));
     return names;
-  }, [world, written]);
+  }, [world, written, dim3All]);
   const recordEntries = useMemo(
     () => (genesis ? footRecord(genesis, (id) => nameOfShapeId.get(id) ?? id) : []),
     [genesis, nameOfShapeId],
@@ -779,12 +927,12 @@ export default function ManuscriptView() {
         0,
       ]),
     );
-    world.dim3.forEach((m, k) =>
-      homes.set(m.shape.id, [centered(k, world.dim3.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0]),
+    dim3All.forEach((m, k) =>
+      homes.set(m.shape.id, [centered(k, dim3All.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0]),
     );
     written.forEach((w) => homes.set(w.form.shape.id, w.home));
     return homes;
-  }, [world, written, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing]);
+  }, [world, written, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing, dim3All]);
   // the stemma: the committed reduced edges whose endpoints are on the page
   const stemmaLines = useMemo(() => {
     if (!genesis) return [];
@@ -1213,29 +1361,49 @@ export default function ManuscriptView() {
           ),
         )}
 
-        {/* dim 3 — fundamental domains, never solid bodies */}
-        {world.dim3.map((model, k) =>
-          selectable(
+        {/* dim 3 — THE APERTURE (the registers invert): the world shows a
+            hand-cut hole into the INTERIOR (no embedding in R³ ⇒ no
+            silhouette; the rim is a CUT, not an outline). When the gate cannot
+            hand a real deck group + ambient it DRAWS NOTHING and the caption
+            says so. The fundamental-domain diagram is the SPECIMEN's now —
+            the committed InkedDomain, byte-unchanged, summoned on select. */}
+        {dim3All.map((model, k) => {
+          const aperture = apertures[k];
+          const summoned = selected === `dim3:${model.key}`;
+          return selectable(
             `dim3:${model.key}`,
             model.shape.id,
-            [centered(k, world.dim3.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0],
+            [centered(k, dim3All.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0],
             k + 19,
             {
               title: model.title,
-              sub: `H₁ = ${model.tower.homology.H1.pretty} · χ ${model.tower.chi} · ${model.pairs.length} face-pairs`,
+              sub: aperture.caption,
               drop: -1.6 * scaleCtl.dim3Scale - 0.9,
             },
             <group scale={scaleCtl.dim3Scale}>
-              <InkedDomain
-                model={model}
-                inkColor={inkFor(`dim3:${model.key}`, model.shape.id, silhouetteCtl.color)}
-                lineWidth={d.world.domain.lineWidth}
-                markColors={d.world.domain.markColors}
-                markRadius={d.world.domain.markRadius}
+              <ApertureBody
+                trace={aperture.trace}
+                ink={{
+                  paperColor: d.paper.background,
+                  interiorInk: d.world.aperture.interiorInk,
+                  rimSeed: apertureCtl.rimSeed,
+                  size: d.world.aperture.size,
+                }}
               />
+              {summoned ? (
+                <group position={[0, 3.05, 0]} scale={0.68}>
+                  <InkedDomain
+                    model={model}
+                    inkColor={inkFor(`dim3:${model.key}`, model.shape.id, silhouetteCtl.color)}
+                    lineWidth={d.world.domain.lineWidth}
+                    markColors={d.world.domain.markColors}
+                    markRadius={d.world.domain.markRadius}
+                  />
+                </group>
+              ) : null}
             </group>,
-          ),
-        )}
+          );
+        })}
 
         {/* WRITTEN material — invoked primitives + op-born forms (REAL committed
             Shapes; renders routed by the committed bornFormRouting) */}
@@ -1339,7 +1507,7 @@ export default function ManuscriptView() {
           {opNotice}
         </div>
       ) : null}
-      {selectedFacePick && selected ? (
+      {selectedFacePick && selected && !apertureOpen ? (
         <div
           style={{
             position: 'absolute',
@@ -1370,6 +1538,99 @@ export default function ManuscriptView() {
             onPick={(faceId) => setPortFaces((cur) => ({ ...cur, [selected]: faceId }))}
             paper={d.paper}
           />
+        </div>
+      ) : null}
+      <button
+        type="button"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          setApertureOpen((cur) => !cur);
+          setApertureNotice(null);
+        }}
+        style={{
+          position: 'absolute',
+          right: 14,
+          bottom: 24,
+          padding: '6px 12px',
+          borderRadius: 3,
+          border: `1px solid ${d.paper.cardBorder}`,
+          background: d.paper.cardBackground,
+          color: d.paper.cardInk,
+          fontFamily: 'Georgia, "Times New Roman", serif',
+          fontSize: 12,
+          cursor: 'pointer',
+          boxShadow: '0 2px 9px rgba(58, 51, 38, 0.15)',
+        }}
+      >
+        {apertureOpen ? 'close the aperture gate' : 'aperture — build a 3-manifold'}
+      </button>
+      {apertureOpen ? (
+        <ApertureGatePanel
+          rows={apertureRowViews}
+          refusal={apertureRefusal}
+          notice={apertureNotice}
+          onPickFaceA={(i, v) =>
+            setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, faceA: v || null, candidateKey: null } : r)))
+          }
+          onPickFaceB={(i, v) =>
+            setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, faceB: v || null, candidateKey: null } : r)))
+          }
+          onPickMap={(i, v) =>
+            setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, candidateKey: v || null } : r)))
+          }
+          onGlue={handleApertureGlue}
+          onClose={() => setApertureOpen(false)}
+          paper={d.paper}
+          accent={generatorsCtl.a}
+        />
+      ) : null}
+      {selectedDim3 && !apertureOpen ? (
+        <div
+          style={{
+            position: 'absolute',
+            left: 14,
+            top: 64,
+            width: 250,
+            padding: '11px 13px',
+            borderRadius: 3,
+            background: d.paper.cardBackground,
+            border: `1px solid ${d.paper.cardBorder}`,
+            boxShadow: '0 2px 9px rgba(58, 51, 38, 0.2)',
+            color: d.paper.cardInk,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 12.5,
+          }}
+        >
+          <div style={{ fontSize: 11, letterSpacing: 1.2, opacity: 0.6, fontVariant: 'small-caps' }}>
+            the room — place a form
+          </div>
+          <div style={{ marginTop: 3, fontSize: 11, opacity: 0.75 }}>
+            your own forms are what you add — the light carries them down every corridor
+          </div>
+          <select
+            value={placedForms[selectedDim3.key] ?? ''}
+            onChange={(e) => setPlacedForms((cur) => ({ ...cur, [selectedDim3.key]: e.target.value }))}
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{
+              display: 'block',
+              width: '100%',
+              marginTop: 7,
+              padding: '3px 4px',
+              fontFamily: 'ui-monospace, monospace',
+              fontSize: 10.5,
+              background: d.paper.cardBackground,
+              color: d.paper.cardInk,
+              border: `1px solid ${d.paper.cardBorder}`,
+              borderRadius: 3,
+            }}
+          >
+            <option value="">— the room keeps its two inhabitants —</option>
+            {placeableForms.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.label}
+              </option>
+            ))}
+          </select>
         </div>
       ) : null}
       <OperationsDock

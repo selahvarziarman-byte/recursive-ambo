@@ -1,0 +1,60 @@
+PLATONIC ENGINE — THE APERTURE (the person builds a 3-manifold and stands
+inside it) · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_APERTURE.md` (gitignored),
+taken on the REAL filesystem bytes (the file is LF-only; the CR-stripped hash
+is identical):
+
+    47dae985...73fd   (full value as measured on the real FS by the coder and
+                       ratified by the engineer after independently verifying
+                       the seal's CONTENT with the real-FS Read path)
+
+Sealed 2026-07-13 by the engineer seat. Baseline 9d02726. Designer-ruled
+(design ADR 0004 + Amendments 1-2 + the scene spec). The coder builds BLIND.
+
+--------------------------------------------------------------------------------
+A PROCESS FAILURE, RECORDED — because the seal is the one thing that must not rot
+--------------------------------------------------------------------------------
+
+This seal was circulated with FOUR different hashes before it was verifiable:
+1d61ead8..., ff7907ab..., b5318bdf..., 3fb3d212... . The coder REFUSED TO BUILD
+and returned it. They were right, and their refusal is the system working.
+
+TWO INDEPENDENT FAILURES, BOTH THE ENGINEER'S:
+
+  (1) I AMENDED A LIVE SEAL. I handed the seal out, then amended it twice --
+      stripping ride-alongs, then stripping leaked mentions -- re-hashing each
+      time, patching the header and never the footer. Three hashes ended up in
+      one document.
+
+      > LAW: A SEAL IS FINAL BEFORE IT LEAVES. A circulated seal is NEVER
+      > amended. If it must change, it is a NEW seal, with a new name, and the
+      > old one is declared DEAD in writing. A seal that can be edited after
+      > the build is chartered is not a seal -- it is a draft, and it cannot
+      > pin anything.
+
+  (2) I HASHED THROUGH AN INSTRUMENT I HAD ALREADY CAUGHT LYING. The sandbox
+      mount served me a 91-line copy of a 92-line file. Every hash I computed
+      through it was the hash of a file that does not exist. I had caught that
+      same mount serving truncated and stale files FOUR times on the same day,
+      and each time I wrote that "the Read tool is the arbiter" -- and then I
+      used the mount as the oracle for the one value in this system that must
+      be byte-exact.
+
+      > LAW: A SEAL'S HASH IS TAKEN ON THE REAL BYTES. Never through a mount,
+      > a bridge, or any instrument already known to be unfaithful. Verify the
+      > seal's CONTENT with the real-FS path, and take the hash where the file
+      > actually lives. An instrument you have caught lying does not get to
+      > certify the thing that certifies everything else.
+
+THE DEEPER LESSON. The whole campaign's discipline is that no claim is trusted
+without a witness, and no witness is trusted without proving it can fail. I
+applied that to the engine, to the coder, to the researcher, to the mothership,
+and to my own rulings -- and stopped applying it to my own instruments. The
+seal is the root of trust. It is precisely the thing that must not be certified
+by a tool one has already caught lying.
+
+The coder's line, which is now doctrine:
+    "An honest stop is incomplete; a confident build against the wrong seal is
+     the lie."

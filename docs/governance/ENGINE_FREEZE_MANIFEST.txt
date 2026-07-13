@@ -158,11 +158,13 @@ NOT_FROZEN src/lib/surfaceDual.ts — outside the chartered freeze set (the engi
 NOT_FROZEN src/lib/topologySignature.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/trisonizedMidwifeReadingV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/workspacePersistence.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
+NOT_FROZEN src/manuscript/ApertureView.tsx — THE APERTURE's ink layer (2026-07-13 mandate) — view seam; ratified by diagnose-the-aperture.cjs
 NOT_FROZEN src/manuscript/InkedPlainForm.tsx — render seam beside the frozen InkedForm/InkedDomain — freeze candidate named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/manuscript/InkedSkeleton.tsx — render seam beside the frozen InkedForm/InkedDomain — freeze candidate named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/manuscript/ManuscriptChrome.tsx — manuscript chrome seam under active mandate churn — ratified per-build by its own witnesses
 NOT_FROZEN src/manuscript/ManuscriptView.tsx — manuscript view seam under active mandate churn — ratified per-build by its own witnesses
 NOT_FROZEN src/manuscript/OperationGlyphs.tsx — glyph chrome (visual only) — not engine logic
+NOT_FROZEN src/manuscript/apertureModel.ts — THE APERTURE's react-free core (2026-07-13 mandate): map menu · witnessed deck fit · recession-law geometry · gate · room · image-space tracer — ratified by diagnose-the-aperture.cjs; freeze candidate once the mandate lands
 NOT_FROZEN src/manuscript/formDomainModel.ts — manuscript model outside the chartered freeze set — not yet ruled frozen
 NOT_FROZEN src/manuscript/writtenFormModel.ts — the operating-context model — churned by sanctioned mandates (three in 2026-07 alone); ratified per-build
 NOT_FROZEN src/playground/identificationAnnotation.ts — playground annotation layer outside the chartered freeze set — not yet ruled frozen

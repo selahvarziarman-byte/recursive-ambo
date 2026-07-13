@@ -308,6 +308,221 @@ export function BirthGatePanel({
 }
 
 // ---------------------------------------------------------------------------
+// THE APERTURE gate (engineer-chartered 2026-07-13, designer-ruled ADR 0004):
+// the person builds a 3-manifold — seed cube → pick face PAIRS → pick the MAP
+// on each → glue; the engine's S² gate judges. ⛔ THE KNOB THAT LIES: there is
+// NO preserving/reversing toggle here and never will be — the menu offers the
+// MAP (which vertex of faceA lands on which vertex of faceB — the face's own
+// dihedral orbit, exactly the maps the engine accepts); the mode printed
+// beside each option is DERIVED from that map's witnessed deck fit and merely
+// RECORDED. A label cannot reverse anything; only a reflected map can.
+// ---------------------------------------------------------------------------
+
+export interface ApertureFaceChoice {
+  id: string;
+  label: string;
+}
+
+export interface ApertureMapChoice {
+  key: string; // the map's pick key — never a mode
+  label: string; // the vertex correspondence + its derived mode, for reading only
+}
+
+export interface AperturePairRowView {
+  faceA: string; // '' = not yet picked
+  faceB: string;
+  mapKey: string;
+  faceChoicesA: ApertureFaceChoice[];
+  faceChoicesB: ApertureFaceChoice[];
+  mapChoices: ApertureMapChoice[]; // empty until both faces are picked
+}
+
+function AperturePickRow({
+  index,
+  row,
+  onPickFaceA,
+  onPickFaceB,
+  onPickMap,
+  paper,
+}: {
+  index: number;
+  row: AperturePairRowView;
+  onPickFaceA: (value: string) => void;
+  onPickFaceB: (value: string) => void;
+  onPickMap: (value: string) => void;
+  paper: ChromePaper;
+}) {
+  const selectStyle = {
+    display: 'block',
+    width: '100%',
+    marginTop: 2,
+    padding: '3px 4px',
+    fontFamily: 'ui-monospace, monospace',
+    fontSize: 10.5,
+    background: paper.cardBackground,
+    color: paper.cardInk,
+    border: `1px solid ${paper.cardBorder}`,
+    borderRadius: 3,
+  } as const;
+  return (
+    <div style={{ marginTop: 9, paddingTop: 7, borderTop: index > 0 ? `1px dashed ${paper.cardBorder}` : 'none' }}>
+      <div style={{ fontSize: 11, opacity: 0.7 }}>pair {index + 1}</div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <select value={row.faceA} onChange={(e) => onPickFaceA(e.target.value)} onMouseDown={(e) => e.stopPropagation()} style={{ ...selectStyle, flex: 1 }}>
+          <option value="">— face —</option>
+          {row.faceChoicesA.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.label}
+            </option>
+          ))}
+        </select>
+        <select value={row.faceB} onChange={(e) => onPickFaceB(e.target.value)} onMouseDown={(e) => e.stopPropagation()} style={{ ...selectStyle, flex: 1 }}>
+          <option value="">— face —</option>
+          {row.faceChoicesB.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <select
+        value={row.mapKey}
+        onChange={(e) => onPickMap(e.target.value)}
+        onMouseDown={(e) => e.stopPropagation()}
+        disabled={row.mapChoices.length === 0}
+        style={selectStyle}
+      >
+        <option value="">— pick the identification map (vertex → vertex) —</option>
+        {row.mapChoices.map((m) => (
+          <option key={m.key} value={m.key}>
+            {m.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+export function ApertureGatePanel({
+  rows,
+  refusal,
+  notice,
+  onPickFaceA,
+  onPickFaceB,
+  onPickMap,
+  onGlue,
+  onClose,
+  paper,
+  accent,
+}: {
+  rows: AperturePairRowView[];
+  refusal: string | null; // the door's named, curable refusal — null = the glue may run
+  notice: string | null; // the engine's own thrown refusal from the last glue attempt, verbatim
+  onPickFaceA: (index: number, value: string) => void;
+  onPickFaceB: (index: number, value: string) => void;
+  onPickMap: (index: number, value: string) => void;
+  onGlue: () => void;
+  onClose: () => void;
+  paper: ChromePaper;
+  accent: string;
+}) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: 14,
+        top: 64,
+        width: 306,
+        padding: '13px 15px',
+        borderRadius: 3,
+        background: paper.cardBackground,
+        border: `1px solid ${paper.cardBorder}`,
+        boxShadow: '0 2px 9px rgba(58, 51, 38, 0.2)',
+        color: paper.cardInk,
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: 13.5,
+        lineHeight: 1.5,
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div style={{ fontSize: 11, letterSpacing: 1.2, opacity: 0.6, fontVariant: 'small-caps' }}>
+          the aperture — build a 3-manifold
+        </div>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          style={{ border: 'none', background: 'transparent', color: paper.cardInk, cursor: 'pointer', fontSize: 13, opacity: 0.6 }}
+        >
+          ×
+        </button>
+      </div>
+      <div style={{ marginTop: 3, fontSize: 11, opacity: 0.75 }}>
+        seed cube · pair its six faces · pick the identification MAP on each — the mode is derived from
+        the map you pick, never chosen
+      </div>
+      {rows.map((row, i) => (
+        <AperturePickRow
+          key={i}
+          index={i}
+          row={row}
+          onPickFaceA={(v) => onPickFaceA(i, v)}
+          onPickFaceB={(v) => onPickFaceB(i, v)}
+          onPickMap={(v) => onPickMap(i, v)}
+          paper={paper}
+        />
+      ))}
+      {refusal === null ? (
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onGlue();
+          }}
+          style={{
+            marginTop: 10,
+            width: '100%',
+            padding: '7px 0',
+            borderRadius: 3,
+            border: `1px solid ${accent}`,
+            background: 'transparent',
+            color: accent,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontWeight: 700,
+            fontSize: 13.5,
+            cursor: 'pointer',
+          }}
+        >
+          glue — the S² gate judges
+        </button>
+      ) : (
+        <div
+          style={{
+            marginTop: 9,
+            padding: '6px 8px',
+            border: `1px solid ${paper.cardBorder}`,
+            borderRadius: 3,
+            fontSize: 12,
+            fontStyle: 'italic',
+            opacity: 0.85,
+          }}
+        >
+          {refusal}
+        </div>
+      )}
+      {notice ? (
+        <div style={{ marginTop: 7, fontSize: 11, fontFamily: 'ui-monospace, monospace', opacity: 0.8 }}>{notice}</div>
+      ) : null}
+      <div style={{ marginTop: 9, fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.5 }}>
+        the world shows the interior · the specimen carries the domain, its pairings, the tower
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // 3b — the RECORD, as foot-marginalia ("what begat what" — the committed DAG,
 // Q3 transitive-reduced; integrity surfaced, never hidden)
 // ---------------------------------------------------------------------------
