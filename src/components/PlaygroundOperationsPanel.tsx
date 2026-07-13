@@ -19,6 +19,7 @@ import {
   PLAYGROUND_OPERATIONS,
   canAssemblePair,
   getAssemblePairDisabledReason,
+  singleFaceGateReason,
   type PlaygroundOperationContext,
 } from '../playground/playgroundOperations';
 import {
@@ -92,14 +93,22 @@ export function PlaygroundOperationsPanel() {
   const chosenPairings: BoundaryPairing[] = rowsComplete
     ? pairingRows.map((row) => ({ edgeA: Number(row.edgeA), edgeB: Number(row.edgeB), mode: row.mode }))
     : [];
-  const gluePreview = !selectedFace
-    ? { ok: false as const, reason: 'Select a face to glue.' }
-    : !rowsComplete
-      ? {
-          ok: false as const,
-          reason: pairingRows.length === 0 ? 'Add an edge pair to begin.' : 'Complete every pair row.',
-        }
-      : previewCustomGlue(shape, selectedFace, chosenPairings, context.parentShape);
+  // THE REFUSAL-ORDER LAW (2026-07-14, THE SMALL RUN): the wall before the
+  // door — the FORM reaches the validator's own form-level gate (reason-or-
+  // null, the same authority every registry op consults) BEFORE this panel
+  // synthesizes any pick/row prompt. A refusal no pick or row can cure is
+  // never fronted by a prompt the person can satisfy.
+  const glueFormGateReason = singleFaceGateReason(shape);
+  const gluePreview = glueFormGateReason
+    ? { ok: false as const, reason: glueFormGateReason }
+    : !selectedFace
+      ? { ok: false as const, reason: 'Select a face to glue.' }
+      : !rowsComplete
+        ? {
+            ok: false as const,
+            reason: pairingRows.length === 0 ? 'Add an edge pair to begin.' : 'Complete every pair row.',
+          }
+        : previewCustomGlue(shape, selectedFace, chosenPairings, context.parentShape);
   const handleCustomGlue = () => {
     const born = applyCustomGlueToSelection(chosenPairings);
     selectForm(born.id);
@@ -270,7 +279,9 @@ export function PlaygroundOperationsPanel() {
           </span>
           {!selectedFace ? (
             <span className="px-1 text-[11px] leading-snug text-stone-600">
-              Select a face (click it in the viewport) to build a pairing.
+              {/* the wall before the door (THE SMALL RUN): the form-level refusal,
+                  when it stands, is named INSTEAD of a pick prompt no pick can cure */}
+              {glueFormGateReason ?? 'Select a face (click it in the viewport) to build a pairing.'}
             </span>
           ) : (
             <>

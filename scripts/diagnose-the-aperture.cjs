@@ -428,7 +428,18 @@ const headBlobOf = (file) =>
   execSync(`git cat-file blob HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
 const movedCrInsensitive = (file, workingOverride) => {
   const working = workingOverride ?? fs.readFileSync(path.join(repoRoot, file), 'utf8');
-  return sha256OfCrStripped(working) !== sha256OfCrStripped(headBlobOf(file));
+  // a file with NO HEAD blob is a NEW ARRIVAL, not moved content (a staged-
+// added file enters `git diff HEAD` — the probes' baked module, staged by
+// the small-run re-cut 2026-07-14, is the case in point); arrivals are
+// governed by the manifest completeness scan and the fifth guard
+// (checkUntrackedImports), never by this drift leg.
+  let head;
+  try {
+    head = headBlobOf(file);
+  } catch {
+    return false;
+  }
+  return sha256OfCrStripped(working) !== sha256OfCrStripped(head);
 };
 const diffCandidates = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)
@@ -454,13 +465,22 @@ const ALLOWED_SRC_CHANGES = new Set([
   // THE PROBES (2026-07-14, sealed 8fcb8d42…4a69): the real-scan room — the
   // crease contour rides apertureInk; ratified in diagnose-the-probes.cjs.
   'src/manuscript/apertureInk.ts',
+  // THE SMALL RUN (2026-07-14, sealed 2eb45568…9060): that mandate's sanctioned
+  // surface rides the same working tree — the custom-glue refusal reorder (the
+  // wall before the door), the panel's gate-first seam, and the NUL→escape
+  // substitution in faceIdentification (cooked values identical, proven);
+  // manifest hash lines moved in the SAME change (the freeze law working);
+  // ratified in diagnose-the-small-run.cjs.
+  'src/playground/customGluing.ts',
+  'src/lib/faceIdentification.ts',
+  'src/components/PlaygroundOperationsPanel.tsx',
 ]);
-check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults (the aperture model + view are NEW files); NOT ONE model, renderer, certifier or engine file moved — dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 27',
+check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 44 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&
   (() => {
     const { checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
     const freeze = checkEngineFreeze();
-    return freeze.ok === true && freeze.checked === 27 && freeze.unlisted.length === 0;
+    return freeze.ok === true && freeze.checked === 44 && freeze.unlisted.length === 0;
   })());
 note(`diff candidates: ${diffCandidates.length} · content-moved: [${changedSrc.join(', ') || 'empty'}]`);
 // …and the CR-insensitive listing still BITES (a filter that cannot fail is a
@@ -487,8 +507,9 @@ check('…and the dim-1/2 populations still read their committed values through 
 console.log('\n----- [j] the engine freeze manifest holds — and still bites -----');
 const { checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
 const freeze = checkEngineFreeze();
-check('THE ENGINE FREEZE MANIFEST: all 27 frozen engine files match their manifest hashes and every source file under the engine roots is classified (the aperture\'s two NEW manuscript files ride as NOT_FROZEN lines — the completeness law working) — drifted [] · missing [] · unlisted []',
-  freeze.ok === true && freeze.checked === 27 &&
+// 27 → 44 (2026-07-14, THE SMALL RUN): the freeze closed under imports.
+check('THE ENGINE FREEZE MANIFEST: all 44 frozen engine files (import-closed) match their manifest hashes and every source file under the engine roots is classified (the aperture\'s two NEW manuscript files ride as NOT_FROZEN lines — the completeness law working) — drifted [] · missing [] · unlisted []',
+  freeze.ok === true && freeze.checked === 44 &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 && freeze.unlisted.length === 0);
 const FREEZE_SENTINEL = 'src/lib/incidenceTraceRegistry.ts';
 const sentinelContent = fs.readFileSync(path.join(repoRoot, FREEZE_SENTINEL), 'utf8');

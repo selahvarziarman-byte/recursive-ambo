@@ -496,8 +496,20 @@ note(`T³ hands ${traceT3.counts.handCopiesVisible} (0 LEFT) · FLIP hands ${tra
 // the CR-insensitive diff surface (the aperture witness's re-cut idiom, reused)
 const { sha256OfCrStripped, checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
 const headBlobOf = (file) => execSync(`git cat-file blob HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
-const movedCrInsensitive = (file) =>
-  sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) !== sha256OfCrStripped(headBlobOf(file));
+const movedCrInsensitive = (file) => {
+  // a file with NO HEAD blob is a NEW ARRIVAL, not moved content (a staged-
+// added file enters `git diff HEAD` — the probes' baked module, staged by
+// the small-run re-cut 2026-07-14, is the case in point); arrivals are
+// governed by the manifest completeness scan and the fifth guard
+// (checkUntrackedImports), never by this drift leg.
+  let head;
+  try {
+    head = headBlobOf(file);
+  } catch {
+    return false;
+  }
+  return sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) !== sha256OfCrStripped(head);
+};
 const inkAllowed = new Set([
   'src/design/designDefaults.ts',
   'src/manuscript/ApertureView.tsx',
@@ -513,16 +525,25 @@ const inkAllowed = new Set([
   // crease contour (this file), the normal buffer + probe scene (the model);
   // ratified in diagnose-the-probes.cjs.
   'src/manuscript/apertureInk.ts',
+  // THE SMALL RUN (2026-07-14, sealed 2eb45568…9060): the custom-glue refusal
+  // reorder (the wall before the door), the panel's gate-first seam, and the
+  // NUL→escape substitution in faceIdentification (cooked values identical);
+  // manifest hashes moved in the same change; ratified in
+  // diagnose-the-small-run.cjs.
+  'src/playground/customGluing.ts',
+  'src/lib/faceIdentification.ts',
+  'src/components/PlaygroundOperationsPanel.tsx',
 ]);
 const inkMoved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)
   .filter(Boolean)
   .filter((f) => movedCrInsensitive(f));
-check('…and the dim-1/2 world is untouched: the CR-insensitive content-moved surface is exactly the ink\'s sanctioned files (defaults · view wrap · dial threading · the additive depth) — no model, renderer, certifier or engine file moved; the freeze manifest holds at 27',
+check('…and the dim-1/2 world is untouched: the CR-insensitive content-moved surface is exactly the sanctioned files of the mandates riding this tree (the small run\'s two engine edits carry their manifest hash updates in the same change); the freeze manifest holds at 44 (import-closed)',
   inkMoved.every((f) => inkAllowed.has(f)) &&
   (() => {
     const freeze = checkEngineFreeze();
-    return freeze.ok === true && freeze.checked === 27 && freeze.unlisted.length === 0;
+    // 27 → 44 (2026-07-14, THE SMALL RUN): the freeze closed under imports
+    return freeze.ok === true && freeze.checked === 44 && freeze.unlisted.length === 0;
   })());
 note(`content-moved vs HEAD: [${inkMoved.join(', ') || 'empty'}]`);
 

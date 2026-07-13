@@ -310,8 +310,20 @@ note(`dials swept: ${Object.keys(DIALS).join(' · ')}`);
 console.log('\n----- [g] ★ non-movement: level3 untouched; the folded verdicts stand; the diff surface is the mandate\'s (clause 4 · battery 8) -----');
 const { sha256OfCrStripped, checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
 const headBlobOf = (file) => execSync(`git cat-file blob HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
-const movedCrInsensitive = (file) =>
-  sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) !== sha256OfCrStripped(headBlobOf(file));
+const movedCrInsensitive = (file) => {
+  // a file with NO HEAD blob is a NEW ARRIVAL, not moved content (a staged-
+// added file enters `git diff HEAD` — the probes' baked module, staged by
+// the small-run re-cut 2026-07-14, is the case in point); arrivals are
+// governed by the manifest completeness scan and the fifth guard
+// (checkUntrackedImports), never by this drift leg.
+  let head;
+  try {
+    head = headBlobOf(file);
+  } catch {
+    return false;
+  }
+  return sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) !== sha256OfCrStripped(head);
+};
 const moved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)
   .filter(Boolean)
@@ -321,13 +333,22 @@ const allowed = new Set([
   'src/manuscript/ManuscriptView.tsx',
   'src/manuscript/apertureModel.ts',
   'src/manuscript/apertureInk.ts',
+  // THE SMALL RUN (2026-07-14, sealed 2eb45568…9060): the custom-glue refusal
+  // reorder (the wall before the door), the panel's gate-first seam, and the
+  // NUL→escape substitution in faceIdentification (cooked values identical —
+  // the level3 machinery asserted unmoved below is proven untouched by it);
+  // manifest hashes moved in the same change; ratified in
+  // diagnose-the-small-run.cjs.
+  'src/playground/customGluing.ts',
+  'src/lib/faceIdentification.ts',
+  'src/components/PlaygroundOperationsPanel.tsx',
 ]);
-check('★ CLAUSE 4 — NON-MOVEMENT: the CR-insensitive content-moved surface is exactly the mandate\'s files (the model\'s normal + probe scene · the ink\'s crease · the view\'s probes + dials · the 0620 defaults; the probe modules are NEW files); the GATE, the TOWER and the FOLDED-EDGE machinery (level3*) are BYTE-IDENTICAL to HEAD; the freeze manifest holds at 27 with the two new files classified',
+check('★ CLAUSE 4 — NON-MOVEMENT: the CR-insensitive content-moved surface is exactly the riding mandates\' files (the probes\' model/ink/view/defaults + the small run\'s ratified trio; the probe modules are NEW files); the GATE, the TOWER and the FOLDED-EDGE machinery (level3*) are BYTE-IDENTICAL to HEAD; the freeze manifest holds at 44 (import-closed) with the new files classified',
   moved.every((file) => allowed.has(file)) &&
   ['src/lib/level3SoundnessGate.ts', 'src/lib/level3Invariants.ts', 'src/lib/level3Orientation.ts'].every((file) => !movedCrInsensitive(file)) &&
   (() => {
     const freeze = checkEngineFreeze();
-    return freeze.ok === true && freeze.checked === 27 && freeze.unlisted.length === 0;
+    return freeze.ok === true && freeze.checked === 44 && freeze.unlisted.length === 0;
   })());
 note(`content-moved vs HEAD: [${moved.join(', ') || 'empty'}]`);
 check('…and a FOLDED verdict still speaks (the orbifold branch unmoved): a folded door pairing — found by sweep — refuses by name with kind \'folded-edge\' and the researcher\'s wall',

@@ -71,7 +71,6 @@ export function validateCustomPairings(
   form?: Shape | null,
   parentShape?: Shape | null,
 ): string | null {
-  if (!face) return 'Select a face to glue.';
   // Word-op single-face gate (engineer-chartered, 2026-07-11): the custom glue
   // routes through the SAME fundamental-polygon materializer as the registry
   // word ops (one identified polygon out; every other face silently discarded)
@@ -79,9 +78,16 @@ export function validateCustomPairings(
   // form-level; the committed two-argument (face, pairings) validation calls
   // cannot check it, but every LIVE seam (preview / execute / the picker UI)
   // passes the form and is gated here.
+  // THE REFUSAL-ORDER LAW (2026-07-13, at singleFaceGateReason; applied to this
+  // seam 2026-07-14, THE SMALL RUN): the gate is FORM-level — no face pick
+  // cures it — so it fires BEFORE the curable 'Select a face…' prompt. On a
+  // form the gate refuses for every face, that prompt was a false promise.
+  // (Without the form — the committed two-argument calls — the gate cannot
+  // speak and the face prompt stays first, exactly as before.)
   if (form && form.faces.length !== 1) {
     return singleFaceGateReason(form);
   }
+  if (!face) return 'Select a face to glue.';
   const n = face.vertexIds.length;
   if (new Set(face.vertexIds).size !== n) {
     if (form) {

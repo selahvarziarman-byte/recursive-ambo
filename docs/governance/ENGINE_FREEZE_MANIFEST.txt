@@ -1,6 +1,7 @@
 # ═══════════════════════════════════════════════════════════════════════════
 # THE ENGINE FREEZE MANIFEST — PlatonicEngine202
 # Chartered by the engineer seat 2026-07-12; built 2026-07-13 at baseline 9fd3581.
+# Closed under imports 2026-07-14 (THE SMALL RUN, baseline 5f3aecc).
 #
 # THE LAW — A GUARD MUST NOT REQUIRE A HOLE IN ITSELF TO PERMIT A SANCTIONED CHANGE.
 # A guard’s job is not to prevent change — it is to make change VISIBLE and
@@ -17,24 +18,50 @@
 #   · The checker (scripts/lib/engineFreeze.cjs) READS this file and can never
 #     write it. No auto-regeneration, no --update, no fix mode. A hash update
 #     is a deliberate human act, reviewed in the diff.
-#   · COMPLETENESS: every .ts/.tsx under src/lib, src/playground, src/manuscript
-#     is either FROZEN (hashed below) or NOT_FROZEN (named below, with a reason).
-#     Anything else is `unlisted` and FAILS every witness — a new engine file
-#     can never again be silently unguarded.
+#   · IMPORT CLOSURE (THE SMALL RUN, 2026-07-14): a file imported by a frozen
+#     file is FROZEN, transitively — a frozen file is only as frozen as its
+#     dependencies. The criterion is objective, never taste. The 17 files the
+#     closure added: the core types, id-minting, lineage, shape/packets, the
+#     level3 tower (gate · orientation · w1 · homology · link extractor ·
+#     faceIdentification), dualization, surfaceDual, seeds, the primitive
+#     catalogue, and the written-form model.
+#   · NO NUL BYTES (THE SMALL RUN, 2026-07-14): no frozen file may contain a
+#     raw NUL byte — a NUL makes greps treat the file as BINARY and silently
+#     skip it, so every content audit of it becomes a false negative that
+#     looks exactly like a pass. The checker FAILS on a NUL (`nulled`).
+#   · COMPLETENESS: every .ts/.tsx under src/lib, src/playground,
+#     src/manuscript, src/types (types joined 2026-07-14 — it was a blind spot
+#     in the blind-spot check) is either FROZEN (hashed below) or NOT_FROZEN
+#     (named below, with a reason). Anything else is `unlisted` and FAILS
+#     every witness — a new engine file can never again be silently unguarded.
 #
 # Audit rule: in any commit touching a frozen file, confirm exactly the
 # sanctioned file’s hash line moved — nothing else.
 # ═══════════════════════════════════════════════════════════════════════════
 
-# ─── FROZEN (27) — the engine; drift here without a manifest update is a finding ───
+# ─── FROZEN (44) — the engine, import-closed; drift here without a manifest update is a finding ───
+src/data/seeds.ts                       6936376f3c1fcf6b3170d25fe2b3e080afcd9c3eb329dcee4ea37f6435f83274
 src/lib/complexIdentification.ts        86660c686cda01243465d1835da2655a61d3db8813e1626189eba86a5cbb7d9c
 src/lib/connectedSum.ts                 c9d1455e76f4fb62e68ad954c7101ec1f62068194c2c07f04f5e84c6a3185b57
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c
+src/lib/dualization.ts                  f450a61ca363e915b40374cd0707f6bc878680649d6057389bf49a90eb14d2a0
+src/lib/faceIdentification.ts           2a09c9ec0d4914c158ad42f8b7066f4f3bb2f94cf825717814a3107171a9691f
 src/lib/genealogyDag.ts                 1ace11b7f2a1007e3191c6692ecf5c83c23e590776c41ed00e9ba96499e7839b
 src/lib/globalW1.ts                     3209127d540d80c7a0734c6989f745423fc1cb3c1fe3103bbfb73dc1da13e207
+src/lib/ids.ts                          3de67f4590eb2ce56a51a061bb8e05047b77b0e846fd45d11c9c171e9f22703e
 src/lib/incidenceTraceRegistry.ts       f052da294632da927f28c385abd63cda5c134d8431e6dc05a0b94467cc0dccf0
+src/lib/level3Homology.ts               7806c9cfb54f5ec7fa1e07350a68bfe4d7d5b5c7a21a281272ae759d0468ffda
+src/lib/level3Invariants.ts             228231d481e8bc938e2d2f536b0f582c41b091548aeede7f36a141b9878af798
+src/lib/level3LinkExtractor.ts          f98139f74f194f3cb558de16e2357c815d0a827dad11d5f86324ce81dec859a1
+src/lib/level3Orientation.ts            2ac4b44395ea8ac438d540a52f87c94412c74cb77b8dcd4b6451511dfafe44ae
+src/lib/level3SoundnessGate.ts          4aa356824c37b25254ffd94b245579478df8866b65528c15ef16946abf8570ed
+src/lib/level3W1.ts                     469f3c0736f4e94e28f5a60bca2020a11b3340e38a9dc92d41b0e44f1dde8590
+src/lib/lineage.ts                      a2fd474f9e58869ba1015ed16d1d930d37dd2725d48492a2f08dc9dc93ccb0fa
 src/lib/materializeOperation.ts         3f984c1415ee219d08cbcd71e8c69d4bb2742b185faa419984ec98b059fcdee4
 src/lib/multiform.ts                    8a2cb9eeff1cd5bdb30fa5c2f43b7eec07af0880164e684ff73cf45f7419b093
+src/lib/packets.ts                      feaf628678732c01a276ead985b08dd439b2ae8ab09adf5bba865a0dd4811d9f
+src/lib/shape.ts                        8339d97812ac4dac2a68b982936b34d51cdb308069d73e6738f2da366bd5b7b2
+src/lib/surfaceDual.ts                  022a1c68251c3b04c13c4b6f39f1dad7e5d0fcf74cd64570f5d0e9f6c93eec95
 src/lib/surfaceImmersion.ts             699110df572af936d38ef067d45f5a797ec441e8e0018accc83639caa82f9c09
 src/lib/surfaceOperations.ts            06a439f357e3a51743a355071819b1ed73dcb4d1607afb0afc64a711877b04b6
 src/lib/transformationLedger.ts         2f77f9b331c9151c00242f40708a4915dc35e8f6408059ad4769f9433d3c162b
@@ -48,12 +75,15 @@ src/manuscript/specimenModel.ts         c711be9dafcac4b6e4f62b113c6383712cef952b
 src/manuscript/standardBodies.ts        6100e6cf1bbea405bdd8aaaa72d6ffeb07dbd5700a6f6359ff76469e2a65198b
 src/manuscript/surfaceClassifier.ts     0abad4df23c8697cc059ce009c18aa4cc868b0bb22a7561e42666e72551eeb6d
 src/manuscript/worldModel.ts            c923c911ec2cde09d58331be00479d762ea0be7ef4e5b9e95fb32b2d8717af75
+src/manuscript/writtenFormModel.ts      9e4b3118ef2655631cbc2d48d5f92b22c4443972106d93e1fc7df8b2dbe6477e
 src/playground/bornFormRouting.ts       6f6530d67c5ecfb98a48f35f9df0e12b327ca570c2bdfc45cfe18f0106f411fa
-src/playground/customGluing.ts          9abdfe6ed555f51279eae844057c4facd58897cd4b4f1cbbfaafe399e93ce6f7
+src/playground/customGluing.ts          2085fb7ef4199bda258d8c3cde23f3a186d16eb7f51d6d809061f72ee7c8ddb5
 src/playground/formInvariants.ts        1079458c3d4a3451cd2df376f62893271ff10014210492b96f411a7718717f96
 src/playground/genealogyLayout.ts       dcdde159e83cc246fdbaf0521ec69a2a5884c78d0d68cbe1dae7c1b1589f98b8
 src/playground/playgroundOperations.ts  ed0cc1a8350cc7d7a79923d7d4db9c4c2255c9997fc1ec2996d87074d1865b2e
+src/playground/primitiveCatalogue.ts    9d977610215f7e4751a293a14b02085879442320cccc3ce6fcb66aa90eecf882
 src/playground/snapshot.ts              7e0655ad3207b1c6ad456e7c32c5ad3e249c8561dca9c2512fed3a6b91636843
+src/types/geometry.ts                   7dcfc6c1ef8f1a5192afb9cb4c09b2193dadc18be168e3bb8a2c839f0c98a100
 
 # ─── NOT_FROZEN — classified with a reason (completeness: nothing may be unlisted) ───
 NOT_FROZEN src/lib/ambo.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
@@ -64,8 +94,6 @@ NOT_FROZEN src/lib/closeEdgeIntoCircle.ts — outside the chartered freeze set (
 NOT_FROZEN src/lib/connectionWaveInstrumentV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/diagonalizationMatrix.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/dualView.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
-NOT_FROZEN src/lib/dualization.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
-NOT_FROZEN src/lib/faceIdentification.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/fanoOctonionicAssociatorProjectionTableV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/fanoOctonionicCarrierGraphFieldV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/fanoOctonionicCarrierTableV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
@@ -119,14 +147,6 @@ NOT_FROZEN src/lib/generatedSiteReadingV0FieldCueUiBoundary.ts — field/carrier
 NOT_FROZEN src/lib/harmonicEmissionProfilesV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/honestSourceStateReadingV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/hubLayerSourceStateCapsuleV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
-NOT_FROZEN src/lib/ids.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
-NOT_FROZEN src/lib/level3Homology.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
-NOT_FROZEN src/lib/level3Invariants.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
-NOT_FROZEN src/lib/level3LinkExtractor.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
-NOT_FROZEN src/lib/level3Orientation.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
-NOT_FROZEN src/lib/level3SoundnessGate.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
-NOT_FROZEN src/lib/level3W1.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
-NOT_FROZEN src/lib/lineage.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/medialCarrierSourceStateSurvivalAuditV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/medialCarrierSourceStateSurvivalAuditV1.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/medialDualEquivariantCarrierPolicyModelCardV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
@@ -137,13 +157,11 @@ NOT_FROZEN src/lib/moufangAutomorphismGaugeV0.ts — field/carrier-programme wor
 NOT_FROZEN src/lib/moufangHolonomyValidityV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/octaFirstBirthCarrierBaseV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/octonionVsA3MedialCarrierDiscriminatorV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
-NOT_FROZEN src/lib/packets.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/patchLift.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/propagationFieldActivitySurvivalAuditV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/pyritohedralDiagonalization.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/richFieldV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/s4FrameWitnessV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
-NOT_FROZEN src/lib/shape.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/siteWitnessCatalogueV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/sourceSignatureContractAuditV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/spectralFlowV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
@@ -154,7 +172,6 @@ NOT_FROZEN src/lib/structuredSourceStateFieldBehaviorRecoveryV0.ts — field/car
 NOT_FROZEN src/lib/structuredSourceStateFieldBehaviorResidualV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/structuredSourceStateMultiProjectionStructuralChannelV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/subComplexLift.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
-NOT_FROZEN src/lib/surfaceDual.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/topologySignature.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/trisonizedMidwifeReadingV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/workspacePersistence.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
@@ -169,7 +186,5 @@ NOT_FROZEN src/manuscript/apertureModel.ts — THE APERTURE's react-free core (2
 NOT_FROZEN src/manuscript/apertureProbeAssets.ts — THE PROBES' real scans, baked (2026-07-14 mandate): exact Float32/Uint32 base64 of the designer's .obj scans — witness-verified equal to the source files; generated once, never regenerated silently
 NOT_FROZEN src/manuscript/apertureProbes.ts — THE PROBES' mounts (2026-07-14 mandate): the mask split rim-to-rim, the hand placed by rotation only (det(R)>0 THROWS) — ratified by diagnose-the-probes.cjs
 NOT_FROZEN src/manuscript/formDomainModel.ts — manuscript model outside the chartered freeze set — not yet ruled frozen
-NOT_FROZEN src/manuscript/writtenFormModel.ts — the operating-context model — churned by sanctioned mandates (three in 2026-07 alone); ratified per-build
 NOT_FROZEN src/playground/identificationAnnotation.ts — playground annotation layer outside the chartered freeze set — not yet ruled frozen
-NOT_FROZEN src/playground/primitiveCatalogue.ts — invocation catalogue — freeze candidate named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/playground/surfaceCatalogue.ts — invocation catalogue — freeze candidate named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
