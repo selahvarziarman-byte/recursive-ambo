@@ -336,8 +336,13 @@ check('an UNSOUND person-built pattern: the tower\'s S² gate refuses — the fa
   unsoundGate.reason.includes('S² gate: NOT sound') && unsoundGate.reason.includes('nothing is drawn') &&
   unsoundGate.reason.includes('vertex-link') && unsoundGate.reason.includes('vertex:cube:'));
 note(`unsound refusal: ${unsoundGate.reason.slice(0, 140)}…`);
-// find a SOUND non-E³ space through the door (the recession law refuses the ambient honestly)
-let s3Found = null;
+// B.0 THE HONEST DOOR (2026-07-15, sealed fab02d7e…e77e2, researcher-ruled:
+// the engine is EUCLIDEAN): this leg INVERTS. The same sweep-found sound
+// n=[3,3,3,3] form was refused here as "S³" off an edge count — k is the
+// edge-class size, not an ambient curvature (LAW 15). The door now DRAWS it
+// and names the honest reading: a Euclidean cone-manifold with cone edges at
+// k×90° — never S³. Ratified in diagnose-the-honest-door.cjs.
+let coneFound = null;
 const adjPairs = [['left', 'front'], ['right', 'back'], ['bottom', 'top']];
 const adjCands = adjPairs.map(([a, b]) => A.dihedralMapCandidates(cube, faceId(a), faceId(b)));
 outer: for (const c0 of adjCands[0])
@@ -347,22 +352,26 @@ outer: for (const c0 of adjCands[0])
       try {
         const d = A.buildPersonDomain(cube, rows, 'p-s3', 'sweep');
         const g = A.geometryFromTower(d.tower);
-        if (d.tower.sound && g.kind === 'S3') {
-          s3Found = { rows: [c0.key, c1.key, c2.key], domain: d, geometry: g };
+        if (d.tower.sound && g.n.every((v) => v === 3)) {
+          coneFound = { rows: [c0.key, c1.key, c2.key], domain: d, geometry: g };
           break outer;
         }
       } catch (error) {
         // the engine's own loud refusal (level3Orientation FOLDED) — reported in the handback, surfaced by the door verbatim
       }
     }
-check('a SOUND S³ manifold is door-reachable (the adjacent matching, found by sweep) — the recession law reads n=[3,3,3,3] uniform → θ=2π/3 > the cube\'s 90° dihedral → S³ — and the gate refuses to draw it BY NAME: only the E³ transport is built; nothing is drawn',
-  s3Found !== null &&
-  s3Found.geometry.n.every((v) => v === 3) &&
+check('the SOUND n=[3,3,3,3] form (the adjacent matching, found by sweep — refused as "S³" before B.0) now DRAWS: the gate is ok, and the geometry names the honest reading — a Euclidean cone-manifold with cone edges 4 × 270°, never S³ (k is the edge-class size, not an ambient)',
+  coneFound !== null &&
+  coneFound.geometry.n.every((v) => v === 3) &&
+  coneFound.geometry.kind === 'cone' &&
+  coneFound.geometry.label.includes('Euclidean cone-manifold') &&
+  coneFound.geometry.label.includes('4 × 270°') &&
+  !/S³|S3|H³|H3|spherical|hyperbolic/.test(coneFound.geometry.label) &&
   (() => {
-    const gate = A.buildAperture(s3Found.domain);
-    return gate.ok === false && gate.reason.includes('S³') && gate.reason.includes('only the E³ transport is built') && gate.reason.includes('nothing is drawn');
+    const gate = A.buildAperture(coneFound.domain);
+    return gate.ok === true && gate.deck.length > 0;
   })());
-note(`S³ fixture: maps [${s3Found ? s3Found.rows.join(', ') : '—'}] · n=[${s3Found ? s3Found.geometry.n.join(',') : '—'}]`);
+note(`cone fixture: maps [${coneFound ? coneFound.rows.join(', ') : '—'}] · n=[${coneFound ? coneFound.geometry.n.join(',') : '—'}] · ${coneFound ? coneFound.geometry.label.slice(0, 80) : '—'}`);
 check('the GEOMETRY is DERIVED from the tower\'s own edge links, never typed in: n = tower.gate.edgeLinks[].memberEdgeIds.length (source-asserted on the selector) and T³ reads E³ from n=[4,4,4]',
   modelSrc.includes('tower.gate.edgeLinks.map((link) => link.memberEdgeIds.length)') &&
   t3Gate.ok === true && t3Gate.geometry.label.includes('n=[4,4,4]'));

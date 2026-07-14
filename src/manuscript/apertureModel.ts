@@ -513,18 +513,41 @@ export function subdivideAndReadPersonDomain(seedShape: Shape, rows: AperturePai
 // ---------------------------------------------------------------------------
 
 export interface ApertureGeometry {
-  kind: 'E3' | 'S3' | 'H3' | 'mixed';
+  // B.0 THE HONEST DOOR (researcher-ruled, sealed fab02d7e…e77e2): the engine
+  // is EUCLIDEAN — the seed cube has 90° dihedrals and the deck maps are
+  // ambient ℝ³ isometries, so cube/~ is ALWAYS a Euclidean cone-manifold.
+  // k = edgeLinks[].memberEdgeIds.length is the EDGE-CLASS SIZE, never an
+  // ambient curvature: a necessary condition is not a verdict (LAW 15). A
+  // k≠4 class is a CONE EDGE at angle k×90° — the door no longer names
+  // 'S³'/'H³'/'mixed' geometries the substrate cannot hold.
+  kind: 'E3' | 'cone';
   n: number[];
   label: string;
+  coneEdges: string | null; // the k≠4 classes at k×90°, human-readable — null on the uniform flat form
 }
 
 export function geometryFromTower(tower: DomainModel['tower']): ApertureGeometry {
   const n = tower.gate.edgeLinks.map((link) => link.memberEdgeIds.length);
   const uniform = n.length > 0 && n.every((v) => v === n[0]);
-  if (uniform && n[0] === 4) return { kind: 'E3', n, label: `E³ — n=[${n.join(',')}] · 2π/4 = the cube's 90° dihedral` };
-  if (uniform && n[0] < 4) return { kind: 'S3', n, label: `S³ — n=[${n.join(',')}] · angle deficit (2π/${n[0]} > 90°)` };
-  if (uniform) return { kind: 'H3', n, label: `H³ — n=[${n.join(',')}] · angle excess (2π/${n[0]} < 90°)` };
-  return { kind: 'mixed', n, label: `mixed — n=[${n.join(',')}] · no single ambient satisfies the recession law` };
+  if (uniform && n[0] === 4) {
+    return { kind: 'E3', n, label: `E³ — n=[${n.join(',')}] · 2π/4 = the cube's 90° dihedral`, coneEdges: null };
+  }
+  // every other sound form: a Euclidean cone-manifold — report the cone edges
+  // (each k≠4 class at k×90°) and claim nothing about a curved ambient
+  const coneCounts = new Map<number, number>();
+  for (const k of n) {
+    if (k !== 4) coneCounts.set(k, (coneCounts.get(k) ?? 0) + 1);
+  }
+  const coneEdges = [...coneCounts.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([k, count]) => `${count} × ${k * 90}°`)
+    .join(', ');
+  return {
+    kind: 'cone',
+    n,
+    label: `Euclidean cone-manifold — n=[${n.join(',')}] · cone edges: ${coneEdges}`,
+    coneEdges,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -547,13 +570,12 @@ export function buildAperture(domain: DomainModel): ApertureGate {
       reason: `S² gate: NOT sound (${first}) — no deck group exists behind this pattern; nothing is drawn.`,
     };
   }
+  // B.0 THE HONEST DOOR: the kind!=='E3' refusal is DELETED — a sound form
+  // draws regardless of k. The cell-local face-map step (p←g(p), v←R·v) IS the
+  // geodesic flow on a Euclidean cone-manifold, ratified; the transport is
+  // unchanged. (Unsound/folded forms stay refused ABOVE — that gate is 0.2's,
+  // not B.0's.)
   const geometry = geometryFromTower(tower);
-  if (geometry.kind !== 'E3') {
-    return {
-      ok: false,
-      reason: `the recession law reads ${geometry.label} — only the E³ transport is built; nothing is drawn.`,
-    };
-  }
   const pairings = domain.complex.pairings;
   try {
     const deck = deckOf(domain.shape, pairings);
@@ -1081,7 +1103,11 @@ export function apertureCaption(geometry: ApertureGeometry, counts: ApertureTrac
   // The mask line carries NO chirality claim (a face is its own mirror);
   // THE HAND is the only chirality counter.
   const parts = [
-    `${geometry.kind === 'E3' ? 'E³' : geometry.kind} · n=[${geometry.n.join(',')}]`,
+    // B.0: the honest reading — the flat form keeps its exact caption; a cone
+    // form names its cone edges (k×90°) and never a curved ambient
+    geometry.kind === 'E3'
+      ? `E³ · n=[${geometry.n.join(',')}]`
+      : `Euclidean cone-manifold · n=[${geometry.n.join(',')}] · cone edges: ${geometry.coneEdges}`,
     `orbit (visible): ${counts.maskCopiesVisible} mask${counts.maskCopiesVisible === 1 ? '' : 's'}`,
     `${counts.handCopiesMirrored} of the ${counts.handCopiesVisible} hands are LEFT — count them`,
   ];

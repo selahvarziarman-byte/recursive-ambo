@@ -678,8 +678,9 @@ export default function ManuscriptView() {
     return map;
   }, [world, written, dim3All]);
 
-  // THE APERTURE per dim-3 domain: the GATE first (unsound · non-E³ ambient ·
-  // fit refusal ⇒ DRAW NOTHING, SAY SO — the refusal IS the caption), else the
+  // THE APERTURE per dim-3 domain: the GATE first (unsound · fit refusal ⇒
+  // DRAW NOTHING, SAY SO — the refusal IS the caption; B.0: a sound cone form
+  // draws — k≠4 is a cone edge, never a curved ambient), else the
   // image-space trace — the room populated by the mask, the coil, and whatever
   // form the person placed. Copies are what the light does, never drawn.
   const apertures = useMemo(

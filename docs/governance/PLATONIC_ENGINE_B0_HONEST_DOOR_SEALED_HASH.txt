@@ -1,0 +1,44 @@
+PLATONIC ENGINE — B.0 · THE DOOR STOPS NAMING A GEOMETRY THE ENGINE
+CANNOT HOLD (un-refuse the 36 sound cone forms; never say "S³") · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_DOOR_STOPS_LYING.md`
+(gitignored plaintext), taken on the REAL filesystem bytes:
+
+    fab02d7e748e3ef58057423a5e7afdc3115f40ab488bf6ba3245efaf850e77e2
+
+Sealed 2026-07-15 by the engineer seat. Baseline 8a009e0. Researcher-ruled
+(the engine is EUCLIDEAN — `cube/~` is always a Euclidean cone-manifold;
+nothing is ever S³/H³) + mothership-ratified. The coder builds BLIND.
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+The value above was computed in the sandbox, which reads through the mount --
+the instrument caught serving a 91-line copy of a 92-line file (the APERTURE
+seal's four-hash failure). It is NOT the arbiter.
+
+    > A SEAL'S HASH IS TAKEN ON THE REAL BYTES. The engineer verified the
+    > seal's CONTENT with the real-FS Read path (49 lines, coherent). The
+    > HASH is confirmed by Arman natively:
+    >
+    >     certutil -hashfile .handoff\SEAL_THE_DOOR_STOPS_LYING.md SHA256
+    >
+    > If that does not print fab02d7e...e77e2, the mount served a stale copy;
+    > STOP, do not build, and the engineer re-hashes. The coder builds only
+    > against a natively-confirmed hash.
+
+    > A SEAL IS FINAL BEFORE IT LEAVES. This seal is not amended. If it must
+    > change, it is a NEW seal with a new name and this one is declared DEAD
+    > in writing.
+
+--------------------------------------------------------------------------------
+WHAT IT PINS (revealed only at audit; the coder builds from the MANDATE)
+--------------------------------------------------------------------------------
+
+B.0 deletes ONE refusal (`buildAperture`'s `kind!=='E3'`) and relabels the
+geometry (never "S³"/"H³"/"mixed"; a Euclidean cone-manifold with cone edges
+at k×90°). The transport is UNCHANGED. Expected: 79 sound forms draw (was 43);
+zero of 512 labels say S³/H³; the 43 flat forms byte-identical to HEAD; the 97
+folded forms untouched (their body is 0.2). Two wrong mechanisms carried.

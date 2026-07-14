@@ -348,6 +348,10 @@ const HEAD_READ_ALLOWLIST = new Map([
   // gate/tower byte-identity + the 512 un-subdivided verdicts vs the
   // HEAD-compiled tower reader)
   ['diagnose-the-subdivision.cjs', { catfile: 1 }],
+  // B.0 THE HONEST DOOR (2026-07-15): headBlobOf — the HEAD-compiled aperture
+  // reader (flat-form labels/traces byte-identity · folded verdicts untouched ·
+  // pre-commit mutant fidelity)
+  ['diagnose-the-honest-door.cjs', { catfile: 1 }],
 ]);
 // the scanner runs over a {name → source} map so the planted-guard exhibit can
 // feed it a simulated tree without touching the disk
