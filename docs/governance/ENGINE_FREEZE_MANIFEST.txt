@@ -147,6 +147,7 @@ NOT_FROZEN src/lib/generatedSiteReadingV0FieldCueUiBoundary.ts — field/carrier
 NOT_FROZEN src/lib/harmonicEmissionProfilesV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/honestSourceStateReadingV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/hubLayerSourceStateCapsuleV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
+NOT_FROZEN src/lib/level3Subdivision.ts — ARC 0.1 THE SUBDIVISION (2026-07-14 mandate): bisect the 1-skeleton, keep one cell — the folded-edge wall's cure as a real door (edge bisection valid exactly while faceIdentification.ts:316 holds); ratified by diagnose-the-subdivision.cjs; freeze candidate once the arc lands
 NOT_FROZEN src/lib/medialCarrierSourceStateSurvivalAuditV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/medialCarrierSourceStateSurvivalAuditV1.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/medialDualEquivariantCarrierPolicyModelCardV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine

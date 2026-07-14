@@ -214,10 +214,16 @@ check('level3Orientation\'s FOLDED throw is NOT deleted (source-asserted) and st
 // ═════ [f] battery 4 — the aperture draws nothing and says so ════════════════════
 console.log('\n----- [f] the door surfaces the wall; nothing joins the world; the aperture draws nothing (battery 4) -----');
 const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
-check('the view consumes the VERDICT: a folded glue sets the notice to the WALL and returns before any domain is born (source-asserted: buildPersonDomainVerdict consumed · setApertureNotice(verdict.wall) · the early return precedes setBuiltDomains) — nothing joins the band, so the aperture draws nothing, and the wall says why',
+// THE SUBDIVISION (ARC 0.1, 2026-07-14, sealed 080adb52…2496): the folded
+// branch grew its sanctioned door — the view now ALSO snapshots the folded
+// rows (setApertureFoldedRows) before returning, so the wall's cure can act on
+// exactly the identification that folded. The window widens for those lines
+// and the snapshot is pinned POSITIVELY (ratified in diagnose-the-subdivision.cjs).
+check('the view consumes the VERDICT: a folded glue sets the notice to the WALL, snapshots the folded rows for the subdivide door, and returns before any domain is born (source-asserted: buildPersonDomainVerdict consumed · setApertureNotice(verdict.wall) · setApertureFoldedRows inside the folded branch · the early return precedes setBuiltDomains) — nothing joins the band, so the aperture draws nothing, and the wall says why',
   viewSrc.includes('buildPersonDomainVerdict(') &&
   viewSrc.includes('setApertureNotice(verdict.wall);') &&
-  /if \(verdict\.folded\) \{[\s\S]{0,220}return;[\s\S]{0,80}\}/.test(viewSrc) &&
+  /if \(verdict\.folded\) \{[\s\S]{0,460}return;[\s\S]{0,80}\}/.test(viewSrc) &&
+  /if \(verdict\.folded\) \{[\s\S]{0,460}setApertureFoldedRows\(/.test(viewSrc) &&
   viewSrc.indexOf('setApertureNotice(verdict.wall);') < viewSrc.indexOf('setBuiltDomains((cur) => [...cur, domain]);'));
 
 // ═════ [g] CLAUSE 4 — non-movement: the 415 byte-identical to HEAD ═══════════════
@@ -314,6 +320,11 @@ const allowed = new Set([
   'src/playground/customGluing.ts',
   'src/lib/faceIdentification.ts',
   'src/components/PlaygroundOperationsPanel.tsx',
+  // ARC 0.1 THE SUBDIVISION (2026-07-14, sealed 080adb52…2496): the wall's
+  // cure as a real door — the subdivide handler/prop threading (the chrome's
+  // button, the view's folded-rows state, the model's door); ratified in
+  // diagnose-the-subdivision.cjs.
+  'src/manuscript/ManuscriptChrome.tsx',
 ]);
 const moved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

@@ -80,6 +80,7 @@ import {
   buildPersonDomainVerdict,
   describeCandidate,
   dihedralMapCandidates,
+  subdivideAndReadPersonDomain,
   traceAperture,
   type AperturePairRow,
 } from './apertureModel';
@@ -560,6 +561,9 @@ export default function ManuscriptView() {
   ];
   const [apertureRows, setApertureRows] = useState<AperturePairRow[]>(emptyApertureRows);
   const [apertureNotice, setApertureNotice] = useState<string | null>(null);
+  // THE SUBDIVISION (ARC 0.1): the rows whose glue came back FOLDED — held so
+  // the wall's cure (subdivide) acts on exactly the identification that folded.
+  const [apertureFoldedRows, setApertureFoldedRows] = useState<AperturePairRow[] | null>(null);
   const [placedForms, setPlacedForms] = useState<Record<string, string>>({});
   const [displacedRooms, setDisplacedRooms] = useState<Record<string, boolean>>({});
   const probeMeshes = useMemo(() => buildProbeMeshes(), []);
@@ -763,6 +767,9 @@ export default function ManuscriptView() {
       if (verdict.folded) {
         builtCountRef.current -= 1; // no domain was born
         setApertureNotice(verdict.wall);
+        // THE SUBDIVISION (ARC 0.1): the wall's cure is a door now — keep the
+        // rows that folded, so the person can invoke subdivide on exactly them.
+        setApertureFoldedRows(apertureRows.map((row) => ({ ...row })));
         return;
       }
       const domain = verdict.domain;
@@ -773,12 +780,36 @@ export default function ManuscriptView() {
           : 'glued — the S² gate refuses this pattern; the band says so and draws nothing',
       );
       setApertureRows(emptyApertureRows());
+      setApertureFoldedRows(null);
     } catch (error) {
       builtCountRef.current -= 1;
       // a door-level refusal (an incomplete matching, an unknown candidate) — named
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
+      setApertureFoldedRows(null);
     }
   }, [cubeSeed, apertureRows]);
+  // THE SUBDIVISION DOOR (ARC 0.1, LAW 14 — a cure must be a door, not a
+  // theorem): on the folded verdict the person invokes subdivide — the seed is
+  // bisected, the pairings lift, the form is re-glued, and the gate reads the
+  // finer cells. ⛔ The notice CLAIMS NOTHING about the result: it speaks the
+  // gate's own reading (the finer question is ARC 0.3, its own seal).
+  const handleApertureSubdivide = useCallback(() => {
+    if (!apertureFoldedRows) return;
+    try {
+      const { counts, reading } = subdivideAndReadPersonDomain(cubeSeed, apertureFoldedRows);
+      const cellsLine = `${counts.v} v · ${counts.e} e · ${counts.f} f · ${counts.c} cell`;
+      setApertureNotice(
+        reading.folded
+          ? `subdivided (${cellsLine}) — the gate STILL reads a fold at ${reading.foldedEdgeClasses.join(', ')}; report this`
+          : reading.tower.sound
+            ? `subdivided (${cellsLine}) — the fold is resolved; the gate reads: χ ${reading.tower.chi} · w₁ ${reading.tower.w1.w1} · H₁ ${reading.tower.homology.H1.pretty}`
+            : `subdivided (${cellsLine}) — the fold is resolved; the S² gate now refuses the finer complex: ${reading.tower.gate.failures.map((f) => f.kind).join(', ')}`,
+      );
+      setApertureFoldedRows(null);
+    } catch (error) {
+      setApertureNotice(`the engine refused: ${(error as Error).message}`);
+    }
+  }, [cubeSeed, apertureFoldedRows]);
   const selectedDim3 = useMemo(
     () => (selected && selected.startsWith('dim3:') ? dim3All.find((m) => `dim3:${m.key}` === selected) ?? null : null),
     [selected, dim3All],
@@ -1600,6 +1631,7 @@ export default function ManuscriptView() {
           e.stopPropagation();
           setApertureOpen((cur) => !cur);
           setApertureNotice(null);
+          setApertureFoldedRows(null);
         }}
         style={{
           position: 'absolute',
@@ -1633,6 +1665,7 @@ export default function ManuscriptView() {
             setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, candidateKey: v || null } : r)))
           }
           onGlue={handleApertureGlue}
+          onSubdivide={apertureFoldedRows ? handleApertureSubdivide : null}
           onClose={() => setApertureOpen(false)}
           paper={d.paper}
           accent={generatorsCtl.a}

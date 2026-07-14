@@ -411,6 +411,7 @@ export function ApertureGatePanel({
   onPickFaceB,
   onPickMap,
   onGlue,
+  onSubdivide,
   onClose,
   paper,
   accent,
@@ -422,6 +423,9 @@ export function ApertureGatePanel({
   onPickFaceB: (index: number, value: string) => void;
   onPickMap: (index: number, value: string) => void;
   onGlue: () => void;
+  // THE SUBDIVISION (ARC 0.1, LAW 14): non-null exactly when the last glue came
+  // back FOLDED — the wall's cure, as a door the person can actually open.
+  onSubdivide: (() => void) | null;
   onClose: () => void;
   paper: ChromePaper;
   accent: string;
@@ -514,6 +518,29 @@ export function ApertureGatePanel({
       )}
       {notice ? (
         <div style={{ marginTop: 7, fontSize: 11, fontFamily: 'ui-monospace, monospace', opacity: 0.8 }}>{notice}</div>
+      ) : null}
+      {onSubdivide ? (
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onSubdivide();
+          }}
+          style={{
+            marginTop: 7,
+            width: '100%',
+            padding: '6px 0',
+            borderRadius: 3,
+            border: `1px solid ${paper.cardBorder}`,
+            background: 'transparent',
+            color: paper.cardInk,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 12.5,
+            cursor: 'pointer',
+          }}
+        >
+          subdivide — resolve the fold; the gate reads again
+        </button>
       ) : null}
       <div style={{ marginTop: 9, fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.5 }}>
         the world shows the interior · the specimen carries the domain, its pairings, the tower

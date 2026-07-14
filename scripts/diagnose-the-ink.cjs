@@ -533,6 +533,11 @@ const inkAllowed = new Set([
   'src/playground/customGluing.ts',
   'src/lib/faceIdentification.ts',
   'src/components/PlaygroundOperationsPanel.tsx',
+  // ARC 0.1 THE SUBDIVISION (2026-07-14, sealed 080adb52…2496): the wall's
+  // cure as a real door — the subdivide handler/prop threading (the chrome's
+  // button, the view's folded-rows state, the model's door); ratified in
+  // diagnose-the-subdivision.cjs.
+  'src/manuscript/ManuscriptChrome.tsx',
 ]);
 const inkMoved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

@@ -344,6 +344,10 @@ const HEAD_READ_ALLOWLIST = new Map([
   // behaviour deltas) and one rev-anchored grep (the §4 grep-blindness
   // exhibit: the committed NUL-bearing blob defeats the search)
   ['diagnose-the-small-run.cjs', { catfile: 1, gitgrep: 1 }],
+  // ARC 0.1 THE SUBDIVISION (2026-07-14): headBlobOf — non-movement (the
+  // gate/tower byte-identity + the 512 un-subdivided verdicts vs the
+  // HEAD-compiled tower reader)
+  ['diagnose-the-subdivision.cjs', { catfile: 1 }],
 ]);
 // the scanner runs over a {name → source} map so the planted-guard exhibit can
 // feed it a simulated tree without touching the disk

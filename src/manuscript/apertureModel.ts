@@ -56,7 +56,8 @@ import {
   type FacePairing,
   type Level3SeedCell,
 } from '../lib/faceIdentification';
-import { readLevel3Tower } from '../lib/level3Invariants';
+import { readLevel3Tower, type Level3TowerReading } from '../lib/level3Invariants';
+import { bisectEdges, liftPairingsToBisected } from '../lib/level3Subdivision';
 import type { Level3SoundnessReport } from '../lib/level3SoundnessGate';
 import { buildFormDomain } from './formDomainModel';
 import type { DomainModel } from './worldModel';
@@ -467,6 +468,44 @@ export function buildPersonDomain(seedShape: Shape, rows: AperturePairRow[], key
     throw new Error(`apertureModel: ${verdict.wall}`);
   }
   return verdict.domain;
+}
+
+// ---------------------------------------------------------------------------
+// THE SUBDIVISION DOOR (ARC 0.1, 2026-07-14 — LAW 14: a cure must be a door,
+// not a theorem). The wall's cure now exists.
+// ---------------------------------------------------------------------------
+
+export interface SubdivisionReading {
+  // the finer cell structure's counts, read off the union-finds (never assumed)
+  counts: { v: number; e: number; f: number; c: number };
+  // the gate's OWN verdict on the bisected complex, verbatim — ⛔ NOTHING is
+  // claimed about the result: subdivision makes the orbifold LEGIBLE, not a
+  // manifold; whatever the gate says is the honest reading (the finer question
+  // is ARC 0.3, its own seal).
+  reading: Level3TowerReading;
+}
+
+/**
+ * subdivideAndReadPersonDomain — on a folded-edge verdict the person invokes
+ * subdivide: the seed is BISECTED (uniformly — all edges; partial bisection
+ * breaks paired-face congruence and the validator would refuse it), the
+ * pairings LIFT (midpoint → midpoint of the edge's image), the form is
+ * RE-GLUED through the same committed ops, and the gate reads it again. The
+ * formerly folded edge is now two half-edges the identification simply
+ * swaps, with a genuine vertex fixed at its midpoint.
+ *
+ * ⚠ Valid exactly while faceIdentification.ts:316 (no self-paired face) is
+ * enforced — see level3Subdivision's header for the precondition, by line.
+ */
+export function subdivideAndReadPersonDomain(seedShape: Shape, rows: AperturePairRow[]): SubdivisionReading {
+  const pairings = resolvePersonPairings(seedShape, rows);
+  const seed = readSeedCell(seedShape);
+  const bisected = bisectEdges(seed);
+  const lifted = liftPairingsToBisected(seed, pairings);
+  const complex = lifted.some((p) => p.mode === 'reversing')
+    ? flipGlueFaces(bisected, lifted)
+    : glueFaces(bisected, lifted);
+  return { counts: complex.counts, reading: readLevel3Tower(complex) };
 }
 
 // ---------------------------------------------------------------------------

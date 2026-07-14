@@ -342,6 +342,11 @@ const allowed = new Set([
   'src/playground/customGluing.ts',
   'src/lib/faceIdentification.ts',
   'src/components/PlaygroundOperationsPanel.tsx',
+  // ARC 0.1 THE SUBDIVISION (2026-07-14, sealed 080adb52…2496): the wall's
+  // cure as a real door — the subdivide handler/prop threading (the chrome's
+  // button, the view's folded-rows state, the model's door); ratified in
+  // diagnose-the-subdivision.cjs.
+  'src/manuscript/ManuscriptChrome.tsx',
 ]);
 check('★ CLAUSE 4 — NON-MOVEMENT: the CR-insensitive content-moved surface is exactly the riding mandates\' files (the probes\' model/ink/view/defaults + the small run\'s ratified trio; the probe modules are NEW files); the GATE, the TOWER and the FOLDED-EDGE machinery (level3*) are BYTE-IDENTICAL to HEAD; the freeze manifest holds at 44 (import-closed) with the new files classified',
   moved.every((file) => allowed.has(file)) &&
