@@ -1,0 +1,76 @@
+PLATONIC ENGINE — 0.3 · THE CERTIFICATE (the 97 are NOT manifolds: the arc's
+strongest claim stops living in a report) · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_CERTIFICATE.md`
+(gitignored plaintext), taken on the REAL filesystem bytes:
+
+    426478908f5e8109a7b69bc9cbabbf7cbd8a8491b6ddccd45e2e76cc18c9c1db
+
+Sealed 2026-07-16 by the engineer seat. Baseline 39f6717. Researcher-proved
+(the fold is the cone on RP2) · mothership-ruled (a certificate that lives in
+someone's scratchpad is the differential-oracle mistake, repeating). The coder
+builds BLIND.
+
+--------------------------------------------------------------------------------
+CO-RATIFICATION  [DRAFT CONVENTION — mothership ruling 2026-07-16 0900 §2]
+--------------------------------------------------------------------------------
+
+    status   : PENDING
+    ruling   : —
+    verified : —
+
+THE GATE IS: engineer audit -> mothership co-ratification -> Arman commits.
+NOTHING ENFORCED THE MIDDLE STEP. It was a convention held in memory, and on
+2026-07-15 the engineer skipped it: the census (a318eba) was committed with no
+co-ratification because the engineer announced the intention in a report to
+ARMAN and never wrote the letter. Nothing failed; nothing noticed. It surfaced
+only because Arman read the mothership's stale queue against the git log.
+
+    > A law with no mechanism is not a law. It is a thing you are remembering,
+    > not running. (The same ruling that gave instruments/ a home; the
+    > mothership applied it to her own gate.)
+
+THE MECHANISM: this block is REQUIRED in every *_SEALED_HASH.txt. A commit
+whose hash record shows `status: PENDING` is VISIBLY UN-RATIFIED -- on-repo,
+greppable, by anyone:
+
+    grep -L "status   : RATIFIED" docs/governance/*_SEALED_HASH.txt
+
+The Sovereign is not supposed to be the integrity check on the ratifying
+office's own gate. This block is the lock the gate never had.
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_CERTIFICATE.md SHA256
+
+If that does not print 42647890...c1db, the mount served a stale copy; STOP, do
+not build, and the engineer re-hashes. A seal is FINAL before it leaves.
+
+--------------------------------------------------------------------------------
+WHAT IT PINS (revealed only at audit; the coder builds from the MANDATE)
+--------------------------------------------------------------------------------
+
+THE CLAIM, reproduced independently by the engineer before sealing (committed
+op + committed gate): 97 folded forms subdivided; 200 fold midpoints located
+FROM THE FOLD (folded-edge -> repEdgeId -> midpointVertexId); the chi histogram
+of those midpoint links is exactly {1: 200} -- 200/200 read chi=1 => RP2 -- and
+ZERO read chi=2. A closed surface with chi=1 is RP2; there is no other. An RP2
+vertex link is a definitive NON-MANIFOLD certificate: in a PL 3-manifold every
+vertex link is S2.
+
+THE DECIDER (what refuted the axis): a cone AXIS is a MANIFOLD point (link S2,
+chi=2) -- the gate would have PASSED it. The gate refuses 97/97. Subdivided:
+sound 0, refused 97.
+
+THE COUSIN TRAP, pinned because it caught the engineer: vertexLinks are keyed by
+`vertexClass`, a union-find ROOT, with memberVertexIds beside it. A midpoint is a
+MEMBER, not the root. Matching the midpoint id AGAINST the key finds 0 of 200 --
+a FALSE FAILURE on a correct engine. The leg must match BY MEMBERSHIP. Unlike
+`edgeClass`, this name does not lie; the hazard is the caller's assumption.
+
+SCOPE: the leg only. It changes NO person-facing text. Whether the subdivide
+notice may TELL the person "not a manifold" is routed to the mothership and is
+NOT part of this build. You may not edit the thing you certify.
