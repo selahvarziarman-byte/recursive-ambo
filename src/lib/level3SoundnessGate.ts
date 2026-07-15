@@ -34,7 +34,17 @@ export type Level3Failure =
       // boundary). Detected HERE, before the orientation reader ever sees the
       // complex — the order is the fix.
       kind: 'folded-edge';
-      edgeClass: string;
+      // THE REPRESENTATIVE (census mandate, 2026-07-16, sealed 9832a89c…f2d4):
+      // this is the smallest MEMBER EDGE ID (members[0] after the lex sort) —
+      // the value the person-facing wall prints. It is NOT the union-find
+      // class root, and it was previously named `edgeClass`: a census that
+      // cross-referenced it against the link readings' edgeClass (which IS
+      // the root) BY ID was a silent no-op — it returned the same number as
+      // no filter at all, and three offices published it. A NAME IS A CLAIM,
+      // so `.edgeClass` no longer exists on this record; the canonical key
+      // both views share is `classRoot`.
+      repEdgeId: string;
+      classRoot: string;
       memberEdgeIds: string[];
     }
   | {
@@ -76,13 +86,14 @@ export function classifyLevel3Soundness(complex: Level3Complex): Level3Soundness
     if (list) list.push(edge);
     else edgeGroups.set(root, [edge]);
   }
-  for (const members of edgeGroups.values()) {
+  for (const [root, members] of edgeGroups.entries()) {
     members.sort((x, y) => x.id.localeCompare(y.id));
     const rep = members[0];
     if (complex.endClassOf(rep.id, rep.a) === complex.endClassOf(rep.id, rep.b)) {
       failures.push({
         kind: 'folded-edge',
-        edgeClass: rep.id,
+        repEdgeId: rep.id,
+        classRoot: root,
         memberEdgeIds: members.map((m) => m.id),
       });
     }

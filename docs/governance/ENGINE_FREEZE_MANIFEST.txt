@@ -51,10 +51,10 @@ src/lib/globalW1.ts                     3209127d540d80c7a0734c6989f745423fc1cb3c
 src/lib/ids.ts                          3de67f4590eb2ce56a51a061bb8e05047b77b0e846fd45d11c9c171e9f22703e
 src/lib/incidenceTraceRegistry.ts       f052da294632da927f28c385abd63cda5c134d8431e6dc05a0b94467cc0dccf0
 src/lib/level3Homology.ts               7806c9cfb54f5ec7fa1e07350a68bfe4d7d5b5c7a21a281272ae759d0468ffda
-src/lib/level3Invariants.ts             228231d481e8bc938e2d2f536b0f582c41b091548aeede7f36a141b9878af798
+src/lib/level3Invariants.ts             dd76891c23d1c6395a7a5b63cc51269dd782ab4eecf6acfc3907822b273de84d
 src/lib/level3LinkExtractor.ts          f98139f74f194f3cb558de16e2357c815d0a827dad11d5f86324ce81dec859a1
 src/lib/level3Orientation.ts            2ac4b44395ea8ac438d540a52f87c94412c74cb77b8dcd4b6451511dfafe44ae
-src/lib/level3SoundnessGate.ts          4aa356824c37b25254ffd94b245579478df8866b65528c15ef16946abf8570ed
+src/lib/level3SoundnessGate.ts          110976f3fa29d197d75ea17462d0aedabe793299a2c7b66cc1f181f12007c2f2
 src/lib/level3W1.ts                     469f3c0736f4e94e28f5a60bca2020a11b3340e38a9dc92d41b0e44f1dde8590
 src/lib/lineage.ts                      a2fd474f9e58869ba1015ed16d1d930d37dd2725d48492a2f08dc9dc93ccb0fa
 src/lib/materializeOperation.ts         3f984c1415ee219d08cbcd71e8c69d4bb2742b185faa419984ec98b059fcdee4

@@ -1,0 +1,48 @@
+PLATONIC ENGINE — THE CENSUS + THE REPRESENTATIVE (make the arbitration
+permanent; kill the id-cross-reference trap at compile time) · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_CENSUS_AND_THE_REPRESENTATIVE.md`
+(gitignored plaintext), taken on the REAL filesystem bytes:
+
+    9832a89ceb8a9084b106433cf206dc8de5a4446b468d2c077892e4557869f2d4
+
+Sealed 2026-07-16 by the engineer seat. Baseline 50b7538. Mothership-ruled
+(1700 arbitration order / 1900 acceptance) · researcher-diagnosed (the field
+whose name is false). The coder builds BLIND.
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_CENSUS_AND_THE_REPRESENTATIVE.md SHA256
+
+If that does not print 9832a89c...f2d4, the mount served a stale copy; STOP,
+do not build, and the engineer re-hashes. (The APERTURE seal circulated FOUR
+wrong hashes because it was hashed through a torn mount. The seal's hash is
+taken on the real bytes; a seal is FINAL before it leaves.)
+
+--------------------------------------------------------------------------------
+WHAT IT PINS (revealed only at audit; the coder builds from the MANDATE)
+--------------------------------------------------------------------------------
+
+THE DEFECT: `level3SoundnessGate.ts:85` mints the folded-edge failure's
+`edgeClass` from rep.id (the smallest MEMBER EDGE ID); `:97` mints the
+edge-link reading's `edgeClass` from the union-find ROOT. Measured: of the 200
+folded classes they agree in only 34 and differ in 166 -- so a census that
+excludes folds by cross-referencing the two views BY ID silently keeps 166 of
+200, returning the identical number to no filter at all (61). Three offices ran
+that no-op. A name is a claim, and `edgeClass` holding an edge id is a false one.
+
+THE FIX: rename the folded-edge failure's `edgeClass` -> `repEdgeId` and expose
+the true class root, so the silent id-match becomes a TYPE ERROR. The wall's
+printed VALUE does not move (it is person-facing on 166/200 classes).
+
+PINNED: folded 97 · sound 79 · folded-with-cone 46 · folded-cone-free 51 ·
+sound-with-cone 36 · sound-flat 43; the totals must close (46+51=97, 36+43=79,
+79+97+336=512). "THE 36" folded-cone-free is STRUCK -- it was 97-61, the
+complement of the bug; the real number is 51.
+
+FROZEN: this build edits TWO of the FROZEN 44 (level3SoundnessGate.ts,
+level3Invariants.ts) -- both manifest hashes must be RE-SEALED; the count stays
+44. Drift there without a manifest update is a finding.

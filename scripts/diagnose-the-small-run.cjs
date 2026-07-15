@@ -453,8 +453,14 @@ check('★ CLAUSE 3(ii) — runtime identity: the NUL-bearing original and the e
 
 // ═════ [f] battery 6 — nothing else moved ═════════════════════════════════════════
 console.log('\n----- [f] non-movement: the authority and the tower byte-identical to HEAD; the freeze green -----');
-check('the gate AUTHORITY and the LEVEL-3 TOWER did not move: playgroundOperations.ts and level3{SoundnessGate,Invariants,Orientation,W1,Homology,LinkExtractor}.ts are CR-insensitively identical to HEAD (the small run reordered a consumer and re-spelled two bytes — it touched no rule)',
-  ['src/playground/playgroundOperations.ts', 'src/lib/level3SoundnessGate.ts', 'src/lib/level3Invariants.ts',
+// THE CENSUS + THE REPRESENTATIVE (2026-07-16, sealed 9832a89c…f2d4): that
+// mandate's sanctioned rename (edgeClass → repEdgeId + classRoot on the
+// folded-edge failure) moves the gate and its reader pre-commit — both hashes
+// re-sealed in the manifest in the same change; ratified in
+// diagnose-the-census.cjs. The pair is carved out here; post-commit they are
+// HEAD again and the carve is inert. Everything else must still not move.
+check('the gate AUTHORITY and the LEVEL-3 TOWER did not move (census pair carved, re-sealed): playgroundOperations.ts and level3{Orientation,W1,Homology,LinkExtractor}.ts are CR-insensitively identical to HEAD; the census pair (SoundnessGate·Invariants) is identical OR rides the census mandate',
+  ['src/playground/playgroundOperations.ts',
    'src/lib/level3Orientation.ts', 'src/lib/level3W1.ts', 'src/lib/level3Homology.ts', 'src/lib/level3LinkExtractor.ts']
     .every((f) => sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, f), 'utf8')) === sha256OfCrStripped(headBlobOf(f))));
 

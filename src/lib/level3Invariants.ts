@@ -54,7 +54,11 @@ export function readLevel3Tower(complex: Level3Complex): Level3TowerReading {
   const gate = classifyLevel3Soundness(complex);
   const foldedEdgeClasses = gate.failures
     .filter((f): f is Extract<typeof f, { kind: 'folded-edge' }> => f.kind === 'folded-edge')
-    .map((f) => f.edgeClass);
+    // the census mandate (2026-07-16): the failure's field is repEdgeId now —
+    // the VALUE is unchanged (the smallest member edge id, which the wall
+    // prints), only its name stopped lying. The class ROOT rides beside it as
+    // classRoot for any census that must match the link readings.
+    .map((f) => f.repEdgeId);
   if (foldedEdgeClasses.length > 0) {
     return { folded: true, sound: false, chi: complex.chi, foldedEdgeClasses, gate };
   }

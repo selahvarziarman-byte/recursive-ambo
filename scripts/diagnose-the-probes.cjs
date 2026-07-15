@@ -347,10 +347,25 @@ const allowed = new Set([
   // button, the view's folded-rows state, the model's door); ratified in
   // diagnose-the-subdivision.cjs.
   'src/manuscript/ManuscriptChrome.tsx',
+  // THE CENSUS + THE REPRESENTATIVE (2026-07-16, sealed 9832a89c…f2d4): the
+  // folded-edge failure's field rename (edgeClass → repEdgeId + classRoot) in
+  // the gate and its reader — both manifest hashes re-sealed in the same
+  // change; the wall's printed VALUE unchanged; ratified in
+  // diagnose-the-census.cjs.
+  'src/lib/level3SoundnessGate.ts',
+  'src/lib/level3Invariants.ts',
 ]);
-check('★ CLAUSE 4 — NON-MOVEMENT: the CR-insensitive content-moved surface is exactly the riding mandates\' files (the probes\' model/ink/view/defaults + the small run\'s ratified trio; the probe modules are NEW files); the GATE, the TOWER and the FOLDED-EDGE machinery (level3*) are BYTE-IDENTICAL to HEAD; the freeze manifest holds at 44 (import-closed) with the new files classified',
+const allowedCensusPair = new Set(['src/lib/level3SoundnessGate.ts', 'src/lib/level3Invariants.ts']);
+check('★ CLAUSE 4 — NON-MOVEMENT: the CR-insensitive content-moved surface is exactly the riding mandates\' files (the probes\' model/ink/view/defaults + the small run\'s ratified trio + the census pair); the ORIENTATION READER is byte-identical to HEAD (the census pair may move pre-commit — re-sealed in the manifest, inert post-commit); the freeze manifest holds at 44 (import-closed) with the new files classified',
   moved.every((file) => allowed.has(file)) &&
-  ['src/lib/level3SoundnessGate.ts', 'src/lib/level3Invariants.ts', 'src/lib/level3Orientation.ts'].every((file) => !movedCrInsensitive(file)) &&
+  // THE CENSUS + THE REPRESENTATIVE (2026-07-16, sealed 9832a89c…f2d4): that
+  // mandate's sanctioned edit renames the folded-edge failure's field
+  // (edgeClass → repEdgeId + classRoot) inside the gate and its reader — both
+  // re-sealed in the manifest in the same change. Pre-commit those two may
+  // move; the orientation reader must not. Post-commit all three are HEAD
+  // again and this allowance is inert.
+  ['src/lib/level3Orientation.ts'].every((file) => !movedCrInsensitive(file)) &&
+  ['src/lib/level3SoundnessGate.ts', 'src/lib/level3Invariants.ts'].every((file) => !movedCrInsensitive(file) || allowedCensusPair.has(file)) &&
   (() => {
     const freeze = checkEngineFreeze();
     return freeze.ok === true && freeze.checked === 44 && freeze.unlisted.length === 0;

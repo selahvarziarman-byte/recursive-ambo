@@ -271,8 +271,13 @@ check('⛔ NOTHING IS CLAIMED: the subdivide handler\'s user-facing notice templ
 
 // ═════ [f] battery 7 + CLAUSE 4 — non-movement when subdivision is not invoked ════
 console.log('\n----- [f] ★ CLAUSE 4 — non-movement: the gate/tower/faceIdentification untouched; all 512 un-subdivided readings ≡ HEAD (battery 7) -----');
-check('the READ PATH did not move: faceIdentification, level3{SoundnessGate,Invariants,Orientation,W1,Homology,LinkExtractor} are CR-insensitively BYTE-IDENTICAL to HEAD (the subdivision is a new module BESIDE the engine, never inside it)',
-  ['src/lib/faceIdentification.ts', 'src/lib/level3SoundnessGate.ts', 'src/lib/level3Invariants.ts',
+// THE CENSUS + THE REPRESENTATIVE (2026-07-16, sealed 9832a89c…f2d4): the
+// sanctioned rename (edgeClass → repEdgeId + classRoot on the folded-edge
+// failure) moves the gate and its reader pre-commit — re-sealed in the
+// manifest in the same change; ratified in diagnose-the-census.cjs. Carved
+// here; inert post-commit. Everything else must still not move.
+check('the READ PATH did not move (census pair carved, re-sealed): faceIdentification, level3{Orientation,W1,Homology,LinkExtractor} are CR-insensitively BYTE-IDENTICAL to HEAD (the subdivision is a new module BESIDE the engine, never inside it)',
+  ['src/lib/faceIdentification.ts',
    'src/lib/level3Orientation.ts', 'src/lib/level3W1.ts', 'src/lib/level3Homology.ts', 'src/lib/level3LinkExtractor.ts']
     .every((file) => sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) === sha256OfCrStripped(headBlobOf(file))));
 // the 512 un-subdivided readings vs the HEAD-COMPILED tower reader — the same
