@@ -352,6 +352,9 @@ const HEAD_READ_ALLOWLIST = new Map([
   // reader (flat-form labels/traces byte-identity · folded verdicts untouched ·
   // pre-commit mutant fidelity)
   ['diagnose-the-honest-door.cjs', { catfile: 1 }],
+  // 0.2 THE ORBIFOLD'S BODY (2026-07-16): headBlobOf — the HEAD-compiled
+  // reader (79 sound forms' non-movement) + the frozen registers' byte-identity
+  ['diagnose-the-orbifolds-body.cjs', { catfile: 1 }],
 ]);
 // the scanner runs over a {name → source} map so the planted-guard exhibit can
 // feed it a simulated tree without touching the disk
