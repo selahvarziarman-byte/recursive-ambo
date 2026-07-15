@@ -10,3 +10,28 @@ storybook-static
 
 # off-repo handoff channel — mandates/reports between engineer and coder; never committed
 .handoff/
+
+# ── INSTRUMENTS ─────────────────────────────────────────────────────────────
+# "An office may build an INSTRUMENT to KNOW. It may not build the PRODUCT."
+#   (mothership, 2026-07-15 — the boundary that let the designer render the
+#    winding two offices had canonized invisible.)
+# An instrument is a THROWAWAY probe that lives OUTSIDE the app and never ships;
+# its output is a RULING with the run attached, never code to merge. Put them
+# here. Contents are ignored — the README is tracked so the convention is
+# discoverable on-repo rather than remembered.
+# NOTE: `instruments/*`, NOT `instruments/` — git will not descend into an
+# excluded directory, so the README negation below would silently fail.
+instruments/*
+!instruments/README.md
+
+# Root-level scratch probes that pre-date instruments/ (~32 one-off .ts/.mjs
+# from the cone/fold/orbit investigations). Ignored WHERE THEY LIE — they are
+# other seats' live instruments and moving them would break their relative
+# imports mid-investigation. New ones belong in instruments/.
+# Tracked configs (vite/tailwind, incl. their .d.ts) are UNAFFECTED: a gitignore
+# cannot untrack an already-tracked file. A future root config needs `git add -f`
+# or an exception below — that friction is deliberate.
+/*.ts
+/*.mjs
+!/vite.config.ts
+!/tailwind.config.ts
