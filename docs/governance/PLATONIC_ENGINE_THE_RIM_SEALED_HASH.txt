@@ -1,0 +1,67 @@
+PLATONIC ENGINE — THE RIM: refine until a disk can be cut (the person can add
+a crosscap) · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_RIM.md` (gitignored):
+
+    e5e2e7fb220941b56cf45a56ede9bad1d25d8a2d4e5f7dc690517e7ed4844dde
+
+Measured NATIVELY by Arman (certutil) and independently agreed by the sandbox --
+which is itself evidence for the technical-officer's mechanism: this seal was
+WRITTEN ONCE and never edited, so the mount holds the real bytes. Edited files
+do not propagate; that is what produced the dead 56d73ccf phantom.
+
+Sealed 2026-07-16 by the engineer seat. Baseline 8ae2866. Mothership-chartered
+(ARC 0.0 REFINE) · researcher-defined (1600: all four questions ruled -- the
+pair, the carrier law, :129 is sound, the 2-gon needs two passes).
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_RIM.md SHA256
+
+DEAD -- do NOT build against any of these: SEAL_THE_CHORD (c7918d3c...a589) and
+its two predecessors (d8175c5b, 56d73ccf). The chord seal's clause 3 was
+UNSATISFIABLE: the coder stopped at measurement and refused to build. A
+circulated seal is never amended; this is a new shape with a new name.
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+WHY THE LAST SEAL DIED: connectedSum names the phantom cure at FOUR walls. The
+engineer targeted :100 (single face) and never read :129 (the disk's boundary
+repeats a corner) -- two lines below it in his own grep output. The researcher's
+table had said it a week earlier -- "the cut's boundary CIRCLE; refine until the
+circle is a 1-cycle of cells" -- while her prose said "chord". She wrote both;
+he built the easier one.
+
+NEITHER HALF WORKS ALONE. Chord alone: dead by pigeonhole (mints no vertex, so
+the class count is frozen; every sub-face has >=3 slots from <=2 classes, so a
+corner must repeat). Bisection alone: ALSO dead (the rim [p,m_a,q,m_b,p,m_a,q,
+m_b] is 4 classes in 8 slots, still repeating). Both halves are load-bearing.
+
+THE OP IS A LOOP, NOT A COUNT: bisect until a chord can cut a distinct-cornered
+disk, then chord. Terminating -- each pass doubles the slots. Passes: RP2 4-gon
+1, RP2 2-GON 2, T2 1, Klein 1. The 2-gon is not a bad presentation; the order
+solves it.
+
+REFINE IS NOT A BIRTH, and for a minting op this is NOT an analogy: bisectEdges
+already mints 12 vertices (8->20) and LAW 16 is witnessed on it at 8a009e0 --
+the same op one dimension down, already committed. Bisecting an edge adds one
+vertex AND one edge, so chi cannot move. Minting a cell is not begetting a form.
+Carrier law: every new cell's parent = the unique smallest OLD cell whose
+closure contains it (midpoint -> its edge). Type-claim = resolution.
+
+:129 IS SOUND -- do not relax it. Cutting a repeated-corner face is
+topologically valid, so :129 is not a topological truth: it guards the
+ENDPOINT-KEYED seam (:134 says so). The cure is REFINE, not relaxation. The seam
+is a known debt and is NOT this build.
+
+THE SPINE IS THE MUTANT PAIR: chord-alone and bisect-alone must BOTH be carried
+and BOTH visibly refuse at :129 -- or the pair is not proven to be a pair. Each
+mutant is a plausible whole that a competent seat would have shipped; one of
+them is what the dead seal promised.
