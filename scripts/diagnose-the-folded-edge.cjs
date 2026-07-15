@@ -332,6 +332,10 @@ const allowed = new Set([
   // button, the view's folded-rows state, the model's door); ratified in
   // diagnose-the-subdivision.cjs.
   'src/manuscript/ManuscriptChrome.tsx',
+  // THE EXIT (2026-07-16, sealed a1587899…1049): the pair's exit gains the
+  // parallel-rim conjunct (:132's own predicate) inside the NOT_FROZEN rim
+  // module — no frozen file moves; ratified in diagnose-the-exit.cjs.
+  'src/lib/surfaceRefinement.ts',
 ]);
 const moved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

@@ -1,0 +1,95 @@
+PLATONIC ENGINE — THE EXIT: a loop's exit must test EVERY wall it must clear
+(the person can add a handle) · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_EXIT.md` (gitignored):
+
+    a15878998bf94ebe9222408f110b20115c80596639bc27aa2bdc67675c8a1049
+
+Measured NATIVELY by Arman (certutil); the sandbox independently agreed --
+consistent with the technical-officer's mechanism: this seal was WRITTEN ONCE
+and never edited, which is exactly when the mount holds the real bytes.
+
+Sealed 2026-07-16 by the engineer seat. Baseline e304a6d.
+RE-CHARTER of the DEAD seal THE SEAM (50fda3f4...2a13e), which the coder killed
+at measurement three independent ways. A circulated seal is never amended: this
+is a NEW SHAPE with a NEW NAME, and the old is declared dead on-repo in
+PLATONIC_ENGINE_THE_SEAM_SEALED_HASH.txt. The coder builds BLIND.
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_EXIT.md SHA256
+
+If that does not print a1587899...1049, the mount served a stale copy; STOP, do
+not build, and the engineer re-hashes.
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+THE ENGINEER'S ERROR, NAMED IN THE SEAL'S OWN TITLE. connectedSum applies FOUR
+walls, and three seals have now been aimed at one of them:
+
+  :98   m.faces.length < 2                    the chord clears it   (faces=2, measured)
+  :122  cycleA.length !== cycleB.length       the chord clears it FREELY -- the chord
+                                              ALWAYS cuts a 3-cycle, so any two zoo
+                                              disks match pairwise, automatically
+  :127  new Set(cycle).size !== cycle.length  THE EXIT TESTS THIS ONE
+  :132  parallelRimEdges(m, cycle)            THE EXIT DOES NOT TEST IT  <-- the defect
+
+The chord seal targeted :98 and missed :127. The rim seal's exit tests :127 and
+misses :132. The seam seal tried to fix :132 with the wrong mechanism entirely
+and would have broken a working payoff. A LOOP'S EXIT CONDITION MUST TEST EVERY
+WALL IT MUST CLEAR. This is not offered as a law (the moratorium stands at 26);
+it is the engineer's repeated error, and this seal is where it stops.
+
+THE MEASUREMENT -- the coder's table, independently reproduced by the engineer:
+
+    form        passes  faces  disk-len  distinct(:127)  parallels(:132)
+    RP2-4gon    1       2      3         ok              0    -> SUMS at HEAD today
+    RP2-2gon    2       2      3         ok              0    -> SUMS at HEAD today
+    T2          1       2      3         ok              2    -> refused at :132
+    Klein       1       2      3         ok              2    -> refused at :132
+
+THE LOOP CAN ALREADY CLEAR IT. IT JUST STOPS TOO EARLY. The 2-gon proves the
+mechanism end to end: two passes, zero parallels, sums at HEAD today.
+
+AND THE RESEARCHER'S RULING IS FALSIFIED BY THAT TABLE: "refine cannot reach
+:134 -- the parallel-rim problem is the SEAM's key, not the rim's resolution."
+:132 IS CURED BY DEPTH.
+
+THE CURE IS ONE CONJUNCT: refineToDisk exits only when the candidate disk is
+BOTH distinct-cornered (:127) AND endpoint-faithful (:132's predicate). The file
+(surfaceRefinement.ts) is NOT_FROZEN. The blast radius collapses from three
+frozen engine files under the full surgery protocol to ZERO. :132 is NOT deleted
+-- it is a true wall on an endpoint-keyed seam, and the rim now clears it by
+depth. The seam's deeper cure (explicit signed edge classes) remains a KNOWN
+DEBT and is not this build.
+
+PINNED: the exit clears all four walls on all four zoo forms; passes RP2-4gon=1,
+RP2-2gon=2, T2=2, Klein=2 (REPORT disagreement, do not tune the loop to the
+table); T2#T2 refused at HEAD -> SUCCEEDS -> chi=-2, w1=0, closed orientable
+("add a handle" becomes a move a person can make); RP2#RP2 STILL yields the
+Klein (chi=0) -- the regression clause the dead seal would have broken;
+Klein#Klein succeeds (chi=-2, non-orientable); RP2#T2 MEASURED AND REPORTED
+(expected 3 crosscaps, Dyck's surface, chi=-1 -- report the engine's answer, not
+the engineer's); subdivision invariance holds at the deeper counts; the loop
+carries a BOUND and refuses loudly rather than spins; connectedSum.ts,
+complexIdentification.ts and multiform.ts BYTE-IDENTICAL (this is a NOT_FROZEN-
+only cure -- if any frozen file must move, the seal is VOID).
+
+THE TWO WRONG MECHANISMS, carried in-memory: (a) the OLD EXIT (tests :127 only)
+-> T2 exits at 1 pass with 2 parallel pairs -> visibly refused at :132. That is
+the mechanism committed today. (b) THE SEW REWIRE -- the DEAD seal's own
+mechanism -> RP2#RP2 visibly REFUSED (the punctured RP2 is a Moebius band; its
+rim will not walk). That mutant carries the engineer's killed hypothesis as a
+permanent exhibit: the cure that would have broken the payoff.
+
+Fifth wall disclosed by the coder on the way, and it closes the last dodge:
+executeCustomGlue is guarded to 8 edges, and an exhaustive 1,680-word search
+proves no endpoint-faithful 8-gon T2/Klein seed exists. Depth is not one cure
+among several. It is the only one.

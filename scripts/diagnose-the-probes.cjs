@@ -354,6 +354,10 @@ const allowed = new Set([
   // diagnose-the-census.cjs.
   'src/lib/level3SoundnessGate.ts',
   'src/lib/level3Invariants.ts',
+  // THE EXIT (2026-07-16, sealed a1587899…1049): the pair's exit gains the
+  // parallel-rim conjunct (:132's own predicate) inside the NOT_FROZEN rim
+  // module — no frozen file moves; ratified in diagnose-the-exit.cjs.
+  'src/lib/surfaceRefinement.ts',
 ]);
 const allowedCensusPair = new Set(['src/lib/level3SoundnessGate.ts', 'src/lib/level3Invariants.ts']);
 check('★ CLAUSE 4 — NON-MOVEMENT: the CR-insensitive content-moved surface is exactly the riding mandates\' files (the probes\' model/ink/view/defaults + the small run\'s ratified trio + the census pair); the ORIENTATION READER is byte-identical to HEAD (the census pair may move pre-commit — re-sealed in the manifest, inert post-commit); the freeze manifest holds at 44 (import-closed) with the new files classified',

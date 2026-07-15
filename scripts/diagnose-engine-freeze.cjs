@@ -358,6 +358,10 @@ const HEAD_READ_ALLOWLIST = new Map([
   // THE RIM (2026-07-16): headBlobOf — the L3 sibling's byte-identity (the
   // rim is additive, never a refactor of level3Subdivision)
   ['diagnose-the-rim.cjs', { catfile: 1 }],
+  // THE EXIT (2026-07-16 re-charter): headBlobOf — the three frozen engine
+  // files' non-movement (connectedSum / complexIdentification / multiform);
+  // the build touched NOT_FROZEN surface only
+  ['diagnose-the-exit.cjs', { catfile: 1 }],
 ]);
 // the scanner runs over a {name → source} map so the planted-guard exhibit can
 // feed it a simulated tree without touching the disk

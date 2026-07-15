@@ -1,5 +1,7 @@
 // surfaceRefinement — THE RIM (engineer-chartered 2026-07-16, sealed
-// e5e2e7fb…4dde; mothership-chartered ARC 0.0 REFINE · researcher-defined 1600).
+// e5e2e7fb…4dde; mothership-chartered ARC 0.0 REFINE · researcher-defined 1600)
+// · THE EXIT (re-charter 2026-07-16, sealed a1587899…1049, after the coder's
+// stop killed SEAL_THE_SEAM: the exit now tests EVERY wall it must clear).
 // Refine until a disk can be cut. The level-2 sibling of level3Subdivision —
 // a SIBLING, not a refactor: no L3 code is imported or moved.
 //
@@ -13,15 +15,21 @@
 //   BISECT grows the classes. The CHORD cuts a sub-face small enough to use
 //   them. Both are load-bearing.
 //
-// THE LOOP (the researcher's rule, verbatim): BISECT UNTIL A CHORD CAN CUT A
-// DISTINCT-CORNERED DISK. THEN CHORD. The exit condition is the gate's own
-// rule — new Set(cycle).size === cycle.length — applied to the would-be disk
-// (its arc plus the chord), with the chord's endpoint pair FRESH (parallel to
-// no rim edge: the endpoint-keyed seam could not resolve it otherwise).
-// Terminating: each pass doubles the slots and adds a midpoint class per edge
-// class. Measured pass-counts: RP² 4-gon 1 · RP² 2-gon 2 · T² 1 · Klein 1
-// (the 2-gon admits no chord at pass 0 — that is the loop's first iteration,
-// not a defect).
+// THE LOOP (the researcher's rule, deepened by THE EXIT re-charter): BISECT
+// UNTIL A CHORD CAN CUT A DISK THAT CLEARS EVERY WALL. connectedSum applies
+// FOUR walls; a loop's exit condition must test every wall it must clear:
+//   :98  faces ≥ 2            — the chord clears it by construction;
+//   :122 equal rim lengths    — cleared freely (the exit disk is minimal);
+//   :127 distinct corners     — tested (new Set(cycle).size === cycle.length);
+//   :132 no parallel rim pair — ★ tested since THE EXIT (each disk rim pair
+//        carried by exactly ONE edge instance — the wall's own predicate,
+//        re-derived here, never imported from the frozen wall).
+// The chord's endpoint pair stays FRESH (parallel to no rim slot). Measured
+// pass-counts at the full exit: RP² 4-gon 1 · RP² 2-gon 2 · T² 2 · Klein 2
+// (the 2-gon admits no chord at pass 0; T²/Klein clear :127 at pass 1 but
+// their halves h(a,1)/h(a,2) still share endpoint pairs — one more pass
+// breaks the collision. The old exit stopped there: three seals died on
+// walls the exit never asked about).
 //
 // THE WORD IS THE SUBSTRATE: the op recovers the form's birth word through the
 // committed, replay-verified `recoverBornSurface` and refines at the
@@ -47,12 +55,16 @@
 //     ink carries a type-claim and it must be true — birth-ink would assert
 //     a falsehood; a pentimento would mourn a parent that never died).
 //
-// ⚠ KNOWN DEBT, named by the mandate and NOT fixed here: the endpoint-keyed
-// readers (tryDirectComplex, the seam) cannot translate a refined T²/Klein at
-// the ruled exit — their halves h(a,1)=(x,m) and h(a,2)=(m,x) are PARALLEL
-// classes on one endpoint pair. The op's output is a valid complex; the
-// reader abstains. The deeper fix (explicit signed classes, never
-// endpoint-derived) is its own build.
+// ⚠ KNOWN DEBT, named and NOT fixed here: the endpoint-keyed readers
+// (tryDirectComplex, the seam) cannot translate a PARTIALLY-refined quotient
+// whose halves share an endpoint pair — e.g. ONE bisection pass of T²/Klein
+// leaves h(a,1)=(x,m) and h(a,2)=(m,x) PARALLEL, and the reader abstains
+// (bisectSurface output can still carry this). THE EXIT clears it for the
+// pair's own outputs BY DEPTH — refineToDisk keeps bisecting until the disk
+// rim is parallel-free, which on the zoo lands fully endpoint-faithful forms
+// the readers translate directly. The deeper fix (explicit signed classes,
+// never endpoint-derived) remains its own build — the seam's known debt,
+// formally owed elsewhere.
 //
 // ⚠ PROVENANCE GAP, disclosed: the frozen OperationKind union has no word for
 // refinement, and the freeze must not move in this build. Minted midpoints
@@ -172,17 +184,31 @@ interface ChordPick {
   arc: string[]; // the disk's corners (both chord endpoints included)
 }
 
-// the exit condition — the gate's own rule on the would-be disk: a chord
-// between non-adjacent positions whose arc has all-distinct corners, whose
-// endpoints are distinct classes, and whose endpoint pair is FRESH (parallel
-// to no rim slot — the endpoint-keyed seam could not resolve it otherwise)
+// THE EXIT — a loop's exit condition must test EVERY wall it must clear (the
+// re-charter's law; the seam post-mortem). The gate's own rules on the
+// would-be disk: a chord between non-adjacent positions whose arc has
+// all-distinct corners (:127), whose endpoints are distinct classes, whose
+// endpoint pair is FRESH (parallel to no rim slot), AND whose disk rim is
+// ENDPOINT-FAITHFUL — every rim pair of the disk carried by exactly ONE edge
+// instance (:132's own predicate, re-derived here by design: the exit must
+// ask the same question the wall asks, without importing the frozen wall)
 const findChord = (state: RimState): ChordPick | null => {
-  const { n, corners } = state;
+  const { n, corners, word } = state;
+  const pairKeyOf = (a: string, b: string): string => (a < b ? `${a}|${b}` : `${b}|${a}`);
+  // the result carries ONE edge per slot CLASS (plus the chord) — :132 counts
+  // edge INSTANCES per unordered endpoint pair, so the census is per class,
+  // never per slot (a class's two slots share one settled pair)
+  const sc = slotClassOf(n, word);
+  const classPairCount = new Map<string, number>();
   const rimPairs = new Set<string>();
+  const seenClass = new Set<number>();
   for (let k = 0; k < n; k += 1) {
-    const a = corners[k];
-    const b = corners[(k + 1) % n];
-    rimPairs.add(a < b ? `${a}|${b}` : `${b}|${a}`);
+    const key = pairKeyOf(corners[k], corners[(k + 1) % n]);
+    rimPairs.add(key);
+    const rep = sc(k);
+    if (seenClass.has(rep)) continue;
+    seenClass.add(rep);
+    classPairCount.set(key, (classPairCount.get(key) ?? 0) + 1);
   }
   for (let i = 0; i < n; i += 1) {
     for (let d = 2; d <= n - 2; d += 1) {
@@ -196,8 +222,20 @@ const findChord = (state: RimState): ChordPick | null => {
       const vi = corners[i];
       const vj = corners[j];
       if (vi === vj) continue;
-      const key = vi < vj ? `${vi}|${vj}` : `${vj}|${vi}`;
+      const key = pairKeyOf(vi, vj);
       if (rimPairs.has(key)) continue;
+      // ★ the missing conjunct (THE EXIT): every arc edge's endpoint pair
+      // must be carried by exactly one class — else the sum's parallel-rim
+      // wall (:132) refuses the disk downstream. The chord itself is fresh
+      // (checked above), hence automatically the unique instance on its pair.
+      let parallelFree = true;
+      for (let k = i; k !== j; k = (k + 1) % n) {
+        if ((classPairCount.get(pairKeyOf(corners[k], corners[(k + 1) % n])) ?? 0) !== 1) {
+          parallelFree = false;
+          break;
+        }
+      }
+      if (!parallelFree) continue;
       return { i, j, arc };
     }
   }
@@ -349,25 +387,30 @@ export function bisectSurface(form: Shape, parent: Shape | null): RefineResult {
 }
 
 /**
- * refineToDisk — THE PAIR: bisect until a chord can cut a distinct-cornered
- * disk, then chord. The exit is the gate's own rule on the would-be disk.
- * Returns the refined form (2 faces — the disk and the remainder) with the
- * refinement record: type-claim 'resolution', the measured pass count, and
- * the carrier surjection new→old.
+ * refineToDisk — THE PAIR at THE EXIT: bisect until a chord can cut a disk
+ * that clears EVERY wall it must clear — distinct-cornered (:127) AND
+ * endpoint-faithful on its rim (:132's predicate) — then chord. Returns the
+ * refined form (2 faces — the disk and the remainder) with the refinement
+ * record: type-claim 'resolution', the measured pass count, and the carrier
+ * surjection new→old.
  */
 export function refineToDisk(form: Shape, parent: Shape | null): RefineResult {
   const { state, slotEdgeOf } = recoverState(form, parent);
   let current = state;
   let chord = findChord(current);
-  // terminating: each pass doubles the slots and adds a midpoint class per
-  // edge class; the hard stop is a programmer-guard, not a tuning knob
+  // the BOUND: termination is expected (each pass doubles the slots and adds
+  // a midpoint class per edge class, so corner classes strictly grow and
+  // parallel collisions strictly break) — but expected is not measured, so
+  // the loop carries a hard stop and refuses LOUDLY rather than spin
   const HARD_STOP = 8;
   while (!chord && current.pass < HARD_STOP) {
     current = bisectPass(current);
     chord = findChord(current);
   }
   if (!chord) {
-    throw new Error(`surfaceRefinement: no distinct-cornered disk after ${HARD_STOP} passes — refusing (report this form)`);
+    throw new Error(
+      `surfaceRefinement: no disk cleared every wall (distinct corners AND a parallel-free rim) after ${HARD_STOP} passes — refusing loudly (report this form)`,
+    );
   }
   return assembleRefined(form, current, chord, slotEdgeOf);
 }

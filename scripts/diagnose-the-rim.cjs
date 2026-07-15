@@ -84,15 +84,18 @@ const PRES = 'preserving';
 const FIXTURES = {
   'RP2-4gon': { ...bear(4, [{ edgeA: 0, edgeB: 2, mode: REV }, { edgeA: 1, edgeB: 3, mode: REV }], 'rimR4'), expectPasses: 1 },
   'RP2-2gon': { ...bear(2, [{ edgeA: 0, edgeB: 1, mode: REV }], 'rimR2'), expectPasses: 2 },
-  'T2': { ...bear(4, [{ edgeA: 0, edgeB: 2, mode: PRES }, { edgeA: 1, edgeB: 3, mode: PRES }], 'rimT4'), expectPasses: 1 },
-  'Klein': { ...bear(4, [{ edgeA: 0, edgeB: 2, mode: PRES }, { edgeA: 1, edgeB: 3, mode: REV }], 'rimK4'), expectPasses: 1 },
+  // T²/Klein pass-counts moved 1 → 2 under THE EXIT (re-charter, seal
+  // a1587899…1049): the exit now also demands a parallel-free disk rim
+  // (:132's predicate), and their pass-1 halves still share endpoint pairs
+  'T2': { ...bear(4, [{ edgeA: 0, edgeB: 2, mode: PRES }, { edgeA: 1, edgeB: 3, mode: PRES }], 'rimT4'), expectPasses: 2 },
+  'Klein': { ...bear(4, [{ edgeA: 0, edgeB: 2, mode: PRES }, { edgeA: 1, edgeB: 3, mode: REV }], 'rimK4'), expectPasses: 2 },
 };
 const invProj = (r) => ({ chi: r.chi, chiCert: r.chiCertified, cls: r.classification, boundary: r.boundary });
 
 // ═════ [a] the loop terminates; the pass-counts are the engine's own ══════════════
 console.log('----- [a] the loop terminates and its pass-count is MEASURED against the gate\'s own rule (clause 1) -----');
 const refined = {};
-check('★ THE LOOP TERMINATES on all four zoo forms, and the MEASURED pass-counts are RP²-4gon 1 · RP²-2gon 2 · T² 1 · Klein 1 (the engine agrees with the researcher\'s word-derived table; the 2-gon\'s pass-0 chordlessness is the loop\'s first iteration, not a defect) — each result carries exactly TWO faces (the disk and the remainder) and a chord between distinct corners',
+check('★ THE LOOP TERMINATES on all four zoo forms at THE EXIT\'s full rule (distinct corners AND a parallel-free rim), and the MEASURED pass-counts are RP²-4gon 1 · RP²-2gon 2 · T² 2 · Klein 2 (the rim charter measured 1/2/1/1 under the :127-only exit; THE EXIT re-charter deepened T²/Klein by exactly the one pass that breaks their parallel halves) — each result carries exactly TWO faces (the disk and the remainder) and a chord between distinct corners',
   Object.entries(FIXTURES).every(([name, fx]) => {
     const out = refineToDisk(fx.born, fx.parent);
     refined[name] = out;
@@ -124,13 +127,11 @@ check('★ THE FULL CERTIFIED READOUT (χ_cert · classification · boundary) is
     note(`${name}: before(${before.complexSource}) ≡ after(${after.complexSource}): ${JSON.stringify(invProj(after))}`);
     return ok;
   }));
-check('…and the T²/Klein AFTER-forms hit the KNOWN endpoint-keyed reader debt, not an invariant motion (the mandate names it and forbids fixing it here): their refined halves h(a,1)=(x,m) and h(a,2)=(m,x) are PARALLEL classes on one endpoint pair, so tryDirectComplex abstains (complexSource null, classification honestly n-a) while χ reads unmoved — the reader\'s abstention is MEASURED to be exactly the parallel-pair census, and the invariants that CAN be read did not move',
+check('…and the T²/Klein AFTER-forms no longer hit the endpoint-keyed reader debt — THE EXIT re-charter (seal a1587899…1049) cleared it BY DEPTH: the deeper exit leaves ZERO parallel endpoint pairs (the pass-1 halves h(a,1)/h(a,2) that used to collide are split by pass 2), so the DIRECT translation reads them and the FULL certified readout (χ_cert · classification · boundary) is BYTE-IDENTICAL before/after — the debt survives only for shallower outputs (a single bisectSurface pass), and the certified-invariance battery now covers ALL FOUR forms',
   ['T2', 'Klein'].every((name) => {
     const fx = FIXTURES[name];
     const before = readFormInvariants(fx.born, [fx.parent]);
     const after = readFormInvariants(refined[name].shape, [fx.parent]);
-    // the parallel-pair census: at least one unordered endpoint pair carried
-    // by two DISTINCT edges (why the endpoint-keyed translation abstains)
     const pairCount = new Map();
     for (const e of refined[name].shape.edges) {
       const [a, b] = e.vertexIds;
@@ -138,9 +139,9 @@ check('…and the T²/Klein AFTER-forms hit the KNOWN endpoint-keyed reader debt
       pairCount.set(key, (pairCount.get(key) ?? 0) + 1);
     }
     const parallels = [...pairCount.values()].filter((c) => c > 1).length;
-    note(`${name}: χ ${before.chi}→${after.chi} · after.complexSource=${String(after.complexSource)} · parallel endpoint pairs: ${parallels}`);
-    return before.chi === after.chi && after.complexSource === null && parallels > 0 &&
-      before.complexSource === 'recovered' && before.chiCertified === before.chi;
+    note(`${name}: readout(${before.complexSource}→${after.complexSource}) ≡ ${JSON.stringify(invProj(after))} · parallel endpoint pairs: ${parallels}`);
+    return JSON.stringify(invProj(before)) === JSON.stringify(invProj(after)) &&
+      before.complexSource === 'recovered' && after.complexSource === 'direct' && parallels === 0;
   }));
 
 // ═════ [c] ★ the refusal dies — RP² + RP² = Klein ════════════════════════════════

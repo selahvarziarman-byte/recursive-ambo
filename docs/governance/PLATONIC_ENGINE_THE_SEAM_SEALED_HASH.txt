@@ -1,0 +1,124 @@
+PLATONIC ENGINE — THE SEAM: the sum IS the sew (the person can add a handle)
+· SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_SEAM.md` (gitignored):
+
+    50fda3f40f36c90d188200e459eb50157d5037c6d64381ca43fe97b850c2a13e
+
+Measured NATIVELY by Arman (certutil); the sandbox independently agreed --
+consistent with the technical-officer's mechanism: this seal was WRITTEN ONCE
+and never edited, which is exactly when the mount holds the real bytes.
+
+Sealed 2026-07-16 by the engineer seat. Baseline e304a6d.
+Mothership-ruled (2000: the op-set before the field -- the seam is the critical
+path; 2100: engine surgery on a frozen file takes the FULL protocol).
+Researcher-ruled (2130: it is the DEFINITION, not an analogy -- and :129 does
+NOT die). The coder builds BLIND.
+
+co-ratified: NEVER — ⛔ THIS SEAL IS DEAD. THE BUILD NEVER STARTED.
+
+The coder stopped at measurement and killed the charter three independent ways.
+They were right. Nothing was staged; connectedSum.ts, complexIdentification.ts
+and multiform.ts are byte-identical to HEAD.
+
+  1. THE REWIRE BREAKS THE RIM'S PAYOFF. The mandated recipe on RP2#RP2 --
+     cut, disjoint-union, sewBoundaryCircles -- is REFUSED: the punctured RP2
+     (a Moebius band) has free edges running x->m, m->y, x->y, so vertex x has
+     TWO outgoing and walkBoundaryCircles nulls. The sew refuses the pair's own
+     embedded, distinct-cornered rim. Clause 3 ("RP2#RP2 must not move") would
+     have moved it to a refusal. The old seam yields the Klein at HEAD.
+  2. T2/KLEIN NEVER REACH THE SEW. acquireComplex(union) = NULL even with the
+     ancestry fully threaded: assemble stamps parentShapeId: null
+     (multiform.ts:355), so no replay route can fire. Curing that is
+     complexIdentification/multiform surgery -- which clause 6 declares VOID.
+  3. THE COMPLEMENTARITY CLAIM FAILS. The sew's walker is STRICTER than :129,
+     not its re-derivation -- it refuses distinct-cornered rims too.
+
+THE ENGINEER'S DIAGNOSIS WAS WRONG. "The wall is the caller" was 3-for-3 (B.0,
+0.2, and the sew's existence) and FAILED on its fourth application. The
+mothership had already said it was a heuristic, not a law, and had tested it
+against product; the engineer let it carry a seal anyway.
+
+AND THE RESEARCHER'S RULING IS FALSIFIED TOO: "refine cannot reach :134 -- the
+parallel-rim problem is the SEAM's key, not the rim's resolution" is FALSE,
+measured. :134 IS CURED BY DEPTH:
+
+    RP2-4gon   1 pass  · 0 parallel pairs  -> SUMS at HEAD
+    RP2-2gon   2 passes · 0 parallel pairs  -> SUMS at HEAD
+    T2 / Klein 1 pass  · 2 parallel pairs  -> refused
+    (T2 at 1 pass = 2 parallel pairs: independently re-measured by the engineer)
+
+One more bisection pass clears T2/Klein. The cure is ONE CONJUNCT in
+refineToDisk's exit condition -- the loop must exit only when the rim is BOTH
+distinct-cornered (:127) AND endpoint-faithful (:134's predicate). That file
+(surfaceRefinement.ts) is NOT_FROZEN. The blast radius collapses from three
+frozen engine files to zero.
+
+THE ENGINEER'S REPEATED ERROR, NAMED: connectedSum has FOUR walls, and this is
+the THIRD seal aimed at one of them. The chord seal targeted :100 and missed
+:129. The rim seal's exit condition tests :127 and misses :134. This seal tried
+to fix :134 with the wrong mechanism entirely. A loop's exit condition must test
+EVERY wall it must clear.
+
+A circulated seal is never amended. The re-charter is a new shape with a new
+name. Fifth wall disclosed on the way: executeCustomGlue is guarded to 8 edges,
+and an exhaustive 1,680-word search proves no endpoint-faithful 8-gon T2/Klein
+dodge exists.
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_SEAM.md SHA256
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+THE WALL IS THE CALLER. connectedSum routes through assemble(), whose entire
+vocabulary is BoundaryIdentification { merges: VertexMerge[] } -- no edges. The
+seam says "corner a = corner b" and lets the edges follow; with two edges on one
+endpoint pair it cannot say WHICH, so :134 refuses. It is not guarding a hard
+problem. It guards a caller that cannot name an edge.
+
+THE CURE IS COMMITTED AND UNREACHED: sewBoundaryCircles (complexIdentification
+:878) walks EDGE IDS, carries the mode, and its own contract states the two-layer
+answer -- shape (endpoint-keyed, MAY CARRY PARALLELS) beside complex (THE
+EXPLICIT SIGNED TRUTH -- what certifies). That is the researcher's law already
+implemented. connectedSum calls it ZERO times (mothership-confirmed).
+
+WHY IT WAS MISSED, and it is not carelessness: the connect-sum macro was RIGHT on
+2026-07-10; sewBoundaryCircles was co-ratified 2026-07-11 -- ONE DAY LATER -- and
+generalized the very seam the macro had hand-rolled. NOTHING RE-READS A CLOSED
+MACRO. (Predicts where else to look: every macro sealed before its generalizing
+primitive existed.)
+
+IT IS THE DEFINITION: M1#M2 = (M1-D) u (M2-D) / (d1=d2), and
+sewBoundaryCircles(F,mode,0,1) = F/(circle0=circle1). Put F=(M1-D)u(M2-D): the
+same formula. The disjoint union of two forms IS one form with two boundary
+circles. LAW 17 passes falsifiably -- a borrowed mechanism would need a new rule;
+the researcher's mode-law (sum=separating=inert, self-sew=non-separating=bites)
+was ruled BEFORE this question and covers both with no amendment.
+
+PINNED: T2#T2 refused at HEAD -> SUCCEEDS -> chi=-2, w1=0, closed orientable,
+b1=4 ("add a handle" becomes a move); Klein#Klein succeeds; RP2#RP2 still the
+Klein (regression on the rim's payoff); :134 DELETED WITH ITS CAUSE (not relaxed
+-- the caller now names edges, so the guard has nothing to guard);
+complexIdentification.ts + multiform.ts BYTE-IDENTICAL (this is a REWIRE -- if
+either must move it is not a rewire and the seal is VOID).
+
+:129 DOES NOT DIE -- the engineer proposed it would and the researcher refuted
+him. walkBoundaryCircles carries the same requirement in its own vocabulary
+("every boundary vertex must have exactly one outgoing free edge"), so a repeated
+corner makes the walk return null and the sew refuses in its own words. The sew
+RE-DERIVES :129 instead of asserting it. :129 was TRUE all along; only :134 was
+an artifact. The two cures are COMPLEMENTARY: the PAIR makes the rim an embedded
+circle, the SEW names its edges. Mutant (b) -- sew without the pair -- exists to
+kill the engineer's claim that the sew makes the pair redundant.
+
+THREAD THE ANCESTRY: sewBoundaryCircles calls acquireComplex(form, ancestry) and
+throws if the direct bridge refuses and no replay reaches. The inputs are born
+forms; the union is born-of-born. If the chain does not reach, that is the
+researcher's long-owed acquisition chain meeting its first real caller -- a
+FINDING, not a wiring bug. STOP and REPORT; do not work around it.

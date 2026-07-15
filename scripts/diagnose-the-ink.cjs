@@ -525,6 +525,10 @@ const inkAllowed = new Set([
   // crease contour (this file), the normal buffer + probe scene (the model);
   // ratified in diagnose-the-probes.cjs.
   'src/manuscript/apertureInk.ts',
+  // THE EXIT (2026-07-16, sealed a1587899…1049): the pair's exit gains the
+  // parallel-rim conjunct (:132's own predicate) inside the NOT_FROZEN rim
+  // module — no frozen file moves; ratified in diagnose-the-exit.cjs.
+  'src/lib/surfaceRefinement.ts',
   // THE SMALL RUN (2026-07-14, sealed 2eb45568…9060): the custom-glue refusal
   // reorder (the wall before the door), the panel's gate-first seam, and the
   // NUL→escape substitution in faceIdentification (cooked values identical);
