@@ -83,6 +83,7 @@ import {
   subdivideAndReadPersonDomain,
   traceAperture,
   type AperturePairRow,
+  type FoldedDomain,
 } from './apertureModel';
 import { createSeedShape } from '../data/seeds';
 // THE PROBES (2026-07-14): the real scans — the mask, held in a hand. The
@@ -552,6 +553,10 @@ export default function ManuscriptView() {
   // committed buildFormDomain behind buildPersonDomain).
   const cubeSeed = useMemo(() => createSeedShape('cube'), []);
   const [builtDomains, setBuiltDomains] = useState<DomainModel[]>([]);
+  // 0.2 THE ORBIFOLD'S BODY: the folded verdicts' tower-less bodies — a
+  // SIBLING list, never mixed into dim3All (the specimen register and every
+  // DomainModel consumer stay untouched; a folded body has no tower to read).
+  const [foldedBodies, setFoldedBodies] = useState<FoldedDomain[]>([]);
   const builtCountRef = useRef(0);
   const [apertureOpen, setApertureOpen] = useState(false);
   const emptyApertureRows = (): AperturePairRow[] => [
@@ -722,6 +727,39 @@ export default function ManuscriptView() {
       }),
     [dim3All, placedForms, shapeById, apertureCtl],
   );
+  // 0.2 — the folded bodies' apertures: the SAME committed gate → trace →
+  // caption pipeline, keyed on the verdict's folded body (never on !sound —
+  // the 336 broken patterns have no body and never reach this list).
+  const foldedApertures = useMemo(
+    () =>
+      foldedBodies.map((body) => {
+        const gate = buildAperture(body);
+        if (!gate.ok) {
+          return { key: body.key, gate, trace: null, caption: gate.reason };
+        }
+        const probes = [...probeMeshes.maskShells, probeMeshes.hand];
+        const scene = buildApertureScene(body.shape, null, probes);
+        const trace = traceAperture({
+          deck: gate.deck,
+          scene,
+          width: apertureCtl.resolution,
+          height: apertureCtl.resolution,
+          craft: {
+            level: apertureCtl.level,
+            toneGamma: apertureCtl.toneGamma,
+            contourWeight: apertureCtl.contourWeight,
+            // echoFade deliberately absent (THE INK re-cut): the fade is the
+            // ink's alone — the tracer's value carries darkness, never distance
+            maskTone: apertureCtl.maskTone,
+            handTone: apertureCtl.handTone,
+            scaffoldTone: apertureCtl.scaffoldTone,
+            formTone: apertureCtl.formTone,
+          },
+        });
+        return { key: body.key, gate, trace, caption: apertureCaption(gate.geometry, trace.counts) };
+      }),
+    [foldedBodies, apertureCtl],
+  );
   // the gate panel's rows with the MAP MENU — the face's own dihedral orbit;
   // each option prints its vertex correspondence + the DERIVED mode (recorded,
   // never chosen — the knob that lies does not exist here)
@@ -766,10 +804,12 @@ export default function ManuscriptView() {
       // nothing. Zero throws escape this door.
       const verdict = buildPersonDomainVerdict(cubeSeed, apertureRows, `built-${n}`, `built 3-manifold ${n}`);
       if (verdict.folded) {
-        builtCountRef.current -= 1; // no domain was born
+        // 0.2 THE ORBIFOLD'S BODY: the verdict carries a BODY now — it joins
+        // the folded shelf and the aperture draws it. The wall + its cure
+        // (0.1) stand untouched: the notice still speaks the researcher's
+        // sentence and the subdivide door still opens on these exact rows.
+        setFoldedBodies((cur) => [...cur, verdict.body]);
         setApertureNotice(verdict.wall);
-        // THE SUBDIVISION (ARC 0.1): the wall's cure is a door now — keep the
-        // rows that folded, so the person can invoke subdivide on exactly them.
         setApertureFoldedRows(apertureRows.map((row) => ({ ...row })));
         return;
       }
@@ -1487,6 +1527,54 @@ export default function ManuscriptView() {
                   />
                 </group>
               ) : null}
+            </group>,
+          );
+        })}
+
+        {/* 0.2 THE ORBIFOLD'S BODY — the folded shelf: the tower-less bodies,
+            drawn through the SAME aperture pipeline, placed AFTER the dim-3
+            row (the sound rooms' homes do not move). No specimen rises for a
+            folded body — it has no tower to summon; the caption asserts
+            NON-FREENESS ONLY (orbifold · fold loci · true cone edges), and
+            the hands' LEFT count remains w₁'s caption, never the fold's. */}
+        {foldedBodies.map((body, k) => {
+          const aperture = foldedApertures[k];
+          const rowEnd = dim3All.length > 0
+            ? centered(dim3All.length - 1, dim3All.length, rows.dim3Spacing * scaleCtl.dim3Scale)
+            : 0;
+          return selectable(
+            `dim3f:${body.key}`,
+            `folded:${body.key}`,
+            [rowEnd + (k + 1) * rows.dim3Spacing * scaleCtl.dim3Scale, rows.dim3Y, 0],
+            60 + k,
+            {
+              title: `${body.title} — folded`,
+              sub: aperture.caption,
+              drop: -1.6 * scaleCtl.dim3Scale - 0.9,
+            },
+            <group scale={scaleCtl.dim3Scale}>
+              <ApertureBody
+                trace={aperture.trace}
+                ink={{
+                  paperColor: d.paper.background,
+                  interiorInk: d.world.aperture.interiorInk,
+                  rimSeed: apertureCtl.rimSeed,
+                  size: d.world.aperture.size,
+                  echoFade: apertureCtl.echoFade,
+                  contourEchoFade: inkCtl.contourEchoFade,
+                  contourGain: inkCtl.contourGain,
+                  contourBlur: inkCtl.contourBlur,
+                  hatchAngleA: inkCtl.hatchAngleA,
+                  hatchAngleB: inkCtl.hatchAngleB,
+                  hatchPeriod: inkCtl.hatchPeriod,
+                  hatchWidth: inkCtl.hatchWidth,
+                  hatchThresholdA: inkCtl.hatchThresholdA,
+                  hatchThresholdB: inkCtl.hatchThresholdB,
+                  darkSolid: inkCtl.darkSolid,
+                  creaseThreshold: inkCtl.creaseThreshold,
+                  depthBreakThreshold: inkCtl.depthBreakThreshold,
+                }}
+              />
             </group>,
           );
         })}

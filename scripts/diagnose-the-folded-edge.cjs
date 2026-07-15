@@ -219,11 +219,18 @@ const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptVi
 // rows (setApertureFoldedRows) before returning, so the wall's cure can act on
 // exactly the identification that folded. The window widens for those lines
 // and the snapshot is pinned POSITIVELY (ratified in diagnose-the-subdivision.cjs).
-check('the view consumes the VERDICT: a folded glue sets the notice to the WALL, snapshots the folded rows for the subdivide door, and returns before any domain is born (source-asserted: buildPersonDomainVerdict consumed · setApertureNotice(verdict.wall) · setApertureFoldedRows inside the folded branch · the early return precedes setBuiltDomains) — nothing joins the band, so the aperture draws nothing, and the wall says why',
+// 0.2 THE ORBIFOLD'S BODY (2026-07-16, sealed de6f8237…83cb): the folded
+// verdict CARRIES A BODY now — the branch also births it onto the FOLDED
+// shelf (setFoldedBodies — a SIBLING list; setBuiltDomains stays untouched in
+// this branch, so no DomainModel is ever born folded). The wall + its cure
+// stand verbatim; the window widens for the sanctioned lines and the birth is
+// pinned POSITIVELY (ratified in diagnose-the-orbifolds-body.cjs).
+check('the view consumes the VERDICT: a folded glue sets the notice to the WALL, snapshots the folded rows for the subdivide door, births the FOLDED BODY onto its sibling shelf (0.2), and returns before any DomainModel is born (source-asserted: buildPersonDomainVerdict consumed · setApertureNotice(verdict.wall) · setApertureFoldedRows and setFoldedBodies inside the folded branch · the early return precedes setBuiltDomains) — nothing joins the DomainModel band, and the wall says why',
   viewSrc.includes('buildPersonDomainVerdict(') &&
   viewSrc.includes('setApertureNotice(verdict.wall);') &&
-  /if \(verdict\.folded\) \{[\s\S]{0,460}return;[\s\S]{0,80}\}/.test(viewSrc) &&
-  /if \(verdict\.folded\) \{[\s\S]{0,460}setApertureFoldedRows\(/.test(viewSrc) &&
+  /if \(verdict\.folded\) \{[\s\S]{0,900}return;[\s\S]{0,80}\}/.test(viewSrc) &&
+  /if \(verdict\.folded\) \{[\s\S]{0,900}setApertureFoldedRows\(/.test(viewSrc) &&
+  /if \(verdict\.folded\) \{[\s\S]{0,900}setFoldedBodies\(/.test(viewSrc) &&
   viewSrc.indexOf('setApertureNotice(verdict.wall);') < viewSrc.indexOf('setBuiltDomains((cur) => [...cur, domain]);'));
 
 // ═════ [g] CLAUSE 4 — non-movement: the 415 byte-identical to HEAD ═══════════════

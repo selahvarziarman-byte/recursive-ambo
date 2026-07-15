@@ -402,6 +402,11 @@ export interface FoldedEdgeVerdict {
   foldedEdgeClasses: string[];
   gate: Level3SoundnessReport;
   wall: string; // the researcher-ruled wall, naming the fold locus and the cure
+  // 0.2 THE ORBIFOLD'S BODY: the verdict CARRIES A BODY now — the tower-less
+  // sibling the aperture can draw. The wall and its cure above are 0.1's and
+  // stand untouched; the body is what the person sees when they look through
+  // the aperture at the thing the wall names.
+  body: FoldedDomain;
 }
 
 export type PersonDomainVerdict = { folded: false; domain: DomainModel } | FoldedEdgeVerdict;
@@ -452,6 +457,19 @@ export function buildPersonDomainVerdict(
       foldedEdgeClasses: reading.foldedEdgeClasses,
       gate: reading.gate,
       wall: foldedEdgeWall(reading.foldedEdgeClasses[0]),
+      // 0.2: the body — tower-less by construction (a folded cell has no
+      // readable tower); the gate's own edge links carry its geometry
+      body: {
+        folded: true,
+        key,
+        title,
+        shape: seedShape,
+        pairings,
+        chi: reading.chi,
+        foldedEdgeClasses: reading.foldedEdgeClasses,
+        gate: reading.gate,
+        wall: foldedEdgeWall(reading.foldedEdgeClasses[0]),
+      },
     };
   }
   return { folded: false, domain: buildFormDomain(seedShape, pairings, key, title) };
@@ -551,15 +569,96 @@ export function geometryFromTower(tower: DomainModel['tower']): ApertureGeometry
 }
 
 // ---------------------------------------------------------------------------
+// 0.2 THE ORBIFOLD'S BODY (2026-07-16, sealed de6f8237…83cb): the folded
+// forms' bodies already existed — deckOf fits all 97 and the tracer draws
+// them; the sole blocker was one unconditional tower read. The folded path is
+// a SIBLING, never a widening: DomainModel's tower stays non-nullable, the
+// frozen worldModel/specimenModel do not move, and the transport is untouched.
+// ---------------------------------------------------------------------------
+
+/** The folded body's geometry — read from the GATE's own edge links (present
+ * on 97/97 folded verdicts), never from a tower a folded cell cannot carry.
+ * ⛔ ASSERTS NON-FREENESS ONLY (ADR 0022): the label says orbifold and names
+ * the fold loci; it never says (or contains) "manifold" — that certificate is
+ * the gate's (0.3, its own seal).
+ * THE RP² POINT PRINTS NOTHING (designer-ruled): a FOLDED edge is not a cone
+ * edge — its holonomy reverses the edge, so k×90° does not apply and no angle
+ * is minted for it (folded classes are excluded by classRoot — the census
+ * key). The fold locus gets no angle, no interpolation, and NO drawn hole:
+ * "an ε² hole sized so it reads is the orbifold badge wearing the costume of
+ * honesty." The tracer is byte-untouched; nothing special-cases the singular
+ * point (measure-zero — it essentially never fires).
+ */
+export interface FoldedApertureGeometry {
+  kind: 'folded';
+  n: number[];
+  foldLoci: number; // folded edge classes — no angle applies to them
+  coneEdges: string | null; // TRUE cone edges only: k≠4 AND NOT folded, at k×90°
+  label: string;
+}
+
+export function geometryFromFoldedGate(gate: Level3SoundnessReport): FoldedApertureGeometry {
+  const foldedRoots = new Set(
+    gate.failures
+      .filter((f): f is Extract<typeof f, { kind: 'folded-edge' }> => f.kind === 'folded-edge')
+      .map((f) => f.classRoot),
+  );
+  const n = gate.edgeLinks.map((link) => link.memberEdgeIds.length);
+  const coneCounts = new Map<number, number>();
+  for (const link of gate.edgeLinks) {
+    const k = link.memberEdgeIds.length;
+    if (k !== 4 && !foldedRoots.has(link.edgeClass)) coneCounts.set(k, (coneCounts.get(k) ?? 0) + 1);
+  }
+  const coneEdges = coneCounts.size === 0
+    ? null
+    : [...coneCounts.entries()].sort((a, b) => a[0] - b[0]).map(([k, count]) => `${count} × ${k * 90}°`).join(', ');
+  return {
+    kind: 'folded',
+    n,
+    foldLoci: foldedRoots.size,
+    coneEdges,
+    label: `orbifold — n=[${n.join(',')}] · fold loci: ${foldedRoots.size}${coneEdges ? ` · cone edges: ${coneEdges}` : ''}`,
+  };
+}
+
+/** The tower-less domain a folded verdict carries — the body the person can
+ * stand in. A SIBLING of DomainModel (no tower field exists here at all). */
+export interface FoldedDomain {
+  folded: true;
+  key: string;
+  title: string;
+  shape: Shape; // the seed
+  pairings: FacePairing[];
+  chi: number;
+  foldedEdgeClasses: string[];
+  gate: Level3SoundnessReport;
+  wall: string; // 0.1's wall + cure, kept verbatim
+}
+
+// ---------------------------------------------------------------------------
 // THE GATE (mandate §1 ⛔ / §8): cannot hand a real deck group + ambient
 // ⇒ DRAW NOTHING, SAY SO.
 // ---------------------------------------------------------------------------
 
 export type ApertureGate =
-  | { ok: true; deck: DeckEntry[]; geometry: ApertureGeometry }
+  | { ok: true; deck: DeckEntry[]; geometry: ApertureGeometry | FoldedApertureGeometry }
   | { ok: false; reason: string };
 
-export function buildAperture(domain: DomainModel): ApertureGate {
+export function buildAperture(domain: DomainModel | FoldedDomain): ApertureGate {
+  // 0.2 — THE BOUNDARY: this branch keys on FOLDED, never on !sound. The 336
+  // unsound-but-NOT-folded patterns (pinches, bad links) are not orbifolds and
+  // stay refused below by the S² gate's own words. An orbifold is a legitimate
+  // object; a pinch is not — the gate already distinguishes them, and this
+  // door inherits that distinction rather than routing around it.
+  if ('folded' in domain) {
+    const geometry = geometryFromFoldedGate(domain.gate);
+    try {
+      const deck = deckOf(domain.shape, domain.pairings);
+      return { ok: true, deck, geometry };
+    } catch (error) {
+      return { ok: false, reason: `the deck fit refused: ${(error as Error).message} — nothing is drawn.` };
+    }
+  }
   const tower = domain.tower;
   if (!tower.sound) {
     const failures = tower.gate.failures ?? [];
@@ -1097,17 +1196,25 @@ export function traceAperture(options: {
 // the countable caption — copies and objects, never pixels or area
 // ---------------------------------------------------------------------------
 
-export function apertureCaption(geometry: ApertureGeometry, counts: ApertureTraceCounts): string {
+export function apertureCaption(geometry: ApertureGeometry | FoldedApertureGeometry, counts: ApertureTraceCounts): string {
   // COUNTABLE, and honest about occlusion: hidden copies are omitted because
   // the person cannot SEE them — the caption counts what the eye can count.
   // The mask line carries NO chirality claim (a face is its own mirror);
-  // THE HAND is the only chirality counter.
+  // THE HAND is the only chirality counter — and its LEFT count is w₁'s
+  // caption ("the copies come back left-handed"), NEVER the fold's (0.2:
+  // mirrored[] lights on sound w₁=1 forms that carry no fold at all; sealing
+  // the fold on it would certify a fold in 57 manifolds that don't have one).
   const parts = [
     // B.0: the honest reading — the flat form keeps its exact caption; a cone
-    // form names its cone edges (k×90°) and never a curved ambient
-    geometry.kind === 'E3'
-      ? `E³ · n=[${geometry.n.join(',')}]`
-      : `Euclidean cone-manifold · n=[${geometry.n.join(',')}] · cone edges: ${geometry.coneEdges}`,
+    // form names its cone edges (k×90°) and never a curved ambient.
+    // 0.2: a FOLDED body asserts NON-FREENESS ONLY — orbifold, fold loci, and
+    // its TRUE cone edges; no manifoldness word appears (that certificate is
+    // the gate's, 0.3).
+    geometry.kind === 'folded'
+      ? `orbifold · n=[${geometry.n.join(',')}] · fold loci: ${geometry.foldLoci}${geometry.coneEdges ? ` · cone edges: ${geometry.coneEdges}` : ''}`
+      : geometry.kind === 'E3'
+        ? `E³ · n=[${geometry.n.join(',')}]`
+        : `Euclidean cone-manifold · n=[${geometry.n.join(',')}] · cone edges: ${geometry.coneEdges}`,
     `orbit (visible): ${counts.maskCopiesVisible} mask${counts.maskCopiesVisible === 1 ? '' : 's'}`,
     `${counts.handCopiesMirrored} of the ${counts.handCopiesVisible} hands are LEFT — count them`,
   ];

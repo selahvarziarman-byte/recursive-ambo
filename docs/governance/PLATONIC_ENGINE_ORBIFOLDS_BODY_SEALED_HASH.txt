@@ -1,0 +1,55 @@
+PLATONIC ENGINE — 0.2 · THE ORBIFOLD'S BODY (the 97 folded forms get a body;
+the winding reads on it; the flip does not) · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_ORBIFOLDS_BODY.md`
+(gitignored plaintext), taken on the REAL filesystem bytes:
+
+    de6f8237843581a61973c6bdf88987077f0db33f60d4151d833187a3339a83cb
+
+Sealed 2026-07-16 by the engineer seat. Baseline ba108d0. Mothership-ruled
+(0330 re-scope) · designer-ruled (the draw path: the RP2 point prints nothing;
+the flip waits for motion). The coder builds BLIND.
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_ORBIFOLDS_BODY.md SHA256
+
+If that does not print de6f8237...83cb, the mount served a stale copy; STOP, do
+not build, and the engineer re-hashes. (A seal is FINAL before it leaves; the
+APERTURE seal once circulated FOUR hashes because it was hashed through a torn
+mount.)
+
+--------------------------------------------------------------------------------
+WHAT IT PINS (revealed only at audit; the coder builds from the MANDATE)
+--------------------------------------------------------------------------------
+
+THE PROMISE: every pairing -> a verdict -> a cure that works -> A BODY YOU CAN
+STAND IN. The first three landed (8a009e0, 50b7538). The 97 folded forms have
+no body: buildPersonDomainVerdict returns early and the aperture draws nothing.
+
+MEASURED, by bypassing buildFormDomain entirely: deckOf FITS ALL 97 folded forms
+(0 refusals -- the fold is on an EDGE, so the face pairings remain a
+fixed-point-free involution and the deck fit is untouched by non-freeness), and
+folded forms TRACE (2153/4096 and 2115/4096 lit). THE BODIES ALREADY EXIST;
+NOTHING DRAWS THEM. The sole blocker is formDomainModel.ts:42 --
+level3InvariantTower(complex), called unconditionally, unreadable for a folded
+cell by design -> throws 97/97.
+
+THE FIX IS ADDITIVE: a tower-less domain in a NOT_FROZEN module + a FOLDED
+branch in buildAperture reading gate.edgeLinks (present 97/97). DomainModel
+(worldModel.ts) and specimenModel.ts are FROZEN and MUST NOT MOVE -- `tower`
+must NOT be made nullable; the folded path is a SIBLING, not a widening.
+
+THE BOUNDARY: 512 = 79 sound + 97 folded + 336 unsound-NOT-folded. The 336 STAY
+REFUSED; the branch keys on `folded`, NEVER `!sound`. An orbifold is a
+legitimate object; a pinch is not.
+
+THE BODY CLAIMS NOTHING: no manifoldness (that certificate is the gate's, 0.3);
+non-freeness only (ADR 0022). mirrored[] ships captioned as w1 -- never the fold
+(it lights 369 pixels on a SOUND, w1=1, NO-FOLD form). The FLIP is OUT, held for
+the shader: it needs the meridian walked, which is motion. The RP2 point PRINTS
+NOTHING -- an eps^2 hole sized so it reads is the orbifold badge wearing the
+costume of honesty.
