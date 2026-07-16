@@ -23,6 +23,7 @@
     "diagnose:dual-candidate-expansion": "node scripts/diagnose-dual-candidate-expansion.cjs",
     "diagnose:rectified-dual-candidates": "node scripts/diagnose-rectified-dual-candidates.cjs",
     "diagnose:workspace-persistence": "node scripts/diagnose-workspace-persistence.cjs",
+    "diagnose:the-subdivide-path": "node scripts/diagnose-the-subdivide-path.cjs",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"

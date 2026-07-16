@@ -54,6 +54,7 @@ import {
   type WrittenForm,
 } from './writtenFormModel';
 import { resolveLineage } from '../playground/playgroundOperations';
+import { refineToDisk } from '../lib/surfaceRefinement';
 import { InkedPlainForm } from './InkedPlainForm';
 import {
   ApertureGatePanel,
@@ -1064,9 +1065,29 @@ export default function ManuscriptView() {
   // ----- the person picks the port face on each form — never faces[0]) -------
   const combineGate = useMemo(() => {
     if (!selected || !combineWith) return null;
-    const a = targetFor(selected);
-    const b = targetFor(combineWith);
-    if (!a || !b) return null;
+    const a0 = targetFor(selected);
+    const b0 = targetFor(combineWith);
+    if (!a0 || !b0) return null;
+    // THE SUBDIVIDE PATH (C.1's item zero, 2026-07-16): connectedSum's single-
+    // face wall refuses and names its own cure — "Subdivide first" — so the
+    // gate performs it: a 1-face target enters the birth REFINED (refineToDisk,
+    // the committed rim op; targetFor already carries the lineage). ONE refine
+    // per target — the panel and handleCombine both read THIS shape, so the
+    // person picks a port face on the SAME refined form the birth receives
+    // (`…:disk` / `…:rest`, rendered unpicked — never a default, never
+    // faces-dot-zero). refineToDisk is NOT total — it throws where the birth
+    // word cannot be recovered (e.g. an invoked bare polygon): the target then
+    // passes through UNREFINED and the committed refusal stands, as today.
+    const subdivided = (t: NonNullable<ReturnType<typeof targetFor>>) => {
+      if (t.shape.faces.length !== 1) return t;
+      try {
+        return { ...t, shape: refineToDisk(t.shape, t.parent).shape };
+      } catch {
+        return t;
+      }
+    };
+    const a = subdivided(a0);
+    const b = subdivided(b0);
     const portFaceA = a.shape.faces.find((face) => face.id === portFaces[selected]) ?? null;
     const portFaceB = b.shape.faces.find((face) => face.id === portFaces[combineWith]) ?? null;
     return {

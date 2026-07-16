@@ -1,0 +1,96 @@
+PLATONIC ENGINE — THE SUBDIVIDE PATH (C.1's ITEM ZERO): the engine tells the
+person to subdivide; the manuscript gives them no way. This opens it. · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_SUBDIVIDE_PATH.md` (gitignored):
+
+    7866072030f2252ea6ad4e8f9a259848320d5a1b475b8c6b6cfaffdf4e881f73
+
+Measured NATIVELY by Arman (certutil), on the real bytes. The seal was WRITTEN
+ONCE and never edited; no sandbox digest was ever printed beside it -- the
+native measurement is the only hash that has ever existed for this file.
+
+Sealed by the engineer seat. BASELINE a930f28 (the retirement).
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+A DEAD SEAL, RECORDED SO IT IS NEVER BUILT
+--------------------------------------------------------------------------------
+
+SEAL_THE_MANUSCRIPT_WIRE.md, hash
+42568b29595172efd55760b8fe7e006e9bd762c2992e66ad180653e528291bc9, is DEAD. It
+never reached the coder. It was killed by its own author on a fact: its
+sections 0 and 2.2 named ManuscriptView.tsx:990 (`selectedFacePick`) as "the
+picker that hides 1-face forms." That is the OP picker, and :988
+(`if (!selected || combineWith) return null;`) DISABLES it during a combine --
+it is not on the combine path at all. The claim was inherited from a session
+summary and sealed without checking WHICH picker the combine uses. A seal is
+not amended; it is replaced.
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_SUBDIVIDE_PATH.md SHA256
+
+If that does not print 78660720...1f73, STOP -- do not build.
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+THE DEADLOCK (measured, and it is NOT a hidden picker): :990 is the ONLY
+faces.length guard in ManuscriptView.tsx, and it is on the OP picker. The
+combine path has NO face guard. So with two invoked 1-face forms, BirthGatePanel
+(:1858) renders the lone face, the person PICKS it, combineGateFor (:1079)
+PASSES -- and connectedSum:98 then throws "has a single face -- cutting its only
+face leaves no surface. Subdivide first ...". The engine names its own cure and
+the manuscript offers no subdivide. refineToDisk is named ZERO times in
+ManuscriptView.tsx and ZERO times in genesisModel.ts.
+
+THE SHAPE: ONE useMemo -- combineGate (:1065-1081). When a target's
+shape.faces.length === 1, replace its shape with refineToDisk(shape,
+parent).shape. targetFor (:865-868) ALREADY returns `parent` -- no new state, no
+new lineage call. Everything downstream follows unmodified: BirthGatePanel's
+labels (:1862-1869) already render `${face.id} - ${n} corners`, so ":disk - 3
+corners" appears beside ":rest - N corners" and THE PERSON PICKS.
+
+WHY THE RATIFIED PLACEMENT WAS NOT BUILT (engineer, corrected on the merits,
+routed to the mothership): "give birthChild the prepare() step" fails three
+ways -- (1) genesisModel.ts is FROZEN (382e6ec3...9243); (2) prepare()
+AUTO-PICKS the :disk and, for multi-face forms, passes disk:null letting
+connectedSum take its own default -- forbidden by genesisModel.ts:76-81 ("THE
+PORT FACES ARE THE PERSON'S ... no default is ever taken; no 'canonical' face is
+invented" -- the defect ef704d0/04a1c5f were spent killing) and by
+ManuscriptView.tsx:1063-1064 ("the person picks the port face on each form --
+never faces[0]"); (3) wrong ORDER -- the person picks BEFORE birthChild runs, so
+a refine inside it would refine a form whose picked face no longer exists.
+THE PLAYGROUND IS THE LOOSE DOOR; THE MANUSCRIPT IS THE STRICT ONE.
+
+THE APPARENT DOCTRINE CLASH DISSOLVES: refineToDisk yields :disk + :rest
+(surfaceRefinement.ts:330-333). connectedSum :122 (equal rims) refuses
+disk(3)+rest(long); :127 (distinct corners) refuses rest+rest. Exactly ONE face
+is a legal port on a refined minimal form. The gate's premise "the topology is
+safe wherever you cut" is FALSE there; its law targets CHOOSING AMONG EQUALS,
+and there are none. :disk is the only legal port and the person still chooses
+it -- both laws hold unamended, no rule-apart needed.
+
+NOT ASSUMED TOTAL: surfaceRefinement.ts:336-338 returns a 1-face shape when no
+chord is found. If a form does not refine, the existing refusal STANDS.
+
+PINNED: zero frozen files (genesisModel.ts 382e6ec3...9243 and connectedSum.ts
+c9d1455e...5b57 byte-identical post-build) · ManuscriptView.tsx is the ONLY src
+file that may change · selectedFacePick / its :990 guard / applyOp / the op menu
+UNTOUCHED (item zero must not change which ops are available) · no auto-pick, no
+preselection, no faces[0] default · refine is NOT a birth (typeClaim
+'resolution') · the deadlock reproduced at HEAD before the cure · post-refine
+faces.length === 2 with :disk at 3 corners · RP²#RP² -> the Klein (T²#T² and
+Klein#Klein are REFUSED at connectedSum:132 -- the seam wall, out of scope) ·
+the child's invariants PRINT, not assert · suite 92 at exactly 1
+(dual-inspection) · tsc -b 0 · manifest count 44.
+
+BANKED, NOT FIXED: connectedSum.ts:70-71's SUBDIVIDE_PATH advises "the committed
+immersion at a higher resolution" -- the PRE-RIM cure. refineToDisk is now the
+real one. The file is FROZEN; the message is honest but dated. Owed to the
+aftermath bundle.
