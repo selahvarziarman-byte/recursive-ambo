@@ -46,7 +46,7 @@ src/lib/connectedSum.ts                 c9d1455e76f4fb62e68ad954c7101ec1f6206819
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c
 src/lib/dualization.ts                  f450a61ca363e915b40374cd0707f6bc878680649d6057389bf49a90eb14d2a0
 src/lib/faceIdentification.ts           c2c67a1eae6ec10dcb2e226289608673d24c711b77bfdd750c0e4e2894030a56
-src/lib/genealogyDag.ts                 1ace11b7f2a1007e3191c6692ecf5c83c23e590776c41ed00e9ba96499e7839b
+src/lib/genealogyDag.ts                 c89bfbf34e4d48932aa39b5236e504703f8dcf463495b496ba2502a228f05b5d
 src/lib/globalW1.ts                     3209127d540d80c7a0734c6989f745423fc1cb3c1fe3103bbfb73dc1da13e207
 src/lib/ids.ts                          3de67f4590eb2ce56a51a061bb8e05047b77b0e846fd45d11c9c171e9f22703e
 src/lib/incidenceTraceRegistry.ts       f052da294632da927f28c385abd63cda5c134d8431e6dc05a0b94467cc0dccf0
@@ -73,7 +73,7 @@ src/manuscript/inkedFormModel.ts        9ddcff0fc8455f8e469726af4d5cdd75b5ab37f6
 src/manuscript/optionBModel.ts          b8947f23be817e0c1c5312276dfa596a67723c491bba8d7ce97bb2e494dd35b1
 src/manuscript/specimenModel.ts         c711be9dafcac4b6e4f62b113c6383712cef952b07805553dc8d72e429e97485
 src/manuscript/standardBodies.ts        6100e6cf1bbea405bdd8aaaa72d6ffeb07dbd5700a6f6359ff76469e2a65198b
-src/manuscript/surfaceClassifier.ts     0abad4df23c8697cc059ce009c18aa4cc868b0bb22a7561e42666e72551eeb6d
+src/manuscript/surfaceClassifier.ts     f2e96084220c3fc5c6c5726b74d9293350068334fb27c29d5e41e19848457974
 src/manuscript/worldModel.ts            c923c911ec2cde09d58331be00479d762ea0be7ef4e5b9e95fb32b2d8717af75
 src/manuscript/writtenFormModel.ts      9e4b3118ef2655631cbc2d48d5f92b22c4443972106d93e1fc7df8b2dbe6477e
 src/playground/bornFormRouting.ts       6f6530d67c5ecfb98a48f35f9df0e12b327ca570c2bdfc45cfe18f0106f411fa
@@ -83,7 +83,7 @@ src/playground/genealogyLayout.ts       dcdde159e83cc246fdbaf0521ec69a2a5884c78d
 src/playground/playgroundOperations.ts  ed0cc1a8350cc7d7a79923d7d4db9c4c2255c9997fc1ec2996d87074d1865b2e
 src/playground/primitiveCatalogue.ts    9d977610215f7e4751a293a14b02085879442320cccc3ce6fcb66aa90eecf882
 src/playground/snapshot.ts              7e0655ad3207b1c6ad456e7c32c5ad3e249c8561dca9c2512fed3a6b91636843
-src/types/geometry.ts                   7dcfc6c1ef8f1a5192afb9cb4c09b2193dadc18be168e3bb8a2c839f0c98a100
+src/types/geometry.ts                   8976ce534d1a3549d02d4a5f484b9f46f3ee73bd7dbf2b89a8a86756f01a382f
 
 # ─── NOT_FROZEN — classified with a reason (completeness: nothing may be unlisted) ───
 NOT_FROZEN src/lib/ambo.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
@@ -175,6 +175,7 @@ NOT_FROZEN src/lib/structuredSourceStateMultiProjectionStructuralChannelV0.ts �
 NOT_FROZEN src/lib/subComplexLift.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/topologySignature.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/surfaceRefinement.ts — THE RIM (2026-07-16 mandate): refine until a disk can be cut — the L2 pair (bisect-until + chord), a sibling of level3Subdivision; refine is not a birth (type-claim resolution); the exit tests every wall (THE EXIT re-charter); ratified by diagnose-the-rim.cjs and diagnose-the-exit.cjs; freeze candidate once the arc lands
+NOT_FROZEN src/lib/thicken.ts — THICKEN (2026-07-18 mandate, A.1 rung 1): the ×I product — an arity-1 NON-CONSUMING birth (operation 'product'; Leibniz signs minted, never endpoint-derived; a×0/a×1/a×I → a carrier, refine-shaped); the band from the person's lifted circle carries its birth-memory; ratified by diagnose-thicken.cjs; freeze candidate once the arc lands
 NOT_FROZEN src/lib/trisonizedMidwifeReadingV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/workspacePersistence.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/manuscript/ApertureView.tsx — THE APERTURE's ink layer (2026-07-13 mandate) — view seam; ratified by diagnose-the-aperture.cjs

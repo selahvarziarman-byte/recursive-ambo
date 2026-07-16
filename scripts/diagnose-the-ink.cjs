@@ -533,6 +533,16 @@ const inkAllowed = new Set([
   // store action (the assemble precedent) + its panel control; zero frozen
   // files; ratified in diagnose-the-gate.cjs.
   'src/store/playgroundStore.ts',
+  // THICKEN (2026-07-18, sealed 039feb1b…82cae): the ×I product — three
+  // sanctioned frozen edits (types/geometry + genealogyDag gain 'product';
+  // surfaceClassifier's rider splits graph edges from true boundaries, all
+  // re-sealed) + the production wiring (the lift's own store + Panels);
+  // ratified in diagnose-thicken.cjs.
+  'src/types/geometry.ts',
+  'src/lib/genealogyDag.ts',
+  'src/manuscript/surfaceClassifier.ts',
+  'src/store/geometryStore.ts',
+  'src/components/Panels.tsx',
   // THE SMALL RUN (2026-07-14, sealed 2eb45568…9060): the custom-glue refusal
   // reorder (the wall before the door), the panel's gate-first seam, and the
   // NUL→escape substitution in faceIdentification (cooked values identical);

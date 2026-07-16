@@ -350,6 +350,16 @@ const allowed = new Set([
   // store action (the assemble precedent) + its panel control; zero frozen
   // files; ratified in diagnose-the-gate.cjs.
   'src/store/playgroundStore.ts',
+  // THICKEN (2026-07-18, sealed 039feb1b…82cae): the ×I product — three
+  // sanctioned frozen edits (types/geometry + genealogyDag gain 'product';
+  // surfaceClassifier's rider splits graph edges from true boundaries, all
+  // re-sealed) + the production wiring (the lift's own store + Panels);
+  // ratified in diagnose-thicken.cjs.
+  'src/types/geometry.ts',
+  'src/lib/genealogyDag.ts',
+  'src/manuscript/surfaceClassifier.ts',
+  'src/store/geometryStore.ts',
+  'src/components/Panels.tsx',
 ]);
 const moved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

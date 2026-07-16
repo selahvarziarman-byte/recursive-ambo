@@ -334,33 +334,22 @@ console.log('\n----- [8] THE MANIFEST: two re-seals in the same change, count 44
 const freeze = checkEngineFreeze(repoRoot);
 check('THE FULL PROTOCOL\'S BOOKKEEPING: the freeze reads ok at 44 with zero drift (the two sanctioned hash lines moved IN THIS SAME CHANGE — the freeze law); the manifest differs from HEAD in EXACTLY the two re-sealed lines (faceIdentification · level3SoundnessGate) plus nothing else; and the two ⛔ files the mandate names — multiform.ts and level3Invariants.ts — are CR-insensitively BYTE-IDENTICAL to HEAD',
   (() => {
-    const workManifest = fs.readFileSync(path.join(repoRoot, 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'), 'utf8').split(/\r?\n/);
-    const headManifest = headBlobOf('docs/governance/ENGINE_FREEZE_MANIFEST.txt').split(/\r?\n/);
-    const changed = [];
-    for (let i = 0; i < Math.max(workManifest.length, headManifest.length); i += 1) {
-      if ((workManifest[i] ?? '') !== (headManifest[i] ?? '')) changed.push(workManifest[i] ?? headManifest[i]);
-    }
-    note(`freeze: ok=${freeze.ok} checked=${freeze.checked} · manifest lines changed vs HEAD: ${changed.length}`);
-    for (const line of changed) note(`  changed: ${String(line).slice(0, 84)}`);
+    // THE SEALED FACT, state-independent (recut under THICKEN, 2026-07-18):
+    // the exact-line differential was an over-pin — ANY later sanctioned
+    // manifest motion (THICKEN's three re-seals were the first) broke it while
+    // this arc's own truth stood. What THIS arc must hold forever: the two
+    // files' CURRENT hashes are the ones the manifest seals, the freeze reads
+    // ok at 44, and the two ⛔ files did not move. The flagship guards the
+    // hash lines themselves in every state.
+    const workManifest = fs.readFileSync(path.join(repoRoot, 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'), 'utf8');
+    const sealedHere = ['src/lib/faceIdentification.ts', 'src/lib/level3SoundnessGate.ts'].every((file) =>
+      workManifest.includes(sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8'))),
+    );
     const unmoved = ['src/lib/multiform.ts', 'src/lib/level3Invariants.ts'].every(
       (file) => sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) === sha256OfCrStripped(headBlobOf(file)),
     );
-    // ARRIVAL BRANCH (THE WITNESS LAW): pre-commit the working manifest
-    // differs from HEAD in EXACTLY the two re-sealed lines; post-commit the
-    // re-seal has ARRIVED and the differential is empty — both states are the
-    // same truth at different times, and the freeze flagship guards the
-    // hashes themselves in either state.
-    const reSealArrived = changed.length === 0 &&
-      headBlobOf('docs/governance/ENGINE_FREEZE_MANIFEST.txt').includes(
-        sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, 'src/lib/faceIdentification.ts'), 'utf8')),
-      );
-    const preCommitShape = changed.length === 2 &&
-      changed.some((l) => l.includes('src/lib/faceIdentification.ts')) &&
-      changed.some((l) => l.includes('src/lib/level3SoundnessGate.ts'));
-    note(reSealArrived ? 'the re-seal has ARRIVED at HEAD — the differential is empty, as it must be' : 'pre-commit: the two re-sealed lines ride this change');
-    return freeze.ok === true && freeze.checked === 44 &&
-      (preCommitShape || reSealArrived) &&
-      unmoved;
+    note(`freeze: ok=${freeze.ok} checked=${freeze.checked} · the two re-sealed hashes present in the manifest: ${sealedHere}`);
+    return freeze.ok === true && freeze.checked === 44 && sealedHere && unmoved;
   })());
 
 console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAILURE(S)`);

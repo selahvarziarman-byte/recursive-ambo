@@ -71,6 +71,7 @@ const srcFilesAt = (rev) => execSync(`git ls-tree -r --name-only ${rev} -- src`,
 const OPS = {
   'connectedSum (add a handle/crosscap)': 'src/lib/connectedSum.ts',
   'refineToDisk (THE EXIT)': 'src/lib/surfaceRefinement.ts',
+  'thicken (A.1 — the ×I product)': 'src/lib/thicken.ts',
   'subComplexLift (THE AMBO LIFT)': 'src/lib/subComplexLift.ts',
   'sewBoundaryCircles': 'src/lib/complexIdentification.ts',
   'cutCell': 'src/lib/cutOperation.ts',
@@ -204,7 +205,14 @@ check('★★ THE COLUMN STOPS CALLING THE DEV SHELL "THE PERSON": refineToDisk 
     const overlap = [...headCol.production].filter((f) => headCol.dev.has(f)).length;
     const partitionOk = Object.values(r).every((row) => !row.present || ['PRODUCTION', 'DEV-ONLY', 'NONE'].includes(row.app));
     note(`PRODUCTION ∩ DEV = ${overlap} (by construction) · manuscript files naming refineToDisk: ${headCol.grepCount('src/manuscript/', 'refineToDisk')}`);
-    return r['refineToDisk (THE EXIT)'].app === 'DEV-ONLY' &&
+    // THICKEN (2026-07-18): the ×I product must read PRODUCTION — the lift is
+    // its route (geometryStore, a production gesture root, imports it); if it
+    // reads DEV-ONLY or NONE the person's route is not wired and THICKEN's
+    // seal has failed its own §2. Absent at older revs (the historical leg
+    // skips rows whose file is not at the rev).
+    const thickenRow = r['thicken (A.1 — the ×I product)'];
+    return (!thickenRow.present || (thickenRow.app === 'PRODUCTION' && thickenRow.gestureProd === true)) &&
+      r['refineToDisk (THE EXIT)'].app === 'DEV-ONLY' &&
       r['refineToDisk (THE EXIT)'].gestureDev === true && r['refineToDisk (THE EXIT)'].gestureProd === false &&
       !r['refineToDisk (THE EXIT)'].route.includes('✅') &&
       r['connectedSum (add a handle/crosscap)'].app === 'PRODUCTION' &&

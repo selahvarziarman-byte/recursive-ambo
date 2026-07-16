@@ -1,0 +1,215 @@
+// thicken — THE ×I PRODUCT (A.1 rung 1; engineer-chartered 2026-07-18, sealed
+// 039feb1b…82cae, natively measured; mothership: rung 1 delivers THE FIRST
+// FORM BORN OF A FORM THE PERSON SELECTED OUT OF ANOTHER FORM).
+//
+// THE OP: A × I, cell-for-cell —
+//   n_k(A×I) = 2·n_k(A) + n_{k−1}(A)
+// Every cell `a` begets `a×0`, `a×1` (same dimension) and `a×I` (dim+1). The
+// SIGNS are Leibniz, MINTED here and never endpoint-derived:
+//   ∂(a×I) = (∂a)×I + (−1)^{dim a} · (a×1 − a×0)
+// which for an edge e = (a,b) walks the prism quad [a×0, b×0, b×1, a×1]
+// (e×0 forward, b×I up, e×1 backward, a×I down) — that cycle IS the sign law
+// spelled as a boundary walk, and it is the only orientation this module
+// mints.
+//
+// NO NEW FORM — the band over the person's lifted circle IS the annulus they
+// can already glue from a square (glueFace(square, one pair) → V2E3F1; the
+// level-2 tower is COMPLETE, so identical readings are a PROOF of sameness).
+// A NEW ANCESTRY: the annulus-from-a-square is born of a SQUARE; the band
+// from thicken(their lifted loop) is born of THEIR CIRCLE, and carries that
+// birth-memory. The ancestry is what this module IS.
+//
+// IT IS A BIRTH (dim+1 — a boundary appears) BUT NON-CONSUMING: the
+// projection π_A recovers the parent exactly, so the parent stays live —
+// `product` fills the seat genealogyDag's doctrine held for it ("once it
+// exists, `product`"); NO pentimento is ever minted for the parent. The
+// LINEAGE is arity-1: the interval is a PARAMETER, not a form the person
+// holds; a×0, a×1, a×I → a is a 3-to-1 CARRIER surjection, structurally
+// refine's, and the ledger already speaks it as a pull-back — no new
+// mechanism.
+//
+// THE BOUND IS A DOOR (LAW 14): a form carrying 3-cells is refused by name —
+// "the product of two surfaces is a 4-manifold; this engine stops at 3." The
+// TWISTED I-bundle is NOT a product (twisted = product THEN identify) and no
+// primitive for it exists here.
+//
+// RUNG 1 PINS THE INPUT THE PERSON CAN ACTUALLY HAND IT (her law): the
+// engine's S¹ is an n-CYCLE (V3E3F0 — the lifted tetra-face rim), never the
+// V1E1 self-loop (nGon(1) throws; no seed carries a self-loop; the direct
+// bridge refuses self-loops anyway). V3E3F0 × I = V6 E9 F3, χ = 0.
+
+import type { Cell, Edge, Face, Shape, Vertex, VertexId } from '../types/geometry';
+import { createDefaultVertexData } from './shape';
+
+export interface ThickenRecord {
+  parentShapeId: string;
+  // the 3-to-1 carrier surjection new→old: a×0, a×1, a×I ↦ a (old cells map
+  // through their own generator; the interval is a parameter, not a parent)
+  carrier: Record<string, string>;
+  counts: { v: number; e: number; f: number; c: number };
+}
+
+export interface ThickenResult {
+  shape: Shape;
+  product: ThickenRecord;
+}
+
+const at0 = (id: string): string => `${id}@0`;
+const at1 = (id: string): string => `${id}@1`;
+const atI = (id: string): string => `${id}@I`;
+
+// the ×1 copy is displaced along the loop's own plane normal (Newell), scaled
+// by the mean edge length — deterministic, no ambient claim (a drawing offset)
+const thickenOffset = (form: Shape): [number, number, number] => {
+  const ids = Object.keys(form.vertices);
+  let nx = 0;
+  let ny = 0;
+  let nz = 0;
+  for (const edge of form.edges) {
+    const [a, b] = edge.vertexIds;
+    const p = form.vertices[a]?.position ?? [0, 0, 0];
+    const q = form.vertices[b]?.position ?? [0, 0, 0];
+    nx += (p[1] - q[1]) * (p[2] + q[2]);
+    ny += (p[2] - q[2]) * (p[0] + q[0]);
+    nz += (p[0] - q[0]) * (p[1] + q[1]);
+  }
+  const norm = Math.hypot(nx, ny, nz);
+  let meanEdge = 0;
+  for (const edge of form.edges) {
+    const [a, b] = edge.vertexIds;
+    const p = form.vertices[a]?.position ?? [0, 0, 0];
+    const q = form.vertices[b]?.position ?? [0, 0, 0];
+    meanEdge += Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+  }
+  meanEdge = form.edges.length > 0 ? meanEdge / form.edges.length : 1;
+  const scale = meanEdge > 0 ? meanEdge : 1;
+  if (norm < 1e-12 || ids.length === 0) return [0, 0, scale];
+  return [(nx / norm) * scale, (ny / norm) * scale, (nz / norm) * scale];
+};
+
+export function thicken(form: Shape, name?: string): ThickenResult {
+  if (form.cells.length > 0) {
+    throw new Error('thicken: the product of two surfaces is a 4-manifold; this engine stops at 3.');
+  }
+  const shapeId = `shape:thicken:${form.id}`;
+  const offset = thickenOffset(form);
+  const carrier: Record<string, string> = {};
+
+  const vertices: Record<VertexId, Vertex> = {};
+  for (const [id, v] of Object.entries(form.vertices)) {
+    for (const [copyId, pos] of [
+      [at0(id), v.position],
+      [at1(id), [v.position[0] + offset[0], v.position[1] + offset[1], v.position[2] + offset[2]]],
+    ] as [string, [number, number, number]][]) {
+      vertices[copyId] = {
+        id: copyId,
+        position: pos,
+        data: createDefaultVertexData(copyId),
+        createdBy: {
+          shapeId,
+          operation: 'product',
+          sourceVertexIds: [id],
+        },
+      };
+      carrier[copyId] = id;
+    }
+  }
+
+  const edges: Edge[] = [];
+  // e×0, e×1 — the two levels of every parent edge
+  for (const edge of form.edges) {
+    const [a, b] = edge.vertexIds;
+    edges.push({ id: at0(edge.id), vertexIds: [at0(a), at0(b)], sourceVertexIds: [at0(a), at0(b)] });
+    edges.push({ id: at1(edge.id), vertexIds: [at1(a), at1(b)], sourceVertexIds: [at1(a), at1(b)] });
+    carrier[at0(edge.id)] = edge.id;
+    carrier[at1(edge.id)] = edge.id;
+  }
+  // v×I — the vertical edge over every parent vertex
+  for (const id of Object.keys(form.vertices)) {
+    edges.push({ id: atI(id), vertexIds: [at0(id), at1(id)], sourceVertexIds: [at0(id), at1(id)] });
+    carrier[atI(id)] = id;
+  }
+
+  const faces: Face[] = [];
+  // f×0, f×1 — the two levels of every parent face
+  for (const face of form.faces) {
+    faces.push({ id: at0(face.id), vertexIds: face.vertexIds.map(at0), role: 'seed-face' as const });
+    faces.push({ id: at1(face.id), vertexIds: face.vertexIds.map(at1), role: 'seed-face' as const });
+    carrier[at0(face.id)] = face.id;
+    carrier[at1(face.id)] = face.id;
+  }
+  // e×I — the prism quad over every parent edge, in the Leibniz orientation
+  for (const edge of form.edges) {
+    const [a, b] = edge.vertexIds;
+    faces.push({
+      id: atI(edge.id),
+      vertexIds: [at0(a), at0(b), at1(b), at1(a)],
+      role: 'seed-face' as const,
+    });
+    carrier[atI(edge.id)] = edge.id;
+  }
+
+  const cells: Cell[] = [];
+  // f×I — the prism 3-cell over every parent face (rung 2's territory)
+  for (const face of form.faces) {
+    const rim = face.vertexIds;
+    // side faces: the e×I prisms of every parent edge incident to the rim —
+    // collected by INCIDENCE and DEDUPED, because a quotient rim (repeated
+    // vertices) under-determines the slot→edge binding from the Shape alone
+    // (the rim module's lesson); on faithful inputs this is exactly the
+    // consecutive-pair walk
+    const rimSet = new Set(rim);
+    const sideFaceIds: string[] = [];
+    for (const e of form.edges) {
+      if (rimSet.has(e.vertexIds[0]) && rimSet.has(e.vertexIds[1]) && !sideFaceIds.includes(atI(e.id))) {
+        sideFaceIds.push(atI(e.id));
+      }
+    }
+    cells.push({
+      id: atI(face.id),
+      kind: 'core',
+      generationDepth: form.genealogy.generationDepth + 1,
+      parentCellId: null,
+      sourceOperation: 'product',
+      vertexIds: [...face.vertexIds.map(at0), ...face.vertexIds.map(at1)],
+      faceIds: [at0(face.id), at1(face.id), ...sideFaceIds],
+      sourceVertexIds: face.vertexIds,
+      sourceEdgeIds: [],
+    });
+    carrier[atI(face.id)] = face.id;
+  }
+  // old cells map to themselves through the parent (the carrier is total on
+  // the CHILD; the parent's own cells are recovered by π_A, not listed here)
+
+  const shape: Shape = {
+    id: shapeId,
+    name: name ?? `${form.name} × I`,
+    vertices,
+    edges,
+    faces,
+    cells,
+    generations: [],
+    genealogy: {
+      parentShapeId: form.id,
+      operation: 'product',
+      generationDepth: form.genealogy.generationDepth + 1,
+      sourceVertexIds: Object.keys(form.vertices),
+      createdVertexIds: Object.keys(vertices),
+      createdAt: '',
+    },
+  };
+
+  return {
+    shape,
+    product: {
+      parentShapeId: form.id,
+      carrier,
+      counts: {
+        v: Object.keys(vertices).length,
+        e: edges.length,
+        f: faces.length,
+        c: cells.length,
+      },
+    },
+  };
+}

@@ -362,6 +362,16 @@ const allowed = new Set([
   // store action (the assemble precedent) + its panel control; zero frozen
   // files; ratified in diagnose-the-gate.cjs.
   'src/store/playgroundStore.ts',
+  // THICKEN (2026-07-18, sealed 039feb1b…82cae): the ×I product — three
+  // sanctioned frozen edits (types/geometry + genealogyDag gain 'product';
+  // surfaceClassifier's rider splits graph edges from true boundaries, all
+  // re-sealed) + the production wiring (the lift's own store + Panels);
+  // ratified in diagnose-thicken.cjs.
+  'src/types/geometry.ts',
+  'src/lib/genealogyDag.ts',
+  'src/manuscript/surfaceClassifier.ts',
+  'src/store/geometryStore.ts',
+  'src/components/Panels.tsx',
 ]);
 const allowedCensusPair = new Set(['src/lib/level3SoundnessGate.ts', 'src/lib/level3Invariants.ts']);
 check('★ CLAUSE 4 — NON-MOVEMENT: the CR-insensitive content-moved surface is exactly the riding mandates\' files (the probes\' model/ink/view/defaults + the small run\'s ratified trio + the census pair); the ORIENTATION READER is byte-identical to HEAD (the census pair may move pre-commit — re-sealed in the manifest, inert post-commit); the freeze manifest holds at 44 (import-closed) with the new files classified',

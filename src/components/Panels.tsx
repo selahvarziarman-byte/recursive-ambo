@@ -199,6 +199,7 @@ export function OperationControls() {
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
   const liftSelectionToManuscript = useGeometryStore((state) => state.liftSelectionToManuscript);
+  const thickenLiftToManuscript = useGeometryStore((state) => state.thickenLiftToManuscript);
   // P1b — the granular save's honest one-line outcome (lifted / refused)
   const [liftNotice, setLiftNotice] = useState<string | null>(null);
   const liftSelection = useGeometryStore((state) => state.liftSelection);
@@ -337,6 +338,24 @@ export function OperationControls() {
       {liftNotice ? (
         <p className="mt-2 text-xs leading-4 text-stone-400">{liftNotice}</p>
       ) : null}
+      {/* THICKEN (A.1 rung 1) — the lifted selection × I: the band that
+          remembers being their circle. Same gating as the lift button. */}
+      <button
+        type="button"
+        onClick={() => {
+          try {
+            const title = thickenLiftToManuscript();
+            setLiftNotice(`thickened — “${title}” (and its parent circle) → the Manuscript shelf`);
+          } catch (error) {
+            setLiftNotice(error instanceof Error ? error.message : String(error));
+          }
+        }}
+        disabled={liftDisabled}
+        title="Thicken the lifted selection (× I): the band joins the shelf beside its parent — born of the person's own circle"
+        className="mt-2 h-10 w-full rounded border border-stone-600 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-400 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
+      >
+        Thicken {liftRegion ? 'region' : 'selection'} × I → Manuscript
+      </button>
       <button
         type="button"
         onClick={resetWorkspace}

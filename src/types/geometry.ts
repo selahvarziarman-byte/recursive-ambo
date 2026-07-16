@@ -19,7 +19,11 @@ export type OperationKind =
   | 'collapse'
   | 'cut'
   | 'assemble'
-  | 'patch-lift';
+  | 'patch-lift'
+  // THICKEN (A.1 rung 1, 2026-07-18, sealed 039feb1b…82cae): the ×I product —
+  // an arity-1 NON-CONSUMING birth (genealogyDag's own doctrine held the seat:
+  // "once it exists, `product`"); manifest re-sealed in the same change
+  | 'product';
 export type CellKind = 'seed' | 'parent' | 'core' | 'residue';
 export type SeedTopology = 'tetrahedron' | 'octahedron' | 'cube';
 export type CellTopology =

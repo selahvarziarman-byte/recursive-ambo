@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createSeedShape } from '../data/seeds';
 import { isCellActiveFrontier } from '../lib/cellLifecycle';
 import { liftSubComplex, type LiftSelection } from '../lib/subComplexLift';
+import { thicken } from '../lib/thicken';
 import { serializeSnapshot } from '../playground/snapshot';
 import { useLiftStore } from './liftStore';
 import {
@@ -161,6 +162,7 @@ interface GeometryState {
   applyOperationToSelection: (operationId: string) => void;
   applyAmboDissectionToCurrent: () => void;
   liftSelectionToManuscript: () => string;
+  thickenLiftToManuscript: () => string;
   toggleLiftSelection: (selection: LiftSelection) => void;
   clearLiftSelection: () => void;
   selectShape: (shapeId: ShapeId) => void;
@@ -459,6 +461,42 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       set({ liftSelection: [] });
     }
     return lifted.title;
+  },
+  // THICKEN (A.1 rung 1, 2026-07-18, sealed 039feb1b…82cae): the person's own
+  // lifted circle becomes a band that REMEMBERS. The selection is lifted
+  // exactly as liftSelectionToManuscript lifts it, then the committed ×I
+  // product runs on the lifted sub-shape, and BOTH forms ride the shelf
+  // channel: the circle (the parent, alive — `product` is NON-CONSUMING) and
+  // the band (born of it, arity-1, its genealogy naming THEIR circle). No new
+  // form — the band is the annulus they could already glue from a square; a
+  // new PARENT is the whole payoff.
+  thickenLiftToManuscript: () => {
+    const { currentShapeId, shapes, selectedCellId, selectedVertexId, liftSelection } = get();
+    const shape = shapes[currentShapeId];
+    if (!shape) {
+      throw new Error('geometryStore: no current shape to lift from');
+    }
+    const selections: LiftSelection[] =
+      liftSelection.length > 0
+        ? liftSelection
+        : selectedCellId
+          ? [{ kind: 'cell', id: selectedCellId }]
+          : selectedVertexId
+            ? [{ kind: 'vertex', id: selectedVertexId }]
+            : [];
+    if (selections.length === 0) {
+      throw new Error(
+        'geometryStore: select a cell or a vertex to lift (or shift-click a region into the lift set)',
+      );
+    }
+    const lifted = liftSubComplex(shape, selections);
+    const band = thicken(lifted.shape);
+    useLiftStore.getState().push({ title: lifted.title, file: serializeSnapshot(lifted.shape, shape.id) });
+    useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id) });
+    if (liftSelection.length > 0) {
+      set({ liftSelection: [] });
+    }
+    return band.shape.name;
   },
   // toggle one entity in/out of the multi-region lift set (identity = kind+id)
   toggleLiftSelection: (selection) => {

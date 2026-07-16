@@ -1,0 +1,145 @@
+PLATONIC ENGINE — THICKEN: the person's own circle becomes a band, and the band
+remembers. · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THICKEN.md` (gitignored):
+
+    039feb1b75ac8e163ee5e2cc05b4124e9c0d6fcf5d03faa7b73ff3a718c82cae
+
+Measured NATIVELY by Arman (certutil), on the REAL bytes. THE SANDBOX DID NOT
+AGREE AND HAS NO STANDING HERE -- see the disclosure below. The Read tool (the
+real-FS arbiter) confirms the measured file is the FINAL text: the frozen-rider
+warning is present at :58-64.
+
+Sealed by the engineer seat. BASELINE c0f5768.
+Ordering cites SHAs; typed dates are decoration (mothership-ruled; TO's catch).
+A.1 STEP 2. Fork (b) FORCED -- researcher-ruled, mothership-verified.
+The coder builds BLIND.
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+⚠ DISCLOSURE -- THIS SEAL WAS EDITED AFTER WRITING. THE ENGINEER'S ERROR, NAMED.
+--------------------------------------------------------------------------------
+
+Three hashes existed for this one file:
+
+    039feb1b...82cae   Arman's certutil, REAL bytes      <- THE SEAL. The only measurement with standing.
+    42c8f14d...24242   sandbox, before the edit          <- a shadow
+    7f088427...2dd9a   sandbox, after the edit           <- a shadow
+
+THE MECHANISM IS THE ONE THE ENGINEER PREDICTED OUT LOUD IN THE SAME BREATH AS
+CAUSING IT: the seal was WRITTEN, then EDITED, and the mount does not propagate
+in-place edits (technical-officer's proven finding). The sandbox was reading a
+file that no longer existed. This is the APERTURE four-hash scar, recurring.
+
+THE RULE IS THE ENGINEER'S OWN AND IT WAS BENT: A SEAL IS FINAL BEFORE IT LEAVES.
+This one was not. The edit was SUBSTANTIVE, not cosmetic -- it re-priced the run
+from "a new NOT_FROZEN file, no protocol" to "the rider is engine surgery with a
+manifest re-seal." A reader of v1 and a reader of v2 would build different
+things. It never circulated (no mandate, no record, the coder never saw it), so
+the remedy is not "declare it dead and rename": the seal that LEAVES is the one
+that was MEASURED, measured ONCE, after it was final. 039feb1b...82cae is that
+measurement, and the seal is final at it.
+
+THE PRACTICE CORRECTION, MECHANICAL: the seal is written ONCE, whole, and the
+ONLY hash that ever appears beside it is the native one. A sandbox digest is not
+a "log line" -- printing a number you know is untrustworthy is the <HHMM> slot
+again: a value that feels like formatting. If a seal must change before it
+circulates, it is REWRITTEN WHOLE and RE-MEASURED, never patched with a fresh
+sandbox digest printed alongside.
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THICKEN.md SHA256
+
+If that does not print 039feb1b...82cae, STOP -- do not build.
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+THE LINE (the mothership's, replacing her own withdrawn label):
+
+  STRUCK: "PROOF-OF-LIFE -- person gains: nothing."
+  SHIP:   RUNG 1 DELIVERS THE FIRST FORM BORN OF A FORM THE PERSON SELECTED OUT
+          OF ANOTHER FORM.
+
+She withdrew it herself: it would have been the campaign's first UNDERCLAIM.
+Every prior route-error overclaimed the person's reach ("THE PERSON CAN ADD A
+HANDLE" onto a dev door); that one would have ERASED a reach they have. Same
+disease, mirror image. NO NEW FORM -- the band IS the annulus they can already
+glue (glueFace(square, one pair) -> V2E3F1), and it must never be called new by
+invariant-matching (the researcher's bound; Bound-1 rider). A NEW ANCESTRY: the
+annulus from a square is born of a SQUARE; the band from thicken(their lifted
+loop) is born of THEIR CIRCLE, carrying its birth-memory. "The ancestry is what
+this module IS." I asked whether the person gains a FORM. They gain a PARENT --
+and that was the question all along.
+
+FORK (b) IS FORCED, NOT CHOSEN -- the V1E1 circle CANNOT EXIST:
+  primitiveCatalogue:53    nGon(1) THROWS ("an n-gon needs an integer n >= 2")
+  primitiveCatalogue:42-46 nGonSpec ALWAYS mints a face -> a DISK, never a face-less circle
+  seeds.ts                 tetra/octa/cube -- no self-loop exists to lift
+  formInvariants:88        tryDirectComplex refuses self-loops anyway
+=> THE ENGINE'S S1 IS AN n-CYCLE. (a) V1E1 x I -> V2E3F1 is DISQUALIFIED, not
+merely costlier: it would test thicken against an input it will NEVER receive --
+the door-column error one level down, testing against a person who does not
+exist. (b) V3E3F0 x I -> V6 E9 F3 (the prism shell over the circle the person
+HOLDS) -- RUNG 1 PINS THIS. THE LAW UNDER IT (researcher; LAW 9's family, no new
+law): AN OP'S SPEC MUST BE PINNED ON THE INPUT THE PERSON CAN ACTUALLY HAND IT.
+
+THE PERSON'S ROUTE, named before the build -- a LIFT, not a fixture: shift-click
+the THREE EDGE ROWS of a tetra face WITHOUT the face (Panels:2128-2139) ->
+addEdge pulls edge+vertices and STOPS (subComplexLift:111-114; nothing pulls the
+face above an edge) -> validateLiftSelection checks DOWNWARD only (:207-215) ->
+extractSubShape -> V3 E3 F0 -> the shelf places it as a skeleton
+(genesisModel:296-306) -> level1Betti reads b1 = 3-3+1 = 1. THAT IS THEIR S1, IN
+PRODUCTION, TODAY. The payoff leg drives THAT route; a hand-built circle is
+exactly how a proof-of-life becomes a lie.
+
+THE RIDER -- the clause ruled apart at c0f5768 HAS A TWIN, and the twin is
+talking to the person:
+
+  MINE, cured:      faceIdentification   count !== 1     held {0} and {>1}   -> RULED APART
+  ITS TWIN, live:   surfaceClassifier:146  slotCount < 2 holds {0 faces = A GRAPH EDGE}
+                                                         and {1 face = A TRUE SURFACE BOUNDARY}
+    => on a 0-face lift EVERY edge reads "free" => classLabel:230 prints
+       "1 boundary circle" about their S1, whose boundary is EMPTY
+  THE LIB, CORRECT: complexIdentification:832-833  free <=> wedgeCount === 1;
+                                                   wedgeCount === 0 => null,
+                                                   "dangling edges -- not a surface boundary"
+
+RULED (mothership): the LIB is right. dS1 = the empty set -- a circle IS the
+form, not its own boundary. readBoundary is a SURFACE reader handed a GRAPH --
+LAW 20: it never earned that domain, and outside it it hands the person a
+well-formed lie about the exact form rung 1 takes as input.
+
+ ⚠ AND THE ENGINEER'S CATCH, WHICH RE-PRICES THE RIDER: surfaceClassifier.ts is
+FROZEN (0abad4df..., path+hash, NO NOT_FROZEN prefix -- read by LINE). The rider
+is therefore ENGINE SURGERY with a manifest re-seal, on a run chartered as "a new
+NOT_FROZEN file, no protocol." The mothership ruled the rider "NOT a blocker --
+if it fights the surgery, report and it waits." Now it IS surgery => IF THE
+RE-SEAL MAKES THIS RUN HEAVY, DROP THE RIDER AND REPORT. Rung 1 does not depend
+on it; the lie is one commit old at worst; a heavy run smuggled in as a rider is
+what the Sovereign has forbidden twice.
+
+ NO SWEEP for other overloaded predicates. Two in one day is a pattern, not a
+mandate. We fix what we found; we do not go hunting.
+
+PINNED: the person lifts 3 edge rows -> V3E3F0, b1=1 -> thicken -> V6 E9 F3,
+chi=0 -- and the band's lineage names THEIR CIRCLE as its parent (the ancestry IS
+the payoff); product joins NON_CONSUMING, NO pentimento (pi_A recovers the
+parent); the band and glueFace(square,one-pair)'s annulus are THE SAME SURFACE,
+printed side by side and NOT claimed new (the level-2 tower is COMPLETE, so
+identical readings are a PROOF of sameness, not a blindness); DO NOT SEAL ON
+INVARIANCE ALONE -- chi/w1/H cannot tell thicken from a NO-OP, the DIMENSION and
+the BOUNDARY discriminate (researcher, binding); the rider lands -- readBoundary
+on the loop no longer says "1 boundary circle" and walkBoundaryCircles still
+nulls, so the two readers AGREE on the person's own form; six frozen files
+byte-identical; the ladder is rung 1 (the floor) -> rung 2 thicken(T2) -> rung 3
+= the committed T3 CELL-FOR-CELL; and the ACQUISITION CHAIN is ON-CALL FROM RUNG
+2, escalated -- rung 1's lift dodges it, rung 2's QUOTIENT does not; it returned
+NULL at THE SEAM; STOP-and-report pre-chartered, its SECOND real caller, a
+FINDING not a wiring bug. thicken's own door-column row must read PRODUCTION.

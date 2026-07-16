@@ -35,9 +35,12 @@ const GLUE_KINDS: ReadonlySet<OperationKind> = new Set<OperationKind>(['glue', '
 // leaves the source byte-unchanged — the source stays live; mothership ruling
 // "Route-B patch-lift RATIFIED; NON-CONSUMING"), `dualization` (the surface
 // Poincaré dual REFLECTS its source — M and M* coexist; mothership ruling
-// Q6/ADR 0020 "single-parent NON-consuming birth", sanctioned 2026-07-04), and,
-// once it exists, `product` (E3 — deferred).
-const NON_CONSUMING: ReadonlySet<OperationKind> = new Set<OperationKind>(['invoke', 'patch-lift', 'dualization']);
+// Q6/ADR 0020 "single-parent NON-consuming birth", sanctioned 2026-07-04), and
+// `product` (E3 — the seat this comment held as "deferred" since it was
+// written, filled by THICKEN, 2026-07-18, sealed 039feb1b…82cae: A×I is a
+// dim+1 birth whose projection π_A recovers the parent exactly — the parent
+// stays live; NO pentimento; manifest re-sealed in the same change).
+const NON_CONSUMING: ReadonlySet<OperationKind> = new Set<OperationKind>(['invoke', 'patch-lift', 'dualization', 'product']);
 
 export interface GenealogyNode {
   id: ShapeId;

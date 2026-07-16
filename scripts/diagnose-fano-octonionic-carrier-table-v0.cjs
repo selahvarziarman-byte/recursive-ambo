@@ -249,9 +249,15 @@ function runAssertions(report, sources) {
   // (the freeze-law lesson, one directory over) — pre-commit exactly that one
   // file may be dirty; post-commit the tree is clean and this allowance is
   // inert.
+  // THICKEN (2026-07-18, sealed 039feb1b…82cae): the same mechanism, the next
+  // mandate — Panels.tsx gains the "Thicken × I → Manuscript" button (the
+  // production wiring §7 demands); ratified in diagnose-thicken.cjs; inert
+  // post-commit exactly as above.
   expectEqual(
     getChangedPaths(['src/components']).filter(
-      (line) => !line.endsWith('src/components/PlaygroundOperationsPanel.tsx'),
+      (line) =>
+        !line.endsWith('src/components/PlaygroundOperationsPanel.tsx') &&
+        !line.endsWith('src/components/Panels.tsx'),
     ).length,
     0,
     'no component file changed (beyond the small run’s sanctioned panel seam)',

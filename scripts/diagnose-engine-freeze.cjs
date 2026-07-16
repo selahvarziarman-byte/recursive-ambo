@@ -185,8 +185,14 @@ const oldUnion = new Set(Object.values(OLD_PER_DIAGNOSTIC_LISTS).flat());
 // nothing. The legs below therefore filter the sanctioned file out: what must
 // be ZERO in BOTH states is the UNSANCTIONED catch.
 const SMALL_RUN_SANCTIONED = ['src/playground/customGluing.ts'];
+// THICKEN (2026-07-18, sealed 039feb1b…82cae): this run's three sanctioned
+// frozen edits ride pre-commit exactly as §2's did — the old mechanism cannot
+// tell a mandate from drift (the treadmill's whole cost, again); post-commit
+// these entries are inert (working = HEAD; the manifest re-seals guard them).
+const THICKEN_SANCTIONED = ['src/types/geometry.ts', 'src/lib/genealogyDag.ts', 'src/manuscript/surfaceClassifier.ts'];
+const SANCTIONED_PRE_COMMIT = [...SMALL_RUN_SANCTIONED, ...THICKEN_SANCTIONED];
 const unsanctionedOf = (catches) =>
-  catches.filter((c) => !SMALL_RUN_SANCTIONED.some((f) => c.endsWith(`: ${f}`)));
+  catches.filter((c) => !SANCTIONED_PRE_COMMIT.some((f) => c.endsWith(`: ${f}`)));
 const onlyFile = (catches, file) => catches.filter((c) => c.endsWith(`: ${file}`));
 check('the carried lists ARE the measured old mechanism: nine lists sized 14·14·14·16·16·16·18·20·21, union 26 — and the ORPHAN is in NONE of them (the hole, exhibited)',
   [...oldListCounts].sort((a, b) => a - b).join('·') === '14·14·14·16·16·16·18·20·21' &&
@@ -374,6 +380,9 @@ const HEAD_READ_ALLOWLIST = new Map([
   // stacks (the 512 regression + the malformed-throw differential), the
   // ⛔-files' non-movement, and the manifest re-seal differential
   ['diagnose-the-bounded-form.cjs', { catfile: 1 }],
+  // THICKEN (2026-07-18): headBlobOf — non-movement ×6 + the three-re-seal
+  // manifest set-differential (arrival-branched)
+  ['diagnose-thicken.cjs', { catfile: 1 }],
 ]);
 // the scanner runs over a {name → source} map so the planted-guard exhibit can
 // feed it a simulated tree without touching the disk

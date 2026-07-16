@@ -491,6 +491,16 @@ const ALLOWED_SRC_CHANGES = new Set([
   // store action (the assemble precedent) + its panel control; zero frozen
   // files; ratified in diagnose-the-gate.cjs.
   'src/store/playgroundStore.ts',
+  // THICKEN (2026-07-18, sealed 039feb1b…82cae): the ×I product — three
+  // sanctioned frozen edits (types/geometry + genealogyDag gain 'product';
+  // surfaceClassifier's rider splits graph edges from true boundaries, all
+  // re-sealed) + the production wiring (the lift's own store + Panels);
+  // ratified in diagnose-thicken.cjs.
+  'src/types/geometry.ts',
+  'src/lib/genealogyDag.ts',
+  'src/manuscript/surfaceClassifier.ts',
+  'src/store/geometryStore.ts',
+  'src/components/Panels.tsx',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 44 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

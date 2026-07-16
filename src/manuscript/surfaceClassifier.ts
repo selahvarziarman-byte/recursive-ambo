@@ -129,9 +129,16 @@ export function splitComplexComponents(complex: AssembledComplex): AssembledComp
 // ---------------------------------------------------------------------------
 
 export interface BoundaryReading {
-  freeEdgeIds: string[]; // edges in exactly one face slot (the free 1-skeleton)
+  freeEdgeIds: string[]; // edges in exactly ONE face slot (a TRUE surface boundary)
+  // THICKEN rider (2026-07-18, sealed 039feb1b…82cae; mothership-ruled — the
+  // lib was right): edges in ZERO face slots are 1-complex material — a GRAPH
+  // edge is NOT free and NOT a boundary (∂S¹ = ∅; complexIdentification:
+  // wedgeCount 0 ⇒ "dangling edges — not a surface boundary"). The old
+  // `slotCount < 2` held both meanings in one predicate — the count!==1 twin —
+  // and printed "1 boundary circle" about a circle whose boundary is empty.
+  graphEdgeIds: string[];
   junctionEdgeIds: string[]; // edges in >2 face slots — non-manifold incidence
-  circles: number; // boundary components (disjoint free circles)
+  circles: number; // boundary components (disjoint free circles) — TRUE free edges only
   circlesAreDisjoint: boolean; // every free-skeleton vertex has free-degree exactly 2
 }
 
@@ -143,7 +150,8 @@ export function readBoundary(complex: AssembledComplex): BoundaryReading {
       slotCount.set(slot.edge, (slotCount.get(slot.edge) ?? 0) + 1);
     }
   }
-  const freeEdges = complex.edges.filter((e) => (slotCount.get(e.id) ?? 0) < 2);
+  const freeEdges = complex.edges.filter((e) => (slotCount.get(e.id) ?? 0) === 1);
+  const graphEdgeIds = complex.edges.filter((e) => (slotCount.get(e.id) ?? 0) === 0).map((e) => e.id);
   const junctionEdgeIds = complex.edges.filter((e) => (slotCount.get(e.id) ?? 0) > 2).map((e) => e.id);
   const { find, union } = makeUnionFind();
   const freeDegree = new Map<string, number>();
@@ -154,6 +162,7 @@ export function readBoundary(complex: AssembledComplex): BoundaryReading {
   }
   return {
     freeEdgeIds: freeEdges.map((e) => e.id),
+    graphEdgeIds,
     junctionEdgeIds,
     circles: new Set(freeEdges.map((e) => find(e.u))).size,
     circlesAreDisjoint: [...freeDegree.values()].every((d) => d === 2),
