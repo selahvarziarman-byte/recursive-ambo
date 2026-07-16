@@ -24,6 +24,8 @@ import * as THREE from 'three';
 import type { Shape, Vec3 } from '../types/geometry';
 import type { InkedFormCraft } from './InkedForm';
 import type { CertifiedGenerator } from './optionBModel';
+import type { ShapeField } from '../lib/fieldForShape';
+import { InkedFieldLayer } from './InkedFieldLayer';
 
 function buildBodyGeometry(shape: Shape): THREE.BufferGeometry | null {
   const ids = Object.keys(shape.vertices).sort();
@@ -65,12 +67,18 @@ export function InkedPlainForm({
   craft,
   generators,
   junction,
+  field,
   position = [0, 0, 0],
 }: {
   shape: Shape;
   craft: InkedFormCraft;
   generators?: CertifiedGenerator[]; // the certified Option-B basis (optionBModel), verbatim
   junction?: { segments: Vec3[][]; color: string; lineWidth: number }; // the classifier's junction edges, marked
+  // C.1 THE FIELD IN THE SPECIMEN: the form's OWN computed field (worker-borne).
+  // THE ONE-COMPLEX LAW: this must be the field of THIS `shape` — the caller
+  // keys it by the drawn shape's id. Absent ⇒ this component's behaviour is
+  // byte-identical (it still adds NO mark of its own; the layer draws).
+  field?: ShapeField;
   position?: Vec3;
 }) {
   const body = useMemo(() => buildBodyGeometry(shape), [shape]);
@@ -135,6 +143,7 @@ export function InkedPlainForm({
           ) : null}
         </>
       ) : null}
+      {field ? <InkedFieldLayer shape={shape} field={field} /> : null}
       {generatorLines.map((line) => (
         <group key={line.key}>
           {craft.generatorGhostOpacity > 0 ? (

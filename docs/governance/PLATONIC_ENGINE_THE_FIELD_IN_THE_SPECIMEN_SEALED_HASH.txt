@@ -1,0 +1,127 @@
+PLATONIC ENGINE — THE FIELD IN THE SPECIMEN (C.1): the form carries its living
+field, in ink. The oldest unpaid debt, paid. · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_FIELD_IN_THE_SPECIMEN.md`
+(gitignored):
+
+    390c90469e981499da3ffe432332260f99c922ae50bee3c6d25508229ae1c607
+
+Measured NATIVELY by Arman (certutil), on the real bytes. The seal was WRITTEN
+ONCE and never edited; no sandbox digest was ever printed beside it.
+
+Sealed by the engineer seat. BASELINE 16341e2.
+THE TERMINUS IS MET: product landed (1901700 thicken) + the seam's half
+discharged (bd99fb5 the exit) + item zero (16341e2 the subdivide path).
+By plan section 10-bis's own hard terms, THE FIELD STARTS. Deferred five times.
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_FIELD_IN_THE_SPECIMEN.md SHA256
+
+If that does not print 390c9046...c607, STOP -- do not build.
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+THE STATE: computeFieldForShape is built, general and gate-honest -- and
+DEV-ONLY. PRODUCTION = closure(AppShell) imports the field ZERO times; the
+person has never seen it. Nothing of the dev VIEW transplants: it is unlit
+vertex BRIGHTNESS on a DARK SCREEN GROUND, and buildFieldModel is
+register-bound (:79 `const colors: number[]`). The manuscript is ink & graphite
+on warm paper. C.1 is a REGISTER TRANSLATION, not a wire.
+
+TWO MARKS (designer-ruled; the "one mark / nothing to split" synthesis FELL to
+measurement):
+  1. |psi|^2 = STIPPLE DENSITY, LINEAR (forced: the one law says every visible
+     mark is a value the engine computed; a gamma draws a different function).
+     Never hatching -- hatching carries an AXIS, |psi|^2 is a SCALAR.
+  2. SIGMA = ITS OWN RESERVED INK over sigma.sigmaChainEdges, drawn CRISP at
+     FULL CONFIDENCE. Ground: CLASS = CERTIFIED, REPRESENTATIVE = CRAFT
+     (inkedFormModel.ts:6-9, researcher-ruled, shipped since Phase 1.5). The
+     generator loops are the exact precedent: a vertexPath is a chosen
+     representative of an invariant class, realization-dependent in precisely
+     Sigma's sense, drawn crisp in colour on every plate. If a crisp Sigma-line
+     over-claims, every shipped loop does -- the objection PROVES TOO MUCH.
+  3. DEGENERATE => DRAW NOTHING. A missing mark is a missing VALUE, not a
+     missing render. The absence IS the verdict.
+
+THE VOID IS NOT SIGMA (measured -- this killed the "one mark" ruling): Sigma is
+EDGES, |psi|^2 is VERTICES; a vertex-void cannot draw an edge-chain (a TYPE
+error). The defect-FREE demo has EIGHT machine-zero voids; the defect-BEARING
+Klein body has NO readable void at any density. The A/B plate that ruled
+otherwise had its void AUTHORED BY HAND -- LAW 9: the instrument carried the
+property it measured. It proved a hand-placed void is legible; it never touched
+whether a void MEANS Sigma.
+
+THE SEAM: the specimen renders through <InkedPlainForm> (ManuscriptView:1650 for
+classBody, :1661 for plain) -- NOT_FROZEN, and the manifest names it: "render
+seam beside the frozen InkedForm/InkedDomain". SEVEN FROZEN FILES STAND
+UNTOUCHED. The new layer takes its OWN props; InkedFormCraft is NOT extended
+(it lives in the frozen InkedForm.tsx).
+
+THE ONE-COMPLEX LAW (BornFormView:35-40, committed): "the mesh and its field
+must share one complex (intensities are keyed to its sites)." The field is
+computed on the DRAWN body (component.body / render.shape) -- NEVER on a shape
+that is not the shape being drawn.
+
+THE WORKER -- mothership-ruled (b): measured, computeFieldForShape on the drawn
+Klein body (504 sites) = 19.2s SYNCHRONOUS. C.3's escape hatch DOES NOT EXIST:
+buildClassBodyModel(shape, parent) takes NO resolution; the drawn bodies are
+fixed per class; the slider feeds only the immersion route. A 19-second dead
+manuscript at the person's FIRST CONTACT with the terminus is not
+"field-on-demand" -- it is the dev world's "froze the tab", shipped as the
+flagship. The worker is not cargo; it is the claim, breathing. THE REPO'S FIRST
+WORKER (measured: zero exist). Proven off-thread BY THE CALL GRAPH, never by a
+timing assertion (L9: a timing test measures the test machine).
+
+THE CALIBRATION -- DERIVED, PER-FORM: D_max(form) = ceil(1 / dimmest NON-NODE
+|psi|^2/max), so the dimmest computed value still receives >=1 dot and a node
+receives 0. Measured on the DRAWN bodies: demo 15 - Klein 135 - dev RP2 222.
+At the demo's 15, RP2's dimmest NON-NODE renders as ZERO dots -- a void where
+the engine computed a value. FABRICATION. There is no single honest constant.
+Where D_max exceeds the render budget the plate REFUSES; it never CLIPS.
+
+MEASURED GROUNDS (16341e2, instruments/c1_*.cjs):
+  demo (born genus-2 DRAWN body, w1=0): gate=simple ker=1 band
+    lambda=0.037502046383418336 x1, 502 sites, Sigma=EMPTY, 8 nodes ~5.8e-30,
+    D_max 15. THE ONLY w1=0 FORM WITH A TEXTURE (the torus reads degenerate,
+    band x4 -- grid symmetry) => the ONLY POSSIBLE 8' CONTROL.
+  Klein (born DRAWN body, w1=1, via the person's own subdivide path): gate=simple
+    ker=0, 504 sites, Sigma=56 EDGES, 90 nodes, D_max 135. Deepest node 7.326e-3
+    vs dimmest non-node 7.441e-3 => RATIO 1.016 => NO READABLE VOID AT ANY
+    DENSITY. On the Klein, Sigma's ink is not the better mark -- it is the ONLY
+    possible one.
+  invoked square: render.mode='plain', gate=degenerate, 9 sites => draws nothing.
+  word-born (immersion-routed) forms: REFUSED BY THE COMMITTED BRIDGE ("carries
+    PARALLEL edge classes") -- the ENGINE's wall, not the freeze's.
+
+CLAUSE 8' (the designer's, taken whole) -- ITS ONE NUMBER CORRECTED TO THE DRAWN
+MESH: the designer wrote "klein Sigma = 12 edges"; 12 was the engineer's DEV-mesh
+probe (klein R=6, 144 sites). The DRAWN body carries Sigma = 56 across 504 sites.
+Sealing 12 would have sealed a FALSE EXPECTED VALUE FROM THE WRONG MESH -- the
+exact fault that killed the struck clause 8 an hour earlier. Corrected in the
+open, with provenance.
+
+CLAUSE 7 (rescoped, mothership): no DEGENERATE-band DEFECT-BEARING form reaches
+the specimen until the designer has rendered that plate (degenerate => no texture
+=> no void to carry Sigma). IT DOES NOT GATE C.1.
+
+PINNED: seven frozen hashes byte-identical - files allowed: InkedPlainForm,
+ManuscriptView, designDefaults + a NEW layer file + a NEW worker file + a NEW
+witness + one package.json entry - fieldForShape/richFieldV0 IMPORTED, NEVER
+EDITED (sealed L3b tolerances) - no gamma, no clamp that closes a node, no global
+D_max, no InkedFormCraft extension - the field computed only on the DRAWN complex
+- worker off-thread by call graph - suite 93 at exactly 1 (dual-inspection) -
+tsc -b 0 - manifest count 44.
+
+C.3 IS REWRITTEN (mothership) as THE BOUNDED-BAND SOLVE: the pipeline computes
+the FULL spectrum (~n^3 Jacobi) where only the LOWEST band is consumed; a
+bounded-band solve is ~n^2 => 19.2s becomes ~0.4s. RESEARCHER-OWNED (solver
+substitution under sealed tolerances). When it lands the worker becomes
+belt-and-braces, kept. It does not gate C.1, C.2, or the arc.

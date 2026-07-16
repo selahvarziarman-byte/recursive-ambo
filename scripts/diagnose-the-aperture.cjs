@@ -501,6 +501,11 @@ const ALLOWED_SRC_CHANGES = new Set([
   'src/manuscript/surfaceClassifier.ts',
   'src/store/geometryStore.ts',
   'src/components/Panels.tsx',
+  // C.1 THE FIELD IN THE SPECIMEN (2026-07-17, sealed 390c9046…c607): the
+  // plain-form plate gains the optional field-layer mount (absent ⇒
+  // byte-identical); zero frozen files; ratified in
+  // diagnose-the-field-in-the-specimen.cjs.
+  'src/manuscript/InkedPlainForm.tsx',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 44 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

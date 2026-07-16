@@ -55,6 +55,10 @@ import {
 } from './writtenFormModel';
 import { resolveLineage } from '../playground/playgroundOperations';
 import { refineToDisk } from '../lib/surfaceRefinement';
+// C.1 — type-only: the FUNCTION computeFieldForShape is never imported by any
+// component module; it runs solely inside the worker (the call-graph claim)
+import type { ShapeField } from '../lib/fieldForShape';
+import type { FieldWorkRequest, FieldWorkResponse } from './fieldWorker';
 import { InkedPlainForm } from './InkedPlainForm';
 import {
   ApertureGatePanel,
@@ -614,6 +618,70 @@ export default function ManuscriptView() {
     }
     return map;
   }, [written]);
+
+  // ----- C.1 THE FIELD IN THE SPECIMEN: the SELECTED specimen's own field, ---
+  // ----- computed OFF-THREAD on the DRAWN body (the repo's FIRST worker) -----
+  // THE ONE-COMPLEX LAW (BornFormView's committed clause): the mesh and its
+  // field must share one complex — the worker receives the EXACT shape the
+  // plate draws (`component.body` on the classBody route, `render.shape` on
+  // the plain route), and the result is keyed by that shape's id so it can
+  // never dress a different mesh. The pipeline is ~n³ on the drawn body's
+  // sites and there is no resolution rescue (the drawn bodies are fixed per
+  // class), hence the worker + the `fieldComputing` state.
+  const [specimenField, setSpecimenField] = useState<{ shapeId: string; field: ShapeField } | null>(
+    null,
+  );
+  const [fieldComputing, setFieldComputing] = useState<string | null>(null);
+  const fieldCacheRef = useRef(new Map<string, ShapeField>());
+  const selectedDrawnBody = useMemo((): Shape | null => {
+    if (!selected) return null;
+    const [band, key] = selected.split(':');
+    if (band !== 'w') return null;
+    const entry = written.find((w) => w.form.id === key);
+    if (!entry) return null;
+    const render = entry.form.render;
+    // the two InkedPlainForm plates; immersion/skeleton routes carry no field layer
+    if (render.mode === 'classBody') return render.model.components[0]?.body ?? null;
+    if (render.mode === 'plain') return render.shape;
+    return null;
+  }, [selected, written]);
+  useEffect(() => {
+    if (!selectedDrawnBody) {
+      setSpecimenField(null);
+      setFieldComputing(null);
+      return;
+    }
+    const cached = fieldCacheRef.current.get(selectedDrawnBody.id);
+    if (cached) {
+      setSpecimenField({ shapeId: selectedDrawnBody.id, field: cached });
+      setFieldComputing(null);
+      return;
+    }
+    setSpecimenField(null);
+    setFieldComputing(selectedDrawnBody.id);
+    const worker = new Worker(new URL('./fieldWorker.ts', import.meta.url), { type: 'module' });
+    worker.onmessage = (event: MessageEvent<FieldWorkResponse>) => {
+      const message = event.data;
+      if (message.shapeId !== selectedDrawnBody.id) return;
+      setFieldComputing(null);
+      if (message.ok) {
+        fieldCacheRef.current.set(message.shapeId, message.field);
+        setSpecimenField({ shapeId: message.shapeId, field: message.field });
+      } else {
+        // the engine's own wall (e.g. the bridge's PARALLEL-edge-classes
+        // refusal): the plate stays bare — a missing mark is a missing value,
+        // never routed around
+        setSpecimenField(null);
+      }
+      worker.terminate();
+    };
+    const request: FieldWorkRequest = { shapeId: selectedDrawnBody.id, shape: selectedDrawnBody };
+    worker.postMessage(request);
+    return () => {
+      worker.terminate();
+      setFieldComputing(null);
+    };
+  }, [selectedDrawnBody]);
 
   // the analytic reading — built ON SELECT from the committed certifiers'
   // readouts (specimenModel/writtenFormModel), cleared on deselect: summoned,
@@ -1652,6 +1720,13 @@ export default function ManuscriptView() {
                     shape={component.body}
                     craft={craftFor(id, entry.form.shape.id)}
                     generators={component.optionB.generators}
+                    field={
+                      // C.1 — THE ONE-COMPLEX LAW at the seam: the field dresses
+                      // ONLY the exact drawn body it was computed on
+                      specimenField && specimenField.shapeId === component.body.id
+                        ? specimenField.field
+                        : undefined
+                    }
                     position={component.offset}
                   />
                 ))}
@@ -1669,6 +1744,12 @@ export default function ManuscriptView() {
                           color: d.world.junction.color,
                           lineWidth: d.world.junction.lineWidth,
                         }
+                      : undefined
+                  }
+                  field={
+                    // C.1 — the same one-complex key on the plain route
+                    specimenField && specimenField.shapeId === render.shape.id
+                      ? specimenField.field
                       : undefined
                   }
                 />
@@ -1700,6 +1781,28 @@ export default function ManuscriptView() {
           }}
         >
           {opNotice}
+        </div>
+      ) : null}
+      {fieldComputing ? (
+        // C.1 — the `computing` state made visible: the field is being worked
+        // out OFF the drawing thread; the plate stays bare until it arrives
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            bottom: 148,
+            transform: 'translateX(-50%)',
+            padding: '4px 10px',
+            borderRadius: 3,
+            background: d.paper.cardBackground,
+            border: `1px solid ${d.paper.cardBorder}`,
+            color: d.paper.cardInk,
+            fontFamily: 'ui-monospace, monospace',
+            fontSize: 11.5,
+            maxWidth: 560,
+          }}
+        >
+          field: computing off-thread…
         </div>
       ) : null}
       {selectedFacePick && selected && !apertureOpen ? (

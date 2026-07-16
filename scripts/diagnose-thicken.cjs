@@ -265,8 +265,19 @@ check('THE MANIFEST CARRIES THIS RUN\'S EXACT WEIGHT: the freeze reads ok at 44 
     const head = headBlobOf('docs/governance/ENGINE_FREEZE_MANIFEST.txt').split(/\r?\n/);
     const headSet = new Set(head);
     const workSet = new Set(work);
-    const workOnly = work.filter((l) => !headSet.has(l));
-    const headOnly = head.filter((l) => !workSet.has(l));
+    // C.1 THE FIELD IN THE SPECIMEN (2026-07-17, sealed 390c9046…c607): a later
+    // arc's completeness-law lines (its two new NOT_FROZEN classifications) may
+    // ride the same tree pre-commit — stripped from THIS differential on BOTH
+    // sides, by NAME (this leg weighs THICKEN's own manifest surface, not the
+    // campaign's; any unnamed line still breaks it); ratified in
+    // diagnose-the-field-in-the-specimen.cjs.
+    const LATER_ARC_LINES = [
+      'NOT_FROZEN src/manuscript/InkedFieldLayer.tsx',
+      'NOT_FROZEN src/manuscript/fieldWorker.ts',
+    ];
+    const notLaterArc = (l) => !LATER_ARC_LINES.some((p) => l.startsWith(p));
+    const workOnly = work.filter((l) => !headSet.has(l)).filter(notLaterArc);
+    const headOnly = head.filter((l) => !workSet.has(l)).filter(notLaterArc);
     note(`freeze: ok=${freeze.ok} checked=${freeze.checked} · manifest lines: +${workOnly.length} / −${headOnly.length} vs HEAD`);
     for (const l of workOnly) note(`  + ${l.slice(0, 76)}`);
     const preCommit = workOnly.length === 4 && headOnly.length === 3 &&

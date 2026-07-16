@@ -556,6 +556,11 @@ const inkAllowed = new Set([
   // button, the view's folded-rows state, the model's door); ratified in
   // diagnose-the-subdivision.cjs.
   'src/manuscript/ManuscriptChrome.tsx',
+  // C.1 THE FIELD IN THE SPECIMEN (2026-07-17, sealed 390c9046…c607): the
+  // plain-form plate gains the optional field-layer mount (absent ⇒
+  // byte-identical); zero frozen files; ratified in
+  // diagnose-the-field-in-the-specimen.cjs.
+  'src/manuscript/InkedPlainForm.tsx',
 ]);
 const inkMoved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

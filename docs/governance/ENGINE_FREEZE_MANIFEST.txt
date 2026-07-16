@@ -179,6 +179,7 @@ NOT_FROZEN src/lib/thicken.ts — THICKEN (2026-07-18 mandate, A.1 rung 1): the 
 NOT_FROZEN src/lib/trisonizedMidwifeReadingV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/workspacePersistence.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/manuscript/ApertureView.tsx — THE APERTURE's ink layer (2026-07-13 mandate) — view seam; ratified by diagnose-the-aperture.cjs
+NOT_FROZEN src/manuscript/InkedFieldLayer.tsx — C.1 THE FIELD IN THE SPECIMEN (2026-07-17 mandate): |ψ|² as LINEAR stipple (D_max derived per form — refuse, never clip) + Σ in its own reserved ink; degenerate ⇒ nothing — ratified by diagnose-the-field-in-the-specimen.cjs
 NOT_FROZEN src/manuscript/InkedPlainForm.tsx — render seam beside the frozen InkedForm/InkedDomain — freeze candidate named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/manuscript/InkedSkeleton.tsx — render seam beside the frozen InkedForm/InkedDomain — freeze candidate named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/manuscript/ManuscriptChrome.tsx — manuscript chrome seam under active mandate churn — ratified per-build by its own witnesses
@@ -188,6 +189,7 @@ NOT_FROZEN src/manuscript/apertureInk.ts — THE INK's react-free recipe (2026-0
 NOT_FROZEN src/manuscript/apertureModel.ts — THE APERTURE's react-free core (2026-07-13 mandate): map menu · witnessed deck fit · recession-law geometry · gate · room · image-space tracer — ratified by diagnose-the-aperture.cjs; freeze candidate once the mandate lands
 NOT_FROZEN src/manuscript/apertureProbeAssets.ts — THE PROBES' real scans, baked (2026-07-14 mandate): exact Float32/Uint32 base64 of the designer's .obj scans — witness-verified equal to the source files; generated once, never regenerated silently
 NOT_FROZEN src/manuscript/apertureProbes.ts — THE PROBES' mounts (2026-07-14 mandate): the mask split rim-to-rim, the hand placed by rotation only (det(R)>0 THROWS) — ratified by diagnose-the-probes.cjs
+NOT_FROZEN src/manuscript/fieldWorker.ts — C.1 THE FIELD IN THE SPECIMEN (2026-07-17 mandate): the repo's FIRST web worker — computeFieldForShape off the drawing thread (off-thread proven by the call graph, never by timing); ratified by diagnose-the-field-in-the-specimen.cjs
 NOT_FROZEN src/manuscript/formDomainModel.ts — manuscript model outside the chartered freeze set — not yet ruled frozen
 NOT_FROZEN src/playground/identificationAnnotation.ts — playground annotation layer outside the chartered freeze set — not yet ruled frozen
 NOT_FROZEN src/playground/surfaceCatalogue.ts — invocation catalogue — freeze candidate named in REPORT_engine-freeze-manifest.md for the engineer’s ruling

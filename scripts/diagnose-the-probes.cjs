@@ -372,6 +372,11 @@ const allowed = new Set([
   'src/manuscript/surfaceClassifier.ts',
   'src/store/geometryStore.ts',
   'src/components/Panels.tsx',
+  // C.1 THE FIELD IN THE SPECIMEN (2026-07-17, sealed 390c9046…c607): the
+  // plain-form plate gains the optional field-layer mount (absent ⇒
+  // byte-identical); zero frozen files; ratified in
+  // diagnose-the-field-in-the-specimen.cjs.
+  'src/manuscript/InkedPlainForm.tsx',
 ]);
 const allowedCensusPair = new Set(['src/lib/level3SoundnessGate.ts', 'src/lib/level3Invariants.ts']);
 check('★ CLAUSE 4 — NON-MOVEMENT: the CR-insensitive content-moved surface is exactly the riding mandates\' files (the probes\' model/ink/view/defaults + the small run\'s ratified trio + the census pair); the ORIENTATION READER is byte-identical to HEAD (the census pair may move pre-commit — re-sealed in the manifest, inert post-commit); the freeze manifest holds at 44 (import-closed) with the new files classified',

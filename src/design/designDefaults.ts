@@ -193,7 +193,7 @@ export const manuscriptDefaults = {
     crossStart: 0.66, // threshold where cross-hatch begins
   },
   layout: {
-    resolution: 16, // construction-grid resolution — `?manuscript` runs NO field pipeline, so the BornFormView R=6 budget does not apply (that ceiling is the field's ~n³, not the immersion's)
+    resolution: 16, // construction-grid resolution — feeds the IMMERSION route only. C.1 (2026-07-17): `?manuscript` now RUNS the field pipeline for the SELECTED specimen, but OFF-THREAD (fieldWorker — the repo's first worker) and on the DRAWN body, which is fixed per class and never fed by this knob; the BornFormView R=6 budget remains the dev shell's on-thread ceiling (the field's ~n³, not the immersion's)
     spacing: 8.5, // base x-distance between forms within a band (scaled per band)
     cameraPosition: [0, 0, 46] as const, // frames the three stacked registers
     captionDrop: 4.6, // how far below a form its name label hangs (in form-local units)
