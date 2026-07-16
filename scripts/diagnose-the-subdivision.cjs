@@ -79,7 +79,11 @@ const A = req('src/manuscript/apertureModel.ts');
 
 // the ONE plumbing read (pinned by name in the flagship's HEAD-read
 // inventory): non-movement — byte-identity + the HEAD-compiled tower reader
-const headBlobOf = (file) => execSync(`git cat-file blob HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
+// THE APP COLUMN riding fix (2026-07-18): the baseline is PINNED to 01da8ed
+// (the small run — the tree this arc built against). The old spelling read
+// HEAD:, which post-commit compares the committed file against ITSELF — a
+// non-movement clause that cannot detect movement.
+const headBlobOf = (file) => execSync(`git cat-file blob 01da8ed:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
 
 let failures = 0;
 const check = (name, cond) => {
@@ -276,13 +280,13 @@ console.log('\n----- [f] ★ CLAUSE 4 — non-movement: the gate/tower/faceIdent
 // failure) moves the gate and its reader pre-commit — re-sealed in the
 // manifest in the same change; ratified in diagnose-the-census.cjs. Carved
 // here; inert post-commit. Everything else must still not move.
-check('the READ PATH did not move (census pair carved, re-sealed): faceIdentification, level3{Orientation,W1,Homology,LinkExtractor} are CR-insensitively BYTE-IDENTICAL to HEAD (the subdivision is a new module BESIDE the engine, never inside it)',
+check('the READ PATH did not move (census pair carved, re-sealed): faceIdentification, level3{Orientation,W1,Homology,LinkExtractor} are CR-insensitively BYTE-IDENTICAL to the 01da8ed BASELINE — the tree this arc built against, pinned so the clause can detect movement forever (the old HEAD: spelling compared the committed file against itself post-commit; THE APP COLUMN riding fix, 2026-07-18) — the subdivision is a new module BESIDE the engine, never inside it',
   ['src/lib/faceIdentification.ts',
    'src/lib/level3Orientation.ts', 'src/lib/level3W1.ts', 'src/lib/level3Homology.ts', 'src/lib/level3LinkExtractor.ts']
     .every((file) => sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) === sha256OfCrStripped(headBlobOf(file))));
-// the 512 un-subdivided readings vs the HEAD-COMPILED tower reader — the same
-// modules HEAD carries, compiled in-memory (their imports resolve to working
-// files proven byte-identical above)
+// the 512 un-subdivided readings vs the BASELINE-COMPILED tower reader — the
+// modules the 01da8ed baseline carries, compiled in-memory (their imports
+// resolve to working files proven byte-identical above)
 const headInvariants = (() => {
   const src = headBlobOf('src/lib/level3Invariants.ts');
   const m = new Module.Module('level3Invariants.head.ts');

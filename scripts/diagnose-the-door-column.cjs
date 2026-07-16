@@ -1,35 +1,45 @@
 #!/usr/bin/env node
 
-// DIAGNOSTIC — THE DOOR COLUMN (engineer-chartered 2026-07-17, completing the
-// mothership's 0500 order; SEAL-BEFORE-BUILD — BUILT BLIND to
-// `.handoff/SEAL_THE_COLUMN.md`, SHA-256 94f1a8c9…df4a, natively measured).
+// DIAGNOSTIC — THE DOOR COLUMN (engineer-chartered 2026-07-17, THE COLUMN;
+// re-cut 2026-07-18, THE APP COLUMN — mothership STEP 0: "one column, not one
+// root"; SEAL-BEFORE-BUILD — BUILT BLIND to `.handoff/SEAL_THE_APP_COLUMN.md`,
+// SHA-256 04096576…65ff, natively measured).
 //
-// THE MECHANISM GETS A HOME: this is the door-column instrument — the one
-// probe that caught what four seals, two stops and a 145-witness suite
-// structurally could not ("connectedSum was reachable and the person still
-// could not use it") — PORTED from the gitignored `instruments/` directory
-// (one disk, a session that ends, a mount that serves it torn) into a
-// TRACKED witness that rides every clone and every suite run.
+// THE MECHANISM: for every engine op, THE PERSON'S ROUTE — or none. Ported
+// from the gitignored instruments/ drawer (THE COLUMN) and then taught the
+// one distinction its first cut lacked (THE APP COLUMN): it called the DEV
+// SHELL "the person" and PASSED the exact case it was built to catch (LAW 9 —
+// the instrument must not carry the property it measures).
 //
-// THE QUESTION, at every arc boundary, for every engine op:
-//   GESTURE   = reachable from the person's own gesture surfaces (the unary
-//               registry menu + the store's binary actions — they act on
-//               THEIR OWN form);
-//   CATALOGUE = reachable only from standardBodies/genesisModel (the product
-//               is handed a CLASS NAME and builds a representative);
-//   NONE      = neither — a door nobody hung (ALIVE, RATIFIED, UNREACHED).
-// "Reachable from the app" was never the question.
+// THE PARTITION — by ROOT CLOSURE, never by regex (a `dev &&` regex would
+// scan for a fact living in a different file from the edge it must cut:
+// main.tsx STATICALLY imports the dev shell and gates it at the RENDER site):
+//   PRODUCTION = closure('src/AppShell.tsx')      — Ambo ⇄ Manuscript. The
+//                ManuscriptView MODULE is production (AppShell lazy-loads
+//                it) though ?manuscript is also a dev route — the module is
+//                production; the route is dev; it is never marked DEV.
+//   DEV        = closure('src/main.tsx') MINUS PRODUCTION — excluded by
+//                CONSTRUCTION (the playground shell and its store).
+// Every op row reads exactly one of PRODUCTION · DEV-ONLY · NONE, and the
+// two non-production diagnoses NEVER merge — they need different cures:
+//   NONE     = unbuilt (no door anywhere);
+//   DEV-ONLY = built for the wrong person (a door nobody ships) — NEVER ✅.
 //
-// It reads COMMITTED BYTES ONLY (the object DB via git plumbing, never the
-// working tree) — which is also why it survives torn mounts. The CANARIES
-// are FATAL: if a file this column KNOWS is live reads as unreachable, the
-// run prints nothing but the failure — an instrument that cannot report
-// itself broken is a rumour with a shell prompt.
+// GESTURE roots by app (GESTURE = the person acts on THEIR OWN form;
+// CATALOGUE = the product is handed a CLASS NAME and builds a representative):
+//   PRODUCTION gestures: manuscript/genesisModel.ts (birthChild — the
+//     person's port-face combine since 2026-07-12; misfiled as CATALOGUE by
+//     both seats until 2026-07-18, LAW 25) + manuscript/writtenFormModel.ts
+//     (the dock) + store/geometryStore.ts (THE AMBO LIFT →
+//     lib/subComplexLift — the person's second door).
+//   DEV gestures: playground/playgroundOperations.ts + store/playgroundStore.ts.
+//   CATALOGUE: manuscript/standardBodies.ts ONLY.
 //
-// ★★ THE HISTORICAL MUTANT IS FREE: the same column pointed at bd99fb5 (the
-// commit BEFORE the gate) must read connectedSum as ⚠ CATALOGUE ONLY — the
-// column goes visibly RED on the world where the door is missing. A column
-// that cannot go red is a decoration.
+// Committed bytes only (the object DB) · canaries FATAL (a broken instrument
+// prints nothing but the failure) · the bd99fb5 historical mutant SHARPENED:
+// refineToDisk reads NONE before the gate, DEV-ONLY after it, ✅ at neither —
+// the column distinguishes "unbuilt" from "built for the wrong person"
+// across real history, which is the only reason it exists.
 //
 // Anti-mock: the sources it parses are the committed blobs themselves.
 
@@ -49,7 +59,7 @@ const check = (name, cond) => {
 };
 const note = (msg) => console.log(`  ↳ ${msg}`);
 
-console.log('the door column: for every engine op — the person\'s route, or none (blind concretes)\n');
+console.log('the door column: for every engine op — the person\'s route, or none; and WHICH person (blind concretes)\n');
 
 // ── the column, rev-parameterized (committed bytes only) ──────────────────────
 // the ONE plumbing blob read (pinned in the flagship's HEAD-read inventory)
@@ -61,6 +71,7 @@ const srcFilesAt = (rev) => execSync(`git ls-tree -r --name-only ${rev} -- src`,
 const OPS = {
   'connectedSum (add a handle/crosscap)': 'src/lib/connectedSum.ts',
   'refineToDisk (THE EXIT)': 'src/lib/surfaceRefinement.ts',
+  'subComplexLift (THE AMBO LIFT)': 'src/lib/subComplexLift.ts',
   'sewBoundaryCircles': 'src/lib/complexIdentification.ts',
   'cutCell': 'src/lib/cutOperation.ts',
   'assemble (multiform)': 'src/lib/multiform.ts',
@@ -70,13 +81,11 @@ const OPS = {
   'faceIdentification': 'src/lib/faceIdentification.ts',
   'level3SoundnessGate': 'src/lib/level3SoundnessGate.ts',
 };
-// THE TWO DOORS — and they are NOT the same thing. The gesture surface is the
-// unary OP MENU plus the STORE's own actions (the committed binary gestures —
-// assemble, combine — are store actions by ratified shape; a census rooted
-// only at the registry is blind to every arity-2 gesture by construction).
-const GESTURE_ROOTS = ['src/playground/playgroundOperations.ts', 'src/store/playgroundStore.ts'];
-const CATALOGUE_ROOTS = ['src/manuscript/standardBodies.ts', 'src/manuscript/genesisModel.ts'];
-const APP_ROOTS = ['src/main.tsx'];
+const PRODUCTION_ROOTS = ['src/AppShell.tsx'];
+const MAIN_ROOTS = ['src/main.tsx'];
+const GESTURE_PROD_ROOTS = ['src/manuscript/genesisModel.ts', 'src/manuscript/writtenFormModel.ts', 'src/store/geometryStore.ts'];
+const GESTURE_DEV_ROOTS = ['src/playground/playgroundOperations.ts', 'src/store/playgroundStore.ts'];
+const CATALOGUE_ROOTS = ['src/manuscript/standardBodies.ts'];
 
 const columnAt = (rev) => {
   const files = srcFilesAt(rev);
@@ -90,6 +99,8 @@ const columnAt = (rev) => {
     }
     return null;
   };
+  // ts.preProcessFile detects DYNAMIC imports too — AppShell's
+  // React.lazy(() => import('./manuscript/ManuscriptView')) is a real edge
   const importsOf = (f) => ts.preProcessFile(src[f], true, true).importedFiles.map((i) => resolve(f, i.fileName)).filter(Boolean);
   const closure = (entries) => {
     const seen = new Set();
@@ -102,17 +113,22 @@ const columnAt = (rev) => {
     }
     return seen;
   };
-  const gesture = closure(GESTURE_ROOTS);
+  const production = closure(PRODUCTION_ROOTS);
+  const main = closure(MAIN_ROOTS);
+  const dev = new Set([...main].filter((f) => !production.has(f))); // disjoint BY CONSTRUCTION
+  const gestureProd = closure(GESTURE_PROD_ROOTS);
+  const gestureDev = closure(GESTURE_DEV_ROOTS);
   const catalogue = closure(CATALOGUE_ROOTS);
-  const app = closure(APP_ROOTS);
-  // THE CANARIES — FATAL. Files this column KNOWS are live must read as
-  // reachable, or the whole run is a broken instrument and says ONLY that
-  // (no plausible column may be printed over a dead resolver).
+  // THE CANARIES — FATAL. Files this column KNOWS are live must read where it
+  // knows them to be, or the whole run is a broken instrument and says ONLY
+  // that (no plausible column may be printed over a dead resolver).
   const canaries = [
-    ['src/lib/multiform.ts reachable by GESTURE (assemble is a committed gesture)', gesture.has('src/lib/multiform.ts')],
+    ['ManuscriptView is PRODUCTION (the MODULE ships; the ?manuscript route being dev never marks it DEV)', production.has('src/manuscript/ManuscriptView.tsx')],
+    ['the Playground shell is NOT production (AppShell carries zero Playground refs)', !production.has('src/components/Playground.tsx')],
+    ['the Playground shell IS the dev closure (main.tsx statically imports it; the dev&& gate is at the render site)', dev.has('src/components/Playground.tsx')],
     ['src/lib/connectedSum.ts reachable by CATALOGUE (standardBodies sums bodies)', catalogue.has('src/lib/connectedSum.ts')],
-    ['src/store/playgroundStore.ts inside APP (main → shell → panel → store)', app.has('src/store/playgroundStore.ts')],
-    ['the GESTURE closure is non-trivial (> 5 files)', gesture.size > 5],
+    ['src/lib/multiform.ts reachable by BOTH gesture registers (assemble is a committed gesture everywhere)', gestureProd.has('src/lib/multiform.ts') && gestureDev.has('src/lib/multiform.ts')],
+    ['the PRODUCTION closure is non-trivial (> 20 files)', production.size > 20],
   ];
   const dead = canaries.filter(([, ok]) => !ok);
   if (dead.length > 0) {
@@ -124,99 +140,109 @@ const columnAt = (rev) => {
       rows[name] = { present: false };
       continue;
     }
-    const g = gesture.has(f);
-    const c = catalogue.has(f);
-    const a = app.has(f);
-    const route = g
-      ? 'PLAYGROUND_OPERATIONS / the store — the person acts'
-      : c
-        ? '⚠ CATALOGUE ONLY — the product builds a named class; NOT a gesture'
-        : a
-          ? '⚠ in APP but via neither door'
-          : '⛔ NONE';
-    rows[name] = { present: true, gesture: g, catalogue: c, app: a, route };
+    const gp = gestureProd.has(f);
+    const gd = gestureDev.has(f);
+    const cat = catalogue.has(f);
+    const app = production.has(f) ? 'PRODUCTION' : dev.has(f) ? 'DEV-ONLY' : 'NONE';
+    const route =
+      app === 'PRODUCTION' && gp
+        ? '✅ PRODUCTION — the person acts (the manuscript\'s own doors)'
+        : app === 'PRODUCTION' && cat
+          ? '⚠ CATALOGUE ONLY — the product builds a named class; NOT a gesture'
+          : app === 'PRODUCTION'
+            ? '⚠ in the PRODUCTION app but via neither door'
+            : app === 'DEV-ONLY'
+              ? '⚠ DEV-ONLY — built for the wrong person: a door nobody ships (never the green tick)'
+              : '⛔ NONE — unbuilt (no door anywhere)';
+    rows[name] = { present: true, gestureProd: gp, gestureDev: gd, catalogue: cat, app, route };
   }
   const importersOf = (target) => Object.keys(src).filter((f) => f !== target && importsOf(f).includes(target));
-  return { rev, files, src, rows, importersOf };
+  const grepCount = (dirPrefix, token) => files.filter((f) => f.startsWith(dirPrefix) && src[f].includes(token)).length;
+  return { rev, files, src, rows, importersOf, grepCount, production, dev };
 };
 
-const printColumn = (col) => {
+const mark = (b) => (b ? ' ✓' : ' —');
+const printColumn = (col, annotations = {}) => {
   note(`── the door column @ ${col.rev} ──`);
-  note('op                                     GESTURE  CATALOGUE  APP  route');
+  note('op                                    G-PROD  G-DEV  CATALOGUE  APP         route');
   for (const [name, row] of Object.entries(col.rows)) {
     if (!row.present) {
-      note(`${name.padEnd(38)} FILE NOT AT ${col.rev}`);
+      note(`${name.padEnd(37)} FILE NOT AT ${col.rev}`);
       continue;
     }
-    note(`${name.padEnd(38)} ${(row.gesture ? '  ✓' : '  —').padEnd(8)} ${(row.catalogue ? '  ✓' : '  —').padEnd(10)} ${(row.app ? '✓' : '—').padEnd(4)} ${row.route}`);
+    const extra = annotations[name] ?? '';
+    note(`${name.padEnd(37)} ${mark(row.gestureProd).padEnd(7)} ${mark(row.gestureDev).padEnd(6)} ${mark(row.catalogue).padEnd(10)} ${row.app.padEnd(11)} ${row.route}${extra}`);
   }
 };
 
-// ═════ [a] tracked — the entire point of the build ════════════════════════════════
-console.log('----- [a] TRACKED: this witness rides the staging line (clause 1) -----');
-check('★ THE MECHANISM HAS A HOME: scripts/diagnose-the-door-column.cjs is NOT gitignored (git check-ignore refuses it) — it rides every clone and every suite run, unlike the instruments/ probe drawer it was ported from (gitignored by design, one disk, a session that ends)',
+// ═════ [a] tracked — the point of THE COLUMN ══════════════════════════════════════
+console.log('----- [a] TRACKED: this witness rides the staging line -----');
+check('★ THE MECHANISM HAS A HOME: scripts/diagnose-the-door-column.cjs is NOT gitignored (git check-ignore refuses it) — it rides every clone and every suite run',
   (() => {
     let ignored = true;
     try {
       execSync('git check-ignore scripts/diagnose-the-door-column.cjs', { cwd: repoRoot, encoding: 'utf8', stdio: 'pipe' });
-      ignored = true; // exit 0 = ignored
+      ignored = true;
     } catch {
-      ignored = false; // exit 1 = not ignored
+      ignored = false;
     }
     note(`git check-ignore: ${ignored ? 'IGNORED?!' : 'not ignored'}`);
     return !ignored;
   })());
 
-// ═════ [b] the column at HEAD, printed and pinned ═════════════════════════════════
-console.log('\n----- [b] THE COLUMN AT HEAD: every op, the person\'s route or none (clause 3) -----');
+// ═════ [b] ★★ the column at HEAD — one column, which person ═══════════════════════
+console.log('\n----- [b] ★★ THE COLUMN AT HEAD: PRODUCTION · DEV-ONLY · NONE — never merged, never ✅ for the dev shell (clauses 1–5) -----');
 let headCol = null;
-check('★ THE COLUMN AT HEAD, PRINTED AND PINNED: connectedSum → GESTURE ✓ (the gate) · refineToDisk → GESTURE ✓ (reached through the gate\'s store path — no longer "NOBODY in src/") · sewBoundaryCircles / cutCell / assemble / surfaceDual → GESTURE ✓ · and patchLift + closeEdgeIntoCircle → ⛔ NONE, which is CORRECT AND PRINTED, never widened away: they are the researcher\'s "ALIVE, RATIFIED, UNREACHED" population — doors nobody hung, not rot. The ledger even knows the patch-lift birth (genealogyDag carries \'patch-lift\' in GLUE_KINDS) while NO src file imports the constructor: the column\'s job is to keep saying so at every arc boundary until someone hangs the door — exactly as it would have said about connectedSum for four seals, had it existed',
+check('★★ THE COLUMN STOPS CALLING THE DEV SHELL "THE PERSON": refineToDisk reads DEV-ONLY — NOT ✅ (yesterday it printed "the person acts"; that was LAW 9, the instrument carrying the property it measures — THE GATE is the dev-register PROTOTYPE, and there is only one real person) · connectedSum reads ✅ PRODUCTION (genesisModel:birthChild — the person\'s port-face combine, a GESTURE root since 2026-07-12, misfiled as catalogue until now) AND its row carries RAW, NO REFINE (zero src/manuscript files name refineToDisk — the production door does not refine; C.1\'s item zero, stated by the instrument) · subComplexLift (THE AMBO LIFT) reads ✅ PRODUCTION — the person\'s second door, which the column had never seen · sew/cut/assemble/dual read ✅ PRODUCTION (the manuscript dock drives the registry) · patchLift + closeEdgeIntoCircle read ⛔ NONE — unchanged, CORRECT, printed, never widened away · and the PARTITION SUMS: every row exactly one of PRODUCTION/DEV-ONLY/NONE, PRODUCTION ∩ DEV = ∅ by construction and measured',
   (() => {
     headCol = columnAt('HEAD');
-    printColumn(headCol);
+    const rawNoRefine = headCol.grepCount('src/manuscript/', 'refineToDisk') === 0;
+    printColumn(headCol, {
+      'connectedSum (add a handle/crosscap)': rawNoRefine ? '  ← RAW, NO REFINE (no manuscript file names refineToDisk)' : '  ← REFINED?!',
+    });
     const r = headCol.rows;
-    const patchLiftImporters = headCol.importersOf('src/lib/patchLift.ts');
-    const ledgerKnows = (headCol.src['src/lib/genealogyDag.ts'] ?? '').includes('patch-lift');
-    note(`patchLift importers in src/: ${patchLiftImporters.length === 0 ? '⛔ NOBODY' : patchLiftImporters.join(', ')} · genealogyDag names 'patch-lift': ${ledgerKnows} — the ledger knows a birth the person cannot perform`);
-    const refineImporters = headCol.importersOf('src/lib/surfaceRefinement.ts');
-    note(`refineToDisk importers in src/: ${refineImporters.join(', ') || 'NOBODY'}`);
-    return r['connectedSum (add a handle/crosscap)'].gesture === true &&
-      r['refineToDisk (THE EXIT)'].gesture === true &&
-      r['sewBoundaryCircles'].gesture === true &&
-      r['cutCell'].gesture === true &&
-      r['assemble (multiform)'].gesture === true &&
-      r['surfaceDual'].gesture === true &&
-      r['patchLift (route-B)'].gesture === false && r['patchLift (route-B)'].catalogue === false &&
-      r['patchLift (route-B)'].route === '⛔ NONE' &&
-      r['closeEdgeIntoCircle'].gesture === false && r['closeEdgeIntoCircle'].catalogue === false &&
-      r['closeEdgeIntoCircle'].route === '⛔ NONE' &&
-      patchLiftImporters.length === 0 && ledgerKnows &&
-      refineImporters.includes('src/store/playgroundStore.ts');
+    const overlap = [...headCol.production].filter((f) => headCol.dev.has(f)).length;
+    const partitionOk = Object.values(r).every((row) => !row.present || ['PRODUCTION', 'DEV-ONLY', 'NONE'].includes(row.app));
+    note(`PRODUCTION ∩ DEV = ${overlap} (by construction) · manuscript files naming refineToDisk: ${headCol.grepCount('src/manuscript/', 'refineToDisk')}`);
+    return r['refineToDisk (THE EXIT)'].app === 'DEV-ONLY' &&
+      r['refineToDisk (THE EXIT)'].gestureDev === true && r['refineToDisk (THE EXIT)'].gestureProd === false &&
+      !r['refineToDisk (THE EXIT)'].route.includes('✅') &&
+      r['connectedSum (add a handle/crosscap)'].app === 'PRODUCTION' &&
+      r['connectedSum (add a handle/crosscap)'].gestureProd === true && rawNoRefine &&
+      r['subComplexLift (THE AMBO LIFT)'].app === 'PRODUCTION' && r['subComplexLift (THE AMBO LIFT)'].gestureProd === true &&
+      ['sewBoundaryCircles', 'cutCell', 'assemble (multiform)', 'surfaceDual'].every(
+        (op) => r[op].app === 'PRODUCTION' && r[op].gestureProd === true,
+      ) &&
+      ['patchLift (route-B)', 'closeEdgeIntoCircle'].every(
+        (op) => r[op].app === 'NONE' && !r[op].gestureProd && !r[op].gestureDev && !r[op].catalogue && r[op].route.includes('⛔ NONE'),
+      ) &&
+      overlap === 0 && partitionOk;
   })());
 
-// ═════ [c] ★★ the historical mutant — the column goes red ═════════════════════════
-console.log('\n----- [c] ★★ THE HISTORICAL MUTANT: the same column at bd99fb5, the world before the door (clause 2) -----');
-check('★★ THE COLUMN CAN GO RED — pointed at bd99fb5 (HEAD~1, the commit BEFORE the gate) the SAME column reads connectedSum as ⚠ CATALOGUE ONLY (gesture —, catalogue ✓) and the GESTURE-✓ expectation VISIBLY FAILS on that world; measured beside it: `applyCombineToSelection` lives in 2 src files at cb507c4 and 0 at bd99fb5. The instrument proves itself against the world it was built to catch — a column that cannot go red is a decoration',
+// ═════ [c] ★★ the sharpened historical mutant ═════════════════════════════════════
+console.log('\n----- [c] ★★ THE HISTORICAL MUTANT, SHARPENED: unbuilt → built-for-the-wrong-person, never ✅ (clause 6) -----');
+check('★★ THE COLUMN TELLS "UNBUILT" FROM "BUILT FOR THE WRONG PERSON" ACROSS REAL HISTORY: at bd99fb5 (pre-gate) refineToDisk reads ⛔ NONE (the module existed, no app imported it) · at HEAD (post-gate) it reads ⚠ DEV-ONLY (the gate hung its door in the playground shell — the prototype) · at NEITHER rev does it read ✅. Beside it, the corrected history the misfiled root hid: connectedSum reads ✅ PRODUCTION even at bd99fb5 (genesisModel\'s birthChild predates the gate — the production combine existed all along, RAW; the first cut\'s "CATALOGUE ONLY at bd99fb5" was the misfile\'s artifact, LAW 25) · and the gate\'s own arrival stays measured: applyCombineToSelection in 2 src files at HEAD, 0 at bd99fb5',
   (() => {
     const oldCol = columnAt('bd99fb5');
-    const oldRow = oldCol.rows['connectedSum (add a handle/crosscap)'];
-    note(`@bd99fb5: connectedSum → GESTURE=${oldRow.gesture ? '✓' : '—'} CATALOGUE=${oldRow.catalogue ? '✓' : '—'} · "${oldRow.route}"`);
-    const headExpectationOnOldWorld = oldRow.gesture === true;
-    note(`the GESTURE-✓ expectation applied to bd99fb5: ${headExpectationOnOldWorld ? 'PASS?!' : 'FAIL — red, exactly where the door is missing'}`);
-    const countFilesWith = (col, token) => Object.values(col.src).filter((s) => s.includes(token)).length;
-    const nowCount = countFilesWith(headCol, 'applyCombineToSelection');
-    const oldCount = countFilesWith(oldCol, 'applyCombineToSelection');
+    const oldRefine = oldCol.rows['refineToDisk (THE EXIT)'];
+    const newRefine = headCol.rows['refineToDisk (THE EXIT)'];
+    const oldSum = oldCol.rows['connectedSum (add a handle/crosscap)'];
+    note(`refineToDisk @bd99fb5: APP=${oldRefine.app} · "${oldRefine.route}"`);
+    note(`refineToDisk @HEAD   : APP=${newRefine.app} · "${newRefine.route}"`);
+    note(`✅ at either rev? ${oldRefine.route.includes('✅') || newRefine.route.includes('✅') ? 'YES?!' : 'no — never'}`);
+    note(`connectedSum @bd99fb5: APP=${oldSum.app} · gestureProd=${oldSum.gestureProd} (the production combine predates the gate — raw)`);
+    const nowCount = headCol.files.filter((f) => headCol.src[f].includes('applyCombineToSelection')).length;
+    const oldCount = oldCol.files.filter((f) => oldCol.src[f].includes('applyCombineToSelection')).length;
     note(`applyCombineToSelection: ${nowCount} src file(s) at HEAD · ${oldCount} at bd99fb5`);
-    const oldRefineImporters = oldCol.importersOf('src/lib/surfaceRefinement.ts');
-    note(`refineToDisk importers @bd99fb5: ${oldRefineImporters.join(', ') || '⛔ NOBODY in src/'}`);
-    return oldRow.gesture === false && oldRow.catalogue === true &&
-      oldRow.route.includes('CATALOGUE ONLY') && !headExpectationOnOldWorld &&
-      nowCount === 2 && oldCount === 0 && oldRefineImporters.length === 0;
+    return oldRefine.app === 'NONE' && newRefine.app === 'DEV-ONLY' &&
+      !oldRefine.route.includes('✅') && !newRefine.route.includes('✅') &&
+      oldSum.app === 'PRODUCTION' && oldSum.gestureProd === true &&
+      nowCount === 2 && oldCount === 0;
   })());
 
-// ═════ [d] the gate's absence branch is dead ══════════════════════════════════════
-console.log('\n----- [d] THE GATE\'S ABSENCE BRANCH DIES: an optional guard is not a guard (clause 4) -----');
-check('THE ABSENCE BRANCH IS GONE: diagnose-the-gate.cjs no longer carries the "ABSENT … nothing to run here" note — its door-column leg now runs THIS TRACKED WITNESS, so on any clone the column either runs or the leg FAILS LOUD (a check that stops checking while reporting green was the disease; the tracked home is the cure)',
+// ═════ [d] the gate's absence branch stays dead ═══════════════════════════════════
+console.log('\n----- [d] THE GATE\'S ABSENCE BRANCH STAYS DEAD: an optional guard is not a guard -----');
+check('THE ABSENCE BRANCH IS GONE: diagnose-the-gate.cjs carries no "ABSENT … nothing to run here" note — its door-column leg runs THIS TRACKED WITNESS, so on any clone the column either runs or the leg FAILS LOUD',
   (() => {
     const gateSrc = fs.readFileSync(path.join(repoRoot, 'scripts', 'diagnose-the-gate.cjs'), 'utf8');
     const absenceGone = !gateSrc.includes('nothing to run here') && !gateSrc.includes('ABSENT on this checkout');
@@ -226,9 +252,9 @@ check('THE ABSENCE BRANCH IS GONE: diagnose-the-gate.cjs no longer carries the "
   })());
 
 // ═════ [e] the freeze reads ok ════════════════════════════════════════════════════
-console.log('\n----- [e] the freeze is green (zero frozen files in this build) -----');
+console.log('\n----- [e] the freeze is green (zero frozen files, zero src files in this build) -----');
 const freeze = checkEngineFreeze(repoRoot);
-check('THE ENGINE FREEZE reads ok with zero drift, zero missing, zero unlisted, zero nulled — this build ships witnesses only (the column, the gate\'s retargeted leg, the flagship allowlist line)',
+check('THE ENGINE FREEZE reads ok with zero drift, zero missing, zero unlisted, zero nulled — this build ships witnesses and governance records only',
   freeze.ok);
 
 console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAILURE(S)`);

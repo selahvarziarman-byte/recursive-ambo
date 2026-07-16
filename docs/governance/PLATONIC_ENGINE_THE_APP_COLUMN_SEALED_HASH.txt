@@ -1,0 +1,100 @@
+PLATONIC ENGINE — THE APP COLUMN: the column stops calling the dev shell "the
+person." · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_APP_COLUMN.md` (gitignored):
+
+    04096576cd1d9d430d50a06a5e6d5316683e2f65fa55f9ab961cba46dc5265ff
+
+Measured NATIVELY by Arman (certutil); the sandbox independently agreed --
+consistent with the technical-officer's mechanism: this seal was WRITTEN ONCE
+and never edited, which is exactly when the mount holds the real bytes.
+
+Sealed 2026-07-18 by the engineer seat. Baseline 93569f3. A LIGHT run.
+Mothership: STEP 0 RATIFIED with her addition -- "one column, not one root."
+Researcher: independently found the same defect (0730) and proposed the same
+third column. Two seats converged without conferring; that convergence is the
+verification the engineer's own proposal lacked. The coder builds BLIND.
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_APP_COLUMN.md SHA256
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+THE DEFECT: the door column defines "the person" as the DEV SHELL.
+
+  door_column.cjs:22 (now scripts/diagnose-the-door-column.cjs)
+    GESTURE = closure(['src/playground/playgroundOperations.ts',
+                       'src/store/playgroundStore.ts'])   <- THE DEV SHELL
+    it prints:  connectedSum -> the person acts    refineToDisk -> the person acts
+
+main.tsx:23 -- `const showPlayground = dev && params.has('playground')`; :9 --
+"`import.meta.env.DEV` makes these branches DEAD in a production build."
+=> THE COLUMN CALLS THE DEV SHELL "THE PERSON," AND PASSES THE EXACT CASE IT WAS
+BUILT TO CATCH. That is LAW 9 -- the instrument must not carry the property it
+measures. No new law; none proposed.
+
+THE ENGINEER'S PROPOSED FIX WOULD HAVE MADE IT WORSE. He proposed ADDING the
+manuscript door to GESTURE_ROOTS -- an under-read fix that leaves
+playgroundOperations unqualified => THE GATE would print a green tick FOREVER,
+automated. (Mothership: "an instrument that misses a door is under-powered; an
+instrument that PASSES a door that does not ship is a liar with authority" --
+and it is the authority her 0600 order leans on.) The researcher's line, kept:
+"You built the map that refutes the column, and the column is the one that runs.
+The map knows. The instrument does not. Only the instrument runs."
+
+THE LOAD-BEARING FINDING -- PARTITION BY ROOT, NOT BY REGEX. Both seats
+specified the fix in prose, and the prose does not compile:
+
+  main.tsx:5  import { Playground } from './components/Playground';   <- STATIC
+
+The `dev &&` gating is at the RENDER site, not the import => an import-walk from
+main.tsx reaches every dev shell regardless, and a `dev && params.has(...)`
+regex would be scanning for a fact that lives in a different file from the edge
+it must cut.
+
+  THE PRODUCTION ROOT IS AppShell.tsx -- measured: it imports only App (the Ambo
+  module) + React.lazy(() => import('./manuscript/ManuscriptView')).
+  Playground references in AppShell: 0.  playground references in App.tsx: 0.
+
+  PRODUCTION = closure(src/AppShell.tsx)   -- Ambo (App -> Panels/Workspace3D ->
+    geometryStore + operations/registry + THE LIFT) <=> Manuscript
+    (ManuscriptView -> genesisModel/writtenFormModel -> PLAYGROUND_OPERATIONS)
+  DEV = closure(src/main.tsx) MINUS PRODUCTION -- excluded BY CONSTRUCTION.
+
+  ManuscriptView is PRODUCTION (AppShell lazy-loads it) even though ?manuscript
+  is also a dev route. The MODULE is production; the ROUTE is dev.
+
+THE OP: every op row gains its APP -- PRODUCTION / DEV-ONLY / NONE. A capability
+reachable only from the DEV closure prints DEV-ONLY, never a green tick.
+DEV-ONLY and NONE are DIFFERENT DIAGNOSES and must not merge: NONE = unbuilt (no
+door); DEV-ONLY = built for the wrong person (a door nobody ships). They need
+different cures. genesisModel moves CATALOGUE -> GESTURE (the misfile was the
+mothership's, pasted as verified by re-running the engineer's grep -- LAW 25,
+replication is not independence, broken by the seat that wrote it; the engineer
+repeated it).
+
+PINNED: refineToDisk -> DEV-ONLY (today it prints a green tick -- that is the
+defect and the whole build); connectedSum -> PRODUCTION (manuscript · combine)
+RAW, NO REFINE (genesisModel:125 is the person's port-face gesture;
+grep refineToDisk src/manuscript/ -> NOTHING) -- that row IS C.1's item zero,
+stated by the instrument instead of by the engineer; patchLift +
+closeEdgeIntoCircle -> NONE (correct, printed, never widened); the AMBO LIFT ->
+PRODUCTION (subComplexLift reachable from AppShell; Panels:2134 edge-row ->
+geometryStore:436 -- the person's second door, which the column has never seen);
+rows partition (PRODUCTION n DEV = empty by construction); the historical mutant
+sharpens -- at bd99fb5 refineToDisk -> NONE, at 93569f3 -> DEV-ONLY, at neither
+a green tick; zero src files, zero frozen files, witnesses only.
+
+Riding along (mechanical, same light run): the chord's stale hash record marked
+DEAD; the manifest's NOT_FROZEN ratifier line for surfaceRefinement names
+diagnose-the-exit.cjs too; diagnose-the-subdivision.cjs's headBlobOf baseline
+pinned to 01da8ed (it compares the committed file against ITSELF today -- a
+non-movement clause that cannot detect movement).

@@ -234,21 +234,22 @@ check('connectedSum.ts (incl. :132) · playgroundOperations.ts (and its strings)
 
 // ═════ [8] the door column flips ══════════════════════════════════════════════════
 console.log('\n----- [8] THE DOOR COLUMN: GESTURE ✓ where it read ⚠ CATALOGUE ONLY (clause 8) -----');
-check('★ THE COLUMN STANDS AND FLIPS: the TRACKED door-column witness (scripts/diagnose-the-door-column.cjs — THE COLUMN mandate gave the mechanism a home; it rides every clone) runs GREEN, and its own legs pin the flip this clause demands: connectedSum reads GESTURE ✓ ("the person acts") at HEAD and ⚠ CATALOGUE ONLY at bd99fb5 (the commit before this door), with surfaceRefinement\'s importer no longer "NOBODY in src/" but the STORE itself. The column is MANDATORY here: if it is absent or red, this leg FAILS LOUD — an optional guard is not a guard (the old gitignored-instrument absence branch is dead)',
+check('★ THE TRACKED COLUMN STANDS, AND SPEAKS THE APP-COLUMN REGISTER: scripts/diagnose-the-door-column.cjs runs GREEN on any clone (absence or redness = this leg fails loud — the old gitignored-instrument absence branch stays dead), and it reads THIS gate honestly: the door the gate hung lives in the playground shell, so refineToDisk reads ⚠ DEV-ONLY — the gate is the dev-register PROTOTYPE (THE APP COLUMN re-charter; the production wire is C.1\'s item zero) — while connectedSum reads ✅ PRODUCTION with RAW, NO REFINE on the row (the manuscript combine predates this gate and does not refine). The gate\'s own arrival stays measured inside the column (applyCombineToSelection: 2 src files at HEAD, 0 at bd99fb5)',
   (() => {
     const columnPath = path.join(repoRoot, 'scripts', 'diagnose-the-door-column.cjs');
     // execSync throws on a missing file or a non-zero exit — absence IS failure
     const run = execSync(`node "${columnPath}"`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
     const lines = run.split(/\r?\n/);
-    const headRow = lines.find((l) => l.includes('connectedSum') && l.includes('the person acts')) ?? '';
-    const oldRow = lines.find((l) => l.includes('@bd99fb5: connectedSum')) ?? '';
-    const importers = lines.find((l) => l.includes('refineToDisk importers in src/:')) ?? '';
+    const sumRow = lines.find((l) => l.includes('connectedSum (add a handle/crosscap)') && l.includes('PRODUCTION')) ?? '';
+    const refineRow = lines.find((l) => l.includes('refineToDisk (THE EXIT)') && l.includes('DEV-ONLY')) ?? '';
+    const arrival = lines.find((l) => l.includes('applyCombineToSelection:')) ?? '';
     note(`column verdict: ${run.includes('ALL PASS') ? 'ALL PASS' : 'NOT GREEN'}`);
-    note(`@HEAD: ${headRow.trim().slice(0, 104) || 'row not found'}`);
-    note(`${oldRow.trim().slice(0, 108) || '@bd99fb5 row not found'}`);
-    return run.includes('ALL PASS') && headRow.includes('the person acts') &&
-      oldRow.includes('CATALOGUE=✓') && oldRow.includes('GESTURE=—') &&
-      importers.includes('src/store/playgroundStore.ts');
+    note(`@HEAD: ${sumRow.trim().slice(0, 110) || 'connectedSum row not found'}`);
+    note(`@HEAD: ${refineRow.trim().slice(0, 110) || 'refineToDisk row not found'}`);
+    return run.includes('ALL PASS') &&
+      sumRow.includes('✅ PRODUCTION') && sumRow.includes('RAW, NO REFINE') &&
+      refineRow.includes('DEV-ONLY') && !refineRow.includes('✅') &&
+      arrival.includes('2 src file(s) at HEAD') && arrival.includes('0 at bd99fb5');
   })());
 
 // ═════ [9] the freeze reads ok ════════════════════════════════════════════════════

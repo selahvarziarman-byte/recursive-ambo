@@ -1,0 +1,86 @@
+PLATONIC ENGINE — subdivideFace: THE L2 CHORD (the person can add a crosscap)
+· SEALED HASH
+================================================================================
+⛔ THIS SEAL IS DEAD (2026-07-16) — RECORD PRESERVED; IT CHARTERS NOTHING
+================================================================================
+
+The coder STOPPED the chord at measurement: clause 3 was unsatisfiable — the
+quotient-cycle wall (connectedSum:129, in the numbering of that tree) stands
+behind the single-face wall, and a chord mints no vertex, so every sub-face of
+the <=2-corner-class zoo repeats a corner (the pigeonhole). The stop was
+adopted as the spine of THE RIM (seal e5e2e7fb...4dde, committed e304a6d),
+whose witness carries this seal's mechanism as its DEAD MUTANT (a). The death
+is already on-repo in scripts/diagnose-the-rim.cjs; this file remains only as
+the historical record. A circulated seal is never amended; the successor was
+a new shape with a new name. (Marked DEAD by THE APP COLUMN mandate,
+2026-07-18; the hash below is the dead seal's, kept for the record.)
+
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_CHORD.md` (gitignored):
+
+    c7918d3c38d5c050f13dc1468314d1bfbf9baeeae46bd15de195d19a26c8a589
+
+Sealed 2026-07-16 by the engineer seat. Baseline 8ae2866. Mothership-chartered
+(ARC 0.0 REFINE) · researcher-defined (the chord; refine is NOT a birth;
+ratified 2135). The coder builds BLIND.
+
+co-ratified: NEVER — the seal died at the coder's measurement stop (see header)
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_CHORD.md SHA256
+
+TWO DEAD HASHES -- do NOT build against either:
+
+  d8175c5b...87c1a -- the pre-ruling seal (it typed a freeze status and a count).
+  56d73ccf...45ab  -- WRONG: computed by the engineer THROUGH THE SANDBOX MOUNT.
+                      Arman's native certutil on the real bytes returned
+                      c7918d3c...a589. The engineer tested the obvious cause and
+                      REJECTED it: mount=56d73ccf, LF->CRLF=0de08331, native=
+                      c7918d3c -- it is NOT a line-ending difference. The mount
+                      and the real filesystem simply hold different bytes, and
+                      from inside the sandbox the engineer cannot see how. The
+                      Read tool (real-FS path) confirms the seal's CONTENT is
+                      correct; only the sandbox-computed HASH was a phantom.
+                      This is the APERTURE four-hash scar, exactly: a seal's hash
+                      is taken on the REAL bytes, never through an instrument
+                      already caught lying. The native value is authoritative.
+
+The pre-ruling seal's defect: That seal stated a
+freeze status and a count from memory. The mothership ruled (2026-07-16 1400)
+that the seal loses its freeze claims entirely: diagnose-engine-freeze.cjs
+already reports both, authoritatively, on every build, and a seal that restates
+them is a memory competing with a measurement. Three of the engineer's four
+false seal facts were exactly that field. It is deleted, not policed -- a seal
+with no prose field for a fact cannot have a fact typed into it. The old seal
+never left: no native confirmation, no mandate, the coder never saw it.
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+THE SHIPPED LIE: connectedSum.ts:98 tells the person "has a single face --
+Subdivide first", and subdivideFace does not exist. That is LAW 14 at level 2 --
+the exact defect ARC 0 spent five days fixing at level 3. connectedSum refuses
+every 1-face form: RP2, T2, Klein -- the whole polygon-word zoo, which is what
+the person actually begets. "Add a crosscap" is not a move a person can make.
+
+THE OP: subdivideFace splits a 2-cell with an INTERIOR 1-cell (a CHORD) between
+two non-adjacent corners. One face becomes two. No vertex is minted. It is a
+SIBLING of bisectEdges (the L3 instance), not a reuse.
+
+REFINE IS NOT A BIRTH: no genealogy node, no pentimento, consumes nothing. A
+resolution change on the SAME form. The LEDGER carries it (new cell's parent =
+the cell it refines, a surjection new->old). The STEMMA records nothing, because
+nothing was begotten. Type-claim = resolution, NOT lineage. Birth-ink would
+assert a falsehood; design ADR 0003 forbids exactly that.
+
+PINNED: 1 face -> 2; chi/w1/homology byte-identical across RP2, T2, Klein
+(subdivision invariance); connectedSum(RP2,RP2) refused at HEAD -> succeeds
+after refine, yielding KLEIN (chi=0, w1=1); zero genealogy nodes; ancestry
+intact; bisectEdges byte-identical. Two mutants carried: an adjacent-corner
+chord, and a refine that re-seeds (severing the ancestry -- the shortcut this
+seal exists to forbid).
