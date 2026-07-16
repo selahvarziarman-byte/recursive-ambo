@@ -336,6 +336,10 @@ const allowed = new Set([
   // parallel-rim conjunct (:132's own predicate) inside the NOT_FROZEN rim
   // module — no frozen file moves; ratified in diagnose-the-exit.cjs.
   'src/lib/surfaceRefinement.ts',
+  // THE GATE (2026-07-17, sealed d130debf…21d3): the person's combine — a
+  // store action (the assemble precedent) + its panel control; zero frozen
+  // files; ratified in diagnose-the-gate.cjs.
+  'src/store/playgroundStore.ts',
 ]);
 const moved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

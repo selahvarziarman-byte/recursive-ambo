@@ -44,8 +44,12 @@ export function PlaygroundOperationsPanel() {
   const applyOperationToSelection = usePlaygroundStore((state) => state.applyOperationToSelection);
   const applyCustomGlueToSelection = usePlaygroundStore((state) => state.applyCustomGlueToSelection);
   const applyAssembleToSelection = usePlaygroundStore((state) => state.applyAssembleToSelection);
+  const applyCombineToSelection = usePlaygroundStore((state) => state.applyCombineToSelection);
   const selectForm = usePlaygroundStore((state) => state.selectForm);
   const [assembleWithId, setAssembleWithId] = useState<string>('');
+  // THE GATE (2026-07-17) — the combine refusal is the ENGINE's own sentence,
+  // shown to the person verbatim (a wall, not a crash); cleared on retry.
+  const [combineRefusal, setCombineRefusal] = useState<string | null>(null);
   // C4 — the pairing editor's rows + the assemble edge choice (local UI state).
   const [pairingRows, setPairingRows] = useState<PairingRow[]>([]);
   const [assembleEdgeA, setAssembleEdgeA] = useState<string>('0');
@@ -82,6 +86,23 @@ export function PlaygroundOperationsPanel() {
   const handleAssemble = () => {
     const child = applyAssembleToSelection(assembleWithId);
     selectForm(child.id);
+  };
+
+  // THE GATE (2026-07-17, sealed d130debf…21d3) — the arity-2 COMBINE: the
+  // connected sum of the person's OWN two forms (A = current, B = the same
+  // picker as assemble). The wire (refine-to-disk on minimal word-forms)
+  // lives in the store action; this panel only names the gesture. The
+  // registry's own refusal sentence ("…Or cut / combine.") now names a door
+  // that exists.
+  const combineWith = assembleWith;
+  const handleCombine = () => {
+    try {
+      const child = applyCombineToSelection(assembleWithId);
+      setCombineRefusal(null);
+      selectForm(child.id);
+    } catch (error) {
+      setCombineRefusal(error instanceof Error ? error.message : String(error));
+    }
   };
 
   // C4 — the custom pairing editor (the selected face's edge vocabulary + the
@@ -246,6 +267,30 @@ export function PlaygroundOperationsPanel() {
               ) : null}
             </div>
           ) : null}
+          {/* THE GATE — combine: the connected sum of A with the picked B */}
+          <div className="mt-1 grid gap-1 border-t border-stone-900 pt-2">
+            <button
+              type="button"
+              disabled={!combineWith}
+              onClick={handleCombine}
+              className={`w-full rounded border px-3 py-2 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-teal-400 ${
+                combineWith
+                  ? 'border-stone-800 bg-stone-900 text-stone-300 hover:border-stone-600 hover:bg-stone-800'
+                  : 'cursor-not-allowed border-stone-900 bg-stone-950 text-stone-600'
+              }`}
+            >
+              Combine (connected sum)
+            </button>
+            {!combineWith ? (
+              <span className="px-1 text-[11px] leading-snug text-stone-600">
+                Pick a second form (B) above — combine sums it with the current form (add a
+                handle or crosscap).
+              </span>
+            ) : null}
+            {combineRefusal ? (
+              <span className="px-1 text-[11px] leading-snug text-amber-600">{combineRefusal}</span>
+            ) : null}
+          </div>
         </div>
         {PLAYGROUND_OPERATIONS.map((operation) => {
           const applicable = operation.canApply(context);

@@ -21,7 +21,9 @@ import {
   type PlaygroundSnapshotFile,
 } from '../playground/snapshot';
 import type { BoundaryPairing } from '../lib/surfaceOperations';
-import type { CellId, FaceId, Shape, ShapeId, VertexId } from '../types/geometry';
+import { connectedSum } from '../lib/connectedSum';
+import { refineToDisk } from '../lib/surfaceRefinement';
+import type { CellId, Face, FaceId, Shape, ShapeId, VertexId } from '../types/geometry';
 
 export interface PlaygroundProvenance {
   source: string | null;
@@ -53,6 +55,7 @@ interface PlaygroundState extends PlaygroundSnapshot {
   applyOperationToSelection: (operationId: string) => Shape;
   applyCustomGlueToSelection: (pairings: BoundaryPairing[]) => Shape;
   applyAssembleToSelection: (secondFormId: ShapeId, edgeChoice?: AssembleEdgeChoice) => Shape;
+  applyCombineToSelection: (secondFormId: ShapeId) => Shape;
   saveFormAsSnapshot: (formId: ShapeId) => PlaygroundSnapshotFile;
   loadSnapshot: (file: PlaygroundSnapshotFile, loadSource?: string) => Shape;
   removeForm: (shapeId: ShapeId) => void;
@@ -316,6 +319,65 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
       : executeAssemblePair(formA.shape, (formB as PlaygroundForm).shape);
 
     get().addForm(child, { source: ASSEMBLE_OPERATION_ID, origin: 'born' });
+
+    return child;
+  },
+  // THE GATE (2026-07-17, sealed d130debf…21d3) — the arity-2 COMBINE: the
+  // person sums TWO OF THEIR OWN forms. formA (current) + formB (picked by id)
+  // → THE WIRE → the committed `connectedSum` → the born form joins the store.
+  //
+  // THE WIRE LIVES HERE, IN THE GATE — never inside connectedSum (frozen; its
+  // contract is "sum two summable forms"; the gate's job is to hand it
+  // summable forms, exactly what the catalogue does implicitly by choosing
+  // grid tori). A MINIMAL 1-face word-form (the RP²/T²/Klein the person
+  // begets) cannot be summed as begotten — the single-face wall — so the gate
+  // refines it through the committed pair (`refineToDisk`, whose EXIT tests
+  // every wall it must clear) and hands the sum its minted disk. A MULTI-face
+  // form is already summable vocabulary — refining it here would mint a NEW
+  // wall in front of forms that sum at HEAD today (the grid tori), the exact
+  // defect class this arc kills.
+  //
+  // The child is born with `parentShapeId: null` (connectedSum's committed
+  // design); the committed MULTI-PARENT DAG WALK (2026-07-12) recovers BOTH
+  // parents from the store's candidates by site-provenance — the refined
+  // intermediates carry the parents' own ids VERBATIM (refine is not a
+  // birth), so the walk lands on the person's stored forms.
+  applyCombineToSelection: (secondFormId) => {
+    const state = get();
+    const formA = state.currentFormId ? state.forms[state.currentFormId] : null;
+    const formB = state.forms[secondFormId] ?? null;
+    if (!formA) {
+      throw new Error('playgroundStore: no form selected — combine needs a current form (A)');
+    }
+    if (!formB) {
+      throw new Error('playgroundStore: combine needs a second form (B) — pick one from the list');
+    }
+    if (formA.shape.id === formB.shape.id) {
+      throw new Error(
+        'playgroundStore: combine needs two DISTINCT forms — invoke or beget a second one (co-location ≠ identity)',
+      );
+    }
+    const candidates = Object.values(state.forms).map((entry) => entry.shape);
+    const prepare = (form: Shape): { shape: Shape; disk: Face | null } => {
+      if (form.faces.length !== 1) {
+        return { shape: form, disk: null }; // already summable vocabulary — pass through
+      }
+      const parent =
+        resolveLineage(form, (id) => state.forms[id]?.shape, candidates)[0] ?? null;
+      const refined = refineToDisk(form, parent);
+      return {
+        shape: refined.shape,
+        disk: refined.shape.faces.find((face) => face.id.endsWith(':disk')) ?? null,
+      };
+    };
+    const a = prepare(formA.shape);
+    const b = prepare(formB.shape);
+    const child = connectedSum(a.shape, b.shape, {
+      ...(a.disk ? { faceA: a.disk } : {}),
+      ...(b.disk ? { faceB: b.disk } : {}),
+    }).shape;
+
+    get().addForm(child, { source: 'combine', origin: 'born' });
 
     return child;
   },

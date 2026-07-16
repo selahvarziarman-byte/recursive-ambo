@@ -529,6 +529,10 @@ const inkAllowed = new Set([
   // parallel-rim conjunct (:132's own predicate) inside the NOT_FROZEN rim
   // module — no frozen file moves; ratified in diagnose-the-exit.cjs.
   'src/lib/surfaceRefinement.ts',
+  // THE GATE (2026-07-17, sealed d130debf…21d3): the person's combine — a
+  // store action (the assemble precedent) + its panel control; zero frozen
+  // files; ratified in diagnose-the-gate.cjs.
+  'src/store/playgroundStore.ts',
   // THE SMALL RUN (2026-07-14, sealed 2eb45568…9060): the custom-glue refusal
   // reorder (the wall before the door), the panel's gate-first seam, and the
   // NUL→escape substitution in faceIdentification (cooked values identical);

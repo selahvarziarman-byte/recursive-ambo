@@ -362,6 +362,10 @@ const HEAD_READ_ALLOWLIST = new Map([
   // files' non-movement (connectedSum / complexIdentification / multiform);
   // the build touched NOT_FROZEN surface only
   ['diagnose-the-exit.cjs', { catfile: 1 }],
+  // THE GATE (2026-07-17): headBlobOf — non-movement ×5 + the arrival branch
+  // (the door-column substrate-swap anchors are concatenation-built patch
+  // targets, not reads — the instrument reads on its own, outside scripts/)
+  ['diagnose-the-gate.cjs', { catfile: 1 }],
 ]);
 // the scanner runs over a {name → source} map so the planted-guard exhibit can
 // feed it a simulated tree without touching the disk

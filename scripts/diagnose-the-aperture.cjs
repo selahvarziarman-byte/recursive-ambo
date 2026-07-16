@@ -487,6 +487,10 @@ const ALLOWED_SRC_CHANGES = new Set([
   // parallel-rim conjunct (:132's own predicate) inside the NOT_FROZEN rim
   // module — no frozen file moves; ratified in diagnose-the-exit.cjs.
   'src/lib/surfaceRefinement.ts',
+  // THE GATE (2026-07-17, sealed d130debf…21d3): the person's combine — a
+  // store action (the assemble precedent) + its panel control; zero frozen
+  // files; ratified in diagnose-the-gate.cjs.
+  'src/store/playgroundStore.ts',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 44 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

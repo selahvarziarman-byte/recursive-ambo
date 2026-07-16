@@ -1,0 +1,110 @@
+PLATONIC ENGINE — THE GATE: build the door. The person combines two of their
+own forms. · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_GATE.md` (gitignored):
+
+    d130debf8f9bae6a7950a8be4729665a70ec4c695a40c066b90f09a734b421d3
+
+Measured NATIVELY by Arman (certutil); the sandbox independently agreed --
+consistent with the technical-officer's mechanism: this seal was WRITTEN ONCE
+and never edited, which is exactly when the mount holds the real bytes.
+
+Sealed 2026-07-17 by the engineer seat. Baseline bd99fb5.
+Mothership: THE WIRE WITHDRAWN (the engineer's refusal accepted under her own
+0600 mechanism); THE GATE scope RATIFIED -- "Take it." The coder builds BLIND.
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_GATE.md SHA256
+
+If that does not print d130debf...21d3, the mount served a stale copy; STOP, do
+not build, and the engineer re-hashes.
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+THE FINDING THAT OUTRANKS THE BUILD: FOUR SEALS CURED A WALL FOR A CALLER THAT
+DOES NOT EXIST.
+
+The person's COMPLETE menu (PLAYGROUND_OPERATIONS, committed bytes) is ten ops:
+glueTorus, glueCylinder, flipGlueKlein, flipGlue (-> RP2), flipGlueMobius,
+collapseSphere, cutFace, surfaceDual, sewBoundaryPreserving,
+sewBoundaryReversing. NO CONNECT-SUM. NO COMBINE. No 'combine' gate exists
+anywhere in src/. The only importers of connectedSum are genesisModel and
+standardBodies -- BOTH the CATALOGUE. In playgroundOperations it appears in
+COMMENTS ONLY.
+
+And standardBodies -- connectedSum's ONLY caller -- feeds it GRID tori at R>=4
+(immersionPosition('torus', (i+0.5)/R, (j+0.5)/R)) summed at explicit grid-cell
+ports. A grid cell is a quad: multi-face, distinct corners, no parallel edges.
+=> :98 never fires. :127 never fires. :132 never fires. connectedSum's only
+caller has never hit ONE of the three walls that the chord, the rim, the seam
+and the exit were all built to cure. Those walls fire only on MINIMAL WORD-FORMS
+-- the 1-face RP2/T2/Klein -- which is exactly what the PERSON begets. And the
+person cannot invoke connectedSum.
+
+ARC 0.0's charter said it in the plan's own words -- "the entire polygon-word
+zoo, which is what the person actually begets" -- and nobody checked that the
+person had the op. Four seals. Two coder stops. Two commits (e304a6d, bd99fb5).
+All correct. All real. All for a door nobody hung.
+
+GESTURE != CATALOGUE -- the distinction the campaign was missing. GESTURE = the
+person acts on THEIR OWN form. CATALOGUE = buildClassBody(cls) is handed a class
+NAME and constructs a representative. "Reachable from the app" was never the
+question: connectedSum IS reachable and the person still cannot use it.
+
+THE ENGINEER'S CORRECTION TO THE RATIFIED CHARTER, and it takes the blast radius
+to ZERO: `combine` must NOT go in PLAYGROUND_OPERATIONS. That array lives in
+playgroundOperations.ts (FROZEN ed0cc1a8...) and is UNARY BY TYPE --
+PlaygroundOperationContext carries `form: Shape` with no vocabulary for a second
+form (the same shape as the seam: assemble speaks merges: VertexMerge[] and has
+no word for an edge; a caller cannot name what its vocabulary lacks). But the
+precedent already exists and is exact: assemble is BINARY and is NOT in that
+array -- applyAssembleToSelection(secondFormId, edgeChoice?) reads formA from the
+current selection and formB by id, and the store already holds
+forms: Record<ShapeId, PlaygroundForm>. The person already names a second form
+TODAY. The multi-form vocabulary is BUILT; nobody wired combine to it.
+
+THE OP: applyCombineToSelection(secondFormId) in playgroundStore.ts (NOT in the
+manifest -- outside the freeze) + its control in PlaygroundOperationsPanel.tsx
+(NOT in the manifest). The gate's path: formA + formB -> refineToDisk BOTH ->
+connectedSum -> the born form. THE WIRE LIVES IN THE GATE, NOT INSIDE THE FROZEN
+OP: refining is the caller's job -- it is exactly what standardBodies does
+implicitly by choosing grid tori. connectedSum's contract is "sum two summable
+forms"; the gate's job is to hand it summable forms. That is LAW 12 read
+correctly and it is why the radius is zero.
+
+LAW 14, LIVE IN THE PRODUCT, DISCHARGED FOR FREE: playgroundOperations.ts:257,
+person-facing, committed: "...use identify / the sew-boundary-* ops, which act on
+the whole complex. (Or cut / combine.)" THE APP TELLS THE PERSON TO USE COMBINE.
+THERE IS NO COMBINE. That is a refusal naming a cure that does not exist -- the
+identical defect ARC 0 spent five days killing at level 3. Build the gate and the
+sentence becomes TRUE. The string is NOT edited: the lie dies by the cure
+arriving. (The manifest's own header names singleFaceGateReason as a function
+that once "ended up guarded by NOBODY, and nothing went red.")
+
+PINNED: the person's two BEGOTTEN, MINIMAL forms -> applyCombineToSelection ->
+two tori = the GENUS-2 (chi=-2, w1=0, closed orientable); two RP2s = the KLEIN
+(chi=0, cross-caps 2); RP2 + T2 = DYCK'S SURFACE (chi=-1, cross-caps 3). The
+payoff leg drives the STORE and may not require('../src/lib/...') on any line --
+141 of our witnesses drive src/lib, 28 drive the registry; this one drives the
+registry. Grid tori and buildClassBody are FORBIDDEN in the payoff (the catalogue
+proving the gesture is the original sin). The raw torus is shown REFUSED at :98
+verbatim before the gate's refine. Both parents in the lineage. Five frozen files
+byte-identical (connectedSum, playgroundOperations, surfaceRefinement,
+complexIdentification, multiform) -- if any must move the seal is VOID and the
+shape is wrong. The door column flips connectedSum from CATALOGUE ONLY to
+GESTURE.
+
+THE MUTANT IS THE CENTREPIECE: drive connectedSum DIRECTLY on refined forms --
+exactly as diagnose-the-exit.cjs does, exactly as all 141 do -- IT PASSES, while
+the person's route (before the gate) VISIBLY FAILS. That is the instrument which
+hid this for two days, made permanent and failing on purpose. A witness that
+drives the op cannot see a missing door BY CONSTRUCTION. That is the whole
+finding and it must never be re-learned.
