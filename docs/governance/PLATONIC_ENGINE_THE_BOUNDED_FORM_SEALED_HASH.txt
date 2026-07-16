@@ -1,0 +1,103 @@
+PLATONIC ENGINE — THE BOUNDED FORM: one clause closed the level-3 zoo, and
+nobody ever ruled it. · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_BOUNDED_FORM.md` (gitignored):
+
+    eb9bfcb4d38fec115d7949f760f9c0a5fd456c6b4acef20f17c1fa0a114d598c
+
+Measured NATIVELY by Arman (certutil); the sandbox independently agreed --
+consistent with the technical-officer's mechanism: this seal was WRITTEN ONCE
+and never edited, which is exactly when the mount holds the real bytes.
+
+Sealed by the engineer seat. BASELINE 7477729.
+ORDERING CITES SHAs; typed dates are decoration -- mothership-ruled after the
+technical officer caught that every "07-17/07-18" stamp in this window was
+fabricated by filename-inheritance (four offices, the engineer's included; the
+real clock read 2026-07-16 and none of us asked it). The seals need no rework:
+their SHAs were always the real evidence; only the dates' authority is revoked.
+
+A.1 UNGATED + REORDERED (mothership): rung 1's annulus IS the committed
+glueFace(square, one pair), cell-for-cell -- the person has it today -- so
+rung-1-first was a detour. A.1's payoff is a KIND: the person's FIRST
+3-MANIFOLD WITH BOUNDARY, and it lives entirely in items 2+3. `thicken` rides
+behind (its non-catalogue outputs are refused by both guards until this lands).
+
+ENGINE SURGERY ON FROZEN FILES => THE FULL PROTOCOL. The coder builds BLIND.
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_BOUNDED_FORM.md SHA256
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+THE CLAUSE -- one predicate, two meanings, never decided:
+
+  faceIdentification.ts:348-356   (FROZEN 2a09c9ec)
+    // (1) perfect matching -- every boundary face in exactly one pair
+    for (const face of seed.faces) {
+      const count = seen.get(face.id) ?? 0;
+      if (count !== 1) throw new Error(
+        `boundary face ${face.id} appears in ${count} pairs -- a perfect matching needs exactly 1`);
+    }
+
+`count !== 1` CONFLATES TWO DIFFERENT FACTS. count === 0 is an UNPAIRED face --
+a LEGITIMATE BOUNDARY. count > 1 is a face in several pairs -- GENUINELY
+MALFORMED. One line, written once, never ruled, and it closed the entire level-3
+zoo to bounded forms. (Mothership: "the charter you write is the first decision
+that clause has ever received.")
+
+AND THE PERSON-FACING GATE ALREADY KNOWS THE DIFFERENCE -- the vocabulary exists
+one layer up, in a NOT_FROZEN file:
+
+  apertureModel.ts:370-372  "face X is picked N times -- every face pairs exactly once."  <- the >1 case
+  apertureModel.ts:378-382  "face X is not in any pair -- the matching must be perfect."  <- the 0 case
+
+The UI separated them and then refused both. The engine never separated them at
+all. This build makes the engine speak what the door already says, and lets the
+door say YES to one of them.
+
+THE PROSPECTIVE PERSON-ROUTE -- NAMED BEFORE THE BUILD (the mothership's new
+clause, born of THE GATE shipping to a dev-only door). The answer is not "no
+door": THE DOOR EXISTS AND IT IS PRODUCTION -- the APERTURE GATE PANEL
+(AppShell -> ManuscriptView -> ApertureGatePanel / AperturePairRowView). The
+person already picks the face pairs and the identification map, by hand, today.
+THREE WALLS stand between that person and a bounded form:
+
+  1. apertureModel.ts:380        "the matching must be perfect"     NOT_FROZEN, person-facing
+  2. faceIdentification.ts:348   count !== 1 -> throw               FROZEN 2a09c9ec
+  3. level3SoundnessGate.ts:104  valence !== 'interior' -> failure  FROZEN 110976f3
+
+This build opens all three, and the seal pins the ROUTE, not the op. That is
+what THE GATE should have carried and did not.
+
+THE OP -- three edits, no new mechanism. ITEM 2 (engine): count === 0 => the
+face is BOUNDARY, carried as a VERDICT, never thrown; count > 1 still throws,
+message byte-identical. ITEM 3 (gate): valence:'boundary' reads BOUNDARY, not
+defect -- the READER already computes it; the VERDICT is wrong, not the
+instrument. A DOOR, not a theorem (LAW 14): say "this form has a boundary,"
+never "this form is broken." THE DOOR (apertureModel, NOT_FROZEN): stop refusing
+UNPAIRED faces; keep refusing OVER-PAIRED ones byte-identical.
+
+PINNED: the person pairs TWO of three opposite cube-face pairs at the aperture
+gate, leaves the third unpaired, submits -> A BODY WITH BOUNDARY draws, captioned
+bounded (the payoff leg drives the manuscript's aperture path, NOT
+faceIdentification directly -- 141 of our witnesses drive src/lib; this one
+drives the door or it witnesses nothing); T2 x I is the first 3-manifold with
+boundary and its boundary is TWO copies of T2 (the researcher's spec:
+d(X x I) = X x {0} u X x {1}); ALL 512 CUBE-DOOR FORMS BYTE-IDENTICAL TO HEAD --
+79 sound, 97 folded, 336 refused, every verdict and count (IF ONE OF THE 512
+MOVES, item 2 broke the closed world to open the bounded one and the seal is
+VOID); the malformed case still throws verbatim; the gate says boundary not
+broken; apertureModel's two refusals split; manifest re-seals x2 (count stays
+44); multiform.ts and level3Invariants.ts BYTE-IDENTICAL; the acquisition chain
+is ON-CALL (her matching clause is its next caller -- STOP and REPORT, a FINDING
+not a wiring bug); and NO "new vs the 79" claim by invariant-matching --
+CONSTRUCTION only (the researcher's bound): a bounded form is new because it was
+CONSTRUCTED bounded, never because its invariants differ.

@@ -192,7 +192,16 @@ const throws = (fn, needle) => {
     return String(error.message).includes(needle);
   }
 };
-check('tooth: an IMPERFECT matching refuses (two pairs leave faces unmatched)', throws(() => glueFaces(cube, T3_PATTERN.slice(0, 2)), 'perfect matching'));
+// THE BOUNDED FORM (2026-07-18, sealed eb9bfcb4…d598c): an IMPERFECT matching
+// is no longer a refusal — an unpaired face is a legitimate BOUNDARY, carried
+// as a verdict (the gate reads it downstream). The tooth now bites the TRUE
+// malformation the old predicate conflated with it: a face in TWO pairs.
+check('tooth: an UNPAIRED face ENACTS as a boundary (two pairs leave two faces free — 4 face classes come back, nothing thrown; THE BOUNDED FORM ruled the old imperfect-matching refusal apart), and a face in TWO pairs still refuses with the committed template',
+  (() => {
+    const bounded = glueFaces(cube, T3_PATTERN.slice(0, 2));
+    return bounded.counts.f === 4 &&
+      throws(() => glueFaces(cube, [...T3_PATTERN, T3_PATTERN[0]]), 'perfect matching');
+  })());
 check('tooth: a missing mode refuses', throws(() => glueFaces(cube, [{ ...T3_PATTERN[0], mode: undefined }, T3_PATTERN[1], T3_PATTERN[2]]), 'mode'));
 const brokenMap = { ...T3_PATTERN[2], map: (() => {
   const m = { ...T3_PATTERN[2].map };

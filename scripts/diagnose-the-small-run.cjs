@@ -367,8 +367,14 @@ check('★ CLAUSE 2(d) — THE LIE, EXHIBITED ON THE REAL TOOL: the NUL-bearing 
       return recNulled && fidelity && blind.status !== 0 && blind.stdout.trim() === '' &&
         tolerant.status === 0 && tolerantCount >= 1;
     }
-    note('post-commit: HEAD blob is the readable content; the reconstruction carries the NUL-bearing mechanism (its fidelity to the old blob was proven in the pre-commit window)');
-    return recNulled && sha256OfCrStripped(fiHead) === sha256OfCrStripped(fiWork);
+    // post-window: HEAD is READABLE (raw-NUL-free) — that is the exhibit's
+    // requirement. Equality with the WORKING bytes was an over-pin: any later
+    // sanctioned edit to faceIdentification (THE BOUNDED FORM, 2026-07-18,
+    // was the first — re-sealed in its own change) legitimately rides the
+    // tree pre-commit, and the reconstruction still carries the NUL-bearing
+    // mechanism either way (its fidelity was proven while the window was open).
+    note('post-window: HEAD blob is READABLE; the working file may carry a later sanctioned edit — the reconstruction still carries the NUL-bearing mechanism');
+    return recNulled && !fiHead.includes(NUL0);
   })());
 check('★ THE STANDING GUARD BITES: a raw NUL planted in-memory into the frozen faceIdentification.ts FAILS the freeze with nulled naming exactly that file — a FAIL, never a warning — and the clean tree reports nulled []',
   (() => {

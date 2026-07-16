@@ -45,7 +45,7 @@ src/lib/complexIdentification.ts        86660c686cda01243465d1835da2655a61d3db88
 src/lib/connectedSum.ts                 c9d1455e76f4fb62e68ad954c7101ec1f62068194c2c07f04f5e84c6a3185b57
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c
 src/lib/dualization.ts                  f450a61ca363e915b40374cd0707f6bc878680649d6057389bf49a90eb14d2a0
-src/lib/faceIdentification.ts           2a09c9ec0d4914c158ad42f8b7066f4f3bb2f94cf825717814a3107171a9691f
+src/lib/faceIdentification.ts           c2c67a1eae6ec10dcb2e226289608673d24c711b77bfdd750c0e4e2894030a56
 src/lib/genealogyDag.ts                 1ace11b7f2a1007e3191c6692ecf5c83c23e590776c41ed00e9ba96499e7839b
 src/lib/globalW1.ts                     3209127d540d80c7a0734c6989f745423fc1cb3c1fe3103bbfb73dc1da13e207
 src/lib/ids.ts                          3de67f4590eb2ce56a51a061bb8e05047b77b0e846fd45d11c9c171e9f22703e
@@ -54,7 +54,7 @@ src/lib/level3Homology.ts               7806c9cfb54f5ec7fa1e07350a68bfe4d7d5b5c7
 src/lib/level3Invariants.ts             dd76891c23d1c6395a7a5b63cc51269dd782ab4eecf6acfc3907822b273de84d
 src/lib/level3LinkExtractor.ts          f98139f74f194f3cb558de16e2357c815d0a827dad11d5f86324ce81dec859a1
 src/lib/level3Orientation.ts            2ac4b44395ea8ac438d540a52f87c94412c74cb77b8dcd4b6451511dfafe44ae
-src/lib/level3SoundnessGate.ts          110976f3fa29d197d75ea17462d0aedabe793299a2c7b66cc1f181f12007c2f2
+src/lib/level3SoundnessGate.ts          c4f29765a005ea0d5d97ca2bb5e788259acec6ddf01032e9558f1af46fbd645b
 src/lib/level3W1.ts                     469f3c0736f4e94e28f5a60bca2020a11b3340e38a9dc92d41b0e44f1dde8590
 src/lib/lineage.ts                      a2fd474f9e58869ba1015ed16d1d930d37dd2725d48492a2f08dc9dc93ccb0fa
 src/lib/materializeOperation.ts         3f984c1415ee219d08cbcd71e8c69d4bb2742b185faa419984ec98b059fcdee4

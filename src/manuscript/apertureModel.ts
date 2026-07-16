@@ -375,11 +375,13 @@ export function aperturePairingRefusal(seedShape: Shape, rows: AperturePairRow[]
     if (!row.faceA || !row.faceB) return `pair ${i + 1}: pick BOTH faces.`;
     if (row.faceA === row.faceB) return `pair ${i + 1}: a face cannot pair with itself.`;
   }
-  const matched = new Set(rows.flatMap((r) => [r.faceA as string, r.faceB as string]));
-  const unmatched = seed.faces.filter((f) => !matched.has(f.id));
-  if (unmatched.length > 0) {
-    return `face ${unmatched.map((f) => shortId(f.id)).join(', ')} is not in any pair — the matching must be perfect.`;
-  }
+  // THE BOUNDED FORM (2026-07-18, sealed eb9bfcb4…d598c): the UNPAIRED-face
+  // refusal ("…is not in any pair — the matching must be perfect.") is DELETED.
+  // An unpaired face is a legitimate BOUNDARY — the person may pair one or two
+  // of the three opposite pairs and hold a body with a boundary. The
+  // over-paired refusal above stays byte-identical: a face in several pairs
+  // was always genuinely malformed. The door now says what the engine's own
+  // gate reads — one predicate, two meanings, finally ruled apart.
   for (let i = 0; i < rows.length; i += 1) {
     if (!rows[i].candidateKey) return `pair ${i + 1}: pick the identification MAP (which vertex lands on which).`;
   }
@@ -542,29 +544,54 @@ export interface ApertureGeometry {
   n: number[];
   label: string;
   coneEdges: string | null; // the k≠4 classes at k×90°, human-readable — null on the uniform flat form
+  // THE BOUNDED FORM (2026-07-18): the honest boundary sentence, null on a
+  // closed form. A boundary edge class (link = an arc) has a k×90° < 360°
+  // dihedral BY BEING A BOUNDARY — it is never called a cone edge (the same
+  // exclusion the folded label applies to fold loci).
+  boundary: string | null;
 }
 
 export function geometryFromTower(tower: DomainModel['tower']): ApertureGeometry {
+  // THE BOUNDED FORM: boundary edge classes are excluded from the dihedral
+  // census exactly as fold loci are — k×90° names a CONE angle only on an
+  // interior class. On a closed form the boundary set is empty and every
+  // branch below is byte-equivalent to the previous door.
+  const boundaryReading = tower.gate.boundary ?? null;
+  const boundaryRoots = new Set(boundaryReading ? boundaryReading.edgeClasses : []);
+  const boundary = boundaryReading
+    ? `bounded — ∂ carries ${boundaryReading.faceClasses.length} face class(es); closed-form claims do not apply`
+    : null;
+  const interiorLinks = tower.gate.edgeLinks.filter((link) => !boundaryRoots.has(link.edgeClass));
   const n = tower.gate.edgeLinks.map((link) => link.memberEdgeIds.length);
-  const uniform = n.length > 0 && n.every((v) => v === n[0]);
-  if (uniform && n[0] === 4) {
-    return { kind: 'E3', n, label: `E³ — n=[${n.join(',')}] · 2π/4 = the cube's 90° dihedral`, coneEdges: null };
+  const interiorN = interiorLinks.map((link) => link.memberEdgeIds.length);
+  const uniform = interiorN.length > 0 && interiorN.every((v) => v === interiorN[0]);
+  if (uniform && interiorN[0] === 4) {
+    return {
+      kind: 'E3',
+      n,
+      label: `E³ — n=[${n.join(',')}] · 2π/4 = the cube's 90° dihedral${boundary ? ` · ${boundary}` : ''}`,
+      coneEdges: null,
+      boundary,
+    };
   }
   // every other sound form: a Euclidean cone-manifold — report the cone edges
-  // (each k≠4 class at k×90°) and claim nothing about a curved ambient
+  // (each INTERIOR k≠4 class at k×90°) and claim nothing about a curved ambient
   const coneCounts = new Map<number, number>();
-  for (const k of n) {
+  for (const k of interiorN) {
     if (k !== 4) coneCounts.set(k, (coneCounts.get(k) ?? 0) + 1);
   }
-  const coneEdges = [...coneCounts.entries()]
-    .sort((a, b) => a[0] - b[0])
-    .map(([k, count]) => `${count} × ${k * 90}°`)
-    .join(', ');
+  const coneEdges = coneCounts.size === 0
+    ? null
+    : [...coneCounts.entries()]
+        .sort((a, b) => a[0] - b[0])
+        .map(([k, count]) => `${count} × ${k * 90}°`)
+        .join(', ');
   return {
     kind: 'cone',
     n,
-    label: `Euclidean cone-manifold — n=[${n.join(',')}] · cone edges: ${coneEdges}`,
+    label: `Euclidean cone-manifold — n=[${n.join(',')}]${coneEdges ? ` · cone edges: ${coneEdges}` : ''}${boundary ? ` · ${boundary}` : ''}`,
     coneEdges,
+    boundary,
   };
 }
 

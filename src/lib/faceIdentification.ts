@@ -345,10 +345,17 @@ function assertWellFormed(seed: Level3SeedCell, pairings: FacePairing[]): void {
     seen.set(pairing.faceA, (seen.get(pairing.faceA) ?? 0) + 1);
     seen.set(pairing.faceB, (seen.get(pairing.faceB) ?? 0) + 1);
   }
-  // (1) perfect matching — every boundary face in exactly one pair
+  // (1) the matching — every PAIRED face at most once. THE BOUNDED FORM
+  // (2026-07-18, sealed eb9bfcb4…d598c): the old `count !== 1` held two
+  // different facts in one predicate, and nobody had ever ruled it.
+  //   count === 0 — an UNPAIRED face: a legitimate BOUNDARY, carried as a
+  //     verdict in the enacted complex (its face class stays free; the
+  //     level-3 gate reads the boundary downstream), never thrown;
+  //   count > 1  — a face in several pairs: genuinely MALFORMED, still
+  //     thrown, message byte-identical.
   for (const face of seed.faces) {
     const count = seen.get(face.id) ?? 0;
-    if (count !== 1) {
+    if (count > 1) {
       throw new Error(
         `faceIdentification: boundary face ${face.id} appears in ${count} pairs — a perfect matching needs exactly 1`,
       );

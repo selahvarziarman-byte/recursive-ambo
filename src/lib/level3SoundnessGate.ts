@@ -63,8 +63,19 @@ export type Level3Failure =
       chi: number;
     };
 
+// THE BOUNDED FORM (2026-07-18, sealed eb9bfcb4…d598c): the boundary READING —
+// the free face classes and the boundary strata they induce. A DOOR, not a
+// theorem (LAW 14): "this form has a boundary," never "this form is broken."
+// The reader always computed these valences; only the verdict was wrong.
+export interface Level3BoundaryReading {
+  faceClasses: string[]; // singleton face classes — the boundary 2-cells
+  edgeClasses: string[]; // edge classes whose link valence reads 'boundary'
+  vertexClasses: string[]; // vertex classes on free faces (disk links, χ = 1)
+}
+
 export interface Level3SoundnessReport {
   sound: boolean;
+  boundary: Level3BoundaryReading | null; // null on a closed complex
   failures: Level3Failure[];
   edgeLinks: (EdgeLinkReading & { decomposition: LinkDecomposition })[];
   vertexLinks: VertexLinkReading[];
@@ -72,6 +83,32 @@ export interface Level3SoundnessReport {
 
 export function classifyLevel3Soundness(complex: Level3Complex): Level3SoundnessReport {
   const failures: Level3Failure[] = [];
+
+  // THE BOUNDED FORM (2026-07-18): the free (singleton) face classes — the
+  // boundary 2-cells. An unpaired face is a BOUNDARY, not a defect: the two
+  // clauses below except exactly the strata a boundary induces (edge links of
+  // valence 'boundary'; connected disk vertex links, χ = 1, on free faces)
+  // and the report carries the reading as a verdict. On a closed complex the
+  // sets are empty and every clause below is byte-equivalent to the old gate.
+  const faceClassCount = new Map<string, number>();
+  const faceClassRep = new Map<string, { id: string; cycle: string[] }>();
+  for (const face of complex.originalFaces) {
+    const root = complex.faceClassOf(face.id);
+    faceClassCount.set(root, (faceClassCount.get(root) ?? 0) + 1);
+    if (!faceClassRep.has(root)) faceClassRep.set(root, face);
+  }
+  const boundaryFaceClasses = [...faceClassCount.entries()]
+    .filter(([, count]) => count === 1)
+    .map(([root]) => root)
+    .sort((a, b) => a.localeCompare(b));
+  const boundaryVertexClasses = new Set<string>();
+  for (const root of boundaryFaceClasses) {
+    const rep = faceClassRep.get(root);
+    if (rep) {
+      for (const v of rep.cycle) boundaryVertexClasses.add(complex.vertexClassOf(v));
+    }
+  }
+  const boundaryEdgeClasses: string[] = [];
 
   // THE FOLDED EDGE (ADR 0022) — read FIRST (the refusal-order law: the
   // non-freeness verdict precedes the link readings; it is what makes the
@@ -101,7 +138,11 @@ export function classifyLevel3Soundness(complex: Level3Complex): Level3Soundness
 
   const edgeLinks = extractEdgeLinks(complex).map((reading) => {
     const decomposition = decomposeLink(reading.adjacency);
-    if (decomposition.valence !== 'interior') {
+    if (decomposition.valence === 'boundary' && boundaryFaceClasses.length > 0) {
+      // a boundary edge link (an arc, one stratum) on a complex that HAS free
+      // faces — the boundary reading, never a failure
+      boundaryEdgeClasses.push(reading.edgeClass);
+    } else if (decomposition.valence !== 'interior') {
       failures.push({
         kind: 'edge-link',
         clause: 'a',
@@ -116,6 +157,14 @@ export function classifyLevel3Soundness(complex: Level3Complex): Level3Soundness
 
   const vertexLinks = extractVertexLinks(complex);
   for (const reading of vertexLinks) {
+    // THE BOUNDED FORM: a vertex ON A FREE FACE with a connected χ = 1 link
+    // is a boundary vertex (its link is a disk — a connected surface WITH
+    // boundary at χ = 1 is a disk). A χ = 1 link on an INTERIOR vertex stays
+    // a failure exactly as before (an RP² link also reads χ = 1, connected —
+    // free-face incidence is what separates the disk from the cone point).
+    if (boundaryVertexClasses.has(reading.vertexClass) && reading.components === 1 && reading.chi === 1) {
+      continue;
+    }
     if (reading.components !== 1) {
       failures.push({
         kind: 'vertex-link',
@@ -135,5 +184,13 @@ export function classifyLevel3Soundness(complex: Level3Complex): Level3Soundness
     }
   }
 
-  return { sound: failures.length === 0, failures, edgeLinks, vertexLinks };
+  const boundary: Level3BoundaryReading | null = boundaryFaceClasses.length > 0
+    ? {
+        faceClasses: boundaryFaceClasses,
+        edgeClasses: [...boundaryEdgeClasses].sort((a, b) => a.localeCompare(b)),
+        vertexClasses: [...boundaryVertexClasses].sort((a, b) => a.localeCompare(b)),
+      }
+    : null;
+
+  return { sound: failures.length === 0, boundary, failures, edgeLinks, vertexLinks };
 }

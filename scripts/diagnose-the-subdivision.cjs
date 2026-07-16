@@ -280,10 +280,14 @@ console.log('\n----- [f] ★ CLAUSE 4 — non-movement: the gate/tower/faceIdent
 // failure) moves the gate and its reader pre-commit — re-sealed in the
 // manifest in the same change; ratified in diagnose-the-census.cjs. Carved
 // here; inert post-commit. Everything else must still not move.
-check('the READ PATH did not move (census pair carved, re-sealed): faceIdentification, level3{Orientation,W1,Homology,LinkExtractor} are CR-insensitively BYTE-IDENTICAL to the 01da8ed BASELINE — the tree this arc built against, pinned so the clause can detect movement forever (the old HEAD: spelling compared the committed file against itself post-commit; THE APP COLUMN riding fix, 2026-07-18) — the subdivision is a new module BESIDE the engine, never inside it',
-  ['src/lib/faceIdentification.ts',
-   'src/lib/level3Orientation.ts', 'src/lib/level3W1.ts', 'src/lib/level3Homology.ts', 'src/lib/level3LinkExtractor.ts']
-    .every((file) => sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) === sha256OfCrStripped(headBlobOf(file))));
+check('the READ PATH did not move (census pair carved, re-sealed): level3{Orientation,W1,Homology,LinkExtractor} are CR-insensitively BYTE-IDENTICAL to the 01da8ed BASELINE — the tree this arc built against, pinned so the clause can detect movement forever (the old HEAD: spelling compared the committed file against itself post-commit; THE APP COLUMN riding fix, 2026-07-18) — and faceIdentification carries EXACTLY the one sanctioned movement since that baseline: THE BOUNDED FORM (2026-07-18, sealed eb9bfcb4…d598c, manifest re-sealed in the same change) split the matching predicate — `count > 1` throws the byte-identical message, `count !== 1` is gone; the manifest hash is its guard now — the subdivision is a new module BESIDE the engine, never inside it',
+  ['src/lib/level3Orientation.ts', 'src/lib/level3W1.ts', 'src/lib/level3Homology.ts', 'src/lib/level3LinkExtractor.ts']
+    .every((file) => sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) === sha256OfCrStripped(headBlobOf(file))) &&
+  (() => {
+    const work = fs.readFileSync(path.join(repoRoot, 'src/lib/faceIdentification.ts'), 'utf8');
+    return work.includes('if (count > 1) {') && !work.includes('if (count !== 1) {') &&
+      work.includes('appears in ${count} pairs — a perfect matching needs exactly 1');
+  })());
 // the 512 un-subdivided readings vs the BASELINE-COMPILED tower reader — the
 // modules the 01da8ed baseline carries, compiled in-memory (their imports
 // resolve to working files proven byte-identical above)

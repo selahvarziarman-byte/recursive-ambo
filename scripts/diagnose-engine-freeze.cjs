@@ -370,6 +370,10 @@ const HEAD_READ_ALLOWLIST = new Map([
   // candidates, blobs are verdicts) so it can point at HEAD and at bd99fb5
   // (the historical mutant: the world before the door, where it goes red)
   ['diagnose-the-door-column.cjs', { catfile: 1, lstree: 1 }],
+  // THE BOUNDED FORM (2026-07-18): headBlobOf — the HEAD-compiled engine
+  // stacks (the 512 regression + the malformed-throw differential), the
+  // ⛔-files' non-movement, and the manifest re-seal differential
+  ['diagnose-the-bounded-form.cjs', { catfile: 1 }],
 ]);
 // the scanner runs over a {name → source} map so the planted-guard exhibit can
 // feed it a simulated tree without touching the disk

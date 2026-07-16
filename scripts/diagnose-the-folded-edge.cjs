@@ -248,18 +248,28 @@ const headGateModule = compileHead('src/lib/level3SoundnessGate.ts', 'level3Soun
 const headTowerModule = compileHead('src/lib/level3Invariants.ts', 'level3Invariants.__head__.ts');
 let towerMismatches = 0;
 let gateMismatches = 0;
+// THE BOUNDED FORM (2026-07-18, sealed eb9bfcb4…d598c): the gate report gained
+// a `boundary` reading — NULL on every closed complex, which all 415 perfect
+// matchings are. The compare asserts it IS null on each (the new door is
+// inert on the closed world) and projects the key out before the byte-compare
+// (the HEAD-compiled gate predates the field). Every OTHER byte must agree.
+let boundaryNonNull = 0;
+const stripBoundary = ({ boundary, ...rest }) => rest;
 for (const s of soundSide) {
   const complex = complexOf(s.rows);
   const workGate = classifyLevel3Soundness(complex);
+  if (workGate.boundary !== null) boundaryNonNull += 1;
   const headGate = headGateModule.classifyLevel3Soundness(complex);
-  if (JSON.stringify(workGate) !== JSON.stringify(headGate)) gateMismatches += 1;
+  // strip BOTH sides: pre-commit HEAD has no `boundary` key (no-op);
+  // post-commit it carries the key at null — the rest must byte-agree
+  if (JSON.stringify(stripBoundary(workGate)) !== JSON.stringify(stripBoundary(headGate))) gateMismatches += 1;
   const workTower = s.verdict.domain.tower;
   const headTower = headTowerModule.level3InvariantTower(complex);
   if (JSON.stringify(workTower) !== JSON.stringify(headTower)) towerMismatches += 1;
 }
-check('★ CLAUSE 4 — NON-MOVEMENT, the highest bar: for ALL 415 non-folded pairings the gate report and the FULL tower (χ · w₁ · H₁ · matrices · gluing bits) are JSON-identical between the working engine and the HEAD-compiled engine — the 97 are the ONLY behaviour that moves',
-  gateMismatches === 0 && towerMismatches === 0 && soundSide.length === 415);
-note(`415 pairings × (gate + tower) compared vs HEAD-compiled: ${gateMismatches} gate mismatches · ${towerMismatches} tower mismatches`);
+check('★ CLAUSE 4 — NON-MOVEMENT, the highest bar: for ALL 415 non-folded pairings the gate report (modulo the BOUNDED-FORM `boundary` key — asserted NULL on every closed pairing, then projected before the compare) and the FULL tower (χ · w₁ · H₁ · matrices · gluing bits) are JSON-identical between the working engine and the HEAD-compiled engine — the 97 are the ONLY behaviour that moves',
+  gateMismatches === 0 && towerMismatches === 0 && boundaryNonNull === 0 && soundSide.length === 415);
+note(`415 pairings × (gate + tower) compared vs HEAD-compiled: ${gateMismatches} gate mismatches · ${towerMismatches} tower mismatches · boundary non-null: ${boundaryNonNull}`);
 // the CANONICAL fixtures (the same rows every prior witness pinned — a
 // different reflected space has its own honest counts; the seal's numbers
 // belong to THESE decks)
