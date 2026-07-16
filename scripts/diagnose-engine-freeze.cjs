@@ -363,9 +363,13 @@ const HEAD_READ_ALLOWLIST = new Map([
   // the build touched NOT_FROZEN surface only
   ['diagnose-the-exit.cjs', { catfile: 1 }],
   // THE GATE (2026-07-17): headBlobOf — non-movement ×5 + the arrival branch
-  // (the door-column substrate-swap anchors are concatenation-built patch
-  // targets, not reads — the instrument reads on its own, outside scripts/)
   ['diagnose-the-gate.cjs', { catfile: 1 }],
+  // THE COLUMN (2026-07-17): the door-column mechanism, ported to a TRACKED
+  // witness — it reads COMMITTED BYTES BY DESIGN (one rev-parameterized
+  // cat-file blob helper + one rev-anchored ls-tree listing; names are
+  // candidates, blobs are verdicts) so it can point at HEAD and at bd99fb5
+  // (the historical mutant: the world before the door, where it goes red)
+  ['diagnose-the-door-column.cjs', { catfile: 1, lstree: 1 }],
 ]);
 // the scanner runs over a {name → source} map so the planted-guard exhibit can
 // feed it a simulated tree without touching the disk

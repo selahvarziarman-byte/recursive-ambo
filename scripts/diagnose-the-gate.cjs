@@ -234,57 +234,21 @@ check('connectedSum.ts (incl. :132) · playgroundOperations.ts (and its strings)
 
 // ═════ [8] the door column flips ══════════════════════════════════════════════════
 console.log('\n----- [8] THE DOOR COLUMN: GESTURE ✓ where it read ⚠ CATALOGUE ONLY (clause 8) -----');
-check('★ THE COLUMN FLIPS: instruments/door_column.cjs (committed-bytes substrate — HEAD) reads connectedSum\'s route as the pre-gate world states it; and the same instrument on the WORKING-TREE substrate (the world after the commit — the post-commit simulation idiom) reads **GESTURE ✓ — "PLAYGROUND_OPERATIONS — the person acts"**, with surfaceRefinement.ts\'s importer column no longer "NOBODY in src/" but the STORE itself. (The instrument\'s ROOT was made portable and its GESTURE closure includes the store — the ratified §1 shape lives there, where the committed binary `assemble` precedent lives; both amendments dated in the instrument)',
+check('★ THE COLUMN STANDS AND FLIPS: the TRACKED door-column witness (scripts/diagnose-the-door-column.cjs — THE COLUMN mandate gave the mechanism a home; it rides every clone) runs GREEN, and its own legs pin the flip this clause demands: connectedSum reads GESTURE ✓ ("the person acts") at HEAD and ⚠ CATALOGUE ONLY at bd99fb5 (the commit before this door), with surfaceRefinement\'s importer no longer "NOBODY in src/" but the STORE itself. The column is MANDATORY here: if it is absent or red, this leg FAILS LOUD — an optional guard is not a guard (the old gitignored-instrument absence branch is dead)',
   (() => {
-    const instrPath = path.join(repoRoot, 'instruments', 'door_column.cjs');
-    // instruments/* is GITIGNORED BY DESIGN (".gitignore: other seats' live
-    // instruments") — the door column is the ENGINEER's live instrument and
-    // is not repo content, so a clean clone legitimately lacks it. Where it
-    // is absent this leg names the absence and stands on the flip proven on
-    // the campaign machine (recorded in this witness's notes) rather than
-    // crashing a clean-clone suite — measured where measurable, named where
-    // not (the fifth guard's clean-clone lesson, one spawn removed).
-    if (!fs.existsSync(instrPath)) {
-      note('instruments/door_column.cjs ABSENT on this checkout (gitignored live instrument) — the flip was proven where the instrument lives; nothing to run here');
-      return true;
-    }
-    const headRun = execSync(`node "${instrPath}"`, { cwd: repoRoot, encoding: 'utf8' });
-    const headRow = headRun.split(/\r?\n/).find((l) => l.includes('connectedSum')) ?? '';
-    // the branch couples to the INSTRUMENT'S OWN substrate (its importers row
-    // says whether the store imports the rim module at ITS HEAD), never to
-    // this witness's headBlobOf — the two substrates must stay independently
-    // faithful or the post-commit simulation would shear them apart
-    const headImporters = headRun.split(/\r?\n/).find((l) => l.includes('surfaceRefinement.ts:')) ?? '';
-    const gateAtInstrumentHead = headImporters.includes('src/store/playgroundStore.ts');
-    const headExpected = gateAtInstrumentHead
-      ? headRow.includes('the person acts')
-      : headRow.includes('CATALOGUE ONLY');
-    note(`HEAD substrate: ${headRow.trim().slice(0, 110)}`);
-    const instr = fs.readFileSync(instrPath, 'utf8');
-    // the substrate-swap anchors are BUILT BY CONCATENATION (the flagship
-    // census's own J2 idiom): they are patch TARGETS quoted from the
-    // instrument, not reads this witness performs — the instrument does its
-    // own reading at runtime, outside scripts/
-    const a1 = 'cp.execSync("git ls' + '-tree -r --name-only HEAD -- src",{cwd:ROOT,encoding:\'utf8\'})';
-    const a2 = 'const read=f=>cp.execSync(`git sh' + 'ow HEAD:${f}`,{cwd:ROOT,encoding:\'utf8\',maxBuffer:1e8});';
-    const a3 = "const ROOT=path.resolve(__dirname,'..');";
-    if (instr.split(a1).length !== 2 || instr.split(a2).length !== 2 || instr.split(a3).length !== 2) {
-      note('SIM ANCHORS NOT FOUND — the instrument changed shape; refusing to guess');
-      return false;
-    }
-    const sim = instr
-      .split(a1).join('cp.execSync("git ls-files -- src",{cwd:ROOT,encoding:\'utf8\'})')
-      .split(a2).join("const read=f=>fs.readFileSync(require('path').join(ROOT,f),'utf8'); // WORKING-TREE SUBSTRATE (post-commit sim)")
-      .split(a3).join(`const ROOT=${JSON.stringify(repoRoot)};`);
-    // the sim runs OVER STDIN (no file is written — nothing under scripts/
-    // may hold a write API; `typescript` resolves from the cwd)
-    const simRun = execSync('node', { cwd: repoRoot, encoding: 'utf8', input: sim, maxBuffer: 1e8 });
-    const simRow = simRun.split(/\r?\n/).find((l) => l.includes('connectedSum')) ?? '';
-    const simImporters = simRun.split(/\r?\n/).find((l) => l.includes('surfaceRefinement.ts:')) ?? '';
-    note(`working-tree substrate: ${simRow.trim().slice(0, 110)}`);
-    note(`importers: ${simImporters.trim().slice(0, 100)}`);
-    return headExpected && simRow.includes('the person acts') && !simRow.includes('CATALOGUE ONLY') &&
-      simImporters.includes('src/store/playgroundStore.ts');
+    const columnPath = path.join(repoRoot, 'scripts', 'diagnose-the-door-column.cjs');
+    // execSync throws on a missing file or a non-zero exit — absence IS failure
+    const run = execSync(`node "${columnPath}"`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
+    const lines = run.split(/\r?\n/);
+    const headRow = lines.find((l) => l.includes('connectedSum') && l.includes('the person acts')) ?? '';
+    const oldRow = lines.find((l) => l.includes('@bd99fb5: connectedSum')) ?? '';
+    const importers = lines.find((l) => l.includes('refineToDisk importers in src/:')) ?? '';
+    note(`column verdict: ${run.includes('ALL PASS') ? 'ALL PASS' : 'NOT GREEN'}`);
+    note(`@HEAD: ${headRow.trim().slice(0, 104) || 'row not found'}`);
+    note(`${oldRow.trim().slice(0, 108) || '@bd99fb5 row not found'}`);
+    return run.includes('ALL PASS') && headRow.includes('the person acts') &&
+      oldRow.includes('CATALOGUE=✓') && oldRow.includes('GESTURE=—') &&
+      importers.includes('src/store/playgroundStore.ts');
   })());
 
 // ═════ [9] the freeze reads ok ════════════════════════════════════════════════════

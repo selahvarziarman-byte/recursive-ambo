@@ -1,0 +1,87 @@
+PLATONIC ENGINE — THE COLUMN: the mechanism gets a home. A guard that cannot be
+run is not a guard. · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_COLUMN.md` (gitignored):
+
+    94f1a8c93e8decaab279528df757501f3fd244cc8d24f8087fff3d6abf6bdf4a
+
+Measured NATIVELY by Arman (certutil); the sandbox independently agreed --
+consistent with the technical-officer's mechanism: this seal was WRITTEN ONCE
+and never edited, which is exactly when the mount holds the real bytes.
+
+Sealed 2026-07-17 by the engineer seat. Baseline cb507c4. A LIGHT run.
+Completes the mothership's 0500 order. The coder builds BLIND.
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_COLUMN.md SHA256
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+THE ENGINEER'S ERROR: I created instruments/ as a gitignored home for THROWAWAY
+PROBES (ba108d0 -- `instruments/*` + `!README.md`), then put the campaign's ONLY
+person-aimed instrument in it. A category error: the door column is not a probe,
+it is the mechanism. It found what 145 witnesses structurally could not -- and it
+currently exists on ONE disk, in a session that ends.
+
+The mothership's 0500 order was explicit: "THE DOOR COLUMN ... it runs at every
+arc boundary ... It is not my promise. It is a number in a file, and it
+contradicts me without my permission." A number in a file that nobody else has
+contradicts nobody.
+
+THREE WAYS IT IS NOT A MECHANISM TODAY:
+  1. Gitignored => no other seat has it; it dies with the session.
+  2. diagnose-the-gate.cjs:248 NOTES its absence and PASSES -- "ABSENT on this
+     checkout (gitignored live instrument) ... nothing to run here." On every
+     clean clone, clause 8 reports GREEN BECAUSE IT CANNOT LOOK. That is the
+     view-pin's disease (a check that stops checking while still reporting
+     green), and the engineer caused this one.
+  3. The engineer cannot run it: the mount serves it TORN (node --check ->
+     "Unexpected end of input"; the Read tool shows it intact). ONE DEGREE PAST
+     THE TO's 1200 RULING: his own SOUND detector, run from the sandbox, reports
+     TORN on a file that is fine -- it checks the MOUNT's bytes. Native is the
+     measurement, including for the instrument that measures.
+
+THE OP: instruments/door_column.cjs -> scripts/diagnose-the-door-column.cjs.
+TRACKED. In the suite. Run NATIVELY at every arc boundary. Its logic exists on
+disk -- port it, do not re-invent it. It reads COMMITTED BYTES (git show HEAD:),
+never the working tree -- which is why it survives the mount. Its canaries stay
+FATAL: if a file it KNOWS is live reads as unreachable, it prints nothing but the
+failure. An instrument that cannot report itself broken is a rumour with a shell
+prompt.
+
+THE QUESTION IT ASKS -- for every engine op: GESTURE / CATALOGUE / NONE.
+GESTURE = reachable from the person's own store actions (they act on THEIR OWN
+form). CATALOGUE = reachable only from standardBodies/genesisModel (the product
+is handed a CLASS NAME and builds a representative). NONE = neither. That
+distinction is the campaign's finding: "reachable from the app" was never the
+question -- connectedSum WAS reachable and the person still could not use it.
+
+PINNED: scripts/diagnose-the-door-column.cjs tracked and NOT gitignored (the
+entire point of the build); the column at cb507c4 reads connectedSum -> GESTURE,
+patchLift -> NONE, closeEdgeIntoCircle -> NONE, sewBoundaryCircles/cutCell/
+assemble/surfaceDual -> GESTURE; the gate's absence branch REMOVED (an optional
+guard is not a guard); zero frozen files.
+
+THE HISTORICAL MUTANT, AND THE CONTROL IS FREE: point the same column at bd99fb5
+(HEAD~1 -- the commit BEFORE the door). connectedSum reads CATALOGUE ONLY and the
+leg VISIBLY FAILS. At cb507c4 it reads GESTURE and passes. (Measured:
+applyCombineToSelection -- 2 at HEAD, 0 at HEAD~1.) The instrument proves itself
+against the world before the door existed. A column that cannot go red is a
+decoration.
+
+patchLift -> NONE and closeEdgeIntoCircle -> NONE are CORRECT and must PRINT, not
+fail. They are the researcher's "ALIVE, RATIFIED, UNREACHED" population -- doors
+we never hung, not rot. patchLift especially: genealogyDag (APP) carries
+`patch-lift` in GLUE_KINDS citing "Route-B patch-lift RATIFIED" and no app file
+imports the constructor. THE LEDGER KNOWS A BIRTH THE PERSON CANNOT PERFORM. The
+column's job is to say so at every arc boundary until someone hangs the door --
+the same way it would have said it about connectedSum for four seals, had it
+existed.
