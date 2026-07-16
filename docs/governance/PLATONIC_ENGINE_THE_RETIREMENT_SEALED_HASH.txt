@@ -1,0 +1,98 @@
+PLATONIC ENGINE — THE RETIREMENT: 62 witnesses of a cancelled programme stop
+taxing every build. · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_RETIREMENT.md` (gitignored):
+
+    e8a9c240aff9bd008691c466c94b782de3b7badd44010f22690b20c8bb5d589a
+
+Measured NATIVELY by Arman (certutil), on the real bytes. The seal was WRITTEN
+ONCE and never edited (the THICKEN lesson, applied); no sandbox digest was ever
+printed beside it — the native measurement is the only hash that has ever
+existed for this file.
+
+Sealed by the engineer seat. BASELINE 1901700.
+THE SOVEREIGN'S GATE: "we will not build one iota of code unless this is
+addressed and dealt with effectively." thicken HOLDS (seal 039feb1b..., parked
+intact) until this lands. The coder builds BLIND.
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_RETIREMENT.md SHA256
+
+If that does not print e8a9c240...589a, STOP -- do not build.
+
+--------------------------------------------------------------------------------
+WHAT IT PINS
+--------------------------------------------------------------------------------
+
+THE TAX (Arman's catch, measured): 153 witnesses / 66,216 lines; the dead
+programme is 62 files -- ~40% of the count -- run TWICE per build (main +
+worktree), plus the coder's attention mid-surgery reverse-engineering a
+cancelled programme's output shapes. The programme is dead three ways, none of
+them reachability: its own §18 kill-criterion fired; the Sovereign cancelled it
+("they could not recover the structural/topological relations"); the researcher
+ruled it dead by import.
+
+THE MOTHERSHIP'S STOP, honored in structure: "field" NEVER appears as a
+selector token (it is the live terminus's name -- a "field"-shaped selector
+deletes ADR 0018's own witness, diagnose-rich-field-l3b, and patchLift's only
+texture finding, diagnose-field-for-shape). The list is PRINTED, file by file,
+with per-file evidence, before one rm. A deletion list without an executable
+selector is a rumor that removes files.
+
+THE SELECTOR (v2, component-based; the coder RE-RUNS it and must reproduce the
+list byte-identically; any diff = STOP; embedded verbatim in the mandate):
+  1. WITNESS_ONLY src = src files reachable from NO app closure
+     (PRODUCTION = closure(AppShell); DEV = closure(main) - PRODUCTION).
+  2. THE DEAD PROGRAMME = import-connected COMPONENTS of witness-only src,
+     seeded ONLY by the mothership's authorized vocabulary: fano · octonion ·
+     medial · moufang · mixed-loop · harmonic · fieldAtlas ·
+     field-source-profile-aware. (structuredSourceState / fieldCue /
+     generatedSite / sourceSignature join BY IMPORT EDGE to the fano core,
+     never by name.)
+  3. PROTECTED (any ref => KEEP): surfaceRefinement · patchLift ·
+     closeEdgeIntoCircle (alive-unreached) · fieldSampler (her UNDECIDED).
+  4. RETIRE <=> no PROTECTED ref · no witness-only ref OUTSIDE dead components
+     (un-adjudicated => KEEP, reported -- trisonizedMidwifeReadingV0 and
+     surfaceCatalogue stayed exactly this way) · >=1 dead-component ref · and
+     EVERY live ref covered by >=3 KEPT witnesses (the COVERAGE VETO -- never
+     delete the last eyes on a live file).
+  5. RETIRE-N3 (by b132b02 evidence, mothership-ordered): the three orphans of
+     the corpse-ectomy.
+  6. CANARIES (selector prints NOTHING if any fails): rich-field-l3b ·
+     field-for-shape · director-field · director-field-loop-reversal ·
+     field-sampler · site-witness-catalogue-v0 ·
+     general-site-packet-presenter-v0.
+
+v1 OF THE SELECTOR WAS KILLED BY ITS OWN AUTHOR before it touched a file:
+line-based require-detection is unsound (a multi-line require reads as none),
+and "has a live ref" is meaningless when nearly every witness mentions
+types/geometry.ts. Three suspicious kill-rows were READ, not trusted:
+w1-legitimacy-walk and w2b-field-certification are the DEAD W-campaign's
+candidate naming (sole engine subject: fanoOctonionicCarrierTableV0), not the
+topological w1; higherform-associator's retirement also removes the "known
+branch pin" from every future worktree tally.
+
+THE LIST: 62 = 59 RETIRE + 3 RETIRE-N3, pinned in the seal's §2 and in
+.handoff/THE_RETIREMENT_LIST.md; the on-repo record
+docs/governance/PLATONIC_ENGINE_WITNESS_RETIREMENT_LIST.txt (written by the
+coder in the same commit) carries the 62 names + the selector's text -- the
+executable answer to "a number without a method." One prose flaw in the seal's
+§2 is struck IN PLACE, not edited out (trisonized appeared in prose; it is
+KEEP): the SELECTOR is normative wherever prose and output disagree.
+
+PINNED: selector reproduces 62 byte-identically · 48 package.json entries die
+in the same commit · NOT ONE src/ FILE MOVES (VOID) · post-delete suite = 91
+witnesses at EXACTLY 1 failure (dual-inspection -- the N3 orphans gone,
+baseline 4 -> 1, a red light means something again) · worktree 91 at 1 with NO
+branch-pin rider · fieldAtlas.ts + fieldCueV0.ts flip WITNESS_ONLY -> ORPHAN
+(the corpse stops being its own alibi; the later src-sweep inherits a strictly
+stronger signal free) · seven canaries green post-delete · frozen set
+byte-identical, manifest count 44 · cross-references of retired names
+post-delete: zero (the only referencing scripts were themselves retired) ·
+tsc -b 0.

@@ -1,0 +1,138 @@
+PLATONIC ENGINE — THE WITNESS RETIREMENT (2026-07-18) · ON-REPO RECORD
+================================================================================
+
+62 witnesses of the cancelled programme retired at baseline 1901700 (sealed
+e8a9c240aff9bd008691c466c94b782de3b7badd44010f22690b20c8bb5d589a — blind,
+natively measured, written once). Deletions only: not one src/ file moved;
+48 package.json script entries removed in the same commit. The selector below
+is NORMATIVE and reproducible — run it from the repo root at 1901700 and its
+output's name-set equals this list exactly (verified pre-delete: SET DIFF NONE
+against .handoff/THE_RETIREMENT_LIST.md, 59 RETIRE + 3 RETIRE-N3).
+
+── THE 62, canonical sorted (verdict + name) ──
+
+RETIRE diagnose-fano-octonionic-associator-projection-table-v0.cjs
+RETIRE diagnose-fano-octonionic-carrier-graph-field-v0.cjs
+RETIRE diagnose-fano-octonionic-carrier-table-v0.cjs
+RETIRE diagnose-fano-octonionic-child-emission-envelope-v0.cjs
+RETIRE diagnose-fano-octonionic-generational-field-update-v0.cjs
+RETIRE diagnose-fano-octonionic-local-channel-table-v0.cjs
+RETIRE diagnose-fano-octonionic-spatial-support-projection-v0.cjs
+RETIRE diagnose-field-atlas.cjs
+RETIRE diagnose-field-cue-v0-multi-projection-consumption.cjs
+RETIRE diagnose-field-cue-v0.cjs
+RETIRE diagnose-field-source-child-contexts.cjs
+RETIRE diagnose-field-source-child-degeneracy.cjs
+RETIRE diagnose-field-source-child-derivations.cjs
+RETIRE diagnose-field-source-profile-aware-atlas-adapter.cjs
+RETIRE diagnose-field-source-profile-aware-atlas-execution.cjs
+RETIRE diagnose-field-source-profile-aware-atlas-view-model-runtime.cjs
+RETIRE diagnose-field-source-profile-aware-atlas-view-model.cjs
+RETIRE diagnose-field-source-profile-aware-evidence-stability.cjs
+RETIRE diagnose-field-source-profile-aware-feature-report.cjs
+RETIRE diagnose-field-source-profile-aware-feature-stability.cjs
+RETIRE diagnose-field-source-profile-aware-field-report.cjs
+RETIRE diagnose-field-source-profile-aware-policy.cjs
+RETIRE diagnose-field-source-profile-aware-route-gate-candidates.cjs
+RETIRE diagnose-field-source-profile-aware-shape-position-resolver.cjs
+RETIRE diagnose-field-source-profile-aware-shape-resolved-surface-atlas.cjs
+RETIRE diagnose-field-source-profile-aware-stack-summary.cjs
+RETIRE diagnose-field-source-profile-aware-support-region-candidates.cjs
+RETIRE diagnose-field-source-profiles.cjs
+RETIRE diagnose-field-source-quark-channels.cjs
+RETIRE diagnose-generated-site-reading-v0-fieldcue-boundary.cjs
+RETIRE diagnose-generated-site-reading-v0.cjs
+RETIRE diagnose-harmonic-emission-profiles-v0.cjs
+RETIRE diagnose-higherform-associator-v0.cjs
+RETIRE diagnose-honest-source-state-display-assertions-v0.cjs
+RETIRE diagnose-hub-layer-source-state-capsule-v0.cjs
+RETIRE diagnose-medial-carrier-source-state-survival-audit-v0.cjs
+RETIRE diagnose-medial-carrier-source-state-survival-audit-v1.cjs
+RETIRE diagnose-medial-dual-equivariant-carrier-policy-model-card-v0.cjs
+RETIRE diagnose-medial-hub-triadic-closure-bench-v0.cjs
+RETIRE diagnose-mixed-loop-leaves-q-gate-v0.cjs
+RETIRE diagnose-mixed-loop-validity-gauntlet-v0.cjs
+RETIRE diagnose-moufang-automorphism-gauge-v0.cjs
+RETIRE diagnose-moufang-holonomy-validity-v0.cjs
+RETIRE diagnose-octa-first-birth-carrier-base-v0.cjs
+RETIRE diagnose-octonion-vs-a3-medial-carrier-discriminator-v0.cjs
+RETIRE diagnose-propagation-field-activity-survival-audit-v0.cjs
+RETIRE diagnose-source-signature-contract-audit-v0.cjs
+RETIRE diagnose-structured-source-state-candidate-reduction-law-comparison-v0.cjs
+RETIRE diagnose-structured-source-state-emitted-recovery-v0.cjs
+RETIRE diagnose-structured-source-state-field-behavior-recovery-v0.cjs
+RETIRE diagnose-structured-source-state-field-behavior-residual-v0.cjs
+RETIRE diagnose-structured-source-state-multi-projection-structural-channel-v0.cjs
+RETIRE diagnose-structured-source-state-v0.cjs
+RETIRE diagnose-w1-legitimacy-walk-primitive-source-regime.cjs
+RETIRE diagnose-w2b-field-certification-v0.cjs
+RETIRE preview-field-cue-v0.cjs
+RETIRE preview-generated-site-legibility-v0.cjs
+RETIRE preview-generated-site-reading-v0.cjs
+RETIRE preview-honest-source-state-dual-reading-v0.cjs
+RETIRE-N3 diagnose-field-cue-v0-ui.cjs
+RETIRE-N3 diagnose-field-source-profile-aware-field-mode-ui.cjs
+RETIRE-N3 diagnose-generated-site-reading-v0-ui.cjs
+
+── THE EXECUTABLE SELECTOR (v2, component-based) — the method, verbatim ──
+
+#!/usr/bin/env node
+// THE EXECUTABLE SELECTOR (v2, component-based) — reproduces THE_RETIREMENT_LIST.md or STOP.
+const fs = require('node:fs');
+const path = require('node:path');
+const ts = require('typescript');
+const ROOT = process.cwd(); // run from the repo root
+const rel = (f) => path.relative(ROOT, f).replace(/\\/g, '/');
+const exists = (f) => { try { return fs.statSync(f).isFile(); } catch { return false; } };
+const resolveSpec = (from, spec) => {
+  if (!spec.startsWith('.')) return null;
+  const p = path.resolve(path.dirname(from), spec);
+  for (const c of [p, `${p}.ts`, `${p}.tsx`, `${p}/index.ts`, `${p}/index.tsx`]) if (exists(c)) return c;
+  return null;
+};
+const importsOf = (f) => ts.preProcessFile(fs.readFileSync(f, 'utf8'), true, true)
+  .importedFiles.map((i) => resolveSpec(f, i.fileName)).filter(Boolean);
+const closure = (roots) => {
+  const seen = new Set(); const st = roots.map((r) => path.join(ROOT, r)).filter(exists);
+  while (st.length) { const f = st.pop(); if (seen.has(f)) continue; seen.add(f); for (const d of importsOf(f)) st.push(d); }
+  return new Set([...seen].map(rel));
+};
+const PROD = closure(['src/AppShell.tsx']);
+const REACHABLE = new Set([...PROD, ...closure(['src/main.tsx'])]);
+const allSrc = [];
+(function walk(d) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (/\.tsx?$/.test(e.name) && !/\.d\.ts$/.test(e.name)) allSrc.push(rel(p)); } })(path.join(ROOT, 'src'));
+const WONLY = allSrc.filter((f) => !REACHABLE.has(f));
+const parent = new Map(); const find = (x) => { if (!parent.has(x)) parent.set(x, x); let r = x; while (parent.get(r) !== r) r = parent.get(r); return r; };
+const union = (a, b) => parent.set(find(a), find(b));
+for (const f of WONLY) { find(f); for (const d of importsOf(path.join(ROOT, f)).map(rel)) if (WONLY.includes(d)) union(f, d); }
+const VOCAB = /(fano|octonion|medial|moufang|mixed-?loop|harmonic|field-?atlas|field-source-profile-aware)/i;
+const deadRoots = new Set(WONLY.filter((f) => VOCAB.test(f)).map((f) => find(f)));
+const DEAD_SRC = new Set(WONLY.filter((f) => deadRoots.has(find(f))));
+const PROTECTED = ['src/lib/surfaceRefinement.ts', 'src/lib/patchLift.ts', 'src/lib/closeEdgeIntoCircle.ts', 'src/lib/fieldSampler.ts'];
+const N3 = ['diagnose-field-cue-v0-ui.cjs', 'diagnose-generated-site-reading-v0-ui.cjs', 'diagnose-field-source-profile-aware-field-mode-ui.cjs'];
+const MUST_KEEP = ['diagnose-rich-field-l3b.cjs', 'diagnose-field-for-shape.cjs', 'diagnose-director-field.cjs', 'diagnose-director-field-loop-reversal.cjs', 'diagnose-field-sampler.cjs', 'diagnose-site-witness-catalogue-v0.cjs', 'diagnose-general-site-packet-presenter-v0.cjs'];
+const witnesses = fs.readdirSync(path.join(ROOT, 'scripts')).filter((f) => /^(diagnose|preview)-.*\.cjs$/.test(f)).sort();
+const refsOf = (w) => {
+  const text = fs.readFileSync(path.join(ROOT, 'scripts', w), 'utf8'); const out = new Set();
+  for (const m of text.matchAll(/['"`]([^'"`]*src\/[A-Za-z0-9_./-]+\.tsx?)['"`]/g)) {
+    const p = 'src/' + m[1].split('src/').pop(); out.add(exists(path.join(ROOT, p)) ? p : `${p} (MISSING)`);
+  } return [...out];
+};
+const rows = witnesses.map((w) => {
+  const refs = refsOf(w);
+  const live = refs.filter((r) => REACHABLE.has(r));
+  const prot = refs.filter((r) => PROTECTED.includes(r));
+  const dead = refs.filter((r) => DEAD_SRC.has(r));
+  const other = refs.filter((r) => !REACHABLE.has(r) && !DEAD_SRC.has(r) && !PROTECTED.includes(r) && !r.endsWith('(MISSING)'));
+  let verdict = 'KEEP';
+  if (N3.includes(w)) verdict = 'RETIRE-N3';
+  else if (!prot.length && !other.length && dead.length) verdict = 'RETIRE';
+  return { w, verdict, refs, live };
+});
+const kept0 = rows.filter((r) => r.verdict === 'KEEP');
+const coverage = (s) => kept0.filter((k) => k.refs.includes(s)).length;
+for (const r of rows) if (r.verdict === 'RETIRE' && r.live.some((l) => coverage(l) < 3)) r.verdict = 'KEEP';
+const broken = rows.filter((r) => MUST_KEEP.includes(r.w) && r.verdict !== 'KEEP');
+if (broken.length) { console.log('SELECTOR BROKEN'); for (const b of broken) console.log(` ${b.w} -> ${b.verdict}`); process.exit(1); }
+const out = rows.filter((r) => r.verdict !== 'KEEP').map((r) => `${r.verdict} ${r.w}`).sort();
+console.log(out.join('\n')); console.log(`TOTAL ${out.length}`);
