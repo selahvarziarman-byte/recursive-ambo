@@ -1,0 +1,114 @@
+PLATONIC ENGINE — THE REFINE IS NOT A GESTURE: the column already prints the
+truth. Pin what it says, not what the engineer wanted it to say. · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_REFINE_IS_NOT_A_GESTURE.md`
+(gitignored):
+
+    3c27b071e11ef6d1febfb44a38c3bd5851cc326bee4e8d132eaf014c0b074cd3
+
+Measured NATIVELY by Arman (certutil), on the real bytes. Written ONCE, never
+edited. Sealed by the engineer seat. BASELINE 8d5e344.
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_REFINE_IS_NOT_A_GESTURE.md SHA256
+
+If that does not print 3c27b071...4cd3, STOP -- do not build.
+
+--------------------------------------------------------------------------------
+A DEAD SEAL, RECORDED SO IT IS NEVER BUILT
+--------------------------------------------------------------------------------
+
+SEAL_THE_RECUT.md, hash
+e84db5884ee67f802142cf83e373bececfd666093aa389e5496daa3c0283bdc0, is DEAD. The
+coder measured it, refused to build it, and STOPPED at measurement -- zero files
+edited, nothing staged. The engineer confirmed every count. It pinned FOUR values
+and the engineer had measured NONE of them:
+
+  app === 'PRODUCTION'              TRUE
+  the manuscript names refineToDisk TRUE
+  gestureProd === true              FALSE -- measured false
+  route.includes('OK-tick')         FALSE -- and DERIVED at :148-153, OUTSIDE the
+                                    "leg [b] ONLY" scope the seal itself declared
+  grepCount(...) === 4              FALSE -- grepCount counts FILES (:161) and
+                                    returns 1. The "4" came from `grep -ac` =
+                                    LINES IN ONE FILE, run in the engineer's own
+                                    SELF-AUDIT. The verification instrument
+                                    answered a DIFFERENT QUESTION than the pin --
+                                    LAW 9, committed inside the audit whose whole
+                                    purpose is catching LAW 9. (The ORGAN, again:
+                                    "count" = files / lines / occurrences.)
+
+A pin cut to that seal's letter would have been RED FOREVER, violating its own
+clause 5.3 (baseline exactly 1) and 5.4 (assert, don't widen) in one stroke.
+
+--------------------------------------------------------------------------------
+THE RULING — THE REFINE IS NOT A GESTURE
+--------------------------------------------------------------------------------
+
+MEASURED, COMPLETE: surfaceRefinement.ts's importers are exactly
+ManuscriptView.tsx (the VIEW) and playgroundStore.ts (the DEV store).
+GESTURE_PROD_ROOTS (:87) = genesisModel.ts, writtenFormModel.ts,
+geometryStore.ts -- three MODELS. A view is not a gesture root.
+=> gestureProd(refineToDisk) === false, and that is CORRECT.
+
+THE PERSON INVOKES COMBINE. THEY DO NOT INVOKE REFINE. The refine is the door
+satisfying combine's precondition -- plumbing that makes a gesture possible, not
+an act the person takes. Consistent with the committed doctrine already banked:
+REFINE IS NOT A BIRTH (refinement.typeClaim === 'resolution').
+
+THE COLUMN ALREADY PRINTS THE TRUTH -- :153-154, verbatim:
+'in the PRODUCTION app but via neither door'. It needs NO new vocabulary. The
+instrument was never wrong; the engineer's PIN was.
+
+AND THE DEAD SEAL DEMANDED THE COLUMN RE-COMMIT ITS OWN NAMED SCAR: the column's
+header confesses "yesterday it printed 'the person acts'; that was LAW 9, the
+instrument carrying the property it measures." The dead seal demanded exactly
+that string for a file the person does not act with.
+  CURE 2 (widen the gesture vocabulary to earn the tick) = that scar, re-committed
+    as doctrine. REFUSED.
+  CURE 3 (re-wire the refine into a frozen model) = an unfreeze ritual bought for
+    a lie; contradicts item zero's own charter. REFUSED.
+  CURE 1 (pin the measured world) = RULED. It changes NO doctrine and asserts only
+    what is true. (Cures 2 and 3 would have changed doctrine -- those would have
+    been the mothership's. They are refused, not deferred.)
+
+WHAT THE COLUMN NOW TELLS -- FOUR states, sharper than the three asked for:
+  NONE @bd99fb5                          unbuilt (no door anywhere)
+  DEV-ONLY                               built for the WRONG PERSON
+  PRODUCTION, no gesture, no catalogue   in the PRODUCTION app but via NEITHER
+                                         DOOR   <- refineToDisk @8d5e344
+  PRODUCTION + gesture                   OK PRODUCTION - the person acts
+                                         <- connectedSum (unchanged)
+It now separates "the person acts" (connectedSum) from "the door works"
+(refineToDisk). Neither seat had that distinction before the measurement.
+
+PINNED: instruments ONLY, zero src motion, nothing staged (no src file is added
+=> no completeness line owed, checkUntrackedImports does not apply) - files
+allowed: diagnose-the-door-column.cjs + diagnose-the-gate.cjs ONLY -
+GESTURE_PROD_ROOTS (:87), the route derivation (:148-157) and the [c] historical
+leg (:232, fixed-SHA bd99fb5) are UNTOUCHABLE - refineToDisk @8d5e344 reads
+app=PRODUCTION, gestureProd=false, gestureDev=true, route='in the PRODUCTION app
+but via neither door', grepCount('src/manuscript/','refineToDisk')===1 (FILES) -
+the gate is red on FOUR causes of its own (:244 row-finder requires 'DEV-ONLY',
+:250 requires 'RAW, NO REFINE', :251 requires 'DEV-ONLY' + no-tick, :249 requires
+the column ALL PASS) - :252's arrival pin is PRINTED, not assumed (the engineer
+did not measure it; if it moved, STOP) - ASSERT, DO NOT WIDEN (a pin that accepts
+either answer has stopped asking) - DERIVE EVERY NUMBER YOU PIN, inherit none -
+93 at EXACTLY 1, measured POST-COMMIT in a worktree at the tip - manifest 44 -
+tsc 0.
+
+BANKED, NOT BUILT — THE FREEZE PUSHED A CAPABILITY OUT OF THE GESTURE REGISTER:
+item zero put the refine in ManuscriptView's useMemo BECAUSE genesisModel is
+FROZEN. The subdivide-path seal boasted "zero frozen files" -- and that was bought
+by welding the refine to one view's useMemo. A second combine door would have to
+re-implement it. The column billed the engineer for it, and the bill is correct.
+Small today; real; not that run's and not this one's.
+
+ALSO MEASURED (coder): diagnose-the-subdivision is ALREADY CURED (fixed-SHA
+01da8ed pin, green today). The engineer's backlog item for it is STALE -- struck.

@@ -1,0 +1,98 @@
+PLATONIC ENGINE — A HISTORY LEG HAS NO FOOT IN THE PRESENT: leg [c] asserts
+history with one foot on HEAD. That is the disease it was named as the cure for.
+· SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal
+`.handoff/SEAL_A_HISTORY_LEG_HAS_NO_FOOT_IN_THE_PRESENT.md` (gitignored):
+
+    ac215e6f9a512a39883f1ce74e2fd4b1b9080ddfe49ed4e7a986123918614219
+
+Measured NATIVELY by Arman (certutil). Written ONCE, never edited.
+Sealed by the engineer seat. BASELINE 8d5e344.
+
+co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_A_HISTORY_LEG_HAS_NO_FOOT_IN_THE_PRESENT.md SHA256
+
+If that does not print ac215e6f...4219, STOP -- do not build.
+
+--------------------------------------------------------------------------------
+THE FINDING (the coder's, twice over) AND THE DOCTRINE IT PAYS FOR
+--------------------------------------------------------------------------------
+
+THE ENGINEER WROTE, IN TWO CONSECUTIVE SEALS: "the [c] historical leg is pinned
+to a FIXED SHA (bd99fb5) and is IMMUNE. DO NOT TOUCH IT -- it is the proof that a
+fixed-SHA pin is the correct pattern."
+
+DERIVED, AND IT IS FALSE:
+  :234  const oldCol   = columnAt('bd99fb5');                       <- FIXED
+  :236  const newRefine = headCol.rows['refineToDisk (THE EXIT)'];  <- headCol = the
+                                                                       SAME MOVING HEAD [b] reads
+  :245  return oldRefine.app === 'NONE' && newRefine.app === 'DEV-ONLY' && ...
+                                                    ^ the ONE failing conjunct
+  :248         ... && nowCount === 2 && oldCount === 0;
+              ^ nowCount ALSO reads headCol -- a SECOND moving pin nobody had named
+
+=> THE LEG NAMED AS THE PROOF OF THE CURE CARRIES THE DISEASE. And its own title
+said so: "ACROSS REAL HISTORY" compares bd99fb5 TO NOW.
+
+HOW THE ENGINEER GOT IT WRONG, EXACTLY: he grepped "does this file mention a
+fixed SHA?", got bd99fb5, and concluded "therefore it pins only against it."
+LAW 15 -- a necessary condition wearing the verdict's clothes. THE ORGAN:
+"fixed-SHA leg" = {mentions a fixed SHA} u {pins only against fixed SHAs}. The
+same shape as :990, as "APP", as "count", as "deepest node": A NAME READ AS A
+MEASUREMENT.
+
+--------------------------------------------------------------------------------
+THE RULING
+--------------------------------------------------------------------------------
+
+A LEG THAT ASSERTS THE PRESENT reads HEAD, and MUST -- that is its job, and it is
+exactly how item zero's delivery was detected. It is RE-CUT ON DELIVERY,
+correctly, forever. That is [b], and [b] is green as of this run.
+
+A LEG THAT ASSERTS HISTORY must pin FIXED SHAs on EVERY END. History is fixed; a
+claim about the past that depends on the present is a CATEGORY ERROR, and it is
+the (A)-flavour bug: a pin a future commit can falsify.
+
+=> [c]'s second anchor becomes a SECOND FIXED SHA: cb507c4. The coder's option 1
+(flip the HEAD pin to PRODUCTION) only RESETS THE CLOCK -- the next reachability
+change breaks it again. Option 2 CURES THE CLASS. Ruled: option 2.
+
+THE ANCHOR NAMES ITSELF -- DERIVED, not chosen:
+  bd99fb5  refineToDisk app = NONE        "the exit: a loop's exit must test every wall"
+  cb507c4  refineToDisk app = DEV-ONLY    "the gate: the door exists -- the person combines"
+  8d5e344  refineToDisk app = PRODUCTION  (measured this run; independently by the coder)
+The column's own comment -- "refineToDisk reads NONE BEFORE THE GATE, DEV-ONLY
+AFTER IT" -- is CONFIRMED BY MEASUREMENT. cb507c4 IS the gate (verified an
+ancestor of HEAD). THE ANCHOR WAS IN THE INSTRUMENT'S OWN SENTENCE ALL ALONG.
+
+=> THE PAIR TELLS THE FOUR-STATE STORY AND NEITHER HALF CAN ROT:
+   [c] = the two dead stages, FROZEN AS HISTORY (bd99fb5 NONE -> cb507c4 DEV-ONLY),
+         immune forever
+   [b] = the living stage at HEAD (PRODUCTION, not a gesture), recut on delivery
+
+PINNED: ONE file (diagnose-the-door-column.cjs), leg [c] ONLY - :236 newRefine
+comes from columnAt('cb507c4'), not headCol - :245's assertion does NOT change;
+its SUBJECT stops moving - :248's nowCount must move to cb507c4 too, and its value
+is ORDERED DERIVED, never inherited (the coder's 2 was 8d5e344; the engineer
+deliberately did NOT measure it, to avoid the temptation to pin it) - leg [b],
+GESTURE_PROD_ROOTS, the route derivation and the gate are UNTOUCHABLE (the gate is
+red solely downstream via execSync and goes green when [c] does; if it does not,
+STOP) - zero src motion - nothing staged - manifest 44 - 93 at EXACTLY 1,
+POST-COMMIT at the tip - tsc 0.
+
+WHAT THE CLASS LEARNS: "reads HEAD:" is a CANDIDATE, NOT A VERDICT -- but SO IS
+"contains a fixed SHA." Both flavours live in ONE FILE, in ADJACENT LEGS. The
+closed-list instrument must ask "DOES THIS PIN'S SUBJECT MOVE?" -- never "does
+this file mention a SHA?"
+
+THE LEDGER'S FIRST RUN EARNED IT: the derivation ledger (adopted the hour before,
+Arman: "your proposition is sound") caught :248's nowCount -- a second moving pin
+nobody had named -- and stopped the engineer pinning a count he had not derived.
+One turn earlier, both would have shipped.
