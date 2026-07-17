@@ -78,10 +78,37 @@ export function DualizeGlyph() {
   );
 }
 
+// sew — the general complex identification's BOUNDARY sub-family: the form's
+// TWO OWN RIMS (bold) become one seam. The word ops fold a POLYGON's own edges;
+// sew acts on a COMPLEX WITH BOUNDARY — hence a tube, not a rect. That contrast
+// IS the mark: it is a different KIND of act and it must not look like the five.
+// The faint arc is the committed identification idiom (glue's arc: "these two
+// become one"). ⛔ NO ARROWS — the group holds BOTH modes; an arrow would depict
+// one and lie about the other. The mode is the submenu's to say, not the glyph's.
+export function SewGlyph() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
+      <path d="M8 8 H22" {...S} />
+      <path d="M8 22 H22" {...S} />
+      <ellipse cx="8" cy="15" rx="3.4" ry="7" {...BOLD} />
+      <ellipse cx="22" cy="15" rx="3.4" ry="7" {...BOLD} />
+      <path d="M8 5 Q15 1.5 22 5" {...FAINT} />
+    </svg>
+  );
+}
+
+// OPEN THE DOOR (2026-07-17): the sew entry closes the six-day black page —
+// DOCK_OPERATION_GROUPS grew a sixth group (2026-07-11) and this map never
+// learned it; DOCK_GLYPHS[key] rendered undefined and unmounted the app.
+// ⚠ The FULL cure — a DockGroupKey union keying BOTH this map and the groups,
+// making a missing glyph a COMPILE error — is BLOCKED: writtenFormModel.ts is
+// FROZEN (manifest :78), so the union awaits its sanctioned unfreeze. Until
+// then this map must carry one entry per dock group, by discipline.
 export const DOCK_GLYPHS: Record<string, () => JSX.Element> = {
   glue: GlueGlyph,
   'flip-glue': FlipGlueGlyph,
   collapse: CollapseGlyph,
   cut: CutGlyph,
   dualize: DualizeGlyph,
+  sew: SewGlyph,
 };

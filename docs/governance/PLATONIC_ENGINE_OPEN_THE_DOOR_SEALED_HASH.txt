@@ -1,0 +1,110 @@
+PLATONIC ENGINE — OPEN THE DOOR: the glyph opens it today; the TYPE kills the
+class forever; and one number decides the flag. · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_OPEN_THE_DOOR.md` (gitignored):
+
+    15966cf9d5330b7552a2c4e36e187c21054ec69dabcc7199bcea6046e37481de
+
+Measured NATIVELY by Arman (certutil). Written ONCE. BASELINE 113f12a.
+Sealed by the engineer seat.   co-ratified: PENDING
+
+    certutil -hashfile .handoff\SEAL_OPEN_THE_DOOR.md SHA256
+If that does not print 15966cf9...81de, STOP -- do not build.
+
+--------------------------------------------------------------------------------
+THE FACT — verified independently by FOUR seats, each by their own hands
+--------------------------------------------------------------------------------
+  writtenFormModel:108-115  six groups (SEW at :115, entered d4a9d1a 2026-07-11)
+  OperationGlyphs:81-87     five glyphs (last touched 4ad835c 2026-07-09)
+  ManuscriptChrome:752      const Glyph = DOCK_GLYPHS[group.key];  <- undefined
+                            <Glyph /> -> React throws on first paint -> unwinds
+                            to ROOT -> BLACK. Both canvases die.
+
+THE PERSON'S APP HAS NOT OPENED SINCE 2026-07-11. 36 commits. NINE ARCS --
+including C.1's field, "the person sees their form's living field" -- landed on a
+page that cannot open. EXHIBIT_CRASH_BLACK.png is the only picture the route can
+produce. The glyph map is TWO DAYS OLDER than the group it must serve.
+
+--------------------------------------------------------------------------------
+SCOPE (mothership): SEW STAYS
+--------------------------------------------------------------------------------
+sew-boundary-preserving / sew-boundary-reversing are the ops that CLOSE thicken's
+band. The researcher's ratified line: "the boundary IS the point: thicken MAKES
+it, sew CLOSES it -- that pair is 'product ADDS,' realized." 1901700 gave the
+person a band born of their own circle; removing sew takes back their ability to
+finish the gesture. Deleting half of A.1's payoff to fix a render crash: NO.
+
+--------------------------------------------------------------------------------
+THE GLYPH (designer) — verbatim, rendered and inspected before delivery (LAW 23
+on his own mark). AND HE CAUGHT A LIE IN THE ENGINEER'S BRIEF:
+--------------------------------------------------------------------------------
+The engineer quoted him the sanction COMMENT -- "sew two rims of a COMPLEX" --
+as the mechanism. He was about to draw TWO FORMS MEETING. Then he read the
+substrate the engineer did not:
+  complexIdentification.ts:879  sewBoundaryCircles(form, mode, circleIndexA=0, circleIndexB=1)
+  playgroundOperations.ts:677   "Identify THE FORM'S first two boundary circles..."
+=> ONE complex. TWO of its OWN rims. NOT two forms joining. THE GLYPH IS A TUBE.
+He would have shipped a false diagram of a real op, from the engineer's words.
+The seat whose job is marks went to the substrate that the seat whose job is the
+substrate did not. A NAME READ AS A MEASUREMENT -- the week's pattern, again.
+(Derived before chartering: the drop-in's {...S} {...BOLD} {...FAINT} exist at
+OperationGlyphs:15,16,17 -- the paste compiles.)
+
+--------------------------------------------------------------------------------
+THE CURE IS A TYPE, NOT A GUARD (researcher ruled; mothership RETRACTED her own
+guard order an hour after giving it)
+--------------------------------------------------------------------------------
+"I GAVE YOU THE FALLBACK AS IF IT WERE THE RULE." The cure SPLITS:
+  hypothesis EXPRESSIBLE in a type -> MAKE IT A TYPE   cost 0, fires WRITE-TIME
+  hypothesis NOT expressible       -> NAME IT BY LINE  (her original cure)
+"A type is not a guard -- it is REMOVE THE OCCASION", this campaign's own
+doctrine (:134 died with its cause; .edgeClass was removed rather than policed).
+=> PREFER THE TYPE - FALL BACK TO THE SEAL LINE - NEVER MINT A GUARD FOR WHAT A
+   TYPE CAN HOLD.  DO NOT ALSO BUILD ?? null (guards-on-guards).
+
+DERIVED: the hypothesis was EXPRESSIBLE TWICE and expressed NEITHER time --
+  writtenFormModel:69,104  key: string      (DockGroupKey: ZERO hits in all of src/)
+  OperationGlyphs:81       DOCK_GLYPHS: Record<string, () => JSX.Element>
+  => DOCK_GLYPHS[group.key] types as () => JSX.Element, NEVER | undefined.
+  => THE COMPILER DOES NOT MISS THE BLACK RECTANGLE -- IT CERTIFIES IT.
+     The type system was ASKED to lie, and it did.
+
+AND THE ORGAN IN THE MOTHERSHIP'S OWN ECONOMY DOCTRINE (her words): "my three
+tests are tests for GUARDS, and the object was not a guard. 'Does this guard earn
+its place?' holds TWO questions: is this thing a guard? (never asked) and does it
+earn its place? (asked)." The designer applied her instrument correctly and it
+returned the wrong answer, because it had no category for remove-the-occasion.
+
+--------------------------------------------------------------------------------
+THE FLAG — MEASURED, NOT RULED
+--------------------------------------------------------------------------------
+Researcher, on a reduction of our exact shape:
+  --strict                             -> 0 errors   <- OUR SETTINGS CERTIFY THE BLACK RECTANGLE AS SAFE
+  --strict --noUncheckedIndexedAccess  -> error TS2722: possibly 'undefined'
+=> would have caught it AT d4a9d1a, AT WRITE-TIME, in the commit that broke it.
+=> AND IT ANSWERS "a closed-list instrument or nothing": THE COMPILER IS THE
+   CLOSED LIST -- exhaustive by construction, zero false positives on this class.
+   A grep finds candidates; the compiler decides.
+NEITHER the researcher NOR the engineer could get the day-one cost (her run "did
+not finish in my window"; his exceeded seven minutes in the sandbox and never
+landed). IT IS A NATIVE MEASUREMENT, chartered to the coder: report the count, DO
+NOT set the flag, DO NOT fix what it finds. The mothership rules when the number
+lands: "5 => today; 500 => an arc. I will not answer economy test 3 by estimate."
+
+--------------------------------------------------------------------------------
+PINNED
+--------------------------------------------------------------------------------
+Three files (OperationGlyphs, writtenFormModel, ManuscriptChrome-if-needed) -
+tsconfig.json MUST NOT CHANGE - the glyph verbatim, no redraw, no arrows - a
+DockGroupKey union where zero existed - a seventh group without a glyph is a
+COMPILE ERROR - NO runtime guard - the flag's count REPORTED not acted on - AND A
+NON-BLACK SCREENSHOT OF THE DEFAULT ROUTE (never ?manuscript, the dev shell):
+after six days and nine arcs of headless green, A PASSING SUITE IS NOT EVIDENCE
+THE PAGE RENDERS - suite 93 at exactly 1 - tsc -b 0 - manifest 44 - nothing
+staged (no src file added => no completeness line owed, checkUntrackedImports
+does not apply).
+
+THE MOUNT GUARD stays the engineer's, ratified by the mothership before he asked:
+no type can express "the page rendered"; it measures THE CLAIM, not a proxy. It
+is the perimeter that was never there.
