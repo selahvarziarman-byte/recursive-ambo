@@ -123,8 +123,18 @@ check('ONE REFLECTED MAP picked instead (the menu\'s first reversing candidate):
   personFlip.complex.pairings[0].mode === 'reversing');
 check('the door reproduces the COMMITTED T³ byte-for-byte where it should: same pairing maps as worldModel\'s fixture (the person can build the canonical space by hand)',
   eq(personT3.complex.pairings.map((p) => p.map), t3Committed.complex.pairings.map((p) => p.map)));
-check('the refusal ladder is named and curable: empty rows prompt for faces; a face reused twice refuses by name; an un-picked map prompts for the MAP',
-  String(A.aperturePairingRefusal(cube, [{ faceA: null, faceB: null, candidateKey: null }, { faceA: null, faceB: null, candidateKey: null }, { faceA: null, faceB: null, candidateKey: null }])).includes('pick BOTH faces') &&
+// R2 (the row law ruled apart): an UNTOUCHED pair is the OPEN PAIR — boundary,
+// never an error — so an untouched BOARD refuses globally and honestly; a
+// HALF-PICKED pair is refused by name. `pick BOTH faces.` died with the
+// one-predicate law (its leg here is recut to the new ladder — forced recut,
+// disclosed in REPORT_HAMZAAD_R2).
+check('the refusal ladder is named and curable: an untouched board refuses honestly (open pairs are boundary); a half-picked pair is named; a face reused twice refuses by name; an un-picked map prompts for the MAP',
+  String(A.aperturePairingRefusal(cube, [{ faceA: null, faceB: null, candidateKey: null }, { faceA: null, faceB: null, candidateKey: null }, { faceA: null, faceB: null, candidateKey: null }])).includes('no identification yet') &&
+  String(A.aperturePairingRefusal(cube, [
+    { faceA: faceId('left'), faceB: null, candidateKey: null },
+    { faceA: null, faceB: null, candidateKey: null },
+    { faceA: null, faceB: null, candidateKey: null },
+  ])).includes('pair 1: one face is picked') &&
   String(A.aperturePairingRefusal(cube, [
     { faceA: faceId('left'), faceB: faceId('right'), candidateKey: null },
     { faceA: faceId('left'), faceB: faceId('back'), candidateKey: null },

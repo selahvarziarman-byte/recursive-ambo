@@ -1,0 +1,57 @@
+PLATONIC ENGINE — SEALED HASH RECORD — R2: THE APERTURE
+========================================================
+
+SEAL:            .handoff/SEAL_R2_THE_APERTURE.md   (off-repo, gitignored; written ONCE)
+NATIVE SHA256:   6f7ae2dc8d7af4111a46bb9882ff7d6420ab659a90e798e11a219dbd4ee661f1
+                 4,421 bytes. DOUBLE-DERIVED: coder at build time without reading the seal
+                 (REPORT_HAMZAAD_R2.md §0); the Sovereign's certutil identical at audit
+                 close (2026-07-21/22).
+
+CHARTER:         mothership 2139 (ARC R · R2) · baseline `c6fd402`. NO ritual (apertureModel
+                 :189 NOT_FROZEN · ManuscriptChrome :185 NOT_FROZEN).
+BUILD:           coder (همزاد), blind. AUDIT: engineer (3rd seat) — ACCEPT.
+
+THE CLAIM (RUNG 4, twice — plates viewed by coder and auditor, LAW 23):
+  The dim-3 door OPENS. The row law at apertureModel:375 held two meanings (half-picked
+  vs untouched) one loop above where c0f5768 cured its sibling — ruled apart AT BOTH ITS
+  SITES: the validator (untouched ⇒ the OPEN PAIR, the person's boundary; exactly-one ⇒
+  refused naming that pair; zero complete ⇒ honest refusal) AND the builder
+  (resolvePersonPairings — open pairs contribute NO pairing). The second site was found
+  by the build's own rung-4 proof after the string-shaped sweep missed it — the
+  duplicated-home canon is hereby amended: SWEEP BY CONSUMERS, NOT STRINGS.
+  The collisions fall: the sources shelf BOTTOM-ANCHORED (bottom:128; one move, both
+  named collisions; 204px clearance at the panel's fullest; record strip untouched).
+
+PROOFS (raw in the handback):
+  NEG-1: `pair 1: pick BOTH faces.` on the person's open board (the dead law, premised).
+  NEG-2: shelf rect wholly inside the panel rect (the collision, premised from the DOM).
+  P1: validate() truth table 5/5 — over-paired leg BYTE-IDENTICAL (the control) · the
+      caption pipeline carries "bounded — ∂ carries 4 face class(es)".
+  P2: tsc -b clean. P3: 93 @ exactly 1 (twelve readers named; two disjoint sim commits
+      c7453e7 + 39830ec, discarded — R1.2's surface kept apart).
+  ★ RUNG4-A — THE BOUNDED BODY: one pair, by clicks alone ⇒ glued — H₁ ℤ · CW v4·e8·f5·c1 ·
+      face-pairs 1 · the interior renders. Plate R2_THE_BOUNDED_BODY.png.
+      c0f5768's person-clause reaches the screen for the first time.
+  ★ RUNG4-B — THE HABITAT: three preserving pairs picked by menu label ⇒ "glued — H₁ ℤ³ ·
+      the aperture opens in the dim-3 band" — the interior renders with its two default
+      inhabitants. Plate R2_THE_HABITAT.png. ADR 0004's render payoff, first person-reach.
+      RUNG STATED HONESTLY: the interior RENDERS from a fixed viewpoint — the person does
+      NOT yet walk it; the camera (eye/forward) remains unwired, post-field by ruling.
+  LAYOUT: post-fix DOM rects printed beside NEG-2's — no left-corner intersections.
+
+DECISIONS ON RECORD: type option DECLINED with the count (AperturePairRow names 4 files
+  incl. the forbidden View) · aperture witness's dead-law leg recut per the R5a collision
+  class, disclosed. RESIDUALS ROUTED: card↔panel top-corner co-occurrence (cure in the
+  forbidden View — mothership scopes) · ★ the CONE-ROOM menu ordering (first preserving
+  candidate = sound cone room, n=[12]·1080° — designer's ordering call) · room panel
+  mounts only with the gate closed (UX note) · geometryStore:429 stale prose.
+
+COMMIT PATHS (exact, nothing else):
+  src/manuscript/apertureModel.ts
+  src/manuscript/ManuscriptChrome.tsx
+  scripts/diagnose-the-aperture.cjs
+  docs/governance/PLATONIC_ENGINE_R2_APERTURE_SEALED_HASH.txt
+
+KILL-CONDITIONS: in the seal — the three-row form hypothesis; the chrome-inventory
+  hypothesis (the DOM intersection check is 20 lines, rerun on any new corner box);
+  connectedSum:95 fenced as a DIFFERENT door's wall.

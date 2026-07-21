@@ -619,7 +619,14 @@ export function SourcesShelf({
       style={{
         position: 'absolute',
         left: 14,
-        top: 110,
+        // R2 (the left-corner collisions): the shelf is BOTTOM-anchored — the
+        // top-left corner belongs to the aperture gate panel (left:14, top:64,
+        // grows down; measured fullest bottom ≈ y650) and the person-picks
+        // card (top:64, ~180 tall). Anchored at bottom:128 the shelf grows UP
+        // from ≈y872 — above the record strip (bottom:74) and clear of both
+        // top-corner tenants at any measured extent. The designer reviews the
+        // plate; nothing here pre-rules their coordinates.
+        bottom: 128,
         width: 208,
         padding: '9px 11px',
         borderRadius: 3,

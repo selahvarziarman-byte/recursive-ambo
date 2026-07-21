@@ -370,10 +370,21 @@ export function aperturePairingRefusal(seedShape: Shape, rows: AperturePairRow[]
   for (const [id, count] of used) {
     if (count > 1) return `face ${shortId(id)} is picked ${count} times — every face pairs exactly once.`;
   }
+  // THE APERTURE'S ROW LAW, ruled apart (R2, seal 6f7ae2dc…661f1): an UNTOUCHED
+  // pair is the OPEN PAIR — the person's chosen boundary — and is SKIPPED, never
+  // refused; a HALF-PICKED pair is refused BY NAME; zero complete pairs is the
+  // one honest global refusal below. `pair N: pick BOTH faces.` died with the
+  // one-predicate law that could not tell the two apart.
+  let completePairs = 0;
   for (let i = 0; i < rows.length; i += 1) {
     const row = rows[i];
-    if (!row.faceA || !row.faceB) return `pair ${i + 1}: pick BOTH faces.`;
+    const hasA = row.faceA !== null;
+    const hasB = row.faceB !== null;
+    if (!hasA && !hasB) continue; // the open pair — the boundary stands
+    if (hasA !== hasB)
+      return `pair ${i + 1}: one face is picked and its partner is not — pick the second face, or clear the first to leave the pair open.`;
     if (row.faceA === row.faceB) return `pair ${i + 1}: a face cannot pair with itself.`;
+    completePairs += 1;
   }
   // THE BOUNDED FORM (2026-07-18, sealed eb9bfcb4…d598c): the UNPAIRED-face
   // refusal ("…is not in any pair — the matching must be perfect.") is DELETED.
@@ -383,8 +394,11 @@ export function aperturePairingRefusal(seedShape: Shape, rows: AperturePairRow[]
   // was always genuinely malformed. The door now says what the engine's own
   // gate reads — one predicate, two meanings, finally ruled apart.
   for (let i = 0; i < rows.length; i += 1) {
+    if (rows[i].faceA === null && rows[i].faceB === null) continue; // an open pair carries no map
     if (!rows[i].candidateKey) return `pair ${i + 1}: pick the identification MAP (which vertex lands on which).`;
   }
+  if (completePairs === 0)
+    return 'no identification yet — pick at least one pair of faces (the rest may stay open as boundary).';
   return null;
 }
 
@@ -416,7 +430,12 @@ export type PersonDomainVerdict = { folded: false; domain: DomainModel } | Folde
 function resolvePersonPairings(seedShape: Shape, rows: AperturePairRow[]): FacePairing[] {
   const refusal = aperturePairingRefusal(seedShape, rows);
   if (refusal) throw new Error(`apertureModel: ${refusal}`);
-  return rows.map((row) => {
+  return rows
+    // R2, the law's other half: an UNTOUCHED pair is the OPEN PAIR — the
+    // person's boundary — and contributes NO pairing (the refusal above has
+    // already guaranteed every remaining row is complete with its map).
+    .filter((row) => row.faceA !== null || row.faceB !== null)
+    .map((row) => {
     const candidates = dihedralMapCandidates(seedShape, row.faceA as string, row.faceB as string);
     const candidate = candidates.find((c) => c.key === row.candidateKey);
     if (!candidate) throw new Error(`apertureModel: unknown map candidate ${row.candidateKey}`);
