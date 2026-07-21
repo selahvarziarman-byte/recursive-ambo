@@ -11,6 +11,8 @@ Sealed 2026-07-16 by the engineer seat. Baseline ba108d0. Mothership-ruled
 (0330 re-scope) · designer-ruled (the draw path: the RP2 point prints nothing;
 the flip waits for motion). The coder builds BLIND.
 
+co-ratified: 2026-07-16 0700
+
 --------------------------------------------------------------------------------
 CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
 --------------------------------------------------------------------------------

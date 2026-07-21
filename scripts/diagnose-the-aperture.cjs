@@ -458,6 +458,11 @@ const ALLOWED_SRC_CHANGES = new Set([
   'src/design/designDefaults.ts',
   'src/manuscript/ManuscriptChrome.tsx',
   'src/manuscript/ManuscriptView.tsx',
+  // OPEN THE DOOR (2026-07-17, sealed 15966cf9…81de): the sew glyph joins the
+  // NOT_FROZEN glyph chrome — the dock's sixth group (2026-07-11) never had a
+  // glyph and the person's app could not mount; the opened-door screenshot
+  // rides the handoff. Ratified by that mandate's own §5 (SEE IT OPEN).
+  'src/manuscript/OperationGlyphs.tsx',
   // THE INK (engineer-chartered 2026-07-14, sealed 5c430603…9f7e): the ink
   // mandate's sanctioned surface — the additive depth buffer in the tracer
   // and the re-inked view wrap (the void is paper; the line carries the

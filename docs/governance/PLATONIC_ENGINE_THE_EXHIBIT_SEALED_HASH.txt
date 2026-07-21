@@ -1,0 +1,94 @@
+PLATONIC ENGINE — THE EXHIBIT: the only picture this campaign has ever made is
+the one that lied. Make a true one. · SEALED HASH
+================================================================================
+
+SHA-256 of the off-repo seal `.handoff/SEAL_THE_EXHIBIT.md` (gitignored):
+
+    6b9a4c328eebf555c7b79cf1121abb6d43d8f32067507ddcf9468eed6d7d22de
+
+Measured NATIVELY by Arman (certutil). Written ONCE. BASELINE 113f12a.
+Sealed by the engineer seat.   co-ratified: PENDING
+
+--------------------------------------------------------------------------------
+CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
+--------------------------------------------------------------------------------
+
+    certutil -hashfile .handoff\SEAL_THE_EXHIBIT.md SHA256
+
+If that does not print 6b9a4c32...22de, STOP -- do not build.
+
+--------------------------------------------------------------------------------
+WHY THIS EXISTS
+--------------------------------------------------------------------------------
+
+Clause 8' of C.1 says EXHIBIT: the w1=1 plate beside its w1=0 control AT THE
+SHIPPED CALIBRATION. It was never done. Measured at 8d5e344: images in C.1's
+commit = ZERO. The witness proves the law BEHAVIOURALLY, HEADLESS. NOBODY HAS
+LOOKED AT THE PLATE.
+
+AND THE ONLY .png THIS CAMPAIGN HAS EVER PRODUCED IS THE HAND-AUTHORED ONE.
+DESIGNER_STIPPLE_VOID_TEST.png's field was E*(2(x-0.5))^2 -- the designer placed
+the zero at x=0.5 with his own hand, then "discovered" that it read. It ruled
+"one mark", killed Sigma's ink, and the engineer's numbers falsified it. LAW 9:
+the instrument carried the property it measured. It proved a hand-placed void is
+visible; it never touched whether a void MEANS Sigma.
+
+=> WE RULED A PICTURE-CLAIM ON A FAKE PICTURE, AND SHIPPED A REAL PICTURE NOBODY
+HAS SEEN. Designer's LAW 23: a claim about a picture must be made BY RENDERING
+IT. This run renders it.
+
+--------------------------------------------------------------------------------
+WHAT IT PINS -- PROVENANCE, NOT APPEARANCE
+--------------------------------------------------------------------------------
+
+THIS SEAL PINS NOTHING ABOUT HOW THE PLATE LOOKS. That is the DESIGNER'S ruling
+(LAW 23) and it is the entire reason the plate exists. Tuning the calibration or
+a colour to make it look better is VOID: "a curve that closes the void has erased
+a theorem, not tuned a texture." If it looks wrong, THAT IS THE FINDING.
+
+THE PRODUCTION DOOR (main.tsx:14/17): the DEFAULT route (AppShell) is the person;
+"?manuscript" is the DEV shell. The exhibit uses the DEFAULT ROUTE. ?manuscript
+=> VOID. The door-column's own headline is "THE COLUMN STOPS CALLING THE DEV
+SHELL 'THE PERSON'" -- exhibiting the person's field through a dev route would be
+LAW 9 in pictures, the last plate's sin in a new costume.
+
+THE ANTI-LAW-9 CLAUSE -- the whole seal: the pixels must come FROM THE ENGINE,
+through THE PERSON'S GESTURES. No fixture injection, no mock, no seeded store, no
+page.evaluate that builds a form, no hand-drawn anything. Every form arrives by
+CLICKING WHAT THE PERSON CLICKS. (Click path, DERIVED: invoke = RIGHT-CLICK on
+empty paper -> InvokePalette; ops = the dock's five glyphs (glue, flip-glue,
+collapse, cut, dualize); COMBINE = SHIFT-CLICK a second form (ManuscriptView:536
+"click selects the specimen; SHIFT-click a second form arms the combine pair") --
+which is why "combine" is not a dock glyph; ports = BirthGatePanel; the field =
+select the specimen, and the worker fires.)
+
+THE FALSIFIER THAT MAKES "IT IS REAL" CHECKABLE: the same run, from the same page
+state, must PRINT the field's measured values beside each screenshot, and they
+must match --
+  KLEIN   (w1=1): gate=simple, ker=0, 504 sites, Sigma = 56 EDGES, 90 nodes, D_max 135
+  GENUS-2 (w1=0): gate=simple, ker=1, 502 sites, Sigma = 0 (EMPTY),  8 nodes, D_max 15
+A HAND-AUTHORED PLATE CANNOT PRODUCE THESE NUMBERS. That is what makes the
+provenance checkable rather than promised.
+
+THE CONTROL IS FORCED, NOT CHOSEN: the torus reads DEGENERATE, so the genus-2 is
+the ONLY w1=0 form with a texture. No other control is possible.
+
+DERIVED THIS HOUR, AND IT CORRECTED A REAL RISK: the sealed 502/8/15 originally
+came from IMMERSED tori -- a DIFFERENT mesh from the person's word-glued path.
+Re-derived on the person's own path (invoke square -> glue-torus -> T2 -> combine
+-> :disk ports), the numbers MATCH -- because the drawn body is a CLASS BODY
+(buildClassBody), which depends on the CERTIFIED CLASS, not the ancestry.
+"class = certified, representative = craft", paying off as a prediction. Same
+number, different epistemic status: DERIVED, not remembered. Without that check
+the wrong-mesh assumption would have shipped for the third time.
+
+ALSO MEASURED: the T2 parents route 'immersion' => NO field layer
+(ManuscriptView:643). Only the CHILD carries the field. That is correct, and it
+is the exhibit's picture: A BIRTH THAT ENDS IN MUSIC.
+
+PINNED: default route only - both forms born by CLICKS alone - numbers printed
+from the same page state as each screenshot and matching the two rows above -
+two .png's delivered into .handoff/ - ZERO src motion, ZERO instrument motion -
+NOT a witness, NOT added to the suite - suite untouched at 93 @ exactly 1
+(dual-inspection) - manifest 44 - nothing staged - DERIVE EVERY NUMBER PRINTED,
+inherit none.

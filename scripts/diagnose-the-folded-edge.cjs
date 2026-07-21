@@ -324,6 +324,11 @@ const allowed = new Set([
   'src/lib/level3Invariants.ts',
   'src/manuscript/apertureModel.ts',
   'src/manuscript/ManuscriptView.tsx',
+  // OPEN THE DOOR (2026-07-17, sealed 15966cf9…81de): the sew glyph joins the
+  // NOT_FROZEN glyph chrome — the dock's sixth group (2026-07-11) never had a
+  // glyph and the person's app could not mount; the opened-door screenshot
+  // rides the handoff. Ratified by that mandate's own §5 (SEE IT OPEN).
+  'src/manuscript/OperationGlyphs.tsx',
   // THE PROBES (2026-07-14, sealed 8fcb8d42…4a69): that mandate's sanctioned
   // surface rides the same working tree — the crease ink, the 0620 defaults;
   // ratified in diagnose-the-probes.cjs.

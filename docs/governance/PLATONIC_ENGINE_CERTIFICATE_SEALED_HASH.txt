@@ -12,33 +12,7 @@ Sealed 2026-07-16 by the engineer seat. Baseline 39f6717. Researcher-proved
 someone's scratchpad is the differential-oracle mistake, repeating). The coder
 builds BLIND.
 
---------------------------------------------------------------------------------
-CO-RATIFICATION  [DRAFT CONVENTION — mothership ruling 2026-07-16 0900 §2]
---------------------------------------------------------------------------------
-
-    status   : PENDING
-    ruling   : —
-    verified : —
-
-THE GATE IS: engineer audit -> mothership co-ratification -> Arman commits.
-NOTHING ENFORCED THE MIDDLE STEP. It was a convention held in memory, and on
-2026-07-15 the engineer skipped it: the census (a318eba) was committed with no
-co-ratification because the engineer announced the intention in a report to
-ARMAN and never wrote the letter. Nothing failed; nothing noticed. It surfaced
-only because Arman read the mothership's stale queue against the git log.
-
-    > A law with no mechanism is not a law. It is a thing you are remembering,
-    > not running. (The same ruling that gave instruments/ a home; the
-    > mothership applied it to her own gate.)
-
-THE MECHANISM: this block is REQUIRED in every *_SEALED_HASH.txt. A commit
-whose hash record shows `status: PENDING` is VISIBLY UN-RATIFIED -- on-repo,
-greppable, by anyone:
-
-    grep -L "status   : RATIFIED" docs/governance/*_SEALED_HASH.txt
-
-The Sovereign is not supposed to be the integrity check on the ratifying
-office's own gate. This block is the lock the gate never had.
+co-ratified: PENDING
 
 --------------------------------------------------------------------------------
 CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED

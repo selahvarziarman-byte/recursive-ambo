@@ -11,6 +11,8 @@ Sealed 2026-07-16 by the engineer seat. Baseline 50b7538. Mothership-ruled
 (1700 arbitration order / 1900 acceptance) · researcher-diagnosed (the field
 whose name is false). The coder builds BLIND.
 
+co-ratified: 2026-07-16 0900 (retroactive — committed without the gate)
+
 --------------------------------------------------------------------------------
 CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
 --------------------------------------------------------------------------------

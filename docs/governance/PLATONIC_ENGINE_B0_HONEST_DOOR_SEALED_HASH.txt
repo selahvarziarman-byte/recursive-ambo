@@ -11,6 +11,8 @@ Sealed 2026-07-15 by the engineer seat. Baseline 8a009e0. Researcher-ruled
 (the engine is EUCLIDEAN — `cube/~` is always a Euclidean cone-manifold;
 nothing is ever S³/H³) + mothership-ratified. The coder builds BLIND.
 
+co-ratified: 2026-07-16 0015
+
 --------------------------------------------------------------------------------
 CONFIRM NATIVELY BEFORE THE BUILD IS CHARTERED
 --------------------------------------------------------------------------------

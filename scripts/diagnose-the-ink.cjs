@@ -515,6 +515,11 @@ const inkAllowed = new Set([
   'src/manuscript/ApertureView.tsx',
   'src/manuscript/ManuscriptView.tsx',
   'src/manuscript/apertureModel.ts',
+  // OPEN THE DOOR (2026-07-17, sealed 15966cf9…81de): the sew glyph joins the
+  // NOT_FROZEN glyph chrome — the dock's sixth group (2026-07-11) never had a
+  // glyph and the person's app could not mount; the opened-door screenshot
+  // rides the handoff. Ratified by that mandate's own §5 (SEE IT OPEN).
+  'src/manuscript/OperationGlyphs.tsx',
   // THE FOLDED EDGE (2026-07-14, ADR 0022): that mandate's sanctioned surface
   // rides the same working tree — the gate's folded-edge verdict + the
   // gate-first tower order + the verdict door; ratified in

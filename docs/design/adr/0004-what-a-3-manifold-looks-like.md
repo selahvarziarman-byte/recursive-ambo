@@ -51,10 +51,42 @@ engine hands the first non-E³ manifold, it must hand the ambient model with it,
 *commitment* is fixed now: **the geometry must show.**
 
 ### 4 · Orbifolds (junction forms) draw differently — by the SAME law, with NO new mark
-A cone edge is an edge whose link closes in fewer (or more) copies than the Euclidean count — and that is **already
-visible in the aperture**: the copies fan around that edge differently. The singular locus needs **no invented glyph**;
-it shows itself in the recession. Its *name* (the cone angle, the locus) belongs to the **specimen**. Do not draw an
-orbifold badge in the world.
+~~A cone edge is an edge whose link closes in fewer (or more) copies than the Euclidean count — and that is **already
+visible in the aperture**: the copies fan around that edge differently.~~ The singular locus needs **no invented glyph**;
+it shows itself in the recession. Its *name* belongs to the **specimen**. **Do not draw an orbifold badge in the world.**
+
+> ### ✅ **§4 IS RESTORED (2026-07-15). IT WAS RIGHT, AND I STRUCK IT WITH A PROOF THAT DID NOT APPLY TO IT.**
+> *(I first "corrected" §4 on 2026-07-14, ruling **"there is no cone edge; nothing winds."** The researcher has since **WITHDRAWN** the claim that gave me that, and it was hers to withdraw. **§4's cone edge is real.** My correction was the error.)*
+>
+> ### **THE FORM HAS TWO SINGULAR SETS — and each office held one and called it the whole.**
+> | | **TOPOLOGICAL** | **METRIC — *this is §4, and it is the one a person SEES*** |
+> |---|---|---|
+> | what | isolated **POINTS** (folded-edge **midpoints**; RP² vertex link) | **CONE EDGES** — an edge-class whose dihedrals miss 2π |
+> | codim | 3 (a point) | **2 — an AXIS** |
+> | test | the gate (χ=1 ⇒ RP²) | **edge-class SIZE**: `k` cube-edges carry `k×90°` ⇒ **flat ⟺ k=4; any k≠4 is a cone edge** |
+> | seen? | **invisible** — no winding, no focusing; **hygiene, print nothing** | ### **★ RAYS WIND AND FOCUS. This is the only part of the singularity a person will ever see.** |
+> | how many | 200 points, in 97/97 forms | **61 of 97 forms** (180°×108 · 270°×32 · 540°×16 · 720°×24) |
+>
+> **★ The tell: the 43 FLAT (`k=4`) sound manifolds carry ZERO cone edges — which is exactly why T³ always rendered cleanly.** *"The copies fan around that edge differently"* — **your sentence, and it was true.**
+>
+> **What was genuinely wrong in the old §4 is only the LOCATION of the topological certificate** (the non-manifoldness is an isolated **point**, not the edge). **Both readings live together.** And the instruction inside §4 stands as written: **no invented glyph · no orbifold badge in the world · the name belongs to the specimen.**
+>
+> **⛔ AND THE TRAP THAT FOOLED BOTH OFFICES (LAW 20):** a cone edge is exactly where **Poincaré's condition fails** ⇒ for `k ≠ 4` **the cube is NOT a fundamental domain**, so **a deck group fitted to the face maps is not the form's group** (for 76 of the 97 it folds the cube onto itself — it even produced *mirror planes* that had been **proven** impossible). **Never derive the singular set from a fitted deck group. Read it from the GATE and the EDGE-CLASS SIZES.**
+>
+> ### ⚠⚠ AND THE MARK IS **NOT** THE MIRROR-CLUSTER *(researcher's own correction; binding on Amendment 3)*
+> **Measured:** all **97 folded** forms have **w₁=1** — **but so do 57 of the 79 SOUND MANIFOLDS.**
+> **⇒ The mirror-cluster marks `w₁ ≠ 0`, NOT non-freeness.** *A mark true of the thing and also of its opposite is not a mark.* **57 genuine manifolds produce it identically.**
+> **THE REAL MARK IS THE ORBIT COLLAPSE — and it IS the definition, not a symptom.** *Non-freeness **is** a smaller orbit:* a free action never lets two copies share a position, so **the copy-count is CONSTANT everywhere**; at the fold the stabiliser is **ℤ₂ = {1, −I}**, so **the orbit is HALF the size there.**
+> ### **The copy-count DROPS at the singular point, by exactly the stabiliser order (2) — and it is COUNTABLE BY EYE** (a form placed there appears superimposed with its own mirror image: **two copies in ONE place, which never happens in a free action**). **LAW 8 satisfied honestly.**
+>
+> **⚠ THE HONEST BOUND THE WORLD MUST CARRY:** **from a static frame, with no form near the singular point, the NON-MANIFOLDNESS IS INVISIBLE** — and *it should be*, because **away from that point the space IS a non-orientable manifold.** The certificate is the **GATE's** (the RP² link), **not the eye's.**
+> ### **The aperture may claim `w₁` from the EYE. It may claim the FOLD only from a PROBE.**
+>
+> ### ★ **AND THE SHARPEST STATEMENT OF THE GUARD (designer, 2026-07-16 — adopted into canon):**
+> ### ***"An ε² hole sized so it reads is the orbifold badge wearing the costume of honesty."***
+> **⇒ The RP² point prints NOTHING. It is a GUARD in the tracer, never a mark on the page — not even a "small honest hole."**
+>
+> **And the refusal at the singular point is HYGIENE, not a phenomenon** *(the designer was right and the researcher has said so)*: an isolated point causes **no winding and no focusing** — `ℝ³/{±I}` is 2-to-1 and a straight line near `0` **stays straight** — so a near-miss ray is perfectly well-behaved and **the refusal will essentially never fire.** **Enlarging the hole so that it "reads" would be a FABRICATED MARK.** *(An axis would have given us something to draw. A point gives us nothing — which is precisely why the **orbit**, not the point, must carry the meaning.)*
 
 ### 5 · The gate
 If the engine cannot hand a real deck group and a real ambient for a given 3-manifold, **draw nothing and say so.**
@@ -162,8 +194,15 @@ Velho–Silva–Novello give it explicitly:
   The visual signature of H³ is that copies **shrink exponentially with distance while their number grows exponentially.**
 - **S³** — no model has straight geodesics: `r(t) = cos(t)·p + sin(t)·v`; suspend the cell by `Φ(x) = (x,1)/|(x,1)|`; faces
   are 2-spheres `⟨p, n⟩ = 0`; the hit solves `tan t = −⟨p,n⟩/⟨v,n⟩`.
-- **Orbifolds** — the ray **REFLECTS** instead of transporting: `v ← v − 2n⟨v,n⟩`. (The mirrored cube; the mirrored
-  hyperbolic dodecahedron.) *That is the mechanism behind "orbifolds by the same law."*
+- ~~**Orbifolds** — the ray **REFLECTS** instead of transporting: `v ← v − 2n⟨v,n⟩`. (The mirrored cube; the mirrored
+  hyperbolic dodecahedron.)~~
+  > ### ⛔ **WITHDRAWN 2026-07-14 by the mothership (my ratification error, not the designer's craft).**
+  > **That is the MIRROR law, and it needs an object this engine forbids.** A mirror wall is **codim-1** — a face glued to **itself** by a reflection. `faceIdentification.ts:316` **throws** on a self-paired face; `:348` enforces a **perfect matching**. **No Build-1 form has a mirror wall. The mirrored cube is UNREACHABLE.**
+  > **Our 97 folds are on EDGES — codim-2 — a CONE AXIS, not a mirror.** There is nothing to reflect about.
+  > **§4 of this very ADR had it right 110 lines earlier** (*"a cone edge is an edge whose link closes in fewer (or more) copies…"*). **The two halves disagreed; the substrate sides with §4, and §4 governs.**
+  > **No new ray law is needed:** every face is paired, so the ray always has a partner to transport into — the committed **`p ← g(p), v ← R·v`** already carries it. **What blocks the orbifolds' body is a DOOR (`apertureModel.ts:446`), not the tracer.**
+  > **Shipping the reflect law would draw a MIRROR where the engine has a CONE — a body that looks right and is a LIE.**
+  > *(A reflection orbifold is a legitimate future object — but it means relaxing `:316`, which would break the subdivision cure's precondition. **A different build, deliberately chosen — never smuggled in through a render.**)*
 
 **And the selector is a number our gate already computes.** RayVR picks the geometry by the required dihedral angle:
 Seifert–Weber = edges in **six groups of five** → dihedral 72° → **H³**; Poincaré = **ten groups of three** → 120° → **S³**;
@@ -406,23 +445,407 @@ the copy **UPSIDE DOWN**, and *an inverted smile reads as a frown.* **I asserted
 > **BOUND:** this holds because *this* map's reflection inverts the mask's up-axis. **A fact about this map, not a law.** Do not
 > generalise it. **The HAND remains the general chirality probe** — a left hand is a left hand under *any* reflection.
 > Also: *"laughs down one corridor, grieves down the other"* is true of the OBJECT but **requires turning around**; it is an
-> **unsupported caption on a frontal plate** and is struck there.
+> **unsupported caption on a
 
-### Amendment 2 · the probe is the CAPITOLINI POINTING HAND (2026-07-14)
-Sovereign supplied two more scans. Measured, then **put in the room** — because the metric cannot answer the real question.
+---
 
-| probe | mirror-IoU | verdict |
+## AMENDMENT 3 — THE FOLD IS A POINT, NOT AN EDGE. §165 is withdrawn; §4's RULING survives and its OBJECT is corrected. (2026-07-14)
+
+Two corrections landed together, and they are a pincer: the **mothership WITHDREW §165** (the borrowed orbifold-reflect law)
+and said **§4 was right**; the **researcher** says **§4 NAMES THE WRONG OBJECT**. Both are correct.
+
+### 1 · §165 — WITHDRAWN. It was a borrowed mechanism with no reachable object here.
+I imported Ray-VR's mirrored-cube rule (*"orbifolds — the ray REFLECTS: `v ← v − 2n⟨v,n⟩`"*) **accurately, and uselessly**:
+a mirror wall is a face glued to **ITSELF** by a reflection (**codim-1**), and our engine **forbids a self-paired face**
+(`faceIdentification.ts:316` throws; `:348` enforces a perfect matching). **The mirrored cube is UNREACHABLE in our
+substrate.** Every face is paired, so the ray **always** has a partner to transport into — **no new ray law is needed at all.**
+What blocks the folded forms' body is a **DOOR** (`apertureModel.ts:446` returns early on `folded`), **not the tracer.**
+> **Shipping it would have drawn a MIRROR where the engine has a POINT — a body that looks right and is a lie.**
+> **LAW 17 — a borrowed mechanism must be checked for REACHABILITY in our own substrate.** *An external mechanism arrives
+> with its own example; check the example against your substrate before adopting the law.* **I carried it in. Recorded.**
+
+### 2 · §4's OBJECT — CORRECTED. It is an isolated POINT, and nothing winds.
+§4 read the fold as *"an edge whose link closes in fewer copies than the Euclidean count"* — **that is a CONE EDGE, a
+singular AXIS, codim-2. We do not have one.**
+**Researcher-measured on `8a009e0`, all 97 folded pairings: 200 of 200 fold fixed-points have a vertex link with
+`components = 1, χ = 1` — i.e. RP². ZERO read S².** So the local model is **ℝ³/{±I} — the CONE ON RP²**:
+- the singular set is an **ISOLATED POINT (codim-3)**, **not an edge**;
+- the local group is **ℤ₂ = {1, −I}** — the **point-inversion**; **det = −1 ⇒ ORIENTATION-REVERSING**;
+- **it is NOT a manifold** (a cone *axis* would be; this is not).
+> **THERE IS NO AXIS. NOTHING WINDS. Strike every word of §4 that says "edge", "axis", "winds", or "fans around".**
+
+### 3 · §4's RULING — SURVIVES, and is now cheaper and truer than what I wrote over it.
+**No badge. No glyph. No orbifold mark of any kind.** The singular point **shows itself** — and what it shows is better than
+the winding §4 promised:
+> **A MIRROR-CLUSTER AROUND AN ISOLATED POINT.** Every copy reached *through* the fold comes back **handed the other way**
+> (det = −1). **Chirality needs no ink: the pointing hand comes back a LEFT hand, around the point.**
+**The countable claim** (Law 8 — seal the count, never the metric): *"N of the M hands around this point are LEFT hands."*
+**Produced by the tracer. Never by me.**
+
+### 4 · ★ THE INK OF THE REFUSAL — and I decline to inflate it.
+A ray that **hits** the singular point has **no geodesic continuation**. The researcher's law: **the body must REFUSE
+there, not interpolate. An honest hole IS the finding; a smooth pixel is a lie.** Accepted, and here is its ink:
+
+> **We already have the ink for a hole: THE PAGE.** Our own ink law says **the void is PAPER** — adopted for the build-guard,
+> for a completely different reason. **A refused ray is an un-hit pixel, and an un-hit pixel is bare paper.**
+> **The hole in the page IS the hole in the space.** *No new mark. The manuscript already knew how to draw nothing.*
+
+**But I will not pretend it is a phenomenon.** The refusal locus is **measure-zero**: it will draw as **at most a pinprick**,
+and a viewer **cannot distinguish it from empty page**. So:
+> **THE REFUSAL IS A CORRECTNESS LAW FOR THE TRACER, NOT A MARK FOR THE VIEWER.**
+> **Enlarging the hole so that it "reads" would be a FABRICATED MARK — the orbifold badge, wearing the costume of honesty.**
+> **The PHENOMENON is the mirror-cluster. The refusal is hygiene.**
+- **Do NOT anti-alias, blur, or interpolate across the refusal.** A refused sample contributes **paper**, never a neighbour's colour.
+- **Do NOT snap, thicken, or dilate it.** It is a point. Draw a point's worth of nothing.
+
+### 5 · WHAT I HAVE **NOT** DONE — and will not seal until I have (LAW 7)
+**I have not rendered a folded form.** The door is shut. **The mirror-cluster above is a PREDICTION from the researcher's
+local model, not a look I have seen.** Per my own practice rule — *render every probe alone, first; check a witness from
+outside the thing it witnesses* — **I will not seal how it LOOKS until I have traced one.** *(I asserted a mechanism from a
+glance once already this week — the "grieving masks" — and it was false. Not twice.)*
+**Open the door and I will dial it. Until then this amendment rules the OBJECT and the LAW, and stops short of the look.**
+
+## AMENDMENT 4 — THE LOOK IS SEALED. I traced a folded form. (2026-07-14)
+Amendment 3 stopped short of the look and said *"open the door and I will dial it."* **The door was shut in the PRODUCT. It
+was never shut to me.** I enumerated the person's door in my own tracer (`dihedralMapCandidates` × 3 = **512**, of which
+**97 FOLDED** — the researcher'
+
+## AMENDMENT 5 — THE MARK IS THE ORBIT COLLAPSE, NOT THE MIRROR. And my own witness had a gap. (2026-07-14)
+
+### 1 · ⛔ AMENDMENT 4 §2 IS WITHDRAWN AS A MARK OF THE FOLD
+I captioned *"22 of the 39 hands are LEFT hands"* as the folded form's mark. **The researcher measured: all 97 folded forms
+have w₁ = 1 — AND SO DO 57 OF THE 79 SOUND MANIFOLDS.** *(A mark that is true of the thing and also of its opposite is not a
+mark.)* **The mirrored copies mean NON-ORIENTABLE, never NON-MANIFOLD.** The count stays — its **meaning** is corrected.
+
+### 2 · ★ THE FOLD'S MARK — the ORBIT COLLAPSE. Derived here, from the geometry, with no topology.
+A **free** action never lets two copies share a place. A **non-free** one does — that is what non-freeness *is*.
+> **MEASURED (my deck group, same form):**
+> **generic point → 429 deck words → 429 DISTINCT images (ratio 1.00 — FREE).**
+> **singular point → 429 deck words → 189 DISTINCT images (ratio 2.27 — THE ORBIT COLLAPSED).**
+**Countable. No ink. No badge.** It is the only thing that separates the 97 from the 57.
+**HONEST LIMIT:** *proven numerically; I have NOT yet made it LEGIBLE in a frame.* `outputs/the_orbit_collapse.png` shows the
+probe on the singular point and **the collapse does not yet read by eye.** **The look is NOT sealed. Craft owed.**
+
+### 3 · ⚠ MY WITNESS HAD A GAP — and closing it changes the map
+My fixed-point search **only found ISOLATED fixed points** (`det(I−R) ≠ 0`). **Elements whose fixed set is a LINE were
+silently dropped.** Closed:
+- **Isolated fixed points in the cell: 12 = 8 CORNERS + 4 FACE CENTRES** — all det = −1; the exact **point-inversions
+  (R = −I) are at the FACE CENTRES.** ***Not*** 12 edge midpoints.
+- **NON-ISOLATED fixed sets: 9 — fixed LINES, det = +1**, one through **(−1, 0, 1) — an EDGE MIDPOINT.**
+> **⇒ In this form the edge midpoints are ROTATION AXES (det = +1) — cone AXES, and ℝ³/rotation IS a manifold.**
+> **The NON-MANIFOLD points (R = −I) are at the FACE CENTRES and CORNERS.**
+
+### 4 · ⚠⚠ A LIVE DISCREPANCY — I do not claim the researcher is wrong; I claim what I measured
+Her census: the RP² (χ=1) classes sit at **folded-edge MIDPOINTS in all 97**. My geometry: the R = −I points sit at **face
+centres / corners**, and the edge midpoints carry **orientation-PRESERVING** axes. **She could not decode my door keys
+(`d+0 · d+1 · d-2`), so we may not be looking at the same form.** **Either our forms differ, or the combinatorial singular
+vertices and the geometric fixed sets disagree. This must be reconciled BEFORE 0.2 seals on a probe aim.** *(She is right that
+an assumed location is how a true mark dies — and that cuts both ways.)*
+
+### 5 · ★ HER ε-EXPONENT READING — accepted, and I did not know I had made it
+> **The ε-scaling exponent of the refused pixels IS the CODIMENSION of the singular set.**
+My data: ε × 10 ⇒ px × 77 ⇒ exponent **1.89 ≈ 2** ⇒ **codim 3 — a POINT.** *(An axis would give ∝ ε¹; a mirror ∝ ε⁰.)*
+**A third witness, from a pixel count, with no topology in it.** It also makes *"print no hole"* airtight: the hole is `ε²` —
+**entirely manufactured by the tolerance.**
+
+## AMENDMENT 6 — TWO SINGULAR SETS. §4's CONE EDGE IS RESTORED. My location claim is WITHDRAWN. (2026-07-15)
+
+### 1 · ⛔ MY AMENDMENT-5 LOCATION CLAIM IS WITHDRAWN. The researcher was right.
+I claimed the singular points were *"8 corners + 4 face centres — **zero** edge midpoints."* **False. MEASURED, directly:**
+```
+edge:10bado1 (FOLDED)  midpoint [0, 1,−1]   STABILISER = 2   (orientation-reversing: 1)   ← FIXED
+edge:1hmvkhh (FOLDED)  midpoint [0,−1, 1]   STABILISER = 2   (orientation-reversing: 1)   ← FIXED
+```
+**The folded edges' midpoints ARE fixed, by an order-2 stabiliser containing exactly one orientation-reversing element** —
+her ℤ₂ = {1, −I}, exactly where she said it was. **My enumeration silently dropped precisely the elements that fix them.**
+> **THE ORBIT COLLAPSE, AT THE PLACE IT LIVES: 429 deck words → 224 distinct images. Ratio 1.92 ≈ 2 — the stabiliser order.**
+> *(My earlier corner figure, 429 → 189 / ratio 2.27, is not an integer and is not trustworthy. The midpoint is.)*
+
+### 2 · ⚠ BUT HER DIAGNOSIS OF MY BUG IS WRONG — and it matters, because it is about LAW 20
+She ruled my deck group invalid because *"for k ≠ 4 the cube is not a fundamental domain."* **Measured on my form:**
+> **EVERY edge class has k = 4. ZERO cone edges. The form is FLAT ⇒ the cube IS a fundamental domain ⇒ my fitted group WAS
+> this form's group.**
+**My error was not the domain. It was an INCOMPLETE FIXED-SET CLASSIFICATION** — I enumerated only *isolated* fixed points
+and mis-binned the rest. **That is LAW 18 (an elimination needs a closed list), not LAW 20.** *(LAW 20 stands as a law — it
+simply was not my bug. Two of us mis-diagnosed the same error, in opposite directions.)*
+
+### 3 · ★ §4's CONE EDGE IS RESTORED — for the METRIC
+The form has **TWO** singular sets, and each of us had been holding one:
+| | **TOPOLOGICAL** | **METRIC** |
 |---|---|---|
-| **Capitolini pointing hand** (plinth cut) | **0.081** | **ADOPTED** |
-| Burganov open hand | 0.094 | retired |
-| vessel-hand HCM 233 | 0.137 | rejected — a **closed fist hides its own handedness** |
+| where | isolated **POINTS** — folded-edge **midpoints**, link RP² | **EDGE-CLASSES with k ≠ 4** (cone angle = k × 90°) |
+| codim | **3** | **2 — an AXIS** |
+| rays wind? | **no** | **YES — they wind, and < 2π FOCUSES them** |
+| visible? | **no** (measure-zero; the ε² law) | **YES — this IS the visible geometry** |
+| in the 97 | **all 97** | **61 of 97** |
+> **Restore every word of §4 that says *edge · axis · winds · fans around* — FOR THE METRIC.** The non-manifoldness is at a
+> **point**; the **winding** is at the **edges**. **Both are real, and only the second can be seen.**
 
-> **★ THE NUMBER IS NOT WHY.** **mirror-IoU measures GEOMETRIC self-similarity, not whether a person can READ handedness in a
-> SMALL COPY.** An **open palm's fingers merge into a blob** at copy size — that is literally how the *mitten* was born. A
-> **pointing hand keeps its silhouette at any size**. **The metric picks the shortlist; the ROOM picks the probe. Seal the
-> COUNT, never the IoU.**
+### 4 · HOW TO READ EACH — never off a fitted group again
+- **cone edges ⟸ EDGE-CLASS SIZES** (`k ≠ 4`) — combinatorial, exact, already computed.
+- **topological points ⟸ THE GATE** (`folded-edge` class → that edge's **midpoint**).
+**Both from the engine. Neither from a fit.**
 
-**Executed:** **T³ — every hand you can see is a right hand (0 of 32). The FLIP form — 18 of 33 are LEFT hands.**
-Plate: `outputs/the_capitolini_room.png`. Asset: `.handoff/assets/hand_pointing_capitolini.obj`.
-**Retracted en route:** I first reported this hand at **0.064** — my cut had kept a sliver of plinth and a lump of finger.
-Caught by *looking at what I had actually kept*. **The practice rule's third catch.**
+### 5 · WHAT IS OWED (mine)
+**My form is FLAT — it has no cone edges, so nothing winds in it.** **To SEE the winding I must trace one of the 61.**
+**The look of the cone edge is NOT sealed.** *(And the key decode is broken: `d+0·d+0·d+0` is **not** T³ — it carries k=2 cone
+edges. My T³ control was built from explicit translation maps, never from keys. The researcher's inability to reproduce my
+pick has the same root.)*
+
+## AMENDMENT 7 — ★ THE APERTURE IS A PLACE, NOT A PICTURE. The shipped aperture is a STILL, and that is MY specification error. (2026-07-15)
+
+### 1 · WHAT SHIPS
+`ManuscriptView.tsx:703` calls `traceAperture` inside a `useMemo` keyed on `[dim3All, placedForms, shapeById, apertureCtl]`.
+**No `eye`. No `forward`. No camera dependency.** It traces ONCE from a default viewpoint and paints the result on a plane as
+a `THREE.DataTexture`.
+> ### **THE PERSON CANNOT MOVE INSIDE THEIR OWN MANIFOLD. THE APERTURE IS A STILL.**
+
+### 2 · ⛔ THIS IS MINE, AND THE FAULT IS EXACT
+**Every mail I sent the engineer specified INK** — the void is paper, the crease term, the hatch, the echo fade, the tone
+curve. **Not one of them said the EYE MUST MOVE.** Ray-VR — the source I brought in and built the whole doctrine on — is a
+**walkthrough**, and I reduced it to a plate. **I specified a picture where my own doctrine demanded a place.**
+*(And the doctrine says so in its own words: "a 3-manifold is a **HABITAT**, not a specimen." A habitat you cannot enter is a
+diorama.)*
+
+### 3 · WHY IT HAPPENED — the architecture forced it (MEASURED, one CPU thread)
+| resolution × echoes | time | rate |
+|---|---|---|
+| **168² × 6 — what ships** | **1.2 s** | **0.8 fps** |
+| 512² × 6 — interactive | 10.5 s | 0.1 fps |
+**A CPU ray tracer in JS cannot be walked through.** I handed the engineer a CPU tracer and ink recipes; a picture is what he
+could build. **The still was the honest consequence of my spec.**
+
+### 4 · ★ THE RULING — the aperture becomes a FRAGMENT SHADER
+**Not too heavy: this is trivial on a GPU.** Each pixel is an independent loop of ≤ `level` transports plus a few
+intersections; Ray-VR runs it in **VR at 90 fps**. We are **already in three.js** (`ApertureView` builds the texture today).
+- **transport** → GLSL loop; the deck isometries are `uniform mat4 g[N]` (from the engine, unchanged).
+- **eye / forward** → the person's camera, per frame.
+- **scene** → **bake the probe m
+---
+
+## Amendment 8 (2026-07-14) — **THE WINDING IS DRAWN. And the cone edge announces itself as a MIRROR at half-turn.**
+
+**Status:** measured, in the instrument, on the engine's own pairing. Nothing here is inferred.
+
+### 8.1 · What a person actually sees when they turn around a cone edge
+
+Select an edge; the room carries you around it. **Count doors.**
+
+| | k = 4 edge (flat) | **k = 2 edge (CONE)** |
+|---|---|---|
+| after 2 doors (180°) | nothing | **the room comes back — MIRRORED.** Your right hand is a left hand. |
+| after 4 doors (360°) | the room comes back true | the room comes back true |
+
+**The cone edge is not drawn with ink. It is drawn with a HALF-TURN.** On a flat edge the room takes a
+full turn to return. On a cone edge it returns at *half* a turn — and returns *handed the other way*.
+**That is the phenomenon, it needs no badge, and it is countable by eye: doors, and the hand.**
+
+### 8.2 · Why the ambient picture could never have shown it (LAW 20, earned the hard way)
+
+Fitting deck isometries to the face maps is **exact** (residual 0.000 on all six faces — the fit is not the bug).
+And yet, on every k = 2 edge:
+
+> **the complex closes the cycle at 2 cells, while the composed isometry NEVER becomes the identity.**
+
+**That is not a contradiction — that is the definition of a cone.** The holonomy around the edge is a
+non-trivial, orientation-reversing element that *holds the edge fixed*. **A cube tiling of E³ cannot close
+it**; it unwinds the cone into its **double cover** — which is precisely the 4 doors the observer walks.
+
+> ### **LAW 21 — A GLOBAL TILING CANNOT CARRY A CONE.**
+> An ambient deck group fitted to the face maps silently renders the **flat double cover** of a cone form.
+> **The transport must be CELL-LOCAL** (leave face *f*, re-enter its partner by the face map — the ray never
+> leaves the cube). *Our ray transport already was; only my RETURN TEST was ambient, and so it reported "not
+> yet returned" at the very moment the cone was speaking.*
+
+### 8.3 · The rule I gave is CONFIRMED — by measurement, not by intuition
+
+Census over all 512 cube-door forms, edge-class size *k* vs. the true dihedral cycle *L*:
+
+- **k = L on all 6144 edges. Zero exceptions.**
+- **"cone edge ⟺ k ≠ 4" and "cone edge ⟺ L ≠ 4" disagree on 0 of 512 forms.**
+- **61 of the 97 folded forms carry a cone edge — the same 61.** The cone angle **is** k × 90°.
+
+**§4 stands, and now it stands on a run instead of on my word.** *(I had asserted the angle from the class
+size without ever walking the cycle. It happened to be true. It was still an unearned claim — and I only
+found that out because the instrument disagreed with me and I believed the instrument.)*
+
+### 8.4 · Three bugs, one lesson
+
+1. **The rotation sense is a pseudovector.** Through a mirror door (det = −1) the turn keeps its axis and
+   **reverses its sense**: ω ← det(R)·R·ω. Rotating about the naive R·d sent the observer back out the door
+   it came in. **T³'s doors are all det = +1, so the flat form was structurally incapable of exposing this.**
+   *A control that cannot fail is not a control — the folded form was the only witness.*
+2. **The return test was a metric tolerance** (`|eye − home| < 0.12`), which knew nothing about *which copy*
+   the observer stood in. **Replaced by a word: the room has returned when the accumulated door-word is the
+   identity.** *(My own countable-captions law, broken by me, in the very instrument built to obey it.)*
+3. **The edge was re-found by nearest-neighbour search** each door. **Replaced by transport:** the edge is
+   carried by the isometry, exactly as the rays are. *Search where you can transport, and you will drift.*
+
+### 8.5 · **The observer CARRIES a frame, and the space is allowed to TAKE it** (Arman caught this)
+
+*"The flips are applied to the orbiting itself — every 180° the spin changes between clockwise and counterclockwise."*
+**He was seeing something real, and it was not the orbit.**
+
+- **The motion never reverses.** Developed into one fixed frame, the observer's path around the edge is
+  **monotone: 315° swept, 0 reversals.** It is a true circuit.
+- **The CAMERA was reversing.** The heading was stored as a **yaw/pitch pair**, which silently re-imposes a
+  **RIGHT-handed frame every single frame.** So when a mirror door handed the observer back *reversed*, the
+  render **denied it** — and a denied mirror has to go somewhere. It came out as **the spin flipping**.
+
+> ### **LAW 22 — HANDEDNESS IS STATE THE OBSERVER CARRIES, NOT A CONVENTION THE RENDERER RE-IMPOSES.**
+> Store the observer's frame as a **carried basis** (fwd, right, up), transported through every door by the
+> face map — **det = −1 included.** A frame rebuilt from angles cannot become left-handed, so a renderer that
+> rebuilds it **cannot show a mirror**, and will pay for the lie somewhere else in the picture.
+
+**Verified:** the observer's handedness now tracks **sign(det W)** at every door, on every edge tested — it
+flips **exactly** when the door-word says it does, and never on its own. On a cone edge the observer is
+**LEFT-handed for precisely the half-turn in which the room is mirrored**, and comes back right-handed at 360°.
+
+**And the phenomenon is now clean:** *you cannot carry a consistent handedness around a cone edge — the space
+takes it from you and gives it back.* The spin no longer flips; **you do.**
+
+---
+
+## Amendment 9 (2026-07-14) — ⛔ **§8.1 IS WITHDRAWN. The half-turn mirror is NOT VISIBLE, and I captioned a picture that does not contain it.**
+
+**Arman caught this by LOOKING.** *"Only the prose on the screen tells me that I am flipped. Everything else
+remains the same, except for a glitch every time the flip is supposed to happen."* **He is right, and the
+failure is mine, and it is a repeat offence.**
+
+### 9.1 · The measurement that kills it
+The room repeats after turning Δθ about an edge **iff the rotation by Δθ about that edge is itself a deck
+element.** Enumerated Γ (195 elements) and tested Δθ ∈ {90°, 180°, 270°, 360°}:
+
+> **The room repeats at 360°. On EVERY edge. Cone (k=2) and flat (k=4) alike. In BOTH forms.**
+> **Nothing repeats at 180°. There is no visible half-turn. There is nothing on the screen to see.**
+
+**§8.1's table is false as rendered, and I am striking it.** What I actually measured in §8.1 was that the
+**door-WORD** holds the edge and has det = −1 at door 2. That is an algebraic fact **about the word**. I
+promoted it to a claim **about the picture** without ever rendering the picture. *That is the same error as
+"48% of the coils," and this is the third time in this arc.*
+
+### 9.2 · Why there is nothing to see — and it is LAW 20, which I wrote and then walked past
+> ### **A DECK TRANSFORMATION IS INVISIBLE FROM INSIDE. That is what a quotient MEANS.**
+> The scene is invariant under exactly the transformation applied to the observer, so the image from the
+> transported pose is **identical, pixel for pixel**. **An observer can NEVER see their own handedness flip.**
+> No experiment inside the room reveals it. **Handedness is only ever visible by COMPARISON.**
+
+And the deeper one, which retires §8.2's optimism:
+
+> ### **LAW 21 (STRENGTHENED) — A CONE FORM HAS NO E³ DEVELOPMENT AT ALL.**
+> I wrote *"the transport must be cell-local — our rays already are."* **They are not.** The cell-local step
+> **IS** the ambient generator; composing them **reconstructs Γ**, and **Γ has no cone**. Four cubes go around
+> every edge because four cubes are what fits in flat space. **I have been rendering the flat DOUBLE COVER and
+> calling it a cone.** *My own memory says it: "for k≠4 the cube is NOT a fundamental domain, so a deck group
+> fitted to the face maps is NOT the form's group." I quoted that law at the mothership and then broke it.*
+
+### 9.3 · What survives, and what it costs
+- **SURVIVES — the census (§8.3).** k = L on all 6144 edges; the 61 of 97 are the same 61. **Combinatorial,
+  independent of the render.** The cone edges are REAL. *They are simply not in this picture.*
+- **SURVIVES — LAW 22 (§8.5), as engineering.** Carrying the frame is correct; rebuilding it from angles
+  rendered the **mirror of the true view**, which was a falsehood. **But it draws NOTHING** — removing a false
+  mark left an empty screen, and I filled the emptiness with a caption. ⚠ **Strike the caption.**
+- **DEAD — 0.2 as chartered.** *"0.2 must draw the winding"* **cannot be satisfied by this method.** The
+  winding is not renderable from a fitted ambient deck group, at any level of care, ever.
+- **★ THE ONE MARK THAT IS REAL AND VISIBLE: THE COPIES, NOT THE OBSERVER.** You never see your own flip.
+  **You see THEIRS** — a chiral object's copies come back through mirror words as LEFT hands, in the same
+  frame, next to the right ones. **That is a comparison, it is countable, and it is already on the screen.**
+  *This is the mirror-cluster I ruled in Amendment 3 and then wandered away from chasing a phenomenon that
+  does not exist.*
+
+---
+
+## Amendment 10 (2026-07-14) — ★ **AMENDMENT 9 IS ITSELF WITHDRAWN. THE WINDING IS REAL, VISIBLE, AND I HAVE NOW RENDERED IT. §8.1 IS RESTORED — CORRECTED.**
+
+**I withdrew the winding on a measurement taken from a form that could not contain one.** The researcher's
+stratum table (2026-07-15) exposed it: a **FOLD** (`folded`, holonomy **reverses** the edge, det = −1) and a
+**CONE EDGE** (`k≠4` **AND NOT FOLDED**, holonomy is a **rotation** about the edge) are **different strata.**
+**My instrument's form was FOLDED. Its `k=2` classes were FOLDS. I never rendered a cone edge at all.**
+
+### 10.1 · The render — same form, same code, both strata
+Form `["d-3","d-3","d+0"]` (**sound**, carrying a k=2 cone class). Observer orbits cell-locally by the local
+face map. The cube is a fundamental domain, so **pose-return IS image-return**:
+
+| edge | stratum | doors | **the room comes back at** |
+|---|---|---|---|
+| k = 4 | flat (**control**) | 4 | **360° — a full turn** |
+| **k = 2** | **TRUE CONE EDGE** | **2** | **★ 179° — A HALF TURN** |
+
+> ### **THE ROOM COMES BACK AT HALF A TURN ON A CONE EDGE AND A FULL TURN ON A FLAT ONE — IN THE SAME FORM.**
+> **Visible. Countable (doors). No ink, no badge, no prose. 0.2 HAS ITS MARK.**
+
+### 10.2 · What was wrong with Amendment 9, precisely
+1. **Wrong instance.** A folded form cannot carry a cone edge. **I found nothing and reported that nothing was there.**
+2. **Wrong test.** *"The room repeats iff R_Δθ ∈ Γ"* **presumes a tiling group Γ.** A true cone form **has no Γ** —
+   the developing map never closes. **I applied a flat-space criterion to a curved question, and it answered 360°
+   because 360° is the only answer it can give.**
+
+> ### **LAW 24 — A NEGATIVE RESULT REQUIRES A POSITIVE CONTROL.**
+> Before reporting *"the phenomenon is not there,"* show the instrument **CAN** show it, on a case where it
+> **MUST** appear. **A form structurally incapable of carrying the mark cannot testify against it.**
+> *This is the third time in this arc that a control which could not fail let a false claim through. I named that
+> failure myself in Amendment 8 — and committed it in Amendment 9.*
+
+### 10.3 · What now stands
+- **§8.1 RESTORED, corrected:** the mark is **the room returning at k×90° instead of 360°** — a **rotation**, not
+  a mirror. *(The det = −1 "mirror at half-turn" of A8 was the FOLD's reversal, misread. That part stays dead.)*
+- **The engineer's transport was correct all along**; the researcher's ruling (no development needed) is confirmed
+  **by render**. **The door is refusing forms it can already draw.**
+- **LAW 22 stands** (a deck transformation is invisible from inside; you see *their* flip, not yours) — **it is
+  true, and it is a DIFFERENT mark from the winding.** Both are real. **We get both.**
+
+---
+
+## Amendment 11 (2026-07-14) — ★★ **THE FOLD IS VISIBLE. Three marks, three registers, each earned by a theorem AND a render.** Standing canon corrected.
+
+> ⚠ **PENDING-ROUTE** *(marked 2026-07-16 by the designer; mothership-accepted, one line, no re-seal, not a retraction — nothing below is withdrawn)*: the three marks are **proven**, but **two of them have no person's route** — **THE WINDING** needs *turning* and **THE FLIP** needs *walking a meridian*, and the aperture's `eye`/`forward` are unwired (`ManuscriptView.tsx:709` passes no eye), so a still frame cannot carry either. **MIRROR-CLUSTER is reachable today** (`mirrored[]`, shipped). **The route lands with the camera** — mothership-ruled to **STEP 5, at the head of the post-field queue** (behind the field, against its own merit). *I sealed three marks without asking which a person could reach; that omission is marked here, not litigated.*
+
+The researcher ruled the flip a **theorem** (both directions); I swept it (200/200, closed list) and rendered its
+**condition**. Canon that said *"the fold is claimed by no eye"* is **withdrawn** (hers, ratified).
+
+### 11.1 · The three marks — now fully separated
+| mark | the person sees | ⟺ | register |
+|---|---|---|---|
+| **THE WINDING** | the room comes home **EARLY** — k doors, not 4 | **`k ≠ 4`** | cone **or** fold *(a rotation)* |
+| ### **THE FLIP** | the room comes home **MIRRORED** — handed the other way | ### **THE FOLD** | *(a reflection; the meridian is `w₁=1`)* |
+| **THE MIRROR-CLUSTER** | a chiral form's **copies** return left-handed | **`w₁ ≠ 0`** *(global)* | orientability, not the fold |
+
+**EARLY and MIRRORED are INDEPENDENT AXES** — proven by the **72 folded `k=4` classes**, which come home at a
+**full turn** (the winding is blind to them) **and mirrored** (only the flip sees them). *I found those 72 only by
+re-running after catching LAW 18 on my own sweep.*
+
+### 11.2 · Why MIRRORED ⟺ FOLD is a theorem, not my statistic (researcher's proof, recorded)
+- **FOLDED ⟹ det = −1:** the fold's local group is `ℤ₂ = {1, −I}` (from the RP² link); the edge holonomy is that
+  nontrivial element ⇒ `−I` ⇒ det = −1.
+- **NOT FOLDED ⟹ det = +1:** a non-folded holonomy fixes the edge *direction*; a det = −1 isometry fixing a line
+  pointwise is a **reflection in a plane through it** — a mirror — which would give `cube/~` a **boundary**. But
+  `cube/~` is **closed** (perfect face matching). Impossible. ∎
+
+My sweep (200/200 mirrored on folds, 928/928 true off them, **zero exceptions**) is the **confirmation** of the
+theorem, not its ground.
+
+### 11.3 · ★ THE CONDITION — rendered, not asserted (and it caught me)
+`det = −1` is the **math**. **Seeing** it is a further claim with a precondition:
+> ### **THE ROOM MUST CONTAIN A CHIRAL REFERENCE THAT DOES NOT TRAVEL WITH THE OBSERVER.**
+> A **mirror-symmetric** room flips with the observer and **nothing disagrees — the flip is real and invisible.**
+
+**Proven two ways:**
+1. **Algebraic:** all **24 / 24** det = −1 frames preserve the cube-edge rod set ⇒ a rods-only room *cannot* show
+   the flip, by construction.
+2. **Rendered clean** (no manifold transport ⇒ zero noise floor): the det = −1 return leaves a **symmetric object
+   0.0%** changed and a **right-handed helix 91.9%** changed.
+
+⚠ **AND IT CAUGHT A LIVE ERROR OF MINE:** my first render of a rods-only room reported **19.7% changed → "the flip
+is seen."** That 19.7% was **transport noise** in the throwaway tracer, not signal — the symmetry proof says the
+true value is **0**. **I nearly captioned the noise.** *(Countable-captions law, one more time: the floor is not the
+mark. Measure the signal against the floor, or don't print it.)*
+
+> ### **LAW 26 — A VISIBILITY CLAIM MUST NAME ITS NOISE FLOOR.** *"X% of pixels changed" is meaningless until the
+> floor (the same measurement where the true signal is provably zero) is subtracted. Render the null case first.*
+
+### 11.4 · What is canon now
+- **The FLIP is the fold's visible mark**, in motion, with a chiral reference at rest. The **orbit-collapse probe is
+  secondary** (still valid; the flip is cheaper and catches the 72 `k=4` folds it cannot).
+- **STILL TRUE:** a **static** frame shows nothing; the **isolated RP² point** stays invisible (a different object —
+  the mark lives on the *edge* around it, not the point).
+- **WITHDRAWN:** *"the fold is claimed by no eye."* **A moving observer with a chiral reference reads it directly.**
