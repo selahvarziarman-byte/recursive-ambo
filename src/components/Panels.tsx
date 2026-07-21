@@ -43,6 +43,7 @@ import {
 import type {
   Cell,
   CellKind,
+  EdgeId,
   Face,
   PacketLineage,
   PacketSourceRef,
@@ -118,7 +119,11 @@ interface CellFaceRow {
 }
 
 interface CellEdgeRow {
-  id: string;
+  id: string; // the canonical VERTEX-PAIR KEY — display/dedup identity, NOT an entity id
+  // R1 THE LIFT: the row's REAL edge entity id — the only id the lift consumes.
+  // null ⇔ no edge entity backs the pair (measured-dead on app-produced forms;
+  // the type carries the branch honestly instead of a lying string).
+  edgeId: EdgeId | null;
   vertexIds: [VertexId, VertexId];
   displayLabel: string;
   secondaryLabel: string | null;
@@ -2150,12 +2155,16 @@ function CellComposition({
             <div
               key={edge.id}
               onClick={(event) => {
-                if (event.shiftKey) toggleLiftSelection({ kind: 'edge', id: edge.id });
+                // R1 THE LIFT: hand the REAL edge id — the pair key (edge.id) is
+                // display identity and is NOT in the source shape's edge table.
+                // null ⇒ no toggle (measured-dead branch on app forms).
+                if (event.shiftKey && edge.edgeId !== null)
+                  toggleLiftSelection({ kind: 'edge', id: edge.edgeId });
               }}
               onPointerEnter={() => setHoverTarget({ kind: 'edge', vertexIds: edge.vertexIds })}
               onPointerLeave={() => setHoverTarget(null)}
               className={`cursor-pointer rounded border px-2 py-1 text-xs text-stone-400 ${
-                inLiftSet('edge', edge.id)
+                edge.edgeId !== null && inLiftSet('edge', edge.edgeId)
                   ? 'border-emerald-400 bg-emerald-400/10'
                   : 'border-stone-900 bg-stone-950/70'
               }`}
@@ -3254,6 +3263,7 @@ function getCellEdges(shape: Shape, cell: Cell): CellEdgeRow[] {
       if (!edges.has(key)) {
         edges.set(key, {
           id: key,
+          edgeId: edge?.id ?? null,
           vertexIds: [a, b],
           displayLabel: formatEdgeRef(shape, [a, b]),
           secondaryLabel: formatEdgeSecondaryLabel(edge, a, b),

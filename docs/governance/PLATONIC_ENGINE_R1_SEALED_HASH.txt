@@ -1,0 +1,65 @@
+PLATONIC ENGINE — SEALED HASH RECORD — R1: THE LIFT
+====================================================
+
+SEAL:            .handoff/SEAL_R1_THE_LIFT.md   (off-repo, gitignored; written ONCE)
+NATIVE SHA256:   c724886724b65d50331e69cde4a4d3d0e96c86f1ba39c7045b4aa8f21773cd51
+                 3,989 bytes. DOUBLE-DERIVED: coder at build time without reading the seal
+                 (REPORT_HAMZAAD_R1.md §0); the Sovereign's certutil identical at audit
+                 close (2026-07-21).
+
+CHARTER:         mothership 1608 (ARC R · R1) · baseline `a501883`. NO ritual (Panels not
+                 in the manifest; subComplexLift NOT_FROZEN :175 — untouched by the build).
+BUILD:           coder (همزاد), blind; addendum R1.1 (the highlight) same charter.
+AUDIT:           engineer (3rd seat) — ACCEPT WHOLE.
+
+THE FORK (charter §2, settled BEFORE any edit, by measurement):
+  `edge === undefined` NOT reachable on app-produced forms — 3 seeds × full operation
+  closure to g2 (pyritohedral-icosahedron included) = 32 shapes · 6,624 face-cycle
+  pairs · 0 without an edge entity (key formula verified ≡ Panels:3700 sort-join).
+  The `?.` is defensive noise on this population. Caveat named: hand-edited import
+  JSON is outside "forms the app produces."
+
+THE DIAGNOSIS: the edge always EXISTED — the row handed the vertex-PAIR KEY where the
+  lift resolves `e.id` (subComplexLift:145; its lookup was correct all along). The
+  duplicated-home class, id-space instance.
+
+THE CUT (one file — src/components/Panels.tsx; four hunks + one addendum line):
+  CellEdgeRow.edgeId: EdgeId | null (minted from the existing edge binding; null = the
+  measured-dead branch, typed honestly — no guard minted) · the shift-click hands the
+  REAL edge id (null ⇒ silent no-toggle) · display/dedup pair key untouched ·
+  R1.1: the armed-row highlight follows the honest id (edge.edgeId !== null &&
+  inLiftSet('edge', edge.edgeId)) — the parent mandate's byte-identical pin had left
+  it dark; the regression was the ENGINEER'S, owned in the audit record.
+
+PROOFS (raw in the handback):
+  P-NEG (premise, pre-edit): the pair key throws `is not in the source shape` while the
+    real edge id (edge:mf5p2o) sits beside it.
+  P1: lift returns V2 E1 F0 (one edge) · V3 E3 F0 (a face's 3-cycle).
+  P2: tsc -b clean (both passes).
+  P3: 93 @ exactly 1, sim-commit worktree 9e489e5 (the four Panels-reading moved-surface
+    unions found by the ordered count); R1.1 cited from the parent sim with the reason
+    on the record (content-only hunk in an already-moved path).
+  ★ P-RUNG4 — THE PAYOFF, at the person's hand on the default route: three shift-clicks
+    → preflight `connected — closes to 3V · 3E · 0F`, zero refusals → lifted
+    "3-entity region of Tetrahedron" → chip → DRAG-PLACED → the sheet shows the raised
+    3-cycle beside its certified reading: components 1 · b₁(level 1) = 1 · H₁ ℤ · χ 0 ·
+    "the drawn ink IS the cycle set". Plates: R1_THE_CIRCLE_BY_LIFT.png ·
+    R1_ARMED_ROWS.png (three rows emerald, the dark A-D between, the armed triangle
+    tinted on the solid). Viewed by coder and auditor (LAW 23).
+  THE CONTROL: the cut path untouched — Trial I's cut-circle cited as the unchanged
+    other door; the two doors now both reach the sheet.
+
+  ⇒ `1901700`'s headline — "the person's own circle becomes a band" begins here: the
+  circle BY LIFT is REACHED for the first time since the op landed. (The band's own
+  turn — thicken on the lifted circle — is the next gesture this repair unlocks.)
+
+FINDINGS ROUTED, NOT FIXED: the StrictMode first-visit drain loss (dev-only mechanism;
+  mothership's scope call) · the "skeleton" wording (the mandate's own error).
+
+COMMIT PATHS (exact, nothing else):
+  src/components/Panels.tsx
+  docs/governance/PLATONIC_ENGINE_R1_SEALED_HASH.txt
+
+KILL-CONDITIONS: in the seal — a future row source minting pairs without edge entities
+  revives the fork (the null branch is its honest surface); any new constructor re-opens
+  the 0-miss claim (the instrument is 40 lines, rerun it).
