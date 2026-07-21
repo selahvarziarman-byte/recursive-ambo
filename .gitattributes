@@ -1,0 +1,30 @@
+# All text normalized to LF in the repo AND in the working tree.
+# (No tracked .bat/.cmd exist here, so forcing LF on checkout is safe.)
+* text=auto eol=lf
+
+# Binaries - never touch
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.pdf   binary
+*.zip   binary
+*.svg   text eol=lf
+
+# Byte-exact artifacts - NEVER normalize (a normalized patch will not apply)
+*.diff  -text
+*.patch -text
+
+# ---- DECLARED, not left to a heuristic (mothership's ruling) ----
+
+# 15MB ZBrush export. ASCII => text=auto WOULD normalize it. Nothing diffs a
+# 208,188-vertex mesh; normalizing it buys nothing and rewrites an asset.
+*.obj   -text
+
+# UTF-16LE governance seal-hash record (a PowerShell `>` artifact). text=auto
+# would PROBABLY spare it via NUL-detection - but a governance file's survival
+# must not rest on a heuristic.
+docs/governance/CHAINING_UNFREEZE_SEAL_HASH.txt -text
