@@ -1,0 +1,56 @@
+PLATONIC ENGINE — SEALED HASH RECORD — THE UNION
+=================================================
+
+SEAL:            .handoff/SEAL_THE_UNION.md   (off-repo, gitignored; written ONCE)
+NATIVE SHA256:   60d035644ae801910ae48a8c31ca15eabcabbdaaff41b1d868b4f7925e070e43
+                 4,313 bytes. DOUBLE-DERIVED: the coder measured this value natively at
+                 build time WITHOUT reading the seal (REPORT_HAMZAAD_THE_UNION.md §0);
+                 the Sovereign's certutil returned the identical value at audit close
+                 (2026-07-21). Custody clean.
+
+CHARTER:         mothership §10-quinquies STEP 1 (2026-07-21 1405) · baseline 3c406ee.
+BUILD:           coder (همزاد), blind from PROMPT_HAMZAAD_THE_UNION.md.
+AUDIT:           engineer (3rd seat) — every claim verified against the artifacts;
+                 verdict ACCEPT, commit-as-cure ruled.
+
+THE CLAIM (RUNG 1 — a compile-time MODEL guarantee; it certifies NOTHING about what a
+person can do; the dock's person-defects are ARC R's):
+  DockGroupKey = 'glue'|'flip-glue'|'collapse'|'cut'|'dualize'|'sew' — a CLOSED type
+  keying BOTH DOCK_OPERATION_GROUPS (writtenFormModel, the sanctioned frozen edit) and
+  DOCK_GLYPHS (OperationGlyphs). A group without its glyph, a glyph without its group,
+  or a rogue key is a COMPILE error — the write-time death of the class that produced
+  the six-day trapdoor (d4a9d1a → 6436736) and is invisible to all 93 witnesses by
+  construction (DOCK_GLYPHS: 0 references in scripts/; DOCK_OPERATION_GROUPS: 0).
+
+THE RITUAL (SEAL_DOCTRINE.md :122-135, the byte-register law):
+  ENGINE_FREEZE_MANIFEST.txt :78 re-sealed IN THE SAME CHANGE.
+  register = THE LF BLOB, stated not presumed.
+  new digest: 71aa0c77897335629aa16f27f56845a620b21e284be0bc268fb092c14d4cd883
+  (re-derived independently by coder and auditor; post-commit confirmation:
+   git show HEAD:src/manuscript/writtenFormModel.ts | sha256sum)
+
+PROOFS (pinned by CODE + MESSAGE):
+  P1  npx tsc -b clean · ManuscriptChrome.tsx BYTE-UNTOUCHED (cmp vs HEAD blob) — the proof.
+  P2  rogue key 'probe'  => TS2322  '"probe"' is not assignable to type 'DockGroupKey'.
+  P3  sew deleted from the map, groups at six  => TS2741  Property 'sew' is missing …
+      Record<DockGroupKey, () => Element>.  [tsc's display elides the JSX. qualifier —
+      the seal's pin said JSX.Element; ruled MET IN SUBSTANCE; the pin defect is the
+      auditor's, recorded, seal unamended.]
+      This mutant is the byte-restoration of the pre-6436736 trapdoor: the exact
+      configuration that sat under an all-green wall for six days is now unwritable.
+  P4  STOPPED as built: five moved-surface guards red on the UNCOMMITTED frozen edit
+      (the four door-run allowlists carry zero writtenFormModel references; thicken's
+      differential reads the manifest — both grounded at the object DB). RULED
+      structural pre-commit artifacts: THE COMMIT IS THE CURE — measured, not asserted
+      (worktree simulation of the exact paths: flagship + five, 6/6 GREEN; discarded).
+      Zero witness motion. Post-commit expectation: 93 @ exactly 1 (dual-inspection).
+
+COMMIT PATHS (exact, nothing else):
+  src/manuscript/writtenFormModel.ts
+  src/manuscript/OperationGlyphs.tsx
+  docs/governance/ENGINE_FREEZE_MANIFEST.txt
+  docs/governance/PLATONIC_ENGINE_THE_UNION_SEALED_HASH.txt
+
+KILL-CONDITIONS: in the seal (sole-authority hypothesis; OperationGlyphs freeze status;
+the register-contingency). The mandate's word-failures (3, logged verbatim in the
+handback's permanent clause) are inherited by ARC R's charters.

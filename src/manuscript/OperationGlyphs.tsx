@@ -1,3 +1,5 @@
+import type { DockGroupKey } from './writtenFormModel';
+
 // OperationGlyphs — Manuscript craft round-2: the DESIGNER'S FINAL glyph set
 // (RELAY_DESIGNER_TO_ENGINEER_MANUSCRIPT_CRAFT_2 §1 — drop-in, verbatim).
 //
@@ -97,14 +99,12 @@ export function SewGlyph() {
   );
 }
 
-// OPEN THE DOOR (2026-07-17): the sew entry closes the six-day black page —
+// OPEN THE DOOR (2026-07-17): the sew entry closed the six-day black page —
 // DOCK_OPERATION_GROUPS grew a sixth group (2026-07-11) and this map never
 // learned it; DOCK_GLYPHS[key] rendered undefined and unmounted the app.
-// ⚠ The FULL cure — a DockGroupKey union keying BOTH this map and the groups,
-// making a missing glyph a COMPILE error — is BLOCKED: writtenFormModel.ts is
-// FROZEN (manifest :78), so the union awaits its sanctioned unfreeze. Until
-// then this map must carry one entry per dock group, by discipline.
-export const DOCK_GLYPHS: Record<string, () => JSX.Element> = {
+// THE UNION (sanctioned frozen edit, SEAL_THE_UNION): DockGroupKey now keys
+// BOTH this map and the groups — a missing glyph is a COMPILE error.
+export const DOCK_GLYPHS: Record<DockGroupKey, () => JSX.Element> = {
   glue: GlueGlyph,
   'flip-glue': FlipGlueGlyph,
   collapse: CollapseGlyph,

@@ -100,8 +100,14 @@ export interface WrittenForm {
   render: WrittenRender;
 }
 
+// THE UNION (write-time guard of the trapdoor class; engineer seal
+// SEAL_THE_UNION, charter §10-quinquies STEP 1): a dock group's key is a
+// CLOSED type — a group without its glyph, a glyph without its group, or a
+// rogue key is a COMPILE error, never a runtime black page.
+export type DockGroupKey = 'glue' | 'flip-glue' | 'collapse' | 'cut' | 'dualize' | 'sew';
+
 export const DOCK_OPERATION_GROUPS: ReadonlyArray<{
-  key: string;
+  key: DockGroupKey;
   label: string;
   operationIds: string[];
 }> = [
