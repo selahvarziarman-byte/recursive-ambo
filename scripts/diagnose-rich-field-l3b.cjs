@@ -145,10 +145,12 @@ note(`gauge g = ${JSON.stringify(g)} → same spectrum, same |ψ|²`);
 // FINDING (surfaced, not massaged): the mandate words the sealed table's node
 // entries as "exact zeros"; the engine's true eigenmode carries ~1.57e-5 there
 // (T4's residual 1e-15 + the independent solver agree — it is the matrix's truth,
-// not solver noise). The sealed 3-decimal values round it to 0 and pass at the
-// stated ~1e-3 tolerance; the node classification therefore uses the DECLARED
-// NODE_TOL=1e-4 (≥3 orders from both scales). The raw values are printed.
-check('T3 nodes 2,5 are DEEP minima (< NODE_TOL=1e-4; ≥3 orders below every other site)', field.intensity[2] < rf.NODE_TOL && field.intensity[5] < rf.NODE_TOL);
+// not solver noise). The sealed 3-decimal values round it to 0. R5a: the node
+// classification is the ruled RELATIVE criterion — x < NODE_TOL_REL·max (the
+// constant carries its own derivation in richFieldV0); on this form the node
+// sits at ~1.4e-4 of max, an order under the cut. The raw values are printed.
+const maxT3 = Math.max(...field.intensity);
+check('T3 nodes 2,5 are DEEP minima (< NODE_TOL_REL·max — the ruled relative cut; ~1.4e-4 of max here)', field.intensity[2] < rf.NODE_TOL_REL * maxT3 && field.intensity[5] < rf.NODE_TOL_REL * maxT3);
 const nonNodeMin = Math.min(...field.intensity.filter((_x, i) => i !== 2 && i !== 5));
 check('T3 the node/non-node separation is ≥ 3 orders of magnitude', nonNodeMin / Math.max(field.intensity[2], field.intensity[5]) > 1e3);
 check('T3 measured node intensity is NOT an exact zero (the finding — reported honestly)', field.intensity[2] > 0 && field.intensity[5] > 0);
@@ -180,7 +182,7 @@ note(`residual=${residualNorm.toExponential(2)} rayleigh=${rayleigh.toFixed(9)} 
 
 // ===== discipline =====
 console.log('\n----- discipline -----');
-check('declared knobs only: DEGENERACY_TOL=1e-6, NODE_TOL=1e-4 (the surfaced node-scale finding), ANTINODE_TOL=1e-9', rf.DEGENERACY_TOL === 1e-6 && rf.NODE_TOL === 1e-4 && rf.ANTINODE_TOL === 1e-9);
+check('declared knobs only: DEGENERACY_TOL=1e-6, NODE_TOL_REL=1e-3, ANTINODE_TOL_REL=1e-3 (R5a — the ruled relative factors)', rf.DEGENERACY_TOL === 1e-6 && rf.NODE_TOL_REL === 1e-3 && rf.ANTINODE_TOL_REL === 1e-3);
 check('the connection support IS the committed Σ chain (−1 exactly on sigmaChainEdges)', field.edgeSigns.filter((s) => s === -1).length === field.sigma.sigmaChainEdges.length && field.sub.edges.every((e, i) => (field.edgeSigns[i] === -1) === field.sigma.sigmaChainEdges.includes(e.id)));
 
 console.log(

@@ -1,0 +1,60 @@
+PLATONIC ENGINE — SEALED HASH RECORD — R5a: THE RELATIVE CLASSIFIER
+====================================================================
+
+SEAL:            .handoff/SEAL_R5A_THE_RELATIVE_CLASSIFIER.md   (off-repo, gitignored; written ONCE)
+NATIVE SHA256:   4d51c469533d58e96665bf847edc3ce18fe4949e4aaa54cf5766421fda066d16
+                 5,094 bytes. DOUBLE-DERIVED: the coder measured this value natively at build
+                 time WITHOUT reading the seal (REPORT_HAMZAAD_R5A.md §0); the Sovereign's
+                 certutil returned the identical value at audit close (2026-07-21).
+
+CHARTER:         mothership 1751 (R5 amended — the tolerance class joins) + 1823 (severity +
+                 sequencing handed to the engineer) · sequencing ruled by the engineer 1843
+                 (the tolerance half rides before R1) · baseline `cfff8bf`.
+BUILD:           coder (همزاد), blind. AUDIT: engineer (3rd seat) — ACCEPT.
+
+THE CLAIM (RUNG 1 for the classifier; RUNG 4 for the re-plate):
+  Node/antinode classification becomes SCALE-FREE — x < NODE_TOL_REL·max and
+  (max−x) ≤ ANTINODE_TOL_REL·max, both 1e-3 (the researcher's ruled form; the committed
+  comment's own prose criterion made computable; never result-fitted). Ends a measured
+  live misclassification: 62 of the co-ratified Klein plate's "90 nodes" were real
+  non-nodes manufactured by the absolute cut (69%); the control was clean (8/8, band 0).
+
+THE LOAD-BEARING FORK (disclosed, audited, RULED CORRECT):
+  The LIVE classifier for the specimen witness and the person's plates was an INLINE
+  ABSOLUTE COPY at fieldForShape.ts:128-129 (verified at the object DB by the auditor);
+  the mandate's FORBIDDEN line protected that file on a false map. The coder took
+  MIGRATE through the mandate's delegated importer decision — the only branch that
+  reaches the targets (alias measurably dead both ways) — and deleted the old names
+  (post-cut count outside _REL: 0). First correct proceed-through-collision; the
+  coder's stop record stands 6/6 beside it.
+
+PROOFS (all raw in the handback):
+  P1  tsc -b clean.
+  P2  band harness, run BEFORE the edit (premise) and after (proof), identical:
+        Klein  {N:504, nodes_abs:90, nodes_rel:28, band:62} · gap 12.42× · D_max 710
+               headrooms 1.41×/8.80× (node) · antinode 1, headroom 14.8×
+        genus-2 {N:502, 8, 8, 0} · 26-order cliff · D_max 15 · antinodes_rel 10 (plateau —
+               semantics routed to the researcher; nothing pins a count)
+      Independently re-derived by the auditor on the live tree: nodes 28 · antinodes 1 · 504.
+  P3  suite 93 @ exactly 1, worktree with the five paths sim-committed (24e79d3, discarded).
+  P4  re-plates through the person's click path at cfff8bf: Klein {504, Σ56, nodes 28,
+      D_max 710} MATCH · genus-2 unchanged MATCH. Plates: EXHIBIT_PLATE_KLEIN_R5A.png /
+      _GENUS2_R5A.png (the suspended pre-R5a plates stay on disk as the record of the
+      manufactured reading). Viewed by coder, auditor, both per LAW 23.
+
+RECUTS (falsified pins, re-derived never widened): specimen witness 90→28, five textual
+  135s→710, ★THE KILL → ★THE SEPARATION (12 < r < 13); two knob-witness recuts forced by
+  the sanctioned delete (rich-field-l3b, field-for-shape).
+
+COMMIT PATHS (exact, nothing else):
+  src/lib/richFieldV0.ts
+  src/lib/fieldForShape.ts
+  scripts/diagnose-the-field-in-the-specimen.cjs
+  scripts/diagnose-rich-field-l3b.cjs
+  scripts/diagnose-field-for-shape.cjs
+  docs/governance/PLATONIC_ENGINE_R5A_SEALED_HASH.txt
+
+KILL-CONDITIONS: in the seal — τ_rel's thin edge is the 1.41× tail-side headroom (a form
+  inside ~1.4× of 1e-3·max re-opens the constant, researcher's re-derivation); τ_a valid
+  while competitor gaps ≫ 1e-3 (measured 14.8×/19.2×); D_max vs the 2048 refuse-budget
+  (Klein 710 clears today). C.1 re-ratifies on the R5A plates (mothership's §2, 1823).

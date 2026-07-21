@@ -170,7 +170,7 @@ check('§3.3 plain shapes translate via the committed bridge (no parallel classe
 // ===== discipline =====
 console.log('\n----- discipline -----');
 check('derive-only: the ambo source Shape is byte-unchanged after lift + field', JSON.stringify(S) === sSnapshot);
-check('reuse-not-fork: the gate tolerances are the committed L3b constants', rf.DEGENERACY_TOL === 1e-6 && rf.NODE_TOL === 1e-4 && rf.ANTINODE_TOL === 1e-9);
+check('reuse-not-fork: the gate tolerances are the committed L3b constants (R5a — the ruled relative factors)', rf.DEGENERACY_TOL === 1e-6 && rf.NODE_TOL_REL === 1e-3 && rf.ANTINODE_TOL_REL === 1e-3);
 
 console.log(
   `\n--- field integration (L3b regression, per-form gate table, route-B texture finding, zoo contradiction surfaced, parallel guard): ${

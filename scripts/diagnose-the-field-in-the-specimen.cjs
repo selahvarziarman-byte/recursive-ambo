@@ -24,9 +24,11 @@
 //
 // THE VOID IS NOT Σ: Σ is EDGES, |ψ|² lives on VERTICES. The defect-FREE demo
 // carries 8 machine-zero voids and NO Σ-ink; the defect-BEARING Klein carries
-// Σ-ink and NO readable void at any density (its node band's top sits 1.6%
-// under the lit band's bottom). If a reader can read "defect" off a void, the
-// mark has failed — that is the falsifier, printed below.
+// Σ-ink AND its 28 true voids (R5a's relative criterion — the old "no readable
+// void / band top 1.6% under the lit bottom" reading was an artifact of the
+// absolute cut's 62 manufactured tail-nodes; measured clean, the populations
+// part by 12.4×). Voids on BOTH plates ⇒ a void carries no defect claim. If a
+// reader can read "defect" off a void, the mark has failed — the falsifier below.
 //
 // Anti-mock: requiring the REAL TS modules through the transpile hook is the guard.
 
@@ -155,31 +157,37 @@ if (kleinField) {
     kleinField.gate === 'simple' && kleinField.kernelDim === 0);
   check('504 sites · sigma.sigmaChainEdges.length === 56 · hasDefect === true',
     kleinField.siteIds.length === 504 && kleinField.sigma.sigmaChainEdges.length === 56 && kleinField.hasDefect === true);
-  check('nodes.length === 90', kleinField.nodes.length === 90);
+  // R5a derivation: the relative cut x < 1e-3·max (max 1.3559e-2) keeps the 28
+  // true nodes (band top 1.1358e-4 of max) and drops the 62 manufactured tail
+  // sites the absolute 1e-4 had swallowed (90 = 28 + 62).
+  check('nodes.length === 28', kleinField.nodes.length === 28);
   const kleinD = deriveDMax(kleinField);
-  check('D_max === 135 · and the layer\'s own derivation agrees',
-    kleinD.dMax === 135 && deriveStippleDensity(kleinField).dMax === 135);
-  // ★ THE KILL, RE-DERIVED: the node band's TOP against the lit band's BOTTOM.
-  // (The charter calls the 7.326e-3 figure the "deepest node" — measured, it is
-  // the node band's BRIGHTEST member, the node nearest visibility; the deepest
-  // sits at ~1e-11. The kill is the same either way: even the node CLOSEST to
-  // the lit band is within 1.6% of it ⇒ NO READABLE VOID AT ANY DENSITY.)
+  // R5a derivation: dimmest NON-node = 1.912e-5 → r = 1.912e-5/1.3559e-2 =
+  // 1.4103e-3 → D_max = ⌈1/1.4103e-3⌉ = 710 (band + gap, re-derived not inherited).
+  check('D_max === 710 · and the layer\'s own derivation agrees',
+    kleinD.dMax === 710 && deriveStippleDensity(kleinField).dMax === 710);
+  // ★ THE SEPARATION (R5a — the old KILL re-derived on the relative criterion):
+  // the "< 1.1, populations meet" reading was an artifact of the absolute cut —
+  // its 90-node band had swallowed 62 dim-tail LIT sites, dragging the band top
+  // to within 1.6% of the lit bottom. With the manufactured band gone the TRUE
+  // populations part: node band top 1.1358e-4 of max · dimmest non-node
+  // 1.4103e-3 of max · measured gap 12.42×. A void IS readable on this plate.
   const rKlein = relativeOf(kleinField);
   const nodeBandTop = Math.max(...kleinField.nodes.map((i) => rKlein[i]));
   const ratio = kleinD.dimmest / nodeBandTop;
-  check('★ THE KILL: dimmest-non-node / node-band-top < 1.1 — the two populations MEET; a void cannot be read',
-    ratio < 1.1);
+  check('★ THE SEPARATION: dimmest-non-node / node-band-top measures 12.42× (pinned 12 < r < 13) — the populations PART; the 28 voids are real',
+    ratio > 12 && ratio < 13);
   note(`node band top r = ${nodeBandTop.toExponential(4)} · dimmest non-node r = ${kleinD.dimmest.toExponential(4)} · ratio = ${ratio.toFixed(4)}`);
   const kleinModel = buildFieldInkModel(kleinBody, kleinField);
-  check('the plate: plated · dMax 135 · Σ IN INK — all 56 chain spokes resolve to [edge-midpoint → face-barycentre] segments',
-    kleinModel.plated === true && kleinModel.dMax === 135 && kleinModel.sigmaSegments.length === 2 * 56);
-  check('★ THE LINEAR LAW on the Klein: dots(site) === ⌊r · 135⌋ for EVERY site — including the 90 nodes (no special case)',
+  check('the plate: plated · dMax 710 (under the 2048 budget) · Σ IN INK — all 56 chain spokes resolve to [edge-midpoint → face-barycentre] segments',
+    kleinModel.plated === true && kleinModel.dMax === 710 && kleinModel.sigmaSegments.length === 2 * 56);
+  check('★ THE LINEAR LAW on the Klein: dots(site) === ⌊r · 710⌋ for EVERY site — including the 28 nodes (no special case)',
     linearLawHolds(kleinField, kleinModel));
   note(`stipple dots on the plate: ${kleinModel.dotCount} · budget in force: ${FIELD_STIPPLE_BUDGET}`);
   // THE BUDGET: refuse, never clip — the REAL field against an explicit
   // smaller budget refuses the WHOLE plate (zero marks; nothing clipped down)
   const overBudget = buildFieldInkModel(kleinBody, kleinField, 100);
-  check('over the render budget the plate REFUSES ENTIRE (budget 100 < D_max 135): not plated · reason "density-over-budget" · ZERO dots · ZERO Σ — it never clips',
+  check('over the render budget the plate REFUSES ENTIRE (budget 100 < D_max 710): not plated · reason "density-over-budget" · ZERO dots · ZERO Σ — it never clips',
     overBudget.plated === false && overBudget.refusal === 'density-over-budget' &&
     overBudget.dotCount === 0 && overBudget.sigmaSegments.length === 0);
 }
@@ -215,13 +223,14 @@ The stipple renders |psi|^2's COMPUTED values faithfully, INCLUDING its nodal se
 A nodal void carries NO defect claim. Sigma's reserved ink is the ONLY defect-mark,
 and its ABSENCE is the "no defect" statement (a missing mark is a missing value).
   the w1=0 demo  (born genus-2 body, Sigma = EMPTY)  -> its EIGHT nodal voids AND no Sigma-ink
-  the w1=1 Klein (born Klein body,  Sigma = 56 EDGES) -> Sigma-ink AND no comparable void
+  the w1=1 Klein (born Klein body,  Sigma = 56 EDGES) -> Sigma-ink AND its 28 true voids
+  (voids appear on BOTH plates -> a void, alone, carries NO defect information)
 ★ IF A READER CAN READ "defect" OFF A VOID, THE MARK HAS FAILED.
 `);
-check('the falsifier is BOUND to the measurements above: demo (8 voids · Σ absent from the plate) · Klein (Σ 56 in ink · ratio < 1.1 ⇒ no comparable void)',
+check('the falsifier is BOUND to the measurements above: demo (8 voids · Σ absent from the plate) · Klein (Σ 56 in ink · 28 true voids) — voids on BOTH plates ⇒ a void carries no defect claim',
   demoField !== null && kleinField !== null &&
   demoField.nodes.length === 8 && demoField.sigma.sigmaChainEdges.length === 0 &&
-  kleinField.sigma.sigmaChainEdges.length === 56);
+  kleinField.nodes.length === 28 && kleinField.sigma.sigmaChainEdges.length === 56);
 
 // ═════ [6] CLAUSE 7 — the DEGENERATE gate on a DEFECT-BEARING form ═══════════
 console.log('\n----- [6] clause 7: a degenerate-band, defect-bearing form is refused — never silently plated -----');

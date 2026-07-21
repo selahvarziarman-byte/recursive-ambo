@@ -46,9 +46,9 @@ import {
 import { signedLaplacian, type Graph, type Sign } from './connectionWaveInstrumentV0';
 import { kerCount } from './spectralFlowV0';
 import {
-  ANTINODE_TOL,
+  ANTINODE_TOL_REL,
   DEGENERACY_TOL,
-  NODE_TOL,
+  NODE_TOL_REL,
   symmetricEigensystem,
   type EigenPair,
 } from './richFieldV0';
@@ -125,8 +125,10 @@ export function computeFieldForComplex(complex: AssembledComplex): ShapeField {
     psi = spectrum[bandIndex].vector;
     intensity = psi.map((x) => x * x);
     const max = intensity.reduce((acc, x) => Math.max(acc, x), 0);
-    nodes = intensity.map((x, i) => (x < NODE_TOL ? i : -1)).filter((i) => i >= 0);
-    antinodes = intensity.map((x, i) => (max - x <= ANTINODE_TOL ? i : -1)).filter((i) => i >= 0);
+    // R5a: the ruled RELATIVE criterion — same cut as richFieldV0's classifier
+    // (the constants carry their own derivation there).
+    nodes = intensity.map((x, i) => (x < NODE_TOL_REL * max ? i : -1)).filter((i) => i >= 0);
+    antinodes = intensity.map((x, i) => (max - x <= ANTINODE_TOL_REL * max ? i : -1)).filter((i) => i >= 0);
   }
 
   return {

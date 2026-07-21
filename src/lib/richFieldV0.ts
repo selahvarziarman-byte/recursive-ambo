@@ -34,9 +34,9 @@
 // accumulates the rotation matrix (the committed `symmetricEigenvalues` returns
 // values only) — plus the simple-eigenvalue gate and the node/antinode readout.
 // Declared constants only; nothing is fitted:
-//   DEGENERACY_TOL — two eigenvalues within this are one band (gate);
-//   NODE_TOL       — |ψ|² below this is a NODE (an exact zero up to float);
-//   ANTINODE_TOL   — |ψ|² within this of the max is an ANTINODE.
+//   DEGENERACY_TOL   — two eigenvalues within this are one band (gate);
+//   NODE_TOL_REL     — |ψ|² below this FRACTION of the form's max is a NODE;
+//   ANTINODE_TOL_REL — |ψ|² within this fraction of the max is an ANTINODE.
 //
 // LABEL / THE GUARD (ADR 0017 Amd-2 / ADR 0018): this module computes the field;
 // it asserts no verdict and draws nothing. The render (RichFieldOverlay) shows
@@ -62,13 +62,20 @@ import { kerCount } from './spectralFlowV0';
 // declared constants (never result-fitted)
 // ---------------------------------------------------------------------------
 export const DEGENERACY_TOL = 1e-6; // eigenvalues within this = one band (the gate reads multiplicity)
-// A NODE is a DEEP minimum, not an exact zero: the measured canonical mode carries
-// ~1.57e-5 at the seam midpoints (vs 0.111 at the next-smallest site — 4 orders of
-// magnitude). The V3 table's "0" is that value at 3 decimals; the threshold is
-// declared BETWEEN the two scales (≥3 orders from each), never fitted to either.
-// Surfaced as a finding in the L3b report ("exact zero" is NOT what the engine gives).
-export const NODE_TOL = 1e-4; // |ψ|² below this = a node (≥3 orders below every non-node site)
-export const ANTINODE_TOL = 1e-9; // |ψ|² within this of the max = an antinode
+// THE RELATIVE CRITERION (R5a — the researcher's ruled form; the prose
+// hypothesis made computable): a NODE is a site whose |ψ|² is negligible
+// RELATIVE TO THE FORM'S OWN BRIGHTEST SITE — x < NODE_TOL_REL·max — never an
+// absolute cut. The absolute 1e-4 was falsified on the born Klein body (504
+// sites, max 1.3559e-2): it manufactured 62 of its 90 "nodes" out of the
+// mode's CONTINUOUS dim tail. Measured on that counterexample: 28 true nodes,
+// band top at 1.1358e-4 of max, dimmest NON-node at 1.4103e-3 of max — a
+// 12.4× clean gap that τ = 1e-3 splits with 8.8× headroom below and 1.41×
+// above. (The old "≥3 orders" prose holds for genus-2's machine-zero cliff,
+// not for the Klein's tail.) The antinode cut is relative the same way:
+// max − x ≤ ANTINODE_TOL_REL·max, nearest non-antinode measured at 14.8× the
+// cut. Constants DERIVED from the counterexample's gap, never result-fitted.
+export const NODE_TOL_REL = 1e-3; // a node: |ψ|² < NODE_TOL_REL · max (per-form relative cut)
+export const ANTINODE_TOL_REL = 1e-3; // an antinode: max − |ψ|² ≤ ANTINODE_TOL_REL · max
 
 // ---------------------------------------------------------------------------
 // the eigenVECTOR emission — cyclic Jacobi WITH the accumulated rotation V
@@ -297,8 +304,8 @@ export interface RichField {
   gate: SimpleEigenvalueGate;
   psi: number[]; // the λ_min eigenvector (unit) — null-free only when gate.simple
   intensity: number[]; // |ψ_x|² per site (the TEXTURE)
-  nodes: number[]; // site indices with |ψ|² < NODE_TOL
-  antinodes: number[]; // site indices with |ψ|² within ANTINODE_TOL of the max
+  nodes: number[]; // site indices with |ψ|² < NODE_TOL_REL · max (relative — R5a)
+  antinodes: number[]; // site indices with max − |ψ|² ≤ ANTINODE_TOL_REL · max
   sigma: PoincareDualResult; // the committed Σ = PD(φ) (flip support + RM chain + [Σ])
 }
 
@@ -332,9 +339,9 @@ export function analyzeRichField(form: RichFieldForm): RichField {
   const psi = spectrum[0]?.vector ?? [];
   const intensity = psi.map((x) => x * x);
   const max = intensity.reduce((acc, x) => Math.max(acc, x), 0);
-  const nodes = intensity.map((x, i) => (x < NODE_TOL ? i : -1)).filter((i) => i >= 0);
+  const nodes = intensity.map((x, i) => (x < NODE_TOL_REL * max ? i : -1)).filter((i) => i >= 0);
   const antinodes = intensity
-    .map((x, i) => (max - x <= ANTINODE_TOL ? i : -1))
+    .map((x, i) => (max - x <= ANTINODE_TOL_REL * max ? i : -1))
     .filter((i) => i >= 0);
 
   return {
