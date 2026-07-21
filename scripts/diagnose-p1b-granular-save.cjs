@@ -247,12 +247,15 @@ const liftedTitle = useGeometryStore.getState().liftSelectionToManuscript();
 const queued = useLiftStore.getState().queue;
 check('§5 geometryStore.liftSelectionToManuscript pushes ONE item onto the channel with the honest title',
   queued.length === 1 && queued[0].title === liftedTitle && liftedTitle === `cell of ${storeShape.name}`);
-const drained = useLiftStore.getState().drain();
-check('§5 drain() empties the channel and hands the items over exactly once',
-  drained.length === 1 && useLiftStore.getState().queue.length === 0 && useLiftStore.getState().drain().length === 0);
-const drainedEntry = loadUniverseSnapshot(drained[0].file);
-check('§5 the drained file loads through the COMMITTED shelf ingestion — placeable, source = the live ambo shape id',
-  drainedEntry.placeable === true && drainedEntry.source === storeShape.id);
+// R1.2 (the fresh-session drain): the channel RETAINS its items — no
+// destructive drain exists; consumers ingest IDEMPOTENTLY by the item's own
+// monotone `key`. The old "hands over exactly once" law is REPLACED by this.
+const retained = useLiftStore.getState().queue;
+check('§5 R1.2: the channel RETAINS the pushed item (no drain in the protocol; `key` is the idempotence token — monotone, positive)',
+  retained.length === 1 && retained[0].key > 0 && useLiftStore.getState().queue.length === 1);
+const retainedEntry = loadUniverseSnapshot(retained[0].file);
+check('§5 the retained file loads through the COMMITTED shelf ingestion — placeable, source = the live ambo shape id',
+  retainedEntry.placeable === true && retainedEntry.source === storeShape.id);
 check('§5 the live store shape is unmutated by its lift',
   JSON.stringify(useGeometryStore.getState().shapes[storeShape.id]) === JSON.stringify(storeShape));
 // no selection → the action refuses honestly

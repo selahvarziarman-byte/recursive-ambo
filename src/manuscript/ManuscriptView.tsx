@@ -1198,14 +1198,21 @@ export default function ManuscriptView() {
   }, [combineGate, layoutCtl.resolution]);
 
   // ----- P1b: the ambo→manuscript lift channel ------------------------------
-  // Drain lifted snapshots onto the shelf through the COMMITTED load — the
-  // exact same ingestion as the file picker below. Runs on mount (the channel
-  // is durable while the Manuscript is unvisited) and on every push.
+  // Ingest lifted snapshots onto the shelf through the COMMITTED load — the
+  // exact same ingestion as the file picker below. R1.2 (the fresh-session
+  // drain): the channel RETAINS its items and this effect ingests
+  // IDEMPOTENTLY by each item's `key` — a destructive one-shot drain raced
+  // StrictMode's first-mount replay (measured both ways on the same bytes:
+  // lost in one run, seconds late in another), so consumption is keyed, per
+  // live instance, and safe under ANY replay ordering: no lift lost, none
+  // doubled. Failed loads notice once and are not retried (the old drain's
+  // exact failure semantics).
   const liftQueue = useLiftStore((state) => state.queue);
+  const ingestedLiftKeys = useRef<Set<number>>(new Set());
   useEffect(() => {
-    if (liftQueue.length === 0) return;
-    const items = useLiftStore.getState().drain();
-    for (const item of items) {
+    for (const item of liftQueue) {
+      if (ingestedLiftKeys.current.has(item.key)) continue;
+      ingestedLiftKeys.current.add(item.key);
       try {
         const entry = loadUniverseSnapshot(item.file);
         setShelf((cur) => [...cur, { entry, placed: false }]);

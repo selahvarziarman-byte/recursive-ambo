@@ -192,9 +192,11 @@ check('§5 toggling an entity AGAIN removes it (in/out semantics)',
   useGeometryStore.getState().liftSelection.length === 1 &&
   useGeometryStore.getState().liftSelection[0].id === livePair[0].id);
 useGeometryStore.getState().toggleLiftSelection({ kind: 'face', id: livePair[1].id });
-useLiftStore.getState().drain(); // start clean
+// R1.2: the channel RETAINS its items (no destructive drain) — a witness
+// measures ITS OWN pushes from the watermark, never by clearing the channel.
+const liftWatermark = useLiftStore.getState().queue.length;
 const regionTitle = useGeometryStore.getState().liftSelectionToManuscript();
-const pushed = useLiftStore.getState().drain();
+const pushed = useLiftStore.getState().queue.slice(liftWatermark);
 check("§5 the SET lifts through the real action as '2-entity region of …', reaches the channel, and loads placeable",
   regionTitle === `2-entity region of ${live.name}` &&
   pushed.length === 1 &&
@@ -205,8 +207,9 @@ check('§5 the ambo original is byte-unchanged by the region lift',
 // the committed single-entity FALLBACK (empty set → inspection selection)
 const liveCore = live.cells.find((c) => c.kind === 'core');
 useGeometryStore.getState().selectCell(liveCore.id);
+const fallbackWatermark = useLiftStore.getState().queue.length; // R1.2 watermark idiom
 const fallbackTitle = useGeometryStore.getState().liftSelectionToManuscript();
-const fallbackPushed = useLiftStore.getState().drain();
+const fallbackPushed = useLiftStore.getState().queue.slice(fallbackWatermark);
 check("§5 NO REGRESSION: with an empty set, the single inspection-selected cell still lifts ('cell of …' — the committed P1b path)",
   fallbackTitle === `cell of ${live.name}` &&
   fallbackPushed.length === 1 &&

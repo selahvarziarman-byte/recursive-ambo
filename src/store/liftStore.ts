@@ -7,8 +7,19 @@
 // path as the file picker — this store never loads, never parses, never
 // touches a live universe: it carries FILES, names not doorways).
 //
-// DURABLE: a module-singleton Zustand store — the queue holds even while the
-// Manuscript is unvisited (it is lazy-mounted); the first mount drains it.
+// DURABLE + RETAINED (R1.2, the fresh-session drain): a module-singleton
+// Zustand store — the queue holds while the Manuscript is unvisited AND is
+// never destructively drained. React 18 StrictMode replays the consumer's
+// first mount, and a one-shot drain RACES that replay — measured both ways on
+// the same bytes (the lift lost in one run; arrived seconds late in another).
+// The channel therefore RETAINS its items and the consumer ingests
+// IDEMPOTENTLY, keyed by each item's own `key` (the protocol's idempotence
+// token — no runtime guard minted): no lift is lost under any replay, none is
+// doubled, and the production single-mount behavior is unchanged. One
+// consumer exists (ManuscriptView's shelf effect — counted at cut time); a
+// FRESH consumer instance re-ingests the retained queue into its fresh
+// shelf, which is the correct semantics for a shelf that lives in that
+// instance's own state.
 //
 // ADDITIVE: nothing committed moves; the shelf's file-load path is untouched.
 
@@ -24,7 +35,6 @@ export interface LiftedSnapshotItem {
 interface LiftChannelState {
   queue: LiftedSnapshotItem[];
   push: (item: Omit<LiftedSnapshotItem, 'key'>) => void;
-  drain: () => LiftedSnapshotItem[];
 }
 
 let liftSequence = 0;
@@ -34,10 +44,5 @@ export const useLiftStore = create<LiftChannelState>((set, get) => ({
   push: (item) => {
     liftSequence += 1;
     set({ queue: [...get().queue, { ...item, key: liftSequence }] });
-  },
-  drain: () => {
-    const items = get().queue;
-    if (items.length > 0) set({ queue: [] });
-    return items;
   },
 }));
