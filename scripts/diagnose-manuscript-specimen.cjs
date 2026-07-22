@@ -45,6 +45,7 @@ const req = (p) => require(path.join(repoRoot, p));
 const { readFormInvariants } = req('src/playground/formInvariants.ts');
 const { level3InvariantTower } = req('src/lib/level3Invariants.ts');
 const { buildManuscriptWorld } = req('src/manuscript/worldModel.ts');
+const { invokePrimitive, applyPlaygroundOperationTo } = req('src/manuscript/writtenFormModel.ts');
 const {
   readDomainSpecimen,
   readSkeletonSpecimen,
@@ -63,7 +64,28 @@ const rowOf = (reading, label) => {
 };
 
 const world = buildManuscriptWorld(8);
-const surface = (key) => world.dim2.find((m) => m.surface === key);
+// CUT 0 THE GALLERY FIX: the world's dim-2 band starts EMPTY — the reference
+// surfaces are SUMMONED through the PERSON'S OWN path (invoke square + the
+// committed preset word → applyPlaygroundOperationTo → routeWrittenRender),
+// exactly as the view does it; the readings' subjects below are those summoned
+// models (parity with the retired seed is pinned in diagnose-manuscript-world).
+const REFERENCE_OPS = {
+  torus: 'glue-torus',
+  klein: 'flip-glue-klein',
+  rp2: 'flip-glue',
+  sphere: 'collapse-sphere',
+  cylinder: 'glue-cylinder',
+  mobius: 'flip-glue-mobius',
+};
+let summonSeq = 9400;
+const surface = (key) => {
+  const host = invokePrimitive('square', (summonSeq += 1));
+  const res = applyPlaygroundOperationTo(REFERENCE_OPS[key], host.shape, null, (summonSeq += 1), 8, [], null);
+  if (!res.ok || res.born.render.mode !== 'immersion') {
+    throw new Error(`specimen: the person-path summon of "${key}" failed (${res.ok ? res.born.render.mode : res.reason})`);
+  }
+  return res.born.render.model;
+};
 
 // ----- surfaces: card === an independent readFormInvariants pass -------------
 {

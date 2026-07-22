@@ -544,10 +544,10 @@ check('…and the re-cut leg still BITES: a one-character in-memory edit to worl
       movedCrInsensitive(MODEL, crlf) === false;
   })());
 const worldNow = buildManuscriptWorld(8);
-check('…and the dim-1/2 populations still read their committed values through the UNTOUCHED modules: dim-1 = the loop (b₁=1) + the arc (b₁=0); dim-2 = the six committed immersions; dim-3 world default = the T³ domain, byte-equal in its pairing maps to the committed fixture',
+check('…and the dim-1/2 populations read their committed values through the UNTOUCHED modules: dim-1 = the loop (b₁=1) + the arc (b₁=0); dim-2 = EMPTY since CUT 0 (THE GALLERY FIX — the always-on seed died; the six are SUMMONED through the person\'s own path, parity pinned in diagnose-manuscript-world); dim-3 world default = the T³ domain, byte-equal in its pairing maps to the committed fixture',
   worldNow.dim1.length === 2 &&
   worldNow.dim1[0].invariants.level1.b1 === 1 && worldNow.dim1[1].invariants.level1.b1 === 0 &&
-  worldNow.dim2.length === 6 &&
+  worldNow.dim2.length === 0 &&
   eq(worldNow.dim3[0].complex.pairings.map((p) => p.map), t3Committed.complex.pairings.map((p) => p.map)));
 
 // ═════ [j] the engine freeze + bite (the standing leg) ═══════════════════════════

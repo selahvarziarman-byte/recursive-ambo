@@ -3,11 +3,18 @@
 // DIAGNOSTIC — Manuscript Phase 2a: the ambient world stays faithful across the
 // fuller catalogue (anti-mock: transpile-hook require of the real .ts sources).
 //
-//   · dim 2 — the six populated immersions each draw EXACTLY their certified
-//     basis (loops === cert.b1 for every one): torus 2 · KLEIN 2 (one free +
-//     one ℤ/2 torsion — w₁Class [0,1], the canonical rank-1 multiset) · RP² 1 ·
-//     sphere 0 · cylinder/Möbius 1 certified core each. The trio's values are
-//     UNCHANGED from Phase 1/1.5.
+//   · dim 2 — CUT 0 THE GALLERY FIX: the band starts EMPTY (worldModel seeds
+//     nothing — the pin below). The six references are SUMMONED through the
+//     PERSON'S OWN path (invoke square + the committed preset word →
+//     applyPlaygroundOperationTo → routeWrittenRender — the view's exact
+//     seam), and each summoned immersion draws EXACTLY its certified basis
+//     (loops === cert.b1): torus 2 · KLEIN 2 (one free + one ℤ/2 torsion —
+//     w₁Class [0,1]) · RP² 1 · sphere 0 · cylinder/Möbius 1 certified core
+//     each — the same values as the retired always-on seed, PROVEN identical:
+//     the parity legs pin summoned == an independent summon (byte-identical
+//     JSON) and summoned == the direct buildInkedFormModel drawing, and the
+//     NO-BYPASS leg pins that ManuscriptView never calls buildInkedFormModel
+//     (reference == person, no nicer path).
 //   · dim 1 — the cut-born skeletons are honest 1-complexes: zero faces, real
 //     pass-through positions (identical to their source polygons), H₁ labels =
 //     the committed level1Betti rank (free — a graph has no torsion): loop ℤ,
@@ -52,6 +59,8 @@ const {
   h1LabelFromLevel1,
   WORLD_SURFACES,
 } = req('src/manuscript/worldModel.ts');
+const { invokePrimitive, applyPlaygroundOperationTo } = req('src/manuscript/writtenFormModel.ts');
+const { buildInkedFormModel } = req('src/manuscript/inkedFormModel.ts');
 
 let failures = 0;
 function check(label, condition) {
@@ -63,20 +72,60 @@ const note = (msg) => console.log(`  ↳ ${msg}`);
 const R = 8;
 const world = buildManuscriptWorld(R);
 
-// ----- dim 2: every populated surface draws exactly its certified basis ------
+// CUT 0 — the person-path summon (the view's exact seam, re-run here): each
+// reference is an invoked square + the committed preset word; the model out is
+// routeWrittenRender's immersion arm. The op-per-surface map is the view's own.
+const REFERENCE_OPS = {
+  torus: 'glue-torus',
+  klein: 'flip-glue-klein',
+  rp2: 'flip-glue',
+  sphere: 'collapse-sphere',
+  cylinder: 'glue-cylinder',
+  mobius: 'flip-glue-mobius',
+};
+let summonSeq = 9300;
+const summonReference = (key) => {
+  const host = invokePrimitive('square', (summonSeq += 1));
+  const res = applyPlaygroundOperationTo(REFERENCE_OPS[key], host.shape, null, (summonSeq += 1), R, [], null);
+  if (!res.ok || res.born.render.mode !== 'immersion') {
+    throw new Error(`world: the person-path summon of "${key}" failed (${res.ok ? res.born.render.mode : res.reason})`);
+  }
+  return res.born.render.model;
+};
+
+// ----- dim 2: the gallery fix + the summoned six draw their certified basis --
 {
-  console.log('----- [dim 2] the six immersions: drawn loops === the certified basis -----');
+  console.log('----- [dim 2] CUT 0: the band starts EMPTY; the summoned six draw loops === the certified basis -----');
+  check('★ THE GALLERY FIX: the world seeds NO dim-2 forms — the band starts EMPTY (the six enter only by the person-path summon)',
+    Array.isArray(world.dim2) && world.dim2.length === 0);
+  const summoned = WORLD_SURFACES.map((key) => summonReference(key));
   const expectedLoops = { torus: 2, klein: 2, rp2: 1, sphere: 0, cylinder: 1, mobius: 1 };
-  check('population is exactly the committed immersion keys (B-flag guard: no non-single-polygon surface)',
-    world.dim2.length === WORLD_SURFACES.length &&
-    world.dim2.every((m, k) => m.surface === WORLD_SURFACES[k] && m.immersion.correspondence.surface === m.surface));
-  for (const model of world.dim2) {
+  check('the summon covers exactly the committed immersion keys (B-flag guard: no non-single-polygon surface)',
+    summoned.length === WORLD_SURFACES.length &&
+    summoned.every((m, k) => m.surface === WORLD_SURFACES[k] && m.immersion.correspondence.surface === m.surface));
+  for (const model of summoned) {
     const inv = model.invariants;
     const want = expectedLoops[model.surface];
     check(`${model.surface}: draws ${want} loop(s) === certified b₁ (${inv.cert ? inv.cert.b1 : 'n-a'})`,
       Boolean(inv.cert && model.loops.length === want && inv.cert.b1 === want));
   }
-  const klein = world.dim2.find((m) => m.surface === 'klein');
+  // ★ THE PARITY LEGS (reference == person, falsifiable): a SECOND independent
+  // summon is byte-identical, and the summoned drawing IS the committed
+  // buildInkedFormModel drawing — the render did not change, its PROVENANCE
+  // did. A future "nicer" reference path breaks these two, loud.
+  check('★ PARITY: two independent person-path toruses → byte-identical models (JSON)',
+    JSON.stringify(summonReference('torus')) === JSON.stringify(summoned[0]));
+  check('★ PARITY: summoned torus + klein === the direct buildInkedFormModel drawing (same bytes — no reference-only render exists)',
+    JSON.stringify(summoned[0]) === JSON.stringify(buildInkedFormModel({ surface: 'torus', resolution: R })) &&
+    JSON.stringify(summoned[1]) === JSON.stringify(buildInkedFormModel({ surface: 'klein', resolution: R })));
+  // ★ NO BYPASS: the view never calls buildInkedFormModel — the summon goes
+  // through applyPlaygroundOperationTo (the person's seam), asserted on source.
+  const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+  check('★ NO BYPASS: ManuscriptView names buildInkedFormModel ZERO times and carries the person-path summon (applyPlaygroundOperationTo + "load the reference zoo")',
+    (viewSrc.match(/buildInkedFormModel/g) ?? []).length === 0 &&
+    viewSrc.includes('applyPlaygroundOperationTo') &&
+    viewSrc.includes('load the reference zoo'));
+  const klein = summoned.find((m) => m.surface === 'klein');
   check('KLEIN: two word loops a, b — both closed cycles (letters verbatim)',
     Boolean(klein && klein.loops.length === 2 &&
       klein.loops[0].label === 'a' && klein.loops[1].label === 'b' &&
@@ -86,9 +135,9 @@ const world = buildManuscriptWorld(R);
       klein.invariants.cert.nonOrientable &&
       JSON.stringify(klein.invariants.cert.w1Class) === '[0,1]'));
   check("KLEIN: caption H₁ = 'ℤ ⊕ ℤ/2'", Boolean(klein && klein.h1Label === 'ℤ ⊕ ℤ/2'));
-  const torus = world.dim2.find((m) => m.surface === 'torus');
-  const rp2 = world.dim2.find((m) => m.surface === 'rp2');
-  const sphere = world.dim2.find((m) => m.surface === 'sphere');
+  const torus = summoned.find((m) => m.surface === 'torus');
+  const rp2 = summoned.find((m) => m.surface === 'rp2');
+  const sphere = summoned.find((m) => m.surface === 'sphere');
   check("trio unchanged: torus 'ℤ ⊕ ℤ' [0,0] · RP² 'ℤ/2' [1] · sphere '0' []",
     Boolean(torus && rp2 && sphere &&
       torus.h1Label === 'ℤ ⊕ ℤ' && JSON.stringify(torus.invariants.cert.w1Class) === '[0,0]' &&
@@ -96,7 +145,7 @@ const world = buildManuscriptWorld(R);
       sphere.h1Label === '0' && sphere.invariants.cert.w1Class.length === 0));
   check('open cores carry their certified provenance (basisEdgeIds present)',
     ['cylinder', 'mobius'].every((key) => {
-      const m = world.dim2.find((x) => x.surface === key);
+      const m = summoned.find((x) => x.surface === key);
       return m && m.loops.length === 1 && m.loops[0].label === 'core' && Array.isArray(m.loops[0].basisEdgeIds);
     }));
 }
@@ -168,11 +217,13 @@ const world = buildManuscriptWorld(R);
 
 // ----- determinism ------------------------------------------------------------
 {
-  console.log('----- [determinism] two independent world builds agree -----');
+  console.log('----- [determinism] two independent world builds + summon sweeps agree -----');
   const again = buildManuscriptWorld(R);
-  check('dim2 loop label sets identical across builds',
-    JSON.stringify(world.dim2.map((m) => m.loops.map((l) => l.label))) ===
-    JSON.stringify(again.dim2.map((m) => m.loops.map((l) => l.label))));
+  check('CUT 0: a second world build seeds dim2 EMPTY too (the fix is the builder\'s, not a call-order accident)',
+    again.dim2.length === 0);
+  check('summon determinism: a full second person-path sweep yields identical loop label sets',
+    JSON.stringify(WORLD_SURFACES.map((key) => summonReference(key).loops.map((l) => l.label))) ===
+    JSON.stringify(WORLD_SURFACES.map((key) => summonReference(key).loops.map((l) => l.label))));
   check('dim3 tower verdicts identical across builds',
     JSON.stringify([again.dim3[0].tower.sound, again.dim3[0].tower.chi, again.dim3[0].tower.homology.H1.pretty]) ===
     JSON.stringify([world.dim3[0].tower.sound, world.dim3[0].tower.chi, world.dim3[0].tower.homology.H1.pretty]));
@@ -180,7 +231,7 @@ const world = buildManuscriptWorld(R);
 
 console.log(
   failures === 0
-    ? '\n--- manuscript world (2a: bands populated faithfully — Klein free+torsion, cores, domains): no failures ---\n\nALL PASS'
+    ? '\n--- manuscript world (2a + CUT 0: the dim-2 band starts EMPTY; the summoned six certified faithfully — Klein free+torsion, cores, domains): no failures ---\n\nALL PASS'
     : `\n--- manuscript world: ${failures} FAILURE(S) ---`,
 );
 process.exitCode = failures === 0 ? 0 : 1;

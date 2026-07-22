@@ -1,0 +1,49 @@
+PLATONIC ENGINE — SEALED HASH RECORD — CUT 0: THE GALLERY FIX (THE FAITHFUL BODY, cut 0)
+========================================================================================
+
+SEAL:            .handoff/SEAL_CUT0_THE_GALLERY_FIX.md   (off-repo, gitignored; written ONCE)
+NATIVE SHA256:   01601e3658ce6a4af641eef8dda0ad340a9d85e362456d207022039d568733fd
+                 4,982 bytes. DOUBLE-DERIVED: coder blind at build; the Sovereign's certutil at close.
+
+CHARTER:         mothership 2316 (THE FAITHFUL BODY · CUT 0, ratified) · baseline `31f5762`.
+                 RITUAL: ONE frozen re-seal (worldModel :77, THE UNION protocol).
+BUILD:           coder (همزاد), blind. AUDIT: engineer (3rd seat) — ACCEPT.
+
+⚠ THE FREEZE FINDING (grounded, reshapes the arc's cost): the ENTIRE render pipeline is FROZEN —
+  worldModel · inkedFormModel · writtenFormModel · classBodyModel. Every FAITHFUL BODY cut is a
+  frozen re-seal or needs a new not-frozen delegate. CUT 1 will route the cells-on-body renderer
+  through a NEW not-frozen module so the pipeline's freeze costs one re-seal, not four.
+
+THE CHANGE — the always-on gallery and its inverted hierarchy die:
+  worldModel:224  `dim2: WORLD_SURFACES.map(buildInkedFormModel)` → `dim2: []` (+ the dead
+    buildInkedFormModel value-import dropped for the type gate). The dim-2 band opens EMPTY.
+  ManuscriptView (NOT_FROZEN): the "load the reference zoo" summon builds the six through
+    applyPlaygroundOperationTo → routeWrittenRender — the PERSON's path. Reference == person,
+    byte-identical render; ManuscriptView names buildInkedFormModel ZERO times (the bypass gone).
+
+⛔ THE RE-SEAL — worldModel :77, register law, VERIFIED THREE WAYS:
+  c923c911…af75  →  c942b24ef805f18cde8a1d094ed23cb10a15ed8d7aea57bc681e9f90051b7e98
+  (1) manifest :77 = new; old gone file-wide. (2) `git show cd91dd0:…worldModel | sha256sum` == it
+  (auditor-reproduced sim). (3) working-tree sha256 == it. Freeze closure re-run 44/0.
+
+PROOFS: tsc -b 0 · suite 94 @ exactly 1 at sim cd91dd0 (dual-inspection). Three witnesses recut —
+  two predicted + a THIRD (diagnose-the-aperture's dim-2 population pin: `dim2.length === 6` →
+  `=== 0`, prose documenting the seed's death and the person-path summon) that the coder's sweep
+  MISSED and the first sim run caught red — the sim earning its keep (REPORT §5), recut honest
+  (moved to the new truth, not weakened). Parity legs pinned in diagnose-manuscript-world:
+  independent summon byte-identical · summoned === the direct drawing · buildInkedFormModel 0 in
+  the view. Plates: CUT0_EMPTY.png (band empty on open) · CUT0_SUMMONED.png (zoo the person's way).
+  NON-MOVEMENT: the renderer (inkedFormModel/writtenFormModel/classBodyModel) + chrome + gesture
+  model 0 diff — untouched, exactly as CUT 1 expects to find them.
+
+COMMIT (ONE — 6 build paths + this record; Arman fires natively; certutil :77 expects c942b24e…7e98):
+  src/manuscript/worldModel.ts
+  src/manuscript/ManuscriptView.tsx
+  docs/governance/ENGINE_FREEZE_MANIFEST.txt
+  scripts/diagnose-manuscript-world.cjs
+  scripts/diagnose-manuscript-specimen.cjs
+  scripts/diagnose-the-aperture.cjs
+  docs/governance/PLATONIC_ENGINE_CUT0_SEALED_HASH.txt
+
+⇒ The band opens empty; the zoo enters the person's way; the inversion dies (polish stops meaning
+  truth). CUT 1 (the cone, cells-on-body) follows on this commit — the renderer awaits, untouched.

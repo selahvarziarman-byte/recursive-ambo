@@ -57,7 +57,7 @@ import {
 } from '../lib/faceIdentification';
 import { level3InvariantTower, type Level3InvariantTower } from '../lib/level3Invariants';
 import { readFormInvariants, type FormInvariantsReadout } from '../playground/formInvariants';
-import { buildInkedFormModel, type InkedFormModel } from './inkedFormModel';
+import type { InkedFormModel } from './inkedFormModel';
 import type { ImmersedSurfaceKey } from '../lib/surfaceImmersion';
 
 // ---------------------------------------------------------------------------
@@ -216,7 +216,12 @@ export interface ManuscriptWorld {
 export function buildManuscriptWorld(resolution: number): ManuscriptWorld {
   return {
     dim1: buildSkeletonModels(),
-    dim2: WORLD_SURFACES.map((surface) => buildInkedFormModel({ surface, resolution })),
+    // CUT 0 THE GALLERY FIX (sanctioned frozen edit): the dim-2 band starts
+    // EMPTY — the six references are SUMMONED on demand through the person's
+    // OWN path (the view: invoke + the committed preset word →
+    // routeWrittenRender), never seeded here. WORLD_SURFACES stays as the list
+    // the summon reuses; a reference can never render nicer than the person's.
+    dim2: [],
     dim3: [buildThreeTorusDomain()],
   };
 }

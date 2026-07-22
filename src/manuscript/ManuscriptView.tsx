@@ -34,7 +34,7 @@ import {
   type MeshBasicMaterial,
 } from 'three';
 import { manuscriptDefaults } from '../design/designDefaults';
-import { buildManuscriptWorld, type DomainModel } from './worldModel';
+import { buildManuscriptWorld, WORLD_SURFACES, type DomainModel } from './worldModel';
 import { InkedForm, type InkedFormCraft, type InkedFormLighting } from './InkedForm';
 import { InkedSkeleton } from './InkedSkeleton';
 import { InkedDomain } from './InkedDomain';
@@ -181,6 +181,17 @@ const DIM2_TITLES: Record<string, string> = {
   sphere: 'Sphere (S²)',
   cylinder: 'Cylinder',
   mobius: 'Möbius band',
+};
+
+// CUT 0 — the reference summon's word per surface: the six committed preset
+// ops (the dock's own words), measured to birth exactly WORLD_SURFACES
+const REFERENCE_OPS: Record<string, string> = {
+  torus: 'glue-torus',
+  klein: 'flip-glue-klein',
+  rp2: 'flip-glue',
+  sphere: 'collapse-sphere',
+  cylinder: 'glue-cylinder',
+  mobius: 'flip-glue-mobius',
 };
 
 // craft-level colour recede: mix an ink toward the paper tone (pure, deterministic)
@@ -1133,6 +1144,49 @@ export default function ManuscriptView() {
     },
     [invokeMenu, closeMenus],
   );
+
+  // ----- CUT 0 — THE REFERENCE SUMMON (the gallery fix) ----------------------
+  // The dim-2 band starts EMPTY (worldModel seeds nothing); the six references
+  // enter ON DEMAND, and they enter the PERSON'S OWN WAY: each is an invoked
+  // square + the committed preset word, through applyPlaygroundOperationTo →
+  // routeWrittenRender — the exact seam the person's forms take (measured:
+  // byte-identical models). NO direct inked-model bypass exists in this file
+  // (a witness pins the count at zero), so a reference can never render nicer
+  // than the person's own torus. The
+  // consumed squares settle to pencil and the six births join the record —
+  // the zoo shows its construction, which is the point.
+  const [zooLoaded, setZooLoaded] = useState(false);
+  const handleSummonZoo = useCallback((): void => {
+    if (zooLoaded) return;
+    const additions: Array<{ form: WrittenForm; home: [number, number, number] }> = [];
+    for (let k = 0; k < WORLD_SURFACES.length; k += 1) {
+      const surface = WORLD_SURFACES[k];
+      const slotX = centered(k, WORLD_SURFACES.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2);
+      const host = invokePrimitive('square', seqRef.current);
+      seqRef.current += 1;
+      const born = applyPlaygroundOperationTo(
+        REFERENCE_OPS[surface],
+        host.shape,
+        null,
+        seqRef.current,
+        layoutCtl.resolution,
+        [],
+        null,
+      );
+      if (!born.ok) {
+        // fail-honest: no partial silent zoo — the committed reason speaks and
+        // the button stays live (nothing from this sweep joins the page)
+        setOpNotice(`${REFERENCE_OPS[surface]}: ${born.reason}`);
+        return;
+      }
+      seqRef.current += 1;
+      additions.push({ form: host, home: [slotX, rows.dim2Y - 3.1, 0] });
+      additions.push({ form: born.born, home: [slotX, rows.dim2Y, 0] });
+    }
+    setWritten((cur) => [...cur, ...additions]);
+    setZooLoaded(true);
+    setOpNotice(null);
+  }, [zooLoaded, layoutCtl.spacing, layoutCtl.resolution, scaleCtl.dim2Scale, rows.dim2Y]);
 
   // ----- 3b: the genesis reading — ONE committed DAG feeds pentimento + -----
   // ----- stemma + the foot-record (nothing hand-kept) ------------------------
@@ -2094,6 +2148,31 @@ export default function ManuscriptView() {
             paper={d.paper}
           />
         </div>
+      ) : null}
+      {!zooLoaded ? (
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleSummonZoo();
+          }}
+          style={{
+            position: 'absolute',
+            right: 14,
+            bottom: 62,
+            padding: '6px 12px',
+            borderRadius: 3,
+            border: `1px solid ${d.paper.cardBorder}`,
+            background: d.paper.cardBackground,
+            color: d.paper.cardInk,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 12,
+            cursor: 'pointer',
+            boxShadow: '0 2px 9px rgba(58, 51, 38, 0.15)',
+          }}
+        >
+          load the reference zoo
+        </button>
       ) : null}
       <button
         type="button"
