@@ -99,11 +99,38 @@ export function SewGlyph() {
   );
 }
 
+// fold — H2 THE GENERAL FOLD (the 7th word): the hexagon with PAIRED ARROWED
+// EDGES per the designer's plate (H2_AFFORDANCES_DESIGNER.png §1) — the
+// letters + arrows ARE the fundamental-polygon word: not a picture OF the
+// fold, the fold itself; the person writes the math on the rim. Two pairs
+// shown (bold pair · plain pair), each arrowed with a SENSE — unlike sew,
+// the arrows here do not pick a mode for the group: the fold's mode lives on
+// EACH pair (→→ preserving · →⇄ reversing), which is exactly what paired
+// arrows of differing weights depict. Structure faithful; the designer's ink
+// craft-pass polishes later (his standing drop-in lane).
+export function FoldGlyph() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
+      <path d="M15 4 L5.5 9.5 L5.5 20.5 L15 26 L24.5 20.5 L24.5 9.5 Z" {...S} />
+      <path d="M24.5 9.5 L15 4" {...BOLD} />
+      <path d="M16.5 7.2 L15 4 L18.5 3.7" {...BOLD} />
+      <path d="M5.5 20.5 L15 26" {...BOLD} />
+      <path d="M13.5 22.9 L15 26 L11.5 26.3" {...BOLD} />
+      <path d="M5.5 9.5 V20.5" {...S} />
+      <path d="M3.6 18.2 L5.5 20.5 L7.4 18.2" {...S} />
+      <path d="M24.5 9.5 V20.5" {...S} />
+      <path d="M22.6 18.2 L24.5 20.5 L26.4 18.2" {...S} />
+    </svg>
+  );
+}
+
 // OPEN THE DOOR (2026-07-17): the sew entry closed the six-day black page —
 // DOCK_OPERATION_GROUPS grew a sixth group (2026-07-11) and this map never
 // learned it; DOCK_GLYPHS[key] rendered undefined and unmounted the app.
 // THE UNION (sanctioned frozen edit, SEAL_THE_UNION): DockGroupKey now keys
-// BOTH this map and the groups — a missing glyph is a COMPILE error.
+// BOTH this map and the groups — a missing glyph is a COMPILE error (H2's
+// widening to 'fold' proved it live: TS2741 fired on this map until FoldGlyph
+// joined it).
 export const DOCK_GLYPHS: Record<DockGroupKey, () => JSX.Element> = {
   glue: GlueGlyph,
   'flip-glue': FlipGlueGlyph,
@@ -111,4 +138,5 @@ export const DOCK_GLYPHS: Record<DockGroupKey, () => JSX.Element> = {
   cut: CutGlyph,
   dualize: DualizeGlyph,
   sew: SewGlyph,
+  fold: FoldGlyph,
 };

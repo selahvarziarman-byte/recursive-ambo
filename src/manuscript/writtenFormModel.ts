@@ -104,7 +104,7 @@ export interface WrittenForm {
 // SEAL_THE_UNION, charter §10-quinquies STEP 1): a dock group's key is a
 // CLOSED type — a group without its glyph, a glyph without its group, or a
 // rogue key is a COMPILE error, never a runtime black page.
-export type DockGroupKey = 'glue' | 'flip-glue' | 'collapse' | 'cut' | 'dualize' | 'sew';
+export type DockGroupKey = 'glue' | 'flip-glue' | 'collapse' | 'cut' | 'dualize' | 'sew' | 'fold';
 
 export const DOCK_OPERATION_GROUPS: ReadonlyArray<{
   key: DockGroupKey;
@@ -119,6 +119,12 @@ export const DOCK_OPERATION_GROUPS: ReadonlyArray<{
   // the general complex identification's boundary sub-family (sanctioned,
   // 2026-07-11) — sew two rims of a COMPLEX (the word ops fold polygons)
   { key: 'sew', label: 'sew', operationIds: ['sew-boundary-preserving', 'sew-boundary-reversing'] },
+  // H2 THE GENERAL FOLD (sanctioned frozen edit): the 7th word — the person
+  // writes the rim's OWN gluing word (the six words above are PRESETS over the
+  // same BoundaryPairing[] seam). Not a registry op: operationIds is empty by
+  // design — the dock opens the fold panel, which consumes customGluing's
+  // committed validate/preview/execute through handGestureModel.
+  { key: 'fold', label: 'fold', operationIds: [] },
 ];
 
 const IMMERSION_TITLES: Record<string, string> = {

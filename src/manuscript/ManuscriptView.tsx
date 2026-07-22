@@ -63,6 +63,8 @@ import { InkedPlainForm } from './InkedPlainForm';
 import {
   ApertureGatePanel,
   BirthGatePanel,
+  ChordGatePanel,
+  FoldGatePanel,
   FormOpsMenu,
   InvokePalette,
   OperationsDock,
@@ -71,6 +73,27 @@ import {
   SourcesShelf,
   type AperturePairRowView,
 } from './ManuscriptChrome';
+// H2 THE PERSON'S HANDS — the two gestures' react-free model: the fold (the
+// 7th dock word over customGluing's committed seam) and the aimed chord (the
+// committed subdivideFace as a person gesture + the combine fork). The view
+// only places its results; every verdict is the model's.
+import {
+  applyChordToWritten,
+  applyFoldTo,
+  applyGateChords,
+  chordSplitFor,
+  combineForkFor,
+  foldCommitEnabled,
+  foldGateReason,
+  foldPreviewFor,
+  foldRimEdges,
+  forkOfferLabel,
+  tapFoldEdge,
+  toggleFoldPairMode,
+  type ChordAim,
+  type ForkOffer,
+  type FoldState,
+} from './handGestureModel';
 // THE APERTURE (engineer-chartered 2026-07-13, designer-ruled ADR 0004): the
 // person builds a 3-manifold (map-picked pairs — the mode is DERIVED, never
 // chosen) and stands inside it — image-space transport on the engine's own
@@ -521,6 +544,25 @@ export default function ManuscriptView() {
   const cameraRef = useRef<Camera | null>(null);
   // craft round-2: the birth-cue (the child settles AMBIENT; the cue announces it)
   const [birthCue, setBirthCue] = useState<{ key: number; home: [number, number, number] } | null>(null);
+  // ----- H2 THE PERSON'S HANDS ----------------------------------------------
+  // the fold panel's gesture state, keyed to the selected form (a selection
+  // change hides the panel; reopening starts a fresh word)
+  const [fold, setFold] = useState<{ targetKey: string } & FoldState | null>(null);
+  // the chord panel: 'reshape' acts on the standing written form in place
+  // (refine is not a birth); 'gate' composes the person's aim onto the combine
+  // gate's shape (the same pattern as the gate's committed 1-face refine)
+  const [chord, setChord] = useState<{
+    targetKey: string;
+    faceId: string;
+    cornerA: string | null;
+    cornerB: string | null;
+    targetLen: number | null;
+    mode: 'reshape' | 'gate';
+  } | null>(null);
+  // the person's aimed chords per page key, applied to the GATE shape only
+  const [gateChords, setGateChords] = useState<Record<string, ChordAim[]>>({});
+  // the last combine attempt's rim-mismatch refusal + the fork it offers
+  const [combineRefusal, setCombineRefusal] = useState<{ reason: string; fork: ForkOffer } | null>(null);
   const closeMenus = useCallback(() => {
     setInvokeMenu(null);
     setFormMenu(null);
@@ -530,6 +572,10 @@ export default function ManuscriptView() {
       if (event.key === 'Escape') {
         setSelected(null);
         setCombineWith(null);
+        setFold(null);
+        setChord(null);
+        setGateChords({});
+        setCombineRefusal(null);
         closeMenus();
       }
     };
@@ -1162,8 +1208,17 @@ export default function ManuscriptView() {
         return t;
       }
     };
-    const a = subdivided(a0);
-    const b = subdivided(b0);
+    // H2 THE FORK — the person's aimed chords compose onto the gate's shape
+    // (the page form untouched; the birth receives the shape the panel shows —
+    // the exact pattern of the committed 1-face refine above). An empty aim
+    // list leaves the shape byte-identical.
+    const withChords = (t: NonNullable<ReturnType<typeof targetFor>>, key: string) => {
+      const aims = gateChords[key];
+      if (!aims || aims.length === 0) return t;
+      return { ...t, shape: applyGateChords(t.shape, aims) };
+    };
+    const a = withChords(subdivided(a0), selected);
+    const b = withChords(subdivided(b0), combineWith);
     const portFaceA = a.shape.faces.find((face) => face.id === portFaces[selected]) ?? null;
     const portFaceB = b.shape.faces.find((face) => face.id === portFaces[combineWith]) ?? null;
     return {
@@ -1175,7 +1230,7 @@ export default function ManuscriptView() {
       portFaceB,
       gate: combineGateFor(a.shape, b.shape, portFaceA, portFaceB),
     };
-  }, [selected, combineWith, targetFor, portFaces]);
+  }, [selected, combineWith, targetFor, portFaces, gateChords]);
   const handleCombine = useCallback((): void => {
     if (!combineGate) return;
     const result = birthChild(
@@ -1187,7 +1242,29 @@ export default function ManuscriptView() {
       layoutCtl.resolution,
     );
     if (!result.ok) {
-      setOpNotice(`connect-sum: ${result.reason}`);
+      // H2 THE FORK — offered exactly when the frozen door's rim-mismatch wall
+      // is the one that fired: the two PICKED faces' lengths differ AND both
+      // gate shapes carry ≥ 2 faces (the frozen wall ORDER guarantees the
+      // single-face walls fire first, so under these conditions the thrown
+      // refusal IS the mismatch door — computed from the faces the view holds,
+      // the refusal string never parsed). No honest fork → the toast, as today.
+      const fork =
+        combineGate.a.shape.faces.length >= 2 && combineGate.b.shape.faces.length >= 2
+          ? combineForkFor(
+              combineGate.portFaceA,
+              combineGate.portFaceB,
+              combineGate.aKey,
+              combineGate.bKey,
+              combineGate.a.title,
+              combineGate.b.title,
+            )
+          : null;
+      if (fork) {
+        setCombineRefusal({ reason: result.reason, fork });
+        setOpNotice(null);
+      } else {
+        setOpNotice(`connect-sum: ${result.reason}`);
+      }
       return;
     }
     seqRef.current += 1;
@@ -1203,7 +1280,172 @@ export default function ManuscriptView() {
     setSelected(null);
     setBirthCue({ key: seqRef.current, home });
     setOpNotice(null);
+    setCombineRefusal(null);
+    setGateChords({});
+    setChord(null);
   }, [combineGate, layoutCtl.resolution]);
+
+  // ----- H2 THE PERSON'S HANDS: the fold + the aimed chord ------------------
+  // the fold's dock chip state — the committed form-level gate's own sentence
+  const foldTarget = useMemo(() => targetFor(selected), [targetFor, selected]);
+  const foldReason = useMemo(
+    () => (foldTarget ? foldGateReason(foldTarget.shape) : 'Select a form first.'),
+    [foldTarget],
+  );
+  const foldPanel = useMemo(() => {
+    if (!fold || fold.targetKey !== selected || !foldTarget) return null;
+    const preview =
+      fold.pairs.length > 0 ? foldPreviewFor(foldTarget.shape, fold.pairs, foldTarget.parent) : null;
+    return {
+      title: foldTarget.title,
+      edges: foldRimEdges(foldTarget.shape),
+      state: { pairs: fold.pairs, pending: fold.pending },
+      preview,
+      commitEnabled: foldCommitEnabled({ pairs: fold.pairs, pending: fold.pending }, preview),
+    };
+  }, [fold, selected, foldTarget]);
+  const handleFoldToggle = useCallback((): void => {
+    if (!selected) return;
+    setFold((cur) => (cur && cur.targetKey === selected ? null : { targetKey: selected, pairs: [], pending: null }));
+  }, [selected]);
+  const handleFoldCommit = useCallback((): void => {
+    if (!fold) return;
+    const target = targetFor(fold.targetKey);
+    if (!target) return;
+    const result = applyFoldTo(
+      target.shape,
+      target.parent,
+      target.ancestry,
+      fold.pairs,
+      seqRef.current,
+      layoutCtl.resolution,
+    );
+    if (!result.ok) {
+      setOpNotice(`fold: ${result.reason}`);
+      return;
+    }
+    seqRef.current += 1;
+    setOpNotice(null);
+    setWritten((cur) => [
+      ...cur,
+      { form: result.born, home: [target.home[0] + d.world.chrome.spawnOffset, target.home[1], 0] },
+    ]);
+    setSelected(`w:${result.born.id}`);
+    setFold(null);
+  }, [fold, targetFor, layoutCtl.resolution, d.world.chrome.spawnOffset]);
+
+  // the chord panel's subject — the gate's shape in 'gate' mode (the fork),
+  // the standing written form in 'reshape' mode (the general entry)
+  const chordPanel = useMemo(() => {
+    if (!chord) return null;
+    if (chord.mode === 'gate') {
+      if (!combineGate) return null;
+      const side =
+        chord.targetKey === combineGate.aKey
+          ? combineGate.a
+          : chord.targetKey === combineGate.bKey
+            ? combineGate.b
+            : null;
+      if (!side) return null;
+      const face = side.shape.faces.find((f) => f.id === chord.faceId);
+      if (!face) return null;
+      return { shape: side.shape, face, formTitle: side.title };
+    }
+    const target = targetFor(chord.targetKey);
+    if (!target) return null;
+    const face = target.shape.faces.find((f) => f.id === chord.faceId);
+    if (!face) return null;
+    return { shape: target.shape, face, formTitle: target.title };
+  }, [chord, combineGate, targetFor]);
+  const chordSplit = useMemo(() => {
+    if (!chord || !chordPanel || !chord.cornerA || !chord.cornerB) return null;
+    return chordSplitFor(chordPanel.shape, chord.faceId, chord.cornerA, chord.cornerB);
+  }, [chord, chordPanel]);
+  const handleChordTap = useCallback((cornerId: string): void => {
+    setChord((cur) => {
+      if (!cur) return cur;
+      if (cur.cornerA === cornerId) return { ...cur, cornerA: null };
+      if (cur.cornerB === cornerId) return { ...cur, cornerB: null };
+      if (cur.cornerA === null) return { ...cur, cornerA: cornerId };
+      return { ...cur, cornerB: cornerId };
+    });
+  }, []);
+  const handleChordCommit = useCallback((): void => {
+    if (!chord || !chord.cornerA || !chord.cornerB) return;
+    const aim: ChordAim = { faceId: chord.faceId, cornerA: chord.cornerA, cornerB: chord.cornerB };
+    if (chord.mode === 'gate') {
+      // the aim joins the gate's chords; the gate recomputes, the replaced
+      // face's stale pick resolves null, and the committed gate asks for the
+      // port face again — the person picks the new rim (never a default)
+      setGateChords((cur) => ({ ...cur, [chord.targetKey]: [...(cur[chord.targetKey] ?? []), aim] }));
+      setChord(null);
+      return;
+    }
+    const entry = written.find((w) => `w:${w.form.id}` === chord.targetKey);
+    const target = targetFor(chord.targetKey);
+    if (!entry || !target) return;
+    const result = applyChordToWritten(entry.form, target.ancestry, aim, layoutCtl.resolution);
+    if (!result.ok) {
+      setOpNotice(`subdivide: ${result.reason}`);
+      return;
+    }
+    // refine is not a birth: same id, same genealogy — the entry reshapes in
+    // place; the field cache must not serve the coarser body under the same id
+    fieldCacheRef.current.delete(entry.form.shape.id);
+    setWritten((cur) =>
+      cur.map((w) => (w.form.id === entry.form.id ? { ...w, form: result.reshaped } : w)),
+    );
+    setOpNotice(null);
+    setChord(null);
+  }, [chord, written, targetFor, layoutCtl.resolution]);
+  // the general entry's row state (right-click a written form): the chord
+  // reshapes a PLAIN drawn form on a determinate face — single-face forms use
+  // their only face; multi-face forms use the person's picked face
+  const menuChord = useMemo(() => {
+    if (!formMenu) return null;
+    const [band, key] = formMenu.id.split(':');
+    if (band !== 'w') return null;
+    const entry = written.find((w) => w.form.id === key);
+    if (!entry) return null;
+    if (entry.form.render.mode !== 'plain') {
+      return { enabled: false, reason: 'the chord acts on the form’s own drawn faces (a plain form)', faceId: null };
+    }
+    const shape = entry.form.shape;
+    if (shape.faces.length === 1) {
+      const [onlyFace] = shape.faces; // the ONLY face — not a choice
+      return { enabled: true, reason: null, faceId: onlyFace.id };
+    }
+    const picked = portFaces[formMenu.id];
+    const face = picked ? shape.faces.find((f) => f.id === picked) ?? null : null;
+    if (!face) {
+      return { enabled: false, reason: 'pick a face first — the person picks, no default is taken', faceId: null };
+    }
+    return { enabled: true, reason: null, faceId: face.id };
+  }, [formMenu, written, portFaces]);
+  const handleOpenChordFromMenu = useCallback((): void => {
+    if (!formMenu || !menuChord || !menuChord.enabled || !menuChord.faceId) return;
+    setChord({
+      targetKey: formMenu.id,
+      faceId: menuChord.faceId,
+      cornerA: null,
+      cornerB: null,
+      targetLen: null,
+      mode: 'reshape',
+    });
+    closeMenus();
+  }, [formMenu, menuChord, closeMenus]);
+  const handleTakeFork = useCallback((): void => {
+    if (!combineRefusal) return;
+    const { fork } = combineRefusal;
+    setChord({
+      targetKey: fork.pageKey,
+      faceId: fork.faceId,
+      cornerA: null,
+      cornerB: null,
+      targetLen: fork.targetLen,
+      mode: 'gate',
+    });
+  }, [combineRefusal]);
 
   // ----- P1b: the ambo→manuscript lift channel ------------------------------
   // Ingest lifted snapshots onto the shelf through the COMMITTED load — the
@@ -1974,6 +2216,12 @@ export default function ManuscriptView() {
         paper={d.paper}
         accent={generatorsCtl.a}
         onApply={(operationId) => applyOp(operationId)}
+        fold={{
+          enabled: foldReason === null,
+          reason: foldReason,
+          open: fold !== null && fold.targetKey === selected,
+        }}
+        onFoldToggle={handleFoldToggle}
       />
       {invokeMenu ? (
         <InvokePalette
@@ -1992,6 +2240,8 @@ export default function ManuscriptView() {
           availability={menuAvailability}
           paper={d.paper}
           onApply={(operationId) => applyOp(operationId, formMenu.id)}
+          chord={menuChord ? { enabled: menuChord.enabled, reason: menuChord.reason } : null}
+          onOpenChord={handleOpenChordFromMenu}
         />
       ) : null}
       {combineGate ? (
@@ -2018,12 +2268,52 @@ export default function ManuscriptView() {
           paper={d.paper}
           accent={generatorsCtl.a}
           onCombine={handleCombine}
+          refusalNotice={combineRefusal?.reason ?? null}
+          fork={
+            combineRefusal
+              ? { label: forkOfferLabel(combineRefusal.fork), onTake: handleTakeFork }
+              : null
+          }
+        />
+      ) : foldPanel ? (
+        <FoldGatePanel
+          title={foldPanel.title}
+          edges={foldPanel.edges}
+          state={foldPanel.state}
+          preview={foldPanel.preview}
+          commitEnabled={foldPanel.commitEnabled}
+          paper={d.paper}
+          accent={generatorsCtl.a}
+          onTapEdge={(edgeIndex) =>
+            setFold((cur) => (cur ? { ...cur, ...tapFoldEdge({ pairs: cur.pairs, pending: cur.pending }, edgeIndex) } : cur))
+          }
+          onToggleMode={(pairIndex) =>
+            setFold((cur) => (cur ? { ...cur, ...toggleFoldPairMode({ pairs: cur.pairs, pending: cur.pending }, pairIndex) } : cur))
+          }
+          onCommit={handleFoldCommit}
+          onClose={() => setFold(null)}
         />
       ) : reading ? (
         <SpecimenCard
           reading={reading}
           paper={d.paper}
           generatorInks={{ a: generatorsCtl.a, b: generatorsCtl.b }}
+        />
+      ) : null}
+      {chord && chordPanel ? (
+        <ChordGatePanel
+          formTitle={chordPanel.formTitle}
+          faceText={faceLabel(chordPanel.face)}
+          corners={chordPanel.face.vertexIds}
+          cornerA={chord.cornerA}
+          cornerB={chord.cornerB}
+          split={chordSplit}
+          targetLen={chord.targetLen}
+          paper={d.paper}
+          accent={generatorsCtl.a}
+          onTapCorner={handleChordTap}
+          onCommit={handleChordCommit}
+          onClose={() => setChord(null)}
         />
       ) : null}
       <RecordStrip entries={recordEntries} accepted={genesis?.accepted ?? true} paper={d.paper} />

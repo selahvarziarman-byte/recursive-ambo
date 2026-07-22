@@ -20,6 +20,9 @@ import type { OperationAvailability } from './writtenFormModel';
 import { DOCK_OPERATION_GROUPS } from './writtenFormModel';
 import { DOCK_GLYPHS } from './OperationGlyphs';
 import type { BirthGate, RecordEntry, ShelfEntry } from './genesisModel';
+import type { FaceEdgeLabel, GluingPreviewResult } from '../playground/customGluing';
+import type { BoundaryPairing } from '../lib/surfaceOperations';
+import type { ChordSplit, FoldState } from './handGestureModel';
 
 export interface ChromePaper {
   cardBackground: string;
@@ -125,6 +128,8 @@ export function FormOpsMenu({
   availability,
   paper,
   onApply,
+  chord,
+  onOpenChord,
 }: {
   x: number;
   y: number;
@@ -132,6 +137,11 @@ export function FormOpsMenu({
   availability: OperationAvailability[];
   paper: ChromePaper;
   onApply: (operationId: string) => void;
+  // H2 — the aimed chord's GENERAL entry (reshape a face anytime): a gesture
+  // row after the committed ops; enable/reason arrive from the view's model
+  // read, never invented here
+  chord?: { enabled: boolean; reason: string | null } | null;
+  onOpenChord?: () => void;
 }) {
   return (
     <div style={{ ...menuStyle(paper), left: x, top: y, maxWidth: 280 }}>
@@ -145,6 +155,14 @@ export function FormOpsMenu({
           onPick={() => onApply(op.id)}
         />
       ))}
+      {chord ? (
+        <MenuRow
+          label="subdivide — draw a chord"
+          sub={chord.enabled ? null : chord.reason}
+          disabled={!chord.enabled}
+          onPick={() => onOpenChord?.()}
+        />
+      ) : null}
     </div>
   );
 }
@@ -220,6 +238,8 @@ export function BirthGatePanel({
   paper,
   accent,
   onCombine,
+  refusalNotice,
+  fork,
 }: {
   aTitle: string;
   bTitle: string;
@@ -233,6 +253,12 @@ export function BirthGatePanel({
   paper: ChromePaper;
   accent: string;
   onCombine: () => void;
+  // H2 THE FORK — when the last combine attempt refused on the rim mismatch,
+  // the refusal (the frozen door's own sentence, verbatim) rides the panel and
+  // the offer below it opens the aimed chord, pre-aimed by the view (lengths
+  // computed from the PICKED faces — the string is never parsed)
+  refusalNotice?: string | null;
+  fork?: { label: string; onTake: () => void } | null;
 }) {
   return (
     <div
@@ -300,6 +326,35 @@ export function BirthGatePanel({
           {gate.reason ?? 'The pair cannot combine.'}
         </div>
       )}
+      {refusalNotice ? (
+        <div
+          style={{
+            marginTop: 9,
+            padding: '7px 9px',
+            border: `1px solid ${paper.cardBorder}`,
+            borderRadius: 3,
+            fontSize: 12,
+          }}
+        >
+          <div style={{ fontSize: 10.5, letterSpacing: 1, opacity: 0.6, fontVariant: 'small-caps' }}>
+            ⊘ cannot combine these two faces
+          </div>
+          <div style={{ marginTop: 3, fontStyle: 'italic', opacity: 0.88 }}>{refusalNotice}</div>
+          {fork ? (
+            <div style={{ borderTop: `1px dashed ${paper.cardBorder}`, marginTop: 7, paddingTop: 6 }}>
+              <span
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  fork.onTake();
+                }}
+                style={{ color: accent, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}
+              >
+                {fork.label}
+              </span>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       <div style={{ marginTop: 9, fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.5 }}>
         the consumed parents settle to pencil · esc releases the pair
       </div>
@@ -722,12 +777,19 @@ export function OperationsDock({
   paper,
   accent,
   onApply,
+  fold,
+  onFoldToggle,
 }: {
   availability: OperationAvailability[]; // the committed contract for the CURRENT selection
   hasTarget: boolean;
   paper: ChromePaper;
   accent: string; // hover/enabled ink (the generator-a orange)
   onApply: (operationId: string) => void;
+  // H2 THE FOLD — the 7th word is a GESTURE, not a registry op: the chip
+  // opens the fold panel; enable/reason arrive from handGestureModel via the
+  // view (the committed form-level gate's own sentence — never invented here)
+  fold?: { enabled: boolean; reason: string | null; open: boolean };
+  onFoldToggle?: () => void;
 }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -752,6 +814,66 @@ export function OperationsDock({
       }}
     >
       {DOCK_OPERATION_GROUPS.map((group) => {
+        if (group.key === 'fold') {
+          // H2 — the fold chip: no variant flyout (the gesture has no
+          // committed words to list); the panel is the affordance. A greyed
+          // chip still SPEAKS on hover — the committed gate reason rides the
+          // label (the R4(e) rule: no refusal is eaten with the click).
+          const foldEnabled = Boolean(fold?.enabled);
+          const foldOpen = Boolean(fold?.open);
+          return (
+            <div key={group.key} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onMouseEnter={() => setHovered(group.key)}
+                onMouseLeave={() => setHovered(null)}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  if (foldEnabled) onFoldToggle?.();
+                }}
+                style={{
+                  width: 46,
+                  height: 46,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 3,
+                  border: `1px solid ${paper.cardBorder}`,
+                  background: foldOpen ? 'rgba(58,51,38,0.08)' : 'transparent',
+                  color: foldEnabled ? (hovered === group.key ? accent : paper.cardInk) : paper.cardInk,
+                  opacity: foldEnabled ? 1 : 0.38,
+                  cursor: foldEnabled ? 'pointer' : 'default',
+                  padding: 0,
+                }}
+              >
+                {DOCK_GLYPHS[group.key]()}
+              </button>
+              {hovered === group.key ? (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 52,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    whiteSpace: 'nowrap',
+                    padding: '3px 8px',
+                    borderRadius: 3,
+                    background: paper.cardBackground,
+                    border: `1px solid ${paper.cardBorder}`,
+                    fontSize: 12,
+                    boxShadow: '0 2px 6px rgba(58,51,38,0.18)',
+                  }}
+                >
+                  {group.label}
+                  {!hasTarget ? <span style={{ opacity: 0.6 }}> — select a form first</span> : null}
+                  {hasTarget && !foldEnabled && fold?.reason ? (
+                    <span style={{ opacity: 0.6 }}> — {fold.reason}</span>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          );
+        }
         const ops = group.operationIds
           .map((id) => byId.get(id))
           .filter((op): op is OperationAvailability => Boolean(op));
@@ -855,6 +977,417 @@ export function OperationsDock({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// H2 — THE FOLD GATE panel (the 7th word's affordance): the person writes the
+// rim's own gluing word — edge taps pair (a·a, b·b, …), the arrow per pair is
+// the mode, the preview is the committed dry-run's OWN certificate, and the
+// commit runs the committed execute. Pure presentation: every number and every
+// refusal in here arrives from handGestureModel/customGluing verbatim.
+// Wording = the designer's plate (working text; his craft-pass refines).
+// ---------------------------------------------------------------------------
+
+const PAIR_LETTERS = 'abcdefgh';
+
+export function FoldGatePanel({
+  title,
+  edges,
+  state,
+  preview,
+  commitEnabled,
+  paper,
+  accent,
+  onTapEdge,
+  onToggleMode,
+  onCommit,
+  onClose,
+}: {
+  title: string;
+  edges: FaceEdgeLabel[]; // the committed describeFaceEdges vocabulary
+  state: FoldState;
+  preview: GluingPreviewResult | null; // null ⟺ no pairs yet
+  commitEnabled: boolean;
+  paper: ChromePaper;
+  accent: string;
+  onTapEdge: (edgeIndex: number) => void;
+  onToggleMode: (pairIndex: number) => void;
+  onCommit: () => void;
+  onClose: () => void;
+}) {
+  const pairIndexOf = (edgeIndex: number): number =>
+    state.pairs.findIndex((p) => p.edgeA === edgeIndex || p.edgeB === edgeIndex);
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        right: 14,
+        top: 64,
+        width: 264,
+        padding: '13px 15px',
+        borderRadius: 3,
+        background: paper.cardBackground,
+        border: `1px solid ${paper.cardBorder}`,
+        boxShadow: '0 2px 9px rgba(58, 51, 38, 0.2)',
+        color: paper.cardInk,
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: 13,
+        lineHeight: 1.5,
+      }}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div style={{ fontSize: 11, letterSpacing: 1.2, opacity: 0.6, fontVariant: 'small-caps' }}>
+          the fold — write the rim&apos;s own word
+        </div>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          style={{ border: 'none', background: 'transparent', color: paper.cardInk, cursor: 'pointer', fontSize: 13, opacity: 0.6 }}
+        >
+          ×
+        </button>
+      </div>
+      <div style={{ marginTop: 2, fontWeight: 700, fontSize: 13.5 }}>{title}</div>
+      <div style={{ marginTop: 4, fontSize: 11, opacity: 0.75 }}>
+        tap two EDGES → they pair (a·a). the arrow is the mode: →→ same sense = glue · →⇄ opposed = flip-glue
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
+        {edges.map((edge) => {
+          const inPair = pairIndexOf(edge.index);
+          const isPending = state.pending === edge.index;
+          const letter = inPair >= 0 ? PAIR_LETTERS[inPair] ?? '?' : null;
+          return (
+            <button
+              key={edge.index}
+              type="button"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                onTapEdge(edge.index);
+              }}
+              title={`${edge.from} → ${edge.to}`}
+              style={{
+                padding: '3px 7px',
+                borderRadius: 3,
+                border: `1px ${isPending ? 'dashed' : 'solid'} ${letter ? accent : paper.cardBorder}`,
+                background: 'transparent',
+                color: letter ? accent : paper.cardInk,
+                fontFamily: 'ui-monospace, monospace',
+                fontSize: 11,
+                cursor: 'pointer',
+              }}
+            >
+              e{edge.index}
+              {letter ? ` · ${letter}` : ''}
+            </button>
+          );
+        })}
+      </div>
+      {state.pairs.map((pair, k) => (
+        <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 5, fontSize: 12 }}>
+          <span style={{ fontFamily: 'ui-monospace, monospace' }}>
+            {PAIR_LETTERS[k] ?? '?'}·{PAIR_LETTERS[k] ?? '?'} — e{pair.edgeA} with e{pair.edgeB}
+          </span>
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              onToggleMode(k);
+            }}
+            title={pair.mode === 'preserving' ? 'same sense — the committed glue' : 'opposed — the committed flip-glue'}
+            style={{
+              padding: '1px 7px',
+              borderRadius: 3,
+              border: `1px solid ${paper.cardBorder}`,
+              background: 'transparent',
+              color: paper.cardInk,
+              fontSize: 12,
+              cursor: 'pointer',
+            }}
+          >
+            {pair.mode === 'preserving' ? '→→' : '→⇄'}
+          </button>
+        </div>
+      ))}
+      <div style={{ marginTop: 9, fontSize: 10.5, letterSpacing: 1, opacity: 0.6, fontVariant: 'small-caps' }}>
+        preview — updates per pair
+      </div>
+      {preview === null ? (
+        <div style={{ marginTop: 3, fontSize: 12, fontStyle: 'italic', opacity: 0.7 }}>
+          no pairs yet — the word is empty
+        </div>
+      ) : preview.ok ? (
+        <div style={{ marginTop: 3 }}>
+          {(
+            [
+              ['χ (Euler)', String(preview.preview.chi)],
+              ['w₁', String(preview.preview.w1)],
+              ['orientable', preview.preview.w1 === 0 ? 'yes' : 'no'],
+              ['rim', `${preview.preview.freeEdges} edge${preview.preview.freeEdges === 1 ? '' : 's'} free`],
+              ['runs', `the committed ${preview.preview.operation}`],
+            ] as const
+          ).map(([label, value]) => (
+            <div
+              key={label}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: 12,
+                borderTop: `1px solid ${paper.cardBorder}55`,
+                padding: '3px 0 2px',
+                fontSize: 12.5,
+              }}
+            >
+              <span style={{ opacity: 0.85 }}>{label}</span>
+              <b>{value}</b>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div
+          style={{
+            marginTop: 4,
+            padding: '5px 8px',
+            border: `1px solid ${paper.cardBorder}`,
+            borderRadius: 3,
+            fontSize: 12,
+            fontStyle: 'italic',
+            opacity: 0.85,
+          }}
+        >
+          {preview.reason}
+        </div>
+      )}
+      <button
+        type="button"
+        disabled={!commitEnabled}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          if (commitEnabled) onCommit();
+        }}
+        style={{
+          marginTop: 10,
+          width: '100%',
+          padding: '7px 0',
+          borderRadius: 3,
+          border: `1px solid ${commitEnabled ? accent : paper.cardBorder}`,
+          background: 'transparent',
+          color: commitEnabled ? accent : paper.cardInk,
+          opacity: commitEnabled ? 1 : 0.45,
+          fontFamily: 'Georgia, "Times New Roman", serif',
+          fontWeight: 700,
+          fontSize: 13.5,
+          cursor: commitEnabled ? 'pointer' : 'default',
+        }}
+      >
+        commit the fold
+      </button>
+      <div style={{ marginTop: 8, fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.5 }}>
+        commit only when the rim closes
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// H2 — THE CHORD panel (the subdivide gesture): tap two non-adjacent corners,
+// read the live split, commit the aimed chord. Serves BOTH entries — the
+// general reshape and the combine fork (targetLen non-null ⟺ pre-aimed).
+// Pure presentation: the split numbers and every refusal are subdivideFace's
+// own, via handGestureModel. Wording = the designer's plate (working text).
+// ---------------------------------------------------------------------------
+
+export function ChordGatePanel({
+  formTitle,
+  faceText,
+  corners,
+  cornerA,
+  cornerB,
+  split,
+  targetLen,
+  paper,
+  accent,
+  onTapCorner,
+  onCommit,
+  onClose,
+}: {
+  formTitle: string;
+  faceText: string; // the one face-labeler's honest line for the subject face
+  corners: string[]; // the face's own corner ids, rim order
+  cornerA: string | null;
+  cornerB: string | null;
+  split: ChordSplit | null; // null ⟺ fewer than two corners tapped
+  targetLen: number | null; // the fork's aim (null on the general entry)
+  paper: ChromePaper;
+  accent: string;
+  onTapCorner: (cornerId: string) => void;
+  onCommit: () => void;
+  onClose: () => void;
+}) {
+  const commitEnabled = split !== null && split.ok;
+  const matches = (n: number): boolean => targetLen !== null && n === targetLen;
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: 14,
+        top: 288,
+        width: 264,
+        padding: '13px 15px',
+        borderRadius: 3,
+        background: paper.cardBackground,
+        border: `1px solid ${paper.cardBorder}`,
+        boxShadow: '0 2px 9px rgba(58, 51, 38, 0.2)',
+        color: paper.cardInk,
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: 13,
+        lineHeight: 1.5,
+      }}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div style={{ fontSize: 11, letterSpacing: 1.2, opacity: 0.6, fontVariant: 'small-caps' }}>
+          subdivide — draw a chord
+        </div>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          style={{ border: 'none', background: 'transparent', color: paper.cardInk, cursor: 'pointer', fontSize: 13, opacity: 0.6 }}
+        >
+          ×
+        </button>
+      </div>
+      <div style={{ marginTop: 2, fontWeight: 700, fontSize: 13.5 }}>{formTitle}</div>
+      <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10.5, opacity: 0.72 }}>{faceText}</div>
+      <div style={{ marginTop: 4, fontSize: 11, opacity: 0.75 }}>tap two non-adjacent CORNERS → a chord.</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
+        {corners.map((cornerId) => {
+          const picked = cornerId === cornerA || cornerId === cornerB;
+          return (
+            <button
+              key={cornerId}
+              type="button"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                onTapCorner(cornerId);
+              }}
+              title={cornerId}
+              style={{
+                padding: '3px 7px',
+                borderRadius: 3,
+                border: `1px solid ${picked ? accent : paper.cardBorder}`,
+                background: 'transparent',
+                color: picked ? accent : paper.cardInk,
+                fontFamily: 'ui-monospace, monospace',
+                fontSize: 11,
+                cursor: 'pointer',
+              }}
+            >
+              {cornerId.split(':').pop()}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ marginTop: 9, fontSize: 10.5, letterSpacing: 1, opacity: 0.6, fontVariant: 'small-caps' }}>
+        chord preview
+      </div>
+      {split === null ? (
+        <div style={{ marginTop: 3, fontSize: 12, fontStyle: 'italic', opacity: 0.7 }}>
+          two corners aim the chord
+        </div>
+      ) : split.ok ? (
+        <div style={{ marginTop: 3 }}>
+          {(
+            [
+              ['this side', split.diskCorners],
+              ['that side', split.restCorners],
+            ] as const
+          ).map(([label, n]) => (
+            <div
+              key={label}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: 12,
+                borderTop: `1px solid ${paper.cardBorder}55`,
+                padding: '3px 0 2px',
+                fontSize: 12.5,
+              }}
+            >
+              <span style={{ opacity: 0.85 }}>{label}</span>
+              <b style={{ color: matches(n) ? accent : paper.cardInk }}>
+                {n} edges{matches(n) ? ' — matches' : ''}
+              </b>
+            </div>
+          ))}
+          {targetLen !== null ? (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: 12,
+                borderTop: `1px solid ${paper.cardBorder}55`,
+                padding: '3px 0 2px',
+                fontSize: 12.5,
+              }}
+            >
+              <span style={{ opacity: 0.85 }}>target</span>
+              <b>{targetLen}</b>
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div
+          style={{
+            marginTop: 4,
+            padding: '5px 8px',
+            border: `1px solid ${paper.cardBorder}`,
+            borderRadius: 3,
+            fontSize: 12,
+            fontStyle: 'italic',
+            opacity: 0.85,
+          }}
+        >
+          {split.reason}
+        </div>
+      )}
+      <button
+        type="button"
+        disabled={!commitEnabled}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          if (commitEnabled) onCommit();
+        }}
+        style={{
+          marginTop: 10,
+          width: '100%',
+          padding: '7px 0',
+          borderRadius: 3,
+          border: `1px solid ${commitEnabled ? accent : paper.cardBorder}`,
+          background: 'transparent',
+          color: commitEnabled ? accent : paper.cardInk,
+          opacity: commitEnabled ? 1 : 0.45,
+          fontFamily: 'Georgia, "Times New Roman", serif',
+          fontWeight: 700,
+          fontSize: 13.5,
+          cursor: commitEnabled ? 'pointer' : 'default',
+        }}
+      >
+        commit the chord
+      </button>
+      {targetLen !== null ? (
+        <div style={{ marginTop: 8, fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.5 }}>
+          aim until one side = the target — then combine again
+        </div>
+      ) : null}
     </div>
   );
 }

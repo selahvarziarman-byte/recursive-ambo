@@ -1,0 +1,72 @@
+PLATONIC ENGINE — SEALED HASH RECORD — H2: THE PERSON'S HANDS (the arc closes)
+==============================================================================
+
+SEAL:            .handoff/SEAL_H2_THE_PERSONS_HANDS.md   (off-repo, gitignored; written ONCE)
+NATIVE SHA256:   4872a28db7e92480a3defaef944eaca7592794bddc538225db2875144c41709c
+                 8,854 bytes. DOUBLE-DERIVED: coder blind at build (REPORT_HAMZAAD_H2.md §0);
+                 the Sovereign's certutil at audit close.
+
+CHARTER:         mothership 2013 (THE PERSON'S HANDS · H2) + the designer's ratified plate
+                 (.handoff/assets/H2_AFFORDANCES_DESIGNER.png) + researcher SPEC 2 · baseline
+                 `b4c92e6`. RITUAL: ONE frozen re-seal (writtenFormModel :78, THE UNION protocol).
+BUILD:           coder (همزاد) — the FRESH seat's first full build, blind. + one addendum.
+AUDIT:           engineer (3rd seat) — ACCEPT. Full scrutiny (re-earning the record). Both plates
+                 viewed by builder AND auditor (LAW 23). ⇒ ARC CLOSES.
+
+THE TWO GESTURES — the doctrine's rulings reach the person's hand:
+  GESTURE 1 — THE FOLD (the 7th dock word): the person taps two edges → the pair writes the
+    rim's own gluing word (→→ glue · →⇄ flip-glue); live preview = previewCustomGlue's own
+    certificate (χ/w₁/orientable/free-edges); commit = executeCustomGlue. The six preset words
+    STAY as labeled shortcuts over the same seam (all six still build their surfaces). One pair
+    at n=3 ⇒ triangle→cone.
+  GESTURE 2 — THE AIMED CHORD (subdivideFace as a person gesture): tap two non-adjacent corners
+    → live split-length readout → aim to the target → combine. Composed BOTH ways: a general
+    reshape affordance AND surfaced pre-aimed on the `:124` refusal — the R5 wall becomes a FORK
+    (re-pick OR subdivide the longer face). The seam ops (customGluing, subdivideFace) are
+    import-only, byte-unchanged.
+
+⛔ THE FROZEN RE-SEAL — writtenFormModel :78 (DockGroupKey widened 6→7 with 'fold'), 3 ways:
+  71aa0c77…4cd883  →  f9173b2b20eb0537afcf0b2d24f3b37b512ec3aaf414e98db9bb2c601b41bb09
+  (1) manifest :78 = the new hash, old gone file-wide; (2) `git show 2375135d:…writtenFormModel`
+  == it (auditor-reproduced git-native); (3) working-tree sha256 == it (eol=lf). The register
+  law's THIRD live frozen re-seal; freeze closure re-run 44/0. The addendum did NOT move the
+  blob (writtenFormModel untouched by it — door column only).
+
+★ RUNG 4 REACHED — a PERSON'S GESTURE COMPLETES (the arc's actual seal; plates viewed):
+  H2_FOLD.png    — the 7th FOLD glyph in the dock; "Triangle — invoked —glue→ genus 0 · 1
+                   boundary circle — born" · χ=1 · orientable · 1 boundary circle. The cone
+                   stands, by the person's fold gesture. Not "reachable" — DONE.
+  H2_SUBDIVIDE.png — the `:124` door verbatim ("4 edges and 5") → the fork taken → "this side 4
+                   — matches" → "square pyramid + penta pyramid —assemble→ genus 0 — born." The
+                   R5 wall crossed BY THE PERSON'S HAND. (+3 supporting frames.)
+
+★ THE ARC'S OWN PROOF — the door column flips (customGluing DEV-ONLY → PRODUCTION):
+  handGestureModel (the new gesture root) imports the value seam ⇒ customGluing reads ✅
+  PRODUCTION — the person acts. The instrument's blind spot (H1's 13th row) closed.
+  ADDENDUM (engineer-required, my H1 "no-row" call corrected): the surfaceRefinement row now
+  reads `subdivideFace (THE AIMED CHORD — gesture) · refineToDisk (THE EXIT) — plumbing`, the
+  attribution asserted MECHANICALLY (`gestureRootBlob.includes('subdivideFace')`), preserving
+  refineToDisk's true "plumbing / via neither door" status (2026-07-17 ruling). The row tells
+  the Sovereign the truth; column + gate ALL PASS.
+
+THE TWO BOUNDS (engineer-measured, LAW 0 — both resolved LIVE): previewCustomGlue 0.08 ms/call
+  ⇒ live per-pair preview; subdivideFace split-lengths one call ⇒ live aim.
+
+PROOFS: tsc -b 0 both trees · suite 94 @ exactly 1 (diagnose-dual-inspection, sim tips 2375135d
+  + 2ad9feb, discarded) · seam ops + connectedSum + genesisModel byte-unchanged · only
+  writtenFormModel frozen-touched (re-sealed); freeze 44/0.
+
+COMMIT (ONE — 8 build paths + this record; Arman fires natively; certutil :78 expects f9173b2b…bb09):
+  src/manuscript/writtenFormModel.ts
+  src/manuscript/OperationGlyphs.tsx
+  src/manuscript/ManuscriptChrome.tsx
+  src/manuscript/ManuscriptView.tsx
+  src/manuscript/handGestureModel.ts
+  docs/governance/ENGINE_FREEZE_MANIFEST.txt
+  scripts/diagnose-the-door-column.cjs
+  scripts/diagnose-the-gate.cjs
+  docs/governance/PLATONIC_ENGINE_H2_SEALED_HASH.txt
+
+⇒ THE PERSON'S HANDS — CLOSED. The person folds a triangle to a cone and crosses the R5 wall by
+  their own hand. H1 (the wrist) + H2 (the hand). The Sovereign's charge — "a capability nobody
+  finds is not a door" — is discharged.

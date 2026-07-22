@@ -234,14 +234,14 @@ check('connectedSum.ts (incl. :132) · playgroundOperations.ts (and its strings)
 
 // ═════ [8] the door column flips ══════════════════════════════════════════════════
 console.log('\n----- [8] THE DOOR COLUMN: GESTURE ✓ where it read ⚠ CATALOGUE ONLY (clause 8) -----');
-check('★ THE TRACKED COLUMN STANDS, AND SPEAKS THE DELIVERED WORLD (THE REFINE IS NOT A GESTURE, ruled 2026-07-17): scripts/diagnose-the-door-column.cjs runs GREEN on any clone (absence or redness = this leg fails loud — the old gitignored-instrument absence branch stays dead), and it reads THIS gate honestly: the gate\'s door was the dev-register PROTOTYPE, and item zero (16341e2) landed the production wire in the view\'s combine gate — so refineToDisk reads PRODUCTION via NEITHER DOOR (the person invokes COMBINE, never REFINE: plumbing, not a gesture — never DEV-ONLY, never ✅) — while connectedSum reads ✅ PRODUCTION and its row says REFINES FIRST (the production combine now satisfies its own precondition). The gate\'s own arrival stays measured inside the column (applyCombineToSelection: 2 src files at HEAD, 0 at bd99fb5 — printed below verbatim)',
+check('★ THE TRACKED COLUMN STANDS, AND SPEAKS THE DELIVERED WORLD — RE-CUT AT H2 (THE PERSON\'S HANDS): scripts/diagnose-the-door-column.cjs runs GREEN on any clone (absence or redness = this leg fails loud — the old gitignored-instrument absence branch stays dead), and it reads the arc\'s close honestly: the refine stayed plumbing exactly as ruled 2026-07-17 UNTIL H2 put the AIMED CHORD (subdivideFace, the same file) into the person\'s hands via handGestureModel — the column keys by FILE, so the refineToDisk row now reads ✅ PRODUCTION AS A GESTURE (this leg\'s old "never ✅" pin was FALSIFIED BY DESIGN at the H2 commit — the loud flavor) — while connectedSum reads ✅ PRODUCTION and its row says REFINES FIRST (the production combine still satisfies its own precondition; the fold\'s customGluing row reads ✅ too, pinned in the column itself). The gate\'s own arrival stays measured inside the column (applyCombineToSelection: 2 src files at HEAD, 0 at bd99fb5 — printed below verbatim)',
   (() => {
     const columnPath = path.join(repoRoot, 'scripts', 'diagnose-the-door-column.cjs');
     // execSync throws on a missing file or a non-zero exit — absence IS failure
     const run = execSync(`node "${columnPath}"`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
     const lines = run.split(/\r?\n/);
     const sumRow = lines.find((l) => l.includes('connectedSum (add a handle/crosscap)') && l.includes('PRODUCTION')) ?? '';
-    const refineRow = lines.find((l) => l.includes('refineToDisk (THE EXIT)') && l.includes('via neither door')) ?? '';
+    const refineRow = lines.find((l) => l.includes('refineToDisk (THE EXIT)') && l.includes('PRODUCTION')) ?? '';
     const arrival = lines.find((l) => l.includes('applyCombineToSelection:')) ?? '';
     note(`column verdict: ${run.includes('ALL PASS') ? 'ALL PASS' : 'NOT GREEN'}`);
     note(`@HEAD: ${sumRow.trim().slice(0, 110) || 'connectedSum row not found'}`);
@@ -249,8 +249,8 @@ check('★ THE TRACKED COLUMN STANDS, AND SPEAKS THE DELIVERED WORLD (THE REFINE
     note(`the arrival, verbatim: ${arrival.trim() || 'arrival line not found'}`);
     return run.includes('ALL PASS') &&
       sumRow.includes('✅ PRODUCTION') && sumRow.includes('REFINES FIRST') &&
-      refineRow.includes('PRODUCTION') && refineRow.includes('via neither door') &&
-      !refineRow.includes('✅') && !refineRow.includes('DEV-ONLY') &&
+      refineRow.includes('✅ PRODUCTION') && refineRow.includes('the person acts') &&
+      !refineRow.includes('DEV-ONLY') && !refineRow.includes('via neither door') &&
       arrival.includes('2 src file(s) at cb507c4') && arrival.includes('0 at bd99fb5');
   })());
 

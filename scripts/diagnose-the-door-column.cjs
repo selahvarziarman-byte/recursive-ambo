@@ -31,7 +31,10 @@
 //     person's port-face combine since 2026-07-12; misfiled as CATALOGUE by
 //     both seats until 2026-07-18, LAW 25) + manuscript/writtenFormModel.ts
 //     (the dock) + store/geometryStore.ts (THE AMBO LIFT →
-//     lib/subComplexLift — the person's second door).
+//     lib/subComplexLift — the person's second door) +
+//     manuscript/handGestureModel.ts (H2 THE PERSON'S HANDS: the FOLD — the
+//     7th dock word over customGluing's committed seam — and the AIMED CHORD
+//     — subdivideFace as the person's own reshape + the combine fork).
 //   DEV gestures: playground/playgroundOperations.ts + store/playgroundStore.ts.
 //   CATALOGUE: manuscript/standardBodies.ts ONLY.
 //
@@ -77,7 +80,15 @@ const srcFilesAt = (rev) => execSync(`git ls-tree -r --name-only ${rev} -- src`,
 
 const OPS = {
   'connectedSum (add a handle/crosscap)': 'src/lib/connectedSum.ts',
-  'refineToDisk (THE EXIT)': 'src/lib/surfaceRefinement.ts',
+  // H2 ADDENDUM (engineer-required, reversing the H1 "no subdivideFace row"
+  // call): the column keys by FILE, and H2 gave this file's subdivideFace a
+  // person gesture while refineToDisk stayed combine-plumbing — a single
+  // function-named label would now attribute "the person acts" to the WRONG
+  // function on the one instrument built to tell them apart. The key names
+  // BOTH functions with their true statuses; the attribution is FALSIFIABLE,
+  // not decorative — [b] reads the gesture root's blob and asserts it imports
+  // subdivideFace (and the manuscript refineToDisk-naming pin stays at 1).
+  'subdivideFace (THE AIMED CHORD — gesture) · refineToDisk (THE EXIT) — plumbing': 'src/lib/surfaceRefinement.ts',
   'thicken (A.1 — the ×I product)': 'src/lib/thicken.ts',
   'subComplexLift (THE AMBO LIFT)': 'src/lib/subComplexLift.ts',
   'sewBoundaryCircles': 'src/lib/complexIdentification.ts',
@@ -88,15 +99,14 @@ const OPS = {
   'closeEdgeIntoCircle': 'src/lib/closeEdgeIntoCircle.ts',
   'faceIdentification': 'src/lib/faceIdentification.ts',
   'level3SoundnessGate': 'src/lib/level3SoundnessGate.ts',
-  // H1 (chartered rider): the general fold joins the column. NOTE — the column
-  // keys by FILE and surfaceRefinement.ts already holds a row (refineToDisk),
-  // so subdivideFace gets no row of its own: an absence by decision, not
-  // omission (REPORT_HAMZAAD_H1).
+  // H1 (chartered rider): the general fold joins the column. (H1's companion
+  // note — "subdivideFace gets no row of its own" — is REVERSED above by the
+  // H2 addendum: the shared file-row now names both functions.)
   'customGluing (the general fold)': 'src/playground/customGluing.ts',
 };
 const PRODUCTION_ROOTS = ['src/AppShell.tsx'];
 const MAIN_ROOTS = ['src/main.tsx'];
-const GESTURE_PROD_ROOTS = ['src/manuscript/genesisModel.ts', 'src/manuscript/writtenFormModel.ts', 'src/store/geometryStore.ts'];
+const GESTURE_PROD_ROOTS = ['src/manuscript/genesisModel.ts', 'src/manuscript/writtenFormModel.ts', 'src/store/geometryStore.ts', 'src/manuscript/handGestureModel.ts'];
 const GESTURE_DEV_ROOTS = ['src/playground/playgroundOperations.ts', 'src/store/playgroundStore.ts'];
 const CATALOGUE_ROOTS = ['src/manuscript/standardBodies.ts'];
 
@@ -206,7 +216,7 @@ check('★ THE MECHANISM HAS A HOME: scripts/diagnose-the-door-column.cjs is NOT
 // ═════ [b] ★★ the column at HEAD — one column, which person ═══════════════════════
 console.log('\n----- [b] ★★ THE COLUMN AT HEAD: PRODUCTION · DEV-ONLY · NONE — never merged, never ✅ for the dev shell (clauses 1–5) -----');
 let headCol = null;
-check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" (THE REFINE IS NOT A GESTURE, ruled 2026-07-17): refineToDisk reads PRODUCTION via NEITHER DOOR — the EXACT route string, asserted whole (the person invokes COMBINE, never REFINE: the refine is plumbing satisfying combine\'s precondition; gestureProd stays FALSE as the DELIVERED TRUTH — item zero wired the refine into the view\'s combine gate, not a gesture-root model, because genesisModel is frozen — and gestureDev stays TRUE, the playground prototype remains wired) · the manuscript NAMES refineToDisk: exactly 1 file (ManuscriptView — grepCount counts FILES), naming it exactly 4 times (derived: the import, two doctrine comments, the call — item zero landed at 16341e2) · connectedSum reads ✅ PRODUCTION (genesisModel:birthChild — the person\'s port-face combine) AND its production door now REFINES FIRST (the view\'s gate satisfies the precondition before birthChild runs) · subComplexLift (THE AMBO LIFT) reads ✅ PRODUCTION · sew/cut/assemble/dual read ✅ PRODUCTION (the manuscript dock drives the registry) · patchLift + closeEdgeIntoCircle read ⛔ NONE — unchanged, CORRECT, printed, never widened away · and the PARTITION SUMS: every row exactly one of PRODUCTION/DEV-ONLY/NONE, PRODUCTION ∩ DEV = ∅ by construction and measured',
+check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" — RE-CUT AT H2 (THE PERSON\'S HANDS): the H1/H2 arc CLOSED the two walls this column existed to state. ★ customGluing (the general fold) reads ✅ PRODUCTION AS A GESTURE — the 7th dock word (the fold panel consumes the committed validate/preview/execute through handGestureModel, a production gesture root; DEV-ONLY was the 13th row\'s truth from H1 until this commit and the old pin died with it, loud) · ★ surfaceRefinement\'s row reads ✅ PRODUCTION AS A GESTURE too, and the ROW NAMES THE BEARER (the H2 addendum, reversing H1\'s no-subdivideFace-row call): the label attributes the gesture to subdivideFace (THE AIMED CHORD — the person\'s own reshape + the combine fork, via the same gesture root) and marks refineToDisk as the plumbing it remains, exactly as ruled 2026-07-17 (the person invokes COMBINE or aims the CHORD, never REFINE); the attribution is asserted mechanically — the gesture root\'s blob imports subdivideFace, and the naming pin below proves it never names the refine — and gestureDev stays TRUE, the playground prototype remains wired · the manuscript NAMES refineToDisk: exactly 1 file (ManuscriptView — grepCount counts FILES), naming it exactly 4 times (derived: the import, two doctrine comments, the call — item zero landed at 16341e2; H2 added ZERO namings by construction) · connectedSum reads ✅ PRODUCTION (genesisModel:birthChild — the person\'s port-face combine) AND its production door now REFINES FIRST (the view\'s gate satisfies the precondition before birthChild runs) · subComplexLift (THE AMBO LIFT) reads ✅ PRODUCTION · sew/cut/assemble/dual read ✅ PRODUCTION (the manuscript dock drives the registry) · patchLift + closeEdgeIntoCircle read ⛔ NONE — unchanged, CORRECT, printed, never widened away · and the PARTITION SUMS: every row exactly one of PRODUCTION/DEV-ONLY/NONE, PRODUCTION ∩ DEV = ∅ by construction and measured',
   (() => {
     headCol = columnAt('HEAD');
     const manuscriptFilesNamingRefine = headCol.grepCount('src/manuscript/', 'refineToDisk');
@@ -226,10 +236,28 @@ check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" (THE 
     // seal has failed its own §2. Absent at older revs (the historical leg
     // skips rows whose file is not at the rev).
     const thickenRow = r['thicken (A.1 — the ×I product)'];
+    const REFINE_ROW = 'subdivideFace (THE AIMED CHORD — gesture) · refineToDisk (THE EXIT) — plumbing';
+    // H2 ADDENDUM — the label's attribution is a CLAIM, so it carries its
+    // mechanical read: the gesture root imports subdivideFace (the chord),
+    // and the standing manuscript pin (refineToDisk-naming files === 1,
+    // ManuscriptView only) already proves the root never names the refine.
+    const gestureRootBlob = headCol.src['src/manuscript/handGestureModel.ts'] ?? '';
+    const chordBearsTheGesture = gestureRootBlob.includes('subdivideFace');
+    note(`the gesture-bearer, read from the root: handGestureModel imports subdivideFace = ${chordBearsTheGesture} (the refine stays plumbing — the naming pin holds at 1)`);
     return (!thickenRow.present || (thickenRow.app === 'PRODUCTION' && thickenRow.gestureProd === true)) &&
-      r['refineToDisk (THE EXIT)'].app === 'PRODUCTION' &&
-      r['refineToDisk (THE EXIT)'].gestureDev === true && r['refineToDisk (THE EXIT)'].gestureProd === false &&
-      r['refineToDisk (THE EXIT)'].route === '⚠ in the PRODUCTION app but via neither door' &&
+      r[REFINE_ROW].app === 'PRODUCTION' &&
+      // H2 re-cut: the FILE gained the person gesture (subdivideFace via the
+      // handGestureModel root) — the row's gestureProd flipped TRUE and the
+      // route reads the green tick; the old `gestureProd === false` pin was
+      // FALSIFIED BY DESIGN at this commit (the falsified-pin flavor: loud).
+      r[REFINE_ROW].gestureDev === true && r[REFINE_ROW].gestureProd === true &&
+      r[REFINE_ROW].route === '✅ PRODUCTION — the person acts (the manuscript\'s own doors)' &&
+      chordBearsTheGesture &&
+      // H2: the general fold's row — the arc's own proof, pinned. DEV-ONLY
+      // (H1's 13th row) died here; the fold is the person's 7th dock word.
+      r['customGluing (the general fold)'].app === 'PRODUCTION' &&
+      r['customGluing (the general fold)'].gestureProd === true &&
+      r['customGluing (the general fold)'].route === '✅ PRODUCTION — the person acts (the manuscript\'s own doors)' &&
       r['connectedSum (add a handle/crosscap)'].app === 'PRODUCTION' &&
       r['connectedSum (add a handle/crosscap)'].gestureProd === true &&
       manuscriptFilesNamingRefine === 1 && refineNamingsInView === 4 &&
@@ -253,8 +281,8 @@ check('★★ THE COLUMN TELLS "UNBUILT" FROM "BUILT FOR THE WRONG PERSON" ACROS
     // an ancestor of HEAD), never any moving rev. The living third stage is
     // [b]'s to assert at the tip, forever; nothing here may move when it does.
     const gateCol = columnAt('cb507c4');
-    const oldRefine = oldCol.rows['refineToDisk (THE EXIT)'];
-    const gateRefine = gateCol.rows['refineToDisk (THE EXIT)'];
+    const oldRefine = oldCol.rows['subdivideFace (THE AIMED CHORD — gesture) · refineToDisk (THE EXIT) — plumbing'];
+    const gateRefine = gateCol.rows['subdivideFace (THE AIMED CHORD — gesture) · refineToDisk (THE EXIT) — plumbing'];
     const oldSum = oldCol.rows['connectedSum (add a handle/crosscap)'];
     note(`refineToDisk @bd99fb5: APP=${oldRefine.app} · "${oldRefine.route}"`);
     note(`refineToDisk @cb507c4 (the gate): APP=${gateRefine.app} · "${gateRefine.route}"`);
