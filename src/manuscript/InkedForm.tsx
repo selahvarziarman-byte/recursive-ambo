@@ -57,6 +57,9 @@ export interface InkedFormCraft {
   generatorColorB: string;
   generatorLineWidth: number;
   generatorGhostOpacity: number;
+  // R4B (the sanctioned frozen touch, manifest :69 re-sealed in the same
+  // change): the near pass's see-through weight (1 = the old opaque rope).
+  generatorNearOpacity: number;
   hatchSpacingPx: number;
   hatchOpacity: number;
   hatchWeightPx: number;
@@ -332,6 +335,8 @@ export function InkedForm({
             points={loopPoints[k]}
             color={loopColor(k)}
             lineWidth={craft.generatorLineWidth}
+            transparent
+            opacity={craft.generatorNearOpacity}
             renderOrder={10}
           />
         </group>

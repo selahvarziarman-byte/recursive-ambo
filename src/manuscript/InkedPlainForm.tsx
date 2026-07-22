@@ -162,6 +162,8 @@ export function InkedPlainForm({
             points={line.points}
             color={line.ink === 'b' ? craft.generatorColorB : craft.generatorColorA}
             lineWidth={craft.generatorLineWidth}
+            transparent
+            opacity={craft.generatorNearOpacity}
             renderOrder={10}
           />
         </group>

@@ -1,0 +1,62 @@
+PLATONIC ENGINE — SEALED HASH RECORD — R4-b: THE MUTED GENERATOR (frozen re-land)
+=================================================================================
+
+SEAL:            .handoff/SEAL_R4B_THE_MUTED_GENERATOR.md   (off-repo, gitignored; written ONCE)
+NATIVE SHA256:   775410095ecc5814ebc089c4037040560cbc75775902c77b726c71d9f3060adf
+                 6,705 bytes. DOUBLE-DERIVED: coder at build time without reading the seal
+                 (REPORT_HAMZAAD_R4B.md §0); the Sovereign's certutil at audit close.
+
+CHARTER:         mothership 1252 (ARC R · R4-b) · baseline `c1f0033`. THE UNION protocol:
+                 the frozen `InkedForm.tsx` touch SANCTIONED (designer-ruled render
+                 constants, NOT engine motion). RITUAL: the edit + the manifest re-seal
+                 land in ONE commit.
+BUILD:           coder (همزاد) — a sanctioned RE-LAND of its own REPORT_HAMZAAD_R4.md §5
+                 diff (built + plated before withdrawal on the seal's NOT_FROZEN error).
+AUDIT:           engineer (3rd seat) — ACCEPT.
+
+⛔ THE RE-SEAL — the load-bearing ritual (where THE CHORD died), VERIFIED THREE WAYS:
+  `InkedForm.tsx` manifest :69:  486411a0…757ecf  →  091a3c1d1a4d0d35ca82e93d37ccc57b1148a1483a201b2c1c9cd4f1fa52e3d1
+  Register law (LF blob, never the working skin):
+   1. manifest :69 now reads 091a3c1d…e3d1; the old 486411a0 is gone file-wide (0 hits).
+   2. `git show aa1fba2:src/manuscript/InkedForm.tsx | sha256sum` = 091a3c1d…e3d1
+      (the coder's discarded sim commit — the git-native register receipt, reproduced by
+      the auditor).
+   3. working-tree sha256 = 091a3c1d…e3d1 (the .gitattributes `* text=auto eol=lf`
+      coincidence — a cross-check, not the register; the method the coder USED was
+      `git show :src/manuscript/InkedForm.tsx | sha256sum`, stated in the report).
+  The manifest pins the actual committed blob. The mothership's junior build-gate
+  (hash the LF blob, not the working skin) is satisfied.
+
+THE EDIT (four files, the designer's mapping — §5 verbatim):
+  designDefaults.ts:172  lineWidth 3.5 → 1.7 · ghostOpacity 0.3 KEPT (the floor, never
+    scaled) · new nearOpacity 0.55.
+  InkedForm.tsx (FROZEN)  InkedFormCraft gains generatorNearOpacity; the near <Line>
+    (renderOrder 10) gains transparent + opacity={craft.generatorNearOpacity}.
+  InkedPlainForm.tsx  the same two near-pass props (the both-renderers law).
+  ManuscriptView.tsx  the generators Leva ctl nearOpacity + generatorNearOpacity in the
+    base craft; the derived world/specimen crafts ride the ...baseCraft spread (un-re-tuned).
+
+PROOFS (raw in REPORT_HAMZAAD_R4B.md; the load-bearing re-run by the auditor):
+  NEG: 3.5 / no nearOpacity / opaque near passes / manifest :69 = 486411a0.
+  ★ FREEZE CLOSURE, auditor re-run (the manifest's own check, all 44 frozen entries):
+    44 checked · 0 drift — the InkedForm re-seal holds and no other frozen file moved.
+  Σ (SIGMA_LINE_WIDTH 2.6) untouched; hues a #c2811d / b #3e6db4 untouched (context-only
+    in the diff, no +/-).
+  P1: tsc -b 0 (coder; the new field rides the spreads — no type loosening).
+  P2: suite 93 @ exactly 1 at the sim tip (coder sim aa1fba2, 17 readers, discarded).
+  RUNG 4: the generator loop reads as a muted MARK over the field (near 0.55), the faint
+    ghost still present behind the body (0.30) — not an opaque rope. Plate R4B_GENERATOR.png.
+
+TWO CODER DISCLOSURES (neither blocks — both outside the R4-b code):
+  · a measured select-race blocks the raised-torus shot (predates the reland; a choreography
+    finding, logged raw — the select-race scar family).
+  · the original R4 raised plate was lost to the coder's own artifact overwrite (a plate,
+    not code; the coder's owned error).
+
+COMMIT (ONE commit — the file and its hash move together; Arman fires natively):
+  src/design/designDefaults.ts
+  src/manuscript/InkedForm.tsx
+  src/manuscript/InkedPlainForm.tsx
+  src/manuscript/ManuscriptView.tsx
+  docs/governance/ENGINE_FREEZE_MANIFEST.txt
+  docs/governance/PLATONIC_ENGINE_R4B_SEALED_HASH.txt

@@ -387,6 +387,7 @@ export default function ManuscriptView() {
     b: d.generators.b,
     lineWidth: { value: d.generators.lineWidth, min: 1, max: 8, step: 0.5 },
     ghostOpacity: { value: d.generators.ghostOpacity, min: 0, max: 1, step: 0.05 },
+    nearOpacity: { value: d.generators.nearOpacity, min: 0, max: 1, step: 0.05 }, // R4B
   });
   const hatchingCtl = useControls('hatching · tone (capped)', {
     spacingPx: { value: d.hatching.spacingPx, min: 3, max: 16, step: 0.5 },
@@ -484,6 +485,7 @@ export default function ManuscriptView() {
     generatorColorB: generatorsCtl.b,
     generatorLineWidth: generatorsCtl.lineWidth,
     generatorGhostOpacity: generatorsCtl.ghostOpacity,
+    generatorNearOpacity: generatorsCtl.nearOpacity, // R4B — rides into every derived craft via the spreads
     hatchSpacingPx: hatchingCtl.spacingPx,
     hatchOpacity: hatchingCtl.opacity,
     hatchWeightPx: hatchingCtl.weightPx,

@@ -169,12 +169,15 @@ export const manuscriptDefaults = {
   generators: {
     a: '#c2811d', // warm orange — the reference's a → longitude (also the a·b + certified-core ink)
     b: '#3e6db4', // manuscript blue — the reference's b → meridian
-    lineWidth: 3.5,
+    lineWidth: 1.7, // R4B, designer-ruled + mothership-sanctioned reland: the generator mutes — a mark, not a rope
     // two-pass treatment (designer craft item 2, mirroring the construction lines):
     // a NEAR pass (depth-tested, full colour) + a HIDDEN pass (depth-test off,
     // faint — the drafting hidden-line convention). Same real loop, no new mark;
     // replaces Phase 1's blanket depthTest:false.
-    ghostOpacity: 0.3,
+    ghostOpacity: 0.3, // a FLOOR, not a shadow value — never scaled (R4B: 0.55×0.3 dies on the Klein's dense field)
+    // R4B: the NEAR pass goes see-through — the loop reads as a mark over the
+    // stippled field instead of a rope over it. Ghost stays the faint floor.
+    nearOpacity: 0.55,
     renderOrder: 10,
   },
   hatching: {
