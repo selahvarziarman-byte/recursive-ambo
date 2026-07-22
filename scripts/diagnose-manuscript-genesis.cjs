@@ -100,7 +100,7 @@ const c = invokePrimitive('triangle', 3);
     gate.legal === true && gate.reason === null && canAssemblePair(tA, tB));
   const noPorts = combineGateFor(tA, tB, null, null);
   check('⛔ NO PORT FACE ⇒ the gate REFUSES BY NAME (never a faces[0] fallback — the seam location is the person\'s choice, not array order)',
-    noPorts.legal === false && /PORT FACE/.test(noPorts.reason) && /array-order artifact/.test(noPorts.reason));
+    noPorts.legal === false && /port face picked on each form/.test(noPorts.reason) && /there's no default/.test(noPorts.reason)); // R5: the designer's door
   const faceA = tA.faces[5];
   const faceB = tB.faces[11];
   const mine = birthChild(tA, tB, 4, faceA, faceB, 8);

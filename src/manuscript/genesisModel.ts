@@ -97,7 +97,7 @@ export function combineGateFor(
       .join(' and ');
     return {
       legal: false,
-      reason: `connect-sum needs a PORT FACE picked on each form — pick the disk to cut on ${missing}. No default is taken (faces[0] would be an array-order artifact).`,
+      reason: `connect-sum needs a port face picked on each form — pick the disk to cut on ${missing}. The face you pick changes the result, so there's no default.`,
     };
   }
   return { legal: true, reason: null };

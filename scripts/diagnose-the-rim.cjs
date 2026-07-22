@@ -242,7 +242,7 @@ const chordAlone = (form) => {
     ],
   };
 };
-check('★ CLAUSE 6(a) — CHORD ALONE, carried in-memory (the DEAD seal c7918d3c\'s mechanism): on the born RP²-4gon NO distinct-cornered arc exists at pass 0 (the pigeonhole: every arc of ≥3 slots from 2 classes repeats — measured), and forcing the cut anyway hands the sum a repeated-corner disk that is VISIBLY REFUSED at the quotient-cycle wall: "a chosen disk\'s boundary repeats a corner… Subdivide first"',
+check('★ CLAUSE 6(a) — CHORD ALONE, carried in-memory (the DEAD seal c7918d3c\'s mechanism): on the born RP²-4gon NO distinct-cornered arc exists at pass 0 (the pigeonhole: every arc of ≥3 slots from 2 classes repeats — measured), and forcing the cut anyway hands the sum a repeated-corner disk that is VISIBLY REFUSED at the quotient-cycle wall: "passes the same corner twice around its rim… Pick a different face" (R5, the designer’s door)',
   (() => {
     const a = bear(4, [{ edgeA: 0, edgeB: 2, mode: REV }, { edgeA: 1, edgeB: 3, mode: REV }], 'mutCA');
     const b = bear(4, [{ edgeA: 0, edgeB: 2, mode: REV }, { edgeA: 1, edgeB: 3, mode: REV }], 'mutCB');
@@ -265,7 +265,7 @@ check('★ CLAUSE 6(a) — CHORD ALONE, carried in-memory (the DEAD seal c7918d3
     }
     note(`distinct arc at pass 0: ${anyDistinctArc} · sum on the forced disk: "${refusal ? refusal.slice(0, 92) : 'SUCCEEDED?!'}…"`);
     return anyDistinctArc === false && refusal !== null &&
-      refusal.includes('repeats a corner') && refusal.includes('Subdivide first');
+      refusal.includes('passes the same corner twice') && refusal.includes('Pick a different face');
   })());
 check('★ CLAUSE 6(b) — BISECTION ALONE, carried as the REAL committed half (bisectSurface, one pass, NO chord): the bisected RP² rim reads [p, m_a, q, m_b, p, m_a, q, m_b] — 4 classes, 8 slots, STILL REPEATS (measured — the researcher\'s rim, exactly) — so :129\'s own rule (new Set(cycle).size === cycle.length) CONDEMNS the only available disk, and the sum still REFUSES the chordless single-face form ("has a single face… Subdivide first" — the wall\'s advice after bisection alone is STILL subdivision). Both halves fail alone; the pair is proven to be a pair',
   (() => {

@@ -202,7 +202,7 @@ const oldExitRefine = (kind, ns) => {
   }
   throw new Error('mutant: the old exit found no :127 chord — cannot carry the mechanism');
 };
-check('★★ THE GENUS-2 LANDS. Before (the OLD EXIT carried in-memory — T² at 1 pass, its disk :127-clean): connectedSum REFUSES verbatim at the parallel-rim wall ("a rim carries PARALLEL edge instances… Subdivide first"). After (the committed refineToDisk, 2 passes): T² # T² SUCCEEDS — χ = −2 · χ_cert = −2 · w₁ = 0 (orientable) · "genus 2 (closed, orientable)" · closed · certified through the DIRECT translation. Adding a handle stops being an incantation',
+check('★★ THE GENUS-2 LANDS. Before (the OLD EXIT carried in-memory — T² at 1 pass, its disk :127-clean): connectedSum REFUSES verbatim at the parallel-rim wall ("two rim-edges between the same pair of corners… Pick a different face" — R5, the designer’s door). After (the committed refineToDisk, 2 passes): T² # T² SUCCEEDS — χ = −2 · χ_cert = −2 · w₁ = 0 (orientable) · "genus 2 (closed, orientable)" · closed · certified through the DIRECT translation. Adding a handle stops being an incantation',
   (() => {
     const oldA = oldExitRefine('T2', 'oldT2A');
     const oldB = oldExitRefine('T2', 'oldT2B');
@@ -218,7 +218,7 @@ check('★★ THE GENUS-2 LANDS. Before (the OLD EXIT carried in-memory — T² 
     const inv = readFormInvariants(sum.shape, [A.refined, B.refined]);
     note(`before: "${refusal ? refusal.slice(0, 96) : 'NO REFUSAL?!'}…"`);
     note(`after:  χ=${inv.chi} · χ_cert=${inv.chiCertified} · "${inv.classification}" · ${inv.boundary} · nonOrientable=${inv.cert ? inv.cert.nonOrientable : '?'} · b₁=${inv.cert ? inv.cert.b1 : '?'} · via ${inv.complexSource}`);
-    return refusal !== null && refusal.includes('PARALLEL edge instances') && refusal.includes('Subdivide first') &&
+    return refusal !== null && refusal.includes('two rim-edges between the same pair of corners') && refusal.includes('Pick a different face') &&
       inv.chi === -2 && inv.chiCertified === -2 && inv.classification === 'genus 2 (closed, orientable)' &&
       inv.boundary === 'closed' && inv.cert !== null && inv.cert.nonOrientable === false && inv.complexSource === 'direct';
   })());
@@ -282,7 +282,7 @@ check('★ χ · w₁ · homology (b₁) · classification · boundary are BYTE-
 
 // ═════ [8] both wrong mechanisms, in-memory ═══════════════════════════════════════
 console.log('\n----- [8] THE MUTANTS: both wrong mechanisms carried in-memory, both visibly failing (clause 8) -----');
-check('★ MUTANT (a) — THE OLD EXIT (:127 only, the mechanism at HEAD): T² exits at 1 pass, its disk is distinct-cornered, and the shape still carries 2 parallel endpoint pairs — the sum is VISIBLY REFUSED at :132 ("a rim carries PARALLEL edge instances… Subdivide first"). The wall was never wrong; the exit just never asked its question',
+check('★ MUTANT (a) — THE OLD EXIT (:127 only, the mechanism at HEAD): T² exits at 1 pass, its disk is distinct-cornered, and the shape still carries 2 parallel endpoint pairs — the sum is VISIBLY REFUSED at :132 ("two rim-edges between the same pair of corners… Pick a different face" — R5, the designer’s door). The wall was never wrong; the exit just never asked its question',
   (() => {
     const A = oldExitRefine('T2', 'muA');
     const B = oldExitRefine('T2', 'muB');
@@ -296,7 +296,7 @@ check('★ MUTANT (a) — THE OLD EXIT (:127 only, the mechanism at HEAD): T² e
     }
     note(`old exit: passes=1 · disk distinct=${distinct} · shape parallel pairs=${parallels} · sum: "${refusal ? refusal.slice(0, 84) : 'SUCCEEDED?!'}…"`);
     return distinct && parallels === 2 && refusal !== null &&
-      refusal.includes('PARALLEL edge instances') && refusal.includes('Subdivide first');
+      refusal.includes('two rim-edges between the same pair of corners') && refusal.includes('Pick a different face');
   })());
 check('★ MUTANT (b) — THE SEW REWIRE (the DEAD seal 50fda3f4\'s own recipe, in-memory: cut both rims → assemble the disjoint union with NO merges → sewBoundaryCircles): RP² # RP² is VISIBLY REFUSED — the punctured Möbius piece\'s free skeleton does not walk coherently. The killed hypothesis, kept as a permanent exhibit: this cure would have broken the working payoff that clause [4] just re-proved',
   (() => {

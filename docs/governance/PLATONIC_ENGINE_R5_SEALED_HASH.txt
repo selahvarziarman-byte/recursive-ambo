@@ -1,0 +1,62 @@
+PLATONIC ENGINE — SEALED HASH RECORD — R5: THE STALE STRINGS (ARC R's last)
+===========================================================================
+
+SEAL:            .handoff/SEAL_R5_THE_STALE_STRINGS.md   (off-repo, gitignored; written ONCE)
+NATIVE SHA256:   d12832636d6847bf87cb6cf782f2e2c0909ba13b76f4a22bac886f99b717b4d1
+                 7,721 bytes. DOUBLE-DERIVED: coder blind at build (REPORT_HAMZAAD_R5.md §0);
+                 the Sovereign's certutil at audit close.
+
+CHARTER:         mothership 1615 (ARC R · R5) · baseline `fd0685c`. THE UNION protocol:
+                 TWO frozen re-seals in ONE commit. Wording designer-ratified; per-site
+                 reachability researcher-ruled; STRING 2 dropped (junior: dev-only/swallowed).
+BUILD:           coder (همزاد), blind. AUDIT: engineer (3rd seat) — ACCEPT. ARC R CLOSES.
+
+WHAT CHANGED — the connect-sum refusals become DOORS (LAW 14):
+  `SUBDIVIDE_PATH` const DELETED — it named the unbuilt `subdivideFace` (a stale theorem;
+  the real door was RE-PICK all along, researcher-ruled). connectedSum's three
+  person-facing throws (:124/:129/:134) now carry the designer's ratified re-pick strings
+  (byte-exact); :100/:105 keep dev-inline text (dev-only — both person-doors intercept a
+  1-face form); the file's REFUSALS header comment recut to the new law (caught by the
+  seal's own grep gate, which the edit-enumeration had not listed — defense-in-depth).
+  genesisModel:100 gate loses "faces[0] would be an array-order artifact" for the
+  designer's door. STRING 2 (`options.complex`) dropped: surfaceDual dev-only,
+  fieldForShape reason-swallowed at ManuscriptView:682.
+
+⛔ THE TWO RE-SEALS — register law (git show the LF blob), VERIFIED THREE WAYS:
+  connectedSum.ts  :45  c9d1455e…3185b57  →  d8b6c0d269f6847b50f29c3190199ed290096319d25edbf280ce77effc1df6b9
+  genesisModel.ts  :71  382e6ec3…10059243  →  481f0d116718ccce2d8d277da05f4f7401ac2ff6e3fa6d2fa1c55a189208033c
+   1. manifest :45/:71 now read the new hashes; old + intermediate (4c911cbc, the header-comment retake) gone file-wide.
+   2. `git show affe47e:<file> | sha256sum` (coder's discarded sim, auditor-reproduced) == both manifest lines.
+   3. working-tree sha256 (eol=lf coincidence) == both. The coder's METHOD was `git show :path` (stated).
+  Freeze closure re-run by the auditor: 44 frozen files, 0 drift. The register law's second
+  live multi-file frozen re-seal; it held.
+
+★ THE FIVE WITNESS RECUTS — audited against the Trial-III lie (a witness moved to PASS, not to the new truth):
+  combine-is-connected-sum · connectsum-p2 · manuscript-genesis · the-exit · the-rim.
+  Each pinned a string R5 changed; each moved its pin to the NEW door text while KEEPING
+  the refusal assertion (legal===false / refusal!==null intact) — none weakened to
+  vacuous. connectsum-p2 keeps the specific "4 edges and 5" count. Orphan check: every
+  surviving "Subdivide first" pin references the UNCHANGED :100/:105 dev strings or the
+  out-of-scope playgroundOperations:210 — no missed recut. (Suite: sim v1 93@6 on the
+  old-string legs → forced recuts, semantics kept → sim v2 affe47e 93 @ exactly 1.)
+
+PROOFS (raw in REPORT_HAMZAAD_R5.md; auditor re-runs):
+  NEG: const + 4 sites, the dev-speak present, manifest :45/:71 old.
+  GREP GATES: `SUBDIVIDE_PATH src/` = 0 · dev-speak in the two files = 0.
+  P1: tsc -b 0 (coder). P2: 93 @ exactly 1 at sim affe47e.
+  RUNG 4: plate R5_THE_DOOR.png — the gate speaks the port-face door pre-pick; the 3-vs-7
+  bad pick prints the different-lengths door verbatim in the toast; "subdivide" nowhere.
+
+DESIGNER NOTE (routed, not blocking): the toast channel prefixes "connect-sum: " (the
+  wrapper's, person-readable — not the throw's old "connectedSum:" code identifier).
+
+COMMIT (ONE — files, hashes, witnesses together; Arman fires natively):
+  src/lib/connectedSum.ts
+  src/manuscript/genesisModel.ts
+  docs/governance/ENGINE_FREEZE_MANIFEST.txt
+  scripts/diagnose-combine-is-connected-sum.cjs
+  scripts/diagnose-connectsum-p2.cjs
+  scripts/diagnose-manuscript-genesis.cjs
+  scripts/diagnose-the-exit.cjs
+  scripts/diagnose-the-rim.cjs
+  docs/governance/PLATONIC_ENGINE_R5_SEALED_HASH.txt

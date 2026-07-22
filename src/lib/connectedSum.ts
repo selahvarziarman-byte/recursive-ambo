@@ -11,15 +11,17 @@
 // seam edges de-duplicate inside the enacted assemble; the committed link gate
 // judges the result downstream (instruments, not guards).
 //
-// REFUSALS (honest, never silent):
+// REFUSALS (honest, never silent — R5: the person's refusals are DOORS,
+// designer-ratified; the dev refusals keep their mechanism/ADR text):
 //   · a single-face form has no face to spare — cutting its only face leaves
-//     no surface: refuse with the subdivide-first path (ADR 0018);
-//   · mismatched rims (unequal boundary edge counts) — refuse with the
-//     subdivide-to-equalize reason (never silently mis-match);
+//     no surface: dev-facing subdivide-first path (ADR 0018; only the engine's
+//     internal callers reach it);
+//   · mismatched rims (unequal boundary edge counts) — the person's door:
+//     pick two faces with the same edge count (never silently mis-match);
 //   · PARALLEL edges on a rim (two edge instances sharing the rim pair's
-//     endpoints — e.g. a resolution-2 grid torus): the endpoint-keyed seam
-//     machinery cannot tell them apart (the same committed limitation as the
-//     Q-M2 parallel-classes deferral): refuse with the subdivide path;
+//     endpoints — e.g. a resolution-2 grid torus): the seam cannot tell which
+//     joins to which (the same committed limitation as the Q-M2
+//     parallel-classes deferral): the person's door — pick a different face;
 //   · shared vertex ids across the inputs — invoke from distinct universes
 //     (co-location ≠ identity); the committed assemble would fail loud anyway,
 //     this refusal just says why first.
@@ -67,9 +69,6 @@ export interface ConnectedSumResult {
   mode: ConnectedSumMode;
 }
 
-const SUBDIVIDE_PATH =
-  'Subdivide first (ADR 0018 — e.g. the committed immersion at a higher resolution), then sum the subdivided forms.';
-
 function parallelRimEdges(shape: Shape, cycle: VertexId[]): boolean {
   for (let k = 0; k < cycle.length; k += 1) {
     const a = cycle[k];
@@ -95,14 +94,16 @@ export function connectedSum(
   if (!faceA || !faceB) {
     throw new Error('connectedSum: both forms need a face to cut');
   }
+  // R5: dev-facing (only the engine's internal standardBodies reaches these —
+  // the person never does); the mechanism/ADR text stays inline for a developer.
   if (m1.faces.length < 2) {
     throw new Error(
-      `connectedSum: "${m1.name}" has a single face — cutting its only face leaves no surface. ${SUBDIVIDE_PATH}`,
+      `connectedSum: "${m1.name}" has a single face — cutting its only face leaves no surface. Subdivide first (ADR 0018 — a higher-resolution immersion), then sum.`,
     );
   }
   if (m2.faces.length < 2) {
     throw new Error(
-      `connectedSum: "${m2.name}" has a single face — cutting its only face leaves no surface. ${SUBDIVIDE_PATH}`,
+      `connectedSum: "${m2.name}" has a single face — cutting its only face leaves no surface. Subdivide first (ADR 0018 — a higher-resolution immersion), then sum.`,
     );
   }
   const vertexIds = new Set(Object.keys(m1.vertices));
@@ -119,19 +120,22 @@ export function connectedSum(
   }
   const cycleA = faceA.vertexIds;
   const cycleB = faceB.vertexIds;
+  // R5 (designer-ratified, byte-exact): these three reach the PERSON raw — the
+  // combine toast surfaces error.message verbatim. Person register: sentence
+  // case, no prefix, and every refusal is a DOOR (what to pick instead).
   if (cycleA.length !== cycleB.length) {
     throw new Error(
-      `connectedSum: boundary cycles do not match (${cycleA.length} vs ${cycleB.length} edges) — subdivide to equalize the rims before summing (never silently mis-matched)`,
+      `These two faces have rims of different lengths — ${cycleA.length} edges and ${cycleB.length}. The rims join edge to edge, so pick two faces with the same edge count.`,
     );
   }
   if (new Set(cycleA).size !== cycleA.length || new Set(cycleB).size !== cycleB.length) {
     throw new Error(
-      `connectedSum: a chosen disk's boundary repeats a corner (a quotient cycle) — pick a face with distinct corners. ${SUBDIVIDE_PATH}`,
+      `One of these faces passes the same corner twice around its rim, so the rim isn't a clean loop. Pick a different face.`,
     );
   }
   if (parallelRimEdges(m1, cycleA) || parallelRimEdges(m2, cycleB)) {
     throw new Error(
-      `connectedSum: a rim carries PARALLEL edge instances (two edges on one endpoint pair) — the endpoint-keyed seam cannot tell them apart. ${SUBDIVIDE_PATH}`,
+      `One of these faces has two rim-edges between the same pair of corners, so the seam can't tell which joins to which. Pick a different face.`,
     );
   }
 

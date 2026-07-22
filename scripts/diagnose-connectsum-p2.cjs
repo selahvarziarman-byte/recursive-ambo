@@ -211,9 +211,9 @@ let parallelRefused = false;
 try {
   connectedSum(tDup, t2, {});
 } catch (error) {
-  parallelRefused = /PARALLEL edge instances/.test(String(error.message));
+  parallelRefused = /two rim-edges between the same pair of corners/.test(String(error.message)); // R5: the designer's door
 }
-check('§c a rim carrying PARALLEL edge instances REFUSES (the endpoint-keyed seam never guesses)', parallelRefused);
+check('§c a rim carrying PARALLEL edge instances REFUSES — the person\'s door: the seam can\'t tell which joins to which, pick a different face (R5)', parallelRefused);
 // mismatched rims: cut faces of unequal cycle length
 const t2b = deserializeSnapshot(serializeSnapshot(immerseSurface({ surface: 'torus', resolution: 4 }).shape, 'csC')).shape;
 const fakePentagonFace = { ...t2b.faces[0], vertexIds: [...t2b.faces[0].vertexIds, Object.keys(t2b.vertices)[9]] };
@@ -221,7 +221,7 @@ let mismatchRefused = false;
 try {
   connectedSum(t1, t2b, { faceB: fakePentagonFace });
 } catch (error) {
-  mismatchRefused = /boundary cycles do not match \(4 vs 5 edges\)/.test(String(error.message));
+  mismatchRefused = /rims of different lengths — 4 edges and 5\./.test(String(error.message)); // R5: the designer's door
 }
 check('§c mismatched rims (4 vs 5) REFUSE with the subdivide-to-equalize reason — never silently mis-matched', mismatchRefused);
 // id collisions: two loads of one source under DIFFERENT names are now fully

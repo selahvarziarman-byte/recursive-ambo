@@ -137,8 +137,9 @@ console.log('\n----- [c] the port faces are the person\'s — the gate refuses b
 const g0 = combineGateFor(A, B, null, null);
 const g1 = combineGateFor(A, B, portA, null);
 check('no port face on both sides ⇒ the gate REFUSES BY NAME (both missing, and one missing, each named)',
-  g0.legal === false && /PORT FACE/.test(g0.reason) && /array-order artifact/.test(g0.reason) &&
-  g1.legal === false && /PORT FACE/.test(g1.reason));
+  // R5: the gate reason is the designer's door — the pin moves with the ratified string
+  g0.legal === false && /port face picked on each form/.test(g0.reason) && /there's no default/.test(g0.reason) &&
+  g1.legal === false && /port face picked on each form/.test(g1.reason));
 const doorSource = fs.readFileSync(path.join(repoRoot, 'src', 'manuscript', 'genesisModel.ts'), 'utf8');
 check('no faces[0] fallback exists in the door\'s source: no `.faces[0]` member access anywhere in genesisModel (the string "faces[0]" appears only inside the gate\'s own refusal, naming the forbidden default), and birthChild passes the PICKED faces explicitly',
   !/\.faces\[0\]/.test(doorSource) &&
