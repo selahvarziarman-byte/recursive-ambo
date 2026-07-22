@@ -21,7 +21,7 @@ Until then it is source awaiting compilation, and binds nothing. *(Promoted from
 **Basis.** A generative seat's default output is its modal continuation. Its production cost is zero, so its fluency carries no evidence. Ground is world-contact, and the contact must be exhibited.
 
 **Definitions.**
-- **World-contact:** a command executed, bytes read at a cited ref, a clock read, a plate opened. The receipt names which.
+- **World-contact:** a command executed · bytes read at a cited ref · **a derivation exhibited** (a computation from stated premises, shown step-by-step and re-runnable by redoing the steps — its receipt is the derivation itself; it contacts the world of mathematical fact and grounds a claim in proof) · **a clock, SHA, or compiler-error stamped by the production act** (the inseparable form — NOT "a clock read," which is skippable: one may read a clock and type a different number) · a plate opened. The receipt names which. *(The derivation member and the stamped-clock correction were LAW-18-caught by the researcher within the hour of §0's own commit — the first enumeration named the researcher-seat's primary instrument, proof, as if it were absent, and named the clock by its branch-3 form while the doctrine's founding evidence — the mtime — is the branch-1 stamp.)*
 - **Load-bearing:** a ruling, charter, build, or commit decision rests on the claim. Where nothing rests, the law is silent.
 - **FREE CLAIM (the forbidden object):** a load-bearing assertion with zero world-contact, shipped as grounded.
 
