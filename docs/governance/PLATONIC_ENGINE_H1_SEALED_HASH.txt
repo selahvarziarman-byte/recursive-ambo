@@ -1,0 +1,57 @@
+PLATONIC ENGINE — SEALED HASH RECORD — H1: subdivideFace, THE AIMED CHORD
+=========================================================================
+
+SEAL:            .handoff/SEAL_H1_SUBDIVIDE_FACE.md   (off-repo, gitignored; written ONCE)
+NATIVE SHA256:   2d8b876026a19a85314d1560f9b9ecc1d080205dd5b0376a876df5284731fc02
+                 7,483 bytes. DOUBLE-DERIVED: coder blind at build (REPORT_HAMZAAD_H1.md §0);
+                 the Sovereign's certutil at audit close.
+
+CHARTER:         mothership 1840 (THE PERSON'S HANDS arc · H1) · baseline `a3154af`. NO ritual
+                 — `surfaceRefinement.ts` NOT_FROZEN (:177); engine motion CHARTERED (a new op).
+BUILD:           coder (همزاد), blind — the current coder's LAST build before the sanctioned swap.
+AUDIT:           engineer (3rd seat) — ACCEPT. All three batteries re-run by the auditor.
+
+THE OP — the aimed chord (the researcher's surface-rim enabler; the R5 wall's real cure):
+  `subdivideFace(shape, face, cornerA, cornerB): RefineResult` — a CHORD between two
+  non-adjacent corners of a DISK face, splitting it into two faces sharing the minted
+  edge. +1 edge · +1 face · +0 vertices. Every other cell BYTE-CARRIED (the multi-face
+  generalization — faces preserved in place by slice, the shape's other fields spread).
+  Reuses the committed chord genre (ref:{ns}:chord mint, :disk/:rest split, carrier law,
+  RefineResult), NOT a rebuild — the file's own `refineToDisk` chord, aimed by the person.
+
+★ LAW 16 — SUBDIVISION INVARIANCE (the seal's heart), auditor re-run 3/3:
+  SQUARE v0–v2 → two triangles · PENTAGON v0–v2 → 3-gon+4-gon · CUBE face:bottom (CLOSED,
+  multi-face). Each: V+0 · E+1 · F+1 · χ/w₁/H₁ certified-key BYTE-INVARIANT before==after
+  · every untargeted cell byte-carried (same object references) · carrier surjective
+  new→old. The cube stays "genus 0 (closed, orientable)" χ=2 with its other five faces
+  byte-identical — the generalization's own witness.
+
+★ REFUSAL-TOTAL on every person-reachable face (auditor re-run 6/6, zero crashes):
+  triangle (all 9 pairs → "a triangle has no chord") · born torus face (folded/quotient →
+  not a disk — the researcher's non-disk ⚠ DISCHARGED as a refusal, her caller-graph walk
+  thereby not a gate) · adjacent pair · corner-off-face · alien face (integrity) ·
+  duplicate endpoint pair (endpoint-keyed discipline).
+
+★ THE CHAIN — the R5 wall crossed by hand (auditor re-run, the op's caller-evidence, LAW 12):
+  connectedSum(4-gon base, 5-gon base) → REFUSES with R5's :124 door verbatim → subdivideFace
+  chords the pentagon 2/3, the :rest face is a new 4-rim → connectedSum SUCCEEDS: χ=2 ·
+  orientable · closed (sphere # sphere = sphere). REFUSE → SUBDIVIDE → SUCCEED, certified.
+
+PROOFS: NEG (no export; faces[0] single-face assumption) · tsc -b 0 · the new witness
+  `scripts/diagnose-subdivide-face.cjs` (all three batteries, auditor exit 0) · suite
+  94 @ exactly 1 at the tip (coder sim ca2cde5, 12 readers, discarded) · the 13TH DOOR-COLUMN
+  ROW added: customGluing = DEV-ONLY (the instrument's blind spot closed; no subdivideFace
+  row — the column keys by file, surfaceRefinement already has one; absence recorded as a
+  decision) · NON-MOVEMENT: no frozen file touched, freeze closure 44/0.
+
+⚠ RUNG STATED HONESTLY (the whole point of the arc, and its current limit):
+  H1 lands the op at LINKED — the capability EXISTS and is witness-proven. There is NO
+  person gesture yet, BY CHARTER: the door column honestly reads surfaceRefinement as
+  production-plumbing until H2 wires the manuscript affordance. The person cannot yet
+  reach subdivideFace by clicking; H1 is the engine's wrist, H2 is the hand.
+
+COMMIT (Arman fires natively; THEN the coder swap at this clean seam):
+  src/lib/surfaceRefinement.ts
+  scripts/diagnose-subdivide-face.cjs
+  scripts/diagnose-the-door-column.cjs
+  docs/governance/PLATONIC_ENGINE_H1_SEALED_HASH.txt

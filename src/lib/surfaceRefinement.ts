@@ -414,3 +414,106 @@ export function refineToDisk(form: Shape, parent: Shape | null): RefineResult {
   }
   return assembleRefined(form, current, chord, slotEdgeOf);
 }
+
+/**
+ * subdivideFace — H1, THE AIMED CHORD (the person's-hands arc): the committed
+ * chord discipline, generalized to ANY face of a MULTI-face shape, with the
+ * person aiming the chord's two corners. No word recovery — the face's own
+ * vertex cycle IS the rim; the walls the committed `findChord` asks
+ * automatically are asked here of the person's aim, and refused BY NAME
+ * (total on person-reachable input; DEV-register strings — the designer
+ * words them at wiring, not here):
+ *   1  a corner not on the face;
+ *   2  adjacent (or equal) corners — they already share a rim edge; a
+ *      TRIANGLE therefore refuses every pair ("a triangle has no chord");
+ *   3  a folded/quotient face (repeated corner classes) — not a disk;
+ *   4  a chord duplicating an existing endpoint pair anywhere on the shape
+ *      (the endpoint-keyed discipline: one instance per pair);
+ *   5  a face not on the shape — integrity (dev).
+ * The cut mints the committed conventions verbatim: the chord edge
+ * `ref:{ns}:chord…`, the faces `{face.id}:disk` / `{face.id}:rest`, and the
+ * CARRIER law — {disk, rest, chord} → face.id, identity elsewhere; surjective
+ * new→old. Every OTHER cell is byte-carried (the same objects, never copies):
+ * +1 edge, +1 face, +0 vertices — χ cannot move, and the trap measures it.
+ */
+export function subdivideFace(shape: Shape, face: Face, cornerA: VertexId, cornerB: VertexId): RefineResult {
+  const own = shape.faces.find((f) => f.id === face.id);
+  if (!own) {
+    throw new Error(
+      `surfaceRefinement: face "${face.id}" is not on "${shape.name}" — subdivideFace refuses an alien face (integrity)`,
+    );
+  }
+  const cycle = own.vertexIds;
+  const n = cycle.length;
+  if (new Set(cycle).size !== n) {
+    throw new Error(
+      `surfaceRefinement: face "${own.id}" repeats a corner class around its rim (a folded/quotient face, not a disk) — subdivideFace cuts disk-like faces only`,
+    );
+  }
+  const i = cycle.indexOf(cornerA);
+  if (i < 0) {
+    throw new Error(
+      `surfaceRefinement: corner "${cornerA}" is not on face "${own.id}" — pick both chord corners from the face's own rim`,
+    );
+  }
+  const j = cycle.indexOf(cornerB);
+  if (j < 0) {
+    throw new Error(
+      `surfaceRefinement: corner "${cornerB}" is not on face "${own.id}" — pick both chord corners from the face's own rim`,
+    );
+  }
+  const d = (j - i + n) % n;
+  if (d === 0 || d === 1 || d === n - 1) {
+    throw new Error(
+      `surfaceRefinement: corners "${cornerA}" and "${cornerB}" are ${d === 0 ? 'the same corner' : 'adjacent'} on face "${own.id}" — a chord joins two corners that do not already share a rim edge (a triangle has no chord)`,
+    );
+  }
+  const pairKeyOf = (a: string, b: string): string => (a < b ? `${a}|${b}` : `${b}|${a}`);
+  const chordKey = pairKeyOf(cornerA, cornerB);
+  if (shape.edges.some((e) => pairKeyOf(e.vertexIds[0], e.vertexIds[1]) === chordKey)) {
+    throw new Error(
+      `surfaceRefinement: a chord "${cornerA}"–"${cornerB}" would duplicate an existing edge's endpoint pair on "${shape.name}" — the endpoint-keyed discipline demands one instance per pair`,
+    );
+  }
+  // the cut — the committed chord geometry on the face's own cycle
+  const arc: VertexId[] = [];
+  for (let k = i; ; k = (k + 1) % n) {
+    arc.push(cycle[k]);
+    if (k === j) break;
+  }
+  const rest: VertexId[] = [];
+  for (let k = j; ; k = (k + 1) % n) {
+    rest.push(cycle[k]);
+    if (k === i) break;
+  }
+  const ns = keySafeNs(shape.id);
+  // unique under repetition: the committed base id, suffixed only on collision
+  let chordEdgeId = `ref:${ns}:chord`;
+  const edgeIds = new Set(shape.edges.map((e) => e.id));
+  for (let k = 2; edgeIds.has(chordEdgeId); k += 1) chordEdgeId = `ref:${ns}:chord:${k}`;
+  const chordEdge = {
+    id: chordEdgeId,
+    vertexIds: [cornerA, cornerB] as [VertexId, VertexId],
+    sourceVertexIds: [cornerA, cornerB] as [VertexId, VertexId],
+  };
+  const faceIndex = shape.faces.findIndex((f) => f.id === own.id);
+  const faces: Face[] = [
+    ...shape.faces.slice(0, faceIndex),
+    { ...own, id: `${own.id}:disk`, vertexIds: arc },
+    { ...own, id: `${own.id}:rest`, vertexIds: rest },
+    ...shape.faces.slice(faceIndex + 1),
+  ];
+  const carrier: Record<string, string> = {};
+  for (const id of Object.keys(shape.vertices)) carrier[id] = id;
+  for (const e of shape.edges) carrier[e.id] = e.id;
+  for (const f of shape.faces) {
+    if (f.id !== own.id) carrier[f.id] = f.id;
+  }
+  carrier[chordEdgeId] = own.id;
+  carrier[`${own.id}:disk`] = own.id;
+  carrier[`${own.id}:rest`] = own.id;
+  return {
+    shape: { ...shape, edges: [...shape.edges, chordEdge], faces },
+    refinement: { typeClaim: 'resolution', passes: 0, chordEdgeId, carrier },
+  };
+}

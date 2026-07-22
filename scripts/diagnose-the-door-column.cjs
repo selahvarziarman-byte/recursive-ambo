@@ -88,6 +88,11 @@ const OPS = {
   'closeEdgeIntoCircle': 'src/lib/closeEdgeIntoCircle.ts',
   'faceIdentification': 'src/lib/faceIdentification.ts',
   'level3SoundnessGate': 'src/lib/level3SoundnessGate.ts',
+  // H1 (chartered rider): the general fold joins the column. NOTE — the column
+  // keys by FILE and surfaceRefinement.ts already holds a row (refineToDisk),
+  // so subdivideFace gets no row of its own: an absence by decision, not
+  // omission (REPORT_HAMZAAD_H1).
+  'customGluing (the general fold)': 'src/playground/customGluing.ts',
 };
 const PRODUCTION_ROOTS = ['src/AppShell.tsx'];
 const MAIN_ROOTS = ['src/main.tsx'];
