@@ -766,7 +766,15 @@ export function OperationsDock({
               onMouseLeave={() => setHovered(null)}
               onMouseDown={(e) => {
                 e.stopPropagation();
-                if (!groupEnabled) return;
+                if (!groupEnabled) {
+                  // R4(e): a greyed group can be ASKED — the click opens the
+                  // submenu, where EVERY refused op speaks its own committed
+                  // reason through the existing row idiom. Apply stays gated by
+                  // each row's disabled; a disabled SINGLE-op group opens too —
+                  // its reason must not be eaten with the click.
+                  setOpenGroup(isOpen ? null : group.key);
+                  return;
+                }
                 if (ops.length === 1) {
                   setOpenGroup(null);
                   onApply(ops[0].id);

@@ -44,7 +44,7 @@ import {
   readSurfaceSpecimen,
   type SpecimenReading,
 } from './specimenModel';
-import type { Shape } from '../types/geometry';
+import type { Face, Shape } from '../types/geometry';
 import { PRIMITIVE_CATALOGUE } from '../playground/primitiveCatalogue';
 import {
   applyPlaygroundOperationTo,
@@ -353,6 +353,12 @@ function SpecimenCard({
     </div>
   );
 }
+
+// R4(a): THE ONE FACE-LABELER — the person-facing face label, minted once.
+// Byte-identical to the three inline copies it replaces (the face-pick card and
+// the birth gate's two port menus). The aperture rows keep their own SHORT
+// convention (:836) and engine strings never route here.
+const faceLabel = (face: Face): string => `${face.id} · ${face.vertexIds.length} corners`;
 
 export default function ManuscriptView() {
   const d = manuscriptDefaults;
@@ -1061,7 +1067,7 @@ export default function ManuscriptView() {
       title: target.title,
       faces: target.shape.faces.map((face) => ({
         id: face.id,
-        label: `${face.id} · ${face.vertexIds.length} corners`,
+        label: faceLabel(face),
       })),
       picked: portFaces[selected] ?? '',
     };
@@ -1992,11 +1998,11 @@ export default function ManuscriptView() {
           bTitle={combineGate.b.title}
           aFaces={combineGate.a.shape.faces.map((face) => ({
             id: face.id,
-            label: `${face.id} · ${face.vertexIds.length} corners`,
+            label: faceLabel(face),
           }))}
           bFaces={combineGate.b.shape.faces.map((face) => ({
             id: face.id,
-            label: `${face.id} · ${face.vertexIds.length} corners`,
+            label: faceLabel(face),
           }))}
           portA={combineGate.portFaceA?.id ?? ''}
           portB={combineGate.portFaceB?.id ?? ''}

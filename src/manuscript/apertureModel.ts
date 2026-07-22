@@ -295,6 +295,12 @@ export interface ApertureMapCandidate {
   correspondence: [string, string][]; // faceA cycle vertex → its faceB image (display order = A's cycle)
   derivedMode: 'preserving' | 'reversing'; // DERIVED from the witnessed fit determinant — never chosen
   det: number;
+  // R4(f): the R-test on the WITNESSED deck fit — ‖R − I‖∞ < 0.5 on g[0..8].
+  // True exactly on the translation (flat) glue; every other candidate rotates
+  // or reflects the face before gluing. Never a key test (the flat key differs
+  // by pair — d-1/d-1/d-0 on the cube's axes, measured). Doubles as the
+  // winding-label hook in describeCandidate.
+  translationLike: boolean;
 }
 
 const shortId = (id: string): string => {
@@ -302,9 +308,16 @@ const shortId = (id: string): string => {
   return parts[parts.length - 1];
 };
 
+// R4(f): the row-major identity — the R-test's reference (‖R − I‖∞).
+const IDENTITY3 = [1, 0, 0, 0, 1, 0, 0, 0, 1] as const;
+
 export function describeCandidate(candidate: ApertureMapCandidate): string {
   const corr = candidate.correspondence.map(([a, b]) => `${shortId(a)}→${shortId(b)}`).join(' · ');
-  return `${corr} — ${candidate.derivedMode} (derived)`;
+  const base = `${corr} — ${candidate.derivedMode} (derived)`;
+  // R4(f) THE WINDING LABEL — the arc's ONE new person-facing string: every
+  // non-translation candidate rotates/reflects the face before gluing, so it
+  // genuinely winds; the flag IS the label hook (no separate geometry).
+  return candidate.translationLike ? base : `${base} · cone room · edges wind`;
 }
 
 /**
@@ -335,17 +348,24 @@ export function dihedralMapCandidates(seedShape: Shape, faceAId: string, faceBId
         map[a] = b;
         correspondence.push([a, b]);
       }
-      const { det } = fitDeckIsometry(geometry, { faceA: faceAId, faceB: faceBId, mode: 'preserving', map });
+      const { g, det } = fitDeckIsometry(geometry, { faceA: faceAId, faceB: faceBId, mode: 'preserving', map });
+      // R4(f): the flat (translation) candidate — the witnessed rotation part
+      // is the identity up to the fit's own noise: ‖R − I‖∞ < 0.5.
+      const translationLike = IDENTITY3.every((v, i) => Math.abs(g[i] - v) < 0.5);
       candidates.push({
         key: `d${dir > 0 ? '+' : '-'}${offset}`,
         map,
         correspondence,
         derivedMode: det > 0 ? 'preserving' : 'reversing',
         det,
+        translationLike,
       });
     }
   }
-  return candidates;
+  // R4(f): the FLAT room leads the menu — the translation candidate takes slot
+  // 0 (order-preserving otherwise; every consumer picks by KEY, the menu alone
+  // reads the array order).
+  return [...candidates.filter((c) => c.translationLike), ...candidates.filter((c) => !c.translationLike)];
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,69 @@
+PLATONIC ENGINE — SEALED HASH RECORD — R4: THE NEIGHBOURHOOD (four of five)
+===========================================================================
+
+SEAL:            .handoff/SEAL_R4_THE_NEIGHBOURHOOD.md   (off-repo, gitignored; written ONCE)
+NATIVE SHA256:   60a8fad81c6742d24eee27d608f5d9803500b0fcaff4161b8be1b65f99683130
+                 11,903 bytes. DOUBLE-DERIVED: coder at build time without reading the seal
+                 (REPORT_HAMZAAD_R4.md §0); the Sovereign's certutil identical at audit
+                 close (2026-07-22).
+
+CHARTER:         mothership 1130 (ARC R · R4) · baseline `7cb6487`. O(1) flat-default
+                 junior-cleared (non-circular; probe .handoff/PROBE_R4F_FLAT_DEFAULT.cjs).
+BUILD:           coder (همزاد), blind. AUDIT: engineer (3rd seat) — ACCEPT four-of-five;
+                 (b) WITHDRAWN on a frozen wall (see below); (g) BACKLOGGED per charter.
+
+⚠ THE SEAL'S OWN ERROR, OWNED (engineer, 3rd seat):
+  The seal's preamble asserted "every file below is NOT_FROZEN." FALSE. `InkedForm.tsx`
+  is manifest line :69 (`486411a0…757ecf`), inside the 44-file frozen closure. I verified
+  ManuscriptView and apertureModel against the manifest and asserted the three (b) files
+  NOT_FROZEN WITHOUT grepping them — a ⚠ (inferred) dressed as a ✔ (verified), the exact
+  class amended into the seat's ledger this same session. The coder cut (b) as chartered
+  (tsc cannot see a freeze), measured the 28-RED drift wall, and — unable to self-sanction
+  a re-seal — withdrew (b) WHOLE (its "both renderers, or the mark is inconsistent" law
+  forbids the half). The three (b) files are byte-restored to HEAD; zero drift. The 8th
+  correct coder stop. (b) relands via the frozen-file ritual (THE UNION protocol) — routed
+  to the mothership for sanction; NOT in this commit.
+
+THE FOUR THAT STAND — three files, audited against the sealed values:
+  (a) ONE FACE-LABELER: `faceLabel(face)` minted once at ManuscriptView module scope,
+      byte-identical to the three inline copies it replaces (the face-pick card source +
+      the combine gate's two port menus). Carve-outs held: :836 (SHORT aperture
+      convention), playgroundOperations:208 (engine string), :1834 (heading) — all
+      untouched. A refactor: the person reads the SAME label; the string has one home.
+  (e) EVERY REFUSED REASON REACHABLE (RUNG 4): a disabled dock group's click now OPENS
+      its submenu, where every greyed op speaks its own committed `reason` (the
+      heterogeneous-group `ops[0]`-only under-report retired). Single-op disabled group
+      opens too — its reason is not eaten. No new strings. Plate R4_REASONS.png.
+  (f) THE FLAT ROOM LEADS + THE WINDING LABEL (RUNG 4): `ApertureMapCandidate.translationLike`
+      set from the R-test on the WITNESSED deck fit (‖R−I‖∞ < 0.5 on g[0..8]) — NEVER a
+      key test (the ⛔ forbidden line held; the flat key differs by pair, d-1/d-1/d-0,
+      recorded as a MEASURED output). The flat candidate takes slot 0 of every menu
+      (filter-concat; consumers pick by KEY). `describeCandidate` appends the arc's ONE
+      new person-string ` · cone room · edges wind` to every non-flat label.
+      Plate R4_APERTURE_DEFAULT.png.
+  (g) FIRST-RIGHT-CLICK: BACKLOGGED per the charter's own out — the eaten first right-click
+      is the canvas event system's first-interaction init, not a one-line listener guard.
+      Runner-note rides both runners; measured twice, spot-independent.
+
+PROOFS (raw in REPORT_HAMZAAD_R4.md; the strongest re-run by the auditor):
+  NEG per item on current bytes (three inline copies; opaque 3.5 near pass; `ops[0]`-only;
+    mapChoices[0]=d+0 reversing, translationLike ABSENT).
+  P1: tsc -b 0 (coder; auditor-confirmed by inspection + the modules executing through
+    diagnose's transpile hook — full tsc exceeds the sandbox window, stated honestly).
+  P2: suite 93 @ exactly 1 after the withdrawal (coder sim-commit 7c81b80, 20 readers,
+    discarded). The (b)-in tip measured 93 @ 28 — a commit does NOT cure a frozen drift;
+    only the re-seal ritual does.
+  ★ ORACLE (f), auditor re-run against the BUILT apertureModel: VERDICT YES — unique
+    translationLike per pair, preserving, == committed T³ key, flat at menu index 0,
+    margin 1.0 vs the 0.5 threshold, ‖R−I‖ derived from real fitDeckIsometry output.
+  ★ diagnose-the-aperture.cjs (the aperture's ratifying witness), auditor re-run: 18/18
+    PASS, exit 0 — the reorder is VISIBLE (menu dets now lead `d-1:1` for left↔right, was
+    `d+0:-1`) and every count-check survives (counts by filter, not index).
+  NON-MOVEMENT: exactly 3 tracked files changed; the 44-file frozen closure intact
+    (InkedForm byte-identical to HEAD); the exhibit populations read 28/8 unchanged.
+
+COMMIT (four-of-five; Arman fires natively after this audit):
+  src/manuscript/ManuscriptView.tsx
+  src/manuscript/ManuscriptChrome.tsx
+  src/manuscript/apertureModel.ts
+  docs/governance/PLATONIC_ENGINE_R4_SEALED_HASH.txt
