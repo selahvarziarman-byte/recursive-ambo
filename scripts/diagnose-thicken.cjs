@@ -259,7 +259,7 @@ check('RUNG 3 REPORTS AND STOPS (as the mandate allows): identifying the T²-ban
 // ═════ [8] the freeze: three re-seals, count 44, arrival-branched ═════════════════
 console.log('\n----- [8] THE FREEZE: three re-seals in the same change, count 44 -----');
 const freeze = checkEngineFreeze(repoRoot);
-check('THE MANIFEST CARRIES THIS RUN\'S EXACT WEIGHT: the freeze reads ok at 44 with zero drift (the three sanctioned hash lines — types/geometry · genealogyDag · surfaceClassifier — moved IN THIS SAME CHANGE, and thicken.ts rides as a NOT_FROZEN line, the completeness law); the manifest\'s set-differential vs HEAD is EXACTLY those four lines (three replaced hashes + one new NOT_FROZEN entry) — or EMPTY with the new hashes present, once the re-seal has ARRIVED at HEAD',
+check('THE MANIFEST CARRIES THIS RUN\'S EXACT WEIGHT: the freeze reads ok at 45 with zero drift (the three sanctioned hash lines — types/geometry · genealogyDag · surfaceClassifier — moved IN THIS SAME CHANGE, and thicken.ts rides as a NOT_FROZEN line, the completeness law); the manifest\'s set-differential vs HEAD is EXACTLY those four lines (three replaced hashes + one new NOT_FROZEN entry) — or EMPTY with the new hashes present, once the re-seal has ARRIVED at HEAD',
   (() => {
     const work = fs.readFileSync(path.join(repoRoot, 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'), 'utf8').split(/\r?\n/);
     const head = headBlobOf('docs/governance/ENGINE_FREEZE_MANIFEST.txt').split(/\r?\n/);
@@ -289,7 +289,7 @@ check('THE MANIFEST CARRIES THIS RUN\'S EXACT WEIGHT: the freeze reads ok at 44 
         sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, 'src/types/geometry.ts'), 'utf8')),
       );
     note(arrived ? 'the re-seal has ARRIVED at HEAD' : 'pre-commit: the four lines ride this change');
-    return freeze.ok === true && freeze.checked === 44 && (preCommit || arrived);
+    return freeze.ok === true && freeze.checked === 45 && (preCommit || arrived);
   })());
 
 console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAILURE(S)`);

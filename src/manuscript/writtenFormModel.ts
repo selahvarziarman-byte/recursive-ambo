@@ -64,6 +64,7 @@ import { h1LabelFromLevel1 } from './worldModel';
 import type { SpecimenReading } from './specimenModel';
 import { buildClassBodyModel, type ClassBodyModel } from './classBodyModel';
 import { acquireFaithfulComplex, readBoundary } from './surfaceClassifier';
+import { tryFaithfulBodyModel, type FaithfulBodyModel } from './faithfulBodyModel';
 
 export interface WrittenSkeletonModel {
   key: string;
@@ -83,7 +84,10 @@ export type WrittenRender =
       h1Label: string | null;
       junctionEdgeIds?: string[]; // present iff the certifier reads non-manifold — the render marks these
     }
-  | { mode: 'classBody'; model: ClassBodyModel }; // P-IMMERSE — the honest representative body
+  | { mode: 'classBody'; model: ClassBodyModel } // P-IMMERSE — the honest representative body
+  // CUT 1 THE FAITHFUL BODY (sanctioned frozen edit): the embeddable
+  // cone-family draws its OWN cells (apex · seam · rim — LAWS A/B/E)
+  | { mode: 'faithful'; model: FaithfulBodyModel };
 
 export interface WrittenForm {
   id: string; // the manuscript-side handle (w<seq>)
@@ -351,6 +355,16 @@ export function routeWrittenRender(
     };
   }
   // 'patch' / 'raw': minted quotient positions — bookkeeping, never geometry.
+  // CUT 1 THE FAITHFUL BODY (sanctioned frozen edit — the ONE intercept): an
+  // embeddable cone-family form (one face, one boundary circle, fan layout
+  // computable) draws its OWN cells through faithfulBodyModel — the person who
+  // folded sees the fold. Everything else falls through UNCHANGED to the class
+  // body; the stage walls (CUT 1b / CUT 2) live in faithfulBodyVerdict,
+  // measured by witness.
+  const faithful = tryFaithfulBodyModel(born, lineage);
+  if (faithful) {
+    return { mode: 'faithful', model: faithful };
+  }
   // P-IMMERSE: the ABSTAIN falls — the form's invariants are still CERTIFIED
   // (recovered/direct complex), so it gets the honest CLASS BODY: classify
   // from the committed certificates, build the self-certifying representative,

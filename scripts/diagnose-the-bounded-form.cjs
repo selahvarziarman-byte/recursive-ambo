@@ -332,14 +332,14 @@ check('THE CHAIN WAS NOT ON THIS PATH: the aperture route (readSeedCell → glue
 // ═════ [8] the manifest: exactly two re-seals, count 44; the two ⛔ files unmoved ══
 console.log('\n----- [8] THE MANIFEST: two re-seals in the same change, count 44; multiform + level3Invariants unmoved (clause 8) -----');
 const freeze = checkEngineFreeze(repoRoot);
-check('THE FULL PROTOCOL\'S BOOKKEEPING: the freeze reads ok at 44 with zero drift (the two sanctioned hash lines moved IN THIS SAME CHANGE — the freeze law); the manifest differs from HEAD in EXACTLY the two re-sealed lines (faceIdentification · level3SoundnessGate) plus nothing else; and the two ⛔ files the mandate names — multiform.ts and level3Invariants.ts — are CR-insensitively BYTE-IDENTICAL to HEAD',
+check('THE FULL PROTOCOL\'S BOOKKEEPING: the freeze reads ok at 45 with zero drift (the two sanctioned hash lines moved IN THIS SAME CHANGE — the freeze law); the manifest differs from HEAD in EXACTLY the two re-sealed lines (faceIdentification · level3SoundnessGate) plus nothing else; and the two ⛔ files the mandate names — multiform.ts and level3Invariants.ts — are CR-insensitively BYTE-IDENTICAL to HEAD',
   (() => {
     // THE SEALED FACT, state-independent (recut under THICKEN, 2026-07-18):
     // the exact-line differential was an over-pin — ANY later sanctioned
     // manifest motion (THICKEN's three re-seals were the first) broke it while
     // this arc's own truth stood. What THIS arc must hold forever: the two
     // files' CURRENT hashes are the ones the manifest seals, the freeze reads
-    // ok at 44, and the two ⛔ files did not move. The flagship guards the
+    // ok at 45, and the two ⛔ files did not move. The flagship guards the
     // hash lines themselves in every state.
     const workManifest = fs.readFileSync(path.join(repoRoot, 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'), 'utf8');
     const sealedHere = ['src/lib/faceIdentification.ts', 'src/lib/level3SoundnessGate.ts'].every((file) =>
@@ -349,7 +349,7 @@ check('THE FULL PROTOCOL\'S BOOKKEEPING: the freeze reads ok at 44 with zero dri
       (file) => sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) === sha256OfCrStripped(headBlobOf(file)),
     );
     note(`freeze: ok=${freeze.ok} checked=${freeze.checked} · the two re-sealed hashes present in the manifest: ${sealedHere}`);
-    return freeze.ok === true && freeze.checked === 44 && sealedHere && unmoved;
+    return freeze.ok === true && freeze.checked === 45 && sealedHere && unmoved;
   })());
 
 console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAILURE(S)`);

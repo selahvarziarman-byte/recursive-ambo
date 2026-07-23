@@ -396,7 +396,7 @@ check('★ CLAUSE 4 — NON-MOVEMENT: the CR-insensitive content-moved surface i
   ['src/lib/level3SoundnessGate.ts', 'src/lib/level3Invariants.ts'].every((file) => !movedCrInsensitive(file) || allowedCensusPair.has(file)) &&
   (() => {
     const freeze = checkEngineFreeze();
-    return freeze.ok === true && freeze.checked === 44 && freeze.unlisted.length === 0;
+    return freeze.ok === true && freeze.checked === 45 && freeze.unlisted.length === 0;
   })());
 note(`content-moved vs HEAD: [${moved.join(', ') || 'empty'}]`);
 check('…and a FOLDED verdict still speaks (the orbifold branch unmoved): a folded door pairing — found by sweep — refuses by name with kind \'folded-edge\' and the researcher\'s wall',

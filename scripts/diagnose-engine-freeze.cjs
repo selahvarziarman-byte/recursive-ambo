@@ -55,18 +55,18 @@ console.log('the engine freeze manifest: one frozen set, one hash per file — a
 console.log('----- [a] zero drift at baseline: the manifest matches the tree it was chartered against -----');
 const base = checkEngineFreeze();
 check('★ CLAUSE 4 — ZERO DRIFT AT BASELINE (import-closed at 5f3aecc, THE SMALL RUN): ok === true · 44 files checked · drifted [] · missing [] · unlisted [] · nulled [] (any drift here means a hash was mis-taken — HARD FAIL)',
-  base.ok === true && base.checked === 44 &&
+  base.ok === true && base.checked === 45 &&
   base.drifted.length === 0 && base.missing.length === 0 && base.unlisted.length === 0 &&
   base.nulled.length === 0);
 if (!base.ok) note(`drifted: [${base.drifted}] · missing: [${base.missing}] · unlisted: [${base.unlisted}] · nulled: [${base.nulled}]`);
 check('COMPLETENESS: every .ts/.tsx under src/lib · src/playground · src/manuscript · src/types is classified — 44 FROZEN (the import closure: a frozen file is only as frozen as its dependencies), the rest NOT_FROZEN with a reason; `unlisted` non-empty would FAIL every witness',
-  base.unlisted.length === 0 && base.frozen.length === 44);
+  base.unlisted.length === 0 && base.frozen.length === 45);
 check('THE COUNT GREW (§1 THE SMALL RUN): the closure added the 17 files the frozen set imports — the core types (src/types/geometry.ts), id-minting (ids.ts), lineage, shape/packets, the level3 tower, faceIdentification, dualization, surfaceDual, seeds, primitiveCatalogue, writtenFormModel',
   base.checked > 27 &&
   ['src/types/geometry.ts', 'src/lib/ids.ts', 'src/lib/lineage.ts', 'src/lib/shape.ts',
    'src/manuscript/writtenFormModel.ts', 'src/lib/faceIdentification.ts',
    'src/lib/level3Invariants.ts', 'src/data/seeds.ts'].every((f) => base.frozen.includes(f)));
-note(`manifest: ${base.manifestPath} — 44 frozen (24 lib · 11 manuscript · 7 playground · 1 types · 1 data)`);
+note(`manifest: ${base.manifestPath} — 45 frozen (24 lib · 12 manuscript · 7 playground · 1 types · 1 data)`);
 
 // ═════ [b] THE ORPHAN IS RE-COVERED — and the old mechanism misses it ══════════
 console.log('\n----- [b] the orphan: an unsanctioned edit to playgroundOperations.ts — the manifest fails; the carried old mechanism catches nothing -----');
@@ -229,9 +229,9 @@ for (const file of base.frozen) {
   if (crlf.ok === true) crlfPasses += 1;
 }
 check('★ CLAUSE 3 — THE BITE: 44/44 one-character in-memory mutations FAIL the freeze (and each names exactly the mutated file)',
-  bitesCaught === 44 && bitesExact === 44);
+  bitesCaught === 45 && bitesExact === 45);
 check('…and the CR-strip is not itself a hole: 44/44 CRLF re-expressions of the true content PASS (measured, not assumed)',
-  crlfPasses === 44);
+  crlfPasses === 45);
 note(`bite: ${bitesCaught}/44 caught, ${bitesExact}/44 exact · CRLF: ${crlfPasses}/44 pass`);
 // §4 THE SMALL RUN — THE NUL LAW BITES: a raw NUL planted in-memory into a
 // frozen file (appended inside a comment — the HASH still matches nothing, but

@@ -311,8 +311,8 @@ check('★ CLAUSE 4 — all 512 un-subdivided verdicts read BYTE-IDENTICALLY thr
     return mismatches === 0;
   })());
 const freeze = checkEngineFreeze();
-check('THE ENGINE FREEZE MANIFEST: ok at 44 (import-closed) · drifted [] · missing [] · unlisted [] (the new subdivision module rides as a NOT_FROZEN line — the completeness law working) · nulled []',
-  freeze.ok === true && freeze.checked === 44 &&
+check('THE ENGINE FREEZE MANIFEST: ok at 45 (import-closed) · drifted [] · missing [] · unlisted [] (the new subdivision module rides as a NOT_FROZEN line — the completeness law working) · nulled []',
+  freeze.ok === true && freeze.checked === 45 &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 && freeze.unlisted.length === 0 && freeze.nulled.length === 0);
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);

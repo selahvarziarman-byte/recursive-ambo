@@ -78,10 +78,10 @@ const note = (msg) => console.log(`  ↳ ${msg}`);
 console.log('the small run: the freeze closes under imports · the wall speaks before the door · every HEAD-read idiom is pinned · the unreadable file reads again\n');
 
 // ═════ [a] §1 — THE FREEZE, CLOSED UNDER IMPORTS (battery 1) ══════════════════════
-console.log('----- [a] §1 the closed freeze: ok at 44, src/types scanned, the closure re-measured -----');
+console.log('----- [a] §1 the closed freeze: ok at 45, src/types scanned, the closure re-measured -----');
 const freeze = checkEngineFreeze();
-check('★ CLAUSE 1 — EXECUTE WHAT YOU WITNESS: checkEngineFreeze() runs and reports ok with the ENLARGED set — checked 44 (> the pre-closure 27: THE COUNT GREW) · drifted [] · missing [] · unlisted [] (src/types now IN scope) · nulled []',
-  freeze.ok === true && freeze.checked === 44 && freeze.checked > 27 &&
+check('★ CLAUSE 1 — EXECUTE WHAT YOU WITNESS: checkEngineFreeze() runs and reports ok with the ENLARGED set — checked 45 (> the pre-closure 27: THE COUNT GREW) · drifted [] · missing [] · unlisted [] (src/types now IN scope) · nulled []',
+  freeze.ok === true && freeze.checked === 45 && freeze.checked > 27 &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 &&
   freeze.unlisted.length === 0 && freeze.nulled.length === 0 &&
   ROOTS.includes('src/types'));

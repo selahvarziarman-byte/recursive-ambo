@@ -297,8 +297,8 @@ check('★ CLAUSE 6(b) — the FOLD-CLAIMING caption, carried in-memory, VISIBLY
 // ═════ [g] the freeze — must read ok · 44 · NO drift (0.2 never reached the engine) ═
 console.log('\n----- [g] the freeze: ok · 44 · no drift — no re-seal was needed; 0.2 lives beside the engine, never inside it -----');
 const freeze = checkEngineFreeze();
-check('THE ENGINE FREEZE MANIFEST is UNTOUCHED: ok · checked 44 · drifted [] · missing [] · unlisted [] · nulled [] (apertureModel and ManuscriptView are NOT_FROZEN seams; a drift here would mean 0.2 reached into the engine — the mandate\'s STOP condition, which never fired)',
-  freeze.ok === true && freeze.checked === 44 &&
+check('THE ENGINE FREEZE MANIFEST is UNTOUCHED: ok · checked 45 · drifted [] · missing [] · unlisted [] · nulled [] (apertureModel and ManuscriptView are NOT_FROZEN seams; a drift here would mean 0.2 reached into the engine — the mandate\'s STOP condition, which never fired)',
+  freeze.ok === true && freeze.checked === 45 &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 &&
   freeze.unlisted.length === 0 && freeze.nulled.length === 0);
 

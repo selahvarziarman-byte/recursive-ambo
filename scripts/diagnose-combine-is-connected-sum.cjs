@@ -334,8 +334,8 @@ const { checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.
 const freeze = checkEngineFreeze();
 // 27 → 44 (2026-07-14, THE SMALL RUN): the freeze closed under imports — a
 // frozen file is only as frozen as its dependencies; src/types joined the scan.
-check('THE ENGINE FREEZE MANIFEST: all 44 frozen engine files (import-closed) match their manifest hashes and every source file under the engine roots is classified — drifted [] · missing [] · unlisted []',
-  freeze.ok === true && freeze.checked === 44 &&
+check('THE ENGINE FREEZE MANIFEST: all 45 frozen engine files (import-closed) match their manifest hashes and every source file under the engine roots is classified — drifted [] · missing [] · unlisted []',
+  freeze.ok === true && freeze.checked === 45 &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 && freeze.unlisted.length === 0);
 if (!freeze.ok) note(`drifted: [${freeze.drifted}] · missing: [${freeze.missing}] · unlisted: [${freeze.unlisted}]`);
 // THE FREEZE CHECK STILL BITES (stub-proof — a checker that cannot fail is dead):

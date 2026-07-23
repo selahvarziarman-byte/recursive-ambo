@@ -164,8 +164,8 @@ note(`id-against-key finds: ${idAgainstKeyHits}/200 · membership finds: ${membe
 // ═════ [e] the freeze — additive build; the certified thing is untouched ══════════
 console.log('\n----- [e] the freeze: ok · 44 · no drift (a reading, not an edit — you may not change the thing you certify) -----');
 const freeze = checkEngineFreeze();
-check('THE ENGINE FREEZE MANIFEST is untouched: ok · checked 44 · drifted [] · missing [] · unlisted [] · nulled [] — this build is ONE witness file; the op, the gate, the tower and the transport it certifies are byte-identical to what the manifest already sealed',
-  freeze.ok === true && freeze.checked === 44 &&
+check('THE ENGINE FREEZE MANIFEST is untouched: ok · checked 45 · drifted [] · missing [] · unlisted [] · nulled [] — this build is ONE witness file; the op, the gate, the tower and the transport it certifies are byte-identical to what the manifest already sealed',
+  freeze.ok === true && freeze.checked === 45 &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 &&
   freeze.unlisted.length === 0 && freeze.nulled.length === 0);
 

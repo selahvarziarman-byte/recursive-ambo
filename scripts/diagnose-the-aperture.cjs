@@ -522,12 +522,12 @@ const ALLOWED_SRC_CHANGES = new Set([
   // diagnose-the-field-in-the-specimen.cjs.
   'src/manuscript/InkedPlainForm.tsx',
 ]);
-check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 44 (import-closed)',
+check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&
   (() => {
     const { checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
     const freeze = checkEngineFreeze();
-    return freeze.ok === true && freeze.checked === 44 && freeze.unlisted.length === 0;
+    return freeze.ok === true && freeze.checked === 45 && freeze.unlisted.length === 0;
   })());
 note(`diff candidates: ${diffCandidates.length} · content-moved: [${changedSrc.join(', ') || 'empty'}]`);
 // …and the CR-insensitive listing still BITES (a filter that cannot fail is a
@@ -555,8 +555,8 @@ console.log('\n----- [j] the engine freeze manifest holds — and still bites --
 const { checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
 const freeze = checkEngineFreeze();
 // 27 → 44 (2026-07-14, THE SMALL RUN): the freeze closed under imports.
-check('THE ENGINE FREEZE MANIFEST: all 44 frozen engine files (import-closed) match their manifest hashes and every source file under the engine roots is classified (the aperture\'s two NEW manuscript files ride as NOT_FROZEN lines — the completeness law working) — drifted [] · missing [] · unlisted []',
-  freeze.ok === true && freeze.checked === 44 &&
+check('THE ENGINE FREEZE MANIFEST: all 45 frozen engine files (import-closed) match their manifest hashes and every source file under the engine roots is classified (the aperture\'s two NEW manuscript files ride as NOT_FROZEN lines — the completeness law working) — drifted [] · missing [] · unlisted []',
+  freeze.ok === true && freeze.checked === 45 &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 && freeze.unlisted.length === 0);
 const FREEZE_SENTINEL = 'src/lib/incidenceTraceRegistry.ts';
 const sentinelContent = fs.readFileSync(path.join(repoRoot, FREEZE_SENTINEL), 'utf8');

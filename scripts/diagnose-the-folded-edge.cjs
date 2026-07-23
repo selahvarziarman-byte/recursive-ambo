@@ -380,7 +380,7 @@ check('the CR-insensitive content-moved surface is exactly the riding mandates\'
   (() => {
     const freeze = checkEngineFreeze();
     // 27 → 44 (2026-07-14, THE SMALL RUN): the freeze closed under imports
-    return freeze.ok === true && freeze.checked === 44 && freeze.unlisted.length === 0;
+    return freeze.ok === true && freeze.checked === 45 && freeze.unlisted.length === 0;
   })());
 note(`content-moved vs HEAD: [${moved.join(', ') || 'empty'}]`);
 

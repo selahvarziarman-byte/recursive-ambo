@@ -1,0 +1,53 @@
+PLATONIC ENGINE — SEALED HASH RECORD — CUT 1: THE CONE, CELLS ON BODY (THE FAITHFUL BODY, stage 1)
+==================================================================================================
+
+SEAL:            .handoff/SEAL_CUT1_THE_CONE_CELLS_ON_BODY.md   (off-repo, gitignored; written ONCE)
+NATIVE SHA256:   45523ada7675a6755ce9d61d6e182a7a7ebd20c9815da6547c06c19b4e249013
+                 7,139 bytes. DOUBLE-DERIVED: coder blind at build; the Sovereign's certutil at close.
+
+CHARTER:         mothership 2316 (THE FAITHFUL BODY · CUT 1 = the CONE FAMILY) + researcher's five
+                 laws + designer's five registers · baseline `f9b9010` (CUT 0's commit).
+BUILD:           coder (همزاد), blind + one engineer ruling (the freeze fix, below).
+AUDIT:           engineer (3rd seat) — ACCEPT. The four looks re-verified; the freeze fix audited.
+
+THE RENDERER — the cone drawn from its OWN cells (LAWS A/B/E), the blob retired for the family:
+  NEW `src/manuscript/faithfulBodyModel.ts` — the fan layout (apex at the tip, rim on the base
+  circle, seam a radius). `routeWrittenRender` intercepts the cone family before the classBody
+  blob. Cone V=2·E=2·F=1: apex + rim vertex (two dots), seam apex→rim (thin graphite), rim loop
+  (heavy graphite, closed). The person's fold is the seam — their act, in the drawing.
+  ★ THE FOUR COUNTED LOOKS (builder + auditor, by eye): COUNT 2/2/1 drawn = printed · TRACE the
+  1 rim closes heavy · CROSSINGS none · JUNCTIONS none. Plate CUT1_THE_CONE.png (vs CUT1_BLOB_BEFORE).
+  REFUSE-don't-blob: Möbius-fold/no-apex → CUT 1b · Klein/RP² → CUT 2 (true walls, 18/18 model).
+
+⚠ THE ENGINEER'S RULING (my mandate erred; the coder's STOP was correct):
+  My mandate architected faithfulBodyModel as NOT_FROZEN, imported by the frozen routeWrittenRender —
+  which the small-run's import-closure falsifier caught RED (the frozen set IS the transitive
+  import-closure). RULED: faithfulBodyModel MUST be FROZEN — it is in the closure by definition; the
+  count grows 44→45 exactly as it grew 27→44 when the closure was first computed. Closure-forced,
+  not a policy dial. The falsifier that caught the mandate now CERTIFIES the cure.
+
+⛔ THE FREEZE FIX — audited THREE ways + the sweep precise:
+  faithfulBodyModel :71  = a0f6376b4673849cc49b6bec9fcc0f3ab20bf4af031198f081c8a489d73b7e90 (NEW frozen;
+    NOT_FROZEN line gone). writtenFormModel :79 = fa96bade… (H2/CUT1 re-seal, +1 positional shift from
+    the insert, content unmoved). (1) manifest == (2) `git show 5f5ed62:<file> | sha256sum` (auditor
+    git-native) == (3) working tree, both files. FREEZE CLOSURE re-run: 45 / 0 drift, bites 45/45.
+  ★ THE 44→45 SWEEP, auditor-precise: moved only the live freeze-count pins + their check-names across
+    22 witnesses + the flagship census; the dated "27 → 44" HISTORY lines verified UNTOUCHED (a naive
+    find-replace would have corrupted them — it did not). The pin restored by the ruled cure, not loosened.
+
+PROOFS: tsc -b 0 · small-run ALL PASS at sim 5f5ed62 (the closure falsifier certifies the cure) ·
+  flagship ALL PASS (45/0) · suite 94 @ exactly 1. NON-MOVEMENT: classBodyModel/inkedFormModel
+  byte-unchanged (the blob stays for refused forms).
+
+FOLLOW-ON (routed, not blocking): CUT 1 is cell-faithful but the person does not yet RECOGNIZE the
+  cone (reads as a disk + radius; the card counts the rim but never names "cone"; the apex is an
+  ordinary dot, not a cone point). Routed to designer + researcher as the successor layer — visual
+  cue on the seam · naming the surface · the apex-as-cone-point (a metric cut). ABOVE cell-faithfulness,
+  not a CUT-1 defect.
+
+COMMIT (ONE — 26 build paths + this record; Arman fires; certutil :71 = a0f6376b…7e90, :79 = fa96bade…b587):
+  the 26 exact paths are in REPORT_HAMZAAD_CUT1.md §10 (faithfulBodyModel + writtenFormModel + manifest
+  + ManuscriptView + the 22 count-pin witnesses + the flagship) + docs/governance/PLATONIC_ENGINE_CUT1_SEALED_HASH.txt.
+
+⇒ THE FOLD IS DRAWN, counted 2/2/1, from its own cells — the blob is dead for the cone. Stage 1 of
+  THE FAITHFUL BODY closes. The person can SEE (the recognition layer is the routed successor).

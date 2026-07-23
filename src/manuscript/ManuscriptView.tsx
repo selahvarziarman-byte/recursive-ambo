@@ -94,6 +94,9 @@ import {
   type ForkOffer,
   type FoldState,
 } from './handGestureModel';
+// CUT 1 THE FAITHFUL BODY — the cone family's cell model (apex · seam · rim);
+// the view only PLACES its certified placements in the two ink registers
+import type { FaithfulBodyModel } from './faithfulBodyModel';
 // THE APERTURE (engineer-chartered 2026-07-13, designer-ruled ADR 0004): the
 // person builds a 3-manifold (map-picked pairs — the mode is DERIVED, never
 // chosen) and stands inside it — image-space transport on the engine's own
@@ -293,6 +296,64 @@ function FormLabel({
         <div style={{ fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.72 }}>{sub}</div>
       </div>
     </Html>
+  );
+}
+
+// CUT 1 — THE FAITHFUL BODY (stage 1, the cone family): the person's OWN
+// cells, placed by the model, drawn in the designer's registers — every class
+// exactly once (LAW A): a dot per vertex-class, ONE thin stroke per seam
+// (cell register), ONE heavy stroke per rim edge-class closing the boundary
+// circle (LAW B), the one face a flat translucent disk (LAW E: a drawing that
+// implies no curvature, no symmetry, no orientation). No other ink.
+function FaithfulBody({
+  model,
+  seamColor,
+  rimColor,
+  seamWidth,
+  rimWidth,
+  bodyColor,
+  bodyOpacity,
+}: {
+  model: FaithfulBodyModel;
+  seamColor: string;
+  rimColor: string;
+  seamWidth: number;
+  rimWidth: number;
+  bodyColor: string;
+  bodyOpacity: number;
+}) {
+  return (
+    <group>
+      <mesh renderOrder={-2}>
+        <circleGeometry args={[model.faceDisk.radius, model.faceDisk.segments]} />
+        <meshBasicMaterial color={bodyColor} transparent opacity={bodyOpacity} depthWrite={false} />
+      </mesh>
+      {model.seams.map((seam) => (
+        <Line
+          key={seam.id}
+          points={[
+            [seam.from[0], seam.from[1], 0.01],
+            [seam.to[0], seam.to[1], 0.01],
+          ]}
+          color={seamColor}
+          lineWidth={seamWidth}
+        />
+      ))}
+      {model.rimArcs.map((arc) => (
+        <Line
+          key={arc.id}
+          points={arc.points.map((p) => [p[0], p[1], 0.015] as [number, number, number])}
+          color={rimColor}
+          lineWidth={rimWidth}
+        />
+      ))}
+      {[model.apex, ...model.rimVertices].map((vertex) => (
+        <mesh key={vertex.id} position={[vertex.position[0], vertex.position[1], 0.02]} renderOrder={2}>
+          <circleGeometry args={[0.05, 24]} />
+          <meshBasicMaterial color={rimColor} />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
@@ -778,6 +839,32 @@ export default function ManuscriptView() {
         // P-IMMERSE: the form's OWN certified invariants + the honest frame +
         // the body's drawn certified generators, named (classBodyModel)
         return readClassBodySpecimen(entry.form.title, entry.form.provenance, render.model);
+      }
+      if (render.mode === 'faithful') {
+        // CUT 1 — the counted caption (EYE-CHECK 1): the card prints V/E/F OF
+        // THE COMPLEX and the boundary-circle count (LAW B's trace companion);
+        // the certified rows beneath are the tower's, verbatim
+        const base = readPlainSpecimen(
+          entry.form.title,
+          entry.form.provenance,
+          render.model.invariants,
+          render.model.h1Label,
+        );
+        return {
+          ...base,
+          rows: [
+            {
+              label: 'cells V·E·F',
+              value: `${render.model.counts.v} · ${render.model.counts.e} · ${render.model.counts.f}`,
+              emphasize: true,
+            },
+            {
+              label: 'boundary',
+              value: `${render.model.boundaryCircles} circle${render.model.boundaryCircles === 1 ? '' : 's'}`,
+            },
+            ...base.rows,
+          ],
+        };
       }
       const base = readPlainSpecimen(entry.form.title, entry.form.provenance, render.invariants, render.h1Label);
       // Option B: name the drawn certified generators in the summoned legend
@@ -1991,7 +2078,10 @@ export default function ManuscriptView() {
                 ? `H₁ = ${render.model.h1Label ?? 'n-a'} · b₁ ${render.model.invariants.level1?.b1 ?? '—'}`
                 : render.mode === 'classBody'
                   ? `H₁ = ${render.model.h1Label ?? 'n-a'} · class body`
-                  : `H₁ = ${render.h1Label ?? 'n-a'}`;
+                  : render.mode === 'faithful'
+                    ? // CUT 1 — the counted caption rides the label too (EYE-CHECK 1)
+                      `V ${render.model.counts.v} · E ${render.model.counts.e} · F ${render.model.counts.f} · H₁ = ${render.model.h1Label ?? 'n-a'}`
+                    : `H₁ = ${render.h1Label ?? 'n-a'}`;
           const drop =
             render.mode === 'immersion' || render.mode === 'classBody'
               ? -d.layout.captionDrop * scaleCtl.dim2Scale - 0.9
@@ -2041,6 +2131,20 @@ export default function ManuscriptView() {
                     position={component.offset}
                   />
                 ))}
+              </group>
+            ) : render.mode === 'faithful' ? (
+              // CUT 1 — the person's own cells in the two registers: seam thin,
+              // rim heavy, dots per vertex-class, the one face a flat disk
+              <group scale={scaleCtl.dim1Scale * 1.5}>
+                <FaithfulBody
+                  model={render.model}
+                  seamColor={inkFor(id, entry.form.shape.id, constructionCtl.color)}
+                  rimColor={inkFor(id, entry.form.shape.id, silhouetteCtl.color)}
+                  seamWidth={1.2}
+                  rimWidth={4}
+                  bodyColor={bodyCtl.color}
+                  bodyOpacity={bodyCtl.opacity * 0.55}
+                />
               </group>
             ) : (
               <group scale={scaleCtl.dim1Scale}>
