@@ -1543,7 +1543,7 @@ export default function ManuscriptView() {
         shape: null,
         segment: null,
         refusal:
-          'thicken needs an interval — select a segment (a form with two ends). Tip: lift a single edge to get one.',
+          'Thicken needs an interval — a form with two ends. Lift a single edge to make one, then select it with the shape you\'re thickening.',
       };
     }
     const [shapeOperand, segmentOperand] = bIsSegment ? [a, b] : [b, a];

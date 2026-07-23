@@ -203,6 +203,7 @@ export function OperationControls() {
   const resetWorkspace = useGeometryStore((state) => state.resetWorkspace);
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const selectedEdgeId = useGeometryStore((state) => state.selectedEdgeId);
   const liftSelectionToManuscript = useGeometryStore((state) => state.liftSelectionToManuscript);
   const thickenLiftToManuscript = useGeometryStore((state) => state.thickenLiftToManuscript);
   // P1b — the granular save's honest one-line outcome (lifted / refused)
@@ -245,7 +246,7 @@ export function OperationControls() {
   }, [liftSelection, shape]);
   const liftDisabled = liftRegion
     ? Boolean(liftRegion.reason)
-    : !selectedCellId && !selectedVertexId;
+    : !selectedCellId && !selectedVertexId && !selectedEdgeId;
   const selectedCell = findCell(shape, selectedCellId);
   const operationContext = { shape, selectedCellId, selectedCell };
   const operationRows = registeredOperations.map((operation) => {
@@ -332,9 +333,9 @@ export function OperationControls() {
         title={
           liftRegion
             ? liftRegion.reason ?? 'Lift the picked region (auto-closed) onto the Manuscript shelf'
-            : selectedCellId || selectedVertexId
+            : selectedCellId || selectedVertexId || selectedEdgeId
               ? 'Lift the selection’s downward closure onto the Manuscript shelf (source-tagged; the ambo original is untouched)'
-              : 'Select a cell or a vertex — or shift-click a region — to lift'
+              : 'Select a cell, a vertex, or an edge — or shift-click a region — to lift'
         }
         className="mt-3 h-10 w-full rounded border border-stone-600 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-400 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
       >
@@ -547,8 +548,13 @@ export function ObjectInspector() {
   const shape = useCurrentShape();
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const selectedEdgeId = useGeometryStore((state) => state.selectedEdgeId);
   const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
   const vertex = selectedVertexId ? shape.vertices[selectedVertexId] : null;
+  // GAP2A PARITY — the minimal edge read (rich class/role content deferred)
+  const selectedEdge = selectedEdgeId
+    ? shape.edges.find((edge) => edge.id === selectedEdgeId) ?? null
+    : null;
   const selectedCell = findCell(shape, selectedCellId);
   const selectedVertexCells = selectedVertexId
     ? shape.cells.filter((cell) => cell.vertexIds.includes(selectedVertexId))
@@ -631,6 +637,21 @@ export function ObjectInspector() {
           <p className="text-sm text-stone-500">Click a vertex in the workspace to inspect it.</p>
         )}
       </div>
+
+      {selectedEdge ? (
+        <div className="mt-4 border-t border-stone-800 pt-4">
+          <dl className="grid grid-cols-[96px_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+            <dt className="text-stone-500">Edge</dt>
+            <dd className="break-all font-mono text-xs text-stone-300">{selectedEdge.id}</dd>
+            <dt className="text-stone-500">Vertices</dt>
+            <dd className="break-all font-mono text-xs text-stone-300">
+              {selectedEdge.vertexIds.join(' - ')}
+            </dd>
+            <dt className="text-stone-500">Liftable</dt>
+            <dd className="text-stone-200">yes — lifts to a V2 E1 F0 segment</dd>
+          </dl>
+        </div>
+      ) : null}
     </Panel>
   );
 }
@@ -2047,6 +2068,8 @@ function CellComposition({
 }) {
   const selectVertex = useGeometryStore((state) => state.selectVertex);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const selectEdge = useGeometryStore((state) => state.selectEdge);
+  const selectedEdgeId = useGeometryStore((state) => state.selectedEdgeId);
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
   // multi-region lift: shift-click any row toggles the entity into the set
   const toggleLiftSelection = useGeometryStore((state) => state.toggleLiftSelection);
@@ -2158,9 +2181,21 @@ function CellComposition({
               onClick={(event) => {
                 // R1 THE LIFT: hand the REAL edge id — the pair key (edge.id) is
                 // display identity and is NOT in the source shape's edge table.
-                if (!event.shiftKey) return;
+                if (event.shiftKey) {
+                  // the GAP2A shift-click branch, exactly
+                  if (edge.edgeId !== null) {
+                    toggleLiftSelection({ kind: 'edge', id: edge.edgeId });
+                    setEdgeNotice(null);
+                  } else {
+                    setEdgeNotice('an identified pair — cannot be lifted');
+                  }
+                  return;
+                }
+                // GAP2A PARITY — plain-click SELECTS a liftable edge (the
+                // segment operand's door); an identified pair has no single
+                // edge to select and says so in the same seam notice
                 if (edge.edgeId !== null) {
-                  toggleLiftSelection({ kind: 'edge', id: edge.edgeId });
+                  selectEdge(edge.edgeId);
                   setEdgeNotice(null);
                 } else {
                   setEdgeNotice('an identified pair — cannot be lifted');
@@ -2171,7 +2206,9 @@ function CellComposition({
               className={`cursor-pointer rounded border px-2 py-1 text-xs text-stone-400 ${
                 edge.edgeId !== null && inLiftSet('edge', edge.edgeId)
                   ? 'border-emerald-400 bg-emerald-400/10'
-                  : 'border-stone-900 bg-stone-950/70'
+                  : edge.edgeId !== null && edge.edgeId === selectedEdgeId
+                    ? 'border-amber-300 bg-amber-300/10'
+                    : 'border-stone-900 bg-stone-950/70'
               }`}
               title={
                 edge.edgeId !== null

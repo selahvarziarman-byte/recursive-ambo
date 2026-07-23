@@ -137,6 +137,10 @@ interface GeometryState {
   currentShapeId: ShapeId;
   selectedCellId: CellId | null;
   selectedVertexId: VertexId | null;
+  // GAP2A PARITY: the single inspection-selected EDGE (plain-click in the
+  // composition rows) — the third selection kind, feeding the lift fallback
+  // exactly as a selected vertex does (the segment operand thicken needs)
+  selectedEdgeId: EdgeId | null;
   // multi-region lift (P1b follow-on): the SET of entities picked for lifting
   // (shift-click; all four kinds). Distinct from the single inspection
   // selection above, which stays unchanged.
@@ -169,6 +173,7 @@ interface GeometryState {
   selectShape: (shapeId: ShapeId) => void;
   selectCell: (cellId: CellId | null) => void;
   selectVertex: (vertexId: VertexId | null) => void;
+  selectEdge: (edgeId: EdgeId | null) => void;
   setDualInspectionTarget: (target: DualInspectionTarget | null) => void;
   clearDualInspectionTarget: () => void;
   toggleCellVisibility: (key: keyof CellVisibility) => void;
@@ -218,6 +223,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   currentShapeId: initialShape.id,
   selectedCellId: null,
   selectedVertexId: null,
+  selectedEdgeId: null,
   liftSelection: [],
   dualInspectionTarget: null,
   cellVisibility: defaultCellVisibility,
@@ -255,6 +261,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: shape.id,
       selectedCellId: null,
       selectedVertexId: null,
+      selectedEdgeId: null,
       liftSelection: [],
       dualInspectionTarget: null,
       cellVisibility: defaultCellVisibility,
@@ -289,6 +296,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: shape.id,
       selectedCellId: null,
       selectedVertexId: null,
+      selectedEdgeId: null,
       liftSelection: [],
       dualInspectionTarget: null,
       cellVisibility: defaultCellVisibility,
@@ -316,6 +324,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     set({
       ...restoreWorkspaceSnapshot(previousSnapshot),
       liftSelection: [],
+      selectedEdgeId: null,
       undoStack: state.undoStack.slice(0, -1),
       redoStack: nextRedoStack,
       operationHistory: state.operationHistory.slice(0, -1),
@@ -341,6 +350,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     set({
       ...restoreWorkspaceSnapshot(nextSnapshot),
       liftSelection: [],
+      selectedEdgeId: null,
       undoStack,
       redoStack: state.redoStack.slice(1),
       operationHistory,
@@ -416,6 +426,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: nextShape.id,
       selectedCellId: null,
       selectedVertexId: null,
+      selectedEdgeId: null,
       liftSelection: [],
       dualInspectionTarget: null,
       hoverTarget: null,
@@ -437,7 +448,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   // cell/vertex (the original P1b behavior, unchanged). A successful set lift
   // clears the set.
   liftSelectionToManuscript: () => {
-    const { currentShapeId, shapes, selectedCellId, selectedVertexId, liftSelection } = get();
+    const { currentShapeId, shapes, selectedCellId, selectedVertexId, selectedEdgeId, liftSelection } = get();
     const shape = shapes[currentShapeId];
     if (!shape) {
       throw new Error('geometryStore: no current shape to lift from');
@@ -449,10 +460,12 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
           ? [{ kind: 'cell', id: selectedCellId }]
           : selectedVertexId
             ? [{ kind: 'vertex', id: selectedVertexId }]
-            : [];
+            : selectedEdgeId
+              ? [{ kind: 'edge', id: selectedEdgeId }]
+              : [];
     if (selections.length === 0) {
       throw new Error(
-        'geometryStore: select a cell or a vertex to lift (or shift-click a region into the lift set)',
+        'geometryStore: select a cell, a vertex, or an edge to lift (or shift-click a region into the lift set)',
       );
     }
     const lifted = liftSubComplex(shape, selections);
@@ -472,7 +485,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   // form — the band is the annulus they could already glue from a square; a
   // new PARENT is the whole payoff.
   thickenLiftToManuscript: () => {
-    const { currentShapeId, shapes, selectedCellId, selectedVertexId, liftSelection } = get();
+    const { currentShapeId, shapes, selectedCellId, selectedVertexId, selectedEdgeId, liftSelection } = get();
     const shape = shapes[currentShapeId];
     if (!shape) {
       throw new Error('geometryStore: no current shape to lift from');
@@ -484,10 +497,12 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
           ? [{ kind: 'cell', id: selectedCellId }]
           : selectedVertexId
             ? [{ kind: 'vertex', id: selectedVertexId }]
-            : [];
+            : selectedEdgeId
+              ? [{ kind: 'edge', id: selectedEdgeId }]
+              : [];
     if (selections.length === 0) {
       throw new Error(
-        'geometryStore: select a cell or a vertex to lift (or shift-click a region into the lift set)',
+        'geometryStore: select a cell, a vertex, or an edge to lift (or shift-click a region into the lift set)',
       );
     }
     const lifted = liftSubComplex(shape, selections);
@@ -548,6 +563,10 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
         state.selectedVertexId && shape.vertices[state.selectedVertexId]
           ? state.selectedVertexId
           : null,
+      selectedEdgeId:
+        state.selectedEdgeId && shape.edges.some((edge) => edge.id === state.selectedEdgeId)
+          ? state.selectedEdgeId
+          : null,
       dualInspectionTarget: null,
       hoverTarget: null,
       hoveredFieldAtlasSampleId: null,
@@ -558,12 +577,29 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     set({
       selectedCellId: cellId,
       selectedVertexId: null,
+      selectedEdgeId: null,
       dualInspectionTarget: null,
       hoveredFieldAtlasSampleId: null,
     });
   },
   selectVertex: (vertexId) => {
-    set({ selectedVertexId: vertexId, dualInspectionTarget: null, hoveredFieldAtlasSampleId: null });
+    set({
+      selectedVertexId: vertexId,
+      selectedEdgeId: null,
+      dualInspectionTarget: null,
+      hoveredFieldAtlasSampleId: null,
+    });
+  },
+  // GAP2A PARITY — the edge joins the selection kinds: mirror of selectVertex
+  // (clears the vertex; the CELL stays — an edge is picked within its cell's
+  // composition, the cell context remains the inspector's frame)
+  selectEdge: (edgeId) => {
+    set({
+      selectedEdgeId: edgeId,
+      selectedVertexId: null,
+      dualInspectionTarget: null,
+      hoveredFieldAtlasSampleId: null,
+    });
   },
   setDualInspectionTarget: (target) => {
     set({
@@ -732,6 +768,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       liftSelection: [],
       selectedCellId,
       selectedVertexId,
+      selectedEdgeId: null,
       dualInspectionTarget: null,
       cellVisibility: importedWorkspace.cellVisibility
         ? { ...importedWorkspace.cellVisibility }
