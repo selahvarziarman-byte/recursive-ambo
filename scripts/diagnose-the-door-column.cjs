@@ -25,17 +25,21 @@
 //   NONE     = unbuilt (no door anywhere);
 //   DEV-ONLY = built for the wrong person (a door nobody ships) — NEVER ✅.
 //
-// GESTURE roots by app (GESTURE = the person acts on THEIR OWN form;
-// CATALOGUE = the product is handed a CLASS NAME and builds a representative):
-//   PRODUCTION gestures: manuscript/genesisModel.ts (birthChild — the
-//     person's port-face combine since 2026-07-12; misfiled as CATALOGUE by
-//     both seats until 2026-07-18, LAW 25) + manuscript/writtenFormModel.ts
-//     (the dock) + store/geometryStore.ts (THE AMBO LIFT →
-//     lib/subComplexLift — the person's second door) +
-//     manuscript/handGestureModel.ts (H2 THE PERSON'S HANDS: the FOLD — the
-//     7th dock word over customGluing's committed seam — and the AIMED CHORD
-//     — subdivideFace as the person's own reshape + the combine fork).
-//   DEV gestures: playground/playgroundOperations.ts + store/playgroundStore.ts.
+// GESTURE attribution is PER-OP (engineer-mandated 2026-07-23; GESTURE = the
+// person acts on THEIR OWN form; CATALOGUE = the product is handed a CLASS
+// NAME and builds a representative):
+//   gestureProd(op) := a NAMED person surface invokes THIS op — a WIRE, a
+//     chain of (file, token) hops asserted on the rev's own blobs: a dock
+//     word's chain (writtenFormModel lists the id → the registry invokes the
+//     function), an affordance model's invocation (genesisModel's combine ·
+//     handGestureModel's fold/chord · apertureModel's build ops), or a person
+//     BUTTON driving a store's op-specific ACTION (Panels.tsx → geometryStore
+//     → the op: the LIFT and THICKEN buttons, measured at :325/:352).
+//   ⛔ NEVER import-closure: a store IMPORTING an op earns nothing (the old
+//     per-file mechanism false-positived every op a gesture-bearing file
+//     imports); a green tick means a wire, and every wire prints.
+//   DEV gestures (unchanged, per-file closure — the dev shell's diagnosis):
+//     playground/playgroundOperations.ts + store/playgroundStore.ts.
 //   CATALOGUE: manuscript/standardBodies.ts ONLY.
 //
 // Committed bytes only (the object DB) · canaries FATAL (a broken instrument
@@ -46,8 +50,8 @@
 // with the committed REFINE IS NOT A BIRTH, typeClaim 'resolution'):
 //   NONE      @bd99fb5                     ⛔ unbuilt (no door anywhere)
 //   DEV-ONLY                               ⚠ built for the WRONG PERSON — a door nobody ships
-//   PRODUCTION, no gesture, no catalogue   ⚠ in the PRODUCTION app but via NEITHER DOOR  ← refineToDisk @8d5e344
-//   PRODUCTION + gesture                   ✅ PRODUCTION — the person acts               ← connectedSum (unchanged)
+//   PRODUCTION, no wire, no catalogue      ⚠ PRODUCTION — built, no person door  (was "via neither door" ← refineToDisk @8d5e344)
+//   PRODUCTION + a gesture WIRE            ✅ PRODUCTION — the person acts               ← connectedSum (unchanged)
 // It separates "THE PERSON ACTS" (connectedSum) from "THE DOOR WORKS"
 // (refineToDisk) across real history — which is the only reason it exists.
 //
@@ -106,9 +110,56 @@ const OPS = {
 };
 const PRODUCTION_ROOTS = ['src/AppShell.tsx'];
 const MAIN_ROOTS = ['src/main.tsx'];
-const GESTURE_PROD_ROOTS = ['src/manuscript/genesisModel.ts', 'src/manuscript/writtenFormModel.ts', 'src/store/geometryStore.ts', 'src/manuscript/handGestureModel.ts'];
 const GESTURE_DEV_ROOTS = ['src/playground/playgroundOperations.ts', 'src/store/playgroundStore.ts'];
 const CATALOGUE_ROOTS = ['src/manuscript/standardBodies.ts'];
+
+// THE PER-OP GESTURE WIRES — one entry per OPS row that has a person door;
+// each wire is a CHAIN of [file, token] hops, and the wire holds iff EVERY
+// hop's blob (at the rev being read) contains its token. Ops absent here have
+// NO person door and may never wear the green tick.
+const GESTURE_WIRES = {
+  'connectedSum (add a handle/crosscap)': [
+    [['src/manuscript/genesisModel.ts', 'connectedSum(']], // birthChild — the port-face combine
+  ],
+  'subdivideFace (THE AIMED CHORD — gesture) · refineToDisk (THE EXIT) — plumbing': [
+    [['src/manuscript/handGestureModel.ts', 'subdivideFace(']], // the aimed chord (H2)
+  ],
+  'thicken (A.1 — the ×I product)': [
+    // the AMBO panel's own button drives the op-specific store action — the
+    // person door the per-file mechanism could not NAME (and the no-door
+    // premise could not see): Panels "Thicken … × I → Manuscript"
+    [['src/components/Panels.tsx', 'thickenLiftToManuscript'], ['src/store/geometryStore.ts', 'thicken(']],
+  ],
+  'subComplexLift (THE AMBO LIFT)': [
+    [['src/components/Panels.tsx', 'liftSelectionToManuscript'], ['src/store/geometryStore.ts', 'liftSubComplex(']], // R1 — the lift button
+  ],
+  'sewBoundaryCircles': [
+    [['src/manuscript/writtenFormModel.ts', "'sew-boundary-preserving'"], ['src/playground/playgroundOperations.ts', 'sewBoundaryCircles(']],
+  ],
+  'cutCell': [
+    [['src/manuscript/writtenFormModel.ts', "operationIds: ['cut']"], ['src/playground/playgroundOperations.ts', 'cutCell(']],
+  ],
+  'assemble (multiform)': [
+    // the person's combine RUNS assemble through the committed macro — both
+    // hops asserted: the surface invokes connectedSum; the macro invokes assemble
+    [['src/manuscript/genesisModel.ts', 'connectedSum('], ['src/lib/connectedSum.ts', 'assemble(']],
+  ],
+  'surfaceDual': [
+    [['src/manuscript/writtenFormModel.ts', "operationIds: ['dual']"], ['src/playground/playgroundOperations.ts', 'surfaceDual(']],
+  ],
+  'faceIdentification': [
+    [['src/manuscript/apertureModel.ts', 'glueFaces(']], // the aperture's build ops
+  ],
+  'level3SoundnessGate': [
+    [['src/manuscript/apertureModel.ts', 'readLevel3Tower('], ['src/lib/level3Invariants.ts', 'classifyLevel3Soundness(']],
+  ],
+  'customGluing (the general fold)': [
+    [['src/manuscript/handGestureModel.ts', 'executeCustomGlue(']], // the fold panel (H2)
+  ],
+};
+const wireProd = (name, src) =>
+  (GESTURE_WIRES[name] ?? []).some((chain) =>
+    chain.every(([file, token]) => src[file] !== undefined && src[file].includes(token)));
 
 const columnAt = (rev) => {
   const files = srcFilesAt(rev);
@@ -139,7 +190,6 @@ const columnAt = (rev) => {
   const production = closure(PRODUCTION_ROOTS);
   const main = closure(MAIN_ROOTS);
   const dev = new Set([...main].filter((f) => !production.has(f))); // disjoint BY CONSTRUCTION
-  const gestureProd = closure(GESTURE_PROD_ROOTS);
   const gestureDev = closure(GESTURE_DEV_ROOTS);
   const catalogue = closure(CATALOGUE_ROOTS);
   // THE CANARIES — FATAL. Files this column KNOWS are live must read where it
@@ -150,7 +200,7 @@ const columnAt = (rev) => {
     ['the Playground shell is NOT production (AppShell carries zero Playground refs)', !production.has('src/components/Playground.tsx')],
     ['the Playground shell IS the dev closure (main.tsx statically imports it; the dev&& gate is at the render site)', dev.has('src/components/Playground.tsx')],
     ['src/lib/connectedSum.ts reachable by CATALOGUE (standardBodies sums bodies)', catalogue.has('src/lib/connectedSum.ts')],
-    ['src/lib/multiform.ts reachable by BOTH gesture registers (assemble is a committed gesture everywhere)', gestureProd.has('src/lib/multiform.ts') && gestureDev.has('src/lib/multiform.ts')],
+    ['src/lib/multiform.ts reachable by BOTH gesture registers (assemble: the person\'s combine-macro wire holds AND the dev closure reaches it)', wireProd('assemble (multiform)', src) && gestureDev.has('src/lib/multiform.ts')],
     ['the PRODUCTION closure is non-trivial (> 20 files)', production.size > 20],
   ];
   const dead = canaries.filter(([, ok]) => !ok);
@@ -163,7 +213,7 @@ const columnAt = (rev) => {
       rows[name] = { present: false };
       continue;
     }
-    const gp = gestureProd.has(f);
+    const gp = wireProd(name, src); // PER-OP: a named person surface invokes THIS op, or no tick
     const gd = gestureDev.has(f);
     const cat = catalogue.has(f);
     const app = production.has(f) ? 'PRODUCTION' : dev.has(f) ? 'DEV-ONLY' : 'NONE';
@@ -173,7 +223,7 @@ const columnAt = (rev) => {
         : app === 'PRODUCTION' && cat
           ? '⚠ CATALOGUE ONLY — the product builds a named class; NOT a gesture'
           : app === 'PRODUCTION'
-            ? '⚠ in the PRODUCTION app but via neither door'
+            ? '⚠ PRODUCTION — built, no person door'
             : app === 'DEV-ONLY'
               ? '⚠ DEV-ONLY — built for the wrong person: a door nobody ships (never the green tick)'
               : '⛔ NONE — unbuilt (no door anywhere)';
@@ -216,7 +266,7 @@ check('★ THE MECHANISM HAS A HOME: scripts/diagnose-the-door-column.cjs is NOT
 // ═════ [b] ★★ the column at HEAD — one column, which person ═══════════════════════
 console.log('\n----- [b] ★★ THE COLUMN AT HEAD: PRODUCTION · DEV-ONLY · NONE — never merged, never ✅ for the dev shell (clauses 1–5) -----');
 let headCol = null;
-check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" — RE-CUT AT H2 (THE PERSON\'S HANDS): the H1/H2 arc CLOSED the two walls this column existed to state. ★ customGluing (the general fold) reads ✅ PRODUCTION AS A GESTURE — the 7th dock word (the fold panel consumes the committed validate/preview/execute through handGestureModel, a production gesture root; DEV-ONLY was the 13th row\'s truth from H1 until this commit and the old pin died with it, loud) · ★ surfaceRefinement\'s row reads ✅ PRODUCTION AS A GESTURE too, and the ROW NAMES THE BEARER (the H2 addendum, reversing H1\'s no-subdivideFace-row call): the label attributes the gesture to subdivideFace (THE AIMED CHORD — the person\'s own reshape + the combine fork, via the same gesture root) and marks refineToDisk as the plumbing it remains, exactly as ruled 2026-07-17 (the person invokes COMBINE or aims the CHORD, never REFINE); the attribution is asserted mechanically — the gesture root\'s blob imports subdivideFace, and the naming pin below proves it never names the refine — and gestureDev stays TRUE, the playground prototype remains wired · the manuscript NAMES refineToDisk: exactly 1 file (ManuscriptView — grepCount counts FILES), naming it exactly 4 times (derived: the import, two doctrine comments, the call — item zero landed at 16341e2; H2 added ZERO namings by construction) · connectedSum reads ✅ PRODUCTION (genesisModel:birthChild — the person\'s port-face combine) AND its production door now REFINES FIRST (the view\'s gate satisfies the precondition before birthChild runs) · subComplexLift (THE AMBO LIFT) reads ✅ PRODUCTION · sew/cut/assemble/dual read ✅ PRODUCTION (the manuscript dock drives the registry) · patchLift + closeEdgeIntoCircle read ⛔ NONE — unchanged, CORRECT, printed, never widened away · and the PARTITION SUMS: every row exactly one of PRODUCTION/DEV-ONLY/NONE, PRODUCTION ∩ DEV = ∅ by construction and measured',
+check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" — RE-CUT PER-OP (2026-07-23, engineer-mandated): a green tick is a WIRE — a NAMED person surface invoking THIS op (a dock word\'s id + the registry\'s call · an affordance model\'s own invocation · a person BUTTON driving an op-specific store action) — never a file\'s import closure, which false-positived every op a gesture-bearing file imports. The wires PRINT, per-op, and the BUILT-BUT-UNREACHABLE class is enumerated whole beneath the column. ★ THE MANDATE\'S EXPECTED THICKEN FLIP DID NOT SURVIVE THE MEASUREMENT: thicken\'s wire is REAL — the ambo panel\'s own "Thicken … × I → Manuscript" button (Panels.tsx) drives geometryStore.thickenLiftToManuscript → thicken(); the tick is earned per-op, the old mechanism was right by accident, and the no-door premise is corrected in the handback · the CONTROLS hold per-op: connectedSum (genesisModel\'s birthChild) · subdivideFace (handGestureModel\'s chord; refineToDisk stays plumbing exactly as ruled 2026-07-17, the row naming both) · customGluing (the fold panel) · sew/cut/dual (dock word + registry call) · assemble (the combine\'s committed macro runs it — both hops asserted) · subComplexLift (the R1 lift button) · faceIdentification + level3SoundnessGate (the aperture\'s build ops) · the manuscript NAMES refineToDisk: exactly 1 file, exactly 4 times (unchanged) · patchLift + closeEdgeIntoCircle read ⛔ NONE — printed, never widened away · and the PARTITION SUMS: every row exactly one of PRODUCTION/DEV-ONLY/NONE, PRODUCTION ∩ DEV = ∅ by construction and measured',
   (() => {
     headCol = columnAt('HEAD');
     const manuscriptFilesNamingRefine = headCol.grepCount('src/manuscript/', 'refineToDisk');
@@ -230,20 +280,27 @@ check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" — R
     const overlap = [...headCol.production].filter((f) => headCol.dev.has(f)).length;
     const partitionOk = Object.values(r).every((row) => !row.present || ['PRODUCTION', 'DEV-ONLY', 'NONE'].includes(row.app));
     note(`PRODUCTION ∩ DEV = ${overlap} (by construction) · manuscript files naming refineToDisk: ${manuscriptFilesNamingRefine} · namings inside ManuscriptView: ${refineNamingsInView}`);
-    // THICKEN (2026-07-18): the ×I product must read PRODUCTION — the lift is
-    // its route (geometryStore, a production gesture root, imports it); if it
-    // reads DEV-ONLY or NONE the person's route is not wired and THICKEN's
-    // seal has failed its own §2. Absent at older revs (the historical leg
-    // skips rows whose file is not at the rev).
+    // THICKEN (2026-07-18; PER-OP 2026-07-23): the ×I product must read
+    // PRODUCTION with the person's WIRE — the AMBO panel's thicken button
+    // driving the op-specific store action (Panels.tsx → geometryStore →
+    // thicken; measured). If it reads DEV-ONLY/NONE the person's route is not
+    // wired and THICKEN's seal has failed its own §2. Absent at older revs
+    // (the historical leg skips rows whose file is not at the rev).
     const thickenRow = r['thicken (A.1 — the ×I product)'];
     const REFINE_ROW = 'subdivideFace (THE AIMED CHORD — gesture) · refineToDisk (THE EXIT) — plumbing';
-    // H2 ADDENDUM — the label's attribution is a CLAIM, so it carries its
-    // mechanical read: the gesture root imports subdivideFace (the chord),
-    // and the standing manuscript pin (refineToDisk-naming files === 1,
-    // ManuscriptView only) already proves the root never names the refine.
-    const gestureRootBlob = headCol.src['src/manuscript/handGestureModel.ts'] ?? '';
-    const chordBearsTheGesture = gestureRootBlob.includes('subdivideFace');
-    note(`the gesture-bearer, read from the root: handGestureModel imports subdivideFace = ${chordBearsTheGesture} (the refine stays plumbing — the naming pin holds at 1)`);
+    // PER-OP (2026-07-23): every green tick above is a WIRE, and the wires
+    // print — the built-but-unreachable class is the column's own enumeration.
+    const wired = Object.keys(GESTURE_WIRES).filter((n) => r[n] && r[n].present && wireProd(n, headCol.src));
+    note(`the wires verified per-op (${wired.length}): ${wired.map((n) => n.split(' ')[0]).join(' · ')}`);
+    const unreachable = Object.entries(r).filter(([, row]) => row.present && !row.route.startsWith('✅'));
+    note(`── THE BUILT-BUT-UNREACHABLE CLASS @ HEAD (${unreachable.length} row${unreachable.length === 1 ? '' : 's'}) ──`);
+    for (const [n, row] of unreachable) note(`   ${n} — ${row.app} — ${row.route}`);
+    // ⚠ THE MANDATE'S EXPECTED THICKEN FLIP DID NOT SURVIVE THE SUBSTRATE:
+    // the person's door is the AMBO panel's own button ("Thicken … × I →
+    // Manuscript", Panels.tsx) driving the op-specific store action — a NAMED
+    // wire, so the tick is EARNED per-op (the old per-file mechanism was right
+    // about thicken by accident; the premise "no person door" was wrong on
+    // the measurement, reported in the handback).
     return (!thickenRow.present || (thickenRow.app === 'PRODUCTION' && thickenRow.gestureProd === true)) &&
       r[REFINE_ROW].app === 'PRODUCTION' &&
       // H2 re-cut: the FILE gained the person gesture (subdivideFace via the
@@ -252,7 +309,9 @@ check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" — R
       // FALSIFIED BY DESIGN at this commit (the falsified-pin flavor: loud).
       r[REFINE_ROW].gestureDev === true && r[REFINE_ROW].gestureProd === true &&
       r[REFINE_ROW].route === '✅ PRODUCTION — the person acts (the manuscript\'s own doors)' &&
-      chordBearsTheGesture &&
+      // per-op: every control's wire must hold (the chord's old bespoke read
+      // is subsumed — its wire is GESTURE_WIRES' subdivideFace chain)
+      Object.keys(GESTURE_WIRES).every((n) => !r[n] || !r[n].present || wireProd(n, headCol.src) === r[n].gestureProd) &&
       // H2: the general fold's row — the arc's own proof, pinned. DEV-ONLY
       // (H1's 13th row) died here; the fold is the person's 7th dock word.
       r['customGluing (the general fold)'].app === 'PRODUCTION' &&
