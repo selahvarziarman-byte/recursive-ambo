@@ -2055,6 +2055,7 @@ function CellComposition({
     liftSelection.some((s) => s.kind === kind && s.id === id);
   const vertices = useMemo(() => getCellVertexRows(shape, cell), [cell, shape]);
   const faceRows = useMemo(() => getCellFaceRows(shape, faces), [faces, shape]);
+  const [edgeNotice, setEdgeNotice] = useState<string | null>(null);
 
   return (
     <div className="grid gap-4">
@@ -2157,9 +2158,13 @@ function CellComposition({
               onClick={(event) => {
                 // R1 THE LIFT: hand the REAL edge id — the pair key (edge.id) is
                 // display identity and is NOT in the source shape's edge table.
-                // null ⇒ no toggle (measured-dead branch on app forms).
-                if (event.shiftKey && edge.edgeId !== null)
+                if (!event.shiftKey) return;
+                if (edge.edgeId !== null) {
                   toggleLiftSelection({ kind: 'edge', id: edge.edgeId });
+                  setEdgeNotice(null);
+                } else {
+                  setEdgeNotice('an identified pair — cannot be lifted');
+                }
               }}
               onPointerEnter={() => setHoverTarget({ kind: 'edge', vertexIds: edge.vertexIds })}
               onPointerLeave={() => setHoverTarget(null)}
@@ -2168,7 +2173,11 @@ function CellComposition({
                   ? 'border-emerald-400 bg-emerald-400/10'
                   : 'border-stone-900 bg-stone-950/70'
               }`}
-              title={`${edge.vertexIds.join(' - ')} · shift-click: toggle in the lift region`}
+              title={
+                edge.edgeId !== null
+                  ? `${edge.vertexIds.join(' - ')} · shift-click: toggle in the lift region`
+                  : `${edge.vertexIds.join(' - ')} · an identified pair — cannot be lifted`
+              }
             >
               <span className="flex items-center justify-between gap-2">
                 <span className="min-w-0 truncate text-stone-300">{edge.displayLabel}</span>
@@ -2186,6 +2195,9 @@ function CellComposition({
             </div>
           ))}
         </div>
+        {edgeNotice ? (
+          <p className="mt-2 text-xs leading-4 text-rose-300/80">{edgeNotice}</p>
+        ) : null}
       </SelectionSubsection>
     </div>
   );
