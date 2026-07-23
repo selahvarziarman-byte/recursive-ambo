@@ -131,6 +131,24 @@ export function FoldGlyph() {
 // BOTH this map and the groups — a missing glyph is a COMPILE error (H2's
 // widening to 'fold' proved it live: TS2741 fired on this map until FoldGlyph
 // joined it).
+// thicken (GAP2B, the 8th word) — the SEGMENT (two end dots) sweeps up its ×I
+// band: the lifted copy above, the verticals the interval draws. Structure
+// faithful; the designer's ink craft-pass polishes later (his standing lane).
+export function ThickenGlyph() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
+      <path d="M7 21.5 H23" {...BOLD} />
+      <circle cx="7" cy="21.5" r="1.7" fill="currentColor" stroke="none" />
+      <circle cx="23" cy="21.5" r="1.7" fill="currentColor" stroke="none" />
+      <path d="M7 8.5 H23" {...S} />
+      <path d="M7 21.5 V8.5" {...S} />
+      <path d="M23 21.5 V8.5" {...S} />
+      <path d="M4.9 11 L7 8.5 L9.1 11" {...FAINT} />
+      <path d="M20.9 11 L23 8.5 L25.1 11" {...FAINT} />
+    </svg>
+  );
+}
+
 export const DOCK_GLYPHS: Record<DockGroupKey, () => JSX.Element> = {
   glue: GlueGlyph,
   'flip-glue': FlipGlueGlyph,
@@ -139,4 +157,5 @@ export const DOCK_GLYPHS: Record<DockGroupKey, () => JSX.Element> = {
   dualize: DualizeGlyph,
   sew: SewGlyph,
   fold: FoldGlyph,
+  thicken: ThickenGlyph,
 };

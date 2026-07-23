@@ -37,12 +37,29 @@
 // engine's S¹ is an n-CYCLE (V3E3F0 — the lifted tetra-face rim), never the
 // V1E1 self-loop (nGon(1) throws; no seed carries a self-loop; the direct
 // bridge refuses self-loops anyway). V3E3F0 × I = V6 E9 F3, χ = 0.
+//
+// GAP2B (2026-07-23) — THE 8TH WORD, arity-2: `thicken(shape, segment)` — the
+// person invokes the product on TWO forms they hold (the shape + their own
+// lifted segment), like connected sum. The segment is Q1-GUARDED (a connected
+// 1-manifold-with-boundary — two ends; the ONE place "must be a segment" is
+// judged) and stays a CANONICAL factor: the prism, the Leibniz signs and the
+// drawing offset are byte-for-byte the unary build — the offset is NEVER
+// derived from the segment's length (that slot is a later cut). Lineage: the
+// two-parent birth rides parentShapeId null (the connectedSum design — no
+// single pointer crowns one parent) with both parents named on the record.
+// The unary spelling remains for the committed callers (the lift door, the
+// standing witnesses) and is byte-identical — so the "arity-1" doctrine above
+// now reads: the CANONICAL interval is a parameter; a HELD segment is a
+// parent.
 
 import type { Cell, Edge, Face, Shape, Vertex, VertexId } from '../types/geometry';
 import { createDefaultVertexData } from './shape';
 
 export interface ThickenRecord {
   parentShapeId: string;
+  // GAP2B: the arity-2 birth names BOTH parents (the shape and the segment);
+  // absent on the unary spelling (the canonical-I parameter is not a parent)
+  parents?: { shapeId: string; segmentId: string };
   // the 3-to-1 carrier surjection new→old: a×0, a×1, a×I ↦ a (old cells map
   // through their own generator; the interval is a parameter, not a parent)
   carrier: Record<string, string>;
@@ -87,9 +104,60 @@ const thickenOffset = (form: Shape): [number, number, number] => {
   return [(nx / norm) * scale, (ny / norm) * scale, (nz / norm) * scale];
 };
 
-export function thicken(form: Shape, name?: string): ThickenResult {
+// Q1 — THE SEGMENT GATE (GAP2B; the ONE place "must be a segment" is judged —
+// a later widening to dim(a)+dim(b) ≤ 3 replaces this predicate and nothing
+// else): a connected 1-manifold-with-boundary — no faces, no cells, every
+// vertex meets ≤ 2 edges, exactly two degree-1 ends, one piece. Rejects a
+// faced form, a loop (no ends — a self-loop lands here too), a branched
+// graph (a degree-3 vertex), dust, a disconnected union. Returns the refusing
+// clause (dev-facing) or null when the form IS a segment.
+export function segmentGateReason(form: Shape): string | null {
+  if (form.faces.length > 0) return `carries ${form.faces.length} face(s) — a segment has none`;
+  if (form.cells.length > 0) return `carries ${form.cells.length} cell(s) — a segment has none`;
+  if (form.edges.length === 0) return 'carries no edge — a segment is one or more chained edges';
+  const degree = new Map<string, number>();
+  for (const id of Object.keys(form.vertices)) degree.set(id, 0);
+  for (const edge of form.edges) {
+    for (const v of edge.vertexIds) degree.set(v, (degree.get(v) ?? 0) + 1);
+  }
+  for (const [v, d] of degree) {
+    if (d > 2) return `vertex ${v} meets ${d} edges — a segment never branches`;
+  }
+  const ends = [...degree.values()].filter((d) => d === 1).length;
+  if (ends !== 2) return `has ${ends} free end(s) — a segment has exactly two (a loop has none)`;
+  const adjacency = new Map<string, string[]>();
+  for (const edge of form.edges) {
+    const [a, b] = edge.vertexIds;
+    adjacency.set(a, [...(adjacency.get(a) ?? []), b]);
+    adjacency.set(b, [...(adjacency.get(b) ?? []), a]);
+  }
+  const all = Object.keys(form.vertices);
+  const seen = new Set<string>([all[0]]);
+  const queue = [all[0]];
+  while (queue.length > 0) {
+    const v = queue.shift() as string;
+    for (const w of adjacency.get(v) ?? []) {
+      if (!seen.has(w)) {
+        seen.add(w);
+        queue.push(w);
+      }
+    }
+  }
+  if (seen.size !== all.length) return 'is not connected — a segment is one piece';
+  return null;
+}
+
+export function thicken(form: Shape, segment?: Shape, name?: string): ThickenResult {
   if (form.cells.length > 0) {
     throw new Error('thicken: the product of two surfaces is a 4-manifold; this engine stops at 3.');
+  }
+  if (segment !== undefined) {
+    const refusal = segmentGateReason(segment);
+    if (refusal !== null) {
+      throw new Error(
+        `thicken: the second operand must be a segment (a connected 1-manifold with boundary — two ends); this form ${refusal}`,
+      );
+    }
   }
   const shapeId = `shape:thicken:${form.id}`;
   const offset = thickenOffset(form);
@@ -190,7 +258,11 @@ export function thicken(form: Shape, name?: string): ThickenResult {
     cells,
     generations: [],
     genealogy: {
-      parentShapeId: form.id,
+      // GAP2B: the arity-2 birth has TWO parents — parentShapeId null by the
+      // connectedSum design (a single pointer would crown one parent); the
+      // record below names both. The unary spelling keeps the committed
+      // single-parent pointer byte-identically.
+      parentShapeId: segment !== undefined ? null : form.id,
       operation: 'product',
       generationDepth: form.genealogy.generationDepth + 1,
       sourceVertexIds: Object.keys(form.vertices),
@@ -203,6 +275,7 @@ export function thicken(form: Shape, name?: string): ThickenResult {
     shape,
     product: {
       parentShapeId: form.id,
+      ...(segment !== undefined ? { parents: { shapeId: form.id, segmentId: segment.id } } : {}),
       carrier,
       counts: {
         v: Object.keys(vertices).length,

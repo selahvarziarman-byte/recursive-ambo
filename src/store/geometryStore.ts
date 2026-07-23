@@ -163,6 +163,7 @@ interface GeometryState {
   applyAmboDissectionToCurrent: () => void;
   liftSelectionToManuscript: () => string;
   thickenLiftToManuscript: () => string;
+  thickenManuscript: (shape: Shape, segment: Shape) => string;
   toggleLiftSelection: (selection: LiftSelection) => void;
   clearLiftSelection: () => void;
   selectShape: (shapeId: ShapeId) => void;
@@ -496,6 +497,16 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (liftSelection.length > 0) {
       set({ liftSelection: [] });
     }
+    return band.shape.name;
+  },
+  // GAP2B THICKEN ARITY-2 (the 8th word): the person's TWO held forms — the
+  // shape and their lifted segment — product through the same committed
+  // thicken (Q1-guarded inside it; refusals throw honest and the view shows
+  // them). The band rides the shelf channel exactly as the unary lift door
+  // pushes it; both parents stay live (`product` is NON-CONSUMING).
+  thickenManuscript: (shape, segment) => {
+    const band = thicken(shape, segment);
+    useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id) });
     return band.shape.name;
   },
   // toggle one entity in/out of the multi-region lift set (identity = kind+id)

@@ -108,7 +108,7 @@ export interface WrittenForm {
 // SEAL_THE_UNION, charter §10-quinquies STEP 1): a dock group's key is a
 // CLOSED type — a group without its glyph, a glyph without its group, or a
 // rogue key is a COMPILE error, never a runtime black page.
-export type DockGroupKey = 'glue' | 'flip-glue' | 'collapse' | 'cut' | 'dualize' | 'sew' | 'fold';
+export type DockGroupKey = 'glue' | 'flip-glue' | 'collapse' | 'cut' | 'dualize' | 'sew' | 'fold' | 'thicken';
 
 export const DOCK_OPERATION_GROUPS: ReadonlyArray<{
   key: DockGroupKey;
@@ -129,6 +129,12 @@ export const DOCK_OPERATION_GROUPS: ReadonlyArray<{
   // design — the dock opens the fold panel, which consumes customGluing's
   // committed validate/preview/execute through handGestureModel.
   { key: 'fold', label: 'fold', operationIds: [] },
+  // GAP2B THE 8TH WORD (sanctioned frozen edit): thicken — the arity-2
+  // product gesture (shape × segment, TWO held forms, like connected sum).
+  // Not a registry op: operationIds is empty by design — the dock opens the
+  // thicken panel, which fires the committed arity-2 thicken through the
+  // store's own door.
+  { key: 'thicken', label: 'thicken', operationIds: [] },
 ];
 
 const IMMERSION_TITLES: Record<string, string> = {

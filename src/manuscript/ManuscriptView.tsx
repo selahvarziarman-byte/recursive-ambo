@@ -71,8 +71,14 @@ import {
   PortFacePicker,
   RecordStrip,
   SourcesShelf,
+  ThickenGatePanel,
   type AperturePairRowView,
 } from './ManuscriptChrome';
+// GAP2B THE 8TH WORD — thicken(shape, segment): the committed Q1 gate assigns
+// the pair's roles (the ONE place "must be a segment" is judged); the store's
+// own door fires the arity-2 product and shelves the band
+import { segmentGateReason } from '../lib/thicken';
+import { useGeometryStore } from '../store/geometryStore';
 // H2 THE PERSON'S HANDS — the two gestures' react-free model: the fold (the
 // 7th dock word over customGluing's committed seam) and the aimed chord (the
 // committed subdivideFace as a person gesture + the combine fork). The view
@@ -698,6 +704,8 @@ export default function ManuscriptView() {
   const [gateChords, setGateChords] = useState<Record<string, ChordAim[]>>({});
   // the last combine attempt's rim-mismatch refusal + the fork it offers
   const [combineRefusal, setCombineRefusal] = useState<{ reason: string; fork: ForkOffer } | null>(null);
+  // GAP2B — the thicken panel's open state (the 8th dock word's chip toggles it)
+  const [thickenOpen, setThickenOpen] = useState(false);
   const closeMenus = useCallback(() => {
     setInvokeMenu(null);
     setFormMenu(null);
@@ -711,6 +719,7 @@ export default function ManuscriptView() {
         setChord(null);
         setGateChords({});
         setCombineRefusal(null);
+        setThickenOpen(false);
         closeMenus();
       }
     };
@@ -1508,6 +1517,52 @@ export default function ManuscriptView() {
     setGateChords({});
     setChord(null);
   }, [combineGate, layoutCtl.resolution]);
+
+  // ----- GAP2B THE 8TH WORD: thicken(shape, segment) ------------------------
+  // The combine's own two-form arming (click + shift-click), NO port-face
+  // pick. The committed Q1 gate assigns the roles: the operand passing it is
+  // the SEGMENT, the other the SHAPE; both passing, selection order is
+  // argument order (first = shape). Neither passing → the refusal copy rides
+  // the panel. The chip is enabled exactly when the pair is armed.
+  const thickenReason = useMemo(
+    () =>
+      selected && combineWith
+        ? null
+        : 'select two forms — click the shape, shift-click the segment',
+    [selected, combineWith],
+  );
+  const thickenGate = useMemo(() => {
+    if (!thickenOpen || !selected || !combineWith) return null;
+    const a = targetFor(selected);
+    const b = targetFor(combineWith);
+    if (!a || !b) return null;
+    const aIsSegment = segmentGateReason(a.shape) === null;
+    const bIsSegment = segmentGateReason(b.shape) === null;
+    if (!aIsSegment && !bIsSegment) {
+      return {
+        shape: null,
+        segment: null,
+        refusal:
+          'thicken needs an interval — select a segment (a form with two ends). Tip: lift a single edge to get one.',
+      };
+    }
+    const [shapeOperand, segmentOperand] = bIsSegment ? [a, b] : [b, a];
+    return { shape: shapeOperand, segment: segmentOperand, refusal: null };
+  }, [thickenOpen, selected, combineWith, targetFor]);
+  const handleThicken = useCallback((): void => {
+    if (!thickenGate || !thickenGate.shape || !thickenGate.segment) return;
+    try {
+      const bandName = useGeometryStore
+        .getState()
+        .thickenManuscript(thickenGate.shape.shape, thickenGate.segment.shape);
+      setThickenOpen(false);
+      setOpNotice(`thicken: "${bandName}" rides the shelf`);
+    } catch (error) {
+      // the committed doors speak for themselves (the 4-manifold stop, the Q1
+      // guard) — the sentence is the thrown reason, never re-worded here
+      setOpNotice(`thicken: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }, [thickenGate]);
 
   // ----- H2 THE PERSON'S HANDS: the fold + the aimed chord ------------------
   // the fold's dock chip state — the committed form-level gate's own sentence
@@ -2498,6 +2553,12 @@ export default function ManuscriptView() {
           open: fold !== null && fold.targetKey === selected,
         }}
         onFoldToggle={handleFoldToggle}
+        thicken={{
+          enabled: thickenReason === null,
+          reason: thickenReason,
+          open: thickenGate !== null,
+        }}
+        onThickenToggle={() => setThickenOpen((cur) => !cur)}
       />
       {invokeMenu ? (
         <InvokePalette
@@ -2520,7 +2581,17 @@ export default function ManuscriptView() {
           onOpenChord={handleOpenChordFromMenu}
         />
       ) : null}
-      {combineGate ? (
+      {thickenGate ? (
+        <ThickenGatePanel
+          shapeTitle={thickenGate.shape?.title ?? null}
+          segmentTitle={thickenGate.segment?.title ?? null}
+          refusal={thickenGate.refusal}
+          paper={d.paper}
+          accent={generatorsCtl.a}
+          onThicken={handleThicken}
+          onClose={() => setThickenOpen(false)}
+        />
+      ) : combineGate ? (
         <BirthGatePanel
           aTitle={combineGate.a.title}
           bTitle={combineGate.b.title}

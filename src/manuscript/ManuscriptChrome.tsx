@@ -779,6 +779,8 @@ export function OperationsDock({
   onApply,
   fold,
   onFoldToggle,
+  thicken,
+  onThickenToggle,
 }: {
   availability: OperationAvailability[]; // the committed contract for the CURRENT selection
   hasTarget: boolean;
@@ -790,6 +792,11 @@ export function OperationsDock({
   // view (the committed form-level gate's own sentence — never invented here)
   fold?: { enabled: boolean; reason: string | null; open: boolean };
   onFoldToggle?: () => void;
+  // GAP2B THE THICKEN — the 8th word, same gesture shape as the fold: the
+  // chip opens the thicken panel; enable/reason arrive from the view (the
+  // pair arming + the committed Q1 gate — never invented here)
+  thicken?: { enabled: boolean; reason: string | null; open: boolean };
+  onThickenToggle?: () => void;
 }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -814,6 +821,64 @@ export function OperationsDock({
       }}
     >
       {DOCK_OPERATION_GROUPS.map((group) => {
+        if (group.key === 'thicken') {
+          // GAP2B — the thicken chip mirrors the fold chip: no variant flyout
+          // (a gesture, not a registry family); the panel is the affordance;
+          // a greyed chip still SPEAKS on hover (R4(e): no refusal is eaten).
+          const thickenEnabled = Boolean(thicken?.enabled);
+          const thickenOpenNow = Boolean(thicken?.open);
+          return (
+            <div key={group.key} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onMouseEnter={() => setHovered(group.key)}
+                onMouseLeave={() => setHovered(null)}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  if (thickenEnabled) onThickenToggle?.();
+                }}
+                style={{
+                  width: 46,
+                  height: 46,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 3,
+                  border: `1px solid ${paper.cardBorder}`,
+                  background: thickenOpenNow ? 'rgba(58,51,38,0.08)' : 'transparent',
+                  color: thickenEnabled ? (hovered === group.key ? accent : paper.cardInk) : paper.cardInk,
+                  opacity: thickenEnabled ? 1 : 0.38,
+                  cursor: thickenEnabled ? 'pointer' : 'default',
+                  padding: 0,
+                }}
+              >
+                {DOCK_GLYPHS[group.key]()}
+              </button>
+              {hovered === group.key ? (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 52,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    whiteSpace: 'nowrap',
+                    padding: '3px 8px',
+                    borderRadius: 3,
+                    background: paper.cardBackground,
+                    border: `1px solid ${paper.cardBorder}`,
+                    fontSize: 12,
+                    boxShadow: '0 2px 6px rgba(58,51,38,0.18)',
+                  }}
+                >
+                  {group.label}
+                  {!thickenEnabled && thicken?.reason ? (
+                    <span style={{ opacity: 0.6 }}> — {thicken.reason}</span>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          );
+        }
         if (group.key === 'fold') {
           // H2 — the fold chip: no variant flyout (the gesture has no
           // committed words to list); the panel is the affordance. A greyed
@@ -991,6 +1056,114 @@ export function OperationsDock({
 // ---------------------------------------------------------------------------
 
 const PAIR_LETTERS = 'abcdefgh';
+
+// GAP2B — the THICKEN panel (the 8th word's affordance): the combine's own
+// TWO-FORM selection (click + shift-click), NO port-face pick — thicken
+// products whole forms. The VIEW assigns the roles by the committed Q1 gate
+// (the operand passing it is the SEGMENT, the other the SHAPE) and hands the
+// sentence down; the panel only shows it and fires the arity-2 store door.
+export function ThickenGatePanel({
+  shapeTitle,
+  segmentTitle,
+  refusal,
+  paper,
+  accent,
+  onThicken,
+  onClose,
+}: {
+  shapeTitle: string | null; // null ⟺ the roles are refused (see refusal)
+  segmentTitle: string | null;
+  refusal: string | null; // the refusal copy when neither operand passes Q1
+  paper: ChromePaper;
+  accent: string;
+  onThicken: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        right: 14,
+        top: 64,
+        width: 264,
+        padding: '13px 15px',
+        borderRadius: 3,
+        background: paper.cardBackground,
+        border: `1px solid ${paper.cardBorder}`,
+        boxShadow: '0 2px 9px rgba(58, 51, 38, 0.2)',
+        color: paper.cardInk,
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: 13.5,
+        lineHeight: 1.5,
+      }}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div style={{ fontSize: 11, letterSpacing: 1.2, opacity: 0.6, fontVariant: 'small-caps' }}>
+          thicken — form × segment
+        </div>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          style={{ border: 'none', background: 'transparent', color: paper.cardInk, cursor: 'pointer', fontSize: 13, opacity: 0.6 }}
+        >
+          ×
+        </button>
+      </div>
+      {refusal === null && shapeTitle !== null && segmentTitle !== null ? (
+        <>
+          <div style={{ marginTop: 4 }}>
+            <span style={{ opacity: 0.65 }}>shape </span>
+            <b>{shapeTitle}</b>
+          </div>
+          <div>
+            <span style={{ opacity: 0.65 }}>segment </span>
+            <b>{segmentTitle}</b>
+          </div>
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              onThicken();
+            }}
+            style={{
+              marginTop: 10,
+              width: '100%',
+              padding: '7px 0',
+              borderRadius: 3,
+              border: `1px solid ${accent}`,
+              background: 'transparent',
+              color: accent,
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontWeight: 700,
+              fontSize: 13.5,
+              cursor: 'pointer',
+            }}
+          >
+            thicken — the band
+          </button>
+        </>
+      ) : (
+        <div
+          style={{
+            marginTop: 9,
+            padding: '6px 8px',
+            border: `1px solid ${paper.cardBorder}`,
+            borderRadius: 3,
+            fontSize: 12,
+            fontStyle: 'italic',
+            opacity: 0.85,
+          }}
+        >
+          {refusal ?? 'Select two placed forms.'}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function FoldGatePanel({
   title,
