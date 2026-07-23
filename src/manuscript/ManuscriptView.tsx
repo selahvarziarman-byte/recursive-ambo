@@ -97,6 +97,12 @@ import {
 // CUT 1 THE FAITHFUL BODY — the cone family's cell model (apex · seam · rim);
 // the view only PLACES its certified placements in the two ink registers
 import type { FaithfulBodyModel } from './faithfulBodyModel';
+// RECOGNITION (2026-07-23): the class restored through the committed
+// classifier (not-frozen card layer), the NAME register's total lookup, and
+// the seam's provenance mark — the fold's letter + the on-select ghosts
+import { acquireFaithfulComplex as acquireForCard, classifyComplexComponent, classLabel } from './surfaceClassifier';
+import { surfaceNameFor } from './surfaceName';
+import { foldSeamProvenance, type SeamProvenance } from './handGestureModel';
 // THE APERTURE (engineer-chartered 2026-07-13, designer-ruled ADR 0004): the
 // person builds a 3-manifold (map-picked pairs — the mode is DERIVED, never
 // chosen) and stands inside it — image-space transport on the engine's own
@@ -313,6 +319,10 @@ function FaithfulBody({
   rimWidth,
   bodyColor,
   bodyOpacity,
+  seamMark,
+  selected,
+  accent,
+  ghostColor,
 }: {
   model: FaithfulBodyModel;
   seamColor: string;
@@ -321,13 +331,46 @@ function FaithfulBody({
   rimWidth: number;
   bodyColor: string;
   bodyOpacity: number;
+  // RECOGNITION (designer-ruled): the seam is an IDENTIFICATION edge — at rest
+  // it wears the fold's letter (same cell-ink weight — the LABEL carries the
+  // meaning, not a heavier stroke); on select it highlights warm and the two
+  // SOURCE edges ghost back in the memory register (dashed pencil). Provenance
+  // only — no metric, no geometry; null ⇒ the unlabeled fallback (the seam
+  // still warms on select as "your fold").
+  seamMark: SeamProvenance | null;
+  selected: boolean;
+  accent: string;
+  ghostColor: string;
 }) {
+  const marked = seamMark ? model.seams.find((s) => s.id === seamMark.seamEdgeId) ?? null : null;
+  const seamAngle = marked ? Math.atan2(marked.to[1] - marked.from[1], marked.to[0] - marked.from[0]) : 0;
+  const ghostAngles = [seamAngle + 0.24, seamAngle - 0.24];
   return (
     <group>
       <mesh renderOrder={-2}>
         <circleGeometry args={[model.faceDisk.radius, model.faceDisk.segments]} />
         <meshBasicMaterial color={bodyColor} transparent opacity={bodyOpacity} depthWrite={false} />
       </mesh>
+      {selected && marked
+        ? // ON SELECT — the two source edges ghost back, flanking the seam they
+          // became (dashed, pencil tone: the memory register, unconfusable with
+          // cell ink; drawn only while the reading is summoned)
+          ghostAngles.map((angle, k) => (
+            <Line
+              key={`ghost:${k}`}
+              points={[
+                [0, 0, 0.008],
+                [Math.cos(angle) * model.faceDisk.radius, Math.sin(angle) * model.faceDisk.radius, 0.008],
+              ]}
+              color={ghostColor}
+              lineWidth={Math.max(1, seamWidth * 0.9)}
+              dashed
+              dashScale={12}
+              dashSize={0.6}
+              gapSize={0.5}
+            />
+          ))
+        : null}
       {model.seams.map((seam) => (
         <Line
           key={seam.id}
@@ -335,7 +378,7 @@ function FaithfulBody({
             [seam.from[0], seam.from[1], 0.01],
             [seam.to[0], seam.to[1], 0.01],
           ]}
-          color={seamColor}
+          color={selected ? accent : seamColor}
           lineWidth={seamWidth}
         />
       ))}
@@ -353,6 +396,26 @@ function FaithfulBody({
           <meshBasicMaterial color={rimColor} />
         </mesh>
       ))}
+      {marked ? (
+        // AT REST (and on select) — the identification letter beside the seam's
+        // midpoint: the class the person ASSIGNED in the gesture (pair a). On
+        // select a one-line caption joins it (working text; designer refines).
+        <Html
+          position={[(marked.from[0] + marked.to[0]) / 2 + 0.14, (marked.from[1] + marked.to[1]) / 2, 0.03]}
+          distanceFactor={13}
+          zIndexRange={[40, 0]}
+          style={{ pointerEvents: 'none' }}
+        >
+          <div style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: accent, whiteSpace: 'nowrap' }}>
+            <span style={{ fontStyle: 'italic', fontSize: 15, fontWeight: 700 }}>{seamMark?.letter}</span>
+            {selected ? (
+              <span style={{ fontSize: 10, opacity: 0.85, marginLeft: 6 }}>
+                your fold — two edges sewn into one
+              </span>
+            ) : null}
+          </div>
+        </Html>
+      ) : null}
     </group>
   );
 }
@@ -843,16 +906,34 @@ export default function ManuscriptView() {
       if (render.mode === 'faithful') {
         // CUT 1 — the counted caption (EYE-CHECK 1): the card prints V/E/F OF
         // THE COMPLEX and the boundary-circle count (LAW B's trace companion);
-        // the certified rows beneath are the tower's, verbatim
+        // the certified rows beneath are the tower's, verbatim.
+        // RECOGNITION — the class row restored through the COMMITTED classifier
+        // (computed here, the not-frozen card layer; frozen files untouched)
+        // and the NAME row: the total lookup's OUTPUT, never hand-typed — an
+        // unnamed triple prints its arithmetic + the flagged missing row.
         const base = readPlainSpecimen(
           entry.form.title,
           entry.form.provenance,
           render.model.invariants,
           render.model.h1Label,
         );
+        const acquired = acquireForCard(entry.form.shape, entry.form.parentShape);
+        const cls = acquired ? classifyComplexComponent(acquired.complex) : null;
+        const classValue = cls && cls.ok ? classLabel(cls.class) : null;
+        const nameReading = cls && cls.ok ? surfaceNameFor(cls.class) : null;
         return {
           ...base,
           rows: [
+            ...(nameReading
+              ? [
+                  nameReading.named
+                    ? { label: 'name', value: nameReading.name, emphasize: true }
+                    : {
+                        label: 'name',
+                        value: `${nameReading.arithmetic} · ⚠ missing table row ${nameReading.missingRow}`,
+                      },
+                ]
+              : []),
             {
               label: 'cells V·E·F',
               value: `${render.model.counts.v} · ${render.model.counts.e} · ${render.model.counts.f}`,
@@ -862,7 +943,9 @@ export default function ManuscriptView() {
               label: 'boundary',
               value: `${render.model.boundaryCircles} circle${render.model.boundaryCircles === 1 ? '' : 's'}`,
             },
-            ...base.rows,
+            ...base.rows.map((row) =>
+              row.label === 'class' && classValue !== null ? { ...row, value: classValue } : row,
+            ),
           ],
         };
       }
@@ -2134,7 +2217,9 @@ export default function ManuscriptView() {
               </group>
             ) : render.mode === 'faithful' ? (
               // CUT 1 — the person's own cells in the two registers: seam thin,
-              // rim heavy, dots per vertex-class, the one face a flat disk
+              // rim heavy, dots per vertex-class, the one face a flat disk.
+              // RECOGNITION — the seam wears its fold-letter; on select it
+              // warms and the two source edges ghost (provenance, no metric).
               <group scale={scaleCtl.dim1Scale * 1.5}>
                 <FaithfulBody
                   model={render.model}
@@ -2144,6 +2229,14 @@ export default function ManuscriptView() {
                   rimWidth={4}
                   bodyColor={bodyCtl.color}
                   bodyOpacity={bodyCtl.opacity * 0.55}
+                  seamMark={foldSeamProvenance(
+                    render.model.seams.map((s) => s.id),
+                    entry.form.shape,
+                    entry.form.parentShape,
+                  )}
+                  selected={selected === id}
+                  accent={generatorsCtl.a}
+                  ghostColor={genesisCtl.pencilTone}
                 />
               </group>
             ) : (

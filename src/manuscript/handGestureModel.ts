@@ -240,6 +240,37 @@ export function applyGateChords(shape: Shape, aims: ChordAim[]): Shape {
 }
 
 // ---------------------------------------------------------------------------
+// RECOGNITION — the seam's provenance (designer-ruled 2026-07-23: the seam is
+// an IDENTIFICATION edge, not a radius; the mark is the person's ACT)
+// ---------------------------------------------------------------------------
+
+export interface SeamProvenance {
+  seamEdgeId: string; // the surviving edge-class (the parent representative's own id)
+  letter: string; // the identification letter the gesture assigned (pair 0 = 'a')
+}
+
+// Reads what the born shape CARRIES: the fold's surviving seam edge keeps its
+// parent edge's id (the materializer's representative), and the merged partner
+// is the parent edge whose id VANISHED from the born set. The reading is
+// returned ONLY when unambiguous — exactly one seam and exactly one vanished
+// partner (the one-pair fold; the letter is then the gesture's own 'a').
+// Anything else → null, and the render falls back to the designer's own
+// fallback: the seam still highlights on select as "your fold", unlabeled.
+// Provenance only — no metric, no geometry; derive-only over carried ids.
+export function foldSeamProvenance(
+  seamEdgeIds: string[],
+  shape: Shape,
+  parentShape: Shape | null,
+): SeamProvenance | null {
+  if (!parentShape || seamEdgeIds.length !== 1) return null;
+  const bornEdgeIds = new Set(shape.edges.map((e) => e.id));
+  const vanished = parentShape.edges.filter((e) => !bornEdgeIds.has(e.id));
+  if (vanished.length !== 1) return null;
+  if (!parentShape.edges.some((e) => e.id === seamEdgeIds[0])) return null;
+  return { seamEdgeId: seamEdgeIds[0], letter: 'a' };
+}
+
+// ---------------------------------------------------------------------------
 // THE FORK — the rim-mismatch refusal offers the aimed chord, pre-aimed
 // ---------------------------------------------------------------------------
 
