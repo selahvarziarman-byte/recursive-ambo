@@ -54,7 +54,7 @@ import {
   type WrittenForm,
 } from './writtenFormModel';
 import { resolveLineage } from '../playground/playgroundOperations';
-import { refineToDisk } from '../lib/surfaceRefinement';
+import { prepareFormForSew, refineToDisk } from '../lib/surfaceRefinement';
 // C.1 — type-only: the FUNCTION computeFieldForShape is never imported by any
 // component module; it runs solely inside the worker (the call-graph claim)
 import type { ShapeField } from '../lib/fieldForShape';
@@ -1287,9 +1287,17 @@ export default function ManuscriptView() {
       const key = targetId ?? selected;
       const target = targetFor(key);
       if (!target) return;
+      // P2 (DOORS batch) — the sew PREPARER rides the combine-prepare slot
+      // (the withChords pattern): UNEQUAL rims are equalized (classes of the
+      // shorter circle split, subdivision-invariant) before the committed op;
+      // every other case passes through untouched and the committed doors
+      // keep their own sentences.
+      const opShape = operationId.startsWith('sew-boundary')
+        ? prepareFormForSew(target.shape, target.ancestry).shape
+        : target.shape;
       const result = applyPlaygroundOperationTo(
         operationId,
-        target.shape,
+        opShape,
         target.parent,
         seqRef.current,
         layoutCtl.resolution,
@@ -1603,8 +1611,21 @@ export default function ManuscriptView() {
   }, [fold, selected, foldTarget]);
   const handleFoldToggle = useCallback((): void => {
     if (!selected) return;
+    // P1 THE LOOP-MAKER (DOORS batch): the fold word on a SEGMENT fires the
+    // close directly — one action, NO rim panel; the loop rides the shelf.
+    // The committed doors' thrown sentences surface verbatim in the notice.
+    const target = targetFor(selected);
+    if (target && segmentGateReason(target.shape) === null) {
+      try {
+        const loopName = useGeometryStore.getState().closeSegmentManuscript(target.shape);
+        setOpNotice(`fold: "${loopName}" rides the shelf`);
+      } catch (error) {
+        setOpNotice(`fold: ${error instanceof Error ? error.message : String(error)}`);
+      }
+      return;
+    }
     setFold((cur) => (cur && cur.targetKey === selected ? null : { targetKey: selected, pairs: [], pending: null }));
-  }, [selected]);
+  }, [selected, targetFor]);
   const handleFoldCommit = useCallback((): void => {
     if (!fold) return;
     const target = targetFor(fold.targetKey);

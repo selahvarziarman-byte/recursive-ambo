@@ -77,6 +77,12 @@ import type { Face, Shape, VertexId } from '../types/geometry';
 import type { BoundaryPairing } from './surfaceOperations';
 import { createDefaultVertexData } from './shape';
 import { recoverBornSurface } from '../playground/bornFormRouting';
+// P2 (DOORS batch) — the WORDLESS bisection consumes the acquisition chain
+// (an acquired composite has a complex but no birth word) and the committed
+// boundary walker (the sew preparer equalizes rims). No cycle: the
+// identification module never imports this one.
+import { acquireComplex, walkBoundaryCircles } from './complexIdentification';
+import type { AssembledComplex } from './globalW1';
 
 export interface RefinementRecord {
   typeClaim: 'resolution'; // never 'lineage' — refine is not a birth
@@ -516,4 +522,151 @@ export function subdivideFace(shape: Shape, face: Face, cornerA: VertexId, corne
     shape: { ...shape, edges: [...shape.edges, chordEdge], faces },
     refinement: { typeClaim: 'resolution', passes: 0, chordEdgeId, carrier },
   };
+}
+
+// ---------------------------------------------------------------------------
+// P2 (DOORS batch, 2026-07-24) — THE WORDLESS BISECTION: refine a form that
+// has an ACQUIRABLE COMPLEX but NO BIRTH WORD (an acquired patch-lift
+// composite — `recoverState` above rightly refuses it: there is no word to
+// verify). The bisection works on the COMPLEX directly: every CHOSEN edge
+// class gains a midpoint support (u —m— v) and each face-word slot splits in
+// place WITH ITS SIGN CARRIED; χ cannot move (+|S| vertices, +|S| edges,
+// faces fixed). The refine discipline holds whole: type-claim 'resolution'
+// (subdivision invariance — NOT a birth; the genealogy is carried verbatim),
+// carrier surjection new→old (midpoint → its class, halves → their class,
+// everything else → itself). The SHAPE is re-assembled from the bisected
+// complex in the form's own id space (post-GAP2C the acquired complex's
+// supports ARE the form's vertex ids); midpoint positions are endpoint
+// midpoints — a drawing offset, no metric claim.
+// ---------------------------------------------------------------------------
+
+export interface WordlessBisectResult {
+  shape: Shape;
+  refinement: RefinementRecord;
+  complex: AssembledComplex; // the bisected complex — the truth the shape re-draws
+}
+
+export function bisectAcquiredComplex(
+  form: Shape,
+  ancestry: Shape | Shape[] | null = null,
+  classIds: string[] | null = null, // null = every class (one uniform pass)
+): WordlessBisectResult {
+  const acquired = acquireComplex(form, ancestry);
+  if (!acquired) {
+    throw new Error(
+      'surfaceRefinement: the wordless bisection needs an acquirable complex — the chain returned null (pass the form\'s ancestry for chained recovery)',
+    );
+  }
+  const complex = acquired.complex;
+  const chosen = new Set(classIds ?? complex.edges.map((edge) => edge.id));
+  const midOf = (classId: string): string => `mid:${classId}`;
+
+  const edges: AssembledComplex['edges'] = [];
+  const vertices: string[] = [...complex.vertices];
+  for (const edge of complex.edges) {
+    if (!chosen.has(edge.id)) {
+      edges.push(edge);
+      continue;
+    }
+    const mid = midOf(edge.id);
+    vertices.push(mid);
+    edges.push({ id: `${edge.id}:a`, u: edge.u, v: mid });
+    edges.push({ id: `${edge.id}:b`, u: mid, v: edge.v });
+  }
+  const faces: AssembledComplex['faces'] = complex.faces.map((face) => ({
+    boundary: face.boundary.flatMap((slot) => {
+      if (!chosen.has(slot.edge)) return [slot];
+      return slot.dir === 1
+        ? [
+            { edge: `${slot.edge}:a`, dir: 1 as const },
+            { edge: `${slot.edge}:b`, dir: 1 as const },
+          ]
+        : [
+            { edge: `${slot.edge}:b`, dir: -1 as const },
+            { edge: `${slot.edge}:a`, dir: -1 as const },
+          ];
+    }),
+  }));
+  const bisected: AssembledComplex = { vertices, edges, faces };
+
+  // the SHAPE, re-drawn from the bisected complex — rings are the words' tail
+  // walks (slot dir +1 crosses u→v), so a ring is the sequence of slot tails
+  const byId = new Map(edges.map((edge) => [edge.id, edge]));
+  const positionOf = (support: string): [number, number, number] =>
+    form.vertices[support]?.position ?? [0, 0, 0];
+  const shapeVertices: Shape['vertices'] = { ...form.vertices };
+  for (const edge of complex.edges) {
+    if (!chosen.has(edge.id)) continue;
+    const mid = midOf(edge.id);
+    const pu = positionOf(edge.u);
+    const pv = positionOf(edge.v);
+    shapeVertices[mid] = {
+      id: mid,
+      position: [(pu[0] + pv[0]) / 2, (pu[1] + pv[1]) / 2, (pu[2] + pv[2]) / 2],
+      data: createDefaultVertexData(mid),
+      createdBy: {
+        shapeId: form.id,
+        operation: form.genealogy.operation,
+        sourceVertexIds: [edge.u, edge.v],
+      },
+    };
+  }
+  const shapeEdges: Shape['edges'] = edges.map((edge) => ({
+    id: edge.id,
+    vertexIds: [edge.u, edge.v] as Shape['edges'][number]['vertexIds'],
+    sourceVertexIds: [edge.u, edge.v] as Shape['edges'][number]['vertexIds'],
+  }));
+  const shapeFaces: Shape['faces'] = form.faces.map((face, index) => ({
+    ...face,
+    vertexIds: (bisected.faces[index]?.boundary ?? []).map((slot) => {
+      const edge = byId.get(slot.edge) as AssembledComplex['edges'][number];
+      return slot.dir === 1 ? edge.u : edge.v;
+    }),
+  }));
+
+  const carrier: Record<string, string> = {};
+  for (const id of Object.keys(form.vertices)) carrier[id] = id;
+  for (const edge of complex.edges) {
+    if (chosen.has(edge.id)) {
+      carrier[midOf(edge.id)] = edge.id;
+      carrier[`${edge.id}:a`] = edge.id;
+      carrier[`${edge.id}:b`] = edge.id;
+    } else {
+      carrier[edge.id] = edge.id;
+    }
+  }
+  for (const face of form.faces) carrier[face.id] = face.id;
+
+  return {
+    shape: { ...form, vertices: shapeVertices, edges: shapeEdges, faces: shapeFaces },
+    refinement: { typeClaim: 'resolution', passes: 1, chordEdgeId: null, carrier },
+    complex: bisected,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// P2 — the SEW PREPARER (the combine-prepare pattern, engine half): when the
+// form's two boundary circles are walkable but UNEQUAL, classes of the
+// SHORTER circle are split (one midpoint each — length grows by exactly one)
+// until the rims match; the committed sew then accepts the prepared form.
+// Anything else — unwalkable rims, fewer than two circles, no acquirable
+// complex — returns the form UNCHANGED with prepared:false (the committed
+// doors keep their own sentences; nothing is silently cured).
+// ---------------------------------------------------------------------------
+
+export function prepareFormForSew(
+  form: Shape,
+  ancestry: Shape | Shape[] | null = null,
+): { shape: Shape; prepared: boolean } {
+  const acquired = acquireComplex(form, ancestry);
+  if (!acquired) return { shape: form, prepared: false };
+  const circles = walkBoundaryCircles(acquired.complex);
+  if (!circles || circles.length < 2) return { shape: form, prepared: false };
+  const [a, b] = circles;
+  if (a.edgeIds.length === b.edgeIds.length) return { shape: form, prepared: false };
+  const [shorter, longer] =
+    a.edgeIds.length < b.edgeIds.length ? [a, b] : [b, a];
+  const deficit = longer.edgeIds.length - shorter.edgeIds.length;
+  const result = bisectAcquiredComplex(form, ancestry, shorter.edgeIds.slice(0, deficit));
+  return { shape: result.shape, prepared: true };
 }

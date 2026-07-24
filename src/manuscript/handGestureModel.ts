@@ -33,6 +33,7 @@ import {
   type GluingPreviewResult,
 } from '../playground/customGluing';
 import { singleFaceGateReason } from '../playground/playgroundOperations';
+import { segmentGateReason } from '../lib/thicken';
 import { subdivideFace } from '../lib/surfaceRefinement';
 import { routeWrittenRender, type WrittenForm } from './writtenFormModel';
 
@@ -53,8 +54,12 @@ const FOLD_IMMERSION_TITLES: Record<string, string> = {
 
 // reason-or-null for the dock chip: the fold needs a form whose ONLY face is
 // the rim — the committed form-level gate speaks for every other shape.
+// P1 THE LOOP-MAKER (DOORS batch): a SEGMENT folds CLOSED — its two ends
+// identified into the circle (closeEdgeIntoCircle through the store door; no
+// rim panel — the Q1 gate is the one segment authority, re-used verbatim).
 export function foldGateReason(shape: Shape | null): string | null {
   if (!shape) return 'Select a form first.';
+  if (segmentGateReason(shape) === null) return null;
   if (shape.faces.length !== 1) return singleFaceGateReason(shape);
   return null;
 }

@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { createSeedShape } from '../data/seeds';
 import { isCellActiveFrontier } from '../lib/cellLifecycle';
 import { liftSubComplex, type LiftSelection } from '../lib/subComplexLift';
-import { thicken } from '../lib/thicken';
+import { segmentGateReason, thicken } from '../lib/thicken';
+import { closeSegmentIntoLoop } from '../lib/closeEdgeIntoCircle';
 import { serializeSnapshot } from '../playground/snapshot';
 import { useLiftStore } from './liftStore';
 import {
@@ -168,6 +169,7 @@ interface GeometryState {
   liftSelectionToManuscript: () => string;
   thickenLiftToManuscript: () => string;
   thickenManuscript: (shape: Shape, segment: Shape) => string;
+  closeSegmentManuscript: (segment: Shape) => string;
   toggleLiftSelection: (selection: LiftSelection) => void;
   clearLiftSelection: () => void;
   selectShape: (shapeId: ShapeId) => void;
@@ -544,6 +546,23 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const band = thicken(shape, segment);
     useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id) });
     return band.shape.name;
+  },
+  // P1 THE LOOP-MAKER (DOORS batch): the FOLD word on a SEGMENT closes it into
+  // the circle — closeEdgeIntoCircle's ledger fact, minted as the loop Shape,
+  // pushed down the same shelf channel as every lift-born form. Q1 is the ONE
+  // gate ("must be a segment"), re-used verbatim; the segment parent rides the
+  // snapshot's ancestry so the loop's chain stays whole.
+  closeSegmentManuscript: (segment) => {
+    const refusal = segmentGateReason(segment);
+    if (refusal !== null) {
+      throw new Error(`closeSegment: the fold closes a SEGMENT into a loop; this form ${refusal}`);
+    }
+    const born = closeSegmentIntoLoop(segment, segment.edges[0]);
+    useLiftStore.getState().push({
+      title: born.shape.name,
+      file: serializeSnapshot(born.shape, segment.id, [segment]),
+    });
+    return born.shape.name;
   },
   // toggle one entity in/out of the multi-region lift set (identity = kind+id)
   toggleLiftSelection: (selection) => {

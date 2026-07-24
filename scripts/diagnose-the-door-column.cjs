@@ -156,6 +156,12 @@ const GESTURE_WIRES = {
   'customGluing (the general fold)': [
     [['src/manuscript/handGestureModel.ts', 'executeCustomGlue(']], // the fold panel (H2)
   ],
+  'closeEdgeIntoCircle': [
+    // P1 (DOORS, 2026-07-24): the FOLD word on a SEGMENT — the view's fold
+    // toggle drives the op-specific store door, and the door mints the loop
+    // through the op's own carrier (closeSegmentIntoLoop → closeEdgeIntoCircle)
+    [['src/manuscript/ManuscriptView.tsx', 'closeSegmentManuscript'], ['src/store/geometryStore.ts', 'closeSegmentIntoLoop(']],
+  ],
 };
 const wireProd = (name, src) =>
   (GESTURE_WIRES[name] ?? []).some((chain) =>
@@ -266,7 +272,7 @@ check('★ THE MECHANISM HAS A HOME: scripts/diagnose-the-door-column.cjs is NOT
 // ═════ [b] ★★ the column at HEAD — one column, which person ═══════════════════════
 console.log('\n----- [b] ★★ THE COLUMN AT HEAD: PRODUCTION · DEV-ONLY · NONE — never merged, never ✅ for the dev shell (clauses 1–5) -----');
 let headCol = null;
-check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" — RE-CUT PER-OP (2026-07-23, engineer-mandated): a green tick is a WIRE — a NAMED person surface invoking THIS op (a dock word\'s id + the registry\'s call · an affordance model\'s own invocation · a person BUTTON driving an op-specific store action) — never a file\'s import closure, which false-positived every op a gesture-bearing file imports. The wires PRINT, per-op, and the BUILT-BUT-UNREACHABLE class is enumerated whole beneath the column. ★ THE MANDATE\'S EXPECTED THICKEN FLIP DID NOT SURVIVE THE MEASUREMENT: thicken\'s wire is REAL — the ambo panel\'s own "Thicken … × I → Manuscript" button (Panels.tsx) drives geometryStore.thickenLiftToManuscript → thicken(); the tick is earned per-op, the old mechanism was right by accident, and the no-door premise is corrected in the handback · the CONTROLS hold per-op: connectedSum (genesisModel\'s birthChild) · subdivideFace (handGestureModel\'s chord; refineToDisk stays plumbing exactly as ruled 2026-07-17, the row naming both) · customGluing (the fold panel) · sew/cut/dual (dock word + registry call) · assemble (the combine\'s committed macro runs it — both hops asserted) · subComplexLift (the R1 lift button) · faceIdentification + level3SoundnessGate (the aperture\'s build ops) · the manuscript NAMES refineToDisk: exactly 1 file, exactly 4 times (unchanged) · patchLift + closeEdgeIntoCircle read ⛔ NONE — printed, never widened away · and the PARTITION SUMS: every row exactly one of PRODUCTION/DEV-ONLY/NONE, PRODUCTION ∩ DEV = ∅ by construction and measured',
+check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" — RE-CUT PER-OP (2026-07-23, engineer-mandated): a green tick is a WIRE — a NAMED person surface invoking THIS op (a dock word\'s id + the registry\'s call · an affordance model\'s own invocation · a person BUTTON driving an op-specific store action) — never a file\'s import closure, which false-positived every op a gesture-bearing file imports. The wires PRINT, per-op, and the BUILT-BUT-UNREACHABLE class is enumerated whole beneath the column. ★ THE MANDATE\'S EXPECTED THICKEN FLIP DID NOT SURVIVE THE MEASUREMENT: thicken\'s wire is REAL — the ambo panel\'s own "Thicken … × I → Manuscript" button (Panels.tsx) drives geometryStore.thickenLiftToManuscript → thicken(); the tick is earned per-op, the old mechanism was right by accident, and the no-door premise is corrected in the handback · the CONTROLS hold per-op: connectedSum (genesisModel\'s birthChild) · subdivideFace (handGestureModel\'s chord; refineToDisk stays plumbing exactly as ruled 2026-07-17, the row naming both) · customGluing (the fold panel) · sew/cut/dual (dock word + registry call) · assemble (the combine\'s committed macro runs it — both hops asserted) · subComplexLift (the R1 lift button) · faceIdentification + level3SoundnessGate (the aperture\'s build ops) · the manuscript NAMES refineToDisk: exactly 1 file, exactly 4 times (unchanged) · closeEdgeIntoCircle EARNED its tick (P1\'s fold-on-a-segment door — the wire asserted; the old ⛔ NONE pin died with the doorlessness it pinned, 2026-07-24) · patchLift reads ⛔ NONE — printed, never widened away (P4: not person-holdable input) · and the PARTITION SUMS: every row exactly one of PRODUCTION/DEV-ONLY/NONE, PRODUCTION ∩ DEV = ∅ by construction and measured',
   (() => {
     headCol = columnAt('HEAD');
     const manuscriptFilesNamingRefine = headCol.grepCount('src/manuscript/', 'refineToDisk');
@@ -324,9 +330,17 @@ check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" — R
       ['sewBoundaryCircles', 'cutCell', 'assemble (multiform)', 'surfaceDual'].every(
         (op) => r[op].app === 'PRODUCTION' && r[op].gestureProd === true,
       ) &&
-      ['patchLift (route-B)', 'closeEdgeIntoCircle'].every(
+      ['patchLift (route-B)'].every(
         (op) => r[op].app === 'NONE' && !r[op].gestureProd && !r[op].gestureDev && !r[op].catalogue && r[op].route.includes('⛔ NONE'),
       ) &&
+      // P1-USABLE RULED RECUT (2026-07-24): closeEdgeIntoCircle EARNED its
+      // person door — the FOLD word on a SEGMENT (view fold-toggle →
+      // closeSegmentManuscript → closeSegmentIntoLoop, the wire above). The
+      // old ⛔ NONE pin died with the doorlessness it pinned; patchLift STAYS
+      // NONE (P4: its input — an X_K midpoint's star — is not person-holdable).
+      r['closeEdgeIntoCircle'].app === 'PRODUCTION' &&
+      r['closeEdgeIntoCircle'].gestureProd === true &&
+      r['closeEdgeIntoCircle'].route === '✅ PRODUCTION — the person acts (the manuscript\'s own doors)' &&
       overlap === 0 && partitionOk;
   })());
 

@@ -57,13 +57,24 @@ for (const entry of PRIMITIVE_CATALOGUE) {
   const vertexCount = Object.keys(shape.vertices).length;
   const edgeCount = shape.edges.length;
   const faceCount = shape.faces.length;
-  // The committed deriveEdges keys edges by canonical endpoints, so the 2-gon's
-  // two sides share one endpoint pair -> ONE Edge record; every n >= 3 gives n.
-  const expectedEdges = n === 2 ? 1 : n;
-  check(
-    `§1 ${entry.key}: ${n} vertices, ${expectedEdges} derived edge(s), 1 face`,
-    vertexCount === n && edgeCount === expectedEdges && faceCount === 1 && shape.faces[0].vertexIds.length === n,
-  );
+  if (entry.key === 'segment') {
+    // P1-USABLE RULED RECUT (DOORS P-mint, 2026-07-24): the REAL segment —
+    // V2, ONE EXPLICIT face-less edge, NO face. The old clause pinned the
+    // nGon(2) faced bigon (V2 E1 F1) — the lie Q1 measured at GAP2B and the
+    // P-mint mandate killed; the pin died with it. The explicit edge is the
+    // multiform-minted one (not derived — there is no face to derive from).
+    check(
+      `§1 ${entry.key}: 2 vertices, 1 EXPLICIT edge, 0 faces (the real 1-cell)`,
+      vertexCount === 2 && edgeCount === 1 && faceCount === 0 &&
+        shape.edges[0].id === 'edge:multiform:plain:segment:0' &&
+        new Set(shape.edges[0].vertexIds).size === 2,
+    );
+  } else {
+    check(
+      `§1 ${entry.key}: ${n} vertices, ${n} derived edge(s), 1 face`,
+      vertexCount === n && edgeCount === n && faceCount === 1 && shape.faces[0].vertexIds.length === n,
+    );
+  }
   check(
     `§1 ${entry.key}: vertices are v0..v${n - 1}, all source-less (fresh primals)`,
     Object.keys(shape.vertices).sort().join(',') ===
