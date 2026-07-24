@@ -930,8 +930,18 @@ export default function ManuscriptView() {
           render.model.invariants,
           render.model.h1Label,
         );
-        const acquired = acquireForCard(entry.form.shape, entry.form.parentShape);
-        const cls = acquired ? classifyComplexComponent(acquired.complex) : null;
+        // a readout must NEVER crash the app: acquireComplex can THROW (a
+        // disconnected-region lift's restrict refuses BY NAME; GAP2C) and this
+        // path was unguarded — degrade to the plain card on any throw, exactly
+        // as the shelf-ingest guards its own drain (latent P0, L4).
+        const cls = (() => {
+          try {
+            const a = acquireForCard(entry.form.shape, entry.form.parentShape);
+            return a ? classifyComplexComponent(a.complex) : null;
+          } catch {
+            return null;
+          }
+        })();
         const classValue = cls && cls.ok ? classLabel(cls.class) : null;
         const nameReading = cls && cls.ok ? surfaceNameFor(cls.class) : null;
         return {
