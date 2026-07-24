@@ -264,7 +264,11 @@ let refusedNoSelection = false;
 try {
   useGeometryStore.getState().liftSelectionToManuscript();
 } catch (error) {
-  refusedNoSelection = /select a cell or a vertex/.test(String(error.message));
+  // stem-match, not full-copy: this is a BEHAVIOUR test (the lift refuses with a
+  // select-something message), never a copy pin — GAP2A PARITY correctly extended
+  // "…a vertex" → "…a vertex, or an edge" and the old full-string regex went RED
+  // (a diagnostic pinning person-facing copy; recut to the stable stem, L19).
+  refusedNoSelection = /select a cell/.test(String(error.message));
 }
 check('§5 with nothing selected the lift refuses honestly (the UI disables; misuse throws)', refusedNoSelection);
 // committed whole-form path: a 2D form round-trips byte-unaffected by the extension

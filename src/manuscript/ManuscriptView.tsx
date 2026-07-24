@@ -676,6 +676,10 @@ export default function ManuscriptView() {
   // ----- 3a: written material (invoked + op-born — REAL committed Shapes) ----
   const [written, setWritten] = useState<Array<{ form: WrittenForm; home: [number, number, number] }>>([]);
   const seqRef = useRef(1);
+  // GAP2C: hoisted above its first use (targetFor ~:1236, via the availability
+  // memo) — a useRef declared after its reader is a TDZ ReferenceError that
+  // crashed the manuscript on placing a form (P0, 2026-07-24).
+  const shelfAncestorsRef = useRef<Map<string, Shape[]>>(new Map());
   const [invokeMenu, setInvokeMenu] = useState<{ x: number; y: number; world: [number, number] } | null>(null);
   const [formMenu, setFormMenu] = useState<{ x: number; y: number; id: string } | null>(null);
   const [opNotice, setOpNotice] = useState<string | null>(null);
@@ -1742,10 +1746,10 @@ export default function ManuscriptView() {
   // exact failure semantics).
   const liftQueue = useLiftStore((state) => state.queue);
   const ingestedLiftKeys = useRef<Set<number>>(new Set());
-  // GAP2C — the CARRIED ancestor chains of shelf-loaded forms, keyed by the
-  // loaded shape id: acquire-metadata for the ops/classifier lineage (the
-  // researcher's ruling), never entries in the visible form population
-  const shelfAncestorsRef = useRef<Map<string, Shape[]>>(new Map());
+  // GAP2C — `shelfAncestorsRef` (the CARRIED ancestor chains of shelf-loaded
+  // forms, acquire-metadata for the ops/classifier lineage) is declared near
+  // the top of the component (hoisted above its reader targetFor to avoid a
+  // TDZ crash); it is SET below in the shelf-drain effect.
   useEffect(() => {
     for (const item of liftQueue) {
       if (ingestedLiftKeys.current.has(item.key)) continue;
