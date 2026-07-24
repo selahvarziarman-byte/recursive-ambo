@@ -469,7 +469,10 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       );
     }
     const lifted = liftSubComplex(shape, selections);
-    const file = serializeSnapshot(lifted.shape, shape.id);
+    // GAP2C: the workspace population rides as serialize-time ancestry — the
+    // snapshot's predicate carries the chain exactly when the lifted region's
+    // own complex is direct-unreadable (a seamed composite), else byte-as-before
+    const file = serializeSnapshot(lifted.shape, shape.id, Object.values(shapes));
     useLiftStore.getState().push({ title: lifted.title, file });
     if (liftSelection.length > 0) {
       set({ liftSelection: [] });
@@ -507,8 +510,16 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     }
     const lifted = liftSubComplex(shape, selections);
     const band = thicken(lifted.shape);
-    useLiftStore.getState().push({ title: lifted.title, file: serializeSnapshot(lifted.shape, shape.id) });
-    useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id) });
+    // GAP2C: the same serialize-time ancestry as the plain lift; the band's
+    // own chain additionally rides through its lifted parent
+    useLiftStore.getState().push({
+      title: lifted.title,
+      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes)),
+    });
+    useLiftStore.getState().push({
+      title: band.shape.name,
+      file: serializeSnapshot(band.shape, shape.id, [lifted.shape, ...Object.values(shapes)]),
+    });
     if (liftSelection.length > 0) {
       set({ liftSelection: [] });
     }

@@ -41,7 +41,7 @@
 
 # ─── FROZEN (45) — the engine, import-closed; drift here without a manifest update is a finding ───
 src/data/seeds.ts                       6936376f3c1fcf6b3170d25fe2b3e080afcd9c3eb329dcee4ea37f6435f83274
-src/lib/complexIdentification.ts        86660c686cda01243465d1835da2655a61d3db8813e1626189eba86a5cbb7d9c
+src/lib/complexIdentification.ts        f4b1fedeca230e362124ff972b74dab350a6ec361fd0814a5ea59e23e8a9ac72
 src/lib/connectedSum.ts                 d8b6c0d269f6847b50f29c3190199ed290096319d25edbf280ce77effc1df6b9
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c
 src/lib/dualization.ts                  f450a61ca363e915b40374cd0707f6bc878680649d6057389bf49a90eb14d2a0
@@ -83,7 +83,7 @@ src/playground/formInvariants.ts        1079458c3d4a3451cd2df376f62893271ff10014
 src/playground/genealogyLayout.ts       dcdde159e83cc246fdbaf0521ec69a2a5884c78d0d68cbe1dae7c1b1589f98b8
 src/playground/playgroundOperations.ts  ed0cc1a8350cc7d7a79923d7d4db9c4c2255c9997fc1ec2996d87074d1865b2e
 src/playground/primitiveCatalogue.ts    9d977610215f7e4751a293a14b02085879442320cccc3ce6fcb66aa90eecf882
-src/playground/snapshot.ts              7e0655ad3207b1c6ad456e7c32c5ad3e249c8561dca9c2512fed3a6b91636843
+src/playground/snapshot.ts              eccfaba7d807e7a601bbb62ada92704a9935ea38aedc755c40808bf417c56ed7
 src/types/geometry.ts                   8976ce534d1a3549d02d4a5f484b9f46f3ee73bd7dbf2b89a8a86756f01a382f
 
 # ─── NOT_FROZEN — classified with a reason (completeness: nothing may be unlisted) ───

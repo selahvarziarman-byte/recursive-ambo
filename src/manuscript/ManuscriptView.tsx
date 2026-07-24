@@ -1230,10 +1230,14 @@ export default function ManuscriptView() {
         (shapeId) => shapeById.get(shapeId),
         [...shapeById.values()],
       );
+      // GAP2C: a shelf-loaded form's CARRIED chain rides as acquire-metadata
+      // (the researcher's ruling) — appended to the lineage the ops and the
+      // classifier consume, NEVER added to the page's visible population
+      const carried = shelfAncestorsRef.current.get(entry.form.shape.id);
       return {
         shape: entry.form.shape,
         parent: entry.form.parentShape,
-        ancestry,
+        ancestry: carried?.length ? [...ancestry, ...carried] : ancestry,
         title: entry.form.title,
         home: entry.home,
       };
@@ -1738,12 +1742,19 @@ export default function ManuscriptView() {
   // exact failure semantics).
   const liftQueue = useLiftStore((state) => state.queue);
   const ingestedLiftKeys = useRef<Set<number>>(new Set());
+  // GAP2C — the CARRIED ancestor chains of shelf-loaded forms, keyed by the
+  // loaded shape id: acquire-metadata for the ops/classifier lineage (the
+  // researcher's ruling), never entries in the visible form population
+  const shelfAncestorsRef = useRef<Map<string, Shape[]>>(new Map());
   useEffect(() => {
     for (const item of liftQueue) {
       if (ingestedLiftKeys.current.has(item.key)) continue;
       ingestedLiftKeys.current.add(item.key);
       try {
         const entry = loadUniverseSnapshot(item.file);
+        if (entry.loaded.ancestors?.length) {
+          shelfAncestorsRef.current.set(entry.loaded.shape.id, entry.loaded.ancestors);
+        }
         setShelf((cur) => [...cur, { entry, placed: false }]);
         setOpNotice(null);
       } catch (error) {
@@ -1759,6 +1770,9 @@ export default function ManuscriptView() {
         .text()
         .then((text) => {
           const entry = loadUniverseSnapshot(JSON.parse(text));
+          if (entry.loaded.ancestors?.length) {
+            shelfAncestorsRef.current.set(entry.loaded.shape.id, entry.loaded.ancestors);
+          }
           setShelf((cur) => [...cur, { entry, placed: false }]);
           setOpNotice(null);
         })

@@ -169,7 +169,10 @@ function makeUnionFind() {
 // re-expression formInvariants and inkedFormModel each deliberately carry for
 // their layer; equivalence to the committed bridge is asserted in the
 // diagnostic). Throws with the refusing rule — quotient forms fail by design.
-function directComplexOf(shape: Shape): AssembledComplex {
+// GAP2C (sanctioned frozen edit): EXPORTED — the snapshot layer's save-time
+// predicate ("is this form direct-readable?") consumes the same bridge, never
+// a re-expression of it.
+export function directComplexOf(shape: Shape): AssembledComplex {
   const byKey = new Map<string, { id: string; u: string; v: string }>();
   for (const edge of shape.edges) {
     const [u, v] = edge.vertexIds;
@@ -742,7 +745,7 @@ export function recoverIdentifiedComplex(
 // NEVER weakened here — the bridge is right; the chain is what was missing.
 // ---------------------------------------------------------------------------
 
-export type ComplexAcquisitionSource = 'direct' | 'recovered' | 'cut-derived' | 'identified';
+export type ComplexAcquisitionSource = 'direct' | 'recovered' | 'cut-derived' | 'identified' | 'patch-lift';
 
 export interface AcquiredComplex {
   complex: AssembledComplex;
@@ -804,7 +807,132 @@ export function acquireComplex(
     const identified = recoverIdentifiedComplex(shape, parent, lineage);
     if (identified) return { complex: identified.complex, source: 'identified' };
   }
+  // (5) a PATCH-LIFT birth (GAP2C, sanctioned frozen edit): the region's
+  // complex is the PARENT's, chain-acquired (recursion — the parent may be a
+  // quotient the direct bridge rightly refuses), RESTRICTED to the lifted
+  // region with the parent's signs COPIED VERBATIM. A parent that stays
+  // unacquirable falls through to the honest null; a disconnected region
+  // refuses BY NAME inside the restriction (a person door, not a null).
+  if (parent && shape.genealogy.operation === 'patch-lift') {
+    const parentAcquired = acquireComplex(parent, lineage, seen);
+    if (parentAcquired) {
+      const restricted = restrictComplexToRegion(parent, parentAcquired.complex, shape);
+      if (restricted) return { complex: restricted, source: 'patch-lift' };
+    }
+  }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// GAP2C — restrict a chain-acquired PARENT complex to a patch-lift REGION.
+// Keep the region's faces (their oriented boundary words COPIED VERBATIM —
+// the signs are the parent's own; ⛔ a class is NEVER re-derived from its
+// endpoints, the binding invariant), the edge classes those words reference
+// plus the region's own edge ids, and the endpoint supports they use. A seam
+// class whose other wedge stayed behind drops to ONE occurrence and READS AS
+// BOUNDARY by the standing wedge arithmetic — a seam→boundary is SUCCESS,
+// not a refusal. A DISCONNECTED region refuses by name (the person lifted N
+// pieces); a faceless or unfaithful region returns null (not this road — the
+// chain ends at its honest null).
+// ---------------------------------------------------------------------------
+
+export function restrictComplexToRegion(
+  parent: Shape,
+  parentComplex: AssembledComplex,
+  region: Shape,
+): AssembledComplex | null {
+  // the region's connectivity, measured on the REGION SHAPE itself: edges
+  // unite their endpoints, faces unite their rings — one piece or a named door
+  const uf = new Map<string, string>();
+  const find = (x: string): string => {
+    if (!uf.has(x)) uf.set(x, x);
+    let root = x;
+    while (uf.get(root) !== root) root = uf.get(root) as string;
+    return root;
+  };
+  const unite = (x: string, y: string): void => {
+    uf.set(find(x), find(y));
+  };
+  const regionVertexIds = Object.keys(region.vertices);
+  for (const id of regionVertexIds) find(id);
+  for (const edge of region.edges) unite(edge.vertexIds[0], edge.vertexIds[1]);
+  for (const face of region.faces) {
+    for (let k = 1; k < face.vertexIds.length; k += 1) unite(face.vertexIds[0], face.vertexIds[k]);
+  }
+  const pieces = new Set(regionVertexIds.map((id) => find(id))).size;
+  if (pieces > 1) {
+    throw new Error(
+      `complexIdentification: ${pieces} separate pieces, not one form — lift a connected region`,
+    );
+  }
+  if (region.faces.length === 0) return null; // the faceless lift never needed acquisition (level-1 readers own it)
+  const regionFaceIds = new Set(region.faces.map((face) => face.id));
+  const faceIndices = parent.faces
+    .map((parentFace, k) => (regionFaceIds.has(parentFace.id) ? k : -1))
+    .filter((k) => k >= 0);
+  if (faceIndices.length !== region.faces.length) return null; // a region face the parent does not carry — not a faithful restriction
+  // the surviving faces' words, VERBATIM (complex faces are index-aligned
+  // with shape faces on every acquisition source — the standing invariant)
+  const faces = faceIndices.map((k) => parentComplex.faces[k]);
+  // the kept classes are EXACTLY the surviving words' references — the
+  // region ↔ parent correspondence is by FACE id (preserved through lift and
+  // load) plus a COUNT coverage check: a region carrying an edge outside its
+  // faces' closure (a stray) breaks the count and refuses as unfaithful.
+  // (Region edge ids are never text-matched against class ids: across the
+  // snapshot boundary a seam class's minted id composes differently — the
+  // surviving WORDS are the truth.)
+  const keep = new Set<string>();
+  for (const face of faces) for (const slot of face.boundary) keep.add(slot.edge);
+  // "restrict each signed edge class to its in-region members": a region edge
+  // whose class keeps NO surviving wedge (the lift's endpoint-based closure
+  // can pull a neighbouring face's edge into a quotient region) simply LEAVES
+  // the 2-complex — it is 1-skeleton material the level-1 readers own, never
+  // a dangling class handed to the walkers and never a refusal.
+  // the supports are RENAMED into the region's OWN id space via the face-ring
+  // ↔ word-slot correspondence (slot k of a face's word crosses ring[k] →
+  // ring[k+1]; a −1 sign crosses it against the class's canonical direction).
+  // The CLASS structure and the SIGNS stay the parent's verbatim — this is a
+  // rename of endpoint NAMES, never a re-derivation of classes; occurrences
+  // that disagree on the rename refuse as unfaithful. The rename is what lets
+  // the downstream consumers (the walkers, the ops' corner mapping) read the
+  // acquired complex against the region shape they actually hold — load-
+  // namespaced or not.
+  const endpointOf = new Map<string, { u: string; v: string }>();
+  for (let fk = 0; fk < faces.length; fk += 1) {
+    const regionFace = region.faces.find(
+      (candidate) => candidate.id === parent.faces[faceIndices[fk]].id,
+    );
+    if (!regionFace) return null;
+    const ring = regionFace.vertexIds;
+    const wordSlots = faces[fk].boundary;
+    if (ring.length !== wordSlots.length) return null; // ring ↔ word arity mismatch — not a faithful region face
+    for (let k = 0; k < wordSlots.length; k += 1) {
+      const a = ring[k];
+      const b = ring[(k + 1) % ring.length];
+      const slot = wordSlots[k];
+      const [u, v] = slot.dir === 1 ? [a, b] : [b, a];
+      const prior = endpointOf.get(slot.edge);
+      if (!prior) {
+        endpointOf.set(slot.edge, { u, v });
+      } else if (prior.u !== u || prior.v !== v) {
+        return null; // two occurrences disagree on the rename — not a faithful region
+      }
+    }
+  }
+  const edges = parentComplex.edges
+    .filter((edge) => keep.has(edge.id))
+    .map((edge) => {
+      const renamed = endpointOf.get(edge.id) as { u: string; v: string };
+      return { ...edge, u: renamed.u, v: renamed.v };
+    });
+  if (edges.length !== keep.size) return null; // a word references a class the parent does not carry — not a faithful acquisition
+  const supports = new Set<string>();
+  for (const edge of edges) {
+    supports.add(edge.u);
+    supports.add(edge.v);
+  }
+  const vertices = Object.keys(region.vertices).filter((v) => supports.has(v));
+  return { vertices, edges, faces };
 }
 
 // ---------------------------------------------------------------------------
