@@ -456,12 +456,17 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const selections: LiftSelection[] =
       liftSelection.length > 0
         ? liftSelection
-        : selectedCellId
-          ? [{ kind: 'cell', id: selectedCellId }]
+        // the MOST SPECIFIC inspection selection wins: an explicitly selected
+        // edge/vertex lifts as ITSELF, never the cell it was picked within (the
+        // cell stays selected for its rows). The prior cell-first order shadowed
+        // a selected edge with its cell, so "select an edge → lift" lifted the
+        // whole cell and a segment was unliftable (2026-07-24).
+        : selectedEdgeId
+          ? [{ kind: 'edge', id: selectedEdgeId }]
           : selectedVertexId
             ? [{ kind: 'vertex', id: selectedVertexId }]
-            : selectedEdgeId
-              ? [{ kind: 'edge', id: selectedEdgeId }]
+            : selectedCellId
+              ? [{ kind: 'cell', id: selectedCellId }]
               : [];
     if (selections.length === 0) {
       throw new Error(
@@ -496,12 +501,17 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const selections: LiftSelection[] =
       liftSelection.length > 0
         ? liftSelection
-        : selectedCellId
-          ? [{ kind: 'cell', id: selectedCellId }]
+        // the MOST SPECIFIC inspection selection wins: an explicitly selected
+        // edge/vertex lifts as ITSELF, never the cell it was picked within (the
+        // cell stays selected for its rows). The prior cell-first order shadowed
+        // a selected edge with its cell, so "select an edge → lift" lifted the
+        // whole cell and a segment was unliftable (2026-07-24).
+        : selectedEdgeId
+          ? [{ kind: 'edge', id: selectedEdgeId }]
           : selectedVertexId
             ? [{ kind: 'vertex', id: selectedVertexId }]
-            : selectedEdgeId
-              ? [{ kind: 'edge', id: selectedEdgeId }]
+            : selectedCellId
+              ? [{ kind: 'cell', id: selectedCellId }]
               : [];
     if (selections.length === 0) {
       throw new Error(
