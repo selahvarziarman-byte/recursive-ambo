@@ -74,10 +74,19 @@ export interface FormFaceSpec {
   vertexIds: string[]; // ordered PLAIN root ids around the face cycle
 }
 
+// P-mint (DOORS batch, sanctioned frozen edit): an EXPLICIT edge for forms
+// with no face to derive it from — the real 1-cell segment (V2 E1 F0).
+export interface FormEdgeSpec {
+  vertexIds: [string, string]; // the two PLAIN root endpoint ids
+}
+
 export interface FormSpec {
   name: string;
   vertices: FormVertexSpec[];
   faces?: FormFaceSpec[];
+  // P-mint: explicit face-less edges. Absent → derived-only, byte-identical
+  // to every committed spec (the §4.7 regression guard family).
+  edges?: FormEdgeSpec[];
 }
 
 export type FormBuilder = () => FormSpec;
@@ -118,7 +127,15 @@ export function loadForm(builder: FormBuilder, source = ''): Shape {
     role: 'seed-face' as const,
   }));
 
-  const edges: Edge[] = deriveEdges(faces, shapeId); // derived cells follow the namespaced ids
+  const derivedEdges: Edge[] = deriveEdges(faces, shapeId); // derived cells follow the namespaced ids
+  // P-mint: the spec's EXPLICIT face-less edges join the derived ones — minted
+  // with their own multiform ids, endpoints namespaced by the same rule.
+  const explicitEdges: Edge[] = (spec.edges ?? []).map((edgeSpec, index) => ({
+    id: `edge:multiform:${source || 'plain'}:${spec.name}:${index}`,
+    vertexIds: [ns(edgeSpec.vertexIds[0]), ns(edgeSpec.vertexIds[1])] as Edge['vertexIds'],
+    sourceVertexIds: [ns(edgeSpec.vertexIds[0]), ns(edgeSpec.vertexIds[1])] as Edge['vertexIds'],
+  }));
+  const edges: Edge[] = [...derivedEdges, ...explicitEdges];
 
   return {
     id: shapeId,

@@ -55,8 +55,25 @@ export function nGon(n: number): FormBuilder {
   return () => nGonSpec(n, `${n}-gon`);
 }
 
+// P-mint (DOORS batch, sanctioned frozen edit): the REAL segment — two
+// distinct source-less vertices, ONE explicit edge, NO face (V2 E1 F0). The
+// old entry minted nGon(2), a FACED bigon (V2 E1 F1) — measured lying at
+// GAP2B (Q1 refuses it by the face clause). The catalogue now invokes the
+// true 1-cell: Q1 accepts it, thicken products it, the fold (P1) closes it
+// into the loop — never a polygon word.
+function segmentSpec(): FormSpec {
+  return {
+    name: 'segment',
+    vertices: [
+      { id: 'v0', position: [-POLYGON_RADIUS, 0, 0], label: 'v0' },
+      { id: 'v1', position: [POLYGON_RADIUS, 0, 0], label: 'v1' },
+    ],
+    edges: [{ vertexIds: ['v0', 'v1'] }],
+  };
+}
+
 export const PRIMITIVE_CATALOGUE: PrimitiveCatalogueEntry[] = [
-  { key: 'segment', label: 'Segment (2-gon)', build: nGon(2) },
+  { key: 'segment', label: 'Segment', build: () => segmentSpec() },
   { key: 'triangle', label: 'Triangle', build: nGon(3) },
   { key: 'square', label: 'Square', build: nGon(4) },
   { key: 'pentagon', label: 'Pentagon', build: nGon(5) },

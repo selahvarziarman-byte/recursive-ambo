@@ -58,7 +58,7 @@ src/lib/level3SoundnessGate.ts          c4f29765a005ea0d5d97ca2bb5e788259acec6dd
 src/lib/level3W1.ts                     469f3c0736f4e94e28f5a60bca2020a11b3340e38a9dc92d41b0e44f1dde8590
 src/lib/lineage.ts                      a2fd474f9e58869ba1015ed16d1d930d37dd2725d48492a2f08dc9dc93ccb0fa
 src/lib/materializeOperation.ts         3f984c1415ee219d08cbcd71e8c69d4bb2742b185faa419984ec98b059fcdee4
-src/lib/multiform.ts                    8a2cb9eeff1cd5bdb30fa5c2f43b7eec07af0880164e684ff73cf45f7419b093
+src/lib/multiform.ts                    649db40a2f04038094aa5b8a1b30cab9eecc315b7ae772171da231f78c9c7da0
 src/lib/packets.ts                      feaf628678732c01a276ead985b08dd439b2ae8ab09adf5bba865a0dd4811d9f
 src/lib/shape.ts                        8339d97812ac4dac2a68b982936b34d51cdb308069d73e6738f2da366bd5b7b2
 src/lib/surfaceDual.ts                  022a1c68251c3b04c13c4b6f39f1dad7e5d0fcf74cd64570f5d0e9f6c93eec95
@@ -82,7 +82,7 @@ src/playground/customGluing.ts          2085fb7ef4199bda258d8c3cde23f3a186d16eb7
 src/playground/formInvariants.ts        1079458c3d4a3451cd2df376f62893271ff10014210492b96f411a7718717f96
 src/playground/genealogyLayout.ts       dcdde159e83cc246fdbaf0521ec69a2a5884c78d0d68cbe1dae7c1b1589f98b8
 src/playground/playgroundOperations.ts  ed0cc1a8350cc7d7a79923d7d4db9c4c2255c9997fc1ec2996d87074d1865b2e
-src/playground/primitiveCatalogue.ts    9d977610215f7e4751a293a14b02085879442320cccc3ce6fcb66aa90eecf882
+src/playground/primitiveCatalogue.ts    b02c1c2daf58ec632513aec088eff597a76ce3d09d218d9dd85374d183eb1266
 src/playground/snapshot.ts              eccfaba7d807e7a601bbb62ada92704a9935ea38aedc755c40808bf417c56ed7
 src/types/geometry.ts                   8976ce534d1a3549d02d4a5f484b9f46f3ee73bd7dbf2b89a8a86756f01a382f
 
