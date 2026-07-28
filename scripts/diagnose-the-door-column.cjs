@@ -341,6 +341,20 @@ check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" — R
       r['closeEdgeIntoCircle'].app === 'PRODUCTION' &&
       r['closeEdgeIntoCircle'].gestureProd === true &&
       r['closeEdgeIntoCircle'].route === '✅ PRODUCTION — the person acts (the manuscript\'s own doors)' &&
+      // CUT 1b RULED RECUT (2026-07-28): THE LAID BODY has a PRODUCTION wire —
+      // the manuscript view (a PRODUCTION module, canary above) lays a born
+      // form's OWN cells through the new laidBodyModel, which consumes the
+      // FROZEN classifier and the FROZEN canonical bodies BY IMPORT. The same
+      // [file, token] hop idiom as GESTURE_WIRES, on the rev's own blobs:
+      // render doors are wires too — built-but-unwired would be the old lie.
+      [
+        ['src/manuscript/ManuscriptView.tsx', 'tryLaidBodyModel('],
+        ['src/manuscript/ManuscriptView.tsx', 'markRimRefinedForSew('],
+        ['src/manuscript/laidBodyModel.ts', 'export function tryLaidBodyModel'],
+        ['src/manuscript/laidBodyModel.ts', 'export function cutComplexToDisk'],
+        ['src/manuscript/laidBodyModel.ts', "from './surfaceClassifier'"],
+        ['src/manuscript/laidBodyModel.ts', "from '../lib/surfaceImmersion'"],
+      ].every(([file, token]) => headCol.src[file] !== undefined && headCol.src[file].includes(token)) &&
       overlap === 0 && partitionOk;
   })());
 

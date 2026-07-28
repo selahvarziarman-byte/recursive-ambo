@@ -25,6 +25,9 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html, Line, OrbitControls } from '@react-three/drei';
 import { Leva, useControls } from 'leva';
 import {
+  BufferAttribute,
+  BufferGeometry,
+  DoubleSide,
   MathUtils,
   Raycaster,
   Vector2,
@@ -55,6 +58,9 @@ import {
 } from './writtenFormModel';
 import { resolveLineage } from '../playground/playgroundOperations';
 import { prepareFormForSew, refineToDisk } from '../lib/surfaceRefinement';
+// CUT 1b — THE L: the general layout (the person's own cells on the canonical
+// body); consumed here at the classBody seam — the frozen router is untouched
+import { markRimRefinedForSew, tryLaidBodyModel, type LaidBodyModel } from './laidBodyModel';
 // C.1 — type-only: the FUNCTION computeFieldForShape is never imported by any
 // component module; it runs solely inside the worker (the call-graph claim)
 import type { ShapeField } from '../lib/fieldForShape';
@@ -426,6 +432,61 @@ function FaithfulBody({
   );
 }
 
+// CUT 1b — THE L: the person's own cells laid on the CANONICAL body (every
+// laid coordinate went through the committed immersion). LAW A: one dot per
+// vertex class, one thin curve per edge class, one translucent region per
+// face; the rim register (LAW B) is drawn heavy where it exists — on a closed
+// body it is present and honestly empty. No other ink, no orientation mark.
+function LaidBody({
+  model,
+  cellColor,
+  rimColor,
+  bodyColor,
+  bodyOpacity,
+  selected,
+  accent,
+}: {
+  model: LaidBodyModel;
+  cellColor: string;
+  rimColor: string;
+  bodyColor: string;
+  bodyOpacity: number;
+  selected: boolean;
+  accent: string;
+}) {
+  const regionGeometries = useMemo(
+    () =>
+      model.faceRegions.map((region) => {
+        const geometry = new BufferGeometry();
+        geometry.setAttribute('position', new BufferAttribute(new Float32Array(region.positions), 3));
+        geometry.setIndex(new BufferAttribute(new Uint32Array(region.indices), 1));
+        return geometry;
+      }),
+    [model],
+  );
+  return (
+    <group>
+      {model.faceRegions.map((region, k) => (
+        <mesh key={region.id} geometry={regionGeometries[k]} renderOrder={-2}>
+          <meshBasicMaterial color={bodyColor} transparent opacity={bodyOpacity} depthWrite={false} side={DoubleSide} />
+        </mesh>
+      ))}
+      {model.edgeCurves.map((curve) => (
+        <Line key={curve.id} points={curve.points} color={selected ? accent : cellColor} lineWidth={1.2} />
+      ))}
+      {model.rimArcs.map((arc) => (
+        <Line key={arc.id} points={arc.points} color={rimColor} lineWidth={4} />
+      ))}
+      {model.vertexDots.map((dot) => (
+        <mesh key={dot.id} position={dot.position} renderOrder={2}>
+          <sphereGeometry args={[0.07, 16, 16]} />
+          <meshBasicMaterial color={rimColor} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 // the specimen card — manuscript-styled, rendered IFF a reading is summoned
 function SpecimenCard({
   reading,
@@ -675,6 +736,11 @@ export default function ManuscriptView() {
   const [portFaces, setPortFaces] = useState<Record<string, string>>({});
   // ----- 3a: written material (invoked + op-born — REAL committed Shapes) ----
   const [written, setWritten] = useState<Array<{ form: WrittenForm; home: [number, number, number] }>>([]);
+  // CUT 1b — the laid bodies, keyed by shape id: computed ONCE at the moment a
+  // classBody-routed form is born/placed (the same lineage the frozen router
+  // used), consumed at the render/caption/card seams. A lay that walls simply
+  // never enters the map — the committed class body stands untouched.
+  const [laidBodies, setLaidBodies] = useState<Map<string, LaidBodyModel>>(new Map());
   const seqRef = useRef(1);
   // GAP2C: hoisted above its first use (targetFor ~:1236, via the availability
   // memo) — a useRef declared after its reader is a TDZ ReferenceError that
@@ -912,6 +978,30 @@ export default function ManuscriptView() {
         return { ...base, title: entry.form.title, subtitle: entry.form.provenance };
       }
       if (render.mode === 'classBody') {
+        // CUT 1b — a LAID form's card: the form's own certified rows plus the
+        // counted caption. The honest-representative frame does NOT ride a
+        // laid body — the drawn cells ARE the person's, so that sentence
+        // would now be false; the class row still speaks the classifier.
+        const laid = laidBodies.get(entry.form.shape.id);
+        if (laid) {
+          const base = readPlainSpecimen(entry.form.title, entry.form.provenance, laid.invariants, laid.h1Label);
+          return {
+            ...base,
+            rows: [
+              {
+                label: 'cells V·E·F',
+                value: `${laid.counts.v} · ${laid.counts.e} · ${laid.counts.f}`,
+                emphasize: true,
+              },
+              {
+                label: 'boundary',
+                value: `${laid.boundaryCircles} circle${laid.boundaryCircles === 1 ? '' : 's'}`,
+              },
+              ...(laid.note ? [{ label: 'note', value: laid.note }] : []),
+              ...base.rows.map((row) => (row.label === 'class' ? { ...row, value: laid.classLabel } : row)),
+            ],
+          };
+        }
         // P-IMMERSE: the form's OWN certified invariants + the honest frame +
         // the body's drawn certified generators, named (classBodyModel)
         return readClassBodySpecimen(entry.form.title, entry.form.provenance, render.model);
@@ -988,7 +1078,7 @@ export default function ManuscriptView() {
     }
     const model = dim3All.find((m) => m.key === key);
     return model ? readDomainSpecimen(model) : null;
-  }, [selected, world, written, optionBByShape, dim3All]);
+  }, [selected, world, written, optionBByShape, dim3All, laidBodies]);
 
   // ----- 3a: the op target + the committed availability + the apply path -----
   const rows = d.world.rows;
@@ -1292,9 +1382,13 @@ export default function ManuscriptView() {
       // shorter circle split, subdivision-invariant) before the committed op;
       // every other case passes through untouched and the committed doors
       // keep their own sentences.
-      const opShape = operationId.startsWith('sew-boundary')
-        ? prepareFormForSew(target.shape, target.ancestry).shape
-        : target.shape;
+      // CUT 1b: the preparer's verdict is KEPT — prepared:true is the one
+      // measured moment the rims were refined for this sew, and the laid
+      // body's designer note discloses it on the born form.
+      const sewPrep = operationId.startsWith('sew-boundary')
+        ? prepareFormForSew(target.shape, target.ancestry)
+        : null;
+      const opShape = sewPrep ? sewPrep.shape : target.shape;
       const result = applyPlaygroundOperationTo(
         operationId,
         opShape,
@@ -1311,6 +1405,20 @@ export default function ManuscriptView() {
       }
       seqRef.current += 1;
       setOpNotice(null);
+      // CUT 1b — THE L: a classBody-routed birth tries the general lay with
+      // the SAME lineage the frozen router received ([opShape, …ancestry]);
+      // success substitutes the drawn body only — the model, the card's
+      // certified rows, and the frozen route stay exactly what they are.
+      if (sewPrep?.prepared) markRimRefinedForSew(result.born.shape.id);
+      if (result.born.render.mode === 'classBody') {
+        const laid = tryLaidBodyModel(result.born.shape, [
+          opShape,
+          ...(target.ancestry ?? (target.parent ? [target.parent] : [])),
+        ]);
+        if (laid) {
+          setLaidBodies((cur) => new Map(cur).set(result.born.shape.id, laid));
+        }
+      }
       setWritten((cur) => [
         ...cur,
         { form: result.born, home: [target.home[0] + d.world.chrome.spawnOffset, target.home[1], 0] },
@@ -1710,6 +1818,14 @@ export default function ManuscriptView() {
     // refine is not a birth: same id, same genealogy — the entry reshapes in
     // place; the field cache must not serve the coarser body under the same id
     fieldCacheRef.current.delete(entry.form.shape.id);
+    // CUT 1b: nor may a stale laid body — the reshaped form re-lays on its
+    // next birth-route or not at all (the class body stands meanwhile)
+    setLaidBodies((cur) => {
+      if (!cur.has(entry.form.shape.id)) return cur;
+      const next = new Map(cur);
+      next.delete(entry.form.shape.id);
+      return next;
+    });
     setWritten((cur) =>
       cur.map((w) => (w.form.id === entry.form.id ? { ...w, form: result.reshaped } : w)),
     );
@@ -1841,6 +1957,14 @@ export default function ManuscriptView() {
       const [x, y] = worldPointFromClient(clientX, clientY);
       const form = placeShelfEntry(item.entry, seqRef.current);
       seqRef.current += 1;
+      // CUT 1b: a shelf-placed classBody form lays too — the carried ancestors
+      // are exactly the lineage its render was routed with at ingest
+      if (form.render.mode === 'classBody') {
+        const laid = tryLaidBodyModel(form.shape, item.entry.loaded.ancestors ?? null);
+        if (laid) {
+          setLaidBodies((cur) => new Map(cur).set(form.shape.id, laid));
+        }
+      }
       setWritten((cur) => [...cur, { form, home: [x, y, 0] }]);
       setShelf((cur) => cur.map((s, k) => (k === index ? { ...s, placed: true } : s)));
       setSelected(`w:${form.id}`);
@@ -2258,13 +2382,19 @@ export default function ManuscriptView() {
         {written.map((entry, k) => {
           const id = `w:${entry.form.id}`;
           const render = entry.form.render;
+          // CUT 1b — the laid body, if this classBody form earned one
+          const laid = render.mode === 'classBody' ? laidBodies.get(entry.form.shape.id) : undefined;
           const sub =
             render.mode === 'immersion'
               ? `${render.model.immersion.correspondence.word === '' ? 'no gluing word' : render.model.immersion.correspondence.word} · H₁ = ${render.model.h1Label ?? 'n-a'}`
               : render.mode === 'skeleton'
                 ? `H₁ = ${render.model.h1Label ?? 'n-a'} · b₁ ${render.model.invariants.level1?.b1 ?? '—'}`
                 : render.mode === 'classBody'
-                  ? `H₁ = ${render.model.h1Label ?? 'n-a'} · class body`
+                  ? laid
+                    ? // CUT 1b — THE FOUR COUNTABLE LOOKS ride the caption:
+                      // dots · curves · regions · rims, each countable in the ink
+                      `V ${laid.counts.v} · E ${laid.counts.e} · F ${laid.counts.f} · rims ${laid.boundaryCircles}${laid.note ? ` · ${laid.note}` : ''} · H₁ = ${laid.h1Label ?? 'n-a'}`
+                    : `H₁ = ${render.model.h1Label ?? 'n-a'} · class body`
                   : render.mode === 'faithful'
                     ? // CUT 1 — the counted caption rides the label too (EYE-CHECK 1)
                       `V ${render.model.counts.v} · E ${render.model.counts.e} · F ${render.model.counts.f} · H₁ = ${render.model.h1Label ?? 'n-a'}`
@@ -2298,6 +2428,23 @@ export default function ManuscriptView() {
                 />
               </group>
             ) : render.mode === 'classBody' ? (
+              laid ? (
+                // CUT 1b — THE L: the person's OWN cells on the canonical body
+                // (every coordinate through the committed immersion) — the
+                // torus they folded/thickened/sewed wears their cells, not a
+                // standard representative. The route/model stay classBody.
+                <group scale={scaleCtl.dim2Scale}>
+                  <LaidBody
+                    model={laid}
+                    cellColor={inkFor(id, entry.form.shape.id, constructionCtl.color)}
+                    rimColor={inkFor(id, entry.form.shape.id, silhouetteCtl.color)}
+                    bodyColor={bodyCtl.color}
+                    bodyOpacity={bodyCtl.opacity * 0.55}
+                    selected={selected === id}
+                    accent={generatorsCtl.a}
+                  />
+                </group>
+              ) : (
               // P-IMMERSE: the honest representative — one self-certified body
               // per connected component, each carrying ITS committed Option-B
               // generators (the model derived them; no view invention)
@@ -2319,6 +2466,7 @@ export default function ManuscriptView() {
                   />
                 ))}
               </group>
+              )
             ) : render.mode === 'faithful' ? (
               // CUT 1 — the person's own cells in the two registers: seam thin,
               // rim heavy, dots per vertex-class, the one face a flat disk.
