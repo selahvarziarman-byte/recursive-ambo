@@ -28,6 +28,9 @@ import type { InkedFormCraft } from './InkedForm';
 import type { CertifiedGenerator } from './optionBModel';
 import type { ShapeField } from '../lib/fieldForShape';
 import { InkedFieldLayer } from './InkedFieldLayer';
+// P4 FIX-FORWARD: the double-cover hull builder (non-frozen sibling) — an
+// inverted hull on a non-orientable mesh needs the oriented double cover
+import { buildCrossingHull } from './laidBodyModel';
 
 function buildBodyGeometry(shape: Shape): THREE.BufferGeometry | null {
   const ids = Object.keys(shape.vertices).sort();
@@ -91,6 +94,8 @@ export function InkedPlainForm({
   junction,
   field,
   position = [0, 0, 0],
+  worldScale = 1,
+  selfCrossing = false,
 }: {
   shape: Shape;
   craft: InkedFormCraft;
@@ -102,6 +107,16 @@ export function InkedPlainForm({
   // byte-identical (it still adds NO mark of its own; the layer draws).
   field?: ShapeField;
   position?: Vec3;
+  // P4 FIX-FORWARD: the group scale this form renders under — the hull weight
+  // divides by it so the pen width applies AT SPEC under any band scale.
+  worldScale?: number;
+  // P4 FIX-FORWARD: a self-crossing body (non-orientable class bodies — the
+  // cross-cap chains) takes the ORIENTED DOUBLE-COVER hull: an inverted hull
+  // needs consistent winding, which a non-orientable mesh cannot carry — the
+  // plain hull read as a black tangle. (Per-copy locus ghosting for the
+  // chains is a later refinement; the laid klein/rp2 carry the full
+  // locus-split hull in LaidBody.)
+  selfCrossing?: boolean;
 }) {
   const body = useMemo(() => buildBodyGeometry(shape), [shape]);
   // P4 — the hull's weight follows InkedForm's screen-space convention
@@ -111,8 +126,24 @@ export function InkedPlainForm({
       1,
       ...Object.values(shape.vertices).map((v) => Math.hypot(v.position[0], v.position[1], v.position[2])),
     );
-    return buildHullGeometry(body, radius * craft.silhouetteScreenspacePx * HULL_PX_CALIBRATION);
-  }, [body, shape, craft.silhouetteScreenspacePx]);
+    const weight = (radius * craft.silhouetteScreenspacePx * HULL_PX_CALIBRATION) / Math.max(0.0001, worldScale);
+    if (selfCrossing) {
+      const positionAttribute = body.getAttribute('position') as THREE.BufferAttribute;
+      const index = body.getIndex();
+      if (!index) return buildHullGeometry(body, weight);
+      const buckets = buildCrossingHull(
+        Array.from(positionAttribute.array as Float32Array),
+        Array.from(index.array as unknown as ArrayLike<number>),
+        weight,
+        [], // no locus register here — the double cover alone (all strong)
+      );
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(buckets.positions), 3));
+      geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(buckets.strongIndices), 1));
+      return geometry;
+    }
+    return buildHullGeometry(body, weight);
+  }, [body, shape, craft.silhouetteScreenspacePx, worldScale, selfCrossing]);
   const edges = useMemo(() => buildEdgeGeometry(shape), [shape]);
   const generatorLines = useMemo(
     () =>

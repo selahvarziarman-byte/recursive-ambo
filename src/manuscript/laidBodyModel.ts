@@ -1262,7 +1262,9 @@ const KLEIN_S = 1.4;
 const KLEIN_C = 2;
 const RP2_S = 5.5;
 
-function locusCurves3(body: 'klein' | 'rp2'): Vec3[][] {
+// exported since P4 FIX-FORWARD: the view's crossing hull ghosts against the
+// same computed locus the register declares
+export function locusCurves3(body: 'klein' | 'rp2'): Vec3[][] {
   if (body === 'klein') {
     const circle: Vec3[] = [];
     for (let k = 0; k <= 96; k += 1) {
@@ -1276,6 +1278,118 @@ function locusCurves3(body: 'klein' | 'rp2'): Vec3[][] {
     segment.push([0, RP2_S * (-0.5 + (0.5 * k) / 16), 0]);
   }
   return [segment];
+}
+
+// ---------------------------------------------------------------------------
+// P4 FIX-FORWARD — the crossing hull (the self-crossing bodies' silhouette).
+// An inverted hull needs a consistently wound mesh, and a NON-ORIENTABLE
+// immersion cannot have one: the plain hull read as a black tangle (winding
+// flips showed front-side hull patches, and the far sheet's displaced hull
+// poked through the near sheet all along the crossing). The cure, two moves:
+//   · the ORIENTED DOUBLE COVER — every triangle rides twice, displaced +n
+//     and −n with opposite windings; back-face culling then behaves exactly
+//     as on an orientable shell (the double cover of any surface IS
+//     orientable), so the strong ink survives only past the true outer
+//     silhouette;
+//   · the LOCUS YIELDS — a hull triangle within ε of the computed double
+//     locus joins the GHOST bucket (pale, the register's own convention):
+//     the strong ink NEVER rides the crossing. A self-crossing is the
+//     double locus, and it wears the ghost, never the black hull.
+// Pure arrays in/out — headless-testable; the view only wraps the buckets.
+// ---------------------------------------------------------------------------
+
+export const CROSSING_HULL_EPSILON = 0.45; // world units — the locus's yield halo
+
+export interface CrossingHull {
+  positions: number[]; // the double cover: outer copies [0..n), inner copies [n..2n)
+  strongIndices: number[]; // triangles wholly ≥ ε off the locus — the strong silhouette ink
+  ghostIndices: number[]; // triangles touching the locus halo — the pale ghost ink
+}
+
+function pointSegmentDistance(p: Vec3, a: Vec3, b: Vec3): number {
+  const abx = b[0] - a[0];
+  const aby = b[1] - a[1];
+  const abz = b[2] - a[2];
+  const len2 = abx * abx + aby * aby + abz * abz;
+  const t =
+    len2 === 0
+      ? 0
+      : Math.max(0, Math.min(1, ((p[0] - a[0]) * abx + (p[1] - a[1]) * aby + (p[2] - a[2]) * abz) / len2));
+  return Math.hypot(p[0] - a[0] - abx * t, p[1] - a[1] - aby * t, p[2] - a[2] - abz * t);
+}
+
+export function buildCrossingHull(
+  positions: number[],
+  indices: number[],
+  weight: number,
+  locusCurves: Vec3[][],
+  epsilon = CROSSING_HULL_EPSILON,
+): CrossingHull {
+  const n = positions.length / 3;
+  // per-vertex normals: accumulated triangle normals, normalized (plain JS)
+  const normals = new Float64Array(positions.length);
+  for (let t = 0; t < indices.length; t += 3) {
+    const ia = indices[t];
+    const ib = indices[t + 1];
+    const ic = indices[t + 2];
+    const ux = positions[3 * ib] - positions[3 * ia];
+    const uy = positions[3 * ib + 1] - positions[3 * ia + 1];
+    const uz = positions[3 * ib + 2] - positions[3 * ia + 2];
+    const vx = positions[3 * ic] - positions[3 * ia];
+    const vy = positions[3 * ic + 1] - positions[3 * ia + 1];
+    const vz = positions[3 * ic + 2] - positions[3 * ia + 2];
+    const cx = uy * vz - uz * vy;
+    const cy = uz * vx - ux * vz;
+    const cz = ux * vy - uy * vx;
+    for (const i of [ia, ib, ic]) {
+      normals[3 * i] += cx;
+      normals[3 * i + 1] += cy;
+      normals[3 * i + 2] += cz;
+    }
+  }
+  for (let i = 0; i < n; i += 1) {
+    const len = Math.hypot(normals[3 * i], normals[3 * i + 1], normals[3 * i + 2]);
+    if (len > 1e-12) {
+      normals[3 * i] /= len;
+      normals[3 * i + 1] /= len;
+      normals[3 * i + 2] /= len;
+    }
+  }
+  // the locus halo, per vertex (distance to the computed curves' segments)
+  const nearLocus = new Uint8Array(n);
+  for (let i = 0; i < n; i += 1) {
+    const p: Vec3 = [positions[3 * i], positions[3 * i + 1], positions[3 * i + 2]];
+    let near = false;
+    for (const curve of locusCurves) {
+      for (let k = 0; k + 1 < curve.length && !near; k += 1) {
+        if (pointSegmentDistance(p, curve[k], curve[k + 1]) <= epsilon) near = true;
+      }
+      if (near) break;
+    }
+    nearLocus[i] = near ? 1 : 0;
+  }
+  // the double cover: outer (+n·w, original winding) then inner (−n·w,
+  // reversed winding) — one shared position array, per-bucket indices
+  const doubled = new Array<number>(positions.length * 2);
+  for (let i = 0; i < n; i += 1) {
+    doubled[3 * i] = positions[3 * i] + normals[3 * i] * weight;
+    doubled[3 * i + 1] = positions[3 * i + 1] + normals[3 * i + 1] * weight;
+    doubled[3 * i + 2] = positions[3 * i + 2] + normals[3 * i + 2] * weight;
+    doubled[3 * (n + i)] = positions[3 * i] - normals[3 * i] * weight;
+    doubled[3 * (n + i) + 1] = positions[3 * i + 1] - normals[3 * i + 1] * weight;
+    doubled[3 * (n + i) + 2] = positions[3 * i + 2] - normals[3 * i + 2] * weight;
+  }
+  const strongIndices: number[] = [];
+  const ghostIndices: number[] = [];
+  for (let t = 0; t < indices.length; t += 3) {
+    const ia = indices[t];
+    const ib = indices[t + 1];
+    const ic = indices[t + 2];
+    const bucket = nearLocus[ia] || nearLocus[ib] || nearLocus[ic] ? ghostIndices : strongIndices;
+    bucket.push(ia, ib, ic); // the outer cover
+    bucket.push(n + ia, n + ic, n + ib); // the inner cover, winding reversed
+  }
+  return { positions: doubled, strongIndices, ghostIndices };
 }
 
 function buildCrossingModel(

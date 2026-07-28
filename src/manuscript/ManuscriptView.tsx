@@ -61,7 +61,7 @@ import { resolveLineage } from '../playground/playgroundOperations';
 import { prepareFormForSew, refineToDisk } from '../lib/surfaceRefinement';
 // CUT 1b — THE L: the general layout (the person's own cells on the canonical
 // body); consumed here at the classBody seam — the frozen router is untouched
-import { markRimRefinedForSew, tryLaidBodyModel, type LaidBodyModel } from './laidBodyModel';
+import { buildCrossingHull, markRimRefinedForSew, tryLaidBodyModel, type LaidBodyModel } from './laidBodyModel';
 // C.1 — type-only: the FUNCTION computeFieldForShape is never imported by any
 // component module; it runs solely inside the worker (the call-graph claim)
 import type { ShapeField } from '../lib/fieldForShape';
@@ -454,6 +454,7 @@ function LaidBody({
   ghostColor,
   selected,
   accent,
+  worldScale,
 }: {
   model: LaidBodyModel;
   cellColor: string;
@@ -466,6 +467,10 @@ function LaidBody({
   ghostColor: string;
   selected: boolean;
   accent: string;
+  // P4 FIX-FORWARD: the group scale this body renders under — the hull's
+  // world displacement divides by it, so the pen width applies AT SPEC
+  // (dim2Scale 0.62 was silently shrinking every laid silhouette to ~62%).
+  worldScale: number;
 }) {
   const regionGeometries = useMemo(
     () =>
@@ -481,7 +486,7 @@ function LaidBody({
   // strong inverted-hull silhouette (the InkedForm craft), and the fill sits
   // a whisper darker than the page (the default's duty); the per-face regions
   // stay separate so the four looks remain countable.
-  const mergedBody = useMemo(() => {
+  const merged = useMemo(() => {
     const positions: number[] = [];
     const indices: number[] = [];
     for (const region of model.faceRegions) {
@@ -493,8 +498,16 @@ function LaidBody({
     geometry.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
     geometry.setIndex(new BufferAttribute(new Uint32Array(indices), 1));
     geometry.computeVertexNormals();
-    return geometry;
+    return { geometry, positions, indices };
   }, [model]);
+  const mergedBody = merged.geometry;
+  // P4 FIX-FORWARD — two hulls, per class:
+  //   · EMBEDDABLE (no crossing register): the plain inverted hull, unchanged
+  //     in logic — only the weight now divides by the group scale (at spec);
+  //   · SELF-CROSSING (klein / rp2): the oriented DOUBLE-COVER hull, split by
+  //     the model's own computed locus — strong ink off the locus, the pale
+  //     ghost where a hull triangle rides the crossing. A self-crossing IS
+  //     the double locus; it wears the ghost, never the black hull.
   const hull = useMemo(() => {
     const position = mergedBody.getAttribute('position') as BufferAttribute;
     const normal = mergedBody.getAttribute('normal') as BufferAttribute;
@@ -502,7 +515,18 @@ function LaidBody({
     for (let k = 0; k < position.count; k += 1) {
       radius = Math.max(radius, Math.hypot(position.getX(k), position.getY(k), position.getZ(k)));
     }
-    const weight = radius * silhouettePx * LAID_HULL_PX_CALIBRATION;
+    const weight = (radius * silhouettePx * LAID_HULL_PX_CALIBRATION) / Math.max(0.0001, worldScale);
+    if (model.crossing) {
+      const buckets = buildCrossingHull(merged.positions, merged.indices, weight, model.crossing.locusCurves);
+      const positionAttribute = new BufferAttribute(new Float32Array(buckets.positions), 3);
+      const strong = new BufferGeometry();
+      strong.setAttribute('position', positionAttribute);
+      strong.setIndex(new BufferAttribute(new Uint32Array(buckets.strongIndices), 1));
+      const ghost = new BufferGeometry();
+      ghost.setAttribute('position', positionAttribute);
+      ghost.setIndex(new BufferAttribute(new Uint32Array(buckets.ghostIndices), 1));
+      return { kind: 'split' as const, strong, ghost };
+    }
     const displaced = new Float32Array(position.count * 3);
     for (let k = 0; k < position.count; k += 1) {
       displaced[3 * k] = position.getX(k) + normal.getX(k) * weight;
@@ -512,8 +536,8 @@ function LaidBody({
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new BufferAttribute(displaced, 3));
     geometry.setIndex(mergedBody.getIndex());
-    return geometry;
-  }, [mergedBody, silhouettePx]);
+    return { kind: 'single' as const, geometry };
+  }, [merged, mergedBody, silhouettePx, worldScale, model]);
   // CUT 2 — the crossing register's ink plan: crossed edges break at the
   // locus and a pale stub bridges each break; the locus itself is the
   // pale-broken ghost (the drawing's crossing — never a cell, so it wears
@@ -534,10 +558,23 @@ function LaidBody({
       <mesh geometry={mergedBody} renderOrder={-3}>
         <meshBasicMaterial colorWrite={false} side={DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={3} />
       </mesh>
-      {silhouetteOpacity > 0 ? (
-        <mesh geometry={hull} renderOrder={-2}>
+      {silhouetteOpacity > 0 && hull.kind === 'single' ? (
+        <mesh geometry={hull.geometry} renderOrder={-2}>
           <meshBasicMaterial color={silhouetteColor} side={BackSide} transparent opacity={silhouetteOpacity} />
         </mesh>
+      ) : null}
+      {silhouetteOpacity > 0 && hull.kind === 'split' ? (
+        // P4 FIX-FORWARD — the self-crossing silhouette: strong ink only off
+        // the locus (the true outer silhouette survives the depth prepass);
+        // where the hull rides the crossing it wears the pale ghost instead.
+        <>
+          <mesh geometry={hull.strong} renderOrder={-2}>
+            <meshBasicMaterial color={silhouetteColor} side={BackSide} transparent opacity={silhouetteOpacity} />
+          </mesh>
+          <mesh geometry={hull.ghost} renderOrder={-2}>
+            <meshBasicMaterial color={ghostColor} side={BackSide} transparent opacity={ghostOpacity} />
+          </mesh>
+        </>
       ) : null}
       {model.faceRegions.map((region, k) => (
         <mesh key={region.id} geometry={regionGeometries[k]} renderOrder={-1}>
@@ -2568,13 +2605,18 @@ export default function ManuscriptView() {
                     cellColor={inkFor(id, entry.form.shape.id, constructionCtl.color)}
                     rimColor={inkFor(id, entry.form.shape.id, silhouetteCtl.color)}
                     bodyColor={bodyCtl.color}
-                    bodyOpacity={bodyCtl.opacity * 0.55}
+                    // P4 FIX-FORWARD: the laid fill takes the default's FULL
+                    // body opacity — the old ×0.55 halved the ruled value at
+                    // this one seam (the class bodies already drew at spec),
+                    // which is why the laid torus read invisible in the app.
+                    bodyOpacity={bodyCtl.opacity}
                     silhouetteColor={silhouetteCtl.color}
                     silhouettePx={silhouetteCtl.screenspacePx}
                     silhouetteOpacity={silhouetteCtl.opacity}
                     ghostColor={genesisCtl.pencilTone}
                     selected={selected === id}
                     accent={generatorsCtl.a}
+                    worldScale={scaleCtl.dim2Scale}
                   />
                 </group>
               ) : (
@@ -2588,6 +2630,8 @@ export default function ManuscriptView() {
                     shape={component.body}
                     craft={craftFor(id, entry.form.shape.id)}
                     generators={component.optionB.generators}
+                    worldScale={scaleCtl.dim2Scale}
+                    selfCrossing={component.class.kind === 'non-orientable'}
                     field={
                       // C.1 — THE ONE-COMPLEX LAW at the seam: the field dresses
                       // ONLY the exact drawn body it was computed on
@@ -2630,6 +2674,7 @@ export default function ManuscriptView() {
                   shape={render.shape}
                   craft={craftFor(id, entry.form.shape.id)}
                   generators={optionBByShape.get(render.shape.id)?.generators}
+                  worldScale={scaleCtl.dim1Scale}
                   junction={
                     junctionSegmentsByShape.has(render.shape.id)
                       ? {

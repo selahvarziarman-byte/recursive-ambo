@@ -153,7 +153,11 @@ export const manuscriptDefaults = {
     // ruled correction is the plate's panel B: a fill a WHISPER darker than
     // the ground #e9e2cf (every channel ≤ the ground's), under a strong
     // silhouette. Tuned against .handoff/assets/P4_BODY_VALUE_DESIGNER.png.
-    color: '#ddd6c0', // the whisper-darker body — never lighter than the page
+    // P4 FIX-FORWARD (2026-07-28): the whisper (#ddd6c0) was INVISIBLE in the
+    // RUNNING APP (the authority — the plate's paper regressed the ruling
+    // twice); the corrected fill is decisively darker while every channel
+    // stays ≤ the ground's. Fallback if still faint in-app: #bfb18c.
+    color: '#c9bd9a', // the visible body — darker than the page, never a glow
     opacity: 0.8, // translucent — the far construction lines stay visible (never opaque/photoreal)
     roughness: 0.9,
     prepassOffsetUnits: 3, // depth-prepass polygonOffset units (designer craft item 5: 2–4 quiets the RP² pinch z-fight)
@@ -171,7 +175,12 @@ export const manuscriptDefaults = {
     // default camera (true per-frame distance invariance = a later refinement).
     // P4 (designer plate): the silhouette goes STRONG — the corrected value
     // pairing is strong hull + whisper-darker fill (panel B).
-    screenspacePx: 2.6,
+    // P4 FIX-FORWARD (2026-07-28): 2.6 → 3.0, and the weight now APPLIES AT
+    // SPEC — the laid/class hulls rendered inside scaled groups (dim2Scale
+    // 0.62) which silently shrank the displacement to ~62% of the pen; the
+    // hull builders now divide by their group's scale (the measured cause of
+    // "the app looked under-inked").
+    screenspacePx: 3.0,
     opacity: 1,
   },
   generators: {
