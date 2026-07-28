@@ -61,8 +61,23 @@ export const LAID_WALL_NO_BODY = (g: number): string =>
   `genus ${g} — no body: the committed canonical bodies end at genus 1; the cut ran, the layout exists, but there is nothing honest to lay it on (never a fabricated body).`;
 export const LAID_WALL_BOUNDED = (b: number): string =>
   `bounded surface (${b} boundary circle${b === 1 ? '' : 's'}) — the bounded lay (cylinder / möbius / disk-family) is a later cut; the committed registers stand.`;
-export const LAID_WALL_CROSSING =
-  'closed non-orientable — this form cannot embed; it belongs to the declared-crossing register (CUT 2), not built yet.';
+// CUT 2 — the old non-orientable wall is DELETED: closed non-orientable forms
+// route through the SAME L onto their committed self-crossing bodies. Beyond
+// the cross-cap pair there is no committed body — that wall stays honest.
+export const LAID_WALL_CROSSCAPS = (k: number): string =>
+  `${k} cross-caps — no body: the committed canonical bodies end at the cross-cap pair (RP² k=1 · Klein k=2); the cut ran, but there is nothing honest to lay it on (never a fabricated body).`;
+export const LAID_WALL_ALIGNED =
+  'the lay rides the crossing — an edge or vertex sits along the double locus, the nudge could not move it off, and a ghost is never a cell (LAW C); the crossing register refuses this lay.';
+
+// the crossing captions (working text; the designer's craft-pass refines the
+// phrasing, never the truth): the caption declares the DRAWING's crossing —
+// never a real edge of the form, never a cell of it.
+export const CROSSING_CAPTIONS: Record<'klein' | 'rp2', string> = {
+  klein:
+    'the body passes through itself along this pale circle — a crossing of the drawing, never a real edge of the form',
+  rp2: 'the body passes through itself along this pale thread — a crossing of the drawing, never a real edge of the form',
+};
+export const CROSSING_GHOST_FLOOR = 0.3; // the pale-broken ghost's opacity floor
 export const LAID_WALL_COMPONENTS = (n: number): string =>
   `the lay draws ONE connected body — this form has ${n} components; the class bodies stand.`;
 
@@ -95,11 +110,15 @@ export interface LaidBodyModel {
   faceRegions: Array<{ id: string; positions: number[]; indices: number[] }>;
   rimArcs: Array<{ id: string; points: Vec3[] }>; // LAW B — empty on a closed body
   parametrization: {
-    domain: 'flat-square' | 'capped-disk';
+    domain: 'flat-square' | 'capped-disk' | 'twisted-square';
     classUV: Record<string, [number, number]>; // one (u,v) per vertex class
     cut: { treeEdgeIds: string[]; dualTreeEdgeIds: string[]; cutEdgeIds: string[] };
     foldover: { areas: number[]; oneSign: boolean }; // coherently-signed triangle areas
   };
+  // CUT 2 — the crossing register: present exactly on the self-crossing
+  // bodies (klein · rp2); null on the embeddable ones. The crossing is the
+  // DRAWING's, never a cell — it rides beside the four looks, not among them.
+  crossing: CrossingModel | null;
   invariants: FormInvariantsReadout; // the tower's certificate (the card's rows)
   h1Label: string | null;
   note: string | null; // the designer's disclosure, or null
@@ -127,7 +146,12 @@ export interface TreeCotreeCut {
   slotsOf: Map<string, SlotRef[]>; // edge id → its face slots
 }
 
-export function cutComplexToDisk(complex: AssembledComplex): TreeCotreeCut {
+// `seed` rotates the spanning-tree searches' edge orders (default 0 = the
+// original deterministic cut, byte-stable). The twisted route enumerates a
+// few seeds: WHICH interior edges join the dual tree decides which corner
+// instances pre-merge in the disk, and a bad merge can make every seam pin
+// itself impossible while a neighbouring cut is clean.
+export function cutComplexToDisk(complex: AssembledComplex, seed = 0): TreeCotreeCut {
   const slotsOf = new Map<string, SlotRef[]>();
   for (const e of complex.edges) slotsOf.set(e.id, []);
   complex.faces.forEach((face, fi) => {
@@ -139,9 +163,10 @@ export function cutComplexToDisk(complex: AssembledComplex): TreeCotreeCut {
   });
 
   // T — BFS over endpoints (self-loops can never be tree edges)
+  const rotated = [...complex.edges.slice(seed % Math.max(1, complex.edges.length)), ...complex.edges.slice(0, seed % Math.max(1, complex.edges.length))];
   const incident = new Map<string, Array<{ id: string; u: string; v: string }>>();
   for (const v of complex.vertices) incident.set(v, []);
-  for (const e of complex.edges) {
+  for (const e of rotated) {
     if (e.u === e.v) continue;
     incident.get(e.u)?.push(e);
     incident.get(e.v)?.push(e);
@@ -176,12 +201,13 @@ export function cutComplexToDisk(complex: AssembledComplex): TreeCotreeCut {
     const queueF = [0];
     const seenF = new Set<number>([0]);
     const interiorByFace = new Map<number, Array<{ edgeId: string; here: SlotRef; there: SlotRef }>>();
-    for (const [edgeId, refs] of slotsOf) {
-      if (refs.length !== 2 || inT.has(edgeId)) continue;
+    for (const e of rotated) {
+      const refs = slotsOf.get(e.id) as SlotRef[];
+      if (refs.length !== 2 || inT.has(e.id)) continue;
       const [a, b] = refs;
       if (a.face === b.face) continue; // a self-adjacency can never join two faces
-      interiorByFace.set(a.face, [...(interiorByFace.get(a.face) ?? []), { edgeId, here: a, there: b }]);
-      interiorByFace.set(b.face, [...(interiorByFace.get(b.face) ?? []), { edgeId, here: b, there: a }]);
+      interiorByFace.set(a.face, [...(interiorByFace.get(a.face) ?? []), { edgeId: e.id, here: a, there: b }]);
+      interiorByFace.set(b.face, [...(interiorByFace.get(b.face) ?? []), { edgeId: e.id, here: b, there: a }]);
     }
     while (queueF.length > 0) {
       const at = queueF.shift() as number;
@@ -660,6 +686,870 @@ function parametrizeCappedDisk(complex: AssembledComplex, cut: TreeCotreeCut): P
 }
 
 // ---------------------------------------------------------------------------
+// CUT 2 — the crossing register: the TWISTED lay (Klein k=2 · RP² k=1)
+//
+// The SAME cut; the disk's corner instances are laid flat by one harmonic
+// solve; each cut edge's two sides are related by the BODY'S OWN gluing map
+// ("the flip is the body's" — the maps are exactly the committed
+// applyIdentifications rules, as affine elements). A candidate layout ships
+// ONLY through four gates: (1) every free seam translation is an integer of
+// the right parity for the body's group; (2) every face lays one-sign;
+// (3) every vertex class's instances agree in 3D; (4) every seam's two sides
+// sample to the SAME 3D curve. A wrong pin pattern cannot ship — it walls.
+// ---------------------------------------------------------------------------
+
+type M2 = [number, number, number, number]; // row-major 2×2
+const M_ID: M2 = [1, 0, 0, 1];
+const M_FLIP_V: M2 = [1, 0, 0, -1]; // (u, v) ↦ (u, −v)
+const M_FLIP_U: M2 = [-1, 0, 0, 1]; // (u, v) ↦ (−u, v)
+const M_NEG: M2 = [-1, 0, 0, -1]; // (u, v) ↦ (−u, −v) — rp2's central reflection class
+const mulM = (m: M2, p: V2): V2 => [m[0] * p[0] + m[1] * p[1], m[2] * p[0] + m[3] * p[1]];
+
+// the committed bodies' own gluing groups, as reduction rules into [0,1]²:
+//   klein: (u,0)~(u,1) straight · (0,v)~(1,1−v) — elements (u+m, (−1)^m v + n)
+//   rp2:   (u,0)~(1−u,1) · (0,v)~(1,1−v)        — sign pattern tied to parity
+export function reduceKlein(p: V2): V2 {
+  let [u, v] = p;
+  let guard = 0;
+  while (u < 0 || u > 1 || v < 0 || v > 1) {
+    if (u > 1) {
+      u -= 1;
+      v = -v;
+    } else if (u < 0) {
+      u += 1;
+      v = -v;
+    } else if (v > 1) {
+      v -= 1;
+    } else {
+      v += 1;
+    }
+    if ((guard += 1) > 200) throw new Error('laidBodyModel: klein reduction diverged');
+  }
+  return [u, v];
+}
+export function reduceRp2(p: V2): V2 {
+  let [u, v] = p;
+  let guard = 0;
+  while (u < 0 || u > 1 || v < 0 || v > 1) {
+    if (u > 1) {
+      u -= 1;
+      v = 1 - v;
+    } else if (u < 0) {
+      u += 1;
+      v = 1 - v;
+    } else if (v > 1) {
+      v -= 1;
+      u = 1 - u;
+    } else {
+      v += 1;
+      u = 1 - u;
+    }
+    if ((guard += 1) > 200) throw new Error('laidBodyModel: rp2 reduction diverged');
+  }
+  return [u, v];
+}
+
+interface TwistedParam {
+  surface: 'klein' | 'rp2';
+  classPos: Map<string, V2>; // one representative laid position per vertex class
+  faceRings: V2[][]; // each face's laid corner polygon (instances, one chart)
+  edgeEnds: Map<string, [V2, V2]>; // ONE side's laid endpoints per edge class (u-end, v-end)
+  foldover: { areas: number[]; oneSign: boolean };
+  toBody: (p: V2) => Vec3;
+  reduce: (p: V2) => V2;
+}
+
+export function parametrizeTwisted(
+  complex: AssembledComplex,
+  cut: TreeCotreeCut,
+  surface: 'klein' | 'rp2',
+  jitter: number,
+): TwistedParam {
+  const edgeById = new Map(complex.edges.map((e) => [e.id, e]));
+  const toBody: (p: V2) => Vec3 =
+    surface === 'klein'
+      ? (p) => immersionPosition('klein', p[0], p[1]) // Γ-equivariant on raw reals (probed below)
+      : (p) => {
+          const r = reduceRp2(p);
+          return immersionPosition('rp2', r[0], r[1]);
+        };
+  if (surface === 'klein') {
+    // the equivariance the drawing leans on, probed loudly: F(u+1, v) = F(u, −v)
+    for (const [pu, pv] of [
+      [0.23, 0.41],
+      [0.77, 0.9],
+    ] as V2[]) {
+      const a = immersionPosition('klein', pu + 1, pv);
+      const b = immersionPosition('klein', pu, -pv);
+      if (Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) > 1e-9) {
+        throw new Error('laidBodyModel: the klein body is not gluing-equivariant — refusing to lay');
+      }
+    }
+  }
+
+  // ── disk instances: (face, corner), glued along the dual tree ──
+  const ringSize = complex.faces.map((f) => f.boundary.length);
+  const bases: number[] = [];
+  let total = 0;
+  complex.faces.forEach((f, fi) => {
+    bases.push(total);
+    total += ringSize[fi];
+  });
+  const parent = Array.from({ length: total }, (_, i) => i);
+  const find = (x: number): number => {
+    let root = x;
+    while (parent[root] !== root) root = parent[root];
+    let at = x;
+    while (parent[at] !== root) {
+      const next = parent[at];
+      parent[at] = root;
+      at = next;
+    }
+    return root;
+  };
+  const union = (a: number, b: number): void => {
+    parent[find(a)] = find(b);
+  };
+  const instOf = (fi: number, corner: number): number =>
+    bases[fi] + ((corner % ringSize[fi]) + ringSize[fi]) % ringSize[fi];
+  // a side (fi, slot s, dir d): the edge's u-end corner is s when d=1, s+1 when d=−1
+  const uEnd = (fi: number, s: number, d: 1 | -1): number => instOf(fi, d === 1 ? s : s + 1);
+  const vEnd = (fi: number, s: number, d: 1 | -1): number => instOf(fi, d === 1 ? s + 1 : s);
+  const inC = new Set(cut.dualTreeEdgeIds);
+  for (const id of cut.dualTreeEdgeIds) {
+    const [r1, r2] = cut.slotsOf.get(id) as SlotRef[];
+    union(uEnd(r1.face, r1.slot, r1.dir), uEnd(r2.face, r2.slot, r2.dir));
+    union(vEnd(r1.face, r1.slot, r1.dir), vEnd(r2.face, r2.slot, r2.dir));
+  }
+  const rootIndex = new Map<number, number>();
+  for (let i = 0; i < total; i += 1) {
+    const r = find(i);
+    if (!rootIndex.has(r)) rootIndex.set(r, rootIndex.size);
+  }
+  const nodeOf = (i: number): number => rootIndex.get(find(i)) as number;
+  const nodes = rootIndex.size;
+  const classOfCorner = (fi: number, k: number): string => {
+    const slot = complex.faces[fi].boundary[k];
+    const e = edgeById.get(slot.edge) as AssembledComplex['edges'][number];
+    return slot.dir === 1 ? e.u : e.v;
+  };
+
+  // ── the energy (uniform weights + optional deterministic nudge jitter) ──
+  const weightOf = (a: number, b: number): number =>
+    1 + jitter * 0.002 * ((((a + 1) * 73856093) ^ ((b + 1) * 19349663)) % 97) / 97;
+  const terms: Array<{ a: number; b: number; w: number }> = [];
+  complex.faces.forEach((f, fi) => {
+    const n = ringSize[fi];
+    for (let k = 0; k < n; k += 1) {
+      terms.push({ a: nodeOf(instOf(fi, k)), b: nodeOf(instOf(fi, k + 1)), w: weightOf(bases[fi] + k, 1) });
+    }
+    for (let k = 2; k <= n - 2; k += 1) {
+      terms.push({ a: nodeOf(instOf(fi, 0)), b: nodeOf(instOf(fi, k)), w: weightOf(bases[fi], k) });
+    }
+  });
+
+  // ── the seams (cut edges): reversing?, pin combos, constraints ──
+  const seams = [...cut.treeEdgeIds, ...cut.cutEdgeIds].map((id) => {
+    const [r1, r2] = cut.slotsOf.get(id) as SlotRef[];
+    const reversing = cut.faceFlips[r1.face] * r1.dir * cut.faceFlips[r2.face] * r2.dir === 1;
+    return {
+      id,
+      reversing,
+      isX: cut.cutEdgeIds.includes(id),
+      u1: nodeOf(uEnd(r1.face, r1.slot, r1.dir)),
+      v1: nodeOf(vEnd(r1.face, r1.slot, r1.dir)),
+      u2: nodeOf(uEnd(r2.face, r2.slot, r2.dir)),
+      v2: nodeOf(vEnd(r2.face, r2.slot, r2.dir)),
+    };
+  });
+  if (inC.size + seams.length !== complex.edges.length) {
+    throw new Error('laidBodyModel: the cut does not partition the edges — refusing to lay');
+  }
+  const revSeams = seams.filter((s) => s.reversing);
+  if (revSeams.length === 0) {
+    throw new Error(
+      'laidBodyModel: a non-orientable complex whose cut carries no reversing seam — the flip census disagrees; refusing to lay',
+    );
+  }
+  type Pin = { M: M2; t: V2 };
+  // A MARKING is an anchor generator (a reversing seam pinned to the body's
+  // own gluing element — only its translation's PARITY class is gauge-free,
+  // so both classes are tried) plus, when the relaxation needs the second
+  // direction injected, one preserving seam pinned as the other generator.
+  // Every OTHER seam's translation is found by SEQUENTIAL round-and-repin:
+  // pin one, re-solve, pin the next — the surface group's own relations then
+  // force the last ones exact (independent rounding would break them).
+  // anchor enumeration: the census orders the candidates (reversing first,
+  // excess before tree) but does not gate them — the true flip generator may
+  // sit on a census-"preserving" seam in the disk's gauge
+  const orderedSeams = [
+    ...revSeams.filter((s) => s.isX),
+    ...revSeams.filter((s) => !s.isX),
+    ...seams.filter((s) => !s.reversing && s.isX),
+    ...seams.filter((s) => !s.reversing && !s.isX),
+  ];
+  const combos: Array<Map<string, Pin>> = [];
+  if (surface === 'klein') {
+    const preserving = seams.filter((s) => !s.reversing);
+    for (const anchor of orderedSeams.slice(0, 4)) {
+      for (const tA of [
+        [1, 0],
+        [1, 1],
+      ] as V2[]) {
+        combos.push(new Map([[anchor.id, { M: M_FLIP_V, t: tA }]]));
+        for (const s2 of preserving) {
+          if (s2.id === anchor.id) continue;
+          for (const tB of [
+            [0, 1],
+            [0, -1],
+          ] as V2[]) {
+            combos.push(
+              new Map([
+                [anchor.id, { M: M_FLIP_V, t: tA }],
+                [s2.id, { M: M_ID, t: tB }],
+              ]),
+            );
+          }
+        }
+      }
+    }
+  } else {
+    for (const anchor of orderedSeams.slice(0, 4)) {
+      combos.push(new Map([[anchor.id, { M: M_FLIP_V, t: [1, 1] }]]));
+      combos.push(new Map([[anchor.id, { M: M_FLIP_U, t: [1, 1] }]]));
+    }
+  }
+
+  // parity table: which affine elements the body's group actually contains.
+  //   klein Γ = {(u+m, (−1)^m v + n)} — v-flip ⟺ odd u-translation;
+  //   rp2  Γ = ⟨(1−u, v+1), (u+1, 1−v)⟩ — ONE axis flipped ⟺ odd/odd
+  //   translations; zero or BOTH axes flipped ⟺ even/even.
+  const flipCount = (m: M2): number => (m[0] < 0 ? 1 : 0) + (m[3] < 0 ? 1 : 0);
+  const parityOk = (m: M2, t: V2): boolean => {
+    const ti = [Math.round(t[0]), Math.round(t[1])];
+    if (Math.abs(t[0] - ti[0]) > 1e-6 || Math.abs(t[1] - ti[1]) > 1e-6) return false;
+    const uOdd = ((ti[0] % 2) + 2) % 2 === 1;
+    const vOdd = ((ti[1] % 2) + 2) % 2 === 1;
+    if (surface === 'klein') {
+      if (flipCount(m) === 0) return !uOdd;
+      return uOdd; // v-flip ⟺ odd u-translation
+    }
+    if (flipCount(m) === 1) return uOdd && vOdd;
+    return !uOdd && !vOdd;
+  };
+
+  // one KKT solve for a given pin assignment (free seams carry difference
+  // rows); constraint rows are rank-reduced first so a CONSISTENT redundant
+  // system still solves and an inconsistent one refuses loudly
+  const N = 2 * nodes;
+  const A = Array.from({ length: N }, () => new Array<number>(N).fill(0));
+  for (const t of terms) {
+    if (t.a === t.b) continue;
+    for (const c of [0, 1]) {
+      A[2 * t.a + c][2 * t.a + c] += t.w;
+      A[2 * t.b + c][2 * t.b + c] += t.w;
+      A[2 * t.a + c][2 * t.b + c] -= t.w;
+      A[2 * t.b + c][2 * t.a + c] -= t.w;
+    }
+  }
+  let rootAt: V2 = [0.2027, 0.3211];
+  const solveWith = (pinsAll: Map<string, Pin>): V2[] => {
+    const C: number[][] = [];
+    const d: number[] = [];
+    const addRow = (coeffs: Array<[number, number, number]>, rhs: number): void => {
+      const row = new Array<number>(N).fill(0);
+      for (const [node, comp, val] of coeffs) row[2 * node + comp] += val;
+      C.push(row);
+      d.push(rhs);
+    };
+    for (const s of seams) {
+      const pin = pinsAll.get(s.id);
+      // an UNCHOSEN seam contributes NO equation — its linear class is still
+      // a guess, and a guess must never be a hard constraint (the disk stays
+      // coupled through its own faces; the greedy reads the relaxed layout)
+      if (!pin) continue;
+      const M = pin.M;
+      // q(end₂) = M q(end₁) + t
+      for (const [n2, n1] of [
+        [s.u2, s.u1],
+        [s.v2, s.v1],
+      ]) {
+        addRow([[n2, 0, 1], [n1, 0, -M[0]], [n1, 1, -M[1]]], pin.t[0]);
+        addRow([[n2, 1, 1], [n1, 0, -M[2]], [n1, 1, -M[3]]], pin.t[1]);
+      }
+    }
+    // the representative instance's pin: the CLEAN value sits off the locus
+    // (a root parked on it would hand its vertex class to the ghost by
+    // fiat); the LATTICE fallback lets a group-FORCED cone vertex sit where
+    // the body demands (rp2's π-cones live on half-lattice points — such a
+    // vertex can never satisfy an off-lattice root, and it gets ghosted)
+    addRow([[0, 0, 1]], rootAt[0]);
+    addRow([[0, 1, 1]], rootAt[1]);
+    // rank-reduce [C | d]: drop dependent rows when consistent, refuse when not
+    const rowsR = C.map((row, r) => [...row, d[r]]);
+    const kept: number[][] = [];
+    for (const row of rowsR) {
+      const work = [...row];
+      for (const lead of kept) {
+        let pivotCol = -1;
+        for (let j = 0; j < N; j += 1) {
+          if (Math.abs(lead[j]) > 1e-9) {
+            pivotCol = j;
+            break;
+          }
+        }
+        if (pivotCol < 0) continue;
+        const f = work[pivotCol] / lead[pivotCol];
+        if (f !== 0) for (let j = 0; j <= N; j += 1) work[j] -= f * lead[j];
+      }
+      const maxCoef = Math.max(...work.slice(0, N).map((x) => Math.abs(x)));
+      if (maxCoef > 1e-9) {
+        kept.push(work);
+      } else if (Math.abs(work[N]) > 1e-7) {
+        throw new Error('inconsistent seam pins');
+      }
+    }
+    const K = N + kept.length;
+    const KKT = Array.from({ length: K }, () => new Array<number>(K).fill(0));
+    const rhs = Array.from({ length: K }, () => [0]);
+    for (let i = 0; i < N; i += 1) for (let j = 0; j < N; j += 1) KKT[i][j] = A[i][j];
+    kept.forEach((row, r) => {
+      for (let j = 0; j < N; j += 1) {
+        KKT[N + r][j] = row[j];
+        KKT[j][N + r] = row[j];
+      }
+      rhs[N + r][0] = row[N];
+    });
+    if (jitter > 0) {
+      // THE NUDGE (LAW C): a deterministic force bias, strong enough to move
+      // a symmetric layout's cells VISIBLY off the locus; the seams stay
+      // exact equations, so the same gates verify the nudged layout whole
+      for (let k = 0; k < nodes; k += 1) {
+        const h1 = ((((k + 3) * 2654435761) >>> 0) % 997) / 997 - 0.5;
+        const h2 = ((((k + 11) * 1103515245) >>> 0) % 991) / 991 - 0.5;
+        if (surface !== 'klein') rhs[2 * k][0] += jitter * 0.12 * h1;
+        rhs[2 * k + 1][0] += jitter * 0.12 * h2;
+      }
+    }
+    const solved = solveDense(KKT, rhs);
+    const q: V2[] = Array.from({ length: nodes }, (_, k) => [solved[2 * k][0], solved[2 * k + 1][0]]);
+    if (q.some((p) => !Number.isFinite(p[0]) || !Number.isFinite(p[1]))) throw new Error('non-finite layout');
+    return q;
+  };
+  // the nearest translation the body's group actually contains
+  const roundLegal = (m: M2, t: V2): V2 => {
+    const out: V2 = [Math.round(t[0]), Math.round(t[1])];
+    const fixToward = (k: 0 | 1): void => {
+      out[k] += t[k] >= out[k] ? 1 : -1;
+    };
+    if (surface === 'klein') {
+      const flip = m[3] === -1;
+      const uOdd = ((out[0] % 2) + 2) % 2 === 1;
+      if (flip !== uOdd) fixToward(0);
+    } else {
+      const wantOdd = flipCount(m) === 1;
+      for (const k of [0, 1] as const) {
+        const odd = ((out[k] % 2) + 2) % 2 === 1;
+        if (odd !== wantOdd) fixToward(k);
+      }
+    }
+    return out;
+  };
+  // the linear classes a seam may wear on this body. The flip census's
+  // reversing/preserving label is GAUGE-RELATIVE (re-flipping a face moves
+  // the label between cohomologous seam sets), so the census only ORDERS the
+  // candidates — every legal class stays on offer; the greedy picks by
+  // rounding residual and the parity/3D gates judge the truth.
+  const seamMCandidates = (reversing: boolean): M2[] => {
+    if (surface === 'klein') return reversing ? [M_FLIP_V, M_ID] : [M_ID, M_FLIP_V];
+    return reversing ? [M_FLIP_V, M_FLIP_U, M_ID, M_NEG] : [M_ID, M_NEG, M_FLIP_V, M_FLIP_U];
+  };
+
+  const comboFailures: string[] = [];
+  for (const rootCandidate of [
+    [0.2027, 0.3211],
+    [0, 0],
+  ] as V2[]) {
+  rootAt = rootCandidate;
+  for (const combo of combos) {
+    try {
+      // SEQUENTIAL ROUND-AND-REPIN: relax, pin the next free seam at its
+      // nearest legal group element (its linear class chosen GREEDILY by
+      // rounding residual — rp2 seams may wear I, −I, or either flip),
+      // re-solve, repeat — the surface group's own relations then force the
+      // tail translations exact (rounding all seams independently would
+      // break the relations). The gates judge only the final layout.
+      const allPins = new Map(combo);
+      let qCur = solveWith(allPins);
+      for (const s of seams) {
+        if (allPins.has(s.id)) continue;
+        // candidate elements from BOTH endpoint pairs (at the relaxed stage
+        // they may disagree — the u-pair can sit satisfied while the v-pair
+        // names the true translation), then TRY-AND-VERIFY: the solver
+        // itself adjudicates each candidate against the group's relations
+        const candidates: Array<{ pin: Pin; score: number }> = [];
+        for (const M of seamMCandidates(s.reversing)) {
+          const tU = sub2(qCur[s.u2], mulM(M, qCur[s.u1]));
+          const tV = sub2(qCur[s.v2], mulM(M, qCur[s.v1]));
+          const mid: V2 = [(tU[0] + tV[0]) / 2, (tU[1] + tV[1]) / 2];
+          for (const guess of [tU, tV, mid]) {
+            const t = roundLegal(M, guess);
+            if (candidates.some((c) => c.pin.M === M && c.pin.t[0] === t[0] && c.pin.t[1] === t[1])) continue;
+            const score =
+              Math.hypot(tU[0] - t[0], tU[1] - t[1]) + Math.hypot(tV[0] - t[0], tV[1] - t[1]);
+            candidates.push({ pin: { M, t }, score });
+          }
+        }
+        candidates.sort((a, b) => a.score - b.score);
+        let solved: V2[] | null = null;
+        let chosen: Pin | null = null;
+        for (const c of candidates.slice(0, 8)) {
+          try {
+            allPins.set(s.id, c.pin);
+            solved = solveWith(allPins);
+            chosen = c.pin;
+            break;
+          } catch {
+            allPins.delete(s.id);
+          }
+        }
+        if (!solved || !chosen) {
+          throw new Error(`seam "${s.id}" admits no legal gluing at this marking`);
+        }
+        qCur = solved;
+      }
+      const q = qCur;
+
+      // gate 1 — every seam is EXACTLY a body gluing on the final layout
+      for (const s of seams) {
+        const M = (allPins.get(s.id) as Pin).M;
+        const tU = sub2(q[s.u2], mulM(M, q[s.u1]));
+        const tV = sub2(q[s.v2], mulM(M, q[s.v1]));
+        if (Math.hypot(tU[0] - tV[0], tU[1] - tV[1]) > 1e-6) throw new Error(`seam "${s.id}" shears`);
+        if (!parityOk(M, tU)) throw new Error(`seam "${s.id}" translation (${tU}) is not a body gluing`);
+      }
+      // gate 2 — faces lay one-sign
+      const faceRings: V2[][] = complex.faces.map((f, fi) =>
+        f.boundary.map((_, k) => q[nodeOf(instOf(fi, k))]),
+      );
+      const areas: number[] = [];
+      faceRings.forEach((ring, fi) => {
+        for (let k = 1; k < ring.length - 1; k += 1) {
+          const area =
+            0.5 *
+            ((ring[k][0] - ring[0][0]) * (ring[k + 1][1] - ring[0][1]) -
+              (ring[k][1] - ring[0][1]) * (ring[k + 1][0] - ring[0][0]));
+          areas.push(area * cut.faceFlips[fi]);
+        }
+      });
+      const oneSign = areas.every((a) => a > 1e-9) || areas.every((a) => a < -1e-9);
+      if (!oneSign) throw new Error('the twisted layout folds over');
+      // gate 3 — every vertex class agrees in 3D across its instances
+      const classPos = new Map<string, V2>();
+      complex.faces.forEach((f, fi) => {
+        f.boundary.forEach((_, k) => {
+          const cls = classOfCorner(fi, k);
+          const p = q[nodeOf(instOf(fi, k))];
+          const seen = classPos.get(cls);
+          if (!seen) {
+            classPos.set(cls, p);
+          } else {
+            const a = toBody(seen);
+            const b = toBody(p);
+            if (Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) > 1e-5) {
+              throw new Error(`vertex class "${cls}" disagrees across sheets`);
+            }
+          }
+        });
+      });
+      for (const v of complex.vertices) {
+        if (!classPos.has(v)) throw new Error(`vertex class "${v}" never laid`);
+      }
+      // gate 4 — every seam's two sides draw the SAME 3D curve
+      for (const s of seams) {
+        for (let step = 0; step <= 8; step += 1) {
+          const t = step / 8;
+          const p1: V2 = [
+            q[s.u1][0] + (q[s.v1][0] - q[s.u1][0]) * t,
+            q[s.u1][1] + (q[s.v1][1] - q[s.u1][1]) * t,
+          ];
+          const p2: V2 = [
+            q[s.u2][0] + (q[s.v2][0] - q[s.u2][0]) * t,
+            q[s.u2][1] + (q[s.v2][1] - q[s.u2][1]) * t,
+          ];
+          const a = toBody(p1);
+          const b = toBody(p2);
+          if (Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) > 1e-5) {
+            throw new Error(`seam "${s.id}" sides diverge in 3D`);
+          }
+        }
+      }
+      const edgeEnds = new Map<string, [V2, V2]>();
+      for (const s of seams) edgeEnds.set(s.id, [q[s.u1], q[s.v1]]);
+      for (const id of cut.dualTreeEdgeIds) {
+        const [r1] = cut.slotsOf.get(id) as SlotRef[];
+        edgeEnds.set(id, [q[nodeOf(uEnd(r1.face, r1.slot, r1.dir))], q[nodeOf(vEnd(r1.face, r1.slot, r1.dir))]]);
+      }
+      return {
+        surface,
+        classPos,
+        faceRings,
+        edgeEnds,
+        foldover: { areas, oneSign },
+        toBody,
+        reduce: surface === 'klein' ? reduceKlein : reduceRp2,
+      };
+    } catch (error) {
+      const pinned = [...combo.entries()]
+        .map(([id, p]) => `${id.slice(0, 18)}→(${p.t})${p.M[3] < 0 ? 'v̄' : p.M[0] < 0 ? 'ū' : ''}`)
+        .join(',');
+      comboFailures.push(`{${pinned}}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  }
+  throw new Error(
+    `laidBodyModel: no gated twisted layout — ${comboFailures.slice(0, 10).join(' · ') || 'no candidate marking'} — the class body stands`,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// the DOUBLE LOCUS — computed per body from the committed formulas, never a
+// sampled search:
+//   klein (figure-8): the cross-section curve (sin vv, sin 2vv) meets itself
+//     exactly where BOTH vanish — vv ∈ {0, π}, i.e. v ≡ 0 and v ≡ ½ (mod 1),
+//     every u; both circles land on the ONE central circle of radius S·C.
+//     The sheet pairing is (u, 0) ↔ (u, ½).
+//   rp2 (cross-cap): sin 2v_c ≥ 0 on the chart, so doubles need sin 2v_c = 0
+//     — the chart's PERIMETER (ρ = 1), which maps 2:1 (beyond the gluing)
+//     onto the Whitney segment x = y = 0, z ∈ [−½·S, 0]; the sheet pairing
+//     is the mirror (u, v) ↔ (1−u, v), pinches at u = ½.
+// ---------------------------------------------------------------------------
+
+export interface CrossingModel {
+  body: 'klein' | 'rp2';
+  caption: string; // the designer's declaration — the MAP's crossing, never a cell
+  count: number; // countable TRANSVERSAL crossings of laid edge curves
+  locusCurves: Vec3[][]; // the pale-broken ghost's own polylines (computed)
+  crossings: Array<{
+    edgeId: string;
+    t: number;
+    uv: [number, number];
+    point: Vec3;
+    partnerUv: [number, number];
+    partner: { kind: 'vertex' | 'face' | 'edge'; id: string };
+  }>;
+  // a PERSON'S OWN vertex whose (u,v) lands ON the locus is GHOSTED, never
+  // refused and never re-minted: both sheets meet at one 3D point (on rp2
+  // the two π-cone vertices are FORCED there by the chart group itself —
+  // exactly the mandate's "two cells at one 3D point")
+  vertexGhosts: Array<{
+    vertexId: string;
+    uv: [number, number];
+    point: Vec3;
+    partnerUv: [number, number];
+    partner: { kind: 'vertex' | 'face' | 'edge'; id: string };
+  }>;
+  // an edge whose straight chart chord would LIE ALONG the locus is NUDGED
+  // OFF as a drawn BOW (an arc into the chart's interior — a depiction
+  // choice, like the fan's arcs; no metric claim): the ghost then never
+  // runs along a cell edge, and the bow's endpoints stay declared ghosts
+  bowedEdges: Array<{ edgeId: string; points: Vec3[] }>;
+  brokenEdges: Array<{ edgeId: string; segments: Vec3[][]; stubs: Vec3[][] }>;
+  ghostFloor: number;
+}
+
+const KLEIN_S = 1.4;
+const KLEIN_C = 2;
+const RP2_S = 5.5;
+
+function locusCurves3(body: 'klein' | 'rp2'): Vec3[][] {
+  if (body === 'klein') {
+    const circle: Vec3[] = [];
+    for (let k = 0; k <= 96; k += 1) {
+      const theta = (2 * Math.PI * k) / 96;
+      circle.push([KLEIN_S * KLEIN_C * Math.cos(theta), 0, KLEIN_S * KLEIN_C * Math.sin(theta)]);
+    }
+    return [circle];
+  }
+  const segment: Vec3[] = [];
+  for (let k = 0; k <= 16; k += 1) {
+    segment.push([0, RP2_S * (-0.5 + (0.5 * k) / 16), 0]);
+  }
+  return [segment];
+}
+
+function buildCrossingModel(
+  complex: AssembledComplex,
+  param: TwistedParam,
+  shape: Shape,
+): { model: CrossingModel; aligned: boolean } {
+  const EPS_ALIGN = 1e-3;
+  const body = param.surface;
+  let aligned = false;
+  // a vertex whose (u,v) LANDS on the locus is GHOSTED — both sheets named,
+  // one 3D point — never refused and never re-minted (LAW C bars MINTING a
+  // cell on the crossing; the person's own cell landing there is the very
+  // case the register exists to declare). On rp2 this is forced: the chart
+  // group puts its two π-cone vertices exactly on the Whitney segment.
+  const vertexGhosts: CrossingModel['vertexGhosts'] = [];
+  for (const [vertexId, p] of param.classPos) {
+    if (body === 'klein') {
+      const twice = p[1] * 2;
+      if (Math.abs(twice - Math.round(twice)) < EPS_ALIGN) {
+        const partnerUv: V2 = [p[0], p[1] + 0.5];
+        vertexGhosts.push({
+          vertexId,
+          uv: [p[0], p[1]],
+          point: param.toBody(p),
+          partnerUv: [partnerUv[0], partnerUv[1]],
+          partner: locatePartnerCell(partnerUv, null, vertexId),
+        });
+      }
+    } else {
+      const r = param.reduce(p);
+      if (
+        Math.min(Math.abs(r[0]), Math.abs(1 - r[0]), Math.abs(r[1]), Math.abs(1 - r[1])) < EPS_ALIGN
+      ) {
+        const partnerUv: V2 = [1 - r[0], r[1]];
+        vertexGhosts.push({
+          vertexId,
+          uv: [r[0], r[1]],
+          point: param.toBody(p),
+          partnerUv: [partnerUv[0], partnerUv[1]],
+          partner: locatePartnerCell(partnerUv, null, vertexId),
+        });
+      }
+    }
+  }
+  for (const g of vertexGhosts) {
+    const there = param.toBody(g.partnerUv);
+    if (Math.hypot(g.point[0] - there[0], g.point[1] - there[1], g.point[2] - there[2]) > 1e-5) {
+      throw new Error('laidBodyModel: a vertex ghost\'s sheet pairing disagrees with the body — refusing');
+    }
+  }
+  const crossings: CrossingModel['crossings'] = [];
+  const crossingsByEdge = new Map<string, number[]>();
+  const alignedEdges: Array<{ edgeId: string; a: V2; b: V2 }> = [];
+  for (const e of complex.edges) {
+    const [a, b] = param.edgeEnds.get(e.id) as [V2, V2];
+    const ts: number[] = [];
+    const record = (t: number, uv: V2, partnerUv: V2): void => {
+      ts.push(t);
+      const point = param.toBody(uv);
+      const partnerPoint = param.toBody(partnerUv);
+      if (
+        Math.hypot(point[0] - partnerPoint[0], point[1] - partnerPoint[1], point[2] - partnerPoint[2]) > 1e-5
+      ) {
+        throw new Error('laidBodyModel: the computed sheet pairing disagrees with the body — refusing');
+      }
+      crossings.push({
+        edgeId: e.id,
+        t,
+        uv: [uv[0], uv[1]],
+        point,
+        partnerUv: [partnerUv[0], partnerUv[1]],
+        partner: locatePartnerCell(partnerUv, e.id, null),
+      });
+    };
+    if (body === 'klein') {
+      const dv = b[1] - a[1];
+      const onLocus = (v: number): boolean => Math.abs(v * 2 - Math.round(v * 2)) < EPS_ALIGN;
+      if (Math.abs(dv) < EPS_ALIGN) {
+        if (onLocus(a[1])) alignedEdges.push({ edgeId: e.id, a, b }); // runs ALONG a locus circle → bow
+      } else {
+        const lo = Math.min(a[1], b[1]);
+        const hi = Math.max(a[1], b[1]);
+        for (let k = Math.ceil(lo * 2 - 1e-9); k <= Math.floor(hi * 2 + 1e-9); k += 1) {
+          const t = (k / 2 - a[1]) / dv;
+          if (t <= 1e-4 || t >= 1 - 1e-4) continue;
+          const uv: V2 = [a[0] + (b[0] - a[0]) * t, k / 2];
+          record(t, uv, [uv[0], uv[1] + 0.5]);
+        }
+      }
+    } else {
+      for (const axis of [0, 1] as const) {
+        const da = b[axis] - a[axis];
+        const onInt = (x: number): boolean => Math.abs(x - Math.round(x)) < EPS_ALIGN;
+        if (Math.abs(da) < EPS_ALIGN) {
+          if (onInt(a[axis]) && !alignedEdges.some((x) => x.edgeId === e.id)) {
+            alignedEdges.push({ edgeId: e.id, a, b }); // rides the perimeter → bow
+          }
+          continue;
+        }
+        const lo = Math.min(a[axis], b[axis]);
+        const hi = Math.max(a[axis], b[axis]);
+        for (let k = Math.ceil(lo - 1e-9); k <= Math.floor(hi + 1e-9); k += 1) {
+          const t = (k - a[axis]) / da;
+          if (t <= 1e-4 || t >= 1 - 1e-4) continue;
+          const raw: V2 = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+          const at = param.reduce(raw);
+          record(t, raw, mirrorRp2Partner(at, raw));
+        }
+      }
+    }
+    ts.sort((x, y) => x - y);
+    crossingsByEdge.set(e.id, ts);
+  }
+
+  function mirrorRp2Partner(reduced: V2, raw: V2): V2 {
+    // the crossing partner on the perimeter is the u-mirror (1−u, v); return
+    // it in the RAW segment's own chart neighbourhood so toBody agrees
+    void raw;
+    return [1 - reduced[0], reduced[1]];
+  }
+
+  function locatePartnerCell(
+    partnerUv: V2,
+    selfEdgeId: string | null,
+    selfVertexId: string | null,
+  ): { kind: 'vertex' | 'face' | 'edge'; id: string } {
+    // candidates: the partner and its nearby group images, tested against the
+    // laid VERTICES first (a vertex ghost's other sheet is often the other
+    // cone vertex), then the edges (edge×edge crossings name both edges),
+    // then the faces
+    const candidates: V2[] = [];
+    const range = 3;
+    for (let m = -range; m <= range; m += 1) {
+      for (let n = -range; n <= range; n += 1) {
+        if (param.surface === 'klein') {
+          const sign = ((m % 2) + 2) % 2 === 1 ? -1 : 1;
+          candidates.push([partnerUv[0] + m, sign * partnerUv[1] + n]);
+        } else {
+          for (const [su, sv] of [
+            [1, 1],
+            [1, -1],
+            [-1, 1],
+            [-1, -1],
+          ]) {
+            const uOdd = ((m % 2) + 2) % 2 === 1;
+            const nOdd = ((n % 2) + 2) % 2 === 1;
+            const legal =
+              (su === 1 && sv === 1 && !uOdd && !nOdd) ||
+              (su === 1 && sv === -1 && uOdd && nOdd) ||
+              (su === -1 && sv === 1 && uOdd && nOdd) ||
+              (su === -1 && sv === -1 && !uOdd && !nOdd);
+            if (legal) candidates.push([su * partnerUv[0] + m, sv * partnerUv[1] + n]);
+          }
+        }
+      }
+    }
+    const distToSegment = (p: V2, a: V2, b: V2): number => {
+      const ab: V2 = [b[0] - a[0], b[1] - a[1]];
+      const len2 = ab[0] * ab[0] + ab[1] * ab[1];
+      const t = len2 < 1e-12 ? 0 : Math.max(0, Math.min(1, ((p[0] - a[0]) * ab[0] + (p[1] - a[1]) * ab[1]) / len2));
+      return Math.hypot(p[0] - (a[0] + ab[0] * t), p[1] - (a[1] + ab[1] * t));
+    };
+    for (const [id, pos] of param.classPos) {
+      if (id === selfVertexId) continue;
+      for (const c of candidates) {
+        if (Math.hypot(c[0] - pos[0], c[1] - pos[1]) < 2e-3) return { kind: 'vertex', id };
+      }
+    }
+    for (const [id, [a, b]] of param.edgeEnds) {
+      if (id === selfEdgeId) continue;
+      for (const c of candidates) {
+        if (distToSegment(c, a, b) < 2e-3) return { kind: 'edge', id };
+      }
+    }
+    const inRing = (p: V2, ring: V2[]): boolean => {
+      let inside = false;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) {
+        const yi = ring[i][1];
+        const yj = ring[j][1];
+        if (yi > p[1] !== yj > p[1]) {
+          const x = ring[j][0] + ((p[1] - yj) / (yi - yj)) * (ring[i][0] - ring[j][0]);
+          if (p[0] < x) inside = !inside;
+        }
+      }
+      return inside;
+    };
+    for (let fi = 0; fi < param.faceRings.length; fi += 1) {
+      for (const c of candidates) {
+        if (inRing(c, param.faceRings[fi])) {
+          return { kind: 'face', id: shape.faces[fi]?.id ?? `face-class:${fi}` };
+        }
+      }
+    }
+    // the locus point must sit ON the drawn surface somewhere — else refuse
+    throw new Error('laidBodyModel: a crossing partner lands on no laid cell — refusing');
+  }
+
+  // THE BOW (the nudge for an edge lying ALONG the locus): the drawn curve
+  // arcs into the chart's interior — off the locus everywhere except its
+  // endpoints, which stay declared vertex ghosts. A zero-chord aligned edge
+  // cannot bow; that one keeps the retry/wall path.
+  const bowedIds = new Set(alignedEdges.map((x) => x.edgeId));
+  const bowedEdges: CrossingModel['bowedEdges'] = [];
+  for (const { edgeId, a, b } of alignedEdges) {
+    const chord = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (chord < 1e-6) {
+      aligned = true;
+      continue;
+    }
+    const mid: V2 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    let inward: V2 = [0, 1];
+    if (body === 'rp2') {
+      const r = param.reduce(mid);
+      const toCenter: V2 = [0.5 - r[0], 0.5 - r[1]];
+      const len = Math.hypot(toCenter[0], toCenter[1]) || 1;
+      inward = [toCenter[0] / len, toCenter[1] / len];
+    }
+    const sag = 0.16;
+    const ctrl: V2 = [mid[0] + inward[0] * sag, mid[1] + inward[1] * sag];
+    const points: Vec3[] = [];
+    for (let s = 0; s <= 28; s += 1) {
+      const t = s / 28;
+      const w0 = (1 - t) * (1 - t);
+      const w1 = 2 * (1 - t) * t;
+      const w2 = t * t;
+      points.push(
+        param.toBody([w0 * a[0] + w1 * ctrl[0] + w2 * b[0], w0 * a[1] + w1 * ctrl[1] + w2 * b[1]]),
+      );
+    }
+    bowedEdges.push({ edgeId, points });
+  }
+  const keptCrossings = crossings.filter((c) => !bowedIds.has(c.edgeId));
+
+  // the pale-broken ink plan: split every crossed edge's curve at its crossings
+  const brokenEdges: CrossingModel['brokenEdges'] = [];
+  for (const e of complex.edges) {
+    if (bowedIds.has(e.id)) continue;
+    const ts = crossingsByEdge.get(e.id) ?? [];
+    if (ts.length === 0) continue;
+    const [a, b] = param.edgeEnds.get(e.id) as [V2, V2];
+    const at = (t: number): V2 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    const GAP = 0.055;
+    const segments: Vec3[][] = [];
+    const stubs: Vec3[][] = [];
+    let cursor = 0;
+    for (const t of ts) {
+      const lo = Math.max(0, t - GAP);
+      const hi = Math.min(1, t + GAP);
+      if (lo > cursor + 1e-6) segments.push(sampleCurve(at(cursor), at(lo), param.toBody));
+      stubs.push(sampleCurve(at(lo), at(hi), param.toBody));
+      cursor = hi;
+    }
+    if (cursor < 1 - 1e-6) segments.push(sampleCurve(at(cursor), at(1), param.toBody));
+    brokenEdges.push({ edgeId: e.id, segments, stubs });
+  }
+
+  return {
+    model: {
+      body,
+      caption: CROSSING_CAPTIONS[body],
+      count: keptCrossings.length,
+      locusCurves: locusCurves3(body),
+      crossings: keptCrossings,
+      vertexGhosts,
+      bowedEdges,
+      brokenEdges,
+      ghostFloor: CROSSING_GHOST_FLOOR,
+    },
+    aligned,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // laying the cells: dots, sampled curves, sub-triangulated regions
 // ---------------------------------------------------------------------------
 
@@ -733,22 +1623,67 @@ export function laidBodyVerdict(shape: Shape, lineage: Shape | Shape[] | null): 
   const component = classification.components[0];
   const cls: SurfaceClass = component.class;
   if (cls.b > 0) return { ok: false, wall: LAID_WALL_BOUNDED(cls.b) };
-  if (cls.kind === 'non-orientable') return { ok: false, wall: LAID_WALL_CROSSING };
-  const g = cls.g as number;
-  if (g >= 2) return { ok: false, wall: LAID_WALL_NO_BODY(g) };
+  // CUT 2: closed non-orientable ROUTES THROUGH THE L — RP² (k=1) and Klein
+  // (k=2) lay onto their committed self-crossing bodies with the crossing
+  // register riding the model; only k ≥ 3 walls (no committed body).
+  const crosscaps = cls.kind === 'non-orientable' ? (cls.k as number) : null;
+  if (crosscaps !== null && crosscaps >= 3) {
+    return { ok: false, wall: LAID_WALL_CROSSCAPS(crosscaps) };
+  }
+  const g = cls.kind === 'orientable' ? (cls.g as number) : null;
+  if (g !== null && g >= 2) return { ok: false, wall: LAID_WALL_NO_BODY(g) };
   const complex = component.complex;
   try {
     const cut = cutComplexToDisk(complex);
-    const surface: ImmersedSurfaceKey = g === 1 ? 'torus' : 'sphere';
+    let cutUsed = cut;
+    const surface: ImmersedSurfaceKey =
+      crosscaps !== null ? (crosscaps === 1 ? 'rp2' : 'klein') : g === 1 ? 'torus' : 'sphere';
     let toBody: (p: V2) => Vec3;
     let positionOfClass: (c: string) => V2;
     let faceRings: V2[][];
     let foldover: { areas: number[]; oneSign: boolean };
-    let domain: 'flat-square' | 'capped-disk';
+    let domain: 'flat-square' | 'capped-disk' | 'twisted-square';
     let jumpOf: Map<string, V2> | null = null;
     let capFace = -1;
     let capRing: string[] = [];
-    if (g === 1) {
+    let twisted: TwistedParam | null = null;
+    let crossingBuilt: { model: CrossingModel; aligned: boolean } | null = null;
+    if (crosscaps !== null) {
+      // CUT 2 — the crossing register: lay, then check LAW C's transversality;
+      // an aligned cell gets a deterministic nudge (a solve bias), a failed
+      // or aligned cut tries its neighbouring cuts (the dual tree's choice of
+      // interior gluings can poison every seam), and only when every road
+      // ends aligned/refused does the register WALL — a ghost is never a
+      // cell, and a cell never a ghost.
+      let roadEnd: unknown = null;
+      const seedMax = Math.min(complex.edges.length, 8);
+      for (let seed = 0; seed <= seedMax && twisted === null; seed += 1) {
+        try {
+          const cutT = seed === 0 ? cut : cutComplexToDisk(complex, seed);
+          let cand = parametrizeTwisted(complex, cutT, surface as 'klein' | 'rp2', 0);
+          let cross = buildCrossingModel(complex, cand, shape);
+          if (cross.aligned) {
+            cand = parametrizeTwisted(complex, cutT, surface as 'klein' | 'rp2', 1);
+            cross = buildCrossingModel(complex, cand, shape);
+            if (cross.aligned) throw new Error(LAID_WALL_ALIGNED);
+          }
+          twisted = cand;
+          crossingBuilt = cross;
+          cutUsed = cutT;
+        } catch (error) {
+          roadEnd = error;
+        }
+      }
+      if (twisted === null || crossingBuilt === null) {
+        throw roadEnd instanceof Error ? roadEnd : new Error(String(roadEnd ?? 'no twisted lay'));
+      }
+      const t = twisted;
+      toBody = t.toBody;
+      positionOfClass = (c) => t.classPos.get(c) as V2;
+      faceRings = t.faceRings;
+      foldover = t.foldover;
+      domain = 'twisted-square';
+    } else if (g === 1) {
       const p = parametrizeFlatSquare(complex, cut);
       toBody = p.toBody;
       positionOfClass = (c) => p.cover.get(c) as V2;
@@ -768,9 +1703,15 @@ export function laidBodyVerdict(shape: Shape, lineage: Shape | Shape[] | null): 
     }
     // LAW A — every class exactly once
     const vertexDots = complex.vertices.map((id) => ({ id, position: toBody(positionOfClass(id)) }));
+    const bowedByEdge = new Map(
+      (crossingBuilt ? crossingBuilt.model.bowedEdges : []).map((bw) => [bw.edgeId, bw.points]),
+    );
     const edgeCurves = complex.edges.map((e) => {
-      const a = positionOfClass(e.u);
-      const b = jumpOf ? add2(a, jumpOf.get(e.id) as V2) : positionOfClass(e.v);
+      const bowed = bowedByEdge.get(e.id);
+      if (bowed) return { id: e.id, points: bowed };
+      const ends = twisted ? (twisted.edgeEnds.get(e.id) as [V2, V2]) : null;
+      const a = ends ? ends[0] : positionOfClass(e.u);
+      const b = ends ? ends[1] : jumpOf ? add2(a, jumpOf.get(e.id) as V2) : positionOfClass(e.v);
       return { id: e.id, points: sampleCurve(a, b, toBody) };
     });
     const faceRegions = complex.faces.map((face, fi) => {
@@ -815,10 +1756,15 @@ export function laidBodyVerdict(shape: Shape, lineage: Shape | Shape[] | null): 
     const classUV: Record<string, [number, number]> = {};
     for (const id of complex.vertices) {
       const p = positionOfClass(id);
-      classUV[id] =
-        domain === 'flat-square'
-          ? [p[0] - Math.floor(p[0]), p[1] - Math.floor(p[1])]
-          : [(Math.PI / 2 - Math.atan2(p[1], p[0])) / (2 * Math.PI), Math.min(1, Math.hypot(p[0], p[1])) * CAP_V];
+      if (twisted) {
+        const r = twisted.reduce(p);
+        classUV[id] = [r[0], r[1]];
+      } else {
+        classUV[id] =
+          domain === 'flat-square'
+            ? [p[0] - Math.floor(p[0]), p[1] - Math.floor(p[1])]
+            : [(Math.PI / 2 - Math.atan2(p[1], p[0])) / (2 * Math.PI), Math.min(1, Math.hypot(p[0], p[1])) * CAP_V];
+      }
     }
     const invariants = readFormInvariants(shape, lineage);
     const model: LaidBodyModel = {
@@ -834,9 +1780,14 @@ export function laidBodyVerdict(shape: Shape, lineage: Shape | Shape[] | null): 
       parametrization: {
         domain,
         classUV,
-        cut: { treeEdgeIds: cut.treeEdgeIds, dualTreeEdgeIds: cut.dualTreeEdgeIds, cutEdgeIds: cut.cutEdgeIds },
+        cut: {
+          treeEdgeIds: cutUsed.treeEdgeIds,
+          dualTreeEdgeIds: cutUsed.dualTreeEdgeIds,
+          cutEdgeIds: cutUsed.cutEdgeIds,
+        },
         foldover,
       },
+      crossing: crossingBuilt ? crossingBuilt.model : null,
       invariants,
       h1Label: classH1Label(cls),
       note: rimRefinedForSew.has(shape.id) ? RIM_REFINED_NOTE : null,

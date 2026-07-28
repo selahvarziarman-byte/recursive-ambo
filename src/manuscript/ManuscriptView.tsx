@@ -25,6 +25,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html, Line, OrbitControls } from '@react-three/drei';
 import { Leva, useControls } from 'leva';
 import {
+  BackSide,
   BufferAttribute,
   BufferGeometry,
   DoubleSide,
@@ -437,12 +438,20 @@ function FaithfulBody({
 // vertex class, one thin curve per edge class, one translucent region per
 // face; the rim register (LAW B) is drawn heavy where it exists — on a closed
 // body it is present and honestly empty. No other ink, no orientation mark.
+// InkedForm's hull calibration, mirrored (P4): world displacement per
+// (bounding-radius × screenspacePx) — the frozen module keeps its own copy.
+const LAID_HULL_PX_CALIBRATION = 0.0117;
+
 function LaidBody({
   model,
   cellColor,
   rimColor,
   bodyColor,
   bodyOpacity,
+  silhouetteColor,
+  silhouettePx,
+  silhouetteOpacity,
+  ghostColor,
   selected,
   accent,
 }: {
@@ -451,6 +460,10 @@ function LaidBody({
   rimColor: string;
   bodyColor: string;
   bodyOpacity: number;
+  silhouetteColor: string;
+  silhouettePx: number;
+  silhouetteOpacity: number;
+  ghostColor: string;
   selected: boolean;
   accent: string;
 }) {
@@ -464,25 +477,134 @@ function LaidBody({
       }),
     [model],
   );
+  // P4 THE BODY VALUE — the merged body carries one depth prepass and one
+  // strong inverted-hull silhouette (the InkedForm craft), and the fill sits
+  // a whisper darker than the page (the default's duty); the per-face regions
+  // stay separate so the four looks remain countable.
+  const mergedBody = useMemo(() => {
+    const positions: number[] = [];
+    const indices: number[] = [];
+    for (const region of model.faceRegions) {
+      const base = positions.length / 3;
+      positions.push(...region.positions);
+      for (const i of region.indices) indices.push(base + i);
+    }
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
+    geometry.setIndex(new BufferAttribute(new Uint32Array(indices), 1));
+    geometry.computeVertexNormals();
+    return geometry;
+  }, [model]);
+  const hull = useMemo(() => {
+    const position = mergedBody.getAttribute('position') as BufferAttribute;
+    const normal = mergedBody.getAttribute('normal') as BufferAttribute;
+    let radius = 1;
+    for (let k = 0; k < position.count; k += 1) {
+      radius = Math.max(radius, Math.hypot(position.getX(k), position.getY(k), position.getZ(k)));
+    }
+    const weight = radius * silhouettePx * LAID_HULL_PX_CALIBRATION;
+    const displaced = new Float32Array(position.count * 3);
+    for (let k = 0; k < position.count; k += 1) {
+      displaced[3 * k] = position.getX(k) + normal.getX(k) * weight;
+      displaced[3 * k + 1] = position.getY(k) + normal.getY(k) * weight;
+      displaced[3 * k + 2] = position.getZ(k) + normal.getZ(k) * weight;
+    }
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new BufferAttribute(displaced, 3));
+    geometry.setIndex(mergedBody.getIndex());
+    return geometry;
+  }, [mergedBody, silhouettePx]);
+  // CUT 2 — the crossing register's ink plan: crossed edges break at the
+  // locus and a pale stub bridges each break; the locus itself is the
+  // pale-broken ghost (the drawing's crossing — never a cell, so it wears
+  // no cell ink and no dot).
+  const brokenByEdge = useMemo(
+    () => new Map((model.crossing?.brokenEdges ?? []).map((b) => [b.edgeId, b])),
+    [model],
+  );
+  // a person's vertex whose (u,v) lands ON the locus is DRAWN GHOSTED (both
+  // sheets meet at its one 3D point) — never dropped, never re-minted
+  const ghostVertexIds = useMemo(
+    () => new Set((model.crossing?.vertexGhosts ?? []).map((g) => g.vertexId)),
+    [model],
+  );
+  const ghostOpacity = Math.max(model.crossing?.ghostFloor ?? 0.3, 0.3);
   return (
     <group>
+      <mesh geometry={mergedBody} renderOrder={-3}>
+        <meshBasicMaterial colorWrite={false} side={DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={3} />
+      </mesh>
+      {silhouetteOpacity > 0 ? (
+        <mesh geometry={hull} renderOrder={-2}>
+          <meshBasicMaterial color={silhouetteColor} side={BackSide} transparent opacity={silhouetteOpacity} />
+        </mesh>
+      ) : null}
       {model.faceRegions.map((region, k) => (
-        <mesh key={region.id} geometry={regionGeometries[k]} renderOrder={-2}>
+        <mesh key={region.id} geometry={regionGeometries[k]} renderOrder={-1}>
           <meshBasicMaterial color={bodyColor} transparent opacity={bodyOpacity} depthWrite={false} side={DoubleSide} />
         </mesh>
       ))}
-      {model.edgeCurves.map((curve) => (
-        <Line key={curve.id} points={curve.points} color={selected ? accent : cellColor} lineWidth={1.2} />
+      {model.edgeCurves.map((curve) => {
+        const broken = brokenByEdge.get(curve.id);
+        if (!broken) {
+          return <Line key={curve.id} points={curve.points} color={selected ? accent : cellColor} lineWidth={1.2} />;
+        }
+        return (
+          <group key={curve.id}>
+            {broken.segments.map((points, k) => (
+              <Line key={`seg:${k}`} points={points} color={selected ? accent : cellColor} lineWidth={1.2} />
+            ))}
+            {broken.stubs.map((points, k) => (
+              <Line
+                key={`stub:${k}`}
+                points={points}
+                color={ghostColor}
+                lineWidth={1.1}
+                dashed
+                dashScale={14}
+                dashSize={0.55}
+                gapSize={0.5}
+                transparent
+                opacity={ghostOpacity}
+                renderOrder={2}
+              />
+            ))}
+          </group>
+        );
+      })}
+      {(model.crossing?.locusCurves ?? []).map((points, k) => (
+        <Line
+          key={`locus:${k}`}
+          points={points}
+          color={ghostColor}
+          lineWidth={1.4}
+          dashed
+          dashScale={10}
+          dashSize={0.5}
+          gapSize={0.45}
+          transparent
+          opacity={ghostOpacity}
+          depthTest={false}
+          depthWrite={false}
+          renderOrder={3}
+        />
       ))}
       {model.rimArcs.map((arc) => (
         <Line key={arc.id} points={arc.points} color={rimColor} lineWidth={4} />
       ))}
-      {model.vertexDots.map((dot) => (
-        <mesh key={dot.id} position={dot.position} renderOrder={2}>
-          <sphereGeometry args={[0.07, 16, 16]} />
-          <meshBasicMaterial color={rimColor} />
-        </mesh>
-      ))}
+      {model.vertexDots.map((dot) => {
+        const ghosted = ghostVertexIds.has(dot.id);
+        return (
+          <mesh key={dot.id} position={dot.position} renderOrder={2}>
+            <sphereGeometry args={[0.07, 16, 16]} />
+            <meshBasicMaterial
+              color={ghosted ? ghostColor : rimColor}
+              transparent={ghosted}
+              opacity={ghosted ? ghostOpacity : 1}
+            />
+          </mesh>
+        );
+      })}
     </group>
   );
 }
@@ -997,6 +1119,11 @@ export default function ManuscriptView() {
                 label: 'boundary',
                 value: `${laid.boundaryCircles} circle${laid.boundaryCircles === 1 ? '' : 's'}`,
               },
+              // CUT 2 — the crossing declares the DRAWING, in the designer's
+              // words: never a real edge of the form, never a cell
+              ...(laid.crossing
+                ? [{ label: `crossings · ${laid.crossing.count}`, value: laid.crossing.caption }]
+                : []),
               ...(laid.note ? [{ label: 'note', value: laid.note }] : []),
               ...base.rows.map((row) => (row.label === 'class' ? { ...row, value: laid.classLabel } : row)),
             ],
@@ -2392,8 +2519,10 @@ export default function ManuscriptView() {
                 : render.mode === 'classBody'
                   ? laid
                     ? // CUT 1b — THE FOUR COUNTABLE LOOKS ride the caption:
-                      // dots · curves · regions · rims, each countable in the ink
-                      `V ${laid.counts.v} · E ${laid.counts.e} · F ${laid.counts.f} · rims ${laid.boundaryCircles}${laid.note ? ` · ${laid.note}` : ''} · H₁ = ${laid.h1Label ?? 'n-a'}`
+                      // dots · curves · regions · rims, each countable in the
+                      // ink. CUT 2 — the crossing count rides BESIDE them (the
+                      // drawing's crossings, countable, never cells).
+                      `V ${laid.counts.v} · E ${laid.counts.e} · F ${laid.counts.f} · rims ${laid.boundaryCircles}${laid.crossing ? ` · crossings ${laid.crossing.count}` : ''}${laid.note ? ` · ${laid.note}` : ''} · H₁ = ${laid.h1Label ?? 'n-a'}`
                     : `H₁ = ${render.model.h1Label ?? 'n-a'} · class body`
                   : render.mode === 'faithful'
                     ? // CUT 1 — the counted caption rides the label too (EYE-CHECK 1)
@@ -2440,6 +2569,10 @@ export default function ManuscriptView() {
                     rimColor={inkFor(id, entry.form.shape.id, silhouetteCtl.color)}
                     bodyColor={bodyCtl.color}
                     bodyOpacity={bodyCtl.opacity * 0.55}
+                    silhouetteColor={silhouetteCtl.color}
+                    silhouettePx={silhouetteCtl.screenspacePx}
+                    silhouetteOpacity={silhouetteCtl.opacity}
+                    ghostColor={genesisCtl.pencilTone}
                     selected={selected === id}
                     accent={generatorsCtl.a}
                   />

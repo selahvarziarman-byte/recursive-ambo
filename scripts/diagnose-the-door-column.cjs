@@ -354,6 +354,14 @@ check('★★ THE COLUMN SEPARATES "THE PERSON ACTS" FROM "THE DOOR WORKS" — R
         ['src/manuscript/laidBodyModel.ts', 'export function cutComplexToDisk'],
         ['src/manuscript/laidBodyModel.ts', "from './surfaceClassifier'"],
         ['src/manuscript/laidBodyModel.ts', "from '../lib/surfaceImmersion'"],
+        // CUT 2 RULED RECUT (2026-07-28): THE CROSSING REGISTER is wired —
+        // the module computes the double locus + captions (never a sampled
+        // search) and the view draws the pale-broken ghost + the crossing
+        // count beside the four looks. Same hop idiom, same rev blobs.
+        ['src/manuscript/laidBodyModel.ts', 'CROSSING_CAPTIONS'],
+        ['src/manuscript/laidBodyModel.ts', 'function locusCurves3'],
+        ['src/manuscript/ManuscriptView.tsx', 'locusCurves'],
+        ['src/manuscript/ManuscriptView.tsx', 'crossings ${laid.crossing.count}'],
       ].every(([file, token]) => headCol.src[file] !== undefined && headCol.src[file].includes(token)) &&
       overlap === 0 && partitionOk;
   })());

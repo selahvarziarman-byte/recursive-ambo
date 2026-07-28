@@ -11,7 +11,9 @@
 // in generator ink with the same two-pass treatment as InkedForm's loops.
 // This component adds NO mark of its own: it renders exactly the polylines
 // given (b₁=0 callers pass none and the drawing stays bare, unchanged).
-// Still NO silhouette hull (flat/polyhedral starter craft; designer refines).
+// P4 THE BODY VALUE (designer plate, 2026-07-28): the silhouette hull is IN
+// (the InkedForm inverted-hull craft, mirrored) — strong outline over a fill
+// a whisper darker than the page; the old "no hull" starter note is retired.
 //
 // P-IMMERSE §5 (the honest non-manifold flag): when the caller passes
 // `junction` — the CLASSIFIER's own junction edge segments (>2 face wedges)
@@ -49,6 +51,26 @@ function buildBodyGeometry(shape: Shape): THREE.BufferGeometry | null {
   return geometry;
 }
 
+// P4 — the inverted-hull silhouette (InkedForm's craft, mirrored: the frozen
+// module keeps its own private builder): the SAME body geometry, each vertex
+// pushed out along its computed normal, drawn back-face only past the rim.
+const HULL_PX_CALIBRATION = 0.0117;
+
+function buildHullGeometry(body: THREE.BufferGeometry, weight: number): THREE.BufferGeometry {
+  const position = body.getAttribute('position') as THREE.BufferAttribute;
+  const normal = body.getAttribute('normal') as THREE.BufferAttribute;
+  const displaced = new Float32Array(position.count * 3);
+  for (let k = 0; k < position.count; k += 1) {
+    displaced[3 * k] = position.getX(k) + normal.getX(k) * weight;
+    displaced[3 * k + 1] = position.getY(k) + normal.getY(k) * weight;
+    displaced[3 * k + 2] = position.getZ(k) + normal.getZ(k) * weight;
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(displaced, 3));
+  geometry.setIndex(body.getIndex());
+  return geometry;
+}
+
 function buildEdgeGeometry(shape: Shape): THREE.BufferGeometry | null {
   const positions: number[] = [];
   for (const edge of shape.edges) {
@@ -82,6 +104,15 @@ export function InkedPlainForm({
   position?: Vec3;
 }) {
   const body = useMemo(() => buildBodyGeometry(shape), [shape]);
+  // P4 — the hull's weight follows InkedForm's screen-space convention
+  const hull = useMemo(() => {
+    if (!body) return null;
+    const radius = Math.max(
+      1,
+      ...Object.values(shape.vertices).map((v) => Math.hypot(v.position[0], v.position[1], v.position[2])),
+    );
+    return buildHullGeometry(body, radius * craft.silhouetteScreenspacePx * HULL_PX_CALIBRATION);
+  }, [body, shape, craft.silhouetteScreenspacePx]);
   const edges = useMemo(() => buildEdgeGeometry(shape), [shape]);
   const generatorLines = useMemo(
     () =>
@@ -108,6 +139,16 @@ export function InkedPlainForm({
               polygonOffsetUnits={craft.prepassOffsetUnits}
             />
           </mesh>
+          {hull && craft.silhouetteOpacity > 0 ? (
+            <mesh geometry={hull} renderOrder={-1}>
+              <meshBasicMaterial
+                color={craft.silhouetteColor}
+                side={THREE.BackSide}
+                transparent
+                opacity={craft.silhouetteOpacity}
+              />
+            </mesh>
+          ) : null}
           <mesh geometry={body} renderOrder={0}>
             <meshStandardMaterial
               color={craft.bodyColor}

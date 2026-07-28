@@ -147,7 +147,13 @@ export const manuscriptDefaults = {
     cardInk: '#3a3326',
   },
   body: {
-    color: '#f5f0e2', // cream body, a step lighter than the ground
+    // P4 THE BODY VALUE (designer plate, 2026-07-28): on a manuscript the PAGE
+    // is the lightest value — nothing is lighter than paper. The old cream
+    // (#f5f0e2) sat ABOVE the ground and read as a glow, not a form. The
+    // ruled correction is the plate's panel B: a fill a WHISPER darker than
+    // the ground #e9e2cf (every channel ≤ the ground's), under a strong
+    // silhouette. Tuned against .handoff/assets/P4_BODY_VALUE_DESIGNER.png.
+    color: '#ddd6c0', // the whisper-darker body — never lighter than the page
     opacity: 0.8, // translucent — the far construction lines stay visible (never opaque/photoreal)
     roughness: 0.9,
     prepassOffsetUnits: 3, // depth-prepass polygonOffset units (designer craft item 5: 2–4 quiets the RP² pinch z-fight)
@@ -163,8 +169,10 @@ export const manuscriptDefaults = {
     // The hull's world displacement = form bounding-radius × screenspacePx × the
     // calibration constant in InkedForm — all forms read as one pen width at the
     // default camera (true per-frame distance invariance = a later refinement).
-    screenspacePx: 1.75,
-    opacity: 0.9,
+    // P4 (designer plate): the silhouette goes STRONG — the corrected value
+    // pairing is strong hull + whisper-darker fill (panel B).
+    screenspacePx: 2.6,
+    opacity: 1,
   },
   generators: {
     a: '#c2811d', // warm orange — the reference's a → longitude (also the a·b + certified-core ink)
