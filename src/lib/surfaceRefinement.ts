@@ -559,7 +559,28 @@ export function bisectAcquiredComplex(
   }
   const complex = acquired.complex;
   const chosen = new Set(classIds ?? complex.edges.map((edge) => edge.id));
-  const midOf = (classId: string): string => `mid:${classId}`;
+  // THE FRESH-MINT LAW (2026-07-28, measured on the fold flow): `mid:<class>`
+  // can already NAME A LIVE VERTEX — thicken's level-copies of a folded
+  // loop's own midpoint vertices spell exactly `mid:edge:<stem>:1@0` while
+  // the band's rim CLASS spells `edge:<stem>:1@0`, so the plain mint silently
+  // OVERWROTE the existing vertex (V6 not V7, a degenerate self-loop half,
+  // an unacquirable complex — and the sew preparer corrupted every fold-born
+  // band it touched). Each mid id is now minted ONCE per chosen class and
+  // checked fresh against the complex's vertices, the form's vertex record,
+  // and this pass's own mints: the first free `mid:<class>`, else
+  // `mid:<class>:2`, `:3`, … Deterministic (edge order); a collision-free
+  // mint stays byte-identical to the old spelling, so every clean flow's ids
+  // are unchanged.
+  const taken = new Set<string>([...complex.vertices, ...Object.keys(form.vertices)]);
+  const midIds = new Map<string, string>();
+  for (const edge of complex.edges) {
+    if (!chosen.has(edge.id)) continue;
+    let mid = `mid:${edge.id}`;
+    for (let n = 2; taken.has(mid); n += 1) mid = `mid:${edge.id}:${n}`;
+    taken.add(mid);
+    midIds.set(edge.id, mid);
+  }
+  const midOf = (classId: string): string => midIds.get(classId) as string;
 
   const edges: AssembledComplex['edges'] = [];
   const vertices: string[] = [...complex.vertices];
