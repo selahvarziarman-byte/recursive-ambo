@@ -724,7 +724,7 @@ function SpecimenCard({
         ) : (
           <div style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.72 }}>
             {reading.kind === 'surface'
-              ? 'no generator loops — H₁ = 0'
+              ? 'no generator loops drawn'
               : reading.kind === 'skeleton'
                 ? 'the drawn ink IS the cycle set'
                 : 'pairing marks shown; H₁ read from the tower'}
