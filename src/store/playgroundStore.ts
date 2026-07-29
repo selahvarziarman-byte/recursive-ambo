@@ -397,7 +397,11 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
       // ROUTED BY WORD-RECOVERABILITY, never provenance: the committed replay
       // recovery speaks for word forms (refineToDisk, byte-kept); a form the
       // recovery refuses — the person's own lift-built composites — refines
-      // through the WORDLESS pair on its acquired complex
+      // through the WORDLESS pair on its acquired complex. REFINE'S WORD
+      // (2026-07-29): both routes stamp the shape itself — genealogy word
+      // 'refine', trace at `genealogy.resolution` — so the record rides
+      // wherever this shape goes (into the sum, onto carried parents, through
+      // snapshots) and no call site can drop it.
       if (form.faces.length === 1 && recoverBornSurface(form, parent)) {
         const refined = refineToDisk(form, parent);
         return {

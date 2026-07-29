@@ -23,7 +23,14 @@ export type OperationKind =
   // THICKEN (A.1 rung 1, 2026-07-18, sealed 039feb1b…82cae): the ×I product —
   // an arity-1 NON-CONSUMING birth (genealogyDag's own doctrine held the seat:
   // "once it exists, `product`"); manifest re-sealed in the same change
-  | 'product';
+  | 'product'
+  // REFINE'S WORD (2026-07-29): the ONE gesture that changes a form without
+  // begetting a new one — a RESOLUTION, not a birth (same form, cells minted,
+  // χ cannot move, nothing consumed; carrier new→old). Its trace rides
+  // `ShapeGenealogy.resolution`; the genealogy DAG mints NO birth node/edge
+  // for it (genealogyDag's RESOLUTION_KINDS); manifest re-sealed in the same
+  // change
+  | 'refine';
 export type CellKind = 'seed' | 'parent' | 'core' | 'residue';
 export type SeedTopology = 'tetrahedron' | 'octahedron' | 'cube';
 export type CellTopology =
@@ -130,6 +137,19 @@ export interface Face {
   sourceVertexId?: VertexId;
 }
 
+// REFINE'S WORD (2026-07-29): the resolution's own record, carried ON the
+// form (`ShapeGenealogy.resolution`) — a type-claim 'resolution', never a
+// birth trace. Defined HERE so `surfaceRefinement` (whose `RefinementRecord`
+// aligns to it) imports FROM the types root and no cycle forms.
+export interface ResolutionTrace {
+  typeClaim: 'resolution'; // never 'lineage' — refine is not a birth
+  passes: number;
+  chordEdgeId: string | null; // null for a bisection-only resolution
+  // the carrier surjection new→old: every new cell id → the old cell whose
+  // closure contains it (old cells map to themselves)
+  carrier: Record<string, string>;
+}
+
 export interface ShapeGenealogy {
   parentShapeId: ShapeId | null;
   operation: OperationKind;
@@ -137,6 +157,10 @@ export interface ShapeGenealogy {
   sourceVertexIds: VertexId[];
   createdVertexIds: VertexId[];
   createdAt: string;
+  // REFINE'S WORD: present EXACTLY when this expression is a resolution
+  // (operation 'refine') — the trace of the re-expression riding the form,
+  // so no call site can drop the record (it is ON the shape, not beside it)
+  resolution?: ResolutionTrace;
 }
 
 export interface Cell {

@@ -39,8 +39,21 @@ const GLUE_KINDS: ReadonlySet<OperationKind> = new Set<OperationKind>(['glue', '
 // `product` (E3 — the seat this comment held as "deferred" since it was
 // written, filled by THICKEN, 2026-07-18, sealed 039feb1b…82cae: A×I is a
 // dim+1 birth whose projection π_A recovers the parent exactly — the parent
-// stays live; NO pentimento; manifest re-sealed in the same change).
-const NON_CONSUMING: ReadonlySet<OperationKind> = new Set<OperationKind>(['invoke', 'patch-lift', 'dualization', 'product']);
+// stays live; NO pentimento; manifest re-sealed in the same change), and
+// `refine` (REFINE'S WORD, 2026-07-29: a RESOLUTION is not a birth — nothing
+// is consumed because nothing is begotten; the form itself stays live).
+const NON_CONSUMING: ReadonlySet<OperationKind> = new Set<OperationKind>(['invoke', 'patch-lift', 'dualization', 'product', 'refine']);
+
+// REFINE'S WORD (2026-07-29): the RESOLUTION kinds — operations that change a
+// form WITHOUT begetting a new one (same form, cells minted, χ fixed; the
+// trace rides `ShapeGenealogy.resolution`). A resolution shape mints NO
+// `GenealogyNode`, NO parent→child edge, and NO record event: refine keeps
+// the form's own id, so the form's ONE node is its original expression's, and
+// the walk is INVARIANT under adding/removing a re-expression (a population
+// carrying both the form and its refined expression is legal — the
+// re-expression is not a second citizen, so the duplicate-id integrity throw
+// rightly never sees it).
+const RESOLUTION_KINDS: ReadonlySet<OperationKind> = new Set<OperationKind>(['refine']);
 
 export interface GenealogyNode {
   id: ShapeId;
@@ -125,8 +138,13 @@ function lineageSourcesOf(shape: Shape): VertexId[] {
 export function buildGenealogyDag(shapes: Shape[], options: BuildOptions = {}): GenealogyDag {
   const orientation = options.orientation ?? {};
 
+  // REFINE'S WORD — the non-begetting walk: a resolution shape is not a
+  // citizen of the record (no node, no edge, no birth/death event); the walk
+  // reads only the born population.
+  const citizens = shapes.filter((shape) => !RESOLUTION_KINDS.has(shape.genealogy.operation));
+
   const byId = new Map<ShapeId, Shape>();
-  for (const shape of shapes) {
+  for (const shape of citizens) {
     if (byId.has(shape.id)) throw new Error(`genealogyDag: duplicate shape id "${shape.id}"`);
     byId.set(shape.id, shape);
   }
@@ -148,7 +166,7 @@ export function buildGenealogyDag(shapes: Shape[], options: BuildOptions = {}): 
     consider(shape.genealogy.parentShapeId); // the committed single-parent arrow first
     const sourceSet = new Set(shape.genealogy.sourceVertexIds);
     if (sourceSet.size > 0) {
-      for (const candidate of shapes) {
+      for (const candidate of citizens) {
         if (candidate.id === shape.id) continue;
         if (candidate.genealogy.createdVertexIds.some((vertexId) => sourceSet.has(vertexId))) {
           consider(candidate.id);
@@ -158,7 +176,7 @@ export function buildGenealogyDag(shapes: Shape[], options: BuildOptions = {}): 
     return parents;
   };
 
-  const nodes: GenealogyNode[] = shapes.map((shape) => {
+  const nodes: GenealogyNode[] = citizens.map((shape) => {
     const parents = parentsOf(shape);
     // From-scratch nodes (no parents) carry 'invoke' AT THE DAG LAYER — the committed
     // seed creation is NOT re-tagged (seeds.ts is forbidden; the shape stays 'seed').

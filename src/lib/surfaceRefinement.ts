@@ -66,14 +66,17 @@
 // never endpoint-derived) remains its own build — the seam's known debt,
 // formally owed elsewhere.
 //
-// ⚠ PROVENANCE GAP, disclosed: the frozen OperationKind union has no word for
-// refinement, and the freeze must not move in this build. Minted midpoints
-// therefore inherit the form's own birth operation in `createdBy.operation`,
-// with `sourceEdgeId` carrying the true provenance (the subdivided edge). The
-// one-word union addition ('refine') is a frozen-types ruling for the
-// engineer's hand.
+// ⚠ PROVENANCE GAP, half-cured (REFINE'S WORD, 2026-07-29): the frozen
+// OperationKind union NOW carries 'refine' (the sanctioned frozen-types
+// ruling this comment owed to the engineer's hand), and both refine routes
+// stamp the SHAPE-level word — `genealogy.operation: 'refine'` with the trace
+// riding `genealogy.resolution` — so no call site can drop the record. The
+// VERTEX-level half remains as disclosed: minted midpoints still inherit the
+// form's own birth operation in `createdBy.operation`, with `sourceEdgeId`
+// carrying the true provenance (the subdivided edge); moving that inheritance
+// is its own ruling, not taken here.
 
-import type { Face, Shape, VertexId } from '../types/geometry';
+import type { Face, ResolutionTrace, Shape, VertexId } from '../types/geometry';
 import type { BoundaryPairing } from './surfaceOperations';
 import { createDefaultVertexData } from './shape';
 import { recoverBornSurface } from '../playground/bornFormRouting';
@@ -84,19 +87,26 @@ import { recoverBornSurface } from '../playground/bornFormRouting';
 import { acquireComplex, identify, parseIdentificationSuffix, walkBoundaryCircles } from './complexIdentification';
 import type { AssembledComplex } from './globalW1';
 
-export interface RefinementRecord {
-  typeClaim: 'resolution'; // never 'lineage' — refine is not a birth
-  passes: number;
-  chordEdgeId: string | null; // null for a bisection-only refinement
-  // the carrier surjection new→old: every new cell id → the old cell whose
-  // closure contains it (old cells map to themselves)
-  carrier: Record<string, string>;
-}
+// REFINE'S WORD (2026-07-29): the record's shape is now the frozen types
+// root's `ResolutionTrace` (typeClaim 'resolution' · passes · chordEdgeId ·
+// carrier new→old) — this module ALIGNS to it (imports FROM geometry; no
+// cycle) rather than owning a second definition.
+export type RefinementRecord = ResolutionTrace;
 
 export interface RefineResult {
   shape: Shape;
   refinement: RefinementRecord;
 }
+
+// REFINE'S WORD — the record rides ON the form: genealogy word 'refine' plus
+// the trace at `genealogy.resolution`, so no call site can drop it (the old
+// beside-the-shape RefineResult drop, cured structurally). Everything else in
+// the genealogy — parent pointer, depth, source/created ids, createdAt — is
+// carried verbatim: a resolution re-expresses the form, it does not re-root it.
+const stampResolution = (shape: Shape, refinement: RefinementRecord): Shape => ({
+  ...shape,
+  genealogy: { ...shape.genealogy, operation: 'refine', resolution: refinement },
+});
 
 interface RimState {
   n: number;
@@ -418,7 +428,9 @@ export function refineToDisk(form: Shape, parent: Shape | null): RefineResult {
       `surfaceRefinement: no disk cleared every wall (distinct corners AND a parallel-free rim) after ${HARD_STOP} passes — refusing loudly (report this form)`,
     );
   }
-  return assembleRefined(form, current, chord, slotEdgeOf);
+  const out = assembleRefined(form, current, chord, slotEdgeOf);
+  // REFINE'S WORD — the resolution is named on the form itself
+  return { ...out, shape: stampResolution(out.shape, out.refinement) };
 }
 
 /**
@@ -955,7 +967,9 @@ export function refineAcquiredToDisk(form: Shape, ancestry: Shape | Shape[] | nu
       `surfaceRefinement: no disk cleared every wall (distinct corners AND a parallel-free rim) after ${HARD_STOP} passes of the wordless rim — refusing loudly (report this form)`,
     );
   }
-  return assembleAcquired(form, current, chord, slotEdgeOf, edgeEnds);
+  const out = assembleAcquired(form, current, chord, slotEdgeOf, edgeEnds);
+  // REFINE'S WORD — the resolution is named on the form itself
+  return { ...out, shape: stampResolution(out.shape, out.refinement) };
 }
 
 // M2 — the PAIRWISE equalize: the sew preparer's deficit-pattern COMPOSED
@@ -1001,7 +1015,30 @@ export function equalizePreparedDisks(
   }
   const disk = grown.shape.faces.find((f) => f.id === (shorter.disk as Face).id) ?? null;
   if (!disk || disk.vertexIds.length !== rimOf(longer)) return { a, b, equalized: 'none' };
-  const next = { shape: grown.shape, disk };
+  // REFINE'S WORD — a MINTED disk arrives here already stamped by its route;
+  // the deficit split is one more resolution pass of the SAME form, so the
+  // riding trace is re-stamped COMPOSED, never left stale: the split's own
+  // carrier chained through the prior carrier lands every final cell on the
+  // person's ORIGINAL cell (both maps are total and surjective, so the
+  // composition is — nothing is invented). A shape that arrived unstamped
+  // (no prior trace) carries the split's own record as its resolution.
+  const prior = shorter.shape.genealogy.resolution;
+  const composed: RefinementRecord = prior
+    ? {
+        typeClaim: 'resolution',
+        passes: prior.passes + grown.refinement.passes,
+        // the chord survives the split unless the split bisected it (the
+        // chord sits on the disk's rim): a named edge must EXIST on the shape
+        chordEdgeId:
+          prior.chordEdgeId !== null && grown.shape.edges.some((e) => e.id === prior.chordEdgeId)
+            ? prior.chordEdgeId
+            : null,
+        carrier: Object.fromEntries(
+          Object.entries(grown.refinement.carrier).map(([newId, oldId]) => [newId, prior.carrier[oldId] ?? oldId]),
+        ),
+      }
+    : grown.refinement;
+  const next = { shape: stampResolution(grown.shape, composed), disk };
   return which === 'a' ? { a: next, b, equalized: 'a' } : { a, b: next, equalized: 'b' };
 }
 

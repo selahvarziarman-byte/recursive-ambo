@@ -172,19 +172,43 @@ check('★ connectedSum(RP², RP²) REFUSES at HEAD with the single-face wall ve
 
 // ═════ [d] refine is NOT a birth ══════════════════════════════════════════════════
 console.log('\n----- [d] NOT A BIRTH: zero genealogy nodes, zero pentimenti, ancestry intact, type-claim resolution, carrier surjective (clause 4) -----');
-check('REFINE MINTS NO GENEALOGY: the refined form keeps its id, name, genealogy and generations BYTE-IDENTICAL (it is not re-seeded — the ancestry is intact); the genealogy DAG over [parent, refined] is node-for-node and edge-for-edge IDENTICAL to the DAG over [parent, born] (nothing was begotten, so the stemma records nothing and no pentimento can arise); the recorded type-claim is \'resolution\'',
+// RECUT (REFINE'S WORD, 2026-07-29 — the ruled ★E1/★E3 movers): the old pin
+// "genealogy BYTE-IDENTICAL" described the NAMELESS state (no 'refine' on the
+// frozen union, the honest record dropped beside the shape). The word now
+// exists and the record RIDES the form, so the TRUE facts are STRONGER:
+//   · the genealogy moves by EXACTLY the resolution stamp — word 'refine' +
+//     the trace at `genealogy.resolution` (REFERENCE-equal to the returned
+//     record); parent pointer, depth, source/created ids, createdAt, id,
+//     name, generations all byte-carried;
+//   · the DAG is invariant under ADDING the re-expression ([parent, born,
+//     refined] ≡ [parent, born] — no node, no edge, no duplicate-id throw:
+//     the re-expression is not a second citizen) and the born form STAYS
+//     LIVE (a resolution consumes nothing).
+check('REFINE MINTS NO GENEALOGY: the refined form keeps its id, name and generations BYTE-IDENTICAL and its genealogy moves by EXACTLY the stamp (word \'refine\' + the riding trace, reference-equal — everything else byte-carried); the genealogy DAG over [parent, born, refined] is node-for-node and edge-for-edge IDENTICAL to the DAG over [parent, born] (nothing was begotten — the re-expression is not a second citizen, no duplicate-id throw, the born form stays LIVE); the recorded type-claim is \'resolution\'',
   Object.entries(FIXTURES).every(([name, fx]) => {
     const out = refined[name];
+    const g = { ...out.shape.genealogy };
+    delete g.resolution;
+    g.operation = fx.born.genealogy.operation;
     const identity = out.shape.id === fx.born.id && out.shape.name === fx.born.name &&
-      JSON.stringify(out.shape.genealogy) === JSON.stringify(fx.born.genealogy) &&
+      JSON.stringify(g) === JSON.stringify(fx.born.genealogy) &&
       JSON.stringify(out.shape.generations) === JSON.stringify(fx.born.generations);
+    const stamped = out.shape.genealogy.operation === 'refine' &&
+      out.shape.genealogy.resolution === out.refinement;
     const dagBefore = buildGenealogyDag([fx.parent, fx.born]);
-    const dagAfter = buildGenealogyDag([fx.parent, out.shape]);
+    let dagAfter = null;
+    try {
+      dagAfter = buildGenealogyDag([fx.parent, fx.born, out.shape]);
+    } catch {
+      return false; // the duplicate-id throw would mean the re-expression was read as a citizen
+    }
     const dagKey = (d) => JSON.stringify({
       nodes: d.nodes.map((n) => n.id).sort(),
       edges: d.edges.map((e) => `${e.parent}->${e.child}:${e.operation ?? ''}`).sort(),
     });
-    return identity && dagKey(dagBefore) === dagKey(dagAfter) && out.refinement.typeClaim === 'resolution';
+    return identity && stamped && dagKey(dagBefore) === dagKey(dagAfter) &&
+      dagAfter.liveAtEnd.includes(fx.born.id) &&
+      out.refinement.typeClaim === 'resolution';
   }));
 check('THE CARRIER IS SURJECTIVE new→old: every cell of the refined form (vertices · edges · faces) maps to an old cell whose closure contains it — midpoints and refined edges to the edge they subdivide (bound through the recovery\'s own materialized complex, unambiguous even for parallel loop classes), the disk/remainder/chord to the face — and every OLD cell has a preimage',
   Object.entries(FIXTURES).every(([name, fx]) => {

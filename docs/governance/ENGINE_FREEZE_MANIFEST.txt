@@ -46,7 +46,7 @@ src/lib/connectedSum.ts                 d8b6c0d269f6847b50f29c3190199ed290096319
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c
 src/lib/dualization.ts                  f450a61ca363e915b40374cd0707f6bc878680649d6057389bf49a90eb14d2a0
 src/lib/faceIdentification.ts           c2c67a1eae6ec10dcb2e226289608673d24c711b77bfdd750c0e4e2894030a56
-src/lib/genealogyDag.ts                 c89bfbf34e4d48932aa39b5236e504703f8dcf463495b496ba2502a228f05b5d
+src/lib/genealogyDag.ts                 5230621d21ca6c4b0e3672869134b4b298483c347cb2e37b8a3180da0f1cc250
 src/lib/globalW1.ts                     3209127d540d80c7a0734c6989f745423fc1cb3c1fe3103bbfb73dc1da13e207
 src/lib/ids.ts                          3de67f4590eb2ce56a51a061bb8e05047b77b0e846fd45d11c9c171e9f22703e
 src/lib/incidenceTraceRegistry.ts       f052da294632da927f28c385abd63cda5c134d8431e6dc05a0b94467cc0dccf0
@@ -84,7 +84,7 @@ src/playground/genealogyLayout.ts       dcdde159e83cc246fdbaf0521ec69a2a5884c78d
 src/playground/playgroundOperations.ts  ed0cc1a8350cc7d7a79923d7d4db9c4c2255c9997fc1ec2996d87074d1865b2e
 src/playground/primitiveCatalogue.ts    b02c1c2daf58ec632513aec088eff597a76ce3d09d218d9dd85374d183eb1266
 src/playground/snapshot.ts              eccfaba7d807e7a601bbb62ada92704a9935ea38aedc755c40808bf417c56ed7
-src/types/geometry.ts                   8976ce534d1a3549d02d4a5f484b9f46f3ee73bd7dbf2b89a8a86756f01a382f
+src/types/geometry.ts                   447faac45a8c7c550315669deab4ac97fad094f79854a19f8adc8c478919d715
 
 # ─── NOT_FROZEN — classified with a reason (completeness: nothing may be unlisted) ───
 NOT_FROZEN src/lib/ambo.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling

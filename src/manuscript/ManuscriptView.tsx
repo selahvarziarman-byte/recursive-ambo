@@ -1010,13 +1010,38 @@ export default function ManuscriptView() {
       const entry = written.find((w) => w.form.id === key);
       if (!entry) return null;
       const render = entry.form.render;
+      // REFINE'S WORD — the resolution rows: a carried parent that entered
+      // this birth REFINED (genealogy word 'refine', trace riding
+      // `genealogy.resolution`) speaks on the card as a RESOLUTION — a row,
+      // never a birth line (the stemma rightly draws nothing for it).
+      const resolutionRows = (() => {
+        const carried = [entry.form.parentShape, ...(entry.form.parentShapes ?? [])].filter(
+          (p): p is Shape => p !== null && p !== undefined,
+        );
+        const seen = new Set<string>();
+        const rows: { label: string; value: string }[] = [];
+        for (const parent of carried) {
+          const trace = parent.genealogy.resolution;
+          if (!trace || seen.has(parent.id)) continue;
+          seen.add(parent.id);
+          rows.push({
+            label: 'resolution',
+            value: `refined · ${trace.passes} pass${trace.passes === 1 ? '' : 'es'} · ${
+              trace.chordEdgeId ? `chord ${trace.chordEdgeId}` : 'no chord'
+            } · carrier ${Object.keys(trace.carrier).length} cells new→old · of ${parent.name || parent.id}`,
+          });
+        }
+        return rows;
+      })();
+      const speak = (r: SpecimenReading): SpecimenReading =>
+        resolutionRows.length === 0 ? r : { ...r, rows: [...r.rows, ...resolutionRows] };
       if (render.mode === 'immersion') {
         const base = readSurfaceSpecimen(render.model);
-        return { ...base, title: entry.form.title, subtitle: `${entry.form.provenance} · ${base.subtitle}` };
+        return speak({ ...base, title: entry.form.title, subtitle: `${entry.form.provenance} · ${base.subtitle}` });
       }
       if (render.mode === 'skeleton') {
         const base = readSkeletonSpecimen(render.model);
-        return { ...base, title: entry.form.title, subtitle: entry.form.provenance };
+        return speak({ ...base, title: entry.form.title, subtitle: entry.form.provenance });
       }
       if (render.mode === 'classBody') {
         // CUT 1b — a LAID form's card: the form's own certified rows plus the
@@ -1031,7 +1056,7 @@ export default function ManuscriptView() {
           // loops): one entry per drawn certified loop, in the ink it wears
           // (a core draws in ink a — the committed craft's own rule).
           const laidInked = laidInkedById.get(entry.form.shape.id);
-          return {
+          return speak({
             ...base,
             rows: [
               {
@@ -1056,11 +1081,11 @@ export default function ManuscriptView() {
               text: `${loop.label} — certified H₁ generator (globalW1 basis), drawn on the body`,
               ink: 'a' as const,
             })),
-          };
+          });
         }
         // P-IMMERSE: the form's OWN certified invariants + the honest frame +
         // the body's drawn certified generators, named (classBodyModel)
-        return readClassBodySpecimen(entry.form.title, entry.form.provenance, render.model);
+        return speak(readClassBodySpecimen(entry.form.title, entry.form.provenance, render.model));
       }
       if (render.mode === 'faithful') {
         // CUT 1 — the counted caption (EYE-CHECK 1): the card prints V/E/F OF
@@ -1090,7 +1115,7 @@ export default function ManuscriptView() {
         })();
         const classValue = cls && cls.ok ? classLabel(cls.class) : null;
         const nameReading = cls && cls.ok ? surfaceNameFor(cls.class) : null;
-        return {
+        return speak({
           ...base,
           rows: [
             ...(nameReading
@@ -1116,7 +1141,7 @@ export default function ManuscriptView() {
               row.label === 'class' && classValue !== null ? { ...row, value: classValue } : row,
             ),
           ],
-        };
+        });
       }
       if (render.mode === 'bodiless') {
         // THE BODILESS CARD's reading: the genealogy + the refusal; the
@@ -1125,7 +1150,7 @@ export default function ManuscriptView() {
         const base = render.invariants
           ? readPlainSpecimen(entry.form.title, entry.form.provenance, render.invariants, null)
           : null;
-        return {
+        return speak({
           ...(base ?? {
             kind: 'surface' as const,
             title: entry.form.title,
@@ -1139,21 +1164,23 @@ export default function ManuscriptView() {
             { label: 'no faithful body', value: render.reason },
             ...(base ? base.rows : []),
           ],
-        };
+        });
       }
       const base = readPlainSpecimen(entry.form.title, entry.form.provenance, render.invariants, render.h1Label);
       // Option B: name the drawn certified generators in the summoned legend
       const optionB = optionBByShape.get(render.shape.id);
-      return optionB && optionB.b1 > 0
-        ? {
-            ...base,
-            legend: optionB.generators.map((generator, k) => ({
-              key: generator.label,
-              text: `${generator.label} — certified H₁ generator (globalW1 basis)`,
-              ink: (k % 2 === 0 ? 'a' : 'b') as 'a' | 'b',
-            })),
-          }
-        : base;
+      return speak(
+        optionB && optionB.b1 > 0
+          ? {
+              ...base,
+              legend: optionB.generators.map((generator, k) => ({
+                key: generator.label,
+                text: `${generator.label} — certified H₁ generator (globalW1 basis)`,
+                ink: (k % 2 === 0 ? 'a' : 'b') as 'a' | 'b',
+              })),
+            }
+          : base,
+      );
     }
     const model = dim3All.find((m) => m.key === key);
     return model ? readDomainSpecimen(model) : null;
