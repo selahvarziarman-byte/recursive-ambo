@@ -81,7 +81,7 @@ import { recoverBornSurface } from '../playground/bornFormRouting';
 // (an acquired composite has a complex but no birth word) and the committed
 // boundary walker (the sew preparer equalizes rims). No cycle: the
 // identification module never imports this one.
-import { acquireComplex, walkBoundaryCircles } from './complexIdentification';
+import { acquireComplex, identify, parseIdentificationSuffix, walkBoundaryCircles } from './complexIdentification';
 import type { AssembledComplex } from './globalW1';
 
 export interface RefinementRecord {
@@ -674,6 +674,336 @@ export function bisectAcquiredComplex(
 // complex — returns the form UNCHANGED with prepared:false (the committed
 // doors keep their own sentences; nothing is silently cured).
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// refineAcquiredToDisk — THE WORDLESS RIM (combine accepts the person's own
+// lift-built forms): `refineToDisk`'s loop verbatim (`bisectPass` until
+// `findChord` clears every wall, then the chord), with the STATE from an
+// `acquireComplex`-based builder instead of `recoverState`'s birth word. The
+// acquired complex's faces are merged along a dual spanning tree into ONE
+// polygon (the classic disk splice — each interior gluing consumed once), and
+// the WORD is SYNTHESIZED from the polygon's own rim identification: every
+// surviving edge class holds exactly two slots, and their relative walk
+// directions decide the mode (opposite ⇒ 'preserving' — crossed corners;
+// equal ⇒ 'reversing' — parallel corners; the module's own convention at
+// :129-:136). The convention is ASSERTED per call, exactly as recoverState
+// asserts its own: `settleCorners` over the synthesized word must reproduce
+// the polygon's true corner classes byte-for-byte, or the op throws.
+//
+// findChord / slotClassOf / bisectPass / refineToDisk stay BYTE-UNTOUCHED —
+// this is a sibling state builder, never a refactor of the committed pair.
+// ---------------------------------------------------------------------------
+
+interface AcquiredPolygonState {
+  state: RimState;
+  slotEdgeOf: (k: number) => string; // pass-0 slot → the acquired edge CLASS it rides
+  edgeEnds: Map<string, [string, string]>; // acquired edge class → its endpoint classes
+}
+
+function acquiredPolygonState(form: Shape, ancestry: Shape | Shape[] | null): AcquiredPolygonState {
+  let acquired: { complex: AssembledComplex } | null = acquireComplex(form, ancestry);
+  if (!acquired) {
+    // THE SNAPSHOT NS-COPY BRIDGE (a frozen-seam finding, disclosed in the
+    // handback): a snapshot-loaded quotient can carry a PARSEABLE idn suffix
+    // whose cycle ids keep their ORIGINAL spellings while its parent pointer
+    // and ancestors are namespaced — the frozen reconstruction replays
+    // chain-INTERNAL links only, so the form's own link ns-copies and the
+    // committed chain honestly nulls. Bridge here, with committed doors only:
+    // map each cycle id into the parent's edge space (a UNIQUE suffix match,
+    // else refuse), replay the committed `identify`, and accept its complex
+    // only when the replay reproduces the loaded copy's own cell counts.
+    const spec = parseIdentificationSuffix(form.id);
+    const lineage = ancestry === null ? [] : Array.isArray(ancestry) ? ancestry : [ancestry];
+    const parent = lineage.find((s) => s.id === form.genealogy.parentShapeId) ?? null;
+    if (spec && parent) {
+      const mapId = (plain: string): string | null => {
+        const hits = parent.edges.filter((e) => e.id === plain || e.id.endsWith(`:${plain}`));
+        return hits.length === 1 ? hits[0].id : null;
+      };
+      const cycleA = spec.cycleA.map(mapId);
+      const cycleB = spec.cycleB.map(mapId);
+      if (cycleA.every((id): id is string => id !== null) && cycleB.every((id): id is string => id !== null)) {
+        try {
+          const rest = lineage.filter((s) => s.id !== parent.id);
+          const replay = identify(parent, cycleA, cycleB, spec.modes, rest.length > 0 ? rest : null);
+          const countsMatch =
+            Object.keys(replay.shape.vertices).length === Object.keys(form.vertices).length &&
+            replay.shape.edges.length === form.edges.length &&
+            replay.shape.faces.length === form.faces.length;
+          if (countsMatch) acquired = { complex: replay.complex };
+        } catch {
+          // the bridge refuses silently here — the loud refusal below speaks
+        }
+      }
+    }
+  }
+  if (!acquired) {
+    throw new Error(
+      `surfaceRefinement: cannot acquire "${form.name}"'s complex (no birth word AND the acquisition chain returned null) — pass the form's ancestry for chained recovery`,
+    );
+  }
+  const complex = acquired.complex;
+  if (complex.faces.length === 0) {
+    throw new Error(`surfaceRefinement: "${form.name}" carries no 2-cells — nothing to refine to a disk`);
+  }
+  const edgeById = new Map(complex.edges.map((e) => [e.id, e]));
+  // every slot of every face, with its EFFECTIVE walk direction (+1 = the
+  // walk crosses the underlying class u→v); the merge may flip whole faces
+  type PolySlot = { edge: string; effDir: 1 | -1 };
+  let polygons: PolySlot[][] = complex.faces.map((face) =>
+    face.boundary.map((slot) => ({ edge: slot.edge, effDir: slot.dir })),
+  );
+  const flip = (poly: PolySlot[]): PolySlot[] =>
+    [...poly].reverse().map((s) => ({ edge: s.edge, effDir: (s.effDir === 1 ? -1 : 1) as 1 | -1 }));
+  // splice until one polygon stands: find an edge class with slots in two
+  // DIFFERENT polygons, orient them opposite, and join A·D·C·B (both glued
+  // slots consumed — the interior gluing is now interior to the one disk)
+  for (;;) {
+    let joined = false;
+    outer: for (let pa = 0; pa < polygons.length && !joined; pa += 1) {
+      for (let sa = 0; sa < polygons[pa].length; sa += 1) {
+        const cls = polygons[pa][sa].edge;
+        for (let pb = 0; pb < polygons.length; pb += 1) {
+          if (pb === pa) continue;
+          let sb = polygons[pb].findIndex((s) => s.edge === cls);
+          if (sb < 0) continue;
+          let B = polygons[pb];
+          if (B[sb].effDir === polygons[pa][sa].effDir) {
+            B = flip(B);
+            sb = B.findIndex((s) => s.edge === cls);
+          }
+          const A = polygons[pa];
+          const rotated = [...B.slice(sb + 1), ...B.slice(0, sb)]; // B minus its glued slot, walk order kept
+          const merged = [...A.slice(0, sa), ...rotated, ...A.slice(sa + 1)];
+          polygons = polygons.filter((_, k) => k !== pa && k !== pb);
+          polygons.push(merged);
+          joined = true;
+          break outer;
+        }
+      }
+    }
+    if (!joined) break;
+  }
+  if (polygons.length !== 1) {
+    throw new Error(
+      `surfaceRefinement: "${form.name}" merges into ${polygons.length} polygons — the wordless rim refines ONE connected surface`,
+    );
+  }
+  const poly = polygons[0];
+  const n = poly.length;
+  // the synthesized word: each surviving class holds exactly TWO slots
+  const positionsOf = new Map<string, number[]>();
+  poly.forEach((slot, k) => positionsOf.set(slot.edge, [...(positionsOf.get(slot.edge) ?? []), k]));
+  const word: BoundaryPairing[] = [];
+  for (const [cls, at] of positionsOf) {
+    if (at.length !== 2) {
+      throw new Error(
+        `surfaceRefinement: rim class "${cls}" appears ${at.length}× on the merged polygon — a closed surface pairs every class exactly twice; refusing the wordless rim`,
+      );
+    }
+    word.push({
+      edgeA: at[0],
+      edgeB: at[1],
+      mode: poly[at[0]].effDir === poly[at[1]].effDir ? 'reversing' : 'preserving',
+    });
+  }
+  // the polygon's TRUE corners (slot tails under the effective direction) —
+  // and the convention assertion: the synthesized word must settle to them
+  const corners = poly.map((slot) => {
+    const e = edgeById.get(slot.edge) as AssembledComplex['edges'][number];
+    return slot.effDir === 1 ? e.u : e.v;
+  });
+  const settled = settleCorners(n, word, corners);
+  if (JSON.stringify(settled) !== JSON.stringify(corners)) {
+    throw new Error(
+      'surfaceRefinement: the synthesized gluing convention does not reproduce the acquired corner classes — refusing to refine on an unverified convention',
+    );
+  }
+  const state: RimState = {
+    n,
+    word,
+    corners,
+    slotOrigin: poly.map((_, k) => k),
+    pass: 0,
+    mintNs: keySafeNs(form.id),
+  };
+  return {
+    state,
+    slotEdgeOf: (k: number) => poly[k].edge,
+    edgeEnds: new Map(complex.edges.map((e) => [e.id, [e.u, e.v] as [string, string]])),
+  };
+}
+
+// assemble the wordless refinement — assembleRefined's minting conventions
+// mirrored for a form whose faces were MERGED into the one polygon (the
+// original faces are re-expressed as disk + rest of the same quotient; the
+// carrier for the merged pieces names the FORM — the smallest old cell whose
+// closure contains a region spanning several old faces is the form itself)
+function assembleAcquired(
+  form: Shape,
+  state: RimState,
+  chord: ChordPick,
+  slotEdgeOf: (originSlot: number) => string,
+  edgeEnds: Map<string, [string, string]>,
+): RefineResult {
+  const { n, corners } = state;
+  const carrier: Record<string, string> = {};
+  for (const id of Object.keys(form.vertices)) carrier[id] = id;
+  const vertices: Shape['vertices'] = { ...form.vertices };
+  for (let k = 0; k < n; k += 1) {
+    const label = corners[k];
+    if (vertices[label]) continue;
+    const oldEdgeId = slotEdgeOf(state.slotOrigin[k]);
+    // lineage SOURCES must TERMINATE the committed walk (assembleRefined's
+    // own warning, measured live twice on the frozen primalMultiset):
+    //   · a MINTED MIDPOINT (bisectPass's own `mid:{ns}:p…` spelling) sources
+    //     the subdivided edge class's endpoint classes — leaves one step down;
+    //   · a pass-0 CORNER CLASS materialized here (the acquired id space can
+    //     differ from the form's vertex ids — the snapshot ns-copy case) is a
+    //     PRIMAL LEAF: sourcing it from its own edge's endpoints would source
+    //     itself, and the walk overflows. Never the settled-cycle neighbors.
+    const isMintedMid = label.startsWith(`mid:${state.mintNs}:p`);
+    const src: [string, string] | [] = isMintedMid ? (edgeEnds.get(oldEdgeId) ?? []) : [];
+    const p1 = (src.length === 2 ? form.vertices[src[0]]?.position : undefined) ?? [0, 0, 0];
+    const p2 = (src.length === 2 ? form.vertices[src[1]]?.position : undefined) ?? p1;
+    vertices[label] = {
+      id: label,
+      position: [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2, (p1[2] + p2[2]) / 2],
+      data: createDefaultVertexData(label),
+      createdBy: {
+        shapeId: form.id,
+        operation: form.genealogy.operation,
+        sourceVertexIds: [...src],
+        sourceEdgeId: oldEdgeId,
+      },
+    };
+    carrier[label] = oldEdgeId;
+  }
+  const sc = slotClassOf(n, state.word);
+  const classSeen = new Set<number>();
+  const edges: Shape['edges'] = [];
+  for (let k = 0; k < n; k += 1) {
+    const rep = sc(k);
+    if (classSeen.has(rep)) continue;
+    classSeen.add(rep);
+    const a = corners[k];
+    const b = corners[(k + 1) % n];
+    const id = `ref:${state.mintNs}:e${edges.length}`;
+    edges.push({ id, vertexIds: [a, b], sourceVertexIds: [a, b] });
+    carrier[id] = slotEdgeOf(state.slotOrigin[k]);
+  }
+  const chordEdgeId = `ref:${state.mintNs}:chord`;
+  edges.push({
+    id: chordEdgeId,
+    vertexIds: [corners[chord.i], corners[chord.j]],
+    sourceVertexIds: [corners[chord.i], corners[chord.j]],
+  });
+  carrier[chordEdgeId] = form.id;
+  const rest: string[] = [];
+  for (let k = chord.j; ; k = (k + 1) % n) {
+    rest.push(corners[k]);
+    if (k === chord.i) break;
+  }
+  const role = form.faces[0]?.role ?? 'seed-face';
+  const diskId = `ref:${state.mintNs}:poly:disk`;
+  const restId = `ref:${state.mintNs}:poly:rest`;
+  const faces: Face[] = [
+    { id: diskId, vertexIds: chord.arc, role },
+    { id: restId, vertexIds: rest, role },
+  ];
+  carrier[diskId] = form.faces.length === 1 ? form.faces[0].id : form.id;
+  carrier[restId] = form.faces.length === 1 ? form.faces[0].id : form.id;
+  // the acquired id space can differ from the form's own vertex ids (the
+  // snapshot ns-copy case): old vertices no cell references any more would
+  // ride as ISOLATED components and break the child's classification — the
+  // refined expression keeps exactly the referenced cells (the carrier still
+  // names every kept old cell; dropped ids simply are not in the new shape)
+  const referenced = new Set<string>();
+  for (const f of faces) for (const id of f.vertexIds) referenced.add(id);
+  for (const e of edges) {
+    referenced.add(e.vertexIds[0]);
+    referenced.add(e.vertexIds[1]);
+  }
+  const keptVertices: Shape['vertices'] = {};
+  for (const [id, vertex] of Object.entries(vertices)) {
+    if (referenced.has(id)) keptVertices[id] = vertex;
+  }
+  return {
+    shape: { ...form, vertices: keptVertices, edges, faces },
+    refinement: { typeClaim: 'resolution', passes: state.pass, chordEdgeId, carrier },
+  };
+}
+
+/**
+ * refineAcquiredToDisk — THE WORDLESS PAIR at THE EXIT: the committed loop
+ * (`bisectPass` until `findChord` clears every wall, then the chord), with the
+ * state built from the ACQUISITION CHAIN instead of a birth word. Combine's
+ * door for the person's own lift-built forms (lift → fold → thicken → sew),
+ * whose complexes are real but whose births carry no word.
+ */
+export function refineAcquiredToDisk(form: Shape, ancestry: Shape | Shape[] | null = null): RefineResult {
+  const { state, slotEdgeOf, edgeEnds } = acquiredPolygonState(form, ancestry);
+  let current = state;
+  let chord = findChord(current);
+  const HARD_STOP = 8;
+  while (!chord && current.pass < HARD_STOP) {
+    current = bisectPass(current);
+    chord = findChord(current);
+  }
+  if (!chord) {
+    throw new Error(
+      `surfaceRefinement: no disk cleared every wall (distinct corners AND a parallel-free rim) after ${HARD_STOP} passes of the wordless rim — refusing loudly (report this form)`,
+    );
+  }
+  return assembleAcquired(form, current, chord, slotEdgeOf, edgeEnds);
+}
+
+// M2 — the PAIRWISE equalize: the sew preparer's deficit-pattern COMPOSED
+// across a combine pair. When both sides carry a MINTED disk and the rims
+// disagree, the SHORTER disk's rim splits `deficit` classes through the
+// committed wordless bisection (each split grows the rim by exactly one and
+// mints a fresh, distinct corner — the sum's distinct-corner and parallel-free
+// walls stay cleared). A committed pass-through face is never touched (it is
+// the person's own pick); an unequalizable pair returns unchanged and the
+// sum's own equal-rims wall speaks.
+export function equalizePreparedDisks(
+  a: { shape: Shape; disk: Face | null },
+  b: { shape: Shape; disk: Face | null },
+): { a: { shape: Shape; disk: Face | null }; b: { shape: Shape; disk: Face | null }; equalized: 'none' | 'a' | 'b' } {
+  const rimOf = (p: { shape: Shape; disk: Face | null }): number =>
+    p.disk ? p.disk.vertexIds.length : (p.shape.faces[0]?.vertexIds.length ?? 0);
+  const la = rimOf(a);
+  const lb = rimOf(b);
+  if (la === lb) return { a, b, equalized: 'none' };
+  const which: 'a' | 'b' = la < lb ? 'a' : 'b';
+  const shorter = which === 'a' ? a : b;
+  const longer = which === 'a' ? b : a;
+  if (!shorter.disk) return { a, b, equalized: 'none' };
+  const deficit = rimOf(longer) - rimOf(shorter);
+  const ring = shorter.disk.vertexIds;
+  // the disk rim is parallel-free by THE EXIT, so the endpoint-keyed lookup
+  // of its rim edges is unambiguous
+  const rimEdgeIds: string[] = [];
+  for (let k = 0; k < ring.length && rimEdgeIds.length < deficit; k += 1) {
+    const u = ring[k];
+    const v = ring[(k + 1) % ring.length];
+    const e = shorter.shape.edges.find(
+      (e2) => (e2.vertexIds[0] === u && e2.vertexIds[1] === v) || (e2.vertexIds[0] === v && e2.vertexIds[1] === u),
+    );
+    if (e && !rimEdgeIds.includes(e.id)) rimEdgeIds.push(e.id);
+  }
+  if (rimEdgeIds.length < deficit) return { a, b, equalized: 'none' };
+  let grown: WordlessBisectResult;
+  try {
+    grown = bisectAcquiredComplex(shorter.shape, null, rimEdgeIds);
+  } catch {
+    return { a, b, equalized: 'none' }; // unequalizable — the sum's own wall speaks
+  }
+  const disk = grown.shape.faces.find((f) => f.id === (shorter.disk as Face).id) ?? null;
+  if (!disk || disk.vertexIds.length !== rimOf(longer)) return { a, b, equalized: 'none' };
+  const next = { shape: grown.shape, disk };
+  return which === 'a' ? { a: next, b, equalized: 'a' } : { a, b: next, equalized: 'b' };
+}
 
 export function prepareFormForSew(
   form: Shape,

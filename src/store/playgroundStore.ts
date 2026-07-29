@@ -22,7 +22,10 @@ import {
 } from '../playground/snapshot';
 import type { BoundaryPairing } from '../lib/surfaceOperations';
 import { connectedSum } from '../lib/connectedSum';
-import { refineToDisk } from '../lib/surfaceRefinement';
+import { equalizePreparedDisks, refineAcquiredToDisk, refineToDisk } from '../lib/surfaceRefinement';
+// the word-recoverability probe for combine's routing (the committed
+// replay-verified recovery — never a provenance flag)
+import { recoverBornSurface } from '../playground/bornFormRouting';
 import type { CellId, Face, FaceId, Shape, ShapeId, VertexId } from '../types/geometry';
 
 export interface PlaygroundProvenance {
@@ -43,6 +46,11 @@ interface PlaygroundSnapshot {
   selectedVertexId: VertexId | null;
   selectedFaceId: FaceId | null;
   snapshots: PlaygroundSnapshotFile[]; // E1 — the in-app snapshot list (session-scoped)
+  // the loaded forms' CARRIED ancestor chains (GAP2C's acquire-metadata, the
+  // playground twin of the manuscript shelf's carry): a snapshot-loaded
+  // quotient acquires through its reconstructed chain — combine's wordless
+  // refine consumes it
+  loadedAncestors: Record<ShapeId, Shape[]>;
 }
 
 interface PlaygroundState extends PlaygroundSnapshot {
@@ -94,6 +102,7 @@ function createInitialPlaygroundSnapshot(): PlaygroundSnapshot {
     selectedVertexId: null,
     selectedFaceId: null,
     snapshots: [],
+    loadedAncestors: {},
   };
 }
 
@@ -358,20 +367,55 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
       );
     }
     const candidates = Object.values(state.forms).map((entry) => entry.shape);
+    // a face is a CLEAN PORT iff its rim is a simple loop with one edge
+    // instance per corner pair — the sum's own :127/:132 questions, re-derived
+    // here (THE EXIT's discipline: ask the wall's question, never import the
+    // frozen wall)
+    const hasCleanPort = (form: Shape): boolean =>
+      form.faces.some((face) => {
+        const cycle = face.vertexIds;
+        if (cycle.length < 3 || new Set(cycle).size !== cycle.length) return false;
+        for (let k = 0; k < cycle.length; k += 1) {
+          const x = cycle[k];
+          const y = cycle[(k + 1) % cycle.length];
+          const instances = form.edges.filter(
+            (e) => (e.vertexIds[0] === x && e.vertexIds[1] === y) || (e.vertexIds[0] === y && e.vertexIds[1] === x),
+          ).length;
+          if (instances !== 1) return false;
+        }
+        return true;
+      });
     const prepare = (form: Shape): { shape: Shape; disk: Face | null } => {
-      if (form.faces.length !== 1) {
-        return { shape: form, disk: null }; // already summable vocabulary — pass through
+      // already summable vocabulary — pass through untouched (the grid tori's
+      // committed path: SOME face offers a clean port)
+      if (form.faces.length !== 1 && hasCleanPort(form)) {
+        return { shape: form, disk: null };
       }
-      const parent =
-        resolveLineage(form, (id) => state.forms[id]?.shape, candidates)[0] ?? null;
-      const refined = refineToDisk(form, parent);
+      const carried = state.loadedAncestors[form.id] ?? [];
+      const lineage = [...resolveLineage(form, (id) => state.forms[id]?.shape, candidates), ...carried];
+      const parent = lineage[0] ?? null;
+      // ROUTED BY WORD-RECOVERABILITY, never provenance: the committed replay
+      // recovery speaks for word forms (refineToDisk, byte-kept); a form the
+      // recovery refuses — the person's own lift-built composites — refines
+      // through the WORDLESS pair on its acquired complex
+      if (form.faces.length === 1 && recoverBornSurface(form, parent)) {
+        const refined = refineToDisk(form, parent);
+        return {
+          shape: refined.shape,
+          disk: refined.shape.faces.find((face) => face.id.endsWith(':disk')) ?? null,
+        };
+      }
+      const refined = refineAcquiredToDisk(form, lineage.length > 0 ? lineage : null);
       return {
         shape: refined.shape,
         disk: refined.shape.faces.find((face) => face.id.endsWith(':disk')) ?? null,
       };
     };
-    const a = prepare(formA.shape);
-    const b = prepare(formB.shape);
+    const preparedA = prepare(formA.shape);
+    const preparedB = prepare(formB.shape);
+    // M2 — pairwise equalize: unequal MINTED rims compose the sew preparer's
+    // deficit-pattern across the pair, so the sum's equal-rims wall passes
+    const { a, b } = equalizePreparedDisks(preparedA, preparedB);
     const child = connectedSum(a.shape, b.shape, {
       ...(a.disk ? { faceA: a.disk } : {}),
       ...(b.disk ? { faceB: b.disk } : {}),
@@ -395,8 +439,14 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     return file;
   },
   loadSnapshot: (file, loadSource) => {
-    const { shape, provenance } = deserializeSnapshot(file, loadSource);
+    const { shape, provenance, ancestors } = deserializeSnapshot(file, loadSource);
     get().addForm(shape, provenance);
+    // the snapshot's reconstructed chain rides as acquire-metadata (GAP2C):
+    // without it a loaded quotient cannot acquire, and combine's wordless
+    // refine would refuse the person's own saved forms
+    if (ancestors && ancestors.length > 0) {
+      set((state) => ({ loadedAncestors: { ...state.loadedAncestors, [shape.id]: ancestors } }));
+    }
     return shape;
   },
   removeForm: (shapeId) => {
