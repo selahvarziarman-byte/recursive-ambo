@@ -61,7 +61,10 @@ import { resolveLineage } from '../playground/playgroundOperations';
 import { prepareFormForSew, refineToDisk } from '../lib/surfaceRefinement';
 // CUT 1b — THE L: the general layout (the person's own cells on the canonical
 // body); consumed here at the classBody seam — the frozen router is untouched
-import { buildCrossingHull, markRimRefinedForSew, tryLaidBodyModel, type LaidBodyModel } from './laidBodyModel';
+import { markRimRefinedForSew, tryLaidBodyModel, type LaidBodyModel } from './laidBodyModel';
+// UNIFICATION: the laid body renders through the ONE crafted renderer
+// (InkedForm) via the adapter — no second re-implementation of the craft
+import { buildLaidInkedModel } from './laidInkedModel';
 // C.1 — type-only: the FUNCTION computeFieldForShape is never imported by any
 // component module; it runs solely inside the worker (the call-graph claim)
 import type { ShapeField } from '../lib/fieldForShape';
@@ -433,119 +436,27 @@ function FaithfulBody({
   );
 }
 
-// CUT 1b — THE L: the person's own cells laid on the CANONICAL body (every
-// laid coordinate went through the committed immersion). LAW A: one dot per
-// vertex class, one thin curve per edge class, one translucent region per
-// face; the rim register (LAW B) is drawn heavy where it exists — on a closed
-// body it is present and honestly empty. No other ink, no orientation mark.
-// InkedForm's hull calibration, mirrored (P4): world displacement per
-// (bounding-radius × screenspacePx) — the frozen module keeps its own copy.
-const LAID_HULL_PX_CALIBRATION = 0.0117;
-
-function LaidBody({
+// UNIFICATION — the LAID CELL OVERLAY: the thin register that rides ON TOP of
+// the one crafted renderer (InkedForm draws the body, hull, hatching, the
+// person's cell curves as construction ink, and the certified loops — via the
+// laidInkedModel adapter). This overlay keeps ONLY what the crafted stack does
+// not own: the vertex-class DOTS (LAW A's countable first look, ghosted where
+// a class lands on the locus), CUT 2's pale-broken crossing ink (locus +
+// bridge stubs), and the rim register (LAW B). No accent, no cell-ink theft —
+// selection never wears a generator hue here.
+function LaidCellOverlay({
   model,
-  cellColor,
   rimColor,
-  bodyColor,
-  bodyOpacity,
-  silhouetteColor,
-  silhouettePx,
-  silhouetteOpacity,
   ghostColor,
-  selected,
-  accent,
-  worldScale,
 }: {
   model: LaidBodyModel;
-  cellColor: string;
   rimColor: string;
-  bodyColor: string;
-  bodyOpacity: number;
-  silhouetteColor: string;
-  silhouettePx: number;
-  silhouetteOpacity: number;
   ghostColor: string;
-  selected: boolean;
-  accent: string;
-  // P4 FIX-FORWARD: the group scale this body renders under — the hull's
-  // world displacement divides by it, so the pen width applies AT SPEC
-  // (dim2Scale 0.62 was silently shrinking every laid silhouette to ~62%).
-  worldScale: number;
 }) {
-  const regionGeometries = useMemo(
-    () =>
-      model.faceRegions.map((region) => {
-        const geometry = new BufferGeometry();
-        geometry.setAttribute('position', new BufferAttribute(new Float32Array(region.positions), 3));
-        geometry.setIndex(new BufferAttribute(new Uint32Array(region.indices), 1));
-        return geometry;
-      }),
-    [model],
-  );
-  // P4 THE BODY VALUE — the merged body carries one depth prepass and one
-  // strong inverted-hull silhouette (the InkedForm craft), and the fill sits
-  // a whisper darker than the page (the default's duty); the per-face regions
-  // stay separate so the four looks remain countable.
-  const merged = useMemo(() => {
-    const positions: number[] = [];
-    const indices: number[] = [];
-    for (const region of model.faceRegions) {
-      const base = positions.length / 3;
-      positions.push(...region.positions);
-      for (const i of region.indices) indices.push(base + i);
-    }
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3));
-    geometry.setIndex(new BufferAttribute(new Uint32Array(indices), 1));
-    geometry.computeVertexNormals();
-    return { geometry, positions, indices };
-  }, [model]);
-  const mergedBody = merged.geometry;
-  // P4 FIX-FORWARD — two hulls, per class:
-  //   · EMBEDDABLE (no crossing register): the plain inverted hull, unchanged
-  //     in logic — only the weight now divides by the group scale (at spec);
-  //   · SELF-CROSSING (klein / rp2): the oriented DOUBLE-COVER hull, split by
-  //     the model's own computed locus — strong ink off the locus, the pale
-  //     ghost where a hull triangle rides the crossing. A self-crossing IS
-  //     the double locus; it wears the ghost, never the black hull.
-  const hull = useMemo(() => {
-    const position = mergedBody.getAttribute('position') as BufferAttribute;
-    const normal = mergedBody.getAttribute('normal') as BufferAttribute;
-    let radius = 1;
-    for (let k = 0; k < position.count; k += 1) {
-      radius = Math.max(radius, Math.hypot(position.getX(k), position.getY(k), position.getZ(k)));
-    }
-    const weight = (radius * silhouettePx * LAID_HULL_PX_CALIBRATION) / Math.max(0.0001, worldScale);
-    if (model.crossing) {
-      const buckets = buildCrossingHull(merged.positions, merged.indices, weight, model.crossing.locusCurves);
-      const positionAttribute = new BufferAttribute(new Float32Array(buckets.positions), 3);
-      const strong = new BufferGeometry();
-      strong.setAttribute('position', positionAttribute);
-      strong.setIndex(new BufferAttribute(new Uint32Array(buckets.strongIndices), 1));
-      const ghost = new BufferGeometry();
-      ghost.setAttribute('position', positionAttribute);
-      ghost.setIndex(new BufferAttribute(new Uint32Array(buckets.ghostIndices), 1));
-      return { kind: 'split' as const, strong, ghost };
-    }
-    const displaced = new Float32Array(position.count * 3);
-    for (let k = 0; k < position.count; k += 1) {
-      displaced[3 * k] = position.getX(k) + normal.getX(k) * weight;
-      displaced[3 * k + 1] = position.getY(k) + normal.getY(k) * weight;
-      displaced[3 * k + 2] = position.getZ(k) + normal.getZ(k) * weight;
-    }
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new BufferAttribute(displaced, 3));
-    geometry.setIndex(mergedBody.getIndex());
-    return { kind: 'single' as const, geometry };
-  }, [merged, mergedBody, silhouettePx, worldScale, model]);
   // CUT 2 — the crossing register's ink plan: crossed edges break at the
   // locus and a pale stub bridges each break; the locus itself is the
   // pale-broken ghost (the drawing's crossing — never a cell, so it wears
   // no cell ink and no dot).
-  const brokenByEdge = useMemo(
-    () => new Map((model.crossing?.brokenEdges ?? []).map((b) => [b.edgeId, b])),
-    [model],
-  );
   // a person's vertex whose (u,v) lands ON the locus is DRAWN GHOSTED (both
   // sheets meet at its one 3D point) — never dropped, never re-minted
   const ghostVertexIds = useMemo(
@@ -555,60 +466,25 @@ function LaidBody({
   const ghostOpacity = Math.max(model.crossing?.ghostFloor ?? 0.3, 0.3);
   return (
     <group>
-      <mesh geometry={mergedBody} renderOrder={-3}>
-        <meshBasicMaterial colorWrite={false} side={DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={3} />
-      </mesh>
-      {silhouetteOpacity > 0 && hull.kind === 'single' ? (
-        <mesh geometry={hull.geometry} renderOrder={-2}>
-          <meshBasicMaterial color={silhouetteColor} side={BackSide} transparent opacity={silhouetteOpacity} />
-        </mesh>
-      ) : null}
-      {silhouetteOpacity > 0 && hull.kind === 'split' ? (
-        // P4 FIX-FORWARD — the self-crossing silhouette: strong ink only off
-        // the locus (the true outer silhouette survives the depth prepass);
-        // where the hull rides the crossing it wears the pale ghost instead.
-        <>
-          <mesh geometry={hull.strong} renderOrder={-2}>
-            <meshBasicMaterial color={silhouetteColor} side={BackSide} transparent opacity={silhouetteOpacity} />
-          </mesh>
-          <mesh geometry={hull.ghost} renderOrder={-2}>
-            <meshBasicMaterial color={ghostColor} side={BackSide} transparent opacity={ghostOpacity} />
-          </mesh>
-        </>
-      ) : null}
-      {model.faceRegions.map((region, k) => (
-        <mesh key={region.id} geometry={regionGeometries[k]} renderOrder={-1}>
-          <meshBasicMaterial color={bodyColor} transparent opacity={bodyOpacity} depthWrite={false} side={DoubleSide} />
-        </mesh>
+      {(model.crossing?.brokenEdges ?? []).map((broken) => (
+        <group key={`stubs:${broken.edgeId}`}>
+          {broken.stubs.map((points, k) => (
+            <Line
+              key={`stub:${k}`}
+              points={points}
+              color={ghostColor}
+              lineWidth={1.1}
+              dashed
+              dashScale={14}
+              dashSize={0.55}
+              gapSize={0.5}
+              transparent
+              opacity={ghostOpacity}
+              renderOrder={2}
+            />
+          ))}
+        </group>
       ))}
-      {model.edgeCurves.map((curve) => {
-        const broken = brokenByEdge.get(curve.id);
-        if (!broken) {
-          return <Line key={curve.id} points={curve.points} color={selected ? accent : cellColor} lineWidth={1.2} />;
-        }
-        return (
-          <group key={curve.id}>
-            {broken.segments.map((points, k) => (
-              <Line key={`seg:${k}`} points={points} color={selected ? accent : cellColor} lineWidth={1.2} />
-            ))}
-            {broken.stubs.map((points, k) => (
-              <Line
-                key={`stub:${k}`}
-                points={points}
-                color={ghostColor}
-                lineWidth={1.1}
-                dashed
-                dashScale={14}
-                dashSize={0.55}
-                gapSize={0.5}
-                transparent
-                opacity={ghostOpacity}
-                renderOrder={2}
-              />
-            ))}
-          </group>
-        );
-      })}
       {(model.crossing?.locusCurves ?? []).map((points, k) => (
         <Line
           key={`locus:${k}`}
@@ -900,6 +776,12 @@ export default function ManuscriptView() {
   // used), consumed at the render/caption/card seams. A lay that walls simply
   // never enters the map — the committed class body stands untouched.
   const [laidBodies, setLaidBodies] = useState<Map<string, LaidBodyModel>>(new Map());
+  // UNIFICATION — the adapter models, one per laid body: the InkedFormModel
+  // the ONE crafted renderer draws (derived from the lay, never stored twice)
+  const laidInkedById = useMemo(
+    () => new Map([...laidBodies].map(([sid, m]) => [sid, buildLaidInkedModel(m)])),
+    [laidBodies],
+  );
   const seqRef = useRef(1);
   // GAP2C: hoisted above its first use (targetFor ~:1236, via the availability
   // memo) — a useRef declared after its reader is a TDZ ReferenceError that
@@ -1144,6 +1026,11 @@ export default function ManuscriptView() {
         const laid = laidBodies.get(entry.form.shape.id);
         if (laid) {
           const base = readPlainSpecimen(entry.form.title, entry.form.provenance, laid.invariants, laid.h1Label);
+          // UNIFICATION — the basis is DRAWN now, and the card's legend names
+          // it (retiring the tourniquet fallback for every laid form with
+          // loops): one entry per drawn certified loop, in the ink it wears
+          // (a core draws in ink a — the committed craft's own rule).
+          const laidInked = laidInkedById.get(entry.form.shape.id);
           return {
             ...base,
             rows: [
@@ -1164,6 +1051,11 @@ export default function ManuscriptView() {
               ...(laid.note ? [{ label: 'note', value: laid.note }] : []),
               ...base.rows.map((row) => (row.label === 'class' ? { ...row, value: laid.classLabel } : row)),
             ],
+            legend: (laidInked?.loops ?? []).map((loop) => ({
+              key: loop.label,
+              text: `${loop.label} — certified H₁ generator (globalW1 basis), drawn on the body`,
+              ink: 'a' as const,
+            })),
           };
         }
         // P-IMMERSE: the form's OWN certified invariants + the honest frame +
@@ -1242,7 +1134,7 @@ export default function ManuscriptView() {
     }
     const model = dim3All.find((m) => m.key === key);
     return model ? readDomainSpecimen(model) : null;
-  }, [selected, world, written, optionBByShape, dim3All, laidBodies]);
+  }, [selected, world, written, optionBByShape, dim3All, laidBodies, laidInkedById]);
 
   // ----- 3a: the op target + the committed availability + the apply path -----
   const rows = d.world.rows;
@@ -2548,6 +2440,7 @@ export default function ManuscriptView() {
           const render = entry.form.render;
           // CUT 1b — the laid body, if this classBody form earned one
           const laid = render.mode === 'classBody' ? laidBodies.get(entry.form.shape.id) : undefined;
+          const laidInked = laid ? laidInkedById.get(entry.form.shape.id) : undefined;
           const sub =
             render.mode === 'immersion'
               ? `${render.model.immersion.correspondence.word === '' ? 'no gluing word' : render.model.immersion.correspondence.word} · H₁ = ${render.model.h1Label ?? 'n-a'}`
@@ -2594,29 +2487,30 @@ export default function ManuscriptView() {
                 />
               </group>
             ) : render.mode === 'classBody' ? (
-              laid ? (
-                // CUT 1b — THE L: the person's OWN cells on the canonical body
-                // (every coordinate through the committed immersion) — the
-                // torus they folded/thickened/sewed wears their cells, not a
-                // standard representative. The route/model stay classBody.
+              laid && laidInked ? (
+                // UNIFICATION — ONE crafted renderer: the laid body rides
+                // InkedForm through the adapter (CUT 1b — the person's OWN
+                // cells on the canonical body; now with the zoo's full pass
+                // stack: prepass · hull · body · hatching · the cells as
+                // construction ink · the CERTIFIED basis loops). The cell
+                // overlay (dots · CUT 2's crossing ghost · rims) rides on
+                // top. The pen divides by the group scale through the CRAFT
+                // prop, so P4's at-spec ruling holds with the frozen craft
+                // byte-untouched.
                 <group scale={scaleCtl.dim2Scale}>
-                  <LaidBody
+                  <InkedForm
+                    model={laidInked}
+                    craft={{
+                      ...craftFor(id, entry.form.shape.id),
+                      silhouetteScreenspacePx:
+                        silhouetteCtl.screenspacePx / Math.max(0.0001, scaleCtl.dim2Scale),
+                    }}
+                    lighting={lighting}
+                  />
+                  <LaidCellOverlay
                     model={laid}
-                    cellColor={inkFor(id, entry.form.shape.id, constructionCtl.color)}
                     rimColor={inkFor(id, entry.form.shape.id, silhouetteCtl.color)}
-                    bodyColor={bodyCtl.color}
-                    // P4 FIX-FORWARD: the laid fill takes the default's FULL
-                    // body opacity — the old ×0.55 halved the ruled value at
-                    // this one seam (the class bodies already drew at spec),
-                    // which is why the laid torus read invisible in the app.
-                    bodyOpacity={bodyCtl.opacity}
-                    silhouetteColor={silhouetteCtl.color}
-                    silhouettePx={silhouetteCtl.screenspacePx}
-                    silhouetteOpacity={silhouetteCtl.opacity}
                     ghostColor={genesisCtl.pencilTone}
-                    selected={selected === id}
-                    accent={generatorsCtl.a}
-                    worldScale={scaleCtl.dim2Scale}
                   />
                 </group>
               ) : (

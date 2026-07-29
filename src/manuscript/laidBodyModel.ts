@@ -46,7 +46,11 @@
 // recomputes an invariant; this module only PLACES certified cells.
 
 import type { Shape, Vec3 } from '../types/geometry';
-import type { AssembledComplex } from '../lib/globalW1';
+import { analyzeGlobalW1, type AssembledComplex } from '../lib/globalW1';
+// UNIFICATION: the certified Option-B machinery, consumed at the complex level
+// (the laid quotient shape is bridge-refusing by design, so the wrapper's own
+// bridge is bypassed — the pieces are the committed exports, verbatim)
+import { buildSubdivisionGeometry } from './optionBModel';
 import { readFormInvariants, type FormInvariantsReadout } from '../playground/formInvariants';
 import { classifyForm, classLabel, type SurfaceClass } from './surfaceClassifier';
 import { classH1Label } from './classBodyModel';
@@ -119,9 +123,23 @@ export interface LaidBodyModel {
   // bodies (klein · rp2); null on the embeddable ones. The crossing is the
   // DRAWING's, never a cell — it rides beside the four looks, not among them.
   crossing: CrossingModel | null;
+  // UNIFICATION — the inked lay: the WELDED dense mesh (one crafted renderer
+  // draws it), the person's cell curves as sample chains (crossing breaks
+  // honored), and the CERTIFIED basis loops lifted onto the body. Built here
+  // because the cover frames live here; the adapter that wraps it into the
+  // crafted renderer's own model shape is laidInkedModel (its sibling).
+  inked: LaidInkedLay;
   invariants: FormInvariantsReadout; // the tower's certificate (the card's rows)
   h1Label: string | null;
   note: string | null; // the designer's disclosure, or null
+}
+
+export interface LaidInkedLay {
+  vertices: Array<{ id: string; position: Vec3 }>; // every sample: mesh + chains + loops
+  triangles: string[][]; // the welded dense mesh, one 3-ring of ids per triangle
+  edgeChains: string[][]; // the person's cell curves as ordered id chains (breaks split chains)
+  loops: Array<{ label: string; path: string[] }>; // certified basis loops, closed (first === last)
+  b1: number; // the certifier's own count — loops.length === b1, asserted at build
 }
 
 export type LaidVerdict = { ok: true; model: LaidBodyModel } | { ok: false; wall: string };
@@ -1723,6 +1741,311 @@ function meshTriangle(
 // the verdict — classify (committed) → body lookup → cut → parametrize → lay
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// UNIFICATION — the inked lay: everything the ONE crafted renderer needs,
+// built where the cover frames live.
+//   · the WELDED dense mesh: faces sampled in their own cover frames, glued
+//     along shared edge samples BY ID (corner samples wear the vertex class,
+//     edge samples a canonical per-class index) — the deck-equivariance of
+//     the body map makes every duplicate lift land on the same 3D point, so
+//     one id per sample is the truth, not a hope;
+//   · the person's cell curves as ordered sample CHAINS (the crossing
+//     register's breaks split the chains — the drawn ink still yields);
+//   · the CERTIFIED basis loops: the committed certifier's own basis cycles,
+//     decomposed on the committed barycentric subdivision, each sub-edge
+//     sampled in its OWN face frame (equivariance joins the pieces) — the
+//     basis is DRAWN on the body, ending the era where the person's own
+//     form carried less craft than the zoo.
+// ---------------------------------------------------------------------------
+
+const MESH_EDGE_DENSITY = 10; // boundary samples per cover unit (clamped 4..24)
+const MESH_ROWS = 5; // interior rows between centroid and boundary
+const CAP_MESH_ROWS = 6; // polar rows for the sphere's cap face
+const LOOP_SEGMENT_SAMPLES = 8; // samples per basis-loop sub-edge
+
+function buildInkedLay(args: {
+  complex: AssembledComplex;
+  faceRings: V2[][];
+  toBody: (p: V2) => Vec3;
+  capFace: number;
+  vertexDots: Array<{ id: string; position: Vec3 }>;
+  edgeCurves: Array<{ id: string; points: Vec3[] }>;
+  crossing: CrossingModel | null;
+}): LaidInkedLay {
+  const { complex, faceRings, toBody, capFace, vertexDots, edgeCurves, crossing } = args;
+  const vertices: Array<{ id: string; position: Vec3 }> = [];
+  const seen = new Set<string>();
+  const addVertex = (id: string, position: Vec3): string => {
+    if (!seen.has(id)) {
+      seen.add(id);
+      vertices.push({ id, position });
+    }
+    return id;
+  };
+  const centroidOf = (fi: number): V2 => {
+    const ring = faceRings[fi];
+    let x = 0;
+    let y = 0;
+    for (const p of ring) {
+      x += p[0];
+      y += p[1];
+    }
+    return [x / ring.length, y / ring.length];
+  };
+  // per-edge boundary sample count — fixed ONCE so both adjacent faces weld
+  const sampleCountOf = new Map<string, number>();
+  complex.faces.forEach((face, fi) => {
+    const ring = faceRings[fi];
+    face.boundary.forEach((slot, p) => {
+      if (sampleCountOf.has(slot.edge)) return;
+      const a = ring[p];
+      const b = ring[(p + 1) % ring.length];
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      sampleCountOf.set(slot.edge, Math.max(4, Math.min(24, Math.ceil(len * MESH_EDGE_DENSITY))));
+    });
+  });
+  const edgeById = new Map(complex.edges.map((e) => [e.id, e]));
+  // one face's boundary as welded sample ids + cover points (chord-exclusive:
+  // each chord contributes its tail corner + interior samples; the head corner
+  // is the next chord's tail)
+  const boundaryOf = (fi: number): Array<{ id: string; cover: V2 }> => {
+    const face = complex.faces[fi];
+    const ring = faceRings[fi];
+    const out: Array<{ id: string; cover: V2 }> = [];
+    face.boundary.forEach((slot, p) => {
+      const e = edgeById.get(slot.edge) as AssembledComplex['edges'][number];
+      const a = ring[p];
+      const b = ring[(p + 1) % ring.length];
+      const K = sampleCountOf.get(slot.edge) as number;
+      const tailClass = slot.dir === 1 ? e.u : e.v;
+      for (let k = 0; k < K; k += 1) {
+        const cover: V2 = [a[0] + ((b[0] - a[0]) * k) / K, a[1] + ((b[1] - a[1]) * k) / K];
+        const id = k === 0 ? `Lv:${tailClass}` : `Lm:${slot.edge}:${slot.dir === 1 ? k : K - k}`;
+        out.push({ id, cover });
+      }
+    });
+    return out;
+  };
+  const triangles: string[][] = [];
+  complex.faces.forEach((face, fi) => {
+    const bnd = boundaryOf(fi);
+    const B = bnd.length;
+    for (const s of bnd) addVertex(s.id, toBody(s.cover));
+    if (fi === capFace) {
+      // the polar patch: the welded ring swept to the pole (v → 1); row 0 IS
+      // the drawn boundary, so the patch meets its own edges exactly
+      const uvOf = (p: V2): [number, number] => {
+        const r = Math.min(1, Math.hypot(p[0], p[1]));
+        return [(Math.PI / 2 - Math.atan2(p[1], p[0])) / (2 * Math.PI), r * CAP_V];
+      };
+      const rows: string[][] = [bnd.map((s) => s.id)];
+      for (let t = 1; t < CAP_MESH_ROWS; t += 1) {
+        const row: string[] = [];
+        bnd.forEach((s, bIdx) => {
+          const [u, v0] = uvOf(s.cover);
+          const v = v0 + (1 - v0) * (t / CAP_MESH_ROWS);
+          row.push(addVertex(`Lf:${fi}:${t}:${bIdx}`, immersionPosition('sphere', u, v)));
+        });
+        rows.push(row);
+      }
+      const pole = addVertex(`Lf:${fi}:pole`, immersionPosition('sphere', 0, 1));
+      for (let t = 0; t + 1 < rows.length; t += 1) {
+        for (let bIdx = 0; bIdx < B; bIdx += 1) {
+          const b2 = (bIdx + 1) % B;
+          triangles.push([rows[t][bIdx], rows[t + 1][bIdx], rows[t + 1][b2]]);
+          triangles.push([rows[t][bIdx], rows[t + 1][b2], rows[t][b2]]);
+        }
+      }
+      const last = rows[rows.length - 1];
+      for (let bIdx = 0; bIdx < B; bIdx += 1) {
+        triangles.push([last[bIdx], pole, last[(bIdx + 1) % B]]);
+      }
+      return;
+    }
+    const c = centroidOf(fi);
+    const centreId = addVertex(`Lf:${fi}:c`, toBody(c));
+    const rows: string[][] = [];
+    for (let t = 1; t < MESH_ROWS; t += 1) {
+      const row: string[] = [];
+      bnd.forEach((s, bIdx) => {
+        const cover: V2 = [
+          c[0] + ((s.cover[0] - c[0]) * t) / MESH_ROWS,
+          c[1] + ((s.cover[1] - c[1]) * t) / MESH_ROWS,
+        ];
+        row.push(addVertex(`Lf:${fi}:${t}:${bIdx}`, toBody(cover)));
+      });
+      rows.push(row);
+    }
+    rows.push(bnd.map((s) => s.id));
+    for (let bIdx = 0; bIdx < B; bIdx += 1) {
+      triangles.push([centreId, rows[0][bIdx], rows[0][(bIdx + 1) % B]]);
+    }
+    for (let t = 0; t + 1 < rows.length; t += 1) {
+      for (let bIdx = 0; bIdx < B; bIdx += 1) {
+        const b2 = (bIdx + 1) % B;
+        triangles.push([rows[t][bIdx], rows[t + 1][bIdx], rows[t + 1][b2]]);
+        triangles.push([rows[t][bIdx], rows[t + 1][b2], rows[t][b2]]);
+      }
+    }
+  });
+  // ── the person's cell curves as chains (the register's breaks split them) ──
+  const brokenByEdge = new Map((crossing?.brokenEdges ?? []).map((b) => [b.edgeId, b]));
+  const edgeChains: string[][] = [];
+  for (const curve of edgeCurves) {
+    const broken = brokenByEdge.get(curve.id);
+    const polylines = broken ? broken.segments : [curve.points];
+    polylines.forEach((points, si) => {
+      const chain: string[] = [];
+      points.forEach((p, k) => {
+        chain.push(addVertex(`Le:${curve.id}:${si}:${k}`, p));
+      });
+      if (chain.length >= 2) edgeChains.push(chain);
+    });
+  }
+  // ── the certified basis, drawn on the body ─────────────────────────────────
+  const analysis = analyzeGlobalW1(complex);
+  const cycles = analysis.debug.basisCycles;
+  if (cycles.length !== analysis.cert.b1) {
+    throw new Error('laidBodyModel: basis-cycle count differs from certified b₁ — refusing the inked lay');
+  }
+  const dotPos = new Map(vertexDots.map((d) => [d.id, d.position]));
+  // the committed subdivision's endpoints, via a measured-dependency partial:
+  // buildSubdivisionGeometry reads shape.vertices[id].position and
+  // shape.faces[*].vertexIds only (its own :58-:81) — the laid quotient shape
+  // is bridge-refusing by design, so the partial carries exactly those fields
+  const synthFaces = complex.faces.map((face, fi) => ({
+    id: `synthface:${fi}`,
+    vertexIds: face.boundary.map((slot) => {
+      const e = edgeById.get(slot.edge) as AssembledComplex['edges'][number];
+      return slot.dir === 1 ? e.u : e.v;
+    }),
+    role: 'seed-face',
+  }));
+  const synthVertices: Record<string, { position: Vec3 }> = {};
+  for (const v of complex.vertices) {
+    synthVertices[v] = { position: dotPos.get(v) ?? [0, 0, 0] };
+  }
+  const geom = buildSubdivisionGeometry(
+    { vertices: synthVertices, faces: synthFaces } as unknown as Shape,
+    complex,
+  );
+  const firstSlotOf = new Map<string, { fi: number; p: number; d: 1 | -1 }>();
+  complex.faces.forEach((face, fi) => {
+    face.boundary.forEach((slot, p) => {
+      if (!firstSlotOf.has(slot.edge)) firstSlotOf.set(slot.edge, { fi, p, d: slot.dir });
+    });
+  });
+  // one sub-edge's cover segment, in its OWN face frame (equivariance joins
+  // consecutive pieces in 3D — no global lift is needed)
+  const subEdgeCover = (subEdge: string): { a: { sv: string; cover: V2 }; b: { sv: string; cover: V2 } } => {
+    const he = subEdge.match(/^HE:(.+):(u|v)$/);
+    if (he) {
+      const e = edgeById.get(he[1]);
+      const slot = firstSlotOf.get(he[1]);
+      if (!e || !slot) throw new Error(`laidBodyModel: basis sub-edge names unknown edge class "${he[1]}"`);
+      const ring = faceRings[slot.fi];
+      const a = ring[slot.p];
+      const b = ring[(slot.p + 1) % ring.length];
+      const tailIsU = slot.d === 1;
+      const uCover = tailIsU ? a : b;
+      const vCover = tailIsU ? b : a;
+      const mid: V2 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      const endCover = he[2] === 'u' ? uCover : vCover;
+      const endClass = he[2] === 'u' ? e.u : e.v;
+      return { a: { sv: `V:${endClass}`, cover: endCover }, b: { sv: `M:${he[1]}`, cover: mid } };
+    }
+    const rm = subEdge.match(/^RM:(\d+):(\d+)$/);
+    if (rm) {
+      const fi = Number(rm[1]);
+      const p = Number(rm[2]);
+      const ring = faceRings[fi];
+      const slot = complex.faces[fi].boundary[p];
+      const a = ring[p];
+      const b = ring[(p + 1) % ring.length];
+      return {
+        a: { sv: `M:${slot.edge}`, cover: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] },
+        b: { sv: `B:${fi}`, cover: centroidOf(fi) },
+      };
+    }
+    const rc = subEdge.match(/^RC:(\d+):(\d+)$/);
+    if (rc) {
+      const fi = Number(rc[1]);
+      const p = Number(rc[2]);
+      const ring = faceRings[fi];
+      const slot = complex.faces[fi].boundary[p];
+      const e = edgeById.get(slot.edge) as AssembledComplex['edges'][number];
+      const tailClass = slot.dir === 1 ? e.u : e.v;
+      return {
+        a: { sv: `B:${fi}`, cover: centroidOf(fi) },
+        b: { sv: `V:${tailClass}`, cover: ring[p] },
+      };
+    }
+    throw new Error(`laidBodyModel: unrecognized basis sub-edge spelling "${subEdge}"`);
+  };
+  const loops: LaidInkedLay['loops'] = [];
+  cycles.forEach((cycle, g) => {
+    // ordered edge-path walk of the Z/2 cycle (deterministic: sorted ids,
+    // smallest-first — the committed decomposition's own discipline, kept
+    // at the EDGE level because the drawn curve needs each sub-edge's frame)
+    const incident = new Map<string, string[]>();
+    for (const id of [...cycle].sort()) {
+      const pair = geom.endpoints.get(id);
+      if (!pair) throw new Error(`laidBodyModel: basis cycle names unknown sub-edge "${id}"`);
+      for (const sv of pair) incident.set(sv, [...(incident.get(sv) ?? []), id]);
+    }
+    const used = new Set<string>();
+    let loopIndex = 0;
+    for (const start of [...incident.keys()].sort()) {
+      for (;;) {
+        const firstEdge = (incident.get(start) ?? []).find((id) => !used.has(id));
+        if (!firstEdge) break;
+        const walk: Array<{ subEdge: string; from: string; to: string }> = [];
+        let current = start;
+        let edge = firstEdge;
+        for (;;) {
+          used.add(edge);
+          const pair = geom.endpoints.get(edge) as [string, string];
+          const next = pair[0] === current ? pair[1] : pair[0];
+          walk.push({ subEdge: edge, from: current, to: next });
+          current = next;
+          if (current === start) break;
+          const following = (incident.get(current) ?? []).find((id) => !used.has(id));
+          if (!following) throw new Error('laidBodyModel: basis walk dead-ended — refusing the inked lay');
+          edge = following;
+        }
+        const label = loopIndex === 0 ? `g${g + 1}` : `g${g + 1}·${loopIndex + 1}`;
+        const path: string[] = [];
+        let n = 0;
+        walk.forEach((step, si) => {
+          const seg = subEdgeCover(step.subEdge);
+          const fromEnd = seg.a.sv === step.from ? seg.a : seg.b;
+          const toEnd = seg.a.sv === step.from ? seg.b : seg.a;
+          if (fromEnd.sv !== step.from || toEnd.sv !== step.to) {
+            throw new Error(`laidBodyModel: sub-edge "${step.subEdge}" endpoints disagree with the walk`);
+          }
+          for (let k = si === 0 ? 0 : 1; k <= LOOP_SEGMENT_SAMPLES; k += 1) {
+            const t = k / LOOP_SEGMENT_SAMPLES;
+            const cover: V2 = [
+              fromEnd.cover[0] + (toEnd.cover[0] - fromEnd.cover[0]) * t,
+              fromEnd.cover[1] + (toEnd.cover[1] - fromEnd.cover[1]) * t,
+            ];
+            const isLast = si === walk.length - 1 && k === LOOP_SEGMENT_SAMPLES;
+            if (isLast) {
+              path.push(path[0]); // closed: first === last, the drawn law
+            } else {
+              path.push(addVertex(`Lg:${g}:${loopIndex}:${n}`, toBody(cover)));
+              n += 1;
+            }
+          }
+        });
+        loops.push({ label, path });
+        loopIndex += 1;
+      }
+    }
+  });
+  return { vertices, triangles, edgeChains, loops, b1: analysis.cert.b1 };
+}
+
 export function laidBodyVerdict(shape: Shape, lineage: Shape | Shape[] | null): LaidVerdict {
   let classification: ReturnType<typeof classifyForm>;
   try {
@@ -1881,6 +2204,17 @@ export function laidBodyVerdict(shape: Shape, lineage: Shape | Shape[] | null): 
       }
     }
     const invariants = readFormInvariants(shape, lineage);
+    // UNIFICATION — the inked lay rides every successful lay (the welded mesh,
+    // the chains, the certified basis drawn); built here, in the frames' scope
+    const inked = buildInkedLay({
+      complex,
+      faceRings,
+      toBody,
+      capFace,
+      vertexDots,
+      edgeCurves,
+      crossing: crossingBuilt ? crossingBuilt.model : null,
+    });
     const model: LaidBodyModel = {
       shape,
       surface,
@@ -1902,6 +2236,7 @@ export function laidBodyVerdict(shape: Shape, lineage: Shape | Shape[] | null): 
         foldover,
       },
       crossing: crossingBuilt ? crossingBuilt.model : null,
+      inked,
       invariants,
       h1Label: classH1Label(cls),
       note: rimRefinedForSew.has(shape.id) ? RIM_REFINED_NOTE : null,
