@@ -1118,6 +1118,29 @@ export default function ManuscriptView() {
           ],
         };
       }
+      if (render.mode === 'bodiless') {
+        // THE BODILESS CARD's reading: the genealogy + the refusal; the
+        // committed invariant rows join ONLY when the readout computed —
+        // a pinch that refuses certification shows none (never fabricated)
+        const base = render.invariants
+          ? readPlainSpecimen(entry.form.title, entry.form.provenance, render.invariants, null)
+          : null;
+        return {
+          ...(base ?? {
+            kind: 'surface' as const,
+            title: entry.form.title,
+            subtitle: entry.form.provenance,
+            rows: [],
+            legend: [],
+            twist: null,
+          }),
+          rows: [
+            { label: 'enacted', value: render.shape.genealogy.operation, emphasize: true },
+            { label: 'no faithful body', value: render.reason },
+            ...(base ? base.rows : []),
+          ],
+        };
+      }
       const base = readPlainSpecimen(entry.form.title, entry.form.provenance, render.invariants, render.h1Label);
       // Option B: name the drawn certified generators in the summoned legend
       const optionB = optionBByShape.get(render.shape.id);
@@ -1456,6 +1479,20 @@ export default function ManuscriptView() {
       );
       closeMenus();
       if (!result.ok) {
+        // THE BODILESS CARD: an ENACTED act persists even when its body
+        // cannot draw — the ledger keeps the written word as a bodiless
+        // card; only an INPUT-refused act stays a passing notice.
+        if (result.enacted) {
+          const enacted = result.enacted;
+          seqRef.current += 1;
+          setOpNotice(null);
+          setWritten((cur) => [
+            ...cur,
+            { form: enacted, home: [target.home[0] + d.world.chrome.spawnOffset, target.home[1], 0] },
+          ]);
+          setSelected(`w:${enacted.id}`);
+          return;
+        }
         setOpNotice(`${operationId}: ${result.reason}`);
         return;
       }
@@ -1665,6 +1702,24 @@ export default function ManuscriptView() {
       layoutCtl.resolution,
     );
     if (!result.ok) {
+      // THE BODILESS CARD: an ENACTED sum persists — the child exists with
+      // its genealogy written, only the render refused; the ledger keeps it.
+      // Input-refused pairs keep the fork/notice path below, unchanged.
+      if (result.enacted) {
+        const enacted = result.enacted;
+        seqRef.current += 1;
+        const bodilessHome: [number, number, number] = [
+          (combineGate.a.home[0] + combineGate.b.home[0]) / 2,
+          Math.min(combineGate.a.home[1], combineGate.b.home[1]) - 4,
+          0,
+        ];
+        setWritten((cur) => [...cur, { form: enacted, home: bodilessHome }]);
+        setCombineWith(null);
+        setSelected(`w:${enacted.id}`);
+        setOpNotice(null);
+        setCombineRefusal(null);
+        return;
+      }
       // H2 THE FORK — offered exactly when the frozen door's rim-mismatch wall
       // is the one that fired: the two PICKED faces' lengths differ AND both
       // gate shapes carry ≥ 2 faces (the frozen wall ORDER guarantees the
@@ -2457,7 +2512,10 @@ export default function ManuscriptView() {
                   : render.mode === 'faithful'
                     ? // CUT 1 — the counted caption rides the label too (EYE-CHECK 1)
                       `V ${render.model.counts.v} · E ${render.model.counts.e} · F ${render.model.counts.f} · H₁ = ${render.model.h1Label ?? 'n-a'}`
-                    : `H₁ = ${render.h1Label ?? 'n-a'}`;
+                    : render.mode === 'bodiless'
+                      ? // THE BODILESS CARD — the caption says what the ledger holds
+                        `enacted · ${render.shape.genealogy.operation} · no faithful body`
+                      : `H₁ = ${render.h1Label ?? 'n-a'}`;
           const drop =
             render.mode === 'immersion' || render.mode === 'classBody'
               ? -d.layout.captionDrop * scaleCtl.dim2Scale - 0.9
@@ -2562,6 +2620,30 @@ export default function ManuscriptView() {
                   ghostColor={genesisCtl.pencilTone}
                 />
               </group>
+            ) : render.mode === 'bodiless' ? (
+              // THE BODILESS CARD — the minimal honest ledger card (the
+              // designer's look is a later follow-up): the genealogy word +
+              // the render's own refusal. NO body is drawn, ever.
+              <Html center distanceFactor={13} zIndexRange={[40, 0]} style={{ pointerEvents: 'none' }}>
+                <div
+                  style={{
+                    maxWidth: 250,
+                    padding: '9px 12px',
+                    borderRadius: 3,
+                    background: d.paper.cardBackground,
+                    border: `1px dashed ${d.paper.cardBorder}`,
+                    color: d.paper.cardInk,
+                    fontFamily: 'Georgia, "Times New Roman", serif',
+                    fontSize: 11.5,
+                    lineHeight: 1.45,
+                  }}
+                >
+                  <div style={{ fontWeight: 700 }}>enacted — {render.shape.genealogy.operation}</div>
+                  <div style={{ fontStyle: 'italic', opacity: 0.8, marginTop: 3 }}>
+                    no faithful body — {render.reason}
+                  </div>
+                </div>
+              </Html>
             ) : (
               <group scale={scaleCtl.dim1Scale}>
                 <InkedPlainForm

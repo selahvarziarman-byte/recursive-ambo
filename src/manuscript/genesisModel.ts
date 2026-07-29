@@ -35,7 +35,7 @@ import {
   resolveLineage,
 } from '../playground/playgroundOperations';
 import { connectedSum } from '../lib/connectedSum';
-import { routeWrittenRender } from './writtenFormModel';
+import { buildBodilessWrittenForm, routeWrittenRender } from './writtenFormModel';
 import {
   buildGenealogyDag,
   type GenealogyDag,
@@ -103,7 +103,11 @@ export function combineGateFor(
   return { legal: true, reason: null };
 }
 
-export type BirthResult = { ok: true; born: WrittenForm } | { ok: false; reason: string };
+// THE BODILESS CARD (sanctioned frozen edit — UNION #2): `enacted` present ⟺
+// the sum EXECUTED (the child exists, its genealogy written) and only the
+// RENDER refused — the caller keeps the child as a bodiless ledger card;
+// absent ⟺ the pair was refused before any child existed (notice-only).
+export type BirthResult = { ok: true; born: WrittenForm } | { ok: false; reason: string; enacted?: WrittenForm };
 
 export function birthChild(
   a: Shape,
@@ -135,7 +139,25 @@ export function birthChild(
   try {
     render = routeWrittenRender(child, [a, b], resolution);
   } catch (error) {
-    return { ok: false, reason: error instanceof Error ? error.message : String(error) };
+    // THE BODILESS CARD (UNION #2): the sum ENACTED — `child` was assigned
+    // before this catch — and only the render refused; the child persists as
+    // a bodiless ledger card. The enactment-catch above stays notice-only:
+    // an input-refused pair persists nothing.
+    const reason = error instanceof Error ? error.message : String(error);
+    return {
+      ok: false,
+      reason,
+      enacted: buildBodilessWrittenForm(
+        child,
+        [a, b],
+        reason,
+        `w${seq}`,
+        'connect-sum',
+        'connect-sum — enacted; the render refused the body',
+        null,
+        [a, b],
+      ),
+    };
   }
   const title =
     render.mode === 'classBody'

@@ -87,7 +87,13 @@ export type WrittenRender =
   | { mode: 'classBody'; model: ClassBodyModel } // P-IMMERSE — the honest representative body
   // CUT 1 THE FAITHFUL BODY (sanctioned frozen edit): the embeddable
   // cone-family draws its OWN cells (apex · seam · rim — LAWS A/B/E)
-  | { mode: 'faithful'; model: FaithfulBodyModel };
+  | { mode: 'faithful'; model: FaithfulBodyModel }
+  // THE BODILESS CARD (sanctioned frozen edit — UNION #1): a form that
+  // ENACTED (its genealogy word is written) but whose BODY the render refused
+  // (a pinch — the classify route throws) keeps its place as an honest
+  // ledger card: genealogy carried, NO body drawn, invariants present ONLY
+  // if the committed readout computes on it — never fabricated.
+  | { mode: 'bodiless'; reason: string; invariants?: FormInvariantsReadout; shape: Shape };
 
 export interface WrittenForm {
   id: string; // the manuscript-side handle (w<seq>)
@@ -248,9 +254,46 @@ export function operationAvailabilityFor(
   });
 }
 
+// THE BODILESS CARD's builder: the enacted shape, the render's own refusal,
+// and invariants ONLY if the committed readout computes on this form — a
+// pinch the certifiers refuse carries none (never fabricated). The FREE
+// discriminator lives at the call sites: `enacted` is built exactly when the
+// born shape was assigned before the render threw.
+export function buildBodilessWrittenForm(
+  bornShape: Shape,
+  lineage: Shape | Shape[] | null,
+  reason: string,
+  id: string,
+  opId: string | null,
+  provenance: string,
+  parentShape: Shape | null,
+  parentShapes?: Shape[],
+): WrittenForm {
+  let invariants: FormInvariantsReadout | undefined;
+  try {
+    invariants = readFormInvariants(bornShape, lineage);
+  } catch {
+    invariants = undefined;
+  }
+  return {
+    id,
+    title: `${bornShape.name || 'Form'} — enacted, bodiless`,
+    shape: bornShape,
+    parentShape,
+    ...(parentShapes ? { parentShapes } : {}),
+    opId,
+    provenance,
+    render: { mode: 'bodiless', reason, ...(invariants ? { invariants } : {}), shape: bornShape },
+  };
+}
+
 export type ApplyResult =
   | { ok: true; born: WrittenForm }
-  | { ok: false; reason: string };
+  // THE BODILESS CARD: `enacted` present ⟺ the operation EXECUTED (the
+  // genealogy word is written) and only the RENDER refused — the caller
+  // keeps the form as a bodiless ledger card; absent ⟺ input-refused,
+  // where the passing notice remains the whole story.
+  | { ok: false; reason: string; enacted?: WrittenForm };
 
 export function applyPlaygroundOperationTo(
   operationId: string,
@@ -271,13 +314,36 @@ export function applyPlaygroundOperationTo(
   // the born child's ancestry = its target plus the target's own lineage —
   // the render/certification acquisition then reaches every generation
   const bornAncestry = [targetShape, ...(targetAncestry ?? (targetParent ? [targetParent] : []))];
+  // THE BODILESS CARD (sanctioned frozen edit — UNION #1): the one try splits
+  // in two, and the split IS the free discriminator — did `bornShape` get
+  // assigned before the catch (enacted) or not (input-refused)?
   try {
     bornShape = operation.execute(context); // ← THE COMMITTED CALL, verbatim
+  } catch (error) {
+    // INPUT-REFUSED (unchanged): a contract surprise (canApply true but the
+    // engine refused the act itself) surfaces verbatim — fail-honest in the
+    // chrome, never a crash, never a mock, and nothing persists
+    return { ok: false, reason: error instanceof Error ? error.message : String(error) };
+  }
+  try {
     render = routeWrittenRender(bornShape, bornAncestry, resolution);
   } catch (error) {
-    // a contract surprise (canApply true but the engine refused) surfaces
-    // verbatim — fail-honest in the chrome, never a crash, never a mock
-    return { ok: false, reason: error instanceof Error ? error.message : String(error) };
+    // ENACTED but RENDER-REFUSED: the genealogy word IS written — the form
+    // keeps its place as a bodiless ledger card with the render's own reason
+    const reason = error instanceof Error ? error.message : String(error);
+    return {
+      ok: false,
+      reason,
+      enacted: buildBodilessWrittenForm(
+        bornShape,
+        bornAncestry,
+        reason,
+        `w${seq}`,
+        operationId,
+        operation.label,
+        targetShape,
+      ),
+    };
   }
   const title =
     render.mode === 'immersion'
