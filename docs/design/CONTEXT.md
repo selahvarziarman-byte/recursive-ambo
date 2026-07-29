@@ -62,6 +62,21 @@ object, the §2 / ADR-0017 lie is back. Keep the construction lines legible.
 - Craft: the silhouette / hatching of the inked body, and the operation glyphs.
 - Exact layout of dock + sources shelf + specimen — settle in the live build.
 
+## SCAR — the two renderers, and the office's own first law (2026-07-28)
+**The surface-body LOOK is `src/manuscript/InkedForm.tsx`** — the committed hand-designed craft:
+depth prepass · ink silhouette (inverted hull) · translucent body · **key-light hatching** (banded;
+target `outputs/torus_hatched_study.png`) · **two-pass construction lines** (near + hidden) ·
+**two-pass generator loops in colour**. The six zoo surfaces render through it and read.
+**`LaidBody` (CUT 1b, `ManuscriptView.tsx:445`) is a SECOND renderer** — the person's own cells on the
+canonical body — and it reproduced almost NONE of that craft (fill + hull + cells + rim only). A
+word-torus (2 cell edges) through LaidBody is invisible. **The fix is craft-parity (LaidBody wears
+InkedForm's passes / unify the two), NEVER a fill-colour tweak.**
+> ### **THE OFFICE'S FIRST LAW: any body-render ruling STARTS by opening `InkedForm.tsx` + this file —
+> never from memory, never from a plate on flattering paper.** *P4 was ruled from recollection without
+> reading the component this office authored; it cost days and shipped a band-aid on the wrong layer.
+> The whole value of a standing office is that it does not re-derive what it built — so read the built
+> record first, every time.*
+
 ### The world mark at dim 3 — the aperture (design ADR 0004)
 A closed 3-manifold **has no embedding in R³**, so it gets **no silhouette**. Its body in the world is an **aperture** —
 a **hand-cut hole in the page** through which its **interior** is seen: the cell's real edges, redrawn under the real deck
