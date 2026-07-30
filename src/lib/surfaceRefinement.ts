@@ -530,9 +530,23 @@ export function subdivideFace(shape: Shape, face: Face, cornerA: VertexId, corne
   carrier[chordEdgeId] = own.id;
   carrier[`${own.id}:disk`] = own.id;
   carrier[`${own.id}:rest`] = own.id;
+  // FIX 2b (2026-07-30) — the person's DIRECT subdivide writes the PAGE
+  // (chordSplitFor → applyChordToWritten reshapes the written form in place):
+  // the record rides ALONGSIDE the birth word — `resolution` presence with
+  // `operation` UNTOUCHED. A form is BORN ONCE: stamping 'refine' here would
+  // relabel the birth edge on a page citizen, the lie the law names. (The
+  // combine routes stamp the full word because their outputs are DISCARDED
+  // intermediates, never page forms.) A repeated reshape carries the LAST
+  // chord's record — the per-step semantics, as everywhere in this module.
+  const refinement: RefinementRecord = { typeClaim: 'resolution', passes: 0, chordEdgeId, carrier };
   return {
-    shape: { ...shape, edges: [...shape.edges, chordEdge], faces },
-    refinement: { typeClaim: 'resolution', passes: 0, chordEdgeId, carrier },
+    shape: {
+      ...shape,
+      edges: [...shape.edges, chordEdge],
+      faces,
+      genealogy: { ...shape.genealogy, resolution: refinement },
+    },
+    refinement,
   };
 }
 

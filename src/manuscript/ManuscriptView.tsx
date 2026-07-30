@@ -1010,17 +1010,19 @@ export default function ManuscriptView() {
       const entry = written.find((w) => w.form.id === key);
       if (!entry) return null;
       const render = entry.form.render;
-      // REFINE'S WORD — the resolution rows: a carried parent that entered
-      // this birth REFINED (genealogy word 'refine', trace riding
-      // `genealogy.resolution`) speaks on the card as a RESOLUTION — a row,
-      // never a birth line (the stemma rightly draws nothing for it).
+      // REFINE'S WORD — the resolution rows, keyed on PRESENCE of
+      // `genealogy.resolution`: the form's OWN shape first (FIX 2b — the
+      // person's direct subdivide carries its record ALONGSIDE the birth
+      // word, so the reshaped form speaks on ITS OWN card), then the carried
+      // parents that entered this birth refined. A row, never a birth line
+      // (the stemma rightly draws nothing for a resolution).
       const resolutionRows = (() => {
-        const carried = [entry.form.parentShape, ...(entry.form.parentShapes ?? [])].filter(
+        const sources = [entry.form.shape, entry.form.parentShape, ...(entry.form.parentShapes ?? [])].filter(
           (p): p is Shape => p !== null && p !== undefined,
         );
         const seen = new Set<string>();
         const rows: { label: string; value: string }[] = [];
-        for (const parent of carried) {
+        for (const parent of sources) {
           const trace = parent.genealogy.resolution;
           if (!trace || seen.has(parent.id)) continue;
           seen.add(parent.id);
@@ -1028,7 +1030,9 @@ export default function ManuscriptView() {
             label: 'resolution',
             value: `refined · ${trace.passes} pass${trace.passes === 1 ? '' : 'es'} · ${
               trace.chordEdgeId ? `chord ${trace.chordEdgeId}` : 'no chord'
-            } · carrier ${Object.keys(trace.carrier).length} cells new→old · of ${parent.name || parent.id}`,
+            } · carrier ${Object.keys(trace.carrier).length} cells new→old · of ${
+              parent.id === entry.form.shape.id ? 'this form' : parent.name || parent.id
+            }`,
           });
         }
         return rows;
