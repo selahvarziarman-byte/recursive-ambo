@@ -283,6 +283,85 @@ export function readIdentificationGate(complex: AssembledComplex): Identificatio
 }
 
 // ---------------------------------------------------------------------------
+// CYCLE-IDENTIFY (L23, sanctioned frozen edit — UNION #2): THE ONE SOURCE for
+// the person's traced gesture. The person traces walk A then walk B, each
+// edge with a DIRECTION (+1 = along the edge's STORED arrow u→v; −1 =
+// against it); the MODE IS THE DIRECTION — per pair, the sewBoundaryCircles
+// convention: walks ALIGNED on the merged edge ⇒ 'reversing'; OPPOSED ⇒
+// 'preserving' (G3: PRESERVING = the two wedges traverse the merged edge in
+// OPPOSITE directions). Alignment is read against each edge's CANONICAL
+// WEDGE — the SAME reference identifyOnComplex unions with (researcher-
+// pinned, ADR 0021 §6.0-bis: the wedge on the face of smallest COMMITTED
+// face-id; a FREE edge reduces to its single wedge; a dangling edge reads
+// +1) — so the enacted merge REPRODUCES THE PERSON'S PLACEMENT exactly. The
+// selector rule here MUST stay semantics-identical to identifyOnComplex's
+// inline selector (both live in this ONE frozen file, re-sealed together);
+// the ambiguity refusal is the same researcher wall, verbatim. The VIEW
+// never re-derives any of this (the L9 scar): it hands traced cycles +
+// directions in and receives per-pair modes.
+export function modesFromDirectedCycles(
+  form: Shape,
+  complex: AssembledComplex,
+  cycleA: string[],
+  cycleB: string[],
+  dirsA: Array<1 | -1>,
+  dirsB: Array<1 | -1>,
+): IdentifyMode[] {
+  if (cycleA.length === 0 || cycleA.length !== cycleB.length) {
+    throw new Error(
+      `complexIdentification: the walks must be matched and non-empty (got ${cycleA.length} vs ${cycleB.length} edge classes) — subdivide to equalize, never silently mis-match`,
+    );
+  }
+  if (dirsA.length !== cycleA.length || dirsB.length !== cycleB.length) {
+    throw new Error(
+      `complexIdentification: each traced edge needs its traced direction (got ${dirsA.length}/${dirsB.length} directions for ${cycleA.length} pairs)`,
+    );
+  }
+  if (complex.faces.length !== form.faces.length) {
+    throw new Error(
+      `complexIdentification: the acquired complex carries ${complex.faces.length} faces for a ${form.faces.length}-face shape — misaligned acquisition, refusing`,
+    );
+  }
+  const known = new Set(complex.edges.map((e) => e.id));
+  for (const id of [...cycleA, ...cycleB]) {
+    if (!known.has(id)) throw new Error(`complexIdentification: edge class "${id}" is not on the form's complex`);
+  }
+  const wedgesOfEdge = new Map<string, Array<{ faceId: string; dir: 1 | -1 }>>();
+  complex.faces.forEach((face, faceIndex) => {
+    const faceId = form.faces[faceIndex].id;
+    for (const slot of face.boundary) {
+      const list = wedgesOfEdge.get(slot.edge);
+      const wedge = { faceId, dir: slot.dir };
+      if (list) list.push(wedge);
+      else wedgesOfEdge.set(slot.edge, [wedge]);
+    }
+  });
+  const canonicalDirOf = (id: string): 1 | -1 => {
+    const wedges = wedgesOfEdge.get(id) ?? [];
+    if (wedges.length === 0) return 1; // dangling — deterministic, disclosed (the selector's own rule)
+    if (wedges.length === 1) return wedges[0].dir; // FREE — the derived rule
+    const canonicalFaceId = wedges.reduce(
+      (min, wedge) => (wedge.faceId.localeCompare(min) < 0 ? wedge.faceId : min),
+      wedges[0].faceId,
+    );
+    const onCanonicalFace = wedges.filter((wedge) => wedge.faceId === canonicalFaceId);
+    if (onCanonicalFace.length > 1) {
+      throw new Error(
+        `complexIdentification: the canonical wedge is ambiguous — both wedges of edge "${id}" lie on face "${canonicalFaceId}"; the tiebreak is a researcher pin not yet ruled`,
+      );
+    }
+    return onCanonicalFace[0].dir;
+  };
+  const modes: IdentifyMode[] = [];
+  for (let i = 0; i < cycleA.length; i += 1) {
+    const relA = dirsA[i] * canonicalDirOf(cycleA[i]);
+    const relB = dirsB[i] * canonicalDirOf(cycleB[i]);
+    modes.push(relA === relB ? 'reversing' : 'preserving');
+  }
+  return modes;
+}
+
+// ---------------------------------------------------------------------------
 // the birth id — encodes the identification for replay recovery
 // ---------------------------------------------------------------------------
 

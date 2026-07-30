@@ -64,6 +64,7 @@ import { h1LabelFromLevel1 } from './worldModel';
 import type { SpecimenReading } from './specimenModel';
 import { buildClassBodyModel, type ClassBodyModel } from './classBodyModel';
 import { acquireFaithfulComplex, readBoundary } from './surfaceClassifier';
+import { readIdentificationGate } from '../lib/complexIdentification';
 import { tryFaithfulBodyModel, type FaithfulBodyModel } from './faithfulBodyModel';
 
 export interface WrittenSkeletonModel {
@@ -425,6 +426,48 @@ export function routeWrittenRender(
       h1Label: h1LabelFromCertified(invariants),
       ...(junctionEdgeIds ? { junctionEdgeIds } : {}),
     };
+  }
+  // CYCLE-IDENTIFY (L23, sanctioned frozen edit — UNION #1): an identify-born
+  // PURE EDGE-JUNCTION renders ITSELF — plain ink on the born's FAITHFUL
+  // positions (identify merges at real centroids; the shape rides UNTOUCHED,
+  // never re-minted) with its junction classes girdered through the committed
+  // plain-render junction wire. STRATUM-AWARE, never blanket:
+  //   · PURE EDGE-JUNCTION — junction edges present AND every junction vertex
+  //     EXPLAINED by them (an endpoint of a junction edge). Measured at HEAD:
+  //     a >2-wedge seam's endpoint links ALWAYS read junction, so the literal
+  //     "junctionVertexIds === []" conjunction is structurally EMPTY — this
+  //     discriminator is the ruled intent (edge-shaped non-manifoldness,
+  //     girderable whole) made reachable;
+  //   · a junction vertex OFF the junction edges (a vertex-pinch, with or
+  //     without junction edges) falls through UNCHANGED to the class body,
+  //     whose refusal is the persistence bodiless card's door — no body is
+  //     drawn that the mathematics does not carry;
+  //   · manifold identify-borns and every other word fall through UNCHANGED
+  //     (no junction edges ⇒ no arm).
+  if (born.genealogy.operation === 'glue' || born.genealogy.operation === 'flip-glue') {
+    const acquired = acquireFaithfulComplex(born, lineage);
+    if (acquired) {
+      const gate = readIdentificationGate(acquired.complex);
+      if (gate.junctionEdgeIds.length > 0) {
+        const junctionEnds = new Set<string>();
+        for (const edge of acquired.complex.edges) {
+          if (gate.junctionEdgeIds.includes(edge.id)) {
+            junctionEnds.add(edge.u);
+            junctionEnds.add(edge.v);
+          }
+        }
+        if (gate.junctionVertexIds.every((v) => junctionEnds.has(v))) {
+          const invariants = readFormInvariants(born, lineage);
+          return {
+            mode: 'plain',
+            shape: born,
+            invariants,
+            h1Label: h1LabelFromCertified(invariants),
+            junctionEdgeIds: gate.junctionEdgeIds,
+          };
+        }
+      }
+    }
   }
   // 'patch' / 'raw': minted quotient positions — bookkeeping, never geometry.
   // CUT 1 THE FAITHFUL BODY (sanctioned frozen edit — the ONE intercept): an

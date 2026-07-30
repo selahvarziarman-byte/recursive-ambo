@@ -781,6 +781,8 @@ export function OperationsDock({
   onFoldToggle,
   thicken,
   onThickenToggle,
+  identifySew,
+  onIdentifyToggle,
 }: {
   availability: OperationAvailability[]; // the committed contract for the CURRENT selection
   hasTarget: boolean;
@@ -797,6 +799,11 @@ export function OperationsDock({
   // pair arming + the committed Q1 gate — never invented here)
   thicken?: { enabled: boolean; reason: string | null; open: boolean };
   onThickenToggle?: () => void;
+  // CYCLE-IDENTIFY (L23) — the sew register: the chip opens the trace panel
+  // (two walks, NO mode control — the mode IS the traced direction);
+  // enable/reason arrive from the view's entry gate (D2 fires at entry)
+  identifySew?: { enabled: boolean; reason: string | null; open: boolean };
+  onIdentifyToggle?: () => void;
 }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -1042,6 +1049,71 @@ export function OperationsDock({
           </div>
         );
       })}
+      {identifySew ? (
+        // CYCLE-IDENTIFY (L23) — the sew-register chip, chrome-local (the
+        // frozen dock-group list is untouched): same gesture shape as the
+        // fold/thicken chips; a greyed chip still SPEAKS on hover.
+        (() => {
+          const idEnabled = Boolean(identifySew.enabled);
+          const idOpen = Boolean(identifySew.open);
+          return (
+            <div key="identify-sew" style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onMouseEnter={() => setHovered('identify-sew')}
+                onMouseLeave={() => setHovered(null)}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  if (idEnabled) onIdentifyToggle?.();
+                }}
+                style={{
+                  width: 46,
+                  height: 46,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 3,
+                  border: `1px solid ${paper.cardBorder}`,
+                  background: idOpen ? 'rgba(58,51,38,0.08)' : 'transparent',
+                  color: idEnabled ? (hovered === 'identify-sew' ? accent : paper.cardInk) : paper.cardInk,
+                  opacity: idEnabled ? 1 : 0.38,
+                  cursor: idEnabled ? 'pointer' : 'default',
+                  padding: 0,
+                }}
+              >
+                {/* the glyph: two walks meeting in a seam (stitch strokes) */}
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <path d="M4 8 C 9 5, 17 5, 22 8" stroke="currentColor" strokeWidth="1.6" fill="none" />
+                  <path d="M4 18 C 9 21, 17 21, 22 18" stroke="currentColor" strokeWidth="1.6" fill="none" />
+                  <path d="M8 7.2 L 8 18.8 M13 6.4 L 13 19.6 M18 7.2 L 18 18.8" stroke="currentColor" strokeWidth="0.9" />
+                </svg>
+              </button>
+              {hovered === 'identify-sew' ? (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 52,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    whiteSpace: 'nowrap',
+                    padding: '3px 8px',
+                    borderRadius: 3,
+                    background: paper.cardBackground,
+                    border: `1px solid ${paper.cardBorder}`,
+                    fontSize: 12,
+                    boxShadow: '0 2px 6px rgba(58,51,38,0.18)',
+                  }}
+                >
+                  identify — trace two walks; the seam is the way you sew them
+                  {!idEnabled && identifySew.reason ? (
+                    <span style={{ opacity: 0.6 }}> — {identifySew.reason}</span>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          );
+        })()
+      ) : null}
     </div>
   );
 }

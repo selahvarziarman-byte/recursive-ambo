@@ -30,8 +30,10 @@ import {
   BufferGeometry,
   DoubleSide,
   MathUtils,
+  Quaternion,
   Raycaster,
   Vector2,
+  Vector3,
   type Camera,
   type Group,
   type Mesh,
@@ -52,13 +54,25 @@ import type { Face, Shape } from '../types/geometry';
 import { PRIMITIVE_CATALOGUE } from '../playground/primitiveCatalogue';
 import {
   applyPlaygroundOperationTo,
+  buildBodilessWrittenForm,
   invokePrimitive,
   operationAvailabilityFor,
   readPlainSpecimen,
+  routeWrittenRender,
   type WrittenForm,
 } from './writtenFormModel';
 import { resolveLineage } from '../playground/playgroundOperations';
 import { prepareFormForSew, refineToDisk } from '../lib/surfaceRefinement';
+// CYCLE-IDENTIFY (L23) — the gesture consumes the committed op + THE ONE
+// SOURCE for the mode (modesFromDirectedCycles; the view NEVER re-derives the
+// wedge convention — the L9 scar); entry gates read the committed walls
+import {
+  acquireComplex,
+  directComplexOf,
+  identify,
+  modesFromDirectedCycles,
+  type AcquiredComplex,
+} from '../lib/complexIdentification';
 // CUT 1b — THE L: the general layout (the person's own cells on the canonical
 // body); consumed here at the classBody seam — the frozen router is untouched
 import { markRimRefinedForSew, tryLaidBodyModel, type LaidBodyModel } from './laidBodyModel';
@@ -434,6 +448,114 @@ function FaithfulBody({
       ) : null}
     </group>
   );
+}
+
+// ---------------------------------------------------------------------------
+// CYCLE-IDENTIFY (L23) — THE TRACE OVERLAY: the person traces two walks on
+// the form's OWN edge classes. Every complex edge gets an INVISIBLE FATTENED
+// PROXY COLLIDER (the designer's reach cure — pixel-exact clicking is the
+// shipped defect this gesture must not inherit); an accepted edge draws a
+// NIB STROKE — thick at the tail, thin at the head, running the TRACED
+// direction (a stroke, never an arrow) — in the walk's OWN RESERVED ink
+// (⛔ the INK LAW: never generators.a/.b, never seam/Σ ink — a traced walk
+// is a person's pick, not a certified generator). While walk B is being
+// traced, the i-th A-stroke LIGHTS as the i-th B-stroke lands (pairing
+// legible at the only moment it is decided — no leader lines, no numerals).
+// ---------------------------------------------------------------------------
+
+// the walks' own reserved inks (provisional values — the designer holds the
+// look; distinct species from generators.a #c2811d / .b #3e6db4, the seam
+// ink, and the Σ ink, per the ratified ink law)
+const TRACE_INK_A = '#8a4f6d';
+const TRACE_INK_B = '#3f7d5c';
+
+function CycleTraceOverlay({
+  shape,
+  complex,
+  walkA,
+  walkB,
+  phase,
+  onPickEdge,
+}: {
+  shape: Shape;
+  complex: AcquiredComplex['complex'];
+  walkA: Array<{ id: string; dir: 1 | -1 }>;
+  walkB: Array<{ id: string; dir: 1 | -1 }>;
+  phase: 'A' | 'B';
+  onPickEdge: (edgeId: string, dir: 1 | -1) => void;
+}) {
+  const posOf = (vid: string): [number, number, number] | null => {
+    const v = shape.vertices[vid];
+    return v ? [v.position[0], v.position[1], v.position[2]] : null;
+  };
+  const inA = new Map(walkA.map((t, i) => [t.id, i]));
+  const inB = new Map(walkB.map((t, i) => [t.id, i]));
+  // the i-th A-edge lights while the i-th B-edge exists (pairing, live)
+  const litA = new Set(walkB.map((_, i) => walkA[i]?.id).filter(Boolean));
+  const nib = (u: [number, number, number], v: [number, number, number], dir: 1 | -1, ink: string, lit: boolean) => {
+    const [tail, head] = dir === 1 ? [u, v] : [v, u];
+    const lerp = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [
+      a[0] + (b[0] - a[0]) * t,
+      a[1] + (b[1] - a[1]) * t,
+      a[2] + (b[2] - a[2]) * t,
+    ];
+    const w = lit ? 5.2 : 3.4; // the lit pair reads heavier, same ink
+    return (
+      <group>
+        <Line points={[tail, lerp(tail, head, 0.55)]} color={ink} lineWidth={w} renderOrder={14} />
+        <Line points={[lerp(tail, head, 0.55), lerp(tail, head, 0.85)]} color={ink} lineWidth={w * 0.62} renderOrder={14} />
+        <Line points={[lerp(tail, head, 0.85), head]} color={ink} lineWidth={w * 0.32} renderOrder={14} />
+      </group>
+    );
+  };
+  return (
+    <group>
+      {complex.edges.map((edge) => {
+        const u = posOf(edge.u);
+        const v = posOf(edge.v);
+        if (!u || !v) return null;
+        const mid: [number, number, number] = [(u[0] + v[0]) / 2, (u[1] + v[1]) / 2, (u[2] + v[2]) / 2];
+        const len = Math.hypot(v[0] - u[0], v[1] - u[1], v[2] - u[2]) || 1;
+        const aHit = inA.get(edge.id);
+        const bHit = inB.get(edge.id);
+        return (
+          <group key={`trace:${edge.id}`}>
+            {/* the fattened invisible proxy — the collider IS the reach fix */}
+            <mesh
+              position={mid}
+              quaternion={quaternionFromUnitY([(v[0] - u[0]) / len, (v[1] - u[1]) / len, (v[2] - u[2]) / len])}
+              onClick={(e) => {
+                e.stopPropagation();
+                // the traced direction: the endpoint NEARER the click is the
+                // stroke's TAIL (the person starts the stroke where they touch)
+                const p = e.point;
+                const du = Math.hypot(p.x - u[0], p.y - u[1], p.z - u[2]);
+                const dv = Math.hypot(p.x - v[0], p.y - v[1], p.z - v[2]);
+                onPickEdge(edge.id, du <= dv ? 1 : -1);
+              }}
+            >
+              <cylinderGeometry args={[0.16, 0.16, len, 6]} />
+              <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+            </mesh>
+            {/* a faint guide so every pickable class is visible while tracing */}
+            {aHit === undefined && bHit === undefined ? (
+              <Line points={[u, v]} color="#9a917e" lineWidth={1} transparent opacity={0.5} renderOrder={13} />
+            ) : null}
+            {aHit !== undefined ? nib(u, v, walkA[aHit].dir, TRACE_INK_A, phase === 'B' && litA.has(edge.id)) : null}
+            {bHit !== undefined ? nib(u, v, walkB[bHit].dir, TRACE_INK_B, false) : null}
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
+// the proxy cylinder's axis: rotate unit-Y onto the edge direction
+function quaternionFromUnitY(dir: [number, number, number]): [number, number, number, number] {
+  const from = new Vector3(0, 1, 0);
+  const to = new Vector3(dir[0], dir[1], dir[2]);
+  const q = new Quaternion().setFromUnitVectors(from, to);
+  return [q.x, q.y, q.z, q.w];
 }
 
 // UNIFICATION — the LAID CELL OVERLAY: the thin register that rides ON TOP of
@@ -813,6 +935,24 @@ export default function ManuscriptView() {
   } | null>(null);
   // the person's aimed chords per page key, applied to the GATE shape only
   const [gateChords, setGateChords] = useState<Record<string, ChordAim[]>>({});
+  // CYCLE-IDENTIFY (L23) — the trace state: two walks, each edge with its
+  // traced direction; the MODE IS THE DIRECTION (no control anywhere). The
+  // entry gate (D2) fires at open, before any tracing; a live notice carries
+  // the D1/D3 doors' sentences.
+  const [cycleTrace, setCycleTrace] = useState<{
+    targetKey: string;
+    phase: 'A' | 'B';
+    walkA: Array<{ id: string; dir: 1 | -1 }>;
+    walkB: Array<{ id: string; dir: 1 | -1 }>;
+    entryRefusal: string | null;
+    notice: string | null;
+  } | null>(null);
+  // the reach fix, half (b): a miss during a trace must NOT discard the held
+  // walk — the pointer-missed clear is TRACE-GUARDED through this ref
+  const cycleTraceRef = useRef(false);
+  useEffect(() => {
+    cycleTraceRef.current = cycleTrace !== null;
+  }, [cycleTrace]);
   // the last combine attempt's rim-mismatch refusal + the fork it offers
   const [combineRefusal, setCombineRefusal] = useState<{ reason: string; fork: ForkOffer } | null>(null);
   // GAP2B — the thicken panel's open state (the 8th dock word's chip toggles it)
@@ -831,6 +971,7 @@ export default function ManuscriptView() {
         setGateChords({});
         setCombineRefusal(null);
         setThickenOpen(false);
+        setCycleTrace(null);
         closeMenus();
       }
     };
@@ -1876,6 +2017,136 @@ export default function ManuscriptView() {
     }
     setFold((cur) => (cur && cur.targetKey === selected ? null : { targetKey: selected, pairs: [], pending: null }));
   }, [selected, targetFor]);
+  // ----- CYCLE-IDENTIFY (L23): the trace gesture ---------------------------
+  // the entry gate — D2 fires AT ENTRY, before the person traces anything
+  // (never let them do the work and then discard it); the quotient wall is
+  // pre-empted structurally for the same reason (its cure is the dock words)
+  const handleIdentifyToggle = useCallback((): void => {
+    if (!selected) return;
+    setCycleTrace((cur) => {
+      if (cur && cur.targetKey === selected) return null;
+      const target = targetFor(selected);
+      if (!target) return cur;
+      let entryRefusal: string | null = null;
+      if (target.shape.faces.length === 1) {
+        try {
+          directComplexOf(target.shape);
+        } catch {
+          entryRefusal =
+            'this single-face quotient identifies through the committed word ops (glue / flip-glue on the face) — the dock words are its doors';
+        }
+      }
+      if (entryRefusal === null) {
+        try {
+          const acquired = acquireComplex(target.shape, target.ancestry ?? null);
+          if (!acquired) {
+            entryRefusal =
+              "the form's faithful complex is not acquirable — the direct bridge refuses it and no replay recovery reaches it";
+          }
+        } catch (error) {
+          entryRefusal = error instanceof Error ? error.message : String(error);
+        }
+      }
+      return { targetKey: selected, phase: 'A', walkA: [], walkB: [], entryRefusal, notice: null };
+    });
+  }, [selected, targetFor]);
+  // the traced form's acquired complex (the trace's substrate)
+  const traceComplex = useMemo(() => {
+    if (!cycleTrace || cycleTrace.entryRefusal) return null;
+    const target = targetFor(cycleTrace.targetKey);
+    if (!target) return null;
+    try {
+      const acquired = acquireComplex(target.shape, target.ancestry ?? null);
+      return acquired ? { target, complex: acquired.complex } : null;
+    } catch {
+      return null;
+    }
+  }, [cycleTrace, targetFor]);
+  // an edge pick — D3's walls fire LIVE (the engine's own sentences, at the
+  // moment of the pick, never sprung at the end)
+  const handleCyclePick = useCallback((edgeId: string, dir: 1 | -1): void => {
+    setCycleTrace((cur) => {
+      if (!cur || cur.entryRefusal) return cur;
+      const inA = cur.walkA.some((t) => t.id === edgeId);
+      const inB = cur.walkB.some((t) => t.id === edgeId);
+      if (cur.phase === 'A') {
+        if (inA) return { ...cur, notice: 'a walk repeats an edge class — each class may appear once' };
+        return { ...cur, walkA: [...cur.walkA, { id: edgeId, dir }], notice: null };
+      }
+      if (inB) return { ...cur, notice: 'a walk repeats an edge class — each class may appear once' };
+      if (inA) return { ...cur, notice: 'this edge class is in walk A — a class cannot be identified with itself' };
+      return { ...cur, walkB: [...cur.walkB, { id: edgeId, dir }], notice: null };
+    });
+  }, []);
+  // Confirm — cycles in TRACED order + dirs in TRACED directions → the ONE
+  // SOURCE (modesFromDirectedCycles) → the committed identify. The render
+  // routes stratum-aware (UNION #1); a pinch's render refusal persists the
+  // bodiless card (D4 — the meaning is kept, no body drawn).
+  const handleCycleConfirm = useCallback((): void => {
+    if (!cycleTrace || !traceComplex) return;
+    const { target, complex } = traceComplex;
+    const { walkA, walkB } = cycleTrace;
+    try {
+      const cycleA = walkA.map((t) => t.id);
+      const cycleB = walkB.map((t) => t.id);
+      const modes = modesFromDirectedCycles(
+        target.shape,
+        complex,
+        cycleA,
+        cycleB,
+        walkA.map((t) => t.dir),
+        walkB.map((t) => t.dir),
+      );
+      const identified = identify(target.shape, cycleA, cycleB, modes, target.ancestry ?? null);
+      const bornAncestry = [target.shape, ...(target.ancestry ?? [])];
+      const seq = seqRef.current;
+      seqRef.current += 1;
+      const provenance = `identify — the person's traced seam (${cycleA.length} pair${cycleA.length === 1 ? '' : 's'}, the mode is the direction)`;
+      let form: WrittenForm;
+      try {
+        const render = routeWrittenRender(identified.shape, bornAncestry, layoutCtl.resolution);
+        const title =
+          render.mode === 'plain' && render.junctionEdgeIds?.length
+            ? 'identified — edge-junction, girdered'
+            : 'identified — born';
+        form = {
+          id: `w${seq}`,
+          title,
+          shape: identified.shape,
+          parentShape: target.shape,
+          opId: identified.shape.genealogy.operation,
+          provenance,
+          render,
+        };
+        setOpNotice(null);
+      } catch (error) {
+        // D4 — the pinch: ENACTED, no faithful body; the persistence bodiless
+        // card keeps the identification's genealogy (FIX 1, reused not rebuilt)
+        const reason = error instanceof Error ? error.message : String(error);
+        form = buildBodilessWrittenForm(
+          identified.shape,
+          bornAncestry,
+          reason,
+          `w${seq}`,
+          identified.shape.genealogy.operation,
+          `identify — enacted; the render refused the body`,
+          target.shape,
+        );
+        setOpNotice('identify: no body exists — the form pinches (the card keeps the act)');
+      }
+      setWritten((cur) => [
+        ...cur,
+        { form, home: [target.home[0] + d.world.chrome.spawnOffset, target.home[1], 0] },
+      ]);
+      setSelected(`w:${form.id}`);
+      setCycleTrace(null);
+    } catch (error) {
+      // D1 (walks mismatched at the engine's own wall), the quotient wall,
+      // the ambiguity wall — the committed sentences surface in the panel
+      const reason = error instanceof Error ? error.message : String(error);
+      setCycleTrace((cur) => (cur ? { ...cur, notice: reason } : cur));
+    }
+  }, [cycleTrace, traceComplex, layoutCtl.resolution]);
   const handleFoldCommit = useCallback((): void => {
     if (!fold) return;
     const target = targetFor(fold.targetKey);
@@ -2259,7 +2530,12 @@ export default function ManuscriptView() {
       <Canvas
         camera={{ position: [...d.layout.cameraPosition], fov: 45 }}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
-        onPointerMissed={() => setSelected(null)}
+        onPointerMissed={() => {
+          // CYCLE-IDENTIFY reach fix (b): a miss mid-trace does NOT discard
+          // the accumulated walk (the 6-edge-trace-cleared-by-one-miss scar)
+          if (cycleTraceRef.current) return;
+          setSelected(null);
+        }}
       >
         <color attach="background" args={[paper.background]} />
         <ambientLight intensity={lightingCtl.ambient} />
@@ -2553,13 +2829,22 @@ export default function ManuscriptView() {
               : render.mode === 'skeleton'
                 ? -1.35 * scaleCtl.dim1Scale - 0.7
                 : -1.35 * scaleCtl.dim1Scale - 0.7;
+          // CYCLE-IDENTIFY — the trace overlay rides the entry's own frame
+          // (skeleton scale) so strokes land on the form's faithful positions
+          const traceHere =
+            cycleTrace !== null &&
+            cycleTrace.targetKey === id &&
+            cycleTrace.entryRefusal === null &&
+            traceComplex !== null &&
+            traceComplex.target.shape.id === entry.form.shape.id;
           return selectable(
             id,
             entry.form.shape.id,
             entry.home,
             30 + k,
             { title: entry.form.title, sub, drop },
-            render.mode === 'immersion' ? (
+            <>
+            {render.mode === 'immersion' ? (
               <group scale={scaleCtl.dim2Scale}>
                 <InkedForm
                   model={render.model}
@@ -2699,7 +2984,20 @@ export default function ManuscriptView() {
                   }
                 />
               </group>
-            ),
+            )}
+            {traceHere && traceComplex ? (
+              <group scale={scaleCtl.dim1Scale}>
+                <CycleTraceOverlay
+                  shape={traceComplex.target.shape}
+                  complex={traceComplex.complex}
+                  walkA={cycleTrace.walkA}
+                  walkB={cycleTrace.walkB}
+                  phase={cycleTrace.phase}
+                  onPickEdge={handleCyclePick}
+                />
+              </group>
+            ) : null}
+            </>,
           );
         })}
 
@@ -2941,6 +3239,12 @@ export default function ManuscriptView() {
           open: thickenGate !== null,
         }}
         onThickenToggle={() => setThickenOpen((cur) => !cur)}
+        identifySew={{
+          enabled: selected !== null && targetFor(selected) !== null,
+          reason: selected === null ? 'select a form first' : null,
+          open: cycleTrace !== null && cycleTrace.targetKey === selected,
+        }}
+        onIdentifyToggle={handleIdentifyToggle}
       />
       {invokeMenu ? (
         <InvokePalette
@@ -3044,6 +3348,120 @@ export default function ManuscriptView() {
           onCommit={handleChordCommit}
           onClose={() => setChord(null)}
         />
+      ) : null}
+      {cycleTrace ? (
+        // CYCLE-IDENTIFY — the trace panel: the doors render HERE, at panel
+        // weight (the legibility law: doors in the panel, NOT tooltips).
+        // Copy is working text — the designer words the doors on the live
+        // build (his §7).
+        <div
+          style={{
+            position: 'absolute',
+            right: 18,
+            bottom: 132,
+            width: 292,
+            padding: '10px 13px',
+            borderRadius: 3,
+            background: d.paper.cardBackground,
+            border: `1px solid ${d.paper.cardBorder}`,
+            color: d.paper.cardInk,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 12.5,
+            lineHeight: 1.5,
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>
+            identify — trace two walks
+            <button
+              type="button"
+              onClick={() => setCycleTrace(null)}
+              style={{
+                float: 'right',
+                border: 'none',
+                background: 'transparent',
+                color: d.paper.cardInk,
+                cursor: 'pointer',
+                fontSize: 13,
+              }}
+            >
+              ×
+            </button>
+          </div>
+          {cycleTrace.entryRefusal ? (
+            // D2 (and the quotient pre-emption) — refused AT ENTRY, before any tracing
+            <div style={{ fontStyle: 'italic', opacity: 0.85 }}>{cycleTrace.entryRefusal}</div>
+          ) : (
+            <>
+              <div style={{ opacity: 0.85, fontSize: 11.5, marginBottom: 6 }}>
+                click the form's edges in order — where you touch is the stroke's tail; the mode IS the
+                direction you trace, there is nothing to switch
+              </div>
+              <div style={{ marginBottom: 6 }}>
+                <span style={{ color: TRACE_INK_A, fontWeight: 700 }}>A: {cycleTrace.walkA.length}</span>
+                {' · '}
+                <span style={{ color: TRACE_INK_B, fontWeight: 700 }}>B: {cycleTrace.walkB.length}</span>
+                <span style={{ opacity: 0.7 }}> — tracing walk {cycleTrace.phase}</span>
+              </div>
+              {cycleTrace.phase === 'A' ? (
+                <button
+                  type="button"
+                  disabled={cycleTrace.walkA.length === 0}
+                  onClick={() => setCycleTrace((cur) => (cur ? { ...cur, phase: 'B', notice: null } : cur))}
+                  style={{
+                    padding: '3px 10px',
+                    borderRadius: 3,
+                    border: `1px solid ${d.paper.cardBorder}`,
+                    background: 'transparent',
+                    color: d.paper.cardInk,
+                    cursor: cycleTrace.walkA.length === 0 ? 'default' : 'pointer',
+                    opacity: cycleTrace.walkA.length === 0 ? 0.4 : 1,
+                    marginRight: 8,
+                  }}
+                >
+                  → trace walk B
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={
+                    cycleTrace.walkB.length === 0 || cycleTrace.walkA.length !== cycleTrace.walkB.length
+                  }
+                  onClick={handleCycleConfirm}
+                  style={{
+                    padding: '3px 10px',
+                    borderRadius: 3,
+                    border: `1px solid ${d.paper.cardBorder}`,
+                    background: 'rgba(58,51,38,0.06)',
+                    color: d.paper.cardInk,
+                    cursor:
+                      cycleTrace.walkB.length === 0 || cycleTrace.walkA.length !== cycleTrace.walkB.length
+                        ? 'default'
+                        : 'pointer',
+                    opacity:
+                      cycleTrace.walkB.length === 0 || cycleTrace.walkA.length !== cycleTrace.walkB.length
+                        ? 0.4
+                        : 1,
+                    marginRight: 8,
+                  }}
+                >
+                  confirm — sew the seam
+                </button>
+              )}
+              {cycleTrace.phase === 'B' && cycleTrace.walkA.length !== cycleTrace.walkB.length ? (
+                // D1 — live, with the counts AND the cure the person already has
+                <div style={{ marginTop: 6, fontStyle: 'italic', opacity: 0.85 }}>
+                  the walks must be matched — A has {cycleTrace.walkA.length}, B has {cycleTrace.walkB.length}
+                  ; subdivide (the chord gesture) to equalize, never silently mis-match
+                </div>
+              ) : null}
+              {cycleTrace.notice ? (
+                // D3 live + the engine's own confirm-time walls, verbatim
+                <div style={{ marginTop: 6, fontStyle: 'italic', opacity: 0.85 }}>{cycleTrace.notice}</div>
+              ) : null}
+            </>
+          )}
+        </div>
       ) : null}
       <RecordStrip entries={recordEntries} accepted={genesis?.accepted ?? true} paper={d.paper} />
       <SourcesShelf

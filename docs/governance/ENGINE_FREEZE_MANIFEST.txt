@@ -41,7 +41,7 @@
 
 # ─── FROZEN (45) — the engine, import-closed; drift here without a manifest update is a finding ───
 src/data/seeds.ts                       6936376f3c1fcf6b3170d25fe2b3e080afcd9c3eb329dcee4ea37f6435f83274
-src/lib/complexIdentification.ts        f4b1fedeca230e362124ff972b74dab350a6ec361fd0814a5ea59e23e8a9ac72
+src/lib/complexIdentification.ts        35d5602c91b590fc32f6ab8a82e5561696cc7b170fd63521332fb0abb2a4d08b
 src/lib/connectedSum.ts                 d8b6c0d269f6847b50f29c3190199ed290096319d25edbf280ce77effc1df6b9
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c
 src/lib/dualization.ts                  f450a61ca363e915b40374cd0707f6bc878680649d6057389bf49a90eb14d2a0
@@ -76,7 +76,7 @@ src/manuscript/specimenModel.ts         c711be9dafcac4b6e4f62b113c6383712cef952b
 src/manuscript/standardBodies.ts        6100e6cf1bbea405bdd8aaaa72d6ffeb07dbd5700a6f6359ff76469e2a65198b
 src/manuscript/surfaceClassifier.ts     f2e96084220c3fc5c6c5726b74d9293350068334fb27c29d5e41e19848457974
 src/manuscript/worldModel.ts            c942b24ef805f18cde8a1d094ed23cb10a15ed8d7aea57bc681e9f90051b7e98
-src/manuscript/writtenFormModel.ts      9e191340bbe814cce43cf59af6fe010a6e69c8dec3a333bc8778abb3d6ee3b87
+src/manuscript/writtenFormModel.ts      63fb13775dbe62404472356af7d6d2a8c6e3b228f564ffcd230bc73b618c4495
 src/playground/bornFormRouting.ts       6f6530d67c5ecfb98a48f35f9df0e12b327ca570c2bdfc45cfe18f0106f411fa
 src/playground/customGluing.ts          2085fb7ef4199bda258d8c3cde23f3a186d16eb7f51d6d809061f72ee7c8ddb5
 src/playground/formInvariants.ts        1079458c3d4a3451cd2df376f62893271ff10014210492b96f411a7718717f96
