@@ -84,7 +84,7 @@ src/playground/genealogyLayout.ts       dcdde159e83cc246fdbaf0521ec69a2a5884c78d
 src/playground/playgroundOperations.ts  ed0cc1a8350cc7d7a79923d7d4db9c4c2255c9997fc1ec2996d87074d1865b2e
 src/playground/primitiveCatalogue.ts    b02c1c2daf58ec632513aec088eff597a76ce3d09d218d9dd85374d183eb1266
 src/playground/snapshot.ts              eccfaba7d807e7a601bbb62ada92704a9935ea38aedc755c40808bf417c56ed7
-src/types/geometry.ts                   447faac45a8c7c550315669deab4ac97fad094f79854a19f8adc8c478919d715
+src/types/geometry.ts                   022077d00c17740bb11be8719a8d9bee4d3d39e4f05c5d55ddbf0e52fb6d9267
 
 # ─── NOT_FROZEN — classified with a reason (completeness: nothing may be unlisted) ───
 NOT_FROZEN src/lib/ambo.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
@@ -92,6 +92,7 @@ NOT_FROZEN src/lib/atomicRegistry.ts — outside the chartered freeze set (the e
 NOT_FROZEN src/lib/cascadeDriver.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/cellLifecycle.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/closeEdgeIntoCircle.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
+NOT_FROZEN src/lib/conformalAtom.ts — THE CONFORMAL ATOM (§2 first build, 2026-07-30 mandate): own the per-corner angle from the invocation source (regular seeds → combinatorial (n−2)π/n, stamped at the NON-frozen invoke seams), derive the per-vertex curvature through the committed link idiom, seal against boundary-corrected Gauss–Bonnet — OWN-ONLY, no render; ratified by diagnose-conformal-atom.cjs; freeze candidate once the layer lands
 NOT_FROZEN src/lib/connectionWaveInstrumentV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/diagonalizationMatrix.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/dualView.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling

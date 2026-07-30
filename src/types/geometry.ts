@@ -129,6 +129,14 @@ export type FaceRole =
 export interface Face {
   id: FaceId;
   vertexIds: VertexId[];
+  // THE CONFORMAL ATOM (§2 first build, 2026-07-30, sanctioned frozen edit):
+  // the per-corner angle, OWNED — index-aligned to `vertexIds` (slot k's
+  // corner measures cornerAngles[k]). ABSENT until owned (non-breaking;
+  // existing constructors untouched): the stamp lands on a NON-frozen seam
+  // at the invocation source (regular seeds → the combinatorial (n−2)π/n,
+  // never render positions), and Gauss–Bonnet seals the whole
+  // (conformalAtom.ts). Manifest re-sealed in the same change.
+  cornerAngles?: number[];
   role: FaceRole;
   data?: PacketData;
   lineage?: PacketLineage;

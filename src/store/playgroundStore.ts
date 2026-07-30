@@ -23,6 +23,7 @@ import {
 import type { BoundaryPairing } from '../lib/surfaceOperations';
 import { connectedSum } from '../lib/connectedSum';
 import { equalizePreparedDisks, refineAcquiredToDisk, refineToDisk } from '../lib/surfaceRefinement';
+import { computeSeedCornerAngles } from '../lib/conformalAtom';
 // the word-recoverability probe for combine's routing (the committed
 // replay-verified recovery — never a provenance flag)
 import { recoverBornSurface } from '../playground/bornFormRouting';
@@ -110,7 +111,10 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
   ...createInitialPlaygroundSnapshot(),
   invokeForm: (builder, source = null) => {
     const normalizedSource = source?.trim() ?? '';
-    const shape = loadForm(builder, normalizedSource);
+    // THE CONFORMAL ATOM (2026-07-30) — the NON-frozen invocation seam: an
+    // invoked regular seed OWNS its per-corner angle from combinatorics
+    // ((n−2)π/n), stamped here — never in the frozen constructors
+    const shape = computeSeedCornerAngles(loadForm(builder, normalizedSource));
 
     get().addForm(shape, {
       source: normalizedSource || null,

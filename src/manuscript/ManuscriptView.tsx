@@ -73,6 +73,8 @@ import {
   modesFromDirectedCycles,
   type AcquiredComplex,
 } from '../lib/complexIdentification';
+// THE CONFORMAL ATOM — the non-frozen invoke wrapper stamps the owned angle
+import { computeSeedCornerAngles } from '../lib/conformalAtom';
 // CUT 1b — THE L: the general layout (the person's own cells on the canonical
 // body); consumed here at the classBody seam — the frozen router is untouched
 import { markRimRefinedForSew, tryLaidBodyModel, type LaidBodyModel } from './laidBodyModel';
@@ -1713,7 +1715,12 @@ export default function ManuscriptView() {
   const handleInvoke = useCallback(
     (catalogueKey: string): void => {
       if (!invokeMenu) return;
-      const form = invokePrimitive(catalogueKey, seqRef.current);
+      const invoked = invokePrimitive(catalogueKey, seqRef.current);
+      // THE CONFORMAL ATOM (2026-07-30) — the manuscript's NON-frozen invoke
+      // wrapper: the person's invoked seed OWNS its per-corner angle from
+      // combinatorics ((n−2)π/n) on the LEDGER shape. OWN-ONLY: render
+      // copies are display-only and read no angle (nothing is drawn).
+      const form = { ...invoked, shape: computeSeedCornerAngles(invoked.shape) };
       seqRef.current += 1;
       setWritten((cur) => [...cur, { form, home: [invokeMenu.world[0], invokeMenu.world[1], 0] }]);
       setSelected(`w:${form.id}`);
