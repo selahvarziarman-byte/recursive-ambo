@@ -86,6 +86,8 @@ import { recoverBornSurface } from '../playground/bornFormRouting';
 // identification module never imports this one.
 import { acquireComplex, identify, parseIdentificationSuffix, walkBoundaryCircles } from './complexIdentification';
 import type { AssembledComplex } from './globalW1';
+// P1 — the conformal subdivide: the owned atom rides the chord (forced split)
+import { splitCornerAngles } from './conformalAtom';
 
 // REFINE'S WORD (2026-07-29): the record's shape is now the frozen types
 // root's `ResolutionTrace` (typeClaim 'resolution' · passes · chordEdgeId ·
@@ -515,10 +517,19 @@ export function subdivideFace(shape: Shape, face: Face, cornerA: VertexId, corne
     sourceVertexIds: [cornerA, cornerB] as [VertexId, VertexId],
   };
   const faceIndex = shape.faces.findIndex((f) => f.id === own.id);
+  // P1 — THE CONFORMAL SUBDIVIDE (2026-07-30): a REGULAR owned parent carries
+  // its atom through the chord under the forced transform (θ → α+β at each
+  // endpoint, middles riding — splitCornerAngles; Gauss–Bonnet holds
+  // automatically since α+β=θ). An irregular or un-owned parent leaves the
+  // children UN-OWNED — and in BOTH cases the parent's own array never
+  // spreads onto a child (a smeared n-length array on a smaller face would
+  // break the alignment law — the misaligned-spread hazard, cured here).
+  const { cornerAngles: parentCornerAngles, ...ownSansAngles } = own;
+  const split = parentCornerAngles ? splitCornerAngles(parentCornerAngles, i, j) : null;
   const faces: Face[] = [
     ...shape.faces.slice(0, faceIndex),
-    { ...own, id: `${own.id}:disk`, vertexIds: arc },
-    { ...own, id: `${own.id}:rest`, vertexIds: rest },
+    { ...ownSansAngles, ...(split ? { cornerAngles: split.disk } : {}), id: `${own.id}:disk`, vertexIds: arc },
+    { ...ownSansAngles, ...(split ? { cornerAngles: split.rest } : {}), id: `${own.id}:rest`, vertexIds: rest },
     ...shape.faces.slice(faceIndex + 1),
   ];
   const carrier: Record<string, string> = {};

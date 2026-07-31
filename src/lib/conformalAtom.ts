@@ -45,6 +45,43 @@ export function computeSeedCornerAngles(shape: Shape): Shape {
   };
 }
 
+// ---------------------------------------------------------------------------
+// P1 — THE SUBDIVIDE'S FORCED TRANSFORM (2026-07-30): the chord splits the
+// parent corner at each endpoint (θ → α+β); every other corner RIDES
+// byte-unchanged. α is the inscribed combinatorial split — the UNIQUE flat
+// assignment: the disk spans d = j−i rim edges, so its (d+1)-gon owes
+// Σ = (d−1)π; the d−1 riding middles carry (d−1)θ, leaving
+// 2α = (d−1)(π−θ) = (d−1)·2π/n ⇒ α = (d−1)π/n; β = θ−α closes the rest
+// identically. α+β = θ ⇒ every vertex angle-sum is UNCHANGED ⇒ Gauss–Bonnet
+// holds through the reshape — the seal is AUTOMATIC, never re-checked in.
+// ⛔ THE GATE — REGULAR parents only (all corners equal): the combinatorial
+// split speaks only where the parent's corners are one θ. An IRREGULAR
+// parent (unequal corners — an already-split or lifted face) returns null
+// and the children stay UN-OWNED — nothing fabricated; the exact split
+// needs source arc-geometry (deferred to P5/lift). Never reads positions.
+// ---------------------------------------------------------------------------
+export function splitCornerAngles(
+  cornerAngles: number[],
+  i: number,
+  j: number,
+): { disk: number[]; rest: number[] } | null {
+  const n = cornerAngles.length;
+  const d = (j - i + n) % n; // the chord's cyclic span (subdivideFace refuses d ∈ {0, 1, n−1})
+  if (n < 3 || d < 2 || d > n - 2) return null;
+  const theta = cornerAngles[0];
+  const EPS = 1e-9;
+  if (!cornerAngles.every((a) => Math.abs(a - theta) < EPS)) return null; // irregular — the honest deferral
+  const alpha = ((d - 1) * Math.PI) / n;
+  const beta = theta - alpha;
+  const disk: number[] = [alpha];
+  for (let k = 1; k < d; k += 1) disk.push(cornerAngles[(i + k) % n]); // the middles RIDE
+  disk.push(alpha);
+  const rest: number[] = [beta];
+  for (let k = 1; k < n - d; k += 1) rest.push(cornerAngles[(j + k) % n]); // the middles RIDE
+  rest.push(beta);
+  return { disk, rest };
+}
+
 export interface VertexCurvatureReading {
   vertexId: VertexId;
   valence: 'interior' | 'boundary';
