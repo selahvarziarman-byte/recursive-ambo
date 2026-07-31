@@ -24,6 +24,14 @@
 
 import type { Shape, VertexId } from '../types/geometry';
 import { decomposeLink, type LinkValence } from './incidenceTraceRegistry';
+// P2+P3 (2026-07-31) — the QUOTIENT-correct valence source: on merged shapes
+// a vertex may repeat inside one face cycle, and the neighbour-keyed shape
+// link DEGENERATES (self-loops — a FALSE junction on a true manifold vertex,
+// measured on the general-identify torus). The committed gate on the ACQUIRED
+// COMPLEX is the truth-bearer there (edge-END-keyed links); the reader takes
+// it as an optional second argument and classifies through it.
+import { readIdentificationGate } from './complexIdentification';
+import type { AssembledComplex } from './globalW1';
 
 // the combinatorial atom: a regular n-gon's interior corner — (n−2)π/n
 export function regularCornerAngle(n: number): number {
@@ -121,7 +129,13 @@ function vertexLinkOf(v: VertexId, shape: Shape): Map<string, string[]> {
 // honestly where it cannot speak: a face without its atoms (own it first —
 // nothing is fabricated), or a vertex whose link is neither a closed cycle
 // nor an open arc (a junction/pinch has no Gauss–Bonnet clause here).
-export function readVertexCurvatures(shape: Shape): VertexCurvatureReading[] {
+//
+// P2+P3 — the optional COMPLEX routes the valence through the COMMITTED gate
+// (readIdentificationGate: edge-end-keyed links — quotient-correct): a
+// gate-junction vertex REFUSES by the same sentence; a free-edge endpoint is
+// BOUNDARY; everything else INTERIOR. Without a complex the shape-level link
+// walk stands (the simplicial population — atom/P1 callers byte-unchanged).
+export function readVertexCurvatures(shape: Shape, complex?: AssembledComplex): VertexCurvatureReading[] {
   for (const face of shape.faces) {
     if (!face.cornerAngles) {
       throw new Error(
@@ -134,6 +148,21 @@ export function readVertexCurvatures(shape: Shape): VertexCurvatureReading[] {
       );
     }
   }
+  // the gate-classified valences (quotient-correct), when a complex rides in
+  let gateJunction: Set<VertexId> | null = null;
+  let gateBoundary: Set<VertexId> | null = null;
+  if (complex) {
+    const gate = readIdentificationGate(complex);
+    gateJunction = new Set(gate.junctionVertexIds);
+    gateBoundary = new Set();
+    const free = new Set(gate.freeEdgeIds);
+    for (const edge of complex.edges) {
+      if (free.has(edge.id)) {
+        gateBoundary.add(edge.u);
+        gateBoundary.add(edge.v);
+      }
+    }
+  }
   const readings: VertexCurvatureReading[] = [];
   for (const vertexId of Object.keys(shape.vertices)) {
     let angleSum = 0;
@@ -143,13 +172,18 @@ export function readVertexCurvatures(shape: Shape): VertexCurvatureReading[] {
         if (cycle[k] === vertexId) angleSum += (face.cornerAngles as number[])[k];
       }
     }
-    const link = vertexLinkOf(vertexId, shape);
-    if (link.size === 0) {
-      throw new Error(
-        `conformalAtom: vertex "${vertexId}" has no incident face corner — an isolated vertex carries no angle and no clause`,
-      );
+    let valence: LinkValence;
+    if (gateJunction && gateBoundary) {
+      valence = gateJunction.has(vertexId) ? 'junction' : gateBoundary.has(vertexId) ? 'boundary' : 'interior';
+    } else {
+      const link = vertexLinkOf(vertexId, shape);
+      if (link.size === 0) {
+        throw new Error(
+          `conformalAtom: vertex "${vertexId}" has no incident face corner — an isolated vertex carries no angle and no clause`,
+        );
+      }
+      valence = decomposeLink(link).valence;
     }
-    const valence: LinkValence = decomposeLink(link).valence;
     if (valence !== 'interior' && valence !== 'boundary') {
       throw new Error(
         `conformalAtom: vertex "${vertexId}" reads link valence "${valence}" — Gauss–Bonnet speaks only for interior (closed link) and boundary (open arc) vertices`,
