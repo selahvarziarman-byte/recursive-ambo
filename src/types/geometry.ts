@@ -183,6 +183,16 @@ export interface Cell {
   sourceVertexIds: VertexId[];
   sourceEdgeIds: EdgeId[];
   preservedVertexId?: VertexId;
+  // P4 — THE CONFORMAL DIHEDRAL (2026-07-31, sanctioned frozen edit): the
+  // per-(cell,edge) dihedral angle, OWNED — KEYED by edge id (a Cell carries
+  // no ordered edge list, so the carrier is a Record, not an aligned array;
+  // keys must name the cell's own edges — the keyed alignment law). ABSENT
+  // until owned: the stamp lands on the NON-frozen thicken seam (vertical
+  // pillar v×I → the base corner θ_v lifted; horizontal e×{0,1} → the ⊥
+  // product's π/2), and the LOCAL 3-D seal reads it (conformalAtom —
+  // smooth 2π · honest cone ≠2π · only a non-manifold 3-edge refused).
+  // Manifest re-sealed in the same change.
+  dihedralAngles?: Record<EdgeId, number>;
   data?: PacketData;
   lineage?: PacketLineage;
 }

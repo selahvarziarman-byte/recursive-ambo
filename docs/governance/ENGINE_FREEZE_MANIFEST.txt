@@ -84,7 +84,7 @@ src/playground/genealogyLayout.ts       dcdde159e83cc246fdbaf0521ec69a2a5884c78d
 src/playground/playgroundOperations.ts  ed0cc1a8350cc7d7a79923d7d4db9c4c2255c9997fc1ec2996d87074d1865b2e
 src/playground/primitiveCatalogue.ts    b02c1c2daf58ec632513aec088eff597a76ce3d09d218d9dd85374d183eb1266
 src/playground/snapshot.ts              eccfaba7d807e7a601bbb62ada92704a9935ea38aedc755c40808bf417c56ed7
-src/types/geometry.ts                   022077d00c17740bb11be8719a8d9bee4d3d39e4f05c5d55ddbf0e52fb6d9267
+src/types/geometry.ts                   b7f8e4f999e539bba021679dda877dc5c30fb33c7c0b38a2beb69500e6588e12
 
 # ─── NOT_FROZEN — classified with a reason (completeness: nothing may be unlisted) ───
 NOT_FROZEN src/lib/ambo.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling

@@ -199,10 +199,14 @@ export function thicken(form: Shape, segment?: Shape, name?: string): ThickenRes
   }
 
   const faces: Face[] = [];
-  // f×0, f×1 — the two levels of every parent face
+  // f×0, f×1 — the two levels of every parent face. P4 (2026-07-31): an
+  // OWNED base face's cornerAngles RIDE VERBATIM to both copies (the same
+  // corner cycle, level-mapped — alignment preserved); an un-owned base
+  // stays un-owned (nothing fabricated).
   for (const face of form.faces) {
-    faces.push({ id: at0(face.id), vertexIds: face.vertexIds.map(at0), role: 'seed-face' as const });
-    faces.push({ id: at1(face.id), vertexIds: face.vertexIds.map(at1), role: 'seed-face' as const });
+    const ride = face.cornerAngles ? { cornerAngles: [...face.cornerAngles] } : {};
+    faces.push({ id: at0(face.id), vertexIds: face.vertexIds.map(at0), role: 'seed-face' as const, ...ride });
+    faces.push({ id: at1(face.id), vertexIds: face.vertexIds.map(at1), role: 'seed-face' as const, ...ride });
     carrier[at0(face.id)] = face.id;
     carrier[at1(face.id)] = face.id;
   }
@@ -233,6 +237,28 @@ export function thicken(form: Shape, segment?: Shape, name?: string): ThickenRes
         sideFaceIds.push(atI(e.id));
       }
     }
+    // P4 — THE CONFORMAL DIHEDRAL (2026-07-31): an OWNED base face lifts its
+    // 2-D atom into the prism cell's per-edge dihedrals, KEYED:
+    //   · VERTICAL pillar v×I → the base corner θ_v at that vertex — the
+    //     face's corners WRAP-SUMMED over its slots citing v (a quotient rim
+    //     may cite a class more than once; the cell's whole wedge at the
+    //     pillar is their sum);
+    //   · HORIZONTAL e×{0,1} → π/2 (the ⊥ product — wall meets floor),
+    //     over the SAME incidence-collected side edges the cell's faces use.
+    // Combinatorial only — no positions; an un-owned base leaves the cell
+    // un-owned (nothing fabricated).
+    let dihedralAngles: Record<string, number> | undefined;
+    if (face.cornerAngles) {
+      dihedralAngles = {};
+      face.vertexIds.forEach((v, k) => {
+        dihedralAngles![atI(v)] = (dihedralAngles![atI(v)] ?? 0) + (face.cornerAngles as number[])[k];
+      });
+      for (const sideId of sideFaceIds) {
+        const parentEdgeId = sideId.slice(0, -'@I'.length);
+        dihedralAngles[at0(parentEdgeId)] = Math.PI / 2;
+        dihedralAngles[at1(parentEdgeId)] = Math.PI / 2;
+      }
+    }
     cells.push({
       id: atI(face.id),
       kind: 'core',
@@ -243,6 +269,7 @@ export function thicken(form: Shape, segment?: Shape, name?: string): ThickenRes
       faceIds: [at0(face.id), at1(face.id), ...sideFaceIds],
       sourceVertexIds: face.vertexIds,
       sourceEdgeIds: [],
+      ...(dihedralAngles ? { dihedralAngles } : {}),
     });
     carrier[atI(face.id)] = face.id;
   }

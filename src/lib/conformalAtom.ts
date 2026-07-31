@@ -204,3 +204,87 @@ export function readVertexCurvatures(shape: Shape, complex?: AssembledComplex): 
 export function gaussBonnetTotal(readings: VertexCurvatureReading[]): number {
   return readings.reduce((sum, r) => sum + r.curvature, 0);
 }
+
+// ---------------------------------------------------------------------------
+// P4 — THE LOCAL 3-D SEAL (2026-07-31): thicken lifts the 2-D corner into
+// the DIHEDRAL around the vertical pillar v×I, and the wall meets the floor
+// at π/2. A closed 3-manifold has χ=0, so the seal is LOCAL — per INTERIOR
+// pillar, the sum of the incident cells' dihedrals:
+//   · SMOOTH  = 2π — Euclidean around the edge (E³);
+//   · CONE   ≠ 2π — an HONEST Euclidean cone-manifold: OWNED, its cone
+//     angle reported, ⛔ NEVER refused (unlike the 2-D pinch — the cells
+//     still cycle cleanly around the edge);
+//   · REFUSAL — only a NON-MANIFOLD 3-edge: the cells BRANCH (the cell-link
+//     is not a circle). One thicken layer's pillar branches exactly when the
+//     BASE vertex's 2-D link is a junction — the dim-3 manifold question
+//     leans on the OWNED dim-2 answer (the seal's own frame), read
+//     quotient-correct through the base's acquired complex when it rides in.
+//   · ★ THE CONSISTENCY SEAL: Σ dihedral at v×I == Σθ_v (the base vertex's
+//     2-D angle-sum) — two views of ONE curvature; a mis-stamped dihedral
+//     breaks it and nothing else can hide it.
+// Boundary pillars (an open base link) carry no 2π law and are not read.
+// ---------------------------------------------------------------------------
+export interface PillarDihedralReading {
+  baseVertexId: VertexId;
+  pillarEdgeId: string; // v×I — the thickened shape's vertical edge id
+  cellCount: number; // incident owned cells summed
+  totalDihedral: number; // Σ over the incident cells' dihedralAngles[pillar]
+  baseAngleSum: number; // Σθ_v — the base's own 2-D atom at v
+  consistent: boolean; // totalDihedral == baseAngleSum (the consistency seal)
+  classification: 'smooth' | 'cone';
+  coneAngle: number | null; // the owned cone angle when ≠ 2π, else null
+}
+
+export function readPillarDihedrals(
+  base: Shape,
+  thickened: Shape,
+  baseComplex?: AssembledComplex,
+): PillarDihedralReading[] {
+  const EPS = 1e-9;
+  // the base's per-vertex 2-D readings carry the valence (quotient-correct
+  // through the optional complex) and Σθ_v; a junction base vertex is the
+  // NON-MANIFOLD 3-edge — the same honest throw, here wearing its 3-D name
+  let baseReadings: VertexCurvatureReading[];
+  try {
+    baseReadings = readVertexCurvatures(base, baseComplex);
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes('link valence "junction"')) {
+      throw new Error(
+        `conformalAtom: NON-MANIFOLD 3-edge — the cells around a pillar BRANCH (${msg.slice(msg.indexOf('vertex'))}) — the local seal refuses; a cone would have been owned, a branching edge cannot be`,
+      );
+    }
+    throw error;
+  }
+  const readings: PillarDihedralReading[] = [];
+  for (const reading of baseReadings) {
+    if (reading.valence !== 'interior') continue; // boundary pillars carry no 2π law
+    const pillarEdgeId = `${reading.vertexId}@I`;
+    let totalDihedral = 0;
+    let cellCount = 0;
+    for (const cell of thickened.cells) {
+      const owned = cell.dihedralAngles?.[pillarEdgeId];
+      if (owned !== undefined) {
+        totalDihedral += owned;
+        cellCount += 1;
+      }
+    }
+    if (cellCount === 0) {
+      throw new Error(
+        `conformalAtom: pillar "${pillarEdgeId}" carries no owned dihedral in any cell — the atom is not owned yet (stamp at the thicken seam first; nothing is fabricated)`,
+      );
+    }
+    const smooth = Math.abs(totalDihedral - 2 * Math.PI) < EPS;
+    readings.push({
+      baseVertexId: reading.vertexId,
+      pillarEdgeId,
+      cellCount,
+      totalDihedral,
+      baseAngleSum: reading.angleSum,
+      consistent: Math.abs(totalDihedral - reading.angleSum) < EPS,
+      classification: smooth ? 'smooth' : 'cone',
+      coneAngle: smooth ? null : totalDihedral,
+    });
+  }
+  return readings;
+}
