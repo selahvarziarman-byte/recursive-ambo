@@ -86,6 +86,8 @@ import { buildLaidInkedModel } from './laidInkedModel';
 import type { ShapeField } from '../lib/fieldForShape';
 import type { FieldWorkRequest, FieldWorkResponse } from './fieldWorker';
 import { InkedPlainForm } from './InkedPlainForm';
+// R1 — the deficit register's SPECIMEN card rows ("cone point · deficit N°")
+import { buildDeficitRegisterModel } from './deficitRegisterModel';
 import {
   ApertureGatePanel,
   BirthGatePanel,
@@ -1180,8 +1182,42 @@ export default function ManuscriptView() {
         }
         return rows;
       })();
+      // R1 — THE DEFICIT REGISTER's specimen card: the PROOF register (the
+      // WORLD shows the wedge and no numerals; the number lives here). Rows
+      // read the SAME drawn body the world marks dress (the selectedDrawnBody
+      // choice, mirrored); the researcher's phrasing — "cone point", never
+      // "holonomy". δ=0 and refused reads (un-owned atom / junction) emit no
+      // row — a missing row is a missing value.
+      const deficitRows = (() => {
+        const body =
+          render.mode === 'plain'
+            ? render.shape
+            : render.mode === 'classBody'
+              ? (render.model.components[0]?.body ?? null)
+              : null;
+        if (!body) return [] as { label: string; value: string }[];
+        const model = buildDeficitRegisterModel(body);
+        if (!model.marked || model.marks.length === 0) return [] as { label: string; value: string }[];
+        const buckets = new Map<string, number>();
+        for (const mark of model.marks) {
+          const degrees = Math.round(((mark.wedgeAngle * 180) / Math.PI) * 10) / 10;
+          const phrase =
+            mark.valence === 'boundary'
+              ? `rim turn · deficit ${degrees}°`
+              : mark.wedgeAngle > 0
+                ? `cone point · deficit ${degrees}°`
+                : `saddle point · deficit ${degrees}°`;
+          buckets.set(phrase, (buckets.get(phrase) ?? 0) + 1);
+        }
+        return [...buckets.entries()].map(([phrase, count]) => ({
+          label: 'deficit',
+          value: count === 1 ? phrase : `${phrase} ×${count}`,
+        }));
+      })();
       const speak = (r: SpecimenReading): SpecimenReading =>
-        resolutionRows.length === 0 ? r : { ...r, rows: [...r.rows, ...resolutionRows] };
+        resolutionRows.length === 0 && deficitRows.length === 0
+          ? r
+          : { ...r, rows: [...r.rows, ...resolutionRows, ...deficitRows] };
       if (render.mode === 'immersion') {
         const base = readSurfaceSpecimen(render.model);
         return speak({ ...base, title: entry.form.title, subtitle: `${entry.form.provenance} · ${base.subtitle}` });

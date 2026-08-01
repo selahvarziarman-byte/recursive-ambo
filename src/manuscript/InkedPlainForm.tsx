@@ -28,6 +28,9 @@ import type { InkedFormCraft } from './InkedForm';
 import type { CertifiedGenerator } from './optionBModel';
 import type { ShapeField } from '../lib/fieldForShape';
 import { InkedFieldLayer } from './InkedFieldLayer';
+// R1 — THE DEFICIT REGISTER: the holonomy wedge per non-zero-deficit vertex
+// (verdigris; self-refusing on un-owned atoms and junction links)
+import { InkedDeficitLayer } from './InkedDeficitLayer';
 // P4 FIX-FORWARD: the double-cover hull builder (non-frozen sibling) — an
 // inverted hull on a non-orientable mesh needs the oriented double cover
 import { buildCrossingHull } from './laidBodyModel';
@@ -216,6 +219,11 @@ export function InkedPlainForm({
         </>
       ) : null}
       {field ? <InkedFieldLayer shape={shape} field={field} /> : null}
+      {/* R1 — the deficit register: the designer's slot (after construction
+          lines 1–2, before generators 9), renderOrder 5–8. The layer draws
+          ONLY owned readings and refuses whole where the atom is not owned —
+          plates without the atom stay byte-identical. */}
+      <InkedDeficitLayer shape={shape} />
       {generatorLines.map((line) => (
         <group key={line.key}>
           {craft.generatorGhostOpacity > 0 ? (
