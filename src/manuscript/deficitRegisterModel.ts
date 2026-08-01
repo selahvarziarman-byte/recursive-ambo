@@ -44,9 +44,10 @@ import type { AssembledComplex } from '../lib/globalW1';
 
 // the flat tolerance: below this the deficit is silence, not a mark
 export const DEFICIT_EPS = 1e-9;
-// the circuit radius as a fraction of the shortest incident edge (a reasonable
-// default — the designer dials the screen-space weights on the real ground)
-export const DEFICIT_RADIUS_FRACTION = 0.2;
+// the circuit radius as a fraction of the shortest incident edge.
+// R1-FIX delta #2 (designer's floor, not a nudge): 0.2 → 0.12 — the marks
+// must never obscure the cells they annotate (adjacent cube rings overlapped).
+export const DEFICIT_RADIUS_FRACTION = 0.12;
 
 export interface DeficitMark {
   vertexId: string;
@@ -60,6 +61,11 @@ export interface DeficitMark {
   side: 'cone' | 'saddle'; // δ > 0 falls one side, δ < 0 the other — two marks, never a caption
   circuit: 'closed' | 'open'; // interior circles; the boundary sibling is the open rim turn
   radius: number; // world-unit circuit radius (screen-space intent; designer tunes)
+  // R1-FIX delta #1: the circuit lies ON THE SURFACE — one arc per incident
+  // face wedge (points in that face's plane at distance `radius` from the
+  // vertex), never a detached tangent-plane hoop. A mark that claims "carry a
+  // direction AROUND the vertex" must lie on the vertex's own faces.
+  circuitArcs: Vec3[][];
 }
 
 export interface DeficitRegisterModel {
@@ -211,6 +217,38 @@ export function buildDeficitRegisterModel(
     }
     if (!geometry) continue; // no usable reference direction — nothing fabricated
 
+    // R1-FIX delta #1 — the circuit ON the surface: per incident face wedge,
+    // the in-face arc from the previous-edge direction to the next-edge
+    // direction at distance `radius` (rotation about the FACE's own normal
+    // keeps every sample in the face plane; consecutive wedges share their
+    // edge-direction endpoints, so the arcs chain into the circuit).
+    const circuitArcs: Vec3[][] = [];
+    for (const face of shape.faces) {
+      const cycle = face.vertexIds;
+      for (let k = 0; k < cycle.length; k += 1) {
+        if (cycle[k] !== reading.vertexId) continue;
+        const prevPos = shape.vertices[cycle[(k - 1 + cycle.length) % cycle.length]]?.position;
+        const nextPos = shape.vertices[cycle[(k + 1) % cycle.length]]?.position;
+        if (!prevPos || !nextPos) continue;
+        const dPrev = unit(sub(prevPos, center));
+        const dNext = unit(sub(nextPos, center));
+        const fn = unit(faceNormalOf(shape, cycle));
+        if (!dPrev || !dNext || !fn) continue;
+        const sweep = Math.atan2(dot(cross(dPrev, dNext), fn), dot(dPrev, dNext));
+        const steps = Math.max(4, Math.ceil(Math.abs(sweep) / (Math.PI / 24)));
+        const arc: Vec3[] = [];
+        for (let t = 0; t <= steps; t += 1) {
+          const dir = rotateAboutAxis(dPrev, fn, (sweep * t) / steps);
+          arc.push([
+            center[0] + dir[0] * radius,
+            center[1] + dir[1] * radius,
+            center[2] + dir[2] * radius,
+          ]);
+        }
+        circuitArcs.push(arc);
+      }
+    }
+
     marks.push({
       vertexId: reading.vertexId,
       valence: reading.valence,
@@ -223,8 +261,55 @@ export function buildDeficitRegisterModel(
       side: geometry.side,
       circuit: reading.valence === 'interior' ? 'closed' : 'open',
       radius,
+      circuitArcs,
     });
   }
 
   return { marked: true, refusal: null, marks };
+}
+
+// ---------------------------------------------------------------------------
+// R1-FIX — THE SILENCE, READABLE (the specimen card rows; designer-found,
+// mothership-ratified): REFUSED and FLAT are DIFFERENT FACTS and must not
+// share a branch (the exact inverse of the H₁=0 defect).
+//   · !marked (REFUSED — un-owned atom / junction link) ⇒ a REFUSAL row
+//     carrying the reader's own sentence — NEVER a number, NEVER implying
+//     flatness ("not measured" is not "zero");
+//   · marked && no marks (MEASURED, genuinely δ=0 everywhere) ⇒ NO row —
+//     genuine silence (a real δ=0 is a real value; the world rightly draws
+//     nothing);
+//   · marks ⇒ the phrasing rows (researcher's): interior "cone point ·
+//     deficit N°" / "saddle point · deficit N°"; boundary "rim turn · N°"
+//     (the designer's wording — "deficit" dropped on the boundary row only).
+// ---------------------------------------------------------------------------
+export interface DeficitCardRow {
+  label: string;
+  value: string;
+}
+
+export function deficitCardRows(model: DeficitRegisterModel): DeficitCardRow[] {
+  if (!model.marked) {
+    return [
+      {
+        label: 'deficit',
+        value: `not measured · ${model.refusal ?? 'the reading refused'}`,
+      },
+    ];
+  }
+  if (model.marks.length === 0) return [];
+  const buckets = new Map<string, number>();
+  for (const mark of model.marks) {
+    const degrees = Math.round(((mark.wedgeAngle * 180) / Math.PI) * 10) / 10;
+    const phrase =
+      mark.valence === 'boundary'
+        ? `rim turn · ${degrees}°`
+        : mark.wedgeAngle > 0
+          ? `cone point · deficit ${degrees}°`
+          : `saddle point · deficit ${degrees}°`;
+    buckets.set(phrase, (buckets.get(phrase) ?? 0) + 1);
+  }
+  return [...buckets.entries()].map(([phrase, count]) => ({
+    label: 'deficit',
+    value: count === 1 ? phrase : `${phrase} ×${count}`,
+  }));
 }

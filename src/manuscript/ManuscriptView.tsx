@@ -86,8 +86,10 @@ import { buildLaidInkedModel } from './laidInkedModel';
 import type { ShapeField } from '../lib/fieldForShape';
 import type { FieldWorkRequest, FieldWorkResponse } from './fieldWorker';
 import { InkedPlainForm } from './InkedPlainForm';
-// R1 — the deficit register's SPECIMEN card rows ("cone point · deficit N°")
-import { buildDeficitRegisterModel } from './deficitRegisterModel';
+// R1 — the deficit register's SPECIMEN card rows ("cone point · deficit N°");
+// R1-FIX — the rows build in the TESTABLE model (deficitCardRows): the
+// refusal row vs genuine silence split lives there, witness-asserted
+import { buildDeficitRegisterModel, deficitCardRows } from './deficitRegisterModel';
 import {
   ApertureGatePanel,
   BirthGatePanel,
@@ -1185,9 +1187,10 @@ export default function ManuscriptView() {
       // R1 — THE DEFICIT REGISTER's specimen card: the PROOF register (the
       // WORLD shows the wedge and no numerals; the number lives here). Rows
       // read the SAME drawn body the world marks dress (the selectedDrawnBody
-      // choice, mirrored); the researcher's phrasing — "cone point", never
-      // "holonomy". δ=0 and refused reads (un-owned atom / junction) emit no
-      // row — a missing row is a missing value.
+      // choice, mirrored). R1-FIX — THE SILENCE SPLITS in deficitCardRows:
+      // a REFUSED read (un-owned/junction) speaks a refusal row (never a
+      // number, never implying flatness); a MEASURED all-flat read stays
+      // genuinely silent. Different facts, different branches.
       const deficitRows = (() => {
         const body =
           render.mode === 'plain'
@@ -1196,23 +1199,7 @@ export default function ManuscriptView() {
               ? (render.model.components[0]?.body ?? null)
               : null;
         if (!body) return [] as { label: string; value: string }[];
-        const model = buildDeficitRegisterModel(body);
-        if (!model.marked || model.marks.length === 0) return [] as { label: string; value: string }[];
-        const buckets = new Map<string, number>();
-        for (const mark of model.marks) {
-          const degrees = Math.round(((mark.wedgeAngle * 180) / Math.PI) * 10) / 10;
-          const phrase =
-            mark.valence === 'boundary'
-              ? `rim turn · deficit ${degrees}°`
-              : mark.wedgeAngle > 0
-                ? `cone point · deficit ${degrees}°`
-                : `saddle point · deficit ${degrees}°`;
-          buckets.set(phrase, (buckets.get(phrase) ?? 0) + 1);
-        }
-        return [...buckets.entries()].map(([phrase, count]) => ({
-          label: 'deficit',
-          value: count === 1 ? phrase : `${phrase} ×${count}`,
-        }));
+        return deficitCardRows(buildDeficitRegisterModel(body));
       })();
       const speak = (r: SpecimenReading): SpecimenReading =>
         resolutionRows.length === 0 && deficitRows.length === 0
@@ -1783,7 +1770,12 @@ export default function ManuscriptView() {
     for (let k = 0; k < WORLD_SURFACES.length; k += 1) {
       const surface = WORLD_SURFACES[k];
       const slotX = centered(k, WORLD_SURFACES.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2);
-      const host = invokePrimitive('square', seqRef.current);
+      const invokedHost = invokePrimitive('square', seqRef.current);
+      // R1-FIX — WIRE THE INVOKE ATOM (the unwired boundary, census-confirmed):
+      // this was the ONE manuscript invoke that skipped the P0 stamp — the
+      // zoo's host squares landed un-owned (blank register) and fed the births
+      // un-owned. The same stamp handleInvoke and playgroundStore:117 apply.
+      const host = { ...invokedHost, shape: computeSeedCornerAngles(invokedHost.shape) };
       seqRef.current += 1;
       const born = applyPlaygroundOperationTo(
         REFERENCE_OPS[surface],

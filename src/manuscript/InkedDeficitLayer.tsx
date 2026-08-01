@@ -36,8 +36,10 @@ export const DEFICIT_DEPARTURE_WIDTH = 1.7; // the plain reference line (uniform
 export const DEFICIT_GHOST_OPACITY = 0.28; // the hidden-line pass (the certified-mark two-pass idiom)
 export const DEFICIT_WEDGE_OPACITY = 0.2; // the fan fill between departure and return
 export const DEFICIT_STROKE_TAIL_FRACTION = 0.16; // nib tail half-width as a fraction of radius
-export const DEFICIT_REACH = 1.35; // departure/return length as a multiple of the circuit radius
-const ARC_STEP = Math.PI / 24; // circuit/fan sampling
+// R1-FIX delta #2 (designer's floor): 1.35 → 1.15 — the strokes stay close to
+// the corner; the marks must never obscure the cells they annotate.
+export const DEFICIT_REACH = 1.15; // departure/return length as a multiple of the circuit radius
+const ARC_STEP = Math.PI / 24; // fan sampling
 
 const toTuple = (v: Vec3): [number, number, number] => [v[0], v[1], v[2]];
 const at = (center: Vec3, dir: Vec3, r: number): [number, number, number] => [
@@ -46,26 +48,10 @@ const at = (center: Vec3, dir: Vec3, r: number): [number, number, number] => [
   center[2] + dir[2] * r,
 ];
 
-// the circuit polyline: a full circle for an interior vertex; the boundary
-// sibling is the OPEN arc of the turn itself (departure → return, the signed
-// sweep) — the closed frame does not exist on the rim
-function circuitPoints(mark: DeficitMark): [number, number, number][] {
-  const points: [number, number, number][] = [];
-  if (mark.circuit === 'closed') {
-    const steps = Math.max(24, Math.ceil((2 * Math.PI) / ARC_STEP));
-    for (let k = 0; k <= steps; k += 1) {
-      const dir = rotateAboutAxis(mark.departure, mark.normal, (2 * Math.PI * k) / steps);
-      points.push(at(mark.center, dir, mark.radius));
-    }
-    return points;
-  }
-  const steps = Math.max(8, Math.ceil(Math.abs(mark.wedgeAngle) / ARC_STEP));
-  for (let k = 0; k <= steps; k += 1) {
-    const dir = rotateAboutAxis(mark.departure, mark.normal, (mark.wedgeAngle * k) / steps);
-    points.push(at(mark.center, dir, mark.radius));
-  }
-  return points;
-}
+// R1-FIX delta #1 — the circuit lies ON THE SURFACE: the model's per-face
+// wedge arcs (points in the incident faces' own planes), drawn as-is. The
+// old tangent-plane hoop read as detached beside the corner; a mark that
+// claims "carry a direction AROUND the vertex" must lie on the vertex.
 
 // the wedge fan (the mark proper): triangles sweeping departure → return by
 // the SIGNED angle — +δ and −δ fans occupy opposite sides of the departure
@@ -139,22 +125,25 @@ export function InkedDeficitLayer({
   return (
     <group>
       {model.marks.map((mark) => {
-        const circuit = circuitPoints(mark);
         const departureLine = [toTuple(mark.center), at(mark.center, mark.departure, mark.radius * DEFICIT_REACH)];
         return (
           <group key={`deficit:${mark.vertexId}`}>
             <TriangleSoup positions={wedgeFanPositions(mark)} opacity={DEFICIT_WEDGE_OPACITY} renderOrder={5} />
-            <Line
-              points={circuit}
-              color={DEFICIT_INK}
-              lineWidth={DEFICIT_CIRCUIT_WIDTH}
-              transparent
-              opacity={DEFICIT_GHOST_OPACITY}
-              depthTest={false}
-              depthWrite={false}
-              renderOrder={6}
-            />
-            <Line points={circuit} color={DEFICIT_INK} lineWidth={DEFICIT_CIRCUIT_WIDTH} renderOrder={7} />
+            {mark.circuitArcs.map((arc, k) => (
+              <group key={`arc:${k}`}>
+                <Line
+                  points={arc.map(toTuple)}
+                  color={DEFICIT_INK}
+                  lineWidth={DEFICIT_CIRCUIT_WIDTH}
+                  transparent
+                  opacity={DEFICIT_GHOST_OPACITY}
+                  depthTest={false}
+                  depthWrite={false}
+                  renderOrder={6}
+                />
+                <Line points={arc.map(toTuple)} color={DEFICIT_INK} lineWidth={DEFICIT_CIRCUIT_WIDTH} renderOrder={7} />
+              </group>
+            ))}
             <Line
               points={departureLine}
               color={DEFICIT_INK}

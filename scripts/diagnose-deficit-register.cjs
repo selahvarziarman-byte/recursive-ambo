@@ -48,11 +48,11 @@ const req = (p) => require(path.join(repoRoot, p));
 const { usePlaygroundStore } = req('src/store/playgroundStore.ts');
 const { nGon } = req('src/playground/primitiveCatalogue.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
-const { applyPlaygroundOperationTo } = req('src/manuscript/writtenFormModel.ts');
+const { applyPlaygroundOperationTo, invokePrimitive } = req('src/manuscript/writtenFormModel.ts');
 const { acquireComplex, identify } = req('src/lib/complexIdentification.ts');
 const { subdivideFace } = req('src/lib/surfaceRefinement.ts');
-const { computeSeedCornerAngles, readVertexCurvatures } = req('src/lib/conformalAtom.ts');
-const { buildDeficitRegisterModel, buildDeficitMarkGeometry } = req(
+const { computeSeedCornerAngles, readVertexCurvatures, gaussBonnetTotal } = req('src/lib/conformalAtom.ts');
+const { buildDeficitRegisterModel, buildDeficitMarkGeometry, deficitCardRows, DEFICIT_RADIUS_FRACTION } = req(
   'src/manuscript/deficitRegisterModel.ts',
 );
 
@@ -196,6 +196,103 @@ check('§4 (E4) THE JUNCTION REFUSES WHOLE: the rim⊕chord pinch reads marked=f
     pinchModel.marks.length === 0);
 
 // ---------------------------------------------------------------------------
+// §4-FIX-A (R1-FIX E1) ★ THE SQUARE IS WIRED — the manuscript invoke owns
+// ---------------------------------------------------------------------------
+console.log('\n----- §4-FIX-A (E1) ★ the wired square: the manuscript invoke path owns the atom -----');
+const invoked = invokePrimitive('square', 900);
+const wired = { ...invoked, shape: computeSeedCornerAngles(invoked.shape) }; // the view's exact stamp
+const wiredReadings = readVertexCurvatures(wired.shape);
+const wiredModel = buildDeficitRegisterModel(wired.shape);
+note(`invoked square (wired): ${wiredModel.marks.length} marks · valences {${[...new Set(wiredModel.marks.map((m) => m.valence))].join(',')}} · wedges {${[...new Set(wiredModel.marks.map((m) => ((m.wedgeAngle * 180) / P).toFixed(1)))].join(',')}}° · Σ = ${((gaussBonnetTotal(wiredReadings) * 180) / P).toFixed(1)}°`);
+check('§4-FIX-A (E1) ★ THE SQUARE IS WIRED: the manuscript-invoked square through the view\'s stamp reads OWNED — 4 boundary marks at 90° (rim turns), Σ = 360° = 2πχ (χ=1 disk) — was: throws/blank',
+  wiredModel.marked &&
+    wiredModel.marks.length === 4 &&
+    wiredModel.marks.every((m) => m.valence === 'boundary' && near(m.wedgeAngle, P / 2)) &&
+    near(gaussBonnetTotal(wiredReadings), 2 * P));
+check('§4-FIX-A (E1) …and the card reads `rim turn · 90° ×4` (the designer\'s boundary wording — "deficit" dropped on the rim row)',
+  (() => {
+    const rows = deficitCardRows(wiredModel);
+    return rows.length === 1 && rows[0].label === 'deficit' && rows[0].value === 'rim turn · 90° ×4';
+  })());
+const viewSrcWire = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+check('§4-FIX-A (E1) the WIRING is at BOTH manuscript invoke sites (handleInvoke stamps `invoked.shape`; the zoo host stamps `invokedHost.shape`) — no un-owned invoke path remains in the view',
+  viewSrcWire.includes('computeSeedCornerAngles(invoked.shape)') &&
+    viewSrcWire.includes('computeSeedCornerAngles(invokedHost.shape)') &&
+    (viewSrcWire.match(/invokePrimitive\(/g) ?? []).length === 2);
+
+// ---------------------------------------------------------------------------
+// §4-FIX-B (R1-FIX E2/E3) ★★ THE SILENCE SPLITS — refused ≠ flat
+// ---------------------------------------------------------------------------
+console.log('\n----- §4-FIX-B (E2/E3) ★★ the silence splits: a refusal SPEAKS, genuine flatness stays silent -----');
+const pinchRows = deficitCardRows(pinchModel);
+const torusRows = deficitCardRows(torusModel);
+note(`pinch rows: ${JSON.stringify(pinchRows.map((r) => `${r.label}: ${r.value.slice(0, 60)}…`))}`);
+note(`flat-torus rows: ${JSON.stringify(torusRows)} (genuine silence)`);
+check('§4-FIX-B (E2) ★★ THE REFUSED FORM SPEAKS: the junction/pinch model yields ONE refusal row — `not measured · <the reader\'s own sentence>` — while the genuinely FLAT torus yields NO row (different facts, different branches)',
+  pinchRows.length === 1 &&
+    pinchRows[0].label === 'deficit' &&
+    pinchRows[0].value.startsWith('not measured · ') &&
+    pinchRows[0].value.includes('link valence "junction"') &&
+    torusRows.length === 0);
+check('§4-FIX-B (E3) THE REFUSAL IS HONEST: the row prints the reader\'s sentence VERBATIM and carries NO degree glyph, NO number-with-°, NO "flat"/"0°" (not-measured is never zero)',
+  pinchRows[0].value.includes(String(pinchModel.refusal)) &&
+    !pinchRows[0].value.includes('°') &&
+    !pinchRows[0].value.toLowerCase().includes('flat'));
+// THE PLANT (runs every time): force a MEASURED-flat model into the refused
+// branch — a row MUST appear (the split is real, not cosmetic)
+const plantedSwap = deficitCardRows({ ...torusModel, marked: false, refusal: 'PLANTED-REFUSAL sentence' });
+check('§4-FIX-B (E2) THE PLANT BITES: the same flat model FORCED to marked:false flips from silence to a refusal row carrying the planted sentence — the branch split is real',
+  plantedSwap.length === 1 && plantedSwap[0].value === 'not measured · PLANTED-REFUSAL sentence');
+
+// ---------------------------------------------------------------------------
+// §4-FIX-C (R1-FIX E4) the two deltas landed; the fill UNTOUCHED
+// ---------------------------------------------------------------------------
+console.log('\n----- §4-FIX-C (E4) the deltas: circuit ON the surface · radius/reach floored · fill untouched -----');
+const cubeShortest = Math.min(
+  ...cube.edges.map((e) => {
+    const a = cube.vertices[e.vertexIds[0]].position;
+    const b = cube.vertices[e.vertexIds[1]].position;
+    return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  }),
+);
+const onSurface = cubeModel.marks.every((m) =>
+  m.circuitArcs.length > 0 &&
+  m.circuitArcs.every((arc) =>
+    arc.length >= 2 &&
+    arc.every((p) => {
+      const d = [p[0] - m.center[0], p[1] - m.center[1], p[2] - m.center[2]];
+      const r = Math.hypot(d[0], d[1], d[2]);
+      if (Math.abs(r - m.radius) > 1e-9) return false;
+      // the point must lie in the plane of SOME face incident to the vertex
+      return cube.faces.some((face) => {
+        if (!face.vertexIds.includes(m.vertexId)) return false;
+        const [i0, i1, i2] = face.vertexIds;
+        const p0 = cube.vertices[i0].position;
+        const p1 = cube.vertices[i1].position;
+        const p2 = cube.vertices[i2].position;
+        const u = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
+        const v = [p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]];
+        const n = cross(u, v);
+        const nl = Math.hypot(n[0], n[1], n[2]);
+        if (nl < 1e-12) return false;
+        const off = ((p[0] - p0[0]) * n[0] + (p[1] - p0[1]) * n[1] + (p[2] - p0[2]) * n[2]) / nl;
+        return Math.abs(off) < 1e-9;
+      });
+    }),
+  ),
+);
+check('§4-FIX-C (E4) delta #1 LANDED: every cube circuit point lies ON the surface — in the plane of an incident face, at exactly the mark\'s radius (3 arcs per corner; never a detached tangent-plane hoop)',
+  onSurface && cubeModel.marks.every((m) => m.circuitArcs.length === 3));
+const layerSrcDelta = fs.readFileSync(path.join(repoRoot, 'src/manuscript/InkedDeficitLayer.tsx'), 'utf8');
+check('§4-FIX-C (E4) delta #2 LANDED (the floor): DEFICIT_RADIUS_FRACTION = 0.12 (measured on the model: radius = 0.12 × shortest incident edge) · DEFICIT_REACH = 1.15 — and the marks CANNOT obscure: 2·radius·reach < the shortest edge',
+  DEFICIT_RADIUS_FRACTION === 0.12 &&
+    cubeModel.marks.every((m) => near(m.radius, 0.12 * cubeShortest, 1e-9)) &&
+    layerSrcDelta.includes('export const DEFICIT_REACH = 1.15;') &&
+    2 * 0.12 * cubeShortest * 1.15 < cubeShortest);
+check('§4-FIX-C (E4) delta #3 RETRACTED — the wedge fill is UNTOUCHED: DEFICIT_WEDGE_OPACITY = 0.2 verbatim in the layer',
+  layerSrcDelta.includes('export const DEFICIT_WEDGE_OPACITY = 0.2;'));
+
+// ---------------------------------------------------------------------------
 // §5 (E5) the ink + the two registers (source reads, code-only)
 // ---------------------------------------------------------------------------
 console.log('\n----- §5 (E5) verdigris ≠ Σ-violet; the WORLD carries no numerals; the SPECIMEN card speaks -----');
@@ -214,8 +311,16 @@ check('§5 (E5) THE WORLD PRINTS NO NUMERALS: the layer\'s CODE renders no text 
     !layerCode.includes('Text') &&
     !layerCode.includes('toFixed') &&
     !layerCode.includes('°'));
-check('§5 (E5) THE SPECIMEN CARD SPEAKS THE RESEARCHER\'S PHRASE: ManuscriptView builds rows phrased "cone point · deficit N°" (never "holonomy" on the card)',
-  viewSrc.includes('`cone point · deficit ${degrees}°`') &&
+// R1-FIX ruled recut: the row builder MOVED into the testable model
+// (deficitCardRows) — the phrase greps follow the true fact to its new home;
+// the view now consumes the model's rows (the split lives where the witness
+// can drive it).
+const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/deficitRegisterModel.ts'), 'utf8');
+check('§5 (E5) THE SPECIMEN CARD SPEAKS THE RESEARCHER\'S PHRASE from the TESTABLE model: deficitCardRows phrases "cone point · deficit N°", the boundary row "rim turn · N°" (the designer\'s wording — no "deficit" on the rim row), and the view consumes deficitCardRows (never "holonomy" in card code)',
+  modelSrc.includes('`cone point · deficit ${degrees}°`') &&
+    modelSrc.includes('`rim turn · ${degrees}°`') &&
+    !modelSrc.includes('rim turn · deficit') &&
+    viewSrc.includes('deficitCardRows(buildDeficitRegisterModel(body))') &&
     !stripComments(viewSrc).toLowerCase().includes('holonomy'));
 
 // ---------------------------------------------------------------------------
@@ -229,6 +334,15 @@ const headEq = (p) => {
 };
 check('§6 (E6) FROZEN HELD: InkedForm.tsx · InkedDomain.tsx · inkedFormModel.ts BYTE-IDENTICAL to HEAD (the register composed as a sibling — no union owed)',
   ['src/manuscript/InkedForm.tsx', 'src/manuscript/InkedDomain.tsx', 'src/manuscript/inkedFormModel.ts'].every(headEq));
+check('§6 (E5-FIX) THE FROZEN INVOKE SEAM HELD: writtenFormModel.ts · multiform.ts · primitiveCatalogue.ts · worldModel.ts · geometry.ts · the manifest BYTE-IDENTICAL to HEAD — the wire stamps at the NOT_FROZEN call site only',
+  [
+    'src/manuscript/writtenFormModel.ts',
+    'src/lib/multiform.ts',
+    'src/playground/primitiveCatalogue.ts',
+    'src/manuscript/worldModel.ts',
+    'src/types/geometry.ts',
+    'docs/governance/ENGINE_FREEZE_MANIFEST.txt',
+  ].every(headEq));
 
 console.log(
   `\n--- R1 THE DEFICIT REGISTER — the holonomy wedge (the owned deficit drawn, the sign two marks, silence at zero, the rim turn on the boundary, the junction refused): ${
