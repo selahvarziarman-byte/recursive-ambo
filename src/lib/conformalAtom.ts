@@ -288,3 +288,83 @@ export function readPillarDihedrals(
   }
   return readings;
 }
+
+// ---------------------------------------------------------------------------
+// P6 — THE IDEAL DUAL'S TWO-CLAUSE SEAL (2026-08-01): consume an IDEALIZED
+// dual (faces stamped count-only at the dual seam) per dual vertex:
+//   deficit(v) = 2π − Σ_{incident faces f} θ_f(v)   (every dual vertex of a
+// closed cell's dual is interior — the dual of a closed polyhedron is closed).
+// The reading is DISTANCE-FREE BY CONSTRUCTION: the parameter type carries
+// counts and owned angles ONLY — no position field exists to read (Bound 8).
+//
+// Clause (a) — THE STAMP-CHECK: Σ_v deficit(v) = 2πχ. Euler's identity holds
+// for ANY correct stamp (Form or not) — it certifies the IMPLEMENTATION
+// (a buggy idealize: wrong angle, miscounted valence → Σ ≠ 2πχ → RED). It is
+// NEVER the Form-detector.
+// Clause (b) — THE FORM-DETECTOR: the dual is a Platonic Form iff
+//   (i) the deficits are UNIFORM (all equal ⇒ vertex-transitive), AND
+//   (ii) the faces are one-type (all side-counts equal ⇒ face-transitive), AND
+//   (iii) the sign matches (every deficit ≥ 0 — Alexandrov for χ=2 convex).
+// Returns verdict 'SEAL' (a Form) or 'REFUSE' (not a Form) — a detector that
+// cannot refuse the rhombic-dodecahedron would be vacuous and is forbidden.
+// ---------------------------------------------------------------------------
+export interface IdealDualFaceLike {
+  id: string;
+  vertexIds: string[];
+  cornerAngles?: number[];
+}
+
+export interface IdealDualSealReading {
+  deficits: Record<string, number>; // per dual vertex
+  totalDeficit: number; // Σ_v deficit(v)
+  chi: number; // the χ the stamp-check was read against
+  stampHolds: boolean; // clause (a): Σ = 2πχ
+  sideCounts: number[]; // sorted dual-face side-count multiset
+  verdict: 'SEAL' | 'REFUSE'; // clause (b)
+  reason: string; // the Form statement, or which sub-clause refused
+}
+
+export function readIdealDualSeal(
+  faces: ReadonlyArray<IdealDualFaceLike>,
+  chi: number,
+): IdealDualSealReading {
+  const EPS = 1e-9;
+  if (!faces.length) {
+    throw new Error('conformalAtom: IDEAL-DUAL SEAL refuses an empty dual — no faces to read');
+  }
+  const angleSums = new Map<string, number>();
+  for (const face of faces) {
+    const owned = face.cornerAngles;
+    if (!owned || owned.length !== face.vertexIds.length) {
+      throw new Error(
+        `conformalAtom: dual face "${face.id}" does not own the atom — the ideal dual is read only where the idealize stamped it (nothing is fabricated)`,
+      );
+    }
+    face.vertexIds.forEach((vertexId, k) => {
+      angleSums.set(vertexId, (angleSums.get(vertexId) ?? 0) + owned[k]);
+    });
+  }
+  const deficits: Record<string, number> = {};
+  let totalDeficit = 0;
+  for (const [vertexId, angleSum] of angleSums) {
+    const deficit = 2 * Math.PI - angleSum;
+    deficits[vertexId] = deficit;
+    totalDeficit += deficit;
+  }
+  const stampHolds = Math.abs(totalDeficit - 2 * Math.PI * chi) < EPS;
+  const sideCounts = faces.map((face) => face.vertexIds.length).sort((a, b) => a - b);
+  const deficitValues = Object.values(deficits);
+  const uniform = Math.max(...deficitValues) - Math.min(...deficitValues) < EPS;
+  const oneType = sideCounts.every((count) => count === sideCounts[0]);
+  const signMatches = deficitValues.every((deficit) => deficit >= -EPS);
+  const verdict: 'SEAL' | 'REFUSE' = uniform && oneType && signMatches ? 'SEAL' : 'REFUSE';
+  const reason =
+    verdict === 'SEAL'
+      ? `a Platonic Form: ${faces.length} regular ${sideCounts[0]}-gons, uniform deficit ${(deficitValues[0] / Math.PI).toFixed(6)}π at every vertex`
+      : !uniform
+        ? 'not a Form: the deficits are NOT uniform (curvature is not equidistributed — not vertex-transitive)'
+        : !oneType
+          ? 'not a Form: the faces are not one-type (mixed side-counts — not face-transitive)'
+          : 'not a Form: a negative deficit breaks the convex sign (Alexandrov)';
+  return { deficits, totalDeficit, chi, stampHolds, sideCounts, verdict, reason };
+}

@@ -3,6 +3,10 @@ import type { DualInspectionTarget } from '../store/geometryStore';
 import { isCellActiveFrontier } from './cellLifecycle';
 import { buildSemanticDualModel, type SemanticDualModel } from './dualization';
 import { canonicalEdgeKey, stableHash } from './ids';
+// P6 — THE IDEAL DUAL (2026-08-01): the idealize stamp is COUNT-ONLY — the
+// dual face's regular angle from its side-count alone (Bound 8: no position,
+// no faceCentroid feeds the angle; those stay in the SORT/render shadow only).
+import { regularCornerAngle } from './conformalAtom';
 import { getCellFaces, getCellVertices, getFaceVertices } from './shape';
 
 export type DualViewSupportedTopology =
@@ -38,6 +42,9 @@ export interface DualViewVertex {
 export interface DualViewFace {
   id: string;
   vertexIds: string[];
+  // P6 — the IDEALIZED angle (the conformal atom on the dual): stamped
+  // count-only at construction, (n−2)π/n per corner for a side-n dual face.
+  cornerAngles?: number[];
 }
 
 export interface DualCorrespondenceVertex {
@@ -48,6 +55,8 @@ export interface DualCorrespondenceVertex {
 export interface DualCorrespondenceFace {
   id: string;
   vertexIds: string[];
+  // P6 — the IDEALIZED angle rides the correspondence model's dualFaces too.
+  cornerAngles?: number[];
 }
 
 export interface DualCorrespondenceEdge {
@@ -970,6 +979,11 @@ function createDualFaceEntry(
     face: {
       id: makeDualViewFaceId(cell.id, sourceVertex.id, vertexIds),
       vertexIds,
+      // P6 IDEALIZE — distance-free: the dual face's side-count IS the primal
+      // vertex's degree; a side-n regular face owes (n−2)π/n at every corner.
+      // The stamp reads ONLY the count (never sourceVertex.position, never
+      // faceCentroid — the metric above orders the cycle and is discarded).
+      cornerAngles: Array(vertexIds.length).fill(regularCornerAngle(vertexIds.length)),
     },
   };
 }
