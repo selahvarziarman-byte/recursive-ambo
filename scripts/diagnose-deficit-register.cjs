@@ -196,28 +196,68 @@ check('§4 (E4) THE JUNCTION REFUSES WHOLE: the rim⊕chord pinch reads marked=f
     pinchModel.marks.length === 0);
 
 // ---------------------------------------------------------------------------
-// §4-FIX-A (R1-FIX E1) ★ THE SQUARE IS WIRED — the manuscript invoke owns
+// §4-FIX-A (R1-FIX2 E1/E2/E3) ★★ THE APP PATH IS OWNED — end-to-end on the
+// EXACT object the app reads (`form.render.shape`), with the leak falsifier.
+// R1-FIX2 ruled recut: the old clause tested a hand-stamped shape — it proved
+// the STAMP works, never that the app CALLS it on the shape it reads (the
+// 3rd model-vs-app miss: the ledger stamp was INERT for the register).
 // ---------------------------------------------------------------------------
-console.log('\n----- §4-FIX-A (E1) ★ the wired square: the manuscript invoke path owns the atom -----');
+console.log('\n----- §4-FIX-A (E1/E2) ★★ the APP path: form.render.shape owned end-to-end + the leak falsifier -----');
 const invoked = invokePrimitive('square', 900);
-const wired = { ...invoked, shape: computeSeedCornerAngles(invoked.shape) }; // the view's exact stamp
-const wiredReadings = readVertexCurvatures(wired.shape);
-const wiredModel = buildDeficitRegisterModel(wired.shape);
-note(`invoked square (wired): ${wiredModel.marks.length} marks · valences {${[...new Set(wiredModel.marks.map((m) => m.valence))].join(',')}} · wedges {${[...new Set(wiredModel.marks.map((m) => ((m.wedgeAngle * 180) / P).toFixed(1)))].join(',')}}° · Σ = ${((gaussBonnetTotal(wiredReadings) * 180) / P).toFixed(1)}°`);
-check('§4-FIX-A (E1) ★ THE SQUARE IS WIRED: the manuscript-invoked square through the view\'s stamp reads OWNED — 4 boundary marks at 90° (rim turns), Σ = 360° = 2πχ (χ=1 disk) — was: throws/blank',
-  wiredModel.marked &&
-    wiredModel.marks.length === 4 &&
-    wiredModel.marks.every((m) => m.valence === 'boundary' && near(m.wedgeAngle, P / 2)) &&
-    near(gaussBonnetTotal(wiredReadings), 2 * P));
-check('§4-FIX-A (E1) …and the card reads `rim turn · 90° ×4` (the designer\'s boundary wording — "deficit" dropped on the rim row)',
+// the handleInvoke stamp logic, VERBATIM (the fix): ledger AND drawn body
+const ownedShape = computeSeedCornerAngles(invoked.shape);
+const wired = {
+  ...invoked,
+  shape: ownedShape,
+  render: invoked.render.mode === 'plain' ? { ...invoked.render, shape: ownedShape } : invoked.render,
+};
+const appModel = buildDeficitRegisterModel(wired.render.shape); // THE APP'S READ TARGET
+const appRows = deficitCardRows(appModel);
+const appReadings = readVertexCurvatures(wired.render.shape);
+const ownedAll = (s) => s.faces.every((f) => Array.isArray(f.cornerAngles));
+note(`app path: render.mode=${wired.render.mode} · render.shape ${ownedAll(wired.render.shape) ? 'OWNED' : 'UN-OWNED'} · ${appModel.marks.length} marks · card ${JSON.stringify(appRows.map((r) => r.value))} · Σ = ${((gaussBonnetTotal(appReadings) * 180) / P).toFixed(1)}°`);
+check('§4-FIX-A (E1) ★★ THE APP PATH IS OWNED end-to-end: invokePrimitive → the handleInvoke stamp → form.render.shape (the EXACT object InkedPlainForm and the card read) — 4 boundary marks at 90°, Σ = 360° = 2πχ, card `rim turn · 90° ×4`, NOT `not measured`',
+  wired.render.mode === 'plain' &&
+    appModel.marked &&
+    appModel.marks.length === 4 &&
+    appModel.marks.every((m) => m.valence === 'boundary' && near(m.wedgeAngle, P / 2)) &&
+    near(gaussBonnetTotal(appReadings), 2 * P) &&
+    appRows.length === 1 &&
+    appRows[0].value === 'rim turn · 90° ×4');
+check('§4-FIX-A (E1) THE INVARIANT: render.shape ownership == form.shape ownership (the ledger and the drawn body AGREE — the leak was exactly their disagreement)',
+  ownedAll(wired.shape) === ownedAll(wired.render.shape) && ownedAll(wired.render.shape) === true);
+// THE FALSIFIER (runs every time): the PRE-FIX state — the ledger-only stamp
+// (render left un-stamped). The clause that would have caught the bug: the
+// app's read target stays un-owned and the card says `not measured`.
+const leak = { ...invoked, shape: ownedShape, render: invoked.render };
+const leakModel = buildDeficitRegisterModel(leak.render.shape);
+const leakRows = deficitCardRows(leakModel);
+note(`the leak (ledger-only): render.shape ${ownedAll(leak.render.shape) ? 'OWNED' : 'UN-OWNED'} · card ${JSON.stringify(leakRows.map((r) => r.value.slice(0, 40)))}`);
+check('§4-FIX-A (E2) ★★ THE LEAK FALSIFIER BITES every run: the ledger-only stamp (the pre-fix state) leaves form.render.shape UN-OWNED — the register refuses and the card reads `not measured · …` (this clause reads the APP\'s target; it would have caught the bug)',
+  ownedAll(leak.shape) &&
+    !ownedAll(leak.render.shape) &&
+    leakModel.marked === false &&
+    leakRows.length === 1 &&
+    leakRows[0].value.startsWith('not measured · '));
+// the zoo host, same end-to-end (E3)
+const invokedZoo = invokePrimitive('square', 901);
+const ownedZooShape = computeSeedCornerAngles(invokedZoo.shape);
+const zooHost = {
+  ...invokedZoo,
+  shape: ownedZooShape,
+  render: invokedZoo.render.mode === 'plain' ? { ...invokedZoo.render, shape: ownedZooShape } : invokedZoo.render,
+};
+check('§4-FIX-A (E3) the ZOO HOST\'s drawn body is owned too: the same carry at handleSummonZoo — host.render.shape reads 4 × 90° rim turns',
   (() => {
-    const rows = deficitCardRows(wiredModel);
-    return rows.length === 1 && rows[0].label === 'deficit' && rows[0].value === 'rim turn · 90° ×4';
+    const m = buildDeficitRegisterModel(zooHost.render.shape);
+    return m.marked && m.marks.length === 4 && m.marks.every((x) => near(x.wedgeAngle, P / 2));
   })());
 const viewSrcWire = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
-check('§4-FIX-A (E1) the WIRING is at BOTH manuscript invoke sites (handleInvoke stamps `invoked.shape`; the zoo host stamps `invokedHost.shape`) — no un-owned invoke path remains in the view',
+check('§4-FIX-A (E3) the CARRY is at BOTH manuscript invoke sites in the VIEW: each site stamps its shape AND patches its plain render body (`{ ...invoked.render, shape: ownedShape }` · `{ ...invokedHost.render, shape: ownedHostShape }`); exactly 2 invokePrimitive callers',
   viewSrcWire.includes('computeSeedCornerAngles(invoked.shape)') &&
     viewSrcWire.includes('computeSeedCornerAngles(invokedHost.shape)') &&
+    viewSrcWire.includes('{ ...invoked.render, shape: ownedShape }') &&
+    viewSrcWire.includes('{ ...invokedHost.render, shape: ownedHostShape }') &&
     (viewSrcWire.match(/invokePrimitive\(/g) ?? []).length === 2);
 
 // ---------------------------------------------------------------------------

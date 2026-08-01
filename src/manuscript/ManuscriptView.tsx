@@ -1741,9 +1741,19 @@ export default function ManuscriptView() {
       const invoked = invokePrimitive(catalogueKey, seqRef.current);
       // THE CONFORMAL ATOM (2026-07-30) — the manuscript's NON-frozen invoke
       // wrapper: the person's invoked seed OWNS its per-corner angle from
-      // combinatorics ((n−2)π/n) on the LEDGER shape. OWN-ONLY: render
-      // copies are display-only and read no angle (nothing is drawn).
-      const form = { ...invoked, shape: computeSeedCornerAngles(invoked.shape) };
+      // combinatorics ((n−2)π/n). R1-FIX2 — THE RENDER LEAK: the ledger stamp
+      // alone was INERT for the register — the world layer and the card read
+      // form.render.shape, which the frozen router built from the UN-stamped
+      // shape before this call site ran. Carry the owned atom into the DRAWN
+      // body too (an invoked primitive is always render.mode==='plain');
+      // the invariant: render.shape ownership == form.shape ownership.
+      const ownedShape = computeSeedCornerAngles(invoked.shape);
+      const form = {
+        ...invoked,
+        shape: ownedShape,
+        render:
+          invoked.render.mode === 'plain' ? { ...invoked.render, shape: ownedShape } : invoked.render,
+      };
       seqRef.current += 1;
       setWritten((cur) => [...cur, { form, home: [invokeMenu.world[0], invokeMenu.world[1], 0] }]);
       setSelected(`w:${form.id}`);
@@ -1771,11 +1781,18 @@ export default function ManuscriptView() {
       const surface = WORLD_SURFACES[k];
       const slotX = centered(k, WORLD_SURFACES.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2);
       const invokedHost = invokePrimitive('square', seqRef.current);
-      // R1-FIX — WIRE THE INVOKE ATOM (the unwired boundary, census-confirmed):
-      // this was the ONE manuscript invoke that skipped the P0 stamp — the
-      // zoo's host squares landed un-owned (blank register) and fed the births
-      // un-owned. The same stamp handleInvoke and playgroundStore:117 apply.
-      const host = { ...invokedHost, shape: computeSeedCornerAngles(invokedHost.shape) };
+      // R1-FIX — WIRE THE INVOKE ATOM; R1-FIX2 — carry it into the DRAWN body
+      // (render.shape), the object the register actually reads. The zoo host
+      // square wears its rim turns on the page and feeds the births owned.
+      const ownedHostShape = computeSeedCornerAngles(invokedHost.shape);
+      const host = {
+        ...invokedHost,
+        shape: ownedHostShape,
+        render:
+          invokedHost.render.mode === 'plain'
+            ? { ...invokedHost.render, shape: ownedHostShape }
+            : invokedHost.render,
+      };
       seqRef.current += 1;
       const born = applyPlaygroundOperationTo(
         REFERENCE_OPS[surface],
