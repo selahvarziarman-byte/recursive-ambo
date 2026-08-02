@@ -57,7 +57,7 @@ const { applyPyritohedralDiagonalization, canApplyPyritohedralDiagonalization } 
 const { isCellActiveFrontier } = req('src/lib/cellLifecycle.ts');
 const { buildDualCorrespondenceModel, describeDualViewTopology } = req('src/lib/dualView.ts');
 const { getCellFaces } = req('src/lib/shape.ts');
-const { regularCornerAngle, readIdealDualSeal } = req('src/lib/conformalAtom.ts');
+const { regularCornerAngle, readIdealDualSeal, readVertexCurvatures } = req('src/lib/conformalAtom.ts');
 
 let failures = 0;
 function check(label, condition) {
@@ -286,8 +286,62 @@ const headEq = (p) => {
 check('§6 THE FROZEN BOUNDARY HELD: dualization.ts · surfaceDual.ts · geometry.ts · the manifest all BYTE-IDENTICAL to HEAD (the idealize lives on the NOT_FROZEN seam only — no union owed)',
   ['src/lib/dualization.ts', 'src/lib/surfaceDual.ts', 'src/types/geometry.ts', 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'].every(headEq));
 
+// ---------------------------------------------------------------------------
+// §7 THE ASCENT STANCE-STAMP (2026-08-02 seal) — the medial faces OWN their
+// angle. The ascent's minted faces were the last un-stamped substrate: on
+// exactly these subjects readVertexCurvatures THREW "carries no cornerAngles"
+// (the argument's stance-piece unavailable on the Platonic-ascent path).
+// E1 owned · E2 Σ = 2πχ on both ascent rungs (the dual's 4π is §4's, same
+// run) · E3 the wrong-angle plant · E4 the horizon untouched.
+// ---------------------------------------------------------------------------
+console.log('\n----- §7 THE STANCE-STAMP: the ascent forms own their angle (was: the read THREW) -----');
+const isolateCell = (shape, cell) => {
+  const faces = getCellFaces(shape, cell);
+  const ids = new Set(faces.flatMap((f) => f.vertexIds));
+  const vertices = {};
+  for (const id of ids) vertices[id] = shape.vertices[id];
+  return { ...shape, faces, vertices };
+};
+const cuboIso = isolateCell(shapeB, cuboCellB);
+const cuboReadings = readVertexCurvatures(cuboIso);
+const cuboSum = cuboReadings.reduce((s, r) => s + r.curvature, 0);
+note(`cuboctahedron (cell-isolated): ${cuboIso.faces.filter((f) => Array.isArray(f.cornerAngles)).length}/14 owned · ${cuboReadings.length} vertices · Σ = ${deg(cuboSum)}°`);
+check('§7 (E1) ★★ THE CUBOCTAHEDRON OWNS ITS STANCE: all 14 medial faces carry cornerAngles — 60° on the 8 triangles, 90° on the 6 squares, no smear, NO THROW (the pre-stamp read threw "carries no cornerAngles" on exactly this subject)',
+  cuboIso.faces.every((f) => Array.isArray(f.cornerAngles) && f.cornerAngles.length === f.vertexIds.length) &&
+    cuboIso.faces.filter((f) => f.vertexIds.length === 3).every((f) => f.cornerAngles.every((a) => near(a, P / 3))) &&
+    cuboIso.faces.filter((f) => f.vertexIds.length === 4).every((f) => f.cornerAngles.every((a) => near(a, P / 2))));
+check('§7 (E2) ★★ Σ = 2πχ SEALS ON THE ASCENT: 12 interior vertices, deficit 60° EACH (2 tri·60° + 2 sq·90° = Σθ 300°), Σ = 720° = 4π = 2πχ (χ=2)',
+  cuboReadings.length === 12 &&
+    cuboReadings.every((r) => r.valence === 'interior' && near(r.curvature, P / 3)) &&
+    near(cuboSum, 4 * P));
+const icosaIso = isolateCell(shapeA, icosaCell);
+const icosaReadings = readVertexCurvatures(icosaIso);
+const icosaSum = icosaReadings.reduce((s, r) => s + r.curvature, 0);
+note(`icosahedron (cell-isolated): ${icosaIso.faces.filter((f) => Array.isArray(f.cornerAngles)).length}/20 owned (8 preserved CARRIED + 12 split MINTED) · ${icosaReadings.length} vertices · Σ = ${deg(icosaSum)}°`);
+check('§7 (E2) ★★ …AND ON THE NEXT RUNG: the pyritohedral-icosahedron owns all 20 triangles at 60° (8 carried through the preserved-copy RIDE + 12 minted on the splits — the carry is load-bearing) → 12 interior vertices, deficit 60° each, Σ = 4π; §4 already sealed its dual dodecahedron at 4π on this same run',
+  icosaIso.faces.every((f) => Array.isArray(f.cornerAngles) && f.cornerAngles.every((a) => near(a, P / 3))) &&
+    icosaReadings.length === 12 &&
+    icosaReadings.every((r) => near(r.curvature, P / 3)) &&
+    near(icosaSum, 4 * P));
+// E3 — THE PLANT (runs every time): one face's stamp biased +0.1 per corner
+const plantedIso = {
+  ...cuboIso,
+  faces: cuboIso.faces.map((f, i) => (i === 0 ? { ...f, cornerAngles: f.cornerAngles.map((a) => a + 0.1) } : f)),
+};
+const plantedSum = readVertexCurvatures(plantedIso).reduce((s, r) => s + r.curvature, 0);
+check('§7 (E3) ★★ THE STAMP BITES: ONE medial face planted +0.1 per corner → Σ ≠ 2πχ, off by exactly the planted bias — the stamp must be the real combinatorial angle, never a constant',
+  !near(plantedSum, 4 * P) && near(plantedSum, 4 * P - 0.1 * cuboIso.faces[0].vertexIds.length));
+// E4 — the horizon untouched: stamps confined to the face constructors
+const amboSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/ambo.ts'), 'utf8');
+const pyritoSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/pyritohedralDiagonalization.ts'), 'utf8');
+check('§7 (E4) THE HORIZON UNTOUCHED: the stamps live ONLY at the face constructors (7 `cornerAngles` occurrences in ambo — the parent-cell RIDE [3: guard + key + value] + 2 core mints + 2 residue mints; 7 in pyritohedral — the parent RIDE [3] + the preserved RIDE [3] + the split mint [1]) and the horizon reader module (trisonizedMidwifeReadingV0 — the apex-trace median, recorded-never-drawn) is BYTE-IDENTICAL to HEAD, stamping nothing',
+  (amboSrc.match(/cornerAngles/g) ?? []).length === 7 &&
+    (pyritoSrc.match(/cornerAngles/g) ?? []).length === 7 &&
+    headEq('src/lib/trisonizedMidwifeReadingV0.ts') &&
+    !fs.readFileSync(path.join(repoRoot, 'src/lib/trisonizedMidwifeReadingV0.ts'), 'utf8').includes('cornerAngles'));
+
 console.log(
-  `\n--- P6 THE IDEAL DUAL — the ascent to the Forms (the swap untouched, the idealize count-only, clause (a) certifies the stamp, clause (b) detects the Form): ${
+  `\n--- P6 THE IDEAL DUAL — the ascent to the Forms (the swap untouched, the idealize count-only, clause (a) certifies the stamp, clause (b) detects the Form; §7 the ascent STANCE owned — the medial faces carry their angle and Σ = 2πχ seals on every rung): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
   } ---`,
 );

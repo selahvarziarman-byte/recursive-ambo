@@ -27,6 +27,11 @@ import {
   packetSourceRef,
 } from './packets';
 import { createDefaultVertexData, deriveEdges, getCellFaces, midpoint } from './shape';
+// THE ASCENT STANCE-STAMP (2026-08-02): a MINTED medial face owns its corner
+// angle combinatorially — invocation's rule ((n−2)π/n), distance-free; a
+// COPIED face RIDES its source's owned angles. The atom is READ (frozen),
+// never re-derived.
+import { regularCornerAngle } from './conformalAtom';
 
 const DEFAULT_MIDPOINT_COLOR = '#eab308';
 
@@ -489,6 +494,8 @@ function createParentCellFaces(
     role: 'parent-cell-face',
     sourceCellId: parentCellId,
     sourceFaceId: face.id,
+    // the copy RIDES the source's owned atom (additive — absent stays absent)
+    ...(face.cornerAngles ? { cornerAngles: face.cornerAngles } : {}),
     lineage: deriveFromSourceFace(face.id, shapeId),
   }));
 }
@@ -512,6 +519,8 @@ function createCoreCell(
         role: 'dissection-core-face' as const,
         sourceCellId: cellId,
         sourceFaceId: sourceFace.id,
+        // MINTED medial face — the combinatorial stamp (the stance-piece)
+        cornerAngles: faceVertexIds.map(() => regularCornerAngle(faceVertexIds.length)),
         lineage: deriveFromSourceFace(sourceFace.id, shapeId),
       };
     }),
@@ -524,6 +533,8 @@ function createCoreCell(
         role: 'dissection-core-face' as const,
         sourceCellId: cellId,
         sourceVertexId,
+        // MINTED medial face — the combinatorial stamp (the stance-piece)
+        cornerAngles: faceVertexIds.map(() => regularCornerAngle(faceVertexIds.length)),
         lineage: deriveFromSourceVertex(sourceVertexId, shapeId),
       };
     }),
@@ -654,6 +665,8 @@ function createResidueFaces(
       sourceCellId: cellId,
       sourceFaceId: sourceFace?.id,
       sourceVertexId,
+      // MINTED medial face — the combinatorial stamp (the stance-piece)
+      cornerAngles: vertexIds.map(() => regularCornerAngle(vertexIds.length)),
       lineage: deriveGeneratedFaceLineage(shapeId, sourceFace?.id, sourceVertexId),
     });
   }
@@ -666,6 +679,8 @@ function createResidueFaces(
     role: 'dissection-residue-face',
     sourceCellId: cellId,
     sourceVertexId,
+    // MINTED medial face — the combinatorial stamp (the stance-piece)
+    cornerAngles: baseVertexIds.map(() => regularCornerAngle(baseVertexIds.length)),
     lineage: deriveFromSourceVertex(sourceVertexId, shapeId),
   });
 

@@ -22,6 +22,11 @@ import {
   packetSourceRef,
 } from './packets';
 import { deriveEdges, getCellFaces } from './shape';
+// THE ASCENT STANCE-STAMP (2026-08-02): a MINTED medial face owns its corner
+// angle combinatorially — invocation's rule ((n−2)π/n), distance-free; a
+// COPIED face RIDES its source's owned angles. The atom is READ (frozen),
+// never re-derived.
+import { regularCornerAngle } from './conformalAtom';
 
 interface CuboctahedronSourceTopology {
   cell: Cell;
@@ -324,6 +329,8 @@ function createParentCellFaces(
     role: 'parent-cell-face',
     sourceCellId: parentCellId,
     sourceFaceId: face.id,
+    // the copy RIDES the source's owned atom (additive — absent stays absent)
+    ...(face.cornerAngles ? { cornerAngles: face.cornerAngles } : {}),
     lineage: deriveFromSourceFace(face.id, shapeId),
   }));
 }
@@ -343,6 +350,8 @@ function createPyritohedralFaces(
       data: clonePacketData(face.data),
       sourceCellId,
       sourceFaceId: face.id,
+      // the copy RIDES the source's owned atom (additive — absent stays absent)
+      ...(face.cornerAngles ? { cornerAngles: face.cornerAngles } : {}),
       lineage: deriveFaceLineage(
         [
           packetSourceRef('face', face.id, 'source-face'),
@@ -364,6 +373,8 @@ function createPyritohedralFaces(
       role: 'pyritohedral-split-face' as const,
       sourceCellId,
       sourceFaceId: choice.sourceFace.id,
+      // MINTED medial face — the combinatorial stamp (the stance-piece)
+      cornerAngles: vertexIds.map(() => regularCornerAngle(vertexIds.length)),
       lineage: deriveFaceLineage(
         [
           packetSourceRef('face', choice.sourceFace.id, 'source-face'),
