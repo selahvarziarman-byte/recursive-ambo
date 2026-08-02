@@ -48,6 +48,33 @@ def scene_presence(page):
     )
 
 
+def argument_card_checks(page):
+    # THE ARGUMENT CARD (Phase 1) on the LIVE card of the selected fold-born:
+    # the MAP spine + the demoted certificate receipt, plus the sign-hand
+    # GLYPH COVERAGE probe — a sign that draws like the notdef box is a
+    # BLANK CLAIM, not a degraded card.
+    record(
+        "card.mapSection",
+        page.get_by_text("map — the spine", exact=True).count() > 0,
+        "the MAP spine label on the live card",
+    )
+    record("card.certificate", page.locator("text=certificate").count() > 0, "the demoted receipt present")
+    tofu = page.evaluate(
+        """() => {
+      const hand = '13px "DejaVu Sans", "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", sans-serif';
+      const draw = (ch) => {
+        const c = document.createElement('canvas'); c.width = 24; c.height = 24;
+        const g = c.getContext('2d'); g.font = hand; g.fillText(ch, 2, 18);
+        return c.toDataURL();
+      };
+      const notdef = draw('\\u0378');
+      return ['⟶', '←', '•', '⊕'].map((ch) => ({ ch, tofu: draw(ch) === notdef }));
+    }"""
+    )
+    bad = [t["ch"] for t in tofu if t["tofu"]]
+    record("card.glyphs", len(bad) == 0, f"tofu: {bad}" if bad else "every sign renders in the sign hand")
+
+
 def find_fold_chip(page):
     # the dock chips are glyph-only 46x46 buttons; hover until the tooltip
     # reads exactly 'fold' (the committed hover label)
@@ -163,6 +190,7 @@ def main():
         # records RED — the leg always emits its verdict, never a bare trace.
         try:
             drive_fold(page, "triangle", "Triangle", "left", "cone point · deficit 300°", "rim turn · 60°", 1)
+            argument_card_checks(page)
         except Exception as error:  # noqa: BLE001
             record("triangle.drive", False, repr(error))
         try:

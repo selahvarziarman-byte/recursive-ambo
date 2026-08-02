@@ -129,6 +129,11 @@ function killTree(pid) {
             get('square.cardCone').ok && get('square.cardRim').ok);
         check('§E1 ★★ SQUARE — PRESENCE: after the second fold TWO faithful frames carry their deficit registers',
           get('square.presence').ok, get('square.presence').detail);
+        // THE ARGUMENT CARD (Phase 1 — extended per SEAL_THE_ARGUMENT_CARD E7)
+        check('§E-CARD ★ THE ARGUMENT CARD RIDES THE LIVE APP: the MAP spine section and the demoted `certificate` receipt are present on the fold-born\'s live card',
+          get('card.mapSection').ok && get('card.certificate').ok);
+        check('§E-CARD THE SIGN HAND CARRIES ITS GLYPHS: every card sign draws distinct from the notdef box in the same hand (a tofu sign is a BLANK CLAIM)',
+          get('card.glyphs').ok, get('card.glyphs').detail);
         // E4 hygiene
         check('§E4 CONSOLE CLEAN — no error logged across the whole drive (favicon noise excluded)',
           get('console').ok, get('console').detail);

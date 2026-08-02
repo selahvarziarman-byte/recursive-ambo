@@ -97,6 +97,7 @@ import {
   type FaithfulDeficitDatum,
 } from './deficitRegisterModel';
 import { InkedDeficitLayer } from './InkedDeficitLayer';
+import { buildArgumentReading, type ArgumentReading, type ArgumentMapRow } from './argumentReadingModel';
 import {
   ApertureGatePanel,
   BirthGatePanel,
@@ -688,16 +689,121 @@ function LaidCellOverlay({
   );
 }
 
-// the specimen card — manuscript-styled, rendered IFF a reading is summoned
+// THE TWO HANDS (the designer's craft ruling, the argument card): SIGNS are
+// set in the sign hand (sans — the book hand carries no glyph for ⊾/𝕋², and
+// a sign rendered as tofu □ is a BLANK CLAIM); WORDS stay in the book hand
+// (the card's serif). The app-path leg verifies glyph coverage per hand.
+const SIGN_HAND = '"DejaVu Sans", "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", sans-serif';
+
+// THE ARGUMENT MAP (Phase 1 — the spine): the birth op drawn as a map, the
+// concept/relation rows from the substrate trace, the words-line. Rows carry
+// presentation letters; the substrate ids live in the model (the witness's
+// surface). Row lists compact honestly past 8 (grouped by typing, counted —
+// never dropped silently).
+function ArgumentMapSection({
+  argument,
+  paper,
+}: {
+  argument: ArgumentReading;
+  paper: { cardBorder: string };
+}) {
+  const sign: React.CSSProperties = { fontFamily: SIGN_HAND };
+  const compact = (rows: ArgumentMapRow[], mark: string) => {
+    // relations always show their recorded source (the endpoint-lettered
+    // parent edge — the measured substrate read); concepts split by typing
+    const identified = rows.filter((r) => r.kind === 'relation' || r.typing === 'identified');
+    const bornOf = rows.filter((r) => r.kind === 'concept' && r.bornOf !== null);
+    const plain = rows.filter((r) => r.kind === 'concept' && r.typing !== 'identified' && r.bornOf === null);
+    const lines: React.ReactNode[] = [];
+    for (const r of identified) {
+      lines.push(
+        <div key={r.resultId} style={{ fontSize: 13 }}>
+          <span style={sign}>{mark}</span>
+          <span style={sign}>{r.label}</span>
+          <span style={sign}> ← </span>
+          <span style={sign}>{r.rootLabels.join(' ')}</span>
+        </div>,
+      );
+    }
+    for (const r of bornOf) {
+      lines.push(
+        <div key={r.resultId} style={{ fontSize: 13 }}>
+          <span style={sign}>{mark}</span>
+          <span style={sign}>{r.label}</span>
+          <span style={sign}> ⟷ </span>
+          <span>{r.bornOf}</span>
+        </div>,
+      );
+    }
+    if (plain.length > 0 && plain.length + lines.length <= 8) {
+      for (const r of plain) {
+        lines.push(
+          <div key={r.resultId} style={{ fontSize: 13 }}>
+            <span style={sign}>{mark}</span>
+            <span style={sign}>{r.label}</span>
+            <span style={{ opacity: 0.75 }}> — {r.typing === 'survived' ? 'survives' : 'born'}</span>
+          </div>,
+        );
+      }
+    } else if (plain.length > 0) {
+      const survived = plain.filter((r) => r.typing === 'survived').length;
+      const born = plain.length - survived;
+      lines.push(
+        <div key={`${mark}:grouped`} style={{ fontSize: 12.5, opacity: 0.8 }}>
+          <span style={sign}>{mark}</span>
+          {survived > 0 ? `${survived} survive` : ''}
+          {survived > 0 && born > 0 ? ' · ' : ''}
+          {born > 0 ? `${born} born` : ''}
+        </div>,
+      );
+    }
+    return lines;
+  };
+  return (
+    <div style={{ marginTop: 6 }}>
+      <div style={{ fontSize: 15.5 }}>
+        <span style={{ ...sign, fontWeight: 700 }}>{argument.header.source}</span>
+        <span style={sign}> ⟶ </span>
+        <span style={{ ...sign, fontWeight: 700 }}>{argument.header.result}</span>
+      </div>
+      <div style={{ fontStyle: 'italic', fontSize: 12, opacity: 0.75, marginBottom: 5 }}>
+        {argument.op} — {argument.header.gloss}
+      </div>
+      <div style={{ fontSize: 10.5, letterSpacing: 1, opacity: 0.6, fontVariant: 'small-caps' }}>map — the spine</div>
+      {compact(argument.conceptRows, '•')}
+      {compact(argument.relationRows, '—')}
+      {argument.absorbedRelations.length > 0 ? (
+        <div style={{ fontSize: 12, opacity: 0.72 }}>
+          <span style={{ fontVariant: 'small-caps', fontSize: 10.5, letterSpacing: 0.8 }}>absorbed </span>
+          <span style={sign}>{argument.absorbedRelations.join(' ')}</span>
+        </div>
+      ) : null}
+      <div style={{ fontSize: 12, opacity: 0.78, marginTop: 3, borderBottom: `1px solid ${paper.cardBorder}55`, paddingBottom: 5 }}>
+        {argument.words}
+      </div>
+    </div>
+  );
+}
+
+// the specimen card — manuscript-styled, rendered IFF a reading is summoned.
+// THE ARGUMENT INVERSION (Phase 1): when the argument reading rides, the MAP
+// is the card's spine and the INVARIANT rows demote into the `certificate`
+// receipt (hairline rule, one graphite line, EXPAND-IN-PLACE — subordinate,
+// never a second panel). Non-invariant registers (the deficit rows — R1's
+// ratified proof register — resolution, cells, notes) stay SURFACED under
+// the map: only invariants demote.
 function SpecimenCard({
   reading,
+  argument,
   paper,
   generatorInks,
 }: {
   reading: SpecimenReading;
+  argument?: ArgumentReading | null;
   paper: { cardBackground: string; cardBorder: string; cardInk: string };
   generatorInks: { a: string; b: string };
 }) {
+  const [certificateOpen, setCertificateOpen] = useState(false);
   const row: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'space-between',
@@ -705,6 +811,10 @@ function SpecimenCard({
     borderTop: `1px solid ${paper.cardBorder}55`,
     padding: '4px 0 3px',
   };
+  const isCertificateRow = (label: string): boolean =>
+    Boolean(argument) && argument!.certificateLabels.some((prefix) => label.startsWith(prefix));
+  const certificateRows = reading.rows.filter((r) => isCertificateRow(r.label));
+  const surfacedRows = argument ? reading.rows.filter((r) => !isCertificateRow(r.label)) : reading.rows;
   return (
     <div
       style={{
@@ -728,7 +838,8 @@ function SpecimenCard({
       <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.72, marginBottom: 7 }}>
         {reading.subtitle}
       </div>
-      {reading.rows.map((r) => (
+      {argument ? <ArgumentMapSection argument={argument} paper={paper} /> : null}
+      {surfacedRows.map((r) => (
         // the key carries label AND value: R1-REBUILD gave the card its first
         // multi-row register (two `deficit` rows — cone + rim), and a
         // label-only key collides (React may duplicate OR OMIT a row — the
@@ -739,6 +850,35 @@ function SpecimenCard({
           <b style={{ textAlign: 'right', fontWeight: r.emphasize ? 800 : 600 }}>{r.value}</b>
         </div>
       ))}
+      {argument ? (
+        // THE CERTIFICATE — the demoted receipt (the seal's expand-in-place
+        // ruling): a hairline rule, the word, one graphite line; click
+        // expands the full invariant rows IN PLACE, subordinate always.
+        <div style={{ marginTop: 7, borderTop: `1px solid ${paper.cardBorder}`, paddingTop: 4 }}>
+          <div
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              setCertificateOpen((open) => !open);
+            }}
+            style={{ cursor: 'pointer', fontSize: 11, opacity: 0.68, display: 'flex', gap: 8, alignItems: 'baseline' }}
+          >
+            <span style={{ letterSpacing: 1, fontVariant: 'small-caps' }}>certificate</span>
+            {!certificateOpen ? (
+              <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10.5 }}>
+                {certificateRows.map((r) => `${r.label} ${r.value}`).join(' · ') || '—'}
+              </span>
+            ) : null}
+          </div>
+          {certificateOpen
+            ? certificateRows.map((r) => (
+                <div key={`${r.label}·${r.value}`} style={{ ...row, fontSize: 12.5, opacity: 0.85 }}>
+                  <span>{r.label}</span>
+                  <b style={{ textAlign: 'right', fontWeight: 600 }}>{r.value}</b>
+                </div>
+              ))
+            : null}
+        </div>
+      ) : null}
       {reading.twist ? (
         <div
           style={{
@@ -1419,6 +1559,17 @@ export default function ManuscriptView() {
     const model = dim3All.find((m) => m.key === key);
     return model ? readDomainSpecimen(model) : null;
   }, [selected, world, written, optionBByShape, dim3All, laidBodies, laidInkedById]);
+
+  // THE ARGUMENT-READING CARD (Phase 1 — the MAP): the birth op's argument,
+  // read from the substrate (primalMultiset roots, one-generation sources,
+  // typing). Rides its OWN prop — SpecimenReading is FROZEN and untouched.
+  const selectedArgument = useMemo<ArgumentReading | null>(() => {
+    if (!selected) return null;
+    const [band, key] = selected.split(':');
+    if (band !== 'w') return null;
+    const entry = written.find((w) => w.form.id === key);
+    return entry ? buildArgumentReading(entry.form) : null;
+  }, [selected, written]);
 
   // ----- 3a: the op target + the committed availability + the apply path -----
   const rows = d.world.rows;
@@ -3465,6 +3616,7 @@ export default function ManuscriptView() {
       ) : reading ? (
         <SpecimenCard
           reading={reading}
+          argument={selectedArgument}
           paper={d.paper}
           generatorInks={{ a: generatorsCtl.a, b: generatorsCtl.b }}
         />
