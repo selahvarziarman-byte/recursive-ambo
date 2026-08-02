@@ -697,7 +697,12 @@ function SpecimenCard({
         {reading.subtitle}
       </div>
       {reading.rows.map((r) => (
-        <div key={r.label} style={row}>
+        // the key carries label AND value: R1-REBUILD gave the card its first
+        // multi-row register (two `deficit` rows — cone + rim), and a
+        // label-only key collides (React may duplicate OR OMIT a row — the
+        // silent-drop class). Caught by the app-path witness leg's console
+        // clause on its first run.
+        <div key={`${r.label}·${r.value}`} style={row}>
           <span style={{ opacity: 0.85 }}>{r.label}</span>
           <b style={{ textAlign: 'right', fontWeight: r.emphasize ? 800 : 600 }}>{r.value}</b>
         </div>
@@ -2609,6 +2614,12 @@ export default function ManuscriptView() {
       <Canvas
         camera={{ position: [...d.layout.cameraPosition], fov: 45 }}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
+        onCreated={(state) => {
+          // THE APP-PATH WITNESS LEG's scene handle (a TEST SEAM, dev-view
+          // only — `?manuscript` is dev-gated): the leg asserts PRESENCE by
+          // traversing the real scene graph; no render behavior changes.
+          (window as unknown as { __manuscriptScene?: unknown }).__manuscriptScene = state.scene;
+        }}
         onPointerMissed={() => {
           // CYCLE-IDENTIFY reach fix (b): a miss mid-trace does NOT discard
           // the accumulated walk (the 6-edge-trace-cleared-by-one-miss scar)
@@ -2996,7 +3007,11 @@ export default function ManuscriptView() {
               // rim heavy, dots per vertex-class, the one face a flat disk.
               // RECOGNITION — the seam wears its fold-letter; on select it
               // warms and the two source edges ghost (provenance, no metric).
-              <group scale={scaleCtl.dim1Scale * 1.5}>
+              <group
+                // name = the app-path witness leg's PRESENCE handle (test seam)
+                name="faithful-body"
+                scale={scaleCtl.dim1Scale * 1.5}
+              >
                 <FaithfulBody
                   model={render.model}
                   seamColor={inkFor(id, entry.form.shape.id, constructionCtl.color)}

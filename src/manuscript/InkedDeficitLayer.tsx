@@ -123,7 +123,9 @@ export function InkedDeficitLayer({
   if (!model.marked || model.marks.length === 0) return null;
 
   return (
-    <group>
+    // name = the app-path witness leg's PRESENCE handle (a test seam; the
+    // group exists only when real marks ride — absence stays absence)
+    <group name="deficit-register">
       {model.marks.map((mark) => {
         const departureLine = [toTuple(mark.center), at(mark.center, mark.departure, mark.radius * DEFICIT_REACH)];
         return (
