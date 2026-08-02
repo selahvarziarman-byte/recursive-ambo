@@ -306,7 +306,7 @@ check('…and the carried mutants are REAL, not strawmen: pre-commit, the HEAD-c
 console.log('\n----- [g] the freeze holds; apertureModel rides as NOT_FROZEN (its classification at this baseline — see the handback disclosure) -----');
 const freeze = checkEngineFreeze();
 check('THE ENGINE FREEZE MANIFEST: ok at 45 · drifted [] · missing [] · unlisted [] · nulled [] (apertureModel.ts is classified NOT_FROZEN at this baseline — no hash line exists to move; the mandate\'s premise that it is frozen is handed back as a disclosure)',
-  freeze.ok === true && freeze.checked === 45 &&
+  freeze.ok === true && freeze.checked === 46 &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 &&
   freeze.unlisted.length === 0 && freeze.nulled.length === 0);
 

@@ -174,8 +174,18 @@ const geoSha = crypto
   .digest('hex');
 check('§4 (E6) manifest :87 row === sha256(working geometry.ts) — THE UNION\'s re-seal is LIVE',
   Boolean(geoRow) && geoRow.trim().split(/\s+/).pop() === geoSha);
-check('§4 the atom module is ROWED (NOT_FROZEN, the completeness law)',
-  manifest.includes('NOT_FROZEN src/lib/conformalAtom.ts'));
+check('§4 the atom module is ROWED — HASH-ROWED since the APEX-LIFT union (2026-08-02, engineer ruling 1807): the atom entered the FROZEN set (its own "freeze candidate once the layer lands" clause, due) and its manifest row is the sha256 line, matching the working bytes',
+  (() => {
+    const row = manifest
+      .split(/\r?\n/)
+      .find((line) => line.startsWith('src/lib/conformalAtom.ts'));
+    if (!row) return false;
+    const sha = crypto
+      .createHash('sha256')
+      .update(fs.readFileSync(path.join(repoRoot, 'src/lib/conformalAtom.ts'), 'utf8').replace(/\r/g, ''))
+      .digest('hex');
+    return row.trim().split(/\s+/).pop() === sha && !manifest.includes('NOT_FROZEN src/lib/conformalAtom.ts');
+  })());
 
 console.log(
   `\n--- THE CONFORMAL ATOM (owned · derived · sealed): ${

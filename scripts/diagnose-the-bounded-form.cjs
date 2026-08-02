@@ -349,7 +349,7 @@ check('THE FULL PROTOCOL\'S BOOKKEEPING: the freeze reads ok at 45 with zero dri
       (file) => sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) === sha256OfCrStripped(headBlobOf(file)),
     );
     note(`freeze: ok=${freeze.ok} checked=${freeze.checked} · the two re-sealed hashes present in the manifest: ${sealedHere}`);
-    return freeze.ok === true && freeze.checked === 45 && sealedHere && unmoved;
+    return freeze.ok === true && freeze.checked === 46 && sealedHere && unmoved;
   })());
 
 console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAILURE(S)`);

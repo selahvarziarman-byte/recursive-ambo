@@ -39,9 +39,10 @@
 # sanctioned file’s hash line moved — nothing else.
 # ═══════════════════════════════════════════════════════════════════════════
 
-# ─── FROZEN (45) — the engine, import-closed; drift here without a manifest update is a finding ───
+# ─── FROZEN (46) — the engine, import-closed; drift here without a manifest update is a finding ───
 src/data/seeds.ts                       6936376f3c1fcf6b3170d25fe2b3e080afcd9c3eb329dcee4ea37f6435f83274
 src/lib/complexIdentification.ts        35d5602c91b590fc32f6ab8a82e5561696cc7b170fd63521332fb0abb2a4d08b
+src/lib/conformalAtom.ts                c401d195b678b5b625e4c126f72bc2916983c4fc4374fbfd0e538c6a21a0df97
 src/lib/connectedSum.ts                 d8b6c0d269f6847b50f29c3190199ed290096319d25edbf280ce77effc1df6b9
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c
 src/lib/dualization.ts                  f450a61ca363e915b40374cd0707f6bc878680649d6057389bf49a90eb14d2a0
@@ -68,7 +69,7 @@ src/lib/transformationLedger.ts         2f77f9b331c9151c00242f40708a4915dc35e8f6
 src/manuscript/InkedDomain.tsx          067f04c99043a5606ebe96de4669e47e2cab623166b45ce4067d4ffbb445195b
 src/manuscript/InkedForm.tsx            091a3c1d1a4d0d35ca82e93d37ccc57b1148a1483a201b2c1c9cd4f1fa52e3d1
 src/manuscript/classBodyModel.ts        177de3e916a7f7a7cf2d8e4f97366eeef00d70b3a7f6b7fa6aa70e4f76bff0a2
-src/manuscript/faithfulBodyModel.ts     a0f6376b4673849cc49b6bec9fcc0f3ab20bf4af031198f081c8a489d73b7e90
+src/manuscript/faithfulBodyModel.ts     b72ba46a22118401d7dfde3b08b9c006899bf39e0f3b3cd5300094ea248d42e4
 src/manuscript/genesisModel.ts          3b6bde076dcfcd1be7891c5e1b7fc8977f2dca1df6a5cfc8c290b915c784b74f
 src/manuscript/inkedFormModel.ts        9ddcff0fc8455f8e469726af4d5cdd75b5ab37f620a9bbcf96e84bb70be366fb
 src/manuscript/optionBModel.ts          b8947f23be817e0c1c5312276dfa596a67723c491bba8d7ce97bb2e494dd35b1
@@ -92,7 +93,6 @@ NOT_FROZEN src/lib/atomicRegistry.ts — outside the chartered freeze set (the e
 NOT_FROZEN src/lib/cascadeDriver.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/cellLifecycle.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/closeEdgeIntoCircle.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
-NOT_FROZEN src/lib/conformalAtom.ts — THE CONFORMAL ATOM (§2 first build, 2026-07-30 mandate): own the per-corner angle from the invocation source (regular seeds → combinatorial (n−2)π/n, stamped at the NON-frozen invoke seams), derive the per-vertex curvature through the committed link idiom, seal against boundary-corrected Gauss–Bonnet — OWN-ONLY, no render; ratified by diagnose-conformal-atom.cjs; freeze candidate once the layer lands
 NOT_FROZEN src/lib/connectionWaveInstrumentV0.ts — field/carrier-programme workstream (V0 instruments & policies) — governed by its own diagnostics; not the frozen topological engine
 NOT_FROZEN src/lib/diagonalizationMatrix.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/lib/dualView.ts — outside the chartered freeze set (the engineer-measured union of the nine witnesses + the orphan) — load-bearing candidates among these are named in REPORT_engine-freeze-manifest.md for the engineer’s ruling

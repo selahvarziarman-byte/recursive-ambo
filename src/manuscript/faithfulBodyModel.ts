@@ -8,10 +8,15 @@
 // boundary in the rim register, and nothing implied that the mathematics does
 // not carry. This module realizes stage 1 of her stage-cut:
 //   LAW A (cells)  — every vertex/edge/face class drawn once; the layout is
-//                    THE FAN: the apex at the tip (the fan's pivot), each rim
-//                    vertex on the base circle, each seam a RADIUS, the one
-//                    face the disk between. A flat fan asserts no curvature,
-//                    no symmetry beyond the depiction's own (LAW E).
+//                    THE FAN ROLLED TO ITS CONE (the apex-lift union,
+//                    2026-08-02): the apex lifted to h = R·√(1−s²) by the
+//                    OWNED deficit (s = Θ/2π, Θ = 2π−δ), each rim vertex on
+//                    the CONTRACTED base circle R·s, each seam a SLANT of
+//                    length R, the one face the lateral surface between.
+//                    δ=0 degenerates to the flat fan (which asserts no
+//                    curvature); δ<0 and un-owned atoms DECLARE and stay
+//                    flat (see FaithfulLift). No symmetry is asserted
+//                    beyond the depiction's own (LAW E).
 //   LAW B (rim)    — the boundary circle is a CLOSED heavy-register curve
 //                    (the designer's rim ink); seams wear the thin cell
 //                    register. An open edge of the ink would mean an open
@@ -36,6 +41,9 @@ import type { AssembledComplex } from '../lib/globalW1';
 import { readFormInvariants, type FormInvariantsReadout } from '../playground/formInvariants';
 import { acquireFaithfulComplex, readBoundary } from './surfaceClassifier';
 import { h1LabelFromCertified } from './inkedFormModel';
+// THE APEX-LIFT (union 2026-08-02): the apex height is a function of the
+// OWNED deficit — read through the committed reader, never recomputed
+import { readVertexCurvatures } from '../lib/conformalAtom';
 
 // the stage walls — TRUE doors naming the unbuilt register (working text from
 // the mandate; the designer's craft-pass refines wording, never the truth)
@@ -43,6 +51,43 @@ export const FAITHFUL_WALL_GENERAL =
   'this form needs the general-layout render (CUT 1b); not built yet.';
 export const FAITHFUL_WALL_CROSSING =
   'this form cannot embed — it needs the declared-crossing register (CUT 2); not built yet.';
+
+// THE APEX-LIFT's declaration (union 2026-08-02, mothership-sanctioned;
+// defect Arman/designer-caught): the fan of slant R with apex material-angle
+// Θ = 2π − δ ROLLS — an isometry, no material made or destroyed — to the
+// cone: s = Θ/2π · baseRadius = R·s · apexHeight = R·√(1−s²).
+//   · 'cone'             — δ > 0: the lifted cone (h tracks the OWNED deficit);
+//   · 'flat'             — δ = 0: s = 1, h = 0 — the flat disk falls out as the
+//                          degenerate case (ordinary flat forms byte-unchanged);
+//   · 'saddle-declared'  — δ < 0 (Θ > 2π, s > 1): NO isometric cone exists in
+//                          ℝ³ (h imaginary) — DECLARED and drawn flat, never
+//                          faked (the collapse-sphere doctrine);
+//   · 'unowned-declared' — the atom is not owned, no δ speaks — the flat
+//                          depiction stands, declared.
+export type FaithfulLift =
+  | { kind: 'cone'; apexHeight: number; baseRadius: number }
+  | { kind: 'flat'; apexHeight: 0; baseRadius: number }
+  | { kind: 'saddle-declared'; apexHeight: 0; baseRadius: number }
+  | { kind: 'unowned-declared'; apexHeight: 0; baseRadius: number };
+
+// the isometry, pure (exported so the witness drives the branch directly —
+// the reachable fold-borns are all δ>0 cones, so the flat/saddle branches
+// cannot be reached through the committed ops; the verdict calls THIS)
+const LIFT_EPS = 1e-9;
+export function computeFaithfulLift(delta: number): FaithfulLift {
+  if (delta < -LIFT_EPS) {
+    return { kind: 'saddle-declared', apexHeight: 0, baseRadius: RADIUS };
+  }
+  if (delta < LIFT_EPS) {
+    return { kind: 'flat', apexHeight: 0, baseRadius: RADIUS };
+  }
+  const turnFraction = (2 * Math.PI - delta) / (2 * Math.PI); // s = Θ/2π
+  return {
+    kind: 'cone',
+    apexHeight: Number((RADIUS * Math.sqrt(1 - turnFraction * turnFraction)).toFixed(6)),
+    baseRadius: Number((RADIUS * turnFraction).toFixed(6)),
+  };
+}
 
 export interface FaithfulBodyModel {
   shape: Shape; // the person's own quotient shape (ids intact)
@@ -52,7 +97,8 @@ export interface FaithfulBodyModel {
   rimVertices: Array<{ id: string; position: Vec3 }>; // base-circle placements, walk order
   seams: Array<{ id: string; from: Vec3; to: Vec3 }>; // thin cell register — one radius per interior edge-class
   rimArcs: Array<{ id: string; points: Vec3[] }>; // heavy rim register — one arc per boundary edge-class; the chain closes
-  faceDisk: { radius: number; segments: number }; // the ONE face — the disk between
+  faceDisk: { radius: number; segments: number }; // the ONE face — its BASE circle (contracted to R·s by the lift)
+  lift: FaithfulLift; // the apex-lift declaration (cone height from the owned deficit, or the declared degenerate)
   invariants: FormInvariantsReadout; // the tower's body certificate (χ, w₁, class)
   h1Label: string | null;
 }
@@ -68,9 +114,11 @@ const ARC_SEGMENTS = 64;
 // order, clockwise from the top); the apex sits at the pivot. Pure geometry of
 // the DEPICTION — no engine value is recomputed here.
 const rimAngle = (i: number, k: number): number => Math.PI / 2 - (2 * Math.PI * i) / k;
-const rimPoint = (angle: number): Vec3 => [
-  Number((RADIUS * Math.cos(angle)).toFixed(6)),
-  Number((RADIUS * Math.sin(angle)).toFixed(6)),
+// the rim sits on the BASE circle — radius R for the flat fan, R·s under the
+// lift (the isometry contracts the rim; the slant stays R)
+const rimPoint = (angle: number, radius: number): Vec3 => [
+  Number((radius * Math.cos(angle)).toFixed(6)),
+  Number((radius * Math.sin(angle)).toFixed(6)),
   0,
 ];
 
@@ -117,6 +165,18 @@ export function faithfulBodyVerdict(shape: Shape, lineage: Shape[]): FaithfulVer
   const apexIds = complex.vertices.filter((v) => !rimVertexIds.has(v));
   if (apexIds.length !== 1) return { ok: false, wall: FAITHFUL_WALL_GENERAL };
   const apexId = apexIds[0];
+  // THE APEX-LIFT — the lift is a FUNCTION OF THE OWNED DEFICIT (the atom R1
+  // reads, quotient-correct through the acquired complex this verdict already
+  // holds); drawn, never invented. See FaithfulLift / computeFaithfulLift.
+  let lift: FaithfulLift;
+  try {
+    const apexReading = readVertexCurvatures(shape, complex).find((r) => r.vertexId === apexId);
+    lift = computeFaithfulLift(
+      apexReading && apexReading.valence === 'interior' ? apexReading.curvature : 0,
+    );
+  } catch {
+    lift = { kind: 'unowned-declared', apexHeight: 0, baseRadius: RADIUS };
+  }
   // every seam is a RADIUS: apex↔rim, one per rim vertex at most (two seams to
   // one rim vertex would overlap on a single stroke — the eye would count one
   // where the complex holds two, so the fan refuses; LAW A over convenience)
@@ -161,8 +221,8 @@ export function faithfulBodyVerdict(shape: Shape, lineage: Shape[]): FaithfulVer
   }
   const k = orderedRim.length;
   const angleOf = new Map(orderedRim.map((v, i) => [v, rimAngle(i, k)]));
-  const positionOf = new Map(orderedRim.map((v, i) => [v, rimPoint(rimAngle(i, k))]));
-  const apexPosition: Vec3 = [0, 0, 0];
+  const positionOf = new Map(orderedRim.map((v, i) => [v, rimPoint(rimAngle(i, k), lift.baseRadius)]));
+  const apexPosition: Vec3 = [0, 0, lift.apexHeight];
   const rimArcs = walk.map((stepEntry, i) => {
     const a0 = angleOf.get(stepEntry.from) as number;
     // each arc sweeps CLOCKWISE to the next vertex's angle; the self-loop and
@@ -174,7 +234,7 @@ export function faithfulBodyVerdict(shape: Shape, lineage: Shape[]): FaithfulVer
     const segments = Math.max(12, Math.round((ARC_SEGMENTS * sweep) / (2 * Math.PI)));
     const points: Vec3[] = [];
     for (let s = 0; s <= segments; s += 1) {
-      points.push(rimPoint(a0 - (sweep * s) / segments));
+      points.push(rimPoint(a0 - (sweep * s) / segments, lift.baseRadius));
     }
     return { id: stepEntry.edge.id, points };
   });
@@ -190,7 +250,8 @@ export function faithfulBodyVerdict(shape: Shape, lineage: Shape[]): FaithfulVer
       to: positionOf.get(e.u === apexId ? e.v : e.u) as Vec3,
     })),
     rimArcs,
-    faceDisk: { radius: RADIUS, segments: ARC_SEGMENTS },
+    faceDisk: { radius: lift.baseRadius, segments: ARC_SEGMENTS },
+    lift,
     invariants,
     h1Label: h1LabelFromCertified(invariants),
   };

@@ -576,7 +576,7 @@ check('…and the dim-1/2 world is untouched: the CR-insensitive content-moved s
   (() => {
     const freeze = checkEngineFreeze();
     // 27 → 44 (2026-07-14, THE SMALL RUN): the freeze closed under imports
-    return freeze.ok === true && freeze.checked === 45 && freeze.unlisted.length === 0;
+    return freeze.ok === true && freeze.checked === 46 && freeze.unlisted.length === 0;
   })());
 note(`content-moved vs HEAD: [${inkMoved.join(', ') || 'empty'}]`);
 

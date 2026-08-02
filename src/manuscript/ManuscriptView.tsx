@@ -23,6 +23,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html, Line, OrbitControls } from '@react-three/drei';
+import * as THREE from 'three';
 import { Leva, useControls } from 'leva';
 import {
   BackSide,
@@ -353,7 +354,9 @@ function FormLabel({
 // (cell register), ONE heavy stroke per rim edge-class closing the boundary
 // circle (LAW B), the one face a flat translucent disk (LAW E: a drawing that
 // implies no curvature, no symmetry, no orientation). No other ink.
-function FaithfulBody({
+// exported for the manuscript bench (the apex-lift seal folds the designer's
+// 1620 ask in): the bench shows the LIFTED cone through the one component
+export function FaithfulBody({
   model,
   seamColor,
   rimColor,
@@ -389,10 +392,32 @@ function FaithfulBody({
   const ghostAngles = [seamAngle + 0.24, seamAngle - 0.24];
   return (
     <group>
-      <mesh renderOrder={-2}>
-        <circleGeometry args={[model.faceDisk.radius, model.faceDisk.segments]} />
-        <meshBasicMaterial color={bodyColor} transparent opacity={bodyOpacity} depthWrite={false} />
-      </mesh>
+      {model.lift.apexHeight > 0 ? (
+        // THE APEX-LIFT: the cone's LATERAL surface — apex [0,0,h], base
+        // circle at the contracted radius on z=0. A thin OPEN drawing
+        // surface (LAW E — never a photoreal solid). ConeGeometry is
+        // y-up/centered: rotate +x by π/2 (y→z) and lift by h/2 so the
+        // apex lands at z=h and the base at z=0.
+        <mesh renderOrder={-2} rotation={[Math.PI / 2, 0, 0]} position={[0, 0, model.lift.apexHeight / 2]}>
+          <coneGeometry
+            args={[model.faceDisk.radius, model.lift.apexHeight, model.faceDisk.segments, 1, true]}
+          />
+          <meshBasicMaterial
+            color={bodyColor}
+            transparent
+            opacity={bodyOpacity}
+            depthWrite={false}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      ) : (
+        // the declared degenerates (δ=0 flat · saddle · un-owned): the flat
+        // disk, byte-equal to the pre-lift drawing
+        <mesh renderOrder={-2}>
+          <circleGeometry args={[model.faceDisk.radius, model.faceDisk.segments]} />
+          <meshBasicMaterial color={bodyColor} transparent opacity={bodyOpacity} depthWrite={false} />
+        </mesh>
+      )}
       {selected && marked
         ? // ON SELECT — the two source edges ghost back, flanking the seam they
           // became (dashed, pencil tone: the memory register, unconfusable with
@@ -417,8 +442,10 @@ function FaithfulBody({
         <Line
           key={seam.id}
           points={[
-            [seam.from[0], seam.from[1], 0.01],
-            [seam.to[0], seam.to[1], 0.01],
+            // the seam RIDES the lifted positions (apex z = h) — the small
+            // z-nudge keeps it above the surface as before
+            [seam.from[0], seam.from[1], seam.from[2] + 0.01],
+            [seam.to[0], seam.to[1], seam.to[2] + 0.01],
           ]}
           color={selected ? accent : seamColor}
           lineWidth={seamWidth}
@@ -433,7 +460,12 @@ function FaithfulBody({
         />
       ))}
       {[model.apex, ...model.rimVertices].map((vertex) => (
-        <mesh key={vertex.id} position={[vertex.position[0], vertex.position[1], 0.02]} renderOrder={2}>
+        // the dots RIDE the lifted positions (the apex dot sits at z = h)
+        <mesh
+          key={vertex.id}
+          position={[vertex.position[0], vertex.position[1], vertex.position[2] + 0.02]}
+          renderOrder={2}
+        >
           <circleGeometry args={[0.05, 24]} />
           <meshBasicMaterial color={rimColor} />
         </mesh>

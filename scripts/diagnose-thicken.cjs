@@ -289,7 +289,7 @@ check('THE MANIFEST CARRIES THIS RUN\'S EXACT WEIGHT: the freeze reads ok at 45 
         sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, 'src/types/geometry.ts'), 'utf8')),
       );
     note(arrived ? 'the re-seal has ARRIVED at HEAD' : 'pre-commit: the four lines ride this change');
-    return freeze.ok === true && freeze.checked === 45 && (preCommit || arrived);
+    return freeze.ok === true && freeze.checked === 46 && (preCommit || arrived);
   })());
 
 console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAILURE(S)`);

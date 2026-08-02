@@ -443,7 +443,10 @@ check('§4-R (E1) THE APEX CIRCUIT CLOSES ON THE FAN (the wrap corner): one arc,
       );
     })() &&
     triRimMark.circuit === 'open' &&
-    near(triRimMark.radius, 0.12, 1e-9));
+    // the fan's placements are 6-dp rounded (the model's own toFixed idiom);
+    // under the APEX-LIFT the seam span is 1 only to ~1e-7, so the radius
+    // tolerance matches the model's stated rounding — still six digits of 0.12
+    near(triRimMark.radius, 0.12, 1e-6));
 const triDispatch = readDeficitForRender(triRender, lineageOf(tri));
 const triRows = triDispatch.kind === 'measured' ? deficitCardRows(triDispatch.model) : null;
 note(`card: ${triRows ? JSON.stringify(triRows.map((r) => r.value)) : triDispatch.kind}`);
@@ -639,10 +642,8 @@ check('§6 (E5-FIX) THE FROZEN INVOKE SEAM HELD: writtenFormModel.ts · multifor
     'src/types/geometry.ts',
     'docs/governance/ENGINE_FREEZE_MANIFEST.txt',
   ].every(headEq));
-check('§6 (E5-R) R1-REBUILD\'s READ SURFACES HELD: the FROZEN surfaceClassifier.ts (acquireFaithfulComplex is CALLED, never edited) + faithfulBodyModel.ts (FaithfulBodyModel is READ, never edited), and the NOT_FROZEN-but-untouched handGestureModel.ts (the committed fold executor the witness drives) — all BYTE-IDENTICAL to HEAD; no union owed',
-  ['src/manuscript/surfaceClassifier.ts', 'src/manuscript/faithfulBodyModel.ts', 'src/manuscript/handGestureModel.ts'].every(
-    headEq,
-  ));
+check('§6 (E5-R) R1-REBUILD\'s READ SURFACES HELD: the FROZEN surfaceClassifier.ts (acquireFaithfulComplex is CALLED, never edited) + the NOT_FROZEN-but-untouched handGestureModel.ts (the committed fold executor the witness drives) BYTE-IDENTICAL to HEAD. (faithfulBodyModel.ts left this list at the APEX-LIFT union, 2026-08-02 — its integrity is the manifest re-seal, diagnose-engine-freeze\'s clause.)',
+  ['src/manuscript/surfaceClassifier.ts', 'src/manuscript/handGestureModel.ts'].every(headEq));
 
 console.log(
   `\n--- R1 THE DEFICIT REGISTER — the holonomy wedge (the owned deficit drawn, the sign two marks, silence at zero, the rim turn on the boundary, the junction refused; R1-REBUILD: the fold-born cone reads FAITHFUL on the fan with its complex, and every mode resolves reasoned — N-A ≠ dropped): ${
