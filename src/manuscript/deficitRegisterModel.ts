@@ -41,6 +41,13 @@
 import type { Shape, Vec3 } from '../types/geometry';
 import { readVertexCurvatures } from '../lib/conformalAtom';
 import type { AssembledComplex } from '../lib/globalW1';
+// R1-REBUILD (2026-08-02): the faithful mode joins the readers — the fold-born
+// cone renders `faithful` and both readers dropped it to a silent null. The
+// acquisition is the committed READ (`surfaceClassifier`, frozen, import-only);
+// the render union rides as a TYPE only (elided at runtime).
+import { acquireFaithfulComplex, type ComplexSource } from './surfaceClassifier';
+import type { FaithfulBodyModel } from './faithfulBodyModel';
+import type { WrittenRender } from './writtenFormModel';
 
 // the flat tolerance: below this the deficit is silence, not a mark
 export const DEFICIT_EPS = 1e-9;
@@ -197,12 +204,17 @@ export function buildDeficitRegisterModel(
             ...incident.filter((e) => (pairCount.get(pairKey(e.vertexIds[0], e.vertexIds[1])) ?? 0) !== 1),
           ]
         : incident;
-    // the shortest incident edge sets the circuit's local scale
+    // the shortest incident edge sets the circuit's local scale. A SELF-LOOP
+    // edge (the fan's one-edge rim: both ends the same class) spans zero
+    // length and carries no scale — skipped, or the mark would collapse to
+    // the 1e-6 floor (an invisible mark is a dropped value, not a small one).
     let shortest = Infinity;
     for (const edge of incident) {
       const other = edge.vertexIds[0] === reading.vertexId ? edge.vertexIds[1] : edge.vertexIds[0];
       const p = shape.vertices[other]?.position;
-      if (p) shortest = Math.min(shortest, len(sub(p, center)));
+      if (!p) continue;
+      const span = len(sub(p, center));
+      if (span > 1e-12) shortest = Math.min(shortest, span);
     }
     const radius = Number.isFinite(shortest) ? Math.max(1e-6, shortest * DEFICIT_RADIUS_FRACTION) : 0.1;
 
@@ -232,9 +244,34 @@ export function buildDeficitRegisterModel(
         if (!prevPos || !nextPos) continue;
         const dPrev = unit(sub(prevPos, center));
         const dNext = unit(sub(nextPos, center));
-        const fn = unit(faceNormalOf(shape, cycle));
-        if (!dPrev || !dNext || !fn) continue;
-        const sweep = Math.atan2(dot(cross(dPrev, dNext), fn), dot(dPrev, dNext));
+        // a quotient fan's face cycle repeats classes, so Newell can
+        // degenerate (coincident/collinear placements) — the vertex's own
+        // tangent normal is the honest plane then (the fan is planar by
+        // construction); non-degenerate faces keep their Newell normal
+        // byte-identically (R1-REBUILD)
+        const fn = unit(faceNormalOf(shape, cycle)) ?? normal;
+        if (!dPrev || !dNext) continue;
+        let sweep = Math.atan2(dot(cross(dPrev, dNext), fn), dot(dPrev, dNext));
+        // THE FAN-WRAP CORNER (R1-REBUILD): on a faithful fan the one face
+        // wraps fully around the pivot, so an INTERIOR corner's two edge
+        // slots aim at the SAME vertex class and the chord sweep degenerates
+        // to 0 where the depicted wedge is the whole turn. The circuit must
+        // CLOSE around the vertex it claims to circle — the full 2π (the fan
+        // rim walk's own self-loop normalization). Boundary vertices are
+        // never wrapped (a closed ring there would assert a transported
+        // frame the rim does not carry); ordinary corners (distinct ends)
+        // are untouched.
+        if (
+          reading.valence === 'interior' &&
+          Math.abs(sweep) < 1e-9 &&
+          cycle[(k - 1 + cycle.length) % cycle.length] === cycle[(k + 1) % cycle.length]
+        ) {
+          sweep = 2 * Math.PI;
+        }
+        // a chord-degenerate wedge (zero sweep with distinct ends) cannot be
+        // resolved from straight chords — draw nothing there, fabricate
+        // nothing (the wedge fan + departure + return still carry the mark)
+        if (Math.abs(sweep) < 1e-9) continue;
         const steps = Math.max(4, Math.ceil(Math.abs(sweep) / (Math.PI / 24)));
         const arc: Vec3[] = [];
         for (let t = 0; t <= steps; t += 1) {
@@ -312,4 +349,142 @@ export function deficitCardRows(model: DeficitRegisterModel): DeficitCardRow[] {
     label: 'deficit',
     value: count === 1 ? phrase : `${phrase} ×${count}`,
   }));
+}
+
+// ---------------------------------------------------------------------------
+// R1-REBUILD — THE FAITHFUL MODE READS (2026-08-02; Arman-caught, corrected
+// seal): the fold-born cone renders `faithful` and BOTH readers (world layer ·
+// card) dropped it to a silent null. The cure lives HERE, testable (the
+// R1-FIX2 lesson — the DISPATCH is the defect site, so the dispatch is model
+// code the witness can drive, never a view closure):
+//   · the faithful body is `FaithfulBodyModel.shape` (the person's own
+//     quotient shape, ids intact), read WITH its acquired complex — the
+//     valence (interior cone vs boundary rim) is quotient-correct only
+//     through the gate; WITHOUT the complex the rim mis-reads and Σ ≠ 2πχ;
+//   · the marks land on the FAN's real placements (`apex` + `rimVertices`)
+//     — the depiction's own 3D surface — never the flat pre-fold positions;
+//     `readVertexCurvatures` is position-blind, so repositioning moves the
+//     mark and cannot move the value;
+//   · acquisition runs on the ORIGINAL shape (the recovery replays the birth
+//     word and byte-compares — a repositioned shape would refuse honestly
+//     for the wrong reason); only the register reads the repositioned one;
+//   · a null acquire REFUSES (the R1-fix split) — never a false mark.
+// ---------------------------------------------------------------------------
+
+export type FaithfulDeficitDatum =
+  | { kind: 'read'; shape: Shape; complex: AssembledComplex; source: ComplexSource }
+  | { kind: 'refused'; refusal: string };
+
+// the fan reposition — total-or-refuse: every vertex class lands on its fan
+// placement (apex at the pivot, rim on the base circle) or the datum refuses
+// whole; nothing is half-drawn. In the fan family this never triggers — the
+// family IS apex ∪ rim (faithfulBodyVerdict's own gate).
+export function repositionShapeToFan(model: FaithfulBodyModel): Shape | null {
+  const placement = new Map<string, Vec3>([
+    [model.apex.id, model.apex.position],
+    ...model.rimVertices.map((r) => [r.id, r.position] as [string, Vec3]),
+  ]);
+  const vertices: Shape['vertices'] = {};
+  for (const [id, vertex] of Object.entries(model.shape.vertices)) {
+    const position = placement.get(id);
+    if (!position) return null;
+    vertices[id] = { ...vertex, position };
+  }
+  return { ...model.shape, vertices };
+}
+
+export function faithfulDeficitDatum(
+  model: FaithfulBodyModel,
+  lineage: Shape[],
+): FaithfulDeficitDatum {
+  const acquired = acquireFaithfulComplex(model.shape, lineage);
+  if (!acquired) {
+    return {
+      kind: 'refused',
+      refusal:
+        'deficitRegister: the faithful complex did not acquire — without it the valence would be false (no mark is honest; a false mark is not)',
+    };
+  }
+  const fan = repositionShapeToFan(model);
+  if (!fan) {
+    return {
+      kind: 'refused',
+      refusal:
+        'deficitRegister: a vertex class has no fan placement — the mark cannot land on the drawn body (nothing is half-drawn)',
+    };
+  }
+  return { kind: 'read', shape: fan, complex: acquired.complex, source: acquired.source };
+}
+
+// THE MODE DISPATCH — total over WrittenRender (N-A ≠ DROPPED, the scar's
+// cure): every render mode resolves to a REASONED reading; no branch may fall
+// through to a silent null (a silent null cannot tell "flat/N-A" from
+// "dropped" — the exact re-opened R1 defect).
+//   · plain / classBody — the drawn body, read exactly as before (no complex:
+//     the simplicial population's shape-level link walk stands);
+//   · faithful — the fan datum above (complex-borne, fan-placed); a refused
+//     datum becomes the register's own refusal (the card SPEAKS it);
+//   · bodiless — the enacted ledger shape read honestly: the reader's own
+//     refusal (junction / un-owned) speaks — refused is never silent;
+//   · immersion — N-A: the drawn body is the smooth representative, not the
+//     cell complex; a cell-body deficit is DECLARED dropped on the smooth
+//     surface, never faked (measured census, witness-recorded: five
+//     reachable gluings are flat; flip-glue/RP² carries two real 180° cone
+//     points — the declaration IS the honest reading of that census);
+//   · skeleton — N-A: no faces, no corner, no clause.
+
+export type DeficitRenderReading =
+  | { kind: 'measured'; model: DeficitRegisterModel }
+  | { kind: 'not-applicable'; mode: 'immersion' | 'skeleton'; reason: string };
+
+function unhandledRenderMode(render: never): never {
+  throw new Error(
+    `deficitRegister: unhandled render mode "${(render as { mode?: string }).mode}" — every mode must choose its clause (a silent fall-through is the R1 scar)`,
+  );
+}
+
+export function readDeficitForRender(render: WrittenRender, lineage: Shape[]): DeficitRenderReading {
+  if (render.mode === 'plain') {
+    return { kind: 'measured', model: buildDeficitRegisterModel(render.shape) };
+  }
+  if (render.mode === 'classBody') {
+    const body = render.model.components[0]?.body ?? null;
+    if (!body) {
+      return {
+        kind: 'measured',
+        model: {
+          marked: false,
+          refusal: 'deficitRegister: the class body carries no component body to read',
+          marks: [],
+        },
+      };
+    }
+    return { kind: 'measured', model: buildDeficitRegisterModel(body) };
+  }
+  if (render.mode === 'faithful') {
+    const datum = faithfulDeficitDatum(render.model, lineage);
+    if (datum.kind === 'refused') {
+      return { kind: 'measured', model: { marked: false, refusal: datum.refusal, marks: [] } };
+    }
+    return { kind: 'measured', model: buildDeficitRegisterModel(datum.shape, datum.complex) };
+  }
+  if (render.mode === 'bodiless') {
+    return { kind: 'measured', model: buildDeficitRegisterModel(render.shape) };
+  }
+  if (render.mode === 'immersion') {
+    return {
+      kind: 'not-applicable',
+      mode: 'immersion',
+      reason:
+        'the immersion draws a smooth representative, not the cell complex — a deficit of the cell body is DECLARED dropped on the smooth surface, never faked as a mark it does not wear',
+    };
+  }
+  if (render.mode === 'skeleton') {
+    return {
+      kind: 'not-applicable',
+      mode: 'skeleton',
+      reason: 'a skeleton has no faces — no corner, no angle, no Gauss–Bonnet clause',
+    };
+  }
+  return unhandledRenderMode(render);
 }

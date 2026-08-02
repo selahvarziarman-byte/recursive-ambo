@@ -89,7 +89,13 @@ import { InkedPlainForm } from './InkedPlainForm';
 // R1 — the deficit register's SPECIMEN card rows ("cone point · deficit N°");
 // R1-FIX — the rows build in the TESTABLE model (deficitCardRows): the
 // refusal row vs genuine silence split lives there, witness-asserted
-import { buildDeficitRegisterModel, deficitCardRows } from './deficitRegisterModel';
+import {
+  deficitCardRows,
+  faithfulDeficitDatum,
+  readDeficitForRender,
+  type FaithfulDeficitDatum,
+} from './deficitRegisterModel';
+import { InkedDeficitLayer } from './InkedDeficitLayer';
 import {
   ApertureGatePanel,
   BirthGatePanel,
@@ -1075,6 +1081,26 @@ export default function ManuscriptView() {
     return map;
   }, [written]);
 
+  // ----- R1-REBUILD — THE FAITHFUL WORLD MARK's datum (the corrected seal): --
+  // the fold-born cone renders `faithful`, whose FaithfulBody composed no
+  // deficit layer — the world-side drop. Per faithful entry: acquire the
+  // complex on the ORIGINAL quotient shape (the recovery byte-compares its
+  // replay), reposition to the fan's real placements, and the layer reads
+  // THAT pair. A refused datum draws NOTHING in the world (the refusal
+  // speaks on the card — never a false mark).
+  const faithfulDeficitById = useMemo(() => {
+    const map = new Map<string, FaithfulDeficitDatum>();
+    for (const entry of written) {
+      const render = entry.form.render;
+      if (render.mode !== 'faithful') continue;
+      const lineage = [entry.form.shape, entry.form.parentShape, ...(entry.form.parentShapes ?? [])].filter(
+        (p): p is Shape => p !== null && p !== undefined,
+      );
+      map.set(entry.form.id, faithfulDeficitDatum(render.model, lineage));
+    }
+    return map;
+  }, [written]);
+
   // ----- C.1 THE FIELD IN THE SPECIMEN: the SELECTED specimen's own field, ---
   // ----- computed OFF-THREAD on the DRAWN body (the repo's FIRST worker) -----
   // THE ONE-COMPLEX LAW (BornFormView's committed clause): the mesh and its
@@ -1186,20 +1212,21 @@ export default function ManuscriptView() {
       })();
       // R1 — THE DEFICIT REGISTER's specimen card: the PROOF register (the
       // WORLD shows the wedge and no numerals; the number lives here). Rows
-      // read the SAME drawn body the world marks dress (the selectedDrawnBody
-      // choice, mirrored). R1-FIX — THE SILENCE SPLITS in deficitCardRows:
-      // a REFUSED read (un-owned/junction) speaks a refusal row (never a
-      // number, never implying flatness); a MEASURED all-flat read stays
-      // genuinely silent. Different facts, different branches.
+      // read the SAME drawn body the world marks dress. R1-FIX — THE SILENCE
+      // SPLITS in deficitCardRows: a REFUSED read speaks a refusal row (never
+      // a number, never implying flatness); a MEASURED all-flat read stays
+      // genuinely silent. R1-REBUILD — the dispatch moved into the TESTABLE
+      // model (readDeficitForRender): EVERY mode resolves to a reasoned
+      // reading — faithful reads the fan WITH its acquired complex, bodiless
+      // speaks its refusal, immersion/skeleton are N-A by reason — no branch
+      // falls through to a silent null (the dropped fold-born cone was
+      // exactly that fall-through).
       const deficitRows = (() => {
-        const body =
-          render.mode === 'plain'
-            ? render.shape
-            : render.mode === 'classBody'
-              ? (render.model.components[0]?.body ?? null)
-              : null;
-        if (!body) return [] as { label: string; value: string }[];
-        return deficitCardRows(buildDeficitRegisterModel(body));
+        const lineage = [entry.form.shape, entry.form.parentShape, ...(entry.form.parentShapes ?? [])].filter(
+          (p): p is Shape => p !== null && p !== undefined,
+        );
+        const deficitReading = readDeficitForRender(render, lineage);
+        return deficitReading.kind === 'measured' ? deficitCardRows(deficitReading.model) : [];
       })();
       const speak = (r: SpecimenReading): SpecimenReading =>
         resolutionRows.length === 0 && deficitRows.length === 0
@@ -2987,6 +3014,16 @@ export default function ManuscriptView() {
                   accent={generatorsCtl.a}
                   ghostColor={genesisCtl.pencilTone}
                 />
+                {(() => {
+                  // R1-REBUILD — the deficit register on the fan (the world-side
+                  // cure): the layer reads the REPOSITIONED shape WITH its
+                  // acquired complex; a refused datum draws nothing (the card
+                  // speaks the refusal — never a false mark in the world)
+                  const datum = faithfulDeficitById.get(entry.form.id);
+                  return datum && datum.kind === 'read' ? (
+                    <InkedDeficitLayer shape={datum.shape} complex={datum.complex} />
+                  ) : null;
+                })()}
               </group>
             ) : render.mode === 'bodiless' ? (
               // THE BODILESS CARD — the minimal honest ledger card (the

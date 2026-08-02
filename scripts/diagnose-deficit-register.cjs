@@ -20,6 +20,28 @@
 //   E6 — the frozen render set (InkedForm/InkedDomain/inkedFormModel) is
 //        BYTE-IDENTICAL to HEAD.
 //
+// R1-REBUILD (2026-08-02, the re-opened defect — Arman-caught): the reader
+// covered only plain+classBody; `faithful` fell through to a silent null and
+// the fold-born CONE was never drawn. The recut §4-R exercises the APP path
+// end-to-end (invokePrimitive → the handleInvoke stamp → applyFoldTo → the
+// faithful render → the view's own dispatch):
+//   §4-R E1 ★★ the fold-born cone SEALS on the substrate (apex interior 300°
+//        + rim boundary 60°, Σ = 360° = 2πχ, source `recovered`), the marks
+//        land ON the fan's real placements (reposition load-bearing), the
+//        apex circuit CLOSES (the 2π wrap ring), the card reads the cone —
+//        with the DROP FALSIFIER (the pre-fix two-mode selection yields null
+//        on the same render) biting every run.
+//   §4-R E2 ★★ the square fold: 0°(b) · 270°(i) · 90°(b), Σ = 2πχ; the 0°
+//        boundary vertex stays silent (2 marks for 3 readings).
+//   §4-R E3 ★★ the complex is LOAD-BEARING: the complex-less read turns the
+//        rim false-interior and Σ = 540° ≠ 2πχ — no seal without the gate.
+//   §4-R E4 ★★ EVERY mode resolves REASONED (N-A ≠ dropped): plain and
+//        classBody byte-equal to the pre-recut reads · immersion a typed
+//        declared-drop N-A over the MEASURED census (five flat; flip-glue/
+//        RP² carries two real 180° cones, drawn nowhere on the smooth
+//        surface) · skeleton a typed no-faces N-A · bodiless refuses and
+//        SPEAKS · the dispatch source names every union arm + a never-floor.
+//
 // Anti-mock: the REAL TS modules through the transpile hook.
 
 const fs = require('node:fs');
@@ -48,13 +70,22 @@ const req = (p) => require(path.join(repoRoot, p));
 const { usePlaygroundStore } = req('src/store/playgroundStore.ts');
 const { nGon } = req('src/playground/primitiveCatalogue.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
-const { applyPlaygroundOperationTo, invokePrimitive } = req('src/manuscript/writtenFormModel.ts');
+const { applyPlaygroundOperationTo, invokePrimitive, buildBodilessWrittenForm } = req(
+  'src/manuscript/writtenFormModel.ts',
+);
+const { applyFoldTo } = req('src/manuscript/handGestureModel.ts');
 const { acquireComplex, identify } = req('src/lib/complexIdentification.ts');
+const { acquireFaithfulComplex } = req('src/manuscript/surfaceClassifier.ts');
 const { subdivideFace } = req('src/lib/surfaceRefinement.ts');
 const { computeSeedCornerAngles, readVertexCurvatures, gaussBonnetTotal } = req('src/lib/conformalAtom.ts');
-const { buildDeficitRegisterModel, buildDeficitMarkGeometry, deficitCardRows, DEFICIT_RADIUS_FRACTION } = req(
-  'src/manuscript/deficitRegisterModel.ts',
-);
+const {
+  buildDeficitRegisterModel,
+  buildDeficitMarkGeometry,
+  deficitCardRows,
+  faithfulDeficitDatum,
+  readDeficitForRender,
+  DEFICIT_RADIUS_FRACTION,
+} = req('src/manuscript/deficitRegisterModel.ts');
 
 let failures = 0;
 function check(label, condition) {
@@ -333,6 +364,230 @@ check('§4-FIX-C (E4) delta #3 RETRACTED — the wedge fill is UNTOUCHED: DEFICI
   layerSrcDelta.includes('export const DEFICIT_WEDGE_OPACITY = 0.2;'));
 
 // ---------------------------------------------------------------------------
+// §4-R (R1-REBUILD E1) ★★ THE FOLD-BORN CONE READS FAITHFUL — end-to-end on
+// the APP path: invokePrimitive → the handleInvoke stamp VERBATIM → the fold
+// panel's applyFoldTo (the app's own executor) → the faithful render → the
+// view's own dispatch + lineage expression. Verified ON THE SUBSTRATE
+// (readVertexCurvatures over the acquired complex), never off the card.
+// ---------------------------------------------------------------------------
+console.log('\n----- §4-R (E1) ★★ R1-REBUILD: the fold-born cone reads FAITHFUL end-to-end (the re-opened defect) -----');
+const wireForm = (form) => {
+  // the handleInvoke stamp logic, VERBATIM (the R1-FIX2 carry)
+  const owned = computeSeedCornerAngles(form.shape);
+  return {
+    ...form,
+    shape: owned,
+    render: form.render.mode === 'plain' ? { ...form.render, shape: owned } : form.render,
+  };
+};
+// the view's own lineage expression, verbatim (the resolution rows' chain)
+const lineageOf = (form) => [form.shape, form.parentShape, ...(form.parentShapes ?? [])].filter(Boolean);
+const vEq = (a, b) => Boolean(a) && Boolean(b) && a.every((x, i) => near(x, b[i], 1e-9));
+
+const triInvoked = wireForm(invokePrimitive('triangle', 910));
+const triFold = applyFoldTo(triInvoked.shape, triInvoked.parentShape, [], [{ edgeA: 0, edgeB: 1, mode: 'preserving' }], 911, 8);
+check('§4-R (E1) the APP fold (invokePrimitive → the handleInvoke stamp → applyFoldTo, one preserving pair) routes FAITHFUL — the exact mode the defect dropped',
+  triFold.ok && triFold.born.render.mode === 'faithful');
+const tri = triFold.born;
+const triRender = tri.render;
+const triDatum = faithfulDeficitDatum(triRender.model, lineageOf(tri));
+note(`datum ${triDatum.kind}${triDatum.kind === 'read' ? ` · source ${triDatum.source}` : ` · ${String(triDatum.refusal).slice(0, 60)}`}`);
+check('§4-R (E1) ★ the datum ACQUIRES through the committed chain on the ORIGINAL quotient shape (source `recovered` — the load-bearing branch for quotient forms) and the app\'s ONE object is read (render.model.shape === form.shape)',
+  triDatum.kind === 'read' && triDatum.source === 'recovered' && triRender.model.shape === tri.shape);
+const triReadings = readVertexCurvatures(triRender.model.shape, triDatum.complex);
+const triApexReading = triReadings.find((r) => r.valence === 'interior');
+const triRimReading = triReadings.find((r) => r.valence === 'boundary');
+note(`substrate: ${triReadings.map((r) => `${r.valence} ${((r.curvature * 180) / P).toFixed(1)}°`).join(' · ')} · Σ = ${((gaussBonnetTotal(triReadings) * 180) / P).toFixed(1)}° · complex χ = ${triDatum.complex.vertices.length - triDatum.complex.edges.length + triDatum.complex.faces.length}`);
+check('§4-R (E1) ★★ THE SEALED SPECIMEN ON THE SUBSTRATE (never off the card): apex interior 300° + rim boundary 60°, Σ = 360° = 2πχ (χ = 1 from the acquired complex, V−E+F = 2−2+1)',
+  triReadings.length === 2 &&
+    triApexReading !== undefined &&
+    triRimReading !== undefined &&
+    near(triApexReading.curvature, (5 * P) / 3) &&
+    near(triRimReading.curvature, P / 3) &&
+    near(gaussBonnetTotal(triReadings), 2 * P) &&
+    triDatum.complex.vertices.length - triDatum.complex.edges.length + triDatum.complex.faces.length === 1);
+const triModel = buildDeficitRegisterModel(triDatum.shape, triDatum.complex);
+const triApexMark = triModel.marks.find((m) => m.valence === 'interior');
+const triRimMark = triModel.marks.find((m) => m.valence === 'boundary');
+note(`marks: ${triModel.marks.map((m) => `${m.valence} ${((m.wedgeAngle * 180) / P).toFixed(1)}° @[${m.center.map((n) => +n.toFixed(2)).join(',')}] r=${m.radius.toFixed(3)} arcs=${m.circuitArcs.length}`).join(' · ')}`);
+check('§4-R (E1) ★★ THE MARKS LAND ON THE FAN\'s REAL 3D PLACEMENTS (the cube delta-#1 lesson): apex mark at model.apex.position, rim mark at its own rimVertices position — and the REPOSITION IS LOAD-BEARING (both fan placements differ from the quotient\'s stored positions)',
+  triModel.marked &&
+    triModel.marks.length === 2 &&
+    triApexMark !== undefined &&
+    triRimMark !== undefined &&
+    vEq(triApexMark.center, triRender.model.apex.position) &&
+    vEq(triRimMark.center, (triRender.model.rimVertices.find((r) => r.id === triRimMark.vertexId) ?? { position: null }).position) &&
+    !vEq(triRender.model.apex.position, triRender.model.shape.vertices[triApexMark.vertexId].position) &&
+    !vEq(
+      (triRender.model.rimVertices.find((r) => r.id === triRimMark.vertexId) ?? { position: null }).position,
+      triRender.model.shape.vertices[triRimMark.vertexId].position,
+    ));
+check('§4-R (E1) THE APEX CIRCUIT CLOSES ON THE FAN (the wrap corner): one arc, ends coincident — the full 2π ring at the mark\'s radius on the disk; the rim wears the OPEN turn (no closed circuit, and the self-loop rim edge donates no zero radius — r = 0.12 × the seam span)',
+  triApexMark.circuitArcs.length === 1 &&
+    (() => {
+      const arc = triApexMark.circuitArcs[0];
+      const gap = Math.hypot(
+        arc[0][0] - arc[arc.length - 1][0],
+        arc[0][1] - arc[arc.length - 1][1],
+        arc[0][2] - arc[arc.length - 1][2],
+      );
+      return (
+        gap < 1e-9 &&
+        arc.every((p) =>
+          near(
+            Math.hypot(p[0] - triApexMark.center[0], p[1] - triApexMark.center[1], p[2] - triApexMark.center[2]),
+            triApexMark.radius,
+            1e-9,
+          ),
+        )
+      );
+    })() &&
+    triRimMark.circuit === 'open' &&
+    near(triRimMark.radius, 0.12, 1e-9));
+const triDispatch = readDeficitForRender(triRender, lineageOf(tri));
+const triRows = triDispatch.kind === 'measured' ? deficitCardRows(triDispatch.model) : null;
+note(`card: ${triRows ? JSON.stringify(triRows.map((r) => r.value)) : triDispatch.kind}`);
+check('§4-R (E1) ★★ THE CARD READS THE CONE through the view\'s own dispatch: exactly {`cone point · deficit 300°`, `rim turn · 60°`}',
+  triRows !== null &&
+    triRows.length === 2 &&
+    triRows.some((r) => r.value === 'cone point · deficit 300°') &&
+    triRows.some((r) => r.value === 'rim turn · 60°'));
+// THE DROP FALSIFIER (runs every time): the PRE-FIX dispatch — the two-mode
+// body selection — on the SAME faithful render yields NULL → zero rows,
+// indistinguishable from N-A. The clause that detects the exact shipped hole.
+const preFixBody =
+  triRender.mode === 'plain'
+    ? triRender.shape
+    : triRender.mode === 'classBody'
+      ? (triRender.model.components?.[0]?.body ?? null)
+      : null;
+check('§4-R (E1) ★★ THE DROP FALSIFIER BITES every run: the pre-fix two-mode selection yields NULL for the faithful render (the silent drop) while the recut dispatch reads the cone — the hole is structurally detected, not assumed away',
+  preFixBody === null && triRows !== null && triRows.length === 2);
+
+// ---------------------------------------------------------------------------
+// §4-R (E2) ★★ THE SQUARE FOLD — the mothership's corrected three-vertex
+// reading, and the silence law riding the fan
+// ---------------------------------------------------------------------------
+console.log('\n----- §4-R (E2) ★★ the square fold: 0°(b) · 270°(i) · 90°(b), Σ = 2πχ; the 0° vertex stays silent -----');
+const sqInvoked = wireForm(invokePrimitive('square', 912));
+const sqFold = applyFoldTo(sqInvoked.shape, sqInvoked.parentShape, [], [{ edgeA: 0, edgeB: 1, mode: 'preserving' }], 913, 8);
+const sqRender = sqFold.born.render;
+const sqDatum = faithfulDeficitDatum(sqRender.model, lineageOf(sqFold.born));
+const sqReadings = readVertexCurvatures(sqRender.model.shape, sqDatum.complex);
+const sqSignature = sqReadings.map((r) => `${r.valence}:${Math.round((r.curvature * 180) / P)}`).sort();
+note(`substrate: ${sqSignature.join(' · ')} · Σ = ${((gaussBonnetTotal(sqReadings) * 180) / P).toFixed(1)}°`);
+check('§4-R (E2) ★★ THE SQUARE FOLD SEALS: faithful route, three vertex classes 0°(boundary) · 270°(interior) · 90°(boundary), Σ = 360° = 2πχ — the corrected reading, verbatim',
+  sqFold.ok &&
+    sqRender.mode === 'faithful' &&
+    sqDatum.kind === 'read' &&
+    sqReadings.length === 3 &&
+    JSON.stringify(sqSignature) === JSON.stringify(['boundary:0', 'boundary:90', 'interior:270']) &&
+    near(gaussBonnetTotal(sqReadings), 2 * P));
+const sqModel = buildDeficitRegisterModel(sqDatum.shape, sqDatum.complex);
+const sqDispatch = readDeficitForRender(sqRender, lineageOf(sqFold.born));
+const sqRows = sqDispatch.kind === 'measured' ? deficitCardRows(sqDispatch.model) : null;
+note(`marks ${sqModel.marks.length}/3 readings · card ${sqRows ? JSON.stringify(sqRows.map((r) => r.value)) : sqDispatch.kind}`);
+check('§4-R (E2) THE SILENCE RIDES THE FAN: the 0° boundary vertex draws NOTHING (2 marks for 3 readings — δ=0 is silence, never a faint mark); card = {`cone point · deficit 270°`, `rim turn · 90°`}',
+  sqModel.marks.length === 2 &&
+    sqModel.marks.every((m) => Math.abs(m.wedgeAngle) > 1e-9) &&
+    sqRows !== null &&
+    sqRows.length === 2 &&
+    sqRows.some((r) => r.value === 'cone point · deficit 270°') &&
+    sqRows.some((r) => r.value === 'rim turn · 90°'));
+
+// ---------------------------------------------------------------------------
+// §4-R (E3) ★★ THE COMPLEX IS LOAD-BEARING — the no-complex plant
+// ---------------------------------------------------------------------------
+console.log('\n----- §4-R (E3) ★★ the complex plant: without the gate the rim reads false-interior and nothing seals -----');
+const bareTri = readVertexCurvatures(triRender.model.shape); // NO complex — the plant
+const bareSum = gaussBonnetTotal(bareTri);
+note(`no-complex: ${bareTri.map((r) => `${r.valence} ${((r.curvature * 180) / P).toFixed(1)}°`).join(' · ')} · Σ = ${((bareSum * 180) / P).toFixed(1)}° (the seal needs 360°)`);
+check('§4-R (E3) ★★ THE PLANT BITES: WITHOUT the acquired complex the fold-born rim reads FALSE-INTERIOR (no boundary valence survives) and Σ = 540° ≠ 2πχ — no seal; WITH the complex (E1) the same shape seals at 360°. The complex is load-bearing, measured',
+  bareTri.every((r) => r.valence === 'interior') &&
+    !near(bareSum, 2 * P) &&
+    near(bareSum, 3 * P) &&
+    near(gaussBonnetTotal(triReadings), 2 * P));
+
+// ---------------------------------------------------------------------------
+// §4-R (E4) ★★ EVERY MODE RESOLVES REASONED — N-A ≠ DROPPED (the scar's cure)
+// ---------------------------------------------------------------------------
+console.log('\n----- §4-R (E4) ★★ every render mode reasoned: plain · classBody · faithful · immersion · skeleton · bodiless -----');
+// plain — byte-equal to the pre-recut read (the shipped behavior preserved)
+const plainDispatch = readDeficitForRender(wired.render, lineageOf(wired));
+check('§4-R (E4) PLAIN through the dispatch is BYTE-EQUAL to the direct register read: measured, 4 rim turns at 90° (nothing weakened by the recut)',
+  plainDispatch.kind === 'measured' &&
+    plainDispatch.model.marked &&
+    plainDispatch.model.marks.length === 4 &&
+    JSON.stringify(deficitCardRows(plainDispatch.model)) ===
+      JSON.stringify(deficitCardRows(buildDeficitRegisterModel(wired.render.shape))));
+// classBody — the REVERSING fold routes it (the seal's own discriminator)
+const revInvoked = wireForm(invokePrimitive('triangle', 914));
+const revFold = applyFoldTo(revInvoked.shape, revInvoked.parentShape, [], [{ edgeA: 0, edgeB: 1, mode: 'reversing' }], 915, 8);
+const revRender = revFold.born.render;
+const revDispatch = readDeficitForRender(revRender, lineageOf(revFold.born));
+check('§4-R (E4) CLASSBODY still reads: the reversing fold routes classBody and the dispatch\'s rows are BYTE-EQUAL to the pre-recut selection\'s (components[0].body) — same read, same rows, nothing changed',
+  revFold.ok &&
+    revRender.mode === 'classBody' &&
+    revDispatch.kind === 'measured' &&
+    JSON.stringify(revDispatch.kind === 'measured' ? deficitCardRows(revDispatch.model) : null) ===
+      JSON.stringify(deficitCardRows(buildDeficitRegisterModel(revRender.model.components[0].body))));
+// immersion — the reachable population, census MEASURED on each cell body
+const census = [];
+let censusSeq = 916;
+for (const op of ['glue-torus', 'glue-cylinder', 'flip-glue-klein', 'flip-glue', 'flip-glue-mobius', 'collapse-sphere']) {
+  const host = wireForm(invokePrimitive('square', (censusSeq += 1)));
+  const applied = applyPlaygroundOperationTo(op, host.shape, null, (censusSeq += 1), 8, [], null);
+  const acq = acquireFaithfulComplex(applied.born.shape, [host.shape]);
+  const readings = readVertexCurvatures(applied.born.shape, acq.complex);
+  census.push({
+    op,
+    mode: applied.born.render.mode,
+    flat: readings.every((x) => Math.abs(x.curvature) < 1e-9),
+    sum: gaussBonnetTotal(readings),
+    dispatch: readDeficitForRender(applied.born.render, lineageOf(applied.born)),
+  });
+}
+note(census.map((c) => `${c.op}:${c.mode}:${c.flat ? 'flat' : `Σ=${((c.sum * 180) / P).toFixed(0)}°`}`).join(' · '));
+check('§4-R (E4) IMMERSION is a REASONED, TYPED N-A for the whole reachable population (kind not-applicable + the declared-drop reason — never a silent null), and the census is MEASURED on the cell bodies: five gluings flat',
+  census.every(
+    (c) =>
+      c.mode === 'immersion' &&
+      c.dispatch.kind === 'not-applicable' &&
+      c.dispatch.mode === 'immersion' &&
+      c.dispatch.reason.includes('DECLARED dropped'),
+  ) && census.filter((c) => c.flat).length === 5);
+check('§4-R (E4) ★ THE DECLARED DROP IS REAL, NOT VACUOUS: flip-glue (RP²) carries TWO real 180° cone points on its cell body (Σ = 360° = 2πχ — the substrate seals) and the register rightly draws NONE of them on the smooth immersion — the seal\'s own latitude, exercised and recorded (a "reachable gluings are flat" claim would be FALSE here)',
+  (() => {
+    const rp2 = census.find((c) => c.op === 'flip-glue');
+    return rp2 !== undefined && !rp2.flat && near(rp2.sum, 2 * P) && rp2.dispatch.kind === 'not-applicable';
+  })());
+// skeleton — the cut-born 1-complex
+const cutHost = wireForm(invokePrimitive('square', 930));
+const cutApplied = applyPlaygroundOperationTo('cut', cutHost.shape, null, 931, 8, [], null);
+const cutDispatch = readDeficitForRender(cutApplied.born.render, lineageOf(cutApplied.born));
+check('§4-R (E4) SKELETON is a REASONED, TYPED N-A: the cut-born 1-complex routes skeleton (0 faces) and the dispatch types it not-applicable with the no-faces reason — never a silent null',
+  cutApplied.ok &&
+    cutApplied.born.render.mode === 'skeleton' &&
+    cutApplied.born.shape.faces.length === 0 &&
+    cutDispatch.kind === 'not-applicable' &&
+    cutDispatch.mode === 'skeleton' &&
+    cutDispatch.reason.includes('no faces'));
+// bodiless — the app's own constructor on the real pinch (§4's subject)
+const bodilessForm = buildBodilessWrittenForm(pinch.shape, [sub], 'the render refused (witness)', 'w-bl', 'glue', 'witness', sub);
+const bodilessDispatch = readDeficitForRender(bodilessForm.render, lineageOf(bodilessForm));
+check('§4-R (E4) BODILESS REFUSES and the refusal SPEAKS: the app\'s own bodiless constructor on the real pinch → measured, marked:false, the reader\'s junction sentence riding (refused ≠ silent — the card carries the row)',
+  bodilessForm.render.mode === 'bodiless' &&
+    bodilessDispatch.kind === 'measured' &&
+    bodilessDispatch.model.marked === false &&
+    String(bodilessDispatch.model.refusal).includes('link valence "junction"'));
+// the coverage floor — the dispatch source names every union arm
+const dispatchSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/deficitRegisterModel.ts'), 'utf8');
+check('§4-R (E4) THE COVERAGE FLOOR: the dispatch source enumerates EVERY WrittenRender arm by name (plain · classBody · faithful · bodiless · immersion · skeleton) and carries the never-floor (unhandledRenderMode) — a new mode cannot silently fall through; a plate testing only plain+classBody is the forbidden hole',
+  ['plain', 'classBody', 'faithful', 'bodiless', 'immersion', 'skeleton'].every((m) =>
+    dispatchSrc.includes(`render.mode === '${m}'`),
+  ) && dispatchSrc.includes('unhandledRenderMode'));
+
+// ---------------------------------------------------------------------------
 // §5 (E5) the ink + the two registers (source reads, code-only)
 // ---------------------------------------------------------------------------
 console.log('\n----- §5 (E5) verdigris ≠ Σ-violet; the WORLD carries no numerals; the SPECIMEN card speaks -----');
@@ -356,11 +611,12 @@ check('§5 (E5) THE WORLD PRINTS NO NUMERALS: the layer\'s CODE renders no text 
 // the view now consumes the model's rows (the split lives where the witness
 // can drive it).
 const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/deficitRegisterModel.ts'), 'utf8');
-check('§5 (E5) THE SPECIMEN CARD SPEAKS THE RESEARCHER\'S PHRASE from the TESTABLE model: deficitCardRows phrases "cone point · deficit N°", the boundary row "rim turn · N°" (the designer\'s wording — no "deficit" on the rim row), and the view consumes deficitCardRows (never "holonomy" in card code)',
+check('§5 (E5) THE SPECIMEN CARD SPEAKS THE RESEARCHER\'S PHRASE from the TESTABLE model: deficitCardRows phrases "cone point · deficit N°", the boundary row "rim turn · N°" (the designer\'s wording — no "deficit" on the rim row); the view consumes the model DISPATCH (readDeficitForRender — R1-REBUILD: the dispatch is the defect site, so it lives where the witness drives it) and mounts the world layer on the faithful fan (InkedDeficitLayer with the datum\'s repositioned shape + complex); never "holonomy" in card code',
   modelSrc.includes('`cone point · deficit ${degrees}°`') &&
     modelSrc.includes('`rim turn · ${degrees}°`') &&
     !modelSrc.includes('rim turn · deficit') &&
-    viewSrc.includes('deficitCardRows(buildDeficitRegisterModel(body))') &&
+    viewSrc.includes('readDeficitForRender(render, lineage)') &&
+    viewSrc.includes('<InkedDeficitLayer shape={datum.shape} complex={datum.complex} />') &&
     !stripComments(viewSrc).toLowerCase().includes('holonomy'));
 
 // ---------------------------------------------------------------------------
@@ -383,9 +639,13 @@ check('§6 (E5-FIX) THE FROZEN INVOKE SEAM HELD: writtenFormModel.ts · multifor
     'src/types/geometry.ts',
     'docs/governance/ENGINE_FREEZE_MANIFEST.txt',
   ].every(headEq));
+check('§6 (E5-R) R1-REBUILD\'s READ SURFACES HELD: the FROZEN surfaceClassifier.ts (acquireFaithfulComplex is CALLED, never edited) + faithfulBodyModel.ts (FaithfulBodyModel is READ, never edited), and the NOT_FROZEN-but-untouched handGestureModel.ts (the committed fold executor the witness drives) — all BYTE-IDENTICAL to HEAD; no union owed',
+  ['src/manuscript/surfaceClassifier.ts', 'src/manuscript/faithfulBodyModel.ts', 'src/manuscript/handGestureModel.ts'].every(
+    headEq,
+  ));
 
 console.log(
-  `\n--- R1 THE DEFICIT REGISTER — the holonomy wedge (the owned deficit drawn, the sign two marks, silence at zero, the rim turn on the boundary, the junction refused): ${
+  `\n--- R1 THE DEFICIT REGISTER — the holonomy wedge (the owned deficit drawn, the sign two marks, silence at zero, the rim turn on the boundary, the junction refused; R1-REBUILD: the fold-born cone reads FAITHFUL on the fan with its complex, and every mode resolves reasoned — N-A ≠ dropped): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
   } ---`,
 );
