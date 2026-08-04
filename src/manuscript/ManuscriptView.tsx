@@ -825,7 +825,9 @@ function ArgumentMapSection({
           {argument.verdict.locals.slice(0, 4).map((l) => (
             <div key={`${l.conceptLabel}·${l.curvatureDeg}`} style={{ fontSize: 13 }}>
               <span style={sign}>{`${l.conceptLabel} ${l.curvatureDeg > 0 ? '+' : ''}${l.curvatureDeg}°`}</span>
-              <span> — a {l.kind}</span>
+              {/* the rim-turn split: the boundary BENDS — a truthful default
+                  phrase; the designer refines the wording on the bench */}
+              <span> — {l.kind === 'rim-turn' ? 'a rim turn' : `a ${l.kind}`}</span>
             </div>
           ))}
           <div style={{ fontSize: 13 }}>

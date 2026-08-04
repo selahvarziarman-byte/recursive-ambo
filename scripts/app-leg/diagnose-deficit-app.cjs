@@ -143,8 +143,8 @@ function killTree(pid) {
         check('§E1 ★★ SQUARE — PRESENCE: after the second fold TWO faithful frames carry their deficit registers',
           get('square.presence').ok, get('square.presence').detail);
         // THE ARGUMENT CARD (Phases 1+2 — per SEAL_THE_ARGUMENT_CARD E7 / _PHASE2 E8)
-        check('§E-CARD ★ THE ARGUMENT CARD RIDES THE LIVE APP: the MAP spine + INCIDENCE + STANCE + VERDICT sections and the demoted `certificate` receipt are all present on the fold-born\'s live card',
-          get('card.mapSection').ok && get('card.incidence').ok && get('card.stance').ok && get('card.verdict').ok && get('card.certificate').ok);
+        check('§E-CARD ★ THE ARGUMENT CARD RIDES THE LIVE APP: the MAP spine + INCIDENCE + STANCE + VERDICT sections, the demoted `certificate` receipt, AND the rim-turn local phrase (the SPLIT: the boundary bends — never "a cone") are all present on the fold-born\'s live card',
+          get('card.mapSection').ok && get('card.incidence').ok && get('card.stance').ok && get('card.verdict').ok && get('card.certificate').ok && get('card.rimTurn').ok);
         check('§E-CARD THE SIGN HAND CARRIES ITS GLYPHS (Phase-2 signs included: ⊾ ⌐ ⇄ ○ Σδ): every card sign draws distinct from the notdef box in the same hand (a tofu sign is a BLANK CLAIM)',
           get('card.glyphs').ok, get('card.glyphs').detail);
         // E4 hygiene

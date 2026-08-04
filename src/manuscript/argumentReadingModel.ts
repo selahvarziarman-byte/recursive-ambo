@@ -114,7 +114,10 @@ export interface StanceRow {
 }
 
 export interface VerdictReading {
-  locals: Array<{ conceptLabel: string; curvatureDeg: number; kind: 'seamless' | 'cone' | 'saddle' }>;
+  // THE RIM-TURN SPLIT (mothership 1230): a BOUNDARY +δ is the rim BENDING —
+  // a rim-turn — never an interior cone's over-commitment; the split reads
+  // the ACQUIRED valence already on the reading
+  locals: Array<{ conceptLabel: string; curvatureDeg: number; kind: 'seamless' | 'cone' | 'saddle' | 'rim-turn' }>;
   closed: boolean; // no boundary valence anywhere — the global gate
   totalDeg: number; // gaussBonnetTotal, in degrees
   global: string; // closed: tiles/curls up/splays · bounded: open · local-cone (NEVER a global curl)
@@ -404,7 +407,14 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
           .map((r) => ({
             conceptLabel: conceptLabelOf.get(r.vertexId) ?? r.vertexId,
             curvatureDeg: toDeg(r.curvature),
-            kind: r.curvature > 0 ? ('cone' as const) : ('saddle' as const),
+            // the valence split: boundary +δ = the rim turning (never a
+            // cone); interior +δ = a cone; −δ = a saddle either way
+            kind:
+              r.valence === 'boundary' && r.curvature > 0
+                ? ('rim-turn' as const)
+                : r.curvature > 0
+                  ? ('cone' as const)
+                  : ('saddle' as const),
           })),
         closed,
         totalDeg: toDeg(total),

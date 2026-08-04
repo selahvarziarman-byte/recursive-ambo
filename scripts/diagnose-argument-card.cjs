@@ -358,6 +358,28 @@ check('§9 (P2·E5) ★★ THE VERDICT GATES ON CLOSURE: the torus (closed) read
     squareVerdict.global === 'open · local-cone');
 check('§9 (P2·E6) THE FALLBACK + THE POLISH: the dual carrier keeps absorbed (no fabricated pairing, from §7) AND the fold-born header now speaks its class word — `disk`, not the raw op',
   coneReading.header.result === 'disk' && dualReading.wordRows === null);
+// THE RIM-TURN SPLIT (mothership 1230; SEAL_RIM_TURN_SPLIT): the locals'
+// kinds judged against an INDEPENDENT recomputation from the readings' own
+// acquired valence + sign — a boundary +δ is the rim BENDING, never a cone
+const expectedLocalKind = (valence, curvatureDeg) =>
+  valence === 'boundary' && curvatureDeg > 0 ? 'rim-turn' : curvatureDeg > 0 ? 'cone' : 'saddle';
+const coneStanceByLabel = new Map((coneReading.stance ?? []).map((r) => [r.conceptLabel, r]));
+const coneLocals = coneReading.verdict?.locals ?? [];
+const coneLocalsAgree = (locals) =>
+  locals.length > 0 &&
+  locals.every((l) => {
+    const s = coneStanceByLabel.get(l.conceptLabel);
+    return s !== undefined && l.kind === expectedLocalKind(s.valence, l.curvatureDeg);
+  });
+note(`cone locals: ${coneLocals.map((l) => `${l.conceptLabel} ${l.curvatureDeg > 0 ? '+' : ''}${l.curvatureDeg}° ${l.kind}`).join(' · ')}`);
+check('§9 (SPLIT) ★ THE RIM-TURN SPLIT IS REAL: the △⟶cone reads its TWO +δ locals with DISTINCT kinds — the interior apex (+300°) a `cone`, the boundary rim (+60°) a `rim-turn`, never `cone` — and EVERY local kind equals the independent valence+sign recomputation (the valence the acquired complex carries)',
+  coneLocals.some((l) => l.kind === 'cone' && l.curvatureDeg === 300) &&
+    coneLocals.some((l) => l.kind === 'rim-turn' && l.curvatureDeg === 60) &&
+    !coneLocals.some((l) => l.kind === 'cone' && l.curvatureDeg === 60) &&
+    coneLocalsAgree(coneLocals));
+const plantedLocals = coneLocals.map((l) => (l.kind === 'rim-turn' ? { ...l, kind: 'cone' } : l));
+check('§9 (SPLIT) THE PLANT BITES: the rim local forced to `cone` FAILS the same valence recomputation that greens the real locals — a boundary concept can never read `cone`',
+  coneLocalsAgree(plantedLocals) === false);
 check('§9 (P2·E7) THE VIEW WIRES THE READING (source-pinned): incidence — carried · stance — through the map · verdict — consequence sections + the gloss quote render from the argument; the verdict is a consequence-clause (no invariant token in the global line)',
   (() => {
     const src = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');

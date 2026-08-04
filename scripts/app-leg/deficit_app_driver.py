@@ -82,6 +82,12 @@ def argument_card_checks(page):
         "the verdict section on the live card",
     )
     record("card.certificate", page.locator("text=certificate").count() > 0, "the demoted receipt present")
+    # THE RIM-TURN SPLIT: the boundary local's truthful phrase on the live card
+    record(
+        "card.rimTurn",
+        page.get_by_text("a rim turn", exact=False).count() > 0,
+        "the rim-turn local phrase (never 'a cone' for the boundary)",
+    )
     tofu = page.evaluate(
         """() => {
       const hand = '13px "DejaVu Sans", "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", sans-serif';
