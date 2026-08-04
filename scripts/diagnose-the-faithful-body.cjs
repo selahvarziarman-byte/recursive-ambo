@@ -1,0 +1,152 @@
+#!/usr/bin/env node
+
+// DIAGNOSTIC — THE FAITHFUL BODY UNIFICATION (the craft stack, third
+// instance; seal SEAL_FAITHFUL_BODY_UNIFICATION): the fold-born cone renders
+// through the ONE crafted renderer via the thin adapter — the wash is gone,
+// the apex-lift preserved, and the PASS-PARITY INSTRUMENT makes the drift
+// impossible silently (the diagnose-the-laid-body shape: the instrument + the
+// contradiction, both run every time).
+//
+// Anti-mock: the REAL TS modules through the transpile hook.
+
+const fs = require('node:fs');
+const path = require('node:path');
+const { execFileSync } = require('node:child_process');
+const ts = require('typescript');
+
+require.extensions['.ts'] = (module, filename) => {
+  module._compile(
+    ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
+      compilerOptions: {
+        esModuleInterop: true,
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2020,
+      },
+      fileName: filename,
+    }).outputText,
+    filename,
+  );
+};
+require.extensions['.tsx'] = require.extensions['.ts'];
+
+const repoRoot = path.resolve(__dirname, '..');
+const req = (p) => require(path.join(repoRoot, p));
+
+const { invokePrimitive } = req('src/manuscript/writtenFormModel.ts');
+const { applyFoldTo } = req('src/manuscript/handGestureModel.ts');
+const { computeSeedCornerAngles } = req('src/lib/conformalAtom.ts');
+const { buildFaithfulInkedModel } = req('src/manuscript/faithfulInkedModel.ts');
+
+let failures = 0;
+function check(label, condition) {
+  console.log(`${condition ? 'PASS' : 'FAIL'} - ${label}`);
+  if (!condition) failures += 1;
+}
+const note = (msg) => console.log(`  ↳ ${msg}`);
+const near = (a, b, eps = 1e-6) => Math.abs(a - b) < eps;
+
+console.log('THE FAITHFUL BODY UNIFICATION — the cone becomes an inked drawing (the one renderer, the third instance)\n');
+
+// ---------------------------------------------------------------------------
+// §1 (E1/E5) the adapter mints a VALID InkedFormModel — the cone preserved
+// ---------------------------------------------------------------------------
+console.log('----- §1 (E1/E5) the adapter: apex + rim ring · the triangle fan · seams + rim chains · the LIFT preserved -----');
+const wireForm = (form) => {
+  const owned = computeSeedCornerAngles(form.shape);
+  return { ...form, shape: owned, render: form.render.mode === 'plain' ? { ...form.render, shape: owned } : form.render };
+};
+const sq = wireForm(invokePrimitive('square', 990));
+const foldRes = applyFoldTo(sq.shape, null, [], [{ edgeA: 0, edgeB: 1, mode: 'preserving' }], 991, 8);
+const faithful = foldRes.ok && foldRes.born.render.mode === 'faithful' ? foldRes.born.render.model : null;
+const inked = faithful ? buildFaithfulInkedModel(faithful) : null;
+const inkedShape = inked ? inked.immersion.shape : null;
+const apexVertex = inkedShape
+  ? Object.values(inkedShape.vertices).find((v) => v.id.endsWith(':apex'))
+  : null;
+const rimVertexCount = inkedShape ? Object.keys(inkedShape.vertices).length - 1 : 0;
+note(
+  inked
+    ? `V=${Object.keys(inkedShape.vertices).length} (apex + ${rimVertexCount} ring) · F=${inkedShape.faces.length} fan triangles · E=${inkedShape.edges.length} (seams + rim chains) · apex z=${apexVertex?.position[2]}`
+    : 'the fold did not yield a faithful body',
+);
+check('§1 (E1) THE ADAPTER MINTS THE FAN: the □-fold cone adapts to an InkedFormModel with the apex + a densified rim ring, >0 triangle-fan faces (each [apex, rim_i, rim_i+1]), seam + rim-chain edges, loops [] (the disk has no basis), and the faithful model\'s invariants/h1Label VERBATIM',
+  inked !== null &&
+    apexVertex !== null &&
+    rimVertexCount >= 12 &&
+    inkedShape.faces.length === rimVertexCount &&
+    inkedShape.faces.every((f) => f.vertexIds.length === 3 && f.vertexIds[0] === apexVertex.id) &&
+    inkedShape.edges.some((e) => e.id.includes(':seam:')) &&
+    inkedShape.edges.some((e) => e.id.includes(':rim:')) &&
+    inked.loops.length === 0 &&
+    inked.invariants === faithful.invariants &&
+    inked.h1Label === faithful.h1Label);
+check('§1 (E5) ★ THE APEX-LIFT SURVIVES THE UNIFICATION: the adapter\'s apex sits at the frozen model\'s own lift.apexHeight (the 270°-deficit square cone, h ≈ 0.968R — a cone, never flattened) and the rim ring sits on z = 0 at the contracted radius',
+  faithful !== null &&
+    faithful.lift.kind === 'cone' &&
+    near(apexVertex.position[2], faithful.lift.apexHeight) &&
+    apexVertex.position[2] > 0.9 &&
+    Object.values(inkedShape.vertices)
+      .filter((v) => v.id !== apexVertex.id)
+      .every((v) => near(v.position[2], 0) && near(Math.hypot(v.position[0], v.position[1]), faithful.lift.baseRadius, 1e-3)));
+
+// ---------------------------------------------------------------------------
+// §2 (E2/E3) ★ THE PASS-PARITY INSTRUMENT + THE CONTRADICTION
+// ---------------------------------------------------------------------------
+console.log('\n----- §2 (E2/E3) ★ the instrument: the faithful route wears the crafted stack; the planted wash FAILS -----');
+const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+// the instrument — a PREDICATE over the view source (run on the real bytes
+// AND on the planted contradiction): the faithful route mounts the ONE
+// crafted renderer, and the old wash (a coneGeometry/faceDisk-circle
+// meshBasic body fill) is GONE from the view
+const passParity = (src) =>
+  src.includes('faithfulInkedById') &&
+  src.includes('<InkedForm') &&
+  src.includes('model={faithfulInked}') &&
+  !src.includes('<coneGeometry') &&
+  !src.includes('circleGeometry args={[model.faceDisk.radius, model.faceDisk.segments]}');
+check('§2 (E2) ★ THE RAW PATH IS GONE: the faithful route mounts <InkedForm model={faithfulInked}> through the adapter map, and the old wash (the coneGeometry / faceDisk-circle meshBasic fill) no longer exists in the view — the body wears prepass · hull · lit body · hatching · two-pass',
+  passParity(viewSrc));
+// THE CONTRADICTION (runs every time): re-plant the wash → the instrument REDS
+const planted = viewSrc.replace(
+  'model={faithfulInked}',
+  'model={faithfulInked}>{/* planted */}<mesh><coneGeometry args={[1,1,64,1,true]} /><meshBasicMaterial /></mesh>',
+);
+check('§2 (E3) ★ THE CONTRADICTION BITES: the SAME instrument run on a source with the raw meshBasic cone wash re-planted FAILS — a silent drift back to the wash is structurally impossible',
+  passParity(planted) === false);
+check('§2 (E3) THE OVERLAY KEPT ITS REGISTERS: FaithfulBody still rides as the overlay (seams · rims · dots · the RECOGNITION letter + ghosts) beside the crafted body — the fill props left its signature (no bodyColor/bodyOpacity remain)',
+  viewSrc.includes('<FaithfulBody') &&
+    /export function FaithfulBody\(\{[^}]*\}/s.test(viewSrc) &&
+    !/export function FaithfulBody\(\{[^}]*bodyColor/s.test(viewSrc));
+
+// ---------------------------------------------------------------------------
+// §3 (E7) the fallback is honest — a declared/flat lift still adapts
+// ---------------------------------------------------------------------------
+console.log('\n----- §3 (E7) the declared degenerates still route through the crafted stack -----');
+const flatModel = { ...faithful, lift: { kind: 'flat', apexHeight: 0, baseRadius: 1 }, apex: { ...faithful.apex, position: [0, 0, 0] } };
+const flatInked = buildFaithfulInkedModel(flatModel);
+check('§3 (E7) THE FALLBACK IS HONEST: a flat/declared lift (h=0) still adapts — the fan triangulates flat (>0 faces, apex at z=0) and routes through the SAME crafted stack; the wash exists for no branch',
+  flatInked.immersion.shape.faces.length > 0 &&
+    Object.values(flatInked.immersion.shape.vertices).every((v) => near(v.position[2], 0)));
+
+// ---------------------------------------------------------------------------
+// §4 (E4) zero frozen edit — the hard rail
+// ---------------------------------------------------------------------------
+console.log('\n----- §4 (E4) the hard rail: the frozen renderer + model bytes untouched -----');
+const headEq = (p) => {
+  const working = fs.readFileSync(path.join(repoRoot, p), 'utf8').replace(/\r/g, '');
+  const head = execFileSync('git', ['show', `HEAD:${p}`], { cwd: repoRoot, encoding: 'utf8' }).replace(/\r/g, '');
+  return working === head;
+};
+check('§4 (E4) ZERO FROZEN EDIT: InkedForm.tsx · inkedFormModel.ts · faithfulBodyModel.ts BYTE-IDENTICAL to HEAD (the adapter READS; the rail holds by construction)',
+  ['src/manuscript/InkedForm.tsx', 'src/manuscript/inkedFormModel.ts', 'src/manuscript/faithfulBodyModel.ts'].every(headEq));
+const manifest = fs.readFileSync(path.join(repoRoot, 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'), 'utf8');
+check('§4 (E4) THE COMPLETENESS ROW: faithfulInkedModel.ts carries its NOT_FROZEN row (the closure witness fails any unlisted src/** file) — a cures-at-HEAD manifest compare pre-commit, green at the sim tip',
+  manifest.includes('NOT_FROZEN src/manuscript/faithfulInkedModel.ts'));
+
+console.log(
+  `\n--- THE FAITHFUL BODY UNIFICATION — the cone becomes an inked drawing (the one renderer, the adapter thin, the wash gone, the apex-lift riding, the instrument + contradiction standing): ${
+    failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
+  } ---`,
+);
+console.log(failures === 0 ? '\nALL PASS' : '\nFAILURES PRESENT');
+process.exit(failures === 0 ? 0 : 1);

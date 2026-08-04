@@ -30,8 +30,8 @@ def scene_presence(page):
     return page.evaluate(
         """() => {
       const scene = window.__manuscriptScene;
-      if (!scene) return { hooked: false, faithful: 0, deficitUnderFaithful: 0, markChildren: 0 };
-      let faithful = 0, deficitUnderFaithful = 0, markChildren = 0;
+      if (!scene) return { hooked: false, faithful: 0, deficitUnderFaithful: 0, markChildren: 0, litMeshes: 0, hatchShaders: 0 };
+      let faithful = 0, deficitUnderFaithful = 0, markChildren = 0, litMeshes = 0, hatchShaders = 0;
       scene.traverse((o) => {
         if (o.name === 'faithful-body') {
           faithful += 1;
@@ -40,10 +40,17 @@ def scene_presence(page):
               deficitUnderFaithful += 1;
               markChildren += c.children.length;
             }
+            // THE UNIFICATION (E6) — the crafted stack's live fingerprint,
+            // measured on InkedForm's own bytes: the LIT body is the ONE
+            // MeshStandardMaterial (prepass + hull are basic BY DESIGN) and
+            // the key-light hatching is a ShaderMaterial. The old wash had
+            // NEITHER (one unlit basic fill).
+            if (c.isMesh && c.material && c.material.type === 'MeshStandardMaterial') litMeshes += 1;
+            if (c.isMesh && c.material && c.material.type === 'ShaderMaterial') hatchShaders += 1;
           });
         }
       });
-      return { hooked: true, faithful, deficitUnderFaithful, markChildren };
+      return { hooked: true, faithful, deficitUnderFaithful, markChildren, litMeshes, hatchShaders };
     }"""
     )
 

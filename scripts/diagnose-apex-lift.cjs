@@ -192,11 +192,13 @@ check('§5 (E5) faceDisk.radius == lift.baseRadius on every specimen (the view\'
     ['cone'].includes(sqModel.lift.kind));
 const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/faithfulBodyModel.ts'), 'utf8');
 const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
-check('§5 (E5) THE WIRING IS PINNED: the verdict CALLS computeFaithfulLift (the pure branch §2/§4 witnessed IS the branch the app runs), the un-owned catch declares, and the view draws the cone\'s LATERAL surface from the lift (coneGeometry from lift.apexHeight; the flat degenerates keep the pre-lift disk)',
+check('§5 (E5) THE WIRING IS PINNED (recut at THE UNIFICATION, 2026-08-04: the lateral surface moved from the view\'s raw coneGeometry into the crafted adapter): the verdict CALLS computeFaithfulLift (the pure branch §2/§4 witnessed IS the branch the app runs), the un-owned catch declares, the adapter tessellates the fan from the frozen model\'s OWN lifted placements (faithful.apex.position — at lift.apexHeight by construction, numerically witnessed in diagnose-the-faithful-body §1/E5), the view mounts InkedForm through faithfulInkedById, the raw coneGeometry wash is GONE, and FaithfulBody rides as the fill-less overlay',
   modelSrc.includes('lift = computeFaithfulLift(') &&
     modelSrc.includes("lift = { kind: 'unowned-declared', apexHeight: 0, baseRadius: RADIUS };") &&
-    viewSrc.includes('model.lift.apexHeight > 0 ? (') &&
-    viewSrc.includes('<coneGeometry') &&
+    fs.readFileSync(path.join(repoRoot, 'src/manuscript/faithfulInkedModel.ts'), 'utf8').includes('faithful.apex.position') &&
+    viewSrc.includes('faithfulInkedById') &&
+    viewSrc.includes('model={faithfulInked}') &&
+    !viewSrc.includes('<coneGeometry') &&
     viewSrc.includes('export function FaithfulBody'));
 
 console.log(

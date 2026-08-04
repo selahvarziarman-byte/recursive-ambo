@@ -98,6 +98,8 @@ import {
 } from './deficitRegisterModel';
 import { InkedDeficitLayer } from './InkedDeficitLayer';
 import { buildArgumentReading, type ArgumentReading, type ArgumentMapRow } from './argumentReadingModel';
+import { buildFaithfulInkedModel } from './faithfulInkedModel';
+import type { InkedFormModel } from './inkedFormModel';
 import {
   ApertureGatePanel,
   BirthGatePanel,
@@ -363,8 +365,6 @@ export function FaithfulBody({
   rimColor,
   seamWidth,
   rimWidth,
-  bodyColor,
-  bodyOpacity,
   seamMark,
   selected,
   accent,
@@ -375,8 +375,6 @@ export function FaithfulBody({
   rimColor: string;
   seamWidth: number;
   rimWidth: number;
-  bodyColor: string;
-  bodyOpacity: number;
   // RECOGNITION (designer-ruled): the seam is an IDENTIFICATION edge — at rest
   // it wears the fold's letter (same cell-ink weight — the LABEL carries the
   // meaning, not a heavier stroke); on select it highlights warm and the two
@@ -393,32 +391,13 @@ export function FaithfulBody({
   const ghostAngles = [seamAngle + 0.24, seamAngle - 0.24];
   return (
     <group>
-      {model.lift.apexHeight > 0 ? (
-        // THE APEX-LIFT: the cone's LATERAL surface — apex [0,0,h], base
-        // circle at the contracted radius on z=0. A thin OPEN drawing
-        // surface (LAW E — never a photoreal solid). ConeGeometry is
-        // y-up/centered: rotate +x by π/2 (y→z) and lift by h/2 so the
-        // apex lands at z=h and the base at z=0.
-        <mesh renderOrder={-2} rotation={[Math.PI / 2, 0, 0]} position={[0, 0, model.lift.apexHeight / 2]}>
-          <coneGeometry
-            args={[model.faceDisk.radius, model.lift.apexHeight, model.faceDisk.segments, 1, true]}
-          />
-          <meshBasicMaterial
-            color={bodyColor}
-            transparent
-            opacity={bodyOpacity}
-            depthWrite={false}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-      ) : (
-        // the declared degenerates (δ=0 flat · saddle · un-owned): the flat
-        // disk, byte-equal to the pre-lift drawing
-        <mesh renderOrder={-2}>
-          <circleGeometry args={[model.faceDisk.radius, model.faceDisk.segments]} />
-          <meshBasicMaterial color={bodyColor} transparent opacity={bodyOpacity} depthWrite={false} />
-        </mesh>
-      )}
+      {/* THE UNIFICATION (SEAL_FAITHFUL_BODY_UNIFICATION): the body FILL left
+          this component — the cone's lateral surface now renders through the
+          ONE crafted renderer (InkedForm, via buildFaithfulInkedModel — the
+          LaidBody pattern). FaithfulBody is the OVERLAY riding it: the seam /
+          rim / dot registers + the RECOGNITION marks (the fold letter, the
+          source-edge ghosts) — exactly LaidCellOverlay's role. The wash is
+          gone; the apex-lift geometry rides the adapter untouched. */}
       {selected && marked
         ? // ON SELECT — the two source edges ghost back, flanking the seam they
           // became (dashed, pencil tone: the memory register, unconfusable with
@@ -1362,6 +1341,17 @@ export default function ManuscriptView() {
         (p): p is Shape => p !== null && p !== undefined,
       );
       map.set(entry.form.id, faithfulDeficitDatum(render.model, lineage));
+    }
+    return map;
+  }, [written]);
+  // THE UNIFICATION — the faithful cone through the ONE crafted renderer:
+  // the adapter models, one per faithful body (the laidInkedById pattern)
+  const faithfulInkedById = useMemo(() => {
+    const map = new Map<string, InkedFormModel>();
+    for (const entry of written) {
+      const render = entry.form.render;
+      if (render.mode !== 'faithful') continue;
+      map.set(entry.form.id, buildFaithfulInkedModel(render.model));
     }
     return map;
   }, [written]);
@@ -3283,14 +3273,30 @@ export default function ManuscriptView() {
                 name="faithful-body"
                 scale={scaleCtl.dim1Scale * 1.5}
               >
+                {(() => {
+                  // THE UNIFICATION — the cone's body through the ONE crafted
+                  // renderer (prepass · hull silhouette · lit body · hatching
+                  // · two-pass), the laid mount's pen compensation mirrored
+                  // for this group's scale
+                  const faithfulInked = faithfulInkedById.get(entry.form.id);
+                  return faithfulInked ? (
+                    <InkedForm
+                      model={faithfulInked}
+                      craft={{
+                        ...craftFor(id, entry.form.shape.id),
+                        silhouetteScreenspacePx:
+                          silhouetteCtl.screenspacePx / Math.max(0.0001, scaleCtl.dim1Scale * 1.5),
+                      }}
+                      lighting={lighting}
+                    />
+                  ) : null;
+                })()}
                 <FaithfulBody
                   model={render.model}
                   seamColor={inkFor(id, entry.form.shape.id, constructionCtl.color)}
                   rimColor={inkFor(id, entry.form.shape.id, silhouetteCtl.color)}
                   seamWidth={1.2}
                   rimWidth={4}
-                  bodyColor={bodyCtl.color}
-                  bodyOpacity={bodyCtl.opacity * 0.55}
                   seamMark={foldSeamProvenance(
                     render.model.seams.map((s) => s.id),
                     entry.form.shape,

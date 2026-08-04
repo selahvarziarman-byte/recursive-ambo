@@ -124,6 +124,19 @@ function killTree(pid) {
         // E1 presence — the mount R1 re-opened on
         check('§E1 ★★ TRIANGLE — PRESENCE: the `deficit-register` group rides UNDER a `faithful-body` frame in the LIVE scene graph, with real mark children (the exact mount whose silent absence was the shipped defect)',
           get('triangle.presence').ok, get('triangle.presence').detail);
+        // THE UNIFICATION (SEAL_FAITHFUL_BODY_UNIFICATION E6): the cone wears
+        // the crafted stack on the LIVE app — lit MeshStandardMaterial meshes
+        // (the body + the hull) inside the faithful frame; the wash was unlit
+        check('§E-UNIFY ★ THE CONE WEARS THE CRAFTED STACK LIVE: the faithful frame carries the stack\'s fingerprint — ≥ 1 LIT MeshStandardMaterial mesh (the body; the old wash was pure unlit basic) AND ≥ 1 ShaderMaterial mesh (the key-light hatching) — measured against InkedForm\'s own material census (prepass + hull are basic by design)',
+          (() => {
+            try {
+              const p = JSON.parse(get('triangle.presence').detail);
+              return p.litMeshes >= 1 && p.hatchShaders >= 1;
+            } catch {
+              return false;
+            }
+          })(),
+          get('triangle.presence').detail);
         check('§E2 ★★ SQUARE — gestures run and THE SEALED TEXT reads: `cone point · deficit 270°` + `rim turn · 90°`',
           get('square.palette').ok && get('square.chip').ok && get('square.panel').ok && get('square.commitEnabled').ok &&
             get('square.cardCone').ok && get('square.cardRim').ok);
