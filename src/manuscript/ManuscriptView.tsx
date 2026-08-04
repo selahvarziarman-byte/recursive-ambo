@@ -771,16 +771,104 @@ function ArgumentMapSection({
       </div>
       <div style={{ fontSize: 10.5, letterSpacing: 1, opacity: 0.6, fontVariant: 'small-caps' }}>map — the spine</div>
       {compact(argument.conceptRows, '•')}
-      {compact(argument.relationRows, '—')}
-      {argument.absorbedRelations.length > 0 ? (
-        <div style={{ fontSize: 12, opacity: 0.72 }}>
-          <span style={{ fontVariant: 'small-caps', fontSize: 10.5, letterSpacing: 0.8 }}>absorbed </span>
-          <span style={sign}>{argument.absorbedRelations.join(' ')}</span>
-        </div>
-      ) : null}
+      {argument.wordRows ? (
+        // PHASE 2 — the ATTRIBUTED pairing from the committed replay-verified
+        // birth word: —a ← AB CD (reversing draws the inverse letter)
+        argument.wordRows.map((pair) => (
+          <div key={pair.letter} style={{ fontSize: 13 }}>
+            <span style={sign}>—</span>
+            <span style={sign}>{pair.displayLetter}</span>
+            <span style={sign}> ← </span>
+            <span style={sign}>{pair.slotNames.join(' ')}</span>
+          </div>
+        ))
+      ) : (
+        // the honest fallback (no recoverable word): the Phase-1 survivors +
+        // the absorbed partners — NEVER a fabricated pairing
+        <>
+          {compact(argument.relationRows, '—')}
+          {argument.absorbedRelations.length > 0 ? (
+            <div style={{ fontSize: 12, opacity: 0.72 }}>
+              <span style={{ fontVariant: 'small-caps', fontSize: 10.5, letterSpacing: 0.8 }}>absorbed </span>
+              <span style={sign}>{argument.absorbedRelations.join(' ')}</span>
+            </div>
+          ) : null}
+        </>
+      )}
       <div style={{ fontSize: 12, opacity: 0.78, marginTop: 3, borderBottom: `1px solid ${paper.cardBorder}55`, paddingBottom: 5 }}>
         {argument.words}
       </div>
+      {argument.refusal ? (
+        <div style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.75, marginTop: 4 }}>
+          incidence · stance · verdict — not measured · {argument.refusal.slice(0, 140)}
+        </div>
+      ) : null}
+      {argument.incidence ? (
+        <div style={{ marginTop: 5 }}>
+          <div style={{ fontSize: 10.5, letterSpacing: 1, opacity: 0.6, fontVariant: 'small-caps' }}>incidence — carried</div>
+          {argument.incidence.slice(0, 8).map((row) => (
+            <div key={row.conceptId} style={{ fontSize: 13 }}>
+              {row.selfOnly ? (
+                <>
+                  <span style={sign}>{`${row.relationLetters[0]} ⌐ ${row.relationLetters[0]} @ ${row.conceptLabel}`}</span>
+                  <span style={{ opacity: 0.75 }}> — no partner</span>
+                </>
+              ) : (
+                <span style={sign}>{`${[...new Set(row.relationLetters)].join(' ⊾ ')} @ ${row.conceptLabel}`}</span>
+              )}
+            </div>
+          ))}
+          {argument.incidence.length > 8 ? (
+            <div style={{ fontSize: 12, opacity: 0.7 }}>… {argument.incidence.length - 8} more meetings</div>
+          ) : null}
+        </div>
+      ) : null}
+      {argument.stance ? (
+        <div style={{ marginTop: 5 }}>
+          <div style={{ fontSize: 10.5, letterSpacing: 1, opacity: 0.6, fontVariant: 'small-caps' }}>stance — through the map</div>
+          {argument.stance.slice(0, 8).map((row) => (
+            <div key={row.conceptId} style={{ fontSize: 13 }}>
+              <span style={sign}>
+                {`${row.conceptLabel} : ${row.cornersDeg.length > 1 ? row.cornersDeg.join(' ⊕ ') : row.cornersDeg.join('')} = ${row.angleSumDeg}`}
+              </span>
+            </div>
+          ))}
+          {argument.stance.length > 8 ? (
+            <div style={{ fontSize: 12, opacity: 0.7 }}>… {argument.stance.length - 8} more stances</div>
+          ) : null}
+        </div>
+      ) : null}
+      {argument.verdict ? (
+        // the verdict wears the house verdigris (the designer's plate reads
+        // teal; her bench pass refines the exact ink)
+        <div style={{ marginTop: 5, color: '#2f6b6b' }}>
+          <div style={{ fontSize: 10.5, letterSpacing: 1, opacity: 0.7, fontVariant: 'small-caps' }}>verdict — consequence</div>
+          {argument.verdict.locals.slice(0, 4).map((l) => (
+            <div key={`${l.conceptLabel}·${l.curvatureDeg}`} style={{ fontSize: 13 }}>
+              <span style={sign}>{`${l.conceptLabel} ${l.curvatureDeg > 0 ? '+' : ''}${l.curvatureDeg}°`}</span>
+              <span> — a {l.kind}</span>
+            </div>
+          ))}
+          <div style={{ fontSize: 13 }}>
+            <span style={sign}>{argument.verdict.closed ? '' : '○ '}</span>
+            <span style={sign}>{argument.verdict.global}</span>
+          </div>
+          {argument.verdict.atForm ? (
+            <div style={{ fontSize: 13 }}>
+              <span style={sign}>uniform → </span>
+              <span>at its Form</span>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+      {argument.gloss ? (
+        <div style={{ fontStyle: 'italic', fontSize: 12.5, opacity: 0.85, marginTop: 5 }}>
+          “{argument.gloss}”
+        </div>
+      ) : null}
+      {argument.declare ? (
+        <div style={{ fontStyle: 'italic', fontSize: 12, opacity: 0.72, marginTop: 3 }}>{argument.declare}</div>
+      ) : null}
     </div>
   );
 }

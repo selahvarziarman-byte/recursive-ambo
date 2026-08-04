@@ -242,8 +242,136 @@ const manifest = fs.readFileSync(path.join(repoRoot, 'docs/governance/ENGINE_FRE
 check('§6 (E7) THE COMPLETENESS ROW: the new argumentReadingModel.ts carries its NOT_FROZEN row (the closure witness fails any unlisted src/** file) — a cures-at-HEAD manifest compare pre-commit, green at the sim tip',
   manifest.includes('NOT_FROZEN src/manuscript/argumentReadingModel.ts'));
 
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE 2 (SEAL_ARGUMENT_CARD_PHASE2) — the RELATION half of the spine + the
+// reading on it: the word-attributed pairing (via the COMMITTED replay-
+// verified recovery — the registry's `pairings` is closure-private on the
+// FROZEN playgroundOperations, the grounding correction flagged in the
+// handback), incidence ∘ the map, stance WITH the acquired complex, the
+// closure-gated verdict, the gloss, the honest fallback + header polish.
+// ═══════════════════════════════════════════════════════════════════════════
+const { recoverBornSurface } = req('src/playground/bornFormRouting.ts');
+
+console.log('\n----- §7 (P2·E1/E2) ★★ the relation map FROM THE WORD — and the plants -----');
+const torusRecovery = recoverBornSurface(torus.shape, torus.parentShape);
+const slotNameOf = (face, slot) => {
+  const n = face.vertexIds.length;
+  // the parent square's corners ARE the roots — letter by sorted order (the
+  // same convention the model uses)
+  const roots = [...Object.keys(torus.parentShape.vertices)].sort();
+  const letter = (id) => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[roots.indexOf(id)] ?? id;
+  return `${letter(face.vertexIds[slot % n])}${letter(face.vertexIds[(slot + 1) % n])}`;
+};
+const expectedPairs = torusRecovery
+  ? torusRecovery.pairings.map((p) => [slotNameOf(torusRecovery.parentFace, p.edgeA), slotNameOf(torusRecovery.parentFace, p.edgeB)].join('+'))
+  : [];
+const modelPairs = (torusReading.wordRows ?? []).map((w) => w.slotNames.join('+'));
+note(`torus word: model [${modelPairs.join(' · ')}] vs recomputed [${expectedPairs.join(' · ')}]`);
+check('§7 (P2·E1) ★★ THE RELATION MAP FROM THE WORD: □⟶𝕋² reads TWO attributed pairs recovered through the committed replay-verified word (recoverBornSurface — parsed from the born id, byte-verified), matching the independent recomputation SET-FOR-SET — a ← {AB,CD} · b ← {BC,DA}, both preserving; NOT "absorbed", NOT endpoint-inferred',
+  torusRecovery !== null &&
+    torusReading.wordRows !== null &&
+    torusReading.wordRows.length === 2 &&
+    modelPairs.length === 2 &&
+    modelPairs.every((p, i) => p === expectedPairs[i]) &&
+    torusReading.wordRows.every((w) => w.mode === 'preserving') &&
+    new Set(torusReading.wordRows.flatMap((w) => w.slotNames)).size === 4);
+const kleinHost = wireForm(invokePrimitive('square', 976));
+const kleinApplied = applyPlaygroundOperationTo('flip-glue-klein', kleinHost.shape, null, 977, 8, [], null);
+const kleinReading = kleinApplied.ok ? buildArgumentReading(kleinApplied.born) : null;
+check('§7 (P2·E1) THE MODE RIDES: the Klein word (abaB) reads its second pair REVERSING (b⁻¹) while the torus\'s both preserve — the a-vs-a⁻¹ distinction comes from the committed word, never a guess',
+  kleinReading !== null &&
+    kleinReading.wordRows !== null &&
+    kleinReading.wordRows.length === 2 &&
+    kleinReading.wordRows[0].mode === 'preserving' &&
+    kleinReading.wordRows[1].mode === 'reversing');
+const doctoredPairs = modelPairs.map((p, i) => (i === 0 ? 'AB+DA' : p));
+check('§7 (P2·E2) ★★ THE WRONG-PAIRING PLANT BITES: a doctored attribution (a ← {AB,DA}) disagrees with the recomputed committed word — the same comparator that greens the real rows',
+  doctoredPairs.every((p, i) => p === expectedPairs[i]) === false);
+check('§7 (P2·E2) ★★ NO FABRICATION WHERE NO WORD: the dual carrier (no recoverable word) reads wordRows === null and keeps the Phase-1 absorbed fallback — a pairing is never invented',
+  dualReading.wordRows === null);
+
+console.log('\n----- §8 (P2·E3/E4) ★★ incidence descends from the map · stance sums the sources -----');
+const torusIncidence = torusReading.incidence ?? [];
+const torusStance = torusReading.stance ?? [];
+note(`torus incidence: ${torusIncidence.map((r) => `${[...new Set(r.relationLetters)].join('⊾')}@${r.conceptLabel} (${r.relationLetters.length} slots)`).join(' · ')}`);
+check('§8 (P2·E3) ★★ INCIDENCE DESCENDS FROM THE MAP (the corner-flank walk over the oriented boundary — the only read that splits parallel self-loops): the torus\'s one concept is flanked a·b at each of its 4 corners — 8 flank letters, 2 distinct (a⊾b@p), not self-only',
+  torusIncidence.length === 1 &&
+    torusIncidence[0].relationLetters.length === 8 &&
+    new Set(torusIncidence[0].relationLetters).size === 2 &&
+    !torusIncidence[0].selfOnly);
+const coneIncidence = coneReading.incidence ?? [];
+const coneApexIncidence = coneIncidence.find((r) => r.conceptId === coneApexRow.resultId) ?? null;
+check('§8 (P2·E3) ★★ THE CONE\'S APEX MEETS ONLY ITSELF: seam ⌐ seam @ apex — ONE relation, no partner (the substrate\'s one-relation-no-cross, the deficit\'s cause — invisible in any invariant list)',
+  coneApexIncidence !== null && coneApexIncidence.selfOnly === true && new Set(coneApexIncidence.relationLetters).size === 1);
+const torusStanceRow = torusStance[0] ?? null;
+const coneStanceApex = (coneReading.stance ?? []).find((r) => r.conceptId === coneApexRow.resultId) ?? null;
+const coneStanceRim = (coneReading.stance ?? []).find((r) => r.conceptId === coneRimRow.resultId) ?? null;
+note(`stance: torus p=${torusStanceRow?.angleSumDeg}° [${torusStanceRow?.cornersDeg.join('⊕')}] · cone apex=${coneStanceApex?.angleSumDeg}° rim=${coneStanceRim?.angleSumDeg}°`);
+check('§8 (P2·E4) ★★ STANCE SUMS THE SOURCE STANCES (read WITH the acquired complex): torus p: 90⊕90⊕90⊕90 = 360°; cone apex: 60 = 60° (one corner) · rim: 60⊕60 = 120°',
+  torusStanceRow !== null &&
+    torusStanceRow.angleSumDeg === 360 &&
+    torusStanceRow.cornersDeg.length === 4 &&
+    torusStanceRow.cornersDeg.every((c) => c === 90) &&
+    coneStanceApex !== null &&
+    coneStanceApex.angleSumDeg === 60 &&
+    coneStanceApex.cornersDeg.length === 1 &&
+    coneStanceRim !== null &&
+    coneStanceRim.angleSumDeg === 120 &&
+    coneStanceRim.valence === 'boundary');
+// the dodeca stance (icosa⟶dodeca "was 300 / now 324"): MEASURED — the
+// MATERIALIZED dual shape's minted faces carry NO cornerAngles (the P6
+// count-only stamp lives on buildDualCorrespondenceModel.dualFaces, not the
+// shape — a stance-stamp-class gap in the FROZEN dualization.ts, ROUTED UP);
+// so the shelf-carrier card REFUSES the stance honestly (asserted), and the
+// Form's number is verified on the P6 surface itself — the committed
+// correspondence model + the ideal-dual seal, the P6 witness's own idiom
+const { buildDualCorrespondenceModel } = req('src/lib/dualView.ts');
+const { readIdealDualSeal } = req('src/lib/conformalAtom.ts');
+const icosaCellForDual = ascent.cells.find((c) => c.topology === 'pyritohedral-icosahedron');
+const dodecaModel = buildDualCorrespondenceModel(ascent, icosaCellForDual, 'dodecahedron');
+const dodecaSeal = readIdealDualSeal(dodecaModel.dualFaces, 2);
+const dodecaDeficits = Object.values(dodecaSeal.deficits);
+check('§8 (P2·E4) …AND THE FORM\'S RUNG (on the P6 surface): the dodecahedron reads deficit π/5 = 36° UNIFORM ×20 ⟺ angleSum 108⊕108⊕108 = 324° at every concept (was 300° on the icosahedron), Σδ = 4π, the seal HOLDS — while the shelf-carrier card REFUSES the stance honestly (the materialized dual shape\'s minted faces are UN-STAMPED — a stance-stamp-class gap in frozen dualization.ts, routed up)',
+  dodecaDeficits.length === 20 &&
+    dodecaDeficits.every((d) => Math.abs(d - Math.PI / 5) < 1e-9) &&
+    Math.abs(dodecaSeal.totalDeficit - 4 * Math.PI) < 1e-9 &&
+    dodecaSeal.stampHolds &&
+    dualReading.refusal !== null);
+
+console.log('\n----- §9 (P2·E5/E6) ★★ the verdict gates on closure · the fallback + polish are honest -----');
+const torusVerdict = torusReading.verdict;
+const coneVerdict = coneReading.verdict;
+const squareVerdict = seedReading.verdict;
+note(`verdicts: torus "${torusVerdict?.global}" atForm=${torusVerdict?.atForm} · cone "${coneVerdict?.global}" · square "${squareVerdict?.global}"`);
+check('§9 (P2·E5) ★★ THE VERDICT GATES ON CLOSURE: the torus (closed) reads Σδ = 0 ⇄ tiles · uniform → at its Form; the △⟶cone (BOUNDED) reads open · local-cone with the apex +300° local — NEVER "curls up"; the invoked square (BOUNDED, Σ=+360°) reads open — the flat disk is NOT a global curl',
+  torusVerdict !== null &&
+    torusVerdict.closed === true &&
+    torusVerdict.global === 'Σδ = 0 ⇄ tiles' &&
+    torusVerdict.atForm === true &&
+    coneVerdict !== null &&
+    coneVerdict.closed === false &&
+    coneVerdict.global === 'open · local-cone' &&
+    !coneVerdict.global.includes('curls') &&
+    coneVerdict.locals.some((l) => l.curvatureDeg === 300 && l.kind === 'cone') &&
+    squareVerdict !== null &&
+    squareVerdict.closed === false &&
+    squareVerdict.global === 'open · local-cone');
+check('§9 (P2·E6) THE FALLBACK + THE POLISH: the dual carrier keeps absorbed (no fabricated pairing, from §7) AND the fold-born header now speaks its class word — `disk`, not the raw op',
+  coneReading.header.result === 'disk' && dualReading.wordRows === null);
+check('§9 (P2·E7) THE VIEW WIRES THE READING (source-pinned): incidence — carried · stance — through the map · verdict — consequence sections + the gloss quote render from the argument; the verdict is a consequence-clause (no invariant token in the global line)',
+  (() => {
+    const src = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+    return (
+      src.includes('incidence — carried') &&
+      src.includes('stance — through the map') &&
+      src.includes('verdict — consequence') &&
+      src.includes('argument.gloss') &&
+      !/χ|genus|H₁/.test(torusVerdict.global)
+    );
+  })());
+
 console.log(
-  `\n--- THE ARGUMENT-READING CARD, Phase 1 — the MAP is the spine (the birth op's argument from the substrate: roots named by primalMultiset, typing read not invented, invariants demoted to the receipt): ${
+  `\n--- THE ARGUMENT-READING CARD — the MAP is the spine, Phase 2 completes the reading (the word-attributed relation map through the committed recovery, incidence ∘ map, stance with the acquired complex, the closure-gated verdict, the honest fallback): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
   } ---`,
 );
