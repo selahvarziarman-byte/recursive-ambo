@@ -260,8 +260,8 @@ const storeCore = storeShape.cells.find((c) => c.kind === 'core');
 useGeometryStore.getState().selectCell(storeCore.id);
 const liftedTitle = useGeometryStore.getState().liftSelectionToManuscript();
 const queued = useLiftStore.getState().queue;
-check('§5 geometryStore.liftSelectionToManuscript pushes ONE item onto the channel with the honest title — named by WHICH entity (`cell:<id> of …`, the SEAL_THE_LIFT_IDENTITY_AND_GRAIN distinct-id mint)',
-  queued.length === 1 && queued[0].title === liftedTitle && liftedTitle === `cell:${storeCore.id} of ${storeShape.name}`);
+check('§5 geometryStore.liftSelectionToManuscript pushes ONE item onto the channel with the honest title — named by WHICH entity (`<cellId> of …`, the distinct-id mint; SLICE2 un-doubled the kind: the entity id already carries it)',
+  queued.length === 1 && queued[0].title === liftedTitle && liftedTitle === `${storeCore.id} of ${storeShape.name}`);
 // R1.2 (the fresh-session drain): the channel RETAINS its items — no
 // destructive drain exists; consumers ingest IDEMPOTENTLY by the item's own
 // monotone `key`. The old "hands over exactly once" law is REPLACED by this.

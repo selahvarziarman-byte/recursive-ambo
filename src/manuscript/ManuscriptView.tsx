@@ -693,10 +693,19 @@ function ArgumentMapSection({
     // THE LIFT (SEAL_THE_LIFT_IDENTITY_AND_GRAIN): a lifted row renders its
     // life-line read THROUGH to the birth record — "C — seed corner of the
     // tetrahedron, lifted" — never a mistyped born/invoked line
-    const identified = rows.filter((r) => r.kind === 'relation' || r.typing === 'identified');
+    // SLICE2: a 'derived' row (a mint-from-many whose sources PERSIST — the
+    // researcher's split) draws its sources like an identified row but wears
+    // its own honest word — never "identified" for a persisting mint
+    const identified = rows.filter(
+      (r) => r.kind === 'relation' || r.typing === 'identified' || r.typing === 'derived',
+    );
     const bornOf = rows.filter((r) => r.kind === 'concept' && r.bornOf !== null && r.typing !== 'lifted');
     const plain = rows.filter(
-      (r) => r.kind === 'concept' && r.typing !== 'identified' && (r.bornOf === null || r.typing === 'lifted'),
+      (r) =>
+        r.kind === 'concept' &&
+        r.typing !== 'identified' &&
+        r.typing !== 'derived' &&
+        (r.bornOf === null || r.typing === 'lifted'),
     );
     const lines: React.ReactNode[] = [];
     for (const r of identified) {
@@ -707,6 +716,7 @@ function ArgumentMapSection({
           <span style={sign}> ← </span>
           <span style={sign}>{r.rootLabels.join(' ')}</span>
           {r.typing === 'lifted' ? <span style={{ opacity: 0.75 }}> — lifted</span> : null}
+          {r.typing === 'derived' ? <span style={{ opacity: 0.75 }}> — derived</span> : null}
         </div>,
       );
     }

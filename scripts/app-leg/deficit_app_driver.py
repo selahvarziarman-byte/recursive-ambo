@@ -250,12 +250,14 @@ def drive_lift(page, lift_files):
                 "the real identity + the read-through life-lines on the LIVE A-C card",
             )
         if k == 2:
-            # the FACE lift's card (auto-selected on its drop): the honest mark
+            # the FACE lift's card (auto-selected on its drop): SLICE2 — the
+            # interior grain is CARRIED, so NO mark rides (a mark here would
+            # be a false claim); the words read lifted-whole unflagged
             record(
-                "lift.cardGrainMark",
-                page.get_by_text("coarse face; finer structure not carried", exact=False).count() > 0
+                "lift.cardFaceCarry",
+                page.get_by_text("coarse face; finer structure not carried", exact=False).count() == 0
                 and page.get_by_text("lifted whole", exact=False).count() > 0,
-                "the honest grain mark + the lifted-whole words on the LIVE face card",
+                "the carried-grain face card: lifted whole, NO mark",
             )
     remaining = page.locator('div[draggable="true"]').count()
     refused = page.locator("text=already on the sheet").count()

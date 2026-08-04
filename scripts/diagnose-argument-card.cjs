@@ -446,10 +446,11 @@ const liftBD = liftSubComplex(amboD, [{ kind: 'edge', id: eBD.id }]);
 const loadLift = (lifted, seq) => placeShelfEntry(loadUniverseSnapshot(serializeSnapshot(lifted.shape, amboD.id, [])), seq);
 const loadedAC = loadUniverseSnapshot(serializeSnapshot(liftAC.shape, amboD.id, []));
 const loadedBD = loadUniverseSnapshot(serializeSnapshot(liftBD.shape, amboD.id, []));
-check('§10 (E-DISTINCT-ID) ★★ TWO different edges from ONE shape mint DISTINCT shape ids (`lift:edge:<edgeId>:from:<shape>` — the id names WHICH entity), both load placeable, and their LOADED ids stay distinct — the sheet dedup (keyed on shape.id, source-pinned in §11) admits BOTH; the collision that refused the second edge is dead',
+check('§10 (E-DISTINCT-ID + E-COSMETIC-ID) ★★ TWO different edges from ONE shape mint DISTINCT shape ids (`lift:edge:<hash>:from:<shape>` — the id names WHICH entity, with ONE kind prefix — the SLICE2 un-doubling), both load placeable, and their LOADED ids stay distinct — the sheet dedup (keyed on shape.id, source-pinned in §11) admits BOTH; the collision that refused the second edge is dead',
   liftAC.shape.id !== liftBD.shape.id &&
-    liftAC.shape.id.includes(eAC.id) &&
-    liftBD.shape.id.includes(eBD.id) &&
+    liftAC.shape.id === `lift:${eAC.id}:from:${amboD.id}` &&
+    liftBD.shape.id === `lift:${eBD.id}:from:${amboD.id}` &&
+    !/edge:edge:/.test(liftAC.shape.id) &&
     loadedAC.placeable === true &&
     loadedBD.placeable === true &&
     loadedAC.loaded.shape.id !== loadedBD.loaded.shape.id);
@@ -488,11 +489,15 @@ const faceLift = liftSubComplex(amboD, [{ kind: 'face', id: coarseFace.id }]);
 const faceForm = loadLift(faceLift, 512);
 const faceReading = buildArgumentReading(faceForm);
 note(`face lift: v=${Object.keys(faceForm.shape.vertices).length} e=${faceForm.shape.edges.length} · marks=${JSON.stringify(faceReading.grainMarks)}`);
-check('§10 (E-GRAIN) ★★ THE FACE CARRIES ITS SIDES\' GRAIN AND MARKS ITS INTERIOR (slice 1, the binding bar): the coarse face lifts 6 vertices (3 corners + 3 side midpoints) + 9 edges (3 coarse sides + 6 half-edges), and the card carries the honest mark "coarse face; finer structure not carried" — surfaced in the words too; NEVER a silently bare coarse face',
+check('§10 (E-FACE-CARRY) ★★ THE FACE CARRIES ITS WHOLE PLANAR GRAIN (SLICE2 — detect→mark became detect→CARRY): the coarse face lifts 6 vertices (3 corners + 3 side midpoints) + 12 edges (3 coarse sides + 6 half-edges + the 3 interior chords) + 5 faces (the coarse + the core mid-face + the 3 residue triangles — the full coplanar dissection), and the card carries NO mark (nothing was refused — a mark here would be a false claim); the words read "lifted whole" unflagged',
   Object.keys(faceForm.shape.vertices).length === 6 &&
-    faceForm.shape.edges.length === 9 &&
-    faceReading.grainMarks.includes('coarse face; finer structure not carried') &&
-    faceReading.words.includes('finer structure not carried'));
+    faceForm.shape.edges.length === 12 &&
+    faceForm.shape.faces.length === 5 &&
+    faceForm.shape.faces.some((f) => f.role === 'dissection-core-face') &&
+    faceForm.shape.faces.filter((f) => f.role === 'dissection-residue-face').length === 3 &&
+    faceReading.grainMarks.length === 0 &&
+    faceReading.words.includes('lifted whole') &&
+    !faceReading.words.includes('finer structure not carried'));
 // THE USER'S OWN NAME — the committed doors end-to-end: the workspace store's
 // ambo → selectVertex → updateSelectedVertexData (the packet editor's door)
 // → the lift → the card reads the person's word; a blanked packet reads
@@ -543,10 +548,40 @@ const bareForm = placeShelfEntry(loadUniverseSnapshot(serializeSnapshot(bareLift
 const bareReading = buildArgumentReading(bareForm);
 const carriedOrMarked = (reading) =>
   reading.conceptRows.some((r) => r.label === 'AC') || reading.grainMarks.length > 0;
-check('§10 (PLANT) ★★ THE DROPPED SUBDIVISION BITES: the pre-cure endpoints-only closure (grain silently omitted, no mark) FAILS the carried-or-marked judge that greens BOTH real lifts (the edge: grain carried · the face: interior marked) — the binding bar is structural, not a wish',
+check('§10 (PLANT) ★★ THE DROPPED SUBDIVISION BITES: the pre-cure endpoints-only closure (grain silently omitted, no mark) FAILS the carried-or-marked judge that greens BOTH real lifts (the edge AND the face: grain CARRIED whole — slice 2) — the binding bar is structural, not a wish',
   carriedOrMarked(liftReading) === true &&
     carriedOrMarked(faceReading) === true &&
     carriedOrMarked(bareReading) === false);
+// SLICE2 (the binding bar's other half): a GENUINELY un-carriable interior
+// stray still MARKS. No committed op mints a stranded interior vertex (a
+// vertex inside a face with no connecting finer edge), so this boundary
+// branch is exercised as a UNIT-PROBE: a minimal Shape-typed fixture (honest
+// labels, real positions) fed to the REAL downwardClosure — the one
+// non-engine-minted subject in this witness, disclosed.
+const strayFixture = {
+  id: 'shape:probe:stray',
+  name: 'stray probe',
+  vertices: {
+    'vertex:probe:a': { id: 'vertex:probe:a', position: [0, 0, 0], data: { label: 'A', notes: '', color: '#000', tags: [], custom: {} }, createdBy: { shapeId: 'shape:probe:stray', operation: 'seed', sourceVertexIds: [] } },
+    'vertex:probe:b': { id: 'vertex:probe:b', position: [4, 0, 0], data: { label: 'B', notes: '', color: '#000', tags: [], custom: {} }, createdBy: { shapeId: 'shape:probe:stray', operation: 'seed', sourceVertexIds: [] } },
+    'vertex:probe:c': { id: 'vertex:probe:c', position: [0, 4, 0], data: { label: 'C', notes: '', color: '#000', tags: [], custom: {} }, createdBy: { shapeId: 'shape:probe:stray', operation: 'seed', sourceVertexIds: [] } },
+    'vertex:probe:stray': { id: 'vertex:probe:stray', position: [1, 1, 0], data: { label: 'S', notes: '', color: '#000', tags: [], custom: {} }, createdBy: { shapeId: 'shape:probe:stray', operation: 'seed', sourceVertexIds: [] } },
+  },
+  edges: [
+    { id: 'edge:probe:ab', vertexIds: ['vertex:probe:a', 'vertex:probe:b'], sourceVertexIds: ['vertex:probe:a', 'vertex:probe:b'] },
+    { id: 'edge:probe:bc', vertexIds: ['vertex:probe:b', 'vertex:probe:c'], sourceVertexIds: ['vertex:probe:b', 'vertex:probe:c'] },
+    { id: 'edge:probe:ca', vertexIds: ['vertex:probe:c', 'vertex:probe:a'], sourceVertexIds: ['vertex:probe:c', 'vertex:probe:a'] },
+  ],
+  faces: [{ id: 'face:probe:abc', vertexIds: ['vertex:probe:a', 'vertex:probe:b', 'vertex:probe:c'], role: 'seed-face' }],
+  cells: [],
+  generations: [],
+  genealogy: { parentShapeId: null, operation: 'seed', generationDepth: 0, sourceVertexIds: [], createdVertexIds: [], createdAt: '' },
+};
+const { downwardClosure: probeClosure } = req('src/lib/subComplexLift.ts');
+const strayClosure = probeClosure(strayFixture, [{ kind: 'face', id: 'face:probe:abc' }]);
+check('§10 (E-FACE-CARRY) THE UN-CARRIABLE STRAY STILL MARKS (the binding bar\'s boundary, unit-probed on the REAL downwardClosure — disclosed fixture): an interior vertex with NO connecting finer edge is NOT pulled (the connectivity gate) and the face carries the honest "coarse face; finer structure not carried" mark — never a silent drop, never a broken lift',
+  !strayClosure.vertexIds.includes('vertex:probe:stray') &&
+    (strayClosure.grainMarks ?? []).some((m) => m.kind === 'face' && m.mark === 'coarse face; finer structure not carried'));
 
 // ═══════════════════════════════════════════════════════════════════════════
 // §11 THE WALK — every OperationKind reads packet identity (the witness bar:
@@ -603,31 +638,53 @@ const refined = bisectSurface(cone.shape, triHost.shape);
 const refineWalk = buildArgumentReading(wrapCarrier(refined.shape, triHost.shape, 'refined'));
 const amboWalk = buildArgumentReading(wrapCarrier(amboD, seedTetra, 'ambo'));
 note(`product: ${bandWalk.conceptRows.map((r) => r.label).join(' ')} · refine op=${refineWalk.op} res=${refined.refinement?.typeClaim ?? 'none'} ${refineWalk.conceptRows.map((r) => r.label).join(' ')} · ambo ${amboWalk.conceptRows.map((r) => `${r.label}(${r.typing})`).join(' ')}`);
-check('§11 (WALK) ★ PRODUCT + DUAL + AMBO + REFINE: the ×I band\'s copies read through their sources\' real names (A/C/AC + the ·X index — the copy mints id-as-label); the dual carrier is packet-judged (born-of-face rows ride §3); the ambo universe reads 4 SURVIVED corners A–D + 6 midpoints AB..CD (typed `identified` — the ratified ≥2-sources rule\'s letter, flagged) with its own op word; the refined cone keeps its BIRTH op (`glue` — refine is a RESOLUTION, not a birth; the trace rides `genealogy.resolution`) and mints finer concepts without erasing a name — every card packet-judged',
+check('§11 (WALK + E-DERIVED) ★ PRODUCT + DUAL + AMBO + REFINE: the ×I band\'s copies read through their sources\' real names (A/C/AC + the ·X index — the copy mints id-as-label); the dual carrier is packet-judged (born-of-face rows ride §3); the ambo universe reads 4 SURVIVED corners A–D + 6 midpoints AB..CD typed `derived` (SLICE2, researcher 1900: a mint-from-many whose sources PERSIST — never `identified`, which is a unification of ABSORBED sources) with its relations `derived` likewise and its own op word; the refined cone keeps its BIRTH op (`glue` — refine is a RESOLUTION, not a birth; the trace rides `genealogy.resolution`) and mints finer concepts without erasing a name — every card packet-judged',
   bandWalk.op === 'product' &&
     bandWalk.conceptRows.every((r) => ['A', 'C', 'AC'].includes(r.label.replace(/·[A-Z]\d*$/, ''))) &&
     packetJudge(bandWalk, bandLift.shape) &&
     packetJudge(dualReading, dualShape) &&
     amboWalk.op === 'ambo-dissection' &&
     ['A', 'B', 'C', 'D'].every((name) => amboWalk.conceptRows.some((r) => r.label === name && r.typing === 'survived')) &&
-    ['AB', 'AC', 'AD', 'BC', 'BD', 'CD'].every((name) => amboWalk.conceptRows.some((r) => r.label === name && r.typing === 'identified')) &&
+    ['AB', 'AC', 'AD', 'BC', 'BD', 'CD'].every((name) => amboWalk.conceptRows.some((r) => r.label === name && r.typing === 'derived')) &&
+    amboWalk.relationRows.every((r) => r.typing === 'derived') &&
     amboWalk.header.gloss === 'corners cut to midpoints — the ambo dissection' &&
     packetJudge(amboWalk, amboD) &&
     refineWalk.op === 'glue' &&
     refined.refinement?.typeClaim === 'resolution' &&
     refineWalk.conceptRows.length > (coneReading?.conceptRows.length ?? 0) &&
     packetJudge(refineWalk, refined.shape));
+// E-DERIVED both ways + the persist-PLANT: the discriminator is recomputed
+// INDEPENDENTLY from the substrate (sources ∈ result.vertices) and judges
+// every ≥2-source concept row; forcing a persisting mint to `identified`
+// fails the same judge that greens the real cards
+const persistJudge = (reading, shapeX) =>
+  reading.conceptRows.every((row) => {
+    if (row.typing !== 'identified' && row.typing !== 'derived') return true;
+    if (row.sourceIds.length < 2) return true;
+    const persist = row.sourceIds.every((s) => Boolean(shapeX.vertices[s]));
+    return row.typing === (persist ? 'derived' : 'identified');
+  });
+const forcedIdentified = {
+  ...amboWalk,
+  conceptRows: amboWalk.conceptRows.map((r) => (r.typing === 'derived' ? { ...r, typing: 'identified' } : r)),
+};
+check('§11 (E-DERIVED) ★ THE SPLIT IS THE SUBSTRATE\'S, BOTH WAYS: the ambo midpoints read `derived` (sources persist) while the glue-torus class stays `identified` (sources absorbed) — each judged by the INDEPENDENT persist-recomputation — and THE PLANT BITES: the ambo mints forced to `identified` FAIL the same judge that greens the real cards',
+  persistJudge(amboWalk, amboD) === true &&
+    persistJudge(torusReading, torus.shape) === true &&
+    torusReading.conceptRows[0].typing === 'identified' &&
+    persistJudge(forcedIdentified, amboD) === false);
 const viewSrcNow = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
-check('§11 (VIEW) THE LIFT RENDERS (source-pinned): the view draws the life-line (`origin.display` + the ", lifted" branch), renders the grain marks (⚠ + `argument.grainMarks`), counts `lifted` in the grouped line, and keys the sheet dedup on `shape.id` (the exact predicate the distinct id unblocks)',
+check('§11 (VIEW) THE LIFT + THE DERIVED WORD RENDER (source-pinned): the view draws the life-line (`origin.display` + the ", lifted" branch), renders the grain marks (⚠ + `argument.grainMarks`), counts `lifted` in the grouped line, keys the sheet dedup on `shape.id` (the exact predicate the distinct id unblocks), and speaks `— derived` for a persisting mint (never "identified")',
   viewSrcNow.includes('origin.display') &&
     viewSrcNow.includes('argument.grainMarks') &&
     viewSrcNow.includes('`${lifted} lifted`') &&
-    viewSrcNow.includes('w.form.shape.id === item.entry.loaded.shape.id'));
+    viewSrcNow.includes('w.form.shape.id === item.entry.loaded.shape.id') &&
+    viewSrcNow.includes(' — derived'));
 check('§11 (E-NO-UNION) NOTHING FROZEN MOVED: ambo.ts (the mechanism is the LIFT, not the ambo — the T-junction stays real) · types/geometry.ts · lib/shape.ts · store/geometryStore.ts · the MANIFEST — all BYTE-IDENTICAL to HEAD (no union, no new file, no new row owed)',
   ['src/lib/ambo.ts', 'src/types/geometry.ts', 'src/lib/shape.ts', 'src/store/geometryStore.ts', 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'].every(headEq));
 
 console.log(
-  `\n--- THE ARGUMENT-READING CARD — the MAP is the spine, Phase 2 completes the reading, THE LIFT carries identity + grain (the packet is the name, 'lifted' the typing, the id names WHICH entity, the grain carried-or-marked): ${
+  `\n--- THE ARGUMENT-READING CARD — the MAP is the spine, Phase 2 completes the reading, THE LIFT carries identity + grain (the packet is the name, 'lifted' the typing, the id names WHICH entity — one kind prefix, the grain CARRIED edge AND face-interior with the mark only for the un-carriable, 'derived' split from 'identified' on the persist-discriminator): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
   } ---`,
 );

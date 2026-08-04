@@ -9,10 +9,11 @@
 //        text is trusted ONLY beside presence (the mothership's clause — a
 //        hardcoded string cannot fake the mount);
 //   E4    HYGIENE — no console error across the whole gesture drive.
-//   E-LIFT ★★ (SEAL_THE_LIFT_IDENTITY_AND_GRAIN) — three REAL lift parcels
-//        (two DIFFERENT edges + the coarse face) through the person's own
-//        file door: ALL place (the distinct id — the dedup collision dead),
-//        the LIVE card reads the real identity + life-line + grain mark.
+//   E-LIFT ★★ (SEAL_THE_LIFT_IDENTITY_AND_GRAIN + SLICE2) — three REAL lift
+//        parcels (two DIFFERENT edges + the coarse face) through the person's
+//        own file door: ALL place (the distinct id — the dedup collision
+//        dead), the LIVE card reads the real identity + life-line, and the
+//        face card reads lifted-whole with NO mark (the interior CARRIED).
 //
 // ARCHITECTURE (the seal's ruling): a SEPARATE leg OUTSIDE the browserless
 // 109-suite, run per render-arc handback. ⚠ PLACEMENT (disclosed finding):
@@ -209,8 +210,8 @@ function killTree(pid) {
         check('§E-LIFT ★★ THE LIFT RIDES THE RUNNING APP: three REAL lift parcels (two DIFFERENT edges + the coarse face — committed doors, distinct ids) load through the person\'s own file door and ALL place on the sheet — the dedup admits BOTH edges (the collision that refused the second is dead) — and the LIVE card reads the REAL identity: "lifted from Ambo Dissection Tetrahedron" + the "seed corner of the tetrahedron, lifted" life-line + the midpoint\'s "ambo-dissection corner of" read-through',
           get('lift.load').ok && get('lift.bothEdgesPlaced').ok && get('lift.cardIdentity').ok,
           `${get('lift.bothEdgesPlaced').detail} · ${get('lift.cardIdentity').detail}`);
-        check('§E-LIFT ★ THE GRAIN MARK RIDES LIVE: the face lift\'s card carries the honest "coarse face; finer structure not carried" + the "lifted whole" words — never a silently bare coarse lift',
-          get('lift.cardGrainMark').ok, get('lift.cardGrainMark').detail);
+        check('§E-LIFT ★ THE FACE-CARRY RIDES LIVE (SLICE2): the face lift\'s card reads "lifted whole" with NO grain mark — the interior grain is CARRIED, and a mark would be a false claim',
+          get('lift.cardFaceCarry').ok, get('lift.cardFaceCarry').detail);
         // E4 hygiene
         check('§E4 CONSOLE CLEAN — no error logged across the whole drive (favicon noise excluded)',
           get('console').ok, get('console').detail);

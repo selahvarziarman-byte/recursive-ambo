@@ -49,8 +49,11 @@ import type { AssembledComplex } from '../lib/globalW1';
 
 // THE LIFT — IDENTITY & GRAIN (SEAL_THE_LIFT_IDENTITY_AND_GRAIN): 'lifted' —
 // imported whole from another universe (`genealogy.operation === 'patch-lift'`)
-// — is its OWN typing, never a mistyped 'born'
-export type ArgumentTyping = 'identified' | 'survived' | 'born' | 'lifted';
+// — is its OWN typing, never a mistyped 'born'. SLICE2 (researcher 1900):
+// 'derived' — a mint-from-many whose sources PERSIST in the result (the ambo
+// midpoint AC ← {A, C}, an inference/lemma) — split from 'identified' (≥2
+// sources ABSORBED — a unification: glue/fold/collapse).
+export type ArgumentTyping = 'identified' | 'survived' | 'born' | 'lifted' | 'derived';
 
 export interface ArgumentMapRow {
   kind: 'concept' | 'relation'; // • vertex-concept · — relation
@@ -319,7 +322,9 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
         : bornOf !== null
           ? 'born'
           : sourceIds.length >= 2
-            ? 'identified'
+            ? sourceIds.every((s) => Boolean(shape.vertices[s]))
+              ? 'derived' // researcher 1900: the sources PERSIST — a mint-from-many (the ambo midpoint), not a unification
+              : 'identified' // ≥2 sources ABSORBED — glue/fold/collapse
             : parentVertexIds && parentVertexIds.has(vertexId)
               ? 'survived' // includes the retained-verbatim corner (createdBy still tells the seed story)
               : sourceIds.length === 1 && sourceIds[0] !== vertexId
@@ -404,7 +409,9 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
         : parentEdgeIds && parentEdgeIds.has(edge.id)
           ? 'survived'
           : parent
-            ? 'survived'
+            ? sourceIds.length >= 2 && sourceIds.every((s) => Boolean(shape.vertices[s]))
+              ? 'derived' // SLICE2: an op-born relation whose recorded endpoint sources PERSIST (the researcher's discriminator, scoped INSIDE the op-born branch — a seed's self-record stays born)
+              : 'survived'
             : 'born';
       return {
         kind: 'relation' as const,

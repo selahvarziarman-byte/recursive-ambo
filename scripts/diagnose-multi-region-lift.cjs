@@ -250,8 +250,8 @@ useGeometryStore.getState().selectCell(liveCore.id);
 const fallbackWatermark = useLiftStore.getState().queue.length; // R1.2 watermark idiom
 const fallbackTitle = useGeometryStore.getState().liftSelectionToManuscript();
 const fallbackPushed = useLiftStore.getState().queue.slice(fallbackWatermark);
-check("§5 NO REGRESSION: with an empty set, the single inspection-selected cell still lifts — titled by WHICH entity ('cell:<id> of …', the SEAL_THE_LIFT_IDENTITY_AND_GRAIN distinct-id mint) — the committed P1b path",
-  fallbackTitle === `cell:${liveCore.id} of ${live.name}` &&
+check("§5 NO REGRESSION: with an empty set, the single inspection-selected cell still lifts — titled by WHICH entity ('<cellId> of …', the distinct-id mint; SLICE2 un-doubled the kind: the entity id already carries it) — the committed P1b path",
+  fallbackTitle === `${liveCore.id} of ${live.name}` &&
   fallbackPushed.length === 1 &&
   loadUniverseSnapshot(fallbackPushed[0].file).placeable === true);
 // clear control
