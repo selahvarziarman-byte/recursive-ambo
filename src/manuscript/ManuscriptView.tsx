@@ -688,11 +688,16 @@ function ArgumentMapSection({
 }) {
   const sign: React.CSSProperties = { fontFamily: SIGN_HAND };
   const compact = (rows: ArgumentMapRow[], mark: string) => {
-    // relations always show their recorded source (the endpoint-lettered
-    // parent edge — the measured substrate read); concepts split by typing
+    // relations always show their recorded source (the endpoint-named
+    // parent edge — the measured substrate read); concepts split by typing.
+    // THE LIFT (SEAL_THE_LIFT_IDENTITY_AND_GRAIN): a lifted row renders its
+    // life-line read THROUGH to the birth record — "C — seed corner of the
+    // tetrahedron, lifted" — never a mistyped born/invoked line
     const identified = rows.filter((r) => r.kind === 'relation' || r.typing === 'identified');
-    const bornOf = rows.filter((r) => r.kind === 'concept' && r.bornOf !== null);
-    const plain = rows.filter((r) => r.kind === 'concept' && r.typing !== 'identified' && r.bornOf === null);
+    const bornOf = rows.filter((r) => r.kind === 'concept' && r.bornOf !== null && r.typing !== 'lifted');
+    const plain = rows.filter(
+      (r) => r.kind === 'concept' && r.typing !== 'identified' && (r.bornOf === null || r.typing === 'lifted'),
+    );
     const lines: React.ReactNode[] = [];
     for (const r of identified) {
       lines.push(
@@ -701,6 +706,7 @@ function ArgumentMapSection({
           <span style={sign}>{r.label}</span>
           <span style={sign}> ← </span>
           <span style={sign}>{r.rootLabels.join(' ')}</span>
+          {r.typing === 'lifted' ? <span style={{ opacity: 0.75 }}> — lifted</span> : null}
         </div>,
       );
     }
@@ -720,19 +726,31 @@ function ArgumentMapSection({
           <div key={r.resultId} style={{ fontSize: 13 }}>
             <span style={sign}>{mark}</span>
             <span style={sign}>{r.label}</span>
-            <span style={{ opacity: 0.75 }}> — {r.typing === 'survived' ? 'survives' : 'born'}</span>
+            <span style={{ opacity: 0.75 }}>
+              {' — '}
+              {r.typing === 'lifted'
+                ? `${r.origin ? `${r.origin.display}, ` : ''}lifted`
+                : r.typing === 'survived'
+                  ? 'survives'
+                  : 'born'}
+            </span>
           </div>,
         );
       }
     } else if (plain.length > 0) {
       const survived = plain.filter((r) => r.typing === 'survived').length;
-      const born = plain.length - survived;
+      const lifted = plain.filter((r) => r.typing === 'lifted').length;
+      const born = plain.length - survived - lifted;
       lines.push(
         <div key={`${mark}:grouped`} style={{ fontSize: 12.5, opacity: 0.8 }}>
           <span style={sign}>{mark}</span>
-          {survived > 0 ? `${survived} survive` : ''}
-          {survived > 0 && born > 0 ? ' · ' : ''}
-          {born > 0 ? `${born} born` : ''}
+          {[
+            survived > 0 ? `${survived} survive` : null,
+            lifted > 0 ? `${lifted} lifted` : null,
+            born > 0 ? `${born} born` : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
         </div>,
       );
     }
@@ -774,6 +792,15 @@ function ArgumentMapSection({
           ) : null}
         </>
       )}
+      {argument.grainMarks.length > 0 ? (
+        // THE GRAIN LAW: the lift's own honest refusal, rendered — never a
+        // silently bare coarse entity presented as complete
+        <div style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.8, marginTop: 3 }}>
+          {argument.grainMarks.map((m) => (
+            <div key={m}>⚠ {m}</div>
+          ))}
+        </div>
+      ) : null}
       <div style={{ fontSize: 12, opacity: 0.78, marginTop: 3, borderBottom: `1px solid ${paper.cardBorder}55`, paddingBottom: 5 }}>
         {argument.words}
       </div>

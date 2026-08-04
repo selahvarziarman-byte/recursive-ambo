@@ -132,7 +132,16 @@ check('§1 CELL lift: places as a WrittenForm operand whose provenance names the
 note(`CELL concrete: {V:6, E:12, F:8, cells:1} · source tag "${cellEntry.source.slice(0, 48)}…" · provenance: ${placedCell.provenance.slice(0, 72)}…`);
 
 // --- FACE ---------------------------------------------------------------------
-const someFace = dissected.faces.find((f) => f.vertexIds.length === 3);
+// GRAIN-FREE subject (SEAL_THE_LIFT_IDENTITY_AND_GRAIN recut): a lifted
+// COARSE entity now CARRIES its collinear finer cells (the cured closure —
+// diagnose-argument-card §10 owns that truth); the exact-count clauses here
+// keep their original claim on faces/edges with no seed-to-seed side.
+const isSeedV = (v) => Boolean(seed.vertices[v]);
+const someFace = dissected.faces.find(
+  (f) =>
+    f.vertexIds.length === 3 &&
+    f.vertexIds.every((v, i) => !(isSeedV(v) && isSeedV(f.vertexIds[(i + 1) % f.vertexIds.length]))),
+);
 const faceLift = liftSubComplex(dissected, [{ kind: 'face', id: someFace.id }]);
 const faceFile = serializeSnapshot(faceLift.shape, dissected.id);
 const faceEntry = loadUniverseSnapshot(faceFile);
@@ -145,7 +154,8 @@ check('§1 FACE lift: a triangle lifts {V:3, E:3, F:1} — a disk, χ = 1 — pl
   faceEntry.source === dissected.id);
 
 // --- EDGE ---------------------------------------------------------------------
-const someEdge = dissected.edges[0];
+// a grain-free edge (a half-/mid-edge carries nothing collinear on itself)
+const someEdge = dissected.edges.find((e) => !(isSeedV(e.vertexIds[0]) && isSeedV(e.vertexIds[1])));
 const edgeLift = liftSubComplex(dissected, [{ kind: 'edge', id: someEdge.id }]);
 const edgeEntry = loadUniverseSnapshot(serializeSnapshot(edgeLift.shape, dissected.id));
 check('§1 EDGE lift: {V:2, E:1, F:0} — loads as the honest SKELETON render (no faces), placeable',
@@ -209,10 +219,15 @@ const discoReason = validateLiftSelection(dissected, disconnected);
 check("§3 a DISCONNECTED set refuses honestly — '…lift components separately'",
   typeof discoReason === 'string' && /disconnected/.test(discoReason) && /lift components separately/.test(discoReason));
 // the junction wedge: two faces sharing exactly ONE vertex — lifts ANYWAY
+// grain-free wedge faces (no coarse side) — the {V:5, E:6, F:2} shape of the
+// closure is the claim; a coarse side would honestly carry its grain and the
+// counts would speak a different (equally honest) sentence
+const wedgeGrainFree = (f) =>
+  f.vertexIds.every((v, i) => !(isSeedV(v) && isSeedV(f.vertexIds[(i + 1) % f.vertexIds.length])));
 let wedgePair = null;
 outer: for (const fa of dissected.faces) {
   for (const fb of dissected.faces) {
-    if (fa.id === fb.id) continue;
+    if (fa.id === fb.id || !wedgeGrainFree(fa) || !wedgeGrainFree(fb)) continue;
     const shared = fa.vertexIds.filter((v) => fb.vertexIds.includes(v));
     if (shared.length === 1) { wedgePair = [fa, fb, shared[0]]; break outer; }
   }
@@ -245,8 +260,8 @@ const storeCore = storeShape.cells.find((c) => c.kind === 'core');
 useGeometryStore.getState().selectCell(storeCore.id);
 const liftedTitle = useGeometryStore.getState().liftSelectionToManuscript();
 const queued = useLiftStore.getState().queue;
-check('§5 geometryStore.liftSelectionToManuscript pushes ONE item onto the channel with the honest title',
-  queued.length === 1 && queued[0].title === liftedTitle && liftedTitle === `cell of ${storeShape.name}`);
+check('§5 geometryStore.liftSelectionToManuscript pushes ONE item onto the channel with the honest title — named by WHICH entity (`cell:<id> of …`, the SEAL_THE_LIFT_IDENTITY_AND_GRAIN distinct-id mint)',
+  queued.length === 1 && queued[0].title === liftedTitle && liftedTitle === `cell:${storeCore.id} of ${storeShape.name}`);
 // R1.2 (the fresh-session drain): the channel RETAINS its items — no
 // destructive drain exists; consumers ingest IDEMPOTENTLY by the item's own
 // monotone `key`. The old "hands over exactly once" law is REPLACED by this.

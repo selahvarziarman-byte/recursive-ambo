@@ -97,7 +97,7 @@ def argument_card_checks(page):
         return c.toDataURL();
       };
       const notdef = draw('\\u0378');
-      return ['⟶', '←', '•', '⊕', '⊾', '⌐', '⇄', '○', 'Σδ'].map((ch) => ({ ch, tofu: draw(ch) === notdef }));
+      return ['⟶', '←', '•', '⊕', '⊾', '⌐', '⇄', '○', 'Σδ', '⚠'].map((ch) => ({ ch, tofu: draw(ch) === notdef }));
     }"""
     )
     bad = [t["ch"] for t in tofu if t["tofu"]]
@@ -188,9 +188,88 @@ def drive_fold(page, key, invoke_label, side, cone_text, rim_text, min_presence)
     )
 
 
+def drive_lift(page, lift_files):
+    # THE LIFT (SEAL_THE_LIFT_IDENTITY_AND_GRAIN) on the RUNNING app: three
+    # real lift parcels (two DIFFERENT edges + the coarse face; minted by the
+    # orchestrator through the committed doors) enter through the person's own
+    # file door, ALL place (the dedup admits both edges — the dead collision),
+    # and the LIVE card reads the REAL identity + the honest grain mark.
+    files = [f for f in lift_files.split(",") if f.strip()]
+    page.set_input_files('input[type="file"]', files)
+    page.wait_for_timeout(700)
+    parcels = page.locator('div[draggable="true"]').count()
+    record("lift.load", parcels >= 3, f"{parcels} placeable parcels on the shelf")
+    canvas = page.locator("canvas").first
+    box = canvas.bounding_box()
+    spots = [(0.46, 0.3), (0.6, 0.3), (0.53, 0.66)]
+    placed_pts = []
+    for k in range(3):
+        item = page.locator('div[draggable="true"]')
+        if item.count() == 0:
+            break
+        fx, fy = spots[k]
+        pt = None
+        for dfy in (0.0, 0.06, -0.06):
+            for dfx in (0.0, 0.04, -0.04):
+                x = box["x"] + box["width"] * (fx + dfx)
+                y = box["y"] + box["height"] * (fy + dfy)
+                tag = page.evaluate(
+                    "([x, y]) => { const el = document.elementFromPoint(x, y); return el ? el.tagName : null; }",
+                    [x, y],
+                )
+                if tag == "CANVAS":
+                    pt = {"x": x, "y": y}
+                    break
+            if pt:
+                break
+        if pt is None:
+            record(f"lift.place{k}", False, "no uncovered paper point for the drop")
+            return
+        # the person's own gesture: drag the parcel off the shelf, drop on
+        # paper — with a REAL DataTransfer (a bare dispatched DragEvent
+        # carries dataTransfer:null and the shelf's own setData throws)
+        data_transfer = page.evaluate_handle("() => new DataTransfer()")
+        item.first.dispatch_event("dragstart", {"dataTransfer": data_transfer})
+        canvas.dispatch_event(
+            "drop",
+            {"clientX": pt["x"], "clientY": pt["y"], "bubbles": True, "dataTransfer": data_transfer},
+        )
+        page.wait_for_timeout(500)
+        placed_pts.append(pt)
+        # the drop AUTO-SELECTS the placed form (the view's own contract) —
+        # the card is up NOW; a paper click would only clear the selection
+        if k == 0:
+            # the A-C EDGE lift's card (3 concepts — the life-lines render
+            # individually): the real identity + the read-through
+            record(
+                "lift.cardIdentity",
+                page.get_by_text("lifted from Ambo Dissection Tetrahedron", exact=False).count() > 0
+                and page.get_by_text("seed corner of the tetrahedron, lifted", exact=False).count() > 0
+                and page.get_by_text("ambo-dissection corner of", exact=False).count() > 0
+                and page.get_by_text("lifted whole", exact=False).count() > 0,
+                "the real identity + the read-through life-lines on the LIVE A-C card",
+            )
+        if k == 2:
+            # the FACE lift's card (auto-selected on its drop): the honest mark
+            record(
+                "lift.cardGrainMark",
+                page.get_by_text("coarse face; finer structure not carried", exact=False).count() > 0
+                and page.get_by_text("lifted whole", exact=False).count() > 0,
+                "the honest grain mark + the lifted-whole words on the LIVE face card",
+            )
+    remaining = page.locator('div[draggable="true"]').count()
+    refused = page.locator("text=already on the sheet").count()
+    record(
+        "lift.bothEdgesPlaced",
+        len(placed_pts) == 3 and remaining == 0 and refused == 0,
+        f"3 lifts placed (2 distinct edges + the face), {remaining} left on the shelf, dedup refusals: {refused}",
+    )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", required=True)
+    parser.add_argument("--lift-files", default="")
     args = parser.parse_args()
 
     with sync_playwright() as p:
@@ -226,6 +305,11 @@ def main():
             drive_fold(page, "square", "Square", "right", "cone point · deficit 270°", "rim turn · 90°", 2)
         except Exception as error:  # noqa: BLE001
             record("square.drive", False, repr(error))
+        if args.lift_files:
+            try:
+                drive_lift(page, args.lift_files)
+            except Exception as error:  # noqa: BLE001
+                record("lift.drive", False, repr(error))
 
         record("console", len(console_errors) == 0, "; ".join(console_errors[:4]))
         browser.close()

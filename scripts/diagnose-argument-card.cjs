@@ -22,6 +22,14 @@
 //   E7 FROZEN + NO UNION — lineage.ts / conformalAtom.ts / specimenModel.ts /
 //        writtenFormModel.ts byte-identical to HEAD; the manifest carries the
 //        new file's NOT_FROZEN completeness row (a cures-at-HEAD compare).
+//   §10-§11 THE LIFT — IDENTITY & GRAIN (SEAL_THE_LIFT_IDENTITY_AND_GRAIN):
+//        the packet IS the name (a real "C"/"fact" reads itself, a
+//        placeholder reads "unnamed", never a positional letter); 'lifted'
+//        is the typing with the life-line read through `createdBy`; the
+//        lift id names WHICH entity (two edges both place); the grain is
+//        carried (edge A-AC-C) or honestly MARKED (face interior — slice 1);
+//        the fabricated-letter + dropped-subdivision plants bite; the WALK
+//        judges every card-reachable OperationKind by the packet comparator.
 //
 // Anti-mock: the REAL TS modules through the transpile hook.
 
@@ -102,14 +110,34 @@ check('§1 (E1) ★★ THE TORUS MAP READS THE TRACE: ONE concept row, IDENTIFIE
     torusReading.conceptRows[0].sourceIds.length === 4 &&
     torusReading.conceptRows[0].rootIds.length === 4 &&
     rowsAgreeWithSubstrate(torusReading, torus.shape));
-check('§1 (E1) the relations read the RECORDED correspondence (measured substrate: fresh ids + sourceVertexIds, the partner ABSORBED — the spec\'s mat:-relation-name does not exist on edges, flagged): 2 surviving relation rows each lettered by its source edge\'s endpoints (2 letters within A–D), 2 ABSORBED partners lettered likewise, and the words count 4→1 · 4→2 · 2 absorbed',
+// THE IDENTITY LAW (SEAL_THE_LIFT_IDENTITY_AND_GRAIN — recut): endpoints are
+// named by their REAL packet labels now (the invoked square's corners are
+// minted v0..v3 — measured), never positional letters. The expected names are
+// recomputed INDEPENDENTLY from the parent's own packets.
+const packetEndpointName = (parentShape, ids) => {
+  const parts = ids.map((id) => {
+    const label = parentShape.vertices[id]?.data?.label?.trim() ?? '';
+    return label.length > 0 && label !== id ? label : (id.split(':').pop() ?? id);
+  });
+  return parts.every((p) => p.length === 1) ? parts.join('') : parts.join('·');
+};
+check('§1 (E1) the relations read the RECORDED correspondence (measured substrate: fresh ids + sourceVertexIds, the partner ABSORBED): 2 surviving relation rows each NAMED by its source edge\'s endpoint PACKETS (v0·v1 style — the real minted names, recomputed independently), 2 ABSORBED partners named likewise, and the words count 4→1 · 4→2 · 2 absorbed',
   torusReading !== null &&
     torusReading.relationRows.length === 2 &&
     torusReading.relationRows.every(
-      (r) => r.typing === 'survived' && /^[A-D]{2}$/.test(r.rootLabels[0] ?? ''),
+      (r) => r.typing === 'survived' && r.rootLabels[0] === packetEndpointName(torus.parentShape, r.sourceIds),
     ) &&
     torusReading.absorbedRelations.length === 2 &&
-    torusReading.absorbedRelations.every((s) => /^[A-D]{2}$/.test(s)) &&
+    (() => {
+      const childEdgeIds = new Set(torus.shape.edges.map((e) => e.id));
+      const expectedAbsorbed = torus.parentShape.edges
+        .filter((e) => !childEdgeIds.has(e.id))
+        .map((e) => packetEndpointName(torus.parentShape, e.vertexIds));
+      return (
+        expectedAbsorbed.length === 2 &&
+        torusReading.absorbedRelations.every((s) => expectedAbsorbed.includes(s))
+      );
+    })() &&
     torusReading.words.includes('4 concepts become 1') &&
     torusReading.words.includes('4 relations become 2') &&
     torusReading.words.includes('2 absorbed') &&
@@ -256,11 +284,10 @@ console.log('\n----- §7 (P2·E1/E2) ★★ the relation map FROM THE WORD — a
 const torusRecovery = recoverBornSurface(torus.shape, torus.parentShape);
 const slotNameOf = (face, slot) => {
   const n = face.vertexIds.length;
-  // the parent square's corners ARE the roots — letter by sorted order (the
-  // same convention the model uses)
-  const roots = [...Object.keys(torus.parentShape.vertices)].sort();
-  const letter = (id) => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[roots.indexOf(id)] ?? id;
-  return `${letter(face.vertexIds[slot % n])}${letter(face.vertexIds[(slot + 1) % n])}`;
+  // THE IDENTITY LAW (recut): slots are named by the parent corners' REAL
+  // packet labels — recomputed here from the packets themselves, never from
+  // the model's own output
+  return packetEndpointName(torus.parentShape, [face.vertexIds[slot % n], face.vertexIds[(slot + 1) % n]]);
 };
 const expectedPairs = torusRecovery
   ? torusRecovery.pairings.map((p) => [slotNameOf(torusRecovery.parentFace, p.edgeA), slotNameOf(torusRecovery.parentFace, p.edgeB)].join('+'))
@@ -392,8 +419,215 @@ check('§9 (P2·E7) THE VIEW WIRES THE READING (source-pinned): incidence — ca
     );
   })());
 
+// ═══════════════════════════════════════════════════════════════════════════
+// THE LIFT — IDENTITY & GRAIN (SEAL_THE_LIFT_IDENTITY_AND_GRAIN): the packet
+// IS the name · 'lifted' is the typing · the id names WHICH entity · the
+// grain is carried-or-MARKED (slice 1: edge grain CARRIED, face interior
+// MARKED — the binding bar holds). Every subject engine-minted through the
+// committed doors; the comparators recompute from the SUBSTRATE; plants bite.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log('\n----- §10 (LIFT) ★★ identity · lifted typing · distinct id · grain carried-or-marked -----');
+const { getOperation } = req('src/operations/registry.ts');
+const { liftSubComplex, extractSubShape } = req('src/lib/subComplexLift.ts');
+const { serializeSnapshot } = req('src/playground/snapshot.ts');
+const { loadUniverseSnapshot, placeShelfEntry } = req('src/manuscript/genesisModel.ts');
+const seedTetra = createSeedShape('tetrahedron');
+const amboD = getOperation('ambo-dissection').execute({ shape: seedTetra, selectedCellId: null, selectedCell: null });
+const cornerA = 'vertex:tetrahedron:a';
+const cornerC = 'vertex:tetrahedron:c';
+const edgeBetween = (shapeX, u, v) =>
+  shapeX.edges.find(
+    (e) => (e.vertexIds[0] === u && e.vertexIds[1] === v) || (e.vertexIds[0] === v && e.vertexIds[1] === u),
+  );
+const eAC = edgeBetween(amboD, cornerA, cornerC);
+const eBD = edgeBetween(amboD, 'vertex:tetrahedron:b', 'vertex:tetrahedron:d');
+const liftAC = liftSubComplex(amboD, [{ kind: 'edge', id: eAC.id }]);
+const liftBD = liftSubComplex(amboD, [{ kind: 'edge', id: eBD.id }]);
+const loadLift = (lifted, seq) => placeShelfEntry(loadUniverseSnapshot(serializeSnapshot(lifted.shape, amboD.id, [])), seq);
+const loadedAC = loadUniverseSnapshot(serializeSnapshot(liftAC.shape, amboD.id, []));
+const loadedBD = loadUniverseSnapshot(serializeSnapshot(liftBD.shape, amboD.id, []));
+check('§10 (E-DISTINCT-ID) ★★ TWO different edges from ONE shape mint DISTINCT shape ids (`lift:edge:<edgeId>:from:<shape>` — the id names WHICH entity), both load placeable, and their LOADED ids stay distinct — the sheet dedup (keyed on shape.id, source-pinned in §11) admits BOTH; the collision that refused the second edge is dead',
+  liftAC.shape.id !== liftBD.shape.id &&
+    liftAC.shape.id.includes(eAC.id) &&
+    liftBD.shape.id.includes(eBD.id) &&
+    loadedAC.placeable === true &&
+    loadedBD.placeable === true &&
+    loadedAC.loaded.shape.id !== loadedBD.loaded.shape.id);
+const liftForm = placeShelfEntry(loadedAC, 511);
+const liftReading = buildArgumentReading(liftForm);
+const liftedShape = liftForm.shape;
+note(`lift card: ${liftReading.header.source} ⟶ ${liftReading.header.result} · "${liftReading.header.gloss}" · ${liftReading.conceptRows.map((r) => `${r.label}(${r.typing})`).join(' · ')}`);
+const liftedPacketLabels = Object.values(liftedShape.vertices).map((v) => v.data.label);
+check('§10 (E-GRAIN) ★★ THE A-AC-C GRAIN RIDES THE EDGE LIFT (Arman\'s case): the lifted coarse A-C carries 3 vertices (the T-junction: both corners + the collinear midpoint, packets intact) + 3 edges (the coarse span + both half-edges) — and NOTHING was refused, so the card carries NO grain mark',
+  Object.keys(liftedShape.vertices).length === 3 &&
+    liftedShape.edges.length === 3 &&
+    new Set(liftedPacketLabels).size === 3 &&
+    ['A', 'C', 'AC'].every((name) => liftedPacketLabels.includes(name)) &&
+    liftReading.grainMarks.length === 0);
+check('§10 (E-IDENTITY) ★★ THE REAL NAME READS ITSELF — the card\'s concept labels are EXACTLY the packets\' own {A, C, AC}; the positional fabrication is DEAD: the real "C" never reads "B" (the OLD sorted-root lettering minted exactly that here — measured pre-cure), and no row falls to a raw id tail',
+  liftReading.conceptRows.length === 3 &&
+    ['A', 'C', 'AC'].every((name) => liftReading.conceptRows.some((r) => r.label === name)) &&
+    !liftReading.conceptRows.some((r) => r.label === 'B') &&
+    liftReading.conceptRows.every((r) => ['A', 'C', 'AC'].includes(r.label)));
+check('§10 (E-LIFTED-TYPING) ★★ \'lifted\' IS THE TYPING, THE LIFE-LINE READS THROUGH: every concept AND relation types `lifted` (never born/invoked); the C corner\'s life-line reads "seed corner of the tetrahedron" (subject + source universe + lineage, `createdBy` verbatim); the midpoint\'s origin op is `ambo-dissection`; the header speaks "lifted from Ambo Dissection Tetrahedron" — not "invoked"; the words say "lifted whole"',
+  liftReading.op === 'patch-lift' &&
+    liftReading.conceptRows.every((r) => r.typing === 'lifted') &&
+    liftReading.relationRows.every((r) => r.typing === 'lifted') &&
+    liftReading.conceptRows.find((r) => r.label === 'C')?.origin?.display === 'seed corner of the tetrahedron' &&
+    liftReading.conceptRows.find((r) => r.label === 'AC')?.origin?.op === 'ambo-dissection' &&
+    liftReading.header.source === 'Ambo Dissection Tetrahedron' &&
+    liftReading.header.gloss === 'lifted from Ambo Dissection Tetrahedron' &&
+    liftReading.words.includes('lifted whole'));
+// the FACE lift — slice 1's binding bar: the side grain (A-AC-C on every
+// side) is CARRIED, the strictly-2D interior (the mid-face + the residue
+// dissection, coplanar-contained — detected geometrically) is honestly MARKED
+const coarseFace = amboD.faces.find(
+  (f) => f.role === 'parent-cell-face' && f.vertexIds.every((v) => seedTetra.vertices[v]),
+);
+const faceLift = liftSubComplex(amboD, [{ kind: 'face', id: coarseFace.id }]);
+const faceForm = loadLift(faceLift, 512);
+const faceReading = buildArgumentReading(faceForm);
+note(`face lift: v=${Object.keys(faceForm.shape.vertices).length} e=${faceForm.shape.edges.length} · marks=${JSON.stringify(faceReading.grainMarks)}`);
+check('§10 (E-GRAIN) ★★ THE FACE CARRIES ITS SIDES\' GRAIN AND MARKS ITS INTERIOR (slice 1, the binding bar): the coarse face lifts 6 vertices (3 corners + 3 side midpoints) + 9 edges (3 coarse sides + 6 half-edges), and the card carries the honest mark "coarse face; finer structure not carried" — surfaced in the words too; NEVER a silently bare coarse face',
+  Object.keys(faceForm.shape.vertices).length === 6 &&
+    faceForm.shape.edges.length === 9 &&
+    faceReading.grainMarks.includes('coarse face; finer structure not carried') &&
+    faceReading.words.includes('finer structure not carried'));
+// THE USER'S OWN NAME — the committed doors end-to-end: the workspace store's
+// ambo → selectVertex → updateSelectedVertexData (the packet editor's door)
+// → the lift → the card reads the person's word; a blanked packet reads
+// `unnamed`, never a fabricated letter
+const { useGeometryStore } = req('src/store/geometryStore.ts');
+useGeometryStore.getState().applyOperationToSelection('ambo-dissection');
+const workShape0 = useGeometryStore.getState().shapes[useGeometryStore.getState().currentShapeId];
+const workAC = edgeBetween(workShape0, cornerA, cornerC);
+useGeometryStore.getState().selectVertex(cornerC);
+useGeometryStore.getState().updateSelectedVertexData({ label: 'fact' });
+useGeometryStore.getState().selectVertex(cornerA);
+useGeometryStore.getState().updateSelectedVertexData({ label: '   ' });
+const workShape = useGeometryStore.getState().shapes[useGeometryStore.getState().currentShapeId];
+const renamedLift = liftSubComplex(workShape, [{ kind: 'edge', id: workAC.id }]);
+const renamedForm = placeShelfEntry(loadUniverseSnapshot(serializeSnapshot(renamedLift.shape, workShape.id, [])), 513);
+const renamedReading = buildArgumentReading(renamedForm);
+note(`renamed card: ${renamedReading.conceptRows.map((r) => r.label).join(' · ')}`);
+check('§10 (E-IDENTITY) ★★ THE USER\'S NAME + THE PLACEHOLDER, through the committed doors (store ambo → selectVertex → updateSelectedVertexData → lift → load): the corner renamed "fact" reads "fact"; the corner blanked to whitespace reads "unnamed" — NEVER a fabricated letter, NEVER the erased name resurrected',
+  renamedReading.conceptRows.some((r) => r.label === 'fact') &&
+    renamedReading.conceptRows.some((r) => r.label === 'unnamed') &&
+    !renamedReading.conceptRows.some((r) => r.label === 'A' || r.label === 'B'));
+
+console.log('\n----- §10 (PLANTS) ★★ a fabricated letter · a dropped subdivision — both bite -----');
+// the INDEPENDENT packet judge: a concept whose vertex carries a real,
+// non-degenerate packet label MUST read exactly that label (modulo the ·X
+// disambiguating index) — recomputed from the SHAPE, never from the model
+const packetJudge = (reading, shapeX) =>
+  reading.conceptRows.every((row) => {
+    const packet = shapeX.vertices[row.resultId]?.data;
+    const own = packet && typeof packet.label === 'string' ? packet.label.trim() : '';
+    if (own.length > 0 && own !== row.resultId) {
+      return row.label.replace(/·[A-Z]\d*$/, '') === own;
+    }
+    return true; // degenerate/absent packets are judged by the other clauses
+  });
+const fabricatedCard = {
+  ...liftReading,
+  conceptRows: liftReading.conceptRows.map((r) => (r.label === 'C' ? { ...r, label: 'B' } : r)),
+};
+check('§10 (PLANT) ★★ THE FABRICATED LETTER BITES: forcing the positional "B" over the real packet "C" FAILS the independent packet judge that greens the real card',
+  packetJudge(liftReading, liftedShape) === true && packetJudge(fabricatedCard, liftedShape) === false);
+// the dropped subdivision: the PRE-CURE closure (endpoints only, no mark),
+// hand-built and run through the SAME committed extraction + load — a
+// silently bare lift (no AC, no mark) fails the carried-or-marked judge
+const bareClosure = { cellIds: [], faceIds: [], edgeIds: [eAC.id], vertexIds: [cornerA, cornerC] };
+const bareLift = extractSubShape(amboD, bareClosure, `edge:${eAC.id}`);
+const bareForm = placeShelfEntry(loadUniverseSnapshot(serializeSnapshot(bareLift.shape, amboD.id, [])), 514);
+const bareReading = buildArgumentReading(bareForm);
+const carriedOrMarked = (reading) =>
+  reading.conceptRows.some((r) => r.label === 'AC') || reading.grainMarks.length > 0;
+check('§10 (PLANT) ★★ THE DROPPED SUBDIVISION BITES: the pre-cure endpoints-only closure (grain silently omitted, no mark) FAILS the carried-or-marked judge that greens BOTH real lifts (the edge: grain carried · the face: interior marked) — the binding bar is structural, not a wish',
+  carriedOrMarked(liftReading) === true &&
+    carriedOrMarked(faceReading) === true &&
+    carriedOrMarked(bareReading) === false);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// §11 THE WALK — every OperationKind reads packet identity (the witness bar:
+// seed/invoke · glue/flip-glue · cut · collapse · product · patch-lift ★§10 ·
+// dual · ambo · refine). Registry census (measured): the walkable doors are
+// the playground ops + ambo-dissection (≡ the ambo group) + the P2 dual
+// carrier + thicken (product) + bisectSurface (refine); `assemble` and
+// `pyritohedral-diagonalization` have no card-reachable birth door today —
+// their op-words ride the reasoned `the <op> move` fall-through (never
+// silent). The invoked-primitive leg is §3's (loadForm mints op `seed` —
+// measured; the OP_WORDS `invoke` entry stands honest-but-dormant).
+// ═══════════════════════════════════════════════════════════════════════════
+console.log('\n----- §11 (WALK) every birth-op reads packet identity + its word + its typing -----');
+const { thicken } = req('src/lib/thicken.ts');
+const { bisectSurface } = req('src/lib/surfaceRefinement.ts');
+const wrapCarrier = (shapeX, parentX, title) => ({
+  id: `w-walk-${title}`,
+  title,
+  shape: shapeX,
+  parentShape: parentX,
+  opId: null,
+  provenance: 'witness carrier (the shelf-load pattern)',
+  render: { mode: 'bodiless', reason: 'witness carrier', shape: shapeX },
+});
+const seedWalk = buildArgumentReading(wrapCarrier(seedTetra, null, 'seed'));
+check('§11 (WALK) ★ SEED + INVOKE: the seed tetrahedron\'s card reads its 4 corners by their REAL packet names A·B·C·D (all born, their own roots); the invoked square (§3\'s leg) reads v0..v3 — both judged by the independent packet comparator',
+  seedWalk.op === 'seed' &&
+    ['A', 'B', 'C', 'D'].every((name) => seedWalk.conceptRows.some((r) => r.label === name)) &&
+    seedWalk.conceptRows.every((r) => r.typing === 'born') &&
+    packetJudge(seedWalk, seedTetra) &&
+    ['v0', 'v1', 'v2', 'v3'].every((name) => seedReading.conceptRows.some((r) => r.label === name)) &&
+    packetJudge(seedReading, sqHost.shape));
+const cutApplied = applyPlaygroundOperationTo('cut', triHost.shape, null, 611, 8, [], triHost.shape.faces[0].id);
+const cutWalk = cutApplied.ok ? buildArgumentReading(cutApplied.born) : null;
+const collapseApplied = applyPlaygroundOperationTo('collapse-sphere', sqHost.shape, null, 612, 8, [], null);
+const collapseWalk = collapseApplied.ok ? buildArgumentReading(collapseApplied.born) : null;
+note(`cut: ${cutWalk ? cutWalk.conceptRows.map((r) => `${r.label}(${r.typing})`).join(' ') : cutApplied.reason} · collapse: ${collapseWalk ? collapseWalk.conceptRows.map((r) => `${r.label}(${r.typing})`).join(' ') : collapseApplied.reason}`);
+check('§11 (WALK) ★ GLUE + FLIP-GLUE + CUT + COLLAPSE: the torus\'s identified class reads THROUGH its members\' real names (v0·v1·v2·v3 — the id-as-label mint has no independent name, so the members\' packets speak); the klein likewise judged; the cut form keeps its corners\' real names; the collapse-born class reads through its members — every card packet-judged',
+  torusReading.conceptRows[0].label === 'v0·v1·v2·v3' &&
+    packetJudge(torusReading, torus.shape) &&
+    packetJudge(kleinReading, kleinApplied.born.shape) &&
+    cutWalk !== null &&
+    ['v0', 'v1', 'v2'].every((name) => cutWalk.conceptRows.some((r) => r.label === name)) &&
+    packetJudge(cutWalk, cutApplied.born.shape) &&
+    collapseWalk !== null &&
+    collapseWalk.conceptRows.every((r) => r.label.split('·').every((part) => /^v\d$|^[A-Z]\d*$/.test(part))) &&
+    packetJudge(collapseWalk, collapseApplied.born.shape));
+const bandLift = thicken(liftAC.shape);
+const bandWalk = buildArgumentReading(wrapCarrier(bandLift.shape, liftAC.shape, 'band'));
+// the refine door refines BORN WORD-FORMS (measured: the raw invoked polygon
+// refuses — "the rim op refines born word-forms"); the subject is the
+// fold-born cone, its resolution a re-expression that keeps op `refine`
+const refined = bisectSurface(cone.shape, triHost.shape);
+const refineWalk = buildArgumentReading(wrapCarrier(refined.shape, triHost.shape, 'refined'));
+const amboWalk = buildArgumentReading(wrapCarrier(amboD, seedTetra, 'ambo'));
+note(`product: ${bandWalk.conceptRows.map((r) => r.label).join(' ')} · refine op=${refineWalk.op} res=${refined.refinement?.typeClaim ?? 'none'} ${refineWalk.conceptRows.map((r) => r.label).join(' ')} · ambo ${amboWalk.conceptRows.map((r) => `${r.label}(${r.typing})`).join(' ')}`);
+check('§11 (WALK) ★ PRODUCT + DUAL + AMBO + REFINE: the ×I band\'s copies read through their sources\' real names (A/C/AC + the ·X index — the copy mints id-as-label); the dual carrier is packet-judged (born-of-face rows ride §3); the ambo universe reads 4 SURVIVED corners A–D + 6 midpoints AB..CD (typed `identified` — the ratified ≥2-sources rule\'s letter, flagged) with its own op word; the refined cone keeps its BIRTH op (`glue` — refine is a RESOLUTION, not a birth; the trace rides `genealogy.resolution`) and mints finer concepts without erasing a name — every card packet-judged',
+  bandWalk.op === 'product' &&
+    bandWalk.conceptRows.every((r) => ['A', 'C', 'AC'].includes(r.label.replace(/·[A-Z]\d*$/, ''))) &&
+    packetJudge(bandWalk, bandLift.shape) &&
+    packetJudge(dualReading, dualShape) &&
+    amboWalk.op === 'ambo-dissection' &&
+    ['A', 'B', 'C', 'D'].every((name) => amboWalk.conceptRows.some((r) => r.label === name && r.typing === 'survived')) &&
+    ['AB', 'AC', 'AD', 'BC', 'BD', 'CD'].every((name) => amboWalk.conceptRows.some((r) => r.label === name && r.typing === 'identified')) &&
+    amboWalk.header.gloss === 'corners cut to midpoints — the ambo dissection' &&
+    packetJudge(amboWalk, amboD) &&
+    refineWalk.op === 'glue' &&
+    refined.refinement?.typeClaim === 'resolution' &&
+    refineWalk.conceptRows.length > (coneReading?.conceptRows.length ?? 0) &&
+    packetJudge(refineWalk, refined.shape));
+const viewSrcNow = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+check('§11 (VIEW) THE LIFT RENDERS (source-pinned): the view draws the life-line (`origin.display` + the ", lifted" branch), renders the grain marks (⚠ + `argument.grainMarks`), counts `lifted` in the grouped line, and keys the sheet dedup on `shape.id` (the exact predicate the distinct id unblocks)',
+  viewSrcNow.includes('origin.display') &&
+    viewSrcNow.includes('argument.grainMarks') &&
+    viewSrcNow.includes('`${lifted} lifted`') &&
+    viewSrcNow.includes('w.form.shape.id === item.entry.loaded.shape.id'));
+check('§11 (E-NO-UNION) NOTHING FROZEN MOVED: ambo.ts (the mechanism is the LIFT, not the ambo — the T-junction stays real) · types/geometry.ts · lib/shape.ts · store/geometryStore.ts · the MANIFEST — all BYTE-IDENTICAL to HEAD (no union, no new file, no new row owed)',
+  ['src/lib/ambo.ts', 'src/types/geometry.ts', 'src/lib/shape.ts', 'src/store/geometryStore.ts', 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'].every(headEq));
+
 console.log(
-  `\n--- THE ARGUMENT-READING CARD — the MAP is the spine, Phase 2 completes the reading (the word-attributed relation map through the committed recovery, incidence ∘ map, stance with the acquired complex, the closure-gated verdict, the honest fallback): ${
+  `\n--- THE ARGUMENT-READING CARD — the MAP is the spine, Phase 2 completes the reading, THE LIFT carries identity + grain (the packet is the name, 'lifted' the typing, the id names WHICH entity, the grain carried-or-marked): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
   } ---`,
 );

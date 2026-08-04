@@ -69,14 +69,24 @@ const dissectedBytes = JSON.stringify(dissected);
 const sharedCount = (a, b) => a.vertexIds.filter((v) => b.vertexIds.includes(v)).length;
 
 // ===== [1] a multi-FACE region (adjacent pair) ================================
+// THE GRAIN LAW (SEAL_THE_LIFT_IDENTITY_AND_GRAIN): a lifted COARSE edge now
+// CARRIES its collinear finer cells (the A-AC-C grain — the argument-card
+// witness §10 owns that truth), so the exact-count clauses here run on
+// GRAIN-FREE subjects (faces/edges with no seed-to-seed side) where the
+// closure's shape is unchanged — each clause keeps its original claim.
+const isSeedVertex = (v) => Boolean(seed.vertices[v]);
+const grainFreeFace = (f) => {
+  const vs = f.vertexIds;
+  return vs.every((v, i) => !(isSeedVertex(v) && isSeedVertex(vs[(i + 1) % vs.length])));
+};
 console.log('----- [1] multi-FACE region: two faces sharing an edge -----');
 let adjacent = null;
 outer: for (const fa of dissected.faces) {
   for (const fb of dissected.faces) {
-    if (fa.id !== fb.id && sharedCount(fa, fb) === 2) { adjacent = [fa, fb]; break outer; }
+    if (fa.id !== fb.id && grainFreeFace(fa) && grainFreeFace(fb) && sharedCount(fa, fb) === 2) { adjacent = [fa, fb]; break outer; }
   }
 }
-check('§1 fixture: an adjacent face pair exists (two shared vertices — a shared edge)', Boolean(adjacent));
+check('§1 fixture: an adjacent GRAIN-FREE face pair exists (two shared vertices — a shared edge; no coarse side)', Boolean(adjacent));
 const facePicks = [
   { kind: 'face', id: adjacent[0].id },
   { kind: 'face', id: adjacent[1].id },
@@ -115,9 +125,12 @@ note(`multi-cell concrete: {V:${Object.keys(cellRegion.shape.vertices).length}, 
 
 // ===== [3] multi-EDGE path + cycle ============================================
 console.log('\n----- [3] multi-EDGE regions: a path and a cycle -----');
-const e0 = dissected.edges[0];
+// grain-free edges (a half-edge / mid-edge carries nothing collinear) — the
+// coarse-edge carry is §10 of the argument-card witness
+const grainFreeEdge = (e) => !(isSeedVertex(e.vertexIds[0]) && isSeedVertex(e.vertexIds[1]));
+const e0 = dissected.edges.find(grainFreeEdge);
 const e1 = dissected.edges.find(
-  (e) => e.id !== e0.id && e.vertexIds.some((v) => e0.vertexIds.includes(v)),
+  (e) => e.id !== e0.id && grainFreeEdge(e) && e.vertexIds.some((v) => e0.vertexIds.includes(v)),
 );
 const pathRegion = liftSubComplex(dissected, [
   { kind: 'edge', id: e0.id },
@@ -150,13 +163,19 @@ check('§3 an edge CYCLE (a triangle boundary, no face) lifts {V:3, E:3, F:0} �
 
 // ===== [4] disconnected → refused, not broken =================================
 console.log('\n----- [4] a DISCONNECTED pick refuses honestly -----');
+// TRULY apart (SEAL_THE_LIFT_IDENTITY_AND_GRAIN recut): the old finder's
+// first no-shared-vertex pair was a COARSE face + a face touching it through
+// the collinear grain — apart by IDS, JOINED in the geometry; the cured
+// closure now carries that junction and the pair lifts CONNECTED (asserted
+// below as the new truth). The refusal clause runs on a pair with no grain
+// contact either: two grain-free faces sharing nothing.
 let apart = null;
 outer2: for (const fa of dissected.faces) {
   for (const fb of dissected.faces) {
-    if (fa.id !== fb.id && sharedCount(fa, fb) === 0) { apart = [fa, fb]; break outer2; }
+    if (fa.id !== fb.id && grainFreeFace(fa) && grainFreeFace(fb) && sharedCount(fa, fb) === 0) { apart = [fa, fb]; break outer2; }
   }
 }
-check('§4 fixture: two faces sharing NO vertex exist', Boolean(apart));
+check('§4 fixture: two faces sharing NO vertex and NO grain contact exist', Boolean(apart));
 const apartPicks = [
   { kind: 'face', id: apart[0].id },
   { kind: 'face', id: apart[1].id },
@@ -172,6 +191,27 @@ try {
   apartThrew = /disconnected/.test(String(error.message));
 }
 check('§4 the lift REFUSES the disconnected pick loudly (never a broken lift)', apartThrew);
+// THE CURED TRUTH (SEAL_THE_LIFT_IDENTITY_AND_GRAIN): a coarse face and its
+// inscribed mid-face share NO vertex id, but the carried side grain (the
+// midpoints) JOINS them — the pair now lifts CONNECTED (the pre-cure closure
+// dropped exactly this junction and mis-read the pair as disconnected)
+const coarseFace = dissected.faces.find((f) => f.vertexIds.every(isSeedVertex));
+const inscribedMid = coarseFace
+  ? dissected.faces.find(
+      (f) => f.id !== coarseFace.id && f.vertexIds.every((v) => !isSeedVertex(v)) && sharedCount(f, coarseFace) === 0 &&
+        f.vertexIds.every((v) => dissected.vertices[v].createdBy.sourceVertexIds.every((s) => coarseFace.vertexIds.includes(s))),
+    )
+  : null;
+check('§4 THE CURED JUNCTION: the coarse face + its inscribed mid-face (no shared vertex ID — joined by the carried grain) now lift as ONE CONNECTED region',
+  Boolean(coarseFace) &&
+    Boolean(inscribedMid) &&
+    validateLiftSelection(
+      dissected,
+      downwardClosure(dissected, [
+        { kind: 'face', id: coarseFace.id },
+        { kind: 'face', id: inscribedMid.id },
+      ]),
+    ) === null);
 
 // ===== [5] the REAL store: toggle → set lift → clear → fallback ===============
 console.log('\n----- [5] the real store: toggle semantics, set lift, clear, fallback -----');
@@ -210,8 +250,8 @@ useGeometryStore.getState().selectCell(liveCore.id);
 const fallbackWatermark = useLiftStore.getState().queue.length; // R1.2 watermark idiom
 const fallbackTitle = useGeometryStore.getState().liftSelectionToManuscript();
 const fallbackPushed = useLiftStore.getState().queue.slice(fallbackWatermark);
-check("§5 NO REGRESSION: with an empty set, the single inspection-selected cell still lifts ('cell of …' — the committed P1b path)",
-  fallbackTitle === `cell of ${live.name}` &&
+check("§5 NO REGRESSION: with an empty set, the single inspection-selected cell still lifts — titled by WHICH entity ('cell:<id> of …', the SEAL_THE_LIFT_IDENTITY_AND_GRAIN distinct-id mint) — the committed P1b path",
+  fallbackTitle === `cell:${liveCore.id} of ${live.name}` &&
   fallbackPushed.length === 1 &&
   loadUniverseSnapshot(fallbackPushed[0].file).placeable === true);
 // clear control

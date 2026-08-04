@@ -47,17 +47,29 @@ import { acquireFaithfulComplex } from './surfaceClassifier';
 import { readVertexCurvatures, gaussBonnetTotal } from '../lib/conformalAtom';
 import type { AssembledComplex } from '../lib/globalW1';
 
-export type ArgumentTyping = 'identified' | 'survived' | 'born';
+// THE LIFT — IDENTITY & GRAIN (SEAL_THE_LIFT_IDENTITY_AND_GRAIN): 'lifted' —
+// imported whole from another universe (`genealogy.operation === 'patch-lift'`)
+// — is its OWN typing, never a mistyped 'born'
+export type ArgumentTyping = 'identified' | 'survived' | 'born' | 'lifted';
 
 export interface ArgumentMapRow {
   kind: 'concept' | 'relation'; // • vertex-concept · — relation
   resultId: string; // the substrate id (the value — the witness reads this)
-  label: string; // the presentation letter/name the card draws
+  // THE IDENTITY LAW (the researcher's, binding): the label CARRIES the
+  // packet's real name (`vertex.data.label` — a seed "C", a user "fact", a
+  // minted "AB"/"v0"), 'unnamed' for a reachable-but-empty packet, the id
+  // tail for an unreachable one; a positional letter survives ONLY as an
+  // appended disambiguating index (`name·A`), NEVER as the name
+  label: string;
   sourceIds: string[]; // the ONE-generation sources (ids, may be empty)
   rootIds: string[]; // the ultimate roots via primalMultiset (concepts only)
-  rootLabels: string[]; // presentation letters for the roots (A, B, …)
+  rootLabels: string[]; // the roots' real names (packet-carried, see label)
   typing: ArgumentTyping;
   bornOf: 'face' | 'edge' | null; // the dual's trade: born OF a face/edge (p ⟷ f)
+  // the lifted concept's life-line read THROUGH to its birth record
+  // (`createdBy` — retained verbatim by the lift): "seed corner of the
+  // tetrahedron" — subject + source universe + lineage; null off patch-lift
+  origin: { op: string; shapeId: string; display: string } | null;
 }
 
 export interface ArgumentReading {
@@ -86,6 +98,10 @@ export interface ArgumentReading {
   gloss: string; // the layman line (dev-register placeholder; designer refines)
   refusal: string | null; // the acquire's own sentence when incidence/stance/verdict refuse
   declare: string | null; // immersion/collapse honesty (the drawn body hides the cell stance)
+  // THE GRAIN LAW: the lift's own honest refusal marks (`data.grainMark` on
+  // lifted edges/faces — "coarse face; finer structure not carried"), read
+  // off the substrate and rendered by the view; empty when the grain rode
+  grainMarks: string[];
 }
 
 export interface RelationPairRow {
@@ -149,6 +165,12 @@ const OP_WORDS: Record<string, string> = {
   refine: 'refine the cells',
   seed: 'the seed, invoked',
   identify: 'identify the chosen cells',
+  // THE LIFT (SEAL_THE_LIFT_IDENTITY_AND_GRAIN) — the header names the move;
+  // buildArgumentReading swaps in the SPECIFIC source name where it reads one
+  'patch-lift': 'lifted from the source universe',
+  invoke: 'the primitive, invoked',
+  'ambo-dissection': 'corners cut to midpoints — the ambo dissection',
+  product: 'the ×I product — thickened',
 };
 
 const ROOT_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -170,7 +192,18 @@ export function mergedMembersOf(id: string): string[] | null {
 
 function sourceNameFor(form: WrittenForm): string {
   const parent = form.parentShape;
-  if (!parent) return 'invoked';
+  if (!parent) {
+    // THE LIFT: a placed patch-lift has no parent on the sheet (the loader
+    // re-roots), but its NAME carries the source verbatim — the lift's own
+    // mint is `<entity> of <source universe>` (subComplexLift, this build's
+    // contract) — read it, never "invoked" for an import
+    if (form.shape.genealogy.operation === 'patch-lift') {
+      const name = form.shape.name ?? '';
+      const cut = name.indexOf(' of ');
+      return cut > -1 ? name.slice(cut + 4) : 'another universe';
+    }
+    return 'invoked';
+  }
   if (parent.faces.length === 1) {
     return POLYGON_SIGNS[parent.faces[0].vertexIds.length] ?? `${parent.faces[0].vertexIds.length}-gon`;
   }
@@ -184,6 +217,14 @@ function resultNameFor(form: WrittenForm): string {
   // verdict gate: χ=1, open, orientable) — the header speaks the class word,
   // not the raw op ('cone' joins once the metric mark rides — the seal's note)
   if (render.mode === 'faithful') return 'disk';
+  // THE LIFT: the result is the lifted entity itself — the tag before the
+  // mint's own " of " (the full name would repeat the source already named
+  // on the left of the arrow)
+  if (form.shape.genealogy.operation === 'patch-lift') {
+    const name = form.shape.name ?? '';
+    const cut = name.indexOf(' of ');
+    if (cut > -1) return name.slice(0, cut);
+  }
   // the drawn class name where a card already computes one is Phase-2 polish;
   // the form's own title word is the honest Phase-1 fallback
   return form.title.split('—')[0].trim() || form.shape.name || 'this form';
@@ -195,13 +236,68 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
   const op = shape.genealogy.operation;
   const memo = new Map<string, Map<string, number>>();
 
-  // the root letters: every distinct primal root across the form, in sorted
-  // order, gets a stable presentation letter
+  // THE IDENTITY LAW (SEAL_THE_LIFT_IDENTITY_AND_GRAIN — the researcher's,
+  // binding): CARRY what the substrate holds · MARK what it doesn't ·
+  // FABRICATE neither a name nor a structure · ERASE neither. The entity's
+  // name IS its packet (`vertex.data.label` — the seed's "C", the user's
+  // "fact", the mint's "AB"/"v0"); `letterFor` is DETHRONED as an identity
+  // source — a positional letter survives ONLY as an appended disambiguating
+  // index over duplicate real names, never as the name.
+  const liftedForm = op === 'patch-lift'; // imported whole from another universe
+  const packetOf = (id: string) =>
+    shape.vertices[id]?.data ??
+    parent?.vertices[id]?.data ??
+    (form.parentShapes ?? []).map((s) => s.vertices[id]?.data).find(Boolean) ??
+    null;
+  // the entity's OWN name: a real, non-degenerate packet label (the quotient
+  // mint copies the id INTO the label — measured — which is no independent
+  // name; an id-as-label or empty label falls through)
+  const ownNameOf = (id: string): string | null => {
+    const data = packetOf(id);
+    if (!data || typeof data.label !== 'string') return null;
+    const trimmed = data.label.trim();
+    return trimmed.length > 0 && trimmed !== id ? trimmed : null;
+  };
+  const idTail = (id: string): string => id.split(':').pop() ?? id;
+  // a root's display: its packet name; 'unnamed' when the packet is reachable
+  // but empty/degenerate; the honest id tail when the packet is out of reach
+  // (a source-tagged primal of an absent universe — the id is a real value)
+  const rootDisplayBase = (id: string): string =>
+    ownNameOf(id) ?? (packetOf(id) ? 'unnamed' : idTail(id));
+
   const allRoots = new Set<string>();
   for (const vertexId of Object.keys(shape.vertices)) {
     for (const root of primalMultiset(vertexId, shape, memo).keys()) allRoots.add(root);
   }
-  const rootLabelOf = new Map([...allRoots].sort().map((id, i) => [id, letterFor(i, ROOT_LETTERS)]));
+  const sortedRoots = [...allRoots].sort();
+  const rootBaseNames = sortedRoots.map(rootDisplayBase);
+  const rootNameCount = new Map<string, number>();
+  for (const name of rootBaseNames) rootNameCount.set(name, (rootNameCount.get(name) ?? 0) + 1);
+  const rootNameSeen = new Map<string, number>();
+  const rootLabelOf = new Map<string, string>();
+  sortedRoots.forEach((id, i) => {
+    const name = rootBaseNames[i];
+    if ((rootNameCount.get(name) ?? 0) > 1) {
+      const k = rootNameSeen.get(name) ?? 0;
+      rootNameSeen.set(name, k + 1);
+      rootLabelOf.set(id, `${name}·${letterFor(k, ROOT_LETTERS)}`); // index, never the name
+    } else {
+      rootLabelOf.set(id, name);
+    }
+  });
+  const rootDisplayOf = (id: string): string => rootLabelOf.get(id) ?? rootDisplayBase(id);
+
+  // the lifted concept's life-line read-through: `createdBy` is retained
+  // VERBATIM by the lift — the birth op + the birth universe name the story
+  // ("seed corner of the tetrahedron"); the id is carried raw on the row
+  const shapeDisplay = (shapeId: string): string =>
+    shapeId.startsWith('shape:seed:')
+      ? `the ${shapeId.slice('shape:seed:'.length)}`
+      : shapeId.startsWith('shape:')
+        ? shapeId.slice('shape:'.length)
+        : shapeId;
+  const originDisplay = (creation: { operation: string; shapeId: string }): string =>
+    `${creation.operation === 'seed' ? 'seed corner' : `${creation.operation} corner`} of ${shapeDisplay(creation.shapeId)}`;
 
   const parentVertexIds = parent ? new Set(Object.keys(parent.vertices)) : null;
   const conceptRows: ArgumentMapRow[] = Object.keys(shape.vertices)
@@ -218,8 +314,9 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
       // what it is born OF; the corners are that face's witnesses)
       const bornOf: ArgumentMapRow['bornOf'] =
         creation.sourceFaceId ? 'face' : creation.sourceEdgeId && sourceIds.length === 0 ? 'edge' : null;
-      const typing: ArgumentTyping =
-        bornOf !== null
+      const typing: ArgumentTyping = liftedForm
+        ? 'lifted' // the lift is a pure restriction — every member is an import
+        : bornOf !== null
           ? 'born'
           : sourceIds.length >= 2
             ? 'identified'
@@ -228,50 +325,97 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
               : sourceIds.length === 1 && sourceIds[0] !== vertexId
                 ? 'survived'
                 : 'born';
+      // the concept's name: its OWN packet first; a class without an
+      // independent name (id-as-label) reads through its members' real names
+      const own = ownNameOf(vertexId);
+      const label =
+        own ??
+        (rootIds.length > 0 && !(rootIds.length === 1 && rootIds[0] === vertexId)
+          ? rootIds.map(rootDisplayOf).join('·')
+          : packetOf(vertexId)
+            ? 'unnamed'
+            : idTail(vertexId));
       return {
         kind: 'concept' as const,
         resultId: vertexId,
-        label: rootIds.length === 1 ? (rootLabelOf.get(rootIds[0]) ?? vertexId) : vertexId.split(':').pop() ?? vertexId,
+        label,
         sourceIds,
         rootIds,
-        rootLabels: rootIds.map((id) => rootLabelOf.get(id) ?? id),
+        rootLabels: rootIds.map(rootDisplayOf),
         typing,
         bornOf,
+        origin: liftedForm
+          ? { op: creation.operation, shapeId: creation.shapeId, display: originDisplay(creation) }
+          : null,
       };
     });
+  // duplicate real names across DISTINCT concepts stay distinguishable — the
+  // positional letter rides as an appended index only
+  const conceptNameCount = new Map<string, number>();
+  for (const row of conceptRows) conceptNameCount.set(row.label, (conceptNameCount.get(row.label) ?? 0) + 1);
+  const conceptNameSeen = new Map<string, number>();
+  for (const row of conceptRows) {
+    if ((conceptNameCount.get(row.label) ?? 0) > 1) {
+      const k = conceptNameSeen.get(row.label) ?? 0;
+      conceptNameSeen.set(row.label, k + 1);
+      row.label = `${row.label}·${letterFor(k, ROOT_LETTERS)}`;
+    }
+  }
 
   // the relation source is the recorded `sourceVertexIds` (the surviving
   // representative's parent endpoints — measured substrate fact); the source
-  // is NAMED by those endpoints' root letters (AB — a reading, not a mint)
-  const endpointLetters = (endpointIds: readonly string[]): string =>
-    endpointIds.map((id) => rootLabelOf.get(id) ?? primalRootLetter(id)).join('');
-  const primalRootLetter = (id: string): string => {
+  // is NAMED by those endpoints' REAL names (AB / v0·v1 — a reading, not a
+  // mint; single-char names join bare, longer ones join with ·)
+  const endpointNameOf = (id: string): string => {
+    if (rootLabelOf.has(id)) return rootLabelOf.get(id) as string;
+    const own = ownNameOf(id);
+    if (own) return own;
     // a parent endpoint may itself be a merged class — resolve to its roots
     const roots = shape.vertices[id]
       ? [...primalMultiset(id, shape, memo).keys()].sort()
       : (mergedMembersOf(id) ?? [id]);
-    return roots.map((r) => rootLabelOf.get(r) ?? r.split(':').pop() ?? r).join('');
+    if (roots.length === 1 && roots[0] === id) return packetOf(id) ? 'unnamed' : idTail(id);
+    return roots.map(rootDisplayOf).join('·');
   };
+  const joinNames = (parts: string[]): string =>
+    parts.every((p) => p.length === 1) ? parts.join('') : parts.join('·');
+  const endpointLetters = (endpointIds: readonly string[]): string =>
+    joinNames(endpointIds.map(endpointNameOf));
   const parentEdgeIds = parent ? new Set(parent.edges.map((e) => e.id)) : null;
   const relationLabelOf = new Map(
     [...shape.edges].map((e) => e.id).sort().map((id, i) => [id, letterFor(i, RELATION_LETTERS)]),
   );
+  // a relation's own packet name when the substrate carries one (measured:
+  // none minted today — the honest read stands ready); the pairing letter
+  // stays PRESENTATION over the real edge id (P1's ratified stance)
+  const relationOwnName = (edge: Edge): string | null => {
+    const raw = edge.data?.['label'];
+    if (typeof raw !== 'string') return null;
+    const trimmed = raw.trim();
+    return trimmed.length > 0 && trimmed !== edge.id ? trimmed : null;
+  };
   const relationRows: ArgumentMapRow[] = [...shape.edges]
     .sort((a, b) => a.id.localeCompare(b.id))
     .map((edge: Edge) => {
       const sourceEndpoints = edge.sourceVertexIds ?? edge.vertexIds;
       const sourceIds = edge.sourceEdgeId ? [edge.sourceEdgeId] : [...sourceEndpoints];
-      const typing: ArgumentTyping =
-        parentEdgeIds && parentEdgeIds.has(edge.id) ? 'survived' : parent ? 'survived' : 'born';
+      const typing: ArgumentTyping = liftedForm
+        ? 'lifted'
+        : parentEdgeIds && parentEdgeIds.has(edge.id)
+          ? 'survived'
+          : parent
+            ? 'survived'
+            : 'born';
       return {
         kind: 'relation' as const,
         resultId: edge.id,
-        label: relationLabelOf.get(edge.id) ?? edge.id,
+        label: relationOwnName(edge) ?? relationLabelOf.get(edge.id) ?? edge.id,
         sourceIds,
         rootIds: [],
-        rootLabels: [endpointLetters(sourceEndpoints)], // the source edge, endpoint-lettered
+        rootLabels: [endpointLetters(sourceEndpoints)], // the source edge, endpoint-named
         typing,
         bornOf: null,
+        origin: null,
       };
     });
 
@@ -287,12 +431,27 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
     ? Object.keys(parent.vertices).filter((id) => !shape.vertices[id] && !absorbedVertexIds.has(id)).length
     : 0;
 
+  // THE GRAIN LAW: the lift's own honest marks, read off the lifted copies'
+  // data (never re-derived here — the detection lived at the source)
+  const grainMarks = [
+    ...new Set(
+      [
+        ...shape.edges.map((e) => e.data?.['grainMark']),
+        ...shape.faces.map((f) => f.data?.['grainMark']),
+      ].filter((m): m is string => typeof m === 'string' && m.length > 0),
+    ),
+  ];
+
   // the words-line — counts, mechanical (the designer's wording rides later)
   const words = parent
     ? `${Object.keys(parent.vertices).length} concepts become ${conceptRows.length} · ${parent.edges.length} relations become ${relationRows.length}${
         absorbedRelations.length > 0 ? ` · ${absorbedRelations.length} absorbed` : ''
       }${diedConcepts > 0 ? ` · ${diedConcepts} die` : ''}`
-    : `${conceptRows.length} concepts, ${relationRows.length} relations — the seed's own`;
+    : liftedForm
+      ? `${conceptRows.length} concepts, ${relationRows.length} relations — lifted whole${
+          grainMarks.length > 0 ? ' · finer structure not carried' : ''
+        }`
+      : `${conceptRows.length} concepts, ${relationRows.length} relations — the seed's own`;
 
   // ---- PHASE 2 — the relation half + the reading on it -------------------
   // (1) THE ATTRIBUTED PAIRING — the committed replay-verified birth word
@@ -450,7 +609,10 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
     header: {
       source: sourceNameFor(form),
       result: resultNameFor(form),
-      gloss: OP_WORDS[op] ?? `the ${op} move`,
+      // the lift's gloss names its SPECIFIC source ("lifted from <source>" —
+      // the sealed header phrase); every other op keeps its word, with the
+      // reasoned `the <op> move` fall-through (never silent)
+      gloss: liftedForm ? `lifted from ${sourceNameFor(form)}` : (OP_WORDS[op] ?? `the ${op} move`),
     },
     conceptRows,
     relationRows,
@@ -464,6 +626,7 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
     gloss,
     refusal,
     declare,
+    grainMarks,
     // the receipt: which existing card rows demote under the hairline (the
     // view filters its OWN rows by these labels — nothing re-derived here)
     certificateLabels: ['χ', 'χ (certified)', 'class', 'name', 'H₁', 'w₁', 'genus', 'b₁'],
