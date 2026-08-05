@@ -768,6 +768,65 @@ export function SourcesShelf({
 }
 
 // ---------------------------------------------------------------------------
+// PHASE A (SEAL_PHASE_A_CAMERA C2) — the camera dock: Fit Selected + Reset
+// Camera over the shared rig's request counters (the Ambo's own pattern).
+// The plate fires on SELECT by itself — these are the recovery controls.
+// Bottom-RIGHT: the shelf owns bottom-left, the op dock bottom-center.
+// ---------------------------------------------------------------------------
+
+export function CameraDock({
+  paper,
+  hasSelection,
+  onFitSelected,
+  onResetCamera,
+}: {
+  paper: ChromePaper;
+  hasSelection: boolean;
+  onFitSelected: () => void;
+  onResetCamera: () => void;
+}) {
+  const buttonStyle = (enabled: boolean): React.CSSProperties => ({
+    padding: '5px 10px',
+    borderRadius: 3,
+    border: `1px solid ${paper.cardBorder}`,
+    background: paper.cardBackground,
+    color: paper.cardInk,
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 12,
+    cursor: enabled ? 'pointer' : 'default',
+    opacity: enabled ? 1 : 0.38,
+    boxShadow: '0 2px 6px rgba(58,51,38,0.14)',
+  });
+  return (
+    // above the drei Html card layer (zIndexRange tops out ~16.7M): at plate
+    // framing the specimen's card can drift over this corner — the recovery
+    // controls must stay CLICKABLE exactly then (the measured 30s-timeout
+    // find); the designer refines placement on the bench
+    <div style={{ position: 'absolute', right: 14, bottom: 14, display: 'flex', gap: 8, zIndex: 2147483000 }}>
+      <button
+        type="button"
+        aria-label="Fit Selected"
+        title="fit the selected specimen"
+        disabled={!hasSelection}
+        onClick={onFitSelected}
+        style={buttonStyle(hasSelection)}
+      >
+        Fit Selected
+      </button>
+      <button
+        type="button"
+        aria-label="Reset Camera"
+        title="return to the default view"
+        onClick={onResetCamera}
+        style={buttonStyle(true)}
+      >
+        Reset Camera
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // the operations dock (glyphs only; labels on hover; variant flyouts)
 // ---------------------------------------------------------------------------
 
@@ -838,6 +897,8 @@ export function OperationsDock({
             <div key={group.key} style={{ position: 'relative' }}>
               <button
                 type="button"
+                aria-label={group.label}
+                title={group.label}
                 onMouseEnter={() => setHovered(group.key)}
                 onMouseLeave={() => setHovered(null)}
                 onMouseDown={(e) => {
@@ -897,6 +958,8 @@ export function OperationsDock({
             <div key={group.key} style={{ position: 'relative' }}>
               <button
                 type="button"
+                aria-label={group.label}
+                title={group.label}
                 onMouseEnter={() => setHovered(group.key)}
                 onMouseLeave={() => setHovered(null)}
                 onMouseDown={(e) => {
@@ -956,6 +1019,8 @@ export function OperationsDock({
           <div key={group.key} style={{ position: 'relative' }}>
             <button
               type="button"
+              aria-label={group.label}
+              title={group.label}
               onMouseEnter={() => setHovered(group.key)}
               onMouseLeave={() => setHovered(null)}
               onMouseDown={(e) => {
@@ -1060,6 +1125,8 @@ export function OperationsDock({
             <div key="identify-sew" style={{ position: 'relative' }}>
               <button
                 type="button"
+                aria-label="identify"
+                title="identify"
                 onMouseEnter={() => setHovered('identify-sew')}
                 onMouseLeave={() => setHovered(null)}
                 onMouseDown={(e) => {

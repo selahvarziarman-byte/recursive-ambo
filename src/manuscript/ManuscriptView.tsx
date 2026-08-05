@@ -105,6 +105,7 @@ import {
   BirthGatePanel,
   ChordGatePanel,
   FoldGatePanel,
+  CameraDock,
   FormOpsMenu,
   InvokePalette,
   OperationsDock,
@@ -114,6 +115,11 @@ import {
   ThickenGatePanel,
   type AperturePairRowView,
 } from './ManuscriptChrome';
+// PHASE A (SEAL_PHASE_A_CAMERA): the ONE shared fit/reset camera mechanism —
+// extracted from the Ambo Workspace3D, consumed here with the plate semantics
+// (exact reset to the composed default, a standing 3/4 fit attitude, a
+// legible-fraction margin — the designer gates the numbers on the bench)
+import { SceneCameraControls, type SceneBounds } from '../components/SceneCameraRig';
 // GAP2B THE 8TH WORD — thicken(shape, segment): the committed Q1 gate assigns
 // the pair's roles (the ONE place "must be a segment" is judged); the store's
 // own door fires the arity-2 product and shelves the band
@@ -299,6 +305,7 @@ function SpecimenLift({
   riseTo,
   riseScale,
   damping,
+  name,
   children,
 }: {
   home: [number, number, number];
@@ -306,6 +313,9 @@ function SpecimenLift({
   riseTo: [number, number, number];
   riseScale: number;
   damping: number;
+  // PHASE A (SEAL_PHASE_A_CAMERA C1): the wrapper is NAMED so the plate can
+  // measure the REAL drawn bounds of the selected specimen (Box3 by name)
+  name?: string;
   children: React.ReactNode;
 }) {
   const ref = useRef<Group>(null);
@@ -321,7 +331,7 @@ function SpecimenLift({
     group.scale.setScalar(s);
   });
   return (
-    <group ref={ref} position={home}>
+    <group ref={ref} position={home} name={name}>
       {children}
     </group>
   );
@@ -1211,6 +1221,50 @@ export default function ManuscriptView() {
   const [shelf, setShelf] = useState<Array<{ entry: ShelfEntry; placed: boolean }>>([]);
   const dragIndexRef = useRef<number | null>(null);
   const cameraRef = useRef<Camera | null>(null);
+  // ----- PHASE A (SEAL_PHASE_A_CAMERA) — the plate ------------------------
+  // C1 (the designer's ruling): SELECT FRAMES THE SPECIMEN. On select, wait
+  // one settle beat (SpecimenLift damps the body toward the stage), measure
+  // the REAL drawn bounds (Box3 over the named wrapper), and fly the shared
+  // fit; deselect returns the default overview. C2's chrome buttons are the
+  // recovery path over the same request counters. Attitude/margins are sane
+  // defaults — the designer gates them on the running plate.
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const prevSelectedRef = useRef<string | null>(null);
+  const [fitSelectedRequest, setFitSelectedRequest] = useState(0);
+  const [resetCameraRequest, setResetCameraRequest] = useState(0);
+  const [selectedCameraBounds, setSelectedCameraBounds] = useState<SceneBounds | null>(null);
+  const overviewBounds = useMemo<SceneBounds>(() => ({ center: [0, 0, 0], radius: 8 }), []);
+  const measureSelectedBounds = useCallback((): SceneBounds | null => {
+    const scene = sceneRef.current;
+    if (!scene || !selected) return null;
+    const group = scene.getObjectByName(`written:${selected}`);
+    if (!group) return null;
+    const box = new THREE.Box3().setFromObject(group);
+    if (box.isEmpty()) return null;
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    return {
+      center: [sphere.center.x, sphere.center.y, sphere.center.z],
+      radius: Math.max(0.5, sphere.radius),
+    };
+  }, [selected]);
+  useEffect(() => {
+    const was = prevSelectedRef.current;
+    prevSelectedRef.current = selected;
+    if (selected && selected.startsWith('w:')) {
+      const timer = window.setTimeout(() => {
+        const bounds = measureSelectedBounds();
+        if (bounds) {
+          setSelectedCameraBounds(bounds);
+          setFitSelectedRequest((request) => request + 1);
+        }
+      }, 420); // one settle beat — the lift's damp has largely landed
+      return () => window.clearTimeout(timer);
+    }
+    if (was !== null && selected === null) {
+      setResetCameraRequest((request) => request + 1); // deselect → the default overview
+    }
+    return undefined;
+  }, [measureSelectedBounds, selected]);
   // craft round-2: the birth-cue (the child settles AMBIENT; the cue announces it)
   const [birthCue, setBirthCue] = useState<{ key: number; home: [number, number, number] } | null>(null);
   // ----- H2 THE PERSON'S HANDS ----------------------------------------------
@@ -2861,6 +2915,7 @@ export default function ManuscriptView() {
       riseTo={riseTo}
       riseScale={specimenCtl.riseScale}
       damping={specimenCtl.damping}
+      name={`written:${id}`}
     >
       <Drift
         index={driftIndex}
@@ -2918,7 +2973,12 @@ export default function ManuscriptView() {
           // THE APP-PATH WITNESS LEG's scene handle (a TEST SEAM, dev-view
           // only — `?manuscript` is dev-gated): the leg asserts PRESENCE by
           // traversing the real scene graph; no render behavior changes.
+          // PHASE A adds the camera handle (the leg PROJECTS the selected
+          // specimen's bounds to judge the plate) + the view's own scene ref
+          // (C1 measures the drawn bounds by name).
           (window as unknown as { __manuscriptScene?: unknown }).__manuscriptScene = state.scene;
+          (window as unknown as { __manuscriptCamera?: unknown }).__manuscriptCamera = state.camera;
+          sceneRef.current = state.scene;
         }}
         onPointerMissed={() => {
           // CYCLE-IDENTIFY reach fix (b): a miss mid-trace does NOT discard
@@ -3421,7 +3481,27 @@ export default function ManuscriptView() {
           );
         })}
 
-        <OrbitControls makeDefault enableDamping dampingFactor={0.08} />
+        {/* PHASE A (SEAL_PHASE_A_CAMERA): the shared fit/reset rig replaces
+            the bare controls — zoom lands AT the cursor with a usable delta
+            (C3), middle-drag pans (C4 — left stays orbit, right stays the
+            invoke menu), reset returns the composed default exactly. */}
+        <SceneCameraControls
+          sceneBounds={overviewBounds}
+          selectedSceneBounds={selectedCameraBounds}
+          fitViewRequest={0}
+          fitSelectedRequest={fitSelectedRequest}
+          resetCameraRequest={resetCameraRequest}
+          defaults={{ position: [...d.layout.cameraPosition] as [number, number, number], target: [0, 0, 0] }}
+          resetMode="exact"
+          fitAttitude={[0.55, -0.45, 1]}
+          fitMargin={1.8}
+          orbit={{
+            zoomToCursor: true,
+            zoomSpeed: 1.6,
+            panSpeed: 1.1,
+            mouseButtons: { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.PAN },
+          }}
+        />
       </Canvas>
       {/* P1a-craft: the dev title overlay is gone — the shared shell bar names
           the app, the toggle names the section. (The shift-click combine hint
@@ -3665,6 +3745,20 @@ export default function ManuscriptView() {
           open: cycleTrace !== null && cycleTrace.targetKey === selected,
         }}
         onIdentifyToggle={handleIdentifyToggle}
+      />
+      {/* PHASE A (C2): the recovery controls over the same request counters —
+          the plate itself fires on SELECT */}
+      <CameraDock
+        paper={d.paper}
+        hasSelection={selected !== null && selected.startsWith('w:')}
+        onFitSelected={() => {
+          const bounds = measureSelectedBounds();
+          if (bounds) {
+            setSelectedCameraBounds(bounds);
+            setFitSelectedRequest((request) => request + 1);
+          }
+        }}
+        onResetCamera={() => setResetCameraRequest((request) => request + 1)}
       />
       {invokeMenu ? (
         <InvokePalette

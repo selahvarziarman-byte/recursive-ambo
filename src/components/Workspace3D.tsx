@@ -1,5 +1,8 @@
-import { OrbitControls } from '@react-three/drei';
-import { Canvas, useThree, type ThreeEvent } from '@react-three/fiber';
+import { Canvas, type ThreeEvent } from '@react-three/fiber';
+// PHASE A (SEAL_PHASE_A_CAMERA): the fit/reset camera controller is EXTRACTED
+// to the shared SceneCameraRig (verbatim semantics — every default is this
+// file's old literal) so the Ambo + Manuscript ride ONE mechanism.
+import { SceneCameraControls, type SceneBounds } from './SceneCameraRig';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import {
@@ -128,142 +131,6 @@ export function Workspace3D() {
         </button>
       </div>
     </div>
-  );
-}
-
-interface SceneBounds {
-  center: Vec3;
-  radius: number;
-}
-
-interface OrbitControlsHandle {
-  target: THREE.Vector3;
-  update: () => void;
-}
-
-const DEFAULT_CAMERA_TARGET = new THREE.Vector3(0, 0, 0);
-const DEFAULT_CAMERA_POSITION = new THREE.Vector3(3.2, 2.4, 3.8);
-const MIN_CAMERA_DISTANCE = 3.8;
-
-function SceneCameraControls({
-  sceneBounds,
-  selectedSceneBounds,
-  fitViewRequest,
-  fitSelectedRequest,
-  resetCameraRequest,
-}: {
-  sceneBounds: SceneBounds;
-  selectedSceneBounds: SceneBounds | null;
-  fitViewRequest: number;
-  fitSelectedRequest: number;
-  resetCameraRequest: number;
-}) {
-  const { camera, size } = useThree();
-  const controlsRef = useRef<OrbitControlsHandle | null>(null);
-  const didInitializeControlsRef = useRef(false);
-  const handledFitViewRequestRef = useRef(fitViewRequest);
-  const handledFitSelectedRequestRef = useRef(fitSelectedRequest);
-  const handledResetCameraRequestRef = useRef(resetCameraRequest);
-  const boundsCenter = useMemo(() => vec3ToVector(sceneBounds.center), [sceneBounds.center]);
-
-  const updateCameraClipping = useCallback(
-    (distance: number) => {
-      if (!(camera instanceof THREE.PerspectiveCamera)) {
-        return;
-      }
-
-      camera.near = Math.max(0.01, distance / 1000);
-      camera.far = Math.max(1000, distance * 100);
-      camera.updateProjectionMatrix();
-    },
-    [camera],
-  );
-
-  const fitCameraToBounds = useCallback(
-    (bounds: SceneBounds, mode: 'fit' | 'reset') => {
-      const controls = controlsRef.current;
-      const target = vec3ToVector(bounds.center);
-      const radius = Math.max(bounds.radius, 0.5);
-      const distance =
-        mode === 'fit'
-          ? getFitDistance(camera, radius, size.width / Math.max(1, size.height))
-          : Math.max(MIN_CAMERA_DISTANCE, radius * 3.1);
-      const direction =
-        mode === 'fit'
-          ? camera.position.clone().sub(controls?.target ?? target)
-          : DEFAULT_CAMERA_POSITION.clone().sub(DEFAULT_CAMERA_TARGET);
-      const safeDirection =
-        direction.lengthSq() > 0.000001
-          ? direction.normalize()
-          : DEFAULT_CAMERA_POSITION.clone().sub(DEFAULT_CAMERA_TARGET).normalize();
-
-      camera.position.copy(target.clone().add(safeDirection.multiplyScalar(distance)));
-      camera.lookAt(target);
-      updateCameraClipping(distance);
-
-      if (controls) {
-        controls.target.copy(target);
-        controls.update();
-      }
-    },
-    [camera, size.height, size.width, updateCameraClipping],
-  );
-
-  useEffect(() => {
-    const controls = controlsRef.current;
-
-    if (!controls || didInitializeControlsRef.current) {
-      return;
-    }
-
-    controls.target.copy(boundsCenter);
-    controls.update();
-    didInitializeControlsRef.current = true;
-  }, [boundsCenter]);
-
-  useEffect(() => {
-    if (fitViewRequest > handledFitViewRequestRef.current) {
-      handledFitViewRequestRef.current = fitViewRequest;
-      fitCameraToBounds(sceneBounds, 'fit');
-    }
-  }, [fitCameraToBounds, fitViewRequest, sceneBounds]);
-
-  useEffect(() => {
-    if (fitSelectedRequest > handledFitSelectedRequestRef.current) {
-      handledFitSelectedRequestRef.current = fitSelectedRequest;
-      if (!selectedSceneBounds) {
-        return;
-      }
-
-      fitCameraToBounds(selectedSceneBounds, 'fit');
-    }
-  }, [fitCameraToBounds, fitSelectedRequest, selectedSceneBounds]);
-
-  useEffect(() => {
-    if (resetCameraRequest > handledResetCameraRequestRef.current) {
-      handledResetCameraRequestRef.current = resetCameraRequest;
-      fitCameraToBounds(sceneBounds, 'reset');
-    }
-  }, [fitCameraToBounds, resetCameraRequest, sceneBounds]);
-
-  return (
-    <OrbitControls
-      ref={(controls) => {
-        controlsRef.current = controls as OrbitControlsHandle | null;
-      }}
-      makeDefault
-      enableDamping
-      dampingFactor={0.08}
-      enablePan
-      enableRotate
-      enableZoom
-      maxDistance={240}
-      minDistance={0.2}
-      panSpeed={0.9}
-      rotateSpeed={0.75}
-      screenSpacePanning
-      zoomSpeed={0.9}
-    />
   );
 }
 
@@ -1836,22 +1703,6 @@ function positionsToSceneBounds(positions: Vec3[]): SceneBounds {
   );
 
   return { center, radius: Math.max(radius, 1.2) };
-}
-
-function getFitDistance(camera: THREE.Camera, radius: number, aspect: number): number {
-  if (!(camera instanceof THREE.PerspectiveCamera)) {
-    return Math.max(MIN_CAMERA_DISTANCE, radius * 3.1);
-  }
-
-  const verticalFov = THREE.MathUtils.degToRad(camera.fov);
-  const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * Math.max(0.1, aspect));
-  const fitFov = Math.max(0.1, Math.min(verticalFov, horizontalFov));
-
-  return Math.max(MIN_CAMERA_DISTANCE, (radius / Math.sin(fitFov / 2)) * 1.15);
-}
-
-function vec3ToVector([x, y, z]: Vec3): THREE.Vector3 {
-  return new THREE.Vector3(x, y, z);
 }
 
 function createFaceGeometry(vertices: RenderVertex[], faces: RenderFace[]): THREE.BufferGeometry {

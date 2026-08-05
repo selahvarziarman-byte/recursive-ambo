@@ -268,6 +268,209 @@ def drive_lift(page, lift_files):
     )
 
 
+def camera_state(page):
+    # the PHASE A projection seam: the composed camera, read mechanically
+    return page.evaluate(
+        """() => {
+      const camera = window.__manuscriptCamera;
+      if (!camera) return null;
+      return { position: camera.position.toArray(), quaternion: camera.quaternion.toArray() };
+    }"""
+    )
+
+
+def max_written_fraction(page):
+    # project every placed specimen's REAL drawn bounds (Box3 over the named
+    # wrappers) to screen; the plate-fitted one is the max fraction of the
+    # viewport height. PRESENCE-side math only — never a pixel read.
+    return page.evaluate(
+        """() => {
+      const scene = window.__manuscriptScene, camera = window.__manuscriptCamera;
+      if (!scene || !camera) return null;
+      const groups = [];
+      scene.traverse((o) => { if (o.name && o.name.startsWith('written:')) groups.push(o); });
+      let best = 0;
+      for (const g of groups) {
+        // three does not ride on window — the bbox is built by traversal,
+        // minting vectors through an instance's own constructor
+        let minY = Infinity, maxY = -Infinity, any = false;
+        g.updateWorldMatrix(true, true);
+        g.traverse((c) => {
+          const geom = c.geometry;
+          if (!geom) return;
+          if (!geom.boundingBox) geom.computeBoundingBox();
+          const bb = geom.boundingBox;
+          if (!bb) return;
+          for (const px of [bb.min.x, bb.max.x]) for (const py of [bb.min.y, bb.max.y]) for (const pz of [bb.min.z, bb.max.z]) {
+            const p = c.localToWorld(new c.position.constructor(px, py, pz));
+            p.project(camera);
+            minY = Math.min(minY, p.y);
+            maxY = Math.max(maxY, p.y);
+            any = true;
+          }
+        });
+        if (!any) continue;
+        const fraction = (maxY - minY) / 2; // NDC height 2 = full viewport
+        best = Math.max(best, fraction);
+      }
+      return best;
+    }"""
+    )
+
+
+def drive_camera(page):
+    # PHASE A (SEAL_PHASE_A_CAMERA) — the plate, judged on the RUNNING app.
+    # Runs LAST: every drive above exercised the sheet at the default framing
+    # (the no-regression half); the camera moves come after.
+    canvas = page.locator("canvas").first
+    box = canvas.bounding_box()
+    cx = box["x"] + box["width"] * 0.5
+    cy = box["y"] + box["height"] * 0.5
+    # E-PLATE: the last lift drop AUTO-SELECTED the face specimen and C1 flew
+    # the plate (the settle beat + flight already passed in drive_lift's waits)
+    page.wait_for_timeout(1400)
+    fraction = max_written_fraction(page)
+    record(
+        "camera.plate",
+        fraction is not None and fraction >= 0.22,
+        f"selected specimen projected height fraction {fraction if fraction is None else round(fraction, 3)} (the designer measured ~50px ≈ 0.055 pre-cure)",
+    )
+    # E-FIT/RESET: Reset returns the composed default exactly; Fit re-flies
+    reset_button = page.get_by_text("Reset Camera", exact=True)
+    fit_button = page.get_by_text("Fit Selected", exact=True)
+    record("camera.controlsPresent", reset_button.count() > 0 and fit_button.count() > 0, "Fit Selected + Reset Camera in the chrome")
+    reset_button.first.click()
+    page.wait_for_timeout(600)
+    after_reset = camera_state(page)
+    default_cam = DEFAULT_CAMERA["state"]
+    reset_ok = (
+        after_reset is not None
+        and default_cam is not None
+        and all(abs(a - b) < 0.05 for a, b in zip(after_reset["position"], default_cam["position"]))
+    )
+    fit_button.first.click()
+    page.wait_for_timeout(700)
+    after_fit = camera_state(page)
+    fit_moved = after_fit is not None and any(
+        abs(a - b) > 0.2 for a, b in zip(after_fit["position"], after_reset["position"])
+    )
+    frac_after_fit = max_written_fraction(page)
+    record(
+        "camera.fitReset",
+        reset_ok and fit_moved and frac_after_fit is not None and frac_after_fit >= 0.22,
+        f"reset≈default {reset_ok} · fit moved {fit_moved} · refit fraction {frac_after_fit if frac_after_fit is None else round(frac_after_fit, 3)}",
+    )
+    # E-ZOOM-TO-CURSOR: reset, wheel-in with the cursor RIGHT of center — the
+    # framing moves TOWARD the cursor (+x) and a few ticks change it materially
+    reset_button.first.click()
+    page.wait_for_timeout(600)
+    before_zoom = camera_state(page)
+    zx = box["x"] + box["width"] * 0.74
+    zy = box["y"] + box["height"] * 0.5
+    page.mouse.move(zx, zy)
+    for _ in range(4):
+        page.mouse.wheel(0, -120)
+        page.wait_for_timeout(90)
+    page.wait_for_timeout(500)
+    after_zoom = camera_state(page)
+    def dist(p):
+        return (p[0] ** 2 + p[1] ** 2 + p[2] ** 2) ** 0.5
+    zoom_ok = False
+    zoom_detail = "no camera state"
+    if before_zoom and after_zoom:
+        d0 = dist(before_zoom["position"])
+        d1 = dist(after_zoom["position"])
+        dx = after_zoom["position"][0] - before_zoom["position"][0]
+        zoom_ok = d1 < d0 * 0.88 and dx > 0.03
+        zoom_detail = f"distance {round(d0, 2)}→{round(d1, 2)} · Δx {round(dx, 3)} toward the cursor (4 ticks)"
+    record("camera.zoomToCursor", zoom_ok, zoom_detail)
+    # E-PAN: middle-drag translates WITHOUT rotating (quaternion stable) and
+    # never opens the invoke palette
+    reset_button.first.click()
+    page.wait_for_timeout(600)
+    before_pan = camera_state(page)
+    page.mouse.move(cx, cy)
+    page.mouse.down(button="middle")
+    page.mouse.move(cx + 180, cy + 60, steps=8)
+    page.mouse.up(button="middle")
+    page.wait_for_timeout(500)
+    after_pan = camera_state(page)
+    pan_ok = False
+    pan_detail = "no camera state"
+    if before_pan and after_pan:
+        lateral = abs(after_pan["position"][0] - before_pan["position"][0]) + abs(
+            after_pan["position"][1] - before_pan["position"][1]
+        )
+        qdot = abs(sum(a * b for a, b in zip(before_pan["quaternion"], after_pan["quaternion"])))
+        pan_ok = lateral > 0.15 and qdot > 0.9995 and page.locator("text=invoke — real material").count() == 0
+        pan_detail = f"lateral {round(lateral, 3)} · |q·q| {round(qdot, 6)} (1 = no rotation) · palette closed"
+    record("camera.pan", pan_ok, pan_detail)
+    # no-regression: left-drag still ORBITS (rotation happens), and the
+    # right-click invoke palette still opens on empty paper. The drag must
+    # START on the CANVAS (a drei Html card intercepts pointer events — the
+    # measured miss), so the point is discovered, never assumed.
+    before_orbit = camera_state(page)
+    orbit_pt = None
+    for fy in (0.5, 0.4, 0.62, 0.3):
+        for fx in (0.5, 0.36, 0.64, 0.25):
+            x = box["x"] + box["width"] * fx
+            y = box["y"] + box["height"] * fy
+            tag = page.evaluate(
+                "([x, y]) => { const el = document.elementFromPoint(x, y); return el ? el.tagName : null; }",
+                [x, y],
+            )
+            if tag == "CANVAS":
+                orbit_pt = {"x": x, "y": y}
+                break
+        if orbit_pt:
+            break
+    if orbit_pt is None:
+        orbit_pt = {"x": cx, "y": cy}
+    page.mouse.move(orbit_pt["x"], orbit_pt["y"])
+    page.mouse.down(button="left")
+    page.mouse.move(orbit_pt["x"] + 220, orbit_pt["y"] + 70, steps=12)
+    page.wait_for_timeout(450)
+    # measure MID-DRAG: the release clicks empty paper → deselect → the C1
+    # reset flies the camera back to default — measuring after the release
+    # races the view's own recovery and reads "no rotation" (the found race)
+    after_orbit = camera_state(page)
+    page.mouse.up(button="left")
+    page.wait_for_timeout(400)
+    orbit_ok = False
+    if before_orbit and after_orbit:
+        qdot = abs(sum(a * b for a, b in zip(before_orbit["quaternion"], after_orbit["quaternion"])))
+        orbit_ok = qdot < 0.9995  # it rotated
+    reset_button.first.click()
+    page.wait_for_timeout(400)
+    pt = None
+    for fx in (0.3, 0.24, 0.4):
+        x = box["x"] + box["width"] * fx
+        y = box["y"] + box["height"] * 0.5
+        tag = page.evaluate(
+            "([x, y]) => { const el = document.elementFromPoint(x, y); return el ? el.tagName : null; }",
+            [x, y],
+        )
+        if tag == "CANVAS":
+            pt = {"x": x, "y": y}
+            break
+    invoke_ok = False
+    if pt:
+        canvas.click(button="right", position={"x": pt["x"] - box["x"], "y": pt["y"] - box["y"]})
+        page.wait_for_timeout(400)
+        invoke_ok = page.locator("text=invoke — real material").count() > 0
+        page.keyboard.press("Escape")
+        page.mouse.click(box["x"] + box["width"] * 0.9, box["y"] + box["height"] * 0.12)
+        page.wait_for_timeout(300)
+    record(
+        "camera.noRegression",
+        orbit_ok and invoke_ok,
+        f"left-drag orbits {orbit_ok} · right-click invoke opens {invoke_ok}",
+    )
+
+
+DEFAULT_CAMERA = {"state": None}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", required=True)
@@ -293,6 +496,9 @@ def main():
         page.wait_for_timeout(800)
         # hide the floating dev tuning panel (pointer interception only)
         page.add_style_tag(content="#leva__root, [id^='leva'] { display: none !important; }")
+        # PHASE A: the composed default camera, captured at boot (the Reset
+        # falsifier compares against it — never a guessed literal)
+        DEFAULT_CAMERA["state"] = camera_state(page)
         record("boot", True, "app up, scene handle hooked")
 
         # E1/E2 the triangle specimen (left paper), then the square (right
@@ -312,6 +518,12 @@ def main():
                 drive_lift(page, args.lift_files)
             except Exception as error:  # noqa: BLE001
                 record("lift.drive", False, repr(error))
+        # PHASE A — the camera plate, judged LAST (everything above already
+        # exercised the sheet at the default framing)
+        try:
+            drive_camera(page)
+        except Exception as error:  # noqa: BLE001
+            record("camera.drive", False, repr(error))
 
         record("console", len(console_errors) == 0, "; ".join(console_errors[:4]))
         browser.close()

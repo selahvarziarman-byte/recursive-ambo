@@ -212,6 +212,18 @@ function killTree(pid) {
           `${get('lift.bothEdgesPlaced').detail} · ${get('lift.cardIdentity').detail}`);
         check('§E-LIFT ★ THE FACE-CARRY RIDES LIVE (SLICE2): the face lift\'s card reads "lifted whole" with NO grain mark — the interior grain is CARRIED, and a mark would be a false claim',
           get('lift.cardFaceCarry').ok, get('lift.cardFaceCarry').detail);
+        // PHASE A (SEAL_PHASE_A_CAMERA) — the plate on the RUNNING app
+        check('§E-PLATE ★★ SELECT FRAMES THE SPECIMEN: after the drop\'s auto-select, the specimen\'s projected screen height is a LEGIBLE fraction of the frame (≥ 0.22 of the viewport — the designer measured ~50px ≈ 0.055 pre-cure), and the Fit Selected + Reset Camera controls stand in the chrome',
+          get('camera.plate').ok && get('camera.controlsPresent').ok,
+          get('camera.plate').detail);
+        check('§E-FIT/RESET ★ THE RECOVERY CONTROLS FIRE: Reset returns the composed default camera EXACTLY (compared against the boot-captured state, never a guessed literal); Fit Selected re-flies the plate to a legible fraction',
+          get('camera.fitReset').ok, get('camera.fitReset').detail);
+        check('§E-ZOOM ★ ZOOM LANDS AT THE CURSOR WITH A USABLE DELTA: four wheel ticks with the cursor right-of-center pull the camera materially closer (≥12%) AND laterally toward the cursor — not the dead fixed-anchor crawl (~0.7%/tick, 34 ticks)',
+          get('camera.zoomToCursor').ok, get('camera.zoomToCursor').detail);
+        check('§E-PAN ★ MIDDLE-DRAG PANS: the framing translates (lateral shift, quaternion unchanged — a pan, not an orbit) and never opens the invoke palette',
+          get('camera.pan').ok, get('camera.pan').detail);
+        check('§E-NO-REGRESSION left-drag still ORBITS and the right-click invoke palette still opens — the pan/zoom bindings collide with neither',
+          get('camera.noRegression').ok, get('camera.noRegression').detail);
         // E4 hygiene
         check('§E4 CONSOLE CLEAN — no error logged across the whole drive (favicon noise excluded)',
           get('console').ok, get('console').detail);
