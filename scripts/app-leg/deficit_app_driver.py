@@ -204,7 +204,14 @@ def drive_lift(page, lift_files):
     spots = [(0.46, 0.3), (0.6, 0.3), (0.53, 0.66)]
     placed_pts = []
     for k in range(3):
-        item = page.locator('div[draggable="true"]')
+        # DETERMINISTIC drop order (the shelf's own order is not contracted):
+        # the two EDGE parcels first, the FACE parcel LAST — so k==0 asserts
+        # the edge card, k==2 the face card, and the face stays selected for
+        # the correspondence section (the measured order-flip cascade)
+        pool = page.locator('div[draggable="true"]')
+        item = pool.filter(has_text="edge:") if k < 2 else pool.filter(has_text="face:")
+        if item.count() == 0:
+            item = pool
         if item.count() == 0:
             break
         fx, fy = spots[k]
@@ -266,6 +273,149 @@ def drive_lift(page, lift_files):
         "lift.bothEdgesPlaced",
         len(placed_pts) == 3 and remaining == 0 and refused == 0,
         f"3 lifts placed (2 distinct edges + the face), {remaining} left on the shelf, dedup refusals: {refused}",
+    )
+
+
+def drive_correspondence(page):
+    # PHASE D1 (SEAL_PHASE_D1_CORRESPONDENCE_ENGINE) — the engine on the
+    # RUNNING app. The face lift is selected (the drop auto-selected it; the
+    # plate settled), so the seam carries the projected positions + the card
+    # row id-space. Ends with Fit Selected so the camera section that follows
+    # measures from the plate.
+    page.wait_for_timeout(600)
+    seam = page.evaluate(
+        """() => {
+      const c = window.__manuscriptCorrespondence;
+      if (!c) return null;
+      return { keys: Object.keys(c.positions ?? {}), rowIds: c.rowResultIds ?? [] };
+    }"""
+    )
+    record(
+        "corr.seam",
+        seam is not None and len(seam["keys"]) > 0 and len(seam["rowIds"]) > 0,
+        f"{0 if not seam else len(seam['keys'])} projected entities · {0 if not seam else len(seam['rowIds'])} card row ids · subject tail: {('' if not seam or not seam['keys'] else seam['keys'][0].split(':')[-1])}",
+    )
+    if not seam or not seam["keys"]:
+        return
+    # E-ONE-ID-SPACE: every projected key is a card row resultId by === — and
+    # the suffix-only plant (the bare hash tail) is REFUSED (D1 is ===, not
+    # endsWith)
+    idspace = page.evaluate(
+        """() => {
+      const c = window.__manuscriptCorrespondence;
+      const keys = Object.keys(c.positions ?? {});
+      const rowSet = new Set(c.rowResultIds ?? []);
+      const inRows = keys.filter((k) => rowSet.has(k)).length;
+      const suffixPlantAccepted = keys.map((k) => k.split(':').pop()).some((t) => rowSet.has(t));
+      return { total: keys.length, inRows, suffixPlantAccepted, rowCount: (c.rowResultIds ?? []).length };
+    }"""
+    )
+    record(
+        "corr.idSpace",
+        idspace["total"] > 0
+        and idspace["inRows"] == idspace["total"]
+        and idspace["suffixPlantAccepted"] is False
+        and idspace["rowCount"] == idspace["total"],
+        f"{idspace['inRows']}/{idspace['total']} projected ids === card row ids (rows {idspace['rowCount']}) · suffix-only plant accepted: {idspace['suffixPlantAccepted']}",
+    )
+    # E-PICK-RETURNS-ID: hover/click a corner VERTEX at its own projected
+    # coords (the least-contested target), then hover an EDGE at its midpoint
+    target = page.evaluate(
+        """() => {
+      const c = window.__manuscriptCorrespondence;
+      const entries = Object.entries(c.positions ?? {});
+      const vertices = entries.filter(([id, p]) => id.includes(':vertex:') && p.onScreen);
+      const vertex = vertices.find(([id]) => id.includes(':tetrahedron:')) ?? vertices[0] ?? null;
+      // the edge target must not be CONTESTED: on a T-junction the coarse
+      // side's midpoint IS a vertex sphere — prefer an edge whose projected
+      // midpoint sits ≥ 18px from every projected vertex
+      const edge = entries.find(([id, p]) => {
+        if (!id.includes(':edge:') || !p.onScreen) return false;
+        return vertices.every(([, vp]) => Math.hypot(vp.x - p.x, vp.y - p.y) >= 18);
+      }) ?? null;
+      return {
+        vertex: vertex ? { id: vertex[0], x: vertex[1].x, y: vertex[1].y } : null,
+        edge: edge ? { id: edge[0], x: edge[1].x, y: edge[1].y } : null,
+      };
+    }"""
+    )
+    canvas = page.locator("canvas").first
+    box = canvas.bounding_box()
+    ok_hover_v = ok_pick_v = ok_hover_e = False
+    if target["vertex"]:
+        page.mouse.move(box["x"] + target["vertex"]["x"], box["y"] + target["vertex"]["y"])
+        page.wait_for_timeout(350)
+        hov = page.evaluate("() => window.__manuscriptCorrespondence.hovered ?? null")
+        ok_hover_v = bool(hov) and hov["id"] == target["vertex"]["id"] and hov["kind"] == "vertex"
+        page.mouse.down(button="left")
+        page.mouse.up(button="left")
+        page.wait_for_timeout(250)
+        pick = page.evaluate("() => window.__manuscriptCorrespondence.picked ?? null")
+        ok_pick_v = bool(pick) and pick["id"] == target["vertex"]["id"]
+    if target["edge"]:
+        page.mouse.move(box["x"] + target["edge"]["x"], box["y"] + target["edge"]["y"])
+        page.wait_for_timeout(350)
+        hov = page.evaluate("() => window.__manuscriptCorrespondence.hovered ?? null")
+        ok_hover_e = bool(hov) and hov["id"] == target["edge"]["id"] and hov["kind"] == "edge"
+    record(
+        "corr.pick",
+        ok_hover_v and ok_pick_v and ok_hover_e,
+        f"vertex hover {ok_hover_v} · vertex pick {ok_pick_v} · edge hover {ok_hover_e} — the projected coords HIT their own entities (the lands-on-drawn proof)",
+    )
+    # E-POSITIONS-TRACK-CAMERA: the projected coords MOVE on Reset, then Fit
+    # Selected restores the plate
+    before = (
+        page.evaluate("(id) => window.__manuscriptCorrespondence.positions[id] ?? null", target["vertex"]["id"])
+        if target["vertex"]
+        else None
+    )
+    page.get_by_text("Reset Camera", exact=True).first.click(timeout=8000)
+    page.wait_for_timeout(700)
+    after = (
+        page.evaluate("(id) => window.__manuscriptCorrespondence.positions[id] ?? null", target["vertex"]["id"])
+        if target["vertex"]
+        else None
+    )
+    moved = bool(before and after) and (abs(before["x"] - after["x"]) + abs(before["y"] - after["y"])) > 10
+    fit_button = page.get_by_text("Fit Selected", exact=True).first
+    if fit_button.is_enabled():
+        fit_button.click(timeout=8000)
+    else:
+        record("corr.fitDisabled", False, "Fit Selected DISABLED at corr end — the selection was lost mid-section")
+    page.wait_for_timeout(800)
+    restored = (
+        page.evaluate("(id) => window.__manuscriptCorrespondence.positions[id] ?? null", target["vertex"]["id"])
+        if target["vertex"]
+        else None
+    )
+    record(
+        "corr.track",
+        moved and bool(restored and restored["onScreen"]),
+        f"Δ {0 if not (before and after) else round(abs(before['x'] - after['x']) + abs(before['y'] - after['y']), 1)}px on Reset · onScreen after Fit {bool(restored and restored['onScreen'])}",
+    )
+    # E-NO-MARKS: the pick layer is INVISIBLE — every mesh opacity-0
+    marks = page.evaluate(
+        """() => {
+      const scene = window.__manuscriptScene;
+      if (!scene) return null;
+      let meshes = 0, invisible = 0;
+      scene.traverse((o) => {
+        if (o.name === 'correspondence-pick') {
+          o.traverse((c) => {
+            if (c.isMesh && c.material) {
+              meshes += 1;
+              if (c.material.transparent && c.material.opacity === 0) invisible += 1;
+            }
+          });
+        }
+      });
+      return { meshes, invisible };
+    }"""
+    )
+    record(
+        "corr.noMarks",
+        bool(marks) and marks["meshes"] > 0 and marks["invisible"] == marks["meshes"],
+        f"{0 if not marks else marks['invisible']}/{0 if not marks else marks['meshes']} pick meshes invisible (opacity 0)",
     )
 
 
@@ -519,6 +669,12 @@ def main():
                 drive_lift(page, args.lift_files)
             except Exception as error:  # noqa: BLE001
                 record("lift.drive", False, repr(error))
+        # PHASE D1 — the correspondence engine (the face lift is selected)
+        if args.lift_files:
+            try:
+                drive_correspondence(page)
+            except Exception as error:  # noqa: BLE001
+                record("corr.drive", False, repr(error))
         # PHASE A — the camera plate, judged LAST (everything above already
         # exercised the sheet at the default framing)
         try:

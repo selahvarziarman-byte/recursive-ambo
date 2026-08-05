@@ -120,6 +120,14 @@ import {
 // (exact reset to the composed default, a standing 3/4 fit attitude, a
 // legible-fraction margin — the designer gates the numbers on the bench)
 import { SceneCameraControls, type SceneBounds } from '../components/SceneCameraRig';
+// PHASE D1 (SEAL_PHASE_D1_CORRESPONDENCE_ENGINE): the body-agnostic pick +
+// projection layer — positions, picks, and ONE id-space (=== on the live ids
+// the card rows already carry); renders NO marks (D2's terrain)
+import {
+  CorrespondencePickLayer,
+  type CorrespondenceEntityRef,
+  type CorrespondenceSeam,
+} from '../components/CorrespondencePickLayer';
 // GAP2B THE 8TH WORD — thicken(shape, segment): the committed Q1 gate assigns
 // the pair's roles (the ONE place "must be a segment" is judged); the store's
 // own door fires the arity-2 product and shelves the band
@@ -1281,6 +1289,9 @@ export default function ManuscriptView() {
     }
     return undefined;
   }, [measureSelectedBounds, selected]);
+  // ----- PHASE D1 — the correspondence state (data only; D2 renders) -------
+  const [correspondenceHover, setCorrespondenceHover] = useState<CorrespondenceEntityRef | null>(null);
+  const [correspondencePicked, setCorrespondencePicked] = useState<CorrespondenceEntityRef | null>(null);
   // craft round-2: the birth-cue (the child settles AMBIENT; the cue announces it)
   const [birthCue, setBirthCue] = useState<{ key: number; home: [number, number, number] } | null>(null);
   // ----- H2 THE PERSON'S HANDS ----------------------------------------------
@@ -1757,6 +1768,20 @@ export default function ManuscriptView() {
     const entry = written.find((w) => w.form.id === key);
     return entry ? buildArgumentReading(entry.form) : null;
   }, [selected, written]);
+  // PHASE D1 — the correspondence seam (the dev test-seam pattern beside
+  // __manuscriptScene/__manuscriptCamera): hovered · picked · the row
+  // id-space (the LIVE resultIds the card rows already carry — `===` is the
+  // whole contract, Phase C resolved); the pick layer writes `positions`
+  // per frame from its own world matrices
+  useEffect(() => {
+    const host = window as unknown as { __manuscriptCorrespondence?: CorrespondenceSeam };
+    const seam = host.__manuscriptCorrespondence ?? (host.__manuscriptCorrespondence = {});
+    seam.hovered = correspondenceHover;
+    seam.picked = correspondencePicked;
+    seam.rowResultIds = selectedArgument
+      ? [...selectedArgument.conceptRows, ...selectedArgument.relationRows].map((r) => r.resultId)
+      : [];
+  }, [correspondenceHover, correspondencePicked, selectedArgument]);
 
   // ----- 3a: the op target + the committed availability + the apply path -----
   const rows = d.world.rows;
@@ -3490,6 +3515,21 @@ export default function ManuscriptView() {
                   walkB={cycleTrace.walkB}
                   phase={cycleTrace.phase}
                   onPickEdge={handleCyclePick}
+                />
+              </group>
+            ) : null}
+            {/* PHASE D1 — the correspondence pick + projection layer on the
+                SELECTED specimen, for the modes whose DRAWN geometry is the
+                form's own shape (plain + skeleton — the lift family; the
+                derived-body modes ride after the sanctioned crafted union).
+                Invisible; renders no marks (D2's terrain); same transform as
+                the drawn body (the CycleTraceOverlay mount idiom). */}
+            {selected === id && (render.mode === 'plain' || render.mode === 'skeleton') ? (
+              <group scale={scaleCtl.dim1Scale}>
+                <CorrespondencePickLayer
+                  shape={entry.form.shape}
+                  onHover={setCorrespondenceHover}
+                  onPick={setCorrespondencePicked}
                 />
               </group>
             ) : null}

@@ -212,6 +212,13 @@ function killTree(pid) {
           `${get('lift.bothEdgesPlaced').detail} · ${get('lift.cardIdentity').detail}`);
         check('§E-LIFT ★ THE FACE-CARRY RIDES LIVE (SLICE2): the face lift\'s card reads "lifted whole" with NO grain mark — the interior grain is CARRIED, and a mark would be a false claim',
           get('lift.cardFaceCarry').ok, get('lift.cardFaceCarry').detail);
+        // PHASE D1 (SEAL_PHASE_D1_CORRESPONDENCE_ENGINE) — the engine live
+        check('§E-D1 ★★ THE PICK RETURNS THE ENTITY ID + ONE ID-SPACE: hovering/clicking a specimen vertex at its OWN projected coords returns THAT vertex\'s live id (the lands-on-drawn proof — the projection and the pick agree); an edge likewise; every projected id === a card row resultId (the suffix-only plant REFUSED — D1 is ===, not endsWith)',
+          get('corr.seam').ok && get('corr.pick').ok && get('corr.idSpace').ok,
+          `${get('corr.pick').detail} · ${get('corr.idSpace').detail}`);
+        check('§E-D1 ★ POSITIONS TRACK THE CAMERA + NO MARKS: the projected coords move on Reset and return onScreen after Fit Selected; the pick layer is INVISIBLE (every mesh opacity-0 — D1 renders nothing; the key/emphasis are D2\'s, held for the look-gate)',
+          get('corr.track').ok && get('corr.noMarks').ok,
+          `${get('corr.track').detail} · ${get('corr.noMarks').detail}`);
         // PHASE A (SEAL_PHASE_A_CAMERA) — the plate on the RUNNING app
         check('§E-PLATE ★★ SELECT FRAMES THE SPECIMEN: after the drop\'s auto-select, the specimen\'s projected screen height is a LEGIBLE fraction of the frame (≥ 0.22 of the viewport — the designer measured ~50px ≈ 0.055 pre-cure), and the Fit Selected + Reset Camera controls stand in the chrome',
           get('camera.plate').ok && get('camera.controlsPresent').ok,
@@ -239,6 +246,11 @@ function killTree(pid) {
     } catch {
       // scratch parcels — best-effort cleanup
     }
+  }
+  if (failures > 0 && verdict) {
+    // diagnostics on red: the driver's raw record ledger (honest evidence,
+    // printed only when a clause failed)
+    console.log(`\nDRIVER VERDICT (diagnostic): ${JSON.stringify(verdict.results)}`);
   }
   const seconds = ((Date.now() - t0) / 1000).toFixed(1);
   console.log(`\n  runtime: ${seconds}s (dev-boot + headless chromium — the disclosed cost; run per render-arc handback, never in the browserless suite)`);
