@@ -80,6 +80,47 @@ export function buildFaithfulInkedModel(faithful: FaithfulBodyModel): InkedFormM
     ringChains.push(chain);
   });
 
+  // PHASE B — THE FLAT-BODY GUARD (SEAL_PHASE_B_MANIFOLD, the mothership's
+  // ADAPTER-HELD verdict): a FLAT faithful subject (the δ=0 degenerate — the
+  // apex lying ON the rim plane) would hand InkedForm a constant-normal body
+  // whose hull displacement DEGENERATES (no silhouette — the pinch). The
+  // DRAWN apex gets a minimal depicted lift along the rim plane's normal — a
+  // shallow tent: depiction only, never the model's numbers (the model's
+  // invariants/stance ride untouched; the designer gates the exact look).
+  // InkedForm stays byte-untouched.
+  if (ring.length >= 3) {
+    const pts = ring.map((id) => vertices[id].position);
+    let nx = 0;
+    let ny = 0;
+    let nz = 0;
+    for (let i = 0; i < pts.length; i += 1) {
+      const p = pts[i];
+      const q = pts[(i + 1) % pts.length];
+      nx += (p[1] - q[1]) * (p[2] + q[2]);
+      ny += (p[2] - q[2]) * (p[0] + q[0]);
+      nz += (p[0] - q[0]) * (p[1] + q[1]);
+    }
+    const nLen = Math.hypot(nx, ny, nz);
+    if (nLen > 1e-12) {
+      const n: Vec3 = [nx / nLen, ny / nLen, nz / nLen];
+      const c: Vec3 = [
+        pts.reduce((s, p) => s + p[0], 0) / pts.length,
+        pts.reduce((s, p) => s + p[1], 0) / pts.length,
+        pts.reduce((s, p) => s + p[2], 0) / pts.length,
+      ];
+      const radius = Math.max(...pts.map((p) => Math.hypot(p[0] - c[0], p[1] - c[1], p[2] - c[2])), 1e-9);
+      const apex = vertices[apexId].position;
+      const off = (apex[0] - c[0]) * n[0] + (apex[1] - c[1]) * n[1] + (apex[2] - c[2]) * n[2];
+      if (Math.abs(off) < 1e-6 * radius) {
+        const lift = 0.06 * radius;
+        vertices[apexId] = {
+          ...vertices[apexId],
+          position: [apex[0] + n[0] * lift, apex[1] + n[1] * lift, apex[2] + n[2] * lift],
+        };
+      }
+    }
+  }
+
   // faces — the triangle FAN over the ring: the cone's lateral surface
   const faces: Face[] = ring.map((rimId, k) => ({
     id: `face:faithfulink:${k}`,

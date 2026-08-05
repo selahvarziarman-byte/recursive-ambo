@@ -121,12 +121,48 @@ check('§2 (E3) THE OVERLAY KEPT ITS REGISTERS: FaithfulBody still rides as the 
 // ---------------------------------------------------------------------------
 // §3 (E7) the fallback is honest — a declared/flat lift still adapts
 // ---------------------------------------------------------------------------
-console.log('\n----- §3 (E7) the declared degenerates still route through the crafted stack -----');
+console.log('\n----- §3 (E7) the declared degenerates route through the crafted stack — GUARDED (Phase B) -----');
 const flatModel = { ...faithful, lift: { kind: 'flat', apexHeight: 0, baseRadius: 1 }, apex: { ...faithful.apex, position: [0, 0, 0] } };
 const flatInked = buildFaithfulInkedModel(flatModel);
-check('§3 (E7) THE FALLBACK IS HONEST: a flat/declared lift (h=0) still adapts — the fan triangulates flat (>0 faces, apex at z=0) and routes through the SAME crafted stack; the wash exists for no branch',
+// PHASE B (SEAL_PHASE_B_MANIFOLD — the ADAPTER-HELD flat-body guard): a flat
+// subject (apex ON the rim plane) would hand InkedForm a constant-normal
+// body whose hull displacement DEGENERATES (no silhouette — the pinch). The
+// adapter now lifts the DRAWN apex a shallow depicted step off the rim plane
+// (depiction only — the model's numbers untouched; InkedForm byte-untouched).
+const flatVerts = flatInked.immersion.shape.vertices;
+const flatRing = Object.values(flatVerts).filter((v) => v.id !== 'faithfulink:apex');
+const flatApex = flatVerts['faithfulink:apex'];
+const ringRadius = Math.max(...flatRing.map((v) => Math.hypot(v.position[0], v.position[1])), 1e-9);
+const fanNormalZSigns = flatInked.immersion.shape.faces.map((f) => {
+  const [a, b, c] = f.vertexIds.map((id) => flatVerts[id].position);
+  const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+  const w = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+  return [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
+});
+const normalsVary = (() => {
+  const norm = (n) => {
+    const l = Math.hypot(n[0], n[1], n[2]);
+    return l > 1e-12 ? [n[0] / l, n[1] / l, n[2] / l] : null;
+  };
+  const first = norm(fanNormalZSigns[0]);
+  return fanNormalZSigns.some((n) => {
+    const u = norm(n);
+    return first && u && Math.abs(u[0] * first[0] + u[1] * first[1] + u[2] * first[2]) < 0.9999;
+  });
+})();
+check('§3 (E7→PHASE B) THE FLAT-BODY GUARD: a flat/declared lift (h=0) still adapts through the SAME crafted stack — the RING stays on the rim plane (z≈0) but the DRAWN apex is LIFTED a shallow depicted step (≈6% of the rim radius, off-plane) so the fan normals VARY and the hull can inflate a real silhouette — never a constant-normal pinch, never a wash',
   flatInked.immersion.shape.faces.length > 0 &&
-    Object.values(flatInked.immersion.shape.vertices).every((v) => near(v.position[2], 0)));
+    flatRing.every((v) => near(v.position[2], 0)) &&
+    flatApex !== undefined &&
+    Math.abs(flatApex.position[2]) > 0.01 * ringRadius &&
+    Math.abs(flatApex.position[2]) < 0.2 * ringRadius &&
+    normalsVary);
+check('§3 (E7→PHASE B) THE GUARD IS A NO-OP ON A REAL CONE: the fold-born faithful model (apex already lifted) adapts with its apex height PRESERVED verbatim — the guard touches only the degenerate',
+  (() => {
+    if (!inked || !faithful) return false;
+    const coneApex = inked.immersion.shape.vertices['faithfulink:apex'];
+    return coneApex !== undefined && near(coneApex.position[2], faithful.apex.position[2]);
+  })());
 
 // ---------------------------------------------------------------------------
 // §4 (E4) zero frozen edit — the hard rail

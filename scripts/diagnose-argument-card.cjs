@@ -489,15 +489,125 @@ const faceLift = liftSubComplex(amboD, [{ kind: 'face', id: coarseFace.id }]);
 const faceForm = loadLift(faceLift, 512);
 const faceReading = buildArgumentReading(faceForm);
 note(`face lift: v=${Object.keys(faceForm.shape.vertices).length} e=${faceForm.shape.edges.length} · marks=${JSON.stringify(faceReading.grainMarks)}`);
-check('§10 (E-FACE-CARRY) ★★ THE FACE CARRIES ITS WHOLE PLANAR GRAIN (SLICE2 — detect→mark became detect→CARRY): the coarse face lifts 6 vertices (3 corners + 3 side midpoints) + 12 edges (3 coarse sides + 6 half-edges + the 3 interior chords) + 5 faces (the coarse + the core mid-face + the 3 residue triangles — the full coplanar dissection), and the card carries NO mark (nothing was refused — a mark here would be a false claim); the words read "lifted whole" unflagged',
+check('§10 (E-FACE-CARRY→MANIFOLD) ★★ THE FACE LIFTS AS A MANIFOLD DISK (PHASE B — coarse-as-relation): 6 vertices + 9 LIVE edges (6 halves + 3 chords — the finer subdivision IS the boundary) + 4 LIVE faces (the core mid-face + 3 residues; the coarse face is a RECORDED relation, not a live layer), NO mark; the words read "lifted whole" unflagged',
   Object.keys(faceForm.shape.vertices).length === 6 &&
-    faceForm.shape.edges.length === 12 &&
-    faceForm.shape.faces.length === 5 &&
+    faceForm.shape.edges.length === 9 &&
+    faceForm.shape.faces.length === 4 &&
     faceForm.shape.faces.some((f) => f.role === 'dissection-core-face') &&
     faceForm.shape.faces.filter((f) => f.role === 'dissection-residue-face').length === 3 &&
     faceReading.grainMarks.length === 0 &&
     faceReading.words.includes('lifted whole') &&
     !faceReading.words.includes('finer structure not carried'));
+// PHASE B (SEAL_PHASE_B_MANIFOLD) — the 4-surface bar, judged independently
+const { readVertexCurvatures: readCurvB } = req('src/lib/conformalAtom.ts');
+const { acquireComplex: acquireB } = req('src/lib/complexIdentification.ts');
+const manifoldShape = faceForm.shape;
+const degreeB = {};
+for (const e of manifoldShape.edges) for (const v of e.vertexIds) degreeB[v] = (degreeB[v] ?? 0) + 1;
+const edgeFaceCount = new Map(manifoldShape.edges.map((e) => [e.id, 0]));
+for (const f of manifoldShape.faces) {
+  const vs = f.vertexIds;
+  for (let i = 0; i < vs.length; i += 1) {
+    const a = vs[i];
+    const b = vs[(i + 1) % vs.length];
+    for (const e of manifoldShape.edges) {
+      if ((e.vertexIds[0] === a && e.vertexIds[1] === b) || (e.vertexIds[0] === b && e.vertexIds[1] === a)) {
+        edgeFaceCount.set(e.id, (edgeFaceCount.get(e.id) ?? 0) + 1);
+      }
+    }
+  }
+}
+const boundaryEdges = manifoldShape.edges.filter((e) => edgeFaceCount.get(e.id) === 1);
+// the degree-2 boundary walk — every boundary vertex crossed exactly once
+const walkAdj = new Map();
+for (const e of boundaryEdges) {
+  walkAdj.set(e.vertexIds[0], [...(walkAdj.get(e.vertexIds[0]) ?? []), e.vertexIds[1]]);
+  walkAdj.set(e.vertexIds[1], [...(walkAdj.get(e.vertexIds[1]) ?? []), e.vertexIds[0]]);
+}
+let walkOk = boundaryEdges.length === 6 && [...walkAdj.values()].every((n) => n.length === 2);
+if (walkOk) {
+  const start = boundaryEdges[0].vertexIds[0];
+  const visited = new Set([start]);
+  let prev = null;
+  let cur = start;
+  for (let steps = 0; steps < 12; steps += 1) {
+    const next = (walkAdj.get(cur) ?? []).find((n) => n !== prev);
+    if (!next) break;
+    prev = cur;
+    cur = next;
+    if (cur === start) break;
+    visited.add(cur);
+  }
+  walkOk = cur === start && visited.size === 6;
+}
+let stanceB = null;
+try {
+  const acq = acquireB(manifoldShape, [manifoldShape]);
+  stanceB = acq ? readCurvB(manifoldShape, acq.complex) : null;
+} catch {
+  stanceB = null;
+}
+const stanceDeg = (x) => Math.round(((x * 180) / Math.PI) * 10) / 10;
+check('§10 (E-MANIFOLD) ★★ THE 4-SURFACE BAR: no junction (corners degree 2, midpoints degree 4 — a manifold boundary fan), the boundary WALKS degree-2 through all 6 vertices, and the STANCE MEASURES (no junction throw): corners 120° ×3 + midpoints 0° ×3 = Σ 360° — the coarse face\'s own stance by SUBDIVISION INVARIANCE',
+  Object.values(degreeB).every((d) => d === 2 || d === 4) &&
+    walkOk &&
+    stanceB !== null &&
+    stanceB.length === 6 &&
+    stanceB.every((r) => r.valence === 'boundary') &&
+    stanceB.filter((r) => stanceDeg(r.curvature) === 120).length === 3 &&
+    stanceB.filter((r) => Math.abs(stanceDeg(r.curvature)) < 1e-9).length === 3);
+const composedB = faceLift.closure.composedRelations ?? [];
+const composedEdges = composedB.filter((r) => r.kind === 'edge' && r.relation === 'composed-of');
+const composedFaces = composedB.filter((r) => r.kind === 'face' && r.relation === 'composed-of');
+const liveEdgeIdsB = new Set(faceLift.shape.edges.map((e) => e.id));
+const liveFaceIdsB = new Set(faceLift.shape.faces.map((f) => f.id));
+check('§10 (E-COARSE-AS-RELATION) ★★ EACH COARSE SIDE IS A COMPOSED RELATION, NOT A LIVE EDGE: 3 edge records, each a 2-half PATH between seed corners whose parts are LIVE and whose composed id is NOT (nothing erased — the union of halves IS the side); the coarse FACE rides as 1 composed record over the 4 live tiles; the stamps survive the committed load (`data.composes` on every part)',
+  composedEdges.length === 3 &&
+    composedEdges.every(
+      (r) =>
+        r.parts.length === 2 &&
+        r.parts.every((p) => liveEdgeIdsB.has(p)) &&
+        !liveEdgeIdsB.has(r.id) &&
+        r.sourceVertexIds.length === 2 &&
+        r.sourceVertexIds.every((v) => seedTetra.vertices[v]),
+    ) &&
+    composedFaces.length === 1 &&
+    composedFaces[0].parts.length === 4 &&
+    composedFaces[0].parts.every((p) => liveFaceIdsB.has(p)) &&
+    !liveFaceIdsB.has(composedFaces[0].id) &&
+    manifoldShape.edges.filter((e) => e.data && e.data.composes).length === 6 &&
+    manifoldShape.faces.filter((f) => f.data && f.data.composes).length === 4);
+// E-TWIN: select BOTH records of a shared wall (the dissection writes one per
+// cell) as a 2-entity region — ONE lives, the twin becomes SHARED-BY
+const twinPair = (() => {
+  for (const fa of amboD.faces) {
+    for (const fb of amboD.faces) {
+      if (fa.id === fb.id) continue;
+      const setA = [...fa.vertexIds].sort().join('|');
+      const setB = [...fb.vertexIds].sort().join('|');
+      if (setA === setB) return [fa, fb];
+    }
+  }
+  return null;
+})();
+const twinLift = twinPair
+  ? liftSubComplex(amboD, [
+      { kind: 'face', id: twinPair[0].id },
+      { kind: 'face', id: twinPair[1].id },
+    ])
+  : null;
+const twinRecords = twinLift ? (twinLift.closure.composedRelations ?? []).filter((r) => r.relation === 'shared-by' && r.kind === 'face') : [];
+check('§10 (E-TWIN-SHARED-BY) ★ A SHARED WALL IS ONE LIVE FACE + A SHARED-BY RELATION: lifting both twin records of a dissection wall keeps ONE live face; the duplicate is recorded (the kept copy\'s `data.sharedBy` names it), never N live layers',
+  twinLift !== null &&
+    twinLift.shape.faces.length === 1 &&
+    twinRecords.length === 1 &&
+    twinRecords[0].parts[0] === twinLift.shape.faces[0].id &&
+    Array.isArray(twinLift.shape.faces[0].data?.sharedBy) &&
+    twinLift.shape.faces[0].data.sharedBy.includes(twinRecords[0].id));
+// E-NUL: the delimiter is the ESCAPE now — the file is pure text
+const liftBytes = fs.readFileSync(path.join(repoRoot, 'src/lib/subComplexLift.ts'));
+check('§10 (E-NUL) THE FILE IS TEXT: zero NUL bytes in subComplexLift.ts (the delimiter is the `\\0` ESCAPE — runtime-identical key, git-diffable source; the pre-fix blob was binary and blinded the diff audits)',
+  !liftBytes.includes(0) && liftBytes.toString('utf8').includes('`${a}\\0${b}`'));
 // THE USER'S OWN NAME — the committed doors end-to-end: the workspace store's
 // ambo → selectVertex → updateSelectedVertexData (the packet editor's door)
 // → the lift → the card reads the person's word; a blanked packet reads
@@ -680,8 +790,8 @@ check('§11 (VIEW) THE LIFT + THE DERIVED WORD RENDER (source-pinned): the view 
     viewSrcNow.includes('`${lifted} lifted`') &&
     viewSrcNow.includes('w.form.shape.id === item.entry.loaded.shape.id') &&
     viewSrcNow.includes(' — derived'));
-check('§11 (E-NO-UNION) NOTHING FROZEN MOVED: ambo.ts (the mechanism is the LIFT, not the ambo — the T-junction stays real) · types/geometry.ts · lib/shape.ts · store/geometryStore.ts · the MANIFEST — all BYTE-IDENTICAL to HEAD (no union, no new file, no new row owed)',
-  ['src/lib/ambo.ts', 'src/types/geometry.ts', 'src/lib/shape.ts', 'src/store/geometryStore.ts', 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'].every(headEq));
+check('§11 (E-NO-UNION) NOTHING FROZEN MOVED: ambo.ts (the mechanism is the LIFT — the T-junction stays real) · InkedForm.tsx (the flat-body guard is ADAPTER-HELD) · types/geometry.ts · lib/shape.ts · store/geometryStore.ts · genesisModel.ts · faithfulBodyModel.ts · inkedFormModel.ts · the MANIFEST — all BYTE-IDENTICAL to HEAD (no union, no new file, no new row owed)',
+  ['src/lib/ambo.ts', 'src/manuscript/InkedForm.tsx', 'src/types/geometry.ts', 'src/lib/shape.ts', 'src/store/geometryStore.ts', 'src/manuscript/genesisModel.ts', 'src/manuscript/faithfulBodyModel.ts', 'src/manuscript/inkedFormModel.ts', 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'].every(headEq));
 
 console.log(
   `\n--- THE ARGUMENT-READING CARD — the MAP is the spine, Phase 2 completes the reading, THE LIFT carries identity + grain (the packet is the name, 'lifted' the typing, the id names WHICH entity — one kind prefix, the grain CARRIED edge AND face-interior with the mark only for the un-carriable, 'derived' split from 'identified' on the persist-discriminator): ${
