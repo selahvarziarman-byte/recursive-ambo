@@ -67,7 +67,7 @@ src/lib/surfaceImmersion.ts             699110df572af936d38ef067d45f5a797ec441e8
 src/lib/surfaceOperations.ts            06a439f357e3a51743a355071819b1ed73dcb4d1607afb0afc64a711877b04b6
 src/lib/transformationLedger.ts         2f77f9b331c9151c00242f40708a4915dc35e8f6408059ad4769f9433d3c162b
 src/manuscript/InkedDomain.tsx          067f04c99043a5606ebe96de4669e47e2cab623166b45ce4067d4ffbb445195b
-src/manuscript/InkedForm.tsx            091a3c1d1a4d0d35ca82e93d37ccc57b1148a1483a201b2c1c9cd4f1fa52e3d1
+src/manuscript/InkedForm.tsx            e1995779b5e61048644baf13f0c72ee29c004aa30b86912a8872d015de0fc5d2
 src/manuscript/classBodyModel.ts        177de3e916a7f7a7cf2d8e4f97366eeef00d70b3a7f6b7fa6aa70e4f76bff0a2
 src/manuscript/faithfulBodyModel.ts     b72ba46a22118401d7dfde3b08b9c006899bf39e0f3b3cd5300094ea248d42e4
 src/manuscript/genesisModel.ts          3b6bde076dcfcd1be7891c5e1b7fc8977f2dca1df6a5cfc8c290b915c784b74f

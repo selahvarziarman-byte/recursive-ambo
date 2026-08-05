@@ -143,14 +143,17 @@ function buildConstructionGeometry(shape: Shape): THREE.BufferGeometry | null {
 // the shading term selects the BAND (none / single / cross), never a gradient.
 const HATCH_VERTEX = /* glsl */ `
   varying vec3 vWorldNormal;
+  varying vec3 vObjectPosition;
   void main() {
     vWorldNormal = normalize(mat3(modelMatrix) * normal);
+    vObjectPosition = position;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
 const HATCH_FRAGMENT = /* glsl */ `
   precision highp float;
   varying vec3 vWorldNormal;
+  varying vec3 vObjectPosition;
   uniform vec3 keyDir;
   uniform float ambient;
   uniform float keyI;
@@ -168,13 +171,23 @@ const HATCH_FRAGMENT = /* glsl */ `
     // ambient+key model the standard material sees)
     float shade = (ambient + keyI * lambert) / max(ambient + keyI, 1e-4);
     if (shade >= shadowStart) discard; // lit crown: clean paper-wash, no hatch
+    // THE SURFACE LOCK (the S4 union): the strokes ride the BODY, not the
+    // screen — a 2D surface coordinate from the OBJECT-space position in a
+    // stable normal-derived tangent frame (dFdx/dFdy give the face plane per
+    // fragment); spacing and weight are OBJECT units. The hatch is skin that
+    // rotates and foreshortens with the surface, never wallpaper.
+    vec3 surfaceNormal = normalize(cross(dFdx(vObjectPosition), dFdy(vObjectPosition)));
+    vec3 seed = abs(surfaceNormal.z) < 0.9 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+    vec3 tangent = normalize(cross(seed, surfaceNormal));
+    vec3 bitangent = cross(surfaceNormal, tangent);
+    vec2 surfaceCoord = vec2(dot(vObjectPosition, tangent), dot(vObjectPosition, bitangent));
     vec2 d1 = vec2(cos(angleRad), sin(angleRad));
-    float duty = clamp(weightPx / max(spacingPx, 1.0), 0.0, 1.0);
-    float m = step(fract(dot(gl_FragCoord.xy, d1) / max(spacingPx, 1.0)), duty);
+    float duty = clamp(weightPx / max(spacingPx, 1e-4), 0.0, 1.0);
+    float m = step(fract(dot(surfaceCoord, d1) / max(spacingPx, 1e-4)), duty);
     if (shade < crossStart) {
       // deepest shadow only: the crossing diagonal joins in
       vec2 d2 = vec2(-d1.y, d1.x);
-      m = max(m, step(fract(dot(gl_FragCoord.xy, d2) / max(spacingPx, 1.0)), duty));
+      m = max(m, step(fract(dot(surfaceCoord, d2) / max(spacingPx, 1e-4)), duty));
     }
     if (m <= 0.0) discard;
     gl_FragColor = vec4(inkColor, opacityCap); // capped, banded — never a smooth volume

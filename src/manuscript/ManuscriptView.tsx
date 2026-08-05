@@ -1101,9 +1101,10 @@ export default function ManuscriptView() {
     nearOpacity: { value: d.generators.nearOpacity, min: 0, max: 1, step: 0.05 }, // R4B
   });
   const hatchingCtl = useControls('hatching · tone (capped)', {
-    spacingPx: { value: d.hatching.spacingPx, min: 3, max: 16, step: 0.5 },
+    // S4 surface-lock: object-unit ranges (the hatch rides the surface)
+    spacingPx: { value: d.hatching.spacingPx, min: 0.02, max: 0.3, step: 0.005 },
     opacity: { value: d.hatching.opacity, min: 0, max: 0.5, step: 0.01 }, // hard craft cap — anti-photoreal
-    weightPx: { value: d.hatching.weightPx, min: 0.5, max: 3, step: 0.25 },
+    weightPx: { value: d.hatching.weightPx, min: 0.004, max: 0.06, step: 0.002 },
     color: d.hatching.color,
     angleDeg: { value: d.hatching.angleDeg, min: 0, max: 180, step: 5 },
     shadowStart: { value: d.hatching.shadowStart, min: 0.5, max: 1, step: 0.01 },

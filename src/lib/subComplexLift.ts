@@ -738,6 +738,55 @@ export function extractSubShape(
         generation.createdVertexIds.length > 0,
     );
 
+  // §3 THE CO-ORIENT (SEAL_S3_BLACK_TRIANGLE_S4_SURFACE_LOCK): every face of
+  // a COPLANAR region must co-wind — the dissection's medial cell arrives
+  // ANTI-wound (Newell·ref −1.000, engineer-probed) and its inverted-hull
+  // back-face turns cameraward: a black interior FILL (black owns no
+  // register). The cure is at the SOURCE of the winding: an anti-wound
+  // carried face's vertex order is REVERSED (cornerAngles follow the cycle;
+  // the P5 stamp below then recomputes aligned). SURFACE closures only — a
+  // volume's twin walls wind opposite BY DESIGN (outward per cell).
+  if (closure.cellIds.length === 0) {
+    const newellOf = (face: Face): [number, number, number] | null => {
+      const pts = face.vertexIds.map((id) => vertices[id]?.position);
+      if (pts.some((p) => !p) || pts.length < 3) return null;
+      let nx = 0;
+      let ny = 0;
+      let nz = 0;
+      for (let i = 0; i < pts.length; i += 1) {
+        const p = pts[i] as [number, number, number];
+        const q = pts[(i + 1) % pts.length] as [number, number, number];
+        nx += (p[1] - q[1]) * (p[2] + q[2]);
+        ny += (p[2] - q[2]) * (p[0] + q[0]);
+        nz += (p[0] - q[0]) * (p[1] + q[1]);
+      }
+      const len = Math.hypot(nx, ny, nz);
+      return len > 1e-12 ? [nx / len, ny / len, nz / len] : null;
+    };
+    const planeGroups: Array<{ normal: [number, number, number]; offset: number }> = [];
+    for (const face of faces) {
+      const n = newellOf(face);
+      if (!n) continue;
+      const p0 = vertices[face.vertexIds[0]]?.position;
+      if (!p0) continue;
+      const offset = p0[0] * n[0] + p0[1] * n[1] + p0[2] * n[2];
+      const group = planeGroups.find(
+        (g) =>
+          Math.abs(g.normal[0] * n[0] + g.normal[1] * n[1] + g.normal[2] * n[2]) > 0.999 &&
+          Math.abs(Math.abs(g.offset) - Math.abs(offset)) < 1e-6 * Math.max(1, Math.abs(g.offset)),
+      );
+      if (!group) {
+        planeGroups.push({ normal: n, offset }); // the region's reference winding — the first face
+        continue;
+      }
+      const dot = group.normal[0] * n[0] + group.normal[1] * n[1] + group.normal[2] * n[2];
+      if (dot < 0) {
+        face.vertexIds.reverse();
+        if (face.cornerAngles) face.cornerAngles.reverse();
+      }
+    }
+  }
+
   // P5 — PART A: THE SECOND SOURCE (2026-07-31). The lift always carried the
   // Ambo's angles in its coordinates and read none of them — it reads now:
   // each lifted face's corner k measures θ_k = acos((e₁·e₂)/(|e₁||e₂|)) from

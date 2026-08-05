@@ -605,6 +605,31 @@ check('§10 (E-TWIN-SHARED-BY) ★ A SHARED WALL IS ONE LIVE FACE + A SHARED-BY 
     twinRecords[0].parts[0] === twinLift.shape.faces[0].id &&
     Array.isArray(twinLift.shape.faces[0].data?.sharedBy) &&
     twinLift.shape.faces[0].data.sharedBy.includes(twinRecords[0].id));
+// S3 — THE CO-WOUND REGION (SEAL_S3_BLACK_TRIANGLE_S4_SURFACE_LOCK): the
+// dissection's medial cell arrived ANTI-wound (Newell·ref −1.000, the
+// engineer's probe) — the lift now co-orients every coplanar carried face
+const newellS3 = (face, verts) => {
+  const pts = face.vertexIds.map((id) => verts[id]?.position);
+  if (pts.some((p) => !p) || pts.length < 3) return null;
+  let nx = 0, ny = 0, nz = 0;
+  for (let i = 0; i < pts.length; i += 1) {
+    const p = pts[i];
+    const q = pts[(i + 1) % pts.length];
+    nx += (p[1] - q[1]) * (p[2] + q[2]);
+    ny += (p[2] - q[2]) * (p[0] + q[0]);
+    nz += (p[0] - q[0]) * (p[1] + q[1]);
+  }
+  const len = Math.hypot(nx, ny, nz);
+  return len > 1e-12 ? [nx / len, ny / len, nz / len] : null;
+};
+check('§10 (E-S3-WINDING) ★ THE COPLANAR REGION CO-WINDS: every live face of the lifted manifold disk winds WITH the reference (Newell·ref +1.000 — the anti-wound medial cell is co-oriented AT THE LIFT, the source of the winding; a black back-face fill owns no cell)',
+  (() => {
+    const normals = manifoldShape.faces.map((f) => newellS3(f, manifoldShape.vertices)).filter(Boolean);
+    return (
+      normals.length === 4 &&
+      normals.every((n) => n[0] * normals[0][0] + n[1] * normals[0][1] + n[2] * normals[0][2] > 0.999)
+    );
+  })());
 // E-NUL: the delimiter is the ESCAPE now — the file is pure text
 const liftBytes = fs.readFileSync(path.join(repoRoot, 'src/lib/subComplexLift.ts'));
 check('§10 (E-NUL) THE FILE IS TEXT: zero NUL bytes in subComplexLift.ts (the delimiter is the `\\0` ESCAPE — runtime-identical key, git-diffable source; the pre-fix blob was binary and blinded the diff audits)',

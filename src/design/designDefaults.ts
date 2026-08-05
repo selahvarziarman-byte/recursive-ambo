@@ -204,9 +204,12 @@ export const manuscriptDefaults = {
     // deep shadow → cross-hatch. TONE only: unlike the lines and loops it derives
     // from no correspondence; its one guard is the ANTI-PHOTOREAL CAP — opacity
     // capped per stroke and banded, never a smooth tonal volume.
-    spacingPx: 7.5, // screen-space stroke pitch
+    // THE SURFACE LOCK (S4): spacing/weight are OBJECT units now — the hatch
+    // rides the body's own surface, not the screen. These are visible
+    // DEFAULTS for the look-clear; the designer pins the final values.
+    spacingPx: 0.09, // surface stroke pitch, object units
     opacity: 0.4, // max graphite opacity per stroke (THE CAP — the Leva range stops at 0.5)
-    weightPx: 1, // stroke line-weight
+    weightPx: 0.014, // stroke weight, object units
     color: '#61563f', // graphite, a step darker than construction
     angleDeg: 45, // the hatch diagonal
     shadowStart: 0.8, // shading-term threshold where single-hatch begins

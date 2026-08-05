@@ -225,6 +225,17 @@ check('§5 (E-PARITY-EXECUTES) ★★ THE PLANT BITES BOTH DIRECTIONS: one byte 
 check('§5 (D2-GROUND) THE ONE HATCH PASS IS MOUNTED: exactly one hatch mesh at renderOrder 0.5 in InkedPlainForm (InkedForm\'s own mount, mirrored), gated on the craft\'s hatchOpacity',
   (workingPlain.match(/material=\{hatchMaterial\} renderOrder=\{0\.5\}/g) ?? []).length === 1 &&
     workingPlain.includes('craft.hatchOpacity > 0 ?'));
+// S4 — THE SURFACE LOCK (SEAL_S3_BLACK_TRIANGLE_S4_SURFACE_LOCK): the hatch
+// rides the SURFACE (object-space), never the screen. Reads the COMMITTED
+// block — pre-sim-commit this is RED by the HEAD-read ordering (expected).
+check('§5 (E-S4-SURFACE-LOCK) ★ THE HATCH IS SKIN, NOT WALLPAPER: the COMMITTED hatch block contains NO gl_FragCoord (gone, not made conditional — no per-body toggle); HATCH_VERTEX declares + writes the object-position varying; HATCH_FRAGMENT reads it in BOTH hatch dots (the surfaceCoord frame)',
+  headHatch !== null &&
+    !headHatch.includes('gl_FragCoord') &&
+    headHatch.includes('varying vec3 vObjectPosition') &&
+    headHatch.includes('vObjectPosition = position') &&
+    (headHatch.match(/dot\(surfaceCoord, d[12]\)/g) ?? []).length === 2);
+check('§5 (E-S3-HULL-GUARD) THE FLAT BODY KEEPS ITS RIM SILHOUETTE: the hull-on-flat guard stands in InkedPlainForm — a constant-normal body skips the face-hull (its zero-volume shell\'s back-face washed the interior black); the rim edges carry a flat silhouette',
+  workingPlain.includes('THE HULL-ON-FLAT GUARD') && workingPlain.includes('if (flat) return null;'));
 
 console.log(
   `\n--- THE FAITHFUL BODY UNIFICATION — the cone becomes an inked drawing (the one renderer, the adapter thin, the wash gone, the apex-lift riding, the instrument + contradiction standing) + THE D2-GROUND HATCH PARITY (the wire executes): ${
