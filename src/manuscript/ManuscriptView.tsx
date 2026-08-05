@@ -812,6 +812,22 @@ function ArgumentMapSection({
           ) : null}
         </>
       )}
+      {/* PHASE C (SEAL_PHASE_C_CARD_REGISTRY): the surfaced coarse relations —
+          each row's PLACE is its drawn path through the live halves (the
+          two-sided bar: never a name without a place, never a dropped
+          relation) */}
+      {argument.composedRelationRows.map((row) => (
+        <div key={row.id} style={{ fontSize: 13 }}>
+          <span style={sign}>—</span>
+          <span style={sign}>{row.label}</span>
+          <span style={sign}> ← </span>
+          <span style={sign}>{row.pathLabels.join(' ∘ ')}</span>
+          <span style={{ opacity: 0.75 }}>
+            {' — '}
+            {row.kind === 'shared-by' ? 'shared wall' : 'composed seed relation'}
+          </span>
+        </div>
+      ))}
       {argument.grainMarks.length > 0 ? (
         // THE GRAIN LAW: the lift's own honest refusal, rendered — never a
         // silently bare coarse entity presented as complete

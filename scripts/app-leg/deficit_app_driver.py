@@ -97,7 +97,7 @@ def argument_card_checks(page):
         return c.toDataURL();
       };
       const notdef = draw('\\u0378');
-      return ['⟶', '←', '•', '⊕', '⊾', '⌐', '⇄', '○', 'Σδ', '⚠'].map((ch) => ({ ch, tofu: draw(ch) === notdef }));
+      return ['⟶', '←', '•', '⊕', '⊾', '⌐', '⇄', '○', 'Σδ', '⚠', '∘'].map((ch) => ({ ch, tofu: draw(ch) === notdef }));
     }"""
     )
     bad = [t["ch"] for t in tofu if t["tofu"]]
@@ -251,13 +251,14 @@ def drive_lift(page, lift_files):
             )
         if k == 2:
             # the FACE lift's card (auto-selected on its drop): SLICE2 — the
-            # interior grain is CARRIED, so NO mark rides (a mark here would
-            # be a false claim); the words read lifted-whole unflagged
+            # interior grain is CARRIED, so NO mark rides; PHASE C — the
+            # composed seed relations SURFACE with their drawn paths LIVE
             record(
                 "lift.cardFaceCarry",
                 page.get_by_text("coarse face; finer structure not carried", exact=False).count() == 0
-                and page.get_by_text("lifted whole", exact=False).count() > 0,
-                "the carried-grain face card: lifted whole, NO mark",
+                and page.get_by_text("lifted whole", exact=False).count() > 0
+                and page.get_by_text("composed seed relation", exact=False).count() > 0,
+                "the manifold face card: lifted whole, NO mark, the composed seed relations surfaced",
             )
     remaining = page.locator('div[draggable="true"]').count()
     refused = page.locator("text=already on the sheet").count()

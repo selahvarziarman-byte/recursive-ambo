@@ -105,6 +105,27 @@ export interface ArgumentReading {
   // lifted edges/faces — "coarse face; finer structure not carried"), read
   // off the substrate and rendered by the view; empty when the grain rode
   grainMarks: string[];
+  // PHASE C: the surfaced coarse relations (read from the Phase-B registry —
+  // the `data.composes`/`data.sharedBy` stamps on the live entities, the
+  // carrier that survives the committed load); empty off the lift family
+  composedRelationRows: ComposedRelationRow[];
+}
+
+// PHASE C (SEAL_PHASE_C_CARD_REGISTRY — the researcher's SURFACE ruling): a
+// coarse relation Phase B recorded (composed-of: the union of its live
+// halves · shared-by: a twin wall's duplicate record) SURFACES as its own
+// row. THE TWO-SIDED BAR: its PLACE is the drawn path through live parts
+// (`pathEdgeIds` — never a floating name), and no recorded relation is
+// silently dropped (the words count them).
+export interface ComposedRelationRow {
+  id: string; // the recorded coarse entity's id (the value)
+  kind: 'composed-of' | 'shared-by';
+  entity: 'edge' | 'face';
+  label: string; // endpoint/corner names, ·-joined ('Fact·Meaning')
+  pathLabels: string[]; // the live parts, endpoint-named, in path order
+  pathIds: string[]; // the live part ids — the drawn PLACE (witness-checked)
+  typing: ArgumentTyping; // the source-role through the lift ('born' — a premise)
+  sourceVertexIds: string[];
 }
 
 export interface RelationPairRow {
@@ -404,8 +425,17 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
     .map((edge: Edge) => {
       const sourceEndpoints = edge.sourceVertexIds ?? edge.vertexIds;
       const sourceIds = edge.sourceEdgeId ? [edge.sourceEdgeId] : [...sourceEndpoints];
+      // PHASE C (researcher 2240): a LIFTED relation reads its SOURCE-ROLE
+      // through the lift's map-move — a seed-story relation (every endpoint
+      // created by `seed`) is a PREMISE ('born'); one touching a minted
+      // endpoint is 'derived' (the ambo's half). A relation is a meaning
+      // that persists; the blanket 'lifted' stays on CONCEPTS (their
+      // life-line carries the lift story).
+      const seedStory = (id: string): boolean => shape.vertices[id]?.createdBy.operation === 'seed';
       const typing: ArgumentTyping = liftedForm
-        ? 'lifted'
+        ? edge.vertexIds.every(seedStory)
+          ? 'born'
+          : 'derived'
         : parentEdgeIds && parentEdgeIds.has(edge.id)
           ? 'survived'
           : parent
@@ -425,6 +455,80 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
         origin: null,
       };
     });
+
+  // PHASE C — THE CARD READS THE REGISTRY (SEAL_PHASE_C_CARD_REGISTRY): the
+  // coarse relations Phase B recorded surface as COMPOSED-PATH rows. The
+  // registry is read off the LIVE entities' own stamps (`data.composes` on
+  // every part, `data.sharedBy` on the kept twin — the serializing carrier;
+  // deduped by the recorded id). Labels ·-join ALWAYS (the composed row
+  // names a RELATION between concepts — 'A·B' never collides with the
+  // midpoint concept 'AB'); the typing is the source-role through the lift
+  // (seed-story endpoints ⇒ 'born' — a premise; a minted endpoint ⇒
+  // 'derived'). The PLACE is the ordered live path (the two-sided bar).
+  const dotJoin = (ids: readonly string[]): string => ids.map(endpointNameOf).join('·');
+  const composedRelationRows: ComposedRelationRow[] = (() => {
+    if (!liftedForm) return [];
+    const seedStoryV = (id: string): boolean => shape.vertices[id]?.createdBy.operation === 'seed';
+    const rows = new Map<string, ComposedRelationRow>();
+    // the Phase-B stamps carry SOURCE-universe ids; the committed load
+    // prefixes every STRUCTURAL id (`<source>:…`) but the data blobs ride
+    // OPAQUE (measured) — a recorded id resolves against the live pool by
+    // suffix, and the RESOLVED (live) ids are what the row carries
+    const liveVertexIds = Object.keys(shape.vertices);
+    const liveEdgeIds = shape.edges.map((e) => e.id);
+    const resolveLive = (recordedId: string, pool: readonly string[]): string =>
+      pool.find((liveId) => liveId === recordedId || liveId.endsWith(`:${recordedId}`)) ?? recordedId;
+    const liveEdgeById = new Map(shape.edges.map((e) => [e.id, e]));
+    const readComposes = (entity: 'edge' | 'face', data: Record<string, unknown> | undefined): void => {
+      const rec = data?.['composes'] as
+        | { kind?: string; id?: string; parts?: string[]; sourceVertexIds?: string[] }
+        | undefined;
+      if (!rec || typeof rec.id !== 'string' || !Array.isArray(rec.parts)) return;
+      if (rows.has(rec.id)) return;
+      const source = (Array.isArray(rec.sourceVertexIds) ? rec.sourceVertexIds : []).map((v) =>
+        resolveLive(v, liveVertexIds),
+      );
+      const parts = rec.parts.map((p) => resolveLive(p, liveEdgeIds));
+      rows.set(rec.id, {
+        id: rec.id,
+        kind: 'composed-of',
+        entity,
+        label: dotJoin(source),
+        pathLabels: parts.map((p) => {
+          const live = liveEdgeById.get(p);
+          return live ? dotJoin(live.vertexIds) : (p.split(':').pop() ?? p);
+        }),
+        pathIds: parts,
+        typing: source.length > 0 && source.every(seedStoryV) ? 'born' : 'derived',
+        sourceVertexIds: source,
+      });
+    };
+    // composed-of EDGE records only — a coarse SIDE is a seed RELATION (the
+    // seal's rows); the coarse FACE's composed record is the REGION's own
+    // registry entry (Phase D's correspondence subject), not a relation row —
+    // it stays on the shape, nothing hidden (disclosed)
+    for (const e of shape.edges) readComposes('edge', e.data);
+    const readSharedBy = (entity: 'edge' | 'face', keptId: string, data: Record<string, unknown> | undefined, corners: readonly string[]): void => {
+      const dropped = data?.['sharedBy'];
+      if (!Array.isArray(dropped)) return;
+      for (const droppedId of dropped) {
+        if (typeof droppedId !== 'string' || rows.has(droppedId)) continue;
+        rows.set(droppedId, {
+          id: droppedId,
+          kind: 'shared-by',
+          entity,
+          label: dotJoin(corners),
+          pathLabels: [dotJoin(corners)],
+          pathIds: [keptId], // the ONE live wall — the shared place
+          typing: corners.length > 0 && corners.every(seedStoryV) ? 'born' : 'derived',
+          sourceVertexIds: [...corners],
+        });
+      }
+    };
+    for (const e of shape.edges) readSharedBy('edge', e.id, e.data, e.vertexIds);
+    for (const f of shape.faces) readSharedBy('face', f.id, f.data, f.vertexIds);
+    return [...rows.values()].sort((a, b) => a.id.localeCompare(b.id));
+  })();
 
   // the ABSORBED partners: parent edges absent from the child — identified
   // into a surviving class by the birth word (never "dead"); listed by their
@@ -455,9 +559,15 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
         absorbedRelations.length > 0 ? ` · ${absorbedRelations.length} absorbed` : ''
       }${diedConcepts > 0 ? ` · ${diedConcepts} die` : ''}`
     : liftedForm
-      ? `${conceptRows.length} concepts, ${relationRows.length} relations — lifted whole${
-          grainMarks.length > 0 ? ' · finer structure not carried' : ''
-        }`
+      ? `${conceptRows.length} concepts, ${relationRows.length} ${
+          composedRelationRows.length > 0 ? 'finer relations' : 'relations'
+        }${
+          // THE TWO-SIDED BAR (Phase C): the count never hides the recorded
+          // coarse relations — "9 finer + 3 composed seed", never a bare 9
+          composedRelationRows.length > 0
+            ? ` + ${composedRelationRows.length} composed seed relation${composedRelationRows.length === 1 ? '' : 's'}`
+            : ''
+        } — lifted whole${grainMarks.length > 0 ? ' · finer structure not carried' : ''}`
       : `${conceptRows.length} concepts, ${relationRows.length} relations — the seed's own`;
 
   // ---- PHASE 2 — the relation half + the reading on it -------------------
@@ -634,6 +744,7 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
     refusal,
     declare,
     grainMarks,
+    composedRelationRows,
     // the receipt: which existing card rows demote under the hairline (the
     // view filters its OWN rows by these labels — nothing re-derived here)
     certificateLabels: ['χ', 'χ (certified)', 'class', 'name', 'H₁', 'w₁', 'genus', 'b₁'],

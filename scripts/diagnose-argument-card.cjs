@@ -470,10 +470,11 @@ check('§10 (E-IDENTITY) ★★ THE REAL NAME READS ITSELF — the card\'s conce
     ['A', 'C', 'AC'].every((name) => liftReading.conceptRows.some((r) => r.label === name)) &&
     !liftReading.conceptRows.some((r) => r.label === 'B') &&
     liftReading.conceptRows.every((r) => ['A', 'C', 'AC'].includes(r.label)));
-check('§10 (E-LIFTED-TYPING) ★★ \'lifted\' IS THE TYPING, THE LIFE-LINE READS THROUGH: every concept AND relation types `lifted` (never born/invoked); the C corner\'s life-line reads "seed corner of the tetrahedron" (subject + source universe + lineage, `createdBy` verbatim); the midpoint\'s origin op is `ambo-dissection`; the header speaks "lifted from Ambo Dissection Tetrahedron" — not "invoked"; the words say "lifted whole"',
+check('§10 (E-LIFTED-TYPING, Phase-C recut) ★★ CONCEPTS TYPE `lifted` WITH THE LIFE-LINE; RELATIONS READ THEIR SOURCE-ROLE THROUGH THE LIFT (researcher 2240 — a relation is a meaning that persists): the coarse A-C (seed-story endpoints) reads `born` — a premise; both halves (a minted midpoint endpoint) read `derived`; the C corner\'s life-line reads "seed corner of the tetrahedron"; the header speaks "lifted from Ambo Dissection Tetrahedron"; the words say "lifted whole"',
   liftReading.op === 'patch-lift' &&
     liftReading.conceptRows.every((r) => r.typing === 'lifted') &&
-    liftReading.relationRows.every((r) => r.typing === 'lifted') &&
+    liftReading.relationRows.filter((r) => r.typing === 'born').length === 1 &&
+    liftReading.relationRows.filter((r) => r.typing === 'derived').length === 2 &&
     liftReading.conceptRows.find((r) => r.label === 'C')?.origin?.display === 'seed corner of the tetrahedron' &&
     liftReading.conceptRows.find((r) => r.label === 'AC')?.origin?.op === 'ambo-dissection' &&
     liftReading.header.source === 'Ambo Dissection Tetrahedron' &&
@@ -608,6 +609,80 @@ check('§10 (E-TWIN-SHARED-BY) ★ A SHARED WALL IS ONE LIVE FACE + A SHARED-BY 
 const liftBytes = fs.readFileSync(path.join(repoRoot, 'src/lib/subComplexLift.ts'));
 check('§10 (E-NUL) THE FILE IS TEXT: zero NUL bytes in subComplexLift.ts (the delimiter is the `\\0` ESCAPE — runtime-identical key, git-diffable source; the pre-fix blob was binary and blinded the diff audits)',
   !liftBytes.includes(0) && liftBytes.toString('utf8').includes('`${a}\\0${b}`'));
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHASE C (SEAL_PHASE_C_CARD_REGISTRY) — THE CARD READS THE REGISTRY: the
+// coarse seed relations surface as COMPOSED-PATH rows; the two-sided bar
+// (no name without a PLACE · no real relation DROPPED) is judged by
+// independent comparators and both plants bite.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log('\n----- §12 (PHASE C) ★★ the coarse relation surfaces as a composed path — the two-sided bar -----');
+const composedRows = faceReading.composedRelationRows;
+const liveEdgeIdSet = new Set(manifoldShape.edges.map((e) => e.id));
+const liveFaceIdSet = new Set(manifoldShape.faces.map((f) => f.id));
+note(`composed rows: ${composedRows.map((r) => `${r.label} ← ${r.pathLabels.join(' ∘ ')} (${r.typing}/${r.kind})`).join(' · ')}`);
+check('§12 (E-SURFACE) ★★ EACH COARSE SEED RELATION SURFACES AS A COMPOSED PATH read from the Phase-B registry: 3 rows (one per dropped side), each `A·B ← A·AB ∘ AB·B`-shaped — a 2-part ordered LIVE path between ·-joined seed-corner names; NOT absent, NOT a live-edge duplicate (the ids stay off the live set); the words count them honestly ("+ 3 composed seed relations", never a bare 9)',
+  composedRows.filter((r) => r.kind === 'composed-of').length === 3 &&
+    composedRows
+      .filter((r) => r.kind === 'composed-of')
+      .every(
+        (r) =>
+          r.pathIds.length === 2 &&
+          r.pathIds.every((p) => liveEdgeIdSet.has(p)) &&
+          !liveEdgeIdSet.has(r.id) &&
+          r.label.includes('·') &&
+          r.pathLabels.length === 2 &&
+          r.pathLabels.every((p) => p.includes('·')),
+      ) &&
+    faceReading.words.includes('+ 3 composed seed relations') &&
+    faceReading.words.includes('9 finer relations'));
+// the INDEPENDENT place judge — every named relation resolves to a DRAWN
+// place: a live edge (finer rows) or a path through live parts (composed)
+const placeJudge = (reading, liveEdges, liveFaces) =>
+  reading.relationRows.every((r) => liveEdges.has(r.resultId)) &&
+  reading.composedRelationRows.every(
+    (r) =>
+      r.pathIds.length > 0 &&
+      r.pathIds.every((p) => (r.kind === 'shared-by' ? liveEdges.has(p) || liveFaces.has(p) : liveEdges.has(p))),
+  );
+const phantomCard = {
+  ...faceReading,
+  composedRelationRows: faceReading.composedRelationRows.map((r, i) =>
+    i === 0 ? { ...r, pathIds: ['edge:FABRICATED-NO-PLACE'] } : r,
+  ),
+};
+check('§12 (E-NO-PHANTOM) ★★ NO NAME WITHOUT A PLACE — and the plant bites: every named relation resolves to a drawn place (a live edge, or a path through live parts); a composed row doctored to a fabricated path FAILS the same judge that greens the real card (Arman\'s original letter-with-no-place cannot recur)',
+  placeJudge(faceReading, liveEdgeIdSet, liveFaceIdSet) === true &&
+    placeJudge(phantomCard, liveEdgeIdSet, liveFaceIdSet) === false);
+// the INDEPENDENT drop judge — the shape's own registry census must equal
+// the surfaced count (nothing recorded may vanish from the card)
+const dropJudge = (reading, shapeX) => {
+  const registry = new Set();
+  for (const e of shapeX.edges) {
+    const c = e.data && e.data.composes;
+    if (c && c.kind === 'edge' && typeof c.id === 'string') registry.add(c.id);
+  }
+  return reading.composedRelationRows.filter((r) => r.kind === 'composed-of').length === registry.size;
+};
+const droppedCard = { ...faceReading, composedRelationRows: faceReading.composedRelationRows.filter((r) => r.kind !== 'composed-of') };
+check('§12 (E-NO-DROP) ★★ NO REAL RELATION SILENTLY DROPPED — and the plant bites: the surfaced composed count equals the shape\'s own registry census (the `data.composes` stamps); a card that hides them FAILS the same judge',
+  dropJudge(faceReading, manifoldShape) === true && dropJudge(droppedCard, manifoldShape) === false);
+check('§12 (E-TYPING) THE SOURCE-ROLE THROUGH THE LIFT (researcher 2240): each composed seed relation reads `born` (a premise — seed-story endpoints); every live finer row on the face card reads `derived` (a minted midpoint endpoint); the A-C edge card splits the same way (coarse `born` · halves `derived` — §10\'s recut)',
+  composedRows.filter((r) => r.kind === 'composed-of').every((r) => r.typing === 'born') &&
+    faceReading.relationRows.every((r) => r.typing === 'derived'));
+const twinForm = twinLift ? loadLift(twinLift, 517) : null;
+const twinReading = twinForm ? buildArgumentReading(twinForm) : null;
+note(`twin card: ${twinReading ? twinReading.composedRelationRows.map((r) => `${r.label} (${r.kind})`).join(' · ') : 'no twin subject'}`);
+check('§12 (E-SHARED-BY) ★ A SHARED WALL SURFACES ONCE: the twin-region card carries exactly ONE shared-by row whose place is the ONE live wall (the LOADED live face id — the load prefixes structural ids) — never N duplicate rows, never dropped',
+  twinReading !== null &&
+    twinReading.composedRelationRows.filter((r) => r.kind === 'shared-by').length === 1 &&
+    twinReading.composedRelationRows.find((r) => r.kind === 'shared-by')?.pathIds[0] === twinForm.shape.faces[0].id);
+const viewSrcC = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+check('§12 (VIEW) THE COMPOSED ROW RENDERS WITH ITS PATH (source-pinned): the view maps `composedRelationRows` with the ∘-joined path labels and the honest suffix words',
+  viewSrcC.includes('argument.composedRelationRows.map') &&
+    viewSrcC.includes("pathLabels.join(' ∘ ')") &&
+    viewSrcC.includes('composed seed relation') &&
+    viewSrcC.includes('shared wall'));
 // THE USER'S OWN NAME — the committed doors end-to-end: the workspace store's
 // ambo → selectVertex → updateSelectedVertexData (the packet editor's door)
 // → the lift → the card reads the person's word; a blanked packet reads
