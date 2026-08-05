@@ -383,6 +383,12 @@ const HEAD_READ_ALLOWLIST = new Map([
   // THICKEN (2026-07-18): headBlobOf — non-movement ×6 + the three-re-seal
   // manifest set-differential (arrival-branched)
   ['diagnose-thicken.cjs', { catfile: 1 }],
+  // THE D2 GROUND (2026-08-05, SEAL_D2_GROUND_HATCH_PARITY): the (b) parity
+  // wire — InkedPlainForm's private hatch copy must equal the FROZEN
+  // InkedForm's committed hatch block BYTE-FOR-BYTE (the one-source union is
+  // ruled out), so the wire READS the committed blob at run time and goes
+  // RED on any divergence, either direction. The read IS the wire.
+  ['diagnose-the-faithful-body.cjs', { show: 1 }],
 ]);
 // the scanner runs over a {name → source} map so the planted-guard exhibit can
 // feed it a simulated tree without touching the disk
@@ -427,12 +433,16 @@ check('★ §3 — THE INVENTORY PINS EVERY HEAD-READ IDIOM: the only non-commen
 // HEAD-guard spelled with cat-file (the retired guard idiom, new spelling).
 // The old inventory VISIBLY PASSES the planted tree; the full one FAILS it.
 const OLD_GIT_SHOW_ONLY = { show: new RegExp(J2('git sh', 'ow HEAD:')) };
-const OLD_ALLOWLIST = new Map([
-  ['diagnose-multiparent-dag-walk.cjs', { show: 1 }],
-  ['diagnose-combine-is-connected-sum.cjs', { show: 1 }],
-  ['diagnose-the-person-picks-the-face.cjs', { show: 1 }],
-  ['diagnose-engine-freeze.cjs', { show: 1 }],
-]);
+// the show-only frame, PROJECTED from the live allowlist (the original
+// carried-verbatim 4-entry map predates later legitimate show-reads — the
+// D2-ground parity wire added the fifth; the exhibit's subject is the IDIOM
+// hole (show-only cannot see a cat-file guard), not the file census, so the
+// old-style scan runs against the full list's own show-projection)
+const OLD_ALLOWLIST = new Map(
+  [...HEAD_READ_ALLOWLIST]
+    .filter(([, expect]) => (expect.show ?? 0) > 0)
+    .map(([name, expect]) => [name, { show: expect.show }]),
+);
 const PLANTED_GUARD_SRC = [
   "const { execSync } = require('node:child_process');",
   "const guarded = require('node:fs').readFileSync('src/lib/ids.ts', 'utf8');",

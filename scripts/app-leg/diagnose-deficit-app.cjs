@@ -231,6 +231,14 @@ function killTree(pid) {
           get('camera.pan').ok, get('camera.pan').detail);
         check('§E-NO-REGRESSION left-drag still ORBITS and the right-click invoke palette still opens — the pan/zoom bindings collide with neither',
           get('camera.noRegression').ok, get('camera.noRegression').detail);
+        // THE D2 GROUND (SEAL_D2_GROUND_HATCH_PARITY) — live
+        check('§E-HATCH ★★ THE D2 GROUND IS HATCHED: the placed flat lift\'s PLAIN body carries the hatch ShaderMaterial (grey from lines, the crafted key-light shading — not a fill wash); the material census reads it on the live written bodies',
+          get('hatch.plain').ok, get('hatch.plain').detail);
+        check('§E-RESIDUAL-ORBIT ★ THE DRAG KEEPS THE SUBJECT: an orbit-drag release does NOT deselect (the plate + the designer\'s two-angle look survive); a TRUE empty-paper click still deselects — the drag/click discriminator holds both ways',
+          get('residual.orbitKeepsSelection').ok && get('residual.emptyClickDeselects').ok,
+          `${get('residual.orbitKeepsSelection').detail} · ${get('residual.emptyClickDeselects').detail}`);
+        check('§E-RESIDUAL-CHROME the CameraDock stands clear of the aperture toggle (bounding boxes disjoint — the bottom-right stack is gone)',
+          get('residual.chromeDisjoint').ok, get('residual.chromeDisjoint').detail);
         // E4 hygiene
         check('§E4 CONSOLE CLEAN — no error logged across the whole drive (favicon noise excluded)',
           get('console').ok, get('console').detail);

@@ -258,8 +258,8 @@ check('★ §3 the confirm calls THE ONE SOURCE then the committed op — traced
     !/localeCompare|canonicalWedge|wedgeDir/i.test(viewSrc));
 check('★ §3 NO MODE CONTROL anywhere in the view (the mode words never appear as person-facing state)',
   !/'preserving'|'reversing'/.test(viewSrc));
-check('§3 the REACH FIX: the pointer-missed clear is TRACE-GUARDED (a miss mid-trace keeps the walk) and the collider is a FATTENED INVISIBLE proxy',
-  /if \(cycleTraceRef\.current\) return;\s*\n\s*setSelected\(null\)/.test(viewSrc) &&
+check('§3 the REACH FIX: the pointer-missed clear is TRACE-GUARDED (a miss mid-trace keeps the walk — the guard stands FIRST; the D2-ground drag/click discriminator rides between it and the clear) and the collider is a FATTENED INVISIBLE proxy',
+  /if \(cycleTraceRef\.current\) return;[\s\S]{0,900}?setSelected\(null\)/.test(viewSrc) &&
     viewSrc.includes('cylinderGeometry') &&
     viewSrc.includes('opacity={0}'));
 check("§3 the INK LAW: the walk inks are their OWN reserved species (never generators.a #c2811d / .b #3e6db4)",

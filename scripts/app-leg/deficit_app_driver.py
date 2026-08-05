@@ -267,6 +267,32 @@ def drive_lift(page, lift_files):
                 and page.get_by_text("composed seed relation", exact=False).count() > 0,
                 "the manifold face card: lifted whole, NO mark, the composed seed relations surfaced",
             )
+            # D2-GROUND E-HATCH: the placed flat lift's PLAIN body carries the
+            # hatch ShaderMaterial (grey from lines) — the material census on
+            # the selected written group
+            hatch = page.evaluate(
+                """() => {
+              const scene = window.__manuscriptScene;
+              if (!scene) return null;
+              let shaders = 0, standard = 0;
+              scene.traverse((o) => {
+                if (o.name && o.name.startsWith('written:')) {
+                  o.traverse((c) => {
+                    if (c.isMesh && c.material) {
+                      if (c.material.type === 'ShaderMaterial') shaders += 1;
+                      if (c.material.type === 'MeshStandardMaterial') standard += 1;
+                    }
+                  });
+                }
+              });
+              return { shaders, standard };
+            }"""
+            )
+            record(
+                "hatch.plain",
+                bool(hatch) and hatch["shaders"] >= 1,
+                f"written bodies: {0 if not hatch else hatch['shaders']} hatch ShaderMaterial(s) · {0 if not hatch else hatch['standard']} standard fill(s)",
+            )
     remaining = page.locator('div[draggable="true"]').count()
     refused = page.locator("text=already on the sheet").count()
     record(
@@ -577,16 +603,61 @@ def drive_camera(page):
             break
     if orbit_pt is None:
         orbit_pt = {"x": cx, "y": cy}
+    sel_alive = "() => ((window.__manuscriptCorrespondence ?? {}).rowResultIds ?? []).length > 0"
+    pre_down = page.evaluate(sel_alive)
     page.mouse.move(orbit_pt["x"], orbit_pt["y"])
     page.mouse.down(button="left")
+    page.wait_for_timeout(150)
+    post_down = page.evaluate(sel_alive)
     page.mouse.move(orbit_pt["x"] + 220, orbit_pt["y"] + 70, steps=12)
     page.wait_for_timeout(450)
-    # measure MID-DRAG: the release clicks empty paper → deselect → the C1
-    # reset flies the camera back to default — measuring after the release
-    # races the view's own recovery and reads "no rotation" (the found race)
     after_orbit = camera_state(page)
     page.mouse.up(button="left")
     page.wait_for_timeout(400)
+    post_up = page.evaluate(sel_alive)
+    # D2-GROUND RESIDUAL: the orbit-DRAG release must NOT deselect (the drag
+    # discriminator in onPointerMissed) — the Fit button stays enabled; a
+    # true empty-paper CLICK (no movement) still deselects
+    fit_after_drag = page.get_by_text("Fit Selected", exact=True).first
+    record(
+        "residual.orbitKeepsSelection",
+        fit_after_drag.is_enabled(),
+        f"Fit enabled after drag: {fit_after_drag.is_enabled()} · selection alive pre-down {pre_down} / post-down {post_down} / post-up {post_up}",
+    )
+    # the deselect click aims at a far corner (the orbit just rotated the
+    # world — the old point may now sit on a body, which would SELECT)
+    deselect_pt = orbit_pt
+    for fx, fy in ((0.08, 0.16), (0.92, 0.4), (0.06, 0.5), (0.5, 0.12)):
+        x = box["x"] + box["width"] * fx
+        y = box["y"] + box["height"] * fy
+        tag = page.evaluate(
+            "([x, y]) => { const el = document.elementFromPoint(x, y); return el ? el.tagName : null; }",
+            [x, y],
+        )
+        if tag == "CANVAS":
+            deselect_pt = {"x": x, "y": y}
+            break
+    page.mouse.click(deselect_pt["x"], deselect_pt["y"])
+    page.wait_for_timeout(600)
+    record(
+        "residual.emptyClickDeselects",
+        not page.get_by_text("Fit Selected", exact=True).first.is_enabled(),
+        "a true empty-paper click deselects (Fit Selected disabled)",
+    )
+    # D2-GROUND RESIDUAL: the CameraDock is disjoint from the aperture toggle
+    dock_box = page.get_by_text("Fit Selected", exact=True).first.bounding_box()
+    aperture_box = page.get_by_text("aperture — build a 3-manifold", exact=False).first.bounding_box()
+    disjoint = bool(dock_box and aperture_box) and (
+        dock_box["y"] + dock_box["height"] <= aperture_box["y"]
+        or aperture_box["y"] + aperture_box["height"] <= dock_box["y"]
+        or dock_box["x"] + dock_box["width"] <= aperture_box["x"]
+        or aperture_box["x"] + aperture_box["width"] <= dock_box["x"]
+    )
+    record(
+        "residual.chromeDisjoint",
+        disjoint,
+        f"dock y {None if not dock_box else round(dock_box['y'])} h {None if not dock_box else round(dock_box['height'])} · aperture y {None if not aperture_box else round(aperture_box['y'])}",
+    )
     orbit_ok = False
     if before_orbit and after_orbit:
         qdot = abs(sum(a * b for a, b in zip(before_orbit["quaternion"], after_orbit["quaternion"])))

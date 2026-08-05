@@ -1254,6 +1254,19 @@ export default function ManuscriptView() {
   // defaults — the designer gates them on the running plate.
   const sceneRef = useRef<THREE.Scene | null>(null);
   const prevSelectedRef = useRef<string | null>(null);
+  // the D2-ground drag/click discriminator (the orbit residual): where the
+  // pointer went DOWN — onPointerMissed compares to tell a drag-release
+  // from a true click. A window-level CAPTURE listener arms it (a Canvas
+  // onPointerDown prop does not reach the canvas element — measured on the
+  // leg: the guard never armed and every release still deselected).
+  const pointerDownScreenRef = useRef<{ x: number; y: number } | null>(null);
+  useEffect(() => {
+    const arm = (event: PointerEvent): void => {
+      pointerDownScreenRef.current = { x: event.clientX, y: event.clientY };
+    };
+    window.addEventListener('pointerdown', arm, true);
+    return () => window.removeEventListener('pointerdown', arm, true);
+  }, []);
   const [fitSelectedRequest, setFitSelectedRequest] = useState(0);
   const [resetCameraRequest, setResetCameraRequest] = useState(0);
   const [selectedCameraBounds, setSelectedCameraBounds] = useState<SceneBounds | null>(null);
@@ -3021,10 +3034,19 @@ export default function ManuscriptView() {
           (window as unknown as { __manuscriptCamera?: unknown }).__manuscriptCamera = state.camera;
           sceneRef.current = state.scene;
         }}
-        onPointerMissed={() => {
+        onPointerMissed={(event) => {
           // CYCLE-IDENTIFY reach fix (b): a miss mid-trace does NOT discard
           // the accumulated walk (the 6-edge-trace-cleared-by-one-miss scar)
           if (cycleTraceRef.current) return;
+          // D2-GROUND RESIDUAL (SEAL_D2_GROUND_HATCH_PARITY): an orbit-DRAG
+          // turns the subject, NEVER deselects — only a true empty-paper
+          // CLICK (the pointer barely moved since down) does. R3F can fire
+          // this for the pointerdown too (measured on the leg: the down's
+          // own Δ=0 deselected before the drag moved) — only the click-type
+          // event is judged, and its coords are the RELEASE point.
+          if (event.type !== 'click') return;
+          const down = pointerDownScreenRef.current;
+          if (down && Math.abs(event.clientX - down.x) + Math.abs(event.clientY - down.y) > 6) return;
           setSelected(null);
         }}
       >
@@ -3045,6 +3067,12 @@ export default function ManuscriptView() {
           renderOrder={-15}
           onClick={(event) => {
             event.stopPropagation();
+            // D2-GROUND RESIDUAL (SEAL_D2_GROUND_HATCH_PARITY): an orbit-DRAG
+            // released over the paper raycasts THIS backdrop (an object click,
+            // not a canvas miss — measured); the same drag/click discriminator
+            // applies — only a true click sinks the specimen
+            const down = pointerDownScreenRef.current;
+            if (down && Math.abs(event.clientX - down.x) + Math.abs(event.clientY - down.y) > 6) return;
             setSelected(null);
             setCombineWith(null);
             closeMenus();
@@ -3388,6 +3416,7 @@ export default function ManuscriptView() {
                     key={`${id}:c${ci}`}
                     shape={component.body}
                     craft={craftFor(id, entry.form.shape.id)}
+                    lighting={lighting}
                     generators={component.optionB.generators}
                     worldScale={scaleCtl.dim2Scale}
                     selfCrossing={component.class.kind === 'non-orientable'}
@@ -3486,6 +3515,7 @@ export default function ManuscriptView() {
                 <InkedPlainForm
                   shape={render.shape}
                   craft={craftFor(id, entry.form.shape.id)}
+                  lighting={lighting}
                   generators={optionBByShape.get(render.shape.id)?.generators}
                   worldScale={scaleCtl.dim1Scale}
                   junction={

@@ -292,16 +292,16 @@ export const Deficit: StoryObj = {
   render: () => (
     <div style={{ position: 'relative' }}>
       <PaperCanvas camera={[0, 3, 20]}>
-        <InkedPlainForm shape={cubeOwned} craft={benchCraft} position={[-10, 0, 0]} />
-        <InkedPlainForm shape={tetraOwned} craft={benchCraft} position={[-5, 0, 0]} />
+        <InkedPlainForm shape={cubeOwned} craft={benchCraft} lighting={benchLighting} position={[-10, 0, 0]} />
+        <InkedPlainForm shape={tetraOwned} craft={benchCraft} lighting={benchLighting} position={[-5, 0, 0]} />
         <group scale={DIM1}>
-          <InkedPlainForm shape={torusQuotient} craft={benchCraft} worldScale={DIM1} />
+          <InkedPlainForm shape={torusQuotient} craft={benchCraft} lighting={benchLighting} worldScale={DIM1} />
           {/* the TRUE complex-borne read — MEASURED flat, draws nothing (the
               silence is the value; the plain mount's own complex-less read
               refuses and also rightly draws nothing) */}
           <InkedDeficitLayer shape={torusQuotient} complex={torusAcquired.complex} />
         </group>
-        <InkedPlainForm shape={cubeRaw} craft={benchCraft} position={[5, 0, 0]} />
+        <InkedPlainForm shape={cubeRaw} craft={benchCraft} lighting={benchLighting} position={[5, 0, 0]} />
         <group scale={DIM1 * 1.5} position={[10, 0, 0]}>
           {/* the fold-born cone's marks at the fan's real placements (the
               app's faithful-route mount, mirrored) */}
@@ -333,10 +333,10 @@ export const Boundary: StoryObj = {
     <div style={{ position: 'relative' }}>
       <PaperCanvas camera={[0, 0, 10]}>
         <group scale={DIM1} position={[-2.4, 0, 0]}>
-          <InkedPlainForm shape={boundarySquare.shape} craft={benchCraft} worldScale={DIM1} />
+          <InkedPlainForm shape={boundarySquare.shape} craft={benchCraft} lighting={benchLighting} worldScale={DIM1} />
         </group>
         <group scale={DIM1} position={[2.4, 0, 0]}>
-          <InkedPlainForm shape={boundaryTriangle.shape} craft={benchCraft} worldScale={DIM1} />
+          <InkedPlainForm shape={boundaryTriangle.shape} craft={benchCraft} lighting={benchLighting} worldScale={DIM1} />
         </group>
       </PaperCanvas>
       <CaptionBar
@@ -360,6 +360,7 @@ export const CrossingJunction: StoryObj = {
         <group position={[-4.5, 0, 0]}>
           <group scale={DIM2}>
             <InkedPlainForm
+              lighting={benchLighting}
               shape={revComponent.body}
               craft={benchCraft}
               generators={revComponent.optionB.generators}
@@ -372,6 +373,7 @@ export const CrossingJunction: StoryObj = {
         <group position={[3.5, 0, 0]}>
           <group scale={DIM1}>
             <InkedPlainForm
+              lighting={benchLighting}
               shape={pinchPlain.shape}
               craft={benchCraft}
               worldScale={DIM1}

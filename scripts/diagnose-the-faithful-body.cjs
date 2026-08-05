@@ -179,8 +179,55 @@ const manifest = fs.readFileSync(path.join(repoRoot, 'docs/governance/ENGINE_FRE
 check('§4 (E4) THE COMPLETENESS ROW: faithfulInkedModel.ts carries its NOT_FROZEN row (the closure witness fails any unlisted src/** file) — a cures-at-HEAD manifest compare pre-commit, green at the sim tip',
   manifest.includes('NOT_FROZEN src/manuscript/faithfulInkedModel.ts'));
 
+// ═══════════════════════════════════════════════════════════════════════════
+// §5 THE (b) PARITY WIRE (SEAL_D2_GROUND_HATCH_PARITY — the mothership's hard
+// bar: it must EXECUTE). InkedPlainForm carries a private copy of InkedForm's
+// hatch (the union that would share one source is ruled OUT); this clause
+// READS InkedForm's ACTUAL COMMITTED bytes (git show HEAD:…), extracts the
+// hatch block (HATCH_VERTEX + HATCH_FRAGMENT + useHatchMaterial — the GLSL
+// AND the full uniform/param set), and demands BYTE-IDENTITY with the copy.
+// The plants prove it can fail — BOTH directions. Never a copied literal.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log('\n----- §5 (D2-GROUND) ★★ the hatch parity — the plain copy === InkedForm\'s COMMITTED bytes -----');
+const extractHatchBlock = (source) => {
+  const start = source.indexOf('const HATCH_VERTEX');
+  if (start < 0) return null;
+  const endMarker = 'return material;';
+  const endAt = source.indexOf(endMarker, start);
+  if (endAt < 0) return null;
+  const close = source.indexOf('}', endAt); // useHatchMaterial's closing brace
+  if (close < 0) return null;
+  return source.slice(start, close + 1).replace(/\r/g, '');
+};
+// the ONE committed-blob read of this witness — spelled scanner-visibly (the
+// engine-freeze HEAD-read inventory names it; an argv spelling would be the
+// exact hole its Clause 2(b) exhibits)
+const { execSync } = require('node:child_process');
+const committedInkedForm = execSync('git show HEAD:src/manuscript/InkedForm.tsx', {
+  cwd: repoRoot,
+  encoding: 'utf8',
+  maxBuffer: 1e8,
+});
+const workingPlain = fs.readFileSync(path.join(repoRoot, 'src/manuscript/InkedPlainForm.tsx'), 'utf8');
+const headHatch = extractHatchBlock(committedInkedForm);
+const plainHatch = extractHatchBlock(workingPlain);
+const hatchParity = (a, b) => a !== null && b !== null && a === b;
+note(`extracted: head ${headHatch ? headHatch.length : 'MISS'} bytes · plain ${plainHatch ? plainHatch.length : 'MISS'} bytes`);
+check('§5 (E-PARITY) ★★ THE WIRE READS THE FROZEN BYTES AND HOLDS: InkedPlainForm\'s hatch block is BYTE-IDENTICAL to InkedForm\'s COMMITTED blob (read from the repository at run time, never a copied literal — a re-seal of InkedForm\'s hatch trips this clause; a drifted copy trips it too)',
+  hatchParity(headHatch, plainHatch));
+// ★ the plants — a parity that can't fail witnesses nothing
+const plantPlain = plainHatch === null ? null : plainHatch.replace('opacityCap', 'opacityCaq');
+const plantInked = headHatch === null ? null : headHatch.replace('spacingPx', 'spacingPy');
+check('§5 (E-PARITY-EXECUTES) ★★ THE PLANT BITES BOTH DIRECTIONS: one byte flipped in the PLAIN copy → RED; one byte flipped on the InkedForm side of the SAME comparator → RED; the real pair → GREEN — the wire executes, it does not decorate',
+  hatchParity(headHatch, plantPlain) === false &&
+    hatchParity(plantInked, plainHatch) === false &&
+    hatchParity(headHatch, plainHatch) === true);
+check('§5 (D2-GROUND) THE ONE HATCH PASS IS MOUNTED: exactly one hatch mesh at renderOrder 0.5 in InkedPlainForm (InkedForm\'s own mount, mirrored), gated on the craft\'s hatchOpacity',
+  (workingPlain.match(/material=\{hatchMaterial\} renderOrder=\{0\.5\}/g) ?? []).length === 1 &&
+    workingPlain.includes('craft.hatchOpacity > 0 ?'));
+
 console.log(
-  `\n--- THE FAITHFUL BODY UNIFICATION — the cone becomes an inked drawing (the one renderer, the adapter thin, the wash gone, the apex-lift riding, the instrument + contradiction standing): ${
+  `\n--- THE FAITHFUL BODY UNIFICATION — the cone becomes an inked drawing (the one renderer, the adapter thin, the wash gone, the apex-lift riding, the instrument + contradiction standing) + THE D2-GROUND HATCH PARITY (the wire executes): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
   } ---`,
 );

@@ -20,11 +20,11 @@
 // — they overdraw in the junction ink, two passes, so the flaw is unmissable.
 // Which edges are junctions is the model's reading; the ink is craft.
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Line } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Shape, Vec3 } from '../types/geometry';
-import type { InkedFormCraft } from './InkedForm';
+import type { InkedFormCraft, InkedFormLighting } from './InkedForm';
 import type { CertifiedGenerator } from './optionBModel';
 import type { ShapeField } from '../lib/fieldForShape';
 import { InkedFieldLayer } from './InkedFieldLayer';
@@ -90,9 +90,97 @@ function buildEdgeGeometry(shape: Shape): THREE.BufferGeometry | null {
   return geometry;
 }
 
+// THE D2 GROUND (SEAL_D2_GROUND_HATCH_PARITY): the key-light hatch, the
+// private-mirror move this file already makes for the hull. The block below —
+// HATCH_VERTEX · HATCH_FRAGMENT · useHatchMaterial — is a BYTE-FOR-BYTE copy
+// of the frozen InkedForm's own (:144–:222); the (b) PARITY WIRE in
+// diagnose-the-faithful-body.cjs reads InkedForm's COMMITTED bytes and goes
+// RED on any one-byte divergence, either direction. Do not edit this block
+// without the parity in view.
+const HATCH_VERTEX = /* glsl */ `
+  varying vec3 vWorldNormal;
+  void main() {
+    vWorldNormal = normalize(mat3(modelMatrix) * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const HATCH_FRAGMENT = /* glsl */ `
+  precision highp float;
+  varying vec3 vWorldNormal;
+  uniform vec3 keyDir;
+  uniform float ambient;
+  uniform float keyI;
+  uniform float spacingPx;
+  uniform float weightPx;
+  uniform float opacityCap;
+  uniform vec3 inkColor;
+  uniform float angleRad;
+  uniform float shadowStart;
+  uniform float crossStart;
+  void main() {
+    vec3 n = normalize(vWorldNormal) * (gl_FrontFacing ? 1.0 : -1.0);
+    float lambert = clamp(dot(n, normalize(keyDir)), 0.0, 1.0);
+    // the body's own shading term, normalized to 1.0 fully lit (the same
+    // ambient+key model the standard material sees)
+    float shade = (ambient + keyI * lambert) / max(ambient + keyI, 1e-4);
+    if (shade >= shadowStart) discard; // lit crown: clean paper-wash, no hatch
+    vec2 d1 = vec2(cos(angleRad), sin(angleRad));
+    float duty = clamp(weightPx / max(spacingPx, 1.0), 0.0, 1.0);
+    float m = step(fract(dot(gl_FragCoord.xy, d1) / max(spacingPx, 1.0)), duty);
+    if (shade < crossStart) {
+      // deepest shadow only: the crossing diagonal joins in
+      vec2 d2 = vec2(-d1.y, d1.x);
+      m = max(m, step(fract(dot(gl_FragCoord.xy, d2) / max(spacingPx, 1.0)), duty));
+    }
+    if (m <= 0.0) discard;
+    gl_FragColor = vec4(inkColor, opacityCap); // capped, banded — never a smooth volume
+  }
+`;
+
+function useHatchMaterial(craft: InkedFormCraft, lighting: InkedFormLighting): THREE.ShaderMaterial {
+  const material = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: HATCH_VERTEX,
+        fragmentShader: HATCH_FRAGMENT,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        uniforms: {
+          keyDir: { value: new THREE.Vector3(1, 1, 1) },
+          ambient: { value: 1 },
+          keyI: { value: 0.5 },
+          spacingPx: { value: 7.5 },
+          weightPx: { value: 1 },
+          opacityCap: { value: 0.4 },
+          inkColor: { value: new THREE.Color('#61563f') },
+          angleRad: { value: Math.PI / 4 },
+          shadowStart: { value: 0.8 },
+          crossStart: { value: 0.66 },
+        },
+      }),
+    [],
+  );
+  useEffect(() => () => material.dispose(), [material]);
+  useEffect(() => {
+    material.uniforms.keyDir.value.set(...lighting.keyPosition).normalize();
+    material.uniforms.ambient.value = lighting.ambientIntensity;
+    material.uniforms.keyI.value = lighting.keyIntensity;
+    material.uniforms.spacingPx.value = craft.hatchSpacingPx;
+    material.uniforms.weightPx.value = craft.hatchWeightPx;
+    material.uniforms.opacityCap.value = Math.min(craft.hatchOpacity, 0.5); // the anti-photoreal cap, enforced
+    (material.uniforms.inkColor.value as THREE.Color).set(craft.hatchColor);
+    material.uniforms.angleRad.value = (craft.hatchAngleDeg * Math.PI) / 180;
+    material.uniforms.shadowStart.value = craft.hatchShadowStart;
+    material.uniforms.crossStart.value = craft.hatchCrossStart;
+  }, [material, craft, lighting]);
+  return material;
+}
+
 export function InkedPlainForm({
   shape,
   craft,
+  lighting,
   generators,
   junction,
   field,
@@ -102,6 +190,9 @@ export function InkedPlainForm({
 }: {
   shape: Shape;
   craft: InkedFormCraft;
+  // THE D2 GROUND: the key-light the hatch shades by (the same composed
+  // lighting InkedForm receives — the view passes its one lighting object)
+  lighting: InkedFormLighting;
   generators?: CertifiedGenerator[]; // the certified Option-B basis (optionBModel), verbatim
   junction?: { segments: Vec3[][]; color: string; lineWidth: number }; // the classifier's junction edges, marked
   // C.1 THE FIELD IN THE SPECIMEN: the form's OWN computed field (worker-borne).
@@ -148,6 +239,7 @@ export function InkedPlainForm({
     return buildHullGeometry(body, weight);
   }, [body, shape, craft.silhouetteScreenspacePx, worldScale, selfCrossing]);
   const edges = useMemo(() => buildEdgeGeometry(shape), [shape]);
+  const hatchMaterial = useHatchMaterial(craft, lighting);
   const generatorLines = useMemo(
     () =>
       (generators ?? []).flatMap((generator, k) =>
@@ -194,6 +286,11 @@ export function InkedPlainForm({
               depthWrite={false}
             />
           </mesh>
+          {/* THE D2 GROUND: the ONE hatch pass (InkedForm's own mount,
+              mirrored) — grey from lines, never a fill wash */}
+          {craft.hatchOpacity > 0 ? (
+            <mesh geometry={body} material={hatchMaterial} renderOrder={0.5} />
+          ) : null}
         </>
       ) : null}
       {edges ? (

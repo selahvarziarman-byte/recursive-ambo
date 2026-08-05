@@ -802,7 +802,9 @@ export function CameraDock({
     // framing the specimen's card can drift over this corner — the recovery
     // controls must stay CLICKABLE exactly then (the measured 30s-timeout
     // find); the designer refines placement on the bench
-    <div style={{ position: 'absolute', right: 14, bottom: 14, display: 'flex', gap: 8, zIndex: 2147483000 }}>
+    // D2-GROUND RESIDUAL: bottom:64 — CLEAR of the aperture toggle
+    // ("aperture — build a 3-manifold", right:14 bottom:24) it overlapped
+    <div style={{ position: 'absolute', right: 14, bottom: 64, display: 'flex', gap: 8, zIndex: 2147483000 }}>
       <button
         type="button"
         aria-label="Fit Selected"
