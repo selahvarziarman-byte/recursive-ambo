@@ -219,22 +219,41 @@ function killTree(pid) {
         check('§E-D1 ★ POSITIONS TRACK THE CAMERA + NO MARKS: the projected coords move on Reset and return onScreen after Fit Selected; the pick layer is INVISIBLE (every mesh opacity-0 — D1 renders nothing; the key/emphasis are D2\'s, held for the look-gate)',
           get('corr.track').ok && get('corr.noMarks').ok,
           `${get('corr.track').detail} · ${get('corr.noMarks').detail}`);
-        // D2 (SEAL_D2_CORRESPONDENCE_MARKS — THE CARD'S CLOSE) — live
-        check('§E-D2 ★★ THE MARKS CENSUS + HALO + PERSISTENCE + TWO-REGISTER: every card row (concept + relation + composed) has ONE drawn mark at its place — no phantom, no drop (the Phase-C law, now for the marks); every mark carries its 1h unhatched-paper halo; the key stood WITHOUT any hover (persistent on select) and only the SELECTED specimen wears it (the census equality — the world stays unlettered); deselect clears it',
-          get('d2.census').ok && get('d2.persistDeselect').ok,
-          `${get('d2.census').detail} · ${get('d2.persistDeselect').detail}`);
-        check('§E-D2 ★ THE EMPHASIS IS BIDIRECTIONAL (~3): hovering a specimen VERTEX lights its argument-neighborhood (~3 on the seam, never 1, never all) AND bolds the matching CARD ROW; hovering a CARD ROW lights the neighborhood AND bolds the MARK — both directions on the one id-space',
+        // THE MARKED SPECIMEN (SEAL_THE_MARKED_SPECIMEN — THE CARD'S CLOSE):
+        // M2 the callout ring + M1 register subordination — live
+        check('§E-M2 ★★ THE RING CENSUS + HALO-EMPHASIS-ONLY + PERSISTENCE + TWO-REGISTER: every card row has ONE margin label (phantom 0, dropped 0 — the Phase-C law on the ring); the RECESSED ring wears NO paper halo (the 18-halo heap is deleted — the emphasis state alone gets paper); the key stood WITHOUT any hover (persistent on select), only the SELECTED specimen wears it, and deselect clears it',
+          get('ring.census').ok && get('ring.haloDefaultZero').ok && get('d2.persistDeselect').ok,
+          `${get('ring.census').detail} · ${get('ring.haloDefaultZero').detail} · ${get('d2.persistDeselect').detail}`);
+        check('§E-M2 ★★ THE FIGURE IS VISIBLE + THE MARGIN IS RESERVED (the census-overlap-miss cure): NO key label box sits inside the figure\'s projected silhouette disc (L1), NO two leaders properly cross (L2 — each label holds its anchor\'s own bearing ray), and the FITTED figure occupies the non-margin fraction (L3 — the SPECIMEN_FIT_MARGIN reservation measured live). A heap that hides the figure goes RED here, headless',
+          get('ring.figureVisible').ok && get('ring.marginReserved').ok,
+          `${get('ring.figureVisible').detail} · ${get('ring.marginReserved').detail}`);
+        check('§E-M2 ★ THE EMPHASIS IS BIDIRECTIONAL (~3) + THE PROMOTED HALO: hovering a specimen VERTEX lights its argument-neighborhood (~3, never 1, never all), bolds the matching CARD ROW, and the paper halo appears on EXACTLY the promoted marks; hovering an ENTITY card row lights the neighborhood and bolds the MARK — both directions on the one id-space',
           get('d2.emphasisEntitySide').ok && get('d2.emphasisRowSide').ok,
           `entity side: ${get('d2.emphasisEntitySide').detail} · row side: ${get('d2.emphasisRowSide').detail}`);
-        check('§E-D2 THE KEY RESOLVES VIA h (source-pinned): the mark layer derives cap 4·h, offset 1.5·h, halo 1·h (never bare literals) and the view feeds h from the hatch band (bandPx) — the D2 key rides the designer\'s one lever',
+        check('§E-M1 ★★ REGISTER SUBORDINATION (one full · injective): cold, the door is CLOSED and ZERO annotation registers draw full (the binary recessed band holds; the DEFICIT rides as the researcher\'s STATED exception); the two recessed styles differ on FORM + factor + receded ink — no two registers collapse when recessed',
+          get('regs.subordDefault').ok && get('regs.injective').ok,
+          `${get('regs.subordDefault').detail} · ${get('regs.injective').detail}`);
+        check('§E-M1 ★ THE FIELD DOOR + THE §7 PROMOTION: the door sits in the specimen panel CLOSED by default; opening promotes the field (full) and recedes the rest, closing returns the quiet band; touching a REGISTER row (the generators legend where loops exist · a deficit row · the door\'s own hover) promotes ITS register through the ONE emphasizedIds channel (`register:` ids — no new mechanism)',
+          get('regs.doorClosedDefault').ok && get('regs.doorPromotesField').ok && get('regs.promoteCardRow').ok,
+          `${get('regs.doorClosedDefault').detail} · ${get('regs.doorPromotesField').detail} · ${get('regs.promoteCardRow').detail}`);
+        check('§E-M2 THE RESERVATION IS ONE CONSTANT + THE RECESSION IS WEIGHT+HUE (source-pinned): the ring exports SPECIMEN_FIT_MARGIN and the view\'s camera fit consumes THAT constant (the margin reserved BEFORE the figure is sized); the ring type is page-fixed (RING_FONT_PX); the halo styles ONLY the lit branch; the recessed band derives from designDefaults.registers (line factor ≠ stipple factor) with NO opacity/dash move; the deficit exception is STATED in InkedPlainForm',
           (() => {
-            const markSrc = fs.readFileSync(path.join(repoRoot, 'src/components/CorrespondenceMarkLayer.tsx'), 'utf8');
+            const ringSrc = fs.readFileSync(path.join(repoRoot, 'src/components/CorrespondenceRing.tsx'), 'utf8');
             const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+            const plainSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/InkedPlainForm.tsx'), 'utf8');
+            const fieldSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/InkedFieldLayer.tsx'), 'utf8');
+            const defaultsSrc = fs.readFileSync(path.join(repoRoot, 'src/design/designDefaults.ts'), 'utf8');
             return (
-              markSrc.includes('const capPx = 4 * h') &&
-              markSrc.includes('const offsetPx = 1.5 * h') &&
-              markSrc.includes('const haloPx = 1 * h') &&
-              viewSrc.includes('h={hatchingCtl.bandPx}')
+              ringSrc.includes('export const SPECIMEN_FIT_MARGIN') &&
+              ringSrc.includes('export const RING_FONT_PX') &&
+              ringSrc.includes('...(lit') &&
+              viewSrc.includes('fitMargin={SPECIMEN_FIT_MARGIN}') &&
+              plainSrc.includes('recessedLineFactor') &&
+              plainSrc.includes('STATED EXCEPTION') &&
+              fieldSrc.includes('recessedStippleFactor') &&
+              defaultsSrc.includes('recessedLineFactor') &&
+              defaultsSrc.includes('recessedStippleFactor') &&
+              !ringSrc.includes('strokeDasharray')
             );
           })());
         // PHASE A (SEAL_PHASE_A_CAMERA) — the plate on the RUNNING app

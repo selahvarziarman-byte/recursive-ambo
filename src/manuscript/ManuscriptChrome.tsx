@@ -30,6 +30,71 @@ export interface ChromePaper {
   cardInk: string;
 }
 
+// M1 (SEAL_THE_MARKED_SPECIMEN) — THE FIELD DOOR: the specimen panel's
+// control for the FIELD annotation register. CLOSED by default; opening
+// PROMOTES the field (full) and recedes the other annotation registers.
+// The dock-chip idiom at card scale (a bordered chip, hover speaks, the
+// pressed state shows as the dock's open-tint). The COPY below is a NEUTRAL
+// PLACEHOLDER — the designer writes the door's words at her look-clear (do
+// not treat 'field' / the hover line as ratified copy).
+export function FieldDoor({
+  open,
+  onToggle,
+  onHover,
+  paper,
+  accent,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  // §7 — hovering the door touches the field REGISTER row (the same
+  // emphasizedIds channel every register promotion rides); null on leave
+  onHover?: (touching: boolean) => void;
+  paper: ChromePaper;
+  accent: string;
+}) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      type="button"
+      data-door="field"
+      aria-pressed={open}
+      onMouseEnter={() => {
+        setHovered(true);
+        onHover?.(true);
+      }}
+      onMouseLeave={() => {
+        setHovered(false);
+        onHover?.(false);
+      }}
+      onMouseDown={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'baseline',
+        gap: 7,
+        marginTop: 7,
+        padding: '3px 9px',
+        borderRadius: 3,
+        border: `1px solid ${paper.cardBorder}`,
+        background: open ? 'rgba(58,51,38,0.08)' : 'transparent',
+        color: hovered ? accent : paper.cardInk,
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: 11,
+        letterSpacing: 1,
+        fontVariant: 'small-caps',
+        cursor: 'pointer',
+      }}
+    >
+      field
+      <span style={{ fontSize: 10, opacity: 0.6, letterSpacing: 0, fontVariant: 'normal' }}>
+        {open ? 'promoted — the rest recede' : 'recessed — open to promote'}
+      </span>
+    </button>
+  );
+}
+
 const menuStyle = (paper: ChromePaper): React.CSSProperties => ({
   position: 'fixed',
   zIndex: 60,

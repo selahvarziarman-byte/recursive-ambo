@@ -40,7 +40,7 @@ import {
   type Mesh,
   type MeshBasicMaterial,
 } from 'three';
-import { manuscriptDefaults } from '../design/designDefaults';
+import { manuscriptDefaults, recedeInk } from '../design/designDefaults';
 import { buildManuscriptWorld, WORLD_SURFACES, type DomainModel } from './worldModel';
 import { InkedForm, type InkedFormCraft, type InkedFormLighting } from './InkedForm';
 import { InkedSkeleton } from './InkedSkeleton';
@@ -104,6 +104,7 @@ import {
   ApertureGatePanel,
   BirthGatePanel,
   ChordGatePanel,
+  FieldDoor,
   FoldGatePanel,
   CameraDock,
   FormOpsMenu,
@@ -115,6 +116,9 @@ import {
   ThickenGatePanel,
   type AperturePairRowView,
 } from './ManuscriptChrome';
+// M1 (SEAL_THE_MARKED_SPECIMEN) — the registers seam reports the recessed
+// styles (injectivity is witnessed on the REAL resolved values)
+import { STIPPLE_INK } from './InkedFieldLayer';
 // PHASE A (SEAL_PHASE_A_CAMERA): the ONE shared fit/reset camera mechanism —
 // extracted from the Ambo Workspace3D, consumed here with the plate semantics
 // (exact reset to the composed default, a standing 3/4 fit attitude, a
@@ -128,10 +132,13 @@ import {
   type CorrespondenceEntityRef,
   type CorrespondenceSeam,
 } from '../components/CorrespondencePickLayer';
-// D2 (SEAL_D2_CORRESPONDENCE_MARKS — THE CARD'S CLOSE): the VISIBLE marks
-// over D1's invisible engine — the persistent key (words · letters · leaders,
-// resolved via h = the hatch band) + the shared bidirectional emphasis
-import { CorrespondenceMarkLayer } from '../components/CorrespondenceMarkLayer';
+// M2 (SEAL_THE_MARKED_SPECIMEN — THE CARD'S CLOSE): the CALLOUT RING — the
+// key in the PAGE MARGIN (supersedes the D2 on-figure heap): bearing-ordered,
+// non-crossing leaders on every mark, page-fixed type, recessed default with
+// the ≤3 promoted riding the same emphasizedIds channel, halo on emphasis
+// only. SPECIMEN_FIT_MARGIN is the L3 reservation the camera fit reads —
+// the margin exists BEFORE the figure is sized.
+import { CorrespondenceRing, SPECIMEN_FIT_MARGIN } from '../components/CorrespondenceRing';
 // GAP2B THE 8TH WORD — thicken(shape, segment): the committed Q1 gate assigns
 // the pair's roles (the ONE place "must be a segment" is judged); the store's
 // own door fires the arity-2 product and shelves the band
@@ -956,6 +963,7 @@ function SpecimenCard({
   generatorInks,
   emphasizedIds,
   onRowTouch,
+  fieldDoor,
 }: {
   reading: SpecimenReading;
   argument?: ArgumentReading | null;
@@ -964,7 +972,20 @@ function SpecimenCard({
   // D2b — threaded through to the map section (the shared emphasis)
   emphasizedIds?: readonly string[];
   onRowTouch?: (resultId: string | null) => void;
+  // M1 — THE FIELD DOOR (closed by default; opening promotes the field
+  // register + recedes the rest). Present on the specimen panel only where
+  // the view mounts a promotable field route.
+  fieldDoor?: { open: boolean; onToggle: () => void };
 }) {
+  // §7 — a REGISTER row touches its register through the ONE emphasizedIds
+  // channel (`register:<name>` — the same mechanism as the key's entities)
+  const registerTouch = (register: string) => ({
+    'data-row-id': `register:${register}`,
+    onMouseEnter: () => onRowTouch?.(`register:${register}`),
+    onMouseLeave: () => onRowTouch?.(null),
+  });
+  const registerLit = (register: string): React.CSSProperties =>
+    emphasizedIds?.includes(`register:${register}`) ? { fontWeight: 700 } : {};
   const [certificateOpen, setCertificateOpen] = useState(false);
   const row: React.CSSProperties = {
     display: 'flex',
@@ -1014,11 +1035,30 @@ function SpecimenCard({
         // label-only key collides (React may duplicate OR OMIT a row — the
         // silent-drop class). Caught by the app-path witness leg's console
         // clause on its first run.
-        <div key={`${r.label}·${r.value}`} style={row}>
+        // §7 — the DEFICIT rows are the deficit register's card presence:
+        // touching one promotes the register (which is FULL anyway — the
+        // researcher's held exception — so the promotion recedes the others).
+        <div
+          key={`${r.label}·${r.value}`}
+          style={{ ...row, ...(r.label === 'deficit' ? registerLit('deficit') : {}) }}
+          {...(r.label === 'deficit' ? registerTouch('deficit') : {})}
+        >
           <span style={{ opacity: 0.85 }}>{r.label}</span>
           <b style={{ textAlign: 'right', fontWeight: r.emphasize ? 800 : 600 }}>{r.value}</b>
         </div>
       ))}
+      {fieldDoor ? (
+        // M1 — THE FIELD DOOR (ManuscriptChrome's chip idiom; closed by
+        // default). Hover touches the field register (§7's one channel);
+        // the copy inside is the designer's placeholder.
+        <FieldDoor
+          open={fieldDoor.open}
+          onToggle={fieldDoor.onToggle}
+          onHover={(touching) => onRowTouch?.(touching ? 'register:field' : null)}
+          paper={paper}
+          accent={generatorInks.a}
+        />
+      ) : null}
       {argument ? (
         // THE CERTIFICATE — the demoted receipt (the seal's expand-in-place
         // ruling): a hairline rule, the word, one graphite line; click
@@ -1064,8 +1104,14 @@ function SpecimenCard({
       ) : null}
       <div style={{ marginTop: 9 }}>
         {reading.legend.length ? (
+          // §7 — the legend rows are the GENERATORS register's card presence:
+          // touching one promotes the generators (full) + recedes the rest
           reading.legend.map((entry) => (
-            <div key={entry.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
+            <div
+              key={entry.key}
+              {...registerTouch('generators')}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3, ...registerLit('generators') }}
+            >
               <span
                 style={{
                   width: 15,
@@ -1343,6 +1389,17 @@ export default function ManuscriptView() {
   // relation + its two endpoints · a concept + two incident relations · a
   // composed row + its live path) — never one bare entity, never all
   const [emphasizedIds, setEmphasizedIds] = useState<string[]>([]);
+  // M1 (SEAL_THE_MARKED_SPECIMEN) — THE FIELD DOOR (closed by default) + the
+  // §7 register promotion. ONE mechanism: a register promotion rides the SAME
+  // emphasizedIds channel as the key's entities (`register:<name>` ids — no
+  // new machinery); the door is standing state beneath the transient touch.
+  // At most ONE annotation register is full; the DEFICIT is a STATED
+  // EXCEPTION (held for the researcher, 1618) and never recedes.
+  const [fieldDoorOpen, setFieldDoorOpen] = useState(false);
+  const promotedRegister = useMemo(() => {
+    const touched = emphasizedIds.find((i) => i.startsWith('register:'))?.slice('register:'.length);
+    return touched ?? (fieldDoorOpen ? 'field' : null);
+  }, [emphasizedIds, fieldDoorOpen]);
   // craft round-2: the birth-cue (the child settles AMBIENT; the cue announces it)
   const [birthCue, setBirthCue] = useState<{ key: number; home: [number, number, number] } | null>(null);
   // ----- H2 THE PERSON'S HANDS ----------------------------------------------
@@ -1826,7 +1883,16 @@ export default function ManuscriptView() {
   // per frame from its own world matrices
   useEffect(() => {
     const host = window as unknown as {
-      __manuscriptCorrespondence?: CorrespondenceSeam & { emphasizedIds?: string[]; composedRowIds?: string[] };
+      __manuscriptCorrespondence?: CorrespondenceSeam & {
+        emphasizedIds?: string[];
+        composedRowIds?: string[];
+        registers?: {
+          door: boolean;
+          full: string | null;
+          deficit: 'full-exception';
+          recessedStyles: Record<string, { form: string; widthFactor: number; ink: string }>;
+        };
+      };
     };
     const seam = host.__manuscriptCorrespondence ?? (host.__manuscriptCorrespondence = {});
     seam.hovered = correspondenceHover;
@@ -1836,7 +1902,28 @@ export default function ManuscriptView() {
       : [];
     seam.composedRowIds = selectedArgument ? selectedArgument.composedRelationRows.map((r) => r.id) : [];
     seam.emphasizedIds = emphasizedIds;
-  }, [correspondenceHover, correspondencePicked, selectedArgument, emphasizedIds]);
+    // M1 — the registers seam: the door, the ONE full annotation register
+    // (null = all recessed), the deficit's stated exception, and the two
+    // RESOLVED recessed styles (the injectivity witness reads real values:
+    // distinct FORMS + distinct factors + distinct receded inks)
+    seam.registers = {
+      door: fieldDoorOpen,
+      full: promotedRegister,
+      deficit: 'full-exception',
+      recessedStyles: {
+        generators: {
+          form: 'line',
+          widthFactor: manuscriptDefaults.registers.recessedLineFactor,
+          ink: recedeInk(generatorsCtl.a),
+        },
+        field: {
+          form: 'stipple',
+          widthFactor: manuscriptDefaults.registers.recessedStippleFactor,
+          ink: recedeInk(STIPPLE_INK),
+        },
+      },
+    };
+  }, [correspondenceHover, correspondencePicked, selectedArgument, emphasizedIds, fieldDoorOpen, promotedRegister, generatorsCtl.a]);
   // D2b — the argument-neighborhood of a touched id (~3 lit; the exact
   // neighborhood is the designer's look-gate)
   const emphasisNeighborhood = useCallback(
@@ -1861,9 +1948,15 @@ export default function ManuscriptView() {
     const source = correspondencePicked ?? correspondenceHover;
     setEmphasizedIds(source ? emphasisNeighborhood(source.id) : []);
   }, [correspondenceHover, correspondencePicked, emphasisNeighborhood]);
-  // the card-row side (threaded into the map section)
+  // the card-row side (threaded into the map section). §7: a REGISTER row
+  // (`register:<name>`) promotes its register through the same channel —
+  // no neighborhood (a register is one thing, not a graph locus).
   const handleRowTouch = useCallback(
     (resultId: string | null): void => {
+      if (resultId?.startsWith('register:')) {
+        setEmphasizedIds([resultId]);
+        return;
+      }
       if (resultId) setEmphasizedIds(emphasisNeighborhood(resultId));
       else setEmphasizedIds(correspondencePicked ? emphasisNeighborhood(correspondencePicked.id) : []);
     },
@@ -3494,6 +3587,11 @@ export default function ManuscriptView() {
                     generators={component.optionB.generators}
                     worldScale={scaleCtl.dim2Scale}
                     selfCrossing={component.class.kind === 'non-orientable'}
+                    // M1 — the same binary recessed band on the immersion route
+                    recede={{
+                      generators: !(selected === id && promotedRegister === 'generators'),
+                      field: !(selected === id && promotedRegister === 'field'),
+                    }}
                     field={
                       // C.1 — THE ONE-COMPLEX LAW at the seam: the field dresses
                       // ONLY the exact drawn body it was computed on
@@ -3592,6 +3690,13 @@ export default function ManuscriptView() {
                   lighting={lighting}
                   generators={optionBByShape.get(render.shape.id)?.generators}
                   worldScale={scaleCtl.dim1Scale}
+                  // M1 — the binary recessed band: annotation registers recede
+                  // by default; the SELECTED specimen's promoted one (door or
+                  // §7 row touch) draws full. The figure never recedes.
+                  recede={{
+                    generators: !(selected === id && promotedRegister === 'generators'),
+                    field: !(selected === id && promotedRegister === 'field'),
+                  }}
                   junction={
                     junctionSegmentsByShape.has(render.shape.id)
                       ? {
@@ -3635,11 +3740,11 @@ export default function ManuscriptView() {
                   onHover={setCorrespondenceHover}
                   onPick={setCorrespondencePicked}
                 />
-                {/* D2 — THE PERSISTENT KEY (two-register: the SELECTED
-                    specimen only; the world stays unlettered). Mounts on
-                    select, never hover-only. */}
+                {/* M2 — THE CALLOUT RING (two-register: the SELECTED specimen
+                    only; the world stays unlettered). Persistent — mounts on
+                    select, never hover-only; the key in the PAGE MARGIN. */}
                 {selectedArgument ? (
-                  <CorrespondenceMarkLayer
+                  <CorrespondenceRing
                     shape={entry.form.shape}
                     concepts={selectedArgument.conceptRows.map((r) => ({
                       id: r.resultId,
@@ -3682,7 +3787,10 @@ export default function ManuscriptView() {
           defaults={{ position: [...d.layout.cameraPosition] as [number, number, number], target: [0, 0, 0] }}
           resetMode="exact"
           fitAttitude={[0.55, -0.45, 1]}
-          fitMargin={1.8}
+          // L3 (SEAL_THE_MARKED_SPECIMEN) — the margin is RESERVED BEFORE the
+          // figure is sized: the fit reads the ONE constant the callout ring
+          // lays its band from (the figure sizes into the remainder)
+          fitMargin={SPECIMEN_FIT_MARGIN}
           orbit={{
             zoomToCursor: true,
             zoomSpeed: 1.6,
@@ -4036,6 +4144,7 @@ export default function ManuscriptView() {
           emphasizedIds={emphasizedIds}
           onRowTouch={handleRowTouch}
           generatorInks={{ a: generatorsCtl.a, b: generatorsCtl.b }}
+          fieldDoor={{ open: fieldDoorOpen, onToggle: () => setFieldDoorOpen((open) => !open) }}
         />
       ) : null}
       {chord && chordPanel ? (

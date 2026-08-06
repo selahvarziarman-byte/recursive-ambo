@@ -28,6 +28,7 @@ import type { InkedFormCraft, InkedFormLighting } from './InkedForm';
 import type { CertifiedGenerator } from './optionBModel';
 import type { ShapeField } from '../lib/fieldForShape';
 import { InkedFieldLayer } from './InkedFieldLayer';
+import { manuscriptDefaults, recedeInk } from '../design/designDefaults';
 // R1 — THE DEFICIT REGISTER: the holonomy wedge per non-zero-deficit vertex
 // (verdigris; self-refusing on un-owned atoms and junction links)
 import { InkedDeficitLayer } from './InkedDeficitLayer';
@@ -228,6 +229,7 @@ export function InkedPlainForm({
   position = [0, 0, 0],
   worldScale = 1,
   selfCrossing = false,
+  recede,
 }: {
   shape: Shape;
   craft: InkedFormCraft;
@@ -252,6 +254,13 @@ export function InkedPlainForm({
   // chains is a later refinement; the laid klein/rp2 carry the full
   // locus-split hull in LaidBody.)
   selfCrossing?: boolean;
+  // M1 (SEAL_THE_MARKED_SPECIMEN) — REGISTER SUBORDINATION: the FIGURE
+  // (silhouette + hatch + cells + rim) is the phenomenon and NEVER recedes;
+  // the ANNOTATION registers named here wear the binary recessed band —
+  // WEIGHT (the finer nib) + hue-preserving pull toward the ink neutral.
+  // ⛔ never opacity · never dash. The DEFICIT register is a STATED EXCEPTION
+  // (held for the researcher, ruling 1618) and stays FULL below.
+  recede?: { generators?: boolean; field?: boolean };
 }) {
   const body = useMemo(() => buildBodyGeometry(shape), [shape]);
   // P4 — the hull's weight follows InkedForm's screen-space convention
@@ -371,19 +380,30 @@ export function InkedPlainForm({
           ) : null}
         </>
       ) : null}
-      {field ? <InkedFieldLayer shape={shape} field={field} /> : null}
+      {field ? <InkedFieldLayer shape={shape} field={field} recessed={Boolean(recede?.field)} /> : null}
       {/* R1 — the deficit register: the designer's slot (after construction
           lines 1–2, before generators 9), renderOrder 5–8. The layer draws
           ONLY owned readings and refuses whole where the atom is not owned —
-          plates without the atom stay byte-identical. */}
+          plates without the atom stay byte-identical.
+          M1 STATED EXCEPTION: the deficit is HELD FOR THE RESEARCHER (ruling
+          1618) — it stays FULL, never receded, until her call lands. */}
       <InkedDeficitLayer shape={shape} />
-      {generatorLines.map((line) => (
+      {generatorLines.map((line) => {
+        // M1 — the generators' recessed band: the SAME loop at a finer nib
+        // (width × the line factor) with its ink pulled toward the neutral.
+        // Opacity params untouched (recession is presence, not uncertainty).
+        const recessedGen = Boolean(recede?.generators);
+        const genWidth =
+          craft.generatorLineWidth * (recessedGen ? manuscriptDefaults.registers.recessedLineFactor : 1);
+        const fullInk = line.ink === 'b' ? craft.generatorColorB : craft.generatorColorA;
+        const genInk = recessedGen ? recedeInk(fullInk) : fullInk;
+        return (
         <group key={line.key}>
           {craft.generatorGhostOpacity > 0 ? (
             <Line
               points={line.points}
-              color={line.ink === 'b' ? craft.generatorColorB : craft.generatorColorA}
-              lineWidth={craft.generatorLineWidth}
+              color={genInk}
+              lineWidth={genWidth}
               transparent
               opacity={craft.generatorGhostOpacity}
               depthTest={false}
@@ -393,14 +413,15 @@ export function InkedPlainForm({
           ) : null}
           <Line
             points={line.points}
-            color={line.ink === 'b' ? craft.generatorColorB : craft.generatorColorA}
-            lineWidth={craft.generatorLineWidth}
+            color={genInk}
+            lineWidth={genWidth}
             transparent
             opacity={craft.generatorNearOpacity}
             renderOrder={10}
           />
         </group>
-      ))}
+        );
+      })}
       {(junction?.segments ?? []).map((segment, k) => (
         <group key={`junction:${k}`}>
           <Line

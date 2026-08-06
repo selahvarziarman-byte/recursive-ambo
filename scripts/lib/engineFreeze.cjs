@@ -154,9 +154,21 @@ function checkUntrackedImports(options = {}) {
   const specRe = /(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)|import\s*['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
   const violations = [];
   for (const file of importers) {
-    const raw = Object.prototype.hasOwnProperty.call(overrides, file)
-      ? overrides[file]
-      : fs.readFileSync(path.join(REPO_ROOT, file), 'utf8');
+    let raw;
+    if (Object.prototype.hasOwnProperty.call(overrides, file)) {
+      raw = overrides[file];
+    } else {
+      try {
+        raw = fs.readFileSync(path.join(REPO_ROOT, file), 'utf8');
+      } catch {
+        // THE MARKED SPECIMEN (2026-08-06): an index-tracked importer with NO
+        // working copy is a PENDING DELETION — it ships no content, so it has
+        // no imports to check (the arrival guard's mirror case; the commit
+        // drops it from the index and the question disappears). Before this
+        // the guard CRASHED on any working-tree deletion.
+        continue;
+      }
+    }
     const src = stripCodeComments(raw);
     let m;
     const re = new RegExp(specRe.source, 'g');

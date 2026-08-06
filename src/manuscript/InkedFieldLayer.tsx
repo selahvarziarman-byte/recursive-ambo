@@ -50,6 +50,7 @@ import { Line } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Shape, Vec3 } from '../types/geometry';
 import type { ShapeField } from '../lib/fieldForShape';
+import { manuscriptDefaults, recedeInk } from '../design/designDefaults';
 
 // the layer's own props and constants — deliberately NOT InkedFormCraft (that
 // interface lives in the FROZEN InkedForm.tsx and is not extended here)
@@ -237,8 +238,24 @@ export function buildFieldInkModel(
   };
 }
 
-export function InkedFieldLayer({ shape, field }: { shape: Shape; field: ShapeField }) {
+export function InkedFieldLayer({
+  shape,
+  field,
+  recessed = false,
+}: {
+  shape: Shape;
+  field: ShapeField;
+  // M1 (SEAL_THE_MARKED_SPECIMEN) — the field is an ANNOTATION register: when
+  // not promoted it wears the binary recessed band — WEIGHT (dot/Σ at the
+  // stipple factor — its OWN factor, distinct from the generators' line
+  // factor: injectivity) + hue-preserving pull toward the ink neutral.
+  // ⛔ opacity/dash never change (the recession is presence, not uncertainty).
+  recessed?: boolean;
+}) {
   const model = useMemo(() => buildFieldInkModel(shape, field), [shape, field]);
+  const recessFactor = recessed ? manuscriptDefaults.registers.recessedStippleFactor : 1;
+  const stippleInk = recessed ? recedeInk(STIPPLE_INK) : STIPPLE_INK;
+  const sigmaInk = recessed ? recedeInk(SIGMA_INK) : SIGMA_INK;
   const dotsGeometry = useMemo(() => {
     if (!model.plated || model.dotCount === 0) return null;
     const geometry = new THREE.BufferGeometry();
@@ -258,8 +275,8 @@ export function InkedFieldLayer({ shape, field }: { shape: Shape; field: ShapeFi
         // dots do not ink through the form
         <points geometry={dotsGeometry} renderOrder={0}>
           <pointsMaterial
-            color={STIPPLE_INK}
-            size={STIPPLE_DOT_PX}
+            color={stippleInk}
+            size={STIPPLE_DOT_PX * recessFactor}
             sizeAttenuation={false}
             transparent
             opacity={STIPPLE_OPACITY}
@@ -272,8 +289,8 @@ export function InkedFieldLayer({ shape, field }: { shape: Shape; field: ShapeFi
           <Line
             segments
             points={model.sigmaSegments}
-            color={SIGMA_INK}
-            lineWidth={SIGMA_LINE_WIDTH}
+            color={sigmaInk}
+            lineWidth={SIGMA_LINE_WIDTH * recessFactor}
             transparent
             opacity={SIGMA_GHOST_OPACITY}
             depthTest={false}
@@ -283,8 +300,8 @@ export function InkedFieldLayer({ shape, field }: { shape: Shape; field: ShapeFi
           <Line
             segments
             points={model.sigmaSegments}
-            color={SIGMA_INK}
-            lineWidth={SIGMA_LINE_WIDTH}
+            color={sigmaInk}
+            lineWidth={SIGMA_LINE_WIDTH * recessFactor}
             renderOrder={14}
           />
         </>

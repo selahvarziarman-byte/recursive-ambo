@@ -298,8 +298,8 @@ check('the whole-src census: computeFieldForShape\'s VALUE importers are EXACTLY
   ]));
 note(`value importers, measured: [${valueImporters.join(', ')}]`);
 const plainSrc = stripComments(readSrc('src/manuscript/InkedPlainForm.tsx'));
-check('InkedPlainForm mounts the layer exactly when the field is given (absent ⇒ byte-identical: no mark of its own)',
-  plainSrc.includes('{field ? <InkedFieldLayer shape={shape} field={field} /> : null}'));
+check('InkedPlainForm mounts the layer exactly when the field is given (absent ⇒ byte-identical: no mark of its own; M1 threads the recessed STYLE flag — style, never a mark)',
+  /\{field \? <InkedFieldLayer shape=\{shape\} field=\{field\}[^/]*\/> : null\}/.test(plainSrc));
 const layerSrc = stripComments(readSrc('src/manuscript/InkedFieldLayer.tsx'));
 check('the layer draws NOTHING when not plated (the source carries the gate verbatim) and extends no frozen craft (InkedFormCraft is not named)',
   layerSrc.includes('if (!model.plated) return null;') && !layerSrc.includes('InkedFormCraft'));

@@ -508,7 +508,17 @@ const movedCrInsensitive = (file) => {
   } catch {
     return false;
   }
-  return sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) !== sha256OfCrStripped(head);
+  // THE MARKED SPECIMEN (2026-08-06): a file with a HEAD blob but NO working
+  // copy is a DELETION — content moved (the ring superseded the D2 mark
+  // layer whole). Before this the leg CRASHED on any deletion; now a
+  // deletion speaks and is governed by the same allowlist as any move.
+  let working;
+  try {
+    working = fs.readFileSync(path.join(repoRoot, file), 'utf8');
+  } catch {
+    return true;
+  }
+  return sha256OfCrStripped(working) !== sha256OfCrStripped(head);
 };
 const inkAllowed = new Set([
   'src/design/designDefaults.ts',
@@ -566,6 +576,13 @@ const inkAllowed = new Set([
   // byte-identical); zero frozen files; ratified in
   // diagnose-the-field-in-the-specimen.cjs.
   'src/manuscript/InkedPlainForm.tsx',
+  // THE MARKED SPECIMEN (2026-08-06, SEAL_THE_MARKED_SPECIMEN): M1 register
+  // subordination (the field layer's recessed band; the plain form + chrome +
+  // view + defaults rows above already ride) + M2 the callout ring — the D2
+  // mark layer is DELETED (superseded whole by the margin ring); zero frozen
+  // files; ratified in diagnose-deficit-app.cjs (§E-M1/§E-M2).
+  'src/manuscript/InkedFieldLayer.tsx',
+  'src/components/CorrespondenceMarkLayer.tsx',
 ]);
 const inkMoved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

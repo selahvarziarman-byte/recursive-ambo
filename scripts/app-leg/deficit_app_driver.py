@@ -367,33 +367,10 @@ def drive_correspondence(page):
       };
     }"""
     )
-    canvas = page.locator("canvas").first
-    box = canvas.bounding_box()
-    ok_hover_v = ok_pick_v = ok_hover_e = False
-    if target["vertex"]:
-        page.mouse.move(box["x"] + target["vertex"]["x"], box["y"] + target["vertex"]["y"])
-        page.wait_for_timeout(350)
-        hov = page.evaluate("() => window.__manuscriptCorrespondence.hovered ?? null")
-        ok_hover_v = bool(hov) and hov["id"] == target["vertex"]["id"] and hov["kind"] == "vertex"
-        page.mouse.down(button="left")
-        page.mouse.up(button="left")
-        page.wait_for_timeout(250)
-        pick = page.evaluate("() => window.__manuscriptCorrespondence.picked ?? null")
-        ok_pick_v = bool(pick) and pick["id"] == target["vertex"]["id"]
-    edges_tried = 0
-    for candidate in target["edges"]:
-        edges_tried += 1
-        page.mouse.move(box["x"] + candidate["x"], box["y"] + candidate["y"])
-        page.wait_for_timeout(350)
-        hov = page.evaluate("() => window.__manuscriptCorrespondence.hovered ?? null")
-        if bool(hov) and hov["id"] == candidate["id"] and hov["kind"] == "edge":
-            ok_hover_e = True
-            break
-    record(
-        "corr.pick",
-        ok_hover_v and ok_pick_v and ok_hover_e,
-        f"vertex hover {ok_hover_v} · vertex pick {ok_pick_v} · edge hover {ok_hover_e} ({edges_tried} candidate(s) tried — a depth-contested midpoint yields to the nearer edge honestly) — the projected coords HIT their own entities (the lands-on-drawn proof)",
-    )
+    # (the pick GESTURES moved to drive_correspondence_pick — it runs AFTER
+    # the ring census so the census reads a truly COLD emphasis: a pick is
+    # STICKY by D1's design, and its ~3 neighborhood would wear the promoted
+    # halo through every later section)
     # E-POSITIONS-TRACK-CAMERA: the projected coords MOVE on Reset, then Fit
     # Selected restores the plate
     before = (
@@ -451,13 +428,65 @@ def drive_correspondence(page):
     )
 
 
+def drive_correspondence_pick(page):
+    # E-PICK-RETURNS-ID (D1) — hover/click a corner VERTEX at its own
+    # projected coords, then hover an EDGE at its midpoint. Runs AFTER the
+    # ring census: the pick is STICKY (D1's design) and its emphasized ~3
+    # would pollute a "cold" halo census run behind it.
+    target = page.evaluate(
+        """() => {
+      const c = window.__manuscriptCorrespondence;
+      const entries = Object.entries(c.positions ?? {});
+      const vertices = entries.filter(([id, p]) => id.includes(':vertex:') && p.onScreen);
+      const vertex = vertices.find(([id]) => id.includes(':tetrahedron:')) ?? vertices[0] ?? null;
+      const edges = entries
+        .filter(([id, p]) => id.includes(':edge:') && p.onScreen)
+        .filter(([, p]) => vertices.every(([, vp]) => Math.hypot(vp.x - p.x, vp.y - p.y) >= 18))
+        .slice(0, 5)
+        .map(([id, p]) => ({ id, x: p.x, y: p.y }));
+      return {
+        vertex: vertex ? { id: vertex[0], x: vertex[1].x, y: vertex[1].y } : null,
+        edges,
+      };
+    }"""
+    )
+    canvas = page.locator("canvas").first
+    box = canvas.bounding_box()
+    ok_hover_v = ok_pick_v = ok_hover_e = False
+    if target["vertex"]:
+        page.mouse.move(box["x"] + target["vertex"]["x"], box["y"] + target["vertex"]["y"])
+        page.wait_for_timeout(350)
+        hov = page.evaluate("() => window.__manuscriptCorrespondence.hovered ?? null")
+        ok_hover_v = bool(hov) and hov["id"] == target["vertex"]["id"] and hov["kind"] == "vertex"
+        page.mouse.down(button="left")
+        page.mouse.up(button="left")
+        page.wait_for_timeout(250)
+        pick = page.evaluate("() => window.__manuscriptCorrespondence.picked ?? null")
+        ok_pick_v = bool(pick) and pick["id"] == target["vertex"]["id"]
+    edges_tried = 0
+    for candidate in target["edges"]:
+        edges_tried += 1
+        page.mouse.move(box["x"] + candidate["x"], box["y"] + candidate["y"])
+        page.wait_for_timeout(350)
+        hov = page.evaluate("() => window.__manuscriptCorrespondence.hovered ?? null")
+        if bool(hov) and hov["id"] == candidate["id"] and hov["kind"] == "edge":
+            ok_hover_e = True
+            break
+    record(
+        "corr.pick",
+        ok_hover_v and ok_pick_v and ok_hover_e,
+        f"vertex hover {ok_hover_v} · vertex pick {ok_pick_v} · edge hover {ok_hover_e} ({edges_tried} candidate(s) tried — a depth-contested midpoint yields to the nearer edge honestly) — the projected coords HIT their own entities (the lands-on-drawn proof)",
+    )
+
+
 def drive_d2_marks(page):
-    # D2 (SEAL_D2_CORRESPONDENCE_MARKS — THE CARD'S CLOSE) — the marks census,
-    # the halo, and the bidirectional emphasis, on the RUNNING app. The face
-    # lift is SELECTED (no hover has run since the correspondence section
-    # cleared) — so mark presence HERE is the persistence's first half, and
-    # the census equality against the SELECTED card's rows is the two-register
-    # proof (the other placed specimens carry no marks).
+    # M2 (SEAL_THE_MARKED_SPECIMEN — THE CARD'S CLOSE) — the CALLOUT RING on
+    # the RUNNING app (supersedes the D2 heap census). The face lift is
+    # SELECTED (no hover since the correspondence section cleared) — mark
+    # presence HERE is the persistence's first half; the census equality
+    # against the SELECTED card's rows is the two-register proof. The camera
+    # sits at Fit Selected (drive_correspondence ends there) — the margin
+    # measurements below read the FITTED framing.
     page.wait_for_timeout(400)
     census = page.evaluate(
         """() => {
@@ -467,19 +496,82 @@ def drive_d2_marks(page):
       const markSet = new Set(marks);
       const phantom = marks.filter((m) => !rows.has(m));
       const dropped = [...rows].filter((r) => !markSet.has(r));
-      const halos = document.querySelectorAll('.corr-mark .corr-halo').length;
-      return { rows: rows.size, marks: marks.length, phantom: phantom.length, dropped: dropped.length, halos };
+      // E-HALO-EMPHASIS-ONLY, default half: NO mark wears the paper halo cold
+      const haloed = [...document.querySelectorAll('.corr-mark .corr-halo')].filter((el) => {
+        const bg = getComputedStyle(el).backgroundColor;
+        return bg && bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)';
+      }).length;
+      return { rows: rows.size, marks: marks.length, phantom: phantom.length, dropped: dropped.length, haloed };
     }"""
     )
     record(
-        "d2.census",
+        "ring.census",
         census["rows"] > 0
         and census["marks"] == census["rows"]
         and census["phantom"] == 0
-        and census["dropped"] == 0
-        and census["halos"] == census["marks"],
-        f"{census['marks']} marks === {census['rows']} card rows · phantom {census['phantom']} · dropped {census['dropped']} · halos {census['halos']}/{census['marks']}",
+        and census["dropped"] == 0,
+        f"{census['marks']} ring marks === {census['rows']} card rows · phantom {census['phantom']} · dropped {census['dropped']}",
     )
+    record(
+        "ring.haloDefaultZero",
+        census["marks"] > 0 and census["haloed"] == 0,
+        f"halos on the recessed ring: {census['haloed']}/{census['marks']} (the emphasis state alone wears paper)",
+    )
+    # ★ E-FIGURE-VISIBLE — the census-overlap-miss cure, measured: every key
+    # label BOX sits OUTSIDE the figure's projected disc (L1: the vertex hull
+    # bounds the drawn silhouette), and NO two leaders properly cross (L2:
+    # each lies on its own bearing ray by construction).
+    fig = page.evaluate(
+        """() => {
+      const seam = window.__manuscriptCorrespondence ?? {};
+      return { ring: seam.ring ?? [], figure: seam.figure ?? null };
+    }"""
+    )
+    figure_ok = False
+    detail_fig = "no ring/figure seam"
+    if fig["figure"] and fig["ring"]:
+        cx, cy, radius = fig["figure"]["cx"], fig["figure"]["cy"], fig["figure"]["radiusPx"]
+        inside = []
+        for m in fig["ring"]:
+            dx = max(abs(m["labelX"] - cx) - m["labelW"] / 2, 0)
+            dy = max(abs(m["labelY"] - cy) - m["labelH"] / 2, 0)
+            if (dx * dx + dy * dy) ** 0.5 <= radius:
+                inside.append(m["id"])
+
+        def crosses(a, b):
+            # proper segment intersection (shared endpoints don't count)
+            def orient(px, py, qx, qy, rx, ry):
+                v = (qx - px) * (ry - py) - (qy - py) * (rx - px)
+                return 0 if abs(v) < 1e-9 else (1 if v > 0 else -1)
+
+            o1 = orient(a[0], a[1], a[2], a[3], b[0], b[1])
+            o2 = orient(a[0], a[1], a[2], a[3], b[2], b[3])
+            o3 = orient(b[0], b[1], b[2], b[3], a[0], a[1])
+            o4 = orient(b[0], b[1], b[2], b[3], a[2], a[3])
+            return o1 != o2 and o3 != o4 and 0 not in (o1, o2, o3, o4)
+
+        segs = [(m["anchorX"], m["anchorY"], m["labelX"], m["labelY"]) for m in fig["ring"]]
+        crossings = sum(
+            1 for i in range(len(segs)) for j in range(i + 1, len(segs)) if crosses(segs[i], segs[j])
+        )
+        figure_ok = len(fig["ring"]) == census["marks"] and len(inside) == 0 and crossings == 0
+        detail_fig = (
+            f"{len(fig['ring'])} labels · inside the silhouette disc: {len(inside)} · "
+            f"crossing leaders: {crossings} (figure r={radius:.0f}px)"
+        )
+    record("ring.figureVisible", figure_ok, detail_fig)
+    # E-MARGIN-RESERVED (L3) — at the FITTED framing the figure occupies the
+    # non-margin area: projected radius ≤ halfMin/SPECIMEN_FIT_MARGIN (+slack)
+    canvas = page.locator("canvas").first
+    box = canvas.bounding_box()
+    half_min = min(box["width"], box["height"]) / 2
+    margin_ok = False
+    detail_margin = "no figure seam"
+    if fig["figure"]:
+        frac = fig["figure"]["radiusPx"] / half_min
+        margin_ok = 0 < frac <= 0.62  # 1/1.8 = 0.556 + measurement slack
+        detail_margin = f"figure radius {fig['figure']['radiusPx']:.0f}px = {frac:.2f}·halfMin (≤0.62 — the 1.8 fit reserves the band)"
+    record("ring.marginReserved", margin_ok, detail_margin)
     # the ENTITY side of the emphasis: hover a corner vertex (the D1 gesture)
     # → ~3 lit on the seam + the matching CARD ROW bolds
     target = page.evaluate(
@@ -492,9 +584,8 @@ def drive_d2_marks(page):
     )
     emph_ok = False
     row_bold_ok = False
+    halo_ok = False
     detail = "no on-screen vertex target"
-    canvas = page.locator("canvas").first
-    box = canvas.bounding_box()
     if target:
         page.mouse.move(box["x"] + target["x"], box["y"] + target["y"])
         page.wait_for_timeout(450)
@@ -505,15 +596,41 @@ def drive_d2_marks(page):
             target["id"],
         )
         row_bold_ok = weight in ("700", "bold")
-        detail = f"lit {len(emph)} (~3 neighborhood) · the card row fontWeight {weight}"
+        # E-HALO-EMPHASIS-ONLY, promoted half: the paper halo appears on the
+        # PROMOTED marks alone (count === the emphasized ids that own marks)
+        halo_state = page.evaluate(
+            """(emphIds) => {
+      const haloed = [...document.querySelectorAll('.corr-mark')].filter((el) => {
+        const glyph = el.querySelector('.corr-halo');
+        if (!glyph) return false;
+        const bg = getComputedStyle(glyph).backgroundColor;
+        return bg && bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)';
+      }).map((el) => el.getAttribute('data-mark-id'));
+      const markIds = new Set([...document.querySelectorAll('.corr-mark')].map((el) => el.getAttribute('data-mark-id')));
+      const promotedWithMarks = emphIds.filter((id) => markIds.has(id));
+      return { haloed, promoted: promotedWithMarks };
+    }""",
+            emph,
+        )
+        halo_ok = (
+            len(halo_state["haloed"]) >= 1
+            and sorted(halo_state["haloed"]) == sorted(halo_state["promoted"])
+        )
+        detail = (
+            f"lit {len(emph)} (~3 neighborhood) · the card row fontWeight {weight} · "
+            f"halos {len(halo_state['haloed'])} === promoted {len(halo_state['promoted'])}"
+        )
         page.mouse.move(box["x"] + box["width"] * 0.06, box["y"] + box["height"] * 0.12)
         page.wait_for_timeout(300)
-    record("d2.emphasisEntitySide", emph_ok and row_bold_ok, detail)
-    # the ROW side: hover a card row → the seam lights the neighborhood + the
+    record("d2.emphasisEntitySide", emph_ok and row_bold_ok and halo_ok, detail)
+    # the ROW side: hover an ENTITY card row (the register rows are M1's —
+    # drive_registers walks those) → the seam lights the neighborhood + the
     # MARK bolds (the bidirection's other half)
     row = page.evaluate(
         """() => {
-      const el = document.querySelector('[data-row-id]');
+      const el = [...document.querySelectorAll('[data-row-id]')].find(
+        (e) => !(e.getAttribute('data-row-id') ?? '').startsWith('register:'),
+      );
       if (!el) return null;
       const r = el.getBoundingClientRect();
       return { id: el.getAttribute('data-row-id'), x: r.x + r.width / 2, y: r.y + r.height / 2 };
@@ -536,6 +653,131 @@ def drive_d2_marks(page):
         page.mouse.move(box["x"] + box["width"] * 0.06, box["y"] + box["height"] * 0.5)
         page.wait_for_timeout(300)
     record("d2.emphasisRowSide", row_ok and mark_lit_ok, detail2)
+
+
+def drive_registers(page):
+    # M1 (SEAL_THE_MARKED_SPECIMEN) — REGISTER SUBORDINATION on the RUNNING
+    # app: the seam's registers member (the view's RESOLVED state — door, the
+    # one full register, the deficit exception, the recessed styles), the
+    # FIELD DOOR in the specimen panel, and the §7 card-row promotion.
+    page.wait_for_timeout(200)
+    regs = page.evaluate("() => (window.__manuscriptCorrespondence ?? {}).registers ?? null")
+    # E-SUBORD-ONE-FULL, default half: door CLOSED, ZERO annotation registers
+    # full (≤1 holds), the deficit a STATED exception (never receded)
+    default_ok = (
+        regs is not None
+        and regs["door"] is False
+        and regs["full"] is None
+        and regs["deficit"] == "full-exception"
+    )
+    record(
+        "regs.subordDefault",
+        default_ok,
+        "no seam.registers"
+        if regs is None
+        else f"door {regs['door']} · full {regs['full']} · deficit {regs['deficit']} (annotation registers recessed cold)",
+    )
+    # E-SUBORD-INJECTIVE: the two recessed styles differ on FORM + factor +
+    # receded ink (no two registers collapse into one look when recessed)
+    injective = False
+    detail_inj = "no seam.registers"
+    if regs is not None:
+        g = regs["recessedStyles"]["generators"]
+        f = regs["recessedStyles"]["field"]
+        injective = g["form"] != f["form"] and g["widthFactor"] != f["widthFactor"] and g["ink"] != f["ink"]
+        detail_inj = (
+            f"generators {g['form']}×{g['widthFactor']} {g['ink']} ≠ field {f['form']}×{f['widthFactor']} {f['ink']}"
+        )
+    record("regs.injective", injective, detail_inj)
+    # E-FIELD-DOOR: present in the specimen panel, CLOSED by default; opening
+    # promotes the field + recedes the rest; closing returns the quiet band
+    door = page.locator('[data-door="field"]')
+    present = door.count() == 1
+    pressed = door.get_attribute("aria-pressed") if present else None
+    record(
+        "regs.doorClosedDefault",
+        present and pressed == "false",
+        f"door present {present} · aria-pressed {pressed} (closed by default)",
+    )
+    door_ok = False
+    detail_door = "door missing"
+    if present:
+        door.click()
+        page.wait_for_timeout(300)
+        opened = page.evaluate("() => (window.__manuscriptCorrespondence ?? {}).registers ?? null")
+        # the door hover ALSO touches the field register (§7's one channel) —
+        # full is 'field' from the standing door either way; assert door=true
+        door_ok = opened is not None and opened["door"] is True and opened["full"] == "field"
+        detail_door = (
+            "no seam after open"
+            if opened is None
+            else f"open: door {opened['door']} · full {opened['full']} (the field promoted, the rest recede)"
+        )
+        door.click()
+        page.wait_for_timeout(300)
+        page.mouse.move(0, 0)
+        page.wait_for_timeout(200)
+        closed = page.evaluate("() => (window.__manuscriptCorrespondence ?? {}).registers ?? null")
+        door_ok = door_ok and closed is not None and closed["door"] is False and closed["full"] is None
+        detail_door += (
+            ""
+            if closed is None
+            else f" · closed: door {closed['door']} · full {closed['full']}"
+        )
+    record("regs.doorPromotesField", door_ok, detail_door)
+    # E-PROMOTE-CARDROW (§7): touching a REGISTER row promotes ITS register
+    # through the ONE emphasizedIds channel; leaving returns the quiet band.
+    # The row is whichever register the SELECTED card actually draws: the
+    # generators legend when loops exist (the lifted face is a disk — H₁ = 0,
+    # no legend), else a deficit row, else the field door's own hover (the
+    # door touches `register:field` on the same channel).
+    promote_ok = False
+    detail_promote = "no register row on the card"
+    target_row = None
+    for register in ("generators", "deficit"):
+        locator = page.locator(f'[data-row-id="register:{register}"]').first
+        if locator.count() > 0:
+            target_row = (register, locator, True)
+            break
+    if target_row is None and present:
+        target_row = ("field", door, False)
+    if target_row is not None:
+        register, locator, is_row_div = target_row
+        locator.hover()
+        page.wait_for_timeout(300)
+        state = page.evaluate(
+            """(register) => {
+      const seam = window.__manuscriptCorrespondence ?? {};
+      const el = document.querySelector(`[data-row-id="register:${register}"]`);
+      return {
+        full: (seam.registers ?? {}).full ?? null,
+        emphasized: seam.emphasizedIds ?? [],
+        weight: el ? getComputedStyle(el).fontWeight : null,
+      };
+    }""",
+            register,
+        )
+        promote_ok = state["full"] == register and state["emphasized"] == [f"register:{register}"]
+        # the bold read applies to the card ROW divs (the door is a chip —
+        # its pressed/hover state is its own affordance)
+        if is_row_div:
+            promote_ok = promote_ok and state["weight"] in ("700", "bold")
+        detail_promote = (
+            f"row register:{register} · full {state['full']} · emphasized {state['emphasized']}"
+            + (f" · the row fontWeight {state['weight']}" if is_row_div else " · via the door's hover")
+        )
+        page.mouse.move(0, 0)
+        page.wait_for_timeout(300)
+        after = page.evaluate("() => ((window.__manuscriptCorrespondence ?? {}).registers ?? {}).full ?? null")
+        promote_ok = promote_ok and after is None
+        detail_promote += f" · after leave: full {after}"
+    record("regs.promoteCardRow", promote_ok, detail_promote)
+    # the door/row locators AUTO-SCROLL the page when the card runs below the
+    # fold (the 18-row card + the door exceed a 900px viewport — measured:
+    # scrollY 697 left every later canvas-coordinate gesture outside the
+    # viewport). Restore the page origin for the camera section.
+    page.evaluate("() => window.scrollTo(0, 0)")
+    page.wait_for_timeout(200)
 
 
 def camera_state(page):
@@ -592,6 +834,10 @@ def drive_camera(page):
     # PHASE A (SEAL_PHASE_A_CAMERA) — the plate, judged on the RUNNING app.
     # Runs LAST: every drive above exercised the sheet at the default framing
     # (the no-regression half); the camera moves come after.
+    # (defensive: any earlier DOM locator may have auto-scrolled the page —
+    # canvas coords are only valid from the page origin)
+    page.evaluate("() => window.scrollTo(0, 0)")
+    page.wait_for_timeout(150)
     canvas = page.locator("canvas").first
     box = canvas.bounding_box()
     cx = box["x"] + box["width"] * 0.5
@@ -846,11 +1092,22 @@ def main():
                 drive_correspondence(page)
             except Exception as error:  # noqa: BLE001
                 record("corr.drive", False, repr(error))
-            # D2 — the marks + the emphasis (the face still selected)
+            # M2 — the callout ring + the emphasis (the face still selected;
+            # runs BEFORE the pick gestures so the halo census is truly cold)
             try:
                 drive_d2_marks(page)
             except Exception as error:  # noqa: BLE001
                 record("d2.drive", False, repr(error))
+            # D1 — the pick gestures (sticky by design — after the census)
+            try:
+                drive_correspondence_pick(page)
+            except Exception as error:  # noqa: BLE001
+                record("corr.pickDrive", False, repr(error))
+            # M1 — register subordination + the field door + §7 promotion
+            try:
+                drive_registers(page)
+            except Exception as error:  # noqa: BLE001
+                record("regs.drive", False, repr(error))
         # PHASE A — the camera plate, judged LAST (everything above already
         # exercised the sheet at the default framing)
         try:

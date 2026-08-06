@@ -197,6 +197,22 @@ export const manuscriptDefaults = {
     nearOpacity: 0.55,
     renderOrder: 10,
   },
+  // THE MARKED SPECIMEN (M1, SEAL_THE_MARKED_SPECIMEN) — REGISTER
+  // SUBORDINATION: the FIGURE (silhouette + hatch + cells + rim) is the
+  // phenomenon and ALWAYS draws full; the ANNOTATION registers (generators,
+  // field) recede to ONE BINARY recessed band — WEIGHT primary (the same mark
+  // at a finer nib: presence, not value) + hue-preserving pull toward the ink
+  // family's warm NEUTRAL (never the paper) — ⛔ NEVER opacity (dissolves into
+  // the hatch + falsely claims uncertainty) · ⛔ NEVER dash (the crossing
+  // register owns the broken line). INJECTIVE: the two recessible registers
+  // keep distinct recessed styles (line-vs-stipple FORM + distinct factors).
+  // Visible defaults — the designer pins the final values at her look-clear.
+  registers: {
+    inkNeutral: '#847a69', // the ink family's warm neutral (NEVER the paper tone)
+    recessedMix: 0.55, // how far a recessed register's ink pulls toward the neutral
+    recessedLineFactor: 0.5, // generators: the finer nib (width × this)
+    recessedStippleFactor: 0.66, // field: dot/Σ scale — DISTINCT from the line factor (injectivity)
+  },
   hatching: {
     // the designer's round-1 spec (RELAY_DESIGNER_TO_ENGINEER_MANUSCRIPT_CRAFT_1;
     // target: outputs/torus_hatched_study.png): screen-space diagonal ink SHADING,
@@ -353,4 +369,27 @@ export const manuscriptDefaults = {
     keyIntensity: 0.5, // gentle modelling only — shading must not read as photoreal volume
     keyPosition: [4, 6, 3] as const,
   },
+};
+
+// M1 — the ONE ink-recession move (hue-preserving pull toward the warm
+// neutral; the recessed band's colour half — the weight half is the caller's
+// width × factor). Pure hex math, no renderer dependency: the design layer
+// stays data + this one derivation.
+export const recedeInk = (
+  ink: string,
+  mix: number = manuscriptDefaults.registers.recessedMix,
+  neutral: string = manuscriptDefaults.registers.inkNeutral,
+): string => {
+  const parse = (hex: string): [number, number, number] => {
+    const h = hex.replace('#', '');
+    const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+    return [parseInt(full.slice(0, 2), 16), parseInt(full.slice(2, 4), 16), parseInt(full.slice(4, 6), 16)];
+  };
+  const [r0, g0, b0] = parse(ink);
+  const [r1, g1, b1] = parse(neutral);
+  const channel = (a: number, b: number): string =>
+    Math.round(a + (b - a) * mix)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${channel(r0, r1)}${channel(g0, g1)}${channel(b0, b1)}`;
 };
