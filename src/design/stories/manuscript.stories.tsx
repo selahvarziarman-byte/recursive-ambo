@@ -75,6 +75,7 @@ const benchCraft: InkedFormCraft = {
   generatorGhostOpacity: manuscriptDefaults.generators.ghostOpacity,
   generatorNearOpacity: manuscriptDefaults.generators.nearOpacity,
   hatchSpacingPx: manuscriptDefaults.hatching.spacingPx,
+  hatchBandPx: manuscriptDefaults.hatching.bandPx,
   hatchOpacity: manuscriptDefaults.hatching.opacity,
   hatchWeightPx: manuscriptDefaults.hatching.weightPx,
   hatchColor: manuscriptDefaults.hatching.color,

@@ -208,6 +208,11 @@ export const manuscriptDefaults = {
     // rides the body's own surface, not the screen. These are visible
     // DEFAULTS for the look-clear; the designer pins the final values.
     spacingPx: 0.09, // surface stroke pitch, object units
+    // §2 (the S2 union): the legible-band target — the APPARENT screen period
+    // (px) the density management aims for (the LOD snaps the object pitch in
+    // octaves toward it). A visible default; the designer pins it at her
+    // look-clear without a re-seal (the spacingPx split, mirrored).
+    bandPx: 9,
     opacity: 0.4, // max graphite opacity per stroke (THE CAP — the Leva range stops at 0.5)
     weightPx: 0.014, // stroke weight, object units
     color: '#61563f', // graphite, a step darker than construction

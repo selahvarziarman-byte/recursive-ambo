@@ -1103,6 +1103,8 @@ export default function ManuscriptView() {
   const hatchingCtl = useControls('hatching · tone (capped)', {
     // S4 surface-lock: object-unit ranges (the hatch rides the surface)
     spacingPx: { value: d.hatching.spacingPx, min: 0.02, max: 0.3, step: 0.005 },
+    // §2: the legible-band target (apparent screen period, px) — her lever
+    bandPx: { value: d.hatching.bandPx, min: 4, max: 24, step: 0.5 },
     opacity: { value: d.hatching.opacity, min: 0, max: 0.5, step: 0.01 }, // hard craft cap — anti-photoreal
     weightPx: { value: d.hatching.weightPx, min: 0.004, max: 0.06, step: 0.002 },
     color: d.hatching.color,
@@ -1199,6 +1201,7 @@ export default function ManuscriptView() {
     generatorGhostOpacity: generatorsCtl.ghostOpacity,
     generatorNearOpacity: generatorsCtl.nearOpacity, // R4B — rides into every derived craft via the spreads
     hatchSpacingPx: hatchingCtl.spacingPx,
+    hatchBandPx: hatchingCtl.bandPx,
     hatchOpacity: hatchingCtl.opacity,
     hatchWeightPx: hatchingCtl.weightPx,
     hatchColor: hatchingCtl.color,

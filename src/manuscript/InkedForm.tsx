@@ -67,6 +67,11 @@ export interface InkedFormCraft {
   hatchAngleDeg: number;
   hatchShadowStart: number;
   hatchCrossStart: number;
+  // §2 (the S2 union): the legible-band target — the APPARENT screen period
+  // (px) the density management aims for; optional (the shader defaults it)
+  // so every existing craft composition stands; the designer pins it from
+  // designDefaults without a re-seal (the spacingPx split, mirrored)
+  hatchBandPx?: number;
 }
 
 export interface InkedFormLighting {
@@ -164,6 +169,31 @@ const HATCH_FRAGMENT = /* glsl */ `
   uniform float angleRad;
   uniform float shadowStart;
   uniform float crossStart;
+  uniform float bandPx;
+  // §2 THE DENSITY MANAGEMENT (the S2 union, on the S4 surface lock): the
+  // stroke family keeps its SURFACE-TRUE direction; its APPARENT (screen)
+  // period is managed — the base object-unit period LOD-snaps in OCTAVES
+  // against the per-fragment footprint (fwidth) so the stripes never fall
+  // below the legible band when the body shrinks, and the stripe edges are
+  // analytically anti-aliased over the same footprint so they never
+  // caterpillar when it grows. Discrete banded strokes at presented scales;
+  // a flat gray only at the sub-pixel LIMIT — never a smooth tonal volume.
+  float stripeAt(float f, float duty, float aa) {
+    // one stripe [0, duty): both edges smoothed over the footprint
+    return smoothstep(-aa, aa, f) * smoothstep(duty + aa, duty - aa, f);
+  }
+  float stripeCoverage(float t) {
+    float w = fwidth(t); // the per-fragment footprint of the stroke coordinate
+    float apparent = spacingPx / max(w, 1e-6); // the screen period, in px
+    float lod = max(0.0, ceil(log2(bandPx / max(apparent, 1e-6))));
+    float spacing = spacingPx * exp2(lod); // octave snap — banded, never a shimmer
+    float duty = clamp(weightPx / max(spacing, 1e-4), 0.0, 1.0);
+    float f = fract(t / max(spacing, 1e-4));
+    float aa = min(w / max(spacing, 1e-4), 0.49); // the footprint, in period units
+    // this period's stripe + the wrap neighbour (the fract seam) — at the
+    // sub-pixel limit the smoothed pair averages toward duty: the flat gray
+    return clamp(stripeAt(f, duty, aa) + stripeAt(f - 1.0, duty, aa), 0.0, 1.0);
+  }
   void main() {
     vec3 n = normalize(vWorldNormal) * (gl_FrontFacing ? 1.0 : -1.0);
     float lambert = clamp(dot(n, normalize(keyDir)), 0.0, 1.0);
@@ -182,15 +212,16 @@ const HATCH_FRAGMENT = /* glsl */ `
     vec3 bitangent = cross(surfaceNormal, tangent);
     vec2 surfaceCoord = vec2(dot(vObjectPosition, tangent), dot(vObjectPosition, bitangent));
     vec2 d1 = vec2(cos(angleRad), sin(angleRad));
-    float duty = clamp(weightPx / max(spacingPx, 1e-4), 0.0, 1.0);
-    float m = step(fract(dot(surfaceCoord, d1) / max(spacingPx, 1e-4)), duty);
+    float m = stripeCoverage(dot(surfaceCoord, d1));
     if (shade < crossStart) {
       // deepest shadow only: the crossing diagonal joins in
       vec2 d2 = vec2(-d1.y, d1.x);
-      m = max(m, step(fract(dot(surfaceCoord, d2) / max(spacingPx, 1e-4)), duty));
+      m = max(m, stripeCoverage(dot(surfaceCoord, d2)));
     }
-    if (m <= 0.0) discard;
-    gl_FragColor = vec4(inkColor, opacityCap); // capped, banded — never a smooth volume
+    if (m <= 0.004) discard;
+    // capped, banded — the AA scales EDGE alpha within the cap; never a
+    // smooth tonal volume
+    gl_FragColor = vec4(inkColor, opacityCap * m);
   }
 `;
 
@@ -214,6 +245,7 @@ function useHatchMaterial(craft: InkedFormCraft, lighting: InkedFormLighting): T
           angleRad: { value: Math.PI / 4 },
           shadowStart: { value: 0.8 },
           crossStart: { value: 0.66 },
+          bandPx: { value: 9 },
         },
       }),
     [],
@@ -224,6 +256,7 @@ function useHatchMaterial(craft: InkedFormCraft, lighting: InkedFormLighting): T
     material.uniforms.ambient.value = lighting.ambientIntensity;
     material.uniforms.keyI.value = lighting.keyIntensity;
     material.uniforms.spacingPx.value = craft.hatchSpacingPx;
+    material.uniforms.bandPx.value = craft.hatchBandPx ?? 9; // §2: the designer's legible-band lever (NOT_FROZEN valuation)
     material.uniforms.weightPx.value = craft.hatchWeightPx;
     material.uniforms.opacityCap.value = Math.min(craft.hatchOpacity, 0.5); // the anti-photoreal cap, enforced
     (material.uniforms.inkColor.value as THREE.Color).set(craft.hatchColor);
