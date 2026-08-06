@@ -157,6 +157,17 @@ def drive_fold(page, key, invoke_label, side, cone_text, rim_text, min_presence)
     # 2. invoke the primitive (handleInvoke stamps + AUTO-SELECTS)
     page.locator(f'text="{invoke_label}"').first.click()
     page.wait_for_timeout(500)
+    # M3 E-GENERAL — the INVOKED plain shape rings from its own card (no lift
+    # special-case), and its concept labels are the persistence baseline
+    page.wait_for_timeout(300)
+    pre_concepts = page.evaluate(
+        "() => [...document.querySelectorAll('.corr-mark[data-mark-kind=\"concept\"]')].map((el) => (el.textContent ?? '').trim())"
+    )
+    record(
+        f"{key}.ringGeneral",
+        len(pre_concepts) > 0,
+        f"{len(pre_concepts)} concept marks ring the INVOKED {key} (plain — generality, no lift special-case)",
+    )
     # 3. the dock fold chip (enabled — the invoked 1-face form is selected)
     chip = find_fold_chip(page)
     record(f"{key}.chip", chip is not None, "the fold chip discovered by its hover label")
@@ -185,6 +196,43 @@ def drive_fold(page, key, invoke_label, side, cone_text, rim_text, min_presence)
         f"{key}.presence",
         p["hooked"] and p["deficitUnderFaithful"] >= min_presence and p["markChildren"] > 0,
         json.dumps(p),
+    )
+    # M3 ★ THE PERSISTENCE (SEAL_M3_PERSISTENCE) — the fold-born cone renders
+    # in mode 'faithful': its ring must render FROM ITS OWN CARD (the cure —
+    # the old plain/skeleton gate dropped exactly this), labels mapped BY NAME
+    # from the pre-fold ring, the merged class wearing ONE `p ← {…}` label,
+    # and NO false memorial (the fold absorbs — died must read 0).
+    page.wait_for_timeout(400)
+    persist = page.evaluate(
+        """() => {
+      const seam = window.__manuscriptCorrespondence ?? {};
+      const rows = new Set([...(seam.rowResultIds ?? []), ...(seam.composedRowIds ?? [])]);
+      const marks = [...document.querySelectorAll('.corr-mark')].map((el) => ({
+        kind: el.getAttribute('data-mark-kind'),
+        text: (el.textContent ?? '').trim(),
+      }));
+      const died = document.querySelectorAll('[data-died-row]').length;
+      return { rows: rows.size, marks, died };
+    }"""
+    )
+    post_concepts = [m["text"] for m in persist["marks"] if m["kind"] == "concept"]
+    survivors = [t for t in post_concepts if t in set(pre_concepts)]
+    merged = [t for t in post_concepts if "← {" in t]
+    record(
+        f"{key}.ringPersists",
+        persist["rows"] > 0 and len(persist["marks"]) == persist["rows"] and len(survivors) >= 1,
+        f"{len(persist['marks'])} ring marks === {persist['rows']} card rows on the FAITHFUL fold-born · "
+        f"{len(survivors)} concept label(s) mapped by name from the pre-fold ring {survivors}",
+    )
+    record(
+        f"{key}.ringMerged",
+        len(merged) == 1 and "unnamed ← {" in merged[0],
+        f"merged labels: {merged} (ONE `p ← {{…}}` — own name or 'unnamed', never an invented letter)",
+    )
+    record(
+        f"{key}.diedRowAbsent",
+        persist["died"] == 0,
+        f"died rows: {persist['died']} (the fold absorbs — the memorial speaks only a TRUE death)",
     )
 
 
@@ -772,6 +820,26 @@ def drive_registers(page):
         promote_ok = promote_ok and after is None
         detail_promote += f" · after leave: full {after}"
     record("regs.promoteCardRow", promote_ok, detail_promote)
+    # M3-CLEANUP-2 — the CameraDock is CLEAR of the specimen panel: measured
+    # as box disjointness against the FIELD DOOR (the named obstruction — the
+    # door must be clickable with the dock in place)
+    dock_btn = page.get_by_text("Fit Selected", exact=True).first
+    dock_box = dock_btn.bounding_box() if dock_btn.count() > 0 else None
+    door_box = door.first.bounding_box() if present else None
+    dock_clear = False
+    detail_dock = "no dock/door box"
+    if dock_box and door_box:
+        disjoint = (
+            dock_box["x"] + dock_box["width"] < door_box["x"]
+            or door_box["x"] + door_box["width"] < dock_box["x"]
+            or dock_box["y"] + dock_box["height"] < door_box["y"]
+            or door_box["y"] + door_box["height"] < dock_box["y"]
+        )
+        dock_clear = disjoint
+        detail_dock = (
+            f"dock x={dock_box['x']:.0f} y={dock_box['y']:.0f} · door x={door_box['x']:.0f} y={door_box['y']:.0f} · disjoint {disjoint}"
+        )
+    record("regs.dockClearOfDoor", dock_clear, detail_dock)
     # the door/row locators AUTO-SCROLL the page when the card runs below the
     # fold (the 18-row card + the door exceed a 900px viewport — measured:
     # scrollY 697 left every later canvas-coordinate gesture outside the
@@ -990,7 +1058,9 @@ def drive_camera(page):
         page.locator(".corr-mark").count() == 0,
         f"marks after deselect: {page.locator('.corr-mark').count()} (the key mounts on select, clears on deselect)",
     )
-    # D2-GROUND RESIDUAL: the CameraDock is disjoint from the aperture toggle
+    # D2-GROUND RESIDUAL + M3-CLEANUP-2: the CameraDock LEFT the right column
+    # (bottom-left now) — disjoint from the aperture toggle AND anchored clear
+    # of the card's column (its right edge stays left of mid-viewport)
     dock_box = page.get_by_text("Fit Selected", exact=True).first.bounding_box()
     aperture_box = page.get_by_text("aperture — build a 3-manifold", exact=False).first.bounding_box()
     disjoint = bool(dock_box and aperture_box) and (
@@ -999,10 +1069,13 @@ def drive_camera(page):
         or dock_box["x"] + dock_box["width"] <= aperture_box["x"]
         or aperture_box["x"] + aperture_box["width"] <= dock_box["x"]
     )
+    viewport = page.viewport_size or {"width": 1600}
+    left_anchored = bool(dock_box) and (dock_box["x"] + dock_box["width"]) < viewport["width"] * 0.5
     record(
         "residual.chromeDisjoint",
-        disjoint,
-        f"dock y {None if not dock_box else round(dock_box['y'])} h {None if not dock_box else round(dock_box['height'])} · aperture y {None if not aperture_box else round(aperture_box['y'])}",
+        disjoint and left_anchored,
+        f"dock x {None if not dock_box else round(dock_box['x'])} y {None if not dock_box else round(dock_box['y'])} "
+        f"(right edge < half-viewport: {left_anchored}) · aperture y {None if not aperture_box else round(aperture_box['y'])} · disjoint {disjoint}",
     )
     orbit_ok = False
     if before_orbit and after_orbit:

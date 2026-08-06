@@ -64,6 +64,11 @@ export interface ArgumentMapRow {
   // tail for an unreachable one; a positional letter survives ONLY as an
   // appended disambiguating index (`name·A`), NEVER as the name
   label: string;
+  // M3 (SEAL_M3_PERSISTENCE): the packet's OWN name alone — null when the
+  // person never named it. The ring's merged presentation reads this slot
+  // (`p ← {…}` with p = 'unnamed' when null — no invented result-letter);
+  // `label` above stays the card's composed display, untouched.
+  ownName: string | null;
   sourceIds: string[]; // the ONE-generation sources (ids, may be empty)
   rootIds: string[]; // the ultimate roots via primalMultiset (concepts only)
   rootLabels: string[]; // the roots' real names (packet-carried, see label)
@@ -88,6 +93,14 @@ export interface ArgumentReading {
   // endpoint root letters. `diedConcepts` counts true vertex deaths only.
   absorbedRelations: string[]; // e.g. ['CD', 'DA'] — the partner edges, endpoint-lettered
   diedConcepts: number;
+  // M3 (SEAL_M3_PERSISTENCE) — the died concepts' IDENTITIES (the :541 filter
+  // mapped to packet names, never just counted): the card's memorial row
+  // ("Truth — died in <op>") reads these; a died concept must never vanish
+  // silently. MEASURED (probe, 2026-08-06): every committed door at HEAD
+  // absorbs or survives its vertices — this list is reachable-empty today;
+  // the read is total so the first true death SPEAKS the moment an op can
+  // produce one.
+  diedConceptRows: { id: string; label: string }[];
   words: string; // the map's words-line (counts: "4 concepts become 1 · …")
   certificateLabels: string[]; // which of the existing card rows demote into the receipt
   // ---- PHASE 2 — the relation half + the reading on it -------------------
@@ -365,6 +378,7 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
         kind: 'concept' as const,
         resultId: vertexId,
         label,
+        ownName: own,
         sourceIds,
         rootIds,
         rootLabels: rootIds.map(rootDisplayOf),
@@ -447,6 +461,7 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
         kind: 'relation' as const,
         resultId: edge.id,
         label: relationOwnName(edge) ?? relationLabelOf.get(edge.id) ?? edge.id,
+        ownName: relationOwnName(edge),
         sourceIds,
         rootIds: [],
         rootLabels: [endpointLetters(sourceEndpoints)], // the source edge, endpoint-named
@@ -538,9 +553,17 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
     ? parent.edges.filter((e) => !childEdgeIds.has(e.id)).map((e) => endpointLetters(e.vertexIds))
     : [];
   const absorbedVertexIds = new Set(conceptRows.flatMap((r) => r.sourceIds));
-  const diedConcepts = parent
-    ? Object.keys(parent.vertices).filter((id) => !shape.vertices[id] && !absorbedVertexIds.has(id)).length
-    : 0;
+  // M3 — the died IDENTITIES first (the ONE filter), the count derived from
+  // them: a parent vertex absent from the child and absorbed by no child row
+  // is a true death; its label resolves through ITS OWN packet (the identity
+  // law — the memorial names the concept, never an index).
+  const diedConceptRows = parent
+    ? Object.keys(parent.vertices)
+        .filter((id) => !shape.vertices[id] && !absorbedVertexIds.has(id))
+        .sort()
+        .map((id) => ({ id, label: rootDisplayBase(id) }))
+    : [];
+  const diedConcepts = diedConceptRows.length;
 
   // THE GRAIN LAW: the lift's own honest marks, read off the lifted copies'
   // data (never re-derived here — the detection lived at the source)
@@ -735,6 +758,7 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
     relationRows,
     absorbedRelations,
     diedConcepts,
+    diedConceptRows,
     words,
     wordRows,
     incidence,

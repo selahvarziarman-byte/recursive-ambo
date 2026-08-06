@@ -863,13 +863,17 @@ export function CameraDock({
     boxShadow: '0 2px 6px rgba(58,51,38,0.14)',
   });
   return (
-    // above the drei Html card layer (zIndexRange tops out ~16.7M): at plate
-    // framing the specimen's card can drift over this corner — the recovery
-    // controls must stay CLICKABLE exactly then (the measured 30s-timeout
-    // find); the designer refines placement on the bench
-    // D2-GROUND RESIDUAL: bottom:64 — CLEAR of the aperture toggle
-    // ("aperture — build a 3-manifold", right:14 bottom:24) it overlapped
-    <div style={{ position: 'absolute', right: 14, bottom: 64, display: 'flex', gap: 8, zIndex: 2147483000 }}>
+    // above the drei Html card layer (zIndexRange tops out ~16.7M): the
+    // recovery controls must stay CLICKABLE under every framing (the measured
+    // 30s-timeout find).
+    // M3-CLEANUP-2 (designer 1852, OBSTRUCTIVE): the dock leaves the RIGHT
+    // column entirely — at right:14/bottom:64 it overlaid the specimen
+    // panel's lower rows + the field door (the card grew past it at the
+    // marked-specimen close) and crowded the zoo/aperture stack. BOTTOM-LEFT
+    // (left:14, bottom:24): below the record strip (bottom:74) and the
+    // sources shelf (bottom:128, grows up), clear of the bottom-centre
+    // OperationsDock, the right column free for the card.
+    <div style={{ position: 'absolute', left: 14, bottom: 24, display: 'flex', gap: 8, zIndex: 2147483000 }}>
       <button
         type="button"
         aria-label="Fit Selected"

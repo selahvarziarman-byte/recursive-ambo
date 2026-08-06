@@ -890,6 +890,42 @@ check('§11 (VIEW) THE LIFT + THE DERIVED WORD RENDER (source-pinned): the view 
     viewSrcNow.includes('`${lifted} lifted`') &&
     viewSrcNow.includes('w.form.shape.id === item.entry.loaded.shape.id') &&
     viewSrcNow.includes(' — derived'));
+// §12 M3 (SEAL_M3_PERSISTENCE) — THE DIED MEMORIAL AT THE MODEL: the read is
+// total; the positive case is a CONSTRUCTED death (the plant pattern — the
+// comparator is the real one, only the input is minted, because MEASURED at
+// HEAD no committed door produces a true death: fold/cut/dual/collapse/glue/
+// sew/chord+cut all absorb or survive their vertices).
+check('§12 (M3) ★ THE DIED READ IS TOTAL + REACHABLE-EMPTY (measured): a CONSTRUCTED true death (a parent corner absent from the child, absorbed by no row — the same ONE filter the count uses) surfaces its IDENTITY by packet name in `diedConceptRows` with the count derived from the rows; the REAL cut/fold walks read died 0 (every committed door absorbs or survives — the memorial is reachable-empty until an op can kill); the merged class carries `ownName` null (the ring composes `p ← {…}` from it — never an invented letter) while a survivor keeps its own name',
+  (() => {
+    const base = cutApplied.born;
+    const victim = Object.keys(base.shape.vertices).sort()[2];
+    const vertices = {};
+    for (const [id, v] of Object.entries(base.shape.vertices)) if (id !== victim) vertices[id] = v;
+    const pruned = {
+      ...base,
+      shape: {
+        ...base.shape,
+        vertices,
+        edges: base.shape.edges.filter((e) => !e.vertexIds.includes(victim)),
+        faces: base.shape.faces.filter((f) => !f.vertexIds.includes(victim)),
+      },
+    };
+    const diedWalk = buildArgumentReading(pruned);
+    const memorial = diedWalk.diedConceptRows;
+    return (
+      diedWalk.diedConcepts === memorial.length &&
+      memorial.length === 1 &&
+      memorial[0].id === victim &&
+      memorial[0].label === 'v2' &&
+      cutWalk !== null &&
+      cutWalk.diedConceptRows.length === 0 &&
+      cutWalk.diedConcepts === 0 &&
+      coneReading !== null &&
+      coneReading.diedConceptRows.length === 0 &&
+      coneReading.conceptRows.some((r) => r.typing === 'identified' && r.ownName === null) &&
+      coneReading.conceptRows.some((r) => r.typing === 'survived' && r.ownName !== null)
+    );
+  })());
 check('§11 (E-NO-UNION) NOTHING FROZEN MOVED: ambo.ts (the mechanism is the LIFT — the T-junction stays real) · InkedForm.tsx (the flat-body guard is ADAPTER-HELD) · types/geometry.ts · lib/shape.ts · store/geometryStore.ts · genesisModel.ts · faithfulBodyModel.ts · inkedFormModel.ts · the MANIFEST — all BYTE-IDENTICAL to HEAD (no union, no new file, no new row owed)',
   ['src/lib/ambo.ts', 'src/manuscript/InkedForm.tsx', 'src/types/geometry.ts', 'src/lib/shape.ts', 'src/store/geometryStore.ts', 'src/manuscript/genesisModel.ts', 'src/manuscript/faithfulBodyModel.ts', 'src/manuscript/inkedFormModel.ts', 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'].every(headEq));
 

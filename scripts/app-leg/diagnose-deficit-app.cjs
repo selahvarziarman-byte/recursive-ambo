@@ -236,6 +236,35 @@ function killTree(pid) {
         check('§E-M1 ★ THE FIELD DOOR + THE §7 PROMOTION: the door sits in the specimen panel CLOSED by default; opening promotes the field (full) and recedes the rest, closing returns the quiet band; touching a REGISTER row (the generators legend where loops exist · a deficit row · the door\'s own hover) promotes ITS register through the ONE emphasizedIds channel (`register:` ids — no new mechanism)',
           get('regs.doorClosedDefault').ok && get('regs.doorPromotesField').ok && get('regs.promoteCardRow').ok,
           `${get('regs.doorClosedDefault').detail} · ${get('regs.doorPromotesField').detail} · ${get('regs.promoteCardRow').detail}`);
+        // M3 (SEAL_M3_PERSISTENCE — the feature's completion) — live
+        check('§E-M3 ★★ THE MARKS SURVIVE THE OPERATION (the dropped-info cure): folding a marked shape births a FAITHFUL cone whose ring renders FROM ITS OWN CARD (census equal on the born) with concept labels MAPPED BY NAME from the pre-fold ring (never re-lettered) — measured on BOTH fold subjects',
+          get('triangle.ringPersists').ok && get('square.ringPersists').ok,
+          `triangle: ${get('triangle.ringPersists').detail} · square: ${get('square.ringPersists').detail}`);
+        check('§E-M3 ★ GENERAL + MERGED + NO FALSE MEMORIAL: an INVOKED plain shape rings from its own card (no lift special-case); the fold-born merged class wears ONE `p ← {…}` label (its OWN name or \'unnamed\' — never an invented result-letter); died rows read 0 on the absorbing fold (the memorial speaks only a TRUE death)',
+          get('triangle.ringGeneral').ok && get('square.ringGeneral').ok &&
+            get('triangle.ringMerged').ok && get('square.ringMerged').ok &&
+            get('triangle.diedRowAbsent').ok && get('square.diedRowAbsent').ok,
+          `general: ${get('square.ringGeneral').detail} · merged: ${get('triangle.ringMerged').detail} · died: ${get('triangle.diedRowAbsent').detail}`);
+        check('§E-M3 + CLEANUPS (source-pinned + live): the ring mount hosts plain/skeleton/FAITHFUL with the REPOSITIONED fan as the faithful anchor (representative-body modes excluded — their drawn id-space is not the form\'s; bodiless has no anchors); diedConceptRows carries the IDENTITIES with the count derived from the ONE filter, and the card renders the † memorial row; the co-bearing radial step derives 1.5×cap (capPx = 4h — the bare 22 is gone); the CameraDock sits bottom-LEFT, live-measured clear of the field door',
+          (() => {
+            const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+            const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/argumentReadingModel.ts'), 'utf8');
+            const ringSrc = fs.readFileSync(path.join(repoRoot, 'src/components/CorrespondenceRing.tsx'), 'utf8');
+            const chromeSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptChrome.tsx'), 'utf8');
+            return (
+              viewSrc.includes("render.mode === 'faithful'") &&
+              viewSrc.includes('faithfulDeficitById.get(entry.form.id)') &&
+              viewSrc.includes('data-died-row') &&
+              viewSrc.includes("r.ownName ?? 'unnamed'") &&
+              modelSrc.includes('diedConceptRows') &&
+              modelSrc.includes('const diedConcepts = diedConceptRows.length') &&
+              ringSrc.includes('const ringStackPx = 1.5 * capPx') &&
+              !ringSrc.includes('RING_STACK_PX = 22') &&
+              chromeSrc.includes("left: 14, bottom: 24") &&
+              get('regs.dockClearOfDoor').ok
+            );
+          })(),
+          get('regs.dockClearOfDoor').detail);
         check('§E-M2 THE RESERVATION IS ONE CONSTANT + THE RECESSION IS WEIGHT+HUE (source-pinned): the ring exports SPECIMEN_FIT_MARGIN and the view\'s camera fit consumes THAT constant (the margin reserved BEFORE the figure is sized); the ring type is page-fixed (RING_FONT_PX); the halo styles ONLY the lit branch; the recessed band derives from designDefaults.registers (line factor ≠ stipple factor) with NO opacity/dash move; the deficit exception is STATED in InkedPlainForm',
           (() => {
             const ringSrc = fs.readFileSync(path.join(repoRoot, 'src/components/CorrespondenceRing.tsx'), 'utf8');

@@ -76,8 +76,11 @@ export const SPECIMEN_FIT_MARGIN = 1.8;
 export const RING_FONT_PX = 12.5;
 // the gap between the figure's projected extent and the label ring
 export const RING_GAP_PX = 30;
-// the radial step for angularly-coincident (stacked) labels
-export const RING_STACK_PX = 22;
+// M3-CLEANUP-1 (designer 1852): the radial step for angularly-coincident
+// (stacked) labels is 1.5 × CAP-HEIGHT (capPx = 4h) — the fixed 22px step
+// let co-bearing labels fuse into a fabricated name (`A·D`/`AD` read as
+// `A·DAD`); a half-cap of clear paper now rides between stacked labels.
+// Derived per instance from h inside the component — no bare literal.
 
 const mid3 = (a: Vec3, b: Vec3): Vec3 => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
 
@@ -106,6 +109,11 @@ export function CorrespondenceRing({
   emphasizedIds: readonly string[];
 }) {
   const haloPx = 1 * h;
+  // M3-CLEANUP-1 — the co-bearing radial step: 1.5 × cap-height (capPx = 4h,
+  // the D2 key's ratified cap unit), so stacked labels wear a half-cap of
+  // clear paper and read as TWO labels, never a fused string
+  const capPx = 4 * h;
+  const ringStackPx = 1.5 * capPx;
 
   // ---- the anchors: every card row's DRAWN PLACE (points, never mints) ----
   const marks = useMemo(() => {
@@ -212,7 +220,7 @@ export function CorrespondenceRing({
         Math.abs(dirx) > 1e-6 ? labelW / 2 / Math.abs(dirx) : Number.POSITIVE_INFINITY,
         Math.abs(diry) > 1e-6 ? labelH / 2 / Math.abs(diry) : Number.POSITIVE_INFINITY,
       );
-      const r = ringR + level * RING_STACK_PX + rayHalf + 2;
+      const r = ringR + level * ringStackPx + rayHalf + 2;
       const lx = cx + r * dirx;
       const ly = cy + r * diry;
       el.style.display = p.a.on ? '' : 'none';

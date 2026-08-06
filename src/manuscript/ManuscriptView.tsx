@@ -820,6 +820,17 @@ function ArgumentMapSection({
       </div>
       <div style={{ fontSize: 10.5, letterSpacing: 1, opacity: 0.6, fontVariant: 'small-caps' }}>map — the spine</div>
       {compact(argument.conceptRows, '•')}
+      {/* M3 (SEAL_M3_PERSISTENCE) — THE MEMORIAL: a cut-removed concept never
+          vanishes silently; the TYPED died row names it + the op. (Measured:
+          every committed door at HEAD absorbs or survives — the row is
+          reachable-empty today and SPEAKS the first true death.) */}
+      {argument.diedConceptRows.map((r) => (
+        <div key={`died:${r.id}`} data-died-row={r.id} style={{ fontSize: 13, opacity: 0.8 }}>
+          <span style={sign}>† </span>
+          <span style={sign}>{r.label}</span>
+          <span style={{ opacity: 0.75 }}> — died in {argument.op}</span>
+        </div>
+      ))}
       {argument.wordRows ? (
         // PHASE 2 — the ATTRIBUTED pairing from the committed replay-verified
         // birth word: —a ← AB CD (reversing draws the inverse letter)
@@ -3740,15 +3751,51 @@ export default function ManuscriptView() {
                   onHover={setCorrespondenceHover}
                   onPick={setCorrespondencePicked}
                 />
-                {/* M2 — THE CALLOUT RING (two-register: the SELECTED specimen
-                    only; the world stays unlettered). Persistent — mounts on
-                    select, never hover-only; the key in the PAGE MARGIN. */}
-                {selectedArgument ? (
+              </group>
+            ) : null}
+            {/* M3.1 (SEAL_M3_PERSISTENCE) — THE RING RIDES ANY DRAWN SHAPE
+                WHOSE GEOMETRY CARRIES THE FORM'S OWN ID-SPACE (the persistence
+                cure: the old gate stopped at plain/skeleton, so a fold-born
+                cone — mode 'faithful' — lost its marks though its card carried
+                every row). The hosts:
+                  · plain/skeleton — the form's own shape (as before);
+                  · faithful — the REPOSITIONED fan (faithfulDeficitDatum's
+                    shape: measured, repositionShapeToFan keeps every id and
+                    only moves positions — the deficit layer's exact pattern),
+                    under the faithful group's own scale;
+                  · classBody/immersion — NO ring: the drawn body is a
+                    REPRESENTATIVE with its own id-space; anchoring the card's
+                    ids there would MINT positions (the D1 deferral holds —
+                    those modes ride after the sanctioned crafted union);
+                  · bodiless — no body, no anchors, no ring (the card speaks).
+                Two-register unchanged: the SELECTED specimen only. */}
+            {selected === id && selectedArgument ? (() => {
+              const ringHost =
+                render.mode === 'plain' || render.mode === 'skeleton'
+                  ? { shape: entry.form.shape, scale: scaleCtl.dim1Scale }
+                  : render.mode === 'faithful'
+                    ? (() => {
+                        const datum = faithfulDeficitById.get(entry.form.id);
+                        return datum && datum.kind === 'read'
+                          ? { shape: datum.shape, scale: scaleCtl.dim1Scale * 1.5 }
+                          : null;
+                      })()
+                    : null;
+              return ringHost ? (
+                <group scale={ringHost.scale}>
                   <CorrespondenceRing
-                    shape={entry.form.shape}
+                    shape={ringHost.shape}
                     concepts={selectedArgument.conceptRows.map((r) => ({
                       id: r.resultId,
-                      label: r.label,
+                      // M3.2 — THE MERGED PRESENTATION (researcher-ruled): an
+                      // identified class reads `p ← {Truth, Fact}` — its OWN
+                      // name (or 'unnamed' — never an invented letter) with
+                      // the map's source names; every other row keeps the
+                      // card's own label verbatim.
+                      label:
+                        r.typing === 'identified'
+                          ? `${r.ownName ?? 'unnamed'} ← {${r.rootLabels.join(', ')}}`
+                          : r.label,
                       kind: 'concept' as const,
                     }))}
                     relations={selectedArgument.relationRows.map((r) => ({
@@ -3767,9 +3814,9 @@ export default function ManuscriptView() {
                     paperColor={d.paper.background}
                     emphasizedIds={emphasizedIds}
                   />
-                ) : null}
-              </group>
-            ) : null}
+                </group>
+              ) : null;
+            })() : null}
             </>,
           );
         })}
