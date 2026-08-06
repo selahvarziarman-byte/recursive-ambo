@@ -128,6 +128,10 @@ import {
   type CorrespondenceEntityRef,
   type CorrespondenceSeam,
 } from '../components/CorrespondencePickLayer';
+// D2 (SEAL_D2_CORRESPONDENCE_MARKS — THE CARD'S CLOSE): the VISIBLE marks
+// over D1's invisible engine — the persistent key (words · letters · leaders,
+// resolved via h = the hatch band) + the shared bidirectional emphasis
+import { CorrespondenceMarkLayer } from '../components/CorrespondenceMarkLayer';
 // GAP2B THE 8TH WORD — thicken(shape, segment): the committed Q1 gate assigns
 // the pair's roles (the ONE place "must be a segment" is judged); the store's
 // own door fires the arity-2 product and shelves the band
@@ -700,11 +704,24 @@ const SIGN_HAND = '"DejaVu Sans", "Segoe UI Symbol", "Noto Sans Symbols 2", "Not
 function ArgumentMapSection({
   argument,
   paper,
+  emphasizedIds,
+  onRowTouch,
 }: {
   argument: ArgumentReading;
   paper: { cardBorder: string };
+  // D2b (SEAL_D2_CORRESPONDENCE_MARKS): the shared emphasis — a row touch
+  // lights the mark + the entity; a mark/entity pick lights the row (bold)
+  emphasizedIds?: readonly string[];
+  onRowTouch?: (resultId: string | null) => void;
 }) {
   const sign: React.CSSProperties = { fontFamily: SIGN_HAND };
+  const rowEmphasis = (resultId: string): React.CSSProperties =>
+    emphasizedIds?.includes(resultId) ? { fontWeight: 700 } : {};
+  const rowTouchProps = (resultId: string) => ({
+    'data-row-id': resultId,
+    onMouseEnter: () => onRowTouch?.(resultId),
+    onMouseLeave: () => onRowTouch?.(null),
+  });
   const compact = (rows: ArgumentMapRow[], mark: string) => {
     // relations always show their recorded source (the endpoint-named
     // parent edge — the measured substrate read); concepts split by typing.
@@ -728,7 +745,7 @@ function ArgumentMapSection({
     const lines: React.ReactNode[] = [];
     for (const r of identified) {
       lines.push(
-        <div key={r.resultId} style={{ fontSize: 13 }}>
+        <div key={r.resultId} {...rowTouchProps(r.resultId)} style={{ fontSize: 13, ...rowEmphasis(r.resultId) }}>
           <span style={sign}>{mark}</span>
           <span style={sign}>{r.label}</span>
           <span style={sign}> ← </span>
@@ -740,7 +757,7 @@ function ArgumentMapSection({
     }
     for (const r of bornOf) {
       lines.push(
-        <div key={r.resultId} style={{ fontSize: 13 }}>
+        <div key={r.resultId} {...rowTouchProps(r.resultId)} style={{ fontSize: 13, ...rowEmphasis(r.resultId) }}>
           <span style={sign}>{mark}</span>
           <span style={sign}>{r.label}</span>
           <span style={sign}> ⟷ </span>
@@ -751,7 +768,7 @@ function ArgumentMapSection({
     if (plain.length > 0 && plain.length + lines.length <= 8) {
       for (const r of plain) {
         lines.push(
-          <div key={r.resultId} style={{ fontSize: 13 }}>
+          <div key={r.resultId} {...rowTouchProps(r.resultId)} style={{ fontSize: 13, ...rowEmphasis(r.resultId) }}>
             <span style={sign}>{mark}</span>
             <span style={sign}>{r.label}</span>
             <span style={{ opacity: 0.75 }}>
@@ -825,7 +842,7 @@ function ArgumentMapSection({
           two-sided bar: never a name without a place, never a dropped
           relation) */}
       {argument.composedRelationRows.map((row) => (
-        <div key={row.id} style={{ fontSize: 13 }}>
+        <div key={row.id} {...rowTouchProps(row.id)} style={{ fontSize: 13, ...rowEmphasis(row.id) }}>
           <span style={sign}>—</span>
           <span style={sign}>{row.label}</span>
           <span style={sign}> ← </span>
@@ -937,11 +954,16 @@ function SpecimenCard({
   argument,
   paper,
   generatorInks,
+  emphasizedIds,
+  onRowTouch,
 }: {
   reading: SpecimenReading;
   argument?: ArgumentReading | null;
   paper: { cardBackground: string; cardBorder: string; cardInk: string };
   generatorInks: { a: string; b: string };
+  // D2b — threaded through to the map section (the shared emphasis)
+  emphasizedIds?: readonly string[];
+  onRowTouch?: (resultId: string | null) => void;
 }) {
   const [certificateOpen, setCertificateOpen] = useState(false);
   const row: React.CSSProperties = {
@@ -978,7 +1000,14 @@ function SpecimenCard({
       <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.72, marginBottom: 7 }}>
         {reading.subtitle}
       </div>
-      {argument ? <ArgumentMapSection argument={argument} paper={paper} /> : null}
+      {argument ? (
+        <ArgumentMapSection
+          argument={argument}
+          paper={paper}
+          emphasizedIds={emphasizedIds}
+          onRowTouch={onRowTouch}
+        />
+      ) : null}
       {surfacedRows.map((r) => (
         // the key carries label AND value: R1-REBUILD gave the card its first
         // multi-row register (two `deficit` rows — cone + rim), and a
@@ -1309,6 +1338,11 @@ export default function ManuscriptView() {
   // ----- PHASE D1 — the correspondence state (data only; D2 renders) -------
   const [correspondenceHover, setCorrespondenceHover] = useState<CorrespondenceEntityRef | null>(null);
   const [correspondencePicked, setCorrespondencePicked] = useState<CorrespondenceEntityRef | null>(null);
+  // ----- D2b — the shared emphasis (SEAL_D2_CORRESPONDENCE_MARKS) ----------
+  // ~3 lit at once: the touched row's immediate argument-neighborhood (a
+  // relation + its two endpoints · a concept + two incident relations · a
+  // composed row + its live path) — never one bare entity, never all
+  const [emphasizedIds, setEmphasizedIds] = useState<string[]>([]);
   // craft round-2: the birth-cue (the child settles AMBIENT; the cue announces it)
   const [birthCue, setBirthCue] = useState<{ key: number; home: [number, number, number] } | null>(null);
   // ----- H2 THE PERSON'S HANDS ----------------------------------------------
@@ -1791,14 +1825,50 @@ export default function ManuscriptView() {
   // whole contract, Phase C resolved); the pick layer writes `positions`
   // per frame from its own world matrices
   useEffect(() => {
-    const host = window as unknown as { __manuscriptCorrespondence?: CorrespondenceSeam };
+    const host = window as unknown as {
+      __manuscriptCorrespondence?: CorrespondenceSeam & { emphasizedIds?: string[]; composedRowIds?: string[] };
+    };
     const seam = host.__manuscriptCorrespondence ?? (host.__manuscriptCorrespondence = {});
     seam.hovered = correspondenceHover;
     seam.picked = correspondencePicked;
     seam.rowResultIds = selectedArgument
       ? [...selectedArgument.conceptRows, ...selectedArgument.relationRows].map((r) => r.resultId)
       : [];
-  }, [correspondenceHover, correspondencePicked, selectedArgument]);
+    seam.composedRowIds = selectedArgument ? selectedArgument.composedRelationRows.map((r) => r.id) : [];
+    seam.emphasizedIds = emphasizedIds;
+  }, [correspondenceHover, correspondencePicked, selectedArgument, emphasizedIds]);
+  // D2b — the argument-neighborhood of a touched id (~3 lit; the exact
+  // neighborhood is the designer's look-gate)
+  const emphasisNeighborhood = useCallback(
+    (id: string): string[] => {
+      const entry = selected ? written.find((w) => `w:${w.form.id}` === selected) : undefined;
+      const shape = entry?.form.shape;
+      if (!shape) return [id];
+      const edge = shape.edges.find((e) => e.id === id);
+      if (edge) return [edge.id, edge.vertexIds[0], edge.vertexIds[1]]; // a relation + its two endpoints
+      if (shape.vertices[id]) {
+        const incident = shape.edges.filter((e) => e.vertexIds.includes(id)).map((e) => e.id);
+        return [id, ...incident.slice(0, 2)]; // the concept + two incident relations
+      }
+      const rec = selectedArgument?.composedRelationRows.find((r) => r.id === id);
+      if (rec) return [id, ...rec.pathIds].slice(0, 4); // the composed row + its live path
+      return [id];
+    },
+    [selected, written, selectedArgument],
+  );
+  // the entity side lights the set (a pick is sticky; a hover is transient)
+  useEffect(() => {
+    const source = correspondencePicked ?? correspondenceHover;
+    setEmphasizedIds(source ? emphasisNeighborhood(source.id) : []);
+  }, [correspondenceHover, correspondencePicked, emphasisNeighborhood]);
+  // the card-row side (threaded into the map section)
+  const handleRowTouch = useCallback(
+    (resultId: string | null): void => {
+      if (resultId) setEmphasizedIds(emphasisNeighborhood(resultId));
+      else setEmphasizedIds(correspondencePicked ? emphasisNeighborhood(correspondencePicked.id) : []);
+    },
+    [correspondencePicked, emphasisNeighborhood],
+  );
 
   // ----- 3a: the op target + the committed availability + the apply path -----
   const rows = d.world.rows;
@@ -3565,6 +3635,34 @@ export default function ManuscriptView() {
                   onHover={setCorrespondenceHover}
                   onPick={setCorrespondencePicked}
                 />
+                {/* D2 — THE PERSISTENT KEY (two-register: the SELECTED
+                    specimen only; the world stays unlettered). Mounts on
+                    select, never hover-only. */}
+                {selectedArgument ? (
+                  <CorrespondenceMarkLayer
+                    shape={entry.form.shape}
+                    concepts={selectedArgument.conceptRows.map((r) => ({
+                      id: r.resultId,
+                      label: r.label,
+                      kind: 'concept' as const,
+                    }))}
+                    relations={selectedArgument.relationRows.map((r) => ({
+                      id: r.resultId,
+                      label: r.label,
+                      kind: 'relation' as const,
+                    }))}
+                    composed={selectedArgument.composedRelationRows.map((r) => ({
+                      id: r.id,
+                      label: r.label,
+                      pathIds: r.pathIds,
+                    }))}
+                    h={hatchingCtl.bandPx}
+                    ink={d.paper.cardInk}
+                    faintInk={genesisCtl.pencilTone}
+                    paperColor={d.paper.background}
+                    emphasizedIds={emphasizedIds}
+                  />
+                ) : null}
               </group>
             ) : null}
             </>,
@@ -3935,6 +4033,8 @@ export default function ManuscriptView() {
           reading={reading}
           argument={selectedArgument}
           paper={d.paper}
+          emphasizedIds={emphasizedIds}
+          onRowTouch={handleRowTouch}
           generatorInks={{ a: generatorsCtl.a, b: generatorsCtl.b }}
         />
       ) : null}

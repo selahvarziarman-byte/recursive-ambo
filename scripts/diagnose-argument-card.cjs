@@ -240,9 +240,9 @@ check('§4 (E5) THE WORDS-LINE IS COUNTED, NOT COMPOSED FREE: the model\'s words
 // ---------------------------------------------------------------------------
 console.log('\n----- §5 (E6) the gates: sign hand wired · map section mounted · certificate demoted, expand-in-place · the scratch test -----');
 const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
-check('§5 (E6) THE TWO HANDS + THE SECTIONS ARE WIRED: the view carries the SIGN_HAND stack (DejaVu Sans + symbol fallbacks), mounts ArgumentMapSection, renders the `certificate` receipt with expand-in-place state (setCertificateOpen), and passes the argument prop from the selectedArgument memo',
+check('§5 (E6) THE TWO HANDS + THE SECTIONS ARE WIRED: the view carries the SIGN_HAND stack (DejaVu Sans + symbol fallbacks), mounts ArgumentMapSection with the argument prop (multiline JSX since D2 threaded the emphasis through it), renders the `certificate` receipt with expand-in-place state (setCertificateOpen), and passes the argument prop from the selectedArgument memo',
   viewSrc.includes('const SIGN_HAND') &&
-    viewSrc.includes('<ArgumentMapSection argument={argument}') &&
+    /<ArgumentMapSection\s+argument=\{argument\}/.test(viewSrc) &&
     viewSrc.includes('setCertificateOpen') &&
     viewSrc.includes('argument={selectedArgument}'));
 const allRowText = [

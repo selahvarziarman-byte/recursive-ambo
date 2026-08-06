@@ -352,16 +352,18 @@ def drive_correspondence(page):
       const entries = Object.entries(c.positions ?? {});
       const vertices = entries.filter(([id, p]) => id.includes(':vertex:') && p.onScreen);
       const vertex = vertices.find(([id]) => id.includes(':tetrahedron:')) ?? vertices[0] ?? null;
-      // the edge target must not be CONTESTED: on a T-junction the coarse
-      // side's midpoint IS a vertex sphere — prefer an edge whose projected
-      // midpoint sits ≥ 18px from every projected vertex
-      const edge = entries.find(([id, p]) => {
-        if (!id.includes(':edge:') || !p.onScreen) return false;
-        return vertices.every(([, vp]) => Math.hypot(vp.x - p.x, vp.y - p.y) >= 18);
-      }) ?? null;
+      // edge CANDIDATES, least-contested first: midpoints ≥ 18px from every
+      // vertex (the T-junction sphere contest); DEPTH contests (a nearer
+      // edge's cylinder in front at this attitude) are resolved by trying
+      // candidates in turn — the topmost edge always wins its own midpoint
+      const edges = entries
+        .filter(([id, p]) => id.includes(':edge:') && p.onScreen)
+        .filter(([, p]) => vertices.every(([, vp]) => Math.hypot(vp.x - p.x, vp.y - p.y) >= 18))
+        .slice(0, 5)
+        .map(([id, p]) => ({ id, x: p.x, y: p.y }));
       return {
         vertex: vertex ? { id: vertex[0], x: vertex[1].x, y: vertex[1].y } : null,
-        edge: edge ? { id: edge[0], x: edge[1].x, y: edge[1].y } : null,
+        edges,
       };
     }"""
     )
@@ -378,15 +380,19 @@ def drive_correspondence(page):
         page.wait_for_timeout(250)
         pick = page.evaluate("() => window.__manuscriptCorrespondence.picked ?? null")
         ok_pick_v = bool(pick) and pick["id"] == target["vertex"]["id"]
-    if target["edge"]:
-        page.mouse.move(box["x"] + target["edge"]["x"], box["y"] + target["edge"]["y"])
+    edges_tried = 0
+    for candidate in target["edges"]:
+        edges_tried += 1
+        page.mouse.move(box["x"] + candidate["x"], box["y"] + candidate["y"])
         page.wait_for_timeout(350)
         hov = page.evaluate("() => window.__manuscriptCorrespondence.hovered ?? null")
-        ok_hover_e = bool(hov) and hov["id"] == target["edge"]["id"] and hov["kind"] == "edge"
+        if bool(hov) and hov["id"] == candidate["id"] and hov["kind"] == "edge":
+            ok_hover_e = True
+            break
     record(
         "corr.pick",
         ok_hover_v and ok_pick_v and ok_hover_e,
-        f"vertex hover {ok_hover_v} · vertex pick {ok_pick_v} · edge hover {ok_hover_e} — the projected coords HIT their own entities (the lands-on-drawn proof)",
+        f"vertex hover {ok_hover_v} · vertex pick {ok_pick_v} · edge hover {ok_hover_e} ({edges_tried} candidate(s) tried — a depth-contested midpoint yields to the nearer edge honestly) — the projected coords HIT their own entities (the lands-on-drawn proof)",
     )
     # E-POSITIONS-TRACK-CAMERA: the projected coords MOVE on Reset, then Fit
     # Selected restores the plate
@@ -443,6 +449,93 @@ def drive_correspondence(page):
         bool(marks) and marks["meshes"] > 0 and marks["invisible"] == marks["meshes"],
         f"{0 if not marks else marks['invisible']}/{0 if not marks else marks['meshes']} pick meshes invisible (opacity 0)",
     )
+
+
+def drive_d2_marks(page):
+    # D2 (SEAL_D2_CORRESPONDENCE_MARKS — THE CARD'S CLOSE) — the marks census,
+    # the halo, and the bidirectional emphasis, on the RUNNING app. The face
+    # lift is SELECTED (no hover has run since the correspondence section
+    # cleared) — so mark presence HERE is the persistence's first half, and
+    # the census equality against the SELECTED card's rows is the two-register
+    # proof (the other placed specimens carry no marks).
+    page.wait_for_timeout(400)
+    census = page.evaluate(
+        """() => {
+      const seam = window.__manuscriptCorrespondence ?? {};
+      const rows = new Set([...(seam.rowResultIds ?? []), ...(seam.composedRowIds ?? [])]);
+      const marks = [...document.querySelectorAll('.corr-mark')].map((el) => el.getAttribute('data-mark-id'));
+      const markSet = new Set(marks);
+      const phantom = marks.filter((m) => !rows.has(m));
+      const dropped = [...rows].filter((r) => !markSet.has(r));
+      const halos = document.querySelectorAll('.corr-mark .corr-halo').length;
+      return { rows: rows.size, marks: marks.length, phantom: phantom.length, dropped: dropped.length, halos };
+    }"""
+    )
+    record(
+        "d2.census",
+        census["rows"] > 0
+        and census["marks"] == census["rows"]
+        and census["phantom"] == 0
+        and census["dropped"] == 0
+        and census["halos"] == census["marks"],
+        f"{census['marks']} marks === {census['rows']} card rows · phantom {census['phantom']} · dropped {census['dropped']} · halos {census['halos']}/{census['marks']}",
+    )
+    # the ENTITY side of the emphasis: hover a corner vertex (the D1 gesture)
+    # → ~3 lit on the seam + the matching CARD ROW bolds
+    target = page.evaluate(
+        """() => {
+      const c = window.__manuscriptCorrespondence ?? {};
+      const entries = Object.entries(c.positions ?? {});
+      const vertex = entries.find(([id, p]) => id.includes(':vertex:') && id.includes(':tetrahedron:') && p.onScreen);
+      return vertex ? { id: vertex[0], x: vertex[1].x, y: vertex[1].y } : null;
+    }"""
+    )
+    emph_ok = False
+    row_bold_ok = False
+    detail = "no on-screen vertex target"
+    canvas = page.locator("canvas").first
+    box = canvas.bounding_box()
+    if target:
+        page.mouse.move(box["x"] + target["x"], box["y"] + target["y"])
+        page.wait_for_timeout(450)
+        emph = page.evaluate("() => (window.__manuscriptCorrespondence.emphasizedIds ?? [])")
+        emph_ok = 2 <= len(emph) <= 4 and target["id"] in emph
+        weight = page.evaluate(
+            '(id) => { const el = document.querySelector(`[data-row-id="${id}"]`); return el ? getComputedStyle(el).fontWeight : null; }',
+            target["id"],
+        )
+        row_bold_ok = weight in ("700", "bold")
+        detail = f"lit {len(emph)} (~3 neighborhood) · the card row fontWeight {weight}"
+        page.mouse.move(box["x"] + box["width"] * 0.06, box["y"] + box["height"] * 0.12)
+        page.wait_for_timeout(300)
+    record("d2.emphasisEntitySide", emph_ok and row_bold_ok, detail)
+    # the ROW side: hover a card row → the seam lights the neighborhood + the
+    # MARK bolds (the bidirection's other half)
+    row = page.evaluate(
+        """() => {
+      const el = document.querySelector('[data-row-id]');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { id: el.getAttribute('data-row-id'), x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    }"""
+    )
+    row_ok = False
+    mark_lit_ok = False
+    detail2 = "no card row div"
+    if row:
+        page.mouse.move(row["x"], row["y"])
+        page.wait_for_timeout(450)
+        emph2 = page.evaluate("() => (window.__manuscriptCorrespondence.emphasizedIds ?? [])")
+        row_ok = 2 <= len(emph2) <= 4 and row["id"] in emph2
+        mark_weight = page.evaluate(
+            '(id) => { const el = document.querySelector(`.corr-mark[data-mark-id="${id}"] .corr-halo`); return el ? getComputedStyle(el).fontWeight : null; }',
+            row["id"],
+        )
+        mark_lit_ok = mark_weight in ("700", "bold")
+        detail2 = f"lit {len(emph2)} · the mark fontWeight {mark_weight}"
+        page.mouse.move(box["x"] + box["width"] * 0.06, box["y"] + box["height"] * 0.5)
+        page.wait_for_timeout(300)
+    record("d2.emphasisRowSide", row_ok and mark_lit_ok, detail2)
 
 
 def camera_state(page):
@@ -644,6 +737,13 @@ def drive_camera(page):
         not page.get_by_text("Fit Selected", exact=True).first.is_enabled(),
         "a true empty-paper click deselects (Fit Selected disabled)",
     )
+    # D2 persistence, second half: the deselect CLEARS the key (the marks
+    # were present without hover while selected — the census took them cold)
+    record(
+        "d2.persistDeselect",
+        page.locator(".corr-mark").count() == 0,
+        f"marks after deselect: {page.locator('.corr-mark').count()} (the key mounts on select, clears on deselect)",
+    )
     # D2-GROUND RESIDUAL: the CameraDock is disjoint from the aperture toggle
     dock_box = page.get_by_text("Fit Selected", exact=True).first.bounding_box()
     aperture_box = page.get_by_text("aperture — build a 3-manifold", exact=False).first.bounding_box()
@@ -746,6 +846,11 @@ def main():
                 drive_correspondence(page)
             except Exception as error:  # noqa: BLE001
                 record("corr.drive", False, repr(error))
+            # D2 — the marks + the emphasis (the face still selected)
+            try:
+                drive_d2_marks(page)
+            except Exception as error:  # noqa: BLE001
+                record("d2.drive", False, repr(error))
         # PHASE A — the camera plate, judged LAST (everything above already
         # exercised the sheet at the default framing)
         try:

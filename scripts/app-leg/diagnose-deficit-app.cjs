@@ -219,6 +219,24 @@ function killTree(pid) {
         check('§E-D1 ★ POSITIONS TRACK THE CAMERA + NO MARKS: the projected coords move on Reset and return onScreen after Fit Selected; the pick layer is INVISIBLE (every mesh opacity-0 — D1 renders nothing; the key/emphasis are D2\'s, held for the look-gate)',
           get('corr.track').ok && get('corr.noMarks').ok,
           `${get('corr.track').detail} · ${get('corr.noMarks').detail}`);
+        // D2 (SEAL_D2_CORRESPONDENCE_MARKS — THE CARD'S CLOSE) — live
+        check('§E-D2 ★★ THE MARKS CENSUS + HALO + PERSISTENCE + TWO-REGISTER: every card row (concept + relation + composed) has ONE drawn mark at its place — no phantom, no drop (the Phase-C law, now for the marks); every mark carries its 1h unhatched-paper halo; the key stood WITHOUT any hover (persistent on select) and only the SELECTED specimen wears it (the census equality — the world stays unlettered); deselect clears it',
+          get('d2.census').ok && get('d2.persistDeselect').ok,
+          `${get('d2.census').detail} · ${get('d2.persistDeselect').detail}`);
+        check('§E-D2 ★ THE EMPHASIS IS BIDIRECTIONAL (~3): hovering a specimen VERTEX lights its argument-neighborhood (~3 on the seam, never 1, never all) AND bolds the matching CARD ROW; hovering a CARD ROW lights the neighborhood AND bolds the MARK — both directions on the one id-space',
+          get('d2.emphasisEntitySide').ok && get('d2.emphasisRowSide').ok,
+          `entity side: ${get('d2.emphasisEntitySide').detail} · row side: ${get('d2.emphasisRowSide').detail}`);
+        check('§E-D2 THE KEY RESOLVES VIA h (source-pinned): the mark layer derives cap 4·h, offset 1.5·h, halo 1·h (never bare literals) and the view feeds h from the hatch band (bandPx) — the D2 key rides the designer\'s one lever',
+          (() => {
+            const markSrc = fs.readFileSync(path.join(repoRoot, 'src/components/CorrespondenceMarkLayer.tsx'), 'utf8');
+            const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+            return (
+              markSrc.includes('const capPx = 4 * h') &&
+              markSrc.includes('const offsetPx = 1.5 * h') &&
+              markSrc.includes('const haloPx = 1 * h') &&
+              viewSrc.includes('h={hatchingCtl.bandPx}')
+            );
+          })());
         // PHASE A (SEAL_PHASE_A_CAMERA) — the plate on the RUNNING app
         check('§E-PLATE ★★ SELECT FRAMES THE SPECIMEN: after the drop\'s auto-select, the specimen\'s projected screen height is a LEGIBLE fraction of the frame (≥ 0.22 of the viewport — the designer measured ~50px ≈ 0.055 pre-cure), and the Fit Selected + Reset Camera controls stand in the chrome',
           get('camera.plate').ok && get('camera.controlsPresent').ok,
