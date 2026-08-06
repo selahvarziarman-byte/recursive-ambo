@@ -139,6 +139,11 @@ import {
 // only. SPECIMEN_FIT_MARGIN is the L3 reservation the camera fit reads —
 // the margin exists BEFORE the figure is sized.
 import { CorrespondenceRing, SPECIMEN_FIT_MARGIN } from '../components/CorrespondenceRing';
+// THE RING ANCHOR RESOLVER (SEAL_THE_RING_ANCHOR_RESOLVER): TOTAL over the
+// WrittenRender union with a compile-time `: never` floor — every mode
+// RENDERS its anchors or DECLARES a refusal the card speaks; a silent bare
+// is unrepresentable (the mode-dispatch scar's root cure).
+import { resolveRingAnchors } from '../components/ringAnchorResolver';
 // GAP2B THE 8TH WORD — thicken(shape, segment): the committed Q1 gate assigns
 // the pair's roles (the ONE place "must be a segment" is judged); the store's
 // own door fires the arity-2 product and shelves the band
@@ -975,6 +980,8 @@ function SpecimenCard({
   emphasizedIds,
   onRowTouch,
   fieldDoor,
+  ringRefusal,
+  ringUnplaced,
 }: {
   reading: SpecimenReading;
   argument?: ArgumentReading | null;
@@ -987,6 +994,12 @@ function SpecimenCard({
   // register + recedes the rest). Present on the specimen panel only where
   // the view mounts a promotable field route.
   fieldDoor?: { open: boolean; onToggle: () => void };
+  // THE RING ANCHOR RESOLVER — the card SPEAKS what the ring cannot draw:
+  // a refused mode's whole-ring sentence (classBody/bodiless — an OPEN
+  // declaration, the horizon doctrine) and any per-cell unplaced count.
+  // ⛔ never a silent bare.
+  ringRefusal?: string;
+  ringUnplaced?: { id: string; reason: string }[];
 }) {
   // §7 — a REGISTER row touches its register through the ONE emphasizedIds
   // channel (`register:<name>` — the same mechanism as the key's entities)
@@ -1039,6 +1052,20 @@ function SpecimenCard({
           emphasizedIds={emphasizedIds}
           onRowTouch={onRowTouch}
         />
+      ) : null}
+      {ringRefusal ? (
+        // THE RING ANCHOR RESOLVER — the OPEN refusal (classBody/bodiless):
+        // the key exists in the card; the body cannot carry it, and the card
+        // SAYS so (never a silent bare figure)
+        <div data-ring-refusal style={{ marginTop: 6, fontSize: 12, fontStyle: 'italic', opacity: 0.8 }}>
+          {ringRefusal}
+        </div>
+      ) : null}
+      {ringUnplaced && ringUnplaced.length > 0 ? (
+        // the per-cell declarations — a cell the resolver could not place
+        <div data-ring-unplaced style={{ marginTop: 4, fontSize: 11.5, fontStyle: 'italic', opacity: 0.75 }}>
+          {ringUnplaced.length} cell{ringUnplaced.length > 1 ? 's' : ''} could not anchor — {ringUnplaced[0].reason}
+        </div>
       ) : null}
       {surfacedRows.map((r) => (
         // the key carries label AND value: R1-REBUILD gave the card its first
@@ -1887,6 +1914,15 @@ export default function ManuscriptView() {
     const entry = written.find((w) => w.form.id === key);
     return entry ? buildArgumentReading(entry.form) : null;
   }, [selected, written]);
+  // THE RING ANCHOR RESOLVER — the TOTAL verdict for the selected specimen:
+  // anchors (any rendering mode) or a DECLARED refusal the card speaks.
+  const ringResolution = useMemo(() => {
+    if (!selected || !selectedArgument) return null;
+    const [band, key] = selected.split(':');
+    if (band !== 'w') return null;
+    const entry = written.find((w) => w.form.id === key);
+    return entry ? resolveRingAnchors(entry.form, selectedArgument) : null;
+  }, [selected, selectedArgument, written]);
   // PHASE D1 — the correspondence seam (the dev test-seam pattern beside
   // __manuscriptScene/__manuscriptCamera): hovered · picked · the row
   // id-space (the LIVE resultIds the card rows already carry — `===` is the
@@ -1897,6 +1933,13 @@ export default function ManuscriptView() {
       __manuscriptCorrespondence?: CorrespondenceSeam & {
         emphasizedIds?: string[];
         composedRowIds?: string[];
+        ringResolution?: {
+          kind: 'anchored' | 'refused';
+          mode: string | null;
+          refusal: string | null;
+          unplaced: number | null;
+          anchored: number | null;
+        } | null;
         registers?: {
           door: boolean;
           full: string | null;
@@ -1913,6 +1956,21 @@ export default function ManuscriptView() {
       : [];
     seam.composedRowIds = selectedArgument ? selectedArgument.composedRelationRows.map((r) => r.id) : [];
     seam.emphasizedIds = emphasizedIds;
+    // THE RING ANCHOR RESOLVER — the every-mode witness's read: the verdict
+    // kind, the mode it judged, the refusal sentence, the per-cell count
+    seam.ringResolution = ringResolution
+      ? {
+          kind: ringResolution.kind,
+          mode: (() => {
+            const [band, key] = (selected ?? '').split(':');
+            const entry = band === 'w' ? written.find((w) => w.form.id === key) : undefined;
+            return entry?.form.render.mode ?? null;
+          })(),
+          refusal: ringResolution.kind === 'refused' ? ringResolution.refusal : null,
+          unplaced: ringResolution.kind === 'anchored' ? ringResolution.unplaced.length : null,
+          anchored: ringResolution.kind === 'anchored' ? ringResolution.anchors.size : null,
+        }
+      : null;
     // M1 — the registers seam: the door, the ONE full annotation register
     // (null = all recessed), the deficit's stated exception, and the two
     // RESOLVED recessed styles (the injectivity witness reads real values:
@@ -1934,7 +1992,7 @@ export default function ManuscriptView() {
         },
       },
     };
-  }, [correspondenceHover, correspondencePicked, selectedArgument, emphasizedIds, fieldDoorOpen, promotedRegister, generatorsCtl.a]);
+  }, [correspondenceHover, correspondencePicked, selectedArgument, emphasizedIds, fieldDoorOpen, promotedRegister, generatorsCtl.a, ringResolution, selected, written]);
   // D2b — the argument-neighborhood of a touched id (~3 lit; the exact
   // neighborhood is the designer's look-gate)
   const emphasisNeighborhood = useCallback(
@@ -3753,38 +3811,26 @@ export default function ManuscriptView() {
                 />
               </group>
             ) : null}
-            {/* M3.1 (SEAL_M3_PERSISTENCE) — THE RING RIDES ANY DRAWN SHAPE
-                WHOSE GEOMETRY CARRIES THE FORM'S OWN ID-SPACE (the persistence
-                cure: the old gate stopped at plain/skeleton, so a fold-born
-                cone — mode 'faithful' — lost its marks though its card carried
-                every row). The hosts:
-                  · plain/skeleton — the form's own shape (as before);
-                  · faithful — the REPOSITIONED fan (faithfulDeficitDatum's
-                    shape: measured, repositionShapeToFan keeps every id and
-                    only moves positions — the deficit layer's exact pattern),
-                    under the faithful group's own scale;
-                  · classBody/immersion — NO ring: the drawn body is a
-                    REPRESENTATIVE with its own id-space; anchoring the card's
-                    ids there would MINT positions (the D1 deferral holds —
-                    those modes ride after the sanctioned crafted union);
-                  · bodiless — no body, no anchors, no ring (the card speaks).
+            {/* THE RING ANCHOR RESOLVER (SEAL_THE_RING_ANCHOR_RESOLVER) —
+                TOTAL over the render union: the resolver returned ANCHORS
+                (this mount) or a DECLARED refusal (the card speaks it below;
+                classBody/bodiless refuse in the open — never a silent bare).
+                M3's faithful fan map rides inside the resolver unchanged.
                 Two-register unchanged: the SELECTED specimen only. */}
-            {selected === id && selectedArgument ? (() => {
-              const ringHost =
-                render.mode === 'plain' || render.mode === 'skeleton'
-                  ? { shape: entry.form.shape, scale: scaleCtl.dim1Scale }
-                  : render.mode === 'faithful'
-                    ? (() => {
-                        const datum = faithfulDeficitById.get(entry.form.id);
-                        return datum && datum.kind === 'read'
-                          ? { shape: datum.shape, scale: scaleCtl.dim1Scale * 1.5 }
-                          : null;
-                      })()
-                    : null;
-              return ringHost ? (
-                <group scale={ringHost.scale}>
+            {selected === id && selectedArgument && ringResolution?.kind === 'anchored' ? (() => {
+              const anchored = ringResolution;
+              const scale =
+                anchored.mount === 'dim1'
+                  ? scaleCtl.dim1Scale
+                  : anchored.mount === 'faithful'
+                    ? scaleCtl.dim1Scale * 1.5
+                    : scaleCtl.dim2Scale;
+              return (
+                <group scale={scale}>
                   <CorrespondenceRing
-                    shape={ringHost.shape}
+                    anchors={anchored.anchors}
+                    segments={anchored.segments}
+                    figurePoints={anchored.figurePoints}
                     concepts={selectedArgument.conceptRows.map((r) => ({
                       id: r.resultId,
                       // M3.2 — THE MERGED PRESENTATION (researcher-ruled): an
@@ -3815,7 +3861,7 @@ export default function ManuscriptView() {
                     emphasizedIds={emphasizedIds}
                   />
                 </group>
-              ) : null;
+              );
             })() : null}
             </>,
           );
@@ -4192,6 +4238,8 @@ export default function ManuscriptView() {
           onRowTouch={handleRowTouch}
           generatorInks={{ a: generatorsCtl.a, b: generatorsCtl.b }}
           fieldDoor={{ open: fieldDoorOpen, onToggle: () => setFieldDoorOpen((open) => !open) }}
+          ringRefusal={ringResolution?.kind === 'refused' ? ringResolution.refusal : undefined}
+          ringUnplaced={ringResolution?.kind === 'anchored' && ringResolution.unplaced.length > 0 ? ringResolution.unplaced : undefined}
         />
       ) : null}
       {chord && chordPanel ? (

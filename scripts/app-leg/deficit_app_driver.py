@@ -848,6 +848,155 @@ def drive_registers(page):
     page.wait_for_timeout(200)
 
 
+def find_dock_chip(page, label):
+    # the dock chips are glyph-only 46x46 buttons; hover until the tooltip
+    # reads exactly the group label (the find_fold_chip idiom, generalized)
+    for b in page.locator("button").all():
+        try:
+            box = b.bounding_box()
+            if not box or abs(box["width"] - 46) > 3 or abs(box["height"] - 46) > 3:
+                continue
+            b.hover()
+            page.wait_for_timeout(140)
+            tip = page.locator(f'div:text-is("{label}")')
+            if tip.count() > 0 and tip.first.is_visible():
+                return b
+        except Exception:
+            continue
+    return None
+
+
+def ring_state(page):
+    # THE RING ANCHOR RESOLVER's seam + DOM read: the verdict, the drawn
+    # marks, and any on-card declaration (refusal / unplaced)
+    return page.evaluate(
+        """() => {
+      const seam = window.__manuscriptCorrespondence ?? {};
+      const refusal = document.querySelector('[data-ring-refusal]');
+      const unplacedEl = document.querySelector('[data-ring-unplaced]');
+      return {
+        resolution: seam.ringResolution ?? null,
+        marks: document.querySelectorAll('.corr-mark').length,
+        refusalShown: refusal ? (refusal.textContent ?? '').trim().slice(0, 140) : null,
+        unplacedShown: unplacedEl ? (unplacedEl.textContent ?? '').trim().slice(0, 140) : null,
+      };
+    }"""
+    )
+
+
+def drive_ring_modes(page):
+    # THE RING ANCHOR RESOLVER (SEAL_THE_RING_ANCHOR_RESOLVER) — every
+    # DRIVEABLE mode renders-or-declares, live: the TORUS + the CYLINDER
+    # (immersion — the two bodies Arman found BARE) + the SKELETON (dock cut
+    # on the picked face). classBody/bodiless have NO committed gesture
+    # producer (measured; the died precedent) — their refusal branches are
+    # witnessed at the model (diagnose-argument-card §13) and the deviation
+    # is reported. THE SILENT-BARE GUARD rides every record: anchored ⇒
+    # marks > 0; refused ⇒ the card's open declaration present.
+    canvas = page.locator("canvas").first
+    box = canvas.bounding_box()
+    # the sections before this end at Fit Selected (zoomed IN on the lift
+    # face) — reset to the composed default so the paper-point scan sees the
+    # whole sheet, not one body filling the frame
+    reset_button = page.get_by_text("Reset Camera", exact=True)
+    if reset_button.count() > 0:
+        reset_button.first.click()
+        page.wait_for_timeout(600)
+
+    def invoke_square(side):
+        # find_paper_point guarantees the CANVAS element, not EMPTY paper — a
+        # right-click on a drawn form opens the FormOpsMenu, not the invoke
+        # palette (the measured flake). VERIFY the palette opened; otherwise
+        # walk to the next candidate (a new right-click re-points the menu).
+        xs = [0.12, 0.2, 0.3, 0.42] if side == "left" else [0.88, 0.8, 0.7, 0.58]
+        other_xs = [0.88, 0.8, 0.7, 0.58] if side == "left" else [0.12, 0.2, 0.3, 0.42]
+        ys = [0.62, 0.68, 0.56, 0.74, 0.5, 0.44, 0.8, 0.36, 0.3, 0.86]
+        for fx in xs + other_xs:
+            for fy in ys:
+                x = box["x"] + box["width"] * fx
+                y = box["y"] + box["height"] * fy
+                tag = page.evaluate(
+                    "([x, y]) => { const el = document.elementFromPoint(x, y); return el ? el.tagName : null; }",
+                    [x, y],
+                )
+                if tag != "CANVAS":
+                    continue
+                canvas.click(button="right", position={"x": box["width"] * fx, "y": box["height"] * fy})
+                page.wait_for_timeout(300)
+                item = page.locator('text="Square"')
+                if page.locator("text=invoke — real material").count() > 0 and item.count() > 0:
+                    item.first.click()
+                    page.wait_for_timeout(600)
+                    return None
+        return "no EMPTY paper point opened the invoke palette"
+
+    def glue_variant(variant_text):
+        chip = find_dock_chip(page, "glue")
+        if chip is None:
+            return "the glue chip was not found by its hover label"
+        chip.click()
+        page.wait_for_timeout(250)
+        variant = page.locator(f"text={variant_text}")
+        if variant.count() == 0:
+            return f"the flyout shows no '{variant_text}' variant"
+        variant.first.click()
+        page.wait_for_timeout(1000)
+        return None
+
+    def judge(record_name, tag, want_mode):
+        s = ring_state(page)
+        r = s["resolution"]
+        anchored_ok = (
+            r is not None
+            and r["kind"] == "anchored"
+            and r["mode"] == want_mode
+            and r["unplaced"] == 0
+            and r["anchored"] is not None
+            and s["marks"] == r["anchored"]
+            and s["marks"] > 0
+        )
+        record(
+            record_name,
+            anchored_ok,
+            f"{tag}: kind={None if not r else r['kind']} mode={None if not r else r['mode']} "
+            f"anchored={None if not r else r['anchored']} · marks {s['marks']} · unplaced {None if not r else r['unplaced']} "
+            f"(a silent bare — no marks AND no declaration — is the RED)",
+        )
+
+    # TORUS (immersion, closed)
+    step = invoke_square("left") or glue_variant("Torus (abAB)")
+    if step is None:
+        judge("ring.modeTorus", "torus", "immersion")
+    else:
+        record("ring.modeTorus", False, f"could not drive the torus: {step}")
+    # CYLINDER (immersion, BOUNDED — the same map, no special case)
+    step = invoke_square("right") or glue_variant("Cylinder (single pair)")
+    if step is None:
+        judge("ring.modeCylinder", "cylinder", "immersion")
+    else:
+        record("ring.modeCylinder", False, f"could not drive the cylinder: {step}")
+    # SKELETON (dock cut): a ONE-face form auto-passes its only face
+    # (operationContextFor:206 — "not a choice"); the pick panel exists only
+    # for multi-face forms, so try it when present and cut either way
+    step = invoke_square("left")
+    if step is None:
+        face_row = page.locator("text=· 4 corners").first
+        if face_row.count() > 0:
+            face_row.click()
+            page.wait_for_timeout(250)
+        chip = find_dock_chip(page, "cut")
+        step = None if chip is not None else "the cut chip was not found by its hover label"
+        if chip is not None:
+            chip.click()
+            page.wait_for_timeout(1000)
+    if step is None:
+        judge("ring.modeSkeleton", "skeleton", "skeleton")
+    else:
+        record("ring.modeSkeleton", False, f"could not drive the skeleton: {step}")
+    page.evaluate("() => window.scrollTo(0, 0)")
+    page.wait_for_timeout(150)
+
+
 def camera_state(page):
     # the PHASE A projection seam: the composed camera, read mechanically
     return page.evaluate(
@@ -1181,6 +1330,12 @@ def main():
                 drive_registers(page)
             except Exception as error:  # noqa: BLE001
                 record("regs.drive", False, repr(error))
+        # THE RING ANCHOR RESOLVER — every driveable mode renders-or-declares
+        # (runs after the lift-specimen sections; invokes fresh subjects)
+        try:
+            drive_ring_modes(page)
+        except Exception as error:  # noqa: BLE001
+            record("ring.modesDrive", False, repr(error))
         # PHASE A — the camera plate, judged LAST (everything above already
         # exercised the sheet at the default framing)
         try:

@@ -265,6 +265,28 @@ function killTree(pid) {
             );
           })(),
           get('regs.dockClearOfDoor').detail);
+        // THE RING ANCHOR RESOLVER (SEAL_THE_RING_ANCHOR_RESOLVER) — live
+        check('§E-RESOLVER ★★ THE RING RENDERS ON EVERY DRIVEABLE MODE (no silent bare): the TORUS and the CYLINDER (immersion — the two bodies measured BARE before the resolver) anchor their rings ON the surface with census === anchored and unplaced 0; the SKELETON (dock cut on the picked face) rings; plain (the invoked squares) and faithful (the fold-born cones) ride the earlier sections. classBody/bodiless have NO committed gesture producer (measured — the died precedent): their refusal branches are model-witnessed (diagnose-argument-card §13) and the card\'s open declaration is source-pinned below',
+          get('ring.modeTorus').ok && get('ring.modeCylinder').ok && get('ring.modeSkeleton').ok,
+          `${get('ring.modeTorus').detail} · ${get('ring.modeCylinder').detail} · ${get('ring.modeSkeleton').detail}`);
+        check('§E-RESOLVER THE FLOOR IS COMPILE-TIME + THE CARD DECLARES (source-pinned): resolveRingAnchors carries the `: never` floor (deleting a mode branch cannot compile — the readDeficitForRender pattern), judges ALL SIX mode strings, the view consumes it for the mount AND the card declaration (data-ring-refusal + data-ring-unplaced), the seam mirrors the verdict (ringResolution), and the ring consumes resolver anchors (its own geometry resolution is gone)',
+          (() => {
+            const resolverSrc = fs.readFileSync(path.join(repoRoot, 'src/components/ringAnchorResolver.ts'), 'utf8');
+            const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+            const ringSrc = fs.readFileSync(path.join(repoRoot, 'src/components/CorrespondenceRing.tsx'), 'utf8');
+            return (
+              resolverSrc.includes('function unhandledRingMode(render: never): never') &&
+              ["'plain'", "'skeleton'", "'faithful'", "'immersion'", "'classBody'", "'bodiless'"].every((m) =>
+                resolverSrc.includes(`render.mode === ${m}`)) &&
+              resolverSrc.includes('DIHEDRAL_IMAGES') &&
+              viewSrc.includes('resolveRingAnchors(entry.form, selectedArgument)') &&
+              viewSrc.includes('data-ring-refusal') &&
+              viewSrc.includes('data-ring-unplaced') &&
+              viewSrc.includes('seam.ringResolution') &&
+              ringSrc.includes('anchors: ReadonlyMap<string, Vec3>') &&
+              !ringSrc.includes('shape.edges.find')
+            );
+          })());
         check('§E-M2 THE RESERVATION IS ONE CONSTANT + THE RECESSION IS WEIGHT+HUE (source-pinned): the ring exports SPECIMEN_FIT_MARGIN and the view\'s camera fit consumes THAT constant (the margin reserved BEFORE the figure is sized); the ring type is page-fixed (RING_FONT_PX); the halo styles ONLY the lit branch; the recessed band derives from designDefaults.registers (line factor ≠ stipple factor) with NO opacity/dash move; the deficit exception is STATED in InkedPlainForm',
           (() => {
             const ringSrc = fs.readFileSync(path.join(repoRoot, 'src/components/CorrespondenceRing.tsx'), 'utf8');

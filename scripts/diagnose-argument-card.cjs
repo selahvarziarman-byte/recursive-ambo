@@ -926,6 +926,63 @@ check('§12 (M3) ★ THE DIED READ IS TOTAL + REACHABLE-EMPTY (measured): a CONS
       coneReading.conceptRows.some((r) => r.typing === 'survived' && r.ownName !== null)
     );
   })());
+// §13 THE RING ANCHOR RESOLVER (SEAL_THE_RING_ANCHOR_RESOLVER) — the TOTAL
+// verdict at the model: 4 modes RENDER anchors, 2 REFUSE with open sentences;
+// the immersion map anchors ON the surface with the dihedral corner
+// assignment FORCED by gluing consistency (the naive cycle image fails the
+// cylinder — measured; unplaced 0 proves the search found the closing image).
+const { resolveRingAnchors } = req('src/components/ringAnchorResolver.ts');
+check('§13 (RESOLVER) ★ TOTAL OVER THE UNION — 4 RENDER + 2 DECLARE: the glue-TORUS anchors 3/3 (unplaced 0) with every point ON the immersion surface; the glue-CYLINDER anchors 5/5 (unplaced 0) with its two rim classes at DISTINCT heights (the dihedral search closed an assignment the naive cycle fails); plain/skeleton/faithful anchor as before (the M3 fan intact); classBody + bodiless REFUSE with their own sentences (the frame + the committed reason) — never a silent null',
+  (() => {
+    const torusApplied2 = applyPlaygroundOperationTo('glue-torus', sqHost.shape, null, 921, 8, [], null);
+    const cylApplied = applyPlaygroundOperationTo('glue-cylinder', sqHost.shape, null, 922, 8, [], null);
+    if (!torusApplied2.ok || !cylApplied.ok) return false;
+    const torusRes = resolveRingAnchors(torusApplied2.born, buildArgumentReading(torusApplied2.born));
+    const cylRes = resolveRingAnchors(cylApplied.born, buildArgumentReading(cylApplied.born));
+    const onTorus = ([x, y, z]) => {
+      // the torus immersion's own implicit surface: (√(x²+z²) − R0)² + y² = r0²
+      const ring = Math.hypot(x, z) - 2.75;
+      return Math.abs(Math.hypot(ring, y) - 1.25) < 1e-6;
+    };
+    const torusOk =
+      torusRes.kind === 'anchored' &&
+      torusRes.anchors.size === 3 &&
+      torusRes.unplaced.length === 0 &&
+      [...torusRes.anchors.values()].every(onTorus);
+    const cylConcepts = cylRes.kind === 'anchored'
+      ? [...cylRes.anchors.entries()].filter(([id]) => cylApplied.born.shape.vertices[id]).map(([, p]) => p)
+      : [];
+    const cylOk =
+      cylRes.kind === 'anchored' &&
+      cylRes.anchors.size === 5 &&
+      cylRes.unplaced.length === 0 &&
+      cylConcepts.length === 2 &&
+      Math.abs(cylConcepts[0][1] - cylConcepts[1][1]) > 2;
+    const fanRes = resolveRingAnchors(cone, buildArgumentReading(cone));
+    const plainRes = resolveRingAnchors(triHost, buildArgumentReading(triHost));
+    const skelRes = resolveRingAnchors(cutApplied.born, buildArgumentReading(cutApplied.born));
+    const bodilessRes = resolveRingAnchors(
+      { ...triHost, render: { mode: 'bodiless', reason: 'a pinch — the classify route throws', shape: triHost.shape } },
+      buildArgumentReading(triHost),
+    );
+    const { buildClassBodyModel } = req('src/manuscript/classBodyModel.ts');
+    let classRes = null;
+    try {
+      const cb = buildClassBodyModel(torusApplied2.born.shape, [torusApplied2.born.shape, sqHost.shape]);
+      classRes = resolveRingAnchors({ ...torusApplied2.born, render: { mode: 'classBody', model: cb } }, buildArgumentReading(torusApplied2.born));
+    } catch {
+      classRes = null;
+    }
+    return (
+      torusOk &&
+      cylOk &&
+      fanRes.kind === 'anchored' && fanRes.unplaced.length === 0 &&
+      plainRes.kind === 'anchored' && plainRes.unplaced.length === 0 &&
+      skelRes.kind === 'anchored' && skelRes.unplaced.length === 0 &&
+      bodilessRes.kind === 'refused' && bodilessRes.refusal.includes('a pinch') &&
+      classRes !== null && classRes.kind === 'refused' && classRes.refusal.includes('chosen representative')
+    );
+  })());
 check('§11 (E-NO-UNION) NOTHING FROZEN MOVED: ambo.ts (the mechanism is the LIFT — the T-junction stays real) · InkedForm.tsx (the flat-body guard is ADAPTER-HELD) · types/geometry.ts · lib/shape.ts · store/geometryStore.ts · genesisModel.ts · faithfulBodyModel.ts · inkedFormModel.ts · the MANIFEST — all BYTE-IDENTICAL to HEAD (no union, no new file, no new row owed)',
   ['src/lib/ambo.ts', 'src/manuscript/InkedForm.tsx', 'src/types/geometry.ts', 'src/lib/shape.ts', 'src/store/geometryStore.ts', 'src/manuscript/genesisModel.ts', 'src/manuscript/faithfulBodyModel.ts', 'src/manuscript/inkedFormModel.ts', 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'].every(headEq));
 

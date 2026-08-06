@@ -35,7 +35,7 @@ import { useMemo, useRef } from 'react';
 import { Html, Line } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import type { Shape, Vec3 } from '../types/geometry';
+import type { Vec3 } from '../types/geometry';
 
 export interface CorrespondenceMarkRow {
   id: string; // the live resultId (D1's one id-space — matched ===, never re-resolved)
@@ -82,10 +82,10 @@ export const RING_GAP_PX = 30;
 // `A·DAD`); a half-cap of clear paper now rides between stacked labels.
 // Derived per instance from h inside the component — no bare literal.
 
-const mid3 = (a: Vec3, b: Vec3): Vec3 => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
-
 export function CorrespondenceRing({
-  shape,
+  anchors,
+  segments,
+  figurePoints,
   concepts,
   relations,
   composed,
@@ -95,7 +95,14 @@ export function CorrespondenceRing({
   paperColor,
   emphasizedIds,
 }: {
-  shape: Shape;
+  // THE RING ANCHOR RESOLVER (SEAL_THE_RING_ANCHOR_RESOLVER): the ring no
+  // longer resolves geometry itself — the TOTAL resolver hands it per-row
+  // anchors (any mode that renders), endpoint segments (the world-side
+  // emphasis), and the drawn body's own figure points (the L1 silhouette
+  // bound — on an immersion the class points alone under-bound the body).
+  anchors: ReadonlyMap<string, Vec3>;
+  segments: ReadonlyMap<string, readonly [Vec3, Vec3]>;
+  figurePoints: readonly Vec3[];
   concepts: CorrespondenceMarkRow[];
   relations: CorrespondenceMarkRow[];
   composed: CorrespondenceComposedMark[];
@@ -115,43 +122,25 @@ export function CorrespondenceRing({
   const capPx = 4 * h;
   const ringStackPx = 1.5 * capPx;
 
-  // ---- the anchors: every card row's DRAWN PLACE (points, never mints) ----
+  // ---- the marks: every card row the resolver anchored (a row it could
+  // not place was DECLARED in `unplaced` — the card speaks it, never a
+  // silent drop here) ----
   const marks = useMemo(() => {
-    const centroid: Vec3 = [0, 0, 0];
-    const vertexIds = Object.keys(shape.vertices);
-    for (const id of vertexIds) {
-      const p = shape.vertices[id].position;
-      centroid[0] += p[0] / vertexIds.length;
-      centroid[1] += p[1] / vertexIds.length;
-      centroid[2] += p[2] / vertexIds.length;
-    }
     const all: { id: string; kind: 'concept' | 'relation' | 'composed'; label: string; anchor: Vec3 }[] = [];
     for (const row of concepts) {
-      const v = shape.vertices[row.id];
-      if (v) all.push({ id: row.id, kind: 'concept', label: row.label, anchor: v.position });
+      const anchor = anchors.get(row.id);
+      if (anchor) all.push({ id: row.id, kind: 'concept', label: row.label, anchor });
     }
     for (const row of relations) {
-      const edge = shape.edges.find((e) => e.id === row.id);
-      if (!edge) continue;
-      const a = shape.vertices[edge.vertexIds[0]]?.position;
-      const b = shape.vertices[edge.vertexIds[1]]?.position;
-      if (a && b) all.push({ id: row.id, kind: 'relation', label: row.label, anchor: mid3(a, b) });
+      const anchor = anchors.get(row.id);
+      if (anchor) all.push({ id: row.id, kind: 'relation', label: row.label, anchor });
     }
     for (const row of composed) {
-      // the drawn place: the path's own shared midpoint vertex (the live
-      // parts' common endpoint) — POINTED at, never minted
-      const parts = row.pathIds
-        .map((p) => shape.edges.find((e) => e.id === p))
-        .filter((e): e is NonNullable<typeof e> => Boolean(e));
-      if (parts.length === 0) continue;
-      const counts = new Map<string, number>();
-      for (const e of parts) for (const vid of e.vertexIds) counts.set(vid, (counts.get(vid) ?? 0) + 1);
-      const sharedId = [...counts.entries()].find(([, n]) => n >= 2)?.[0] ?? parts[0].vertexIds[0];
-      const place = shape.vertices[sharedId]?.position;
-      if (place) all.push({ id: row.id, kind: 'composed', label: row.label, anchor: place });
+      const anchor = anchors.get(row.id);
+      if (anchor) all.push({ id: row.id, kind: 'composed', label: row.label, anchor });
     }
     return all;
-  }, [concepts, relations, composed, shape]);
+  }, [concepts, relations, composed, anchors]);
 
   const emphasized = (id: string): boolean => emphasizedIds.includes(id);
 
@@ -174,13 +163,13 @@ export function CorrespondenceRing({
         on: Math.abs(v.x) <= 1.2 && Math.abs(v.y) <= 1.2 && v.z >= -1 && v.z <= 1,
       };
     };
-    // the FIGURE's projected disc: centre + max vertex radius (the vertex
-    // hull bounds the drawn silhouette — the L1 reference the labels stay
-    // outside of)
+    // the FIGURE's projected disc: centre + max radius over the DRAWN
+    // body's own points (the resolver's figurePoints — the vertex hull on a
+    // shape mode, the immersion grid's surface points on an immersion; the
+    // L1 reference the labels stay outside of)
     let cx = 0;
     let cy = 0;
-    const vertexIds = Object.keys(shape.vertices);
-    const projected = vertexIds.map((id) => toScreen(shape.vertices[id].position));
+    const projected = figurePoints.map((p) => toScreen(p));
     for (const p of projected) {
       cx += p.x / projected.length;
       cy += p.y / projected.length;
@@ -344,23 +333,27 @@ export function CorrespondenceRing({
       </Html>
       {/* the WORLD half of the emphasis — the entity itself lights on the
           body (body-intrinsic, not lettering). Raycast-INERT (the D2
-          doctrine: decorations never steal D1's hover). */}
+          doctrine: decorations never steal D1's hover). The resolver's
+          segments/anchors carry the drawn places; a degenerate segment (a
+          glued class whose endpoints image to one point) draws nothing. */}
       {relations
         .filter((row) => emphasized(row.id))
         .map((row) => {
-          const edge = shape.edges.find((e) => e.id === row.id);
-          const a = edge ? shape.vertices[edge.vertexIds[0]]?.position : undefined;
-          const b = edge ? shape.vertices[edge.vertexIds[1]]?.position : undefined;
-          return a && b ? (
-            <Line key={`emph:${row.id}`} points={[a, b]} color={ink} lineWidth={3} raycast={() => null} />
-          ) : null;
+          const segment = segments.get(row.id);
+          if (!segment) return null;
+          const [a, b] = segment;
+          const degenerate =
+            Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) < 1e-6;
+          return degenerate ? null : (
+            <Line key={`emph:${row.id}`} points={[[...a], [...b]]} color={ink} lineWidth={3} raycast={() => null} />
+          );
         })}
       {concepts
         .filter((row) => emphasized(row.id))
         .map((row) => {
-          const vertex = shape.vertices[row.id];
-          return vertex ? (
-            <mesh key={`emph:${row.id}`} position={vertex.position} raycast={() => null}>
+          const anchor = anchors.get(row.id);
+          return anchor ? (
+            <mesh key={`emph:${row.id}`} position={anchor} raycast={() => null}>
               <sphereGeometry args={[0.045, 12, 12]} />
               <meshBasicMaterial color={ink} />
             </mesh>
