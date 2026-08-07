@@ -73,6 +73,7 @@ import {
   identify,
   modesFromDirectedCycles,
   type AcquiredComplex,
+  type IdentifyMode,
 } from '../lib/complexIdentification';
 // THE CONFORMAL ATOM — the non-frozen invoke wrapper stamps the owned angle
 import { computeSeedCornerAngles } from '../lib/conformalAtom';
@@ -540,7 +541,12 @@ function CycleTraceOverlay({
   walkA: Array<{ id: string; dir: 1 | -1 }>;
   walkB: Array<{ id: string; dir: 1 | -1 }>;
   phase: 'A' | 'B';
-  onPickEdge: (edgeId: string, dir: 1 | -1) => void;
+  // THE REFINED IDENTIFY GESTURE (SEAL_THE_IDENTIFY_GESTURE, G1): the tail is
+  // a VERTEX the person PICKS — `tail` names the tapped endpoint ('u' | 'v');
+  // null = a tap on the edge BODY (meaningful only as a G3 re-tap flip).
+  // ⛔ The click-proximity inference (nearer-endpoint-becomes-the-tail) is
+  // DELETED — two discrete vertex targets replace the midpoint knife-edge.
+  onPickEdge: (edgeId: string, tail: 'u' | 'v' | null) => void;
 }) {
   const posOf = (vid: string): [number, number, number] | null => {
     const v = shape.vertices[vid];
@@ -550,24 +556,54 @@ function CycleTraceOverlay({
   const inB = new Map(walkB.map((t, i) => [t.id, i]));
   // the i-th A-edge lights while the i-th B-edge exists (pairing, live)
   const litA = new Set(walkB.map((_, i) => walkA[i]?.id).filter(Boolean));
+  const lerp3 = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t,
+  ];
+  // the trace targets' PER-FRAME screen positions onto the dev seam — the
+  // CorrespondencePickLayer idiom verbatim (R3F's own camera/size, so the
+  // witness clicks in exactly the space R3F maps events from; a one-shot
+  // manual projection raced the C1 select-flight — measured)
+  const groupRef = useRef<THREE.Group>(null);
+  useFrame(({ camera, size }) => {
+    const group = groupRef.current;
+    if (!group) return;
+    const world = new Vector3();
+    const positions: Record<string, { x: number; y: number; on: boolean }> = {};
+    group.traverse((object) => {
+      if (!object.name.startsWith('trace-tail:')) return;
+      object.getWorldPosition(world);
+      world.project(camera);
+      positions[object.name] = {
+        x: ((world.x + 1) / 2) * size.width,
+        y: ((1 - world.y) / 2) * size.height,
+        on: Math.abs(world.x) <= 1 && Math.abs(world.y) <= 1 && world.z >= -1 && world.z <= 1,
+      };
+    });
+    const host = window as unknown as { __manuscriptCorrespondence?: { traceTargets?: typeof positions } };
+    const seam = host.__manuscriptCorrespondence ?? (host.__manuscriptCorrespondence = {});
+    seam.traceTargets = positions;
+  });
   const nib = (u: [number, number, number], v: [number, number, number], dir: 1 | -1, ink: string, lit: boolean) => {
     const [tail, head] = dir === 1 ? [u, v] : [v, u];
-    const lerp = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [
-      a[0] + (b[0] - a[0]) * t,
-      a[1] + (b[1] - a[1]) * t,
-      a[2] + (b[2] - a[2]) * t,
-    ];
     const w = lit ? 5.2 : 3.4; // the lit pair reads heavier, same ink
     return (
       <group>
-        <Line points={[tail, lerp(tail, head, 0.55)]} color={ink} lineWidth={w} renderOrder={14} />
-        <Line points={[lerp(tail, head, 0.55), lerp(tail, head, 0.85)]} color={ink} lineWidth={w * 0.62} renderOrder={14} />
-        <Line points={[lerp(tail, head, 0.85), head]} color={ink} lineWidth={w * 0.32} renderOrder={14} />
+        <Line points={[tail, lerp3(tail, head, 0.55)]} color={ink} lineWidth={w} renderOrder={14} />
+        <Line points={[lerp3(tail, head, 0.55), lerp3(tail, head, 0.85)]} color={ink} lineWidth={w * 0.62} renderOrder={14} />
+        <Line points={[lerp3(tail, head, 0.85), head]} color={ink} lineWidth={w * 0.32} renderOrder={14} />
+        {/* G2 — THE TAIL LIGHTS WHERE YOU TOUCHED: the picked vertex marks;
+            the stroke draws FROM it (no inference) */}
+        <mesh position={tail} raycast={() => null}>
+          <sphereGeometry args={[0.085, 12, 12]} />
+          <meshBasicMaterial color={ink} />
+        </mesh>
       </group>
     );
   };
   return (
-    <group>
+    <group ref={groupRef}>
       {complex.edges.map((edge) => {
         const u = posOf(edge.u);
         const v = posOf(edge.v);
@@ -576,25 +612,62 @@ function CycleTraceOverlay({
         const len = Math.hypot(v[0] - u[0], v[1] - u[1], v[2] - u[2]) || 1;
         const aHit = inA.get(edge.id);
         const bHit = inB.get(edge.id);
+        const traced = aHit !== undefined || bHit !== undefined;
+        // G1 — TWO DISCRETE VERTEX TARGETS per edge (inset onto the edge so
+        // neighbouring edges' targets at a shared corner stay distinct): the
+        // person taps the vertex they START from; a two-outcome decision gets
+        // two targets — the midpoint knife-edge is gone.
+        const targetU = lerp3(u, v, 0.14);
+        const targetV = lerp3(v, u, 0.14);
         return (
           <group key={`trace:${edge.id}`}>
-            {/* the fattened invisible proxy — the collider IS the reach fix */}
+            {/* the fattened invisible proxy stays as the G3 RE-TAP surface —
+                a tap on a TRACED edge's body flips its tail to the other end
+                (a trace change, the same gesture); on an untraced edge it
+                asks for a vertex (the panel's notice). SHORTENED to the
+                middle span: a full-length fat cylinder STOLE the raycast
+                from the end targets (its r=0.16 surface sits nearer the ray
+                than the r=0.12 spheres — measured; the D2 closest-hit theft,
+                this time by our own collider) — the end zones belong to the
+                vertex targets EXCLUSIVELY. */}
             <mesh
               position={mid}
               quaternion={quaternionFromUnitY([(v[0] - u[0]) / len, (v[1] - u[1]) / len, (v[2] - u[2]) / len])}
               onClick={(e) => {
                 e.stopPropagation();
-                // the traced direction: the endpoint NEARER the click is the
-                // stroke's TAIL (the person starts the stroke where they touch)
-                const p = e.point;
-                const du = Math.hypot(p.x - u[0], p.y - u[1], p.z - u[2]);
-                const dv = Math.hypot(p.x - v[0], p.y - v[1], p.z - v[2]);
-                onPickEdge(edge.id, du <= dv ? 1 : -1);
+                onPickEdge(edge.id, null);
               }}
             >
-              <cylinderGeometry args={[0.16, 0.16, len, 6]} />
+              <cylinderGeometry args={[0.16, 0.16, len * 0.56, 6]} />
               <meshBasicMaterial transparent opacity={0} depthWrite={false} />
             </mesh>
+            {/* the two vertex TARGETS (visible + pickable; drawn faint until
+                traced — every choice the person has is on the page) */}
+            {(['u', 'v'] as const).map((endKey) => {
+              const at = endKey === 'u' ? targetU : targetV;
+              return (
+                <mesh
+                  key={`tail:${edge.id}:${endKey}`}
+                  // the name = the app-path witness's target handle (the
+                  // test-seam pattern): the leg finds + clicks the DISCRETE
+                  // vertex targets by name, never by proximity
+                  name={`trace-tail:${edge.id}:${endKey}`}
+                  position={at}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPickEdge(edge.id, endKey);
+                  }}
+                >
+                  <sphereGeometry args={[0.12, 12, 12]} />
+                  <meshBasicMaterial
+                    color={traced ? '#6b6252' : '#9a917e'}
+                    transparent
+                    opacity={traced ? 0.35 : 0.75}
+                    depthWrite={false}
+                  />
+                </mesh>
+              );
+            })}
             {/* a faint guide so every pickable class is visible while tracing */}
             {aHit === undefined && bHit === undefined ? (
               <Line points={[u, v]} color="#9a917e" lineWidth={1} transparent opacity={0.5} renderOrder={13} />
@@ -1172,7 +1245,7 @@ function SpecimenCard({
         )}
       </div>
       <div style={{ marginTop: 10, fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.5 }}>
-        esc · click paper — the specimen sinks, the reading clears
+        esc · double-click paper — the specimen sinks, the reading clears
       </div>
     </div>
   );
@@ -2790,19 +2863,85 @@ export default function ManuscriptView() {
       return null;
     }
   }, [cycleTrace, targetFor]);
-  // an edge pick — D3's walls fire LIVE (the engine's own sentences, at the
-  // moment of the pick, never sprung at the end)
-  const handleCyclePick = useCallback((edgeId: string, dir: 1 | -1): void => {
+  // G4 — THE COMPUTED PREVIEW (SEAL_THE_IDENTIFY_GESTURE): the surface each
+  // traced-so-far pair will make, read by CALLING the frozen
+  // `modesFromDirectedCycles` (⛔ reused, never reimplemented — the researcher
+  // confirmed screen-way ≠ canonical dir, so NO raw-visible causal story is
+  // sound; the only honest preview is the computation's own answer).
+  // Person-language on the page: preserving → BAND · reversing → TWIST.
+  // G5 rides per pair: flipping EITHER edge's tail toggles that pair's mode
+  // (mode = same-or-different of the two canonical-relative senses), so the
+  // counterfactual is always exactly the other word.
+  const cyclePreview = useMemo(() => {
+    if (!cycleTrace || !traceComplex || cycleTrace.entryRefusal) return null;
+    const n = Math.min(cycleTrace.walkA.length, cycleTrace.walkB.length);
+    if (n === 0) return null;
+    const A = cycleTrace.walkA.slice(0, n);
+    const B = cycleTrace.walkB.slice(0, n);
+    let modes: IdentifyMode[];
+    try {
+      modes = modesFromDirectedCycles(
+        traceComplex.target.shape,
+        traceComplex.complex,
+        A.map((t) => t.id),
+        B.map((t) => t.id),
+        A.map((t) => t.dir),
+        B.map((t) => t.dir),
+      );
+    } catch {
+      // an engine wall mid-trace (the panel's own notices carry those) —
+      // no preview is honest until the walls clear
+      return null;
+    }
+    const word = (m: IdentifyMode): 'band' | 'twist' => (m === 'preserving' ? 'band' : 'twist');
+    const bands = modes.filter((m) => m === 'preserving').length;
+    const twists = modes.length - bands;
+    const summary =
+      twists === 0
+        ? modes.length === 1
+          ? 'a band'
+          : `a band word (${bands} band)`
+        : bands === 0
+          ? modes.length === 1
+            ? 'a twist'
+            : `a twist word (${twists} twist)`
+          : `a mixed word (${bands} band · ${twists} twist)`;
+    // G6 — the commit STATES its result
+    const commitLabel =
+      twists === 0
+        ? 'confirm — sew into a band'
+        : bands === 0
+          ? 'confirm — sew into a twist'
+          : `confirm — sew into a mixed word (${bands} band · ${twists} twist)`;
+    return {
+      pairs: modes.map((m, k) => ({ aId: A[k].id, bId: B[k].id, word: word(m), other: word(m) === 'band' ? 'twist' : 'band' })),
+      summary,
+      commitLabel,
+    };
+  }, [cycleTrace, traceComplex]);
+  // a pick — D3's walls fire LIVE (the engine's own sentences, at the
+  // moment of the pick, never sprung at the end).
+  // THE REFINED GESTURE (SEAL_THE_IDENTIFY_GESTURE):
+  //   G1 — the tail is the VERTEX the person picked ('u' | 'v'); the dir
+  //        derives from THAT (⛔ never from click proximity);
+  //   G3 — a tap on an ALREADY-TRACED edge (any target, or its body) moves
+  //        the tail to the other end — a TRACE change by the same gesture,
+  //        in whichever walk holds the edge;
+  //   a body-tap (tail null) on an UNTRACED edge asks for a vertex.
+  const handleCyclePick = useCallback((edgeId: string, tail: 'u' | 'v' | null): void => {
     setCycleTrace((cur) => {
       if (!cur || cur.entryRefusal) return cur;
-      const inA = cur.walkA.some((t) => t.id === edgeId);
-      const inB = cur.walkB.some((t) => t.id === edgeId);
+      const flip = (walk: Array<{ id: string; dir: 1 | -1 }>) =>
+        walk.map((t) => (t.id === edgeId ? { ...t, dir: (t.dir * -1) as 1 | -1 } : t));
+      if (cur.walkA.some((t) => t.id === edgeId)) return { ...cur, walkA: flip(cur.walkA), notice: null };
+      if (cur.walkB.some((t) => t.id === edgeId)) return { ...cur, walkB: flip(cur.walkB), notice: null };
+      if (tail === null) {
+        return { ...cur, notice: 'tap the corner you start this edge from — the tail is the vertex you pick' };
+      }
+      const dir: 1 | -1 = tail === 'u' ? 1 : -1;
       if (cur.phase === 'A') {
-        if (inA) return { ...cur, notice: 'a walk repeats an edge class — each class may appear once' };
         return { ...cur, walkA: [...cur.walkA, { id: edgeId, dir }], notice: null };
       }
-      if (inB) return { ...cur, notice: 'a walk repeats an edge class — each class may appear once' };
-      if (inA) return { ...cur, notice: 'this edge class is in walk A — a class cannot be identified with itself' };
       return { ...cur, walkB: [...cur.walkB, { id: edgeId, dir }], notice: null };
     });
   }, []);
@@ -3216,7 +3355,15 @@ export default function ManuscriptView() {
         <group
           onClick={(event) => {
             event.stopPropagation();
-            pick(id, event.nativeEvent.shiftKey);
+            // ARMAN'S LAW (2026-08-07, direct word): summon is a DOUBLE-CLICK.
+            // A single click on a shape is INERT for selection — no flight,
+            // no sink, no reset animation on a stray tap. Shift-click keeps
+            // the combine arming (a deliberate chord, unchanged).
+            if (event.nativeEvent.shiftKey) {
+              pick(id, true);
+              return;
+            }
+            if (event.nativeEvent.detail >= 2) pick(id, false);
           }}
           onContextMenu={(event) => {
             event.stopPropagation();
@@ -3283,6 +3430,9 @@ export default function ManuscriptView() {
           if (event.type !== 'click') return;
           const down = pointerDownScreenRef.current;
           if (down && Math.abs(event.clientX - down.x) + Math.abs(event.clientY - down.y) > 6) return;
+          // ARMAN'S LAW: dismiss is a DOUBLE-CLICK on empty paper — a single
+          // stray click around the shape never sinks it
+          if (event.detail < 2) return;
           setSelected(null);
         }}
       >
@@ -3306,12 +3456,15 @@ export default function ManuscriptView() {
             // D2-GROUND RESIDUAL (SEAL_D2_GROUND_HATCH_PARITY): an orbit-DRAG
             // released over the paper raycasts THIS backdrop (an object click,
             // not a canvas miss — measured); the same drag/click discriminator
-            // applies — only a true click sinks the specimen
+            // applies — only a true click acts here
             const down = pointerDownScreenRef.current;
             if (down && Math.abs(event.clientX - down.x) + Math.abs(event.clientY - down.y) > 6) return;
+            closeMenus();
+            // ARMAN'S LAW: dismiss is a DOUBLE-CLICK — a single paper click
+            // only closes menus, never sinks the specimen
+            if (event.nativeEvent.detail < 2) return;
             setSelected(null);
             setCombineWith(null);
-            closeMenus();
           }}
           onContextMenu={(event) => {
             event.stopPropagation();
@@ -4314,8 +4467,10 @@ export default function ManuscriptView() {
           ) : (
             <>
               <div style={{ opacity: 0.85, fontSize: 11.5, marginBottom: 6 }}>
-                click the form's edges in order — where you touch is the stroke's tail; the mode IS the
-                direction you trace, there is nothing to switch
+                {/* G1/G3 — the ruled instruction (person's language; the old
+                    nothing-to-switch copy WAS the illegibility) */}
+                tap the corner you start each edge from — the tail lights there; tap a traced edge again
+                to move its tail to the other end
               </div>
               <div style={{ marginBottom: 6 }}>
                 <span style={{ color: TRACE_INK_A, fontWeight: 700 }}>A: {cycleTrace.walkA.length}</span>
@@ -4323,6 +4478,26 @@ export default function ManuscriptView() {
                 <span style={{ color: TRACE_INK_B, fontWeight: 700 }}>B: {cycleTrace.walkB.length}</span>
                 <span style={{ opacity: 0.7 }}> — tracing walk {cycleTrace.phase}</span>
               </div>
+              {cyclePreview ? (
+                // G4/G5 — THE COMPUTED PREVIEW (the frozen op's own answer,
+                // per pair) + the per-pair counterfactual (always exactly the
+                // other word — flipping either tail toggles the pair)
+                <div data-identify-preview style={{ marginBottom: 6, fontSize: 12 }}>
+                  <div style={{ fontSize: 10.5, letterSpacing: 1, opacity: 0.6, fontVariant: 'small-caps' }}>
+                    this seam will make
+                  </div>
+                  <div style={{ fontWeight: 700 }}>{cyclePreview.summary}</div>
+                  {cyclePreview.pairs.map((pair, k) => (
+                    <div key={`pv:${pair.aId}:${pair.bId}`} style={{ fontSize: 11.5, opacity: 0.85 }}>
+                      pair {k + 1}: <b>{pair.word}</b>
+                      <span style={{ opacity: 0.75 }}>
+                        {' '}
+                        — start either edge from its other end → a {pair.other}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               {cycleTrace.phase === 'A' ? (
                 <button
                   type="button"
@@ -4365,7 +4540,9 @@ export default function ManuscriptView() {
                     marginRight: 8,
                   }}
                 >
-                  confirm — sew the seam
+                  {/* G6 — the commit STATES its computed result; the bare
+                      label stands only while no preview exists (unmatched) */}
+                  {cyclePreview ? cyclePreview.commitLabel : 'confirm — sew the seam'}
                 </button>
               )}
               {cycleTrace.phase === 'B' && cycleTrace.walkA.length !== cycleTrace.walkB.length ? (

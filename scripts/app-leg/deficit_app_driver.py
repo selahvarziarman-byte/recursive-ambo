@@ -1056,6 +1056,189 @@ def drive_ring_modes(page):
     page.wait_for_timeout(150)
 
 
+def drive_identify(page):
+    # THE REFINED IDENTIFY GESTURE (SEAL_THE_IDENTIFY_GESTURE) — the app-path
+    # ratification: pick a VERTEX target (discrete — never click-proximity),
+    # watch the COMPUTED preview name the surface, re-tap to move the tail and
+    # watch the word FLIP (band↔twist — only a real computation can do this),
+    # and the commit STATES its result.
+    canvas = page.locator("canvas").first
+    box = canvas.bounding_box()
+    reset_button = page.get_by_text("Reset Camera", exact=True)
+    if reset_button.count() > 0:
+        reset_button.first.click()
+        page.wait_for_timeout(600)
+    # a fresh square (the palette-verified invoke — the ring-modes machinery)
+    invoked = False
+    xs = [0.12, 0.2, 0.3, 0.42, 0.88, 0.8, 0.7, 0.58]
+    ys = [0.62, 0.68, 0.56, 0.74, 0.5, 0.44, 0.8, 0.36, 0.3, 0.86]
+    for fx in xs:
+        if invoked:
+            break
+        for fy in ys:
+            x = box["x"] + box["width"] * fx
+            y = box["y"] + box["height"] * fy
+            tag = page.evaluate(
+                "([x, y]) => { const el = document.elementFromPoint(x, y); return el ? el.tagName : null; }",
+                [x, y],
+            )
+            if tag != "CANVAS":
+                continue
+            canvas.click(button="right", position={"x": box["width"] * fx, "y": box["height"] * fy})
+            page.wait_for_timeout(300)
+            item = page.locator('text="Square"')
+            if page.locator("text=invoke — real material").count() > 0 and item.count() > 0:
+                item.first.click()
+                page.wait_for_timeout(600)
+                invoked = True
+                break
+    if not invoked:
+        record("identify.drive", False, "no empty paper point opened the invoke palette")
+        return
+    # open the trace panel via the identify chip (aria-label, chrome-local)
+    chip = page.locator('button[aria-label="identify"]')
+    if chip.count() == 0:
+        record("identify.drive", False, "no identify chip")
+        return
+    chip.first.click()
+    page.wait_for_timeout(400)
+    record(
+        "identify.panelOpens",
+        page.get_by_text("identify — trace two walks", exact=False).count() > 0,
+        "the trace panel opens from the identify chip",
+    )
+    # the DISCRETE vertex targets ride the PER-FRAME seam (the D1 idiom —
+    # R3F's own camera/size space; a one-shot manual projection RACED the C1
+    # select-flight and missed, measured). SETTLE LOOP: wait until a target
+    # is ON-screen and stable (<3px over 400ms) — the flight's length varies
+    # with the sheet; then FRESH-read each target immediately before its tap.
+    seam_targets = None
+    stable = False
+    for _ in range(20):
+        seam_targets = page.evaluate("() => (window.__manuscriptCorrespondence ?? {}).traceTargets ?? null")
+        if seam_targets:
+            probe_name = sorted(seam_targets.keys())[0]
+            t1 = seam_targets[probe_name]
+            page.wait_for_timeout(400)
+            t2 = page.evaluate(
+                "(n) => ((window.__manuscriptCorrespondence ?? {}).traceTargets ?? {})[n] ?? null", probe_name
+            )
+            if t1 and t2 and t2.get("on") and abs(t2["x"] - t1["x"]) < 3 and abs(t2["y"] - t1["y"]) < 3:
+                stable = True
+                seam_targets = page.evaluate("() => (window.__manuscriptCorrespondence ?? {}).traceTargets ?? null")
+                break
+        else:
+            page.wait_for_timeout(400)
+    if not seam_targets or not stable:
+        record("identify.drive", False, "the trace targets never settled on-screen (the C1 flight)")
+        return
+    by_edge = {}
+    for name in seam_targets:
+        parts = name.split(":")
+        by_edge.setdefault(":".join(parts[1:-1]), []).append(name)
+    edges = [e for e, ns in by_edge.items() if len(ns) == 2]
+
+    def tap_until(candidate_names, expect_text):
+        # the crowded sheet: a neighbour body can OCCLUDE a specific target
+        # from this attitude (the raycast honestly hits the nearer form) —
+        # try candidates until the PANEL reflects the walk (the corr.pick
+        # candidate-retry idiom); fresh-read each target before its tap
+        for name in candidate_names:
+            t = page.evaluate(
+                "(n) => ((window.__manuscriptCorrespondence ?? {}).traceTargets ?? {})[n] ?? null", name
+            )
+            if not t or not t.get("on"):
+                continue
+            page.mouse.click(box["x"] + t["x"], box["y"] + t["y"])
+            page.wait_for_timeout(400)
+            if page.get_by_text(expect_text, exact=False).count() > 0:
+                return name
+        return None
+
+    # G1 — walk A: a discrete vertex target, candidate-retried until A: 1
+    hit_a = tap_until([n for e in edges for n in by_edge[e]], "A: 1")
+    if hit_a is None:
+        record("identify.drive", False, "no vertex target registered walk A (all candidates occluded?)")
+        return
+    edge_a = ":".join(hit_a.split(":")[1:-1])
+    walk_b = page.get_by_text("→ trace walk B", exact=False).first
+    if not walk_b.is_enabled():
+        record("identify.drive", False, "walk A registered but the phase button stayed disabled")
+        return
+    walk_b.click()
+    page.wait_for_timeout(250)
+    # walk B: a DISJOINT edge (no shared corner — min target distance), the
+    # same candidate retry until B: 1
+    b_candidates = []
+    for e in edges:
+        if e == edge_a:
+            continue
+        a_pts = [seam_targets[n] for n in by_edge[edge_a]]
+        b_pts = [seam_targets[n] for n in by_edge[e]]
+        dmin = min(((p["x"] - q["x"]) ** 2 + (p["y"] - q["y"]) ** 2) ** 0.5 for p in a_pts for q in b_pts)
+        if dmin > 30:
+            b_candidates.extend(by_edge[e])
+    hit_b = tap_until(b_candidates, "B: 1")
+    if hit_b is None:
+        record("identify.drive", False, "no disjoint vertex target registered walk B")
+        return
+    preview1 = page.evaluate(
+        "() => { const el = document.querySelector('[data-identify-preview]'); return el ? (el.textContent ?? '') : null; }"
+    )
+    word1 = "band" if (preview1 and "band" in preview1.split("start")[0]) else ("twist" if preview1 else None)
+    record(
+        "identify.previewComputed",
+        preview1 is not None and word1 in ("band", "twist") and "start either edge from its other end" in preview1,
+        f"preview: '{(preview1 or '')[:120]}' → word {word1} (computed via the frozen op; the counterfactual rides)",
+    )
+    # G3 + G4 — THE FLIP: re-tap the A-edge (either target — the tail moves)
+    # → the COMPUTED word must flip (band↔twist); only a real computation
+    # flips. Candidate-retry with WORD verification (an occluded target's
+    # tap is a no-op — the word not changing tells us to try the other end).
+    word2 = None
+    for name in by_edge[edge_a]:
+        t = page.evaluate(
+            "(n) => ((window.__manuscriptCorrespondence ?? {}).traceTargets ?? {})[n] ?? null", name
+        )
+        if not t or not t.get("on"):
+            continue
+        page.mouse.click(box["x"] + t["x"], box["y"] + t["y"])
+        page.wait_for_timeout(450)
+        p2 = page.evaluate(
+            "() => { const el = document.querySelector('[data-identify-preview]'); return el ? (el.textContent ?? '') : null; }"
+        )
+        w2 = "band" if (p2 and "band" in p2.split("start")[0]) else ("twist" if p2 else None)
+        if w2 is not None and w2 != word1:
+            word2 = w2
+            break
+    record(
+        "identify.flipFlipsPreview",
+        word1 is not None and word2 is not None and word1 != word2,
+        f"tail re-tap: {word1} → {word2} (the trace change flips the computed surface — the hidden control is now a visible, discrete choice)",
+    )
+    # G6 — the commit STATES the result (matches the current computed word)
+    commit_text = page.evaluate(
+        "() => { const els = [...document.querySelectorAll('button')]; const b = els.find((e) => (e.textContent ?? '').includes('confirm — sew')); return b ? (b.textContent ?? '').trim() : null; }"
+    )
+    record(
+        "identify.commitStates",
+        commit_text is not None and word2 is not None and f"into a {word2}" in commit_text,
+        f"commit label: '{commit_text}' (states the computed result)",
+    )
+    # the commit lands: the panel closes on success (the born identifies)
+    page.evaluate(
+        "() => { const els = [...document.querySelectorAll('button')]; const b = els.find((e) => (e.textContent ?? '').includes('confirm — sew')); if (b) b.click(); }"
+    )
+    page.wait_for_timeout(900)
+    record(
+        "identify.commitLands",
+        page.get_by_text("identify — trace two walks", exact=False).count() == 0,
+        "the panel closed — the identification committed (the born form rides the sheet)",
+    )
+    page.evaluate("() => window.scrollTo(0, 0)")
+    page.wait_for_timeout(150)
+
+
 def camera_state(page):
     # the PHASE A projection seam: the composed camera, read mechanically
     return page.evaluate(
@@ -1239,8 +1422,9 @@ def drive_camera(page):
         fit_after_drag.is_enabled(),
         f"Fit enabled after drag: {fit_after_drag.is_enabled()} · selection alive pre-down {pre_down} / post-down {post_down} / post-up {post_up}",
     )
-    # the deselect click aims at a far corner (the orbit just rotated the
-    # world — the old point may now sit on a body, which would SELECT)
+    # ARMAN'S LAW (2026-08-07, direct word): summon/dismiss is a DOUBLE-CLICK.
+    # A SINGLE empty-paper click is INERT (no sink, no reset animation); the
+    # DOUBLE-click dismisses. Both halves measured.
     deselect_pt = orbit_pt
     for fx, fy in ((0.08, 0.16), (0.92, 0.4), (0.06, 0.5), (0.5, 0.12)):
         x = box["x"] + box["width"] * fx
@@ -1253,11 +1437,15 @@ def drive_camera(page):
             deselect_pt = {"x": x, "y": y}
             break
     page.mouse.click(deselect_pt["x"], deselect_pt["y"])
+    page.wait_for_timeout(500)
+    single_inert = page.get_by_text("Fit Selected", exact=True).first.is_enabled()
+    page.mouse.dblclick(deselect_pt["x"], deselect_pt["y"])
     page.wait_for_timeout(600)
+    dbl_dismissed = not page.get_by_text("Fit Selected", exact=True).first.is_enabled()
     record(
         "residual.emptyClickDeselects",
-        not page.get_by_text("Fit Selected", exact=True).first.is_enabled(),
-        "a true empty-paper click deselects (Fit Selected disabled)",
+        single_inert and dbl_dismissed,
+        f"single empty click INERT (selection survives: {single_inert}) · double-click dismisses (Fit disabled: {dbl_dismissed}) — Arman's law",
     )
     # D2 persistence, second half: the deselect CLEARS the key (the marks
     # were present without hover while selected — the census took them cold)
@@ -1291,22 +1479,28 @@ def drive_camera(page):
         orbit_ok = qdot < 0.9995  # it rotated
     reset_button.first.click()
     page.wait_for_timeout(400)
-    pt = None
-    for fx in (0.3, 0.24, 0.4):
-        x = box["x"] + box["width"] * fx
-        y = box["y"] + box["height"] * 0.5
-        tag = page.evaluate(
-            "([x, y]) => { const el = document.elementFromPoint(x, y); return el ? el.tagName : null; }",
-            [x, y],
-        )
-        if tag == "CANVAS":
-            pt = {"x": x, "y": y}
-            break
+    # PALETTE-VERIFIED right-click retry: elementFromPoint says CANVAS even
+    # over a drawn FORM (the FormOpsMenu opens, not the palette) — on the
+    # crowded sheet the point must be retried until the PALETTE opens
     invoke_ok = False
-    if pt:
-        canvas.click(button="right", position={"x": pt["x"] - box["x"], "y": pt["y"] - box["y"]})
-        page.wait_for_timeout(400)
-        invoke_ok = page.locator("text=invoke — real material").count() > 0
+    for fx in (0.3, 0.24, 0.4, 0.16, 0.5, 0.62, 0.74, 0.86):
+        if invoke_ok:
+            break
+        for fy in (0.5, 0.34, 0.66, 0.2, 0.82):
+            x = box["x"] + box["width"] * fx
+            y = box["y"] + box["height"] * fy
+            tag = page.evaluate(
+                "([x, y]) => { const el = document.elementFromPoint(x, y); return el ? el.tagName : null; }",
+                [x, y],
+            )
+            if tag != "CANVAS":
+                continue
+            canvas.click(button="right", position={"x": x - box["x"], "y": y - box["y"]})
+            page.wait_for_timeout(350)
+            if page.locator("text=invoke — real material").count() > 0:
+                invoke_ok = True
+                break
+    if invoke_ok:
         page.keyboard.press("Escape")
         page.mouse.click(box["x"] + box["width"] * 0.9, box["y"] + box["height"] * 0.12)
         page.wait_for_timeout(300)
@@ -1395,6 +1589,12 @@ def main():
             drive_ring_modes(page)
         except Exception as error:  # noqa: BLE001
             record("ring.modesDrive", False, repr(error))
+        # THE REFINED IDENTIFY GESTURE — vertex-pick + computed preview + the
+        # flip + the stated commit (the mothership's ratification path)
+        try:
+            drive_identify(page)
+        except Exception as error:  # noqa: BLE001
+            record("identify.drive", False, repr(error))
         # PHASE A — the camera plate, judged LAST (everything above already
         # exercised the sheet at the default framing)
         try:

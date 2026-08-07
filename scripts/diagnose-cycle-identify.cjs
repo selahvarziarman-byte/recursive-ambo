@@ -256,8 +256,14 @@ check('★ §3 the confirm calls THE ONE SOURCE then the committed op — traced
   viewSrc.includes('modesFromDirectedCycles(') &&
     viewSrc.includes('identify(target.shape, cycleA, cycleB, modes') &&
     !/localeCompare|canonicalWedge|wedgeDir/i.test(viewSrc));
-check('★ §3 NO MODE CONTROL anywhere in the view (the mode words never appear as person-facing state)',
-  !/'preserving'|'reversing'/.test(viewSrc));
+check('★ §3 NO MODE CONTROL anywhere in the view — the mode words never appear as PERSON-FACING state: every occurrence of the frozen type values is a code COMPARISON (`=== \'preserving\'`), never a rendered string (SEAL_THE_IDENTIFY_GESTURE: the preview maps them to band/twist before the page sees anything)',
+  (() => {
+    const p = (viewSrc.match(/'preserving'/g) ?? []).length;
+    const pCmp = (viewSrc.match(/[=!]== 'preserving'/g) ?? []).length;
+    const r = (viewSrc.match(/'reversing'/g) ?? []).length;
+    const rCmp = (viewSrc.match(/[=!]== 'reversing'/g) ?? []).length;
+    return p === pCmp && r === rCmp;
+  })());
 check('§3 the REACH FIX: the pointer-missed clear is TRACE-GUARDED (a miss mid-trace keeps the walk — the guard stands FIRST; the D2-ground drag/click discriminator rides between it and the clear) and the collider is a FATTENED INVISIBLE proxy',
   /if \(cycleTraceRef\.current\) return;[\s\S]{0,900}?setSelected\(null\)/.test(viewSrc) &&
     viewSrc.includes('cylinderGeometry') &&
@@ -267,11 +273,11 @@ check("§3 the INK LAW: the walk inks are their OWN reserved species (never gene
     /TRACE_INK_B = '#3f7d5c'/.test(viewSrc) &&
     !viewSrc.includes("TRACE_INK_A = '#c2811d'") &&
     !viewSrc.includes("TRACE_INK_B = '#3e6db4'"));
-check('§3 the FOUR DOORS render in the PANEL (D1 counts + the subdivide cure · D2 at entry · D3 live · D4 the bodiless catch)',
+check('§3 the FOUR DOORS render in the PANEL (D1 counts + the subdivide cure · D2 at entry · D3 live · D4 the bodiless catch) — D3\'s live door is the REFINED gesture\'s (SEAL_THE_IDENTIFY_GESTURE): the repeat-notice is SUPERSEDED by the G3 re-tap flip (a re-tap is the correction, not an error), and the live pick door asks for a VERTEX on a body-tap',
   viewSrc.includes('the walks must be matched — A has') &&
     viewSrc.includes('subdivide (the chord gesture) to equalize') &&
     viewSrc.includes('cycleTrace.entryRefusal') &&
-    viewSrc.includes('a walk repeats an edge class') &&
+    viewSrc.includes('tap the corner you start this edge from') &&
     viewSrc.includes('buildBodilessWrittenForm(') &&
     viewSrc.includes('identify — enacted; the render refused the body'));
 check('§3 the pairing is LIVE (the i-th A-stroke lights as the i-th B lands) and the strokes are NIBS (thick tail → thin head), not arrows',

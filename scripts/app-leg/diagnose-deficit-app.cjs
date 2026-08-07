@@ -265,6 +265,25 @@ function killTree(pid) {
             );
           })(),
           get('regs.dockClearOfDoor').detail);
+        // THE REFINED IDENTIFY GESTURE (SEAL_THE_IDENTIFY_GESTURE) — live
+        check('§E-IDENTIFY ★★ THE TAIL IS A VERTEX YOU PICK + THE COMPUTED PREVIEW + THE FLIP + THE STATED COMMIT: the trace panel opens; a DISCRETE vertex target starts each edge (the click-proximity `du <= dv` inference is DELETED — source-pinned below); the preview names the surface by CALLING the frozen mode computation (band/twist + the per-pair counterfactual); RE-TAPPING the traced edge moves the tail and the computed word FLIPS (band↔twist — only a real computation flips); the commit label STATES the result and the commit lands',
+          get('identify.panelOpens').ok && get('identify.previewComputed').ok && get('identify.flipFlipsPreview').ok && get('identify.commitStates').ok && get('identify.commitLands').ok,
+          `${get('identify.previewComputed').detail} · ${get('identify.flipFlipsPreview').detail} · ${get('identify.commitStates').detail}`);
+        check('§E-IDENTIFY THE GESTURE IS DISCRETE + PERSON-LANGUAGE + THE FROZEN BOUNDARY HELD (source-pinned): `du <= dv` is GONE from the view; the overlay carries named trace-tail vertex targets and the pick derives dir from the PICKED vertex; the preview memo CALLS modesFromDirectedCycles (a second call site beside the commit — reuse, never a reimplementation); no raw-visible "tails run with" causal story; the panel speaks band/twist (the old nothing-to-switch copy is gone); complexIdentification.ts byte-identity rides its FROZEN manifest row, enforced by diagnose-engine-freeze every suite run (this orchestrator deliberately does NOT name the manifest — it carries write APIs for the lift parcels, and the freeze grep-proof forbids that pairing)',
+          (() => {
+            const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+            return (
+              !viewSrc.includes('du <= dv') &&
+              viewSrc.includes("name={`trace-tail:${edge.id}:${endKey}`}") &&
+              viewSrc.includes("const dir: 1 | -1 = tail === 'u' ? 1 : -1;") &&
+              (viewSrc.match(/modesFromDirectedCycles\(/g) ?? []).length >= 2 &&
+              !viewSrc.includes('tails run') &&
+              viewSrc.includes('tap the corner you start each edge from') &&
+              !viewSrc.includes('there is nothing to switch') &&
+              viewSrc.includes("'confirm — sew into a band'")
+            );
+          })(),
+          'the discrete-gesture + frozen-boundary pins');
         // THE FIELD DOOR (SEAL_THE_FIELD_DOOR_AND_TEST_SPECIMENS) — live
         check('§E-FIELD ★ THE 3-STATE LAW + THE PERSON\'S LANGUAGE: the door-gated field is ABSENT when closed (field-layer census 0 — not drawn, not merely recessed) while the always-present registers stay RECESSED (deficit-register still drawn); opening puts the register FULL (the state law — the layer DRAWS iff the field PLATES, and no leg-reachable specimen\'s field plates at HEAD: finding #3, the drawn-when-plated law riding diagnose-the-field-in-the-specimen); re-closing returns ABSENT; the door copy is the designer\'s ruled person-language ("the field — show it" / "shown · other marks step back") with ZERO memo words ("recessed"/"promoted") on the page; with the door open the specimen holds FIELD-SLOT + DEFICIT + KEY together (the closest-to-four stand-up — generators are the b₁ gap, §14)',
           get('regs.fieldAbsentClosed').ok && get('regs.fieldShownOpen').ok && get('regs.doorCopy').ok && get('regs.threeRegisterTogether').ok &&
@@ -336,8 +355,16 @@ function killTree(pid) {
         // THE D2 GROUND (SEAL_D2_GROUND_HATCH_PARITY) — live
         check('§E-HATCH ★★ THE D2 GROUND IS HATCHED: the placed flat lift\'s PLAIN body carries the hatch ShaderMaterial (grey from lines, the crafted key-light shading — not a fill wash); the material census reads it on the live written bodies',
           get('hatch.plain').ok, get('hatch.plain').detail);
-        check('§E-RESIDUAL-ORBIT ★ THE DRAG KEEPS THE SUBJECT: an orbit-drag release does NOT deselect (the plate + the designer\'s two-angle look survive); a TRUE empty-paper click still deselects — the drag/click discriminator holds both ways',
-          get('residual.orbitKeepsSelection').ok && get('residual.emptyClickDeselects').ok,
+        check('§E-RESIDUAL-ORBIT ★ THE DRAG KEEPS THE SUBJECT + ARMAN\'S DOUBLE-CLICK LAW (2026-08-07, his direct word): an orbit-drag release does NOT deselect; a SINGLE empty-paper click is INERT (no sink — the stray-tap reset animation is gone); the DOUBLE-CLICK dismisses; the drag/click discriminator still guards both. Source-pinned: the summon (pick) fires only at detail ≥ 2 (shift-click keeps the combine arm), both dismiss doors demand detail ≥ 2, the card hint reads double-click',
+          get('residual.orbitKeepsSelection').ok && get('residual.emptyClickDeselects').ok &&
+            (() => {
+              const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+              return (
+                viewSrc.includes('if (event.nativeEvent.detail >= 2) pick(id, false);') &&
+                (viewSrc.match(/detail < 2\) return;/g) ?? []).length === 2 &&
+                viewSrc.includes('esc · double-click paper')
+              );
+            })(),
           `${get('residual.orbitKeepsSelection').detail} · ${get('residual.emptyClickDeselects').detail}`);
         check('§E-RESIDUAL-CHROME the CameraDock stands clear of the aperture toggle (bounding boxes disjoint — the bottom-right stack is gone)',
           get('residual.chromeDisjoint').ok, get('residual.chromeDisjoint').detail);
