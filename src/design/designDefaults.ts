@@ -337,6 +337,14 @@ export const manuscriptDefaults = {
       hatchThresholdB: 0.74, // the second, steeper family
       darkSolid: 0.9, // the mask's dark material (inert today — real openings; arms when a dark-material mask lands)
     },
+    // RUNG 1 — THE EXPLORE WINDOW (FAT CHARTER 2026-08-07): the walked
+    // inside-view. Craft/pacing only — the frames are traceAperture's, the
+    // walk is the engine's own transport; no knob invents a copy or a step.
+    explore: {
+      resolution: 128, // the window's own trace raster (px) — walking cadence over pixel fetish
+      pace: 0.32, // advance, world units/s — a cloister walk, not a flight sim
+      lookSensitivity: 0.004, // rad/px of drag
+    },
     // P-IMMERSE — the honest non-manifold flag: WHICH edges are junctions is
     // the classifier's slot-count reading (>2 face wedges); the knob is ink only.
     junction: {

@@ -1239,6 +1239,320 @@ def drive_identify(page):
     page.wait_for_timeout(150)
 
 
+def project_group_center(page, name_prefix):
+    # project a named scene group's world origin to CSS pixels via the app's
+    # OWN camera/size (the proven seam idiom — never a hand projection)
+    return page.evaluate(
+        """(prefix) => {
+      const scene = window.__manuscriptScene, camera = window.__manuscriptCamera;
+      if (!scene || !camera) return null;
+      let target = null;
+      scene.traverse((o) => { if (!target && o.name && o.name.startsWith(prefix)) target = o; });
+      if (!target) return null;
+      target.updateWorldMatrix(true, false);
+      const v = new target.position.constructor();
+      target.getWorldPosition(v);
+      v.project(camera);
+      const canvas = document.querySelector('canvas');
+      const r = canvas.getBoundingClientRect();
+      return { x: r.x + ((v.x + 1) / 2) * r.width, y: r.y + ((1 - v.y) / 2) * r.height, ndcZ: v.z };
+    }""",
+        name_prefix,
+    )
+
+
+def explore_seam(page):
+    return page.evaluate(
+        """() => {
+      const s = window.__exploreWindow;
+      if (!s) return null;
+      return { open: s.open, title: s.title, eye: s.eye, forward: s.forward, crossings: s.crossings,
+               traces: s.traces, looks: s.looks, advances: s.advances, restCounts: s.restCounts,
+               caption: s.caption, deltas: s.deltas };
+    }"""
+    )
+
+
+def select_dim3(page, group_prefix, expect_fit=True):
+    # ARMAN'S LAW: summon is a DOUBLE-CLICK; project the room's own group
+    page.evaluate("() => window.scrollTo(0, 0)")
+    pt = project_group_center(page, group_prefix)
+    if pt is None:
+        return False
+    page.mouse.dblclick(pt["x"], pt["y"])
+    page.wait_for_timeout(1200)  # the C1 select flight settles
+    if not expect_fit:
+        return True
+    fit = page.get_by_text("Fit Selected", exact=True)
+    return fit.count() > 0
+
+
+def drive_explore(page):
+    # RUNG 1 — THE EXPLORE WINDOW (FAT CHARTER 2026-08-07): doorway → rest
+    # recurrence → look → advance (the eye carried through a paired face by
+    # the engine's own isometry — measured seamless) → horizon caption →
+    # close → shell intact; then the THRESHOLD on a person-built cone room
+    # and a folded body — the door refuses BY NAME, the window never opens.
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(250)
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(250)
+
+    # ---- the shell's own caption, captured COLD (deselected): the selected
+    # shape's row label leaves the DOM (`hidden={selected === id}` — the card
+    # takes over), so the byte-equal comparison brackets the WHOLE journey:
+    # capture before the summon, compare after everything, deselected again
+    capture_t3_caption = """() => {
+      const nodes = [...document.querySelectorAll('div,span')].filter((n) => n.textContent.includes('E³ · n=[4,4,4]'));
+      if (nodes.length === 0) return null;
+      nodes.sort((a, b) => a.textContent.length - b.textContent.length);
+      return nodes[0].textContent;
+    }"""
+    shell_caption_before = page.evaluate(capture_t3_caption)
+    record("explore.shellCaption", bool(shell_caption_before), f"cold shell caption: {str(shell_caption_before)[:120]}")
+
+    selected = select_dim3(page, "written:dim3:t3")
+    record("explore.selectT3", selected, "double-click summons the three-torus room")
+    if not selected:
+        return
+
+    # ---- E-DOORWAY: the dock chip opens the window; the shell stays operable
+    chip = page.locator('button[aria-label="explore inside"]')
+    record("explore.chipPresent", chip.count() > 0, "the doorway chip rides the dock")
+    chip.first.click()
+    page.wait_for_timeout(400)
+    window_open = page.locator("[data-explore-window]").count() > 0
+    title_ok = page.get_by_text("T³ — identified cube", exact=False).count() > 0
+    fit_enabled = page.get_by_text("Fit Selected", exact=True).count() > 0
+    card_behind = page.get_by_text("on select", exact=True).count() > 0
+    record(
+        "explore.doorwayOpens",
+        window_open and title_ok,
+        f"window {window_open} · titled {title_ok}",
+    )
+    record(
+        "explore.shellOperableBehind",
+        fit_enabled and card_behind,
+        f"Fit present {fit_enabled} · the specimen card still stands behind the window {card_behind}",
+    )
+    if not window_open:
+        return
+
+    # ---- E-REST-RECURRENCE + E-HORIZON: the standing frame already recurs --
+    try:
+        page.wait_for_function(
+            "() => window.__exploreWindow && window.__exploreWindow.restCounts !== null",
+            timeout=40000,
+        )
+    except Exception:
+        pass
+    seam = explore_seam(page)
+    rest = seam and seam["restCounts"]
+    record(
+        "explore.restRecurrence",
+        bool(rest) and rest["masks"] >= 2 and seam["looks"] == 0 and seam["advances"] == 0,
+        f"standing corridor: {rest and rest['masks']} masks · {rest and rest['hands']} hands before ANY gesture",
+    )
+    caption_ok = bool(seam and seam["caption"] and "orbit (visible):" in seam["caption"] and "copies shown to depth" in seam["caption"])
+    record(
+        "explore.horizonCaption",
+        caption_ok,
+        f"caption: {seam and seam['caption']}",
+    )
+
+    # ---- E-DRIVEABLE: look (drag rotates forward) --------------------------
+    canvas = page.locator("[data-explore-canvas]")
+    box = canvas.bounding_box()
+    cx = box["x"] + box["width"] * 0.5
+    cy = box["y"] + box["height"] * 0.5
+    fwd_before = seam["forward"]
+    page.mouse.move(cx, cy)
+    page.mouse.down()
+    for i in range(1, 9):
+        page.mouse.move(cx + i * 10, cy + i * 2)
+        page.wait_for_timeout(30)
+    page.mouse.up()
+    page.wait_for_timeout(600)
+    seam = explore_seam(page)
+    fwd_after = seam["forward"]
+    dot = sum(a * b for a, b in zip(fwd_before, fwd_after))
+    record(
+        "explore.lookTurns",
+        seam["looks"] >= 1 and dot < 0.999,
+        f"forward turned (dot {round(dot, 4)}) · looks {seam['looks']} · traces {seam['traces']}",
+    )
+
+    # ---- E-DRIVEABLE + E-NO-CROSSING: advance; the crossing is seamless ----
+    eye_before = seam["eye"]
+    crossings_before = seam["crossings"]
+    page.mouse.move(cx, cy)
+    page.mouse.down()
+    # the cell spans [-1,1]³ (measured): the first paired face along the
+    # default forward sits ~1.69 units out — at the 0.32 u/s cloister pace
+    # the crossing fires ~5.3 s in; hold well past it (under leg-machine
+    # load the worker frames arrive ~2.5 s apart)
+    page.wait_for_timeout(9400)
+    page.mouse.up()
+    # let the settle frame (the release's own trace) land and record its delta
+    page.wait_for_timeout(2600)
+    seam = explore_seam(page)
+    eye_after = seam["eye"]
+    moved = sum((a - b) ** 2 for a, b in zip(eye_before, eye_after)) ** 0.5
+    crossed_n = seam["crossings"] - crossings_before
+    record(
+        "explore.advanceWalks",
+        seam["advances"] >= 1 and (moved > 0.12 or crossed_n >= 1),
+        f"eye moved {round(moved, 3)} in-chart · crossings {crossings_before}→{seam['crossings']} · advances {seam['advances']}",
+    )
+    # the crossing pair may land on the settle frame (post-release) — a
+    # crossing can only be TAKEN while advancing, so crossed deltas count
+    # from ANY frame; the comparison band is the ordinary advancing frames
+    crossed = [d["delta"] for d in seam["deltas"] if d["crossed"]]
+    plain = [d["delta"] for d in seam["deltas"] if d["gesture"] == "advance" and not d["crossed"]]
+    seam_free = bool(crossed) and bool(plain) and max(crossed) <= max(plain) * 1.75 + 0.002
+    record(
+        "explore.noCrossingMark",
+        crossed_n >= 1 and seam_free,
+        f"the crossing frames look like every walking frame: max crossed Δ {crossed and round(max(crossed), 4)} vs max plain Δ {plain and round(max(plain), 4)} over {len(plain)} walking + {len(crossed)} crossing frames",
+    )
+
+    # ---- E-SHELL-INTACT: close returns to the untouched shell --------------
+    page.get_by_text("close — return to the shell", exact=True).click()
+    page.wait_for_timeout(500)
+    window_gone = page.locator("[data-explore-window]").count() == 0
+    fit_still = page.get_by_text("Fit Selected", exact=True).count() > 0
+    # (the caption comparison lands at the END of the drive, deselected —
+    # the selected row's label is honestly absent from the DOM)
+
+    # ---- the CARD doorway + the Esc law ------------------------------------
+    card_door = page.locator("[data-explore-door] button")
+    record("explore.cardDoorPresent", card_door.count() > 0, "the card's own doorway row (the charter's card-frame site)")
+    if card_door.count() > 0:
+        card_door.first.click()
+        page.wait_for_timeout(400)
+        reopened = page.locator("[data-explore-window]").count() > 0
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(400)
+        esc_closed = page.locator("[data-explore-window]").count() == 0
+        still_selected = page.get_by_text("Fit Selected", exact=True).count() > 0
+        record(
+            "explore.cardDoorAndEsc",
+            reopened and esc_closed and still_selected,
+            f"card door opens {reopened} · esc closes the window ALONE {esc_closed} · selection survives {still_selected}",
+        )
+
+    # ---- E-THRESHOLD-REFUSAL: a person-built CONE room refuses at the door -
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(300)
+    page.get_by_text("aperture — build a 3-manifold", exact=True).click()
+    page.wait_for_timeout(400)
+    panel_up = page.get_by_text("the aperture — build a 3-manifold", exact=False).count() > 0
+    record("explore.aperturePanel", panel_up, "the build panel opens")
+    if panel_up:
+        # the panel's OWN selects (never Leva's hidden ones): the face pickers
+        # carry the cube face ids as option values
+        # anchor on a face NEITHER build ever picks ('back'): it stays in
+        # EVERY face select's option list throughout, so nth(0)/nth(1) are
+        # row 1's A/B by DOM order (a picked face drops out of the OTHER
+        # selects' choices — run 2's timeout, cured)
+        face_selects = page.locator('select:has(option[value="face:cube:back"])')
+        # pair 1: left ~ right, the FLAT map (one glued pair ⇒ a bounded
+        # Euclidean cone-manifold — measured in grounding, kind !== E3)
+        face_selects.nth(0).select_option("face:cube:left")
+        page.wait_for_timeout(200)
+        face_selects.nth(1).select_option("face:cube:right")
+        page.wait_for_timeout(400)
+        page.evaluate(
+            """() => {
+          const maps = [...document.querySelectorAll('select')].find(
+            (s) => [...s.options].some((o) => /^d[+-]/.test(o.value)));
+          if (maps && maps.options.length > 1) {
+            maps.value = maps.options[1].value;
+            maps.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }"""
+        )
+        page.wait_for_timeout(300)
+        page.get_by_text("glue — the S² gate judges", exact=True).click()
+        page.wait_for_timeout(1500)
+        cone_built = select_dim3(page, "written:dim3:built-")
+        record("explore.coneRoomBuilt", cone_built, "one glued pair — the bounded cone room joins the dim-3 band")
+        if cone_built:
+            page.locator('button[aria-label="explore inside"]').first.click()
+            page.wait_for_timeout(400)
+            refusal = page.locator("[data-explore-refusal]")
+            refusal_text = refusal.first.text_content() if refusal.count() > 0 else ""
+            no_window = page.locator("[data-explore-window]").count() == 0
+            record(
+                "explore.thresholdRefusesCone",
+                refusal.count() > 0 and "this door does not open" in (refusal_text or "") and no_window,
+                f"refused at the door: {refusal_text} · window absent {no_window}",
+            )
+        # ---- the FOLDED body refuses too (left ~ top, the d+1 map folds) ----
+        # the panel STAYED OPEN through the cone glue (a successful glue
+        # resets the rows, never the panel) — reopen only if it closed; the
+        # header ("the aperture — …") is present exactly when open, and the
+        # empty rows show the named refusal in place of the glue button
+        if page.get_by_text("the aperture — build a 3-manifold", exact=True).count() == 0:
+            page.get_by_text("aperture — build a 3-manifold", exact=True).click()
+        page.wait_for_timeout(400)
+        # anchor on a face NEITHER build ever picks ('back'): it stays in
+        # EVERY face select's option list throughout, so nth(0)/nth(1) are
+        # row 1's A/B by DOM order (a picked face drops out of the OTHER
+        # selects' choices — run 2's timeout, cured)
+        face_selects = page.locator('select:has(option[value="face:cube:back"])')
+        face_selects.nth(0).select_option("face:cube:left")
+        page.wait_for_timeout(200)
+        face_selects.nth(1).select_option("face:cube:top")
+        page.wait_for_timeout(400)
+        page.evaluate(
+            """() => {
+          const maps = [...document.querySelectorAll('select')].find(
+            (s) => [...s.options].some((o) => /^d[+-]/.test(o.value)));
+          if (maps) {
+            const want = [...maps.options].find((o) => o.value === 'd+1');
+            if (want) {
+              maps.value = 'd+1';
+              maps.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          }
+        }"""
+        )
+        page.wait_for_timeout(300)
+        page.get_by_text("glue — the S² gate judges", exact=True).click()
+        page.wait_for_timeout(1500)
+        folded_wall = page.get_by_text("not free", exact=False).count() > 0
+        record("explore.foldedBuilt", folded_wall, "the fold wall speaks (the orbifold joins the folded shelf)")
+        page.get_by_text("close the aperture gate", exact=True).click()
+        page.wait_for_timeout(300)
+        folded_selected = select_dim3(page, "written:dim3f:", expect_fit=False)
+        if folded_selected:
+            page.locator('button[aria-label="explore inside"]').first.click()
+            page.wait_for_timeout(400)
+            refusal = page.locator("[data-explore-refusal]")
+            refusal_text = refusal.first.text_content() if refusal.count() > 0 else ""
+            no_window = page.locator("[data-explore-window]").count() == 0
+            record(
+                "explore.thresholdRefusesFolded",
+                refusal.count() > 0 and "orbifold" in (refusal_text or "") and no_window,
+                f"refused at the door: {refusal_text} · window absent {no_window}",
+            )
+        else:
+            record("explore.thresholdRefusesFolded", False, "could not summon the folded body")
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(600)
+    # ---- E-SHELL-INTACT, the caption half: deselected again, the T³ row's
+    # own label is back in the DOM — byte-equal across the ENTIRE journey
+    # (window · gestures · close · card door · Esc · two threshold builds)
+    shell_caption_after = page.evaluate(capture_t3_caption)
+    record(
+        "explore.shellIntactOnReturn",
+        # never a VACUOUS equality: a None capture is a red, not an agreement
+        window_gone and fit_still and bool(shell_caption_before) and shell_caption_after == shell_caption_before,
+        f"window closed {window_gone} · selection held at close {fit_still} · caption captured {bool(shell_caption_before)} and unchanged across the journey {bool(shell_caption_before) and shell_caption_after == shell_caption_before}",
+    )
+
+
 def camera_state(page):
     # the PHASE A projection seam: the composed camera, read mechanically
     return page.evaluate(
@@ -1595,12 +1909,22 @@ def main():
             drive_identify(page)
         except Exception as error:  # noqa: BLE001
             record("identify.drive", False, repr(error))
-        # PHASE A — the camera plate, judged LAST (everything above already
-        # exercised the sheet at the default framing)
+        # PHASE A — the camera plate (everything above already exercised the
+        # sheet at the default framing; runs BEFORE explore, whose dblclick
+        # summons deliberately re-fly the camera and clear the lift selection
+        # the plate/residual measurements depend on)
         try:
             drive_camera(page)
         except Exception as error:  # noqa: BLE001
             record("camera.drive", False, repr(error))
+        # RUNG 1 — THE EXPLORE WINDOW: doorway · rest recurrence · the two
+        # gestures · the seamless crossing · horizon · shell intact · the
+        # threshold refusals (cone + folded), all on the running app. Judged
+        # LAST: its summons/builds are free to move the sheet.
+        try:
+            drive_explore(page)
+        except Exception as error:  # noqa: BLE001
+            record("explore.drive", False, repr(error))
 
         record("console", len(console_errors) == 0, "; ".join(console_errors[:4]))
         browser.close()

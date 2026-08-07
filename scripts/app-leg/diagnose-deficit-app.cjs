@@ -149,7 +149,10 @@ function killTree(pid) {
           [path.join(__dirname, 'deficit_app_driver.py'), '--url', URL, '--lift-files', lift.files.join(',')],
           {
             encoding: 'utf8',
-            timeout: 300000,
+            // RUNG 1 raised the drive's floor: the explore sections add the
+            // doorway, a 7.6 s sustained walk (the crossing), and two
+            // threshold room builds — the old 300 s ceiling truncated the run
+            timeout: 480000,
           },
         );
       } catch (error) {
@@ -368,11 +371,70 @@ function killTree(pid) {
           `${get('residual.orbitKeepsSelection').detail} · ${get('residual.emptyClickDeselects').detail}`);
         check('§E-RESIDUAL-CHROME the CameraDock stands clear of the aperture toggle (bounding boxes disjoint — the bottom-right stack is gone)',
           get('residual.chromeDisjoint').ok, get('residual.chromeDisjoint').detail);
+        // RUNG 1 — THE EXPLORE WINDOW (FAT CHARTER 2026-08-07): the doorway,
+        // the driveable eye, and the five invariants, on the RUNNING app
+        check('§E-DOORWAY ★★ THE WINDOW OPENS FROM THE SHAPE AND THE SHELL STAYS OPERABLE: double-click summons T³, the dock\'s `explore inside` chip opens the titled window, the specimen card AND the Fit control still stand BEHIND it (the shell is the operable representative; the window is where the inside-truth lives)',
+          get('explore.selectT3').ok && get('explore.chipPresent').ok && get('explore.doorwayOpens').ok && get('explore.shellOperableBehind').ok,
+          `${get('explore.doorwayOpens').detail} · ${get('explore.shellOperableBehind').detail}`);
+        check('§E-REST-RECURRENCE ★★ THE STANDING CORRIDOR ALREADY RECURS: the window\'s first walked frame counts ≥ 2 mask copies BEFORE any gesture (looks 0 · advances 0 at capture) — if it needed motion to read that the space repeats, it would go RED here (the designer\'s first and hardest gate)',
+          get('explore.restRecurrence').ok, get('explore.restRecurrence').detail);
+        check('§E-DRIVEABLE ★★ THE TWO GESTURES DRIVE THE EYE: a drag TURNS forward (the look), a sustained hold MOVES the eye along forward (the advance — a cloister pace, no strafe/roll/speed switch exists to pin), and the walked frames keep arriving through the worker',
+          get('explore.lookTurns').ok && get('explore.advanceWalks').ok,
+          `${get('explore.lookTurns').detail} · ${get('explore.advanceWalks').detail}`);
+        check('§E-NO-CROSSING ★★ THE CARRY IS SEAMLESS, MEASURED: the sustained walk CROSSED a paired face (the eye carried back by the engine\'s own isometry) and the crossing frames\' image deltas sit INSIDE the ordinary walking-frame band (max crossed Δ ≤ 1.75 × max plain Δ + ε) — a wrong or marked transport explodes exactly here; no seam/flash element exists to draw (source-pinned below)',
+          get('explore.noCrossingMark').ok, get('explore.noCrossingMark').detail);
+        check('§E-HORIZON + E-CAPTION-COUNTABLE ★ THE LIMIT OF SIGHT IS NAMED AND THE CAPTION COUNTS: the live window caption carries the committed countable orbit (`orbit (visible): N masks` · the hands\' LEFT count) AND `copies shown to depth N`; the un-hit void is EXACTLY paper by the ink\'s own law (no black wall — apertureInk untouched, its witness standing)',
+          get('explore.horizonCaption').ok, get('explore.horizonCaption').detail);
+        check('§E-THRESHOLD-REFUSAL ★★ NON-E³ REFUSES AT THE DOOR, BY NAME: a person-built one-pair room (a bounded Euclidean cone-manifold, measured in grounding) and a FOLDED body (left~top d+1 — the orbifold) both refuse at the doorway with the reason (cone edges · fold loci) and the window NEVER mounts — the habitat opens or it doesn\'t (never a smear)',
+          get('explore.coneRoomBuilt').ok && get('explore.thresholdRefusesCone').ok && get('explore.foldedBuilt').ok && get('explore.thresholdRefusesFolded').ok,
+          `${get('explore.thresholdRefusesCone').detail} · ${get('explore.thresholdRefusesFolded').detail}`);
+        check('§E-SHELL-INTACT ★★ CLOSE RETURNS TO THE UNHARMED SHELL + THE CARD DOORWAY + THE ESC LAW: closing the window leaves the SAME shell caption byte-equal, the selection held, and the Fit control live; the card\'s own doorway row re-opens the window; Esc closes the window ALONE (the selection survives — the shell is never falsified)',
+          get('explore.shellIntactOnReturn').ok && get('explore.cardDoorPresent').ok && get('explore.cardDoorAndEsc').ok,
+          `${get('explore.shellIntactOnReturn').detail} · ${get('explore.cardDoorAndEsc').detail}`);
+        check('§E-EXPLORE THE SUBSTRATE HOLDS ITS LAWS (source-pinned): the walk consumes the aperture\'s EXPORTED applyPoint/applyVector on the witnessed deck (the transport math is never re-derived — apertureModel byte-untouched rides its NOT_FROZEN row + diagnose-the-aperture); the window\'s opening frame IS the tracer\'s own default frame (both literals byte-equal in model and tracer); the threshold law is TOTAL (E³ opens · cone · folded · the surface\'s later-rung declaration · the greyed chip\'s word); the window is a thin hand (renderApertureInk + apertureCaption verbatim, no π₁/fundamental-group word anywhere in the new files); the worker rides the fieldWorker idiom (module URL + type module); the Esc guard closes the window FIRST',
+          (() => {
+            const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/exploreWindowModel.ts'), 'utf8');
+            const windowSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ExploreWindow.tsx'), 'utf8');
+            const workerSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/exploreTraceWorker.ts'), 'utf8');
+            const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+            const apertureSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
+            return (
+              /import \{[^}]*applyPoint,[^}]*applyVector,/.test(modelSrc.replace(/\r/g, '')) &&
+              !/const\s+deckCompose|function\s+fitRigid|function\s+fitDeckIsometry/.test(modelSrc) &&
+              modelSrc.includes('eye: [-0.38, -0.3, -0.05]') &&
+              modelSrc.includes('forward: [0.8, 0.55, 0.12]') &&
+              apertureSrc.includes('options.eye ?? [-0.38, -0.3, -0.05]') &&
+              apertureSrc.includes('options.forward ?? [0.8, 0.55, 0.12]') &&
+              modelSrc.includes("if (geometry.kind === 'E3') return { opens: true };") &&
+              modelSrc.includes("if (geometry.kind === 'folded')") &&
+              modelSrc.includes('EXPLORE_SURFACE_LATER') &&
+              modelSrc.includes('EXPLORE_NEEDS_ROOM') &&
+              viewSrc.includes('setExploreRefusal({ key: selected, reason: EXPLORE_SURFACE_LATER });') &&
+              viewSrc.includes('data-explore-refusal') &&
+              viewSrc.includes('if (exploreOpenRef.current) {') &&
+              windowSrc.includes('renderApertureInk(trace, liveRef.current.ink)') &&
+              windowSrc.includes('apertureCaption(liveRef.current.geometry, trace.counts)') &&
+              windowSrc.includes('copies shown to depth') &&
+              !/π₁|fundamental group/.test(modelSrc) &&
+              !/π₁|fundamental group/.test(windowSrc) &&
+              workerSrc.includes('traceAperture({') &&
+              workerSrc.includes('trace.normal.buffer') &&
+              viewSrc.includes("new Worker(new URL('./exploreTraceWorker.ts', import.meta.url), { type: 'module' })") &&
+              !/minimap|you are here|orbit diagram/.test(windowSrc)
+            );
+          })(),
+          'the walk/threshold/caption substrate pins');
         // E4 hygiene
         check('§E4 CONSOLE CLEAN — no error logged across the whole drive (favicon noise excluded)',
           get('console').ok, get('console').detail);
         if (driverExit !== 0 && failures === 0) {
-          check('§0 the driver exit agrees with the clauses', false, `driver exit ${driverExit}`);
+          // NAME the orphan: a red record no clause consumes must not hide
+          // behind a bare exit code (run 4's find — the caption capture)
+          const reds = Object.entries(verdict.results ?? {})
+            .filter(([, r]) => !r.ok)
+            .map(([k, r]) => `${k}: ${r.detail}`)
+            .join(' · ');
+          check('§0 the driver exit agrees with the clauses', false, `driver exit ${driverExit} · red records: ${reds || 'none listed'}`);
         }
       }
     }

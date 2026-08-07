@@ -203,6 +203,17 @@ import { createSeedShape } from '../data/seeds';
 // THE PROBES (2026-07-14): the real scans — the mask, held in a hand. The
 // mask does recurrence; THE HAND does chirality (a face is its own mirror).
 import { buildProbeMeshes } from './apertureProbes';
+// RUNG 1 — THE EXPLORE WINDOW (FAT CHARTER 2026-08-07): the inside-view is a
+// FEATURE opened from a shape's doorway; the shell stays the operable
+// representative behind it. The threshold law is TOTAL: E³ opens, everything
+// else refuses at the door BY NAME (never a smear).
+import { ExploreWindow } from './ExploreWindow';
+import {
+  EXPLORE_NEEDS_ROOM,
+  EXPLORE_SURFACE_LATER,
+  exploreThreshold,
+} from './exploreWindowModel';
+import type { ExploreWorkRequest } from './exploreTraceWorker';
 import {
   birthChild,
   combineGateFor,
@@ -1053,6 +1064,7 @@ function SpecimenCard({
   emphasizedIds,
   onRowTouch,
   fieldDoor,
+  exploreDoor,
   ringRefusal,
   ringUnplaced,
 }: {
@@ -1067,6 +1079,11 @@ function SpecimenCard({
   // register + recedes the rest). Present on the specimen panel only where
   // the view mounts a promotable field route.
   fieldDoor?: { open: boolean; onToggle: () => void };
+  // RUNG 1 — THE DOORWAY on the card (the charter's card-frame site, beside
+  // the class-body note and the dim-3 reading): opening walks the habitat in
+  // the EXPLORE WINDOW; the shell stays the operable representative behind.
+  // The threshold verdict is the view's — this row only knocks.
+  exploreDoor?: { onOpen: () => void };
   // THE RING ANCHOR RESOLVER — the card SPEAKS what the ring cannot draw:
   // a refused mode's whole-ring sentence (classBody/bodiless — an OPEN
   // declaration, the horizon doctrine) and any per-cell unplaced count.
@@ -1169,6 +1186,32 @@ function SpecimenCard({
           paper={paper}
           accent={generatorInks.a}
         />
+      ) : null}
+      {exploreDoor ? (
+        // RUNG 1 — the card's doorway into the habitat (the window is where
+        // the inside-truth lives; close returns to this shell, unharmed)
+        <div data-explore-door style={{ marginTop: 7 }}>
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              exploreDoor.onOpen();
+            }}
+            style={{
+              width: '100%',
+              padding: '5px 0',
+              borderRadius: 3,
+              border: `1px solid ${generatorInks.a}`,
+              background: 'transparent',
+              color: generatorInks.a,
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontSize: 12.5,
+              cursor: 'pointer',
+            }}
+          >
+            explore inside — walk the habitat
+          </button>
+        </div>
       ) : null}
       {argument ? (
         // THE CERTIFICATE — the demoted receipt (the seal's expand-in-place
@@ -1334,6 +1377,13 @@ export default function ManuscriptView() {
   // THE INK's dials (designer's spec 2026-07-14 — exposed, not dialed): the
   // void is paper, the line carries the form; none of these reaches the
   // tracer — the ink moves no copy.
+  // RUNG 1 — the explore window's own pacing/raster dials (craft only; the
+  // frames are traceAperture's and the walk is the engine's own transport)
+  const exploreCtl = useControls('world · explore', {
+    resolution: { value: d.world.explore.resolution, min: 96, max: 168, step: 8 },
+    pace: { value: d.world.explore.pace, min: 0.1, max: 0.8, step: 0.02 },
+    lookSensitivity: { value: d.world.explore.lookSensitivity, min: 0.001, max: 0.012, step: 0.001 },
+  });
   const inkCtl = useControls('world · aperture ink', {
     contourEchoFade: { value: d.world.aperture.contourEchoFade, min: 0.3, max: 1, step: 0.01 },
     contourGain: { value: d.world.aperture.contourGain, min: 0.5, max: 4, step: 0.05 },
@@ -1559,6 +1609,12 @@ export default function ManuscriptView() {
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
+        // RUNG 1 — the explore window closes FIRST and ALONE: the shell keeps
+        // its selection and every panel; return to it unharmed
+        if (exploreOpenRef.current) {
+          setExploreOpen(null);
+          return;
+        }
         setSelected(null);
         setCombineWith(null);
         setFold(null);
@@ -1609,6 +1665,31 @@ export default function ManuscriptView() {
   const [foldedBodies, setFoldedBodies] = useState<FoldedDomain[]>([]);
   const builtCountRef = useRef(0);
   const [apertureOpen, setApertureOpen] = useState(false);
+  // RUNG 1 — THE EXPLORE WINDOW: which room the person is inside of (null =
+  // no window), and the door's last refusal (fires AT the threshold, by name)
+  const [exploreOpen, setExploreOpen] = useState<string | null>(null);
+  const [exploreRefusal, setExploreRefusal] = useState<{ key: string; reason: string } | null>(null);
+  const exploreOpenRef = useRef(false);
+  useEffect(() => {
+    exploreOpenRef.current = exploreOpen !== null;
+  }, [exploreOpen]);
+  // a new selection is a new door — the old refusal does not linger
+  useEffect(() => {
+    setExploreRefusal(null);
+  }, [selected]);
+  // the trace worker (the fieldWorker idiom): created once, WARMED at boot so
+  // the probes' ~522k-triangle BVHs build off-thread before any door opens
+  const exploreWorkerRef = useRef<Worker | null>(null);
+  useEffect(() => {
+    const worker = new Worker(new URL('./exploreTraceWorker.ts', import.meta.url), { type: 'module' });
+    exploreWorkerRef.current = worker;
+    const warm: ExploreWorkRequest = { kind: 'warm', seedShape: cubeSeed };
+    worker.postMessage(warm);
+    return () => {
+      worker.terminate();
+      exploreWorkerRef.current = null;
+    };
+  }, [cubeSeed]);
   const emptyApertureRows = (): AperturePairRow[] => [
     { faceA: null, faceB: null, candidateKey: null },
     { faceA: null, faceB: null, candidateKey: null },
@@ -2297,6 +2378,88 @@ export default function ManuscriptView() {
     () => (selected && selected.startsWith('dim3:') ? dim3All.find((m) => `dim3:${m.key}` === selected) ?? null : null),
     [selected, dim3All],
   );
+  // RUNG 1 — which doorways exist for the current selection: a dim-3 room,
+  // the folded shelf, or a class-body shell (the card's 'cells not laid on
+  // it' frame). Anything else has no inside to knock on.
+  const exploreEligible = useMemo((): 'room' | 'folded' | 'surface' | null => {
+    if (!selected) return null;
+    if (selected.startsWith('dim3:')) return 'room';
+    if (selected.startsWith('dim3f:')) return 'folded';
+    if (selected.startsWith('w:')) {
+      const entry = written.find((w) => `w:${w.form.id}` === selected);
+      return entry?.form.render.mode === 'classBody' ? 'surface' : null;
+    }
+    return null;
+  }, [selected, written]);
+  // RUNG 1 — THE DOOR, total over every doorway kind. The threshold verdict
+  // fires HERE: an E³ room opens the window; a cone room, an orbifold, an
+  // unsound pattern, or a surface refuses AT the door with its reason —
+  // never by opening and degrading (the habitat opens or it doesn't).
+  const handleExploreDoor = useCallback(() => {
+    if (!selected) return;
+    if (exploreOpen && exploreOpen === selected) {
+      setExploreOpen(null);
+      return;
+    }
+    if (selected.startsWith('dim3:')) {
+      const k = dim3All.findIndex((m) => `dim3:${m.key}` === selected);
+      const aperture = k >= 0 ? apertures[k] : undefined;
+      if (!aperture) return;
+      if (!aperture.gate.ok) {
+        // the S² gate's own refusal rides the same door, verbatim
+        setExploreRefusal({ key: selected, reason: aperture.gate.reason });
+        return;
+      }
+      const verdict = exploreThreshold(aperture.gate.geometry);
+      if (!verdict.opens) {
+        setExploreRefusal({ key: selected, reason: verdict.reason });
+        return;
+      }
+      setExploreRefusal(null);
+      setExploreOpen(selected);
+      return;
+    }
+    if (selected.startsWith('dim3f:')) {
+      const k = foldedBodies.findIndex((b) => `dim3f:${b.key}` === selected);
+      const aperture = k >= 0 ? foldedApertures[k] : undefined;
+      if (!aperture) return;
+      if (!aperture.gate.ok) {
+        setExploreRefusal({ key: selected, reason: aperture.gate.reason });
+        return;
+      }
+      // total law: a folded gate is never E³ today — the verdict still rules
+      const verdict = exploreThreshold(aperture.gate.geometry);
+      if (!verdict.opens) {
+        setExploreRefusal({ key: selected, reason: verdict.reason });
+        return;
+      }
+      setExploreRefusal(null);
+      setExploreOpen(selected);
+      return;
+    }
+    // the class-body shell: the doorway exists; the surface walk is a later
+    // rung — declared at the threshold, never silent
+    setExploreRefusal({ key: selected, reason: EXPLORE_SURFACE_LATER });
+  }, [selected, exploreOpen, dim3All, apertures, foldedBodies, foldedApertures]);
+  // RUNG 1 — the opened room, resolved from the live gate (E³ only: the door
+  // above is the sole writer of exploreOpen for rooms)
+  const exploreRoom = useMemo(() => {
+    if (!exploreOpen || !exploreOpen.startsWith('dim3:')) return null;
+    const k = dim3All.findIndex((m) => `dim3:${m.key}` === exploreOpen);
+    if (k < 0) return null;
+    const model = dim3All[k];
+    const aperture = apertures[k];
+    if (!aperture || !aperture.gate.ok || !aperture.trace) return null;
+    const placedId = placedForms[model.key];
+    return {
+      title: model.title,
+      seedShape: model.shape,
+      placedShape: placedId ? shapeById.get(placedId) ?? null : null,
+      deck: aperture.gate.deck,
+      geometry: aperture.gate.geometry,
+      firstTrace: aperture.trace,
+    };
+  }, [exploreOpen, dim3All, apertures, placedForms, shapeById]);
   const placeableForms = useMemo(() => {
     const out: { id: string; label: string }[] = [];
     written.forEach((w) => out.push({ id: w.form.shape.id, label: w.form.title }));
@@ -4298,7 +4461,89 @@ export default function ManuscriptView() {
           open: cycleTrace !== null && cycleTrace.targetKey === selected,
         }}
         onIdentifyToggle={handleIdentifyToggle}
+        explore={{
+          enabled: exploreEligible !== null,
+          reason: exploreEligible === null ? EXPLORE_NEEDS_ROOM : null,
+          open: exploreOpen !== null,
+        }}
+        onExploreToggle={handleExploreDoor}
       />
+      {exploreRefusal ? (
+        // RUNG 1 — THE THRESHOLD REFUSAL: fires AT the door, with the reason
+        // (the geometry's own census / the declared later rung) — the window
+        // NEVER opens on a habitat the transport cannot honestly walk
+        <div
+          data-explore-refusal
+          onMouseDown={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            left: '50%',
+            bottom: 92,
+            transform: 'translateX(-50%)',
+            maxWidth: 470,
+            padding: '7px 11px',
+            borderRadius: 3,
+            background: d.paper.cardBackground,
+            border: `1px solid ${d.paper.cardBorder}`,
+            boxShadow: '0 2px 9px rgba(58, 51, 38, 0.2)',
+            color: d.paper.cardInk,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 12.5,
+            fontStyle: 'italic',
+            lineHeight: 1.45,
+          }}
+        >
+          {exploreRefusal.reason}
+        </div>
+      ) : null}
+      {exploreOpen && exploreRoom && exploreWorkerRef.current ? (
+        // RUNG 1 — THE EXPLORE WINDOW: the walked inside-view over the paper;
+        // the shell stays operable behind it (no backdrop — the world around
+        // the window still takes every gesture), and close returns unharmed
+        <ExploreWindow
+          openKey={exploreOpen}
+          title={exploreRoom.title}
+          seedShape={exploreRoom.seedShape}
+          placedShape={exploreRoom.placedShape}
+          deck={exploreRoom.deck}
+          geometry={exploreRoom.geometry}
+          resolution={exploreCtl.resolution}
+          craft={{
+            level: apertureCtl.level,
+            toneGamma: apertureCtl.toneGamma,
+            contourWeight: apertureCtl.contourWeight,
+            maskTone: apertureCtl.maskTone,
+            handTone: apertureCtl.handTone,
+            scaffoldTone: apertureCtl.scaffoldTone,
+            formTone: apertureCtl.formTone,
+          }}
+          ink={{
+            paperColor: d.paper.background,
+            interiorInk: d.world.aperture.interiorInk,
+            rimSeed: apertureCtl.rimSeed,
+            echoFade: apertureCtl.echoFade,
+            contourEchoFade: inkCtl.contourEchoFade,
+            contourGain: inkCtl.contourGain,
+            contourBlur: inkCtl.contourBlur,
+            hatchAngleA: inkCtl.hatchAngleA,
+            hatchAngleB: inkCtl.hatchAngleB,
+            hatchPeriod: inkCtl.hatchPeriod,
+            hatchWidth: inkCtl.hatchWidth,
+            hatchThresholdA: inkCtl.hatchThresholdA,
+            hatchThresholdB: inkCtl.hatchThresholdB,
+            darkSolid: inkCtl.darkSolid,
+            creaseThreshold: inkCtl.creaseThreshold,
+            depthBreakThreshold: inkCtl.depthBreakThreshold,
+          }}
+          firstTrace={exploreRoom.firstTrace}
+          worker={exploreWorkerRef.current}
+          pace={exploreCtl.pace}
+          lookSensitivity={exploreCtl.lookSensitivity}
+          paper={{ ...d.paper, background: d.paper.background }}
+          accent={generatorsCtl.a}
+          onClose={() => setExploreOpen(null)}
+        />
+      ) : null}
       {/* PHASE A (C2): the recovery controls over the same request counters —
           the plate itself fires on SELECT */}
       <CameraDock
@@ -4402,6 +4647,14 @@ export default function ManuscriptView() {
           onRowTouch={handleRowTouch}
           generatorInks={{ a: generatorsCtl.a, b: generatorsCtl.b }}
           fieldDoor={{ open: fieldDoorOpen, onToggle: () => setFieldDoorOpen((open) => !open) }}
+          exploreDoor={
+            // RUNG 1 — the card's doorway rides the dim-3 reading AND the
+            // class-body frame (the charter's 'cells not laid on it' site);
+            // the folded shelf has no card — its door is the dock chip
+            exploreEligible === 'room' || exploreEligible === 'surface'
+              ? { onOpen: handleExploreDoor }
+              : undefined
+          }
           ringRefusal={ringResolution?.kind === 'refused' ? ringResolution.refusal : undefined}
           ringUnplaced={ringResolution?.kind === 'anchored' && ringResolution.unplaced.length > 0 ? ringResolution.unplaced : undefined}
         />

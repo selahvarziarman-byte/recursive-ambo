@@ -915,6 +915,8 @@ export function OperationsDock({
   onThickenToggle,
   identifySew,
   onIdentifyToggle,
+  explore,
+  onExploreToggle,
 }: {
   availability: OperationAvailability[]; // the committed contract for the CURRENT selection
   hasTarget: boolean;
@@ -936,6 +938,12 @@ export function OperationsDock({
   // enable/reason arrive from the view's entry gate (D2 fires at entry)
   identifySew?: { enabled: boolean; reason: string | null; open: boolean };
   onIdentifyToggle?: () => void;
+  // RUNG 1 THE EXPLORE WINDOW — the DOORWAY chip: enabled on any selected
+  // shape with an inside behind it (a built 3-manifold room, the folded
+  // shelf, a class-body shell); the THRESHOLD verdict (open vs the named
+  // refusal) is the view's — exploreThreshold judges, never this chrome
+  explore?: { enabled: boolean; reason: string | null; open: boolean };
+  onExploreToggle?: () => void;
 }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -1247,6 +1255,74 @@ export function OperationsDock({
                   identify — trace two walks; the seam is the way you sew them
                   {!idEnabled && identifySew.reason ? (
                     <span style={{ opacity: 0.6 }}> — {identifySew.reason}</span>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          );
+        })()
+      ) : null}
+      {explore ? (
+        // RUNG 1 THE EXPLORE WINDOW — the doorway chip (the identify-chip
+        // idiom): glyph-only, label on hover, a greyed chip still SPEAKS.
+        // The chip is the DOOR; whether the habitat opens or refuses at the
+        // threshold is the view's exploreThreshold verdict.
+        (() => {
+          const exEnabled = Boolean(explore.enabled);
+          const exOpen = Boolean(explore.open);
+          return (
+            <div key="explore-window" style={{ position: 'relative' }}>
+              <button
+                type="button"
+                aria-label="explore inside"
+                title="explore inside"
+                onMouseEnter={() => setHovered('explore-window')}
+                onMouseLeave={() => setHovered(null)}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  if (exEnabled) onExploreToggle?.();
+                }}
+                style={{
+                  width: 46,
+                  height: 46,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 3,
+                  border: `1px solid ${paper.cardBorder}`,
+                  background: exOpen ? 'rgba(58,51,38,0.08)' : 'transparent',
+                  color: exEnabled ? (hovered === 'explore-window' ? accent : paper.cardInk) : paper.cardInk,
+                  opacity: exEnabled ? 1 : 0.38,
+                  cursor: exEnabled ? 'pointer' : 'default',
+                  padding: 0,
+                }}
+              >
+                {/* the glyph: a doorway with the corridor receding through it */}
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                  <path d="M6 22 L6 6 Q13 2.5 20 6 L20 22" stroke="currentColor" strokeWidth="1.6" fill="none" />
+                  <path d="M10 22 L10 10 Q13 8.4 16 10 L16 22" stroke="currentColor" strokeWidth="1" fill="none" />
+                  <path d="M12.2 22 L12.2 13.6 Q13 13.2 13.8 13.6 L13.8 22" stroke="currentColor" strokeWidth="0.7" fill="none" />
+                </svg>
+              </button>
+              {hovered === 'explore-window' ? (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 52,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    whiteSpace: 'nowrap',
+                    padding: '3px 8px',
+                    borderRadius: 3,
+                    background: paper.cardBackground,
+                    border: `1px solid ${paper.cardBorder}`,
+                    fontSize: 12,
+                    boxShadow: '0 2px 6px rgba(58,51,38,0.18)',
+                  }}
+                >
+                  explore inside — walk the habitat; the shell stays behind you
+                  {!exEnabled && explore.reason ? (
+                    <span style={{ opacity: 0.6 }}> — {explore.reason}</span>
                   ) : null}
                 </div>
               ) : null}
