@@ -268,7 +268,10 @@ export function InkedFieldLayer({
   if (!model.plated) return null;
 
   return (
-    <group>
+    // the name = the app-path witness's PRESENCE handle (the test-seam
+    // pattern): the 3-state law's ABSENT half is measured as a zero census
+    // of this group when the field door is closed
+    <group name="field-layer">
       {dotsGeometry ? (
         // the stipple sits with the body tone (after the body in mount order),
         // depth-tested against the committed hidden-line prepass so occluded

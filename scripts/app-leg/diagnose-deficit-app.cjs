@@ -265,6 +265,20 @@ function killTree(pid) {
             );
           })(),
           get('regs.dockClearOfDoor').detail);
+        // THE FIELD DOOR (SEAL_THE_FIELD_DOOR_AND_TEST_SPECIMENS) — live
+        check('§E-FIELD ★ THE 3-STATE LAW + THE PERSON\'S LANGUAGE: the door-gated field is ABSENT when closed (field-layer census 0 — not drawn, not merely recessed) while the always-present registers stay RECESSED (deficit-register still drawn); opening puts the register FULL (the state law — the layer DRAWS iff the field PLATES, and no leg-reachable specimen\'s field plates at HEAD: finding #3, the drawn-when-plated law riding diagnose-the-field-in-the-specimen); re-closing returns ABSENT; the door copy is the designer\'s ruled person-language ("the field — show it" / "shown · other marks step back") with ZERO memo words ("recessed"/"promoted") on the page; with the door open the specimen holds FIELD-SLOT + DEFICIT + KEY together (the closest-to-four stand-up — generators are the b₁ gap, §14)',
+          get('regs.fieldAbsentClosed').ok && get('regs.fieldShownOpen').ok && get('regs.doorCopy').ok && get('regs.threeRegisterTogether').ok &&
+            (() => {
+              const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+              const chromeSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptChrome.tsx'), 'utf8');
+              return (
+                (viewSrc.match(/promotedRegister === 'field' &&\s+specimenField/g) ?? []).length === 2 &&
+                chromeSrc.includes("'— shown · other marks step back'") &&
+                chromeSrc.includes("'— show it'") &&
+                !chromeSrc.includes("'recessed — open to promote'")
+              );
+            })(),
+          `${get('regs.fieldAbsentClosed').detail} · ${get('regs.fieldShownOpen').detail} · ${get('regs.doorCopy').detail} · ${get('regs.threeRegisterTogether').detail}`);
         // THE RING ANCHOR RESOLVER (SEAL_THE_RING_ANCHOR_RESOLVER) — live
         check('§E-RESOLVER ★★ THE RING RENDERS ON EVERY DRIVEABLE MODE (no silent bare): the TORUS and the CYLINDER (immersion — the two bodies measured BARE before the resolver) anchor their rings ON the surface with census === anchored and unplaced 0; the SKELETON (dock cut on the picked face) rings; plain (the invoked squares) and faithful (the fold-born cones) ride the earlier sections. classBody/bodiless have NO committed gesture producer (measured — the died precedent): their refusal branches are model-witnessed (diagnose-argument-card §13) and the card\'s open declaration is source-pinned below',
           get('ring.modeTorus').ok && get('ring.modeCylinder').ok && get('ring.modeSkeleton').ok,

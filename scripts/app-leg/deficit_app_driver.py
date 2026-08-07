@@ -747,31 +747,90 @@ def drive_registers(page):
         present and pressed == "false",
         f"door present {present} · aria-pressed {pressed} (closed by default)",
     )
+    # THE 3-STATE LAW (SEAL_THE_FIELD_DOOR): the door-gated field is ABSENT
+    # when closed (a ZERO field-layer census — not drawn at all), FULL when
+    # open; the always-present registers stay RECESSED (still drawn).
+    field_census = "() => { const s = window.__manuscriptScene; let n = 0; if (s) s.traverse((o) => { if (o.name === 'field-layer') n += 1; }); return n; }"
+    deficit_census = "() => { const s = window.__manuscriptScene; let n = 0; if (s) s.traverse((o) => { if (o.name === 'deficit-register') n += 1; }); return n; }"
+    closed_field = page.evaluate(field_census)
+    closed_deficit = page.evaluate(deficit_census)
+    record(
+        "regs.fieldAbsentClosed",
+        closed_field == 0 and closed_deficit >= 1,
+        f"door CLOSED: field-layer census {closed_field} (ABSENT — not drawn) · deficit-register census {closed_deficit} (the always-present registers stay RECESSED, still drawn)",
+    )
+    # the person-language copy (designer-ruled): mechanics OFF the page
+    copy_closed = page.evaluate('() => { const el = document.querySelector(\'[data-door="field"]\'); return el ? (el.textContent ?? "").trim() : null; }')
     door_ok = False
     detail_door = "door missing"
+    open_field = -1
     if present:
         door.click()
-        page.wait_for_timeout(300)
+        page.wait_for_timeout(400)
         opened = page.evaluate("() => (window.__manuscriptCorrespondence ?? {}).registers ?? null")
-        # the door hover ALSO touches the field register (§7's one channel) —
-        # full is 'field' from the standing door either way; assert door=true
         door_ok = opened is not None and opened["door"] is True and opened["full"] == "field"
         detail_door = (
             "no seam after open"
             if opened is None
             else f"open: door {opened['door']} · full {opened['full']} (the field promoted, the rest recede)"
         )
+        # E-FIELD-SHOWN-OPEN (recut to the honest measurable): opening puts
+        # the register in its FULL state; the LAYER draws iff the field
+        # PLATES — and MEASURED (finding #3): no leg-reachable specimen's
+        # field plates at HEAD (the flat lift/square read degenerate-band;
+        # the plated bodies — genus-2, Klein — live behind unreachable
+        # flows). The census is REPORTED; the drawn-when-plated law is
+        # ratified by diagnose-the-field-in-the-specimen in the suite.
+        for _ in range(6):
+            open_field = page.evaluate(field_census)
+            if open_field >= 1:
+                break
+            page.wait_for_timeout(300)
+        copy_open = page.evaluate('() => { const el = document.querySelector(\'[data-door="field"]\'); return el ? (el.textContent ?? "").trim() : null; }')
         door.click()
         page.wait_for_timeout(300)
         page.mouse.move(0, 0)
         page.wait_for_timeout(200)
         closed = page.evaluate("() => (window.__manuscriptCorrespondence ?? {}).registers ?? null")
+        after_field = page.evaluate(field_census)
         door_ok = door_ok and closed is not None and closed["door"] is False and closed["full"] is None
         detail_door += (
             ""
             if closed is None
             else f" · closed: door {closed['door']} · full {closed['full']}"
         )
+        record(
+            "regs.fieldShownOpen",
+            door_ok and after_field == 0 and open_field >= closed_field,
+            f"door OPEN: register full='field' (the state law) · field-layer census {open_field} "
+            f"(0 = the selected specimen's field is honestly UNPLATED — finding #3; drawn-when-plated rides the standing field witness) · re-closed: {after_field} (absent)",
+        )
+        memo_words = lambda t: t is not None and ("recessed" in t or "promoted" in t)
+        record(
+            "regs.doorCopy",
+            copy_closed is not None
+            and "the field" in copy_closed
+            and "show it" in copy_closed
+            and copy_open is not None
+            and "shown · other marks step back" in copy_open
+            and not memo_words(copy_closed)
+            and not memo_words(copy_open),
+            f"closed: '{copy_closed}' · open: '{copy_open}' (no memo words)",
+        )
+        # the closest-to-four-register stand-up, measured LIVE: with the door
+        # open the plain specimen holds the FIELD SLOT (full state) + DEFICIT
+        # (drawn) + KEY (drawn) together; the field's DRAWN presence joins
+        # when a plating specimen exists (finding #3) — generators are the
+        # other measured gap (b₁=0 on every reachable plain body; §14)
+        record(
+            "regs.threeRegisterTogether",
+            door_ok and closed_deficit >= 1 and page.locator(".corr-mark").count() > 0,
+            f"door open (field slot FULL) + deficit-register {closed_deficit} (drawn) + ring marks {page.locator('.corr-mark').count()} (drawn) — the closest stand-up; the field DRAWS when a plating specimen lands (finding #3) · generators = the b₁ gap (§14)",
+        )
+    else:
+        record("regs.fieldShownOpen", False, "door missing")
+        record("regs.doorCopy", False, "door missing")
+        record("regs.threeRegisterTogether", False, "door missing")
     record("regs.doorPromotesField", door_ok, detail_door)
     # E-PROMOTE-CARDROW (§7): touching a REGISTER row promotes ITS register
     # through the ONE emphasizedIds channel; leaving returns the quiet band.

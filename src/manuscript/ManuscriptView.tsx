@@ -3663,8 +3663,12 @@ export default function ManuscriptView() {
                     }}
                     field={
                       // C.1 — THE ONE-COMPLEX LAW at the seam: the field dresses
-                      // ONLY the exact drawn body it was computed on
-                      specimenField && specimenField.shapeId === component.body.id
+                      // ONLY the exact drawn body it was computed on.
+                      // THE 3-STATE LAW: door-gated — ABSENT unless promoted.
+                      selected === id &&
+                      promotedRegister === 'field' &&
+                      specimenField &&
+                      specimenField.shapeId === component.body.id
                         ? specimenField.field
                         : undefined
                     }
@@ -3776,8 +3780,15 @@ export default function ManuscriptView() {
                       : undefined
                   }
                   field={
-                    // C.1 — the same one-complex key on the plain route
-                    specimenField && specimenField.shapeId === render.shape.id
+                    // C.1 — the same one-complex key on the plain route.
+                    // THE 3-STATE LAW (SEAL_THE_FIELD_DOOR): the field is
+                    // DOOR-GATED — ABSENT unless promoted (presence ≠
+                    // consent; the heavy |ψ|²+Σ register never draws
+                    // unasked). Absent or promoted, never recessed.
+                    selected === id &&
+                    promotedRegister === 'field' &&
+                    specimenField &&
+                    specimenField.shapeId === render.shape.id
                       ? specimenField.field
                       : undefined
                   }

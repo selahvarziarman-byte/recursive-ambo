@@ -31,12 +31,12 @@ export interface ChromePaper {
 }
 
 // M1 (SEAL_THE_MARKED_SPECIMEN) — THE FIELD DOOR: the specimen panel's
-// control for the FIELD annotation register. CLOSED by default; opening
-// PROMOTES the field (full) and recedes the other annotation registers.
-// The dock-chip idiom at card scale (a bordered chip, hover speaks, the
-// pressed state shows as the dock's open-tint). The COPY below is a NEUTRAL
-// PLACEHOLDER — the designer writes the door's words at her look-clear (do
-// not treat 'field' / the hover line as ratified copy).
+// control for the FIELD annotation register. CLOSED by default. THE 3-STATE
+// LAW (SEAL_THE_FIELD_DOOR): the field is DOOR-GATED — ABSENT when closed
+// (not drawn at all; presence ≠ consent), FULL when open; the always-present
+// registers stay RECESSED. The dock-chip idiom at card scale. The COPY is
+// the designer's RULED person-language ("the field — show it" / "the field —
+// shown · other marks step back") — the register mechanics stay off the page.
 export function FieldDoor({
   open,
   onToggle,
@@ -87,9 +87,11 @@ export function FieldDoor({
         cursor: 'pointer',
       }}
     >
-      field
+      the field
       <span style={{ fontSize: 10, opacity: 0.6, letterSpacing: 0, fontVariant: 'normal' }}>
-        {open ? 'promoted — the rest recede' : 'recessed — open to promote'}
+        {/* the person's language (designer-ruled): the mechanics stay OFF
+            the page — never "recessed"/"promoted" here (our memo words) */}
+        {open ? '— shown · other marks step back' : '— show it'}
       </span>
     </button>
   );

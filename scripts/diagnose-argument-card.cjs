@@ -45,6 +45,7 @@ require.extensions['.ts'] = (module, filename) => {
         esModuleInterop: true,
         module: ts.ModuleKind.CommonJS,
         target: ts.ScriptTarget.ES2020,
+        jsx: ts.JsxEmit.ReactJSX, // §14 reads the field LAYER (.tsx) — the field witness's own hook option
       },
       fileName: filename,
     }).outputText,
@@ -982,6 +983,63 @@ check('§13 (RESOLVER) ★ TOTAL OVER THE UNION — 4 RENDER + 2 DECLARE: the gl
       bodilessRes.kind === 'refused' && bodilessRes.refusal.includes('a pinch') &&
       classRes !== null && classRes.kind === 'refused' && classRes.refusal.includes('chosen representative')
     );
+  })());
+// §14 THE TEST SPECIMENS (SEAL_THE_FIELD_DOOR_AND_TEST_SPECIMENS) — the two
+// reachability FINDINGS, measured through the real modules (the probe-not-
+// assume law): the designer's 10-mark immersion and four-register body are
+// both UNREACHABLE at HEAD, and the witness pins WHY, by name.
+check('§14 (SPECIMENS) ★ THE TWO REACHABILITY FINDINGS HOLD: (a) the 10-mark immersion — refineToDisk REFUSES an invoked primitive (the rim op refines born word-forms; the refusal names the birth-word recovery) AND the bisected torus LOSES its render route (the recovery refuses the refined quotient — routing throws); (b) the four-register body — every reachable plain body measures b₁ = 0 (no generator loops to recede) while the immersion that DOES draw loops declares the deficit not-applicable — so the reachable maximum is the plain 3-register (field + deficit + key) and the leg stands it up live',
+  (() => {
+    const { refineToDisk, bisectSurface: bisect2 } = req('src/lib/surfaceRefinement.ts');
+    const { routeWrittenRender } = req('src/manuscript/writtenFormModel.ts');
+    const { readDeficitForRender } = req('src/manuscript/deficitRegisterModel.ts');
+    const { deriveOptionBGenerators } = req('src/manuscript/optionBModel.ts');
+    let refineRefused = false;
+    try {
+      refineToDisk(sqHost.shape, [sqHost.shape]);
+    } catch (e) {
+      refineRefused = String(e.message).includes('cannot recover');
+    }
+    let routeLost = false;
+    try {
+      const t = applyPlaygroundOperationTo('glue-torus', sqHost.shape, null, 941, 8, [], null);
+      const bis = bisect2(t.born.shape, sqHost.shape);
+      try {
+        routeWrittenRender(bis.shape, [t.born.shape, sqHost.shape], 8);
+      } catch {
+        routeLost = true;
+      }
+    } catch {
+      routeLost = false;
+    }
+    let b1Zero = false;
+    try {
+      b1Zero = deriveOptionBGenerators(sqHost.shape).b1 === 0 && deriveOptionBGenerators(triHost.shape).b1 === 0;
+    } catch {
+      b1Zero = false;
+    }
+    let deficitNA = false;
+    try {
+      const t2 = applyPlaygroundOperationTo('glue-torus', sqHost.shape, null, 942, 8, [], null);
+      const dr = readDeficitForRender(t2.born.render, [t2.born.shape, sqHost.shape]);
+      deficitNA = dr.kind === 'not-applicable' && dr.mode === 'immersion';
+    } catch {
+      deficitNA = false;
+    }
+    // finding #3 (the field-door arc's third): the flat reachable bodies'
+    // fields are DEGENERATE-BAND (not plated — the layer honestly draws
+    // nothing even with the door open); the plated bodies live behind
+    // unreachable flows
+    let fieldDegenerate = false;
+    try {
+      const { computeFieldForShape } = req('src/lib/fieldForShape.ts');
+      const { buildFieldInkModel } = req('src/manuscript/InkedFieldLayer.tsx');
+      const fm = buildFieldInkModel(sqHost.shape, computeFieldForShape(sqHost.shape));
+      fieldDegenerate = fm.plated === false && fm.refusal === 'degenerate-band';
+    } catch {
+      fieldDegenerate = false;
+    }
+    return refineRefused && routeLost && b1Zero && deficitNA && fieldDegenerate;
   })());
 check('§11 (E-NO-UNION) NOTHING FROZEN MOVED: ambo.ts (the mechanism is the LIFT — the T-junction stays real) · InkedForm.tsx (the flat-body guard is ADAPTER-HELD) · types/geometry.ts · lib/shape.ts · store/geometryStore.ts · genesisModel.ts · faithfulBodyModel.ts · inkedFormModel.ts · the MANIFEST — all BYTE-IDENTICAL to HEAD (no union, no new file, no new row owed)',
   ['src/lib/ambo.ts', 'src/manuscript/InkedForm.tsx', 'src/types/geometry.ts', 'src/lib/shape.ts', 'src/store/geometryStore.ts', 'src/manuscript/genesisModel.ts', 'src/manuscript/faithfulBodyModel.ts', 'src/manuscript/inkedFormModel.ts', 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'].every(headEq));
