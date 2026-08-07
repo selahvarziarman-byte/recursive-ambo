@@ -344,6 +344,42 @@ export const manuscriptDefaults = {
       resolution: 128, // the window's own trace raster (px) — walking cadence over pixel fetish
       pace: 0.32, // advance, world units/s — a cloister walk, not a flight sim
       lookSensitivity: 0.004, // rad/px of drag
+      // D1 — THE INK RETUNE AT WINDOW SCALE (designer 1830, slice 1): the
+      // window's OWN craft + ink — the shell's 168px-tuned params reused
+      // verbatim at ~4× apparent scale collapsed the tone to two values
+      // (the third scale-reuse failure this arc). The retune builds a TONE
+      // LADDER: paper ground → a light single weave the half-lit face
+      // crosses → a darker double weave on the shadowed face → the line on
+      // top — a grey range, the two-faced mask readable. The tone dies fast
+      // with depth while the line persists (the ink's own "line outlives
+      // the tone" law, pushed further at window scale — the far copies
+      // recede as clean line drawings, not tone salt).
+      craft: {
+        toneGamma: 0.88, // lifts the midtones the shell's 1.25 crushed at scale
+        contourWeight: 0.3, // the 0.55 grazing-rim darkening over-fired at scale
+        maskTone: 1.0,
+        handTone: 0.92,
+        scaffoldTone: 0.28,
+        formTone: 0.95,
+      },
+      ink: {
+        paperColor: '#e9e2cf', // THE PAGE ITSELF — the same hand as the plate beside it
+        interiorInk: '#2a251c',
+        rimSeed: 3,
+        echoFade: 0.45, // the tone dies by the second corridor (no distant salt)
+        contourEchoFade: 0.72, // the line persists — depth is carried by drawing, not noise
+        contourGain: 1.55,
+        contourBlur: 0.55,
+        hatchAngleA: 36,
+        hatchAngleB: -46,
+        hatchPeriod: 2.6, // the weave tightens so it reads as TONE at window scale, not stripes
+        hatchWidth: 0.8,
+        hatchThresholdA: 0.3, // the half-lit face crosses — the ladder's light rung
+        hatchThresholdB: 0.62, // the shadowed face crosses both — the darker rung
+        darkSolid: 0.9,
+        creaseThreshold: 0.5,
+        depthBreakThreshold: 0.035,
+      },
     },
     // P-IMMERSE — the honest non-manifold flag: WHICH edges are junctions is
     // the classifier's slot-count reading (>2 face wedges); the knob is ink only.

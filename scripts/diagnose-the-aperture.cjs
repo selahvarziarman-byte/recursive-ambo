@@ -521,6 +521,13 @@ const ALLOWED_SRC_CHANGES = new Set([
   // byte-identical); zero frozen files; ratified in
   // diagnose-the-field-in-the-specimen.cjs.
   'src/manuscript/InkedPlainForm.tsx',
+  // RUNG 1 / D1 — THE EXPLORE WINDOW's own surface (2026-08-07 fat charter +
+  // SEAL_D1_EXPLORE_INK_RETUNE): the walked inside-view rides the aperture's
+  // PASSED craft/ink params — its component is NOT_FROZEN under active
+  // look-mandate churn (the D1 ink retune edits it while apertureModel and
+  // apertureInk stay byte-identical, which THIS witness verifies above);
+  // ratified per-build by the app-path witness leg (§E-EXPLORE / §E-D1).
+  'src/manuscript/ExploreWindow.tsx',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

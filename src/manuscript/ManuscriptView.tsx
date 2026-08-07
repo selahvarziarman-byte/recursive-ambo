@@ -1384,6 +1384,20 @@ export default function ManuscriptView() {
     pace: { value: d.world.explore.pace, min: 0.1, max: 0.8, step: 0.02 },
     lookSensitivity: { value: d.world.explore.lookSensitivity, min: 0.001, max: 0.012, step: 0.001 },
   });
+  // D1 — the window-scale TONE dials (the designer's live craft surface; the
+  // defaults are the retuned ladder, not the shell's 168px values)
+  const exploreInkCtl = useControls('world · explore ink', {
+    toneGamma: { value: d.world.explore.craft.toneGamma, min: 0.5, max: 2.5, step: 0.02 },
+    contourWeight: { value: d.world.explore.craft.contourWeight, min: 0, max: 1, step: 0.05 },
+    hatchPeriod: { value: d.world.explore.ink.hatchPeriod, min: 1.5, max: 12, step: 0.1 },
+    hatchWidth: { value: d.world.explore.ink.hatchWidth, min: 0.4, max: 6, step: 0.1 },
+    hatchThresholdA: { value: d.world.explore.ink.hatchThresholdA, min: 0, max: 1, step: 0.02 },
+    hatchThresholdB: { value: d.world.explore.ink.hatchThresholdB, min: 0, max: 1, step: 0.02 },
+    echoFade: { value: d.world.explore.ink.echoFade, min: 0.3, max: 1, step: 0.01 },
+    contourEchoFade: { value: d.world.explore.ink.contourEchoFade, min: 0.3, max: 1, step: 0.01 },
+    contourGain: { value: d.world.explore.ink.contourGain, min: 0.5, max: 4, step: 0.05 },
+    contourBlur: { value: d.world.explore.ink.contourBlur, min: 0.1, max: 2, step: 0.05 },
+  });
   const inkCtl = useControls('world · aperture ink', {
     contourEchoFade: { value: d.world.aperture.contourEchoFade, min: 0.3, max: 1, step: 0.01 },
     contourGain: { value: d.world.aperture.contourGain, min: 0.5, max: 4, step: 0.05 },
@@ -4509,31 +4523,36 @@ export default function ManuscriptView() {
           geometry={exploreRoom.geometry}
           resolution={exploreCtl.resolution}
           craft={{
+            // D1 — the window's OWN craft: the shell's 168px-tuned values
+            // collapsed the tone at ~4× scale (the seal's grounded cause);
+            // only the transport depth (level) stays the shared dial
             level: apertureCtl.level,
-            toneGamma: apertureCtl.toneGamma,
-            contourWeight: apertureCtl.contourWeight,
-            maskTone: apertureCtl.maskTone,
-            handTone: apertureCtl.handTone,
-            scaffoldTone: apertureCtl.scaffoldTone,
-            formTone: apertureCtl.formTone,
+            toneGamma: exploreInkCtl.toneGamma,
+            contourWeight: exploreInkCtl.contourWeight,
+            maskTone: d.world.explore.craft.maskTone,
+            handTone: d.world.explore.craft.handTone,
+            scaffoldTone: d.world.explore.craft.scaffoldTone,
+            formTone: d.world.explore.craft.formTone,
           }}
           ink={{
-            paperColor: d.paper.background,
-            interiorInk: d.world.aperture.interiorInk,
-            rimSeed: apertureCtl.rimSeed,
-            echoFade: apertureCtl.echoFade,
-            contourEchoFade: inkCtl.contourEchoFade,
-            contourGain: inkCtl.contourGain,
-            contourBlur: inkCtl.contourBlur,
-            hatchAngleA: inkCtl.hatchAngleA,
-            hatchAngleB: inkCtl.hatchAngleB,
-            hatchPeriod: inkCtl.hatchPeriod,
-            hatchWidth: inkCtl.hatchWidth,
-            hatchThresholdA: inkCtl.hatchThresholdA,
-            hatchThresholdB: inkCtl.hatchThresholdB,
-            darkSolid: inkCtl.darkSolid,
-            creaseThreshold: inkCtl.creaseThreshold,
-            depthBreakThreshold: inkCtl.depthBreakThreshold,
+            // D1 — the window's OWN ink: the tone ladder (paper → light
+            // weave → double weave → line), the page's own parchment ground
+            paperColor: d.world.explore.ink.paperColor,
+            interiorInk: d.world.explore.ink.interiorInk,
+            rimSeed: d.world.explore.ink.rimSeed,
+            echoFade: exploreInkCtl.echoFade,
+            contourEchoFade: exploreInkCtl.contourEchoFade,
+            contourGain: exploreInkCtl.contourGain,
+            contourBlur: exploreInkCtl.contourBlur,
+            hatchAngleA: d.world.explore.ink.hatchAngleA,
+            hatchAngleB: d.world.explore.ink.hatchAngleB,
+            hatchPeriod: exploreInkCtl.hatchPeriod,
+            hatchWidth: exploreInkCtl.hatchWidth,
+            hatchThresholdA: exploreInkCtl.hatchThresholdA,
+            hatchThresholdB: exploreInkCtl.hatchThresholdB,
+            darkSolid: d.world.explore.ink.darkSolid,
+            creaseThreshold: d.world.explore.ink.creaseThreshold,
+            depthBreakThreshold: d.world.explore.ink.depthBreakThreshold,
           }}
           firstTrace={exploreRoom.firstTrace}
           worker={exploreWorkerRef.current}

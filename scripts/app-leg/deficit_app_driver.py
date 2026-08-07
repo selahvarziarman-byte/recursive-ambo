@@ -1268,7 +1268,7 @@ def explore_seam(page):
       if (!s) return null;
       return { open: s.open, title: s.title, eye: s.eye, forward: s.forward, crossings: s.crossings,
                traces: s.traces, looks: s.looks, advances: s.advances, restCounts: s.restCounts,
-               caption: s.caption, deltas: s.deltas };
+               caption: s.caption, deltas: s.deltas, inkTone: s.inkTone };
     }"""
     )
 
@@ -1359,6 +1359,16 @@ def drive_explore(page):
         caption_ok,
         f"caption: {seam and seam['caption']}",
     )
+    # D1 — the tone ladder on the LIVE rendered bytes: the standing frame's
+    # histogram carries a grey range (the two-value collapse read mid 13.8% ·
+    # weave 2.9% at the shell-verbatim params; the ladder measured 19.7% ·
+    # 8.5% headless — the bar sits between the regimes)
+    tone = seam and seam["inkTone"]
+    record(
+        "explore.inkMidtones",
+        bool(tone) and tone["mid"] >= 0.17 and tone["weave"] >= 0.05,
+        f"tone bands: paper {tone and round(tone['paper'], 3)} · mid {tone and round(tone['mid'], 3)} · weave rung {tone and round(tone['weave'], 3)}",
+    )
 
     # ---- E-DRIVEABLE: look (drag rotates forward) --------------------------
     canvas = page.locator("[data-explore-canvas]")
@@ -1368,14 +1378,19 @@ def drive_explore(page):
     fwd_before = seam["forward"]
     page.mouse.move(cx, cy)
     page.mouse.down()
-    for i in range(1, 9):
+    for i in range(1, 13):
         page.mouse.move(cx + i * 10, cy + i * 2)
-        page.wait_for_timeout(30)
+        page.wait_for_timeout(40)
     page.mouse.up()
-    page.wait_for_timeout(600)
-    seam = explore_seam(page)
-    fwd_after = seam["forward"]
-    dot = sum(a * b for a, b in zip(fwd_before, fwd_after))
+    # wait on the STATE, not the clock: under machine contention the pointer
+    # events process late — the turn lands when the main thread frees
+    dot = 1.0
+    for _ in range(24):
+        seam = explore_seam(page)
+        dot = sum(a * b for a, b in zip(fwd_before, seam["forward"]))
+        if dot < 0.995:
+            break
+        page.wait_for_timeout(250)
     record(
         "explore.lookTurns",
         seam["looks"] >= 1 and dot < 0.999,
@@ -1393,8 +1408,14 @@ def drive_explore(page):
     # load the worker frames arrive ~2.5 s apart)
     page.wait_for_timeout(9400)
     page.mouse.up()
-    # let the settle frame (the release's own trace) land and record its delta
-    page.wait_for_timeout(2600)
+    # let the settle frame (the release's own trace) land and record its
+    # delta — wait on the DELTA, not the clock (a starved worker can take
+    # several seconds per frame under leg-machine contention)
+    for _ in range(28):
+        seam = explore_seam(page)
+        if any(d["crossed"] for d in seam["deltas"]):
+            break
+        page.wait_for_timeout(500)
     seam = explore_seam(page)
     eye_after = seam["eye"]
     moved = sum((a - b) ** 2 for a, b in zip(eye_before, eye_after)) ** 0.5

@@ -57,6 +57,11 @@ interface ExploreSeam {
   // crossing frame must look like any other walking frame (equivariance);
   // a wrong transport would explode exactly here
   deltas: { delta: number; crossed: boolean; gesture: 'look' | 'advance' | null }[];
+  // D1 — the TONE LADDER, measured on the rendered bytes the person sees:
+  // fractions of covered pixels at paper (t<0.15), the interior mid band
+  // (0.2≤t<0.9), and the weave rung (0.65≤t<0.85 — the single-hatch grey).
+  // A two-value collapse reads mid≈0 · weave≈0 exactly here.
+  inkTone: { paper: number; mid: number; weave: number } | null;
 }
 
 const seamOf = (): ExploreSeam => {
@@ -74,10 +79,43 @@ const seamOf = (): ExploreSeam => {
       restCounts: null,
       caption: null,
       deltas: [],
+      inkTone: null,
     };
   }
   return host.__exploreWindow;
 };
+
+// D1 — project each rendered pixel onto the paper→ink line and band it; the
+// histogram is measured on the EXACT bytes put to the canvas (never a
+// parallel render)
+const hexChannel = (hexColor: string, at: number): number => parseInt(hexColor.slice(at, at + 2), 16);
+function measureInkTone(
+  bytes: Uint8ClampedArray,
+  paperColor: string,
+  interiorInk: string,
+): { paper: number; mid: number; weave: number } {
+  const p = [hexChannel(paperColor, 1), hexChannel(paperColor, 3), hexChannel(paperColor, 5)];
+  const k = [hexChannel(interiorInk, 1), hexChannel(interiorInk, 3), hexChannel(interiorInk, 5)];
+  const d = [p[0] - k[0], p[1] - k[1], p[2] - k[2]];
+  const dd = d[0] * d[0] + d[1] * d[1] + d[2] * d[2] || 1;
+  let covered = 0;
+  let paperN = 0;
+  let mid = 0;
+  let weave = 0;
+  for (let i = 0; i < bytes.length; i += 4) {
+    if (bytes[i + 3] === 0) continue; // beyond the cut
+    covered += 1;
+    const t = Math.max(
+      0,
+      Math.min(1, ((p[0] - bytes[i]) * d[0] + (p[1] - bytes[i + 1]) * d[1] + (p[2] - bytes[i + 2]) * d[2]) / dd),
+    );
+    if (t < 0.15) paperN += 1;
+    if (t >= 0.2 && t < 0.9) mid += 1;
+    if (t >= 0.65 && t < 0.85) weave += 1;
+  }
+  const n = covered || 1;
+  return { paper: paperN / n, mid: mid / n, weave: weave / n };
+}
 
 let nextSession = 1;
 
@@ -162,6 +200,12 @@ export function ExploreWindow({
     // re-wrap: the ink's bytes ride whatever buffer it allocated; ImageData
     // demands a plain ArrayBuffer-backed view
     const bytes = new Uint8ClampedArray(renderApertureInk(trace, liveRef.current.ink));
+    // D1 — the tone ladder, measured on these exact bytes
+    seamOf().inkTone = measureInkTone(
+      bytes,
+      liveRef.current.ink.paperColor ?? '#e9e2cf',
+      liveRef.current.ink.interiorInk ?? '#2a251c',
+    );
     ctx.putImageData(new ImageData(bytes, trace.width, trace.height), 0, 0);
   };
 
@@ -223,6 +267,7 @@ export function ExploreWindow({
     seam.restCounts = null;
     seam.caption = null;
     seam.deltas = [];
+    seam.inkTone = null;
 
     // RECURRENCE AT REST — the first paint is the shell's own standing frame
     // (same committed pipeline, same default eye/forward): the corridor

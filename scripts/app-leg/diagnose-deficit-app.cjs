@@ -391,6 +391,29 @@ function killTree(pid) {
         check('§E-SHELL-INTACT ★★ CLOSE RETURNS TO THE UNHARMED SHELL + THE CARD DOORWAY + THE ESC LAW: closing the window leaves the SAME shell caption byte-equal, the selection held, and the Fit control live; the card\'s own doorway row re-opens the window; Esc closes the window ALONE (the selection survives — the shell is never falsified)',
           get('explore.shellIntactOnReturn').ok && get('explore.cardDoorPresent').ok && get('explore.cardDoorAndEsc').ok,
           `${get('explore.shellIntactOnReturn').detail} · ${get('explore.cardDoorAndEsc').detail}`);
+        // D1 (SEAL_D1_EXPLORE_INK_RETUNE) — the ink retune at window scale
+        check('§E-D1 ★★ MIDTONES LIVE — THE TONE CARRIES A GREY RANGE, NOT TWO VALUES: the standing frame\'s histogram (measured on the EXACT bytes put to the canvas) holds the interior mid band ≥ 17% and the weave rung (the single-hatch grey — the ladder\'s middle) ≥ 5%; the shell-verbatim reuse measured 13.8% · 2.9% — the two-value collapse goes RED here',
+          get('explore.inkMidtones').ok, get('explore.inkMidtones').detail);
+        check('§E-D1 ★ SAME-HAND + INK-ONLY (source-pinned): the window\'s ink ground IS the page\'s own parchment (#e9e2cf) and the craft is WINDOW-TUNED (toneGamma 0.88 / contourWeight 0.3 — the 1.25/0.55 verbatim reuse is gone from the window\'s props); the resolution is UNCHANGED at 128 (D1 is ink alone — the designer re-looks before any pixel spend); the tone ladder\'s thresholds ride the explore-owned defaults; apertureModel + apertureInk byte-identity rides diagnose-the-aperture + the freeze (E-APERTURE-UNTOUCHED)',
+          (() => {
+            const defaultsSrc = fs.readFileSync(path.join(repoRoot, 'src/design/designDefaults.ts'), 'utf8');
+            const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+            const exploreBlock = defaultsSrc.slice(defaultsSrc.indexOf('explore: {'), defaultsSrc.indexOf('junction: {'));
+            return (
+              exploreBlock.includes('resolution: 128,') &&
+              exploreBlock.includes("paperColor: '#e9e2cf',") &&
+              exploreBlock.includes('toneGamma: 0.88,') &&
+              exploreBlock.includes('contourWeight: 0.3,') &&
+              exploreBlock.includes('hatchThresholdA: 0.3,') &&
+              exploreBlock.includes('hatchThresholdB: 0.62,') &&
+              viewSrc.includes('toneGamma: exploreInkCtl.toneGamma,') &&
+              viewSrc.includes('paperColor: d.world.explore.ink.paperColor,') &&
+              // exactly the SHELL's two trace memos still use the aperture
+              // dials — the window's third use is GONE (the verbatim reuse)
+              (viewSrc.match(/toneGamma: apertureCtl\.toneGamma,/g) ?? []).length === 2
+            );
+          })(),
+          'the explore-owned craft/ink pins');
         check('§E-EXPLORE THE SUBSTRATE HOLDS ITS LAWS (source-pinned): the walk consumes the aperture\'s EXPORTED applyPoint/applyVector on the witnessed deck (the transport math is never re-derived — apertureModel byte-untouched rides its NOT_FROZEN row + diagnose-the-aperture); the window\'s opening frame IS the tracer\'s own default frame (both literals byte-equal in model and tracer); the threshold law is TOTAL (E³ opens · cone · folded · the surface\'s later-rung declaration · the greyed chip\'s word); the window is a thin hand (renderApertureInk + apertureCaption verbatim, no π₁/fundamental-group word anywhere in the new files); the worker rides the fieldWorker idiom (module URL + type module); the Esc guard closes the window FIRST',
           (() => {
             const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/exploreWindowModel.ts'), 'utf8');
