@@ -329,12 +329,19 @@ export const manuscriptDefaults = {
       // normal steps over shallow depth steps; without it, a mitten.
       creaseThreshold: 0.5, // |Δnormal|
       depthBreakThreshold: 0.035, // |Δdepth| — the 0.30-class value was far too coarse
-      hatchAngleA: 36, // degrees
-      hatchAngleB: -46, // degrees
-      hatchPeriod: 5, // px
-      hatchWidth: 1.5, // px
-      hatchThresholdA: 0.5, // hatch only where genuinely dark
-      hatchThresholdB: 0.74, // the second, steeper family
+      // THE INSIDE-VIEW HATCH (2026-08-08): the screen-locked families are
+      // retired — the strokes ride the SURFACES (direction from the normal,
+      // phase from the object-space hit, density from grazing × tone,
+      // handedness from the copy's parity). Grey from lines, never a fill.
+      strokePitch: 0.16, // OBJECT units between strokes (the cell spans 2)
+      strokeDuty: 0.25, // CONSTANT line-width fraction — the designer's duty ruling (≈0.25, never fattened; capped 0.35 in the ink)
+      strokeFloor: 0.12, // below this density the body is paper
+      crossOnset: 0.55, // the second (crossing) family joins here
+      grazingGain: 1.6, // edge-on densification strength
+      grazingFalloff: 2, // the grazing falloff rate (the designer's dial)
+      chiralityAngleDeg: 14, // ± the weave's twist; the sign is the copy's parity
+      nibDepthScale: 0.55, // the nib: line weight falls with depth at this rate
+      nibNear: 1.25, // the near nib (heavy)
       darkSolid: 0.9, // the mask's dark material (inert today — real openings; arms when a dark-material mask lands)
     },
     // RUNG 1 — THE EXPLORE WINDOW (FAT CHARTER 2026-08-07): the walked
@@ -370,12 +377,18 @@ export const manuscriptDefaults = {
         contourEchoFade: 0.72, // the line persists — depth is carried by drawing, not noise
         contourGain: 1.55,
         contourBlur: 0.55,
-        hatchAngleA: 36,
-        hatchAngleB: -46,
-        hatchPeriod: 2.6, // the weave tightens so it reads as TONE at window scale, not stripes
-        hatchWidth: 0.8,
-        hatchThresholdA: 0.3, // the half-lit face crosses — the ladder's light rung
-        hatchThresholdB: 0.62, // the shadowed face crosses both — the darker rung
+        // THE INSIDE-VIEW HATCH (2026-08-08): the D1 fill-ladder thresholds
+        // are RETIRED (the wash law — grey from lines); the window rides the
+        // surface-locked stroke dials, tuned at window scale by the probe eye
+        strokePitch: 0.085, // probe-eyed at 128: the near mask carries ~6 strokes (shading, not bands)
+        strokeDuty: 0.25, // the duty ruling — constant, never fattened
+        strokeFloor: 0.12,
+        crossOnset: 0.55,
+        grazingGain: 1.6,
+        grazingFalloff: 2,
+        chiralityAngleDeg: 14,
+        nibDepthScale: 0.55,
+        nibNear: 1.25,
         darkSolid: 0.9,
         creaseThreshold: 0.5,
         depthBreakThreshold: 0.035,

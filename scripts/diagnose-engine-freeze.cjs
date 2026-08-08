@@ -344,7 +344,11 @@ const HEAD_READ_ALLOWLIST = new Map([
   ['diagnose-the-aperture.cjs', { catfile: 1, gitdiff: 1 }],
   ['diagnose-the-folded-edge.cjs', { catfile: 3, gitdiff: 1 }],
   ['diagnose-the-ink.cjs', { catfile: 3, gitdiff: 1 }],
-  ['diagnose-the-probes.cjs', { catfile: 1, gitdiff: 1 }],
+  // THE SCENE (2026-08-08): diagnose-the-probes' scan-fidelity + moved-surface
+  // reads RETIRED with the watermarked baked scans it verified — the recut
+  // witness (authored plaque + coil) reads no committed blob at all, so its
+  // roster entry retires with the reads (a pinned read with no subject is a
+  // lie waiting to rot).
   // the small run's witness: one plumbing read (headBlobOf — §4 NUL-
   // reconstruction fidelity + §2 old-order fidelity + §6 HEAD-compiled
   // behaviour deltas) and one rev-anchored grep (the §4 grep-blindness

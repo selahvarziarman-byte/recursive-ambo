@@ -280,17 +280,20 @@ check('CLAUSE 1 — EXECUTE WHAT YOU WITNESS: the T³ trace TRANSPORTED (transpo
   traceT3.counts.transports > 1000 && traceT3.counts.lostRays === 0 &&
   traceT3.counts.maskCopiesVisible > 0 && traceT3.counts.handCopiesVisible > 0);
 note(`T³ at ${TRACE_W}²: transports ${traceT3.counts.transports} · masks ${traceT3.counts.maskCopiesVisible} · hands ${traceT3.counts.handCopiesVisible} (min copy ${traceT3.counts.minCopyPixels}px)`);
+// RECUT (THE SCENE, 2026-08-08): the pinned ray re-aims at the PLAQUE's
+// station (the authored scene stands deeper in the room than the retired
+// scan masks did — x 0.22 · z 0.1, thin along y)
 const oneRay = A.traceAperture({
   deck: t3Gate.deck,
   scene,
   width: 1,
   height: 1,
-  eye: [0, 0.42, 0.28],
+  eye: [0.22, 0.42, 0.1],
   forward: [0, 1, 0],
   fovDegrees: 1,
   craft: { level: 3 },
 });
-check('…a SINGLE ray, pinned: aimed down the +y corridor from beyond the mask, it EXITS the face, TRANSPORTS by the engine\'s gluing isometry, and hits the mask in the NEXT copy — echo === 1 (a ray exiting a face transports and continues; that is the whole algorithm)',
+check('…a SINGLE ray, pinned: aimed down the +y corridor from beyond the plaque, it EXITS the face, TRANSPORTS by the engine\'s gluing isometry, and hits the plaque in the NEXT copy — echo === 1 (a ray exiting a face transports and continues; that is the whole algorithm)',
   oneRay.counts.transports >= 1 && oneRay.hit[0] === 1 && oneRay.echo[0] === 1 && oneRay.material[0] === A.APERTURE_MATERIALS.MASK);
 check('⛔ NEVER OBJECT-SPACE: the scene is built ONCE and no copy is ever materialized — deeper transport shows MORE copies of the SAME one mask mesh (level 2 < level 6 in distinct deck words) while the scene arrays are untouched; the craft dials change NO count (tone re-traced at γ=0.7 and γ=2.2: byte-identical counts)',
   (() => {
@@ -320,11 +323,13 @@ const stripComments = (src) =>
 const modelCode = stripComments(modelSrc);
 const viewCode = stripComments(viewSrc);
 const chromeCode = stripComments(chromeSrc);
-// RECUT (THE PROBES, 2026-07-14): the coil is RETIRED — chirality is the
-// HAND's job (a real scan, not a diagram). No arrow construct anywhere.
-check('the chirality probe is REAL GEOMETRY, not a diagram: the retired coil is gone from the model (no buildCoilCapsules survives), the hand is a scanned mesh with six figures of triangles, and no arrow construct exists in the room\'s code (comment-stripped: no arrow, no cone, no arrowhead)',
+// RECUT (THE SCENE, 2026-08-08): the chirality probe is the AUTHORED
+// right-handed COIL (designer 1810 — drawn, not scanned; its handedness is
+// MEASURED on the mesh in diagnose-the-probes). Still real geometry, still
+// no arrow construct anywhere.
+check('the chirality probe is REAL GEOMETRY, not a diagram: the model itself builds no coil (no buildCoilCapsules survives — the coil is the probes module\'s authored mesh at authored scale), and no arrow construct exists in the room\'s code (comment-stripped: no arrow, no arrowhead, no coneGeometry)',
   !modelCode.includes('buildCoilCapsules') &&
-  probeList[2].tris.length > 100000 &&
+  probeList[2].tris.length > 300 && probeList[2].tris.length < 20000 &&
   !/arrow|arrowhead|coneGeometry/i.test(modelCode));
 check('SAY ORBIT, NEVER π₁: the caption says "orbit"; no π₁ survives in the aperture model\'s, view\'s, or chrome\'s CODE (comment-stripped — the certified specimen reading "H₁ (= π₁ abelianized)" is specimenModel\'s committed row, untouched, and not the orbit caption)',
   A.apertureCaption(t3Gate.geometry, traceT3.counts).includes('orbit') &&
@@ -402,9 +407,14 @@ note(`with the torus placed: ${traceWithForm.counts.formCopiesVisible} copies of
 
 // ═════ [h] battery 3 · 4 · 9 — populated room · the relocated specimen · the craft surface ═
 console.log('\n----- [h] the registers invert; the room is furnished; the craft surface is the designer\'s (battery 3 · 4 · 9) -----');
-// RECUT (THE PROBES, 2026-07-14): the inhabitants are the REAL SCANS now.
-check('the room\'s inhabitants are REAL SCANS, not primitives: the mask\'s two mounted shells carry six figures of triangles each, the hand over a hundred thousand — and the scaffold tone defaults FAINT (at most scaffolding: below every object tone)',
-  probeList[0].tris.length > 100000 && probeList[1].tris.length > 100000 && probeList[2].tris.length > 100000 &&
+// RECUT (THE SCENE, 2026-08-08): the real-scans law is SUPERSEDED (designer
+// 1810) — the scanned pair carried an embossed WATERMARK across both faces
+// and was deleted with its whole defect class. The inhabitants are AUTHORED:
+// the happy/sad Janus plaque + the right-handed coil, at authored scale.
+check('the room\'s inhabitants are the AUTHORED SCENE (drawn, not scanned — the watermark incident retired the scan law): two plaque faces + the coil at authored scale (thousands of triangles each, never a scan\'s hundreds of thousands) — and the scaffold tone defaults FAINT (at most scaffolding: below every object tone)',
+  probeList[0].tris.length > 500 && probeList[0].tris.length < 20000 &&
+  probeList[1].tris.length > 500 && probeList[1].tris.length < 20000 &&
+  probeList[2].tris.length > 300 && probeList[2].tris.length < 20000 &&
   A.APERTURE_CRAFT_DEFAULTS.scaffoldTone < 0.5 &&
   A.APERTURE_CRAFT_DEFAULTS.scaffoldTone < A.APERTURE_CRAFT_DEFAULTS.maskTone &&
   A.APERTURE_CRAFT_DEFAULTS.scaffoldTone < A.APERTURE_CRAFT_DEFAULTS.handTone);
@@ -446,7 +456,6 @@ const { sha256OfCrStripped } = require(path.join(__dirname, 'lib', 'engineFreeze
 const headBlobOf = (file) =>
   execSync(`git cat-file blob HEAD:${file}`, { cwd: repoRoot, encoding: 'utf8', maxBuffer: 1e8 });
 const movedCrInsensitive = (file, workingOverride) => {
-  const working = workingOverride ?? fs.readFileSync(path.join(repoRoot, file), 'utf8');
   // a file with NO HEAD blob is a NEW ARRIVAL, not moved content (a staged-
 // added file enters `git diff HEAD` — the probes' baked module, staged by
 // the small-run re-cut 2026-07-14, is the case in point); arrivals are
@@ -457,6 +466,20 @@ const movedCrInsensitive = (file, workingOverride) => {
     head = headBlobOf(file);
   } catch {
     return false;
+  }
+  // THE SCENE (2026-08-08): a file with a HEAD blob but NO working copy is a
+  // DELETION — content moved (the ink witness's own deletion recut, mirrored
+  // here; the watermarked baked-scan module is the case in point). Before
+  // this the leg CRASHED on any deletion.
+  let working;
+  if (workingOverride !== undefined) {
+    working = workingOverride;
+  } else {
+    try {
+      working = fs.readFileSync(path.join(repoRoot, file), 'utf8');
+    } catch {
+      return true;
+    }
   }
   return sha256OfCrStripped(working) !== sha256OfCrStripped(head);
 };
@@ -489,6 +512,10 @@ const ALLOWED_SRC_CHANGES = new Set([
   // THE PROBES (2026-07-14, sealed 8fcb8d42…4a69): the real-scan room — the
   // crease contour rides apertureInk; ratified in diagnose-the-probes.cjs.
   'src/manuscript/apertureInk.ts',
+  // THE SCENE (2026-08-08, designer 1810 + the Janus correction): the probes
+  // module AUTHORS the plaque + coil (the scans deleted with the watermark);
+  // ratified in diagnose-the-probes.cjs.
+  'src/manuscript/apertureProbes.ts',
   // THE SMALL RUN (2026-07-14, sealed 2eb45568…9060): that mandate's sanctioned
   // surface rides the same working tree — the custom-glue refusal reorder (the
   // wall before the door), the panel's gate-first seam, and the NUL→escape
@@ -528,6 +555,10 @@ const ALLOWED_SRC_CHANGES = new Set([
   // apertureInk stay byte-identical, which THIS witness verifies above);
   // ratified per-build by the app-path witness leg (§E-EXPLORE / §E-D1).
   'src/manuscript/ExploreWindow.tsx',
+  // THE SCENE (2026-08-08, designer 1810 + the watermark incident): the
+  // watermarked baked-scan module is DELETED (a sanctioned deletion — its
+  // whole defect class goes with it); ratified in diagnose-the-probes.cjs.
+  'src/manuscript/apertureProbeAssets.ts',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

@@ -1384,15 +1384,21 @@ export default function ManuscriptView() {
     pace: { value: d.world.explore.pace, min: 0.1, max: 0.8, step: 0.02 },
     lookSensitivity: { value: d.world.explore.lookSensitivity, min: 0.001, max: 0.012, step: 0.001 },
   });
-  // D1 — the window-scale TONE dials (the designer's live craft surface; the
-  // defaults are the retuned ladder, not the shell's 168px values)
+  // THE INSIDE-VIEW HATCH — the window's tone dials (the designer's live
+  // craft surface): D1's fill-ladder thresholds are RETIRED for the
+  // surface-locked stroke controls (grey from lines)
   const exploreInkCtl = useControls('world · explore ink', {
     toneGamma: { value: d.world.explore.craft.toneGamma, min: 0.5, max: 2.5, step: 0.02 },
     contourWeight: { value: d.world.explore.craft.contourWeight, min: 0, max: 1, step: 0.05 },
-    hatchPeriod: { value: d.world.explore.ink.hatchPeriod, min: 1.5, max: 12, step: 0.1 },
-    hatchWidth: { value: d.world.explore.ink.hatchWidth, min: 0.4, max: 6, step: 0.1 },
-    hatchThresholdA: { value: d.world.explore.ink.hatchThresholdA, min: 0, max: 1, step: 0.02 },
-    hatchThresholdB: { value: d.world.explore.ink.hatchThresholdB, min: 0, max: 1, step: 0.02 },
+    strokePitch: { value: d.world.explore.ink.strokePitch, min: 0.05, max: 0.5, step: 0.005 },
+    strokeDuty: { value: d.world.explore.ink.strokeDuty, min: 0.1, max: 0.35, step: 0.01 },
+    strokeFloor: { value: d.world.explore.ink.strokeFloor, min: 0, max: 0.6, step: 0.01 },
+    crossOnset: { value: d.world.explore.ink.crossOnset, min: 0.2, max: 1, step: 0.01 },
+    grazingGain: { value: d.world.explore.ink.grazingGain, min: 0, max: 4, step: 0.05 },
+    grazingFalloff: { value: d.world.explore.ink.grazingFalloff, min: 0.5, max: 5, step: 0.1 },
+    chiralityAngleDeg: { value: d.world.explore.ink.chiralityAngleDeg, min: 0, max: 40, step: 1 },
+    nibDepthScale: { value: d.world.explore.ink.nibDepthScale, min: 0, max: 2, step: 0.02 },
+    nibNear: { value: d.world.explore.ink.nibNear, min: 0.5, max: 2, step: 0.05 },
     echoFade: { value: d.world.explore.ink.echoFade, min: 0.3, max: 1, step: 0.01 },
     contourEchoFade: { value: d.world.explore.ink.contourEchoFade, min: 0.3, max: 1, step: 0.01 },
     contourGain: { value: d.world.explore.ink.contourGain, min: 0.5, max: 4, step: 0.05 },
@@ -1402,12 +1408,17 @@ export default function ManuscriptView() {
     contourEchoFade: { value: d.world.aperture.contourEchoFade, min: 0.3, max: 1, step: 0.01 },
     contourGain: { value: d.world.aperture.contourGain, min: 0.5, max: 4, step: 0.05 },
     contourBlur: { value: d.world.aperture.contourBlur, min: 0.1, max: 2, step: 0.05 },
-    hatchAngleA: { value: d.world.aperture.hatchAngleA, min: -90, max: 90, step: 1 },
-    hatchAngleB: { value: d.world.aperture.hatchAngleB, min: -90, max: 90, step: 1 },
-    hatchPeriod: { value: d.world.aperture.hatchPeriod, min: 2, max: 12, step: 0.5 },
-    hatchWidth: { value: d.world.aperture.hatchWidth, min: 0.5, max: 6, step: 0.25 },
-    hatchThresholdA: { value: d.world.aperture.hatchThresholdA, min: 0, max: 1, step: 0.02 },
-    hatchThresholdB: { value: d.world.aperture.hatchThresholdB, min: 0, max: 1, step: 0.02 },
+    // THE INSIDE-VIEW HATCH — the surface-locked stroke dials (the
+    // screen-angle families are retired)
+    strokePitch: { value: d.world.aperture.strokePitch, min: 0.05, max: 0.5, step: 0.005 },
+    strokeDuty: { value: d.world.aperture.strokeDuty, min: 0.1, max: 0.35, step: 0.01 },
+    strokeFloor: { value: d.world.aperture.strokeFloor, min: 0, max: 0.6, step: 0.01 },
+    crossOnset: { value: d.world.aperture.crossOnset, min: 0.2, max: 1, step: 0.01 },
+    grazingGain: { value: d.world.aperture.grazingGain, min: 0, max: 4, step: 0.05 },
+    grazingFalloff: { value: d.world.aperture.grazingFalloff, min: 0.5, max: 5, step: 0.1 },
+    chiralityAngleDeg: { value: d.world.aperture.chiralityAngleDeg, min: 0, max: 40, step: 1 },
+    nibDepthScale: { value: d.world.aperture.nibDepthScale, min: 0, max: 2, step: 0.02 },
+    nibNear: { value: d.world.aperture.nibNear, min: 0.5, max: 2, step: 0.05 },
     darkSolid: { value: d.world.aperture.darkSolid, min: 0, max: 1, step: 0.02 },
     creaseThreshold: { value: d.world.aperture.creaseThreshold, min: 0.05, max: 1.5, step: 0.01 },
     depthBreakThreshold: { value: d.world.aperture.depthBreakThreshold, min: 0.005, max: 0.3, step: 0.005 },
@@ -2228,7 +2239,16 @@ export default function ManuscriptView() {
   const apertures = useMemo(
     () =>
       dim3All.map((model) => {
-        const gate = buildAperture(model);
+        // step 8 (THE INSIDE-VIEW HATCH): the cone-angle seam takes the
+        // SEALED metric when the room's seed is a thicken product whose base
+        // rides in the world — the SAME Shape object that built the domain
+        // feeds the reader (one edge-id space). Every current room is
+        // cube-seeded → the k×90° heuristic stays live (reported).
+        const lineageBase =
+          model.shape.genealogy?.operation === 'product' && model.shape.genealogy.parentShapeId
+            ? shapeById.get(model.shape.genealogy.parentShapeId)
+            : undefined;
+        const gate = buildAperture(model, lineageBase ? { base: lineageBase } : undefined);
         if (!gate.ok) {
           return { key: model.key, gate, trace: null, caption: gate.reason };
         }
@@ -3806,12 +3826,15 @@ export default function ManuscriptView() {
                   contourEchoFade: inkCtl.contourEchoFade,
                   contourGain: inkCtl.contourGain,
                   contourBlur: inkCtl.contourBlur,
-                  hatchAngleA: inkCtl.hatchAngleA,
-                  hatchAngleB: inkCtl.hatchAngleB,
-                  hatchPeriod: inkCtl.hatchPeriod,
-                  hatchWidth: inkCtl.hatchWidth,
-                  hatchThresholdA: inkCtl.hatchThresholdA,
-                  hatchThresholdB: inkCtl.hatchThresholdB,
+                  strokePitch: inkCtl.strokePitch,
+                  strokeDuty: inkCtl.strokeDuty,
+                  strokeFloor: inkCtl.strokeFloor,
+                  crossOnset: inkCtl.crossOnset,
+                  grazingGain: inkCtl.grazingGain,
+                  grazingFalloff: inkCtl.grazingFalloff,
+                  chiralityAngleDeg: inkCtl.chiralityAngleDeg,
+                  nibDepthScale: inkCtl.nibDepthScale,
+                  nibNear: inkCtl.nibNear,
                   darkSolid: inkCtl.darkSolid,
                   creaseThreshold: inkCtl.creaseThreshold,
                   depthBreakThreshold: inkCtl.depthBreakThreshold,
@@ -3865,12 +3888,15 @@ export default function ManuscriptView() {
                   contourEchoFade: inkCtl.contourEchoFade,
                   contourGain: inkCtl.contourGain,
                   contourBlur: inkCtl.contourBlur,
-                  hatchAngleA: inkCtl.hatchAngleA,
-                  hatchAngleB: inkCtl.hatchAngleB,
-                  hatchPeriod: inkCtl.hatchPeriod,
-                  hatchWidth: inkCtl.hatchWidth,
-                  hatchThresholdA: inkCtl.hatchThresholdA,
-                  hatchThresholdB: inkCtl.hatchThresholdB,
+                  strokePitch: inkCtl.strokePitch,
+                  strokeDuty: inkCtl.strokeDuty,
+                  strokeFloor: inkCtl.strokeFloor,
+                  crossOnset: inkCtl.crossOnset,
+                  grazingGain: inkCtl.grazingGain,
+                  grazingFalloff: inkCtl.grazingFalloff,
+                  chiralityAngleDeg: inkCtl.chiralityAngleDeg,
+                  nibDepthScale: inkCtl.nibDepthScale,
+                  nibNear: inkCtl.nibNear,
                   darkSolid: inkCtl.darkSolid,
                   creaseThreshold: inkCtl.creaseThreshold,
                   depthBreakThreshold: inkCtl.depthBreakThreshold,
@@ -4544,12 +4570,15 @@ export default function ManuscriptView() {
             contourEchoFade: exploreInkCtl.contourEchoFade,
             contourGain: exploreInkCtl.contourGain,
             contourBlur: exploreInkCtl.contourBlur,
-            hatchAngleA: d.world.explore.ink.hatchAngleA,
-            hatchAngleB: d.world.explore.ink.hatchAngleB,
-            hatchPeriod: exploreInkCtl.hatchPeriod,
-            hatchWidth: exploreInkCtl.hatchWidth,
-            hatchThresholdA: exploreInkCtl.hatchThresholdA,
-            hatchThresholdB: exploreInkCtl.hatchThresholdB,
+            strokePitch: exploreInkCtl.strokePitch,
+            strokeDuty: exploreInkCtl.strokeDuty,
+            strokeFloor: exploreInkCtl.strokeFloor,
+            crossOnset: exploreInkCtl.crossOnset,
+            grazingGain: exploreInkCtl.grazingGain,
+            grazingFalloff: exploreInkCtl.grazingFalloff,
+            chiralityAngleDeg: exploreInkCtl.chiralityAngleDeg,
+            nibDepthScale: exploreInkCtl.nibDepthScale,
+            nibNear: exploreInkCtl.nibNear,
             darkSolid: d.world.explore.ink.darkSolid,
             creaseThreshold: d.world.explore.ink.creaseThreshold,
             depthBreakThreshold: d.world.explore.ink.depthBreakThreshold,

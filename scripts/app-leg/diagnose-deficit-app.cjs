@@ -391,29 +391,40 @@ function killTree(pid) {
         check('§E-SHELL-INTACT ★★ CLOSE RETURNS TO THE UNHARMED SHELL + THE CARD DOORWAY + THE ESC LAW: closing the window leaves the SAME shell caption byte-equal, the selection held, and the Fit control live; the card\'s own doorway row re-opens the window; Esc closes the window ALONE (the selection survives — the shell is never falsified)',
           get('explore.shellIntactOnReturn').ok && get('explore.cardDoorPresent').ok && get('explore.cardDoorAndEsc').ok,
           `${get('explore.shellIntactOnReturn').detail} · ${get('explore.cardDoorAndEsc').detail}`);
-        // D1 (SEAL_D1_EXPLORE_INK_RETUNE) — the ink retune at window scale
-        check('§E-D1 ★★ MIDTONES LIVE — THE TONE CARRIES A GREY RANGE, NOT TWO VALUES: the standing frame\'s histogram (measured on the EXACT bytes put to the canvas) holds the interior mid band ≥ 17% and the weave rung (the single-hatch grey — the ladder\'s middle) ≥ 5%; the shell-verbatim reuse measured 13.8% · 2.9% — the two-value collapse goes RED here',
-          get('explore.inkMidtones').ok, get('explore.inkMidtones').detail);
-        check('§E-D1 ★ SAME-HAND + INK-ONLY (source-pinned): the window\'s ink ground IS the page\'s own parchment (#e9e2cf) and the craft is WINDOW-TUNED (toneGamma 0.88 / contourWeight 0.3 — the 1.25/0.55 verbatim reuse is gone from the window\'s props); the resolution is UNCHANGED at 128 (D1 is ink alone — the designer re-looks before any pixel spend); the tone ladder\'s thresholds ride the explore-owned defaults; apertureModel + apertureInk byte-identity rides diagnose-the-aperture + the freeze (E-APERTURE-UNTOUCHED)',
+        // THE INSIDE-VIEW HATCH (SEAL_THE_INSIDE_VIEW_HATCH) — grey from
+        // LINES; §E-D1-MIDTONES is RETIRED (its fill-range bar demanded the
+        // exact wash the designer reversed)
+        check('§E-HATCH ★★ GREY FROM LINES, LIVE: the standing frame\'s mid-band pixels live as STROKES — ≥ 50% carry high 8-neighbour contrast (a stroke sits beside paper; a flat wash reads ~0 here) with a real mid presence (≥ 6%), measured on the EXACT bytes put to the canvas. The retired D1 fill bar demanded the opposite law',
+          get('explore.greyFromLines').ok, get('explore.greyFromLines').detail);
+        check('§E-HATCH ★ SURFACE-LOCKED + NIB + CHIRALITY + RESOLUTION-HELD + THE CONFORMAL SEAM (source-pinned): the screen-space fixed-angle families are GONE from the ink (no px·cosA phase); the hatch reads the trace\'s normal + objPos + facing channels (surface direction · surface phase · grazing density) and twists ±chiralityAngle by the copy\'s parity; the nib scales the contour by depth; the explore defaults carry the stroke dials (strokePitch/strokeFloor/crossOnset) with resolution UNCHANGED at 128 (D2 held); apertureModel\'s cone census reads the ONE seam (resolveConeAngleSource — measured via readPillarDihedrals + edgeClassOf when a dihedral-owning thicken product rides, k×90° otherwise) and the window wires the lineage lookup; apertureModel/apertureInk edits ride their OWN witnesses green (E-APERTURE-WITNESSED)',
           (() => {
             const defaultsSrc = fs.readFileSync(path.join(repoRoot, 'src/design/designDefaults.ts'), 'utf8');
             const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+            const inkSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureInk.ts'), 'utf8');
+            const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
             const exploreBlock = defaultsSrc.slice(defaultsSrc.indexOf('explore: {'), defaultsSrc.indexOf('junction: {'));
             return (
+              !inkSrc.includes('px * cosA + py * sinA') &&
+              inkSrc.includes('objPos') &&
+              inkSrc.includes('facingBuf[idx]') &&
+              inkSrc.includes('chiralityAngleDeg') &&
+              inkSrc.includes('nibDepthScale * depth[idx]') &&
+              modelSrc.includes('objPos[3 * idx] = p[0] + v[0] * best.t;') &&
+              modelSrc.includes('export function resolveConeAngleSource') &&
+              modelSrc.includes('readPillarDihedrals(lineage.base, shape)') &&
+              modelSrc.includes('domain.complex.edgeClassOf(reading.pillarEdgeId)') &&
+              modelSrc.includes('geometryFromTower(tower, resolveConeAngleSource(domain, lineage))') &&
+              viewSrc.includes("model.shape.genealogy?.operation === 'product'") &&
               exploreBlock.includes('resolution: 128,') &&
               exploreBlock.includes("paperColor: '#e9e2cf',") &&
-              exploreBlock.includes('toneGamma: 0.88,') &&
-              exploreBlock.includes('contourWeight: 0.3,') &&
-              exploreBlock.includes('hatchThresholdA: 0.3,') &&
-              exploreBlock.includes('hatchThresholdB: 0.62,') &&
-              viewSrc.includes('toneGamma: exploreInkCtl.toneGamma,') &&
-              viewSrc.includes('paperColor: d.world.explore.ink.paperColor,') &&
-              // exactly the SHELL's two trace memos still use the aperture
-              // dials — the window's third use is GONE (the verbatim reuse)
+              exploreBlock.includes('strokePitch: 0.085,') &&
+              exploreBlock.includes('strokeFloor: 0.12,') &&
+              exploreBlock.includes('crossOnset: 0.55,') &&
+              viewSrc.includes('strokePitch: exploreInkCtl.strokePitch,') &&
               (viewSrc.match(/toneGamma: apertureCtl\.toneGamma,/g) ?? []).length === 2
             );
           })(),
-          'the explore-owned craft/ink pins');
+          'the surface-lock/nib/chirality/seam pins');
         check('§E-EXPLORE THE SUBSTRATE HOLDS ITS LAWS (source-pinned): the walk consumes the aperture\'s EXPORTED applyPoint/applyVector on the witnessed deck (the transport math is never re-derived — apertureModel byte-untouched rides its NOT_FROZEN row + diagnose-the-aperture); the window\'s opening frame IS the tracer\'s own default frame (both literals byte-equal in model and tracer); the threshold law is TOTAL (E³ opens · cone · folded · the surface\'s later-rung declaration · the greyed chip\'s word); the window is a thin hand (renderApertureInk + apertureCaption verbatim, no π₁/fundamental-group word anywhere in the new files); the worker rides the fieldWorker idiom (module URL + type module); the Esc guard closes the window FIRST',
           (() => {
             const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/exploreWindowModel.ts'), 'utf8');

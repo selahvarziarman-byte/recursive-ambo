@@ -34,11 +34,12 @@
 //     the copies are NOT drawn — they are what the light does. The scene is
 //     built ONCE; no copy of any object is ever materialized.
 //   · the DEFAULT INHABITANTS — a bare room is a lie (T³'s three generators
-//     are genuinely indistinguishable in an empty room): a TWO-FACED MASK in
-//     the middle (recurrence — a face looks back down every corridor, never a
-//     blank back; its aspects tell the decks apart) and a RIGHT-HANDED COIL
-//     beneath it (chirality, legible at a glance — NO arrows, NO field lines:
-//     the helix, never the diagram). The person's own forms are what they ADD.
+//     are genuinely indistinguishable in an empty room): THE SCENE (designer
+//     2026-08-08_1810, authored): the happy/sad JANUS PLAQUE (recurrence — a
+//     face looks back down every corridor, never a blank back; the two
+//     aspects differ by ONE ARC) and the RIGHT-HANDED COIL beside it
+//     (chirality, legible at a glance — NO arrows, NO field lines: the
+//     helix, never the diagram). The person's own forms are what they ADD.
 //   · COUNTABLE CAPTIONS — copies, not pixels; objects, not area. The trace
 //     counts VISIBLE COPIES (distinct accumulated deck words owning at least
 //     `minCopyPixels` pixels) per inhabitant, and how many come back mirrored.
@@ -57,6 +58,8 @@ import {
   type Level3SeedCell,
 } from '../lib/faceIdentification';
 import { readLevel3Tower, type Level3TowerReading } from '../lib/level3Invariants';
+// step 8 (THE INSIDE-VIEW HATCH): the SEALED metric — read-only, derive-only
+import { readPillarDihedrals } from '../lib/conformalAtom';
 import { bisectEdges, liftPairingsToBisected } from '../lib/level3Subdivision';
 import type { Level3SoundnessReport } from '../lib/level3SoundnessGate';
 import { buildFormDomain } from './formDomainModel';
@@ -571,6 +574,70 @@ export function subdivideAndReadPersonDomain(seedShape: Shape, rows: AperturePai
 // GEOMETRY = THE RECESSION LAW, UN-GATED (n from the tower's own edge links)
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// THE CONE-ANGLE SOURCE (2026-08-08, THE INSIDE-VIEW HATCH step 8 — the
+// mothership's conformal wiring, the researcher's pinned map): ONE clean seam
+// deciding where a form's interior cone angles come from.
+//   · MEASURED — when the domain's seed is a THICKEN PRODUCT whose cells own
+//     their dihedrals AND its base rides in (the genealogy's parent): the
+//     SEALED `readPillarDihedrals(base, thickened)` readings, wired onto the
+//     glued classes by the pinned DIRECT lookup
+//     `complex.edgeClassOf(r.pillarEdgeId)` (buildFormDomain→readSeedCell
+//     runs prefix-free, so the pillar ids ARE the complex's edge ids).
+//     A sew that merges several pillars into one class AGGREGATES:
+//     the class's total angle = Σ member pillars' dihedrals (the angle
+//     actually swept around the merged edge; the researcher's fixture table
+//     arbitrates the convention — flagged in the handback).
+//   · HEURISTIC — everywhere else: the standing k×90° census (each interior
+//     class of size k at k times the cube's dihedral). Every CURRENT aperture
+//     subject is cube-seeded (no owned dihedrals), so today this branch is
+//     the live one — the seam makes the swap total the moment a thicken-born
+//     product enters the door.
+//   · REFUSAL — a junction base vertex makes `readPillarDihedrals` THROW
+//     (a non-manifold 3-edge); the refusal is CARRIED verbatim, never turned
+//     into a cone number, and the census falls back to the heuristic with the
+//     refusal spoken on the label.
+// ---------------------------------------------------------------------------
+
+export interface ConeAngleSource {
+  kind: 'measured' | 'heuristic';
+  anglesByClass: Map<string, number> | null; // radians per interior edge-class root (measured only)
+  refusal: string | null; // the junction refusal, carried verbatim
+}
+
+export const HEURISTIC_CONE_SOURCE: ConeAngleSource = { kind: 'heuristic', anglesByClass: null, refusal: null };
+
+export function resolveConeAngleSource(domain: DomainModel, lineage?: { base: Shape }): ConeAngleSource {
+  const shape = domain.shape;
+  const owned = shape.cells.length === 1 && shape.cells[0].dihedralAngles && Object.keys(shape.cells[0].dihedralAngles).length > 0;
+  if (!lineage?.base || !owned) return HEURISTIC_CONE_SOURCE;
+  try {
+    // ⛔ THE PRECONDITION (researcher 1430): the SAME thickened Shape object
+    // feeds this reader and fed buildFormDomain — one edge-id space. The
+    // domain carries that shape verbatim (`domain.shape`), so the ids match
+    // by construction; a re-thickened or divergent solid never reaches here.
+    const readings = readPillarDihedrals(lineage.base, shape);
+    // ZERO readings means NO interior pillar was readable (a sheet base has
+    // only boundary pillars) — nothing was measured, so nothing may be
+    // claimed: the heuristic stands. (All-smooth readings are different:
+    // they MEASURED 2π everywhere and may say so.)
+    if (readings.length === 0) return HEURISTIC_CONE_SOURCE;
+    const anglesByClass = new Map<string, number>();
+    for (const reading of readings) {
+      if (reading.coneAngle === null) continue; // smooth pillars mint no cone edge
+      const classRoot = domain.complex.edgeClassOf(reading.pillarEdgeId);
+      anglesByClass.set(classRoot, (anglesByClass.get(classRoot) ?? 0) + reading.totalDihedral);
+    }
+    return { kind: 'measured', anglesByClass, refusal: null };
+  } catch (error) {
+    return {
+      kind: 'heuristic',
+      anglesByClass: null,
+      refusal: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 export interface ApertureGeometry {
   // B.0 THE HONEST DOOR (researcher-ruled, sealed fab02d7e…e77e2): the engine
   // is EUCLIDEAN — the seed cube has 90° dihedrals and the deck maps are
@@ -590,7 +657,7 @@ export interface ApertureGeometry {
   boundary: string | null;
 }
 
-export function geometryFromTower(tower: DomainModel['tower']): ApertureGeometry {
+export function geometryFromTower(tower: DomainModel['tower'], coneSource?: ConeAngleSource | null): ApertureGeometry {
   // THE BOUNDED FORM: boundary edge classes are excluded from the dihedral
   // census exactly as fold loci are — k×90° names a CONE angle only on an
   // interior class. On a closed form the boundary set is empty and every
@@ -603,12 +670,47 @@ export function geometryFromTower(tower: DomainModel['tower']): ApertureGeometry
   const interiorLinks = tower.gate.edgeLinks.filter((link) => !boundaryRoots.has(link.edgeClass));
   const n = tower.gate.edgeLinks.map((link) => link.memberEdgeIds.length);
   const interiorN = interiorLinks.map((link) => link.memberEdgeIds.length);
+  // step 8 (THE INSIDE-VIEW HATCH) — the MEASURED source supersedes the
+  // k×90° heuristic wholesale: the cone edges are exactly the classes the
+  // sealed metric read as cones; every other interior class is metric-smooth
+  // whatever its k. A carried junction refusal rides the label and the
+  // census below falls back to the heuristic (never a half-wired source).
+  const source = coneSource ?? HEURISTIC_CONE_SOURCE;
+  const refusalNote = source.refusal ? ` · metric refused: ${source.refusal}` : '';
+  if (source.kind === 'measured' && source.anglesByClass) {
+    const measured = interiorLinks.filter((link) => source.anglesByClass!.has(link.edgeClass));
+    if (measured.length === 0) {
+      return {
+        kind: 'E3',
+        n,
+        label: `E³ — n=[${n.join(',')}] · every interior pillar measures 2π (the sealed metric)${boundary ? ` · ${boundary}` : ''}`,
+        coneEdges: null,
+        boundary,
+      };
+    }
+    const coneCountsByAngle = new Map<number, number>();
+    for (const link of measured) {
+      const deg = Math.round(((source.anglesByClass!.get(link.edgeClass) as number) * 1800) / Math.PI) / 10;
+      coneCountsByAngle.set(deg, (coneCountsByAngle.get(deg) ?? 0) + 1);
+    }
+    const coneEdges = [...coneCountsByAngle.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([deg, count]) => `${count} × ${deg}°`)
+      .join(', ');
+    return {
+      kind: 'cone',
+      n,
+      label: `Euclidean cone-manifold — n=[${n.join(',')}] · cone edges (measured): ${coneEdges}${boundary ? ` · ${boundary}` : ''}`,
+      coneEdges,
+      boundary,
+    };
+  }
   const uniform = interiorN.length > 0 && interiorN.every((v) => v === interiorN[0]);
   if (uniform && interiorN[0] === 4) {
     return {
       kind: 'E3',
       n,
-      label: `E³ — n=[${n.join(',')}] · 2π/4 = the cube's 90° dihedral${boundary ? ` · ${boundary}` : ''}`,
+      label: `E³ — n=[${n.join(',')}] · 2π/4 = the cube's 90° dihedral${boundary ? ` · ${boundary}` : ''}${refusalNote}`,
       coneEdges: null,
       boundary,
     };
@@ -628,7 +730,7 @@ export function geometryFromTower(tower: DomainModel['tower']): ApertureGeometry
   return {
     kind: 'cone',
     n,
-    label: `Euclidean cone-manifold — n=[${n.join(',')}]${coneEdges ? ` · cone edges: ${coneEdges}` : ''}${boundary ? ` · ${boundary}` : ''}`,
+    label: `Euclidean cone-manifold — n=[${n.join(',')}]${coneEdges ? ` · cone edges: ${coneEdges}` : ''}${boundary ? ` · ${boundary}` : ''}${refusalNote}`,
     coneEdges,
     boundary,
   };
@@ -710,7 +812,7 @@ export type ApertureGate =
   | { ok: true; deck: DeckEntry[]; geometry: ApertureGeometry | FoldedApertureGeometry }
   | { ok: false; reason: string };
 
-export function buildAperture(domain: DomainModel | FoldedDomain): ApertureGate {
+export function buildAperture(domain: DomainModel | FoldedDomain, lineage?: { base: Shape }): ApertureGate {
   // 0.2 — THE BOUNDARY: this branch keys on FOLDED, never on !sound. The 336
   // unsound-but-NOT-folded patterns (pinches, bad links) are not orbifolds and
   // stay refused below by the S² gate's own words. An orbifold is a legitimate
@@ -740,7 +842,9 @@ export function buildAperture(domain: DomainModel | FoldedDomain): ApertureGate 
   // geodesic flow on a Euclidean cone-manifold, ratified; the transport is
   // unchanged. (Unsound/folded forms stay refused ABOVE — that gate is 0.2's,
   // not B.0's.)
-  const geometry = geometryFromTower(tower);
+  // step 8: the cone census reads the ONE seam — measured when the seed is a
+  // dihedral-owning thicken product with its base in hand, k×90° otherwise
+  const geometry = geometryFromTower(tower, resolveConeAngleSource(domain, lineage));
   const pairings = domain.complex.pairings;
   try {
     const deck = deckOf(domain.shape, pairings);
@@ -898,6 +1002,16 @@ export interface ApertureTrace {
   // is nothing but creases: the gaps between fingers are SHALLOW depth steps
   // but SHARP normal steps; without this the hand renders as a mitten.
   normal: Float32Array; // 3 × W×H
+  // THE INSIDE-VIEW HATCH (2026-08-08, additive): the OBJECT-SPACE hit point.
+  // The scene is built ONCE in the seed frame and the ray is TRANSPORTED into
+  // it, so at the hit `p + v·t` IS the seed-frame coordinate — the
+  // surface-locked hatch's phase source (strokes ride the surface, never the
+  // screen). Storing it materialises NO copy (the ⛔ NEVER OBJECT-SPACE law
+  // forbids copying scene objects, not recording where a ray landed).
+  objPos: Float32Array; // 3 × W×H
+  // …and the grazing scalar |n·v| at the hit (already computed for the
+  // contour term) — the hatch's density source (dense edge-on, sparse face-on)
+  facing: Float32Array;
   counts: ApertureTraceCounts;
 }
 
@@ -1008,6 +1122,8 @@ export function traceAperture(options: {
   const material = new Int8Array(W * H);
   const depth = new Float32Array(W * H);
   const normal = new Float32Array(3 * W * H);
+  const objPos = new Float32Array(3 * W * H);
+  const facingBuf = new Float32Array(W * H);
 
   let transports = 0;
   let litPixels = 0;
@@ -1196,6 +1312,13 @@ export function traceAperture(options: {
           normal[3 * idx] = best.n[0];
           normal[3 * idx + 1] = best.n[1];
           normal[3 * idx + 2] = best.n[2];
+          // THE INSIDE-VIEW HATCH: the seed-frame hit point + the grazing
+          // scalar (facing computed above for the contour term) — additive
+          // outputs; the transport and every count are untouched
+          objPos[3 * idx] = p[0] + v[0] * best.t;
+          objPos[3 * idx + 1] = p[1] + v[1] * best.t;
+          objPos[3 * idx + 2] = p[2] + v[2] * best.t;
+          facingBuf[idx] = facing;
           litPixels += 1;
           if (!best.scaffold) recordCopy(best.mat, g);
           break;
@@ -1244,6 +1367,8 @@ export function traceAperture(options: {
     material,
     depth,
     normal,
+    objPos,
+    facing: facingBuf,
     counts: {
       transports,
       litPixels,
@@ -1281,8 +1406,12 @@ export function apertureCaption(geometry: ApertureGeometry | FoldedApertureGeome
       : geometry.kind === 'E3'
         ? `E³ · n=[${geometry.n.join(',')}]`
         : `Euclidean cone-manifold · n=[${geometry.n.join(',')}] · cone edges: ${geometry.coneEdges}`,
-    `orbit (visible): ${counts.maskCopiesVisible} mask${counts.maskCopiesVisible === 1 ? '' : 's'}`,
-    `${counts.handCopiesMirrored} of the ${counts.handCopiesVisible} hands are LEFT — count them`,
+    // THE SCENE (designer 1810): the inhabitants are the PLAQUE (recurrence,
+    // the MASK count slot) and the COIL (chirality, the HAND count slot);
+    // the mirrored wording is the designer's plate's own. FEED (researcher
+    // §4b): the orientation-floor wording remains her open question.
+    `orbit (visible): ${counts.maskCopiesVisible} plaque${counts.maskCopiesVisible === 1 ? '' : 's'}`,
+    `${counts.handCopiesMirrored} of the ${counts.handCopiesVisible} coils come back mirrored — count them`,
   ];
   if (counts.formCopiesVisible > 0) {
     parts.push(`${counts.formCopiesVisible} of the placed form${counts.formCopiesMirrored > 0 ? ` (${counts.formCopiesMirrored} mirrored)` : ''}`);

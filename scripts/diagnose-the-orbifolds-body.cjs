@@ -233,7 +233,11 @@ check('…and THE RP² POINT PRINTS NOTHING: on all 51 folded-cone-free bodies t
 
 // ═════ [e] CLAUSE 5 — CLAIMS NOTHING ══════════════════════════════════════════════
 console.log('\n----- [e] the body claims NOTHING: no "manifold" in any folded string; the mirrored caption names handedness (w₁), never the fold (clause 5) -----');
-check('★ CLAUSE 5 — across all 97 folded bodies: label and caption contain NO "manifold" (non-freeness only — orbifold · fold loci · true cones; 0.3\'s certificate is not smuggled), and the mirrored[] caption line is the ruled w₁ register ("N of the M hands are LEFT — count them") carrying no fold-attribution',
+// RECUT (THE SCENE, 2026-08-08): the w₁ register's ruled words are the
+// designer's plate's own — "N of the K coils come back mirrored — count
+// them" (the coil replaced the hand as the chirality counter). The law is
+// unchanged: handedness only, never a fold-attribution.
+check('★ CLAUSE 5 — across all 97 folded bodies: label and caption contain NO "manifold" (non-freeness only — orbifold · fold loci · true cones; 0.3\'s certificate is not smuggled), and the mirrored[] caption line is the ruled w₁ register ("N of the K coils come back mirrored — count them") carrying no fold-attribution',
   foldedSet.every((s) => {
     const g = A.geometryFromFoldedGate(s.verdict.gate);
     if (/manifold/i.test(g.label)) return false;
@@ -243,8 +247,8 @@ check('★ CLAUSE 5 — across all 97 folded bodies: label and caption contain N
       formCopiesMirrored: 0, minCopyPixels: 0,
     });
     if (/manifold/i.test(caption)) return false;
-    const handsLine = caption.split(' · ').find((part) => part.includes('are LEFT'));
-    return handsLine !== undefined && /\d+ of the \d+ hands are LEFT — count them/.test(handsLine) && !/fold/i.test(handsLine);
+    const mirroredLine = caption.split(' · ').find((part) => part.includes('come back mirrored'));
+    return mirroredLine !== undefined && /\d+ of the \d+ coils come back mirrored — count them/.test(mirroredLine) && !/fold/i.test(mirroredLine);
   }));
 
 // ═════ [f] ★ CLAUSE 6 — both wrong mechanisms, carried in-memory ══════════════════
@@ -277,7 +281,7 @@ check('★ CLAUSE 6(a) — the !SOUND-KEYED branch, carried in-memory, VISIBLY D
 // w₁: on the 57 SOUND w₁=1 forms (which carry NO fold) it would certify a
 // fold that does not exist.
 const foldClaimCaption = (counts) =>
-  `${counts.handCopiesMirrored} of the ${counts.handCopiesVisible} hands are LEFT — the fold shows itself`;
+  `${counts.handCopiesMirrored} of the ${counts.handCopiesVisible} coils come back mirrored — the fold shows itself`;
 check('★ CLAUSE 6(b) — the FOLD-CLAIMING caption, carried in-memory, VISIBLY FAILS clause 5: on a SOUND w₁=1 fold-free form whose mirrored[] genuinely lights (measured below), the mutant caption asserts "the fold shows itself" — certifying a fold in a manifold that has none (57 such forms exist; the honest caption speaks only handedness)',
   (() => {
     const w1Forms = soundSet.filter((s) => s.verdict.domain.tower.w1.w1 === 1);
@@ -290,8 +294,8 @@ check('★ CLAUSE 6(b) — the FOLD-CLAIMING caption, carried in-memory, VISIBLY
     for (let idx = 0; idx < trace.mirrored.length; idx += 1) if (trace.mirrored[idx] > 0 && trace.hit[idx] > 0) mirroredPx += 1;
     const mutant = foldClaimCaption(trace.counts);
     const honest = A.apertureCaption(gate.geometry, trace.counts);
-    note(`sound w₁=1 fold-free forms: ${w1Forms.length} · mirrored px on the fixture (40²): ${mirroredPx} · mutant: "…${mutant.slice(-42)}" · honest hands line: "…are LEFT — count them"`);
-    return mirroredPx > 0 && /fold/.test(mutant) && !/fold/i.test(honest.split(' · ').find((p) => p.includes('are LEFT')) ?? 'fold');
+    note(`sound w₁=1 fold-free forms: ${w1Forms.length} · mirrored px on the fixture (40²): ${mirroredPx} · mutant: "…${mutant.slice(-42)}" · honest mirrored line: "…come back mirrored — count them"`);
+    return mirroredPx > 0 && /fold/.test(mutant) && !/fold/i.test(honest.split(' · ').find((p) => p.includes('come back mirrored')) ?? 'fold');
   })());
 
 // ═════ [g] the freeze — must read ok · 44 · NO drift (0.2 never reached the engine) ═

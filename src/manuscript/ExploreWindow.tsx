@@ -57,11 +57,13 @@ interface ExploreSeam {
   // crossing frame must look like any other walking frame (equivariance);
   // a wrong transport would explode exactly here
   deltas: { delta: number; crossed: boolean; gesture: 'look' | 'advance' | null }[];
-  // D1 — the TONE LADDER, measured on the rendered bytes the person sees:
-  // fractions of covered pixels at paper (t<0.15), the interior mid band
-  // (0.2≤t<0.9), and the weave rung (0.65≤t<0.85 — the single-hatch grey).
-  // A two-value collapse reads mid≈0 · weave≈0 exactly here.
-  inkTone: { paper: number; mid: number; weave: number } | null;
+  // THE INSIDE-VIEW HATCH — grey from LINES, measured on the rendered bytes
+  // the person sees: paper fraction, the interior mid band, and
+  // strokeContrast — the fraction of mid-band pixels whose 8-neighbour tone
+  // range is HIGH (a stroke lives beside paper; a wash sits in a flat
+  // region). D1's fill-ladder bar is RETIRED; a wash reads strokeContrast≈0
+  // exactly here.
+  inkTone: { paper: number; mid: number; strokeContrast: number } | null;
 }
 
 const seamOf = (): ExploreSeam => {
@@ -91,30 +93,49 @@ const seamOf = (): ExploreSeam => {
 const hexChannel = (hexColor: string, at: number): number => parseInt(hexColor.slice(at, at + 2), 16);
 function measureInkTone(
   bytes: Uint8ClampedArray,
+  width: number,
   paperColor: string,
   interiorInk: string,
-): { paper: number; mid: number; weave: number } {
+): { paper: number; mid: number; strokeContrast: number } {
   const p = [hexChannel(paperColor, 1), hexChannel(paperColor, 3), hexChannel(paperColor, 5)];
   const k = [hexChannel(interiorInk, 1), hexChannel(interiorInk, 3), hexChannel(interiorInk, 5)];
   const d = [p[0] - k[0], p[1] - k[1], p[2] - k[2]];
   const dd = d[0] * d[0] + d[1] * d[1] + d[2] * d[2] || 1;
+  const total = bytes.length / 4;
+  const height = total / width;
+  const tOf = (i: number): number | null => {
+    if (bytes[i * 4 + 3] === 0) return null;
+    return Math.max(
+      0,
+      Math.min(1, ((p[0] - bytes[i * 4]) * d[0] + (p[1] - bytes[i * 4 + 1]) * d[1] + (p[2] - bytes[i * 4 + 2]) * d[2]) / dd),
+    );
+  };
   let covered = 0;
   let paperN = 0;
   let mid = 0;
-  let weave = 0;
-  for (let i = 0; i < bytes.length; i += 4) {
-    if (bytes[i + 3] === 0) continue; // beyond the cut
-    covered += 1;
-    const t = Math.max(
-      0,
-      Math.min(1, ((p[0] - bytes[i]) * d[0] + (p[1] - bytes[i + 1]) * d[1] + (p[2] - bytes[i + 2]) * d[2]) / dd),
-    );
-    if (t < 0.15) paperN += 1;
-    if (t >= 0.2 && t < 0.9) mid += 1;
-    if (t >= 0.65 && t < 0.85) weave += 1;
+  let midStroke = 0;
+  for (let y = 1; y < height - 1; y += 1) {
+    for (let x = 1; x < width - 1; x += 1) {
+      const i = y * width + x;
+      const t = tOf(i);
+      if (t === null) continue;
+      covered += 1;
+      if (t < 0.15) paperN += 1;
+      if (t < 0.2 || t >= 0.9) continue;
+      mid += 1;
+      let lo = 1;
+      let hi = 0;
+      for (const j of [i - 1, i + 1, i - width, i + width, i - width - 1, i - width + 1, i + width - 1, i + width + 1]) {
+        const tj = tOf(j);
+        if (tj === null) continue;
+        if (tj < lo) lo = tj;
+        if (tj > hi) hi = tj;
+      }
+      if (hi - lo > 0.35) midStroke += 1;
+    }
   }
   const n = covered || 1;
-  return { paper: paperN / n, mid: mid / n, weave: weave / n };
+  return { paper: paperN / n, mid: mid / n, strokeContrast: mid ? midStroke / mid : 0 };
 }
 
 let nextSession = 1;
@@ -200,9 +221,10 @@ export function ExploreWindow({
     // re-wrap: the ink's bytes ride whatever buffer it allocated; ImageData
     // demands a plain ArrayBuffer-backed view
     const bytes = new Uint8ClampedArray(renderApertureInk(trace, liveRef.current.ink));
-    // D1 — the tone ladder, measured on these exact bytes
+    // the grey-from-lines measure, on these exact bytes
     seamOf().inkTone = measureInkTone(
       bytes,
+      trace.width,
       liveRef.current.ink.paperColor ?? '#e9e2cf',
       liveRef.current.ink.interiorInk ?? '#2a251c',
     );

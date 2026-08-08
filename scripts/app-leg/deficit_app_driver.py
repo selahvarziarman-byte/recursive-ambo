@@ -1359,15 +1359,16 @@ def drive_explore(page):
         caption_ok,
         f"caption: {seam and seam['caption']}",
     )
-    # D1 — the tone ladder on the LIVE rendered bytes: the standing frame's
-    # histogram carries a grey range (the two-value collapse read mid 13.8% ·
-    # weave 2.9% at the shell-verbatim params; the ladder measured 19.7% ·
-    # 8.5% headless — the bar sits between the regimes)
+    # THE INSIDE-VIEW HATCH — grey from LINES on the LIVE rendered bytes:
+    # mid-band pixels must live as STROKES (high 8-neighbour contrast — a
+    # stroke sits beside paper), never a flat wash. Probe-measured: the
+    # surface-locked hatch reads strokeContrast ~0.8; a wash reads ~0.
+    # (§E-D1-MIDTONES' fill bar is RETIRED — the reversed law.)
     tone = seam and seam["inkTone"]
     record(
-        "explore.inkMidtones",
-        bool(tone) and tone["mid"] >= 0.17 and tone["weave"] >= 0.05,
-        f"tone bands: paper {tone and round(tone['paper'], 3)} · mid {tone and round(tone['mid'], 3)} · weave rung {tone and round(tone['weave'], 3)}",
+        "explore.greyFromLines",
+        bool(tone) and tone["mid"] >= 0.06 and tone["strokeContrast"] >= 0.5,
+        f"tone: paper {tone and round(tone['paper'], 3)} · mid {tone and round(tone['mid'], 3)} · stroke-contrast among mid {tone and round(tone['strokeContrast'], 3)}",
     )
 
     # ---- E-DRIVEABLE: look (drag rotates forward) --------------------------

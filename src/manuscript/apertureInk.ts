@@ -42,12 +42,21 @@ export interface ApertureInkStyle {
   contourEchoFade: number; // the line outlives the tone by a beat (spec ≈0.68)
   contourGain: number; // ≈1.9
   contourBlur: number; // ≈0.6 px
-  hatchAngleA: number; // degrees, ≈+36
-  hatchAngleB: number; // degrees, ≈−46
-  hatchPeriod: number; // px, ≈5
-  hatchWidth: number; // px, ≈1.5
-  hatchThresholdA: number; // ≈0.50
-  hatchThresholdB: number; // ≈0.74
+  // THE INSIDE-VIEW HATCH (2026-08-08, mothership 1320 settled): the
+  // screen-space fixed-angle families are RETIRED — grey is made from LINES
+  // that ride the SURFACE. Direction comes from the hit normal, phase from
+  // the object-space hit point (strokes never swim in screen space), density
+  // from grazing × tone (dense edge-on, sparse face-on), handedness from the
+  // returning copy's parity (the drawn chirality proof).
+  strokePitch: number; // OBJECT units between stroke lines, ≈0.16 (the cell spans 2)
+  strokeDuty: number; // base line-width fraction of the pitch, ≈0.32
+  strokeFloor: number; // density below this draws NO stroke (the lit face-on body is paper), ≈0.12
+  crossOnset: number; // density above this adds the second (crossing) family, ≈0.55
+  grazingGain: number; // how much edge-on grazing densifies, ≈1.6
+  grazingFalloff: number; // the grazing falloff RATE (the designer's dial), ≈2
+  chiralityAngleDeg: number; // ± the frame's twist about the normal; the sign is the copy's parity, ≈14
+  nibDepthScale: number; // the nib: contour weight falls with depth at this rate, ≈0.55
+  nibNear: number; // the near nib weight (heavy), ≈1.25
   darkSolid: number; // ≈0.90 — the mask's dark material (inert today; see above)
   // THE PROBES (2026-07-14, designer 0620): a hand is nothing but creases —
   // the gaps between fingers are SHALLOW depth steps but SHARP normal steps.
@@ -64,12 +73,15 @@ export const APERTURE_INK_DEFAULTS: ApertureInkStyle = {
   contourEchoFade: 0.68,
   contourGain: 1.85, // designer 0620
   contourBlur: 0.5, // designer 0620
-  hatchAngleA: 36,
-  hatchAngleB: -46,
-  hatchPeriod: 5,
-  hatchWidth: 1.5,
-  hatchThresholdA: 0.5,
-  hatchThresholdB: 0.74,
+  strokePitch: 0.16,
+  strokeDuty: 0.25, // the duty ruling: constant width, capped 0.35
+  strokeFloor: 0.12,
+  crossOnset: 0.55,
+  grazingGain: 1.6,
+  grazingFalloff: 2,
+  chiralityAngleDeg: 14,
+  nibDepthScale: 0.55,
+  nibNear: 1.25,
   darkSolid: 0.9,
   creaseThreshold: 0.5, // designer 0620
   depthBreakThreshold: 0.035, // designer 0620 — was 0.30-class, far too coarse
@@ -164,18 +176,28 @@ export function renderApertureInk(trace: ApertureTrace, styleIn: Partial<Apertur
     }
   }
 
-  // ---- the hatch families (screen-space, fixed angles) ----------------------
-  const radA = (style.hatchAngleA * Math.PI) / 180;
-  const radB = (style.hatchAngleB * Math.PI) / 180;
-  const cosA = Math.cos(radA);
-  const sinA = Math.sin(radA);
-  const cosB = Math.cos(radB);
-  const sinB = Math.sin(radB);
-  const duty = Math.min(1, style.hatchWidth / Math.max(1e-6, style.hatchPeriod));
-  const onLine = (u: number): boolean => {
-    const f = u / style.hatchPeriod;
-    return f - Math.floor(f) < duty;
-  };
+  // ---- THE SURFACE-LOCKED HATCH (the screen-space fixed angles are RETIRED)
+  // Direction: a tangent frame from the hit NORMAL (cross with its
+  // least-aligned axis) — a floor's strokes run transverse, a flank's run
+  // along it: the eye reads surface orientation from stroke direction alone.
+  // Phase: the OBJECT-SPACE hit point projected on the tangents — the strokes
+  // ride the surface and never swim in screen space under motion.
+  // Density: grazing × tone — dense edge-on, sparse face-on; the line WIDTH
+  // swells with density (the engraver's line) while the pitch stays put.
+  // Handedness: the frame twists ±chiralityAngle about the normal with the
+  // sign of the copy's parity — a right-handed weave returns left-handed.
+  const { normal: hatchNormal, objPos, facing: facingBuf } = trace;
+  const chi = (style.chiralityAngleDeg * Math.PI) / 180;
+  const cosChi = Math.cos(chi);
+  const sinChi = Math.sin(chi);
+  const pitch = Math.max(1e-4, style.strokePitch);
+  const frac = (u: number): number => u - Math.floor(u);
+  // ⛔ THE DUTY RULING (designer 2026-08-08_1650): the stroke width is
+  // CONSTANT — duty ≈ 0.25, hard-capped at 0.35. Tone is carried by density
+  // and the crossing family, NEVER by fattening the stroke ("a stroke that
+  // thickens is a fill growing out of a line — the wash creeping back in").
+  const strokeWidth = Math.min(0.35, style.strokeDuty);
+  const strokeAt = (u: number): number => (frac(u / pitch) < strokeWidth ? 1 : 0);
 
   // ---- the hand-cut rim (pure ALPHA — the cut, never a shadow ramp) ---------
   const cx = W / 2;
@@ -208,17 +230,67 @@ export function renderApertureInk(trace: ApertureTrace, styleIn: Partial<Apertur
       if (hit[idx] !== 0) {
         const e = echo[idx];
         const fade = Math.pow(style.echoFade, e);
-        // 3. HATCH — only where genuinely dark; two gated families, no gradient
+        // 3. THE SURFACE-LOCKED HATCH — grey from LINES only: density (never
+        // a fill value) carries the tone; a stroke pixel is a MARK at the
+        // stroke's own darkness, everything between strokes is paper
         const tone = 1 - Math.max(0, Math.min(1, value[idx]));
-        const hatchA = tone > style.hatchThresholdA && onLine(px * cosA + py * sinA) ? 1 : 0;
-        const hatchB = tone > style.hatchThresholdB && onLine(px * cosB + py * sinB) ? 1 : 0;
-        const shade = Math.max(hatchA, hatchB) * fade * 0.75;
+        const nx = hatchNormal[3 * idx];
+        const ny = hatchNormal[3 * idx + 1];
+        const nz = hatchNormal[3 * idx + 2];
+        // TRI-PLANAR surface lock: the stroke coordinates are FIXED global
+        // axes picked by the normal's dominant component (floor → transverse
+        // courses, wall → along-corridor lines), so the phase gradient is
+        // constant and the stripe width NEVER collapses into fat bands (a
+        // per-pixel tangent frame varies with the normal on curved surfaces
+        // and its phase gradient cancels — measured as plaid on the mask).
+        // The chirality twist rotates the family WITHIN the fixed plane,
+        // signed by the copy's parity.
+        const axn = Math.abs(nx);
+        const ayn = Math.abs(ny);
+        const azn = Math.abs(nz);
+        const ox = objPos[3 * idx];
+        const oy = objPos[3 * idx + 1];
+        const oz = objPos[3 * idx + 2];
+        let ou: number;
+        let ov: number;
+        if (axn >= ayn && axn >= azn) {
+          ou = oy;
+          ov = oz;
+        } else if (ayn >= azn) {
+          ou = oz;
+          ov = ox;
+        } else {
+          ou = ox;
+          ov = oy;
+        }
+        // handedness: the in-plane twist's SIGN is the parity
+        const s = mirrored[idx] < 0 ? -1 : 1;
+        const sinS = sinChi * s;
+        const u1 = ou * cosChi + ov * sinS;
+        const u2 = -ou * sinS + ov * cosChi;
+        // density: grazing × tone — dense edge-on, sparse face-on (the dial)
+        const graze = 1 - Math.max(0, Math.min(1, facingBuf[idx]));
+        const density = Math.max(
+          0,
+          Math.min(1, tone * (1 + style.grazingGain * Math.pow(graze, style.grazingFalloff))),
+        );
+        let strokes = 0;
+        if (density > style.strokeFloor) {
+          strokes = strokeAt(u1);
+          if (density > style.crossOnset) {
+            strokes = Math.max(strokes, strokeAt(u2));
+          }
+        }
+        const shade = strokes * fade * 0.8;
         // 4. SOLID — the mask's dark material only (inert today: real openings)
         const solid = style.darkMaterialId !== null && material[idx] === style.darkMaterialId ? style.darkSolid * fade : 0;
-        // 2. CONTOUR — the primary mark, on its own slower fade
+        // 2. CONTOUR — the primary mark, on its own slower fade, carried by
+        // THE NIB: heavy near, fine far — the horizon is the line going too
+        // fine to resolve (never fog, never a wall)
         const contourFade = Math.pow(style.contourEchoFade, e);
+        const nib = style.nibNear / (1 + style.nibDepthScale * depth[idx]);
         // 5. compose: the strongest mark wins; tone never fills
-        ink = Math.max(shade, solid, contour[idx] * contourFade * 0.95);
+        ink = Math.max(shade, solid, Math.min(1, contour[idx] * contourFade * 0.95 * nib));
       }
       ink = Math.max(0, Math.min(1, ink));
       out[o] = Math.round(paper[0] + (line[0] - paper[0]) * ink);

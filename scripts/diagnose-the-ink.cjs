@@ -279,21 +279,81 @@ const isEdgy = (i) => {
   }
   return false;
 };
+// RECUT (THE INSIDE-VIEW HATCH, 2026-08-08): under the surface-locked
+// grazing law a GRAZING lit pixel legitimately carries strokes (dense
+// edge-on IS the ruling). The anti-photograph law re-cuts to its honest
+// core: wherever the ink's own density law says NO stroke may fire (density
+// under the floor), the pixel is EXACTLY paper — no wash can hide there.
+// The population is measured on a deliberately LIT trace (soft gamma, low
+// rim-darkening) so the under-floor region is real, never vacuous.
+const litTrace = A.traceAperture({
+  deck: t3Gate.deck,
+  scene,
+  width: TRACE_W,
+  height: TRACE_W,
+  // very soft gamma + near-zero rim darkening: a genuinely LIT frame, so
+  // the under-floor region is a real population (measured 14 px at 0.55 —
+  // vacuous; 0.3 lifts the lit body under the floor across real area)
+  craft: { toneGamma: 0.3, contourWeight: 0.05 },
+});
+const litInk = INK.renderApertureInk(litTrace, styleDefaults);
+const litMark = new Uint8Array(W * H);
+{
+  const pairBreak = (a, b) => {
+    if (litTrace.hit[a] !== litTrace.hit[b]) {
+      litMark[litTrace.hit[a] !== 0 ? a : b] = 1;
+      return;
+    }
+    if (litTrace.hit[a] === 0) return;
+    const dn = Math.hypot(
+      litTrace.normal[3 * a] - litTrace.normal[3 * b],
+      litTrace.normal[3 * a + 1] - litTrace.normal[3 * b + 1],
+      litTrace.normal[3 * a + 2] - litTrace.normal[3 * b + 2],
+    );
+    if (dn > 0.5 || Math.abs(litTrace.depth[a] - litTrace.depth[b]) > 0.035 || litTrace.mirrored[a] !== litTrace.mirrored[b]) {
+      litMark[a] = 1;
+      litMark[b] = 1;
+    }
+  };
+  for (let y = 0; y < H; y += 1) {
+    for (let x = 0; x < W; x += 1) {
+      const i = y * W + x;
+      if (x + 1 < W) pairBreak(i, i + 1);
+      if (y + 1 < H) pairBreak(i, i + W);
+    }
+  }
+}
+const litEdgy = (i) => {
+  const x = i % W;
+  const y = (i - x) / W;
+  for (let dy = -2; dy <= 2; dy += 1)
+    for (let dx = -2; dx <= 2; dx += 1) {
+      const xx = x + dx;
+      const yy = y + dy;
+      if (xx < 0 || yy < 0 || xx >= W || yy >= H) return true;
+      if (litMark[yy * W + xx]) return true;
+    }
+  return false;
+};
 let litInterior = 0;
 let litInteriorNotPaper = 0;
 for (let idx = 0; idx < W * H; idx += 1) {
-  if (traceT3.hit[idx] === 0) continue;
+  if (litTrace.hit[idx] === 0) continue;
   const o = outIndexOf(idx);
-  if (inked[o + 3] === 0) continue;
-  const tone = 1 - Math.max(0, Math.min(1, traceT3.value[idx]));
-  if (tone > 0.5) continue; // hatch territory — genuinely dark
-  if (isEdgy(idx)) continue; // near a story break — the contour's ground
+  if (litInk[o + 3] === 0) continue;
+  const tone = 1 - Math.max(0, Math.min(1, litTrace.value[idx]));
+  const graze = 1 - Math.max(0, Math.min(1, litTrace.facing[idx]));
+  // the ink's own density law at the default dials (grazingGain 1.6 ·
+  // falloff 2 · strokeFloor 0.12) — safely under the floor, with margin
+  const density = Math.min(1, tone * (1 + 1.6 * Math.pow(graze, 2)));
+  if (density > 0.115) continue;
+  if (litEdgy(idx)) continue; // near a story break — the contour's ground
   litInterior += 1;
-  if (inked[o] !== paperRgb[0] || inked[o + 1] !== paperRgb[1] || inked[o + 2] !== paperRgb[2]) litInteriorNotPaper += 1;
+  if (litInk[o] !== paperRgb[0] || litInk[o + 1] !== paperRgb[1] || litInk[o + 2] !== paperRgb[2]) litInteriorNotPaper += 1;
 }
-check('NO SMOOTH GRADIENT ANYWHERE: every LIT interior pixel (tone ≤ 0.50, ≥2px from any story break) is EXACTLY paper — the form\'s body is the page; only the line and the gated hatch carry ink',
+check('NO SMOOTH GRADIENT ANYWHERE (the grazing-law recut): on a deliberately LIT trace, every pixel whose density sits under the stroke floor (the ink\'s own law says no stroke fires), ≥2px from any story break, is EXACTLY paper — the form\'s body is the page; grey exists only as gated strokes and lines',
   litInterior > 100 && litInteriorNotPaper === 0);
-note(`lit interior pixels: ${litInterior} · not-paper among them: ${litInteriorNotPaper}`);
+note(`under-floor pixels (lit trace): ${litInterior} · not-paper among them: ${litInteriorNotPaper}`);
 
 // ═════ [e] battery 4 — far copies dissolve at echoFade 0.63 ═════════════════════
 console.log('\n----- [e] the dissolution: exponential decay at 0.63 — distant copies are a whisper, not a soup (battery 4) -----');
@@ -305,8 +365,10 @@ console.log('\n----- [e0] ★ the double-fade is dead: value carries DARKNESS, n
 // echo-1 ray transports once and lands on the identical mask point the
 // echo-0 ray hits directly — same normal, same light, so the TONE must be
 // EQUAL now (the deleted tracer fade made them differ by ×0.88 per echo).
-const rayHome = A.traceAperture({ deck: t3Gate.deck, scene, width: 1, height: 1, eye: [0, -0.45, 0.28], forward: [0, 1, 0], fovDegrees: 1, craft: { level: 3 } });
-const rayNext = A.traceAperture({ deck: t3Gate.deck, scene, width: 1, height: 1, eye: [0, 0.42, 0.28], forward: [0, 1, 0], fovDegrees: 1, craft: { level: 3 } });
+// RECUT (THE SCENE, 2026-08-08): the pinned rays re-aim at the PLAQUE's
+// station (x 0.22 · z 0.1) — the same-point-two-echoes construction stands
+const rayHome = A.traceAperture({ deck: t3Gate.deck, scene, width: 1, height: 1, eye: [0.22, -0.45, 0.1], forward: [0, 1, 0], fovDegrees: 1, craft: { level: 3 } });
+const rayNext = A.traceAperture({ deck: t3Gate.deck, scene, width: 1, height: 1, eye: [0.22, 0.42, 0.1], forward: [0, 1, 0], fovDegrees: 1, craft: { level: 3 } });
 const vHome = rayHome.value[0];
 const vNext = rayNext.value[0];
 check('★ HATCH FIRES ON DARKNESS ONLY: the same mask point seen at echo 0 and at echo 1 (one transport) carries the SAME tone — value is echo-independent for equally-lit surfaces — and therefore the SAME hatch decision at both thresholds',
@@ -363,17 +425,22 @@ note(`max ink by echo: near(0) ${near.max.toFixed(3)} · mid(2) ${mid.max.toFixe
 
 // ═════ [f] CLAUSE 3 — the ink moves no copy, PLURALLY ═══════════════════════════
 console.log('\n----- [f] ★ every new dial, both extremes: the trace and every count are byte-identical (clause 3 · battery 5) -----');
+// RECUT (THE INSIDE-VIEW HATCH, 2026-08-08): the screen-space hatch dials
+// are retired; the sweep covers the surface-locked stroke/nib/grazing set
 const DIAL_EXTREMES = {
   echoFade: [0.3, 1],
   contourEchoFade: [0.3, 1],
   contourGain: [0.5, 4],
   contourBlur: [0.1, 2],
-  hatchAngleA: [-90, 90],
-  hatchAngleB: [-90, 90],
-  hatchPeriod: [2, 12],
-  hatchWidth: [0.5, 6],
-  hatchThresholdA: [0, 1],
-  hatchThresholdB: [0, 1],
+  strokePitch: [0.05, 0.5],
+  strokeDuty: [0.1, 0.35],
+  strokeFloor: [0, 0.6],
+  crossOnset: [0.2, 1],
+  grazingGain: [0, 4],
+  grazingFalloff: [0.5, 5],
+  chiralityAngleDeg: [0, 40],
+  nibDepthScale: [0, 2],
+  nibNear: [0.5, 2],
   darkSolid: [0, 1],
 };
 const traceHashBefore = hashTrace(traceT3);
@@ -390,7 +457,7 @@ for (const [dial, [lo, hi]] of Object.entries(DIAL_EXTREMES)) {
   }
 }
 check(`★ CLAUSE 3 — THE INK MOVES NO COPY, PLURALLY: ${sweepRenders} renders (every new dial × both extremes) against the SAME trace — hit · value · echo · mirrored · material · depth hash-identical after every render, and every count byte-identical (one dial pair is not the proof; this is all of them)`,
-  sweepRenders === 22 && sweepClean && hashTrace(traceT3) === traceHashBefore && JSON.stringify(traceT3.counts) === countsBefore);
+  sweepRenders === 28 && sweepClean && hashTrace(traceT3) === traceHashBefore && JSON.stringify(traceT3.counts) === countsBefore);
 note(`dials swept: ${Object.keys(DIAL_EXTREMES).join(' · ')}`);
 
 // ═════ [g] BOUND 1 — the probes are furniture: displaceable, and absent from the specimen ═
@@ -583,6 +650,15 @@ const inkAllowed = new Set([
   // files; ratified in diagnose-deficit-app.cjs (§E-M1/§E-M2).
   'src/manuscript/InkedFieldLayer.tsx',
   'src/components/CorrespondenceMarkLayer.tsx',
+  // RUNG 1 + THE SCENE (2026-08-07/08, SEAL_THE_INSIDE_VIEW_HATCH + designer
+  // 1810): the explore window (RUNG 1's own NOT_FROZEN component) and the
+  // authored inhabitants — the watermarked baked-scan module is DELETED (a
+  // deletion counts as moved content, rightly) and the probes module now
+  // AUTHORS the plaque + coil; ratified in diagnose-the-probes.cjs +
+  // diagnose-deficit-app.cjs (§E-HATCH).
+  'src/manuscript/ExploreWindow.tsx',
+  'src/manuscript/apertureProbes.ts',
+  'src/manuscript/apertureProbeAssets.ts',
 ]);
 const inkMoved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)
