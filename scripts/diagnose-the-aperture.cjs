@@ -559,6 +559,13 @@ const ALLOWED_SRC_CHANGES = new Set([
   // watermarked baked-scan module is DELETED (a sanctioned deletion — its
   // whole defect class goes with it); ratified in diagnose-the-probes.cjs.
   'src/manuscript/apertureProbeAssets.ts',
+  // THE GPU RESET (2026-08-09, CHARTER_GPU_EXPLORE_WINDOW_PORT): the CPU
+  // still is RETIRED — the trace worker + the walk model are DELETED (the
+  // WebGL2 fragment shader carries the transport loop now; a deletion counts
+  // as moved content, rightly); ratified in diagnose-deficit-app.cjs
+  // (§E-GPU / §E-GPU-SUBSTRATE).
+  'src/manuscript/exploreTraceWorker.ts',
+  'src/manuscript/exploreWindowModel.ts',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

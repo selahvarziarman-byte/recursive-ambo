@@ -149,10 +149,12 @@ function killTree(pid) {
           [path.join(__dirname, 'deficit_app_driver.py'), '--url', URL, '--lift-files', lift.files.join(',')],
           {
             encoding: 'utf8',
-            // RUNG 1 raised the drive's floor: the explore sections add the
-            // doorway, a 7.6 s sustained walk (the crossing), and two
-            // threshold room builds — the old 300 s ceiling truncated the run
-            timeout: 480000,
+            // RUNG 1 raised the drive's floor (doorway + sustained walk +
+            // threshold builds pushed past 300 s); the GPU reset raised it
+            // again — the 6 s advance hold + the CONE room build (six face
+            // picks, three maps, glue, chip) measured 484.9 s wall against
+            // the old 480 s ceiling. 720 s is the disclosed cost.
+            timeout: 720000,
           },
         );
       } catch (error) {
@@ -376,33 +378,26 @@ function killTree(pid) {
         check('§E-DOORWAY ★★ THE WINDOW OPENS FROM THE SHAPE AND THE SHELL STAYS OPERABLE: double-click summons T³, the dock\'s `explore inside` chip opens the titled window, the specimen card AND the Fit control still stand BEHIND it (the shell is the operable representative; the window is where the inside-truth lives)',
           get('explore.selectT3').ok && get('explore.chipPresent').ok && get('explore.doorwayOpens').ok && get('explore.shellOperableBehind').ok,
           `${get('explore.doorwayOpens').detail} · ${get('explore.shellOperableBehind').detail}`);
-        check('§E-REST-RECURRENCE ★★ THE STANDING CORRIDOR ALREADY RECURS: the window\'s first walked frame counts ≥ 2 mask copies BEFORE any gesture (looks 0 · advances 0 at capture) — if it needed motion to read that the space repeats, it would go RED here (the designer\'s first and hardest gate)',
-          get('explore.restRecurrence').ok, get('explore.restRecurrence').detail);
-        check('§E-DRIVEABLE ★★ THE TWO GESTURES DRIVE THE EYE: a drag TURNS forward (the look), a sustained hold MOVES the eye along forward (the advance — a cloister pace, no strafe/roll/speed switch exists to pin), and the walked frames keep arriving through the worker',
+        check('§E-GPU ★★ THE SHADER IS UP AND THE LOOP LIVES (ADR 0004 Amdt 7 — the aperture is a PLACE): the window renders via a linked WebGL2 fragment shader (the CPU still is retired) and the render loop keeps producing frames',
+          get('explore.gpuUp').ok, get('explore.gpuUp').detail);
+        check('§E-DRIVEABLE ★★ THE TWO GESTURES DRIVE THE CARRIED FRAME: a drag TURNS forward (the look), a sustained hold MOVES the eye along it (the advance) — and the walk went THROUGH A DOOR (the transport carried the eye AND the frame; a mirror door may take the frame\'s handedness — the instrument\'s hard-won law, ported whole)',
           get('explore.lookTurns').ok && get('explore.advanceWalks').ok,
           `${get('explore.lookTurns').detail} · ${get('explore.advanceWalks').detail}`);
-        check('§E-NO-CROSSING ★★ THE CARRY IS SEAMLESS, MEASURED: the sustained walk CROSSED a paired face (the eye carried back by the engine\'s own isometry) and the crossing frames\' image deltas sit INSIDE the ordinary walking-frame band (max crossed Δ ≤ 1.75 × max plain Δ + ε) — a wrong or marked transport explodes exactly here; no seam/flash element exists to draw (source-pinned below)',
-          get('explore.noCrossingMark').ok, get('explore.noCrossingMark').detail);
-        check('§E-HORIZON + E-CAPTION-COUNTABLE ★ THE LIMIT OF SIGHT IS NAMED AND THE CAPTION COUNTS: the live window caption carries the committed countable orbit (`orbit (visible): N masks` · the hands\' LEFT count) AND `copies shown to depth N`; the un-hit void is EXACTLY paper by the ink\'s own law (no black wall — apertureInk untouched, its witness standing)',
+        check('§E-HORIZON ★ THE LIMIT OF SIGHT IS NAMED: the live window caption carries the deck\'s own geometry line AND `copies shown to depth N`; the void is PAPER by the shader\'s own law (no fog, no wall — the miss branch returns the page)',
           get('explore.horizonCaption').ok, get('explore.horizonCaption').detail);
-        check('§E-THRESHOLD-REFUSAL ★★ NON-E³ REFUSES AT THE DOOR, BY NAME: a person-built one-pair room (a bounded Euclidean cone-manifold, measured in grounding) and a FOLDED body (left~top d+1 — the orbifold) both refuse at the doorway with the reason (cone edges · fold loci) and the window NEVER mounts — the habitat opens or it doesn\'t (never a smear)',
-          get('explore.coneRoomBuilt').ok && get('explore.thresholdRefusesCone').ok && get('explore.foldedBuilt').ok && get('explore.thresholdRefusesFolded').ok,
-          `${get('explore.thresholdRefusesCone').detail} · ${get('explore.thresholdRefusesFolded').detail}`);
+        check('§E-DOOR-LAW ★★ OPEN PAIRS REFUSE; ★ THE CONE OPENS (E-T3-AND-CONE): a one-pair room refuses at the door BY NAME (the walk needs all six faces paired) and the window never mounts; a FULLY-PAIRED cone form (d-1 · d+2 · d+3 — a sound Euclidean cone-manifold, 2 × 180°) OPENS the window with the GPU up and rodK carrying k≠4 entries the shader draws HEAVY — E³ and cone alike, one transport loop (Amdt 10)',
+          get('explore.openPairRoomBuilt').ok && get('explore.openPairsRefused').ok && get('explore.coneFormBuilt').ok && get('explore.coneOpens').ok,
+          `${get('explore.openPairsRefused').detail} · ${get('explore.coneOpens').detail}`);
         check('§E-SHELL-INTACT ★★ CLOSE RETURNS TO THE UNHARMED SHELL + THE CARD DOORWAY + THE ESC LAW: closing the window leaves the SAME shell caption byte-equal, the selection held, and the Fit control live; the card\'s own doorway row re-opens the window; Esc closes the window ALONE (the selection survives — the shell is never falsified)',
           get('explore.shellIntactOnReturn').ok && get('explore.cardDoorPresent').ok && get('explore.cardDoorAndEsc').ok,
           `${get('explore.shellIntactOnReturn').detail} · ${get('explore.cardDoorAndEsc').detail}`);
-        // THE INSIDE-VIEW HATCH (SEAL_THE_INSIDE_VIEW_HATCH) — grey from
-        // LINES; §E-D1-MIDTONES is RETIRED (its fill-range bar demanded the
-        // exact wash the designer reversed)
-        check('§E-HATCH ★★ GREY FROM LINES, LIVE: the standing frame\'s mid-band pixels live as STROKES — ≥ 50% carry high 8-neighbour contrast (a stroke sits beside paper; a flat wash reads ~0 here) with a real mid presence (≥ 6%), measured on the EXACT bytes put to the canvas. The retired D1 fill bar demanded the opposite law',
-          get('explore.greyFromLines').ok, get('explore.greyFromLines').detail);
-        check('§E-HATCH ★ SURFACE-LOCKED + NIB + CHIRALITY + RESOLUTION-HELD + THE CONFORMAL SEAM (source-pinned): the screen-space fixed-angle families are GONE from the ink (no px·cosA phase); the hatch reads the trace\'s normal + objPos + facing channels (surface direction · surface phase · grazing density) and twists ±chiralityAngle by the copy\'s parity; the nib scales the contour by depth; the explore defaults carry the stroke dials (strokePitch/strokeFloor/crossOnset) with resolution UNCHANGED at 128 (D2 held); apertureModel\'s cone census reads the ONE seam (resolveConeAngleSource — measured via readPillarDihedrals + edgeClassOf when a dihedral-owning thicken product rides, k×90° otherwise) and the window wires the lineage lookup; apertureModel/apertureInk edits ride their OWN witnesses green (E-APERTURE-WITNESSED)',
+        // THE INSIDE-VIEW HATCH (the SHELL's ink — the window's ink is the
+        // shader's own now; the CPU-window live records retired with it)
+        check('§E-HATCH ★ THE SHELL\'S SURFACE-LOCKED INK + THE CONFORMAL SEAM STAND (source-pinned): the screen-space fixed-angle families stay GONE from apertureInk (no px·cosA phase); the shell\'s hatch reads the trace\'s normal + objPos + facing channels and twists by the copy\'s parity; the nib scales the contour by depth; apertureModel\'s cone census reads the ONE seam (resolveConeAngleSource — measured via readPillarDihedrals + edgeClassOf when a dihedral-owning thicken product rides, k×90° otherwise) and the view wires the lineage lookup; apertureModel/apertureInk edits ride their OWN witnesses green',
           (() => {
-            const defaultsSrc = fs.readFileSync(path.join(repoRoot, 'src/design/designDefaults.ts'), 'utf8');
             const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
             const inkSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureInk.ts'), 'utf8');
             const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
-            const exploreBlock = defaultsSrc.slice(defaultsSrc.indexOf('explore: {'), defaultsSrc.indexOf('junction: {'));
             return (
               !inkSrc.includes('px * cosA + py * sinA') &&
               inkSrc.includes('objPos') &&
@@ -415,49 +410,42 @@ function killTree(pid) {
               modelSrc.includes('domain.complex.edgeClassOf(reading.pillarEdgeId)') &&
               modelSrc.includes('geometryFromTower(tower, resolveConeAngleSource(domain, lineage))') &&
               viewSrc.includes("model.shape.genealogy?.operation === 'product'") &&
-              exploreBlock.includes('resolution: 128,') &&
-              exploreBlock.includes("paperColor: '#e9e2cf',") &&
-              exploreBlock.includes('strokePitch: 0.085,') &&
-              exploreBlock.includes('strokeFloor: 0.12,') &&
-              exploreBlock.includes('crossOnset: 0.55,') &&
-              viewSrc.includes('strokePitch: exploreInkCtl.strokePitch,') &&
               (viewSrc.match(/toneGamma: apertureCtl\.toneGamma,/g) ?? []).length === 2
             );
           })(),
-          'the surface-lock/nib/chirality/seam pins');
-        check('§E-EXPLORE THE SUBSTRATE HOLDS ITS LAWS (source-pinned): the walk consumes the aperture\'s EXPORTED applyPoint/applyVector on the witnessed deck (the transport math is never re-derived — apertureModel byte-untouched rides its NOT_FROZEN row + diagnose-the-aperture); the window\'s opening frame IS the tracer\'s own default frame (both literals byte-equal in model and tracer); the threshold law is TOTAL (E³ opens · cone · folded · the surface\'s later-rung declaration · the greyed chip\'s word); the window is a thin hand (renderApertureInk + apertureCaption verbatim, no π₁/fundamental-group word anywhere in the new files); the worker rides the fieldWorker idiom (module URL + type module); the Esc guard closes the window FIRST',
+          'the shell-ink/seam pins');
+        check('§E-GPU-SUBSTRATE THE PORT HOLDS ITS LAWS (source-pinned): the CPU still is DELETED (worker + walk model gone from the tree; no explore worker in the view — the fieldWorker is a different organ and stays); the shader carries the instrument\'s technique — the transport loop accumulating the deck word (`acc = mat3(g)*acc`), THE VOID IS PAPER, the geometry-anchored contour (screen derivatives of the normal), the settle-gated screen hatch, cone-edges-heavy from uRodK — and the AUTHORED inhabitants as SDFs (sdPlaque with the per-side one-arc mouths + sdCoil right-handed; ZERO scan re-introduction); the door law is the fully-paired rule (deck.length !== 3 refuses BY NAME); the D1 window-ink block is reverted; the Esc guard closes the window FIRST; no π₁ person-facing',
           (() => {
-            const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/exploreWindowModel.ts'), 'utf8');
             const windowSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ExploreWindow.tsx'), 'utf8');
-            const workerSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/exploreTraceWorker.ts'), 'utf8');
             const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
-            const apertureSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
+            const defaultsSrc = fs.readFileSync(path.join(repoRoot, 'src/design/designDefaults.ts'), 'utf8');
+            const exploreBlock = defaultsSrc.slice(defaultsSrc.indexOf('explore: {'), defaultsSrc.indexOf('junction: {'));
             return (
-              /import \{[^}]*applyPoint,[^}]*applyVector,/.test(modelSrc.replace(/\r/g, '')) &&
-              !/const\s+deckCompose|function\s+fitRigid|function\s+fitDeckIsometry/.test(modelSrc) &&
-              modelSrc.includes('eye: [-0.38, -0.3, -0.05]') &&
-              modelSrc.includes('forward: [0.8, 0.55, 0.12]') &&
-              apertureSrc.includes('options.eye ?? [-0.38, -0.3, -0.05]') &&
-              apertureSrc.includes('options.forward ?? [0.8, 0.55, 0.12]') &&
-              modelSrc.includes("if (geometry.kind === 'E3') return { opens: true };") &&
-              modelSrc.includes("if (geometry.kind === 'folded')") &&
-              modelSrc.includes('EXPLORE_SURFACE_LATER') &&
-              modelSrc.includes('EXPLORE_NEEDS_ROOM') &&
-              viewSrc.includes('setExploreRefusal({ key: selected, reason: EXPLORE_SURFACE_LATER });') &&
+              !fs.existsSync(path.join(repoRoot, 'src/manuscript/exploreTraceWorker.ts')) &&
+              !fs.existsSync(path.join(repoRoot, 'src/manuscript/exploreWindowModel.ts')) &&
+              !fs.existsSync(path.join(repoRoot, 'src/manuscript/apertureProbeAssets.ts')) &&
+              !viewSrc.includes('exploreTraceWorker') &&
+              windowSrc.includes("getContext('webgl2'") &&
+              windowSrc.includes('acc = mat3(g)*acc;') &&
+              windowSrc.includes('THE VOID IS PAPER') &&
+              windowSrc.includes('fwdD') &&
+              windowSrc.includes('uHatch') &&
+              windowSrc.includes('uRodK[ei]!=4.0') &&
+              windowSrc.includes('sdPlaque') &&
+              windowSrc.includes('sdCoil') &&
+              !/masks_happy_and_sad|hand_pointing_capitolini|apertureProbeAssets/.test(windowSrc) &&
+              windowSrc.includes('copies shown to depth') &&
+              !/π₁|fundamental group/.test(windowSrc) &&
+              viewSrc.includes('gate.deck.length !== 3') &&
+              viewSrc.includes('EXPLORE_OPEN_PAIRS') &&
               viewSrc.includes('data-explore-refusal') &&
               viewSrc.includes('if (exploreOpenRef.current) {') &&
-              windowSrc.includes('renderApertureInk(trace, liveRef.current.ink)') &&
-              windowSrc.includes('apertureCaption(liveRef.current.geometry, trace.counts)') &&
-              windowSrc.includes('copies shown to depth') &&
-              !/π₁|fundamental group/.test(modelSrc) &&
-              !/π₁|fundamental group/.test(windowSrc) &&
-              workerSrc.includes('traceAperture({') &&
-              workerSrc.includes('trace.normal.buffer') &&
-              viewSrc.includes("new Worker(new URL('./exploreTraceWorker.ts', import.meta.url), { type: 'module' })") &&
+              !exploreBlock.includes('strokePitch') &&
+              !exploreBlock.includes('resolution:') &&
               !/minimap|you are here|orbit diagram/.test(windowSrc)
             );
           })(),
-          'the walk/threshold/caption substrate pins');
+          'the GPU port substrate pins');
         // E4 hygiene
         check('§E4 CONSOLE CLEAN — no error logged across the whole drive (favicon noise excluded)',
           get('console').ok, get('console').detail);

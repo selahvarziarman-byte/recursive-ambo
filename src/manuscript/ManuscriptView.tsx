@@ -203,17 +203,19 @@ import { createSeedShape } from '../data/seeds';
 // THE PROBES (2026-07-14): the real scans — the mask, held in a hand. The
 // mask does recurrence; THE HAND does chirality (a face is its own mirror).
 import { buildProbeMeshes } from './apertureProbes';
-// RUNG 1 — THE EXPLORE WINDOW (FAT CHARTER 2026-08-07): the inside-view is a
-// FEATURE opened from a shape's doorway; the shell stays the operable
-// representative behind it. The threshold law is TOTAL: E³ opens, everything
-// else refuses at the door BY NAME (never a smear).
+// THE GPU EXPLORE WINDOW (2026-08-08 reset, ADR 0004 Amdt 7): the inside
+// view is the instrument's fragment shader; the shell stays the operable
+// representative behind it. The door law: a fully-paired room OPENS —
+// E³ AND cone AND folded alike (Amdt 10 rendered the cone; the transport is
+// one loop) — while open-pair rooms and surfaces refuse BY NAME.
 import { ExploreWindow } from './ExploreWindow';
-import {
-  EXPLORE_NEEDS_ROOM,
-  EXPLORE_SURFACE_LATER,
-  exploreThreshold,
-} from './exploreWindowModel';
-import type { ExploreWorkRequest } from './exploreTraceWorker';
+import { readRodData } from './apertureModel';
+
+const EXPLORE_NEEDS_ROOM = 'select a room with an inside — a built 3-manifold';
+const EXPLORE_SURFACE_LATER =
+  'the inside of a surface is not walkable yet — this door opens in a later chapter of the instrument.';
+const EXPLORE_OPEN_PAIRS =
+  'this room keeps some faces open as boundary — the walk needs all six paired; an open-pair walk is a later rung.';
 import {
   birthChild,
   combineGateFor,
@@ -1377,32 +1379,12 @@ export default function ManuscriptView() {
   // THE INK's dials (designer's spec 2026-07-14 — exposed, not dialed): the
   // void is paper, the line carries the form; none of these reaches the
   // tracer — the ink moves no copy.
-  // RUNG 1 — the explore window's own pacing/raster dials (craft only; the
-  // frames are traceAperture's and the walk is the engine's own transport)
+  // THE GPU EXPLORE WINDOW — pacing dials only (the shader renders at canvas
+  // resolution; its ink is inline — the D1/hatch window-ink groups retired
+  // with the CPU tracer)
   const exploreCtl = useControls('world · explore', {
-    resolution: { value: d.world.explore.resolution, min: 96, max: 168, step: 8 },
-    pace: { value: d.world.explore.pace, min: 0.1, max: 0.8, step: 0.02 },
+    pace: { value: d.world.explore.pace, min: 0.1, max: 1.2, step: 0.02 },
     lookSensitivity: { value: d.world.explore.lookSensitivity, min: 0.001, max: 0.012, step: 0.001 },
-  });
-  // THE INSIDE-VIEW HATCH — the window's tone dials (the designer's live
-  // craft surface): D1's fill-ladder thresholds are RETIRED for the
-  // surface-locked stroke controls (grey from lines)
-  const exploreInkCtl = useControls('world · explore ink', {
-    toneGamma: { value: d.world.explore.craft.toneGamma, min: 0.5, max: 2.5, step: 0.02 },
-    contourWeight: { value: d.world.explore.craft.contourWeight, min: 0, max: 1, step: 0.05 },
-    strokePitch: { value: d.world.explore.ink.strokePitch, min: 0.05, max: 0.5, step: 0.005 },
-    strokeDuty: { value: d.world.explore.ink.strokeDuty, min: 0.1, max: 0.35, step: 0.01 },
-    strokeFloor: { value: d.world.explore.ink.strokeFloor, min: 0, max: 0.6, step: 0.01 },
-    crossOnset: { value: d.world.explore.ink.crossOnset, min: 0.2, max: 1, step: 0.01 },
-    grazingGain: { value: d.world.explore.ink.grazingGain, min: 0, max: 4, step: 0.05 },
-    grazingFalloff: { value: d.world.explore.ink.grazingFalloff, min: 0.5, max: 5, step: 0.1 },
-    chiralityAngleDeg: { value: d.world.explore.ink.chiralityAngleDeg, min: 0, max: 40, step: 1 },
-    nibDepthScale: { value: d.world.explore.ink.nibDepthScale, min: 0, max: 2, step: 0.02 },
-    nibNear: { value: d.world.explore.ink.nibNear, min: 0.5, max: 2, step: 0.05 },
-    echoFade: { value: d.world.explore.ink.echoFade, min: 0.3, max: 1, step: 0.01 },
-    contourEchoFade: { value: d.world.explore.ink.contourEchoFade, min: 0.3, max: 1, step: 0.01 },
-    contourGain: { value: d.world.explore.ink.contourGain, min: 0.5, max: 4, step: 0.05 },
-    contourBlur: { value: d.world.explore.ink.contourBlur, min: 0.1, max: 2, step: 0.05 },
   });
   const inkCtl = useControls('world · aperture ink', {
     contourEchoFade: { value: d.world.aperture.contourEchoFade, min: 0.3, max: 1, step: 0.01 },
@@ -1702,19 +1684,8 @@ export default function ManuscriptView() {
   useEffect(() => {
     setExploreRefusal(null);
   }, [selected]);
-  // the trace worker (the fieldWorker idiom): created once, WARMED at boot so
-  // the probes' ~522k-triangle BVHs build off-thread before any door opens
-  const exploreWorkerRef = useRef<Worker | null>(null);
-  useEffect(() => {
-    const worker = new Worker(new URL('./exploreTraceWorker.ts', import.meta.url), { type: 'module' });
-    exploreWorkerRef.current = worker;
-    const warm: ExploreWorkRequest = { kind: 'warm', seedShape: cubeSeed };
-    worker.postMessage(warm);
-    return () => {
-      worker.terminate();
-      exploreWorkerRef.current = null;
-    };
-  }, [cubeSeed]);
+  // (the CPU trace worker is RETIRED — the window renders as the
+  // instrument's fragment shader on the GPU; ADR 0004 Amdt 7)
   const emptyApertureRows = (): AperturePairRow[] => [
     { faceA: null, faceB: null, candidateKey: null },
     { faceA: null, faceB: null, candidateKey: null },
@@ -2425,75 +2396,76 @@ export default function ManuscriptView() {
     }
     return null;
   }, [selected, written]);
-  // RUNG 1 — THE DOOR, total over every doorway kind. The threshold verdict
-  // fires HERE: an E³ room opens the window; a cone room, an orbifold, an
-  // unsound pattern, or a surface refuses AT the door with its reason —
-  // never by opening and degrading (the habitat opens or it doesn't).
+  // THE DOOR (GPU reset): a FULLY-PAIRED room OPENS — E³ AND cone AND
+  // folded alike (Amdt 10 rendered the cone; the transport is one loop).
+  // Open-pair rooms, unsound patterns, and surfaces refuse BY NAME at the
+  // door — never by opening and degrading.
   const handleExploreDoor = useCallback(() => {
     if (!selected) return;
     if (exploreOpen && exploreOpen === selected) {
       setExploreOpen(null);
       return;
     }
-    if (selected.startsWith('dim3:')) {
-      const k = dim3All.findIndex((m) => `dim3:${m.key}` === selected);
-      const aperture = k >= 0 ? apertures[k] : undefined;
-      if (!aperture) return;
-      if (!aperture.gate.ok) {
+    const judgeGate = (gate: (typeof apertures)[number]['gate']): void => {
+      if (!gate.ok) {
         // the S² gate's own refusal rides the same door, verbatim
-        setExploreRefusal({ key: selected, reason: aperture.gate.reason });
+        setExploreRefusal({ key: selected, reason: gate.reason });
         return;
       }
-      const verdict = exploreThreshold(aperture.gate.geometry);
-      if (!verdict.opens) {
-        setExploreRefusal({ key: selected, reason: verdict.reason });
+      if (gate.deck.length !== 3) {
+        setExploreRefusal({ key: selected, reason: EXPLORE_OPEN_PAIRS });
         return;
       }
       setExploreRefusal(null);
       setExploreOpen(selected);
+    };
+    if (selected.startsWith('dim3:')) {
+      const k = dim3All.findIndex((m) => `dim3:${m.key}` === selected);
+      const aperture = k >= 0 ? apertures[k] : undefined;
+      if (aperture) judgeGate(aperture.gate);
       return;
     }
     if (selected.startsWith('dim3f:')) {
       const k = foldedBodies.findIndex((b) => `dim3f:${b.key}` === selected);
       const aperture = k >= 0 ? foldedApertures[k] : undefined;
-      if (!aperture) return;
-      if (!aperture.gate.ok) {
-        setExploreRefusal({ key: selected, reason: aperture.gate.reason });
-        return;
-      }
-      // total law: a folded gate is never E³ today — the verdict still rules
-      const verdict = exploreThreshold(aperture.gate.geometry);
-      if (!verdict.opens) {
-        setExploreRefusal({ key: selected, reason: verdict.reason });
-        return;
-      }
-      setExploreRefusal(null);
-      setExploreOpen(selected);
+      if (aperture) judgeGate(aperture.gate);
       return;
     }
     // the class-body shell: the doorway exists; the surface walk is a later
     // rung — declared at the threshold, never silent
     setExploreRefusal({ key: selected, reason: EXPLORE_SURFACE_LATER });
   }, [selected, exploreOpen, dim3All, apertures, foldedBodies, foldedApertures]);
-  // RUNG 1 — the opened room, resolved from the live gate (E³ only: the door
-  // above is the sole writer of exploreOpen for rooms)
+  // the opened room, resolved from the live gate — E³/cone (dim3:) and
+  // folded (dim3f:) alike; the shader takes the deck + the rod data
   const exploreRoom = useMemo(() => {
-    if (!exploreOpen || !exploreOpen.startsWith('dim3:')) return null;
-    const k = dim3All.findIndex((m) => `dim3:${m.key}` === exploreOpen);
-    if (k < 0) return null;
-    const model = dim3All[k];
-    const aperture = apertures[k];
-    if (!aperture || !aperture.gate.ok || !aperture.trace) return null;
-    const placedId = placedForms[model.key];
-    return {
-      title: model.title,
-      seedShape: model.shape,
-      placedShape: placedId ? shapeById.get(placedId) ?? null : null,
-      deck: aperture.gate.deck,
-      geometry: aperture.gate.geometry,
-      firstTrace: aperture.trace,
+    if (!exploreOpen) return null;
+    const resolve = (
+      title: string,
+      gate: (typeof apertures)[number]['gate'],
+      domain: Parameters<typeof readRodData>[0],
+    ) => {
+      if (!gate.ok || gate.deck.length !== 3) return null;
+      const g = gate.geometry;
+      const deckLine =
+        g.kind === 'folded'
+          ? `orbifold · n=[${g.n.join(',')}] · fold loci: ${g.foldLoci}`
+          : g.kind === 'E3'
+            ? `E³ · n=[${g.n.join(',')}]`
+            : `Euclidean cone-manifold · n=[${g.n.join(',')}]${g.coneEdges ? ` · cone edges: ${g.coneEdges}` : ''}`;
+      return { title, deck: gate.deck, rodData: readRodData(domain), deckLine };
     };
-  }, [exploreOpen, dim3All, apertures, placedForms, shapeById]);
+    if (exploreOpen.startsWith('dim3:')) {
+      const k = dim3All.findIndex((m) => `dim3:${m.key}` === exploreOpen);
+      if (k < 0 || !apertures[k]) return null;
+      return resolve(dim3All[k].title, apertures[k].gate, dim3All[k]);
+    }
+    if (exploreOpen.startsWith('dim3f:')) {
+      const k = foldedBodies.findIndex((b) => `dim3f:${b.key}` === exploreOpen);
+      if (k < 0 || !foldedApertures[k]) return null;
+      return resolve(`${foldedBodies[k].title} — folded`, foldedApertures[k].gate, foldedBodies[k]);
+    }
+    return null;
+  }, [exploreOpen, dim3All, apertures, foldedBodies, foldedApertures]);
   const placeableForms = useMemo(() => {
     const out: { id: string; label: string }[] = [];
     written.forEach((w) => out.push({ id: w.form.shape.id, label: w.form.title }));
@@ -4536,55 +4508,17 @@ export default function ManuscriptView() {
           {exploreRefusal.reason}
         </div>
       ) : null}
-      {exploreOpen && exploreRoom && exploreWorkerRef.current ? (
-        // RUNG 1 — THE EXPLORE WINDOW: the walked inside-view over the paper;
+      {exploreOpen && exploreRoom ? (
+        // THE GPU EXPLORE WINDOW: the instrument's shader over the paper;
         // the shell stays operable behind it (no backdrop — the world around
         // the window still takes every gesture), and close returns unharmed
         <ExploreWindow
           openKey={exploreOpen}
           title={exploreRoom.title}
-          seedShape={exploreRoom.seedShape}
-          placedShape={exploreRoom.placedShape}
           deck={exploreRoom.deck}
-          geometry={exploreRoom.geometry}
-          resolution={exploreCtl.resolution}
-          craft={{
-            // D1 — the window's OWN craft: the shell's 168px-tuned values
-            // collapsed the tone at ~4× scale (the seal's grounded cause);
-            // only the transport depth (level) stays the shared dial
-            level: apertureCtl.level,
-            toneGamma: exploreInkCtl.toneGamma,
-            contourWeight: exploreInkCtl.contourWeight,
-            maskTone: d.world.explore.craft.maskTone,
-            handTone: d.world.explore.craft.handTone,
-            scaffoldTone: d.world.explore.craft.scaffoldTone,
-            formTone: d.world.explore.craft.formTone,
-          }}
-          ink={{
-            // D1 — the window's OWN ink: the tone ladder (paper → light
-            // weave → double weave → line), the page's own parchment ground
-            paperColor: d.world.explore.ink.paperColor,
-            interiorInk: d.world.explore.ink.interiorInk,
-            rimSeed: d.world.explore.ink.rimSeed,
-            echoFade: exploreInkCtl.echoFade,
-            contourEchoFade: exploreInkCtl.contourEchoFade,
-            contourGain: exploreInkCtl.contourGain,
-            contourBlur: exploreInkCtl.contourBlur,
-            strokePitch: exploreInkCtl.strokePitch,
-            strokeDuty: exploreInkCtl.strokeDuty,
-            strokeFloor: exploreInkCtl.strokeFloor,
-            crossOnset: exploreInkCtl.crossOnset,
-            grazingGain: exploreInkCtl.grazingGain,
-            grazingFalloff: exploreInkCtl.grazingFalloff,
-            chiralityAngleDeg: exploreInkCtl.chiralityAngleDeg,
-            nibDepthScale: exploreInkCtl.nibDepthScale,
-            nibNear: exploreInkCtl.nibNear,
-            darkSolid: d.world.explore.ink.darkSolid,
-            creaseThreshold: d.world.explore.ink.creaseThreshold,
-            depthBreakThreshold: d.world.explore.ink.depthBreakThreshold,
-          }}
-          firstTrace={exploreRoom.firstTrace}
-          worker={exploreWorkerRef.current}
+          rodData={exploreRoom.rodData}
+          deckLine={exploreRoom.deckLine}
+          level={apertureCtl.level}
           pace={exploreCtl.pace}
           lookSensitivity={exploreCtl.lookSensitivity}
           paper={{ ...d.paper, background: d.paper.background }}

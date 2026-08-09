@@ -1239,15 +1239,16 @@ def drive_identify(page):
     page.wait_for_timeout(150)
 
 
-def project_group_center(page, name_prefix):
+def project_group_center(page, name_prefix, last=False):
     # project a named scene group's world origin to CSS pixels via the app's
-    # OWN camera/size (the proven seam idiom — never a hand projection)
+    # OWN camera/size (the proven seam idiom — never a hand projection).
+    # last=True takes the NEWEST matching group (the latest built room).
     return page.evaluate(
-        """(prefix) => {
+        """([prefix, takeLast]) => {
       const scene = window.__manuscriptScene, camera = window.__manuscriptCamera;
       if (!scene || !camera) return null;
       let target = null;
-      scene.traverse((o) => { if (!target && o.name && o.name.startsWith(prefix)) target = o; });
+      scene.traverse((o) => { if (o.name && o.name.startsWith(prefix)) { if (takeLast || !target) target = o; } });
       if (!target) return null;
       target.updateWorldMatrix(true, false);
       const v = new target.position.constructor();
@@ -1257,26 +1258,28 @@ def project_group_center(page, name_prefix):
       const r = canvas.getBoundingClientRect();
       return { x: r.x + ((v.x + 1) / 2) * r.width, y: r.y + ((1 - v.y) / 2) * r.height, ndcZ: v.z };
     }""",
-        name_prefix,
+        [name_prefix, last],
     )
 
 
 def explore_seam(page):
+    # the GPU window's seam (the CPU-era counts/deltas retired with the tracer)
     return page.evaluate(
         """() => {
       const s = window.__exploreWindow;
       if (!s) return null;
-      return { open: s.open, title: s.title, eye: s.eye, forward: s.forward, crossings: s.crossings,
-               traces: s.traces, looks: s.looks, advances: s.advances, restCounts: s.restCounts,
-               caption: s.caption, deltas: s.deltas, inkTone: s.inkTone };
+      return { open: s.open, title: s.title, gpu: s.gpu, eye: s.eye, forward: s.forward,
+               doors: s.doors, frameHanded: s.frameHanded, settle: s.settle,
+               renderFrames: s.renderFrames, looks: s.looks, advances: s.advances,
+               caption: s.caption, rodK: s.rodK };
     }"""
     )
 
 
-def select_dim3(page, group_prefix, expect_fit=True):
+def select_dim3(page, group_prefix, expect_fit=True, last=False):
     # ARMAN'S LAW: summon is a DOUBLE-CLICK; project the room's own group
     page.evaluate("() => window.scrollTo(0, 0)")
-    pt = project_group_center(page, group_prefix)
+    pt = project_group_center(page, group_prefix, last=last)
     if pt is None:
         return False
     page.mouse.dblclick(pt["x"], pt["y"])
@@ -1338,37 +1341,28 @@ def drive_explore(page):
     if not window_open:
         return
 
-    # ---- E-REST-RECURRENCE + E-HORIZON: the standing frame already recurs --
+    # ---- E-GPU: the shader is up and rendering; the caption carries depth --
     try:
         page.wait_for_function(
-            "() => window.__exploreWindow && window.__exploreWindow.restCounts !== null",
-            timeout=40000,
+            "() => window.__exploreWindow && window.__exploreWindow.gpu && window.__exploreWindow.renderFrames > 3",
+            timeout=20000,
         )
     except Exception:
         pass
     seam = explore_seam(page)
-    rest = seam and seam["restCounts"]
+    frames0 = seam["renderFrames"] if seam else 0
+    page.wait_for_timeout(700)
+    seam = explore_seam(page)
     record(
-        "explore.restRecurrence",
-        bool(rest) and rest["masks"] >= 2 and seam["looks"] == 0 and seam["advances"] == 0,
-        f"standing corridor: {rest and rest['masks']} masks · {rest and rest['hands']} hands before ANY gesture",
+        "explore.gpuUp",
+        bool(seam) and seam["gpu"] and seam["renderFrames"] > frames0,
+        f"webgl2 program linked {seam and seam['gpu']} · frames {frames0}→{seam and seam['renderFrames']} (the render loop lives)",
     )
-    caption_ok = bool(seam and seam["caption"] and "orbit (visible):" in seam["caption"] and "copies shown to depth" in seam["caption"])
+    caption_ok = bool(seam and seam["caption"] and "copies shown to depth" in seam["caption"])
     record(
         "explore.horizonCaption",
         caption_ok,
         f"caption: {seam and seam['caption']}",
-    )
-    # THE INSIDE-VIEW HATCH — grey from LINES on the LIVE rendered bytes:
-    # mid-band pixels must live as STROKES (high 8-neighbour contrast — a
-    # stroke sits beside paper), never a flat wash. Probe-measured: the
-    # surface-locked hatch reads strokeContrast ~0.8; a wash reads ~0.
-    # (§E-D1-MIDTONES' fill bar is RETIRED — the reversed law.)
-    tone = seam and seam["inkTone"]
-    record(
-        "explore.greyFromLines",
-        bool(tone) and tone["mid"] >= 0.06 and tone["strokeContrast"] >= 0.5,
-        f"tone: paper {tone and round(tone['paper'], 3)} · mid {tone and round(tone['mid'], 3)} · stroke-contrast among mid {tone and round(tone['strokeContrast'], 3)}",
     )
 
     # ---- E-DRIVEABLE: look (drag rotates forward) --------------------------
@@ -1377,12 +1371,27 @@ def drive_explore(page):
     cx = box["x"] + box["width"] * 0.5
     cy = box["y"] + box["height"] * 0.5
     fwd_before = seam["forward"]
-    page.mouse.move(cx, cy)
-    page.mouse.down()
-    for i in range(1, 13):
-        page.mouse.move(cx + i * 10, cy + i * 2)
-        page.wait_for_timeout(40)
-    page.mouse.up()
+    # the drag is DOM-dispatched in ONE task through the app's real handler
+    # chain (pointerdown → 12 moves → pointerup on the canvas). CDP injection
+    # cannot express a drag here: under software rendering each CDP dispatch
+    # serializes at ~a frame (~3.5 s measured, twice) — the whole "drag"
+    # stretched past 150 s of INPUT time, so the hold timer lawfully claimed
+    # it and walked 31-37 doors. Same-task dispatch carries honest timestamps
+    # (< the 260 ms hold window); the app-side law being witnessed — slop,
+    # the mode lock, the rotation, the seam counts — is identical.
+    page.evaluate(
+        """() => {
+      const c = document.querySelector('[data-explore-canvas]');
+      const r = c.getBoundingClientRect();
+      const cx = r.x + r.width / 2, cy = r.y + r.height / 2;
+      const fire = (type, x, y) => c.dispatchEvent(new PointerEvent(type, {
+        pointerId: 7, bubbles: true, cancelable: true, clientX: x, clientY: y, isPrimary: true,
+      }));
+      fire('pointerdown', cx, cy);
+      for (let i = 1; i <= 12; i += 1) fire('pointermove', cx + i * 10, cy + i * 2);
+      fire('pointerup', cx + 120, cy + 24);
+    }"""
+    )
     # wait on the STATE, not the clock: under machine contention the pointer
     # events process late — the turn lands when the main thread frees
     dot = 1.0
@@ -1395,48 +1404,71 @@ def drive_explore(page):
     record(
         "explore.lookTurns",
         seam["looks"] >= 1 and dot < 0.999,
-        f"forward turned (dot {round(dot, 4)}) · looks {seam['looks']} · traces {seam['traces']}",
+        f"forward turned (dot {round(dot, 4)}) · looks {seam['looks']} · renderFrames {seam['renderFrames']}",
     )
 
     # ---- E-DRIVEABLE + E-NO-CROSSING: advance; the crossing is seamless ----
     eye_before = seam["eye"]
-    crossings_before = seam["crossings"]
+    doors_before = seam["doors"]
+    # who actually receives input at the gesture point and at the close
+    # button? (runs 5-6: the CDP down never engaged and the close click hung
+    # on actionability — name the coverer instead of guessing)
+    hit = page.evaluate(
+        """([x, y]) => {
+      const at = (px, py) => {
+        const el = document.elementFromPoint(px, py);
+        return el ? `${el.tagName}${el.dataset ? JSON.stringify({...el.dataset}) : ''}.${String(el.className).slice(0, 60)}` : 'NULL';
+      };
+      const btn = document.querySelector('button[aria-label="close — return to the shell"]');
+      const b = btn ? btn.getBoundingClientRect() : null;
+      return { center: at(x, y), close: b ? at(b.x + b.width / 2, b.y + b.height / 2) : 'NO BUTTON' };
+    }""",
+        [cx, cy],
+    )
+    record("explore.hitProbe", True, f"at canvas center: {hit['center']} · at close button: {hit['close']}")
+    adv_before = seam["advances"]
     page.mouse.move(cx, cy)
     page.mouse.down()
-    # the cell spans [-1,1]³ (measured): the first paired face along the
-    # default forward sits ~1.69 units out — at the 0.32 u/s cloister pace
-    # the crossing fires ~5.3 s in; hold well past it (under leg-machine
-    # load the worker frames arrive ~2.5 s apart)
-    page.wait_for_timeout(9400)
+    # THE ENGAGE FENCE: under the starved renderer both discrete events (the
+    # down, then the up 6 s later by the wall) can queue behind ONE
+    # multi-second stall and deliver back-to-back — the hold collapses in
+    # delivery time, the 260 ms timer never fires, and the canvas keeps real
+    # pointer capture, which then starves the close click's hit test (runs
+    # 5-6). Wait on the STATE — the seam says the press engaged — before
+    # counting the held seconds; the evaluate itself fences the down's
+    # delivery. Then the cell spans [-1,1]³: at 0.45 u/s the first paired
+    # face along forward fires within the held five seconds.
+    engaged = True
+    try:
+        page.wait_for_function(
+            f"() => window.__exploreWindow && window.__exploreWindow.advances > {adv_before}",
+            timeout=20000,
+        )
+    except Exception:
+        engaged = False
+    record("explore.holdEngaged", engaged, "the press engaged (seam.advances incremented) before the held seconds count")
+    page.wait_for_timeout(5000)
     page.mouse.up()
-    # let the settle frame (the release's own trace) land and record its
-    # delta — wait on the DELTA, not the clock (a starved worker can take
-    # several seconds per frame under leg-machine contention)
-    for _ in range(28):
-        seam = explore_seam(page)
-        if any(d["crossed"] for d in seam["deltas"]):
-            break
-        page.wait_for_timeout(500)
+    page.wait_for_timeout(400)
     seam = explore_seam(page)
     eye_after = seam["eye"]
     moved = sum((a - b) ** 2 for a, b in zip(eye_before, eye_after)) ** 0.5
-    crossed_n = seam["crossings"] - crossings_before
+    doors_n = seam["doors"] - doors_before
     record(
         "explore.advanceWalks",
-        seam["advances"] >= 1 and (moved > 0.12 or crossed_n >= 1),
-        f"eye moved {round(moved, 3)} in-chart · crossings {crossings_before}→{seam['crossings']} · advances {seam['advances']}",
+        seam["advances"] > adv_before and doors_n >= 1,
+        f"eye moved {round(moved, 3)} in-chart · doors {doors_before}→{seam['doors']} (the walk TRANSPORTED — the carried frame went through) · advances {adv_before}→{seam['advances']}",
     )
-    # the crossing pair may land on the settle frame (post-release) — a
-    # crossing can only be TAKEN while advancing, so crossed deltas count
-    # from ANY frame; the comparison band is the ordinary advancing frames
-    crossed = [d["delta"] for d in seam["deltas"] if d["crossed"]]
-    plain = [d["delta"] for d in seam["deltas"] if d["gesture"] == "advance" and not d["crossed"]]
-    seam_free = bool(crossed) and bool(plain) and max(crossed) <= max(plain) * 1.75 + 0.002
-    record(
-        "explore.noCrossingMark",
-        crossed_n >= 1 and seam_free,
-        f"the crossing frames look like every walking frame: max crossed Δ {crossed and round(max(crossed), 4)} vs max plain Δ {plain and round(max(plain), 4)} over {len(plain)} walking + {len(crossed)} crossing frames",
-    )
+    # a plate for the eyes: the T³ window as the shader draws it. A viewport
+    # CLIP, not an element screenshot — the canvas invalidates every frame and
+    # the element capture's stability wait times out under software rendering
+    # (run 3 lost both plates to a swallowed except)
+    try:
+        pbox = page.locator("[data-explore-window]").bounding_box()
+        page.screenshot(path=str(__import__('pathlib').Path(__file__).parent / "gpu_t3_window.png"), clip=pbox)
+        record("explore.t3Plate", True, "gpu_t3_window.png captured")
+    except Exception as err:
+        record("explore.t3Plate", False, f"the T³ plate failed to capture: {err}")
 
     # ---- E-SHELL-INTACT: close returns to the untouched shell --------------
     page.get_by_text("close — return to the shell", exact=True).click()
@@ -1463,7 +1495,8 @@ def drive_explore(page):
             f"card door opens {reopened} · esc closes the window ALONE {esc_closed} · selection survives {still_selected}",
         )
 
-    # ---- E-THRESHOLD-REFUSAL: a person-built CONE room refuses at the door -
+    # ---- THE DOOR LAW (GPU reset): an OPEN-PAIR room refuses; a fully
+    # paired room OPENS — flat AND cone alike (Amdt 10) ---------------------
     page.keyboard.press("Escape")
     page.wait_for_timeout(300)
     page.get_by_text("aperture — build a 3-manifold", exact=True).click()
@@ -1498,7 +1531,7 @@ def drive_explore(page):
         page.get_by_text("glue — the S² gate judges", exact=True).click()
         page.wait_for_timeout(1500)
         cone_built = select_dim3(page, "written:dim3:built-")
-        record("explore.coneRoomBuilt", cone_built, "one glued pair — the bounded cone room joins the dim-3 band")
+        record("explore.openPairRoomBuilt", cone_built, "one glued pair — the bounded room joins the dim-3 band")
         if cone_built:
             page.locator('button[aria-label="explore inside"]').first.click()
             page.wait_for_timeout(400)
@@ -1506,61 +1539,70 @@ def drive_explore(page):
             refusal_text = refusal.first.text_content() if refusal.count() > 0 else ""
             no_window = page.locator("[data-explore-window]").count() == 0
             record(
-                "explore.thresholdRefusesCone",
-                refusal.count() > 0 and "this door does not open" in (refusal_text or "") and no_window,
+                "explore.openPairsRefused",
+                refusal.count() > 0 and "keeps some faces open" in (refusal_text or "") and no_window,
                 f"refused at the door: {refusal_text} · window absent {no_window}",
             )
-        # ---- the FOLDED body refuses too (left ~ top, the d+1 map folds) ----
-        # the panel STAYED OPEN through the cone glue (a successful glue
-        # resets the rows, never the panel) — reopen only if it closed; the
-        # header ("the aperture — …") is present exactly when open, and the
-        # empty rows show the named refusal in place of the glue button
+        # ---- ★ THE CONE OPENS (the GPU reset's new law): a fully-paired
+        # room with k≠4 classes — keys d-1 · d+2 · d+3 on the three face
+        # pairs give a SOUND Euclidean cone-manifold (2 × 180°, measured in
+        # grounding; rodK carries 2s the shader draws HEAVY) ----------------
         if page.get_by_text("the aperture — build a 3-manifold", exact=True).count() == 0:
             page.get_by_text("aperture — build a 3-manifold", exact=True).click()
         page.wait_for_timeout(400)
-        # anchor on a face NEITHER build ever picks ('back'): it stays in
-        # EVERY face select's option list throughout, so nth(0)/nth(1) are
-        # row 1's A/B by DOM order (a picked face drops out of the OTHER
-        # selects' choices — run 2's timeout, cured)
-        face_selects = page.locator('select:has(option[value="face:cube:back"])')
-        face_selects.nth(0).select_option("face:cube:left")
-        page.wait_for_timeout(200)
-        face_selects.nth(1).select_option("face:cube:top")
-        page.wait_for_timeout(400)
+        # anchor on a face picked LAST ('top'): every face select lists the
+        # unused faces, so the anchor matches all six pickers in DOM order
+        # until the final pick consumes it
+        fsel = page.locator('select:has(option[value="face:cube:top"])')
+        for idx, face in [(0, "face:cube:left"), (1, "face:cube:right"), (2, "face:cube:front"), (3, "face:cube:back"), (4, "face:cube:bottom"), (5, "face:cube:top")]:
+            fsel.nth(idx).select_option(face)
+            page.wait_for_timeout(150)
         page.evaluate(
             """() => {
-          const maps = [...document.querySelectorAll('select')].find(
+          const maps = [...document.querySelectorAll('select')].filter(
             (s) => [...s.options].some((o) => /^d[+-]/.test(o.value)));
-          if (maps) {
-            const want = [...maps.options].find((o) => o.value === 'd+1');
-            if (want) {
-              maps.value = 'd+1';
-              maps.dispatchEvent(new Event('change', { bubbles: true }));
+          const want = ['d-1', 'd+2', 'd+3'];
+          maps.forEach((m, i) => {
+            if ([...m.options].some((o) => o.value === want[i])) {
+              m.value = want[i];
+              m.dispatchEvent(new Event('change', { bubbles: true }));
             }
-          }
+          });
         }"""
         )
         page.wait_for_timeout(300)
         page.get_by_text("glue — the S² gate judges", exact=True).click()
         page.wait_for_timeout(1500)
-        folded_wall = page.get_by_text("not free", exact=False).count() > 0
-        record("explore.foldedBuilt", folded_wall, "the fold wall speaks (the orbifold joins the folded shelf)")
         page.get_by_text("close the aperture gate", exact=True).click()
         page.wait_for_timeout(300)
-        folded_selected = select_dim3(page, "written:dim3f:", expect_fit=False)
-        if folded_selected:
+        cone3_built = select_dim3(page, "written:dim3:built-", last=True)
+        record("explore.coneFormBuilt", cone3_built, "the fully-paired cone form (d-1 · d+2 · d+3) joins the dim-3 band")
+        if cone3_built:
             page.locator('button[aria-label="explore inside"]').first.click()
-            page.wait_for_timeout(400)
-            refusal = page.locator("[data-explore-refusal]")
-            refusal_text = refusal.first.text_content() if refusal.count() > 0 else ""
-            no_window = page.locator("[data-explore-window]").count() == 0
+            page.wait_for_timeout(600)
+            window_open_cone = page.locator("[data-explore-window]").count() > 0
+            try:
+                page.wait_for_function(
+                    "() => window.__exploreWindow && window.__exploreWindow.gpu && window.__exploreWindow.renderFrames > 3",
+                    timeout=15000,
+                )
+            except Exception:
+                pass
+            seam = explore_seam(page)
+            rod_k = (seam and seam["rodK"]) or []
             record(
-                "explore.thresholdRefusesFolded",
-                refusal.count() > 0 and "orbifold" in (refusal_text or "") and no_window,
-                f"refused at the door: {refusal_text} · window absent {no_window}",
+                "explore.coneOpens",
+                window_open_cone and bool(seam) and seam["gpu"] and any(k != 4 for k in rod_k),
+                f"the cone form OPENS: window {window_open_cone} · gpu {seam and seam['gpu']} · rodK {rod_k} (k≠4 rods ride the shader HEAVY)",
             )
-        else:
-            record("explore.thresholdRefusesFolded", False, "could not summon the folded body")
+            try:
+                pbox = page.locator("[data-explore-window]").bounding_box()
+                page.screenshot(path=str(__import__('pathlib').Path(__file__).parent / "gpu_cone_window.png"), clip=pbox)
+                record("explore.conePlate", True, "gpu_cone_window.png captured")
+            except Exception as err:
+                record("explore.conePlate", False, f"the cone plate failed to capture: {err}")
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(300)
     page.keyboard.press("Escape")
     page.wait_for_timeout(600)
     # ---- E-SHELL-INTACT, the caption half: deselected again, the T³ row's

@@ -659,6 +659,13 @@ const inkAllowed = new Set([
   'src/manuscript/ExploreWindow.tsx',
   'src/manuscript/apertureProbes.ts',
   'src/manuscript/apertureProbeAssets.ts',
+  // THE GPU RESET (2026-08-09, CHARTER_GPU_EXPLORE_WINDOW_PORT): the CPU
+  // still is RETIRED — the trace worker + the walk model are DELETED (the
+  // WebGL2 fragment shader carries the transport loop now; a deletion counts
+  // as moved content, rightly); ratified in diagnose-deficit-app.cjs
+  // (§E-GPU / §E-GPU-SUBSTRATE).
+  'src/manuscript/exploreTraceWorker.ts',
+  'src/manuscript/exploreWindowModel.ts',
 ]);
 const inkMoved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

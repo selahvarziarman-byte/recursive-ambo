@@ -804,6 +804,82 @@ export interface FoldedDomain {
 }
 
 // ---------------------------------------------------------------------------
+// THE ROD DATA (GPU port, 2026-08-08 — the instrument's uRodK/uRodClass):
+// the 12 cube edges in the instrument's corner ordering, each carrying ITS
+// engine edge-class (a small palette index) and the class SIZE k — "k is
+// metric, and visible": the shader draws k≠4 rods HEAVY. Read from the
+// domain's own union-find + gate; nothing re-derived.
+// ---------------------------------------------------------------------------
+
+/** the instrument's corner order: (±1,±1,±1) as CN[8]; edges as CE[12] */
+const ROD_CORNERS: V3[] = [
+  [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
+  [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1],
+];
+const ROD_EDGES: [number, number][] = [
+  [0, 1], [1, 2], [2, 3], [3, 0],
+  [4, 5], [5, 6], [6, 7], [7, 4],
+  [0, 4], [1, 5], [2, 6], [3, 7],
+];
+
+export interface ApertureRodData {
+  rodK: number[]; // 12 — the edge-class SIZE (k×90° is the heuristic census)
+  rodClass: number[]; // 12 — a small palette index per distinct class root
+}
+
+export function readRodData(domain: DomainModel | FoldedDomain): ApertureRodData {
+  const shape = domain.shape;
+  const positions = new Map(Object.values(shape.vertices).map((v) => [v.id, v.position as V3]));
+  const gate = 'folded' in domain ? domain.gate : domain.tower.gate;
+  const classOf = 'folded' in domain ? null : domain.complex.edgeClassOf;
+  // per seed edge: its class root (via the union-find when present, else the
+  // gate's own link membership) and the class size
+  const linkOfEdge = (edgeId: string): { root: string; k: number } | null => {
+    if (classOf) {
+      const root = classOf(edgeId);
+      const link = gate.edgeLinks.find((l) => l.edgeClass === root) ?? gate.edgeLinks.find((l) => l.memberEdgeIds.includes(edgeId));
+      return link ? { root: link.edgeClass, k: link.memberEdgeIds.length } : { root, k: 1 };
+    }
+    const link = gate.edgeLinks.find((l) => l.memberEdgeIds.includes(edgeId));
+    return link ? { root: link.edgeClass, k: link.memberEdgeIds.length } : null;
+  };
+  const paletteOf = new Map<string, number>();
+  const rodK: number[] = [];
+  const rodClass: number[] = [];
+  for (const [a, b] of ROD_EDGES) {
+    const pa = ROD_CORNERS[a];
+    const pb = ROD_CORNERS[b];
+    // find the seed edge whose endpoint positions match this cube edge
+    const edge = shape.edges.find((e) => {
+      const qa = positions.get(e.vertexIds[0]);
+      const qb = positions.get(e.vertexIds[1]);
+      if (!qa || !qb) return false;
+      const near = (u: V3, w: V3): boolean => Math.hypot(u[0] - w[0], u[1] - w[1], u[2] - w[2]) < 1e-6;
+      return (near(qa, pa) && near(qb, pb)) || (near(qa, pb) && near(qb, pa));
+    });
+    if (!edge) {
+      rodK.push(4);
+      rodClass.push(0);
+      continue;
+    }
+    const link = linkOfEdge(edge.id);
+    if (!link) {
+      rodK.push(4);
+      rodClass.push(0);
+      continue;
+    }
+    let palette = paletteOf.get(link.root);
+    if (palette === undefined) {
+      palette = paletteOf.size % 5;
+      paletteOf.set(link.root, palette);
+    }
+    rodK.push(link.k);
+    rodClass.push(palette);
+  }
+  return { rodK, rodClass };
+}
+
+// ---------------------------------------------------------------------------
 // THE GATE (mandate §1 ⛔ / §8): cannot hand a real deck group + ambient
 // ⇒ DRAW NOTHING, SAY SO.
 // ---------------------------------------------------------------------------

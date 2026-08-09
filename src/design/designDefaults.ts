@@ -344,55 +344,14 @@ export const manuscriptDefaults = {
       nibNear: 1.25, // the near nib (heavy)
       darkSolid: 0.9, // the mask's dark material (inert today — real openings; arms when a dark-material mask lands)
     },
-    // RUNG 1 — THE EXPLORE WINDOW (FAT CHARTER 2026-08-07): the walked
-    // inside-view. Craft/pacing only — the frames are traceAperture's, the
-    // walk is the engine's own transport; no knob invents a copy or a step.
+    // THE GPU EXPLORE WINDOW (2026-08-08 reset, ADR 0004 Amdt 7): the window
+    // renders as the instrument's fragment shader at canvas resolution — the
+    // CPU raster dial and the D1/hatch window-ink blocks are RETIRED with
+    // the CPU tracer (the shader's ink is inline; the SHELL keeps its own
+    // aperture-ink dials). Pacing only.
     explore: {
-      resolution: 128, // the window's own trace raster (px) — walking cadence over pixel fetish
-      pace: 0.32, // advance, world units/s — a cloister walk, not a flight sim
+      pace: 0.45, // advance, world units/s — the cell spans 2; a cloister walk
       lookSensitivity: 0.004, // rad/px of drag
-      // D1 — THE INK RETUNE AT WINDOW SCALE (designer 1830, slice 1): the
-      // window's OWN craft + ink — the shell's 168px-tuned params reused
-      // verbatim at ~4× apparent scale collapsed the tone to two values
-      // (the third scale-reuse failure this arc). The retune builds a TONE
-      // LADDER: paper ground → a light single weave the half-lit face
-      // crosses → a darker double weave on the shadowed face → the line on
-      // top — a grey range, the two-faced mask readable. The tone dies fast
-      // with depth while the line persists (the ink's own "line outlives
-      // the tone" law, pushed further at window scale — the far copies
-      // recede as clean line drawings, not tone salt).
-      craft: {
-        toneGamma: 0.88, // lifts the midtones the shell's 1.25 crushed at scale
-        contourWeight: 0.3, // the 0.55 grazing-rim darkening over-fired at scale
-        maskTone: 1.0,
-        handTone: 0.92,
-        scaffoldTone: 0.28,
-        formTone: 0.95,
-      },
-      ink: {
-        paperColor: '#e9e2cf', // THE PAGE ITSELF — the same hand as the plate beside it
-        interiorInk: '#2a251c',
-        rimSeed: 3,
-        echoFade: 0.45, // the tone dies by the second corridor (no distant salt)
-        contourEchoFade: 0.72, // the line persists — depth is carried by drawing, not noise
-        contourGain: 1.55,
-        contourBlur: 0.55,
-        // THE INSIDE-VIEW HATCH (2026-08-08): the D1 fill-ladder thresholds
-        // are RETIRED (the wash law — grey from lines); the window rides the
-        // surface-locked stroke dials, tuned at window scale by the probe eye
-        strokePitch: 0.085, // probe-eyed at 128: the near mask carries ~6 strokes (shading, not bands)
-        strokeDuty: 0.25, // the duty ruling — constant, never fattened
-        strokeFloor: 0.12,
-        crossOnset: 0.55,
-        grazingGain: 1.6,
-        grazingFalloff: 2,
-        chiralityAngleDeg: 14,
-        nibDepthScale: 0.55,
-        nibNear: 1.25,
-        darkSolid: 0.9,
-        creaseThreshold: 0.5,
-        depthBreakThreshold: 0.035,
-      },
     },
     // P-IMMERSE — the honest non-manifold flag: WHICH edges are junctions is
     // the classifier's slot-count reading (>2 face wedges); the knob is ink only.
