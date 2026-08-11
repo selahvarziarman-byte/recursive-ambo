@@ -1379,12 +1379,18 @@ export default function ManuscriptView() {
   // THE INK's dials (designer's spec 2026-07-14 — exposed, not dialed): the
   // void is paper, the line carries the form; none of these reaches the
   // tracer — the ink moves no copy.
-  // THE GPU EXPLORE WINDOW — pacing dials only (the shader renders at canvas
-  // resolution; its ink is inline — the D1/hatch window-ink groups retired
-  // with the CPU tracer)
+  // THE GPU EXPLORE WINDOW — pacing + the PART-A legibility dials (2026-08-11
+  // seal: recede smooth-rod WEIGHT keep class color · focal hierarchy ·
+  // LOD ladder). Structure + defaults here; the designer's eye gates the
+  // values when Chrome returns.
   const exploreCtl = useControls('world · explore', {
     pace: { value: d.world.explore.pace, min: 0.1, max: 1.2, step: 0.02 },
     lookSensitivity: { value: d.world.explore.lookSensitivity, min: 0.001, max: 0.012, step: 0.001 },
+    smoothRodRecede: { value: d.world.explore.smoothRodRecede, min: 0, max: 1, step: 0.05 },
+    depthWeightRatio: { value: d.world.explore.depthWeightRatio, min: 1, max: 8, step: 0.25 },
+    lodMidDepth: { value: d.world.explore.lodMidDepth, min: 1, max: 12, step: 0.25 },
+    lodSmallDepth: { value: d.world.explore.lodSmallDepth, min: 2, max: 14, step: 0.25 },
+    lodTinyDepth: { value: d.world.explore.lodTinyDepth, min: 3, max: 16, step: 0.25 },
   });
   const inkCtl = useControls('world · aperture ink', {
     contourEchoFade: { value: d.world.aperture.contourEchoFade, min: 0.3, max: 1, step: 0.01 },
@@ -2446,12 +2452,14 @@ export default function ManuscriptView() {
     ) => {
       if (!gate.ok || gate.deck.length !== 3) return null;
       const g = gate.geometry;
+      // C5 (Part A): a flat room says so — `flat · no cone edges` is an
+      // explicit reading, never silence (the E³ case IS the no-cone-edges case)
       const deckLine =
         g.kind === 'folded'
           ? `orbifold · n=[${g.n.join(',')}] · fold loci: ${g.foldLoci}`
           : g.kind === 'E3'
-            ? `E³ · n=[${g.n.join(',')}]`
-            : `Euclidean cone-manifold · n=[${g.n.join(',')}]${g.coneEdges ? ` · cone edges: ${g.coneEdges}` : ''}`;
+            ? `E³ · n=[${g.n.join(',')}] · flat · no cone edges`
+            : `Euclidean cone-manifold · n=[${g.n.join(',')}]${g.coneEdges ? ` · cone edges: ${g.coneEdges}` : ' · flat · no cone edges'}`;
       return { title, deck: gate.deck, rodData: readRodData(domain), deckLine };
     };
     if (exploreOpen.startsWith('dim3:')) {
@@ -4521,6 +4529,11 @@ export default function ManuscriptView() {
           level={apertureCtl.level}
           pace={exploreCtl.pace}
           lookSensitivity={exploreCtl.lookSensitivity}
+          smoothRodRecede={exploreCtl.smoothRodRecede}
+          depthWeightRatio={exploreCtl.depthWeightRatio}
+          lodMidDepth={exploreCtl.lodMidDepth}
+          lodSmallDepth={exploreCtl.lodSmallDepth}
+          lodTinyDepth={exploreCtl.lodTinyDepth}
           paper={{ ...d.paper, background: d.paper.background }}
           accent={generatorsCtl.a}
           onClose={() => setExploreOpen(null)}

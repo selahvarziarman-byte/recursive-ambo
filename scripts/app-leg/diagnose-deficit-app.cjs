@@ -383,7 +383,7 @@ function killTree(pid) {
         check('§E-DRIVEABLE ★★ THE TWO GESTURES DRIVE THE CARRIED FRAME: a drag TURNS forward (the look), a sustained hold MOVES the eye along it (the advance) — and the walk went THROUGH A DOOR (the transport carried the eye AND the frame; a mirror door may take the frame\'s handedness — the instrument\'s hard-won law, ported whole)',
           get('explore.lookTurns').ok && get('explore.advanceWalks').ok,
           `${get('explore.lookTurns').detail} · ${get('explore.advanceWalks').detail}`);
-        check('§E-HORIZON ★ THE LIMIT OF SIGHT IS NAMED: the live window caption carries the deck\'s own geometry line AND `copies shown to depth N`; the void is PAPER by the shader\'s own law (no fog, no wall — the miss branch returns the page)',
+        check('§E-HORIZON ★ THE LIMIT OF SIGHT IS NAMED + THE FLAT ROOM SAYS SO (C5, Part A): the live window caption carries the deck\'s own geometry line, `copies shown to depth N`, AND — the T³ having no cone edges — the explicit reading `flat · no cone edges` (never silence); the void is PAPER by the shader\'s own law (no fog, no wall — the miss branch returns the page)',
           get('explore.horizonCaption').ok, get('explore.horizonCaption').detail);
         check('§E-DOOR-LAW ★★ OPEN PAIRS REFUSE; ★ THE CONE OPENS (E-T3-AND-CONE): a one-pair room refuses at the door BY NAME (the walk needs all six faces paired) and the window never mounts; a FULLY-PAIRED cone form (d-1 · d+2 · d+3 — a sound Euclidean cone-manifold, 2 × 180°) OPENS the window with the GPU up and rodK carrying k≠4 entries the shader draws HEAVY — E³ and cone alike, one transport loop (Amdt 10)',
           get('explore.openPairRoomBuilt').ok && get('explore.openPairsRefused').ok && get('explore.coneFormBuilt').ok && get('explore.coneOpens').ok,
@@ -446,6 +446,35 @@ function killTree(pid) {
             );
           })(),
           'the GPU port substrate pins');
+        check('§E-PART-A THE LEGIBILITY LAWS HOLD (source-pinned, 2026-08-11 seal): the smooth rod (k=4) RECEDES IN WEIGHT — radius thins toward a guide AND its ink weight scales down — while `classInk(uRodClass)` still keys its color (position arbitrary → weight recedes; class color real → survives; k rides the class so every copy recedes alike); cone rods keep 0.042 + the heavy tone (Part A never touches cone); the contour\'s depth weight is FRAME-NEAREST with the settable ratio (nearest full, furthest 1/uDepthRatio, monotonic); the LOD ladder is HARD depth gates — the hatch STOPS at uLodMid (never fades to mush), flat wash at uLodSmall, contour-only at uLodTiny; the five dials ride designDefaults + the leva group + the mount; the flat caption is explicit in the deckLine builder; the canvas context is alpha:false (a solid plate)',
+          (() => {
+            const windowSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ExploreWindow.tsx'), 'utf8');
+            const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+            const defaultsSrc = fs.readFileSync(path.join(repoRoot, 'src/design/designDefaults.ts'), 'utf8');
+            const exploreBlock = defaultsSrc.slice(defaultsSrc.indexOf('explore: {'), defaultsSrc.indexOf('junction: {'));
+            return (
+              windowSrc.includes('uniform float uSmoothRecede') &&
+              windowSrc.includes('mix(0.016, 0.007, uSmoothRecede)') &&
+              windowSrc.includes('weightScale = mix(1.0, 0.35, uSmoothRecede)') &&
+              windowSrc.includes('base=classInk(uRodClass[ei]);') &&
+              windowSrc.includes(': 0.042') &&
+              windowSrc.includes('tone*1.35') &&
+              windowSrc.includes('1.0/max(uDepthRatio,1.0)') &&
+              windowSrc.includes('if(dep > uLodMid)   hatch = 0.0;') &&
+              windowSrc.includes('if(dep > uLodSmall) tone  = 0.0;') &&
+              windowSrc.includes('if(dep > uLodTiny)  body  = 0.0;') &&
+              windowSrc.includes('alpha: false') &&
+              viewSrc.includes('flat · no cone edges') &&
+              viewSrc.includes('smoothRodRecede={exploreCtl.smoothRodRecede}') &&
+              viewSrc.includes('lodTinyDepth={exploreCtl.lodTinyDepth}') &&
+              exploreBlock.includes('smoothRodRecede:') &&
+              exploreBlock.includes('depthWeightRatio:') &&
+              exploreBlock.includes('lodMidDepth:') &&
+              exploreBlock.includes('lodSmallDepth:') &&
+              exploreBlock.includes('lodTinyDepth:')
+            );
+          })(),
+          'the Part-A legibility pins');
         // E4 hygiene
         check('§E4 CONSOLE CLEAN — no error logged across the whole drive (favicon noise excluded)',
           get('console').ok, get('console').detail);

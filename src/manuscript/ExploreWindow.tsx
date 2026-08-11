@@ -92,6 +92,12 @@ uniform float uRodK[12];
 uniform float uRodClass[12];
 uniform int   uLevel;
 uniform float uHatch;      // the SETTLE dial
+// ── PART A (RUNG-1 legibility, 2026-08-11 seal): the designer's dials ──────
+uniform float uSmoothRecede; // smooth-rod (k=4) WEIGHT recede — the class COLOR survives
+uniform float uDepthRatio;   // focal hierarchy: nearest:furthest contour ratio
+uniform float uLodMid;       // LOD ladder depths — a mark STOPS below its resolving size:
+uniform float uLodSmall;     //   mid → hatch DROPS · small → flat wash (the one mark)
+uniform float uLodTiny;      //   tiny → contour only
 
 const vec3 PAPER = vec3(0.914,0.886,0.812);   // the page (#e9e2cf)
 const vec3 INK   = vec3(0.165,0.145,0.110);   // the line (#2a251c)
@@ -169,7 +175,10 @@ float map(vec3 p, out float id){
   float dc=sdCoil(p); if(dc<d){ d=dc; id=13.; }
   float ds=sdStands(p); if(ds<d){ d=ds; id=14.; }
   for(int i=0;i<12;i++){
-    float r = (uRodK[i]==4.0) ? 0.016 : 0.042;   // a CONE edge is MUCH thicker — k is metric, and visible
+    // a CONE edge is MUCH thicker — k is metric, and visible. Part A: a
+    // SMOOTH rod (k=4) thins toward a guide as the recede dial rises (its
+    // position is arbitrary; only its class color is real)
+    float r = (uRodK[i]==4.0) ? mix(0.016, 0.007, uSmoothRecede) : 0.042;
     float dd=sdCap(p, CN[CE[i].x], CN[CE[i].y], r);
     if(dd<d){ d=dd; id=float(i+1); }
   }
@@ -223,19 +232,31 @@ void main(){
   float lam=abs(dot(nrmOut,key));
   float tone=clamp(1.0-(0.12+0.88*lam),0.,1.);
 
+  // PART A · THE SMOOTH-ROD RECEDE: position is arbitrary so the WEIGHT
+  // recedes; the class color is real so it SURVIVES. k rides the rod's
+  // CLASS (rodK = class size), so the recede lands on every copy of a
+  // class alike (researcher Q1). Cone rods (k≠4) stay bold.
+  float weightScale = 1.0;
   vec3 base;
   if(idOut<0.5 || idOut>12.5){ base=INK; }
   else { int ei=int(idOut)-1; base=classInk(uRodClass[ei]);
-         if(uRodK[ei]!=4.0) tone=clamp(tone*1.35,0.,1.); }   // cone edges HEAVY
+         if(uRodK[ei]!=4.0) tone=clamp(tone*1.35,0.,1.);       // cone edges HEAVY
+         else weightScale = mix(1.0, 0.35, uSmoothRecede); }   // smooth rods QUIET
   // mirrored = det(acc) < 0 — a mirrored copy SHOWS itself; it is NEVER
   // ink-marked (chirality by the light: the coil reads left-handed)
 
   // CONTOUR — geometry-anchored (screen derivatives of n and depth): the
-  // lines do NOT crawl when the camera moves
+  // lines do NOT crawl when the camera moves. PART A · THE FOCAL HIERARCHY:
+  // the depth weight is FRAME-NEAREST (dep, not transport count) — the
+  // nearest rank carries the frame BY DESIGN; every farther rank is
+  // monotonically subordinate, ending at 1/uDepthRatio at the horizon
+  // (sqrt shaping drops the second rank decisively, not gently).
   float crease = length(fwdD(nrmOut));
   float dbreak = fwidth(dep);
   float line = clamp(max(crease*0.9, dbreak*9.0), 0., 1.);
-  line = smoothstep(0.25, 0.75, line) * exp(-echo/2.8);
+  float horizon = 2.0*float(uLevel) + 1e-3;
+  float wDepth = mix(1.0, 1.0/max(uDepthRatio,1.0), sqrt(clamp(dep/horizon,0.,1.)));
+  line = smoothstep(0.25, 0.75, line) * wDepth;
 
   // HATCH — screen-space, ~22% duty, gated by tone and the SETTLE dial
   float a1=0.593;
@@ -243,7 +264,18 @@ void main(){
   float hatch = (tone>0.52 && h<0.22) ? 1.0 : 0.0;
   hatch *= fade*0.55*uHatch;
 
+  // PART A · THE LOD LADDER: a mark STOPS below its resolving size — hard
+  // depth-gated steps, never a fade to mush (sub-resolution hatch is noise,
+  // a fabrication under the one law): full → the hatch DROPS (mid) → flat
+  // wash, the one distinguishing mark (small) → contour only (tiny).
+  if(dep > uLodMid)   hatch = 0.0;
+  if(dep > uLodSmall) tone  = 0.0;
   float body = clamp(0.26+0.55*tone,0.,1.)*fade;
+  if(dep > uLodTiny)  body  = 0.0;
+
+  body  *= weightScale;
+  hatch *= weightScale;
+  line  *= weightScale;
   vec3 col = mix(PAPER, base, body*0.85);
   col = mix(col, INK, max(hatch, line*0.92));
   o=vec4(col,1.);
@@ -313,6 +345,13 @@ export interface ExploreWindowProps {
   level: number;
   pace: number; // advance, world units / s (the cell spans 2)
   lookSensitivity: number; // rad / px
+  // PART A (2026-08-11 seal): the legibility dials — structure here, the
+  // designer's eye gates the values
+  smoothRodRecede: number; // 0..1 — smooth-rod (k=4) weight recede
+  depthWeightRatio: number; // nearest:furthest contour ratio (≈4)
+  lodMidDepth: number; // beyond: the hatch DROPS
+  lodSmallDepth: number; // beyond: flat wash — the one mark
+  lodTinyDepth: number; // beyond: contour only
   paper: { cardBackground: string; cardBorder: string; cardInk: string; background: string };
   accent: string;
   onClose: () => void;
@@ -327,14 +366,19 @@ export function ExploreWindow({
   level,
   pace,
   lookSensitivity,
+  smoothRodRecede,
+  depthWeightRatio,
+  lodMidDepth,
+  lodSmallDepth,
+  lodTinyDepth,
   paper,
   accent,
   onClose,
 }: ExploreWindowProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const captionRef = useRef<HTMLDivElement | null>(null);
-  const liveRef = useRef({ level, pace, lookSensitivity });
-  liveRef.current = { level, pace, lookSensitivity };
+  const liveRef = useRef({ level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidDepth, lodSmallDepth, lodTinyDepth });
+  liveRef.current = { level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidDepth, lodSmallDepth, lodTinyDepth };
 
   const packed = useMemo(() => packDeck(deck), [deck]);
 
@@ -352,7 +396,9 @@ export function ExploreWindow({
     seam.rodK = [...rodData.rodK];
     nextSession += 1;
     if (!canvas || !packed) return undefined;
-    const gl = canvas.getContext('webgl2', { antialias: false });
+    // alpha:false — the window is a SOLID PLATE by charter (the page never
+    // shows through the backbuffer, even before the first frame)
+    const gl = canvas.getContext('webgl2', { antialias: false, alpha: false });
     if (!gl) {
       seam.caption = 'WebGL2 unavailable — the walk needs the GPU (ADR 0004 Amdt 7)';
       if (captionRef.current) captionRef.current.textContent = seam.caption;
@@ -574,6 +620,11 @@ export function ExploreWindow({
       gl.uniform3f(U('uUp'), camU[0], camU[1], camU[2]);
       gl.uniform1i(U('uLevel'), Math.max(0, Math.round(liveRef.current.level)));
       gl.uniform1f(U('uHatch'), settle);
+      gl.uniform1f(U('uSmoothRecede'), liveRef.current.smoothRodRecede);
+      gl.uniform1f(U('uDepthRatio'), liveRef.current.depthWeightRatio);
+      gl.uniform1f(U('uLodMid'), liveRef.current.lodMidDepth);
+      gl.uniform1f(U('uLodSmall'), liveRef.current.lodSmallDepth);
+      gl.uniform1f(U('uLodTiny'), liveRef.current.lodTinyDepth);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       seam.renderFrames += 1;
       seam.eye = [...eye] as Vec3;

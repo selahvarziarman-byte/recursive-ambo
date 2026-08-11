@@ -348,10 +348,16 @@ export const manuscriptDefaults = {
     // renders as the instrument's fragment shader at canvas resolution — the
     // CPU raster dial and the D1/hatch window-ink blocks are RETIRED with
     // the CPU tracer (the shader's ink is inline; the SHELL keeps its own
-    // aperture-ink dials). Pacing only.
+    // aperture-ink dials). Pacing + the PART-A legibility dials (2026-08-11
+    // seal) — BEST-GUESS defaults; the designer's eye gates the values.
     explore: {
       pace: 0.45, // advance, world units/s — the cell spans 2; a cloister walk
       lookSensitivity: 0.004, // rad/px of drag
+      smoothRodRecede: 0.65, // smooth-rod (k=4) WEIGHT recede, 0..1 — the class color survives; cone rods stay bold
+      depthWeightRatio: 5, // focal hierarchy: nearest:furthest contour ratio — 1/R lands at the ANALYTIC horizon (2·level), so 5 measures ≈3.2× on the farthest VISIBLE copies (the seal's ≥3 bar; raster-measured 2026-08-11)
+      lodMidDepth: 3.5, // LOD: beyond this depth the hatch DROPS (sub-resolution hatch is noise — it STOPS)
+      lodSmallDepth: 7, // LOD: beyond, flat wash only — the one distinguishing mark
+      lodTinyDepth: 10, // LOD: beyond, contour only (the horizon fade takes the rest)
     },
     // P-IMMERSE — the honest non-manifold flag: WHICH edges are junctions is
     // the classifier's slot-count reading (>2 face wedges); the knob is ink only.

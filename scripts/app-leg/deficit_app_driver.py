@@ -1358,7 +1358,14 @@ def drive_explore(page):
         bool(seam) and seam["gpu"] and seam["renderFrames"] > frames0,
         f"webgl2 program linked {seam and seam['gpu']} · frames {frames0}→{seam and seam['renderFrames']} (the render loop lives)",
     )
-    caption_ok = bool(seam and seam["caption"] and "copies shown to depth" in seam["caption"])
+    # C5 (Part A): the flat T³ SAYS it is flat — an explicit reading, never
+    # silence on cone edges
+    caption_ok = bool(
+        seam
+        and seam["caption"]
+        and "copies shown to depth" in seam["caption"]
+        and "flat · no cone edges" in seam["caption"]
+    )
     record(
         "explore.horizonCaption",
         caption_ok,
@@ -1590,10 +1597,12 @@ def drive_explore(page):
                 pass
             seam = explore_seam(page)
             rod_k = (seam and seam["rodK"]) or []
+            cone_caption = (seam and seam["caption"]) or ""
             record(
                 "explore.coneOpens",
-                window_open_cone and bool(seam) and seam["gpu"] and any(k != 4 for k in rod_k),
-                f"the cone form OPENS: window {window_open_cone} · gpu {seam and seam['gpu']} · rodK {rod_k} (k≠4 rods ride the shader HEAVY)",
+                window_open_cone and bool(seam) and seam["gpu"] and any(k != 4 for k in rod_k)
+                and "cone edges" in cone_caption and "flat" not in cone_caption,
+                f"the cone form OPENS: window {window_open_cone} · gpu {seam and seam['gpu']} · rodK {rod_k} (k≠4 rods ride the shader HEAVY) · caption names the cone edges, never 'flat': {cone_caption[:80]}",
             )
             try:
                 pbox = page.locator("[data-explore-window]").bounding_box()
