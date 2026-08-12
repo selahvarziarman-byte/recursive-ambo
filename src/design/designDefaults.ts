@@ -353,10 +353,10 @@ export const manuscriptDefaults = {
     explore: {
       pace: 0.45, // advance, world units/s — the cell spans 2; a cloister walk
       lookSensitivity: 0.004, // rad/px of drag
-      smoothRodRecede: 0.65, // smooth-rod (k=4) WEIGHT recede, 0..1 — the class color survives; cone rods stay bold
-      depthWeightRatio: 5, // focal hierarchy: nearest:furthest contour ratio — 1/R lands at the ANALYTIC horizon (2·level), so 5 measures ≈3.2× on the farthest VISIBLE copies (the seal's ≥3 bar; raster-measured 2026-08-11)
+      smoothRodRecede: 0.85, // smooth-rod (k=4) WEIGHT recede, 0..1 — the class color survives; cone rods stay bold (designer eye-gate, mothership 1526; re-centre the mapping's useful top-20% zone in a later touch)
+      depthWeightRatio: 9, // focal hierarchy: nearest:furthest contour ratio (designer eye-gate 5→9, mothership 1526 — the near rank carries the frame harder)
       lodMidDepth: 3.5, // LOD: beyond this depth the hatch DROPS (sub-resolution hatch is noise — it STOPS)
-      lodSmallDepth: 7, // LOD: beyond, flat wash only — the one distinguishing mark
+      lodSmallDepth: 5, // LOD: beyond, flat wash only — the one distinguishing mark (designer eye-gate 7→5, mothership 1526)
       lodTinyDepth: 10, // LOD: beyond, contour only (the horizon fade takes the rest)
     },
     // P-IMMERSE — the honest non-manifold flag: WHICH edges are junctions is
