@@ -353,11 +353,15 @@ export const manuscriptDefaults = {
     explore: {
       pace: 0.45, // advance, world units/s — the cell spans 2; a cloister walk
       lookSensitivity: 0.004, // rad/px of drag
-      smoothRodRecede: 0.85, // smooth-rod (k=4) WEIGHT recede, 0..1 — the class color survives; cone rods stay bold (designer eye-gate, mothership 1526; re-centre the mapping's useful top-20% zone in a later touch)
+      smoothRodRecede: 0.85, // smooth-rod (k=4) WEIGHT recede, 0..1 — the class color survives; cone rods stay bold (designer eye-gate, mothership 1526). DIAL-AXIS 2026-08-12: the mapping is LOG-SPACE now (the linear mix's useful zone was the top ~20% — her finding); endpoints exact, 0.85 lands within ~5-8% of the committed look
       depthWeightRatio: 9, // focal hierarchy: nearest:furthest contour ratio (designer eye-gate 5→9, mothership 1526 — the near rank carries the frame harder)
-      lodMidDepth: 3.5, // LOD: beyond this depth the hatch DROPS (sub-resolution hatch is noise — it STOPS)
-      lodSmallDepth: 5, // LOD: beyond, flat wash only — the one distinguishing mark (designer eye-gate 7→5, mothership 1526)
-      lodTinyDepth: 10, // LOD: beyond, contour only (the horizon fade takes the rest)
+      // DIAL-AXIS (2026-08-12): the LOD ladder reads the ECHO axis — the
+      // content horizon is the fade exp(−echo/2.4), extinct ≈ echo 6 (8.2%)
+      // to 7 (5.4%); dep-unit gates were inert out there. Hard steps kept.
+      // The designer RE-GATES all three + the held tiny at her named station.
+      lodMidEcho: 2, // beyond this echo the hatch DROPS (ranks 0-2 keep it; sub-resolution hatch is noise — it STOPS)
+      lodSmallEcho: 5, // beyond: flat wash only — the one distinguishing mark (the committed small=5, now in echo units)
+      lodTinyEcho: 6, // beyond: contour only — at the extinction shoulder (held for the designer's re-gate)
     },
     // P-IMMERSE — the honest non-manifold flag: WHICH edges are junctions is
     // the classifier's slot-count reading (>2 face wedges); the knob is ink only.

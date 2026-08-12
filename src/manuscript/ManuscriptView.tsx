@@ -1381,16 +1381,17 @@ export default function ManuscriptView() {
   // tracer — the ink moves no copy.
   // THE GPU EXPLORE WINDOW — pacing + the PART-A legibility dials (2026-08-11
   // seal: recede smooth-rod WEIGHT keep class color · focal hierarchy ·
-  // LOD ladder). Structure + defaults here; the designer's eye gates the
-  // values when Chrome returns.
+  // LOD ladder). DIAL-AXIS (2026-08-12): the LOD dials read ECHO (transport
+  // count — the fade's own axis; extinction ≈ echo 6); the designer re-gates
+  // at her named station.
   const exploreCtl = useControls('world · explore', {
     pace: { value: d.world.explore.pace, min: 0.1, max: 1.2, step: 0.02 },
     lookSensitivity: { value: d.world.explore.lookSensitivity, min: 0.001, max: 0.012, step: 0.001 },
     smoothRodRecede: { value: d.world.explore.smoothRodRecede, min: 0, max: 1, step: 0.05 },
-    depthWeightRatio: { value: d.world.explore.depthWeightRatio, min: 1, max: 8, step: 0.25 },
-    lodMidDepth: { value: d.world.explore.lodMidDepth, min: 1, max: 12, step: 0.25 },
-    lodSmallDepth: { value: d.world.explore.lodSmallDepth, min: 2, max: 14, step: 0.25 },
-    lodTinyDepth: { value: d.world.explore.lodTinyDepth, min: 3, max: 16, step: 0.25 },
+    depthWeightRatio: { value: d.world.explore.depthWeightRatio, min: 1, max: 12, step: 0.25 },
+    lodMidEcho: { value: d.world.explore.lodMidEcho, min: 0, max: 8, step: 1 },
+    lodSmallEcho: { value: d.world.explore.lodSmallEcho, min: 0, max: 10, step: 1 },
+    lodTinyEcho: { value: d.world.explore.lodTinyEcho, min: 0, max: 12, step: 1 },
   });
   const inkCtl = useControls('world · aperture ink', {
     contourEchoFade: { value: d.world.aperture.contourEchoFade, min: 0.3, max: 1, step: 0.01 },
@@ -4531,9 +4532,9 @@ export default function ManuscriptView() {
           lookSensitivity={exploreCtl.lookSensitivity}
           smoothRodRecede={exploreCtl.smoothRodRecede}
           depthWeightRatio={exploreCtl.depthWeightRatio}
-          lodMidDepth={exploreCtl.lodMidDepth}
-          lodSmallDepth={exploreCtl.lodSmallDepth}
-          lodTinyDepth={exploreCtl.lodTinyDepth}
+          lodMidEcho={exploreCtl.lodMidEcho}
+          lodSmallEcho={exploreCtl.lodSmallEcho}
+          lodTinyEcho={exploreCtl.lodTinyEcho}
           paper={{ ...d.paper, background: d.paper.background }}
           accent={generatorsCtl.a}
           onClose={() => setExploreOpen(null)}

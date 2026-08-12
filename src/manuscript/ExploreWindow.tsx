@@ -93,11 +93,14 @@ uniform float uRodClass[12];
 uniform int   uLevel;
 uniform float uHatch;      // the SETTLE dial
 // ── PART A (RUNG-1 legibility, 2026-08-11 seal): the designer's dials ──────
+// DIAL-AXIS (2026-08-12): the LOD thresholds read the ECHO axis — the
+// content horizon IS the echo fade exp(−echo/2.4), visually extinct by
+// echo ≈ 6–7, so depth-unit gates were inert out there (the mis-spec).
 uniform float uSmoothRecede; // smooth-rod (k=4) WEIGHT recede — the class COLOR survives
 uniform float uDepthRatio;   // focal hierarchy: nearest:furthest contour ratio
-uniform float uLodMid;       // LOD ladder depths — a mark STOPS below its resolving size:
-uniform float uLodSmall;     //   mid → hatch DROPS · small → flat wash (the one mark)
-uniform float uLodTiny;      //   tiny → contour only
+uniform float uLodMid;       // LOD ladder ECHO thresholds — a mark STOPS below its resolving size:
+uniform float uLodSmall;     //   beyond mid → hatch DROPS · beyond small → flat wash (the one mark)
+uniform float uLodTiny;      //   beyond tiny → contour only; all sit below the ~echo-6 extinction
 
 const vec3 PAPER = vec3(0.914,0.886,0.812);   // the page (#e9e2cf)
 const vec3 INK   = vec3(0.165,0.145,0.110);   // the line (#2a251c)
@@ -117,6 +120,11 @@ float sdCap(vec3 p, vec3 a, vec3 b, float r){
   vec3 pa=p-a, ba=b-a; float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.);
   return length(pa-ba*h)-r;
 }
+// the smooth-rod radius under the recede dial — LOG-SPACE interpolation
+// (equal dial steps = equal RATIO steps; the linear mix crammed the visible
+// thinning into the dial's top ~20% — the designer's finding); endpoints
+// exact (0.016 → 0.007). Set ONCE per fragment in main.
+float gSmoothR = 0.016;
 // ── THE AUTHORED JANUS PLAQUE (a207c44), as an SDF ─────────────────────────
 // a thin standing lens at the authored station; the features are REAL CUT
 // openings: one round eye, one stroke eye (the asymmetry), and per side ONE
@@ -177,8 +185,11 @@ float map(vec3 p, out float id){
   for(int i=0;i<12;i++){
     // a CONE edge is MUCH thicker — k is metric, and visible. Part A: a
     // SMOOTH rod (k=4) thins toward a guide as the recede dial rises (its
-    // position is arbitrary; only its class color is real)
-    float r = (uRodK[i]==4.0) ? mix(0.016, 0.007, uSmoothRecede) : 0.042;
+    // position is arbitrary; only its class color is real). The recede
+    // radius is gSmoothR — hoisted to ONE pow per fragment (a pow inside
+    // this loop ran per rod per march step: ~630M/frame, and the software
+    // rasterizer's frame time blew past the input-delivery windows).
+    float r = (uRodK[i]==4.0) ? gSmoothR : 0.042;
     float dd=sdCap(p, CN[CE[i].x], CN[CE[i].y], r);
     if(dd<d){ d=dd; id=float(i+1); }
   }
@@ -191,6 +202,7 @@ vec3 nrm(vec3 p){ float id; vec2 e=vec2(1e-3,0);
 vec3 fwdD(vec3 n){ return abs(dFdx(n))+abs(dFdy(n)); }
 
 void main(){
+  gSmoothR = 0.016*pow(0.4375, uSmoothRecede);
   vec2 uv=(gl_FragCoord.xy - 0.5*uRes)/uRes.y;
   vec3 v=normalize(uFwd + uRight*uv.x*1.25 + uUp*uv.y*1.25);
   vec3 p=uEye;
@@ -241,7 +253,7 @@ void main(){
   if(idOut<0.5 || idOut>12.5){ base=INK; }
   else { int ei=int(idOut)-1; base=classInk(uRodClass[ei]);
          if(uRodK[ei]!=4.0) tone=clamp(tone*1.35,0.,1.);       // cone edges HEAVY
-         else weightScale = mix(1.0, 0.35, uSmoothRecede); }   // smooth rods QUIET
+         else weightScale = pow(0.35, uSmoothRecede); }        // smooth rods QUIET — log-space (recentred; endpoints exact 1.0 → 0.35)
   // mirrored = det(acc) < 0 — a mirrored copy SHOWS itself; it is NEVER
   // ink-marked (chirality by the light: the coil reads left-handed)
 
@@ -265,13 +277,16 @@ void main(){
   hatch *= fade*0.55*uHatch;
 
   // PART A · THE LOD LADDER: a mark STOPS below its resolving size — hard
-  // depth-gated steps, never a fade to mush (sub-resolution hatch is noise,
-  // a fabrication under the one law): full → the hatch DROPS (mid) → flat
+  // steps, never a fade to mush (sub-resolution hatch is noise, a
+  // fabrication under the one law): full → the hatch DROPS (mid) → flat
   // wash, the one distinguishing mark (small) → contour only (tiny).
-  if(dep > uLodMid)   hatch = 0.0;
-  if(dep > uLodSmall) tone  = 0.0;
+  // DIAL-AXIS: the gates read ECHO (the fade's own axis — the content
+  // horizon), not world travel; a rank is a transport count, and the
+  // thresholds sit below the ~echo-6 extinction where dep-gates were inert.
+  if(echo > uLodMid)   hatch = 0.0;
+  if(echo > uLodSmall) tone  = 0.0;
   float body = clamp(0.26+0.55*tone,0.,1.)*fade;
-  if(dep > uLodTiny)  body  = 0.0;
+  if(echo > uLodTiny)  body  = 0.0;
 
   body  *= weightScale;
   hatch *= weightScale;
@@ -346,12 +361,13 @@ export interface ExploreWindowProps {
   pace: number; // advance, world units / s (the cell spans 2)
   lookSensitivity: number; // rad / px
   // PART A (2026-08-11 seal): the legibility dials — structure here, the
-  // designer's eye gates the values
-  smoothRodRecede: number; // 0..1 — smooth-rod (k=4) weight recede
-  depthWeightRatio: number; // nearest:furthest contour ratio (≈4)
-  lodMidDepth: number; // beyond: the hatch DROPS
-  lodSmallDepth: number; // beyond: flat wash — the one mark
-  lodTinyDepth: number; // beyond: contour only
+  // designer's eye gates the values. DIAL-AXIS (2026-08-12): the LOD dials
+  // read ECHO (transport count — the fade's own axis), not world travel.
+  smoothRodRecede: number; // 0..1 — smooth-rod (k=4) weight recede (log-space response)
+  depthWeightRatio: number; // nearest:furthest contour ratio
+  lodMidEcho: number; // beyond this echo: the hatch DROPS
+  lodSmallEcho: number; // beyond: flat wash — the one mark
+  lodTinyEcho: number; // beyond: contour only (below the ~echo-6 extinction)
   paper: { cardBackground: string; cardBorder: string; cardInk: string; background: string };
   accent: string;
   onClose: () => void;
@@ -368,17 +384,17 @@ export function ExploreWindow({
   lookSensitivity,
   smoothRodRecede,
   depthWeightRatio,
-  lodMidDepth,
-  lodSmallDepth,
-  lodTinyDepth,
+  lodMidEcho,
+  lodSmallEcho,
+  lodTinyEcho,
   paper,
   accent,
   onClose,
 }: ExploreWindowProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const captionRef = useRef<HTMLDivElement | null>(null);
-  const liveRef = useRef({ level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidDepth, lodSmallDepth, lodTinyDepth });
-  liveRef.current = { level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidDepth, lodSmallDepth, lodTinyDepth };
+  const liveRef = useRef({ level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho });
+  liveRef.current = { level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho };
 
   const packed = useMemo(() => packDeck(deck), [deck]);
 
@@ -622,9 +638,9 @@ export function ExploreWindow({
       gl.uniform1f(U('uHatch'), settle);
       gl.uniform1f(U('uSmoothRecede'), liveRef.current.smoothRodRecede);
       gl.uniform1f(U('uDepthRatio'), liveRef.current.depthWeightRatio);
-      gl.uniform1f(U('uLodMid'), liveRef.current.lodMidDepth);
-      gl.uniform1f(U('uLodSmall'), liveRef.current.lodSmallDepth);
-      gl.uniform1f(U('uLodTiny'), liveRef.current.lodTinyDepth);
+      gl.uniform1f(U('uLodMid'), liveRef.current.lodMidEcho);
+      gl.uniform1f(U('uLodSmall'), liveRef.current.lodSmallEcho);
+      gl.uniform1f(U('uLodTiny'), liveRef.current.lodTinyEcho);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       seam.renderFrames += 1;
       seam.eye = [...eye] as Vec3;

@@ -446,7 +446,7 @@ function killTree(pid) {
             );
           })(),
           'the GPU port substrate pins');
-        check('§E-PART-A THE LEGIBILITY LAWS HOLD (source-pinned, 2026-08-11 seal): the smooth rod (k=4) RECEDES IN WEIGHT — radius thins toward a guide AND its ink weight scales down — while `classInk(uRodClass)` still keys its color (position arbitrary → weight recedes; class color real → survives; k rides the class so every copy recedes alike); cone rods keep 0.042 + the heavy tone (Part A never touches cone); the contour\'s depth weight is FRAME-NEAREST with the settable ratio (nearest full, furthest 1/uDepthRatio, monotonic); the LOD ladder is HARD depth gates — the hatch STOPS at uLodMid (never fades to mush), flat wash at uLodSmall, contour-only at uLodTiny; the five dials ride designDefaults + the leva group + the mount; the flat caption is explicit in the deckLine builder; the canvas context is alpha:false (a solid plate)',
+        check('§E-PART-A THE LEGIBILITY LAWS HOLD (source-pinned, 2026-08-11 seal + the 2026-08-12 DIAL-AXIS touch): the smooth rod (k=4) RECEDES IN WEIGHT — radius thins toward a guide AND its ink weight scales down, both LOG-SPACE (the recentre: equal dial steps = equal ratio steps; the linear mix crammed the action into the top ~20%) — while `classInk(uRodClass)` still keys its color; cone rods keep 0.042 + the heavy tone; the contour\'s depth weight is FRAME-NEAREST with the settable ratio; the LOD ladder is HARD gates ON THE ECHO AXIS (the fade\'s own axis — the content horizon; dep-gates were inert past extinction): the hatch STOPS beyond uLodMid, flat wash beyond uLodSmall, contour-only beyond uLodTiny; the five dials ride designDefaults + the leva group + the mount in echo units; the flat caption is explicit in the deckLine builder; the canvas context is alpha:false (a solid plate)',
           (() => {
             const windowSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ExploreWindow.tsx'), 'utf8');
             const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
@@ -454,27 +454,30 @@ function killTree(pid) {
             const exploreBlock = defaultsSrc.slice(defaultsSrc.indexOf('explore: {'), defaultsSrc.indexOf('junction: {'));
             return (
               windowSrc.includes('uniform float uSmoothRecede') &&
-              windowSrc.includes('mix(0.016, 0.007, uSmoothRecede)') &&
-              windowSrc.includes('weightScale = mix(1.0, 0.35, uSmoothRecede)') &&
+              windowSrc.includes('0.016*pow(0.4375, uSmoothRecede)') &&
+              windowSrc.includes('weightScale = pow(0.35, uSmoothRecede)') &&
+              !windowSrc.includes('mix(0.016, 0.007, uSmoothRecede)') &&
               windowSrc.includes('base=classInk(uRodClass[ei]);') &&
               windowSrc.includes(': 0.042') &&
               windowSrc.includes('tone*1.35') &&
               windowSrc.includes('1.0/max(uDepthRatio,1.0)') &&
-              windowSrc.includes('if(dep > uLodMid)   hatch = 0.0;') &&
-              windowSrc.includes('if(dep > uLodSmall) tone  = 0.0;') &&
-              windowSrc.includes('if(dep > uLodTiny)  body  = 0.0;') &&
+              windowSrc.includes('if(echo > uLodMid)   hatch = 0.0;') &&
+              windowSrc.includes('if(echo > uLodSmall) tone  = 0.0;') &&
+              windowSrc.includes('if(echo > uLodTiny)  body  = 0.0;') &&
+              !/if\(dep > uLod/.test(windowSrc) &&
               windowSrc.includes('alpha: false') &&
               viewSrc.includes('flat · no cone edges') &&
               viewSrc.includes('smoothRodRecede={exploreCtl.smoothRodRecede}') &&
-              viewSrc.includes('lodTinyDepth={exploreCtl.lodTinyDepth}') &&
+              viewSrc.includes('lodTinyEcho={exploreCtl.lodTinyEcho}') &&
               exploreBlock.includes('smoothRodRecede:') &&
               exploreBlock.includes('depthWeightRatio:') &&
-              exploreBlock.includes('lodMidDepth:') &&
-              exploreBlock.includes('lodSmallDepth:') &&
-              exploreBlock.includes('lodTinyDepth:')
+              exploreBlock.includes('lodMidEcho:') &&
+              exploreBlock.includes('lodSmallEcho:') &&
+              exploreBlock.includes('lodTinyEcho:') &&
+              !exploreBlock.includes('lodMidDepth:')
             );
           })(),
-          'the Part-A legibility pins');
+          'the Part-A legibility pins (dial-axis recut)');
         // E4 hygiene
         check('§E4 CONSOLE CLEAN — no error logged across the whole drive (favicon noise excluded)',
           get('console').ok, get('console').detail);

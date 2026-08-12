@@ -77,6 +77,21 @@ InkedForm's passes / unify the two), NEVER a fill-colour tweak.**
 > The whole value of a standing office is that it does not re-derive what it built — so read the built
 > record first, every time.*
 
+### THE GATING LAWS — what a craft value must survive before it is filed
+*(2026-08-12, designer 3 · mothership-ratified · ledger E5/E6. The FIRST LAW above says where a ruling STARTS; these say when a value has earned the right to leave this office. All five were bought in a single afternoon, each by a false claim caught before it reached the person.)*
+
+> **THE BRACKET LAW — drive the dial to BOTH EXTREMES before judging any value.** A value judged against its neighbours is a guess; a value judged against the dial's full range is a reading. *I had already formed the claim "`smoothRodRecede`'s top of range does not achieve the recede it names" from a 0.65 → 0.92 comparison in which the frame barely moved. The bracket killed it: at `0` the room is a full-strength coloured wireframe cage, at `1` the inhabitants carry the frame with the class colour surviving as a whisper. **The dial worked; my comparison was too insensitive to see it** — and that claim was one step from reaching the engineer as a defect. It went on to catch three more the same afternoon.*
+
+> **SAME-PASS VERIFICATION — the value on the panel and the plate in ONE pass.** A filed value never rests on a read taken at a different moment than the picture. *The panel read `8.00` where I had typed `9`, so two plates I had already judged were at a value I could not name. This is the "seal a read on the runtime object, not the source" scar in its craft form.*
+
+> **THE STATION LAW — a depth-threshold dial is gateable only from a station where the band it governs is POPULATED; the gate must NAME its station.** *`lodMidDepth` at 2 vs 6 rendered **pixel-identical frames at two independent stations** — no copy sat in the band — and I had written the defect report: "the mid rung is inert, the default sits in a dead zone." At the third station `2` leaves the mid cluster smooth and `6` gives it hatch. The dial was fine. **My evidence channel was empty and I read empty as broken.** "Tune it to your eye" is under-specified for a threshold dial: a value can pass the gate blind.*
+
+> **THE READING-RANGE BOUND — this office's capture instrument cannot reach reading range.** Screen captures return 1568 px from a 1920 px viewport, `zoom` crops the already-downscaled image (recovering nothing), and `resize_window` is refused. Contour weight and small-type contrast are precisely what that softening destroys. **So a legibility or weight ruling comes only from the app's own camera driven to true size, or from the Sovereign's eye — never from a cropped plate.** Anything below that resolution is filed ⚠ with its magnitude named as tentative. *The Sovereign's own full-resolution screenshot of his screen proved a better plate than anything this office can capture; where a judgement turns on fine weight, ask him for one.*
+
+> **A RULING IS NOT A RECEIPT.** A definition handed down by another office is ground for what a thing MEANS, never for what the code DOES. Before person-facing copy is written against a ruling, read the line that emits the string. *I transcribed three `preserving · cone room · edges wind` options into my own task-1 report, then adopted a ruling that says the tag means reversing, and specified copy that would have printed a falsehood in the product. The receipt was in my own filing.*
+
+**The through-line:** all five are the same instruction — **do not let the absence of evidence read as evidence.** An insensitive comparison, a stale read, an empty depth band, a softened plate, and an unread emitting line all present as information and are not.
+
 ### The world mark at dim 3 — the aperture (design ADR 0004)
 A closed 3-manifold **has no embedding in R³**, so it gets **no silhouette**. Its body in the world is an **aperture** —
 a **hand-cut hole in the page** through which its **interior** is seen: the cell's real edges, redrawn under the real deck
