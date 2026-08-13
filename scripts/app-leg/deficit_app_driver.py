@@ -1271,7 +1271,7 @@ def explore_seam(page):
       return { open: s.open, title: s.title, gpu: s.gpu, eye: s.eye, forward: s.forward,
                doors: s.doors, frameHanded: s.frameHanded, settle: s.settle,
                renderFrames: s.renderFrames, looks: s.looks, advances: s.advances,
-               caption: s.caption, rodK: s.rodK };
+               caption: s.caption, rodK: s.rodK, walls: s.walls };
     }"""
     )
 
@@ -1478,6 +1478,12 @@ def drive_explore(page):
         record("explore.t3Plate", False, f"the T³ plate failed to capture: {err}")
 
     # ---- E-SHELL-INTACT: close returns to the untouched shell --------------
+    # a delivery pump before the click: under contention the renderer's input
+    # queue can hold an undelivered pointer event whose capture starves the
+    # click's hit test (the engage-fence class of flake — seen once at this
+    # previously-green step); an evaluate forces the queue through first
+    page.evaluate("() => 0")
+    page.wait_for_timeout(400)
     page.get_by_text("close — return to the shell", exact=True).click()
     page.wait_for_timeout(500)
     window_gone = page.locator("[data-explore-window]").count() == 0
@@ -1540,16 +1546,31 @@ def drive_explore(page):
         cone_built = select_dim3(page, "written:dim3:built-")
         record("explore.openPairRoomBuilt", cone_built, "one glued pair — the bounded room joins the dim-3 band")
         if cone_built:
+            # THE DOOR-FEED partial: the bounded body OPENS now (the
+            # researcher's precedent — a legal partial pairing is a room);
+            # its four unpaired faces render as WALLS and the caption says
+            # where the manifold ends. The old refusal is RETIRED.
             page.locator('button[aria-label="explore inside"]').first.click()
-            page.wait_for_timeout(400)
-            refusal = page.locator("[data-explore-refusal]")
-            refusal_text = refusal.first.text_content() if refusal.count() > 0 else ""
-            no_window = page.locator("[data-explore-window]").count() == 0
+            page.wait_for_timeout(600)
+            window_open_b = page.locator("[data-explore-window]").count() > 0
+            try:
+                page.wait_for_function(
+                    "() => window.__exploreWindow && window.__exploreWindow.gpu && window.__exploreWindow.renderFrames > 3",
+                    timeout=15000,
+                )
+            except Exception:
+                pass
+            seam = explore_seam(page)
+            b_caption = (seam and seam["caption"]) or ""
             record(
-                "explore.openPairsRefused",
-                refusal.count() > 0 and "keeps some faces open" in (refusal_text or "") and no_window,
-                f"refused at the door: {refusal_text} · window absent {no_window}",
+                "explore.boundedRoomOpens",
+                window_open_b and bool(seam) and seam["gpu"] and seam["walls"] == 4
+                and "the manifold ends here" in b_caption
+                and page.locator("[data-explore-refusal]").count() == 0,
+                f"the bounded room OPENS: window {window_open_b} · gpu {seam and seam['gpu']} · walls {seam and seam['walls']} (the four open faces) · caption: {b_caption[:110]}",
             )
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(300)
         # ---- ★ THE CONE OPENS (the GPU reset's new law): a fully-paired
         # room with k≠4 classes — keys d-1 · d+2 · d+3 on the three face
         # pairs give a SOUND Euclidean cone-manifold (2 × 180°, measured in
@@ -1612,6 +1633,216 @@ def drive_explore(page):
                 record("explore.conePlate", False, f"the cone plate failed to capture: {err}")
             page.keyboard.press("Escape")
             page.wait_for_timeout(300)
+    # ---- ★ THE DOOR-FEED partial: the PRISM room by the person's own hands —
+    # invoke Pentagon + Segment → thicken (the 8th word FEEDS the aperture
+    # seed) → pair the two pentagon ends → glue → OPEN: 5 boundary WALLS +
+    # the honest caption. Runs LAST: the thicken re-seeds the panel.
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(300)
+    try:
+        # SEGMENT first, PENTAGON second: the invoke AUTO-SELECTS, so the
+        # shape operand ends selected with no body-click needed
+        for label in ["Segment", "Pentagon"]:
+            page.mouse.click(120, 780, button="right")
+            page.wait_for_timeout(400)
+            if page.locator("text=invoke — real material").count() == 0:
+                page.mouse.click(200, 820, button="right")
+                page.wait_for_timeout(400)
+            page.locator(f'text="{label}"').first.click()
+            page.wait_for_timeout(900)
+        newest = page.evaluate(
+            """() => {
+          const scene = window.__manuscriptScene;
+          if (!scene) return [];
+          const names = [];
+          scene.traverse((o) => { if (o.name && o.name.startsWith('written:w')) names.push(o.name); });
+          return names.slice(-2);
+        }"""
+        )
+        seg_name = newest[0] if len(newest) == 2 else None
+        pent_ok = False
+        if seg_name:
+            # bring the selected pentagon's row on-screen, then PAN (the
+            # committed middle-drag — translates, no rotation) until the
+            # segment projects inside the viewport; invoked forms settle
+            # into the written row OFF the default framing (measured)
+            page.get_by_text("Fit Selected", exact=True).click()
+            page.wait_for_timeout(1200)
+            sp = project_group_center(page, seg_name)
+            for _ in range(6):
+                if sp and 20 < sp["x"] < 1480 and 20 < sp["y"] < 860:
+                    break
+                dy = -180 if (sp and sp["y"] > 860) else 180
+                dx = -160 if (sp and sp["x"] > 1480) else (160 if (sp and sp["x"] < 20) else 0)
+                page.mouse.move(750, 470)
+                page.mouse.down(button="middle")
+                page.mouse.move(750 + dx, 470 + dy, steps=8)
+                page.mouse.up(button="middle")
+                page.wait_for_timeout(450)
+                sp = project_group_center(page, seg_name)
+            if not sp or not (0 < sp["x"] < 1500 and 0 < sp["y"] < 940):
+                raise RuntimeError(f"the segment never entered the viewport ({sp})")
+            page.keyboard.down("Shift")
+            page.mouse.click(sp["x"], sp["y"])
+            page.keyboard.up("Shift")
+            page.wait_for_timeout(400)
+            chip = find_dock_chip(page, "thicken")
+            if chip is None:
+                raise RuntimeError("the thicken dock chip was not found by its hover label")
+            chip.click()
+            page.wait_for_timeout(400)
+            page.get_by_text("thicken — the band", exact=True).click()
+            page.wait_for_timeout(900)
+            pent_ok = True
+        # the FEED's witness is the PANEL'S OWN CONTENT: the aperture menus
+        # now list the PRODUCT's faces (stronger than any notice text).
+        # scrollTo(0,0) first — earlier DOM locators may have auto-scrolled
+        # the page, displacing the absolute-positioned panel from raw mouse
+        # coordinates (the drive_camera precaution, same reason)
+        page.evaluate("() => window.scrollTo(0, 0)")
+        page.wait_for_timeout(200)
+        page.get_by_text("aperture — build a 3-manifold", exact=False).click()
+        page.wait_for_timeout(500)
+        end_ids = page.evaluate(
+            """() => {
+          const sels = [...document.querySelectorAll('select')];
+          for (const s of sels) {
+            const ends = [...s.options].map((o) => o.value).filter((v) => /5-gon:0@[01]$/.test(v));
+            if (ends.length >= 2) return ends.sort();
+          }
+          return [];
+        }"""
+        )
+        record(
+            "explore.thickenFeedsAperture",
+            pent_ok and len(end_ids) == 2,
+            f"the 8th word FED its single-cell product as the aperture seed — the panel lists the prism's own end faces: {[e[-14:] for e in end_ids]}",
+        )
+        prism_room_built = False
+        if len(end_ids) == 2:
+            fsel = page.locator(f'select:has(option[value="{end_ids[1]}"])')
+            fsel.nth(0).select_option(end_ids[0])
+            page.wait_for_timeout(250)
+            fsel.nth(1).select_option(end_ids[1])
+            page.wait_for_timeout(500)
+            page.evaluate(
+                """() => {
+              const maps = [...document.querySelectorAll('select')].find(
+                (s) => [...s.options].some((o) => /^d[+-]/.test(o.value)));
+              if (maps) {
+                maps.value = 'd+0';
+                maps.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            }"""
+            )
+            page.wait_for_timeout(300)
+            pre_glue = page.evaluate(
+                """() => {
+              const n = [...document.querySelectorAll('div')].filter((x) => x.textContent.includes('pick the identification') || x.textContent.includes('pairs exactly once') || x.textContent.includes('pick at least one pair'));
+              n.sort((a, b) => a.textContent.length - b.textContent.length);
+              return n[0] ? n[0].textContent.slice(0, 140) : 'no refusal';
+            }"""
+            )
+            record("explore.prismPanelState", True, f"pre-glue panel refusal line: {pre_glue}")
+            # DOM-dispatch: the glue button's person-clickability is already
+            # witnessed by the cone build's REAL click earlier in this same
+            # run; here the busier page starves Playwright's actionability
+            # loop (measured: the same click passes on a fresh page).
+            # ⚠ the chrome fires on MOUSEDOWN — a bare .click() dispatches
+            # only `click` and the handler never runs (measured); send the
+            # full sequence.
+            page.evaluate(
+                """() => {
+              const b = [...document.querySelectorAll('button')].find((x) => x.textContent.includes('glue — the S² gate judges'));
+              if (b) {
+                b.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                b.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                b.click();
+              }
+            }"""
+            )
+            page.wait_for_timeout(1500)
+            glue_notice = page.evaluate(
+                """() => {
+              const n = [...document.querySelectorAll('div')].filter((x) => x.textContent.includes('glued') || x.textContent.includes('refused') || x.textContent.includes('not free'));
+              n.sort((a, b) => a.textContent.length - b.textContent.length);
+              return n[0] ? n[0].textContent.slice(0, 180) : 'NO NOTICE';
+            }"""
+            )
+            record("explore.prismGlueNotice", True, f"the glue's own words: {glue_notice}")
+            page.evaluate(
+                """() => {
+              const b = [...document.querySelectorAll('button')].find((x) => x.textContent.includes('close the aperture gate'));
+              if (b) {
+                b.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                b.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                b.click();
+              }
+            }"""
+            )
+            page.wait_for_timeout(300)
+            # summon the prism room by its EXACT group name (three built
+            # rooms ride the band now — a prefix summon hits a neighbor):
+            # reset the camera, project the NEWEST built group, pan it into
+            # view if needed, then double-click IT
+            page.get_by_text("Reset Camera", exact=True).click()
+            page.wait_for_timeout(900)
+            built_name = page.evaluate(
+                """() => {
+              const scene = window.__manuscriptScene;
+              const names = [];
+              scene.traverse((o) => { if (o.name && o.name.startsWith('written:dim3:built-')) names.push(o.name); });
+              return names.pop() || null;
+            }"""
+            )
+            prism_room_built = False
+            if built_name:
+                bp = project_group_center(page, built_name)
+                for _ in range(6):
+                    if bp and 20 < bp["x"] < 1480 and 20 < bp["y"] < 860:
+                        break
+                    dy = -180 if (bp and bp["y"] > 860) else 180
+                    dx = -160 if (bp and bp["x"] > 1480) else (160 if (bp and bp["x"] < 20) else 0)
+                    page.mouse.move(750, 470)
+                    page.mouse.down(button="middle")
+                    page.mouse.move(750 + dx, 470 + dy, steps=8)
+                    page.mouse.up(button="middle")
+                    page.wait_for_timeout(450)
+                    bp = project_group_center(page, built_name)
+                if bp and 0 < bp["x"] < 1500 and 0 < bp["y"] < 940:
+                    page.mouse.dblclick(bp["x"], bp["y"])
+                    page.wait_for_timeout(1400)
+                    prism_room_built = page.get_by_text("Fit Selected", exact=True).count() > 0
+        record("explore.prismRoomBuilt", prism_room_built, f"the pentagon-prism room (ends paired, sides open) joins the dim-3 band · summoned by name {built_name}")
+        if prism_room_built:
+            page.locator('button[aria-label="explore inside"]').first.click()
+            page.wait_for_timeout(600)
+            window_open_p = page.locator("[data-explore-window]").count() > 0
+            try:
+                page.wait_for_function(
+                    "() => window.__exploreWindow && window.__exploreWindow.gpu && window.__exploreWindow.renderFrames > 3",
+                    timeout=15000,
+                )
+            except Exception:
+                pass
+            seam = explore_seam(page)
+            p_caption = (seam and seam["caption"]) or ""
+            record(
+                "explore.prismRoomOpens",
+                window_open_p and bool(seam) and seam["gpu"] and seam["walls"] == 5
+                and "the manifold ends here" in p_caption and "sealed" not in p_caption,
+                f"the PRISM room OPENS: window {window_open_p} · gpu {seam and seam['gpu']} · walls {seam and seam['walls']} (the five open sides) · caption (no divergence claim): {p_caption[:110]}",
+            )
+            try:
+                pbox = page.locator("[data-explore-window]").bounding_box()
+                page.screenshot(path=str(__import__('pathlib').Path(__file__).parent / "gpu_prism_window.png"), clip=pbox)
+                record("explore.prismPlate", True, "gpu_prism_window.png captured")
+            except Exception as err:
+                record("explore.prismPlate", False, f"the prism plate failed to capture: {err}")
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(300)
+    except Exception as error:  # noqa: BLE001
+        record("explore.prismDrive", False, f"the prism drive died: {error!r}")
     page.keyboard.press("Escape")
     page.wait_for_timeout(600)
     # ---- E-SHELL-INTACT, the caption half: deselected again, the T³ row's

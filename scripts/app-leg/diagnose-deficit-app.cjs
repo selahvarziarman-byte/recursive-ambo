@@ -385,9 +385,12 @@ function killTree(pid) {
           `${get('explore.lookTurns').detail} · ${get('explore.advanceWalks').detail}`);
         check('§E-HORIZON ★ THE LIMIT OF SIGHT IS NAMED + THE FLAT ROOM SAYS SO (C5, Part A): the live window caption carries the deck\'s own geometry line, `copies shown to depth N`, AND — the T³ having no cone edges — the explicit reading `flat · no cone edges` (never silence); the void is PAPER by the shader\'s own law (no fog, no wall — the miss branch returns the page)',
           get('explore.horizonCaption').ok, get('explore.horizonCaption').detail);
-        check('§E-DOOR-LAW ★★ OPEN PAIRS REFUSE; ★ THE CONE OPENS (E-T3-AND-CONE): a one-pair room refuses at the door BY NAME (the walk needs all six faces paired) and the window never mounts; a FULLY-PAIRED cone form (d-1 · d+2 · d+3 — a sound Euclidean cone-manifold, 2 × 180°) OPENS the window with the GPU up and rodK carrying k≠4 entries the shader draws HEAVY — E³ and cone alike, one transport loop (Amdt 10)',
-          get('explore.openPairRoomBuilt').ok && get('explore.openPairsRefused').ok && get('explore.coneFormBuilt').ok && get('explore.coneOpens').ok,
-          `${get('explore.openPairsRefused').detail} · ${get('explore.coneOpens').detail}`);
+        check('§E-DOOR-LAW ★★ THE BOUNDED BODY OPENS (the DOOR-FEED partial — the researcher\'s precedent: a LEGAL PARTIAL PAIRING is a room; its unpaired faces are WALLS, never an escape); ★ THE CONE OPENS (E-T3-AND-CONE): a one-pair cube room OPENS with the GPU up, walls=4, and the honest boundary caption; a FULLY-PAIRED cone form (d-1 · d+2 · d+3 — a sound Euclidean cone-manifold, 2 × 180°) OPENS with rodK carrying k≠4 entries the shader draws HEAVY — E³, cone, and bounded alike, one transport loop',
+          get('explore.openPairRoomBuilt').ok && get('explore.boundedRoomOpens').ok && get('explore.coneFormBuilt').ok && get('explore.coneOpens').ok,
+          `${get('explore.boundedRoomOpens').detail} · ${get('explore.coneOpens').detail}`);
+        check('§E-DOOR-FEED ★★ THE PRISM ROOM BY THE PERSON\'S OWN HANDS (the partial\'s point): invoke Pentagon + Segment → thicken — the 8th word FEEDS its single-cell product as the aperture seed (the notice says so) → pair the two pentagon ends in the panel → glue → the room OPENS with the GPU up, walls=5 (the open sides), the fresh boundary caption ("the manifold ends here; the orbit recurs only through the glued corridors"), and ⛔ NO divergence claim on any caption (no sealed-vs-heuristic exists on single-cell — measured, the honest scope)',
+          get('explore.thickenFeedsAperture').ok && get('explore.prismRoomBuilt').ok && get('explore.prismRoomOpens').ok,
+          `${get('explore.thickenFeedsAperture').detail} · ${get('explore.prismRoomOpens').detail}`);
         check('§E-SHELL-INTACT ★★ CLOSE RETURNS TO THE UNHARMED SHELL + THE CARD DOORWAY + THE ESC LAW: closing the window leaves the SAME shell caption byte-equal, the selection held, and the Fit control live; the card\'s own doorway row re-opens the window; Esc closes the window ALONE (the selection survives — the shell is never falsified)',
           get('explore.shellIntactOnReturn').ok && get('explore.cardDoorPresent').ok && get('explore.cardDoorAndEsc').ok,
           `${get('explore.shellIntactOnReturn').detail} · ${get('explore.cardDoorAndEsc').detail}`);
@@ -414,7 +417,7 @@ function killTree(pid) {
             );
           })(),
           'the shell-ink/seam pins');
-        check('§E-GPU-SUBSTRATE THE PORT HOLDS ITS LAWS (source-pinned): the CPU still is DELETED (worker + walk model gone from the tree; no explore worker in the view — the fieldWorker is a different organ and stays); the shader carries the instrument\'s technique — the transport loop accumulating the deck word (`acc = mat3(g)*acc`), THE VOID IS PAPER, the geometry-anchored contour (screen derivatives of the normal), the settle-gated screen hatch, cone-edges-heavy from uRodK — and the AUTHORED inhabitants as SDFs (sdPlaque with the per-side one-arc mouths + sdCoil right-handed; ZERO scan re-introduction); the door law is the fully-paired rule (deck.length !== 3 refuses BY NAME); the D1 window-ink block is reverted; the Esc guard closes the window FIRST; no π₁ person-facing',
+        check('§E-GPU-SUBSTRATE THE PORT HOLDS ITS LAWS (source-pinned): the CPU still is DELETED (worker + walk model gone from the tree; no explore worker in the view — the fieldWorker is a different organ and stays); the shader carries the instrument\'s technique — the transport loop accumulating the deck word (`acc = mat3(g)*acc`), THE VOID IS PAPER, the geometry-anchored contour (screen derivatives of the normal), the settle-gated screen hatch, DECLARED-cone-edges-heavy from uRodHeavy — and the AUTHORED inhabitants as SDFs (sdPlaque with the per-side one-arc mouths + sdCoil right-handed; ZERO scan re-introduction); the door law admits every LEGAL pairing (only the impossible zero-pair refuses; the DOOR-FEED partial retired the fully-paired-only rule); the D1 window-ink block is reverted; the Esc guard closes the window FIRST; no π₁ person-facing',
           (() => {
             const windowSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ExploreWindow.tsx'), 'utf8');
             const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
@@ -430,14 +433,14 @@ function killTree(pid) {
               windowSrc.includes('THE VOID IS PAPER') &&
               windowSrc.includes('fwdD') &&
               windowSrc.includes('uHatch') &&
-              windowSrc.includes('uRodK[ei]!=4.0') &&
+              windowSrc.includes('uRodHeavy[ei]>0.5') &&
               windowSrc.includes('sdPlaque') &&
               windowSrc.includes('sdCoil') &&
               !/masks_happy_and_sad|hand_pointing_capitolini|apertureProbeAssets/.test(windowSrc) &&
               windowSrc.includes('copies shown to depth') &&
               !/π₁|fundamental group/.test(windowSrc) &&
-              viewSrc.includes('gate.deck.length !== 3') &&
-              viewSrc.includes('EXPLORE_OPEN_PAIRS') &&
+              viewSrc.includes('gate.deck.length === 0') &&
+              !viewSrc.includes('EXPLORE_OPEN_PAIRS') &&
               viewSrc.includes('data-explore-refusal') &&
               viewSrc.includes('if (exploreOpenRef.current) {') &&
               !exploreBlock.includes('strokePitch') &&
@@ -446,6 +449,26 @@ function killTree(pid) {
             );
           })(),
           'the GPU port substrate pins');
+        check('§E-BOUNDARY-WALL THE ROOM\'S EDGE IS DRAWN, NEVER ESCAPED (source-pinned, the DOOR-FEED partial): the cell surface read carries the per-face BOUNDARY verdict (readCellSurface — the witnessed apertureModel add; portals carry their deck transform, walls carry none); the shader\'s exit test walks the room\'s OWN face planes and a wall exit HITS the 2-cell (`uFaceWall[fE]>0.5` — never the escape-to-void); the JS walk STOPS the eye at a wall; the caption speaks the fresh sentence and NEVER the winding-tag\'s wording; the thicken gesture FEEDS a single-cell product as the panel seed with the honest multi-cell refusal and the cube one click away; ⛔ no `sealed` divergence claim in the window',
+          (() => {
+            const windowSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ExploreWindow.tsx'), 'utf8');
+            const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+            const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
+            return (
+              modelSrc.includes('export function readCellSurface') &&
+              modelSrc.includes('wall: boolean; // true = the person\'s boundary — the room\'s edge, never an escape') &&
+              windowSrc.includes('uFaceWall[fE]>0.5') &&
+              windowSrc.includes('the manifold ends here; the orbit recurs only through the glued corridors') &&
+              !windowSrc.includes('cone room · edges wind') &&
+              !windowSrc.includes('sealed') &&
+              windowSrc.includes('if (face.wall || !face.g) {') &&
+              viewSrc.includes('readCellSurface(domain, coneEdgesDeclared)') &&
+              viewSrc.includes('setApertureSeed(product)') &&
+              viewSrc.includes('cannot open as a room yet') &&
+              viewSrc.includes('build on the cube again')
+            );
+          })(),
+          'the boundary-wall pins');
         check('§E-PART-A THE LEGIBILITY LAWS HOLD (source-pinned, 2026-08-11 seal + the 2026-08-12 DIAL-AXIS touch): the smooth rod (k=4) RECEDES IN WEIGHT — radius thins toward a guide AND its ink weight scales down, both LOG-SPACE (the recentre: equal dial steps = equal ratio steps; the linear mix crammed the action into the top ~20%) — while `classInk(uRodClass)` still keys its color; cone rods keep 0.042 + the heavy tone; the contour\'s depth weight is FRAME-NEAREST with the settable ratio; the LOD ladder is HARD gates ON THE ECHO AXIS (the fade\'s own axis — the content horizon; dep-gates were inert past extinction): the hatch STOPS beyond uLodMid, flat wash beyond uLodSmall, contour-only beyond uLodTiny; the five dials ride designDefaults + the leva group + the mount in echo units; the flat caption is explicit in the deckLine builder; the canvas context is alpha:false (a solid plate)',
           (() => {
             const windowSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ExploreWindow.tsx'), 'utf8');
@@ -458,7 +481,7 @@ function killTree(pid) {
               windowSrc.includes('weightScale = pow(0.35, uSmoothRecede)') &&
               !windowSrc.includes('mix(0.016, 0.007, uSmoothRecede)') &&
               windowSrc.includes('base=classInk(uRodClass[ei]);') &&
-              windowSrc.includes(': 0.042') &&
+              windowSrc.includes('? 0.042 : gSmoothR') &&
               windowSrc.includes('tone*1.35') &&
               windowSrc.includes('1.0/max(uDepthRatio,1.0)') &&
               windowSrc.includes('if(echo > uLodMid)   hatch = 0.0;') &&

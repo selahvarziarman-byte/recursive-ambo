@@ -34,7 +34,7 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import type { Vec3 } from '../types/geometry';
-import type { ApertureRodData, DeckEntry } from './apertureModel';
+import type { ApertureCellSurface } from './apertureModel';
 
 interface ExploreSeam {
   open: string | null;
@@ -49,7 +49,8 @@ interface ExploreSeam {
   looks: number;
   advances: number;
   caption: string | null;
-  rodK: number[] | null; // the engine's k per rod — the cone edges the shader draws HEAVY
+  rodK: number[] | null; // the engine's k per rod — declared cone edges draw HEAVY
+  walls: number; // the room's boundary faces — the manifold's own edge (DOOR-FEED partial)
 }
 
 const seamOf = (): ExploreSeam => {
@@ -69,6 +70,7 @@ const seamOf = (): ExploreSeam => {
       advances: 0,
       caption: null,
       rodK: null,
+      walls: 0,
     };
   }
   return host.__exploreWindow;
@@ -87,9 +89,24 @@ precision highp float;
 out vec4 o;
 uniform vec2  uRes;
 uniform vec3  uEye, uFwd, uRight, uUp;
-uniform mat4  uG[3], uGi[3];
-uniform float uRodK[12];
-uniform float uRodClass[12];
+// ── THE CELL SURFACE (DOOR-FEED partial, 2026-08-13): the room's OWN
+// fundamental cell — per-face outward plane (n·p = d), each face a PORTAL
+// (its deck transform) or a WALL (the person's boundary: the manifold ends
+// there — never an escape to the void). The cube degenerates exactly to the
+// instrument's old 3-axis frame; the isometry application is untouched.
+uniform int   uFaceCount;               // ≤ 8
+uniform vec3  uFaceN[8];
+uniform float uFaceD[8];
+uniform float uFaceWall[8];             // 1 = wall
+uniform mat4  uFaceG[8];                // portal transform (identity on walls)
+uniform float uSpan;                    // the cell's max extent (cube: 2) — the horizon unit
+// the seed's own edges as rods (≤ 20), each with its engine class
+uniform int   uRodCount;
+uniform vec3  uRodA[20];
+uniform vec3  uRodB[20];
+uniform float uRodK[20];
+uniform float uRodClass[20];
+uniform float uRodHeavy[20];            // 1 ⇔ the census DECLARED cone edges and this class is k≠4 — never fabricated
 uniform int   uLevel;
 uniform float uHatch;      // the SETTLE dial
 // ── PART A (RUNG-1 legibility, 2026-08-11 seal): the designer's dials ──────
@@ -111,11 +128,6 @@ vec3 classInk(float c){
   if(c<3.5) return vec3(0.588,0.431,0.157);
   return vec3(0.376,0.275,0.470);
 }
-const vec3 CN[8] = vec3[8](vec3(-1,-1,-1),vec3(1,-1,-1),vec3(1,1,-1),vec3(-1,1,-1),
-                           vec3(-1,-1,1), vec3(1,-1,1), vec3(1,1,1), vec3(-1,1,1));
-const ivec2 CE[12]= ivec2[12](ivec2(0,1),ivec2(1,2),ivec2(2,3),ivec2(3,0),
-                              ivec2(4,5),ivec2(5,6),ivec2(6,7),ivec2(7,4),
-                              ivec2(0,4),ivec2(1,5),ivec2(2,6),ivec2(3,7));
 float sdCap(vec3 p, vec3 a, vec3 b, float r){
   vec3 pa=p-a, ba=b-a; float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.);
   return length(pa-ba*h)-r;
@@ -177,20 +189,20 @@ float sdStands(vec3 p){
   d = min(d, sdCap(p, vec3(0.36,-0.17,-0.25), vec3(0.46,-0.17,-0.25), 0.007));
   return d;
 }
-// scene ids: 0 = plaque · 13 = coil · 14 = stands · 1..12 = the rods
+// scene ids: 100 = plaque · 101 = coil · 102 = stands · 1..uRodCount = the
+// rods (the seed's OWN edges) · 99 = a WALL 2-cell (set in the transport)
 float map(vec3 p, out float id){
-  float d=sdPlaque(p); id=0.;
-  float dc=sdCoil(p); if(dc<d){ d=dc; id=13.; }
-  float ds=sdStands(p); if(ds<d){ d=ds; id=14.; }
-  for(int i=0;i<12;i++){
-    // a CONE edge is MUCH thicker — k is metric, and visible. Part A: a
-    // SMOOTH rod (k=4) thins toward a guide as the recede dial rises (its
-    // position is arbitrary; only its class color is real). The recede
-    // radius is gSmoothR — hoisted to ONE pow per fragment (a pow inside
-    // this loop ran per rod per march step: ~630M/frame, and the software
-    // rasterizer's frame time blew past the input-delivery windows).
-    float r = (uRodK[i]==4.0) ? gSmoothR : 0.042;
-    float dd=sdCap(p, CN[CE[i].x], CN[CE[i].y], r);
+  float d=sdPlaque(p); id=100.;
+  float dc=sdCoil(p); if(dc<d){ d=dc; id=101.; }
+  float ds=sdStands(p); if(ds<d){ d=ds; id=102.; }
+  for(int i=0;i<20;i++){
+    if(i>=uRodCount) break;
+    // a declared CONE edge is MUCH thicker — k is metric, and visible; a
+    // smooth rod thins toward a guide as the recede dial rises (gSmoothR —
+    // hoisted to ONE pow per fragment: a pow in this loop ran per rod per
+    // march step, ~630M/frame, and blew the software rasterizer's windows).
+    float r = (uRodHeavy[i]>0.5) ? 0.042 : gSmoothR;
+    float dd=sdCap(p, uRodA[i], uRodB[i], r);
     if(dd<d){ d=dd; id=float(i+1); }
   }
   return d;
@@ -212,12 +224,14 @@ void main(){
 
   for(int b=0;b<12;b++){
     if(b>uLevel) break;
-    float tE=1e9; int ax=0; float sgn=1.;
-    for(int a=0;a<3;a++){
-      float va=v[a]; if(abs(va)<1e-6) continue;
-      float s=sign(va);
-      float t=(s - p[a])/va;
-      if(t>1e-5 && t<tE){ tE=t; ax=a; sgn=s; }
+    // the cell exit: the nearest of the room's OWN face planes (the cube
+    // degenerates to the instrument's exact 3-axis test)
+    float tE=1e9; int fE=0;
+    for(int f=0;f<8;f++){
+      if(f>=uFaceCount) break;
+      float dn=dot(v,uFaceN[f]); if(dn<1e-6) continue;
+      float t=(uFaceD[f]-dot(p,uFaceN[f]))/dn;
+      if(t>1e-5 && t<tE){ tE=t; fE=f; }
     }
     float t=1e-3, id=-1.;
     for(int i=0;i<160;i++){
@@ -227,10 +241,16 @@ void main(){
       t += max(d*0.9, 4e-4);
     }
     if(hit){ vec3 q=p+v*t; nrmOut=nrm(q); idOut=id; dep=travel+t; break; }
+    if(uFaceWall[fE]>0.5){
+      // ★ THE WALL — the person's boundary face IS a 2-cell: the room's
+      // edge, drawn (the manifold ends here) — NEVER an escape to the void.
+      hit=true; nrmOut=-uFaceN[fE]; idOut=99.; dep=travel+tE;
+      break;
+    }
     // TRANSPORT — the engine's own gluing isometry (ratified; never churned)
     travel += tE; echo += 1.;
     vec3 q=p+v*tE;
-    mat4 g = (sgn>0.) ? uGi[ax] : uG[ax];
+    mat4 g = uFaceG[fE];
     p = (g*vec4(q,1.)).xyz;
     v = normalize(mat3(g)*v);
     acc = mat3(g)*acc;
@@ -245,14 +265,20 @@ void main(){
   float tone=clamp(1.0-(0.12+0.88*lam),0.,1.);
 
   // PART A · THE SMOOTH-ROD RECEDE: position is arbitrary so the WEIGHT
-  // recedes; the class color is real so it SURVIVES. k rides the rod's
-  // CLASS (rodK = class size), so the recede lands on every copy of a
-  // class alike (researcher Q1). Cone rods (k≠4) stay bold.
+  // recedes; the class color is real so it SURVIVES. The heavy flag is the
+  // census's own declaration (k≠4 under DECLARED cone edges) — heavy rods
+  // stay bold; everything else recedes alike per class (researcher Q1).
+  // THE WALL (id 99): a flat quiet plate — visibly a SURFACE (not the paper
+  // void, not an object): fixed mid tone, no hatch, rim contours free from
+  // the depth break at its edges.
   float weightScale = 1.0;
+  bool isWall = (idOut==99.);
+  bool isRod = (idOut>=0.5 && idOut<=20.5);
   vec3 base;
-  if(idOut<0.5 || idOut>12.5){ base=INK; }
+  if(isWall){ base=INK; tone=0.30; }
+  else if(!isRod){ base=INK; }
   else { int ei=int(idOut)-1; base=classInk(uRodClass[ei]);
-         if(uRodK[ei]!=4.0) tone=clamp(tone*1.35,0.,1.);       // cone edges HEAVY
+         if(uRodHeavy[ei]>0.5) tone=clamp(tone*1.35,0.,1.);    // DECLARED cone edges HEAVY
          else weightScale = pow(0.35, uSmoothRecede); }        // smooth rods QUIET — log-space (recentred; endpoints exact 1.0 → 0.35)
   // mirrored = det(acc) < 0 — a mirrored copy SHOWS itself; it is NEVER
   // ink-marked (chirality by the light: the coil reads left-handed)
@@ -266,11 +292,12 @@ void main(){
   float crease = length(fwdD(nrmOut));
   float dbreak = fwidth(dep);
   float line = clamp(max(crease*0.9, dbreak*9.0), 0., 1.);
-  float horizon = 2.0*float(uLevel) + 1e-3;
+  float horizon = uSpan*float(uLevel) + 1e-3;
   float wDepth = mix(1.0, 1.0/max(uDepthRatio,1.0), sqrt(clamp(dep/horizon,0.,1.)));
   line = smoothstep(0.25, 0.75, line) * wDepth;
 
   // HATCH — screen-space, ~22% duty, gated by tone and the SETTLE dial
+  // (a wall's fixed 0.30 tone sits under the gate: walls never hatch)
   float a1=0.593;
   float h = fract((gl_FragCoord.x*cos(a1) + gl_FragCoord.y*sin(a1))/6.0);
   float hatch = (tone>0.52 && h<0.22) ? 1.0 : 0.0;
@@ -327,26 +354,44 @@ const applyRot = (g: number[], v: Vec3): Vec3 => [
 const det3of = (g: number[]): number =>
   g[0] * (g[4] * g[8] - g[5] * g[7]) - g[1] * (g[3] * g[8] - g[5] * g[6]) + g[2] * (g[3] * g[7] - g[4] * g[6]);
 
-/** the deck by AXIS SLOT: the shader's exit test picks axis a and applies
- * uGi[a] (exiting +a) or uG[a] (exiting −a); slot a must carry the pairing
- * whose faces are the ±a pair, oriented so g maps the −a face to the +a
- * face (swap when the pattern's faceA sits on +a). */
-function packDeck(deck: DeckEntry[]): { G: Float32Array; Gi: Float32Array } | null {
-  const G = new Float32Array(48);
-  const Gi = new Float32Array(48);
-  const seen = [false, false, false];
-  for (const entry of deck) {
-    const axis = [0, 1, 2].reduce((best, a) => (Math.abs(entry.nA[a]) > Math.abs(entry.nA[best]) ? a : best), 0);
-    if (seen[axis]) return null;
-    seen[axis] = true;
-    const aFaceOnMinus = entry.nA[axis] < 0;
-    const g = aFaceOnMinus ? entry.g : entry.gi;
-    const gi = aFaceOnMinus ? entry.gi : entry.g;
-    G.set(m4(g), axis * 16);
-    Gi.set(m4(gi), axis * 16);
-  }
-  if (!seen.every(Boolean)) return null;
-  return { G, Gi };
+/** THE CELL PACK (DOOR-FEED partial): the room's own surface → the shader's
+ * uniform arrays — per-face plane + wall flag + portal transform (exiting
+ * face f applies uFaceG[f]; a wall face draws the 2-cell instead), and the
+ * seed's edges as rods. The cube degenerates to the instrument's old frame. */
+const IDENTITY_G: number[] = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0];
+function packCell(surface: ApertureCellSurface): {
+  faceN: Float32Array; faceD: Float32Array; faceWall: Float32Array; faceG: Float32Array; faceCount: number;
+  rodA: Float32Array; rodB: Float32Array; rodK: Float32Array; rodClass: Float32Array; rodHeavy: Float32Array; rodCount: number;
+  span: number;
+} | null {
+  if (surface.faces.length === 0 || surface.faces.length > 8 || surface.rods.length > 20) return null;
+  const faceN = new Float32Array(24);
+  const faceD = new Float32Array(8);
+  const faceWall = new Float32Array(8);
+  const faceG = new Float32Array(128);
+  surface.faces.forEach((f, i) => {
+    faceN.set(f.n, i * 3);
+    faceD[i] = f.d;
+    faceWall[i] = f.wall ? 1 : 0;
+    faceG.set(m4(f.g ?? IDENTITY_G), i * 16);
+  });
+  const rodA = new Float32Array(60);
+  const rodB = new Float32Array(60);
+  const rodK = new Float32Array(20);
+  const rodClass = new Float32Array(20);
+  const rodHeavy = new Float32Array(20);
+  surface.rods.forEach((r, i) => {
+    rodA.set(r.a, i * 3);
+    rodB.set(r.b, i * 3);
+    rodK[i] = r.k;
+    rodClass[i] = r.cls;
+    rodHeavy[i] = r.heavy ? 1 : 0;
+  });
+  return {
+    faceN, faceD, faceWall, faceG, faceCount: surface.faces.length,
+    rodA, rodB, rodK, rodClass, rodHeavy, rodCount: surface.rods.length,
+    span: surface.span,
+  };
 }
 
 let nextSession = 1;
@@ -354,8 +399,7 @@ let nextSession = 1;
 export interface ExploreWindowProps {
   openKey: string;
   title: string;
-  deck: DeckEntry[];
-  rodData: ApertureRodData;
+  cellSurface: ApertureCellSurface; // the room's own faces (portal/wall) + rods
   deckLine: string; // the caption's geometry line (the gate's own label words)
   level: number;
   pace: number; // advance, world units / s (the cell spans 2)
@@ -376,8 +420,7 @@ export interface ExploreWindowProps {
 export function ExploreWindow({
   openKey,
   title,
-  deck,
-  rodData,
+  cellSurface,
   deckLine,
   level,
   pace,
@@ -396,7 +439,7 @@ export function ExploreWindow({
   const liveRef = useRef({ level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho });
   liveRef.current = { level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho };
 
-  const packed = useMemo(() => packDeck(deck), [deck]);
+  const packed = useMemo(() => packCell(cellSurface), [cellSurface]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -409,7 +452,8 @@ export function ExploreWindow({
     seam.renderFrames = 0;
     seam.looks = 0;
     seam.advances = 0;
-    seam.rodK = [...rodData.rodK];
+    seam.rodK = cellSurface.rods.map((r) => r.k);
+    seam.walls = cellSurface.wallCount;
     nextSession += 1;
     if (!canvas || !packed) return undefined;
     // alpha:false — the window is a SOLID PLATE by charter (the page never
@@ -455,46 +499,52 @@ export function ExploreWindow({
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const U = (n: string): WebGLUniformLocation | null => gl.getUniformLocation(pr, n);
-    gl.uniformMatrix4fv(U('uG[0]'), false, packed.G);
-    gl.uniformMatrix4fv(U('uGi[0]'), false, packed.Gi);
-    gl.uniform1fv(U('uRodK[0]'), new Float32Array(rodData.rodK));
-    gl.uniform1fv(U('uRodClass[0]'), new Float32Array(rodData.rodClass));
+    gl.uniform1i(U('uFaceCount'), packed.faceCount);
+    gl.uniform3fv(U('uFaceN[0]'), packed.faceN);
+    gl.uniform1fv(U('uFaceD[0]'), packed.faceD);
+    gl.uniform1fv(U('uFaceWall[0]'), packed.faceWall);
+    gl.uniformMatrix4fv(U('uFaceG[0]'), false, packed.faceG);
+    gl.uniform1f(U('uSpan'), packed.span);
+    gl.uniform1i(U('uRodCount'), packed.rodCount);
+    gl.uniform3fv(U('uRodA[0]'), packed.rodA);
+    gl.uniform3fv(U('uRodB[0]'), packed.rodB);
+    gl.uniform1fv(U('uRodK[0]'), packed.rodK);
+    gl.uniform1fv(U('uRodClass[0]'), packed.rodClass);
+    gl.uniform1fv(U('uRodHeavy[0]'), packed.rodHeavy);
 
     // ★★ THE CARRIED FRAME — the observer's handedness is the space's to take
     let eye: Vec3 = [-0.35, -0.55, 0.1];
     let camF: Vec3 = nrm3([Math.cos(1.2), Math.sin(1.2), 0]);
     let camR: Vec3 = nrm3([-Math.sin(1.2), Math.cos(1.2), 0]);
     let camU: Vec3 = [0, 0, 1];
-    // the deck's raw 12-layouts by axis slot, for the JS-side walk transport
-    const slotG: number[][] = [[], [], []];
-    const slotGi: number[][] = [[], [], []];
-    for (const entry of deck) {
-      const axis = [0, 1, 2].reduce((best, a) => (Math.abs(entry.nA[a]) > Math.abs(entry.nA[best]) ? a : best), 0);
-      const aFaceOnMinus = entry.nA[axis] < 0;
-      slotG[axis] = aFaceOnMinus ? entry.g : entry.gi;
-      slotGi[axis] = aFaceOnMinus ? entry.gi : entry.g;
-    }
     let lastMove = performance.now();
     let raf = 0;
     let disposed = false;
 
+    // the JS-side walk transport over the room's OWN faces: a portal applies
+    // its deck transform (the same isometry law); a WALL stops the eye AT the
+    // room's edge — the manifold ends there, the person never escapes
     const transportWalk = (): void => {
       for (let guard = 0; guard < 8; guard += 1) {
-        let a = -1;
-        let s = 1;
-        for (let k = 0; k < 3; k += 1) {
-          if (eye[k] > 1) { a = k; s = 1; break; }
-          if (eye[k] < -1) { a = k; s = -1; break; }
+        let exited = -1;
+        for (let f = 0; f < cellSurface.faces.length; f += 1) {
+          const face = cellSurface.faces[f];
+          const s = eye[0] * face.n[0] + eye[1] * face.n[1] + eye[2] * face.n[2] - face.d;
+          if (s > 0) { exited = f; break; }
         }
-        if (a < 0) break;
-        const g = s > 0 ? slotGi[a] : slotG[a];
-        if (!g.length) { eye[a] = Math.max(-1, Math.min(1, eye[a])); break; }
-        eye = applyM(g, eye);
-        camF = applyRot(g, camF);
-        camR = applyRot(g, camR);
-        camU = applyRot(g, camU);
+        if (exited < 0) break;
+        const face = cellSurface.faces[exited];
+        if (face.wall || !face.g) {
+          const s = eye[0] * face.n[0] + eye[1] * face.n[1] + eye[2] * face.n[2] - face.d;
+          eye = [eye[0] - face.n[0] * (s + 1e-4), eye[1] - face.n[1] * (s + 1e-4), eye[2] - face.n[2] * (s + 1e-4)];
+          continue;
+        }
+        eye = applyM(face.g, eye);
+        camF = applyRot(face.g, camF);
+        camR = applyRot(face.g, camR);
+        camU = applyRot(face.g, camU);
         seam.doors += 1;
-        seam.frameHanded *= det3of(g) < 0 ? -1 : 1;
+        seam.frameHanded *= det3of(face.g) < 0 ? -1 : 1;
       }
     };
 
@@ -646,7 +696,12 @@ export function ExploreWindow({
       seam.eye = [...eye] as Vec3;
       seam.forward = [...camF] as Vec3;
       seam.settle = settle;
-      const caption = `${deckLine} · copies shown to depth ${Math.max(0, Math.round(liveRef.current.level))}`;
+      // the boundary is SPOKEN, fresh (never the winding-tag's wording): a
+      // room with walls says where it ends and how its orbit still recurs
+      const boundaryLine = cellSurface.wallCount > 0
+        ? ' · the manifold ends here; the orbit recurs only through the glued corridors'
+        : '';
+      const caption = `${deckLine}${boundaryLine} · copies shown to depth ${Math.max(0, Math.round(liveRef.current.level))}`;
       if (seam.caption !== caption) {
         seam.caption = caption;
         if (captionRef.current) captionRef.current.textContent = caption;
@@ -669,7 +724,7 @@ export function ExploreWindow({
     };
     // one GL session per opened room
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openKey, packed, rodData]);
+  }, [openKey, packed, cellSurface]);
 
   return (
     <div

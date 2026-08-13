@@ -207,15 +207,17 @@ import { buildProbeMeshes } from './apertureProbes';
 // view is the instrument's fragment shader; the shell stays the operable
 // representative behind it. The door law: a fully-paired room OPENS —
 // E³ AND cone AND folded alike (Amdt 10 rendered the cone; the transport is
-// one loop) — while open-pair rooms and surfaces refuse BY NAME.
+// one loop) — while surfaces refuse BY NAME. THE DOOR-FEED partial
+// (2026-08-13): a LEGAL PARTIAL PAIRING opens too — the researcher's
+// bounded-body precedent; the unpaired faces render as WALLS (the room's
+// edge), never as an escape.
 import { ExploreWindow } from './ExploreWindow';
-import { readRodData } from './apertureModel';
+import { readCellSurface } from './apertureModel';
+import { thicken } from '../lib/thicken';
 
 const EXPLORE_NEEDS_ROOM = 'select a room with an inside — a built 3-manifold';
 const EXPLORE_SURFACE_LATER =
   'the inside of a surface is not walkable yet — this door opens in a later chapter of the instrument.';
-const EXPLORE_OPEN_PAIRS =
-  'this room keeps some faces open as boundary — the walk needs all six paired; an open-pair walk is a later rung.';
 import {
   birthChild,
   combineGateFor,
@@ -1672,6 +1674,10 @@ export default function ManuscriptView() {
   // beside the committed T³ (worldModel byte-unchanged; the door is the
   // committed buildFormDomain behind buildPersonDomain).
   const cubeSeed = useMemo(() => createSeedShape('cube'), []);
+  // THE DOOR-FEED partial (2026-08-13): the aperture panel's SEED is a
+  // parameter now — the 8th-word thicken gesture feeds its (single-cell)
+  // product solid as the room seed; cube rooms pass cubeSeed byte-identical.
+  const [apertureSeed, setApertureSeed] = useState<Shape>(cubeSeed);
   const [builtDomains, setBuiltDomains] = useState<DomainModel[]>([]);
   // 0.2 THE ORBIFOLD'S BODY: the folded verdicts' tower-less bodies — a
   // SIBLING list, never mixed into dim3All (the specimen register and every
@@ -2299,7 +2305,7 @@ export default function ManuscriptView() {
   // each option prints its vertex correspondence + the DERIVED mode (recorded,
   // never chosen — the knob that lies does not exist here)
   const apertureRowViews = useMemo((): AperturePairRowView[] => {
-    const allFaces = cubeSeed.faces.map((f) => ({ id: f.id, label: f.id.split(':').pop() as string }));
+    const allFaces = apertureSeed.faces.map((f) => ({ id: f.id, label: f.id.split(':').pop() as string }));
     const usedElsewhere = (rowIndex: number, except: 'A' | 'B'): Set<string> => {
       const used = new Set<string>();
       apertureRows.forEach((row, i) => {
@@ -2313,7 +2319,7 @@ export default function ManuscriptView() {
       const takenB = usedElsewhere(i, 'B');
       const mapChoices =
         row.faceA && row.faceB && row.faceA !== row.faceB
-          ? dihedralMapCandidates(cubeSeed, row.faceA, row.faceB).map((c) => ({
+          ? dihedralMapCandidates(apertureSeed, row.faceA, row.faceB).map((c) => ({
               key: c.key,
               label: describeCandidate(c),
             }))
@@ -2327,8 +2333,13 @@ export default function ManuscriptView() {
         mapChoices,
       };
     });
-  }, [apertureRows, cubeSeed]);
-  const apertureRefusal = useMemo(() => aperturePairingRefusal(cubeSeed, apertureRows), [cubeSeed, apertureRows]);
+  }, [apertureRows, apertureSeed]);
+  const apertureRefusal = useMemo(() => aperturePairingRefusal(apertureSeed, apertureRows), [apertureSeed, apertureRows]);
+  // a seed change clears the rows — face ids from another solid must never
+  // linger in the pickers
+  useEffect(() => {
+    setApertureRows(emptyApertureRows());
+  }, [apertureSeed]);
   const handleApertureGlue = useCallback(() => {
     try {
       builtCountRef.current += 1;
@@ -2337,7 +2348,7 @@ export default function ManuscriptView() {
       // identification is not free (an orbifold), refused BY NAME with the
       // researcher's wall; nothing joins the world and the aperture draws
       // nothing. Zero throws escape this door.
-      const verdict = buildPersonDomainVerdict(cubeSeed, apertureRows, `built-${n}`, `built 3-manifold ${n}`);
+      const verdict = buildPersonDomainVerdict(apertureSeed, apertureRows, `built-${n}`, `built 3-manifold ${n}`);
       if (verdict.folded) {
         // 0.2 THE ORBIFOLD'S BODY: the verdict carries a BODY now — it joins
         // the folded shelf and the aperture draws it. The wall + its cure
@@ -2363,7 +2374,7 @@ export default function ManuscriptView() {
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
       setApertureFoldedRows(null);
     }
-  }, [cubeSeed, apertureRows]);
+  }, [apertureSeed, apertureRows]);
   // THE SUBDIVISION DOOR (ARC 0.1, LAW 14 — a cure must be a door, not a
   // theorem): on the folded verdict the person invokes subdivide — the seed is
   // bisected, the pairings lift, the form is re-glued, and the gate reads the
@@ -2403,10 +2414,11 @@ export default function ManuscriptView() {
     }
     return null;
   }, [selected, written]);
-  // THE DOOR (GPU reset): a FULLY-PAIRED room OPENS — E³ AND cone AND
-  // folded alike (Amdt 10 rendered the cone; the transport is one loop).
-  // Open-pair rooms, unsound patterns, and surfaces refuse BY NAME at the
-  // door — never by opening and degrading.
+  // THE DOOR (GPU reset + the DOOR-FEED partial): a room with a LEGAL
+  // pairing OPENS — fully paired (E³/cone/folded, Amdt 10) AND the
+  // researcher's bounded body alike (a partial pairing is legitimate; its
+  // unpaired faces render as WALLS — the room's edge, never an escape).
+  // Unsound patterns and surfaces refuse BY NAME at the door.
   const handleExploreDoor = useCallback(() => {
     if (!selected) return;
     if (exploreOpen && exploreOpen === selected) {
@@ -2419,8 +2431,10 @@ export default function ManuscriptView() {
         setExploreRefusal({ key: selected, reason: gate.reason });
         return;
       }
-      if (gate.deck.length !== 3) {
-        setExploreRefusal({ key: selected, reason: EXPLORE_OPEN_PAIRS });
+      if (gate.deck.length === 0) {
+        // unreachable through the panel (zero complete pairs never glue) —
+        // but the door SPEAKS if it ever occurs, never opens on nothing
+        setExploreRefusal({ key: selected, reason: 'this room has no glued pair at all — nothing recurs; there is no walk.' });
         return;
       }
       setExploreRefusal(null);
@@ -2443,15 +2457,16 @@ export default function ManuscriptView() {
     setExploreRefusal({ key: selected, reason: EXPLORE_SURFACE_LATER });
   }, [selected, exploreOpen, dim3All, apertures, foldedBodies, foldedApertures]);
   // the opened room, resolved from the live gate — E³/cone (dim3:) and
-  // folded (dim3f:) alike; the shader takes the deck + the rod data
+  // folded (dim3f:) alike; the shader takes the room's OWN cell surface
+  // (faces as portals/walls + the seed's rods)
   const exploreRoom = useMemo(() => {
     if (!exploreOpen) return null;
     const resolve = (
       title: string,
       gate: (typeof apertures)[number]['gate'],
-      domain: Parameters<typeof readRodData>[0],
+      domain: Parameters<typeof readCellSurface>[0],
     ) => {
-      if (!gate.ok || gate.deck.length !== 3) return null;
+      if (!gate.ok || gate.deck.length === 0) return null;
       const g = gate.geometry;
       // C5 (Part A): a flat room says so — `flat · no cone edges` is an
       // explicit reading, never silence (the E³ case IS the no-cone-edges case)
@@ -2461,7 +2476,14 @@ export default function ManuscriptView() {
           : g.kind === 'E3'
             ? `E³ · n=[${g.n.join(',')}] · flat · no cone edges`
             : `Euclidean cone-manifold · n=[${g.n.join(',')}]${g.coneEdges ? ` · cone edges: ${g.coneEdges}` : ' · flat · no cone edges'}`;
-      return { title, deck: gate.deck, rodData: readRodData(domain), deckLine };
+      // the heavy flag is the census's own declaration — no cone edges
+      // declared ⇒ no heavy rods (never fabricated on a bounded body)
+      const coneEdgesDeclared = g.kind !== 'folded' && g.kind !== 'E3' && Boolean(g.coneEdges);
+      try {
+        return { title, cellSurface: readCellSurface(domain, coneEdgesDeclared), deckLine };
+      } catch {
+        return null;
+      }
     };
     if (exploreOpen.startsWith('dim3:')) {
       const k = dim3All.findIndex((m) => `dim3:${m.key}` === exploreOpen);
@@ -2952,7 +2974,21 @@ export default function ManuscriptView() {
         .getState()
         .thickenManuscript(thickenGate.shape.shape, thickenGate.segment.shape);
       setThickenOpen(false);
-      setOpNotice(`thicken: "${bandName}" rides the shelf`);
+      // THE DOOR-FEED partial (2026-08-13): the 8th word FEEDS the aperture —
+      // a SINGLE-CELL product solid becomes the panel's room seed (thicken is
+      // pure and id-deterministic: this re-derivation is the same solid the
+      // shelf carries). A multi-cell product refuses HONESTLY here — the door
+      // reads ONE solid cell today; the multi-cell room is chartered, and no
+      // divergence claim rides this partial.
+      const product = thicken(thickenGate.shape.shape, thickenGate.segment.shape).shape;
+      if (product.cells.length === 1) {
+        setApertureSeed(product);
+        setOpNotice(`thicken: "${bandName}" rides the shelf — and seeds the aperture (build a room on its faces)`);
+      } else {
+        setOpNotice(
+          `thicken: "${bandName}" rides the shelf — its ${product.cells.length} cells cannot open as a room yet (the aperture reads ONE solid cell; the multi-cell room is a chartered later build)`,
+        );
+      }
     } catch (error) {
       // the committed doors speak for themselves (the 4-manifold stop, the Q1
       // guard) — the sentence is the thrown reason, never re-worded here
@@ -4366,8 +4402,38 @@ export default function ManuscriptView() {
           boxShadow: '0 2px 9px rgba(58, 51, 38, 0.15)',
         }}
       >
-        {apertureOpen ? 'close the aperture gate' : 'aperture — build a 3-manifold'}
+        {apertureOpen
+          ? 'close the aperture gate'
+          : apertureSeed === cubeSeed
+            ? 'aperture — build a 3-manifold'
+            : `aperture — build a 3-manifold (on ${apertureSeed.name})`}
       </button>
+      {apertureOpen && apertureSeed !== cubeSeed ? (
+        // the DOOR-FEED seed is honest and reversible: the panel names the
+        // thicken product it builds on, and the cube stays one click away
+        <button
+          type="button"
+          data-aperture-seed-reset
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={() => setApertureSeed(cubeSeed)}
+          style={{
+            position: 'absolute',
+            left: 334, // clear of the gate panel (left 14 + width 306 + margin)
+            top: 64,
+            padding: '3px 9px',
+            borderRadius: 3,
+            border: `1px solid ${d.paper.cardBorder}`,
+            background: d.paper.cardBackground,
+            color: d.paper.cardInk,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 11,
+            cursor: 'pointer',
+            zIndex: 41,
+          }}
+        >
+          build on the cube again
+        </button>
+      ) : null}
       {apertureOpen ? (
         <ApertureGatePanel
           rows={apertureRowViews}
@@ -4524,8 +4590,7 @@ export default function ManuscriptView() {
         <ExploreWindow
           openKey={exploreOpen}
           title={exploreRoom.title}
-          deck={exploreRoom.deck}
-          rodData={exploreRoom.rodData}
+          cellSurface={exploreRoom.cellSurface}
           deckLine={exploreRoom.deckLine}
           level={apertureCtl.level}
           pace={exploreCtl.pace}

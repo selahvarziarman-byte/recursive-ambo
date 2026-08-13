@@ -804,36 +804,80 @@ export interface FoldedDomain {
 }
 
 // ---------------------------------------------------------------------------
-// THE ROD DATA (GPU port, 2026-08-08 — the instrument's uRodK/uRodClass):
-// the 12 cube edges in the instrument's corner ordering, each carrying ITS
-// engine edge-class (a small palette index) and the class SIZE k — "k is
-// metric, and visible": the shader draws k≠4 rods HEAVY. Read from the
-// domain's own union-find + gate; nothing re-derived.
+// THE CELL SURFACE (THE DOOR-FEED partial, 2026-08-13 — the witnessed
+// boundary-flag read): everything the walk window needs about the room's OWN
+// fundamental cell, in CENTERED cell coordinates — the face planes with each
+// face's verdict (a PORTAL carrying its deck transform, or a WALL: the
+// person's unpaired boundary — "the manifold ends here"), and the seed edges
+// as rods with their engine edge-class k + palette. General over any ONE-cell
+// convex seed (the cube degenerates to the instrument's exact 12-rod frame).
+// Read from the domain's own pairings/union-find/gate; nothing re-derived,
+// the transport math untouched.
 // ---------------------------------------------------------------------------
 
-/** the instrument's corner order: (±1,±1,±1) as CN[8]; edges as CE[12] */
-const ROD_CORNERS: V3[] = [
-  [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
-  [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1],
-];
-const ROD_EDGES: [number, number][] = [
-  [0, 1], [1, 2], [2, 3], [3, 0],
-  [4, 5], [5, 6], [6, 7], [7, 4],
-  [0, 4], [1, 5], [2, 6], [3, 7],
-];
-
-export interface ApertureRodData {
-  rodK: number[]; // 12 — the edge-class SIZE (k×90° is the heuristic census)
-  rodClass: number[]; // 12 — a small palette index per distinct class root
+export interface ApertureCellFace {
+  n: V3; // outward unit normal (centered coords)
+  d: number; // plane offset: dot(p, n) = d
+  wall: boolean; // true = the person's boundary — the room's edge, never an escape
+  g: DeckTransform | null; // portal: exiting through this face applies g (null on walls)
 }
 
-export function readRodData(domain: DomainModel | FoldedDomain): ApertureRodData {
+export interface ApertureCellRod {
+  a: V3;
+  b: V3; // endpoints, centered coords
+  k: number; // the edge-class SIZE (the heuristic census counts k×90°)
+  cls: number; // a small palette index per distinct class root
+  heavy: boolean; // drawn HEAVY only when the geometry's own census declared cone edges and this class is k≠4 — never fabricated on a census that read none
+}
+
+export interface ApertureCellSurface {
+  faces: ApertureCellFace[];
+  rods: ApertureCellRod[];
+  span: number; // the cell's max bbox extent (the cube: 2) — the walk's horizon unit
+  wallCount: number;
+}
+
+const shiftDeckTransform = (g: DeckTransform, c: V3): DeckTransform => {
+  // the frame recenters by c (p' = p − c): the linear part rides; the
+  // translation conjugates — t' = R·c + t − c
+  const R = g.slice(0, 9);
+  const t: V3 = [g[9], g[10], g[11]];
+  const Rc: V3 = [
+    R[0] * c[0] + R[1] * c[1] + R[2] * c[2],
+    R[3] * c[0] + R[4] * c[1] + R[5] * c[2],
+    R[6] * c[0] + R[7] * c[1] + R[8] * c[2],
+  ];
+  return [...R, Rc[0] + t[0] - c[0], Rc[1] + t[1] - c[1], Rc[2] + t[2] - c[2]];
+};
+
+export function readCellSurface(
+  domain: DomainModel | FoldedDomain,
+  coneEdgesDeclared: boolean,
+): ApertureCellSurface {
   const shape = domain.shape;
-  const positions = new Map(Object.values(shape.vertices).map((v) => [v.id, v.position as V3]));
+  const geometry = readSeedGeometry(shape);
+  const c = geometry.cellCentroid;
+  const pairings = 'folded' in domain ? domain.pairings : domain.complex.pairings;
+  const deck = deckOf(shape, pairings);
   const gate = 'folded' in domain ? domain.gate : domain.tower.gate;
   const classOf = 'folded' in domain ? null : domain.complex.edgeClassOf;
-  // per seed edge: its class root (via the union-find when present, else the
-  // gate's own link membership) and the class size
+  const near = (u: V3, w: V3): boolean => Math.hypot(u[0] - w[0], u[1] - w[1], u[2] - w[2]) < 1e-5;
+  // per seed FACE: portal (its deck transform, recentered) or wall. On a
+  // convex cell every face owns a unique OUTWARD normal, so the normal alone
+  // identifies the deck entry (nA/nB are the pairing's own outward normals).
+  const faces: ApertureCellFace[] = geometry.seed.faces.map((face) => {
+    const fc = sub(geometry.faceCentroid(face.id), c);
+    const n = norm(fc);
+    const d = dot(fc, n);
+    for (const entry of deck) {
+      if (near(entry.nA, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.g, c) };
+      if (near(entry.nB, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.gi, c) };
+    }
+    return { n, d, wall: true, g: null };
+  });
+  // per seed EDGE: the rod with its class k + palette (readRodData's law,
+  // generalized — positions direct from the seed, no instrument-corner match)
+  const positions = new Map(Object.values(shape.vertices).map((v) => [v.id, v.position as V3]));
   const linkOfEdge = (edgeId: string): { root: string; k: number } | null => {
     if (classOf) {
       const root = classOf(edgeId);
@@ -844,39 +888,27 @@ export function readRodData(domain: DomainModel | FoldedDomain): ApertureRodData
     return link ? { root: link.edgeClass, k: link.memberEdgeIds.length } : null;
   };
   const paletteOf = new Map<string, number>();
-  const rodK: number[] = [];
-  const rodClass: number[] = [];
-  for (const [a, b] of ROD_EDGES) {
-    const pa = ROD_CORNERS[a];
-    const pb = ROD_CORNERS[b];
-    // find the seed edge whose endpoint positions match this cube edge
-    const edge = shape.edges.find((e) => {
-      const qa = positions.get(e.vertexIds[0]);
-      const qb = positions.get(e.vertexIds[1]);
-      if (!qa || !qb) return false;
-      const near = (u: V3, w: V3): boolean => Math.hypot(u[0] - w[0], u[1] - w[1], u[2] - w[2]) < 1e-6;
-      return (near(qa, pa) && near(qb, pb)) || (near(qa, pb) && near(qb, pa));
-    });
-    if (!edge) {
-      rodK.push(4);
-      rodClass.push(0);
-      continue;
-    }
+  const rods: ApertureCellRod[] = [];
+  for (const edge of shape.edges) {
+    const qa = positions.get(edge.vertexIds[0]);
+    const qb = positions.get(edge.vertexIds[1]);
+    if (!qa || !qb) continue;
     const link = linkOfEdge(edge.id);
-    if (!link) {
-      rodK.push(4);
-      rodClass.push(0);
-      continue;
+    const k = link ? link.k : 1;
+    let palette = 0;
+    if (link) {
+      const seen = paletteOf.get(link.root);
+      palette = seen ?? paletteOf.size % 5;
+      if (seen === undefined) paletteOf.set(link.root, palette);
     }
-    let palette = paletteOf.get(link.root);
-    if (palette === undefined) {
-      palette = paletteOf.size % 5;
-      paletteOf.set(link.root, palette);
-    }
-    rodK.push(link.k);
-    rodClass.push(palette);
+    rods.push({ a: sub(qa, c), b: sub(qb, c), k, cls: palette, heavy: coneEdgesDeclared && k !== 4 });
   }
-  return { rodK, rodClass };
+  const span = Math.max(
+    geometry.bboxHi[0] - geometry.bboxLo[0],
+    geometry.bboxHi[1] - geometry.bboxLo[1],
+    geometry.bboxHi[2] - geometry.bboxLo[2],
+  );
+  return { faces, rods, span, wallCount: faces.filter((f) => f.wall).length };
 }
 
 // ---------------------------------------------------------------------------
