@@ -360,8 +360,8 @@ export const manuscriptDefaults = {
       // to 7 (5.4%); dep-unit gates were inert out there. Hard steps kept.
       // The designer RE-GATES all three + the held tiny at her named station.
       lodMidEcho: 2, // beyond this echo the hatch DROPS (ranks 0-2 keep it; sub-resolution hatch is noise — it STOPS)
-      lodSmallEcho: 5, // beyond: flat wash only — the one distinguishing mark (the committed small=5, now in echo units)
-      lodTinyEcho: 6, // beyond: contour only — at the extinction shoulder (held for the designer's re-gate)
+      lodSmallEcho: 4, // beyond: flat wash only — the one distinguishing mark. E6 REACHABILITY: the trio needs mid < small < tiny ≤ level−1 to keep every rung non-empty within the echo cap; the VALUE stays provisional (designer re-gate post-E6)
+      lodTinyEcho: 5, // beyond: contour only. E6 REACHABILITY: the march caps echo ≤ level (6), so a tiny threshold AT the cap never fired (`echo>6` is unreachable) — the trio must sit BELOW the level cap (tiny < level). The VALUE stays provisional; the designer re-gates post-E6.
     },
     // P-IMMERSE — the honest non-manifold flag: WHICH edges are junctions is
     // the classifier's slot-count reading (>2 face wedges); the knob is ink only.

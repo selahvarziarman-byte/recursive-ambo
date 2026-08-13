@@ -501,6 +501,32 @@ function killTree(pid) {
             );
           })(),
           'the Part-A legibility pins (dial-axis recut)');
+        check('§E-E6 THE ENCLOSURE-LOOK CURE HOLDS (source-pinned, mothership 1001): the smooth-rod recede GRADES ON RANK (wDepth folds into the smooth weightScale — the occupied room\'s rods present, distant recurrences receding harder; cone rods untouched); the focal hierarchy\'s weight argument is ECHO, not world travel ("the room you are in carries the frame" constructionally) and LOG-SPACE; the depth-break contour is ONE-SIDED (quad-parity sign — a rod behind a body draws NO line at the body\'s silhouette; the crease stays two-sided); the LOD echo trio is REACHABLE (mid < small < tiny < the level cap — every rung bites; the VALUES stay the designer\'s)',
+          (() => {
+            const windowSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ExploreWindow.tsx'), 'utf8');
+            const defaultsSrc = fs.readFileSync(path.join(repoRoot, 'src/design/designDefaults.ts'), 'utf8');
+            const exploreBlock = defaultsSrc.slice(defaultsSrc.indexOf('explore: {'), defaultsSrc.indexOf('junction: {'));
+            const num = (src, key) => {
+              const m = src.match(new RegExp(`${key}:\\s*([\\d.]+)`));
+              return m ? Number(m[1]) : NaN;
+            };
+            const mid = num(exploreBlock, 'lodMidEcho');
+            const small = num(exploreBlock, 'lodSmallEcho');
+            const tiny = num(exploreBlock, 'lodTinyEcho');
+            const level = num(defaultsSrc.slice(defaultsSrc.indexOf('aperture: {')), 'level');
+            return (
+              windowSrc.includes('weightScale = pow(0.35, uSmoothRecede) * wDepth') &&
+              windowSrc.includes('sqrt(clamp(echo/max(float(uLevel),1.0)') &&
+              !windowSrc.includes('dep/horizon') &&
+              windowSrc.includes('pow(1.0/max(uDepthRatio,1.0)') &&
+              windowSrc.includes('max(sqx*dFdx(dep), 0.0) + max(sqy*dFdy(dep), 0.0)') &&
+              !windowSrc.includes('= fwidth(dep)') &&
+              windowSrc.includes('fwdD(nrmOut)') &&
+              Number.isFinite(mid) && Number.isFinite(small) && Number.isFinite(tiny) && Number.isFinite(level) &&
+              mid < small && small < tiny && tiny < level
+            );
+          })(),
+          'the E6 cure pins (structure, not the designer\'s values)');
         // E4 hygiene
         check('§E4 CONSOLE CLEAN — no error logged across the whole drive (favicon noise excluded)',
           get('console').ok, get('console').detail);

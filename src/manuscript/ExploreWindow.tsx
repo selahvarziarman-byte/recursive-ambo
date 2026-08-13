@@ -264,10 +264,19 @@ void main(){
   float lam=abs(dot(nrmOut,key));
   float tone=clamp(1.0-(0.12+0.88*lam),0.,1.);
 
-  // PART A · THE SMOOTH-ROD RECEDE: position is arbitrary so the WEIGHT
-  // recedes; the class color is real so it SURVIVES. The heavy flag is the
-  // census's own declaration (k≠4 under DECLARED cone edges) — heavy rods
-  // stay bold; everything else recedes alike per class (researcher Q1).
+  // THE FOCAL HIERARCHY (Part A, E6-recut): the depth weight rides the ECHO
+  // axis — "the room you are in (echo 0) carries the frame" is
+  // CONSTRUCTIONAL, never by luck of world-travel (a near recurrence-rib
+  // used to outweigh the occupied room's far rib — the E6 defect). LOG-SPACE
+  // (equal steps = ratio steps); endpoints exact: rank 0 → 1, the level
+  // horizon → 1/uDepthRatio.
+  float wDepth = pow(1.0/max(uDepthRatio,1.0), sqrt(clamp(echo/max(float(uLevel),1.0),0.,1.)));
+
+  // PART A · THE SMOOTH-ROD RECEDE, GRADED ON RANK (E6): the base recede is
+  // the dial (log-space, endpoints exact 1.0 → 0.35); wDepth FOLDS IN so the
+  // occupied room's smooth rods stay present while distant recurrences
+  // recede harder — one dial, rank-graded. Cone rods untouched. The heavy
+  // flag is the census's own declaration (k≠4 under DECLARED cone edges).
   // THE WALL (id 99): a flat quiet plate — visibly a SURFACE (not the paper
   // void, not an object): fixed mid tone, no hatch, rim contours free from
   // the depth break at its edges.
@@ -278,22 +287,24 @@ void main(){
   if(isWall){ base=INK; tone=0.30; }
   else if(!isRod){ base=INK; }
   else { int ei=int(idOut)-1; base=classInk(uRodClass[ei]);
-         if(uRodHeavy[ei]>0.5) tone=clamp(tone*1.35,0.,1.);    // DECLARED cone edges HEAVY
-         else weightScale = pow(0.35, uSmoothRecede); }        // smooth rods QUIET — log-space (recentred; endpoints exact 1.0 → 0.35)
+         if(uRodHeavy[ei]>0.5) tone=clamp(tone*1.35,0.,1.);            // DECLARED cone edges HEAVY
+         else weightScale = pow(0.35, uSmoothRecede) * wDepth; }       // smooth rods QUIET, receding harder by rank
   // mirrored = det(acc) < 0 — a mirrored copy SHOWS itself; it is NEVER
   // ink-marked (chirality by the light: the coil reads left-handed)
 
   // CONTOUR — geometry-anchored (screen derivatives of n and depth): the
-  // lines do NOT crawl when the camera moves. PART A · THE FOCAL HIERARCHY:
-  // the depth weight is FRAME-NEAREST (dep, not transport count) — the
-  // nearest rank carries the frame BY DESIGN; every farther rank is
-  // monotonically subordinate, ending at 1/uDepthRatio at the horizon
-  // (sqrt shaping drops the second rank decisively, not gently).
+  // lines do NOT crawl when the camera moves. E6 · THE ONE-SIDED DEPTH
+  // BREAK: fwidth(dep) is inherently two-sided — both fragments straddling
+  // a break light up, so a rod BEHIND a body drew a false line AT the
+  // body's silhouette. The quad-parity sign recovers neighbor−self per
+  // axis; the line fires ONLY where the jump goes AWAY (this fragment is
+  // the near/occluder side). The crease stays two-sided — it IS the
+  // geometry silhouette.
   float crease = length(fwdD(nrmOut));
-  float dbreak = fwidth(dep);
+  float sqx = (mod(floor(gl_FragCoord.x), 2.0) < 0.5) ? 1.0 : -1.0;
+  float sqy = (mod(floor(gl_FragCoord.y), 2.0) < 0.5) ? 1.0 : -1.0;
+  float dbreak = max(sqx*dFdx(dep), 0.0) + max(sqy*dFdy(dep), 0.0);
   float line = clamp(max(crease*0.9, dbreak*9.0), 0., 1.);
-  float horizon = uSpan*float(uLevel) + 1e-3;
-  float wDepth = mix(1.0, 1.0/max(uDepthRatio,1.0), sqrt(clamp(dep/horizon,0.,1.)));
   line = smoothstep(0.25, 0.75, line) * wDepth;
 
   // HATCH — screen-space, ~22% duty, gated by tone and the SETTLE dial
