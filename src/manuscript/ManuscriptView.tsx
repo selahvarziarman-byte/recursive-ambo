@@ -214,6 +214,7 @@ import { buildProbeMeshes } from './apertureProbes';
 import { ExploreWindow } from './ExploreWindow';
 import { readCellSurface } from './apertureModel';
 import { thicken } from '../lib/thicken';
+import { buildFormDomain } from './formDomainModel';
 
 const EXPLORE_NEEDS_ROOM = 'select a room with an inside — a built 3-manifold';
 const EXPLORE_SURFACE_LATER =
@@ -2431,9 +2432,13 @@ export default function ManuscriptView() {
         setExploreRefusal({ key: selected, reason: gate.reason });
         return;
       }
-      if (gate.deck.length === 0) {
-        // unreachable through the panel (zero complete pairs never glue) —
-        // but the door SPEAKS if it ever occurs, never opens on nothing
+      // THE MULTI-CELL CUT: a DECKLESS room is legal exactly when it is a
+      // BOUNDED CHAMBER (the fan×I: every pairing interior, all boundary
+      // walls — nothing recurs, and the room still has an inside to stand
+      // in). A deckless CLOSED form remains the impossible case the door
+      // speaks about rather than opening on nothing.
+      const bounded = 'boundary' in gate.geometry && gate.geometry.boundary !== null;
+      if (gate.deck.length === 0 && !bounded) {
         setExploreRefusal({ key: selected, reason: 'this room has no glued pair at all — nothing recurs; there is no walk.' });
         return;
       }
@@ -2466,8 +2471,10 @@ export default function ManuscriptView() {
       gate: (typeof apertures)[number]['gate'],
       domain: Parameters<typeof readCellSurface>[0],
     ) => {
-      if (!gate.ok || gate.deck.length === 0) return null;
+      if (!gate.ok) return null;
       const g = gate.geometry;
+      const boundedRoom = 'boundary' in g && g.boundary !== null;
+      if (gate.deck.length === 0 && !boundedRoom) return null;
       // C5 (Part A): a flat room says so — `flat · no cone edges` is an
       // explicit reading, never silence (the E³ case IS the no-cone-edges case)
       const deckLine =
@@ -2977,16 +2984,25 @@ export default function ManuscriptView() {
       // THE DOOR-FEED partial (2026-08-13): the 8th word FEEDS the aperture —
       // a SINGLE-CELL product solid becomes the panel's room seed (thicken is
       // pure and id-deterministic: this re-derivation is the same solid the
-      // shelf carries). A multi-cell product refuses HONESTLY here — the door
-      // reads ONE solid cell today; the multi-cell room is chartered, and no
-      // divergence claim rides this partial.
+      // shelf carries). THE MULTI-CELL CUT (sovereign GO): a multi-cell
+      // product now BUILDS ITS ROOM DIRECTLY — its interior shared walls ARE
+      // its identification (auto-paired per cell); no panel picks exist for
+      // it, and the room joins the dim-3 band at once. The old honest
+      // refusal retires for sound products; an unsound one still speaks
+      // through the band's own gate reading.
       const product = thicken(thickenGate.shape.shape, thickenGate.segment.shape).shape;
       if (product.cells.length === 1) {
         setApertureSeed(product);
         setOpNotice(`thicken: "${bandName}" rides the shelf — and seeds the aperture (build a room on its faces)`);
       } else {
+        builtCountRef.current += 1;
+        const n = builtCountRef.current;
+        const domain = buildFormDomain(product, [], `built-${n}`, `built 3-manifold ${n}`);
+        setBuiltDomains((cur) => [...cur, domain]);
         setOpNotice(
-          `thicken: "${bandName}" rides the shelf — its ${product.cells.length} cells cannot open as a room yet (the aperture reads ONE solid cell; the multi-cell room is a chartered later build)`,
+          domain.tower.sound
+            ? `thicken: "${bandName}" rides the shelf — and its ${product.cells.length}-cell room joins the dim-3 band (the shared walls are its own identification)`
+            : `thicken: "${bandName}" rides the shelf — its ${product.cells.length}-cell pattern is not sound; the band says so and draws nothing`,
         );
       }
     } catch (error) {

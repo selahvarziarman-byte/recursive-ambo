@@ -396,7 +396,7 @@ function killTree(pid) {
           `${get('explore.shellIntactOnReturn').detail} · ${get('explore.cardDoorAndEsc').detail}`);
         // THE INSIDE-VIEW HATCH (the SHELL's ink — the window's ink is the
         // shader's own now; the CPU-window live records retired with it)
-        check('§E-HATCH ★ THE SHELL\'S SURFACE-LOCKED INK + THE CONFORMAL SEAM STAND (source-pinned): the screen-space fixed-angle families stay GONE from apertureInk (no px·cosA phase); the shell\'s hatch reads the trace\'s normal + objPos + facing channels and twists by the copy\'s parity; the nib scales the contour by depth; apertureModel\'s cone census reads the ONE seam (resolveConeAngleSource — measured via readPillarDihedrals + edgeClassOf when a dihedral-owning thicken product rides, k×90° otherwise) and the view wires the lineage lookup; apertureModel/apertureInk edits ride their OWN witnesses green',
+        check('§E-HATCH ★ THE SHELL\'S SURFACE-LOCKED INK + THE CONFORMAL SEAM STAND (source-pinned): the screen-space fixed-angle families stay GONE from apertureInk (no px·cosA phase); the shell\'s hatch reads the trace\'s normal + objPos + facing channels and twists by the copy\'s parity; the nib scales the contour by depth; apertureModel\'s cone census reads the ONE seam (resolveConeAngleSource — measured via readPillarDihedrals + the edge-class resolution THROUGH complex.originalEdges when a dihedral-owning product rides — THE MULTI-CELL CUT generalized the lookup to prefixed multi-cell ids, k×90° otherwise) and the view wires the lineage lookup; apertureModel/apertureInk edits ride their OWN witnesses green',
           (() => {
             const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
             const inkSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureInk.ts'), 'utf8');
@@ -410,7 +410,7 @@ function killTree(pid) {
               modelSrc.includes('objPos[3 * idx] = p[0] + v[0] * best.t;') &&
               modelSrc.includes('export function resolveConeAngleSource') &&
               modelSrc.includes('readPillarDihedrals(lineage.base, shape)') &&
-              modelSrc.includes('domain.complex.edgeClassOf(reading.pillarEdgeId)') &&
+              modelSrc.includes('domain.complex.edgeClassOf(inComplexId(reading.pillarEdgeId))') &&
               modelSrc.includes('geometryFromTower(tower, resolveConeAngleSource(domain, lineage))') &&
               viewSrc.includes("model.shape.genealogy?.operation === 'product'") &&
               (viewSrc.match(/toneGamma: apertureCtl\.toneGamma,/g) ?? []).length === 2
@@ -449,7 +449,7 @@ function killTree(pid) {
             );
           })(),
           'the GPU port substrate pins');
-        check('§E-BOUNDARY-WALL THE ROOM\'S EDGE IS DRAWN, NEVER ESCAPED (source-pinned, the DOOR-FEED partial): the cell surface read carries the per-face BOUNDARY verdict (readCellSurface — the witnessed apertureModel add; portals carry their deck transform, walls carry none); the shader\'s exit test walks the room\'s OWN face planes and a wall exit HITS the 2-cell (`uFaceWall[fE]>0.5` — never the escape-to-void); the JS walk STOPS the eye at a wall; the caption speaks the fresh sentence and NEVER the winding-tag\'s wording; the thicken gesture FEEDS a single-cell product as the panel seed with the honest multi-cell refusal and the cube one click away; ⛔ no `sealed` divergence claim in the window',
+        check('§E-BOUNDARY-WALL THE ROOM\'S EDGE IS DRAWN, NEVER ESCAPED (source-pinned, the DOOR-FEED partial + THE MULTI-CELL CUT): the cell surface read carries the per-face BOUNDARY verdict (readCellSurface — the witnessed apertureModel add; portals carry their deck transform, walls carry none); the shader\'s exit test walks the room\'s OWN face planes and a wall exit HITS the 2-cell (`uFaceWall[fE]>0.5` — never the escape-to-void); the JS walk STOPS the eye at a wall; the caption speaks the fresh sentence and NEVER the winding-tag\'s wording; the thicken gesture FEEDS a single-cell product as the panel seed AND a multi-cell product BUILDS ITS ROOM directly (buildFormDomain — the shared walls are its own identification; the old refusal retired for sound products, the cube still one click away); ⛔ no `sealed` claim in the window SOURCE (the measured divergence lives in the model\'s own label)',
           (() => {
             const windowSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ExploreWindow.tsx'), 'utf8');
             const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
@@ -464,7 +464,7 @@ function killTree(pid) {
               windowSrc.includes('if (face.wall || !face.g) {') &&
               viewSrc.includes('readCellSurface(domain, coneEdgesDeclared)') &&
               viewSrc.includes('setApertureSeed(product)') &&
-              viewSrc.includes('cannot open as a room yet') &&
+              viewSrc.includes('buildFormDomain(product, [],') &&
               viewSrc.includes('build on the cube again')
             );
           })(),

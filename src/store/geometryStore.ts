@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createSeedShape } from '../data/seeds';
 import { isCellActiveFrontier } from '../lib/cellLifecycle';
 import { liftSubComplex, type LiftSelection } from '../lib/subComplexLift';
+import { openLift } from '../lib/openLift';
 import { segmentGateReason, thicken } from '../lib/thicken';
 import { closeSegmentIntoLoop } from '../lib/closeEdgeIntoCircle';
 import { serializeSnapshot } from '../playground/snapshot';
@@ -168,6 +169,7 @@ interface GeometryState {
   applyAmboDissectionToCurrent: () => void;
   liftSelectionToManuscript: () => string;
   thickenLiftToManuscript: () => string;
+  openLiftStarToManuscript: () => string;
   thickenManuscript: (shape: Shape, segment: Shape) => string;
   closeSegmentManuscript: (segment: Shape) => string;
   toggleLiftSelection: (selection: LiftSelection) => void;
@@ -536,6 +538,34 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       set({ liftSelection: [] });
     }
     return band.shape.name;
+  },
+  // DOOR 3 (2026-08-13, SEAL_OPEN_STAR_EXTRACTOR + researcher 1837): the
+  // OPEN-LIFT word on the terrain — the star of the selected X_K midpoint,
+  // read off the selected cell's skin, extracted as a BOUNDED base Shape
+  // (rim FREE — patchLift's carriage minus its closure) and pushed down the
+  // shelf channel like every lift-born form. The committed openLift gates
+  // (the site check, the triangle-fan v0 scope, the disk link) throw honest
+  // and the panel shows them; the terrain stays live ('open-lift' is
+  // NON-CONSUMING). Ancestry rides GAP2C-style so the carried terrain
+  // lineage stays readable on the shelf.
+  openLiftStarToManuscript: () => {
+    const { currentShapeId, shapes, selectedCellId, selectedVertexId } = get();
+    const shape = shapes[currentShapeId];
+    if (!shape) {
+      throw new Error('geometryStore: no current shape to open-lift from');
+    }
+    if (!selectedVertexId) {
+      throw new Error('geometryStore: select the star centre first (an X_K midpoint vertex)');
+    }
+    if (!selectedCellId) {
+      throw new Error('geometryStore: select the skin cell the star is read from (e.g. the diagonalized core)');
+    }
+    const lifted = openLift(shape, selectedVertexId, selectedCellId);
+    useLiftStore.getState().push({
+      title: lifted.shape.name,
+      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes)),
+    });
+    return lifted.shape.name;
   },
   // GAP2B THICKEN ARITY-2 (the 8th word): the person's TWO held forms — the
   // shape and their lifted segment — product through the same committed

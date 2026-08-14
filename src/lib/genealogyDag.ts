@@ -41,8 +41,13 @@ const GLUE_KINDS: ReadonlySet<OperationKind> = new Set<OperationKind>(['glue', '
 // dim+1 birth whose projection π_A recovers the parent exactly — the parent
 // stays live; NO pentimento; manifest re-sealed in the same change), and
 // `refine` (REFINE'S WORD, 2026-07-29: a RESOLUTION is not a birth — nothing
-// is consumed because nothing is begotten; the form itself stays live).
-const NON_CONSUMING: ReadonlySet<OperationKind> = new Set<OperationKind>(['invoke', 'patch-lift', 'dualization', 'product', 'refine']);
+// is consumed because nothing is begotten; the form itself stays live), and
+// `open-lift` (DOOR 3, 2026-08-13, sovereign-ruled Option B: the open-star
+// extractor READS a star sub-region and leaves the terrain byte-unchanged —
+// patch-lift's carriage MINUS its closure; deliberately NOT in GLUE_KINDS
+// because no identification is performed, the rim stays a free boundary;
+// manifest re-sealed in the same change).
+const NON_CONSUMING: ReadonlySet<OperationKind> = new Set<OperationKind>(['invoke', 'patch-lift', 'dualization', 'product', 'open-lift', 'refine']);
 
 // REFINE'S WORD (2026-07-29): the RESOLUTION kinds — operations that change a
 // form WITHOUT begetting a new one (same form, cells minted, χ fixed; the

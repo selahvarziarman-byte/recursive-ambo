@@ -206,6 +206,7 @@ export function OperationControls() {
   const selectedEdgeId = useGeometryStore((state) => state.selectedEdgeId);
   const liftSelectionToManuscript = useGeometryStore((state) => state.liftSelectionToManuscript);
   const thickenLiftToManuscript = useGeometryStore((state) => state.thickenLiftToManuscript);
+  const openLiftStarToManuscript = useGeometryStore((state) => state.openLiftStarToManuscript);
   // P1b — the granular save's honest one-line outcome (lifted / refused)
   const [liftNotice, setLiftNotice] = useState<string | null>(null);
   const liftSelection = useGeometryStore((state) => state.liftSelection);
@@ -361,6 +362,30 @@ export function OperationControls() {
         className="mt-2 h-10 w-full rounded border border-stone-600 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-400 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
       >
         Thicken {liftRegion ? 'region' : 'selection'} × I → Manuscript
+      </button>
+      {/* DOOR 3 (2026-08-13, SEAL_OPEN_STAR_EXTRACTOR): the open-lift word —
+          the selected midpoint's star, read off the selected cell's skin,
+          extracted OPEN (the rim stays free) onto the shelf. The committed
+          gates speak for themselves in the notice. */}
+      <button
+        type="button"
+        onClick={() => {
+          try {
+            const title = openLiftStarToManuscript();
+            setLiftNotice(`open-lifted “${title}” → the Manuscript shelf`);
+          } catch (error) {
+            setLiftNotice(error instanceof Error ? error.message : String(error));
+          }
+        }}
+        disabled={!selectedVertexId || !selectedCellId}
+        title={
+          selectedVertexId && selectedCellId
+            ? "Open-lift the selected midpoint's star (read off the selected cell): the fan rides the shelf as a bounded base — the rim stays a free boundary"
+            : 'Select the skin cell AND the star-centre vertex (an X_K midpoint) to open-lift'
+        }
+        className="mt-2 h-10 w-full rounded border border-stone-600 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-stone-400 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:cursor-not-allowed disabled:border-stone-700 disabled:bg-stone-800 disabled:text-stone-500"
+      >
+        Open-lift star → Manuscript
       </button>
       <button
         type="button"

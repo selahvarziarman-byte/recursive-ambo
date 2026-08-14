@@ -102,6 +102,68 @@ export function readSeedCell(shape: Shape, prefix = ''): Level3SeedCell {
   };
 }
 
+// THE MULTI-CELL CUT (2026-08-13, sovereign GO; researcher 1930/2033 ruling):
+// read EACH cell of a multi-cell Shape as its own PREFIXED seed — the same
+// disjoint-id mechanism the two-seed fixtures use, applied per cell. A face
+// SHARED by two cells (thicken's interior wall) becomes two disjoint prefixed
+// copies; the CALLER pairs them (the paired-face representation `enact`
+// consumes — the researcher's (ii): NOT the shared-face representation).
+// Each per-cell seed carries only ITS OWN edges (derived from its faces'
+// cycles — a multi-cell Shape's edge list is global). One-incidence is
+// PER-CELL and each solid cell satisfies it independently (the ruling's (i)).
+export function readSeedCells(shape: Shape, prefixBase = 'c'): Level3SeedCell[] {
+  if (shape.cells.length === 0) {
+    throw new Error(`faceIdentification: expected committed solid Cells on "${shape.id}" (got 0)`);
+  }
+  assertKeySafe(prefixBase, 'seed prefix');
+  const faceById = new Map(shape.faces.map((face) => [face.id, face]));
+  const edgeByEndpointsKey = new Map<string, { id: string; a: VertexId; b: VertexId }>();
+  for (const edge of shape.edges) {
+    edgeByEndpointsKey.set(pairKey(edge.vertexIds[0], edge.vertexIds[1]), {
+      id: edge.id,
+      a: edge.vertexIds[0],
+      b: edge.vertexIds[1],
+    });
+  }
+  return shape.cells.map((cell, index) => {
+    const prefix = `${prefixBase}${index}`;
+    const ns = (id: string): string => {
+      assertKeySafe(id, 'seed id');
+      return `${prefix}:${id}`;
+    };
+    const faces = cell.faceIds.map((faceId) => {
+      const face = faceById.get(faceId);
+      if (!face) throw new Error(`faceIdentification: the Cell's faceIds are not all on the Shape`);
+      return { id: ns(face.id), cycle: face.vertexIds.map(ns) };
+    });
+    // the cell's own edges: every consecutive corner pair of its faces' cycles
+    const edgeIds = new Set<string>();
+    const edges: Level3SeedCell['edges'] = [];
+    for (const faceId of cell.faceIds) {
+      const face = faceById.get(faceId);
+      if (!face) continue;
+      const cycle = face.vertexIds;
+      for (let k = 0; k < cycle.length; k += 1) {
+        const u = cycle[k];
+        const v = cycle[(k + 1) % cycle.length];
+        const edge = edgeByEndpointsKey.get(pairKey(u, v));
+        if (!edge) {
+          throw new Error(`faceIdentification: no edge with endpoints ${u} ~ ${v} on "${shape.id}"`);
+        }
+        if (edgeIds.has(edge.id)) continue;
+        edgeIds.add(edge.id);
+        edges.push({ id: ns(edge.id), a: ns(edge.a), b: ns(edge.b) });
+      }
+    }
+    return {
+      cellId: ns(cell.id),
+      vertexIds: cell.vertexIds.map(ns),
+      edges,
+      faces,
+    };
+  });
+}
+
 // ---------------------------------------------------------------------------
 // the pairing pattern
 // ---------------------------------------------------------------------------
@@ -302,9 +364,13 @@ function enact(seeds: Level3SeedCell[], pairings: FacePairing[], extra: ExtraUni
 // well-formedness (asserted BEFORE enacting — the mandate's three clauses)
 // ---------------------------------------------------------------------------
 
-function assertWellFormed(seed: Level3SeedCell, pairings: FacePairing[]): void {
+// THE MULTI-CELL CUT: the well-formedness laws are unchanged — the face
+// universe simply spans every seed (the ruling's "ordinary pairing
+// well-formedness … the op already enforces"; no condition added or removed).
+// Single-seed callers pass [seed]; every message stays byte-identical.
+function assertWellFormed(seeds: Level3SeedCell[], pairings: FacePairing[]): void {
   // (3) map/mode present + map is a combinatorial cycle-isomorphism
-  const faceById = new Map(seed.faces.map((f) => [f.id, f]));
+  const faceById = new Map(seeds.flatMap((s) => s.faces).map((f) => [f.id, f]));
   const seen = new Map<string, number>();
   for (const pairing of pairings) {
     if (pairing.mode !== 'preserving' && pairing.mode !== 'reversing') {
@@ -353,7 +419,7 @@ function assertWellFormed(seed: Level3SeedCell, pairings: FacePairing[]): void {
   //     level-3 gate reads the boundary downstream), never thrown;
   //   count > 1  — a face in several pairs: genuinely MALFORMED, still
   //     thrown, message byte-identical.
-  for (const face of seed.faces) {
+  for (const face of seeds.flatMap((s) => s.faces)) {
     const count = seen.get(face.id) ?? 0;
     if (count > 1) {
       throw new Error(
@@ -367,13 +433,17 @@ function assertWellFormed(seed: Level3SeedCell, pairings: FacePairing[]): void {
 // the ops (the level-2 docstring contracts, mirrored one dimension up)
 // ---------------------------------------------------------------------------
 
-// Every pairing orientation-PRESERVING.
-export function glueFaces(seed: Level3SeedCell, pairings: FacePairing[]): Level3Complex {
+// Every pairing orientation-PRESERVING. THE MULTI-CELL CUT: the entry now
+// admits PLURAL seeds (the researcher's WALL 2 — the private `enact` was
+// already plural; this exposes the (seeds[], pairings) composition over the
+// ready core). A single seed passes exactly as before.
+export function glueFaces(seedOrSeeds: Level3SeedCell | Level3SeedCell[], pairings: FacePairing[]): Level3Complex {
   if (pairings.some((p) => p.mode === 'reversing')) {
     throw new Error('faceIdentification: glueFaces requires every pairing preserving (use flipGlueFaces)');
   }
-  assertWellFormed(seed, pairings);
-  return enact([seed], pairings);
+  const seeds = Array.isArray(seedOrSeeds) ? seedOrSeeds : [seedOrSeeds];
+  assertWellFormed(seeds, pairings);
+  return enact(seeds, pairings);
 }
 
 // At least one pairing orientation-REVERSING.
@@ -381,7 +451,7 @@ export function flipGlueFaces(seed: Level3SeedCell, pairings: FacePairing[]): Le
   if (!pairings.some((p) => p.mode === 'reversing')) {
     throw new Error('faceIdentification: flipGlueFaces requires >= 1 reversing pairing (use glueFaces)');
   }
-  assertWellFormed(seed, pairings);
+  assertWellFormed([seed], pairings);
   return enact([seed], pairings);
 }
 

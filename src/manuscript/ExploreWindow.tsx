@@ -94,19 +94,19 @@ uniform vec3  uEye, uFwd, uRight, uUp;
 // (its deck transform) or a WALL (the person's boundary: the manifold ends
 // there — never an escape to the void). The cube degenerates exactly to the
 // instrument's old 3-axis frame; the isometry application is untouched.
-uniform int   uFaceCount;               // ≤ 8
-uniform vec3  uFaceN[8];
-uniform float uFaceD[8];
-uniform float uFaceWall[8];             // 1 = wall
-uniform mat4  uFaceG[8];                // portal transform (identity on walls)
+uniform int   uFaceCount;               // ≤ 16 (the multi-cell cut: a fan room carries 15 boundary walls)
+uniform vec3  uFaceN[16];
+uniform float uFaceD[16];
+uniform float uFaceWall[16];            // 1 = wall
+uniform mat4  uFaceG[16];               // portal transform (identity on walls)
 uniform float uSpan;                    // the cell's max extent (cube: 2) — the horizon unit
-// the seed's own edges as rods (≤ 20), each with its engine class
+// the seed's own edges as rods (≤ 32), each with its engine class
 uniform int   uRodCount;
-uniform vec3  uRodA[20];
-uniform vec3  uRodB[20];
-uniform float uRodK[20];
-uniform float uRodClass[20];
-uniform float uRodHeavy[20];            // 1 ⇔ the census DECLARED cone edges and this class is k≠4 — never fabricated
+uniform vec3  uRodA[32];
+uniform vec3  uRodB[32];
+uniform float uRodK[32];
+uniform float uRodClass[32];
+uniform float uRodHeavy[32];            // 1 ⇔ the census DECLARED cone edges and this class is k≠4 — never fabricated
 uniform int   uLevel;
 uniform float uHatch;      // the SETTLE dial
 // ── PART A (RUNG-1 legibility, 2026-08-11 seal): the designer's dials ──────
@@ -195,7 +195,7 @@ float map(vec3 p, out float id){
   float d=sdPlaque(p); id=100.;
   float dc=sdCoil(p); if(dc<d){ d=dc; id=101.; }
   float ds=sdStands(p); if(ds<d){ d=ds; id=102.; }
-  for(int i=0;i<20;i++){
+  for(int i=0;i<32;i++){
     if(i>=uRodCount) break;
     // a declared CONE edge is MUCH thicker — k is metric, and visible; a
     // smooth rod thins toward a guide as the recede dial rises (gSmoothR —
@@ -227,7 +227,7 @@ void main(){
     // the cell exit: the nearest of the room's OWN face planes (the cube
     // degenerates to the instrument's exact 3-axis test)
     float tE=1e9; int fE=0;
-    for(int f=0;f<8;f++){
+    for(int f=0;f<16;f++){
       if(f>=uFaceCount) break;
       float dn=dot(v,uFaceN[f]); if(dn<1e-6) continue;
       float t=(uFaceD[f]-dot(p,uFaceN[f]))/dn;
@@ -282,7 +282,7 @@ void main(){
   // the depth break at its edges.
   float weightScale = 1.0;
   bool isWall = (idOut==99.);
-  bool isRod = (idOut>=0.5 && idOut<=20.5);
+  bool isRod = (idOut>=0.5 && idOut<=32.5);
   vec3 base;
   if(isWall){ base=INK; tone=0.30; }
   else if(!isRod){ base=INK; }
@@ -375,22 +375,22 @@ function packCell(surface: ApertureCellSurface): {
   rodA: Float32Array; rodB: Float32Array; rodK: Float32Array; rodClass: Float32Array; rodHeavy: Float32Array; rodCount: number;
   span: number;
 } | null {
-  if (surface.faces.length === 0 || surface.faces.length > 8 || surface.rods.length > 20) return null;
-  const faceN = new Float32Array(24);
-  const faceD = new Float32Array(8);
-  const faceWall = new Float32Array(8);
-  const faceG = new Float32Array(128);
+  if (surface.faces.length === 0 || surface.faces.length > 16 || surface.rods.length > 32) return null;
+  const faceN = new Float32Array(48);
+  const faceD = new Float32Array(16);
+  const faceWall = new Float32Array(16);
+  const faceG = new Float32Array(256);
   surface.faces.forEach((f, i) => {
     faceN.set(f.n, i * 3);
     faceD[i] = f.d;
     faceWall[i] = f.wall ? 1 : 0;
     faceG.set(m4(f.g ?? IDENTITY_G), i * 16);
   });
-  const rodA = new Float32Array(60);
-  const rodB = new Float32Array(60);
-  const rodK = new Float32Array(20);
-  const rodClass = new Float32Array(20);
-  const rodHeavy = new Float32Array(20);
+  const rodA = new Float32Array(96);
+  const rodB = new Float32Array(96);
+  const rodK = new Float32Array(32);
+  const rodClass = new Float32Array(32);
+  const rodHeavy = new Float32Array(32);
   surface.rods.forEach((r, i) => {
     rodA.set(r.a, i * 3);
     rodB.set(r.b, i * 3);
@@ -708,9 +708,13 @@ export function ExploreWindow({
       seam.forward = [...camF] as Vec3;
       seam.settle = settle;
       // the boundary is SPOKEN, fresh (never the winding-tag's wording): a
-      // room with walls says where it ends and how its orbit still recurs
+      // room with walls AND corridors says how its orbit still recurs; a
+      // DECKLESS bounded chamber (the multi-cell fan) says nothing recurs
+      const portalCount = cellSurface.faces.length - cellSurface.wallCount;
       const boundaryLine = cellSurface.wallCount > 0
-        ? ' · the manifold ends here; the orbit recurs only through the glued corridors'
+        ? portalCount > 0
+          ? ' · the manifold ends here; the orbit recurs only through the glued corridors'
+          : ' · the manifold ends here — a bounded chamber; nothing recurs'
         : '';
       const caption = `${deckLine}${boundaryLine} · copies shown to depth ${Math.max(0, Math.round(liveRef.current.level))}`;
       if (seam.caption !== caption) {

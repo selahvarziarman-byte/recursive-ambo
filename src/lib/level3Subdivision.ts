@@ -12,7 +12,7 @@
 // guards this specializes:
 //   · no fixed point in the 3-cell's interior — face-pairings identify
 //     boundary points with boundary points only;
-//   · no fixed point in a face's interior — faceIdentification.ts:316
+//   · no fixed point in a face's interior — faceIdentification.ts:382
 //     ("a face cannot pair with itself in Build 1") together with
 //     assertWellFormed's perfect-matching guard make the face pairing a
 //     FIXED-POINT-FREE INVOLUTION on the six faces;
@@ -20,7 +20,7 @@
 //     fold (e ≡ ē), and its fixed point is the edge's midpoint.
 //     BISECT THE 1-SKELETON. KEEP ONE CELL.
 //
-// ⚠ THIS SPECIALIZATION IS VALID EXACTLY WHILE faceIdentification.ts:316 IS
+// ⚠ THIS SPECIALIZATION IS VALID EXACTLY WHILE faceIdentification.ts:382 IS
 // ENFORCED. Admit a MIRROR (self-paired) face — which is precisely how one
 // generates a REFLECTION ORBIFOLD — and a FACE can fold: edge bisection no
 // longer suffices, and the general (barycentric) cure returns. Check that line

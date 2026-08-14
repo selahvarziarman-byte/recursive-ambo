@@ -20,6 +20,13 @@ export type OperationKind =
   | 'cut'
   | 'assemble'
   | 'patch-lift'
+  // OPEN-LIFT (DOOR 3, 2026-08-13, sovereign-ruled Option B; SEAL_OPEN_STAR_
+  // EXTRACTOR + researcher 1837): the open-star extractor's word — patch-lift's
+  // lineage-carriage MINUS its closure, a lift that does NOT glue (the rim
+  // stays a free boundary; no identification is performed). NON-consuming
+  // (genealogyDag NON_CONSUMING, deliberately NOT GLUE_KINDS); manifest
+  // re-sealed in the same change
+  | 'open-lift'
   // THICKEN (A.1 rung 1, 2026-07-18, sealed 039feb1b…82cae): the ×I product —
   // an arity-1 NON-CONSUMING birth (genealogyDag's own doctrine held the seat:
   // "once it exists, `product`"); manifest re-sealed in the same change

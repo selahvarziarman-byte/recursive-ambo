@@ -152,10 +152,25 @@ interface SeedGeometry {
 }
 
 export function readSeedGeometry(seedShape: Shape): SeedGeometry {
-  const seed = readSeedCell(seedShape);
+  // THE MULTI-CELL CUT (2026-08-13): a multi-cell solid reads as the UNION
+  // region — its vertices/faces are the shape's own, and every PREFIXED id
+  // (cN:…, the paired-face representation's charts) resolves by stripping
+  // the prefix: the charts of an embedded product COINCIDE in space, so the
+  // shared-wall deck fits come out identity, which is geometrically true.
+  // The single-cell path is byte-behavior-identical (no prefixes to strip).
+  const strip = (id: string): string => id.replace(/^c\d+:/, '');
+  const seed =
+    seedShape.cells.length === 1
+      ? readSeedCell(seedShape)
+      : {
+          cellId: seedShape.cells.map((c) => c.id).join('+'),
+          vertexIds: Object.keys(seedShape.vertices),
+          edges: seedShape.edges.map((e) => ({ id: e.id, a: e.vertexIds[0], b: e.vertexIds[1] })),
+          faces: seedShape.faces.map((f) => ({ id: f.id, cycle: f.vertexIds })),
+        };
   const positions = new Map(Object.values(seedShape.vertices).map((v) => [v.id, v.position as V3]));
   const positionOf = (id: string): V3 => {
-    const p = positions.get(id);
+    const p = positions.get(id) ?? positions.get(strip(id));
     if (!p) throw new Error(`apertureModel: seed vertex ${id} has no position`);
     return p;
   };
@@ -173,7 +188,7 @@ export function readSeedGeometry(seedShape: Shape): SeedGeometry {
     }
   const faceById = new Map(seed.faces.map((f) => [f.id, f]));
   const faceCentroid = (faceId: string): V3 => {
-    const f = faceById.get(faceId);
+    const f = faceById.get(faceId) ?? faceById.get(strip(faceId));
     if (!f) throw new Error(`apertureModel: unknown face ${faceId}`);
     return mulS(
       f.cycle.reduce((acc, id) => add(acc, positionOf(id)), [0, 0, 0] as V3),
@@ -286,6 +301,23 @@ export function deckOf(seedShape: Shape, pairings: FacePairing[]): DeckEntry[] {
     const nB = norm(sub(fcB, geometry.cellCentroid));
     return { g, gi: deckInverse(g), det, nA, dA: dot(fcA, nA), nB, dB: dot(fcB, nB) };
   });
+}
+
+// THE MULTI-CELL CUT: the pairings that are DOORS. An interior shared wall
+// of a multi-cell solid (two cells own the face) is spanned by the room's
+// own region — no transport happens there, and the witnessed deck fit
+// RIGHTLY refuses it (the off-cell law is for doors). The deck is fit over
+// the SURFACE pairings only; a room whose pairings are all interior is a
+// legitimately DECKLESS bounded chamber.
+export function surfacePairingsOf(seedShape: Shape, pairings: FacePairing[]): FacePairing[] {
+  if (seedShape.cells.length <= 1) return pairings;
+  const ownersCount = new Map<string, number>();
+  for (const cell of seedShape.cells)
+    for (const faceId of cell.faceIds) ownersCount.set(faceId, (ownersCount.get(faceId) ?? 0) + 1);
+  const strip = (id: string): string => id.replace(/^c\d+:/, '');
+  return pairings.filter(
+    (p) => (ownersCount.get(strip(p.faceA)) ?? 1) !== 2 && (ownersCount.get(strip(p.faceB)) ?? 1) !== 2,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -609,7 +641,15 @@ export const HEURISTIC_CONE_SOURCE: ConeAngleSource = { kind: 'heuristic', angle
 
 export function resolveConeAngleSource(domain: DomainModel, lineage?: { base: Shape }): ConeAngleSource {
   const shape = domain.shape;
-  const owned = shape.cells.length === 1 && shape.cells[0].dihedralAngles && Object.keys(shape.cells[0].dihedralAngles).length > 0;
+  // THE MULTI-CELL CUT (2026-08-13): a multi-cell product is ADMITTED when
+  // EVERY cell owns its dihedrals (thicken stamps each prism cell of an
+  // owned base) — the researcher's fixture ran readPillarDihedrals on the
+  // n=5 fan (300°). The single-cell path is byte-behavior-identical: one
+  // owned cell passes both forms; a cube (no owned dihedrals) still falls
+  // to the k×90° heuristic exactly as before.
+  const owned =
+    shape.cells.length >= 1 &&
+    shape.cells.every((c) => c.dihedralAngles && Object.keys(c.dihedralAngles).length > 0);
   if (!lineage?.base || !owned) return HEURISTIC_CONE_SOURCE;
   try {
     // ⛔ THE PRECONDITION (researcher 1430): the SAME thickened Shape object
@@ -622,10 +662,21 @@ export function resolveConeAngleSource(domain: DomainModel, lineage?: { base: Sh
     // claimed: the heuristic stands. (All-smooth readings are different:
     // they MEASURED 2π everywhere and may say so.)
     if (readings.length === 0) return HEURISTIC_CONE_SOURCE;
+    // the reading's pillar id lives in the SHAPE's id space; a multi-cell
+    // complex is PREFIXED per cell (readSeedCells) — resolve through the
+    // complex's own original edges (exact match first: the single-cell path
+    // stays byte-identical; then any cell's prefixed copy — the shared-wall
+    // pairings union every copy into ONE class, so any member resolves it)
+    const inComplexId = (edgeId: string): string => {
+      const exact = domain.complex.originalEdges.find((e) => e.id === edgeId);
+      if (exact) return exact.id;
+      const prefixed = domain.complex.originalEdges.find((e) => e.id.endsWith(`:${edgeId}`));
+      return prefixed ? prefixed.id : edgeId;
+    };
     const anglesByClass = new Map<string, number>();
     for (const reading of readings) {
       if (reading.coneAngle === null) continue; // smooth pillars mint no cone edge
-      const classRoot = domain.complex.edgeClassOf(reading.pillarEdgeId);
+      const classRoot = domain.complex.edgeClassOf(inComplexId(reading.pillarEdgeId));
       anglesByClass.set(classRoot, (anglesByClass.get(classRoot) ?? 0) + reading.totalDihedral);
     }
     return { kind: 'measured', anglesByClass, refusal: null };
@@ -858,27 +909,50 @@ export function readCellSurface(
   const geometry = readSeedGeometry(shape);
   const c = geometry.cellCentroid;
   const pairings = 'folded' in domain ? domain.pairings : domain.complex.pairings;
-  const deck = deckOf(shape, pairings);
+  // THE MULTI-CELL CUT: the room's walk-region is the UNION of the cells —
+  // a face owned by TWO cells is INTERIOR (the region spans it; it is not an
+  // exit and never enters the surface); the boundary faces (one owner) carry
+  // the portal/wall verdict exactly as before. On an embedded product the
+  // charts coincide, so interior pairings fit identity — geometrically true.
+  const interiorFaceIds = new Set<string>();
+  if (shape.cells.length > 1) {
+    const ownersCount = new Map<string, number>();
+    for (const cell of shape.cells)
+      for (const faceId of cell.faceIds) ownersCount.set(faceId, (ownersCount.get(faceId) ?? 0) + 1);
+    for (const [faceId, count] of ownersCount) if (count === 2) interiorFaceIds.add(faceId);
+  }
+  const stripId = (id: string): string => id.replace(/^c\d+:/, '');
+  const deck = deckOf(shape, surfacePairingsOf(shape, pairings));
   const gate = 'folded' in domain ? domain.gate : domain.tower.gate;
   const classOf = 'folded' in domain ? null : domain.complex.edgeClassOf;
   const near = (u: V3, w: V3): boolean => Math.hypot(u[0] - w[0], u[1] - w[1], u[2] - w[2]) < 1e-5;
-  // per seed FACE: portal (its deck transform, recentered) or wall. On a
+  // per surface FACE: portal (its deck transform, recentered) or wall. On a
   // convex cell every face owns a unique OUTWARD normal, so the normal alone
   // identifies the deck entry (nA/nB are the pairing's own outward normals).
-  const faces: ApertureCellFace[] = geometry.seed.faces.map((face) => {
-    const fc = sub(geometry.faceCentroid(face.id), c);
-    const n = norm(fc);
-    const d = dot(fc, n);
-    for (const entry of deck) {
-      if (near(entry.nA, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.g, c) };
-      if (near(entry.nB, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.gi, c) };
-    }
-    return { n, d, wall: true, g: null };
-  });
+  const faces: ApertureCellFace[] = geometry.seed.faces
+    .filter((face) => !interiorFaceIds.has(stripId(face.id)))
+    .map((face) => {
+      const fc = sub(geometry.faceCentroid(face.id), c);
+      const n = norm(fc);
+      const d = dot(fc, n);
+      for (const entry of deck) {
+        if (near(entry.nA, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.g, c) };
+        if (near(entry.nB, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.gi, c) };
+      }
+      return { n, d, wall: true, g: null };
+    });
   // per seed EDGE: the rod with its class k + palette (readRodData's law,
-  // generalized — positions direct from the seed, no instrument-corner match)
+  // generalized — positions direct from the seed, no instrument-corner match).
+  // A multi-cell complex is PREFIXED — resolve the shape's edge id through
+  // any cell's copy (the shared-wall unions make every copy one class).
   const positions = new Map(Object.values(shape.vertices).map((v) => [v.id, v.position as V3]));
-  const linkOfEdge = (edgeId: string): { root: string; k: number } | null => {
+  const complexEdgeId = (edgeId: string): string => {
+    if ('folded' in domain || shape.cells.length === 1) return edgeId;
+    const prefixed = domain.complex.originalEdges.find((e) => e.id === edgeId || e.id.endsWith(`:${edgeId}`));
+    return prefixed ? prefixed.id : edgeId;
+  };
+  const linkOfEdge = (rawEdgeId: string): { root: string; k: number } | null => {
+    const edgeId = complexEdgeId(rawEdgeId);
     if (classOf) {
       const root = classOf(edgeId);
       const link = gate.edgeLinks.find((l) => l.edgeClass === root) ?? gate.edgeLinks.find((l) => l.memberEdgeIds.includes(edgeId));
@@ -953,7 +1027,10 @@ export function buildAperture(domain: DomainModel | FoldedDomain, lineage?: { ba
   // step 8: the cone census reads the ONE seam — measured when the seed is a
   // dihedral-owning thicken product with its base in hand, k×90° otherwise
   const geometry = geometryFromTower(tower, resolveConeAngleSource(domain, lineage));
-  const pairings = domain.complex.pairings;
+  // THE MULTI-CELL CUT: the deck is the room's DOORS — interior shared walls
+  // (spanned by the region, no transport) are excluded; the witnessed fit
+  // rightly refuses them and a bounded chamber may be legitimately deckless.
+  const pairings = surfacePairingsOf(domain.shape, domain.complex.pairings);
   try {
     const deck = deckOf(domain.shape, pairings);
     return { ok: true, deck, geometry };

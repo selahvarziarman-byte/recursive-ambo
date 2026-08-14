@@ -17,7 +17,7 @@
 // identification simply swaps, with a genuine vertex fixed at the middle.
 //
 // ⚠ THE PRECONDITION, BY LINE: edge bisection suffices EXACTLY WHILE
-// faceIdentification.ts:316 (no self-paired face) is enforced — a mirror face
+// faceIdentification.ts:382 (no self-paired face) is enforced — a mirror face
 // would let a FACE fold, and the barycentric cure returns. The op's header
 // states this, citing the line; this witness greps both sides of the cite.
 //
@@ -120,9 +120,9 @@ check('battery 1 — bisectEdges(cube) = 20 vertices (8 + 12 midpoints) · 24 ha
 note(`counts: ${bis.vertexIds.length} v · ${bis.edges.length} e · ${bis.faces.length} f (all 8-cycles) · 1 cell`);
 const subSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/level3Subdivision.ts'), 'utf8');
 const fiSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/faceIdentification.ts'), 'utf8');
-const fiLine316 = fiSrc.split(/\r?\n/)[315];
-check('battery 6 — THE PRECONDITION IS IN THE OP\'S HEADER, CITING THE LINE: level3Subdivision names `faceIdentification.ts:316` (one grep finds it), and line 316 still IS the no-self-paired-face guard the specialization stands on',
-  subSrc.includes('faceIdentification.ts:316') &&
+const fiLine316 = fiSrc.split(/\r?\n/)[381];
+check('battery 6 — THE PRECONDITION IS IN THE OP\'S HEADER, CITING THE LINE: level3Subdivision names `faceIdentification.ts:382` (one grep finds it), and line 382 still IS the no-self-paired-face guard the specialization stands on (the cite re-pointed with THE MULTI-CELL CUT\'s frozen-union insertions above it — both sides moved together, the witness\'s own law)',
+  subSrc.includes('faceIdentification.ts:382') &&
   fiLine316.includes('pairing.faceA === pairing.faceB') && fiLine316.includes('cannot pair with itself'));
 note(`the cited line, live: "${fiLine316.trim().slice(0, 96)}…"`);
 

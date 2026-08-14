@@ -205,6 +205,10 @@ const OP_WORDS: Record<string, string> = {
   // THE LIFT (SEAL_THE_LIFT_IDENTITY_AND_GRAIN) — the header names the move;
   // buildArgumentReading swaps in the SPECIFIC source name where it reads one
   'patch-lift': 'lifted from the source universe',
+  // DOOR 3 (SEAL_OPEN_STAR_EXTRACTOR, researcher 1837 §2): the non-glue lift —
+  // the star read off the terrain, the rim left a rim; the card reads the
+  // source honestly ("lifted from ⟨terrain⟩"), never "invoked" for an import
+  'open-lift': 'the open star, lifted — the rim stays a rim',
   invoke: 'the primitive, invoked',
   'ambo-dissection': 'corners cut to midpoints — the ambo dissection',
   product: 'the ×I product — thickened',
@@ -239,6 +243,13 @@ function sourceNameFor(form: WrittenForm): string {
       const cut = name.indexOf(' of ');
       return cut > -1 ? name.slice(cut + 4) : 'another universe';
     }
+    // DOOR 3: the open-lift's own mint is `open-lift(<source>)` (openLift.ts) —
+    // read the terrain's name out of it; an import is never "invoked"
+    if (form.shape.genealogy.operation === 'open-lift') {
+      const name = form.shape.name ?? '';
+      const match = /^open-lift\((.+)\)$/.exec(name);
+      return match ? match[1] : 'the terrain';
+    }
     return 'invoked';
   }
   if (parent.faces.length === 1) {
@@ -262,6 +273,9 @@ function resultNameFor(form: WrittenForm): string {
     const cut = name.indexOf(' of ');
     if (cut > -1) return name.slice(0, cut);
   }
+  // DOOR 3: the open-lift's result is the star itself; its source is already
+  // named on the left of the arrow
+  if (form.shape.genealogy.operation === 'open-lift') return 'the open star';
   // the drawn class name where a card already computes one is Phase-2 polish;
   // the form's own title word is the honest Phase-1 fallback
   return form.title.split('—')[0].trim() || form.shape.name || 'this form';

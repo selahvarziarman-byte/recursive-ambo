@@ -566,6 +566,25 @@ const ALLOWED_SRC_CHANGES = new Set([
   // (§E-GPU / §E-GPU-SUBSTRATE).
   'src/manuscript/exploreTraceWorker.ts',
   'src/manuscript/exploreWindowModel.ts',
+  // THE MULTI-CELL CUT + DOOR 3 (2026-08-13, CHARTER_MULTICELL +
+  // SEAL_OPEN_STAR_EXTRACTOR, sovereign-ruled door 3): the route-agnostic
+  // multi-cell consumer — formDomainModel gains sharedWallPairings + the
+  // multi-cell buildFormDomain branch (the single-cell path byte-behavior-
+  // identical); the arc's frozen union rides the standing entries above
+  // (faceIdentification :49; geometry/genealogyDag gain 'open-lift', :88/:50)
+  // with manifest re-seals in the same change; ratified in
+  // scripts/app-leg/diagnose-open-lift.cjs (four plants RED-when-planted +
+  // the sealed 300° end-to-end through the committed extractor).
+  'src/manuscript/formDomainModel.ts',
+  // …the card's honest open-lift words (researcher 1837 §2: the room's card
+  // reads "lifted from ⟨terrain⟩", never "invoked" for an import):
+  'src/manuscript/argumentReadingModel.ts',
+  // …and the line-cite maintenance the frozen-union insertions force:
+  // level3Subdivision's precondition cite re-points :316 → :382 (the
+  // no-self-paired-face guard moved down with faceIdentification's
+  // readSeedCells addition; diagnose-the-subdivision greps BOTH sides —
+  // its own law is that the cite and the line move together).
+  'src/lib/level3Subdivision.ts',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&
