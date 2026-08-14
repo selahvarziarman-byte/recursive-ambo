@@ -22,11 +22,12 @@ import {
   packetSourceRef,
 } from './packets';
 import { deriveEdges, getCellFaces } from './shape';
-// THE ASCENT STANCE-STAMP (2026-08-02): a MINTED medial face owns its corner
-// angle combinatorially — invocation's rule ((n−2)π/n), distance-free; a
-// COPIED face RIDES its source's owned angles. The atom is READ (frozen),
-// never re-derived.
-import { regularCornerAngle } from './conformalAtom';
+// THE ASCENT STANCE-STAMP (2026-08-02) is RETIRED here by R2 (2026-08-14,
+// the Sovereign's D5 finding): a MINTED split face no longer assumes the
+// regular constant — its angles are acos-IMPORTED from the carried vertex
+// positions (measure, never stamp; malformed ⇒ un-owned). A COPIED face
+// still RIDES its source's owned angles unchanged.
+import { importCornerAngles } from './cornerAngleImport';
 
 interface CuboctahedronSourceTopology {
   cell: Cell;
@@ -97,7 +98,7 @@ function applyCuboctahedronDiagonalization(
   const vertices = cloneParentVertices(parent.vertices);
   const diagonalChoices = selectCoherentDiagonalMatching(topology);
   const parentFaces = createParentCellFaces(shapeId, parentCellId, topology.faces);
-  const resultFaces = createPyritohedralFaces(shapeId, sourceCell.id, topology, diagonalChoices);
+  const resultFaces = createPyritohedralFaces(shapeId, sourceCell.id, topology, diagonalChoices, vertices);
   const resultCellId = makeCellId(shapeId, 'core', sourceCell.id, sourceCell.vertexIds);
   const sourceEdgeIds = topology.edges.map((edge) => edge.id);
   const parentCell: Cell = {
@@ -340,6 +341,7 @@ function createPyritohedralFaces(
   sourceCellId: string,
   topology: CuboctahedronSourceTopology,
   diagonalChoices: DiagonalChoice[],
+  vertices: Record<VertexId, Vertex>,
 ): Face[] {
   const preservedFaces = [...topology.triangleFaces]
     .sort((a, b) => a.id.localeCompare(b.id))
@@ -362,28 +364,35 @@ function createPyritohedralFaces(
       ),
     }));
   const splitFaces = diagonalChoices.flatMap((choice) =>
-    choice.splitFaces.map((vertexIds, index) => ({
-      id: makeFaceId(
-        shapeId,
-        'pyritohedral-split-face',
-        `${choice.sourceFace.id}:split:${index}`,
+    choice.splitFaces.map((vertexIds, index) => {
+      // MINTED split face — R2 (the Sovereign's D5 finding cured at the root):
+      // the angles acos-IMPORTED from the carried positions — a square's
+      // diagonal halves TRULY own 45·45·90, never a stamped 60·60·60
+      // (measure, never stamp); malformed ⇒ un-owned
+      const trueAngles = importCornerAngles(vertexIds, vertices);
+
+      return {
+        id: makeFaceId(
+          shapeId,
+          'pyritohedral-split-face',
+          `${choice.sourceFace.id}:split:${index}`,
+          vertexIds,
+        ),
         vertexIds,
-      ),
-      vertexIds,
-      role: 'pyritohedral-split-face' as const,
-      sourceCellId,
-      sourceFaceId: choice.sourceFace.id,
-      // MINTED medial face — the combinatorial stamp (the stance-piece)
-      cornerAngles: vertexIds.map(() => regularCornerAngle(vertexIds.length)),
-      lineage: deriveFaceLineage(
-        [
-          packetSourceRef('face', choice.sourceFace.id, 'source-face'),
-          packetSourceRef('cell', sourceCellId, 'source-cell'),
-        ],
-        shapeId,
-        'derived-from-face',
-      ),
-    })),
+        role: 'pyritohedral-split-face' as const,
+        sourceCellId,
+        sourceFaceId: choice.sourceFace.id,
+        ...(trueAngles ? { cornerAngles: trueAngles } : {}),
+        lineage: deriveFaceLineage(
+          [
+            packetSourceRef('face', choice.sourceFace.id, 'source-face'),
+            packetSourceRef('cell', sourceCellId, 'source-cell'),
+          ],
+          shapeId,
+          'derived-from-face',
+        ),
+      };
+    }),
   );
 
   return [...preservedFaces, ...splitFaces];

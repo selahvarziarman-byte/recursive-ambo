@@ -31,7 +31,9 @@ import { createDefaultVertexData, deriveEdges, getCellFaces, midpoint } from './
 // angle combinatorially — invocation's rule ((n−2)π/n), distance-free; a
 // COPIED face RIDES its source's owned angles. The atom is READ (frozen),
 // never re-derived.
-import { regularCornerAngle } from './conformalAtom';
+// R2 (2026-08-14): the regular stamp is RETIRED at these mint sites — the
+// angles are acos-imported from the carried positions (measure, never stamp)
+import { importCornerAngles } from './cornerAngleImport';
 
 const DEFAULT_MIDPOINT_COLOR = '#eab308';
 
@@ -145,9 +147,9 @@ function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Sh
     ),
   };
 
-  const coreCell = createCoreCell(topology, shapeId, generationDepth, parentCellId, midpointIds);
+  const coreCell = createCoreCell(topology, shapeId, generationDepth, parentCellId, midpointIds, vertices);
   const residueCells = topology.vertexIds.map((sourceVertexId) =>
-    createResidueCell(topology, shapeId, generationDepth, parentCellId, sourceVertexId, midpointIds),
+    createResidueCell(topology, shapeId, generationDepth, parentCellId, sourceVertexId, midpointIds, vertices),
   );
   const generatedCells = [coreCell, ...residueCells];
   const generatedFaces = generatedCells.flatMap((cellWithFaces) => cellWithFaces.faces);
@@ -506,12 +508,16 @@ function createCoreCell(
   generationDepth: number,
   parentCellId: string,
   midpointIds: Map<string, VertexId>,
+  vertices: Record<VertexId, Vertex>,
 ): CellWithFaces {
   const vertexIds = topology.edges.map((edge) => getMidpointId(midpointIds, ...edge.vertexIds));
   const cellId = makeCellId(shapeId, 'core', parentCellId, vertexIds);
   const faces: Face[] = [
     ...topology.faces.map((sourceFace) => {
       const faceVertexIds = midpointLoopForFace(sourceFace, midpointIds);
+      // MINTED medial face — R2: the angles acos-IMPORTED from the carried
+      // midpoint positions (measure, never stamp); malformed ⇒ un-owned
+      const trueAngles = importCornerAngles(faceVertexIds, vertices);
 
       return {
         id: makeFaceId(shapeId, 'dissection-core-face', sourceFace.id, faceVertexIds),
@@ -519,13 +525,15 @@ function createCoreCell(
         role: 'dissection-core-face' as const,
         sourceCellId: cellId,
         sourceFaceId: sourceFace.id,
-        // MINTED medial face — the combinatorial stamp (the stance-piece)
-        cornerAngles: faceVertexIds.map(() => regularCornerAngle(faceVertexIds.length)),
+        ...(trueAngles ? { cornerAngles: trueAngles } : {}),
         lineage: deriveFromSourceFace(sourceFace.id, shapeId),
       };
     }),
     ...topology.vertexIds.map((sourceVertexId) => {
       const faceVertexIds = midpointRingForVertex(topology, sourceVertexId, midpointIds);
+      // MINTED medial face — R2: the angles acos-IMPORTED from the carried
+      // midpoint positions (measure, never stamp); malformed ⇒ un-owned
+      const trueAngles = importCornerAngles(faceVertexIds, vertices);
 
       return {
         id: makeFaceId(shapeId, 'dissection-core-face', sourceVertexId, faceVertexIds),
@@ -533,8 +541,7 @@ function createCoreCell(
         role: 'dissection-core-face' as const,
         sourceCellId: cellId,
         sourceVertexId,
-        // MINTED medial face — the combinatorial stamp (the stance-piece)
-        cornerAngles: faceVertexIds.map(() => regularCornerAngle(faceVertexIds.length)),
+        ...(trueAngles ? { cornerAngles: trueAngles } : {}),
         lineage: deriveFromSourceVertex(sourceVertexId, shapeId),
       };
     }),
@@ -563,12 +570,13 @@ function createResidueCell(
   parentCellId: string,
   sourceVertexId: VertexId,
   midpointIds: Map<string, VertexId>,
+  vertices: Record<VertexId, Vertex>,
 ): CellWithFaces {
   const neighborRing = getNeighborRing(topology, sourceVertexId);
   const baseVertexIds = midpointRingForVertex(topology, sourceVertexId, midpointIds);
   const vertexIds = [sourceVertexId, ...baseVertexIds];
   const cellId = makeCellId(shapeId, 'residue', sourceVertexId, vertexIds);
-  const faces = createResidueFaces(topology, shapeId, cellId, sourceVertexId, neighborRing, midpointIds);
+  const faces = createResidueFaces(topology, shapeId, cellId, sourceVertexId, neighborRing, midpointIds, vertices);
 
   return {
     id: cellId,
@@ -645,6 +653,7 @@ function createResidueFaces(
   sourceVertexId: VertexId,
   neighborRing: VertexId[],
   midpointIds: Map<string, VertexId>,
+  vertices: Record<VertexId, Vertex>,
 ): Face[] {
   const faces: Face[] = [];
 
@@ -657,6 +666,9 @@ function createResidueFaces(
       getMidpointId(midpointIds, sourceVertexId, b),
     ];
     const sourceFace = findFaceContaining(topology.faces, [sourceVertexId, a, b]);
+    // MINTED residue side — R2: the angles acos-IMPORTED from the carried
+    // positions (measure, never stamp); malformed ⇒ un-owned
+    const sideAngles = importCornerAngles(vertexIds, vertices);
 
     faces.push({
       id: makeFaceId(shapeId, 'dissection-residue-face', `${cellId}:side:${index}`, vertexIds),
@@ -665,13 +677,15 @@ function createResidueFaces(
       sourceCellId: cellId,
       sourceFaceId: sourceFace?.id,
       sourceVertexId,
-      // MINTED medial face — the combinatorial stamp (the stance-piece)
-      cornerAngles: vertexIds.map(() => regularCornerAngle(vertexIds.length)),
+      ...(sideAngles ? { cornerAngles: sideAngles } : {}),
       lineage: deriveGeneratedFaceLineage(shapeId, sourceFace?.id, sourceVertexId),
     });
   }
 
   const baseVertexIds = midpointRingForVertex(topology, sourceVertexId, midpointIds);
+  // MINTED residue base — R2: the angles acos-IMPORTED from the carried
+  // positions (measure, never stamp); malformed ⇒ un-owned
+  const baseAngles = importCornerAngles(baseVertexIds, vertices);
 
   faces.push({
     id: makeFaceId(shapeId, 'dissection-residue-face', `${cellId}:base`, baseVertexIds),
@@ -679,8 +693,7 @@ function createResidueFaces(
     role: 'dissection-residue-face',
     sourceCellId: cellId,
     sourceVertexId,
-    // MINTED medial face — the combinatorial stamp (the stance-piece)
-    cornerAngles: baseVertexIds.map(() => regularCornerAngle(baseVertexIds.length)),
+    ...(baseAngles ? { cornerAngles: baseAngles } : {}),
     lineage: deriveFromSourceVertex(sourceVertexId, shapeId),
   });
 

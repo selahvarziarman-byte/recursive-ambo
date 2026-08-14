@@ -24,6 +24,16 @@
 // fooled; the two clauses are provably INDEPENDENT); a stripped face throws
 // the un-owned refusal; the frozen dual sources are byte-identical to HEAD.
 //
+// ⚑ THE METRIC DEBT (R2 finding 2026-08-14, a SEPARATE flag on the METRIC
+// realization — NOT on the honest ascent seal above): the drawn/measured
+// centroid-dual is a SKEW SHADOW on the irregular seed — acos over the dual
+// vertices' positions reads pentagons [99.59,99.59,109.47,114.09,114.09]°
+// (sum 536.8° ≠ 540°) and quads [83.62,83.62,90,90]° (sum 347.2° ≠ 360°),
+// and a seal over those measures Σ = 4.21π / 4.85π ≠ 4π. A MEASURED 4π seal
+// is R1-downstream — it planarizes when the seed becomes a real regular
+// icosahedron. The idealize above is untouched by this: the ascent is
+// count-only by construction and owes nothing to the shadow's metric.
+//
 // Anti-mock: the REAL TS modules through the transpile hook.
 
 const fs = require('node:fs');
@@ -214,7 +224,7 @@ const sealA = readIdealDualSeal(icosaDual.dualFaces, chiOf(icosaDual));
 const sealB = readIdealDualSeal(cuboDual.dualFaces, chiOf(cuboDual));
 note(`dodecahedron: Σ = ${(sealA.totalDeficit / P).toFixed(6)}π vs 2πχ = ${2 * sealA.chi}π`);
 note(`rhombic-dodecahedron: Σ = ${(sealB.totalDeficit / P).toFixed(6)}π vs 2πχ = ${2 * sealB.chi}π`);
-check('§4 (E4) ★★ clause (a) GREENS both correct stamps: dodecahedron Σ = 4π = 2π·2 AND rhombic-dodecahedron Σ = 4π = 2π·2 (Euler\'s identity — it certifies the STAMP, never the Form)',
+check('§4 (E4) ★★ clause (a) GREENS both correct stamps — THE CONFORMAL ASCENT (R2-corrected framing, engineer 1304): the icosahedral type ascends to the dodecahedral Form and Σδ = 4π BY THE IDEALIZE (a pentagon is 108° because it is a pentagon — count-only, never a metric claim about the model\'s positions); same for the rhombic side-4 ascent (Euler\'s identity — it certifies the STAMP, never the Form)',
   sealA.stampHolds && near(sealA.totalDeficit, 4 * P) && sealB.stampHolds && near(sealB.totalDeficit, 4 * P));
 // THE PLANT (runs every time): the buggy idealize — regularCornerAngle(n)+0.1
 const buggy = icosaDual.dualFaces.map((f) => ({
@@ -318,8 +328,19 @@ const icosaIso = isolateCell(shapeA, icosaCell);
 const icosaReadings = readVertexCurvatures(icosaIso);
 const icosaSum = icosaReadings.reduce((s, r) => s + r.curvature, 0);
 note(`icosahedron (cell-isolated): ${icosaIso.faces.filter((f) => Array.isArray(f.cornerAngles)).length}/20 owned (8 preserved CARRIED + 12 split MINTED) · ${icosaReadings.length} vertices · Σ = ${deg(icosaSum)}°`);
-check('§7 (E2) ★★ …AND ON THE NEXT RUNG: the pyritohedral-icosahedron owns all 20 triangles at 60° (8 carried through the preserved-copy RIDE + 12 minted on the splits — the carry is load-bearing) → 12 interior vertices, deficit 60° each, Σ = 4π; §4 already sealed its dual dodecahedron at 4π on this same run',
-  icosaIso.faces.every((f) => Array.isArray(f.cornerAngles) && f.cornerAngles.every((a) => near(a, P / 3))) &&
+// R2 (2026-08-14, the five-site cure): the splits now own their TRUE parts —
+// 45·45·90 per half-square (never the stamped 60·60·60); the 8 preserved
+// triangles still ride 60°×3. THE VERTEX-DEFICIT SEAL IS UNTOUCHED: each
+// vertex still sums 300° (45+45+60+60+90), deficit 60° each, Σ = 4π.
+const icosaSplits = icosaIso.faces.filter((f) => f.role === 'pyritohedral-split-face');
+const icosaPreserved = icosaIso.faces.filter((f) => f.role === 'pyritohedral-preserved-face');
+const sortedDeg = (f) => (f.cornerAngles ?? []).map((a) => Math.round((a * 180) / P)).sort((x, y) => x - y).join(',');
+check('§7 (E2) ★★ …AND ON THE NEXT RUNG (R2 — the true parts): the pyritohedral-icosahedron owns all 20 triangles — the 8 preserved RIDE 60°×3, the 12 splits acos-read their TRUE 45·45·90 (the fabricated uniform 60s are gone) → the vertex seal UNCHANGED: 12 interior vertices, each Σθ = 300° (45+45+60+60+90), deficit 60° each, Σ = 4π; §4 already sealed its dual dodecahedron at 4π on this same run',
+  icosaIso.faces.every((f) => Array.isArray(f.cornerAngles)) &&
+    icosaPreserved.length === 8 &&
+    icosaPreserved.every((f) => f.cornerAngles.every((a) => near(a, P / 3))) &&
+    icosaSplits.length === 12 &&
+    icosaSplits.every((f) => sortedDeg(f) === '45,45,90') &&
     icosaReadings.length === 12 &&
     icosaReadings.every((r) => near(r.curvature, P / 3)) &&
     near(icosaSum, 4 * P));

@@ -585,6 +585,19 @@ const ALLOWED_SRC_CHANGES = new Set([
   // readSeedCells addition; diagnose-the-subdivision greps BOTH sides —
   // its own law is that the cite and the line move together).
   'src/lib/level3Subdivision.ts',
+  // R2 THE SUBSTRATE ROOT (2026-08-14 mandate + the 1304 correction, ruled
+  // (b)): the derived MODEL-face mint sites stop stamping regularCornerAngle
+  // and acos-import their TRUE angles from carried positions
+  // (cornerAngleImport.ts, a NEW NOT_FROZEN module); the FIVE swap sites live
+  // in these two NOT_FROZEN ops (ambo core/residue mints + the pyritohedral
+  // split mint — the Sovereign's D5 cure). dualView:986 is the P6 IDEALIZE —
+  // the distance-free ascent, correct by construction — REVERTED to its
+  // committed byte-identical state (it does not move). Ratified by
+  // scripts/app-leg/diagnose-r2-angle-import.cjs (45·45·90 split, 90×4
+  // square, the fan apex 60·60·45·45·90 Σ=300°). conformalAtom.ts (the
+  // frozen invoke-seed stamp) byte-unchanged.
+  'src/lib/ambo.ts',
+  'src/lib/pyritohedralDiagonalization.ts',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

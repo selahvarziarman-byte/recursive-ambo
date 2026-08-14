@@ -10,7 +10,10 @@
 //   CLEAN — openLift (the COMMITTED module) on the sovereign's terrain
 //   (ambo(cube) → central cuboctahedron → pyritohedral-diagonalization)
 //   extracts the n=5 open star: 5 carried triangles, owned Σθ = 300° at the
-//   centre, rim FREE (V=6/E=10/F=5, nothing minted, nothing merged), the
+//   centre with the TRUE wedge parts [60,60,45,45,90] (R2 2026-08-14: the
+//   mint sites acos-import from positions — the parts changed from the
+//   stamped uniform 60s, the sum did not), rim FREE (V=6/E=10/F=5,
+//   nothing minted, nothing merged), the
 //   birth-name 'open-lift' single-parent non-consuming, every vertex's
 //   createdBy carried VERBATIM (the primalMultiset is a pure function of the
 //   carried createdBy chain — the seed-stamp is exactly what severs it).
@@ -120,6 +123,21 @@ const lift = openLift(terrain, mid, coreCell.id);
 const clean = assess(lift, terrain);
 check('clean · 5-triangle star extracted', lift.shape.faces.length === 5 && lift.rimVertexIds.length === 5);
 check('clean · owned Σθ at centre = 300° (carried, not re-derived)', clean.angles, `Σ=${Math.round(DEG(sumAtCenter(lift.shape, lift.center)))}°`);
+// ★ R2's receipt (2026-08-14): the wedge PARTS are the TRUE measured angles
+// [60,60,45,45,90] (2 ring triangles + the touched square's halves + the
+// avoided square's half) — no longer the stamped uniform 60s; Σ holds 300°.
+{
+  const wedgeDegs = lift.shape.faces
+    .map((face) => {
+      let acc = 0;
+      face.vertexIds.forEach((v, k) => {
+        if (v === lift.center) acc += (face.cornerAngles ?? [])[k] ?? 0;
+      });
+      return Math.round(DEG(acc));
+    })
+    .sort((a, b) => a - b);
+  check('clean · the wedge parts are TRUE: [45,45,60,60,90] (R2 — measured, never stamped)', JSON.stringify(wedgeDegs) === JSON.stringify([45, 45, 60, 60, 90]), `[${wedgeDegs.join(',')}]`);
+}
 check("clean · birth-name 'open-lift', single-parent, non-consuming, nothing minted", clean.name);
 check('clean · the rim is FREE (V=6/E=10/F=5, nothing identified)', clean.rim, `V=${Object.keys(lift.shape.vertices).length} E=${lift.shape.edges.length} F=${lift.shape.faces.length}`);
 check('clean · descent carried verbatim (createdBy chains intact)', clean.descent);

@@ -359,7 +359,7 @@ const icosaCellForDual = ascent.cells.find((c) => c.topology === 'pyritohedral-i
 const dodecaModel = buildDualCorrespondenceModel(ascent, icosaCellForDual, 'dodecahedron');
 const dodecaSeal = readIdealDualSeal(dodecaModel.dualFaces, 2);
 const dodecaDeficits = Object.values(dodecaSeal.deficits);
-check('§8 (P2·E4) …AND THE FORM\'S RUNG (on the P6 surface): the dodecahedron reads deficit π/5 = 36° UNIFORM ×20 ⟺ angleSum 108⊕108⊕108 = 324° at every concept (was 300° on the icosahedron), Σδ = 4π, the seal HOLDS — while the shelf-carrier card REFUSES the stance honestly (the materialized dual shape\'s minted faces are UN-STAMPED — a stance-stamp-class gap in frozen dualization.ts, routed up)',
+check('§8 (P2·E4) …AND THE FORM\'S RUNG (on the P6 surface — THE CONFORMAL ASCENT, R2-corrected framing: the number is the IDEALIZE\'s, count-only by construction, never a metric claim about the drawn dual\'s positions): the dodecahedron reads deficit π/5 = 36° UNIFORM ×20 ⟺ angleSum 108⊕108⊕108 = 324° at every concept (was 300° on the icosahedron), Σδ = 4π BY THE IDEALIZE, the seal HOLDS — while the shelf-carrier card REFUSES the stance honestly (the materialized dual shape\'s minted faces are UN-STAMPED — a stance-stamp-class gap in frozen dualization.ts, routed up)',
   dodecaDeficits.length === 20 &&
     dodecaDeficits.every((d) => Math.abs(d - Math.PI / 5) < 1e-9) &&
     Math.abs(dodecaSeal.totalDeficit - 4 * Math.PI) < 1e-9 &&
