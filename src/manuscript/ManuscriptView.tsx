@@ -1679,6 +1679,15 @@ export default function ManuscriptView() {
   // parameter now — the 8th-word thicken gesture feeds its (single-cell)
   // product solid as the room seed; cube rooms pass cubeSeed byte-identical.
   const [apertureSeed, setApertureSeed] = useState<Shape>(cubeSeed);
+  // D1 (2026-08-14): the metric-base THREAD — the arity-2 thicken names its
+  // base in the product record (thicken:305 `product.parents`, threaded
+  // through geometryStore.thickenManuscript), and the view carries that id
+  // onto the dim3 model so the sealed-metric reader resolves it for EVERY
+  // arity-2 room — page-native and shelf-routed alike, by construction.
+  // `apertureSeedBaseId` rides the panel path (a thicken product seeded into
+  // the aperture panel); `metricBaseIds` keys built domains by their key.
+  const [apertureSeedBaseId, setApertureSeedBaseId] = useState<string | null>(null);
+  const [metricBaseIds, setMetricBaseIds] = useState<Record<string, string>>({});
   const [builtDomains, setBuiltDomains] = useState<DomainModel[]>([]);
   // 0.2 THE ORBIFOLD'S BODY: the folded verdicts' tower-less bodies — a
   // SIBLING list, never mixed into dim3All (the specimen register and every
@@ -2224,16 +2233,28 @@ export default function ManuscriptView() {
   const apertures = useMemo(
     () =>
       dim3All.map((model) => {
-        // step 8 (THE INSIDE-VIEW HATCH): the cone-angle seam takes the
-        // SEALED metric when the room's seed is a thicken product whose base
-        // rides in the world — the SAME Shape object that built the domain
-        // feeds the reader (one edge-id space). Every current room is
-        // cube-seeded → the k×90° heuristic stays live (reported).
-        const lineageBase =
-          model.shape.genealogy?.operation === 'product' && model.shape.genealogy.parentShapeId
-            ? shapeById.get(model.shape.genealogy.parentShapeId)
-            : undefined;
-        const gate = buildAperture(model, lineageBase ? { base: lineageBase } : undefined);
+        // step 8 (THE INSIDE-VIEW HATCH) + D1 (2026-08-14): the cone-angle
+        // seam takes the SEALED metric when the room's seed is a thicken
+        // product whose base resolves — through the UNARY parent pointer OR
+        // the arity-2 metric-base thread (`product.parents` carried onto the
+        // model's key; `parentShapeId` is null there by the connectedSum
+        // design and is never crowned). An OWNED product whose recorded base
+        // cannot be found on the page REFUSES BY NAME (the floor at
+        // resolveConeAngleSource) — never a silent k×90° in measured
+        // clothing. A cube-seeded room stays heuristic legitimately.
+        const isProduct = model.shape.genealogy?.operation === 'product';
+        const metricBaseId = isProduct
+          ? model.shape.genealogy?.parentShapeId ?? metricBaseIds[model.key] ?? null
+          : null;
+        const lineageBase = metricBaseId ? shapeById.get(metricBaseId) : undefined;
+        const gate = buildAperture(
+          model,
+          lineageBase
+            ? { base: lineageBase }
+            : isProduct && metricBaseId
+              ? { baseMissing: `the recorded metric base "${metricBaseId}" is no longer on the page` }
+              : undefined,
+        );
         if (!gate.ok) {
           return { key: model.key, gate, trace: null, caption: gate.reason };
         }
@@ -2267,7 +2288,7 @@ export default function ManuscriptView() {
         });
         return { key: model.key, gate, trace, caption: apertureCaption(gate.geometry, trace.counts) };
       }),
-    [dim3All, placedForms, shapeById, apertureCtl],
+    [dim3All, placedForms, shapeById, apertureCtl, metricBaseIds],
   );
   // 0.2 — the folded bodies' apertures: the SAME committed gate → trace →
   // caption pipeline, keyed on the verdict's folded body (never on !sound —
@@ -2362,6 +2383,9 @@ export default function ManuscriptView() {
       }
       const domain = verdict.domain;
       setBuiltDomains((cur) => [...cur, domain]);
+      // D1: a room glued on a thicken-product seed inherits the seed's
+      // metric-base id — the panel path's half of the thread
+      if (apertureSeedBaseId) setMetricBaseIds((cur) => ({ ...cur, [`built-${n}`]: apertureSeedBaseId }));
       setApertureNotice(
         domain.tower.sound
           ? `glued — H₁ ${domain.tower.homology.H1.pretty} · the aperture opens in the dim-3 band`
@@ -2375,7 +2399,7 @@ export default function ManuscriptView() {
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
       setApertureFoldedRows(null);
     }
-  }, [apertureSeed, apertureRows]);
+  }, [apertureSeed, apertureRows, apertureSeedBaseId]);
   // THE SUBDIVISION DOOR (ARC 0.1, LAW 14 — a cure must be a door, not a
   // theorem): on the folded verdict the person invokes subdivide — the seed is
   // bisected, the pairings lift, the form is re-glued, and the gate reads the
@@ -2477,12 +2501,26 @@ export default function ManuscriptView() {
       if (gate.deck.length === 0 && !boundedRoom) return null;
       // C5 (Part A): a flat room says so — `flat · no cone edges` is an
       // explicit reading, never silence (the E³ case IS the no-cone-edges case)
+      // D1 RIDER (engineer 1537, mothership-sharpened): BOTH metric states are
+      // POSITIVELY MARKED in the window's own caption — the slots below render
+      // whichever state the geometry declares (`g.metricSource`, the fact).
+      // ⛔ THE WORDINGS ARE THE DESIGNER'S (caption v2, same surface): the
+      // three strings in this table are placeholders wired for her to
+      // replace — the mechanism accepts whatever she supplies.
+      const METRIC_MARK: Record<'measured' | 'heuristic' | 'unresolved-base', string> = {
+        measured: '(measured)',
+        heuristic: '(k×90° heuristic)',
+        'unresolved-base': 'sealed metric UNRESOLVED',
+      };
+      const metricSource = 'metricSource' in g ? g.metricSource : null;
       const deckLine =
         g.kind === 'folded'
           ? `orbifold · n=[${g.n.join(',')}] · fold loci: ${g.foldLoci}`
           : g.kind === 'E3'
-            ? `E³ · n=[${g.n.join(',')}] · flat · no cone edges`
-            : `Euclidean cone-manifold · n=[${g.n.join(',')}]${g.coneEdges ? ` · cone edges: ${g.coneEdges}` : ' · flat · no cone edges'}`;
+            ? `E³ · n=[${g.n.join(',')}] · flat · no cone edges${metricSource ? ` · ${METRIC_MARK[metricSource]}` : ''}`
+            : metricSource === 'unresolved-base'
+              ? `Euclidean cone-manifold · n=[${g.n.join(',')}] · ${METRIC_MARK['unresolved-base']}${g.metricRefusal ? ` — ${g.metricRefusal}` : ''}`
+              : `Euclidean cone-manifold · n=[${g.n.join(',')}]${g.coneEdges ? ` · cone edges${metricSource ? ` ${METRIC_MARK[metricSource]}` : ''}: ${g.coneEdges}` : ' · flat · no cone edges'}`;
       // the heavy flag is the census's own declaration — no cone edges
       // declared ⇒ no heavy rods (never fabricated on a bounded body)
       const coneEdgesDeclared = g.kind !== 'folded' && g.kind !== 'E3' && Boolean(g.coneEdges);
@@ -2977,7 +3015,7 @@ export default function ManuscriptView() {
   const handleThicken = useCallback((): void => {
     if (!thickenGate || !thickenGate.shape || !thickenGate.segment) return;
     try {
-      const bandName = useGeometryStore
+      const { name: bandName, metricBaseId } = useGeometryStore
         .getState()
         .thickenManuscript(thickenGate.shape.shape, thickenGate.segment.shape);
       setThickenOpen(false);
@@ -2993,12 +3031,18 @@ export default function ManuscriptView() {
       const product = thicken(thickenGate.shape.shape, thickenGate.segment.shape).shape;
       if (product.cells.length === 1) {
         setApertureSeed(product);
+        // D1: the panel path carries the base id alongside the seed — the
+        // room built on this seed resolves its sealed metric (or refuses by
+        // name if the base leaves the page)
+        setApertureSeedBaseId(metricBaseId);
         setOpNotice(`thicken: "${bandName}" rides the shelf — and seeds the aperture (build a room on its faces)`);
       } else {
         builtCountRef.current += 1;
         const n = builtCountRef.current;
         const domain = buildFormDomain(product, [], `built-${n}`, `built 3-manifold ${n}`);
         setBuiltDomains((cur) => [...cur, domain]);
+        // D1: the direct multi-cell room carries its base id under its key
+        if (metricBaseId) setMetricBaseIds((cur) => ({ ...cur, [`built-${n}`]: metricBaseId }));
         setOpNotice(
           domain.tower.sound
             ? `thicken: "${bandName}" rides the shelf — and its ${product.cells.length}-cell room joins the dim-3 band (the shared walls are its own identification)`
@@ -4431,7 +4475,11 @@ export default function ManuscriptView() {
           type="button"
           data-aperture-seed-reset
           onMouseDown={(e) => e.stopPropagation()}
-          onClick={() => setApertureSeed(cubeSeed)}
+          onClick={() => {
+            setApertureSeed(cubeSeed);
+            // D1: the cube seed has no metric base — clear the carried id
+            setApertureSeedBaseId(null);
+          }}
           style={{
             position: 'absolute',
             left: 334, // clear of the gate panel (left 14 + width 306 + margin)

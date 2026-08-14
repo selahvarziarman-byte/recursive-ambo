@@ -170,7 +170,7 @@ interface GeometryState {
   liftSelectionToManuscript: () => string;
   thickenLiftToManuscript: () => string;
   openLiftStarToManuscript: () => string;
-  thickenManuscript: (shape: Shape, segment: Shape) => string;
+  thickenManuscript: (shape: Shape, segment: Shape) => { name: string; metricBaseId: string | null };
   closeSegmentManuscript: (segment: Shape) => string;
   toggleLiftSelection: (selection: LiftSelection) => void;
   clearLiftSelection: () => void;
@@ -575,7 +575,12 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   thickenManuscript: (shape, segment) => {
     const band = thicken(shape, segment);
     useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id) });
-    return band.shape.name;
+    // D1 (2026-08-14): the thread's first station — the arity-2 birth names
+    // its base in the PRODUCT RECORD (thicken:305 `product.parents`), never
+    // in the genealogy (`parentShapeId` stays null — the connectedSum design
+    // crowns no parent). The view carries this id onto the dim3 model so the
+    // sealed-metric reader can resolve the base for EVERY arity-2 product.
+    return { name: band.shape.name, metricBaseId: band.product.parents?.shapeId ?? null };
   },
   // P1 THE LOOP-MAKER (DOORS batch): the FOLD word on a SEGMENT closes it into
   // the circle — closeEdgeIntoCircle's ledger fact, minted as the loop Shape,

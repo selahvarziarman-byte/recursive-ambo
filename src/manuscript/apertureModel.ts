@@ -632,14 +632,27 @@ export function subdivideAndReadPersonDomain(seedShape: Shape, rows: AperturePai
 // ---------------------------------------------------------------------------
 
 export interface ConeAngleSource {
-  kind: 'measured' | 'heuristic';
+  // D1 (2026-08-14, the mothership's non-negotiable): a third kind —
+  // 'unresolved-base' — for an OWNED product whose metric base did not
+  // resolve. It is a NAMED refusal, never a silent slide to the heuristic:
+  // after D1 everyone believes a bare number is measured, so the un-measured
+  // owned case must SAY SO on the caption.
+  kind: 'measured' | 'heuristic' | 'unresolved-base';
   anglesByClass: Map<string, number> | null; // radians per interior edge-class root (measured only)
-  refusal: string | null; // the junction refusal, carried verbatim
+  refusal: string | null; // the junction refusal / the unresolved-base reason, carried verbatim
 }
 
 export const HEURISTIC_CONE_SOURCE: ConeAngleSource = { kind: 'heuristic', anglesByClass: null, refusal: null };
 
-export function resolveConeAngleSource(domain: DomainModel, lineage?: { base: Shape }): ConeAngleSource {
+// D1: `base` resolves the sealed metric; `baseMissing` NAMES why it could not
+// be handed in (the caller knows — e.g. the recorded base left the page). An
+// owned product with neither is refused by the floor's own default sentence.
+export interface ConeLineage {
+  base?: Shape;
+  baseMissing?: string;
+}
+
+export function resolveConeAngleSource(domain: DomainModel, lineage?: ConeLineage): ConeAngleSource {
   const shape = domain.shape;
   // THE MULTI-CELL CUT (2026-08-13): a multi-cell product is ADMITTED when
   // EVERY cell owns its dihedrals (thicken stamps each prism cell of an
@@ -650,7 +663,20 @@ export function resolveConeAngleSource(domain: DomainModel, lineage?: { base: Sh
   const owned =
     shape.cells.length >= 1 &&
     shape.cells.every((c) => c.dihedralAngles && Object.keys(c.dihedralAngles).length > 0);
-  if (!lineage?.base || !owned) return HEURISTIC_CONE_SOURCE;
+  // D1 THE REFUSE-BY-NAME FLOOR (the mothership's non-negotiable): a
+  // NOT-owned shape (a cube) falls to the heuristic LEGITIMATELY — that is
+  // not the defect. An OWNED product without a resolved base REFUSES BY
+  // NAME — never a silent k×90° that would read as measured.
+  if (!owned) return HEURISTIC_CONE_SOURCE;
+  if (!lineage?.base) {
+    return {
+      kind: 'unresolved-base',
+      anglesByClass: null,
+      refusal:
+        lineage?.baseMissing ??
+        'the product owns its dihedrals but its sealed metric base could not be resolved (no base was recorded for it)',
+    };
+  }
   try {
     // ⛔ THE PRECONDITION (researcher 1430): the SAME thickened Shape object
     // feeds this reader and fed buildFormDomain — one edge-id space. The
@@ -706,6 +732,13 @@ export interface ApertureGeometry {
   // dihedral BY BEING A BOUNDARY — it is never called a cone edge (the same
   // exclusion the folded label applies to fold loci).
   boundary: string | null;
+  // D1 RIDER (engineer 1537): the metric state as a POSITIVE FACT the window
+  // caption can mark on BOTH sides (the wordings are the designer's — the
+  // view holds the slot table; this field only says WHICH state holds).
+  metricSource: 'measured' | 'heuristic' | 'unresolved-base';
+  // the unresolved-base reason (or a carried junction refusal), for the
+  // caption slot to speak — null when nothing was refused
+  metricRefusal: string | null;
 }
 
 export function geometryFromTower(tower: DomainModel['tower'], coneSource?: ConeAngleSource | null): ApertureGeometry {
@@ -737,6 +770,8 @@ export function geometryFromTower(tower: DomainModel['tower'], coneSource?: Cone
         label: `E³ — n=[${n.join(',')}] · every interior pillar measures 2π (the sealed metric)${boundary ? ` · ${boundary}` : ''}`,
         coneEdges: null,
         boundary,
+        metricSource: 'measured',
+        metricRefusal: null,
       };
     }
     const coneCountsByAngle = new Map<number, number>();
@@ -754,6 +789,23 @@ export function geometryFromTower(tower: DomainModel['tower'], coneSource?: Cone
       label: `Euclidean cone-manifold — n=[${n.join(',')}] · cone edges (measured): ${coneEdges}${boundary ? ` · ${boundary}` : ''}`,
       coneEdges,
       boundary,
+      metricSource: 'measured',
+      metricRefusal: null,
+    };
+  }
+  // D1 THE REFUSE-BY-NAME FLOOR reaches the label: an OWNED product whose
+  // base did not resolve claims NO metric number — not flat, not k×90° cones.
+  // The caption speaks the refusal by name; the heavy-rod census sees no
+  // declared cone edges (coneEdges null — nothing fabricated on a refusal).
+  if (source.kind === 'unresolved-base') {
+    return {
+      kind: 'cone',
+      n,
+      label: `Euclidean cone-manifold — n=[${n.join(',')}] · sealed metric UNRESOLVED: ${source.refusal ?? 'the metric base could not be resolved'}${boundary ? ` · ${boundary}` : ''}`,
+      coneEdges: null,
+      boundary,
+      metricSource: 'unresolved-base',
+      metricRefusal: source.refusal,
     };
   }
   const uniform = interiorN.length > 0 && interiorN.every((v) => v === interiorN[0]);
@@ -764,6 +816,8 @@ export function geometryFromTower(tower: DomainModel['tower'], coneSource?: Cone
       label: `E³ — n=[${n.join(',')}] · 2π/4 = the cube's 90° dihedral${boundary ? ` · ${boundary}` : ''}${refusalNote}`,
       coneEdges: null,
       boundary,
+      metricSource: 'heuristic',
+      metricRefusal: source.refusal,
     };
   }
   // every other sound form: a Euclidean cone-manifold — report the cone edges
@@ -784,6 +838,8 @@ export function geometryFromTower(tower: DomainModel['tower'], coneSource?: Cone
     label: `Euclidean cone-manifold — n=[${n.join(',')}]${coneEdges ? ` · cone edges: ${coneEdges}` : ''}${boundary ? ` · ${boundary}` : ''}${refusalNote}`,
     coneEdges,
     boundary,
+    metricSource: 'heuristic',
+    metricRefusal: source.refusal,
   };
 }
 
@@ -994,7 +1050,7 @@ export type ApertureGate =
   | { ok: true; deck: DeckEntry[]; geometry: ApertureGeometry | FoldedApertureGeometry }
   | { ok: false; reason: string };
 
-export function buildAperture(domain: DomainModel | FoldedDomain, lineage?: { base: Shape }): ApertureGate {
+export function buildAperture(domain: DomainModel | FoldedDomain, lineage?: ConeLineage): ApertureGate {
   // 0.2 — THE BOUNDARY: this branch keys on FOLDED, never on !sound. The 336
   // unsound-but-NOT-folded patterns (pinches, bad links) are not orbifolds and
   // stay refused below by the S² gate's own words. An orbifold is a legitimate
