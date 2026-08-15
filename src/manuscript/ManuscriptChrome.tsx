@@ -14,7 +14,7 @@
 // writtenFormModel's `operationAvailabilityFor` (the committed contract,
 // verbatim) — this layer invents no operability.
 
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { PrimitiveCatalogueEntry } from '../playground/primitiveCatalogue';
 import type { OperationAvailability } from './writtenFormModel';
 import { DOCK_OPERATION_GROUPS } from './writtenFormModel';
@@ -490,10 +490,12 @@ function AperturePickRow({
     <div style={{ marginTop: 9, paddingTop: 7, borderTop: index > 0 ? `1px dashed ${paper.cardBorder}` : 'none' }}>
       <div style={{ fontSize: 11, opacity: 0.7 }}>pair {index + 1}</div>
       <div style={{ display: 'flex', gap: 6 }}>
+        {/* D11 (F.2/F.4): the option TEXT is the person's letter; the face id
+            survives as the RECORD — the option's value and its DOM title */}
         <select value={row.faceA} onChange={(e) => onPickFaceA(e.target.value)} onMouseDown={(e) => e.stopPropagation()} style={{ ...selectStyle, flex: 1 }}>
           <option value="">— face —</option>
           {row.faceChoicesA.map((f) => (
-            <option key={f.id} value={f.id}>
+            <option key={f.id} value={f.id} title={f.id}>
               {f.label}
             </option>
           ))}
@@ -501,7 +503,7 @@ function AperturePickRow({
         <select value={row.faceB} onChange={(e) => onPickFaceB(e.target.value)} onMouseDown={(e) => e.stopPropagation()} style={{ ...selectStyle, flex: 1 }}>
           <option value="">— face —</option>
           {row.faceChoicesB.map((f) => (
-            <option key={f.id} value={f.id}>
+            <option key={f.id} value={f.id} title={f.id}>
               {f.label}
             </option>
           ))}
@@ -558,13 +560,41 @@ export function ApertureGatePanel({
   paper: ChromePaper;
   accent: string;
 }) {
+  // D10 (engineer 1629): the panel must be usable at ANY row count — the
+  // count is ⌊boundary/2⌋ and unbounded, so the ROWS region owns a bounded
+  // scroll (viewport-relative, tuned to NO row count) while the exits,
+  // refusal and notice stay below it, always visible without scrolling.
+  // The more-indicator is MEASURED (the region actually overflows), never
+  // guessed from a count. ⛔ the appearance (the bound's look, the
+  // indicator's wording) is the designer's — flagged in the handback.
+  const rowsRegionRef = useRef<HTMLDivElement>(null);
+  const [rowsOverflow, setRowsOverflow] = useState(false);
+  useLayoutEffect(() => {
+    const region = rowsRegionRef.current;
+    if (!region) {
+      setRowsOverflow(false);
+      return;
+    }
+    setRowsOverflow(region.scrollHeight > region.clientHeight + 1);
+  }, [rows.length]);
   return (
     <div
+      data-aperture-panel
       style={{
         position: 'absolute',
         left: 14,
         top: 64,
         width: 306,
+        // D10 STRUCTURAL BOUND (measured, not eyeballed): the panel's bottom
+        // never passes 64 + min(560, 100vh−340) — paired with the shelf's own
+        // bound (its top pinned ≥ 100vh−128−max(140,100vh−762) = 634px for
+        // viewports ≥ 902px), the two left-column tenants cannot meet at any
+        // row count on viewports ≥ ~760px. overflowY is the last-resort
+        // fallback for pathological viewports — the rows region below scrolls
+        // long before this fires. ⛔ the numbers are a mechanical safety
+        // margin, NOT a design: the plate is the designer's (flagged).
+        maxHeight: 'min(560px, calc(100vh - 340px))',
+        overflowY: 'auto',
         padding: '13px 15px',
         borderRadius: 3,
         background: paper.cardBackground,
@@ -595,17 +625,27 @@ export function ApertureGatePanel({
         seed cube · pair its six faces · pick the identification MAP on each — the mode is derived from
         the map you pick, never chosen
       </div>
-      {rows.map((row, i) => (
-        <AperturePickRow
-          key={i}
-          index={i}
-          row={row}
-          onPickFaceA={(v) => onPickFaceA(i, v)}
-          onPickFaceB={(v) => onPickFaceB(i, v)}
-          onPickMap={(v) => onPickMap(i, v)}
-          paper={paper}
-        />
-      ))}
+      <div data-aperture-rows ref={rowsRegionRef} style={{ maxHeight: 'clamp(100px, 22vh, 300px)', overflowY: 'auto' }}>
+        {rows.map((row, i) => (
+          <AperturePickRow
+            key={i}
+            index={i}
+            row={row}
+            onPickFaceA={(v) => onPickFaceA(i, v)}
+            onPickFaceB={(v) => onPickFaceB(i, v)}
+            onPickMap={(v) => onPickMap(i, v)}
+            paper={paper}
+          />
+        ))}
+      </div>
+      {rowsOverflow ? (
+        <div data-aperture-more style={{ marginTop: 4, fontSize: 10.5, opacity: 0.65, textAlign: 'center' }}>
+          {/* ⛔ COPY PENDING THE DESIGNER (flagged): the more-rows indicator's
+              wording and look are hers; this placeholder states the measured
+              fact so no row is silently hidden */}
+          ▼ more pairs below — scroll the list ({rows.length} in all)
+        </div>
+      ) : null}
       {refusal === null ? (
         <button
           type="button"
@@ -781,6 +821,15 @@ export function SourcesShelf({
         // top-corner tenants at any measured extent. The designer reviews the
         // plate; nothing here pre-rules their coordinates.
         bottom: 128,
+        // D10 (measured 2026-08-15): with FOUR loaded universes the shelf's
+        // top invaded y339 — under the aperture panel's bottom (546) — so the
+        // shelf now owns its own bound too: its top stays pinned ≥ 634px on
+        // viewports ≥ 902px (floor 140px below), paired with the panel's
+        // min(560, 100vh−340) cap so the two tenants cannot meet. Content
+        // beyond the bound scrolls. ⛔ mechanical margins only — the real
+        // column layout is the designer's (flagged).
+        maxHeight: 'max(140px, calc(100vh - 762px))',
+        overflowY: 'auto',
         width: 208,
         padding: '9px 11px',
         borderRadius: 3,

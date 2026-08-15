@@ -507,8 +507,25 @@ export interface AperturePairRow {
 // (readSeedCells + sharedWallPairings). That seam is the only place the two
 // differ.
 export interface BoundaryFaceEntry {
-  id: string; // the id the build path consumes (raw or c{i}:-prefixed)
-  label: string; // the short human tail
+  id: string; // the id the build path consumes (raw or c{i}:-prefixed) — THE RECORD (F.2: survives in data/value/DOM)
+  label: string; // the person-facing name: a per-volume letter + the countable corner fact — NEVER the id's hash tail (F.4)
+}
+
+// D11 (engineer 1629 §D11-rename, F.4 canon: no hash in any person-facing
+// string): the menu's person-facing name is a DETERMINISTIC PER-VOLUME
+// LETTER assigned by the menu's own stable emission order (`shape.faces`
+// order, filtered — the same volume yields the same letters every time).
+// ⛔ the letter claims NOTHING spatial — it distinguishes menu rows only.
+// ⛔ the rendered FORM (`A`, `A · 3 corners`) is the designer's (flagged);
+// this derivation only guarantees determinism and hash-freedom.
+function menuLetter(index: number): string {
+  let name = '';
+  let n = index;
+  do {
+    name = String.fromCharCode(65 + (n % 26)) + name;
+    n = Math.floor(n / 26) - 1;
+  } while (n >= 0);
+  return name;
 }
 
 export function boundaryFacesOf(shape: Shape): BoundaryFaceEntry[] {
@@ -519,7 +536,7 @@ export function boundaryFacesOf(shape: Shape): BoundaryFaceEntry[] {
     // the degenerate case: one cell owns every face — the whole menu, raw ids
     return shape.faces
       .filter((face) => shape.cells[0].faceIds.includes(face.id))
-      .map((face) => ({ id: face.id, label: face.id.split(':').pop() as string }));
+      .map((face, index) => ({ id: face.id, label: `${menuLetter(index)} · ${face.vertexIds.length} corners` }));
   }
   // the owner census — DISTINCT owning cells per face. ⛔ THE DEGENERATE
   // GUARD (engineer 1420 §1): a face repeated INSIDE one cell's faceIds (a
@@ -548,9 +565,54 @@ export function boundaryFacesOf(shape: Shape): BoundaryFaceEntry[] {
   for (const face of shape.faces) {
     const owners = ownersByFace.get(face.id);
     if (!owners || owners.length !== 1) continue; // interior walls (2 owners) are the complex's own identification — never offered
-    entries.push({ id: `c${owners[0]}:${face.id}`, label: face.id.split(':').pop() as string });
+    entries.push({ id: `c${owners[0]}:${face.id}`, label: `${menuLetter(entries.length)} · ${face.vertexIds.length} corners` });
   }
   return entries;
+}
+
+// D8 amendment 1 (engineer 1759): the carried-base resolve, PURE and
+// ambiguity-refusing. The shelf load re-namespaces a product's id to
+// `snapshot:<source>:<originalId>`, so the mint-time key survives only as a
+// strict `:`-suffix — and id-nesting is real in this codebase (an
+// open-lift's id ENDS WITH its source's id), so a first-match-wins scan
+// over a Map would let insertion order silently pick the person's base.
+// The rule: an EXACT id match is the identity and wins outright; otherwise
+// ALL suffix matches are collected — exactly one is the base; two or more
+// REFUSE BY NAME (the sentence names the candidates and reaches the caption
+// through the D1 `baseMissing` floor as `unresolved-base` — never a guess);
+// zero yields nothing (the caller's unary fallback stands).
+export interface CarriedMetricBaseResolution {
+  baseId: string | null;
+  // ⛔ COPY PENDING THE DESIGNER (flagged): the refusal reaches the person
+  // through the caption's UNRESOLVED slot; the wording is hers.
+  ambiguity: string | null;
+}
+
+export function resolveCarriedMetricBase(
+  volumeId: string,
+  carried: ReadonlyMap<string, string>,
+): CarriedMetricBaseResolution {
+  const exact = carried.get(volumeId);
+  if (exact) return { baseId: exact, ambiguity: null };
+  const matches: string[] = [];
+  for (const mintId of carried.keys()) {
+    if (volumeId.endsWith(`:${mintId}`)) matches.push(mintId);
+  }
+  if (matches.length === 1) return { baseId: carried.get(matches[0]) ?? null, ambiguity: null };
+  if (matches.length > 1) {
+    // the candidates are named IN FULL — a nesting ambiguity is exactly the
+    // case where the ids' short tails coincide (that is what made them
+    // ambiguous), so the tails would name nothing. ⚠ F.4 tension (full ids
+    // in a caption-bound sentence) is the designer's to resolve with the
+    // wording (flagged).
+    return {
+      baseId: null,
+      ambiguity: `this volume could not be matched to a UNIQUE recorded base — ${matches.length} carried mint ids suffix-match its loaded id (${matches
+        .map((m) => `"${m}"`)
+        .join(', ')}); refusing to guess between their bases`,
+    };
+  }
+  return { baseId: null, ambiguity: null };
 }
 
 /** Named, curable refusals — the door never glues a half-made pattern. */

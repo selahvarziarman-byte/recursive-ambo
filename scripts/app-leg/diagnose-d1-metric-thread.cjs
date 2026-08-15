@@ -139,23 +139,66 @@ check(
 console.log('\n— (b) the view thread (page-native + shelf-routed alike), source-pinned —');
 const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
 const storeSrc = fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts'), 'utf8');
-// D2 recut (2026-08-15, disclosed): the apertureSeed machine dissolved — the
-// panel thread now reads the POINTED-AT VOLUME's own ancestry
-// (`apertureVolumeBaseId`), written at BOTH exits (glue AND leave-bounded);
-// the thicken multi-cell direct write stands unchanged.
+// D8+D9 recut (2026-08-15 engineer 1629, disclosed) + amendment 1759: the
+// door resolves the CARRIED PRODUCT-RECORD base — `productMetricBasesRef`,
+// written at the thicken mint keyed by the product's MINT id — through the
+// model's `resolveCarriedMetricBase` (the loaded id is RE-NAMESPACED; the
+// mint id survives as its strict `:`-suffix; ambiguity REFUSES BY NAME,
+// case (e) below) — never the crowned pointer, and never the dead
+// `parent?.id` fallback (placeShelfEntry sets parentShape null by
+// construction). The D9 deletion removed the auto-build's direct write; the
+// door's BOTH-exit writes are the only carriers onto built rooms.
+const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
 check(
-  '(b) the thread stations all present: thickenManuscript returns the product record\'s base id; the view derives the pointed-at volume\'s base from its OWN ancestry and writes it at BOTH exits (glue + leave-bounded) plus the direct multi-cell branch; the resolve reads the carried id; an unfound base passes baseMissing; the caption slot table holds all three positive marks (the designer\'s strings to replace)',
+  '(b) the thread stations all present: thickenManuscript returns the product record\'s base id + the product\'s own mint id; the view CARRIES the base at the mint; the door resolves through the model\'s resolveCarriedMetricBase (exact wins · one suffix match is the base · two refuse · genealogy pointer = the unary fallback only) and writes base OR refusal at BOTH exits; the reader hands either to the D1 floor; the caption slot table holds all three positive marks (the designer\'s strings to replace)',
   storeSrc.includes('metricBaseId: band.product.parents?.shapeId ?? null') &&
-    viewSrc.includes('const apertureVolumeBaseId') &&
-    viewSrc.includes('apertureTarget?.parent?.id ?? null') &&
-    viewSrc.includes('[`built-${n}`]: metricBaseId') &&
-    (viewSrc.match(/\[`built-\$\{n\}`\]: apertureVolumeBaseId/g) ?? []).length === 2 &&
+    storeSrc.includes('shapeId: band.shape.id') &&
+    viewSrc.includes('productMetricBasesRef.current.set(shapeId, metricBaseId)') &&
+    viewSrc.includes('resolveCarriedMetricBase(apertureVolume.id, productMetricBasesRef.current)') &&
+    modelSrc.includes('volumeId.endsWith(`:${mintId}`)') &&
+    modelSrc.includes('if (matches.length > 1)') &&
+    !viewSrc.includes('apertureTarget?.parent?.id ?? null') &&
+    !viewSrc.includes('[`built-${n}`]: metricBaseId') &&
+    (viewSrc.match(/\[`built-\$\{n\}`\]: apertureVolumeBase\.baseId as string/g) ?? []).length === 2 &&
+    (viewSrc.match(/\[`built-\$\{n\}`\]: apertureVolumeBase\.ambiguity as string/g) ?? []).length === 2 &&
     viewSrc.includes('metricBaseIds[model.key]') &&
+    viewSrc.includes('metricBaseRefusals[model.key]') &&
+    viewSrc.includes('baseMissing: metricAmbiguity') &&
     viewSrc.includes('baseMissing: `the recorded metric base') &&
     viewSrc.includes("'unresolved-base': 'sealed metric UNRESOLVED'") &&
     viewSrc.includes('METRIC_MARK[metricSource]'),
-  'the eight pins (both-exit writes counted)',
+  'the sixteen pins (both-exit base AND refusal writes counted; resolver + ambiguity guard pinned in the model)',
 );
+
+// ---- (e) amendment 1759: the suffix resolve REFUSES AMBIGUITY -------------
+console.log('\n— (e) the resolve never silently picks: ambiguity is refused BY NAME —');
+{
+  const carried = new Map([
+    ['shape:thicken:inner', 'base-A'],
+    ['nest:shape:thicken:inner', 'base-B'], // its mint id ENDS WITH the first's — the planted nesting
+  ]);
+  const ambiguous = A.resolveCarriedMetricBase('snapshot:src:nest:shape:thicken:inner', carried);
+  check(
+    '(e1) TWO strict-suffix matches ⇒ no base, the refusal SENTENCE names the count (never an insertion-order pick)',
+    ambiguous.baseId === null &&
+      typeof ambiguous.ambiguity === 'string' &&
+      /UNIQUE/.test(ambiguous.ambiguity) &&
+      /2 carried mint ids/.test(ambiguous.ambiguity),
+    (ambiguous.ambiguity ?? 'NO SENTENCE').slice(0, 120),
+  );
+  const unique = A.resolveCarriedMetricBase(
+    'snapshot:src:shape:thicken:solo',
+    new Map([['shape:thicken:solo', 'base-C']]),
+  );
+  check('(e2) exactly ONE suffix match ⇒ the base, no refusal', unique.baseId === 'base-C' && unique.ambiguity === null);
+  const exact = A.resolveCarriedMetricBase('nest:shape:thicken:inner', carried);
+  check(
+    '(e3) an EXACT id match is the identity and wins outright — even while a second key suffix-matches it',
+    exact.baseId === 'base-B' && exact.ambiguity === null,
+  );
+  const none = A.resolveCarriedMetricBase('snapshot:src:shape:other', carried);
+  check('(e4) ZERO matches ⇒ nothing (the caller\'s unary fallback stands)', none.baseId === null && none.ambiguity === null);
+}
 
 console.log(failures === 0 ? '\nDIAGNOSE-D1-METRIC-THREAD: ALL GREEN' : `\nDIAGNOSE-D1-METRIC-THREAD: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);

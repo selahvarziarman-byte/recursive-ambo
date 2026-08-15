@@ -195,9 +195,11 @@ import {
   buildPersonDomainVerdict,
   describeCandidate,
   dihedralMapCandidates,
+  resolveCarriedMetricBase,
   subdivideAndReadPersonDomain,
   traceAperture,
   type AperturePairRow,
+  type CarriedMetricBaseResolution,
   type FoldedDomain,
 } from './apertureModel';
 // THE PROBES (2026-07-14): the real scans — the mask, held in a hand. The
@@ -213,7 +215,6 @@ import { buildProbeMeshes } from './apertureProbes';
 // edge), never as an escape.
 import { ExploreWindow } from './ExploreWindow';
 import { readCellSurface } from './apertureModel';
-import { thicken } from '../lib/thicken';
 import { buildFormDomain } from './formDomainModel';
 
 const EXPLORE_NEEDS_ROOM = 'select a room with an inside — a built 3-manifold';
@@ -1680,6 +1681,23 @@ export default function ManuscriptView() {
   // D1's metric-base map stays: it keys built domains by their key, written
   // at BOTH exits from the pointed-at volume's own ancestry.
   const [metricBaseIds, setMetricBaseIds] = useState<Record<string, string>>({});
+  // amendment 1759: a room whose carried-base resolve REFUSED (ambiguous
+  // suffix match) records the refusal SENTENCE under its key — the reader
+  // hands it to the D1 `baseMissing` floor so the caption reads
+  // `unresolved-base` with the named reason, never a guessed base.
+  const [metricBaseRefusals, setMetricBaseRefusals] = useState<Record<string, string>>({});
+  // D8 (engineer 1629): the arity-2 base rides the PRODUCT RECORD
+  // (`product.parents`, thicken:305) and the record does NOT survive the
+  // shelf snapshot — so the base id returned by thickenManuscript is CARRIED
+  // here at the mint, keyed by the PRODUCT'S OWN SHAPE ID. ⚠ VERIFIED per
+  // the mandate (the shelf-route witness caught it): the RAW id does NOT
+  // survive the shelf → paper route — deserializeSnapshot re-namespaces the
+  // loaded shape to `snapshot:<source>:<originalId>` — but the ORIGINAL id
+  // survives as that id's strict `:`-suffix, and the door resolves by it.
+  // Session-local, like metricBaseIds: a product loaded from a saved file in
+  // a later session has no carried record and honestly refuses by name at
+  // the D1 floor.
+  const productMetricBasesRef = useRef<Map<string, string>>(new Map());
   const [builtDomains, setBuiltDomains] = useState<DomainModel[]>([]);
   // 0.2 THE ORBIFOLD'S BODY: the folded verdicts' tower-less bodies — a
   // SIBLING list, never mixed into dim3All (the specimen register and every
@@ -2239,6 +2257,10 @@ export default function ManuscriptView() {
         const metricBaseId = isProduct
           ? model.shape.genealogy?.parentShapeId ?? metricBaseIds[model.key] ?? null
           : null;
+        // amendment 1759: a room whose carried-base resolve REFUSED at the
+        // door (ambiguous suffix match) carries that sentence instead of a
+        // base — it rides the same baseMissing floor, refused by name
+        const metricAmbiguity = isProduct && !metricBaseId ? metricBaseRefusals[model.key] ?? null : null;
         const lineageBase = metricBaseId ? shapeById.get(metricBaseId) : undefined;
         const gate = buildAperture(
           model,
@@ -2246,7 +2268,9 @@ export default function ManuscriptView() {
             ? { base: lineageBase }
             : isProduct && metricBaseId
               ? { baseMissing: `the recorded metric base "${metricBaseId}" is no longer on the page` }
-              : undefined,
+              : metricAmbiguity
+                ? { baseMissing: metricAmbiguity }
+                : undefined,
         );
         if (!gate.ok) {
           return { key: model.key, gate, trace: null, caption: gate.reason };
@@ -2281,7 +2305,7 @@ export default function ManuscriptView() {
         });
         return { key: model.key, gate, trace, caption: apertureCaption(gate.geometry, trace.counts) };
       }),
-    [dim3All, placedForms, shapeById, apertureCtl, metricBaseIds],
+    [dim3All, placedForms, shapeById, apertureCtl, metricBaseIds, metricBaseRefusals],
   );
   // 0.2 — the folded bodies' apertures: the SAME committed gate → trace →
   // caption pipeline, keyed on the verdict's folded body (never on !sound —
@@ -2316,6 +2340,30 @@ export default function ManuscriptView() {
       }),
     [foldedBodies, apertureCtl],
   );
+  // THE APP-PATH LEG's aperture seam — an UNGATED `window` seam, exactly
+  // like the committed __manuscriptScene/__manuscriptCamera it sits beside
+  // (amendment 1759: no import.meta.env gate exists on any of the three;
+  // whether they should be DEV-gated is the engineer's separate question —
+  // this label claims the idiom, not a gate). It carries the gates'
+  // RESOLVED metric facts per room, so the D8 shelf-route witness asserts
+  // the carry ON THE RUNNING APP. The person-facing `(measured)` mark rides
+  // the explore window's canvas caption (out of DOM reach); the plate
+  // caption carries the VALUE — this seam carries the FACT.
+  useEffect(() => {
+    (window as unknown as {
+      __manuscriptApertures?: Record<string, { metricSource: string | null; label: string | null }>;
+    }).__manuscriptApertures = Object.fromEntries(
+      apertures.map((a) => [
+        a.key,
+        a.gate.ok
+          ? {
+              metricSource: 'metricSource' in a.gate.geometry ? (a.gate.geometry.metricSource as string) : null,
+              label: 'label' in a.gate.geometry ? a.gate.geometry.label : null,
+            }
+          : { metricSource: null, label: null },
+      ]),
+    );
+  }, [apertures]);
   const targetFor = useCallback(
     (
       id: string | null,
@@ -2405,17 +2453,28 @@ export default function ManuscriptView() {
     : apertureTarget.shape.cells.length === 0
       ? 'this form is a surface, not a solid — there is no room to build on it'
       : null;
-  // D1 re-threaded through the door (engineer 1420 ⛔): the metric base comes
-  // from the pointed-at volume's OWN ancestry — the unary parent pointer, or
-  // the written form's carried parent (the arity-2 product's base, D1's
-  // thread) — no parallel seed-base state survives the dissolution.
-  const apertureVolumeBaseId = useMemo(
-    () =>
-      apertureVolume && apertureVolume.genealogy?.operation === 'product'
-        ? apertureVolume.genealogy.parentShapeId ?? apertureTarget?.parent?.id ?? null
-        : null,
-    [apertureVolume, apertureTarget],
-  );
+  // D8 (engineer 1629, THE-COMMENT law): this derivation reads the CARRIED
+  // PRODUCT-RECORD base — `productMetricBasesRef`, written at the thicken
+  // mint from `product.parents` (thicken:305) and keyed by the product's own
+  // MINT-TIME shape id. ⚠ the shelf → paper route RE-NAMESPACES that id
+  // (deserializeSnapshot: `snapshot:<source>:<originalId>`; placeShelfEntry
+  // then places the loaded shape verbatim with `parentShape: null` by
+  // construction — no parent fallback exists on that route). The resolve is
+  // the model's `resolveCarriedMetricBase` (amendment 1759): exact id wins;
+  // otherwise ALL strict `:`-suffix matches are collected — one is the
+  // base, TWO OR MORE refuse BY NAME (the ambiguity sentence rides to the
+  // caption's UNRESOLVED slot; never a silent insertion-order pick). The
+  // genealogy pointer is the UNARY fallback only: the arity-2 birth sets
+  // `parentShapeId: null` BY DESIGN (GAP2B — no parent is crowned), so for
+  // the person's thicken product the carried record is the ONLY base.
+  const apertureVolumeBase = useMemo((): CarriedMetricBaseResolution => {
+    if (!apertureVolume || apertureVolume.genealogy?.operation !== 'product') {
+      return { baseId: null, ambiguity: null };
+    }
+    const resolved = resolveCarriedMetricBase(apertureVolume.id, productMetricBasesRef.current);
+    if (resolved.baseId !== null || resolved.ambiguity !== null) return resolved;
+    return { baseId: apertureVolume.genealogy.parentShapeId ?? null, ambiguity: null };
+  }, [apertureVolume]);
   const apertureFaceMenu = useMemo(() => {
     if (!apertureVolume) return [];
     try {
@@ -2464,11 +2523,25 @@ export default function ManuscriptView() {
     () => (apertureVolume ? aperturePairingRefusal(apertureVolume, apertureRows) : apertureVolumeRefusal),
     [apertureVolume, apertureRows, apertureVolumeRefusal],
   );
+  // D10 MEASUREMENT SEAM (dev-only, the leg's synthetic larger row count):
+  // `?d10rows=N` pads the row STATE beyond the derived count so the panel's
+  // bound is measured where no real volume reaches — the menu itself is
+  // untouched and the seam is unreachable in a production build.
+  const d10SyntheticRows = useMemo(() => {
+    if (!import.meta.env.DEV) return 0;
+    const raw = new URLSearchParams(window.location.search).get('d10rows');
+    const n = raw ? Number(raw) : 0;
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+  }, []);
+  const derivedApertureRowCount = useCallback(
+    () => Math.max(Math.floor(apertureFaceMenu.length / 2), d10SyntheticRows),
+    [apertureFaceMenu.length, d10SyntheticRows],
+  );
   // pointing at a different volume clears the rows (their count derived from
   // ITS boundary menu) — face ids from another solid must never linger in
   // the pickers; a held fold cure dies with them
   useEffect(() => {
-    setApertureRows(emptyApertureRows(Math.floor(apertureFaceMenu.length / 2)));
+    setApertureRows(emptyApertureRows(derivedApertureRowCount()));
     setApertureFoldedRows(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apertureVolume?.id, apertureFaceMenu.length]);
@@ -2496,14 +2569,19 @@ export default function ManuscriptView() {
       const domain = verdict.domain;
       setBuiltDomains((cur) => [...cur, domain]);
       // D1 (re-threaded through the door): the room inherits the pointed-at
-      // volume's own metric base — EXIT A's half of the both-exits law
-      if (apertureVolumeBaseId) setMetricBaseIds((cur) => ({ ...cur, [`built-${n}`]: apertureVolumeBaseId }));
+      // volume's own metric base — EXIT A's half of the both-exits law;
+      // an AMBIGUOUS resolve records its refusal instead (amendment 1759)
+      if (apertureVolumeBase.baseId) setMetricBaseIds((cur) => ({ ...cur, [`built-${n}`]: apertureVolumeBase.baseId as string }));
+      else if (apertureVolumeBase.ambiguity) setMetricBaseRefusals((cur) => ({ ...cur, [`built-${n}`]: apertureVolumeBase.ambiguity as string }));
       setApertureNotice(
         domain.tower.sound
           ? `glued — H₁ ${domain.tower.homology.H1.pretty} · the aperture opens in the dim-3 band`
           : 'glued — the S² gate refuses this pattern; the band says so and draws nothing',
       );
-      setApertureRows(emptyApertureRows());
+      // D2 residual (found while wiring D10, disclosed): the post-exit reset
+      // took the pre-derivation default (3) — the ratified ⌊menu/2⌋ law now
+      // holds after an exit on the same volume too
+      setApertureRows(emptyApertureRows(derivedApertureRowCount()));
       setApertureFoldedRows(null);
     } catch (error) {
       builtCountRef.current -= 1;
@@ -2511,7 +2589,7 @@ export default function ManuscriptView() {
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
       setApertureFoldedRows(null);
     }
-  }, [apertureVolume, apertureRows, apertureVolumeBaseId]);
+  }, [apertureVolume, apertureRows, apertureVolumeBase, derivedApertureRowCount]);
   // D2 — EXIT B: LEAVE BOUNDED (the mothership's spine clause: the fault was
   // never that the room was bounded — it was that nobody was asked). An
   // EXPLICIT zero-pair act: the volume becomes the bounded free-rim chamber,
@@ -2524,20 +2602,23 @@ export default function ManuscriptView() {
       const n = builtCountRef.current;
       const domain = buildFormDomain(apertureVolume, [], `built-${n}`, `built 3-manifold ${n}`);
       setBuiltDomains((cur) => [...cur, domain]);
-      // D1: the both-exits law — EXIT B carries the base too
-      if (apertureVolumeBaseId) setMetricBaseIds((cur) => ({ ...cur, [`built-${n}`]: apertureVolumeBaseId }));
+      // D1: the both-exits law — EXIT B carries the base too (or the
+      // ambiguity refusal, amendment 1759)
+      if (apertureVolumeBase.baseId) setMetricBaseIds((cur) => ({ ...cur, [`built-${n}`]: apertureVolumeBase.baseId as string }));
+      else if (apertureVolumeBase.ambiguity) setMetricBaseRefusals((cur) => ({ ...cur, [`built-${n}`]: apertureVolumeBase.ambiguity as string }));
       setApertureNotice(
         domain.tower.sound
           ? `left bounded — the free rim stands as walls · the chamber joins the dim-3 band`
           : 'left bounded — the S² gate refuses this pattern; the band says so and draws nothing',
       );
-      setApertureRows(emptyApertureRows());
+      // D2 residual (disclosed): the derived ⌊menu/2⌋ count, post-exit too
+      setApertureRows(emptyApertureRows(derivedApertureRowCount()));
       setApertureFoldedRows(null);
     } catch (error) {
       builtCountRef.current -= 1;
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
     }
-  }, [apertureVolume, apertureVolumeBaseId]);
+  }, [apertureVolume, apertureVolumeBase, derivedApertureRowCount]);
   // THE SUBDIVISION DOOR (ARC 0.1, LAW 14 — a cure must be a door, not a
   // theorem): on the folded verdict the person invokes subdivide — the seed is
   // bisected, the pairings lift, the form is re-glued, and the gate reads the
@@ -3089,35 +3170,21 @@ export default function ManuscriptView() {
   const handleThicken = useCallback((): void => {
     if (!thickenGate || !thickenGate.shape || !thickenGate.segment) return;
     try {
-      const { name: bandName, metricBaseId } = useGeometryStore
+      const { name: bandName, shapeId, metricBaseId } = useGeometryStore
         .getState()
         .thickenManuscript(thickenGate.shape.shape, thickenGate.segment.shape);
       setThickenOpen(false);
-      // D2 — THE ONE DOOR: thicken no longer SEEDS a panel (the producer
-      // framing dissolved with apertureSeed) — the product rides the shelf
-      // and the person POINTS AT it to build its room (the door reads the
-      // pointed-at volume). THE MULTI-CELL CUT branch below stands: a
-      // multi-cell product still builds its room directly (its interior
-      // shared walls ARE its identification); an unsound one still speaks
-      // through the band's own gate reading.
-      const product = thicken(thickenGate.shape.shape, thickenGate.segment.shape).shape;
-      if (product.cells.length === 1) {
-        // ⛔ COPY PENDING THE DESIGNER (flagged): the notice that points the
-        // person at the shelf form is hers to word.
-        setOpNotice(`thicken: "${bandName}" rides the shelf — point at it to build a room on its faces`);
-      } else {
-        builtCountRef.current += 1;
-        const n = builtCountRef.current;
-        const domain = buildFormDomain(product, [], `built-${n}`, `built 3-manifold ${n}`);
-        setBuiltDomains((cur) => [...cur, domain]);
-        // D1: the direct multi-cell room carries its base id under its key
-        if (metricBaseId) setMetricBaseIds((cur) => ({ ...cur, [`built-${n}`]: metricBaseId }));
-        setOpNotice(
-          domain.tower.sound
-            ? `thicken: "${bandName}" rides the shelf — and its ${product.cells.length}-cell room joins the dim-3 band (the shared walls are its own identification)`
-            : `thicken: "${bandName}" rides the shelf — its ${product.cells.length}-cell pattern is not sound; the band says so and draws nothing`,
-        );
-      }
+      // D9 (Sovereign Δ12, via mothership 1615/1630: "no un-asked-for room at
+      // all"): the multi-cell auto-build is DELETED — the cells.length split
+      // is gone with it (there was never a second concept). EVERY thicken
+      // product rides the shelf and the person POINTS AT it to open the one
+      // door; no room exists until they answer. D8: the product-record base
+      // is carried at the mint, keyed by the product's shape id, so the door
+      // can resolve it on the placed form.
+      if (metricBaseId) productMetricBasesRef.current.set(shapeId, metricBaseId);
+      // ⛔ COPY PENDING THE DESIGNER (flagged): the notice that points the
+      // person at the shelf form is hers to word.
+      setOpNotice(`thicken: "${bandName}" rides the shelf — point at it to build a room on its faces`);
     } catch (error) {
       // the committed doors speak for themselves (the 4-manifold stop, the Q1
       // guard) — the sentence is the thrown reason, never re-worded here
@@ -3530,7 +3597,11 @@ export default function ManuscriptView() {
           shelfAncestorsRef.current.set(entry.loaded.shape.id, entry.loaded.ancestors);
         }
         setShelf((cur) => [...cur, { entry, placed: false }]);
-        setOpNotice(null);
+        // D9 finding (2026-08-15, disclosed): this drain used to clear the op
+        // notice on every successful ingest — which ERASED the thicken
+        // door-open notice in the same breath that pushed the band parcel
+        // (the person was "asked" for one frame). The drain now leaves the
+        // standing notice alone; its own failures below still speak.
       } catch (error) {
         setOpNotice(`lift: ${error instanceof Error ? error.message : String(error)}`);
       }

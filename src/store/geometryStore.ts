@@ -170,7 +170,7 @@ interface GeometryState {
   liftSelectionToManuscript: () => string;
   thickenLiftToManuscript: () => string;
   openLiftStarToManuscript: () => string;
-  thickenManuscript: (shape: Shape, segment: Shape) => { name: string; metricBaseId: string | null };
+  thickenManuscript: (shape: Shape, segment: Shape) => { name: string; shapeId: string; metricBaseId: string | null };
   closeSegmentManuscript: (segment: Shape) => string;
   toggleLiftSelection: (selection: LiftSelection) => void;
   clearLiftSelection: () => void;
@@ -578,9 +578,13 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // D1 (2026-08-14): the thread's first station — the arity-2 birth names
     // its base in the PRODUCT RECORD (thicken:305 `product.parents`), never
     // in the genealogy (`parentShapeId` stays null — the connectedSum design
-    // crowns no parent). The view carries this id onto the dim3 model so the
-    // sealed-metric reader can resolve the base for EVERY arity-2 product.
-    return { name: band.shape.name, metricBaseId: band.product.parents?.shapeId ?? null };
+    // crowns no parent). D8 (2026-08-15): the product's OWN mint-time shape
+    // id rides out too — the view keys the carried base by it so the DOOR
+    // can resolve the base on the placed product. ⚠ the shelf load
+    // RE-NAMESPACES the id (`snapshot:<source>:<originalId>`); the mint id
+    // survives as that id's strict suffix and the door matches by it (the
+    // product record itself does not survive the snapshot at all).
+    return { name: band.shape.name, shapeId: band.shape.id, metricBaseId: band.product.parents?.shapeId ?? null };
   },
   // P1 THE LOOP-MAKER (DOORS batch): the FOLD word on a SEGMENT closes it into
   // the circle — closeEdgeIntoCircle's ledger fact, minted as the loop Shape,
