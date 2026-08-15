@@ -24,6 +24,8 @@
 
 import type { Shape, VertexId } from '../types/geometry';
 import { decomposeLink, type LinkValence } from './incidenceTraceRegistry';
+// D6 (2026-08-14): the seal's per-cell face read — committed reader by import
+import { getCellFaces } from './shape';
 // P2+P3 (2026-07-31) — the QUOTIENT-correct valence source: on merged shapes
 // a vertex may repeat inside one face cycle, and the neighbour-keyed shape
 // link DEGENERATES (self-loops — a FALSE junction on a true manifold vertex,
@@ -230,7 +232,22 @@ export interface PillarDihedralReading {
   cellCount: number; // incident owned cells summed
   totalDihedral: number; // Σ over the incident cells' dihedralAngles[pillar]
   baseAngleSum: number; // Σθ_v — the base's own 2-D atom at v
-  consistent: boolean; // totalDihedral == baseAngleSum (the consistency seal)
+  // D6(α) — THE THICKEN-LIFT COHERENCE GUARD (2026-08-15, researcher 1243 +
+  // mothership 1250; the label is PART of the cure): true iff EVERY incident
+  // cell's `dihedralAngles[pillar]` still equals the FACE cornerAngle record
+  // it was lifted from (thicken:253-255 — the wrap-sum of the cell's base
+  // copy's corners citing the pillar vertex), within ε, PER CELL.
+  // ✔ a green ASSERTS: the dihedral record stayed faithful to the
+  //   cornerAngle record thicken lifted it from — THE LIFT HELD.
+  // ⛔ a green does NOT assert consistency with geometry — it is never
+  //   "the metric matches the world" (no embedded quantity equals an
+  //   intrinsic cone stamp: embedded dihedrals tile 2π while stamps sum to
+  //   the cone angle — the D6 finding, verified).
+  // ⛔ it does NOT catch a coordinated rewrite of BOTH records (no seal
+  //   catches total forgery) and does NOT catch mint-fabrication (D5) —
+  //   that is R2's job upstream. D6(α) + R2 together close the chain
+  //   (positions→cornerAngle by R2; cornerAngle→dihedral by α).
+  consistent: boolean;
   classification: 'smooth' | 'cone';
   coneAngle: number | null; // the owned cone angle when ≠ 2π, else null
 }
@@ -256,17 +273,51 @@ export function readPillarDihedrals(
     }
     throw error;
   }
+  // D6(α) — THE THICKEN-LIFT COHERENCE GUARD (2026-08-15, researcher 1243,
+  // mothership 1250): the old seal compared Σ stamps to Σθ_v — post-R2 the
+  // stamp IS the acos of the base corner, so that was a value against itself
+  // (vacuous by ROUTE). And no geometric quantity can replace it at a cone:
+  // embedded dihedrals tile 2π while intrinsic stamps sum to the cone angle
+  // (the D6 finding, measured). So D6 is a RECORD guard: per cell, the
+  // dihedral record must still equal the FACE cornerAngle record it was
+  // lifted from (thicken:253-255 — the wrap-sum of the cell's base copy's
+  // corners citing this pillar's vertex), within ε. Distance-free — owned
+  // records only, no position is read. PER CELL, strictly stronger than the
+  // retired sum (per-cell catches compensating errors the sum hid); the sum
+  // is NEVER the comparand (it IS the cone angle by design).
+  // ⛔ A green asserts THE LIFT HELD — never "the metric matches the world";
+  // it cannot catch a coordinated rewrite of both records nor D5 mint-
+  // fabrication (R2's job upstream — α and R2 together close the chain).
   const readings: PillarDihedralReading[] = [];
   for (const reading of baseReadings) {
     if (reading.valence !== 'interior') continue; // boundary pillars carry no 2π law
     const pillarEdgeId = `${reading.vertexId}@I`;
+    const baseCorner0 = `${reading.vertexId}@0`;
     let totalDihedral = 0;
     let cellCount = 0;
+    let consistent = true;
     for (const cell of thickened.cells) {
       const owned = cell.dihedralAngles?.[pillarEdgeId];
       if (owned !== undefined) {
         totalDihedral += owned;
         cellCount += 1;
+        // the source record: the cell's OWN base copy (F×{0} — the ridden
+        // cornerAngles, thicken:207-209) — sum its corners at the slots
+        // citing this pillar's vertex, exactly as the lift summed them. A
+        // missing copy, a stripped ride, or a mismatched value is a record
+        // that no longer supports the dihedral — the guard fires.
+        const baseCopy = getCellFaces(thickened, cell).find(
+          (face) => face.id.endsWith('@0') && face.vertexIds.includes(baseCorner0),
+        );
+        if (!baseCopy || !baseCopy.cornerAngles) {
+          consistent = false;
+          continue;
+        }
+        let liftedCorner = 0;
+        baseCopy.vertexIds.forEach((v, k) => {
+          if (v === baseCorner0) liftedCorner += (baseCopy.cornerAngles as number[])[k] ?? 0;
+        });
+        if (Math.abs(liftedCorner - owned) >= EPS) consistent = false;
       }
     }
     if (cellCount === 0) {
@@ -281,7 +332,7 @@ export function readPillarDihedrals(
       cellCount,
       totalDihedral,
       baseAngleSum: reading.angleSum,
-      consistent: Math.abs(totalDihedral - reading.angleSum) < EPS,
+      consistent,
       classification: smooth ? 'smooth' : 'cone',
       coneAngle: smooth ? null : totalDihedral,
     });
