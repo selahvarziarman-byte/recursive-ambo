@@ -189,6 +189,7 @@ import { ApertureBody } from './ApertureView';
 import {
   apertureCaption,
   aperturePairingRefusal,
+  boundaryFacesOf,
   buildAperture,
   buildApertureScene,
   buildPersonDomainVerdict,
@@ -199,7 +200,6 @@ import {
   type AperturePairRow,
   type FoldedDomain,
 } from './apertureModel';
-import { createSeedShape } from '../data/seeds';
 // THE PROBES (2026-07-14): the real scans — the mask, held in a hand. The
 // mask does recurrence; THE HAND does chirality (a face is its own mirror).
 import { buildProbeMeshes } from './apertureProbes';
@@ -1674,19 +1674,11 @@ export default function ManuscriptView() {
   // THE APERTURE: the person's OWN built 3-manifolds join the dim-3 register
   // beside the committed T³ (worldModel byte-unchanged; the door is the
   // committed buildFormDomain behind buildPersonDomain).
-  const cubeSeed = useMemo(() => createSeedShape('cube'), []);
-  // THE DOOR-FEED partial (2026-08-13): the aperture panel's SEED is a
-  // parameter now — the 8th-word thicken gesture feeds its (single-cell)
-  // product solid as the room seed; cube rooms pass cubeSeed byte-identical.
-  const [apertureSeed, setApertureSeed] = useState<Shape>(cubeSeed);
-  // D1 (2026-08-14): the metric-base THREAD — the arity-2 thicken names its
-  // base in the product record (thicken:305 `product.parents`, threaded
-  // through geometryStore.thickenManuscript), and the view carries that id
-  // onto the dim3 model so the sealed-metric reader resolves it for EVERY
-  // arity-2 room — page-native and shelf-routed alike, by construction.
-  // `apertureSeedBaseId` rides the panel path (a thicken product seeded into
-  // the aperture panel); `metricBaseIds` keys built domains by their key.
-  const [apertureSeedBaseId, setApertureSeedBaseId] = useState<string | null>(null);
+  // D2 — THE ONE DOOR (2026-08-15): the apertureSeed machine (the cube-era
+  // "producer" state and its D1 side-car) is DISSOLVED — the aperture is a
+  // view onto the volume the person points at (see the door block below).
+  // D1's metric-base map stays: it keys built domains by their key, written
+  // at BOTH exits from the pointed-at volume's own ancestry.
   const [metricBaseIds, setMetricBaseIds] = useState<Record<string, string>>({});
   const [builtDomains, setBuiltDomains] = useState<DomainModel[]>([]);
   // 0.2 THE ORBIFOLD'S BODY: the folded verdicts' tower-less bodies — a
@@ -1709,11 +1701,12 @@ export default function ManuscriptView() {
   }, [selected]);
   // (the CPU trace worker is RETIRED — the window renders as the
   // instrument's fragment shader on the GPU; ADR 0004 Amdt 7)
-  const emptyApertureRows = (): AperturePairRow[] => [
-    { faceA: null, faceB: null, candidateKey: null },
-    { faceA: null, faceB: null, candidateKey: null },
-    { faceA: null, faceB: null, candidateKey: null },
-  ];
+  // D2: the row count DERIVES from the pointed-at volume's boundary menu —
+  // ⌊faces/2⌋ (the cube's ⌊6/2⌋ = 3 REPRODUCES the committed fixed three by
+  // construction; the fan's ⌊15/2⌋ = 7). The default 3 seats the initial
+  // state before any volume is pointed at.
+  const emptyApertureRows = (count = 3): AperturePairRow[] =>
+    Array.from({ length: Math.max(1, count) }, () => ({ faceA: null, faceB: null, candidateKey: null }));
   const [apertureRows, setApertureRows] = useState<AperturePairRow[]>(emptyApertureRows);
   const [apertureNotice, setApertureNotice] = useState<string | null>(null);
   // THE SUBDIVISION (ARC 0.1): the rows whose glue came back FOLDED — held so
@@ -2323,11 +2316,122 @@ export default function ManuscriptView() {
       }),
     [foldedBodies, apertureCtl],
   );
+  const targetFor = useCallback(
+    (
+      id: string | null,
+    ): { shape: Shape; parent: Shape | null; ancestry: Shape[]; title: string; home: [number, number, number] } | null => {
+      if (!id) return null;
+      const [band, key] = id.split(':');
+      if (band === 'dim1') {
+        const k = world.dim1.findIndex((m) => m.key === key);
+        if (k < 0) return null;
+        const m = world.dim1[k];
+        return {
+          shape: m.shape,
+          parent: null,
+          ancestry: [],
+          title: m.title,
+          home: [centered(k, world.dim1.length, rows.dim1Spacing * scaleCtl.dim1Scale), rows.dim1Y, 0],
+        };
+      }
+      if (band === 'dim2') {
+        const k = world.dim2.findIndex((m) => m.surface === key);
+        if (k < 0) return null;
+        const m = world.dim2[k];
+        return {
+          shape: m.immersion.shape,
+          parent: null,
+          ancestry: [],
+          title: DIM2_TITLES[m.surface] ?? m.surface,
+          home: [centered(k, world.dim2.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2), rows.dim2Y, 0],
+        };
+      }
+      if (band === 'dim3') {
+        const k = dim3All.findIndex((m) => m.key === key);
+        if (k < 0) return null;
+        const m = dim3All[k];
+        return {
+          shape: m.shape,
+          parent: null,
+          ancestry: [],
+          title: m.title,
+          home: [centered(k, dim3All.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0],
+        };
+      }
+      const entry = written.find((w) => w.form.id === key);
+      if (!entry) return null;
+      // the REAL lineage walk (registry unbounding): the full ancestor chain
+      // over the page's own shapes — the acquisition reaches every generation.
+      // MULTI-PARENT DAG WALK (2026-07-12): the page's shapes ride along as
+      // the candidate population, so a two-parent birth (assemble /
+      // connectedSum — parentShapeId null by design) receives BOTH parents,
+      // committed-birth order, where it received none.
+      const ancestry = resolveLineage(
+        entry.form.shape,
+        (shapeId) => shapeById.get(shapeId),
+        [...shapeById.values()],
+      );
+      // GAP2C: a shelf-loaded form's CARRIED chain rides as acquire-metadata
+      // (the researcher's ruling) — appended to the lineage the ops and the
+      // classifier consume, NEVER added to the page's visible population
+      const carried = shelfAncestorsRef.current.get(entry.form.shape.id);
+      return {
+        shape: entry.form.shape,
+        parent: entry.form.parentShape,
+        ancestry: carried?.length ? [...ancestry, ...carried] : ancestry,
+        title: entry.form.title,
+        home: entry.home,
+      };
+    },
+    [world, written, shapeById, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing, dim3All],
+  );
+
+  // ----- D2 — THE ONE DOOR (sovereign-ruled: "building manifold-3 becomes
+  // real on the user's choice over the shapes, not a given set of shapes"):
+  // the aperture is a VIEW ONTO A VOLUME THE PERSON POINTS AT — the
+  // apertureSeed machine is dissolved. A volume is the selected form whose
+  // shape carries >= 1 cell; the cube panel is the degenerate case of the
+  // one rule (a single cell owns every face). Anything else is refused BY
+  // NAME — never a silent disable.
+  const apertureTarget = useMemo(() => targetFor(selected), [targetFor, selected]);
+  const apertureVolume = useMemo(
+    () => (apertureTarget && apertureTarget.shape.cells.length >= 1 ? apertureTarget.shape : null),
+    [apertureTarget],
+  );
+  // ⛔ COPY PENDING THE DESIGNER (flagged in the handback — both refusals and
+  // the door's own label are hers; these placeholders only hold the slots):
+  const apertureVolumeRefusal = !apertureTarget
+    ? 'point at a solid first — select a form to build on (nothing is selected)'
+    : apertureTarget.shape.cells.length === 0
+      ? 'this form is a surface, not a solid — there is no room to build on it'
+      : null;
+  // D1 re-threaded through the door (engineer 1420 ⛔): the metric base comes
+  // from the pointed-at volume's OWN ancestry — the unary parent pointer, or
+  // the written form's carried parent (the arity-2 product's base, D1's
+  // thread) — no parallel seed-base state survives the dissolution.
+  const apertureVolumeBaseId = useMemo(
+    () =>
+      apertureVolume && apertureVolume.genealogy?.operation === 'product'
+        ? apertureVolume.genealogy.parentShapeId ?? apertureTarget?.parent?.id ?? null
+        : null,
+    [apertureVolume, apertureTarget],
+  );
+  const apertureFaceMenu = useMemo(() => {
+    if (!apertureVolume) return [];
+    try {
+      return boundaryFacesOf(apertureVolume);
+    } catch {
+      // the pinch guard's refusal surfaces through the panel's refusal line,
+      // not a crash; the menu offers nothing rather than something false
+      return [];
+    }
+  }, [apertureVolume]);
+
   // the gate panel's rows with the MAP MENU — the face's own dihedral orbit;
   // each option prints its vertex correspondence + the DERIVED mode (recorded,
   // never chosen — the knob that lies does not exist here)
   const apertureRowViews = useMemo((): AperturePairRowView[] => {
-    const allFaces = apertureSeed.faces.map((f) => ({ id: f.id, label: f.id.split(':').pop() as string }));
+    const allFaces = apertureFaceMenu;
     const usedElsewhere = (rowIndex: number, except: 'A' | 'B'): Set<string> => {
       const used = new Set<string>();
       apertureRows.forEach((row, i) => {
@@ -2340,8 +2444,8 @@ export default function ManuscriptView() {
       const takenA = usedElsewhere(i, 'A');
       const takenB = usedElsewhere(i, 'B');
       const mapChoices =
-        row.faceA && row.faceB && row.faceA !== row.faceB
-          ? dihedralMapCandidates(apertureSeed, row.faceA, row.faceB).map((c) => ({
+        apertureVolume && row.faceA && row.faceB && row.faceA !== row.faceB
+          ? dihedralMapCandidates(apertureVolume, row.faceA, row.faceB).map((c) => ({
               key: c.key,
               label: describeCandidate(c),
             }))
@@ -2355,22 +2459,30 @@ export default function ManuscriptView() {
         mapChoices,
       };
     });
-  }, [apertureRows, apertureSeed]);
-  const apertureRefusal = useMemo(() => aperturePairingRefusal(apertureSeed, apertureRows), [apertureSeed, apertureRows]);
-  // a seed change clears the rows — face ids from another solid must never
-  // linger in the pickers
+  }, [apertureRows, apertureVolume, apertureFaceMenu]);
+  const apertureRefusal = useMemo(
+    () => (apertureVolume ? aperturePairingRefusal(apertureVolume, apertureRows) : apertureVolumeRefusal),
+    [apertureVolume, apertureRows, apertureVolumeRefusal],
+  );
+  // pointing at a different volume clears the rows (their count derived from
+  // ITS boundary menu) — face ids from another solid must never linger in
+  // the pickers; a held fold cure dies with them
   useEffect(() => {
-    setApertureRows(emptyApertureRows());
-  }, [apertureSeed]);
+    setApertureRows(emptyApertureRows(Math.floor(apertureFaceMenu.length / 2)));
+    setApertureFoldedRows(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apertureVolume?.id, apertureFaceMenu.length]);
   const handleApertureGlue = useCallback(() => {
+    if (!apertureVolume) return; // the door's chip is gated on the refusal line
     try {
       builtCountRef.current += 1;
       const n = builtCountRef.current;
       // THE FOLDED EDGE (ADR 0022): the door returns a VERDICT — a folded
       // identification is not free (an orbifold), refused BY NAME with the
       // researcher's wall; nothing joins the world and the aperture draws
-      // nothing. Zero throws escape this door.
-      const verdict = buildPersonDomainVerdict(apertureSeed, apertureRows, `built-${n}`, `built 3-manifold ${n}`);
+      // nothing. Zero throws escape this door. D2: dispatched on the pointed-
+      // at volume's cell count inside the verdict itself.
+      const verdict = buildPersonDomainVerdict(apertureVolume, apertureRows, `built-${n}`, `built 3-manifold ${n}`);
       if (verdict.folded) {
         // 0.2 THE ORBIFOLD'S BODY: the verdict carries a BODY now — it joins
         // the folded shelf and the aperture draws it. The wall + its cure
@@ -2383,9 +2495,9 @@ export default function ManuscriptView() {
       }
       const domain = verdict.domain;
       setBuiltDomains((cur) => [...cur, domain]);
-      // D1: a room glued on a thicken-product seed inherits the seed's
-      // metric-base id — the panel path's half of the thread
-      if (apertureSeedBaseId) setMetricBaseIds((cur) => ({ ...cur, [`built-${n}`]: apertureSeedBaseId }));
+      // D1 (re-threaded through the door): the room inherits the pointed-at
+      // volume's own metric base — EXIT A's half of the both-exits law
+      if (apertureVolumeBaseId) setMetricBaseIds((cur) => ({ ...cur, [`built-${n}`]: apertureVolumeBaseId }));
       setApertureNotice(
         domain.tower.sound
           ? `glued — H₁ ${domain.tower.homology.H1.pretty} · the aperture opens in the dim-3 band`
@@ -2399,16 +2511,45 @@ export default function ManuscriptView() {
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
       setApertureFoldedRows(null);
     }
-  }, [apertureSeed, apertureRows, apertureSeedBaseId]);
+  }, [apertureVolume, apertureRows, apertureVolumeBaseId]);
+  // D2 — EXIT B: LEAVE BOUNDED (the mothership's spine clause: the fault was
+  // never that the room was bounded — it was that nobody was asked). An
+  // EXPLICIT zero-pair act: the volume becomes the bounded free-rim chamber,
+  // chosen, not defaulted. The zero-pair refusal guards EXIT A only.
+  // ⛔ the button's wording is the designer's (flagged).
+  const handleApertureLeaveBounded = useCallback(() => {
+    if (!apertureVolume) return;
+    try {
+      builtCountRef.current += 1;
+      const n = builtCountRef.current;
+      const domain = buildFormDomain(apertureVolume, [], `built-${n}`, `built 3-manifold ${n}`);
+      setBuiltDomains((cur) => [...cur, domain]);
+      // D1: the both-exits law — EXIT B carries the base too
+      if (apertureVolumeBaseId) setMetricBaseIds((cur) => ({ ...cur, [`built-${n}`]: apertureVolumeBaseId }));
+      setApertureNotice(
+        domain.tower.sound
+          ? `left bounded — the free rim stands as walls · the chamber joins the dim-3 band`
+          : 'left bounded — the S² gate refuses this pattern; the band says so and draws nothing',
+      );
+      setApertureRows(emptyApertureRows());
+      setApertureFoldedRows(null);
+    } catch (error) {
+      builtCountRef.current -= 1;
+      setApertureNotice(`the engine refused: ${(error as Error).message}`);
+    }
+  }, [apertureVolume, apertureVolumeBaseId]);
   // THE SUBDIVISION DOOR (ARC 0.1, LAW 14 — a cure must be a door, not a
   // theorem): on the folded verdict the person invokes subdivide — the seed is
   // bisected, the pairings lift, the form is re-glued, and the gate reads the
   // finer cells. ⛔ The notice CLAIMS NOTHING about the result: it speaks the
   // gate's own reading (the finer question is ARC 0.3, its own seal).
   const handleApertureSubdivide = useCallback(() => {
-    if (!apertureFoldedRows) return;
+    if (!apertureFoldedRows || !apertureVolume) return;
     try {
-      const { counts, reading } = subdivideAndReadPersonDomain(cubeSeed, apertureFoldedRows);
+      // D2 §5 (the :2411 finding, cured): the cure reads THE VOLUME THE
+      // PERSON IS LOOKING AT — never a hardwired cube. A multi-cell volume
+      // is refused by name inside the committed reader.
+      const { counts, reading } = subdivideAndReadPersonDomain(apertureVolume, apertureFoldedRows);
       const cellsLine = `${counts.v} v · ${counts.e} e · ${counts.f} f · ${counts.c} cell`;
       setApertureNotice(
         reading.folded
@@ -2421,7 +2562,7 @@ export default function ManuscriptView() {
     } catch (error) {
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
     }
-  }, [cubeSeed, apertureFoldedRows]);
+  }, [apertureVolume, apertureFoldedRows]);
   const selectedDim3 = useMemo(
     () => (selected && selected.startsWith('dim3:') ? dim3All.find((m) => `dim3:${m.key}` === selected) ?? null : null),
     [selected, dim3All],
@@ -2549,75 +2690,8 @@ export default function ManuscriptView() {
     return out;
   }, [written, world]);
 
-  const targetFor = useCallback(
-    (
-      id: string | null,
-    ): { shape: Shape; parent: Shape | null; ancestry: Shape[]; title: string; home: [number, number, number] } | null => {
-      if (!id) return null;
-      const [band, key] = id.split(':');
-      if (band === 'dim1') {
-        const k = world.dim1.findIndex((m) => m.key === key);
-        if (k < 0) return null;
-        const m = world.dim1[k];
-        return {
-          shape: m.shape,
-          parent: null,
-          ancestry: [],
-          title: m.title,
-          home: [centered(k, world.dim1.length, rows.dim1Spacing * scaleCtl.dim1Scale), rows.dim1Y, 0],
-        };
-      }
-      if (band === 'dim2') {
-        const k = world.dim2.findIndex((m) => m.surface === key);
-        if (k < 0) return null;
-        const m = world.dim2[k];
-        return {
-          shape: m.immersion.shape,
-          parent: null,
-          ancestry: [],
-          title: DIM2_TITLES[m.surface] ?? m.surface,
-          home: [centered(k, world.dim2.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2), rows.dim2Y, 0],
-        };
-      }
-      if (band === 'dim3') {
-        const k = dim3All.findIndex((m) => m.key === key);
-        if (k < 0) return null;
-        const m = dim3All[k];
-        return {
-          shape: m.shape,
-          parent: null,
-          ancestry: [],
-          title: m.title,
-          home: [centered(k, dim3All.length, rows.dim3Spacing * scaleCtl.dim3Scale), rows.dim3Y, 0],
-        };
-      }
-      const entry = written.find((w) => w.form.id === key);
-      if (!entry) return null;
-      // the REAL lineage walk (registry unbounding): the full ancestor chain
-      // over the page's own shapes — the acquisition reaches every generation.
-      // MULTI-PARENT DAG WALK (2026-07-12): the page's shapes ride along as
-      // the candidate population, so a two-parent birth (assemble /
-      // connectedSum — parentShapeId null by design) receives BOTH parents,
-      // committed-birth order, where it received none.
-      const ancestry = resolveLineage(
-        entry.form.shape,
-        (shapeId) => shapeById.get(shapeId),
-        [...shapeById.values()],
-      );
-      // GAP2C: a shelf-loaded form's CARRIED chain rides as acquire-metadata
-      // (the researcher's ruling) — appended to the lineage the ops and the
-      // classifier consume, NEVER added to the page's visible population
-      const carried = shelfAncestorsRef.current.get(entry.form.shape.id);
-      return {
-        shape: entry.form.shape,
-        parent: entry.form.parentShape,
-        ancestry: carried?.length ? [...ancestry, ...carried] : ancestry,
-        title: entry.form.title,
-        home: entry.home,
-      };
-    },
-    [world, written, shapeById, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing, dim3All],
-  );
+  // (targetFor moved above the aperture panel — D2: the one door reads the
+  // pointed-at volume through it, so it must precede the panel block)
 
   // THE PERSON PICKS THE FACE (2026-07-12): the picked port/op face per page
   // form rides into every availability/apply context — never a faces[0]
@@ -3019,23 +3093,18 @@ export default function ManuscriptView() {
         .getState()
         .thickenManuscript(thickenGate.shape.shape, thickenGate.segment.shape);
       setThickenOpen(false);
-      // THE DOOR-FEED partial (2026-08-13): the 8th word FEEDS the aperture —
-      // a SINGLE-CELL product solid becomes the panel's room seed (thicken is
-      // pure and id-deterministic: this re-derivation is the same solid the
-      // shelf carries). THE MULTI-CELL CUT (sovereign GO): a multi-cell
-      // product now BUILDS ITS ROOM DIRECTLY — its interior shared walls ARE
-      // its identification (auto-paired per cell); no panel picks exist for
-      // it, and the room joins the dim-3 band at once. The old honest
-      // refusal retires for sound products; an unsound one still speaks
+      // D2 — THE ONE DOOR: thicken no longer SEEDS a panel (the producer
+      // framing dissolved with apertureSeed) — the product rides the shelf
+      // and the person POINTS AT it to build its room (the door reads the
+      // pointed-at volume). THE MULTI-CELL CUT branch below stands: a
+      // multi-cell product still builds its room directly (its interior
+      // shared walls ARE its identification); an unsound one still speaks
       // through the band's own gate reading.
       const product = thicken(thickenGate.shape.shape, thickenGate.segment.shape).shape;
       if (product.cells.length === 1) {
-        setApertureSeed(product);
-        // D1: the panel path carries the base id alongside the seed — the
-        // room built on this seed resolves its sealed metric (or refuses by
-        // name if the base leaves the page)
-        setApertureSeedBaseId(metricBaseId);
-        setOpNotice(`thicken: "${bandName}" rides the shelf — and seeds the aperture (build a room on its faces)`);
+        // ⛔ COPY PENDING THE DESIGNER (flagged): the notice that points the
+        // person at the shelf form is hers to word.
+        setOpNotice(`thicken: "${bandName}" rides the shelf — point at it to build a room on its faces`);
       } else {
         builtCountRef.current += 1;
         const n = builtCountRef.current;
@@ -4462,42 +4531,16 @@ export default function ManuscriptView() {
           boxShadow: '0 2px 9px rgba(58, 51, 38, 0.15)',
         }}
       >
+        {/* D2 — ⛔ COPY PENDING THE DESIGNER (flagged): the door's label; it
+            names the pointed-at volume when one is selected. The cube-summon
+            zero-state affordance is HER call (routed) — no reset button
+            survives the dissolution. */}
         {apertureOpen
           ? 'close the aperture gate'
-          : apertureSeed === cubeSeed
-            ? 'aperture — build a 3-manifold'
-            : `aperture — build a 3-manifold (on ${apertureSeed.name})`}
+          : apertureVolume
+            ? `aperture — build a 3-manifold (on ${apertureTarget?.title ?? apertureVolume.name})`
+            : 'aperture — build a 3-manifold'}
       </button>
-      {apertureOpen && apertureSeed !== cubeSeed ? (
-        // the DOOR-FEED seed is honest and reversible: the panel names the
-        // thicken product it builds on, and the cube stays one click away
-        <button
-          type="button"
-          data-aperture-seed-reset
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={() => {
-            setApertureSeed(cubeSeed);
-            // D1: the cube seed has no metric base — clear the carried id
-            setApertureSeedBaseId(null);
-          }}
-          style={{
-            position: 'absolute',
-            left: 334, // clear of the gate panel (left 14 + width 306 + margin)
-            top: 64,
-            padding: '3px 9px',
-            borderRadius: 3,
-            border: `1px solid ${d.paper.cardBorder}`,
-            background: d.paper.cardBackground,
-            color: d.paper.cardInk,
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: 11,
-            cursor: 'pointer',
-            zIndex: 41,
-          }}
-        >
-          build on the cube again
-        </button>
-      ) : null}
       {apertureOpen ? (
         <ApertureGatePanel
           rows={apertureRowViews}
@@ -4513,6 +4556,7 @@ export default function ManuscriptView() {
             setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, candidateKey: v || null } : r)))
           }
           onGlue={handleApertureGlue}
+          onLeaveBounded={apertureVolume ? handleApertureLeaveBounded : null}
           onSubdivide={apertureFoldedRows ? handleApertureSubdivide : null}
           onClose={() => setApertureOpen(false)}
           paper={d.paper}

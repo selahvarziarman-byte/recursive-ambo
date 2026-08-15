@@ -139,17 +139,22 @@ check(
 console.log('\n— (b) the view thread (page-native + shelf-routed alike), source-pinned —');
 const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
 const storeSrc = fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts'), 'utf8');
+// D2 recut (2026-08-15, disclosed): the apertureSeed machine dissolved — the
+// panel thread now reads the POINTED-AT VOLUME's own ancestry
+// (`apertureVolumeBaseId`), written at BOTH exits (glue AND leave-bounded);
+// the thicken multi-cell direct write stands unchanged.
 check(
-  '(b) the thread stations all present: thickenManuscript returns the product record\'s base id; the view carries it at BOTH thicken branches AND the panel glue; the resolve reads the carried id; an unfound base passes baseMissing; the caption slot table holds all three positive marks (the designer\'s strings to replace)',
+  '(b) the thread stations all present: thickenManuscript returns the product record\'s base id; the view derives the pointed-at volume\'s base from its OWN ancestry and writes it at BOTH exits (glue + leave-bounded) plus the direct multi-cell branch; the resolve reads the carried id; an unfound base passes baseMissing; the caption slot table holds all three positive marks (the designer\'s strings to replace)',
   storeSrc.includes('metricBaseId: band.product.parents?.shapeId ?? null') &&
-    viewSrc.includes('setApertureSeedBaseId(metricBaseId)') &&
+    viewSrc.includes('const apertureVolumeBaseId') &&
+    viewSrc.includes('apertureTarget?.parent?.id ?? null') &&
     viewSrc.includes('[`built-${n}`]: metricBaseId') &&
-    viewSrc.includes('[`built-${n}`]: apertureSeedBaseId') &&
+    (viewSrc.match(/\[`built-\$\{n\}`\]: apertureVolumeBaseId/g) ?? []).length === 2 &&
     viewSrc.includes('metricBaseIds[model.key]') &&
     viewSrc.includes('baseMissing: `the recorded metric base') &&
     viewSrc.includes("'unresolved-base': 'sealed metric UNRESOLVED'") &&
     viewSrc.includes('METRIC_MARK[metricSource]'),
-  'the seven pins',
+  'the eight pins (both-exit writes counted)',
 );
 
 console.log(failures === 0 ? '\nDIAGNOSE-D1-METRIC-THREAD: ALL GREEN' : `\nDIAGNOSE-D1-METRIC-THREAD: ${failures} FAILURE(S)`);

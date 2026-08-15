@@ -262,13 +262,15 @@ const chromeSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/Manuscript
 check('the door is WIRED where the wall shows: the view snapshots the folded rows on the folded verdict (setApertureFoldedRows beside setApertureNotice(verdict.wall)), hands onSubdivide to the panel exactly when they exist, and the panel renders the subdivide button under the notice ("subdivide — resolve the fold; the gate reads again")',
   viewSrc.includes('setApertureFoldedRows(apertureRows.map((row) => ({ ...row })))') &&
   viewSrc.includes('onSubdivide={apertureFoldedRows ? handleApertureSubdivide : null}') &&
-  viewSrc.includes('subdivideAndReadPersonDomain(cubeSeed, apertureFoldedRows)') &&
+  // D2 recut (2026-08-15, disclosed): the one-door mandate dissolved the
+  // seed machine — the cure now reads the POINTED-AT volume (the :2411 cure).
+  viewSrc.includes('subdivideAndReadPersonDomain(apertureVolume, apertureFoldedRows)') &&
   chromeSrc.includes('onSubdivide: (() => void) | null;') &&
   chromeSrc.includes('subdivide — resolve the fold; the gate reads again'));
 check('⛔ NOTHING IS CLAIMED: the subdivide handler\'s user-facing notice templates never say "manifold" (the gate\'s own numbers and failure kinds speak; the finer question is ARC 0.3\'s, unanswered here)',
   (() => {
     const start = viewSrc.indexOf('const handleApertureSubdivide');
-    const block = viewSrc.slice(start, viewSrc.indexOf('}, [cubeSeed, apertureFoldedRows]);', start));
+    const block = viewSrc.slice(start, viewSrc.indexOf('}, [apertureVolume, apertureFoldedRows]);', start));
     const templates = block.match(/`[^`]*`/g) ?? [];
     return start > 0 && templates.length >= 3 && templates.every((t) => !/manifold/i.test(t));
   })());

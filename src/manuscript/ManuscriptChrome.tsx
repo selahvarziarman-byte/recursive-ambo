@@ -533,6 +533,7 @@ export function ApertureGatePanel({
   onPickFaceB,
   onPickMap,
   onGlue,
+  onLeaveBounded,
   onSubdivide,
   onClose,
   paper,
@@ -545,6 +546,11 @@ export function ApertureGatePanel({
   onPickFaceB: (index: number, value: string) => void;
   onPickMap: (index: number, value: string) => void;
   onGlue: () => void;
+  // D2 — EXIT B (LEAVE BOUNDED): non-null exactly when a volume is pointed
+  // at. An EXPLICIT zero-pair act — the volume becomes the bounded free-rim
+  // chamber, chosen, not defaulted (the zero-pair refusal guards the glue
+  // exit only). ⛔ the button's wording is the designer's (flagged).
+  onLeaveBounded: (() => void) | null;
   // THE SUBDIVISION (ARC 0.1, LAW 14): non-null exactly when the last glue came
   // back FOLDED — the wall's cure, as a door the person can actually open.
   onSubdivide: (() => void) | null;
@@ -638,6 +644,32 @@ export function ApertureGatePanel({
           {refusal}
         </div>
       )}
+      {onLeaveBounded ? (
+        <button
+          type="button"
+          data-aperture-leave-bounded
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onLeaveBounded();
+          }}
+          style={{
+            marginTop: 7,
+            width: '100%',
+            padding: '6px 0',
+            borderRadius: 3,
+            border: `1px solid ${paper.cardBorder}`,
+            background: 'transparent',
+            color: paper.cardInk,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 12.5,
+            cursor: 'pointer',
+          }}
+        >
+          {/* D2 EXIT B — ⛔ COPY PENDING THE DESIGNER (flagged): the explicit
+              leave-bounded act's wording is hers; this placeholder holds the slot */}
+          leave bounded — the free rim stands as walls
+        </button>
+      ) : null}
       {notice ? (
         <div style={{ marginTop: 7, fontSize: 11, fontFamily: 'ui-monospace, monospace', opacity: 0.8 }}>{notice}</div>
       ) : null}

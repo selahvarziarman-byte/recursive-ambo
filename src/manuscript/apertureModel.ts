@@ -54,6 +54,7 @@ import {
   flipGlueFaces,
   glueFaces,
   readSeedCell,
+  readSeedCells,
   type FacePairing,
   type Level3SeedCell,
 } from '../lib/faceIdentification';
@@ -62,7 +63,7 @@ import { readLevel3Tower, type Level3TowerReading } from '../lib/level3Invariant
 import { readPillarDihedrals } from '../lib/conformalAtom';
 import { bisectEdges, liftPairingsToBisected } from '../lib/level3Subdivision';
 import type { Level3SoundnessReport } from '../lib/level3SoundnessGate';
-import { buildFormDomain } from './formDomainModel';
+import { buildFormDomain, sharedWallPairings } from './formDomainModel';
 import type { DomainModel } from './worldModel';
 
 // ---------------------------------------------------------------------------
@@ -149,6 +150,12 @@ interface SeedGeometry {
   bboxHi: V3;
   faceById: Map<string, { id: string; cycle: string[] }>;
   faceCentroid: (faceId: string) => V3;
+  // D2: the frame that orients a face's INSIDE — the face's OWNING cell's
+  // vertex centroid + bounds on a multi-cell volume (resolved by the id's
+  // `c{i}:` prefix), the one cell's committed centroid/bbox on a single-cell
+  // volume (byte-identical there). The deck fit's fifth constraint reads
+  // sidedness through the centroid; its off-itself witness reads the bounds.
+  insideFrameOf: (faceId: string) => { centroid: V3; lo: V3; hi: V3 };
 }
 
 export function readSeedGeometry(seedShape: Shape): SeedGeometry {
@@ -195,7 +202,29 @@ export function readSeedGeometry(seedShape: Shape): SeedGeometry {
       1 / f.cycle.length,
     );
   };
-  return { seed, positionOf, cellCentroid, bboxLo, bboxHi, faceById, faceCentroid };
+  const insideFrameOf = (faceId: string): { centroid: V3; lo: V3; hi: V3 } => {
+    const m = /^c(\d+):/.exec(faceId);
+    if (!m || seedShape.cells.length <= 1) return { centroid: cellCentroid, lo: bboxLo, hi: bboxHi };
+    const cell = seedShape.cells[Number(m[1])];
+    if (!cell) throw new Error(`apertureModel: face ${faceId} names cell ${m[1]}, which does not exist`);
+    const pts = cell.vertexIds.map(positionOf);
+    const lo: V3 = [Infinity, Infinity, Infinity];
+    const hi: V3 = [-Infinity, -Infinity, -Infinity];
+    for (const p of pts)
+      for (let k = 0; k < 3; k += 1) {
+        lo[k] = Math.min(lo[k], p[k]);
+        hi[k] = Math.max(hi[k], p[k]);
+      }
+    return {
+      centroid: mulS(
+        pts.reduce((acc, p) => add(acc, p), [0, 0, 0] as V3),
+        1 / pts.length,
+      ),
+      lo,
+      hi,
+    };
+  };
+  return { seed, positionOf, cellCentroid, bboxLo, bboxHi, faceById, faceCentroid, insideFrameOf };
 }
 
 // ---------------------------------------------------------------------------
@@ -248,14 +277,40 @@ function fitRigid(pairs: [V3, V3][]): DeckTransform {
  * assertions THROW — a fit that merely looks right is not a fit.
  */
 export function fitDeckIsometry(geometry: SeedGeometry, pairing: FacePairing): { g: DeckTransform; det: number } {
-  const { positionOf, cellCentroid, bboxLo, bboxHi, faceCentroid } = geometry;
+  const { positionOf, faceById, faceCentroid, insideFrameOf } = geometry;
   const fcA = faceCentroid(pairing.faceA);
   const fcB = faceCentroid(pairing.faceB);
   const correspondences: [V3, V3][] = Object.entries(pairing.map).map(([a, b]) => [positionOf(a), positionOf(b)]);
-  // THE FIFTH, OFF-PLANE CONSTRAINT — inside the cell → outside past the partner:
+  // THE FIFTH, OFF-PLANE CONSTRAINT — inside the cell → outside past the
+  // partner. D2 (face-local): the committed construction took the half-way
+  // point toward/away from ONE global cell centroid — exact only where that
+  // centroid sits midway between the paired faces (every cube pair, which is
+  // why it never fired). The general volume computes the SAME sidedness
+  // face-locally: h along faceA's INWARD normal behind A maps to h along
+  // faceB's OUTWARD normal past B — exact under the true isometry for ANY h
+  // (both sides share it), and on the seed cube these are the committed
+  // points to the byte (centroid distance 1, h = 0.5).
+  const stripId = (id: string): string => id.replace(/^c\d+:/, '');
+  const inwardNormal = (faceId: string, fc: V3): V3 => {
+    const f = faceById.get(faceId) ?? faceById.get(stripId(faceId));
+    if (!f) throw new Error(`apertureModel: unknown face ${faceId}`);
+    let n: V3 = [0, 0, 0];
+    for (let k = 0; k < f.cycle.length; k += 1) {
+      const p = positionOf(f.cycle[k]);
+      const q = positionOf(f.cycle[(k + 1) % f.cycle.length]);
+      n = add(n, [(p[1] - q[1]) * (p[2] + q[2]), (p[2] - q[2]) * (p[0] + q[0]), (p[0] - q[0]) * (p[1] + q[1])]);
+    }
+    const len = Math.hypot(n[0], n[1], n[2]);
+    if (len < 1e-12) throw new Error(`apertureModel: face ${faceId} is degenerate — no normal exists for the deck fit`);
+    n = mulS(n, 1 / len);
+    const cOwn = insideFrameOf(faceId).centroid;
+    const toInside = sub(cOwn, fc);
+    return n[0] * toInside[0] + n[1] * toInside[1] + n[2] * toInside[2] >= 0 ? n : mulS(n, -1);
+  };
+  const H5 = 0.5;
   correspondences.push([
-    add(fcA, mulS(sub(cellCentroid, fcA), 0.5)),
-    add(fcB, mulS(sub(fcB, cellCentroid), 0.5)),
+    add(fcA, mulS(inwardNormal(pairing.faceA, fcA), H5)),
+    add(fcB, mulS(inwardNormal(pairing.faceB, fcB), -H5)),
   ]);
   const g = fitRigid(correspondences);
   // WITNESS (1): the fit reproduces the ENGINE'S vertex map to 1e-6.
@@ -270,8 +325,11 @@ export function fitDeckIsometry(geometry: SeedGeometry, pairing: FacePairing): {
   // WITNESS (2): the fit MOVES THE CELL OFF ITSELF — a deck transformation of
   // a fundamental domain never fixes it (the 4-coplanar rotation does: it
   // pins the centroid and the fit silently passes as the wrong isometry).
-  const movedCentroid = applyPoint(g, cellCentroid);
-  const inside = [0, 1, 2].every((k) => movedCentroid[k] > bboxLo[k] + 1e-9 && movedCentroid[k] < bboxHi[k] - 1e-9);
+  // D2: the cell is faceA's OWNING cell (its frame) — on a single-cell
+  // volume this is the committed centroid/bbox to the byte.
+  const frameA = insideFrameOf(pairing.faceA);
+  const movedCentroid = applyPoint(g, frameA.centroid);
+  const inside = [0, 1, 2].every((k) => movedCentroid[k] > frameA.lo[k] + 1e-9 && movedCentroid[k] < frameA.hi[k] - 1e-9);
   if (inside) {
     throw new Error(
       `apertureModel: the fitted isometry for ${pairing.faceA}→${pairing.faceB} does not move the cell off itself — the 4-coplanar degeneracy (a rotation agreeing on the face), refused`,
@@ -365,8 +423,21 @@ export function describeCandidate(candidate: ApertureMapCandidate): string {
  */
 export function dihedralMapCandidates(seedShape: Shape, faceAId: string, faceBId: string): ApertureMapCandidate[] {
   const geometry = readSeedGeometry(seedShape);
-  const fA = geometry.faceById.get(faceAId);
-  const fB = geometry.faceById.get(faceBId);
+  // D2 — the id-space seam (the one place the two worlds differ): a
+  // multi-cell volume's menu speaks PREFIXED ids (`c{i}:faceId` — the space
+  // its build path consumes: readSeedCells + glueFaces), while the
+  // geometry's face records are the shape's own raw ids. Strip for the
+  // lookup; PREFIX the emitted correspondence per side so the pairing's map
+  // lands in the complex's prefixed corner space. A single-cell volume has
+  // no prefix and every string below is byte-identical to the committed door.
+  const prefixOf = (id: string): string => {
+    const m = /^(c\d+:)/.exec(id);
+    return m ? m[1] : '';
+  };
+  const prefA = prefixOf(faceAId);
+  const prefB = prefixOf(faceBId);
+  const fA = geometry.faceById.get(faceAId) ?? (prefA ? geometry.faceById.get(faceAId.slice(prefA.length)) : undefined);
+  const fB = geometry.faceById.get(faceBId) ?? (prefB ? geometry.faceById.get(faceBId.slice(prefB.length)) : undefined);
   if (!fA || !fB) throw new Error(`apertureModel: unknown face in pair ${faceAId} ~ ${faceBId}`);
   if (fA.cycle.length !== fB.cycle.length) {
     throw new Error(`apertureModel: faces ${faceAId} and ${faceBId} are not congruent (${fA.cycle.length} vs ${fB.cycle.length})`);
@@ -378,12 +449,24 @@ export function dihedralMapCandidates(seedShape: Shape, faceAId: string, faceBId
       const map: Record<string, string> = {};
       const correspondence: [string, string][] = [];
       for (let i = 0; i < n; i += 1) {
-        const a = fA.cycle[i];
-        const b = fB.cycle[(((offset + dir * i) % n) + n) % n];
+        const a = `${prefA}${fA.cycle[i]}`;
+        const b = `${prefB}${fB.cycle[(((offset + dir * i) % n) + n) % n]}`;
         map[a] = b;
         correspondence.push([a, b]);
       }
-      const { g, det } = fitDeckIsometry(geometry, { faceA: faceAId, faceB: faceBId, mode: 'preserving', map });
+      // D2: on a non-symmetric face (e.g. the terrain's 45·45·90 splits) some
+      // cycle correspondences are NOT realizable by any isometry — the
+      // committed fit refuses them (its 1e-6 verify). The menu offers exactly
+      // the realizable ones: an unrealizable correspondence is SKIPPED, never
+      // shown (offering it would be the lying knob). The cube's regular
+      // squares realize all eight — its menu is byte-identical.
+      let fitted: { g: number[]; det: number };
+      try {
+        fitted = fitDeckIsometry(geometry, { faceA: faceAId, faceB: faceBId, mode: 'preserving', map });
+      } catch {
+        continue;
+      }
+      const { g, det } = fitted;
       // R4(f): the flat (translation) candidate — the witnessed rotation part
       // is the identity up to the fit's own noise: ‖R − I‖∞ < 0.5.
       const translationLike = IDENTITY3.every((v, i) => Math.abs(g[i] - v) < 0.5);
@@ -413,9 +496,75 @@ export interface AperturePairRow {
   candidateKey: string | null; // the picked MAP (never a mode)
 }
 
+// D2 — THE ONE DOOR (2026-08-15, sovereign-ruled: "building manifold-3
+// becomes real on the user's choice over the shapes, not a given set of
+// shapes"): the aperture is a VIEW ONTO A VOLUME THE PERSON POINTS AT. The
+// cube panel is the DEGENERATE CASE of the one rule — the person pairs the
+// faces exactly one cell owns; on a single-cell solid that is ALL its faces.
+// `boundaryFacesOf` is that rule, emitted in the id space the volume's own
+// build path consumes: RAW ids for a single-cell volume (readSeedCell +
+// glueFaces(seed, …)), PREFIXED `c{i}:…` ids for a multi-cell volume
+// (readSeedCells + sharedWallPairings). That seam is the only place the two
+// differ.
+export interface BoundaryFaceEntry {
+  id: string; // the id the build path consumes (raw or c{i}:-prefixed)
+  label: string; // the short human tail
+}
+
+export function boundaryFacesOf(shape: Shape): BoundaryFaceEntry[] {
+  if (shape.cells.length === 0) {
+    throw new Error('apertureModel: this form is a surface, not a solid — there is no room to build on it');
+  }
+  if (shape.cells.length === 1) {
+    // the degenerate case: one cell owns every face — the whole menu, raw ids
+    return shape.faces
+      .filter((face) => shape.cells[0].faceIds.includes(face.id))
+      .map((face) => ({ id: face.id, label: face.id.split(':').pop() as string }));
+  }
+  // the owner census — DISTINCT owning cells per face. ⛔ THE DEGENERATE
+  // GUARD (engineer 1420 §1): a face repeated INSIDE one cell's faceIds (a
+  // pinched / self-paired cell) would count 2 by naive tallying and be
+  // silently hidden from the person as if it were an interior wall — never
+  // silently hide it; refuse BY NAME.
+  const ownersByFace = new Map<string, number[]>();
+  shape.cells.forEach((cell, index) => {
+    const seenInCell = new Set<string>();
+    for (const faceId of cell.faceIds) {
+      if (seenInCell.has(faceId)) {
+        throw new Error(
+          `apertureModel: cell ${index} cites face ${shortId(faceId)} more than once (a pinched cell) — the boundary menu cannot be read honestly; refused by name`,
+        );
+      }
+      seenInCell.add(faceId);
+      const owners = ownersByFace.get(faceId);
+      if (owners) {
+        owners.push(index);
+      } else {
+        ownersByFace.set(faceId, [index]);
+      }
+    }
+  });
+  const entries: BoundaryFaceEntry[] = [];
+  for (const face of shape.faces) {
+    const owners = ownersByFace.get(face.id);
+    if (!owners || owners.length !== 1) continue; // interior walls (2 owners) are the complex's own identification — never offered
+    entries.push({ id: `c${owners[0]}:${face.id}`, label: face.id.split(':').pop() as string });
+  }
+  return entries;
+}
+
 /** Named, curable refusals — the door never glues a half-made pattern. */
 export function aperturePairingRefusal(seedShape: Shape, rows: AperturePairRow[]): string | null {
-  const seed = readSeedCell(seedShape);
+  // D2: the validation side-effect, cell-count-aware — the single-cell path
+  // keeps `readSeedCell`'s wall byte-behavior-identically; a multi-cell
+  // volume validates through its own reader (the old unconditional
+  // readSeedCell would THROW on every multi-cell solid). The `seed` binding
+  // was unused by the row law below (verified) — only the throw mattered.
+  if (seedShape.cells.length <= 1) {
+    readSeedCell(seedShape);
+  } else {
+    readSeedCells(seedShape);
+  }
   const used = new Map<string, number>();
   for (const row of rows) {
     for (const id of [row.faceA, row.faceB]) {
@@ -519,6 +668,48 @@ export function buildPersonDomainVerdict(
   title: string,
 ): PersonDomainVerdict {
   const pairings = resolvePersonPairings(seedShape, rows);
+  // D2 — ONE DOOR, dispatched on cell count. The single-cell path below is
+  // byte-behavior-identical to the committed door. A multi-cell volume routes
+  // its person pairings through the SAME gate-first shape: enact (the shared
+  // walls added by the complex's own law — never passed in, never auto-
+  // pairing a boundary face), read the tower GATE-FIRST so no throw escapes,
+  // then the committed buildFormDomain runs verbatim on the sound path.
+  if (seedShape.cells.length > 1) {
+    if (pairings.some((p) => p.mode === 'reversing')) {
+      // refused BY NAME here — never crash into formDomainModel's committed
+      // wall mid-build; the reversing chapter on multi-cell volumes is its own
+      throw new Error(
+        'apertureModel: a REVERSING identification on a multi-cell volume is a later chapter — pick a preserving map, or leave the pair open (refused by name; nothing was glued)',
+      );
+    }
+    const seeds = readSeedCells(seedShape);
+    const shared = sharedWallPairings(seedShape);
+    const complexM = glueFaces(seeds, [...shared, ...pairings]);
+    const readingM = readLevel3Tower(complexM);
+    if (readingM.folded) {
+      return {
+        folded: true,
+        key,
+        title,
+        chi: readingM.chi,
+        foldedEdgeClasses: readingM.foldedEdgeClasses,
+        gate: readingM.gate,
+        wall: foldedEdgeWall(readingM.foldedEdgeClasses[0]),
+        body: {
+          folded: true,
+          key,
+          title,
+          shape: seedShape,
+          pairings,
+          chi: readingM.chi,
+          foldedEdgeClasses: readingM.foldedEdgeClasses,
+          gate: readingM.gate,
+          wall: foldedEdgeWall(readingM.foldedEdgeClasses[0]),
+        },
+      };
+    }
+    return { folded: false, domain: buildFormDomain(seedShape, pairings, key, title) };
+  }
   const seed = readSeedCell(seedShape);
   const complex = pairings.some((p) => p.mode === 'reversing')
     ? flipGlueFaces(seed, pairings)
@@ -592,6 +783,15 @@ export interface SubdivisionReading {
  * enforced — see level3Subdivision's header for the precondition, by line.
  */
 export function subdivideAndReadPersonDomain(seedShape: Shape, rows: AperturePairRow[]): SubdivisionReading {
+  // D2 §5 (the :2411 finding): the cure must read THE VOLUME THE PERSON IS
+  // LOOKING AT — the committed bisection reads a single seed cell, so a
+  // multi-cell volume is refused BY NAME (which form and why), never a
+  // silent subdivide of some other shape.
+  if (seedShape.cells.length > 1) {
+    throw new Error(
+      `apertureModel: the subdivide cure reads a single-cell volume — "${seedShape.name}" carries ${seedShape.cells.length} cells; the multi-cell fold cure is its own arc (refused by name; nothing was subdivided)`,
+    );
+  }
   const pairings = resolvePersonPairings(seedShape, rows);
   const seed = readSeedCell(seedShape);
   const bisected = bisectEdges(seed);
