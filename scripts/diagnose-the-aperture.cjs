@@ -598,6 +598,16 @@ const ALLOWED_SRC_CHANGES = new Set([
   // frozen invoke-seed stamp) byte-unchanged.
   'src/lib/ambo.ts',
   'src/lib/pyritohedralDiagonalization.ts',
+  // D6(α) (2026-08-15 mandate; the face-normal quantity was REFUSED by the
+  // substrate — embedded dihedrals tile 2π while intrinsic stamps sum to the
+  // cone angle — and re-ruled): the pillar seal is the THICKEN-LIFT
+  // COHERENCE guard — per cell, the dihedral record must equal the FACE
+  // cornerAngle record it was lifted from (distance-free, no .position; the
+  // conformal charter stands). The conformalAtom.ts edit + the manifest :45
+  // re-seal ride ONE commit; ratified by
+  // scripts/app-leg/diagnose-d6-face-normal-seal.cjs (a single bent record
+  // FIRES it, either direction; the honest fan + the cone green).
+  'src/lib/conformalAtom.ts',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

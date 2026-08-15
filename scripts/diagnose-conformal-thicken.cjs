@@ -157,7 +157,14 @@ check('★ §2 (E5) THE REFUSAL fires ONLY for the branching edge: the pillar ov
 // §3 ★★ the consistency seal + the 85° plant
 // ---------------------------------------------------------------------------
 console.log('\n----- §3 ★★ Σ at v×I == Σθ_v everywhere + the 85° plant -----');
-check('★★ §3 (E4) THE CONSISTENCY SEAL: Σ dihedral at v×I == Σθ_v on EVERY subject (torus 2π · cube 3π/2 · octa 4π/3) — two views of one curvature',
+// D6(α) recut (2026-08-15, disclosed): the old label claimed "Σ dihedral ==
+// Σθ_v — two views of one curvature" — post-R2 that comparison was a value
+// against itself (the retired vacuity). `consistent` now means the
+// THICKEN-LIFT COHERENCE guard: per cell, the dihedral record still equals
+// the cornerAngle record it was lifted from. The Σ==Σθ_v arithmetic below
+// stays as a LOCAL identity of these fixtures (it is how thicken builds),
+// asserted directly — no longer through the seal's name.
+check('★★ §3 (E4) THE LIFT-COHERENCE SEAL holds on EVERY subject (torus · cube · octa): each cell\'s dihedral record equals the cornerAngle record thicken lifted it from — and on these fixtures Σ dihedral == Σθ_v arithmetically (how thicken builds)',
   torusPillars.every((r) => r.consistent && near(r.baseAngleSum, r.totalDihedral)) &&
     cubePillars.every((r) => r.consistent) &&
     octaPillars.every((r) => r.consistent));
@@ -170,7 +177,7 @@ const bentCells = thicken(cubeSurf).shape.cells.map((c, i) => {
 const bentPillars = readPillarDihedrals(cubeSurf, { ...thicken(cubeSurf).shape, cells: bentCells });
 const bent = bentPillars.find((r) => !r.consistent);
 note(`plant: the bent pillar reads Σ=${bent ? ((bent.totalDihedral * 180) / P).toFixed(0) : '—'}° vs base Σθ=${bent ? ((bent.baseAngleSum * 180) / P).toFixed(0) : '—'}° (off by 5°)`);
-check('★★ §3 (E4) THE PLANT BITES: an 85° dihedral where the base corner is 90° breaks the consistency seal by exactly 5° — and nothing else can hide it',
+check('★★ §3 (E4) THE PLANT BITES: an 85° dihedral record where the lifted cornerAngle record says 90° breaks the LIFT-COHERENCE guard on exactly that pillar — a single bent record cannot hide',
   Boolean(bent) &&
     near(Math.abs(bent.totalDihedral - bent.baseAngleSum), (5 * P) / 180) &&
     bentPillars.filter((r) => !r.consistent).length === 1);
