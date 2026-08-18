@@ -608,6 +608,17 @@ const ALLOWED_SRC_CHANGES = new Set([
   // scripts/app-leg/diagnose-d6-face-normal-seal.cjs (a single bent record
   // FIRES it, either direction; the honest fan + the cone green).
   'src/lib/conformalAtom.ts',
+  // D13 §3 (2026-08-18, engineer 2021 URGENT — the app DIED on a person
+  // action): the error-boundary mounts — the new boundary component, its
+  // tight mount in the view (already allowed above), and the LAST-RESORT
+  // mounts in BOTH shells (AppShell's production route AND main.tsx's
+  // `?manuscript` dev route, which mounts the view directly — the route the
+  // crash was found on had no boundary at all until this cut). Ratified by
+  // scripts/app-leg/diagnose-d13-the-door-speaks.cjs (the planted throws:
+  // the tight catch leaves the page standing; the last-resort speaks).
+  'src/manuscript/ManuscriptErrorBoundary.tsx',
+  'src/AppShell.tsx',
+  'src/main.tsx',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import AppShell from './AppShell';
 import { DirectorFieldRenderV0 } from './components/DirectorFieldRenderV0';
+import { ManuscriptErrorBoundary } from './manuscript/ManuscriptErrorBoundary';
 import { Playground } from './components/Playground';
 import { WitnessRenderV0 } from './components/WitnessRenderV0';
 import './styles.css';
@@ -39,9 +40,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <DesignWorkbench />
       </React.Suspense>
     ) : showManuscript && ManuscriptView ? (
-      <React.Suspense fallback={null}>
-        <ManuscriptView />
-      </React.Suspense>
+      /* D13 §3 (found by the witness leg): the `?manuscript` dev route mounts
+         the view DIRECTLY — bypassing AppShell and the last-resort boundary
+         placed there — so the very route the crash was found on had no
+         boundary at all. The page's cover must ride EVERY mount. */
+      <ManuscriptErrorBoundary scope="the manuscript page (last resort — the page state did not survive)">
+        <React.Suspense fallback={null}>
+          <ManuscriptView />
+        </React.Suspense>
+      </ManuscriptErrorBoundary>
     ) : showPlayground ? (
       <Playground />
     ) : showGlyphDebug ? (

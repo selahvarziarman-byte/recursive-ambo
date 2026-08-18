@@ -189,6 +189,7 @@ NOT_FROZEN src/manuscript/InkedFieldLayer.tsx — C.1 THE FIELD IN THE SPECIMEN 
 NOT_FROZEN src/manuscript/InkedPlainForm.tsx — render seam beside the frozen InkedForm/InkedDomain — freeze candidate named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/manuscript/InkedSkeleton.tsx — render seam beside the frozen InkedForm/InkedDomain — freeze candidate named in REPORT_engine-freeze-manifest.md for the engineer’s ruling
 NOT_FROZEN src/manuscript/ManuscriptChrome.tsx — manuscript chrome seam under active mandate churn — ratified per-build by its own witnesses
+NOT_FROZEN src/manuscript/ManuscriptErrorBoundary.tsx — D13 §3 (2026-08-15 mandate, URGENT): the spoken-refusal error boundary — a render throw becomes the designer's ratified sentence + the firing scope (tight panel boundary preserves the page's useState work; AppShell's last-resort catches the rest at that state's honest cost); self-contained inline styling BY DESIGN (must render when everything else is broken); ratified by diagnose-d13-the-door-speaks.cjs
 NOT_FROZEN src/manuscript/ManuscriptView.tsx — manuscript view seam under active mandate churn — ratified per-build by its own witnesses
 NOT_FROZEN src/manuscript/OperationGlyphs.tsx — glyph chrome (visual only) — not engine logic
 NOT_FROZEN src/manuscript/apertureInk.ts — THE INK's react-free recipe (2026-07-14 mandate): the void is paper, the line carries the form — contour · gated hatch · alpha rim; ratified by diagnose-the-ink.cjs

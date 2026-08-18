@@ -30,6 +30,7 @@
 
 import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import App from './App';
+import { ManuscriptErrorBoundary } from './manuscript/ManuscriptErrorBoundary';
 
 const ManuscriptView = React.lazy(() => import('./manuscript/ManuscriptView'));
 
@@ -103,9 +104,16 @@ export default function AppShell() {
         </div>
         {hasVisitedManuscript ? (
           <div style={wrapperStyle('manuscript')}>
-            <Suspense fallback={<ManuscriptOpening />}>
-              <ManuscriptView />
-            </Suspense>
+            {/* D13 §3 — the LAST-RESORT boundary: catches what no tight
+                boundary can (a throw in ManuscriptView's own render body).
+                When THIS one fires the page's useState work is gone — the
+                fallback says so honestly by reporting its scope and
+                promises nothing (⛔ no comfort the app cannot keep). */}
+            <ManuscriptErrorBoundary scope="the manuscript page (last resort — the page state did not survive)">
+              <Suspense fallback={<ManuscriptOpening />}>
+                <ManuscriptView />
+              </Suspense>
+            </ManuscriptErrorBoundary>
           </div>
         ) : null}
       </div>

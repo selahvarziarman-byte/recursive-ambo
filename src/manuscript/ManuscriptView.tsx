@@ -186,6 +186,7 @@ import { foldSeamProvenance, type SeamProvenance } from './handGestureModel';
 // gluing isometries; the registers invert (world = the aperture; specimen =
 // the relocated fundamental domain + pairings + tower).
 import { ApertureBody } from './ApertureView';
+import { ManuscriptErrorBoundary } from './ManuscriptErrorBoundary';
 import {
   apertureCaption,
   aperturePairingRefusal,
@@ -216,6 +217,14 @@ import { buildProbeMeshes } from './apertureProbes';
 import { ExploreWindow } from './ExploreWindow';
 import { readCellSurface } from './apertureModel';
 import { buildFormDomain } from './formDomainModel';
+
+// D13 WITNESS SEAM (dev-only): the panel-scope plant must be a COMPONENT —
+// a thrown JSX *expression* fires in the PARENT's own render body (children
+// are evaluated eagerly by the parent), so no child boundary could ever
+// catch it; the leg proved exactly that on its first run.
+function D13PanelThrow(): never {
+  throw new Error('d13 planted render throw — panel scope (dev seam)');
+}
 
 const EXPLORE_NEEDS_ROOM = 'select a room with an inside — a built 3-manifold';
 const EXPLORE_SURFACE_LATER =
@@ -2502,13 +2511,21 @@ export default function ManuscriptView() {
     return apertureRows.map((row, i) => {
       const takenA = usedElsewhere(i, 'A');
       const takenB = usedElsewhere(i, 'B');
-      const mapChoices =
-        apertureVolume && row.faceA && row.faceB && row.faceA !== row.faceB
-          ? dihedralMapCandidates(apertureVolume, row.faceA, row.faceB).map((c) => ({
-              key: c.key,
-              label: describeCandidate(c),
-            }))
-          : [];
+      // D13 §2 (engineer 2021): the candidate build sits ON THE RENDER PATH —
+      // no exception may escape it (the un-guarded call was the black
+      // screen: a throw here unmounts the entire tree). A throw becomes an
+      // empty menu; the row's own refusal line speaks the reason by name.
+      let mapChoices: { key: string; label: string }[] = [];
+      if (apertureVolume && row.faceA && row.faceB && row.faceA !== row.faceB) {
+        try {
+          mapChoices = dihedralMapCandidates(apertureVolume, row.faceA, row.faceB).map((c) => ({
+            key: c.key,
+            label: describeCandidate(c),
+          }));
+        } catch {
+          mapChoices = [];
+        }
+      }
       return {
         faceA: row.faceA ?? '',
         faceB: row.faceB ?? '',
@@ -2527,6 +2544,15 @@ export default function ManuscriptView() {
   // `?d10rows=N` pads the row STATE beyond the derived count so the panel's
   // bound is measured where no real volume reaches — the menu itself is
   // untouched and the seam is unreachable in a production build.
+  // D13 WITNESS SEAM (dev-only, like d10rows): `?d13throw=panel` throws
+  // inside the tight boundary's subtree when the door opens; `?d13throw=page`
+  // throws in the view's own render body — the class only the last-resort
+  // boundary can catch. Unreachable in a production build; exists so the leg
+  // can watch each boundary SPEAK instead of a black screen.
+  const d13Throw = useMemo(() => {
+    if (!import.meta.env.DEV) return null;
+    return new URLSearchParams(window.location.search).get('d13throw');
+  }, []);
   const d10SyntheticRows = useMemo(() => {
     if (!import.meta.env.DEV) return 0;
     const raw = new URLSearchParams(window.location.search).get('d10rows');
@@ -3805,6 +3831,14 @@ export default function ManuscriptView() {
     </SpecimenLift>
   );
 
+  // D13 WITNESS SEAM (dev-only, see d13Throw above): the page-scope planted
+  // throw — it fires in THIS component's own render body, after every hook,
+  // which is exactly the class no tight child boundary can catch; only
+  // AppShell's last-resort boundary speaks for it.
+  if (d13Throw === 'page') {
+    throw new Error('d13 planted render throw — page scope (dev seam)');
+  }
+
   return (
     // P1a-craft: absolute (not fixed) — the module fills the SHELL's content
     // area below the shared header bar; all its absolute chrome stays relative.
@@ -4613,26 +4647,39 @@ export default function ManuscriptView() {
             : 'aperture — build a 3-manifold'}
       </button>
       {apertureOpen ? (
-        <ApertureGatePanel
-          rows={apertureRowViews}
-          refusal={apertureRefusal}
-          notice={apertureNotice}
-          onPickFaceA={(i, v) =>
-            setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, faceA: v || null, candidateKey: null } : r)))
-          }
-          onPickFaceB={(i, v) =>
-            setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, faceB: v || null, candidateKey: null } : r)))
-          }
-          onPickMap={(i, v) =>
-            setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, candidateKey: v || null } : r)))
-          }
-          onGlue={handleApertureGlue}
-          onLeaveBounded={apertureVolume ? handleApertureLeaveBounded : null}
-          onSubdivide={apertureFoldedRows ? handleApertureSubdivide : null}
-          onClose={() => setApertureOpen(false)}
-          paper={d.paper}
-          accent={generatorsCtl.a}
-        />
+        /* D13 §3 — the TIGHT boundary: a throw inside the panel subtree
+           speaks and leaves the whole page (its useState work) standing.
+           ⚠ precision (engineer 2021): a throw in ManuscriptView's OWN
+           render body cannot be caught here — that class is prevented by
+           the §2 guard above; AppShell's last-resort boundary is the
+           backstop for the unknown one. */
+        <ManuscriptErrorBoundary scope="the aperture panel (tight — the page is standing)">
+          {/* D13 WITNESS SEAM (dev-only): the panel-scope planted throw — a
+              COMPONENT inside the tight boundary's subtree (see D13PanelThrow:
+              an inline thrown expression would fire in THIS component's own
+              render and only the last-resort could catch it) */}
+          {d13Throw === 'panel' ? <D13PanelThrow /> : null}
+          <ApertureGatePanel
+            rows={apertureRowViews}
+            refusal={apertureRefusal}
+            notice={apertureNotice}
+            onPickFaceA={(i, v) =>
+              setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, faceA: v || null, candidateKey: null } : r)))
+            }
+            onPickFaceB={(i, v) =>
+              setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, faceB: v || null, candidateKey: null } : r)))
+            }
+            onPickMap={(i, v) =>
+              setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, candidateKey: v || null } : r)))
+            }
+            onGlue={handleApertureGlue}
+            onLeaveBounded={apertureVolume ? handleApertureLeaveBounded : null}
+            onSubdivide={apertureFoldedRows ? handleApertureSubdivide : null}
+            onClose={() => setApertureOpen(false)}
+            paper={d.paper}
+            accent={generatorsCtl.a}
+          />
+        </ManuscriptErrorBoundary>
       ) : null}
       {selectedDim3 && !apertureOpen ? (
         <div

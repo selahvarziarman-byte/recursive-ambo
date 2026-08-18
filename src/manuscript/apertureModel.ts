@@ -49,7 +49,7 @@
 // `buildFormDomain`, the tower via DomainModel). worldModel / specimenModel /
 // InkedDomain are BYTE-UNCHANGED — the register inversion is view-layer.
 
-import type { Shape, Vec3 } from '../types/geometry';
+import type { Face, Shape, Vec3 } from '../types/geometry';
 import {
   flipGlueFaces,
   glueFaces,
@@ -439,8 +439,14 @@ export function dihedralMapCandidates(seedShape: Shape, faceAId: string, faceBId
   const fA = geometry.faceById.get(faceAId) ?? (prefA ? geometry.faceById.get(faceAId.slice(prefA.length)) : undefined);
   const fB = geometry.faceById.get(faceBId) ?? (prefB ? geometry.faceById.get(faceBId.slice(prefB.length)) : undefined);
   if (!fA || !fB) throw new Error(`apertureModel: unknown face in pair ${faceAId} ~ ${faceBId}`);
+  // D13 (engineer 2021, URGENT): a NON-CONGRUENT pick is a LEGITIMATE person
+  // action, not a programming error — it killed the whole app when this was
+  // a throw reached from the render path. The menu simply offers NO
+  // candidates; `aperturePairingRefusal` names the reason to the person.
+  // ⛔ the unknown-face throw above STAYS a throw: that one IS a programming
+  // error (a menu id the geometry does not hold).
   if (fA.cycle.length !== fB.cycle.length) {
-    throw new Error(`apertureModel: faces ${faceAId} and ${faceBId} are not congruent (${fA.cycle.length} vs ${fB.cycle.length})`);
+    return [];
   }
   const n = fA.cycle.length;
   const candidates: ApertureMapCandidate[] = [];
@@ -511,21 +517,50 @@ export interface BoundaryFaceEntry {
   label: string; // the person-facing name: a per-volume letter + the countable corner fact — NEVER the id's hash tail (F.4)
 }
 
-// D11 (engineer 1629 §D11-rename, F.4 canon: no hash in any person-facing
-// string): the menu's person-facing name is a DETERMINISTIC PER-VOLUME
-// LETTER assigned by the menu's own stable emission order (`shape.faces`
-// order, filtered — the same volume yields the same letters every time).
-// ⛔ the letter claims NOTHING spatial — it distinguishes menu rows only.
-// ⛔ the rendered FORM (`A`, `A · 3 corners`) is the designer's (flagged);
-// this derivation only guarantees determinism and hash-freedom.
-function menuLetter(index: number): string {
-  let name = '';
-  let n = index;
-  do {
-    name = String.fromCharCode(65 + (n % 26)) + name;
-    n = Math.floor(n / 26) - 1;
-  } while (n >= 0);
-  return name;
+// D14 (engineer 2021, amended 2026-08-18 — GOVERNED BY ADR 0024 §3.1, the
+// FAITHFULNESS CLAUSE): a face's person-facing name is its CORNER LABELS,
+// read from the PACKET (`vertex.data.label` — the real name the substrate
+// holds; ambo names a midpoint of A and B "AB"), in CYCLE order, rotated to
+// start at the earliest label, joined by `·`, UPPERCASE at display. Two
+// clauses make it a rule, not a guess: ROTATION-TO-EARLIEST (else one face
+// has several names) and ⛔ DIRECTION IS NOT NORMALIZED (A·D·C·B ≠ A·B·C·D —
+// the cycle's sense is real information the map's `dir` acts on): rotate
+// only, never reverse to make it sort. Where the packet does NOT carry a
+// label — empty, or the id copied into the label (the committed identity
+// law's own discriminator, argumentReadingModel:303-311) — the name is
+// `unnamed`, the ADR's word: never a synthesized letter, never a positional
+// index (the D11 `menuLetter` was exactly that fabrication — a list
+// position with no place on the shape — and is DELETED), never the cycle
+// scheme run over ids, never a warmer word. ★ A THICKENED room's faces read
+// `unnamed` and that is CORRECT (thicken:175 fabricates id-as-label
+// packets; the packet-carriage cure is a separate chartered cut under the
+// semantic layer's non-foreclosure rider). ⛔ the rendered form (`·` join,
+// case) is the designer's — flagged.
+export function faceDisplayName(shape: Shape, face: Face): string {
+  const labels: string[] = [];
+  for (const vertexId of face.vertexIds) {
+    const data = shape.vertices[vertexId]?.data;
+    const trimmed = typeof data?.label === 'string' ? data.label.trim() : '';
+    if (trimmed.length === 0 || trimmed === vertexId) return 'unnamed';
+    labels.push(trimmed.toUpperCase());
+  }
+  if (labels.length === 0) return 'unnamed';
+  // rotate to the earliest label; a TIE (duplicate labels on one cycle) is
+  // broken by the lexicographically least full rotation, so the name is
+  // total and stable — still a rotation, never a reversal
+  let best = 0;
+  for (let k = 1; k < labels.length; k += 1) {
+    for (let i = 0; i < labels.length; i += 1) {
+      const a = labels[(best + i) % labels.length];
+      const b = labels[(k + i) % labels.length];
+      if (b < a) {
+        best = k;
+        break;
+      }
+      if (a < b) break;
+    }
+  }
+  return labels.map((_, i) => labels[(best + i) % labels.length]).join('·');
 }
 
 export function boundaryFacesOf(shape: Shape): BoundaryFaceEntry[] {
@@ -536,7 +571,7 @@ export function boundaryFacesOf(shape: Shape): BoundaryFaceEntry[] {
     // the degenerate case: one cell owns every face — the whole menu, raw ids
     return shape.faces
       .filter((face) => shape.cells[0].faceIds.includes(face.id))
-      .map((face, index) => ({ id: face.id, label: `${menuLetter(index)} · ${face.vertexIds.length} corners` }));
+      .map((face) => ({ id: face.id, label: `${faceDisplayName(shape, face)} · ${face.vertexIds.length} corners` }));
   }
   // the owner census — DISTINCT owning cells per face. ⛔ THE DEGENERATE
   // GUARD (engineer 1420 §1): a face repeated INSIDE one cell's faceIds (a
@@ -565,7 +600,7 @@ export function boundaryFacesOf(shape: Shape): BoundaryFaceEntry[] {
   for (const face of shape.faces) {
     const owners = ownersByFace.get(face.id);
     if (!owners || owners.length !== 1) continue; // interior walls (2 owners) are the complex's own identification — never offered
-    entries.push({ id: `c${owners[0]}:${face.id}`, label: `${menuLetter(entries.length)} · ${face.vertexIds.length} corners` });
+    entries.push({ id: `c${owners[0]}:${face.id}`, label: `${faceDisplayName(shape, face)} · ${face.vertexIds.length} corners` });
   }
   return entries;
 }
@@ -615,6 +650,15 @@ export function resolveCarriedMetricBase(
   return { baseId: null, ambiguity: null };
 }
 
+// D13: a menu id's corner count, id-space-aware (the multi-cell menu speaks
+// `c{i}:`-prefixed ids); null for an id the shape does not hold — the
+// unknown-id case stays the engine's own throw downstream, never guessed here
+function faceCornerCountOf(shape: Shape, menuFaceId: string): number | null {
+  const raw = menuFaceId.replace(/^c\d+:/, '');
+  const face = shape.faces.find((f) => f.id === raw);
+  return face ? face.vertexIds.length : null;
+}
+
 /** Named, curable refusals — the door never glues a half-made pattern. */
 export function aperturePairingRefusal(seedShape: Shape, rows: AperturePairRow[]): string | null {
   // D2: the validation side-effect, cell-count-aware — the single-cell path
@@ -650,6 +694,16 @@ export function aperturePairingRefusal(seedShape: Shape, rows: AperturePairRow[]
     if (hasA !== hasB)
       return `pair ${i + 1}: one face is picked and its partner is not — pick the second face, or clear the first to leave the pair open.`;
     if (row.faceA === row.faceB) return `pair ${i + 1}: a face cannot pair with itself.`;
+    // D13 (engineer 2021): the NON-CONGRUENT pick, refused BY NAME — this
+    // fires BEFORE the pick-the-map refusal below, so the person hears the
+    // real reason (the map menu is empty precisely because of this).
+    // ⛔ the sentence is the designer's RATIFIED string (her plate, engineer
+    // 2021 §(a)) — templated onto the row's own numbers, flagged not final.
+    const cornersA = faceCornerCountOf(seedShape, row.faceA as string);
+    const cornersB = faceCornerCountOf(seedShape, row.faceB as string);
+    if (cornersA !== null && cornersB !== null && cornersA !== cornersB) {
+      return `a face meets only a face with the same corners — this one has ${cornersA}, that one has ${cornersB}. pick a partner with ${cornersA}.`;
+    }
     completePairs += 1;
   }
   // THE BOUNDED FORM (2026-07-18, sealed eb9bfcb4…d598c): the UNPAIRED-face
