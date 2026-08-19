@@ -112,7 +112,7 @@ export function loadForm(builder: FormBuilder, source = ''): Shape {
     vertices[id] = {
       id,
       position: v.position,
-      data: createDefaultVertexData(v.label ?? v.id, v.color),
+      data: createDefaultVertexData(v.label ?? '', v.color),
       createdBy: {
         shapeId,
         operation: 'seed', // a loaded form's roots ARE source-less primals (seeds)
@@ -285,7 +285,7 @@ export function assemble(forms: Shape[], identification: BoundaryIdentification)
     vertices[merge.resultId] = {
       id: merge.resultId,
       position: centroid(merge.sources.map((source) => vertices[source].position)),
-      data: createDefaultVertexData(merge.resultId),
+      data: createDefaultVertexData(''),
       createdBy: {
         shapeId: assembledShapeId,
         operation: ASSEMBLY_CHILD_OPERATION,
