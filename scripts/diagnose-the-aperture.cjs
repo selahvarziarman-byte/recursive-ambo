@@ -619,6 +619,13 @@ const ALLOWED_SRC_CHANGES = new Set([
   'src/manuscript/ManuscriptErrorBoundary.tsx',
   'src/AppShell.tsx',
   'src/main.tsx',
+  // D12-b part 1 (2026-08-19, engineer 1740, researcher-ratified): the ×I
+  // mint stops manufacturing id-as-label packets — `thicken.ts:175` writes
+  // ABSENCE; readers resolve through lineage (presence-first). NOT_FROZEN
+  // (manifest 182); ratified by
+  // scripts/app-leg/diagnose-d12b-carried-names.cjs (the Sovereign's route
+  // live + the three non-regression pins).
+  'src/lib/thicken.ts',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

@@ -172,7 +172,15 @@ export function thicken(form: Shape, segment?: Shape, name?: string): ThickenRes
       vertices[copyId] = {
         id: copyId,
         position: pos,
-        data: createDefaultVertexData(copyId),
+        // D12-b part 1 (engineer 1740, researcher-ratified): the ×I copy's
+        // label is ABSENT — never the copy's own id (the manufacture this
+        // cures), never the source's name (that would drop the level and
+        // store a reading as a record). The empty label is the absence form:
+        // it rides the snapshot namespacing verbatim (ids are prefixed,
+        // labels are not), so absence is namespacing-invariant. Readers
+        // resolve absence through `createdBy.sourceVertexIds` (presence-
+        // first, lineage-on-absence — the ratified ruling).
+        data: createDefaultVertexData(''),
         createdBy: {
           shapeId,
           operation: 'product',

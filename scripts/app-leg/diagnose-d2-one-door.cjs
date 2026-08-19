@@ -191,7 +191,9 @@ check('view · the seed machine is DISSOLVED: no setApertureSeed, no apertureSee
   !viewSrc.includes('setApertureSeed(') && !viewSrc.includes('apertureSeedBaseId'));
 check('view · the door reads the pointed-at volume: apertureVolume from targetFor(selected); refusals by name; the menu from boundaryFacesOf; derived row count; both exits wired; the :2411 cure reads the volume',
   viewSrc.includes('const apertureVolume') &&
-    viewSrc.includes('boundaryFacesOf(apertureVolume)') &&
+    // D12-b recut (2026-08-19, disclosed): the menu call carries the door's
+    // absent-label resolver now — the pointed-at-volume read is unchanged
+    viewSrc.includes('boundaryFacesOf(apertureVolume, resolveAbsentLabel)') &&
     viewSrc.includes('this form is a surface, not a solid') &&
     viewSrc.includes('Math.floor(apertureFaceMenu.length / 2)') &&
     viewSrc.includes('handleApertureLeaveBounded') &&

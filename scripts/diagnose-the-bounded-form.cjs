@@ -324,8 +324,13 @@ console.log('\n----- [7] THE ACQUISITION CHAIN: on-call — and this route never
 check('THE CHAIN WAS NOT ON THIS PATH: the aperture route (readSeedCell → glueFaces → the gate → the tower → the domain) lives in the level-3 world and never touches `acquireComplex` — measured: apertureModel imports nothing from complexIdentification, and the whole route above ran end-to-end. The chain\'s known gap (assemble stamps parentShapeId: null) stays formally owed to the researcher; its next caller is the matching clause ((A/~)×I = (A×I)/(~×id)) — thicken, which rides behind. No STOP condition fired',
   (() => {
     const doorSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
-    const touches = doorSrc.includes('complexIdentification') || doorSrc.includes('acquireComplex');
-    note(`apertureModel names complexIdentification/acquireComplex: ${touches} · the route ran end-to-end in [1]`);
+    // D12-b recut (2026-08-19, disclosed): pin IMPORT statements, not any
+    // source text — the scaffold's own comment now NAMES the quotient mint
+    // (`complexIdentification:632`) as a manufacture site, which the old
+    // whole-source grep read as the chain being on the path. The clause's
+    // intent was always the import.
+    const touches = /import[^;]*from\s+'[^']*complexIdentification'/.test(doorSrc) || /\bacquireComplex\s*\(/.test(doorSrc);
+    note(`apertureModel imports complexIdentification / calls acquireComplex: ${touches} · the route ran end-to-end in [1]`);
     return !touches && t2iFamily.length >= 1;
   })());
 

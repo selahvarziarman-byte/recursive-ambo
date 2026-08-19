@@ -536,12 +536,59 @@ export interface BoundaryFaceEntry {
 // packets; the packet-carriage cure is a separate chartered cut under the
 // semantic layer's non-foreclosure rider). ⛔ the rendered form (`·` join,
 // case) is the designer's — flagged.
-export function faceDisplayName(shape: Shape, face: Face): string {
+// D12-b part 4 (engineer 1740): a corner whose packet label is ABSENT
+// resolves through `createdBy.sourceVertexIds` to the SOURCE's positively-
+// present label — presence-first, lineage-on-absence (the ratified ruling;
+// never lineage-always: an ambo midpoint carries sources AND a real label,
+// and the label wins). The resolver reaches OUTSIDE the shape (a ×I copy's
+// source lives in the base form, on the page) — the door hands one in; a
+// caller without one keeps the honest `unnamed`. Only a SINGLE source is
+// resolved: composing several source labels into a new name would be the
+// reader minting a reading (ambo composes at the MINT; a reader never may).
+export type AbsentLabelResolver = (sourceVertexIds: string[], vertexId: string) => string | null;
+
+// the per-corner LEVEL MARK (designer-ratified SUBSCRIPT form): the ×I
+// mint's own structural record is the copy id's `@k` tail — the mark reads
+// THAT (raw level, no word for it; the semantic layer is deferred). `·`
+// stays reserved for the corner join; both ends always carry their mark.
+const SUBSCRIPT_DIGITS = '₀₁₂₃₄₅₆₇₈₉';
+function levelMarkOf(vertexId: string): string {
+  const m = /@(\d+)$/.exec(vertexId);
+  if (!m) return '';
+  return m[1]
+    .split('')
+    .map((d) => SUBSCRIPT_DIGITS[Number(d)])
+    .join('');
+}
+
+export function faceDisplayName(shape: Shape, face: Face, resolveAbsent?: AbsentLabelResolver): string {
   const labels: string[] = [];
   for (const vertexId of face.vertexIds) {
-    const data = shape.vertices[vertexId]?.data;
+    const vertex = shape.vertices[vertexId];
+    const data = vertex?.data;
     const trimmed = typeof data?.label === 'string' ? data.label.trim() : '';
-    if (trimmed.length === 0 || trimmed === vertexId) return 'unnamed';
+    // ⛔ THE SCAFFOLD (engineer 1740 §part-2-HELD, researcher-ratified): the
+    // `trimmed === vertexId` clause is a TEMPORARY GUARD, not the design.
+    // Thirteen mints still manufacture id-as-label packets (the fold's loop
+    // maker closeEdgeIntoCircle:173, the surface-materialize door
+    // materializeOperation:301, the quotient mint complexIdentification:632,
+    // the zoo standardBodies:130, …); `thicken.ts:175` is CURED (it writes
+    // absence now) and each remaining producer migrates the same way — its
+    // fix riding WITH the absence-resolution so the site resolves through
+    // lineage and never regresses. An id-copy caught here is NEVER resolved
+    // through lineage (resolution is for TRUE absence only — the migration
+    // discipline). DEATH-CONDITION: this clause may be deleted only in the
+    // single terminal cut after the LAST person-reachable manufacturer has
+    // stopped; deleting it earlier prints ids as names on reachable doors
+    // (measured on the fold loop, 2026-08-19).
+    if (trimmed === vertexId && trimmed.length > 0) return 'unnamed';
+    if (trimmed.length === 0) {
+      const sources = vertex?.createdBy?.sourceVertexIds ?? [];
+      const resolved = resolveAbsent && sources.length === 1 ? resolveAbsent(sources, vertexId) : null;
+      if (resolved === null || resolved.trim().length === 0) return 'unnamed';
+      labels.push(`${resolved.trim().toUpperCase()}${levelMarkOf(vertexId)}`);
+      continue;
+    }
     labels.push(trimmed.toUpperCase());
   }
   if (labels.length === 0) return 'unnamed';
@@ -563,7 +610,7 @@ export function faceDisplayName(shape: Shape, face: Face): string {
   return labels.map((_, i) => labels[(best + i) % labels.length]).join('·');
 }
 
-export function boundaryFacesOf(shape: Shape): BoundaryFaceEntry[] {
+export function boundaryFacesOf(shape: Shape, resolveAbsent?: AbsentLabelResolver): BoundaryFaceEntry[] {
   if (shape.cells.length === 0) {
     throw new Error('apertureModel: this form is a surface, not a solid — there is no room to build on it');
   }
@@ -571,7 +618,7 @@ export function boundaryFacesOf(shape: Shape): BoundaryFaceEntry[] {
     // the degenerate case: one cell owns every face — the whole menu, raw ids
     return shape.faces
       .filter((face) => shape.cells[0].faceIds.includes(face.id))
-      .map((face) => ({ id: face.id, label: `${faceDisplayName(shape, face)} · ${face.vertexIds.length} corners` }));
+      .map((face) => ({ id: face.id, label: `${faceDisplayName(shape, face, resolveAbsent)} · ${face.vertexIds.length} corners` }));
   }
   // the owner census — DISTINCT owning cells per face. ⛔ THE DEGENERATE
   // GUARD (engineer 1420 §1): a face repeated INSIDE one cell's faceIds (a
@@ -600,7 +647,7 @@ export function boundaryFacesOf(shape: Shape): BoundaryFaceEntry[] {
   for (const face of shape.faces) {
     const owners = ownersByFace.get(face.id);
     if (!owners || owners.length !== 1) continue; // interior walls (2 owners) are the complex's own identification — never offered
-    entries.push({ id: `c${owners[0]}:${face.id}`, label: `${faceDisplayName(shape, face)} · ${face.vertexIds.length} corners` });
+    entries.push({ id: `c${owners[0]}:${face.id}`, label: `${faceDisplayName(shape, face, resolveAbsent)} · ${face.vertexIds.length} corners` });
   }
   return entries;
 }

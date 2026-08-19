@@ -2484,16 +2484,43 @@ export default function ManuscriptView() {
     if (resolved.baseId !== null || resolved.ambiguity !== null) return resolved;
     return { baseId: apertureVolume.genealogy.parentShapeId ?? null, ambiguity: null };
   }, [apertureVolume]);
+  // D12-b part 4 (engineer 1740): the door's absent-label resolver — the ×I
+  // copy's source lives OUTSIDE the product (in the base form, on the page),
+  // so the resolve happens here, over the page population. Exact vertex-id
+  // match first; then ONE namespace layer (the shelf load prefixes the
+  // product's `sourceVertexIds` with the snapshot source — the live id
+  // survives as the strict `:`-suffix, the D8 lesson at vertex grain). ALL
+  // positively-present candidate labels must AGREE — disagreement or none
+  // refuses (null → `unnamed`; the D8 amendment's ambiguity law, never a
+  // silent pick). An id-copy or empty source label is no name and never
+  // resolves (the scaffold's discipline holds through the walk).
+  const resolveAbsentLabel = useMemo(() => {
+    const shapes = [...shapeById.values()];
+    return (sourceVertexIds: string[], _vertexId: string): string | null => {
+      const ref = sourceVertexIds[0];
+      if (!ref) return null;
+      const labels = new Set<string>();
+      for (const shape of shapes) {
+        for (const vertex of Object.values(shape.vertices)) {
+          if (vertex.id !== ref && !ref.endsWith(`:${vertex.id}`)) continue;
+          const raw = typeof vertex.data?.label === 'string' ? vertex.data.label.trim() : '';
+          if (raw.length === 0 || raw === vertex.id) continue; // absence or manufacture — no name to carry
+          labels.add(raw);
+        }
+      }
+      return labels.size === 1 ? [...labels][0] : null;
+    };
+  }, [shapeById]);
   const apertureFaceMenu = useMemo(() => {
     if (!apertureVolume) return [];
     try {
-      return boundaryFacesOf(apertureVolume);
+      return boundaryFacesOf(apertureVolume, resolveAbsentLabel);
     } catch {
       // the pinch guard's refusal surfaces through the panel's refusal line,
       // not a crash; the menu offers nothing rather than something false
       return [];
     }
-  }, [apertureVolume]);
+  }, [apertureVolume, resolveAbsentLabel]);
 
   // the gate panel's rows with the MAP MENU — the face's own dihedral orbit;
   // each option prints its vertex correspondence + the DERIVED mode (recorded,
