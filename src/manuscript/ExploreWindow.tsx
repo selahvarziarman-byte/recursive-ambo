@@ -51,6 +51,16 @@ interface ExploreSeam {
   caption: string | null;
   rodK: number[] | null; // the engine's k per rod — declared cone edges draw HEAVY
   walls: number; // the room's boundary faces — the manifold's own edge (DOOR-FEED partial)
+  // THE WINDING ROUTE (engineer 0930, designer W.1–W.6): the return line —
+  // what just HAPPENED, beside the standing description. Persists; never
+  // flashes. Null until the first position-return.
+  returnLine: string | null;
+  // the walk leg's THROTTLE (an ungated window seam, the committed
+  // __manuscriptScene idiom): nothing in the app sets it — the headless
+  // driver's pointer pulses have a ~2u floor at the default pace under the
+  // software renderer, and the leg slows the walk to sample the return ball
+  // the way a person's 60fps hand does for free. Null = the person's pace.
+  paceOverride: number | null;
 }
 
 const seamOf = (): ExploreSeam => {
@@ -71,6 +81,8 @@ const seamOf = (): ExploreSeam => {
       caption: null,
       rodK: null,
       walls: 0,
+      returnLine: null,
+      paceOverride: null,
     };
   }
   return host.__exploreWindow;
@@ -78,6 +90,19 @@ const seamOf = (): ExploreSeam => {
 
 const LOOK_SLOP_PX = 7;
 const ADVANCE_HOLD_MS = 260;
+// THE WINDING ROUTE — the position-return eye (Q1: POSITION, not the frame;
+// the announcement fires when the person could not tell this view's PLACE
+// from the entry's). The ball is sized to a hand's walk at the default pace
+// (the cell spans [-1,1]³): fire inside 0.35 u of the entry point; re-arm
+// only after walking OUT past 1.75× that (hysteresis — standing at the
+// start never re-fires). ⚠ the number is the coder's grounded choice; the
+// binding gate is Arman's own hand-walk (the mandate's Q1), not this text.
+const RETURN_EPS = 0.35;
+const RETURN_ARM = RETURN_EPS * 1.75;
+// deck-frame identity test: the frame is transported by exact face
+// isometries only (never the look gesture), so drift is numerical — a real
+// turn moves the trace by ≥ 1 (a 90° class); 1e-3 is three orders inside.
+const FRAME_EPS = 1e-3;
 
 const VS = `#version 300 es
 in vec2 p; void main(){ gl_Position=vec4(p,0.,1.); }`;
@@ -447,6 +472,7 @@ export function ExploreWindow({
 }: ExploreWindowProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const captionRef = useRef<HTMLDivElement | null>(null);
+  const returnRef = useRef<HTMLDivElement | null>(null);
   const liveRef = useRef({ level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho });
   liveRef.current = { level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho };
 
@@ -465,6 +491,8 @@ export function ExploreWindow({
     seam.advances = 0;
     seam.rodK = cellSurface.rods.map((r) => r.k);
     seam.walls = cellSurface.wallCount;
+    seam.returnLine = null;
+    seam.paceOverride = null;
     nextSession += 1;
     if (!canvas || !packed) return undefined;
     // alpha:false — the window is a SOLID PLATE by charter (the page never
@@ -528,6 +556,21 @@ export function ExploreWindow({
     let camF: Vec3 = nrm3([Math.cos(1.2), Math.sin(1.2), 0]);
     let camR: Vec3 = nrm3([-Math.sin(1.2), Math.cos(1.2), 0]);
     let camU: Vec3 = [0, 0, 1];
+    // THE WINDING ROUTE — THE DECK FRAME (engineer 0930, the one trap): a
+    // frame rotated ONLY by the portal transports (`face.g`), NEVER by the
+    // look gesture — so frame-equality ⟺ the walk's W = identity EXACTLY
+    // (nothing else acts on it; no matrix is accumulated, no identity test
+    // on a product). Initialised at entry to the standard basis; the entry
+    // value IS that basis, so the return test reads the frame directly.
+    let deckF: Vec3 = [1, 0, 0];
+    let deckR: Vec3 = [0, 1, 0];
+    let deckU: Vec3 = [0, 0, 1];
+    // the entry POSITION + the return hysteresis: the announcement arms only
+    // after the person walks OUT of the entry ball (else standing at the
+    // start would fire it at once), and fires on each re-entry (position-
+    // return ALONE — what the frame did is REPORTED, never a gate).
+    const entryEye: Vec3 = [eye[0], eye[1], eye[2]];
+    let awayFromEntry = false;
     let lastMove = performance.now();
     let raf = 0;
     let disposed = false;
@@ -554,6 +597,9 @@ export function ExploreWindow({
         camF = applyRot(face.g, camF);
         camR = applyRot(face.g, camR);
         camU = applyRot(face.g, camU);
+        deckF = applyRot(face.g, deckF);
+        deckR = applyRot(face.g, deckR);
+        deckU = applyRot(face.g, deckU);
         seam.doors += 1;
         seam.frameHanded *= det3of(face.g) < 0 ? -1 : 1;
       }
@@ -590,7 +636,7 @@ export function ExploreWindow({
       lastMove = performance.now();
     };
     const advanceBy = (ms: number): void => {
-      const step = liveRef.current.pace * Math.max(0, ms) / 1000;
+      const step = (seam.paceOverride ?? liveRef.current.pace) * Math.max(0, ms) / 1000;
       eye = [eye[0] + camF[0] * step, eye[1] + camF[1] * step, eye[2] + camF[2] * step];
       lastMove = performance.now();
     };
@@ -721,6 +767,34 @@ export function ExploreWindow({
         seam.caption = caption;
         if (captionRef.current) captionRef.current.textContent = caption;
       }
+      // THE WINDING ROUTE — the position-return test (fires on POSITION
+      // ALONE; hazard 1: never gated on W ≠ identity — the flat control's
+      // four quarter-turns compose to the identity and MUST still announce).
+      // The clause reads the DECK frame: `mirrored` on det −1 (frameHanded,
+      // already the pure product of det signs); else `turned` iff the deck
+      // frame moved (det +1 — a fold is never named a rotation); else the
+      // same way up. Subject THE ROOM, never the person (LAW 20). The line
+      // PERSISTS on its own surface line (W.4/Q2) and never resets (W.5).
+      // ⛔ the three strings are the designer's ratified wording, verbatim;
+      // the door count is a plain numeral (W.6 HELD — flagged, not styled).
+      const dEntry = Math.hypot(eye[0] - entryEye[0], eye[1] - entryEye[1], eye[2] - entryEye[2]);
+      if (!awayFromEntry && dEntry > RETURN_ARM) {
+        awayFromEntry = true;
+      } else if (awayFromEntry && dEntry <= RETURN_EPS) {
+        awayFromEntry = false;
+        const deckTrace = deckF[0] + deckR[1] + deckU[2];
+        const clause =
+          seam.frameHanded < 0
+            ? 'the room came back mirrored'
+            : deckTrace >= 3 - FRAME_EPS
+              ? 'the room came back the same way up'
+              : 'the room came back turned';
+        const returnLine = `back where you started · ${seam.doors} doors · ${clause}`;
+        if (seam.returnLine !== returnLine) {
+          seam.returnLine = returnLine;
+          if (returnRef.current) returnRef.current.textContent = returnLine;
+        }
+      }
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
@@ -801,6 +875,17 @@ export function ExploreWindow({
         ref={captionRef}
         data-explore-caption
         style={{ marginTop: 6, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.78, minHeight: 15 }}
+      />
+      {/* THE WINDING ROUTE (Q2): the return line — same surface, same ink,
+          its OWN line. The caption above says what the room IS; this line
+          says what just HAPPENED. It appears on the first position-return
+          and PERSISTS (a transient line would be timed to arrive while the
+          person is looking at the room, not the caption). Empty until then
+          (minHeight holds the slot so the plate never jumps). */}
+      <div
+        ref={returnRef}
+        data-explore-return
+        style={{ marginTop: 2, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.78, minHeight: 15 }}
       />
       <div style={{ marginTop: 3, fontSize: 10.5, opacity: 0.55 }}>
         drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell
