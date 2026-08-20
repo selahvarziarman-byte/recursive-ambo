@@ -530,6 +530,7 @@ function AperturePickRow({
 export function ApertureGatePanel({
   rows,
   refusal,
+  pristine,
   notice,
   onPickFaceA,
   onPickFaceB,
@@ -543,6 +544,10 @@ export function ApertureGatePanel({
 }: {
   rows: AperturePairRowView[];
   refusal: string | null; // the door's named, curable refusal — null = the glue may run
+  // F.0 THE EMPTY STATE (engineer 2300, mothership 1745 §5): before the
+  // person has acted the refusal may not occupy the primary action's slot —
+  // the same words move to the quiet register below instead.
+  pristine: boolean;
   notice: string | null; // the engine's own thrown refusal from the last glue attempt, verbatim
   onPickFaceA: (index: number, value: string) => void;
   onPickFaceB: (index: number, value: string) => void;
@@ -621,9 +626,13 @@ export function ApertureGatePanel({
           ×
         </button>
       </div>
+      {/* F.0 (engineer 2300): the old sentence commanded a total pairing the
+          engine stopped requiring on 07-18 and was false three ways on a
+          5-cell (not a cube · not six faces · not required). This is the
+          DESIGNER'S RATIFIED DRAFT, wired verbatim and reported for her
+          confirmation — ⛔ wording hers, nothing authored here. */}
       <div style={{ marginTop: 3, fontSize: 11, opacity: 0.75 }}>
-        seed cube · pair its six faces · pick the identification MAP on each — the mode is derived from
-        the map you pick, never chosen
+        this volume · pair the faces it owns · pick how each pair meets — the mode follows from the map, never chosen
       </div>
       <div data-aperture-rows ref={rowsRegionRef} style={{ maxHeight: 'clamp(100px, 22vh, 300px)', overflowY: 'auto' }}>
         {rows.map((row, i) => (
@@ -646,7 +655,11 @@ export function ApertureGatePanel({
           ▼ more pairs below — scroll the list ({rows.length} in all)
         </div>
       ) : null}
-      {refusal === null ? (
+      {refusal !== null && pristine ? (
+        /* the empty state: the person has not acted — the primary slot
+           stays empty; the refusal's words stand in the quiet register */
+        <div data-aperture-quiet style={{ marginTop: 9, fontSize: 11, fontStyle: 'italic', opacity: 0.6 }}>{refusal}</div>
+      ) : refusal === null ? (
         <button
           type="button"
           onMouseDown={(e) => {

@@ -418,14 +418,21 @@ check('the room\'s inhabitants are the AUTHORED SCENE (drawn, not scanned — th
   A.APERTURE_CRAFT_DEFAULTS.scaffoldTone < 0.5 &&
   A.APERTURE_CRAFT_DEFAULTS.scaffoldTone < A.APERTURE_CRAFT_DEFAULTS.maskTone &&
   A.APERTURE_CRAFT_DEFAULTS.scaffoldTone < A.APERTURE_CRAFT_DEFAULTS.handTone);
-check('the SPECIMEN carries the relocated fundamental domain + pairings + tower: readDomainSpecimen (BYTE-UNCHANGED specimenModel) still reads S² gate · χ · orientable · H₁ · CW counts · face-pairs, and the view mounts the committed InkedDomain ONLY summoned-on-select (exactly one mount, inside the summoned branch, beside the aperture)',
+// F.0 recut (2026-08-20 engineer 2300, disclosed for pricing): the mandate
+// ORDERS a second InkedDomain mount — the LIVE skeleton over the domain the
+// panel's rows make (`liveApertureDomain`, gated on the open door) — so the
+// old exactly-one-mount pin is stale against the mandated move. The pin now
+// names BOTH mounts: the summoned specimen mount AND the live-build mount,
+// and nothing else.
+check('the SPECIMEN carries the relocated fundamental domain + pairings + tower: readDomainSpecimen (BYTE-UNCHANGED specimenModel) still reads S² gate · χ · orientable · H₁ · CW counts · face-pairs, and the view mounts the committed InkedDomain at EXACTLY TWO named sites — summoned-on-select (the specimen) and the F.0 live-build skeleton (door-gated)',
   (() => {
     const reading = readDomainSpecimen(personT3);
     const labels = reading.rows.map((r) => r.label);
     return (
       reading.kind === 'domain' &&
       ['S² gate', 'Euler χ', 'orientable', 'H₁ (= π₁ abelianized)', 'CW counts', 'face-pairs'].every((l) => labels.includes(l)) &&
-      (viewSrc.match(/<InkedDomain/g) ?? []).length === 1 &&
+      (viewSrc.match(/<InkedDomain/g) ?? []).length === 2 &&
+      /apertureOpen && liveApertureDomain[\s\S]{0,700}<InkedDomain/.test(viewSrc) &&
       /summoned \?[\s\S]{0,400}<InkedDomain/.test(viewSrc) &&
       viewSrc.includes('<ApertureBody')
     );

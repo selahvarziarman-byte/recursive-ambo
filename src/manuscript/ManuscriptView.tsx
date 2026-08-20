@@ -196,6 +196,7 @@ import {
   buildPersonDomainVerdict,
   describeCandidate,
   dihedralMapCandidates,
+  faceDisplayName,
   resolveCarriedMetricBase,
   subdivideAndReadPersonDomain,
   traceAperture,
@@ -1309,11 +1310,16 @@ function SpecimenCard({
   );
 }
 
-// R4(a): THE ONE FACE-LABELER — the person-facing face label, minted once.
-// Byte-identical to the three inline copies it replaces (the face-pick card and
-// the birth gate's two port menus). The aperture rows keep their own SHORT
-// convention (:836) and engine strings never route here.
-const faceLabel = (face: Face): string => `${face.id} · ${face.vertexIds.length} corners`;
+// R4(a): THE ONE FACE-LABELER — the person-facing face label, minted once
+// (the face-pick card and the birth gate's two port menus + the chord panel).
+// F.0 (engineer 2300): the composer is now the D14 rule that already writes
+// the aperture menu — `faceDisplayName`: corner names in cycle order,
+// rotated to the earliest, direction NEVER normalised (a reversed cycle is
+// a flipped face), `unnamed` on true absence. The id no longer fronts the
+// person (`X · 4 corners` named every cube face alike); the countable
+// `· N corners` stays (LAW 23). One rule, both registers — by REUSE.
+const faceLabel = (shape: Shape, face: Face): string =>
+  `${faceDisplayName(shape, face)} · ${face.vertexIds.length} corners`;
 
 export default function ManuscriptView() {
   const d = manuscriptDefaults;
@@ -2567,6 +2573,43 @@ export default function ManuscriptView() {
     () => (apertureVolume ? aperturePairingRefusal(apertureVolume, apertureRows) : apertureVolumeRefusal),
     [apertureVolume, apertureRows, apertureVolumeRefusal],
   );
+  // F.0 — the EMPTY STATE (engineer 2300 / mothership 1745 §5): before the
+  // person has acted, the refusal may not occupy the primary action's slot.
+  // Same words may stand; the REGISTER must not.
+  const aperturePristine = useMemo(
+    () => apertureRows.every((row) => !row.faceA && !row.faceB && !row.candidateKey),
+    [apertureRows],
+  );
+  // F.0 — BLIND IDENTIFICATION CURED (engineer 2300): the skeleton runs
+  // LIVE while the room is built. The COMPLETE rows (both faces + a map)
+  // feed the COMMITTED path — buildPersonDomainVerdict → buildFormDomain;
+  // a partial pairing set is simply a less-glued complex (measured at every
+  // arity by the mandate itself), so the preview is a REAL DomainModel, not
+  // a mock. One finished row draws its pair while the rest sit empty (the
+  // preview is never gated on a complete set — the blindness is worst
+  // exactly while it is incomplete). ⛔ a row with both faces and NO map is
+  // NOT drawn: a DomainPairMark without a mode would be a fabricated
+  // reading (STOPped and reported, the mandate's own escape). A folded or
+  // refused live pick falls back to the zero-pair skeleton — the outline
+  // stands while the refusal line speaks.
+  const liveApertureDomain = useMemo(() => {
+    if (!apertureOpen || !apertureVolume) return null;
+    const complete = apertureRows.filter((row) => row.faceA && row.faceB && row.candidateKey);
+    try {
+      if (complete.length === 0) {
+        return buildFormDomain(apertureVolume, [], 'live-build', 'the build in progress');
+      }
+      const verdict = buildPersonDomainVerdict(apertureVolume, complete, 'live-build', 'the build in progress');
+      if (!verdict.folded) return verdict.domain;
+    } catch {
+      // fall through to the bare outline below
+    }
+    try {
+      return buildFormDomain(apertureVolume, [], 'live-build', 'the build in progress');
+    } catch {
+      return null;
+    }
+  }, [apertureOpen, apertureVolume, apertureRows]);
   // D10 MEASUREMENT SEAM (dev-only, the leg's synthetic larger row count):
   // `?d10rows=N` pads the row STATE beyond the derived count so the panel's
   // bound is measured where no real volume reaches — the menu itself is
@@ -2931,7 +2974,7 @@ export default function ManuscriptView() {
       title: target.title,
       faces: target.shape.faces.map((face) => ({
         id: face.id,
-        label: faceLabel(face),
+        label: faceLabel(target.shape, face),
       })),
       picked: portFaces[selected] ?? '',
     };
@@ -4184,6 +4227,28 @@ export default function ManuscriptView() {
           );
         })}
 
+        {/* F.0 — THE LIVE SKELETON (engineer 2300): the build in progress,
+            drawn by the COMMITTED InkedDomain over the real DomainModel the
+            panel's own rows make. It floats above the pointed-at volume
+            while the door is open and dies with the panel — which faces am
+            I gluing, answered while building. The group is NAMED so the
+            acceptance leg can census its marks. */}
+        {apertureOpen && liveApertureDomain && apertureTarget ? (
+          <group
+            name="live-aperture-skeleton"
+            position={[apertureTarget.home[0], apertureTarget.home[1] + 3.0, apertureTarget.home[2]]}
+            scale={0.68}
+          >
+            <InkedDomain
+              model={liveApertureDomain}
+              inkColor={inkFor('live-build', apertureVolume ? apertureVolume.id : 'live-build', silhouetteCtl.color)}
+              lineWidth={d.world.domain.lineWidth}
+              markColors={d.world.domain.markColors}
+              markRadius={d.world.domain.markRadius}
+            />
+          </group>
+        ) : null}
+
         {/* WRITTEN material — invoked primitives + op-born forms (REAL committed
             Shapes; renders routed by the committed bornFormRouting) */}
         {written.map((entry, k) => {
@@ -4689,6 +4754,7 @@ export default function ManuscriptView() {
           <ApertureGatePanel
             rows={apertureRowViews}
             refusal={apertureRefusal}
+            pristine={aperturePristine}
             notice={apertureNotice}
             onPickFaceA={(i, v) =>
               setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, faceA: v || null, candidateKey: null } : r)))
@@ -4909,11 +4975,11 @@ export default function ManuscriptView() {
           bTitle={combineGate.b.title}
           aFaces={combineGate.a.shape.faces.map((face) => ({
             id: face.id,
-            label: faceLabel(face),
+            label: faceLabel(combineGate.a.shape, face),
           }))}
           bFaces={combineGate.b.shape.faces.map((face) => ({
             id: face.id,
-            label: faceLabel(face),
+            label: faceLabel(combineGate.b.shape, face),
           }))}
           portA={combineGate.portFaceA?.id ?? ''}
           portB={combineGate.portFaceB?.id ?? ''}
@@ -4976,7 +5042,7 @@ export default function ManuscriptView() {
       {chord && chordPanel ? (
         <ChordGatePanel
           formTitle={chordPanel.formTitle}
-          faceText={faceLabel(chordPanel.face)}
+          faceText={faceLabel(chordPanel.shape, chordPanel.face)}
           corners={chordPanel.face.vertexIds}
           cornerA={chord.cornerA}
           cornerB={chord.cornerB}
