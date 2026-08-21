@@ -1,78 +1,60 @@
-# THE BUILD REPORT — INTERIOR TRANSPORT: the fan turns
+# THE BUILD REPORT — the whole frame: two measurements routed, three strings landed, one death booked
 
-**coder · 2026-08-21 · cut `4c0d94e` · witness recuts `9e84390` · on `0780653` (mandate record) · branch `team-arman`**
+**coder · 2026-08-21 · cut `9e39a13` · witness `346e678` · on `6cf6a09` (mandate record) · branch `team-arman`**
 
 ---
 
-## 1 · WHAT I SAW — the person's own chamber, built by the person's own route, coming home early
+## 1 · PART A — MEASURED, NOT FIXED (both routed; both files frozen and untouched)
 
-I built the fan chamber in the real app exactly as Arman would: SOURCES → the fan-lift and segment parcels through the file door → both dragged onto the paper → shift-click pairs them → **thicken — the band** → the band rides the shelf, dragged out → `aperture — build a 3-manifold (on open-lift(…) × I)` → **leave bounded** (*"left bounded — the free rim stands as walls · the chamber joins the dim-3 band"* — the subtitle honestly counting its 15 boundary faces) → the built room summons → **explore inside**.
+**The χ verdict, three lines:**
+1. The card computes χ from the complex (`v − e + f − c`, `complex.chi`, carried) and prints the flag from `tower.chiConsistent`.
+2. `level3Invariants.ts:85`: `chiConsistent: gate.sound ? complex.chi === 0 : null` — **the closed-3-manifold expectation (χ = 0), applied to EVERY sound complex unconditionally**; its own type comment (`:22`) says *"sound ⇒ (χ === 0); unsound ⇒ null — no closed-manifold claim"* — bounded-but-sound was not in that comment's world.
+3. The fan chamber is sound with walls and χ = 1 (correct for a bounded body), so the closed-world check prints `INCONSISTENT` at the person — the comment-precondition family, on a frozen file; **whether a bounded room should read `n-a — bounded`, or χ against 1, is the researcher's meaning question.**
 
-**Inside, after walking the pillar circuit** (a driven loop through the ratified arc), the plate reads, verbatim:
-```
-Euclidean cone-manifold · n=[…] · cone edges (measured): 1 × 300° · the manifold ends here;
-the orbit recurs only through the glued corridors · copies shown to depth 6
-back where you started · 1 door · the room came back turned
-```
-**The acceptance sentence, live: a door count that is NOT 0, and the room came back turned.** No detector, no felt rotation — the room comes home EARLY, counted in doors (LAW 20), and W.7's singular (`1 door`) pays for itself on the first real cone. The heavy hatched pillar rod stands visibly in the room; the seam is invisible from inside, as a deck transition must be. Evidence: `scripts/app-leg/it_fan_chamber_1door_turned.jpg`.
+**"the identified cube", three lines:**
+1. `specimenModel.ts:144` (frozen): `subtitle: 'fundamental domain · the identified cube (no body exists)'` — **a hardcoded literal in `readDomainSpecimen`.**
+2. Every `DomainModel` card carries it — T³ truthfully, but also every cone room and the five-cell fan chamber; nothing about it is derived from the specimen.
+3. **Stale copy on a generic surface, confirmed** — the replacement wording is the designer's; the mechanism (derive from the model's own title/shape) is a one-line consumer change once she rules.
 
-**Two defects were found AT THE EYE during this drive and cured in the cut — neither was reachable by the in-process instruments alone:**
-1. **The app's chamber refused to develop (`walls: 15` in the seam census)** while every in-process fixture developed. Measured to the root: `deserializeSnapshot` re-roots every id with the shelf prefix **but not the `dihedralAngles` record blob's keys** — GAP2C's exact data-blob class, live — and since the person's band always rides the shelf once more, the pillar-key match failed only on the person's route. Cure at the consumer: the record key matches by TAIL (either side may carry prefixes the other lacks), demanding EXACTLY ONE hit per cell — an ambiguous or absent record falls back to the union path rather than developing a wrong room.
-2. **A re-opened room rendered a blank standing caption**: `seam.caption` was the one session fact the open-reset missed, so the change-gated DOM write never re-fired (seam 217 chars, DOM 0 — measured). One line adds it to the reset family.
+## 2 · PART B — the three ratified strings, at the eye
 
-## 2 · WHAT I RAN — the witnesses, verbatim
+Drove the T³ route and the fan-band route on a fresh origin.
 
-**The measurement that forced the mechanism** (instruments, gitignored): the fan's OWNED pillar wedges read [60,60,90,45,45] (Σ=300°) while its EMBEDDED wedges read [135,59,90,45,31] (Σ=360°) — the thicken embedding smears the deficit INSIDE cells, every shared-wall isometry fits identity (witness-refused), so no per-wall transform on the stored embedding can be honest. D6's own law names the cure: the intrinsic product is the OWNED stamps' — so the room is DEVELOPED from the records.
+- **The dots are DROPPED** (§3.1): a decided pair now draws as its two traced cycles with **exactly one tick each — the only dot on a trace, meaning "the cycle starts here"** — and nothing else; the mechanism is the live mount's own `markRadius={0}` dial (the frozen `InkedDomain` untouched; the finished specimen keeps its dots — no traces there, nothing to contradict). Evidence: `scripts/app-leg/ds_traces_no_dots_one_tick.png`.
+- **THE LEGEND** (§3.2) stands under the figure, verbatim, in the walk's own idiom: *"dashed — not yet decided · solid — decided; the tick is its first corner, and the way it runs is how the faces meet · one hue to a pair."*
+- **The dependency question, MEASURED:** the F.0e plate's "two blue treatments" are **ONE pending pair across two faces, one treatment** — census: both pending rings carry byte-identical dash material (`dashSize 0.09 · gapSize 0.07`, uniform: true; one code path builds every pending ring). The "dotted vertical" is the same world-space dash foreshortened by projection on the near-edge-on face. **The legend's first clause stands; nothing returns to the designer.**
+- **THE FORCED-WALL LINE** (§3.3), live on the fan band, before any pick, quiet and plain (never the refusal register — the pristine refusal is italic; this is not):
+  ```
+  15 faces — 10 with three corners, 5 with four · a face meets only a face with the same
+  corners, so 7 pairs is all this volume can make · one face stands as a wall whatever you choose
+  …and a world has no walls — every face glued to a partner. One face with no partner is one
+  wall that stays, so this closes into a room you stand inside, never a world.
+  ```
+  Every number derived from `apertureParityCensus` (boundary faces by corner class; pairs = Σ⌊count/2⌋; forced walls = Σ(count mod 2)); the consequence sentence is the researcher's verbatim, comment-flagged for the designer's compression. **On the cube the line says nothing** — driven and seen (the T³ panel shows only the subtitle). Evidence: `scripts/app-leg/ds_forced_wall_line_panel.png`.
 
-**The simulator (the committed replica), on the developed room:**
-```
-pillar circuit: returned=true doorsAtReturn=1 traceAtReturn=2 handedness=1 clamps=0
-reading → back where you started · 1 door · the room came back turned
-```
-The trace shows one seam crossing per lap (+60° holonomy jump), deck trace 1+2·cos 60° = 2, never mirrored (det +1).
+## 3 · WHAT I RAN
 
-**The expiry pin failed exactly as designed and was re-derived (LAW 24 both ways):**
 ```
-PASS (1a/1b) the single-cell cone control: 2 doors · deck trace −1 (the half-turn) — UNTOUCHED
-PASS (2a) the fixture, DEVELOPED: 9 faces — 7 walls + 2 bounded seam portals — k=5 pillar rod
-PASS (2b) ★ INTERIOR TRANSPORT, PINNED: 1 door · 0 clamps · trace 2 ⇒ `1 door · the room came back turned`
-PASS (2c) the null-homotopy control: a loop NOT winding the pillar — 0 doors, identity (the seam never over-fires)
-DIAGNOSE-WINDING-HEADINGS: ALL GREEN · DIAGNOSE-OPEN-LIFT: ALL GREEN (census recut 9/7/29)
-```
-
-**The app leg (its own server + three live sessions), first run at the cut:** the cone control passed LIVE (`2 doors · turned` + the retrace `2 doors · the same way up`), the mirror room passed (`1 door · mirrored`), and the E-leg exposed defect #1 above (stalled at 0 doors on the union room). After the tail-match cure:
-```
-PASS ★★ `2 doors · the room came back turned` (cone control, seam + DOM) · PASS ★ the retrace `2 doors · the same way up`
-PASS ★ the pillar ENCIRCLED: THE LINE, VERBATIM: back where you started · 1 door · the room came back turned · doors 1
-PASS ★★ `1 door · the room came back mirrored` (the fourth string, W.7 singular) · PASS no console error
-DIAGNOSE-WINDING-ROUTE: ALL GREEN
-```
-
-**Types + suite:**
-```
-npx tsc -b → exit 0 (at the final HEAD)
+npx tsc -b → exit 0
+PASS apertureParityCensus (fan): {"total":15,"classes":[{"corners":3,"count":10},{"corners":4,"count":5}],"pairs":7,"forcedWalls":1}
+PASS apertureParityCensus (cube): {"total":6,"classes":[{"corners":4,"count":6}],"pairs":3,"forcedWalls":0}
+DIAGNOSE-OPEN-LIFT: ALL GREEN
 112
 FAIL scripts/diagnose-dual-inspection.cjs
-SUITE-DONE at 9e84390
+SUITE-DONE
 ```
-**112 @ 1 at the final HEAD** — the accepted baseline only.
+**112 @ 1** — the accepted baseline only; the run's tree is byte-identical to the cut commit (`git diff --stat 9a9fc49 9e39a13` → empty).
 ```
 ```
-(The 112 suite carries no pins on this surface — the winding witnesses live in `scripts/app-leg/`, all green above. The suite was also 112@1 at the intermediate sim `f9139aa`.)
+Census-beside-the-eye at each drive step: 2 zero-radius mark meshes (invisible by construction) · 2 ticks (radius > 0, one per decided trace) · pending dash materials identical. Freeze manifest: `apertureModel` · `ManuscriptView` · `ManuscriptChrome` all NOT_FROZEN; `specimenModel.ts` / `level3Invariants.ts` frozen and **untouched** (measured read-only). One stale 0-byte `.git/index.lock` removed (the standing recurrence).
 
-**Freeze manifest, per touched file:** `196:NOT_FROZEN src/manuscript/apertureModel.ts` · `186:NOT_FROZEN src/manuscript/ExploreWindow.tsx` · app-leg scripts not listed (outside the engine roots). No frozen file touched ⇒ re-seal n/a. One stale 0-byte `.git/index.lock` removed (10 min old, no live git — the standing recurrence).
+## 4 · WHAT I CHANGED
 
-## 3 · WHAT I CHANGED
+- **`apertureModel.ts`** — `apertureParityCensus` (the §3.3 derivation, null on an unreadable menu) + the **#37 death-condition booked at the tail-match site**: *"when #37 re-roots carried DATA-BLOB refs by the load's own prefix (resolved by exact ===), delete `keyMatchesPillar` and match record keys by equality — until then this guard STANDS."*
+- **`ManuscriptView.tsx`** — the live mount's `markRadius={0}` (with the §3.1 ruling in place); the legend Html under the figure; the parity memo + prop.
+- **`ManuscriptChrome.tsx`** — the `parity` prop and the two quiet lines under the subtitle (shown only when `forcedWalls > 0`); corner counts as words per the ratified idiom, counts beyond the spelled range fall back to digits.
+- **`diagnose-open-lift.cjs`** (`346e678`) — the parity census pinned both directions (fan: exactly one forced wall; cube: none — the silent case is a check, not an absence).
 
-- **`src/manuscript/apertureModel.ts`** — `developedConeSurface`: behind live guards (>1 cell · every two-owner face is a quad sharing one pillar vertex pair · one simple cell cycle · exactly one dihedral record per cell · Σ(owned) < 2π − ε), the base fan is unrolled flat at its OWNED wedge angles, lifted ⊥ by the pillar's own fiber, recentered, the void aimed away from the walk's entry; the cycle-closing wall becomes a **bounded seam portal pair** with g = rotation about the pillar by ∓ the material span (det +1). `ApertureCellFace` gains optional quad `bounds`. The old filter's true-but-unguarded comment ("on an embedded product the charts coincide") is now **written as the guard**: only genuinely-flat products reach the union path. The rod-class law is hoisted so both room shapes read the one law.
-- **`src/manuscript/ExploreWindow.tsx`** — bounded faces in the walk and the shader: a seam fires only on a genuine **segment crossing** (before ≤ 0 < after, pierce point inside the quad) — a point-only test fired 60° early on the measured circuit; the ray path already had exact-point semantics and gained the same quad test; packCell/uniforms carry the bounds; the caption joins the open-reset.
-- **`scripts/app-leg/`** (`9e84390`, the recut commit): `windingWalk.cjs` mirrors the segment law (the replica must move with the window's law, by its own charter); `diagnose-winding-headings.cjs` 2a/2b re-derived to the ratified reading + the null-homotopy control added; `diagnose-open-lift.cjs` census 9/7/29; `diagnose-winding-route.cjs` FAN_PLAN re-planned for the developed coordinates + the E.circuit clause label and the driver's want-pin set to the ratified line (a witness that accepts any line pins nothing).
+## 5 · WHAT I COULD NOT REACH
 
-**Not touched:** `snapshot.ts` (frozen; the blob-key re-rooting is the standing 37/GAP2C work — my consumer-side tail-read carries what the substrate holds), the single-cell path (byte-identical in behavior — the C/M legs prove it live), the winding vocabulary (no new words anywhere).
-
-## 4 · WHAT I COULD NOT REACH
-
-Nothing in the mandate. Three notes:
-1. **The person's chamber card says `Euler χ 1 (INCONSISTENT)`** — the bounded chamber's χ flag predates this build (visible on the card before the walk); it did not block the gate (sound) or the walk. Named, not chased.
-2. The E-leg's first-run failure was **the find of the build**: the shelf round-trip's un-re-rooted `dihedralAngles` keys are exactly the researcher's priced "DATA-BLOB refs" gap — my tail-match reads through it, but the mint-side re-rooting remains theirs.
-3. §2 stands: the fan acceptance is **Arman's** — he walks the pillar in his own fan and the sentence *"the same defect: blind identification"* dies at his hand. The room is ready for him.
+Nothing in the mandate. Two flags standing for the designer, in the code at their sites: the consequence sentence awaits her compression; the legend line's screen position (it can graze the wireframe's lower edge at some cameras) is hers to nudge. And one observation for the record: the loaded parcels' record strip shows *"⚠ integrity violations (shown, not hidden)"* — pre-existing on the load path, outside this mandate, named so nobody discovers it as a surprise.
