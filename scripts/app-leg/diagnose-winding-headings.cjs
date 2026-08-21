@@ -142,29 +142,57 @@ const check = (label, pass, detail = '') => {
   const band = thicken(lift.shape, segment).shape;
   const domain = buildFormDomain(band, [], 'fan', 'the fan chamber');
   const surface = A.readCellSurface(domain, true);
-  const portals = surface.faces.filter((f) => f.g && !f.wall).length;
+  const portals = surface.faces.filter((f) => f.g && !f.wall);
   const pillar = surface.rods.find((r) => r.k === 5);
+  // INTERIOR TRANSPORT LANDED (mothership 2026-08-21; the old pin expired as
+  // designed): the fan chamber is now the DEVELOPED cone room — the base fan
+  // unrolled at its OWNED wedge angles (Σ = 300° < 2π), so the cycle-closing
+  // wall is a bounded SEAM PORTAL PAIR carrying the holonomy, and the four
+  // spanned walls never enter the surface at all.
   check(
-    '(2a) the fixture stands: the fan chamber is DECKLESS (15 walls, 0 portals — the interior faces are stripped) and carries the k=5 pillar',
-    surface.faces.length === 15 && portals === 0 && Boolean(pillar),
-    `faces ${surface.faces.length} · portals ${portals} · pillar ${pillar ? 'k=5' : 'MISSING'}`,
+    '(2a) the fixture stands, DEVELOPED: 9 faces — 7 walls + the 2 bounded seam portals — and the k=5 pillar rod',
+    surface.faces.length === 9 && portals.length === 2 && portals.every((p) => p.bounds) && Boolean(pillar),
+    `faces ${surface.faces.length} · portals ${portals.length} · pillar ${pillar ? 'k=5' : 'MISSING'}`,
   );
-  // the planned circuit: entry → staging → 360° around the pillar's
-  // z=0.1 piercing point (0.43, −0.45) at r 0.35 → home
-  const CTR = [0.43, -0.45, 0.1];
-  const R = 0.35;
-  const plan = [ENTRY, [CTR[0] + R, CTR[1], 0.1]];
-  for (let i = 1; i <= 16; i += 1) {
-    const th = (i / 16) * 2 * Math.PI;
-    plan.push([CTR[0] + R * Math.cos(th), CTR[1] + R * Math.sin(th), 0.1]);
+  // ★ THE CURE, PINNED (the expired 2b re-derived): the person's own loop —
+  // a circle around the pillar THROUGH the entry; the return law decides
+  // where the circuit closes. LAW 20: the room comes home EARLY, counted in
+  // doors — one seam crossing, deck trace 1+2·cos(60°) = 2, det +1 (a cone
+  // is never a mirror) ⇒ `back where you started · 1 door · the room came
+  // back turned`.
+  const px = pillar.a[0];
+  const py = pillar.a[1];
+  const rad = Math.hypot(ENTRY[0] - px, ENTRY[1] - py);
+  const a0 = Math.atan2(ENTRY[1] - py, ENTRY[0] - px);
+  const plan = [];
+  for (let i = 0; i <= 48; i += 1) {
+    const th = a0 + (1.2 * 2 * Math.PI * i) / 48;
+    plan.push([px + rad * Math.cos(th), py + rad * Math.sin(th), ENTRY[2]]);
   }
-  plan.push(ENTRY);
   const sim = simulateWalk(surface, ENTRY, plan);
-  const dEnd = Math.hypot(sim.eye[0] - ENTRY[0], sim.eye[1] - ENTRY[1], sim.eye[2] - ENTRY[2]);
   check(
-    '(2b) ★ THE INTERIOR-TRANSPORT GAP, PINNED: the 360° circuit around the k=5 pillar closes on the entry with 0 doors, 0 clamps, deck IDENTITY — the person winds a cone edge and the room reads `the same way up`. ⛔ WHEN THE INTERIOR-TRANSPORT CURE LANDS, THIS PIN FAILS — that is the trigger to re-derive the fan\'s readings, not a defect',
-    dEnd < 1e-3 && sim.doors === 0 && sim.clamps === 0 && Math.abs(sim.trace - 3) < 1e-9,
-    `dEntry ${dEnd.toFixed(4)} · doors ${sim.doors} · clamps ${sim.clamps} · trace ${sim.trace.toFixed(3)}`,
+    '(2b) ★ INTERIOR TRANSPORT, PINNED: the pillar circuit comes home EARLY — position-return fires with 1 door, 0 clamps, deck trace 2 (the 60° holonomy), handedness +1 ⇒ `back where you started · 1 door · the room came back turned`',
+    sim.returned === true && sim.doorsAtReturn === 1 && sim.clamps === 0 &&
+      Math.abs(sim.traceAtReturn - 2) < 1e-6 && sim.handedness > 0,
+    `returned ${sim.returned} · doorsAtReturn ${sim.doorsAtReturn} · clamps ${sim.clamps} · trace ${sim.traceAtReturn === null ? 'null' : sim.traceAtReturn.toFixed(3)}`,
+  );
+  // the NULL-HOMOTOPY CONTROL (kept deliberately — the seam must not
+  // over-fire): a small loop in material that does NOT wind the pillar
+  // reads 0 doors, 0 clamps, deck identity.
+  const CTR = [-0.35, -0.55, 0.1];
+  const RSMALL = 0.16;
+  const nullPlan = [ENTRY];
+  for (let i = 0; i <= 16; i += 1) {
+    const th = (i / 16) * 2 * Math.PI;
+    nullPlan.push([CTR[0] + RSMALL * Math.cos(th), CTR[1] + RSMALL * Math.sin(th), 0.1]);
+  }
+  nullPlan.push(ENTRY);
+  const nullSim = simulateWalk(surface, ENTRY, nullPlan);
+  const dEnd = Math.hypot(nullSim.eye[0] - ENTRY[0], nullSim.eye[1] - ENTRY[1], nullSim.eye[2] - ENTRY[2]);
+  check(
+    '(2c) the null-homotopy control: a loop NOT winding the pillar reads 0 doors, 0 clamps, deck identity — the seam never over-fires',
+    dEnd < 1e-3 && nullSim.doors === 0 && nullSim.clamps === 0 && Math.abs(nullSim.trace - 3) < 1e-9,
+    `dEntry ${dEnd.toFixed(4)} · doors ${nullSim.doors} · clamps ${nullSim.clamps} · trace ${nullSim.trace.toFixed(3)}`,
   );
 }
 

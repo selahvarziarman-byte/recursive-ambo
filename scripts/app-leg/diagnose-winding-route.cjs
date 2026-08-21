@@ -21,7 +21,7 @@
 //            between the crossings (the deck falsifier);
 //   fan2   · the pillar CIRCUIT on the 5-cell fan chamber — the person
 //            winds 300° around the k=5 cone edge and the room reads
-//            `0 doors · the same way up` (THE INTERIOR-TRANSPORT GAP on the
+//            `1 door · the room came back turned` (INTERIOR TRANSPORT on the
 //            person's own surface; when its cure lands, this reading is
 //            re-derived — see diagnose-winding-headings' pinned trigger);
 //   mirror · THE FOURTH STRING — the sweep's corrected fact, live: the
@@ -67,18 +67,31 @@ const { openLift } = req('src/lib/openLift.ts');
 const { liftSubComplex } = req('src/lib/subComplexLift.ts');
 const { serializeSnapshot } = req('src/playground/snapshot.ts');
 
-// the fan pillar circuit (derived + verified in diagnose-winding-headings)
+// the fan pillar circuit, re-derived for the DEVELOPED cone room (interior
+// transport landed 2026-08-21; derived + verified in diagnose-winding-headings
+// 2b): a circle around the pillar (0.28, 0.01) THROUGH the entry, radius 0.84,
+// waypoints in MATERIAL only — the void arc (27.5°..87.5°) is skipped; the
+// leg that straddles it crosses the seam quad, the eye jumps +60° (the
+// holonomy) and goto converges on the far side (a door counts as leg-arrival
+// in goto's own law). Expected reading at the close:
+// `back where you started · 1 door · the room came back turned`.
 const FAN_PLAN = [
   [-0.35, -0.55, 0.1],
-  [0.78, -0.45, 0.1],
-  [0.68, -0.2, 0.1],
-  [0.43, -0.1, 0.1],
-  [0.18, -0.2, 0.1],
-  [0.08, -0.45, 0.1],
-  [0.18, -0.7, 0.1],
-  [0.43, -0.8, 0.1],
-  [0.68, -0.7, 0.1],
-  [0.78, -0.45, 0.1],
+  [-0.13, -0.72, 0.1],
+  [0.15, -0.82, 0.1],
+  [0.44, -0.81, 0.1],
+  [0.71, -0.71, 0.1],
+  [0.93, -0.52, 0.1],
+  [1.07, -0.26, 0.1],
+  [1.12, 0.02, 0.1],
+  [1.06, 0.31, 0.1],
+  [0.27, 0.85, 0.1],
+  [-0.02, 0.79, 0.1],
+  [-0.27, 0.64, 0.1],
+  [-0.45, 0.42, 0.1],
+  [-0.55, 0.14, 0.1],
+  [-0.54, -0.15, 0.1],
+  [-0.44, -0.42, 0.1],
   [-0.35, -0.55, 0.1],
 ];
 
@@ -181,7 +194,7 @@ function waitHttp(url, timeoutMs) {
     clause('E.parcels', 'the fan lift + segment place');
     clause('E.armed', 'the thicken pair arms');
     clause('E.window', 'EXIT B builds the chamber; the window opens');
-    clause('E.circuit', '★ the pillar ENCIRCLED: `0 doors · the same way up` (the gap, on the person\'s surface)');
+    clause('E.circuit', '★ the pillar ENCIRCLED (interior transport landed): `back where you started · 1 door · the room came back turned` — the room comes home EARLY through the seam');
     console.log('\n— the mirrored room: the fourth string —');
     clause('M.cubePlaced', 'the cube parcel places');
     clause('M.picks', 'the aperture picks: the word d+0,d+1,d+2');

@@ -196,7 +196,13 @@ const src = A.resolveConeAngleSource(domain, { base: lift.shape });
 const coneClasses = src.anglesByClass ? [...src.anglesByClass.entries()] : [];
 check('coneSource measured; the cone edge named by the terrain lineage', src.kind === 'measured' && coneClasses.length === 1 && Math.abs(DEG(coneClasses[0][1]) - 300) < 1e-6 && coneClasses[0][0].includes(mid), coneClasses.map(([k, v]) => `${k}=${Math.round(DEG(v))}°`).join(','));
 const surf = A.readCellSurface(domain, Boolean(gate.ok && gate.geometry.coneEdges));
-check('readCellSurface: 15 faces / 15 walls / 26 rods', surf.faces.length === 15 && surf.wallCount === 15 && surf.rods.length === 26, `faces=${surf.faces.length} walls=${surf.wallCount} rods=${surf.rods.length}`);
+// INTERIOR TRANSPORT LANDED (mothership 2026-08-21; the 15/15/26 pin expired
+// as designed): the fan room is now DEVELOPED — 7 walls + the 2 bounded seam
+// portals carrying the 300° cone's holonomy, rods re-laid from the records.
+check('readCellSurface (developed cone room): 9 faces / 7 walls / 2 bounded seam portals / 29 rods',
+  surf.faces.length === 9 && surf.wallCount === 7 && surf.rods.length === 29 &&
+  surf.faces.filter((f) => !f.wall).length === 2 && surf.faces.filter((f) => !f.wall).every((f) => f.bounds),
+  `faces=${surf.faces.length} walls=${surf.wallCount} rods=${surf.rods.length}`);
 
 console.log(failures === 0 ? '\nDIAGNOSE-OPEN-LIFT: ALL GREEN' : `\nDIAGNOSE-OPEN-LIFT: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);

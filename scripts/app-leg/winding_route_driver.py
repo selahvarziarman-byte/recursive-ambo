@@ -383,9 +383,10 @@ def run_cone(page, args, arc):
 
 
 def run_fan2(page, args, arc):
-    # acceptance #2 RE-DRIVEN (engineer 1200): the pillar ENCIRCLED — the
-    # planned circuit (simulated: closes at the entry, 0 doors, 0 clamps,
-    # deck identity). The reading is REPORTED, not pre-claimed.
+    # acceptance #2, INTERIOR TRANSPORT LANDED (2026-08-21): the pillar
+    # ENCIRCLED in the DEVELOPED cone room — the circuit crosses the seam
+    # once and the room comes home EARLY. The ratified reading is pinned:
+    # `back where you started · 1 door · the room came back turned`.
     page.set_input_files('input[type="file"]', [args.fanlift])
     page.wait_for_timeout(800)
     lift_ok = place_parcel(page, 0.44, 0.30) is not None
@@ -452,7 +453,10 @@ def run_fan2(page, args, arc):
         if walked and seam(page)["returnLine"] is None:
             walk_until(page, lambda s: s["returnLine"] is not None, pulse_ms=380, max_pulses=20)
         line, dom = read_return(page)
-        record("E.circuit", line is not None and dom == line, f"THE LINE, VERBATIM: {line} · doors {seam(page)['doors']}")
+        # the ratified reading, pinned (a witness that accepts any line pins
+        # nothing): one seam crossing, home early, turned
+        wantE = "back where you started · 1 door · the room came back turned"
+        record("E.circuit", line == wantE and dom == line, f"THE LINE, VERBATIM: {line} · doors {seam(page)['doors']}")
     close_window(page)
 
 

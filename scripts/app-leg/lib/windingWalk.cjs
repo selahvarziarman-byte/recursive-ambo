@@ -53,6 +53,7 @@ function simulateWalk(surface, startEye, coverPath, opts = {}) {
       [deckF[0], deckR[0], deckU[0], deckF[1], deckR[1], deckU[1], deckF[2], deckR[2], deckU[2]],
       step,
     );
+    let prev = eye;
     eye = [eye[0] + s[0], eye[1] + s[1], eye[2] + s[2]];
     for (let guard = 0; guard < 8; guard += 1) {
       let exited = -1;
@@ -60,6 +61,29 @@ function simulateWalk(surface, startEye, coverPath, opts = {}) {
         const face = surface.faces[f];
         const d = eye[0] * face.n[0] + eye[1] * face.n[1] + eye[2] * face.n[2] - face.d;
         if (d > 0) {
+          // INTERIOR TRANSPORT (2026-08-21, mirrored from ExploreWindow's
+          // transportWalk): a BOUNDED face (the developed cone room's seam
+          // quad) fires only on a genuine CROSSING — this step's segment
+          // pierces the plane (before ≤ 0 < after) and the pierce point lies
+          // inside the quad. A point-only test fired 60° early (measured).
+          // Unbounded faces keep the convex-cell law byte-identically.
+          if (face.bounds) {
+            const dPrev = prev[0] * face.n[0] + prev[1] * face.n[1] + prev[2] * face.n[2] - face.d;
+            if (dPrev > 0) continue;
+            const t = dPrev / (dPrev - d);
+            const hit = [
+              prev[0] + (eye[0] - prev[0]) * t,
+              prev[1] + (eye[1] - prev[1]) * t,
+              prev[2] + (eye[2] - prev[2]) * t,
+            ];
+            const q = [hit[0] - face.bounds.c[0], hit[1] - face.bounds.c[1], hit[2] - face.bounds.c[2]];
+            const u = face.bounds.u;
+            const w = face.bounds.w;
+            const du = q[0] * u[0] + q[1] * u[1] + q[2] * u[2];
+            const dw = q[0] * w[0] + q[1] * w[1] + q[2] * w[2];
+            if (Math.abs(du) > u[0] * u[0] + u[1] * u[1] + u[2] * u[2]) continue;
+            if (Math.abs(dw) > w[0] * w[0] + w[1] * w[1] + w[2] * w[2]) continue;
+          }
           exited = f;
           break;
         }
@@ -69,10 +93,12 @@ function simulateWalk(surface, startEye, coverPath, opts = {}) {
       if (face.wall || !face.g) {
         const d = eye[0] * face.n[0] + eye[1] * face.n[1] + eye[2] * face.n[2] - face.d;
         eye = [eye[0] - face.n[0] * (d + 1e-4), eye[1] - face.n[1] * (d + 1e-4), eye[2] - face.n[2] * (d + 1e-4)];
+        prev = eye;
         clamps += 1;
         continue;
       }
       eye = applyM(face.g, eye);
+      prev = eye;
       deckF = applyRot(face.g, deckF);
       deckR = applyRot(face.g, deckR);
       deckU = applyRot(face.g, deckU);
