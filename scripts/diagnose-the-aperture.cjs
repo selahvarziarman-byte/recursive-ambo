@@ -141,6 +141,41 @@ check('the refusal ladder is named and curable: an untouched board refuses hones
     { faceA: faceId('bottom'), faceB: faceId('top'), candidateKey: null },
   ])).includes('picked 2 times') &&
   String(A.aperturePairingRefusal(cube, t3Rows.map((r) => ({ ...r, candidateKey: null })))).includes('pick the identification MAP'));
+// F.0e — THE RELOCATED REFUSAL (mothership §3.3, designer-ruled): the
+// reversing-map-on-a-multi-cell limit used to surface only at COMMIT
+// (buildPersonDomainVerdict's wall — still standing, byte-untouched); the
+// ladder now names it AT PICK TIME. Falsifier both directions on a REAL
+// multi-cell volume (a thickened cube surface — six prism cells): the picked
+// REVERSING candidate refuses by name in the ladder; the preserving pick
+// passes the same ladder (null — the glue may run). A door-blind revert of
+// the ladder condition fails this leg.
+const { thicken } = req('src/lib/thicken.ts');
+const { computeSeedCornerAngles } = req('src/lib/conformalAtom.ts');
+const multiVol = thicken(computeSeedCornerAngles({ ...createSeedShape('cube'), cells: [] })).shape;
+const mcMenu = A.boundaryFacesOf(multiVol);
+let mcPair = null;
+outer: for (let i = 0; i < mcMenu.length; i += 1) {
+  for (let j = i + 1; j < mcMenu.length; j += 1) {
+    try {
+      const cands = A.dihedralMapCandidates(multiVol, mcMenu[i].id, mcMenu[j].id);
+      const rev = cands.find((c) => c.derivedMode === 'reversing');
+      const pres = cands.find((c) => c.derivedMode === 'preserving');
+      if (rev && pres) {
+        mcPair = { a: mcMenu[i].id, b: mcMenu[j].id, rev, pres };
+        break outer;
+      }
+    } catch {
+      // a non-congruent pair offers nothing — keep looking
+    }
+  }
+}
+check('F.0e: on a multi-cell volume the ladder refuses a picked REVERSING map AT PICK TIME (one pick, not the whole act) — and the preserving pick passes the same ladder (null; the commit wall behind it stands byte-unchanged)',
+  mcPair !== null &&
+  multiVol.cells.length > 1 &&
+  String(A.aperturePairingRefusal(multiVol, [{ faceA: mcPair.a, faceB: mcPair.b, candidateKey: mcPair.rev.key }])).includes('REVERSING identification on a multi-cell volume') &&
+  A.aperturePairingRefusal(multiVol, [{ faceA: mcPair.a, faceB: mcPair.b, candidateKey: mcPair.pres.key }]) === null &&
+  modelSrc.includes('a REVERSING identification on a multi-cell volume is a later chapter'));
+if (mcPair) note(`multi-cell fixture: ${multiVol.cells.length} cells · ${mcPair.a} ↔ ${mcPair.b} · reversing ${mcPair.rev.key} refused live · preserving ${mcPair.pres.key} passes`);
 
 // ═════ [c] CLAUSE 2(b) — the MODE-LABEL door, carried, exhibited lying ═══════════
 console.log('\n----- [c] ★ the carried mode-label door: the toggle would hand back T³ and call it reversed -----');
