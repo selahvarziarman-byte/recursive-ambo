@@ -1,78 +1,80 @@
-# THE BUILD REPORT — B-2026-08-22-A: #37's sanctioned half + PERSISTENCE, both landed; the acceptance's caption clause found to contradict the mandate's own kill
+# THE BUILD REPORT — B-2026-08-22-B: #37 FINISHED (the promotion landed, the last composes-suffix walk died) · the zoo rides as the ACT · the restored page is SEEN · §2(iii) measured and answered
 
-**STAMP ECHO: `B-2026-08-22-A`** — the build I executed is the one you wrote.
-**coder · 2026-08-21 · commits `7caf30e` (frozen union) · `c5f52bc` (persistence) · `c55efea` (witness recut) on `b09829b` (mandate record) · branch `team-arman` · NOT pushed (say the word)**
+**STAMP ECHO: `B-2026-08-22-B`** — the build I executed is the one you wrote.
+**coder · 2026-08-21 · commits `13f17f3` (mandate record) · `75c6abd` (geometry.ts frozen) · `98d0626` (snapshot.ts frozen) · `e053684` (mint+card+flip) · `e291a56` (zoo+frame) on `fbdb145` · branch `team-arman` · pushed at open (`fbdb145`), final push after this report lands**
 
 ---
 
 ## TO THE MOTHERSHIP
 
-**1 · A CONTRADICTION BETWEEN TWO RATIFIED THINGS (3 lines).**
-This build's GAP-2 kill (suffix resolvers die; exact `===` only) and this build's acceptance sentence (the walk caption reads `cone edges (measured): 1 × 300°` after reload) cannot both hold: thicken's product reaches the page only through the shelf's namespace hop, which re-roots the product's dihedral-record keys one prefix past the parent that stays behind on the page, so `readPillarDihedrals(base, product)` can never marry them by `===` — the F.0c-era drive saw "measured" only because the retired tail-match bridged the two id spaces by fabrication.
-Measured, twice: in-app (the restored chamber walks under `cone edges (k×90° heuristic): 1 × 450°`, refusal carried: *"pillar …u8aoid@I carries no owned dihedral in any cell"*) and headless (same seed + same base through `resolveConeAngleSource` → `kind: 'heuristic'`, same refusal verbatim). The headless witness measures 300° only because it hands the reader the pre-hop parent object — a route the shelf design does not preserve.
-The cure is a MEANING call — what "the same form across a namespace hop" is (re-root `parents` too? marry across the loader's own committed prefix relation? carry ancestors in every product file?) — and is not mine to pick. Until ruled, an owned shelf-routed band walks under the honest heuristic mark with its refusal swallowed below the caption.
+**1 · §2(iii) IS ANSWERED — your hypothesis is TRUE and the finding is one layer deeper.**
+`thicken.ts:300` confirmed verbatim: `parentShapeId: segment !== undefined ? null : form.id` — **nulled at arity-2**, both parents named only in the EXTRACTION record (`product.parents`), which rides the caller's hands, never the Shape. **And the one-field cure alone cannot reach the caption:** the loader's own committed pointer rule (`snapshot.ts:315-318`) preserves a pointer across a hop ONLY when the parent Shape rides the file as `ancestors[0]` (GAP2C), and otherwise re-roots it to **null** ("a name, not a doorway — the committed behavior"). A restored `parentShapeId = form.id` would be nulled at the shelf hop because the thicken shelf-join calls `serializeSnapshot(shape, source, [])` — **the GAP2C ancestors machinery already exists and the join passes an empty ancestry.**
+So the roads, measured: (a) one field alone → nulled at the hop → still `unresolved-base`; (b) one field + the join passing `[form]` as ancestry → the committed parentPointer machinery preserves the chain **through existing code** — but that is your refused option (c) in miniature (the parent duplicated into every band file); (c) the hop's own recorded mapping — the only trace the hop leaves today is `provenance.source`, and the committed vocabulary stamps it **"opaque provenance — never a doorway"** (`genesisModel.ts:288`), so reading it as the marriage's mapping flips a committed reading. **Per your gate I built none of (ii). The choice is: re-rule `source`'s status, or mint a new hop record, or accept the ancestors-chain road despite its duplication.** Three real options, all meaning calls.
 
-**2 · GAP 1 IS FROZEN GROUND (3 lines).**
-The `data.composes`/`data.sharedBy` promotion needs new structural fields on `Edge`/`Face` in `src/types/geometry.ts` — FROZEN (manifest line 88), NOT on the sanction list; the `cornerAngles?` precedent in the same file shows the sanctioned-edit shape.
-The remaining GAP-2 `===` flips travel with that promotion (they resolve against the promoted fields).
-Asking, not spending: sanction `geometry.ts` or park GAP 1.
+**2 · The remaining suffix sites, named in full (the completeness law) — none of them the promotion's travelers, none flipped this build:**
+`apertureModel.ts:733` (`resolveCarriedMetricBase` — the D1 carried-base marriage, amendment-1759 ambiguity guard) and `ManuscriptView.tsx:2619` (`resolveAbsentLabel` — D12-b's one-layer vertex-label resolve, agreement-guarded) are **cross-hop marriages awaiting (ii)** — flipping them to `===` today would silently null every hopped resolve. `apertureModel.ts:1171`/`:1680` resolve a shape-level edge id to its **cell-prefixed copy inside one complex** (the complex's own construction, not a hop), and `surfaceRefinement.ts:757` resolves within a refine's own parent — same-species within-shape walks. All five carry guards; none reads `composes`/`sharedBy` (that one — `argumentReadingModel.ts:509` — is flipped and dead).
 
-**3 · THE ZOO IS OUTSIDE THE RULED FIVE (flagged, not swept).** "load the reference zoo" is a person-performed door whose products are not in the ruled record set (written · shelf · builtDomains · foldedBodies · D1 carry) — zoo rooms will not survive a save/load. Flagged per the brief's own instruction rather than swept in.
+**3 · One drive quirk for the record:** on one reload this session the computer-tool click at the Manuscript header button landed without activating (twice); the DOM `.click()` on the same button worked instantly. Window metrics had shifted between reloads. Cosmetic to the drive, not the app — noted so a future drive does not misread it.
 
-**4 · The stale `.git/index.lock` recurred once mid-build** (21:23, 0 bytes, no live git; removed, disclosed). You said you'd handle it when quiet — this was during my own git ops, so likely mine/sandbox noise, not the standing recurrence.
+**4 · The stale `.git/index.lock`** recurred twice during my own git ops (22:04, 21:23 — 0 bytes, no live git; removed, disclosed). Consistent with sandbox noise around my own operations, as ruled.
 
 ---
 
-## 1 · WHAT I SAW (I drove the app — vite :5186, Chrome, the person's frames)
+## 1 · WHAT I SAW (I drove the app — vite :5186, fresh origin each hop)
 
-**The page comes back through the visible door — twice, at the eye.** Built state on the page (parcels placed from the shelf, a chamber standing) → **save the page…** (a real browser download, `manuscript-….page.json`) → browser reloaded (state wiped, verified: virgin Ambo) → Manuscript → **load the page…** → the whole page returns: every band glyph, the shelf with its placed marks, the chamber `built 3-manifold 1` — quiet (nothing selected, no notices), zero refusals. Then **saved the RESTORED page** (377,288 bytes, 4 shelf files — the ledger caught the in-session thicken too) → reloaded → loaded again: **the double hop reproduces the page exactly** — same glyphs, same chamber panel (v12 · e26 · f20 · c5, face-pairs 5 all preserving, S² sound, H₁ 0), and the walk caption is pixel-identical across hops. Nothing nested (the n-census of 26 entries is byte-stable across both hops).
+**§4 at the eye — the zoo is the ACT, and the act re-runs.** Pressed **"load the reference zoo"**: the six references entered ON the page (Torus T² · Klein K² · RP² · Sphere S² · Cylinder · Möbius, each atop its consumed, pencil-settled invoked square), the button left, and THE RECORD line read the constructions ("Square — invoked —glue→ Torus (T²) — born · …"). Saved the page: **the file is 152 bytes** — `written: 0, zooLoaded: true` — the twelve forms never entered it. Reloaded the browser (state wiped), loaded the file: **the committed door re-ran** — twelve forms re-derived, all re-marked, the button still gone, the same record line — the zoo came back as re-performed acts, not thawed content. Ambo → Manuscript round-trip after that: still twelve, no duplicates, the button stays closed — **the latent duplicate-zoo door (the flag dying on unmount while the store-held forms lived) is cured by the flag living on the page store.**
 
-**(A) The unmount is survived.** Manuscript → Ambo (unmount; store census still holds written 3 · shelf 4 · builtDomains 1) → Manuscript: the full page stands again, no load performed.
+**§5 at the eye — the restored page is SEEN.** The load landed and the very next frame was the FRAMED page — bands, references, the walk room — never bare paper. (The cure is the committed Reset Camera act fired inside the load handler; no new camera machinery.)
 
-**Negative controls the drive handed me for free:**
-- The page file handed to **Ambo's workspace door** (a mid-boot mis-click): refused BY NAME — *"Workspace schema must be platonic-engine.workspace…"*. Wrong file at the wrong door speaks; nothing loads.
-- Re-performing the same thicken on the restored page: the product minted the **same deterministic id** as the already-placed band (same act ⇒ same trace) and the placement door refused BY NAME — *"already on the sheet (one placement per loaded form)"*. The engine speaking the meaning-trace law back at me.
-
-**The acceptance's caption clause — NOT REACHED, and here is the mechanism (measured, not theorized).** The chamber's walk caption reads `cone edges (k×90° heuristic): 1 × 450°`, not `(measured): 1 × 300°` — **and the restore is FAITHFUL: the live pre-save page reads the same.** The chamber was built (leave-bounded, EXIT B — the same door the witness proves yields the measured 300° room) on a band whose dihedral-record keys live one namespace hop past its on-page parent; the exact-`===` pillar marriage this build mandated cannot cross that hop; the only bridge was the tail-match this build killed. Full statement above, TO THE MOTHERSHIP §1. Persistence itself is unaffected — hydration re-runs the same door on the same record and reproduces the same caption every hop, which is what a RECORD owes.
-
-**One drift disclosed:** twin shelf entries with identical ids (the loaded band + the re-thickened band) both read "placed" after a restore — `shelfPlacedShapeIds` is an id set and cannot tell twins apart. Cosmetic (placement stays refused; written is deduped by id), noted for the ledger.
-
-**One frame noted:** when the load lands during the Manuscript's mount animation, the first camera frame shows bare paper; Reset Camera (or any later mount) shows the restored page. The store had the page the whole time.
+**§3's person-facing half, witnessed at the reader:** the argument card's composed rows are proven across hops headless (below) — the reader that feeds the card is the code the witness runs; the card's pixels themselves were not re-driven this build (the §12 VIEW pin covers the row→render map).
 
 ## 2 · WHAT I RAN (the five witnesses)
 
 ```
-1  git diff --stat f252d40 HEAD -- src docs        → EMPTY (committed tree IS the audited sim tree)
-   (+ scripts/app-leg/diagnose-open-lift.cjs, added beyond the sim, ratified by running it — below)
+1  git diff --stat 96f76c5 HEAD → EMPTY (the committed tree IS the audited sim tree)
 2  freeze manifest, every touched file:
-   ManuscriptChrome.tsx / ManuscriptView.tsx / apertureModel.ts → NOT_FROZEN
-   pageSnapshot.ts / pageStore.ts → NOT_FROZEN (rows added this build)
-   snapshot.ts → FROZEN, SANCTIONED — edited + re-sealed in ONE commit (7caf30e), nothing else in it
-3  re-seal RECOMPUTED with positive control: old hash eccfaba7d807…56ed7 REPRODUCED at base;
-   new hash f5d40ffc91c6…52eec sealed (manifest line 87)
-4  suite at the sim tree: 112 files @ exactly 1 fail = diagnose-dual-inspection (accepted baseline)
-   npx tsc -b → exit 0 (tsbuildinfo churn restored, not staged)
-   scripts/app-leg/diagnose-open-lift.cjs → ALL GREEN, including:
-     #37 double hop: developed cone room 9 faces / 7 walls after TWO loader round-trips (exact ===)
-     §2 page double hop: save → load → save → load, zero refusals both hops, chamber re-derives,
-       shelf reloads its parcel, builtCount preserved
-5  THE READING — what the person sees, in the frame they are in: §1 above, driven at the eye
-   (save door visible on the shelf panel; the restored page quiet; the caption truth named)
+   geometry.ts → FROZEN, SANCTIONED THIS BUILD — edit + re-seal ONE commit (75c6abd)
+   snapshot.ts → FROZEN, standing sanction — edit + re-seal ONE commit (98d0626)
+   subComplexLift.ts / argumentReadingModel.ts / pageSnapshot.ts / pageStore.ts /
+   ManuscriptView.tsx / diagnose-* → NOT_FROZEN
+3  positive controls, both frozen files, at the real base:
+   geometry.ts  8abb1474…cb77a REPRODUCED → new seal 6ebdd92f…52d7b7
+   snapshot.ts  f5d40ffc…52eec REPRODUCED → new seal 7619e51c…e35f3b
+4  suite at the sim tree (96f76c5 = HEAD bytes): 112 files @ exactly 1 fail =
+   diagnose-dual-inspection (the accepted baseline)
+   npx tsc -b → exit 0 (after every commit; tsbuildinfo churn restored, never staged)
+   scripts/diagnose-argument-card.cjs → ALL PASS, including the two NEW §13 legs:
+     · the promoted record across a DOUBLE HOP under two different sources —
+       record ids VERBATIM raw→hop1→hop2 (nothing nests), doorway refs ===-live
+       in each hop's own id space, 6+4 stamps both hops
+     · the LEGACY CONTROL — a pre-promotion data-blob file loads whole: stamps
+       lifted to the named fields, blob keys stripped (one home), unrelated
+       data preserved, and the card reads the SAME composed rows off it
+   scripts/app-leg/diagnose-open-lift.cjs → ALL GREEN, including the new §4 leg:
+     the file's written EXCLUDES the zoo-marked entry, carries zooLoaded, and
+     the restore holds the act with no zoo forms on the page
+   probe (pre-seal, at the working tree): legacy blob migrate + re-root + verbatim
+     names + idempotent same-source second hop — all measured before committing
+5  THE READING — §1 above: the zoo re-derived at the eye from a 152-byte act,
+   the restored page framed on landing, the round-trip quiet
 ```
 
 ## 3 · WHAT I CHANGED
 
-- **`src/playground/snapshot.ts`** (`7caf30e`, FROZEN+SANCTIONED, one commit): `namespaceOne` re-roots the `dihedralAngles` record KEYS with everything else — the carried id-refs the cell spread left verbatim. #37's cure at the root.
-- **`src/manuscript/apertureModel.ts`** (`c5f52bc`): the pillar tail-match DIES by its booked condition — `keyMatchesPillar` is exact `===` only.
-- **`src/manuscript/pageStore.ts`** (NEW): the page relocated to module scope — live layer + record ledger + `loadPage` hydration re-running the committed doors, per-record named refusals, quiet restore.
-- **`src/manuscript/pageSnapshot.ts`** (NEW): the versioned page FILE (`platonic-engine.manuscript-page.v1`) — RECORD not READING; refuse-by-name on a foreign version; ids verbatim (#37 GAP 3).
-- **`src/manuscript/ManuscriptView.tsx`**: durable state moved onto the store (setters keep useState signatures); every domain door records its ledger entry (glue / leave-bounded, with `unbump` on refusal); save/load handlers (blob download · FileList door · quiet reset).
-- **`src/manuscript/ManuscriptChrome.tsx`**: the VISIBLE save/load doors on the sources shelf + the single-file page input (⛔ wordings flagged for the designer).
-- **`docs/governance/ENGINE_FREEZE_MANIFEST.txt`**: snapshot re-seal (frozen commit) + two NOT_FROZEN rows.
-- **`scripts/app-leg/diagnose-open-lift.cjs`** (`c55efea`): the #37 double-hop leg + the §2 page double-hop leg.
+- **`src/types/geometry.ts`** (`75c6abd`, FROZEN+sanctioned, one commit): `ComposedRelationStamp` + `composes?`/`sharedBy?` on Edge and Face — the manifold record PROMOTED to fields the loader can name. Doorway refs vs source-universe names distinguished in the type's own doc.
+- **`src/playground/snapshot.ts`** (`98d0626`, FROZEN+sanctioned, one commit): `namespaceOne` re-roots the named stamps (parts/sourceVertexIds prefix with the shape's ids; record id + sharedBy entries VERBATIM — hop-stable), and LIFTS a pre-promotion file's data-blob stamps into the named fields on load (blob keys stripped — one home; malformed blobs left untouched).
+- **`src/lib/subComplexLift.ts`** (`e053684`): the mint writes the named fields; the data-blob home retires at the source.
+- **`src/manuscript/argumentReadingModel.ts`** (`e053684`): the card reads the named fields; `resolveLive` is exact `===` — **the last composes-suffix walk is dead** (the `?? recordedId` fallback stays: an unresolvable name is carried, never fabricated).
+- **`scripts/diagnose-argument-card.cjs`** (`e053684`): the blob pins recut to the named home + the blob's ABSENCE pinned on the loaded shape; the two §13 legs above.
+- **`src/manuscript/pageSnapshot.ts`** (`e291a56`): `zooMember?` mark on written entries; `zooLoaded` on file+records; the serializer EXCLUDES zoo entries (the file's own law); additive fields, version unchanged (refuse-by-name is for foreign versions).
+- **`src/manuscript/pageStore.ts`** (`e291a56`): `zooLoaded` on the live layer + `recordZooLoaded` hook; `pageRecords`/`loadPage` carry the act.
+- **`src/manuscript/ManuscriptView.tsx`** (`e291a56`): the zoo flag reads the store; `summonZooForms` split from the handler with the authoritative guard reading the store fresh (StrictMode-safe); the §4 hydration effect re-runs the door on act-with-no-zoo; `handleLoadPage` fires the committed Reset Camera act on success (§5).
+- **`scripts/app-leg/diagnose-open-lift.cjs`** (`e291a56`): the §4 record-not-reading leg.
+- **`.handoff/THE_BUILD.md`** (`13f17f3`): the mandate record, protected.
 
-## 4 · WHAT I COULD NOT REACH
+## 4 · WHAT I COULD NOT REACH / DID NOT TOUCH
 
-- **The acceptance caption `cone edges (measured): 1 × 300°` after reload** — unreachable through the app's committed doors while the GAP-2 kill stands; the contradiction is routed above with both measurements. (The caption IS stable across hops — the persistence half of the sentence holds.)
-- **GAP 1 (+ its dependent GAP-2 flips)** — frozen ground, routed above, not spent.
-- **HELD, untouched, per the brief:** the card union (`level3Invariants.ts` / `specimenModel.ts`), the parked set, force-push (never).
+- **§2(ii)** — not built, per your gate; (iii)'s answer + the three roads are routed above.
+- **The five non-traveler suffix sites** — named above, standing with their guards, awaiting (ii).
+- **The twin shelf entries** — ledger'd last build, untouched per §5's ruling.
+- **HELD:** the card union (`level3Invariants.ts` / `specimenModel.ts`), the parked set; no force-push.
