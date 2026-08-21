@@ -293,11 +293,17 @@ export function thicken(form: Shape, segment?: Shape, name?: string): ThickenRes
     cells,
     generations: [],
     genealogy: {
-      // GAP2B: the arity-2 birth has TWO parents — parentShapeId null by the
-      // connectedSum design (a single pointer would crown one parent); the
-      // record below names both. The unary spelling keeps the committed
-      // single-parent pointer byte-identically.
-      parentShapeId: segment !== undefined ? null : form.id,
+      // 2(b) (B-2026-08-22-C, mothership-ruled): the pointer NAMES THE BASE
+      // at both arities — a thicken is `shape × segment → band` and the
+      // band's meaning IS that operation on those operands, so the base is
+      // not "crowned over" the segment: it is the metric operand the sealed
+      // caption must find on the far side of a hop (the segment still rides
+      // the product record below, which names both parents). The old
+      // arity-2 null (the connectedSum spelling) left D1's thread rootless
+      // — measured: the loader nulls an un-carried pointer, the hop starves
+      // `readPillarDihedrals` of its operand, and the walk caption fell to
+      // the k×90° heuristic on every shelf-routed band.
+      parentShapeId: form.id,
       operation: 'product',
       generationDepth: form.genealogy.generationDepth + 1,
       sourceVertexIds: Object.keys(form.vertices),

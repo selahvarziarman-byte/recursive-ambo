@@ -574,16 +574,17 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   // pushes it; both parents stay live (`product` is NON-CONSUMING).
   thickenManuscript: (shape, segment) => {
     const band = thicken(shape, segment);
-    useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id) });
-    // D1 (2026-08-14): the thread's first station — the arity-2 birth names
-    // its base in the PRODUCT RECORD (thicken:305 `product.parents`), never
-    // in the genealogy (`parentShapeId` stays null — the connectedSum design
-    // crowns no parent). D8 (2026-08-15): the product's OWN mint-time shape
-    // id rides out too — the view keys the carried base by it so the DOOR
-    // can resolve the base on the placed product. ⚠ the shelf load
-    // RE-NAMESPACES the id (`snapshot:<source>:<originalId>`); the mint id
-    // survives as that id's strict suffix and the door matches by it (the
-    // product record itself does not survive the snapshot at all).
+    // 2(b) (B-2026-08-22-C, mothership-ruled): the join hands the OPERAND —
+    // `[shape]` rides the file as ancestors (the record being WHOLE: the
+    // base is what the band is made OF, not context it refers to), and the
+    // committed loader preserves the genealogy pointer onto the
+    // reconstructed ancestor in the hop's own id space — the pillar reader
+    // gets its operand and the sealed metric survives every shelf hop.
+    // D1's thread now starts at the genealogy pointer itself (thicken names
+    // the base at both arities); the segment still rides the product
+    // record. D8 stands: the mint-time shape id keys the carried base for
+    // the same-session placed product (exact id — nothing hopped there).
+    useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id, [shape]) });
     return { name: band.shape.name, shapeId: band.shape.id, metricBaseId: band.product.parents?.shapeId ?? null };
   },
   // P1 THE LOOP-MAKER (DOORS batch): the FOLD word on a SEGMENT closes it into

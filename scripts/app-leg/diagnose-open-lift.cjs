@@ -266,5 +266,49 @@ check('apertureParityCensus (cube): even classes — 3 pairs possible, 0 forced 
     `hopA refusals=${refusalsA.length} surf=${surfA ? `${surfA.faces.length}/${surfA.wallCount}` : 'n/a'} · hopB refusals=${refusalsB.length} surf=${surfB ? `${surfB.faces.length}/${surfB.wallCount}` : 'n/a'}`);
 }
 
+// 2(b) (B-2026-08-22-C, mothership-ruled) — THE OPERAND RIDES AND THE
+// MARRIAGE MEASURES: arity-2 thicken names the base in the genealogy
+// pointer; the join's ancestry rides the file (the widened gate: a caller
+// that hands ancestry is declaring the operands of the making); the
+// committed loader preserves the pointer onto the CARRIED ancestor in the
+// hop's own id space; and resolveConeAngleSource reads MEASURED 1 × 300°
+// after ONE hop AND after TWO (the operand re-rides; nothing nests into a
+// wrong space). LAW 24 CONTROL: a cube (no owned dihedrals) reads the
+// k×90° HEURISTIC through the same reader — the cure did not make
+// everything "measured".
+{
+  const probeSeg = {
+    id: 'twob:seg', name: '2b segment',
+    vertices: {
+      'twob:v0': { id: 'twob:v0', position: [0, 0, 0], data: { label: '', notes: '', color: '', tags: [], custom: {} }, createdBy: { shapeId: 'twob:seg', operation: 'seed', sourceVertexIds: [] } },
+      'twob:v1': { id: 'twob:v1', position: [0, 0, 1], data: { label: '', notes: '', color: '', tags: [], custom: {} }, createdBy: { shapeId: 'twob:seg', operation: 'seed', sourceVertexIds: [] } },
+    },
+    edges: [{ id: 'twob:e0', vertexIds: ['twob:v0', 'twob:v1'], sourceVertexIds: ['twob:v0', 'twob:v1'] }],
+    faces: [], cells: [], generations: [],
+    genealogy: { parentShapeId: null, operation: 'seed', generationDepth: 0, sourceVertexIds: [], createdVertexIds: [], createdAt: '' },
+  };
+  const { serializeSnapshot: serB, deserializeSnapshot: desB } = req('src/playground/snapshot.ts');
+  const band2 = thicken(lift.shape, probeSeg).shape;
+  check('2(b) the pointer names the base at arity-2 (thicken\'s own mint)', band2.genealogy.parentShapeId === lift.shape.id);
+  const hopA2 = desB(JSON.parse(JSON.stringify(serB(band2, 'twob-a', [lift.shape]))));
+  const ancA = hopA2.ancestors ?? [];
+  const domA2 = buildFormDomain(hopA2.shape, [], '2b-a', '2b-a');
+  const srcA2 = A.resolveConeAngleSource(domA2, { base: ancA[0] });
+  const degA = srcA2.anglesByClass ? Math.round(([...srcA2.anglesByClass.values()][0] * 180) / Math.PI) : null;
+  const hopB2 = desB(JSON.parse(JSON.stringify(serB(hopA2.shape, 'twob-b', hopA2.ancestors ?? []))));
+  const ancB = hopB2.ancestors ?? [];
+  const domB2 = buildFormDomain(hopB2.shape, [], '2b-b', '2b-b');
+  const srcB2 = A.resolveConeAngleSource(domB2, { base: ancB[0] });
+  const degB2 = srcB2.anglesByClass ? Math.round(([...srcB2.anglesByClass.values()][0] * 180) / Math.PI) : null;
+  check('2(b) the operand rides BOTH hops and the sealed metric survives: ancestors present, pointer === carried ancestor id, MEASURED 1 × 300° after hop 1 AND hop 2',
+    ancA.length >= 1 && hopA2.shape.genealogy.parentShapeId === ancA[0].id && srcA2.kind === 'measured' && degA === 300 &&
+      ancB.length >= 1 && hopB2.shape.genealogy.parentShapeId === ancB[0].id && srcB2.kind === 'measured' && degB2 === 300,
+    `hop1 kind=${srcA2.kind}/${degA}° · hop2 kind=${srcB2.kind}/${degB2}°`);
+  const cubeDom = buildFormDomain(createSeedShape('cube'), [], '2b-cube', '2b-cube');
+  const cubeSrc = A.resolveConeAngleSource(cubeDom, { base: createSeedShape('cube') });
+  check('2(b) LAW 24 POSITIVE CONTROL: the cube (no owned dihedrals) still reads the k×90° HEURISTIC — both states positively marked, the cure proved something',
+    cubeSrc.kind === 'heuristic' && cubeSrc.refusal === null, `kind=${cubeSrc.kind}`);
+}
+
 console.log(failures === 0 ? '\nDIAGNOSE-OPEN-LIFT: ALL GREEN' : `\nDIAGNOSE-OPEN-LIFT: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);

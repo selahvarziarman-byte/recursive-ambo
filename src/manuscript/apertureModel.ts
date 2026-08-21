@@ -704,21 +704,20 @@ export function boundaryFacesOf(shape: Shape, resolveAbsent?: AbsentLabelResolve
   return entries;
 }
 
-// D8 amendment 1 (engineer 1759): the carried-base resolve, PURE and
-// ambiguity-refusing. The shelf load re-namespaces a product's id to
-// `snapshot:<source>:<originalId>`, so the mint-time key survives only as a
-// strict `:`-suffix — and id-nesting is real in this codebase (an
-// open-lift's id ENDS WITH its source's id), so a first-match-wins scan
-// over a Map would let insertion order silently pick the person's base.
-// The rule: an EXACT id match is the identity and wins outright; otherwise
-// ALL suffix matches are collected — exactly one is the base; two or more
-// REFUSE BY NAME (the sentence names the candidates and reaches the caption
-// through the D1 `baseMissing` floor as `unresolved-base` — never a guess);
-// zero yields nothing (the caller's unary fallback stands).
+// D8 amendment 1 (engineer 1759) → 2(b) recut (B-2026-08-22-C, ruling (i):
+// identity across a hop is a RECORD, never a string relation): the
+// carried-base resolve is EXACT-ONLY now. The suffix arm — and the
+// amendment-1759 ambiguity refusal that existed solely to guard it — dies
+// with its class: a hopped product no longer resolves its base by name
+// surgery at all; its genealogy pointer (re-rooted by the committed loader
+// onto the CARRIED ancestor riding the same file) is the record the view
+// reads FIRST, and this map remains only the mint-time exact-id fallback
+// for a product that never hopped. Zero yields nothing — the caller's
+// pointer road stands; nothing is ever guessed.
 export interface CarriedMetricBaseResolution {
   baseId: string | null;
-  // ⛔ COPY PENDING THE DESIGNER (flagged): the refusal reaches the person
-  // through the caption's UNRESOLVED slot; the wording is hers.
+  // retained for the RECORD type (old page files carry named refusals);
+  // this resolver no longer mints one — the walk it guarded is dead.
   ambiguity: string | null;
 }
 
@@ -728,24 +727,6 @@ export function resolveCarriedMetricBase(
 ): CarriedMetricBaseResolution {
   const exact = carried.get(volumeId);
   if (exact) return { baseId: exact, ambiguity: null };
-  const matches: string[] = [];
-  for (const mintId of carried.keys()) {
-    if (volumeId.endsWith(`:${mintId}`)) matches.push(mintId);
-  }
-  if (matches.length === 1) return { baseId: carried.get(matches[0]) ?? null, ambiguity: null };
-  if (matches.length > 1) {
-    // the candidates are named IN FULL — a nesting ambiguity is exactly the
-    // case where the ids' short tails coincide (that is what made them
-    // ambiguous), so the tails would name nothing. ⚠ F.4 tension (full ids
-    // in a caption-bound sentence) is the designer's to resolve with the
-    // wording (flagged).
-    return {
-      baseId: null,
-      ambiguity: `this volume could not be matched to a UNIQUE recorded base — ${matches.length} carried mint ids suffix-match its loaded id (${matches
-        .map((m) => `"${m}"`)
-        .join(', ')}); refusing to guess between their bases`,
-    };
-  }
   return { baseId: null, ambiguity: null };
 }
 

@@ -86,9 +86,9 @@ const segment = {
 const band = thicken(lift.shape, segment);
 const product = band.shape;
 check(
-  'the arity-2 record: parentShapeId NULL (no parent crowned) · product.parents names the base (thicken:305)',
-  product.genealogy.parentShapeId === null && band.product.parents?.shapeId === lift.shape.id,
-  `parents.shapeId=${band.product.parents?.shapeId?.slice(0, 40)}`,
+  'the arity-2 record (2(b) recut, B-2026-08-22-C): parentShapeId NAMES THE BASE — the pointer is the record at both arities (the band\'s meaning IS shape × segment, and the metric operand must be findable across a hop) · product.parents still names both parents (thicken)',
+  product.genealogy.parentShapeId === lift.shape.id && band.product.parents?.shapeId === lift.shape.id,
+  `parentShapeId===base: ${product.genealogy.parentShapeId === lift.shape.id} · parents.shapeId=${band.product.parents?.shapeId?.slice(0, 40)}`,
 );
 const domain = buildFormDomain(product, [], 'd1-room', 'the d1 fan room');
 
@@ -150,13 +150,15 @@ const storeSrc = fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts
 // door's BOTH-exit writes are the only carriers onto built rooms.
 const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
 check(
-  '(b) the thread stations all present: thickenManuscript returns the product record\'s base id + the product\'s own mint id; the view CARRIES the base at the mint; the door resolves through the model\'s resolveCarriedMetricBase (exact wins · one suffix match is the base · two refuse · genealogy pointer = the unary fallback only) and writes base OR refusal at BOTH exits; the reader hands either to the D1 floor; the caption slot table holds all three positive marks (the designer\'s strings to replace)',
+  '(b) the thread stations all present (2(b) recut): the join hands the OPERAND (`[shape]` rides the file); the POINTER is read FIRST when it resolves on the page (a record read — never a string marriage); the D8 carried map is the mint-time EXACT fallback (the suffix walk + its ambiguity guard are DEAD in the model); base OR refusal still written at BOTH exits; the reader hands either to the D1 floor; the caption slot table holds all three positive marks',
   storeSrc.includes('metricBaseId: band.product.parents?.shapeId ?? null') &&
     storeSrc.includes('shapeId: band.shape.id') &&
+    storeSrc.includes('serializeSnapshot(band.shape, shape.id, [shape])') &&
     viewSrc.includes('productMetricBasesRef.current.set(shapeId, metricBaseId)') &&
+    viewSrc.includes('if (pointer && shapeById.has(pointer)) return { baseId: pointer, ambiguity: null };') &&
     viewSrc.includes('resolveCarriedMetricBase(apertureVolume.id, productMetricBasesRef.current)') &&
-    modelSrc.includes('volumeId.endsWith(`:${mintId}`)') &&
-    modelSrc.includes('if (matches.length > 1)') &&
+    !modelSrc.includes('volumeId.endsWith(`:${mintId}`)') &&
+    !modelSrc.includes('if (matches.length > 1)') &&
     !viewSrc.includes('apertureTarget?.parent?.id ?? null') &&
     !viewSrc.includes('[`built-${n}`]: metricBaseId') &&
     (viewSrc.match(/\[`built-\$\{n\}`\]: apertureVolumeBase\.baseId as string/g) ?? []).length === 2 &&
@@ -167,37 +169,37 @@ check(
     viewSrc.includes('baseMissing: `the recorded metric base') &&
     viewSrc.includes("'unresolved-base': 'sealed metric UNRESOLVED'") &&
     viewSrc.includes('METRIC_MARK[metricSource]'),
-  'the sixteen pins (both-exit base AND refusal writes counted; resolver + ambiguity guard pinned in the model)',
+  'the pins (pointer-first + operand-riding join + dead suffix walk; both-exit writes; the D1 floor + slot table)',
 );
 
-// ---- (e) amendment 1759: the suffix resolve REFUSES AMBIGUITY -------------
-console.log('\n— (e) the resolve never silently picks: ambiguity is refused BY NAME —');
+// ---- (e) 2(b) recut — THE SUFFIX WALK IS DEAD (ruling (i)): the resolver
+// is exact-only; a hopped id resolves through the POINTER road, never here
+console.log('\n— (e) the resolve is exact-only: the suffix class is dead, nothing is guessed —');
 {
   const carried = new Map([
     ['shape:thicken:inner', 'base-A'],
-    ['nest:shape:thicken:inner', 'base-B'], // its mint id ENDS WITH the first's — the planted nesting
+    ['nest:shape:thicken:inner', 'base-B'], // its mint id ENDS WITH the first's — the old planted nesting
   ]);
-  const ambiguous = A.resolveCarriedMetricBase('snapshot:src:nest:shape:thicken:inner', carried);
+  const hopped = A.resolveCarriedMetricBase('snapshot:src:nest:shape:thicken:inner', carried);
   check(
-    '(e1) TWO strict-suffix matches ⇒ no base, the refusal SENTENCE names the count (never an insertion-order pick)',
-    ambiguous.baseId === null &&
-      typeof ambiguous.ambiguity === 'string' &&
-      /UNIQUE/.test(ambiguous.ambiguity) &&
-      /2 carried mint ids/.test(ambiguous.ambiguity),
-    (ambiguous.ambiguity ?? 'NO SENTENCE').slice(0, 120),
+    '(e1) a HOPPED id (the old two-suffix-match plant) resolves NOTHING here — no pick, no sentence: the walk that needed the ambiguity guard is dead, and the pointer road owns the hopped case',
+    hopped.baseId === null && hopped.ambiguity === null,
   );
-  const unique = A.resolveCarriedMetricBase(
+  const wouldBeSuffix = A.resolveCarriedMetricBase(
     'snapshot:src:shape:thicken:solo',
     new Map([['shape:thicken:solo', 'base-C']]),
   );
-  check('(e2) exactly ONE suffix match ⇒ the base, no refusal', unique.baseId === 'base-C' && unique.ambiguity === null);
+  check(
+    '(e2) the old one-suffix-match case resolves NOTHING here either — identity across a hop is a RECORD, never a string relation',
+    wouldBeSuffix.baseId === null && wouldBeSuffix.ambiguity === null,
+  );
   const exact = A.resolveCarriedMetricBase('nest:shape:thicken:inner', carried);
   check(
-    '(e3) an EXACT id match is the identity and wins outright — even while a second key suffix-matches it',
+    '(e3) an EXACT id match is the identity and wins outright — the un-hopped mint-time case, unchanged',
     exact.baseId === 'base-B' && exact.ambiguity === null,
   );
   const none = A.resolveCarriedMetricBase('snapshot:src:shape:other', carried);
-  check('(e4) ZERO matches ⇒ nothing (the caller\'s unary fallback stands)', none.baseId === null && none.ambiguity === null);
+  check('(e4) ZERO matches ⇒ nothing (the caller\'s pointer road stands)', none.baseId === null && none.ambiguity === null);
 }
 
 console.log(failures === 0 ? '\nDIAGNOSE-D1-METRIC-THREAD: ALL GREEN' : `\nDIAGNOSE-D1-METRIC-THREAD: ${failures} FAILURE(S)`);

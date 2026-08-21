@@ -2347,6 +2347,12 @@ export default function ManuscriptView() {
   // REGISTRY UNBOUNDING (2026-07-11): the page's shape lookup — the REAL
   // lineage walk resolves each target's full ancestry over the world's and
   // the written forms' shapes (parents included), never a fabricated list.
+  // 2(b) (B-2026-08-22-C): the shelf's CARRIED ancestors join the lookup —
+  // a hopped product's genealogy pointer names its reconstructed operand
+  // (the committed loader's parentPointer), and that operand OBJECT lives
+  // on the ShelfEntry (`loaded.ancestors`, the record being whole); without
+  // this the pointer would name a shape the page could not hand the pillar
+  // reader, and the sealed metric would refuse as unresolved-base.
   const shapeById = useMemo(() => {
     const map = new Map<string, Shape>();
     world.dim1.forEach((m) => map.set(m.shape.id, m.shape));
@@ -2356,8 +2362,13 @@ export default function ManuscriptView() {
       map.set(w.form.shape.id, w.form.shape);
       if (w.form.parentShape) map.set(w.form.parentShape.id, w.form.parentShape);
     });
+    shelf.forEach((item) => {
+      (item.entry.loaded.ancestors ?? []).forEach((ancestor) => {
+        if (!map.has(ancestor.id)) map.set(ancestor.id, ancestor);
+      });
+    });
     return map;
-  }, [world, written, dim3All]);
+  }, [world, written, dim3All, shelf]);
 
   // THE APERTURE per dim-3 domain: the GATE first (unsound · fit refusal ⇒
   // DRAW NOTHING, SAY SO — the refusal IS the caption; B.0: a sound cone form
@@ -2576,38 +2587,40 @@ export default function ManuscriptView() {
     : apertureTarget.shape.cells.length === 0
       ? 'this form is a surface, not a solid — there is no room to build on it'
       : null;
-  // D8 (engineer 1629, THE-COMMENT law): this derivation reads the CARRIED
-  // PRODUCT-RECORD base — `productMetricBasesRef`, written at the thicken
-  // mint from `product.parents` (thicken:305) and keyed by the product's own
-  // MINT-TIME shape id. ⚠ the shelf → paper route RE-NAMESPACES that id
-  // (deserializeSnapshot: `snapshot:<source>:<originalId>`; placeShelfEntry
-  // then places the loaded shape verbatim with `parentShape: null` by
-  // construction — no parent fallback exists on that route). The resolve is
-  // the model's `resolveCarriedMetricBase` (amendment 1759): exact id wins;
-  // otherwise ALL strict `:`-suffix matches are collected — one is the
-  // base, TWO OR MORE refuse BY NAME (the ambiguity sentence rides to the
-  // caption's UNRESOLVED slot; never a silent insertion-order pick). The
-  // genealogy pointer is the UNARY fallback only: the arity-2 birth sets
-  // `parentShapeId: null` BY DESIGN (GAP2B — no parent is crowned), so for
-  // the person's thicken product the carried record is the ONLY base.
+  // 2(b) (B-2026-08-22-C, mothership-ruled) — THE POINTER IS THE RECORD,
+  // read FIRST: thicken names the base at BOTH arities now, and the
+  // committed loader re-roots the pointer onto the CARRIED ancestor riding
+  // the product's own file — so on a hopped band the pointer names an
+  // object shapeById can actually hand the pillar reader (the operand, in
+  // the product's own id space; the mint-space look-alike on the page is
+  // the WRONG operand — measured, that mismatch was the heuristic-caption
+  // bug). The D8 carried map (`productMetricBasesRef`, mint-time keys) is
+  // the exact-id fallback for a product that never hopped; its suffix walk
+  // and the amendment-1759 ambiguity that guarded it are DEAD (ruling (i)).
+  // A pointer that resolves nowhere still rides out last — the aperture
+  // memo turns it into the honest `unresolved-base` refusal, never a guess.
   const apertureVolumeBase = useMemo((): CarriedMetricBaseResolution => {
     if (!apertureVolume || apertureVolume.genealogy?.operation !== 'product') {
       return { baseId: null, ambiguity: null };
     }
+    const pointer = apertureVolume.genealogy.parentShapeId ?? null;
+    if (pointer && shapeById.has(pointer)) return { baseId: pointer, ambiguity: null };
     const resolved = resolveCarriedMetricBase(apertureVolume.id, productMetricBasesRef.current);
     if (resolved.baseId !== null || resolved.ambiguity !== null) return resolved;
-    return { baseId: apertureVolume.genealogy.parentShapeId ?? null, ambiguity: null };
-  }, [apertureVolume]);
-  // D12-b part 4 (engineer 1740): the door's absent-label resolver — the ×I
-  // copy's source lives OUTSIDE the product (in the base form, on the page),
-  // so the resolve happens here, over the page population. Exact vertex-id
-  // match first; then ONE namespace layer (the shelf load prefixes the
-  // product's `sourceVertexIds` with the snapshot source — the live id
-  // survives as the strict `:`-suffix, the D8 lesson at vertex grain). ALL
+    return { baseId: pointer, ambiguity: null };
+  }, [apertureVolume, shapeById]);
+  // D12-b part 4 (engineer 1740) → 2(b) recut (ruling (i)): the door's
+  // absent-label resolver — the ×I copy's source lives OUTSIDE the product
+  // (in the base form), and the base now RIDES the product's own file as
+  // its carried ancestor, entering `shapeById` in the SAME id space the
+  // loader gave the product's `sourceVertexIds` — so the resolve is an
+  // EXACT vertex-id match over the page population, and the retired
+  // one-namespace-layer suffix walk is dead with its class. ALL
   // positively-present candidate labels must AGREE — disagreement or none
-  // refuses (null → `unnamed`; the D8 amendment's ambiguity law, never a
-  // silent pick). An id-copy or empty source label is no name and never
-  // resolves (the scaffold's discipline holds through the walk).
+  // refuses (null → `unnamed`, never a silent pick). An id-copy or empty
+  // source label is no name and never resolves. A pre-2(b) band file that
+  // carries no ancestor resolves nothing and reads the honest `unnamed` —
+  // its record was never whole, and the label no longer pretends it was.
   const resolveAbsentLabel = useMemo(() => {
     const shapes = [...shapeById.values()];
     return (sourceVertexIds: string[], _vertexId: string): string | null => {
@@ -2616,7 +2629,7 @@ export default function ManuscriptView() {
       const labels = new Set<string>();
       for (const shape of shapes) {
         for (const vertex of Object.values(shape.vertices)) {
-          if (vertex.id !== ref && !ref.endsWith(`:${vertex.id}`)) continue;
+          if (vertex.id !== ref) continue;
           const raw = typeof vertex.data?.label === 'string' ? vertex.data.label.trim() : '';
           if (raw.length === 0 || raw === vertex.id) continue; // absence or manufacture — no name to carry
           labels.add(raw);
