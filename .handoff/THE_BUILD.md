@@ -1,52 +1,43 @@
 # THE BUILD — always current, self-contained
 
-**Written by: mothership · 2026-08-21 · base `8752c88` · branch `team-arman`**
+**Written by: mothership · 2026-08-21 · base `a2aaf36` · branch `team-arman`**
 *Read `CLAUDE.md` at the repo root first. **If anything below contradicts what you MEASURE, your measurement wins** — say so in the report.*
-
-⚠ **This supersedes the previous THE_BUILD.** The designer ruled on my routed question and it **changes the shape of the work.** F.0b still lands, but what its marks LOOK like changes, and one clause I ratified was half-cured.
 
 ---
 
-## 1 · ⛔ MY ERROR, FIRST, BECAUSE YOU MAY HAVE READ MY PRAISE AS A CLOSE
+## 1 · ✅ F.0e RATIFIED — read at my own eye on both frames
 
-I ratified the subtitle from your frame as *"the `:625` contradiction cured."* ⛔ **It is HALF cured.** The designer's delivered line carried a clause the wired one dropped: **`the rest stand as walls`.** Without it, *"pair the faces it owns"* still reads as ***pair them all*** — and it is the clause that makes the `leave bounded` button legible, the one Arman called *"whatever that is."*
+`f0e_pending_dashed_vs_decided_solid_zoom.png`: **two dashed steel rings and two solid orange rings on one wireframe, unconfusable at a glance.** `f0e_both_pairs_decided_traced_zoom.png`: **four traced faces, two hues, start ticks visible, no dashes left.** ✔ **The traces genuinely enclose faces. Clause 2 lands: two faces picked, no map, and he sees which two.**
 
-> ### ⇒ ***I audited the fix against the DEFECT and not against the SPEC.*** The cube-wording was gone, so I closed it. **A fix checked only against what it REMOVED will pass while what it was supposed to ADD is missing.** Mine, not yours.
+★★★ **And the thing worth more than the cut: `d14NameRotation`.** The rotation that orders the trace **is literally the extracted rotation the printed name uses** — so the mark and the name are **one object in code, one producer.** ⇒ ***Agreement is not correctness* answered by CONSTRUCTION, not by two implementations agreeing to behave.** That is the strongest form of that law this project has produced, and it came from the designer's insight and your wiring of it. **Recorded as the standard.**
 
-## 2 · ★★★ THE RULING THAT CHANGES THE WORK — a skeleton has no face to mark
+★★ **Three more, each of which I would have had to ask for and did not:**
+- **The re-seal:** you recomputed independently and it matched the dissolved seat's sim value — and you said ***"now that agreement is a check, not the evidence."*** **That is the vacuity law honoured without being told.**
+- **You refused to inherit the sim's superseded `+2.2` offset and hollow studs.** A parked sim is a claim, not a receipt. Correct.
+- **`7af0f24` is a REAL falsifier, both directions:** a genuine six-cell volume, reversing refused **live**, preserving passes, **and the commit-side wall byte-unchanged** — so you proved the limit MOVED rather than merely appeared.
 
-I worried that a **dot at a centroid says a LOCATION, not a FACE.** The designer confirms it and gives the structural reason: ***a wireframe has no face treatment to modulate*** — her R.2 was written for a surface with faces, and the cure moved the mark to one without. **The centroid was the only thing a skeleton offers. It was not sloppy; it was the only affordance there.**
+## 2 · ⛔ THE FRONT ITEM'S ACCEPTANCE IS NOT YOURS TO GIVE, AND NOT MINE
 
-> ### ⇒ **MARK THE FACE BY TRACING ITS OWN EDGE CYCLE, NOT ITS CENTRE.**
-> - ✔ **It is the one thing a skeleton actually has**, and a traced cycle **encloses exactly one face** — unambiguous at any viewing angle, at any face count, axis-aligned or not. Two centroids stop being distinguishable the moment they project near each other; two cycles never do.
-> - ★★ **AND THE TRACE *IS* THE NAME.** D14 composes the name from the corners **in cycle order** — so tracing `A→D→C→B` **draws** `A·D·C·B`. ⇒ **The mark and the name stop being two artifacts that must agree and become ONE OBJECT.** That is *agreement is not correctness* answered by construction instead of by discipline — **the strongest form of it we have found.**
-> - ★ **The trace's DIRECTION carries the orientation** — the twist. ⇒ **the expensive remaining half of blind identification gets most of its payload for free:** the twist shows as the ORDER the corners light, on the figure, while the choosing stays in the list where Arman ruled it belongs.
-> - ✔ Tracing is PROMOTION and the pair is what he is attending to; **unpaired faces stay in ink, `wall`/`door` unchanged.**
+Blind identification is cured **at your eye and at mine.** ⛔ **It is not accepted until ARMAN builds a room.** His own words were *"i could not build a walkable room from 5-cell — the same defect: blind identification."* ⇒ **The acceptance is that sentence becoming false, at his hand, on the fan.** He is driving it now. **Do not chase it; if it fails, the failure will arrive here with his words in it.**
 
-⚠ **Her words, and they bound your craft not your requirement:** *"Keep the dots or drop them — that is craft and I will not settle it off a description. But they cannot be the thing that says which face."*
+## 3 · THE TASK — **W.7**, and it does not depend on the above
 
-## 3 · THE TASK — **TWO CUTS, and the split is forced by the register law**
+**Context, because you have not touched this surface.** The Manuscript lets a person **walk inside** a 3-manifold they built. When their walk returns to where it started, the room says so on its caption, in ratified strings:
+> **`back where you started` · `N doors` · one of `the room came back turned` / `the same way up` / `mirrored`**
+Landed at `fdb92ca` + `bd5829d`; **Arman walked a circuit by hand and the line fired.** Accepted.
 
-⛔ **A frozen-file commit is the edit + the re-seal and NOTHING ELSE IN IT.** So this cannot be one commit.
+⛔ **What is missing — and it is a defect of the MARK, not of the walk.** **The mark is the COMPARISON, not either line.** `2 doors · turned` means something only against `4 doors · the same way up`. A caption showing **only the latest return** makes him hold the first circuit's reading in his head while walking the second.
 
-### CUT A — the union (frozen, sanctioned)
-**Land F.0b: `DomainPairMark` able to state *"faces chosen, meeting unknown"* positively, plus the `correspondence` carry.**
-⚠ **What you may NOT inherit:** `68d6a14` was built by a previous coder and audited by the **engineer seat, since dissolved.** ⇒ ***That audit is ⚠ on a seat that could not run the app, not ✔.*** **Re-establish it yourself at the real base:** recompute the `worldModel.ts` re-seal **with its positive control** (do not carry a hash from `61ea3e6`); the stash was taken before the skeleton moved, so **whether it still applies is a measurement**; its falsifier runs both directions.
-⛔ **Nothing else in this commit.**
+> ### ⇒ **W.7 — THE RETURN LINE KEEPS THE PREVIOUS RETURN BESIDE THE CURRENT ONE.**
+> ✔ **Ratified** (designer's spec, my ruling). ⚠ **Two lines instead of one is the named cost.**
+> ⛔ **KEEP THE HONEST DUPLICATE:** two circuits round the same edge show the same pair twice — **they walked it twice, and a display that silently de-dups is a display lying about what he did.**
+> ★ **Why it is forced rather than wanted:** her W.3 already forbids demanding recall. Without W.7 the comparison is handed back to memory **by the display**, one layer below where W.3 caught it.
 
-### CUT B — the reading (free)
-1. **The pair marks render as TRACED EDGE CYCLES.** Clause 2 lands here: *two faces picked, no map ⇒ he sees WHICH TWO, by their traced cycles.* ⛔ **A pending trace must be unconfusable with a decided one** — that is why pending is a separate type with no `mode`.
-2. **The subtitle, amended (§1):** `this volume · {N} faces · pair the ones you choose — the rest stand as walls · the mode follows from the map, never chosen`. ⚠ **`{N}` only if the count is genuinely reachable — drop it rather than fake it.**
-3. **The MISPLACED REFUSAL** — hers, open, same panel: the **reversing-map-on-a-multi-cell** limit refuses at `buildPersonDomainVerdict:840-845`, i.e. **at COMMIT**, while its sibling (a face meets only an equal-cornered face) refuses **LIVE** at `aperturePairingRefusal:749-753`. ⇒ **One condition into the ladder that already exists**, and `describeCandidate` already prints the derived mode so the option can say it where it is chosen. *A limit found at commit costs the whole act; the same limit at pick-time costs one pick.*
-4. **Strike `state persists`** from the chrome — **no replacement.** A false claim is removed, not balanced. ⚠ Check the manifest for its file; do not take my word that it is free.
+**ACCEPTANCE — at his eye:** *he walks one circuit, then another, and **sees both readings at once** without scrolling, without remembering, and can tell which is the one he just closed.*
+⚠ **Constraints already ruled, do not re-derive:** the strings are FINAL · `1 door` singular, `N doors` otherwise · it **persists, it does not flash** (a person closing a circuit is looking at the room; a transient line arrives while he is looking elsewhere) · it gets **its own line**, not appended to a standing one — the deck/boundary lines say what the room **IS**, this says what just **HAPPENED**, and mixing the grammars makes the standing lines look momentary.
 
-**ACCEPTANCE — at his eye, in the frame he is in:**
-> **Two faces picked, no map ⇒ he can see WHICH TWO, traced.** · **A map picked ⇒ he can see the pairing, and the trace's direction says which way it meets.** · **He can tell a pending pair from a decided one.** · **The subtitle tells him unpaired faces become walls.**
-⛔ **Not a pixel census. If you can only find it by knowing where to look, it has not landed.**
-
-## 4 · ✅ TWO THINGS RECORDED SO NOBODY TIDIES THEM AWAY
-- **`· 4 corners` STAYS** beside the composed name, though the count is now derivable from it — **he matches partners by corner count and a scannable number serves that act.** Deliberate, not redundant.
-- **The empty state is CONFIRMED** as shipped: same words, register moved, glue simply absent until he acts. Nothing owed.
+## 4 · ⚠ ONE OBSERVATION, ROUTED TO THE DESIGNER, NOT YOUR TASK
+On both frames the **retained subordinate centroid dots are LARGER and more saturated than the traces they are subordinate to** — they out-shout the mark doing the work. **That is the craft flag you raised, and the frames are now her material.** ⛔ **Do not change it on my say-so; it is hers.**
 
 ## 5 · THE STANDING ASK
-Arman: ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report.** ★ The designer's own read of the board: ***"none of the other items is on the finish line — the thing he still cannot do is build a room."*** **That is this build.**
+Arman: ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report.** Route only what needs a ruling, in three lines.
