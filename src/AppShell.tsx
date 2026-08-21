@@ -123,8 +123,9 @@ export default function AppShell() {
 
 // the ONE header: `Platonic Engine` in serif ink · the segmented toggle
 // (active = raised paper card + indigo underline; inactive = faint, flat;
-// a small ⇄ between) · a faint `state persists` hint. Native buttons with
-// aria-pressed carry the active state (keyboard-focusable).
+// a small ⇄ between). Native buttons with aria-pressed carry the active
+// state (keyboard-focusable). F.0e (mothership §3.4): the `state persists`
+// hint is STRUCK — a false claim is removed, not balanced; no replacement.
 function ShellBar({
   active,
   onSwitch,
@@ -201,16 +202,6 @@ function ShellBar({
         })}
       </nav>
 
-      <div
-        style={{
-          marginLeft: 'auto',
-          fontSize: 11.5,
-          fontStyle: 'italic',
-          color: c.faintInk,
-        }}
-      >
-        state persists
-      </div>
     </header>
   );
 }

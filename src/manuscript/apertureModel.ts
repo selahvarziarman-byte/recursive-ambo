@@ -592,9 +592,16 @@ export function faceDisplayName(shape: Shape, face: Face, resolveAbsent?: Absent
     labels.push(trimmed.toUpperCase());
   }
   if (labels.length === 0) return 'unnamed';
-  // rotate to the earliest label; a TIE (duplicate labels on one cycle) is
-  // broken by the lexicographically least full rotation, so the name is
-  // total and stable — still a rotation, never a reversal
+  const best = d14NameRotation(labels);
+  return labels.map((_, i) => labels[(best + i) % labels.length]).join('·');
+}
+
+// D14's rotation, extracted (F.0e): rotate to the earliest label; a TIE
+// (duplicate labels on one cycle) is broken by the lexicographically least
+// full rotation, so the name is total and stable — still a rotation, never a
+// reversal. SHARED by the printed name (faceDisplayName) and the drawn trace
+// (faceTraceCycle) so the two cannot disagree — one rotation, two readers.
+export function d14NameRotation(labels: string[]): number {
   let best = 0;
   for (let k = 1; k < labels.length; k += 1) {
     for (let i = 0; i < labels.length; i += 1) {
@@ -607,7 +614,52 @@ export function faceDisplayName(shape: Shape, face: Face, resolveAbsent?: Absent
       if (a < b) break;
     }
   }
-  return labels.map((_, i) => labels[(best + i) % labels.length]).join('·');
+  return best;
+}
+
+// F.0e — THE TRACE IS THE NAME (mothership §2, designer-ruled): a face's
+// pair-mark is its own edge cycle TRACED in D14 order — start at the
+// alphabetically-first corner, run in the face's own cycle direction — so
+// drawing the trace IS drawing the name `A·D·C·B`: one rotation
+// (d14NameRotation, the printed name's own call), two readers. A face whose
+// labels do not resolve (absent or the id-as-label scaffold) keeps its stored
+// cycle order — its printed name is 'unnamed' there, so no name exists for
+// the trace to disagree with. Menu-space ids in, menu-space corners out
+// (`c{i}:` preserved — the correspondence's space); positions resolve through
+// the seed's own vertices with the prefix stripped, the same lookup the
+// marks' centroids use.
+export interface ApertureFaceTrace {
+  faceId: string;
+  corners: string[]; // vertex ids, menu space, D14 trace order
+  positions: V3[]; // same order, the seed's real positions
+}
+
+export function faceTraceCycle(seedShape: Shape, menuFaceId: string): ApertureFaceTrace | null {
+  const geometry = readSeedGeometry(seedShape);
+  const m = /^(c\d+:)/.exec(menuFaceId);
+  const pref = m ? m[1] : '';
+  const raw = pref ? menuFaceId.slice(pref.length) : menuFaceId;
+  const face = geometry.faceById.get(menuFaceId) ?? geometry.faceById.get(raw);
+  if (!face) return null;
+  const positions: V3[] = [];
+  const labels: string[] = [];
+  let labelsSound = true;
+  for (const vid of face.cycle) {
+    const stripped = vid.replace(/^c\d+:/, '');
+    const vertex = seedShape.vertices[stripped];
+    if (!vertex) return null;
+    positions.push([vertex.position[0], vertex.position[1], vertex.position[2]]);
+    const trimmed = typeof vertex.data?.label === 'string' ? vertex.data.label.trim() : '';
+    if (trimmed.length === 0 || trimmed === stripped) labelsSound = false;
+    else labels.push(trimmed.toUpperCase());
+  }
+  const n = face.cycle.length;
+  const best = labelsSound && labels.length === n ? d14NameRotation(labels) : 0;
+  return {
+    faceId: menuFaceId,
+    corners: face.cycle.map((_, i) => `${pref}${face.cycle[(best + i) % n]}`),
+    positions: positions.map((_, i) => positions[(best + i) % n]),
+  };
 }
 
 export function boundaryFacesOf(shape: Shape, resolveAbsent?: AbsentLabelResolver): BoundaryFaceEntry[] {
@@ -763,6 +815,25 @@ export function aperturePairingRefusal(seedShape: Shape, rows: AperturePairRow[]
   for (let i = 0; i < rows.length; i += 1) {
     if (rows[i].faceA === null && rows[i].faceB === null) continue; // an open pair carries no map
     if (!rows[i].candidateKey) return `pair ${i + 1}: pick the identification MAP (which vertex lands on which).`;
+    // F.0e — THE MISPLACED REFUSAL, RELOCATED (mothership §3.3, designer-ruled):
+    // the reversing-map-on-a-multi-cell limit used to surface only at COMMIT
+    // (buildPersonDomainVerdict's wall — which STAYS standing behind this),
+    // costing the whole act; here it costs one pick. The option's own label
+    // already printed the derived mode where it was chosen, so the sentence
+    // can name it. Guarded: the candidate build sits on the render path (D13)
+    // — an unbuildable menu refuses nothing here; the commit wall still holds.
+    if (seedShape.cells.length > 1 && rows[i].candidateKey) {
+      try {
+        const chosen = dihedralMapCandidates(seedShape, rows[i].faceA as string, rows[i].faceB as string).find(
+          (c) => c.key === rows[i].candidateKey,
+        );
+        if (chosen && chosen.derivedMode === 'reversing') {
+          return `pair ${i + 1}: a REVERSING identification on a multi-cell volume is a later chapter — pick a preserving map, or leave the pair open.`;
+        }
+      } catch {
+        // the commit wall behind this ladder still refuses by name
+      }
+    }
   }
   if (completePairs === 0)
     return 'no identification yet — pick at least one pair of faces (the rest may stay open as boundary).';

@@ -28,7 +28,7 @@ import {
   type FacePairing,
 } from '../lib/faceIdentification';
 import { level3InvariantTower } from '../lib/level3Invariants';
-import type { DomainModel, DomainPairMark } from './worldModel';
+import type { DomainModel, DomainPairMark, DomainPendingPairMark } from './worldModel';
 
 // THE MULTI-CELL CUT (2026-08-13): the SHARED interior walls of a multi-cell
 // solid (thicken's product cells share their radial faces) become explicit
@@ -129,4 +129,40 @@ export function buildFormDomain(
   });
 
   return { key, title, shape: seedShape, complex, tower, pairs };
+}
+
+// F.0b — THE PENDING MARK (engineer 0200 §1–2): a row with both faces chosen
+// and no map yet is a POSITIVE fact about the person's progress — the pair
+// exists; how it meets is not yet decided. These marks carry NO mode (none
+// exists to carry; inventing one was refused by name) — they are a separate
+// type the decided-mark readers cannot confuse. Centers come from the SAME
+// centroid arithmetic as the decided marks (the seed's real positions);
+// multi-cell face ids arrive PREFIXED (`c{i}:` — the menu's id space, the D2
+// seam) and strip for the position lookup, exactly as `buildFormDomain` does.
+export function pendingPairMarks(seedShape: Shape, facePairs: [string, string][]): DomainPendingPairMark[] {
+  if (facePairs.length === 0) return [];
+  const faces =
+    seedShape.cells.length > 1
+      ? readSeedCells(seedShape).flatMap((s) => s.faces)
+      : readSeedCell(seedShape).faces;
+  const faceCycleOf = new Map(faces.map((f) => [f.id, f.cycle]));
+  const positionOf = new Map(Object.values(seedShape.vertices).map((v) => [v.id, v.position]));
+  const strip = (id: string): string => id.replace(/^c\d+:/, '');
+  const centroid = (cycle: string[]): Vec3 => {
+    const sum = cycle.reduce<Vec3>(
+      (acc, id) => {
+        const p = positionOf.get(strip(id));
+        if (!p) throw new Error(`formDomainModel: seed vertex ${id} has no position`);
+        return [acc[0] + p[0], acc[1] + p[1], acc[2] + p[2]];
+      },
+      [0, 0, 0],
+    );
+    return [sum[0] / cycle.length, sum[1] / cycle.length, sum[2] / cycle.length];
+  };
+  return facePairs.map(([faceA, faceB]) => {
+    const a = faceCycleOf.get(faceA);
+    const b = faceCycleOf.get(faceB);
+    if (!a || !b) throw new Error('formDomainModel: a pending pair names a face not on the seed');
+    return { faceIds: [faceA, faceB], centers: [centroid(a), centroid(b)] };
+  });
 }

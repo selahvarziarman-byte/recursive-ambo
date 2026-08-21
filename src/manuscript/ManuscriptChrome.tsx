@@ -529,6 +529,7 @@ function AperturePickRow({
 
 export function ApertureGatePanel({
   rows,
+  faceCount,
   refusal,
   pristine,
   notice,
@@ -543,6 +544,10 @@ export function ApertureGatePanel({
   accent,
 }: {
   rows: AperturePairRowView[];
+  // F.0e (mothership §3.2): the volume's own boundary-face count for the
+  // subtitle's `{N} faces` — null when the menu could not be read (the pinch
+  // guard's refusal), and then the clause is DROPPED rather than faked.
+  faceCount: number | null;
   refusal: string | null; // the door's named, curable refusal — null = the glue may run
   // F.0 THE EMPTY STATE (engineer 2300, mothership 1745 §5): before the
   // person has acted the refusal may not occupy the primary action's slot —
@@ -628,11 +633,17 @@ export function ApertureGatePanel({
       </div>
       {/* F.0 (engineer 2300): the old sentence commanded a total pairing the
           engine stopped requiring on 07-18 and was false three ways on a
-          5-cell (not a cube · not six faces · not required). This is the
-          DESIGNER'S RATIFIED DRAFT, wired verbatim and reported for her
-          confirmation — ⛔ wording hers, nothing authored here. */}
+          5-cell (not a cube · not six faces · not required).
+          F.0e (mothership §1+§3.2): the earlier wiring dropped the clause
+          that makes `leave bounded` legible — `the rest stand as walls` is
+          the designer's DELIVERED line, restored verbatim; `{N} faces` rides
+          only when the count is genuinely read off the volume's own boundary
+          menu (never faked — the clause drops instead). ⛔ wording hers,
+          nothing authored here. */}
       <div style={{ marginTop: 3, fontSize: 11, opacity: 0.75 }}>
-        this volume · pair the faces it owns · pick how each pair meets — the mode follows from the map, never chosen
+        {faceCount !== null
+          ? `this volume · ${faceCount} faces · pair the ones you choose — the rest stand as walls · the mode follows from the map, never chosen`
+          : 'this volume · pair the ones you choose — the rest stand as walls · the mode follows from the map, never chosen'}
       </div>
       <div data-aperture-rows ref={rowsRegionRef} style={{ maxHeight: 'clamp(100px, 22vh, 300px)', overflowY: 'auto' }}>
         {rows.map((row, i) => (

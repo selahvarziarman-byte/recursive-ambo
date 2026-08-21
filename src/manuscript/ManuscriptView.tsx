@@ -41,7 +41,7 @@ import {
   type MeshBasicMaterial,
 } from 'three';
 import { manuscriptDefaults, recedeInk } from '../design/designDefaults';
-import { buildManuscriptWorld, WORLD_SURFACES, type DomainModel } from './worldModel';
+import { buildManuscriptWorld, WORLD_SURFACES, type DomainModel, type DomainPendingPairMark } from './worldModel';
 import { InkedForm, type InkedFormCraft, type InkedFormLighting } from './InkedForm';
 import { InkedSkeleton } from './InkedSkeleton';
 import { InkedDomain } from './InkedDomain';
@@ -216,8 +216,8 @@ import { buildProbeMeshes } from './apertureProbes';
 // bounded-body precedent; the unpaired faces render as WALLS (the room's
 // edge), never as an escape.
 import { ExploreWindow } from './ExploreWindow';
-import { readCellSurface } from './apertureModel';
-import { buildFormDomain } from './formDomainModel';
+import { readCellSurface, faceTraceCycle } from './apertureModel';
+import { buildFormDomain, pendingPairMarks } from './formDomainModel';
 
 // D13 WITNESS SEAM (dev-only): the panel-scope plant must be a COMPONENT —
 // a thrown JSX *expression* fires in the PARENT's own render body (children
@@ -385,6 +385,81 @@ function SpecimenLift({
   return (
     <group ref={ref} position={home} name={name}>
       {children}
+    </group>
+  );
+}
+
+// F.0e — THE TRACED PAIR MARK (mothership §2, designer-ruled: a wireframe has
+// no face treatment to modulate — its own edge cycle is the one affordance a
+// skeleton offers, and a traced cycle encloses exactly one face at any angle).
+// The ring is pulled INWARD toward its cycle's centroid so it rings the inside
+// of its face and never fights the outline's ink. A DECIDED trace is a solid
+// COMET — ink swelling from the D14 start corner to the closing edge, so the
+// order the corners light is readable in one still frame — with a small tick
+// at the start corner (direction punctuation: the tick may not be the thing
+// that says which face; the cycle is). A PENDING trace is dashed and uniform:
+// it claims the FACES and no direction — a different type upstream, a
+// different treatment here, unconfusable by construction.
+function LiveTraceCycle({
+  positions,
+  color,
+  lineWidth,
+  tickRadius,
+  pending,
+}: {
+  positions: Vec3[];
+  color: string;
+  lineWidth: number;
+  tickRadius: number;
+  pending: boolean;
+}) {
+  const ring = useMemo(() => {
+    const sum = positions.reduce<Vec3>((acc, p) => [acc[0] + p[0], acc[1] + p[1], acc[2] + p[2]], [0, 0, 0]);
+    const centroid: Vec3 = [sum[0] / positions.length, sum[1] / positions.length, sum[2] / positions.length];
+    const PULL = 0.82;
+    return positions.map((p): [number, number, number] => [
+      centroid[0] + (p[0] - centroid[0]) * PULL,
+      centroid[1] + (p[1] - centroid[1]) * PULL,
+      centroid[2] + (p[2] - centroid[2]) * PULL,
+    ]);
+  }, [positions]);
+  if (ring.length < 2) return null;
+  if (pending) {
+    return (
+      <Line
+        points={[...ring, ring[0]]}
+        color={color}
+        lineWidth={lineWidth * 1.15}
+        dashed
+        dashSize={0.09}
+        gapSize={0.07}
+        transparent
+        opacity={0.85}
+      />
+    );
+  }
+  return (
+    <group>
+      {ring.map((p, i) => {
+        const q = ring[(i + 1) % ring.length];
+        const t = (i + 1) / ring.length;
+        return (
+          <Line
+            key={`seg:${i}`}
+            points={[p, q]}
+            color={color}
+            lineWidth={lineWidth * (0.7 + 1.1 * t)}
+            transparent
+            opacity={0.35 + 0.65 * t}
+          />
+        );
+      })}
+      {tickRadius > 0 ? (
+        <mesh position={ring[0]}>
+          <sphereGeometry args={[tickRadius, 12, 10]} />
+          <meshBasicMaterial color={color} />
+        </mesh>
+      ) : null}
     </group>
   );
 }
@@ -2587,29 +2662,103 @@ export default function ManuscriptView() {
   // arity by the mandate itself), so the preview is a REAL DomainModel, not
   // a mock. One finished row draws its pair while the rest sit empty (the
   // preview is never gated on a complete set — the blindness is worst
-  // exactly while it is incomplete). ⛔ a row with both faces and NO map is
-  // NOT drawn: a DomainPairMark without a mode would be a fabricated
-  // reading (STOPped and reported, the mandate's own escape). A folded or
-  // refused live pick falls back to the zero-pair skeleton — the outline
-  // stands while the refusal line speaks.
+  // exactly while it is incomplete). A folded or refused live pick falls
+  // back to the zero-pair skeleton — the outline stands while the refusal
+  // line speaks.
+  // F.0b — THE PENDING MARK (the sanctioned worldModel union): a row with
+  // BOTH faces and NO map reaches the skeleton as a PENDING pair — faces
+  // chosen, meeting unknown, stated positively by its own type
+  // (`DomainPendingPairMark`, no mode field; still no fabricated mode
+  // anywhere). One-face rows are not pairs and are not drawn. The person's
+  // chosen candidate's correspondence rides each DECIDED mark (the carry)
+  // so the twist is expressible downstream; fixture-built marks carry none
+  // — absence stays absent.
   const liveApertureDomain = useMemo(() => {
     if (!apertureOpen || !apertureVolume) return null;
     const complete = apertureRows.filter((row) => row.faceA && row.faceB && row.candidateKey);
+    const pendingRows = apertureRows.filter((row) => row.faceA && row.faceB && !row.candidateKey);
+    let domain: DomainModel | null = null;
     try {
       if (complete.length === 0) {
-        return buildFormDomain(apertureVolume, [], 'live-build', 'the build in progress');
+        domain = buildFormDomain(apertureVolume, [], 'live-build', 'the build in progress');
+      } else {
+        const verdict = buildPersonDomainVerdict(apertureVolume, complete, 'live-build', 'the build in progress');
+        if (!verdict.folded) domain = verdict.domain;
       }
-      const verdict = buildPersonDomainVerdict(apertureVolume, complete, 'live-build', 'the build in progress');
-      if (!verdict.folded) return verdict.domain;
     } catch {
       // fall through to the bare outline below
     }
-    try {
-      return buildFormDomain(apertureVolume, [], 'live-build', 'the build in progress');
-    } catch {
-      return null;
+    if (!domain) {
+      try {
+        domain = buildFormDomain(apertureVolume, [], 'live-build', 'the build in progress');
+      } catch {
+        return null;
+      }
     }
+    let pendingPairs: DomainPendingPairMark[] = [];
+    try {
+      pendingPairs = pendingPairMarks(
+        apertureVolume,
+        pendingRows.map((row) => [row.faceA as string, row.faceB as string]),
+      );
+    } catch {
+      pendingPairs = [];
+    }
+    const corrOf = new Map<string, [string, string][]>();
+    for (const row of complete) {
+      // per-row guarded — the candidate build sits on the render path (D13);
+      // an unbuildable menu carries nothing, the other rows still carry
+      try {
+        const chosen = dihedralMapCandidates(apertureVolume, row.faceA as string, row.faceB as string).find(
+          (c) => c.key === row.candidateKey,
+        );
+        if (chosen) corrOf.set(`${row.faceA}→${row.faceB}`, chosen.correspondence);
+      } catch {
+        // absence stays absent
+      }
+    }
+    const pairs = domain.pairs.map((pair) => {
+      const correspondence = corrOf.get(`${pair.faceIds[0]}→${pair.faceIds[1]}`);
+      return correspondence ? { ...pair, correspondence } : pair;
+    });
+    return { ...domain, pairs, pendingPairs };
   }, [apertureOpen, apertureVolume, apertureRows]);
+  // F.0e — THE TRACE IS THE NAME (mothership §2): each live pair mark is the
+  // face's own edge cycle in D14 order (faceTraceCycle — the printed name's
+  // own rotation, shared code). A DECIDED pair traces its partner by walking
+  // A's D14 cycle THROUGH the person's chosen correspondence, so the
+  // direction the trace runs on B IS the way the faces meet — preserving
+  // runs with B's own cycle, reversing against it — read off the figure.
+  // Without a carried correspondence B keeps its own cycle: the pair still
+  // says WHICH faces and claims no direction (absence stays absent). A
+  // PENDING pair traces both faces' own cycles.
+  const liveApertureTraces = useMemo(() => {
+    if (!liveApertureDomain || !apertureVolume) return null;
+    const positionOf = (id: string): Vec3 | null => {
+      const vertex = apertureVolume.vertices[id.replace(/^c\d+:/, '')];
+      return vertex ? [vertex.position[0], vertex.position[1], vertex.position[2]] : null;
+    };
+    const decided = liveApertureDomain.pairs.map((pair) => {
+      const a = faceTraceCycle(apertureVolume, pair.faceIds[0]);
+      let b = faceTraceCycle(apertureVolume, pair.faceIds[1]);
+      if (a && b && pair.correspondence) {
+        const image = new Map(pair.correspondence);
+        const corners = a.corners.map((c) => image.get(c));
+        if (corners.every((c): c is string => typeof c === 'string')) {
+          const mapped = corners.map((c) => positionOf(c));
+          if (mapped.every((p): p is Vec3 => p !== null)) {
+            b = { faceId: b.faceId, corners: corners as string[], positions: mapped as Vec3[] };
+          }
+        }
+      }
+      return { a, b };
+    });
+    const pending = (liveApertureDomain.pendingPairs ?? []).map((pair) => ({
+      a: faceTraceCycle(apertureVolume, pair.faceIds[0]),
+      b: faceTraceCycle(apertureVolume, pair.faceIds[1]),
+    }));
+    return { decided, pending };
+  }, [liveApertureDomain, apertureVolume]);
   // D10 MEASUREMENT SEAM (dev-only, the leg's synthetic larger row count):
   // `?d10rows=N` pads the row STATE beyond the derived count so the panel's
   // bound is measured where no real volume reaches — the menu itself is
@@ -4252,6 +4401,47 @@ export default function ManuscriptView() {
               markColors={d.world.domain.markColors}
               markRadius={d.world.domain.markRadius}
             />
+            {/* F.0e — the traced pair marks (mothership §2): the mark IS the
+                face's D14 cycle, drawn. Decided pairs share the decided mark
+                palette by index (the frozen InkedDomain's dots stay — craft:
+                they mark centers; the CYCLES are what say which face);
+                pending pairs continue the palette past the decided run so no
+                pending pair shares a hue with a decided one on screen. Groups
+                NAMED so the acceptance leg can census decided and pending
+                traces separately. */}
+            {liveApertureTraces ? (
+              <group name="live-aperture-traces">
+                {liveApertureTraces.decided.map((trace, k) => {
+                  const color = d.world.domain.markColors[k % d.world.domain.markColors.length];
+                  return (
+                    <group key={`decided:${k}`} name="live-aperture-trace-decided">
+                      {trace.a ? (
+                        <LiveTraceCycle positions={trace.a.positions} color={color} lineWidth={d.world.domain.lineWidth} tickRadius={d.world.domain.markRadius * 0.45} pending={false} />
+                      ) : null}
+                      {trace.b ? (
+                        <LiveTraceCycle positions={trace.b.positions} color={color} lineWidth={d.world.domain.lineWidth} tickRadius={d.world.domain.markRadius * 0.45} pending={false} />
+                      ) : null}
+                    </group>
+                  );
+                })}
+                {liveApertureTraces.pending.map((trace, j) => {
+                  const color =
+                    d.world.domain.markColors[
+                      (liveApertureTraces.decided.length + j) % d.world.domain.markColors.length
+                    ];
+                  return (
+                    <group key={`pending:${j}`} name="live-aperture-trace-pending">
+                      {trace.a ? (
+                        <LiveTraceCycle positions={trace.a.positions} color={color} lineWidth={d.world.domain.lineWidth} tickRadius={0} pending />
+                      ) : null}
+                      {trace.b ? (
+                        <LiveTraceCycle positions={trace.b.positions} color={color} lineWidth={d.world.domain.lineWidth} tickRadius={0} pending />
+                      ) : null}
+                    </group>
+                  );
+                })}
+              </group>
+            ) : null}
           </group>
         ) : null}
 
@@ -4759,6 +4949,7 @@ export default function ManuscriptView() {
           {d13Throw === 'panel' ? <D13PanelThrow /> : null}
           <ApertureGatePanel
             rows={apertureRowViews}
+            faceCount={apertureFaceMenu.length > 0 ? apertureFaceMenu.length : null}
             refusal={apertureRefusal}
             pristine={aperturePristine}
             notice={apertureNotice}
