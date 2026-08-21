@@ -1,62 +1,53 @@
 # THE BUILD — always current, self-contained
 
-**STAMP: `B-2026-08-22-A`** ⛔ **Echo this stamp at the top of your report.**
-**Written by: mothership · base `1312d1f` · branch `team-arman`**
+**STAMP: `B-2026-08-22-B`** ⛔ **Echo this stamp at the top of your report.**
+**Written by: mothership · base `fbdb145` · branch `team-arman`**
 *Read `CLAUDE.md` at the repo root first. **If anything below contradicts what you MEASURE, your measurement wins.***
 
 ---
 
-## 1 · ✅ TASK 0 RATIFIED — verified by me, independently
-`## team-arman...origin/team-arman` — no ahead, no behind. **33 commits off one disk.** `CLAUDE.md` tracked, nothing untracked left, the probe gone.
-★ **Three judgements in that report were yours to make and you made them right:** naming `tasks/plan.md` as **another seat's only copy** and protecting it without claiming it (*protect first, adjudicate ownership second*) · moving the `.claude/` decision **into the repo's own `.gitignore`** because *a decision living in a machine's configuration is not a decision the project holds* · and deleting the probe rather than promoting *"a non-failing printer wearing a script's name."*
-⚠ **One correction: the `.git/index.lock` is probably MINE.** My reads run through a sandbox mount and my own tooling reports it cannot unlink that file. ⇒ **Stop investigating it.** If it recurs when I am quiet, tell me and I will reopen it.
+## 1 · ✅ PERSISTENCE IS ACCEPTED — and the acceptance clause it "failed" is WITHDRAWN by me
+
+✔ **(A) the page survives an unmount, proven at the eye.** ✔ **(B) the double hop closed — build → save → reload → load → save → reload → load, zero refusals, page pixel-stable, nothing nested.** ✔ **Visible doors.** ✔ **The frozen `snapshot.ts` union, positive control reproduced.** ✔ **The tail-match died by its booked condition.**
+★ **And two free negative controls you did not have to look for:** Ambo's workspace door **refusing the page file by name**, and re-performing the same thicken **minting the same deterministic id and being refused as "already on the sheet."** ⇒ ***the meaning-trace law speaking back*** — the same gesture leaving the same trace, and the engine recognising it. **Keep that sentence; it is the doctrine demonstrating itself.**
+
+⛔ **PUSH. Do not ask again.** `CLAUDE.md` §6 carries it as standing: **push to `origin/team-arman` after every build lands, fast-forward only.** Arman ruled it; it is not a per-build decision.
 
 ---
 
-## 2 · ⛔ THE FRONT IS **PERSISTENCE**. Arman's decision, and it was his standing ask two days ago.
+## 2 · ★★★ YOUR §1 — RULED. And you were right that it is a meaning call.
 
-**Why it matters now more than when he asked:** ⛔ **every reload wipes the page.** ★ **And the fan chamber is the first thing he has ever built that he would want back tomorrow.** Before this week there was nothing worth saving.
+**What you measured, and it is the finding of the week:** the F.0c-era `cone edges (measured): 1 × 300°` **was reached through the tail-match, by fabrication.** Killing the stopgap did not break the caption — **it revealed that the honest route never reached it.**
 
-### ⛔ #37 FIRST — it is the gate, not a cleanup
-`deserializeSnapshot` **re-namespaces every owned id on load.** A saved page is a web of carried references by id. ⇒ **#37 is what makes a saved page re-loadable TWICE**, and without it the person's own re-saved work starts firing ambiguity refusals.
+⛔ **AND MINE, FIRST: I RATIFIED THAT READING AT MY OWN EYE on 08-19.** I drove it, saw `1 × 300° (measured)`, and accepted it. ⇒ ***I checked the READING and not the ROUTE*** — the vacuity law, against the seat whose job is to catch it. **The number was true; the bridge under it was not.**
 
-✔ **PRICED by the researcher — do not re-derive it:**
-- ✅ **`snapshot.ts` `namespaceOne` (`:168-245`) ALREADY re-roots the within-form web correctly.** ⛔ **Do not rebuild it.** #37 is the three gaps it does not cover.
-- ⛔ **GAP 1, the real one — DATA-BLOB refs.** `namespaceOne` spreads `...vertex` and re-roots only named fields, so **`data.composes` / `data.sharedBy` (stamped at `subComplexLift:865`, read at `argumentReadingModel:122,490-491`) survive VERBATIM and go stale on load.** ⇒ ✅ **RULED: PROMOTE them to a structural field the loader already prefixes.** The meaning reason is binding: ***`data` is the PERSON'S content — label, notes, tags. An id-reference is the MACHINE'S structure.*** Structure in the person's blob is what made it invisible. ⚠ **A promoted field must be NAMED in `namespaceOne` too — the promotion buys no freeze relief and I was wrong when I implied it would.**
-- ⛔ **GAP 2 — the suffix resolvers become `===`**, each of which resolves a carried id-ref: `argumentReadingModel:509` · `apertureModel:681, 1062, 1370` · `ManuscriptView:2505` · `surfaceRefinement:757` · **and `resolveAbsentLabel`'s `:`-suffix fallback.** ✔ **NOT #37, leave verbatim:** `playgroundStore:413,419` (`:disk` role) · `conformalAtom:310` (`@0` level) — structural suffixes, not cross-namespace refs.
-- ⛔ **GAP 3 — the page serializer follows the same rule** when you build it (§B).
-- ✔ **D1's metric base rides the STRUCTURAL `genealogy.parentShapeId`** (which `namespaceOne:240` re-roots). `metricBaseIds` is session-local and `:2267` already prefers the structural pointer. ⛔ **Never persist a side-map.**
-- **THE SWEEP PREDICATE (completeness):** *a site is a #37 site iff it resolves a CARRIED id-reference by `endsWith(':${…}')`, OR reads an entity id out of a `data`-blob field.*
-- ⚠ **And your own tail-match from the interior-transport build is one of these** — its death-condition is booked at its site. **This is the cut that kills it. Do it by name.**
+★★ **And the sharpest thing in your report is the one about the witness:** *"the headless witness measures 300° only because it hands the reader the pre-hop parent object — a route the shelf design does not preserve."* ⇒ ⛔ ***A witness that supplies the reader an object the app's own route never provides is proving a thing the app cannot do.*** **That is why this survived weeks of green.** **Standing, and it is the sharpest form of *a seal must execute what it witnesses* we have found.**
 
-⛔ **FREEZE:** `snapshot.ts` is **FROZEN and SANCTIONED** (item 14 on the closed list). Edit + re-seal in ONE commit, nothing else in it, positive control recomputed at the real base. The other listed sites are NOT_FROZEN — **print the manifest line beside each anyway.**
+> ### ⛔ THE RULING — three parts.
+> **(i) IDENTITY ACROSS A HOP IS A RECORD, NEVER A STRING RELATION.** An id is an ADDRESS. Marrying two addresses by name surgery — suffix, prefix, or "the loader's committed prefix relation" **reconstructed later from the strings** — is inferring identity from a READING. ⛔ **Refused as a class, not as an instance.** *(This is why your tail-match had to die even though it "worked".)*
+> **(ii) A NAMESPACE HOP IS AN OPERATION, AND EVERY OPERATION LEAVES A TRACE.** The shelf hop performs a re-rooting **and records nothing about what it did.** ⇒ ⛔ **That is the defect.** ✅ **The hop must leave its own record — the mapping it applied — at the hop.** Then the marriage **reads a trace** instead of guessing at a name. ★ **Your option (b) is RIGHT if and only if the relation is RECORDED BY THE HOP, and WRONG if it is reconstructed afterwards.** ⛔ **Option (c) — carrying ancestors in every product file — is DUPLICATING the record instead of recording the RELATION; it is heavier and it will drift. Refused.**
+> **(iii) ⚠ BUT MEASURE THIS FIRST, because it may make (ii) unnecessary — smallest measurement first.**
+> **Does the band even HAVE a parent pointer to re-root?** ⚠ **My hypothesis, flagged as mine and ungrounded:** `thicken.ts:292` — `parentShapeId: segment !== undefined ? null : form.id` — **NULLS the pointer at arity-2.** That is **D1's original root, and I do not believe it was ever cured.** ⇒ **If the structural route is unavailable because the pointer is null, the cure is D1's — one field, not a new mechanism — and `namespaceOne:240` already re-roots that pointer when it exists.**
+> ⇒ **Measure it, report, and do not build (ii) until (iii) is answered.**
 
-### THEN PERSISTENCE — **(A) and (B), with the record defined ONCE**
-✔ **Priced and standing:** save the **RECORD, not the READING**. `complex` and `tower` are DERIVED — serialize *(seed shape + the person's pairings + key/title + the metric base)* and **re-derive on load.** **The durable page is ~5 fields, not the ~25 the view holds:** `written` · `shelf` · `builtDomains` · `foldedBodies` · the D1 carry.
-⛔ **NOT saved:** selection, menus, notices, hover, camera, in-flight fold/chord. **A restored page comes back QUIET — restoring a half-finished gesture restores a state he never chose to keep.**
-
-✅ **THE TWO DECISIONS, ruled from Arman's own words — do not re-ask them:**
-1. **What counts as his work:** ***"manuscript is exactly like ambo, the whole thing is the work. shapes, operation, HISTORY OF IT, names."*** ⇒ **everything he performed, and the history is IN.** ⚠ Classify by his predicate — *did the person perform it?* — and **flag any you cannot resolve rather than sweeping it in.**
-2. **The gesture:** ***"manuscript is exactly like ambo."*** Ambo has **BOTH** halves — a STORE (survives navigating away and an unmount, within a session) and a FILE (across reloads). **The manuscript has neither.** ⇒ **(A) RELOCATE — into a store, so it survives an unmount** AND **(B) SERIALIZE — an explicit file, beside the committed snapshot machinery.** ⛔ **(A) is NOT optional; my earlier acceptance tested (B) only and a page that passes it can still be destroyed by a render fault.**
-⛔ **NON-FORECLOSURE IS A CLAUSE, in his words:** *"we should hold open the possibility of that later version of 'save'"* — the semantic layer's richer save must not be a rewrite. **Version the file; refuse by name on a bump — `SNAPSHOT_VERSION` already does this.**
-⛔ **THE SAVE DOOR MUST BE VISIBLE.** Not a right-click, not a hidden gesture, not a keystroke you must be told. ★ **The evidence is mine: I spent an hour concluding `INVOKE — REAL MATERIAL` did not exist, then filed that to three seats — it works, it is in the canon, and it lives on a surface configured not to draw.** *Visible, not taught.*
-
-### ⛔ ACCEPTANCE — at Arman's eye, and the double hop is the point
-> **Build the fan chamber → SAVE → RELOAD THE BROWSER → LOAD → the room is there, quiet and unselected, and its caption still reads `cone edges (measured): 1 × 300°`.**
-> **Then SAVE and RELOAD AGAIN.** ⛔ **One hop cannot see the nesting bug — that is exactly what the suffix stopgap hides.**
-> **And (A): navigate away and back within a session — the page survives the unmount.**
-⛔ **A room that comes back without its measured metric is the D8 inversion arriving through the save path.**
+⚠ **And say this to Arman in your own words if he asks, because it is the honest shape:** ***the old number was RIGHT and reached WRONGLY; the new number is WRONG and reached RIGHTLY.*** **A regression at his eye that is progress in the substrate.**
 
 ---
 
-## 3 · ⚠ HELD, NOT YOURS YET — the card union, one card one visit
-Three defects on the specimen card, **all the same disease: strings and predicates that were true when written and went stale when the 07-18 seal made bounded rooms first-class.**
-1. ✅ **RULED (researcher):** `chiConsistent = gate.sound ? χ === 0 : null` at **`level3Invariants.ts:85`** applies the **CLOSED**-manifold check to every *sound* complex — **and the file's own comment at `:4-5` says "closed."** A bounded room has **χ = χ(∂M)/2** (ball → 1, solid torus → 0), so **the fan's χ=1 is CORRECT** and `INCONSISTENT` is a false negative on his own room. ⇒ **Gate on `isClosed` (no unpaired face), and return the same `null` the code already returns for unsound — NEVER `false`.**
-2. ✅ **RULED (designer):** the subtitle becomes **`fundamental domain · this cell and how its faces meet (no body exists)`** — one clause changed. ★ **The fault is worse than stale: `title: model.title` sits ONE LINE ABOVE, so the card already carries the right name and the subtitle contradicts it.**
-3. ⚠ **OPEN:** whether **`(no body exists)`** is still true of a bounded room with standing walls. **With the researcher now.**
-⇒ ⛔ **Both files are FROZEN and I am SANCTIONING them: `level3Invariants.ts` and `specimenModel.ts` join the closed list.** ⚠ **Two frozen files = TWO commits, each edit + re-seal alone.** ⛔ **But it waits for (3), because one card gets one visit.** **I will name it in a build file when the answer lands. Do not open it before then.**
+## 3 · ✅ YOUR §2 — `geometry.ts` IS SANCTIONED. Finish #37.
+⛔ **`src/types/geometry.ts` (manifest 88) joins the closed list.** ✔ Asking rather than spending was right, and the `cornerAngles?` precedent in the same file gives you the sanctioned-edit shape.
+**Why now rather than parked:** the `data.composes`/`sharedBy` refs go stale on load ⇒ **the argument card's composed readings break across a save/load** — a person-facing defect on a saved page, and the remaining `===` flips travel with the promotion. **A half-finished gate is stopgaps waiting to bite.**
+⚠ **Edit + re-seal in ONE commit, nothing else, positive control at the real base.**
 
----
+## 4 · ✅ YOUR §3 — THE ZOO. Ruled, and it is `record, not reading` again.
+⛔ **A zoo room is not saved as CONTENT.** Arman's predicate is *did the person perform it?* — and what he performed is **pressing "load the reference zoo."** The rooms themselves are the engine's own catalogue, **reproducible by pressing it again.**
+> ✅ **RULED: record the ACT — "the zoo was loaded" — and re-run the door on restore.** ⛔ **Never serialize the zoo's contents.** ★ Same doctrine as `complex`/`tower`: **serialize the input, re-derive the reading.**
+✔ **Flagging it instead of sweeping it in was exactly the instruction and exactly right.**
 
-## 4 · THE STANDING ASK
-Arman: ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report. Read the whole frame. Echo the stamp.**
+## 5 · TWO SMALL ONES FROM YOUR OWN DRIVE
+- ⛔ **The mount-animation frame is NOT cosmetic.** *"When the load lands during the Manuscript's mount animation, the first camera frame shows bare paper… the store had the page the whole time."* ⇒ **The person's reading is "it did not work."** ***A positive fact — the page IS loaded — carried by nothing being there.*** **He will press load twice, or conclude the door is broken.** Take it.
+- ⚠ **The twin shelf entries** (`shelfPlacedShapeIds` is an id set and cannot tell twins apart, both read "placed"). ✔ Cosmetic, placement stays refused, **recorded for the ledger, not for this cut.**
+- ✔ **`index.lock` closed** — yours/sandbox during your own git ops, as you said.
+
+## 6 · THE STANDING ASK
+Arman: ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report. Read the whole frame. Echo the stamp. Push when it lands.**
