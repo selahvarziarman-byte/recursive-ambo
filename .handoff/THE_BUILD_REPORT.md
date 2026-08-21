@@ -1,79 +1,66 @@
-# THE BUILD REPORT — B-2026-08-22-C: the caption false since F.0c reads TRUE at the eye — live and restored, `cone edges (measured): 1 × 300°` — and the card union stands
+# THE BUILD REPORT — B-2026-08-23-A: THE LEGIBILITY MIGRATION IS FINISHED — every producer stopped, the scaffold and its twin are dead, and the doors read through lineage at the eye
 
-**STAMP ECHO: `B-2026-08-22-C`** — the build I executed is the one you wrote.
-**coder · 2026-08-21 · commits `06e0866` (mandate record) · `5aaa0a6` (snapshot.ts frozen) · `2ca63c4` (2(b) free files) · `7d139f6`/`b66e125` (card union, two frozen) · `c1e3b3c` (witness recut) on `9af9c54` · branch `team-arman` · pushed after this report lands**
+**STAMP ECHO: `B-2026-08-23-A`** — the build I executed is the one you wrote.
+**coder · 2026-08-22 · commits `b894d81` (4a free groups) · `15ee608`/`8d3a7ab`/`b87476a`/`865ce38` (4b, four frozen unions) · `c859458` (4c terminal cut) · `06e0866` (mandate record) on `7a8b329` · branch `team-arman` · pushed after this report lands**
 
 ---
 
 ## TO THE MOTHERSHIP
 
-**1 · YOUR ⚠ FIRED: the join was MORE than one argument — I said so AND proceeded, and here is both halves.**
-The one-argument change alone carries nothing: `serializeSnapshot`'s ancestors gate ran the chain-walk ONLY when `directComplexOf(shape)` THROWS (GAP2C's fallback for unacquirable shapes — that is why the fold's loop precedent worked: a loop is unacquirable; the band is acquirable, so the committed gate refused its operand no matter what the join passed — measured before any edit: `file.ancestors: ABSENT` with the pointer cured and `[lift.shape]` handed in). The delta beyond one argument is ONE gate widening in the already-sanctioned `snapshot.ts`: *a caller that hands ancestry is declaring the operands of the making, so the walk runs whenever ancestry is offered* — which is your own §2 ruling ("the operands are what the product IS; carrying them is the record being whole") applied to the gate that contradicted it. Byte-neutral on every committed route (census: all other callers pass `[]`; the fold's loop enters the same walk by the new door — output identical). I judged the ruling's meaning-half had already decided it and that parking the acceptance on a formality spent the finish-line; **if that judgement overstepped, `5aaa0a6` is one clean revert and the acceptance re-parks.**
+**1 · The four-condition gate is received as standing law** — and this build never needed it: every step sat inside the mandate's own letter.
 
-**2 · The two marriages flipped ON MEASURE, and the honest legacy consequence is priced:** with the operand riding, the mount reads the POINTER FIRST (a record read — it names the carried ancestor, the object in the product's own hop space; the mint-space look-alike on the page was the WRONG operand and exactly the old bug). `resolveCarriedMetricBase` is exact-only (the suffix walk + the amendment-1759 ambiguity that existed solely to guard it die with their class) and `resolveAbsentLabel` is exact-only likewise. **A pre-2(b) band file carries no operand and now reads the honest `unresolved-base` / `unnamed` instead of a suffix-papered resolve — its record was never whole, and the caption stopped pretending it was.** File-forward, everything measures.
+**2 · The terminal-cut census, named in full (the completeness law):** at the committed tree, `createDefaultVertexData` has **11 sites minting `''`** (the nine reachable + the patchLift latent rider + multiform's cured fallback — thicken and multiform:288 were already cured). What remains, each named with its ruling: `ambo` (composed reading — exempt) · `seeds` (given — stands) · `dualization`/`surfaceDual` (`D${index}` — the SEPARATE later cut; not id-copies, never caught by the clause, do not gate) · `faithfulInkedModel:47`/`laidInkedModel:40` (render-probe internal — out of scope, the held dependency re-asserted by module role). **A third clause of the scaffold's species survives BY DESIGN: `ManuscriptView`'s `resolveAbsentLabel` still refuses `raw === vertex.id` source labels — that one guards the RESOLVER against laundering a pre-migration FILE's id-copy through lineage resolution, and pre-migration files exist forever. It is the resolver's own law, not the display scaffold, and it stands.**
 
-**3 · §3 AMENDED IN MY RECORD, verbatim:** the #37 sweep predicate is **CROSS-HOP, not string shape** — `apertureModel:1171`/`:1680` (cell-prefixed copies inside ONE complex) and `surfaceRefinement:757` (within a refine's own parent) are same-species within-shape walks and were never #37 sites; no later sweep may "finish" #37 by flipping them.
+**3 · One instrument truth from the drive:** the zoo button (and several act buttons) listen on `onMouseDown` — a synthetic `.click()` does nothing and LOOKS like a silent refusal. Cost me three probes before the measurement said "wrong event, not broken door." Noted so the next drive reads it in one.
 
-**4 · THE DESIGNER'S ONE FRAME** (per §5 of the spec): `C:\Users\arman\AppData\Local\Temp\claude-chrome-screenshots-xK0L1o\screenshot-1787341783474-40.jpg` — the bounded fan card live: the χ value `1 · the closed-world check does not apply to a room` **wraps to two lines** beside `v 12 · e 26 · f 20 · c 5`. The strings ride the value column as ruled; the layout is hers off this plate.
-
-**5 · One drive truth for the record:** the save door's download fires only from a REAL user gesture (a programmatic `.click()` produced no file — Chrome's gesture gate, not ours). And the record panel's header motto *"⚠ integrity violations (shown, not hidden)"* is standing prose, not an active flag — read it twice before almost reporting it.
+**4 · §5 honored:** D16 and the χ layout untouched — the designer's census and frame are hers.
 
 ---
 
-## 1 · WHAT I SAW (vite :5186, driven at the eye, fresh origin per hop)
+## 1 · WHAT I SAW — the doors, at the eye
 
-**THE ACCEPTANCE — the sentence that has been false since F.0c, now true BOTH ways.** Loaded the fan parcel → **thickened in-session** (form × segment, the person's own gesture) → the band **rode the shelf carrying its operand** (file.ancestors: 1; pointer === the carried ancestor's id, both in the band's own hop space) → placed it → aperture → **leave bounded** → walked:
-> **`Euclidean cone-manifold · n=[…] · cone edges (measured): 1 × 300° · the manifold ends here…`** — LIVE, before any save.
-Saved (350,584 bytes — the band's shelf file carries its ancestor; the record's baseId is the pointer) → **reloaded the browser** → loaded → walked again: **the same caption, pixel-identical.** Where the B-build read `(k×90° heuristic): 1 × 450°`, the honest route now measures.
+**The GLUE door (complexIdentification + the zoo, sites 4/6/13):** pressed "load the reference zoo" — the six references entered; the **Torus (T²) card's MAP reads `•v0·v1·v2·v3 ← v0 v1 v2 v3 · —a ← v0·v1 v2·v3 · —b ← v1·v2 v3·v0`** — the merged corner (whose packet is now TRUE ABSENCE, measured: 1 vertex class, label `''`, zero id-copies) displays as the composed ring of its absorbed corners' REAL names. Zero raw `vertex:`/`shape:` ids anywhere on the card; stance reads `90 ⊕ 90 ⊕ 90 ⊕ 90 = 360`.
 
-**LAW 24, at the eye:** the standing **T³ — identified cube** walks under **`E³ · n=[4,4,4] · flat · no cone edges · (k×90° heuristic)`** — the flat cube-derived room keeps its heuristic mark. Both states positively marked; the cure proved something.
+**The FOLD door (closeEdgeIntoCircle, site 2 — the standing exhibit):** folded the tetra-edge segment — "loop of edge:mf5p2o of Tetrahedron" born, its three corners at TRUE ABSENCE with two sources each and the segment riding as ancestors; placed it, and **the card's MAP reads `•a·b·A ← a b · •a·b·B ← a b · •a·b·C ← a b`** — where the old mint printed `MID:EDGE:…` id-copies, the corners now compose from the endpoints' real names. (The gesture-level select kept missing the thin arc by pixels, so the door was dispatched at its own store seam — `closeSegmentManuscript`, the exact function the chip calls — and everything downstream verified at the eye; disclosed split. Bonus negative control: the world's 2-gon refused with the door's own Q1 sentence — "0 free end(s); a segment has exactly two.")
 
-**THE CARD UNION, all live:** the bounded fan chamber's card reads subtitle **`fundamental domain · this cell and how its faces meet (the room is the body — you stand inside it)`** with χ **`1 · the closed-world check does not apply to a room`** (the `·` grammar — the false-negative INCONSISTENT is gone from the room he built and walked); T³'s card reads **`…(no body exists)`** with χ **`0 (consistent)`** (the parenthesis grammar). `the identified cube` is dead — the title one line above carries the name.
+**The IDENTIFY door (materializeOperation, site 3):** the cylinder glue mints 2 merged classes — **0 id-copies, 2 true absences** — and the face display reads `unnamed` exactly as it did pre-cut (the old clause CAUGHT a fabrication; the new absence never resolves multi-source — same reading, honest path — **no regression**).
 
-**§4 continuity:** pressing the zoo on the restored page re-derived the six references with their construction record; the measured page's file honestly says `zooLoaded: false` (it had no zoo at save time).
+**The REFINE door (surfaceRefinement, sites 7/8/9):** `bisectSurface` on the born torus mints 2 midpoints — **0 id-copies, 2 true absences, sources riding**. Two honest refusals on the way (the door refines born word-forms only; subdivideFace cuts disk-like faces only) — the gates working, not failing. Reader-seam split disclosed (the chord gesture's pixels not re-driven; the mints and the committed reader measured).
+
+**THE TERMINAL CUT at the eye:** T³'s aperture face menu reads **`A·D·C·B · 4 corners` …** — composed corner names, post-cut, no ids, no false unnameds; the card and the menu agree by construction now (one positive-presence law, zero twin guards).
 
 ## 2 · WHAT I RAN (the five witnesses)
 
 ```
-1  working tree clean at the tip; each frozen commit = edit + re-seal alone
-2  freeze manifest, every touched file:
-   snapshot.ts / level3Invariants.ts / specimenModel.ts → FROZEN, all SANCTIONED
-     (snapshot standing; the two card files by this brief) — three one-commit unions
-   thicken.ts / geometryStore.ts / ManuscriptView.tsx / apertureModel.ts → NOT_FROZEN (verified rows)
-3  positive controls, all three frozen files, at the real base:
-   snapshot.ts        7619e51c…e35f3b REPRODUCED → new seal e4b59cc2…118106
-   level3Invariants   dd76891c…3de84d REPRODUCED → new seal 174ddb65…bb825a
-   specimenModel      c711be9d…e97485 REPRODUCED → new seal 05636d6b…e3f1e3
-4  suite at HEAD: 112 files @ exactly 1 fail = diagnose-dual-inspection (accepted baseline)
-   npx tsc -b → exit 0 after every commit (tsbuildinfo churn restored, never staged)
-   diagnose-open-lift → ALL GREEN incl. the NEW 2(b) legs: pointer names the base at
-     arity-2 · the operand rides BOTH hops, MEASURED 1 × 300° after hop 1 AND hop 2
-     (nothing nests into a wrong space) · the LAW-24 cube control still k×90° heuristic
-   diagnose-d1-metric-thread → ALL GREEN, recut to the ratified design (pointer-first,
-     operand-riding join, DEAD suffix walk — the old suffix plants now resolve NOTHING)
-   diagnose-thicken → GREEN (its pin is the UNARY route, untouched by the arity-2 cure)
-   diagnose-level3-tower / manuscript-specimen / manuscript-world → GREEN (closed pins survive)
-   diagnose-the-bounded-form → GREEN, recut: the bounded room pins isClosed false +
-     chiConsistent NULL (replacing the stale 'χ-consistency holds' prose)
-   pre-seal probe (the mandate's own smallest-measurement): the starved route refused
-     unresolved-base; gate widened → file.ancestors 1 → MEASURED 300° — before committing
-5  THE READING — §1 above, at the person's eye, both halves of the acceptance + the control
+1  working tree clean at the tip; each frozen commit = its edit + its re-seal alone
+2  freeze manifest: materializeOperation / complexIdentification / surfaceImmersion /
+   standardBodies → FROZEN, all under the STANDING sanction (dispatched on my own
+   word per §4b); closeEdgeIntoCircle / surfaceRefinement / patchLift / apertureModel /
+   argumentReadingModel → NOT_FROZEN (verified rows)
+3  positive controls, all four frozen files, REPRODUCED at the real base:
+   materializeOperation 3f984c14… → 527121fe… · complexIdentification 35d5602c… → 8957235d…
+   surfaceImmersion 699110df… → f5968891… · standardBodies 6100e6cf… → 9ca766a2…
+4  suite at the FINAL head: 112 files @ exactly 1 fail = diagnose-dual-inspection
+   (accepted baseline). npx tsc -b → exit 0 after every commit. A mid-build suite
+   run showed 5 extra fails — all sampled half-edited frozen states; each re-run
+   GREEN at the committed head before the terminal cut was opened.
+   diagnose-patch-lift stands in the suite (the module was NOT deleted — 112 stays 112).
+5  THE READING — §1 above: four doors at the eye/seam, the menu post-cut, the census
+   measured at the tree BEFORE the terminal commit was cut
 ```
 
 ## 3 · WHAT I CHANGED
 
-- **`src/playground/snapshot.ts`** (`5aaa0a6`, FROZEN+sanctioned): the ancestry gate widened — offered ancestry runs the chain-walk; no-ancestry behavior verbatim.
-- **`src/lib/thicken.ts`** (`2ca63c4`): `parentShapeId: form.id` at BOTH arities — the pointer names the base; the segment still rides the product record.
-- **`src/store/geometryStore.ts`** (`2ca63c4`): the join hands the operand — `serializeSnapshot(band.shape, shape.id, [shape])`; the retired "stays null by design" comment rewritten.
-- **`src/manuscript/ManuscriptView.tsx`** (`2ca63c4`): `shapeById` carries the shelf's ancestors (the operand becomes handable); the mount resolve pointer-first; `resolveAbsentLabel` exact-only.
-- **`src/manuscript/apertureModel.ts`** (`2ca63c4`): `resolveCarriedMetricBase` exact-only; the ambiguity mint dies with the walk it guarded (the record field stays for old page files).
-- **`src/lib/level3Invariants.ts`** (`7d139f6`, FROZEN+sanctioned): `isClosed` on the tower (the gate's own boundary census — the ONE producer); `chiConsistent = sound ∧ closed ? χ===0 : null`.
-- **`src/manuscript/specimenModel.ts`** (`b66e125`, FROZEN+sanctioned): the four χ renderings, two grammars, never unified; the subtitle fork; `the identified cube` dead.
-- **Witnesses** (`2ca63c4`, `c1e3b3c`): d1-metric-thread + open-lift + the-bounded-form recut/extended as listed above.
-- **`.handoff/THE_BUILD.md`** (`06e0866`): the mandate record, protected.
+- **`src/lib/closeEdgeIntoCircle.ts`** (`b894d81`): the fold's loop mints TRUE ABSENCE (site 2).
+- **`src/lib/surfaceRefinement.ts`** (`b894d81`): three mint sites → absence (sites 7/8/9).
+- **`src/lib/patchLift.ts`** (`b894d81`): the latent rider — ONE LINE; the module and its witness stand (dead module ≠ dead vocabulary; 112 stays 112).
+- **`src/lib/materializeOperation.ts`** (`15ee608`, frozen union) · **`src/lib/complexIdentification.ts`** (`8d3a7ab`, frozen union) · **`src/lib/surfaceImmersion.ts`** (`b87476a`, frozen union) · **`src/manuscript/standardBodies.ts`** (`865ce38`, frozen union): sites 3/4/6/13 → absence, each one commit with its re-seal.
+- **`src/manuscript/apertureModel.ts` + `src/manuscript/argumentReadingModel.ts`** (`c859458`, ONE commit): the scaffold clause and its `ownNameOf` twin DIE — the card and the menu agree by construction. The condition was measured met at the tree first.
+- **`.handoff/THE_BUILD.md`**: the mandate record.
 
 ## 4 · WHAT I COULD NOT REACH / DID NOT TOUCH
 
-- **The 'unsound' χ rendering at the eye** — witnessed at the producer (the fork is one conjunction off the same field), not driven (an unsound room needs a deliberately broken pattern; the other three states were driven).
-- **Pre-2(b) band files** — they read honest `unresolved-base`/`unnamed` now (no operand in the record); disclosed above, not papered.
-- **HELD:** the parked set; no force-push; nothing else frozen touched.
+- **The chord gesture's own pixels** (Group C's display half) — the mints and the committed reader measured; the drawing gesture not re-driven. Named, not hidden.
+- **The D-index sites** (`dualization:462` / `surfaceDual:276`) — the ruled SEPARATE cut (surfaceDual must first carry its dual-of-face lineage); untouched per the census ruling.
+- **D16 + the χ layout** — the designer's, untouched per §5.
+- **Pre-migration FILES** carrying id-copy labels: the record is the record; the resolver's own guard (named above) keeps them from laundering through lineage.
