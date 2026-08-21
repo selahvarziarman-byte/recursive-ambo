@@ -314,7 +314,11 @@ export function immerseSurface(spec: SurfaceImmersionSpec): SurfaceImmersion {
     vertices[vertexId] = {
       id: vertexId,
       position,
-      data: createDefaultVertexData(vertexId),
+      // LEGIBILITY MIGRATION (B-2026-08-23-A, census site 6, sanctioned
+      // frozen edit): the immersion grid mints TRUE ABSENCE — an id in the
+      // name slot is no name. A from-scratch root has no lineage to resolve
+      // through; the honest reading is `unnamed`, never the address.
+      data: createDefaultVertexData(''),
       createdBy: {
         shapeId,
         operation: 'seed', // a from-scratch root — R0 makes NO lineage claim (L2 owns that)

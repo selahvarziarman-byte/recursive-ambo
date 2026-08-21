@@ -63,7 +63,7 @@ src/lib/multiform.ts                    5d70c6e2583759f2f96af0f45facba7040dfdbba
 src/lib/packets.ts                      feaf628678732c01a276ead985b08dd439b2ae8ab09adf5bba865a0dd4811d9f
 src/lib/shape.ts                        8339d97812ac4dac2a68b982936b34d51cdb308069d73e6738f2da366bd5b7b2
 src/lib/surfaceDual.ts                  022a1c68251c3b04c13c4b6f39f1dad7e5d0fcf74cd64570f5d0e9f6c93eec95
-src/lib/surfaceImmersion.ts             699110df572af936d38ef067d45f5a797ec441e8e0018accc83639caa82f9c09
+src/lib/surfaceImmersion.ts             f5968891d408ca15b2b711e8af27c29c326f4637c9b7d9846eaf389203d68a5f
 src/lib/surfaceOperations.ts            06a439f357e3a51743a355071819b1ed73dcb4d1607afb0afc64a711877b04b6
 src/lib/transformationLedger.ts         2f77f9b331c9151c00242f40708a4915dc35e8f6408059ad4769f9433d3c162b
 src/manuscript/InkedDomain.tsx          067f04c99043a5606ebe96de4669e47e2cab623166b45ce4067d4ffbb445195b
