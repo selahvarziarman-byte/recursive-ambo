@@ -127,7 +127,10 @@ function torusSummand(ns: string, cx: number): TorusSummand {
       vertices[id] = {
         id,
         position: [p[0] + cx, p[2], p[1]],
-        data: createDefaultVertexData(id),
+        // LEGIBILITY MIGRATION (B-2026-08-23-A, census site 13, sanctioned
+        // frozen edit): the zoo's grid mints TRUE ABSENCE — an id in the
+        // name slot is no name; a from-scratch root reads unnamed.
+        data: createDefaultVertexData(''),
         createdBy: { shapeId, operation: 'seed', sourceVertexIds: [] },
       };
     }
