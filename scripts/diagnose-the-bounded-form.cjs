@@ -288,15 +288,16 @@ check('`count > 1` WAS ALWAYS RIGHT — AND THE OLD PREDICATE BLAMED THE WRONG F
 
 // ═════ [5] the gate says boundary, not broken ═════════════════════════════════════
 console.log('\n----- [5] BOUNDARY, NOT BROKEN: the verdict names its boundary; "unsound" appears nowhere on it (clause 5) -----');
-check('THE VERDICT NAMES ITS BOUNDARY: the bounded form reads sound: true with `boundary.faceClasses` naming its two free faces, χ-consistency holds (χ = 0), the aperture label says "bounded — ∂ carries 2 face class(es)" — and the string "unsound" does not appear anywhere on the serialized verdict',
+check('THE VERDICT NAMES ITS BOUNDARY (card-union recut, B-2026-08-22-C): the bounded form reads sound: true with `boundary.faceClasses` naming its two free faces, the tower reads isClosed: false with chiConsistent NULL (the closed-world check does not apply to a room — never a judgement faked on a bounded object), the aperture label says "bounded — ∂ carries 2 face class(es)" — and the string "unsound" does not appear anywhere on the serialized verdict',
   (() => {
     if (!T2I) return false;
     const tower = T2I.verdict.domain.tower;
     const gate = A.buildAperture(T2I.verdict.domain);
     const serialized = JSON.stringify(T2I.verdict) + (gate.ok ? gate.geometry.label : gate.reason);
-    note(`sound=${tower.sound} · χ=${tower.chi} · chiConsistent=${tower.chiConsistent} · boundary.faceClasses=[${tower.gate.boundary.faceClasses.map((x) => x.split(':').pop()).join(', ')}]`);
+    note(`sound=${tower.sound} · χ=${tower.chi} · isClosed=${tower.isClosed} · chiConsistent=${tower.chiConsistent} · boundary.faceClasses=[${tower.gate.boundary.faceClasses.map((x) => x.split(':').pop()).join(', ')}]`);
     note(`"unsound" on the verdict: ${serialized.includes('unsound')}`);
-    return tower.sound === true && tower.gate.boundary.faceClasses.length === 2 &&
+    return tower.sound === true && tower.isClosed === false && tower.chiConsistent === null &&
+      tower.gate.boundary.faceClasses.length === 2 &&
       !serialized.includes('unsound') && gate.ok && gate.geometry.label.includes('bounded');
   })());
 
