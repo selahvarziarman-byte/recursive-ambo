@@ -110,6 +110,24 @@ export interface Vertex {
   createdBy: VertexCreation;
 }
 
+// THE MANIFOLD RECORD (#37 GAP 1, B-2026-08-22-B, sanctioned frozen edit):
+// a dropped coarse entity IS a relation, and the relation is a NAMED field —
+// promoted from the opaque `data` blob (SEAL_PHASE_B_MANIFOLD's serializing
+// carrier) so the committed loader can re-root what it names. `parts` and
+// `sourceVertexIds` are DOORWAYS to ids the carrying shape owns — they
+// prefix with the shape's own ids on a load; `id` (and each `sharedBy`
+// entry on the kept twin) NAMES the dropped source-universe entity — a
+// name, not a doorway, carried VERBATIM (hop-stable: nothing nests on a
+// re-load). ABSENT on an entity that composes nothing (non-breaking; the
+// mint is the NON-frozen subComplexLift seam, the card resolves the refs
+// by exact `===`). Manifest re-sealed in the same change.
+export interface ComposedRelationStamp {
+  kind: 'edge' | 'face';
+  id: string; // the dropped coarse entity — the record's NAME (source-universe id)
+  parts: string[]; // the LIVE finer parts — this shape's own edge/face ids
+  sourceVertexIds: VertexId[]; // the coarse entity's corners — this shape's own
+}
+
 export interface Edge {
   id: EdgeId;
   vertexIds: [VertexId, VertexId];
@@ -120,6 +138,10 @@ export interface Edge {
   sourceCellId?: CellId;
   lineage?: PacketLineage;
   data?: PacketData;
+  // THE MANIFOLD RECORD (#37 GAP 1): the composed-of stamp on every live
+  // part · the shared-by record names on the kept twin
+  composes?: ComposedRelationStamp;
+  sharedBy?: string[];
 }
 
 export type FaceRole =
@@ -150,6 +172,10 @@ export interface Face {
   sourceCellId?: CellId;
   sourceFaceId?: FaceId;
   sourceVertexId?: VertexId;
+  // THE MANIFOLD RECORD (#37 GAP 1): the composed-of stamp on every live
+  // part · the shared-by record names on the kept twin
+  composes?: ComposedRelationStamp;
+  sharedBy?: string[];
 }
 
 // REFINE'S WORD (2026-07-29): the resolution's own record, carried ON the
