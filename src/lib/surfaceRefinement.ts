@@ -304,7 +304,8 @@ const assembleRefined = (
       // midpoint sits on the point itself — the quotient's immersion is
       // already degenerate there)
       position: [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2, (p1[2] + p2[2]) / 2],
-      data: createDefaultVertexData(label),
+      // LEGIBILITY MIGRATION (B-2026-08-23-A): id-in-the-name-slot stops — true absence; lineage resolves
+      data: createDefaultVertexData(''),
       createdBy: {
         shapeId: form.id,
         // the frozen OperationKind has no word for refinement (disclosed in
@@ -661,7 +662,8 @@ export function bisectAcquiredComplex(
     shapeVertices[mid] = {
       id: mid,
       position: [(pu[0] + pv[0]) / 2, (pu[1] + pv[1]) / 2, (pu[2] + pv[2]) / 2],
-      data: createDefaultVertexData(mid),
+      // LEGIBILITY MIGRATION (B-2026-08-23-A): id-in-the-name-slot stops — true absence; lineage resolves
+      data: createDefaultVertexData(''),
       createdBy: {
         shapeId: form.id,
         operation: form.genealogy.operation,
@@ -906,7 +908,8 @@ function assembleAcquired(
     vertices[label] = {
       id: label,
       position: [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2, (p1[2] + p2[2]) / 2],
-      data: createDefaultVertexData(label),
+      // LEGIBILITY MIGRATION (B-2026-08-23-A): id-in-the-name-slot stops — true absence; lineage resolves
+      data: createDefaultVertexData(''),
       createdBy: {
         shapeId: form.id,
         operation: form.genealogy.operation,

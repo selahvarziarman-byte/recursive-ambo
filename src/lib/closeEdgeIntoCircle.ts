@@ -170,7 +170,10 @@ export function closeSegmentIntoLoop(segment: Shape, edge: Edge): ClosedLoopBirt
   const mintVertex = (id: string, angle: number) => ({
     id,
     position: ringAt(angle),
-    data: createDefaultVertexData(id),
+    // LEGIBILITY MIGRATION (B-2026-08-23-A, census site 2): the label is a
+    // TRUE ABSENCE — an id in the name slot is no name (positive presence);
+    // the display resolves through `createdBy.sourceVertexIds` on absence.
+    data: createDefaultVertexData(''),
     createdBy: { shapeId, operation: 'assemble' as const, sourceVertexIds: [x, y] },
   });
   const shape: Shape = {

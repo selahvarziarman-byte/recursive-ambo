@@ -228,7 +228,9 @@ export function patchLift(source: Shape, centerId: VertexId): PatchLift {
     mintedChildren.push({
       id: childId,
       position: midpoint(source.vertices[a].position, source.vertices[b].position),
-      data: createDefaultVertexData(childId),
+      // LEGIBILITY MIGRATION (B-2026-08-23-A, the latent-producer rider): the manufacture
+      // stops even on the dormant route — dead module, dead id-copy, LIVE vocabulary
+      data: createDefaultVertexData(''),
       createdBy: {
         shapeId: liftShapeId,
         operation: PATCH_LIFT_OPERATION,
