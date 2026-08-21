@@ -55,6 +55,14 @@ interface ExploreSeam {
   // what just HAPPENED, beside the standing description. Persists; never
   // flashes. Null until the first position-return.
   returnLine: string | null;
+  // W.7 (designer-ruled, mothership 2026-08-21): the PREVIOUS return, kept
+  // beside the current one — the mark is the COMPARISON (`2 doors · turned`
+  // means something only against `4 doors · the same way up`; without this
+  // the display hands the comparison back to memory, one layer below where
+  // W.3 caught it). Shifted on EVERY circuit close — the honest duplicate:
+  // the same reading twice means he walked it twice, and a silent de-dup
+  // would lie about what he did. Null until the second position-return.
+  previousReturnLine: string | null;
   // the walk leg's THROTTLE (an ungated window seam, the committed
   // __manuscriptScene idiom): nothing in the app sets it — the headless
   // driver's pointer pulses have a ~2u floor at the default pace under the
@@ -82,6 +90,7 @@ const seamOf = (): ExploreSeam => {
       rodK: null,
       walls: 0,
       returnLine: null,
+      previousReturnLine: null,
       paceOverride: null,
     };
   }
@@ -473,6 +482,7 @@ export function ExploreWindow({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const captionRef = useRef<HTMLDivElement | null>(null);
   const returnRef = useRef<HTMLDivElement | null>(null);
+  const prevReturnRef = useRef<HTMLDivElement | null>(null);
   const liveRef = useRef({ level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho });
   liveRef.current = { level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho };
 
@@ -492,6 +502,7 @@ export function ExploreWindow({
     seam.rodK = cellSurface.rods.map((r) => r.k);
     seam.walls = cellSurface.wallCount;
     seam.returnLine = null;
+    seam.previousReturnLine = null;
     seam.paceOverride = null;
     nextSession += 1;
     if (!canvas || !packed) return undefined;
@@ -789,11 +800,22 @@ export function ExploreWindow({
             : deckTrace >= 3 - FRAME_EPS
               ? 'the room came back the same way up'
               : 'the room came back turned';
-        const returnLine = `back where you started · ${seam.doors} doors · ${clause}`;
-        if (seam.returnLine !== returnLine) {
-          seam.returnLine = returnLine;
-          if (returnRef.current) returnRef.current.textContent = returnLine;
+        // the ratified final strings: `1 door` singular, `N doors` otherwise
+        // (`0 doors` stays plural) — W.7 recut; the three clauses verbatim.
+        const returnLine = `back where you started · ${seam.doors === 1 ? '1 door' : `${seam.doors} doors`} · ${clause}`;
+        // W.7 — the comparison is the mark: the line just standing shifts to
+        // the PREVIOUS slot on EVERY circuit close, never gated on the string
+        // having changed — an equal reading is a circuit he genuinely walked
+        // twice, and a display that silently de-dups is a display lying about
+        // what he did. Both lines persist (W.5); the new reading takes the
+        // familiar current slot so the full-ink line is always the one he
+        // just closed.
+        if (seam.returnLine !== null) {
+          seam.previousReturnLine = seam.returnLine;
+          if (prevReturnRef.current) prevReturnRef.current.textContent = seam.previousReturnLine;
         }
+        seam.returnLine = returnLine;
+        if (returnRef.current) returnRef.current.textContent = returnLine;
       }
       raf = requestAnimationFrame(frame);
     };
@@ -886,6 +908,18 @@ export function ExploreWindow({
         ref={returnRef}
         data-explore-return
         style={{ marginTop: 2, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.78, minHeight: 15 }}
+      />
+      {/* W.7 — the previous return, kept beside the current one: the mark is
+          the COMPARISON. RECESSED register, same ink family — the full-ink
+          line above, in the slot returns have always used, is the one he
+          just closed; this fainter echo is the circuit before it. Its own
+          held slot (the plate never jumps; two lines is the named cost);
+          empty until the second circuit. The honest duplicate arrives from
+          upstream unfiltered. */}
+      <div
+        ref={prevReturnRef}
+        data-explore-return-previous
+        style={{ marginTop: 1, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.45, minHeight: 15 }}
       />
       <div style={{ marginTop: 3, fontSize: 10.5, opacity: 0.55 }}>
         drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell
