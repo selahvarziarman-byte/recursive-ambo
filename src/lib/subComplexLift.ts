@@ -81,8 +81,9 @@ export interface SubComplex {
   // RECORDED here — `composed-of` (a coarse side = the union of its halves;
   // a coarse face = its finer tiling) or `shared-by` (a twin wall record —
   // one live copy kept). Nothing is erased: the relation IS the record, and
-  // extractSubShape stamps it onto the live copies' own data (`composes` /
-  // `sharedBy`) so the card (Phase C) reads it off the shape.
+  // extractSubShape stamps it onto the live copies' own NAMED fields
+  // (`composes` / `sharedBy` — #37 GAP 1, loader-re-rooted) so the card
+  // (Phase C) reads it off the shape by exact `===`.
   composedRelations?: Array<{
     kind: 'edge' | 'face';
     id: string;
@@ -840,10 +841,13 @@ export function extractSubShape(
     }
   }
 
-  // THE MANIFOLD RECORDS (SEAL_PHASE_B_MANIFOLD): a dropped coarse entity IS
-  // a relation now — stamped onto its LIVE parts' own data (`composes`) and
-  // onto the kept twin (`sharedBy`): the serializing carrier Phase C reads
-  // off the shape. Deep copies — the source is never touched.
+  // THE MANIFOLD RECORDS (SEAL_PHASE_B_MANIFOLD · #37 GAP 1 promotion,
+  // B-2026-08-22-B): a dropped coarse entity IS a relation now — stamped
+  // onto its LIVE parts' own NAMED field (`composes`) and onto the kept
+  // twin (`sharedBy`): a field the committed loader re-roots by name, so
+  // the card resolves the refs by exact `===` after any number of loads
+  // (the opaque-data-blob home is retired; the loader migrates old files).
+  // Deep copies — the source is never touched.
   for (const rec of closure.composedRelations ?? []) {
     if (rec.relation === 'composed-of') {
       const stamp = {
@@ -855,16 +859,13 @@ export function extractSubShape(
       for (const partId of rec.parts) {
         const target =
           rec.kind === 'edge' ? edges.find((e) => e.id === partId) : faces.find((f) => f.id === partId);
-        if (target) target.data = { ...(target.data ?? {}), composes: stamp };
+        if (target) target.composes = stamp;
       }
     } else {
       const keptId = rec.parts[0];
       const target =
         rec.kind === 'edge' ? edges.find((e) => e.id === keptId) : faces.find((f) => f.id === keptId);
-      if (target) {
-        const prior = Array.isArray(target.data?.sharedBy) ? (target.data.sharedBy as string[]) : [];
-        target.data = { ...(target.data ?? {}), sharedBy: [...prior, rec.id] };
-      }
+      if (target) target.sharedBy = [...(target.sharedBy ?? []), rec.id];
     }
   }
 

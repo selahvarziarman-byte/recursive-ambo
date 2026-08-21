@@ -430,7 +430,7 @@ check('§9 (P2·E7) THE VIEW WIRES THE READING (source-pinned): incidence — ca
 console.log('\n----- §10 (LIFT) ★★ identity · lifted typing · distinct id · grain carried-or-marked -----');
 const { getOperation } = req('src/operations/registry.ts');
 const { liftSubComplex, extractSubShape } = req('src/lib/subComplexLift.ts');
-const { serializeSnapshot } = req('src/playground/snapshot.ts');
+const { serializeSnapshot, deserializeSnapshot } = req('src/playground/snapshot.ts');
 const { loadUniverseSnapshot, placeShelfEntry } = req('src/manuscript/genesisModel.ts');
 const seedTetra = createSeedShape('tetrahedron');
 const amboD = getOperation('ambo-dissection').execute({ shape: seedTetra, selectedCellId: null, selectedCell: null });
@@ -563,7 +563,7 @@ const composedEdges = composedB.filter((r) => r.kind === 'edge' && r.relation ==
 const composedFaces = composedB.filter((r) => r.kind === 'face' && r.relation === 'composed-of');
 const liveEdgeIdsB = new Set(faceLift.shape.edges.map((e) => e.id));
 const liveFaceIdsB = new Set(faceLift.shape.faces.map((f) => f.id));
-check('§10 (E-COARSE-AS-RELATION) ★★ EACH COARSE SIDE IS A COMPOSED RELATION, NOT A LIVE EDGE: 3 edge records, each a 2-half PATH between seed corners whose parts are LIVE and whose composed id is NOT (nothing erased — the union of halves IS the side); the coarse FACE rides as 1 composed record over the 4 live tiles; the stamps survive the committed load (`data.composes` on every part)',
+check('§10 (E-COARSE-AS-RELATION) ★★ EACH COARSE SIDE IS A COMPOSED RELATION, NOT A LIVE EDGE: 3 edge records, each a 2-half PATH between seed corners whose parts are LIVE and whose composed id is NOT (nothing erased — the union of halves IS the side); the coarse FACE rides as 1 composed record over the 4 live tiles; the stamps survive the committed load on the NAMED field (#37 GAP 1: `composes` on every part, loader-re-rooted — the data blob is retired)',
   composedEdges.length === 3 &&
     composedEdges.every(
       (r) =>
@@ -577,8 +577,10 @@ check('§10 (E-COARSE-AS-RELATION) ★★ EACH COARSE SIDE IS A COMPOSED RELATIO
     composedFaces[0].parts.length === 4 &&
     composedFaces[0].parts.every((p) => liveFaceIdsB.has(p)) &&
     !liveFaceIdsB.has(composedFaces[0].id) &&
-    manifoldShape.edges.filter((e) => e.data && e.data.composes).length === 6 &&
-    manifoldShape.faces.filter((f) => f.data && f.data.composes).length === 4);
+    manifoldShape.edges.filter((e) => e.composes).length === 6 &&
+    manifoldShape.faces.filter((f) => f.composes).length === 4 &&
+    manifoldShape.edges.every((e) => !(e.data && e.data.composes)) &&
+    manifoldShape.faces.every((f) => !(f.data && f.data.composes)));
 // E-TWIN: select BOTH records of a shared wall (the dissection writes one per
 // cell) as a 2-entity region — ONE lives, the twin becomes SHARED-BY
 const twinPair = (() => {
@@ -599,13 +601,13 @@ const twinLift = twinPair
     ])
   : null;
 const twinRecords = twinLift ? (twinLift.closure.composedRelations ?? []).filter((r) => r.relation === 'shared-by' && r.kind === 'face') : [];
-check('§10 (E-TWIN-SHARED-BY) ★ A SHARED WALL IS ONE LIVE FACE + A SHARED-BY RELATION: lifting both twin records of a dissection wall keeps ONE live face; the duplicate is recorded (the kept copy\'s `data.sharedBy` names it), never N live layers',
+check('§10 (E-TWIN-SHARED-BY) ★ A SHARED WALL IS ONE LIVE FACE + A SHARED-BY RELATION: lifting both twin records of a dissection wall keeps ONE live face; the duplicate is recorded (the kept copy\'s NAMED `sharedBy` field names it — #37 GAP 1), never N live layers',
   twinLift !== null &&
     twinLift.shape.faces.length === 1 &&
     twinRecords.length === 1 &&
     twinRecords[0].parts[0] === twinLift.shape.faces[0].id &&
-    Array.isArray(twinLift.shape.faces[0].data?.sharedBy) &&
-    twinLift.shape.faces[0].data.sharedBy.includes(twinRecords[0].id));
+    Array.isArray(twinLift.shape.faces[0].sharedBy) &&
+    twinLift.shape.faces[0].sharedBy.includes(twinRecords[0].id));
 // S3 — THE CO-WOUND REGION (SEAL_S3_BLACK_TRIANGLE_S4_SURFACE_LOCK): the
 // dissection's medial cell arrived ANTI-wound (Newell·ref −1.000, the
 // engineer's probe) — the lift now co-orients every coplanar carried face
@@ -685,13 +687,13 @@ check('§12 (E-NO-PHANTOM) ★★ NO NAME WITHOUT A PLACE — and the plant bite
 const dropJudge = (reading, shapeX) => {
   const registry = new Set();
   for (const e of shapeX.edges) {
-    const c = e.data && e.data.composes;
+    const c = e.composes; // #37 GAP 1: the NAMED field is the registry
     if (c && c.kind === 'edge' && typeof c.id === 'string') registry.add(c.id);
   }
   return reading.composedRelationRows.filter((r) => r.kind === 'composed-of').length === registry.size;
 };
 const droppedCard = { ...faceReading, composedRelationRows: faceReading.composedRelationRows.filter((r) => r.kind !== 'composed-of') };
-check('§12 (E-NO-DROP) ★★ NO REAL RELATION SILENTLY DROPPED — and the plant bites: the surfaced composed count equals the shape\'s own registry census (the `data.composes` stamps); a card that hides them FAILS the same judge',
+check('§12 (E-NO-DROP) ★★ NO REAL RELATION SILENTLY DROPPED — and the plant bites: the surfaced composed count equals the shape\'s own registry census (the NAMED `composes` stamps, #37 GAP 1); a card that hides them FAILS the same judge',
   dropJudge(faceReading, manifoldShape) === true && dropJudge(droppedCard, manifoldShape) === false);
 check('§12 (E-TYPING) THE SOURCE-ROLE THROUGH THE LIFT (researcher 2240): each composed seed relation reads `born` (a premise — seed-story endpoints); every live finer row on the face card reads `derived` (a minted midpoint endpoint); the A-C edge card splits the same way (coarse `born` · halves `derived` — §10\'s recut)',
   composedRows.filter((r) => r.kind === 'composed-of').every((r) => r.typing === 'born') &&
@@ -1041,6 +1043,57 @@ check('§14 (SPECIMENS) ★ THE TWO REACHABILITY FINDINGS HOLD: (a) the 10-mark 
     }
     return refineRefused && routeLost && b1Zero && deficitNA && fieldDegenerate;
   })());
+// #37 GAP 1+2 (B-2026-08-22-B) — THE PROMOTED RECORD ACROSS THE DOUBLE HOP,
+// and the retired world's file still loads. One hop cannot see the nesting
+// bug: hop under TWO DIFFERENT sources — the doorway refs (parts /
+// sourceVertexIds) re-root WITH the ids they name and stay ===-live BOTH
+// hops; the record id and each sharedBy entry ride VERBATIM (nothing
+// nests). LEGACY CONTROL: a pre-promotion file (stamps riding the opaque
+// data blob) is LIFTED to the named fields on load — blob keys stripped,
+// unrelated data preserved — and the card reads the same rows off it.
+{
+  const rawShape = faceLift.shape;
+  const hop1 = deserializeSnapshot(serializeSnapshot(rawShape, 'hop-a', [])).shape;
+  const hop2 = deserializeSnapshot(serializeSnapshot(hop1, 'hop-b', [])).shape;
+  const liveByEq = (s) => {
+    const eIds = new Set(s.edges.map((e) => e.id));
+    const vIds = new Set(Object.keys(s.vertices));
+    const fIds = new Set(s.faces.map((f) => f.id));
+    return s.edges.filter((e) => e.composes).every((e) =>
+      e.composes.parts.every((p) => (e.composes.kind === 'edge' ? eIds.has(p) : fIds.has(p))) &&
+      e.composes.sourceVertexIds.every((v) => vIds.has(v)),
+    ) && s.faces.filter((f) => f.composes).every((f) => f.composes.parts.every((p) => fIds.has(p)));
+  };
+  const recordIds = (s) => [...s.edges, ...s.faces].filter((x) => x.composes).map((x) => x.composes.id).sort();
+  check('§13 (#37 GAP 1+2) THE PROMOTED RECORD SURVIVES THE DOUBLE HOP: 6+4 stamps both hops, every doorway ref ===-live in its own hop\'s id space, and the record ids VERBATIM across raw → hop1 → hop2 (nothing nests)',
+    hop1.edges.filter((e) => e.composes).length === 6 &&
+      hop1.faces.filter((f) => f.composes).length === 4 &&
+      hop2.edges.filter((e) => e.composes).length === 6 &&
+      hop2.faces.filter((f) => f.composes).length === 4 &&
+      liveByEq(hop1) && liveByEq(hop2) &&
+      JSON.stringify(recordIds(rawShape)) === JSON.stringify(recordIds(hop1)) &&
+      JSON.stringify(recordIds(hop1)) === JSON.stringify(recordIds(hop2)));
+  // the legacy file: demote the raw lift's structural stamps into data blobs
+  // (a byte-faithful pre-promotion shape), then load it through the door
+  const legacy = JSON.parse(JSON.stringify(rawShape));
+  for (const pool of [legacy.edges, legacy.faces]) {
+    for (const x of pool) {
+      if (x.composes) { x.data = { ...(x.data ?? {}), composes: x.composes }; delete x.composes; }
+      if (x.sharedBy) { x.data = { ...(x.data ?? {}), sharedBy: x.sharedBy }; delete x.sharedBy; }
+    }
+  }
+  const legacyFile = JSON.parse(JSON.stringify(serializeSnapshot(legacy, 'legacy-src', [])));
+  const migrated = deserializeSnapshot(legacyFile).shape;
+  const migratedReading = buildArgumentReading(placeShelfEntry(loadUniverseSnapshot(legacyFile), 613));
+  check('§13 (LEGACY CONTROL) A PRE-PROMOTION FILE STILL LOADS WHOLE: the data-blob stamps are LIFTED to the named fields (6+4, ===-live), the blob keys are STRIPPED (one home), and the card reads the same composed rows off the migrated form',
+    migrated.edges.filter((e) => e.composes).length === 6 &&
+      migrated.faces.filter((f) => f.composes).length === 4 &&
+      migrated.edges.every((e) => !(e.data && e.data.composes)) &&
+      migrated.faces.every((f) => !(f.data && f.data.composes)) &&
+      liveByEq(migrated) &&
+      migratedReading.composedRelationRows.filter((r) => r.kind === 'composed-of').length ===
+        faceReading.composedRelationRows.filter((r) => r.kind === 'composed-of').length);
+}
 check('§11 (E-NO-UNION) NOTHING FROZEN MOVED: ambo.ts (the mechanism is the LIFT — the T-junction stays real) · InkedForm.tsx (the flat-body guard is ADAPTER-HELD) · types/geometry.ts · lib/shape.ts · store/geometryStore.ts · genesisModel.ts · faithfulBodyModel.ts · inkedFormModel.ts · the MANIFEST — all BYTE-IDENTICAL to HEAD (no union, no new file, no new row owed)',
   ['src/lib/ambo.ts', 'src/manuscript/InkedForm.tsx', 'src/types/geometry.ts', 'src/lib/shape.ts', 'src/store/geometryStore.ts', 'src/manuscript/genesisModel.ts', 'src/manuscript/faithfulBodyModel.ts', 'src/manuscript/inkedFormModel.ts', 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'].every(headEq));
 

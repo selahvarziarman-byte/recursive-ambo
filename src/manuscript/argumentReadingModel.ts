@@ -30,7 +30,7 @@
 // the REAL substrate ids (kept on every row for the witness); a label names,
 // it never invents a source.
 
-import type { Edge, Shape } from '../types/geometry';
+import type { ComposedRelationStamp, Edge, Shape } from '../types/geometry';
 import { primalMultiset } from '../lib/lineage';
 import type { WrittenForm } from './writtenFormModel';
 // PHASE 2 (seal SEAL_ARGUMENT_CARD_PHASE2): the RELATION half of the spine +
@@ -119,8 +119,8 @@ export interface ArgumentReading {
   // off the substrate and rendered by the view; empty when the grain rode
   grainMarks: string[];
   // PHASE C: the surfaced coarse relations (read from the Phase-B registry —
-  // the `data.composes`/`data.sharedBy` stamps on the live entities, the
-  // carrier that survives the committed load); empty off the lift family
+  // the NAMED `composes`/`sharedBy` fields on the live entities (#37 GAP 1),
+  // the carrier the committed loader re-roots); empty off the lift family
   composedRelationRows: ComposedRelationRow[];
 }
 
@@ -487,9 +487,9 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
 
   // PHASE C — THE CARD READS THE REGISTRY (SEAL_PHASE_C_CARD_REGISTRY): the
   // coarse relations Phase B recorded surface as COMPOSED-PATH rows. The
-  // registry is read off the LIVE entities' own stamps (`data.composes` on
-  // every part, `data.sharedBy` on the kept twin — the serializing carrier;
-  // deduped by the recorded id). Labels ·-join ALWAYS (the composed row
+  // registry is read off the LIVE entities' own NAMED stamps (`composes` on
+  // every part, `sharedBy` on the kept twin — #37 GAP 1's loader-re-rooted
+  // carrier; deduped by the recorded id). Labels ·-join ALWAYS (the composed row
   // names a RELATION between concepts — 'A·B' never collides with the
   // midpoint concept 'AB'); the typing is the source-role through the lift
   // (seed-story endpoints ⇒ 'born' — a premise; a minted endpoint ⇒
@@ -499,19 +499,17 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
     if (!liftedForm) return [];
     const seedStoryV = (id: string): boolean => shape.vertices[id]?.createdBy.operation === 'seed';
     const rows = new Map<string, ComposedRelationRow>();
-    // the Phase-B stamps carry SOURCE-universe ids; the committed load
-    // prefixes every STRUCTURAL id (`<source>:…`) but the data blobs ride
-    // OPAQUE (measured) — a recorded id resolves against the live pool by
-    // suffix, and the RESOLVED (live) ids are what the row carries
+    // #37 GAP 1 (B-2026-08-22-B): the stamps ride NAMED fields the committed
+    // loader re-roots with the shape's own ids — a recorded doorway ref IS a
+    // live id by construction, so the resolver is exact `===` (the suffix
+    // walk died with the promotion; `?? recordedId` remains the honest carry
+    // for a name that resolves nowhere — never a fabrication)
     const liveVertexIds = Object.keys(shape.vertices);
     const liveEdgeIds = shape.edges.map((e) => e.id);
     const resolveLive = (recordedId: string, pool: readonly string[]): string =>
-      pool.find((liveId) => liveId === recordedId || liveId.endsWith(`:${recordedId}`)) ?? recordedId;
+      pool.find((liveId) => liveId === recordedId) ?? recordedId;
     const liveEdgeById = new Map(shape.edges.map((e) => [e.id, e]));
-    const readComposes = (entity: 'edge' | 'face', data: Record<string, unknown> | undefined): void => {
-      const rec = data?.['composes'] as
-        | { kind?: string; id?: string; parts?: string[]; sourceVertexIds?: string[] }
-        | undefined;
+    const readComposes = (entity: 'edge' | 'face', rec: ComposedRelationStamp | undefined): void => {
       if (!rec || typeof rec.id !== 'string' || !Array.isArray(rec.parts)) return;
       if (rows.has(rec.id)) return;
       const source = (Array.isArray(rec.sourceVertexIds) ? rec.sourceVertexIds : []).map((v) =>
@@ -536,9 +534,8 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
     // seal's rows); the coarse FACE's composed record is the REGION's own
     // registry entry (Phase D's correspondence subject), not a relation row —
     // it stays on the shape, nothing hidden (disclosed)
-    for (const e of shape.edges) readComposes('edge', e.data);
-    const readSharedBy = (entity: 'edge' | 'face', keptId: string, data: Record<string, unknown> | undefined, corners: readonly string[]): void => {
-      const dropped = data?.['sharedBy'];
+    for (const e of shape.edges) readComposes('edge', e.composes);
+    const readSharedBy = (entity: 'edge' | 'face', keptId: string, dropped: readonly string[] | undefined, corners: readonly string[]): void => {
       if (!Array.isArray(dropped)) return;
       for (const droppedId of dropped) {
         if (typeof droppedId !== 'string' || rows.has(droppedId)) continue;
@@ -554,8 +551,8 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
         });
       }
     };
-    for (const e of shape.edges) readSharedBy('edge', e.id, e.data, e.vertexIds);
-    for (const f of shape.faces) readSharedBy('face', f.id, f.data, f.vertexIds);
+    for (const e of shape.edges) readSharedBy('edge', e.id, e.sharedBy, e.vertexIds);
+    for (const f of shape.faces) readSharedBy('face', f.id, f.sharedBy, f.vertexIds);
     return [...rows.values()].sort((a, b) => a.id.localeCompare(b.id));
   })();
 
