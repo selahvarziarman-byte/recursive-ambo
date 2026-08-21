@@ -84,7 +84,7 @@ src/playground/formInvariants.ts        1079458c3d4a3451cd2df376f62893271ff10014
 src/playground/genealogyLayout.ts       dcdde159e83cc246fdbaf0521ec69a2a5884c78d0d68cbe1dae7c1b1589f98b8
 src/playground/playgroundOperations.ts  ed0cc1a8350cc7d7a79923d7d4db9c4c2255c9997fc1ec2996d87074d1865b2e
 src/playground/primitiveCatalogue.ts    b02c1c2daf58ec632513aec088eff597a76ce3d09d218d9dd85374d183eb1266
-src/playground/snapshot.ts              eccfaba7d807e7a601bbb62ada92704a9935ea38aedc755c40808bf417c56ed7
+src/playground/snapshot.ts              f5d40ffc91c69536cf6226857a0ac45c5ffd552e59c51a7a73044453bba52eec
 src/types/geometry.ts                   8abb1474f5ef8fe52277b9b8d4c1a57d82aeea2118629b4d8f39f318287cb77a
 
 # ─── NOT_FROZEN — classified with a reason (completeness: nothing may be unlisted) ───

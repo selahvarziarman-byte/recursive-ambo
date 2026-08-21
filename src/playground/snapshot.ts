@@ -215,6 +215,22 @@ export function deserializeSnapshot(
       faceIds: cell.faceIds.map(ns),
       sourceVertexIds: cell.sourceVertexIds.map(ns),
       ...(cell.preservedVertexId ? { preservedVertexId: ns(cell.preservedVertexId) } : {}),
+      // #37 (B-2026-08-22-A, researcher's sweep predicate: "reads an entity
+      // id out of a data-blob field"): the dihedral record's KEYS are carried
+      // id-refs — `<entityId>@<level>` composites minted from this shape's
+      // own ids — and the spread above left them VERBATIM, so one shelf
+      // round-trip made every record key stale (measured: the fan's cone
+      // rendered flat off the person's own route). The whole key is
+      // prefixed; the `@…` level suffix is STRUCTURAL and rides inside it
+      // untouched (conformalAtom's level reads are unaffected). Consumers
+      // now resolve these keys by exact `===` — the suffix stopgap dies.
+      ...(cell.dihedralAngles
+        ? {
+            dihedralAngles: Object.fromEntries(
+              Object.entries(cell.dihedralAngles).map(([key, angle]) => [ns(key), angle]),
+            ),
+          }
+        : {}),
     }));
     const generations: Generation[] = (original.generations ?? []).map((generation) => ({
       ...generation,
