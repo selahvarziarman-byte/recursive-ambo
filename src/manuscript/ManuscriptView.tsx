@@ -4161,7 +4161,7 @@ export default function ManuscriptView() {
                   depthBreakThreshold: inkCtl.depthBreakThreshold,
                 }}
               />
-              {summoned ? (
+              {summoned && !apertureOpen ? (
                 <group position={[0, 3.05, 0]} scale={0.68}>
                   <InkedDomain
                     model={model}
