@@ -1,53 +1,59 @@
 # THE BUILD — always current, self-contained
 
-**STAMP: `B-2026-08-22-B`** ⛔ **Echo this stamp at the top of your report.**
-**Written by: mothership · base `fbdb145` · branch `team-arman`**
+**STAMP: `B-2026-08-22-C`** ⛔ **Echo this stamp at the top of your report.**
+**Written by: mothership · base `9af9c54` · branch `team-arman`**
 *Read `CLAUDE.md` at the repo root first. **If anything below contradicts what you MEASURE, your measurement wins.***
 
 ---
 
-## 1 · ✅ PERSISTENCE IS ACCEPTED — and the acceptance clause it "failed" is WITHDRAWN by me
+## 1 · ✅ `B-2026-08-22-B` RATIFIED — #37 is finished and the zoo is right
 
-✔ **(A) the page survives an unmount, proven at the eye.** ✔ **(B) the double hop closed — build → save → reload → load → save → reload → load, zero refusals, page pixel-stable, nothing nested.** ✔ **Visible doors.** ✔ **The frozen `snapshot.ts` union, positive control reproduced.** ✔ **The tail-match died by its booked condition.**
-★ **And two free negative controls you did not have to look for:** Ambo's workspace door **refusing the page file by name**, and re-performing the same thicken **minting the same deterministic id and being refused as "already on the sheet."** ⇒ ***the meaning-trace law speaking back*** — the same gesture leaving the same trace, and the engine recognising it. **Keep that sentence; it is the doctrine demonstrating itself.**
-
-⛔ **PUSH. Do not ask again.** `CLAUDE.md` §6 carries it as standing: **push to `origin/team-arman` after every build lands, fast-forward only.** Arman ruled it; it is not a per-build decision.
-
----
-
-## 2 · ★★★ YOUR §1 — RULED. And you were right that it is a meaning call.
-
-**What you measured, and it is the finding of the week:** the F.0c-era `cone edges (measured): 1 × 300°` **was reached through the tail-match, by fabrication.** Killing the stopgap did not break the caption — **it revealed that the honest route never reached it.**
-
-⛔ **AND MINE, FIRST: I RATIFIED THAT READING AT MY OWN EYE on 08-19.** I drove it, saw `1 × 300° (measured)`, and accepted it. ⇒ ***I checked the READING and not the ROUTE*** — the vacuity law, against the seat whose job is to catch it. **The number was true; the bridge under it was not.**
-
-★★ **And the sharpest thing in your report is the one about the witness:** *"the headless witness measures 300° only because it hands the reader the pre-hop parent object — a route the shelf design does not preserve."* ⇒ ⛔ ***A witness that supplies the reader an object the app's own route never provides is proving a thing the app cannot do.*** **That is why this survived weeks of green.** **Standing, and it is the sharpest form of *a seal must execute what it witnesses* we have found.**
-
-> ### ⛔ THE RULING — three parts.
-> **(i) IDENTITY ACROSS A HOP IS A RECORD, NEVER A STRING RELATION.** An id is an ADDRESS. Marrying two addresses by name surgery — suffix, prefix, or "the loader's committed prefix relation" **reconstructed later from the strings** — is inferring identity from a READING. ⛔ **Refused as a class, not as an instance.** *(This is why your tail-match had to die even though it "worked".)*
-> **(ii) A NAMESPACE HOP IS AN OPERATION, AND EVERY OPERATION LEAVES A TRACE.** The shelf hop performs a re-rooting **and records nothing about what it did.** ⇒ ⛔ **That is the defect.** ✅ **The hop must leave its own record — the mapping it applied — at the hop.** Then the marriage **reads a trace** instead of guessing at a name. ★ **Your option (b) is RIGHT if and only if the relation is RECORDED BY THE HOP, and WRONG if it is reconstructed afterwards.** ⛔ **Option (c) — carrying ancestors in every product file — is DUPLICATING the record instead of recording the RELATION; it is heavier and it will drift. Refused.**
-> **(iii) ⚠ BUT MEASURE THIS FIRST, because it may make (ii) unnecessary — smallest measurement first.**
-> **Does the band even HAVE a parent pointer to re-root?** ⚠ **My hypothesis, flagged as mine and ungrounded:** `thicken.ts:292` — `parentShapeId: segment !== undefined ? null : form.id` — **NULLS the pointer at arity-2.** That is **D1's original root, and I do not believe it was ever cured.** ⇒ **If the structural route is unavailable because the pointer is null, the cure is D1's — one field, not a new mechanism — and `namespaceOne:240` already re-roots that pointer when it exists.**
-> ⇒ **Measure it, report, and do not build (ii) until (iii) is answered.**
-
-⚠ **And say this to Arman in your own words if he asks, because it is the honest shape:** ***the old number was RIGHT and reached WRONGLY; the new number is WRONG and reached RIGHTLY.*** **A regression at his eye that is progress in the substrate.**
+✔ Both sanctioned unions, each one commit with its positive control. ✔ **The last `composes`-suffix walk is dead**, witnessed **both ways** — a double hop under two different sources *and* a legacy-file control off a migrated old file. ★ **That second one is the good instinct: a migration is a claim about files that already exist, and only an old file can test it.**
+✔ **The zoo rides as the ACT** — 152 bytes, `written: 0, zooLoaded: true`, the door re-run on restore with all six references re-derived. ★ **And the ruling exposed a latent bug you then cured: the flag lived in component state while the forms lived in the store**, so an unmount round-trip would have re-opened the door over a populated page. ⇒ ***A ruling that forces a fact into the record finds the places that fact was being held wrongly.***
+✔ The restored page is framed at the eye. ✔ Pushed.
 
 ---
 
-## 3 · ✅ YOUR §2 — `geometry.ts` IS SANCTIONED. Finish #37.
-⛔ **`src/types/geometry.ts` (manifest 88) joins the closed list.** ✔ Asking rather than spending was right, and the `cornerAngles?` precedent in the same file gives you the sanctioned-edit shape.
-**Why now rather than parked:** the `data.composes`/`sharedBy` refs go stale on load ⇒ **the argument card's composed readings break across a save/load** — a person-facing defect on a saved page, and the remaining `===` flips travel with the promotion. **A half-finished gate is stopgaps waiting to bite.**
-⚠ **Edit + re-seal in ONE commit, nothing else, positive control at the real base.**
+## 2 · ⛔ YOUR §1 — RULED, AND YOUR MEASUREMENT CORRECTS MY OWN RULING
 
-## 4 · ✅ YOUR §3 — THE ZOO. Ruled, and it is `record, not reading` again.
-⛔ **A zoo room is not saved as CONTENT.** Arman's predicate is *did the person perform it?* — and what he performed is **pressing "load the reference zoo."** The rooms themselves are the engine's own catalogue, **reproducible by pressing it again.**
-> ✅ **RULED: record the ACT — "the zoo was loaded" — and re-run the door on restore.** ⛔ **Never serialize the zoo's contents.** ★ Same doctrine as `complex`/`tower`: **serialize the input, re-derive the reading.**
-✔ **Flagging it instead of sweeping it in was exactly the instruction and exactly right.**
+You measured what I only hypothesised, and then went a layer deeper than the hypothesis. **The three roads are real and I am choosing (b) — but not for the reason you framed, and the reason matters more than the choice.**
 
-## 5 · TWO SMALL ONES FROM YOUR OWN DRIVE
-- ⛔ **The mount-animation frame is NOT cosmetic.** *"When the load lands during the Manuscript's mount animation, the first camera frame shows bare paper… the store had the page the whole time."* ⇒ **The person's reading is "it did not work."** ***A positive fact — the page IS loaded — carried by nothing being there.*** **He will press load twice, or conclude the door is broken.** Take it.
-- ⚠ **The twin shelf entries** (`shelfPlacedShapeIds` is an id set and cannot tell twins apart, both read "placed"). ✔ Cosmetic, placement stays refused, **recorded for the ledger, not for this cut.**
-- ✔ **`index.lock` closed** — yours/sandbox during your own git ops, as you said.
+> ### ★★★ **THERE ARE TWO DIFFERENT PROBLEMS WEARING ONE NAME.**
+> **(1) DO TWO IDS REFER TO THE SAME THING?** — a **NAME** question. A hop record answers it. My (i)/(ii) ruling governs it and stands.
+> **(2) IS THE THING HERE AT ALL?** — a **CONTENT** question. **Only carrying it answers it.**
+>
+> ⛔ **We have been treating (2) as if it were (1).** The caption needs `readPillarDihedrals(base, product)` — **it needs the base OBJECT, not its name.** ⇒ **Road (c) marries NAMES; the caption is missing an OPERAND. A perfect hop record would hand it a correctly-spelled reference to something that is not in the file.**
+> ⇒ ★★ **And this is why the tail-match "worked": it papered over a MISSING OPERAND by faking a name match.** ★ **It is also exactly why your headless witness passed — it handed the reader the pre-hop parent OBJECT, supplying the content the route does not carry.** **Three findings, one cause, now named.**
+
+### ⇒ THE RULING
+⛔ **(a) is dead** — you measured it: nulled at the hop by `snapshot.ts:315-318`, still `unresolved-base`.
+⛔ **(c) is refused twice over.** First, reusing `provenance.source` **flips a committed reading** — *"opaque provenance — never a doorway"* is a ratified boundary that keeps a source a NAME and not a navigable link, and I am not spending it. Second and decisively, **even a newly minted hop record would not reach this fact**, per the split above.
+✅ **(b) — the join passes the operand as ancestry, and the committed `parentPointer` machinery preserves the chain through code that already exists.**
+
+> ⚠ **AND I AM WITHDRAWING MY EARLIER REFUSAL, because you were right to name it and wrong about what it was.** I refused *"carrying ancestors in every product file"* as **duplication that will drift.** ⛔ **That refusal was aimed at carrying a speculative ancestry CHAIN as a lookup aid. It does not reach this case, and here is why:**
+> ★★★ **A thicken is `shape × segment → band`. The band's MEANING IS that operation on those operands** — *every gesture leaves a trace, and the trace is the meaning of the act.* ⇒ **The operands are not context the band refers to; they are what the band IS.** ⇒ **Carrying them is not duplication, it is the record being WHOLE.**
+> ★ **And "drift" inverts in a record:** a snapshot freezes a moment. If the parent changes later, **the band was made from the old one — and saying so is fidelity, not staleness.**
+> ⛔ **BOUND IT, and this is where my original refusal still binds: carry the operands of the ONE operation that made this thing — `ancestors[0]`, never the transitive chain.**
+
+### THE TASK — 2(b)
+1. **`thicken.ts:300`** — stop nulling at arity-2; the pointer names the base. ⚠ **Check the manifest; my note says NOT_FROZEN but verify, do not take my word.**
+2. **The thicken shelf-join** — `serializeSnapshot(shape, source, [])` passes **`[form]`**. ⚠ **You said the GAP2C machinery already exists and the join simply passes an empty ancestry — so this should be one argument. If it is more, stop and say so.**
+3. ⇒ **Then the two cross-hop marriages you named should be able to flip:** `apertureModel.ts:733` (`resolveCarriedMetricBase`) and `ManuscriptView.tsx:2619` (`resolveAbsentLabel`). ⛔ **Flip them ONLY if the operand now rides — measure, do not assume.** ⚠ **You warned that flipping them today would silently null every hopped resolve; that warning stands until the operand is there.**
+
+**ACCEPTANCE — at the eye, and it is the one that has been false since F.0c:**
+> **Build the fan chamber, save, reload, load — and the walk caption reads `cone edges (measured): 1 × 300°`, not `(k×90° heuristic): 1 × 450°`.** ⛔ **And it must read `measured` on the LIVE page too, before any save** — the live and restored readings have been identical throughout and must stay so.
+⛔ **AND THE POSITIVE CONTROL (LAW 24):** a genuinely flat cube-derived room must still read **`(k×90° heuristic)`**. ★ **Both states positively marked — a cure that makes everything read "measured" has proved nothing.**
+
+## 3 · ✅ YOUR §2 — RATIFIED, and it corrects the completeness law
+✔ **Not every `endsWith` is a #37 site.** `apertureModel:1171/:1680` resolve a shape-level edge id to its **cell-prefixed copy inside ONE complex** — the complex's own construction, not a hop — and `surfaceRefinement:757` walks within a refine's own parent. ⇒ ***Same-species within-shape walks are not cross-namespace marriages.*** **The predicate is CROSS-HOP, not the string shape.** ⚠ **Amend it in your own record so a later sweep does not "finish" #37 by flipping three sites that were never in it.**
+
+## 4 · THEN — THE CARD UNION, complete and waiting
+**Spec of record: `.handoff/RATIFIED_THE_CARD_UNION_2026-08-22_*.md`.** Lift it verbatim; every string is ruled and both files are sanctioned.
+**Headline:** `gate.sound && isClosed ? χ === 0 : null` · four χ renderings with **two deliberate grammars** (a parenthesis = a judgement was made; a `·` clause = why no judgement exists — ⛔ **do not unify them**) · the subtitle forks, changing only the false half. **Two frozen files ⇒ two commits.**
+⚠ **Ship the `·` strings in the value column and give the designer ONE FRAME** — layout is hers and she settles it off a plate, not a description.
+
+## 5 · CLOSED
+✔ **The click quirk** — cosmetic to the drive, noted so a future drive does not misread it. ✔ **`index.lock`** — sandbox noise around your own git ops, as ruled. **Neither needs anything.**
 
 ## 6 · THE STANDING ASK
 Arman: ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report. Read the whole frame. Echo the stamp. Push when it lands.**
