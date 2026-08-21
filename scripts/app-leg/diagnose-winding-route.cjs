@@ -27,7 +27,7 @@
 //   mirror · THE FOURTH STRING — the sweep's corrected fact, live: the
 //            sound word d+0,d+1,d+2 returns the entry on a straight +y walk
 //            in ONE door with a reflection deck ⇒
-//            `1 doors · the room came back mirrored`.
+//            `1 door · the room came back mirrored` (W.7 recut: singular).
 //
 // Run directly (boots vite on the leg's own port):
 //   node scripts/app-leg/diagnose-winding-route.cjs
@@ -186,7 +186,7 @@ function waitHttp(url, timeoutMs) {
     clause('M.cubePlaced', 'the cube parcel places');
     clause('M.picks', 'the aperture picks: the word d+0,d+1,d+2');
     clause('M.window', 'the room builds, summons, opens');
-    clause('M.mirrored', '★★ `back where you started · 1 doors · the room came back mirrored` — live');
+    clause('M.mirrored', '★★ `back where you started · 1 door · the room came back mirrored` — live (W.7 recut: `1 door` singular is the ratified string)');
     clause('hygiene.console', 'no console error across the sessions');
   } finally {
     try {

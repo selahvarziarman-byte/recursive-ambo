@@ -501,7 +501,8 @@ def run_mirror(page, args):
     if built:
         got = False
         line = dom = None
-        want = "back where you started · 1 doors · the room came back mirrored"
+        # W.7 recut: the ratified final strings read `1 door` singular
+        want = "back where you started · 1 door · the room came back mirrored"
         for attempt in range(5):
             if attempt > 0:
                 close_window(page)
