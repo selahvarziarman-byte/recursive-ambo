@@ -300,14 +300,17 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
     parent?.vertices[id]?.data ??
     (form.parentShapes ?? []).map((s) => s.vertices[id]?.data).find(Boolean) ??
     null;
-  // the entity's OWN name: a real, non-degenerate packet label (the quotient
-  // mint copies the id INTO the label — measured — which is no independent
-  // name; an id-as-label or empty label falls through)
+  // the entity's OWN name: a real packet label by POSITIVE PRESENCE. THE
+  // TERMINAL CUT (B-2026-08-23-A): the `trimmed !== id` twin died with
+  // apertureModel's scaffold clause IN THE SAME COMMIT — every id-copy
+  // producer has stopped (the ruled census, measured), so an id in the
+  // label slot no longer occurs on the committed mints and the card and
+  // the menu keep agreeing by construction, not by twin guards.
   const ownNameOf = (id: string): string | null => {
     const data = packetOf(id);
     if (!data || typeof data.label !== 'string') return null;
     const trimmed = data.label.trim();
-    return trimmed.length > 0 && trimmed !== id ? trimmed : null;
+    return trimmed.length > 0 ? trimmed : null;
   };
   const idTail = (id: string): string => id.split(':').pop() ?? id;
   // a root's display: its packet name; 'unnamed' when the packet is reachable

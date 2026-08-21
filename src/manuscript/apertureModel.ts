@@ -567,21 +567,17 @@ export function faceDisplayName(shape: Shape, face: Face, resolveAbsent?: Absent
     const vertex = shape.vertices[vertexId];
     const data = vertex?.data;
     const trimmed = typeof data?.label === 'string' ? data.label.trim() : '';
-    // ⛔ THE SCAFFOLD (engineer 1740 §part-2-HELD, researcher-ratified): the
-    // `trimmed === vertexId` clause is a TEMPORARY GUARD, not the design.
-    // Thirteen mints still manufacture id-as-label packets (the fold's loop
-    // maker closeEdgeIntoCircle:173, the surface-materialize door
-    // materializeOperation:301, the quotient mint complexIdentification:632,
-    // the zoo standardBodies:130, …); `thicken.ts:175` is CURED (it writes
-    // absence now) and each remaining producer migrates the same way — its
-    // fix riding WITH the absence-resolution so the site resolves through
-    // lineage and never regresses. An id-copy caught here is NEVER resolved
-    // through lineage (resolution is for TRUE absence only — the migration
-    // discipline). DEATH-CONDITION: this clause may be deleted only in the
-    // single terminal cut after the LAST person-reachable manufacturer has
-    // stopped; deleting it earlier prints ids as names on reachable doors
-    // (measured on the fold loop, 2026-08-19).
-    if (trimmed === vertexId && trimmed.length > 0) return 'unnamed';
+    // THE TERMINAL CUT (B-2026-08-23-A): the id-as-label scaffold clause is
+    // DEAD — every producer it stood for has stopped (the nine reachable
+    // mints + the patchLift latent rider + multiform's absent-fallback, the
+    // ruled census, measured at the tree: eleven sites mint TRUE ABSENCE;
+    // what remains is exempt/given/out-of-scope/D-index — none caught by
+    // the retired clause). A label is a NAME by positive presence; absence
+    // resolves through lineage below. Its twin in argumentReadingModel's
+    // ownNameOf died in the SAME commit — the card and the menu agree.
+    // (Pre-migration FILES may carry id-copy labels verbatim — the record
+    // is the record; the view-side resolver still refuses to LAUNDER an
+    // id-copy source label through lineage resolution.)
     if (trimmed.length === 0) {
       const sources = vertex?.createdBy?.sourceVertexIds ?? [];
       const resolved = resolveAbsent && sources.length === 1 ? resolveAbsent(sources, vertexId) : null;
