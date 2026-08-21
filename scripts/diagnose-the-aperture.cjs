@@ -424,7 +424,11 @@ check('the room\'s inhabitants are the AUTHORED SCENE (drawn, not scanned — th
 // old exactly-one-mount pin is stale against the mandated move. The pin now
 // names BOTH mounts: the summoned specimen mount AND the live-build mount,
 // and nothing else.
-check('the SPECIMEN carries the relocated fundamental domain + pairings + tower: readDomainSpecimen (BYTE-UNCHANGED specimenModel) still reads S² gate · χ · orientable · H₁ · CW counts · face-pairs, and the view mounts the committed InkedDomain at EXACTLY TWO named sites — summoned-on-select (the specimen) and the F.0 live-build skeleton (door-gated)',
+// F.0c recut (2026-08-21 coder): THE RULING — with the aperture door open the
+// person's question owns the stage, so the SPECIMEN mount is DISARMED while
+// the door is open (`summoned && !apertureOpen`). The pin now names the door
+// on BOTH mounts; a revert to a door-blind `summoned ?` arming fails it.
+check('the SPECIMEN carries the relocated fundamental domain + pairings + tower: readDomainSpecimen (BYTE-UNCHANGED specimenModel) still reads S² gate · χ · orientable · H₁ · CW counts · face-pairs, and the view mounts the committed InkedDomain at EXACTLY TWO named sites — summoned-on-select while the door is shut (the specimen — the open door disarms it) and the F.0 live-build skeleton (door-gated)',
   (() => {
     const reading = readDomainSpecimen(personT3);
     const labels = reading.rows.map((r) => r.label);
@@ -433,7 +437,7 @@ check('the SPECIMEN carries the relocated fundamental domain + pairings + tower:
       ['S² gate', 'Euler χ', 'orientable', 'H₁ (= π₁ abelianized)', 'CW counts', 'face-pairs'].every((l) => labels.includes(l)) &&
       (viewSrc.match(/<InkedDomain/g) ?? []).length === 2 &&
       /apertureOpen && liveApertureDomain[\s\S]{0,700}<InkedDomain/.test(viewSrc) &&
-      /summoned \?[\s\S]{0,400}<InkedDomain/.test(viewSrc) &&
+      /summoned && !apertureOpen \?[\s\S]{0,400}<InkedDomain/.test(viewSrc) &&
       viewSrc.includes('<ApertureBody')
     );
   })());
