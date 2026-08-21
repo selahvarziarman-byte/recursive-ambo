@@ -215,6 +215,50 @@ const parityCube = A.apertureParityCensus(createSeedShape('cube'));
 check('apertureParityCensus (cube): even classes — 3 pairs possible, 0 forced walls (the line says nothing)',
   Boolean(parityCube) && parityCube.total === 6 && parityCube.pairs === 3 && parityCube.forcedWalls === 0,
   parityCube ? JSON.stringify(parityCube) : 'null');
+// #37 (B-2026-08-22-A) — THE DOUBLE HOP: one shelf round-trip cannot see the
+// nesting bug (that is exactly what the retired suffix stopgap hid). The
+// product round-trips the loader TWICE; the dihedral-record keys re-root
+// with everything else each hop, the exact-=== pillar match holds, and the
+// developed cone room survives BOTH hops.
+{
+  const { serializeSnapshot, deserializeSnapshot } = req('src/playground/snapshot.ts');
+  const hop1 = deserializeSnapshot(serializeSnapshot(product, 'hop-one')).shape;
+  const hop2 = deserializeSnapshot(serializeSnapshot(hop1, 'hop-two')).shape;
+  const d1 = buildFormDomain(hop1, [], 'hop1', 'hop1');
+  const d2 = buildFormDomain(hop2, [], 'hop2', 'hop2');
+  const s1 = A.readCellSurface(d1, true);
+  const s2 = A.readCellSurface(d2, true);
+  check('#37 double hop: the developed cone room survives TWO shelf round-trips (9 faces / 7 walls / 2 bounded portals, both hops — exact === on re-rooted record keys)',
+    s1.faces.length === 9 && s1.wallCount === 7 && s2.faces.length === 9 && s2.wallCount === 7 &&
+    s2.faces.filter((f) => !f.wall).length === 2 && s2.faces.filter((f) => !f.wall).every((f) => f.bounds),
+    `hop1 faces=${s1.faces.length}/walls=${s1.wallCount} · hop2 faces=${s2.faces.length}/walls=${s2.wallCount}`);
+
+  // §2 (B-2026-08-22-A) — THE PAGE ROUND-TRIP, headless and DOUBLE: records
+  // → versioned file → parse → hydrate through the committed doors — then
+  // save the RESTORED page and restore it again (the acceptance's own law:
+  // one hop cannot see the nesting bug). Both hops: the chamber re-derives
+  // and its walk-room develops; the shelf reloads its parcel; nothing nests.
+  const { serializePage, parsePage } = req('src/manuscript/pageSnapshot.ts');
+  const { useManuscriptPageStore } = req('src/manuscript/pageStore.ts');
+  const { serializeSnapshot: ser2 } = req('src/playground/snapshot.ts');
+  const fanParcel = ser2(lift.shape, 'page-fan-src');
+  const record = { door: 'bounded', key: 'built-1', title: 'built 3-manifold 1', seed: hop1, rows: [], baseId: null, baseRefusal: null };
+  const fileA = JSON.parse(JSON.stringify(serializePage({ written: [], shelfFiles: [fanParcel], shelfPlacedShapeIds: [], builtRecords: [record], builtCount: 1 })));
+  const refusalsA = useManuscriptPageStore.getState().loadPage(parsePage(fileA));
+  const stateA = useManuscriptPageStore.getState();
+  const surfA = stateA.builtDomains.length === 1 ? A.readCellSurface(stateA.builtDomains[0], true) : null;
+  const fileB = JSON.parse(JSON.stringify(serializePage(stateA.pageRecords())));
+  const refusalsB = useManuscriptPageStore.getState().loadPage(parsePage(fileB));
+  const stateB = useManuscriptPageStore.getState();
+  const surfB = stateB.builtDomains.length === 1 ? A.readCellSurface(stateB.builtDomains[0], true) : null;
+  check('§2 page double hop: save → load → save → load — zero refusals both hops, the shelf reloads its parcel, the chamber re-derives, and the developed walk-room stands (9/7) after BOTH restores',
+    refusalsA.length === 0 && refusalsB.length === 0 &&
+    stateA.shelf.length === 1 && stateB.shelf.length === 1 &&
+    Boolean(surfA) && surfA.faces.length === 9 && surfA.wallCount === 7 &&
+    Boolean(surfB) && surfB.faces.length === 9 && surfB.wallCount === 7 &&
+    stateB.builtCount === 1,
+    `hopA refusals=${refusalsA.length} surf=${surfA ? `${surfA.faces.length}/${surfA.wallCount}` : 'n/a'} · hopB refusals=${refusalsB.length} surf=${surfB ? `${surfB.faces.length}/${surfB.wallCount}` : 'n/a'}`);
+}
 
 console.log(failures === 0 ? '\nDIAGNOSE-OPEN-LIFT: ALL GREEN' : `\nDIAGNOSE-OPEN-LIFT: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);
