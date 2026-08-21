@@ -1511,26 +1511,16 @@ function developedConeSurface(
   if (!P0 || !P1) return null;
   const H = Math.hypot(P1[0] - P0[0], P1[1] - P0[1], P1[2] - P0[2]);
   if (!(H > 1e-6)) return null;
-  // the pillar's dihedral-record key — matched by TAIL, not equality: the
-  // shelf round-trip re-roots every id but NOT the dihedralAngles blob's
-  // keys (GAP2C's data-blob class — MEASURED: a shelf-placed band's vertex
-  // ids carry the new `snapshot:<src>:` prefix while its dihedral keys keep
-  // their mint-time ids), so either side may carry prefixes the other lacks.
-  // The match demands EXACTLY ONE hit per cell — an ambiguous or absent
-  // record falls back to the union path rather than developing a wrong room.
-  // ⚠ STOPGAP (ruled 2026-08-21): this tail-match is the RETIRED suffix
-  // pattern standing at a genuine #37 site — a dihedralAngles key IS a
-  // carried id-ref, and prefixes NEST: a save→load→save→load page defeats
-  // any endsWith, uniqueness guard or not. DEATH-CONDITION: when #37
-  // re-roots carried DATA-BLOB refs by the load's own prefix (resolved by
-  // exact ===), delete keyMatchesPillar and match record keys by equality
-  // on the re-rooted ids. Until then this guard STANDS.
-  const pillarStem = pillar0.replace(/@0$/, '');
-  const keyMatchesPillar = (k: string): boolean => {
-    if (!k.endsWith('@I')) return false;
-    const core = k.slice(0, -2);
-    return pillarStem.endsWith(core) || core.endsWith(pillarStem);
-  };
+  // #37 LANDED (B-2026-08-22-A): the dihedral-record keys are re-rooted by
+  // the loader with every other carried ref (snapshot.ts namespaceOne, the
+  // sanctioned union), so the record key for this pillar is EXACTLY the
+  // pillar id's stem + '@I' — resolved by `===`, never by suffix. The
+  // 2026-08-21 tail-match stopgap died here by its own booked
+  // death-condition. The match still demands EXACTLY ONE hit per cell — an
+  // ambiguous or absent record falls back to the union path rather than
+  // developing a wrong room.
+  const pillarKey = `${pillar0.replace(/@0$/, '')}@I`;
+  const keyMatchesPillar = (k: string): boolean => k === pillarKey;
   // adjacency cycle over cells via the interior walls
   const wallsOfCell = new Map<number, string[]>();
   for (const [fid, owners] of interior)

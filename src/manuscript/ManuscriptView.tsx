@@ -218,6 +218,9 @@ import { buildProbeMeshes } from './apertureProbes';
 import { ExploreWindow } from './ExploreWindow';
 import { readCellSurface, faceTraceCycle, apertureParityCensus } from './apertureModel';
 import { buildFormDomain, pendingPairMarks } from './formDomainModel';
+// §2 (B-2026-08-22-A) — the page's store half (A) and file half (B)
+import { useManuscriptPageStore } from './pageStore';
+import { serializePage, parsePage } from './pageSnapshot';
 
 // D13 WITNESS SEAM (dev-only): the panel-scope plant must be a COMPONENT —
 // a thrown JSX *expression* fires in the PARENT's own render body (children
@@ -1569,12 +1572,20 @@ export default function ManuscriptView() {
   // array-order artifact in the seam's location).
   const [portFaces, setPortFaces] = useState<Record<string, string>>({});
   // ----- 3a: written material (invoked + op-born — REAL committed Shapes) ----
-  const [written, setWritten] = useState<Array<{ form: WrittenForm; home: [number, number, number] }>>([]);
+  // §2A (B-2026-08-22-A, Arman's ruling "manuscript is exactly like ambo"):
+  // THE PAGE LIVES IN THE STORE — written · laid · shelf · built · folded ·
+  // the D1 metric maps relocated to useManuscriptPageStore (module scope: the
+  // page survives an unmount, the Ambo⇄Manuscript switch included). The
+  // setters keep the exact useState updater signature, so every existing call
+  // site reads unchanged.
+  const written = useManuscriptPageStore((s) => s.written);
+  const setWritten = useManuscriptPageStore((s) => s.setWritten);
   // CUT 1b — the laid bodies, keyed by shape id: computed ONCE at the moment a
   // classBody-routed form is born/placed (the same lineage the frozen router
   // used), consumed at the render/caption/card seams. A lay that walls simply
   // never enters the map — the committed class body stands untouched.
-  const [laidBodies, setLaidBodies] = useState<Map<string, LaidBodyModel>>(new Map());
+  const laidBodies = useManuscriptPageStore((s) => s.laidBodies);
+  const setLaidBodies = useManuscriptPageStore((s) => s.setLaidBodies);
   // UNIFICATION — the adapter models, one per laid body: the InkedFormModel
   // the ONE crafted renderer draws (derived from the lay, never stored twice)
   const laidInkedById = useMemo(
@@ -1582,15 +1593,29 @@ export default function ManuscriptView() {
     [laidBodies],
   );
   const seqRef = useRef(1);
+  // §2A — written survives the unmount in the store, so the id mint must
+  // never reuse a restored form's seq (w<seq> handles): on every written
+  // change the mint jumps past the highest seq present.
+  useEffect(() => {
+    const maxSeq = written.reduce((max, { form }) => {
+      const parsed = /^w(\d+)$/.exec(form.id);
+      return parsed ? Math.max(max, Number(parsed[1])) : max;
+    }, 0);
+    if (seqRef.current <= maxSeq) seqRef.current = maxSeq + 1;
+  }, [written]);
   // GAP2C: hoisted above its first use (targetFor ~:1236, via the availability
-  // memo) — a useRef declared after its reader is a TDZ ReferenceError that
-  // crashed the manuscript on placing a form (P0, 2026-07-24).
-  const shelfAncestorsRef = useRef<Map<string, Shape[]>>(new Map());
+  // memo). §2A: the carried ancestor chains moved into the page store (they
+  // are part of the page — a restored shelf re-populates them through the
+  // same load door), read here and recorded at the two load sites.
+  const shelfAncestors = useManuscriptPageStore((s) => s.shelfAncestors);
+  const recordShelfAncestors = useManuscriptPageStore((s) => s.recordShelfAncestors);
+  const recordShelfFile = useManuscriptPageStore((s) => s.recordShelfFile);
   const [invokeMenu, setInvokeMenu] = useState<{ x: number; y: number; world: [number, number] } | null>(null);
   const [formMenu, setFormMenu] = useState<{ x: number; y: number; id: string } | null>(null);
   const [opNotice, setOpNotice] = useState<string | null>(null);
   // ----- 3b: the sources shelf (committed snapshot loads) --------------------
-  const [shelf, setShelf] = useState<Array<{ entry: ShelfEntry; placed: boolean }>>([]);
+  const shelf = useManuscriptPageStore((s) => s.shelf);
+  const setShelf = useManuscriptPageStore((s) => s.setShelf);
   const dragIndexRef = useRef<number | null>(null);
   const cameraRef = useRef<Camera | null>(null);
   // ----- PHASE A (SEAL_PHASE_A_CAMERA) — the plate ------------------------
@@ -1770,12 +1795,14 @@ export default function ManuscriptView() {
   // view onto the volume the person points at (see the door block below).
   // D1's metric-base map stays: it keys built domains by their key, written
   // at BOTH exits from the pointed-at volume's own ancestry.
-  const [metricBaseIds, setMetricBaseIds] = useState<Record<string, string>>({});
+  const metricBaseIds = useManuscriptPageStore((s) => s.metricBaseIds);
+  const setMetricBaseIds = useManuscriptPageStore((s) => s.setMetricBaseIds);
   // amendment 1759: a room whose carried-base resolve REFUSED (ambiguous
   // suffix match) records the refusal SENTENCE under its key — the reader
   // hands it to the D1 `baseMissing` floor so the caption reads
   // `unresolved-base` with the named reason, never a guessed base.
-  const [metricBaseRefusals, setMetricBaseRefusals] = useState<Record<string, string>>({});
+  const metricBaseRefusals = useManuscriptPageStore((s) => s.metricBaseRefusals);
+  const setMetricBaseRefusals = useManuscriptPageStore((s) => s.setMetricBaseRefusals);
   // D8 (engineer 1629): the arity-2 base rides the PRODUCT RECORD
   // (`product.parents`, thicken:305) and the record does NOT survive the
   // shelf snapshot — so the base id returned by thickenManuscript is CARRIED
@@ -1788,12 +1815,18 @@ export default function ManuscriptView() {
   // a later session has no carried record and honestly refuses by name at
   // the D1 floor.
   const productMetricBasesRef = useRef<Map<string, string>>(new Map());
-  const [builtDomains, setBuiltDomains] = useState<DomainModel[]>([]);
+  const builtDomains = useManuscriptPageStore((s) => s.builtDomains);
+  const setBuiltDomains = useManuscriptPageStore((s) => s.setBuiltDomains);
   // 0.2 THE ORBIFOLD'S BODY: the folded verdicts' tower-less bodies — a
   // SIBLING list, never mixed into dim3All (the specimen register and every
   // DomainModel consumer stay untouched; a folded body has no tower to read).
-  const [foldedBodies, setFoldedBodies] = useState<FoldedDomain[]>([]);
-  const builtCountRef = useRef(0);
+  const foldedBodies = useManuscriptPageStore((s) => s.foldedBodies);
+  const setFoldedBodies = useManuscriptPageStore((s) => s.setFoldedBodies);
+  // §2A/§2B: the domain doors' input LEDGER — each act recorded with the
+  // door it took, so the page file re-runs the SAME door on restore.
+  const bumpBuiltCount = useManuscriptPageStore((s) => s.bumpBuiltCount);
+  const unbumpBuiltCount = useManuscriptPageStore((s) => s.unbumpBuiltCount);
+  const recordBuilt = useManuscriptPageStore((s) => s.recordBuilt);
   const [apertureOpen, setApertureOpen] = useState(false);
   // RUNG 1 — THE EXPLORE WINDOW: which room the person is inside of (null =
   // no window), and the door's last refusal (fires AT the threshold, by name)
@@ -2512,7 +2545,7 @@ export default function ManuscriptView() {
       // GAP2C: a shelf-loaded form's CARRIED chain rides as acquire-metadata
       // (the researcher's ruling) — appended to the lineage the ops and the
       // classifier consume, NEVER added to the page's visible population
-      const carried = shelfAncestorsRef.current.get(entry.form.shape.id);
+      const carried = shelfAncestors.get(entry.form.shape.id);
       return {
         shape: entry.form.shape,
         parent: entry.form.parentShape,
@@ -2521,7 +2554,7 @@ export default function ManuscriptView() {
         home: entry.home,
       };
     },
-    [world, written, shapeById, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing, dim3All],
+    [world, written, shapeById, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing, dim3All, shelfAncestors],
   );
 
   // ----- D2 — THE ONE DOOR (sovereign-ruled: "building manifold-3 becomes
@@ -2800,14 +2833,25 @@ export default function ManuscriptView() {
   const handleApertureGlue = useCallback(() => {
     if (!apertureVolume) return; // the door's chip is gated on the refusal line
     try {
-      builtCountRef.current += 1;
-      const n = builtCountRef.current;
+      const n = bumpBuiltCount();
       // THE FOLDED EDGE (ADR 0022): the door returns a VERDICT — a folded
       // identification is not free (an orbifold), refused BY NAME with the
       // researcher's wall; nothing joins the world and the aperture draws
       // nothing. Zero throws escape this door. D2: dispatched on the pointed-
       // at volume's cell count inside the verdict itself.
       const verdict = buildPersonDomainVerdict(apertureVolume, apertureRows, `built-${n}`, `built 3-manifold ${n}`);
+      // §2B — the act enters the LEDGER (door + inputs, verbatim): the page
+      // file re-runs this exact door on restore. A folded verdict is still
+      // the person's act — recorded; the restore reproduces the same body.
+      recordBuilt({
+        door: 'glue',
+        key: `built-${n}`,
+        title: `built 3-manifold ${n}`,
+        seed: apertureVolume,
+        rows: apertureRows.map((row) => ({ ...row })),
+        baseId: apertureVolumeBase.baseId ?? null,
+        baseRefusal: apertureVolumeBase.ambiguity ?? null,
+      });
       if (verdict.folded) {
         // 0.2 THE ORBIFOLD'S BODY: the verdict carries a BODY now — it joins
         // the folded shelf and the aperture draws it. The wall + its cure
@@ -2836,12 +2880,12 @@ export default function ManuscriptView() {
       setApertureRows(emptyApertureRows(derivedApertureRowCount()));
       setApertureFoldedRows(null);
     } catch (error) {
-      builtCountRef.current -= 1;
+      unbumpBuiltCount();
       // a door-level refusal (an incomplete matching, an unknown candidate) — named
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
       setApertureFoldedRows(null);
     }
-  }, [apertureVolume, apertureRows, apertureVolumeBase, derivedApertureRowCount]);
+  }, [apertureVolume, apertureRows, apertureVolumeBase, derivedApertureRowCount, bumpBuiltCount, unbumpBuiltCount, recordBuilt]);
   // D2 — EXIT B: LEAVE BOUNDED (the mothership's spine clause: the fault was
   // never that the room was bounded — it was that nobody was asked). An
   // EXPLICIT zero-pair act: the volume becomes the bounded free-rim chamber,
@@ -2850,9 +2894,19 @@ export default function ManuscriptView() {
   const handleApertureLeaveBounded = useCallback(() => {
     if (!apertureVolume) return;
     try {
-      builtCountRef.current += 1;
-      const n = builtCountRef.current;
+      const n = bumpBuiltCount();
       const domain = buildFormDomain(apertureVolume, [], `built-${n}`, `built 3-manifold ${n}`);
+      // §2B — EXIT B enters the LEDGER too (door 'bounded', rows []): the
+      // page file re-runs this exact door on restore.
+      recordBuilt({
+        door: 'bounded',
+        key: `built-${n}`,
+        title: `built 3-manifold ${n}`,
+        seed: apertureVolume,
+        rows: [],
+        baseId: apertureVolumeBase.baseId ?? null,
+        baseRefusal: apertureVolumeBase.ambiguity ?? null,
+      });
       setBuiltDomains((cur) => [...cur, domain]);
       // D1: the both-exits law — EXIT B carries the base too (or the
       // ambiguity refusal, amendment 1759)
@@ -2867,10 +2921,10 @@ export default function ManuscriptView() {
       setApertureRows(emptyApertureRows(derivedApertureRowCount()));
       setApertureFoldedRows(null);
     } catch (error) {
-      builtCountRef.current -= 1;
+      unbumpBuiltCount();
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
     }
-  }, [apertureVolume, apertureVolumeBase, derivedApertureRowCount]);
+  }, [apertureVolume, apertureVolumeBase, derivedApertureRowCount, bumpBuiltCount, unbumpBuiltCount, recordBuilt]);
   // THE SUBDIVISION DOOR (ARC 0.1, LAW 14 — a cure must be a door, not a
   // theorem): on the folded verdict the person invokes subdivide — the seed is
   // bisected, the pairings lift, the form is re-glued, and the gate reads the
@@ -3835,18 +3889,19 @@ export default function ManuscriptView() {
   // exact failure semantics).
   const liftQueue = useLiftStore((state) => state.queue);
   const ingestedLiftKeys = useRef<Set<number>>(new Set());
-  // GAP2C — `shelfAncestorsRef` (the CARRIED ancestor chains of shelf-loaded
-  // forms, acquire-metadata for the ops/classifier lineage) is declared near
-  // the top of the component (hoisted above its reader targetFor to avoid a
-  // TDZ crash); it is SET below in the shelf-drain effect.
+  // GAP2C — the carried ancestor chains of shelf-loaded forms (acquire-
+  // metadata for the ops/classifier lineage) live in the page store (§2A);
+  // this drain RECORDS them, with the parcel FILE itself — the load door's
+  // input, which is what the page file serializes (§2B).
   useEffect(() => {
     for (const item of liftQueue) {
       if (ingestedLiftKeys.current.has(item.key)) continue;
       ingestedLiftKeys.current.add(item.key);
       try {
         const entry = loadUniverseSnapshot(item.file);
+        recordShelfFile(item.file);
         if (entry.loaded.ancestors?.length) {
-          shelfAncestorsRef.current.set(entry.loaded.shape.id, entry.loaded.ancestors);
+          recordShelfAncestors(entry.loaded.shape.id, entry.loaded.ancestors);
         }
         setShelf((cur) => [...cur, { entry, placed: false }]);
         // D9 finding (2026-08-15, disclosed): this drain used to clear the op
@@ -3858,7 +3913,7 @@ export default function ManuscriptView() {
         setOpNotice(`lift: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
-  }, [liftQueue]);
+  }, [liftQueue, recordShelfFile, recordShelfAncestors, setShelf]);
 
   // ----- 3b: the sources shelf (committed snapshot loads + drag-to-place) ----
   const handleLoadFiles = useCallback((files: FileList): void => {
@@ -3866,9 +3921,11 @@ export default function ManuscriptView() {
       file
         .text()
         .then((text) => {
-          const entry = loadUniverseSnapshot(JSON.parse(text));
+          const parsed = JSON.parse(text);
+          const entry = loadUniverseSnapshot(parsed);
+          recordShelfFile(parsed);
           if (entry.loaded.ancestors?.length) {
-            shelfAncestorsRef.current.set(entry.loaded.shape.id, entry.loaded.ancestors);
+            recordShelfAncestors(entry.loaded.shape.id, entry.loaded.ancestors);
           }
           setShelf((cur) => [...cur, { entry, placed: false }]);
           setOpNotice(null);
@@ -3877,7 +3934,50 @@ export default function ManuscriptView() {
           setOpNotice(`load: ${error instanceof Error ? error.message : String(error)}`);
         });
     }
+  }, [recordShelfFile, recordShelfAncestors, setShelf]);
+  // §2B — THE PAGE DOORS. Save: the RECORD layer, serialized to an explicit
+  // versioned file the person keeps. Load: parse → refuse-by-name on any
+  // version mismatch → hydrate the store through the SAME committed doors —
+  // and the restored page comes back QUIET (no selection, no open panels, no
+  // notices restored; per-record refusals are NAMED, never silent).
+  const handleSavePage = useCallback(() => {
+    const file = serializePage(useManuscriptPageStore.getState().pageRecords());
+    const blob = new Blob([JSON.stringify(file)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `manuscript-${new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-')}.page.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }, []);
+  const handleLoadPage = useCallback(
+    (files: FileList): void => {
+      const file = files[0];
+      if (!file) return;
+      file
+        .text()
+        .then((text) => {
+          const records = parsePage(JSON.parse(text));
+          const refusals = useManuscriptPageStore.getState().loadPage(records);
+          // the QUIET restore — session gestures are not part of the page
+          setSelected(null);
+          setApertureOpen(false);
+          setApertureNotice(null);
+          setInvokeMenu(null);
+          setFormMenu(null);
+          setExploreOpen(null);
+          setOpNotice(
+            refusals.length > 0
+              ? `page restored — ${refusals.length} record(s) refused by name: ${refusals[0]}`
+              : null,
+          );
+        })
+        .catch((error: unknown) => {
+          setOpNotice(`page: ${error instanceof Error ? error.message : String(error)}`);
+        });
+    },
+    [setSelected],
+  );
   const worldPointFromClient = useCallback((clientX: number, clientY: number): [number, number] => {
     const camera = cameraRef.current;
     if (!camera) return [0, -4];
@@ -5429,6 +5529,8 @@ export default function ManuscriptView() {
         universes={shelfUniverses}
         paper={d.paper}
         onLoadFiles={handleLoadFiles}
+        onSavePage={handleSavePage}
+        onLoadPage={handleLoadPage}
         onDragEntry={(index) => {
           dragIndexRef.current = index;
         }}

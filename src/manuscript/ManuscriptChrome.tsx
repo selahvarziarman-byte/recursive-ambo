@@ -868,13 +868,22 @@ export function SourcesShelf({
   paper,
   onLoadFiles,
   onDragEntry,
+  onSavePage,
+  onLoadPage,
 }: {
   universes: Array<{ source: string; entries: Array<{ index: number; entry: ShelfEntry; placed: boolean }> }>;
   paper: ChromePaper;
   onLoadFiles: (files: FileList) => void;
   onDragEntry: (index: number) => void; // dragstart — the view places on canvas drop
+  // §2B (B-2026-08-22-A): THE PAGE DOORS — VISIBLE, ruled ("not a right-click,
+  // not a hidden gesture"): the whole page saved to and restored from an
+  // explicit versioned file. ⛔ COPY PENDING THE DESIGNER (flagged): the
+  // buttons' wording holds the slots, nothing authored here.
+  onSavePage: () => void;
+  onLoadPage: (files: FileList) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const pageFileRef = useRef<HTMLInputElement>(null);
   return (
     <div
       style={{
@@ -967,6 +976,60 @@ export function SourcesShelf({
       >
         load universe… (.snapshot.json)
       </button>
+      {/* §2B — THE PAGE DOORS, visible beside the universe door. ⛔ COPY
+          PENDING THE DESIGNER (flagged): wording holds the slots. */}
+      <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onSavePage();
+          }}
+          style={{
+            flex: 1,
+            padding: '5px 0',
+            borderRadius: 3,
+            border: `1px solid ${paper.cardBorder}`,
+            background: 'transparent',
+            color: paper.cardInk,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 12,
+            cursor: 'pointer',
+          }}
+        >
+          save the page…
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            pageFileRef.current?.click();
+          }}
+          style={{
+            flex: 1,
+            padding: '5px 0',
+            borderRadius: 3,
+            border: `1px solid ${paper.cardBorder}`,
+            background: 'transparent',
+            color: paper.cardInk,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 12,
+            cursor: 'pointer',
+          }}
+        >
+          load the page…
+        </button>
+      </div>
+      <input
+        ref={pageFileRef}
+        type="file"
+        accept=".json,application/json"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          if (e.target.files && e.target.files.length) onLoadPage(e.target.files);
+          e.target.value = '';
+        }}
+      />
       <input
         ref={fileRef}
         type="file"
