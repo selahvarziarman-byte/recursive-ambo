@@ -1,79 +1,70 @@
-# THE BUILD REPORT — F.0e: the trace is the name, and the pending mark finally speaks
+# THE BUILD REPORT — W.7: the comparison is on the display
 
-**coder · 2026-08-21 · CUT A `ad91f92` (frozen union + re-seal, alone) · CUT B `959e3f6` · witness recut `7af0f24` · on `8396486` (the mandate's own record commit) · branch `team-arman`**
+**coder · 2026-08-21 · cut `2398c08` · witness recut `6817dbb` · on `9442984` (mandate record) · branch `team-arman`**
 
 ---
 
-## 1 · WHAT I SAW — the same route, at his eye
+## 1 · WHAT I SAW — walked the room myself, three circuits and then two more on a fresh window
 
-Fresh origin (`127.0.0.1:5182`, virgin state), real Chrome. Manuscript → zoo → double-click `T³ — identified cube` → aperture.
+Fresh origin (`127.0.0.1:5183`), real Chrome, the T³ zoo specimen, `explore inside — walk the habitat`. (One stall worth recording: the walk runs on `requestAnimationFrame`, which Chrome freezes for a backgrounded window — the drive needed the window foregrounded, and Arman brought it forward when asked.)
 
-- **The header** no longer claims `state persists` — struck, nothing in its place (§3.4).
-- **The subtitle, the door open:** *"this volume · 6 faces · pair the ones you choose — the rest stand as walls · the mode follows from the map, never chosen."* The `6` is read off the volume's own boundary menu (dropped, never faked, when that menu refuses). The walls clause is back and `leave bounded` finally has its referent (§1/§3.2).
-- **Two faces picked, NO map (`A·D·C·B` ↔ `E·F·G·H`):** the stage wireframe now carries **two dashed burnt-orange rings — the two picked faces' own edge cycles, traced**. Which two faces am I gluing? *Those two, the dashed ones.* No mode claimed, no direction claimed, no dot pretending to be a face. **The clause F.0c/F.0d could not reach is on screen.**
-- **A second pair picked (`A·B·F·E` ↔ `B·C·G·F`):** two more dashed rings in the next hue (blue) — two pending pairs, hue-separated, the palette continuing past the decided run so no pending pair shares a colour with a decided one.
-- **Pair 1's map picked (`a→e·d→h·c→g·b→f — preserving`):** pair 1's rings turn **solid** — each cycle drawn as a comet (ink swelling around the cycle from the D14 start corner, a small tick marking that corner) — while pair 2 stays **dashed blue**. **Pending and decided sit in one frame and cannot be confused: solid-with-tick against dashed.** (Evidence: `scripts/app-leg/f0e_pending_dashed_vs_decided_solid_zoom.png`.)
-- **Pair 2's map picked, deliberately REVERSING (`a→b·b→c·f→g·e→f — reversing · cone room · edges wind`):** both pairs solid; the partner face's ring is traced by walking A's D14 cycle **through the person's chosen correspondence**, so the direction the ink runs on the partner IS the way the faces meet; the start ticks and the swell make the two runs comparable on the figure. The panel offered `glue — the S² gate judges`. (Evidence: `scripts/app-leg/f0e_both_pairs_decided_traced_zoom.png`.)
-- Census agreeing with the eye at each step (arrow-8 behind arrow-9, never instead of it): pending frame = 1 pending group · 2 dashed lines · 0 solid; mixed frame = 1 decided (8 comet segments · 2 ticks) + 1 pending (2 dashed); final frame = 2 decided · 16 segments · 4 ticks · 0 dashed.
+**First circuit closes** (diagonal heading): the return line arrives in its familiar slot — `back where you started · 7 doors · the room came back the same way up` — and the previous-return slot below it stays **empty**: nothing is invented on the first fire.
 
-**Acceptance, clause by clause:** which-two-traced ✔ · pairing + direction on the figure ✔ · pending≠decided ✔ · walls in the subtitle ✔.
+**Second circuit closes**: the plate now reads, in one glance, no scrolling, no memory —
+```
+back where you started · 11 doors · the room came back the same way up     (full ink, the familiar slot)
+back where you started · 7 doors · the room came back the same way up      (faint — the circuit before)
+```
+Measured registers: current opacity 0.78, previous 0.45 — same ink family, same grammar, the just-closed one unmistakable because it is the full-ink line in the slot returns have always used. **The acceptance sentence, verbatim: he walks one circuit, then another, and sees both readings at once, and can tell which is the one he just closed.**
 
-**What I did not drive:** the multi-cell pick-time refusal (§3.3) — driving it needs a thickened volume built by hand through the Ambo route. It is witnessed instead by a live falsifier on a real six-cell volume (below), both directions. The trace treatment (comet + tick, dots retained as subordinate centers, dashed pending) is craft under her flag — hers to ratify from the evidence frames.
+**Third circuit** (axis-aligned): the pair shifts again — `12 doors` over `11 doors`. Every close shifts; nothing flashes; both lines persist.
+
+**A fresh window, then two axis circuits — the ruled singular, live:** first close prints **`back where you started · 1 door · the room came back the same way up`** — `1 door`, not the `1 doors` the substrate printed before this cut — and the second close puts above it:
+```
+back where you started · 2 doors · the room came back the same way up      (full ink)
+back where you started · 1 door · the room came back the same way up       (faint)
+```
+Seam and DOM agree at every step (`__exploreWindow.returnLine` / `.previousReturnLine` === the two `data-explore-return*` nodes' text). Evidence frame, committed beside the leg artifacts: `scripts/app-leg/w7_two_returns_2doors_over_1door.png`.
+
+**The honest duplicate** — the shift is **unconditional on the string having changed** (the code path has no equality gate anywhere between the fire and the two slots), so two circuits with identical readings show the same pair twice by construction. My circuits happened to differ in door count (the counter is cumulative over the walk, so successive closes rarely tie); the mechanism cannot de-dup because it never compares.
 
 ## 2 · WHAT I RAN — the witnesses, verbatim
 
-**1 · Tree identity:** `git diff --stat 449c015 959e3f6` → **(empty)** — the audited CUT B sim IS the real commit. CUT A was committed directly and audited at its own tip.
+**1 · Tree identity:** `git diff --stat 76d6c13 2398c08` → **(empty)** — the audited sim IS the real commit.
 
 **2 · Freeze manifest, per touched file:**
 ```
-79:src/manuscript/worldModel.ts            092012c46886da4215b7922e921765f0b5454185670cadbb9c88ee85ba29cb43   (CUT A: FROZEN — edit + re-seal, ONE commit, nothing else)
-193:NOT_FROZEN src/manuscript/ManuscriptView.tsx — manuscript view seam under active mandate churn
-191:NOT_FROZEN src/manuscript/ManuscriptChrome.tsx — manuscript chrome seam under active mandate churn
-196:NOT_FROZEN src/manuscript/apertureModel.ts — THE APERTURE's react-free core
-203:NOT_FROZEN src/manuscript/formDomainModel.ts — manuscript model outside the chartered freeze set
-src/AppShell.tsx · scripts/diagnose-the-aperture.cjs — not listed (outside the engine roots)
+186:NOT_FROZEN src/manuscript/ExploreWindow.tsx — THE GPU EXPLORE WINDOW (2026-08-08 reset, ADR 0004 Amdt 7) …
+scripts/app-leg/winding_route_driver.py · diagnose-winding-route.cjs — not listed (outside the engine roots)
 ```
-
-**3 · Re-seal, RECOMPUTED with its positive control (mothership §CUT A: do not carry a hash):**
-```
-pre-edit  tr -d '\r' | sha256sum → c942b24e…51b7e98   == the manifest row at base (control REPRODUCES)
-post-edit tr -d '\r' | sha256sum → 092012c4…29cb43    → sealed; independently equals the dissolved seat's sim value
-```
+No frozen file touched ⇒ **3 · re-seal: n/a.**
 
 **4 · Types + suite:**
 ```
-npx tsc -b → exit 0   (at CUT A's tip and at CUT B's tree)
+npx tsc -b → exit 0
+112
 FAIL scripts/diagnose-dual-inspection.cjs
-SUITE-DONE at 7af0f24
+SUITE-DONE at 76d6c13
 ```
-**112 @ 1 at the final HEAD** (112 files counted this build; the one FAIL is the accepted baseline).
-```
-```
-Suite at the CUT B sim `449c015` (tree == `959e3f6`): `112 · FAIL diagnose-dual-inspection · SUITE-DONE` — **112 @ 1**, the accepted baseline.
+**112 @ 1 at the sim** (tree byte-identical to the cut commit `2398c08`); the accepted baseline only. The witness-recut commit touches only `scripts/app-leg/*` — outside the suite's glob — so the verdict carries to HEAD unchanged; tsc re-run at HEAD, exit 0.
 
-**5 · The reading** — §1, led by the eye.
+**5 · The reading** — §1, at the eye, with the seam census beside it.
 
-**The stash measurement (§CUT A ordered it):** `worldModel.ts`, `formDomainModel.ts`, and the manifest are byte-identical between the stash's base and today's HEAD — those hunks applied verbatim (taken from `68d6a14` by checkout, provably base+union). `ManuscriptView.tsx` moved (F.0c + F.0d), so the sim's view hunks were re-established by hand: the **feed** (pendingPairs + correspondence carry) carried over verbatim; the sim's **+2.2 beside-offset and hollow-stud pending rendering were NOT inherited** — the offset's premise (the mount collision) was dissolved by F.0c/F.0d, and the studs are superseded by this mandate's traced cycles. Stash `d5adab1` left untouched in the stash list; the commit object `68d6a14` remains the union's provenance record.
-
-**The relocated refusal's falsifier (witness recut `7af0f24`), both directions, live:**
-```
-PASS - F.0e: on a multi-cell volume the ladder refuses a picked REVERSING map AT PICK TIME (one pick, not
-the whole act) — and the preserving pick passes the same ladder (null; the commit wall byte-unchanged)
-  ↳ six-cell fixture (a thickened cube surface) · reversing refused live · preserving passes · ALL PASS
-```
+⚠ **One measured divergence, resolved by the ruling:** the mandate lists `1 door` singular among the FINAL strings, but the pre-cut substrate printed `${doors} doors` unconditionally — and the winding leg itself pinned `1 doors` (driver `:504`, clause label `:189`). The ratified strings win: the template now reads `1 door` / `N doors` (`0 doors` stays plural), and the leg's pins are recut to the ratified string (`6817dbb`). The leg is an app-driving witness (its own vite + Playwright session under the orchestrator); it was not run in this build — its next run bites on the recut want-string.
 
 ## 3 · WHAT I CHANGED
 
-- **`8396486`** — the mandate file committed into history (the record ruling, standing).
-- **CUT A `ad91f92` — `src/manuscript/worldModel.ts` + the manifest re-seal, NOTHING ELSE** (the register law): `DomainPendingPairMark` (faces chosen, meeting unknown — positive, no mode field), `correspondence?` on `DomainPairMark`, `pendingPairs?` on `DomainModel` — the sanctioned union verbatim.
-- **CUT B `959e3f6`, five files:**
-  - `formDomainModel.ts` — `pendingPairMarks` producer (verbatim from the sim; file free, line 203).
-  - `ManuscriptView.tsx` — the F.0b feed (pending rows → pendingPairs; the chosen candidate's correspondence rides each decided mark) + **the traced marks**: `liveApertureTraces` derives each mark's cycle via `faceTraceCycle`; `LiveTraceCycle` renders pending = dashed uniform ring, decided = comet + start tick, rings pulled inside their faces; groups named (`live-aperture-trace-decided/-pending`) for the census; `faceCount` wired to the panel.
-  - `apertureModel.ts` — **D14's rotation EXTRACTED** (`d14NameRotation`) so `faceDisplayName` (the printed name) and the new `faceTraceCycle` (the drawn trace) share one rotation — *the mark and the name are one object in code, not by discipline*; the reversing-on-multi-cell condition added to `aperturePairingRefusal`'s existing ladder (the commit wall stays standing behind it).
-  - `ManuscriptChrome.tsx` — the amended subtitle (designer's delivered line, `{N}` honest-or-dropped) + the `faceCount` prop.
-  - `AppShell.tsx` — `state persists` struck, no replacement (no manifest row — outside the engine roots).
-- **Witness recut `7af0f24`** — the ladder falsifier leg in `diagnose-the-aperture.cjs` (own commit, test shape is this seat's lane).
+- **`src/manuscript/ExploreWindow.tsx` — commit `2398c08`, the whole cut:**
+  - seam union: `previousReturnLine: string | null` (+ init, + the open-reset beside `returnLine`);
+  - the producer: on every position-return, the standing line shifts to the previous slot **before** the new line takes the current one — no equality gating (the honest duplicate), both persist (W.5), nothing flashes;
+  - the render: a second held line `data-explore-return-previous` under the current one — recessed register (opacity 0.45 vs 0.78), same ink family, own `minHeight` slot so the plate never jumps; two lines is the named cost, paid always;
+  - the ratified singular in the line template.
+- **`scripts/app-leg/winding_route_driver.py` + `diagnose-winding-route.cjs` — commit `6817dbb`:** the `1 doors` pins and the stale header comment recut to `1 door` (a label is behaviour; a witness pinning the dead string would fail the ratified one).
+
+**Not touched, per the mandate:** the centroid-dot craft (§4 — hers), and nothing was chased on the fan acceptance (§2 — his).
 
 ## 4 · WHAT I COULD NOT REACH
 
-Nothing in the mandate. Flagged for the designer, not blocking: the decided trace's treatment (comet gradient + start tick; the retained subordinate dots) and the pending dash cadence are craft wired under her standing flag — the evidence frames are her material. The trace direction is drawn and legible on attention; if she wants the twist LOUDER (e.g. an animated run of the corners lighting in order), that is one component's craft, no model change — the correspondence already rides every decided mark.
+Nothing in the mandate. Two notes, neither blocking:
+1. The **`mirrored` / `turned` clauses were not exercised in this drive** — the committed T³'s straight circuits all read `the same way up` (all three pairs preserving translations); the other clauses live in the winding leg's cone/mirror rooms, whose recut pins now expect the ratified singular. W.7's mechanism is clause-blind (it shifts whatever string fired), so the coverage gap is the leg's, not the cut's.
+2. The walk drive requires a **foregrounded** Chrome window (rAF freezes hidden tabs) — recorded here so the next drive doesn't re-diagnose it.
