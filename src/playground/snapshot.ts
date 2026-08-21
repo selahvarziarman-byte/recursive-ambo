@@ -21,7 +21,17 @@
 //
 // DERIVE-ONLY · committed modules by import; no invariant recomputed.
 
-import type { Cell, Edge, Face, Generation, Shape, Vertex, VertexId } from '../types/geometry';
+import type {
+  Cell,
+  ComposedRelationStamp,
+  Edge,
+  Face,
+  Generation,
+  PacketData,
+  Shape,
+  Vertex,
+  VertexId,
+} from '../types/geometry';
 // GAP2C (sanctioned frozen edit): the save-time predicate consumes the
 // COMMITTED direct bridge itself — "is this form direct-readable?" is the
 // bridge's own verdict, never a re-expression of its rules here; the load-time
@@ -181,6 +191,63 @@ export function deserializeSnapshot(
       };
     }
 
+    // #37 GAP 1 (B-2026-08-22-B, sanctioned): the MANIFOLD RECORD is a NAMED
+    // field this loader re-roots — `parts`/`sourceVertexIds` are DOORWAYS to
+    // ids this shape owns and prefix with everything else; the record `id`
+    // and each `sharedBy` entry NAME a dropped source-universe entity (a
+    // name, not a doorway — VERBATIM, so nothing nests on a re-load). A
+    // pre-promotion file's `data.composes`/`data.sharedBy` blobs are LIFTED
+    // here into the named fields (same re-rooting, blob keys stripped — ONE
+    // home after every load); a malformed blob is left where it lay,
+    // untouched and uninterpreted.
+    const promoteManifoldRecord = (
+      entity: Pick<Edge, 'composes' | 'sharedBy' | 'data'>,
+    ): { composes?: ComposedRelationStamp; sharedBy?: string[]; data?: PacketData } => {
+      const blobC = entity.data?.['composes'] as
+        | { kind?: unknown; id?: unknown; parts?: unknown; sourceVertexIds?: unknown }
+        | undefined;
+      const blobS = entity.data?.['sharedBy'];
+      const rawC = entity.composes ?? blobC;
+      const rawS = entity.sharedBy ?? blobS;
+      const wellC =
+        rawC !== undefined &&
+        (rawC.kind === 'edge' || rawC.kind === 'face') &&
+        typeof rawC.id === 'string' &&
+        Array.isArray(rawC.parts) &&
+        rawC.parts.every((p): p is string => typeof p === 'string');
+      const wellS = Array.isArray(rawS) && rawS.every((s): s is string => typeof s === 'string');
+      const migratedC = !entity.composes && wellC;
+      const migratedS = !entity.sharedBy && wellS;
+      let data = entity.data;
+      if (data && (migratedC || migratedS)) {
+        const stripped: PacketData = { ...data };
+        if (migratedC) delete stripped['composes'];
+        if (migratedS) delete stripped['sharedBy'];
+        data = Object.keys(stripped).length > 0 ? stripped : undefined;
+      }
+      return {
+        ...(wellC
+          ? {
+              composes: {
+                kind: rawC.kind as 'edge' | 'face',
+                id: rawC.id as string,
+                parts: (rawC.parts as string[]).map(ns),
+                sourceVertexIds: (Array.isArray(rawC.sourceVertexIds)
+                  ? (rawC.sourceVertexIds as unknown[]).filter(
+                      (v): v is string => typeof v === 'string',
+                    )
+                  : []
+                ).map(ns),
+              },
+            }
+          : {}),
+        ...(wellS ? { sharedBy: [...(rawS as string[])] } : {}),
+        // present only when a migration changed it — stripped-to-empty
+        // becomes an explicit undefined the JSON serializer drops
+        ...(data !== entity.data ? { data } : {}),
+      };
+    };
+
     const edges: Edge[] = original.edges.map((edge) => ({
       ...edge,
       id: ns(edge.id),
@@ -188,12 +255,14 @@ export function deserializeSnapshot(
       ...(edge.sourceVertexIds
         ? { sourceVertexIds: edge.sourceVertexIds.map(ns) as Edge['sourceVertexIds'] }
         : {}),
+      ...promoteManifoldRecord(edge),
     }));
 
     const faces: Face[] = original.faces.map((face) => ({
       ...face,
       id: ns(face.id),
       vertexIds: face.vertexIds.map(ns),
+      ...promoteManifoldRecord(face),
     }));
 
     // P1b + P2: CELLS + GENERATIONS load coherently too (2D playground forms have
