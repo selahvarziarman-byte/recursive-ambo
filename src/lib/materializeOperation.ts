@@ -298,7 +298,11 @@ export function materializeSurfaceResult(
     vertices[mintedId] = {
       id: mintedId,
       position: centroidOf(sorted.map((m) => form.vertices[m].position)),
-      data: createDefaultVertexData(mintedId),
+      // LEGIBILITY MIGRATION (B-2026-08-23-A, census site 3, sanctioned
+      // frozen edit): the merged class's label is a TRUE ABSENCE — an id in
+      // the name slot is no name; the display resolves through the carried
+      // sourceVertexIds below (carried-not-minted), never regresses.
+      data: createDefaultVertexData(''),
       createdBy: {
         shapeId,
         operation,
