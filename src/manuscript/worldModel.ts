@@ -110,6 +110,21 @@ export interface DomainPairMark {
   mode: FacePairing['mode'];
   faceIds: [string, string];
   centers: [Vec3, Vec3]; // face centroids, derived from the cube's real positions
+  // F.0b (sanctioned union, engineer 0200 §3): the person's CHOSEN map, carried
+  // verbatim off the picked candidate (faceA cycle vertex → its faceB image,
+  // display order = A's cycle) so the twist is expressible downstream. Absent
+  // on fixture-built marks — a fixture's map is not a person's pick.
+  correspondence?: [string, string][];
+}
+
+// F.0b (sanctioned union, engineer 0200 §1): FACES CHOSEN, MEETING UNKNOWN —
+// a POSITIVE statement of the person's progress, not a missing field. No mode
+// exists here and none is invented: the type cannot say how the faces meet,
+// only that they are chosen. A reader can never confuse it with a decided
+// identification — a different type, no mode field, a separate array.
+export interface DomainPendingPairMark {
+  faceIds: [string, string];
+  centers: [Vec3, Vec3]; // face centroids, same derivation as the decided marks
 }
 
 export interface DomainModel {
@@ -119,6 +134,7 @@ export interface DomainModel {
   complex: Level3Complex; // the committed identification (counts read off union-finds)
   tower: Level3InvariantTower; // S² gate · χ · w₁ · integer homology (H₁ label source)
   pairs: DomainPairMark[];
+  pendingPairs?: DomainPendingPairMark[]; // F.0b: mid-build progress only — no finished builder sets it
 }
 
 export function buildThreeTorusDomain(): DomainModel {
