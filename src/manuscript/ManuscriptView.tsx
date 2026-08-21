@@ -216,7 +216,7 @@ import { buildProbeMeshes } from './apertureProbes';
 // bounded-body precedent; the unpaired faces render as WALLS (the room's
 // edge), never as an escape.
 import { ExploreWindow } from './ExploreWindow';
-import { readCellSurface, faceTraceCycle } from './apertureModel';
+import { readCellSurface, faceTraceCycle, apertureParityCensus } from './apertureModel';
 import { buildFormDomain, pendingPairMarks } from './formDomainModel';
 
 // D13 WITNESS SEAM (dev-only): the panel-scope plant must be a COMPONENT —
@@ -2602,6 +2602,13 @@ export default function ManuscriptView() {
       return [];
     }
   }, [apertureVolume, resolveAbsentLabel]);
+  // §3.3 — the parity census, read BEFORE the person acts: null while no
+  // volume is pointed at (or the menu refuses); the panel prints its lines
+  // only when the parity actually forces a wall.
+  const apertureParity = useMemo(
+    () => (apertureVolume ? apertureParityCensus(apertureVolume, resolveAbsentLabel) : null),
+    [apertureVolume, resolveAbsentLabel],
+  );
 
   // the gate panel's rows with the MAP MENU — the face's own dihedral orbit;
   // each option prints its vertex correspondence + the DERIVED mode (recorded,
@@ -4399,7 +4406,15 @@ export default function ManuscriptView() {
               inkColor={inkFor('live-build', apertureVolume ? apertureVolume.id : 'live-build', silhouetteCtl.color)}
               lineWidth={d.world.domain.lineWidth}
               markColors={d.world.domain.markColors}
-              markRadius={d.world.domain.markRadius}
+              /* §3.1 (designer-ruled, 2026-08-21): the CENTROID DOTS are
+                 DROPPED on the live build — not shrunk — because they
+                 CONTRADICT the traces (two dots stack inside one apparent
+                 face and read as two marks on one face). A dot on a trace
+                 must mean "the cycle starts here", which it can only mean
+                 when the start TICK is the only dot on the trace. The
+                 finished specimen mount keeps its dots — no traces there,
+                 nothing to contradict. */
+              markRadius={0}
             />
             {/* F.0e — the traced pair marks (mothership §2): the mark IS the
                 face's D14 cycle, drawn. Decided pairs share the decided mark
@@ -4442,6 +4457,24 @@ export default function ManuscriptView() {
                 })}
               </group>
             ) : null}
+            {/* §3.2 — THE LEGEND (ratified strings, verbatim): under the
+                figure, in the walk's own idiom — the marks teach their
+                reading where they are read (the walk already teaches its
+                gestures; the pairing figure taught none of its marks). */}
+            <Html center position={[0, -1.7, 0]} distanceFactor={13} zIndexRange={[40, 0]} style={{ pointerEvents: 'none' }}>
+              <div
+                style={{
+                  whiteSpace: 'nowrap',
+                  textAlign: 'center',
+                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontSize: 10.5,
+                  opacity: 0.6,
+                  color: d.paper.titleInk,
+                }}
+              >
+                dashed — not yet decided · solid — decided; the tick is its first corner, and the way it runs is how the faces meet · one hue to a pair
+              </div>
+            </Html>
           </group>
         ) : null}
 
@@ -4950,6 +4983,7 @@ export default function ManuscriptView() {
           <ApertureGatePanel
             rows={apertureRowViews}
             faceCount={apertureFaceMenu.length > 0 ? apertureFaceMenu.length : null}
+            parity={apertureParity}
             refusal={apertureRefusal}
             pristine={aperturePristine}
             notice={apertureNotice}

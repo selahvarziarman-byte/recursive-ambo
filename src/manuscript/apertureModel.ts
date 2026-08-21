@@ -758,6 +758,44 @@ function faceCornerCountOf(shape: Shape, menuFaceId: string): number | null {
   return face ? face.vertexIds.length : null;
 }
 
+// §3.3 (mothership 2026-08-21; the researcher's ruled consequence): THE
+// PARITY CENSUS — a face meets only an equal-cornered face, so per corner
+// class the pair capacity is ⌊count/2⌋ and every ODD class forces one face
+// to stand as a wall whatever the person chooses. Read BEFORE the person
+// acts — a fact about the volume, never a refusal; the panel prints it only
+// when a wall is actually forced (a cube's even classes say nothing).
+export interface ApertureParityCensus {
+  total: number;
+  classes: { corners: number; count: number }[]; // largest class first — the ratified reading order
+  pairs: number; // Σ ⌊count/2⌋ — all this volume can make
+  forcedWalls: number; // Σ (count mod 2) — walls that stand whatever is chosen
+}
+
+export function apertureParityCensus(shape: Shape, resolveAbsent?: AbsentLabelResolver): ApertureParityCensus | null {
+  let entries: BoundaryFaceEntry[];
+  try {
+    entries = boundaryFacesOf(shape, resolveAbsent);
+  } catch {
+    return null; // the pinch guard's refusal owns that surface — no census
+  }
+  const byCorners = new Map<number, number>();
+  for (const entry of entries) {
+    const corners = faceCornerCountOf(shape, entry.id);
+    if (corners === null) return null; // an unreadable face ⇒ no honest census
+    byCorners.set(corners, (byCorners.get(corners) ?? 0) + 1);
+  }
+  const classes = [...byCorners.entries()]
+    .map(([corners, count]) => ({ corners, count }))
+    .sort((a, b) => b.count - a.count || a.corners - b.corners);
+  let pairs = 0;
+  let forcedWalls = 0;
+  for (const { count } of classes) {
+    pairs += Math.floor(count / 2);
+    forcedWalls += count % 2;
+  }
+  return { total: entries.length, classes, pairs, forcedWalls };
+}
+
 /** Named, curable refusals — the door never glues a half-made pattern. */
 export function aperturePairingRefusal(seedShape: Shape, rows: AperturePairRow[]): string | null {
   // D2: the validation side-effect, cell-count-aware — the single-cell path
@@ -1480,6 +1518,13 @@ function developedConeSurface(
   // their mint-time ids), so either side may carry prefixes the other lacks.
   // The match demands EXACTLY ONE hit per cell — an ambiguous or absent
   // record falls back to the union path rather than developing a wrong room.
+  // ⚠ STOPGAP (ruled 2026-08-21): this tail-match is the RETIRED suffix
+  // pattern standing at a genuine #37 site — a dihedralAngles key IS a
+  // carried id-ref, and prefixes NEST: a save→load→save→load page defeats
+  // any endsWith, uniqueness guard or not. DEATH-CONDITION: when #37
+  // re-roots carried DATA-BLOB refs by the load's own prefix (resolved by
+  // exact ===), delete keyMatchesPillar and match record keys by equality
+  // on the re-rooted ids. Until then this guard STANDS.
   const pillarStem = pillar0.replace(/@0$/, '');
   const keyMatchesPillar = (k: string): boolean => {
     if (!k.endsWith('@I')) return false;

@@ -23,6 +23,7 @@ import type { BirthGate, RecordEntry, ShelfEntry } from './genesisModel';
 import type { FaceEdgeLabel, GluingPreviewResult } from '../playground/customGluing';
 import type { BoundaryPairing } from '../lib/surfaceOperations';
 import type { ChordSplit, FoldState } from './handGestureModel';
+import type { ApertureParityCensus } from './apertureModel';
 
 export interface ChromePaper {
   cardBackground: string;
@@ -445,6 +446,18 @@ export interface ApertureFaceChoice {
   label: string;
 }
 
+// §3.3 — corner counts read as words in the forced-wall line (the ratified
+// string's own idiom: "10 with three corners, 5 with four"); counts beyond
+// the spelled range fall back to the digit rather than fake a word.
+const APERTURE_CORNER_WORDS: Record<number, string> = {
+  3: 'three',
+  4: 'four',
+  5: 'five',
+  6: 'six',
+  7: 'seven',
+  8: 'eight',
+};
+
 export interface ApertureMapChoice {
   key: string; // the map's pick key — never a mode
   label: string; // the vertex correspondence + its derived mode, for reading only
@@ -530,6 +543,7 @@ function AperturePickRow({
 export function ApertureGatePanel({
   rows,
   faceCount,
+  parity,
   refusal,
   pristine,
   notice,
@@ -548,6 +562,10 @@ export function ApertureGatePanel({
   // subtitle's `{N} faces` — null when the menu could not be read (the pinch
   // guard's refusal), and then the clause is DROPPED rather than faked.
   faceCount: number | null;
+  // §3.3 (2026-08-21): the parity census — printed only when it actually
+  // forces a wall; a fact about the volume, before the person acts, and it
+  // must never wear a refusal's register.
+  parity: ApertureParityCensus | null;
   refusal: string | null; // the door's named, curable refusal — null = the glue may run
   // F.0 THE EMPTY STATE (engineer 2300, mothership 1745 §5): before the
   // person has acted the refusal may not occupy the primary action's slot —
@@ -645,6 +663,31 @@ export function ApertureGatePanel({
           ? `this volume · ${faceCount} faces · pair the ones you choose — the rest stand as walls · the mode follows from the map, never chosen`
           : 'this volume · pair the ones you choose — the rest stand as walls · the mode follows from the map, never chosen'}
       </div>
+      {parity && parity.forcedWalls > 0 ? (
+        <>
+          {/* §3.3 — THE FORCED-WALL LINE (ratified shape; every number
+              derived from the census; corner counts as words, the first
+              class carrying the word "corners"). Its own quiet PLAIN line —
+              never the refusal register (the pristine refusal is italic;
+              this is not one): the person has done nothing wrong, this is
+              the volume's own fact, available before he acts. */}
+          <div style={{ marginTop: 3, fontSize: 10.5, opacity: 0.7 }}>
+            {`${parity.total} faces — ${parity.classes
+              .map(({ count, corners }, i) => `${count} with ${APERTURE_CORNER_WORDS[corners] ?? corners}${i === 0 ? ' corners' : ''}`)
+              .join(', ')} · a face meets only a face with the same corners, so ${parity.pairs} ${
+              parity.pairs === 1 ? 'pair' : 'pairs'
+            } is all this volume can make · ${
+              parity.forcedWalls === 1 ? 'one face stands as a wall' : `${parity.forcedWalls} faces stand as walls`
+            } whatever you choose`}
+          </div>
+          {/* the ruled consequence — the RESEARCHER's words, verbatim. ⛔ the
+              final compression is the DESIGNER's (flagged); nothing authored
+              here. */}
+          <div style={{ marginTop: 2, fontSize: 10.5, opacity: 0.6 }}>
+            …and a world has no walls — every face glued to a partner. One face with no partner is one wall that stays, so this closes into a room you stand inside, never a world.
+          </div>
+        </>
+      ) : null}
       <div data-aperture-rows ref={rowsRegionRef} style={{ maxHeight: 'clamp(100px, 22vh, 300px)', overflowY: 'auto' }}>
         {rows.map((row, i) => (
           <AperturePickRow
