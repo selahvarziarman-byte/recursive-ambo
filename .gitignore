@@ -8,6 +8,11 @@ storybook-static
 *_SEALED_PREDICTIONS.txt
 *_SEALED_PREDICTIONS.txt
 
+# session state (Claude Code local settings/permissions) — per-machine, never
+# project record. Also covered by the user's global ignore on this machine;
+# this line makes the decision durable in-repo (TASK 0, B-2026-08-21-C).
+.claude/
+
 # handoff channel — seat MAIL stays off-repo, but THE_BUILD and THE_BUILD_REPORT
 # are not mail: they are the project's only record of what was built and what was
 # seen, overwritten each build — uncommitted, "git carries the history" is false.

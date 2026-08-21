@@ -1,0 +1,8 @@
+# BACKLOG — PlatonicEngine202
+
+## ⬇ Cone hatch period-normalisation (the 5× body-dependent period) — LOW PRIORITY (Arman ruled 2026-08-06, does NOT block D2/the card)
+The surface-locked hatch (§2/§4) shows a ~5× BODY-DEPENDENT apparent period: at comparable presented size the flat composite face reads ~7px (in-band, bandPx=9) but the cone reads ~35–40px — SAME shader, same build. NOT a missing large-side ceiling (that would coarsen both bodies together; the flat body sits in-band, only the cone is off). The variable is the BODY. Designer's hypothesis: the cone is a fan tessellation and the hatch's OBJECT-space period isn't normalised to the surface's actual parameterisation/scale, so a body whose object scale differs from a flat patch gets a proportionally different apparent period (her secondary tell: the cone's scallop count may match its fan segment count → per-face not continuous parameterisation).
+- **The falsifiable test (run BEFORE any build):** sample the shader's period derivation on BOTH bodies at equal presented size; different object-space periods for the same bandPx ⇒ the period is not normalised to the surface parameterisation = the cause. Cure = normalise the period to the surface (both bodies in-band, NO clamp).
+- ⚠ **Report the FROZEN/union verdict + mechanism BEFORE sealing** (is normalisation a HATCH shader change = a frozen union like §2/§4, or can it live in the surfaceCoord/geometry the NOT_FROZEN adapter feeds?).
+- The **pitch-ceiling** is a CONTINGENCY (safety net after the cause is fixed), NOT the cure — do not spend it as the fix. bandPx=9 STANDS (the flat face at ~7px confirms the target).
+- Parked alongside: circumferential-vs-rulings hatch direction · the fold-notice overdraw (draws over the specimen).
