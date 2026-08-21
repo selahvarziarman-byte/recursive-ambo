@@ -203,6 +203,18 @@ check('readCellSurface (developed cone room): 9 faces / 7 walls / 2 bounded seam
   surf.faces.length === 9 && surf.wallCount === 7 && surf.rods.length === 29 &&
   surf.faces.filter((f) => !f.wall).length === 2 && surf.faces.filter((f) => !f.wall).every((f) => f.bounds),
   `faces=${surf.faces.length} walls=${surf.wallCount} rods=${surf.rods.length}`);
+// §3.3 (2026-08-21) — the parity census, both directions: the fan's odd
+// class forces exactly one wall (10×3 + 5×4 ⇒ 7 pairs, 1 wall); the cube's
+// even classes force none, so its line stays silent.
+const parityFan = A.apertureParityCensus(product);
+check('apertureParityCensus (fan): 15 faces — 10 three-corner + 5 four-corner ⇒ 7 pairs · 1 forced wall',
+  Boolean(parityFan) && parityFan.total === 15 && parityFan.pairs === 7 && parityFan.forcedWalls === 1 &&
+  JSON.stringify(parityFan.classes) === JSON.stringify([{ corners: 3, count: 10 }, { corners: 4, count: 5 }]),
+  parityFan ? JSON.stringify(parityFan) : 'null');
+const parityCube = A.apertureParityCensus(createSeedShape('cube'));
+check('apertureParityCensus (cube): even classes — 3 pairs possible, 0 forced walls (the line says nothing)',
+  Boolean(parityCube) && parityCube.total === 6 && parityCube.pairs === 3 && parityCube.forcedWalls === 0,
+  parityCube ? JSON.stringify(parityCube) : 'null');
 
 console.log(failures === 0 ? '\nDIAGNOSE-OPEN-LIFT: ALL GREEN' : `\nDIAGNOSE-OPEN-LIFT: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);
