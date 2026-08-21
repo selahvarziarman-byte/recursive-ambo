@@ -3228,10 +3228,18 @@ export default function ManuscriptView() {
   // than the person's own torus. The
   // consumed squares settle to pencil and the six births join the record —
   // the zoo shows its construction, which is the point.
-  const [zooLoaded, setZooLoaded] = useState(false);
-  const handleSummonZoo = useCallback((): void => {
-    if (zooLoaded) return;
-    const additions: Array<{ form: WrittenForm; home: [number, number, number] }> = [];
+  // §4 (B-2026-08-22-B, the zoo RULED record-not-reading): the ACT lives on
+  // the page store (it survives the unmount WITH the forms it explains — the
+  // component-held flag dying while the store-held forms lived was a latent
+  // duplicate-zoo door); the page FILE records the act and never the
+  // contents, and hydration re-runs THIS door (the effect below).
+  const zooLoaded = useManuscriptPageStore((s) => s.zooLoaded);
+  const recordZooLoaded = useManuscriptPageStore((s) => s.recordZooLoaded);
+  const summonZooForms = useCallback((): boolean => {
+    // the authoritative guard reads the STORE fresh (not a render closure):
+    // zustand's set is synchronous, so a re-entrant call sees the forms
+    if (useManuscriptPageStore.getState().written.some((w) => w.zooMember)) return true;
+    const additions: Array<{ form: WrittenForm; home: [number, number, number]; zooMember: true }> = [];
     for (let k = 0; k < WORLD_SURFACES.length; k += 1) {
       const surface = WORLD_SURFACES[k];
       const slotX = centered(k, WORLD_SURFACES.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2);
@@ -3262,16 +3270,25 @@ export default function ManuscriptView() {
         // fail-honest: no partial silent zoo — the committed reason speaks and
         // the button stays live (nothing from this sweep joins the page)
         setOpNotice(`${REFERENCE_OPS[surface]}: ${born.reason}`);
-        return;
+        return false;
       }
       seqRef.current += 1;
-      additions.push({ form: host, home: [slotX, rows.dim2Y - 3.1, 0] });
-      additions.push({ form: born.born, home: [slotX, rows.dim2Y, 0] });
+      additions.push({ form: host, home: [slotX, rows.dim2Y - 3.1, 0], zooMember: true });
+      additions.push({ form: born.born, home: [slotX, rows.dim2Y, 0], zooMember: true });
     }
     setWritten((cur) => [...cur, ...additions]);
-    setZooLoaded(true);
     setOpNotice(null);
-  }, [zooLoaded, layoutCtl.spacing, layoutCtl.resolution, scaleCtl.dim2Scale, rows.dim2Y]);
+    return true;
+  }, [layoutCtl.spacing, layoutCtl.resolution, scaleCtl.dim2Scale, rows.dim2Y]);
+  const handleSummonZoo = useCallback((): void => {
+    if (zooLoaded) return;
+    if (summonZooForms()) recordZooLoaded();
+  }, [zooLoaded, summonZooForms, recordZooLoaded]);
+  // §4 hydration: the act restored with no zoo on the page ⇒ the SAME
+  // committed door re-runs (the file carried the record, never the reading)
+  useEffect(() => {
+    if (zooLoaded && !written.some((w) => w.zooMember)) summonZooForms();
+  }, [zooLoaded, written, summonZooForms]);
 
   // ----- 3b: the genesis reading — ONE committed DAG feeds pentimento + -----
   // ----- stemma + the foot-record (nothing hand-kept) ------------------------
@@ -3966,6 +3983,12 @@ export default function ManuscriptView() {
           setInvokeMenu(null);
           setFormMenu(null);
           setExploreOpen(null);
+          // §5 (B-2026-08-22-B): the restored page must be SEEN — a load
+          // landing during the mount's camera intro left the first frame
+          // bare paper, which reads as "it did not work" (a positive fact
+          // carried by nothing being there). The same committed act as the
+          // person's own Reset Camera frames the page the moment it lands.
+          setResetCameraRequest((n) => n + 1);
           setOpNotice(
             refusals.length > 0
               ? `page restored — ${refusals.length} record(s) refused by name: ${refusals[0]}`

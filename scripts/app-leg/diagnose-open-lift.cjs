@@ -243,9 +243,15 @@ check('apertureParityCensus (cube): even classes — 3 pairs possible, 0 forced 
   const { serializeSnapshot: ser2 } = req('src/playground/snapshot.ts');
   const fanParcel = ser2(lift.shape, 'page-fan-src');
   const record = { door: 'bounded', key: 'built-1', title: 'built 3-manifold 1', seed: hop1, rows: [], baseId: null, baseRefusal: null };
-  const fileA = JSON.parse(JSON.stringify(serializePage({ written: [], shelfFiles: [fanParcel], shelfPlacedShapeIds: [], builtRecords: [record], builtCount: 1 })));
+  // §4 (B-2026-08-22-B): the zoo is RECORD-NOT-READING — a zoo-marked written
+  // entry NEVER enters the file; the ACT (`zooLoaded`) does, and it restores
+  const zooEntry = { form: { shape: hop1 }, home: [0, 0, 0], zooMember: true };
+  const fileA = JSON.parse(JSON.stringify(serializePage({ written: [zooEntry], shelfFiles: [fanParcel], shelfPlacedShapeIds: [], builtRecords: [record], builtCount: 1, zooLoaded: true })));
   const refusalsA = useManuscriptPageStore.getState().loadPage(parsePage(fileA));
   const stateA = useManuscriptPageStore.getState();
+  check('§4 the zoo rides as the ACT, never as content: the file\'s written EXCLUDES the zoo-marked entry, carries zooLoaded, and the restore holds the act with no zoo forms on the page',
+    fileA.written.length === 0 && fileA.zooLoaded === true &&
+      stateA.zooLoaded === true && stateA.written.every((w) => !w.zooMember));
   const surfA = stateA.builtDomains.length === 1 ? A.readCellSurface(stateA.builtDomains[0], true) : null;
   const fileB = JSON.parse(JSON.stringify(serializePage(stateA.pageRecords())));
   const refusalsB = useManuscriptPageStore.getState().loadPage(parsePage(fileB));

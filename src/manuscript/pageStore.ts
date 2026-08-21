@@ -55,6 +55,10 @@ interface ManuscriptPageState {
   metricBaseRefusals: Record<string, string>;
   shelfAncestors: Map<string, Shape[]>; // GAP2C acquire-metadata, keyed by loaded shape id
   builtCount: number;
+  // §4 (B-2026-08-22-B): the ACT "the zoo was loaded" — page state (the flag
+  // survives the unmount WITH the forms it explains; component state dying
+  // while the store-held forms lived was the latent duplicate-zoo bug)
+  zooLoaded: boolean;
   // ── the RECORD layer ──
   shelfFiles: PlaygroundSnapshotFile[];
   builtRecords: BuiltDomainRecord[];
@@ -70,6 +74,7 @@ interface ManuscriptPageState {
   recordShelfFile: (file: PlaygroundSnapshotFile) => void;
   recordShelfAncestors: (shapeId: string, ancestors: Shape[]) => void;
   recordBuilt: (record: BuiltDomainRecord) => void;
+  recordZooLoaded: () => void; // §4: the zoo door's one-way act record
   bumpBuiltCount: () => number; // returns the NEW count (the door's n)
   unbumpBuiltCount: () => void; // a refused door hands its number back
   // ── the file half ──
@@ -87,6 +92,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
   metricBaseRefusals: {},
   shelfAncestors: new Map(),
   builtCount: 0,
+  zooLoaded: false,
   shelfFiles: [],
   builtRecords: [],
 
@@ -102,6 +108,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
   recordShelfAncestors: (shapeId, ancestors) =>
     set((s) => ({ shelfAncestors: new Map(s.shelfAncestors).set(shapeId, ancestors) })),
   recordBuilt: (record) => set((s) => ({ builtRecords: [...s.builtRecords, record] })),
+  recordZooLoaded: () => set({ zooLoaded: true }),
   bumpBuiltCount: () => {
     const n = get().builtCount + 1;
     set({ builtCount: n });
@@ -117,6 +124,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
       shelfPlacedShapeIds: s.shelf.filter((i) => i.placed).map((i) => i.entry.loaded.shape.id),
       builtRecords: s.builtRecords,
       builtCount: s.builtCount,
+      zooLoaded: s.zooLoaded,
     };
   },
 
@@ -181,6 +189,10 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
       metricBaseIds,
       metricBaseRefusals,
       builtCount: records.builtCount,
+      // §4: the ACT restores; the zoo's FORMS are absent from the file by the
+      // serializer's own law — the view re-runs the committed door on seeing
+      // the act recorded with no zoo on the page
+      zooLoaded: records.zooLoaded,
       shelfFiles: records.shelfFiles,
       builtRecords: records.builtRecords,
     });

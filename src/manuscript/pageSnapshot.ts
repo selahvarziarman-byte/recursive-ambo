@@ -45,6 +45,10 @@ export interface BuiltDomainRecord {
 export interface WrittenPageEntry {
   form: WrittenForm;
   home: [number, number, number];
+  // §4 (B-2026-08-22-B, the zoo RULED record-not-reading): the positive mark
+  // on the reference zoo's own entries — the serializer's exclusion reads it
+  // (the zoo's contents never enter the file; the ACT does, as `zooLoaded`)
+  zooMember?: true;
 }
 
 export interface ManuscriptPageFile {
@@ -54,6 +58,9 @@ export interface ManuscriptPageFile {
   shelfPlacedShapeIds: string[]; // which loaded forms he placed (namespaced shape ids, verbatim)
   builtRecords: BuiltDomainRecord[];
   builtCount: number; // so future keys never collide with restored ones
+  // §4: the ACT "the zoo was loaded" — hydration re-runs the committed door;
+  // absent on pre-§4 files (an additive field; the version does not move)
+  zooLoaded?: boolean;
 }
 
 export interface ManuscriptPageRecords {
@@ -62,16 +69,20 @@ export interface ManuscriptPageRecords {
   shelfPlacedShapeIds: string[];
   builtRecords: BuiltDomainRecord[];
   builtCount: number;
+  zooLoaded: boolean;
 }
 
 export function serializePage(records: ManuscriptPageRecords): ManuscriptPageFile {
   return {
     version: PAGE_SNAPSHOT_VERSION,
-    written: records.written,
+    // §4: the zoo is the engine's own catalogue — the ACT rides the file
+    // (`zooLoaded`), the contents never do (record, not reading)
+    written: records.written.filter((entry) => !entry.zooMember),
     shelfFiles: records.shelfFiles,
     shelfPlacedShapeIds: records.shelfPlacedShapeIds,
     builtRecords: records.builtRecords,
     builtCount: records.builtCount,
+    zooLoaded: records.zooLoaded,
   };
 }
 
@@ -105,5 +116,7 @@ export function parsePage(raw: unknown): ManuscriptPageRecords {
     shelfPlacedShapeIds: placed,
     builtRecords: file.builtRecords,
     builtCount: count,
+    // §4: absent on pre-§4 files — the act was not recorded, so it did not happen
+    zooLoaded: file.zooLoaded === true,
   };
 }
