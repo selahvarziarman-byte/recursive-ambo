@@ -8,8 +8,15 @@ storybook-static
 *_SEALED_PREDICTIONS.txt
 *_SEALED_PREDICTIONS.txt
 
-# off-repo handoff channel — mandates/reports between engineer and coder; never committed
-.handoff/
+# handoff channel — seat MAIL stays off-repo, but THE_BUILD and THE_BUILD_REPORT
+# are not mail: they are the project's only record of what was built and what was
+# seen, overwritten each build — uncommitted, "git carries the history" is false.
+# (mothership ruling, 2026-08-21: the ignore yields for exactly these two paths.)
+# `.handoff/*`, NOT `.handoff/` — same reason as instruments/* below: git will
+# not descend into an excluded directory, so the negations would silently fail.
+.handoff/*
+!.handoff/THE_BUILD.md
+!.handoff/THE_BUILD_REPORT.md
 
 # ── INSTRUMENTS ─────────────────────────────────────────────────────────────
 # "An office may build an INSTRUMENT to KNOW. It may not build the PRODUCT."
