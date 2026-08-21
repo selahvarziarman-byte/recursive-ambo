@@ -41,7 +41,7 @@
 
 # ─── FROZEN (46) — the engine, import-closed; drift here without a manifest update is a finding ───
 src/data/seeds.ts                       6936376f3c1fcf6b3170d25fe2b3e080afcd9c3eb329dcee4ea37f6435f83274
-src/lib/complexIdentification.ts        35d5602c91b590fc32f6ab8a82e5561696cc7b170fd63521332fb0abb2a4d08b
+src/lib/complexIdentification.ts        8957235dbd740fa5a8ca0671fe6ed42182de0648b7423354944c87eef9a9cf5f
 src/lib/conformalAtom.ts                c7eee19c59d0424dfd69f7c6768a00a6811a9cdce658e91c63069847fdae00f5
 src/lib/connectedSum.ts                 d8b6c0d269f6847b50f29c3190199ed290096319d25edbf280ce77effc1df6b9
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c

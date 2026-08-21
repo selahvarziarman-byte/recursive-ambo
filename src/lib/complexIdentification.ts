@@ -629,7 +629,10 @@ function identifyOnComplex(
         if (!vertex) throw new Error(`complexIdentification: vertex ${m} not on the form`);
         return vertex.position;
       })),
-      data: createDefaultVertexData(mintedId),
+      // LEGIBILITY MIGRATION (B-2026-08-23-A, census site 4, sanctioned
+      // frozen edit): the quotient mint writes TRUE ABSENCE — an id in the
+      // name slot is no name; the carried class below is the resolution.
+      data: createDefaultVertexData(''),
       createdBy: {
         shapeId: bornShapeId,
         operation: modes.some((m) => m === 'reversing') ? 'flip-glue' : 'glue',
