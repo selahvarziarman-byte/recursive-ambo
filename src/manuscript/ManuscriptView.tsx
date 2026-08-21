@@ -4227,17 +4227,23 @@ export default function ManuscriptView() {
           );
         })}
 
-        {/* F.0 — THE LIVE SKELETON (engineer 2300): the build in progress,
-            drawn by the COMMITTED InkedDomain over the real DomainModel the
-            panel's own rows make. It floats above the pointed-at volume
-            while the door is open and dies with the panel — which faces am
-            I gluing, answered while building. The group is NAMED so the
-            acceptance leg can census its marks. */}
+        {/* F.0 — THE LIVE SKELETON (engineer 2300) · F.0d — AT THE STAGE: the
+            build in progress, drawn by the COMMITTED InkedDomain over the real
+            DomainModel the panel's own rows make. F.0c measured it at the row:
+            a 17×27-px speck behind the risen body — reachable, unusable. It now
+            occupies the seat the finished diagram vacated (F.0c disarms mount 1
+            while the door is open): the door's target IS the selection, the
+            selection is always damped to riseTo, so the live build sits above
+            the risen body exactly where mount 1's marks were read — the same
+            seat constants (3.05 · 0.68) through the same chain (dim3Scale ·
+            riseScale), composed here because this single site serves every
+            band the door can target. Dies with the panel. The group is NAMED
+            so the acceptance leg can census its marks. */}
         {apertureOpen && liveApertureDomain && apertureTarget ? (
           <group
             name="live-aperture-skeleton"
-            position={[apertureTarget.home[0], apertureTarget.home[1] + 3.0, apertureTarget.home[2]]}
-            scale={0.68}
+            position={[riseTo[0], riseTo[1] + 3.05 * scaleCtl.dim3Scale * specimenCtl.riseScale, riseTo[2]]}
+            scale={0.68 * scaleCtl.dim3Scale * specimenCtl.riseScale}
           >
             <InkedDomain
               model={liveApertureDomain}
