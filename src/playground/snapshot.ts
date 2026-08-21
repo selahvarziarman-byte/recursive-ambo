@@ -85,12 +85,20 @@ export interface LoadedSnapshotForm {
 // plain data; nothing live survives serialization) + the opaque source name.
 // GAP2C: `ancestry` (additive, optional — the committed 2-arg calls are
 // byte-identical) is the caller's population of candidate ancestors. The
-// PREDICATE: if the committed bridge reads the form directly, nothing is
-// carried (today's file exactly); if it THROWS (seam/quotient), the parent
-// chain is walked through `ancestry` — direct parent first — until a link the
-// bridge reads (the acquirable root, inclusive) and STORED verbatim. A
-// pointer that leaves the population ends the walk (the carried prefix is
-// still honest metadata); a genealogy cycle exhausts finitely.
+// PREDICATE (widened, B-2026-08-22-C 2(b), sanctioned frozen edit): a caller
+// that HANDS an ancestry is DECLARING the operands of the making — the
+// mothership's ruling: the operands are not context the product refers to,
+// they are what the product IS, and carrying them is the record being WHOLE
+// — so the chain-walk runs whenever ancestry is offered, acquirable product
+// or not (the fan band: directComplexOf reads it fine, and its base must
+// still ride so the sealed metric has its OPERAND on the far side of the
+// hop). With NO ancestry offered the old predicate stands verbatim: if the
+// committed bridge reads the form directly nothing is carried; if it THROWS
+// (seam/quotient) the walk would find nothing in an empty population anyway.
+// The walk itself is unchanged: direct parent first, until a link the bridge
+// reads (the acquirable root, inclusive), STORED verbatim. A pointer that
+// leaves the population ends the walk (the carried prefix is still honest
+// metadata); a genealogy cycle exhausts finitely.
 export function serializeSnapshot(
   shape: Shape,
   sourceId: string,
@@ -100,9 +108,15 @@ export function serializeSnapshot(
   if (!source) throw new Error('snapshot: sourceId must be a non-empty name');
   assertKeySafe(source, 'sourceId');
   let ancestors: Shape[] | null = null;
-  try {
-    directComplexOf(shape);
-  } catch {
+  let walkChain = ancestry.length > 0;
+  if (!walkChain) {
+    try {
+      directComplexOf(shape);
+    } catch {
+      walkChain = true;
+    }
+  }
+  if (walkChain) {
     const byId = new Map(ancestry.map((candidate) => [candidate.id, candidate]));
     const chain: Shape[] = [];
     const seen = new Set<string>([shape.id]);
