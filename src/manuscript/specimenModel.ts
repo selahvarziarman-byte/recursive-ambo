@@ -127,12 +127,27 @@ export function readSkeletonSpecimen(model: SkeletonModel): SpecimenReading {
 export function readDomainSpecimen(model: DomainModel): SpecimenReading {
   const tower = model.tower;
   const counts = model.complex.counts;
+  // THE CARD UNION (B-2026-08-22-C, sanctioned frozen edit): the χ row's
+  // TWO GRAMMARS are deliberate and must not be unified — a PARENTHESIS
+  // says a judgement was made; a `·` clause says why no judgement exists
+  // (he can tell them apart before reading a word of either). The two `·`
+  // strings differ because the silences have opposite reasons: bounded is
+  // a SOUND object the closed-check does not fit; unsound is not an object
+  // the check can be asked of. `a bare count` hands him what he HAS (an
+  // alternating sum of cells is a real thing — the row is never a verdict
+  // on his failure), and `the S² gate` points back at the thing that made
+  // the call in his own vocabulary — it does NOT re-diagnose the refusal.
+  // One producer: `tower.isClosed` drives this fork, the χ predicate, and
+  // the subtitle below. ⚠ layout (the `·` strings in a value column) is
+  // the DESIGNER's, settled off a frame — shipped in the value per ruling.
+  const chiRow = !tower.sound
+    ? `${tower.chi} · a bare count — the S² gate found no manifold for χ to describe`
+    : !tower.isClosed
+      ? `${tower.chi} · the closed-world check does not apply to a room`
+      : `${tower.chi}${tower.chiConsistent === true ? ' (consistent)' : tower.chiConsistent === false ? ' (INCONSISTENT)' : ''}`;
   const rows: SpecimenRow[] = [
     { label: 'S² gate', value: tower.sound ? 'sound' : 'NOT sound' },
-    {
-      label: 'Euler χ',
-      value: `${tower.chi}${tower.chiConsistent === null ? '' : tower.chiConsistent ? ' (consistent)' : ' (INCONSISTENT)'}`,
-    },
+    { label: 'Euler χ', value: chiRow },
     { label: 'orientable', value: tower.orientable ? 'yes' : 'no' },
     { label: 'H₁ (= π₁ abelianized)', value: tower.homology.H1.pretty, emphasize: true },
     { label: 'CW counts', value: `v ${counts.v} · e ${counts.e} · f ${counts.f} · c ${counts.c}` },
@@ -141,7 +156,17 @@ export function readDomainSpecimen(model: DomainModel): SpecimenReading {
   return {
     kind: 'domain',
     title: model.title,
-    subtitle: 'fundamental domain · the identified cube (no body exists)',
+    // the subtitle FORK, changing only the false half: `the identified
+    // cube` (a hardcoded literal contradicting the title one line above)
+    // goes; `this cell` is deictic and correct on any volume; `how its
+    // faces meet` is the legend's own phrase — one vocabulary across card,
+    // panel, legend, walk. `(no body exists)` is RIGHT for a closed
+    // quotient and FALSE for a bounded room — the room IS an embeddable
+    // body, the very thing he built and walked, and `you stand inside it`
+    // matches the panel's forced-wall line.
+    subtitle: tower.isClosed
+      ? 'fundamental domain · this cell and how its faces meet (no body exists)'
+      : 'fundamental domain · this cell and how its faces meet (the room is the body — you stand inside it)',
     rows,
     legend: [], // the domain draws pairing marks, not H₁ loop representatives
     twist: tower.orientable ? null : 'w₁ ≠ 0 — non-orientable (the twist)',
