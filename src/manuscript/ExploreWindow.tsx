@@ -133,6 +133,16 @@ uniform vec3  uFaceN[16];
 uniform float uFaceD[16];
 uniform float uFaceWall[16];            // 1 = wall
 uniform mat4  uFaceG[16];               // portal transform (identity on walls)
+// INTERIOR TRANSPORT (2026-08-21): a BOUNDED face is a real quad, not a
+// whole plane — the developed cone room's seam planes cut through material
+// far from the seam, so a plane-only exit would transport rays that never
+// touched the seam. A bounded face is skipped where the crossing lands
+// outside its quad (|dot(q−c,u)| ≤ ‖u‖², both axes); unbounded faces keep
+// the convex-cell law byte-identically.
+uniform float uFaceBounded[16];         // 1 = quad-bounded (the seam pair)
+uniform vec3  uFaceC[16];               // quad centre
+uniform vec3  uFaceU[16];               // quad half-axis 1 (length = half-extent)
+uniform vec3  uFaceW[16];               // quad half-axis 2
 uniform float uSpan;                    // the cell's max extent (cube: 2) — the horizon unit
 // the seed's own edges as rods (≤ 32), each with its engine class
 uniform int   uRodCount;
@@ -265,7 +275,14 @@ void main(){
       if(f>=uFaceCount) break;
       float dn=dot(v,uFaceN[f]); if(dn<1e-6) continue;
       float t=(uFaceD[f]-dot(p,uFaceN[f]))/dn;
-      if(t>1e-5 && t<tE){ tE=t; fE=f; }
+      if(t>1e-5 && t<tE){
+        if(uFaceBounded[f]>0.5){
+          vec3 q=p+v*t-uFaceC[f];
+          if(abs(dot(q,uFaceU[f]))>dot(uFaceU[f],uFaceU[f]) ||
+             abs(dot(q,uFaceW[f]))>dot(uFaceW[f],uFaceW[f])) continue;
+        }
+        tE=t; fE=f;
+      }
     }
     float t=1e-3, id=-1.;
     for(int i=0;i<160;i++){
@@ -406,6 +423,7 @@ const det3of = (g: number[]): number =>
 const IDENTITY_G: number[] = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0];
 function packCell(surface: ApertureCellSurface): {
   faceN: Float32Array; faceD: Float32Array; faceWall: Float32Array; faceG: Float32Array; faceCount: number;
+  faceBounded: Float32Array; faceC: Float32Array; faceU: Float32Array; faceW: Float32Array;
   rodA: Float32Array; rodB: Float32Array; rodK: Float32Array; rodClass: Float32Array; rodHeavy: Float32Array; rodCount: number;
   span: number;
 } | null {
@@ -414,11 +432,21 @@ function packCell(surface: ApertureCellSurface): {
   const faceD = new Float32Array(16);
   const faceWall = new Float32Array(16);
   const faceG = new Float32Array(256);
+  const faceBounded = new Float32Array(16);
+  const faceC = new Float32Array(48);
+  const faceU = new Float32Array(48);
+  const faceW = new Float32Array(48);
   surface.faces.forEach((f, i) => {
     faceN.set(f.n, i * 3);
     faceD[i] = f.d;
     faceWall[i] = f.wall ? 1 : 0;
     faceG.set(m4(f.g ?? IDENTITY_G), i * 16);
+    if (f.bounds) {
+      faceBounded[i] = 1;
+      faceC.set(f.bounds.c, i * 3);
+      faceU.set(f.bounds.u, i * 3);
+      faceW.set(f.bounds.w, i * 3);
+    }
   });
   const rodA = new Float32Array(96);
   const rodB = new Float32Array(96);
@@ -434,6 +462,7 @@ function packCell(surface: ApertureCellSurface): {
   });
   return {
     faceN, faceD, faceWall, faceG, faceCount: surface.faces.length,
+    faceBounded, faceC, faceU, faceW,
     rodA, rodB, rodK, rodClass, rodHeavy, rodCount: surface.rods.length,
     span: surface.span,
   };
@@ -503,6 +532,12 @@ export function ExploreWindow({
     seam.walls = cellSurface.wallCount;
     seam.returnLine = null;
     seam.previousReturnLine = null;
+    // INTERIOR TRANSPORT drive find (2026-08-21): the caption was the one
+    // session fact the open-reset missed — on RE-OPENING the same room the
+    // freshly computed caption equals the seam's stale copy, the change-gated
+    // DOM write never fires, and the standing line renders BLANK. Reset it
+    // with the rest so the first frame always writes.
+    seam.caption = null;
     seam.paceOverride = null;
     nextSession += 1;
     if (!canvas || !packed) return undefined;
@@ -554,6 +589,10 @@ export function ExploreWindow({
     gl.uniform1fv(U('uFaceD[0]'), packed.faceD);
     gl.uniform1fv(U('uFaceWall[0]'), packed.faceWall);
     gl.uniformMatrix4fv(U('uFaceG[0]'), false, packed.faceG);
+    gl.uniform1fv(U('uFaceBounded[0]'), packed.faceBounded);
+    gl.uniform3fv(U('uFaceC[0]'), packed.faceC);
+    gl.uniform3fv(U('uFaceU[0]'), packed.faceU);
+    gl.uniform3fv(U('uFaceW[0]'), packed.faceW);
     gl.uniform1f(U('uSpan'), packed.span);
     gl.uniform1i(U('uRodCount'), packed.rodCount);
     gl.uniform3fv(U('uRodA[0]'), packed.rodA);
@@ -589,19 +628,49 @@ export function ExploreWindow({
     // the JS-side walk transport over the room's OWN faces: a portal applies
     // its deck transform (the same isometry law); a WALL stops the eye AT the
     // room's edge — the manifold ends there, the person never escapes
-    const transportWalk = (): void => {
+    const transportWalk = (prevEye: Vec3): void => {
+      let prev: Vec3 = prevEye;
       for (let guard = 0; guard < 8; guard += 1) {
         let exited = -1;
         for (let f = 0; f < cellSurface.faces.length; f += 1) {
           const face = cellSurface.faces[f];
           const s = eye[0] * face.n[0] + eye[1] * face.n[1] + eye[2] * face.n[2] - face.d;
-          if (s > 0) { exited = f; break; }
+          if (s > 0) {
+            // INTERIOR TRANSPORT (2026-08-21): a BOUNDED face (the developed
+            // cone room's seam) fires only on a genuine CROSSING — the
+            // segment walked this frame pierces the plane (before ≤ 0 < after)
+            // AND the pierce point lies inside the seam's quad. A point-only
+            // test is not enough: the seam plane cuts through distant
+            // material, and an eye deep past it can still PROJECT into the
+            // quad (measured: the probe's circuit fired 60° early on exactly
+            // that). Unbounded faces keep the convex-cell law byte-identically.
+            if (face.bounds) {
+              const sPrev = prev[0] * face.n[0] + prev[1] * face.n[1] + prev[2] * face.n[2] - face.d;
+              if (sPrev > 0) continue; // no crossing this frame — material on the far side
+              const t = sPrev / (sPrev - s);
+              const hit: Vec3 = [
+                prev[0] + (eye[0] - prev[0]) * t,
+                prev[1] + (eye[1] - prev[1]) * t,
+                prev[2] + (eye[2] - prev[2]) * t,
+              ];
+              const q: Vec3 = [hit[0] - face.bounds.c[0], hit[1] - face.bounds.c[1], hit[2] - face.bounds.c[2]];
+              const u = face.bounds.u;
+              const w = face.bounds.w;
+              const du = q[0] * u[0] + q[1] * u[1] + q[2] * u[2];
+              const dw = q[0] * w[0] + q[1] * w[1] + q[2] * w[2];
+              if (Math.abs(du) > u[0] * u[0] + u[1] * u[1] + u[2] * u[2]) continue;
+              if (Math.abs(dw) > w[0] * w[0] + w[1] * w[1] + w[2] * w[2]) continue;
+            }
+            exited = f;
+            break;
+          }
         }
         if (exited < 0) break;
         const face = cellSurface.faces[exited];
         if (face.wall || !face.g) {
           const s = eye[0] * face.n[0] + eye[1] * face.n[1] + eye[2] * face.n[2] - face.d;
           eye = [eye[0] - face.n[0] * (s + 1e-4), eye[1] - face.n[1] * (s + 1e-4), eye[2] - face.n[2] * (s + 1e-4)];
+          prev = eye;
           continue;
         }
         eye = applyM(face.g, eye);
@@ -611,6 +680,9 @@ export function ExploreWindow({
         deckF = applyRot(face.g, deckF);
         deckR = applyRot(face.g, deckR);
         deckU = applyRot(face.g, deckU);
+        // the next guard iteration's segment starts at the LANDED point —
+        // with prev == eye a bounded face cannot re-fire without a real move
+        prev = eye;
         seam.doors += 1;
         seam.frameHanded *= det3of(face.g) < 0 ? -1 : 1;
       }
@@ -709,8 +781,9 @@ export function ExploreWindow({
         } else if (mode === 'advance' && advancing) {
           // close the walk's integral at the up's true time and transport
           // NOW — a starved RAF may not tick for seconds
+          const before: Vec3 = [eye[0], eye[1], eye[2]];
           advanceBy(ev.timeStamp - advClock);
-          transportWalk();
+          transportWalk(before);
         }
       }
       pressed = false;
@@ -733,11 +806,12 @@ export function ExploreWindow({
       // hold measured 0.036 units. The transport while-loop absorbs
       // multi-door steps; the up handler closes the integral when no frame
       // lands inside the hold at all.
+      const beforeAdvance: Vec3 = [eye[0], eye[1], eye[2]];
       if (advancing) {
         advanceBy(now - advClock);
         advClock = Math.max(advClock, now); // a RAF stamp may predate the timer's engage — never rewind the integrator
       }
-      transportWalk();
+      transportWalk(beforeAdvance);
       const still = (now - lastMove) / 1000;
       const settle = Math.max(0, Math.min(1, (still - 0.12) / 0.45));
       const w = canvas.clientWidth;

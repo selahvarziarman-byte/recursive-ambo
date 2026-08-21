@@ -1361,6 +1361,13 @@ export interface ApertureCellFace {
   d: number; // plane offset: dot(p, n) = d
   wall: boolean; // true = the person's boundary — the room's edge, never an escape
   g: DeckTransform | null; // portal: exiting through this face applies g (null on walls)
+  // INTERIOR TRANSPORT (mothership 2026-08-21): a BOUNDED face fires only
+  // where its actual quad is — |dot(p−c,u)| ≤ ‖u‖² and |dot(p−c,w)| ≤ ‖w‖².
+  // Forced by non-convexity: the developed cone room's seam planes cut
+  // through material far from the seam itself, and a plane-only test would
+  // transport an eye standing legitimately inside another wedge. Absent =
+  // the plane is the whole story (every convex-cell face, byte-identical).
+  bounds?: { c: V3; u: V3; w: V3 };
 }
 
 export interface ApertureCellRod {
@@ -1391,6 +1398,234 @@ const shiftDeckTransform = (g: DeckTransform, c: V3): DeckTransform => {
   return [...R, Rc[0] + t[0] - c[0], Rc[1] + t[1] - c[1], Rc[2] + t[2] - c[2]];
 };
 
+// ---------------------------------------------------------------------------
+// INTERIOR TRANSPORT (mothership 2026-08-21) — THE DEVELOPED CONE ROOM.
+// The measured fact that forced this (instruments/interior_transport_probe):
+// a thicken product's STORED embedding smears a cone pillar's angle across
+// the full 2π (the fan: owned wedges Σ=300° but embedded wedges Σ=360°, the
+// distortion INSIDE cells c0/c4), so every interior shared wall fits the
+// identity and no per-wall transform on that embedding can carry the
+// deficit. The honest room is the DEVELOPMENT: D6's own law says the
+// intrinsic product is the OWNED stamps' (dihedral record ≡ base corner
+// angle; "embedded dihedrals tile 2π while intrinsic stamps sum to the cone
+// angle") — so the walk-room is rebuilt from the records: the base fan
+// unrolled flat around the pillar at its TRUE wedge angles (Σ = the cone
+// angle < 2π ⇒ injective, with a void wedge), lifted ⊥ by the pillar's own
+// fiber, and the ONE cycle-closing wall becomes a SEAM PORTAL PAIR carrying
+// the holonomy (rotation about the pillar by ∓ the material span — det +1,
+// LAW 20: the mark is the room coming home EARLY, counted in doors; no felt
+// rotation is produced anywhere). Interior walls between consecutively-laid
+// wedges coincide BY CONSTRUCTION — genuinely spanned, never emitted:
+// not-a-wall and, at the seam, not-nothing.
+// Every precondition is a LIVE GUARD (the null falls back to the union
+// path): >1 cell · every two-owner face shares one pillar vertex pair ·
+// the cells form one cycle · every cell owns the pillar dihedral record ·
+// Σ(owned) < 2π − ε. A flat product (Σ ≈ 2π: the charts genuinely
+// coincide) keeps the union path byte-identically — the old comment's
+// precondition, finally WRITTEN as code.
+const rotZAbout = (theta: number, axisXY: [number, number]): DeckTransform => {
+  const cs = Math.cos(theta);
+  const sn = Math.sin(theta);
+  // linear part rotZ(theta); translation fixes the vertical line through axisXY
+  const tx = axisXY[0] - (cs * axisXY[0] - sn * axisXY[1]);
+  const ty = axisXY[1] - (sn * axisXY[0] + cs * axisXY[1]);
+  return [cs, -sn, 0, sn, cs, 0, 0, 0, 1, tx, ty, 0];
+};
+
+function developedConeSurface(
+  domain: DomainModel | FoldedDomain,
+  rodFor: (srcEdgeId: string | null, a: V3, b: V3) => ApertureCellRod,
+): ApertureCellSurface | null {
+  const shape = domain.shape;
+  if (shape.cells.length < 2) return null;
+  // interior faces: owned by exactly two cells
+  const ownersOf = new Map<string, number[]>();
+  shape.cells.forEach((cell, ci) => {
+    for (const fid of cell.faceIds) {
+      const list = ownersOf.get(fid) ?? [];
+      list.push(ci);
+      ownersOf.set(fid, list);
+    }
+  });
+  const interior = [...ownersOf.entries()].filter(([, owners]) => owners.length === 2);
+  if (interior.length !== shape.cells.length) return null; // one cycle needs exactly N walls
+  // the PILLAR: the vertex pair every interior wall contains
+  const faceById = new Map(shape.faces.map((f) => [f.id, f]));
+  let common: Set<string> | null = null;
+  for (const [fid] of interior) {
+    const face = faceById.get(fid);
+    if (!face || face.vertexIds.length !== 4) return null; // thicken walls are quads
+    const ids = new Set(face.vertexIds);
+    if (common === null) {
+      common = ids;
+    } else {
+      const prev: Set<string> = common;
+      common = new Set([...prev].filter((v) => ids.has(v)));
+    }
+  }
+  if (!common || common.size !== 2) return null;
+  const positions = new Map(Object.values(shape.vertices).map((v) => [v.id, v.position as V3]));
+  const [pA, pB] = [...common];
+  // bottom = the @0 copy when the suffix convention holds; else order is harmless
+  const [pillar0, pillar1] = pA.endsWith('@1') && pB.endsWith('@0') ? [pB, pA] : [pA, pB];
+  const P0 = positions.get(pillar0);
+  const P1 = positions.get(pillar1);
+  if (!P0 || !P1) return null;
+  const H = Math.hypot(P1[0] - P0[0], P1[1] - P0[1], P1[2] - P0[2]);
+  if (!(H > 1e-6)) return null;
+  // the pillar's dihedral-record key — matched by TAIL, not equality: the
+  // shelf round-trip re-roots every id but NOT the dihedralAngles blob's
+  // keys (GAP2C's data-blob class — MEASURED: a shelf-placed band's vertex
+  // ids carry the new `snapshot:<src>:` prefix while its dihedral keys keep
+  // their mint-time ids), so either side may carry prefixes the other lacks.
+  // The match demands EXACTLY ONE hit per cell — an ambiguous or absent
+  // record falls back to the union path rather than developing a wrong room.
+  const pillarStem = pillar0.replace(/@0$/, '');
+  const keyMatchesPillar = (k: string): boolean => {
+    if (!k.endsWith('@I')) return false;
+    const core = k.slice(0, -2);
+    return pillarStem.endsWith(core) || core.endsWith(pillarStem);
+  };
+  // adjacency cycle over cells via the interior walls
+  const wallsOfCell = new Map<number, string[]>();
+  for (const [fid, owners] of interior)
+    for (const ci of owners) wallsOfCell.set(ci, [...(wallsOfCell.get(ci) ?? []), fid]);
+  if ([...wallsOfCell.values()].some((w) => w.length !== 2)) return null;
+  const cycleCells: number[] = [0];
+  const cycleWalls: string[] = [];
+  let enteredBy: string | null = null;
+  for (let step = 0; step < shape.cells.length; step += 1) {
+    const here = cycleCells[cycleCells.length - 1];
+    const exitWall = (wallsOfCell.get(here) ?? []).find((w) => w !== enteredBy);
+    if (!exitWall) return null;
+    cycleWalls.push(exitWall);
+    const owners = ownersOf.get(exitWall) ?? [];
+    const next = owners.find((ci) => ci !== here);
+    if (next === undefined) return null;
+    if (step === shape.cells.length - 1) {
+      if (next !== cycleCells[0]) return null; // must close
+    } else {
+      if (cycleCells.includes(next)) return null; // one simple cycle only
+      cycleCells.push(next);
+    }
+    enteredBy = exitWall;
+  }
+  // owned wedge per cell (the D6 record) + the base radial data per wall
+  const wedgeOf: number[] = [];
+  for (const ci of cycleCells) {
+    const dm = shape.cells[ci].dihedralAngles ?? {};
+    const hits = Object.keys(dm).filter(keyMatchesPillar);
+    if (hits.length !== 1) return null;
+    wedgeOf.push(dm[hits[0]]);
+  }
+  const total = wedgeOf.reduce((a, b) => a + b, 0);
+  if (!(total > 1e-6) || total > 2 * Math.PI - 1e-3) return null; // flat/over ⇒ union path
+  // wall i sits BETWEEN cycleCells[i-1] and cycleCells[i]; wall 0 (the seam)
+  // between the last and first. Its base rim vertex: the wall's @0 corner
+  // that is not the pillar.
+  const rimBaseOfWall = (fid: string): string | null => {
+    const face = faceById.get(fid);
+    if (!face) return null;
+    const rims = face.vertexIds.filter((v) => v !== pillar0 && v !== pillar1);
+    if (rims.length !== 2) return null;
+    return rims.find((v) => v.endsWith('@0')) ?? rims[0];
+  };
+  // developed layout: wall angles cumulative from the seam at Θ0; the void
+  // bisector is aimed OPPOSITE the walk's entry direction (the entry eye is
+  // ExploreWindow's [-0.35,-0.55,·] in centered coords) so the person starts
+  // inside material, away from the seam.
+  const entryDir = Math.atan2(-0.55, -0.35);
+  const voidBisector = entryDir + Math.PI;
+  const theta0 = voidBisector + (2 * Math.PI - total) / 2 - 2 * Math.PI; // seam A angle
+  const wallAngle: number[] = [theta0];
+  for (let i = 0; i < wedgeOf.length; i += 1) wallAngle.push(wallAngle[i] + wedgeOf[i]);
+  // developed base points: pillar at origin; rim of wall i at its angle
+  const seamWall = cycleWalls[cycleWalls.length - 1]; // closes last→first: the seam
+  const orderedWalls = [seamWall, ...cycleWalls.slice(0, cycleWalls.length - 1)];
+  const rimLen: number[] = [];
+  const rimSrc: string[] = [];
+  for (const fid of orderedWalls) {
+    const rim = rimBaseOfWall(fid);
+    const rp = rim ? positions.get(rim) : null;
+    if (!rim || !rp) return null;
+    rimSrc.push(rim);
+    rimLen.push(Math.hypot(rp[0] - P0[0], rp[1] - P0[1], rp[2] - P0[2]));
+  }
+  rimSrc.push(rimSrc[0]); // the far seam copy shares the SOURCE rim vertex
+  rimLen.push(rimLen[0]);
+  const rimXY: [number, number][] = wallAngle.map((th, i) => [Math.cos(th) * rimLen[i], Math.sin(th) * rimLen[i]]);
+  // recenter on the developed centroid (bottom+top rims + pillar ends)
+  const pts: V3[] = [];
+  for (const z of [0, H]) {
+    pts.push([0, 0, z]);
+    for (const [x, y] of rimXY) pts.push([x, y, z]);
+  }
+  const c: V3 = [0, 0, 0];
+  for (const p of pts) {
+    c[0] += p[0] / pts.length;
+    c[1] += p[1] / pts.length;
+    c[2] += p[2] / pts.length;
+  }
+  const R = (p: V3): V3 => [p[0] - c[0], p[1] - c[1], p[2] - c[2]];
+  const pillarXY: [number, number] = [-c[0], -c[1]];
+  const faces: ApertureCellFace[] = [];
+  faces.push({ n: [0, 0, -1], d: c[2], wall: true, g: null });
+  faces.push({ n: [0, 0, 1], d: H - c[2], wall: true, g: null });
+  for (let i = 0; i < wedgeOf.length; i += 1) {
+    const a = rimXY[i];
+    const b = rimXY[i + 1];
+    const chord = [b[0] - a[0], b[1] - a[1]];
+    let n: V3 = [chord[1], -chord[0], 0];
+    const nn = Math.hypot(n[0], n[1]);
+    n = [n[0] / nn, n[1] / nn, 0];
+    const mid = [(a[0] + b[0]) / 2 - 0, (a[1] + b[1]) / 2 - 0];
+    if (mid[0] * n[0] + mid[1] * n[1] < 0) n = [-n[0], -n[1], 0]; // outward from the pillar
+    const d = (a[0] - c[0]) * n[0] + (a[1] - c[1]) * n[1];
+    faces.push({ n, d, wall: true, g: null });
+  }
+  // the SEAM PORTAL PAIR — bounded quads; g = rotation about the pillar by
+  // ± the material span (the holonomy; det +1: a cone is never a mirror)
+  const seamFace = (angle: number, len: number, outwardSign: 1 | -1, gTheta: number): ApertureCellFace => {
+    const ur: V3 = [Math.cos(angle), Math.sin(angle), 0];
+    const n: V3 = outwardSign > 0 ? [-ur[1], ur[0], 0] : [ur[1], -ur[0], 0];
+    const d = pillarXY[0] * n[0] + pillarXY[1] * n[1];
+    const center: V3 = [pillarXY[0] + (ur[0] * len) / 2, pillarXY[1] + (ur[1] * len) / 2, H / 2 - c[2]];
+    return {
+      n,
+      d,
+      wall: false,
+      g: rotZAbout(gTheta, pillarXY),
+      bounds: { c: center, u: [(ur[0] * len) / 2, (ur[1] * len) / 2, 0], w: [0, 0, H / 2] },
+    };
+  };
+  faces.push(seamFace(wallAngle[0], rimLen[0], -1, total)); // exit at Θ0 → reappear at the far end
+  faces.push(seamFace(wallAngle[wallAngle.length - 1], rimLen[rimLen.length - 1], 1, -total));
+  // rods: the developed edges, classes read through the SOURCE edges
+  const edgeByPair = new Map<string, string>();
+  for (const e of shape.edges) edgeByPair.set([...e.vertexIds].sort().join('~'), e.id);
+  const srcEdge = (va: string, vb: string): string | null => edgeByPair.get([va, vb].sort().join('~')) ?? null;
+  const top = (v: string): string => v.replace(/@0$/, '@1');
+  const rods: ApertureCellRod[] = [];
+  rods.push(rodFor(srcEdge(pillar0, pillar1), R([0, 0, 0]), R([0, 0, H])));
+  for (let i = 0; i < rimXY.length; i += 1) {
+    const [x, y] = rimXY[i];
+    rods.push(rodFor(srcEdge(rimSrc[i], pillar0), R([x, y, 0]), R([0, 0, 0])));
+    rods.push(rodFor(srcEdge(top(rimSrc[i]), pillar1), R([x, y, H]), R([0, 0, H])));
+    rods.push(rodFor(srcEdge(rimSrc[i], top(rimSrc[i])), R([x, y, 0]), R([x, y, H])));
+    if (i < rimXY.length - 1) {
+      const [x2, y2] = rimXY[i + 1];
+      rods.push(rodFor(srcEdge(rimSrc[i], rimSrc[i + 1]), R([x, y, 0]), R([x2, y2, 0])));
+      rods.push(rodFor(srcEdge(top(rimSrc[i]), top(rimSrc[i + 1])), R([x, y, H]), R([x2, y2, H])));
+    }
+  }
+  let span = 0;
+  for (const axis of [0, 1, 2] as const) {
+    const vals = pts.map((p) => p[axis]);
+    span = Math.max(span, Math.max(...vals) - Math.min(...vals));
+  }
+  return { faces, rods, span, wallCount: faces.filter((f) => f.wall).length };
+}
+
 export function readCellSurface(
   domain: DomainModel | FoldedDomain,
   coneEdgesDeclared: boolean,
@@ -1399,41 +1634,10 @@ export function readCellSurface(
   const geometry = readSeedGeometry(shape);
   const c = geometry.cellCentroid;
   const pairings = 'folded' in domain ? domain.pairings : domain.complex.pairings;
-  // THE MULTI-CELL CUT: the room's walk-region is the UNION of the cells —
-  // a face owned by TWO cells is INTERIOR (the region spans it; it is not an
-  // exit and never enters the surface); the boundary faces (one owner) carry
-  // the portal/wall verdict exactly as before. On an embedded product the
-  // charts coincide, so interior pairings fit identity — geometrically true.
-  const interiorFaceIds = new Set<string>();
-  if (shape.cells.length > 1) {
-    const ownersCount = new Map<string, number>();
-    for (const cell of shape.cells)
-      for (const faceId of cell.faceIds) ownersCount.set(faceId, (ownersCount.get(faceId) ?? 0) + 1);
-    for (const [faceId, count] of ownersCount) if (count === 2) interiorFaceIds.add(faceId);
-  }
-  const stripId = (id: string): string => id.replace(/^c\d+:/, '');
-  const deck = deckOf(shape, surfacePairingsOf(shape, pairings));
   const gate = 'folded' in domain ? domain.gate : domain.tower.gate;
   const classOf = 'folded' in domain ? null : domain.complex.edgeClassOf;
-  const near = (u: V3, w: V3): boolean => Math.hypot(u[0] - w[0], u[1] - w[1], u[2] - w[2]) < 1e-5;
-  // per surface FACE: portal (its deck transform, recentered) or wall. On a
-  // convex cell every face owns a unique OUTWARD normal, so the normal alone
-  // identifies the deck entry (nA/nB are the pairing's own outward normals).
-  const faces: ApertureCellFace[] = geometry.seed.faces
-    .filter((face) => !interiorFaceIds.has(stripId(face.id)))
-    .map((face) => {
-      const fc = sub(geometry.faceCentroid(face.id), c);
-      const n = norm(fc);
-      const d = dot(fc, n);
-      for (const entry of deck) {
-        if (near(entry.nA, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.g, c) };
-        if (near(entry.nB, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.gi, c) };
-      }
-      return { n, d, wall: true, g: null };
-    });
-  // per seed EDGE: the rod with its class k + palette (readRodData's law,
-  // generalized — positions direct from the seed, no instrument-corner match).
-  // A multi-cell complex is PREFIXED — resolve the shape's edge id through
+  // the rod-class law, hoisted so both room shapes read the ONE law:
+  // a multi-cell complex is PREFIXED — resolve the shape's edge id through
   // any cell's copy (the shared-wall unions make every copy one class).
   const positions = new Map(Object.values(shape.vertices).map((v) => [v.id, v.position as V3]));
   const complexEdgeId = (edgeId: string): string => {
@@ -1452,12 +1656,8 @@ export function readCellSurface(
     return link ? { root: link.edgeClass, k: link.memberEdgeIds.length } : null;
   };
   const paletteOf = new Map<string, number>();
-  const rods: ApertureCellRod[] = [];
-  for (const edge of shape.edges) {
-    const qa = positions.get(edge.vertexIds[0]);
-    const qb = positions.get(edge.vertexIds[1]);
-    if (!qa || !qb) continue;
-    const link = linkOfEdge(edge.id);
+  const rodFor = (srcEdgeId: string | null, a: V3, b: V3): ApertureCellRod => {
+    const link = srcEdgeId ? linkOfEdge(srcEdgeId) : null;
     const k = link ? link.k : 1;
     let palette = 0;
     if (link) {
@@ -1465,7 +1665,60 @@ export function readCellSurface(
       palette = seen ?? paletteOf.size % 5;
       if (seen === undefined) paletteOf.set(link.root, palette);
     }
-    rods.push({ a: sub(qa, c), b: sub(qb, c), k, cls: palette, heavy: coneEdgesDeclared && k !== 4 });
+    return { a, b, k, cls: palette, heavy: coneEdgesDeclared && k !== 4 };
+  };
+  // INTERIOR TRANSPORT (mothership 2026-08-21): a multi-cell room whose
+  // OWNED pillar wedges sum BELOW 2π is a cone — its stored embedding smears
+  // the deficit across the cells (measured: the fan's Σ=300° owned reads
+  // Σ=360° embedded), so the walk-room is DEVELOPED from the records
+  // instead, and the cycle-closing wall becomes the seam portal pair
+  // carrying the holonomy. The union path below remains for everything the
+  // developed guard measures itself out of.
+  if (shape.cells.length > 1) {
+    const developed = developedConeSurface(domain, rodFor);
+    if (developed) return developed;
+  }
+  // THE MULTI-CELL CUT: the room's walk-region is the UNION of the cells —
+  // a face owned by TWO cells is INTERIOR (the region spans it; it is not an
+  // exit and never enters the surface); the boundary faces (one owner) carry
+  // the portal/wall verdict exactly as before. On an embedded product the
+  // charts coincide, so interior pairings fit identity — geometrically true
+  // ⛔ AND NOW GUARDED (the F.0-era comment stated this precondition without
+  // writing it): the developed path above measures Σ(owned wedges) and takes
+  // every under-2π cone; only genuinely-flat products (Σ ≈ 2π — the charts
+  // really do coincide) reach this union path.
+  const interiorFaceIds = new Set<string>();
+  {
+    const ownersCount = new Map<string, number>();
+    for (const cell of shape.cells)
+      for (const faceId of cell.faceIds) ownersCount.set(faceId, (ownersCount.get(faceId) ?? 0) + 1);
+    for (const [faceId, count] of ownersCount) if (count === 2) interiorFaceIds.add(faceId);
+  }
+  const stripId = (id: string): string => id.replace(/^c\d+:/, '');
+  const deck = deckOf(shape, surfacePairingsOf(shape, pairings));
+  const near = (u: V3, w: V3): boolean => Math.hypot(u[0] - w[0], u[1] - w[1], u[2] - w[2]) < 1e-5;
+  // per surface FACE: portal (its deck transform, recentered) or wall. On a
+  // convex cell every face owns a unique OUTWARD normal, so the normal alone
+  // identifies the deck entry (nA/nB are the pairing's own outward normals).
+  const faces: ApertureCellFace[] = geometry.seed.faces
+    .filter((face) => !interiorFaceIds.has(stripId(face.id)))
+    .map((face) => {
+      const fc = sub(geometry.faceCentroid(face.id), c);
+      const n = norm(fc);
+      const d = dot(fc, n);
+      for (const entry of deck) {
+        if (near(entry.nA, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.g, c) };
+        if (near(entry.nB, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.gi, c) };
+      }
+      return { n, d, wall: true, g: null };
+    });
+  // per seed EDGE: the rod through the hoisted class law (one law, both rooms)
+  const rods: ApertureCellRod[] = [];
+  for (const edge of shape.edges) {
+    const qa = positions.get(edge.vertexIds[0]);
+    const qb = positions.get(edge.vertexIds[1]);
+    if (!qa || !qb) continue;
+    rods.push(rodFor(edge.id, sub(qa, c), sub(qb, c)));
   }
   const span = Math.max(
     geometry.bboxHi[0] - geometry.bboxLo[0],
