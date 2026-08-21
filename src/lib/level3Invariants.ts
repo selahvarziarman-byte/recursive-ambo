@@ -19,7 +19,19 @@ import { computeIntegerHomology, type IntegerHomology } from './level3Homology';
 export interface Level3InvariantTower {
   chi: number; // Build 1's Tier-1 value, carried
   sound: boolean; // the S² gate's verdict (Build 1)
-  chiConsistent: boolean | null; // sound ⇒ (χ === 0); unsound ⇒ null (n-a — no closed-manifold claim)
+  // THE CARD UNION (B-2026-08-22-C, sanctioned frozen edit): the ONE
+  // closed-detector — STRUCTURAL (the gate's own boundary census: null ⇔ no
+  // unpaired/wall face), never χ (χ cannot discriminate the classes — a
+  // bounded solid torus is also χ=0; anyone tempted to widen the χ check is
+  // refuted here in advance). One producer; the χ gate below, the card's χ
+  // rendering fork, and the subtitle fork all read THIS field.
+  isClosed: boolean;
+  // sound ∧ closed ⇒ (χ === 0); otherwise null — a bounded room is a SOUND
+  // object the closed-world check does not fit (χ = χ(∂M)/2: the fan's χ=1
+  // is CORRECT), and an unsound complex is not an object the check can be
+  // asked of. The 07-18 seal made an unpaired face legitimate; this
+  // predicate stopped assuming "sound" implied "closed" two months late.
+  chiConsistent: boolean | null;
   w1: Level3W1Reading;
   orientable: boolean;
   homology: IntegerHomology;
@@ -79,10 +91,12 @@ function towerFromGate(complex: Level3Complex, gate: Level3SoundnessReport): Lev
     oriented.d2,
     oriented.d3,
   );
+  const isClosed = gate.boundary === null;
   return {
     chi: complex.chi,
     sound: gate.sound,
-    chiConsistent: gate.sound ? complex.chi === 0 : null,
+    isClosed,
+    chiConsistent: gate.sound && isClosed ? complex.chi === 0 : null,
     w1,
     orientable: w1.orientable,
     homology,

@@ -52,7 +52,7 @@ src/lib/globalW1.ts                     3209127d540d80c7a0734c6989f745423fc1cb3c
 src/lib/ids.ts                          3de67f4590eb2ce56a51a061bb8e05047b77b0e846fd45d11c9c171e9f22703e
 src/lib/incidenceTraceRegistry.ts       f052da294632da927f28c385abd63cda5c134d8431e6dc05a0b94467cc0dccf0
 src/lib/level3Homology.ts               7806c9cfb54f5ec7fa1e07350a68bfe4d7d5b5c7a21a281272ae759d0468ffda
-src/lib/level3Invariants.ts             dd76891c23d1c6395a7a5b63cc51269dd782ab4eecf6acfc3907822b273de84d
+src/lib/level3Invariants.ts             174ddb65b235fc5687fd2c36012ec6a144f36dcd7a8b72c51c944af7b1bb825a
 src/lib/level3LinkExtractor.ts          f98139f74f194f3cb558de16e2357c815d0a827dad11d5f86324ce81dec859a1
 src/lib/level3Orientation.ts            2ac4b44395ea8ac438d540a52f87c94412c74cb77b8dcd4b6451511dfafe44ae
 src/lib/level3SoundnessGate.ts          c4f29765a005ea0d5d97ca2bb5e788259acec6ddf01032e9558f1af46fbd645b
