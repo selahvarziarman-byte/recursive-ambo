@@ -111,15 +111,27 @@ check('§1 (E1) ★★ THE TORUS MAP READS THE TRACE: ONE concept row, IDENTIFIE
     torusReading.conceptRows[0].sourceIds.length === 4 &&
     torusReading.conceptRows[0].rootIds.length === 4 &&
     rowsAgreeWithSubstrate(torusReading, torus.shape));
-// THE IDENTITY LAW (SEAL_THE_LIFT_IDENTITY_AND_GRAIN — recut): endpoints are
-// named by their REAL packet labels now (the invoked square's corners are
-// minted v0..v3 — measured), never positional letters. The expected names are
-// recomputed INDEPENDENTLY from the parent's own packets.
+// THE IDENTITY LAW (B-2026-08-23-C recut — the LAST producer-stop landed):
+// an invoked corner's packet is TRUE ABSENCE now, so an endpoint reads
+// 'unnamed' + the RULED disambiguating index (a positional letter survives
+// ONLY as an appended handle over duplicate display names, assigned in
+// sorted-id order over the ruled alphabet). Recomputed INDEPENDENTLY here
+// from the parent's own packets + the rule — never from the model's output.
+const WITNESS_ROOT_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+const expectedRootName = (parentShape, id) => {
+  const label = parentShape.vertices[id]?.data?.label?.trim() ?? '';
+  if (label.length > 0 && label !== id) return label;
+  const base = parentShape.vertices[id] ? 'unnamed' : (id.split(':').pop() ?? id);
+  const displayOf = (vid) => {
+    const l = parentShape.vertices[vid]?.data?.label?.trim() ?? '';
+    return l.length > 0 && l !== vid ? l : 'unnamed';
+  };
+  const dupes = Object.keys(parentShape.vertices).sort().filter((vid) => displayOf(vid) === base);
+  if (dupes.length <= 1) return base;
+  return `${base}·${WITNESS_ROOT_LETTERS[dupes.indexOf(id)]}`;
+};
 const packetEndpointName = (parentShape, ids) => {
-  const parts = ids.map((id) => {
-    const label = parentShape.vertices[id]?.data?.label?.trim() ?? '';
-    return label.length > 0 && label !== id ? label : (id.split(':').pop() ?? id);
-  });
+  const parts = ids.map((id) => expectedRootName(parentShape, id));
   return parts.every((p) => p.length === 1) ? parts.join('') : parts.join('·');
 };
 check('§1 (E1) the relations read the RECORDED correspondence (measured substrate: fresh ids + sourceVertexIds, the partner ABSORBED): 2 surviving relation rows each NAMED by its source edge\'s endpoint PACKETS (v0·v1 style — the real minted names, recomputed independently), 2 ABSORBED partners named likewise, and the words count 4→1 · 4→2 · 2 absorbed',
@@ -820,27 +832,28 @@ const wrapCarrier = (shapeX, parentX, title) => ({
   render: { mode: 'bodiless', reason: 'witness carrier', shape: shapeX },
 });
 const seedWalk = buildArgumentReading(wrapCarrier(seedTetra, null, 'seed'));
-check('§11 (WALK) ★ SEED + INVOKE: the seed tetrahedron\'s card reads its 4 corners by their REAL packet names A·B·C·D (all born, their own roots); the invoked square (§3\'s leg) reads v0..v3 — both judged by the independent packet comparator',
+check('§11 (WALK) ★ SEED + INVOKE (B-2026-08-23-C recut): the seed tetrahedron\'s card reads its 4 corners by their REAL packet names A·B·C·D (all born, their own roots); the invoked square reads its BORN corners as TRUE ABSENCE — the packets MEASURE empty (the producer-stop landed; v0 is dead as a label) and the card shows unnamed + the ruled handle (unnamed·A..·D) — both judged by the independent packet comparator',
   seedWalk.op === 'seed' &&
     ['A', 'B', 'C', 'D'].every((name) => seedWalk.conceptRows.some((r) => r.label === name)) &&
     seedWalk.conceptRows.every((r) => r.typing === 'born') &&
     packetJudge(seedWalk, seedTetra) &&
-    ['v0', 'v1', 'v2', 'v3'].every((name) => seedReading.conceptRows.some((r) => r.label === name)) &&
+    Object.values(sqHost.shape.vertices).every((v) => ((v.data?.label ?? '').trim()) === '') &&
+    ['A', 'B', 'C', 'D'].every((L) => seedReading.conceptRows.some((r) => r.label === `unnamed·${L}`)) &&
     packetJudge(seedReading, sqHost.shape));
 const cutApplied = applyPlaygroundOperationTo('cut', triHost.shape, null, 611, 8, [], triHost.shape.faces[0].id);
 const cutWalk = cutApplied.ok ? buildArgumentReading(cutApplied.born) : null;
 const collapseApplied = applyPlaygroundOperationTo('collapse-sphere', sqHost.shape, null, 612, 8, [], null);
 const collapseWalk = collapseApplied.ok ? buildArgumentReading(collapseApplied.born) : null;
 note(`cut: ${cutWalk ? cutWalk.conceptRows.map((r) => `${r.label}(${r.typing})`).join(' ') : cutApplied.reason} · collapse: ${collapseWalk ? collapseWalk.conceptRows.map((r) => `${r.label}(${r.typing})`).join(' ') : collapseApplied.reason}`);
-check('§11 (WALK) ★ GLUE + FLIP-GLUE + CUT + COLLAPSE: the torus\'s identified class reads THROUGH its members\' real names (v0·v1·v2·v3 — the id-as-label mint has no independent name, so the members\' packets speak); the klein likewise judged; the cut form keeps its corners\' real names; the collapse-born class reads through its members — every card packet-judged',
-  torusReading.conceptRows[0].label === 'v0·v1·v2·v3' &&
+check('§11 (WALK) ★ GLUE + FLIP-GLUE + CUT + COLLAPSE (B-2026-08-23-C recut): the torus\'s identified class reads THROUGH its members — four TRUE ABSENCES, each carried by the ruled handle (unnamed·A·unnamed·B·unnamed·C·unnamed·D — the id-copy laundering is DEAD); the klein likewise judged; the cut form keeps its corners\' honest absences; the collapse-born class reads through its members — every card packet-judged',
+  torusReading.conceptRows[0].label === 'unnamed·A·unnamed·B·unnamed·C·unnamed·D' &&
     packetJudge(torusReading, torus.shape) &&
     packetJudge(kleinReading, kleinApplied.born.shape) &&
     cutWalk !== null &&
-    ['v0', 'v1', 'v2'].every((name) => cutWalk.conceptRows.some((r) => r.label === name)) &&
+    ['A', 'B', 'C'].every((L) => cutWalk.conceptRows.some((r) => r.label === `unnamed·${L}`)) &&
     packetJudge(cutWalk, cutApplied.born.shape) &&
     collapseWalk !== null &&
-    collapseWalk.conceptRows.every((r) => r.label.split('·').every((part) => /^v\d$|^[A-Z]\d*$/.test(part))) &&
+    collapseWalk.conceptRows.every((r) => r.label === 'unnamed·A·unnamed·B·unnamed·C·unnamed·D') &&
     packetJudge(collapseWalk, collapseApplied.born.shape));
 const bandLift = thicken(liftAC.shape);
 const bandWalk = buildArgumentReading(wrapCarrier(bandLift.shape, liftAC.shape, 'band'));
@@ -886,6 +899,29 @@ check('§11 (E-DERIVED) ★ THE SPLIT IS THE SUBSTRATE\'S, BOTH WAYS: the ambo m
     persistJudge(torusReading, torus.shape) === true &&
     torusReading.conceptRows[0].typing === 'identified' &&
     persistJudge(forcedIdentified, amboD) === false);
+// D16 (B-2026-08-23-C §4) + TASK D (§5): the card takes the door's resolver
+// ENTIRE — with the view's reach handed in, a ×I copy reads its source's
+// REAL name + the LEVEL MARK (the menu's own strings), every copy distinct
+// BY THE MARK (no ·letter rides any copy); and the FACE register names every
+// face through the composer that exists — never the face id. The resolver
+// here is the witness's own reach over the band's base universes (label
+// positive, never an id-copy) — the same contract the view's resolver keeps.
+const bandResolver = (sourceIds) => {
+  const ref = sourceIds[0];
+  const v = liftAC.shape.vertices[ref] ?? amboD.vertices[ref];
+  const raw = (v?.data?.label ?? '').trim();
+  return raw.length > 0 && raw !== ref ? raw : null;
+};
+const bandWalkD16 = buildArgumentReading(wrapCarrier(bandLift.shape, liftAC.shape, 'band-d16'), bandResolver);
+note(`d16 band: ${bandWalkD16.conceptRows.map((r) => r.label).join(' ')} · faces ${bandWalkD16.faceRows.map((f) => f.label).join(' | ')}`);
+check('§11 (D16+FACES) ★ THE CARD TAKES THE DOOR\'S RESOLVER ENTIRE + THE FACE REGISTER: with the reach handed in the ×I copies read source-name + level mark (A₀/A₁/C₀/C₁/AC₀/AC₁ — reach and mark, the menu\'s strings), ALL DISTINCT by the mark alone (no ·letter on any copy), relation source readings carry NO raw id, and faceRows names every face by composed corners (the ambo card\'s faces read their midpoint compositions) — never a face id',
+  bandWalkD16.conceptRows.every((r) => /^(A|C|AC)[₀₁]$/.test(r.label)) &&
+    new Set(bandWalkD16.conceptRows.map((r) => r.label)).size === bandWalkD16.conceptRows.length &&
+    bandWalkD16.relationRows.every((r) => (r.rootLabels[0] ?? '').length > 0 && !(r.rootLabels[0] ?? '').includes(':')) &&
+    bandWalkD16.faceRows.length === bandLift.shape.faces.length &&
+    bandWalkD16.faceRows.every((f) => f.label.length > 0 && !f.label.includes('face:')) &&
+    amboWalk.faceRows.length === amboD.faces.length &&
+    amboWalk.faceRows.some((f) => /^[A-Z]{1,2}(·[A-Z]{1,2}){2,}$/.test(f.label)));
 const viewSrcNow = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
 check('§11 (VIEW) THE LIFT + THE DERIVED WORD RENDER (source-pinned): the view draws the life-line (`origin.display` + the ", lifted" branch), renders the grain marks (⚠ + `argument.grainMarks`), counts `lifted` in the grouped line, keys the sheet dedup on `shape.id` (the exact predicate the distinct id unblocks), and speaks `— derived` for a persisting mint (never "identified")',
   viewSrcNow.includes('origin.display') &&
@@ -915,18 +951,29 @@ check('§12 (M3) ★ THE DIED READ IS TOTAL + REACHABLE-EMPTY (measured): a CONS
     };
     const diedWalk = buildArgumentReading(pruned);
     const memorial = diedWalk.diedConceptRows;
+    note(`m3 victim=${victim} memorial: ${memorial.map((m) => `${m.id}=${m.label}`).join(' · ') || '(empty)'}`);
     return (
       diedWalk.diedConcepts === memorial.length &&
       memorial.length === 1 &&
       memorial[0].id === victim &&
-      memorial[0].label === 'v2' &&
+      memorial[0].label === 'unnamed' &&
       cutWalk !== null &&
       cutWalk.diedConceptRows.length === 0 &&
       cutWalk.diedConcepts === 0 &&
       coneReading !== null &&
       coneReading.diedConceptRows.length === 0 &&
       coneReading.conceptRows.some((r) => r.typing === 'identified' && r.ownName === null) &&
-      coneReading.conceptRows.some((r) => r.typing === 'survived' && r.ownName !== null)
+      // B-2026-08-23-C recut: the cone's survivor is a BORN-unnamed corner
+      // now (the producer-stop) — its ownName is HONESTLY null, judged
+      // against its own empty packet; the survivor-KEEPS-its-name law is
+      // pinned where a name exists (the seed walk: every corner owned)
+      coneReading.conceptRows.some(
+        (r) =>
+          r.typing === 'survived' &&
+          r.ownName === null &&
+          ((cone.shape.vertices[r.resultId]?.data?.label ?? '').trim() === ''),
+      ) &&
+      seedWalk.conceptRows.every((r) => r.ownName !== null)
     );
   })());
 // §13 THE RING ANCHOR RESOLVER (SEAL_THE_RING_ANCHOR_RESOLVER) — the TOTAL
