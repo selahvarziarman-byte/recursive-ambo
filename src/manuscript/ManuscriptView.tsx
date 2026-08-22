@@ -2926,26 +2926,52 @@ export default function ManuscriptView() {
     }
   }, [apertureVolume, apertureRows, apertureVolumeBase, derivedApertureRowCount, bumpBuiltCount, unbumpBuiltCount, recordBuilt]);
   // D2 — EXIT B: LEAVE BOUNDED (the mothership's spine clause: the fault was
-  // never that the room was bounded — it was that nobody was asked). An
-  // EXPLICIT zero-pair act: the volume becomes the bounded free-rim chamber,
-  // chosen, not defaulted. The zero-pair refusal guards EXIT A only.
+  // never that the room was bounded — it was that nobody was asked).
+  // R1 (B-2026-08-24-B §2, RULED): `leave bounded` CONSUMES the picked pairs
+  // and walls the remainder — the panel's own sentence ("pair the ones you
+  // choose — the rest stand as walls") was already the ruling. The old
+  // hardcoded `[]` assumed a domain is either FULLY GLUED or FULLY OPEN —
+  // true when this exit was written, stale since the 07-18 seal made partial
+  // pairing legitimate; it silently discarded the person's committed pick.
+  // A TOUCHED row now goes through the SAME verdict door the glue exit uses
+  // (its named refusals — incomplete pair, unknown candidate — and the
+  // folded orbifold wall included); untouched rows keep the zero-pair
+  // chamber byte-identical to before (the verdict door itself refuses zero
+  // pairs — that refusal guards the GLUE exit's meaning and stands).
   // ⛔ the button's wording is the designer's (flagged).
   const handleApertureLeaveBounded = useCallback(() => {
     if (!apertureVolume) return;
     try {
       const n = bumpBuiltCount();
-      const domain = buildFormDomain(apertureVolume, [], `built-${n}`, `built 3-manifold ${n}`);
-      // §2B — EXIT B enters the LEDGER too (door 'bounded', rows []): the
-      // page file re-runs this exact door on restore.
+      const touched = apertureRows.some((row) => row.faceA !== null || row.faceB !== null);
+      const verdict = touched
+        ? buildPersonDomainVerdict(apertureVolume, apertureRows, `built-${n}`, `built 3-manifold ${n}`)
+        : ({
+            folded: false as const,
+            domain: buildFormDomain(apertureVolume, [], `built-${n}`, `built 3-manifold ${n}`),
+          });
+      // §2B — EXIT B enters the LEDGER too (door 'bounded', the REAL rows —
+      // R1: the restore replays the same consumed pairs; a pre-R1 record
+      // carries rows [] and restores its all-walls chamber as recorded).
       recordBuilt({
         door: 'bounded',
         key: `built-${n}`,
         title: `built 3-manifold ${n}`,
         seed: apertureVolume,
-        rows: [],
+        rows: apertureRows.map((row) => ({ ...row })),
         baseId: apertureVolumeBase.baseId ?? null,
         baseRefusal: apertureVolumeBase.ambiguity ?? null,
       });
+      if (verdict.folded) {
+        // the folded identification is a verdict here too — consuming the
+        // pairs means consuming their wall (and its subdivide cure), exactly
+        // as the glue exit does; nothing is silently un-consumed
+        setFoldedBodies((cur) => [...cur, verdict.body]);
+        setApertureNotice(verdict.wall);
+        setApertureFoldedRows(apertureRows.map((row) => ({ ...row })));
+        return;
+      }
+      const domain = verdict.domain;
       setBuiltDomains((cur) => [...cur, domain]);
       // D1: the both-exits law — EXIT B carries the base too (or the
       // ambiguity refusal, amendment 1759)
@@ -2962,8 +2988,9 @@ export default function ManuscriptView() {
     } catch (error) {
       unbumpBuiltCount();
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
+      setApertureFoldedRows(null);
     }
-  }, [apertureVolume, apertureVolumeBase, derivedApertureRowCount, bumpBuiltCount, unbumpBuiltCount, recordBuilt]);
+  }, [apertureVolume, apertureRows, apertureVolumeBase, derivedApertureRowCount, bumpBuiltCount, unbumpBuiltCount, recordBuilt]);
   // THE SUBDIVISION DOOR (ARC 0.1, LAW 14 — a cure must be a door, not a
   // theorem): on the folded verdict the person invokes subdivide — the seed is
   // bisected, the pairings lift, the form is re-glued, and the gate reads the

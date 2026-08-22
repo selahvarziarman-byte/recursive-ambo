@@ -164,7 +164,14 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
     const metricBaseRefusals: Record<string, string> = {};
     for (const record of records.builtRecords) {
       try {
-        if (record.door === 'bounded') {
+        // R1 (B-2026-08-24-B §2): a 'bounded' record with TOUCHED rows
+        // replays through the SAME verdict door — the pairs were CONSUMED at
+        // the act and the restore reproduces exactly that. A pre-R1 record
+        // (rows []) restores its all-walls chamber as recorded — the record
+        // is the record. The old unconditional `[]` here was the SECOND site
+        // of the fully-glued-or-fully-open assumption.
+        const touched = record.rows.some((row) => row.faceA !== null || row.faceB !== null);
+        if (record.door === 'bounded' && !touched) {
           builtDomains.push(buildFormDomain(record.seed, [], record.key, record.title));
         } else {
           const verdict = buildPersonDomainVerdict(record.seed, record.rows, record.key, record.title);
