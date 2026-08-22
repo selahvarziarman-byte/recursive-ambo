@@ -1,7 +1,37 @@
-# THE BUILD REPORT — B-2026-08-24-B: all seven landed in the ordered sequence — R1's pairs are CONSUMED both directions at the eye, the rows read plain `unnamed` with the figure carrying the identity, the fourth reader reads, and the χ clause sits in the note register beside the twist
+# THE BUILD REPORT — B-2026-08-24-B (+ the mid-build amendment): all seven landed in the ordered sequence, the ELISION ROW shipped with its seven clauses, and the §9b OCTAHEDRON CENSUS is measured — identify is LIVE on the closed complex and the cut road is real
 
-**STAMP ECHO: `B-2026-08-24-B`** — the build I executed is the one you wrote (the -A text was never worked from).
-**coder · 2026-08-22 · commits `ac57b77` (R1) · `2853cb6` (§6) · `e54f451` (R2) · `991955a` (R7) · `631d193` (§7) · `0685fc8` (§8) · `b28218a` (§5, frozen union) · `fc3057c` (mandate record) · `3ac287f` (§5 tail) on base `a4f7d04` · branch `team-arman` · pushed after this report lands**
+**STAMP ECHO: `B-2026-08-24-B`** — the build I executed is the one you wrote (the -A text was never worked from; the mid-build §9/9b/9c amendment was received, recorded, and executed in the same cycle).
+**coder · 2026-08-22 · commits `ac57b77` (R1) · `2853cb6` (§6) · `e54f451` (R2) · `991955a` (R7) · `631d193` (§7) · `0685fc8` (§8) · `b28218a` (§5, frozen union) · `fc3057c` (mandate record) · `3ac287f` (§5 tail) · `669dc29` (report) · `94138d7` (the elision row) · `0b07e25` (the amendment record) on base `a4f7d04` · branch `team-arman` · pushed after this report lands**
+
+---
+
+## THE AMENDMENT'S TWO DELIVERABLES (§9 + §9b), ON TOP OF THE SEVEN
+
+### A · THE ELISION ROW — built, seven clauses, at the eye
+On the 12-face loop×I band's card: **`◻ 12 faces in all — none named here`** — her string verbatim. ◻ retained (1) · the number IS `faceRows.length` (2) · `in all` (3) · the withheld naming positively marked (4) · **no route** — past 8 the named rows do not render, and none is offered (5) · the muted overflow register, not entry grammar (6) · no `· N corners` (7).
+
+### B · THE §9b CENSUS — the octahedron on the dock, measured from the screen (route: ambo dissection → core cell → `Lift selection → Manuscript` → placed → selected)
+
+**The dock, all N from the screen:** ten op chips — glue · flip-glue · collapse · cut · dualize · sew · fold · thicken · **identify** · explore inside — plus Fit Selected / Reset Camera, `load the reference zoo` / `aperture — build a 3-manifold`, and the shelf's three doors. Every chip SPEAKS in both states; the sentences verbatim:
+
+| chip | octahedron SELECTED | nothing selected |
+|---|---|---|
+| glue / flip-glue / fold | `A word (e.g. abAB) is addressed to the slots of ONE polygon — this form is a COMPLEX (8 faces), where the word denotes nothing. Sew its boundary instead: use identify / the sew-boundary-* ops, which act on the whole complex. (Or cut / combine.)` | `select a form first` |
+| collapse | ⚠ its ONE row `Collapse → Sphere (D²/∂D²)` is DISABLED with the same word-gate sentence — **Arman's "only collapse would take it" did NOT reproduce on this route**; his octahedron may have entered by another door (⚠, not ✔ — route unestablished) | `select a form first` |
+| cut | **`Select a face to operate on.`** — no form gate; the picker lists all 8 faces NAMED (`AB·BC·AC · 3 corners` … — R2 standing here too) | `select a form first` |
+| dualize | plain `dualize` — enabled | `select a form first` |
+| sew | `The form has 0 boundary circles — sewing needs two.` | `select a form first` |
+| thicken | `select two forms — click the shape, shift-click the segment` | same |
+| **identify** | **ENABLED** (opacity 1, cursor pointer) — pressing it OPENS the trace mode: `identify — trace two walks · tap the corner you start each edge from — the tail lights there… · A: 0 · B: 0 — tracing walk A`, tap targets on every corner of the CLOSED complex | greyed (opacity 0.38) AND SPEAKING: `…— select a form first` |
+| explore inside | `walk the habitat; the shell stays behind you — select a room with an inside — a built 3-manifold` | same |
+
+**§9b-3's answer: identify was NOT the silent grey — it was LIVE.** The silent state the exposed code gap permits (`selected && targetFor === null` → disabled, reason null) **did not occur on any form this drive produced** — every selected form resolved a target. The gap stands in the source exactly as you traced it; I could not manufacture its firing case from the doors I have (⚠ on "cannot fire", measured only as "did not fire here").
+
+**The reroute's far end + the cut road (your live candidate — CONFIRMED):** cut face `AB·BC·AC` → **`Cut — born · Cut (remove the 2-cell)`**, the record extends (`…— loaded —cut→ Cut — born`), and the gates MOVE truthfully: sew now reads **`The form has 1 boundary circle — sewing needs two`** (0 → 1 — one more cut reaches sewability), the word-gate re-counts (`7 faces`), identify stays live. **Cutting is what opens the boundary the rim-addressed gestures need — measured.**
+
+**A §9c-outranking finding, named as the amendment invites:** `identify`'s gesture ACCEPTS the closed complex at entry (the trace mode opened on the uncut octahedron, corners tappable). Whether tracing two walks and sewing the seam COMMITS on a closed form — and whether that road can reach the antipodal quotient — was not driven; entry-live is the measured fact, completion is ⚠ unmeasured. The meaning half stays routed to the researcher.
+
+**And the §7 backstop fired in the wild, mid-drive:** my own navigation off a dirty page was blocked by the `Leave site?` dialog — the guard's first live catch was its own builder. (Post-Task-B note, one line: bands built over the world's fresh-boot loop now read id TAILS in term positions — `—l2 ← v8·v8` — because the loop's corner labels mint absent and its primal 12-gon is out of the carrier's reach; the ruled honest-id arm, pre-existing, named for the record.)
 
 ---
 
