@@ -44,6 +44,34 @@ export interface ShelfItem {
   placed: boolean;
 }
 
+// §7 (B-2026-08-24-B, RULED): THE STANDING UNSAVED MARK's fact — "there is
+// work here that is not written down" is a POSITIVE fact: the RECORD layer
+// (exactly what the page FILE serializes) differs from the last save/load.
+// The signature reads ids and counts only, so it recomputes cheaply on any
+// store change: written forms MINUS zoo members (the serializer's own
+// exclusion — the zoo re-summon on restore must never read as unsaved
+// work), the shelf's load-door files, the person's placements, the built
+// ledger, the count, the zoo act. A page holding nothing beyond its last
+// writing is the ORDINARY case and carries NO mark (a mark on the
+// unremarkable stops meaning anything).
+export const pageSignatureOf = (s: {
+  written: WrittenPageEntry[];
+  shelf: ShelfItem[];
+  shelfFiles: PlaygroundSnapshotFile[];
+  builtRecords: BuiltDomainRecord[];
+  builtCount: number;
+  zooLoaded: boolean;
+}): string =>
+  JSON.stringify([
+    s.written.filter((w) => !w.zooMember).map((w) => w.form.id),
+    s.shelfFiles.length,
+    s.shelf.filter((i) => i.placed).map((i) => i.entry.loaded.shape.id),
+    s.builtRecords.length,
+    s.builtCount,
+    s.zooLoaded,
+  ]);
+const EMPTY_PAGE_SIGNATURE = JSON.stringify([[], 0, [], 0, 0, false]);
+
 interface ManuscriptPageState {
   // ── the LIVE layer ──
   written: WrittenPageEntry[];
@@ -80,6 +108,10 @@ interface ManuscriptPageState {
   // ── the file half ──
   pageRecords: () => ManuscriptPageRecords;
   loadPage: (records: ManuscriptPageRecords) => string[]; // named per-record refusals (empty = clean)
+  // §7: the record-layer signature at the last save/load; the mark reads
+  // `pageSignatureOf(state) !== savedSignature`
+  savedSignature: string;
+  markPageSaved: () => void;
 }
 
 export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => ({
@@ -95,6 +127,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
   zooLoaded: false,
   shelfFiles: [],
   builtRecords: [],
+  savedSignature: EMPTY_PAGE_SIGNATURE,
 
   setWritten: (next) => set((s) => ({ written: applyUpdater(s.written, next) })),
   setShelf: (next) => set((s) => ({ shelf: applyUpdater(s.shelf, next) })),
@@ -115,6 +148,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
     return n;
   },
   unbumpBuiltCount: () => set((s) => ({ builtCount: Math.max(0, s.builtCount - 1) })),
+  markPageSaved: () => set((s) => ({ savedSignature: pageSignatureOf(s) })),
 
   pageRecords: () => {
     const s = get();
@@ -202,6 +236,15 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
       zooLoaded: records.zooLoaded,
       shelfFiles: records.shelfFiles,
       builtRecords: records.builtRecords,
+      // §7: a freshly loaded page IS written down — the mark starts quiet
+      savedSignature: pageSignatureOf({
+        written: records.written,
+        shelf,
+        shelfFiles: records.shelfFiles,
+        builtRecords: records.builtRecords,
+        builtCount: records.builtCount,
+        zooLoaded: records.zooLoaded,
+      }),
     });
     return refusals;
   },

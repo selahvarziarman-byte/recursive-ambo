@@ -866,6 +866,7 @@ export function RecordStrip({
 export function SourcesShelf({
   universes,
   paper,
+  dirty,
   onLoadFiles,
   onDragEntry,
   onSavePage,
@@ -873,6 +874,11 @@ export function SourcesShelf({
 }: {
   universes: Array<{ source: string; entries: Array<{ index: number; entry: ShelfEntry; placed: boolean }> }>;
   paper: ChromePaper;
+  // §7 (B-2026-08-24-B, RULED): the page holds work not written down — the
+  // QUIET STANDING MARK renders beside `save the page…`, where the act
+  // lives, while the person still has a choice. UNSAVED only (the saved
+  // state is the ordinary case and carries no mark).
+  dirty: boolean;
   onLoadFiles: (files: FileList) => void;
   onDragEntry: (index: number) => void; // dragstart — the view places on canvas drop
   // §2B (B-2026-08-22-A): THE PAGE DOORS — VISIBLE, ruled ("not a right-click,
@@ -976,6 +982,20 @@ export function SourcesShelf({
       >
         load universe… (.snapshot.json)
       </button>
+      {/* §7 (B-2026-08-24-B, RULED): the QUIET STANDING MARK — unsaved work,
+          stated where the act lives, while he still has a choice. Only the
+          UNSAVED state is marked. The second line speaks the ruled asymmetry
+          ("an unmount survives; a full reload does not") in the person's own
+          vocabulary. ⛔ final wording + look the DESIGNER's (flagged); the
+          lines state the ruled facts and nothing more. */}
+      {dirty ? (
+        <div data-unsaved-mark style={{ marginTop: 7, fontSize: 10.5, fontStyle: 'italic', opacity: 0.75 }}>
+          there is work here that is not written down
+          <div style={{ marginTop: 1, opacity: 0.85 }}>
+            switching modules keeps it · a full reload loses it — save the page… writes it down
+          </div>
+        </div>
+      ) : null}
       {/* §2B — THE PAGE DOORS, visible beside the universe door. ⛔ COPY
           PENDING THE DESIGNER (flagged): wording holds the slots. */}
       <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>

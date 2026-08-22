@@ -219,8 +219,9 @@ import { buildProbeMeshes } from './apertureProbes';
 import { ExploreWindow } from './ExploreWindow';
 import { readCellSurface, faceTraceCycle, apertureParityCensus } from './apertureModel';
 import { buildFormDomain, pendingPairMarks } from './formDomainModel';
-// §2 (B-2026-08-22-A) — the page's store half (A) and file half (B)
-import { useManuscriptPageStore } from './pageStore';
+// §2 (B-2026-08-22-A) — the page's store half (A) and file half (B);
+// §7 (B-2026-08-24-B): the unsaved-mark's derived signature
+import { pageSignatureOf, useManuscriptPageStore } from './pageStore';
 import { serializePage, parsePage } from './pageSnapshot';
 
 // D13 WITNESS SEAM (dev-only): the panel-scope plant must be a COMPONENT —
@@ -1642,6 +1643,23 @@ export default function ManuscriptView() {
   // ----- 3b: the sources shelf (committed snapshot loads) --------------------
   const shelf = useManuscriptPageStore((s) => s.shelf);
   const setShelf = useManuscriptPageStore((s) => s.setShelf);
+  // §7 (B-2026-08-24-B, RULED): the STANDING UNSAVED MARK's fact — the
+  // record layer differs from the last save/load. Derived per store change
+  // (ids + counts only), never a flag that can drift; the zoo re-summon on
+  // restore stays quiet by the signature's own zoo exclusion.
+  const pageDirty = useManuscriptPageStore((s) => pageSignatureOf(s) !== s.savedSignature);
+  // §7's BACKSTOP (ruled acceptable as a backstop, NEVER the cure — the
+  // cure is the standing mark where the act lives): a full reload with
+  // unsaved work asks once before discarding it.
+  useEffect(() => {
+    if (!pageDirty) return undefined;
+    const guard = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', guard);
+    return () => window.removeEventListener('beforeunload', guard);
+  }, [pageDirty]);
   const dragIndexRef = useRef<number | null>(null);
   const cameraRef = useRef<Camera | null>(null);
   // ----- PHASE A (SEAL_PHASE_A_CAMERA) — the plate ------------------------
@@ -4041,6 +4059,11 @@ export default function ManuscriptView() {
     anchor.download = `manuscript-${new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-')}.page.json`;
     anchor.click();
     URL.revokeObjectURL(url);
+    // §7: the page is written down as of this act — the standing mark quiets.
+    // (The download lands without a further dialog in the default browser
+    // setup; a browser configured to ask-and-cancel can out-date the mark —
+    // disclosed, the mark re-arms on the next record change.)
+    useManuscriptPageStore.getState().markPageSaved();
   }, []);
   const handleLoadPage = useCallback(
     (files: FileList): void => {
@@ -5626,6 +5649,7 @@ export default function ManuscriptView() {
       <SourcesShelf
         universes={shelfUniverses}
         paper={d.paper}
+        dirty={pageDirty}
         onLoadFiles={handleLoadFiles}
         onSavePage={handleSavePage}
         onLoadPage={handleLoadPage}
