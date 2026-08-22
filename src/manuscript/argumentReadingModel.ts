@@ -348,9 +348,15 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
   sortedRoots.forEach((id, i) => {
     const name = rootBaseNames[i];
     if ((rootNameCount.get(name) ?? 0) > 1) {
+      // §6 (B-2026-08-24-B): this handle survives ONLY into TERM positions —
+      // the composed class label's parts, relation source readings, and the
+      // ring's `p ← {…}` set line — where two distinct roots must not read
+      // as one root counted twice and no hover can reach a term. The ROW
+      // register never shows it (the row dedup below is dead). HELD for the
+      // designer's term-spec; until she rules, the term line stands as is.
       const k = rootNameSeen.get(name) ?? 0;
       rootNameSeen.set(name, k + 1);
-      rootLabelOf.set(id, `${name}·${letterFor(k, ROOT_LETTERS)}`); // index, never the name
+      rootLabelOf.set(id, `${name}·${letterFor(k, ROOT_LETTERS)}`);
     } else {
       rootLabelOf.set(id, name);
     }
@@ -431,18 +437,19 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
           : null,
       };
     });
-  // duplicate real names across DISTINCT concepts stay distinguishable — the
-  // positional letter rides as an appended index only
-  const conceptNameCount = new Map<string, number>();
-  for (const row of conceptRows) conceptNameCount.set(row.label, (conceptNameCount.get(row.label) ?? 0) + 1);
-  const conceptNameSeen = new Map<string, number>();
-  for (const row of conceptRows) {
-    if ((conceptNameCount.get(row.label) ?? 0) > 1) {
-      const k = conceptNameSeen.get(row.label) ?? 0;
-      conceptNameSeen.set(row.label, k + 1);
-      row.label = `${row.label}·${letterFor(k, ROOT_LETTERS)}`;
-    }
-  }
+  // §6 (B-2026-08-24-B, RULED — designer + mothership concurring): the ROW
+  // REGISTER carries NO suffix. The dedup that appended `·A`/`·B` to
+  // colliding row labels is DEAD — it welded a positional index (`v0` in a
+  // different alphabet) into the name's own slot, the exact defect the
+  // legibility migration removed; three born corners read `unnamed`,
+  // `unnamed`, `unnamed`, and the DISAMBIGUATION IS THE FIGURE (touching a
+  // row lights its corner on the shape — the shipped emphasizedIds idiom;
+  // no new gesture). The requirement is general: a real-name collision
+  // (`AB`+`AB`) reads `AB`, `AB` too — a list is a POINTER, not an
+  // identity. ⛔ The TERM positions stand EXACTLY as they are (rootLabelOf's
+  // handles inside composed strings and the ring's `p ← {…}` set line) —
+  // there no hover can reach a term and two distinct roots would read as
+  // one root counted twice; that half is HELD for the designer's spec.
 
   // the relation source is the recorded `sourceVertexIds` (the surviving
   // representative's parent endpoints — measured substrate fact); the source

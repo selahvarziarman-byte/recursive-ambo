@@ -832,13 +832,14 @@ const wrapCarrier = (shapeX, parentX, title) => ({
   render: { mode: 'bodiless', reason: 'witness carrier', shape: shapeX },
 });
 const seedWalk = buildArgumentReading(wrapCarrier(seedTetra, null, 'seed'));
-check('§11 (WALK) ★ SEED + INVOKE (B-2026-08-23-C recut): the seed tetrahedron\'s card reads its 4 corners by their REAL packet names A·B·C·D (all born, their own roots); the invoked square reads its BORN corners as TRUE ABSENCE — the packets MEASURE empty (the producer-stop landed; v0 is dead as a label) and the card shows unnamed + the ruled handle (unnamed·A..·D) — both judged by the independent packet comparator',
+check('§11 (WALK) ★ SEED + INVOKE (B-2026-08-24-B §6 recut): the seed tetrahedron\'s card reads its 4 corners by their REAL packet names A·B·C·D (all born, their own roots); the invoked square reads its BORN corners as TRUE ABSENCE — the packets MEASURE empty AND the ROW register carries NO suffix (four rows, each exactly `unnamed` — the figure disambiguates, never a positional index in the name slot) — both judged by the independent packet comparator',
   seedWalk.op === 'seed' &&
     ['A', 'B', 'C', 'D'].every((name) => seedWalk.conceptRows.some((r) => r.label === name)) &&
     seedWalk.conceptRows.every((r) => r.typing === 'born') &&
     packetJudge(seedWalk, seedTetra) &&
     Object.values(sqHost.shape.vertices).every((v) => ((v.data?.label ?? '').trim()) === '') &&
-    ['A', 'B', 'C', 'D'].every((L) => seedReading.conceptRows.some((r) => r.label === `unnamed·${L}`)) &&
+    seedReading.conceptRows.length === 4 &&
+    seedReading.conceptRows.every((r) => r.label === 'unnamed') &&
     packetJudge(seedReading, sqHost.shape));
 const cutApplied = applyPlaygroundOperationTo('cut', triHost.shape, null, 611, 8, [], triHost.shape.faces[0].id);
 const cutWalk = cutApplied.ok ? buildArgumentReading(cutApplied.born) : null;
@@ -850,7 +851,8 @@ check('§11 (WALK) ★ GLUE + FLIP-GLUE + CUT + COLLAPSE (B-2026-08-23-C recut):
     packetJudge(torusReading, torus.shape) &&
     packetJudge(kleinReading, kleinApplied.born.shape) &&
     cutWalk !== null &&
-    ['A', 'B', 'C'].every((L) => cutWalk.conceptRows.some((r) => r.label === `unnamed·${L}`)) &&
+    cutWalk.conceptRows.filter((r) => r.label === 'unnamed').length >= 3 &&
+    cutWalk.conceptRows.every((r) => !/^unnamed·[A-Z]\d*$/.test(r.label)) &&
     packetJudge(cutWalk, cutApplied.born.shape) &&
     collapseWalk !== null &&
     collapseWalk.conceptRows.every((r) => r.label === 'unnamed·A·unnamed·B·unnamed·C·unnamed·D') &&
