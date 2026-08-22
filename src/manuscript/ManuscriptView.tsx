@@ -200,6 +200,7 @@ import {
   resolveCarriedMetricBase,
   subdivideAndReadPersonDomain,
   traceAperture,
+  type AbsentLabelResolver,
   type AperturePairRow,
   type CarriedMetricBaseResolution,
   type FoldedDomain,
@@ -1416,8 +1417,13 @@ function SpecimenCard({
 // a flipped face), `unnamed` on true absence. The id no longer fronts the
 // person (`X · 4 corners` named every cube face alike); the countable
 // `· N corners` stays (LAW 23). One rule, both registers — by REUSE.
-const faceLabel = (shape: Shape, face: Face): string =>
-  `${faceDisplayName(shape, face)} · ${face.vertexIds.length} corners`;
+// R2 (B-2026-08-24-B §3): the REACH rides here too — this labeler was the
+// fourth reader on the same fact that never got the resolver (a ×I band's
+// port menu read `unnamed · 4 corners` ×12 beside a card naming every
+// face). The callers hand in the view's own resolveAbsentLabel; no fifth
+// composing path exists.
+const faceLabel = (shape: Shape, face: Face, resolveAbsent?: AbsentLabelResolver): string =>
+  `${faceDisplayName(shape, face, resolveAbsent)} · ${face.vertexIds.length} corners`;
 
 export default function ManuscriptView() {
   const d = manuscriptDefaults;
@@ -3250,11 +3256,11 @@ export default function ManuscriptView() {
       title: target.title,
       faces: target.shape.faces.map((face) => ({
         id: face.id,
-        label: faceLabel(target.shape, face),
+        label: faceLabel(target.shape, face, resolveAbsentLabel),
       })),
       picked: portFaces[selected] ?? '',
     };
-  }, [selected, combineWith, targetFor, portFaces]);
+  }, [selected, combineWith, targetFor, portFaces, resolveAbsentLabel]);
 
   const handleInvoke = useCallback(
     (catalogueKey: string): void => {
@@ -3577,7 +3583,10 @@ export default function ManuscriptView() {
     } catch (error) {
       // the committed doors speak for themselves (the 4-manifold stop, the Q1
       // guard) — the sentence is the thrown reason, never re-worded here
-      setOpNotice(`thicken: ${error instanceof Error ? error.message : String(error)}`);
+      // R7 (B-2026-08-24-B §4): the door's own message already carries the
+      // `thicken:` prefix — prepending unconditionally doubled the word
+      const msg = error instanceof Error ? error.message : String(error);
+      setOpNotice(msg.startsWith('thicken:') ? msg : `thicken: ${msg}`);
     }
   }, [thickenGate]);
 
@@ -5395,11 +5404,11 @@ export default function ManuscriptView() {
           bTitle={combineGate.b.title}
           aFaces={combineGate.a.shape.faces.map((face) => ({
             id: face.id,
-            label: faceLabel(combineGate.a.shape, face),
+            label: faceLabel(combineGate.a.shape, face, resolveAbsentLabel),
           }))}
           bFaces={combineGate.b.shape.faces.map((face) => ({
             id: face.id,
-            label: faceLabel(combineGate.b.shape, face),
+            label: faceLabel(combineGate.b.shape, face, resolveAbsentLabel),
           }))}
           portA={combineGate.portFaceA?.id ?? ''}
           portB={combineGate.portFaceB?.id ?? ''}
@@ -5462,7 +5471,7 @@ export default function ManuscriptView() {
       {chord && chordPanel ? (
         <ChordGatePanel
           formTitle={chordPanel.formTitle}
-          faceText={faceLabel(chordPanel.shape, chordPanel.face)}
+          faceText={faceLabel(chordPanel.shape, chordPanel.face, resolveAbsentLabel)}
           corners={chordPanel.face.vertexIds}
           cornerA={chord.cornerA}
           cornerB={chord.cornerB}
