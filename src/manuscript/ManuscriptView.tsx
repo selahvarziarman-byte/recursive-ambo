@@ -1358,8 +1358,13 @@ function SpecimenCard({
             : null}
         </div>
       ) : null}
-      {reading.twist ? (
+      {/* §5(a) (B-2026-08-24-B, RULED): THE NOTE REGISTER — the twist note
+          and the χ clauses share ONE register, each note naming its own
+          subject (never told apart by position). The two-notes room proved
+          both sit at once without clobbering. */}
+      {[...(reading.twist ? [reading.twist] : []), ...(reading.notes ?? [])].map((note) => (
         <div
+          key={note}
           style={{
             marginTop: 8,
             padding: '5px 8px',
@@ -1369,9 +1374,9 @@ function SpecimenCard({
             fontSize: 12.5,
           }}
         >
-          {reading.twist}
+          {note}
         </div>
-      ) : null}
+      ))}
       <div style={{ marginTop: 9 }}>
         {reading.legend.length ? (
           // §7 — the legend rows are the GENERATORS register's card presence:
