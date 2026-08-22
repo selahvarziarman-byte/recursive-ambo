@@ -28,6 +28,15 @@ const POLYGON_RADIUS = 0.8;
 // The regular n-gon spec: n distinct source-less vertices `v0..v{n-1}` on a
 // circle (first vertex at the top), one face cycle through all of them. For
 // n = 2 this is the segment/2-gon (one bigon face over two vertices).
+//
+// THE LEGIBILITY MIGRATION — the LAST producer-stop (B-2026-08-23-C §3,
+// researcher-ruled): `v${index}` in the LABEL slot was a POSITIONAL INDEX —
+// the D-index class, not a name (the discriminator: does the label carry
+// information about the entity beyond its own position?). BORN, not yet
+// given ⇒ no source to carry, nothing to compose from, and the person has
+// not named it ⇒ TRUE ABSENCE; the display reads `unnamed`, the COMPLETE
+// answer for a born corner. The vertex IDS stay `v0..v{n-1}` — an id is
+// the value, never the name.
 function nGonSpec(n: number, name: string): FormSpec {
   const vertices = Array.from({ length: n }, (_, index) => {
     const angle = Math.PI / 2 + (2 * Math.PI * index) / n;
@@ -36,7 +45,7 @@ function nGonSpec(n: number, name: string): FormSpec {
       Number((POLYGON_RADIUS * Math.sin(angle)).toFixed(6)),
       0,
     ];
-    return { id: `v${index}`, position, label: `v${index}` };
+    return { id: `v${index}`, position, label: '' };
   });
 
   return {
@@ -64,9 +73,11 @@ export function nGon(n: number): FormBuilder {
 function segmentSpec(): FormSpec {
   return {
     name: 'segment',
+    // the same producer-stop (B-2026-08-23-C §3): born endpoints mint TRUE
+    // ABSENCE — the ids stay `v0`/`v1`, the labels are no one's name
     vertices: [
-      { id: 'v0', position: [-POLYGON_RADIUS, 0, 0], label: 'v0' },
-      { id: 'v1', position: [POLYGON_RADIUS, 0, 0], label: 'v1' },
+      { id: 'v0', position: [-POLYGON_RADIUS, 0, 0], label: '' },
+      { id: 'v1', position: [POLYGON_RADIUS, 0, 0], label: '' },
     ],
     edges: [{ vertexIds: ['v0', 'v1'] }],
   };

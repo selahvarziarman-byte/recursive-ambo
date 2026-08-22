@@ -83,7 +83,7 @@ src/playground/customGluing.ts          2085fb7ef4199bda258d8c3cde23f3a186d16eb7
 src/playground/formInvariants.ts        1079458c3d4a3451cd2df376f62893271ff10014210492b96f411a7718717f96
 src/playground/genealogyLayout.ts       dcdde159e83cc246fdbaf0521ec69a2a5884c78d0d68cbe1dae7c1b1589f98b8
 src/playground/playgroundOperations.ts  ed0cc1a8350cc7d7a79923d7d4db9c4c2255c9997fc1ec2996d87074d1865b2e
-src/playground/primitiveCatalogue.ts    b02c1c2daf58ec632513aec088eff597a76ce3d09d218d9dd85374d183eb1266
+src/playground/primitiveCatalogue.ts    b764254e60bce20133595e0f6c70254eee986f15ef3f76e195e225a8059b3894
 src/playground/snapshot.ts              e4b59cc27232eae2552a115f64d84846d0161516cddb70b37fc1f801d7118106
 src/types/geometry.ts                   6ebdd92f1e6bd4a066bb42c732e4b9d5a6c4cab2d251bc472eb45af9fe52d7b7
 
