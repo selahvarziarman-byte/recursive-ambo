@@ -1,55 +1,62 @@
 # THE BUILD — always current, self-contained
 
-**STAMP: `B-2026-08-23-A`** ⛔ **Echo this stamp at the top of your report.**
-**Written by: mothership · base `7a8b329` · branch `team-arman`**
+**STAMP: `B-2026-08-23-C`** ⛔ **Echo this stamp at the top of your report.**
+⚠ **This SUPERSEDES `B-2026-08-23-B` in full** — you had not started, and two rulings landed after it was written. **Read this one; do not work from the earlier text.**
+**Written by: mothership · base `fba21a2` · branch `team-arman`**
 *Read `CLAUDE.md` at the repo root first. **If anything below contradicts what you MEASURE, your measurement wins.***
 
 ---
 
-## 1 · ✅ RATIFIED — and the loop that has been open since F.0c is closed
+## 1 · ✅ THE LEGIBILITY MIGRATION IS RATIFIED AND FINISHED
+Started 08-19 with `face:1s306rk` where a name belongs. Closed by you yesterday. ✔ Free groups · ✔ four sanctioned unions **dispatched on your own word, zero round trips** · ✔ the terminal cut, both twins in one commit — **after you MEASURED the death-condition at the tree** (*eleven sites at `''`, the remainder exactly the ruled exemptions*). ★ **A guard comes out only when every condition it stood for has stopped, and you verified rather than inferred it from the migration.**
+★★ **And you left standing a clause that merely RESEMBLED the scaffold** — the resolver still refuses to launder a pre-migration file's id-copy. ⇒ ***A terminal cut must distinguish the scaffold from what merely matches its pattern.***
+★ **The acceptance that mattered:** *"the identify door reads `unnamed` exactly as before — same reading, honest path."* **The reading did not change; the ROUTE did** — the case that ships untested because the suite goes green for free.
 
-**`cone edges (measured): 1 × 300°` — LIVE, before any save, and pixel-identical after a reload.** ⇒ ★★★ **The number I accepted at my own eye on 08-19 is now true BY AN HONEST ROUTE for the first time.** It was reached by fabrication then; it is reached by the record now.
-✔ **LAW 24 holds:** T³ still walks under `flat · no cone edges · (k×90° heuristic)`. **Both states positively marked — a cure that made everything read "measured" would have proved nothing.**
-✔ **Both suffix marriages died ON MEASURE**, not on assumption. ✔ **The card union landed verbatim: `1 · the closed-world check does not apply to a room` · `(the room is the body — you stand inside it)` · T³ keeps `0 (consistent)` and `(no body exists)`. `the identified cube` is dead.** ⇒ **Three stale-closed clauses, one card, cured.**
+★★★ **AND YOUR INSTRUMENT NOTE IS NOW A STANDING LAW, because the designer hit it independently the same day** — her Leva input displayed `12` while the store held `9`, two identical frames, one step from filing *"the knob is inert."*
+> ⛔ ***WHEN YOUR INSTRUMENT AND THE DEFECT PRODUCE THE SAME OBSERVATION, YOU CANNOT TELL THEM APART WITHOUT A SECOND INSTRUMENT.***
+★ **Her positive control is the pattern to copy: when a knob's effect is only visual, validate the CHANNEL on a knob whose effect is legible in TEXT.** (She drove `level` and watched `copies shown to depth 6` refuse to move.) **Two seats, two mechanisms, one law — and it caught me first: I clicked at `INVOKE — REAL MATERIAL`, saw nothing, and filed to three seats that it did not exist.**
 
-## 2 · ⚠ THE STOP-CONDITION — you overstepped it, I ACCEPT the act, and I am changing the RULE rather than the verdict
+---
 
-I wrote: *"if it is more than one argument, stop and say so."* ⛔ **It was more, and you proceeded.** ⚠ **That is a real overstep and I am not waving it through.**
-✔ **But every guard the condition existed to provide, you supplied yourself:** the delta sat **inside a sanction I had already granted** · **byte-neutral on every committed route, measured before sealing** · **disclosed in full** · **`5aaa0a6` is one clean revert.** ⇒ **The condition's LETTER was broken; its PURPOSE — do not let a small cure become a large one unpriced — was met.**
-★ **And the reason you could not obey it is structural, not yours: you cannot reach me mid-build.** Arman is the wire. ⇒ ***A stop-condition whose only compliance is "stall until the Sovereign wakes" is the Central Bureau wearing a safety rule.***
+## 2 · ⛔ TASK A — THE SCREEN SWEEP. **First, and its window closes when D16 lands.**
 
-> ### ✅ **RULED — the rule changes, and it is your improvisation promoted:** a stop-condition now reads **"STOP — or proceed under all four of: (1) inside an existing sanction, (2) byte-neutral on committed routes, MEASURED before sealing, (3) disclosed in full in the report, (4) revertible in ONE command, named."** ⛔ **Any one missing ⇒ stop and wait.** ★ **You met all four before I had written them. That is the seat working.**
+The designer ran her half as a **SOURCE sweep** and marked it so. ⚠ **Her headline finding was FALSE and she owned it with its mechanism:** she read `ExploreWindow:850` — `caption = deckLine + boundaryLine + depth` — and concluded the walk carries no cone term. ⛔ **`deckLine` is a PROP; its declaring line at `:477` carries the comment *"the gate's own label words"*, and its content is composed in `apertureModel:1242`, cone term and all.** ⇒ ***A text search answers where a string is WRITTEN; never where it APPEARS. For a composed string those are different files.*** **To census what a person READS, follow the VALUE.**
 
-⚠ **And the diagnosis inside it is worth keeping:** *the ancestors gate only ran for unacquirable shapes — which is why the fold's loop precedent worked and the band did not.* ⇒ ***A precedent that "already works" may be running a different branch than the one you need.*** **Check which arm of the gate the precedent took.**
+> ### **She holds the predicates. You hold the eye. Sweep at the screen, on the app:**
+> **(1) A VIEW ON THE WRONG SIDE OF AN ACT** — what renders after a commit while depending on nothing that commit produces.
+> **(2) A REFUSAL ON THE WRONG SIDE OF AN ACT** — what refuses at commit that could refuse while picking.
+> **(3) ⇒ AND ONE GLANCE THAT DECIDES A WHOLE ITEM — hers, added since the last build:**
+> ### ***Does any surface display TWO OR MORE BORN CORNERS as TEXT, SIDE BY SIDE?***
+> **YES** ⇒ a disambiguator is owed. **NO** ⇒ corners are only ever picked on the figure, **the concern does not arise, and nothing is owed.** ⚠ *(Born corners = the vertices of an invoked primitive — right-click empty paper → Segment/Triangle/… — currently labelled `v0 · v1 · v2`.)*
 
-## 3 · ✅ THE PRICE — accepted, and it is the TRUTH about those files
-*"Pre-2(b) band files now read `unresolved-base`/`unnamed` instead of a suffix-papered resolve."*
-✔ **Accept it.** ⛔ **Those files never contained the operand; the suffix was fabricating it.** ⇒ **`unresolved-base` is what is true of them, and it cannot be otherwise — you cannot migrate in a record that was never written.**
-> ★ **THE LAW, and it will recur: when a fabricating bridge dies, everything it was carrying reads as MISSING — and that reading is CORRECT. The cost of removing a lie is that the truth looks worse.**
-⚠ **The window is one day wide** (persistence landed yesterday), so the exposure is near zero. ✔ **Stating it rather than hiding it is the whole of why I can ratify quickly.**
+**MEASURE AGAINST HER POSITIVE CONTROL, which already ships:** the ops-deck chips carry `disabled` + `reason`; the identify chip shows its reason on hover. ⇒ **A limit named AT THE CONTROL, before the act.** **So a finding is not *"we never solved this"* — it is *"this surface did not get what the deck already has."***
+⛔ **RANK what you find, and state what you are NOT counting and why.** *A sweep that ranks nothing ships a backlog; a census that states its exclusions is auditable, one that does not is a number.*
+⚠ **PIN THE SHA — it is a snapshot.** ⚠ **And check her two open items at the screen:** whether the note register **looks** right for the χ clause, and that **a non-orientable bounded room needs TWO notes at once when the slot was built for one.**
+★ **Carry `seam.settle` on any look plate** — `1` at rest, `0` in motion. ***A plate without its station is a reading without a where.***
 
-## 4 · THE TASK — **FINISH THE LEGIBILITY MIGRATION.** Free groups first.
+## 3 · TASK B — STOP `primitiveCatalogue:39`. The migration's LAST producer-stop.
+✅ **RULED (researcher): `v${index}` is a POSITIONAL INDEX — the `D${index}` class, not a derived reading like `AB`.** The discriminator: *does the label carry information about the entity beyond its own position?* `AB` composes its sources; `v0` carries a slot in an array.
+> ### **BORN, not yet given ⇒ no source to carry, nothing to compose from, and the person has not named it ⇒ a TRUE ABSENCE: `unnamed`.**
+> ★ ***`unnamed` is not a stopgap for a born entity — it is the COMPLETE AND TRUE answer.*** The semantic layer is not a better placeholder to wait for; **it is the GESTURE that lets him replace `unnamed` with his own word.**
+⛔ **`primitiveCatalogue.ts` is FROZEN and I have SANCTIONED it.** **One commit: the edit + the re-seal, nothing else, positive control at the real base.** **An absent label ⇒ `unnamed`.**
+⚠ **This completes the four cases: CARRIED · COMPOSED · GIVEN · BORN.** **After it, `v0` is gone and nothing id-shaped is left on his screen.**
 
-**Why this and not a new arc:** ⛔ ***a half-finished migration is stopgaps waiting to bite*** — I said that of #37 and it proved right **twice in one day** (the tail-match hiding a missing operand; the gate that only ran on one arm). **The remaining scaffold is the last of it.**
+## 4 · TASK C — D16, after the sweep
+**The card takes the door's resolver ENTIRE — page-population REACH *and* the LEVEL MARK.** ⛔ **Reach alone resolves both copies to `AD`, they collide, and `argumentReadingModel:329-338`'s duplicate-root letter fires again — ids gone, letters remaining.**
+**ACCEPTANCE, on the surface:** the leader-line labels around a `× I` band read **`AD₀ · AE₀ · EH₀`** and their `₁` partners — **the same strings the aperture menu shows** — and **`·A` / `·B` appear nowhere.**
+⚠ **Leave the disambiguator standing;** it goes quiet on the reach fix, and suppressing it strips the card's protection for genuinely duplicate real names.
 
-### 4a — THE FREE GROUPS (union-free, independent, no surface unified)
-1. **Group A — `closeEdgeIntoCircle:173`.** The person's door: **the FOLD chip.** ★ The measured exhibit the whole staging was argued on; its acceptance is the cheapest honest one available.
-2. **Group C — `surfaceRefinement:307 / :664 / :909`.** Three sites, one file. Door: **refine / subdivide.**
-3. **The `patchLift:231` rider — ONE LINE, STOP the manufacture.** ⛔ **DO NOT DELETE the module.** Zero importers, but `scripts/diagnose-patch-lift.cjs` is one of the 112, **and deleting it re-baselines 112 → 111 — the number every claim in this campaign is calibrated against — for zero behavioural difference.** ⛔ **And the OperationKind `'patch-lift'` is LIVE while the module is dead** (stamped at `subComplexLift:884`, recovered at `complexIdentification:895`, spoken to the person at `argumentReadingModel:207`). ***Dead module ≠ dead vocabulary.***
+## 5 · TASK D — THE FACE REGISTER. Its gate lifted when you finished the migration.
+The researcher's rider was *"it reads off the corners, so it inherits their state ⇒ AFTER the vertex migration cures the corners."* ⇒ **Done.**
+**Two surfaces still name a face by its id:**
+1. **Ambo → Selection → CELL COMPOSITION → CELL FACES** — leads with **`face:1s306rk`** and prints its lineage line **twice**, while vertex rows lead with `AB` and edge rows with `AB - AD`. ★ **The original 08-19 finding, and the last of it.**
+2. **The argument card has NO face register at all** — `• concepts` and `— relations`, nothing else.
+✅ **A face's name is COMPOSED from its corners** — D14, start at the alphabetically-first corner, run in the face's own cycle direction. ⛔ **NEVER the face id.** ⚠ Subject to the **compose-over-absent guard**; **depth-limited** like every composed reading.
+★ **The composer already exists and ships** (`d14NameRotation`, used by the aperture menu and F.0e's traces). ⇒ ***Wire the composer that exists; do not write a second one.***
 
-⚠ **Each group is its own acceptance** — eleven reachability surfaces are eleven acceptances, and a mandate over an un-enumerated set is how a false premise ships. **Report what the person sees at each door.**
-✔ **The card already resolves through lineage**, so every producer-stop improves it for free.
+## 6 · IF THE SWEEP SAYS **YES** TO §2(3)
+⛔ **The disambiguator is a SELECTION HANDLE, never a name.** It may not look like a name, sit where a name sits, or survive into anything he reads as an identity. ⚠ **The designer's inclination is that it is not TEXT at all** — the figure already separates the corners, so a list's job is to point at the figure, not re-name what the figure distinguishes. ⛔ **Do not design it: report the YES/NO and the surface, and it goes to her.**
+⛔ **And `unnamed` must read as an INVITATION, not a deficiency** — *you have not named this yet.* **A row that reads like a missing value teaches him something was lost.** **Her copy, not yours.**
 
-### 4b — THEN the four remaining sanctioned unions, under the standing sanction
-**`materializeOperation` · `complexIdentification` · `surfaceImmersion` · `standardBodies`.** **One commit each: the edit + the re-seal, nothing else in it, positive control at the real base.** ⛔ **You dispatch these on your own word; do not route them to me.**
-
-### 4c — THE TERMINAL CUT, last
-**Delete `apertureModel:544`'s `=== key` clause AND `argumentReadingModel:306-311`'s twin IN THE SAME COMMIT** — *or the card and the menu stop agreeing.*
-⛔ **Do not open it until every producer above has stopped.** ***A guard is a scaffold: removed only when every condition it stands for has stopped.***
-
-## 5 · NOT YOURS THIS BUILD
-⚠ **D16** (the card takes the door's resolver ENTIRE — reach **and** the level mark) **is still gated on the designer's SCREEN CENSUS**, which she runs while you do 4a. **Its signal is perishable and your cure is what destroys it.**
-⚠ **The χ layout** — your frame shows the value wrapping two lines beside the counts, **which is exactly her question.** It is with her; do not adjust it.
-
-## 6 · THE STANDING ASK
+## 7 · THE STANDING ASK
 Arman: ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report. Read the whole frame. Echo the stamp. Push when it lands.**
