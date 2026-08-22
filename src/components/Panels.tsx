@@ -35,6 +35,9 @@ import {
 } from '../lib/topologySignature';
 import { parseWorkspaceImport } from '../lib/workspacePersistence';
 import { downwardClosure, validateLiftSelection } from '../lib/subComplexLift';
+// TASK D (B-2026-08-23-C §5): the composer that exists — the face's D14
+// name, shared with the aperture menu (never a second composer, never the id)
+import { faceDisplayName } from '../manuscript/apertureModel';
 import {
   type DualInspectionTarget,
   type OperationHistoryEntry,
@@ -112,9 +115,14 @@ interface CellVertexRow {
 
 interface CellFaceRow {
   face: Face;
+  // TASK D (B-2026-08-23-C §5): the face's person-facing NAME — D14-composed
+  // from its corners by the composer that exists (apertureModel's
+  // faceDisplayName): rotate to the earliest corner label, run the face's
+  // own cycle direction, `·`-join. NEVER the face id — the id rides the
+  // demoted mono sub-line, the same layout the vertex rows keep.
+  displayName: string;
   shortId: string;
   size: number;
-  sourceRole: string;
   lineageSummary: string;
 }
 
@@ -2181,10 +2189,10 @@ function CellComposition({
             >
               <span className="flex items-start justify-between gap-2">
                 <span className="min-w-0">
-                  <span className="block truncate font-mono text-xs text-stone-400">
+                  <span className="block truncate text-stone-200">{row.displayName}</span>
+                  <span className="mt-1 block truncate font-mono text-xs text-stone-500">
                     {row.shortId}
                   </span>
-                  <span className="mt-1 block text-stone-200">{row.sourceRole}</span>
                 </span>
                 <span className="shrink-0 rounded border border-stone-700 bg-stone-900 px-2 py-0.5 text-xs text-stone-400">
                   {row.size} vertices
@@ -3387,9 +3395,9 @@ function getCellVertexRows(shape: Shape, cell: Cell): CellVertexRow[] {
 function getCellFaceRows(shape: Shape, faces: Face[]): CellFaceRow[] {
   return faces.map((face) => ({
     face,
+    displayName: faceDisplayName(shape, face),
     shortId: shortenId(face.id),
     size: face.vertexIds.length,
-    sourceRole: inferFaceSourceRole(shape, face),
     lineageSummary: formatFaceLineageSummary(shape, face),
   }));
 }
@@ -3760,22 +3768,6 @@ function inferCellVertexRole(cell: Cell, vertex: Vertex): string {
 
   if (cell.sourceVertexIds.includes(vertex.id)) {
     return 'source';
-  }
-
-  return 'unknown';
-}
-
-function inferFaceSourceRole(shape: Shape, face: Face): string {
-  if (face.role === 'seed-face') {
-    return 'seed face';
-  }
-
-  if (face.sourceFaceId) {
-    return `derived from source face ${getFaceDisplayLabel(shape, face.sourceFaceId)}`;
-  }
-
-  if (face.sourceVertexId) {
-    return `derived from source vertex ${getVertexDisplayLabel(shape, face.sourceVertexId)}`;
   }
 
   return 'unknown';

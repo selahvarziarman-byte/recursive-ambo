@@ -1054,6 +1054,26 @@ function ArgumentMapSection({
           </span>
         </div>
       ))}
+      {/* TASK D (B-2026-08-23-C §5): the FACE register — the map's 2-cells,
+          each named by the door's own composer (D14 corner reading through
+          the threaded resolver; compose-over-absent reads 'unnamed'), in the
+          menu's `· n corners` grammar — one vocabulary, two doors. Beyond 8
+          the register groups like the spine does. ⚠ the ◻ glyph + the row
+          form are the DESIGNER's to settle — shipped minimal, flagged. */}
+      {argument.faceRows.length > 8 ? (
+        <div style={{ fontSize: 12.5, opacity: 0.8 }}>
+          <span style={sign}>◻ </span>
+          {argument.faceRows.length} faces
+        </div>
+      ) : (
+        argument.faceRows.map((row) => (
+          <div key={`face:${row.resultId}`} style={{ fontSize: 13 }}>
+            <span style={sign}>◻ </span>
+            <span style={sign}>{row.label}</span>
+            <span style={{ opacity: 0.75 }}> · {row.corners} corners</span>
+          </div>
+        ))
+      )}
       {argument.grainMarks.length > 0 ? (
         // THE GRAIN LAW: the lift's own honest refusal, rendered — never a
         // silently bare coarse entity presented as complete

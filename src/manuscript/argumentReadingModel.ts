@@ -46,8 +46,9 @@ import { acquireComplex } from '../lib/complexIdentification';
 import { acquireFaithfulComplex } from './surfaceClassifier';
 // D16 (B-2026-08-23-C §4): the DOOR's own per-corner lineage arm — reach +
 // level mark, ONE function shared with the menu's faceDisplayName so the
-// two readers cannot disagree (never a second composer)
-import { lineageCornerDisplay, type AbsentLabelResolver } from './apertureModel';
+// two readers cannot disagree (never a second composer). TASK D (§5): the
+// face register reads faceDisplayName itself — the composer that exists.
+import { faceDisplayName, lineageCornerDisplay, type AbsentLabelResolver } from './apertureModel';
 import { readVertexCurvatures, gaussBonnetTotal } from '../lib/conformalAtom';
 import type { AssembledComplex } from '../lib/globalW1';
 
@@ -126,6 +127,13 @@ export interface ArgumentReading {
   // the NAMED `composes`/`sharedBy` fields on the live entities (#37 GAP 1),
   // the carrier the committed loader re-roots); empty off the lift family
   composedRelationRows: ComposedRelationRow[];
+  // TASK D (B-2026-08-23-C §5): the FACE register — every face of the result
+  // NAMED by its D14-composed corner reading via the door's own composer
+  // (faceDisplayName + the threaded resolver: reach and level marks ride;
+  // the compose-over-absent guard refuses to 'unnamed', depth exactly the
+  // door's own). `corners` feeds the menu's `· n corners` grammar — one
+  // vocabulary across the card and the aperture menu. NEVER the face id.
+  faceRows: { resultId: string; label: string; corners: number }[];
 }
 
 // PHASE C (SEAL_PHASE_C_CARD_REGISTRY — the researcher's SURFACE ruling): a
@@ -783,6 +791,16 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
         ? 'a topological sphere — no metric rides the collapse'
         : null;
 
+  // TASK D (B-2026-08-23-C §5): the face register — the composer that
+  // exists, the resolver that rides; sorted by id for a stable reading
+  const faceRows = [...shape.faces]
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((face) => ({
+      resultId: face.id,
+      label: faceDisplayName(shape, face, resolveAbsent),
+      corners: face.vertexIds.length,
+    }));
+
   return {
     op,
     header: {
@@ -808,6 +826,7 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
     declare,
     grainMarks,
     composedRelationRows,
+    faceRows,
     // the receipt: which existing card rows demote under the hairline (the
     // view filters its OWN rows by these labels — nothing re-derived here)
     certificateLabels: ['χ', 'χ (certified)', 'class', 'name', 'H₁', 'w₁', 'genus', 'b₁'],
