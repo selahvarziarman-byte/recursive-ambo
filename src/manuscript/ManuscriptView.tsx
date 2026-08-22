@@ -1063,9 +1063,17 @@ function ArgumentMapSection({
           the register groups like the spine does. ⚠ the ◻ glyph + the row
           form are the DESIGNER's to settle — shipped minimal, flagged. */}
       {argument.faceRows.length > 8 ? (
-        <div style={{ fontSize: 12.5, opacity: 0.8 }}>
+        /* §9 (B-2026-08-24-B amended — her string, the SEVEN clauses): an
+           ELISION, never an entry. ◻ retained (the kind marker, clause 1) ·
+           the number is the TOTAL faceRows.length, never a remainder (2) ·
+           `in all` marks it a total (3) · `none named here` marks the
+           withheld naming POSITIVELY (4) · NO route offered — past 8 the
+           named rows do not render at all, there is nowhere to go (5) · the
+           overflow act's own muted register, not entry grammar (6) · no
+           `· N corners` on a total (7). */
+        <div style={{ fontSize: 11, opacity: 0.65 }}>
           <span style={sign}>◻ </span>
-          {argument.faceRows.length} faces
+          {argument.faceRows.length} faces in all — none named here
         </div>
       ) : (
         argument.faceRows.map((row) => (
