@@ -77,6 +77,13 @@ export interface ArgumentMapRow {
   sourceIds: string[]; // the ONE-generation sources (ids, may be empty)
   rootIds: string[]; // the ultimate roots via primalMultiset (concepts only)
   rootLabels: string[]; // the roots' real names (packet-carried, see label)
+  // §2 (B-2026-08-25-A, the designer's count ruling): the roots' PLAIN
+  // names — the positive label, the honest id tail when the packet is out
+  // of reach (a real value), or NULL for a reachable-but-absent packet.
+  // NO handles, NO 'unnamed' word: the raw fact the count form composes
+  // from (`mergedRootsPhrase`) — set notation manufactures a token per
+  // slot; the count form has no slot to fill.
+  rootOwnNames: (string | null)[];
   typing: ArgumentTyping;
   bornOf: 'face' | 'edge' | null; // the dual's trade: born OF a face/edge (p ⟷ f)
   // the lifted concept's life-line read THROUGH to its birth record
@@ -229,6 +236,46 @@ const OP_WORDS: Record<string, string> = {
 const ROOT_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const RELATION_LETTERS = 'abcdefghjklmnpqrstuvwxyz';
 
+// §2 (B-2026-08-25-A — the designer's count ruling, her table verbatim):
+// `p ← {unnamed, unnamed}` was a FALSE SENTENCE — the line's job is to say
+// p came from TWO DIFFERENT places, and identical terms say the opposite.
+// WHEN TWO TERMS IN A COMPOSED SENTENCE CANNOT BE TOLD APART BY THEIR
+// NAMES, THE SENTENCE COUNTS THEM INSTEAD OF INDEXING THEM — it says HOW
+// MANY; it does not invent labels to fill slots (set notation `{ , }`
+// demands a token per element, so it MANUFACTURES one; the count form has
+// no slot to fill). Her cases: both named → `{AB, CD}` · neither named →
+// `two unnamed roots` · one named → `{AB, one unnamed root}` · a real
+// collision → `two roots named AB`. Named-distinct roots keep set tokens;
+// a SINGLE counted group stands BARE (nothing set-like remains); a mix
+// keeps the braces with the counted phrase riding as a term.
+const COUNT_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const countWord = (n: number): string => COUNT_WORDS[n] ?? String(n);
+export function mergedRootsPhrase(names: readonly (string | null)[]): string {
+  const named = new Map<string, number>();
+  let unnamed = 0;
+  for (const n of names) {
+    if (n === null) unnamed += 1;
+    else named.set(n, (named.get(n) ?? 0) + 1);
+  }
+  const tokens: string[] = [];
+  let countedGroups = 0;
+  for (const [name, k] of named) {
+    if (k === 1) tokens.push(name);
+    else {
+      tokens.push(`${countWord(k)} roots named ${name}`);
+      countedGroups += 1;
+    }
+  }
+  if (unnamed > 0) {
+    tokens.push(unnamed === 1 ? 'one unnamed root' : `${countWord(unnamed)} unnamed roots`);
+    countedGroups += 1;
+  }
+  // a single counted group is the whole sentence — braces would dress a
+  // count as a set of one
+  if (tokens.length === 1 && countedGroups === 1) return tokens[0];
+  return `{${tokens.join(', ')}}`;
+}
+
 const letterFor = (index: number, alphabet: string): string =>
   index < alphabet.length
     ? alphabet[index]
@@ -334,6 +381,10 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
   // (a source-tagged primal of an absent universe — the id is a real value)
   const rootDisplayBase = (id: string): string =>
     ownNameOf(id) ?? (packetOf(id) ? 'unnamed' : idTail(id));
+  // §2: the same read with the ABSENCE kept as null (no 'unnamed' word, no
+  // handle) — the count form's raw fact; the id-tail arm stays a real value
+  const rootPlainOf = (id: string): string | null =>
+    ownNameOf(id) ?? (packetOf(id) ? null : idTail(id));
 
   const allRoots = new Set<string>();
   for (const vertexId of Object.keys(shape.vertices)) {
@@ -430,6 +481,7 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
         sourceIds,
         rootIds,
         rootLabels: rootIds.map(rootDisplayOf),
+        rootOwnNames: rootIds.map(rootPlainOf),
         typing,
         bornOf,
         origin: liftedForm
@@ -522,6 +574,7 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
         sourceIds,
         rootIds: [],
         rootLabels: [endpointLetters(sourceEndpoints)], // the source edge, endpoint-named
+        rootOwnNames: [], // relations carry no root set — the count form is the concepts'
         typing,
         bornOf: null,
         origin: null,

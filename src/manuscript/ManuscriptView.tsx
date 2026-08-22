@@ -98,7 +98,7 @@ import {
   type FaithfulDeficitDatum,
 } from './deficitRegisterModel';
 import { InkedDeficitLayer } from './InkedDeficitLayer';
-import { buildArgumentReading, type ArgumentReading, type ArgumentMapRow } from './argumentReadingModel';
+import { buildArgumentReading, mergedRootsPhrase, type ArgumentReading, type ArgumentMapRow } from './argumentReadingModel';
 import { buildFaithfulInkedModel } from './faithfulInkedModel';
 import type { InkedFormModel } from './inkedFormModel';
 import {
@@ -3205,6 +3205,16 @@ export default function ManuscriptView() {
       portFaces[formMenu.id] ?? null,
     );
   }, [formMenu, targetFor, portFaces]);
+  // §3 (B-2026-08-25-A): the identify chip's reason, derived FIRST so the
+  // enabled below is reason === null — totality by construction, one branch
+  // per conjunct of the old predicate (selected !== null && targetFor(...)
+  // !== null). The uncovered conjunct was reachable: `folded:` selections.
+  const identifySewReason =
+    selected === null
+      ? 'select a form first'
+      : targetFor(selected) === null
+        ? 'this specimen resolves no traceable form'
+        : null;
 
   const applyOp = useCallback(
     (operationId: string, targetId: string | null = selected): void => {
@@ -5011,14 +5021,20 @@ export default function ManuscriptView() {
                     figurePoints={anchored.figurePoints}
                     concepts={selectedArgument.conceptRows.map((r) => ({
                       id: r.resultId,
-                      // M3.2 — THE MERGED PRESENTATION (researcher-ruled): an
-                      // identified class reads `p ← {Truth, Fact}` — its OWN
-                      // name (or 'unnamed' — never an invented letter) with
-                      // the map's source names; every other row keeps the
-                      // card's own label verbatim.
+                      // M3.2 — THE MERGED PRESENTATION (researcher-ruled) →
+                      // §2 (B-2026-08-25-A, the designer's COUNT ruling): an
+                      // identified class reads its OWN name (or 'unnamed' —
+                      // never an invented letter) ← the ruled root phrase.
+                      // Roots that cannot be told apart by name are COUNTED,
+                      // never indexed — `p ← two unnamed roots`, never the
+                      // false sentence `p ← {unnamed, unnamed}` and never a
+                      // manufactured handle. Named-distinct roots keep the
+                      // set form (`p ← {AB, CD}`); a mix keeps braces with
+                      // the counted phrase as a term. One composer:
+                      // mergedRootsPhrase, from the rule's own table.
                       label:
                         r.typing === 'identified'
-                          ? `${r.ownName ?? 'unnamed'} ← {${r.rootLabels.join(', ')}}`
+                          ? `${r.ownName ?? 'unnamed'} ← ${mergedRootsPhrase(r.rootOwnNames)}`
                           : r.label,
                       kind: 'concept' as const,
                     }))}
@@ -5332,8 +5348,16 @@ export default function ManuscriptView() {
         }}
         onThickenToggle={() => setThickenOpen((cur) => !cur)}
         identifySew={{
-          enabled: selected !== null && targetFor(selected) !== null,
-          reason: selected === null ? 'select a form first' : null,
+          // §3 (B-2026-08-25-A, RULED): the reason is TOTAL over the enabled
+          // predicate BY CONSTRUCTION — enabled IS reason === null (the
+          // fold/thicken idiom), one branch per conjunct, so the chip can
+          // never grey silent (the ratified idiom: a greyed chip still
+          // SPEAKS). The second branch is REACHABLE today: a folded verdict
+          // body selects as `folded:` — a band targetFor resolves no
+          // traceable form for. ⚠ its wording names the fact only; final
+          // copy flagged to the designer.
+          enabled: identifySewReason === null,
+          reason: identifySewReason,
           open: cycleTrace !== null && cycleTrace.targetKey === selected,
         }}
         onIdentifyToggle={handleIdentifyToggle}

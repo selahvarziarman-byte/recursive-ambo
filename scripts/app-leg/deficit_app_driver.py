@@ -217,7 +217,12 @@ def drive_fold(page, key, invoke_label, side, cone_text, rim_text, min_presence)
     )
     post_concepts = [m["text"] for m in persist["marks"] if m["kind"] == "concept"]
     survivors = [t for t in post_concepts if t in set(pre_concepts)]
-    merged = [t for t in post_concepts if "← {" in t]
+    # B-2026-08-25-A §2 recut (the designer's count ruling, pinned FROM THE
+    # RULE): the fold-born rim merges TWO unnamed roots — the merged label
+    # reads the COUNT form `unnamed ← two unnamed roots`, never the false
+    # set sentence `{unnamed, unnamed}` (identical tokens say "one place
+    # twice"; the count says how many without inventing labels).
+    merged = [t for t in post_concepts if "← " in t]
     record(
         f"{key}.ringPersists",
         persist["rows"] > 0 and len(persist["marks"]) == persist["rows"] and len(survivors) >= 1,
@@ -226,8 +231,8 @@ def drive_fold(page, key, invoke_label, side, cone_text, rim_text, min_presence)
     )
     record(
         f"{key}.ringMerged",
-        len(merged) == 1 and "unnamed ← {" in merged[0],
-        f"merged labels: {merged} (ONE `p ← {{…}}` — own name or 'unnamed', never an invented letter)",
+        len(merged) == 1 and merged[0] == "unnamed ← two unnamed roots",
+        f"merged labels: {merged} (ONE merged line, the RULED count form — own name or 'unnamed', roots COUNTED never indexed)",
     )
     record(
         f"{key}.diedRowAbsent",

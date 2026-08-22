@@ -61,7 +61,7 @@ const { invokePrimitive, applyPlaygroundOperationTo } = req('src/manuscript/writ
 const { applyFoldTo } = req('src/manuscript/handGestureModel.ts');
 const { computeSeedCornerAngles } = req('src/lib/conformalAtom.ts');
 const { primalMultiset } = req('src/lib/lineage.ts');
-const { buildArgumentReading, mergedMembersOf } = req('src/manuscript/argumentReadingModel.ts');
+const { buildArgumentReading, mergedMembersOf, mergedRootsPhrase } = req('src/manuscript/argumentReadingModel.ts');
 
 let failures = 0;
 function check(label, condition) {
@@ -157,6 +157,23 @@ check('§1 (E1) the relations read the RECORDED correspondence (measured substra
     !torusReading.words.includes('die'));
 check('§1 (E1) the header speaks the map: source □ (the parent 4-gon) ⟶ result 𝕋² (the drawn immersion class)',
   torusReading !== null && torusReading.header.source === '□' && torusReading.header.result === '𝕋²');
+
+// ---------------------------------------------------------------------------
+// §1b (B-2026-08-25-A §2) — THE COUNT FORM, pinned FROM THE RULE (the
+// designer's table verbatim, never from the new output): when two terms in
+// a composed sentence cannot be told apart by their names, the sentence
+// COUNTS them instead of indexing them — set notation manufactures a token
+// per slot; the count form has no slot to fill.
+// ---------------------------------------------------------------------------
+console.log('\n----- §1b (COUNT FORM) ★★ the merged line counts what it cannot tell apart -----');
+check('§1b (COUNT FORM) ★★ HER TABLE, case for case: both named → {AB, CD} · neither named → two unnamed roots · one named → {AB, one unnamed root} · a real collision → two roots named AB — and the live torus row carries FOUR nulls in rootOwnNames (no handle, no word) whose phrase reads `four unnamed roots`, never the false sentence {unnamed, unnamed, …}',
+  mergedRootsPhrase(['AB', 'CD']) === '{AB, CD}' &&
+    mergedRootsPhrase([null, null]) === 'two unnamed roots' &&
+    mergedRootsPhrase(['AB', null]) === '{AB, one unnamed root}' &&
+    mergedRootsPhrase(['AB', 'AB']) === 'two roots named AB' &&
+    torusReading.conceptRows[0].rootOwnNames.length === 4 &&
+    torusReading.conceptRows[0].rootOwnNames.every((n) => n === null) &&
+    mergedRootsPhrase(torusReading.conceptRows[0].rootOwnNames) === 'four unnamed roots');
 
 // ---------------------------------------------------------------------------
 // §2 (E1) ★★ △⟶cone — the apex survives alone; the rim folds together

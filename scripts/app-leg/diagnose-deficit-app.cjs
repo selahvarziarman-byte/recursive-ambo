@@ -245,7 +245,7 @@ function killTree(pid) {
         check('§E-M3 ★★ THE MARKS SURVIVE THE OPERATION (the dropped-info cure): folding a marked shape births a FAITHFUL cone whose ring renders FROM ITS OWN CARD (census equal on the born) with concept labels MAPPED BY NAME from the pre-fold ring (never re-lettered) — measured on BOTH fold subjects',
           get('triangle.ringPersists').ok && get('square.ringPersists').ok,
           `triangle: ${get('triangle.ringPersists').detail} · square: ${get('square.ringPersists').detail}`);
-        check('§E-M3 ★ GENERAL + MERGED + NO FALSE MEMORIAL: an INVOKED plain shape rings from its own card (no lift special-case); the fold-born merged class wears ONE `p ← {…}` label (its OWN name or \'unnamed\' — never an invented result-letter); died rows read 0 on the absorbing fold (the memorial speaks only a TRUE death)',
+        check('§E-M3 ★ GENERAL + MERGED + NO FALSE MEMORIAL (B-2026-08-25-A §2 recut): an INVOKED plain shape rings from its own card (no lift special-case); the fold-born merged class wears ONE merged line in the RULED COUNT FORM (`unnamed ← two unnamed roots` — its OWN name or \'unnamed\', roots COUNTED never indexed, never a manufactured set token); died rows read 0 on the absorbing fold (the memorial speaks only a TRUE death)',
           get('triangle.ringGeneral').ok && get('square.ringGeneral').ok &&
             get('triangle.ringMerged').ok && get('square.ringMerged').ok &&
             get('triangle.diedRowAbsent').ok && get('square.diedRowAbsent').ok,
