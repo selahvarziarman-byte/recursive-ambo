@@ -2211,16 +2211,66 @@ export default function ManuscriptView() {
     return model ? readDomainSpecimen(model) : null;
   }, [selected, world, written, optionBByShape, dim3All, laidBodies, laidInkedById]);
 
+  // (D16 — moved ABOVE the argument memo: the card now reads through the
+  // door's resolver, so the page population and the reach must exist first;
+  // both memos are byte-identical to their pre-move selves.)
+  const shapeById = useMemo(() => {
+    const map = new Map<string, Shape>();
+    world.dim1.forEach((m) => map.set(m.shape.id, m.shape));
+    world.dim2.forEach((m) => map.set(m.immersion.shape.id, m.immersion.shape));
+    dim3All.forEach((m) => map.set(m.shape.id, m.shape));
+    written.forEach((w) => {
+      map.set(w.form.shape.id, w.form.shape);
+      if (w.form.parentShape) map.set(w.form.parentShape.id, w.form.parentShape);
+    });
+    shelf.forEach((item) => {
+      (item.entry.loaded.ancestors ?? []).forEach((ancestor) => {
+        if (!map.has(ancestor.id)) map.set(ancestor.id, ancestor);
+      });
+    });
+    return map;
+  }, [world, written, dim3All, shelf]);
+  // D12-b part 4 (engineer 1740) → 2(b) recut (ruling (i)): the door's
+  // absent-label resolver — the ×I copy's source lives OUTSIDE the product
+  // (in the base form), and the base now RIDES the product's own file as
+  // its carried ancestor, entering `shapeById` in the SAME id space the
+  // loader gave the product's `sourceVertexIds` — so the resolve is an
+  // EXACT vertex-id match over the page population, and the retired
+  // one-namespace-layer suffix walk is dead with its class. ALL
+  // positively-present candidate labels must AGREE — disagreement or none
+  // refuses (null → `unnamed`, never a silent pick). An id-copy or empty
+  // source label is no name and never resolves. A pre-2(b) band file that
+  // carries no ancestor resolves nothing and reads the honest `unnamed` —
+  // its record was never whole, and the label no longer pretends it was.
+  const resolveAbsentLabel = useMemo(() => {
+    const shapes = [...shapeById.values()];
+    return (sourceVertexIds: string[], _vertexId: string): string | null => {
+      const ref = sourceVertexIds[0];
+      if (!ref) return null;
+      const labels = new Set<string>();
+      for (const shape of shapes) {
+        for (const vertex of Object.values(shape.vertices)) {
+          if (vertex.id !== ref) continue;
+          const raw = typeof vertex.data?.label === 'string' ? vertex.data.label.trim() : '';
+          if (raw.length === 0 || raw === vertex.id) continue; // absence or manufacture — no name to carry
+          labels.add(raw);
+        }
+      }
+      return labels.size === 1 ? [...labels][0] : null;
+    };
+  }, [shapeById]);
   // THE ARGUMENT-READING CARD (Phase 1 — the MAP): the birth op's argument,
   // read from the substrate (primalMultiset roots, one-generation sources,
   // typing). Rides its OWN prop — SpecimenReading is FROZEN and untouched.
+  // D16 (B-2026-08-23-C §4): the card takes the door's resolver ENTIRE —
+  // the SAME reach the aperture menu reads through, level marks riding.
   const selectedArgument = useMemo<ArgumentReading | null>(() => {
     if (!selected) return null;
     const [band, key] = selected.split(':');
     if (band !== 'w') return null;
     const entry = written.find((w) => w.form.id === key);
-    return entry ? buildArgumentReading(entry.form) : null;
-  }, [selected, written]);
+    return entry ? buildArgumentReading(entry.form, resolveAbsentLabel) : null;
+  }, [selected, written, resolveAbsentLabel]);
   // THE RING ANCHOR RESOLVER — the TOTAL verdict for the selected specimen:
   // anchors (any rendering mode) or a DECLARED refusal the card speaks.
   const ringResolution = useMemo(() => {
@@ -2353,23 +2403,6 @@ export default function ManuscriptView() {
   // on the ShelfEntry (`loaded.ancestors`, the record being whole); without
   // this the pointer would name a shape the page could not hand the pillar
   // reader, and the sealed metric would refuse as unresolved-base.
-  const shapeById = useMemo(() => {
-    const map = new Map<string, Shape>();
-    world.dim1.forEach((m) => map.set(m.shape.id, m.shape));
-    world.dim2.forEach((m) => map.set(m.immersion.shape.id, m.immersion.shape));
-    dim3All.forEach((m) => map.set(m.shape.id, m.shape));
-    written.forEach((w) => {
-      map.set(w.form.shape.id, w.form.shape);
-      if (w.form.parentShape) map.set(w.form.parentShape.id, w.form.parentShape);
-    });
-    shelf.forEach((item) => {
-      (item.entry.loaded.ancestors ?? []).forEach((ancestor) => {
-        if (!map.has(ancestor.id)) map.set(ancestor.id, ancestor);
-      });
-    });
-    return map;
-  }, [world, written, dim3All, shelf]);
-
   // THE APERTURE per dim-3 domain: the GATE first (unsound · fit refusal ⇒
   // DRAW NOTHING, SAY SO — the refusal IS the caption; B.0: a sound cone form
   // draws — k≠4 is a cone edge, never a curved ambient), else the
@@ -2609,35 +2642,8 @@ export default function ManuscriptView() {
     if (resolved.baseId !== null || resolved.ambiguity !== null) return resolved;
     return { baseId: pointer, ambiguity: null };
   }, [apertureVolume, shapeById]);
-  // D12-b part 4 (engineer 1740) → 2(b) recut (ruling (i)): the door's
-  // absent-label resolver — the ×I copy's source lives OUTSIDE the product
-  // (in the base form), and the base now RIDES the product's own file as
-  // its carried ancestor, entering `shapeById` in the SAME id space the
-  // loader gave the product's `sourceVertexIds` — so the resolve is an
-  // EXACT vertex-id match over the page population, and the retired
-  // one-namespace-layer suffix walk is dead with its class. ALL
-  // positively-present candidate labels must AGREE — disagreement or none
-  // refuses (null → `unnamed`, never a silent pick). An id-copy or empty
-  // source label is no name and never resolves. A pre-2(b) band file that
-  // carries no ancestor resolves nothing and reads the honest `unnamed` —
-  // its record was never whole, and the label no longer pretends it was.
-  const resolveAbsentLabel = useMemo(() => {
-    const shapes = [...shapeById.values()];
-    return (sourceVertexIds: string[], _vertexId: string): string | null => {
-      const ref = sourceVertexIds[0];
-      if (!ref) return null;
-      const labels = new Set<string>();
-      for (const shape of shapes) {
-        for (const vertex of Object.values(shape.vertices)) {
-          if (vertex.id !== ref) continue;
-          const raw = typeof vertex.data?.label === 'string' ? vertex.data.label.trim() : '';
-          if (raw.length === 0 || raw === vertex.id) continue; // absence or manufacture — no name to carry
-          labels.add(raw);
-        }
-      }
-      return labels.size === 1 ? [...labels][0] : null;
-    };
-  }, [shapeById]);
+  // (D16: `resolveAbsentLabel` — the D12-b/2(b) door resolver — moved above
+  // the argument memo with `shapeById`; the aperture reads it from there.)
   const apertureFaceMenu = useMemo(() => {
     if (!apertureVolume) return [];
     try {

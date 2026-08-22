@@ -44,6 +44,10 @@ import type { WrittenForm } from './writtenFormModel';
 import { recoverBornSurface } from '../playground/bornFormRouting';
 import { acquireComplex } from '../lib/complexIdentification';
 import { acquireFaithfulComplex } from './surfaceClassifier';
+// D16 (B-2026-08-23-C §4): the DOOR's own per-corner lineage arm — reach +
+// level mark, ONE function shared with the menu's faceDisplayName so the
+// two readers cannot disagree (never a second composer)
+import { lineageCornerDisplay, type AbsentLabelResolver } from './apertureModel';
 import { readVertexCurvatures, gaussBonnetTotal } from '../lib/conformalAtom';
 import type { AssembledComplex } from '../lib/globalW1';
 
@@ -281,7 +285,11 @@ function resultNameFor(form: WrittenForm): string {
   return form.title.split('—')[0].trim() || form.shape.name || 'this form';
 }
 
-export function buildArgumentReading(form: WrittenForm): ArgumentReading {
+// D16 (B-2026-08-23-C §4): the card takes the door's resolver ENTIRE — the
+// view hands in ITS OWN AbsentLabelResolver (the page-population reach the
+// aperture menu already reads through). Optional: a caller without a page
+// (the witnesses' direct reads) keeps the pre-D16 composition unchanged.
+export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLabelResolver): ArgumentReading {
   const shape = form.shape;
   const parent = form.parentShape ?? null;
   const op = shape.genealogy.operation;
@@ -382,10 +390,19 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
                 ? 'survived'
                 : 'born';
       // the concept's name: its OWN packet first; a class without an
-      // independent name (id-as-label) reads through its members' real names
+      // independent name (id-as-label) reads through its members' real names.
+      // D16: BEFORE the root composition, the DOOR's lineage arm — exactly
+      // the corner the menu resolves (absent own name, ONE creation source)
+      // reads reach + level mark (`AD₀`/`AD₁` — the same strings the
+      // aperture menu shows), so the two ×I copies stay distinct and the
+      // duplicate-name letter below goes QUIET (it stands, guarding
+      // genuinely duplicate real names).
       const own = ownNameOf(vertexId);
+      const viaDoor =
+        own === null ? lineageCornerDisplay(creation.sourceVertexIds, vertexId, resolveAbsent) : null;
       const label =
         own ??
+        viaDoor ??
         (rootIds.length > 0 && !(rootIds.length === 1 && rootIds[0] === vertexId)
           ? rootIds.map(rootDisplayOf).join('·')
           : packetOf(vertexId)
@@ -427,6 +444,14 @@ export function buildArgumentReading(form: WrittenForm): ArgumentReading {
     if (rootLabelOf.has(id)) return rootLabelOf.get(id) as string;
     const own = ownNameOf(id);
     if (own) return own;
+    // D16: the door's lineage arm here too — the SAME resolver names every
+    // register the card reads (a rung's ends read `V0₀·V0₁`, never the
+    // level-blind `v0·v0`); presence-first order unchanged
+    const creationSources =
+      (shape.vertices[id] ?? parent?.vertices[id] ?? (form.parentShapes ?? []).map((s) => s.vertices[id]).find(Boolean))
+        ?.createdBy?.sourceVertexIds ?? [];
+    const viaDoor = lineageCornerDisplay(creationSources, id, resolveAbsent);
+    if (viaDoor !== null) return viaDoor;
     // a parent endpoint may itself be a merged class — resolve to its roots
     const roots = shape.vertices[id]
       ? [...primalMultiset(id, shape, memo).keys()].sort()

@@ -561,6 +561,28 @@ function levelMarkOf(vertexId: string): string {
     .join('');
 }
 
+// D16 (B-2026-08-23-C §4): the door's per-corner LINEAGE ARM, extracted so
+// the argument card can take the resolver ENTIRE — the page-population
+// REACH (the caller's AbsentLabelResolver) AND the LEVEL MARK (the ×I copy
+// id's own `@k` tail). ONE resolver, two readers — the menu's
+// faceDisplayName and the card's labels cannot disagree by construction.
+// Null when the absence does not resolve (no resolver handed in, not
+// exactly one source, or no agreed positive label) — each caller keeps its
+// own honest fallback ('unnamed' at the menu; the root composition at the
+// card).
+export function lineageCornerDisplay(
+  sourceVertexIds: readonly string[],
+  vertexId: string,
+  resolveAbsent?: AbsentLabelResolver,
+): string | null {
+  const resolved =
+    resolveAbsent && sourceVertexIds.length === 1
+      ? resolveAbsent([...sourceVertexIds], vertexId)
+      : null;
+  if (resolved === null || resolved.trim().length === 0) return null;
+  return `${resolved.trim().toUpperCase()}${levelMarkOf(vertexId)}`;
+}
+
 export function faceDisplayName(shape: Shape, face: Face, resolveAbsent?: AbsentLabelResolver): string {
   const labels: string[] = [];
   for (const vertexId of face.vertexIds) {
@@ -580,9 +602,9 @@ export function faceDisplayName(shape: Shape, face: Face, resolveAbsent?: Absent
     // id-copy source label through lineage resolution.)
     if (trimmed.length === 0) {
       const sources = vertex?.createdBy?.sourceVertexIds ?? [];
-      const resolved = resolveAbsent && sources.length === 1 ? resolveAbsent(sources, vertexId) : null;
-      if (resolved === null || resolved.trim().length === 0) return 'unnamed';
-      labels.push(`${resolved.trim().toUpperCase()}${levelMarkOf(vertexId)}`);
+      const display = lineageCornerDisplay(sources, vertexId, resolveAbsent);
+      if (display === null) return 'unnamed';
+      labels.push(display);
       continue;
     }
     labels.push(trimmed.toUpperCase());
