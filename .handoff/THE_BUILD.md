@@ -135,7 +135,61 @@ Your finding: the port/cut-face menu lists **`unnamed · 4 corners` ×12** for *
 ## 9 · NOT YOURS
 ⚠ **The disambiguator's form** — hers. **You designed nothing, correctly.**
 ⚠ **The `◻` glyph — ruled by her on my measurement, and it STAYS** *(the card is ONE FLAT SEQUENCE with `† — ◻ ⚠` sigils, not homogeneous blocks; kind is what CHANGES row to row, so the glyph is vocabulary, not noise)*. ✔ **`· 4 corners` stays.**
-⚠ **BUT `◻ {N} faces` (the `> 8` elision at `ManuscriptView.tsx:1063`) IS COMING** — she ruled **the glyph innocent and the ROW'S GRAMMAR wrong: an ENTRY and an ELISION are wearing the same shape**, so it must read as *there is more here than I am showing* and never as an item called "12 faces." ⛔ **Not yours yet — she is writing the string.** **Do not touch that row in this build.**
+### ✅ **THE ELISION ROW — her string LANDED, with a clause checklist. Build it.**
+**`ManuscriptView.tsx:1063` — the `> 8` summary row. She ruled the glyph INNOCENT and the ROW'S GRAMMAR wrong: an ENTRY and an ELISION were wearing the same shape.**
+> ### **`◻ 12 faces in all — none named here`**
+⛔ **Ship all SEVEN clauses. A missing one is a defect, not a trim:**
+| # | clause | why |
+|---|---|---|
+| 1 | **`◻` retained** | the kind marker, unconditional on face rows |
+| 2 | **the number is `faceRows.length`** | ⛔ the TOTAL, never a remainder — `12`, not "12 more" |
+| 3 | **`in all`** | marks it a TOTAL; without it the eye reads a remainder — a different sentence entirely |
+| 4 | **`none named here`** | ⛔ the withheld naming, POSITIVELY marked — else he infers from an absence that the card has nothing to say |
+| 5 | ⛔ **NO route implied** | no *scroll* / *expand* / *show all* — **past 8 the named rows do not render at all, so there is nowhere to go.** *An offer of a route that is not there is the invitation defect one register down.* |
+| 6 | **elision grammar, not entry grammar** | it is the `▼ … in all` overflow act, not an item in the list |
+| 7 | ⛔ **no `· N corners`** | that suffix belongs to a NAMED face row; on a total it describes nothing |
+✔ **LAW 23 holds: he cannot count 12 on the card, but he can count them on the FIGURE — the number is checkable at the surface that owns it.**
+
+---
+
+## 9b · ⛔⛔ **NEW — ARMAN DROVE AN OCTAHEDRON INTO MANUSCRIPT AND ONLY `collapse` WOULD TAKE IT. MEASURE THIS. Do not cure it.**
+
+**His words: *"surely that is wrong!"* — and he is right.** ✔ **I traced the gates in committed source @ `a4f7d04`; the chain is ✔, what he SAW is ⚠ and that is your half.**
+
+**THE CHAIN, in firing order:**
+1. **The 5 word ops** (`glue-torus`, `glue-cylinder`, `flip-glue`, `flip-glue-klein`, `flip-glue-mobius`) hit **`singleFaceGateReason` — FORM-level, fires before any face-level test**: an octahedron is a COMPLEX (8 faces), so the word *"denotes nothing."* ✔ **Correct refusal**, and its sentence **reroutes him: *"use identify / the sew-boundary-\* ops."***
+2. **`sew-boundary-*` then refuses him too** — `sewEligibilityReason` → `boundary.circles < 2` ⇒ **`"The form has 0 boundary circles — sewing needs two."`** ✔ **Also correct: the octahedron is CLOSED.**
+3. ⛔⛔ **I WROTE THAT `identify` IS NOT ON THE DOCK. THAT WAS FALSE, AND ARMAN PRODUCED THE SCREENSHOT.** **`identify` IS there** — a hand-built chip at **`ManuscriptChrome.tsx:1429–1492`**, rendered OUTSIDE `DOCK_OPERATION_GROUPS`, tooltip *"identify — trace two walks; the seam is the way you sew them."*
+> ⛔ **MY ERROR, exactly: I enumerated ONE producer (`DOCK_OPERATION_GROUPS`) and wrote "the dock IS glue · flip-glue · … · thicken" — a CLOSED list over a set I had not swept.** ***A census runs in two directions, and a definite article about an un-enumerated set is the tell.*** **The tell was in my own sentence.** ⚠ **Treat nothing in this section as ✔ unless it names a line.**
+
+> ### ⇒ **BUT THE MEASUREMENT THE CORRECTION EXPOSED IS BETTER THAN THE CLAIM IT KILLED.** `ManuscriptView.tsx:5326-5330`:
+> ```js
+> identifySew={{
+>   enabled: selected !== null && targetFor(selected) !== null,
+>   reason:  selected === null ? 'select a form first' : null,
+> }}
+> ```
+> ⛔ **The `enabled` predicate has TWO conjuncts. The `reason` covers ONE.** ⇒ **When a form IS selected but `targetFor` does not resolve it, the chip is DISABLED with `reason: null` — it greys out and SAYS NOTHING.**
+> ★★★ **And the idiom it breaks is written ten lines below it, at `:1498`: *"a greyed chip still SPEAKS."*** ⇒ ⛔ **From his chair a silent greyed chip is INDISTINGUISHABLE FROM AN ABSENT ONE — which is exactly the report we got.**
+> ⇒ ***A REASON MUST COME FROM THE PREDICATE THAT IS THE REFUSAL. A refusal computed from a different predicate than its enablement goes SILENT on every case the two do not share.*** *(One register over from: a count must come from a predicate that IS the claim.)*
+> ★ **And `reason: null` here is an ABSENCE carrying a POSITIVE FACT** — the very thing positive-presence forbids.
+
+⚠ **`targetFor` (`:2583`) is a BAND LOOKUP, not a topology test** — so I do NOT know whether identify was live for his octahedron, and **I am not going to guess again.**
+
+> ### ⇒ **YOUR TASK IS A MEASUREMENT, NOT A CUT. Drive an octahedron into Manuscript and report:**
+> 1. **EVERY affordance on the dock — the group glyphs AND the separate chips (identify, explore, and any others I have not enumerated).** ⛔ **Enumerate them from the SCREEN, not from a constant.** **Name all N.**
+> 2. **For each: enabled or not, and the EXACT sentence it shows** — with the form selected, and with nothing selected.
+> 3. ⛔ **Specifically: is `identify` enabled on a selected octahedron? If it is DISABLED, does it say anything at all?**
+> 4. **Press the word ops and quote the refusal verbatim, then follow its reroute and report what you find at the far end.**
+
+★ **One live candidate I still believe but have NOT confirmed: `cut` has no form-level gate, and a closed solid must be CUT before anything can be identified — cutting is what makes the boundary the rim-addressed gestures need.** ⚠ **⚠ on me, not ✔. Measure it.**
+
+## 9c · ⚠ **THE MEANING QUESTION UNDER IT — routed to the RESEARCHER, not to you**
+Arman: ***"can you not get RP² from an octahedron by identification of antipodal vertices?"*** ⇒ ✔ **You can — that is the classical construction: quotient the octahedron by the antipodal map and you get RP² as a cell complex with 3 vertices, 6 edges, 4 faces, χ = 1.**
+⇒ ⛔ **But EVERY identification gesture in the dock is addressed to a BOUNDARY** — the word ops fold a polygon's rim, `fold` writes a rim's own word, `sew` joins two rims. **A closed form has no rim.** ⇒ **A free-involution self-quotient of a CLOSED complex has no gesture I can find, and that is the module's own foundation stone one stratum up.**
+⛔ **Not yours. Do not build toward it.** ⚠ **And do not treat my "I could not find it" as "it does not exist" — if you meet the gesture while driving, that is a finding and it outranks this paragraph.**
+
+---
 
 ## 10 · ORDER, AND WHAT MUST LAND
 **R1 → §6 rows → R2 → R7 → §7 → §8 → §5 (its own commit, last).**
