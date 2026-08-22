@@ -204,7 +204,7 @@ check('faceIdentification · level3SoundnessGate · connectedSum · multiform ·
 
 // ═════ [7] the ladder — rung 2 reaches, rung 3 reports its wall ═══════════════════
 console.log('\n----- [7] THE LADDER: rung 2 (thicken T² — the chain REACHES) · rung 3 (the T³ arithmetic + the honest wall) (clauses 7–8) -----');
-check('★ RUNG 2 STANDS AND THE ACQUISITION CHAIN REACHES ITS SECOND REAL CALLER: the quotient T²\'s complex arrives through the chain (source: \'recovered\' — the committed replay; at THE SEAM the chain returned NULL for parentless unions, and rung 2\'s plain born form is exactly what it CAN reach — measured, the researcher\'s long-owed item meets a caller and answers) · thicken(T²) = V2 E5 F4 C1, χ = 0 — the n_k law on a quotient input (2·1 · 2·2+1 · 2·1+2 · 0+1) · and the BOUND is a door: thicken on the 3-form refuses VERBATIM ("the product of two surfaces is a 4-manifold; this engine stops at 3.")',
+check('★ RUNG 2 STANDS AND THE ACQUISITION CHAIN REACHES ITS SECOND REAL CALLER: the quotient T²\'s complex arrives through the chain (source: \'recovered\' — the committed replay; at THE SEAM the chain returned NULL for parentless unions, and rung 2\'s plain born form is exactly what it CAN reach — measured, the researcher\'s long-owed item meets a caller and answers) · thicken(T²) = V2 E5 F4 C1, χ = 0 — the n_k law on a quotient input (2·1 · 2·2+1 · 2·1+2 · 0+1) · and the BOUND is a door refusing VERBATIM with the R7 recut sentence that names the TRUE operands ("this form carries a 3-cell — a solid × a segment is a 4-manifold; this engine stops at 3.")',
   (() => {
     const sq2 = loadForm(nGon(4), 'thkR2');
     const t2 = executeCustomGlue(sq2, sq2.faces[0], [
@@ -227,7 +227,7 @@ check('★ RUNG 2 STANDS AND THE ACQUISITION CHAIN REACHES ITS SECOND REAL CALLE
     note(`the bound: "${refusal ?? 'NO REFUSAL?!'}"`);
     return acq.source === 'recovered' &&
       Object.keys(s.vertices).length === 2 && s.edges.length === 5 && s.faces.length === 4 && s.cells.length === 1 &&
-      chi === 0 && refusal === 'thicken: the product of two surfaces is a 4-manifold; this engine stops at 3.';
+      chi === 0 && refusal === 'thicken: this form carries a 3-cell — a solid × a segment is a 4-manifold; this engine stops at 3.';
   })());
 check('RUNG 3 REPORTS AND STOPS (as the mandate allows): identifying the T²-band\'s two boundary tori (f×0 ~ f×1) WOULD land the committed T³ cell-for-cell by arithmetic (V2E5F4C1 → identify one vertex pair, two edge pairs, one face pair → V1 E3 F3 C1 — the committed 3-torus\'s exact counts), and readSeedCell now accepts the band (4 faces) — but the identification door itself refuses the QUOTIENT rim: the pairing map is a bijection over cycle CORNERS, and the band-of-T²\'s face cycles are degenerate (one vertex class repeated) — the same quotient-degeneracy the rim module solved at level 2 by working at the (polygon, word) level. The wall is MEASURED and NAMED; hanging that door is its own run',
   (() => {

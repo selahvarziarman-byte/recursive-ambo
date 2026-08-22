@@ -29,9 +29,12 @@
 // mechanism.
 //
 // THE BOUND IS A DOOR (LAW 14): a form carrying 3-cells is refused by name —
-// "the product of two surfaces is a 4-manifold; this engine stops at 3." The
-// TWISTED I-bundle is NOT a product (twisted = product THEN identify) and no
-// primitive for it exists here.
+// "this form carries a 3-cell — a solid × a segment is a 4-manifold; this
+// engine stops at 3." (R7, B-2026-08-24-B §4: the old sentence said "two
+// surfaces" over operands that are a SOLID and a SEGMENT — the refusal now
+// names what the person actually did.) The TWISTED I-bundle is NOT a
+// product (twisted = product THEN identify) and no primitive for it exists
+// here.
 //
 // RUNG 1 PINS THE INPUT THE PERSON CAN ACTUALLY HAND IT (her law): the
 // engine's S¹ is an n-CYCLE (V3E3F0 — the lifted tetra-face rim), never the
@@ -149,7 +152,9 @@ export function segmentGateReason(form: Shape): string | null {
 
 export function thicken(form: Shape, segment?: Shape, name?: string): ThickenResult {
   if (form.cells.length > 0) {
-    throw new Error('thicken: the product of two surfaces is a 4-manifold; this engine stops at 3.');
+    throw new Error(
+      'thicken: this form carries a 3-cell — a solid × a segment is a 4-manifold; this engine stops at 3.',
+    );
   }
   if (segment !== undefined) {
     const refusal = segmentGateReason(segment);
