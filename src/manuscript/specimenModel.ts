@@ -51,6 +51,14 @@ export interface SpecimenReading {
   rows: SpecimenRow[];
   legend: SpecimenLegendEntry[];
   twist: string | null; // non-null iff the certifier reads non-orientable
+  // §5(a) (B-2026-08-24-B, the designer's layout ruling): the NOTE REGISTER —
+  // a clause that explains why a judgement does not exist leaves the value
+  // column and lives here, SHARING the register with the twist note, each
+  // note NAMING ITS OWN SUBJECT (two notes are never told apart by
+  // position). The χ clauses ride here now; the χ VALUE keeps the bare
+  // number. Optional so readings without notes (and the frozen
+  // classBodyModel's objects, which predate the field) stand unchanged.
+  notes?: string[];
 }
 
 const SURFACE_TITLES: Record<string, string> = {
@@ -127,31 +135,48 @@ export function readSkeletonSpecimen(model: SkeletonModel): SpecimenReading {
 export function readDomainSpecimen(model: DomainModel): SpecimenReading {
   const tower = model.tower;
   const counts = model.complex.counts;
-  // THE CARD UNION (B-2026-08-22-C, sanctioned frozen edit): the χ row's
-  // TWO GRAMMARS are deliberate and must not be unified — a PARENTHESIS
-  // says a judgement was made; a `·` clause says why no judgement exists
-  // (he can tell them apart before reading a word of either). The two `·`
-  // strings differ because the silences have opposite reasons: bounded is
-  // a SOUND object the closed-check does not fit; unsound is not an object
-  // the check can be asked of. `a bare count` hands him what he HAS (an
-  // alternating sum of cells is a real thing — the row is never a verdict
-  // on his failure), and `the S² gate` points back at the thing that made
-  // the call in his own vocabulary — it does NOT re-diagnose the refusal.
-  // One producer: `tower.isClosed` drives this fork, the χ predicate, and
-  // the subtitle below. ⚠ layout (the `·` strings in a value column) is
-  // the DESIGNER's, settled off a frame — shipped in the value per ruling.
-  const chiRow = !tower.sound
-    ? `${tower.chi} · a bare count — the S² gate found no manifold for χ to describe`
+  // THE CARD UNION (B-2026-08-22-C) → §5(a) (B-2026-08-24-B, the designer's
+  // words landed): the TWO GRAMMARS stand — a PARENTHESIS says a judgement
+  // was made; a clause says why no judgement exists — but the CLAUSE MOVES
+  // TO THE NOTE REGISTER and the VALUE keeps the bare number (the measured
+  // defect: the in-value clause wrapped the label mid-symbol, "Euler / χ"
+  // interleaving with its own lines). The two clauses differ because the
+  // silences have opposite reasons: bounded is a SOUND object the
+  // closed-check does not fit; unsound is not an object the check can be
+  // asked of. Each note NAMES ITS SUBJECT (`χ — …`) so it shares the note
+  // register with the twist note without positional ambiguity — her exact
+  // words, verbatim. One producer: `tower.isClosed` drives this fork, the
+  // χ predicate, and the subtitle below.
+  const chiRow =
+    tower.sound && tower.isClosed
+      ? `${tower.chi}${tower.chiConsistent === true ? ' (consistent)' : tower.chiConsistent === false ? ' (INCONSISTENT)' : ''}`
+      : `${tower.chi}`;
+  const chiNote = !tower.sound
+    ? 'χ — a bare count; the S² gate found no manifold for it to describe'
     : !tower.isClosed
-      ? `${tower.chi} · the closed-world check does not apply to a room`
-      : `${tower.chi}${tower.chiConsistent === true ? ' (consistent)' : tower.chiConsistent === false ? ' (INCONSISTENT)' : ''}`;
+      ? 'χ — the closed-world check does not apply to a room'
+      : null;
+  // §5(b) (B-2026-08-24-B): the QUANTIFIER is asserted only after the thing
+  // it quantifies is known — 0 pairs is a bare count; ONE pair reads its
+  // own mode; N alike read `all <mode>`; N unlike read `mixed`. (The old
+  // row hardcoded `all` before the fork and printed `mixed` over a single
+  // reversing pair.)
+  const pairModes = model.pairs.map((p) => p.mode);
+  const facePairsRow =
+    pairModes.length === 0
+      ? '0'
+      : pairModes.length === 1
+        ? `1 (${pairModes[0]})`
+        : pairModes.every((m) => m === pairModes[0])
+          ? `${pairModes.length} (all ${pairModes[0]})`
+          : `${pairModes.length} (mixed)`;
   const rows: SpecimenRow[] = [
     { label: 'S² gate', value: tower.sound ? 'sound' : 'NOT sound' },
     { label: 'Euler χ', value: chiRow },
     { label: 'orientable', value: tower.orientable ? 'yes' : 'no' },
     { label: 'H₁ (= π₁ abelianized)', value: tower.homology.H1.pretty, emphasize: true },
     { label: 'CW counts', value: `v ${counts.v} · e ${counts.e} · f ${counts.f} · c ${counts.c}` },
-    { label: 'face-pairs', value: `${model.pairs.length} (all ${model.pairs.every((p) => p.mode === 'preserving') ? 'preserving' : 'mixed'})` },
+    { label: 'face-pairs', value: facePairsRow },
   ];
   return {
     kind: 'domain',
@@ -170,5 +195,6 @@ export function readDomainSpecimen(model: DomainModel): SpecimenReading {
     rows,
     legend: [], // the domain draws pairing marks, not H₁ loop representatives
     twist: tower.orientable ? null : 'w₁ ≠ 0 — non-orientable (the twist)',
+    notes: chiNote === null ? [] : [chiNote],
   };
 }
