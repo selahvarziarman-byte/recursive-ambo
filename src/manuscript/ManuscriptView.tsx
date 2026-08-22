@@ -4462,6 +4462,10 @@ export default function ManuscriptView() {
                 model={model}
                 color={inkFor(`dim1:${model.key}`, model.shape.id, silhouetteCtl.color)}
                 lineWidth={d.world.skeleton.lineWidth}
+                // §8 (RULED): ≥24px hit region on the stroke, ink unchanged;
+                // withheld while selected so the correspondence pick layer
+                // keeps first claim on the corners
+                pickWidth={selected === `dim1:${model.key}` ? undefined : 24}
               />
             </group>,
           ),
@@ -4762,6 +4766,7 @@ export default function ManuscriptView() {
                   model={render.model}
                   color={inkFor(id, entry.form.shape.id, silhouetteCtl.color)}
                   lineWidth={d.world.skeleton.lineWidth}
+                  pickWidth={selected === id ? undefined : 24}
                 />
               </group>
             ) : render.mode === 'classBody' ? (

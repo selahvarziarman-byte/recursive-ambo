@@ -17,11 +17,23 @@ export function InkedSkeleton({
   color,
   lineWidth,
   position = [0, 0, 0],
+  pickWidth,
 }: {
   model: SkeletonModel;
   color: string;
   lineWidth: number;
   position?: Vec3;
+  // §8 (B-2026-08-24-B, RULED): the dim-1 HIT REGION — an INVISIBLE stroke
+  // ≥24px wide over the same segments widens the raycast target while the
+  // INK stays hairline (the look does not change). It follows the drawn
+  // stroke only — a loop's hollow is NEVER pickable (a 1-complex is not a
+  // disk; a fillable interior would teach a false ontology). The ruled
+  // failure mode this kills: a hairline target and a broken door produce
+  // the same observation — a person concludes the capability is absent.
+  // Undefined/0 renders no pick stroke (the view withholds it while the
+  // specimen is SELECTED, so the correspondence pick layer keeps first
+  // claim on the corners).
+  pickWidth?: number;
 }) {
   const segments = useMemo(() => {
     const points: [number, number, number][] = [];
@@ -37,6 +49,17 @@ export function InkedSkeleton({
   return (
     <group position={position}>
       <Line segments points={segments} color={color} lineWidth={lineWidth} />
+      {pickWidth ? (
+        <Line
+          segments
+          points={segments}
+          color={color}
+          lineWidth={pickWidth}
+          transparent
+          opacity={0}
+          depthWrite={false}
+        />
+      ) : null}
     </group>
   );
 }
