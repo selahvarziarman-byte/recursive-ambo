@@ -2743,11 +2743,25 @@ export default function ManuscriptView() {
       let mapChoices: { key: string; label: string }[] = [];
       if (apertureVolume && row.faceA && row.faceB && row.faceA !== row.faceB) {
         try {
-          mapChoices = dihedralMapCandidates(apertureVolume, row.faceA, row.faceB).map((c) => ({
-            key: c.key,
-            label: describeCandidate(c),
-          }));
-        } catch {
+          // B-101 §2b rider: the per-candidate refusals are COLLECTED — an
+          // empty menu is never silently unexplained (the dev register warns;
+          // the person-facing sentence for an all-refused pair awaits the
+          // designer's wording, reported not invented)
+          const refusals: { key: string; reason: string }[] = [];
+          mapChoices = dihedralMapCandidates(apertureVolume, row.faceA, row.faceB, (r) => refusals.push(r)).map(
+            (c) => ({
+              key: c.key,
+              label: describeCandidate(c),
+            }),
+          );
+          if (mapChoices.length === 0 && refusals.length > 0) {
+            console.warn(
+              `aperture: every identification candidate for ${row.faceA} ~ ${row.faceB} was refused by the fit`,
+              refusals,
+            );
+          }
+        } catch (error) {
+          console.warn(`aperture: the candidate build threw for ${row.faceA} ~ ${row.faceB}`, error);
           mapChoices = [];
         }
       }

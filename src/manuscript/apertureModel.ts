@@ -151,11 +151,14 @@ interface SeedGeometry {
   faceById: Map<string, { id: string; cycle: string[] }>;
   faceCentroid: (faceId: string) => V3;
   // D2: the frame that orients a face's INSIDE — the face's OWNING cell's
-  // vertex centroid + bounds on a multi-cell volume (resolved by the id's
-  // `c{i}:` prefix), the one cell's committed centroid/bbox on a single-cell
-  // volume (byte-identical there). The deck fit's fifth constraint reads
-  // sidedness through the centroid; its off-itself witness reads the bounds.
-  insideFrameOf: (faceId: string) => { centroid: V3; lo: V3; hi: V3 };
+  // vertex centroid + bounds + its OWN face cycles on a multi-cell volume
+  // (resolved by the id's `c{i}:` prefix), the one cell's committed
+  // centroid/bbox/faces on a single-cell volume (byte-identical there). The
+  // deck fit's fifth constraint reads sidedness through the centroid; its
+  // off-itself witness reads the CELL's planes (B-101 §2b(i): the bbox
+  // over-covers any cell that under-fills its box — the lifted octahedron's
+  // every true deck neighbour landed in the slack and was refused).
+  insideFrameOf: (faceId: string) => { centroid: V3; lo: V3; hi: V3; faces: { cycle: string[] }[] };
 }
 
 export function readSeedGeometry(seedShape: Shape): SeedGeometry {
@@ -202,9 +205,10 @@ export function readSeedGeometry(seedShape: Shape): SeedGeometry {
       1 / f.cycle.length,
     );
   };
-  const insideFrameOf = (faceId: string): { centroid: V3; lo: V3; hi: V3 } => {
+  const insideFrameOf = (faceId: string): { centroid: V3; lo: V3; hi: V3; faces: { cycle: string[] }[] } => {
     const m = /^c(\d+):/.exec(faceId);
-    if (!m || seedShape.cells.length <= 1) return { centroid: cellCentroid, lo: bboxLo, hi: bboxHi };
+    if (!m || seedShape.cells.length <= 1)
+      return { centroid: cellCentroid, lo: bboxLo, hi: bboxHi, faces: seed.faces.map((f) => ({ cycle: f.cycle })) };
     const cell = seedShape.cells[Number(m[1])];
     if (!cell) throw new Error(`apertureModel: face ${faceId} names cell ${m[1]}, which does not exist`);
     const pts = cell.vertexIds.map(positionOf);
@@ -215,6 +219,8 @@ export function readSeedGeometry(seedShape: Shape): SeedGeometry {
         lo[k] = Math.min(lo[k], p[k]);
         hi[k] = Math.max(hi[k], p[k]);
       }
+    // the owning cell's OWN face cycles, raw ids (positionOf strips prefixes)
+    const owned = new Set(cell.faceIds);
     return {
       centroid: mulS(
         pts.reduce((acc, p) => add(acc, p), [0, 0, 0] as V3),
@@ -222,6 +228,7 @@ export function readSeedGeometry(seedShape: Shape): SeedGeometry {
       ),
       lo,
       hi,
+      faces: seedShape.faces.filter((f) => owned.has(f.id)).map((f) => ({ cycle: f.vertexIds })),
     };
   };
   return { seed, positionOf, cellCentroid, bboxLo, bboxHi, faceById, faceCentroid, insideFrameOf };
@@ -325,11 +332,33 @@ export function fitDeckIsometry(geometry: SeedGeometry, pairing: FacePairing): {
   // WITNESS (2): the fit MOVES THE CELL OFF ITSELF — a deck transformation of
   // a fundamental domain never fixes it (the 4-coplanar rotation does: it
   // pins the centroid and the fit silently passes as the wrong isometry).
-  // D2: the cell is faceA's OWNING cell (its frame) — on a single-cell
-  // volume this is the committed centroid/bbox to the byte.
+  // D2: the cell is faceA's OWNING cell (its frame). B-101 §2b(i), MEASURED:
+  // the old bbox test was exact only where cell == bbox (every cube); a cell
+  // that under-fills its box (the lifted octahedron — bbox [-1,1]³, every
+  // true deck neighbour's centroid at (±2/3,±2/3,±2/3)) put ALL its real
+  // isometries in the slack and the guard refused the entire menu. Inside is
+  // now the CELL itself: strictly on the centroid's side of every face plane.
   const frameA = insideFrameOf(pairing.faceA);
   const movedCentroid = applyPoint(g, frameA.centroid);
-  const inside = [0, 1, 2].every((k) => movedCentroid[k] > frameA.lo[k] + 1e-9 && movedCentroid[k] < frameA.hi[k] - 1e-9);
+  const inside = frameA.faces.every((face) => {
+    let n: V3 = [0, 0, 0];
+    for (let k = 0; k < face.cycle.length; k += 1) {
+      const p = positionOf(face.cycle[k]);
+      const q = positionOf(face.cycle[(k + 1) % face.cycle.length]);
+      n = add(n, [(p[1] - q[1]) * (p[2] + q[2]), (p[2] - q[2]) * (p[0] + q[0]), (p[0] - q[0]) * (p[1] + q[1])]);
+    }
+    const len = Math.hypot(n[0], n[1], n[2]);
+    if (len < 1e-12) return true; // a degenerate face constrains nothing
+    n = mulS(n, 1 / len);
+    const fc = mulS(
+      face.cycle.reduce((acc, id) => add(acc, positionOf(id)), [0, 0, 0] as V3),
+      1 / face.cycle.length,
+    );
+    const sideOfCentroid = dot(n, sub(frameA.centroid, fc));
+    if (Math.abs(sideOfCentroid) < 1e-12) return true; // a plane through the centroid constrains nothing
+    const sideOfMoved = dot(n, sub(movedCentroid, fc));
+    return sideOfMoved * Math.sign(sideOfCentroid) > 1e-9;
+  });
   if (inside) {
     throw new Error(
       `apertureModel: the fitted isometry for ${pairing.faceA}→${pairing.faceB} does not move the cell off itself — the 4-coplanar degeneracy (a rotation agreeing on the face), refused`,
@@ -421,7 +450,16 @@ export function describeCandidate(candidate: ApertureMapCandidate): string {
  * deck fit of that very map — rotations land det=+1 (preserving), reflections
  * det=−1 (reversing) — measured, never labelled by hand.
  */
-export function dihedralMapCandidates(seedShape: Shape, faceAId: string, faceBId: string): ApertureMapCandidate[] {
+export function dihedralMapCandidates(
+  seedShape: Shape,
+  faceAId: string,
+  faceBId: string,
+  // B-101 §2b (the D13-catch rider): a skipped candidate is a DECISION with a
+  // REASON — the optional collector receives each one (the fit's own thrown
+  // sentence, verbatim), so an empty menu is never silently unexplained.
+  // Additive; every existing caller stands unchanged.
+  onRefusal?: (refusal: { key: string; reason: string }) => void,
+): ApertureMapCandidate[] {
   const geometry = readSeedGeometry(seedShape);
   // D2 — the id-space seam (the one place the two worlds differ): a
   // multi-cell volume's menu speaks PREFIXED ids (`c{i}:faceId` — the space
@@ -469,7 +507,14 @@ export function dihedralMapCandidates(seedShape: Shape, faceAId: string, faceBId
       let fitted: { g: number[]; det: number };
       try {
         fitted = fitDeckIsometry(geometry, { faceA: faceAId, faceB: faceBId, mode: 'preserving', map });
-      } catch {
+      } catch (error) {
+        // B-101 §2b rider: the skip stays a skip, but the reason is CARRIED —
+        // never eaten (the silent-chip class; the lifted octahedron's whole
+        // menu vanished through this catch with no word anywhere).
+        onRefusal?.({
+          key: `d${dir > 0 ? '+' : '-'}${offset}`,
+          reason: error instanceof Error ? error.message : String(error),
+        });
         continue;
       }
       const { g, det } = fitted;

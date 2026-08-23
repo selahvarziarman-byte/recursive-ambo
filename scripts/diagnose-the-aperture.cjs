@@ -718,5 +718,84 @@ check('…and the freeze check still BITES: a one-character in-memory mutation o
   freezeBite.ok === false && freezeBite.drifted.length === 1 && freezeBite.drifted[0] === FREEZE_SENTINEL &&
   freezeCrlf.ok === true);
 
+// ═════ [k] B-101 §2b(i) — the off-itself witness reads the CELL, not its box ═
+console.log('\n----- [k] B-101: a cell that under-fills its bbox keeps its REAL deck isometries; a refused candidate is never silent -----');
+const octa = createSeedShape('octahedron');
+const sharedCorners = (f, g) => f.vertexIds.filter((v) => g.vertexIds.includes(v)).length;
+const findPair = (n) => {
+  for (const f of octa.faces) for (const g of octa.faces) if (f !== g && sharedCorners(f, g) === n) return [f, g];
+  return null;
+};
+const oppPair = findPair(0);
+const adjPair = findPair(2);
+check('the committed octahedron seed: ONE cell, 8 triangular faces; an opposite pair (no shared corner) and an adjacent pair (a shared edge) both exist',
+  octa.cells.length === 1 && octa.faces.length === 8 && octa.faces.every((f) => f.vertexIds.length === 3) &&
+  oppPair !== null && adjPair !== null);
+const octaRefusals = [];
+const oppMenu = A.dihedralMapCandidates(octa, oppPair[0].id, oppPair[1].id, (r) => octaRefusals.push(r));
+const adjMenu = A.dihedralMapCandidates(octa, adjPair[0].id, adjPair[1].id, (r) => octaRefusals.push(r));
+check("B-101 THE CURE, pinned on the geometry class the screen measured: the octahedron's opposite AND adjacent pairs each offer the FULL dihedral orbit — 6 real maps (3 preserving · 3 reversing, det-derived), ZERO refusals collected (the retired bbox slack refused ALL of these as 'did not move off itself')",
+  oppMenu.length === 6 && adjMenu.length === 6 &&
+  oppMenu.filter((c) => c.derivedMode === 'preserving').length === 3 &&
+  oppMenu.filter((c) => c.derivedMode === 'reversing').length === 3 &&
+  adjMenu.filter((c) => c.derivedMode === 'preserving').length === 3 &&
+  adjMenu.filter((c) => c.derivedMode === 'reversing').length === 3 &&
+  octaRefusals.length === 0);
+// the regression falsifier AGAINST the old mechanism: this fitted isometry's
+// moved centroid lands strictly INSIDE the cell's bbox (the old test's
+// "inside" — it threw here) while the fit rightly SUCCEEDS (off the CELL)
+const geomO = A.readSeedGeometry(octa);
+const fA0 = geomO.faceById.get(oppPair[0].id);
+const fB0 = geomO.faceById.get(oppPair[1].id);
+const idMap = {};
+for (let i = 0; i < 3; i += 1) idMap[fA0.cycle[i]] = fB0.cycle[i];
+const fit0 = A.fitDeckIsometry(geomO, { faceA: oppPair[0].id, faceB: oppPair[1].id, mode: 'preserving', map: idMap });
+const frame0 = geomO.insideFrameOf(oppPair[0].id);
+const c0 = frame0.centroid;
+const moved0 = [0, 1, 2].map((i) => fit0.g[3 * i] * c0[0] + fit0.g[3 * i + 1] * c0[1] + fit0.g[3 * i + 2] * c0[2] + fit0.g[9 + i]);
+check('…the falsifier against the retired mechanism: the fitted deck isometry SUCCEEDS while its moved cell centroid sits strictly INSIDE the bbox (re-instating the bbox test turns this leg red — that inside read as "did not move off itself")',
+  [0, 1, 2].every((k) => moved0[k] > frame0.lo[k] + 1e-9 && moved0[k] < frame0.hi[k] - 1e-9));
+note(`moved centroid [${moved0.map((x) => x.toFixed(3)).join(', ')}] vs bbox lo [${frame0.lo.map((x) => x.toFixed(1)).join(', ')}] hi [${frame0.hi.map((x) => x.toFixed(1)).join(', ')}]`);
+check('…and the degeneracy arm STANDS in source: the off-itself refusal sentence + the cell-planes test live; the bbox slack is retired',
+  modelSrc.includes('does not move the cell off itself') &&
+  modelSrc.includes('frameA.faces.every') &&
+  !modelSrc.includes('movedCentroid[k] > frameA.lo[k]'));
+// THE RIDER's falsifier — a manufactured all-refused pair: a 1×1×2 cuboid's
+// square end vs oblong side have EQUAL corner counts but NO rigid map; every
+// candidate must be refused WITH ITS REASON collected, none eaten
+const cbV = (id, x, y, z) => [id, { id, position: [x, y, z] }];
+const cuboid = {
+  id: 'shape:b101:cuboid',
+  name: 'cuboid 1x1x2',
+  vertices: Object.fromEntries([
+    cbV('cb:v0', 0, 0, 0), cbV('cb:v1', 1, 0, 0), cbV('cb:v2', 1, 1, 0), cbV('cb:v3', 0, 1, 0),
+    cbV('cb:v4', 0, 0, 2), cbV('cb:v5', 1, 0, 2), cbV('cb:v6', 1, 1, 2), cbV('cb:v7', 0, 1, 2),
+  ]),
+  edges: [
+    ['cb:e0', 'cb:v0', 'cb:v1'], ['cb:e1', 'cb:v1', 'cb:v2'], ['cb:e2', 'cb:v2', 'cb:v3'], ['cb:e3', 'cb:v3', 'cb:v0'],
+    ['cb:e4', 'cb:v4', 'cb:v5'], ['cb:e5', 'cb:v5', 'cb:v6'], ['cb:e6', 'cb:v6', 'cb:v7'], ['cb:e7', 'cb:v7', 'cb:v4'],
+    ['cb:e8', 'cb:v0', 'cb:v4'], ['cb:e9', 'cb:v1', 'cb:v5'], ['cb:e10', 'cb:v2', 'cb:v6'], ['cb:e11', 'cb:v3', 'cb:v7'],
+  ].map(([id, a, b]) => ({ id, vertexIds: [a, b] })),
+  faces: [
+    ['cb:f-bottom', ['cb:v0', 'cb:v3', 'cb:v2', 'cb:v1']],
+    ['cb:f-top', ['cb:v4', 'cb:v5', 'cb:v6', 'cb:v7']],
+    ['cb:f-front', ['cb:v0', 'cb:v1', 'cb:v5', 'cb:v4']],
+    ['cb:f-right', ['cb:v1', 'cb:v2', 'cb:v6', 'cb:v5']],
+    ['cb:f-back', ['cb:v2', 'cb:v3', 'cb:v7', 'cb:v6']],
+    ['cb:f-left', ['cb:v3', 'cb:v0', 'cb:v4', 'cb:v7']],
+  ].map(([id, cycle]) => ({ id, vertexIds: cycle })),
+  cells: [{
+    id: 'cb:cell',
+    vertexIds: ['cb:v0', 'cb:v1', 'cb:v2', 'cb:v3', 'cb:v4', 'cb:v5', 'cb:v6', 'cb:v7'],
+    faceIds: ['cb:f-bottom', 'cb:f-top', 'cb:f-front', 'cb:f-right', 'cb:f-back', 'cb:f-left'],
+  }],
+};
+const cbRefusals = [];
+const cbMenu = A.dihedralMapCandidates(cuboid, 'cb:f-bottom', 'cb:f-front', (r) => cbRefusals.push(r));
+check("THE RIDER: the square-end×oblong-side pair (equal corner counts, no rigid map) yields an EMPTY menu with all 8 refusals COLLECTED, each carrying the fit's own thrown sentence — the catch no longer eats the reason",
+  cbMenu.length === 0 && cbRefusals.length === 8 &&
+  cbRefusals.every((r) => /does not reproduce|does not move the cell/.test(r.reason)));
+note(`first collected refusal: ${cbRefusals[0] ? cbRefusals[0].key + ' — ' + cbRefusals[0].reason.slice(0, TRACE_W) : '(none)'}`);
+
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);
