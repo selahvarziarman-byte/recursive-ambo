@@ -1,107 +1,86 @@
-# THE BUILD REPORT — B-2026-08-26-A: the census says ONE form is illegible (the folded verdict body — everything else raises a card), the false sentence is cured at every reader, and both A1 measurements ARRIVED — identify completes on the closed octahedron, and the cut road reaches RP²'s certified invariants but not its body
+# THE BUILD REPORT — B-101: the empty menu's mechanism was the off-itself witness reading a BOX where the cell lives — measured, cured on fork (i), the octahedron's six real maps stand at the eye with the cube's eight byte-identical; the doctrine commit rides; the persistence claim is doubly false
 
-**STAMP ECHO: `B-2026-08-26-A`** — the build I executed is the one you wrote.
-**MARKER ECHO: `A1`** — the amendment's two measurements were consumed THIS build (see TO THE MOTHERSHIP 1).
-**coder · commits `b08848d` (§2b frozen union, sanctioned) · `5bc1301` (§2b wiring + witness) · `4950f95` (mandate record; A1 archived) · report follows · on base `665bc71` · branch `team-arman` · pushed after this report lands**
+**STAMP ECHO: `B-101`** — the build I executed is the one you wrote.
+**coder · commits `4375b10` (§2 cure + witness) · `93e15fb` (§3 doctrine, no src) · `6a4093a` (mandate record) · report follows · on base `dcc68a0` · branch `team-arman` · pushed after this report lands**
 
 ---
 
 ## TO THE MOTHERSHIP
 
-**1 · The A1 accounting.** A1 postdates my B-2026-08-25-A report (that build read its mandate once, whole; nothing arrived mid-flight — as reported). The file sat unarchived in the inbox and its marker was never echoed, so by your own consumption rule it was UNCONSUMED standing work; your §1 header ratified it into the record without listing its two measurements as done. I read it as owed, drove both measurements this build, and echo both markers above. The mail file is archived on disk; note the inbox is gitignored BY DESIGN (`.handoff/*` — seat mail stays off-repo), so an amendment file is an **unprotected** file until echoed in a committed report — worth knowing when you weigh the protocol.
+**1 · The mechanism, corrected against my own hypothesis — your ⚠ was earned.** I had guessed "fitDeckIsometry throws on this lifted geometry." The measurement (run in-page against the LIVE lifted shape through vite's own module graph — the real substrate, the real functions): **WITNESS (1) PASSED on all 12 probed candidates** (opposite and adjacent pairs, every dir/offset — the fits reproduce the vertex maps to 1e-6; every candidate is a REAL isometry). The thrower was **WITNESS (2)**, and the defect was not "this geometry breaks the fit" but **the off-itself test reading the owning cell's axis-aligned BBOX**: exact on the cube (cell == bbox — why it never fired), wrong on any cell that under-fills its box. The lifted octahedron is the axis-vertex octahedron (centroid origin, bbox [−1,1]³); every true deck neighbour's centroid lands at (±2/3, ±2/3, ±2/3) — in the box's slack, well off the cell — and the guard read every real isometry as "did not move the cell off itself." The D13 catch then ate each throw. So: not an unhandled geometry, not an upstream defect — **fork (i), a legitimate class wrongly refused**, and the cure is the honest version of the same witness (the CELL's own planes), not its removal.
 
-**2 · §2b's ruled site lives in a FROZEN file, and I stopped before spending it.** `operationAvailabilityFor` is in `src/manuscript/writtenFormModel.ts` — a bare seal row (`63fb1377…`, positive control reproduced at base). It is not on CLAUDE.md's sanctioned list and the mandate did not say "frozen union," so I stopped and asked Arman in the terminal; **he sanctioned the spend**, and it landed per protocol (edit + re-seal alone in `b08848d`; new seal `0b270df1…`). Your ledger and CLAUDE.md's sanctioned list may want the record.
+**2 · Fork (ii)'s sentence — the STOP sub-point, with the needed content.** After the cure a genuinely-no-map pair still exists as a class: equal corner counts, incongruent faces (the witness manufactures one — a 1×1×2 cuboid's square end vs oblong side: all 8 candidates rightly refused by WITNESS (1)). For that state the menu is empty and the row still says only the generic map prompt; per your ⚠ I did not invent copy. The rider is satisfied mechanically (the refusals are collected and the dev register warns — nothing is eaten), and the person-facing sentence awaits the designer. **The needed CONTENT:** a row-level refusal in the corner-count register saying that these two faces share a corner count but admit no rigid correspondence — every candidate map was tried and refused by the fit — so the pair cannot be identified as picked (pick different faces or leave the pair open).
 
-**3 · A THIRD reader of the same conflated fact, measured and left standing:** with the folded body SELECTED, opening the aperture reads **"point at a solid first — select a form to build on (nothing is selected)"** — the parenthetical is false (something IS selected; it resolves no volume). Same fact-shape as 2b, but the sentence is a composed line in the aperture's register — wiring the ruled sentence into it would recompose copy that is not mine. Reported, not cut.
+**3 · An adjacent vocabulary finding on the CURED menu:** the octahedron's map labels read vertex **id tails** — `1qudnfs→1sib9lm · 1ch2wmc→1c73axd · …` — where the cube's read its vertex letters (`a→e · d→h · …`). The picks are real and the modes derived (acceptance met), but the person picks a map by strings he cannot read, while the same corners are named AB·BC·AC in the face picker one row up. `describeCandidate`'s vertex display does not reach the composed corner names on lifted shapes. Reported, not cut — the label's resolver is a reading-layer choice adjacent to D16's lane.
 
-**4 · A free finding that blocks the aperture on lifted solids:** on the shelf-lifted octahedron, EVERY face pair (opposite and adjacent both tried) offers **zero identification maps** while the row prompt still says "pair 1: pick the identification MAP (which vertex lands on which)." — an empty menu the person is told to pick from. The cube populates all 8 for the same gesture. Mechanism hypothesis, unverified: `dihedralMapCandidates`' per-candidate `fitDeckIsometry` throws on this lifted geometry and D13's catch silently empties the menu — the only NAMED refusal branch is corner-count mismatch, which doesn't fire here. This is why the A1 folded-body route ran through the cube room. ⚠ on me until the mechanism is measured; the SCREEN facts above are measured.
-
-**5 · A fact correction to my own last report:** the folded body's selection key is **`dim3f:{key}`**, not `folded:{key}` (`folded:` is the second `selectable` argument — the shape-id slot; the explore matcher keys on `dim3f:`). Behavior identical (neither resolves through `targetFor`); the shorthand in B-2026-08-25-A's §3 comment trail is corrected here.
+**4 · §4's premise is falsified at the source, and the measurement is FALSE anyway.** No chrome reads "state persists" — `AppShell.tsx:127-128` is a COMMENT recording that F.0e (an earlier mothership's §3.4) **STRUCK** that hint: *"a false claim is removed, not balanced; no replacement."* A grep over src finds the phrase only in that comment; nothing renders it. The measurement you asked for ran regardless: placed a form → full browser reload → **the page came back PRISTINE** (empty shelf, no written forms; only the world's standing exhibits). The app's own guard fired on the way out (the "Leave site?" backstop), and its own §7 wording already states the fact: *"a full reload loses it — save the page… writes it down."* What exists is explicit save/load (the page doors) plus the backstop — no automatic persistence at the eye. If Δ10's "persistence" meant page-state-across-reload, it has not landed; if it meant the doors, the chrome claims nothing false today because F.0e already removed the claim. No copy was cut.
 
 ---
 
 ## 1 · WHAT I SAW
 
-### 1.1 · §2a — THE CARD CENSUS, from the screen, all N
+### 1.1 · §2a — the mechanism, measured (smallest first, on the real thing)
 
-Every kind built/selected live; "card" = the ON SELECT panel (specimen register; `w:` forms carry the argument reading in it too).
+Route re-driven: ambo dissect tetrahedron → core octahedron → Lift selection → Manuscript → shelf → placed. The probe imported `pageStore` and `apertureModel` through the dev server's own module graph (same instances the app runs), took the placed form's shape, and replayed the candidate loop calling `fitDeckIsometry` directly:
 
-| # | kind (route) | selection band | card | argument reading |
-|---|---|---|---|---|
-| 1 | chord — Loop (world row) | `dim1:` | **CARD** (H₀/H₁/b₁/χ, class n-a 1-complex) | — (a standing exhibit; no birth act to read) |
-| 2 | room — T³ identified cube (world row) | `dim3:` | **CARD** (S² gate sound · χ 0 · H₁ Z³ · CW counts · face-pairs · explore door) | — |
-| 3 | aperture-born chamber — "built 3-manifold 1" (leave-bounded WITH a picked pair) | `dim3:` | **CARD** (S² gate sound · χ 0 · H₁ ℤ · v4·e8·f5·c1 · face-pairs 1 preserving) | — |
-| 4 | glue-born torus (zoo) | `w:` | **CARD** | **full** — map/incidence/stance 360/verdict Σδ=0 tiles/χ 0 certified/certificate genus 1, generators named |
-| 5 | invoked square (zoo host) | `w:` | **CARD** | full — the seed's own (rim turns, χ 1 certified) |
-| 6 | fold-born body — "genus 0 — born" (aabb, e0·e1+e2·e3 →→) | `w:` | **CARD** | full — merged concept `•unnamed·A·unnamed·C ← unnamed·A unnamed·C`, survivors, cones, "closed, but not at a Form" |
-| 7 | ×I band — loop × Arc (thicken → shelf → placed) | `w:` | **CARD** | full — "•24 survive," edge spine in honest id tails (the known pre-2(b) arm) |
-| 8 | shelf-lifted closed octahedron (ambo core lift) | `w:` | **CARD** | full — 6 corners lifted · 12 edges derived · 8 ◻ · stance 240×6 · Σδ=720° curls up · χ 2 certified · genus 0 closed orientable |
-| 9 | identify-born — "identified — edge-junction, girdered" (A1·M1's birth) | `w:` | **CARD** | full — verdict REFUSED BY NAME (junction link; Gauss–Bonnet scope), certificate class n-a (non-manifold edge incidence) |
-| 10 | cut-born ×4 (each cut a birth) | `w:` | **CARD** | full — the carve visible in the ◻ rows; empty incidence `@ AC` spoken as a row |
-| 11 | identify-born, bodiless — the RP² sew (A1·M2's far end) | `w:` | **CARD** (bodiless — "the card keeps the act") | full — enacted · refusal verbatim · certified invariant rows |
-| 12 | **folded verdict body** (aperture, shared-edge-reversed map d+1) | **`dim3f:`** | **NO CARD — the panel is simply absent** | **none** |
-| — | dim2 band | `dim2:` | unreachable in this world — `world.dim2` is empty; the zoo lands as `w:` forms | |
+- **12/12 candidates threw WITNESS (2)**, verbatim: *"apertureModel: the fitted isometry for …1kgb8lu→…1tz2cyp does not move the cell off itself — the 4-coplanar degeneracy (a rotation agreeing on the face), refused"* — never WITNESS (1)'s "does not reproduce" (those fits were good).
+- The numbers: cell centroid [0,0,0] · faceB centroid [⅓,−⅓,−⅓] · the isometry's moved centroid [⅔,−⅔,−⅔] · bbox [−1,1]³ → **strictly inside the box, off the cell** — the old test's `inside` true on every real map.
 
-**The sentence standing in the no-card case: NOTHING.** No refusal renders where the card would be (`reading ? <SpecimenCard/> : null`). What speaks for a selected folded body: the world caption (`{title} — folded` + the aperture caption) and the dock chips' reasons — nothing else. The chrome even knows it in a comment: *"the folded shelf has no card — it has no tower to summon."*
+### 1.2 · §2b — fork (i), the cure, and the rider
 
-> ### THE VERDICT ON 2a: **the no-card set is exactly ONE form kind — the folded verdict body.** By your own dichotomy: a bug, not a class-hole ⇒ 2b proceeded.
-> Mechanism, for the record: the specimen reading dispatches `dim1:`/`dim2:`/`w:`/`dim3:` and `dim3f:` falls through every branch to null; the argument memo is `w:`-gated. One kind, two gates, both miss it.
+- `insideFrameOf` now carries the owning cell's **own face cycles**; WITNESS (2) tests strictly-inside against the **cell's planes** (same side as the centroid of every face, 1e-9 margin). The cube's verdicts are byte-identical by geometry: a cube pair's moved centroid crosses the partner plane (passes, as before); the 4-coplanar degeneracy pins the centroid (all planes agree — still refused). The refusal sentence and the arm STAND.
+- **The rider:** `dihedralMapCandidates` gains an optional `onRefusal` collector (additive — all 29 existing callers stand unchanged); the per-candidate catch now CARRIES the fit's thrown sentence to it; the View collects and `console.warn`s an all-refused pair and its own outer catch no longer swallows silently. Nothing person-facing was authored (TO THE MOTHERSHIP 2).
 
-### 1.2 · A1·M1 — ENTRY IS NOT COMPLETION, and completion HOLDS
+### 1.3 · §2c — the acceptance at the eye
 
-On the shelf-lifted closed octahedron (route re-driven: ambo dissect tetrahedron → core octahedron → Lift selection → Manuscript → shelf → placed): identify opened the trace; **walk A = the rim of face AB·BC·AC (AB→BC→AC), walk B = the rim of the ANTIPODAL face AD·BD·CD, same rotational sense** — tapped corner by corner (the tail is the vertex I picked; nothing inferred). The preview spoke: *"this seam will make a twist word (3 twist)"*, per-pair counterfactuals offered. **Commit ARRIVED**: born **"identified — edge-junction, girdered"** — 6 corners merge pairwise (`•BD·BC ← BD BC · •CD·AC ← CD AC · •AB·AD ← AB AD`), the 6 traced rim edges absorb into 3 seam edges, all 8 faces survive. The card refuses what it cannot read BY NAME: *"incidence · stance · verdict — not measured · conformalAtom: vertex "idn:…" reads link valence "junction" — Gauss–Bonnet speaks only for interior (closed link) and boundary (open arc) vertices"*; certificate *"class n-a (non-manifold edge incidence) · w₁ class [0] · H₁ n-a"*. And the born form's ring lines read the count form's braces case: **`unnamed ← {CD, AC}` · `unnamed ← {BD, BC}`** — her table holding on a fresh birth. No stop, no silent wall: the door opens AND the route arrives, honestly classified.
+- **The exact pair that stood empty** (AB·BC·AC ↔ AD·BD·CD on the placed lifted octahedron): the menu offers **6 real maps — 3 preserving · 3 reversing, modes derived**, picked from a live select. A second pair likewise 6. No empty menu under a pick prompt anywhere I could reach on this volume.
+- **The cube control, byte-identical:** T³ → bottom↔top → all **8** maps, labels exactly as last build's read — `a→e · d→h · c→g · b→f — preserving (derived)` leading (the flat candidate), the seven others with their cone-room tags, same strings, same order.
 
-### 1.3 · A1·M2 — the cut road: the hemisphere is reachable as a COMPOSITION, RP²'s invariants arrive, its body does not
+### 1.4 · §3 — the doctrine commit (one commit, no src)
 
-- **`cut` is 2-cell-addressed** — *"Remove the selected open 2-cell … the boundary passes through, now free"*. It cannot express "carve along a closed 4-cycle and keep one side" as ONE act. The hemisphere = **four successive cuts** (faces AB·BC·AC → AC·CD·AD → AB·AD·AC → AC·CD·BC — the four faces at pole AC), each a born form, each face MINE to pick (*"cut consumes the face YOU pick — no default is taken"* — held: the picker demanded every pick).
-- **The kept side carries residue**: the south cap (4 BD-faces) PLUS the north pole and its 4 face-less meridian edges — cut never garbage-collects skeleton. Card: empty incidence row `@ AC`; **χ −2 explicit · 1 certified**; deficit refused by name (*"vertex … has no incident face corner — an isolated vertex carries no angle and no clause"*).
-- **The dock fold refuses the cap, verbatim, and points at the working door**: *"A word (e.g. abAB) is addressed to the slots of ONE polygon — this form is a COMPLEX (4 faces), where the word denotes nothing. Sew its boundary instead: use identify / the sew-boundary-\* ops, which act on the whole complex. (Or cut / combine.)"*
-- **The identify trace expressed the antipodal word — every choice mine**: walk A = AB→AD, AD→CD; walk B = CD→BC, BC→AB (the rim's antipodal matching, continuing the same sense = abab). Preview: *"a twist word (2 twist)."* **Commit ENACTED**: born bodiless — notice *"identify: no body exists — the form pinches (the card keeps the act)"*. The card: antipodal corner merges (CD·AB −60° saddle · BC·AD −60° saddle · BD +120° cone · AC +180°); body refusal verbatim: *"no faithful body (classBodyModel: non-manifold vertex link — the committed gate reads [vertex mid:1r4d94r] as junction/pinch (χ·w₁·b cannot see a wedge point; the link gate can); no manifold body exists)"*; **χ −2 explicit · 1 certified · orientable NO · w₁ class [1] — "w₁ = 1 — non-orientable (the twist)"** — **RP²'s certified invariants**, reached; H₁ n-a on the junction.
-- **Precisely what cut will and will not carve**: it WILL remove any one 2-cell (boundary made free, loss logged, person-picked). It will NOT separate along a 1-cycle, and it removes NO edges or vertices — so "keep one side" always keeps the other side's 1-skeleton, and that wedge is exactly what denies the far end a manifold body. The gap is not in identify (which arrived) — it is that **no gesture discards a face-less skeleton**.
-- **Nothing auto-selected the matching** — the trace demanded every tap; the fold panel pairs only by taps (measured: "no pairs yet — the word is empty" until tapped). The meaning rode my picks, as ruled.
+`93e15fb`: the CLAUDE.md §0 seat-map block committed **as it stood** (not reworked); §6's sanctioned list records **writtenFormModel SPENT at `b08848d`** beside multiform and worldModel; `.gitignore` yields for `!.handoff/THE_SEAT_MAP.md` and the map is tracked in the same commit (67 lines, now protected). Exactly three files; no src.
 
-### 1.4 · §2b — the cure, measured at every reader (folded body selected, and the control)
+### 1.5 · §4 — the truth check
 
-- **Dock chips**: glue · flip-glue · collapse · dualize · sew · **fold** all grey AND speak **"— this specimen resolves no traceable form"** (identify already did; thicken keeps its own pair sentence; explore stays the one live door).
-- **Right-click menu ON the folded body**: every op row reads **"this specimen resolves no traceable form"** — the person who points at a form is no longer told to select one.
-- **The control**: nothing selected → chips read "— select a form first" exactly as before; the model's default keeps `operationAvailabilityFor(null, null)` byte-identical (witness-pinned).
+Reported in TO THE MOTHERSHIP 4: the premise is false at the source (the hint was already struck by F.0e — only the striking's comment remains) and the behavior is FALSE at the eye (build → reload → pristine page; the app's own backstop and §7 wording state exactly this). Measurement only; no cut.
 
 ## 2 · WHAT I RAN (the five witnesses)
 
 ```
-1  git diff HEAD --name-only -- src → EMPTY at the tip (the committed tree is
-   what I audited; tsconfig.tsbuildinfo dirty as always — excluded by law)
-2  freeze manifest: writtenFormModel.ts FROZEN (bare row) → STOPPED, Arman
-   sanctioned in-terminal → edit + re-seal ALONE in b08848d, nothing else in it.
-   ManuscriptView / ManuscriptChrome — NOT_FROZEN rows verified; the witness
-   script unlisted.
-3  re-seal recomputed: tr -d '\r' | sha256sum → 0b270df1…; POSITIVE CONTROL:
-   the old hash 63fb1377… reproduced from HEAD bytes at base 665bc71 BEFORE
-   the edit.
-4  suite at the head after b08848d·5bc1301·4950f95: 112 files @ exactly 1 fail
-   = diagnose-dual-inspection (accepted baseline). diagnose-manuscript-operate
-   gains the §2b legs (the ruled sentence pinned VERBATIM as the one producer;
-   the split rows; the nothing-selected pin untouched and green). npx tsc -b →
-   exit 0.
-5  THE READING — §1 above, all of it driven: the census at the eye, both A1
-   commits at the eye, the cure + its control at the eye. Chrome = the Windows
-   session; one stale 0-byte .git/index.lock (~20h old, no live git) removed
-   and disclosed; one mid-session vite HMR reset the page store — the folded
-   body was rebuilt through the same aperture route for the post-cut
-   measurement (the pre-cut census predates the reset).
+1  git diff HEAD --name-only -- src → EMPTY at the tip (tsbuildinfo dirty by law)
+2  freeze manifest: apertureModel.ts and ManuscriptView.tsx both NOT_FROZEN
+   (rows verified — matching your own desk check); no frozen file touched;
+   the [j] freeze leg green at the head (46 checked, drifted []).
+3  no re-seal owed this build.
+4  suite at the FINAL head: 112 files @ exactly 1 fail = diagnose-dual-inspection
+   (accepted baseline). diagnose-the-aperture gains section [k]: octahedron
+   opposite+adjacent pairs 6 maps each (3+3 by det, zero refusals collected);
+   the falsifier against the retired mechanism (fit SUCCEEDS while its moved
+   centroid [−.667,−.667,−.667] sits strictly inside bbox [−1,1]³ — restoring
+   the bbox test turns the leg red); the degeneracy arm pinned standing in
+   source; the manufactured cuboid pair (equal corners, no rigid map) yields
+   0 candidates + all 8 refusals collected, each carrying the fit's sentence.
+   npx tsc -b → exit 0.
+5  THE READING — §1 above, driven in the Windows Chrome session: the probe on
+   the live shape, the cured menu at the eye on the exact failing pair, the
+   cube control byte-identical, the reload measurement. Two page-store resets
+   rode vite HMR mid-session (apertureModel sits in pageStore's import graph)
+   — the lift was re-driven each time; the ambo workspace survived both. The
+   beforeunload guard was forced twice knowingly: once to leave the previous
+   session's scratch page, once AS the §4 measurement.
 ```
 
 ## 3 · WHAT I CHANGED
 
-- **`src/manuscript/writtenFormModel.ts`** (`b08848d`, frozen union): `operationAvailabilityFor` gains trailing `noShapeReason` (default `'Select a form first.'` — all existing callers byte-identical); exports `UNRESOLVED_SELECTION_REASON` — the ONE producer of the ruled sentence. Re-seal in the same commit.
-- **`src/manuscript/ManuscriptView.tsx`** (`5bc1301`): both availability callsites pass the ruled reason on a standing-but-unresolvable selection (the menu's null target is NEVER "nothing selected"); `identifySewReason` reads the const; the fold-reason ternary's no-target arm made true; the dock gets `noTargetReason` — the ONE derivation of which void.
-- **`src/manuscript/ManuscriptChrome.tsx`** (`5bc1301`): `OperationsDock` takes REQUIRED `noTargetReason` and speaks it at both formerly-hardcoded sites — the chrome invents no operability and now no sentence; a required prop cannot be forgotten by a later caller.
-- **`scripts/diagnose-manuscript-operate.cjs`** (`5bc1301`): the §2b legs — the sentence pinned verbatim; the split pinned; the old pin standing.
-- **`.handoff/THE_BUILD.md`** (`4950f95`): the mandate record; the A1 mail archived on disk (off-repo by the inbox's own law).
+- **`src/manuscript/apertureModel.ts`** (`4375b10`): `insideFrameOf` returns the owning cell's face cycles (both arms — single-cell: all seed faces; multi-cell: the `c{i}` cell's `faceIds`); WITNESS (2) = the cell-planes containment test (bbox slack retired; refusal sentence and degeneracy arm kept); `dihedralMapCandidates` gains the optional `onRefusal` collector and its catch carries the reason.
+- **`src/manuscript/ManuscriptView.tsx`** (`4375b10`): the menu builder collects refusals, warns an all-refused pair in the dev register, and its outer catch names what it caught — nothing eaten silently.
+- **`scripts/diagnose-the-aperture.cjs`** (`4375b10`): section [k] — the cure, the falsifier against the old mechanism, the source pin on the degeneracy arm, the rider's manufactured all-refused pair.
+- **`CLAUDE.md` · `.gitignore` · `.handoff/THE_SEAT_MAP.md`** (`93e15fb`): the §3 doctrine commit as ordered.
+- **`.handoff/THE_BUILD.md`** (`6a4093a`): the mandate record.
 
 ## 4 · WHAT I COULD NOT REACH / DID NOT TOUCH
 
-- **The folded body's missing card** — measured as the one illegible kind, NOT cured: what its card should read (it has no tower; it has a wall sentence, fold loci, χ, pairings) is a meaning-and-copy question that is yours and the designer's. The census you ordered is the extent.
-- **The aperture's third-reader sentence** (TO THE MOTHERSHIP 3) and **the lifted-solid empty map menu** (TO THE MOTHERSHIP 4) — measured, reported, uncut.
-- **§3 term positions** — untouched, as ordered; **§4 collapse** — untouched, as ordered; **vertex identification** — not built toward (the RP² route ran entirely through edge-walk sewing and per-cell cuts, per A1 §4's scope).
-- **dim2-band census row** — unreachable in this world (empty by construction); named rather than faked.
+- **The all-refused pair's person-facing sentence** — the fork (ii) STOP honored; needed content stated (TO THE MOTHERSHIP 2); the wording is the designer's.
+- **The map labels' id-tail vocabulary on lifted shapes** (TO THE MOTHERSHIP 3) — measured, reported, uncut.
+- **§4 copy** — none cut either way, as ordered; both the premise correction and the FALSE measurement are on the record for you and the designer.
+- **§5's ledger** — untouched: the folded card, term positions, vertex identification, collapse's route, the rung-2 tiling ADR lane.
