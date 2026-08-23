@@ -1,63 +1,55 @@
 # THE BUILD — always current, self-contained
 
-**STAMP: `B-101`** ⛔ **Echo this stamp at the top of your report.**
-**Written by: mothership (the SIXTH — seated and ratified by Arman 2026-08-23, clock-read) · base `dcc68a0` · branch `team-arman`**
-
-> ### ⛔ **THE STAMP SCHEME CHANGED, deliberately.**
-> The date-shaped series ended at `B-2026-08-26-A`. Those stamps drifted ahead of the calendar and a mothership then read "today" off one — the fifth's own retraction, on record in `THE_SOVEREIGN_LEDGER.md` and in this file's previous version (`4950f95`). **From here stamps are bare serials (`B-101`, `B-102`, …): nothing in them can be read as a date.** Time lives in SHAs and commit dates, nowhere else.
+**STAMP: `B-102`** ⛔ **Echo this stamp at the top of your report.**
+**Written by: mothership (sixth) · base `de31263` · branch `team-arman`**
 
 *Read `CLAUDE.md` at the repo root first. **If anything below contradicts what you MEASURE, your measurement wins.***
 
 ---
 
-## 1 · ✅ `B-2026-08-26-A` RATIFIED, clause by clause
+## 1 · ✅ `B-101` RATIFIED, clause by clause
 
-✔ **The A1 accounting (your finding 1) — you were RIGHT and the protocol holds because you were.** The marker had not been echoed (your own measurement of the record), so it was unconsumed standing work by the rule's own terms; you read it as owed and drove both measurements. *Consumption is proven by the ECHO, never by the sending* — your cycle is now the rule's precedent.
-✔ **The census (2a): verdict accepted.** Twelve kinds raise a card; the no-card set is exactly ONE form kind (your §1.1 table, ⚠ on your screen census — the accepted channel) — by the mandate's own dichotomy, a bug, and 2b was the ruled branch. ⛔ **The folded body's missing CARD is not chartered here** — what that card should read is a meaning-and-copy question with the designer and me. Do not build toward it.
-✔ **The §2b cure: accepted.** A REQUIRED prop is the by-construction standard — the chrome can no longer invent a sentence, and a later caller cannot forget what the type demands. The control held byte-identical, witness-pinned. **Verified at my own desk:** re-seal `0b270df1…` stands at `ENGINE_FREEZE_MANIFEST.txt:80` ✔ · `HEAD == origin/team-arman == dcc68a0` ✔ — pushed as you said.
-✔ **The frozen stop (finding 2): exactly right.** You stopped on a bare seal row the mandate had not sanctioned, asked Arman in the terminal, and landed the spend per protocol. **The record you asked for lands THIS build — §3 below.**
-✔ **Finding 5** (the selection key is `dim3f:{key}`, not `folded:{key}`): correction taken into the record.
-✔ **Findings 3 and 4 dispositioned:** 3 (your finding 3 — "A THIRD reader of the same conflated fact," the aperture's composed sentence) is the designer's and mine, not yours. 4 (the empty map menu, your finding 4) is **THE FRONT — §2.**
-
----
-
-## 2 · ⛔⛔ THE FRONT: THE LIFTED SOLID'S IDENTIFICATION MENU IS EMPTY UNDER A PICK PROMPT
-
-**The meaning frame, so you know what this build is FOR:** the researcher ruled closed volumes ARE operable — no definitional bar (Δ11's ruling). You then measured a PRACTICAL bar (your finding 4, at the screen — "opposite and adjacent both tried"): on the shelf-lifted octahedron **every face pair you tried offers ZERO identification maps while the row still says "pick the identification MAP (which vertex lands on which)"** — and the cube populates all 8 for the same gesture. Both findings are true, and the second is very likely what Arman actually hit when he asked for lifted volumes to be operable. **An empty menu under a satisfiable-sounding prompt is the FALSE-PROMISE class again** — §2b's sibling: there the chrome said the wrong sentence; here it offers a pick that cannot be made.
-
-### 2a · ⚠ MEASURE THE MECHANISM FIRST — your hypothesis is ⚠ until run
-Your unverified hypothesis: `dihedralMapCandidates`' per-candidate `fitDeckIsometry` throws on this lifted geometry and D13's catch silently empties the menu; the only NAMED refusal branch is corner-count mismatch, which does not fire.
-**Located at my desk (✔, `git grep` at `dcc68a0`):** `fitDeckIsometry` is defined at `apertureModel.ts:279`, consumed at `:355` and `:471` — **`apertureModel.ts` is NOT_FROZEN (`ENGINE_FREEZE_MANIFEST.txt:196`) and so is `ManuscriptView.tsx` (`:193`).** No frozen union is expected on this path. *(If the measurement leads the cut into a bare-row file anyway, `CLAUDE.md` §6 governs: stop, ask Arman in the terminal — the flow that worked last build.)*
-**Smallest measurement first:** catch WHAT throws, on WHICH candidate, and WHY — which invariant of the lifted geometry breaks the fit that the cube's geometry satisfies. Report the mechanism as measured, not the hypothesis confirmed by adjacency.
-
-### 2b · THE RULED FORK — the cure depends on what 2a finds
-- **(i) True candidates EXIST and the fit wrongly refuses them** (an unhandled-but-legitimate geometry) ⇒ **cure the fit or the enumeration so the menu populates with REAL maps.** The fit's own witness discipline holds: no map ships that the fit did not verify. A fabricated candidate is worse than an empty menu.
-- **(ii) The geometry genuinely admits NO map for a pair** ⇒ **the row refuses IN WORDS, BY NAME**, in the same register as the existing corner-count refusal. Never an empty menu under a pick prompt. ⚠ **If the honest sentence needs NEW person-facing copy that no existing ruled sentence covers, STOP on that sub-point and report the needed CONTENT — the wording is the designer's. Do not invent copy.**
-- **(iii) The throw exposes an UPSTREAM defect** — the lift hands the aperture malformed geometry ⇒ **report it with the measurement; do not patch the menu to hide it.** That cut belongs to a different build.
-
-⛔ **The D13-catch rider, whatever branch wins:** a catch that empties a menu silently is the silent-chip class. **After this build, that catch must not eat the reason** — whatever survives it must carry its refusal into words or into the report.
-
-### 2c · ACCEPTANCE — what the person SEES
-On the shelf-lifted octahedron: **every face pair offers either real picks or a refusal in words.** The cube's 8 maps stay byte-identical (the control). Drive it at the eye and say what stood on the screen.
+✔ **§2a — the mechanism, measured against your own hypothesis: that is the standard, again.** You guessed the fit; you measured the guard. And your §1.1 numbers reproduce at my desk by the derivation on this page: the axis-vertex octahedron's face centroid ((1,0,0)+(0,1,0)+(0,0,1))/3 = (⅓,⅓,⅓); the reflected cell's centroid = its double, (⅔,⅔,⅔) — strictly inside bbox `[−1,1]³`, well off the cell. **Exact on the cube because cube == box; wrong on a cell that under-fills its box** — a guard exact on the shape it happened to be exact on, silently refusing the legitimate class you measured. *(The `readCellSurface` convex-clamp's family, D4-era: a precondition never written as a guard.)*
+✔ **§2b — fork (i) rightly adjudicated; the degeneracy arm rightly kept** (Amendment 1's det-ambiguity is a REAL trap and must keep refusing); the cure is the honest version of the same witness, not its removal. **The rider honored by construction:** a refused candidate now CARRIES its sentence — and your manufactured all-refused pair (the 1×1×2 cuboid's square-end × oblong-side) is a LAW-24-grade control: the class fork (ii) needs is now exhibitable on demand.
+✔ **§2c at the eye (your §1.3, ⚠ on your drive — the accepted channel):** the exact failing pair → 6 real maps (3+3 by det); cube's 8 byte-identical, same strings, same order. **Witness [k]'s falsifier against the retired mechanism — the leg turns red if the bbox test ever returns — is enforcement by construction.**
+✔ **§3 verified at my own desk at `de31263`:** `93e15fb` = exactly `.gitignore` + `THE_SEAT_MAP.md` (67 lines, tracked — `git ls-files` shows it) + `CLAUDE.md` (§0 block; §6 sanctioned line now reads the `writtenFormModel` spend at `CLAUDE.md:113`). `HEAD == origin/team-arman == de31263` — pushed as you said.
+✔ **§4 — doubly false, correctly cut nothing.** The premise was stale AT MY DESK: I inherited V3's `AppShell.tsx:127` rider into the mandate without re-reading the line — F.0e had already struck the hint, and only the striking's comment remained. **My miss, owned.** Your reload measurement stands: what landed under Δ10 is the DOORS model (the plan's own ratified acceptance was *save → reload → load*), the app's §7 wording says exactly that, and your grep found the struck phrase nowhere but the striking's comment (⚠ on that sweep, correctly scoped to the phrase). The rider DIES. *(Whether Arman wants automatic page persistence is NEW SCOPE and rides the queue to him — not owed, not yours.)*
+★ **And an owning of my own charter defect: `B-101` §2c's acceptance was REACHABILITY-shaped** — "real picks or a refusal in words" — **and the ledger's own law says a person-facing charter states the USABILITY bar.** You reported the id-tail gap unprompted (your finding 3): the office below the ratifier saving the ratifier — the first instance is the claims ledger's DISTINGUISH-IS-NOT-KNOW law (the engineer naming both bars at the price instead of answering the cheaper one). This mandate's front is that gap, and this time the bar is stated.
 
 ---
 
-## 3 · THE DOCTRINE COMMIT — rides this build, ONE commit, no `src/`
+## 2 · ⛔ THE FRONT: THE CURED MENU'S WORDS — real picks the person cannot READ
 
-The seat map's own law: *an untracked file is an unprotected file.* Measured at my desk (✔): `git ls-files .handoff/` tracks only the two wire files; `THE_SEAT_MAP.md` — the file `CLAUDE.md` §0 routes every seat to — is gitignored, and the §0 block itself is an uncommitted working-tree edit. Mail-off-repo is design; **the seat map is doctrine, not mail.** This commit was proposed to Arman in the seating report with a veto window; his ruling, verbatim, in-session 2026-08-23: *"you are our sixth mothership. ratified. proceed."*
-- **(a)** Commit the `CLAUDE.md` working-tree edit **as it stands** (the §0 seat-map block — do not rework it).
-- **(b)** In the same edit, `CLAUDE.md` §6's sanctioned list: **record `writtenFormModel` as SPENT at `b08848d`** (it joins `multiform` and `worldModel` in the spent parenthesis).
-- **(c)** `.gitignore` gains `!.handoff/THE_SEAT_MAP.md` (beside the two wire exceptions at `:23-24`) and `THE_SEAT_MAP.md` is added in the same commit.
-`tsconfig.tsbuildinfo` stays out, dirty-by-law as always.
+**Your finding 3, now the front:** on the lifted octahedron the map labels read vertex id tails (`1qudnfs→1sib9lm · …`) where the cube's read letters (`a→e · d→h · …`) — **while the SAME corners are named `AB·BC·AC` in the face picker ONE ROW UP.** The law it strikes is F.4 — *an id is an ADDRESS; it may never stand where a NAME is owed* — and the naming doctrine (CARRIED · COMPOSED · GIVEN · BORN): these corners plainly HAVE names, resolved and printed one row above.
 
-## 4 · A CHEAP TRUTH CHECK — riding, measurement only
-`AppShell.tsx:127`'s chrome reads **"state persists."** Persistence landed (Δ10: *"my decision is persistence. proceed"*). **Verify at the eye: build a form → reload the browser → is the page back, still reading true?** Report TRUE or FALSE with what you saw. ⛔ No copy cut either way without the designer — this is a measurement, not a cut. *(A name that describes intent protects code that does not fulfil it — this is the standing rider's kill-check.)*
+### 2a · MEASURE FIRST — one resolver or two?
+**Where does the face picker get `AB·BC·AC` on this lifted shape, and why does `describeCandidate`'s vertex display not reach the same names?** (Your own report points at the seam: "the label's resolver is a reading-layer choice adjacent to D16's lane.") Name the two code paths and the divergence point. ⚠ If they are ALREADY one resolver with a mode/prefix bug, say so — the cure differs.
+
+### 2b · THE CURE — one fact, one producer
+Wire the map labels to **the SAME resolver the face picker uses** — the D16 shape: the door takes the resolver ENTIRE; never a second naming path that must agree by discipline. ⛔ **Fabricate nothing:** a corner the resolver genuinely cannot name (a true BORN absence) displays per the naming doctrine's honest absence — **do not mint letters.** ⚠ If that case is REACHABLE on this route and its honest display needs a NEW person-facing form no ruled convention covers, STOP on that sub-point and report the case (the form is the designer's).
+
+### 2c · ACCEPTANCE — with the usability bar stated
+On the lifted octahedron: **the map menu reads in the SAME vocabulary as its own face picker one row up** — the person can say, in corner letters, which map they picked and what it does. The cube's 8: byte-identical (the control that held in `B-2026-08-26-A` §1.1 and `B-101` §2c — hold it again). Drive both at the eye.
+
+---
+
+## 3 · RIDER — COMMIT ADR 0025 (docs only, its own commit)
+
+Your mid-build note was exactly right and rightly untouched. It is now the opposite problem: **`docs/adr/0025-the-surface-deck-tiling-….md` is RATIFIED doctrine** (against Δ6, clause by clause — ratification letter `inbox/researcher/2026-08-23_1922_…`) **sitting UNTRACKED (✔ my run at `de31263`: `git status --short docs/adr/` → `??` on 0025; absent from `git ls-files docs/adr/`) — the same unprotected-doctrine shape §3 just cured for the seat map.** Commit it **byte-as-it-stands** (the file is the researcher's; you are recording, not editing). ⚠ Its Status line may still read "Proposed" — the status flip is the researcher's own edit and lands as its own commit whenever that seat next wakes; do not flip it for them.
+
+## 4 · RUNG-2 PRE-BUILD MEASUREMENTS — the ADR's own ⚠ section, measurements only
+
+From ADR 0025 §"What the engine build must carry" (its flagged unknowns — the build itself is `B-103`, after these):
+- **(a)** Can the engine run the Poincaré reflect-BFS tiling at interactive rates with the `(1−|c|²)`-scaled dedup? Measure with an instrument of your choice (a probe is fine); report cells-per-frame-budget at {4,5}, not an opinion.
+- **(b)** Is a surface's `{p,q}` available to the window — where would the explore/tiling layer read the combinatorics (which module owns it today, at which line)?
+- **(c)** Does stereographic far-side-shows-through composit correctly with the existing render passes — a reasoned read of the pass structure plus the smallest probe that could kill it.
+⛔ **Measurements and locates only — no tiling render code this build.** *(Sequencing per O22 — the person's shipped-but-unreadable menu outranks a new render layer; these ride because they are cheap and collision-free.)*
 
 ## 5 · ⚠ STILL OPEN, NOT YOURS
-The folded body's missing card (designer + me) · §3 term positions (designer) · vertex identification (researcher holds the two questions the previous mandate named: is the wedge-point refusal TOTAL · is every vertex-shaped intent edge-expressible) · `collapse`'s non-reproduction (open on Arman's route) · Δ11's ruling presented in the app (designer). **The researcher's rung-2 tiling ADR was commissioned this sitting (`inbox/researcher/2026-08-23_1836_mothership_RUNG-2-TILING-ADR-COMMISSIONED.md`) — a docs-only lane; no collision with your tree is expected.**
+Fork (ii)'s person-facing sentence — your stated content is with the designer · the folded body's card (designer + me) · §3 term positions (designer) · Δ11's presentation (designer) · vertex identification (researcher) · `collapse`'s route (Arman) · auto-persistence (new scope, Arman's word) · the rung-2 BUILD (`B-103`, gated on §4's numbers).
 
 ## 6 · ORDER
-**2a (measure) → 2b (cure per fork) → 3 (doctrine commit) → 4 (check).** ⛔ 2a may stop 2b's scope; if (iii), stop after 2a and report. §3 and §4 land regardless of 2's outcome.
+**2a (measure the resolver seam) → 2b (the cure) → 2c (the eye) → 3 (the ADR commit) → 4 (the measurements).** ⚠ 2a may reshape 2b (one-resolver-with-a-bug vs two paths); if the BORN case needs new form, STOP that sub-point only.
 
 ## 7 · THE STANDING ASK
-Arman: ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report. Echo `B-101`. Push when it lands.**
+Arman, verbatim (`THE_SOVEREIGN_LEDGER.md` Δ6): ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report. Echo `B-102`. Push when it lands.**
