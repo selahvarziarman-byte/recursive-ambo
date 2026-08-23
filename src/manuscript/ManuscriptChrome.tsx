@@ -1137,6 +1137,7 @@ export function CameraDock({
 export function OperationsDock({
   availability,
   hasTarget,
+  noTargetReason,
   paper,
   accent,
   onApply,
@@ -1151,6 +1152,11 @@ export function OperationsDock({
 }: {
   availability: OperationAvailability[]; // the committed contract for the CURRENT selection
   hasTarget: boolean;
+  // §2b (B-2026-08-26-A, ruled): the sentence a chip speaks when no target
+  // resolves — the VIEW names which void it is (nothing selected vs a
+  // standing selection no band resolves). This chrome invents no operability
+  // and no sentence; a required prop cannot be forgotten by a later caller.
+  noTargetReason: string;
   paper: ChromePaper;
   accent: string; // hover/enabled ink (the generator-a orange)
   onApply: (operationId: string) => void;
@@ -1312,7 +1318,7 @@ export function OperationsDock({
                   }}
                 >
                   {group.label}
-                  {!hasTarget ? <span style={{ opacity: 0.6 }}> — select a form first</span> : null}
+                  {!hasTarget ? <span style={{ opacity: 0.6 }}> — {noTargetReason}</span> : null}
                   {hasTarget && !foldEnabled && fold?.reason ? (
                     <span style={{ opacity: 0.6 }}> — {fold.reason}</span>
                   ) : null}
@@ -1387,7 +1393,7 @@ export function OperationsDock({
                 }}
               >
                 {group.label}
-                {!hasTarget ? <span style={{ opacity: 0.6 }}> — select a form first</span> : null}
+                {!hasTarget ? <span style={{ opacity: 0.6 }}> — {noTargetReason}</span> : null}
                 {hasTarget && !groupEnabled ? (
                   <span style={{ opacity: 0.6 }}> — {ops[0]?.reason ?? 'not applicable'}</span>
                 ) : null}

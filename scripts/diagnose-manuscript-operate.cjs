@@ -56,6 +56,7 @@ const {
   operationAvailabilityFor,
   operationContextFor,
   readPlainSpecimen,
+  UNRESOLVED_SELECTION_REASON,
 } = req('src/manuscript/writtenFormModel.ts');
 
 let failures = 0;
@@ -196,6 +197,17 @@ const square = invokePrimitive('square', 2);
   // registry; ratified in diagnose-complex-identification)
   check("no selection: every dock op disabled with 'Select a form first.'",
     noTarget.length === 10 && noTarget.every((op) => !op.enabled && op.reason === 'Select a form first.'));
+  // §2b (B-2026-08-26-A, RULED): the null-shape branch SPLITS on the caller's
+  // word — a STANDING selection no band resolves (a folded verdict body)
+  // speaks the ruled sentence, never the pick prompt. The string is pinned
+  // VERBATIM (one producer; a re-authoring breaks this witness), and the
+  // caller-supplied reason rides every row.
+  check("the ruled unresolvable-selection sentence, verbatim (one producer)",
+    UNRESOLVED_SELECTION_REASON === 'this specimen resolves no traceable form');
+  const unresolvable = operationAvailabilityFor(null, null, undefined, null, UNRESOLVED_SELECTION_REASON);
+  check("selected-but-unresolvable: every dock op disabled with the ruled sentence",
+    unresolvable.length === 10 &&
+    unresolvable.every((op) => !op.enabled && op.reason === UNRESOLVED_SELECTION_REASON));
   const onSquare = operationAvailabilityFor(square.shape, null);
   check('on an invoked square: the word/collapse/cut ops enabled, dual honestly disabled',
     onSquare.filter((op) => op.enabled).map((op) => op.id).sort().join(',') ===

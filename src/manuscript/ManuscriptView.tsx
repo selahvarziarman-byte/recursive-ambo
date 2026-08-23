@@ -60,6 +60,7 @@ import {
   operationAvailabilityFor,
   readPlainSpecimen,
   routeWrittenRender,
+  UNRESOLVED_SELECTION_REASON,
   type WrittenForm,
 } from './writtenFormModel';
 import { resolveLineage } from '../playground/playgroundOperations';
@@ -3193,6 +3194,9 @@ export default function ManuscriptView() {
       target?.parent ?? null,
       target?.ancestry,
       selected ? portFaces[selected] ?? null : null,
+      // §2b: a STANDING selection no band resolves speaks the ruled sentence
+      // — never the pick prompt (a prompt he satisfies to no effect)
+      selected !== null && target === null ? UNRESOLVED_SELECTION_REASON : undefined,
     );
   }, [selected, targetFor, portFaces]);
   const menuAvailability = useMemo(() => {
@@ -3203,6 +3207,9 @@ export default function ManuscriptView() {
       target?.parent ?? null,
       target?.ancestry,
       portFaces[formMenu.id] ?? null,
+      // §2b: the menu opens ON a form — a null target here is NEVER "nothing
+      // selected"; it is the unresolvable selection, and it says so
+      target === null ? UNRESOLVED_SELECTION_REASON : undefined,
     );
   }, [formMenu, targetFor, portFaces]);
   // §3 (B-2026-08-25-A): the identify chip's reason, derived FIRST so the
@@ -3213,7 +3220,7 @@ export default function ManuscriptView() {
     selected === null
       ? 'select a form first'
       : targetFor(selected) === null
-        ? 'this specimen resolves no traceable form'
+        ? UNRESOLVED_SELECTION_REASON
         : null;
 
   const applyOp = useCallback(
@@ -3635,8 +3642,16 @@ export default function ManuscriptView() {
   // the fold's dock chip state — the committed form-level gate's own sentence
   const foldTarget = useMemo(() => targetFor(selected), [targetFor, selected]);
   const foldReason = useMemo(
-    () => (foldTarget ? foldGateReason(foldTarget.shape) : 'Select a form first.'),
-    [foldTarget],
+    // §2b: a null target is nothing-selected OR a selection no band resolves
+    // — the second speaks the ruled sentence (the chip's no-target line is
+    // the chrome's, but this value must be TRUE wherever it is read)
+    () =>
+      foldTarget
+        ? foldGateReason(foldTarget.shape)
+        : selected !== null
+          ? UNRESOLVED_SELECTION_REASON
+          : 'Select a form first.',
+    [foldTarget, selected],
   );
   const foldPanel = useMemo(() => {
     if (!fold || fold.targetKey !== selected || !foldTarget) return null;
@@ -5332,6 +5347,11 @@ export default function ManuscriptView() {
       <OperationsDock
         availability={availability}
         hasTarget={targetFor(selected) !== null}
+        // §2b (RULED): the no-target line names WHICH void — nothing picked
+        // (the pick prompt) vs a standing selection no band resolves (the
+        // ruled sentence, wired). The chrome invents no operability AND no
+        // sentence: the view supplies the word.
+        noTargetReason={selected === null ? 'select a form first' : UNRESOLVED_SELECTION_REASON}
         paper={d.paper}
         accent={generatorsCtl.a}
         onApply={(operationId) => applyOp(operationId)}
