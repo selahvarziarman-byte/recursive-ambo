@@ -252,10 +252,12 @@ export const PARALLEL_CLASSES_REASON =
 // ---------------------------------------------------------------------------
 export function singleFaceGateReason(form: Shape): string | null {
   if (form.faces.length === 1) return null;
-  return (
-    `A word (e.g. abAB) is addressed to the slots of ONE polygon — this form is a COMPLEX (${form.faces.length} faces), where the word denotes nothing. ` +
-    'Sew its boundary instead: use identify / the sew-boundary-* ops, which act on the whole complex. (Or cut / combine.)'
-  );
+  // B-103 §2b (designer-ruled, Δ11): the reroute tail is STRIPPED — a refusal
+  // says why IT declines and stops. Five true refusals wearing this tail
+  // composed the false "nothing takes this" at the person; what the form DOES
+  // take now lives in the card's computed affordance line (§2a), the answer
+  // from the form's own chair. Subtractive only — the scope sentence stands.
+  return `A word (e.g. abAB) is addressed to the slots of ONE polygon — this form is a COMPLEX (${form.faces.length} faces), where the word denotes nothing.`;
 }
 
 export function classifyFaceChainPath(
