@@ -110,7 +110,7 @@ for f in scripts/diagnose-*.cjs; do            # clause 4 — 112 files
 done                                           # expect exactly ONE fail: diagnose-dual-inspection
 ```
 
-**Sanctioned frozen files (ask before spending, never assume):** `materializeOperation` · `complexIdentification` · `surfaceImmersion` · `standardBodies` · `snapshot.ts`. *(`multiform`, `worldModel`, and `writtenFormModel` (spent at `b08848d`, sanctioned by Arman in-terminal) are spent.)*
+**Sanctioned frozen files (ask before spending, never assume):** `materializeOperation` · `complexIdentification` · `surfaceImmersion` · `standardBodies` · `snapshot.ts`. *(Spent: `multiform` · `worldModel` · `writtenFormModel` at `b08848d` · `playgroundOperations` at `e60df35` — both sanctioned by Arman in-terminal.)*
 
 **Pick the instrument that shares the claim's type system.** For a TYPE claim the **compiler** is the census — a grep cannot tell `DomainModel.complex` from `acquired.complex`. For what a function RETURNS, **run it**. For what a person sees, **drive the app**.
 
