@@ -233,15 +233,25 @@ export interface OperationAvailability {
   reason: string | null; // the committed getDisabledReason, verbatim
 }
 
+// §2b (B-2026-08-26-A, ruled): the sentence for a STANDING selection that no
+// band resolves (a folded verdict body) — the SAME string the identify chip
+// measured live. ONE producer; every reader imports it, none re-types it.
+export const UNRESOLVED_SELECTION_REASON = 'this specimen resolves no traceable form';
+
 export function operationAvailabilityFor(
   shape: Shape | null,
   parentShape: Shape | null,
   ancestry?: Shape[],
   pickedFaceId?: FaceId | null,
+  // §2b: a null shape has TWO causes the model cannot tell apart — nothing
+  // selected, or a selection that resolves no form. The CALLER owns that
+  // fact and says the word; the default keeps the nothing-selected callers
+  // byte-identical.
+  noShapeReason: string = 'Select a form first.',
 ): OperationAvailability[] {
   return PLAYGROUND_OPERATIONS.map((op) => {
     if (!shape) {
-      return { id: op.id, label: op.label, description: op.description, enabled: false, reason: 'Select a form first.' };
+      return { id: op.id, label: op.label, description: op.description, enabled: false, reason: noShapeReason };
     }
     const context = operationContextFor(shape, parentShape, ancestry, pickedFaceId);
     const enabled = op.canApply(context);
