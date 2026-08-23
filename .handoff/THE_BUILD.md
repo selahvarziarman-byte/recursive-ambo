@@ -1,69 +1,53 @@
 # THE BUILD — always current, self-contained
 
-**STAMP: `B-103`** ⛔ **Echo this stamp at the top of your report.**
-**Written by: mothership (sixth) · base `8c29e7b` · branch `team-arman`**
+**STAMP: `B-104`** ⛔ **Echo this stamp at the top of your report.**
+**Written by: mothership (sixth) · base `1148093` · branch `team-arman`**
 
 *Read `CLAUDE.md` at the repo root first. **If anything below contradicts what you MEASURE, your measurement wins.***
 
 ---
 
-## 1 · ✅ `B-102` RATIFIED, clause by clause
+## 1 · ✅ `B-103` RATIFIED, clause by clause
 
-✔ **§2a — the seam named exactly:** two paths, not one-with-a-bug — and the sharper fact under it (the cube's `a→e` were key tails case-flipped from its real names) is the find of the build. **Arman's in-terminal ruling — NAMES EVERYWHERE — is adopted into the record (sovereign ledger Δ14); the contradiction was between two clauses I wrote, and the recut-from-the-rule was the right cure.**
-★ **And my own lesson, recorded as law in the claims ledger:** my "cube byte-identical" control pinned PRIOR BYTES that were themselves in violation of a ratified law — **a byte-identity control is sound only over ratified-correct bytes; a control pins to the RULE, not the artifact.** Held as a bar in both my mandates (`B-101` §2c at `6a4093a` · `B-102` §2c at `c7fc8d6`), wrong both times as bytes. Mine.
-✔ **§2b — the one-producer cure + the BORN call:** `cornerDisplayName` as THE producer through the picker's own reach; and your no-STOP ruling on the absence arm was correct — the honest tail IS the pre-existing ruled arm, so nothing new waited on the designer. ✔ §2c at the eye (your §1.3, ⚠ your drive): the menu speaks the picker's vocabulary on both volumes.
-✔ **§3 verified at my desk at `8c29e7b`:** `c7cd138` = the ADR alone, 91 insertions, create-mode; its Status line reads **Accepted** with my ratification and the Δ6 interpretation carried — the researcher's own hand, confirmed by their letter to me.
-✔ **§4 — all three unknowns carry numbers and locations, and your framing note (generation ≠ drawing) is exactly the discipline:** the number was not allowed to claim more than its instrument measured. `B-104` (the tiling build) has its ground; it is NEXT after this build — see §5.
-
----
-
-## 2 · ⛔ THE FRONT: THE FORM SPEAKS FOR ITSELF — the Δ11 presentation set, designer-ruled, researcher-grounded
-
-**The meaning frame:** Arman's Δ11 bound — *"if there is [a reason] state it plainly"* — is RULED (the researcher, ADR 0021's closure reading) and its PRESENTATION is measured defective at the person: he read five true refusals as *"it could not be operated on except for collapse"* and said so (Δ11's own occasion; the designer's letter grounds the composition). The designer has now ruled the composition defect (five true refusals composing the false *"nothing takes this"* — an answer from the op's chair to a question from the form's chair) and delivered the copy; the researcher independently ruled the same tooltip cure from the definitions chair. **Sequenced per O22: this is unfinished person-facing work on shipped capability; the rung-2 render (`B-104`) follows it.** All designer copy below is from her letter (`inbox/mothership/2026-08-22_1830_designer_THE-REROUTE-…md`, mtime 2026-08-23 21:54 — the arbiter she named); the C3 grounding is the researcher's (`inbox/mothership/archive/…RULED-vertex-merge-is-a-WEDGE-refused-total….md`).
-
-### 2a · THE AFFORDANCE LINE — new, on the form's card
-> **`this form takes — identify · cut · collapse`** *(the ops shown are ILLUSTRATIVE — the line is COMPUTED)*
-
-**Her five clauses are this cut's INVARIANTS, each a witness leg:**
-1. **computed from the live enabled set, never a literal** (enumerate affordances from the screen, never from a constant);
-2. **TOTAL over what is open** (a partial list is what let a shut door hide beside an open one);
-3. **the FORM is the subject** — *"this form takes"*, never *"you can"*;
-4. **no shut door appears, ever** (naming `sew` on a closed form is the whole defect);
-5. **checkable** — the person can tick the line against the dock (LAW 23).
-⚠ The producer to compute FROM is the same availability layer the chips read (`operationAvailabilityFor` + the ruled reasons — one fact, one producer; **note `writtenFormModel.ts` is FROZEN-spent: if the cut must edit it, STOP and ask Arman in-terminal per §6 — a read/consume needs nothing**).
-
-### 2b · THE SUBTRACTIVE STRIP — the five reroute tails go
-**A refusal says why IT declines and stops.** Strip the reroute tail from all five; the per-op refusals themselves stand (a limit named at the control is the pattern that already ships). ⛔ Subtractive only — no new sentences here; "elsewhere" now lives in 2a's computed line.
-
-### 2c · THE BOUND — on closed volumes, her copy verbatim
-> **`quotienting by a symmetry in one gesture is not built — the long way is cut, then fold.`**
-
-**Siting (my ruling, hers to override by letter):** ADJACENT to 2a's affordance line, on CLOSED VOLUMES — the forms whose holder reaches for a one-gesture quotient. The idiom-precedent is the later-chapter sentence (`ManuscriptView.tsx:238`) — a limit spoken at its own site. If her override letter lands in `inbox/coder/` mid-build, it is its own marker file and your report echoes it.
-
-### 2d · THE TOOLTIP RECUT — doubly grounded, ships verbatim
-Current: `identify — trace two walks; the seam is the way you sew them` →
-> **`identify — trace two edge-walks; where they meet, corners become one concept`**
-*(Designer's words; the researcher's independent ruling from the definitions chair — the foundation sentence names the act by its vertex RESULT, the gesture is edge-addressed, and the translation belongs in HIS language. Two chairs, one cure.)*
-
-### 2e · THE CLASS LABEL falls to the guard — L3's cure
-The class label (`•unnamed·A·unnamed·B·…`) must fall through the **compose-over-absent guard that already exists** and read **`unnamed`** — COMPOSED requires nameable sources; four absences dressed as presences were bypassing it. **Locate WHY the suffix path bypassed the guard and make the fall-through the mechanism, not a patch.** The ring line (`unnamed ← four unnamed roots`) stands as ruled.
-
-### 2f · THE THIRD POSITION — a MEASURE, then a branch
-Read the relation line's emitting site (`—a ← unnamed·C·unnamed·A`): **are its two slots ROLE-BEARING** (source/target · operand order)? **If ROLES: report the grammar, touch nothing — the designer rules it on the case.** If not: the count form governs — wire it to the same count producer (`—a ← two unnamed roots`).
-
-### 2g · ACCEPTANCE — at the eye, composition included
-On a closed volume (the shelf-lifted octahedron): the card carries the computed affordance line **matching the dock chip-for-chip** (clause 5, ticked live) · no refusal anywhere carries a reroute tail · the tooltip reads her sentence · the class label reads `unnamed` **and the pairwise check passes — the label and the ring line AGREE where he sees both** · 2f's branch reported. On an OPEN form (the control): the affordance line speaks that form's own truth — the line is computed, so the control is a DIFFERENT enabled set rendering correctly, not the same bytes.
+✔ **2a — the computed line, proven the strong way:** the port-face pick MOVING the line live is clause 1's falsifier run in the wild, and it is the difference between a computed fact and a literal that happened to match. ★ **And the acceptance now has a second, independent eye: the designer drove the build blind to it and verified the line and the bound at her own hand** (her letter, 0135 — the carry-chain's own standard: accepted by a seat that did not build it).
+✔ **2b — the second frozen wall, same flow, correctly stopped:** sanctioned in-terminal, strip + re-seal alone (`e60df35`, `ed0cc1a8… → 5497f5a4…` — ✔ my read: the new seal stands at `ENGINE_FREEZE_MANIFEST.txt:85`). **The record lands THIS build — §3-R1.** And the recut gate leg — the sign gone AND the once-promised cure pinned still reachable — is the strip-without-regression proof done right.
+✔ **2c/2d — her copy verbatim, her siting confirmed by her own letter** (*"No override. Build it."* — and she then SAW it at her eye). ✔ **2e — the bypass found at the mechanism:** `rootDisplayOf` pre-dressing TRUE ABSENCE as the string `unnamed`+handle is a POSITIVE-PRESENCE violation (*a name is positively-present content; "no name" must be a true absence*) — composing from the plain names makes the guard the mechanism. The pairwise AGREE at the eye closes L3's core. ★ **The `conceptId` re-key is the catch of the build** — a silent-drop your own cut would have armed, seen because you checked the COMPOSITION, not the parts. Disclosed as a behavior change riding a presentation cut: exactly the standard.
+✔ **2f — ROLES, correctly untouched.** Your grammar (*`—a ← X·Y` = "relation a survives from the source edge that runs X → Y"*) is now in the designer's hands with her case; the last held term positions stay held. ✔ **The empty-open-set and the identify-entry sentence — both correctly NOT stretched past her ruling's boundary; both are now hers** (my letter). **Δ11's presentation set is WHOLE at the eye. The plan's item 4 kill fires.**
 
 ---
 
-## 3 · ⚠ STILL OPEN, NOT YOURS
-Fork (ii)'s wording + the 2c siting override + the folded card's composition (all with the designer, letters out) · `collapse`'s route (Arman) · auto-persistence (Arman's word) · the Δ6-interpretation veto window (Arman) · vertex identification — **CLOSED at the record this sitting** (the researcher's wedge ruling processed: bare vertex-merge is out of scope BY BUSINESS — the module builds the inhabitable; kind-1 intents get 2d's translation; nothing builds).
+## 2 · ⛔⛔ THE FRONT: RUNG 2 — THE SURFACE DECK-TILING (the render gate's own next rung)
 
-## 4 · `B-104` IS NEXT — THE TILING BUILD, its ground laid
-Your three measurements + ADR 0025 (tracked, Accepted) are its whole ground: TARGET/INVARIANTS/ACCEPTANCE from the ADR's §"What the engine build must carry" verbatim; your mount seam (`ManuscriptView.tsx:3136`), your {p,q} derivation sites, your idiom finding for far-side. It follows this build's report — do not start it inside `B-103`.
+**Unblocked by Arman's explicit ruling** (Δ16.1: *"(a) stands"*). **The ground is complete:** ADR 0025 (`docs/adr/0025-…md`, Accepted, tracked `c7cd138`) + your own `B-102` §1.4 measurements. **Fat-build doctrine applies** (Δ2: TARGET · INVARIANTS · ACCEPTANCE; your mechanism, structure, and staging — no per-step ratification).
+
+### TARGET (ADR 0025 §"What the engine build must carry", verbatim scope)
+**The explore-window renders a surface as its deck-tiling in the conformal model of its curvature — Poincaré disk / plane / stereographic — from its {p,q}.** The mount seam is the one you located: the explore threshold's surface arm (`ManuscriptView.tsx:3136`), where `EXPLORE_SURFACE_LATER` stands — **the later-chapter door this rung opens.** {p,q} derives — your own `B-102` §1.4(b) measurement, committed at `8c29e7b`: *"it is STORED NOWHERE — record-not-reading holds; nothing to flip"*: **p** from the faces' cycle length via `acquireComplex` (`complexIdentification.ts:840`, FROZEN — consume only); **q** from the interior vertex-link length (`extractVertexLinks`, `level3SoundnessGate.ts:158`, or `vertexLinkOf`, `conformalAtom.ts:106` — both FROZEN, consume only). ⛔ **If any cut is forced INTO a frozen file: stop, in-terminal — the flow that has now worked twice.**
+
+### METHOD ORDER (Δ6, structural — not optional)
+**Hyperbolic FIRST:** land the reflect-across-edge generator in the engine on the ADR's own worked case (`{4,5}`, Poincaré disk — your ported probe is the reference; generation once-per-surface, your §1.4(a) numbers at `8c29e7b`: depth-8 = 2241 cells in 14.93 ms). **Then DERIVE the other two per clause 2:** euclidean = the plane (`{4,4}`, the torus's world), spherical = stereographic (`{4,3}`, the cube-sphere — the pole cell as the whole EXTERIOR, far-side-shows-through riding the ink stack's own renderOrder + depthWrite:false idiom you kill-probed). **Descent:** RP² = the hemicube — `σ ∈ Sym(tiling) ∧ free`, CHECKED never assumed (cube ✔ · octa ✔ · **tetra ✘ = the LAW-24 control that must fail**). ⚠ **A person-built surface with no regular {p,q}: the ADR's §6 fallback governs — the nearest regular tiling with the honest deficit NAMED, or the door stays shut with its reason — never a silent degrade.**
+
+### INVARIANTS — each a witness leg (ADR §4/§5)
+`cosh R = cot(π/p)·cot(π/q)` — corner angle `= 360/q` to 0.01° (the naive-form trap bites at 79.47°) · dedup `(1−|c|²)`-scaled — **tile count = the CLOSED-cycle count, never the tree** (your §1.4(a) control at `8c29e7b`: 5461 tree vs 597 closed at depth 6) · interior vertex valence set `= {q}` exactly · the descent check with the tetra control · **the rim ADDRESSED, never drawn as a wall** (horizon doctrine — the Poincaré boundary is infinity) · **LOD: a cell below the floor is DROPPED, never drawn wrong** · captions countable only (q is ringable at a vertex; 270/360/450 checkable).
+
+### ACCEPTANCE — at the eye, two eyes
+**Yours first:** on the hyperbolic case the person can RING a vertex and COUNT five cells; on the plane four; through the stereographic sphere three — **the curvature read off a countable vertex.** On RP²: **the antipodal identification seen ARISING, the local picture unchanged.** The tetra's descent refusal in words. ⚠ **New person-facing copy beyond countable facts and ADR-ruled sentences — STOP and report the needed content; the wording is the designer's** (the door's own replacement sentence included, if one is owed). **Then the plan's kill: Arman's eye — his acceptance is rung 2's closure, not this build's report.**
+
+---
+
+## 3 · RIDERS — small, ruled, they land regardless of §2's reach
+
+- **R1 · the doctrine record** (docs-only commit): `CLAUDE.md` §6's sanctioned list records **`playgroundOperations` SPENT at `e60df35`** beside the other three spends.
+- **R2 · fork-(ii)'s sentence — the designer's wording, verbatim, ruled:** **`these two faces have the same corners, but no map fits — every candidate was tried and refused. pick a different partner, or leave the pair open.`** Sited **AT the empty menu** (her placement clause: a sentence explaining an emptiness must be adjacent to it), in the corner-count refusal's register. Your cuboid witness pair is the test case.
+- **R3 · two of her ruled strings measured still-placeholder at her own eye** (her letter 0135 §3, mtime `2026-08-24 01:35 +0330` — delivered in her `…1718` letter to the fifth, actioned not completed; both ruled, no STOP needed): **(a)** the leave-bounded button — **`leave it bounded — its {N} unpaired faces stand as walls, and the walk stops at each`** ({N} computed — this is the string Arman called *"whatever that is"*); **(b)** the scroll indicator — **`▼ {N} pairs in all — scroll for the rest`** ({N} computed).
+- **R4 · housekeeping:** delete `.handoff/.clockprobe` (zero-byte; the designer's probe — she reports the delete refused at her hand, letter 0128; if it refuses yours too, say so).
+- **R5 · the folded-body ROUTE, seat-to-seat:** write `.handoff/inbox/designer/` a short note with the EXACT route to a folded verdict body — seed, pair, and the map pick (your builds used the shared-edge-reversed `d+1`) — every tap named. Her letter 0135 §4: two informed attempts, neither folded (both routes quoted there so nobody repeats them); she rules the card only at a frame. **Your route is what unblocks the L1 ruling.**
+- **R6 · THE SUBSTRATE MAP (Arman-ruled yours, Δ16.3):** regenerate `THE_SUBSTRATE_MAP.md` at this arc boundary per its own header law — baseline `6436736` predates the walk, the census, and this whole arc. **SEVERABLE: if §2 consumes the build, say so in the report and R6 becomes `B-105`'s first rider — named, never silently dropped.**
+
+## 4 · ⚠ STILL OPEN, NOT YOURS
+The empty-open-set word · the identify-entry sentence · the roles case · the folded card's register (all with the designer — letters out; R5 feeds the last) · the sweep's revived items R-1…R-5 (queued behind this front) · Arman's five Δ16 rulings are all enacted — no ask on my board names him.
 
 ## 5 · ORDER
-**2a → 2b → 2c → 2d → 2e → 2f → 2g.** ⚠ 2f may stop only its own sub-point (roles → report). One commit per coherent cut at your discretion — the pre-commit witness list per `CLAUDE.md` §6 as always.
+**§2 (hyperbolic → derive → descent → acceptance drive) → R1–R5 (any order, cheap) → R6 (or sever it, named).** One commit per coherent cut; the pre-commit witness list per `CLAUDE.md` §6.
 
 ## 6 · THE STANDING ASK
-Arman, verbatim (`THE_SOVEREIGN_LEDGER.md` Δ6): ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report. Echo `B-103`. Push when it lands.**
+Arman, verbatim (`THE_SOVEREIGN_LEDGER.md` Δ6): ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report. Echo `B-104`. Push when it lands.**
