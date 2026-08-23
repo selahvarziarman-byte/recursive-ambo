@@ -18,7 +18,13 @@
 
 **§1–§4 are shared by every seat. §5–§8 are the coder's alone.**
 
-⚠ **If a `platonic-seat-map` skill loads, it is STALE on the chain** — it still lists an engineer/lieutenant office. **That seat was dissolved 2026-08-21. The chain is `Arman → mothership → coder`, with researcher and designer consulted BY QUESTION, not routed through.**
+> ### ⛔⛔ **IF A `platonic-seat-map` SKILL LOADS, IT IS STALE — READ `.handoff/THE_SEAT_MAP.md` INSTEAD.**
+> **That skill is plugin-backed and cannot be edited from a seat session** *(measured: `save_skill` refuses it — "not listed as user-editable"; only Arman can update the plugin)*. **Three of its claims are WRONG and each would stall or misroute you:**
+> 1. ⛔ the chain is **NOT** `… → researcher → engineer/lieutenant → coder`. **The engineer office was DISSOLVED 2026-08-21.** The chain is **`Arman → mothership → coder`**, with **researcher and designer CONSULTED BY QUESTION, not routed through.**
+> 2. ⛔ it says *"no commit before audit — Arman fires the commit natively."* **FALSE. The coder commits AND pushes** (§6's git-safety rules are what make that safe).
+> 3. ⛔ it names a `.handoff/REPORT_*` wire. **The wire is `THE_BUILD.md` in, `THE_BUILD_REPORT.md` out, with a STAMP echo.**
+>
+> ⇒ **`.handoff/THE_SEAT_MAP.md` is AUTHORITATIVE** — the chain, the seats, the mail convention, the gitignored-inbox rule, and the commit rules. **Where it and the skill disagree, the file wins.**
 
 ---
 
@@ -104,7 +110,7 @@ for f in scripts/diagnose-*.cjs; do            # clause 4 — 112 files
 done                                           # expect exactly ONE fail: diagnose-dual-inspection
 ```
 
-**Sanctioned frozen files (ask before spending, never assume):** `materializeOperation` · `complexIdentification` · `surfaceImmersion` · `standardBodies` · `snapshot.ts`. *(`multiform` and `worldModel` are spent.)*
+**Sanctioned frozen files (ask before spending, never assume):** `materializeOperation` · `complexIdentification` · `surfaceImmersion` · `standardBodies` · `snapshot.ts`. *(`multiform`, `worldModel`, and `writtenFormModel` (spent at `b08848d`, sanctioned by Arman in-terminal) are spent.)*
 
 **Pick the instrument that shares the claim's type system.** For a TYPE claim the **compiler** is the census — a grep cannot tell `DomainModel.complex` from `acquired.complex`. For what a function RETURNS, **run it**. For what a person sees, **drive the app**.
 
