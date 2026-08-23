@@ -64,6 +64,9 @@ import {
   type WrittenForm,
 } from './writtenFormModel';
 import { composeAffordanceLine, isClosedVolume, QUOTIENT_BOUND_SENTENCE } from './affordanceLine';
+import { resolveDeckTiling, type TilingResolution } from './deckTilingModel';
+import { DeckTilingWindow } from './DeckTilingWindow';
+import { readFormInvariants } from '../playground/formInvariants';
 import { resolveLineage } from '../playground/playgroundOperations';
 import { prepareFormForSew, refineToDisk } from '../lib/surfaceRefinement';
 // CYCLE-IDENTIFY (L23) — the gesture consumes the committed op + THE ONE
@@ -1916,6 +1919,8 @@ export default function ManuscriptView() {
   // no window), and the door's last refusal (fires AT the threshold, by name)
   const [exploreOpen, setExploreOpen] = useState<string | null>(null);
   const [exploreRefusal, setExploreRefusal] = useState<{ key: string; reason: string } | null>(null);
+  // B-104 RUNG 2 — the deck-tiling window (the surface arm's own door)
+  const [tilingOpen, setTilingOpen] = useState<string | null>(null);
   const exploreOpenRef = useRef(false);
   useEffect(() => {
     exploreOpenRef.current = exploreOpen !== null;
@@ -3101,19 +3106,47 @@ export default function ManuscriptView() {
     () => (selected && selected.startsWith('dim3:') ? dim3All.find((m) => `dim3:${m.key}` === selected) ?? null : null),
     [selected, dim3All],
   );
-  // RUNG 1 — which doorways exist for the current selection: a dim-3 room,
-  // the folded shelf, or a class-body shell (the card's 'cells not laid on
-  // it' frame). Anything else has no inside to knock on.
+  // B-104 RUNG 2 — the deck-tiling resolution for the selected written form:
+  // the ACQUIRED complex (the same one the identify trace reads) → {p,q} →
+  // the conformal tiling. null = not a candidate (no complex reaches it);
+  // {ok:false} = a candidate whose tiling REFUSES with counted facts (the
+  // greyed chip speaks it); {ok:true} = the door opens on THIS.
+  const deckTilingFor = useMemo((): TilingResolution | null => {
+    if (!selected || !selected.startsWith('w:')) return null;
+    const target = targetFor(selected);
+    if (!target) return null;
+    try {
+      const acquired = acquireComplex(target.shape, target.ancestry ?? null);
+      if (!acquired) return null;
+      const nonOrientable = (() => {
+        try {
+          return readFormInvariants(target.shape, target.ancestry ?? null).cert?.nonOrientable === true;
+        } catch {
+          return false;
+        }
+      })();
+      return resolveDeckTiling(acquired.complex as never, nonOrientable);
+    } catch {
+      return null;
+    }
+  }, [selected, targetFor]);
+  // RUNG 1 → RUNG 2 — which doorways exist for the current selection: a
+  // dim-3 room, the folded shelf, or a SURFACE whose deck-tiling RESOLVES
+  // (the door is TRUE-PREDICTIVE: eligible ⟺ it opens — the affordance
+  // line lists it, and a listed door that then refused would be the false
+  // promise §2b killed; a candidate whose tiling refuses stays ineligible
+  // and the greyed chip speaks the counted facts).
   const exploreEligible = useMemo((): 'room' | 'folded' | 'surface' | null => {
     if (!selected) return null;
     if (selected.startsWith('dim3:')) return 'room';
     if (selected.startsWith('dim3f:')) return 'folded';
-    if (selected.startsWith('w:')) {
-      const entry = written.find((w) => `w:${w.form.id}` === selected);
-      return entry?.form.render.mode === 'classBody' ? 'surface' : null;
-    }
+    if (selected.startsWith('w:')) return deckTilingFor?.ok === true ? 'surface' : null;
     return null;
-  }, [selected, written]);
+  }, [selected, deckTilingFor]);
+  // the tiling window follows the selection — a stale window never lingers
+  useEffect(() => {
+    setTilingOpen((cur) => (cur !== null && cur !== selected ? null : cur));
+  }, [selected]);
   // THE DOOR (GPU reset + the DOOR-FEED partial): a room with a LEGAL
   // pairing OPENS — fully paired (E³/cone/folded, Amdt 10) AND the
   // researcher's bounded body alike (a partial pairing is legitimate; its
@@ -3156,10 +3189,16 @@ export default function ManuscriptView() {
       if (aperture) judgeGate(aperture.gate);
       return;
     }
-    // the class-body shell: the doorway exists; the surface walk is a later
-    // rung — declared at the threshold, never silent
+    // B-104 RUNG 2 — the surface arm's door OPENS: the later-chapter refusal
+    // retires here; eligibility is true-predictive (the tiling resolved), so
+    // the press toggles the deck-tiling window on THIS selection
+    if (exploreEligible === 'surface') {
+      setExploreRefusal(null);
+      setTilingOpen((cur) => (cur === selected ? null : selected));
+      return;
+    }
     setExploreRefusal({ key: selected, reason: EXPLORE_SURFACE_LATER });
-  }, [selected, exploreOpen, dim3All, apertures, foldedBodies, foldedApertures]);
+  }, [selected, exploreOpen, exploreEligible, dim3All, apertures, foldedBodies, foldedApertures]);
   // the opened room, resolved from the live gate — E³/cone (dim3:) and
   // folded (dim3f:) alike; the shader takes the room's OWN cell surface
   // (faces as portals/walls + the seed's rods)
@@ -5451,8 +5490,15 @@ export default function ManuscriptView() {
         onIdentifyToggle={handleIdentifyToggle}
         explore={{
           enabled: exploreEligible !== null,
-          reason: exploreEligible === null ? EXPLORE_NEEDS_ROOM : null,
-          open: exploreOpen !== null,
+          // B-104: the greyed chip speaks — a surface candidate whose tiling
+          // REFUSED gives its counted facts; anything else, the room prompt
+          reason:
+            exploreEligible === null
+              ? deckTilingFor !== null && !deckTilingFor.ok
+                ? deckTilingFor.reason
+                : EXPLORE_NEEDS_ROOM
+              : null,
+          open: exploreOpen !== null || tilingOpen !== null,
         }}
         onExploreToggle={handleExploreDoor}
       />
@@ -5504,6 +5550,17 @@ export default function ManuscriptView() {
           paper={{ ...d.paper, background: d.paper.background }}
           accent={generatorsCtl.a}
           onClose={() => setExploreOpen(null)}
+        />
+      ) : null}
+      {tilingOpen && tilingOpen === selected && deckTilingFor?.ok ? (
+        // B-104 RUNG 2 — THE DECK-TILING WINDOW: the surface's universal
+        // cover in the conformal model of its curvature, the vertex countable
+        <DeckTilingWindow
+          tiling={deckTilingFor.tiling}
+          title={targetFor(selected)?.title ?? 'surface'}
+          paper={d.paper}
+          accent={generatorsCtl.a}
+          onClose={() => setTilingOpen(null)}
         />
       ) : null}
       {/* PHASE A (C2): the recovery controls over the same request counters —
