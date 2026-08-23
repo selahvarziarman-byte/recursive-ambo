@@ -200,14 +200,16 @@ check('THE WIRE IS REAL AND MEASURED: the person\'s raw begotten torus, handed t
 
 // ═════ [5] LAW 14 discharged ══════════════════════════════════════════════════════
 console.log('\n----- [5] LAW 14 DISCHARGED: the sentence now names a door that exists (clause 5) -----');
-check('THE SIGN STOPS LYING: `singleFaceGateReason` on the born multi-face child prints the committed sentence BYTE-INTACT — "…(Or cut / combine.)" — and the named cure now EXISTS and is reachable: the store exposes `applyCombineToSelection` as a function and the panel carries the "Combine (connected sum)" control (the registry string itself is untouched — playgroundOperations.ts is pinned byte-identical to HEAD in [7], so the sentence is HEAD\'s own)',
+check('THE SIGN STOPPED — AND THE CURE STANDS (B-103 §2b recut): the reroute tail is STRIPPED by the designer\'s Δ11 ruling (a refusal says why IT declines and stops — the sign that once had to be backed is gone; what the form takes lives in the card\'s computed affordance line), while the once-promised cure REMAINS reachable: the store exposes `applyCombineToSelection` and the panel carries the "Combine (connected sum)" control — no regression rode the strip',
   (() => {
     const reason = singleFaceGateReason(R.genus2);
     const panelNow = fs.readFileSync(path.join(repoRoot, 'src/components/PlaygroundOperationsPanel.tsx'), 'utf8');
     const storeNow = fs.readFileSync(path.join(repoRoot, 'src/store/playgroundStore.ts'), 'utf8');
     note(`the sentence: "…${String(reason).slice(-72)}"`);
     note(`the cure: store action=${typeof R.S().applyCombineToSelection} · panel control present=${panelNow.includes('Combine (connected sum)')}`);
-    return typeof reason === 'string' && reason.includes('(Or cut / combine.)') &&
+    return typeof reason === 'string' && !reason.includes('(Or cut / combine.)') &&
+      !reason.includes('Sew its boundary instead') &&
+      reason.endsWith('where the word denotes nothing.') &&
       typeof R.S().applyCombineToSelection === 'function' &&
       panelNow.includes('Combine (connected sum)') && panelNow.includes('applyCombineToSelection') &&
       storeNow.includes('applyCombineToSelection');
