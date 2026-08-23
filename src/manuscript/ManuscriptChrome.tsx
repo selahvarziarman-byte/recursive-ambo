@@ -470,6 +470,10 @@ export interface AperturePairRowView {
   faceChoicesA: ApertureFaceChoice[];
   faceChoicesB: ApertureFaceChoice[];
   mapChoices: ApertureMapChoice[]; // empty until both faces are picked
+  // B-104 R2: HER sentence at the empty menu — set exactly when both faces
+  // are picked, corner counts match, and EVERY candidate was refused by the
+  // fit (the view supplies the one ruled string; this chrome invents none)
+  mapRefusal?: string | null;
 }
 
 function AperturePickRow({
@@ -536,6 +540,13 @@ function AperturePickRow({
           </option>
         ))}
       </select>
+      {row.mapRefusal ? (
+        // B-104 R2 — the sentence explaining an emptiness, ADJACENT to it
+        // (her placement clause), in the corner-count refusal's register
+        <div data-aperture-no-map style={{ marginTop: 3, fontSize: 10.5, fontStyle: 'italic', opacity: 0.8 }}>
+          {row.mapRefusal}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -543,6 +554,7 @@ function AperturePickRow({
 export function ApertureGatePanel({
   rows,
   faceCount,
+  unpairedFaceCount,
   parity,
   refusal,
   pristine,
@@ -562,6 +574,9 @@ export function ApertureGatePanel({
   // subtitle's `{N} faces` — null when the menu could not be read (the pinch
   // guard's refusal), and then the clause is DROPPED rather than faked.
   faceCount: number | null;
+  // B-104 R3(a): {N} for the designer's leave-bounded string — the boundary
+  // faces no complete pair consumes, computed by the view live
+  unpairedFaceCount: number;
   // §3.3 (2026-08-21): the parity census — printed only when it actually
   // forces a wall; a fact about the volume, before the person acts, and it
   // must never wear a refusal's register.
@@ -703,10 +718,8 @@ export function ApertureGatePanel({
       </div>
       {rowsOverflow ? (
         <div data-aperture-more style={{ marginTop: 4, fontSize: 10.5, opacity: 0.65, textAlign: 'center' }}>
-          {/* ⛔ COPY PENDING THE DESIGNER (flagged): the more-rows indicator's
-              wording and look are hers; this placeholder states the measured
-              fact so no row is silently hidden */}
-          ▼ more pairs below — scroll the list ({rows.length} in all)
+          {/* B-104 R3(b) — the designer's ruled string, verbatim; {N} computed */}
+          {`▼ ${rows.length} pairs in all — scroll for the rest`}
         </div>
       ) : null}
       {refusal !== null && pristine ? (
@@ -772,9 +785,9 @@ export function ApertureGatePanel({
             cursor: 'pointer',
           }}
         >
-          {/* D2 EXIT B — ⛔ COPY PENDING THE DESIGNER (flagged): the explicit
-              leave-bounded act's wording is hers; this placeholder holds the slot */}
-          leave bounded — the free rim stands as walls
+          {/* D2 EXIT B — B-104 R3(a): the designer's ruled string, verbatim
+              (the one Arman called "whatever that is"); {N} computed live */}
+          {`leave it bounded — its ${unpairedFaceCount} unpaired faces stand as walls, and the walk stops at each`}
         </button>
       ) : null}
       {notice ? (

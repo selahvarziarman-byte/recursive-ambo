@@ -203,6 +203,7 @@ import {
   describeCandidate,
   dihedralMapCandidates,
   faceDisplayName,
+  NO_MAP_FITS_SENTENCE,
   resolveCarriedMetricBase,
   subdivideAndReadPersonDomain,
   traceAperture,
@@ -2772,6 +2773,7 @@ export default function ManuscriptView() {
       // screen: a throw here unmounts the entire tree). A throw becomes an
       // empty menu; the row's own refusal line speaks the reason by name.
       let mapChoices: { key: string; label: string }[] = [];
+      let mapRefusal: string | null = null;
       if (apertureVolume && row.faceA && row.faceB && row.faceA !== row.faceB) {
         try {
           // B-101 §2b rider: the per-candidate refusals are COLLECTED — an
@@ -2789,6 +2791,9 @@ export default function ManuscriptView() {
             }),
           );
           if (mapChoices.length === 0 && refusals.length > 0) {
+            // B-104 R2: the person hears HER sentence at the empty menu; the
+            // per-candidate reasons stay in the dev register
+            mapRefusal = NO_MAP_FITS_SENTENCE;
             console.warn(
               `aperture: every identification candidate for ${row.faceA} ~ ${row.faceB} was refused by the fit`,
               refusals,
@@ -2806,6 +2811,7 @@ export default function ManuscriptView() {
         faceChoicesA: allFaces.filter((f) => !takenA.has(f.id) || f.id === row.faceA),
         faceChoicesB: allFaces.filter((f) => !takenB.has(f.id) || f.id === row.faceB),
         mapChoices,
+        mapRefusal,
       };
     });
   }, [apertureRows, apertureVolume, apertureFaceMenu, resolveAbsentLabel]);
@@ -5360,6 +5366,12 @@ export default function ManuscriptView() {
           <ApertureGatePanel
             rows={apertureRowViews}
             faceCount={apertureFaceMenu.length > 0 ? apertureFaceMenu.length : null}
+            // B-104 R3(a): {N} for her leave-bounded string — the boundary
+            // faces not consumed by a complete pair, computed live
+            unpairedFaceCount={
+              apertureFaceMenu.length -
+              2 * apertureRows.filter((r) => r.faceA !== null && r.faceB !== null && r.faceA !== r.faceB).length
+            }
             parity={apertureParity}
             refusal={apertureRefusal}
             pristine={aperturePristine}

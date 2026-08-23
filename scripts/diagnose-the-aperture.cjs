@@ -817,5 +817,18 @@ const cbFallback = A.describeCandidate(
 check('…and TRUE ABSENCE stays honest: a label-less corner (the literal cuboid carries no names) displays its address tail through the reach — the pre-existing honest-id arm, no minted letters',
   cbFallback === 'v0→v4 — preserving (derived)');
 
+// ═════ [m] B-104 R2 — fork (ii)'s sentence, HERS verbatim, AT the empty menu ═
+console.log('\n----- [m] B-104 R2: the all-refused pair speaks her sentence, adjacent to its own emptiness -----');
+check("the ruled sentence, verbatim from the ONE producer (the designer's wording; a re-typing breaks this witness)",
+  A.NO_MAP_FITS_SENTENCE ===
+    'these two faces have the same corners, but no map fits — every candidate was tried and refused. pick a different partner, or leave the pair open.');
+const viewSrcM = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+const chromeSrcM = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptChrome.tsx'), 'utf8');
+check('…and it is WIRED at the emptiness: the view sets the row refusal exactly on empty-menu-with-collected-refusals (the cuboid pair above is the reachable case) and the chrome renders it under the map select — sited adjacent, her placement clause',
+  viewSrcM.includes('mapRefusal = NO_MAP_FITS_SENTENCE') &&
+  viewSrcM.includes('mapChoices.length === 0 && refusals.length > 0') &&
+  chromeSrcM.includes('row.mapRefusal') &&
+  chromeSrcM.includes('data-aperture-no-map'));
+
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

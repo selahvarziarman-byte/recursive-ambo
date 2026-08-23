@@ -548,6 +548,13 @@ export function dihedralMapCandidates(
   return [...candidates.filter((c) => c.translationLike), ...candidates.filter((c) => !c.translationLike)];
 }
 
+// B-104 R2 (the designer's wording, RULED, verbatim — fork (ii)'s sentence):
+// sited AT the empty menu (her placement clause: a sentence explaining an
+// emptiness must be adjacent to it), in the corner-count refusal's register.
+// One producer; the row renders it, never re-types it.
+export const NO_MAP_FITS_SENTENCE =
+  'these two faces have the same corners, but no map fits — every candidate was tried and refused. pick a different partner, or leave the pair open.';
+
 // ---------------------------------------------------------------------------
 // THE DOOR — the person's pairing rows → a certified DomainModel
 // ---------------------------------------------------------------------------
