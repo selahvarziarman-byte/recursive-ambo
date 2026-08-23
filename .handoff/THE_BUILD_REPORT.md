@@ -1,84 +1,91 @@
-# THE BUILD REPORT — B-103: the form speaks for itself — the computed line ticks the dock chip-for-chip and MOVES with a pick, the refusals stop, her bound and her tooltip ship verbatim, the class label falls to the guard and agrees with the ring — and the relation line's slots measured ROLE-BEARING, so they stand
+# THE BUILD REPORT — B-104: RUNG 2 IS OPEN — the later-chapter door retires and a surface's window is its deck-tiling: the Poincaré disk on a person-built {6,6}, the plane on the fold-born torus, the stereographic plate on the lifted cube, and RP²'s antipodal identification ARISING through the checked descent; the five cheap riders landed; R6 severed, named
 
-**STAMP ECHO: `B-103`** — the build I executed is the one you wrote.
-**coder · commits `e60df35` (§2b frozen union, sanctioned) · `f4a60d2` (§2a+2c+2d+2e + witnesses) · `f0dbb65` (§2b witness tail) · `521358f` (mandate record) · report follows · on base `8c29e7b` · branch `team-arman` · pushed after this report lands**
+**STAMP ECHO: `B-104`** — the build I executed is the one you wrote.
+**coder · commits `6661266` (§2 rung 2 + witness) · `705f9ec` (R1, docs) · `bfc9435` (R2+R3 + witness) · `fd0d691` (mandate record) · report follows · on base `1148093` · branch `team-arman` · pushed after this report lands**
 
 ---
 
 ## TO THE MOTHERSHIP
 
-**1 · A second unanticipated frozen wall, same flow, sanctioned.** The reroute tail's one producer lives in `src/playground/playgroundOperations.ts` — a bare seal row (`ed0cc1a8…`, control reproduced at HEAD) the mandate's freeze note did not cover (it named only writtenFormModel). Stopped, asked Arman in-terminal; **he sanctioned**; the strip + re-seal landed alone (`e60df35`, new seal `5497f5a4…`). The ledger's frozen-spend record gains a second row this arc.
+**1 · R6 SEVERED, as the mandate allows:** §2 consumed the build (the model, the window, the wiring, the witness, and the four-case acceptance drive). `THE_SUBSTRATE_MAP.md` regeneration becomes `B-105`'s first rider — named, not silently dropped.
 
-**2 · §2f — the MEASURE came back ROLES, so I touched nothing.** The relation line's two slots are the source edge's recorded endpoint order (`edge.sourceVertexIds ?? edge.vertexIds`, read through `endpointNameOf`), and that order is **the edge's canonical direction frame**: the identify preview's mode derivation (`modesFromDirectedCycles`, frozen) expresses every traced dir as ±1 RELATIVE to it, and D14's face law treats cycle direction as preserved (a reversed cycle is a flipped face). Swapping the slots would state the opposite orientation. **The grammar, for the designer's case ruling: `—a ← X·Y` reads "relation a survives from the source edge that runs X → Y (its canonical sense)."** The count form was NOT wired there (roles bar it); the handles in that position and in the concept row's `← …` source reading remain the LAST held term positions — one visible adjacency for her case: the cured torus row now reads `•unnamed ← unnamed·A unnamed·B unnamed·C unnamed·D` (label guard-ruled, source side held).
+**2 · The {p,q} reader moved DOWN a level from your locate, and honestly so:** your §1.4(b) sites (the level-3 gate's links) read the *identification-complex* family, but the complex the view actually holds is the ACQUIRED *quotient* family (`{vertices, edges, faces:[{boundary:[{edge,dir}]}]}` — measured: the two families' keys side by side). The quotient complex carries everything structurally — p off the face boundaries, q off the corner census at each merged vertex, closedness off the two-sides-per-edge law — so `readSchlafli` consumes it directly, multi-edge-safe, no frozen call needed. Same record-not-reading law, one family, the same object the identify trace already reads.
 
-**3 · One sentence the line does not have: the EMPTY open set.** A form with a card and zero open doors is reachable (the dim1 loop: every chip shut on it). Her clause 2 makes the total list empty; "this form takes — " + nothing is a broken sentence, and authoring "takes nothing" is copy I don't own. The line **does not render** on an empty set (it never lies by emptiness), and the case rides to the designer for a word — the same discipline as fork (ii)'s sentence.
+**3 · Two acceptance notes, honest edges:** (a) the ADR's worked hyperbolic case {4,5} is pinned in the WITNESS (the generator's reference); no page-reachable surface has that symbol — the PAGE's hyperbolic acceptance ran on the reachable route (hexagon aabbcc → {6,6}, count SIX) — the substance ("the curvature read off a countable vertex") holds; the symbol differs from the worked example. (b) the far-side faint register is exercised weakly by the page's cases (the rotated cube's side faces sit at z≈0; only {3,4} would show strong far cells) — the code path and the B-102 kill-probe stand; a page case with visible far-side awaits an octahedron-class surface. Named, not stretched.
 
-**4 · A silent-drop the cut would have armed, defused in the same commit:** with the class label falling to `unnamed`, two verdict LOCALS can now honestly share a label — and the card keyed locals by label+curvature (the React silent-drop class). The locals now carry `conceptId` and the card keys by it (the === contract, like every other register). Named because it is a BEHAVIOR change riding a presentation cut.
+**4 · The tetra descent refusal lives in the witness, not at the eye:** no page route ASKS the tetrahedron tiling to descend (descent marks arise only on non-orientable spherical surfaces, and the check runs on THEIR double covers). The LAW-24 control (`σ carries the corner … to no corner — not a symmetry of the tiling`) fires in `diagnose-the-deck-tiling` — in words, as ordered — and the {4,2} dihedron forced the check's key to the PATCH CENTROID (both caps share all four corners; the corner-set key of the reference's assert cannot tell them apart — a measured degeneracy the ADR's cube case never met).
+
+**5 · R2's person-facing case is witness-reachable only, today:** every volume on the page has congruent faces, so the all-refused menu (her sentence's site) cannot be reached at the eye yet — the manufactured cuboid pair pins the sentence and the wiring ([m]). The moment an incongruent-equal-corner volume ships, the sentence is already standing at its emptiness.
+
+**6 · R4's refusal did not reproduce at my hand:** `.handoff/.clockprobe` (0 bytes) deleted cleanly by `rm`. Whatever refused hers did not refuse mine — possibly a lock her session held.
 
 ---
 
-## 1 · WHAT I SAW — 2g, all clauses at the eye
+## 1 · WHAT I SAW — the acceptance drive, four windows at the eye
 
-### 1.1 · The affordance line, chip-for-chip and COMPUTED (the shelf-lifted octahedron)
+### 1.1 · HYPERBOLIC — a person-built surface opens the Poincaré disk
 
-The card reads **`this form takes — dualize · identify`** directly under the subtitle; the dock at that moment: glue shut · flip-glue shut · collapse shut · **cut shut** · **dualize OPEN** · sew shut · fold shut · thicken shut · **identify OPEN** · explore shut — **the line = exactly the open chips, dock order** (clause 5 ticked live). Then the strongest proof of clause 1: **the person picks a port face → cut's chip opens AND the line becomes `this form takes — cut · dualize · identify`** — the line moved with the enabled set. Computed, never a literal.
+Invoke hexagon → fold, three adjacent pairs, EACH FLIPPED (`a·a →⇄ · b·b →⇄ · c·c →⇄` — the aabbcc word; the panel previewed χ −1 · w₁ 1 · orientable no) → commit births **"3 cross-caps — born"** → the explore chip lights AND the affordance line gains the door (`this form takes — dualize · fold · identify · explore inside` — the new eligibility composed by the same producer) → the window: **`{6,6} · hyperbolic — the Poincaré disk`** — the central hexagon, rings of arc-bounded cells shrinking to the dashed horizon, the marked vertex with its SIX cells emphasized. Captions, all countable or ADR-ruled: `6 flat 6-gons at a vertex: 6 × 120° = 720° — a 360° OVERLAP — it must ruffle open` · `ring the marked vertex — count the cells: 6` · `the boundary circle is INFINITY — the cells shrink toward it and never reach it` · `714 cells below the floor — dropped, never drawn wrong`. The card beside it reads the SAME verdict from the other chair (`Σδ = −360° ⇄ splays`).
 
-### 1.2 · The bound, sited as ruled
+### 1.2 · EUCLIDEAN — the fold-born torus opens the plane
 
-Beneath the line on the octahedron, her copy verbatim: **`quotienting by a symmetry in one gesture is not built — the long way is cut, then fold.`** The predicate is measured from the substrate (a 3-cell + every edge bordering exactly two faces); on the torus and the square (no 3-cell) the bound is correctly ABSENT.
+Invoke square → fold e0·e2 →→, e1·e3 →→ (abAB; preview χ 0 · orientable yes) → **"Torus (T²) — born"** → the window: **`{4,4} · euclidean — the plane`** · `4 × 90° = 360° — CLOSES EXACTLY — it stays flat` · `count the cells: 4`.
 
-### 1.3 · The refusals stop; the tooltip is hers
+### 1.3 · SPHERICAL — the lifted cube opens the stereographic plate
 
-- glue's hover on the closed octahedron, verbatim: **`A word (e.g. abAB) is addressed to the slots of ONE polygon — this form is a COMPLEX (8 faces), where the word denotes nothing.`** — full stop. No reroute tail anywhere I could reach (the one producer string served every tailed refusal; stripping it once stripped them all).
-- identify's tooltip, verbatim: **`identify — trace two edge-walks; where they meet, corners become one concept`**.
+Ambo seed = Cube → lift the seed cell → placed → the window: **`{4,3} · spherical — a stereographic plate`** — the central cell, four arcing side cells, the outermost arcs bounding the plate, `3 × 90° = 270° — a 90° GAP — it must close up` · `count the cells: 3` · **`the pole cell is the whole EXTERIOR of the plate — its edges are the outermost arcs`** (the pole PLACED at a face centre by construction — the rotation fix; an edge-sampling exterior test never trips, measured before the rotation existed).
 
-### 1.4 · The class label falls to the guard — and agrees with the ring
+### 1.4 · RP² — the identification ARISES, checked
 
-The zoo torus's merged row now reads **`•unnamed ← unnamed·A unnamed·B unnamed·C unnamed·D`** — the LABEL is `unnamed` (the handle-dressed composition is dead), and the in-scene ring line reads **`unnamed ← four unnamed roots`** — **the pairwise check passes: the label and the ring line agree where he sees both.** (The row's `←` source side keeps its handles — the held position, TO THE MOTHERSHIP 2.) Real-name compositions stand: the identified junction's `BD·BC`-class labels are untouched by construction (plain names non-null → compose).
+The zoo's RP² (cross-cap): the window reads **`{4,2} · spherical`** (the abab square's own symbol — two square caps on the sphere, the equator's four corners) · `count the cells: 2` · and the descent line, present exactly because the CHECK passed on this tiling's own cells: **`the antipodal map is a symmetry of this tiling — CHECKED, and it is free: the tiling DESCENDS. 1 cell pair identified — each ink is one pair; the local picture is unchanged`** — the fundamental disk inked, its partner the exterior, the rim their shared equator.
 
-### 1.5 · The OPEN control — a different enabled set rendering correctly
+### 1.5 · The riders at the eye
 
-The zoo host square: line **`this form takes — glue · flip-glue · collapse · cut · fold · identify`**; dock: exactly those six OPEN, dualize/sew/thicken/explore shut — chip-for-chip again, no shut door named, bound absent. And the torus (closed surface, no cell): **`this form takes — dualize · fold · identify`** — its own truth.
+- **R3(a)** on the cube's aperture: **`leave it bounded — its 6 unpaired faces stand as walls, and the walk stops at each`** — and pairing bottom+top moved it live to **`its 4 unpaired faces`**. **R3(b)**: **`▼ 3 pairs in all — scroll for the rest`**. Both copy-pending flags retired.
+- **R2** is wired at the emptiness (witness-pinned; eye-unreachable today — TO THE MOTHERSHIP 5).
 
 ## 2 · WHAT I RAN (the five witnesses)
 
 ```
 1  git diff HEAD --name-only -- src → EMPTY at the tip (tsbuildinfo dirty by law)
-2  freeze manifest: playgroundOperations.ts FROZEN (bare row) → STOPPED, Arman
-   sanctioned in-terminal → strip + re-seal ALONE in e60df35. writtenFormModel
-   CONSUMED only (never edited — the mandate's own note honored). The NEW
-   affordanceLine.ts was caught UNCLASSIFIED by the manifest completeness law
-   (a witness went red) and registered NOT_FROZEN in the same commit as its
-   birth. argumentReadingModel / View / Chrome — NOT_FROZEN rows verified.
-3  re-seal recomputed (tr -d '\r' | sha256sum): ed0cc1a8… → 5497f5a4…;
-   POSITIVE CONTROL: the old hash reproduced from HEAD bytes at base 8c29e7b.
-4  suite at the FINAL head: 112 files @ exactly 1 fail = diagnose-dual-inspection
-   (accepted baseline). npx tsc -b → exit 0. Recut FROM THE RULE: the §11
-   label pins ('unnamed', no handle); §9's stance map re-keyed by conceptId;
-   the two reroute-tail pins → ABSENCE pins; diagnose-the-gate's 'SIGN STOPS
-   LYING' leg → 'THE SIGN STOPPED — AND THE CURE STANDS' (the strip pinned +
-   applyCombineToSelection/panel control still reachable — no regression rode
-   the strip). NEW legs: §2a's five clauses each its own leg (incl. the
-   dock-order total line and the empty-set null); the §2c predicate + her
-   sentence verbatim; the §2d tooltip source pin.
-5  THE READING — §1 above, all of it driven in the Windows Chrome; the line's
-   computed-ness proven by the port-face pick moving it live.
+2  freeze manifest: every frozen file CONSUMED only (seeds, acquire,
+   customGluing, the w₁ cert; the §1.4(b) gate sites turned out the wrong
+   family and were not needed — TO THE MOTHERSHIP 2); the two NEW files
+   registered NOT_FROZEN in their birth commit (the completeness law's
+   witness stayed green). No frozen spend this build.
+3  no re-seal owed.
+4  suite at the FINAL head: 113 files @ exactly 1 fail = diagnose-dual-
+   inspection (the accepted baseline; the count GREW by the new witness).
+   diagnose-the-deck-tiling.cjs (NEW): cot·cot = 1.3764 with the naive-form
+   trap biting · THE DRAWN CORNER 72.0000° ×4 to 0.01° (independent tangent
+   recomputation) · dedup deterministic, 593 closed vs the 5461 tree ·
+   ring counts 5/4/3/3 · rim r ≤ √0.998 + dropped 1492 at depth 8 · descent
+   cube ✔3 octa ✔4 tetra ✘-in-words · torus {4,4} · RP² {4,2}+pair ·
+   cube {4,3}+one exterior · hexagon-aabbcc {6,6} hyperbolic · three counted
+   refusals (no-2-cells · boundary · no-single-{p,q}) · the mount pin.
+   diagnose-the-aperture gains [m]: R2's sentence verbatim + the wiring.
+   npx tsc -b → exit 0.
+5  THE READING — §1: all four windows driven at the eye in the Windows
+   Chrome; the fold previews read before each commit; R3's N moved live.
+   Two HMR page-store resets mid-drive (rebuilt); one renderer freeze
+   (CDP timeout) that recovered on its own — no recycle needed.
 ```
 
 ## 3 · WHAT I CHANGED
 
-- **`src/playground/playgroundOperations.ts`** (`e60df35`, frozen union): the word-gate refusal stops at "…where the word denotes nothing." — subtractive only; re-seal in the same commit.
-- **`src/manuscript/affordanceLine.ts`** (`f4a60d2`, NEW + NOT_FROZEN row): `composeAffordanceLine` (her five clauses as the composer's invariants; consumes writtenFormModel) · `isClosedVolume` · `QUOTIENT_BOUND_SENTENCE` (her copy, one producer).
-- **`src/manuscript/ManuscriptView.tsx`** (`f4a60d2`): the two memos (line + bound) threaded to the card; the verdict locals keyed by `conceptId`.
-- **`src/manuscript/ManuscriptChrome.tsx`** (`f4a60d2`): the identify tooltip, her sentence verbatim.
-- **`src/manuscript/argumentReadingModel.ts`** (`f4a60d2`): the class label composes from the PLAIN names and falls through the compose-over-absent guard (the bypass was `rootDisplayOf` pre-dressing absence as the string `unnamed`+handle — a presence the guard cannot refuse; the fall-through is now the mechanism); verdict locals carry `conceptId`; the two held-clause comments updated to the rulings.
-- **Witnesses** (`f4a60d2` + `f0dbb65`): as itemized in RAN 4.
-- **`.handoff/THE_BUILD.md`** (`521358f`): the mandate record.
+- **`src/manuscript/deckTilingModel.ts`** (`6661266`, NEW + NOT_FROZEN row): `readSchlafli` over the acquired quotient complex · `hyperbolicTiling`/`euclideanTiling` (one reflect walk, curved and flat) · `sphericalTiling` (seed projection, pole-at-face-centre rotation, the {4,2} dihedron literal) · `tilingDescends` (patch-centroid-keyed) · `resolveDeckTiling` (the door's judge).
+- **`src/manuscript/DeckTilingWindow.tsx`** (`6661266`, NEW + NOT_FROZEN row): the 2D-canvas conformal drawing + the countable captions.
+- **`src/manuscript/ManuscriptView.tsx`** (`6661266`, `bfc9435`): `deckTilingFor` (per-selection resolution; nonOrientable off the frozen cert) · eligibility = the resolution (true-predictive) · the door toggles the window · the greyed chip speaks the counted facts · R2's `mapRefusal` wiring · R3(a)'s live `unpairedFaceCount`.
+- **`src/manuscript/apertureModel.ts`** (`bfc9435`): `NO_MAP_FITS_SENTENCE` — her sentence, one producer.
+- **`src/manuscript/ManuscriptChrome.tsx`** (`bfc9435`): the row's `mapRefusal` render (adjacent, her placement) · her two R3 strings verbatim with computed {N}.
+- **`CLAUDE.md`** (`705f9ec`): R1's spent record.
+- **Witnesses**: `diagnose-the-deck-tiling.cjs` (NEW) · `diagnose-the-aperture` [m].
+- **Off-repo, by the inbox's law**: R5's route letter in `.handoff/inbox/designer/` (every tap named; the d+1 key and the d-0 trap called out) · R4's `.clockprobe` deleted.
+- **`.handoff/THE_BUILD.md`** (`fd0d691`): the mandate record.
 
 ## 4 · WHAT I COULD NOT REACH / DID NOT TOUCH
 
-- **§2f** — ROLES; reported (TO THE MOTHERSHIP 2), nothing wired.
-- **The identify-entry sentence** (`ManuscriptView` — "this single-face quotient identifies through the committed word ops … — the dock words are its doors") — reroute-shaped, but it fires on single-face QUOTIENTS, not the closed volume; it is NOT among her five, and her ruling was not extended past its boundary. Named for her next letter.
-- **The empty-open-set sentence** (TO THE MOTHERSHIP 3) — the line hides; the word is hers.
-- **The concept row's `← …` source handles** — the last held term position, visible beside the cured label; hers.
-- **§4's B-104** — not started, as ordered.
+- **R6** — severed, named (TO THE MOTHERSHIP 1): `B-105`'s first rider.
+- **The {4,5} page case / the strong far-side case / R2's eye case** — each named with its honest edge (TO THE MOTHERSHIP 3, 5); nothing stretched.
+- **Arman's eye** — rung 2's CLOSURE is his acceptance, not this report (the mandate's own words); the four windows are ready for him.
+- **§4's ledger** — untouched: the empty-open-set word, the identify-entry sentence, the roles case, the folded card, the revived sweep queue.
