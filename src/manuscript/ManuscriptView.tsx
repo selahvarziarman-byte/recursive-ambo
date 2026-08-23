@@ -195,6 +195,7 @@ import {
   buildAperture,
   buildApertureScene,
   buildPersonDomainVerdict,
+  cornerDisplayName,
   describeCandidate,
   dihedralMapCandidates,
   faceDisplayName,
@@ -2751,7 +2752,10 @@ export default function ManuscriptView() {
           mapChoices = dihedralMapCandidates(apertureVolume, row.faceA, row.faceB, (r) => refusals.push(r)).map(
             (c) => ({
               key: c.key,
-              label: describeCandidate(c),
+              // B-102 §2b: the map labels read through the SAME corner-name
+              // producer the face picker one row up composes with — one
+              // fact, one producer; the menu and the picker cannot disagree
+              label: describeCandidate(c, (vertexId) => cornerDisplayName(apertureVolume, vertexId, resolveAbsentLabel)),
             }),
           );
           if (mapChoices.length === 0 && refusals.length > 0) {
@@ -2774,7 +2778,7 @@ export default function ManuscriptView() {
         mapChoices,
       };
     });
-  }, [apertureRows, apertureVolume, apertureFaceMenu]);
+  }, [apertureRows, apertureVolume, apertureFaceMenu, resolveAbsentLabel]);
   const apertureRefusal = useMemo(
     () => (apertureVolume ? aperturePairingRefusal(apertureVolume, apertureRows) : apertureVolumeRefusal),
     [apertureVolume, apertureRows, apertureVolumeRefusal],

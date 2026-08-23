@@ -797,5 +797,25 @@ check("THE RIDER: the square-end×oblong-side pair (equal corner counts, no rigi
   cbRefusals.every((r) => /does not reproduce|does not move the cell/.test(r.reason)));
 note(`first collected refusal: ${cbRefusals[0] ? cbRefusals[0].key + ' — ' + cbRefusals[0].reason.slice(0, TRACE_W) : '(none)'}`);
 
+// ═════ [l] B-102 §2b — the map menu reads NAMES through the picker's own producer (F.4; ruled: names everywhere) ═
+console.log('\n----- [l] B-102: one corner-name producer — the map labels and the face picker cannot disagree -----');
+const cubeCorner = (vertexId) => A.cornerDisplayName(cube, vertexId);
+const btMenu = A.dihedralMapCandidates(cube, faceId('bottom'), faceId('top'));
+const btFlat = btMenu.find((c) => c.translationLike);
+check("THE RECUT CONTROL, from the rule (the old 'a→e · d→h · c→g · b→f' were id-key TAILS, not names — ruled yielding to F.4): the cube's flat bottom↔top candidate reads its corners' NAMES, the same vocabulary its face picker composes with",
+  A.describeCandidate(btFlat, cubeCorner) === 'A→E · D→H · C→G · B→F — preserving (derived)');
+check('…and the whole cube menu speaks names: every correspondence token on all 8 candidates is a seed corner NAME (A–H), never a lowercase id tail',
+  btMenu.every((c) => A.describeCandidate(c, cubeCorner).split(' — ')[0].split(' · ').every((t) => /^[A-H]→[A-H]$/.test(t))));
+const octaCorner = (vertexId) => A.cornerDisplayName(octa, vertexId);
+check("…the octahedron's menu likewise: every token is the seed's own corner name (+X/−X/±Y/±Z), no hash tails — and the producer IS faceDisplayName's (one function, two readers)",
+  oppMenu.every((c) => A.describeCandidate(c, octaCorner).split(' — ')[0].split(' · ').every((t) => /^[+-][XYZ]→[+-][XYZ]$/.test(t))) &&
+  octa.faces[0].vertexIds.every((vid) => A.faceDisplayName(octa, octa.faces[0]).includes(A.cornerDisplayName(octa, vid))));
+const cbFallback = A.describeCandidate(
+  { key: 'd+0', map: {}, correspondence: [['cb:v0', 'cb:v4']], derivedMode: 'preserving', det: 1, translationLike: true },
+  (vertexId) => A.cornerDisplayName(cuboid, vertexId),
+);
+check('…and TRUE ABSENCE stays honest: a label-less corner (the literal cuboid carries no names) displays its address tail through the reach — the pre-existing honest-id arm, no minted letters',
+  cbFallback === 'v0→v4 — preserving (derived)');
+
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

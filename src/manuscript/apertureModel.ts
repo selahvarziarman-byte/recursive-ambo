@@ -433,8 +433,19 @@ const shortId = (id: string): string => {
 // R4(f): the row-major identity — the R-test's reference (‖R − I‖∞).
 const IDENTITY3 = [1, 0, 0, 0, 1, 0, 0, 0, 1] as const;
 
-export function describeCandidate(candidate: ApertureMapCandidate): string {
-  const corr = candidate.correspondence.map(([a, b]) => `${shortId(a)}→${shortId(b)}`).join(' · ');
+export function describeCandidate(
+  candidate: ApertureMapCandidate,
+  // B-102 §2b (F.4 — an id never stands where a NAME is owed; ruled by Arman
+  // in-terminal: names EVERYWHERE, the cube's tail-strings included): the
+  // corner-name reach — the SAME producer the face picker composes through
+  // (cornerDisplayName, threaded by the caller). A corner the reach cannot
+  // name (TRUE absence, or a caller without the page's reach) displays the
+  // honest address tail — the pre-existing honest-id arm, never minted
+  // letters.
+  cornerName?: (vertexId: string) => string | null,
+): string {
+  const display = (id: string): string => cornerName?.(id) ?? shortId(id);
+  const corr = candidate.correspondence.map(([a, b]) => `${display(a)}→${display(b)}`).join(' · ');
   const base = `${corr} — ${candidate.derivedMode} (derived)`;
   // R4(f) THE WINDING LABEL — the arc's ONE new person-facing string: every
   // non-translation candidate rotates/reflects the face before gluing, so it
@@ -628,31 +639,41 @@ export function lineageCornerDisplay(
   return `${resolved.trim().toUpperCase()}${levelMarkOf(vertexId)}`;
 }
 
+// B-102 §2b — THE ONE CORNER NAME (D16's shape, extracted from the face
+// picker's loop): the positively-present label (uppercased), else the
+// lineage reach (level-marked), else null — TRUE ABSENCE, the caller's own
+// honest register. SHARED by the composed face name and the map menu's
+// correspondence labels — one producer, two readers that cannot disagree.
+// Total over both id spaces: a multi-cell `c{i}:` prefixed id resolves to
+// the shape's raw vertex (the established strip idiom).
+export function cornerDisplayName(shape: Shape, vertexId: string, resolveAbsent?: AbsentLabelResolver): string | null {
+  const vertex = shape.vertices[vertexId] ?? shape.vertices[vertexId.replace(/^c\d+:/, '')];
+  const data = vertex?.data;
+  const trimmed = typeof data?.label === 'string' ? data.label.trim() : '';
+  // THE TERMINAL CUT (B-2026-08-23-A): the id-as-label scaffold clause is
+  // DEAD — every producer it stood for has stopped (the nine reachable
+  // mints + the patchLift latent rider + multiform's absent-fallback, the
+  // ruled census, measured at the tree: eleven sites mint TRUE ABSENCE;
+  // what remains is exempt/given/out-of-scope/D-index — none caught by
+  // the retired clause). A label is a NAME by positive presence; absence
+  // resolves through lineage below. Its twin in argumentReadingModel's
+  // ownNameOf died in the SAME commit — the card and the menu agree.
+  // (Pre-migration FILES may carry id-copy labels verbatim — the record
+  // is the record; the view-side resolver still refuses to LAUNDER an
+  // id-copy source label through lineage resolution.)
+  if (trimmed.length === 0) {
+    const sources = vertex?.createdBy?.sourceVertexIds ?? [];
+    return lineageCornerDisplay(sources, vertexId, resolveAbsent);
+  }
+  return trimmed.toUpperCase();
+}
+
 export function faceDisplayName(shape: Shape, face: Face, resolveAbsent?: AbsentLabelResolver): string {
   const labels: string[] = [];
   for (const vertexId of face.vertexIds) {
-    const vertex = shape.vertices[vertexId];
-    const data = vertex?.data;
-    const trimmed = typeof data?.label === 'string' ? data.label.trim() : '';
-    // THE TERMINAL CUT (B-2026-08-23-A): the id-as-label scaffold clause is
-    // DEAD — every producer it stood for has stopped (the nine reachable
-    // mints + the patchLift latent rider + multiform's absent-fallback, the
-    // ruled census, measured at the tree: eleven sites mint TRUE ABSENCE;
-    // what remains is exempt/given/out-of-scope/D-index — none caught by
-    // the retired clause). A label is a NAME by positive presence; absence
-    // resolves through lineage below. Its twin in argumentReadingModel's
-    // ownNameOf died in the SAME commit — the card and the menu agree.
-    // (Pre-migration FILES may carry id-copy labels verbatim — the record
-    // is the record; the view-side resolver still refuses to LAUNDER an
-    // id-copy source label through lineage resolution.)
-    if (trimmed.length === 0) {
-      const sources = vertex?.createdBy?.sourceVertexIds ?? [];
-      const display = lineageCornerDisplay(sources, vertexId, resolveAbsent);
-      if (display === null) return 'unnamed';
-      labels.push(display);
-      continue;
-    }
-    labels.push(trimmed.toUpperCase());
+    const display = cornerDisplayName(shape, vertexId, resolveAbsent);
+    if (display === null) return 'unnamed';
+    labels.push(display);
   }
   if (labels.length === 0) return 'unnamed';
   const best = d14NameRotation(labels);
