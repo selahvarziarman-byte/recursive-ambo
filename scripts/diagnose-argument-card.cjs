@@ -420,12 +420,15 @@ check('§9 (P2·E6) THE FALLBACK + THE POLISH: the dual carrier keeps absorbed (
 // acquired valence + sign — a boundary +δ is the rim BENDING, never a cone
 const expectedLocalKind = (valence, curvatureDeg) =>
   valence === 'boundary' && curvatureDeg > 0 ? 'rim-turn' : curvatureDeg > 0 ? 'cone' : 'saddle';
-const coneStanceByLabel = new Map((coneReading.stance ?? []).map((r) => [r.conceptLabel, r]));
+// B-103 §2e recut: keyed by conceptId, the === contract — with the class
+// label falling to the guard, two rows can honestly share 'unnamed' and a
+// label-keyed map collapses (the exact collision the id key exists for)
+const coneStanceById = new Map((coneReading.stance ?? []).map((r) => [r.conceptId, r]));
 const coneLocals = coneReading.verdict?.locals ?? [];
 const coneLocalsAgree = (locals) =>
   locals.length > 0 &&
   locals.every((l) => {
-    const s = coneStanceByLabel.get(l.conceptLabel);
+    const s = coneStanceById.get(l.conceptId);
     return s !== undefined && l.kind === expectedLocalKind(s.valence, l.curvatureDeg);
   });
 note(`cone locals: ${coneLocals.map((l) => `${l.conceptLabel} ${l.curvatureDeg > 0 ? '+' : ''}${l.curvatureDeg}° ${l.kind}`).join(' · ')}`);
@@ -863,8 +866,8 @@ const cutWalk = cutApplied.ok ? buildArgumentReading(cutApplied.born) : null;
 const collapseApplied = applyPlaygroundOperationTo('collapse-sphere', sqHost.shape, null, 612, 8, [], null);
 const collapseWalk = collapseApplied.ok ? buildArgumentReading(collapseApplied.born) : null;
 note(`cut: ${cutWalk ? cutWalk.conceptRows.map((r) => `${r.label}(${r.typing})`).join(' ') : cutApplied.reason} · collapse: ${collapseWalk ? collapseWalk.conceptRows.map((r) => `${r.label}(${r.typing})`).join(' ') : collapseApplied.reason}`);
-check('§11 (WALK) ★ GLUE + FLIP-GLUE + CUT + COLLAPSE (B-2026-08-23-C recut): the torus\'s identified class reads THROUGH its members — four TRUE ABSENCES, each carried by the ruled handle (unnamed·A·unnamed·B·unnamed·C·unnamed·D — the id-copy laundering is DEAD); the klein likewise judged; the cut form keeps its corners\' honest absences; the collapse-born class reads through its members — every card packet-judged',
-  torusReading.conceptRows[0].label === 'unnamed·A·unnamed·B·unnamed·C·unnamed·D' &&
+check('§11 (WALK, B-103 §2e recut) ★ GLUE + FLIP-GLUE + CUT + COLLAPSE: COMPOSED requires nameable sources — the identified class of four TRUE ABSENCES falls through the compose-over-absent guard and reads \'unnamed\' (the handle-dressed composition unnamed·A·unnamed·B·… is DEAD: absence dressed as presence bypassed the guard); the klein likewise judged; the cut form keeps its corners\' honest absences; the collapse-born class falls to the guard too — every card packet-judged',
+  torusReading.conceptRows[0].label === 'unnamed' &&
     packetJudge(torusReading, torus.shape) &&
     packetJudge(kleinReading, kleinApplied.born.shape) &&
     cutWalk !== null &&
@@ -872,7 +875,8 @@ check('§11 (WALK) ★ GLUE + FLIP-GLUE + CUT + COLLAPSE (B-2026-08-23-C recut):
     cutWalk.conceptRows.every((r) => !/^unnamed·[A-Z]\d*$/.test(r.label)) &&
     packetJudge(cutWalk, cutApplied.born.shape) &&
     collapseWalk !== null &&
-    collapseWalk.conceptRows.every((r) => r.label === 'unnamed·A·unnamed·B·unnamed·C·unnamed·D') &&
+    collapseWalk.conceptRows.every((r) => r.label === 'unnamed') &&
+    collapseWalk.conceptRows.every((r) => !r.label.includes('·')) &&
     packetJudge(collapseWalk, collapseApplied.born.shape));
 const bandLift = thicken(liftAC.shape);
 const bandWalk = buildArgumentReading(wrapCarrier(bandLift.shape, liftAC.shape, 'band'));

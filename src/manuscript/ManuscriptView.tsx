@@ -63,6 +63,7 @@ import {
   UNRESOLVED_SELECTION_REASON,
   type WrittenForm,
 } from './writtenFormModel';
+import { composeAffordanceLine, isClosedVolume, QUOTIENT_BOUND_SENTENCE } from './affordanceLine';
 import { resolveLineage } from '../playground/playgroundOperations';
 import { prepareFormForSew, refineToDisk } from '../lib/surfaceRefinement';
 // CYCLE-IDENTIFY (L23) — the gesture consumes the committed op + THE ONE
@@ -1144,7 +1145,10 @@ function ArgumentMapSection({
         <div style={{ marginTop: 5, color: '#2f6b6b' }}>
           <div style={{ fontSize: 10.5, letterSpacing: 1, opacity: 0.7, fontVariant: 'small-caps' }}>verdict — consequence</div>
           {argument.verdict.locals.slice(0, 4).map((l) => (
-            <div key={`${l.conceptLabel}·${l.curvatureDeg}`} style={{ fontSize: 13 }}>
+            // B-103 §2e rider: keyed by the concept ID — two locals can now
+            // honestly share the label 'unnamed', and a label key would drop
+            // one silently (the React silent-drop class)
+            <div key={l.conceptId} style={{ fontSize: 13 }}>
               <span style={sign}>{`${l.conceptLabel} ${l.curvatureDeg > 0 ? '+' : ''}${l.curvatureDeg}°`}</span>
               {/* the rim-turn split: the boundary BENDS — a truthful default
                   phrase; the designer refines the wording on the bench */}
@@ -1193,9 +1197,16 @@ function SpecimenCard({
   exploreDoor,
   ringRefusal,
   ringUnplaced,
+  affordance,
+  bound,
 }: {
   reading: SpecimenReading;
   argument?: ArgumentReading | null;
+  // B-103 §2a — the computed affordance line (the form's own answer; null =
+  // no open door composed — the line never lies by emptiness)
+  affordance?: string | null;
+  // B-103 §2c — the designer's quotient bound, sited adjacent (closed volumes)
+  bound?: string | null;
   paper: { cardBackground: string; cardBorder: string; cardInk: string };
   generatorInks: { a: string; b: string };
   // D2b — threaded through to the map section (the shared emphasis)
@@ -1261,6 +1272,20 @@ function SpecimenCard({
       <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.72, marginBottom: 7 }}>
         {reading.subtitle}
       </div>
+      {affordance ? (
+        // B-103 §2a — the form answers from its own chair; checkable against
+        // the dock chip-for-chip (LAW 23)
+        <div data-affordance-line style={{ fontSize: 12.5, marginBottom: bound ? 2 : 7 }}>
+          {affordance}
+        </div>
+      ) : null}
+      {affordance && bound ? (
+        // B-103 §2c — the designer's bound, verbatim, adjacent (the
+        // later-chapter idiom: a limit spoken at its own site)
+        <div data-quotient-bound style={{ fontSize: 11.5, fontStyle: 'italic', opacity: 0.75, marginBottom: 7 }}>
+          {bound}
+        </div>
+      ) : null}
       {argument ? (
         <ArgumentMapSection
           argument={argument}
@@ -3671,6 +3696,31 @@ export default function ManuscriptView() {
           : 'Select a form first.',
     [foldTarget, selected],
   );
+  // B-103 §2a — THE AFFORDANCE LINE, computed from the LIVE enabled set the
+  // dock itself renders from (the availability rows + the gesture chips' own
+  // predicates — one fact, one producer; never a literal). An empty open set
+  // composes NO line (unruled copy — reported, not invented).
+  const affordanceLine = useMemo(
+    () =>
+      selected !== null && targetFor(selected) !== null
+        ? composeAffordanceLine(availability, {
+            fold: foldReason === null,
+            thicken: thickenReason === null,
+            identify: identifySewReason === null,
+            explore: exploreEligible !== null,
+          })
+        : null,
+    [selected, targetFor, availability, foldReason, thickenReason, identifySewReason, exploreEligible],
+  );
+  // B-103 §2c — the designer's bound, ADJACENT to the affordance line on
+  // CLOSED VOLUMES (the predicate measured from the substrate: a 3-cell +
+  // a closed 2-boundary — the octahedron class whose holder reaches for a
+  // one-gesture quotient).
+  const quotientBound = useMemo(() => {
+    if (affordanceLine === null || selected === null) return null;
+    const target = targetFor(selected);
+    return target !== null && isClosedVolume(target.shape) ? QUOTIENT_BOUND_SENTENCE : null;
+  }, [affordanceLine, selected, targetFor]);
   const foldPanel = useMemo(() => {
     if (!fold || fold.targetKey !== selected || !foldTarget) return null;
     const preview =
@@ -5554,6 +5604,8 @@ export default function ManuscriptView() {
         <SpecimenCard
           reading={reading}
           argument={selectedArgument}
+          affordance={affordanceLine}
+          bound={quotientBound}
           paper={d.paper}
           emphasizedIds={emphasizedIds}
           onRowTouch={handleRowTouch}

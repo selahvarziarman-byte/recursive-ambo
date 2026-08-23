@@ -1489,7 +1489,11 @@ export function OperationsDock({
                     boxShadow: '0 2px 6px rgba(58,51,38,0.18)',
                   }}
                 >
-                  identify — trace two walks; the seam is the way you sew them
+                  {/* B-103 §2d — doubly grounded (designer's words; the
+                      researcher's independent ruling from the definitions
+                      chair): the act named by its vertex RESULT, the gesture
+                      edge-addressed. Ships verbatim. */}
+                  identify — trace two edge-walks; where they meet, corners become one concept
                   {!idEnabled && identifySew.reason ? (
                     <span style={{ opacity: 0.6 }}> — {identifySew.reason}</span>
                   ) : null}

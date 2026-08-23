@@ -222,6 +222,49 @@ const square = invokePrimitive('square', 2);
     JSON.stringify(square.shape) === JSON.stringify(loadForm(nGon(4), 'w2')));
 }
 
+// ----- B-103 §2a — THE AFFORDANCE LINE: her five clauses, each a leg ---------
+{
+  console.log('----- [B-103 §2a] the affordance line — computed · total · form-subject · no shut door · chip-for-chip -----');
+  const { composeAffordanceLine, isClosedVolume, QUOTIENT_BOUND_SENTENCE } = req('src/manuscript/affordanceLine.ts');
+  const { createSeedShape } = req('src/data/seeds.ts');
+  const fsMod = require('node:fs');
+  const noGestures = { fold: false, thicken: false, identify: false, explore: false };
+  // clause 1 + 5 — COMPUTED from the LIVE enabled set the dock reads: the real
+  // square's availability + the gesture predicates compose the dock's own
+  // open set in the dock's own order (glue/flip-glue/collapse/cut enabled on
+  // the square per the leg above; dual/sew honestly shut; fold+identify open)
+  const squareLine = composeAffordanceLine(operationAvailabilityFor(square.shape, null),
+    { fold: true, thicken: false, identify: true, explore: false });
+  check("clauses 1+5: the square's line is COMPUTED from the same availability rows the dock renders, in the dock's chip order",
+    squareLine === 'this form takes — glue · flip-glue · collapse · cut · fold · identify');
+  // clause 2 — TOTAL over what is open: every open door appears
+  const allOpen = operationAvailabilityFor(square.shape, null).map((op) => ({ ...op, enabled: true }));
+  check('clause 2: with every door open the line is TOTAL — all eight group labels + both gesture chips, dock order',
+    composeAffordanceLine(allOpen, { fold: true, thicken: true, identify: true, explore: true }) ===
+      'this form takes — glue · flip-glue · collapse · cut · dualize · sew · fold · thicken · identify · explore inside');
+  // clause 3 — the FORM is the subject
+  check("clause 3: the FORM is the subject — the line opens 'this form takes — ' and never says 'you can'",
+    squareLine.startsWith('this form takes — ') && !squareLine.includes('you can'));
+  // clause 4 — no shut door appears, ever
+  check('clause 4: no shut door appears — the shut dualize/sew/thicken/explore are absent from the square\'s line',
+    !squareLine.includes('dualize') && !squareLine.includes('sew') &&
+    !squareLine.includes('thicken') && !squareLine.includes('explore'));
+  // the empty open set composes NO line (unruled copy is never invented)
+  check('the empty open set composes NO line — null, never an empty-tailed sentence',
+    composeAffordanceLine(operationAvailabilityFor(null, null), noGestures) === null);
+  // §2c — the bound's predicate + her copy verbatim (one producer)
+  const octaSeed = createSeedShape('octahedron');
+  check('§2c: isClosedVolume — TRUE on the octahedron seed (a 3-cell, every edge bordering two faces); FALSE on the cell-less square',
+    isClosedVolume(octaSeed) === true && isClosedVolume(square.shape) === false);
+  check("§2c: the designer's bound ships VERBATIM from the one producer",
+    QUOTIENT_BOUND_SENTENCE === 'quotienting by a symmetry in one gesture is not built — the long way is cut, then fold.');
+  // §2d — the tooltip recut, doubly grounded, in the chrome verbatim
+  const chromeSrc = fsMod.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptChrome.tsx'), 'utf8');
+  check('§2d: the identify tooltip reads her sentence verbatim and the old sentence is gone',
+    chromeSrc.includes('identify — trace two edge-walks; where they meet, corners become one concept') &&
+    !chromeSrc.includes('trace two walks; the seam is the way you sew them'));
+}
+
 console.log(
   failures === 0
     ? '\n--- manuscript operate (3a: invoke===primitive · op===committed · faithful borns · verbatim gating): no failures ---\n\nALL PASS'

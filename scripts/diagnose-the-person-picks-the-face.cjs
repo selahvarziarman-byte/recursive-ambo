@@ -155,9 +155,9 @@ check('every gated op (the five words + collapse-sphere) names the FORM-level ga
     const op = unpicked.find((entry) => entry.id === id);
     return op.enabled === false && /COMPLEX \(16 faces\)/.test(op.reason);
   }));
-check('…and the reroute is REACHABLE without any futile action: the gate message hands the person identify / the sew-boundary-* route, un-picked',
+check('…and the refusal STOPS (B-103 §2b, the designer\'s strip): no gated op\'s reason carries the reroute tail — what the form takes lives in the card\'s computed affordance line, not in a refusal\'s tail',
   GATED_OPS.every((id) =>
-    unpicked.find((entry) => entry.id === id).reason.includes('Sew its boundary instead: use identify / the sew-boundary-* ops')));
+    !unpicked.find((entry) => entry.id === id).reason.includes('Sew its boundary instead')));
 const gtDirect = getPlaygroundOperation('glue-torus').getDisabledReason({ form: T, selectedFaceId: null, selectedFace: null });
 check('at the REGISTRY seam itself (the reorder site): glue-torus un-picked answers the gate, not the face prompt',
   typeof gtDirect === 'string' && /COMPLEX \(16 faces\)/.test(gtDirect));

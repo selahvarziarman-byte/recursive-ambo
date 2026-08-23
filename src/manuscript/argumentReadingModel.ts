@@ -189,7 +189,11 @@ export interface VerdictReading {
   // THE RIM-TURN SPLIT (mothership 1230): a BOUNDARY +δ is the rim BENDING —
   // a rim-turn — never an interior cone's over-commitment; the split reads
   // the ACQUIRED valence already on the reading
-  locals: Array<{ conceptLabel: string; curvatureDeg: number; kind: 'seamless' | 'cone' | 'saddle' | 'rim-turn' }>;
+  // B-103 §2e rider: `conceptId` joins the locals — with the class label
+  // falling to the guard, two locals can honestly share the label 'unnamed';
+  // a label-keyed reader would collide (React's silent-drop class) where the
+  // id keys by the === contract, like every other register.
+  locals: Array<{ conceptLabel: string; conceptId: string; curvatureDeg: number; kind: 'seamless' | 'cone' | 'saddle' | 'rim-turn' }>;
   closed: boolean; // no boundary valence anywhere — the global gate
   totalDeg: number; // gaussBonnetTotal, in degrees
   global: string; // closed: tiles/curls up/splays · bounded: open · local-cone (NEVER a global curl)
@@ -399,12 +403,13 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
   sortedRoots.forEach((id, i) => {
     const name = rootBaseNames[i];
     if ((rootNameCount.get(name) ?? 0) > 1) {
-      // §6 (B-2026-08-24-B): this handle survives ONLY into TERM positions —
-      // the composed class label's parts, relation source readings, and the
-      // ring's `p ← {…}` set line — where two distinct roots must not read
-      // as one root counted twice and no hover can reach a term. The ROW
-      // register never shows it (the row dedup below is dead). HELD for the
-      // designer's term-spec; until she rules, the term line stands as is.
+      // §6 (B-2026-08-24-B): this handle survives ONLY into TERM positions.
+      // The census of those positions, as ruled off one by one: the ring's
+      // set line — RULED to the count form (B-2026-08-25-A §2); the composed
+      // class label — RULED to the compose-over-absent guard (B-103 §2e, no
+      // handle survives there); STILL STANDING: the concept row's `← …`
+      // source reading (rootLabels) and relation source readings via
+      // endpointNameOf — held for the designer.
       const k = rootNameSeen.get(name) ?? 0;
       rootNameSeen.set(name, k + 1);
       rootLabelOf.set(id, `${name}·${letterFor(k, ROOT_LETTERS)}`);
@@ -465,11 +470,24 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
       const own = ownNameOf(vertexId);
       const viaDoor =
         own === null ? lineageCornerDisplay(creation.sourceVertexIds, vertexId, resolveAbsent) : null;
+      // B-103 §2e (RULED — L3's cure): COMPOSED requires nameable sources, so
+      // the class label falls through the compose-over-absent guard. WHY the
+      // suffix path bypassed it: rootDisplayOf pre-dresses a TRUE ABSENCE as
+      // the string 'unnamed' (+ the term handle) — a positive presence the
+      // guard can never refuse. Composing from the PLAIN names (rootPlainOf —
+      // null on absence; the honest id tail stays a real value) makes the
+      // fall-through the MECHANISM: any unnameable source refuses the whole
+      // composition to 'unnamed'. The ring line stands as ruled (the count
+      // form); real-name compositions (BD·BC) stand unchanged.
+      const composedFromRoots = (): string => {
+        const plain = rootIds.map(rootPlainOf);
+        return plain.every((name): name is string => name !== null) ? plain.join('·') : 'unnamed';
+      };
       const label =
         own ??
         viaDoor ??
         (rootIds.length > 0 && !(rootIds.length === 1 && rootIds[0] === vertexId)
-          ? rootIds.map(rootDisplayOf).join('·')
+          ? composedFromRoots()
           : packetOf(vertexId)
             ? 'unnamed'
             : idTail(vertexId));
@@ -498,10 +516,12 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
   // row lights its corner on the shape — the shipped emphasizedIds idiom;
   // no new gesture). The requirement is general: a real-name collision
   // (`AB`+`AB`) reads `AB`, `AB` too — a list is a POINTER, not an
-  // identity. ⛔ The TERM positions stand EXACTLY as they are (rootLabelOf's
-  // handles inside composed strings and the ring's `p ← {…}` set line) —
-  // there no hover can reach a term and two distinct roots would read as
-  // one root counted twice; that half is HELD for the designer's spec.
+  // identity. The term-position half, ruled off in steps: the ring's set
+  // line → the count form (B-2026-08-25-A §2); the composed class label →
+  // the compose-over-absent guard (B-103 §2e). STILL HELD for the designer:
+  // the concept row's `← …` source reading and the relation sources
+  // (endpointNameOf — B-103 §2f measured those slots ROLE-BEARING: the
+  // recorded endpoint order is the edge's canonical direction frame).
 
   // the relation source is the recorded `sourceVertexIds` (the surviving
   // representative's parent endpoints — measured substrate fact); the source
@@ -812,6 +832,7 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
           .filter((r) => Math.abs(r.curvature) >= EPS)
           .map((r) => ({
             conceptLabel: conceptLabelOf.get(r.vertexId) ?? r.vertexId,
+            conceptId: r.vertexId,
             curvatureDeg: toDeg(r.curvature),
             // the valence split: boundary +δ = the rim turning (never a
             // cone); interior +δ = a cone; −δ = a saddle either way

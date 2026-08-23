@@ -92,17 +92,18 @@ check('fixture: its selected face has distinct corners — the chain path alone 
 check('every word op refuses the assemble child: canApply === false, all six',
   WORD_OPS.every((id) => getPlaygroundOperation(id).canApply(childCtx) === false));
 const childReason = getPlaygroundOperation('glue-torus').getDisabledReason(childCtx);
-// (message REROUTED 2026-07-11 on the mothership's §2c ruling — the general
-// complex-identification op now EXISTS, so the refusal stopped apologizing
-// ("not yet ruled") and became a ROUTE: name the word's honest scope, point
-// at identify / sew-boundary-*. The gate's MECHANICS are unchanged.)
-check('the reason is honest and specific: names the word\'s scope, the count (2 faces), and ROUTES to the complex ops',
+// (message REROUTED 2026-07-11 on the mothership's §2c ruling; the reroute
+// TAIL STRIPPED B-103 §2b on the designer's Δ11 ruling — five true refusals
+// wearing the tail composed the false "nothing takes this" at the person. A
+// refusal says why IT declines and STOPS; what the form takes lives in the
+// card's computed affordance line. The gate's MECHANICS are unchanged.)
+check('the reason is honest and specific — names the word\'s scope and the count (2 faces) — and STOPS: no reroute tail rides it (B-103 §2b, subtractive)',
   typeof childReason === 'string' &&
   childReason.includes('addressed to the slots of ONE polygon') &&
   childReason.includes('COMPLEX (2 faces)') &&
-  childReason.includes('Sew its boundary instead') &&
-  childReason.includes('sew-boundary') &&
-  childReason.includes('cut / combine'));
+  !childReason.includes('Sew its boundary instead') &&
+  !childReason.includes('sew-boundary') &&
+  !childReason.includes('cut / combine'));
 check('all six word ops speak the SAME family reason on the child',
   WORD_OPS.every((id) => getPlaygroundOperation(id).getDisabledReason(childCtx) === childReason));
 note(`refusal: "${String(childReason).slice(0, 120)}…"`);
