@@ -1,12 +1,20 @@
 // B-104 — RUNG 2's WINDOW: the deck-tiling drawn in the conformal model of
 // its curvature (Poincaré disk / plane / stereographic plate). A 2D canvas
-// overlay in the ink idiom — the conformal models are drawings, and the
-// countable captions are the ADR's own: q is a COUNT the eye checks (ring
-// the vertex, count the cells); the verdict words are the ADR table's
-// (GAP — it must close up · CLOSES EXACTLY · OVERLAP — it must ruffle open);
-// the rim is INFINITY, addressed never walled; the far side SHOWS THROUGH
-// the stereographic plate, drawn faint (the ink stack's own layering law in
-// its 2D register); a DESCENT-checked identification is marked cell-to-cell.
+// overlay in the ink idiom.
+// B-105 (ADR 0025 §7, the B-104 amendment — ratified): THE WINDOW STOPS
+// NARRATING THE PHENOMENON. The ring mark, the vertex-count caption, the
+// angle-sum arithmetic, the rim-infinity sentence, the pole-exterior
+// sentence and the descent prose are OUT — `{p,q}`, the count and the
+// descent check DEMOTE TO THE RECORD (the specimen card's business). The
+// window NAMES what it is (the geometry and its model — a label, not a
+// claim about what he will see) and SHOWS what the cells do: repeat
+// unchanged · crowd and shrink toward a rim that never arrives · close into
+// finitely many cells with the far side showing through. §7.1: the visible
+// mark of a DESCENT is the INHABITANT — the chiral coil drawn in one cell,
+// its computed antipodal image in the partner (far side faint); the LAW-24
+// control is the plain cube's single image. The LOD line stays — it is the
+// DRAWING's own honesty about itself (ADR §5: the mark stops, never
+// degrades), not a narration of the phenomenon.
 import { useEffect, useRef } from 'react';
 import type { DeckTiling } from './deckTilingModel';
 
@@ -43,7 +51,10 @@ export function DeckTilingWindow({
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, SIZE, SIZE);
 
-    // the fit: hyperbolic is the unit disk; the others fit their drawn extent
+    // the fit: hyperbolic is the unit disk; the others fit their drawn
+    // extent — INCLUDING the inhabitant's images (the doubled mark may sit
+    // in the exterior cell, and a mark off-canvas is a mark that was not
+    // shown)
     const half = SIZE / 2;
     let scale: number;
     if (tiling.geometry === 'hyperbolic') {
@@ -54,18 +65,12 @@ export function DeckTilingWindow({
         if (cell.exterior) continue;
         for (const [x, y] of cell.corners) extent = Math.max(extent, Math.abs(x), Math.abs(y));
       }
+      for (const image of tiling.inhabitant?.images ?? []) {
+        for (const [x, y] of image.outline) extent = Math.max(extent, Math.abs(x), Math.abs(y));
+      }
       scale = (half - 18) / Math.max(extent, 1e-6);
     }
     const X = (p: readonly [number, number]): [number, number] => [half + p[0] * scale, half - p[1] * scale];
-
-    const ringSet = new Set(tiling.ring?.cellIndices ?? []);
-    // descent registers: pair index per cell (marked identifications)
-    const pairOf = new Map<number, number>();
-    tiling.descent?.pairs.forEach(([a, b], k) => {
-      pairOf.set(a, k);
-      pairOf.set(b, k);
-    });
-    const descentInks = ['#2f6b6b', '#963c2c', '#5e2a63', '#6b6247'];
 
     const drawCell = (cellIndex: number): void => {
       const cell = tiling.cells[cellIndex];
@@ -79,14 +84,7 @@ export function DeckTilingWindow({
         ctx.lineTo(x, y);
       }
       ctx.closePath();
-      const pairIndex = pairOf.get(cellIndex);
-      if (pairIndex !== undefined) {
-        ctx.fillStyle = descentInks[pairIndex % descentInks.length] + (faint ? '22' : '3a');
-        ctx.fill();
-      } else if (ringSet.has(cellIndex)) {
-        ctx.fillStyle = accent + '2e';
-        ctx.fill();
-      } else if (cell.depth === 0 && tiling.geometry !== 'spherical') {
+      if (cell.depth === 0 && tiling.geometry !== 'spherical') {
         ctx.fillStyle = paper.cardInk + '14';
         ctx.fill();
       }
@@ -103,7 +101,8 @@ export function DeckTilingWindow({
       if (!cell.farSide) drawCell(k);
     });
 
-    // the rim — INFINITY, addressed as a horizon, never a wall
+    // the rim — INFINITY, addressed as a horizon, never a wall (drawn, not
+    // narrated)
     if (tiling.rim) {
       ctx.beginPath();
       ctx.setLineDash([3, 5]);
@@ -114,30 +113,23 @@ export function DeckTilingWindow({
       ctx.setLineDash([]);
     }
 
-    // the countable vertex: the ring mark
-    if (tiling.ring) {
-      const [rx, ry] = X(tiling.ring.at);
+    // ADR §7.1 — THE INHABITANT: the chiral coil, drawn last (the mark rides
+    // the tiling). One image = no identification; the antipodal double =
+    // the descent, SHOWN — the far-side image wears the faint register.
+    for (const image of tiling.inhabitant?.images ?? []) {
+      if (image.outline.length < 2) continue;
       ctx.beginPath();
-      ctx.arc(rx, ry, 4.5, 0, 2 * Math.PI);
-      ctx.fillStyle = accent;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(rx, ry, 9, 0, 2 * Math.PI);
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 1.2;
+      const [ix0, iy0] = X(image.outline[0]);
+      ctx.moveTo(ix0, iy0);
+      for (let i = 1; i < image.outline.length; i += 1) {
+        const [x, y] = X(image.outline[i]);
+        ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = image.farSide ? accent + '88' : accent;
+      ctx.lineWidth = image.farSide ? 1.2 : 1.9;
       ctx.stroke();
     }
   }, [tiling, paper, accent]);
-
-  const gap = 360 - tiling.angleSumDeg;
-  const verdict =
-    gap > 1e-9
-      ? `a ${gap}° GAP — it must close up`
-      : gap < -1e-9
-        ? `a ${-gap}° OVERLAP — it must ruffle open`
-        : 'CLOSES EXACTLY — it stays flat';
-  const q = tiling.q;
-  const ringCount = tiling.ring?.cellIndices.length ?? null;
 
   return (
     <div
@@ -184,38 +176,18 @@ export function DeckTilingWindow({
           ×
         </button>
       </div>
+      {/* the NAME — the geometry and its model, a label (ADR §7's surviving
+          words: the existing line minus the {p,q} symbol, which is the
+          record's now) */}
       <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.75 }}>
-        {`{${tiling.p},${tiling.q}} · ${GEOMETRY_WORD[tiling.geometry]}`}
+        {GEOMETRY_WORD[tiling.geometry]}
       </div>
       <canvas ref={canvasRef} style={{ width: SIZE, height: SIZE, marginTop: 6 }} />
-      <div data-tiling-captions style={{ marginTop: 4 }}>
-        <div>
-          {`${q} flat ${tiling.p}-gons at a vertex: ${q} × ${tiling.flatCornerDeg}° = ${tiling.angleSumDeg}° — ${verdict}`}
+      {tiling.dropped > 0 ? (
+        <div data-tiling-lod style={{ marginTop: 4, fontSize: 11, opacity: 0.6 }}>
+          {`${tiling.dropped} cells below the floor — dropped, never drawn wrong`}
         </div>
-        <div style={{ color: accent }}>
-          {`ring the marked vertex — count the cells: ${ringCount ?? '—'}`}
-        </div>
-        {tiling.rim ? (
-          <div style={{ fontStyle: 'italic', opacity: 0.75 }}>
-            the boundary circle is INFINITY — the cells shrink toward it and never reach it
-          </div>
-        ) : null}
-        {tiling.cells.some((c) => c.exterior) ? (
-          <div style={{ fontStyle: 'italic', opacity: 0.75 }}>
-            the pole cell is the whole EXTERIOR of the plate — its edges are the outermost arcs
-          </div>
-        ) : null}
-        {tiling.descent ? (
-          <div style={{ fontStyle: 'italic', opacity: 0.85 }}>
-            {`the antipodal map is a symmetry of this tiling — CHECKED, and it is free: the tiling DESCENDS. ${tiling.descent.pairs.length} cell pair${tiling.descent.pairs.length === 1 ? '' : 's'} identified — each ink is one pair; the local picture is unchanged`}
-          </div>
-        ) : null}
-        {tiling.dropped > 0 ? (
-          <div style={{ fontSize: 11, opacity: 0.6 }}>
-            {`${tiling.dropped} cells below the floor — dropped, never drawn wrong`}
-          </div>
-        ) : null}
-      </div>
+      ) : null}
     </div>
   );
 }

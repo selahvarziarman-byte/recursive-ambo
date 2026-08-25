@@ -45,26 +45,46 @@ export interface TileCell {
   exterior?: boolean; // spherical: the pole cell — its image is the whole plane OUTSIDE the drawn tiling
 }
 
+// B-105 ADR 0025 §7.1 — THE INHABITANT: a CHIRAL marker (the coil — the
+// hand-and-coil family's chirality carrier, LAW 22; the mask carries none)
+// drawn in ONE cell of a SPHERICAL tiling. On a CHECKED descent its computed
+// ANTIPODAL image joins — the antipodal map on S² is orientation-reversing,
+// so the second image winds the OTHER way BY THE MATH, never by authoring.
+// The person counts PLACES the same mark appears: two = descended · one =
+// not (the LAW-24 control is the plain cube — no identification, one image).
+// Non-spherical tilings carry none: no antipodal question stands there, and
+// absence stays absent.
+export interface InhabitantImage {
+  outline: V2[]; // the projected coil polyline
+  farSide: boolean; // lies on the projection-pole side — shows through, faint
+}
+
 export interface DeckTiling {
   p: number;
   q: number;
   geometry: TilingGeometry;
   coshR: number;
   // TWO corner facts, both owed: the FLAT cell's own corner ((p−2)·180/p) —
-  // the caption's countable arithmetic (q × it = the GAP/FLAT/OVERLAP sum) —
+  // the RECORD's countable arithmetic (q × it = the GAP/FLAT/OVERLAP sum) —
   // and the DRAWN conformal corner (360/q exactly, every geometry: the q
-  // cells around a vertex share the full turn — the fit's 0.01° invariant)
+  // cells around a vertex share the full turn — the fit's 0.01° invariant).
+  // ADR §7 (B-104 amendment): these are PROOF-TOKENS — the card's record and
+  // the witness read them; the window no longer captions them.
   flatCornerDeg: number;
   drawnCornerDeg: number;
   angleSumDeg: number; // q × flatCornerDeg — GAP (<360) · FLAT (=360) · OVERLAP (>360)
   cells: TileCell[];
-  // the COUNTABLE vertex — ring it, count the cells (the ADR's own check)
+  // the countable vertex — the RECORD/witness instrument (ADR §7: the ring
+  // MARK and its caption are withdrawn from the window; the model keeps the
+  // fact so q stays measured, never told)
   ring: { at: V2; cellIndices: number[] } | null;
   rim: boolean; // hyperbolic: the horizon circle exists (addressed, not a wall)
   dropped: number; // LOD/rim-dropped candidates — never drawn wrong
   // descent marks (a non-orientable spherical surface): the antipodal pairs,
   // present exactly when the CHECK passed on this tiling's own cells
   descent: { pairs: [number, number][] } | null;
+  // ADR §7.1 — the inhabitant's image(s): spherical only; two ⟺ descent
+  inhabitant: { images: InhabitantImage[] } | null;
 }
 
 export type TilingResolution =
@@ -329,6 +349,7 @@ export function hyperbolicTiling(p: number, q: number, depth = 6): DeckTiling {
     rim: true,
     dropped,
     descent: null,
+    inhabitant: null,
   };
 }
 
@@ -354,6 +375,7 @@ export function euclideanTiling(p: number, q: number, bound = 3.4): DeckTiling {
     rim: false,
     dropped,
     descent: null,
+    inhabitant: null,
   };
 }
 
@@ -511,6 +533,89 @@ export function sphericalTiling(p: number, q: number, wantDescent: boolean): Dec
     const verdict = tilingDescends(faces, verts);
     if (verdict.descends) descent = { pairs: verdict.pairs };
   }
+  // ADR §7.1 — THE INHABITANT (B-105): the chiral coil, computed on the
+  // sphere and projected. Anchored in the ANTI-POLE cell (the one whose
+  // patch projects around the origin — the plate's central cell), offset
+  // halfway to its rim so the antipodal image lands at a FINITE plate
+  // radius (the exact anti-pole would send its double to infinity). The
+  // second image is the ANTIPODAL MAP applied point-by-point — descent only.
+  const inhabitant = (() => {
+    // the anti-pole cell: minimal centroid z (faces[0] is the pole/exterior)
+    let anchorFace = faces[0];
+    for (const f of faces) if (f.centroid[2] < anchorFace.centroid[2]) anchorFace = f;
+    const c = anchorFace.centroid;
+    const corners = anchorFace.vertexKeys.map((k) => verts.get(k) as V3);
+    if (corners.length === 0) return null;
+    const angleTo = (v: V3): number =>
+      Math.acos(Math.max(-1, Math.min(1, c[0] * v[0] + c[1] * v[1] + c[2] * v[2])));
+    // the cell's angular INRADIUS: the nearest point of its own edge arcs
+    let inradius = Infinity;
+    for (let i = 0; i < corners.length; i += 1) {
+      const a = corners[i];
+      const b = corners[(i + 1) % corners.length];
+      for (let t = 0; t <= 20; t += 1) inradius = Math.min(inradius, angleTo(slerp(a, b, t / 20)));
+    }
+    if (!Number.isFinite(inradius) || inradius < 1e-6) return null;
+    // the anchor: halfway to the rim, toward corner 0 (deterministic)
+    const towards = corners[0];
+    const dot0 = c[0] * towards[0] + c[1] * towards[1] + c[2] * towards[2];
+    const rawDir: V3 = [towards[0] - dot0 * c[0], towards[1] - dot0 * c[1], towards[2] - dot0 * c[2]];
+    const e1 = norm3(rawDir);
+    const e2: V3 = norm3([
+      c[1] * e1[2] - c[2] * e1[1],
+      c[2] * e1[0] - c[0] * e1[2],
+      c[0] * e1[1] - c[1] * e1[0],
+    ]);
+    const phi0 = inradius / 2;
+    const anchor: V3 = norm3([
+      c[0] * Math.cos(phi0) + e1[0] * Math.sin(phi0),
+      c[1] * Math.cos(phi0) + e1[1] * Math.sin(phi0),
+      c[2] * Math.cos(phi0) + e1[2] * Math.sin(phi0),
+    ]);
+    // the tangent frame AT the anchor (re-orthogonalized against it)
+    const dotA = anchor[0] * e1[0] + anchor[1] * e1[1] + anchor[2] * e1[2];
+    const t1 = norm3([e1[0] - dotA * anchor[0], e1[1] - dotA * anchor[1], e1[2] - dotA * anchor[2]]);
+    const t2: V3 = norm3([
+      anchor[1] * t1[2] - anchor[2] * t1[1],
+      anchor[2] * t1[0] - anchor[0] * t1[2],
+      anchor[0] * t1[1] - anchor[1] * t1[0],
+    ]);
+    // the coil: 2.25 turns, radius growing — RIGHT-HANDED as seen from
+    // outside the sphere at the anchor (the apertureProbes coil's own hand)
+    const rhoMax = 0.38 * inradius;
+    const spherePoints: V3[] = [];
+    const SAMPLES = 96;
+    for (let s = 0; s <= SAMPLES; s += 1) {
+      const t = s / SAMPLES;
+      const theta = 2 * Math.PI * 2.25 * t;
+      const rho = rhoMax * (0.16 + 0.84 * t);
+      const dx = Math.cos(theta);
+      const dy = Math.sin(theta);
+      spherePoints.push(
+        norm3([
+          anchor[0] * Math.cos(rho) + (t1[0] * dx + t2[0] * dy) * Math.sin(rho),
+          anchor[1] * Math.cos(rho) + (t1[1] * dx + t2[1] * dy) * Math.sin(rho),
+          anchor[2] * Math.cos(rho) + (t1[2] * dx + t2[2] * dy) * Math.sin(rho),
+        ]),
+      );
+    }
+    const project = (pts: V3[]): V2[] => {
+      const out: V2[] = [];
+      for (const v of pts) {
+        const s2 = stereo(v);
+        if (s2 !== null) out.push(s2);
+      }
+      return out;
+    };
+    const images: InhabitantImage[] = [
+      { outline: project(spherePoints), farSide: anchor[2] > 0 },
+    ];
+    if (descent) {
+      const antipodal = spherePoints.map((v): V3 => [-v[0], -v[1], -v[2]]);
+      images.push({ outline: project(antipodal), farSide: -anchor[2] > 0 });
+    }
+    return { images };
+  })();
   return {
     p,
     q,
@@ -524,6 +629,7 @@ export function sphericalTiling(p: number, q: number, wantDescent: boolean): Dec
     rim: false,
     dropped: 0,
     descent,
+    inhabitant,
   };
 }
 

@@ -210,8 +210,11 @@ export function ShapeFieldView({ title, shape, field, vertexClassOf, children }:
       >
         <div style={{ fontWeight: 700 }}>{title} — field (per-form property)</div>
         <div>
+          {/* B-105 B1 (researcher-ruled, rename never renumber): this figure
+              is the CERTIFIED cert.b1 — a dim over 𝔽₂ — and a viewer cannot
+              count a coefficient ring, so the ring is named */}
           gate: {field.gate} (texture band λ={field.textureBand.value.toFixed(6)} ×
-          {field.textureBand.multiplicity}) · ker={field.kernelDim} · b₁={field.cert.b1}
+          {field.textureBand.multiplicity}) · ker={field.kernelDim} · b₁(ℤ/2)={field.cert.b1}
         </div>
         {field.gate === 'simple' ? (
           <div>surface brightness = |ψ|² — bright antinode / dark node</div>

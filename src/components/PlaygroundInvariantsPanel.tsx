@@ -59,9 +59,16 @@ export function PlaygroundInvariantsPanel() {
             label="b₁"
             value={
               readout.level1
-                ? `${readout.level1.b1} (level-1: E−V+c)`
+                ? // level-1 cycle rank (E−V+c): a graph's H₁ is torsion-free,
+                  // so this figure is FIELD-INDEPENDENT — no ring owed (a
+                  // mark on the ordinary stops meaning; B-105 B1 audit)
+                  `${readout.level1.b1} (level-1: E−V+c)`
                 : readout.cert
-                  ? String(readout.cert.b1)
+                  ? // B-105 B1 (researcher-ruled, rename never renumber): the
+                    // certified figure is a dim over 𝔽₂ — the ring is named
+                    // (RP²'s b₁(ℤ/2)=1 vs b₁(ℚ)=0: a bare number cannot say
+                    // which it is)
+                    `${readout.cert.b1} (ℤ/2)`
                   : 'n-a'
             }
             accent={readout.level1 ? 'good' : undefined}

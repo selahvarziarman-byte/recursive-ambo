@@ -407,9 +407,10 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
       // The census of those positions, as ruled off one by one: the ring's
       // set line — RULED to the count form (B-2026-08-25-A §2); the composed
       // class label — RULED to the compose-over-absent guard (B-103 §2e, no
-      // handle survives there); STILL STANDING: the concept row's `← …`
-      // source reading (rootLabels) and relation source readings via
-      // endpointNameOf — held for the designer.
+      // handle survives there); relation/roles readings via endpointNameOf —
+      // RULED to the bare base name (B-105 W3 §4(a): position carries the
+      // role, no index owed); STILL STANDING: the concept row's `← …`
+      // source reading (rootLabels) — held for the designer.
       const k = rootNameSeen.get(name) ?? 0;
       rootNameSeen.set(name, k + 1);
       rootLabelOf.set(id, `${name}·${letterFor(k, ROOT_LETTERS)}`);
@@ -526,9 +527,16 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
   // the relation source is the recorded `sourceVertexIds` (the surviving
   // representative's parent endpoints — measured substrate fact); the source
   // is NAMED by those endpoints' REAL names (AB / v0·v1 — a reading, not a
-  // mint; single-char names join bare, longer ones join with ·)
+  // mint; single-char names join bare, longer ones join with ·).
+  // B-105 W3 §4(a) — THE ROLES CASE (designer-ruled, her 1721 §1): in an
+  // endpoint POSITION the slot already says which is which (`X·Y` = the run
+  // X → Y; the direction is recorded BY POSITION), so NO disambiguating
+  // handle is owed — `—a ← unnamed·unnamed`, both terms kept, no count, no
+  // index. The base name (rootDisplayBase) replaces the handle-suffixed
+  // rootDisplayOf in every roles position this resolver serves (relation
+  // rows · wordRows slots · absorbed partners).
   const endpointNameOf = (id: string): string => {
-    if (rootLabelOf.has(id)) return rootLabelOf.get(id) as string;
+    if (rootLabelOf.has(id)) return rootDisplayBase(id);
     const own = ownNameOf(id);
     if (own) return own;
     // D16: the door's lineage arm here too — the SAME resolver names every
@@ -544,7 +552,7 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
       ? [...primalMultiset(id, shape, memo).keys()].sort()
       : (mergedMembersOf(id) ?? [id]);
     if (roots.length === 1 && roots[0] === id) return packetOf(id) ? 'unnamed' : idTail(id);
-    return roots.map(rootDisplayOf).join('·');
+    return roots.map(rootDisplayBase).join('·');
   };
   const joinNames = (parts: string[]): string =>
     parts.every((p) => p.length === 1) ? parts.join('') : parts.join('·');

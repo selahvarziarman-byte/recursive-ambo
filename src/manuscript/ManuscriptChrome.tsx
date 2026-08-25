@@ -20,7 +20,7 @@ import type { OperationAvailability } from './writtenFormModel';
 import { DOCK_OPERATION_GROUPS } from './writtenFormModel';
 import { DOCK_GLYPHS } from './OperationGlyphs';
 import type { BirthGate, RecordEntry, ShelfEntry } from './genesisModel';
-import type { FaceEdgeLabel, GluingPreviewResult } from '../playground/customGluing';
+import type { GluingPreviewResult } from '../playground/customGluing';
 import type { BoundaryPairing } from '../lib/surfaceOperations';
 import type { ChordSplit, FoldState } from './handGestureModel';
 import type { ApertureParityCensus } from './apertureModel';
@@ -1709,31 +1709,30 @@ export function ThickenGatePanel({
 
 export function FoldGatePanel({
   title,
-  edges,
   state,
   preview,
   commitEnabled,
   paper,
   accent,
-  onTapEdge,
+  markColors,
   onToggleMode,
   onCommit,
   onClose,
 }: {
   title: string;
-  edges: FaceEdgeLabel[]; // the committed describeFaceEdges vocabulary
   state: FoldState;
   preview: GluingPreviewResult | null; // null ⟺ no pairs yet
   commitEnabled: boolean;
   paper: ChromePaper;
   accent: string;
-  onTapEdge: (edgeIndex: number) => void;
+  // B-105 W3 §1 (P.2/P.6): the pick moved to the FIGURE — the panel lists no
+  // edges and carries no address; each pair row wears ITS OWN figure hue so
+  // the row and the drawn mark agree by color (one hue to a pair)
+  markColors: string[];
   onToggleMode: (pairIndex: number) => void;
   onCommit: () => void;
   onClose: () => void;
 }) {
-  const pairIndexOf = (edgeIndex: number): number =>
-    state.pairs.findIndex((p) => p.edgeA === edgeIndex || p.edgeB === edgeIndex);
   return (
     <div
       style={{
@@ -1772,41 +1771,15 @@ export function FoldGatePanel({
       <div style={{ marginTop: 4, fontSize: 11, opacity: 0.75 }}>
         tap two EDGES → they pair (a·a). the arrow is the mode: →→ same sense = glue · →⇄ opposed = flip-glue
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
-        {edges.map((edge) => {
-          const inPair = pairIndexOf(edge.index);
-          const isPending = state.pending === edge.index;
-          const letter = inPair >= 0 ? PAIR_LETTERS[inPair] ?? '?' : null;
-          return (
-            <button
-              key={edge.index}
-              type="button"
-              onMouseDown={(e) => {
-                e.stopPropagation();
-                onTapEdge(edge.index);
-              }}
-              title={`${edge.from} → ${edge.to}`}
-              style={{
-                padding: '3px 7px',
-                borderRadius: 3,
-                border: `1px ${isPending ? 'dashed' : 'solid'} ${letter ? accent : paper.cardBorder}`,
-                background: 'transparent',
-                color: letter ? accent : paper.cardInk,
-                fontFamily: 'ui-monospace, monospace',
-                fontSize: 11,
-                cursor: 'pointer',
-              }}
-            >
-              e{edge.index}
-              {letter ? ` · ${letter}` : ''}
-            </button>
-          );
-        })}
-      </div>
+      {/* B-105 W3 §1 (P.1/P.6): the edge list is GONE — the person taps the
+          two edges ON THE DRAWN POLYGON; `e0, e1` live only in the committed
+          record. The pending half-pair is marked ON THE FIGURE (dashed — her
+          ratified legend), never restated here; no new sentence is authored
+          (W3 §6's bar). */}
       {state.pairs.map((pair, k) => (
         <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 5, fontSize: 12 }}>
-          <span style={{ fontFamily: 'ui-monospace, monospace' }}>
-            {PAIR_LETTERS[k] ?? '?'}·{PAIR_LETTERS[k] ?? '?'} — e{pair.edgeA} with e{pair.edgeB}
+          <span style={{ fontFamily: 'ui-monospace, monospace', color: markColors[k % markColors.length] }}>
+            {PAIR_LETTERS[k] ?? '?'}·{PAIR_LETTERS[k] ?? '?'}
           </span>
           <button
             type="button"

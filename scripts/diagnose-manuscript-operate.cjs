@@ -225,7 +225,7 @@ const square = invokePrimitive('square', 2);
 // ----- B-103 §2a — THE AFFORDANCE LINE: her five clauses, each a leg ---------
 {
   console.log('----- [B-103 §2a] the affordance line — computed · total · form-subject · no shut door · chip-for-chip -----');
-  const { composeAffordanceLine, isClosedVolume, QUOTIENT_BOUND_SENTENCE } = req('src/manuscript/affordanceLine.ts');
+  const { composeAffordanceLine, isClosedVolume, QUOTIENT_BOUND_SENTENCE, EMPTY_AFFORDANCE_SENTENCE } = req('src/manuscript/affordanceLine.ts');
   const { createSeedShape } = req('src/data/seeds.ts');
   const fsMod = require('node:fs');
   const noGestures = { fold: false, thicken: false, identify: false, explore: false };
@@ -249,9 +249,23 @@ const square = invokePrimitive('square', 2);
   check('clause 4: no shut door appears — the shut dualize/sew/thicken/explore are absent from the square\'s line',
     !squareLine.includes('dualize') && !squareLine.includes('sew') &&
     !squareLine.includes('thicken') && !squareLine.includes('explore'));
-  // the empty open set composes NO line (unruled copy is never invented)
-  check('the empty open set composes NO line — null, never an empty-tailed sentence',
-    composeAffordanceLine(operationAvailabilityFor(null, null), noGestures) === null);
+  // B-105 W3 §4(b) — the RULED zero total: the empty open set SPEAKS her
+  // sentence (a total that comes out zero is still a total; hiding it would
+  // carry a positive fact by an absence). The old null-leg is superseded by
+  // the ruling — the sentence came, verbatim, one producer.
+  check("W3 §4(b): the empty open set speaks the ruled zero-total sentence, hers verbatim ('this form takes — nothing · each door says why'), never null and never an empty-tailed line",
+    composeAffordanceLine(operationAvailabilityFor(null, null), noGestures) === EMPTY_AFFORDANCE_SENTENCE &&
+    EMPTY_AFFORDANCE_SENTENCE === 'this form takes — nothing · each door says why');
+  // and the shut reasons the sentence points at EXIST and are TOTAL on the
+  // ruled case (the dim-1 loop): every dock row disabled carries a reason
+  {
+    const { closeSegmentIntoLoop } = req('src/lib/closeEdgeIntoCircle.ts');
+    const segBorn = invokePrimitive('segment', 97);
+    const loop = closeSegmentIntoLoop(segBorn.shape, segBorn.shape.edges[0]).shape;
+    const loopAvail = operationAvailabilityFor(loop, null);
+    check("W3 §4(b): 'each door says why' is TRUE on the loop — every disabled dock row carries its own reason (measured, not promised)",
+      loopAvail.length > 0 && loopAvail.every((op) => op.enabled || (typeof op.reason === 'string' && op.reason.length > 0)));
+  }
   // §2c — the bound's predicate + her copy verbatim (one producer)
   const octaSeed = createSeedShape('octahedron');
   check('§2c: isClosedVolume — TRUE on the octahedron seed (a 3-cell, every edge bordering two faces); FALSE on the cell-less square',

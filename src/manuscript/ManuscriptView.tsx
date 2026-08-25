@@ -176,6 +176,9 @@ import {
   type ForkOffer,
   type FoldState,
 } from './handGestureModel';
+// B-105 W3 §1 — the fold tap's rim vocabulary type (the committed picker
+// labels the overlay draws from; the panel no longer lists them)
+import type { FaceEdgeLabel } from '../playground/customGluing';
 // CUT 1 THE FAITHFUL BODY — the cone family's cell model (apex · seam · rim);
 // the view only PLACES its certified placements in the two ink registers
 import type { FaithfulBodyModel } from './faithfulBodyModel';
@@ -803,6 +806,163 @@ function quaternionFromUnitY(dir: [number, number, number]): [number, number, nu
   return [q.x, q.y, q.z, q.w];
 }
 
+// B-105 W3 §1 (designer-ruled, P.1–P.6) — THE FOLD TAP ON THE DRAWN POLYGON:
+// the pick is a TAP ON THE EDGE, on the figure (the fold gate's own gesture,
+// ported one panel over — nothing new invented). The pair is MARKED ON THE
+// FIGURE (one hue to a pair, the aperture's ratified palette-continuation
+// rule); pending and decided BOTH positively marked (dashed / solid — her
+// ratified legend); the DIRECTION is visible — the tick is the run's first
+// corner and the way it runs is how the EDGES meet (→→ both ticks with the
+// rim cycle · →⇄ the partner's tick at its far corner — the panel's own
+// arrow grammar, drawn where the edges are). `e0, e1` go to the RECORD (the
+// committed pairing's slot indices ride the birth record); no address stands
+// on the person's surface. The hit meshes are NAMED (`fold-edge:{slot}`) so
+// the acceptance leg taps the discrete targets by name, never by proximity.
+function FoldTapOverlay({
+  shape,
+  edges,
+  state,
+  markColors,
+  legendInk,
+  onTapEdge,
+}: {
+  shape: Shape;
+  edges: FaceEdgeLabel[]; // the committed rim vocabulary (slot order + ends)
+  state: FoldState;
+  markColors: string[];
+  legendInk: string;
+  onTapEdge: (edgeIndex: number) => void;
+}) {
+  // the untapped guide wears the trace overlay's own pickable-gray (one
+  // vocabulary for "this is a target you have not chosen yet")
+  const guideInk = '#9a917e';
+  const posOf = (vid: string): [number, number, number] | null => {
+    const v = shape.vertices[vid];
+    return v ? [v.position[0], v.position[1], v.position[2]] : null;
+  };
+  const lerp3 = (a: [number, number, number], b: [number, number, number], t: number): [number, number, number] => [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t,
+  ];
+  // the pair index an edge belongs to (its hue); pending continues the
+  // palette past the decided run — the ratified no-shared-hue rule
+  const pairIndexOf = (edgeIndex: number): number =>
+    state.pairs.findIndex((p) => p.edgeA === edgeIndex || p.edgeB === edgeIndex);
+  // the run mark: heavy→light from the tick corner (the aperture grammar —
+  // "the tick is its first corner, and the way it runs is how the EDGES meet")
+  const run = (tail: [number, number, number], head: [number, number, number], ink: string, dashed: boolean) => (
+    <group>
+      <Line
+        points={[tail, lerp3(tail, head, 0.55)]}
+        color={ink}
+        lineWidth={4.6}
+        dashed={dashed}
+        dashSize={0.09}
+        gapSize={0.07}
+        renderOrder={14}
+      />
+      <Line
+        points={[lerp3(tail, head, 0.55), lerp3(tail, head, 0.85)]}
+        color={ink}
+        lineWidth={2.9}
+        dashed={dashed}
+        dashSize={0.09}
+        gapSize={0.07}
+        renderOrder={14}
+      />
+      <Line
+        points={[lerp3(tail, head, 0.85), head]}
+        color={ink}
+        lineWidth={1.5}
+        dashed={dashed}
+        dashSize={0.09}
+        gapSize={0.07}
+        renderOrder={14}
+      />
+      <mesh position={tail} raycast={() => null}>
+        <sphereGeometry args={[0.09, 12, 12]} />
+        <meshBasicMaterial color={ink} />
+      </mesh>
+    </group>
+  );
+  return (
+    <group name="fold-tap-overlay">
+      {edges.map((edge) => {
+        const u = posOf(edge.from);
+        const v = posOf(edge.to);
+        if (!u || !v) return null;
+        const mid: [number, number, number] = [(u[0] + v[0]) / 2, (u[1] + v[1]) / 2, (u[2] + v[2]) / 2];
+        const len = Math.hypot(v[0] - u[0], v[1] - u[1], v[2] - u[2]) || 1;
+        const k = pairIndexOf(edge.index);
+        const isPending = state.pending === edge.index;
+        const pair = k >= 0 ? state.pairs[k] : null;
+        // →→ same sense: both runs follow the rim cycle (tick at the slot's
+        // own first corner). →⇄ opposed: the PARTNER edge's run reverses
+        // (tick at its far corner) — the twist drawn where it acts (P.5).
+        const reversedHere = pair !== null && pair.mode === 'reversing' && pair.edgeB === edge.index;
+        const ink =
+          pair !== null
+            ? markColors[k % markColors.length]
+            : isPending
+              ? markColors[state.pairs.length % markColors.length]
+              : null;
+        return (
+          <group key={`fold-edge:${edge.index}`}>
+            {/* the tap target — the whole edge body, named for the leg */}
+            <mesh
+              name={`fold-edge:${edge.index}`}
+              position={mid}
+              quaternion={quaternionFromUnitY([(v[0] - u[0]) / len, (v[1] - u[1]) / len, (v[2] - u[2]) / len])}
+              onClick={(e) => {
+                e.stopPropagation();
+                onTapEdge(edge.index);
+              }}
+              onPointerOver={() => {
+                document.body.style.cursor = 'pointer';
+              }}
+              onPointerOut={() => {
+                document.body.style.cursor = 'auto';
+              }}
+            >
+              <cylinderGeometry args={[0.16, 0.16, len * 0.92, 6]} />
+              <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+            </mesh>
+            {ink !== null ? (
+              reversedHere ? (
+                run(v, u, ink, isPending)
+              ) : (
+                run(u, v, ink, isPending)
+              )
+            ) : (
+              /* untapped — a faint guide so every pickable edge is visible */
+              <Line points={[u, v]} color={guideInk} lineWidth={1.6} transparent opacity={0.55} renderOrder={13} />
+            )}
+          </group>
+        );
+      })}
+      {/* P.4 — the legend rides the figure (the aperture's ratified string,
+          ONE word changed by her spec: faces → EDGES); same idiom + seat as
+          the live-build legend */}
+      <Html center position={[0, -1.7, 0]} distanceFactor={13} zIndexRange={[40, 0]} style={{ pointerEvents: 'none' }}>
+        <div
+          style={{
+            whiteSpace: 'nowrap',
+            textAlign: 'center',
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 10.5,
+            opacity: 0.6,
+            color: legendInk,
+          }}
+        >
+          dashed — not yet decided · solid — decided; the tick is its first corner, and the way it runs is how the EDGES
+          meet · one hue to a pair
+        </div>
+      </Html>
+    </group>
+  );
+}
+
 // UNIFICATION — the LAID CELL OVERLAY: the thin register that rides ON TOP of
 // the one crafted renderer (InkedForm draws the body, hull, hatching, the
 // person's cell curves as construction ink, and the certified loops — via the
@@ -1203,14 +1363,19 @@ function SpecimenCard({
   ringUnplaced,
   affordance,
   bound,
+  deckRecord,
 }: {
   reading: SpecimenReading;
   argument?: ArgumentReading | null;
-  // B-103 §2a — the computed affordance line (the form's own answer; null =
-  // no open door composed — the line never lies by emptiness)
+  // B-103 §2a — the computed affordance line (the form's own answer). B-105
+  // W3 §4(b): a zero total SPEAKS (her sentence); null means only that no
+  // form is resolved here — never an empty total carried by absence
   affordance?: string | null;
   // B-103 §2c — the designer's quotient bound, sited adjacent (closed volumes)
   bound?: string | null;
+  // B-105 ADR §7 — the deck-tiling's demoted record rows ({p,q} · the vertex
+  // count · the descent check); present exactly when the tiling resolves
+  deckRecord?: { label: string; value: string }[] | null;
   paper: { cardBackground: string; cardBorder: string; cardInk: string };
   generatorInks: { a: string; b: string };
   // D2b — threaded through to the map section (the shared emphasis)
@@ -1328,6 +1493,18 @@ function SpecimenCard({
         >
           <span style={{ opacity: 0.85 }}>{r.label}</span>
           <b style={{ textAlign: 'right', fontWeight: r.emphasize ? 800 : 600 }}>{r.value}</b>
+        </div>
+      ))}
+      {/* B-105 ADR 0025 §7 — THE DECK-TILING RECORD: `{p,q}`, the vertex
+          count and the descent check DEMOTED here from the window (the
+          card's business, where an id and a count may live). Rows, not
+          sentences; present exactly when the tiling resolves. */}
+      {deckRecord?.map((r) => (
+        <div key={`deck·${r.label}`} data-deck-record style={{ ...row, fontSize: 12.5, opacity: 0.85 }}>
+          <span style={{ opacity: 0.85 }}>{r.label}</span>
+          <b style={{ textAlign: 'right', fontWeight: 600, fontFamily: 'ui-monospace, monospace', fontSize: 11.5 }}>
+            {r.value}
+          </b>
         </div>
       ))}
       {fieldDoor ? (
@@ -3743,8 +3920,10 @@ export default function ManuscriptView() {
   );
   // B-103 §2a — THE AFFORDANCE LINE, computed from the LIVE enabled set the
   // dock itself renders from (the availability rows + the gesture chips' own
-  // predicates — one fact, one producer; never a literal). An empty open set
-  // composes NO line (unruled copy — reported, not invented).
+  // predicates — one fact, one producer; never a literal). B-105 W3 §4(b):
+  // the empty open set now composes HER ruled zero-total sentence (`this
+  // form takes — nothing · each door says why`) — null here means only
+  // no-selection / no-resolved-target, never an empty total.
   const affordanceLine = useMemo(
     () =>
       selected !== null && targetFor(selected) !== null
@@ -3766,6 +3945,25 @@ export default function ManuscriptView() {
     const target = targetFor(selected);
     return target !== null && isClosedVolume(target.shape) ? QUOTIENT_BOUND_SENTENCE : null;
   }, [affordanceLine, selected, targetFor]);
+  // B-105 ADR §7 — THE DEMOTED RECORD (the card's business): {p,q}, the
+  // vertex count, and the descent check move here from the window. Rows in
+  // the record grammar; present exactly when the tiling resolves; the
+  // descent row exactly when the check passed on this tiling's own cells.
+  const deckRecord = useMemo(() => {
+    if (!deckTilingFor || deckTilingFor.ok !== true) return null;
+    const t = deckTilingFor.tiling;
+    const rows: { label: string; value: string }[] = [
+      { label: 'deck-tiling', value: `{${t.p},${t.q}}` },
+      { label: 'cells at a vertex', value: `${t.q}` },
+    ];
+    if (t.descent) {
+      rows.push({
+        label: 'descent',
+        value: `−I ∈ Sym ∧ free — ${t.descent.pairs.length} cell pair${t.descent.pairs.length === 1 ? '' : 's'}`,
+      });
+    }
+    return rows;
+  }, [deckTilingFor]);
   const foldPanel = useMemo(() => {
     if (!fold || fold.targetKey !== selected || !foldTarget) return null;
     const preview =
@@ -3795,10 +3993,20 @@ export default function ManuscriptView() {
     }
     setFold((cur) => (cur && cur.targetKey === selected ? null : { targetKey: selected, pairs: [], pending: null }));
   }, [selected, targetFor]);
+  // B-105 W3 §1 — the ONE tap reducer, fired from the FIGURE's edge targets
+  // (the panel lists no edges any more; the pick surface is the drawing)
+  const handleFoldTap = useCallback((edgeIndex: number): void => {
+    setFold((cur) => (cur ? { ...cur, ...tapFoldEdge({ pairs: cur.pairs, pending: cur.pending }, edgeIndex) } : cur));
+  }, []);
   // ----- CYCLE-IDENTIFY (L23): the trace gesture ---------------------------
   // the entry gate — D2 fires AT ENTRY, before the person traces anything
   // (never let them do the work and then discard it); the quotient wall is
-  // pre-empted structurally for the same reason (its cure is the dock words)
+  // pre-empted structurally for the same reason. B-105 W3 §4(c) (designer-
+  // ruled): the pointer clause ("the dock words are its doors") is CUT — a
+  // reroute must be COMPUTED FROM THE FORM IN HAND, never a constant list,
+  // and the computed affordance line now answers that question; a card that
+  // answers it twice teaches him neither answer is authoritative. The
+  // sentence keeps only what it says about the ACT itself.
   const handleIdentifyToggle = useCallback((): void => {
     if (!selected) return;
     setCycleTrace((cur) => {
@@ -3811,7 +4019,7 @@ export default function ManuscriptView() {
           directComplexOf(target.shape);
         } catch {
           entryRefusal =
-            'this single-face quotient identifies through the committed word ops (glue / flip-glue on the face) — the dock words are its doors';
+            'this single-face quotient identifies through the committed word ops (glue / flip-glue on the face)';
         }
       }
       if (entryRefusal === null) {
@@ -5127,6 +5335,31 @@ export default function ManuscriptView() {
                 />
               </group>
             ) : null}
+            {/* B-105 W3 §1 — THE FOLD TAP rides the DRAWN polygon while the
+                fold panel is open on this entry (the CycleTraceOverlay mount
+                idiom: same frame as the drawn body). A faithful-mode target
+                taps on its REPOSITIONED cells (the deficit datum's shape —
+                the fan the person actually sees); plain targets tap their
+                own faithful positions. */}
+            {foldPanel && fold && fold.targetKey === id ? (
+              <group scale={render.mode === 'faithful' ? scaleCtl.dim1Scale * 1.5 : scaleCtl.dim1Scale}>
+                <FoldTapOverlay
+                  shape={
+                    render.mode === 'faithful'
+                      ? (() => {
+                          const datum = faithfulDeficitById.get(entry.form.id);
+                          return datum && datum.kind === 'read' ? datum.shape : entry.form.shape;
+                        })()
+                      : entry.form.shape
+                  }
+                  edges={foldPanel.edges}
+                  state={{ pairs: fold.pairs, pending: fold.pending }}
+                  markColors={d.world.domain.markColors}
+                  legendInk={d.paper.titleInk}
+                  onTapEdge={handleFoldTap}
+                />
+              </group>
+            ) : null}
             {/* THE RING ANCHOR RESOLVER (SEAL_THE_RING_ANCHOR_RESOLVER) —
                 TOTAL over the render union: the resolver returned ANCHORS
                 (this mount) or a DECLARED refusal (the card speaks it below;
@@ -5654,15 +5887,12 @@ export default function ManuscriptView() {
       ) : foldPanel ? (
         <FoldGatePanel
           title={foldPanel.title}
-          edges={foldPanel.edges}
           state={foldPanel.state}
           preview={foldPanel.preview}
           commitEnabled={foldPanel.commitEnabled}
           paper={d.paper}
           accent={generatorsCtl.a}
-          onTapEdge={(edgeIndex) =>
-            setFold((cur) => (cur ? { ...cur, ...tapFoldEdge({ pairs: cur.pairs, pending: cur.pending }, edgeIndex) } : cur))
-          }
+          markColors={d.world.domain.markColors}
           onToggleMode={(pairIndex) =>
             setFold((cur) => (cur ? { ...cur, ...toggleFoldPairMode({ pairs: cur.pairs, pending: cur.pending }, pairIndex) } : cur))
           }
@@ -5675,6 +5905,7 @@ export default function ManuscriptView() {
           argument={selectedArgument}
           affordance={affordanceLine}
           bound={quotientBound}
+          deckRecord={deckRecord}
           paper={d.paper}
           emphasizedIds={emphasizedIds}
           onRowTouch={handleRowTouch}
