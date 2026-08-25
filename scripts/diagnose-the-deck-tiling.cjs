@@ -206,5 +206,77 @@ check('the surface arm OPENS the rung-2 window (the later-chapter door retires a
   viewSrc.includes("setTilingOpen((cur) => (cur === selected ? null : selected))") &&
   viewSrc.includes('deckTilingFor !== null && !deckTilingFor.ok'));
 
+// ═════ [j] B-105 — ADR §7/§7.1: THE INHABITANT + the demoted captions ═══════
+console.log('\n----- [j] B-105 ADR §7.1 — the inhabitant (chiral, doubled ⟺ descent) + §7 the window stops narrating -----');
+// the LAW-24 pair, at the model: the plain cube (no identification) carries
+// the mark ONCE; the {4,2} dihedron under the CHECKED descent carries it
+// TWICE, the second image on the far side (the shows-through register)
+const cubeTiling = M.sphericalTiling(4, 3, false);
+check('[j] the NON-descended {4,3} plate carries the inhabitant ONCE (the LAW-24 control: no identification, no double)',
+  cubeTiling !== null && cubeTiling.inhabitant !== null && cubeTiling.inhabitant.images.length === 1 &&
+  cubeTiling.inhabitant.images[0].farSide === false && cubeTiling.inhabitant.images[0].outline.length > 50);
+const dihedron = M.sphericalTiling(4, 2, true);
+check('[j] the {4,2} dihedron under the CHECKED descent carries the mark in TWO places — the antipodal image joins, on the far side (faint register)',
+  dihedron !== null && dihedron.descent !== null && dihedron.inhabitant !== null &&
+  dihedron.inhabitant.images.length === 2 &&
+  dihedron.inhabitant.images[0].farSide === false && dihedron.inhabitant.images[1].farSide === true);
+// the CHIRALITY is the math's, never authored: the antipodal map on S² is
+// orientation-reversing, so the projected doubles WIND OPPOSITE ways —
+// measured as the signed total turning of each projected polyline
+const turningOf = (outline) => {
+  let total = 0;
+  for (let i = 2; i < outline.length; i += 1) {
+    const ax = outline[i - 1][0] - outline[i - 2][0];
+    const ay = outline[i - 1][1] - outline[i - 2][1];
+    const bx = outline[i][0] - outline[i - 1][0];
+    const by = outline[i][1] - outline[i - 1][1];
+    total += Math.atan2(ax * by - ay * bx, ax * bx + ay * by);
+  }
+  return total;
+};
+const turn0 = turningOf(dihedron.inhabitant.images[0].outline);
+const turn1 = turningOf(dihedron.inhabitant.images[1].outline);
+check('[j] THE FLIP IS THE MATH\'S: the two images wind OPPOSITE ways (signed turning > 1.5 full turns each, opposite signs — a symmetric figure could not carry this)',
+  Math.abs(turn0) > 3 * Math.PI && Math.abs(turn1) > 3 * Math.PI && Math.sign(turn0) === -Math.sign(turn1));
+note(`turning: image0 ${(turn0 / (2 * Math.PI)).toFixed(2)} turns · image1 ${(turn1 / (2 * Math.PI)).toFixed(2)} turns`);
+// the anchor stays INSIDE its one cell: every image-0 point of the cube's
+// coil lies strictly inside the anti-pole cell's plate radius (the cell
+// spans to its corners; the coil was budgeted to half the inradius + 38%)
+check('[j] the mark sits in ONE cell: the cube coil\'s plate radii all fall inside the central cell\'s corner radius',
+  (() => {
+    const central = cubeTiling.cells.filter((c) => !c.exterior && c.farSide !== true)
+      .reduce((best, c) => {
+        const r = Math.hypot(c.center[0], c.center[1]);
+        return best === null || r < Math.hypot(best.center[0], best.center[1]) ? c : best;
+      }, null);
+    if (!central) return false;
+    const cornerR = Math.max(...central.corners.map(([x, y]) => Math.hypot(x, y)));
+    return cubeTiling.inhabitant.images[0].outline.every(([x, y]) => Math.hypot(x, y) < cornerR);
+  })());
+// non-spherical tilings carry NONE (no antipodal question stands there)
+check('[j] absence stays absent: the euclidean and hyperbolic tilings carry no inhabitant',
+  M.euclideanTiling(4, 4).inhabitant === null && M.hyperbolicTiling(6, 6, 5).inhabitant === null);
+// §7 — the window's demotion, source-asserted: the narrating captions are
+// GONE (ring/count/arithmetic/rim/pole/descent prose), the {p,q} header
+// symbol is the record's now, the inhabitant draw loop exists, and the
+// card carries the demoted record rows
+const windowSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/DeckTilingWindow.tsx'), 'utf8');
+check('[j] ADR §7: the window stops NARRATING — no ring caption, no count, no GAP/OVERLAP arithmetic, no rim/pole/descent prose; the geometry NAME stays; the inhabitant is drawn',
+  !windowSrc.includes('ring the marked vertex') &&
+  !windowSrc.includes('count the cells') &&
+  !windowSrc.includes('must ruffle open') &&
+  !windowSrc.includes('CLOSES EXACTLY') &&
+  !windowSrc.includes('the boundary circle is INFINITY') &&
+  !windowSrc.includes('the pole cell is the whole EXTERIOR') &&
+  !windowSrc.includes('the antipodal map is a symmetry') &&
+  !windowSrc.includes('{${tiling.p},${tiling.q}}') &&
+  windowSrc.includes('GEOMETRY_WORD[tiling.geometry]') &&
+  windowSrc.includes('tiling.inhabitant?.images'));
+check('[j] ADR §7: {p,q} · the vertex count · the descent check DEMOTE to the card (data-deck-record rows, present exactly when the tiling resolves; descent row iff checked)',
+  viewSrc.includes('data-deck-record') &&
+  viewSrc.includes("label: 'deck-tiling', value: `{${t.p},${t.q}}`") &&
+  viewSrc.includes("label: 'cells at a vertex'") &&
+  viewSrc.includes('−I ∈ Sym ∧ free'));
+
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

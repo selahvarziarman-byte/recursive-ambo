@@ -181,6 +181,32 @@ check('§2b the MEASURED refinement: the 3-wedge seam has junction VERTICES and 
   junctionBorn.gate.junctionEdgeIds.length === 1 &&
     junctionBorn.gate.junctionVertexIds.length > 0 &&
     junctionBorn.gate.junctionVertexIds.every((v) => jEnds.has(v)));
+// B-105 B2 — THE PINCH DISCRIMINATOR (sanctioned frozen unions, both spends
+// Arman-worded): the girdered arm routes on the classifier's OWN flag
+// (gate.pinchVertexIds), never the endpoint-proxy. Three measurable legs:
+check('★ B2(i) the girderable seam reads pinch-FREE at the gate (pinchVertexIds carried, empty here — the negative arm of the discriminator, measured not assumed)',
+  Array.isArray(junctionBorn.gate.pinchVertexIds) && junctionBorn.gate.pinchVertexIds.length === 0);
+{
+  // B2(ii) the flag's POSITIVE control at the decomposer (LAW 24): a link of
+  // two disjoint cycles — the classic pinch — through the REAL committed
+  // decomposeLink (test-input adjacency, the §1 idiom; the module is real)
+  const { decomposeLink } = req('src/lib/incidenceTraceRegistry.ts');
+  const adj = new Map([
+    ['a1', ['a2', 'a3']], ['a2', ['a1', 'a3']], ['a3', ['a1', 'a2']],
+    ['b1', ['b2', 'b3']], ['b2', ['b1', 'b3']], ['b3', ['b1', 'b2']],
+  ]);
+  const d = decomposeLink(adj);
+  check('★ B2(ii) LAW-24 positive control: a two-component link reads pinch=true at the committed decomposeLink (the flag the gate now carries)',
+    d.pinch === true);
+  // B2(iii) the discriminator IS the flag — source-asserted on the frozen
+  // union (the coincident case has no reachable in-engine construction
+  // today: a 1–2-step edge-identify search on the band found none — the
+  // arm stands ready, reported honestly, the R2-empty-menu shape)
+  const wfmSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/writtenFormModel.ts'), 'utf8');
+  check('★ B2(iii) the girdered arm consumes gate.pinchVertexIds (length === 0 conjunct) and the endpoint-proxy (junctionEnds) is GONE from the router',
+    wfmSrc.includes('gate.junctionEdgeIds.length > 0 && gate.pinchVertexIds.length === 0') &&
+    !wfmSrc.includes('junctionEnds'));
+}
 const routeJunction = routeWrittenRender(junctionBorn.shape, [band2], 24);
 check('★ §2b EDGE-JUNCTION → PLAIN with the junction classes carried (the girder\'s committed wire lights)',
   routeJunction.mode === 'plain' &&

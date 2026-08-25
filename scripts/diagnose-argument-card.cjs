@@ -111,24 +111,17 @@ check('§1 (E1) ★★ THE TORUS MAP READS THE TRACE: ONE concept row, IDENTIFIE
     torusReading.conceptRows[0].sourceIds.length === 4 &&
     torusReading.conceptRows[0].rootIds.length === 4 &&
     rowsAgreeWithSubstrate(torusReading, torus.shape));
-// THE IDENTITY LAW (B-2026-08-23-C recut — the LAST producer-stop landed):
-// an invoked corner's packet is TRUE ABSENCE now, so an endpoint reads
-// 'unnamed' + the RULED disambiguating index (a positional letter survives
-// ONLY as an appended handle over duplicate display names, assigned in
-// sorted-id order over the ruled alphabet). Recomputed INDEPENDENTLY here
-// from the parent's own packets + the rule — never from the model's output.
-const WITNESS_ROOT_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+// THE IDENTITY LAW (B-2026-08-23-C recut) → B-105 W3 §4(a) (designer-ruled,
+// THE ROLES CASE): in an endpoint/roles POSITION the slot already says which
+// is which — the direction is recorded BY POSITION — so NO disambiguating
+// handle is owed there: an unnamed end reads bare 'unnamed' and a relation's
+// source reads `unnamed·unnamed`, both terms kept, no count, no index.
+// Recomputed INDEPENDENTLY here from the parent's own packets + the ruled
+// rule — never from the model's output.
 const expectedRootName = (parentShape, id) => {
   const label = parentShape.vertices[id]?.data?.label?.trim() ?? '';
   if (label.length > 0 && label !== id) return label;
-  const base = parentShape.vertices[id] ? 'unnamed' : (id.split(':').pop() ?? id);
-  const displayOf = (vid) => {
-    const l = parentShape.vertices[vid]?.data?.label?.trim() ?? '';
-    return l.length > 0 && l !== vid ? l : 'unnamed';
-  };
-  const dupes = Object.keys(parentShape.vertices).sort().filter((vid) => displayOf(vid) === base);
-  if (dupes.length <= 1) return base;
-  return `${base}·${WITNESS_ROOT_LETTERS[dupes.indexOf(id)]}`;
+  return parentShape.vertices[id] ? 'unnamed' : (id.split(':').pop() ?? id);
 };
 const packetEndpointName = (parentShape, ids) => {
   const parts = ids.map((id) => expectedRootName(parentShape, id));
@@ -324,14 +317,15 @@ const expectedPairs = torusRecovery
   : [];
 const modelPairs = (torusReading.wordRows ?? []).map((w) => w.slotNames.join('+'));
 note(`torus word: model [${modelPairs.join(' · ')}] vs recomputed [${expectedPairs.join(' · ')}]`);
-check('§7 (P2·E1) ★★ THE RELATION MAP FROM THE WORD: □⟶𝕋² reads TWO attributed pairs recovered through the committed replay-verified word (recoverBornSurface — parsed from the born id, byte-verified), matching the independent recomputation SET-FOR-SET — a ← {AB,CD} · b ← {BC,DA}, both preserving; NOT "absorbed", NOT endpoint-inferred',
+check('§7 (P2·E1) ★★ THE RELATION MAP FROM THE WORD: □⟶𝕋² reads TWO attributed pairs recovered through the committed replay-verified word (recoverBornSurface — parsed from the born id, byte-verified), matching the independent recomputation SET-FOR-SET, both preserving; NOT "absorbed", NOT endpoint-inferred. B-105 W3 §4(a): the slots are ROLES — unnamed ends read bare (all four may DISPLAY alike), and the distinctness lives where the record keeps it: four distinct slot INDICES (position carries the role, no handle owed)',
   torusRecovery !== null &&
     torusReading.wordRows !== null &&
     torusReading.wordRows.length === 2 &&
     modelPairs.length === 2 &&
     modelPairs.every((p, i) => p === expectedPairs[i]) &&
     torusReading.wordRows.every((w) => w.mode === 'preserving') &&
-    new Set(torusReading.wordRows.flatMap((w) => w.slotNames)).size === 4);
+    new Set(torusReading.wordRows.flatMap((w) => w.slotIndices)).size === 4 &&
+    torusReading.wordRows.every((w) => w.slotNames.every((s) => s === 'unnamed·unnamed')));
 const kleinHost = wireForm(invokePrimitive('square', 976));
 const kleinApplied = applyPlaygroundOperationTo('flip-glue-klein', kleinHost.shape, null, 977, 8, [], null);
 const kleinReading = kleinApplied.ok ? buildArgumentReading(kleinApplied.born) : null;

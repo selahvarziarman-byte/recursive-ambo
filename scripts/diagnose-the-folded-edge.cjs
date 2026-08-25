@@ -225,13 +225,51 @@ const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptVi
 // this branch, so no DomainModel is ever born folded). The wall + its cure
 // stand verbatim; the window widens for the sanctioned lines and the birth is
 // pinned POSITIVELY (ratified in diagnose-the-orbifolds-body.cjs).
-check('the view consumes the VERDICT: a folded glue sets the notice to the WALL, snapshots the folded rows for the subdivide door, births the FOLDED BODY onto its sibling shelf (0.2), and returns before any DomainModel is born (source-asserted: buildPersonDomainVerdict consumed · setApertureNotice(verdict.wall) · setApertureFoldedRows and setFoldedBodies inside the folded branch · the early return precedes setBuiltDomains) — nothing joins the DomainModel band, and the wall says why',
+// B-105 A2(iv) — THE VIEW-PIN, RECUT STRUCTURALLY (the sweep's R-6 entry:
+// the old `[\s\S]{0,900}` windows were widened twice and a window-regex can
+// eventually match a DIFFERENT `if (verdict.folded)`/`return;` juxtaposition
+// and pass vacuously while the real branch loses its clause — a pin that
+// needs a wider regex each time is a pin dying). The recut EXTRACTS each
+// `if (verdict.folded) {` block by brace-walking the real source and asserts
+// the clauses INSIDE each block — count pinned (exactly TWO branches: the
+// glue exit + leave-bounded), immune to growth, vacuous-pass impossible.
+const foldedBranchBlocks = (() => {
+  const blocks = [];
+  const marker = 'if (verdict.folded) {';
+  let from = 0;
+  for (;;) {
+    const at = viewSrc.indexOf(marker, from);
+    if (at < 0) break;
+    let depth = 0;
+    let end = -1;
+    for (let i = at + marker.length - 1; i < viewSrc.length; i += 1) {
+      const ch = viewSrc[i];
+      if (ch === '{') depth += 1;
+      else if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+    if (end < 0) break;
+    blocks.push(viewSrc.slice(at, end + 1));
+    from = end + 1;
+  }
+  return blocks;
+})();
+check('the view consumes the VERDICT — STRUCTURAL PIN (B-105 A2(iv) recut): exactly TWO `if (verdict.folded)` branches (the glue exit + leave-bounded), and EACH births the FOLDED BODY (setFoldedBodies), speaks the WALL (setApertureNotice(verdict.wall)), snapshots the rows for the subdivide door (setApertureFoldedRows), returns early, and never lets a DomainModel be born inside (no setBuiltDomains in-branch)',
   viewSrc.includes('buildPersonDomainVerdict(') &&
-  viewSrc.includes('setApertureNotice(verdict.wall);') &&
-  /if \(verdict\.folded\) \{[\s\S]{0,900}return;[\s\S]{0,80}\}/.test(viewSrc) &&
-  /if \(verdict\.folded\) \{[\s\S]{0,900}setApertureFoldedRows\(/.test(viewSrc) &&
-  /if \(verdict\.folded\) \{[\s\S]{0,900}setFoldedBodies\(/.test(viewSrc) &&
-  viewSrc.indexOf('setApertureNotice(verdict.wall);') < viewSrc.indexOf('setBuiltDomains((cur) => [...cur, domain]);'));
+  foldedBranchBlocks.length === 2 &&
+  foldedBranchBlocks.every(
+    (block) =>
+      block.includes('setFoldedBodies(') &&
+      block.includes('setApertureNotice(verdict.wall);') &&
+      block.includes('setApertureFoldedRows(') &&
+      block.includes('return;') &&
+      !block.includes('setBuiltDomains('),
+  ));
 
 // ═════ [g] CLAUSE 4 — non-movement: the 415 byte-identical to HEAD ═══════════════
 console.log('\n----- [g] ★ non-movement: gate verdict + tower JSON per non-folded pairing, vs the HEAD-compiled engine (clause 4 · battery 2) -----');

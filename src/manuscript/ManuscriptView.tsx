@@ -179,6 +179,7 @@ import {
 // B-105 W3 §1 — the fold tap's rim vocabulary type (the committed picker
 // labels the overlay draws from; the panel no longer lists them)
 import type { FaceEdgeLabel } from '../playground/customGluing';
+import type { BoundaryPairing } from '../lib/surfaceOperations';
 // CUT 1 THE FAITHFUL BODY — the cone family's cell model (apex · seam · rim);
 // the view only PLACES its certified placements in the two ink registers
 import type { FaithfulBodyModel } from './faithfulBodyModel';
@@ -836,6 +837,32 @@ function FoldTapOverlay({
   // the untapped guide wears the trace overlay's own pickable-gray (one
   // vocabulary for "this is a target you have not chosen yet")
   const guideInk = '#9a917e';
+  // the fold targets' PER-FRAME screen positions onto the dev seam — the
+  // CycleTraceOverlay idiom verbatim (R3F's own camera/size, so a witness
+  // clicks in exactly the space R3F maps events from)
+  const groupRef = useRef<THREE.Group>(null);
+  useFrame(({ camera, size }) => {
+    const group = groupRef.current;
+    if (!group) return;
+    const world = new Vector3();
+    const positions: Record<string, { x: number; y: number; on: boolean }> = {};
+    group.traverse((object) => {
+      if (!object.name.startsWith('fold-edge:')) return;
+      object.getWorldPosition(world);
+      world.project(camera);
+      positions[object.name] = {
+        x: ((world.x + 1) / 2) * size.width,
+        y: ((1 - world.y) / 2) * size.height,
+        on: Math.abs(world.x) <= 1 && Math.abs(world.y) <= 1 && world.z >= -1 && world.z <= 1,
+      };
+    });
+    const host = window as unknown as {
+      __manuscriptFold?: { targets?: typeof positions; state?: { pairs: BoundaryPairing[]; pending: number | null } };
+    };
+    const seam = host.__manuscriptFold ?? (host.__manuscriptFold = {});
+    seam.targets = positions;
+    seam.state = { pairs: state.pairs.map((p) => ({ ...p })), pending: state.pending };
+  });
   const posOf = (vid: string): [number, number, number] | null => {
     const v = shape.vertices[vid];
     return v ? [v.position[0], v.position[1], v.position[2]] : null;
@@ -887,7 +914,7 @@ function FoldTapOverlay({
     </group>
   );
   return (
-    <group name="fold-tap-overlay">
+    <group name="fold-tap-overlay" ref={groupRef}>
       {edges.map((edge) => {
         const u = posOf(edge.from);
         const v = posOf(edge.to);
@@ -909,12 +936,23 @@ function FoldTapOverlay({
               : null;
         return (
           <group key={`fold-edge:${edge.index}`}>
-            {/* the tap target — the whole edge body, named for the leg */}
+            {/* the tap target — the whole edge body, named for the leg. The
+                collider rides 0.12 ABOVE the figure plane with a fat radius:
+                the crafted ink stack's own meshes sit at small offsets and
+                the CLOSEST intersection wins the R3F event (the D2 theft
+                class — measured at the eye this build: a flush collider lost
+                the ray to the inked face and the tap died in the selectable's
+                inert single-click) */}
             <mesh
               name={`fold-edge:${edge.index}`}
-              position={mid}
+              position={[mid[0], mid[1], mid[2] + 0.12]}
               quaternion={quaternionFromUnitY([(v[0] - u[0]) / len, (v[1] - u[1]) / len, (v[2] - u[2]) / len])}
-              onClick={(e) => {
+              // the tap fires on POINTERDOWN — the panels' own mousedown
+              // idiom, and the mechanism that makes the tap reach: the
+              // selectable's inert single-CLICK handler stops the click
+              // chain from any closer ink hit (measured at the eye: three
+              // of six edges dead to click, all six alive to pointer events)
+              onPointerDown={(e) => {
                 e.stopPropagation();
                 onTapEdge(edge.index);
               }}
@@ -925,7 +963,7 @@ function FoldTapOverlay({
                 document.body.style.cursor = 'auto';
               }}
             >
-              <cylinderGeometry args={[0.16, 0.16, len * 0.92, 6]} />
+              <cylinderGeometry args={[0.24, 0.24, len * 0.92, 6]} />
               <meshBasicMaterial transparent opacity={0} depthWrite={false} />
             </mesh>
             {ink !== null ? (
@@ -5326,7 +5364,13 @@ export default function ManuscriptView() {
                 derived-body modes ride after the sanctioned crafted union).
                 Invisible; renders no marks (D2's terrain); same transform as
                 the drawn body (the CycleTraceOverlay mount idiom). */}
-            {selected === id && (render.mode === 'plain' || render.mode === 'skeleton') ? (
+            {/* B-105 W3 §1: while the FOLD panel is open on this entry the
+                figure's tap surface belongs to the fold gesture — the
+                correspondence layer's colliders would steal the raycast
+                (the D2 closest-hit theft, measured at the eye this build) */}
+            {selected === id &&
+            (render.mode === 'plain' || render.mode === 'skeleton') &&
+            !(foldPanel && fold && fold.targetKey === id) ? (
               <group scale={scaleCtl.dim1Scale}>
                 <CorrespondencePickLayer
                   shape={entry.form.shape}
