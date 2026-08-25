@@ -1,6 +1,6 @@
 # 0025 — The surface deck-tiling: one cell, three worlds; the method anchors in the hyperbolic; descent is the tiling's own symmetry check
 
-Status: **Accepted** — researcher-drafted, **mothership-ratified 2026-08-23 at `dcc68a0` (the sixth)**, clause-by-clause against Δ6 (`.handoff/inbox/researcher/2026-08-23_1922_mothership_ADR-0025-RATIFIED-against-Delta6…md`). ⚠ Clause (1) holds on the sixth's **named interpretation** — *"observe it FOR our own hyperbolic rendering"* = the proven technique observed in service of the render we will build (the reference instrument, not a not-yet-built engine render) — which rides the queue to Arman, vetoable in one word. Commissioned 2026-08-23 (`…_1836_…RUNG-2-TILING-ADR-COMMISSIONED.md`); the walk (rung 1) closed 2026-08-21 at Arman's own hand. Cite SHAs, not the drift-prone dates in the carried record.
+Status: **Accepted** — researcher-drafted, **mothership-ratified 2026-08-23 at `dcc68a0` (the sixth)**, clause-by-clause against Δ6 (`.handoff/inbox/researcher/2026-08-23_1922_mothership_ADR-0025-RATIFIED-against-Delta6…md`). ✔ Clause (1) holds on the sixth's **named interpretation** — *"observe it FOR our own hyperbolic rendering"* = the proven technique observed in service of the render we will build (the reference instrument, not a not-yet-built engine render) — **RULED by Arman, verbatim "(a) stands."** ⚠ **AMENDED §7 (`B-104` drive): the person-eye reading is the PHENOMENON shown, not the count told — see §7.** Commissioned 2026-08-23 (`…_1836_…RUNG-2-TILING-ADR-COMMISSIONED.md`); the walk (rung 1) closed 2026-08-21 at Arman's own hand. Cite SHAs, not the drift-prone dates in the carried record.
 
 Governs **rung 2** of the render gate (`.handoff/PLAN_THE_RENDER_GATE.md`): faithfulness lives in the WINDOW — walk-inside for 3-manifolds (rung 1, closed), **deck-tiling for surfaces (this ADR)**.
 
@@ -30,7 +30,7 @@ A regular tiling is `{p,q}`: p-gon cells, **q of them at every vertex**. The who
 | {4,4} | 4 × 90° | 360° | **CLOSES EXACTLY** — stays flat | **EUCLIDEAN** (the plane) |
 | {4,5} | 5 × 90° | 450° | a 90° **OVERLAP** — it must ruffle open | **HYPERBOLIC** (order-5 square) |
 
-**The cell never changes; only q does.** *Every cell stays flat (local flatness); they do not fit (global curvature); the surface bends to absorb exactly the mismatch.* The sign of `(p−2)(q−2) − 4` is the curvature sign. ⇒ **The tiling is not a new instrument — it is the cone-edge deficit read at a tiling vertex.** [[the-three-marks-and-law-22]] · the countable-captions law: q is a COUNT the eye checks (ring the vertex, count the cells).
+**The cell never changes; only q does.** *Every cell stays flat (local flatness); they do not fit (global curvature); the surface bends to absorb exactly the mismatch.* The sign of `(p−2)(q−2) − 4` is the curvature sign. ⇒ **The tiling is not a new instrument — it is the cone-edge deficit read at a tiling vertex.** [[the-three-marks-and-law-22]] ⛔ **SUPERSEDED BY §7 (`B-104` amendment): the world's mark is WHAT THE CELLS DO (the phenomenon, shown), NOT the vertex count (a proof-token, demoted to the record). q "checkable in principle" is not q "checked by him."**
 
 **The three CONFORMAL models (the field's convention, adopted):** spherical as a **stereographic projection**, euclidean as the **plane**, hyperbolic in the **Poincaré disk**. All three are conformal ⇒ **angles are true and geodesics are circular arcs** — one drawing convention serves all three, which is why one Schläfli symbol can run across them.
 
@@ -66,7 +66,7 @@ A regular tiling is `{p,q}`: p-gon cells, **q of them at every vertex**. The who
 - **The rim is addressed, never drawn as a wall** (horizon doctrine): the Poincaré boundary is INFINITY; the sphere's pole-cell is the whole EXTERIOR (the far side shows through — *"antipodes are never both on the near side"*, the S²/RP² fixture's constraint). A rim drawn as a solid edge is the horizon lie.
 - **LOD: the mark STOPS, never degrades** — a cell whose perimeter falls below the floor is DROPPED, not drawn wrong (the `min_edge` cutoff). A degraded mark is a mark that stops meaning; an absent one is honest.
 - **LAW 24 (a negative needs a positive control):** no "this surface has no tiling / no descent" claim without the case where it MUST appear — the tetra ✘ for descent; the flat {4,4} as the null control for curvature.
-- **Countable captions (LAW 23):** the vertex count q and the deficit (270/360/450°) are numbers the EYE checks; never print an uncheckable number.
+- **Countable captions (LAW 23), SHARPENED by §7:** a number "checkable in principle" is not the mark if the person is never ASKED to check it — a caption that ASSERTS the count is OURS, not his. The mark is the phenomenon he reads (§7); the count lives in the record. The countable thing at his eye is *how many places his inhabitant-mark appears* (§7.1: two = descended, one = not), not a caption's assertion.
 
 ### 6 · THE FALLBACK — on record (clause 3)
 
@@ -74,11 +74,41 @@ If a geometry (or a surface) admits **no derived tiling method** under §2, the 
 
 ---
 
+## 7 · AMENDMENT (researcher, `B-104` drive) — THE READING IS THE PHENOMENON, SHOWN, NEVER THE COUNT, TOLD
+
+⛔ **I own this: §1 and §5 above named the vertex COUNT as the reading — *"q is a COUNT the eye checks"* — and that clause was satisfiable by a CAPTION.** The `B-104` build honored it exactly: it drew a ring around a vertex and captioned *"count the cells: 6."* **Arman rejected it** — *"to ring a vertex is nothing but a little ring the designer has drawn"* — and then, unprompted, read the euclidean geometry CORRECTLY off the cells alone (*"inside a torus locally is flat so a flat grid"*), with no ring, no number, no caption. **That is the control: the phenomenon read succeeded exactly where the caption read failed.** My clause named a number's checkability and never named WHO does the checking — LAW 23's disease wearing an invitation's costume (*a count is arrow-8, a sighting is arrow-9; the chain does not close on the eighth*).
+
+> ### ⛔ **RULED (mothership's mark, ratified into this ADR): a COUNT is a PROOF-TOKEN — our evidence the geometry is what we claim — NOT the world's mark. `{p,q}` and the vertex count DEMOTE TO THE RECORD (the card's business, where an id may live). The world's mark is WHAT THE CELLS DO, and it must be SHOWN, never asserted.**
+
+**The still-readable phenomenon, per geometry (this replaces "ring the vertex, count the cells"):**
+- **EUCLIDEAN {4,4}** — the SAME cell forever: an infinite identical grid, no vertex anywhere different from any other.
+- **HYPERBOLIC {4,5}** — the cells CROWD and SHRINK toward a rim they never reach (the Poincaré shrinking is itself the mark; "never arrives" is shown by the unbounded shrink).
+- **SPHERICAL {4,3}** — **FINITE: the tiling closes into finitely many cells**, the far side wrapping around as the one exterior cell. ⚠ **Not "comes back"** — that is a MOTION fact (see below); the STILL mark of spherical is FINITENESS (it closes; the other two do not).
+
+**ACCEPTANCE amends to his chair:** *with every caption covered, can he tell the three apart?* — infinite-identical vs infinite-shrinking vs finite-closing. The count is checkable-in-principle in the record; the geometry is READABLE off the phenomenon in the window.
+
+### 7.1 · THE ANTIPODAL-IDENTIFICATION MARK (W-4) — an INHABITANT's doubled image, never the descent prose
+
+The RP² window shipped a circle, a pinch, and the true descent sentence; Arman: *"a circle with the pinch marked, with some prose? i don't understand."* **The check is sound and the sentence is true, and the identification was TOLD, not SHOWN.** A bare tiling CANNOT exhibit its own identification — two identified cells look like two different cells ([[the-drawn-lattice-and-enclosure]]'s bare-room lesson, one dimension down).
+
+> ### ⛔ **RULED: the visible mark of a descent (antipodal identification) is an INHABITANT — an ASYMMETRIC marker drawn in one cell whose ANTIPODAL IMAGE is visible in the partner cell** (via the fixture's far-side-shows-through: the partner faint, at once). **The person sees the SAME asymmetric mark in two places and reads "these two cells are one" — the identification SHOWN.** The descent SENTENCE and the `−I ∈ Sym` check demote to the RECORD (our proof), like the count.
+> **LAW-24 CONTROL (binding): a NON-descended spherical window (the plain cube {4,3}, no identification) must show the inhabitant's mark ONCE — no antipodal double.** Descended ⟺ the mark appears in a cell AND its antipode; non-descended ⟺ once. That is the countable phenomenon (LAW 23: *how many places does my mark appear* — two vs one).
+> ⚠ **The window carries NONE of the class-body's own marks** — "the pinch" Arman saw is the cross-cap BODY's pinch-point bleeding through the frame; the window's mark is the inhabitant's double, nothing of the body's.
+
+### 7.2 · REGISTER — STILL vs PLACE: the METHOD survives; some EXPERIENCES do not fit a plate
+
+The mothership's second question (§1804): does §2's method survive if the register becomes a walkable PLACE, not a still plate?
+- ✔ **The METHOD is register-INDEPENDENT and survives intact** — the reflect-across-edge generator, the three conformal models, `cosh R`, and the descent check produce the same tiling whether it is drawn in a still or inhabited. A walkable tiling changes no DERIVATION.
+- ✔ **The CURVATURE distinction IS still-readable** (7's phenomena: infinite-identical / infinite-shrinking / finite-closing are visually distinct in a still — the reference's three panels are stills and read apart), and **the IDENTIFICATION is still-readable** (7.1's doubled inhabitant). **So rung 2's STILL window is sufficient for the reading, once the phenomenon replaces the caption.**
+- ⚠ **What a still CANNOT carry is the INHABITED experience** — *the world comes back* (spherical, learned by going around), *the rim never arrives experientially* (hyperbolic, learned by going toward it). Those are ADR 0004 Amdt-7's *"a place, not a picture"* one dimension down, and they belong to a **walkable surface register (rung 3+)**, not to rung 2's plate. ⇒ **The register choice for rung 2 is a design call (a still suffices for the still-readable marks); the inhabited experience is a later rung, and naming that boundary is this clause's job so no one asks a plate to show a walk.**
+
+---
+
 ## What the engine build must carry (rung 2's charter — the coder's, when the mothership charters it)
 
 **TARGET:** the explore-window renders a surface as its deck-tiling in the conformal model of its curvature (Poincaré / plane / stereographic), from its {p,q}.
 **INVARIANTS (each a witness, per §4/§5):** `cosh R = cot·cot` (corner angle `= 360/q` to 0.01°); dedup `(1−|c|²)`-scaled (tile count = closed-cycle count, not the tree count); interior valence set `= {q}`; the descent check `σ ∈ Sym ∧ free` (cube/octa ✔, tetra ✘); the rim addressed not walled; LOD stops not degrades.
-**ACCEPTANCE (at Arman's eye — the walk's standard):** he reads a surface's curvature off the vertex he can count, and a descended surface (RP² = hemicube) shows the antipodal identification arising, the local picture unchanged.
+**ACCEPTANCE (at Arman's eye — the walk's standard, per §7): WITH EVERY CAPTION COVERED,** he tells the three geometries apart off the phenomenon (infinite-identical · infinite-shrinking · finite-closing), and reads a descent off the inhabitant's DOUBLED mark (§7.1) with the non-descended control showing it SINGLE. ⛔ No ring, no number, no descent-prose does the work — those are the record. The `B-104` ring-and-caption is the anti-acceptance: it satisfied the old clause and he rejected it.
 ⚠ **What must be MEASURED in the engine (I do not rule it):** whether the engine can render the Poincaré tiling at interactive rates with the drift-tolerant dedup; whether the class-body's {p,q} is available to the window; whether stereographic far-side-shows-through composits correctly. Say the word and the measurement is chartered.
 
 ## Consequences
