@@ -441,41 +441,30 @@ export function routeWrittenRender(
   // PURE EDGE-JUNCTION renders ITSELF — plain ink on the born's FAITHFUL
   // positions (identify merges at real centroids; the shape rides UNTOUCHED,
   // never re-minted) with its junction classes girdered through the committed
-  // plain-render junction wire. STRATUM-AWARE, never blanket:
-  //   · PURE EDGE-JUNCTION — junction edges present AND every junction vertex
-  //     EXPLAINED by them (an endpoint of a junction edge). Measured at HEAD:
-  //     a >2-wedge seam's endpoint links ALWAYS read junction, so the literal
-  //     "junctionVertexIds === []" conjunction is structurally EMPTY — this
-  //     discriminator is the ruled intent (edge-shaped non-manifoldness,
-  //     girderable whole) made reachable;
-  //   · a junction vertex OFF the junction edges (a vertex-pinch, with or
-  //     without junction edges) falls through UNCHANGED to the class body,
-  //     whose refusal is the persistence bodiless card's door — no body is
-  //     drawn that the mathematics does not carry;
-  //   · manifold identify-borns and every other word fall through UNCHANGED
-  //     (no junction edges ⇒ no arm).
+  // plain-render junction wire. STRATUM-AWARE, never blanket.
+  // B-105 B2 (sanctioned frozen union, Arman in-terminal; the sweep's R-3,
+  // researcher-blessed 07-30): the discriminator is the CLASSIFIER'S OWN
+  // PINCH FLAG — girder exactly when NO vertex link is disconnected
+  // (`gate.pinchVertexIds === []`), never the endpoint-proxy it replaces
+  // ("every junction vertex is a junction-edge endpoint"), which misread the
+  // COINCIDENT case — a pinch vertex sitting AT a junction-edge endpoint —
+  // as a girdered body. A pinch is not girderable: it falls through to the
+  // class body, whose refusal is the bodiless card's door — no body is drawn
+  // that the mathematics does not carry. Manifold identify-borns and every
+  // other word fall through UNCHANGED (no junction edges ⇒ no arm).
   if (born.genealogy.operation === 'glue' || born.genealogy.operation === 'flip-glue') {
     const acquired = acquireFaithfulComplex(born, lineage);
     if (acquired) {
       const gate = readIdentificationGate(acquired.complex);
-      if (gate.junctionEdgeIds.length > 0) {
-        const junctionEnds = new Set<string>();
-        for (const edge of acquired.complex.edges) {
-          if (gate.junctionEdgeIds.includes(edge.id)) {
-            junctionEnds.add(edge.u);
-            junctionEnds.add(edge.v);
-          }
-        }
-        if (gate.junctionVertexIds.every((v) => junctionEnds.has(v))) {
-          const invariants = readFormInvariants(born, lineage);
-          return {
-            mode: 'plain',
-            shape: born,
-            invariants,
-            h1Label: h1LabelFromCertified(invariants),
-            junctionEdgeIds: gate.junctionEdgeIds,
-          };
-        }
+      if (gate.junctionEdgeIds.length > 0 && gate.pinchVertexIds.length === 0) {
+        const invariants = readFormInvariants(born, lineage);
+        return {
+          mode: 'plain',
+          shape: born,
+          invariants,
+          h1Label: h1LabelFromCertified(invariants),
+          junctionEdgeIds: gate.junctionEdgeIds,
+        };
       }
     }
   }

@@ -77,7 +77,7 @@ src/manuscript/specimenModel.ts         f4368d9f461af99b58c132157093127b06ae4572
 src/manuscript/standardBodies.ts        9ca766a2a39b7c2d915afd29d6ee91de60de124829aa9a1befd0860c685dc020
 src/manuscript/surfaceClassifier.ts     f2e96084220c3fc5c6c5726b74d9293350068334fb27c29d5e41e19848457974
 src/manuscript/worldModel.ts            092012c46886da4215b7922e921765f0b5454185670cadbb9c88ee85ba29cb43
-src/manuscript/writtenFormModel.ts      0b270df12a4f85b7eee42bfbaa8a036ea2efef13fa71ace28add2ac334f97d53
+src/manuscript/writtenFormModel.ts      5d91c2dfb0793544d5479fda574fe27cbe5f8c37ba22ed2959f5b7be4abdbf2e
 src/playground/bornFormRouting.ts       6f6530d67c5ecfb98a48f35f9df0e12b327ca570c2bdfc45cfe18f0106f411fa
 src/playground/customGluing.ts          2085fb7ef4199bda258d8c3cde23f3a186d16eb7f51d6d809061f72ee7c8ddb5
 src/playground/formInvariants.ts        1079458c3d4a3451cd2df376f62893271ff10014210492b96f411a7718717f96
