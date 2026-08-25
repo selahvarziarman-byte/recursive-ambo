@@ -19,12 +19,15 @@ storybook-static
 # (mothership ruling, 2026-08-21: the ignore yields for exactly these two paths.)
 # THE_SEAT_MAP is DOCTRINE, not mail — an untracked file is an unprotected file
 # (B-101 §3, ratified by Arman: "you are our sixth mothership. ratified. proceed.")
+# THE_SUBSTRATE_MAP is doctrine by the same law (B-106 A1): every seat reads it
+# at wake, so it is protected like the seat map — the ignore yields for it too.
 # `.handoff/*`, NOT `.handoff/` — same reason as instruments/* below: git will
 # not descend into an excluded directory, so the negations would silently fail.
 .handoff/*
 !.handoff/THE_BUILD.md
 !.handoff/THE_BUILD_REPORT.md
 !.handoff/THE_SEAT_MAP.md
+!.handoff/THE_SUBSTRATE_MAP.md
 
 # ── INSTRUMENTS ─────────────────────────────────────────────────────────────
 # "An office may build an INSTRUMENT to KNOW. It may not build the PRODUCT."
