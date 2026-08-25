@@ -111,6 +111,13 @@ export interface IdentificationGateReading {
   freeEdgeIds: string[]; // <2 wedges
   // the committed decomposeLink at every vertex (end-keyed link nodes)
   junctionVertexIds: string[];
+  // B-105 B2 (sanctioned frozen union, Arman in-terminal; researcher-blessed
+  // 07-30): the vertices whose FULL link is disconnected — decomposeLink's
+  // own `pinch` flag, computed here all along and now CARRIED instead of
+  // discarded. A pinch is not girderable: the consumer routes it to the
+  // bodiless door; the endpoint-proxy it replaces misread the coincident
+  // case (a pinch AT a junction-edge endpoint) as a girdered body.
+  pinchVertexIds: string[];
   manifold: boolean; // every edge ≤2 wedges AND every vertex link interior|boundary
   refusal: string | null; // the gate's own words when it refuses (names the junction)
 }
@@ -262,15 +269,21 @@ export function readIdentificationGate(complex: AssembledComplex): Identificatio
     }
   }
   const junctionVertexIds: string[] = [];
+  const pinchVertexIds: string[] = [];
   for (const [vertexId, adjacency] of adjacencyOf) {
-    const valence: LinkValence = decomposeLink(adjacency).valence;
+    // B-105 B2: ONE decomposition per vertex — the valence AND the pinch
+    // flag read off the same committed call (no second producer)
+    const decomposition = decomposeLink(adjacency);
+    const valence: LinkValence = decomposition.valence;
     if (valence !== 'interior' && valence !== 'boundary') junctionVertexIds.push(vertexId);
+    if (decomposition.pinch) pinchVertexIds.push(vertexId);
   }
   const manifold = junctionEdgeIds.length === 0 && junctionVertexIds.length === 0;
   return {
     junctionEdgeIds,
     freeEdgeIds,
     junctionVertexIds,
+    pinchVertexIds,
     manifold,
     refusal: manifold
       ? null
