@@ -1,63 +1,75 @@
 to: the mothership
 from: the coder
-clock (raw, verbatim): `Wed Aug 26 18:17 +0330 2026`
-**STAMP ECHO: `B-110` · MARKER ECHO: `A1`.**
-⛔ **§2 STOPPED AT 2b ON HER FORM CALL, by your own clause — with BOTH numbers measured so she can rule in one pass.** §3a · §3b · §4 landed and driven; §5 measured and blocked on one ruling; the sanctioned word union PAID and driven.
+clock (raw, verbatim): `Wed Aug 26 19:07 +0330 2026`
+**STAMP ECHO: `B-111` — COMPLETE. Nothing severed.**
+⛔ **AND THE LOCATE IS THE FINDING YOU ASKED FOR BEFORE ANYTHING IS CHARTERED: the frame is not stale, it is INVERTED. There is no refusal to discharge — the engine DRAWS B.4's curved forms today, with the euclidean transport.**
 
 ---
 
 ## TO THE MOTHERSHIP
 
-**1 · ⛔ §2 — THE MECHANISM IS ONE PRODUCER, AND THE CURE COLLIDES WITH HER OWN SEAL. Both sides measured; the choice is hers.**
-- **THE MECHANISM (2a), answered whole:** ONE producer — `ManuscriptView:1963-1980`, an effect on `selected`. **Not the double-click route: EVERY route**, because the effect keys on the state, and eleven call sites set it (the pick, the born/enact/lift returns). It is **an INSTANT JUMP, not a fly and not an ease** (`camera.position.copy` + `lookAt` + `controls.target.copy` — no interpolation anywhere in the rig). Two directions: select → fit-to-selection after a 420 ms beat; **deselect → an 'exact' reset to the composed default** (so dismissing teleports too).
-- **WHY IT READS AS BLANK, measured on the reference zoo:** after selecting the torus, **9 of the page's 12 form labels left the viewport** (one landed at x = 154406) — and **the selected form's OWN label hides while selected**, so the single thing left in frame carried no name. *An unnamed outline in an empty field.* Her sentence was exact.
-- ⛔ **AND THE CURE IS NOT FREE — this is the stop.** I built "the camera holds" and drove it: **the page stays whole (all 12 forms in frame) and the selected specimen reads ~0.11 of the frame** — legible at my eye, its own lift doing the work. **But her C1 seal pins ≥ 0.22** (`diagnose-deficit-app` §E-PLATE, "the designer measured ~50px ≈ 0.055 pre-cure"). **Holding and her threshold cannot both hold.** At her ≥0.22 framing, the page empties — that is the 9-of-12 above. ⇒ **The choice among her three forms (holds · eases · frames-without-flying) is HERS, and here are the two numbers she needs: HOLD = 12/12 forms in frame, specimen ~0.11 · SEALED FIT = 3/12 in frame, specimen ≥0.22.**
-- **The cut is reverted and the finding is recorded in place** (the effect now carries the whole measurement in its comment). **Re-landing her ruling is one edit: drop the two request bumps, keep the bounds measurement — the dock's `Fit Selected` needs it, and that button is where the framing capability already lives.**
+**1 · ⛔⛔ THE ROUTING LOCATE — measured, and it changes what `B-112` is.** You asked three questions. All three answer differently than the frame assumes.
 
-**2 · §5 — THE APP-LEG FOLD IS MEASURED AND BLOCKED ON ONE RULING, because the naive fold installs the disease it cures.** I ran all 12: **6 pass, 6 red**, and the reds are three different kinds:
-- **3 CANNOT PASS HEADLESS — they are DRIVES, not witnesses** (`diagnose-deficit-app` launches a python driver; `diagnose-d8-shelf-route` and `diagnose-winding-route` need the running app: *"the cube parcel places (file door + drag)"*). ⇒ **Folding these into the main sweep would install 3 PERMANENT reds — exactly "a red nobody owns trains its readers to skip it".**
-- **1 STALE-BY-R1, mine, cheap** (`diagnose-r2-angle-import`): it pins the pre-R1 45·45·90 splits and the 45·45·60·60·90 wedge; post-R1 they measure 60·60·60 and five 60s — the same stale class I recut in `diagnose-open-lift`. **Not fixed here, per your §5.**
-- **2 REAL ASSERTIONS needing investigation** (`diagnose-d12b-carried-names`, `diagnose-d13-the-door-speaks` — id-as-label / `unnamed` claims). **Reported, not fixed, per your §5.**
-- ⚠ **AND A FINDING THE FOLD MUST ABSORB:** running `diagnose-deficit-app` **OVERWROTE a tracked evidence frame** (`scripts/app-leg/gpu_t3_window.png`, 96920 → 80025 bytes). I restored it. **A leg that dirties the tree every time it fires cannot live in a sweep.**
-- ⇒ **My recommendation, sharpened by the measurement: fold the 9 HEADLESS legs (baseline becomes 114 + 9 = 123 files @ 1 accepted), and name the 3 driver legs a DRIVE family that runs with the app** — they are not witnesses in the sweep's sense. **One ruling and I land it.**
+**(a) `p ← g(p), v ← R·v` — COMMITTED, but typed E³-only.** The transport is live at `apertureModel:106-114` (`applyPoint` / `applyVector`). ⚠ **But `DeckTransform` is TWELVE FLOATS — a 3×3 linear part plus a translation — over `V3` points.** The *algebra* survives a model change; **the TYPE does not.** §8's field 3 (the pairing isometries as in-model maps) has no type to land in: a Minkowski isometry is 4×4 and does not fit `DeckTransform`.
 
-**3 · THE WORD UNION IS PAID (marker A1 §1) — and I did ask him directly, as you invited.** He confirmed in-terminal on the priced proposal before I touched the file; the record now has both his word to you and his word to this seat. **The acceptance is PARITY, not capability:** `classifyForm` refused the loaded copy and now reads **"genus 1"**, the same as native; combine's precondition threw and now refines to 2 faces; `acquireComplex` was NULL and is ACQUIRED — **and `identify` throws the SAME committed single-face-quotient refusal on both, which is the point: the loaded form is indistinguishable from the form the person saved, refusals included.** The collapse arm lands; a no-ancestor file loads byte-as-before; a tampered word falls back to the ns-copy without throwing and ends at its honest null. Re-seal `bedc75cb→9f68c7d2`, positive control reproduced, **edit + re-seal alone in one commit** (`cb82950`), witness `§6` in a separate one.
+**(b) THE DOOR IS NOT AT `apertureModel:446` — that line is inside `describeCandidate` (the corner-name reach).** The citation, which 0004 carries and §8 repeats, is stale.
 
-**4 · A MARK WITH NO ROUTE, caught before it shipped (§4):** my first siting of her leaning-residue word went into `ObjectInspector` — **exported and NEVER MOUNTED** (zero mount sites in `src`, measured). Moved to the panel the person actually reads and driven. ★ *The law caught me one layer earlier than usual: not "reachable but unusable" — literally unrendered.*
+**(c) ⛔ AND THE REFUSAL IS NOT THERE AT ALL — it was DELETED, by a ratified cut, in July.** `buildAperture`'s own comment says it: *"B.0 THE HONEST DOOR: the kind!=='E3' refusal is DELETED — a sound form draws regardless of k."* And it went further than the code: **`ApertureGeometry.kind` is `'E3' | 'cone'` — S³/H³ were removed from the TYPE**, with the ruling recorded there (*"the door no longer names 'S³'/'H³'/'mixed' geometries the substrate cannot hold"*, LAW 15). ⇒ **The classifier `n<4 ⇒ S³ · n>4 ⇒ H³` that ADR 0026 §0 quotes, and the refusal your frame rests on, were BOTH retired by B.0.** **What still says otherwise is the file's HEADER COMMENT (lines 23-28) — and that is what the ADR quotes and what your desk check read.** *A comment is not the code; this is the guard-that-was-never-written law, one register up.*
 
-**5 · Her §3b flag, driven and reported (not cured):** **the two arrows do NOT fight** — `←` and `→` hold distinct roles at the eye and read correctly. **But the card's width still wraps each pair, so the `→` lands at a line break.** Her original complaint's shape survives in a smaller form; the bracket fallback is hers to call, and I did not take it.
+**⇒ THE CONSEQUENCE, MEASURED rather than reasoned — I fed B.4's Seifert–Weber domain to the door at HEAD:**
+```
+geometryFromTower  → kind "cone"
+label              → "Euclidean cone-manifold — n=[5,5,5,5,5,5] · cone edges: 6 × 450°"
+buildAperture      → ok: TRUE · a deck of 6 doors
+B.4's own checker  → the euclidean realization misses 2π by 222.8253° at EVERY edge
+```
+**The engine does not refuse the hyperbolic form. It builds a deck and would render it — realized in the wrong geometry, and it prints a CONE ANGLE OF 450°, more than a full turn.** ⇒ ★ **So `B-112` is not "open a door that is refusing". It is: the door is OPEN and pointed at the euclidean shadow of a form whose true realization B.4 just sealed.** ⚠ **I am not calling it a lie: the label is honest about what it built. But it is 0004 §3's exact hazard arriving from the other side, and the person is never told that the manifold they built is not the manifold being drawn.**
 
-**6 · Also committed, attributed:** the researcher's own ADR 0026 Status edit (Proposed → Accepted) found uncommitted in the tree — an uncommitted edit is an unprotected edit.
+**⇒ WHAT §8 CAN TUNE TO MY SEAM (the researcher's offer, answered):** of §8's three fields, **my realizer already emits two, in the ruled shape** — the MODEL TAG (`CurvedRealization.geometry`, the sealed §2 self-mark, carried and never re-inferred) and the FACE NORMALS IN THAT MODEL (`faceCovectors`, exactly the instrument's `(sinh d, cosh d·û)` / `(sin d, cos d·û)`, **keyed by CARRIED face id** — §8.2's trap routed around by construction). **The third — the pairing isometries as in-model maps — is NOT emitted, and the consumer's type is the blocker named in (a).** *That is the seam: §8's fields 1-2 land today; field 3 needs a model-aware transport type before it has anywhere to go.*
+
+**2 · §2 THE FOLD — landed, and the count is not the one either of us predicted: 7 sweep + 5 drive, baseline 121 @ 1** (the accepted `dual-inspection` alone; 485s headless). **`diagnose-d12b-carried-names` and `diagnose-d13-the-door-speaks` are not hybrids that skip when no app is up — they SPAWN THEIR OWN DEV SERVER** (`npm run dev --port 5199`) and drive it through playwright. A sweep that launches dev servers is not a headless sweep, so they join the drive family by your own rule. **Say 121 @ 1, not 123 @ 3.**
+- **Classified BY THE LEG'S OWN DECLARATION** — each drive leg carries a `DRIVE FAMILY` banner and the sweep set is `grep -L "DRIVE FAMILY"`. ⛔ **The files do NOT move: 40 committed reports cite `diagnose-deficit-app` by path, and a moved file breaks a citation exactly as an overwritten plate does.** A directory split would have cured one disease by causing another.
+- **Your addition is written where the family is named** (each banner + `CLAUDE.md` §6): **the drive family runs as part of any build whose READING touches its subject** — the fifth witness is the trigger.
+
+**3 · THE DEFECTIVE LEG — fixed, and the defect was THREE plates, not one.** `deficit_app_driver.py` screenshotted straight onto `gpu_t3_window.png`, `gpu_cone_window.png` AND `gpu_prism_window.png` — all tracked, **all cited by name in committed reports as evidence of specific runs** (*"the plate is scripts/app-leg/gpu_cone_window.png"*; *"the prism plate, my own eye"*). ⇒ **Every run silently replaced the plate a report points at: not merely a dirty tree — the record's own citations falsified.** All five capture sites across three drivers now write into an ignored `_frames/` sibling. **Restoring the frame was not the fix; this is.**
+
+**4 · §3's TWO REAL ASSERTIONS — INVESTIGATED, NOT FIXED, and the answer to your hypothesis is: FOSSIL, provable two ways.** Your instinct said *"a red there may be a survivor rather than a fossil"*. Measured:
+- **d12b's `e1`/`e2`/`e3` require the DISEASE TO BE PRESENT as a precondition** (`loopManufactured && …reads 'unnamed'`), and their own measurements print `loopManufactured: false`, `zooManufactured: false`. **They are red because the substrate improved.**
+- **The law they pin was DELIBERATELY RETIRED:** `cornerDisplayName`'s own comment — *"THE TERMINAL CUT (B-2026-08-23-A): the id-as-label scaffold clause is DEAD — every producer it stood for has stopped (the ruled census, measured at the tree: eleven sites mint TRUE ABSENCE)"*.
+- **And the census that justified the retirement STILL HOLDS at HEAD, one arc later — I swept every live `createDefaultVertexData` call: every one passes `''` or a REAL name; not one passes an id.**
+- ⚠ **The honest edge, and it is worth your eye: the protection is genuinely gone.** An id-as-label packet now displays as a NAME (measured: it reads `V:A·V:B·V:C`). The terminal cut accepted that by construction *because no producer remains* — so **a future mint that regressed to id-as-label would be displayed, silently.** The census is the only thing standing there now.
+- **d13's `f1` and d12b's `f1` are a different, milder class: stale PINS whose GUARD IS INTACT** (the render guard still stands at `ManuscriptView:3032-3053`; a later ratified rider added the `onRefusal` collector, so the pin's exact string moved under it).
+⇒ **Nothing fixed, per your ⛔. If you want them recut I will; if the retired protection deserves reinstating, that is the designer's and yours.**
+
+**5 · §3's STALE PINS — recut and green** (`06c0b77`), **and the recut adds the discriminator the old pin lacked:** a stamped `60·60·60` would print identically today, so leg 1 now also asserts each owned angle **agrees with an independent acos over the shape's own positions** — a test a stamp cannot pass once the positions move under it.
+
+**6 · Also committed, attributed: the researcher's ADR 0026 §8** (`a9d33ae`), found uncommitted in the tree — the routing's definitional half, and the document `B-112` would rest on.
 
 ---
 
-## 1 · WHAT I SAW (drove the app — 5174; 5173 untouched)
-- **§2's blank, reproduced exactly** — and sharper than the report: selecting the torus framed a region where **the torus is not**, with 9/12 labels gone and the selected label hidden. Then, with the cure live, the page held whole and the specimen read at ~0.11.
-- **§3a at the eye:** `•unnamed ← four unnamed roots` (was four handle-suffixed tokens).
-- **§3b at the eye:** `—a ← unnamed·unnamed → unnamed·unnamed`, wrapping after the arrow.
-- **§4 at the eye:** her sentence on the `pyritohedral-icosahedron` card; **selecting a residue tetrahedron on the same shape shows nothing** (the negative control, live).
-- **The union's acceptance** measured on the modules, not the eye — the person-facing half is that a saved form's card keeps its type; the page route for it is the shelf, unchanged.
+## 1 · WHAT I SAW
+Nothing driven this cycle — B-111 is a fold, a recut, two investigations and a locate; no person-facing change was made. (The drive family exists precisely so that a build whose reading touches its subject runs it; this build's reading touched none.)
 
 ## 2 · WHAT I RAN
 ```
-1  suite 114 @ 1 + tsc -b exit 0 at HEAD.
-2  freeze: ONE sanctioned spend (snapshot.ts — Arman's word to you AND to
-   this seat in-terminal). checkEngineFreeze ok · 46 · drifted [] · unlisted [].
-3  re-seal RECOMPUTED bedc75cb→9f68c7d2; POSITIVE CONTROL reproduced at the
-   base before the edit.
-4  the app-leg family run whole: 6 pass · 6 red, classified in §2 above.
-5  THE READING — §1.
+1  FOLDED SWEEP 121 files @ 1 (dual-inspection, accepted) + tsc -b exit 0.
+2  freeze: nothing frozen touched, no spend this cycle.
+3  no re-seal owed.
+4  the app-leg family run whole (12 legs) to classify it; every live
+   createDefaultVertexData call swept for id-copies; B.4's Seifert–Weber
+   domain fed to buildAperture at HEAD (the locate's decisive measurement).
+5  THE READING — not applicable; nothing person-facing changed.
 ```
 
 ## 3 · WHAT I CHANGED
-- **`src/playground/snapshot.ts` + the manifest** (`cb82950`, alone) — the word union.
-- **`scripts/diagnose-snapshot.cjs`** (`34c1759`) — §6's four legs.
-- **`src/manuscript/ManuscriptView.tsx`** — §3a (the count form for concept rows), §3b (the run separator), and §2's measurement recorded in place (behavior unchanged).
-- **`src/components/Panels.tsx`** — §4, sited on the live panel by the substrate's own mark.
-- **`docs/adr/0026-…`** (`569c98a`) — the researcher's Status edit, attributed.
+- **`scripts/app-leg/` × 5 legs** — the `DRIVE FAMILY` banners (the classification, in the leg).
+- **`scripts/app-leg/*_driver.py` × 3** — all five capture sites re-routed to the ignored `_frames/`.
+- **`.gitignore`** — `scripts/app-leg/_frames/`.
+- **`CLAUDE.md` §6** — the folded sweep (121), the DRIVE family with its trigger, the law *a witness that mutates tracked state is not a witness*, and the spend record grown by the two `snapshot.ts` spends.
+- **`scripts/app-leg/diagnose-r2-angle-import.cjs`** — the R1 recut + its new discriminator.
+- **`docs/adr/0026-…` §8** — the researcher's, attributed.
 
-## 4 · WHAT I COULD NOT REACH / SEVERED
-- **§2's cure — STOPPED on her form call** (§1 above). Nothing landed; the mechanism is recorded where the next reader will meet it.
-- **§5's fold — blocked on one ruling** (§2 above); nothing folded, nothing fixed.
-- **`diagnose-r2-angle-import`'s stale pins** — named, not fixed, per your §5.
-- **The aperture routing · P5's gesture** — not started, as ordered.
+## 4 · WHAT I COULD NOT REACH / DID NOT DO
+- **The routing BUILD** — not mine, and now with a changed premise (§1).
+- **d12b/d13** — investigated, not fixed, as ordered.
+- **The camera's form · the bracket fallback · P5** — hers and later.
