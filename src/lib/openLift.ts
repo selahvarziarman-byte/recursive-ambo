@@ -54,6 +54,12 @@ import { buildIncidenceTraceRegistry, decomposeLink } from './incidenceTraceRegi
 
 const OPEN_LIFT_OPERATION: OperationKind = 'open-lift';
 
+// R3's ε — on the MEASURED apex angle (the seal discipline: named, on the
+// angle, never on positions), far above the float floor (~1e-15 on the
+// relaxed fan) and far below any real irregularity (the pre-R1 fan's spread
+// was 45° — the gate's LAW-24 control in the witness)
+export const N5_REGULAR_FAN_EPSILON_RAD = 1e-6;
+
 export interface OpenLift {
   shape: Shape; // the bounded base — the rim is FREE (no pairing exists anywhere on it)
   center: VertexId; // the X_K midpoint the star was read at
@@ -129,6 +135,47 @@ export function openLift(source: Shape, centerId: VertexId, targetCellId: string
       `openLift: the star of "${centerId}" on cell "${targetCellId}" is not a disk — link valence '${gate.valence}' (required 'interior'); no lift`,
     );
   }
+
+  // (4b) THE n=5 REGULAR-FAN GATE (R3 — the Sovereign's ruling verbatim,
+  // 2026-08-14: "for n=5, we should restrict the lifted fan to be regular
+  // (from the icosa itself)"; the researcher's operational form: all apex
+  // corner angles equal within ε, refusing by NAMING the actual angles).
+  // Point 3 of the same ruling binds the scope: IRREGULAR FANS STAY ALLOWED
+  // AT EVERY OTHER n — the restriction is only on the one case being
+  // canonized, so the gate fires at exactly starFaces.length === 5.
+  // NEVER before R1: the only n=5 fan was the pyritohedral 60·60·45·45·90
+  // and this gate would have refused our own door-3 demonstration; R1
+  // relaxed the seed, so the icosahedron's own fans measure 5 × 60° and
+  // pass. The angles are MEASURED here from the carried positions — an
+  // ADMISSION measurement at the earliest door (a limit found at pick-time
+  // costs one pick), never an atom mint: WALL 3's carriage below still
+  // carries the owned atoms verbatim.
+  if (starFaces.length === 5) {
+    const center = source.vertices[centerId].position;
+    const apexAngles = starFaces.map((face) => {
+      const cycle = face.vertexIds;
+      const k = cycle.indexOf(centerId);
+      const prev = source.vertices[cycle[(k - 1 + cycle.length) % cycle.length]].position;
+      const next = source.vertices[cycle[(k + 1) % cycle.length]].position;
+      const e1 = [prev[0] - center[0], prev[1] - center[1], prev[2] - center[2]];
+      const e2 = [next[0] - center[0], next[1] - center[1], next[2] - center[2]];
+      const n1 = Math.hypot(e1[0], e1[1], e1[2]);
+      const n2 = Math.hypot(e2[0], e2[1], e2[2]);
+      const cos = (e1[0] * e2[0] + e1[1] * e2[1] + e1[2] * e2[2]) / (n1 * n2);
+      return Math.acos(Math.max(-1, Math.min(1, cos)));
+    });
+    const spread = Math.max(...apexAngles) - Math.min(...apexAngles);
+    if (spread > N5_REGULAR_FAN_EPSILON_RAD) {
+      const degs = apexAngles
+        .map((a) => ((a * 180) / Math.PI).toFixed(2))
+        .sort((a, b) => Number(a) - Number(b))
+        .join('°, ');
+      throw new Error(
+        `openLift: the n=5 fan at "${centerId}" is not regular — the ruled gate admits only the icosahedron's own fan; the apex angles measure ${degs}° (spread ${((spread * 180) / Math.PI).toFixed(2)}°, ε = 1e-6 rad); no lift`,
+      );
+    }
+  }
+
   const rimVertexIds = [...adjacency.keys()].sort((a, b) => a.localeCompare(b));
 
   // (5) THE CARRIAGE — verbatim, closure-FREE. Vertices by reference (createdBy

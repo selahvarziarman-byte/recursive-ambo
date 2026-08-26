@@ -119,12 +119,21 @@ console.log('\n— (c) EXIT B: LEAVE BOUNDED, chosen not defaulted —');
 const exitB = buildFormDomain(fan, [], 'd2-exitB', 'the chosen bounded chamber');
 const cB = exitB.complex.counts;
 const gateB = A.buildAperture(exitB, { base: lift.shape });
-check('(c) EXIT B (explicit 0 pairs) reproduces the sealed room: sound, v12 e26 f20 c5 · doors 0 · walls 15 · caption still measured 1 × 300°',
+// R3d RECUT (B-109; the leg was stale at HEAD and OWNERLESS — a red nobody
+// owns trains its readers to skip it). What actually moved: the FREE-RIM
+// census. The sealed room is unchanged (counts · soundness · zero deck · the
+// measured 1 × 300° cone caption all reproduce exactly), but "walls 15"
+// conflated two different readings — the BOUNDARY's face classes (15, the
+// gate's own label says so) with readCellSurface's PER-CELL wall count (7 on
+// the drawn cell; the fan is 5 cells). Both are pinned now, each named.
+const surfaceB = A.readCellSurface(exitB, true);
+check("(c) EXIT B (explicit 0 pairs) reproduces the sealed room: sound · v12 e26 f20 c5 · doors 0 · the caption still measures 1 × 300° · the BOUNDARY carries 15 face classes (the gate's own label) and the drawn cell's surface carries 7 walls (per-cell — the fan is 5 cells; the two were conflated in the pre-R3d pin)",
   exitB.tower.sound === true && cB.v === 12 && cB.e === 26 && cB.f === 20 && cB.c === 5 &&
     gateB.ok === true && gateB.deck.length === 0 &&
     gateB.geometry.label.includes('cone edges (measured): 1 × 300°') &&
-    A.readCellSurface(exitB, true).wallCount === 15,
-  `${JSON.stringify(cB)} · deck ${gateB.ok ? gateB.deck.length : '—'}`);
+    gateB.geometry.label.includes('∂ carries 15 face class(es)') &&
+    surfaceB.wallCount === 7,
+  `${JSON.stringify(cB)} · deck ${gateB.ok ? gateB.deck.length : '—'} · walls/cell ${surfaceB.wallCount}`);
 
 // ---- (d) EXIT A seats a deck — PRINTED, not sealed -------------------------
 console.log('\n— (d) EXIT A: one boundary pair, counts PRINTED (the engineer seals nothing here) —');
@@ -168,7 +177,13 @@ console.log('\n— (d) EXIT A: one boundary pair, counts PRINTED (the engineer s
     try {
       A.buildPersonDomainVerdict(fan, [{ faceA: found.fa, faceB: found.fb, candidateKey: found.key }], 'd2-rev', 'rev');
     } catch (e) {
-      named = /REVERSING/.test(String(e.message)) && /refused by name/.test(String(e.message));
+      // R3d RECUT: the refusal is named — but its ruled WORDING is the
+      // committed ladder's own ("a later chapter — pick a preserving map,
+      // or leave the pair open"), never the phrase "refused by name" the
+      // stale pin looked for. Pin the sentence the person actually reads.
+      named = /REVERSING/.test(String(e.message)) &&
+        /a later chapter/.test(String(e.message)) &&
+        /pick a preserving map, or leave the pair open/.test(String(e.message));
     }
   }
   check('(f2) a REVERSING pick on the multi-cell volume is refused BY NAME (never a crash into the committed wall)', Boolean(found) && named,

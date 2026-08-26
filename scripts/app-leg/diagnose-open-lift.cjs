@@ -123,9 +123,12 @@ const lift = openLift(terrain, mid, coreCell.id);
 const clean = assess(lift, terrain);
 check('clean · 5-triangle star extracted', lift.shape.faces.length === 5 && lift.rimVertexIds.length === 5);
 check('clean · owned Σθ at centre = 300° (carried, not re-derived)', clean.angles, `Σ=${Math.round(DEG(sumAtCenter(lift.shape, lift.center)))}°`);
-// ★ R2's receipt (2026-08-14): the wedge PARTS are the TRUE measured angles
-// [60,60,45,45,90] (2 ring triangles + the touched square's halves + the
-// avoided square's half) — no longer the stamped uniform 60s; Σ holds 300°.
+// ★ R2's receipt (2026-08-14), RECUT AT R1 (B-107/B-109): the wedge parts
+// are the TRUE measured angles — pre-R1 they read [45,45,60,60,90] (the
+// diagonalized cuboctahedron's own metric, measured never stamped); R1
+// relaxed the seed to t = 1/φ, so the SAME measurement now reads the
+// regular icosahedron's [60,60,60,60,60]. Σ holds 300° through both — the
+// sum was never the discriminator; the parts are.
 {
   const wedgeDegs = lift.shape.faces
     .map((face) => {
@@ -136,7 +139,46 @@ check('clean · owned Σθ at centre = 300° (carried, not re-derived)', clean.a
       return Math.round(DEG(acc));
     })
     .sort((a, b) => a - b);
-  check('clean · the wedge parts are TRUE: [45,45,60,60,90] (R2 — measured, never stamped)', JSON.stringify(wedgeDegs) === JSON.stringify([45, 45, 60, 60, 90]), `[${wedgeDegs.join(',')}]`);
+  check('clean · the wedge parts are TRUE: [60,60,60,60,60] (R2 measured + R1 relaxed — the regular fan, from the icosa itself)', JSON.stringify(wedgeDegs) === JSON.stringify([60, 60, 60, 60, 60]), `[${wedgeDegs.join(',')}]`);
+}
+// ★ R3 — THE n=5 REGULAR-FAN GATE (B-109; the Sovereign's 2026-08-14 ruling):
+// the demonstration that used to be refused now PASSES (the clean lift above
+// IS the pass side — the gate measured 5 equal apex angles and admitted),
+// and the LAW-24 control REFUSES the pre-R1 fan BY NAMING the actual angles.
+{
+  const { N5_REGULAR_FAN_EPSILON_RAD } = req('src/lib/openLift.ts');
+  // the pass side, made explicit: the admitted fan's measured apex spread
+  const center = terrain.vertices[mid].position;
+  const apex = lift.shape.faces.map((face) => {
+    const cyc = face.vertexIds;
+    const k = cyc.indexOf(mid);
+    const prev = terrain.vertices[cyc[(k - 1 + 3) % 3]].position;
+    const next = terrain.vertices[cyc[(k + 1) % 3]].position;
+    const e1 = prev.map((x, i) => x - center[i]);
+    const e2 = next.map((x, i) => x - center[i]);
+    return Math.acos(Math.max(-1, Math.min(1, (e1[0] * e2[0] + e1[1] * e2[1] + e1[2] * e2[2]) / (Math.hypot(...e1) * Math.hypot(...e2)))));
+  });
+  const spread = Math.max(...apex) - Math.min(...apex);
+  check('R3 · the gate\'s PASS side: the relaxed fan\'s five apex angles are equal within ε (the demonstration that used to refuse itself now passes)',
+    spread <= N5_REGULAR_FAN_EPSILON_RAD, `spread ${spread.toExponential(2)} rad, ε ${N5_REGULAR_FAN_EPSILON_RAD}`);
+  // the LAW-24 control: the PRE-R1 fan — the same terrain with the icosa
+  // cell's positions swapped back to the parent ambo's (t = 1)
+  const preR1 = JSON.parse(JSON.stringify(terrain));
+  for (const vId of coreCell.vertexIds) preR1.vertices[vId].position = [...cube1.vertices[vId].position];
+  let refusal = null;
+  try {
+    openLift(preR1, mid, coreCell.id);
+  } catch (err) {
+    refusal = String(err.message);
+  }
+  check('R3 ⛔ the LAW-24 control: the pre-R1 irregular fan (45·45·60·60·90) is REFUSED, and the refusal NAMES the actual angles',
+    refusal !== null && refusal.includes('not regular') && refusal.includes('45.00') && refusal.includes('90.00') && refusal.includes('no lift'),
+    refusal ? refusal.slice(0, 120) : 'NO REFUSAL');
+  // point 3 of the ruling, structural: the gate fires at n=5 ONLY —
+  // irregular fans stay allowed at every other n
+  const gateSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/openLift.ts'), 'utf8');
+  check('R3 · point 3 held: the gate is scoped to starFaces.length === 5 exactly (irregular fans stay allowed at every other n, the ruling\'s own words in the source)',
+    gateSrc.includes('starFaces.length === 5') && gateSrc.includes('IRREGULAR FANS STAY ALLOWED'));
 }
 check("clean · birth-name 'open-lift', single-parent, non-consuming, nothing minted", clean.name);
 check('clean · the rim is FREE (V=6/E=10/F=5, nothing identified)', clean.rim, `V=${Object.keys(lift.shape.vertices).length} E=${lift.shape.edges.length} F=${lift.shape.faces.length}`);
