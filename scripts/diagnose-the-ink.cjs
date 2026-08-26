@@ -534,10 +534,20 @@ if (!headModelSrc.includes('depth[idx] = travel + best.t;')) {
   // again. This branch pins the ink's MARKERS, which must never regress:
   // the depth buffer present, the tracer fade extinct — in HEAD and working.
   const workModelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
-  check('★ CLAUSE 4 — POST-COMMIT: HEAD and the working apertureModel both carry the ink\'s markers — the depth buffer present, the tracer fade (Math.pow(craft.echoFade…)) extinct in both (the line-exact diff proof ran pre-commit and retired with the ink\'s commit; later sanctioned mandates may add, never regress)',
-    headModelSrc.includes('depth[idx] = travel + best.t;') &&
+  // ⚠ B-113 §3 — THE MARKER IS THE LAW, NOT THE SPELLING. The ink's law is
+  // that `depth` carries DISTANCE and `value` carries darkness; the marker
+  // pinned it by the exact line `depth[idx] = travel + best.t;`. B-113 gave
+  // the render a MODEL, and the last leg is now measured in the model's own
+  // metre (`legLength(best.t, p, hitPoint)`, which returns `best.t` itself at
+  // E³) — the same fact, said where a curved room needs it said. Both
+  // spellings satisfy the marker; a `value`-side fade would still fail it.
+  const carriesDepthMarker = (src) =>
+    src.includes('depth[idx] = travel + best.t;') ||
+    src.includes('depth[idx] = travel + legLength(best.t, p, hitPoint);');
+  check('★ CLAUSE 4 — POST-COMMIT: HEAD and the working apertureModel both carry the ink\'s markers — the depth buffer present (the euclidean spelling `travel + best.t` or B-113\'s model-metre `travel + legLength(best.t, p, hitPoint)`, which IS `best.t` at E³), the tracer fade (Math.pow(craft.echoFade…)) extinct in both (the line-exact diff proof ran pre-commit and retired with the ink\'s commit; later sanctioned mandates may add, never regress)',
+    carriesDepthMarker(headModelSrc) &&
     !headModelSrc.includes('Math.pow(craft.echoFade') &&
-    workModelSrc.includes('depth[idx] = travel + best.t;') &&
+    carriesDepthMarker(workModelSrc) &&
     !stripComments(workModelSrc).includes('Math.pow(craft.echoFade'));
   note('HEAD carries the ink re-cut — the line-exact branch retired with its commit; the markers stand');
 }
@@ -666,6 +676,13 @@ const inkAllowed = new Set([
   // (§E-GPU / §E-GPU-SUBSTRATE).
   'src/manuscript/exploreTraceWorker.ts',
   'src/manuscript/exploreWindowModel.ts',
+  // B-113 §3 (2026-08-26, mothership STAMP B-113): THE RENDER GETS THE
+  // MODEL. The projective chart + the earned realization seal live here
+  // (the transport a sealed room is drawn through); apertureModel
+  // consumes them and the view passes gate.model to the tracer.
+  // NOT_FROZEN (classified 4a7ac81). Ratified by
+  // scripts/diagnose-the-noncube-domain.cjs §9.
+  'src/lib/noncubeDomain.ts',
 ]);
 const inkMoved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

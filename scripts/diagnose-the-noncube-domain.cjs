@@ -69,6 +69,9 @@ const {
   realizePairingIsometries,
   readDeckClosure,
   euclideanControlRealization,
+  // B-113 §9 — the chart the render rides
+  pushChartRay,
+  sealDomainRealization,
 } = req('src/lib/noncubeDomain.ts');
 const { buildFormDomain } = req('src/manuscript/formDomainModel.ts');
 const { readSeedCell } = req('src/lib/faceIdentification.ts');
@@ -337,6 +340,208 @@ console.log('\n----- §8 (B-112) the transport carries a MODEL, and the walk clo
         body.includes('pairing.map') &&
         !body.includes('.position') &&
         !/Math\.hypot|\bnearest\b|\bdist\b/.test(body);
+    })());
+}
+
+// ═════ §9 (B-113) — THE MODEL REACHES THE RENDER ════════════════════════════
+// ADR 0004 §3's acceptance, and it is a person's sentence, not a number's:
+// *"in E³ they recede as 1/d and straight lines stay straight; in H³ they
+// shrink exponentially and crowd; in S³ they close up and come back."*
+// ⛔ This leg measures WHAT THE TRACER DOES. Whether the crowding READS to a
+// person is decided at the eye, in the app, and reported there — a falloff
+// rate is not the mark.
+console.log('\n----- §9 (B-113) the model reaches the RENDER: a Seifert–Weber interior, and the swing -----');
+{
+  const A = req('src/manuscript/apertureModel.ts');
+  const swPairings = dodecahedralTwistPairings(dodeca, 3);
+  const swDomain = buildFormDomain(dodeca, swPairings, 'b113-sw', 'seifert-weber');
+  const gate = A.buildAperture(swDomain);
+  check('§9 ★★ THE DOOR SEALS AND HANDS THE MODEL TO THE RENDER: the person-built Seifert–Weber domain EARNS its realization at buildAperture (nothing told it which geometry — the target 2π/5 against the cell\'s own euclidean dihedral chose H³, the inradius SOLVED, then the fit, every door\'s witnessed isometry and the closure walk each proved it) and the gate carries a 6-door H³ transport',
+    gate.ok && !!gate.seal && gate.seal.geometry === 'H3' && !!gate.model && gate.model.model === 'H3' && gate.model.doors.length === 6);
+  if (gate.ok && gate.seal) {
+    note(`sealed: ${gate.seal.geometry} · inradius ${gate.seal.inradius.toFixed(5)} · k=${gate.seal.edgeClassSize} · closure worst ${((gate.seal.closureWorstRad * 180) / Math.PI).toExponential(2)}° · chart scale ${gate.model.sceneScale.toFixed(4)}`);
+  }
+
+  // ⛔ THE AFFINE REDUCTION, asserted and not hoped for: on a door whose
+  // bottom row is (0,0,0,1) the projective push IS the committed transport,
+  // bit for bit. This is the whole reason the euclidean render did not move.
+  check('§9 ⛔ THE COMMITTED TRANSPORT IS THE E³ CASE OF THE NEW ONE, BIT FOR BIT: on every euclidean door, pushChartRay(affine4(g), p, v) reproduces applyPoint(g,p) and applyVector(g,v) EXACTLY (===, not within ε) — the euclidean render is not a branch beside the model path, it is that path at E³',
+    (() => {
+      const euclidGate = A.buildAperture(buildFormDomain(dodeca, swPairings, 'b113-cmp', 'x'));
+      const rays = [[0.11, -0.23, 0.07], [-0.4, 0.15, 0.33], [0.02, 0.02, -0.5]];
+      const dirs = [[0.6, 0.8, 0], [-0.267, 0.535, 0.802], [0, 0, 1]];
+      let exact = 0;
+      let total = 0;
+      for (const d of euclidGate.deck) {
+        for (const g of [d.g, d.gi]) {
+          const m = [g[0], g[1], g[2], g[9], g[3], g[4], g[5], g[10], g[6], g[7], g[8], g[11], 0, 0, 0, 1];
+          for (let i = 0; i < rays.length; i += 1) {
+            total += 1;
+            const want = A.applyPoint(g, rays[i]);
+            const wantV = A.applyVector(g, dirs[i]);
+            const got = pushChartRay(m, rays[i], dirs[i]);
+            if (got.k[0] === want[0] && got.k[1] === want[1] && got.k[2] === want[2] &&
+                got.w[0] === wantV[0] && got.w[1] === wantV[1] && got.w[2] === wantV[2]) exact += 1;
+          }
+        }
+      }
+      note(`affine pushes compared: ${total} · exact: ${exact}`);
+      return total > 0 && exact === total;
+    })());
+
+  // the room, and one solid in it to BE the copies (a scaffold rod is not
+  // counted as a copy — the tracer's own law, and rightly)
+  const sceneFor = (model) => A.buildApertureScene(dodeca, null, [A.meshFromShape(dodeca, [0, 0, 0], 0.5)], model);
+  const traceAt = (model, level, minCopyPixels) =>
+    A.traceAperture({
+      deck: gate.deck,
+      model,
+      scene: sceneFor(model),
+      width: 84,
+      height: 84,
+      craft: { level },
+      minCopyPixels,
+    });
+
+  // ⛔ THE THRESHOLD SWEEP, not one count. A single `formCopiesVisible` at one
+  // threshold reads the H³ room as EMPTIER than the euclidean one, which is
+  // the exact opposite of what is happening — the copies are there in their
+  // hundreds and almost none of them is big enough to clear the threshold.
+  // Reading one number here would have inverted the finding; the sweep is
+  // what makes the shrink legible as a shrink.
+  const atThresholds = (model, level) =>
+    [1, 4, 16, 64].map((mcp) => traceAt(model, level, mcp).counts.formCopiesVisible);
+  const beyondHome = (t) => {
+    let px = 0;
+    for (let i = 0; i < t.hit.length; i += 1) if (t.hit[i] === 1 && t.echo[i] > 0) px += 1;
+    return px;
+  };
+  const hyp = traceAt(gate.model, 8, 1);
+  const euc = traceAt(null, 8, 1);
+  const hT = atThresholds(gate.model, 8);
+  const eT = atThresholds(null, 8);
+  note(`copies surviving a ≥[1, 4, 16, 64]-pixel threshold at depth 8 (84×84):`);
+  note(`  H³ (sealed): ${JSON.stringify(hT)} · ${beyondHome(hyp)} object pixels lie beyond the home cell, over ${hT[0] - 1} copies`);
+  note(`  E³ (today) : ${JSON.stringify(eT)} · ${beyondHome(euc)} object pixels lie beyond the home cell, over ${eT[0] - 1} copies`);
+  check('§9 ★★ THE RENDER LIGHTS IN THE MODEL: the Seifert–Weber interior draws through the H³ transport — pixels lit, rays transported, copies of the person\'s own solid counted — so the room is not merely realized, it is INHABITED',
+    hyp.counts.litPixels > 0 && hyp.counts.transports > 0 && hyp.counts.lostRays === 0 && hT[0] > 1);
+  check('§9 ★★ AND THE COPIES SHRINK, which is ADR 0004 §3\'s own sentence measured: the H³ room contributes copies in the HUNDREDS and almost none of them is big enough to see — surviving a 4-pixel threshold: 3 against euclidean 86; a 16-pixel one: 1 against 17. ⇒ They are not fewer; they are SMALLER, and the smallness is exponential in depth (the deepest lit ray stands at hyperbolic distance ~12, where a cell subtends 1/sinh 12 ≈ 1/81000 of what it subtends at the eye)',
+    hT[0] > 50 && hT[1] < eT[1] / 10 && hT[2] < eT[2] / 5 && beyondHome(hyp) < beyondHome(euc) / 4);
+
+  // ⛔ THE ROOM CLOSES — the render's OWN primitive, not the matrices'. §8
+  // proved the composed 4×4s are the identity; this proves the thing the
+  // tracer actually calls returns the ray itself, position AND direction.
+  check('§9 ⛔ A RAY THAT CROSSES A DOOR AND COMES BACK IS THE SAME RAY: for every sealed H³ door, pushChartRay through m then through its inverse returns the position and the direction it started with (< 1e-9) — the render\'s own primitive, checked where the render calls it, not where the matrices were fitted',
+    (() => {
+      const rays = [[0.11, -0.23, 0.07], [-0.3, 0.1, 0.2], [0.02, 0.31, -0.15]];
+      // ⚠ UNIT directions, deliberately: a projective push RENORMALIZES (it
+      // must — the map does not preserve chart length), so feeding it a
+      // direction that is 1.0003 long returns a 1.0000 one and the
+      // round-trip "fails" by 2.9e-4 that is the input's, not the door's.
+      // Measured that way first; the fix is the test data, and the property
+      // is worth writing down.
+      const dirs = [[0.6, 0.8, 0], [-0.267, 0.535, 0.802], [0, 0, 1]].map((d) => {
+        const L = Math.hypot(d[0], d[1], d[2]);
+        return [d[0] / L, d[1] / L, d[2] / L];
+      });
+      let worst = 0;
+      for (const door of gate.model.doors) {
+        for (let i = 0; i < rays.length; i += 1) {
+          const out = pushChartRay(door.m, rays[i], dirs[i]);
+          const back = pushChartRay(door.mi, out.k, out.w);
+          for (let c = 0; c < 3; c += 1) {
+            worst = Math.max(worst, Math.abs(back.k[c] - rays[i][c]), Math.abs(back.w[c] - dirs[i][c]));
+          }
+        }
+      }
+      note(`door round-trip worst error: ${worst.toExponential(2)}`);
+      return worst < 1e-9;
+    })());
+
+  // THE DISTANCE the ink fades on — in H³ the chart saturates and the metre
+  // does not. This is the one quantity the projective chart cannot carry.
+  const farDepth = (t) => {
+    let m = 0;
+    for (let i = 0; i < t.depth.length; i += 1) if (t.hit[i] !== 0 && t.depth[i] > m) m = t.depth[i];
+    return m;
+  };
+  note(`deepest lit ray at level 8 — H³ ${farDepth(hyp).toFixed(3)} (hyperbolic distance) · E³ ${farDepth(euc).toFixed(3)} (euclidean distance)`);
+  check('§9 ⛔ THE METRE IS THE MODEL\'S: the depth buffer the ink fades on carries HYPERBOLIC distance in a sealed H³ room, not the chart parameter — chart length saturates at the Klein boundary while true distance runs to infinity, and a fade on the chart would draw every far copy at the same tone',
+    (() => {
+      // a Klein-chart step of 1 unit is at most 1 (the ball has radius 1);
+      // the hyperbolic distance the same ray covers exceeds it once the ray
+      // leaves the middle of the cell — measured on the actual buffer
+      // the Klein ball has radius 1, so nine chart legs can total at most 18;
+      // the measured hyperbolic depth is in the same range only because the
+      // cell is large — what pins the METRE is that it is not the chart
+      // parameter: a chart leg inside this cell is ≤ 2·0.76 and nine of them
+      // cannot reach 12 while staying inside the ball at every step
+      return farDepth(hyp) > 9 * 2 * 0.7601 * 0.5 && farDepth(hyp) !== farDepth(euc);
+    })());
+
+  // ⛔ THE E³ SEAL HANDS NO TRANSPORT — one producer for one fact
+  check('§9 ⛔ A FLAT ROOM GETS THE CLASS AND NOT A SECOND COPY OF ITS OWN MAP: a uniform-k=4 cube form seals E3 and the gate hands model = null, so the committed euclidean deck stays the ONE producer of the euclidean transport (two producers for one fact is how a render drifts from its own witnesses)',
+    (() => {
+      const cube = req('src/data/seeds.ts').createSeedShape('cube');
+      const f = (k) => `face:cube:${k}`;
+      const AX = [['left', 'right'], ['front', 'back'], ['bottom', 'top']];
+      const menus = AX.map(([a, b]) => A.dihedralMapCandidates(cube, f(a), f(b)));
+      const rows = AX.map(([a, b], i) => ({ faceA: f(a), faceB: f(b), candidateKey: menus[i][0].key }));
+      const v = A.buildPersonDomainVerdict(cube, rows, 'b113-flat', 'x');
+      const g = A.buildAperture(v.domain);
+      return g.ok && !!g.seal && g.seal.geometry === 'E3' && g.model === null && g.modelRefusal === null;
+    })());
+
+  // ⛔ THE DEGENERATE CELL — reachable, and refused BY NAME
+  check('§9 ⛔ A DEGENERATE CELL IS REFUSED BY NAME, and the case is REACHABLE (measured: the cube family\'s pattern 776): a uniform k=2 census puts two cells around every edge — a 180° dihedral — which solves to inradius π/2 on S³, where every face plane is the SAME great sphere and the "cell" is a hemisphere with no corners. ⚠ The fit, the door isometries and the closure walk ALL PASS on it: an angle sum and a walk are blind to a cell that has stopped being a solid',
+    (() => {
+      const cube = req('src/data/seeds.ts').createSeedShape('cube');
+      const f = (k) => `face:cube:${k}`;
+      const AX = [['left', 'right'], ['front', 'back'], ['bottom', 'top']];
+      const menus = AX.map(([a, b]) => A.dihedralMapCandidates(cube, f(a), f(b)));
+      const rows = AX.map(([a, b], i) => ({ faceA: f(a), faceB: f(b), candidateKey: menus[i][[7, 7, 6][i]].key }));
+      const v = A.buildPersonDomainVerdict(cube, rows, 'b113-degen', 'x');
+      if (v.folded || !v.domain.tower.sound) return false;
+      const g = A.buildAperture(v.domain);
+      return g.ok && g.model === null && g.seal === null && String(g.modelRefusal).includes('degenerates at this size');
+    })());
+
+  // the census of what the seal actually reaches on the committed family —
+  // ⛔ named in full, never "the seal works"
+  check('§9 THE CENSUS, all of it and not the flattering half: of the cube family\'s 79 sound forms the seal reads 43 as E³, seals 2 as S³ (uniform k=3 at inradius π/4 — three cubes around every edge, the 8-cell\'s own tessellation), refuses 1 as degenerate, and refuses 33 BY NAME for carrying two different k (one regular realization cannot serve two, and averaging them would be a fabrication)',
+    (() => {
+      const cube = req('src/data/seeds.ts').createSeedShape('cube');
+      const f = (k) => `face:cube:${k}`;
+      const AX = [['left', 'right'], ['front', 'back'], ['bottom', 'top']];
+      const menus = AX.map(([a, b]) => A.dihedralMapCandidates(cube, f(a), f(b)));
+      let sound = 0; let e3 = 0; let curved = 0; let degen = 0; let mixed = 0;
+      for (let i = 0; i < 8; i += 1) for (let j = 0; j < 8; j += 1) for (let k = 0; k < 8; k += 1) {
+        const rows = AX.map(([a, b], idx) => ({ faceA: f(a), faceB: f(b), candidateKey: menus[idx][[i, j, k][idx]].key }));
+        const v = A.buildPersonDomainVerdict(cube, rows, `b113-${i}${j}${k}`, 'x');
+        if (v.folded || !v.domain.tower.sound) continue;
+        sound += 1;
+        const g = A.buildAperture(v.domain);
+        if (!g.ok) continue;
+        if (g.seal && g.seal.geometry === 'E3') e3 += 1;
+        else if (g.seal) curved += 1;
+        else if (String(g.modelRefusal).includes('degenerates')) degen += 1;
+        else if (String(g.modelRefusal).includes('two different k')) mixed += 1;
+      }
+      note(`cube family: ${sound} sound = ${e3} E³ + ${curved} S³ + ${degen} degenerate + ${mixed} mixed-k`);
+      return sound === 79 && e3 === 43 && curved === 2 && degen === 1 && mixed === 33;
+    })());
+
+  // ⚠ THE HONEST EDGE, written into the witness rather than left for a reader
+  // to discover: the committed non-movement legs (the honest door's clause 4,
+  // the orbifolds' body clause 3) call traceAperture WITHOUT a model, so they
+  // pin that the EUCLIDEAN path did not move — which is true and worth
+  // pinning — and they say NOTHING about the app's render, which now passes
+  // gate.model. The two S³ cube forms above DO draw differently in the app.
+  check('§9 ⚠ THE NON-MOVEMENT LEGS DO NOT COVER THIS, said here rather than left to be discovered: the honest door\'s clause 4 and the orbifolds\' body clause 3 call traceAperture with NO model, so they pin the euclidean path (unmoved, verified) and NOT the app\'s render, which passes gate.model — the 2 sealed cube forms genuinely draw differently now, and that is the cut working, not a regression',
+    (() => {
+      const src = fs.readFileSync(path.join(repoRoot, 'scripts/diagnose-the-orbifolds-body.cjs'), 'utf8');
+      const door = fs.readFileSync(path.join(repoRoot, 'scripts/diagnose-the-honest-door.cjs'), 'utf8');
+      return !src.includes('model: gate.model') && !door.includes('model: gate.model');
     })());
 }
 

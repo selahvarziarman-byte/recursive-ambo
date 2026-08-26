@@ -424,6 +424,13 @@ const allowed = new Set([
   // byte-identical); zero frozen files; ratified in
   // diagnose-the-field-in-the-specimen.cjs.
   'src/manuscript/InkedPlainForm.tsx',
+  // B-113 §3 (2026-08-26, mothership STAMP B-113): THE RENDER GETS THE
+  // MODEL. The projective chart + the earned realization seal live here
+  // (the transport a sealed room is drawn through); apertureModel
+  // consumes them and the view passes gate.model to the tracer.
+  // NOT_FROZEN (classified 4a7ac81). Ratified by
+  // scripts/diagnose-the-noncube-domain.cjs §9.
+  'src/lib/noncubeDomain.ts',
 ]);
 const moved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

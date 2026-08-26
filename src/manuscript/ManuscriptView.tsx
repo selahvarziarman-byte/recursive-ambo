@@ -20,7 +20,7 @@
 // carries, and WHAT the card says come from worldModel/inkedFormModel/
 // specimenModel — the knobs place, tone, pace, and stage only.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html, Line, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -1238,20 +1238,37 @@ function ArgumentMapSection({
       {argument.wordRows ? (
         // PHASE 2 — the ATTRIBUTED pairing from the committed replay-verified
         // birth word: —a ← AB CD (reversing draws the inverse letter)
+        /* B-110 §3b (the designer's ruling): `·` binds CORNERS, `→` binds
+           RUNS — the heavier mark for the looser bond. The arrow is
+           semantically true rather than decorative: the line already says
+           SURVIVES FROM with `←`, and slot → partner IS the identification
+           the pair records.
+           ═══ R3 (B-113) — OWN THE WRAP. ══════════════════════════════════
+           She WITHDREW her own bracket fallback and ruled instead: the runs
+           get a line each, with the ARROW LEADING THE CONTINUATION —
+               —a⁻¹ ← unnamed·unnamed
+                      → unnamed·unnamed
+           ★ Her reason: THE CONTENT DID NOT FIT THE SLOT, SO THE SLOT
+           CHANGED; she did not repunctuate to squeeze it in. The leading
+           arrow is the one position a wrap cannot swallow — a trailing one
+           can end a line and be read as the end of the row, a leading one
+           cannot be read as anything but a continuation.
+           The three columns (marker · arrow · run) are what make the arrows
+           line up under each other whatever the letter's width — `a` and
+           `a⁻¹` are different widths, so a spacer would only align by
+           accident. */
         argument.wordRows.map((pair) => (
-          <div key={pair.letter} style={{ fontSize: 13 }}>
-            <span style={sign}>—</span>
-            <span style={sign}>{pair.displayLetter}</span>
-            <span style={sign}> ← </span>
-            {/* B-110 §3b (the designer's ruling): `·` binds CORNERS, `→`
-                binds RUNS — the heavier mark for the looser bond. The arrow
-                is semantically true rather than decorative: the line already
-                says SURVIVES FROM with `←`, and slot → partner IS the
-                identification the pair records. Before this, four identical
-                corner tokens ran together with a space between the pairs and
-                nothing said where one run ended. ⚠ Her flag, honoured: two
-                arrows on one line — driven and reported at the eye. */}
-            <span style={sign}>{pair.slotNames.join(' → ')}</span>
+          <div
+            key={pair.letter}
+            style={{ fontSize: 13, display: 'grid', gridTemplateColumns: 'auto auto 1fr', columnGap: 5 }}
+          >
+            {pair.slotNames.map((run, i) => (
+              <Fragment key={`${pair.letter}:${i}`}>
+                <span style={sign}>{i === 0 ? `—${pair.displayLetter}` : ''}</span>
+                <span style={sign}>{i === 0 ? '←' : '→'}</span>
+                <span style={sign}>{run}</span>
+              </Fragment>
+            ))}
           </div>
         ))
       ) : (
@@ -1982,39 +1999,42 @@ export default function ManuscriptView() {
       radius: Math.max(0.5, sphere.radius),
     };
   }, [selected]);
-  // ⚠ B-110 §2 — THE BLANK-PAGE MECHANISM LIVES HERE, MEASURED, AND THE CURE
-  // IS STOPPED ON THE DESIGNER'S FORM CALL (her §2b clause, honoured).
-  // What this effect does and what it costs, measured at the eye on the
-  // reference zoo: selecting a written form bumps `fitSelectedRequest` after
-  // one settle beat, and the rig's fit is an INSTANT JUMP (position copy +
-  // lookAt + controls.target copy — no easing anywhere) that frames ONE form
-  // tightly ⇒ 9 of the page's 12 form labels left the viewport (one landed
-  // at x = 154406), and the selected form's OWN label hides while selected,
-  // so the one thing left in frame carried no name. That is her *"the page
-  // is BLANK"*. The deselect arm teleports too ('exact' reset to the
-  // composed default). ⛔ THE CURE IS NOT A FREE CUT: holding the camera was
-  // BUILT AND DRIVEN (the page stays whole, all 12 forms in frame) and the
-  // selected specimen then reads ~0.11 of the frame — legible, but under the
-  // ≥0.22 her own C1 seal pins (diagnose-deficit-app §E-PLATE). Holding and
-  // her threshold cannot both hold, so the choice among her three forms
-  // (holds · eases · frames-without-flying) is HERS, reported with both
-  // numbers. ⇒ The cut is one edit: drop the two request bumps, keep the
-  // bounds measurement (the dock's Fit Selected needs it).
+  // ═══ R1 (B-113) — SELECTION HOLDS. THE CAMERA DOES NOT MOVE ON SELECT. ═════
+  // ⇒ RULED BY THE DESIGNER, and her argument is better than "jarring":
+  // ★ HE HAD TO SEE IT TO SELECT IT. He pointed at a thing, so it was in view
+  // BY CONSTRUCTION — and moving the view afterwards takes away the very
+  // context he used to act. ⛔ `eases` was REFUSED (an eased teleport is still
+  // a teleport; you just watch it happen) and so was `frames-without-flying`
+  // (it still moves the world, only politely).
+  // ★ THE DISEASE, named: A STATE CHANGE PERFORMING A NAVIGATION — one
+  // gesture doing two jobs. ⇒ AND THE DESELECT RESET GOES WITH IT, not by a
+  // second ruling but because ITS SUBJECT IS GONE: once selection holds,
+  // there is nothing to reset. (Her test for any future camera proposal: if
+  // it still needs a rule for deselection, it has RELOCATED the conflation
+  // rather than removed it.)
+  //
+  // What was here and what it cost, kept because it is the measurement that
+  // bought the ruling (B-110 §2, at the eye on the reference zoo): selecting
+  // a written form bumped `fitSelectedRequest` after one settle beat, and the
+  // rig's fit is an INSTANT JUMP (position copy + lookAt + controls.target
+  // copy — no easing anywhere) that framed ONE form tightly ⇒ 9 of the page's
+  // 12 form labels left the viewport (one landed at x = 154406), and the
+  // selected form's OWN label hides while selected, so the one thing left in
+  // frame carried no name. That was her *"the page is BLANK"*.
+  // ⚠ THE COST OF HOLDING, also measured and NOT hidden: the selected
+  // specimen then reads ~0.11 of the frame, under the ≥0.22 her own C1 seal
+  // pins (diagnose-deficit-app §E-PLATE). She ruled with that number in hand.
+  // ⚠ THE BOUNDS MEASUREMENT STAYS — the dock's *Fit Selected* is the
+  // person's own gesture for framing, and it needs them. The cut removes the
+  // camera moving BY ITSELF, never the person's ability to move it.
   useEffect(() => {
-    const was = prevSelectedRef.current;
     prevSelectedRef.current = selected;
     if (selected && selected.startsWith('w:')) {
       const timer = window.setTimeout(() => {
         const bounds = measureSelectedBounds();
-        if (bounds) {
-          setSelectedCameraBounds(bounds);
-          setFitSelectedRequest((request) => request + 1);
-        }
+        if (bounds) setSelectedCameraBounds(bounds);
       }, 420); // one settle beat — the lift's damp has largely landed
       return () => window.clearTimeout(timer);
-    }
-    if (was !== null && selected === null) {
-      setResetCameraRequest((request) => request + 1); // deselect → the default overview
     }
     return undefined;
   }, [measureSelectedBounds, selected]);
@@ -2799,13 +2819,17 @@ export default function ManuscriptView() {
         // furniture — a placed form can DISPLACE them (the scene recomposes
         // from the same committed pieces: the form's mesh, the cell's rods).
         const probes = [...probeMeshes.maskShells, probeMeshes.hand];
-        const base = buildApertureScene(model.shape, placedShape, probes);
+        // B-113: the scene is built in the room the person is IN — the sealed
+        // model's own cell when the domain earned one, the seed's euclidean
+        // cell (byte-identically) when it did not
+        const base = buildApertureScene(model.shape, placedShape, probes, gate.model);
         const scene =
           placedShape && displacedRooms[model.key]
             ? { meshes: base.meshes.slice(probes.length), capsules: [], rods: base.rods, rodRadius: base.rodRadius }
             : base;
         const trace = traceAperture({
           deck: gate.deck,
+          model: gate.model,
           scene,
           width: apertureCtl.resolution,
           height: apertureCtl.resolution,
@@ -2836,9 +2860,10 @@ export default function ManuscriptView() {
           return { key: body.key, gate, trace: null, caption: gate.reason };
         }
         const probes = [...probeMeshes.maskShells, probeMeshes.hand];
-        const scene = buildApertureScene(body.shape, null, probes);
+        const scene = buildApertureScene(body.shape, null, probes, gate.model);
         const trace = traceAperture({
           deck: gate.deck,
+          model: gate.model,
           scene,
           width: apertureCtl.resolution,
           height: apertureCtl.resolution,

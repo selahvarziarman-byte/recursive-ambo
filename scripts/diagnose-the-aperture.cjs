@@ -699,6 +699,13 @@ const ALLOWED_SRC_CHANGES = new Set([
   // scripts/app-leg/diagnose-d12b-carried-names.cjs (the Sovereign's route
   // live + the three non-regression pins).
   'src/lib/thicken.ts',
+  // B-113 §3 (2026-08-26, mothership STAMP B-113): THE RENDER GETS THE
+  // MODEL. The projective chart + the earned realization seal live here
+  // (the transport a sealed room is drawn through); apertureModel
+  // consumes them and the view passes gate.model to the tracer.
+  // NOT_FROZEN (classified 4a7ac81). Ratified by
+  // scripts/diagnose-the-noncube-domain.cjs §9.
+  'src/lib/noncubeDomain.ts',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

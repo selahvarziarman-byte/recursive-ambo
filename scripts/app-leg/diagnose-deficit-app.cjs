@@ -361,9 +361,16 @@ function killTree(pid) {
             );
           })());
         // PHASE A (SEAL_PHASE_A_CAMERA) — the plate on the RUNNING app
-        check('§E-PLATE ★★ SELECT FRAMES THE SPECIMEN: after the drop\'s auto-select, the specimen\'s projected screen height is a LEGIBLE fraction of the frame (≥ 0.22 of the viewport — the designer measured ~50px ≈ 0.055 pre-cure), and the Fit Selected + Reset Camera controls stand in the chrome',
-          get('camera.plate').ok && get('camera.controlsPresent').ok,
-          get('camera.plate').detail);
+        // ═══ R1 (B-113) — RECUT FROM C1's PLATE, BY THE DESIGNER'S OWN LATER
+        // RULING. C1 pinned SELECT FRAMES THE SPECIMEN (≥ 0.22 of the frame);
+        // she has since ruled the opposite and her ruling supersedes her seal.
+        // ⛔ A ruling that changes what the person READS must sweep the
+        // PREDICATE, the SENTENCE, the TYPE and the WITNESSES — this is the
+        // witness half, and leaving the old clause standing red would have
+        // trained its readers to skip it.
+        check('§E-PLATE ★★ SELECTION HOLDS — THE CAMERA DOES NOT MOVE ON SELECT (the designer\'s ruling, replacing C1\'s "select frames the specimen"): HE HAD TO SEE IT TO SELECT IT, so the view he used to act is the view he keeps. Measured BOTH ways on the running app — deselecting does not move the eye, re-selecting does not move it either (position AND look) — and a form IS selected afterwards, so nothing was held by simply failing to select. The Fit Selected + Reset Camera controls still stand in the chrome: the cut removes the camera moving BY ITSELF, never the person\'s own gesture',
+          get('camera.selectionHolds').ok && get('camera.controlsPresent').ok,
+          get('camera.selectionHolds').detail);
         check('§E-FIT/RESET ★ THE RECOVERY CONTROLS FIRE: Reset returns the composed default camera EXACTLY (compared against the boot-captured state, never a guessed literal); Fit Selected re-flies the plate to a legible fraction',
           get('camera.fitReset').ok, get('camera.fitReset').detail);
         check('§E-ZOOM ★ ZOOM LANDS AT THE CURSOR WITH A USABLE DELTA: four wheel ticks with the cursor right-of-center pull the camera materially closer (≥12%) AND laterally toward the cursor — not the dead fixed-anchor crawl (~0.7%/tick, 34 ticks)',

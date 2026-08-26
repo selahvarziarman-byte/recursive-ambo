@@ -1940,14 +1940,98 @@ def drive_camera(page):
     box = canvas.bounding_box()
     cx = box["x"] + box["width"] * 0.5
     cy = box["y"] + box["height"] * 0.5
-    # E-PLATE: the last lift drop AUTO-SELECTED the face specimen and C1 flew
-    # the plate (the settle beat + flight already passed in drive_lift's waits)
+    # ═══ R1 (B-113) — SELECTION HOLDS. Recut from C1's own PLATE clause. ═════
+    # C1 pinned SELECT FRAMES THE SPECIMEN (fraction ≥ 0.22). The designer has
+    # since RULED THE OPPOSITE and the ruling supersedes her seal: the camera
+    # does not move on selection — HE HAD TO SEE IT TO SELECT IT, so moving
+    # the view afterwards takes away the context he used to act. ⛔ And the
+    # deselect reset goes with it, not by a second ruling but because its
+    # subject is gone.
+    # ⇒ The clause is now the ruling itself, measured BOTH ways on the running
+    # app: deselect must not move the camera, and re-select must not move it
+    # either. A witness that only measured one direction would green a build
+    # that had merely relocated the flight to the other edge.
     page.wait_for_timeout(1400)
+    before_sel = camera_state(page)
+    empty_pt = {"x": cx, "y": cy}
+    for fx, fy in ((0.08, 0.16), (0.92, 0.4), (0.06, 0.5), (0.5, 0.12)):
+        x = box["x"] + box["width"] * fx
+        y = box["y"] + box["height"] * fy
+        tag = page.evaluate(
+            "([x, y]) => { const el = document.elementFromPoint(x, y); return el ? el.tagName : null; }",
+            [x, y],
+        )
+        if tag == "CANVAS":
+            empty_pt = {"x": x, "y": y}
+            break
+    # every placed specimen's DRAWN centre, projected — the group's origin is
+    # not it (SpecimenLift moves the wrapper, and an origin can sit off the
+    # body entirely), so the bbox centre of its real geometry is what a person
+    # would actually be pointing at
+    form_pts = page.evaluate(
+        """([ox, oy, w, h]) => {
+      const scene = window.__manuscriptScene, camera = window.__manuscriptCamera;
+      if (!scene || !camera) return [];
+      const out = [];
+      scene.traverse((g) => {
+        if (!g.name || !g.name.startsWith('written:')) return;
+        g.updateWorldMatrix(true, true);
+        let sx = 0, sy = 0, n = 0;
+        g.traverse((c) => {
+          const geom = c.geometry;
+          if (!geom) return;
+          if (!geom.boundingBox) geom.computeBoundingBox();
+          const bb = geom.boundingBox;
+          if (!bb) return;
+          const mid = [(bb.min.x + bb.max.x) / 2, (bb.min.y + bb.max.y) / 2, (bb.min.z + bb.max.z) / 2];
+          const p = c.localToWorld(new c.position.constructor(mid[0], mid[1], mid[2]));
+          p.project(camera);
+          if (Math.abs(p.x) > 1 || Math.abs(p.y) > 1) return;
+          sx += ox + (p.x * 0.5 + 0.5) * w;
+          sy += oy + (-p.y * 0.5 + 0.5) * h;
+          n += 1;
+        });
+        if (n > 0) out.push({ x: sx / n, y: sy / n });
+      });
+      return out;
+    }""",
+        [box["x"], box["y"], box["width"], box["height"]],
+    )
+    page.mouse.dblclick(empty_pt["x"], empty_pt["y"])  # deselect
+    page.wait_for_timeout(900)
+    after_deselect = camera_state(page)
+    reselected = False
+    after_select = after_deselect
+    fit_locator = page.get_by_text("Fit Selected", exact=True).first
+    for pt in form_pts:
+        page.mouse.dblclick(pt["x"], pt["y"])  # select again
+        page.wait_for_timeout(1400)  # past the 420ms settle beat the old fit rode
+        if fit_locator.is_enabled():
+            reselected = True
+            after_select = camera_state(page)
+            break
+    if not reselected:
+        after_select = camera_state(page)
+
+    def _still(a, b):
+        # BOTH halves of the framing: where the eye stands AND where it looks.
+        # The old fit copied position, called lookAt, and copied the orbit
+        # target — a position-only comparison would have missed two of the
+        # three moves.
+        return (
+            a is not None
+            and b is not None
+            and all(abs(x - y) < 0.05 for x, y in zip(a["position"], b["position"]))
+            and all(abs(x - y) < 0.01 for x, y in zip(a["quaternion"], b["quaternion"]))
+        )
+
+    held_on_deselect = _still(before_sel, after_deselect)
+    held_on_select = _still(after_deselect, after_select)
     fraction = max_written_fraction(page)
     record(
-        "camera.plate",
-        fraction is not None and fraction >= 0.22,
-        f"selected specimen projected height fraction {fraction if fraction is None else round(fraction, 3)} (the designer measured ~50px ≈ 0.055 pre-cure)",
+        "camera.selectionHolds",
+        held_on_deselect and held_on_select and reselected,
+        f"camera unmoved on deselect {held_on_deselect} · unmoved on re-select {held_on_select} · a form IS selected after the re-select {reselected} · the held framing shows the specimen at {fraction if fraction is None else round(fraction, 3)} of the frame (C1's retired plate wanted ≥ 0.22 — the designer ruled with this number in hand)",
     )
     # E-FIT/RESET: Reset returns the composed default exactly; Fit re-flies
     reset_button = page.get_by_text("Reset Camera", exact=True)

@@ -63,6 +63,22 @@ import { readLevel3Tower, type Level3TowerReading } from '../lib/level3Invariant
 import { readPillarDihedrals } from '../lib/conformalAtom';
 import { bisectEdges, liftPairingsToBisected } from '../lib/level3Subdivision';
 import type { Level3SoundnessReport } from '../lib/level3SoundnessGate';
+// B-113 THE RENDER: the model the transport already carries, reaching the
+// consumer. Derive-only — every symbol here is a reader or a constructor,
+// and nothing in this file writes into a Shape.
+import {
+  chartDistance,
+  chartOf,
+  chartPlaneOf,
+  mat4Det,
+  mat4Mul,
+  matrixInverse4,
+  pushChartRay,
+  sealDomainRealization,
+  type Chart3,
+  type Mat4,
+  type SealedRealization,
+} from '../lib/noncubeDomain';
 import { buildFormDomain, sharedWallPairings } from './formDomainModel';
 import type { DomainModel } from './worldModel';
 
@@ -1842,8 +1858,86 @@ export function readCellSurface(
 // ⇒ DRAW NOTHING, SAY SO.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// THE MODEL AT THE DOOR (B-113) — the sealed realization, widened into the
+// exact shape the tracer consumes: doors carrying a 4×4 and their CHART
+// planes. A committed euclidean deck becomes the E³ instance of this same
+// structure, so there is ONE transport below and not two.
+// ---------------------------------------------------------------------------
+
+export interface ApertureModelDoor {
+  m: Mat4; // the in-model isometry carrying faceA onto faceB
+  mi: Mat4;
+  nA: V3; // faceA's plane IN THE CHART: {k : k·n̂ = d}
+  dA: number;
+  nB: V3;
+  dB: number;
+}
+
+export interface ApertureModelDeck {
+  model: 'E3' | 'S3' | 'H3'; // CARRIED from the seal — never re-inferred here
+  doors: ApertureModelDoor[];
+  inradius: number | null;
+  edgeClassSize: number;
+  /** the cell's own corners in the chart — the scaffold the person actually
+   * stands among, which in a curved model is NOT the seed's euclidean cell */
+  chartVertices: Map<string, V3>;
+  /** THE FURNITURE'S SCALE — craft, never geometry. The realized cell is a
+   * different SIZE from the seed's euclidean cell (Seifert–Weber: chart
+   * inradius tanh(0.99638) = 0.760 against the seed dodecahedron's 1.114;
+   * Poincaré: tan(0.31416) = 0.325), so furniture built for the seed would
+   * float outside the room or rattle around inside it. This is the ratio of
+   * the two inradii, applied to WHAT STANDS IN the room — the walls, the
+   * corners and the transport are untouched by it. */
+  sceneScale: number;
+}
+
+/** the committed 12-float affine isometry, widened to the 4×4 whose bottom
+ * row is (0,0,0,1) — the SAME map, said in the type the model needs */
+const affine4 = (g: DeckTransform): Mat4 => [
+  g[0], g[1], g[2], g[9],
+  g[3], g[4], g[5], g[10],
+  g[6], g[7], g[8], g[11],
+  0, 0, 0, 1,
+];
+
+export function apertureModelDeckOf(seal: SealedRealization, euclideanDeck: DeckEntry[]): ApertureModelDeck {
+  const model = seal.geometry;
+  const doors: ApertureModelDoor[] = seal.deck.entries.map((entry) => {
+    const A = chartPlaneOf(model, entry.uA);
+    const B = chartPlaneOf(model, entry.uB);
+    return { m: entry.m, mi: matrixInverse4(entry.m), nA: A.n as V3, dA: A.d, nB: B.n as V3, dB: B.d };
+  });
+  const chartVertices = new Map<string, V3>();
+  for (const [id, x] of seal.realization.vertexPositions) chartVertices.set(id, chartOf(x) as V3);
+  const minAbs = (xs: number[]): number => xs.reduce((m, x) => Math.min(m, Math.abs(x)), Infinity);
+  const chartInradius = minAbs(doors.flatMap((d) => [d.dA, d.dB]));
+  const seedInradius = minAbs(euclideanDeck.flatMap((d) => [d.dA, d.dB]));
+  const sceneScale = Number.isFinite(chartInradius) && Number.isFinite(seedInradius) && seedInradius > 1e-9
+    ? chartInradius / seedInradius
+    : 1;
+  return { model, doors, inradius: seal.inradius, edgeClassSize: seal.edgeClassSize, chartVertices, sceneScale };
+}
+
 export type ApertureGate =
-  | { ok: true; deck: DeckEntry[]; geometry: ApertureGeometry | FoldedApertureGeometry }
+  | {
+      ok: true;
+      deck: DeckEntry[];
+      geometry: ApertureGeometry | FoldedApertureGeometry;
+      /** B-113 — THE CURVED TRANSPORT the render is to use, when the domain
+       * earned one. ⛔ `null` AT E³ ON PURPOSE, and this is not an omission:
+       * at E³ the sealed map and the committed deck fit are THE SAME MAP, and
+       * where they are the same the committed one stands — two producers for
+       * one fact is how a render starts drifting from its own witnesses. The
+       * CLASS is still carried, in `seal`, whatever the render does. */
+      model: ApertureModelDeck | null;
+      /** the class the domain EARNED (constructed, then proven by the fit, by
+       * every door's witnessed isometry, and by the closure walk) — carried,
+       * never re-inferred downstream. `null` = no realization closed. */
+      seal: { geometry: 'E3' | 'S3' | 'H3'; inradius: number | null; edgeClassSize: number; closureWorstRad: number } | null;
+      /** why no seal, when there is none — named, never silent */
+      modelRefusal: string | null;
+    }
   | { ok: false; reason: string };
 
 export function buildAperture(domain: DomainModel | FoldedDomain, lineage?: ConeLineage): ApertureGate {
@@ -1856,7 +1950,10 @@ export function buildAperture(domain: DomainModel | FoldedDomain, lineage?: Cone
     const geometry = geometryFromFoldedGate(domain.gate);
     try {
       const deck = deckOf(domain.shape, domain.pairings);
-      return { ok: true, deck, geometry };
+      // a FOLDED body is an orbifold, not a manifold — the seal's three
+      // proofs are written for a deck group and say nothing here. No model,
+      // and the reason is the object's own kind, not a failure.
+      return { ok: true, deck, geometry, model: null, seal: null, modelRefusal: 'a folded body is an orbifold — the seal realizes deck groups, and this is not one' };
     } catch (error) {
       return { ok: false, reason: `the deck fit refused: ${(error as Error).message} — nothing is drawn.` };
     }
@@ -1885,7 +1982,32 @@ export function buildAperture(domain: DomainModel | FoldedDomain, lineage?: Cone
   const pairings = surfacePairingsOf(domain.shape, domain.complex.pairings);
   try {
     const deck = deckOf(domain.shape, pairings);
-    return { ok: true, deck, geometry };
+    // B-113 THE SEAL: the domain is offered a realization in its OWN geometry
+    // and either earns it (constructed, then proven by the fit, the witnessed
+    // door isometries and the closure walk) or is refused BY NAME. Nothing is
+    // inferred from k here — see `sealDomainRealization`'s own header, which
+    // is where the distinction from B.0's killed classifier is written down.
+    const sealed = sealDomainRealization(domain);
+    if (!sealed.sealed) return { ok: true, deck, geometry, model: null, seal: null, modelRefusal: sealed.reason };
+    const seal = {
+      geometry: sealed.seal.geometry,
+      inradius: sealed.seal.inradius,
+      edgeClassSize: sealed.seal.edgeClassSize,
+      closureWorstRad: sealed.seal.closureWorstRad,
+    };
+    // ⛔ AT E³ THE MODEL CHANGES NOTHING, SO IT IS NOTHING. The seal's own
+    // isometries and the committed deck fit are the same rigid maps of the
+    // same cell; handing the render a second copy of a map it already has
+    // would move every flat form's buffers in the last ulp and buy nothing.
+    // The CLASS is carried regardless — that is what `seal` is for.
+    if (seal.geometry === 'E3') return { ok: true, deck, geometry, model: null, seal, modelRefusal: null };
+    try {
+      return { ok: true, deck, geometry, model: apertureModelDeckOf(sealed.seal, deck), seal, modelRefusal: null };
+    } catch (error) {
+      // a seal that cannot be put in the chart is not a transport — say so,
+      // and keep the class that WAS proven
+      return { ok: true, deck, geometry, model: null, seal, modelRefusal: (error as Error).message };
+    }
   } catch (error) {
     return { ok: false, reason: `the deck fit refused: ${(error as Error).message} — nothing is drawn.` };
   }
@@ -1964,17 +2086,45 @@ export interface ApertureScene {
 
 /** The scene is built ONCE — no copy of any object is ever materialized.
  * THE PROBES (2026-07-14) are INJECTED (the real scans, mounted in
- * apertureProbes.ts): the mask's two shells + the pointing hand. */
-export function buildApertureScene(seedShape: Shape, placedShape: Shape | null, probes: TriMesh[]): ApertureScene {
-  const meshes: TriMesh[] = [...probes];
+ * apertureProbes.ts): the mask's two shells + the pointing hand.
+ *
+ * B-113 — `model` is the room the person is actually standing in. When a
+ * domain has SEALED a realization, the cell's corners are the model's
+ * (in the projective chart), not the seed's euclidean ones, and the
+ * furniture is scaled to that room. ⛔ The scaling touches the SCENE only:
+ * the walls, the doors and the transport never see it, so no scene knob can
+ * move a copy — the committed law. Absent `model` = the committed path,
+ * byte-identical. */
+export function buildApertureScene(
+  seedShape: Shape,
+  placedShape: Shape | null,
+  probes: TriMesh[],
+  model?: ApertureModelDeck | null,
+): ApertureScene {
+  const s = model ? model.sceneScale : 1;
+  const scaleMesh = (mesh: TriMesh): TriMesh =>
+    s === 1 ? mesh : { ...mesh, positions: mesh.positions.map((p) => mulS(p, s)) };
+  const meshes: TriMesh[] = probes.map(scaleMesh);
   if (placedShape) {
-    const placed = meshFromShape(placedShape, [0.30, 0.27, -0.10], 0.42);
+    const placed = meshFromShape(placedShape, [0.30 * s, 0.27 * s, -0.10 * s], 0.42 * s);
     if (placed) meshes.push(placed);
   }
-  const positions = new Map(Object.values(seedShape.vertices).map((v) => [v.id, v.position as V3]));
-  const rods: [V3, V3][] = shapeEdges(seedShape).map(([a, b]) => [positions.get(a) as V3, positions.get(b) as V3]);
-  return { meshes, capsules: [], rods, rodRadius: 0.011 };
+  const positions = model
+    ? model.chartVertices
+    : new Map(Object.values(seedShape.vertices).map((v) => [v.id, v.position as V3]));
+  const rods: [V3, V3][] = shapeEdges(seedShape)
+    .filter(([a, b]) => positions.has(a) && positions.has(b))
+    .map(([a, b]) => [positions.get(a) as V3, positions.get(b) as V3]);
+  return { meshes, capsules: [], rods, rodRadius: 0.011 * s };
 }
+
+/** Where the eye stands, in the room it is actually in. The committed frame
+ * was tuned inside the seed's euclidean cell; a sealed room is a different
+ * size, and an eye left at the euclidean coordinate would be standing
+ * OUTSIDE a Poincaré cell (chart inradius 0.325 against the seed's 1.114) —
+ * the same relative place in the room is the honest carry. */
+export const apertureEyeFor = (model: ApertureModelDeck | null | undefined, eye: V3): V3 =>
+  model && model.sceneScale !== 1 ? mulS(eye, model.sceneScale) : eye;
 
 function shapeEdges(shape: Shape): [string, string][] {
   return shape.edges.map((e) => [e.vertexIds[0], e.vertexIds[1]]);
@@ -2122,6 +2272,9 @@ const bvhOf = (mesh: TriMesh): { nodes: BvhNode[]; order: number[] } => {
 export function traceAperture(options: {
   deck: DeckEntry[];
   scene: ApertureScene;
+  /** B-113 — the sealed model. Absent = E³, and the committed euclidean deck
+   * becomes the E³ instance of the very same structure. */
+  model?: ApertureModelDeck | null;
   width?: number;
   height?: number;
   craft?: Partial<ApertureCraft>;
@@ -2134,15 +2287,43 @@ export function traceAperture(options: {
   const H = options.height ?? 168;
   const craft: ApertureCraft = { ...APERTURE_CRAFT_DEFAULTS, ...(options.craft ?? {}) };
   const LEVEL = Math.max(0, Math.round(craft.level));
-  const deck = options.deck;
   const scene = options.scene;
+  // ═══ THE MODEL ENTERS THE RENDER (B-113) ══════════════════════════════════
+  // ADR 0004's own correction, quoted: *"in H³ use the KLEIN model, in which
+  // rays ARE STRAIGHT."* That is the whole architecture. In the projective
+  // chart (divide the model 4-vector by its fourth component) a geodesic is a
+  // straight line and a face plane is a flat plane IN EVERY MODEL, so the
+  // exit-plane solve and the BVH mesh test below are UNCHANGED — the same
+  // lines of code serve E³, S³ and H³. What the model changes is exactly two
+  // things, and they are the two the ADR named:
+  //   · THE TRANSPORT — a projective 4×4, no longer an affine 12-float. On an
+  //     affine matrix `pushChartRay` reduces to applyPoint/applyVector
+  //     exactly, so the committed euclidean render is not a branch beside
+  //     this one; it IS this one, at E³.
+  //   · THE METRE — chart length is not distance. In H³ the chart saturates
+  //     at the Klein boundary while true distance runs to infinity, and
+  //     distance is what `depth` carries and the ink fades on.
+  // ⛔ WHAT IT DOES NOT CHANGE, said plainly rather than implied: the SHADING
+  // is chart-space Lambert + contour, exactly as committed. A curved-space
+  // radiance model is not built and is not claimed — the geometry (where the
+  // copies are and how big they are) is the model's; the tone is the craft's.
+  const model: 'E3' | 'S3' | 'H3' = options.model ? options.model.model : 'E3';
+  const doors: ApertureModelDoor[] = options.model
+    ? options.model.doors
+    : options.deck.map((d) => ({ m: affine4(d.g), mi: affine4(d.gi), nA: d.nA, dA: d.dA, nB: d.nB, dB: d.dB }));
+  // the leg's length in the MODEL. ⚠ In E³ the chart parameter already IS
+  // arclength (v is a unit chart vector), so the committed path returns `t`
+  // itself rather than re-deriving it through a hypot — same number, and the
+  // ink's fade does not move by a last-ulp difference nobody asked for.
+  const legLength = (t: number, from: V3, to: V3): number =>
+    model === 'E3' ? t : chartDistance(model, from as Chart3, to as Chart3);
   const minCopyPixels = options.minCopyPixels ?? Math.max(18, Math.round((W * H) / 900));
 
   // THE PROBES (2026-07-14): the default frame looks down the diagonal so the
   // x-corridor's odd-word copies are IN VIEW — the FLIP's reflected generator
   // lives on x, and a frame that hides odd-x copies hides every LEFT hand
   // (measured: the old frame showed 0 of 6 LEFT on the reflected space).
-  const eye: V3 = options.eye ?? [-0.38, -0.3, -0.05];
+  const eye: V3 = apertureEyeFor(options.model, options.eye ?? [-0.38, -0.3, -0.05]);
   const fwd = norm(options.forward ?? [0.8, 0.55, 0.12]);
   const right = norm(cross(fwd, [0, 0, 1]));
   const up = cross(right, fwd);
@@ -2166,8 +2347,12 @@ export function traceAperture(options: {
   let litPixels = 0;
   let lostRays = 0;
   const copyWords = new Map<number, Map<string, { pixels: number; det: number }>>();
-  const wordKey = (g: DeckTransform): string => g.map((x) => (Math.abs(x) < 1e-6 ? 0 : x).toFixed(3)).join(',');
-  const recordCopy = (mat: number, g: DeckTransform): void => {
+  const wordKey = (g: Mat4): string => g.map((x) => (Math.abs(x) < 1e-6 ? 0 : x).toFixed(3)).join(',');
+  // the orientation mark reads det of the 4×4 — on an affine door that is the
+  // committed deckDet of its 3×3 block (the bottom row is (0,0,0,1)), so the
+  // mirrored count is the same number it has always been; on a curved door it
+  // is the only reading that means anything.
+  const recordCopy = (mat: number, g: Mat4): void => {
     let words = copyWords.get(mat);
     if (!words) {
       words = new Map();
@@ -2176,7 +2361,7 @@ export function traceAperture(options: {
     const key = wordKey(g);
     const entry = words.get(key);
     if (entry) entry.pixels += 1;
-    else words.set(key, { pixels: 1, det: deckDet(g) < 0 ? -1 : 1 });
+    else words.set(key, { pixels: 1, det: mat4Det(g) < 0 ? -1 : 1 });
   };
 
   const hitMesh = (
@@ -2270,7 +2455,7 @@ export function traceAperture(options: {
     for (let px = 0; px < W; px += 1) {
       let p: V3 = [eye[0], eye[1], eye[2]];
       let v: V3 = norm(add(add(mulS(fwd, FL), mulS(right, px - W / 2 + 0.5)), mulS(up, -(py - H / 2 + 0.5))));
-      let g: DeckTransform = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]; // the accumulated deck word
+      let g: Mat4 = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]; // the accumulated deck word
       let echo = 0;
       let travel = 0;
       for (let step = 0; step <= LEVEL; step += 1) {
@@ -2278,8 +2463,8 @@ export function traceAperture(options: {
         let tExit = Infinity;
         let exitPair = -1;
         let exitSide = 0;
-        for (let k = 0; k < deck.length; k += 1) {
-          const d0 = deck[k];
+        for (let k = 0; k < doors.length; k += 1) {
+          const d0 = doors[k];
           const planes: [V3, number, number][] = [
             [d0.nA, d0.dA, 0],
             [d0.nB, d0.dB, 1],
@@ -2340,21 +2525,25 @@ export function traceAperture(options: {
                   : craft.scaffoldTone;
           tone *= objectTone;
           tone = Math.pow(Math.max(0, Math.min(1, tone)), craft.toneGamma); // the tone curve
+          const hitPoint: V3 = [p[0] + v[0] * best.t, p[1] + v[1] * best.t, p[2] + v[2] * best.t];
           hit[idx] = best.scaffold ? 2 : 1;
           value[idx] = tone;
           echoBuf[idx] = echo;
-          mirrored[idx] = deckDet(g) < 0 ? -1 : 1;
+          mirrored[idx] = mat4Det(g) < 0 ? -1 : 1;
           material[idx] = best.mat;
-          depth[idx] = travel + best.t;
+          // the ink fades on DISTANCE, so this last leg is measured in the
+          // model too — in H³ a copy four doors out is exponentially further
+          // than its chart parameter says
+          depth[idx] = travel + legLength(best.t, p, hitPoint);
           normal[3 * idx] = best.n[0];
           normal[3 * idx + 1] = best.n[1];
           normal[3 * idx + 2] = best.n[2];
           // THE INSIDE-VIEW HATCH: the seed-frame hit point + the grazing
           // scalar (facing computed above for the contour term) — additive
           // outputs; the transport and every count are untouched
-          objPos[3 * idx] = p[0] + v[0] * best.t;
-          objPos[3 * idx + 1] = p[1] + v[1] * best.t;
-          objPos[3 * idx + 2] = p[2] + v[2] * best.t;
+          objPos[3 * idx] = hitPoint[0];
+          objPos[3 * idx + 1] = hitPoint[1];
+          objPos[3 * idx + 2] = hitPoint[2];
           facingBuf[idx] = facing;
           litPixels += 1;
           if (!best.scaffold) recordCopy(best.mat, g);
@@ -2364,22 +2553,29 @@ export function traceAperture(options: {
           lostRays += 1;
           break;
         }
-        // no hit — TRANSPORT through the face by the engine's own gluing isometry
-        const d0 = deck[exitPair];
+        // no hit — TRANSPORT through the face by the engine's own gluing
+        // isometry, IN THE MODEL. At E³ this is byte-for-byte the committed
+        // p ← g(p), v ← R·v; at S³/H³ it is the same equation said
+        // projectively (see `pushChartRay`).
+        const d0 = doors[exitPair];
         const P0 = add(p, mulS(v, tExit));
-        if (exitSide === 0) {
-          p = applyPoint(d0.g, P0);
-          v = applyVector(d0.g, v);
-          g = deckCompose(d0.g, g);
-        } else {
-          p = applyPoint(d0.gi, P0);
-          v = applyVector(d0.gi, v);
-          g = deckCompose(d0.gi, g);
+        const M = exitSide === 0 ? d0.m : d0.mi;
+        travel += legLength(tExit, p, P0);
+        let pushed: { k: Chart3; w: Chart3 };
+        try {
+          pushed = pushChartRay(M, P0 as Chart3, v as Chart3);
+        } catch {
+          // a ray the chart cannot carry is a LOST ray, counted as one — never
+          // a fabricated position that would shade as a plausible surface
+          lostRays += 1;
+          break;
         }
+        p = pushed.k as V3;
+        v = pushed.w as V3;
+        g = mat4Mul(M, g);
         p = add(p, mulS(v, 1e-5));
         transports += 1;
         echo += 1;
-        travel += tExit;
       }
     }
   }

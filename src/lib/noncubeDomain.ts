@@ -379,11 +379,11 @@ const dot4 = (a: Vec4, b: Vec4): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[
 export const metricDot = (geometry: 'S3' | 'H3' | 'E3', a: Vec4, b: Vec4): number =>
   geometry === 'H3' ? minkowski(a, b) : dot4(a, b);
 
-export function realizeDodecahedralDomain(shape: Shape, target: 'seifert-weber' | 'poincare'): CurvedRealization {
-  const geometry = target === 'seifert-weber' ? 'H3' : 'S3';
-  const k = target === 'seifert-weber' ? 5 : 3; // cells per edge — the carried census must agree
-  const targetDihedralRad = (2 * Math.PI) / k;
-  // c measured from the shape's OWN adjacent normals — asserted onto 1/√5
+/** The adjacent-normal dot `c` the realizer's Gram relations are written in,
+ * MEASURED from the shape's own faces — and it exists only if the family is
+ * regular. A family whose adjacent dots differ has no single c and THROWS BY
+ * NAME rather than being averaged into one. */
+export function measureRegularNormalDot(shape: Shape): number {
   const normals = new Map(shape.faces.map((f) => [f.id, faceNormalOf(shape, f.id)]));
   let c: number | null = null;
   for (const fA of shape.faces) {
@@ -397,9 +397,24 @@ export function realizeDodecahedralDomain(shape: Shape, target: 'seifert-weber' 
     }
   }
   if (c === null) throw new Error('noncubeDomain: no adjacent faces found');
-  if (Math.abs(c - 1 / Math.sqrt(5)) > 1e-9) {
-    throw new Error(`noncubeDomain: adjacent-normal dot ${c.toFixed(6)} is not the regular dodecahedron's 1/√5 — R1's seed is the prerequisite`);
-  }
+  return c;
+}
+
+/**
+ * THE REGULAR-CELL REALIZER, general over any one-cell seed whose adjacent
+ * face normals share one measured dot: the face co-vectors at the inradius
+ * that SOLVES δ(d) = the target dihedral, and the vertex positions re-derived
+ * onto them and asserted. `realizeDodecahedralDomain` is this function with
+ * the dodecahedron's own c asserted first — ONE construction, two contracts,
+ * never two copies that can drift apart.
+ */
+export function realizeRegularDomain(
+  shape: Shape,
+  geometry: 'S3' | 'H3',
+  targetDihedralRad: number,
+): CurvedRealization {
+  const c = measureRegularNormalDot(shape);
+  const normals = new Map(shape.faces.map((f) => [f.id, faceNormalOf(shape, f.id)]));
   const d = solveDihedralInradius(geometry, c, targetDihedralRad);
   const faceCovectors = new Map<string, Vec4>();
   for (const f of shape.faces) {
@@ -445,6 +460,17 @@ export function realizeDodecahedralDomain(shape: Shape, target: 'seifert-weber' 
     vertexPositions.set(v.id, x);
   }
   return { geometry, inradius: d, targetDihedralRad, faceCovectors, vertexPositions };
+}
+
+export function realizeDodecahedralDomain(shape: Shape, target: 'seifert-weber' | 'poincare'): CurvedRealization {
+  const geometry = target === 'seifert-weber' ? 'H3' : 'S3';
+  const k = target === 'seifert-weber' ? 5 : 3; // cells per edge — the carried census must agree
+  // c measured from the shape's OWN adjacent normals — asserted onto 1/√5
+  const c = measureRegularNormalDot(shape);
+  if (Math.abs(c - 1 / Math.sqrt(5)) > 1e-9) {
+    throw new Error(`noncubeDomain: adjacent-normal dot ${c.toFixed(6)} is not the regular dodecahedron's 1/√5 — R1's seed is the prerequisite`);
+  }
+  return realizeRegularDomain(shape, geometry, (2 * Math.PI) / k);
 }
 
 // the lens realization is CONSTRUCTIVE (S³): the equator lies on the binding
@@ -928,4 +954,277 @@ export function checkDeckFit(
   }
   const maxDeviationRad = classes.reduce((m, r) => Math.max(m, r.deviationRad), 0);
   return { metric, classes, maxDeviationRad, pass: maxDeviationRad <= DECK_FIT_EPSILON_RAD };
+}
+
+// ---------------------------------------------------------------------------
+// §F THE PROJECTIVE CHART (B-113) — the ONE place all three models look alike,
+// and the reason the committed tracer can carry them at all.
+//
+// Divide a model 4-vector by its fourth component and you land in a chart
+// where, in EVERY model, a geodesic is a STRAIGHT LINE and a face plane is a
+// FLAT PLANE:
+//   · E³ x = (p, 1)            → p            (the identity — the committed frame)
+//   · H³ x = (sinh r·ŵ, cosh r) → tanh r·ŵ    (the KLEIN ball; ADR 0004's
+//                                              own correction: "in H³ use the
+//                                              Klein model, in which rays ARE
+//                                              STRAIGHT")
+//   · S³ x = (sin r·ŵ, cos r)   → tan r·ŵ     (the gnomonic chart)
+// ⇒ the tracer's exit-plane solve and its BVH mesh test stay LINEAR and
+// UNCHANGED in all three; what changes is the TRANSPORT (a projective 4×4,
+// no longer affine) and the METRE (chart length is not distance).
+//
+// ⛔ THE CHART'S OWN LIMIT, and why it is safe HERE and nowhere else: the
+// gnomonic chart covers one open hemisphere and blows up at r = π/2; the
+// Klein chart stops at the sphere at infinity. This tracer never leaves ONE
+// CELL — the ray is transported HOME through every door and the scene is
+// never copied — so the chart is only ever asked about points inside a cell
+// of inradius ≪ π/2. ⚠ A consumer that walks OUT of the cell would need a
+// different chart, and this comment is not a guard: `chartOf` REFUSES a point
+// whose fourth component has collapsed, by name.
+// ---------------------------------------------------------------------------
+
+export type Chart3 = [number, number, number];
+
+/** A model 4-vector in the projective chart. Refuses the horizon by name —
+ * never a silent Infinity that would render as a hit somewhere plausible. */
+export function chartOf(x: Vec4): Chart3 {
+  if (Math.abs(x[3]) < 1e-9) {
+    throw new Error('noncubeDomain: the projective chart cannot see this point — its fourth component has collapsed (the horizon of the chart, not a position)');
+  }
+  return [x[0] / x[3], x[1] / x[3], x[2] / x[3]];
+}
+
+/** The chart plane of a model face co-vector, in the tracer's own (n̂, d)
+ * form: the set {k : k·n̂ = d}. ⟨u,x⟩ = 0 divided through by x₃ is
+ * u_xyz·k − u₃ = 0 in H³ (the Minkowski sign) and u_xyz·k + u₃ = 0 in S³/E³. */
+export function chartPlaneOf(geometry: 'S3' | 'E3' | 'H3', u: Vec4): { n: Chart3; d: number } {
+  const L = Math.hypot(u[0], u[1], u[2]);
+  if (L < 1e-12) throw new Error('noncubeDomain: a face co-vector with no spatial part has no chart plane');
+  const raw = geometry === 'H3' ? u[3] : -u[3];
+  return { n: [u[0] / L, u[1] / L, u[2] / L], d: raw / L };
+}
+
+/** THE METRE — the model distance between two CHART points. This is the one
+ * quantity the chart itself cannot carry: chart length saturates at the Klein
+ * boundary while true hyperbolic distance runs to infinity, and it is exactly
+ * what the ink fades on. E³'s answer is the chart length, which is why the
+ * committed euclidean render is unchanged. */
+export function chartDistance(geometry: 'S3' | 'E3' | 'H3', a: Chart3, b: Chart3): number {
+  if (geometry === 'E3') return Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+  const lift = (k: Chart3): Vec4 => {
+    const x: Vec4 = [k[0], k[1], k[2], 1];
+    const q = metricDot(geometry, x, x);
+    if (geometry === 'H3') {
+      if (q >= -1e-12) throw new Error('noncubeDomain: a chart point outside the Klein ball has no hyperbolic position');
+      const s = Math.sqrt(-q);
+      return [x[0] / s, x[1] / s, x[2] / s, x[3] / s];
+    }
+    const s = Math.sqrt(q);
+    return [x[0] / s, x[1] / s, x[2] / s, x[3] / s];
+  };
+  const A = lift(a);
+  const B = lift(b);
+  const ip = metricDot(geometry, A, B);
+  return geometry === 'H3' ? Math.acosh(Math.max(1, -ip)) : Math.acos(Math.max(-1, Math.min(1, ip)));
+}
+
+/**
+ * THE PROJECTIVE PUSH — a chart point AND the direction it is travelling in,
+ * carried through a door's in-model 4×4.
+ *
+ * The ray is the projective line spanned by K = (k, 1) and W = (w, 0); the
+ * door carries it to the line spanned by K′ = M·K and W′ = M·W, and the chart
+ * curve σ ↦ chart(K′ + σW′) has derivative (W′ₓᵧ_z·K′₃ − K′ₓᵧ_z·W′₃)/K′₃² at
+ * σ = 0. The denominator is positive, so the NUMERATOR is the new direction —
+ * and it is invariant under negating the pair, so no representative choice
+ * can silently reverse the ray.
+ *
+ * ⇒ ON AN AFFINE M (bottom row (0,0,0,1) — every euclidean door) this reduces
+ * to K′₃ = 1, W′₃ = 0: the point is exactly `applyPoint` and the direction is
+ * exactly `applyVector`. The committed euclidean transport is not a special
+ * case bolted on beside this one; it IS this one, at E³.
+ */
+export function pushChartRay(m: Mat4, k: Chart3, w: Chart3): { k: Chart3; w: Chart3 } {
+  const K = matApply(m, [k[0], k[1], k[2], 1]);
+  const W = matApply(m, [w[0], w[1], w[2], 0]);
+  if (Math.abs(K[3]) < 1e-9) {
+    throw new Error('noncubeDomain: a door carried the ray onto the chart horizon — refusing, never a fabricated position');
+  }
+  const point: Chart3 = [K[0] / K[3], K[1] / K[3], K[2] / K[3]];
+  const dir: Chart3 = [W[0] * K[3] - K[0] * W[3], W[1] * K[3] - K[1] * W[3], W[2] * K[3] - K[2] * W[3]];
+  // ⚠ AN AFFINE DOOR NEEDS NO RENORMALIZATION AND MUST NOT GET ONE — and the
+  // test is STRUCTURAL, not a tolerance: a bottom row of exactly (0,0,0,1)
+  // makes K₃ exactly 1 and W₃ exactly 0, so `dir` is exactly the committed
+  // `applyVector(R, w)`, bit for bit. Dividing it by its own hypot would move
+  // every committed euclidean render by ~1e-16 per door in exchange for
+  // nothing, and a bit that moves for no reason is a bit nobody can later
+  // explain. A PROJECTIVE door genuinely changes the chart length — the
+  // plane solve is ratio-invariant but the mesh test's t-caps and epsilons
+  // are not — so it is divided.
+  if (m[12] === 0 && m[13] === 0 && m[14] === 0 && m[15] === 1) return { k: point, w: dir };
+  const L = Math.hypot(dir[0], dir[1], dir[2]);
+  if (L < 1e-12) throw new Error('noncubeDomain: a door collapsed the ray direction — the transport is degenerate');
+  return { k: point, w: [dir[0] / L, dir[1] / L, dir[2] / L] };
+}
+
+/** det of a 4×4 — the orientation mark for a model door. On an affine matrix
+ * it equals the committed `deckDet` of the 3×3 block (the bottom row is
+ * (0,0,0,1)), so the mirrored count is the same number it always was. */
+export function mat4Det(m: Mat4): number {
+  let out = 0;
+  for (let c = 0; c < 4; c += 1) {
+    const minor: number[][] = [];
+    for (let r = 1; r < 4; r += 1) {
+      const row: number[] = [];
+      for (let cc = 0; cc < 4; cc += 1) if (cc !== c) row.push(m[r * 4 + cc]);
+      minor.push(row);
+    }
+    const d3 =
+      minor[0][0] * (minor[1][1] * minor[2][2] - minor[1][2] * minor[2][1]) -
+      minor[0][1] * (minor[1][0] * minor[2][2] - minor[1][2] * minor[2][0]) +
+      minor[0][2] * (minor[1][0] * minor[2][1] - minor[1][1] * minor[2][0]);
+    out += (c % 2 === 0 ? 1 : -1) * m[c] * d3;
+  }
+  return out;
+}
+
+export const matrixInverse4 = mat4Inverse;
+export const mat4Mul = matMul;
+export const mat4Apply = matApply;
+
+// ---------------------------------------------------------------------------
+// §G THE SEAL (B-113) — the realization a PERSON-BUILT domain EARNS, or the
+// refusal it earns instead.
+//
+// ⛔ THIS IS NOT B.0's CLASSIFIER AND MUST NOT BECOME IT. B.0 (LAW 15) killed
+// a reader that took the carried edge-class size k, printed "hyperbolic", and
+// realized nothing — a curvature word INFERRED from a count. Nothing here is
+// inferred: a realization is CONSTRUCTED (the inradius solved so the cell's
+// own dihedral becomes 2π/k) and then PROVEN three ways before any class is
+// carried anywhere —
+//   1. the deck-fit checker measures Θ(c) on the EMITTED co-vectors and every
+//      carried edge class must close to 2π;
+//   2. every door's in-model isometry must fit and WITNESS (§8.1 field 3);
+//   3. the deck WALK must return the room to itself around every class.
+// A domain that fails any of the three gets NO seal and NO model — the
+// euclidean transport stands and says what it always said. The seal is a
+// positive mark that was earned; its absence is a true absence.
+//
+// ⚠ AND WHICH MODEL IS NOT CHOSEN EITHER: the target 2π/k is compared with
+// the cell's OWN euclidean dihedral arccos(−c). Bigger ⇒ the cell must
+// inflate ⇒ S³; smaller ⇒ it must thin ⇒ H³; equal ⇒ E³, sealed POSITIVELY
+// (the flat cube earns a class rather than being the case with no answer).
+// The solve either has a root or THROWS — an unreachable dihedral is a
+// refusal, never a clamp.
+// ---------------------------------------------------------------------------
+
+export const SEAL_CLOSURE_EPSILON_RAD = 1e-4; // the walk's own ε — a seam this big is visible
+
+export interface SealedRealization {
+  geometry: 'S3' | 'E3' | 'H3';
+  inradius: number | null; // null on E³ — a flat cell has no solved size
+  edgeClassSize: number; // the k every carried class shares
+  euclideanDihedralRad: number; // the cell's own arccos(−c) — what the target was compared against
+  realization: CurvedRealization;
+  deck: ModeledDeck;
+  fit: DeckFitReport;
+  closureWorstRad: number;
+}
+
+export type DomainSeal = { sealed: true; seal: SealedRealization } | { sealed: false; reason: string };
+
+export function sealDomainRealization(domain: DomainModel): DomainSeal {
+  const shape = domain.shape;
+  const refuse = (reason: string): DomainSeal => ({ sealed: false, reason });
+  // ONE cell: a multi-cell region's interior walls are spanned, not crossed,
+  // and the regular-cell realizer has no meaning on a union.
+  if (shape.cells.length !== 1) {
+    return refuse(`the seal needs a one-cell seed; this region carries ${shape.cells.length} cells`);
+  }
+  if (!domain.tower.sound) return refuse('the S² gate is not sound — there is no deck group to realize');
+  const boundaryRoots = new Set(domain.tower.gate.boundary ? domain.tower.gate.boundary.edgeClasses : []);
+  const classes = domain.tower.gate.edgeLinks.filter((l) => !boundaryRoots.has(l.edgeClass));
+  if (classes.length === 0) return refuse('the carried census has no interior edge class to fit');
+  const sizes = [...new Set(classes.map((l) => l.memberEdgeIds.length))].sort((a, b) => a - b);
+  if (sizes.length !== 1) {
+    return refuse(`the carried edge classes are k = ${sizes.join(', ')} — one regular realization cannot serve two different k, and averaging them would be a fabrication`);
+  }
+  const k = sizes[0];
+  let c: number;
+  try {
+    c = measureRegularNormalDot(shape);
+  } catch (error) {
+    return refuse((error as Error).message);
+  }
+  const euclideanDihedralRad = Math.acos(Math.max(-1, Math.min(1, -c)));
+  const target = (2 * Math.PI) / k;
+  const geometry: 'S3' | 'E3' | 'H3' =
+    Math.abs(target - euclideanDihedralRad) <= 1e-9 ? 'E3' : target > euclideanDihedralRad ? 'S3' : 'H3';
+  let realization: CurvedRealization;
+  try {
+    realization =
+      geometry === 'E3'
+        ? euclideanControlRealization(shape)
+        : realizeRegularDomain(shape, geometry, target);
+  } catch (error) {
+    return refuse((error as Error).message);
+  }
+  // ⛔ A DEGENERATE CELL IS NOT A REALIZATION, and the case is REACHABLE: a
+  // uniform k = 2 census (two cells around every edge ⇒ a 180° dihedral)
+  // solves to inradius π/2 on S³, where every face plane becomes the SAME
+  // great sphere — the spatial part of each co-vector collapses and the
+  // "cell" is a hemisphere with no corners. The three proofs below all pass
+  // on it, because an angle sum and a closure walk are blind to a cell that
+  // has stopped being a solid. Measured on the cube family: pattern 776.
+  if (realization.inradius !== null) {
+    const bound = geometry === 'S3' ? Math.PI / 2 : 5;
+    if (realization.inradius >= bound - 1e-6) {
+      return refuse(`the cell degenerates at this size: the solve reaches inradius ${realization.inradius.toFixed(6)} on ${geometry}, where the faces stop bounding a solid (k = ${k} puts ${k} cells around every edge — a fundamental domain needs at least 3)`);
+    }
+  }
+  // PROOF 1 — every carried class closes to 2π on the EMITTED co-vectors.
+  // ⚠ E³ measures on the DIRECTION-ONLY co-vectors: the angle Gram is n̂·n̂′
+  // and the affine offset the isometry fit needs would corrupt it (the two
+  // producers, named where they were built).
+  let fit: DeckFitReport;
+  try {
+    fit = checkDeckFit(domain, geometry === 'E3' ? euclideanControlCovectors(shape) : realization.faceCovectors, geometry);
+  } catch (error) {
+    return refuse((error as Error).message);
+  }
+  if (!fit.pass) {
+    return refuse(`the realization does not fit: an edge class misses 2π by ${((fit.maxDeviationRad * 180) / Math.PI).toFixed(4)}°`);
+  }
+  // PROOF 2 — every door fits and witnesses (§8.1 field 3, throws by name)
+  let deck: ModeledDeck;
+  try {
+    deck = realizePairingIsometries(shape, domain.complex.pairings, realization);
+  } catch (error) {
+    return refuse((error as Error).message);
+  }
+  // PROOF 3 — the WALK returns the room to itself around every class
+  let closureWorstRad: number;
+  try {
+    const closure = readDeckClosure(domain, deck, domain.complex.pairings);
+    if (closure.length === 0) return refuse('the closure walk read no edge class — nothing was proven');
+    closureWorstRad = closure.reduce((m, r) => Math.max(m, r.turnRad), 0);
+  } catch (error) {
+    return refuse((error as Error).message);
+  }
+  if (closureWorstRad > SEAL_CLOSURE_EPSILON_RAD) {
+    return refuse(`the deck walk does not close: a class returns the room turned by ${((closureWorstRad * 180) / Math.PI).toFixed(4)}°`);
+  }
+  return {
+    sealed: true,
+    seal: {
+      geometry,
+      inradius: realization.inradius,
+      edgeClassSize: k,
+      euclideanDihedralRad,
+      realization,
+      deck,
+      fit,
+      closureWorstRad,
+    },
+  };
 }
