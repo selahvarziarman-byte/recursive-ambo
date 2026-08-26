@@ -45,7 +45,8 @@ const { loadForm } = req('src/lib/multiform.ts');
 const { nGon } = req('src/playground/primitiveCatalogue.ts');
 const { thicken } = req('src/lib/thicken.ts');
 const { applyPlaygroundOperationTo } = req('src/manuscript/writtenFormModel.ts');
-const { serializeSnapshot } = req('src/playground/snapshot.ts');
+const { serializeSnapshot, deserializeSnapshot } = req('src/playground/snapshot.ts');
+const { acquireComplex } = req('src/lib/complexIdentification.ts');
 const { classifyForm, classLabel } = req('src/manuscript/surfaceClassifier.ts');
 const { recoverBornSurface } = req('src/playground/bornFormRouting.ts');
 
@@ -158,6 +159,35 @@ check('§4 the wordless branch is refineAcquiredToDisk with the carried lineage'
 check('§4 no provenance flag routes (origin/source never decide the refine)',
   !/origin === '(loaded|born|invoked)'[^\n]*refine/i.test(storeSrc));
 check('§4 the pairwise equalize rides the pair (M2)', storeSrc.includes('equalizePreparedDisks(preparedA, preparedB)'));
+
+// ---------------------------------------------------------------------------
+// §5 — R-2 CLOSED (B-106 B3): the frozen fix landed, the bridge retired
+// ---------------------------------------------------------------------------
+console.log('\n----- §5 R-2: the loaded idn form acquires through the COMMITTED chain; the ns-copy bridge is retired -----');
+// (a) THE CURE at its own seam: deserializeSnapshot replays the form's OWN
+// idn link (60bb5dc), so the committed acquisition lands 'identified' on the
+// loaded form directly — no bridge anywhere in the route.
+const cured = deserializeSnapshot(file, 'r2cure');
+const curedAcq = acquireComplex(cured.shape, cured.ancestors ?? null);
+check('§5 THE CURE: acquireComplex(loaded sewn torus, its carried chain) ACQUIRES with source \'identified\' — before 60bb5dc this was NULL (the ns-copied own link), which is what the bridge existed to cover',
+  curedAcq !== null && curedAcq.source === 'identified');
+// (b) the fallback stands HONEST: a recipe the replay must refuse (a bogus
+// cycle id) loads as the namespaced copy — no throw, and acquisition ends at
+// its honest null (the guard was never weakened).
+const tampered = JSON.parse(JSON.stringify(file));
+tampered.shape.id = tampered.shape.id.replace(/idn\[([pr]*)\]\[[^\]]*\]/, 'idn[$1][edge:no-such-edge]');
+const fallback = deserializeSnapshot(tampered, 'r2fall');
+check('§5 the fallback: a tampered recipe loads WITHOUT throwing, as the namespaced copy (id keeps the snapshot: prefix), and acquisition returns the honest null',
+  fallback.shape.id.startsWith('snapshot:r2fall:') &&
+  acquireComplex(fallback.shape, fallback.ancestors ?? null) === null);
+// (c) THE BRIDGE IS RETIRED (R-2's kill, both halves): the live bridge block
+// is gone from surfaceRefinement (its marker, its fuzzy suffix mapper), and
+// the retirement is named in its place.
+const srSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/surfaceRefinement.ts'), 'utf8');
+check('§5 the bridge retired: no live NS-COPY BRIDGE block in surfaceRefinement (the frozen-seam marker and the suffix mapId are gone; the RETIRED notice names the kill)',
+  !srSrc.includes('NS-COPY BRIDGE (a frozen-seam finding') &&
+  !srSrc.includes('e.id.endsWith(`:${plain}`)') &&
+  srSrc.includes('THE SNAPSHOT NS-COPY BRIDGE RETIRED'));
 
 console.log(
   `\n--- refineAcquiredToDisk (invoked type ⇄ acquired type · routing · the unblocked flow): ${

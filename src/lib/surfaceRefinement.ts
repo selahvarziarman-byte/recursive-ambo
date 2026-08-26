@@ -84,7 +84,7 @@ import { recoverBornSurface } from '../playground/bornFormRouting';
 // (an acquired composite has a complex but no birth word) and the committed
 // boundary walker (the sew preparer equalizes rims). No cycle: the
 // identification module never imports this one.
-import { acquireComplex, identify, parseIdentificationSuffix, walkBoundaryCircles } from './complexIdentification';
+import { acquireComplex, walkBoundaryCircles } from './complexIdentification';
 import type { AssembledComplex } from './globalW1';
 // P1 — the conformal subdivide: the owned atom rides the chord (forced split)
 import { splitCornerAngles } from './conformalAtom';
@@ -740,42 +740,18 @@ interface AcquiredPolygonState {
 }
 
 function acquiredPolygonState(form: Shape, ancestry: Shape | Shape[] | null): AcquiredPolygonState {
-  let acquired: { complex: AssembledComplex } | null = acquireComplex(form, ancestry);
-  if (!acquired) {
-    // THE SNAPSHOT NS-COPY BRIDGE (a frozen-seam finding, disclosed in the
-    // handback): a snapshot-loaded quotient can carry a PARSEABLE idn suffix
-    // whose cycle ids keep their ORIGINAL spellings while its parent pointer
-    // and ancestors are namespaced — the frozen reconstruction replays
-    // chain-INTERNAL links only, so the form's own link ns-copies and the
-    // committed chain honestly nulls. Bridge here, with committed doors only:
-    // map each cycle id into the parent's edge space (a UNIQUE suffix match,
-    // else refuse), replay the committed `identify`, and accept its complex
-    // only when the replay reproduces the loaded copy's own cell counts.
-    const spec = parseIdentificationSuffix(form.id);
-    const lineage = ancestry === null ? [] : Array.isArray(ancestry) ? ancestry : [ancestry];
-    const parent = lineage.find((s) => s.id === form.genealogy.parentShapeId) ?? null;
-    if (spec && parent) {
-      const mapId = (plain: string): string | null => {
-        const hits = parent.edges.filter((e) => e.id === plain || e.id.endsWith(`:${plain}`));
-        return hits.length === 1 ? hits[0].id : null;
-      };
-      const cycleA = spec.cycleA.map(mapId);
-      const cycleB = spec.cycleB.map(mapId);
-      if (cycleA.every((id): id is string => id !== null) && cycleB.every((id): id is string => id !== null)) {
-        try {
-          const rest = lineage.filter((s) => s.id !== parent.id);
-          const replay = identify(parent, cycleA, cycleB, spec.modes, rest.length > 0 ? rest : null);
-          const countsMatch =
-            Object.keys(replay.shape.vertices).length === Object.keys(form.vertices).length &&
-            replay.shape.edges.length === form.edges.length &&
-            replay.shape.faces.length === form.faces.length;
-          if (countsMatch) acquired = { complex: replay.complex };
-        } catch {
-          // the bridge refuses silently here — the loud refusal below speaks
-        }
-      }
-    }
-  }
+  // THE SNAPSHOT NS-COPY BRIDGE RETIRED (B-106 B3 — R-2's kill fired: the
+  // frozen edit landed, bridge retired). The bridge stood for one condition:
+  // a snapshot-loaded quotient whose OWN idn link ns-copied (original cycle
+  // spellings in the recipe, namespaced everything else), which nulled the
+  // committed chain. `deserializeSnapshot` now replays the form's own link
+  // at load (60bb5dc), so that producer is GONE: a loaded quotient arrives
+  // replay-native and acquires here directly. A load whose own replay
+  // REFUSED falls back to the ns-copy and lands the loud refusal below —
+  // and the bridge could not have out-performed it: its fuzzy suffix
+  // mapping replayed the same committed identify on equivalent inputs,
+  // so whatever the loader's exact ns-mapping refuses, it refused too.
+  const acquired = acquireComplex(form, ancestry);
   if (!acquired) {
     throw new Error(
       `surfaceRefinement: cannot acquire "${form.name}"'s complex (no birth word AND the acquisition chain returned null) — pass the form's ancestry for chained recovery`,
