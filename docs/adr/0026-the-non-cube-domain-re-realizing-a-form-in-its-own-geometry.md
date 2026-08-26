@@ -1,6 +1,6 @@
 # ADR 0026 — The non-cube domain: re-realizing a form in its own geometry (S³ / H³), where the euclidean deck-deficit vanishes
 
-- **Status:** Proposed — the definitional half of **B.4**, owed the way rung 2 owed ADR 0025. Awaiting mothership ratification.
+- **Status:** Accepted — mothership-ratified 2026-08-26 at `8fd771a` (letter `2026-08-26_1550_mothership_ADR-0026-RATIFIED…`); B.4's first build landed + ratified `B-109` at `7878bcf`. The definitional half of **B.4**.
 - **Date:** 2026-08-26
 - **Author:** the researcher
 - **Context SHA:** `8fd771a` (R1 landed `74be04c`, ratified `026d499`; the regular icosahedron/dodecahedron now realize via `t=1/φ` — see `SEAL_R1_THE_METRIC_RELAXATION_t_equals_one_over_phi.md`).
