@@ -26,8 +26,107 @@ import { deriveEdges, getCellFaces } from './shape';
 // the Sovereign's D5 finding): a MINTED split face no longer assumes the
 // regular constant — its angles are acos-IMPORTED from the carried vertex
 // positions (measure, never stamp; malformed ⇒ un-owned). A COPIED face
-// still RIDES its source's owned angles unchanged.
+// still RIDES its source's owned angles unchanged — EXCEPT across R1's
+// metric correction below, which no stamp crosses.
 import { importCornerAngles } from './cornerAngleImport';
+
+// ---------------------------------------------------------------------------
+// R1 — THE METRIC RELAXATION (B-107; built to the researcher's seal
+// SEAL_R1_THE_METRIC_RELAXATION_t_equals_one_over_phi.md, never re-derived
+// here). The diagonalization used to carry the cuboctahedron's positions
+// verbatim: 12 vertices at the cyclic perms of (0,±1,±1)·h — icosahedron
+// COMBINATORICS on cuboctahedron METRIC, icosahedron-SHAPED but never
+// regular (the split squares truly owned 45·45·90; R2's import told the
+// truth about a wrong metric). The relaxation moves the 12 onto the same
+// family at t = 1/φ — the UNIQUE t making the two edge classes (short 2t ·
+// long √(t²+(1−t)²+1)) equal, i.e. the positive root of t² + t − 1 — IN
+// PLACE: same vertex ids, and the face/edge ids (which encode vertex ids)
+// are byte-identical BY CONSTRUCTION. The correction MARKS itself on each
+// moved vertex's packet (a trace — the meaning of the act) and RE-BEGETS
+// NOTHING: no new vertices, no genealogy edge, createdVertexIds stays [].
+// ⛔ THE SEAL'S TRAP, honoured: the landing is verified on the FIXED CARRIED
+// COMBINATORICS — the 20 result faces' 60 corner angles within ε = 1e-6 rad
+// of 60° — NEVER a distance-derived graph (which self-selects equal edges
+// and reads 60° for ANY t: a test that cannot fail). The t-slot assignment
+// has a chirality that must agree with the diagonal matching's; both are
+// tried and the landing DECIDES. A cuboctahedron cell whose positions this
+// recognizer cannot read (a rotated or sheared frame) stands UNRELAXED with
+// carried positions — the honest carry, byte-identical to the pre-R1
+// behavior, and NO mark is minted (nothing fabricated).
+// ---------------------------------------------------------------------------
+
+const RELAX_T = (Math.sqrt(5) - 1) / 2; // 1/φ — the seal §1's derived target
+const RELAX_EPS_RAD = 1e-6; // the seal §2's ε — on the MEASURED angle, never positions
+const REGULAR_TRIANGLE_RAD = Math.PI / 3;
+// the trace, one producer — the witness pins this exact string
+export const R1_RELAXATION_MARK = 'metric-relaxed · t = 1/φ (R1)';
+
+function relaxedIcosahedronPositions(
+  vertices: Record<VertexId, Vertex>,
+  cellVertexIds: VertexId[],
+  carriedFaceCycles: VertexId[][],
+): Map<VertexId, [number, number, number]> | null {
+  // recognize the family: every position carries exactly one ~zero coordinate
+  // and two coordinates of one shared magnitude h (the cuboctahedron's edge
+  // midpoints in the axis-aligned frame)
+  let h = 0;
+  for (const id of cellVertexIds) {
+    const p = vertices[id]?.position;
+    if (!p) return null;
+    for (const x of p) h = Math.max(h, Math.abs(x));
+  }
+  if (h < 1e-9) return null;
+  const zeroAxisOf = new Map<VertexId, number>();
+  for (const id of cellVertexIds) {
+    const p = vertices[id].position;
+    const magnitudes = p.map((x) => Math.abs(x) / h);
+    const zeroes = magnitudes.filter((m) => m < 1e-9).length;
+    const ones = magnitudes.filter((m) => Math.abs(m - 1) < 1e-9).length;
+    if (zeroes !== 1 || ones !== 2) return null;
+    zeroAxisOf.set(id, p.findIndex((x) => Math.abs(x) / h < 1e-9));
+  }
+  // both chiralities of the t-slot assignment; the seal's invariant — the 60
+  // corner angles of the CARRIED faces — decides which one lands
+  for (const chirality of [1, 2]) {
+    const candidate = new Map<VertexId, [number, number, number]>();
+    for (const id of cellVertexIds) {
+      const p = vertices[id].position;
+      const tAxis = ((zeroAxisOf.get(id) as number) + chirality) % 3;
+      const q: [number, number, number] = [p[0], p[1], p[2]];
+      q[tAxis] = Math.sign(p[tAxis]) * RELAX_T * h;
+      candidate.set(id, q);
+    }
+    const positionOf = (id: VertexId): [number, number, number] | undefined =>
+      candidate.get(id) ?? (vertices[id]?.position as [number, number, number] | undefined);
+    let maxDeviation = 0;
+    let malformed = false;
+    for (const cycle of carriedFaceCycles) {
+      for (let k = 0; k < cycle.length && !malformed; k += 1) {
+        const v = positionOf(cycle[k]);
+        const prev = positionOf(cycle[(k - 1 + cycle.length) % cycle.length]);
+        const next = positionOf(cycle[(k + 1) % cycle.length]);
+        if (!v || !prev || !next) {
+          malformed = true;
+          break;
+        }
+        const e1 = [prev[0] - v[0], prev[1] - v[1], prev[2] - v[2]];
+        const e2 = [next[0] - v[0], next[1] - v[1], next[2] - v[2]];
+        const n1 = Math.hypot(e1[0], e1[1], e1[2]);
+        const n2 = Math.hypot(e2[0], e2[1], e2[2]);
+        if (n1 < 1e-12 || n2 < 1e-12) {
+          malformed = true;
+          break;
+        }
+        const cos = (e1[0] * e2[0] + e1[1] * e2[1] + e1[2] * e2[2]) / (n1 * n2);
+        const angle = Math.acos(Math.max(-1, Math.min(1, cos)));
+        maxDeviation = Math.max(maxDeviation, Math.abs(angle - REGULAR_TRIANGLE_RAD));
+      }
+      if (malformed) break;
+    }
+    if (!malformed && maxDeviation <= RELAX_EPS_RAD) return candidate;
+  }
+  return null;
+}
 
 interface CuboctahedronSourceTopology {
   cell: Cell;
@@ -97,8 +196,32 @@ function applyCuboctahedronDiagonalization(
   const parentCellId = makeCellId(shapeId, 'parent', sourceCell.id, sourceCell.vertexIds);
   const vertices = cloneParentVertices(parent.vertices);
   const diagonalChoices = selectCoherentDiagonalMatching(topology);
-  const parentFaces = createParentCellFaces(shapeId, parentCellId, topology.faces);
-  const resultFaces = createPyritohedralFaces(shapeId, sourceCell.id, topology, diagonalChoices, vertices);
+  // R1 — the relaxation runs BEFORE any face mints, so every acos-import
+  // below measures the RELAXED metric; the moved vertices carry the mark.
+  // The carried verification cycles ARE the result's 20 faces (8 preserved
+  // triangles + 12 split halves) — the seal's fixed combinatorics.
+  const carriedFaceCycles = [
+    ...topology.triangleFaces.map((face) => face.vertexIds),
+    ...diagonalChoices.flatMap((choice) => choice.splitFaces),
+  ];
+  const relaxedPositions = relaxedIcosahedronPositions(vertices, topology.vertexIds, carriedFaceCycles);
+  if (relaxedPositions) {
+    for (const [vertexId, position] of relaxedPositions) {
+      const vertex = vertices[vertexId];
+      vertices[vertexId] = {
+        ...vertex,
+        position,
+        data: { ...vertex.data, tags: [...vertex.data.tags, R1_RELAXATION_MARK] },
+      };
+    }
+  }
+  // R1: after a metric correction NO STAMP CROSSES IT — every face on the
+  // moved vertices re-derives its angle atom from the relaxed positions (the
+  // D6 law: no seal can catch a stale stamp over new positions, so none may
+  // survive one); with no relaxation the copies ride byte-identically.
+  const relaxedVertices = relaxedPositions ? vertices : null;
+  const parentFaces = createParentCellFaces(shapeId, parentCellId, topology.faces, relaxedVertices);
+  const resultFaces = createPyritohedralFaces(shapeId, sourceCell.id, topology, diagonalChoices, vertices, relaxedVertices);
   const resultCellId = makeCellId(shapeId, 'core', sourceCell.id, sourceCell.vertexIds);
   const sourceEdgeIds = topology.edges.map((edge) => edge.id);
   const parentCell: Cell = {
@@ -323,6 +446,7 @@ function createParentCellFaces(
   shapeId: string,
   parentCellId: string,
   sourceFaces: Face[],
+  relaxedVertices: Record<VertexId, Vertex> | null,
 ): Face[] {
   return sourceFaces.map((face) => ({
     id: makeFaceId(shapeId, 'parent-cell-face', face.id, face.vertexIds),
@@ -331,9 +455,26 @@ function createParentCellFaces(
     sourceCellId: parentCellId,
     sourceFaceId: face.id,
     // the copy RIDES the source's owned atom (additive — absent stays absent)
-    ...(face.cornerAngles ? { cornerAngles: face.cornerAngles } : {}),
+    // — UNLESS R1 moved these vertices: then the atom RE-DERIVES from the
+    // relaxed positions (a parent-record square over relaxed positions is a
+    // skew quad; the stamp of its old 90s would be the stale stamp D6 names)
+    ...ownedAngleAtom(face, relaxedVertices),
     lineage: deriveFromSourceFace(face.id, shapeId),
   }));
+}
+
+// R1 — the one rule for copied atoms across the correction: re-derive over
+// moved vertices (measure, never stamp; malformed ⇒ un-owned), copy verbatim
+// when nothing moved.
+function ownedAngleAtom(
+  face: Face,
+  relaxedVertices: Record<VertexId, Vertex> | null,
+): Record<string, never> | { cornerAngles: number[] } {
+  if (relaxedVertices) {
+    const trueAngles = importCornerAngles(face.vertexIds, relaxedVertices);
+    return trueAngles ? { cornerAngles: trueAngles } : {};
+  }
+  return face.cornerAngles ? { cornerAngles: face.cornerAngles } : {};
 }
 
 function createPyritohedralFaces(
@@ -342,6 +483,7 @@ function createPyritohedralFaces(
   topology: CuboctahedronSourceTopology,
   diagonalChoices: DiagonalChoice[],
   vertices: Record<VertexId, Vertex>,
+  relaxedVertices: Record<VertexId, Vertex> | null,
 ): Face[] {
   const preservedFaces = [...topology.triangleFaces]
     .sort((a, b) => a.id.localeCompare(b.id))
@@ -352,8 +494,11 @@ function createPyritohedralFaces(
       data: clonePacketData(face.data),
       sourceCellId,
       sourceFaceId: face.id,
-      // the copy RIDES the source's owned atom (additive — absent stays absent)
-      ...(face.cornerAngles ? { cornerAngles: face.cornerAngles } : {}),
+      // the copy RIDES the source's owned atom — unless R1 moved the
+      // vertices: then it re-derives (the preserved triangles stay
+      // equilateral at t=1/φ, but the atom must be MEASURED there, not
+      // inherited across the correction)
+      ...ownedAngleAtom(face, relaxedVertices),
       lineage: deriveFaceLineage(
         [
           packetSourceRef('face', face.id, 'source-face'),

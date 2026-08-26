@@ -335,12 +335,32 @@ note(`icosahedron (cell-isolated): ${icosaIso.faces.filter((f) => Array.isArray(
 const icosaSplits = icosaIso.faces.filter((f) => f.role === 'pyritohedral-split-face');
 const icosaPreserved = icosaIso.faces.filter((f) => f.role === 'pyritohedral-preserved-face');
 const sortedDeg = (f) => (f.cornerAngles ?? []).map((a) => Math.round((a * 180) / P)).sort((x, y) => x - y).join(',');
-check('§7 (E2) ★★ …AND ON THE NEXT RUNG (R2 — the true parts): the pyritohedral-icosahedron owns all 20 triangles — the 8 preserved RIDE 60°×3, the 12 splits acos-read their TRUE 45·45·90 (the fabricated uniform 60s are gone) → the vertex seal UNCHANGED: 12 interior vertices, each Σθ = 300° (45+45+60+60+90), deficit 60° each, Σ = 4π; §4 already sealed its dual dodecahedron at 4π on this same run',
+// R1 RECUT (B-107 — THE METRIC RELAXATION): the splits' 45·45·90 was the
+// TRUE reading of a WRONG metric (icosahedron combinatorics on carried
+// cuboctahedron positions). R1 relaxes the 12 vertices to t = 1/φ IN the
+// diagonalization, so the splits now MEASURE 60·60·60 — not the old
+// fabricated stamp (that disease stamped 60s OVER 45·45·90 positions; the
+// discriminator below re-derives a split's corners from the shape's own
+// positions and they AGREE). The vertex seal is UNCHANGED by a truer route:
+// each vertex now sums 5 × 60° = 300° (was 45+45+60+60+90), deficit 60°
+// each, Σ = 4π — the DUAL row's seal survives the relaxation.
+check('§7 (E2) ★★ …AND ON THE NEXT RUNG (R1 relaxed): the pyritohedral-icosahedron owns all 20 triangles at a MEASURED 60°×3 (the splits\' angles agree with an independent acos from the shape\'s own relaxed positions — owned by measurement, never the fabricated stamp) → the vertex seal UNCHANGED: 12 interior vertices, each Σθ = 300° (now 5 × 60°), deficit 60° each, Σ = 4π; §4 already sealed its dual dodecahedron at 4π on this same run',
   icosaIso.faces.every((f) => Array.isArray(f.cornerAngles)) &&
     icosaPreserved.length === 8 &&
     icosaPreserved.every((f) => f.cornerAngles.every((a) => near(a, P / 3))) &&
     icosaSplits.length === 12 &&
-    icosaSplits.every((f) => sortedDeg(f) === '45,45,90') &&
+    icosaSplits.every((f) => sortedDeg(f) === '60,60,60') &&
+    icosaSplits.every((f) =>
+      f.vertexIds.every((vid, k) => {
+        const v = shapeA.vertices[vid].position;
+        const prev = shapeA.vertices[f.vertexIds[(k - 1 + f.vertexIds.length) % f.vertexIds.length]].position;
+        const next = shapeA.vertices[f.vertexIds[(k + 1) % f.vertexIds.length]].position;
+        const e1 = [prev[0] - v[0], prev[1] - v[1], prev[2] - v[2]];
+        const e2 = [next[0] - v[0], next[1] - v[1], next[2] - v[2]];
+        const cos = (e1[0] * e2[0] + e1[1] * e2[1] + e1[2] * e2[2]) / (Math.hypot(...e1) * Math.hypot(...e2));
+        return near(f.cornerAngles[k], Math.acos(Math.max(-1, Math.min(1, cos))));
+      }),
+    ) &&
     icosaReadings.length === 12 &&
     icosaReadings.every((r) => near(r.curvature, P / 3)) &&
     near(icosaSum, 4 * P));
@@ -355,9 +375,10 @@ check('§7 (E3) ★★ THE STAMP BITES: ONE medial face planted +0.1 per corner 
 // E4 — the horizon untouched: stamps confined to the face constructors
 const amboSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/ambo.ts'), 'utf8');
 const pyritoSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/pyritohedralDiagonalization.ts'), 'utf8');
-check('§7 (E4) THE HORIZON UNTOUCHED: the stamps live ONLY at the face constructors (7 `cornerAngles` occurrences in ambo — the parent-cell RIDE [3: guard + key + value] + 2 core mints + 2 residue mints; 7 in pyritohedral — the parent RIDE [3] + the preserved RIDE [3] + the split mint [1]) and the horizon reader module (trisonizedMidwifeReadingV0 — the apex-trace median, recorded-never-drawn) is BYTE-IDENTICAL to HEAD, stamping nothing',
+check('§7 (E4) THE HORIZON UNTOUCHED: the stamps live ONLY at the face constructors (7 `cornerAngles` occurrences in ambo — the parent-cell RIDE [3: guard + key + value] + 2 core mints + 2 residue mints; 6 in pyritohedral — R1 centralized the copies into ownedAngleAtom [type 1 + re-derive 1 + ride guard/key/value 3] + the split mint [1]) and the horizon reader module (trisonizedMidwifeReadingV0 — the apex-trace median, recorded-never-drawn) is BYTE-IDENTICAL to HEAD, stamping nothing',
   (amboSrc.match(/cornerAngles/g) ?? []).length === 7 &&
-    (pyritoSrc.match(/cornerAngles/g) ?? []).length === 7 &&
+    (pyritoSrc.match(/cornerAngles/g) ?? []).length === 6 &&
+    pyritoSrc.includes('function ownedAngleAtom(') &&
     headEq('src/lib/trisonizedMidwifeReadingV0.ts') &&
     !fs.readFileSync(path.join(repoRoot, 'src/lib/trisonizedMidwifeReadingV0.ts'), 'utf8').includes('cornerAngles'));
 
