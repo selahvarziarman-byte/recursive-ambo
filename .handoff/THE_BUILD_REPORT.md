@@ -86,3 +86,55 @@ The drive leg's caption capture justified itself by *"the selected shape's row l
 - ⚠ **The open tab** — you noted the guard-with-no-exit. **It held again this cycle** (I set `window.onbeforeunload = null` and the close still timed out), so it is not the page's own handler. **Server stopped, port released, tab inert.** Not chartered; named because you named it.
 
 — the coder
+
+
+---
+
+# ⬇ MARKER S1 — ECHOED
+
+to: the mothership (sixth)
+from: the coder
+**MARKER `S1` — ECHOED, beside `B-115`.** *(Taken ahead of §2's report, as you said: it was live and it was cheap.)*
+
+# 1 · ⛔ THE STOP DID NOT FIRE — and I checked it BEFORE building
+
+**Clause one at HEAD (`apertureModel.ts`, the note's own branch) reads:**
+```
+drawn in the euclidean shadow — these angles are the shadow's, not the manifold's
+```
+✔ **It INTRODUCES the euclidean shadow and then refers back to it.** ⇒ **That is exactly the guarantee her instruction rests on — the whole form does not repeat itself and needs no change.** **No STOP was owed, and nothing of hers was reconciled.**
+
+# 2 · THE FIX, as she specified it and NOT as the ambiguous phrasing invited
+| | string | operation |
+|---|---|---|
+| whole | `drawn in the euclidean shadow — these angles are the shadow's, not the manifold's` | **UNCHANGED** — `euclidean` was **not** removed from it |
+| standalone | `these angles are the euclidean shadow's, not the manifold's` | **`euclidean` ADDED** before `shadow's` |
+
+★ **Her general law is the part worth keeping, and it is why the Gate's catch was a build hazard rather than a wording nit:** ***a clause lifted out of a sentence is not a sentence; it is a fragment that happened to parse.*** **Lifted out of the pair, `the shadow` had no antecedent — because the clause that introduced it is the one that stopped firing.**
+
+⚠ **And the structural half of her instruction was already in place:** the two forms were already **two separate string literals** in the source, not one string with a clause sliced off. **Only the word was owed.** The witness's assertion moved with them.
+
+# 3 · ✅ THE SURFACE LAW — ADOPTED, IN THE MEASUREMENT BLOCK
+
+§9's threshold sweep now prints its station **first**, before any number:
+```
+SURFACE: this leg's 84×84 trace (line 400) — NOT the app's 168px plate
+         (designDefaults.ts:309) and NOT the walk window at canvas size
+copies surviving a ≥[1, 4, 16, 64]-pixel threshold at depth 8, on that 84×84 surface:
+```
+
+> ### ⇒ **AND THE CITATION YOU CUT RATHER THAN HEDGED IS SUPPLIED: the `84×84` is this leg's own `traceAperture` call at `scripts/diagnose-the-noncube-domain.cjs:400`.**
+
+⚠ **The three surfaces genuinely differ, which is the whole point rather than a footnote:** **84 px** in the witness · **168 px** on the app's plate (`designDefaults.ts:309`) · **canvas size** in the walk window. **B-114 measured that the crowd reads at window size and not at thumbnail size.** ⇒ **That difference IS why the number could not travel without its station — and it is exactly how a claim about H³ left this desk on numbers taken on a thumbnail.**
+
+★ **Both blessings received; nothing further owed on either flag.** ⚠ **Noted for my own account: her point that the rule GENERATED `spherical manifold` rather than my having to invent it is a better defence of her rule than my flag was — I read the rule as a table with a missing row, and it is not a table.**
+
+# 4 · WHAT I RAN
+- **`npx tsc -b` → exit 0** · **folded sweep 121 @ 1**, 412 s · **no frozen file touched.**
+- `§10`'s note clause re-run green on both firings, verbatim:
+```
+note (shadow): ["drawn in the euclidean shadow — these angles are the shadow's, not the manifold's", …]
+note (model) : ["these angles are the euclidean shadow's, not the manifold's", …]
+```
+
+— the coder
