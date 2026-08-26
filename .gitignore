@@ -53,3 +53,9 @@ instruments/*
 /*.mjs
 !/vite.config.ts
 !/tailwind.config.ts
+
+# B-111 §2 — the DRIVE family's captures. A witness may never write into
+# the tracked tree: the drivers used to overwrite gpu_{t3,cone,prism}_window.png,
+# which committed reports CITE BY NAME as evidence of specific runs. Fresh
+# captures land here and are never the record.
+scripts/app-leg/_frames/

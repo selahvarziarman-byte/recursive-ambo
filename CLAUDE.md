@@ -107,12 +107,22 @@ Branch `team-arman`. ⛔ **CHANGED BY ARMAN 2026-08-26 (Δ21) — THE WIRE IS MA
 ```bash
 npm run dev                                    # the app (vite) — clause 5 needs you to DRIVE it
 npx tsc -b                                     # clause 4 (NOT --noEmit: TS6310 on this tsconfig)
-for f in scripts/diagnose-*.cjs; do            # clause 4 — 112 files
+# clause 4 — THE SWEEP, folded (B-111 §2): the main family PLUS the app-leg
+# legs that are witnesses, classified BY THEIR OWN DECLARATION, never by a
+# directory or a list kept somewhere else.
+for f in scripts/diagnose-*.cjs $(grep -L "DRIVE FAMILY" scripts/app-leg/diagnose-*.cjs); do
   node "$f" >/dev/null 2>&1 || echo "FAIL $f"
-done                                           # expect exactly ONE fail: diagnose-dual-inspection
+done                                           # 121 files · expect exactly ONE
+                                               # fail: diagnose-dual-inspection
 ```
 
-**Sanctioned frozen files (ask before spending, never assume):** `materializeOperation` · `complexIdentification` · `surfaceImmersion` · `standardBodies` · `snapshot.ts`. *(Spent: `multiform` · `worldModel` · `writtenFormModel` at `b08848d` · `playgroundOperations` at `e60df35` · `complexIdentification` at `85436b2` · `writtenFormModel` again at `a2bf8df` — every spend sanctioned by Arman in-terminal.)*
+### ⛔ THE DRIVE FAMILY — five legs that are NOT in the sweep, and their trigger
+**`scripts/app-leg/`'s five legs carrying a `DRIVE FAMILY` banner DRIVE THE RUNNING APP** (python + playwright; two of them SPAWN their own dev server on 5199). **They cannot pass headless, so folding them into the sweep would install PERMANENT REDS — and a red nobody owns trains its readers to skip it.** They are not witnesses in the sweep's sense.
+> ### ⇒ **THEIR TRIGGER IS THE FIFTH WITNESS, never a calendar and never anyone's memory: THE DRIVE FAMILY RUNS AS PART OF ANY BUILD WHOSE READING TOUCHES ITS SUBJECT.** If what a person SEES in a leg's subject is part of what you are reporting, that leg is part of your run.
+
+⛔ **AND A WITNESS MAY NEVER WRITE INTO THE TRACKED TREE.** The drivers used to screenshot straight onto `gpu_{t3,cone,prism}_window.png` — tracked plates that committed reports **cite by name as evidence of specific runs** — so every run silently replaced the plate a report points at: *not merely a dirty tree, the record's own citations falsified.* Captures now land in the ignored `scripts/app-leg/_frames/`. ⇒ ***A witness that mutates tracked state is not a witness; it is a build step wearing one's clothes.***
+
+**Sanctioned frozen files (ask before spending, never assume):** `materializeOperation` · `complexIdentification` · `surfaceImmersion` · `standardBodies` · `snapshot.ts`. *(Spent: `multiform` · `worldModel` · `writtenFormModel` at `b08848d` · `playgroundOperations` at `e60df35` · `complexIdentification` at `85436b2` · `writtenFormModel` again at `a2bf8df` · `snapshot.ts` at `60bb5dc` (R-2's idn arm) and again at `cb82950` (R-2's sibling, the WORD union) — every spend sanctioned by Arman in-terminal.)*
 
 **Pick the instrument that shares the claim's type system.** For a TYPE claim the **compiler** is the census — a grep cannot tell `DomainModel.complex` from `acquired.complex`. For what a function RETURNS, **run it**. For what a person sees, **drive the app**.
 

@@ -1,5 +1,20 @@
 #!/usr/bin/env node
 
+// ⛔ DRIVE FAMILY — NOT A SWEEP WITNESS (B-111 §2, ruled). This leg DRIVES
+// THE RUNNING APP through a python/playwright driver; with no app up it
+// cannot pass, so folding it into the headless sweep would install a
+// PERMANENT RED — and a red nobody owns trains its readers to skip it, which
+// is the disease the fold exists to cure.
+// ⇒ ITS TRIGGER IS THE FIFTH WITNESS, never a calendar and never anyone's
+// memory: THE DRIVE FAMILY RUNS AS PART OF ANY BUILD WHOSE READING TOUCHES
+// ITS SUBJECT. If what a person SEES in this leg's subject is part of what
+// you are reporting, this leg is part of your run.
+// ⇒ The sweep classifies BY THIS DECLARATION, not by a directory or a list
+// kept somewhere else: the sweep set is `grep -L "DRIVE FAMILY"` over
+// scripts/app-leg/diagnose-*.cjs. The files do not move — 40 committed
+// reports cite this one by path, and a moved file breaks a citation exactly
+// as an overwritten plate does.
+
 // THE APP-PATH WITNESS LEG (SEAL_APP_PATH_WITNESS_LEG) — drive the REAL
 // running dev app end-to-end and assert EXISTENCE mechanically:
 //   E1 ★★ PRESENCE — the deficit register's group rides UNDER the faithful

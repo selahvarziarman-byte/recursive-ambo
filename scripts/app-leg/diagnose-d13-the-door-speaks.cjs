@@ -1,5 +1,22 @@
 #!/usr/bin/env node
 
+// ⛔ DRIVE FAMILY — NOT A SWEEP WITNESS (B-111 §2, ruled; classified here by
+// MEASUREMENT, correcting my own first count). This leg is a HYBRID: headless
+// assertions PLUS a drive — and the drive half does not merely skip when no
+// app is up, it SPAWNS ONE (`npm run dev --port 5199`) and drives it through
+// python/playwright. A sweep that launches dev servers is not a headless
+// sweep: it takes minutes, it needs python + playwright + a free port, and it
+// owns 5199 while it runs.
+// ⇒ ITS TRIGGER IS THE FIFTH WITNESS, never a calendar and never anyone's
+// memory: THE DRIVE FAMILY RUNS AS PART OF ANY BUILD WHOSE READING TOUCHES
+// ITS SUBJECT. If what a person SEES in this leg's subject is part of what
+// you are reporting, this leg is part of your run.
+// ⇒ The sweep classifies BY THIS DECLARATION, not by a directory or a list
+// kept elsewhere: the sweep set is `grep -L "DRIVE FAMILY"` over
+// scripts/app-leg/diagnose-*.cjs. The files do not move — committed reports
+// cite them by path, and a moved file breaks a citation exactly as an
+// overwritten plate does.
+
 // DIAGNOSTIC — D13+D14 (engineer 2021, amended 2026-08-18): THE DOOR SPEAKS.
 //
 // D13 (URGENT — the app DIED): a person pairing a 3-corner face with a

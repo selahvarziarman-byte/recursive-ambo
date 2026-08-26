@@ -12,6 +12,14 @@ from playwright.sync_api import sync_playwright
 RESULTS = {}
 
 
+# B-111 §2: captures land in the IGNORED _frames/ sibling — a witness may
+# never write into the tracked tree (see deficit_app_driver._frame_path).
+def _frame_path(name: str) -> str:
+    import pathlib
+    frames = pathlib.Path(__file__).parent / "_frames"
+    frames.mkdir(exist_ok=True)
+    return str(frames / name)
+
 def record(name, ok, detail=""):
     RESULTS[name] = {"ok": bool(ok), "detail": str(detail)[:300]}
 
@@ -247,7 +255,7 @@ def main():
             press(page, band_btn)
             page.wait_for_timeout(1000)
         else:
-            page.screenshot(path="scripts/app-leg/d12b_debug_arm.png")
+            page.screenshot(path=_frame_path("d12b_debug_arm.png"))
         record("route.thicken", armed, arm_note)
 
         # 4 · the band parcel rides the shelf; place it (the drop auto-points)

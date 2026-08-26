@@ -14,6 +14,14 @@ from playwright.sync_api import sync_playwright
 RESULTS = {}
 
 
+# B-111 §2: captures land in the IGNORED _frames/ sibling — a witness may
+# never write into the tracked tree (see deficit_app_driver._frame_path).
+def _frame_path(name: str) -> str:
+    import pathlib
+    frames = pathlib.Path(__file__).parent / "_frames"
+    frames.mkdir(exist_ok=True)
+    return str(frames / name)
+
 def record(name, ok, detail=""):
     RESULTS[name] = {"ok": bool(ok), "detail": str(detail)[:300]}
 
@@ -265,7 +273,7 @@ def main():
         )
         record("fan.thickenPanel", panel_txt is not None, f"panel: {panel_txt}")
         if not armed:
-            page.screenshot(path="scripts/app-leg/d8_debug_arm.png")
+            page.screenshot(path=_frame_path("d8_debug_arm.png"))
         pre_rooms = page.get_by_text("built 3-manifold").count()
         shelf_before = page.locator('div[draggable="true"]').count()
         record("fan.thickenRun", armed, "the thicken action is offered on the armed pair")

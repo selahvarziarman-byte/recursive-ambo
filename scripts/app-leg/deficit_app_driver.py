@@ -19,6 +19,22 @@ results = {}
 console_errors = []
 
 
+# B-111 §2 — a WITNESS THAT MUTATES TRACKED STATE IS NOT A WITNESS (the
+# mothership's refusal, on a finding of mine). These three captures used to
+# write STRAIGHT ONTO scripts/app-leg/gpu_{t3,cone,prism}_window.png — files
+# that are TRACKED and, worse, CITED BY NAME as evidence in committed reports
+# ("the plate is scripts/app-leg/gpu_cone_window.png"; "the prism plate, my
+# own eye"). Every run silently replaced the plate a report points at: not
+# merely a dirty tree — the record's own citations falsified. Captures now
+# land in an IGNORED sibling directory, so the cited plates stay put and a
+# fresh run can never overwrite the evidence.
+def _frame_path(name: str) -> str:
+    import pathlib
+    frames = pathlib.Path(__file__).parent / "_frames"
+    frames.mkdir(exist_ok=True)
+    return str(frames / name)
+
+
 def record(name, ok, detail=""):
     results[name] = {"ok": bool(ok), "detail": str(detail)[:300]}
 
@@ -1477,8 +1493,8 @@ def drive_explore(page):
     # (run 3 lost both plates to a swallowed except)
     try:
         pbox = page.locator("[data-explore-window]").bounding_box()
-        page.screenshot(path=str(__import__('pathlib').Path(__file__).parent / "gpu_t3_window.png"), clip=pbox)
-        record("explore.t3Plate", True, "gpu_t3_window.png captured")
+        page.screenshot(path=_frame_path("gpu_t3_window.png"), clip=pbox)
+        record("explore.t3Plate", True, "_frames/gpu_t3_window.png captured")
     except Exception as err:
         record("explore.t3Plate", False, f"the T³ plate failed to capture: {err}")
 
@@ -1632,8 +1648,8 @@ def drive_explore(page):
             )
             try:
                 pbox = page.locator("[data-explore-window]").bounding_box()
-                page.screenshot(path=str(__import__('pathlib').Path(__file__).parent / "gpu_cone_window.png"), clip=pbox)
-                record("explore.conePlate", True, "gpu_cone_window.png captured")
+                page.screenshot(path=_frame_path("gpu_cone_window.png"), clip=pbox)
+                record("explore.conePlate", True, "_frames/gpu_cone_window.png captured")
             except Exception as err:
                 record("explore.conePlate", False, f"the cone plate failed to capture: {err}")
             page.keyboard.press("Escape")
@@ -1840,8 +1856,8 @@ def drive_explore(page):
             )
             try:
                 pbox = page.locator("[data-explore-window]").bounding_box()
-                page.screenshot(path=str(__import__('pathlib').Path(__file__).parent / "gpu_prism_window.png"), clip=pbox)
-                record("explore.prismPlate", True, "gpu_prism_window.png captured")
+                page.screenshot(path=_frame_path("gpu_prism_window.png"), clip=pbox)
+                record("explore.prismPlate", True, "_frames/gpu_prism_window.png captured")
             except Exception as err:
                 record("explore.prismPlate", False, f"the prism plate failed to capture: {err}")
             page.keyboard.press("Escape")
