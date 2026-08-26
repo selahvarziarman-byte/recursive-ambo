@@ -497,6 +497,34 @@ export function euclideanControlCovectors(shape: Shape): Map<string, Vec4> {
 }
 
 // ---------------------------------------------------------------------------
+// THE EUCLIDEAN CONTROL AS A REALIZATION (B-112): the §4 control must go
+// through the SAME transport as the curved models, so it needs positions and
+// co-vectors in the affine model — points (x,y,z,1), a plane {p·n̂ = h} as
+// (n̂, −h), and <x,u> = p·n̂ − h. ⚠ A SECOND producer beside
+// `euclideanControlCovectors`, and the two are NOT interchangeable: the angle
+// control needs DIRECTION ONLY (its Gram is n̂·n̂′, which the affine offset
+// would corrupt), while incidence and the isometry fit need the OFFSET. Two
+// jobs, two producers, each named — never one quietly serving both.
+export function euclideanControlRealization(shape: Shape): CurvedRealization {
+  const faceCovectors = new Map<string, Vec4>();
+  for (const f of shape.faces) {
+    const n = faceNormalOf(shape, f.id);
+    const c: [number, number, number] = [0, 0, 0];
+    for (const vId of f.vertexIds) {
+      const p = shape.vertices[vId].position;
+      c[0] += p[0] / f.vertexIds.length;
+      c[1] += p[1] / f.vertexIds.length;
+      c[2] += p[2] / f.vertexIds.length;
+    }
+    faceCovectors.set(f.id, [n[0], n[1], n[2], -dot3(c, n)]);
+  }
+  const vertexPositions = new Map<string, Vec4>();
+  for (const v of Object.values(shape.vertices)) {
+    vertexPositions.set(v.id, [v.position[0], v.position[1], v.position[2], 1]);
+  }
+  return { geometry: 'E3' as CurvedRealization['geometry'], inradius: null, targetDihedralRad: null, faceCovectors, vertexPositions };
+}
+
 // §E THE DECK-FIT CHECKER (Trap 1: carried census, carried flankings).
 // Θ(c) = Σ over the class's member edges of the dihedral between the TWO
 // carried flanking faces, measured from the emitted co-vectors. The class
@@ -505,6 +533,336 @@ export function euclideanControlCovectors(shape: Shape): Map<string, Vec4> {
 // distance graph exists — an adjacency that re-selects with the realization
 // is not expressible in this body.
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// §F THE MODEL-CARRYING TRANSPORT (B-112 — ADR 0026 §8.1 field 3, and the
+// seam the routing turns on).
+//
+// THE BLOCKER, named and cured: the committed transport is
+// `p ← g(p), v ← R·v` with `DeckTransform` = TWELVE FLOATS (a 3×3 linear part
+// plus a translation) over V3 — the ALGEBRA survives a model change, the TYPE
+// does not. A Minkowski isometry is 4×4. ⇒ THE TRANSPORT GETS A MODEL: one
+// 4×4 acting on the model's own 4-vectors, where the SAME matrix multiply
+// serves all three geometries and only the INNER PRODUCT differs (E³ affine
+// on (p,1) · S³ the R⁴ dot · H³ the Minkowski form). The consumer's loop is
+// unchanged; it is handed a model, not a new loop.
+//
+// ⛔ THE MODEL IS CARRIED, NEVER RE-INFERRED (§8.2, and R1's trap a fifth
+// time): `ModeledDeck.model` is the realization's SEALED class, copied from
+// `CurvedRealization.geometry` — never read back off the emitted positions.
+// ⛔ AND THE ISOMETRIES ARE BUILT ON THE CARRIED COMPLEX: each pairing's map
+// comes from the person's own corner correspondence and the face ids they
+// name — never from a distance graph over the realized positions, which
+// would re-select with the realization and close the transport trivially
+// (a door that always has a partner because proximity chose it).
+// ---------------------------------------------------------------------------
+
+export type Mat4 = number[]; // row-major 16
+
+const matApply = (m: Mat4, x: Vec4): Vec4 => [
+  m[0] * x[0] + m[1] * x[1] + m[2] * x[2] + m[3] * x[3],
+  m[4] * x[0] + m[5] * x[1] + m[6] * x[2] + m[7] * x[3],
+  m[8] * x[0] + m[9] * x[1] + m[10] * x[2] + m[11] * x[3],
+  m[12] * x[0] + m[13] * x[1] + m[14] * x[2] + m[15] * x[3],
+];
+const matMul = (a: Mat4, b: Mat4): Mat4 => {
+  const out = new Array(16).fill(0) as Mat4;
+  for (let r = 0; r < 4; r += 1) {
+    for (let c = 0; c < 4; c += 1) {
+      let s = 0;
+      for (let k = 0; k < 4; k += 1) s += a[r * 4 + k] * b[k * 4 + c];
+      out[r * 4 + c] = s;
+    }
+  }
+  return out;
+};
+const MAT4_ID: Mat4 = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+// the general 4×4 inverse (Gauss–Jordan) — a door crossed the OTHER way is
+// its inverse, and the walk crosses doors in both directions
+function mat4Inverse(m: Mat4): Mat4 {
+  const a: number[][] = [];
+  for (let r = 0; r < 4; r += 1) {
+    const idn = [0, 0, 0, 0];
+    idn[r] = 1;
+    a.push([m[r * 4], m[r * 4 + 1], m[r * 4 + 2], m[r * 4 + 3], ...idn]);
+  }
+  for (let col = 0; col < 4; col += 1) {
+    let pivot = col;
+    for (let r = col + 1; r < 4; r += 1) if (Math.abs(a[r][col]) > Math.abs(a[pivot][col])) pivot = r;
+    if (Math.abs(a[pivot][col]) < 1e-12) throw new Error('noncubeDomain: a door is singular — it cannot be crossed backwards');
+    [a[col], a[pivot]] = [a[pivot], a[col]];
+    const d = a[col][col];
+    for (let c = 0; c < 8; c += 1) a[col][c] /= d;
+    for (let r = 0; r < 4; r += 1) {
+      if (r === col) continue;
+      const f = a[r][col];
+      if (f === 0) continue;
+      for (let c = 0; c < 8; c += 1) a[r][c] -= f * a[col][c];
+    }
+  }
+  const out = new Array(16).fill(0) as Mat4;
+  for (let r = 0; r < 4; r += 1) for (let c = 0; c < 4; c += 1) out[r * 4 + c] = a[r][4 + c];
+  return out;
+}
+
+// solve M · P = Q for M, with P and Q holding four 4-vectors as COLUMNS
+// (Gauss–Jordan on Pᵀ; a singular P means the four chosen corners are
+// dependent and the caller must pick another four — never a silent fudge)
+function solveTransform(P: Vec4[], Q: Vec4[]): Mat4 | null {
+  const n = 4;
+  // A = the 4×4 whose COLUMNS are the source points, augmented with I and
+  // reduced ⇒ P⁻¹; then M = Q·P⁻¹. ⚠ THE ORDER IS THE WHOLE CONTENT: the
+  // easy slip is to reduce [P | Q] and read off P⁻¹Q, which solves a
+  // DIFFERENT equation and yields a matrix that fits the points it was built
+  // from and nothing else. Unit-tested against a known rotation+translation
+  // before use — and the corner witness below caught it first, which is what
+  // the witness is for.
+  const a: number[][] = [];
+  for (let r = 0; r < n; r += 1) {
+    const idn = [0, 0, 0, 0];
+    idn[r] = 1;
+    a.push([...P.map((p) => p[r]), ...idn]);
+  }
+  for (let col = 0; col < n; col += 1) {
+    let pivot = col;
+    for (let r = col + 1; r < n; r += 1) if (Math.abs(a[r][col]) > Math.abs(a[pivot][col])) pivot = r;
+    if (Math.abs(a[pivot][col]) < 1e-12) return null; // dependent points — the caller tries another triple
+    [a[col], a[pivot]] = [a[pivot], a[col]];
+    const d = a[col][col];
+    for (let c = 0; c < 2 * n; c += 1) a[col][c] /= d;
+    for (let r = 0; r < n; r += 1) {
+      if (r === col) continue;
+      const f = a[r][col];
+      if (f === 0) continue;
+      for (let c = 0; c < 2 * n; c += 1) a[r][c] -= f * a[col][c];
+    }
+  }
+  const pinv = a.map((row) => row.slice(n));
+  const out = new Array(16).fill(0) as Mat4;
+  for (let r = 0; r < n; r += 1) {
+    for (let c = 0; c < n; c += 1) {
+      let sum = 0;
+      for (let k = 0; k < n; k += 1) sum += Q[k][r] * pinv[k][c];
+      out[r * 4 + c] = sum;
+    }
+  }
+  return out;
+}
+
+export interface ModeledDeckEntry {
+  faceA: string; // the CARRIED face ids — the door's identity, never a position
+  faceB: string;
+  m: Mat4; // the in-model isometry carrying faceA onto faceB
+  uA: Vec4; // the in-model face co-vectors, from the realization
+  uB: Vec4;
+}
+
+export interface ModeledDeck {
+  model: 'S3' | 'E3' | 'H3'; // CARRIED from the realization's seal — never re-inferred
+  entries: ModeledDeckEntry[];
+}
+
+/**
+ * ADR 0026 §8.1 field 3 — the pairing isometries as IN-MODEL maps. Each is
+ * FITTED from the person's own carried corner correspondence (four
+ * independent corners → M = Q·P⁻¹) and then WITNESSED, exactly as the
+ * committed euclidean fit witnesses itself: the fit must reproduce EVERY
+ * carried corner (not just the four it was built from), it must preserve the
+ * model's inner product, and it must carry faceA's plane onto faceB's. Any
+ * failure THROWS BY NAME — a transport that cannot be witnessed is never
+ * handed on.
+ */
+export function realizePairingIsometries(
+  shape: Shape,
+  pairings: FacePairing[],
+  realization: CurvedRealization,
+): ModeledDeck {
+  const geometry = realization.geometry;
+  const posOf = (vertexId: string): Vec4 => {
+    const p = realization.vertexPositions.get(vertexId);
+    if (!p) throw new Error(`noncubeDomain: the realization carries no position for ${vertexId}`);
+    return p;
+  };
+  // THE OFF-PLANE CONSTRAINT, carried up one dimension. A face's corners lie
+  // ON its plane — a 3-dimensional subspace — so no number of them can pin a
+  // 4×4. The committed euclidean fit solved this with a FIFTH, OFF-PLANE
+  // point (*"inside the cell → outside past the partner"*), and the same law
+  // holds here: THE CENTRE MAPS TO THE NEIGHBOUR'S CENTRE ACROSS THE EXIT
+  // FACE. ⛔ Never centre→centre: a gluing isometry carries the cell OFF
+  // ITSELF (the committed fit asserts exactly that), so fixing the centre
+  // would fit the one map the door can never be.
+  // The neighbour's centre is read from the CARRIED co-vector alone — the
+  // inradius is recoverable from its fourth component in each model
+  // (H³ u=(cosh d·n̂, sinh d) · S³ u=(cos d·n̂, −sin d) · E³ u=(n̂, −h)) —
+  // and the walk is 2d along the same geodesic that meets the face at d.
+  const centre: Vec4 = [0, 0, 0, 1];
+  const neighbourCentre = (u: Vec4): Vec4 => {
+    const nl = Math.hypot(u[0], u[1], u[2]);
+    const nHat = [u[0] / nl, u[1] / nl, u[2] / nl];
+    if (geometry === 'H3') {
+      const d = Math.asinh(u[3]);
+      return [Math.sinh(2 * d) * nHat[0], Math.sinh(2 * d) * nHat[1], Math.sinh(2 * d) * nHat[2], Math.cosh(2 * d)];
+    }
+    if (geometry === 'S3') {
+      const d = Math.asin(Math.max(-1, Math.min(1, -u[3])));
+      return [Math.sin(2 * d) * nHat[0], Math.sin(2 * d) * nHat[1], Math.sin(2 * d) * nHat[2], Math.cos(2 * d)];
+    }
+    const h = -u[3] / nl;
+    return [2 * h * nHat[0], 2 * h * nHat[1], 2 * h * nHat[2], 1];
+  };
+  const entries: ModeledDeckEntry[] = pairings.map((pairing) => {
+    const corners = Object.entries(pairing.map);
+    if (corners.length < 3) throw new Error(`noncubeDomain: the pairing ${pairing.faceA}~${pairing.faceB} names too few corners`);
+    const uAfit = realization.faceCovectors.get(pairing.faceA);
+    const uBfit = realization.faceCovectors.get(pairing.faceB);
+    if (!uAfit || !uBfit) throw new Error(`noncubeDomain: the realization carries no co-vector for ${pairing.faceA} or ${pairing.faceB}`);
+    const centreImage = neighbourCentre(uBfit);
+    let fit: Mat4 | null = null;
+    for (let i = 0; i < corners.length && !fit; i += 1) {
+      for (let j = i + 1; j < corners.length && !fit; j += 1) {
+        for (let k = j + 1; k < corners.length && !fit; k += 1) {
+          const P = [posOf(corners[i][0]), posOf(corners[j][0]), posOf(corners[k][0]), centre];
+          const Q = [posOf(corners[i][1]), posOf(corners[j][1]), posOf(corners[k][1]), centreImage];
+          fit = solveTransform(P, Q);
+        }
+      }
+    }
+    if (!fit) {
+      throw new Error(`noncubeDomain: no independent corner triple fits the isometry for ${pairing.faceA}~${pairing.faceB} — refusing, never fudged`);
+    }
+    // WITNESS 1 — every carried corner lands on its partner (not only the
+    // three the fit consumed)
+    for (const [a, b] of corners) {
+      const got = matApply(fit, posOf(a));
+      const want = posOf(b);
+      const miss = Math.hypot(got[0] - want[0], got[1] - want[1], got[2] - want[2], got[3] - want[3]);
+      if (miss > 1e-6) {
+        throw new Error(`noncubeDomain: the in-model isometry for ${pairing.faceA}~${pairing.faceB} misses corner ${a}→${b} by ${miss.toExponential(2)} — the fit is not the person's map`);
+      }
+    }
+    // WITNESS 2 — it is an ISOMETRY of the model: the inner product of two
+    // carried corner positions survives the map
+    const p0 = posOf(corners[0][0]);
+    const p1 = posOf(corners[1][0]);
+    const before = metricDot(geometry, p0, p1);
+    const after = metricDot(geometry, matApply(fit, p0), matApply(fit, p1));
+    if (Math.abs(before - after) > 1e-6) {
+      throw new Error(`noncubeDomain: the map for ${pairing.faceA}~${pairing.faceB} is not an isometry of ${geometry} (⟨,⟩ moved by ${Math.abs(before - after).toExponential(2)})`);
+    }
+    const uA = realization.faceCovectors.get(pairing.faceA);
+    const uB = realization.faceCovectors.get(pairing.faceB);
+    if (!uA || !uB) throw new Error(`noncubeDomain: the realization carries no co-vector for ${pairing.faceA} or ${pairing.faceB}`);
+    return { faceA: pairing.faceA, faceB: pairing.faceB, m: fit, uA, uB };
+  });
+  return { model: geometry, entries };
+}
+
+/**
+ * THE CLOSURE — the acceptance's own instrument, and the one thing an angle
+ * sum cannot say: walking the deck around a CARRIED edge cycle must return
+ * the room to itself. The product of the face-pairing isometries around an
+ * edge class is the IDENTITY exactly when the deck fits; in the wrong model
+ * it is a ROTATION BY THE DEFICIT — a visible seam, not a silent error.
+ * ⛔ The cycle comes from `tower.gate.edgeLinks` (carried), the doors from
+ * the carried face ids: no distance graph can enter here, so the transport
+ * CAN fail to close — which is the only reason its closing means anything.
+ */
+export interface ClosureReading {
+  edgeClass: string;
+  memberCount: number;
+  turnRad: number; // how far the composed walk is from the identity
+}
+
+export function readDeckClosure(domain: DomainModel, deck: ModeledDeck, pairings: FacePairing[]): ClosureReading[] {
+  const shape = domain.shape;
+  const byFace = new Map<string, ModeledDeckEntry>();
+  for (const e of deck.entries) {
+    byFace.set(e.faceA, e);
+    byFace.set(e.faceB, e);
+  }
+  const pairingByFace = new Map<string, FacePairing>();
+  for (const p of pairings) {
+    pairingByFace.set(p.faceA, p);
+    pairingByFace.set(p.faceB, p);
+  }
+  // the carried flanking map (the same combinatorial ground truth the deck
+  // fit reads — face cycles, never positions)
+  const flankings = new Map<string, string[]>();
+  for (const face of shape.faces) {
+    const n = face.vertexIds.length;
+    for (let k = 0; k < n; k += 1) {
+      const a = face.vertexIds[k];
+      const b = face.vertexIds[(k + 1) % n];
+      const key = a < b ? `${a}~${b}` : `${b}~${a}`;
+      flankings.set(key, [...(flankings.get(key) ?? []), face.id]);
+    }
+  }
+  const edgeKeyOf = new Map(
+    shape.edges.map((e) => [
+      e.id,
+      e.vertexIds[0] < e.vertexIds[1] ? `${e.vertexIds[0]}~${e.vertexIds[1]}` : `${e.vertexIds[1]}~${e.vertexIds[0]}`,
+    ]),
+  );
+  const boundaryRoots = new Set(domain.tower.gate.boundary ? domain.tower.gate.boundary.edgeClasses : []);
+  const keyOfPair = (a: string, b: string): string => (a < b ? `${a}~${b}` : `${b}~${a}`);
+  const out: ClosureReading[] = [];
+  for (const link of domain.tower.gate.edgeLinks) {
+    if (boundaryRoots.has(link.edgeClass)) continue;
+    // ⛔ THE WALK IS A WALK, not a product over a list. Around an edge you
+    // step from copy to copy: cross the door on the face you are standing
+    // against, and the edge itself is CARRIED THROUGH that door by the
+    // person's own corner map — landing on the partner face, where the OTHER
+    // face flanking the image edge is the next door. The naive version (one
+    // door per member edge, in list order, no direction) composes a product
+    // that means nothing; it was measured not-closing and that is how it was
+    // caught. The walk here is purely combinatorial — carried corner maps and
+    // carried face cycles — and it must RETURN TO ITS STARTING (edge, face)
+    // in exactly `memberCount` steps, or the class is refused by name.
+    const startKey = edgeKeyOf.get(link.memberEdgeIds[0]);
+    if (!startKey) throw new Error(`noncubeDomain: member edge ${link.memberEdgeIds[0]} is not on the seed shape`);
+    const startFaces = flankings.get(startKey) ?? [];
+    if (startFaces.length !== 2) throw new Error(`noncubeDomain: edge ${link.memberEdgeIds[0]} is flanked by ${startFaces.length} carried faces`);
+    let edgeKey = startKey;
+    let face = startFaces[0];
+    let acc: Mat4 = MAT4_ID;
+    for (let step = 0; step < link.memberEdgeIds.length; step += 1) {
+      const door = byFace.get(face);
+      const pairing = pairingByFace.get(face);
+      if (!door || !pairing) throw new Error(`noncubeDomain: face ${face} carries no door — the walk cannot cross it`);
+      const forward = pairing.faceA === face;
+      acc = matMul(forward ? door.m : mat4Inverse(door.m), acc);
+      // the edge, carried through the door by the person's own map
+      const [u, v] = edgeKey.split('~');
+      const image = (id: string): string => {
+        if (forward) {
+          const to = pairing.map[id];
+          if (!to) throw new Error(`noncubeDomain: the pairing map misses corner ${id} crossing ${face}`);
+          return to;
+        }
+        const back = Object.entries(pairing.map).find(([, b]) => b === id);
+        if (!back) throw new Error(`noncubeDomain: the pairing map has no preimage for ${id} crossing ${face}`);
+        return back[0];
+      };
+      edgeKey = keyOfPair(image(u), image(v));
+      const landed = forward ? pairing.faceB : pairing.faceA;
+      const next = (flankings.get(edgeKey) ?? []).filter((f) => f !== landed);
+      if (next.length !== 1) throw new Error(`noncubeDomain: the image edge is flanked by ${next.length + 1} faces — the walk cannot continue`);
+      face = next[0];
+    }
+    if (edgeKey !== startKey || face !== startFaces[0]) {
+      throw new Error(
+        `noncubeDomain: the walk around edge class ${link.edgeClass} did not return to its start in ${link.memberEdgeIds.length} steps — the carried cycle and the census disagree`,
+      );
+    }
+    // the composed walk's distance from the identity, read as a TURN: the
+    // rotation angle of its spatial part (trace = 1 + 2cosθ)
+    const trace = acc[0] + acc[5] + acc[10];
+    const cos = Math.max(-1, Math.min(1, (trace - 1) / 2));
+    out.push({ edgeClass: link.edgeClass, memberCount: link.memberEdgeIds.length, turnRad: Math.acos(cos) });
+  }
+  return out;
+}
 
 export const DECK_FIT_EPSILON_RAD = 1e-6; // ADR §3's ε — on the ANGLE SUM, never positions
 

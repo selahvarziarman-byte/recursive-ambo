@@ -66,6 +66,9 @@ const {
   checkDeckFit,
   metricDot,
   DECK_FIT_EPSILON_RAD,
+  realizePairingIsometries,
+  readDeckClosure,
+  euclideanControlRealization,
 } = req('src/lib/noncubeDomain.ts');
 const { buildFormDomain } = req('src/manuscript/formDomainModel.ts');
 const { readSeedCell } = req('src/lib/faceIdentification.ts');
@@ -270,6 +273,72 @@ check('§7 realizing all four targets leaves both seed Shapes byte-identical (co
     return dodecaBefore === dodecaAfter && lensBefore === lensAfter &&
       dodeca.genealogy.createdVertexIds.length === 20 && swDomain.shape === dodeca;
   })());
+
+// ═════ §8 (B-112) — THE MODEL-CARRYING TRANSPORT AND THE CLOSURE SWING ══════
+// ADR 0026 §8.1 field 3: the pairing isometries as IN-MODEL maps, and the one
+// thing an angle sum cannot say — that WALKING the deck around an edge
+// returns the room to itself. ⛔ §8.3's LAW-24 control is not hypothetical
+// here: the wrong-model transport is what the engine carries today, so the
+// swing is today's behaviour → the cured one.
+console.log('\n----- §8 (B-112) the transport carries a MODEL, and the walk closes -----');
+{
+  const rad2deg = (r) => (r * 180) / Math.PI;
+  for (const [target, tenths, deficitDeg] of [['seifert-weber', 3, 222.8255], ['poincare', 1, -10.3047]]) {
+    const pairings = dodecahedralTwistPairings(dodeca, tenths);
+    const domain = buildFormDomain(dodeca, pairings, 'b112-' + target, target);
+    const real = realizeDodecahedralDomain(dodeca, target);
+    const deck = realizePairingIsometries(dodeca, pairings, real);
+    const closure = readDeckClosure(domain, deck, pairings);
+    const worst = Math.max(...closure.map((c) => c.turnRad));
+    check('§8 ★★ THE WALK CLOSES in the sealed model (' + target + ', ' + real.geometry + '): every carried edge class returns the room to ITSELF — the composed door-walk is the identity — and the model is CARRIED from the realization\'s seal, never re-inferred (deck.model === realization.geometry)',
+      deck.model === real.geometry && closure.length > 0 && worst < 1e-6);
+    note(target + ': ' + closure.length + ' classes · worst turn ' + rad2deg(worst).toExponential(2) + ' deg');
+    // ⛔ THE SWING — the SAME form, the SAME carried complex, forced to the
+    // euclidean model: the walk FAILS to close, by the deficit itself.
+    const euclid = euclideanControlRealization(dodeca);
+    const deckE = realizePairingIsometries(dodeca, pairings, euclid);
+    const closureE = readDeckClosure(domain, deckE, pairings);
+    const turns = closureE.map((c) => rad2deg(c.turnRad));
+    // a rotation BY the deficit is read as its PRINCIPAL angle: 222.83° about
+    // an axis IS 137.17° about the opposite one, so Seifert–Weber's seam
+    // reads 360 − 222.83; Poincaré's |−10.30| is already principal.
+    const expected = Math.abs(deficitDeg) > 180 ? 360 - Math.abs(deficitDeg) : Math.abs(deficitDeg);
+    check('§8 ⛔ THE SWING (' + target + '): forced to the E³ model the SAME walk FAILS to close on EVERY class, by exactly the ADR\'s deficit — ' + expected.toFixed(4) + ' deg (the principal reading of ' + deficitDeg + ' deg) — so the transport CAN fail, which is the only reason its closing means anything',
+      closureE.length === closure.length && turns.every((t) => Math.abs(t - expected) < 0.01),
+      'turns: ' + [...new Set(turns.map((t) => t.toFixed(4)))].join(', ') + ' deg');
+  }
+  // field 3's own witness law: the fit is WITNESSED per door, and a corrupted
+  // correspondence is REFUSED BY NAME rather than fitted to something else
+  const swPairings = dodecahedralTwistPairings(dodeca, 3);
+  const swReal2 = realizeDodecahedralDomain(dodeca, 'seifert-weber');
+  check('§8 ⛔ field 3 REFUSES a map it cannot witness: a pairing whose corner map is corrupted (one corner re-pointed at another\'s image) throws BY NAME rather than fitting a plausible transform to the corners it happens to like',
+    (() => {
+      const corrupted = swPairings.map((p, i) => {
+        if (i !== 0) return p;
+        const keys = Object.keys(p.map);
+        return { ...p, map: { ...p.map, [keys[0]]: p.map[keys[1]] } };
+      });
+      try {
+        realizePairingIsometries(dodeca, corrupted, swReal2);
+        return false;
+      } catch (err) {
+        const m = String(err.message);
+        return m.includes('noncubeDomain') && (m.includes('misses corner') || m.includes('no independent corner triple'));
+      }
+    })());
+  check('§8 ⛔ TRAP 1, structurally: the closure walk reads the CARRIED census, the CARRIED corner maps and the CARRIED face cycles — no vertex position and no distance graph enter its body',
+    (() => {
+      const src = fs.readFileSync(path.join(repoRoot, 'src/lib/noncubeDomain.ts'), 'utf8');
+      const start = src.indexOf('export function readDeckClosure');
+      const end = src.indexOf('return out;', start);
+      const body = start > 0 && end > start ? src.slice(start, end) : '';
+      return body.length > 0 &&
+        body.includes('tower.gate.edgeLinks') &&
+        body.includes('pairing.map') &&
+        !body.includes('.position') &&
+        !/Math\.hypot|\bnearest\b|\bdist\b/.test(body);
+    })());
+}
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`} — the non-cube domain`);
 process.exit(failures === 0 ? 0 : 1);
