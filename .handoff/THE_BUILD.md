@@ -1,39 +1,44 @@
 to: the coder
 from: the mothership (sixth)
-clock (raw, verbatim): `Wed Aug 26 14:33:46 +0330 2026` — mtime is the fact
-**STAMP: `B-108`** ⛔ **Echo it.**
+clock (raw, verbatim): `Wed Aug 26 15:41:41 +0330 2026` — mtime is the fact
+**STAMP: `B-109`** ⛔ **Echo it.**
 
-# 1 · ✅ `B-106` AND `B-107` RATIFIED — and R1 is CLOSED, the oldest debt on the board
+# 1 · ✅ `B-108` RATIFIED — the STOP was the build
+✔ **The conditional fired and you honoured it.** ⛔ **Σ = 4π is NOT sealed, correctly** — and your measurement is what makes that the right call rather than a cautious one.
+★★ **THE MEASUREMENT IS BETTER THAN THE WARNING IT ANSWERED.** My clause said *"or Σ→4π is read off the WRONG COMPLEX."* **You located that to its true layer and showed my framing was imprecise:** the **cycles survive whole** (0/12 moved; both metrics produce TRUE fan cycles verified against the carried complex), the **stamp is count-only** so the sum cannot be numerically corrupted — ⇒ **the SUM is safe; the IDENTITIES are not.** **6 of 12 dual face ids drift across the relaxation, and a ±1e-9 jitter flips 1/12.** ⇒ ★ **A position-keyed ADDRESS — the key-drift family a third time, now in the model rather than a witness.** **The row's precondition is discharged as a MEASUREMENT even though the seal is not: we now know exactly what was at risk and what was not.**
+✔ **Your correction of your own record commit (`74be04c` → the real `0dfc52a`) — taken, never rewritten, corrected by letter. That is the doctrine.**
 
-**Desk checks, mine:** `HEAD == origin/team-arman == 026d499` ✔ · `snapshot.ts` re-seal `bedc75cb…` stands at `ENGINE_FREEZE_MANIFEST.txt:87` ✔ · the doctrine commit `a72bd17` is exactly two files, nothing else in it ✔.
-
-**`B-107` — what I am ratifying hardest is not the relaxation.** It is that **you demonstrated the trap in-witness**: the min-distance graph at `t=1` self-selecting 24 equal edges and reading 60° **exactly**, shown lying **beside** the honest carried-complex measurement reading 30° off. ⇒ ★★ **A vacuous test is usually described. You made ours EXHIBIT ITS LIE next to the true one — that is the strongest form a control can take, and it is now the shape I want whenever a seal names a trap.**
-✔ **LAW-24 both halves** (30.000° → 1.27e-14°) · **byte-identical ids BY CONSTRUCTION** (they encode vertex ids — so the invariant is structural, not asserted) · **the mark on exactly 12, once each, zero on refusal** · **`createdVertexIds` stays `[]` — a correction, not a birth** · **no stamp crosses the correction** (the parent squares now own their true skew angles, never the copied 90s). ★ **And the chirality NOT assumed — both tried, the seal's own invariant deciding in-op — is the researcher's law enforced by construction rather than by care.**
-✔ **The enumeration is CLOSED with every entry dispositioned**, and ⛔ **BOTH my era citations measured STALE** (`faithfulInkedModel:134` a same-frame lookup; `surfaceOperations:293` consuming no positions). **Mine — the caution I attached to them was the right instinct and does not excuse handing them over.** ★ **You treated them as a starting point and measured past them, which is exactly what the caution asked for.**
-
-**`B-106` — the finding I want named as a standard:** ⛔ **the doorless wall is now INEXPRESSIBLE.** You did not fix the drift; you made the state **one atom** so no code path can clear the door and leave the notice standing — *and the same atom cured the inverse drift nobody had reported.* ⇒ ★★ **A rule a mechanism cannot express cannot be forgotten by a later reader.** ✔ **The plate driven over the exact leak pattern** (the grey band and the label clipping AT the edge) closes Arman's "pinch on the circle" whole. ✔ **R-2 closed WHOLE** — the frozen spend AND the bridge retired, which is the half that usually rots. ✔ **The key cure with a RED control and an enumeration-drift control both RUN.** ✔ **And you verified my doctrine text against your own close-out before committing it, as asked** — that is the ask working, not ceremony. ★ **Committing my ADR §7.2 star separately-attributed rather than riding it in one of yours was exactly right: an uncommitted edit is an unprotected edit, and an unattributed one is worse.** *(It was ready; nothing to revert.)*
+## THE DUAL CURE — RULED, and it rides §3 below
+✔ **Your reading holds and my hedge dissolves: `dualView.ts` is NOT_FROZEN (✔ my own read of the manifest), so no union, no sanction.** ★★ **And the cure's idiom is already in the FROZEN sibling** — `buildIncidentFaceCycleAdjacency` (faces adjacent iff they share an edge through the vertex — combinatorial) + `walkFaceCycle` + `chooseOutwardFaceOrder` (positions consumed ONLY for the orientation bit). ⇒ **RULED: port that idiom to `orderIncidentFaces` — the cycle from edge-adjacency, a deterministic id-keyed starting face, positions for the ONE outward/chirality bit and nothing else.** ⚠ **And your probe already measured the positional cycles AGREE with the combinatorial fan at both metrics — so the port is behaviour-neutral at the cycle level, which means it needs its own falsifier: the id-stability legs and the jitter control ARE that falsifier. Keep them.**
 
 ---
 
-# 2 · THE FRONT: COLLECT R1'S PAYOFF — the two rows it just ungated
+# 2 · THE FRONT: B.4 — the non-cube domain. ADR 0026 is RATIFIED; build against it.
+**Arman's ordering (Δ20) reaches B.4 now that R1 has closed.** **`docs/adr/0026-the-non-cube-domain-re-realizing-a-form-in-its-own-geometry.md`** is the charter — **read it whole; I am not restating it.** What I add is the frame and the three things I will not let be decided silently.
 
-**Arman's ordering is R1 → B.4 → P5+UNDO, and B.4's definitional half is now commissioned to the researcher** (it needs a spec the way rung 2 needed ADR 0025 — I will not hand you a deep build on a plan line). ⇒ **This build takes the two rows R1 unblocked, which is where R1 stops being a debt paid and becomes a capability gained.**
+### ★★ THE FRAME — you are not inventing a door; you are answering one the substrate already marks
+**✔ Verified at my own desk, `apertureModel.ts` at HEAD, its own comment:** *"the geometry is DERIVED from the tower's own edge links: `n = tower.gate.edgeLinks[].memberEdgeIds.length`, θ = 2π/n … n=4 ⇒ E³ (n<4 ⇒ S³ deficit, n>4 ⇒ H³ excess). **Only the E³ transport is built — S³/H³ are the same loop with a different (ray, transport) and REFUSE honestly for now.**"*
+> ### ⇒ ⛔ **THE ENGINE ALREADY DIAGNOSES WHAT B.4 CURES, and it already names the cure's shape — *the same loop with a different (ray, transport)*.** ⇒ **B.4 is the transport that standing refusal has been holding a place for.** ★ **The refusal is your best guide to the seam: build toward making it stop firing honestly, never toward removing it.**
 
-### 2a · DUAL — Σ→4π, and ⛔ do NOT let R1's side-effect close it
-✔ **Your `B-107` recut already shows Σ = 4π SURVIVING by the truer 5×60° route, with the splits measuring 60·60·60 from the shape's own positions.** ⚠ **That is a real advance and it is NOT the row's kill.** **The ledger's DUAL row carries a precondition that must be discharged FIRST, in its own words:** *verify the incident-face ORDERING is stable / re-derived (`dualView:991`'s position-based sort key) or **Σ→4π is read off the WRONG COMPLEX**.*
-⇒ ★ **And the researcher's R1 trap is the same hazard one row over: *a position-keyed structure re-shapes with the positions and hides the defect — key on the carried complex.*** ⇒ **Discharge the ordering question at `dualView:991` — measure whether the sort is position-keyed and whether it survives the relaxation — and only then seal Σ = 4π as MEASURED.** ⛔ **If the ordering is position-keyed, that is a finding, not a blocker: report it and stop; the cure may be a union and is not chartered here.**
+### ⛔ THE THREE THINGS I WILL NOT LET BE DECIDED SILENTLY
+1. **TRAP 2 — THE SIZE-BLIND DIHEDRAL, the build's real hazard.** A hyperbolic/spherical dihedral **DEPENDS ON SIZE**, so *"the dodecahedron"* is under-specified. ⛔ **SOLVE `δ(inradius) = 2π/k` and PROVE the target was reached. Never read the euclidean `116.565°` and declare a fit.** ★ **It is 0025's `cosh R` trap one dimension up and it is worse — there the wrong formula gave a wrong ANGLE; here the wrong reading gives a PLAUSIBLE SHAPE.**
+2. **TRAP 1 — the position-keyed adjacency**, which is **the same trap you just measured active in DUAL, a row over.** ✔ The census already keys on the carried complex (`level3LinkExtractor:92`) — ⛔ **the realizer must not re-derive adjacency from distances.** ⚠ **Given you have now met this shape three times, you are the best-placed seat to catch its fourth: if the realizer's design pushes you toward a distance-derived structure anywhere, STOP and report rather than working around it.**
+3. **THE RESEARCHER'S OWN ⚠, handed to you as a confirm-or-report:** *that the first build needs NO new COMBINATORIAL machinery beyond the realizer* — inferred from `buildFormDomain` being class-agnostic, **not measured.** ⇒ **Confirm it against the seed your realizer emits, or report what else is needed. Do not build around a false premise quietly.**
 
-### 2b · R3 — the n=5 regular-fan gate, now LEGAL
-**The row's own reason for being gated has expired:** *"NEVER before R1 — until R1 lands the only fan is irregular (60·60·45·45·90), so the regular gate would make our own door-3 demonstration refuse itself."* ⇒ **R1 landed; the fan is now regular.** **Build the gate as the researcher ruled it: all apex corner angles equal within ε at the extract/thicken seam, refusing by naming the ACTUAL angles.** ⚠ **The demonstration that used to be refused must now PASS — drive it and say so; that is the acceptance.** ⛔ **And use the seal's ε discipline: a tolerance ON THE ANGLE, named, with a control that fails.**
+### SCOPE, closed — the ADR's own words
+**FIRST BUILD = the deck-fit checker + the S³/H³ realizer + THE THREE TARGET REALIZATIONS** (dodecahedron → Seifert-Weber (H³) and Poincaré (S³); lens → L(p,q)). ⛔ **DEFERRED with triggers, do not drift into them:** the general Coxeter constructor · **the INHABITED interior walk** (*this ADR seals EXISTENCE, not HABITATION* — the curved analogue of rung 1, ported forward exactly as 0025 §7.2 did) · the icosahedral-as-distinct-domain.
+**ACCEPTANCE — the swing first:** **euclidean FAILS on the fixed combinatorics (+222.83° Seifert-Weber · −10.30° Poincaré) → curved PASSES (0.99638 → 72.00000° · 0.31416 → 120.00000°), deficit 0, `|Σδ − 2π| ≤ ε = 1e-6 rad`.** ⚠ **Then: what does a PERSON see, if anything?** The ADR seals existence, so it is legitimate for this to be invisible at the eye — **but say so explicitly if it is; a substrate cut may be invisible, never silently so.**
 
-### 2c · TWO HOUSEKEEPING ITEMS from your own honest edges
-- ⛔ **PRICE THE WORD-MATERIALIZED UNION — do not build it.** Your §2 measured R-2's sibling: word-born single-face forms also null acquisition on save→load, and the cure would import the WORD machinery into the frozen loader. ⇒ **I need the PRICE before anyone decides: which frozen files, how big, and what the person loses today if it stays** (persistence is load-bearing since Δ10's doors, so "a saved form loses its lineage" is a person-facing cost, not a hygiene one). **Smallest measurement first; the scope call is Arman's and he will want a number.**
-- ⚠ **`scripts/app-leg/diagnose-d2-one-door.cjs` legs (c) and (f2) are STALE AT HEAD, pre-existing, outside the 113 suite.** ⇒ **The app-leg family has no named owner and that is the actual defect.** **Recut those two legs if it is cheap, or tell me the family needs an owner and I will charter one.** ⛔ *A red that nobody owns trains its readers to skip it — the same disease as the permanently-red baseline we retired.*
+---
 
-## 3 · NOT YOURS
-B.4's spec (researcher, commissioned) · the removal/undo ruling (researcher) · **the leaning-residue view** (designer — your §2 flagged it and I have sent it to her) · the wall SENTENCE's wording (designer, still upstream of your atom).
+# 3 · RIDERS — small, ruled, severable
+- **R3a · THE DUAL ORDERING CURE** (§1 above) — ~40 lines, one non-frozen file, the frozen sibling's idiom, your three witness legs.
+- **R3b · Σ = 4π SEALED AS MEASURED** — **only after R3a lands.** The row has waited since before the walk; collect it.
+- **R3c · THE n=5 REGULAR-FAN GATE** (`B-108`'s unstarted 2b) — legal now that the fan is regular; **the demonstration that used to refuse itself must PASS, driven.**
+- **R3d · TWO PRICES, no builds** (`B-108`'s unstarted 2c): the word-materialized save/load union (which frozen files, how big, what the person loses today) · the `app-leg/diagnose-d2-one-door` stale legs — **recut if cheap, or tell me the family needs an owner.**
+⚠ **SEVERABLE: if §2 consumes the build, sever the riders and NAME them; they become `B-110`'s first items.** ⛔ **Never silently.**
 
 ## 4 · ORDER
-**2a → 2b → 2c.** ⚠ **If 2a's ordering measurement turns up the position-keyed hazard, STOP THERE and report** — the rest can ride the next build.
+**§2 (B.4: the checker → the realizer → the three realizations → the swing at the witness) → R3a → R3b → R3c → R3d.** ⚠ **If Trap 2's solve turns out to need machinery the ADR did not anticipate, STOP and report — that is a definitions question and it goes back to the researcher, not around them.**
 
 — the mothership (sixth)
