@@ -1,110 +1,90 @@
 to: the mothership (sixth)
 from: the coder
-**STAMP `B-113` — ECHOED.**
+**STAMP `B-114` — ECHOED.**
 
-# 0 · WHAT LANDED, IN ONE LINE EACH
-- ✅ **§3 THE RENDER — `traceAperture` carries the model**, driven at the eye on a Seifert–Weber interior. **The copies shrink, measured; the crowding does NOT read, said plainly.**
-- ⛔ **AND THE ACCEPTANCE IS ONLY HALF MET, because the window a person WALKS is a SECOND CONSUMER I did not know existed until I drove it.** §2 below. **This is the one thing in this report you most need.**
-- ✅ **R1 the camera — SELECTION HOLDS.** Her retired C1 plate clause recut to her ruling and measured **both ways** on the running app.
-- ✅ **R3 the wrap — OWN THE WRAP**, driven: `—a ← unnamed·unnamed` / `→ unnamed·unnamed`, arrows aligned in their own column.
-- ✅ **R2 measured, NOT cured** (her explicit instruction). **One producer, five routes.**
-- ⛔ **§2's label: not landed — her words have not reached my inbox.** A letter from the designer sits in *your* inbox (`2026-08-26_2111`); **I did not open it — it is not addressed to me.** If it carries the label's words, send them and the cut is small.
+# 0 · ⛔ THE ONE THING TO READ FIRST: THE CROWDING READS, AND B-113's HONEST HALF WAS MEASURING THE WRONG SURFACE
+
+> ### ★★★ **STANDING INSIDE THE SEIFERT–WEBER SPACE, AFTER EIGHT DOORS, THE COPIES SHRINK *AND CROWD* — a dense lace of falling-away cells beyond the near wall.** **ADR 0004 §3's sentence, both halves, at the eye.**
+
+**B-113 reported — correctly for what it measured — that the shrink read and the crowd did not.** ⛔ **That was measured on the PLATE: an 84×84 thumbnail on the page.** At that size the copies are sub-pixel before they can crowd, so the plate showed an emptier page and I said so. **The WINDOW is the room at full size, and there the crowd is the dominant fact.** ⇒ **The finding stands as a finding about the plate; it was never a fact about H³.** *(You had already sent the plate-invisibility note and the crowding note to her together — the two do compose, and this is the third fact for that pair.)*
 
 ---
 
-# 1 · WHAT I SAW (drove the app, `?manuscript`, my own dev server)
+# 1 · §2 — THE SECOND CONSUMER IS GONE
 
-**★★ THE SEIFERT–WEBER SPACE BUILT AGAIN AT THE DOOR**, by hand: load the dodecahedron through the person's own *load universe…*, drag it to the paper, open the aperture, set six opposite-face pairs and pick each map **by its content** from the menus the engine offers (the six keys came out `d-4, d-0, d-0, d-0, d-0, d-0` — *the key is an address, the map string is the invariant*), glue. Verbatim:
+✅ **THE PLATE AND THE WINDOW READ ONE GEOMETRY.** `readCellSurface` hands the walk window the **sealed** room — twelve doors each carrying an in-model 4×4, the cell's corners and **every** face plane (walls included) from the model's projective chart. **Measured: every plane the walk tests is the same plane the tracer exits through, agreement `0.00e+0` over 12 faces.** The disagreement you named as the control is gone.
 
-> `glued — H₁ Z/5 ⊕ Z/5 ⊕ Z/5 · the aperture opens in the dim-3 band`
+**The shader's arm was the small half, exactly as I specified it:** the exit test was already the chart's form and `uFaceG` was already `mat4[16]`, so what was missing is the projective divide and **the metre** — `modelDist` lifts the chart point onto the quadric and reads the inner product, because chart length saturates at the Klein boundary while true distance runs to infinity, and distance is what the fade and the LOD ladder ride.
 
-**★★ AND THE CAPTION MOVED.** B-112 measured `orbit (visible): 12 plaques` on this room. At HEAD it reads:
+> ### ⛔ **THE COMMITTED EUCLIDEAN ARM IS UNTOUCHED BY BRANCH, NOT BY REDUCTION.**
+> An affine door's bottom row is `(0,0,0,1)`, so the projective branch **would** reduce to the committed lines — **and reducing to them is not the same as being them.** `uModel==0` keeps the exact arithmetic every euclidean witness was measured against. ✔ Witnessed: T³'s walk room read *with* a null model is byte-equal to the committed read and carries no `model` field and no `g4`; on the running app T³'s caption, GPU, doors and handedness are unchanged.
 
-> `Euclidean cone-manifold · n=[5,5,5,5,5,5] · cone edges: 6 × 450° · orbit (visible): 1 plaque · 0 of the 1 coils come back mirrored — count them`
+## 1.1 · ⛔ THE CARRIED FRAME — the part that was not a translation, and your STOP condition
 
-**12 → 1.** That is the model reaching the person's picture. Side by side on the page, the euclidean T³ plate is dense and the Seifert–Weber plate is sparse.
+`applyRot` is correct **only** because an affine door's linear part is the same map at every point. **Under a projective door a direction's transport DEPENDS ON THE BASE POINT.** The differential is `pushChartRay`'s own direction formula — so the carry is not invented — but the frame must then be **re-orthonormalised in THE MODEL's inner product**, because three chart vectors orthonormal at the old point are not orthonormal at the new one.
 
-⚠ **AND THE HONEST HALF, which you asked for rather than a caption: THE CROWDING DOES NOT READ.** 0004 §3 says *"in H³ they shrink exponentially and crowd."* **The shrink reads — dramatically. The crowd does not.** What a person actually sees beside the euclidean room is an **emptier page**. Measured at depth 8 (84×84, the same room, the same scene): the H³ room contributes **132 distinct copies** and only **3** survive a 4-pixel threshold, against euclidean **86**; at sixteen pixels **1** against **17**. The copies are all there in their hundreds — they fall under a pixel before they can crowd. This cell is *large* (inradius 0.996 in curvature −1), so the second copy is already tiny. **I added no caption.**
+⛔ **LAW 22 decided the method:** the orthonormalisation is **Gram–Schmidt IN ORDER**, which rotates and **can never reflect**. ⇒ **The only thing that may flip the mirror is a door whose own 4×4 determinant is negative — which is exactly what the reading MEANS.**
 
-**R1 at the eye:** dropping the dodecahedron on the paper auto-selected it and **the camera did not move** — the loop, the arc and both rooms stayed in frame. The page stayed whole.
+> ### ✔ **SO THE MIRROR READING'S MEANING IS UNCHANGED, AND NO STOP WAS OWED.** I checked that before building, not after.
 
-**R2 at the eye:** selecting the placed dodecahedron removed its label from the page entirely; its name survived only on the specimen card.
+**Witnessed:** the carried frame returns orthonormal to `4.44e-16` and right-handed on every door; **eight doors walked live left `frameHanded` at +1 throughout**; the return still counts in doors (0 → 8).
 
-**R3 at the eye:** invoke Square → *Glue → Torus (abAB)* → the card reads the wrap as she drew it (DOM-measured: both arrows at x 1668, both runs at x 1684, two lines).
+★ **The measurement that shows why the orientation must read det4 and not det3: every Seifert–Weber door's 4×4 determinant is `1.000000` while its 3×3 BLOCK reads `3.736`.** On a projective door the block is not the orientation, and now nothing reads it as one.
 
 ---
 
-# 2 · ⛔ THE ONE THING THAT MATTERS MOST: THE SECOND CONSUMER
+# 2 · §0 — THE LABEL, LANDED
 
-> ### **THE WINDOW A PERSON WALKS IS NOT THIS TRACER.**
-> I opened *explore inside — walk the habitat* on the built Seifert–Weber room. **It draws, and it draws EUCLIDEAN,** captioned:
-> `Euclidean cone-manifold · n=[5,5,5,5,5,5] · cone edges (k×90° heuristic): 6 × 450° · copies shown to depth 6`
+**At the eye, verbatim, on the room a person built:**
+```
+hyperbolic manifold · n=[5,5,5,5,5,5] · cone edges: 6 × 450° · (k×90° heuristic) ·
+copies shown to depth 6
+these angles are the shadow's, not the manifold's · 450° is more than a full turn —
+that excess is why it cannot be flat
+```
 
-**It is `ExploreWindow.tsx`'s WebGL2 fragment-shader port** (the CPU still was retired), fed by `readCellSurface`, with **its own JS frame-walk** for the eye. My cut reached `traceAperture` — the shell's plate — and not this. **So at HEAD the plate and the window now disagree about the same room**, and I am telling you that rather than letting you find it.
+✅ **Her rule is the mechanism, not a table of cases:** a sealed curved realization reads **`hyperbolic manifold`**; a euclidean form with real cone edges **KEEPS `Euclidean cone-manifold`**; a fold locus reads **`orbifold`** and **no seal can reach past it** — witnessed by *forcing* a seal onto a folded body and watching the noun refuse to move. ⇒ **That third row is what makes her rule right and your conditional wrong, and it is now enforced by ordering rather than by discipline.**
 
-⚠ **I scoped §3 as `traceAperture` in B-112 because that is what B-112's drive went through. That was an incomplete locate, and it was mine.** The correction is measured, not estimated:
+⛔ **ONE PRODUCER.** The view no longer composes its own `Euclidean cone-manifold` beside the plate's — **that is precisely how the two came to disagree.** Both read `apertureNoun`, and the witness pins it structurally.
 
-- ✅ **The shader's plane test is ALREADY the chart form** — `t=(uFaceD[f]-dot(p,uFaceN[f]))/dn`, which is exactly what the projective chart needs, unchanged.
-- ✅ **`uFaceG` is ALREADY `mat4[16]`.** The type is there.
-- ⛔ **What is missing in the shader is four lines:** the point transport takes `.xyz` (assumes w = 1) and the direction uses `mat3(g)`; `acc` is a `mat3`; `travel` is the chart parameter, not the metre.
-- ⛔ **AND THE REAL WORK IS NOT THE SHADER — it is the person's CARRIED FRAME.** `transportWalk` carries the eye **and six axes** (`camF/R/U`, `deckF/R/U`) through a door by `applyRot`. Under a projective map a direction's transport **depends on the base point**. `pushChartRay`'s own direction formula IS that differential — but the re-orthonormalisation is in the **model's** inner product, and **LAW 22 makes handedness state the observer CARRIES**, which the walk window's mirror reading is pinned on. **I will not guess that at speed.**
+## 2.1 · ⚠ TWO THINGS ARE MINE. I am flagging them, not smuggling them.
 
-⇒ **It is one cut, not two, and it is now precisely specified. It is the obvious front for B-114 and I did not start it.**
+1. **`spherical manifold` is my word, not hers.** She handed the hyperbolic one and the rule; **a sealed S³ form is reachable today** (the cube family's two uniform k=3 patterns), so the slot could not stay empty, and her rule admits exactly one word true of S³. **One string for her to overrule.**
+2. ⛔ **THE SHADOW CLAUSE FIRES ON A FACT, and this is a real tension between §0 and §2 that I resolved by construction rather than by asking you to choose.** Her note was written when *everything* was drawn in the shadow. **§2 makes that false for a sealed room** — and *"the label says what IS"* is her own rule. ⇒ **Her sentence goes out WHOLE when its first clause is true; her second clause goes out ALONE when only that one is.** **Not a word of hers changed, none invented.** **If she wants it unconditional it is one line, and I will not argue.**
+
+⛔ **AND THE NOTE GOT ITS OWN LINE, WHICH IT DID NOT HAVE.** She said *"its own line"*; both renderers silently collapsed the newline (`whiteSpace: nowrap` on the page label, plain `textContent` in the window). **Found by measuring the rendered node — the string was right and the page was wrong, and only one of those is what a person reads.**
 
 ---
 
 # 3 · WHAT I RAN
 
-- **`npx tsc -b` → exit 0** at the committed HEAD.
-- **The folded sweep: 121 files @ 1** (`diagnose-dual-inspection`, the accepted baseline), 561 s headless.
-- **THE DRIVE FAMILY, by its own trigger** (my reading touches the camera and the aperture): `scripts/app-leg/diagnose-deficit-app.cjs`, run **twice** — once at HEAD with my cut stashed, once with it. ⇒ **The driver-clause failure set is IDENTICAL: 16 clauses, every one pre-existing.** This cut adds none. *(The aggregate check count fell 29 → 28 because §E-PLATE now passes.)*
-- `git diff --stat 1340293 HEAD` = **EMPTY**.
-- **Freeze manifest, every touched file:** `noncubeDomain.ts` **NOT_FROZEN** · `apertureModel.ts` **NOT_FROZEN** · `ManuscriptView.tsx` **NOT_FROZEN**. **No frozen file touched; no hash moved; no spend asked for.**
+- **`npx tsc -b` → exit 0** · **folded sweep 121 @ 1** (`diagnose-dual-inspection`, the accepted baseline), 525 s.
+- **THE DRIVE FAMILY by its trigger** (my reading is the walk window): `diagnose-deficit-app` — ⇒ **the driver-clause failure set is IDENTICAL to the HEAD baseline I took in B-113: 16 clauses, every one pre-existing.** No new failure.
+- **`§9`/`§10` in `diagnose-the-noncube-domain`** — the walk room, the plane agreement, the euclidean non-movement, the closure, the mirror meaning, the carried frame, the four noun rows, the note's two firings, and the one-producer pin.
+- `git diff --stat 1b72f43 HEAD` = **EMPTY**.
+- **Freeze:** `ExploreWindow.tsx` **NOT_FROZEN** · `apertureModel.ts` **NOT_FROZEN** · `ManuscriptView.tsx` **NOT_FROZEN**. **No frozen file touched.**
 
-**The §9 measurements, verbatim:**
+**Verbatim, the load-bearing ones:**
 ```
-sealed: H3 · inradius 0.99638 · k=5 · closure worst 1.34e-5° · chart scale 0.5522
-affine pushes compared: 36 · exact: 36
-copies surviving ≥[1,4,16,64] px at depth 8 — H³ [132,3,1,1] · E³ [285,86,17,1]
-door round-trip worst error: 3.96e-15
-deepest lit ray at level 8 — H³ 12.008 (hyperbolic) · E³ 20.445 (euclidean)
-cube family: 79 sound = 43 E³ + 2 S³ + 1 degenerate + 33 mixed-k
+walk room: model H3 · 12 faces (0 walls) · 30 rods · span 1.7870
+plate-vs-walk plane agreement: worst 0.00e+0 over 12 faces
+door det4: 1.000000 · their 3×3 blocks: 3.736
+carried frame: worst |⟨eᵢ,eⱼ⟩ − δᵢⱼ| 4.44e-16 · right-handed on every door: true
+live walk: doors 0→8 · frameHanded +1 throughout
+T³ window (control): E³ · n=[4,4,4] · flat · no cone edges · (k×90° heuristic) · copies shown to depth 6
 ```
 
 ---
 
-# 4 · WHAT I CHANGED
+# 4 · ONE WITNESS DEFECT OF MY OWN, FOUND AND FIXED
 
-**`src/lib/noncubeDomain.ts`** — the projective chart (`chartOf`, `chartPlaneOf`, `chartDistance`, `pushChartRay`, `mat4Det`), the general regular-cell realizer (`realizeRegularDomain`; `realizeDodecahedralDomain` now delegates to it — **one construction, two contracts, never two copies that can drift**), and **`sealDomainRealization`** — the class a domain EARNS.
-
-> ### ⛔ **THE SEAL IS NOT B.0's KILLED CLASSIFIER, and its header says so where a later reader will meet it.**
-> B.0 killed a reader that took `k`, printed "hyperbolic", and realized nothing. **Nothing here is inferred.** A realization is **CONSTRUCTED** — the inradius solved so the cell's own dihedral becomes 2π/k, and **which model is not chosen either**: the target is compared with the cell's OWN euclidean dihedral (bigger ⇒ the cell must inflate ⇒ S³; smaller ⇒ H³; equal ⇒ E³, sealed **positively**). Then it is **PROVEN three ways** before any class is carried: the deck fit on the emitted co-vectors, every door's witnessed in-model isometry, and **the closure walk**. Fail any one ⇒ no seal, no model, and the euclidean transport says exactly what it always said. **An absence here is a true absence.**
-
-**`src/manuscript/apertureModel.ts`** — the tracer takes a model.
-- **ONE loop, not two.** The committed 12-float affine deck is widened to the 4×4 with bottom row `(0,0,0,1)` and goes through the same code. **On an affine matrix `pushChartRay` reduces to `applyPoint`/`applyVector` EXACTLY — asserted with `===` over 36 pushes, never hoped for.** The euclidean render is not a branch beside the model path; it **is** that path at E³.
-- **⚠ An affine door is NOT renormalized, and the test is STRUCTURAL, not a tolerance.** Found by measurement: renormalizing moved every committed euclidean render by ~1e-16 per door. **A bit that moves for no reason is a bit nobody can later explain.**
-- **⛔ At E³ the gate hands `model: null` ON PURPOSE.** The sealed map and the committed deck fit are the same rigid maps of the same cell. Handing the render a second copy of a map it already has moved **20 of the 43 flat forms** in the last ulp for nothing. **Two producers for one fact is how a render drifts from its own witnesses.** The **class** is carried regardless, in `gate.seal`.
-- The scene is built in the room the person is **in** (the model's chart corners; furniture scaled to it — **craft, never geometry: the walls, the doors and the transport never see that scale**).
-
-**`src/manuscript/ManuscriptView.tsx`** — R1 (the two request bumps out, the bounds measurement kept because *Fit Selected* is the person's own gesture) and R3 (the three-column wrap). The B-110 measurement that bought R1 is kept in place as the comment, because it is the measurement she ruled on.
-
-**Witnesses:** `diagnose-the-noncube-domain` **§9** (new: the seal, the render, the shrink, the door round-trip, the metre, the E³ null, the degenerate refusal, the full census); `deficit_app_driver.py` + `diagnose-deficit-app` **§E-PLATE recut to R1's ruling**; three diff-surface allow-lists; `diagnose-the-ink`'s depth marker (**the marker is the law, not the spelling** — both spellings satisfy it, a `value`-side fade still fails it).
+⛔ **B-113 gave the depth line the model's metre and updated the ink clause's PREDICATE but not its BRANCH SELECTOR.** HEAD stopped matching the old literal, so the leg fell into a **retired pre-commit branch that cannot pass** — a green that had quietly become unreachable. ⇒ ***A predicate written twice is a predicate that will be updated once.*** One marker, one definition, both readers.
 
 ---
 
-# 5 · TWO THINGS THE BUILD'S OWN WITNESSES CAUGHT, AND ONE I MUST NAME
+# 5 · WHAT I COULD NOT REACH
 
-1. **I read the wrong number and it inverted the finding.** `formCopiesVisible` at a single threshold reads the H³ room as **emptier** than the euclidean one — the exact opposite of what is happening. The threshold **sweep** is what makes a shrink legible as a shrink. **One number there would have shipped a backwards claim.**
-2. **A door round-trip "failed" at 2.9e-4** — my test direction was 1.0003 long and a projective push renormalizes. The fix was the test data; the property is now written down.
-3. ⛔ **A CORRECT WITNESS THAT DOES NOT COVER THE CHANGE, named rather than left to be discovered:** the honest door's clause 4 and the orbifolds' body clause 3 call `traceAperture` **with no model**. They pin that the euclidean path did not move — **true, and verified: 43 flat forms and 79 sound forms byte-identical** — and they say **nothing** about the app's render, which passes `gate.model`. **The 2 sealed cube forms genuinely draw differently now.** That is the cut working, not a regression, and §9 carries the sentence so the next reader meets it.
-
----
-
-# 6 · WHAT I COULD NOT REACH
-
-- **§2's label** — her words have not reached my inbox. **Ready to land the moment they do.**
-- **The interior walk** (§2 above) — named in full, deliberately unstarted.
-- **The aperture plates are invisible on the page at the default camera** — for T³ as much as for the new room; they read only when the row is framed. **Pre-existing, not this cut, and not chased.**
-- ⚠ **I left a browser tab open** at `localhost:5174` — the app's own unsaved-changes guard refused to close it. My dev server is stopped and the port is released; the tab is inert.
+- **Nothing in the mandate.** §0 and §2 both landed; you ordered *nothing else* and I chased nothing else.
+- ⚠ **A browser tab is open** at `localhost:5174` — the app's unsaved-changes guard refuses programmatic close. **The server is stopped, the port released; the tab is inert.**
 
 — the coder

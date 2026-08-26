@@ -1,39 +1,51 @@
 to: the coder
 from: the mothership (sixth)
-clock (raw, verbatim): `Wed Aug 26 20:15:07 +0330 2026` — mtime is the fact
-**STAMP: `B-113`** ⛔ **Echo it.**
+clock (raw, verbatim): `Wed Aug 26 22:19:54 +0330 2026` — mtime is the fact
+**STAMP: `B-114`** ⛔ **Echo it.**
 
-# 1 · ✅ `B-112` RATIFIED — and §1 is the biggest thing anyone has reported in this arc
-> ### ★★★ **A PERSON CAN BUILD THE SEIFERT–WEBER SPACE, BY HAND, AT THE DOOR — and the engine prints its classical invariant back to them:** `glued — H₁ Z/5 ⊕ Z/5 ⊕ Z/5 · the aperture opens in the dim-3 band`.
-**Loaded through the file door, dragged to the paper, twelve faces offered with real corner names, six pairs and their maps picked BY THE PERSON, glued.** ⇒ **That is the module's whole thesis — *forms beget forms, by the person's own hand* — arriving at a classical object nobody wired in.** ✔ **And you drove it end to end rather than asserting it.** ⚠ **Recorded with your caveat: the route is the FILE door; the seed registry still offers only tetrahedron · octahedron · cube. *A capability reachable only by knowing to load a file is reachable, not offered* — that is a designer question and I am raising it, not you.**
-✔ **THE ENGINE HALF: ratified whole.** One 4×4 over the model's own 4-vectors, the same multiply for all three geometries and **only the inner product differing** — that is the minimal correct widening, and the consumer's loop untouched is what makes it safe. ✔ **Field 3 fitted from the person's carried corner correspondence AND WITNESSED** — *every* carried corner landing on its partner, not only the ones the fit consumed; a corrupted correspondence throwing BY NAME rather than fitting a plausible transform. ★ **And carrying the off-plane law up correctly — *the centre maps to the NEIGHBOUR's centre across the exit face, since a gluing isometry carries the cell OFF ITSELF* — is the 2015 deck-fit scar honoured one dimension up.**
-★★★ **THE SWING IS THE INSTRUMENT §8.2 ASKED FOR AND AN ANGLE SUM COULD NOT GIVE:** the deck WALK closing (H³ worst turn `1.34e-5°` · S³ `1.21e-6°`) and **FAILING when forced to E³ (`137.1745°` — the principal reading of the ADR's `+222.8255°` — and `10.3047°`, §4's `−10.3048` exactly).** ⇒ **The transport CAN fail, which is the only reason its closing means anything.** ⛔ **And it is a WALK — cross the door on the face you stand against, the edge carried by the person's own corner map, the other flanking face the next door, returning in exactly `memberCount` steps or refused by name.** *A product over a list would have closed by construction.*
-★ **§7 — your own two errors (`P⁻¹Q` for `Q·P⁻¹`, and a walk with no direction or edge tracking) caught by the witnesses you wrote for §8, inside one build, before any number was believed.** ⇒ **That is what a witness written before the cure is for.**
+# 0 · ⛔ THE LABEL'S WORDS — RELAYED. THE GAP WAS MINE, NOT YOURS.
+**You were right not to open a letter addressed to me, and right to say so plainly.** ⛔ **She sent them to me; I held them a cycle. Mine.** **Here they are, ratified and final:**
+> ### **NOUN:** **`hyperbolic manifold · n=[5,5,5,5,5,5] · cone edges: 6 × 450° · orbit (visible): N plaques`**
+> ### **NOTE (its own line, the instrument's register):** **`drawn in the euclidean shadow — these angles are the shadow's, not the manifold's`**
+> ### **AND ON THE `450°`, in the note's register, the value staying in its slot:** **`450° is more than a full turn — that excess is why it cannot be flat`**
+⛔ **THE RULE THAT GOVERNS THE NOUN — hers, and it CORRECTS a conditional I gave you:** I said *"when a sealed realization exists, drop `cone`."* **She refused that form, because it keys on the wrong fact.**
+> ### ⇒ ***EVERY WORD IN THE NOUN MUST BE TRUE OF THE GEOMETRY THE NOUN NAMES.***
+| the form | the noun |
+|---|---|
+| euclidean, with real cone edges | **`euclidean cone-manifold`** — `cone` is TRUE there; **that noun is not retired, only stopped from claiming forms it does not describe** |
+| a sealed curved realization closing at 2π | **`hyperbolic manifold`** — no cone in H³; the cone is the shadow's |
+| ⚠ **a form with a genuine FOLD LOCUS** | **`orbifold`, and its singularity is REAL** |
+⛔ **That third row is why my conditional was wrong and hers is right: a fold locus is NOT an artifact of the wrong geometry — it SURVIVES into the right one.** ⇒ ***"A realization exists" and "the singularity is an artifact" are two different facts, and only the second decides the word.*** **Build to her rule, not to my conditional.**
+★ **And the note's word is the doctrine's own: ADR 0026 §2 calls this object *"the euclidean shadow"* in the same sentence that makes it smooth in H³.** *(She verified that at HEAD herself rather than taking my read.)*
+⛔ **No future tense anywhere. The label says what IS.**
 
 ---
 
-# 2 · ⛔ THE INTERIM-HONESTY QUESTION DISSOLVES — it was never interim
-**You raised it on measured ground, correctly, and refused to add a caption. Here is my ruling, and it makes your §5(b) land EARLY rather than waiting on the render:**
-> ### ⛔ **THE LABEL SPEAKING THE SEALED CLASS IS NOT A CAPTION ABOUT A CURE THAT IS COMING. IT IS THE HONEST STATEMENT OF A FACT THE ENGINE ALREADY HOLDS.**
-**The realization is sealed. Its class is carried. Saying it is not reword-over-build — it is refusing to keep a positively-present fact silent** (*a positive fact needs a positive mark*). ✔ **And your own reasoning clears LAW 15: B.0 forbade INFERRING S³/H³ from `k`; CARRYING a sealed class is the opposite act.** ⇒ ✅ **RULED: the label speaks the sealed class as soon as its words exist — it does NOT wait for the render.** ⚠ **The WORDS are the designer's and I have asked her for them** (including whether the `450°` line should say anything about being more than a full turn). **When they arrive, land it; it is small and it closes the exposure your §1 measured.**
+# 1 · ✅ `B-113` RATIFIED — and four of its judgements are now law
+✔ **Desk: `HEAD == origin == c4c5a41`. Sweep 121 @ 1 · tsc 0 · no frozen file touched.** ✔ **And you ran the DRIVE FAMILY by its own trigger, twice, with and without your cut — identical pre-existing failure set. That is the trigger rule working on its first real occasion.**
+★★★ **`sealDomainRealization` — THE CLASS A DOMAIN *EARNS*, and your header defends it where a later reader meets it.** **Nothing inferred: the inradius SOLVED, the model not chosen but DERIVED by comparison with the cell's own euclidean dihedral, sealed POSITIVELY at E³ too, and PROVEN three ways before any class is carried — fail one and there is no seal, no model, and the euclidean transport says exactly what it always said.** ⇒ ***An absence here is a true absence.*** **That is B.0's ruling honoured rather than circumvented.**
+★★★ **ONE LOOP, NOT TWO — and asserted rather than hoped:** `pushChartRay` reduces to `applyPoint`/`applyVector` **EXACTLY, `===` over 36 pushes.** ⇒ **The euclidean render is not a branch beside the model path; it IS that path at E³.**
+★★ **`model: null` AT E³ ON PURPOSE** — because handing the render a second copy of a map it already holds moved **20 of 43 flat forms in the last ulp for nothing.** ⇒ ***Two producers for one fact is how a render drifts from its own witnesses.*** ★★ **And the affine door NOT renormalized, tested STRUCTURALLY rather than by tolerance: *a bit that moves for no reason is a bit nobody can later explain.***
+✔ **R1 selection HOLDS, driven both ways · R3 the wrap as she drew it, DOM-measured · R2 measured not cured (one producer, five routes) — exactly as instructed.**
+★★★ **§5.1 IS THE FINDING I WANT EVERY SEAT TO HAVE: you read ONE threshold and it INVERTED the claim** — a single cut reads the H³ room as *emptier*, the exact opposite of what is happening. ⇒ ***The SWEEP is what makes a shrink legible as a shrink; one number there would have shipped a backwards claim.*** **Filed.**
+✔ **§5.3 named rather than left to be found: a CORRECT witness that does not COVER the change** — the honest-door clause pins that the euclidean path did not move (true, verified: 43 flat and 79 sound byte-identical) and says nothing about the app's render. **The 2 sealed cube forms genuinely draw differently now, and your §9 carries the sentence.**
+⚠ **AND THE HONEST HALF, which is why I trust the rest: THE CROWDING DOES NOT READ.** 0004 §3 promised *"shrink exponentially AND crowd."* **The shrink reads dramatically; the crowd does not — what a person sees beside the euclidean room is an EMPTIER PAGE** (H³ `[132,3,1,1]` against E³ `[285,86,17,1]`). ⛔ **You added no caption, which was right.** ⇒ **That is a FORM question and it is with the designer now — not a defect of your cut.**
 
-# 3 · THE FRONT: THE RENDER — `traceAperture` gets the model
-**Your §5(a), as you scoped it: the GEODESIC STEP and the PLANE-HIT test per model** — E³ `p + tv` · S³ `cos t·p + sin t·v` · H³ `cosh t·p + sinh t·v`. **The transport is already model-carrying; this is the consumer catching up.**
-⛔ **THE ACCEPTANCE IS THE ONE 0004 §3 WROTE, and it is a person's, not a number's:** *"in H³ the copies shrink exponentially and crowd; in S³ they close up and come back."* ⇒ **Drive a Seifert–Weber interior and say what the copies DO** — and the swing beside it: **the same form forced to E³ shows the seam the walk measured.** ⚠ **A recession RATE is not the mark** (the researcher's own scar, and mine to hold): **if the crowding does not READ, say so plainly rather than captioning it.**
-⚠ **`apertureModel`'s own types are yours to shape now — you deliberately left them for the render, which was right.**
+---
 
-# 4 · RIDERS — small, ruled, severable
-- **R1 · THE CAMERA — RULED BY THE DESIGNER, and it is one edit:** ✅ **SELECTION HOLDS. The camera does not move on selection.** Her argument, and it is better than "jarring": ***HE HAD TO SEE IT TO SELECT IT*** — he pointed at a thing, so it was in view by construction, and moving the view afterwards takes away the very context he used to act. ⛔ **`eases` REFUSED** (*an eased teleport is still a teleport; you just watch it happen*) · ⛔ **`frames-without-flying` REFUSED** (*it still moves the world; it only moves it politely*). ★ **The disease named: A STATE CHANGE PERFORMING A NAVIGATION — one gesture doing two jobs.** ⇒ ⛔ **AND THE DESELECT-RESET GOES — not by a second ruling but because its subject is gone: once selection holds, there is nothing to reset.** *(Her test for any future camera proposal: if it still needs a rule for deselection, it has relocated the conflation rather than removed it.)*
-- **R2 · A MEASUREMENT SHE ASKED FOR, and it bites P5 — DO NOT CURE IT INSIDE R1:** ⛔ **the selected form's OWN LABEL HIDES while selected** — *selecting a form makes it anonymous on the page.* ⇒ **Her collision: P5's memorial must carry THE NAME of what left, so if selecting un-names a form, the last thing he sees before removing it is a form with no name and the memorial names it back for the first time — *the page would name a thing only once it is gone.*** **MEASURE: what hides it, on which routes, and is it one producer or several? REPORT ONLY.** ⛔ **She was explicit that it must not be cured by whoever happens to be in the file.**
-- **R3 · THE WRAP — she WITHDREW her own bracket fallback and ruled instead: OWN THE WRAP.**
-```
-—a⁻¹ ← unnamed·unnamed
-       → unnamed·unnamed
-```
-**Two lines, deliberately, the arrow LEADING the continuation** — *the one position a wrap cannot swallow.* ★ Her reason: *the content did not fit the slot, so the SLOT changed; I did not repunctuate to squeeze it in.*
+# 2 · THE FRONT: THE SECOND CONSUMER — the window a person WALKS
+> ### ⛔ **AT HEAD, THE PLATE AND THE WINDOW DISAGREE ABOUT THE SAME ROOM.** **`traceAperture` now draws Seifert–Weber in H³; *explore inside — walk the habitat* draws it EUCLIDEAN, captioned `cone edges (k×90° heuristic): 6 × 450°`.**
+★ **You found it by DRIVING, told me before I could find it, and owned the incomplete locate that caused it.** ⇒ **That is the whole of what a stop-and-report is for, and it is the second time your drive has corrected a scope I wrote.**
+**The cut, as you specified it — I am adding nothing to your measurement:**
+- ✅ **The shader's plane test is ALREADY the chart form; `uFaceG` is ALREADY `mat4[16]`.** **Four lines are missing:** the point transport taking `.xyz` (assuming `w=1`), the direction using `mat3(g)`, `acc` being a `mat3`, and `travel` being the chart parameter rather than the metre.
+- ⛔ **THE REAL WORK IS THE PERSON'S CARRIED FRAME, and your refusal to guess it at speed is ratified:** `transportWalk` carries the eye **and six axes** through a door by `applyRot`; **under a projective map a direction's transport depends on the base point**, and the re-orthonormalisation is in **the model's** inner product. ⛔ **LAW 22 makes handedness state the OBSERVER CARRIES, and the walk window's mirror reading is pinned on it.** ⇒ **Get the frame right or the flip lies, and a lying flip is worse than no flip.**
+**ACCEPTANCE — the person's, and it has two halves:** ⛔ **the plate and the window AGREE about the same room** *(the disagreement at HEAD is the control: it exists today and must be gone)*; **and the walk's own marks still read** — **the return counted in doors, and the mirror reading, unchanged in meaning.** ⚠ **If the carried frame's correction changes what the mirror reading SAYS, STOP — that is LAW 22's own territory and it goes to the researcher, not around them.**
 
-## 5 · ORDER
-**§3 (the render) → R1 → R3 → R2's measurement.** ⚠ **§2's label lands the moment her words arrive — take it out of order if it beats the render.** ⛔ **Severable at R2 and R3; name anything you sever.**
-⛔ **NOT yours:** the label's words · the seed-registry question · P5.
+# 3 · RIDERS
+- **§0's label** — land it with the front; it is small and its exposure is live.
+- ⚠ **The aperture plates being invisible at the default camera** (yours, §6, pre-existing, T³ as much as the new room): **named, not chartered.** ⚠ **It composes badly with the crowding finding — if the plate is where the shrink would read and the plate is not in frame, the designer needs to know both facts together.** **I have sent her both.**
+
+## 4 · ORDER
+**§0 (the label — smallest, live exposure) → §2 (the walk window) → nothing else.** ⛔ **Do not chase the invisible plates or the crowding.**
 
 — the mothership (sixth)
