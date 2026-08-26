@@ -24,7 +24,7 @@
 //
 // THE CLAUSES: 1 DRAWS (79 ok, the 36 newly-drawn are exactly the sound k≠4
 // set) · 2 NO LIE (512-sweep strings free of S³/H³/spherical/hyperbolic) ·
-// 3 HONEST CONE ANGLES (d+0³: cone edges at 180° and nothing else; traces
+// 3 HONEST CONE ANGLES (the {2,2,4,4} cone form: cone edges at 180°; traces
 // non-empty) · 4 NON-MOVEMENT (flat forms: label + trace buffers byte-identical
 // to the HEAD-compiled reader) · 5 FOLDED UNTOUCHED (verdicts byte-identical;
 // none draws) · 6 ★ BOTH WRONG MECHANISMS CARRIED IN-MEMORY (the kept-refusal
@@ -172,10 +172,39 @@ check('★ CLAUSE 2 — across ALL 512 door pairings, no person-facing string na
   })());
 
 // ═════ [c] CLAUSE 3 — HONEST CONE ANGLES on the mandate's fixture ═════════════════
-console.log('\n----- [c] the fixture ["d+0","d+0","d+0"] (k profile [2,2,4,4]): cone edges at 180° and NOTHING else; the transport traces it (clause 3) -----');
-const fixtureRows = AXES.map(([a, b]) => ({ faceA: f(a), faceB: f(b), candidateKey: 'd+0' }));
-const fixtureVerdict = A.buildPersonDomainVerdict(cube, fixtureRows, 'fx', 'd+0 cubed');
-check('★ CLAUSE 3 — HONEST CONE ANGLES: the d+0³ form is sound with k = {2,2,4,4}; its label reads "Euclidean cone-manifold" with cone edges 2 × 180° and NO OTHER angle (the two k=4 classes are flat, not cones — the only ° in the label is 180°); the gate is ok and a small trace is NON-EMPTY',
+// B-106 §3 (the key-drift cure): the fixture's IDENTITY is its three MAPS —
+// the corner correspondences a person reads in the menu — never the
+// enumeration keys that once reached them. The old spelling was
+// ["d+0","d+0","d+0"] with the title 'd+0 cubed': a candidate re-enumeration
+// would have made this leg test a DIFFERENT form while its k-profile assert
+// possibly still passed on another — the subject moving under a standing
+// witness. Selection is now BY MAP CONTENT (order-free over the map object,
+// the rowFor idiom); the key rides as plumbing; an absent or ambiguous match
+// THROWS LOUD — the form under test changed, and the witness must go red.
+const mapByContent = (a, b, pairs) => {
+  const want = Object.entries(pairs);
+  const menu = A.dihedralMapCandidates(cube, f(a), f(b));
+  const hits = menu.filter((c) =>
+    Object.keys(c.map).length === want.length &&
+    want.every(([x, y]) => c.map[`vertex:cube:${x}`] === `vertex:cube:${y}`));
+  if (hits.length !== 1) {
+    throw new Error(
+      `the pinned fixture map {${want.map(([x, y]) => `${x}→${y}`).join(' · ')}} on ${a}~${b}: ` +
+      `${hits.length} menu candidates match — the form under test changed`,
+    );
+  }
+  return hits[0];
+};
+// the three reversing axis maps, spelled in the cube's own corner words
+const FIXTURE_MAPS = [
+  ['left', 'right', { d: 'b', a: 'c', e: 'g', h: 'f' }],
+  ['front', 'back', { a: 'c', b: 'd', f: 'h', e: 'g' }],
+  ['bottom', 'top', { a: 'e', d: 'f', c: 'g', b: 'h' }],
+];
+console.log('\n----- [c] the fixture d→b·a→c·e→g·h→f / a→c·b→d·f→h·e→g / a→e·d→f·c→g·b→h (k profile [2,2,4,4]): cone edges at 180° and NOTHING else; the transport traces it (clause 3) -----');
+const fixtureRows = FIXTURE_MAPS.map(([a, b, pairs]) => ({ faceA: f(a), faceB: f(b), candidateKey: mapByContent(a, b, pairs).key }));
+const fixtureVerdict = A.buildPersonDomainVerdict(cube, fixtureRows, 'fx', 'the {2,2,4,4} cone form');
+check('★ CLAUSE 3 — HONEST CONE ANGLES: the fixture form (three reversing axis maps, selected by content) is sound with k = {2,2,4,4}; its label reads "Euclidean cone-manifold" with cone edges 2 × 180° and NO OTHER angle (the two k=4 classes are flat, not cones — the only ° in the label is 180°); the gate is ok and a small trace is NON-EMPTY',
   (() => {
     if (fixtureVerdict.folded || !fixtureVerdict.domain.tower.sound) return false;
     const g = A.geometryFromTower(fixtureVerdict.domain.tower);

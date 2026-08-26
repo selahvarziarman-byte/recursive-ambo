@@ -114,10 +114,27 @@ check('the person-built T³ (translation maps picked from the menu): sound · χ
   personT3.tower.homology.H1.pretty === 'Z^3' &&
   eq(t3Geometry.n, [4, 4, 4]) && t3Geometry.kind === 'E3' &&
   personT3.complex.pairings.every((p) => p.mode === 'preserving'));
-const lrReflected = lrMenu.filter((c) => c.derivedMode === 'reversing');
-const flipRows = [{ ...t3Rows[0], candidateKey: lrReflected[0].key }, t3Rows[1], t3Rows[2]];
+// B-106 §3 (the key-drift cure): the reflected map is selected BY ITS MAP
+// CONTENT — the corner correspondence the person reads (d→b · a→c · e→g ·
+// h→f) — never by list position. The old pick was `lrReflected[0]`, "the
+// menu's first reversing candidate": positional, and the asserted H₁ below
+// is a property of WHICH map was picked (the same positional idiom already
+// bit a person — the designer took the first reversing map hunting the fold,
+// which sat fourth). The key rides as plumbing; no unique match = throw.
+const mapByContent = (menu, pairs, name) => {
+  const want = Object.entries(pairs);
+  const hits = menu.filter((c) =>
+    Object.keys(c.map).length === want.length &&
+    want.every(([x, y]) => c.map[`vertex:cube:${x}`] === `vertex:cube:${y}`));
+  if (hits.length !== 1) {
+    throw new Error(`the pinned map ${name} {${want.map(([x, y]) => `${x}→${y}`).join(' · ')}}: ${hits.length} candidates match — the menu under test changed`);
+  }
+  return hits[0];
+};
+const lrReflectedPick = mapByContent(lrMenu, { d: 'b', a: 'c', e: 'g', h: 'f' }, 'lr-reflected');
+const flipRows = [{ ...t3Rows[0], candidateKey: lrReflectedPick.key }, t3Rows[1], t3Rows[2]];
 const personFlip = A.buildPersonDomain(cube, flipRows, 'p-flip', 'person-built FLIP');
-check('ONE REFLECTED MAP picked instead (the menu\'s first reversing candidate): w₁=1 · NON-orientable · H₁=Z²⊕Z/2 — the manifold changed because the MAP changed; the recorded mode derives as reversing',
+check('ONE REFLECTED MAP picked instead (d→b · a→c · e→g · h→f, selected by content — derived reversing): w₁=1 · NON-orientable · H₁=Z²⊕Z/2 — the manifold changed because the MAP changed; the recorded mode derives as reversing',
   personFlip.tower.sound === true && personFlip.tower.w1.w1 === 1 && personFlip.tower.orientable === false &&
   personFlip.tower.homology.H1.pretty === 'Z^2 ⊕ Z/2' &&
   personFlip.complex.pairings[0].mode === 'reversing');
@@ -372,10 +389,20 @@ check('SAY ORBIT, NEVER π₁: the caption says "orbit"; no π₁ survives in th
 
 // ═════ [f] the gate — DRAW NOTHING, SAY SO; geometry DERIVED, not typed ══════════
 console.log('\n----- [f] the gate: unsound refuses by name; S³ refuses honestly; the geometry is derived from n (battery 5 · 7) -----');
+// B-106 §3 (the key-drift cure): the unsound pattern IS a SPECIFIC bad
+// combination of maps — spelled by content from each pair's own menu (the
+// old spelling d+0 · d+1 · d+0 carried it by enumeration keys: on reorder
+// the meaning drifted first and the assert failed second). Keys ride as
+// plumbing; the shared selector throws loud on any non-unique match.
 const unsoundRows = [
-  { faceA: faceId('left'), faceB: faceId('right'), candidateKey: 'd+0' },
-  { faceA: faceId('front'), faceB: faceId('back'), candidateKey: 'd+1' },
-  { faceA: faceId('bottom'), faceB: faceId('top'), candidateKey: 'd+0' },
+  { faceA: faceId('left'), faceB: faceId('right'),
+    candidateKey: mapByContent(lrMenu, { d: 'b', a: 'c', e: 'g', h: 'f' }, 'unsound-lr').key },
+  { faceA: faceId('front'), faceB: faceId('back'),
+    candidateKey: mapByContent(A.dihedralMapCandidates(cube, faceId('front'), faceId('back')),
+      { a: 'd', b: 'h', f: 'g', e: 'c' }, 'unsound-fb').key },
+  { faceA: faceId('bottom'), faceB: faceId('top'),
+    candidateKey: mapByContent(A.dihedralMapCandidates(cube, faceId('bottom'), faceId('top')),
+      { a: 'e', d: 'f', c: 'g', b: 'h' }, 'unsound-bt').key },
 ];
 const unsoundDomain = A.buildPersonDomain(cube, unsoundRows, 'p-bad', 'unsound pattern');
 const unsoundGate = A.buildAperture(unsoundDomain);
