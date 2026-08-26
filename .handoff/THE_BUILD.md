@@ -1,40 +1,47 @@
 # THE BUILD — always current, self-contained
 
-**STAMP: `B-105`** ⛔ **Echo this stamp at the top of your report.**
-**Written by: mothership (sixth) · base `f06eb84` · branch `team-arman`**
+**STAMP: `B-106`** ⛔ **Echo this stamp at the top of your report.**
+**Written by: mothership (sixth) · base `63216d5` · branch `team-arman`**
 
 *Read `CLAUDE.md` at the repo root first. **If anything below contradicts what you MEASURE, your measurement wins.***
 
----
-
-## 1 · ✅ `B-104` RATIFIED, clause by clause — rung 2's windows stand; the RUNG closes at Arman's eye, which is now in flight
-
-✔ **§2 — the front, whole:** the later-chapter door retiring AT ITS OWN SEAM, eligibility BEING the resolution (the affordance line stays honest by construction), and the four windows driven at your eye with countable captions only. **The person-built {6,6} as the hyperbolic acceptance is the substance of the clause** — the curvature read off a countable vertex on a REACHABLE route — and pinning the ADR's worked {4,5} in the witness while saying plainly that no page surface carries that symbol is the honesty standard (your TO-3a).
-✔ **The family correction (your TO-2) — the substrate won and the mandate lost, correctly:** my located sites read the gate's identification-complex family; the view holds the ACQUIRED QUOTIENT complex, and you measured the two families side by side before cutting. That locate was carried by both of us (`B-102` §1.4(b) → my charter); **owned at my desk — a located line is a claim like any other, and only your measurement settled it.**
-✔ **The {4,2} dihedron degeneracy (your TO-4):** the descent check's key moving corner-set → PATCH CENTROID, with all three controls still pinned (cube ✔3 · octa ✔4 · tetra ✘-in-words), is a sound extension under the ADR's law — **FYI'd to the researcher as the law-owner** (letter out; non-blocking).
-✔ **The three honest edges named, none stretched** (the {4,5} page case · the weak far-side exercise · R2's eye-unreachable site) — carried on the plan as acceptance notes, not defects. ✔ **Riders R1–R5 landed** (R3(a)'s {N} moving 6→4 live is the computed proof again; R5's route letter verified in the designer's inbox at my desk). ✔ **R6 severed exactly as the mandate allowed — it is §2a below.** ✔ Suite **113** @ 1 — grown by your new witness; noted so the next mandate's baseline expectation reads 113.
+> ### ✔ **AND FIRST: STOPPING WAS RIGHT.** You found `THE_BUILD.md` bearing a SPENT stamp, an empty inbox, and no ruling — and you **measured that** rather than assuming it, then refused to invent work. ⛔ *Re-running a spent mandate is the one thing worse than an idle lane.* **That refusal is the protocol working; the gap was mine.**
 
 ---
 
-## 2 · THE FRONT: THE SEVERED RIDER + THE SWEEP'S REVIVED QUEUE — a light build beside Arman's walk
+## 1 · ✅ `B-105` RATIFIED — with its four markers, clause by clause
+*(Every measurement quoted below is yours, from the committed report at `63216d5`, ⚠ on your run — the accepted channel. My own ✔s are marked where I made them.)*
 
-⛔ **PHASE DISCIPLINE, and it is about HIS SESSION, not you:** **Arman's rung-2 acceptance walk is the NEXT act on the board — the walk card went to him with this cycle (the windows are your own report §1 at `f06eb84`). Treat his dev-server session as LIVE from the moment this mandate lands: a `src/` edit can HMR into an open session mid-walk (your own reports' HMR notes, `B-102`/`B-104` witness §5).** ⇒ **Phase A (no `src/` writes) runs first and may land immediately. Phase B (src cuts) STARTS ONLY after his walk verdict arrives** — a mid-build ruling file in `inbox/coder/` or the next mandate will say so; echo its marker.
+✔ **W3 §2 — THE RECONCILIATION IS THE BEST THING IN THE ARC.** Not "who was right": **both seats measured truly and the states differ by ONE TAP** — the volume-change effect kills `apertureFoldedRows` (the door dies) and never clears the notice (**the wall stands doorless**), while the selected body hides its label with no card to speak for it. ★ **And you found that your own letter's step 6 walked her onto it.** *A route letter is a claim like any other* — that is the finding, and it is yours.
+✔ **§1 the fold TAP, at the eye:** the edge list gone, taps on the drawn edges, one hue to a pair, ticks-and-runs carrying **P.5's direction** — and the route driven to its far end (hexagon → `aabbcc` by hand → 3 cross-caps → **the Poincaré window arrives**). ★ **The pointerdown finding is a real defect caught in passing**: three of six edges dead to `click`, all six alive to pointer events — the closest-hit theft in an event-type costume.
+✔ **§4d + §5 — the window NAMES AND SHOWS; the inhabitant landed with its control at the eye:** the coil TWICE on the descended RP², ONCE on the lifted cube, **mirror-wound by the math, not by us.** ⛔ **The LAW-24 control is the acceptance and it stood on both halves.**
+✔ **§4a/§4b/§4c · B1 · B2's two frozen spends** (each edit + re-seal alone, positive controls run — ✔ my read: `0af14869…` and `5d91c2df…` recorded, `CLAUDE.md` spend record grown) · **A2(iv) recut structurally** — a pin that cannot pass vacuously.
+✔ **The honest edges, every one named and none stretched:** B2's coincident case unreachable (searched, said so) · the empty-total sentence page-unreachable · the FLIP not legible at rest with a **clean null control** · the shrink compressed to ~2 rings on {6,6} · the RP² census confirming the dihedron and the hemicube unreachable.
+★ **§9 — the `d+1`/`d+3` key drift, self-reported: the map STRING is the invariant; the candidate KEY is an enumeration-order artifact.** ⇒ **Filed as law: a key is an ADDRESS. Seat-to-seat routes cite the string a person reads, never an index.** *(F.4's family, in the wire instead of the UI.)*
+⛔ **§3 IS MINE, OWNED: three of A2's four premises were STALE at HEAD.** I revived them from the retired BACKLOG's rows and chartered them without re-measuring. **A revived item is a claim and it decays like any other — I swept the FILE and called it a sweep of the SUBSTRATE.** Your three measurements cost a mandate slot; the law is now in the ledger.
+✔ **§10's deviation accepted with its reason** — a substrate map regenerated mid-build is stale before the build ends. Correct, and the kind of call that is yours.
 
-### PHASE A — no src writes
-- **A1 · THE SUBSTRATE MAP** (`B-104`'s severed R6; Arman-ruled yours — `THE_SOVEREIGN_LEDGER.md` Δ16.3): regenerate `.handoff/THE_SUBSTRATE_MAP.md` per its own header law — from committed bytes at HEAD, every fact `file:line`, no anchor inherited unverified. Its baseline `6436736` predates the walk, the legibility arc, persistence, and rung 2 entire.
-- **A2 · THE INSTRUMENT-HONESTY QUARTET** (plan §BACKLOG-SWEEP R-6): (i) `docs/governance/PLATONIC_ENGINE_THE_CHORD_SEALED_HASH.txt` — an untracked file presenting a DEAD seal as a live charter: mark it dead or delete it, never commit as-is; (ii) the manifest's `surfaceRefinement` NOT_FROZEN line names only `diagnose-the-rim` — `diagnose-the-exit` co-ratifies; one-line amendment; (iii) `diagnose-the-subdivision`'s `headBlobOf` compares the committed file to ITSELF — pin to `01da8ed` (a moving baseline is not a baseline); (iv) the folded witness's VIEW-PIN regex — recut three times per the retired BACKLOG's own entry (carried at plan §BACKLOG-SWEEP R-6); a pin that needs a wider regex each time will eventually match nothing and PASS: rewrite structurally or report why not.
-- **A3 · a LOCATE only** (sweep R-5): does `ManuscriptView`'s bare catch (the old `:1085` region — resolve the line at HEAD) still swallow `surfaceRefinement`'s `:371`-family internal-consistency alarm? Read and report; no cut.
-- **A4 · the FLIP FIRST-MEASURE** (sweep R-1; a DRIVE, no edits — safe beside his walk in your own session): a folded 3-form in the explore window, with the chiral reference at rest — **does the mirrored return show at the eye?** LAW 26: render the null case first (a flat form's return) so the claim names its noise floor. Report what stood on the screen; build nothing.
+---
 
-### PHASE B — src cuts, GATED on Arman's walk verdict
-- **B1 · the `b₁` ring print** (sweep R-4; researcher-ruled: rename never renumber): the engine's card figure prints **`b₁(ℤ/2)`** — a viewer cannot count a coefficient ring, so the ring is named. LOCATE the printing site(s) first; audit each label against its own emitting line.
-- **B2 · THE PINCH DISCRIMINATOR** (sweep R-3; researcher-blessed): route bodiless **iff `∃v: decomposeLink(v).pinch`** — the classifier already computes it; the endpoint-proxy misclassifies the coincident case into a girdered lying body. ⚠ Likely a `writtenFormModel` union — the in-terminal sanction flow that has landed twice (`b08848d` · `e60df35`).
+## 2 · ⛔ THE FRONT IS NOT YOURS THIS CYCLE — Arman walks
 
-## 3 · ⚠ STILL OPEN, NOT YOURS
-Arman's rung-2 walk (the next act — his eye is the kill) · the designer's lane: the roles case, the empty-open-set word, the identify-entry sentence, the folded card (your route letter feeds it) · the researcher's FYI (the patch-centroid key) · the sweep's R-2 (`deserializeSnapshot`, next `snapshot.ts` sanction).
+**Rung 2's kill is his eye, the four windows now answer the ruling that rejected them, and his walk card goes out with this mandate.** ⇒ ⛔ **PHASE DISCIPLINE, same as before and for the same reason: a `src/` edit can HMR into an open session.** *(Your own report notes a node process holding 5173 that was not yours — whosever it is, treat 5173 as occupied and stay off it.)*
+**Phase A (below) touches no `src/` and may land immediately. Phase B waits for his verdict** — it arrives as a marker file in `inbox/coder/` or in the next mandate; echo it.
+
+### PHASE A — no `src/` writes
+- **A1 · TRACK THE SUBSTRATE MAP.** You asked and the answer is **yes**: `.handoff/THE_SUBSTRATE_MAP.md` gets its `.gitignore` exception and is committed, **exactly as `THE_SEAT_MAP.md` did at `93e15fb`.** The reason is the same and it is not convention: **every seat reads it at wake, so it is DOCTRINE, not mail — and an untracked file is an unprotected file.** One docs commit; the regenerated map goes in as it stands.
+- **A2 · THE KEY-DRIFT SWEEP (read-only, report only).** Your §9 found a route letter citing an enumeration key. **Sweep the COMMITTED record — witnesses and `.handoff` tracked files — for other places a candidate/enumeration INDEX stands where a person-readable string is the invariant.** ⛔ **Report the sites; cut nothing.** ⚠ If the sweep is large or the class is fuzzy, say so and stop — I would rather have "the class is not crisp, here is why" than a list built to fill a section.
+
+### PHASE B — `src/`, GATED on his walk verdict
+- **B1 · THE DOORLESS WALL'S LIFETIME.** ⚠ **The wording is the designer's and my letter is with her.** But your §2 exposed something under the wording: **the notice and the door have DIFFERENT LIFETIMES — the promise outlives the thing it promises.** ⇒ **Whatever sentence she rules, the STATE must not be able to drift apart again: the notice and its door live and die together, by construction.** Price both together when her sentence lands.
+- **B2 · A3's EATEN ALARM** (`ManuscriptView:3782` at your relocation): the internal-consistency alarm is still swallowed. **Cure it so the catch names what it caught** — a catch that eats a convention alarm is the silent-chip class, third register.
+- **B3 · SWEEP R-2 — `deserializeSnapshot`** (the bridged, never-finished frozen fix): persistence is load-bearing now (Δ10's doors). ⚠ **`snapshot.ts` is on the sanctioned list — the in-terminal flow, which has now landed four times this arc** (`b08848d` · `e60df35` · `85436b2` · `a2bf8df`).
+
+## 3 · ⚠ OPEN, NOT YOURS
+**Arman's walk (the rung-2 kill)** · the doorless wall's SENTENCE and the frame's edge and the LOD line (designer — letter out) · the FLIP's cure, unruled (it does not read at rest; ADR §7.2 puts the inhabited register at rung 3+) · the researcher's lane is clear.
 
 ## 4 · ORDER
-**A1–A4 in any order, land and push Phase A when green. HOLD at the phase line.** Phase B on the walk verdict's marker, echoed.
+**A1 → A2, land and push Phase A. HOLD at the phase line.** Phase B on his verdict's marker, echoed.
 
 ## 5 · THE STANDING ASK
-Arman, verbatim (`THE_SOVEREIGN_LEDGER.md` Δ6): ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report. Echo `B-105`. Push when Phase A lands.**
+Arman, verbatim (`THE_SOVEREIGN_LEDGER.md` Δ6): ***"i'm tired. it's been 3 months. i need a race to the finish line."*** ⇒ **Build, drive, report. Echo `B-106`. Push when Phase A lands.**

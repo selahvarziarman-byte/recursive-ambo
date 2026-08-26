@@ -1,57 +1,68 @@
-# THE BUILD REPORT — B-106 PHASE A: the substrate map is tracked doctrine, and the key-drift sweep found the class alive in three witnesses (crisp), inert in one (filler), and correctly absent everywhere the cure's own idiom already stands — HOLDING at the phase line for Arman's walk verdict
-
-**STAMP ECHO: `B-106`** — Phase A only, per §2's discipline: no `src/` writes; the walk owns the session. No marker file has arrived; Phase B stands gated.
-**coder · commits `69789b3` (A1, docs) · this report · on base `63216d5` · branch `team-arman` · pushed when this lands**
+to: the mothership
+from: the coder
+clock (raw, verbatim): `Wed Aug 26 13:48 +0330 2026`
+**STAMP ECHO: `B-106` — COMPLETE. MARKERS ECHOED: `V1` · `V2` · `V3` · `V4`.**
+*(Filed per Δ21 — this letter is the report; the tracked pair carries the copy at commit. First report through the new wire.)*
 
 ---
 
 ## TO THE MOTHERSHIP
 
-**1 · A2's class held CRISP for the candidate-key family — the sweep is total over that family, and here are the sites, adjudicated:**
+**1 · V3 §3 — THE TWO MEASUREMENTS, answered at the emitting sites (cut nothing; she rules):**
+- **(a) ORDERED — a tuple, and the order is role-bearing.** `—a⁻¹`'s source side is `slotNames: [slotName(pair.edgeA), slotName(pair.edgeB)]` (`argumentReadingModel:748`) from the committed replay-verified birth word — position 0 is the pairing's OWN slot (edgeA), position 1 its partner (edgeB), the same recorded slot indices P.6 ruled into the record. Never a set.
+- **(b) TWO PAIRS.** Each term is ONE RUN's two corners `·`-joined (`endpointLetters([corner_slot, corner_slot+1])`, `:741`); the renderer joins the two runs with a single SPACE (`slotNames.join(' ')`, `ManuscriptView:1232`). Four identical tokens appear because both runs' corners are unnamed AND the only outer separator is the space — which the line-wrap renders invisible. Her structural read was exactly right.
+- **The related sighting is TWO EMITTERS, one fact — and the handle case is the census's own named hold.** The `•` row's source side is `rootLabels.join(' ')` where `rootLabels = rootIds.map(rootDisplayOf)` (`argumentReadingModel:502`) — the HANDLE-SUFFIXED resolver, and the §6 census comment at `:406-413` says in its own words this is the one position STILL STANDING, "held for the designer." The correct-reading line is `mergedRootsPhrase(rootOwnNames)` (`ManuscriptView:5468`) — the ruled count form. So `unnamed·A unnamed·C` beside `two unnamed roots` is the held position doing what its census note says it still does; her ruling on that position closes the family. (Both sightings were visible together on the torus card during my plate drive — confirmed at the eye.)
+- The rootIds under the `•` row are SORTED by internal id (`:444`) — the source side there is a SET rendered in id order; order carries no role in that position.
 
-**THE DISEASE (an enumeration key standing where the map string is the invariant):**
-- **`diagnose-the-honest-door.cjs:176` — the strongest instance, and it INHERITED the idiom from a mandate's own wording:** the leg's header calls it *"the fixture [\"d+0\",\"d+0\",\"d+0\"]"* and the domain is titled `'d+0 cubed'` — the fixture's IDENTITY (the specific sound cone form, k = {2,2,4,4}, cone edges 2 × 180°) is carried entirely by enumeration keys. A reorder of `dihedralMapCandidates` makes `d+0` a different map → a different form; the leg fails LOUD (the k-profile is asserted), but the identity was always the three MAPS, and the record spells it as three indexes.
-- **`diagnose-the-aperture.cjs:376-378`:** the "unsound pattern" leg hardcodes `d+0 · d+1 · d+0`. The intent is a SPECIFIC bad combination; the keys carry it. On reorder the meaning drifts first and the assert fails second.
-- **`diagnose-the-aperture.cjs:118`:** `lrReflected[0]` — *"the menu's first reversing candidate,"* positional by its own label. The asserted consequence (w₁=1, H₁=Z²⊕Z/2) is a property of WHICH reversing map was picked; the pick is an index.
+**2 · R-2's SIBLING DISEASE, measured and named — NOT in the charter, needs its own ruling:** the WORD-MATERIALIZED class (`glue`/`flip-glue`-born single-face forms, ids `shape:materialized:glue:…`, no idn recipe) ALSO nulls acquisition on save→load — `recoverBornSurface`'s byte-compare fails on ns-copied bytes, and there is no recipe the loader can replay (the cure would need the WORD machinery imported into the frozen loader — a much bigger union). Measured in the probe beside the idn premise; reported, not cut.
 
-**THE FILLER (inert content, weakest form):** `diagnose-the-bounded-form.cjs:309-317` — four rows carry `'d+0'` where the ladder under test fires on FACE reuse / unpaired-acceptance before the key's content matters; any valid key serves. An index literal standing where "any valid key" is meant — noted for completeness, lowest priority.
+**3 · A STALE WITNESS at HEAD, pre-existing:** `scripts/app-leg/diagnose-d2-one-door.cjs` legs (c) (EXIT B's sealed room) and (f2) (the reversing-pick refusal) FAIL at HEAD with HEAD's own script — they predate this build (verified by running the HEAD blob; my cuts touch neither leg). The app-leg family is outside the 113 suite; flagging for whoever owns its recut.
 
-**NOT the disease (adjudicated out, each with its reason):**
-- `diagnose-the-aperture.cjs:103-108` (`rowFor`) · `:175-176` · `:401` · `diagnose-the-bounded-form.cjs:105-106` — candidates selected **BY THE MAP or by a named property**, the key merely plumbed. This is the cure's own idiom, already standing in the majority of sites.
-- `diagnose-the-aperture.cjs:814` — a literal fixture OBJECT that defines its own `key`; nothing is looked up by enumeration.
-- The `.key === 'loop' | 'arc' | 't3' | 'segment' | 'triangle' | 'a·b'` family — stable SEMANTIC keys (names that happen to live in a `key` field), not enumeration order.
-- Fold slot indices (`edgeA: 0 …`) in witnesses — the committed `BoundaryPairing` record's own vocabulary; P.6 ruled the address INTO the record.
-- The two `.handoff` tracked-file hits (`THE_BUILD.md:20`, `THE_BUILD_REPORT.md` §9 at `63216d5`) — the law's own statement and the finding that begat it; citations about the drift, not instances of it.
+**4 · V4's doctrine commit landed (`a72bd17`) and I verified its claim before committing, per your own ask:** the described close-out matches what this seat already does — the only change is the source is a letter. Also committed, ATTRIBUTED SEPARATELY (`e6a0b99`): your ADR 0025 §7.2 PORT star, which sat in the working tree outside V4's charter — an uncommitted edit is an unprotected edit, so it went in as its own docs commit rather than riding one of mine. If it was not ready, revert `e6a0b99`.
 
-**2 · The penumbra, declined as you invited:** the general first-of-list pick (`xs[0]`) is NOT a crisp class — most `[0]`s in the suite are totals ("the ONLY face", "the only cell") where no enumeration choice exists, and telling a total from a pick requires reading each site's meaning. I adjudicated the one that intersects the candidate family (`:118` above) and stopped; a whole-suite `[0]` census would be a list built to fill a section.
-
-**3 · Cut nothing, as ordered.** If the three crisp sites earn a cure, the shape is already in the suite: select by the map (the `rowFor` idiom) and let the key ride as plumbing — the honest-door fixture would then be named by its three map strings, which is what its own header is trying to say.
-
-**4 · A1 note:** the map went in exactly as regenerated at the B-105 tip; the `.gitignore` comment names the law (doctrine, not mail) beside the seat-map precedent. `git check-ignore` confirms the yield; the file is in the index at `69789b3`.
+**5 · `B-107` RECEIVED — queued behind this filing, taken up next.** Echo will follow in its own report.
 
 ---
 
-## 1 · WHAT I SAW
-Phase A is docs + read-only — no app driven, no `src/` touched (the walk owns the session; the node process on 5173 is not mine and was not touched). What I read: the committed witnesses (the `candidateKey`/`.key` census above, every hit opened and adjudicated in context) and the four tracked `.handoff` files.
+## 1 · WHAT I SAW (drove the app — my server on 5174; 5173 untouched)
+- **B1 at the eye, the strong direction:** lifted cube → aperture → `front~right` on the reversing `d+2` map → the folded verdict raises the WALL AND ITS DOOR TOGETHER (DOM-measured: wall rect y523–672, door directly beneath y679–730). Then the exact B-105 gesture — the double-click away from the pointed-at volume — kills BOTH: measured `wall:false · door:false`. The old code left the wall standing doorless on this exact gesture.
+- **B1's consume path:** rebuilt the fold on T³, pressed the door — wall and door die together and the general notice speaks the gate's reading verbatim: `subdivided (14 v · 17 e · 5 f · 1 cell) — the fold is resolved; the S² gate now refuses the finer complex: vertex-link`.
+- **THE PLATE at the eye (V3 §2):** reference zoo → torus → explore → the {4,4} window over the exact leak pattern — the grey band and the `unnamed ← four unnamed roots` label CLIP AT the plate's edge; nothing paints inside its rectangle. (Selection gesture measured: specimens select on DOUBLE-click; single clicks pass through.)
+- **Live confirmation of the key-drift arc:** the app's map menu leads with the flat map and speaks map strings — the person already reads the vocabulary the cure pins.
 
 ## 2 · WHAT I RAN
 ```
-1  git diff HEAD --name-only -- src → EMPTY (no src writes this phase;
-   tsbuildinfo dirty by law).
-2  freeze manifest: nothing frozen touched; no spend.
-3  no re-seal owed.
-4  suite/tsc: unchanged from the B-105 close (113 @ 1 · tsc 0 at 63216d5);
-   nothing in this phase compiles or is witnessed — the two commits are
-   .gitignore + a tracked doc + this report.
-5  THE READING: not applicable this phase — nothing person-facing changed.
+1  git diff --stat <tree> HEAD — EMPTY at filing (tsbuildinfo by law).
+2  freeze manifest: ONE sanctioned spend — snapshot.ts (Arman, in-terminal,
+   AskUserQuestion; the arc's fifth). Edit + re-seal ALONE at 60bb5dc.
+3  re-seal RECOMPUTED: e4b59cc2… → bedc75cb…; POSITIVE CONTROL: the old hash
+   reproduced at the base commit before the edit.
+4  suite 113 @ 1 (diagnose-dual-inspection, the accepted baseline) + tsc -b
+   exit 0, at the real HEAD.
+5  THE READING — §1 above; every person-facing change driven.
+Falsifier controls RUN for the behavior-neutral key cure: the RED control
+(one pinned pair corrupted → loud throw naming the drift, exit 1; restored
+green) · the ENUMERATION-DRIFT control (menu reversed: positional pick lands
+d+3 — a DIFFERENT map; content pick lands the same map both ways).
+R-2 premise controls: acquisition NULL at HEAD on both fixture classes
+BEFORE the cut (measured); ACQUIRED (source 'identified') after; idempotent
+re-load; the tampered-recipe fallback honest-null.
 ```
 
-## 3 · WHAT I CHANGED
-- **`.gitignore` + `.handoff/THE_SUBSTRATE_MAP.md`** (`69789b3`): the exception on the seat-map precedent; the B-105 regeneration tracked as it stands.
-- **`.handoff/THE_BUILD_REPORT.md`** (this commit): the report.
-- Nothing else — A2 was read-only by charter.
+## 3 · WHAT I CHANGED (nine commits this cycle, oldest first)
+- **`60bb5dc`** — R-2 THE UNION (sanctioned): `deserializeSnapshot` replays the form's OWN idn link — the GAP2C law at the chain's head; re-seal + positive control; frozen pair ALONE.
+- **`e4516eb`** — B1 the wall is ONE ATOM (`apertureWall` → the one `wall` prop; the doorless wall inexpressible; the subdivide-refusal inverse drift cured by the same atom) + B2 the catch NAMES what it caught (`console.warn`, error carried verbatim). Witnesses: the brace-walker + THE LIFETIME LAW total over the file (count-equality; exactly two raises) + the one-prop seam + subdivide-path [5].
+- **`9ba1587`** — V3 §2 THE SOLID PLATE (zIndex 60 over the label range [40,0]; the sibling's charter; RELATIONAL witness pin) + §1 the wall's subdivide clause CUT (one producer; witnesses swept; substrate map recut).
+- **`3692eec`** — B3 close: the ns-copy bridge RETIRED (R-2's kill fired whole); witness §5 (cure · honest fallback · retirement pinned).
+- **`7358d4f`** — V2 §3 the key-drift cure at the three crisp sites (select by MAP content, keys as plumbing, loud throws; the filler left as ruled).
+- **`a72bd17`** — Δ21 doctrine (CLAUDE.md + THE_SEAT_MAP.md, as they stand, alone).
+- **`e6a0b99`** — ADR 0025 §7.2 PORT star (yours, attributed, own commit).
+- **`aba54d3`** — the door column's refineToDisk pin 4→7 (B2's message; plumbing unchanged).
+- **This commit** — the consumed mandate into `THE_BUILD.md` + this letter's copy into `THE_BUILD_REPORT.md`; the four consumed markers archived.
 
-## 4 · WHAT I COULD NOT REACH / DID NOT TOUCH
-- **Phase B entire** (the doorless wall's lifetime · the eaten alarm · `deserializeSnapshot` with its `snapshot.ts` sanction) — GATED on the walk verdict; I hold at the phase line and echo its marker when it lands.
-- **The three crisp key-drift sites** — reported, not cut (§1's order stands until you charter the cure).
-- **§3's ledger** — Arman's walk (rung 2's kill), the designer's letters, the FLIP's cure.
+## 4 · WHAT I COULD NOT REACH / HONEST EDGES
+- **B2's alarm not driven at the console** — the named catch is pinned structurally (subdivide-path [5]) and the pass-through is suite-verified, but no in-app gesture reaching a refineToDisk THROW was driven this cycle (it needs a 1-face target entering the combine gate). The cure is a message-register change; the committed refusal behavior is byte-unchanged.
+- **The plate's acceptance is the designer's** — verified at my eye on the torus window; her frame ruling (the frame's edge, the LOD line) is her lane.
+- **The word-materialized load class** (§2 above) — same disease family as R-2, out of charter, named not cut.
+- **My browser tab on the dead server would not close** (extension timeout twice) — harmless; disclosed.
+- **A stale `.git/index.lock`** (0 bytes, no live git) — removed per the standing protocol, disclosed.
