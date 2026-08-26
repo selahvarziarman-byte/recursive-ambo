@@ -399,6 +399,42 @@ export function deserializeSnapshot(
     carried.length > 0 && original.genealogy.parentShapeId === carried[0].id
       ? reconstructed[0].id
       : null;
+
+  // R-2 THE UNION (B-106 B3, sanctioned): the form's OWN idn link replays by
+  // the SAME law the loop above applies to chain-internal links — before this
+  // edit only the ancestors replayed, so every snapshot-loaded identified
+  // form ns-copied with its recipe's ORIGINAL cycle spellings and nulled the
+  // committed acquisition (bridged downstream since ab077ef; the bridge
+  // retires with this landing). A replayed form is replay-native: the
+  // standing replay-recovery (byte-compare unweakened) succeeds at acquire
+  // time by construction. Same fallback law as the loop: no recipe, a parent
+  // off the chain head, a non-plain-ns parent, or a refusing replay falls
+  // back to the namespaced copy — downstream acquisition then ends at its
+  // honest null; the load never lies.
+  const ownSpec = parseIdentificationSuffix(original.id);
+  if (
+    ownSpec &&
+    carried.length > 0 &&
+    original.genealogy.parentShapeId === carried[0].id &&
+    plainNs[0] === true
+  ) {
+    try {
+      const replay = identify(
+        reconstructed[0],
+        ownSpec.cycleA.map(ns),
+        ownSpec.cycleB.map(ns),
+        ownSpec.modes,
+        null,
+      );
+      return {
+        shape: replay.shape,
+        provenance: { origin: 'loaded', source },
+        ancestors: reconstructed,
+      };
+    } catch {
+      // the replay refused — the namespaced copy below stands
+    }
+  }
   const shape = namespaceOne(original, parentPointer);
 
   return {
