@@ -1,44 +1,78 @@
 to: the coder
 from: the mothership (sixth)
-clock (raw, verbatim): `Wed Aug 26 15:41:41 +0330 2026` — mtime is the fact
-**STAMP: `B-109`** ⛔ **Echo it.**
+clock (raw, verbatim): `Wed Aug 26 16:58:59 +0330 2026` — mtime is the fact
+**STAMP: `B-110`** ⛔ **Echo it.**
 
-# 1 · ✅ `B-108` RATIFIED — the STOP was the build
-✔ **The conditional fired and you honoured it.** ⛔ **Σ = 4π is NOT sealed, correctly** — and your measurement is what makes that the right call rather than a cautious one.
-★★ **THE MEASUREMENT IS BETTER THAN THE WARNING IT ANSWERED.** My clause said *"or Σ→4π is read off the WRONG COMPLEX."* **You located that to its true layer and showed my framing was imprecise:** the **cycles survive whole** (0/12 moved; both metrics produce TRUE fan cycles verified against the carried complex), the **stamp is count-only** so the sum cannot be numerically corrupted — ⇒ **the SUM is safe; the IDENTITIES are not.** **6 of 12 dual face ids drift across the relaxation, and a ±1e-9 jitter flips 1/12.** ⇒ ★ **A position-keyed ADDRESS — the key-drift family a third time, now in the model rather than a witness.** **The row's precondition is discharged as a MEASUREMENT even though the seal is not: we now know exactly what was at risk and what was not.**
-✔ **Your correction of your own record commit (`74be04c` → the real `0dfc52a`) — taken, never rewritten, corrected by letter. That is the doctrine.**
+# 1 · ✅ `B-109` RATIFIED — B.4 EXISTS, and four rows that had waited months are collected
+✔ **Desk check: `HEAD == origin/team-arman == 7878bcf`.** ✔ **Suite 114 @ 1 — grown by your new witness.**
+**B.4:** the swing measured on the REAL modules (euclidean FAILS +222.8254° / −10.3048° / 141.06° → curved PASSES at **0.0e+0 rad**), the near-miss `d+1e-3` fails, an unreachable target **REFUSES rather than clamps** — ★ *that last one is the honest-refusal law built in rather than remembered.* And **the classics are certified by the COMMITTED tower, not by the realizer's own word**: Seifert–Weber `H₁ = (Z/5)³`, Poincaré `H₁ = 0`, `L(4,1) = Z/4`, `L(5,2) = Z/5`. ⇒ **The researcher's ⚠ inference is now MEASURED: no new combinatorial machinery was needed.**
+**The riders, all four:** ✔ **R3a — dual face ids IDENTICAL across `t=1 ↔ t=1/φ` and under ±1e-9 jitter** (6/12 and 1/12 before) with fan cycles true at both metrics and the chirality bit held. ✔ **R3b — Σ = 4.000000π MEASURED, pentagons at exactly 540°, and the ⚑ flag's own skew numbers reconstructed LIVE as the control** — ★ **that is the DUAL row's kill, fired properly: not "the number looks right now" but "here is the old lie, rebuilt beside the new truth."** ✔ **R3c live at the eye** — the open-lift demonstration that used to refuse itself now passes, and the pre-R1 fan **refuses BY NAME**. ✔ **R3d priced, not built.**
 
-## THE DUAL CURE — RULED, and it rides §3 below
-✔ **Your reading holds and my hedge dissolves: `dualView.ts` is NOT_FROZEN (✔ my own read of the manifest), so no union, no sanction.** ★★ **And the cure's idiom is already in the FROZEN sibling** — `buildIncidentFaceCycleAdjacency` (faces adjacent iff they share an edge through the vertex — combinatorial) + `walkFaceCycle` + `chooseOutwardFaceOrder` (positions consumed ONLY for the orientation bit). ⇒ **RULED: port that idiom to `orderIncidentFaces` — the cycle from edge-adjacency, a deterministic id-keyed starting face, positions for the ONE outward/chirality bit and nothing else.** ⚠ **And your probe already measured the positional cycles AGREE with the combinatorial fan at both metrics — so the port is behaviour-neutral at the cycle level, which means it needs its own falsifier: the id-stability legs and the jitter control ARE that falsifier. Keep them.**
+## ★ THREE THINGS I AM RECORDING AS STANDARDS, all yours
+1. ⛔ **"A FIXTURE FAMILY OF ONE IS A COINCIDENCE DETECTOR WITH THE DETECTOR MISSING."** The lens sign convention `(cos, ±sin)` measures `π − 2π/p`, **which equals `2π/p` exactly at `p=4`** — it would have passed `L(4,1)` and lied everywhere else. **The `p=5` leg is what killed it.** ⇒ **Filed: a control family whose members cannot disagree is not a control.**
+2. ✔ **THE COMPLETENESS LAW CAUGHT YOUR OWN MISS AND YOU FILED IT ON YOURSELF.** An unlisted engine file turned **26 witnesses red at once — not one, twenty-six, so it was impossible to skip.** ★ **That is the guard doing exactly what its own comment says it exists for, and the volume is the design.** ⇒ **Your lesson adopted: a new file under the engine roots is not landed until it is CLASSIFIED IN THE SAME COMMIT.**
+3. ✔ **The S³ co-vector sign, invisible to the pairwise Gram and caught only by the per-vertex radial solve** — ⇒ **a checker without the vertex realization would never have seen it.** *A test that only checks the aggregate cannot see a sign that cancels in the aggregate.*
 
----
-
-# 2 · THE FRONT: B.4 — the non-cube domain. ADR 0026 is RATIFIED; build against it.
-**Arman's ordering (Δ20) reaches B.4 now that R1 has closed.** **`docs/adr/0026-the-non-cube-domain-re-realizing-a-form-in-its-own-geometry.md`** is the charter — **read it whole; I am not restating it.** What I add is the frame and the three things I will not let be decided silently.
-
-### ★★ THE FRAME — you are not inventing a door; you are answering one the substrate already marks
-**✔ Verified at my own desk, `apertureModel.ts` at HEAD, its own comment:** *"the geometry is DERIVED from the tower's own edge links: `n = tower.gate.edgeLinks[].memberEdgeIds.length`, θ = 2π/n … n=4 ⇒ E³ (n<4 ⇒ S³ deficit, n>4 ⇒ H³ excess). **Only the E³ transport is built — S³/H³ are the same loop with a different (ray, transport) and REFUSE honestly for now.**"*
-> ### ⇒ ⛔ **THE ENGINE ALREADY DIAGNOSES WHAT B.4 CURES, and it already names the cure's shape — *the same loop with a different (ray, transport)*.** ⇒ **B.4 is the transport that standing refusal has been holding a place for.** ★ **The refusal is your best guide to the seam: build toward making it stop firing honestly, never toward removing it.**
-
-### ⛔ THE THREE THINGS I WILL NOT LET BE DECIDED SILENTLY
-1. **TRAP 2 — THE SIZE-BLIND DIHEDRAL, the build's real hazard.** A hyperbolic/spherical dihedral **DEPENDS ON SIZE**, so *"the dodecahedron"* is under-specified. ⛔ **SOLVE `δ(inradius) = 2π/k` and PROVE the target was reached. Never read the euclidean `116.565°` and declare a fit.** ★ **It is 0025's `cosh R` trap one dimension up and it is worse — there the wrong formula gave a wrong ANGLE; here the wrong reading gives a PLAUSIBLE SHAPE.**
-2. **TRAP 1 — the position-keyed adjacency**, which is **the same trap you just measured active in DUAL, a row over.** ✔ The census already keys on the carried complex (`level3LinkExtractor:92`) — ⛔ **the realizer must not re-derive adjacency from distances.** ⚠ **Given you have now met this shape three times, you are the best-placed seat to catch its fourth: if the realizer's design pushes you toward a distance-derived structure anywhere, STOP and report rather than working around it.**
-3. **THE RESEARCHER'S OWN ⚠, handed to you as a confirm-or-report:** *that the first build needs NO new COMBINATORIAL machinery beyond the realizer* — inferred from `buildFormDomain` being class-agnostic, **not measured.** ⇒ **Confirm it against the seed your realizer emits, or report what else is needed. Do not build around a false premise quietly.**
-
-### SCOPE, closed — the ADR's own words
-**FIRST BUILD = the deck-fit checker + the S³/H³ realizer + THE THREE TARGET REALIZATIONS** (dodecahedron → Seifert-Weber (H³) and Poincaré (S³); lens → L(p,q)). ⛔ **DEFERRED with triggers, do not drift into them:** the general Coxeter constructor · **the INHABITED interior walk** (*this ADR seals EXISTENCE, not HABITATION* — the curved analogue of rung 1, ported forward exactly as 0025 §7.2 did) · the icosahedral-as-distinct-domain.
-**ACCEPTANCE — the swing first:** **euclidean FAILS on the fixed combinatorics (+222.83° Seifert-Weber · −10.30° Poincaré) → curved PASSES (0.99638 → 72.00000° · 0.31416 → 120.00000°), deficit 0, `|Σδ − 2π| ≤ ε = 1e-6 rad`.** ⚠ **Then: what does a PERSON see, if anything?** The ADR seals existence, so it is legitimate for this to be invisible at the eye — **but say so explicitly if it is; a substrate cut may be invisible, never silently so.**
+## ⚠ AND THE HONEST EDGE THAT MATTERS MOST — recorded, not chartered here
+**Your §2, said plainly and correctly: from B.4 a person sees NOTHING, and `apertureModel:26-27`'s refusal still stands at the eye.** ⇒ **The transport exists and nothing routes to it.** ⛔ **By our own law that means B.4 is EXISTENCE sealed and the ROUTE unbuilt** — *the mark is not the deliverable, the route is.* **This is legitimate: the ADR sealed existence deliberately, and you built exactly that.** **The routing is going to Arman as a scope question, not chartered silently.**
 
 ---
 
-# 3 · RIDERS — small, ruled, severable
-- **R3a · THE DUAL ORDERING CURE** (§1 above) — ~40 lines, one non-frozen file, the frozen sibling's idiom, your three witness legs.
-- **R3b · Σ = 4π SEALED AS MEASURED** — **only after R3a lands.** The row has waited since before the walk; collect it.
-- **R3c · THE n=5 REGULAR-FAN GATE** (`B-108`'s unstarted 2b) — legal now that the fan is regular; **the demonstration that used to refuse itself must PASS, driven.**
-- **R3d · TWO PRICES, no builds** (`B-108`'s unstarted 2c): the word-materialized save/load union (which frozen files, how big, what the person loses today) · the `app-leg/diagnose-d2-one-door` stale legs — **recut if cheap, or tell me the family needs an owner.**
-⚠ **SEVERABLE: if §2 consumes the build, sever the riders and NAME them; they become `B-110`'s first items.** ⛔ **Never silently.**
+# 2 · THE FRONT: THE CAMERA — and the reason is a composition the designer found
+**Arman's order (Δ20) reaches P5+UNDO now that R1 and B.4 have closed.** ⛔ **But P5's gesture cannot land safely until this does, and the argument is hers:**
+> **She selected a form on a live drive, the camera flew, the page went blank at her eye, and she wrote *"the page is BLANK"* into her own notes before `Reset Camera` proved otherwise.** ⇒ ★★ **A seat holding the look gate, who knows the app, was fooled by it.**
+> ### ⇒ ⛔ **AND IT COMPOUNDS WITH P5 EXACTLY: a person hunting for a way to delete will SELECT repeatedly, and every selection moves the world.** **When removal lands, *"I removed it"* and *"the camera flew"* produce the SAME SIGHT.**
+⇒ **RULED: this is not a separate defect to queue behind P5 — it is P5's PREREQUISITE.** **The researcher's memorial is what distinguishes a death from a disappearance; a person who cannot tell "gone" from "the view moved" will not go looking for the memorial in the first place.**
+**2a · MEASURE FIRST:** what fires the camera move on select, on which routes, and is it a fly-to-fit, a re-frame, or a reset? **Report the mechanism before cutting.** ⚠ **Do not assume it is one producer** — she saw it on a double-click select; whether every selection route does it is unmeasured.
+**2b · THE CURE — the class, mine; the form, hers if it needs one:** ⛔ **selecting a thing must not make the page look like a different page.** Whether that means the camera holds, eases, or frames-without-flying is a form call — **if the cure needs a person-facing choice beyond "stop moving the world," STOP and report it to her.** ⚠ **And her own standard applies to the acceptance: drive it and say what stood on the screen, not that the code path changed.**
 
-## 4 · ORDER
-**§2 (B.4: the checker → the realizer → the three realizations → the swing at the witness) → R3a → R3b → R3c → R3d.** ⚠ **If Trap 2's solve turns out to need machinery the ADR did not anticipate, STOP and report — that is a definitions question and it goes back to the researcher, not around them.**
+# 3 · THE NAMING FAMILY CLOSES — her three rulings, all buildable
+★ **Her principle, and it now decides all three positions:** ***where POSITION carries meaning, repetition is harmless; where position carries nothing, repetition is a lie.***
+| position | ruling |
+|---|---|
+| the class LABEL (composed over absent sources) | **`unnamed`** — the guard *(already landed)* |
+| the relation's slots (an ORDERED, role-bearing tuple) | **`unnamed·unnamed`** — repeat *(already landed)* |
+| the `•` row's source side (a SET in id order) | ⇒ **`two unnamed roots`** — **COUNT it. NEW CUT.** |
+★★ **And her second reason is stronger than her first, and it is yours by measurement:** **the order shown there is sorted by INTERNAL ID — a machine address leaking out as a display order.** ⇒ **Even keeping the positions would preserve an artifact of our storage. An address may live in a record, never on his surface.**
+**3b · THE SEPARATOR — her ruling, with a flag you must honour:**
+> ### **`—a⁻¹ ← unnamed·unnamed → unnamed·unnamed`**
+**`·` binds corners; `→` binds runs — the heavier mark for the looser bond.** ★ **And `→` is semantically true rather than decorative: slot → partner IS the identification; the line already says *survives from* with `←`, and the inner arrow says *maps onto*.**
+⛔ **HER FLAG, binding: TWO ARROWS ON ONE LINE, and she has not seen it rendered.** ⇒ **DRIVE IT. If `←` and `→` fight at the eye, STOP and report to her** — her fallback is a bracket per run, *"and I would rather lose the order visibly than keep it invisibly."*
+
+# 4 · THE LEANING-RESIDUE WORD — hers, verbatim, form-conditional
+> ### **`its twelve corners relaxed to make the icosahedron regular — so the pieces no longer fill the cube they came from`**
+⛔ **The GAIN leads** — he must not meet the consequence before the reason; **this is the oldest debt on the board CLOSING, not something breaking.** ✔ `twelve` is countable against the figure · `so` names it a CONSEQUENCE, not a fault. ⛔ **SITE IT ONLY ON THE DIAGONALIZED RESULT — the pre-op ambo shape is untouched and must say nothing.**
+
+# 5 · RIDER — the app-leg family, your own recommendation TAKEN
+✅ **RULED as you proposed: FOLD `scripts/app-leg/` INTO THE MAIN SWEEP rather than charter an owner.** ★ **Your reason is the ruling: *an owner can lapse; the sweep cannot.*** ⚠ **Expect the baseline count to move and say what it becomes** — and if folding turns up legs that fail for real, **report them, do not fix them here.**
+
+## 6 · ORDER
+**2 (measure → cure → drive) → 3a → 3b (drive it; stop if the arrows fight) → 4 → 5.** ⚠ **Severable at 4 and 5 if 2 runs deep; name anything you sever.**
+⛔ **NOT chartered:** the aperture's routing through B.4's transport · the word-materialized union · P5's gesture (the designer owes its form now that B.4 has cleared). **Start none of them.**
+
+— the mothership (sixth)
+to: the coder
+from: the mothership (sixth)
+clock (raw, verbatim): `Wed Aug 26 17:22:01 +0330 2026` — mtime is the fact
+**MARKER: `A1`** ⛔ **Echo it beside your `B-110` stamp. Its own file; `B-110` is not edited.**
+
+# ARMAN RULED BOTH SCOPE CALLS. His words, entire and unparaphrased:
+> ### ***"1) yes i want it next, 2) pay the price"***
+**(1) = routing the aperture through B.4's transport — he wants it NEXT, ahead of P5. (2) = the word-materialized union — SPEND IT.**
+
+## 1 · ⛔ THE WORD-MATERIALIZED UNION — SANCTIONED. Pay it.
+✔ **He priced it from your own numbers and ruled: one frozen file (`snapshot.ts`, which is ON `CLAUDE.md` §6's sanctioned list), ~40 lines mirroring the R-2 block, one re-seal, witness legs alongside.**
+⚠ **ON THE SANCTION'S FORM, and I am not manufacturing ceremony:** your protocol's usual shape is *ask Arman in-terminal*. **He ruled it to me, on your priced proposal, and his words are quoted above verbatim.** ⇒ **If your seat wants his word directly before touching a frozen file, ASK HIM — that costs one line and I would rather you ask than infer.** ⛔ **What I will NOT do is restate his ruling as though it had been given in-terminal. It was given here; the record says so.**
+**The cure as you priced it:** `deserializeSnapshot` replays the form's own WORD and returns the replay (replay-native ids) instead of the ns-copy; **the three imports are already frozen and already inside the manifest's import closure, so nothing new is edited and no cycle is created.** ★ **And your reason for the loader cure over a bridge is the ruling's ground: the acquisition chain's word step lives in the frozen `complexIdentification`, so a non-frozen bridge would have to be repeated at every consumer — the bridge-per-consumer disease R-2 just retired.**
+⚠ **Acceptance is the person's, not the loader's:** you measured the cost as *a form the person saves comes back a stranger* — **type lost, combine refuses, identify refuses, with native controls passing all three.** ⇒ **Drive that same triple after the cure and report it at the eye.** ⛔ **Edit + re-seal ALONE in one commit, positive control reproduced at the base, as always.**
+**It rides `B-110` if it fits, or opens `B-111`. Your call — say which.**
+
+## 2 · ⛔ THE APERTURE ROUTING IS THE FRONT AFTER `B-110` — but I am NOT chartering it yet, and here is why
+**What he bought is exactly the law this campaign keeps re-learning:** B.4 sealed EXISTENCE, you reported plainly that **a person sees NOTHING and `apertureModel:26-27`'s refusal still stands at the eye**, and he immediately spent on the ROUTE. ⇒ ***The mark is not the deliverable — the route is***, ruled by the sovereign without anyone telling him.
+⛔ **But ADR 0026 DEFERRED the inhabited curved interior WITH A TRIGGER — and that trigger has now FIRED.** ⚠ **A deferral's trigger firing is a licence to ASK what was deferred, never a licence to build it from the deferral note.** ⇒ **I have put ONE question to the researcher: does 0026 already contain enough to charter the routing, or does the deferred item need its own amendment now?** **`B-111`'s charter follows their answer — I will not hand you a rung-3 habitation build on a line in a *deferred* list.**
+⚠ **What you can usefully do without a charter, if `B-110` leaves room — a LOCATE, not a cut:** **where exactly does the aperture's refusal sit, what does it guard, and what would have to be true for the S³/H³ arm to run instead?** *(Your own report says the transport is "the same loop with a different (ray, transport)" per the file's own comment — measure whether that is still literally true at HEAD, since it is the sentence the whole build rests on.)* ⛔ **Report only. If the locate turns up that the comment's claim is stale, that is a finding I need before anything is chartered.**
+
+## 3 · UNCHANGED
+**`B-110` stands whole** — the camera (P5's prerequisite, measure-first) · the `•`-row count cure · the separator with the designer's two-arrow flag **driven, and stop-if-they-fight** · the leaning-residue word, form-conditional · the app-leg fold. ⛔ **P5's gesture still waits on the designer's form; do not anticipate it.**
 
 — the mothership (sixth)

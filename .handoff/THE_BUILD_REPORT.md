@@ -1,70 +1,63 @@
 to: the mothership
 from: the coder
-clock (raw, verbatim): `Wed Aug 26 16:45 +0330 2026`
-**STAMP ECHO: `B-109` — COMPLETE. §2 landed and all four riders collected; nothing severed.**
+clock (raw, verbatim): `Wed Aug 26 18:17 +0330 2026`
+**STAMP ECHO: `B-110` · MARKER ECHO: `A1`.**
+⛔ **§2 STOPPED AT 2b ON HER FORM CALL, by your own clause — with BOTH numbers measured so she can rule in one pass.** §3a · §3b · §4 landed and driven; §5 measured and blocked on one ruling; the sanctioned word union PAID and driven.
 
 ---
 
 ## TO THE MOTHERSHIP
 
-**1 · THE RESEARCHER'S ⚠, CONFIRMED BY RUNNING IT (your §2.3 confirm-or-report):** the first build needed **NO new combinatorial machinery beyond the realizer.** `buildFormDomain` · `readSeedCell` · `flipGlueFaces` · the tower all took the dodecahedron and the bipyramid **unmodified**, and the committed tower is what certifies the classics — Seifert–Weber H₁ = (Z/5)³ (6 classes × 5), the Poincaré sphere H₁ = 0 (10 × 3), L(4,1) = Z/4, L(5,2) = Z/5. The inference was right; it is now measured.
+**1 · ⛔ §2 — THE MECHANISM IS ONE PRODUCER, AND THE CURE COLLIDES WITH HER OWN SEAL. Both sides measured; the choice is hers.**
+- **THE MECHANISM (2a), answered whole:** ONE producer — `ManuscriptView:1963-1980`, an effect on `selected`. **Not the double-click route: EVERY route**, because the effect keys on the state, and eleven call sites set it (the pick, the born/enact/lift returns). It is **an INSTANT JUMP, not a fly and not an ease** (`camera.position.copy` + `lookAt` + `controls.target.copy` — no interpolation anywhere in the rig). Two directions: select → fit-to-selection after a 420 ms beat; **deselect → an 'exact' reset to the composed default** (so dismissing teleports too).
+- **WHY IT READS AS BLANK, measured on the reference zoo:** after selecting the torus, **9 of the page's 12 form labels left the viewport** (one landed at x = 154406) — and **the selected form's OWN label hides while selected**, so the single thing left in frame carried no name. *An unnamed outline in an empty field.* Her sentence was exact.
+- ⛔ **AND THE CURE IS NOT FREE — this is the stop.** I built "the camera holds" and drove it: **the page stays whole (all 12 forms in frame) and the selected specimen reads ~0.11 of the frame** — legible at my eye, its own lift doing the work. **But her C1 seal pins ≥ 0.22** (`diagnose-deficit-app` §E-PLATE, "the designer measured ~50px ≈ 0.055 pre-cure"). **Holding and her threshold cannot both hold.** At her ≥0.22 framing, the page empties — that is the 9-of-12 above. ⇒ **The choice among her three forms (holds · eases · frames-without-flying) is HERS, and here are the two numbers she needs: HOLD = 12/12 forms in frame, specimen ~0.11 · SEALED FIT = 3/12 in frame, specimen ≥0.22.**
+- **The cut is reverted and the finding is recorded in place** (the effect now carries the whole measurement in its comment). **Re-landing her ruling is one edit: drop the two request bumps, keep the bounds measurement — the dock's `Fit Selected` needs it, and that button is where the framing capability already lives.**
 
-**2 · WHAT A PERSON SEES FROM B.4: NOTHING — said explicitly, per your ask.** The ADR seals EXISTENCE and I built exactly that: no view touched, no door added, the realizations reachable only from the witness. ⚠ **The person-facing consequence is that `apertureModel:26-27`'s refusal still stands at the eye** — the transport exists now, but nothing routes the aperture through it. **That routing is a build, not a leftover; it needs its own charter** (and it is the natural place the deferred INHABITED trigger will fire from).
+**2 · §5 — THE APP-LEG FOLD IS MEASURED AND BLOCKED ON ONE RULING, because the naive fold installs the disease it cures.** I ran all 12: **6 pass, 6 red**, and the reds are three different kinds:
+- **3 CANNOT PASS HEADLESS — they are DRIVES, not witnesses** (`diagnose-deficit-app` launches a python driver; `diagnose-d8-shelf-route` and `diagnose-winding-route` need the running app: *"the cube parcel places (file door + drag)"*). ⇒ **Folding these into the main sweep would install 3 PERMANENT reds — exactly "a red nobody owns trains its readers to skip it".**
+- **1 STALE-BY-R1, mine, cheap** (`diagnose-r2-angle-import`): it pins the pre-R1 45·45·90 splits and the 45·45·60·60·90 wedge; post-R1 they measure 60·60·60 and five 60s — the same stale class I recut in `diagnose-open-lift`. **Not fixed here, per your §5.**
+- **2 REAL ASSERTIONS needing investigation** (`diagnose-d12b-carried-names`, `diagnose-d13-the-door-speaks` — id-as-label / `unnamed` claims). **Reported, not fixed, per your §5.**
+- ⚠ **AND A FINDING THE FOLD MUST ABSORB:** running `diagnose-deficit-app` **OVERWROTE a tracked evidence frame** (`scripts/app-leg/gpu_t3_window.png`, 96920 → 80025 bytes). I restored it. **A leg that dirties the tree every time it fires cannot live in a sweep.**
+- ⇒ **My recommendation, sharpened by the measurement: fold the 9 HEADLESS legs (baseline becomes 114 + 9 = 123 files @ 1 accepted), and name the 3 driver legs a DRIVE family that runs with the app** — they are not witnesses in the sweep's sense. **One ruling and I land it.**
 
-**3 · TWO SIGN CONVENTIONS the build's own asserts caught — worth the record because one would have passed coincidentally:**
-- the S³ co-vector's outward orientation: the pairwise Gram is sign-invariant, so the deck-fit would have passed either way; only the per-vertex radial solve (and its on-plane assert) breaks. A checker without the vertex realization would never have seen it.
-- the lens pages: the tempting `(cos, ±sin)` form measures `π − 2π/p`, which **equals 2π/p exactly at p=4** — it would have passed the L(4,1) leg and lied everywhere else. **The p=5 leg is what killed it.** ⇒ *A fixture family of one is a coincidence detector with the detector missing.*
+**3 · THE WORD UNION IS PAID (marker A1 §1) — and I did ask him directly, as you invited.** He confirmed in-terminal on the priced proposal before I touched the file; the record now has both his word to you and his word to this seat. **The acceptance is PARITY, not capability:** `classifyForm` refused the loaded copy and now reads **"genus 1"**, the same as native; combine's precondition threw and now refines to 2 faces; `acquireComplex` was NULL and is ACQUIRED — **and `identify` throws the SAME committed single-face-quotient refusal on both, which is the point: the loaded form is indistinguishable from the form the person saved, refusals included.** The collapse arm lands; a no-ancestor file loads byte-as-before; a tampered word falls back to the ns-copy without throwing and ends at its honest null. Re-seal `bedc75cb→9f68c7d2`, positive control reproduced, **edit + re-seal alone in one commit** (`cb82950`), witness `§6` in a separate one.
 
-**4 · ⛔ MY OWN MISS, and the mechanism that caught it — the completeness law.** `db20604` landed `src/lib/noncubeDomain.ts` **UNLISTED** in the freeze manifest. The manifest's completeness clause did precisely what its comment says it exists for (*"a new engine file can never again be silently unguarded"*) and turned **26 witnesses red at once** — not one, twenty-six, so it was impossible to skip. Cured at `4a7ac81` with a NOT_FROZEN classification row (no frozen file touched, no hash moved, `checkEngineFreeze` ok · 46 · drifted 0 · unlisted []). ★ **The lesson I am filing on myself: a new file under the engine roots is not landed until it is classified in the SAME commit.** The nine reds that survived the row were the manifest-vs-HEAD non-movement clauses, self-healing at that commit — verified.
+**4 · A MARK WITH NO ROUTE, caught before it shipped (§4):** my first siting of her leaning-residue word went into `ObjectInspector` — **exported and NEVER MOUNTED** (zero mount sites in `src`, measured). Moved to the panel the person actually reads and driven. ★ *The law caught me one layer earlier than usual: not "reachable but unusable" — literally unrendered.*
 
-**5 · R3d, HALF TWO — THE WORD-MATERIALIZED UNION, PRICED (no build):**
-- **THE PERSON'S COST TODAY, measured** on a saved+reloaded `glue`-born torus: the card's **TYPE is lost** — `classifyForm` reads *"genus 1"* natively and **REFUSES** on the loaded copy (*"no faithful complex — the direct bridge refuses and no replay-verified recovery"*); **combine refuses it** (`refineAcquiredToDisk` throws); **identify refuses it**. Native controls pass all three. ⇒ **Persistence being load-bearing since Δ10, this is a person-facing loss, not hygiene: a form the person saves comes back a stranger.**
-- **THE MECHANISM:** `recoverBornSurface` needs the replay's byte-compare to match; on a loaded copy the ids are `<source>:`-prefixed while the replay mints from the ns'd parent shape id, so the compare can never pass. Same disease as R-2, different recipe (a WORD, slot-indexed, not an `idn` cycle-id list — the word's pairings are **slot indices**, so they carry NO ids and need no mapping at all).
-- **THE PRICE: ONE frozen file, the same shape as R-2's landed spend.** The cure is `deserializeSnapshot` replaying the form's own WORD and returning the replay (replay-native ids) instead of the ns-copy. It **imports** `parsePairingSuffix` (bornFormRouting) · `glueFace`/`flipGlueFace`/`collapseFace` (surfaceOperations) · `materializeSurfaceResult` (materializeOperation) — **all three already frozen and already in the manifest's import closure, so importing them adds no file and edits none.** ⇒ **EDITED: `src/playground/snapshot.ts` alone (~40 lines, mirroring the R-2 block) + its re-seal.** No cycle (none of the three imports snapshot).
-- **Why not a downstream bridge:** the acquisition chain's word step lives in the frozen `complexIdentification`, so a non-frozen bridge would have to be repeated at every consumer — the bridge-per-consumer disease R-2 just retired. **The loader cure is both cheaper and the one that doesn't rot.**
-- ⇒ **The scope call is Arman's, and the number he will want is: one frozen file, one re-seal, ~40 lines, witness legs alongside.**
+**5 · Her §3b flag, driven and reported (not cured):** **the two arrows do NOT fight** — `←` and `→` hold distinct roles at the eye and read correctly. **But the card's width still wraps each pair, so the `→` lands at a line break.** Her original complaint's shape survives in a smaller form; the bracket fallback is hers to call, and I did not take it.
 
-**6 · The app-leg family still has no owner** — I recut its two stale legs (they were stale TEXT, not defects: a conflation of the boundary's 15 face classes with the per-cell 7 walls, and a pin looking for a phrase the committed refusal ladder never says). The family is outside the 113/114 suite, so nothing runs it by default. **My recommendation: fold `scripts/app-leg/` into the main sweep rather than chartering an owner** — an owner can lapse; the sweep cannot.
+**6 · Also committed, attributed:** the researcher's own ADR 0026 Status edit (Proposed → Accepted) found uncommitted in the tree — an uncommitted edit is an unprotected edit.
 
 ---
 
 ## 1 · WHAT I SAW (drove the app — 5174; 5173 untouched)
-**R3c's acceptance, end to end:** cube → Apply Ambo Dissection → Apply Pyritohedral Diagonalization (the relaxed icosahedron stands) → select the `pyritohedral-icosahedron` cell **and** an X_K midpoint vertex (`vertex:mid:h5a0w8`, hover-named "CG") → **"Open-lift star → Manuscript"** → the panel reads *"open-lifted 'open-lift(Pyritohedral Diagonalization Ambo Dissection Cube)' → the Manuscript shelf"*, and switching to the Manuscript shows the chip on the sources shelf under `"shape:pyritohedral-diagonalization:2:1fy059s"`. **The demonstration that used to refuse itself now passes at the eye.** (B.4 itself: nothing to see, §2 above.)
+- **§2's blank, reproduced exactly** — and sharper than the report: selecting the torus framed a region where **the torus is not**, with 9/12 labels gone and the selected label hidden. Then, with the cure live, the page held whole and the specimen read at ~0.11.
+- **§3a at the eye:** `•unnamed ← four unnamed roots` (was four handle-suffixed tokens).
+- **§3b at the eye:** `—a ← unnamed·unnamed → unnamed·unnamed`, wrapping after the arrow.
+- **§4 at the eye:** her sentence on the `pyritohedral-icosahedron` card; **selecting a residue tetrahedron on the same shape shows nothing** (the negative control, live).
+- **The union's acceptance** measured on the modules, not the eye — the person-facing half is that a saved form's card keeps its type; the page route for it is the shelf, unchanged.
 
 ## 2 · WHAT I RAN
 ```
-1  suite 114 @ 1 (dual-inspection, the accepted baseline) + tsc -b exit 0 at
-   the real HEAD. The suite GREW by one: diagnose-the-noncube-domain.
-2  freeze manifest: NO frozen file touched, NO spend, NO hash moved. One
-   NOT_FROZEN classification row added (the §4 miss, cured).
-   checkEngineFreeze: ok true · 46 checked · drifted [] · unlisted [].
-3  no re-seal owed.
-4  B.4's own numbers, all measured on the REAL modules: euclidean control
-   FAILS +222.8254° (SW) / −10.3048° (Poincaré) / 141.06° (lens) → curved
-   PASSES at 0.0e+0 rad (ε = 1e-6) · inradii 0.99638 → 72.00000° and
-   0.31416 → 120.00000° (the instrument's own) · the near-miss (d+1e-3)
-   FAILS · an unreachable target REFUSES rather than clamps.
-   R3a: dual face ids IDENTICAL across t=1 ↔ t=1/φ (6/12 drifted before)
-   and under ±1e-9 jitter (1/12 flipped before); fan cycles TRUE at both
-   metrics; the chirality bit held.
-   R3b: Σ = 4.000000π measured, pentagons at exactly 540°; the ⚑ flag's
-   own skew numbers (536.85°, 4.21π) reconstructed live as the control.
-   R3c: apex spread 0.00e+0 rad admitted; the pre-R1 fan refused BY NAME.
-5  THE READING — §1 above.
+1  suite 114 @ 1 + tsc -b exit 0 at HEAD.
+2  freeze: ONE sanctioned spend (snapshot.ts — Arman's word to you AND to
+   this seat in-terminal). checkEngineFreeze ok · 46 · drifted [] · unlisted [].
+3  re-seal RECOMPUTED bedc75cb→9f68c7d2; POSITIVE CONTROL reproduced at the
+   base before the edit.
+4  the app-leg family run whole: 6 pass · 6 red, classified in §2 above.
+5  THE READING — §1.
 ```
 
 ## 3 · WHAT I CHANGED
-- **`src/lib/noncubeDomain.ts`** (new, NOT_FROZEN) — the deck-fit checker (carried census + carried flankings; §E reads no position, builds no distance graph — Trap 1 inexpressible), the S³/H³ realizer (solve + co-vectors + re-derived vertex positions with on-plane asserts), the three realizations, the euclidean control's co-vectors, the authored seed tables.
-- **`scripts/diagnose-the-noncube-domain.cjs`** (new) — §1–§7: the seeds, THE ORACLE, the swing, Trap 2 proven-not-assumed, Trap 1 structural, coherence, and the Shape byte-untouched.
-- **`src/lib/dualView.ts`** — R3a: the fan order from the carried complex (the frozen sibling's idiom), one metric chirality bit, the old positional sort kept verbatim as the unreadable-fan fallback.
-- **`src/lib/openLift.ts`** — R3c: the n=5 regular-fan gate at pick-time, scoped to n=5 exactly, refusing by naming the angles.
-- **`scripts/diagnose-conformal-dual.cjs`** — §8 (R3a's falsifiers) + §9 (R3b's seal and its carried control); the ⚑ METRIC DEBT header flag recut to collected.
-- **`scripts/app-leg/diagnose-open-lift.cjs`** — the R1-stale wedge pin recut ([60×5]) + R3c's three legs.
-- **`scripts/app-leg/diagnose-d2-one-door.cjs`** — the two stale legs recut (R3d).
-- **`docs/governance/ENGINE_FREEZE_MANIFEST.txt`** — the §4 classification row.
+- **`src/playground/snapshot.ts` + the manifest** (`cb82950`, alone) — the word union.
+- **`scripts/diagnose-snapshot.cjs`** (`34c1759`) — §6's four legs.
+- **`src/manuscript/ManuscriptView.tsx`** — §3a (the count form for concept rows), §3b (the run separator), and §2's measurement recorded in place (behavior unchanged).
+- **`src/components/Panels.tsx`** — §4, sited on the live panel by the substrate's own mark.
+- **`docs/adr/0026-…`** (`569c98a`) — the researcher's Status edit, attributed.
 
-## 4 · WHAT I COULD NOT REACH / HONEST EDGES
-- **The aperture is not routed through the new transport** (§2) — needs its own charter.
-- **The word-materialized union: PRICED, not built** (§5), per your ⛔.
-- **RP³ at the 5/10 twist** is printed as a note in the witness, not pinned — outside the chartered three.
-- **The general Coxeter constructor · the inhabited interior · the icosahedral-as-distinct-domain** — deferred by the ADR's own triggers; untouched.
+## 4 · WHAT I COULD NOT REACH / SEVERED
+- **§2's cure — STOPPED on her form call** (§1 above). Nothing landed; the mechanism is recorded where the next reader will meet it.
+- **§5's fold — blocked on one ruling** (§2 above); nothing folded, nothing fixed.
+- **`diagnose-r2-angle-import`'s stale pins** — named, not fixed, per your §5.
+- **The aperture routing · P5's gesture** — not started, as ordered.
