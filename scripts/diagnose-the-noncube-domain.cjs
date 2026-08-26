@@ -420,7 +420,20 @@ console.log('\n----- §9 (B-113) the model reaches the RENDER: a Seifert–Weber
   const euc = traceAt(null, 8, 1);
   const hT = atThresholds(gate.model, 8);
   const eT = atThresholds(null, 8);
-  note(`copies surviving a ≥[1, 4, 16, 64]-pixel threshold at depth 8 (84×84):`);
+  // ⚠ MARKER S1 — A MEASUREMENT PRINTS ITS SURFACE BESIDE THE NUMBER,
+  // exactly as a plate prints its `settle`. ⛔ A number whose station is
+  // unstated will be read as universal by whoever needs it to be — and a
+  // claim about H³ left this desk on numbers that carried their depth and
+  // their thresholds and NOT the surface they were taken on.
+  // ⇒ THE SURFACE HERE, cited rather than remembered: this leg's own
+  // traceAperture call at scripts/diagnose-the-noncube-domain.cjs:400
+  // (width: 84, height: 84). ⚠ It is NOT the app's plate, which renders at
+  // designDefaults.ts:309 (`resolution: 168`), nor the walk window, which
+  // renders at canvas resolution — and B-114 measured that the crowd reads
+  // at window size and not at thumbnail size. The three surfaces differ,
+  // which is exactly why the number may not travel without its own.
+  note(`SURFACE: this leg's 84×84 trace (line 400) — NOT the app's 168px plate (designDefaults.ts:309) and NOT the walk window at canvas size`);
+  note(`copies surviving a ≥[1, 4, 16, 64]-pixel threshold at depth 8, on that 84×84 surface:`);
   note(`  H³ (sealed): ${JSON.stringify(hT)} · ${beyondHome(hyp)} object pixels lie beyond the home cell, over ${hT[0] - 1} copies`);
   note(`  E³ (today) : ${JSON.stringify(eT)} · ${beyondHome(euc)} object pixels lie beyond the home cell, over ${eT[0] - 1} copies`);
   check('§9 ★★ THE RENDER LIGHTS IN THE MODEL: the Seifert–Weber interior draws through the H³ transport — pixels lit, rays transported, copies of the person\'s own solid counted — so the room is not merely realized, it is INHABITED',
@@ -728,7 +741,7 @@ console.log('\n----- §10 (B-114) the walk window carries the model, and the nou
         forced.startsWith('orbifold ·');
     })());
 
-  check('§10 ⛔ THE NOTE SAYS WHAT IS, AND THE SHADOW CLAUSE FIRES ON A FACT: drawn in the shadow it is her sentence WHOLE ("drawn in the euclidean shadow — these angles are the shadow\'s, not the manifold\'s"); drawn in the sealed model only her second clause goes out — not a word of hers changed, none invented. And the excess note rides the FIGURE (450° > a full turn), never the class',
+  check('§10 ⛔ THE NOTE SAYS WHAT IS, AND THE SHADOW CLAUSE FIRES ON A FACT — as TWO STRINGS, not one string minus a clause (MARKER S1): drawn in the shadow it is her sentence WHOLE; drawn in the sealed model the standalone carries `euclidean` ITSELF, because lifted out of the pair "the shadow" has NO ANTECEDENT — the clause that introduced it is the one that stopped firing. ⚠ ADDED, never MOVED: the whole form is untouched, so when it fires it still introduces the shadow and the pair does not repeat itself. And the excess note rides the FIGURE (450° > a full turn), never the class',
     (() => {
       const inShadow = A.apertureNote(gate.geometry, gate.seal, true);
       const inModel = A.apertureNote(gate.geometry, gate.seal, false);
@@ -736,7 +749,7 @@ console.log('\n----- §10 (B-114) the walk window carries the model, and the nou
       note(`note (model) : ${JSON.stringify(inModel)}`);
       return inShadow.length === 2 && inModel.length === 2 &&
         inShadow[0] === 'drawn in the euclidean shadow — these angles are the shadow\'s, not the manifold\'s' &&
-        inModel[0] === 'these angles are the shadow\'s, not the manifold\'s' &&
+        inModel[0] === 'these angles are the euclidean shadow\'s, not the manifold\'s' &&
         inShadow[1] === '450° is more than a full turn — that excess is why it cannot be flat' &&
         inModel[1] === inShadow[1];
     })());

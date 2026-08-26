@@ -2772,8 +2772,17 @@ export function apertureNote(
   if (geometry.kind === 'folded' || !seal || seal.geometry === 'E3') return [];
   const notes = [
     drawnInShadow
+      // ⛔ MARKER S1 — TWO STRINGS, NOT ONE STRING MINUS A CLAUSE. She caught
+      // what the split did to her own words: standalone, clause two says
+      // *"the shadow's"* and THE SHADOW HAS NO ANTECEDENT, because the clause
+      // that introduced it is the one that no longer fires.
+      // ★ A clause lifted out of a sentence is not a sentence; it is a
+      // fragment that happened to parse.
+      // ⇒ The standalone carries `euclidean` ITSELF. ⚠ And it is ADDED here,
+      // never MOVED: the whole form above is untouched, because when it fires
+      // it still introduces the shadow and the pair does not repeat itself.
       ? 'drawn in the euclidean shadow — these angles are the shadow\'s, not the manifold\'s'
-      : 'these angles are the shadow\'s, not the manifold\'s',
+      : 'these angles are the euclidean shadow\'s, not the manifold\'s',
   ];
   // the excess, in the note's register, the value staying in its slot — fired
   // by the FIGURE itself (any cone angle past a full turn), never by the class
