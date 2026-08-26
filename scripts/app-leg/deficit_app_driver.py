@@ -1322,10 +1322,16 @@ def drive_explore(page):
     page.keyboard.press("Escape")
     page.wait_for_timeout(250)
 
-    # ---- the shell's own caption, captured COLD (deselected): the selected
-    # shape's row label leaves the DOM (`hidden={selected === id}` — the card
-    # takes over), so the byte-equal comparison brackets the WHOLE journey:
-    # capture before the summon, compare after everything, deselected again
+    # ---- the shell's own caption, captured COLD (deselected), and the
+    # byte-equal comparison brackets the WHOLE journey: capture before the
+    # summon, compare after everything, deselected again.
+    # ⚠ B-115 §3 — THE STATED REASON CHANGED, so the comment changes with it:
+    # this used to say the row label LEAVES THE DOM while selected
+    # (`hidden={selected === id}`). It no longer does — R2's cure ruled that
+    # selection may not remove the name. Capturing cold is still the right
+    # discipline (it brackets the journey at one known state), but it is no
+    # longer a workaround for a vanishing node. A comment that keeps a retired
+    # precondition is a guard nobody wrote, aimed at a condition nobody has.
     capture_t3_caption = """() => {
       const nodes = [...document.querySelectorAll('div,span')].filter((n) => n.textContent.includes('E³ · n=[4,4,4]'));
       if (nodes.length === 0) return null;
@@ -2028,6 +2034,33 @@ def drive_camera(page):
     held_on_deselect = _still(before_sel, after_deselect)
     held_on_select = _still(after_deselect, after_select)
     fraction = max_written_fraction(page)
+    # ═══ R2's CURE (B-115 §3) — THE LABEL STAYS, measured where it is READ ═══
+    # Her acceptance in her own terms: SELECTING A FORM LEAVES ITS NAME ON THE
+    # PAGE. Before the cure the selected form's label left the DOM entirely,
+    # so the one thing a person had just pointed at was the one thing with no
+    # name on it. Measured on the page's own labels, not on the card — the
+    # card is chrome; the ruling is about the PAGE.
+    # ⚠ Measured as a COUNT, not by matching the card's heading to a label:
+    # the ruling is "selection may not REMOVE the name", and the removal was a
+    # node leaving the DOM. A count bites exactly there (it fell by one on
+    # every select before the cure) and needs no string to agree with another
+    # string — which is the comparison that would rot first.
+    read_labels = "() => document.querySelectorAll('[data-form-label]').length"
+    labels_selected = page.evaluate(read_labels)
+    page.mouse.dblclick(empty_pt["x"], empty_pt["y"])  # deselect again, to compare
+    page.wait_for_timeout(900)
+    labels_deselected = page.evaluate(read_labels)
+    record(
+        "label.staysOnSelect",
+        reselected and labels_selected > 0 and labels_selected == labels_deselected,
+        f"page labels — selected: {labels_selected} · deselected: {labels_deselected} (equal ⇒ selection removed no name; before the cure the selected form's label left the DOM and this fell by one)",
+    )
+    # put the selection back so the rest of the leg runs in the state it expects
+    for pt in form_pts:
+        page.mouse.dblclick(pt["x"], pt["y"])
+        page.wait_for_timeout(1200)
+        if fit_locator.is_enabled():
+            break
     record(
         "camera.selectionHolds",
         held_on_deselect and held_on_select and reselected,

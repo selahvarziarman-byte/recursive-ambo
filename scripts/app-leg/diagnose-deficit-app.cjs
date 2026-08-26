@@ -371,6 +371,15 @@ function killTree(pid) {
         check('§E-PLATE ★★ SELECTION HOLDS — THE CAMERA DOES NOT MOVE ON SELECT (the designer\'s ruling, replacing C1\'s "select frames the specimen"): HE HAD TO SEE IT TO SELECT IT, so the view he used to act is the view he keeps. Measured BOTH ways on the running app — deselecting does not move the eye, re-selecting does not move it either (position AND look) — and a form IS selected afterwards, so nothing was held by simply failing to select. The Fit Selected + Reset Camera controls still stand in the chrome: the cut removes the camera moving BY ITSELF, never the person\'s own gesture',
           get('camera.selectionHolds').ok && get('camera.controlsPresent').ok,
           get('camera.selectionHolds').detail);
+        // ═══ R2's CURE (B-115 §3) — ruled by the designer, measured here ════
+        // ★ Her diagnosis unifies it with the camera at the right level:
+        // SELECTION'S JOB IS TO SAY WHICH THING IS SELECTED, and un-naming the
+        // thing is the exact opposite of that act. ⇒ A STATE CHANGE PERFORMING
+        // A DESTRUCTION — there the view, here the name. One diagnosis, two
+        // cures, and this is the second one at the eye.
+        check('§E-NAME ★★ THE LABEL STAYS — SELECTION MAY NOT REMOVE THE NAME (the designer\'s ruling): with a form selected, its name is still ON THE PAGE, not only on the card. Before the cure the selected form\'s label left the DOM, so the one thing the person had just pointed at was the one thing carrying no name — and P5\'s memorial would have named it for the FIRST time, the page naming a thing only once it is gone',
+          get('label.staysOnSelect').ok,
+          get('label.staysOnSelect').detail);
         check('§E-FIT/RESET ★ THE RECOVERY CONTROLS FIRE: Reset returns the composed default camera EXACTLY (compared against the boot-captured state, never a guessed literal); Fit Selected re-flies the plate to a legible fraction',
           get('camera.fitReset').ok, get('camera.fitReset').detail);
         check('§E-ZOOM ★ ZOOM LANDS AT THE CURSOR WITH A USABLE DELTA: four wheel ticks with the cursor right-of-center pull the camera materially closer (≥12%) AND laterally toward the cursor — not the dead fixed-anchor crawl (~0.7%/tick, 34 ticks)',

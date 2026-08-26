@@ -480,20 +480,32 @@ function LiveTraceCycle({
   );
 }
 
+// ═══ R2's CURE (B-115 §3) — THE LABEL STAYS. ═══════════════════════════════
+// ⇒ ✅ RULED BY THE DESIGNER: **selection may not remove the name.** Her
+// diagnosis unifies it with the camera at the right level — SELECTION'S JOB IS
+// TO SAY WHICH THING IS SELECTED, and un-naming the thing is the exact
+// opposite of that act. ⇒ A STATE CHANGE PERFORMING A DESTRUCTION: there the
+// view, here the name. One diagnosis, two cures.
+// ⛔ THE `hidden` PROP IS GONE, not passed `false`. It stood for exactly one
+// condition — "this form is the selected one" — and that condition has been
+// ruled away. A guard is correct to leave standing only while something it
+// stands for still holds; this one has nothing left, and a dead prop is a
+// door for the same defect to come back through.
+// ★ And it closes P5's collision (measured B-113, R2): with the name removed
+// on select, the last thing a person saw before removing a form was a form
+// with no name, and the memorial would have named it for the FIRST time —
+// the page naming a thing only once it is gone.
 function FormLabel({
   position,
   title,
   sub,
   ink,
-  hidden,
 }: {
   position: [number, number, number];
   title: string;
   sub: string;
   ink: string;
-  hidden: boolean;
 }) {
-  if (hidden) return null;
   // B-114 §0 — THE NOTE GETS ITS OWN LINE, because she said so and because a
   // disclaimer that runs on into the countable facts reads as one more of
   // them. The caption arrives as noun-then-note separated by a newline;
@@ -503,7 +515,14 @@ function FormLabel({
   const [nounLine, ...noteLines] = sub.split('\n');
   return (
     <Html center position={position} distanceFactor={13} zIndexRange={[40, 0]} style={{ pointerEvents: 'none' }}>
-      <div style={{ textAlign: 'center', color: ink, fontFamily: 'Georgia, "Times New Roman", serif', whiteSpace: 'nowrap' }}>
+      {/* B-115 §3 — the label carries its own MARK so a witness can measure
+          that it is still on the page. The name staying is now a ruled
+          behaviour, and a ruled behaviour with no way to measure it is one
+          nobody will notice going away again. */}
+      <div
+        data-form-label={title}
+        style={{ textAlign: 'center', color: ink, fontFamily: 'Georgia, "Times New Roman", serif', whiteSpace: 'nowrap' }}
+      >
         <div style={{ fontSize: 12.5, fontWeight: 700 }}>{title}</div>
         <div style={{ fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.72 }}>{nounLine}</div>
         {noteLines.map((line) => (
@@ -4796,7 +4815,6 @@ export default function ManuscriptView() {
           title={label.title}
           sub={label.sub}
           ink={inkFor(id, shapeId, d.paper.titleInk)}
-          hidden={selected === id}
         />
       </Drift>
     </SpecimenLift>
