@@ -24,15 +24,14 @@
 // fooled; the two clauses are provably INDEPENDENT); a stripped face throws
 // the un-owned refusal; the frozen dual sources are byte-identical to HEAD.
 //
-// ⚑ THE METRIC DEBT (R2 finding 2026-08-14, a SEPARATE flag on the METRIC
-// realization — NOT on the honest ascent seal above): the drawn/measured
-// centroid-dual is a SKEW SHADOW on the irregular seed — acos over the dual
-// vertices' positions reads pentagons [99.59,99.59,109.47,114.09,114.09]°
-// (sum 536.8° ≠ 540°) and quads [83.62,83.62,90,90]° (sum 347.2° ≠ 360°),
-// and a seal over those measures Σ = 4.21π / 4.85π ≠ 4π. A MEASURED 4π seal
-// is R1-downstream — it planarizes when the seed becomes a real regular
-// icosahedron. The idealize above is untouched by this: the ascent is
-// count-only by construction and owes nothing to the shadow's metric.
+// ⚑→✔ THE METRIC DEBT — COLLECTED (R3b, B-109; the flag stood from the R2
+// finding 2026-08-14): the centroid-dual WAS a skew shadow on the irregular
+// seed (pentagons summing 536.85° ≠ 540°, Σ = 4.21π — those numbers are now
+// §9's CARRIED CONTROL, measured live on the reconstructed pre-R1
+// positions). R1 relaxed the seed, so the measured centroid-dual is the
+// REGULAR dodecahedron and §9 seals Σ = 4π AS MEASURED (acos over the
+// dual's own positions, float floor). The idealize above never depended on
+// this: the ascent is count-only by construction.
 //
 // Anti-mock: the REAL TS modules through the transpile hook.
 
@@ -382,8 +381,154 @@ check('§7 (E4) THE HORIZON UNTOUCHED: the stamps live ONLY at the face construc
     headEq('src/lib/trisonizedMidwifeReadingV0.ts') &&
     !fs.readFileSync(path.join(repoRoot, 'src/lib/trisonizedMidwifeReadingV0.ts'), 'utf8').includes('cornerAngles'));
 
+// ═══════════════════════════════════════════════════════════════════════════
+// §8 — R3a (B-109 §1): THE FAN ORDER IS CARRIED, NOT POSITIONAL. B-108
+// measured the old atan2 sort re-shaping with the positions (6/12 dual face
+// ids drifted across R1's relaxation; ±1e-9 jitter flipped a linear order)
+// while the cycles stayed correct. The port (the frozen dualization's own
+// edge-adjacency idiom, id-keyed start, ONE metric chirality bit) is
+// behavior-neutral at the cycle level BY THAT MEASUREMENT — so these legs
+// are its falsifiers: fan correctness stays true, and the ids stop moving.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log('\n----- §8 (R3a) the fan order is carried: ids stable across the relaxation and under jitter -----');
+const icosaVertexIds = new Set(icosaCell.vertexIds);
+const dualOf = (shapeX) => buildDualCorrespondenceModel(shapeX, shapeX.cells.find((c) => c.topology === 'pyritohedral-icosahedron'), 'dodecahedron');
+const modelNow = buildDualCorrespondenceModel(shapeA, icosaCell, 'dodecahedron');
+// the t=1 world: positions swapped back to the parent ambo's (the pre-R1
+// output — byte-identical combinatorics by the R1 witness's own clause)
+const shapeT1 = JSON.parse(JSON.stringify(shapeA));
+{
+  const parentAmboVertices = (() => {
+    let s = createSeedShape('cube');
+    s = applyAmboDissection(s, selectActive(s, 'seed').id);
+    return s.vertices;
+  })();
+  for (const vId of icosaCell.vertexIds) shapeT1.vertices[vId].position = [...parentAmboVertices[vId].position];
+}
+const modelT1 = dualOf(shapeT1);
+const jitterShape = JSON.parse(JSON.stringify(shapeA));
+[...icosaCell.vertexIds].forEach((vId, i) => {
+  jitterShape.vertices[vId].position = jitterShape.vertices[vId].position.map((x, k) => x + 1e-9 * Math.sin(i * 7 + k * 3));
+});
+const modelJitter = dualOf(jitterShape);
+const faceIdsOf = (m) => m.dualFaces.map((f) => f.id).sort().join('|');
+check('§8 (R3a) ★★ THE IDS STOP MOVING: the dual face ids are IDENTICAL across the metric relaxation (t=1 ↔ t=1/φ; B-108 measured 6/12 drifting before the port) and under a ±1e-9 jitter (1/12 flipped before)',
+  faceIdsOf(modelNow) === faceIdsOf(modelT1) && faceIdsOf(modelNow) === faceIdsOf(modelJitter));
+check('§8 (R3a) the fan cycles stay TRUE on the carried complex at both metrics: every consecutive pair of source faces in every dual cycle shares exactly one edge through its vertex',
+  (() => {
+    const faceById = new Map(shapeA.faces.map((f) => [f.id, f]));
+    const fanTrue = (m) => {
+      for (const df of m.dualFaces) {
+        const src = m.dualFaceToSourceVertex[df.id];
+        const cyc = df.vertexIds.map((dv) => faceById.get(m.dualVertexToSourceFace[dv]));
+        for (let i = 0; i < cyc.length; i += 1) {
+          const f1 = cyc[i];
+          const f2 = cyc[(i + 1) % cyc.length];
+          const at = (f, v) => {
+            const n = f.vertexIds.length;
+            const k = f.vertexIds.indexOf(v);
+            if (k < 0) return [];
+            const key = (a, b) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+            return [key(v, f.vertexIds[(k + 1) % n]), key(v, f.vertexIds[(k - 1 + n) % n])];
+          };
+          if (at(f1, src).filter((k) => at(f2, src).includes(k)).length !== 1) return false;
+        }
+      }
+      return true;
+    };
+    return fanTrue(modelNow) && fanTrue(modelT1);
+  })());
+check('§8 (R3a) the chirality bit held: every dual cycle advances POSITIVELY in the outward tangent frame (the old convention\'s winding, preserved through the port)',
+  (() => {
+    const centroidOfCell = (() => {
+      const c = [0, 0, 0];
+      for (const vId of icosaCell.vertexIds) {
+        const p = shapeA.vertices[vId].position;
+        c[0] += p[0] / 12; c[1] += p[1] / 12; c[2] += p[2] / 12;
+      }
+      return c;
+    })();
+    for (const df of modelNow.dualFaces) {
+      const srcId = modelNow.dualFaceToSourceVertex[df.id];
+      const v = shapeA.vertices[srcId].position;
+      const nrm = [v[0] - centroidOfCell[0], v[1] - centroidOfCell[1], v[2] - centroidOfCell[2]];
+      const ln = Math.hypot(...nrm);
+      const n = nrm.map((x) => x / ln);
+      const ref = Math.abs(n[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+      const u0 = [n[1] * ref[2] - n[2] * ref[1], n[2] * ref[0] - n[0] * ref[2], n[0] * ref[1] - n[1] * ref[0]];
+      const lu = Math.hypot(...u0);
+      const u = u0.map((x) => x / lu);
+      const w = [n[1] * u[2] - n[2] * u[1], n[2] * u[0] - n[0] * u[2], n[0] * u[1] - n[1] * u[0]];
+      const angles = df.vertexIds.map((dv) => {
+        const faceId = modelNow.dualVertexToSourceFace[dv];
+        const face = shapeA.faces.find((f) => f.id === faceId);
+        const c = [0, 0, 0];
+        for (const vv of face.vertexIds) {
+          const p = shapeA.vertices[vv].position;
+          c[0] += p[0] / face.vertexIds.length; c[1] += p[1] / face.vertexIds.length; c[2] += p[2] / face.vertexIds.length;
+        }
+        const d = [c[0] - v[0], c[1] - v[1], c[2] - v[2]];
+        return Math.atan2(d[0] * w[0] + d[1] * w[1] + d[2] * w[2], d[0] * u[0] + d[1] * u[1] + d[2] * u[2]);
+      });
+      for (let i = 0; i < angles.length; i += 1) {
+        let delta = angles[(i + 1) % angles.length] - angles[i];
+        while (delta <= -Math.PI) delta += 2 * Math.PI;
+        while (delta > Math.PI) delta -= 2 * Math.PI;
+        if (delta <= 0) return false;
+      }
+    }
+    return true;
+  })());
+
+// ═══════════════════════════════════════════════════════════════════════════
+// §9 — R3b: Σ = 4π SEALED AS MEASURED (the ⚑ METRIC DEBT above, collected).
+// The header's flag recorded the pre-R1 truth: the centroid-dual of the
+// UNRELAXED seed was a skew shadow (pentagon sums 536.8° ≠ 540°; Σ = 4.21π).
+// R1 relaxed the seed, so the centroid-dual of the icosahedron cell is now
+// the REGULAR dodecahedron and the MEASURED seal closes — acos over the
+// dual vertices' own positions, no idealize anywhere in the leg.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log('\n----- §9 (R3b) Σ = 4π AS MEASURED: acos over the dual\'s own positions -----');
+const measureDual = (m, shapeX) => {
+  const posOfDual = new Map(Object.entries(m.dualVertices).map(([dvId, entry]) => [dvId, (entry.vertex ?? entry).position]));
+  const cornersAtDualVertex = new Map();
+  const faceSums = [];
+  for (const df of m.dualFaces) {
+    const cyc = df.vertexIds;
+    let sum = 0;
+    for (let k = 0; k < cyc.length; k += 1) {
+      const p = posOfDual.get(cyc[k]);
+      const prev = posOfDual.get(cyc[(k - 1 + cyc.length) % cyc.length]);
+      const next = posOfDual.get(cyc[(k + 1) % cyc.length]);
+      const e1 = [prev[0] - p[0], prev[1] - p[1], prev[2] - p[2]];
+      const e2 = [next[0] - p[0], next[1] - p[1], next[2] - p[2]];
+      const cosA = (e1[0] * e2[0] + e1[1] * e2[1] + e1[2] * e2[2]) / (Math.hypot(...e1) * Math.hypot(...e2));
+      const a = Math.acos(Math.max(-1, Math.min(1, cosA)));
+      sum += a;
+      cornersAtDualVertex.set(cyc[k], (cornersAtDualVertex.get(cyc[k]) ?? 0) + a);
+    }
+    faceSums.push(sum);
+  }
+  let sigma = 0;
+  for (const total of cornersAtDualVertex.values()) sigma += 2 * Math.PI - total;
+  return { faceSums, sigma, vertexCount: cornersAtDualVertex.size };
+};
+const measuredNow = measureDual(modelNow, shapeA);
+const measuredT1 = measureDual(modelT1, shapeT1);
+check('§9 (R3b) ★★ THE SEAL, MEASURED: on the R1-relaxed chain every dual pentagon MEASURES 5 × 108° = 540° (acos over positions, within 1e-9) and Σ deficit = 4π at the float floor — the DUAL row\'s kill, collected',
+  measuredNow.vertexCount === 20 &&
+  measuredNow.faceSums.length === 12 &&
+  measuredNow.faceSums.every((s) => Math.abs((s * 180) / P - 540) < 1e-9) &&
+  Math.abs(measuredNow.sigma - 4 * P) < 1e-9);
+check('§9 (R3b) ⛔ the carried control (the ⚑ flag\'s own numbers): the PRE-R1 skew shadow measures pentagon sums ≈ 536.8° ≠ 540° and Σ ≈ 4.21π ≠ 4π — the fail side the seal swung from',
+  (() => {
+    const someSkew = measuredT1.faceSums.some((s) => Math.abs((s * 180) / P - 536.85) < 0.2);
+    return someSkew && Math.abs(measuredT1.sigma / P - 4.21) < 0.02 && Math.abs(measuredT1.sigma - 4 * P) > 0.1;
+  })());
+note(`measured now: Σ = ${(measuredNow.sigma / P).toFixed(6)}π · pre-R1 shadow: Σ = ${(measuredT1.sigma / P).toFixed(3)}π (the flag's 4.21π)`);
+
 console.log(
-  `\n--- P6 THE IDEAL DUAL — the ascent to the Forms (the swap untouched, the idealize count-only, clause (a) certifies the stamp, clause (b) detects the Form; §7 the ascent STANCE owned — the medial faces carry their angle and Σ = 2πχ seals on every rung): ${
+  `\n--- P6 THE IDEAL DUAL — the ascent to the Forms (the swap untouched, the idealize count-only, clause (a) certifies the stamp, clause (b) detects the Form; §7 the ascent STANCE owned — the medial faces carry their angle and Σ = 2πχ seals on every rung; §8 the fan order carried, ids stable; §9 Σ = 4π SEALED AS MEASURED): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
   } ---`,
 );

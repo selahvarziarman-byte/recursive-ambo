@@ -988,25 +988,95 @@ function createDualFaceEntry(
   };
 }
 
+// R3a (B-109 §1, ruled — the B-108 measurement's cure): the fan order comes
+// from the CARRIED COMPLEX — faces adjacent iff they share an edge through
+// this vertex (the frozen dualization's own idiom: buildIncidentFaceCycle-
+// Adjacency), walked from a DETERMINISTIC id-keyed start; positions decide
+// exactly ONE bit (the walk's chirality, so the emitted winding matches the
+// old convention's). The old atan2-over-centroids sort was position-keyed
+// through and through and RE-SHAPED with the positions: 6/12 dual face ids
+// drifted across R1's relaxation and a ±1e-9 jitter flipped a linear order
+// (B-108, measured) — the key-drift family, in the model. The cycle itself
+// was already correct at both metrics (measured), so this port is behavior-
+// neutral at the cycle level; its falsifiers are the id-stability and
+// jitter legs in diagnose-conformal-dual §8.
 function orderIncidentFaces(
   shape: Shape,
   sourceVertex: Vertex,
   incidentFaces: Face[],
   sourceCentroid: Vec3,
 ): Face[] {
-  const normal = normalizeVec3(
-    subtractVec3(sourceVertex.position, sourceCentroid),
-    fallbackDirection(sourceVertex.id),
-  );
+  // adjacency ON THE CARRIED COMPLEX: for each incident face, its two edges
+  // through the vertex (the cycle-neighbors of v in the face's own walk)
+  const edgeKeysAtVertex = (face: Face): [string, string] => {
+    const cycle = face.vertexIds;
+    const k = cycle.indexOf(sourceVertex.id);
+    const next = cycle[(k + 1) % cycle.length];
+    const prev = cycle[(k - 1 + cycle.length) % cycle.length];
+    const key = (a: string, b: string): string => (a < b ? `${a}|${b}` : `${b}|${a}`);
+    return [key(sourceVertex.id, next), key(sourceVertex.id, prev)];
+  };
+  const byEdge = new Map<string, Face[]>();
+  for (const face of incidentFaces) {
+    for (const key of edgeKeysAtVertex(face)) {
+      byEdge.set(key, [...(byEdge.get(key) ?? []), face]);
+    }
+  }
+  const neighborsOf = (face: Face): Face[] => {
+    const out: Face[] = [];
+    for (const key of edgeKeysAtVertex(face)) {
+      for (const other of byEdge.get(key) ?? []) {
+        if (other.id !== face.id && !out.some((f) => f.id === other.id)) out.push(other);
+      }
+    }
+    return out;
+  };
+  const start = [...incidentFaces].sort((a, b) => a.id.localeCompare(b.id))[0];
+  const startNeighbors = neighborsOf(start).sort((a, b) => a.id.localeCompare(b.id));
+  if (startNeighbors.length !== 2) {
+    // a fan this walk cannot read (a malformed local cycle) — the old
+    // positional order is the honest fallback, exactly the pre-R3a behavior
+    const normal = normalizeVec3(subtractVec3(sourceVertex.position, sourceCentroid), fallbackDirection(sourceVertex.id));
+    const basis = tangentBasis(normal);
+    return [...incidentFaces].sort((a, b) => {
+      const angleA = faceAngle(shape, a, sourceVertex.position, basis.u, basis.v);
+      const angleB = faceAngle(shape, b, sourceVertex.position, basis.u, basis.v);
+      const angleDelta = angleA - angleB;
+      return Math.abs(angleDelta) > 0.000001 ? angleDelta : a.id.localeCompare(b.id);
+    });
+  }
+  const walk = (second: Face): Face[] | null => {
+    const out = [start, second];
+    const seen = new Set([start.id, second.id]);
+    while (out.length < incidentFaces.length) {
+      const nextCandidates = neighborsOf(out[out.length - 1]).filter((f) => !seen.has(f.id));
+      if (nextCandidates.length !== 1) return null;
+      out.push(nextCandidates[0]);
+      seen.add(nextCandidates[0].id);
+    }
+    // the cycle must close back onto the start
+    return neighborsOf(out[out.length - 1]).some((f) => f.id === start.id) ? out : null;
+  };
+  const walks = startNeighbors.map(walk).filter((w): w is Face[] => w !== null);
+  if (walks.length === 0) {
+    const normal = normalizeVec3(subtractVec3(sourceVertex.position, sourceCentroid), fallbackDirection(sourceVertex.id));
+    const basis = tangentBasis(normal);
+    return [...incidentFaces].sort((a, b) => faceAngle(shape, a, sourceVertex.position, basis.u, basis.v) - faceAngle(shape, b, sourceVertex.position, basis.u, basis.v));
+  }
+  if (walks.length === 1) return walks[0];
+  // THE ONE METRIC BIT — the chirality: of the two carried walk directions,
+  // keep the one that advances positively in the outward tangent frame (the
+  // old convention's winding), read from positions ONCE per fan
+  const normal = normalizeVec3(subtractVec3(sourceVertex.position, sourceCentroid), fallbackDirection(sourceVertex.id));
   const basis = tangentBasis(normal);
-
-  return [...incidentFaces].sort((a, b) => {
-    const angleA = faceAngle(shape, a, sourceVertex.position, basis.u, basis.v);
-    const angleB = faceAngle(shape, b, sourceVertex.position, basis.u, basis.v);
-    const angleDelta = angleA - angleB;
-
-    return Math.abs(angleDelta) > 0.000001 ? angleDelta : a.id.localeCompare(b.id);
-  });
+  const angleOf = (face: Face): number => faceAngle(shape, face, sourceVertex.position, basis.u, basis.v);
+  const firstStepDelta = (w: Face[]): number => {
+    let d = angleOf(w[1]) - angleOf(w[0]);
+    while (d <= -Math.PI) d += 2 * Math.PI;
+    while (d > Math.PI) d -= 2 * Math.PI;
+    return d;
+  };
+  return firstStepDelta(walks[0]) >= 0 ? walks[0] : walks[1];
 }
 
 function faceAngle(shape: Shape, face: Face, origin: Vec3, u: Vec3, v: Vec3): number {
