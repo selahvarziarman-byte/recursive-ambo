@@ -19,6 +19,7 @@ import {
   type ResolvedDualInspectionTarget,
 } from '../lib/dualView';
 import { buildDiagonalizationMatrices } from '../lib/diagonalizationMatrix';
+import { R1_RELAXATION_MARK } from '../lib/pyritohedralDiagonalization';
 import {
   buildAtomicRegistryReport,
   type AtomicRegistryReport,
@@ -1962,6 +1963,24 @@ function SelectedCellSummary({
         <dt className="text-stone-500">Packet</dt>
         <dd className="text-right text-stone-200">{formatPacketDataSummary(row.cell.data)}</dd>
       </dl>
+      {/* B-110 §4 — THE LEANING-RESIDUE WORD (the designer's, verbatim).
+          R1 relaxed the twelve corners to t = 1/φ, so the core and its
+          residues no longer tile the cube they came from — a person who sees
+          the residues leaning needs the REASON, and THE GAIN LEADS: this is
+          the oldest debt on the board CLOSING, not something breaking.
+          ⛔ Sited by the substrate's own POSITIVE MARK (the relaxed vertices
+          carry `metric-relaxed · t = 1/φ (R1)`), so it can never speak on the
+          pre-op ambo shape, which is untouched and says nothing — by
+          construction, not by discipline. ⚠ It sits HERE, in the panel the
+          person actually reads: my first cut put it in `ObjectInspector`,
+          which is exported and NEVER MOUNTED — a mark with no route is not a
+          mark (measured: zero mount sites in src). */}
+      {cellCarriesR1Relaxation(shape, row.cell) ? (
+        <p className="mt-3 text-xs leading-relaxed text-stone-400">
+          its twelve corners relaxed to make the icosahedron regular — so the pieces no longer fill
+          the cube they came from
+        </p>
+      ) : null}
       <p className="mt-3 truncate text-xs text-stone-600">{formatParentLabel(row)}</p>
       {dualViewEnabled ? (
         <p className="mt-2 text-xs text-stone-500">
@@ -3290,6 +3309,16 @@ function findCell(shape: Shape, cellId: string | null): Cell | null {
   }
 
   return shape.cells.find((cell) => cell.id === cellId) ?? null;
+}
+
+// B-110 §4: the leaning-residue word's SITE predicate — does this cell stand
+// on vertices R1 actually moved? Read from the relaxation's own positive mark
+// (one producer, exported by the op), never inferred from a topology name: a
+// cell could be named `pyritohedral-icosahedron` and stand unrelaxed (the
+// recognizer refuses rotated frames and carries positions verbatim), and that
+// cell must say nothing.
+function cellCarriesR1Relaxation(shape: Shape, cell: Cell): boolean {
+  return cell.vertexIds.some((id) => shape.vertices[id]?.data.tags.includes(R1_RELAXATION_MARK));
 }
 
 function describeCellTopology(cell: Cell): string {

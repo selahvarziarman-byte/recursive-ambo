@@ -1146,7 +1146,21 @@ function ArgumentMapSection({
           <span style={sign}>{mark}</span>
           <span style={sign}>{r.label}</span>
           <span style={sign}> ← </span>
-          <span style={sign}>{r.rootLabels.join(' ')}</span>
+          {/* B-110 §3a (the designer's ruling, her principle deciding it):
+              WHERE POSITION CARRIES MEANING, REPETITION IS HARMLESS; WHERE
+              POSITION CARRIES NOTHING, REPETITION IS A LIE. A CONCEPT's
+              source side is a SET — and (her stronger second reason,
+              measured) its order is `rootIds.sort()`, an INTERNAL ID order:
+              a machine ADDRESS leaking onto his surface, so even keeping the
+              positions would preserve an artifact of our storage. ⇒ it
+              COUNTS (`two unnamed roots`) through the ruled composer, the
+              same one the specimen card already reads. A RELATION's source
+              side is an ORDERED, role-bearing tuple (X·Y = the run X → Y —
+              B-105 W3 §4(a)) and keeps its repetition. One producer for the
+              count, two readers that cannot disagree. */}
+          <span style={sign}>
+            {r.kind === 'concept' ? mergedRootsPhrase(r.rootOwnNames) : r.rootLabels.join(' ')}
+          </span>
           {r.typing === 'lifted' ? <span style={{ opacity: 0.75 }}> — lifted</span> : null}
           {r.typing === 'derived' ? <span style={{ opacity: 0.75 }}> — derived</span> : null}
         </div>,
@@ -1229,7 +1243,15 @@ function ArgumentMapSection({
             <span style={sign}>—</span>
             <span style={sign}>{pair.displayLetter}</span>
             <span style={sign}> ← </span>
-            <span style={sign}>{pair.slotNames.join(' ')}</span>
+            {/* B-110 §3b (the designer's ruling): `·` binds CORNERS, `→`
+                binds RUNS — the heavier mark for the looser bond. The arrow
+                is semantically true rather than decorative: the line already
+                says SURVIVES FROM with `←`, and slot → partner IS the
+                identification the pair records. Before this, four identical
+                corner tokens ran together with a space between the pairs and
+                nothing said where one run ended. ⚠ Her flag, honoured: two
+                arrows on one line — driven and reported at the eye. */}
+            <span style={sign}>{pair.slotNames.join(' → ')}</span>
           </div>
         ))
       ) : (
@@ -1960,6 +1982,24 @@ export default function ManuscriptView() {
       radius: Math.max(0.5, sphere.radius),
     };
   }, [selected]);
+  // ⚠ B-110 §2 — THE BLANK-PAGE MECHANISM LIVES HERE, MEASURED, AND THE CURE
+  // IS STOPPED ON THE DESIGNER'S FORM CALL (her §2b clause, honoured).
+  // What this effect does and what it costs, measured at the eye on the
+  // reference zoo: selecting a written form bumps `fitSelectedRequest` after
+  // one settle beat, and the rig's fit is an INSTANT JUMP (position copy +
+  // lookAt + controls.target copy — no easing anywhere) that frames ONE form
+  // tightly ⇒ 9 of the page's 12 form labels left the viewport (one landed
+  // at x = 154406), and the selected form's OWN label hides while selected,
+  // so the one thing left in frame carried no name. That is her *"the page
+  // is BLANK"*. The deselect arm teleports too ('exact' reset to the
+  // composed default). ⛔ THE CURE IS NOT A FREE CUT: holding the camera was
+  // BUILT AND DRIVEN (the page stays whole, all 12 forms in frame) and the
+  // selected specimen then reads ~0.11 of the frame — legible, but under the
+  // ≥0.22 her own C1 seal pins (diagnose-deficit-app §E-PLATE). Holding and
+  // her threshold cannot both hold, so the choice among her three forms
+  // (holds · eases · frames-without-flying) is HERS, reported with both
+  // numbers. ⇒ The cut is one edit: drop the two request bumps, keep the
+  // bounds measurement (the dock's Fit Selected needs it).
   useEffect(() => {
     const was = prevSelectedRef.current;
     prevSelectedRef.current = selected;
