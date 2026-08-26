@@ -215,10 +215,12 @@ check('level3Orientation\'s FOLDED throw is NOT deleted (source-asserted) and st
 console.log('\n----- [f] the door surfaces the wall; nothing joins the world; the aperture draws nothing (battery 4) -----');
 const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
 // THE SUBDIVISION (ARC 0.1, 2026-07-14, sealed 080adb52…2496): the folded
-// branch grew its sanctioned door — the view now ALSO snapshots the folded
-// rows (setApertureFoldedRows) before returning, so the wall's cure can act on
-// exactly the identification that folded. The window widens for those lines
-// and the snapshot is pinned POSITIVELY (ratified in diagnose-the-subdivision.cjs).
+// branch grew its sanctioned door — the view snapshots the folded rows so the
+// wall's cure can act on exactly the identification that folded. B-106 B1
+// recut the snapshot into ONE ATOM (setApertureWall: the wall's sentence AND
+// the door's rows in a single value) after B-105 §2 measured the two states
+// drifting apart — the doorless wall. The atom is pinned POSITIVELY here and
+// its wiring in diagnose-the-subdivision.cjs.
 // 0.2 THE ORBIFOLD'S BODY (2026-07-16, sealed de6f8237…83cb): the folded
 // verdict CARRIES A BODY now — the branch also births it onto the FOLDED
 // shelf (setFoldedBodies — a SIBLING list; setBuiltDomains stays untouched in
@@ -259,17 +261,30 @@ const foldedBranchBlocks = (() => {
   }
   return blocks;
 })();
-check('the view consumes the VERDICT — STRUCTURAL PIN (B-105 A2(iv) recut): exactly TWO `if (verdict.folded)` branches (the glue exit + leave-bounded), and EACH births the FOLDED BODY (setFoldedBodies), speaks the WALL (setApertureNotice(verdict.wall)), snapshots the rows for the subdivide door (setApertureFoldedRows), returns early, and never lets a DomainModel be born inside (no setBuiltDomains in-branch)',
+check('the view consumes the VERDICT — STRUCTURAL PIN (B-105 A2(iv) recut · B-106 B1): exactly TWO `if (verdict.folded)` branches (the glue exit + leave-bounded), and EACH births the FOLDED BODY (setFoldedBodies), raises the WALL AS ONE ATOM (setApertureWall carrying verdict.wall AND the rows — the sentence and its subdivide door in a single value), returns early, and never lets a DomainModel be born inside (no setBuiltDomains in-branch)',
   viewSrc.includes('buildPersonDomainVerdict(') &&
   foldedBranchBlocks.length === 2 &&
   foldedBranchBlocks.every(
     (block) =>
       block.includes('setFoldedBodies(') &&
-      block.includes('setApertureNotice(verdict.wall);') &&
-      block.includes('setApertureFoldedRows(') &&
+      block.includes('setApertureWall({ sentence: verdict.wall, rows:') &&
       block.includes('return;') &&
       !block.includes('setBuiltDomains('),
   ));
+// B-106 B1 — THE LIFETIME LAW, pinned TOTAL over the file: every write to the
+// wall atom is either the WHOLE wall (sentence + rows, one exact literal) or
+// its WHOLE death (null) — a partial write shape does not exist, so the
+// notice and its door cannot drift apart again. TOTALITY is enforced by
+// count-equality: every raw `setApertureWall(` occurrence must match one of
+// the two shapes, and exactly the two folded branches raise.
+check('⛔ THE WALL CANNOT HALF-DIE — every `setApertureWall(` write in the view is either the full {sentence: verdict.wall, rows: …} literal or null (matched count === raw count, so no third shape hides), with exactly TWO raises (the two folded branches) among them',
+  (() => {
+    const raw = [...viewSrc.matchAll(/setApertureWall\(/g)].length;
+    const writes = [...viewSrc.matchAll(
+      /setApertureWall\((null|\{ sentence: verdict\.wall, rows: apertureRows\.map\(\(row\) => \(\{ \.\.\.row \}\)\) \})\)/g,
+    )];
+    return raw >= 8 && writes.length === raw && writes.filter((m) => m[1] !== 'null').length === 2;
+  })());
 
 // ═════ [g] CLAUSE 4 — non-movement: the 415 byte-identical to HEAD ═══════════════
 console.log('\n----- [g] ★ non-movement: gate verdict + tower JSON per non-folded pairing, vs the HEAD-compiled engine (clause 4 · battery 2) -----');

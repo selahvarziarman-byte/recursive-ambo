@@ -2155,9 +2155,15 @@ export default function ManuscriptView() {
     Array.from({ length: Math.max(1, count) }, () => ({ faceA: null, faceB: null, candidateKey: null }));
   const [apertureRows, setApertureRows] = useState<AperturePairRow[]>(emptyApertureRows);
   const [apertureNotice, setApertureNotice] = useState<string | null>(null);
-  // THE SUBDIVISION (ARC 0.1): the rows whose glue came back FOLDED — held so
-  // the wall's cure (subdivide) acts on exactly the identification that folded.
-  const [apertureFoldedRows, setApertureFoldedRows] = useState<AperturePairRow[] | null>(null);
+  // THE SUBDIVISION (ARC 0.1) recut as ONE ATOM (B-106 B1 — the doorless-wall
+  // lifetime): the folded WALL is the verdict's sentence PLUS the rows whose
+  // glue came back folded (the subdivide door's exact identification), held in
+  // a single value. B-105 §2 measured them drifting apart — the volume-change
+  // effect cleared the rows and left the notice standing (a promise outliving
+  // the thing it promised). One state, one clear: the notice and its door live
+  // and die together BY CONSTRUCTION. `apertureNotice` stays the general
+  // channel for sentences that promise nothing (glued · refused · subdivided).
+  const [apertureWall, setApertureWall] = useState<{ sentence: string; rows: AperturePairRow[] } | null>(null);
   const [placedForms, setPlacedForms] = useState<Record<string, string>>({});
   const [displacedRooms, setDisplacedRooms] = useState<Record<string, boolean>>({});
   const probeMeshes = useMemo(() => buildProbeMeshes(), []);
@@ -3170,10 +3176,11 @@ export default function ManuscriptView() {
   );
   // pointing at a different volume clears the rows (their count derived from
   // ITS boundary menu) — face ids from another solid must never linger in
-  // the pickers; a held fold cure dies with them
+  // the pickers; a held folded wall dies WHOLE with them (sentence + door in
+  // one clear — the B-105 doorless wall cannot recur: B-106 B1)
   useEffect(() => {
     setApertureRows(emptyApertureRows(derivedApertureRowCount()));
-    setApertureFoldedRows(null);
+    setApertureWall(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apertureVolume?.id, apertureFaceMenu.length]);
   const handleApertureGlue = useCallback(() => {
@@ -3201,11 +3208,12 @@ export default function ManuscriptView() {
       if (verdict.folded) {
         // 0.2 THE ORBIFOLD'S BODY: the verdict carries a BODY now — it joins
         // the folded shelf and the aperture draws it. The wall + its cure
-        // (0.1) stand untouched: the notice still speaks the researcher's
-        // sentence and the subdivide door still opens on these exact rows.
+        // (0.1) stand as ONE atom (B-106 B1): the researcher's sentence and
+        // the subdivide door's exact rows are set in a single value, and the
+        // superseded general notice clears — the wall speaks alone.
         setFoldedBodies((cur) => [...cur, verdict.body]);
-        setApertureNotice(verdict.wall);
-        setApertureFoldedRows(apertureRows.map((row) => ({ ...row })));
+        setApertureWall({ sentence: verdict.wall, rows: apertureRows.map((row) => ({ ...row })) });
+        setApertureNotice(null);
         return;
       }
       const domain = verdict.domain;
@@ -3224,12 +3232,12 @@ export default function ManuscriptView() {
       // took the pre-derivation default (3) — the ratified ⌊menu/2⌋ law now
       // holds after an exit on the same volume too
       setApertureRows(emptyApertureRows(derivedApertureRowCount()));
-      setApertureFoldedRows(null);
+      setApertureWall(null);
     } catch (error) {
       unbumpBuiltCount();
       // a door-level refusal (an incomplete matching, an unknown candidate) — named
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
-      setApertureFoldedRows(null);
+      setApertureWall(null);
     }
   }, [apertureVolume, apertureRows, apertureVolumeBase, derivedApertureRowCount, bumpBuiltCount, unbumpBuiltCount, recordBuilt]);
   // D2 — EXIT B: LEAVE BOUNDED (the mothership's spine clause: the fault was
@@ -3272,10 +3280,11 @@ export default function ManuscriptView() {
       if (verdict.folded) {
         // the folded identification is a verdict here too — consuming the
         // pairs means consuming their wall (and its subdivide cure), exactly
-        // as the glue exit does; nothing is silently un-consumed
+        // as the glue exit does; nothing is silently un-consumed. Same B1
+        // atom: sentence + rows in one value, the general notice cleared.
         setFoldedBodies((cur) => [...cur, verdict.body]);
-        setApertureNotice(verdict.wall);
-        setApertureFoldedRows(apertureRows.map((row) => ({ ...row })));
+        setApertureWall({ sentence: verdict.wall, rows: apertureRows.map((row) => ({ ...row })) });
+        setApertureNotice(null);
         return;
       }
       const domain = verdict.domain;
@@ -3291,11 +3300,11 @@ export default function ManuscriptView() {
       );
       // D2 residual (disclosed): the derived ⌊menu/2⌋ count, post-exit too
       setApertureRows(emptyApertureRows(derivedApertureRowCount()));
-      setApertureFoldedRows(null);
+      setApertureWall(null);
     } catch (error) {
       unbumpBuiltCount();
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
-      setApertureFoldedRows(null);
+      setApertureWall(null);
     }
   }, [apertureVolume, apertureRows, apertureVolumeBase, derivedApertureRowCount, bumpBuiltCount, unbumpBuiltCount, recordBuilt]);
   // THE SUBDIVISION DOOR (ARC 0.1, LAW 14 — a cure must be a door, not a
@@ -3304,12 +3313,12 @@ export default function ManuscriptView() {
   // finer cells. ⛔ The notice CLAIMS NOTHING about the result: it speaks the
   // gate's own reading (the finer question is ARC 0.3, its own seal).
   const handleApertureSubdivide = useCallback(() => {
-    if (!apertureFoldedRows || !apertureVolume) return;
+    if (!apertureWall || !apertureVolume) return;
     try {
       // D2 §5 (the :2411 finding, cured): the cure reads THE VOLUME THE
       // PERSON IS LOOKING AT — never a hardwired cube. A multi-cell volume
       // is refused by name inside the committed reader.
-      const { counts, reading } = subdivideAndReadPersonDomain(apertureVolume, apertureFoldedRows);
+      const { counts, reading } = subdivideAndReadPersonDomain(apertureVolume, apertureWall.rows);
       const cellsLine = `${counts.v} v · ${counts.e} e · ${counts.f} f · ${counts.c} cell`;
       setApertureNotice(
         reading.folded
@@ -3318,11 +3327,15 @@ export default function ManuscriptView() {
             ? `subdivided (${cellsLine}) — the fold is resolved; the gate reads: χ ${reading.tower.chi} · w₁ ${reading.tower.w1.w1} · H₁ ${reading.tower.homology.H1.pretty}`
             : `subdivided (${cellsLine}) — the fold is resolved; the S² gate now refuses the finer complex: ${reading.tower.gate.failures.map((f) => f.kind).join(', ')}`,
       );
-      setApertureFoldedRows(null);
+      setApertureWall(null);
     } catch (error) {
+      // B1: the fold is NOT resolved, so the WALL STANDS WHOLE — sentence and
+      // door together (the atom cannot half-die); the refusal speaks beside
+      // it in the general channel. (The old two-state shape replaced the wall
+      // sentence here while the door survived — the inverse drift.)
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
     }
-  }, [apertureVolume, apertureFoldedRows]);
+  }, [apertureVolume, apertureWall]);
   const selectedDim3 = useMemo(
     () => (selected && selected.startsWith('dim3:') ? dim3All.find((m) => `dim3:${m.key}` === selected) ?? null : null),
     [selected, dim3All],
@@ -3783,7 +3796,20 @@ export default function ManuscriptView() {
       if (t.shape.faces.length !== 1) return t;
       try {
         return { ...t, shape: refineToDisk(t.shape, t.parent).shape };
-      } catch {
+      } catch (error) {
+        // B-106 B2 — the catch NAMES what it caught (the eaten-alarm cure;
+        // R-5's kill: "the alarm speaks or the catch names what it caught").
+        // The pass-through itself is CORRECT — refineToDisk is not total and
+        // the committed single-face refusal downstream still speaks to the
+        // person — but this catch also received surfaceRefinement's internal-
+        // consistency alarms (the recovered-boundary mismatch class) and ate
+        // them wordless: the silent-chip class, third register. The message
+        // is carried verbatim; refineToDisk's own sentences say which class
+        // fired.
+        console.warn(
+          `combine gate: refineToDisk refused "${t.shape.name}" — the target enters the birth UNREFINED and the committed single-face wall stands`,
+          error,
+        );
         return t;
       }
     };
@@ -5600,7 +5626,7 @@ export default function ManuscriptView() {
           e.stopPropagation();
           setApertureOpen((cur) => !cur);
           setApertureNotice(null);
-          setApertureFoldedRows(null);
+          setApertureWall(null);
         }}
         style={{
           position: 'absolute',
@@ -5664,7 +5690,9 @@ export default function ManuscriptView() {
             }
             onGlue={handleApertureGlue}
             onLeaveBounded={apertureVolume ? handleApertureLeaveBounded : null}
-            onSubdivide={apertureFoldedRows ? handleApertureSubdivide : null}
+            // B-106 B1: the folded wall crosses the seam as ONE value —
+            // sentence + door; the panel cannot render one without the other
+            wall={apertureWall ? { sentence: apertureWall.sentence, onSubdivide: handleApertureSubdivide } : null}
             onClose={() => setApertureOpen(false)}
             paper={d.paper}
             accent={generatorsCtl.a}

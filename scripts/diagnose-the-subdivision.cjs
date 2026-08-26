@@ -259,18 +259,24 @@ check('the model\'s door WORKS on the exact rows that folded: subdivideAndReadPe
 note(`door counts (class-level): ${JSON.stringify(doorResult.counts)} · reading.folded: ${doorResult.reading.folded} · gate kinds: ${doorResult.reading.folded ? '-' : [...new Set(doorResult.reading.tower.gate.failures.map((x) => x.kind))].join(',') || 'none (sound)'}`);
 const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
 const chromeSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptChrome.tsx'), 'utf8');
-check('the door is WIRED where the wall shows: the view snapshots the folded rows on the folded verdict (setApertureFoldedRows beside setApertureNotice(verdict.wall)), hands onSubdivide to the panel exactly when they exist, and the panel renders the subdivide button under the notice ("subdivide — resolve the fold; the gate reads again")',
-  viewSrc.includes('setApertureFoldedRows(apertureRows.map((row) => ({ ...row })))') &&
-  viewSrc.includes('onSubdivide={apertureFoldedRows ? handleApertureSubdivide : null}') &&
+// B-106 B1 RECUT — the doorless-wall lifetime: the wall's sentence and the
+// subdivide door's rows are ONE state atom (`apertureWall`), crossing the
+// seam as ONE prop (`wall`), so no code path can clear the door and leave
+// the sentence standing (B-105 §2's measured drift). The old two-state pins
+// (setApertureFoldedRows beside setApertureNotice(verdict.wall)) died with
+// the states they pinned.
+check('the door is WIRED where the wall shows — AS ONE ATOM (B-106 B1): the folded verdict sets sentence+rows in a single value (setApertureWall({ sentence: verdict.wall, rows: … })), the seam hands ONE `wall` prop (sentence + onSubdivide together), the handler subdivides the atom\'s own rows, and the panel\'s prop type makes a doorless wall inexpressible ("subdivide — resolve the fold; the gate reads again")',
+  viewSrc.includes('setApertureWall({ sentence: verdict.wall, rows: apertureRows.map((row) => ({ ...row })) });') &&
+  viewSrc.includes('wall={apertureWall ? { sentence: apertureWall.sentence, onSubdivide: handleApertureSubdivide } : null}') &&
   // D2 recut (2026-08-15, disclosed): the one-door mandate dissolved the
   // seed machine — the cure now reads the POINTED-AT volume (the :2411 cure).
-  viewSrc.includes('subdivideAndReadPersonDomain(apertureVolume, apertureFoldedRows)') &&
-  chromeSrc.includes('onSubdivide: (() => void) | null;') &&
+  viewSrc.includes('subdivideAndReadPersonDomain(apertureVolume, apertureWall.rows)') &&
+  chromeSrc.includes('wall: { sentence: string; onSubdivide: () => void } | null;') &&
   chromeSrc.includes('subdivide — resolve the fold; the gate reads again'));
 check('⛔ NOTHING IS CLAIMED: the subdivide handler\'s user-facing notice templates never say "manifold" (the gate\'s own numbers and failure kinds speak; the finer question is ARC 0.3\'s, unanswered here)',
   (() => {
     const start = viewSrc.indexOf('const handleApertureSubdivide');
-    const block = viewSrc.slice(start, viewSrc.indexOf('}, [apertureVolume, apertureFoldedRows]);', start));
+    const block = viewSrc.slice(start, viewSrc.indexOf('}, [apertureVolume, apertureWall]);', start));
     const templates = block.match(/`[^`]*`/g) ?? [];
     return start > 0 && templates.length >= 3 && templates.every((t) => !/manifold/i.test(t));
   })());

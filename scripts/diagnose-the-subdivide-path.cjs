@@ -144,6 +144,28 @@ const rest = birthChild(refA.shape, refB.shape, 9103, restA, diskB);
 check('birthChild(refA, refB, seq, restA, diskB) → ok:false — the 7-corner :rest is not a legal port here', rest.ok === false);
 if (rest.ok === false) note(`the refusal, verbatim (the frozen wall's, printed never asserted): ${rest.reason}`);
 
+// ───── [5] B-106 B2 — the catch NAMES what it caught (R-5's kill) ────────────
+// The view's `subdivided` helper wraps refineToDisk in a try/catch whose
+// pass-through is CORRECT (the committed single-face wall still speaks
+// downstream) — but the old bare `catch {` also ate surfaceRefinement's
+// internal-consistency alarms wordless (the silent-chip class, third
+// register). The cure: the catch captures the error and names it verbatim
+// (console.warn with the caught error carried), so no alarm is eaten silent.
+console.log('\n----- [5] B2: the combine gate\'s refine catch is NAMED, never bare -----');
+const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+const helperStart = viewSrc.indexOf('const subdivided = (t:');
+// the helper closes at its own 4-space indent — an inner `return { … };`
+// line (8-space) must not truncate the block before the catch
+const helperEnd = viewSrc.indexOf('\n    };', helperStart);
+const helperBlock = helperStart >= 0 && helperEnd > helperStart ? viewSrc.slice(helperStart, helperEnd) : '';
+check('the `subdivided` helper exists, catches BY NAME (`catch (error)`), speaks (`console.warn` carrying the message head "combine gate: refineToDisk refused" AND the caught error object), and its old bare `catch {` is gone',
+  helperBlock.length > 0 &&
+  helperBlock.includes('catch (error)') &&
+  helperBlock.includes('console.warn(') &&
+  helperBlock.includes('combine gate: refineToDisk refused') &&
+  /console\.warn\([\s\S]{0,400}?error,\s*\)/.test(helperBlock) &&
+  !/catch\s*\{/.test(helperBlock));
+
 // ═════ verdict ═══════════════════════════════════════════════════════════════
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`} — the subdivide path`);
 process.exit(failures === 0 ? 0 : 1);

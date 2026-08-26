@@ -197,7 +197,8 @@ check('view · the door reads the pointed-at volume: apertureVolume from targetF
     viewSrc.includes('this form is a surface, not a solid') &&
     viewSrc.includes('Math.floor(apertureFaceMenu.length / 2)') &&
     viewSrc.includes('handleApertureLeaveBounded') &&
-    viewSrc.includes('subdivideAndReadPersonDomain(apertureVolume, apertureFoldedRows)'));
+    // B-106 B1 recut: the folded rows live inside the wall ATOM now
+    viewSrc.includes('subdivideAndReadPersonDomain(apertureVolume, apertureWall.rows)'));
 
 console.log(failures === 0 ? '\nDIAGNOSE-D2-ONE-DOOR: ALL GREEN' : `\nDIAGNOSE-D2-ONE-DOOR: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);

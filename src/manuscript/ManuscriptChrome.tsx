@@ -564,7 +564,7 @@ export function ApertureGatePanel({
   onPickMap,
   onGlue,
   onLeaveBounded,
-  onSubdivide,
+  wall,
   onClose,
   paper,
   accent,
@@ -586,7 +586,10 @@ export function ApertureGatePanel({
   // person has acted the refusal may not occupy the primary action's slot —
   // the same words move to the quiet register below instead.
   pristine: boolean;
-  notice: string | null; // the engine's own thrown refusal from the last glue attempt, verbatim
+  // the GENERAL channel — sentences that promise nothing (a glued reading, a
+  // thrown refusal verbatim, the subdivided reading). ⛔ the folded WALL never
+  // arrives here — it crosses only inside `wall`, beside its own door (B1).
+  notice: string | null;
   onPickFaceA: (index: number, value: string) => void;
   onPickFaceB: (index: number, value: string) => void;
   onPickMap: (index: number, value: string) => void;
@@ -596,9 +599,12 @@ export function ApertureGatePanel({
   // chamber, chosen, not defaulted (the zero-pair refusal guards the glue
   // exit only). ⛔ the button's wording is the designer's (flagged).
   onLeaveBounded: (() => void) | null;
-  // THE SUBDIVISION (ARC 0.1, LAW 14): non-null exactly when the last glue came
-  // back FOLDED — the wall's cure, as a door the person can actually open.
-  onSubdivide: (() => void) | null;
+  // THE FOLDED WALL (ARC 0.1, LAW 14 · recut B-106 B1): non-null exactly when
+  // the last glue came back FOLDED. ONE value carries the wall's sentence AND
+  // its cure's door — a doorless wall (or a wall-less door) is inexpressible
+  // at this seam by construction. ⛔ the sentence's wording is upstream
+  // (`verdict.wall` — the researcher's; the designer's recut is owed).
+  wall: { sentence: string; onSubdivide: () => void } | null;
   onClose: () => void;
   paper: ChromePaper;
   accent: string;
@@ -793,28 +799,35 @@ export function ApertureGatePanel({
       {notice ? (
         <div style={{ marginTop: 7, fontSize: 11, fontFamily: 'ui-monospace, monospace', opacity: 0.8 }}>{notice}</div>
       ) : null}
-      {onSubdivide ? (
-        <button
-          type="button"
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            onSubdivide();
-          }}
-          style={{
-            marginTop: 7,
-            width: '100%',
-            padding: '6px 0',
-            borderRadius: 3,
-            border: `1px solid ${paper.cardBorder}`,
-            background: 'transparent',
-            color: paper.cardInk,
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: 12.5,
-            cursor: 'pointer',
-          }}
-        >
-          subdivide — resolve the fold; the gate reads again
-        </button>
+      {/* B1: the wall and its door render from the SAME conditional on the
+          SAME value — one cannot stand without the other */}
+      {wall ? (
+        <>
+          <div style={{ marginTop: 7, fontSize: 11, fontFamily: 'ui-monospace, monospace', opacity: 0.8 }}>
+            {wall.sentence}
+          </div>
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              wall.onSubdivide();
+            }}
+            style={{
+              marginTop: 7,
+              width: '100%',
+              padding: '6px 0',
+              borderRadius: 3,
+              border: `1px solid ${paper.cardBorder}`,
+              background: 'transparent',
+              color: paper.cardInk,
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontSize: 12.5,
+              cursor: 'pointer',
+            }}
+          >
+            subdivide — resolve the fold; the gate reads again
+          </button>
+        </>
       ) : null}
       <div style={{ marginTop: 9, fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.5 }}>
         the world shows the interior · the specimen carries the domain, its pairings, the tower
