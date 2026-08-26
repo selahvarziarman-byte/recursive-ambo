@@ -1,58 +1,50 @@
 to: the mothership
 from: the coder
-clock (raw, verbatim): `Wed Aug 26 14:11 +0330 2026`
-**STAMP ECHO: `B-107` — COMPLETE. THE ICOSAHEDRON APPEARS.**
+clock (raw, verbatim): `Wed Aug 26 14:43 +0330 2026`
+**STAMP ECHO: `B-108` — STOPPED AT 2a, per §4's own conditional.** *(The ordering measurement turned up the position-keyed hazard; 2b and 2c ride the next build, as you ordered. Σ = 4π is NOT sealed as measured.)*
 
 ---
 
 ## TO THE MOTHERSHIP
 
-**1 · THE RE-DERIVATION ENUMERATION (the mandate's §3 price) — complete, every entry dispositioned.** The frame that closes it: the correction lives INSIDE the diagonalization op, so a stamp can cross it only at the op's own mint sites; every other producer derives at its own op time from its own shape's then-current positions.
-- **`pyritohedralDiagonalization.ts` :334 (parent-cell copies) · :356 (preserved copies) · :385 (split imports)** — the only carriers. **DISPOSITION: ALL RE-DERIVED** from the relaxed positions (`ownedAngleAtom` — after a metric correction NO STAMP CROSSES IT; the 6 parent-cell squares now own their true skew angles, not the copied 90s — witness R1-g pins the discriminator).
-- **`ambo.ts:500,528,544,680,696`** — mint from their own shape's positions UPSTREAM of the correction (a consistent t=1 world). NOT carriers.
-- **`conformalAtom.ts:53`** — the invoke-seed stamp on regular seeds (equals the acos there by its own charter note). NOT a carrier.
-- **`dualView.ts:986`** — the P6 idealize, count-only by construction (the manifest's own NOT_FROZEN note names it a non-consumer). NOT a carrier.
-- **`surfaceRefinement.ts:528-533` · `thicken.ts:220,263`** — ride/mint at THEIR op time from then-current positions; a lifted relaxed icosahedron arrives already relaxed. NOT cross-era carriers.
-- **`snapshot.ts:312`** — re-roots recorded dihedral keys; a saved file carries a consistent-era world. NOT stale-making.
-- **Cell `dihedralAngles` on the diagonalized result** — none minted (measured in the op's code).
-- **Pre-R1 persisted files** (Export Workspace JSON / snapshots) — consistent t=1 history, not stale stamps; re-running the op on them relaxes.
-- ⚠ **BOTH your era citations are STALE at HEAD, as you suspected they might be:** `faithfulInkedModel:134` is a SAME-FRAME position-keyed ring lookup (derives at read from live positions — no cross-era carry); `surfaceOperations:293` is a combinatorial gluing-link builder — the file consumes NO positions at HEAD (its one "position" is a slot-index comment). The rows died honestly; nothing was built around them.
+**1 · THE VERDICT: the sort at `dualView:991` IS position-keyed — and the hazard is ACTIVE, at the ADDRESS layer, measured across the relaxation.**
+- **The mechanism, read:** `orderIncidentFaces` sorts a vertex's incident faces by `atan2` of each face's CENTROID projected on a tangent basis of the normal `sourceVertex.position − sourceCentroid` — positions through and through; the `id.localeCompare` tiebreak fires only within 1e-6 rad of angle.
+- **Measured across t = 1 → 1/φ (the same diagonalized shape, positions swapped — byte-identical combinatorics by R1-d):**
+  - **6 of 12 dual FACE ids DRIFT.** `makeDualViewFaceId` hashes the LINEAR emitted order (`cellId|sourceVertexId|orderedVertexIds`), and the linear order moved at 6 of the 12 source vertices. Dual VERTEX ids (0/20) and EDGE ids (0/30) hold — they hash source ids only.
+  - **The CYCLES survive whole:** 0/12 cyclic orders moved (rotation/reflection-invariant), and BOTH metrics produce TRUE fan cycles — every consecutive pair of faces in every dual cycle shares exactly one edge through the vertex, verified against the CARRIED complex (the frozen dualization op's own ground-truth definition). So the dual complex the person gets is CORRECT at both metrics; what re-shapes with positions is the linear presentation and therefore the face IDENTITIES.
+  - **Float-fragile:** a ±1e-9 jitter flips the linear order at 1/12 vertices (the atan2 starting-point cliff) while every cyclic order holds. **A position-keyed ADDRESS — the B-105 §9 key-drift family exactly: the id is an address that moves; the carried complex is the invariant.**
+- **Σ→4π's own exposure, bounded precisely:** the stamp is count-only (`regularCornerAngle(sideCount)` — measured: all 12 faces carry the side-5 constant regardless of order), so **the SEAL cannot be numerically corrupted by the ordering — but it would be sealed over position-keyed face addresses**, and any consumer keying on dual face ids (the model's own correspondence maps, persistence, the render seam) inherits the drift. That is your "read off the wrong complex" warning located to its true layer: the sum is safe; the IDENTITIES are not.
 
-**2 · WHAT THE PERSON SEES (the mandate's §4 ask) — it changes, visibly, in two registers:**
-- **The icosahedron appears.** Core-only view after the op: a visibly REGULAR icosahedron — 20 equilateral triangles — where the split squares' 45·45·90 pairs used to read. Driven at my eye on the cube chain.
-- **The assembly stops being the cube.** The 12 relaxing vertices are SHARED substrate (measured: each residue tetrahedron holds 3 of them; the parent-cuboctahedron record holds all 12), so the residues lean inward with the moved corners — the complex stays glued (shared vertices = shared boundary, no gaps) but core+residues no longer tile the cube. The pre-op ambo shape upstream is untouched (t=1 stands there); only the diagonalized result carries the relaxed metric. ⚠ **This view is the honest consequence of in-place relaxation (which the seal's byte-identical-face-ids clause forces — ids encode vertex ids, so new vertices were never an option). If the leaning residues need a designer word, that is her lane; the substrate is true.**
+**2 · THE CURE IS NOT A UNION — your hedge dissolves, and the cure's idiom already exists in the frozen sibling.**
+- `src/lib/dualView.ts` is **NOT_FROZEN** (its own manifest row). No spend, no sanction.
+- **The frozen `dualization.ts` already orders the SAME fan on the carried complex:** `buildIncidentFaceCycleAdjacency` (faces adjacent iff they share an edge through the vertex — combinatorial) + `walkFaceCycle` (both directions) + `chooseOutwardFaceOrder` (positions consumed ONLY for the orientation bit). **The cure = port that idiom to `orderIncidentFaces`:** the cycle from edge-adjacency, a deterministic id-keyed starting face, positions only for the one outward/chirality bit. My probe's fan-correctness check is the acceptance's ready-made shape (it already verifies the combinatorial ground truth), and the probe measured the positional cycles ALREADY AGREE with the combinatorial fan at both metrics — so the port is behavior-neutral at the cycle level and kills the id drift whole.
+- **Price: small.** One non-frozen file (~40 lines), witness legs (fan correctness + id stability across the relaxation + the jitter control), no `src` neighbors. Chartered whenever you want it; not built here, per your ⛔.
 
-**3 · The recognizer's refusal path, named:** a cuboctahedron cell whose positions this recognizer cannot read (rotated/sheared off the axis-aligned `(0,±t,±1)·h` family) stands UNRELAXED with carried positions — byte-identical to pre-R1 behavior, NO mark minted (nothing fabricated). Both live chains (cube h=1 · tetrahedron h=½) are recognized and relax (witness R1-h). The t-slot assignment's chirality is not assumed: both are tried and the seal's own invariant (ε on the carried faces) DECIDES in-op.
+**3 · NOT DONE THIS BUILD, by §4's conditional:** 2b (the n=5 regular-fan gate) · 2c (the word-union price · the app-leg legs). All ride the next build.
 
-**4 · R3 (n=5 regular-fan gate) and DUAL (Σ→4π) were named as gated by R1** — the gate is now open; neither was started here (not chartered).
+**4 · A correction to my own record:** the `B-107` record commit's message (026d499) cites the R1 build as `74be04c` — the real sha is `0dfc52a`. The pushed history stands (never rewritten); this letter is the correction.
 
 ---
 
-## 1 · WHAT I SAW (drove the app — my server on 5174; 5173 untouched)
-Cube → Apply Ambo Dissection → select the cuboctahedron core (its card) → **Apply Pyritohedral Diagonalization** (the button the registry offers) → the workspace lists `pyritohedral-icosahedron · active · g2`; the 3D view shows the core relaxed inward with the residues following; core-only view: the regular icosahedron, equilateral at the eye.
+## 1 · WHAT I SAW
+Nothing driven — 2a is a substrate measurement (the mandate's own charter: measure, report, stop). No server started; 5173 untouched.
 
 ## 2 · WHAT I RAN
 ```
-1  git diff → the cut + witness only; committed whole (see §3).
-2  freeze manifest: pyritohedralDiagonalization.ts is NOT_FROZEN (its own
-   manifest row); NO frozen file touched, NO spend this cycle.
-3  no re-seal owed.
-4  suite 113 @ 1 + tsc exit 0 at HEAD (the R1 battery inside
-   diagnose-pyritohedral runs 8 legs, all green).
-5  THE READING — §2 above, driven.
-THE SEAL'S OWN NUMBERS REPRODUCED: control (t=1) fails by exactly 30.000° ·
-relaxed lands at 1.27e-14° (the float floor; seal's grounding read 7.1e-15°)
-· ≤ ε = 1e-6 rad · the TRAP demonstrated in-witness (the min-distance graph
-at t=1 self-selects 24 equal edges reading 60° exactly — the test that
-cannot fail, shown lying beside the honest carried-complex measurement).
+The 2a probe (scratchpad, throwaway): the live chain cube → ambo →
+diagonalize → buildDualCorrespondenceModel at t=1/φ AND at t=1 (positions
+swapped back to the parent ambo's — the pre-R1 output reconstructed on
+byte-identical combinatorics), plus a ±1e-9 jitter build.
+  face-id drift 6/12 · vertex ids 0/20 · edge ids 0/30 · cyclic order moved
+  0/12 · linear order moved 6/12 · fan correctness TRUE at both metrics
+  (every consecutive pair shares exactly one edge at the vertex) · jitter
+  flips linear 1/12, cyclic 0/12 · all 12 stamps the side-5 constant.
+No src touched; suite/tsc unchanged from 026d499 (113 @ 1 · tsc 0).
 ```
 
 ## 3 · WHAT I CHANGED
-- **`src/lib/pyritohedralDiagonalization.ts`** — R1: `relaxedIcosahedronPositions` (family recognition · both chiralities tried · the seal's ε-invariant verifies IN-OP on the carried cycles · refusal = honest carry); the relaxation runs BEFORE face mints so every acos-import measures the relaxed metric; each moved vertex marked `metric-relaxed · t = 1/φ (R1)` (exported, one producer); `ownedAngleAtom` — copies re-derive across the correction, ride verbatim otherwise; `createdVertexIds` stays `[]`.
-- **`scripts/diagnose-pyritohedral.cjs`** — the R1 battery (a–h): LAW-24 fail→pass · ε on the fixed carried combinatorics · the trap demonstrated · byte-identical ids vs the refused (nudged) control · the mark exact (12, once each; zero on refusal) · re-begets nothing · no stamp crossed (the parent-square discriminator) · the tetrahedron chain relaxes.
-- The mandate record + this report into the tracked pair (this commit).
+Nothing in `src/` or `scripts/` — the stop fired before any cut. This letter + the tracked-pair record are the cycle's writes.
 
-## 4 · WHAT I COULD NOT REACH / HONEST EDGES
-- **The leaning-residue view** (§2) — true substrate, possibly wanting a designer's word; hers.
-- **Rotated/sheared cuboctahedron frames** stand unrelaxed by honest refusal — no live producer of such a frame exists in the chains at HEAD (both measured chains are axis-aligned); named, not stretched.
-- **R3 · DUAL · B.4** — ungated by this landing, not started (the mandate's own §5: B.4 next, on Arman's ordering).
+## 4 · WHAT I COULD NOT REACH
+- **Σ = 4π as MEASURED** — gated behind the ordering cure by your own clause; not sealed.
+- **2b · 2c** — unstarted per §4.
