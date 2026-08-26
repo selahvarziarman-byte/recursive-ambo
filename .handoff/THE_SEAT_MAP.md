@@ -47,11 +47,17 @@
 
 **Arman is not the wire.** Never ask him to relay content between seats; address the seat directly. Full convention: `.handoff/inbox/INBOX_CONVENTION.md`.
 
-## THE CODER WIRE — one in, one out
+## THE CODER WIRE — ⛔ **RETIRED AS A SEPARATE CHANNEL (Arman, Δ21, 2026-08-26). IT IS MAIL NOW, LIKE EVERY OTHER SEAT'S.**
 
-- **`.handoff/THE_BUILD.md`** — the coder's ENTIRE inbound queue. **One file, always current, carrying a STAMP the report must echo.**
-- **`.handoff/THE_BUILD_REPORT.md`** — outbound, rewritten each cycle, with **`## TO THE MOTHERSHIP`** at the top. **Read that section FIRST; it is addressed to that seat.**
-- ⛔ **NEVER REWRITE `THE_BUILD.md` WHILE A BUILD IS IN FLIGHT.** ***A mid-flight APPEND is detectable; a mid-flight EDIT of already-read text is not.*** **A stamp catches a changed DOCUMENT, never a changed PARAGRAPH inside one already read.** ⇒ **A mid-build ruling goes to `.handoff/inbox/coder/` as ITS OWN FILE with its own marker, and the report echoes each marker separately.**
+> ### ✅ **ONE CHANNEL, ONE PLACE TO LOOK: `.handoff/inbox/<your-seat>/` IS THE ONLY PLACE ANY SEAT — THE MOTHERSHIP INCLUDED — FINDS ITS WORK.**
+> **His words:** *"the communication with coder should also move to the inbox. so the inbox convention be the only way you can access your tasks at hand like the other seats. that way at least we know there would be no unread letters!"*
+> **Bought with a real failure:** the mothership held a PRIVATE second channel (the wire files), formed the habit of reading it, and let two of the designer's letters sit unread in its own inbox for a day — then chartered work around rulings that had already landed. ***An office with two queues will eventually read only one.***
+
+- **MANDATES** → `.handoff/inbox/coder/`, as letters, each carrying a **STAMP** (`B-107`, …). **MID-BUILD RULINGS** → the same inbox, each its own file with its own **MARKER** (`W3`, `V1`, …).
+- **REPORTS** → `.handoff/inbox/mothership/`, as letters, **echoing the stamp and every marker consumed**, with **`## TO THE MOTHERSHIP`** at the top — read that section FIRST.
+- ★ **THIS COLLAPSES TWO CONVENTIONS INTO ONE.** The wire's stamp-echo and the marker protocol were always the same mechanism; now there is only **mail, each piece stamped, each proven consumed by its ECHO.**
+- ★★ **AND THE IN-FLIGHT-EDIT HAZARD DISSOLVES BY CONSTRUCTION** — the old rule was *never rewrite `THE_BUILD.md` while a build is in flight* (a mid-flight APPEND is detectable; a mid-flight EDIT of already-read text is not). **You cannot rewrite a letter you have sent. You send another.**
+- ⚠⚠ **THE ONE COST, named: `.handoff/inbox/` IS GITIGNORED, so the LIVE wire is unprotected.** ⇒ **`THE_BUILD.md` and `THE_BUILD_REPORT.md` SURVIVE AS THE COMMITTED HISTORY** — at commit time the coder copies **the consumed mandate** into `THE_BUILD.md` and **the filed report** into `THE_BUILD_REPORT.md`, which their close-out already does. ⇒ ***The inbox is the LIVE wire; the tracked pair is the RECORD. One is current, one is past — never two producers of one fact.*** ⛔ **Work routed through mail is not in the record until it is echoed in a committed report — that law is unchanged and now carries more weight, not less.**
 
 ## COMMITS — the coder fires them
 

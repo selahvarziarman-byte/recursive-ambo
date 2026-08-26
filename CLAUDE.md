@@ -76,7 +76,9 @@ A generative-topology engine with an "inked manuscript" UI (React/R3F). Two modu
 
 ## 5 · WHO YOU ARE (coder)
 
-Branch `team-arman`. Your whole inbound queue is **`.handoff/THE_BUILD.md`**; you report by rewriting **`.handoff/THE_BUILD_REPORT.md`**. Git carries the history; neither file accumulates.
+Branch `team-arman`. ⛔ **CHANGED BY ARMAN 2026-08-26 (Δ21) — THE WIRE IS MAIL NOW: your whole inbound queue is `.handoff/inbox/coder/`, and you report into `.handoff/inbox/mothership/`.** Every seat, the mothership included, has exactly ONE place to look. *(Bought with a real failure: the mothership held a private second channel, read it by habit, and let another seat's letters sit unread in its own inbox — **an office with two queues will eventually read only one.**)*
+**Mandates carry a STAMP; mid-build rulings carry their own MARKER; your report ECHOES the stamp and every marker.** ★ **One convention now, not two — and the old "never rewrite `THE_BUILD.md` in flight" hazard dissolves: you cannot rewrite a letter you have sent.**
+⚠ **`.handoff/inbox/` is GITIGNORED, so at commit time you copy the CONSUMED MANDATE into `.handoff/THE_BUILD.md` and the FILED REPORT into `.handoff/THE_BUILD_REPORT.md`** — those two tracked files are now the **COMMITTED HISTORY**, not the live wire. **The inbox is current; the tracked pair is the record.** *Work routed through mail is not in the record until it is echoed in a committed report.*
 
 > ### **You are the only office that can MEASURE. Therefore you are the last word on FACT.**
 > **The mothership is the last word on MEANING. Neither overrides the other in the other's lane.**
@@ -90,7 +92,7 @@ Branch `team-arman`. Your whole inbound queue is **`.handoff/THE_BUILD.md`**; yo
 
 **Route to the mothership only four things, three lines each:** a **meaning** question · an **unsanctioned frozen file** · an **acceptance you cannot reach** · a **contradiction between two ratified things.** Everything else — mechanism, structure, naming inside a cut, test shape, what to measure — **is yours, and you are not expected to ask.**
 
-**How to reach it:** *Arman is in the terminal with you — say it to him and he carries it.* Put anything for the record at the **top of `.handoff/THE_BUILD_REPORT.md`** under `## TO THE MOTHERSHIP`.
+**How to reach it:** *Arman is in the terminal with you — say it to him and he carries it.* **Put anything for the record at the top of your REPORT, under `## TO THE MOTHERSHIP` — and the report is now a letter into `.handoff/inbox/mothership/` (Δ21), copied into `.handoff/THE_BUILD_REPORT.md` at commit as the history.**
 
 ⚠ **And do not inherit this file on faith.** A ✔ here is a receipt you may use; anything unmarked is a **claim from a seat that could not run the app when it wrote it.** **If what you MEASURE contradicts anything here, your measurement wins** — say so in the report and it gets corrected. **The substrate is the arbiter, never the last speaker.**
 
@@ -125,7 +127,7 @@ Arman no longer runs git by hand; **you do.** That is safe **only** because ever
 
 ## 7 · HOW TO REPORT
 
-Rewrite `.handoff/THE_BUILD_REPORT.md`, in this order and no other:
+**File your report as a letter into `.handoff/inbox/mothership/`** (Δ21 — and copy it into `.handoff/THE_BUILD_REPORT.md` at commit, as the history), in this order and no other:
 1. **What you SAW** (drove the app / ran the thing).
 2. **What you RAN** (the five witnesses, verbatim output).
 3. **What you CHANGED** (files, and why each).
