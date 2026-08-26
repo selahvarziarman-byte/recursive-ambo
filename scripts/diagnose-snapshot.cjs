@@ -159,8 +159,61 @@ check('§5 a reserved-char load source refuses loudly (the assertKeySafe precede
 check('§5 an empty source refuses loudly', throws(() => deserializeSnapshot(snap, '   '), 'non-empty'));
 check('§5 serialize guards the sourceId too', throws(() => serializeSnapshot(A, 'bad×source'), 'reserved primalMultisetKey char'));
 
+// ═══════════════════════════════════════════════════════════════════════════
+// §6 — THE WORD UNION (B-110 / A1, sanctioned): a WORD-born form survives the
+// round trip. Before the cure a glue/flip-glue/collapse-born single-face form
+// ns-copied on load and the committed word recovery's byte-compare could never
+// pass, so the whole acquisition chain nulled: the card's TYPE was lost,
+// combine refused, identify refused. ★ THE ACCEPTANCE IS PARITY, not
+// capability — the loaded form must behave EXACTLY like the native one,
+// refusals included.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log('\n----- §6 the word union: a saved word-born form comes back itself -----');
+{
+  const { loadForm } = req('src/lib/multiform.ts');
+  const { applyPlaygroundOperationTo } = req('src/manuscript/writtenFormModel.ts');
+  const { acquireComplex } = req('src/lib/complexIdentification.ts');
+  const { recoverBornSurface } = req('src/playground/bornFormRouting.ts');
+  const { classifyForm, classLabel } = req('src/manuscript/surfaceClassifier.ts');
+  const { refineAcquiredToDisk } = req('src/lib/surfaceRefinement.ts');
+
+  const host = loadForm(nGon(4), 'w6');
+  const born = applyPlaygroundOperationTo('glue-torus', host, null, 601, 24, [], null);
+  const file = serializeSnapshot(born.born.shape, 'w6src', [host]);
+  const loaded = deserializeSnapshot(file, 'w6load');
+  const parentLoaded = (loaded.ancestors ?? [])[0];
+  const nativeClass = classifyForm(born.born.shape, [born.born.shape, host]);
+  const loadedClass = classifyForm(loaded.shape, [loaded.shape, ...(loaded.ancestors ?? [])]);
+  check('§6 ★★ THE ROUND TRIP HOLDS: the loaded word-born torus RECOVERS its word and ACQUIRES its complex (both were null before the union) — and the card reads the SAME type it reads natively',
+    recoverBornSurface(loaded.shape, parentLoaded) !== null &&
+      acquireComplex(loaded.shape, loaded.ancestors ?? null) !== null &&
+      nativeClass.ok && loadedClass.ok &&
+      classLabel(loadedClass.components[0].class) === classLabel(nativeClass.components[0].class));
+  note(`the type, both routes: "${classLabel(loadedClass.components[0].class)}"`);
+  check('§6 ★ COMBINE\'S PRECONDITION passes on the loaded form (it THREW before the union — the person\'s saved form could not be combined)',
+    (() => {
+      try {
+        return refineAcquiredToDisk(loaded.shape, loaded.ancestors ?? null).shape.faces.length === 2;
+      } catch {
+        return false;
+      }
+    })());
+  check('§6 ⛔ THE FALLBACK IS UNTOUCHED: a file with NO carried ancestors still loads as the plain namespaced copy (id keeps the `snapshot:<source>:` prefix, no ancestors) — the union never fires where it has no parent to replay against',
+    (() => {
+      const plain = deserializeSnapshot(serializeSnapshot(host, 'w6plain'), 'w6plainload');
+      return plain.shape.id.startsWith('snapshot:w6plainload:') && (plain.ancestors ?? []).length === 0;
+    })());
+  check('§6 ⛔ A TAMPERED WORD falls back honestly: a born id whose pairing suffix is corrupted loads WITHOUT throwing, as the namespaced copy, and acquisition ends at its honest null (no committed refusal weakened)',
+    (() => {
+      const tampered = JSON.parse(JSON.stringify(file));
+      tampered.shape.id = `${tampered.shape.id}-9z9p`;
+      const t = deserializeSnapshot(tampered, 'w6tamper');
+      return t.shape.id.startsWith('snapshot:w6tamper:') && acquireComplex(t.shape, t.ancestors ?? null) === null;
+    })());
+}
+
 console.log(
-  `\n--- E1 snapshot (round-trip, cross-source distinctness via the committed certifier, provenance, born-form carry, guards): ${
+  `\n--- E1 snapshot (round-trip, cross-source distinctness via the committed certifier, provenance, born-form carry, guards, the word union): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
   } ---`,
 );
