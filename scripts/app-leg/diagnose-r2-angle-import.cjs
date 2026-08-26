@@ -64,9 +64,30 @@ const terrain = applyPyritohedralDiagonalization(cube1, cubocta.id);
 // ---- 1 · the pyritohedral split-face: TRUE 45·45·90 ------------------------
 const splits = terrain.faces.filter((f) => f.role === 'pyritohedral-split-face');
 const splitOwned = splits.every((f) => Array.isArray(f.cornerAngles));
-const splitTrue = splitOwned && splits.every((f) => JSON.stringify(degs(f.cornerAngles)) === JSON.stringify([45, 45, 90]));
+// R1 RECUT (B-111 §3; the same class already recut in diagnose-open-lift):
+// R2's claim was never "45·45·90" — it was "the face MEASURES its own angles
+// instead of stamping an assumed constant". Pre-R1 the measurement read
+// 45·45·90 on the diagonalized cuboctahedron's true metric; R1 relaxed the
+// twelve corners to t = 1/φ IN the diagonalization, so the SAME measurement
+// now reads the regular icosahedron's 60·60·60. ⛔ The discriminator is NOT
+// the numbers — a stamped 60·60·60 would print identically today. It is that
+// the owned atom AGREES with an independent acos over the shape's own
+// positions, which a stamp cannot do once the positions move.
+const acosAt = (shape, cycle, k) => {
+  const v = shape.vertices[cycle[k]].position;
+  const prev = shape.vertices[cycle[(k - 1 + cycle.length) % cycle.length]].position;
+  const next = shape.vertices[cycle[(k + 1) % cycle.length]].position;
+  const e1 = prev.map((x, i) => x - v[i]);
+  const e2 = next.map((x, i) => x - v[i]);
+  const cos = (e1[0] * e2[0] + e1[1] * e2[1] + e1[2] * e2[2]) / (Math.hypot(...e1) * Math.hypot(...e2));
+  return Math.acos(Math.max(-1, Math.min(1, cos)));
+};
+const splitTrue =
+  splitOwned &&
+  splits.every((f) => JSON.stringify(degs(f.cornerAngles)) === JSON.stringify([60, 60, 60])) &&
+  splits.every((f) => f.vertexIds.every((_, k) => Math.abs(f.cornerAngles[k] - acosAt(terrain, f.vertexIds, k)) < 1e-9));
 check(
-  '1 · every pyritohedral split-face acos-reads 45·45·90 (never the stamped 60·60·60)',
+  "1 · every pyritohedral split-face MEASURES its own angles — post-R1 they read 60·60·60 (pre-R1: 45·45·90 on the unrelaxed metric), and each owned angle AGREES with an independent acos over the shape's own positions (the discriminator a stamp cannot pass)",
   splits.length === 12 && splitTrue,
   `${splits.length} split faces · e.g. [${splits[0] ? degs(splits[0].cornerAngles ?? []).join(',') : '—'}]`,
 );
@@ -96,9 +117,14 @@ const wedges = lift.shape.faces.map((face) => {
 });
 const wedgeDegs = degs(wedges);
 const sum = wedges.reduce((a, b) => a + b, 0);
+// R1 RECUT (B-111 §3): the wedge PARTS moved with the metric — pre-R1
+// [45,45,60,60,90], post-R1 five 60s — while Σ holds 300° through BOTH. ★ So
+// the SUM was never the discriminator; the PARTS are, and that was R2's whole
+// point: a stamped uniform 60 and a measured one print alike until the
+// positions move under them.
 check(
-  '3 · the fan apex owns wedges 45·45·60·60·90 (sorted) — the parts now TRUE, Σ unchanged at 300°',
-  JSON.stringify(wedgeDegs) === JSON.stringify([45, 45, 60, 60, 90]) && Math.abs(DEG(sum) - 300) < 1e-9,
+  "3 · the fan apex owns wedges 60·60·60·60·60 (sorted) — post-R1 the regular icosahedron's own fan (pre-R1: 45·45·60·60·90); Σ unchanged at 300° through both, so the SUM never discriminated — the PARTS do",
+  JSON.stringify(wedgeDegs) === JSON.stringify([60, 60, 60, 60, 60]) && Math.abs(DEG(sum) - 300) < 1e-9,
   `wedges [${wedgeDegs.join(',')}] · Σ=${DEG(sum)}°`,
 );
 
