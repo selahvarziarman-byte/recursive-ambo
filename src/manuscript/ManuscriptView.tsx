@@ -228,7 +228,7 @@ import { buildProbeMeshes } from './apertureProbes';
 // bounded-body precedent; the unpaired faces render as WALLS (the room's
 // edge), never as an escape.
 import { ExploreWindow } from './ExploreWindow';
-import { readCellSurface, faceTraceCycle, apertureParityCensus } from './apertureModel';
+import { readCellSurface, faceTraceCycle, apertureParityCensus, apertureNoun, apertureNote } from './apertureModel';
 import { buildFormDomain, pendingPairMarks } from './formDomainModel';
 // §2 (B-2026-08-22-A) — the page's store half (A) and file half (B);
 // §7 (B-2026-08-24-B): the unsaved-mark's derived signature
@@ -494,11 +494,25 @@ function FormLabel({
   hidden: boolean;
 }) {
   if (hidden) return null;
+  // B-114 §0 — THE NOTE GETS ITS OWN LINE, because she said so and because a
+  // disclaimer that runs on into the countable facts reads as one more of
+  // them. The caption arrives as noun-then-note separated by a newline;
+  // `whiteSpace: nowrap` would render that newline as a space, so the lines
+  // are split here rather than by trusting the browser with a character it
+  // has been told to collapse.
+  const [nounLine, ...noteLines] = sub.split('\n');
   return (
     <Html center position={position} distanceFactor={13} zIndexRange={[40, 0]} style={{ pointerEvents: 'none' }}>
       <div style={{ textAlign: 'center', color: ink, fontFamily: 'Georgia, "Times New Roman", serif', whiteSpace: 'nowrap' }}>
         <div style={{ fontSize: 12.5, fontWeight: 700 }}>{title}</div>
-        <div style={{ fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.72 }}>{sub}</div>
+        <div style={{ fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.72 }}>{nounLine}</div>
+        {noteLines.map((line) => (
+          // the instrument's register: the same monospace, set back — a note
+          // ABOUT the reading, never another term in it
+          <div key={line} style={{ fontSize: 9.5, fontFamily: 'ui-monospace, monospace', opacity: 0.52, fontStyle: 'italic' }}>
+            {line}
+          </div>
+        ))}
       </div>
     </Html>
   );
@@ -2845,7 +2859,9 @@ export default function ManuscriptView() {
             formTone: apertureCtl.formTone,
           },
         });
-        return { key: model.key, gate, trace, caption: apertureCaption(gate.geometry, trace.counts) };
+        // B-114: the plate carries the sealed class and says whether IT is the
+        // shadow — the model reaching the tracer (B-113) means it is not.
+        return { key: model.key, gate, trace, caption: apertureCaption(gate.geometry, trace.counts, gate.seal, gate.model === null) };
       }),
     [dim3All, placedForms, shapeById, apertureCtl, metricBaseIds, metricBaseRefusals],
   );
@@ -2879,7 +2895,7 @@ export default function ManuscriptView() {
             formTone: apertureCtl.formTone,
           },
         });
-        return { key: body.key, gate, trace, caption: apertureCaption(gate.geometry, trace.counts) };
+        return { key: body.key, gate, trace, caption: apertureCaption(gate.geometry, trace.counts, gate.seal, gate.model === null) };
       }),
     [foldedBodies, apertureCtl],
   );
@@ -3526,19 +3542,39 @@ export default function ManuscriptView() {
         'unresolved-base': 'sealed metric UNRESOLVED',
       };
       const metricSource = 'metricSource' in g ? g.metricSource : null;
+      // ⛔ B-114 — ONE PRODUCER FOR THE NOUN. This line used to compose its own
+      // `Euclidean cone-manifold …` beside the plate's, and that is exactly how
+      // the two came to say different words about the same room. The noun is
+      // now `apertureNoun`'s, shared; only the window's own additions (the
+      // metric mark, the explicit flat reading) are composed here.
+      const seal = gate.seal ?? null;
+      const noun = apertureNoun(g, seal);
+      const flatTail = g.kind === 'E3' ? ' · flat · no cone edges' : !g.coneEdges ? ' · flat · no cone edges' : '';
+      const mark = metricSource ? ` · ${METRIC_MARK[metricSource]}` : '';
       const deckLine =
         g.kind === 'folded'
           ? `orbifold · n=[${g.n.join(',')}] · fold loci: ${g.foldLoci}`
-          : g.kind === 'E3'
-            ? `E³ · n=[${g.n.join(',')}] · flat · no cone edges${metricSource ? ` · ${METRIC_MARK[metricSource]}` : ''}`
-            : metricSource === 'unresolved-base'
-              ? `Euclidean cone-manifold · n=[${g.n.join(',')}] · ${METRIC_MARK['unresolved-base']}${g.metricRefusal ? ` — ${g.metricRefusal}` : ''}`
-              : `Euclidean cone-manifold · n=[${g.n.join(',')}]${g.coneEdges ? ` · cone edges${metricSource ? ` ${METRIC_MARK[metricSource]}` : ''}: ${g.coneEdges}` : ' · flat · no cone edges'}`;
+          : metricSource === 'unresolved-base'
+            ? `${noun} · ${METRIC_MARK['unresolved-base']}${g.metricRefusal ? ` — ${g.metricRefusal}` : ''}`
+            : `${noun}${flatTail}${mark}`;
+      // THE NOTE keeps its own line, in the instrument's register (§0). ⛔ The
+      // shadow clause fires on a FACT: whether the picture beside it IS the
+      // euclidean shadow — which, after this build, a sealed room's is not.
+      const noteLines = apertureNote(g, seal, gate.model === null);
       // the heavy flag is the census's own declaration — no cone edges
       // declared ⇒ no heavy rods (never fabricated on a bounded body)
       const coneEdgesDeclared = g.kind !== 'folded' && g.kind !== 'E3' && Boolean(g.coneEdges);
       try {
-        return { title, cellSurface: readCellSurface(domain, coneEdgesDeclared), deckLine };
+        // ⛔ the note travels SEPARATELY, not glued to the geometry line: the
+        // window appends its own terms (the boundary sentence, the depth) to
+        // the geometry line, and a note carried inside it would land those
+        // terms on the note's line — the disclaimer swallowing the counts.
+        return {
+          title,
+          cellSurface: readCellSurface(domain, coneEdgesDeclared, gate.model),
+          deckLine,
+          deckNote: noteLines.length > 0 ? noteLines.join(' · ') : null,
+        };
       } catch {
         return null;
       }
@@ -5921,6 +5957,7 @@ export default function ManuscriptView() {
           title={exploreRoom.title}
           cellSurface={exploreRoom.cellSurface}
           deckLine={exploreRoom.deckLine}
+          deckNote={exploreRoom.deckNote}
           level={apertureCtl.level}
           pace={exploreCtl.pace}
           lookSensitivity={exploreCtl.lookSensitivity}

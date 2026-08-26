@@ -431,6 +431,12 @@ const allowed = new Set([
   // NOT_FROZEN (classified 4a7ac81). Ratified by
   // scripts/diagnose-the-noncube-domain.cjs §9.
   'src/lib/noncubeDomain.ts',
+  // B-114 §2 (2026-08-26, mothership STAMP B-114): THE WALK WINDOW GETS THE
+  // MODEL — the shader's projective door + the metre, the JS carried frame
+  // through it, and ONE producer for the noun shared with the plate.
+  // NOT_FROZEN. Ratified by scripts/diagnose-the-noncube-domain.cjs §10
+  // and the drive family's own leg.
+  'src/manuscript/ExploreWindow.tsx',
 ]);
 const moved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

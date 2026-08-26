@@ -514,7 +514,16 @@ const removedLines = [];
 for (const [l, c] of headCounts) for (let i = 0; i < c - (workCounts.get(l) ?? 0); i += 1) removedLines.push(l);
 const addedLines = [];
 for (const [l, c] of workCounts) for (let i = 0; i < c - (headCounts.get(l) ?? 0); i += 1) addedLines.push(l);
-if (!headModelSrc.includes('depth[idx] = travel + best.t;')) {
+// ⚠ B-114 — THE BRANCH SELECTOR READS THE SAME MARKER THE CLAUSE DOES. B-113
+// gave the depth line the model's metre and updated the CLAUSE's predicate but
+// not this SELECTOR, so HEAD stopped matching the old literal and the leg fell
+// into the retired pre-commit branch — a branch that cannot pass. ⛔ One
+// marker, one definition, both readers: a predicate written twice is a
+// predicate that will be updated once.
+const carriesDepthMarker = (src) =>
+  src.includes('depth[idx] = travel + best.t;') ||
+  src.includes('depth[idx] = travel + legLength(best.t, p, hitPoint);');
+if (!carriesDepthMarker(headModelSrc)) {
   // PRE-COMMIT: HEAD lacks the depth buffer — the diff proof runs LIVE,
   // checkable only now, done now (this branch retires with the commit).
   check('★ CLAUSE 4 — apertureModel vs HEAD is EXACTLY the two sanctioned edits: every REMOVED line is the tracer fade (echoFade — the lamp inside the tracer), every ADDED line is depth/travel CODE or a re-cut comment in the re-cut\'s own vocabulary; nothing else moved (source-measured, line by line)',
@@ -541,9 +550,8 @@ if (!headModelSrc.includes('depth[idx] = travel + best.t;')) {
   // metre (`legLength(best.t, p, hitPoint)`, which returns `best.t` itself at
   // E³) — the same fact, said where a curved room needs it said. Both
   // spellings satisfy the marker; a `value`-side fade would still fail it.
-  const carriesDepthMarker = (src) =>
-    src.includes('depth[idx] = travel + best.t;') ||
-    src.includes('depth[idx] = travel + legLength(best.t, p, hitPoint);');
+  // ⇒ B-114: hoisted above the branch, because the SELECTOR must read the same
+  // marker this clause does — see its comment there.
   check('★ CLAUSE 4 — POST-COMMIT: HEAD and the working apertureModel both carry the ink\'s markers — the depth buffer present (the euclidean spelling `travel + best.t` or B-113\'s model-metre `travel + legLength(best.t, p, hitPoint)`, which IS `best.t` at E³), the tracer fade (Math.pow(craft.echoFade…)) extinct in both (the line-exact diff proof ran pre-commit and retired with the ink\'s commit; later sanctioned mandates may add, never regress)',
     carriesDepthMarker(headModelSrc) &&
     !headModelSrc.includes('Math.pow(craft.echoFade') &&

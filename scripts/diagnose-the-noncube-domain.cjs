@@ -545,5 +545,224 @@ console.log('\n----- §9 (B-113) the model reaches the RENDER: a Seifert–Weber
     })());
 }
 
+// ═════ §10 (B-114) — THE WALK WINDOW'S ROOM, AND THE NOUN THEY SHARE ════════
+// The acceptance has two halves and both are the person's: ⛔ THE PLATE AND
+// THE WINDOW AGREE ABOUT THE SAME ROOM (the disagreement at the B-113 tip is
+// the control — it existed and must be gone), and ⛔ THE WALK'S OWN MARKS
+// STILL READ (the return counted in doors, the mirror reading unchanged in
+// MEANING). LAW 22: handedness is state the observer CARRIES.
+console.log('\n----- §10 (B-114) the walk window carries the model, and the noun is ONE producer -----');
+{
+  const A = req('src/manuscript/apertureModel.ts');
+  const { buildThreeTorusDomain } = req('src/manuscript/worldModel.ts');
+  // local kit — the witness computes its own, never the module's, so a broken
+  // module cannot certify itself
+  const applyMat4 = (m, x) => [0, 1, 2, 3].map((r) => m[r * 4] * x[0] + m[r * 4 + 1] * x[1] + m[r * 4 + 2] * x[2] + m[r * 4 + 3] * x[3]);
+  const det3rows = (r) =>
+    r[0][0] * (r[1][1] * r[2][2] - r[1][2] * r[2][1]) - r[0][1] * (r[1][0] * r[2][2] - r[1][2] * r[2][0]) + r[0][2] * (r[1][0] * r[2][1] - r[1][1] * r[2][0]);
+  const det3block = (m) => det3rows([[m[0], m[1], m[2]], [m[4], m[5], m[6]], [m[8], m[9], m[10]]]);
+  const pushDet = (m) => {
+    // 4x4 determinant by cofactor expansion along the first row
+    let out = 0;
+    for (let c = 0; c < 4; c += 1) {
+      const rows = [];
+      for (let r = 1; r < 4; r += 1) {
+        const row = [];
+        for (let cc = 0; cc < 4; cc += 1) if (cc !== c) row.push(m[r * 4 + cc]);
+        rows.push(row);
+      }
+      out += (c % 2 === 0 ? 1 : -1) * m[c] * det3rows(rows);
+    }
+    return out;
+  };
+  // the H3 tangent inner product at a Klein-chart point (the same form the
+  // window uses, recomputed here independently)
+  const ipH3 = (k, a, b) => {
+    const kk = k[0] * k[0] + k[1] * k[1] + k[2] * k[2];
+    const s = 1 - kk;
+    const ab = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    const ka = k[0] * a[0] + k[1] * a[1] + k[2] * a[2];
+    const kb = k[0] * b[0] + k[1] * b[1] + k[2] * b[2];
+    return ab / s + (ka * kb) / (s * s);
+  };
+  const gramSchmidtH3 = (k, axes) => {
+    const out = [];
+    for (const raw of axes) {
+      let v = [raw[0], raw[1], raw[2]];
+      for (const done of out) {
+        const c = ipH3(k, v, done);
+        v = [v[0] - c * done[0], v[1] - c * done[1], v[2] - c * done[2]];
+      }
+      const nn = Math.sqrt(Math.max(1e-12, ipH3(k, v, v)));
+      out.push([v[0] / nn, v[1] / nn, v[2] / nn]);
+    }
+    return out;
+  };
+  const swPairings = dodecahedralTwistPairings(dodeca, 3);
+  const swDomain = buildFormDomain(dodeca, swPairings, 'b114-sw', 'seifert-weber');
+  const gate = A.buildAperture(swDomain);
+  const surface = A.readCellSurface(swDomain, true, gate.model);
+
+  check('§10 ★★ THE ROOM A PERSON WALKS IS THE SEALED ONE: readCellSurface hands the walk window a room in the model — 12 faces, every one a DOOR carrying an in-model 4×4 (g4), no walls, and the surface declares its model H3 so nothing downstream has to re-infer it',
+    surface.model === 'H3' && surface.faces.length === 12 && surface.wallCount === 0 &&
+    surface.faces.every((f) => Array.isArray(f.g4) && f.g4.length === 16 && f.g === null) &&
+    surface.rods.length === 30);
+  note(`walk room: model ${surface.model} · ${surface.faces.length} faces (${surface.wallCount} walls) · ${surface.rods.length} rods · span ${surface.span.toFixed(4)}`);
+
+  check('§10 ⛔ AND IT IS THE ROOM THE PLATE DRAWS, NOT A SECOND ONE: every face plane the walk tests is the SAME chart plane the tracer exits through (same n̂, same d, < 1e-12) — the plate and the window read one geometry, which is what "they agree" has to MEAN',
+    (() => {
+      let worst = 0;
+      for (const door of gate.model.doors) {
+        for (const [fid, n, d] of [[door.faceA, door.nA, door.dA], [door.faceB, door.nB, door.dB]]) {
+          const face = surface.faces.find((f) =>
+            Math.abs(f.d - d) < 1e-9 && Math.hypot(f.n[0] - n[0], f.n[1] - n[1], f.n[2] - n[2]) < 1e-9);
+          if (!face) return false;
+          worst = Math.max(worst, Math.abs(face.d - d));
+        }
+      }
+      note(`plate-vs-walk plane agreement: worst ${worst.toExponential(2)} over ${gate.model.doors.length * 2} faces`);
+      return worst < 1e-12;
+    })());
+
+  // ⛔ THE EUCLIDEAN ROOM DID NOT MOVE — the same call with no model is the
+  // committed read, field for field. A cure that quietly re-shaped every flat
+  // room would be a far bigger defect than the one it fixed.
+  check('§10 ⛔ THE EUCLIDEAN ROOM IS UNTOUCHED: the T³ cube\'s walk room read WITH a null model is byte-equal to the committed read (faces, planes, wall flags, deck transforms, rods, span) — and carries NO model field and NO g4, so nothing about it can start reading one by accident',
+    (() => {
+      const t3 = buildThreeTorusDomain();
+      const g3 = A.buildAperture(t3);
+      const a = A.readCellSurface(t3, false);
+      const b = A.readCellSurface(t3, false, g3.model);
+      return JSON.stringify(a) === JSON.stringify(b) &&
+        a.model === undefined &&
+        a.faces.every((f) => f.g4 === undefined) &&
+        g3.seal !== null && g3.seal.geometry === 'E3' && g3.model === null;
+    })());
+
+  // ═══ THE WALK'S OWN MARKS — the ones the acceptance says must still read ═══
+  check('§10 ★★ THE ROOM COMES BACK — the walk closes IN THE MODEL: composing the doors of a carried edge class returns the identity (worst 1.34e-5°, the B-112 reading), so "the return counted in doors" still counts the same thing it always did; the deck the window walks IS that deck',
+    gate.seal !== null && gate.seal.geometry === 'H3' && gate.seal.closureWorstRad < 1e-4);
+
+  check('§10 ⛔ THE MIRROR READING IS UNCHANGED IN MEANING (LAW 22): every Seifert–Weber door is orientation-PRESERVING, and the 4×4 determinant says so — det = +1 on all 12, so a walk through them can never turn the frame\'s handedness. ⚠ The 3×3 block of a projective door is NOT its orientation (measured: the blocks\' dets run ' + '), which is why the carried frame reads det4 and not det3',
+    (() => {
+      const dets = gate.model.doors.flatMap((d) => [pushDet(d.m), pushDet(d.mi)]);
+      const blocks = gate.model.doors.map((d) => det3block(d.m));
+      note(`door det4: ${[...new Set(dets.map((x) => x.toFixed(6)))].join(', ')} · their 3×3 blocks: ${[...new Set(blocks.map((x) => x.toFixed(3)))].join(', ')}`);
+      return dets.every((x) => Math.abs(x - 1) < 1e-6) && blocks.some((x) => Math.abs(Math.abs(x) - 1) > 1e-3);
+    })());
+
+  check('§10 ⛔ THE CARRIED FRAME STAYS A FRAME: pushed through every door and re-orthonormalised in the MODEL\'s inner product, the three axes come back orthonormal (|⟨eᵢ,eⱼ⟩ − δᵢⱼ| < 1e-9) and RIGHT-HANDED — Gram–Schmidt in order rotates and can never reflect, so only a door\'s own determinant may flip the mirror',
+    (() => {
+      let worstIP = 0;
+      let handed = true;
+      for (const door of gate.model.doors) {
+        const k0 = [0.05, -0.11, 0.07];
+        const axes = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+        const K = applyMat4(door.m, [k0[0], k0[1], k0[2], 1]);
+        const kk = [K[0] / K[3], K[1] / K[3], K[2] / K[3]];
+        const pushed = axes.map((v) => {
+          const W = applyMat4(door.m, [v[0], v[1], v[2], 0]);
+          return [W[0] * K[3] - K[0] * W[3], W[1] * K[3] - K[1] * W[3], W[2] * K[3] - K[2] * W[3]];
+        });
+        const on = gramSchmidtH3(kk, pushed);
+        for (let i = 0; i < 3; i += 1) for (let j = 0; j < 3; j += 1) {
+          worstIP = Math.max(worstIP, Math.abs(ipH3(kk, on[i], on[j]) - (i === j ? 1 : 0)));
+        }
+        if (det3rows(on) <= 0) handed = false;
+      }
+      note(`carried frame: worst |⟨eᵢ,eⱼ⟩ − δᵢⱼ| ${worstIP.toExponential(2)} · right-handed on every door: ${handed}`);
+      return worstIP < 1e-9 && handed;
+    })());
+
+  // ═══ THE NOUN — §0's rule, and ONE producer ═══════════════════════════════
+  const foldedFixture = (() => {
+    const cube = req('src/data/seeds.ts').createSeedShape('cube');
+    const f = (k) => `face:cube:${k}`;
+    const AX = [['left', 'right'], ['front', 'back'], ['bottom', 'top']];
+    const menus = AX.map(([a, b]) => A.dihedralMapCandidates(cube, f(a), f(b)));
+    for (let i = 0; i < 8; i += 1) for (let j = 0; j < 8; j += 1) for (let k = 0; k < 8; k += 1) {
+      const rows = AX.map(([a, b], idx) => ({ faceA: f(a), faceB: f(b), candidateKey: menus[idx][[i, j, k][idx]].key }));
+      const v = A.buildPersonDomainVerdict(cube, rows, `b114-fold-${i}${j}${k}`, 'x');
+      if (v.folded && v.body) return v.body;
+    }
+    return null;
+  })();
+
+  check('§10 ★★ THE NOUN OBEYS HER RULE — EVERY WORD TRUE OF THE GEOMETRY IT NAMES: a sealed H³ form reads "hyperbolic manifold" (no cone in H³ — the cone is the shadow\'s) · a euclidean form with real cone edges KEEPS "Euclidean cone-manifold" (cone is TRUE there; the noun was stopped from claiming forms it does not describe, never retired) · a flat form keeps "E³"',
+    (() => {
+      const sw = A.apertureNoun(gate.geometry, gate.seal);
+      const t3 = buildThreeTorusDomain();
+      const g3 = A.buildAperture(t3);
+      const flat = A.apertureNoun(g3.geometry, g3.seal);
+      // a cone form: uniform k≠4 is sealed, so take a MIXED-k cone form —
+      // refused by the seal, and its noun must be the euclidean one
+      const cube = req('src/data/seeds.ts').createSeedShape('cube');
+      const f = (k) => `face:cube:${k}`;
+      const AX = [['left', 'right'], ['front', 'back'], ['bottom', 'top']];
+      const menus = AX.map(([a, b]) => A.dihedralMapCandidates(cube, f(a), f(b)));
+      let coneNoun = null;
+      for (let i = 0; i < 8 && !coneNoun; i += 1) for (let j = 0; j < 8 && !coneNoun; j += 1) for (let k = 0; k < 8 && !coneNoun; k += 1) {
+        const rows = AX.map(([a, b], idx) => ({ faceA: f(a), faceB: f(b), candidateKey: menus[idx][[i, j, k][idx]].key }));
+        const v = A.buildPersonDomainVerdict(cube, rows, `b114-cone-${i}${j}${k}`, 'x');
+        if (v.folded || !v.domain.tower.sound) continue;
+        const g = A.buildAperture(v.domain);
+        if (!g.ok || g.seal !== null || g.geometry.kind !== 'cone') continue;
+        coneNoun = A.apertureNoun(g.geometry, g.seal);
+      }
+      note(`nouns: sealed H³ → "${sw}" · flat → "${flat}" · euclidean cone → "${coneNoun}"`);
+      return sw.startsWith('hyperbolic manifold ·') && sw.includes('cone edges: 6 × 450°') &&
+        flat.startsWith('E³ ·') &&
+        coneNoun !== null && coneNoun.startsWith('Euclidean cone-manifold ·');
+    })());
+
+  check('§10 ⛔ A FOLD LOCUS OUTRANKS EVERY SEAL, which is the row that makes her rule the right one: a folded body reads "orbifold" and NO seal can reach past it — a fold locus is not an artifact of the wrong geometry, it SURVIVES into the right one, so "a realization exists" and "the singularity is an artifact" are two different facts and only the second may choose the word',
+    (() => {
+      if (!foldedFixture) return false;
+      const g = A.buildAperture(foldedFixture);
+      // the folded branch carries NO seal by construction, and even handed one
+      // the noun must not move
+      const forced = A.apertureNoun(g.geometry, { geometry: 'H3', inradius: 1, edgeClassSize: 5, closureWorstRad: 0 });
+      note(`folded noun with a seal FORCED on it: "${forced.slice(0, 46)}…"`);
+      return g.seal === null && g.model === null &&
+        A.apertureNoun(g.geometry, g.seal).startsWith('orbifold ·') &&
+        forced.startsWith('orbifold ·');
+    })());
+
+  check('§10 ⛔ THE NOTE SAYS WHAT IS, AND THE SHADOW CLAUSE FIRES ON A FACT: drawn in the shadow it is her sentence WHOLE ("drawn in the euclidean shadow — these angles are the shadow\'s, not the manifold\'s"); drawn in the sealed model only her second clause goes out — not a word of hers changed, none invented. And the excess note rides the FIGURE (450° > a full turn), never the class',
+    (() => {
+      const inShadow = A.apertureNote(gate.geometry, gate.seal, true);
+      const inModel = A.apertureNote(gate.geometry, gate.seal, false);
+      note(`note (shadow): ${JSON.stringify(inShadow)}`);
+      note(`note (model) : ${JSON.stringify(inModel)}`);
+      return inShadow.length === 2 && inModel.length === 2 &&
+        inShadow[0] === 'drawn in the euclidean shadow — these angles are the shadow\'s, not the manifold\'s' &&
+        inModel[0] === 'these angles are the shadow\'s, not the manifold\'s' &&
+        inShadow[1] === '450° is more than a full turn — that excess is why it cannot be flat' &&
+        inModel[1] === inShadow[1];
+    })());
+
+  check('§10 ⛔ AND NO NOTE WHERE THERE IS NOTHING TO DISCLAIM: a flat room and a euclidean cone room emit NO note at all — a mark on the unremarkable is a mark that stops meaning anything',
+    (() => {
+      const t3 = buildThreeTorusDomain();
+      const g3 = A.buildAperture(t3);
+      return A.apertureNote(g3.geometry, g3.seal, true).length === 0 &&
+        A.apertureNote(g3.geometry, g3.seal, false).length === 0;
+    })());
+
+  check('§10 ⛔ ONE PRODUCER, STRUCTURALLY: the view composes the walk window\'s geometry line FROM apertureNoun (it holds no "Euclidean cone-manifold" literal of its own any more), and apertureCaption composes the plate\'s from the same function — two producers for one sentence is exactly how they came to disagree about the same room',
+    (() => {
+      const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+      const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
+      // the noun's own region: the MODEL_NOUN table it reads from through the
+      // end of its body — both words must live HERE and nowhere else
+      const nounBody = modelSrc.slice(modelSrc.indexOf('const MODEL_NOUN'), modelSrc.indexOf('export function apertureNote'));
+      return viewSrc.includes('const noun = apertureNoun(g, seal)') &&
+        !viewSrc.includes('`Euclidean cone-manifold · n=[${g.n.join') &&
+        modelSrc.includes('apertureNoun(geometry, seal ?? null)') &&
+        nounBody.includes('Euclidean cone-manifold') &&
+        nounBody.includes('hyperbolic manifold');
+    })());
+}
+
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`} — the non-cube domain`);
 process.exit(failures === 0 ? 0 : 1);

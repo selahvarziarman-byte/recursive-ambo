@@ -1489,6 +1489,12 @@ export interface ApertureCellFace {
   d: number; // plane offset: dot(p, n) = d
   wall: boolean; // true = the person's boundary — the room's edge, never an escape
   g: DeckTransform | null; // portal: exiting through this face applies g (null on walls)
+  /** B-114 — the SAME door as an in-model projective 4×4, present only when
+   * the room has SEALED a curved realization. ⛔ The euclidean room does not
+   * get one: `g` is already the whole story there, and a second copy of a map
+   * the room already holds is how a walk drifts from its own witnesses (the
+   * B-113 finding, one dimension over). */
+  g4?: Mat4;
   // INTERIOR TRANSPORT (mothership 2026-08-21): a BOUNDED face fires only
   // where its actual quad is — |dot(p−c,u)| ≤ ‖u‖² and |dot(p−c,w)| ≤ ‖w‖².
   // Forced by non-convexity: the developed cone room's seam planes cut
@@ -1511,6 +1517,12 @@ export interface ApertureCellSurface {
   rods: ApertureCellRod[];
   span: number; // the cell's max bbox extent (the cube: 2) — the walk's horizon unit
   wallCount: number;
+  /** B-114 — the model the room is drawn AND WALKED in. Absent = E³, and
+   * every euclidean room's surface is byte-identical to what it always was.
+   * The chart is the projective one (`chartOf`): straight rays, flat planes,
+   * in all three models — so the walk's plane tests are unchanged and only
+   * the transport and the metre differ. */
+  model?: 'S3' | 'H3';
 }
 
 const shiftDeckTransform = (g: DeckTransform, c: V3): DeckTransform => {
@@ -1754,6 +1766,10 @@ function developedConeSurface(
 export function readCellSurface(
   domain: DomainModel | FoldedDomain,
   coneEdgesDeclared: boolean,
+  /** B-114 — the room's SEALED model, when it earned one. The walk window and
+   * the plate then read the same geometry; absent, everything below is the
+   * committed euclidean read, byte-identical. */
+  model?: ApertureModelDeck | null,
 ): ApertureCellSurface {
   const shape = domain.shape;
   const geometry = readSeedGeometry(shape);
@@ -1802,6 +1818,48 @@ export function readCellSurface(
   if (shape.cells.length > 1) {
     const developed = developedConeSurface(domain, rodFor);
     if (developed) return developed;
+  }
+  // ═══ B-114 — THE ROOM IN ITS OWN MODEL ════════════════════════════════════
+  // The walk window's room, read from the SEALED realization instead of the
+  // euclidean seed: the cell's corners and every face's plane come from the
+  // model's projective chart, and each door carries its in-model 4×4. ⛔ This
+  // is not a second euclidean room with different numbers — it is the same
+  // room said in the geometry it actually has, and the plate now reads the
+  // same one (that agreement is the acceptance).
+  // The chart is already CENTRED: a realization is built around the model's
+  // own origin (0,0,0,1), so nothing is recentred by `c` here — and nothing
+  // may be, since `shiftDeckTransform` is an affine conjugation that a
+  // projective door does not admit.
+  if (model && model.model !== 'E3') {
+    const doorByFace = new Map<string, { m: Mat4 }>();
+    for (const door of model.doors) {
+      doorByFace.set(door.faceA, { m: door.m });
+      doorByFace.set(door.faceB, { m: door.mi });
+    }
+    const faces: ApertureCellFace[] = [];
+    for (const face of geometry.seed.faces) {
+      const plane = model.chartPlanes.get(face.id);
+      // ⛔ REFUSE rather than fall back to the euclidean plane for one face:
+      // a room whose walls come from two different geometries is a room whose
+      // edge is in the wrong place, and nothing downstream would say so.
+      if (!plane) return readCellSurface(domain, coneEdgesDeclared);
+      const door = doorByFace.get(face.id);
+      faces.push(
+        door
+          ? { n: plane.n, d: plane.d, wall: false, g: null, g4: door.m }
+          : { n: plane.n, d: plane.d, wall: true, g: null },
+      );
+    }
+    const rods: ApertureCellRod[] = [];
+    for (const edge of shape.edges) {
+      const qa = model.chartVertices.get(edge.vertexIds[0]);
+      const qb = model.chartVertices.get(edge.vertexIds[1]);
+      if (!qa || !qb) continue;
+      rods.push(rodFor(edge.id, qa, qb));
+    }
+    let span = 0;
+    for (const q of model.chartVertices.values()) span = Math.max(span, 2 * Math.max(Math.abs(q[0]), Math.abs(q[1]), Math.abs(q[2])));
+    return { faces, rods, span, wallCount: faces.filter((f) => f.wall).length, model: model.model };
   }
   // THE MULTI-CELL CUT: the room's walk-region is the UNION of the cells —
   // a face owned by TWO cells is INTERIOR (the region spans it; it is not an
@@ -1865,13 +1923,22 @@ export function readCellSurface(
 // structure, so there is ONE transport below and not two.
 // ---------------------------------------------------------------------------
 
-export interface ApertureModelDoor {
+/** What the RAY needs of a door: the map and the two chart planes. The tracer
+ * synthesises one of these from a committed euclidean deck, which carries no
+ * face ids — so the ids live on the model's own door type below rather than
+ * being faked here as empty strings. */
+export interface ApertureRayDoor {
   m: Mat4; // the in-model isometry carrying faceA onto faceB
   mi: Mat4;
   nA: V3; // faceA's plane IN THE CHART: {k : k·n̂ = d}
   dA: number;
   nB: V3;
   dB: number;
+}
+
+export interface ApertureModelDoor extends ApertureRayDoor {
+  faceA: string; // the CARRIED face ids — the door's identity, never a position
+  faceB: string;
 }
 
 export interface ApertureModelDeck {
@@ -1882,6 +1949,12 @@ export interface ApertureModelDeck {
   /** the cell's own corners in the chart — the scaffold the person actually
    * stands among, which in a curved model is NOT the seed's euclidean cell */
   chartVertices: Map<string, V3>;
+  /** EVERY face's chart plane, keyed by the shape's own face id — walls
+   * included. ⛔ The doors alone are not enough: an unpaired face is the
+   * person's boundary and the room still has to know where it is, and a wall
+   * read from the euclidean seed while its neighbours came from the model
+   * would put the room's edge in the wrong place. */
+  chartPlanes: Map<string, { n: V3; d: number }>;
   /** THE FURNITURE'S SCALE — craft, never geometry. The realized cell is a
    * different SIZE from the seed's euclidean cell (Seifert–Weber: chart
    * inradius tanh(0.99638) = 0.760 against the seed dodecahedron's 1.114;
@@ -1906,17 +1979,31 @@ export function apertureModelDeckOf(seal: SealedRealization, euclideanDeck: Deck
   const doors: ApertureModelDoor[] = seal.deck.entries.map((entry) => {
     const A = chartPlaneOf(model, entry.uA);
     const B = chartPlaneOf(model, entry.uB);
-    return { m: entry.m, mi: matrixInverse4(entry.m), nA: A.n as V3, dA: A.d, nB: B.n as V3, dB: B.d };
+    return {
+      faceA: entry.faceA,
+      faceB: entry.faceB,
+      m: entry.m,
+      mi: matrixInverse4(entry.m),
+      nA: A.n as V3,
+      dA: A.d,
+      nB: B.n as V3,
+      dB: B.d,
+    };
   });
   const chartVertices = new Map<string, V3>();
   for (const [id, x] of seal.realization.vertexPositions) chartVertices.set(id, chartOf(x) as V3);
+  const chartPlanes = new Map<string, { n: V3; d: number }>();
+  for (const [id, u] of seal.realization.faceCovectors) {
+    const plane = chartPlaneOf(model, u);
+    chartPlanes.set(id, { n: plane.n as V3, d: plane.d });
+  }
   const minAbs = (xs: number[]): number => xs.reduce((m, x) => Math.min(m, Math.abs(x)), Infinity);
   const chartInradius = minAbs(doors.flatMap((d) => [d.dA, d.dB]));
   const seedInradius = minAbs(euclideanDeck.flatMap((d) => [d.dA, d.dB]));
   const sceneScale = Number.isFinite(chartInradius) && Number.isFinite(seedInradius) && seedInradius > 1e-9
     ? chartInradius / seedInradius
     : 1;
-  return { model, doors, inradius: seal.inradius, edgeClassSize: seal.edgeClassSize, chartVertices, sceneScale };
+  return { model, doors, inradius: seal.inradius, edgeClassSize: seal.edgeClassSize, chartVertices, chartPlanes, sceneScale };
 }
 
 export type ApertureGate =
@@ -2308,7 +2395,7 @@ export function traceAperture(options: {
   // radiance model is not built and is not claimed — the geometry (where the
   // copies are and how big they are) is the model's; the tone is the craft's.
   const model: 'E3' | 'S3' | 'H3' = options.model ? options.model.model : 'E3';
-  const doors: ApertureModelDoor[] = options.model
+  const doors: ApertureRayDoor[] = options.model
     ? options.model.doors
     : options.deck.map((d) => ({ m: affine4(d.g), mi: affine4(d.gi), nA: d.nA, dA: d.dA, nB: d.nB, dB: d.dB }));
   // the leg's length in the MODEL. ⚠ In E³ the chart parameter already IS
@@ -2620,7 +2707,93 @@ export function traceAperture(options: {
 // the countable caption — copies and objects, never pixels or area
 // ---------------------------------------------------------------------------
 
-export function apertureCaption(geometry: ApertureGeometry | FoldedApertureGeometry, counts: ApertureTraceCounts): string {
+/** The class a gate carries, in the shape a caption needs it. */
+export type ApertureSealedClass = { geometry: 'E3' | 'S3' | 'H3'; inradius: number | null; edgeClassSize: number; closureWorstRad: number };
+
+// ═══ THE NOUN (B-114 §0 — the designer's rule and her words) ═════════════════
+// ⇒ ★ EVERY WORD IN THE NOUN MUST BE TRUE OF THE GEOMETRY THE NOUN NAMES.
+//   · euclidean, with real cone edges → `Euclidean cone-manifold` — `cone` is
+//     TRUE there; the noun is not retired, only stopped from claiming forms it
+//     does not describe;
+//   · a SEALED curved realization closing at 2π → `hyperbolic manifold` (no
+//     cone in H³ — the cone is the shadow's);
+//   · a genuine FOLD LOCUS → `orbifold`, and its singularity is REAL.
+// ⛔ THE THIRD ROW IS WHY THE RULE KEYS ON THE RIGHT FACT: a fold locus is NOT
+// an artifact of the wrong geometry — it SURVIVES into the right one. So
+// *"a realization exists"* and *"the singularity is an artifact"* are two
+// different facts and only the second decides the word. The fold branch below
+// is therefore tested FIRST and no seal can reach past it.
+// ⚠ `spherical manifold` is MINE, not hers: she handed the hyperbolic word and
+// the rule; a sealed S³ form is reachable today (the cube family's two uniform
+// k=3 patterns) so the slot cannot stay empty, and the rule gives only one
+// word that is true of S³. Named here so she can overrule one string.
+// ⛔ No future tense anywhere. The noun says what IS.
+const MODEL_NOUN: Record<'S3' | 'H3', string> = {
+  H3: 'hyperbolic manifold',
+  S3: 'spherical manifold',
+};
+
+/** ⛔ ONE PRODUCER FOR THE NOUN. The plate and the walk window read THIS —
+ * two producers for one sentence is how they came to disagree about the same
+ * room, which is the defect this replaces. */
+export function apertureNoun(
+  geometry: ApertureGeometry | FoldedApertureGeometry,
+  seal: ApertureSealedClass | null,
+): string {
+  if (geometry.kind === 'folded') {
+    // the singularity is REAL and survives every realization — no seal speaks here
+    return `orbifold · n=[${geometry.n.join(',')}] · fold loci: ${geometry.foldLoci}${geometry.coneEdges ? ` · cone edges: ${geometry.coneEdges}` : ''}`;
+  }
+  if (seal && seal.geometry !== 'E3') {
+    // her noun, verbatim: the class, the census, and the cone figures KEPT in
+    // their slot — the note below says whose they are, and hiding a number the
+    // engine computed would be worse than marking it
+    return `${MODEL_NOUN[seal.geometry]} · n=[${geometry.n.join(',')}]${geometry.coneEdges ? ` · cone edges: ${geometry.coneEdges}` : ''}`;
+  }
+  return geometry.kind === 'E3'
+    ? `E³ · n=[${geometry.n.join(',')}]`
+    : `Euclidean cone-manifold · n=[${geometry.n.join(',')}] · cone edges: ${geometry.coneEdges}`;
+}
+
+/** THE NOTE — the instrument's register, its own line(s). Her words.
+ * ⚠ THE SHADOW CLAUSE FIRES ON A FACT, not on a class: `drawnInShadow` is
+ * whether the picture beside this caption is the euclidean shadow. It was
+ * true everywhere when she wrote the sentence; B-114's own cut makes it false
+ * for a room drawn in its sealed model, and a label that says what ISN'T is
+ * exactly what her rule forbids. So her sentence goes out WHOLE when its
+ * first clause is true, and her second clause goes out ALONE when only that
+ * one is — not a word of hers changed, none invented. ⇒ Reported: if she
+ * wants the clause unconditional, it is one line. */
+export function apertureNote(
+  geometry: ApertureGeometry | FoldedApertureGeometry,
+  seal: ApertureSealedClass | null,
+  drawnInShadow: boolean,
+): string[] {
+  if (geometry.kind === 'folded' || !seal || seal.geometry === 'E3') return [];
+  const notes = [
+    drawnInShadow
+      ? 'drawn in the euclidean shadow — these angles are the shadow\'s, not the manifold\'s'
+      : 'these angles are the shadow\'s, not the manifold\'s',
+  ];
+  // the excess, in the note's register, the value staying in its slot — fired
+  // by the FIGURE itself (any cone angle past a full turn), never by the class
+  if (geometry.coneEdges && /(\d+(?:\.\d+)?)\s*°/.test(geometry.coneEdges)) {
+    const over = [...geometry.coneEdges.matchAll(/(\d+(?:\.\d+)?)\s*°/g)]
+      .map((m) => Number(m[1]))
+      .filter((deg) => deg > 360);
+    if (over.length > 0) {
+      notes.push(`${over[0]}° is more than a full turn — that excess is why it cannot be flat`);
+    }
+  }
+  return notes;
+}
+
+export function apertureCaption(
+  geometry: ApertureGeometry | FoldedApertureGeometry,
+  counts: ApertureTraceCounts,
+  seal?: ApertureSealedClass | null,
+  drawnInShadow = false,
+): string {
   // COUNTABLE, and honest about occlusion: hidden copies are omitted because
   // the person cannot SEE them — the caption counts what the eye can count.
   // The mask line carries NO chirality claim (a face is its own mirror);
@@ -2634,11 +2807,10 @@ export function apertureCaption(geometry: ApertureGeometry | FoldedApertureGeome
     // 0.2: a FOLDED body asserts NON-FREENESS ONLY — orbifold, fold loci, and
     // its TRUE cone edges; no manifoldness word appears (that certificate is
     // the gate's, 0.3).
-    geometry.kind === 'folded'
-      ? `orbifold · n=[${geometry.n.join(',')}] · fold loci: ${geometry.foldLoci}${geometry.coneEdges ? ` · cone edges: ${geometry.coneEdges}` : ''}`
-      : geometry.kind === 'E3'
-        ? `E³ · n=[${geometry.n.join(',')}]`
-        : `Euclidean cone-manifold · n=[${geometry.n.join(',')}] · cone edges: ${geometry.coneEdges}`,
+    // B-114: the noun is `apertureNoun`'s — ONE producer, shared with the walk
+    // window, so the plate and the window cannot say different words about the
+    // same room. With no seal this returns the committed strings exactly.
+    apertureNoun(geometry, seal ?? null),
     // THE SCENE (designer 1810): the inhabitants are the PLAQUE (recurrence,
     // the MASK count slot) and the COIL (chirality, the HAND count slot);
     // the mirrored wording is the designer's plate's own. FEED (researcher
@@ -2649,5 +2821,8 @@ export function apertureCaption(geometry: ApertureGeometry | FoldedApertureGeome
   if (counts.formCopiesVisible > 0) {
     parts.push(`${counts.formCopiesVisible} of the placed form${counts.formCopiesMirrored > 0 ? ` (${counts.formCopiesMirrored} mirrored)` : ''}`);
   }
-  return parts.join(' · ');
+  // the note keeps its OWN line — the instrument's register, never folded into
+  // the noun's ` · ` run where it would read as one more countable fact
+  const note = apertureNote(geometry, seal ?? null, drawnInShadow);
+  return note.length > 0 ? `${parts.join(' · ')}\n${note.join(' · ')}` : parts.join(' · ');
 }

@@ -35,6 +35,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { Vec3 } from '../types/geometry';
 import type { ApertureCellSurface } from './apertureModel';
+// B-114 — the orientation of a projective door is its 4×4 determinant
+import { mat4Det } from '../lib/noncubeDomain';
 
 interface ExploreSeam {
   open: string | null;
@@ -139,6 +141,14 @@ uniform mat4  uFaceG[16];               // portal transform (identity on walls)
 // touched the seam. A bounded face is skipped where the crossing lands
 // outside its quad (|dot(q−c,u)| ≤ ‖u‖², both axes); unbounded faces keep
 // the convex-cell law byte-identically.
+// ═══ B-114 — THE MODEL THE ROOM IS DRAWN IN ═════════════════════════════════
+// 0 = E³ (affine doors; the committed arm, byte-untouched) · 1 = S³ · 2 = H³.
+// ⛔ WHAT MAKES THIS FOUR LINES RATHER THAN A NEW TRACER: the exit test above
+// is ALREADY the projective chart's form (a plane is a plane and a ray is a
+// ray in the Klein/gnomonic chart, in every model), and uFaceG is ALREADY a
+// mat4. Only the TRANSPORT and the METRE differ — a projective door does not
+// divide by 1, and chart length is not distance.
+uniform int   uModel;
 uniform float uFaceBounded[16];         // 1 = quad-bounded (the seam pair)
 uniform vec3  uFaceC[16];               // quad centre
 uniform vec3  uFaceU[16];               // quad half-axis 1 (length = half-extent)
@@ -257,6 +267,27 @@ vec3 nrm(vec3 p){ float id; vec2 e=vec2(1e-3,0);
                         map(p+e.yyx,id)-map(p-e.yyx,id))); }
 vec3 fwdD(vec3 n){ return abs(dFdx(n))+abs(dFdy(n)); }
 
+// ═══ B-114 — THE METRE. The one quantity the projective chart cannot carry:
+// chart length saturates at the Klein boundary while true hyperbolic distance
+// runs to infinity, and distance is what the echo fade and the LOD ladder ride.
+// E³'s answer is the chart length itself, which is why the committed arm is
+// untouched. (Lift (k,1) onto the quadric, normalise, read the inner product.)
+float modelDist(vec3 a, vec3 b){
+  if(uModel==2){                                  // H³ — Klein ball, Minkowski form
+    float qa = 1.0 - dot(a,a);                    // −⟨X,X⟩ for X=(a,1)
+    float qb = 1.0 - dot(b,b);
+    if(qa<1e-9 || qb<1e-9) return distance(a,b);  // outside the ball: no honest answer, say the chart's
+    float ip = (1.0 - dot(a,b)) / sqrt(qa*qb);    // −⟨Â,B̂⟩
+    return acosh(max(1.0, ip));
+  }
+  if(uModel==1){                                  // S³ — gnomonic chart, the R⁴ dot
+    float na = sqrt(dot(a,a)+1.0);
+    float nb = sqrt(dot(b,b)+1.0);
+    return acos(clamp((dot(a,b)+1.0)/(na*nb), -1.0, 1.0));
+  }
+  return distance(a,b);
+}
+
 void main(){
   gSmoothR = 0.016*pow(0.4375, uSmoothRecede);
   vec2 uv=(gl_FragCoord.xy - 0.5*uRes)/uRes.y;
@@ -299,12 +330,36 @@ void main(){
       break;
     }
     // TRANSPORT — the engine's own gluing isometry (ratified; never churned)
-    travel += tE; echo += 1.;
+    echo += 1.;
     vec3 q=p+v*tE;
     mat4 g = uFaceG[fE];
-    p = (g*vec4(q,1.)).xyz;
-    v = normalize(mat3(g)*v);
-    acc = mat3(g)*acc;
+    if(uModel==0){
+      // ⛔ THE COMMITTED ARM, BYTE-UNTOUCHED. An affine door's bottom row is
+      // (0,0,0,1), so the projective branch below would reduce to exactly
+      // this — and reducing to it is not the same as BEING it. This arm stays
+      // the arithmetic every euclidean witness was measured against.
+      travel += tE;
+      p = (g*vec4(q,1.)).xyz;
+      v = normalize(mat3(g)*v);
+      acc = mat3(g)*acc;
+    } else {
+      // THE PROJECTIVE DOOR: the ray is the line spanned by K=(q,1) and
+      // W=(v,0); the door carries it to M·K and M·W, and the chart curve's
+      // derivative at the landing is (W′ₓᵧ_z·K′₃ − K′ₓᵧ_z·W′₃) — the
+      // denominator K′₃² is positive, so the numerator IS the new direction.
+      travel += modelDist(p, q);
+      vec4 K = g*vec4(q,1.0);
+      vec4 W = g*vec4(v,0.0);
+      p = K.xyz/K.w;
+      v = normalize(W.xyz*K.w - K.xyz*W.w);
+      // ⚠ acc rides here for symmetry ONLY, and must stay unread: on a
+      // PROJECTIVE door the 3x3 block is not the orientation (the 4x4
+      // determinant is). Nothing in this fragment shader reads det(acc) —
+      // the mirror the person is told about is the JS CARRIED FRAME's
+      // (seam.frameHanded), which B-114 carries in the model. If anything
+      // here ever starts reading it, it must read the 4x4.
+      acc = mat3(g)*acc;
+    }
     p += v*2e-4;
   }
 
@@ -416,6 +471,56 @@ const applyRot = (g: number[], v: Vec3): Vec3 => [
 const det3of = (g: number[]): number =>
   g[0] * (g[4] * g[8] - g[5] * g[7]) - g[1] * (g[3] * g[8] - g[5] * g[6]) + g[2] * (g[3] * g[7] - g[4] * g[6]);
 
+// ═══ B-114 — THE PERSON'S CARRIED FRAME THROUGH A PROJECTIVE DOOR ═══════════
+// ⛔ THIS IS THE PART THAT IS NOT A TRANSLATION. `applyRot` is correct only
+// because an affine door's linear part is the SAME map at every point. Under
+// a projective door a direction's transport DEPENDS ON THE BASE POINT — the
+// differential of chart∘M at k. That differential is exactly `pushChartRay`'s
+// direction formula, so the carry is not invented here; what IS new is that
+// the frame must be re-orthonormalised in THE MODEL's inner product, because
+// three chart vectors that were orthonormal at the old point are not
+// orthonormal at the new one.
+// ⛔ LAW 22: HANDEDNESS IS STATE THE OBSERVER CARRIES, and the window's mirror
+// reading is pinned on this frame. So the orthonormalisation is GRAM–SCHMIDT
+// IN ORDER (forward first, then right, then up), which preserves the frame's
+// handedness by construction — it can rotate the frame, never reflect it. The
+// only thing that may flip the mirror is a door whose own 4×4 determinant is
+// negative, which is exactly what the reading means. ⇒ The mirror reading's
+// MEANING is unchanged; only the arithmetic that carries the frame is.
+const modelIP = (model: 'S3' | 'H3', k: Vec3, a: Vec3, b: Vec3): number => {
+  // the tangent-space inner product at chart point k, pulled back from the
+  // quadric: ⟨da, db⟩ where a chart displacement da at k lifts to (da, 0)
+  // corrected by the radial part — for the Klein/gnomonic charts this is
+  //   H³: (a·b)/(1−k·k) + (k·a)(k·b)/(1−k·k)²
+  //   S³: (a·b)/(1+k·k) − (k·a)(k·b)/(1+k·k)²
+  const kk = k[0] * k[0] + k[1] * k[1] + k[2] * k[2];
+  const ab = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const ka = k[0] * a[0] + k[1] * a[1] + k[2] * a[2];
+  const kb = k[0] * b[0] + k[1] * b[1] + k[2] * b[2];
+  if (model === 'H3') {
+    const s = 1 - kk;
+    if (s < 1e-9) return ab; // off the ball — no honest metric; the chart's own
+    return ab / s + (ka * kb) / (s * s);
+  }
+  const s = 1 + kk;
+  return ab / s - (ka * kb) / (s * s);
+};
+
+/** Gram–Schmidt in the model's metric, IN ORDER — rotates, never reflects. */
+const modelOrthonormalise = (model: 'S3' | 'H3', k: Vec3, axes: Vec3[]): Vec3[] => {
+  const out: Vec3[] = [];
+  for (const raw of axes) {
+    let v: Vec3 = [raw[0], raw[1], raw[2]];
+    for (const done of out) {
+      const c = modelIP(model, k, v, done);
+      v = [v[0] - c * done[0], v[1] - c * done[1], v[2] - c * done[2]];
+    }
+    const nn = Math.sqrt(Math.max(1e-12, modelIP(model, k, v, v)));
+    out.push([v[0] / nn, v[1] / nn, v[2] / nn]);
+  }
+  return out;
+};
+
 /** THE CELL PACK (DOOR-FEED partial): the room's own surface → the shader's
  * uniform arrays — per-face plane + wall flag + portal transform (exiting
  * face f applies uFaceG[f]; a wall face draws the 2-cell instead), and the
@@ -426,6 +531,7 @@ function packCell(surface: ApertureCellSurface): {
   faceBounded: Float32Array; faceC: Float32Array; faceU: Float32Array; faceW: Float32Array;
   rodA: Float32Array; rodB: Float32Array; rodK: Float32Array; rodClass: Float32Array; rodHeavy: Float32Array; rodCount: number;
   span: number;
+  model: number; // B-114: 0 = E³ · 1 = S³ · 2 = H³ — the shader's uModel
 } | null {
   if (surface.faces.length === 0 || surface.faces.length > 16 || surface.rods.length > 32) return null;
   const faceN = new Float32Array(48);
@@ -440,7 +546,10 @@ function packCell(surface: ApertureCellSurface): {
     faceN.set(f.n, i * 3);
     faceD[i] = f.d;
     faceWall[i] = f.wall ? 1 : 0;
-    faceG.set(m4(f.g ?? IDENTITY_G), i * 16);
+    // B-114: a sealed room's door carries its in-model 4×4 DIRECTLY (`g4`);
+    // the euclidean room's 12-float affine goes through `m4` exactly as it
+    // always did. A wall carries neither and gets the identity, unread.
+    faceG.set(f.g4 ?? m4(f.g ?? IDENTITY_G), i * 16);
     if (f.bounds) {
       faceBounded[i] = 1;
       faceC.set(f.bounds.c, i * 3);
@@ -465,6 +574,7 @@ function packCell(surface: ApertureCellSurface): {
     faceBounded, faceC, faceU, faceW,
     rodA, rodB, rodK, rodClass, rodHeavy, rodCount: surface.rods.length,
     span: surface.span,
+    model: surface.model === 'H3' ? 2 : surface.model === 'S3' ? 1 : 0,
   };
 }
 
@@ -475,6 +585,7 @@ export interface ExploreWindowProps {
   title: string;
   cellSurface: ApertureCellSurface; // the room's own faces (portal/wall) + rods
   deckLine: string; // the caption's geometry line (the gate's own label words)
+  deckNote?: string | null; // B-114 §0 — the instrument's register, ITS OWN LINE
   level: number;
   pace: number; // advance, world units / s (the cell spans 2)
   lookSensitivity: number; // rad / px
@@ -496,6 +607,7 @@ export function ExploreWindow({
   title,
   cellSurface,
   deckLine,
+  deckNote,
   level,
   pace,
   lookSensitivity,
@@ -585,6 +697,7 @@ export function ExploreWindow({
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const U = (n: string): WebGLUniformLocation | null => gl.getUniformLocation(pr, n);
     gl.uniform1i(U('uFaceCount'), packed.faceCount);
+    gl.uniform1i(U('uModel'), packed.model); // B-114 — the room's own geometry
     gl.uniform3fv(U('uFaceN[0]'), packed.faceN);
     gl.uniform1fv(U('uFaceD[0]'), packed.faceD);
     gl.uniform1fv(U('uFaceWall[0]'), packed.faceWall);
@@ -667,24 +780,65 @@ export function ExploreWindow({
         }
         if (exited < 0) break;
         const face = cellSurface.faces[exited];
-        if (face.wall || !face.g) {
+        if (face.wall || (!face.g && !face.g4)) {
           const s = eye[0] * face.n[0] + eye[1] * face.n[1] + eye[2] * face.n[2] - face.d;
           eye = [eye[0] - face.n[0] * (s + 1e-4), eye[1] - face.n[1] * (s + 1e-4), eye[2] - face.n[2] * (s + 1e-4)];
           prev = eye;
           continue;
         }
-        eye = applyM(face.g, eye);
-        camF = applyRot(face.g, camF);
-        camR = applyRot(face.g, camR);
-        camU = applyRot(face.g, camU);
-        deckF = applyRot(face.g, deckF);
-        deckR = applyRot(face.g, deckR);
-        deckU = applyRot(face.g, deckU);
+        if (cellSurface.model && face.g4) {
+          // ═══ B-114 — THE PROJECTIVE DOOR, on the eye AND all six axes ═════
+          const model = cellSurface.model;
+          const g4 = face.g4;
+          const K = [
+            g4[0] * eye[0] + g4[1] * eye[1] + g4[2] * eye[2] + g4[3],
+            g4[4] * eye[0] + g4[5] * eye[1] + g4[6] * eye[2] + g4[7],
+            g4[8] * eye[0] + g4[9] * eye[1] + g4[10] * eye[2] + g4[11],
+            g4[12] * eye[0] + g4[13] * eye[1] + g4[14] * eye[2] + g4[15],
+          ];
+          if (Math.abs(K[3]) < 1e-9) break; // the chart horizon — the eye stops, never a fabricated place
+          const push = (v: Vec3): Vec3 => {
+            const W = [
+              g4[0] * v[0] + g4[1] * v[1] + g4[2] * v[2],
+              g4[4] * v[0] + g4[5] * v[1] + g4[6] * v[2],
+              g4[8] * v[0] + g4[9] * v[1] + g4[10] * v[2],
+              g4[12] * v[0] + g4[13] * v[1] + g4[14] * v[2],
+            ];
+            return [W[0] * K[3] - K[0] * W[3], W[1] * K[3] - K[1] * W[3], W[2] * K[3] - K[2] * W[3]];
+          };
+          const pushedCam = [push(camF), push(camR), push(camU)];
+          const pushedDeck = [push(deckF), push(deckR), push(deckU)];
+          eye = [K[0] / K[3], K[1] / K[3], K[2] / K[3]];
+          // re-orthonormalised AT THE LANDED POINT, in the model's metric —
+          // the frames are two independent triples and each keeps its own
+          // order, so neither can borrow the other's handedness
+          const camN = modelOrthonormalise(model, eye, pushedCam);
+          const deckN = modelOrthonormalise(model, eye, pushedDeck);
+          camF = camN[0]; camR = camN[1]; camU = camN[2];
+          deckF = deckN[0]; deckR = deckN[1]; deckU = deckN[2];
+          prev = eye;
+          seam.doors += 1;
+          // the orientation of a PROJECTIVE door is its 4×4 determinant — the
+          // 3×3 block is not it. Same reading, same meaning, read correctly.
+          seam.frameHanded *= mat4Det(g4) < 0 ? -1 : 1;
+          continue;
+        }
+        // the wall test above already proved a portal carries one map or the
+        // other, and the model branch consumed g4 — so this is the affine one
+        const g = face.g;
+        if (!g) break;
+        eye = applyM(g, eye);
+        camF = applyRot(g, camF);
+        camR = applyRot(g, camR);
+        camU = applyRot(g, camU);
+        deckF = applyRot(g, deckF);
+        deckR = applyRot(g, deckR);
+        deckU = applyRot(g, deckU);
         // the next guard iteration's segment starts at the LANDED point —
         // with prev == eye a bounded face cannot re-fire without a real move
         prev = eye;
         seam.doors += 1;
-        seam.frameHanded *= det3of(face.g) < 0 ? -1 : 1;
+        seam.frameHanded *= det3of(g) < 0 ? -1 : 1;
       }
     };
 
@@ -720,7 +874,15 @@ export function ExploreWindow({
     };
     const advanceBy = (ms: number): void => {
       const step = (seam.paceOverride ?? liveRef.current.pace) * Math.max(0, ms) / 1000;
-      eye = [eye[0] + camF[0] * step, eye[1] + camF[1] * step, eye[2] + camF[2] * step];
+      // ⚠ B-114 — THE PACE IS A DISTANCE, so in a sealed room the step is
+      // taken along the model's own geodesic, not along a chart line by a
+      // chart amount. `camF` is unit IN THE MODEL (the frame is orthonormal
+      // there), so the chart displacement that covers `step` of true distance
+      // is step/‖camF‖_chart — the two agree exactly at E³, where the chart
+      // IS the metric and this reduces to the committed line.
+      const model = cellSurface.model;
+      const s = model ? step / Math.sqrt(Math.max(1e-12, modelIP(model, eye, camF, camF))) : step;
+      eye = [eye[0] + camF[0] * s, eye[1] + camF[1] * s, eye[2] + camF[2] * s];
       lastMove = performance.now();
     };
     const onDown = (ev: PointerEvent): void => {
@@ -847,7 +1009,10 @@ export function ExploreWindow({
           ? ' · the manifold ends here; the orbit recurs only through the glued corridors'
           : ' · the manifold ends here — a bounded chamber; nothing recurs'
         : '';
-      const caption = `${deckLine}${boundaryLine} · copies shown to depth ${Math.max(0, Math.round(liveRef.current.level))}`;
+      const geometryLine = `${deckLine}${boundaryLine} · copies shown to depth ${Math.max(0, Math.round(liveRef.current.level))}`;
+      // B-114 §0: the note is a line ABOUT the reading, so it gets a line —
+      // the div below is `pre-line`, which honours this newline and nothing else
+      const caption = deckNote ? [geometryLine, deckNote].join('\n') : geometryLine;
       if (seam.caption !== caption) {
         seam.caption = caption;
         if (captionRef.current) captionRef.current.textContent = caption;
@@ -970,7 +1135,7 @@ export function ExploreWindow({
       <div
         ref={captionRef}
         data-explore-caption
-        style={{ marginTop: 6, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.78, minHeight: 15 }}
+        style={{ marginTop: 6, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.78, minHeight: 15, whiteSpace: 'pre-line' }}
       />
       {/* THE WINDING ROUTE (Q2): the return line — same surface, same ink,
           its OWN line. The caption above says what the room IS; this line
