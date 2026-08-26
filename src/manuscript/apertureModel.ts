@@ -950,13 +950,15 @@ export function aperturePairingRefusal(seedShape: Shape, rows: AperturePairRow[]
   return null;
 }
 
-// THE FOLDED EDGE (ADR 0022, researcher-ruled wall — verbatim; it asserts
-// EXACTLY the non-freeness and nothing more, and carries its cure):
+// THE FOLDED EDGE (ADR 0022, researcher-ruled wall; the subdivide clause CUT
+// by the designer's ruling, B-106 V3 §1 — the wall instructed the person to
+// do what the door beside it already offers, in almost the same words. THE
+// WALL STATES THE LIMIT; THE DOOR CARRIES THE ACT — one act, one voice. The
+// wall asserts EXACTLY the non-freeness and its consequence, nothing more):
 export const foldedEdgeWall = (edgeClass: string): string =>
   `This identification is not free: it folds edge class ${edgeClass} onto its own reverse, fixing its midpoint. ` +
   `The quotient is an orbifold — it carries a fold locus — not a free-quotient manifold. ` +
-  `Its invariants cannot be read on this cell structure (a folded cell has no consistent orientation); ` +
-  `subdivide to resolve the fold, and the gate will read it.`;
+  `Its invariants cannot be read on this cell structure (a folded cell has no consistent orientation).`;
 
 export interface FoldedEdgeVerdict {
   folded: true;
@@ -965,7 +967,7 @@ export interface FoldedEdgeVerdict {
   chi: number;
   foldedEdgeClasses: string[];
   gate: Level3SoundnessReport;
-  wall: string; // the researcher-ruled wall, naming the fold locus and the cure
+  wall: string; // the ruled wall, naming the fold locus — the LIMIT only; the ACT is the door's (V3 §1)
   // 0.2 THE ORBIFOLD'S BODY: the verdict CARRIES A BODY now — the tower-less
   // sibling the aperture can draw. The wall and its cure above are 0.1's and
   // stand untouched; the body is what the person sees when they look through

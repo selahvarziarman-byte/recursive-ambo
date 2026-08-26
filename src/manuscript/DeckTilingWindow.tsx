@@ -149,7 +149,16 @@ export function DeckTilingWindow({
         fontFamily: 'Georgia, "Times New Roman", serif',
         fontSize: 12.5,
         lineHeight: 1.45,
-        zIndex: 30,
+        // B-106 V3 §2 — THE SOLID PLATE, the ExploreWindow charter applied
+        // (its own words: "the window is a SOLID PLATE by charter — the page
+        // never shows through, even before the first frame"). The measured
+        // lie: the page's drei <Html> labels stack in zIndexRange [40, 0],
+        // and this window sat at 30 — page labels rendered INSIDE its
+        // rectangle (Arman's "pinch on the circle" was the cross-cap body
+        // showing through). 60 is the sibling window's charter number, above
+        // the whole label range; the background is the opaque paper token,
+        // static style — solid AT MOUNT, no first-paint gap.
+        zIndex: 60,
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>

@@ -278,5 +278,22 @@ check('[j] ADR §7: {p,q} · the vertex count · the descent check DEMOTE to the
   viewSrc.includes("label: 'cells at a vertex'") &&
   viewSrc.includes('−I ∈ Sym ∧ free'));
 
+// B-106 V3 §2 — THE SOLID PLATE (the ExploreWindow charter, applied): the
+// designer measured page labels legible INSIDE the window's rectangle — the
+// page's drei <Html> labels stack in zIndexRange [40, 0] and the window sat
+// at zIndex 30. The pin is RELATIONAL, not a magic number: the window's
+// zIndex must exceed every zIndexRange ceiling the view declares, and its
+// rectangle must paint the opaque paper token (a window that shows a world
+// is opaque at its own edge — anything visible inside its bounds IS its
+// content).
+check('THE SOLID PLATE: the window\'s zIndex strictly exceeds every drei Html zIndexRange ceiling in the view (measured over ALL declarations, none exempt), and its root paints the paper token as background',
+  (() => {
+    const win = /zIndex:\s*(\d+)/.exec(windowSrc);
+    const ceilings = [...viewSrc.matchAll(/zIndexRange=\{\[\s*(\d+)\s*,/g)].map((m) => Number(m[1]));
+    return win !== null && ceilings.length > 0 &&
+      ceilings.every((c) => Number(win[1]) > c) &&
+      windowSrc.includes('background: paper.cardBackground,');
+  })());
+
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

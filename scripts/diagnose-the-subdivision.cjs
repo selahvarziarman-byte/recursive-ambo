@@ -253,8 +253,10 @@ check('the model\'s door WORKS on the exact rows that folded: subdivideAndReadPe
   doorResult.reading.folded === false &&
   doorResult.counts.c === 1 &&
   (() => {
+    // V3 §1: the wall no longer instructs — the LIMIT is the wall's, the ACT
+    // is the door's. The fixture still folds; the wall carries no 'subdivide'.
     const wallVerdict = A.buildPersonDomainVerdict(cubeShape, foldedRows, 'w', 'wall');
-    return wallVerdict.folded === true && wallVerdict.wall.includes('subdivide to resolve the fold');
+    return wallVerdict.folded === true && !wallVerdict.wall.includes('subdivide');
   })());
 note(`door counts (class-level): ${JSON.stringify(doorResult.counts)} · reading.folded: ${doorResult.reading.folded} · gate kinds: ${doorResult.reading.folded ? '-' : [...new Set(doorResult.reading.tower.gate.failures.map((x) => x.kind))].join(',') || 'none (sound)'}`);
 const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');

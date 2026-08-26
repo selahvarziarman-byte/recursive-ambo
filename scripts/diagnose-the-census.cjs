@@ -193,14 +193,14 @@ check('`.edgeClass` DOES NOT EXIST on a folded-edge failure: zero of the 200 fol
 
 // ═════ [e] the wall — same words, same value ══════════════════════════════════════
 console.log('\n----- [e] ⛔ the wall\'s printed value did not move (the rep edge id, in the researcher\'s verbatim text) -----');
-check('the person-facing WALL is unmoved: on a folded fixture, foldedEdgeClasses[0] is the rep edge id (the smallest member — the identical VALUE the old field carried), and foldedEdgeWall(...) embeds exactly it in the researcher-ruled sentence ("subdivide to resolve the fold" and all)',
+check('the person-facing WALL carries the rep edge id: on a folded fixture, foldedEdgeClasses[0] is the rep edge id (the smallest member — the identical VALUE the old field carried), and foldedEdgeWall(...) embeds exactly it in the ruled sentence (V3 §1 cut the subdivide clause — the wall is the LIMIT; "not free" pins the ruled body)',
   (() => {
     const v = foldedFixture.reading;
     const rep = v.foldedEdgeClasses[0];
     const firstFail = v.gate.failures.find((x) => x.kind === 'folded-edge');
     const wall = A.foldedEdgeWall(rep);
     return rep === firstFail.repEdgeId && rep === [...firstFail.memberEdgeIds].sort()[0] &&
-      wall.includes(`edge class ${rep} `) && wall.includes('subdivide to resolve the fold');
+      wall.includes(`edge class ${rep} `) && wall.includes('not free') && !wall.includes('subdivide');
   })());
 
 // ═════ [f] ★ THE MUTANT — the bug that actually happened, carried in-memory ══════

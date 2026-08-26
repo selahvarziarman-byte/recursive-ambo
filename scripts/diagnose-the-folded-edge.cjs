@@ -77,11 +77,12 @@ const PAIRS = [
   ['bottom', 'top'],
 ];
 const cands = PAIRS.map(([a, b]) => A.dihedralMapCandidates(cube, f(a), f(b)));
+// B-106 V3 §1 — the subdivide clause is CUT (the designer's ruling): the wall
+// states the LIMIT; the DOOR beside it carries the act. The mirror follows.
 const WALL_TEMPLATE = (edgeClass) =>
   `This identification is not free: it folds edge class ${edgeClass} onto its own reverse, fixing its midpoint. ` +
   `The quotient is an orbifold — it carries a fold locus — not a free-quotient manifold. ` +
-  `Its invariants cannot be read on this cell structure (a folded cell has no consistent orientation); ` +
-  `subdivide to resolve the fold, and the gate will read it.`;
+  `Its invariants cannot be read on this cell structure (a folded cell has no consistent orientation).`;
 
 // ═════ [a] the 512 sweep: 97 refuse by name, zero throws escape the door ════════
 console.log('----- [a] the door, all 512 pairings: 97 folded verdicts BY NAME · zero throws (clause 1 · battery 1) -----');
@@ -110,9 +111,9 @@ check('…and every folded case was refused BY THE GATE, not caught: each verdic
   }));
 note(`folded: ${folded.length}/512 · domains: ${soundSide.length}/512 · door throws: ${doorThrows}`);
 
-// ═════ [b] the wall: names the fold, says orbifold, offers the cure — and NOTHING more ═
-console.log('\n----- [b] the wall carries its cure and asserts EXACTLY the non-freeness (battery 3 — the researcher\'s bound) -----');
-check('every folded wall is the researcher-ruled text VERBATIM: names the edge class · "not free" · "orbifold" · "fold locus" · "subdivide to resolve the fold" — and says NOTHING about the underlying space\'s manifoldness (the phrase "not a free-quotient manifold" is the ruled wording; the substring "not a manifold" appears NOWHERE)',
+// ═════ [b] the wall: names the fold, states the LIMIT — and NOTHING more ═════════
+console.log('\n----- [b] the wall states the limit and asserts EXACTLY the non-freeness (battery 3 — the researcher\'s bound · V3 §1\'s cut) -----');
+check('every folded wall is the ruled text VERBATIM: names the edge class · "not free" · "orbifold" · "fold locus" — the subdivide clause is CUT (V3 §1: the wall states the LIMIT, the door carries the ACT — the instruction appears NOWHERE in the wall) and it says NOTHING about the underlying space\'s manifoldness ("not a free-quotient manifold" is the ruled wording; "not a manifold" appears NOWHERE)',
   folded.every((s) => {
     const wall = s.verdict.wall;
     return (
@@ -121,7 +122,7 @@ check('every folded wall is the researcher-ruled text VERBATIM: names the edge c
       wall.includes('not free') &&
       wall.includes('orbifold') &&
       wall.includes('fold locus') &&
-      wall.includes('subdivide to resolve the fold') &&
+      !wall.includes('subdivide') &&
       !wall.includes('not a manifold')
     );
   }));
