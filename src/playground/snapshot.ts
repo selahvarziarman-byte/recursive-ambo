@@ -43,6 +43,13 @@ import {
   identify,
   parseIdentificationSuffix,
 } from '../lib/complexIdentification';
+// R-2's SIBLING (B-110 / A1, sanctioned): the WORD machinery, for replaying a
+// word-born form's own recipe at load. All three modules are already FROZEN
+// and already inside the manifest's import closure — importing them adds no
+// file, edits none, and creates no cycle (none imports snapshot).
+import { collapseFace, flipGlueFace, glueFace } from '../lib/surfaceOperations';
+import { materializeSurfaceResult } from '../lib/materializeOperation';
+import { parsePairingSuffix } from './bornFormRouting';
 
 // The reserved `primalMultisetKey` characters — the committed
 // `multiform.assertKeySafe` precedent (replicated here because the committed
@@ -431,6 +438,59 @@ export function deserializeSnapshot(
         provenance: { origin: 'loaded', source },
         ancestors: reconstructed,
       };
+    } catch {
+      // the replay refused — the namespaced copy below stands
+    }
+  }
+
+  // R-2's SIBLING — THE WORD UNION (B-110 / marker A1, Arman-sanctioned:
+  // "pay the price"; confirmed in-terminal at this seat before the spend).
+  // The same disease one recipe over: a WORD-born single-face form
+  // (glue / flip-glue / collapse) ns-copies on load, and the committed
+  // word recovery's byte-compare can never pass on it — the copy's ids are
+  // `<source>:`-prefixed while a replay mints from the ns'd parent's shape
+  // id — so `recoverBornSurface` nulls and the whole acquisition chain
+  // nulls with it. MEASURED cost before the cure: the card's TYPE is lost
+  // (classifyForm reads "genus 1" natively and REFUSES on the loaded copy),
+  // combine refuses, identify refuses — a form the person saves comes back
+  // a stranger, and persistence is load-bearing since Δ10's doors.
+  // ⇒ Replay the form's OWN WORD at load and return the replay, exactly as
+  // the idn arm above does. ★ The word's pairings are SLOT INDICES, not ids
+  // (`parsePairingSuffix` reads them off the born id), so unlike the idn
+  // recipe they need no namespacing at all — the parent face is found by
+  // the ns'd face id the copy and its parent already share.
+  // The fallback law is unchanged and total: not a word birth, a parent off
+  // the chain head, a non-plain-ns parent, an unparsable word, a missing
+  // parent face, or a refusing replay all fall through to the namespaced
+  // copy — downstream acquisition then ends at its honest null. The load
+  // never lies, and no committed refusal is weakened.
+  const ownOperation = original.genealogy.operation;
+  if (
+    (ownOperation === 'glue' || ownOperation === 'flip-glue' || ownOperation === 'collapse') &&
+    original.faces.length === 1 &&
+    carried.length > 0 &&
+    original.genealogy.parentShapeId === carried[0].id &&
+    plainNs[0] === true
+  ) {
+    try {
+      const parentShape = reconstructed[0];
+      // the born form's single face carries its PARENT face's id — the
+      // committed recovery's own premise, now read in the ns'd space
+      const parentFace = parentShape.faces.find((face) => face.id === ns(original.faces[0].id));
+      if (parentFace) {
+        const wordPairings = parsePairingSuffix(original.id);
+        if (ownOperation === 'collapse') {
+          const trace = collapseFace(parentShape, parentFace);
+          const replay = materializeSurfaceResult(parentShape, parentFace, trace);
+          return { shape: replay.shape, provenance: { origin: 'loaded', source }, ancestors: reconstructed };
+        }
+        if (wordPairings) {
+          const op = ownOperation === 'flip-glue' ? flipGlueFace : glueFace;
+          const trace = op(parentShape, parentFace, wordPairings);
+          const replay = materializeSurfaceResult(parentShape, parentFace, trace, wordPairings);
+          return { shape: replay.shape, provenance: { origin: 'loaded', source }, ancestors: reconstructed };
+        }
+      }
     } catch {
       // the replay refused — the namespaced copy below stands
     }
