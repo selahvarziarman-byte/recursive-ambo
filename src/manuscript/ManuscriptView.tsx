@@ -46,12 +46,19 @@ import { InkedForm, type InkedFormCraft, type InkedFormLighting } from './InkedF
 import { InkedSkeleton } from './InkedSkeleton';
 import { InkedDomain } from './InkedDomain';
 import {
+  STEMMA_ARROW,
+  STEMMA_PICK_WIDTH_PX,
+  stemmaArrowhead,
+  stemmaMidpoint,
+  visibleStemmaLabels,
+} from './stemmaLabelModel';
+import {
   readDomainSpecimen,
   readSkeletonSpecimen,
   readSurfaceSpecimen,
   type SpecimenReading,
 } from './specimenModel';
-import type { Face, Shape } from '../types/geometry';
+import type { Face, OperationKind, Shape } from '../types/geometry';
 import { PRIMITIVE_CATALOGUE } from '../playground/primitiveCatalogue';
 import {
   applyPlaygroundOperationTo,
@@ -532,6 +539,51 @@ function FormLabel({
             {line}
           </div>
         ))}
+      </div>
+    </Html>
+  );
+}
+
+// B-120 E.3 — one flat triangle in the page plane, tip at the origin pointing
+// +x (rotated per edge). Shared verbatim by every arrowhead; the mesh's own
+// bufferGeometry copies nothing, so nine floats serve the whole stemma.
+const STEMMA_ARROW_VERTICES = new Float32Array([
+  0, 0, 0,
+  -STEMMA_ARROW.length, STEMMA_ARROW.halfWidth, 0,
+  -STEMMA_ARROW.length, -STEMMA_ARROW.halfWidth, 0,
+]);
+
+// B-120 E.1/E.2/E.4 — the edge's operation word at the midpoint. The SPECIES
+// is FormLabel's own (drei Html, distanceFactor 13, the page's ink) at the
+// quiet monospace register, RECESSED against a form's name — a verb between
+// two named things, never a third name. E.2 IS BY CONSTRUCTION: an Html
+// label is a DOM overlay, screen-horizontal at every camera angle — the
+// mechanism cannot express a rotated label, so with dragging sending edges
+// to every angle the word still arrives in the manuscript's own reading
+// direction. E.3's other half: the word carries NO arrow glyph — direction
+// lives on the line, once.
+function StemmaOpLabel({
+  position,
+  word,
+  ink,
+}: {
+  position: [number, number, number];
+  word: string;
+  ink: string;
+}) {
+  return (
+    <Html center position={position} distanceFactor={13} zIndexRange={[40, 0]} style={{ pointerEvents: 'none' }}>
+      <div
+        data-stemma-op={word}
+        style={{
+          color: ink,
+          fontFamily: 'ui-monospace, monospace',
+          fontSize: 9.5,
+          opacity: 0.62,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {word}
       </div>
     </Html>
   );
@@ -4095,19 +4147,55 @@ export default function ManuscriptView() {
     written.forEach((w) => homes.set(w.form.shape.id, w.home));
     return homes;
   }, [world, written, rows, scaleCtl.dim1Scale, scaleCtl.dim2Scale, scaleCtl.dim3Scale, layoutCtl.spacing, dim3All]);
-  // the stemma: the committed reduced edges whose endpoints are on the page
+  // the stemma: the committed reduced edges whose endpoints are on the page.
+  // B-120: the edge carries its OPERATION through the map — the one field the
+  // foot record already prints (`footRecord` reads `edges[0].operation`), so
+  // the strip's word and the page's word have one producer. The endpoints
+  // ride too, for the attention rule below.
   const stemmaLines = useMemo(() => {
     if (!genesis) return [];
     return genesis.reducedEdges
       .map((edge) => {
         const from = homeOfShapeId.get(edge.parent);
         const to = homeOfShapeId.get(edge.child);
-        return from && to ? { key: `${edge.parent}->${edge.child}`, from, to } : null;
+        return from && to
+          ? { key: `${edge.parent}->${edge.child}`, parent: edge.parent, child: edge.child, operation: edge.operation, from, to }
+          : null;
       })
-      .filter((line): line is { key: string; from: [number, number, number]; to: [number, number, number] } =>
-        Boolean(line),
+      .filter(
+        (
+          line,
+        ): line is {
+          key: string;
+          parent: string;
+          child: string;
+          operation: OperationKind;
+          from: [number, number, number];
+          to: [number, number, number];
+        } => Boolean(line),
       );
   }, [genesis, homeOfShapeId]);
+  // B-120 E.6 — THE LABEL ARRIVES ON ATTENTION, and both attentions already
+  // exist: the edge's own hover (the 24px pick stroke at the render — R8's
+  // mechanism) or the page's existing selection of either endpoint form. No
+  // new gesture. The hovered edge goes FIRST into the E.5 yield so direct
+  // pointer attention never loses its verb to a selection's crowd.
+  const [stemmaHover, setStemmaHover] = useState<string | null>(null);
+  const stemmaLabelKeys = useMemo(() => {
+    const selectedShapeId = apertureTarget?.shape.id ?? null;
+    const attended = stemmaLines.filter(
+      (line) =>
+        line.key === stemmaHover ||
+        (selectedShapeId !== null && (line.parent === selectedShapeId || line.child === selectedShapeId)),
+    );
+    const ordered = [
+      ...attended.filter((line) => line.key === stemmaHover),
+      ...attended.filter((line) => line.key !== stemmaHover),
+    ];
+    return visibleStemmaLabels(
+      ordered.map((line) => ({ key: line.key, word: line.operation, mid: stemmaMidpoint(line.from, line.to) })),
+    );
+  }, [stemmaLines, stemmaHover, apertureTarget]);
 
   // ----- 3b: birth (the co-ratified CONNECTED SUM behind the visible gate; ---
   // ----- the person picks the port face on each form — never faces[0]) -------
@@ -5252,20 +5340,81 @@ export default function ManuscriptView() {
         />
 
         {/* the INK STEMMA — the committed (Q3-reduced) GenealogyEdges, drawn
-            parent→child on the sheet (ink, not gold; the real edge, no decor) */}
-        {stemmaLines.map((line) => (
-          <Line
-            key={line.key}
-            points={[
-              [line.from[0], line.from[1], -1.5],
-              [line.to[0], line.to[1], -1.5],
-            ]}
-            color={silhouetteCtl.color}
-            lineWidth={genesisCtl.stemmaWidth}
-            transparent
-            opacity={genesisCtl.stemmaOpacity}
-          />
-        ))}
+            parent→child on the sheet (ink, not gold; the real edge, no decor).
+            B-120 E.1–E.7: the LINE IS THE ARROW (head at the child end, the
+            line's own ink) and the edge's operation word arrives at the
+            midpoint on attention. E.5 BY CONSTRUCTION: nothing below the
+            label gate reads the label plan — the ink line, the head, and the
+            pick stroke render unconditionally, so a yielding label has no
+            channel through which to take an edge with it. */}
+        {stemmaLines.map((line) => {
+          const arrow = stemmaArrowhead(line.from, line.to);
+          const mid = stemmaMidpoint(line.from, line.to);
+          return (
+            <group key={line.key}>
+              <Line
+                points={[
+                  [line.from[0], line.from[1], -1.5],
+                  [line.to[0], line.to[1], -1.5],
+                ]}
+                color={silhouetteCtl.color}
+                lineWidth={genesisCtl.stemmaWidth}
+                transparent
+                opacity={genesisCtl.stemmaOpacity}
+              />
+              {/* E.3 — the arrowhead is part of the LINE's ink: direction
+                  lives here, once; the label never repeats it */}
+              {arrow ? (
+                <mesh position={[arrow.tip[0], arrow.tip[1], -1.5]} rotation={[0, 0, arrow.angleRad]}>
+                  <bufferGeometry>
+                    <bufferAttribute attach="attributes-position" args={[STEMMA_ARROW_VERTICES, 3]} />
+                  </bufferGeometry>
+                  <meshBasicMaterial
+                    color={silhouetteCtl.color}
+                    transparent
+                    opacity={genesisCtl.stemmaOpacity}
+                    depthWrite={false}
+                    side={THREE.DoubleSide}
+                  />
+                </mesh>
+              ) : null}
+              {/* E.7 — R8 ported (InkedSkeleton §8): an INVISIBLE ≥24px
+                  stroke over the same segment widens the raycast target
+                  while the ink stays hairline — a hairline target and a
+                  broken door produce the same observation. */}
+              <Line
+                points={[
+                  [line.from[0], line.from[1], -1.5],
+                  [line.to[0], line.to[1], -1.5],
+                ]}
+                color={silhouetteCtl.color}
+                lineWidth={STEMMA_PICK_WIDTH_PX}
+                transparent
+                opacity={0}
+                depthWrite={false}
+                onPointerOver={() => {
+                  // NO first-claim guard — and that is a MEASURED decision,
+                  // not an omission (B-120 drive): a nearest-hit guard here
+                  // can essentially never pass, because every form's native
+                  // LineSegments raycasts with three's default
+                  // `params.Line.threshold` (1 WORLD UNIT), an invisible
+                  // ~±21px halo that owns intersections[0] across the first
+                  // world-unit-plus of every edge near every form. A guard
+                  // honouring that halo honours a raycast default, not the
+                  // person's sense of "on the form" — it made the verb
+                  // unreachable exactly where edges meet their endpoints.
+                  setStemmaHover(line.key);
+                }}
+                onPointerOut={() => {
+                  setStemmaHover((cur) => (cur === line.key ? null : cur));
+                }}
+              />
+              {stemmaLabelKeys.has(line.key) ? (
+                <StemmaOpLabel position={[mid[0], mid[1], -1.5]} word={line.operation} ink={silhouetteCtl.color} />
+              ) : null}
+            </group>
+          );
+        })}
 
         {/* the birth-cue: a brief pulse where the child settled (UX, no mark) */}
         {birthCue ? (
