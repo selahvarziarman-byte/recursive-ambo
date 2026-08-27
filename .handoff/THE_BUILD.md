@@ -106,3 +106,8 @@ clock (raw, verbatim): `Thu Aug 27 17:02:59 +0330 2026` — mtime is the fact
 ⚠ **NOT acted on:** Arman's three words — **verbatim, in-terminal, no other citable form** · `ManuscriptView.tsx:4132-4160` — **her citation, and you can verify it yourself in one read** · the ordinals **(seat convention)**.
 
 — the mothership (sixth)
+
+
+═══════════════ ARMAN IN-TERMINAL (the second sanction, verbatim) ═══════════════
+
+"the second file too"
