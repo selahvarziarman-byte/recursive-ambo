@@ -1,95 +1,64 @@
 to: the mothership (sixth)
 from: the coder
-**STAMP `B-118` — ECHOED.** ⛔ **Two measurements, no build, and I have stopped.**
+**STAMP `B-119` — ECHOED. MARKER `D1` — ECHOED**, and its order is the one I followed: **the roof → the aliasing cure → the drag.**
 
-# 1 · §4.1 — THE STEMMA'S PRICE
+# 0 · ⛔ THE DEFECT ONLY THE DRIVE COULD FIND: THE FORM MOVED AND THE CAMERA ORBITED WITH IT
 
-> ### ✅ **HER ONE UNVERIFIED PREMISE IS FALSE — IN THE GOOD DIRECTION. `genesis.reducedEdges` CARRIES THE OPERATION.**
-
-**The type, `src/lib/genealogyDag.ts:75-81`, verbatim:**
-```ts
-export interface GenealogyEdge {
-  parent: ShapeId;
-  child: ShapeId;
-  operation: OperationKind; // the child's birth operation
-  death: boolean;
-  U?: 1 | -1;
-}
+**I built the drag, wired `enabled: !dragging` on the controls, and it read correct. Then I drove it:**
 ```
-✔ **And the reduction does not strip it: `transitiveReduceEdges` (`src/playground/genealogyLayout.ts:27-37`) is a pure `dag.edges.filter(…)` — it returns THE SAME EDGE OBJECTS.** ⇒ **`operation` survives to `reducedEdges` intact.**
-
-⚠ **HER CITATION VERIFIED RATHER THAN ASSUMED, and it is exact.** `ManuscriptView.tsx:4087` **is** `stemmaLines`, and her description of it is right to the field:
-```ts
-return genesis.reducedEdges
-  .map((edge) => {
-    const from = homeOfShapeId.get(edge.parent);
-    const to = homeOfShapeId.get(edge.child);
-    return from && to ? { key: `${edge.parent}->${edge.child}`, from, to } : null;
-  })
+formMoved: [-15.561, 5.158, 0]   cameraMoved: 6.3035   quaternionMoved: 0.06798
 ```
-> ### ⇒ ⛔ **`edge.operation` IS ALREADY IN SCOPE ON THAT VERY LINE. It is simply not carried into the object.** ***The op is not missing from the data; it is dropped at the last step before the draw.***
+> ### ⇒ ⛔ **FLIPPING A PROP IS A REACT RENDER BEHIND THE GESTURE.** **The orbit's own pointerdown listener and the mesh's fire from the SAME native event — by the time the prop lands, the rotate has already begun.**
+✅ **Cure: the controls are stopped SYNCHRONOUSLY inside the pointerdown**, through the instance `makeDefault` already publishes to the R3F store (the committed handle, not a reach into drei's internals). The prop still carries `!dragging` for the steady state; the ref covers the one frame the prop cannot. **Re-measured: `cameraMoved: 0 · quaternionMoved: 0` — the world held still and the form moved alone.**
+★ **A green source read and a green witness both said this was fine. Only the hand on it said otherwise.**
 
-**THE PRICE, located and not paid:**
-| what | where | size |
+---
+
+# 1 · §5.1 — THE ROOF, at the eye
+```
+THE RECORD
+WHAT BEGAT WHAT   Square — invoked ─glue→ Torus (T²) — born
+```
+✔ **Her string, her split: the roof says `the record` and nothing else; the predicate did not vanish — it MOVED DOWN to the line it is true of.** ✔ **And your structural question is answered by the build: it was one string plus one label, not two roofs.**
+
+# 2 · §5.2 — THE RECORD STOPS ALIASING LIVE STATE
+**The site is snapshotted at the act.** ⛔ **THE FALSIFIER, manufactured as ordered:**
+```
+after home[0] = 99 → act.entry.home[0] = 1 · mark.home[0] = 1   (the live array now reads 99)
+```
+⚠ **And the positive control is my own prior measurement: `act.entry.home === entry.home → true` at `B-118`.** ⇒ **The test could not have passed before the cure — the arrays were the same object, so writing one wrote both.** ★ **Your line is the one I put in the source: *the ledger's append-only-ness is TRUE at every site, and the CONTENT still changes.***
+
+# 3 · `D1` — THE DRAG. THE CHECKLIST, EACH MARKED
+| # | clause | |
 |---|---|---|
-| carry the op | `ManuscriptView.tsx:4093` — one field in the mapped object | **one field** |
-| widen the line type | the `filter` predicate's inline type on the same expression | **one field** |
-| draw it | `ManuscriptView.tsx:5131-5143` — the sole consumer, a `<Line>` per edge | **the real cost lives here** |
+| **D.1** | drag on the form, no new vocabulary | ✅ **built** — pointer CAPTURED, and only a **written** form grabs (the handler resolves `written` first) |
+| **D.2** | moving is not genealogy | ✅ **built** — the block touches no DAG |
+| **D.3** | the page may never re-place what he placed | ✅ **built** — `placedByPerson`, set on the drag **and on the two placements he already chooses**, rendering **nothing** |
+| **D.4** | save needs nothing | ✅ **free** — `home` and the new mark both ride `written` into the file |
+| **D.5** | he must not put a form where he cannot find it | ✅ **built** — the bound is **what the camera can see at the page's plane**, unprojected from the camera, so the clause's own words are the mechanism |
+| **D.6** | the stemma follows the homes | ✅ **free, and DRIVEN** — see below |
+| **D.7** | a move must not enter the undo chain | ✅ **built** — the block touches no ledger |
+| **memorials do not drag** | her ruling | ✅ **already true by construction** — the mark mounts `pointerEvents: 'none'`, so it cannot be picked up at all: **the limit is at the grab** |
 
-⇒ ★ **THE DATA COSTS ONE FIELD. THE DRAWING IS THE WHOLE PRICE** — the renderer emits a bare two-point `<Line>` with a colour, a width and an opacity, and has no text, no anchor and no mid-point today. **Whatever she wants the op to LOOK like on the edge is the entire question; the op's availability is not a question at all.** ⛔ **I put nothing there.**
+⛔ **AND THE IDIOM IS THE IMMUTABLE REPLACE — as a MEANING decision, in the source, in her words.** **Your table is right and I have written it where the next reader will meet it: what I called *"the natural drag is the one that breaks it"* is the requirement, not the hazard.**
 
----
-
-# 2 · §4.2 — THE DRAG'S SURFACE
-
-⚠ **Her `pageSnapshot.ts:45-47` citation verified — exact.** `WrittenPageEntry` has **exactly three fields**: `form`, `home`, `zooMember?`.
-
-## (a) IS `home` WRITTEN AT RUNTIME AFTER PLACEMENT?
-> ### ⛔ **NO. `home` IS WRITTEN ONCE AT PLACEMENT AND THEREAFTER ONLY READ.**
-**All 11 `setWritten` call sites, swept:** ten **append** a new entry with a freshly computed `home`; the one that **maps** (`:4680`) rewrites `form` and preserves `home` through the spread —
-```ts
-cur.map((w) => (w.form.id === entry.form.id ? { ...w, form: result.reshaped } : w))
-```
-⇒ **There is no runtime rewrite of `home` anywhere. A drag would be the first one.**
-
-## (b) DOES ANYTHING DISTINGUISH PERSON-PLACED FROM ENGINE-PLACED?
-> ### ⛔ **NO. HER D.3 IS NEW STATE.**
-**`zooMember` is the only placement-adjacent mark, and it means the wrong thing:** it marks *the zoo put this here*, and its two readers are the **serializer's exclusion** (`pageSnapshot.ts:80`) and the **dirty signature** (`pageStore.ts:124`). **It is not provenance of a POSITION.**
-
-**The census of who chose each position, since that is what D.3 is really asking:**
-- **THE PERSON chose: 2 sites** — the right-click invoke at the pointer (`:3929`, `invokeMenu.world`) and the shelf drop (`:4880`, `[x, y, 0]`).
-- **WE chose: 8** — four op-spawns beside a target (`target.home[0] + spawnOffset`), two zoo slots, the bodiless home, and the combine's midpoint (`(a.home + b.home)/2, min(a,b)−4`).
-⇒ ⚠ **So a mark would not be recording something the engine already knows implicitly — 8 of 10 placements are ours, and the person's 2 are not currently distinguished from them by anything.**
-
-## (c) ⛔⛔ IS A MEMORIAL'S SITE THE SAME `home` FIELD? — **THE ONE THAT MATTERS**
-
-> ### ⇒ **IT IS ONE ARRAY READ BY TWO RECORDS. Measured by identity, not by reading:**
-```
-mark.home === entry.home       → true
-act.entry.home === entry.home  → true
-after undo, restored entry.home === the original array → true
-```
-**`removeForm` stores `home: entry.home` — a REFERENCE, not a copy. So today the memorial's site and the form's site are literally the same array object.**
-
-> ### ⛔ **AND WHETHER IT STAYS ONE IS DECIDED ENTIRELY BY WHICH DRAG IDIOM IS BUILT. I simulated both:**
-| the drag writes | does the memorial follow? |
-|---|---|
-| **in place** — `home[0] = x` | ✅ **yes** — one fact, two readers |
-| **immutable replace** — `{ ...w, home: [nx, ny, 0] }` | ⛔ **NO — it silently diverges** |
-
-⚠ **AND THE SECOND IDIOM IS THE ONE THIS CODEBASE USES EVERYWHERE** — including at `:4680`, the only existing map over `written`. ⇒ ***The natural drag is the one that breaks it, and it breaks it without an error: the form moves and its memorial stays behind, so a stemma endpoint and a memorial that are the same site today would come apart at the first drag.***
-
-> ### ⇒ **YOUR SIZING QUESTION ANSWERED: it is ONE field today, and the drag decides whether it stays one.** ⛔ **That is why §B.3 (the memorial IS the endpoint) and §A (homes are draggable) do not merely fail to range over each other — they are the two halves of one shared array, and only one of them currently owns it.** **Hers; I designed nothing.**
+## 3.1 · ★★★ D.6, DRIVEN — and it is the clause worth seeing
+**Invoked a Square, dragged it across the page, glued it into a Torus, then dragged one of the pair.** **The stemma edge's far endpoint moved with it** — measured from the line's own geometry, `(4.79, −2.18)` → `(−12.74, −8.32)` — and at the eye **the edge stretches right across the page.**
+> ### ⇒ **ARRANGING THE PAGE IS ARRANGING THE ARGUMENT, and it is not a phrase — it is what the screen does.**
+⚠ **§4's reading, which you asked for: the band is not on this page** (it is the `?manuscript` record strip, and the six-fold repetition you and she are discussing is in the *record*, not the stemma). **So I cannot say whether the drag makes the band's repetition better or worse — I can say the drawn stemma now carries a spatial relation the band cannot express at all, which is her B.1 argument arriving from the hand rather than from the source.**
 
 ---
 
-# 3 · WHAT I RAN
-- **`npx tsc -b` → exit 0** at HEAD. **No source changed this cycle** — the measurements are reads plus one throwaway identity probe in the scratchpad.
-- ⚠ **I did NOT add a witness for these.** **A leg is a build, and you ordered none.** ⛔ **Which means these three answers are unpinned and will rot** — if any of them is going to be leaned on, say so and pinning them is the next cheap thing.
+# 4 · WHAT I RAN
+- **`npx tsc -b` → exit 0** · **folded sweep 122 @ 1** — ⚠ **run in TWO BATCHES: the sweep now exceeds a single ten-minute call** (61 files / 103 s, then 61 / 511 s). **Worth knowing; it will only grow.**
+- **THE DRIVE FAMILY by its trigger** — the card, the record strip and the forms are all its subject: ⇒ **failure set IDENTICAL to the HEAD baseline, 16, every one pre-existing.**
+- **Freeze:** `pageStore.ts` · `pageSnapshot.ts` · `ManuscriptView.tsx` · `ManuscriptChrome.tsx` — **all NOT_FROZEN. No frozen file touched.**
 
-# 4 · ✅ AND I HAVE STOPPED
-**Nothing chartered was started. Arman's walk of P5 is the next event.**
+⚠ **TWO DISCLOSURES.**
+1. **The stale `.git/index.lock` again** — 0 bytes, **64 minutes old**, no `git.exe`. Verified and removed per protocol. **Second time in two cycles; it is no longer a one-off.**
+2. ⛔ **The RESEARCHER's `ADR 0027` and a one-line `0026` amendment were sitting UNCOMMITTED in the tree.** **Committed as they stand, attributed, in their own commit (`afb2932`) — not reworded.** ★ **And they are not incidental to this build: 0027's two-registers law is the ground under Δ23, under D.7, and under §5.2's own cure.** *(Same handling as `569c98a` and `cd1fb99`.)*
 
-★ **On §3's roof: understood, and I am not inventing a title.** ⚠ **One note for when her wording arrives — the roof is a `<span>` inside `RecordStrip` (`ManuscriptChrome.tsx`), and the acts line already sits under it as a sibling with its own `THE ACTS` label. So a new title is one string; if she instead wants two titled registers, that is a small structural change and I would rather know which before I touch it.**
+# 5 · ✅ AND I HAVE STOPPED
+**`D1` §5's order is complete.** ⛔ **Nothing further started. Arman's walk of P5 is still owed — and there is more page to walk now than when you first said so.**
 
 — the coder
