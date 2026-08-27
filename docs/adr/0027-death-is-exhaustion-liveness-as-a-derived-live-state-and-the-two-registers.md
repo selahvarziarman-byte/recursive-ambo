@@ -10,14 +10,16 @@
 
 ## 0 · THE TWO REGISTERS — the organizing law
 
-| | THE RECORD (genealogy) | THE LIVE STATE (the page) |
+| | THE RECORD | THE LIVE STATE (the page) |
 |---|---|---|
-| **holds** | what operations MADE — births, the parent→child DAG | what is currently OBTAINED (on the page) + arrangement |
+| **holds** | what happened — irreversibly | what currently IS |
 | **direction** | RATCHETS — only grows | DERIVED — recomputed from the page; moves both ways |
-| **reversible?** | NO (a begetting is a past fact) | YES (remove a child → the obtained-set shrinks) |
-| **who lives here** | begetting · `died`(op-internal) · the removal *trace* | **liveness / exhaustion** · arrangement · the acts ledger |
+| **reversible?** | NO (a past fact) | YES (remove a child → the obtained-set shrinks) |
+| **who lives here** | **two record surfaces:** the GENEALOGY (begetting · `died`(op-internal)) **and the ACTS LEDGER** (removal/undo traces — out of the *genealogy* per Δ23, still a *record*) | **liveness / exhaustion** · arrangement |
 
-✔ **Measured, not prescribed:** the substrate already renders these as two producers — `entries ← footRecord(genesis, …)` over the DAG and `acts ← the append-only ledger` — two props, two lines, 46 px apart (coder `B-117`/`A1`, `08:12`). **This ADR describes what the engine already does; it is not a split the build must be brought to.**
+> ⛔ **THE CRITERION (amended 2026-08-27, the ratification's one returned row): a register is decided by DIRECTION (does it ratchet?), never by SUBJECT (what it is about).** The acts ledger's *subject* is the live page, and it is still a RECORD: it ratchets — undo APPENDS a revert, it does not pop (P5) — and it is not recomputed from the page. An earlier draft rowed it under live state by its subject; by this table's own direction row that was wrong, and §6 bites only because it is wrong: **a record may not hold a reference into live state — two live-state things could share objects freely.** Δ23 keeps removal out of the GENEALOGY (which records what operations MADE); the acts ledger is the OTHER record surface (what the person DID). Two record surfaces, two meanings, one direction.
+
+✔ **Measured, not prescribed:** the substrate already renders the two RECORD surfaces as two producers — `entries ← footRecord(genesis, …)` over the DAG and `acts ← the append-only ledger` — two props, two lines, 46 px apart (coder `B-117`/`A1`, `08:12`), each independent of the live page. **This ADR describes what the engine already does; it is not a split the build must be brought to.**
 
 ⇒ **`alive/exhausted` is a LIVE-STATE property — a function of the current obtained-set — never a genealogy death.** That single placement settles Q1, Q4, and grounds Q3.
 
@@ -47,7 +49,7 @@ Exhaustion needs the child-set answered TOTALLY (*"what can I still beget?"*), o
 | sense | what it is | register | reversible |
 |---|---|---|---|
 | **`died`** (existing) | a part/concept absent from a child, one generation up, INSIDE an op (`argumentReadingModel:24-26`, M3) | record | no |
-| **`removed`** (P5) | the person's page removal act (NOT genealogy — Δ23) | live-state | its own undo |
+| **`removed`** (P5) | the person's page removal act (NOT genealogy — Δ23) | effect: the live page · trace: the acts ledger (a record) | its own undo |
 | **`exhausted`** (this ADR) | a form with no unobtained unique child | **derived live-state** | **YES (revival)** |
 
 ⛔ **`exhausted` may NOT reuse `died`'s type or mark** — different register, different reversibility, different subject. Conflating them re-buys *one glyph, two meanings*. **Division of authority (per the M.3 precedent): the researcher rules the SENSES; the designer rules the SURFACE WORD.** `exhausted` is the sense's name in the model; the page's word for it is the designer's, and may change without amending this ADR.
@@ -77,5 +79,5 @@ Liveness, exhaustion, and revival are all statements about **one parent and its 
 - **Builds now (surfaces):** the parent-life reading (liveness/exhaustion/revival) is well-defined and decidable for the square's surface children (§3), pending the branching display (§7) and the object-level discipline (§6).
 - **Deferred (3-manifold parents):** `exhausted` waits on a form-sameness predicate (§3 trigger).
 - **The surface words are the designer's** — this ADR fixes senses, not captions (§4).
-- **The genealogy's meaning may not be asserted over the live-state register** — a roof title *"the record — what begat what"* is true of the genealogy line and FALSE of the acts line; asserting it over both re-puts removal one register up, where Δ23 removed it. (Constraint ratified on this frame; the wording is the designer's.)
+- **The genealogy's meaning may not be asserted over the acts ledger** — the two are BOTH records (§0's criterion) but with different meanings (what operations MADE vs what the person DID): a roof title *"the record — what begat what"* is true of the genealogy line and FALSE of the acts line; asserting it over both re-puts removal into the genealogy, where Δ23 removed it. (Constraint ratified on this frame; the wording is the designer's.)
 - ⚠ **Marked:** §§0–5 are ✔ the ruling (grounded in the cited source + the classification theorem); §6's aliasing is ✔ the coder's measurement (`B-119`, cited); §7's flattening is ✔ the designer's drive (cited); the 3-manifold deferral rests on `level3SoundnessGate:11` (✔ read). The claim that no general form-sameness predicate exists at HEAD is ⚠ *not found*, not *proven absent* — the coder confirms against the seed if the 3-manifold case is built.
