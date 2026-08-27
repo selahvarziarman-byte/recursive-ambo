@@ -118,12 +118,29 @@ reset();
       return body.includes('entry.form.parentShape');
     })());
 
-  check('§2 ⛔ AND THE VIEW NAMES IT WITH THE PERSON’S OWN WORD: nameOfShapeId sets the removals BEFORE `written`, so a removed parent reads "<name> (removed)" in the record while a RESTORED form reads plainly again (the page’s name is the live fact; the record keeps both traces)',
+  check('§2 ⛔⛔ MARKER A1 — REMOVAL AND UNDO ARE NOT GENEALOGY (Arman, verbatim: "no remove and undo does not need be recorded as geneology"): the genealogy line carries NO removal word. ★ His ruling is the designer’s own §2 argument one layer further — *removal consumes nothing and makes nothing; it acts on the PAGE* — and THE GENEALOGY IS THE RECORD OF WHAT OPERATIONS MADE. ⛔ AND THE BOUNDARY, WHICH POINTS THE OTHER WAY: the birth line must still STAND and still be NAMED — a removed form goes on naming itself PLAINLY, so the line reads `Square —glue→ Torus (T²) — born` and never degrades to a raw shape id',
     (() => {
       const src = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
       const body = src.slice(src.indexOf('const nameOfShapeId'), src.indexOf('const recordEntries'));
-      return body.includes('removals.forEach((m) => names.set(m.shapeId, `${m.name} (removed)`))') &&
+      // ⚠ comment-stripped: the doctrine may still NAME the retired marker —
+      // and should, so the next reader learns why it is not there — while the
+      // EMITTED code must carry no removal word. (The same idiom the ink's
+      // leg uses to let a killed value stay named in its own comment.)
+      const code = body.replace(/\/\*[\s\S]*?\*\//g, '').split(/\r?\n/).map((l) => l.split('//')[0]).join('\n');
+      return code.includes('removals.forEach((m) => names.set(m.shapeId, m.name))') &&
+        !/removed|restored/.test(code) &&
         body.indexOf('removals.forEach') < body.indexOf('written.forEach');
+    })());
+
+  check('§2 ⛔ AND THE TRACE STILL HAS A HOME — IT IS JUST NOT THIS ONE: the RecordStrip takes the genealogy and the acts as TWO SEPARATE PROPS from TWO SEPARATE PRODUCERS (`entries` composed by footRecord over the DAG; `acts` composed from the append-only ledger), rendered as two lines. Removal leaving the genealogy did not leave the trace homeless',
+    (() => {
+      const chrome = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptChrome.tsx'), 'utf8');
+      const view = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+      const strip = chrome.slice(chrome.indexOf('export function RecordStrip'), chrome.indexOf('// 3b — the SOURCES SHELF'));
+      return strip.includes('entries.map((entry, k) =>') &&
+        strip.includes('data-record-acts') &&
+        view.includes('entries={recordEntries}') &&
+        view.includes('acts={(() => {');
     })());
 }
 

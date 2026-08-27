@@ -4040,16 +4040,23 @@ export default function ManuscriptView() {
     // record line keeps standing — but the NAME map read only `written`, so
     // the line would have degraded to a raw shape id. That is the *dangling
     // name* the M3 seal forbids, arriving through the back door.
-    // ⇒ A removed form goes on naming itself, WITH the person's own word.
-    // ⚠ ONE-WORD DIVERGENCE BETWEEN TWO SOURCE LETTERS, resolved by their own
-    // reasoning and REPORTED rather than chosen silently: the researcher wrote
-    // *"born from Square (died)"* while naming the existing genealogy TYPE;
-    // the designer's M.3 rules the word for THE PERSON'S ACT is `removed`,
-    // because the difference between the two words is AGENCY. A form he
-    // removed was removed by him ⇒ `removed`.
-    // Set BEFORE `written` so a RESTORED form (back on the page) reads plainly
-    // again — the page's name is the live fact; the record keeps both traces.
-    removals.forEach((m) => names.set(m.shapeId, `${m.name} (removed)`));
+    // ⇒ A removed form goes on naming itself — PLAINLY.
+    //
+    // ═══ MARKER A1 — ARMAN, VERBATIM: *"no remove and undo does not need be
+    // recorded as geneology"*. ⇒ REMOVAL AND UNDO ARE NOT GENEALOGY, and the
+    // `(removed)` marker this line used to append is GONE.
+    // ★ His ruling is the designer's own §2 argument carried one layer past
+    // where she carried it: *removal consumes nothing and makes nothing — it
+    // acts on the PAGE*, which is why it is off the affordance line and out of
+    // the OPERATIONS menu. THE GENEALOGY IS THE RECORD OF WHAT OPERATIONS
+    // MADE, and removal made nothing.
+    // ⛔⛔ AND THE BOUNDARY, WHICH POINTS THE OTHER WAY AND IS EASY TO
+    // CONFLATE: the birth line itself must NOT disappear. `Square —glue→
+    // Torus` HAPPENED and the record ratchets. He ruled against removal being
+    // ADDED to the genealogy — not against a genealogy line PERSISTING. So
+    // the name stays (plain), and the leaf cure below stays entire; if this
+    // cut ever makes a birth line vanish again, that is the boundary crossed.
+    removals.forEach((m) => names.set(m.shapeId, m.name));
     written.forEach((w) => names.set(w.form.shape.id, w.form.title));
     return names;
   }, [world, written, dim3All, removals]);

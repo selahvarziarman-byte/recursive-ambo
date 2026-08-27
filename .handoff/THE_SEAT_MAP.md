@@ -33,7 +33,8 @@
 
 ## MAIL — how seats reach each other
 
-**On wake, read `.handoff/inbox/<your-seat>/`.** An inbox holds only UNREAD mail: act, then move each handled message to **`.handoff/inbox/<your-seat>/archive/`.** *(A shared `.handoff/inbox/_archive/` also exists and holds the older pile; per-seat archives are the live convention.)*
+**On wake, read `.handoff/inbox/<your-seat>/`.** An inbox holds only UNREAD mail: act, then move each handled message to **`.handoff/inbox/<your-seat>/archive/`.**
+> ⚠ **BUT WHEN YOU SWEEP YOUR OWN ARCHIVE, READ BOTH NAMES: `archive/` AND `_archive/`.** **Some seats' LIVE archive is still `_archive/`** — measured, not remembered: `mothership/archive` and `researcher/archive` against `coder/_archive` and `designer/_archive`, **and the two `_archive`s were written into the same day as the two `archive`s.** ⛔ **The two names track WHICH SEAT WAS SITTING, not what kind of letter it is — so a sweep that reads one name will silently miss a live pile.** ⇒ **`archive/` is the convention for what you write; both names are the truth for what you read.** *(A shared `.handoff/inbox/_archive/` also exists and holds an older pile. **No migration** — untracked is not worthless and the tree has no revert for it.)*
 
 **To reach a seat, write ONE SELF-CONTAINED message into THEIR inbox:**
 `.handoff/inbox/<seat>/<YYYY-MM-DD>_<HHMM>_<from>_<subject>.md`
