@@ -35,6 +35,13 @@ The generating operation is the ROUTE; the child is the RESULT. The map is part 
 
 ⚠ **ONE generation (direct children), never the transitive closure** — forms beget forms without bound, so *"all its children"* is the set obtainable by a single operation, or `exhausted` is undecidable.
 
+### 2.1 · THE GRAIN EXTENDS TO INVOCATION — form · instance · address (amended 2026-08-27, on the six-squares question)
+
+- **A second invoked square is the SAME FORM.** Invocation is an operation (∅ → square) and its result individuates like every other: **one square-FORM; each invocation mints a new INSTANCE, in its own universe (`w1:4-gon`, `w2:4-gon`, …).** *"Which one is THE square?"* — **the FORM is; every drawn square is an instance of it.**
+- **The committed co-location ≠ identity discipline (`writtenFormModel:165-167`) is about ADDRESSES and stands untouched:** instances stay distinct universes so the person's acts attach to the instance he touched. An address is not an identity — the `v${index}` law, one level up.
+- **Liveness, exhaustion, and revival attach to the FORM, over the page-global obtained-set** — every instance of one form shows one liveness. (Per-instance liveness would let six squares yield six toruses — exactly what *"obtainable exactly once"* forbids.)
+- ⛔ **AND IDS ARE ROUTES, NEVER THE CHILD-SET'S GRAIN.** Measured: shape ids are route-grained addresses (`shape:materialized:glue:<parent-id>:<face>:<pairing>`) — a different pairing yielding the same torus mints a second id. **The id scheme is CORRECT as an address scheme, and it is not the identity relation: identity is never a string relation on ids, in either direction** (same id ⇒ same route, not "different id ⇒ different form"). **Exhaustion computes over RESULT-classes (§3), never over ids** — the apparent substrate/§2 contradiction dissolves: the substrate implements ADDRESSES; §2 defines IDENTITY.
+
 ## 3 · Q3 — enumerable and `exhausted`-assertable for SURFACES now; DEFERRED for 3-manifold parents
 
 Exhaustion needs the child-set answered TOTALLY (*"what can I still beget?"*), or only *"nothing I can currently offer"* is assertable — which cannot carry a death. There is a buildability boundary:
@@ -44,6 +51,8 @@ Exhaustion needs the child-set answered TOTALLY (*"what can I still beget?"*), o
 
 ⚠ I did not find a general form-sameness predicate at HEAD; the surface case needs only χ/orientability (present), the 3-manifold case needs what is not yet built.
 
+**THE OBTAINED-SET, precisely (amended 2026-08-27):** the obtained-set of a parent-form P = **the distinct result-forms BEGOTTEN FROM P currently on the page.** Three consequences, each from Arman's own sentence: (1) **begetting is what spends a slot** — a loaded form, or a homeomorphic result begotten from a *different* parent, does not spend P's slot (*"from 1 square"* scopes the exactly-once to the parent); (2) **removal restores the slot** (*"if a child is deleted a dead parent should come back to life"* — the revival clause); (3) ***"exactly once"* = at most ONE living instance per (P → child-form) begetting at a time** — a repeat begetting while the first stands is refused-with-a-route (the gesture's form is the designer's: refuse or focus the standing child); **re-begetting after removal is legal**, and the registers keep it honest: the genealogy edge (P begat C), once written, stands — the new instance is a page fact and an acts-ledger entry, not a second genealogy edge.
+
 ## 4 · Q4 — THREE distinct senses; the TYPE SPLITS; one glyph, one meaning
 
 | sense | what it is | register | reversible |
@@ -51,6 +60,8 @@ Exhaustion needs the child-set answered TOTALLY (*"what can I still beget?"*), o
 | **`died`** (existing) | a part/concept absent from a child, one generation up, INSIDE an op (`argumentReadingModel:24-26`, M3) | record | no |
 | **`removed`** (P5) | the person's page removal act (NOT genealogy — Δ23) | effect: the live page · trace: the acts ledger (a record) | its own undo |
 | **`exhausted`** (this ADR) | a form with no unobtained unique child | **derived live-state** | **YES (revival)** |
+
+⚠ **Which mechanism (footnote, 2026-08-27):** the `died` row's mechanism is `argumentReadingModel:24-26`'s `diedConcepts`/memorial rows (M3) — concept/vertex grain, read one generation up. **`GenealogyEdge.death` (`genealogyDag.ts:206`) is NOT this sense** — it is a pre-split op-kind fact (*"this birth's operation kind is consuming"*), measured as a falsified liveness model (the page kept a "consumed" square standing and operable) and chartered for rename. A later reader must not take the nearest death-shaped field for the named sense.
 
 ⛔ **`exhausted` may NOT reuse `died`'s type or mark** — different register, different reversibility, different subject. Conflating them re-buys *one glyph, two meanings*. **Division of authority (per the M.3 precedent): the researcher rules the SENSES; the designer rules the SURFACE WORD.** `exhausted` is the sense's name in the model; the page's word for it is the designer's, and may change without amending this ADR.
 
