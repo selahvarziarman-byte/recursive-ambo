@@ -91,8 +91,8 @@ const dag = buildGenealogyDag(storeShapes);
 const bornNode = dag.nodes.find((n) => n.id === born.id);
 const birthEdge = dag.edges.find((e) => e.parent === parent.id && e.child === born.id);
 check('§2.1 buildGenealogyDag over the store ACCEPTS (acyclic; lineage ⊆ parents)', dag.integrity.accepted === true);
-check("§2.1 the DAG records the birth: parent→child edge, operation 'flip-glue' (a merge-birth)", eq(bornNode.parents, [parent.id]) && Boolean(birthEdge) && birthEdge.operation === 'flip-glue' && birthEdge.death === true);
-note(`DAG: nodes=${dag.nodes.length} born.parents=${JSON.stringify(bornNode.parents)} edge.op=${birthEdge.operation} (flip-glue consumes: death=${birthEdge.death})`);
+check("§2.1 the DAG records the birth: parent→child edge, operation 'flip-glue' (a merge-birth)", eq(bornNode.parents, [parent.id]) && Boolean(birthEdge) && birthEdge.operation === 'flip-glue' && birthEdge.consuming === true);
+note(`DAG: nodes=${dag.nodes.length} born.parents=${JSON.stringify(bornNode.parents)} edge.op=${birthEdge.operation} (flip-glue consumes: consuming=${birthEdge.consuming})`);
 
 // ===== [2] the registry is data-driven =====
 console.log('\n----- [2] REGISTRY (canApply gates; ineligible disables, never throws) -----');

@@ -136,10 +136,10 @@ check('THE CHILD RESOLVES TO THE LIFTED LOOP AND THE PARENT STAYS ALIVE: the gen
   (() => {
     const dag = buildGenealogyDag([circle, band]);
     const edges = dag.edges.filter((e) => e.child === band.id);
-    const live = dag.liveAtEnd;
+    const live = dag.unconsumedAtEnd;
     const liveHas = (id) => (live instanceof Set ? live.has(id) : Array.isArray(live) ? live.includes(id) : false);
     note(`edges into the band: ${edges.length} — parent: ${edges[0] ? edges[0].parent.slice(0, 52) : 'NONE'}`);
-    note(`liveAtEnd: circle=${liveHas(circle.id)} · band=${liveHas(band.id)}`);
+    note(`unconsumedAtEnd: circle=${liveHas(circle.id)} · band=${liveHas(band.id)}`);
     return edges.length === 1 && edges[0].parent === circle.id && liveHas(circle.id) && liveHas(band.id);
   })());
 

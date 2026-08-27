@@ -8,8 +8,8 @@
 // carries the operation, ALONE — the same committed `GenealogyEdge.operation`
 // the foot record prints (`footRecord` reads `edges[0].operation`): one
 // field, two readers, never a second producer. Nothing else rides the edge —
-// in particular NOT `GenealogyEdge.death`, whose sense predates ADR 0027 §4's
-// split and is refused off the drawing (B-120 §2.3).
+// in particular NOT `GenealogyEdge.consuming` (renamed from `death`, F1): an
+// op-kind fact the designer refused off the drawing (B-120 §2.3, permanent).
 //
 // This module is the PURE model of that drawing — midpoint, arrowhead, and
 // the E.5 yield — so a witness can import the real functions without

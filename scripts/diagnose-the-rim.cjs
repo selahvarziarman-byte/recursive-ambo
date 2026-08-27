@@ -207,7 +207,7 @@ check('REFINE MINTS NO GENEALOGY: the refined form keeps its id, name and genera
       edges: d.edges.map((e) => `${e.parent}->${e.child}:${e.operation ?? ''}`).sort(),
     });
     return identity && stamped && dagKey(dagBefore) === dagKey(dagAfter) &&
-      dagAfter.liveAtEnd.includes(fx.born.id) &&
+      dagAfter.unconsumedAtEnd.includes(fx.born.id) &&
       out.refinement.typeClaim === 'resolution';
   }));
 check('THE CARRIER IS SURJECTIVE new→old: every cell of the refined form (vertices · edges · faces) maps to an old cell whose closure contains it — midpoints and refined edges to the edge they subdivide (bound through the recovery\'s own materialized complex, unambiguous even for parallel loop classes), the disk/remainder/chord to the face — and every OLD cell has a preimage',

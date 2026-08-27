@@ -85,8 +85,8 @@ const chi = (s) => Object.keys(s.vertices).length - s.edges.length + s.faces.len
 const dagKey = (d) =>
   JSON.stringify({
     nodes: d.nodes.map((n) => `${n.id}:${n.birthOperation}`).sort(),
-    edges: d.edges.map((e) => `${e.parent}->${e.child}:${e.operation}:${e.death}`).sort(),
-    live: [...d.liveAtEnd].sort(),
+    edges: d.edges.map((e) => `${e.parent}->${e.child}:${e.operation}:${e.consuming}`).sort(),
+    live: [...d.unconsumedAtEnd].sort(),
   });
 const chordAimOn = (shape) => {
   const pairKey = (a, b) => (a < b ? `${a}|${b}` : `${b}|${a}`);
@@ -143,7 +143,7 @@ check('★ §1 BAND: χ cannot move (measured 0→0) and the DAG edge stays prod
       const d0 = buildGenealogyDag([ring, band]);
       const d1 = buildGenealogyDag([ring, bandSplit.shape]);
       return dagKey(d0) === dagKey(d1) &&
-        d1.edges.length === 1 && d1.edges[0].operation === 'product' && d1.edges[0].death === false;
+        d1.edges.length === 1 && d1.edges[0].operation === 'product' && d1.edges[0].consuming === false;
     })());
 
 // flavor B — the combine CHILD (word 'assemble', consuming birth), reshaped IN PLACE
@@ -180,11 +180,11 @@ if (birth.ok) {
           chi(rs) === -2);
       const p0 = buildGenealogyDag([T.born, ring, band, child]);
       const p1 = buildGenealogyDag([T.born, ring, band, rs]);
-      note(`family DAG edges: [${p0.edges.map((e) => `${e.operation}/${e.death}`).sort().join(', ')}]`);
+      note(`family DAG edges: [${p0.edges.map((e) => `${e.operation}/${e.consuming}`).sort().join(', ')}]`);
       check('★ §1 CHILD: the family DAG is KEY-EQUAL before/after the reshape — the birth edges keep assemble/death=true, the child STAYS LIVE, nothing relabeled',
         dagKey(p0) === dagKey(p1) &&
-          p1.edges.filter((e) => e.child === rs.id).every((e) => e.operation === 'assemble' && e.death === true) &&
-          p1.liveAtEnd.includes(rs.id));
+          p1.edges.filter((e) => e.child === rs.id).every((e) => e.operation === 'assemble' && e.consuming === true) &&
+          p1.unconsumedAtEnd.includes(rs.id));
     }
   }
 }

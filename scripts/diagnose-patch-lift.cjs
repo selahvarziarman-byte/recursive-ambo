@@ -154,13 +154,13 @@ check('§5.4 patch-lift is registered in the merge-birth family: edge S->L carri
 // sub-region and leaves the source byte-unchanged, so it must NOT retire S.
 check(
   '§5.4 patch-lift is NON-CONSUMING: S stays in the LIVE population (record still gains L + the S->L edge)',
-  dag.liveAtEnd.includes(S.id) &&
+  dag.unconsumedAtEnd.includes(S.id) &&
     dag.record.some((event) => event.kind === 'birth' && event.node === L.id) &&
-    !dag.record.some((event) => event.kind === 'death' && event.operation === 'patch-lift') &&
+    !dag.record.some((event) => event.kind === 'consumption' && event.operation === 'patch-lift') &&
     Boolean(slEdge) &&
-    slEdge.death === false,
+    slEdge.consuming === false,
 );
-note(`DAG: L.depth=${lNode.depth} parents=${JSON.stringify(lNode.parents)} edge U=${slEdge.U} (w1 bit=${w1Bit}, derived) liveAtEnd=${JSON.stringify(dag.liveAtEnd)}`);
+note(`DAG: L.depth=${lNode.depth} parents=${JSON.stringify(lNode.parents)} edge U=${slEdge.U} (w1 bit=${w1Bit}, derived) unconsumedAtEnd=${JSON.stringify(dag.unconsumedAtEnd)}`);
 
 // ===== [5] manifold soundness + the MEASURED invariants =====
 console.log('\n----- [5] MANIFOLD SOUNDNESS + INVARIANTS (χ, w₁ measured, blind) -----');

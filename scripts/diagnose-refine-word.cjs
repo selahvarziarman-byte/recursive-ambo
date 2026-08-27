@@ -93,10 +93,10 @@ const chi = (s) => Object.keys(s.vertices).length - s.edges.length + s.faces.len
 const dagKey = (d) =>
   JSON.stringify({
     nodes: d.nodes.map((n) => `${n.id}:${n.birthOperation}`).sort(),
-    edges: d.edges.map((e) => `${e.parent}->${e.child}:${e.operation}:${e.death}`).sort(),
+    edges: d.edges.map((e) => `${e.parent}->${e.child}:${e.operation}:${e.consuming}`).sort(),
     record: d.record.map((r) => `${r.kind}:${r.node}:${r.operation}`),
-    live: [...d.liveAtEnd].sort(),
-    pop: d.populationPath,
+    live: [...d.unconsumedAtEnd].sort(),
+    pop: d.unconsumedPath,
   });
 const noRefineAnywhere = (d) =>
   !d.nodes.some((n) => n.birthOperation === 'refine') &&
@@ -191,7 +191,7 @@ check('★ §2 the DAG over [parent, born, refined] === the DAG over [parent, bo
 check("★ §2 NO 'refine' anywhere in the record (nodes · edges · events) — the resolution begets nothing",
   dagThrew === null && noRefineAnywhere(dag1));
 check('§2 NOTHING CONSUMED: the born form (the refine\'s own parent expression) STAYS LIVE',
-  dagThrew === null && dag1.liveAtEnd.includes(bornT.born.shape.id));
+  dagThrew === null && dag1.unconsumedAtEnd.includes(bornT.born.shape.id));
 let dagA1ok = false;
 try {
   const dagA0 = buildGenealogyDag([loaded]);
@@ -302,7 +302,7 @@ const storeDag = buildGenealogyDag(Object.values(G().forms).map((f) => f.shape))
 check("§5 the store DAG carries NO 'refine' (the transients were resolutions, never citizens) and the birth edges keep their own words",
   noRefineAnywhere(storeDag) && storeDag.edges.some((e) => e.operation === 'glue'));
 check('§5 a born-only population is untouched: [host, born] still walks to 2 nodes · 1 glue edge · death marked',
-  dag0 !== null && dag0.edges[0].operation === 'glue' && dag0.edges[0].death === true);
+  dag0 !== null && dag0.edges[0].operation === 'glue' && dag0.edges[0].consuming === true);
 
 // ---------------------------------------------------------------------------
 // §6 the wires, grepped on the working bytes

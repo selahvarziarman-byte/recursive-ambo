@@ -15,7 +15,7 @@
 //     Full battery: diagnose-combine-is-connected-sum.cjs.
 //   · PENTIMENTO === the DAG's consumed population: assemble parents die;
 //     a glue parent dies; DUALIZATION does not consume (NON_CONSUMING) — the
-//     pencil set is buildGenealogyDag(...).liveAtEnd's complement, never a
+//     pencil set is buildGenealogyDag(...).unconsumedAtEnd's complement, never a
 //     chosen visual state.
 //   · STEMMA === the committed GenealogyEdges, Q3 transitive-reduced.
 //   · THE RECORD === the same reduced committed DAG: on the two-generation
@@ -156,10 +156,10 @@ const c = invokePrimitive('triangle', 3);
   check('the connect-sum consumes: BOTH parents are pentimenti (two ghosts owed, two recorded); the child is live',
     genesis && genesis.pentimentoIds.has(tA.id) && genesis.pentimentoIds.has(tB.id) &&
     !genesis.pentimentoIds.has(child.born.shape.id) &&
-    JSON.stringify(genesis.dag.liveAtEnd) === JSON.stringify([child.born.shape.id]));
-  check('the pentimento set === the DAG liveAtEnd complement (no chosen visual state)',
+    JSON.stringify(genesis.dag.unconsumedAtEnd) === JSON.stringify([child.born.shape.id]));
+  check('the pentimento set === the DAG unconsumedAtEnd complement (no chosen visual state)',
     genesis && [...genesis.pentimentoIds].sort().join(',') ===
-      genesisStoryShapes(written).map((s) => s.id).filter((id) => !genesis.dag.liveAtEnd.includes(id)).sort().join(','));
+      genesisStoryShapes(written).map((s) => s.id).filter((id) => !genesis.dag.unconsumedAtEnd.includes(id)).sort().join(','));
   // a glue parent is consumed too (glue ∉ NON_CONSUMING)
   const sq = invokePrimitive('square', 6);
   const glueBorn = applyPlaygroundOperationTo('glue-cylinder', sq.shape, null, 7, 8);
@@ -171,8 +171,8 @@ const c = invokePrimitive('triangle', 3);
   const dualBorn = applyPlaygroundOperationTo('dual', torus.shape, null, 8, 8);
   const dualGenesis = readGenesis([torus.shape, dualBorn.born.shape]);
   check('dualization does NOT consume: the dualized torus stays live (both live)',
-    dualGenesis && dualGenesis.pentimentoIds.size === 0 && dualGenesis.dag.liveAtEnd.length === 2);
-  note(`assemble deaths: ${genesis ? [...genesis.pentimentoIds].length : '?'} | dual deaths: ${dualGenesis ? dualGenesis.pentimentoIds.size : '?'}`);
+    dualGenesis && dualGenesis.pentimentoIds.size === 0 && dualGenesis.dag.unconsumedAtEnd.length === 2);
+  note(`assemble consumptions: ${genesis ? [...genesis.pentimentoIds].length : '?'} | dual consumptions: ${dualGenesis ? dualGenesis.pentimentoIds.size : '?'}`);
 }
 
 // ----- stemma + record === the committed reduced DAG -------------------------

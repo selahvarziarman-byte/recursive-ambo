@@ -179,19 +179,19 @@ note(`w1Glue=${w1Glue} -> U=${edgeOf(ids.F1, ids.F3).U} ; flip w1=${w1Flip} -> U
 // ===== [7] §5.7 monotone record vs non-monotone population =====
 console.log('\n----- [7] MONOTONE RECORD vs NON-MONOTONE POPULATION -----');
 const births = dag.record.filter((e) => e.kind === 'birth');
-const deaths = dag.record.filter((e) => e.kind === 'death');
-check('§5.7 record events === 8 (5 births + 3 deaths)', dag.record.length === 8 && births.length === 5 && deaths.length === 3);
-check('§5.7 deaths are {F1,F2 (assemble), T (ambo)}', eq(sorted(deaths.map((e) => e.node)), sorted([ids.F1, ids.F2, ids.T])));
-check('§5.7 live population path === [1,2,1,2,2] (NON-monotone — drops at assemble)', eq(dag.populationPath, [1, 2, 1, 2, 2]));
-check('§5.7 population is non-monotone (a real drop)', dag.populationPath.some((v, i) => i > 0 && v < dag.populationPath[i - 1]));
-check('§5.7 live-at-end === 2 {F3,Tprime}', eq(sorted(dag.liveAtEnd), sorted([ids.F3, ids.Tprime])));
-note(`record=${dag.record.length} (births=${births.length},deaths=${deaths.length}) ; path=${JSON.stringify(dag.populationPath)} ; live-at-end=${dag.liveAtEnd.length}`);
+const consumptions = dag.record.filter((e) => e.kind === 'consumption');
+check('§5.7 record events === 8 (5 births + 3 consumptions)', dag.record.length === 8 && births.length === 5 && consumptions.length === 3);
+check('§5.7 consumptions are {F1,F2 (assemble), T (ambo)}', eq(sorted(consumptions.map((e) => e.node)), sorted([ids.F1, ids.F2, ids.T])));
+check('§5.7 unconsumed path === [1,2,1,2,2] (NON-monotone — drops at assemble)', eq(dag.unconsumedPath, [1, 2, 1, 2, 2]));
+check('§5.7 the census is non-monotone (a real drop)', dag.unconsumedPath.some((v, i) => i > 0 && v < dag.unconsumedPath[i - 1]));
+check('§5.7 unconsumed-at-end === 2 {F3,Tprime}', eq(sorted(dag.unconsumedAtEnd), sorted([ids.F3, ids.Tprime])));
+note(`record=${dag.record.length} (births=${births.length},consumptions=${consumptions.length}) ; path=${JSON.stringify(dag.unconsumedPath)} ; unconsumed-at-end=${dag.unconsumedAtEnd.length}`);
 
 // ===== [8] §5.8 TOOTH — integrity ACCEPTS the valid DAG, REJECTS both broken variants =====
 console.log('\n----- [8] TOOTH (integrity must BITE) -----');
 check('§5.8 valid DAG is ACCEPTED (acyclic && lineage⊆parents)', dag.integrity.accepted === true);
 // (a) inject a cycle: an edge Tprime->T (depth 1 -> 0) has no consistent depth.
-const cycleEdges = [...dag.edges, { parent: ids.Tprime, child: ids.T, operation: 'ambo-dissection', death: false }];
+const cycleEdges = [...dag.edges, { parent: ids.Tprime, child: ids.T, operation: 'ambo-dissection', consuming: false }];
 const cycleVerdict = assessIntegrity(dag.nodes, cycleEdges);
 check('§5.8(a) injected cycle (Tprime->T) is REJECTED (not acyclic)', cycleVerdict.accepted === false && cycleVerdict.acyclic === false);
 // (b) inject a ghost source on F3 (GHOST:Z not in F1/F2 vertices).
