@@ -11,8 +11,8 @@
 //   · the CHILD is the committed `executeAssemblePair` (the real `assemble`;
 //     a multi-parent root whose shape-level sources pull back to BOTH parents);
 //   · the PENTIMENTO SET is the DAG's OWN consumed population — every shape in
-//     the record NOT in `buildGenealogyDag(...).liveAtEnd` (the engine's
-//     death-marking: assemble/glue/flip-glue/collapse/cut consume; invoke/
+//     the record NOT in `buildGenealogyDag(...).unconsumedAtEnd` (the engine's
+//     consumption-marking: assemble/glue/flip-glue/collapse/cut consume; invoke/
 //     patch-lift/dualization do not) — never a chosen visual state;
 //   · the STEMMA edges ARE the committed `GenealogyEdge`s, Q3
 //     transitive-reduced (`transitiveReduceEdges` — direct parents only);
@@ -189,7 +189,7 @@ export function birthChild(
 export interface GenesisReading {
   dag: GenealogyDag;
   reducedEdges: GenealogyEdge[]; // Q3 — direct parents only (the canon ruling)
-  pentimentoIds: Set<ShapeId>; // the REALLY-consumed: in the story, not in liveAtEnd
+  pentimentoIds: Set<ShapeId>; // the REALLY-consumed: in the story, not in unconsumedAtEnd
   accepted: boolean; // dag integrity — surfaced, never hidden
   violations: string[];
 }
@@ -238,11 +238,11 @@ export function genesisStoryShapes(
 export function readGenesis(storyShapes: Shape[]): GenesisReading | null {
   if (storyShapes.length === 0) return null;
   const dag = buildGenealogyDag(storyShapes);
-  const live = new Set(dag.liveAtEnd);
+  const unconsumed = new Set(dag.unconsumedAtEnd);
   return {
     dag,
     reducedEdges: transitiveReduceEdges(dag),
-    pentimentoIds: new Set(storyShapes.map((s) => s.id).filter((id) => !live.has(id))),
+    pentimentoIds: new Set(storyShapes.map((s) => s.id).filter((id) => !unconsumed.has(id))),
     accepted: dag.integrity.accepted,
     violations: dag.integrity.violations,
   };

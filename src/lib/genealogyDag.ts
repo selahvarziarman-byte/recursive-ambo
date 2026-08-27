@@ -6,7 +6,7 @@
 // (`ShapeGenealogy` — `parentShapeId` and the shape-level `sourceVertexIds`) FORWARD;
 // it invents NO second parentage model and mutates no shape. Three faces:
 //
-//   • the DAG proper — depth, the birth `OperationKind` on each edge, a death marker
+//   • the DAG proper — depth, the birth `OperationKind` on each edge, a consuming marker
 //     for consumed parents, and queryable ancestry / descent;
 //   • the integrity invariants (the tooth) — (a) acyclic (depth strictly increases
 //     along every edge) and (b) lineage ⊆ parents (a node's `createdBy.sourceVertexIds`
@@ -29,19 +29,19 @@ import { buildIncidenceTraceRegistry, type SiteIncidenceReading } from './incide
 // The glue family — these edges carry the orientation sign `U` (charter §3.2/§4.6).
 const GLUE_KINDS: ReadonlySet<OperationKind> = new Set<OperationKind>(['glue', 'flip-glue', 'assemble', 'patch-lift']);
 
-// In the LIVE population an operation consumes (retires) its parents; the standing
+// In the walk's UNCONSUMED census an operation consumes (retires) its parents; the standing
 // RECORD, by contrast, never shrinks. The non-consuming cases are `invoke` (a
 // from-scratch birth — no parent), `patch-lift` (a lift READS a sub-region and
-// leaves the source byte-unchanged — the source stays live; mothership ruling
+// leaves the source byte-unchanged — the source stays unconsumed; mothership ruling
 // "Route-B patch-lift RATIFIED; NON-CONSUMING"), `dualization` (the surface
 // Poincaré dual REFLECTS its source — M and M* coexist; mothership ruling
 // Q6/ADR 0020 "single-parent NON-consuming birth", sanctioned 2026-07-04), and
 // `product` (E3 — the seat this comment held as "deferred" since it was
 // written, filled by THICKEN, 2026-07-18, sealed 039feb1b…82cae: A×I is a
 // dim+1 birth whose projection π_A recovers the parent exactly — the parent
-// stays live; NO pentimento; manifest re-sealed in the same change), and
+// stays unconsumed; NO pentimento; manifest re-sealed in the same change), and
 // `refine` (REFINE'S WORD, 2026-07-29: a RESOLUTION is not a birth — nothing
-// is consumed because nothing is begotten; the form itself stays live), and
+// is consumed because nothing is begotten; the form itself stays unconsumed), and
 // `open-lift` (DOOR 3, 2026-08-13, sovereign-ruled Option B: the open-star
 // extractor READS a star sub-region and leaves the terrain byte-unchanged —
 // patch-lift's carriage MINUS its closure; deliberately NOT in GLUE_KINDS
@@ -76,12 +76,13 @@ export interface GenealogyEdge {
   parent: ShapeId;
   child: ShapeId;
   operation: OperationKind; // the child's birth operation
-  death: boolean; // the parent is consumed (retired from the live population) by this op
+  consuming: boolean; // this birth's operation KIND consumes the parent — an op-kind fact,
+  // never page liveness (ADR 0027 §4's three senses live elsewhere; renamed from `death`, F1)
   U?: 1 | -1; // orientation sign on glue/flip-glue/assemble edges = (-1)^w1 (seam-readiness)
 }
 
 export interface GenealogyEvent {
-  kind: 'birth' | 'death';
+  kind: 'birth' | 'consumption';
   node: ShapeId;
   operation: OperationKind;
 }
@@ -96,9 +97,9 @@ export interface IntegrityReport {
 export interface GenealogyDag {
   nodes: GenealogyNode[];
   edges: GenealogyEdge[];
-  record: GenealogyEvent[]; // the MONOTONE append-only log (births + deaths) — never shrinks
-  populationPath: number[]; // live count after each birth (with its consumptions) — NON-monotone
-  liveAtEnd: ShapeId[]; // the surviving live population
+  record: GenealogyEvent[]; // the MONOTONE append-only log (births + consumptions) — never shrinks
+  unconsumedPath: number[]; // unconsumed count after each birth (with its consumptions) — NON-monotone
+  unconsumedAtEnd: ShapeId[]; // never consumed by any op in the walk — an op-kind census, never page liveness
   integrity: IntegrityReport;
 }
 
@@ -144,7 +145,7 @@ export function buildGenealogyDag(shapes: Shape[], options: BuildOptions = {}): 
   const orientation = options.orientation ?? {};
 
   // REFINE'S WORD — the non-begetting walk: a resolution shape is not a
-  // citizen of the record (no node, no edge, no birth/death event); the walk
+  // citizen of the record (no node, no edge, no birth/consumption event); the walk
   // reads only the born population.
   const citizens = shapes.filter((shape) => !RESOLUTION_KINDS.has(shape.genealogy.operation));
 
@@ -199,43 +200,43 @@ export function buildGenealogyDag(shapes: Shape[], options: BuildOptions = {}): 
     };
   });
 
-  // Edges: one per (parent → child), carrying the child's birth op, the death marker, and
+  // Edges: one per (parent → child), carrying the child's birth op, the consuming marker, and
   // U on glue/flip-glue/assemble edges (when an orientation reading was supplied).
   const edges: GenealogyEdge[] = [];
   for (const node of nodes) {
-    const death = !NON_CONSUMING.has(node.birthOperation);
+    const consuming = !NON_CONSUMING.has(node.birthOperation);
     const w1 = orientation[node.id]?.w1;
     const carriesU = GLUE_KINDS.has(node.birthOperation) && w1 !== undefined;
     for (const parent of node.parents) {
-      const edge: GenealogyEdge = { parent, child: node.id, operation: node.birthOperation, death };
+      const edge: GenealogyEdge = { parent, child: node.id, operation: node.birthOperation, consuming };
       if (carriesU) edge.U = seamSign(w1 as 0 | 1);
       edges.push(edge);
     }
   }
 
-  // The MONOTONE record (births + deaths, append-only) and the NON-monotone live
-  // population, walked in birth (input) order. A consuming birth retires its parents.
+  // The MONOTONE record (births + consumptions, append-only) and the NON-monotone
+  // unconsumed census, walked in birth (input) order. A consuming birth retires its parents.
   const record: GenealogyEvent[] = [];
-  const alive = new Set<ShapeId>();
-  const populationPath: number[] = [];
+  const unconsumed = new Set<ShapeId>();
+  const unconsumedPath: number[] = [];
   for (const node of nodes) {
     record.push({ kind: 'birth', node: node.id, operation: node.birthOperation });
-    alive.add(node.id);
+    unconsumed.add(node.id);
     if (!NON_CONSUMING.has(node.birthOperation)) {
       for (const parent of node.parents) {
-        record.push({ kind: 'death', node: parent, operation: node.birthOperation });
-        alive.delete(parent);
+        record.push({ kind: 'consumption', node: parent, operation: node.birthOperation });
+        unconsumed.delete(parent);
       }
     }
-    populationPath.push(alive.size);
+    unconsumedPath.push(unconsumed.size);
   }
 
   return {
     nodes,
     edges,
     record,
-    populationPath,
-    liveAtEnd: [...alive],
+    unconsumedPath,
+    unconsumedAtEnd: [...unconsumed],
     integrity: assessIntegrity(nodes, edges),
   };
 }

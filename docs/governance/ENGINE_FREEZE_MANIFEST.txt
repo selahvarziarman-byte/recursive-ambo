@@ -47,7 +47,7 @@ src/lib/connectedSum.ts                 d8b6c0d269f6847b50f29c3190199ed290096319
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c
 src/lib/dualization.ts                  f450a61ca363e915b40374cd0707f6bc878680649d6057389bf49a90eb14d2a0
 src/lib/faceIdentification.ts           3be2c16f050c307df502995c89c3d68234a8ef235ce0d1a3a6e8593c0b5e515d
-src/lib/genealogyDag.ts                 76ba420359ed9a9f043f6993387973e23adba80c76a76cc9edff01df1d28be21
+src/lib/genealogyDag.ts                 c8b6f219438ce8b9c17088044771123169ca8dc3f48c82904747d71bed890ffc
 src/lib/globalW1.ts                     3209127d540d80c7a0734c6989f745423fc1cb3c1fe3103bbfb73dc1da13e207
 src/lib/ids.ts                          3de67f4590eb2ce56a51a061bb8e05047b77b0e846fd45d11c9c171e9f22703e
 src/lib/incidenceTraceRegistry.ts       f052da294632da927f28c385abd63cda5c134d8431e6dc05a0b94467cc0dccf0
@@ -70,7 +70,7 @@ src/manuscript/InkedDomain.tsx          067f04c99043a5606ebe96de4669e47e2cab6231
 src/manuscript/InkedForm.tsx          b7a8f9a1e4f2e8fc10e70422babad050491316210ad8e274fb3baf901cce2d15
 src/manuscript/classBodyModel.ts        177de3e916a7f7a7cf2d8e4f97366eeef00d70b3a7f6b7fa6aa70e4f76bff0a2
 src/manuscript/faithfulBodyModel.ts     b72ba46a22118401d7dfde3b08b9c006899bf39e0f3b3cd5300094ea248d42e4
-src/manuscript/genesisModel.ts          3b6bde076dcfcd1be7891c5e1b7fc8977f2dca1df6a5cfc8c290b915c784b74f
+src/manuscript/genesisModel.ts          357e1682ccf362b42a4c7d65ff402fd042c821a74fb8b7d435bbcd4b9e2d8f1c
 src/manuscript/inkedFormModel.ts        9ddcff0fc8455f8e469726af4d5cdd75b5ab37f620a9bbcf96e84bb70be366fb
 src/manuscript/optionBModel.ts          b8947f23be817e0c1c5312276dfa596a67723c491bba8d7ce97bb2e494dd35b1
 src/manuscript/specimenModel.ts         f4368d9f461af99b58c132157093127b06ae457264eed0604a8e7c23e4015f71
