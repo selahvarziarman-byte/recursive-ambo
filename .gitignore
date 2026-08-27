@@ -59,3 +59,4 @@ instruments/*
 # which committed reports CITE BY NAME as evidence of specific runs. Fresh
 # captures land here and are never the record.
 scripts/app-leg/_frames/
+scripts/.sweep-times.json

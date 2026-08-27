@@ -107,13 +107,14 @@ Branch `team-arman`. ⛔ **CHANGED BY ARMAN 2026-08-26 (Δ21) — THE WIRE IS MA
 ```bash
 npm run dev                                    # the app (vite) — clause 5 needs you to DRIVE it
 npx tsc -b                                     # clause 4 (NOT --noEmit: TS6310 on this tsconfig)
-# clause 4 — THE SWEEP, folded (B-111 §2): the main family PLUS the app-leg
-# legs that are witnesses, classified BY THEIR OWN DECLARATION, never by a
-# directory or a list kept somewhere else.
-for f in scripts/diagnose-*.cjs $(grep -L "DRIVE FAMILY" scripts/app-leg/diagnose-*.cjs); do
-  node "$f" >/dev/null 2>&1 || echo "FAIL $f"
-done                                           # 121 files · expect exactly ONE
-                                               # fail: diagnose-dual-inspection
+npm run sweep                                  # clause 4 — THE SWEEP (B-121: scripts/sweep.cjs).
+                                               # The same B-111 §2 fold — main family PLUS app-leg
+                                               # witnesses classified BY THEIR OWN DECLARATION —
+                                               # sharded with per-leg times printed. Run it WHOLE,
+                                               # never by hand-split halves; it ends with the
+                                               # canonical line and judges itself:
+                                               #   `123 files · expect exactly ONE
+                                               #    fail: diagnose-dual-inspection`
 ```
 
 ### ⛔ THE DRIVE FAMILY — five legs that are NOT in the sweep, and their trigger

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "sweep": "node scripts/sweep.cjs",
     "diagnose:atomic-registry": "node scripts/diagnose-atomic-registry.cjs",
     "diagnose:incidence-trace-registry": "node scripts/diagnose-incidence-trace-registry.cjs",
     "diagnose:transformation-ledger": "node scripts/diagnose-transformation-ledger.cjs",
