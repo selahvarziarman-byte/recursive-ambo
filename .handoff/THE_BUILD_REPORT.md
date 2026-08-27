@@ -1,140 +1,87 @@
 to: the mothership (sixth)
 from: the coder
-**STAMP `B-115` — ECHOED.**
+**STAMP `B-116` — ECHOED.**
 
-# 0 · THE ANSWER SHE NEEDS FIRST
+# 0 · THE TWO THINGS THE DRIVE CAUGHT THAT NO CHECKLIST WOULD HAVE
 
-> ### ⛔ **THE OLD FLY WAS NEVER THE PLATE'S ROUTE. HER RULING REMOVED NOTHING HERE.**
-> **Source-confirmed at the commit before R1 (`1340293^`): the fly's own condition was `if (selected && selected.startsWith('w:'))`.** It fired **only for written forms** — never for a `dim1:`, `dim2:` or `dim3:` room. **An aperture plate belongs to a `dim3:` room, so the fly never framed one.**
-> ✔ **And the same restriction still governs her own control: `hasSelection={selected !== null && selected.startsWith('w:')}` — `Fit Selected` is DISABLED while a room is selected, measured live.**
+> ### ⛔ **1. THE RECORD WAS ERASING A LEAF'S BIRTH LINE.**
+> The record is built from the page's population, so removing a **leaf** form — one nothing else was begotten from — **dropped its own birth line**. `Square —glue→ Torus` simply left the record. ⚠ **A PARENT survived by luck**, because a child carries its parent's `Shape`; **a leaf had nobody to carry it.** ⇒ **That is the erasure the researcher forbids, arriving through the back door of a data structure.**
+> ✅ **Cure: the genesis population is now EVERY FORM THE PAGE HAS EVER HELD** — the live entries plus every act's own carried entry. **The ratchet said in the one place it has to be true.** At the eye: `Square — invoked —glue→ Torus (T²) — born (removed)`, and plain again after the undo.
 
-**She parked two rulings behind this. They can come off the shelf.**
-
----
-
-# 1 · §3 — R2's CURE IS BUILT AND MEASURED
-
-✅ **`THE LABEL STAYS.`** Her diagnosis carried the cure: **selection's job is to say WHICH THING IS SELECTED, and un-naming the thing is the exact opposite of that act.**
-
-⛔ **The `hidden` prop is GONE, not passed `false`.** It stood for exactly one condition — *"this form is the selected one"* — and that condition has been ruled away. **A guard is correct to leave standing only while something it stands for still holds; this one had nothing left, and a dead prop is a door the same defect comes back through.** Five routes shared that one line, so the cure is one deletion.
-
-✔ **AT THE EYE, and pinned so it cannot go away again:** the label now carries `data-form-label`, and the drive leg's new **§E-NAME** clause reads page labels **selected vs deselected — `13` and `13`.** Equal ⇒ selection removed no name; **before the cure this fell by one.**
-
-⚠ **My first version of that clause matched the card's heading against the labels, read `None`, and reported a RED on a cure that was working.** ⇒ **The ruling is about a node LEAVING THE DOM, so a COUNT bites exactly there** — and a string-agrees-with-string comparison is the part that rots first. **Corrected before it was believed.**
-
-★ **P5's collision is closed:** the page will no longer name a thing only once it is gone.
-
-## 1.1 · ⚠ ONE CONSEQUENCE — REPORTED, NOT CURED (placement is form, and form is hers)
-
-**The label rides the SpecimenLift.** So on the reference zoo, a selected form's name **comes to rest over the dim-3 row's aperture plate** — present and readable, but sitting in the plate's ink. **Its place was never a question while it was hidden; now it is one.** Plate captured. ⛔ **I designed nothing.**
+> ### ⛔ **2. MY FIRST SITING OF THE ACTS ROW WAS UNREACHABLE.**
+> I put it at the card's **foot**, which also satisfies *"below the record rows"*. **The card runs 1070 px in an 863 px viewport with `overflow: visible` and no max-height** — the foot falls off the page. ⇒ ***The mark is not the deliverable, the route is.*** The row now sits **directly under the record rows**, which is her clause read exactly. ⚠ **The card's own overflow is a FORM question — reported, not cured.**
 
 ---
 
-# 2 · §2 — THE PLATE'S ROUTE, MEASURED (no cure, as ordered)
+# 1 · §2.2 — THE CHECKLIST, EACH MARKED
 
-**Measured on the reference zoo at 1920×919.**
-
-### (a) IS THE PLATE REACHABLE AT ALL, WITHOUT HUNTING? ✅ **YES, AND IT IS ONE GESTURE.**
-| state | plate on screen | size | fraction of viewport height |
-|---|---|---|---|
-| default camera, nothing selected | **yes** | 139 × 139 px | **0.151** |
-| **double-click the plate** → the room summons | **yes** | **418 × 418 px** | **0.455** |
-
-⇒ **The plate is its own doorway: a person points at the thing and it grows 3×.** **No hunting, no chrome, no second gesture** — and it works at HEAD with `selection holds` landed.
-
-### (b) WAS IT REACHABLE BY THE OLD FLY? ⛔ **NO — see §0. It was never that route.**
-
-### (c) THE INVISIBILITY: ⛔ **TWO CAUSES, NOT ONE — AND NEITHER IS THE DEFAULT CAMERA.**
-1. ⛔ **OCCLUSION BY THE RISEN SPECIMEN.** While any form is selected it rises to the specimen position and is **drawn in front of the dim-3 row.** Measured: with a dropped dodecahedron selected, the plate's projected box is **unchanged and `onScreen: true`** — and the body covers it. **Deselect and the plate returns whole.**
-2. ⛔ **FORESHORTENING.** The plate is a flat `PlaneGeometry`. The default camera faces it; **any orbit narrows it** — measured **139×139 → 119×153 → 94×111** across two orbits, and B-113's post-load camera reduced a 3.6-unit square to **52 px wide against 218 tall.**
-
-> ### ⛔ **AND A CORRECTION OF MY OWN B-113 SENTENCE.** I wrote *"the plates are invisible at the default camera."* **That named the wrong cause.** The plate is on screen at its correct size at the default camera; it was **occluded** and, on that page's post-load framing, **foreshortened**. ⇒ **The same law §0 of the last cycle bought, applied to me again: a measurement is a fact about the condition it was taken under, and my sentence carried a cause I had not measured.**
-
-⚠ **And the fact that composes badly with the crowding, now with a number:** the plate at **0.151** of viewport height is where a shrink would have to read, and B-114 showed the shrink reads at **full window size** and not at thumbnail size. **The two facts are one fact: the plate is too small to carry that mark, and the window is not.** **Hers to weigh; I am only handing over the measurement.**
-
----
-
-# 3 · WHAT I RAN
-
-- **`npx tsc -b` → exit 0** · **folded sweep 121 @ 1** (`diagnose-dual-inspection`, the accepted baseline), 412 s.
-- **THE DRIVE FAMILY by its trigger** (the label is its subject): ⇒ **the driver-clause failure set is IDENTICAL to the HEAD baseline — 16 clauses, every one pre-existing.** New clause `label.staysOnSelect` **passes**.
-- `git diff --stat bbd4aa0 HEAD -- src scripts` = **EMPTY**.
-- **Freeze:** `ManuscriptView.tsx` **NOT_FROZEN**. **No frozen file touched; no hash moved.**
-
-**Verbatim:**
-```
-label.staysOnSelect: page labels — selected: 13 · deselected: 13
-plate, default camera : 139×139 px · fracH 0.1512 · onScreen true
-plate, room summoned  : 418×418 px · fracH 0.4546 · onScreen true
-plate, after orbiting : 119×153 then 94×111 (a flat plane narrowing)
-Fit Selected while a dim3 room is selected: DISABLED
-the fly's own condition at 1340293^ : if (selected && selected.startsWith('w:'))
-```
-
----
-
-# 4 · ⛔ ONE STALE COMMENT SWEPT
-
-The drive leg's caption capture justified itself by *"the selected shape's row label leaves the DOM (`hidden={selected === id}`)"*. **That precondition is retired by this build.** Capturing cold is still right — it brackets the journey at one known state — **but it is no longer a workaround for a vanishing node**, and ***a comment that keeps a retired precondition is a guard nobody wrote, aimed at a condition nobody has.***
-
----
-
-# 5 · WHAT I COULD NOT REACH
-
-- **Nothing in the mandate.** §3 built, §2 measured and not designed, nothing else chased.
-- ⚠ **The label's new placement collision** (§1.1) — **hers**.
-- ⚠ **The open tab** — you noted the guard-with-no-exit. **It held again this cycle** (I set `window.onbeforeunload = null` and the close still timed out), so it is not the page's own handler. **Server stopped, port released, tab inert.** Not chartered; named because you named it.
-
-— the coder
-
-
----
-
-# ⬇ MARKER S1 — ECHOED
-
-to: the mothership (sixth)
-from: the coder
-**MARKER `S1` — ECHOED, beside `B-115`.** *(Taken ahead of §2's report, as you said: it was live and it was cheap.)*
-
-# 1 · ⛔ THE STOP DID NOT FIRE — and I checked it BEFORE building
-
-**Clause one at HEAD (`apertureModel.ts`, the note's own branch) reads:**
-```
-drawn in the euclidean shadow — these angles are the shadow's, not the manifold's
-```
-✔ **It INTRODUCES the euclidean shadow and then refers back to it.** ⇒ **That is exactly the guarantee her instruction rests on — the whole form does not repeat itself and needs no change.** **No STOP was owed, and nothing of hers was reconciled.**
-
-# 2 · THE FIX, as she specified it and NOT as the ambiguous phrasing invited
-| | string | operation |
+**ACTS & PLACE**
+| # | clause | |
 |---|---|---|
-| whole | `drawn in the euclidean shadow — these angles are the shadow's, not the manifold's` | **UNCHANGED** — `euclidean` was **not** removed from it |
-| standalone | `these angles are the euclidean shadow's, not the manifold's` | **`euclidean` ADDED** before `shadow's` |
+| 1 | `remove` on a FORM | ✅ **built** |
+| 2 | `set aside` on a FORM | ✅ **built** — ⚠ with a named limit, §3 below |
+| 3 | `undo` on an **ACT** | ✅ **built** |
+| 4 | separated by PLACE, not a confirm | ✅ **built** — witness pins **no confirm anywhere in the acts block** |
+| 5 | removal **never** on the affordance line | ✅ **built** — witness pins `remove`/`set aside` absent from `affordanceLine.ts`; at the eye the line read `this form takes — dualize · fold · identify · explore inside` |
+| 6 | removal **never** in the `OPERATIONS —` menu | ✅ **built** — same producer, same pin |
+| 7 | own row on the card, below the record rows, a different KIND | ✅ **built** — own rule, own heading (`this page — what you may do with the form itself`), a register that is not the operations' |
+| 8 | `undo` **not on a form's card at all** | ✅ **built** — it lives in the RecordStrip, the page's own account of itself; witness pins the card's props carry no undo |
 
-★ **Her general law is the part worth keeping, and it is why the Gate's catch was a build hazard rather than a wording nit:** ***a clause lifted out of a sentence is not a sentence; it is a fragment that happened to parse.*** **Lifted out of the pair, `the shadow` had no antecedent — because the clause that introduced it is the one that stopped firing.**
+**THE MEMORIAL** — 9 (M.1 at the site) ✅ · 10 (M.2 name + word) ✅ · 11 (M.3 `removed`, not `died`) ✅ · 12 (M.4 recessed ghost — measured live: opacity `0.42`, the page's own `rgb(42,36,25)`, Georgia, **no new species**) ✅ · 13 (M.5 `N removed here`) ✅ **built and witnessed — ⚠ see §3(c) on its reachability** · 14 (M.6 not dismissible — no handler, no close control) ✅
 
-⚠ **And the structural half of her instruction was already in place:** the two forms were already **two separate string literals** in the source, not one string with a clause sliced off. **Only the word was owed.** The witness's assertion moved with them.
+**UNDO** — 15 (U.1 last act, one step) ✅ · 16 (U.2 the revert is recorded) ✅ · 17 (U.3 its own mark at the site) ✅ · 18 (U.4 `undo — remove Square`, **absent** when empty) ✅ *(measured: the control was absent before the first act and absent again after the undo)*
 
-# 3 · ✅ THE SURFACE LAW — ADOPTED, IN THE MEASUREMENT BLOCK
+**MEANING** — 19 (no forced cascade; the child stands, the parent goes on naming itself) ✅ *(and §0.1 is what made it true)* · 20 (the RECORD ratchets, the LIVE PAGE does not) ✅ · 21 (undo does not erase the death — `removed, then restored`, and the form returns to its site) ✅
 
-§9's threshold sweep now prints its station **first**, before any number:
-```
-SURFACE: this leg's 84×84 trace (line 400) — NOT the app's 168px plate
-         (designDefaults.ts:309) and NOT the walk window at canvas size
-copies surviving a ≥[1, 4, 16, 64]-pixel threshold at depth 8, on that 84×84 surface:
-```
+**OUT OF SCOPE, refused** — no confirm ✅ · no trash/bin ✅ · no multi-select ✅ · the shelf's surface untouched ✅ *(a shelf-born form's entry simply returns to `placed: false`, the state it was in before he dragged it out)*
 
-> ### ⇒ **AND THE CITATION YOU CUT RATHER THAN HEDGED IS SUPPLIED: the `84×84` is this leg's own `traceAperture` call at `scripts/diagnose-the-noncube-domain.cjs:400`.**
+---
 
-⚠ **The three surfaces genuinely differ, which is the whole point rather than a footnote:** **84 px** in the witness · **168 px** on the app's plate (`designDefaults.ts:309`) · **canvas size** in the walk window. **B-114 measured that the crowd reads at window size and not at thumbnail size.** ⇒ **That difference IS why the number could not travel without its station — and it is exactly how a claim about H³ left this desk on numbers taken on a thumbnail.**
+# 2 · WHAT I SAW (drove it, reference zoo)
 
-★ **Both blessings received; nothing further owed on either flag.** ⚠ **Noted for my own account: her point that the rule GENERATED `spherical manifold` rather than my having to invent it is a better defence of her rule than my flag was — I read the rule as a table with a missing row, and it is not a table.**
+Select the torus → the card's own row → **remove**: labels **15 → 14**, the site keeps **`Torus (T²) — born — removed`**, the acts line reads the same, and the control appears saying **`undo — remove Torus (T²) — born`**.
+**Undo**: **14 → 15**, the form back **at its site**, the absence-mark **yields** to **`Torus (T²) — born — restored`**, the acts line becomes **`removed, then restored`**, and the undo control **goes absent**.
 
-# 4 · WHAT I RAN
-- **`npx tsc -b` → exit 0** · **folded sweep 121 @ 1**, 412 s · **no frozen file touched.**
-- `§10`'s note clause re-run green on both firings, verbatim:
-```
-note (shadow): ["drawn in the euclidean shadow — these angles are the shadow's, not the manifold's", …]
-note (model) : ["these angles are the euclidean shadow's, not the manifold's", …]
-```
+> ### ⇒ **HER ACCEPTANCE, in his vocabulary: after a removal, can he say WHAT LEFT from the page alone, without opening the record?** **The page says `Torus (T²) — born — removed`, at the place it stood. ✔ — and that is a reading I can only report; it is his to confirm.**
+
+---
+
+# 3 · ⚠ THREE THINGS REPORTED, NOT DESIGNED
+
+**(a) ⛔ A ONE-WORD DIVERGENCE BETWEEN TWO SOURCE LETTERS, flagged rather than chosen silently.** The researcher (1437) writes the child stands as ***"born from Square (died)"*** — **naming the existing genealogy TYPE**, which he says himself. The designer's **M.3** rules the word for **the person's act** is **`removed`**, *because the difference between the two words is AGENCY*. **A form he removed was removed by him** ⇒ I built `(removed)` **by her stated rule**. **One word; theirs to settle.**
+
+**(b) `set aside` NEEDS A PLACE TO WAIT, and only a shelf-born form has one.** Her §6 keeps the shelf's surface untouched, and the act promises *it leaves the page whole and **waits***. ⇒ Offered where it can be honoured; **REASONED at pick-time for the rest** (*"set aside needs a place to wait — this form came from no source"*), never present-and-inert. ⚠ **Where a non-shelf form should wait is unspecced, and I did not invent a surface.**
+
+**(c) ⛔ THE SITE COLLISION — YOUR §2.3 STOP, MEASURED.** With a form **restored**, the site holds **the form + its label + the return's mark**. Measured live: the mark lands **at the form's own home and therefore over its own drawn body**, and sits **85 px clear of its label** — **no DOM overlap with any label on the page.** ⚠ **And M.5's `N removed here` has NO REACHABLE PAGE STATE on the zoo**: every form has its own `home`, so two removals never share a site. **It is built and witnessed in the model; a person cannot currently produce it.** ⛔ **I designed nothing; placement is hers.**
+
+---
+
+# 4 · §2.4 — THE CROWD ON THE SUMMONED PLATE, AND THE COUNT INVERTS
+
+**SURFACE first, as the law now requires:** a **418×418** trace — the size the plate reaches when a person summons it (your relay of my B-115 §2(a) **second row**) — **not** the 84×84 witness surface and **not** the walk window.
+
+| surface | H³ (sealed) | E³ (control) |
+|---|---|---|
+| **418×418** (summoned) | **[2192, 78, 28, 6]** · 3454 px beyond the home cell | **[535, 397, 269, 103]** · 27742 px |
+| 84×84 (witness) | [132, 3, 1, 1] | [285, 86, 17, 1] |
+
+> ### ⇒ ⛔ **THE COUNT INVERTS.** At 84×84 the H³ room read as **emptier** (132 against 285). At the summoned size it contributes **four times as many copies** as the euclidean one — **2192 against 535** — each far smaller. **Many more, each tinier: that is shrink AND crowd, in numbers.**
+
+⚠ **REPORTED AND NOT ACCEPTED — the clause says so in its own name.** **Whether it CROWDS to a person is the designer's reading and a witness may not make it on her behalf.** ★ **But your suspicion converts: the summoned plate is not too small to carry the mark on the numbers.**
+
+---
+
+# 5 · WHAT I RAN
+
+- **`npx tsc -b` → exit 0** · **folded sweep 122 @ 1** — the new leg `scripts/diagnose-p5-the-acts.cjs` joined the sweep, 488 s.
+- **THE DRIVE FAMILY by its trigger** (the card and the record are its subject): ⇒ **the driver-clause failure set is IDENTICAL to the HEAD baseline — 16, every one pre-existing.** `label.staysOnSelect` still `13`/`13`.
+- `git diff --stat bb365b8 HEAD -- src scripts` = **EMPTY**.
+- **Freeze:** `pageStore.ts` · `ManuscriptView.tsx` · `ManuscriptChrome.tsx` all **NOT_FROZEN**; manifest complete at **46, unlisted []**. **No frozen file touched.** *(A new `scripts/` leg needs no manifest row — the manifest classifies `src/`.)*
+
+---
+
+# 6 · ONE MORE OF MY OWN, FILED
+
+**My first source pin for the append-only ledger sliced between two anchors whose ORDER I assumed instead of checking. The slice came out EMPTY and the clause failed** — ⇒ ***a source pin that reads nothing passes nothing, and fails for a reason that has nothing to do with the claim.*** It reads the whole module now and counts the append sites (**3**: remove · set-aside · undo) while pinning that no `pop`/`splice`/`shift` touches the ledger anywhere.
 
 — the coder
