@@ -1,61 +1,49 @@
 to: the mothership
 from: the coder
-clock (raw, verbatim): `Thu Aug 27 16:48:29 IST 2026` — mtime is the fact
-**STAMP ECHOED: `B-121`**
+clock (raw, verbatim): `Thu Aug 27 17:23:44 IST 2026` — mtime is the fact
+**STAMP ECHOED: `B-122` · MARKER ECHOED: `F1`**
 
 ## TO THE MOTHERSHIP
 
-1. ⛔ **§0.3 STOPS AT A FROZEN WALL — an unsanctioned frozen file, routed as the four-things law requires.** The rename's one writer lives in `src/lib/genealogyDag.ts`, which carries a bare `path<TAB>hash` row (manifest line 50) and is NOT on §6's sanctioned list. Your premise *"it is cheap: one writer, zero src readers"* is true of the SITES and silent on the FILE — the freeze law stops me before the spend. **The cut is PREPARED and waits on one word from Arman in-terminal** (I have asked him in this cycle's closing): the name is chosen (§3 below), every site is enumerated, and the shape is the freeze protocol's own — the frozen edit + its re-seal ALONE in one commit (positive control: the old hash `76ba420…` reproduced at the base), the five witness updates in the adjacent commit, suite green at the tip.
-2. **One adjacency named so nobody discovers it later as a miss:** `GenealogyEvent.kind: 'death'` (the DAG's population events) and `liveAtEnd`/`populationPath` carry the SAME pre-split consumption sense under the same word. Not ordered, not touched — but when the field is renamed, the event vocabulary one line below it will still say `death` in the old sense. Yours to rule whether that rides the same sanction or waits.
-3. **§2's measurement sharpened §2.1's question before the researcher rules:** the record's grain is not "invocation by act, everything else by result" — it is ONE uniform grain, **BY ROUTE** (§1 below: the child's id textually CONTAINS its parent's id and the map's own pairing). Note what that pairing-in-the-id implies for ADR 0027 §2's sentence "two maps that both yield a torus are ONE child": at HEAD, two maps are one child only when they are the SAME map on the same parent — a *different* pairing that still yields a torus would mint a SECOND id. The substrate is route-grained where §2's words are result-grained. His lane; my mechanism, handed over.
+1. ⛔⛔ **THE SANCTIONED SPEND STOPS AGAIN, ON F1's OWN BOUNDARY — the vocabulary reaches a SECOND frozen file.** Measured before touching anything: `liveAtEnd` has exactly ONE functional reader outside `genealogyDag.ts` — **`genesisModel.ts:241`** (`const live = new Set(dag.liveAtEnd);`, plus comment mentions at `:14` and `:192`) — and `genesisModel.ts` is FROZEN (manifest line 73, `3b6bde07…`). The other three names are clean: the `death` field zero src readers (B-120), the event literal `'death'` zero (genesisModel iterates `dag.record` but filters on `kind !== 'birth'` and never names the other kind), `populationPath` zero. ⇒ **The coherent rename's TRUE price: TWO frozen files — `genealogyDag.ts` (the vocabulary) + `genesisModel.ts` (one line + two comments).** F1: *"this sanction is one file, and his word does not travel further than the price I put to him"* — so I stopped. **Everything else is ready**: `consuming` ratified, `'birth' | 'consumption'` for the event kind, `unconsumedAtEnd` / `consumptionPath`(or keep `populationPath` if you rule its name honest — it asserts no liveness) as the candidates, both re-seals + both positive controls in ONE commit as one coherent act, witnesses adjacent, suite green at the tip. One more word from Arman covers the second file and it lands next cycle.
+2. **A `(c)` shadow that is the settle law's, routed to the designer with the plates:** at rest the one-parent-six-children page shows NO fan at all — all six children settle into ONE slot, six edges coincide into one visible line, and the six captions overprint into an unreadable smear (plate `b122_1_at_rest.png`). The fan — and with it the whole "one parent's remaining life" reading — exists only after the person drags the pile apart. Same law B-120 flagged at N=1, now seen at N=6: **the reading is drag-gated.** Hers to rule; nothing designed.
 
 ---
 
-## 1 · §0.1 — THE MEASUREMENT: SIX SQUARES, SIX IDS — your hypothesis is RIGHT, and the substrate declares it on purpose
+## 1 · §2.1's THREE COUNTS — the drive, one square worked to six children
 
-**One line, as offered: the six drawn squares carry SIX distinct shape ids.** And the better answer underneath, because the source says it in its own voice:
+**The page:** ONE invoked square; all six preset words applied to IT (`Glue → Torus` · `Glue → Cylinder` · `Flip-glue → Klein` · `Flip-glue → RP²` · `Flip-glue → Möbius` · `Collapse → Sphere`) — six landed, six children born, no refusals. No repeat begetting anywhere (six distinct routes — the forbidden state was not exercised).
 
-- **The mechanism is a committed DISCIPLINE, not an accident** — `invokePrimitive` (`writtenFormModel.ts:165-167`): *"unique source namespace per invocation — two invoked squares stay DISTINCT universes (the committed co-location ≠ identity discipline)"* → `loadForm(entry.build, \`w${seq}\`)`. The act's serial is IN the name.
-- **Run, not inferred** (node, through the committed doors): `invokePrimitive('square',1).shape.id = shape:multiform:w1:4-gon` · `('square',2) → shape:multiform:w2:4-gon` — distinct.
-- **The zoo's own recipe** (six invocations + the six `REFERENCE_OPS` preset words, the exact `summonZooForms` construction): **6 reduced edges · 6 distinct parent ids (`w11…w21`) · 6 distinct child ids · 6 record lines** — her ×12 (six stemma captions + six record lines) reproduced structurally at the substrate; her count was the screen half, this is the id half, and they agree.
-- ★ **THE GRAIN, whole — ids are ROUTES:** a born child's id is `shape:materialized:glue:<THE PARENT'S FULL ID>:<face>:<pairing>` — measured: `torus-of-w1 = shape:materialized:glue:shape:multiform:w1:4-gon:face:…:0-2p:1-3p`. So **same-parent same-map twins COLLAPSE to one id** (my B-120 item 1: two glues on one square, one child) and **cross-parent copies SPLIT** (torus-of-w1 ≠ torus-of-w2 — measured false on equality). Invocation is the route's ROOT ATOM (individuated by act); every birth is deterministic in (op · parent-route · face · pairing). One law, both ends of the page.
-- **And her sentence lands exactly where she aimed it:** *"which one is THE square?"* has no referent in the zoo AS BUILT — each reference child's parent is its OWN square (w11's torus, w13's Klein…), six one-child parents, no six-child parent anywhere. The page Arman's model describes — one square, all its children — exists only when a person invokes ONE square and works it (my B-120 drives were exactly that page). Whether the ZOO should be six universes or one is the meaning half, not mine.
+- **(a) — settled by her type read, and the drive hands it back for free: ONE parent point.** `rawLine2: 12` (six edges × ink+pick) · `distinctParents: 1`. After spreading: **six distinct segments, still ONE shared origin.** Six edges, one diamond — never six.
+- **(b) — THE BAND COUNT, load-bearing as asked: the band prints `Square — invoked` SIX times for ONE parent.** Strip occurrences: **6** (body 7 = the strip's six + the form's one caption). The strip text is six full sentences each restarting `Square — invoked ─op→ …`, and on this page they overflow the strip's width. **So her band argument is RESTORED on the page it was actually accused of failing: the six-fold repetition is the BAND's own structure — a linear band spends one full parent-print per child — while the stemma spends ONE point for the same six begettings.** (Her original zoo count was of a page with six real squares, where six prints were CORRECT — both counts stand, on their own pages.)
+- **(c) — WHAT A PERSON SEES (arrow-9, my eye on the plates):**
+  - **Arranged (plate `b122_3_fan_selected.png`): the fan is UNMISTAKABLE and it is not a tangle.** Six arrows radiate from one point, each with its arrowhead arriving at its own child — torus, cylinder, Klein, RP², Möbius, sphere, each a distinct body with its own caption — and with the parent selected, **all six verbs arrive at once** (`glue · glue · flip-glue · flip-glue · flip-glue · collapse`, measured in the DOM; E.5 had nothing to yield with the midpoints spread). It reads as ONE parent's six begettings at a glance — the branching, the routes, and the words, on one sheet. **It looks fine — better than fine.**
+  - **At rest (plate `b122_1_at_rest.png`): the same page shows a HEAP** — one line from the square into six superimposed bodies, captions overprinted illegibly. Not flattening, not six-unrelated-births: a pile. The TO-THE-MOTHERSHIP item 2 carries this to the designer.
+- **⇒ On the mandate's own stakes: the branching defect DOES NOT EXIST in the stemma.** ADR 0027 §7's premise (*the only display flattens one-parent-many-children*) is false of the stemma and was true of the page §7's drive was run on (six real parents) and of the BAND (measured six-fold). Whether §7 is retired and the parent-life build unblocked is the researcher's/yours; the counts are delivered.
 
-## 2 · §0.3 — THE RENAME, PREPARED TO THE WALL (nothing spent)
+## 2 · `F1` — THE SPEND, HELD AT ITS OWN BOUNDARY (§TO-THE-MOTHERSHIP item 1)
 
-- **The name I pick: `consuming`.** One line, as asked: the field then says exactly what its one writer computes — `consuming = !NON_CONSUMING.has(node.birthOperation)` — an op-kind fact named as one, sharing its word with the very set that produces it, and no liveness claim survives in the name.
-- **Every site, measured:** `genealogyDag.ts:79` (the field + its comment) · `:206` (the local) · `:210` (the edge literal) — the ONE frozen file. Witness follow-throughs (all NOT-frozen): `diagnose-patch-lift.cjs:161` · `diagnose-playground-operations.cjs:94-95` · `diagnose-refine-word.cjs:96,305` · `diagnose-the-page-subdivide.cjs:88,146,183,186` · `diagnose-genealogy-dag.cjs:194` · plus the stale mention in my own `stemmaLabelModel.ts` header comment. `tsc` then proves the type-shape change reached every consumer (the frozen `genesisModel` imports the TYPE and touches no field — its bytes hold).
-- ⛔ **Held at the freeze law: ask, never spend.** Routed above; asked in-terminal.
+Nothing spent, nothing renamed. The reach measurement is the whole §2 deliverable: one name (`liveAtEnd`) crosses into one more frozen file (`genesisModel.ts:241`), so per F1's explicit conditional I stopped and priced it. `76ba420…` (genealogyDag) verified still the manifest row; no hash moved this cycle.
 
-## 3 · §0.2 — THE SWEEP RUNNER: BUILT, MEASURED, AND IT JUDGES ITSELF
+## 3 · WHAT I RAN
 
-- **`npm run sweep` → `scripts/sweep.cjs`** — the three ratified steps: per-leg wall time printed BESIDE each leg; sharded (workers = cpus−1, measured against cpus/2 below); ONE command ending with the canonical line **byte-kept**: `123 files · expect exactly ONE fail: diagnose-dual-inspection`, then the verdict.
-- ★ **It cannot read all-green as OK:** exit 0 iff the failure set is EXACTLY the accepted one; the standing red is the runner's own positive control, and *"the accepted fail PASSED"* prints as its own loud RED (*the baseline moved — the positive control is gone*), never a silent pass. A sweep that lost the ability to see failure cannot report success.
-- **Classification byte-carried:** the same B-111 §2 fold — `scripts/diagnose-*.cjs` plus every app-leg `.cjs` WITHOUT a `DRIVE FAMILY` banner, read from the files' own declarations, no list kept anywhere else.
-- **Measured, three full runs, identical failure set each time (123 @ 1):** hand-split serial baseline ~614s → sharded at cpus/2 (2 workers on this 4-core box) **337.9s** → at cpus−1 (3 workers) **271.5s, and the wall IS the one heavy leg** (`the-field-in-the-specimen` 232-272s — two-thirds of the whole sweep's cost in one leg; the expense now has a face and a name). Longest-first scheduling rides a local ignored times cache (`scripts/.sweep-times.json`, gitignored — a scheduling hint, never a record; losing it costs one slower schedule).
-- **The doctrine points at it:** CLAUDE.md §6's command block now says `npm run sweep — run it WHOLE, never by hand-split halves` where the for-loop stood (the stale `121 files` count died with it). Flagged here because CLAUDE.md is the shared page: the edit mirrors your charter and nothing else.
+- **The drive** (playwright, dev server 5174, headed; the Windows Chrome extension still not connected): the six-op page, three counts, three plates at 2× DPI; server stopped and port verified released after.
+- **The sweep via its own runner at the tip: `123 files · expect exactly ONE fail: diagnose-dual-inspection` → `SWEEP OK`** (272.8s wall).
+- **The reach greps** for the four vocabulary names across `src/` (the §2 measurement).
+- **DRIVE FAMILY: trigger NOT fired** — no behaviour changed (this cycle builds nothing in `src/`; it measures, drives, and files).
+- **tsc**: not re-run beyond the runner's legs — zero source changes this cycle; the tip's tsc receipt stands from `B-121`.
 
-## 4 · WHAT I RAN
+## 4 · WHAT I CHANGED
 
-- `npx tsc -b` — exit 0.
-- **The sweep, three times, through its own new runner: 123 @ 1 each run** (the one accepted red; sharded result identical to B-120's serial baseline at this same HEAD — concurrency moved nothing).
-- The node probes of §1 (the committed doors via the transpile hook — no fixtures).
-- **The DRIVE FAMILY: trigger NOT fired** — this build changes no behaviour a person sees (`src/**` untouched; the runner, `package.json`, `.gitignore`, `CLAUDE.md`, and measurements only). The fifth witness's own rule: the family runs when the READING touches its subject; nothing here does.
-- **Freeze:** every touched file outside the census (`scripts/sweep.cjs` · `package.json` · `.gitignore` · `CLAUDE.md`); ZERO frozen files touched, zero hash lines moved, zero census rows needed.
+- **`docs/adr/0027-….md`** — NOT mine: the researcher's three-spot amendment (§2.1 form/instance/address — ids are ROUTES, addresses, never the child-set's grain; §3 the obtained-set precisely; §4 the which-mechanism footnote), audited against their notice, committed AS IT STANDS, attributed (`7b3ff9f`).
+- **`.handoff/THE_BUILD.md` / `THE_BUILD_REPORT.md`** — the record pair (this mandate + F1 + this letter).
+- **Nothing in `src/`, nothing frozen, nothing renamed.**
 
-## 5 · WHAT I CHANGED
+## 5 · WHAT I COULD NOT REACH
 
-- **`scripts/sweep.cjs` (NEW)** — the runner (§3).
-- **`package.json`** — the `sweep` script (step 3's one command).
-- **`.gitignore`** — the times cache.
-- **`CLAUDE.md` §6** — the command block only, for-loop → `npm run sweep`.
-- **`.handoff/THE_BUILD.md` / `THE_BUILD_REPORT.md`** — the record pair.
-- **NOT changed:** `GenealogyEdge.death` (held at the wall, §2) · anything in `src/` · the band · the zoo.
+- **The rename** — F1's boundary, measured and honoured (§2; the price is on your desk).
+- A spread-mechanics note for honesty: my first fan drive freed only 2 of 6 children (blind grabs); the re-cut verifies each drag GREW the distinct-segment count before advancing — 16-attempt budget, all six placed. The counts above are from the verified run.
 
-## 6 · WHAT I COULD NOT REACH
-
-- **The rename itself** — the frozen wall (§2, routed, asked). Everything short of the spend is done.
-
-`B-121` §0's order: (1) measured — six ids, hypothesis right, grain named; (2) built — the runner, three green runs, doctrine pointed; (3) prepared to the wall and STOPPED, name chosen. ⛔ Nothing further started. Arman's walks — P5, the drag, and now the label — are still owed, and his word on the frozen spend is the one thing this cycle waits on.
+`B-122` §0's order: (1) driven — three counts and the reading, including that it looks fine; (2) the rename held at the wall it named. `F1` echoed: the sanction consumed exactly as far as its own boundary allows, and the boundary fired. ⛔ Nothing further started. Arman's walks are still owed — P5, the drag, the label, and now a fan worth seeing.
 
 — the coder
