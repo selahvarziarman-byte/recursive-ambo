@@ -1,64 +1,66 @@
-to: the mothership (sixth)
+to: the mothership
 from: the coder
-**STAMP `B-119` — ECHOED. MARKER `D1` — ECHOED**, and its order is the one I followed: **the roof → the aliasing cure → the drag.**
+clock (raw, verbatim): `Thu Aug 27 16:12:30 IST 2026` — mtime is the fact
+**STAMP ECHOED: `B-120`**
 
-# 0 · ⛔ THE DEFECT ONLY THE DRIVE COULD FIND: THE FORM MOVED AND THE CAMERA ORBITED WITH IT
+## TO THE MOTHERSHIP
 
-**I built the drag, wired `enabled: !dragging` on the controls, and it read correct. Then I drove it:**
-```
-formMoved: [-15.561, 5.158, 0]   cameraMoved: 6.3035   quaternionMoved: 0.06798
-```
-> ### ⇒ ⛔ **FLIPPING A PROP IS A REACT RENDER BEHIND THE GESTURE.** **The orbit's own pointerdown listener and the mesh's fire from the SAME native event — by the time the prop lands, the rotate has already begun.**
-✅ **Cure: the controls are stopped SYNCHRONOUSLY inside the pointerdown**, through the instance `makeDefault` already publishes to the R3F store (the committed handle, not a reach into drei's internals). The prop still carries `!dragging` for the steady state; the ref covers the one frame the prop cannot. **Re-measured: `cameraMoved: 0 · quaternionMoved: 0` — the world held still and the form moved alone.**
-★ **A green source read and a green witness both said this was fine. Only the hand on it said otherwise.**
+1. **TWO IDENTICAL BIRTHS ARE ONE CHILD IN THE RECORD AND TWO BODIES ON THE PAGE — measured, not judged.** Glue → Torus twice on one square: the page holds TWO written toruses (two captions, both draggable), the strip holds ONE line, the DAG one edge — the second birth's result carries the SAME shape id (the name is the RESULT, and the record obeys ADR 0027 §2's grain: two maps to one result are one child). And `homeOfShapeId` is last-write-wins, so the one drawn edge follows the LATEST instance's home. Whether the LIVE PAGE should hold two instances of one result is a meaning question — the record's answer is already ratified; the page's is not. Three lines, as ordered; I built nothing on it.
+2. **E.6's "select" — my reading, for ratification:** attention = the edge's own hover OR the page's EXISTING selection of either endpoint form (labels arrive on every incident edge). Not a new edge-click — a click on a hairline would put a fourth meaning on a gesture that already carries three. Both attentions are shipped gestures, which is what E.6's "no new gesture" claims.
+3. **The settle law composes with the label at rest:** a fresh child settles 6.0 units from its parent (measured), and a second child settles into the SAME slot — so at rest a fresh birth's edge runs mostly UNDER the two bodies (arrowhead included; the stemma is recessed BEHIND the forms by design). The moment the person drags anything apart — the gesture D1 just built — line, head, and word all read in open air. Observation for the designer's eye, not a defect I cured.
 
 ---
 
-# 1 · §5.1 — THE ROOF, at the eye
-```
-THE RECORD
-WHAT BEGAT WHAT   Square — invoked ─glue→ Torus (T²) — born
-```
-✔ **Her string, her split: the roof says `the record` and nothing else; the predicate did not vanish — it MOVED DOWN to the line it is true of.** ✔ **And your structural question is answered by the build: it was one string plus one label, not two roofs.**
+## 1 · WHAT I SAW (drove the app — playwright on the dev server; the Windows Chrome extension was not connected this session)
 
-# 2 · §5.2 — THE RECORD STOPS ALIASING LIVE STATE
-**The site is snapshotted at the act.** ⛔ **THE FALSIFIER, manufactured as ordered:**
-```
-after home[0] = 99 → act.entry.home[0] = 1 · mark.home[0] = 1   (the live array now reads 99)
-```
-⚠ **And the positive control is my own prior measurement: `act.entry.home === entry.home → true` at `B-118`.** ⇒ **The test could not have passed before the cure — the arrays were the same object, so writing one wrote both.** ★ **Your line is the one I put in the source: *the ledger's append-only-ness is TRUE at every site, and the CONTENT still changes.***
+**The E-clauses at the eye, all seven:**
+- **E.1/E.4** — hover the edge: `glue` arrives at the MIDPOINT in the quiet monospace (9.5px, opacity 0.62, the stemma's own ink, `data-stemma-op` marked). At the default camera it is 6.4px wide — the same size class as every caption on this page; at working DPI/zoom the word reads plainly (plate: `b120v5_word_clip.png` — the square's corner arc, the hairline, the word `glue` on the line).
+- **E.2 UNDER ORBIT** — the page visibly tilted (bands sloped, forms foreshortened) and the word did not: a DOM overlay cannot rotate with the edge, so E.2 holds BY CONSTRUCTION and was still driven at the eye.
+- **E.3** — the arrowhead is a flat triangle on the line's own ink at the child end, backed off 1.4 units; driven with the pair arranged apart it sits in open air pointing parent→child. The label carries no arrow glyph — direction lives in one place.
+- **E.5, THE FULL CYCLE** — select the square with both children stacked at one slot (midpoints coincide): **ONE label** — the later yields. Drag one child out: **TWO labels, two edges**. Drag it back beside its sibling: **ONE label again — and `segsAfterCrowd: 2`, both edges still drawn.** The label yields; the edge never does. The yield's answer reaches ONLY the label gate by construction (witness §3 pins it).
+- **E.6** — hover shows the word, moving away clears it (`opsAfterMoveAway: []`); selecting an endpoint shows every incident edge's word; deselect + unhover shows none.
+- **E.7** — the hover fires ON the hairline because the invisible 24px stroke (R8's own mechanism, ported verbatim) is the target.
 
-# 3 · `D1` — THE DRAG. THE CHECKLIST, EACH MARKED
-| # | clause | |
-|---|---|---|
-| **D.1** | drag on the form, no new vocabulary | ✅ **built** — pointer CAPTURED, and only a **written** form grabs (the handler resolves `written` first) |
-| **D.2** | moving is not genealogy | ✅ **built** — the block touches no DAG |
-| **D.3** | the page may never re-place what he placed | ✅ **built** — `placedByPerson`, set on the drag **and on the two placements he already chooses**, rendering **nothing** |
-| **D.4** | save needs nothing | ✅ **free** — `home` and the new mark both ride `written` into the file |
-| **D.5** | he must not put a form where he cannot find it | ✅ **built** — the bound is **what the camera can see at the page's plane**, unprojected from the camera, so the clause's own words are the mechanism |
-| **D.6** | the stemma follows the homes | ✅ **free, and DRIVEN** — see below |
-| **D.7** | a move must not enter the undo chain | ✅ **built** — the block touches no ledger |
-| **memorials do not drag** | her ruling | ✅ **already true by construction** — the mark mounts `pointerEvents: 'none'`, so it cannot be picked up at all: **the limit is at the grab** |
+**⛔ A CURE ONLY THE DRIVE COULD FORCE — the first-claim hover guard was structurally unsatisfiable.** My first cut guarded hover with "intersections[0] must be me" (the InkedSkeleton first-claim discipline, as I read it). Measured dead: handlers attached (`__r3f.handlers: [onPointerOver, onPointerOut]`), raycast sound (manual Raycaster: 1 hit, d=51.889) — and the handler FIRED, then refused, because `intersections[0]` was **four Group hits at d=50.404: the forms' native `LineSegments`, which raycast with three's default `params.Line.threshold` of 1 WORLD UNIT** — an invisible ~±21px halo around every form stroke that owns nearest-hit across the first world-unit-plus of every edge. A guard honouring that halo honours a raycast default, not the person's sense of "on the form." **Guard dropped; the measured mechanism is in the comment; the witness pins its absence.** (Echo of your §1.1 filing, one layer over: a guard can be one RAYCAST DEFAULT behind the eye it serves.)
+- **The calibration is measured, not styled:** 20.838 px/world at the page plane through the real camera; the rendered `glue` 6.39×4.36px → `charW 0.077 · lineH 0.21` world units, baked into `STEMMA_LABEL_FOOTPRINT` with the measurement cited. My provisional guesses were 3.6× too big — E.5's collision box now speaks the page's own scale.
+- **The two registers, live on the page while I drove:** after two glue births the DAG's `liveAtEnd` calls the square consumed — and the PAGE kept it standing, named, operable (it offered and enacted the second glue). The record of what ops made and the live state of what stands diverged exactly as ADR 0027 §0 says they must.
+- Boot-time census, for the record: the moving caption I chased across three drives is the SUMMONED specimen's own label riding the lift (invoke summons the square; a birth hands the summon to the child; deselect sinks it home). One label at (188,655) in two multi-birth runs remains unexplained by me — it is not my render (my cut mounts no `data-form-label`), noted and left.
 
-⛔ **AND THE IDIOM IS THE IMMUTABLE REPLACE — as a MEANING decision, in the source, in her words.** **Your table is right and I have written it where the next reader will meet it: what I called *"the natural drag is the one that breaks it"* is the requirement, not the hazard.**
+## 2 · THE §2.3 MEASUREMENT — which sense `GenealogyEdge.death` carries (report only; nothing spent)
 
-## 3.1 · ★★★ D.6, DRIVEN — and it is the clause worth seeing
-**Invoked a Square, dragged it across the page, glued it into a Torus, then dragged one of the pair.** **The stemma edge's far endpoint moved with it** — measured from the line's own geometry, `(4.79, −2.18)` → `(−12.74, −8.32)` — and at the eye **the edge stretches right across the page.**
-> ### ⇒ **ARRANGING THE PAGE IS ARRANGING THE ARGUMENT, and it is not a phrase — it is what the screen does.**
-⚠ **§4's reading, which you asked for: the band is not on this page** (it is the `?manuscript` record strip, and the six-fold repetition you and she are discussing is in the *record*, not the stemma). **So I cannot say whether the drag makes the band's repetition better or worse — I can say the drawn stemma now carries a spatial relation the band cannot express at all, which is her B.1 argument arriving from the hand rather than from the source.**
+- **ONE writer:** `src/lib/genealogyDag.ts:206` — `death = !NON_CONSUMING.has(node.birthOperation)`, where `NON_CONSUMING = {invoke, patch-lift, dualization, product, open-lift, refine}` (`:50`). The field's own comment (`:79`): *"the parent is consumed (retired from the live population) by this op."* Pure OPERATION-KIND arithmetic — blind to the page, the person, and the child-set. The same classification (not the field) drives the DAG's death events and `liveAtEnd`/`populationPath` (`:224-230`).
+- **Readers at HEAD:** in `src/` — **ZERO** (nothing renders it, nothing derives from it). In witnesses — five legs pin the op-kind semantics: `diagnose-patch-lift:161` (patch-lift `false`) · `diagnose-playground-operations:94` (flip-glue `true`, "consumes") · `diagnose-refine-word:96,305` (glue `true`; edge serialization) · `diagnose-the-page-subdivide:88,146,186` (product `false`, assemble `true`) · `diagnose-genealogy-dag:194` (constructs one).
+- **THE SENSE: none of ADR 0027 §4's three.** Not `died` (that is a part/concept absent INSIDE an op, vertex-grain — and the argument-card leg's own measurement stands: at HEAD no committed door produces a true death in that sense). Not `removed` (the person's act; never in the DAG — Δ23). Not `exhausted` (derived, child-set-total, revivable). It is a FOURTH, pre-split sense: **"this birth's operation KIND is consuming."** And under ADR 0027 §1 that sense is a FALSIFIED liveness model — one glue does not kill a parent (measured at the eye this cycle: the square stood and operated after two). ⇒ **The designer's refusal is not a one-line addition deferred; in the field's current sense it is a permanent no.** Drawing `death` on the edge would assert the one-op-kills model on the very display 0027 §7 demanded. The witnesses pin the field as op-kind fact — as that, it is true and load-bearing; as liveness, it lies. Field untouched, band untouched, as ordered.
 
----
+## 3 · THE TWO PARAGRAPHS OWED
 
-# 4 · WHAT I RAN
-- **`npx tsc -b` → exit 0** · **folded sweep 122 @ 1** — ⚠ **run in TWO BATCHES: the sweep now exceeds a single ten-minute call** (61 files / 103 s, then 61 / 511 s). **Worth knowing; it will only grow.**
-- **THE DRIVE FAMILY by its trigger** — the card, the record strip and the forms are all its subject: ⇒ **failure set IDENTICAL to the HEAD baseline, 16, every one pre-existing.**
-- **Freeze:** `pageStore.ts` · `pageSnapshot.ts` · `ManuscriptView.tsx` · `ManuscriptChrome.tsx` — **all NOT_FROZEN. No frozen file touched.**
+**§3.1 — the sweep (one paragraph, no build).** What I would do, in order: (1) measure per-leg wall time once and print it beside each leg in the sweep's own output — a check that is expensive gets run less, so first give the expense a face (this cycle: 62 legs / ~103s, then 61 / ~511s — the wall is a few hot legs, not the count); (2) shard the loop across N≈CPU/2 workers — every leg is already an independent node process, so this is a ~40-line runner change and zero leg edits, and turns ~10 minutes into ~2; (3) keep ONE command (`npm run sweep`) that ends with the canonical `N files · expect exactly ONE fail` line, so the two-batch hand-split I ran this cycle — exactly the quiet half-run habit you priced — dies as a habit the day the runner lands. Nothing built until you say.
 
-⚠ **TWO DISCLOSURES.**
-1. **The stale `.git/index.lock` again** — 0 bytes, **64 minutes old**, no `git.exe`. Verified and removed per protocol. **Second time in two cycles; it is no longer a one-off.**
-2. ⛔ **The RESEARCHER's `ADR 0027` and a one-line `0026` amendment were sitting UNCOMMITTED in the tree.** **Committed as they stand, attributed, in their own commit (`afb2932`) — not reworded.** ★ **And they are not incidental to this build: 0027's two-registers law is the ground under Δ23, under D.7, and under §5.2's own cure.** *(Same handling as `569c98a` and `cd1fb99`.)*
+**§3.2 — the `index.lock` (one line, and the cause was findable).** Found: the third lock's mtime is `14:40:18.5` — **the researcher's letter clock to the second** (`Thu Aug 27 14:40:18 +0330 2026`); a seat session measuring the tree while filing (their letter cites the context SHA — a git read, and `git status` takes the lock) was torn down at that instant and left the 0-byte lock. Cause: **concurrent seat sessions running index-touching git reads in the one working copy, killed at teardown.** Cure is theirs to adopt (`git --no-optional-locks status`, or plain `log`/`show`/`rev-parse`, in non-committing seats); mine stays verify-then-remove per protocol.
 
-# 5 · ✅ AND I HAVE STOPPED
-**`D1` §5's order is complete.** ⛔ **Nothing further started. Arman's walk of P5 is still owed — and there is more page to walk now than when you first said so.**
+## 4 · WHAT I RAN (the witnesses, verbatim where short)
+
+- `npx tsc -b` — **exit 0** (at the working tree and re-run at HEAD).
+- **The folded sweep, now 123 legs** (the new `diagnose-stemma-edge-label.cjs` is the 123rd), in two batches (62/103s-class + 61/511s-class): pre-commit it surfaced **7 unexpected reds with ONE shared cause** — the new model file was UNLISTED in the freeze census — cured by its NOT_FROZEN row + staging (the fifth guard: a tracked file may not import an untracked file; *healed by staging, not by a hole*, the leg's own words). Two legs (`the-page-subdivide` §5, `thicken`) pin the MANIFEST byte-identical-to-HEAD and stayed red pre-commit by design; **at the committed HEAD the full sweep reads **123 @ 1** (batches: 62 → 1 fail `dual-inspection` · 31 → 0 · 30 → 0), tsc exit 0 — the two manifest-pinning legs went green at the committed HEAD exactly as their own clauses promise** — the one accepted red, `dual-inspection`.
+- **New leg** `diagnose-stemma-edge-label.cjs`: **15/15 PASS** — §1 one producer on a REAL glue story (the committed doors; `footRecord`'s word === the edge's word) · §2 midpoint/arrowhead geometry with the zero-length refusal · §3 the yield + BY-CONSTRUCTION no channel to the ink (with a non-empty-slice positive control — my first end-anchor matched a comment thousands of lines up and produced the A1 pin's own empty-slice failure; re-cured with positive controls in every slice check) · §4 E.7/E.2/E.3/E.6 wiring · §5 `death` read by NO part of the label.
+- **THE DRIVE FAMILY by its trigger** — the manuscript page is this build's subject: `diagnose-deficit-app.cjs` run whole; the DRIVER verdict fails **16 — count-identical to B-119's recorded baseline**, and none of the sixteen names (`corr.noMarks/pick/track` · `d2.emphasis…`×2 · `explore.drive` · `lift.drive` · the `regs.door` family ×7 · `square.drive` · `triangle.drive`) is stemma- or label-shaped; the leg's own printed total is 28 because the orchestrator's §E clauses re-fail on the same driver gaps (*"clause missing from the driver verdict"*). The clauses my earlier builds own ride green: `label.staysOnSelect` 13/13 · `camera.selectionHolds` true. Verified STABLE on a quiet re-run (the first run shared the machine with my own drives): identical total both runs. And the one source-pin red I could have suspected myself of is measured PRE-EXISTING: the §E-BOUNDARY-WALL pin `readCellSurface(domain, coneEdgesDeclared)` matches ZERO at HEAD — B-113's model argument re-signatured that call cycles ago, so the pin has stood broken since, inside the recorded baseline.. The three GPU walk-window legs' subject (the walk) is untouched by this cut.
+- **Freeze:** `diagnose-engine-freeze.cjs` PASS at the staged tree. Touched files vs the manifest: `ManuscriptView.tsx` NOT_FROZEN:194 · `stemmaLabelModel.ts` NOT_FROZEN (the +1 row this build adds) · the two scripts outside the census · the manifest itself +1 NOT_FROZEN row, **ZERO hash lines moved** ⇒ clause 3 (re-seal with positive control) not applicable — no frozen file touched.
+- The stale `index.lock` (third occurrence): verified 0 bytes · 65 min old · no `git.exe` → removed per protocol, disclosed in §3.2 with its cause.
+
+## 5 · WHAT I CHANGED (files, and why each)
+
+- **`src/manuscript/stemmaLabelModel.ts` (NEW, NOT_FROZEN)** — the pure label model a witness can import without mounting the view: `stemmaMidpoint` (E.1) · `stemmaArrowhead` (E.3 — tip on the segment, child end, backed off; null on zero length: the drawing refuses to invent a direction the record does not hold) · `visibleStemmaLabels` (E.5 — visibility ONLY; caller's order is priority, hovered first) · `STEMMA_PICK_WIDTH_PX = 24` (E.7) · `STEMMA_LABEL_FOOTPRINT` (the measured calibration, cited in place).
+- **`src/manuscript/ManuscriptView.tsx` (NOT_FROZEN)** — the stemma map now carries `parent/child/operation` (the free data of your §2.2, one producer with the strip); `stemmaHover` + the attention plan (hover ∪ selection, hovered-first into the yield); the render: ink `<Line>` unchanged, the arrowhead mesh (shared 9-float geometry), the invisible 24px pick stroke with the unguarded hover (the measured cure), and `StemmaOpLabel` (FormLabel's Html species, one register down) behind the ONE label gate. Nothing below the gate reads the plan — E.5 by construction.
+- **`scripts/diagnose-stemma-edge-label.cjs` (NEW)** — the 123rd leg, §§1–5 as above.
+- **`docs/governance/ENGINE_FREEZE_MANIFEST.txt`** — +1 `NOT_FROZEN` census row for the new file (completeness law); no hash line moved.
+- **`docs/adr/0027-….md`** — NOT mine: the researcher's four-spot amendment (the acts ledger to the RECORD column with the direction-not-subject criterion; the §0 antecedent; §4's `removed` row; §8's roof bullet), found in the tree exactly as their notice describes, audited against the letter, committed AS IT STANDS, attributed, in its own commit — the new filed-doc convention's first arrival worked.
+- **`.handoff/THE_BUILD.md` / `THE_BUILD_REPORT.md`** — the record pair, this mandate and this letter.
+
+## 6 · WHAT I COULD NOT REACH
+
+- **The Windows Chrome extension was not connected** (only the macOS one, which cannot reach this machine's localhost) — the eye-drive ran through playwright headed Chromium instead: same page, same gestures, my eye on the plates. Named, not worked around silently.
+- **E.5's yield under a LIVE camera-following collision** (two labels colliding only at some orbit angle) has no mechanism to fire: the collision test lives in page units by design (shared `distanceFactor` makes overlap camera-invariant on the head-on page; oblique orbit distorts, and a label pair can visually crowd at extreme angles without yielding). Priced and accepted: the page is read head-on; the alternative is per-frame DOM measurement.
+
+`B-120` §0's order is complete: the label built and driven (1), the measurement reported and nothing put on the edge (2), the two paragraphs owed (3), the band untouched, `death: boolean` untouched. ⛔ Nothing further started.
 
 — the coder

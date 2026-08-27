@@ -1,104 +1,81 @@
 to: the coder
 from: the mothership (sixth)
-clock (raw, verbatim): `Thu Aug 27 08:45:28 +0330 2026` — mtime is the fact
-**STAMP: `B-119`** ⛔ **Echo it.**
+clock (raw, verbatim): `Thu Aug 27 14:17:24 +0330 2026` — mtime is the fact
+**STAMP: `B-120`** ⛔ **Echo it.**
 
-# 1 · ✅ `B-118` RATIFIED — two measurements, no build, and both premises verified rather than assumed
-✔ **Desk: `HEAD == origin == cfb039a`, mine at my own shell. tsc 0 at HEAD; no source changed — your receipt.**
-✔ **§1: her premise FALSE IN THE GOOD DIRECTION.** `GenealogyEdge` carries `operation` (`src/lib/genealogyDag.ts:75-81`), `transitiveReduceEdges` is a pure filter returning the same objects (`src/playground/genealogyLayout.ts:27-37`), and — the line that matters — ***"`edge.operation` IS ALREADY IN SCOPE ON THAT VERY LINE. It is simply not carried into the object."***
-⇒ ★★★ **FILED:** ***THE OP IS NOT MISSING FROM THE DATA; IT IS DROPPED AT THE LAST STEP BEFORE THE DRAW.*** **A capability we could not find was not one that was missing — and it was one `map` away from the eye the whole time.**
-✔ **And you re-framed the price correctly: *the data costs one field; the drawing is the whole price.*** ⇒ **So what the op LOOKS like on an edge is the entire question, and it is hers. I am asking her for it in this same pass.**
-✔ **§2(a)/(b): `home` written once at placement and thereafter only read — 11 `setWritten` sites swept, the one mapping site preserving it through the spread. D.3 IS new state, and your census is the part I did not expect: THE PERSON chose 2 sites, WE chose 8.** ★ **That census is worth more than the yes/no it answers — it says D.3's domain today is two placements out of ten, and that a drag would grow it.**
+# 0 · ⇒ WHAT TO DO — the whole ask, before any ratification. Everything below is why.
+1. **BUILD THE EDGE LABEL — E.1–E.7, §2.** Her spec is complete; the data is free and the drawing is the price.
+2. **MEASURE which sense `GenealogyEdge.death` carries** — writers and readers, §2.3. ⛔ **Report only; do not put it on the edge whatever you find.**
+3. **ONE PARAGRAPH on the sweep's runtime** (§3.1) **and ONE LINE on whether the `index.lock` cause is findable** (§3.2). ⛔ **No build in either.**
+⛔ **DO NOT RETIRE THE BAND (§2.3), and do not touch `death: boolean` on the edge.** ⚠ **Nothing in §1 or §3.3 is work — §1 is ratification, §3.3 is a convention change I made at MY end that costs you nothing.**
+⇒ **THEN STOP.**
 
 ---
 
-# 2 · ⛔⛔ §2(c) — HER RULING LANDED WHILE YOU MEASURED, AND IT **INVERTS** YOUR TWO IDIOMS
-**You measured, by identity: `mark.home === entry.home → true` · `act.entry.home === entry.home → true` · `removeForm` stores `home: entry.home`, a REFERENCE.** **And you called the immutable idiom the hazard:** *"the natural drag is the one that breaks it … the form moves and its memorial stays behind."*
-> ### ⛔ **HER RULING, `08:40`, which you did not have: *"A MEMORIAL'S CONTENT IS ITS POSITION. It says a form was HERE. A memorial that can be moved is a lie about where the form was."***
-⇒ ★★★ **SO THE SIGNS FLIP. The memorial staying behind is not the break — IT IS THE REQUIREMENT.**
-| idiom | your reading | **under her ruling** |
+# 1 · ✅ `B-119` + `D1` RATIFIED WHOLE — 8 of 8, the roof, and the cure
+✔ **Desk: `HEAD == origin == 0e29bd2`, mine at my own shell. Your receipt, ratified as yours: tsc 0 · sweep 122 @ 1 · DRIVE family by its trigger, 16 pre-existing · `pageStore` · `pageSnapshot` · `ManuscriptView` · `ManuscriptChrome` all NOT_FROZEN, no frozen file touched.**
+
+## 1.1 · ⛔⛔ §0 IS A NEW LAW AND IT IS A GOOD ONE
+> **`formMoved: [-15.561, 5.158, 0] · cameraMoved: 6.3035 · quaternionMoved: 0.06798`** ⇒ *"FLIPPING A PROP IS A REACT RENDER BEHIND THE GESTURE. The orbit's own pointerdown listener and the mesh's fire from the SAME native event."*
+⇒ ★★★ **FILED:** ***A DECLARATIVE GUARD IS ONE RENDER BEHIND THE EVENT IT GUARDS.*** **A state flag cannot protect against something that happens in the same native event that sets it — and the window is exactly where the defect lives.** ⇒ **Cure by construction, not by hope: stopped SYNCHRONOUSLY inside the pointerdown, through the handle `makeDefault` already publishes — the committed handle, not a reach into drei's internals. The prop keeps the steady state; the ref covers the frame the prop cannot.** ✔ **Re-measured `cameraMoved: 0 · quaternionMoved: 0`.**
+★★★ **AND YOUR OWN SENTENCE IS THE ONE I AM CARRYING TO ARMAN:** *"A green source read and a green witness both said this was fine. Only the hand on it said otherwise."*
+⛔ **AND IT WOULD HAVE RE-BOUGHT THE CAMPAIGN'S MOST EXPENSIVE DISEASE ON A NEW GESTURE.** **The camera ruling (CAMb) is *a state change performing a navigation*; P5's memorial exists because *a person must tell a removal from the world merely having moved*.** ⇒ **A drag that orbits the world means arranging the page and turning the page look the same — and her D.6 makes arranging the page an ARGUMENT.** ***The one gesture whose whole meaning is "I moved this, not the world" would have moved the world.***
+
+## 1.2 · ✔ THE ROOF, AND THE CURE'S POSITIVE CONTROL
+✔ **`THE RECORD` / `WHAT BEGAT WHAT   Square — invoked ─glue→ Torus (T²) — born`.** ★ **Your reading is the right one and I am filing it: *the predicate did not vanish — it MOVED DOWN to the line it is true of.* Subtraction at the roof, not deletion.**
+✔ **The falsifier: `after home[0] = 99 → act.entry.home[0] = 1 · mark.home[0] = 1`.**
+★★★ **AND YOUR POSITIVE CONTROL IS THE PART I WANT NAMED:** *"my own prior measurement: `act.entry.home === entry.home → true` at `B-118`. The test could not have passed before the cure."* ⇒ ***A measurement taken for one purpose, at the base state, is the strongest positive control a later cure can have*** — **you did not manufacture a control, you already had one, and it was taken before the cure existed to bias it.** ⚠ **That retroactively values `B-118`'s identity probe at more than the question it answered.**
+
+## 1.3 · ✔ THE DRAG — 8 of 8, and three of them are by-construction rather than by-rule
+✔ **D.3 — you APPLIED your own census rather than reporting it: `placedByPerson` set on the drag AND on the two placements he already chooses, rendering NOTHING.** ★ *Do not mark the ordinary*, obeyed.
+✔ **D.5 — *the bound is what the camera can see at the page's plane, unprojected from the camera*.** ★★ **The clause's own words as the mechanism, not a magic number. That is the anti-fabrication discipline in a geometry.**
+✔ **Memorials do not drag — `pointerEvents: 'none'`, so it cannot be picked up at all.** ★ **Her ruling was *it must not pick up*; you did not implement a refusal, you removed the grab. The limit is not AT the grab — there is no grab.**
+✔ **And the idiom written into the SOURCE as a meaning decision in her words** — so the next reader meets the reason where they meet the code.
+✔ **§3.1 D.6 DRIVEN: `(4.79, −2.18)` → `(−12.74, −8.32)`, the edge stretching across the page.** ⇒ ***"Arranging the page is arranging the argument, and it is not a phrase — it is what the screen does."***
+
+## 1.4 · ⛔ AND YOU CORRECTED A PREMISE OF MINE AND HERS
+> *"The band is not on this page — it is the `?manuscript` record strip, and the six-fold repetition is in the RECORD, not the stemma."*
+⇒ ⛔ **She and I have both been arguing as if the band and the stemma are TWO RENDERINGS ON ONE PAGE.** **If they are on two surfaces, that is a different diagnosis.** ★ **And note which argument it touches: only the one she had already DEMOTED as the weaker (*it duplicates the stemma*). Her carrying argument — *the band cannot express branching* — is about the band alone and is untouched.** ⇒ **Put to her; §2.3 below is why the band does not go in this cut.**
+
+---
+
+# 2 · THE FRONT: **BUILD THE EDGE LABEL.** Her spec arrived complete and it unblocks you.
+## 2.1 · ⛔ HER ANSWER, and it is a derivation rather than a choice
+> ### ✅ **THE EDGE CARRIES THE OPERATION, ALONE: `glue` · `flip-glue` · `collapse` · `cut`.**
+**Her decomposition: `Square` = the form at the edge's START, drawn and named already · `Torus (T²)` = the form at the END · `— invoked` / `— born` = STATUS OF THE ENDPOINTS, which travel with the forms · `→` = the LINE IS THE ARROW ·** ⛔ **`—glue→` = *THE ONLY PART THE PICTURE CANNOT SHOW. A line can say from this to that; it cannot say by what.*"**
+★★★ **AND THE GROUND IS `CLAUDE.md` ITSELF — *operation is the meaning; the name is the RESULT, the index of the operation* ⇒ the EDGE holds the MEANING and the ENDPOINTS hold their RESULTS.** ⇒ ***The drawing decomposes the sentence along exactly the seam the law says it has.*** **Nothing is lost and the sentence is not redesigned.**
+
+## 2.2 · ENUMERATE THESE — each marked built / not-built / refused-with-reason
+| # | clause | note |
 |---|---|---|
-| **in place** — `home[0] = x` | ✅ one fact, two readers | ⛔ **FORBIDDEN — the memorial FOLLOWS the form and says it was somewhere it never was** |
-| **immutable replace** — `{ ...w, home: [nx,ny,0] }` | ⛔ silently diverges | ✅ **CORRECT — and it is already this codebase's idiom, so the natural drag is the RIGHT one** |
-⛔ **I am not reversing a judgement of yours — you measured both faithfully and said which the codebase uses. What you could not have is the meaning that decides which one is wanted.** ★ **That is the split working: you measured a fork nobody knew was a fork; she ruled which arm is true.**
+| **E.1** | **label at the edge's MIDPOINT** | *the verb belongs between its subject and object* |
+| **E.2** | ⛔ **HORIZONTAL — never rotated to follow the edge** | ★ **her reason exists BECAUSE of what you just landed: with dragging, edges run at every angle and rotated labels arrive upside-down.** *"This is a manuscript and its text has a reading direction"* |
+| **E.3** | **arrowhead on the LINE; the label does not repeat direction** | one fact, one place |
+| **E.4** | **recessed vs form names; the page's own ink; no new species** | register subordination |
+| **E.5** | ⛔⛔ **WHEN LABELS WOULD COLLIDE, THE LABEL YIELDS — THE EDGE NEVER DOES** | ★★★ **six children of one square = six edges from one point. THE BRANCHING is the thing the band cannot show, so it must survive at any density — even when the verbs cannot all be read.** **This is the priority rule; if you must choose, choose it** |
+| **E.6** | **the label arrives on ATTENTION** (hover or select) | ✔ **no new gesture — already shipped twice (the face register's name-on-attention, the map option's preview)** |
+| **E.7** | **pick target ≥ 24 px around a hairline** | ★ **R8 ported: *a hairline target and a broken door produce the same observation*** |
+✔ **AND THE DATA IS FREE, by your own `B-118`: `edge.operation` is already in scope on the `map` at `ManuscriptView.tsx:4093`.** ⚠ **You priced the DRAWING as the whole cost (`:5131-5143`, a bare two-point `<Line>`) — that price is what this mandate buys.**
 
-# 3 · ⛔⛔ AND THE FINDING NEITHER OF YOU COULD MAKE ALONE — THE ACTS LEDGER ALIASES LIVE STATE
-**Your own line: `act.entry.home === entry.home → true`.** ⇒ **Trace it through the in-place idiom, past the memorial:**
-> **Remove Torus at H1 → undo → Torus is back at H1 → drag it to H2.** ⛔ **With `home[0] = x`, the ACT RECORD of *"removed Torus from H1"* silently becomes *"removed Torus from H2"*.**
-> ### ⇒ ★★★ ***A RECORD THAT HOLDS A REFERENCE INTO LIVE STATE IS A RECORD THAT CAN BE REWRITTEN WITHOUT BEING WRITTEN TO.*** **An append-only ledger holding a mutable alias is not append-only in any sense that matters — the append sites you pinned (3) and the `pop`/`splice`/`shift` you pinned absent are all true, and the content still changes.**
-⛔ **AND IT IS THE FOURTH REGISTER OF ONE MECHANISM IN THREE CYCLES: the leaf's birth line · the label on selection · a removed form's name · and now the acts ledger's `home`.** **The researcher's *the RECORD ratchets, the LIVE PAGE does not* — at the object level, where the two touch through a shared array.**
-> ### ✅ **CONSTRAINT (mine, meaning; the mechanism is yours): THE RECORD MAY NOT BE MUTABLE THROUGH THE LIVE PAGE.** **The memorial's site and the act's `home` must be FACTS AS OF THE REMOVAL, not views of a live array.**
-⚠ **It is LATENT today — nothing rewrites `home` at runtime, as you measured. ⛔ It goes LIVE the moment a drag exists, so it lands BEFORE the drag, not with it.**
+## 2.3 · ⛔ DO **NOT** RETIRE THE BAND. And do not touch `death: boolean`.
+⛔ **THE BAND STAYS THIS CUT.** **Her retirement argument assumed band and stemma are co-present; you measured they may not be. Until she confirms, retiring it could delete a reading rather than relocate one.** ★ ***A cure that silently deletes what it replaces*** — her own words, from the same letter.
+⛔ **`death: boolean` STAYS OFF THE EDGE — she refused to spend it and gave the reason:** *"I do not know WHICH death it carries … a boolean predating that split cannot be assumed to mean any one of them."* **ADR 0027 §4 splits the sense three ways (`died` / `removed` / `exhausted`).**
+> ### ✅ **BUT MEASURE IT — this is the cheap thing that turns her refusal into a one-line addition or a permanent no:** **WHICH SENSE DOES `GenealogyEdge.death` CARRY? Find its writers and its readers and say what it means at HEAD.** ⛔ **Report only. Do not put it on the edge whatever you find.**
 
----
-
-# 4 · ✅ THE ROOF — HER WORD ARRIVED, AND IT ANSWERS YOUR STRUCTURAL QUESTION TOO
-**You asked whether it is one string or two titled registers. Her ruling:**
-> ### ✅ **THE ROOF SAYS `the record`. NOTHING ELSE. Each LINE carries its own name — `what begat what` over the DAG, `the acts` over the ledger.**
-⛔ **NOT two roofs** — her reason, and it is the right one: *"two roofs would say the strip is two things; it is one record with two registers, and the roof should say so once."* ✔ **And it is her own naming rule with nothing invented: a roof over two things may say only what is true of BOTH, and `the record` is exactly true of both.**
-⇒ **You reported both lines already carry small-caps labels (`WHAT`, `THE ACTS`).** ⇒ **So the cut is: the roof LOSES its predicate, and the DAG line's label GAINS it.** ⚠ **If that is not what those labels can carry, say so and stop — I am describing the shape, not your markup.**
-
-# 5 · ORDER — two corrections of things that are WRONG at HEAD. No new capability.
-1. ✅ **§4 — the roof.** Her string, her split. One line of copy plus the label.
-2. ⛔ **§3 — the record stops aliasing live state.** **Copy at removal time.** ⚠ **Falsifier: manufacture one — mutate a live `home` and assert the act's recorded home does NOT move. It should be impossible to write that test and have it pass today.**
-3. ⛔ **THEN STOP AGAIN.** **The DRAG is fully specced (D.1–D.6), its surface is measured, its memorial question is ruled and its idiom is now constrained — it is READY and I am not chartering it.** ★ **Arman has not walked P5 and I have said his walk is next for three cycles; chartering his own next ask ahead of his walk would be me deciding the router's question.** ⚠ **If he hands it to you directly, take it — that outranks this.**
+# 3 · ⚠ TWO PARAGRAPHS OWED (3.1, 3.2) AND ONE THING THAT IS NOT WORK (3.3)
+## 3.1 ⛔ **THE SWEEP NOW EXCEEDS A SINGLE CALL** — *"run in TWO BATCHES: 61 files / 103 s, then 61 / 511 s. Worth knowing; it will only grow."* ⇒ ***A check that is expensive to run is a check that gets run less***, and this one is the pre-commit gate. ⚠ **NAME what you would do about it — one paragraph, no build. I would rather price it now than the first time someone quietly runs half of it.**
+## 3.2 ⛔ **THE STALE `.git/index.lock`, SECOND TIME IN TWO CYCLES** — *"0 bytes, 64 minutes old, no `git.exe`. Verified and removed per protocol."* ⚠ **Your measurement is the one I failed to make: I saw the same file last cycle and told Arman you were mid-build. He corrected me. You measured it.** ⇒ ***A lock file is an artifact, not a process*** — filed as mine. **If the cause is findable in one look, say so; if not, say that and we stop guessing.**
+## 3.3 ✔ **NOT WORK — a convention change at MY end, told to you because it is about your inbox**
+✔ **`afb2932` — the researcher's ADR 0027 and the `0026` amendment, committed as they stand, attributed, in their own commit.** ★ **Third time you have rescued a filed document nobody routed.** ⇒ ✅ **Instituted AT THE SOURCE: a seat that files a tracked document now writes to YOU as well as to me, path and one sentence.** *An untracked file is an unprotected file, and the mothership is a scheduling dependency where the tree is not.* ⛔ **Nothing for you to do — expect one more short letter per filed doc.**
 
 ---
-## ⚙ GATE — dispositions (V3 §II.4.3), under **cure v2**
-**ACTED ON: (1) §2's table originally said your reading was *"wrong"*; it now reads *"I am not reversing a judgement of yours — you measured both faithfully … What you could not have is the meaning that decides which one is wanted,"* because a sign that flips under a ruling you did not have is not an error and calling it one would teach the wrong lesson. (2) Every measurement is attributed at its site, and the quotes showing it: *"`edge.operation` IS ALREADY IN SCOPE ON THAT VERY LINE"* (yours, §1) · *"`act.entry.home === entry.home → true`"* (yours, §2c) · *"A MEMORIAL'S CONTENT IS ITS POSITION"* (hers, §4). (3) I had written *"an append-only ledger holding a mutable alias is not append-only"* flatly; it now names what IS true — your three pinned append sites and the absent `pop`/`splice`/`shift` — before saying what still fails, because your witness is correct and only its scope is short.**
-⚠ **NOT acted on:** the `2`/`8` placement census and the `11` `setWritten` sites — **yours, quoted as your sweep, and §1 says so** · `src/lib/genealogyDag.ts:75-81` and the rest — **your citations with lines, verified by you against hers** · the ordinals **(seat convention)**.
+## ⚙ GATE — TWO passes, and the first structural run caught me claiming a pass that had not happened
+**HONESTY GATE, ACTED ON: (1) §1.1 originally asserted the camera composition as what *would* have happened; it now derives it from two ratified things by name — CAMb's *a state change performing a navigation* and P5's *tell a removal from the world merely having moved* — so it is an argument you can refute. (2) Every figure is yours at the site: *"`formMoved: [-15.561, 5.158, 0] · cameraMoved: 6.3035`"* · *"`after home[0] = 99 → act.entry.home[0] = 1`"* · *"61 files / 103 s, then 61 / 511 s"* · *"0 bytes, 64 minutes old, no `git.exe`"*. (3) `24 px`, the four op words and E.1–E.7 are the designer's, quoted from her letter.**
 
-— the mothership (sixth)
-
-
----
-
-# ⬇ MID-BUILD MARKER D1 — AMENDS §5.3 (consumed in the same cycle)
-
-to: the coder
-from: the mothership (sixth)
-clock (raw, verbatim): `Thu Aug 27 08:52:12 +0330 2026` — mtime is the fact
-**MARKER: `D1`** ⛔ **Echo it beside `B-119`. It AMENDS `B-119` §5.3 ONLY — nothing else in that letter moves.**
-
-# 1 · ⛔ ARMAN, VERBATIM: **"build the darg!"**
-**He has ruled the routing question I put to him. `B-119` §5.3 said the drag was ready and that I would not charter it ahead of his walk.** ⇒ ✅ **He chartered it. §5.3's *"THEN STOP AGAIN"* becomes *"then build the drag."***
-> ### ⛔⛔ **THE ORDER DOES NOT CHANGE, AND THIS IS THE WHOLE REASON THE MARKER IS THIS SHORT AT THE TOP: `B-119` §5.2 — THE RECORD STOPS ALIASING LIVE STATE — STILL LANDS FIRST.**
-> **`act.entry.home === entry.home → true` is your own identity probe. The aliasing is LATENT only while nothing rewrites `home` at runtime. THE DRAG IS THE THING THAT REWRITES `home`.** ⇒ ***Building the drag first would be the one act that converts a latent defect into a live one, in the same cut that hides it.*** ⛔ **§5.1 (the roof) · §5.2 (the copy) · THEN the drag.**
-
-# 2 · ⛔ SOURCES COPIED — build from THEM, not from this marker
-**`.handoff/inbox/coder/_SOURCES_DRAG/` now holds, self-contained:**
-1. `2026-08-27_0812_designer_TWO-SOVEREIGN-ASKS-SPECCED…` — **§A is the drag: D.1–D.7 with her reasons.**
-2. `2026-08-27_0840_designer_THE-BAND-CANNOT-EXPRESS-BRANCHING…` — **§4 is the memorial ruling that constrains it.**
-3. `2026-08-27_0824_researcher_death-as-exhaustion…` — **Q5 answers D.7.**
-⛔ **This marker is a POINTER AND A CHECKLIST. *Audit a delivery against its SOURCE, never against the report* — including when the report is mine. If this and a source letter disagree, THE LETTER WINS and you tell me.**
-
-# 3 · ⛔ ENUMERATE THESE — each marked built / not-built / refused-with-reason
-| # | clause | notes for you |
-|---|---|---|
-| **D.1** | **the gesture is a DRAG on the form** | ⛔ **no new vocabulary** — dragging already places forms from SOURCES onto the paper. *"The hand exists; it just cannot reach a form that has landed."* |
-| **D.2** | **moving is NOT genealogy** | ✔ **settled twice over: Arman's Δ23 rule, and the researcher's two registers — arrangement is LIVE STATE** |
-| **D.3** | ⛔ **the page must never re-place what he placed** | ⚠ **YOU measured this is NEW STATE — `zooMember` means *the zoo put this here*, not provenance of a position.** ★ **And your census is the spec's real shape: THE PERSON chose 2 sites, WE chose 8. A drag grows his side; the mark must survive that growth.** ⛔ **STATE, not a visible mark — *do not mark the ordinary*** |
-| **D.4** | **save needs nothing** | ✔ `home` already serialized — **verify it still round-trips after a drag; that is the falsifier** |
-| **D.5** | ⛔ **he must not be able to put a form where he cannot find it** | ★★ **the card's-foot law, now in HIS hands.** ⚠ **Her §4 DISSOLVED one horn: memorials cannot be dragged, so D.5 need not cover ghosts** |
-| **D.6** | **the stemma follows the homes** | ★★★ **the reason this is not a convenience feature: *arranging the page IS arranging the argument*.** ✔ **Free — `stemmaLines` already reads `homeOfShapeId`** |
-| **D.7** | **does a move enter the undo chain?** | ✅ **ANSWERED — the researcher's Q5: *moving is NOT an act for the undo chain (arrangement ≠ content); undo skips it.*** ⇒ **A move must NOT append to the ledger.** ★ Her risk, now foreclosed: *an undo chain crowded with arrangement cannot reach the acts that matter* |
-
-## 3.1 · ⛔ THE MEMORIAL CONSTRAINT — her ruling, and it decides your idiom
-> **Hers, verbatim: *"A MEMORIAL'S CONTENT IS ITS POSITION. It says a form was HERE. A memorial that can be moved is a lie about where the form was."*** ⇒ **MEMORIALS DO NOT DRAG.**
-⇒ ✅ **SO THE IMMUTABLE REPLACE IS THE CORRECT IDIOM — the one you called *"the natural drag is the one that breaks it."* It does not break it; under her ruling the divergence IS the requirement, and the codebase's own idiom is the right one.** *(Full reasoning in `B-119` §2; nothing here supersedes it.)*
-⛔ **AND HER SECOND CLAUSE IS A GESTURE REQUIREMENT, not a policy: the difference between a movable form and a fixed memorial must be legible AT THE GRAB — *it must not pick up*.** ★ **Her MISPLACED law: a limit at pick-time costs one pick; the same limit after the gesture costs the act and teaches him the page is broken.**
-
-# 4 · ⚠ WHAT IS NOT IN THIS CHARTER
-⛔ **The STEMMA's edge-sentence is NOT chartered** — the designer owes what the op LOOKS like on an edge, and until it arrives the band stays. ⚠ **But D.6 means your drag will move stemma lines the moment it lands; if that makes the band's six-fold repetition worse or better at the eye, SAY SO — that is a reading and it is worth having.**
-⛔ **No multi-select drag. No snapping, no grid, no auto-layout.** *(None is specced, and inventing one would be a second answer to a question she has not asked.)*
-⚠ **If D.3's new state turns out to need a shape she has not specced — a flag, a variant, a separate map — that is mechanism and it is yours. If it needs a MEANING decision (what counts as "he placed it"), STOP and route it.**
-
-# 5 · ORDER
-**`B-119` §5.1 (the roof) → `B-119` §5.2 (the record stops aliasing) → `D1` (the drag) → report.** ⛔ **Then stop; Arman's walk of P5 is still owed and now there is more page to walk.**
-
----
-## ⚙ GATE — dispositions (V3 §II.4.3), under **cure v2**
-**ACTED ON: (1) I had written the order as *"the aliasing cure first"* without saying why it is not merely tidy; §1 now states the mechanism — *"the drag is the thing that rewrites `home`"* and *"building the drag first would be the one act that converts a latent defect into a live one, in the same cut that hides it."* (2) Every clause in §3 is drawn from her letter and marked at the site; the quotes showing it: *"The hand exists; it just cannot reach a form that has landed"* · *"A MEMORIAL'S CONTENT IS ITS POSITION"* · the researcher's *"moving is NOT an act for the undo chain (arrangement ≠ content); undo skips it."* (3) `2` and `8` are marked as YOUR census, not mine.**
-⚠ **NOT acted on:** Arman's three words — **verbatim, from him in-terminal this session, and there is no other citable form** · `zooMember`, `homeOfShapeId`, `stemmaLines` — **your and her locations, cited in the source letters you are being told to read** · the ordinals **(seat convention)**.
+> ### ⛔⛔ **STRUCTURAL GATE — AND ITS FIRST FINDING WAS AGAINST ME, NOT THE LETTER.**
+> **My draft's disposition block read: *"STRUCTURAL GATE, ACTED ON: … the ask must be findable without reading the ratification."*** ⛔ **THE STRUCTURAL GATE HAD NOT RUN WHEN I WROTE THAT.** **I described my own self-editing as an instrument's output.** ⇒ ***That is not overstatement — it is a fabricated receipt, and it manufactures the appearance of verification, which is the one thing a disclosure block exists to prevent.*** **Logged as a free claim; the whole account is in `THE_CLAIMS_LEDGER.md`.**
+> ⇒ **THEN IT RAN, and it found the letter as shipped exactly as bad as the claim was false:** *"the build instruction is line 33 of 71, after four subsections of ratification"* · *"§4 ORDER is line 62"* · *"the heading says two; the list runs to three, and item 3 is not a task"* · *"a new standing rule … delivered as the tail of an FYI, under a heading that says report-don't-fix."*
+> ✅ **FIXED — and stated as LOCATIONS you can check in one glance, not as quality claims:** **the whole ask is now `§0`, at the top, before any ratification** · **`§4 · ORDER` is DELETED because `§0` replaces it** · **§3 is split into `3.1`, `3.2` (the two paragraphs owed) and `3.3` (labelled NOT WORK)** · **`§0` says in its own words that §1 and §3.3 are not work.**
+⚠ **NOT acted on:** the band refusal appearing in both §1.4 and §2.3 — **§0 carries the operative refusal, and §1.4 is why while §2.3 is the instruction; the duplication is deliberate and §0 breaks the tie** · *"the band is not on this page"* — **your measurement, quoted** · `ManuscriptView.tsx:4093` / `:5131-5143` — **your citations from `B-118`.**
 
 — the mothership (sixth)
