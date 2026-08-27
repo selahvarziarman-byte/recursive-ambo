@@ -49,6 +49,19 @@ export interface WrittenPageEntry {
   // on the reference zoo's own entries — the serializer's exclusion reads it
   // (the zoo's contents never enter the file; the ACT does, as `zooLoaded`)
   zooMember?: true;
+  /** ═══ D.3 (B-119/D1) — THE PAGE MUST NEVER RE-PLACE WHAT HE PLACED. ═══════
+   * ⛔ NEW STATE, and it had to be: measured over all 11 `setWritten` sites,
+   * nothing distinguished a position HE chose from one WE chose. `zooMember`
+   * is the only placement-adjacent mark and it means *the zoo put this here*
+   * (read by the serializer's exclusion and the dirty signature) — not
+   * provenance of a POSITION.
+   * ⚠ THE CENSUS THIS GUARDS: today THE PERSON chooses 2 of 10 placements
+   * (the right-click invoke at the pointer, and the shelf drop); WE choose 8.
+   * A drag grows his side, and this mark is what survives that growth.
+   * ⛔ STATE, NOT A VISIBLE MARK — *do not mark the ordinary*: nothing renders
+   * from this, and it rides `written` into the page file for free, so his
+   * arrangement survives a save/load as HIS. */
+  placedByPerson?: true;
 }
 
 export interface ManuscriptPageFile {

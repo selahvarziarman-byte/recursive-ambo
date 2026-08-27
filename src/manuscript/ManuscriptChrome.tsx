@@ -879,19 +879,43 @@ export function RecordStrip({
         background: 'transparent',
       }}
     >
-      <span style={{ fontSize: 10.5, letterSpacing: 1.1, opacity: 0.55, fontVariant: 'small-caps' }}>
-        the record — what begat what{accepted ? '' : ' · ⚠ integrity violations (shown, not hidden)'}
-      </span>
-      <span style={{ fontSize: 12 }}>
-        {entries.map((entry, k) => (
-          <span key={entry.childId} style={{ whiteSpace: 'nowrap' }}>
-            <span style={{ opacity: 0.55 }}>{k === 0 ? '   ' : '   ·   '}</span>
-            {entry.parents.map((p) => p.name).join(' + ')}
-            <span style={{ opacity: 0.7 }}> ─{entry.operation}→ </span>
-            <b>{entry.childName}</b>
-          </span>
-        ))}
-      </span>
+      {/* ═══ THE ROOF (B-119 §4 — the designer's ruling) ══════════════════════
+          ⛔ THE ROOF SAYS `the record`. NOTHING ELSE. It used to read *"the
+          record — what begat what"*, which sat over the DAG line (true) AND
+          over the acts line (a live-state log — NOT what begat what).
+          ★ Her own naming rule with nothing invented: A NAME MUST BE TRUE OF
+          WHAT IT NAMES, so A ROOF OVER TWO THINGS MAY SAY ONLY WHAT IS TRUE
+          OF BOTH — and `the record` is exactly true of both, because they are
+          the two registers of ONE record.
+          ⛔ NOT two roofs: *two roofs would say the strip is two things; it is
+          one record with two registers, and the roof should say so once.*
+          ⚠ AND IT MATTERED BEYOND TIDINESS: Δ23 took removal OUT of the
+          genealogy, and a roof naming the acts line *what begat what* put it
+          back one register up, where nobody would look for it. A TITLE IS A
+          CLAIM ABOUT EVERYTHING UNDER IT.
+          ⇒ The predicate does not vanish — it MOVES DOWN to the line it is
+          true of, so each LINE now carries its own name. */}
+      <div style={{ fontSize: 10.5, letterSpacing: 1.1, opacity: 0.55, fontVariant: 'small-caps' }}>
+        the record{accepted ? '' : ' · ⚠ integrity violations (shown, not hidden)'}
+      </div>
+      <div style={{ marginTop: 2, display: 'flex', gap: 12, alignItems: 'baseline' }}>
+        <span
+          data-record-begat-label
+          style={{ fontSize: 10.5, letterSpacing: 1.1, opacity: 0.55, fontVariant: 'small-caps', whiteSpace: 'nowrap' }}
+        >
+          what begat what
+        </span>
+        <span style={{ fontSize: 12 }}>
+          {entries.map((entry, k) => (
+            <span key={entry.childId} style={{ whiteSpace: 'nowrap' }}>
+              <span style={{ opacity: 0.55 }}>{k === 0 ? '' : '   ·   '}</span>
+              {entry.parents.map((p) => p.name).join(' + ')}
+              <span style={{ opacity: 0.7 }}> ─{entry.operation}→ </span>
+              <b>{entry.childName}</b>
+            </span>
+          ))}
+        </span>
+      </div>
       {/* P5 · U.2 — THE ACTS, on their own line: the page's account of what
           the PERSON did to it, beside its account of what begat what. Two
           kinds, two lines — the record does not mix them into one run. */}

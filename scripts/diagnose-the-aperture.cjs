@@ -714,6 +714,11 @@ const ALLOWED_SRC_CHANGES = new Set([
   // NOT_FROZEN. Ratified by scripts/diagnose-p5-the-acts.cjs.
   'src/manuscript/pageStore.ts',
   'src/manuscript/ManuscriptChrome.tsx',
+  // D1 (2026-08-27, mothership MARKER D1 · Arman: "build the darg!"): THE
+  // DRAG — `placedByPerson` is D.3's new state on WrittenPageEntry (the
+  // page may never re-place what he placed). NOT_FROZEN. Ratified by
+  // scripts/diagnose-p5-the-acts.cjs §7.
+  'src/manuscript/pageSnapshot.ts',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

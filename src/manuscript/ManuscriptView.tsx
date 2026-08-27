@@ -537,6 +537,17 @@ function FormLabel({
   );
 }
 
+/** D.1 — the committed handle on the orbit controls. `makeDefault` publishes
+ * them to the R3F store; this lifts that instance to a ref the drag can stop
+ * SYNCHRONOUSLY, which a prop cannot do inside the gesture that starts it. */
+function OrbitHandoff({ into }: { into: React.MutableRefObject<{ enabled: boolean } | null> }) {
+  const controls = useThree((s) => s.controls) as unknown as { enabled: boolean } | null;
+  useEffect(() => {
+    into.current = controls ?? null;
+  }, [controls, into]);
+  return null;
+}
+
 // ═══ P5 · M.1–M.5 — THE MEMORIAL AT THE SITE ════════════════════════════════
 // ⛔⛔ THE LOAD-BEARING CLAUSE, and the designer proved it on herself: A FORM
 // THAT SIMPLY VANISHES IS INDISTINGUISHABLE FROM A CAMERA MOVE. So removal
@@ -3926,7 +3937,8 @@ export default function ManuscriptView() {
           invoked.render.mode === 'plain' ? { ...invoked.render, shape: ownedShape } : invoked.render,
       };
       seqRef.current += 1;
-      setWritten((cur) => [...cur, { form, home: [invokeMenu.world[0], invokeMenu.world[1], 0] }]);
+      // D.3 — HIS placement: the invoke lands where HE right-clicked
+      setWritten((cur) => [...cur, { form, home: [invokeMenu.world[0], invokeMenu.world[1], 0], placedByPerson: true }]);
       setSelected(`w:${form.id}`);
       setOpNotice(null);
       closeMenus();
@@ -4877,7 +4889,8 @@ export default function ManuscriptView() {
           setLaidBodies((cur) => new Map(cur).set(form.shape.id, laid));
         }
       }
-      setWritten((cur) => [...cur, { form, home: [x, y, 0] }]);
+      // D.3 — HIS placement: the shelf form lands where HE dropped it
+      setWritten((cur) => [...cur, { form, home: [x, y, 0], placedByPerson: true }]);
       setShelf((cur) => cur.map((s, k) => (k === index ? { ...s, placed: true } : s)));
       setSelected(`w:${form.id}`);
       setOpNotice(null);
@@ -4961,6 +4974,73 @@ export default function ManuscriptView() {
 
   const riseTo: [number, number, number] = [0, d.world.specimen.riseY, specimenCtl.riseZ];
 
+  // ═══ D1 · THE DRAG — the person's hand on `home` ═══════════════════════════
+  // ★ Her grounding, and it is why this is not a new capability: the page
+  // already COMPUTES a per-form position, DRAWS the stemma from it, and SAVES
+  // it. *The hand exists; it just cannot reach a form that has landed.*
+  // ⛔ D.2 — MOVING IS NOT GENEALOGY (Arman's own rule: the genealogy records
+  // what operations MADE, and moving makes nothing) and ⛔ D.7 — A MOVE IS NOT
+  // AN ACT for the undo chain (the researcher: *arrangement ≠ content; undo
+  // skips it*). So NOTHING here touches `acts` or the DAG. Her risk, foreclosed
+  // by his ruling: *an undo chain crowded with arrangement cannot reach the
+  // acts that matter.*
+  // ⛔ AND THE IDIOM IS THE IMMUTABLE REPLACE, which is a MEANING decision and
+  // not a style one: *A MEMORIAL'S CONTENT IS ITS POSITION. It says a form was
+  // HERE. A memorial that can be moved is a lie about where the form was.* ⇒
+  // the memorial must NOT follow the form, so `home` is REPLACED, never
+  // mutated in place — and B-119 §3's snapshot is what makes that safe.
+  const dragRef = useRef<{ id: string; grab: [number, number]; moved: boolean } | null>(null);
+  const [dragging, setDragging] = useState(false);
+  // ⛔ FOUND BY DRIVING: the form moved AND THE CAMERA ORBITED WITH IT. Flipping
+  // the controls' `enabled` PROP is a React render behind the gesture — the
+  // orbit's own pointerdown listener and the mesh's fire from the SAME native
+  // event, so by the time the prop lands the rotate has already begun.
+  // ⇒ THE CONTROLS ARE STOPPED SYNCHRONOUSLY, in the pointerdown itself. The
+  // prop still carries `!dragging` for the steady state; this ref is what
+  // covers the one frame the prop cannot. (`makeDefault` publishes the
+  // controls to the R3F store, so this is the committed handle, not a reach
+  // into drei's internals.)
+  const orbitRef = useRef<{ enabled: boolean } | null>(null);
+  /** the page's own plane, z = 0 — where every `home` lives. The ray, not the
+   * hit: intersecting the FORM would feed its own motion back into the grab. */
+  const planeHit = (ray: THREE.Ray): [number, number] | null => {
+    if (Math.abs(ray.direction.z) < 1e-6) return null;
+    const t = -ray.origin.z / ray.direction.z;
+    if (!(t > 0)) return null;
+    return [ray.origin.x + ray.direction.x * t, ray.origin.y + ray.direction.y * t];
+  };
+  /** ⛔ D.5 — HE MUST NOT BE ABLE TO PUT A FORM WHERE HE CANNOT FIND IT.
+   * ★ The card's-foot law, now in his hands: *a placement satisfied by order
+   * alone can place a thing off-screen.* The bound is not a made-up rectangle
+   * — it is WHAT THE CAMERA CAN SEE at z = 0, computed from the camera itself,
+   * so the clause's own words ("where he cannot find it") are the mechanism.
+   * ⚠ A degenerate view (the camera looking along the page's own plane) yields
+   * no rect; then the drop stands as-is — the pointer is on screen by
+   * construction, so the form is somewhere he is already looking. */
+  const visibleAtPage = (camera: THREE.Camera): { minX: number; maxX: number; minY: number; maxY: number } | null => {
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const [nx, ny] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as [number, number][]) {
+      const far = new THREE.Vector3(nx, ny, 0.5).unproject(camera);
+      const dir = far.sub(camera.position).normalize();
+      if (Math.abs(dir.z) < 1e-6) return null;
+      const t = -camera.position.z / dir.z;
+      if (!(t > 0)) return null;
+      const x = camera.position.x + dir.x * t;
+      const y = camera.position.y + dir.y * t;
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+    }
+    if (!Number.isFinite(minX) || !Number.isFinite(minY)) return null;
+    const insetX = (maxX - minX) * 0.04;
+    const insetY = (maxY - minY) * 0.04;
+    return { minX: minX + insetX, maxX: maxX - insetX, minY: minY + insetY, maxY: maxY - insetY };
+  };
+
   const selectable = (
     id: string,
     shapeId: string,
@@ -4985,6 +5065,51 @@ export default function ManuscriptView() {
         speed={driftCtl.speed}
       >
         <group
+          // ═══ D.1 — THE GESTURE IS A DRAG ON THE FORM ════════════════════════
+          // ⛔ NO NEW VOCABULARY: dragging already places forms from SOURCES
+          // onto the paper; this is the same hand reaching a form that landed.
+          // ⚠ Only a WRITTEN form drags — the world's dim-1/dim-2 rows and the
+          // built rooms have no `home` of his to move, so they never grab.
+          onPointerDown={(event) => {
+            if (event.nativeEvent.button !== 0) return;
+            const entry = written.find((w) => `w:${w.form.id}` === id);
+            if (!entry) return;
+            const at = planeHit(event.ray);
+            if (!at) return;
+            event.stopPropagation();
+            (event.target as Element | null)?.setPointerCapture?.(event.nativeEvent.pointerId);
+            if (orbitRef.current) orbitRef.current.enabled = false; // SYNCHRONOUS — see orbitRef
+            dragRef.current = { id, grab: [at[0] - entry.home[0], at[1] - entry.home[1]], moved: false };
+            setDragging(true);
+          }}
+          onPointerMove={(event) => {
+            const drag = dragRef.current;
+            if (!drag || drag.id !== id) return;
+            const at = planeHit(event.ray);
+            if (!at) return;
+            event.stopPropagation();
+            drag.moved = true;
+            const bounds = visibleAtPage(event.camera);
+            const raw: [number, number] = [at[0] - drag.grab[0], at[1] - drag.grab[1]];
+            const home: [number, number, number] = bounds
+              ? [Math.min(bounds.maxX, Math.max(bounds.minX, raw[0])), Math.min(bounds.maxY, Math.max(bounds.minY, raw[1])), 0]
+              : [raw[0], raw[1], 0];
+            // ⛔ REPLACE, never mutate: `{ ...w, home: [...] }` is the idiom the
+            // memorial's ruling requires — the mark keeps its own site.
+            // ⛔ AND `placedByPerson` is set HERE, on the act that makes it true.
+            setWritten((cur) =>
+              cur.map((w) => (`w:${w.form.id}` === id ? { ...w, home, placedByPerson: true as const } : w)),
+            );
+          }}
+          onPointerUp={(event) => {
+            const drag = dragRef.current;
+            if (!drag || drag.id !== id) return;
+            event.stopPropagation();
+            (event.target as Element | null)?.releasePointerCapture?.(event.nativeEvent.pointerId);
+            dragRef.current = null;
+            if (orbitRef.current) orbitRef.current.enabled = true;
+            setDragging(false);
+          }}
           onClick={(event) => {
             event.stopPropagation();
             // ARMAN'S LAW (2026-08-07, direct word): summon is a DOUBLE-CLICK.
@@ -5836,6 +5961,7 @@ export default function ManuscriptView() {
             the bare controls — zoom lands AT the cursor with a usable delta
             (C3), middle-drag pans (C4 — left stays orbit, right stays the
             invoke menu), reset returns the composed default exactly. */}
+        <OrbitHandoff into={orbitRef} />
         <SceneCameraControls
           sceneBounds={overviewBounds}
           selectedSceneBounds={selectedCameraBounds}
@@ -5854,6 +5980,11 @@ export default function ManuscriptView() {
             zoomSpeed: 1.6,
             panSpeed: 1.1,
             mouseButtons: { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.PAN },
+            // D.1 — while a form is in hand the world must hold still: a
+            // left-drag on a form moves the FORM, and the same left-drag on
+            // empty paper still orbits (unchanged — the discriminator is what
+            // is under the pointer, not a mode).
+            enabled: !dragging,
           }}
         />
       </Canvas>

@@ -56,6 +56,25 @@ export interface ShelfItem {
 // of what happened*). If you are ever tempted to `pop()` here, that is the
 // disease and not the fix.
 
+// ⛔⛔ B-119 §3 — THE RECORD MAY NOT BE MUTABLE THROUGH THE LIVE PAGE.
+// `WrittenPageEntry.home` is an ARRAY, and storing an entry on an act stored a
+// REFERENCE to it — measured by identity: `act.entry.home === entry.home` was
+// true. ⇒ Remove Torus at H1 → undo → drag it to H2, and with an in-place
+// write the ACT RECORD of *"removed Torus from H1"* silently becomes
+// *"removed Torus from H2"*.
+// ★★★ A RECORD THAT HOLDS A REFERENCE INTO LIVE STATE IS A RECORD THAT CAN BE
+// REWRITTEN WITHOUT BEING WRITTEN TO. The ledger's append-only-ness is TRUE at
+// every site — three appends, no pop/splice/shift — and the CONTENT still
+// changes. Append-only is not enough when the appended thing is an alias.
+// ⇒ THE SITE IS SNAPSHOTTED AT THE ACT: `home` is copied, so the record holds
+// a FACT AS OF THE REMOVAL and not a view of a live array. ⚠ The FORM object
+// is deliberately NOT copied — its identity is what the DAG is keyed on, and
+// only the mutable position needed freezing.
+const frozenSite = (entry: WrittenPageEntry): WrittenPageEntry => ({
+  ...entry,
+  home: [entry.home[0], entry.home[1], entry.home[2]],
+});
+
 export type PageActKind = 'remove' | 'set-aside' | 'undo';
 
 export interface PageAct {
@@ -226,8 +245,8 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
       if (!entry) return {}; // nothing to remove is not an act — no empty trace
       return {
         written: s.written.filter((w) => w.form.id !== formId),
-        acts: [...s.acts, { id: `act:${s.acts.length + 1}:remove:${formId}`, kind: 'remove', formId, name: entry.form.title, entry }],
-        removals: [...s.removals, { formId, shapeId: entry.form.shape.id, name: entry.form.title, home: entry.home, restored: false }],
+        acts: [...s.acts, { id: `act:${s.acts.length + 1}:remove:${formId}`, kind: 'remove', formId, name: entry.form.title, entry: frozenSite(entry) }],
+        removals: [...s.removals, { formId, shapeId: entry.form.shape.id, name: entry.form.title, home: [entry.home[0], entry.home[1], entry.home[2]], restored: false }],
       };
     }),
 
@@ -249,7 +268,7 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
       return {
         written: s.written.filter((w) => w.form.id !== formId),
         shelf: shelfShapeId ? s.shelf.map((i) => (i.entry.loaded.shape.id === shelfShapeId ? { ...i, placed: false } : i)) : s.shelf,
-        acts: [...s.acts, { id: `act:${s.acts.length + 1}:set-aside:${formId}`, kind: 'set-aside', formId, name: entry.form.title, entry, shelfShapeId }],
+        acts: [...s.acts, { id: `act:${s.acts.length + 1}:set-aside:${formId}`, kind: 'set-aside', formId, name: entry.form.title, entry: frozenSite(entry), shelfShapeId }],
       };
     }),
 

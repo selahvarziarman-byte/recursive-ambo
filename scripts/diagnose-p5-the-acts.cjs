@@ -99,6 +99,40 @@ reset();
     })());
 }
 
+// ═════ §1b THE RECORD MAY NOT BE MUTABLE THROUGH THE LIVE PAGE (B-119 §3) ════
+console.log('\n----- §1b the record does not alias live state -----');
+reset();
+{
+  const home = [1, 2, 0];
+  const e = { form: invokePrimitive('square', 150), home };
+  useManuscriptPageStore.setState({ written: [e] });
+  store().removeForm(e.form.id);
+  const act = store().acts[0];
+  const mark = store().removals[0];
+
+  check('§1b ★★★ THE ACT AND THE MEMORIAL HOLD A FACT AS OF THE REMOVAL, NOT A VIEW OF A LIVE ARRAY: neither the recorded entry’s `home` nor the mark’s `home` is the SAME ARRAY the live page carries — identity, not equality. ⛔ A RECORD THAT HOLDS A REFERENCE INTO LIVE STATE IS A RECORD THAT CAN BE REWRITTEN WITHOUT BEING WRITTEN TO, and every append-only pin in this file stays true while the content changes underneath it',
+    act.entry.home !== home && mark.home !== home &&
+    JSON.stringify(act.entry.home) === JSON.stringify(home) &&
+    JSON.stringify(mark.home) === JSON.stringify(home));
+  note(`act.entry.home === the live array: ${act.entry.home === home} · mark.home === the live array: ${mark.home === home} (both must be false, with equal VALUES)`);
+
+  // ⛔ THE FALSIFIER, manufactured as ordered: mutate the live array in place —
+  // the drag idiom that would alias — and assert the RECORD does not move.
+  // ⚠ THIS TEST COULD NOT HAVE PASSED BEFORE THE CURE: the arrays were the
+  // same object, so writing one wrote both. It is the whole claim in one line.
+  home[0] = 99;
+  check('§1b ⛔ THE FALSIFIER: mutating the live `home` IN PLACE (`home[0] = 99` — exactly what an in-place drag would do) leaves the recorded act and the memorial reading their original site. The record is a fact about WHERE THE FORM WAS, and no later arrangement can rewrite it',
+    act.entry.home[0] === 1 && mark.home[0] === 1);
+  note(`after home[0] = 99 → act.entry.home[0] = ${act.entry.home[0]} · mark.home[0] = ${mark.home[0]} (the live array now reads ${home[0]})`);
+
+  check('§1b ⛔ AND THE MEMORIAL CANNOT BE DRAGGED — the designer’s ruling is why the copy is the RIGHT cure and not merely the safe one: *A MEMORIAL’S CONTENT IS ITS POSITION. It says a form was HERE. A memorial that can be moved is a lie about where the form was.* ⇒ the mark mounts with pointerEvents none, so it cannot be picked up at all — the limit is AT THE GRAB, not after the gesture',
+    (() => {
+      const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+      const memorial = viewSrc.slice(viewSrc.indexOf('function SiteMemorial'), viewSrc.indexOf('// CUT 1 — THE FAITHFUL BODY'));
+      return memorial.includes("pointerEvents: 'none'") && !/onPointerDown|draggable/i.test(memorial);
+    })());
+}
+
 // ═════ §2 NO FORCED CASCADE, and the RECORD keeps its subject ════════════════
 console.log('\n----- §2 no forced cascade: the child stands, and the record goes on naming the parent -----');
 reset();
@@ -264,6 +298,56 @@ console.log('\n----- §6 the memorial: at the site, named, recessed, collapsing,
     memorial.includes('const back = marks.filter((m) => m.restored)') &&
     /\$\{back\[0\]\.name\} — restored/.test(memorial) &&
     memorial.includes('${back.length} restored here'));
+}
+
+// ═════ §7 THE DRAG (D1) — D.1–D.7, structurally ══════════════════════════════
+// ⛔ WHAT THIS LEG CAN SAY: the drag is R3F pointer handling, so the GESTURE is
+// the drive family's and the eye's. What is measurable here is every clause
+// that is a fact about the SOURCE — which idiom writes `home`, what the ledger
+// does NOT gain, whether the memorial can be grabbed, and where the bound
+// comes from.
+console.log('\n----- §7 the drag: the person’s hand on `home` -----');
+{
+  const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+  const snapSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/pageSnapshot.ts'), 'utf8');
+  const down = viewSrc.slice(viewSrc.indexOf('onPointerDown={(event) => {'), viewSrc.indexOf('onClick={(event) => {', viewSrc.indexOf('onPointerDown={(event) => {')));
+
+  check('§7 ★★ D.1 — THE GESTURE IS A DRAG ON THE FORM, and no new vocabulary: pointerdown grabs, pointermove writes `home`, pointerup releases, with the pointer CAPTURED so the form does not fall out of the hand at the edge of its own body. ⚠ Only a WRITTEN form grabs — the handler resolves `written` first and returns if the id is not one, so the world’s rows and the built rooms never pick up',
+    down.includes('const entry = written.find((w) => `w:${w.form.id}` === id);') &&
+    down.includes('if (!entry) return;') &&
+    down.includes('setPointerCapture') &&
+    viewSrc.includes('releasePointerCapture'));
+
+  check('§7 ⛔ D.2 + D.7 — MOVING IS NOT GENEALOGY AND NOT AN ACT: the whole drag block touches neither the DAG nor the ledger — no `acts`, no `removeForm`, no `recordBuilt`. ★ Her risk, foreclosed by the researcher’s Q5: *an undo chain crowded with arrangement cannot reach the acts that matter*',
+    (() => {
+      const block = viewSrc.slice(viewSrc.indexOf('onPointerDown={(event) => {'), viewSrc.indexOf('onContextMenu={(event) => {'));
+      return !/acts|removeForm|setAsideForm|undoLastAct|recordBuilt|genesis/.test(block);
+    })());
+
+  check('§7 ⛔⛔ THE IDIOM IS THE IMMUTABLE REPLACE, AND IT IS A MEANING DECISION: the move maps to `{ ...w, home: [...] }` and NEVER writes into the existing array. ★ *A MEMORIAL’S CONTENT IS ITS POSITION — a memorial that can be moved is a lie about where the form was* ⇒ the memorial must NOT follow, so the divergence I first read as the hazard is the REQUIREMENT',
+    /\{ \.\.\.w, home, placedByPerson: true as const \}/.test(viewSrc) &&
+    !/w\.home\[0\] =|entry\.home\[0\] =|home\[0\] =/.test(viewSrc));
+
+  check('§7 ⛔ D.3 — THE PAGE MAY NEVER RE-PLACE WHAT HE PLACED: `placedByPerson` is NEW STATE on WrittenPageEntry (nothing distinguished his placements before — `zooMember` means *the zoo put this here*), it is set on the drag AND on the two placements he already chooses (the invoke at his pointer, the shelf drop), and NOTHING RENDERS FROM IT — state, not a visible mark, because a mark on the ordinary stops meaning anything',
+    snapSrc.includes('placedByPerson?: true;') &&
+    (viewSrc.match(/placedByPerson: true/g) ?? []).length === 3 &&
+    !/placedByPerson \?|placedByPerson &&|\.placedByPerson\b/.test(viewSrc));
+
+  check('§7 ★ D.5 — HE MUST NOT BE ABLE TO PUT A FORM WHERE HE CANNOT FIND IT, and the bound is not an invented rectangle: it is WHAT THE CAMERA CAN SEE at the page’s own plane, unprojected from the camera itself, so the clause’s own words are the mechanism. ⚠ A degenerate view yields no rect and the drop stands — the pointer is on screen by construction',
+    viewSrc.includes('const visibleAtPage = (camera: THREE.Camera)') &&
+    viewSrc.includes('Math.min(bounds.maxX, Math.max(bounds.minX, raw[0]))') &&
+    viewSrc.includes('if (!Number.isFinite(minX) || !Number.isFinite(minY)) return null;'));
+
+  check('§7 ✔ D.6 — THE STEMMA FOLLOWS THE HOMES, and it is FREE: `stemmaLines` reads `homeOfShapeId`, which is built over the live `written` — so moving a form moves its edges with it. ★★★ Which is why this is not a convenience feature: ARRANGING THE PAGE IS ARRANGING THE ARGUMENT',
+    viewSrc.includes('const from = homeOfShapeId.get(edge.parent);') &&
+    viewSrc.includes('const to = homeOfShapeId.get(edge.child);'));
+
+  check('§7 ✔ D.4 — SAVE NEEDS NOTHING: `home` already rides `written` into the page file, and `placedByPerson` rides the same entry — so his arrangement AND its provenance survive a save/load for free (the rare case where the persistence half was done before the gesture existed)',
+    snapSrc.includes('written: WrittenPageEntry[];') &&
+    fs.readFileSync(path.join(repoRoot, 'src/manuscript/pageStore.ts'), 'utf8').includes('written: records.written,'));
+
+  check('§7 ⛔ AND THE WORLD HOLDS STILL WHILE A FORM IS IN HAND: the orbit is disabled for the duration of the drag, so a left-drag on a FORM moves the form while the same left-drag on empty paper still orbits — the discriminator is what is under the pointer, not a mode the person has to hold',
+    viewSrc.includes('enabled: !dragging'));
 }
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`} — P5 + UNDO`);

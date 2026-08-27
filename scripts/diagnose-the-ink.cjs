@@ -699,6 +699,11 @@ const inkAllowed = new Set([
   // NOT_FROZEN. Ratified by scripts/diagnose-p5-the-acts.cjs.
   'src/manuscript/pageStore.ts',
   'src/manuscript/ManuscriptChrome.tsx',
+  // D1 (2026-08-27, mothership MARKER D1 · Arman: "build the darg!"): THE
+  // DRAG — `placedByPerson` is D.3's new state on WrittenPageEntry (the
+  // page may never re-place what he placed). NOT_FROZEN. Ratified by
+  // scripts/diagnose-p5-the-acts.cjs §7.
+  'src/manuscript/pageSnapshot.ts',
 ]);
 const inkMoved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)
