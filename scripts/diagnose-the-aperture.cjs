@@ -706,6 +706,14 @@ const ALLOWED_SRC_CHANGES = new Set([
   // NOT_FROZEN (classified 4a7ac81). Ratified by
   // scripts/diagnose-the-noncube-domain.cjs §9.
   'src/lib/noncubeDomain.ts',
+  // P5 + UNDO (2026-08-27, mothership STAMP B-116 §2): the three acts, the
+  // memorial at the site, and the traced revert — built to the four source
+  // letters. pageStore holds the append-only acts ledger + the site marks;
+  // ManuscriptChrome carries the RecordStrip's acts line and the undo
+  // control (undo acts on an ACT, so it is NOT on a form's card).
+  // NOT_FROZEN. Ratified by scripts/diagnose-p5-the-acts.cjs.
+  'src/manuscript/pageStore.ts',
+  'src/manuscript/ManuscriptChrome.tsx',
 ]);
 check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src file whose CONTENT moved vs HEAD is view/chrome/defaults or a later mandate\'s ratified surface (the small run\'s two engine edits carry their manifest hash updates in the same change); dim-1/2 bodies, specimens, birth marks and invariants are byte-identical to HEAD (CRLF phantoms are candidates, never verdicts), and the engine-freeze manifest still reads ok at 45 (import-closed)',
   changedSrc.every((f) => ALLOWED_SRC_CHANGES.has(f)) &&

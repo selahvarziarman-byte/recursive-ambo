@@ -44,6 +44,64 @@ export interface ShelfItem {
   placed: boolean;
 }
 
+// ═══ P5 — THE THREE ACTS, AND WHY THIS IS A LEDGER AND NOT A STACK ══════════
+// RULED (researcher): *you can never erase a TRACE; you can only ADD one.*
+//   · removal is a traced DEATH · undo is a traced REVERT.
+//   · THE RECORD RATCHETS — it grows and never shrinks.
+//   · THE LIVE PAGE DOES NOT — a form can die, an act can revert.
+// ⛔ SO `acts` IS APPEND-ONLY, ALWAYS. An undo does not POP it; an undo
+// APPENDS an act of its own naming what it reverted. A stack would make undo
+// a history-rewrite, which is the one thing this module's own git doctrine
+// forbids one register up (*revert, never reset — a revert leaves the record
+// of what happened*). If you are ever tempted to `pop()` here, that is the
+// disease and not the fix.
+
+export type PageActKind = 'remove' | 'set-aside' | 'undo';
+
+export interface PageAct {
+  id: string; // stable, so an undo can NAME what it reverted rather than count backwards
+  kind: PageActKind;
+  formId: string;
+  name: string; // the form's own name at the time of the act — the memorial's M.2
+  /** remove / set-aside: the entry as it stood, so the revert returns it whole
+   * TO ITS SITE (the designer's §5 mechanism clause). */
+  entry?: WrittenPageEntry;
+  /** set-aside only: the shelf entry it came from, if it came from one — the
+   * shelf is where a set-aside form WAITS, and only a shelf-born form has one. */
+  shelfShapeId?: string | null;
+  /** undo only: the id of the act it reverted. */
+  ofActId?: string;
+  ofKind?: PageActKind;
+}
+
+/**
+ * P5 M.1–M.5 — THE MARK AT THE FORM'S OWN SITE.
+ * ⛔ M.1: the site keeps a mark, because A FORM THAT SIMPLY VANISHES IS
+ * INDISTINGUISHABLE FROM A CAMERA MOVE — the designer proved that on herself.
+ * ⛔ M.3: the word is `removed`, not `died`: same mechanism, two words, and
+ * the difference is AGENCY — `died` is what happens to a concept inside an op;
+ * `removed` is what happens when HE does it.
+ * ⛔ §5 / the researcher's strengthening: an undo does NOT erase the death.
+ * The RECORD keeps `removed, then restored` permanently; on the LIVE PAGE the
+ * absence-memorial YIELDS to the returned form and the return posts its own
+ * positive `restored` mark — so the page never shows a `removed` ghost
+ * BENEATH a present form, which would say gone-and-here at once.
+ */
+export interface RemovalMark {
+  formId: string;
+  /** ⛔ NO FORCED CASCADE (researcher): removing a parent does NOT remove the
+   * child it begot — begetting cannot be un-done by removing the parent. The
+   * child stands and its lineage keeps naming its parent, so the RECORD needs
+   * the removed form's SHAPE id to go on naming it. (The record survives by
+   * the committed mechanism already: `genesisStoryShapes` collects
+   * `entry.form.parentShape`, so a child holds its parent's Shape in the DAG
+   * even after the parent leaves the page — what it lacked was the NAME.) */
+  shapeId: string;
+  name: string;
+  home: [number, number, number];
+  restored: boolean; // the memorial GAINS a return; it never loses its death
+}
+
 // §7 (B-2026-08-24-B, RULED): THE STANDING UNSAVED MARK's fact — "there is
 // work here that is not written down" is a POSITIVE fact: the RECORD layer
 // (exactly what the page FILE serializes) differs from the last save/load.
@@ -90,6 +148,12 @@ interface ManuscriptPageState {
   // ── the RECORD layer ──
   shelfFiles: PlaygroundSnapshotFile[];
   builtRecords: BuiltDomainRecord[];
+  // ── P5: the acts ledger + the site marks (both RATCHET) ──
+  acts: PageAct[];
+  removals: RemovalMark[];
+  removeForm: (formId: string) => void;
+  setAsideForm: (formId: string) => void;
+  undoLastAct: () => void;
   // ── setters (useState-compatible updater signatures) ──
   setWritten: (next: Updater<WrittenPageEntry[]>) => void;
   setShelf: (next: Updater<ShelfItem[]>) => void;
@@ -127,6 +191,8 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
   zooLoaded: false,
   shelfFiles: [],
   builtRecords: [],
+  acts: [],
+  removals: [],
   savedSignature: EMPTY_PAGE_SIGNATURE,
 
   setWritten: (next) => set((s) => ({ written: applyUpdater(s.written, next) })),
@@ -149,6 +215,76 @@ export const useManuscriptPageStore = create<ManuscriptPageState>((set, get) => 
   },
   unbumpBuiltCount: () => set((s) => ({ builtCount: Math.max(0, s.builtCount - 1) })),
   markPageSaved: () => set((s) => ({ savedSignature: pageSignatureOf(s) })),
+
+  // ═══ P5 · THE ACTS ════════════════════════════════════════════════════════
+  // ⛔ REMOVE — a traced DEATH. The live form leaves; the record GAINS. Both
+  // halves in one set(), because a page that had lost the form without gaining
+  // the trace would be, for that instant, exactly the erasure this forbids.
+  removeForm: (formId) =>
+    set((s) => {
+      const entry = s.written.find((w) => w.form.id === formId);
+      if (!entry) return {}; // nothing to remove is not an act — no empty trace
+      return {
+        written: s.written.filter((w) => w.form.id !== formId),
+        acts: [...s.acts, { id: `act:${s.acts.length + 1}:remove:${formId}`, kind: 'remove', formId, name: entry.form.title, entry }],
+        removals: [...s.removals, { formId, shapeId: entry.form.shape.id, name: entry.form.title, home: entry.home, restored: false }],
+      };
+    }),
+
+  // ⛔ SET ASIDE — *it leaves the page whole and waits; NOTHING DIES.* So it
+  // posts NO memorial: the memorial's own justification is the M3 seal, and
+  // M3 is about a thing that DIED. A set-aside form is intact and waiting.
+  // ⚠ WHERE IT WAITS is the shelf — a shelf-born form's entry simply returns
+  // to `placed: false`, the state it was in before he dragged it out, which
+  // uses the shelf's existing surface rather than redesigning it (her §6:
+  // *the shelf's own surface is untouched*). A form with no shelf entry has
+  // nowhere to wait, and the CARD refuses it BY NAME at pick-time rather than
+  // here at act-time — a limit found at the act costs the whole act; the same
+  // limit at pick-time costs one look.
+  setAsideForm: (formId) =>
+    set((s) => {
+      const entry = s.written.find((w) => w.form.id === formId);
+      if (!entry) return {};
+      const shelfShapeId = s.shelf.find((i) => i.entry.loaded.shape.id === entry.form.shape.id)?.entry.loaded.shape.id ?? null;
+      return {
+        written: s.written.filter((w) => w.form.id !== formId),
+        shelf: shelfShapeId ? s.shelf.map((i) => (i.entry.loaded.shape.id === shelfShapeId ? { ...i, placed: false } : i)) : s.shelf,
+        acts: [...s.acts, { id: `act:${s.acts.length + 1}:set-aside:${formId}`, kind: 'set-aside', formId, name: entry.form.title, entry, shelfShapeId }],
+      };
+    }),
+
+  // ⛔ UNDO — a traced REVERT, one step, and it APPENDS. U.1: the last act
+  // that is not itself an undo and has not already been reverted. ⛔ Walking
+  // back to the last UN-REVERTED act is what makes this a revert rather than a
+  // stack pop: the ledger keeps every act, and `undo` names the one it
+  // reverted by id instead of counting backwards into a mutable history.
+  undoLastAct: () =>
+    set((s) => {
+      const revertedIds = new Set(s.acts.filter((a) => a.kind === 'undo').map((a) => a.ofActId));
+      const target = [...s.acts].reverse().find((a) => a.kind !== 'undo' && !revertedIds.has(a.id));
+      if (!target || !target.entry) return {}; // nothing to undo — the control is ABSENT, never inert
+      const undoAct: PageAct = {
+        id: `act:${s.acts.length + 1}:undo:${target.formId}`,
+        kind: 'undo',
+        formId: target.formId,
+        name: target.name,
+        ofActId: target.id,
+        ofKind: target.kind,
+      };
+      return {
+        // §5 mechanism: the form returns TO ITS SITE — the entry carries its
+        // own `home`, so restoring the entry restores the place with it
+        written: [...s.written, target.entry],
+        shelf: target.shelfShapeId
+          ? s.shelf.map((i) => (i.entry.loaded.shape.id === target.shelfShapeId ? { ...i, placed: true } : i))
+          : s.shelf,
+        acts: [...s.acts, undoAct],
+        // ⛔ THE DEATH IS NOT ERASED. The mark stays and GAINS its return; on
+        // the page it stops drawing an absence-ghost (the form is back) and
+        // starts drawing the return's own positive mark (U.3).
+        removals: s.removals.map((m) => (m.formId === target.formId ? { ...m, restored: true } : m)),
+      };
+    }),
 
   pageRecords: () => {
     const s = get();

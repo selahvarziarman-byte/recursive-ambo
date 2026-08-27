@@ -845,12 +845,25 @@ export function RecordStrip({
   entries,
   accepted,
   paper,
+  acts,
+  undo,
 }: {
   entries: RecordEntry[];
   accepted: boolean;
   paper: ChromePaper;
+  // ═══ P5 · U.2 — THE ACTS ARE RECORDED, and this is where they live ════════
+  // ⛔ `undo` acts on an ACT, not a form ⇒ IT DOES NOT BELONG ON A FORM'S CARD
+  // AT ALL. It lives with the page's own acts, and this strip IS the page's
+  // account of itself. ⛔ U.2: the revert is ITSELF recorded — an untraced
+  // undo is the only gesture in this app that would lie about having happened.
+  acts?: string[];
+  // ⛔ U.4 — the control says WHAT it will undo, computed from the act
+  // (`undo — remove Square`); `undo` alone is a promise about a thing he
+  // cannot see. ⚠ And when there is nothing to undo it is ABSENT or REASONED,
+  // never present and inert — so this prop is undefined, not disabled.
+  undo?: { label: string; onUndo: () => void };
 }) {
-  if (!entries.length) return null;
+  if (!entries.length && !acts?.length && !undo) return null;
   return (
     <div
       style={{
@@ -879,6 +892,43 @@ export function RecordStrip({
           </span>
         ))}
       </span>
+      {/* P5 · U.2 — THE ACTS, on their own line: the page's account of what
+          the PERSON did to it, beside its account of what begat what. Two
+          kinds, two lines — the record does not mix them into one run. */}
+      {acts?.length || undo ? (
+        <div style={{ marginTop: 3, display: 'flex', gap: 12, alignItems: 'baseline' }}>
+          <span style={{ fontSize: 10.5, letterSpacing: 1.1, opacity: 0.55, fontVariant: 'small-caps' }}>
+            the acts
+          </span>
+          <span data-record-acts style={{ fontSize: 12, opacity: 0.8 }}>
+            {acts?.length ? acts.join('   ·   ') : <span style={{ opacity: 0.6 }}>—</span>}
+          </span>
+          {undo ? (
+            <button
+              type="button"
+              data-undo-act
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                undo.onUndo();
+              }}
+              style={{
+                pointerEvents: 'auto', // the strip itself is inert; this control is not
+                marginLeft: 'auto',
+                padding: '2px 9px',
+                borderRadius: 3,
+                border: `1px solid ${paper.cardBorder}`,
+                background: 'transparent',
+                color: paper.cardInk,
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontSize: 11.5,
+                cursor: 'pointer',
+              }}
+            >
+              {undo.label}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

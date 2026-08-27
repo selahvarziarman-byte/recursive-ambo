@@ -537,6 +537,63 @@ function FormLabel({
   );
 }
 
+// ═══ P5 · M.1–M.5 — THE MEMORIAL AT THE SITE ════════════════════════════════
+// ⛔⛔ THE LOAD-BEARING CLAUSE, and the designer proved it on herself: A FORM
+// THAT SIMPLY VANISHES IS INDISTINGUISHABLE FROM A CAMERA MOVE. So removal
+// leaves a POSITIVE MARK AT THE SITE — the place on the page where the form
+// stood, which is where he is looking when he acts.
+//   M.2 the mark carries the NAME and the word.
+//   M.3 the word is `removed`, NOT `died` — same mechanism, two words, and the
+//       difference is AGENCY: `died` is what happens to a concept inside an
+//       op; `removed` is what happens when HE does it.
+//   M.4 RECESSED — a ghost, not a form. Same ink, quiet register, NO NEW
+//       SPECIES: this is the page's own serif in the page's own ink, set back.
+//   M.5 many at one site COLLAPSE to `N removed here` — the elision grammar,
+//       entry-grammar refused, no route implied. ⚠ RULED (researcher): that is
+//       ELISION and legal *iff the record still holds every individual death*,
+//       which it does — `acts` is append-only and holds each one by name.
+//   M.6 NOT DISMISSIBLE BY A GESTURE — so there is no close control here, and
+//       no click handler. Dismissing a trace is erasing one.
+// ⛔ §5 / the researcher's strengthening: a RESTORED form's site shows the
+// form plus the return's own `restored` mark — never a `removed` ghost
+// BENEATH a present form, which would say gone-and-here at once.
+function SiteMemorial({
+  marks,
+  ink,
+}: {
+  marks: { name: string; restored: boolean }[];
+  ink: string;
+}) {
+  const gone = marks.filter((m) => !m.restored);
+  const back = marks.filter((m) => m.restored);
+  if (gone.length === 0 && back.length === 0) return null;
+  // M.5 — the count form, and it is POSITIVE (`N removed here`), never a blank
+  const goneLine =
+    gone.length === 0 ? null : gone.length === 1 ? `${gone[0].name} — removed` : `${gone.length} removed here`;
+  // U.3 — the revert's own mark at the site: he must be able to tell
+  // *I undid it* from *the view moved*, exactly as for the removal itself
+  const backLine =
+    back.length === 0 ? null : back.length === 1 ? `${back[0].name} — restored` : `${back.length} restored here`;
+  return (
+    <Html center distanceFactor={13} zIndexRange={[38, 0]} style={{ pointerEvents: 'none' }}>
+      <div
+        data-site-memorial
+        style={{
+          textAlign: 'center',
+          color: ink,
+          fontFamily: 'Georgia, "Times New Roman", serif',
+          whiteSpace: 'nowrap',
+          opacity: 0.42, // M.4 — recessed: same ink, quiet register
+          fontStyle: 'italic',
+        }}
+      >
+        {goneLine ? <div style={{ fontSize: 11.5 }}>{goneLine}</div> : null}
+        {backLine ? <div style={{ fontSize: 11.5 }}>{backLine}</div> : null}
+      </div>
+    </Html>
+  );
+}
+
 // CUT 1 — THE FAITHFUL BODY (stage 1, the cone family): the person's OWN
 // cells, placed by the model, drawn in the designer's registers — every class
 // exactly once (LAW A): a dot per vertex-class, ONE thin stroke per seam
@@ -1474,6 +1531,7 @@ function SpecimenCard({
   affordance,
   bound,
   deckRecord,
+  formActs,
 }: {
   reading: SpecimenReading;
   argument?: ArgumentReading | null;
@@ -1506,6 +1564,22 @@ function SpecimenCard({
   // ⛔ never a silent bare.
   ringRefusal?: string;
   ringUnplaced?: { id: string; reason: string }[];
+  // ═══ P5 — THE TWO FORM-ACTS, in their OWN ROW ═════════════════════════════
+  // ⛔ NOT on the affordance line and NOT in the OPERATIONS menu. Her cure,
+  // and it is BY CONSTRUCTION rather than by wording: *the affordance line
+  // answers what OPERATIONS consume this form and make something. Removal
+  // consumes nothing and makes nothing — it acts on the PAGE.* ⇒ the one word
+  // that SOUNDS like removal (`collapse`) and the act that IS removal are
+  // never in the same list, so the `collapse` misfire has no site.
+  // ⛔ And `remove` and `set aside` are separated BY PLACE, never by a confirm:
+  // *a confirm is a refusal placed after the act, and I will not cure a
+  // misfire with a speed bump.*
+  formActs?: {
+    onRemove: () => void;
+    // present-and-reasoned, never present-and-inert (her U.4 principle, which
+    // is about a control promising something it cannot do)
+    setAside: { onSetAside: () => void } | { refusal: string };
+  };
 }) {
   // §7 — a REGISTER row touches its register through the ONE emphasizedIds
   // channel (`register:<name>` — the same mechanism as the key's entities)
@@ -1617,6 +1691,86 @@ function SpecimenCard({
           </b>
         </div>
       ))}
+      {/* ═══ P5 — THE TWO FORM-ACTS, THEIR OWN ROW ═══════════════════════════
+          BELOW the record rows, behind a rule of their own, under a heading in
+          a register that is not the operations' — because PLACE SEPARATES
+          KINDS, and that is what place is for. These two act on the PAGE;
+          the affordance line above acts on the FORM.
+          ⚠ SITED HERE, DIRECTLY UNDER THE RECORD ROWS, AND MEASURED — my first
+          build put it at the card's FOOT, which also satisfies *below the
+          record rows*, and it was UNREACHABLE: the card runs 1070 px in an
+          863 px viewport with `overflow: visible` and no max-height, so the
+          foot falls off the page. ⛔ The mark is not the deliverable, the
+          route is — an act a person cannot reach is not built. The card's own
+          overflow is a FORM question and it is reported, not cured here. */}
+      {formActs ? (
+        <div
+          data-form-acts
+          style={{ marginTop: 9, borderTop: `1px solid ${paper.cardBorder}`, paddingTop: 6 }}
+        >
+          <div style={{ fontSize: 10.5, letterSpacing: 1.1, opacity: 0.5, fontVariant: 'small-caps', marginBottom: 4 }}>
+            this page — what you may do with the form itself
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              data-act-remove
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                // ⛔ NO CONFIRM. Separated from `set aside` by PLACE.
+                formActs.onRemove();
+              }}
+              style={{
+                flex: 1,
+                padding: '4px 0',
+                borderRadius: 3,
+                border: `1px solid ${paper.cardBorder}`,
+                background: 'transparent',
+                color: paper.cardInk,
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontSize: 12,
+                cursor: 'pointer',
+              }}
+            >
+              remove
+            </button>
+            {'onSetAside' in formActs.setAside ? (
+              <button
+                type="button"
+                data-act-set-aside
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  (formActs.setAside as { onSetAside: () => void }).onSetAside();
+                }}
+                style={{
+                  flex: 1,
+                  padding: '4px 0',
+                  borderRadius: 3,
+                  border: `1px solid ${paper.cardBorder}`,
+                  background: 'transparent',
+                  color: paper.cardInk,
+                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                set aside
+              </button>
+            ) : (
+              // ⛔ REASONED, never present-and-inert: the act promises *it
+              // leaves the page whole and WAITS*, and a form with no shelf
+              // entry has nowhere to wait. Said at pick-time, where the limit
+              // costs one look instead of a whole act.
+              <span
+                data-act-set-aside-refused
+                style={{ flex: 1, fontSize: 11, opacity: 0.55, fontStyle: 'italic', alignSelf: 'center' }}
+              >
+                {formActs.setAside.refusal}
+              </span>
+            )}
+          </div>
+        </div>
+      ) : null}
       {fieldDoor ? (
         // M1 — THE FIELD DOOR (ManuscriptChrome's chip idiom; closed by
         // default). Hover touches the field register (§7's one channel);
@@ -1979,6 +2133,12 @@ export default function ManuscriptView() {
   // (ids + counts only), never a flag that can drift; the zoo re-summon on
   // restore stays quiet by the signature's own zoo exclusion.
   const pageDirty = useManuscriptPageStore((s) => pageSignatureOf(s) !== s.savedSignature);
+  // ═══ P5 — the acts ledger and the site marks (both RATCHET; see pageStore) ══
+  const acts = useManuscriptPageStore((s) => s.acts);
+  const removals = useManuscriptPageStore((s) => s.removals);
+  const removeForm = useManuscriptPageStore((s) => s.removeForm);
+  const setAsideForm = useManuscriptPageStore((s) => s.setAsideForm);
+  const undoLastAct = useManuscriptPageStore((s) => s.undoLastAct);
   // §7's BACKSTOP (ruled acceptable as a backstop, NEVER the cure — the
   // cure is the standing mark where the act lives): a full reload with
   // unsaved work asks once before discarding it.
@@ -3848,16 +4008,51 @@ export default function ManuscriptView() {
 
   // ----- 3b: the genesis reading — ONE committed DAG feeds pentimento + -----
   // ----- stemma + the foot-record (nothing hand-kept) ------------------------
-  const genesis = useMemo(() => readGenesis(genesisStoryShapes(written)), [written]);
+  // ═══ P5 · clause 20 — THE RECORD RATCHETS; THE LIVE PAGE DOES NOT ═════════
+  // ⛔ FOUND BY DRIVING, and it was ERASURE: the record is built from the
+  // page's population, so removing a LEAF form (one nothing else was begotten
+  // from) dropped its own birth line — `Square —glue→ Torus` simply left the
+  // record. A PARENT survived by luck, because the child carries its parent's
+  // Shape; a leaf had nobody to carry it.
+  // ⇒ THE POPULATION IS EVERY FORM THE PAGE HAS EVER HELD: the live entries
+  // PLUS every act's own carried entry. That is the ratchet said in the one
+  // place it has to be true — the live page loses the form, the record does
+  // not lose the sentence.
+  const genesis = useMemo(() => {
+    const population = [...written];
+    const seen = new Set(written.map((w) => w.form.shape.id));
+    for (const act of acts) {
+      if (!act.entry || seen.has(act.entry.form.shape.id)) continue;
+      seen.add(act.entry.form.shape.id);
+      population.push(act.entry);
+    }
+    return readGenesis(genesisStoryShapes(population));
+  }, [written, acts]);
   const pentimentoShapeIds = genesis?.pentimentoIds ?? new Set<string>();
   const nameOfShapeId = useMemo(() => {
     const names = new Map<string, string>();
     world.dim1.forEach((m) => names.set(m.shape.id, m.title));
     world.dim2.forEach((m) => names.set(m.immersion.shape.id, DIM2_TITLES[m.surface] ?? m.surface));
     dim3All.forEach((m) => names.set(m.shape.id, m.title));
+    // ═══ P5 · clause 19 — NO FORCED CASCADE, AND THE RECORD KEEPS ITS SUBJECT.
+    // ⛔ Measured, not assumed: `genesisStoryShapes` collects each child's own
+    // carried `parentShape`, so a removed parent STAYS in the DAG and its
+    // record line keeps standing — but the NAME map read only `written`, so
+    // the line would have degraded to a raw shape id. That is the *dangling
+    // name* the M3 seal forbids, arriving through the back door.
+    // ⇒ A removed form goes on naming itself, WITH the person's own word.
+    // ⚠ ONE-WORD DIVERGENCE BETWEEN TWO SOURCE LETTERS, resolved by their own
+    // reasoning and REPORTED rather than chosen silently: the researcher wrote
+    // *"born from Square (died)"* while naming the existing genealogy TYPE;
+    // the designer's M.3 rules the word for THE PERSON'S ACT is `removed`,
+    // because the difference between the two words is AGENCY. A form he
+    // removed was removed by him ⇒ `removed`.
+    // Set BEFORE `written` so a RESTORED form (back on the page) reads plainly
+    // again — the page's name is the live fact; the record keeps both traces.
+    removals.forEach((m) => names.set(m.shapeId, `${m.name} (removed)`));
     written.forEach((w) => names.set(w.form.shape.id, w.form.title));
     return names;
-  }, [world, written, dim3All]);
+  }, [world, written, dim3All, removals]);
   const recordEntries = useMemo(
     () => (genesis ? footRecord(genesis, (id) => nameOfShapeId.get(id) ?? id) : []),
     [genesis, nameOfShapeId],
@@ -5245,6 +5440,25 @@ export default function ManuscriptView() {
           </group>
         ) : null}
 
+        {/* ═══ P5 · M.1 — THE MEMORIALS, AT THEIR OWN SITES ═══════════════════
+            Grouped BY SITE, which is what makes M.5's collapse a fact about a
+            PLACE (`N removed here`) rather than a list with a count on it. The
+            site is the removed entry's own `home` — the same coordinate the
+            form stood at, so the mark is where he was looking when he acted. */}
+        {[...removals.reduce((byHome, m) => {
+          const key = m.home.map((v) => v.toFixed(3)).join(',');
+          const at = byHome.get(key) ?? { home: m.home, marks: [] as { name: string; restored: boolean }[] };
+          at.marks.push({ name: m.name, restored: m.restored });
+          byHome.set(key, at);
+          return byHome;
+        }, new Map<string, { home: [number, number, number]; marks: { name: string; restored: boolean }[] }>()).entries()].map(
+          ([key, at]) => (
+            <group key={`memorial:${key}`} position={at.home}>
+              <SiteMemorial marks={at.marks} ink={d.paper.titleInk} />
+            </group>
+          ),
+        )}
+
         {/* WRITTEN material — invoked primitives + op-born forms (REAL committed
             Shapes; renders routed by the committed bornFormRouting) */}
         {written.map((entry, k) => {
@@ -6111,6 +6325,35 @@ export default function ManuscriptView() {
               ? { onOpen: handleExploreDoor }
               : undefined
           }
+          // ═══ P5 — the two form-acts, offered exactly where they can be
+          // HONOURED. Removal acts on the person's OWN written forms: the
+          // dim-1/dim-2 world rows and the built rooms are not `written`
+          // entries and this row is simply absent there — a control that
+          // cannot act must not appear as one.
+          formActs={
+            selected && selected.startsWith('w:') && written.some((w) => `w:${w.form.id}` === selected)
+              ? (() => {
+                  const entry = written.find((w) => `w:${w.form.id}` === selected)!;
+                  const shelfBorn = shelf.some((i) => i.entry.loaded.shape.id === entry.form.shape.id);
+                  return {
+                    onRemove: () => {
+                      removeForm(entry.form.id);
+                      setSelected(null);
+                    },
+                    setAside: shelfBorn
+                      ? {
+                          onSetAside: () => {
+                            setAsideForm(entry.form.id);
+                            setSelected(null);
+                          },
+                        }
+                      : {
+                          refusal: 'set aside needs a place to wait — this form came from no source, so only the shelf’s own forms can be set aside',
+                        },
+                  };
+                })()
+              : undefined
+          }
           ringRefusal={ringResolution?.kind === 'refused' ? ringResolution.refusal : undefined}
           ringUnplaced={ringResolution?.kind === 'anchored' && ringResolution.unplaced.length > 0 ? ringResolution.unplaced : undefined}
         />
@@ -6269,7 +6512,35 @@ export default function ManuscriptView() {
           )}
         </div>
       ) : null}
-      <RecordStrip entries={recordEntries} accepted={genesis?.accepted ?? true} paper={d.paper} />
+      <RecordStrip
+        entries={recordEntries}
+        accepted={genesis?.accepted ?? true}
+        paper={d.paper}
+        // ═══ P5 · U.2 + §5 — THE ACTS LINE, composed from the LEDGER ═════════
+        // ⛔ THE DEATH IS NOT ERASED BY THE UNDO: an act that was reverted
+        // reads `Square — removed, then restored` — the record carries BOTH
+        // traces, because the death happened and cannot un-happen. Composed
+        // from the ledger rather than stored as a sentence (RECORD, NOT
+        // READING: a stored sentence is a stamp that drifts from the acts).
+        acts={(() => {
+          const revertedIds = new Set(acts.filter((a) => a.kind === 'undo').map((a) => a.ofActId));
+          return acts
+            .filter((a) => a.kind !== 'undo')
+            .map((a) => {
+              const word = a.kind === 'remove' ? 'removed' : 'set aside';
+              return revertedIds.has(a.id) ? `${a.name} — ${word}, then restored` : `${a.name} — ${word}`;
+            });
+        })()}
+        // ⛔ U.4 — the label is COMPUTED FROM THE ACT, and the control is
+        // ABSENT when there is nothing to undo (never present and inert)
+        undo={(() => {
+          const revertedIds = new Set(acts.filter((a) => a.kind === 'undo').map((a) => a.ofActId));
+          const target = [...acts].reverse().find((a) => a.kind !== 'undo' && !revertedIds.has(a.id));
+          if (!target) return undefined;
+          const word = target.kind === 'remove' ? 'remove' : 'set aside';
+          return { label: `undo — ${word} ${target.name}`, onUndo: () => undoLastAct() };
+        })()}
+      />
       <SourcesShelf
         universes={shelfUniverses}
         paper={d.paper}

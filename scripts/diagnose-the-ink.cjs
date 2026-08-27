@@ -691,6 +691,14 @@ const inkAllowed = new Set([
   // NOT_FROZEN (classified 4a7ac81). Ratified by
   // scripts/diagnose-the-noncube-domain.cjs §9.
   'src/lib/noncubeDomain.ts',
+  // P5 + UNDO (2026-08-27, mothership STAMP B-116 §2): the three acts, the
+  // memorial at the site, and the traced revert — built to the four source
+  // letters. pageStore holds the append-only acts ledger + the site marks;
+  // ManuscriptChrome carries the RecordStrip's acts line and the undo
+  // control (undo acts on an ACT, so it is NOT on a form's card).
+  // NOT_FROZEN. Ratified by scripts/diagnose-p5-the-acts.cjs.
+  'src/manuscript/pageStore.ts',
+  'src/manuscript/ManuscriptChrome.tsx',
 ]);
 const inkMoved = execSync('git diff HEAD --name-only -- src', { cwd: repoRoot, encoding: 'utf8' })
   .split(/\r?\n/)

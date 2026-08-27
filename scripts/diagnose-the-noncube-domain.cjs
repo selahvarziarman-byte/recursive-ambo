@@ -392,13 +392,13 @@ console.log('\n----- §9 (B-113) the model reaches the RENDER: a Seifert–Weber
   // the room, and one solid in it to BE the copies (a scaffold rod is not
   // counted as a copy — the tracer's own law, and rightly)
   const sceneFor = (model) => A.buildApertureScene(dodeca, null, [A.meshFromShape(dodeca, [0, 0, 0], 0.5)], model);
-  const traceAt = (model, level, minCopyPixels) =>
+  const traceAt = (model, level, minCopyPixels, px) =>
     A.traceAperture({
       deck: gate.deck,
       model,
       scene: sceneFor(model),
-      width: 84,
-      height: 84,
+      width: px ?? 84,
+      height: px ?? 84,
       craft: { level },
       minCopyPixels,
     });
@@ -440,6 +440,34 @@ console.log('\n----- §9 (B-113) the model reaches the RENDER: a Seifert–Weber
     hyp.counts.litPixels > 0 && hyp.counts.transports > 0 && hyp.counts.lostRays === 0 && hT[0] > 1);
   check('§9 ★★ AND THE COPIES SHRINK, which is ADR 0004 §3\'s own sentence measured: the H³ room contributes copies in the HUNDREDS and almost none of them is big enough to see — surviving a 4-pixel threshold: 3 against euclidean 86; a 16-pixel one: 1 against 17. ⇒ They are not fewer; they are SMALLER, and the smallness is exponential in depth (the deepest lit ray stands at hyperbolic distance ~12, where a cell subtends 1/sinh 12 ≈ 1/81000 of what it subtends at the eye)',
     hT[0] > 50 && hT[1] < eT[1] / 10 && hT[2] < eT[2] / 5 && beyondHome(hyp) < beyondHome(euc) / 4);
+
+  // ═══ B-116 §2.4 — DOES THE CROWD READ ON THE *SUMMONED* PLATE? ═══════════
+  // ⛔ THE QUESTION IS THE COMPOSITION MY OWN B-115 REPORT GOT HALF-RIGHT: I
+  // composed "the plate is too small to carry the mark" out of ONE row of a
+  // two-row table — the DEFAULT-camera plate (139×139 px, fracH 0.151). The
+  // same table's second row is the SUMMONED plate at 418×418 px (fracH 0.455),
+  // which is not a thumbnail. ⇒ Smallest measurement first: a yes retires the
+  // worry, a no converts a suspicion into a fact the designer can rule on.
+  // ⚠ SURFACE, stated before the numbers: a 418×418 trace, the size the app's
+  // plate reaches when a person double-clicks it (measured live, B-115 §2(a)
+  // second row) — NOT the 84×84 witness surface above and NOT the walk window.
+  // ⚠ REPORT ONLY. Nothing here is an acceptance; the reading is the
+  // designer's and this leg only hands her the number.
+  {
+    const SUMMONED_PX = 418;
+    const at = (model, mcp) => traceAt(model, 8, mcp, SUMMONED_PX).counts.formCopiesVisible;
+    const hT = [1, 4, 16, 64].map((m) => at(gate.model, m));
+    const eT = [1, 4, 16, 64].map((m) => at(null, m));
+    const beyond = (t) => { let px = 0; for (let i = 0; i < t.hit.length; i += 1) if (t.hit[i] === 1 && t.echo[i] > 0) px += 1; return px; };
+    const hPx = beyond(traceAt(gate.model, 8, 1, SUMMONED_PX));
+    const ePx = beyond(traceAt(null, 8, 1, SUMMONED_PX));
+    note(`SURFACE: a ${SUMMONED_PX}×${SUMMONED_PX} trace — the SUMMONED plate's own size (B-115 §2(a), second row), NOT the 84×84 above`);
+    note(`  H³ (sealed): copies at ≥[1,4,16,64] px ${JSON.stringify(hT)} · ${hPx} object pixels beyond the home cell`);
+    note(`  E³ (control): copies at ≥[1,4,16,64] px ${JSON.stringify(eT)} · ${ePx} object pixels beyond the home cell`);
+    note(`  for comparison, the 84×84 surface read H³ [132,3,1,1] · E³ [285,86,17,1]`);
+    check('§10 ⚠ B-116 §2.4 — THE CROWD ON THE SUMMONED PLATE, REPORTED AND NOT ACCEPTED: the same sweep run at 418×418, the size the plate reaches when a person summons it, instead of the 84×84 witness surface above. ⛔ This clause pins only that the measurement RAN on both models at that surface, and that the H³ room still contributes copies in the hundreds while far fewer survive a visibility threshold — THE READING (does it crowd to a person) IS THE DESIGNER-SEAT VERDICT, and a witness may not make it on her behalf',
+      hT[0] > 50 && eT[0] > 50 && hT[1] < eT[1] && hPx > 0 && ePx > 0);
+  }
 
   // ⛔ THE ROOM CLOSES — the render's OWN primitive, not the matrices'. §8
   // proved the composed 4×4s are the identity; this proves the thing the
