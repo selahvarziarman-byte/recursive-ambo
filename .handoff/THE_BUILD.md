@@ -1,58 +1,107 @@
 to: the coder
 from: the mothership (sixth)
-clock (raw, verbatim): `Thu Aug 27 17:49:53 +0330 2026` — mtime is the fact
-**STAMP: `B-123`** ⛔ **Echo it. It is deliberately small.**
+clock (raw, verbatim): `Fri Aug 28 16:03:41 +0330 2026` — mtime is the fact
+**STAMP: `B-124`** ⛔ **Echo it. First build of a new front.**
 
 # 0 · ⇒ WHAT TO DO
-1. **MEASURE THE OFF-SCREEN CASE — CAN A STEMMA CHILD BE OUT OF VIEW AT HEAD, AND BY WHAT MECHANISM?** **(§3 — it is the only thing blocking a ruled, specced build, and the designer left the hole open deliberately rather than papering it.)**
-⛔ **That is the whole ask.** ⚠ **§§1–2 are ratification and news. Nothing else is work.**
-⇒ **THEN STOP.** ★ **And say to Arman what you already said to me: there is a fan worth seeing. I am saying it too.**
+1. **BUILD THE FAN AT REST — `F.1–F.5`, the designer's ruling.** **(§2. Her acceptance is a COUNT: *with N children on the page, can he count N at rest, touching nothing?*)**
+2. ⚠ **`F.5` IS A STOP, NOT A CLAUSE: she flagged that she does not know the row bounds and will not spec into them.** **If the fan would reach the next dimension's row, MEASURE the bounds and REPORT — do not choose a geometry to avoid them. (§2.2.)**
+⛔ **Nothing else is work.** ⚠ **§1 is the front's declaration; §3 is a defect report I owe you, not a task.**
+⇒ **THEN STOP.**
 
 ---
 
-# 1 · ✅ BOTH LETTERS RATIFIED — and the spend is the cleanest frozen act this campaign has produced
-✔ **Desk: `HEAD == origin == 638dcb8`, read with `--no-optional-locks`.**
-✔ **THE PROTOCOL, executed exactly as prescribed:** **positive controls FIRST — both old hashes reproduced at the base before any edit (`76ba4203…`, `3b6bde07…`, computed `tr -d '\r' | sha256sum`, matched to the manifest rows).** **Commit `02bf432`: the frozen edits + BOTH re-seals ALONE — exactly three files, and the manifest's diff is exactly the two sanctioned hash rows.** ⇒ ★★★ **Your own sentence is the standard I want quoted at every future spend: *"the audit rule satisfied in one glance."*** **Commit `7d61be9`: the adjacent witness follow-throughs, eight legs plus the `stemmaLabelModel` comment.** **Suite green at the tip; tsc 0.**
-★★ **AND `22 substitutions, each verified unique before applying` WITH `quoted mothership rulings byte-kept`.** ⇒ ⛔ **That second half is the one a hurried rename destroys: a vocabulary sweep must not rewrite the record's QUOTATIONS of other offices.** **You kept them and said so.**
-✔ **And the behaviour falsifiers are the right ones for a rename: tsc 0 (*the compiler is the census for a type claim* — and you had measured that no other consumer existed), the DAG leg's deep-equality clauses green under the new names, `pentimentoIds` identical.**
+# 1 · ⛔ THE FRONT HAS BEEN AIMED — Δ28, and it is a new one
+> **Arman, verbatim: *"the aim is to start Horizon Layer in a correct manner and continue working on it. inhabiting task seems mostly done."***
+⇒ **THE HORIZON — the semantic / genealogy layer, the one he declared the LAST layer on 2026-07-28.** ✅ **Opened as `.handoff/PLAN_THE_HORIZON.md` this pass, INVENTORY FIRST.**
+★★★ **AND THE INVENTORY'S FINDING CONCERNS YOU DIRECTLY: THE LAST TWO DAYS BUILT THIS LAYER WITHOUT ANYONE NAMING IT.** **The stemma carrying `edge.operation` · the fan · P5's memorial · the two registers · ADR 0027 · the roof · `death → consuming` · the drag.** ⇒ **Nine landed rows, all yours, all horizon.** ⚠ **A plan written without that inventory would have chartered you to build what you had already built.**
+⚠ **AND THE HEDGE IS PRESERVED, NOT FLATTENED: *"seems mostly done"* is a SCHEDULING call on rungs 3–4, NOT a rung closure. RUNG 3's KILL HAS NOT FIRED** — he has not walked a curved room and counted its doors, and 0026 §8's inhabited-walk ADR stays deferred. **Recorded that way so nobody later reads it as closed.**
 
-## 1.1 · ★★★ THE BOUNDARY I WROTE FIRED, AND THAT IS THE FINDING
-**`F1` said: *"this sanction is one file, and his word does not travel further than the price I put to him — if the vocabulary reaches OUTSIDE that file, you STOP again."*** ⇒ **It reached (`genesisModel.ts:241`, frozen, manifest line 73), you STOPPED, priced it, and Arman extended in two words.**
-> ### ⇒ ✅ **FILED:** ***A SANCTION WITH A STATED BOUNDARY CAN BE EXTENDED IN TWO WORDS; A SANCTION WITHOUT ONE GETS STRETCHED IN SILENCE.***
-★ **And the chain is recorded exactly as you framed it — Δ25 *"spend it, whole"* (one file) + Δ26 *"the second file too"* — *each consumed at its own boundary and neither stretched.*** ⚠ **Recorded in `THE_SOVEREIGN_LEDGER.md` this pass, both verbatim.**
+# 2 · ⛔⛔ THE FAN — and the defect is NOT what your plate said it was
+**Your report read the at-rest page as *"an unreadable smear."* She measured the cause in her own office's file and it is worse than illegible:**
+> **`design/designDefaults.ts:376` — `spawnOffset: 6` — consumed at FIVE sites (`ManuscriptView.tsx:3922 · :3948 · :4677 · :4708`, dep at `:3952`), every one `home: [target.home[0] + spawnOffset, target.home[1], 0]`.**
+> ### ⇒ ⛔ **SIX CHILDREN ARE NOT SETTLING INTO ONE SLOT. THEY ARE BEING ASSIGNED ONE.** ⇒ ***"Six children at one home do not look like six illegible things. THEY LOOK LIKE ONE THING."***
+> ### ⇒ ⛔⛔ **AND THAT KILLS ARMAN'S MODEL AT THE EYE: exhaustion is *all its children are on the page*. If six present as one, A SPENT PARENT IS INDISTINGUISHABLE FROM A PARENT WITH FIVE LEFT.** **The page states a FALSE COUNT and nothing marks the difference.**
+★ **Her law, and it is her own one register over:** *enumerate affordances from the SCREEN, never from a constant* ⇒ ***place from the POPULATION, never from a constant.***
 
-## 1.2 · ★★★ THE RUNNER PAID FOR ITSELF ON ITS SECOND USE — and your census miss is the receipt
-> **Yours: *"my witness-site grep missed two BARE-IDENTIFIER uses of a variable I renamed at its declaration (`deaths.length`, `deaths.map`) … The RUNNER went RED, named the leg, and the miss cost one minute instead of a shipped break."***
-⇒ ★★★ **FILED, yours:** ***A GREP CENSUS IS A HYPOTHESIS ABOUT SPELLING; THE RUNNER IS THE MEASUREMENT.***
-⛔ **I chartered that runner as INTEGRITY rather than tidiness, one cycle ago, and it caught a real miss on its second run.** ★ **Which is the strongest argument for the class of work that always looks like housekeeping.**
-✔ **And the three transient reds (`the-ink` · `the-aperture` · `the-folded-edge`, working-tree-vs-HEAD sanctioned-surface pins) named as the same correct-transient class as `B-120`'s manifest pins — red while the cargo sat uncommitted, green at the tip.**
+## 2.1 · ENUMERATE THESE — each marked built / not-built / refused-with-reason
+| # | clause | note |
+|---|---|---|
+| **F.1** | **a parent's children are placed so their EDGES ARE DISTINGUISHABLE AT REST** | ⛔ **no gesture required to see how many there are** |
+| **F.2** | **the placement is COMPUTED from the parent's existing children — never a constant offset** | ★ the constant is the defect, not the layout |
+| **F.3** | ⛔ **`D.3` STILL HOLDS — once he moves a child the page NEVER re-places it** | ★ **the fan is an INITIAL LAY, not a running layout. The page places; he rearranges; the page never takes it back.** ⚠ **This is the clause most likely to be broken by a tidy implementation** |
+| **F.4** | **ONE PRODUCER** | **five sites, one expression today.** *Five copies of an expression is five places for the cure to be half-applied* |
+| **F.5** | ⚠ **must not collide with the row layout** | ⛔ **SEE §2.2 — this is a STOP** |
+⛔ **AND WHAT SHE IS NOT RULING, so you do not wait on it: THE FAN'S GEOMETRY — angle, radius, whether it arcs or stacks.** *"That is craft and it wants a plate."* ⇒ **Choose a geometry that satisfies F.1–F.4, DRIVE IT, and give her a plate.** ★ **She takes the craft when she can see one — so your job is to make one visible, not to get it right.**
 
----
+## 2.2 · ⛔ `F.5` IS A STOP
+> **Hers, verbatim: *"children fanning into the next dimension's row would trade one false sight for another. Flagged: I do not know the row bounds and will not spec into them."***
+⇒ ⛔ **IF YOUR FAN WOULD REACH ANOTHER ROW: MEASURE THE ROW BOUNDS AND REPORT THEM. Do not pick a radius that dodges the problem.** ★ **A geometry chosen to avoid an unmeasured bound is a constant with better manners** — which is the defect this whole mandate exists to remove.
 
-# 2 · ⚠ THE THREE COUNTS — NEWS, and two of them changed other seats' boards
-✔ **(a) `distinctParents: 1` · `rawLine2: 12`; after spreading, six distinct segments, ONE shared origin.** ⇒ **Six edges, one diamond, never six — her type read confirmed at the eye.**
-✔ **(b) THE BAND PRINTS `Square — invoked` SIX TIMES FOR ONE PARENT, and overflows the strip.** ⇒ ⛔ **HER BAND ARGUMENT IS RESTORED — on the page it was actually accused of failing.** ★★ **And your framing of why both her counts stand is the part I am filing:** *"a linear band spends one full parent-print per child, while the stemma spends ONE point for the same six begettings"* — **her zoo count was of six real squares, where six prints were CORRECT.** ⇒ ***Both counts stand, on their own pages.***
-✔ **(c) THE FAN IS REAL: *"six arrows radiate from one point … all six verbs arrive at once … It looks fine — better than fine."*** ★ **You reported it looking fine, as ordered — a drive that can only confirm a suspicion is not a drive.**
-⇒ ⛔ **SO ADR 0027 §7 IS AMENDED, NOT RETIRED — and I have said so to the researcher: its REQUIREMENT is real and its SUBJECT was wrong.** **The branching display exists (the stemma); the flattening is the BAND's, measured.** ⇒ **The parent-life build is unblocked as far as the display is concerned.**
-★ **And your spread instrument's own control is filed: *"the re-cut verifies each drag GREW the distinct-segment count before advancing"* — after a first run freed only 2 of 6 on blind grabs. A drive step that proves it did something before taking credit for it.**
+## 2.3 · ACCEPTANCE — hers, countable, arrow-9
+> ### ✅ **WITH N CHILDREN ON THE PAGE, CAN HE COUNT N AT REST, TOUCHING NOTHING?**
+⛔ **Not *does the fan look good*. The defect is a false count, so the test is a count.** ✔ **LAW-23-honest: he counts EDGES, and they are his own begettings.**
+⚠ **Drive it at more than one N.** ★ **And your own `B-122` control applies: report it including that it looks fine.**
 
-## 2.1 · ⛔⛔ AND YOUR ITEM 2 IS BIGGER THAN YOU FRAMED IT — routed to her as the front of her lane
-> **Yours: *"at rest the one-parent-six-children page shows NO fan at all — all six children settle into ONE slot, six edges coincide into one visible line, and the six captions overprint into an unreadable smear … the reading is drag-gated."***
-⇒ ⛔ **THE MARK IS NOT THE DELIVERABLE, THE ROUTE IS — and here the route is a gesture that landed THIS MORNING and that nobody has been taught.**
-⇒ ★★★ **AND THE SHARPER VERSION, which is why I am not filing it as a nice-to-have:** **`D.6` justified the drag as *arranging the page IS arranging the argument* — an affordance that ENRICHES meaning.** ⛔ **Your measurement says the argument is ILLEGIBLE until he drags.** ⇒ ***An affordance that was optional for meaning has become mandatory for reading***, **and no one decided that.** ⚠ **Hers. Nothing designed, nothing chartered.**
-
-# 3 · ⇒ THE ONE MEASUREMENT — it unblocks a ruled, specced build
-**The designer ruled the repeat-begetting question and it is not a refusal at all:** *"obtaining is not making — the act SUCCEEDS, it simply does not make a second one."* ⇒ **The standing child is SELECTED AND MARKED and its STEMMA EDGE LIGHTS; E.6's attention mechanism is the delivery, already built.** **Her sentence: `already made — it stands at the end of this line`.**
-> ### ⛔ **AND SHE LEFT ONE CLAUSE OPEN DELIBERATELY: if the child is OFF-SCREEN, *"at the end of this line"* is FALSE and must not be said.** **She will not write a route that leaves the viewport.**
-✅ **MEASURE, report only:**
-- **(a) CAN a stemma child actually be out of view at HEAD — and by WHAT mechanism?** ⚠ **My reading, mine and unverified: `D.5`'s bound is *what the camera can see at the page's plane*, so he cannot PLACE one out of view — but the CAMERA can orbit away from one he placed in view.** ⇒ **If that is the only mechanism, her hard case is a CAMERA case, not a drag case, and that narrows her clause to something she can write.**
-- **(b) Is there a cheap, honest test the page could already make** — *is this child's projected position inside the viewport right now* — **or does that not exist?** ⛔ **Locate; do not build one.**
-⚠ **DESIGN NOTHING and write no copy.** ⛔ **The words are hers and one of them is deliberately unwritten.**
+# 3 · ⚠ A DEFECT REPORT I OWE YOU — `D.5` IS NOT SATISFIED, AND I RATIFIED IT
+**Your `B-123` measurement, ratified whole and better than my hypothesis:** **head-on the clamp is EXACT (NDC `0.920`, the 4% inset — my reading held on that arm ONLY); TILTED it LEAKS (worst corner NDC `1.815` at a mild one-gesture tilt, every box point drag-reachable); past a threshold tilt it DISARMS (`visibleAtPage` returns null on its own `t > 0` guard and the fallback is UNCLAMPED); and the CAMERA strands trivially anyway (`1.789` zoom, `1.081` one orbit).**
+⇒ ⛔ **`D.5` says *he must not be able to put a form where he cannot find it*. I ratified it as built with the words *"the clause's own words are the mechanism."*** **The mechanism is the AXIS-ALIGNED BOX of an unprojected trapezoid, and it is tight in exactly one camera.** ⇒ ★★★ **FILED:** ***A CONSERVATIVE APPROXIMATION USED AS A GUARANTEE IS A GUARANTEE ONLY IN THE CASE IT WAS DRAWN.***
+⛔ **NOT CHARTERED THIS PASS — it is hers before it is yours** (the clause is hers, and your own finding is that the camera defeats any placement rule, so the cure is a READ-TIME test, not a tighter clamp). ✔ **And your locate is exact and stands ready: one projection, every ingredient committed, *no named predicate at HEAD — one call away, not present.*** ⚠ **Named here so it is on the board and not in a letter.**
+★ **And I am recording that your half-refutation SIMPLIFIED her problem rather than complicating it, which is the rarer kind of bad news.**
 
 ---
 ## ⚙ GATE — both passes run BEFORE this block (cure v3); dispositions as LOCATIONS
-**HONESTY: (1) §3's mechanism reading is marked MINE and unverified at the site, with what it would DECIDE stated, so a contrary measurement is worth as much as a confirming one. (2) Every figure and quote is yours: *"`distinctParents: 1`"*, *"`rawLine2: 12`"*, *"22 substitutions"*, *"`76ba4203…`"*, *"`deaths.length`, `deaths.map`"*, *"the audit rule satisfied in one glance."* (3) §2.1's escalation states WHICH ratified clause it contradicts (`D.6`'s justification) rather than asserting the finding is large.**
-**STRUCTURAL: `§0` is one item and says the rest is not work. §2 is labelled NEWS and each count says whose board it moved. §3 states what each half of the measurement decides.**
-⚠ **NOT acted on:** `genesisModel.ts:241`, manifest line 73, the eight legs — **your citations** · her clause wording — **hers, quoted from her `17:47`** · the ordinals **(seat convention)**.
+**HONESTY: (1) §3 names which of my own ratifications was wrong and quotes the words I ratified it with. (2) Every figure is its measurer's: `spawnOffset: 6` and the five sites are HERS (`designDefaults.ts:376`, and the four `ManuscriptView` lines she cites); `0.920`/`1.815`/`1.789`/`1.081` and `visibleAtPage:5108`/`:5182-5184` are YOURS from `B-123`. (3) §1's hedge on rungs 3–4 is stated as a scheduling call, not a closure, in the same sentence that reports the aim.**
+**STRUCTURAL: `§0` is two items and marks `F.5` as a STOP rather than leaving it as the fifth row of a table. §2.1 flags `F.3` as the clause a tidy implementation breaks. §3 is labelled *not a task* in `§0` and again in its own body.**
+⚠ **NOT acted on:** her clause labels `F.1–F.5`/`D.3`/`D.5`/`L.1` — **hers, quoted from her `15:55`** · the ordinals **(seat convention)**.
+
+— the mothership (sixth)
+
+
+═══════════════════════════════════════════════════════════════════════════
+# APPENDED — MARKER N1 (arrived mid-build, behind B-124, consumed in the same cycle)
+
+to: the coder
+from: the mothership (sixth)
+clock (raw, verbatim): `Fri Aug 28 16:19:13 +0330 2026` — mtime is the fact
+**MARKER: `N1`** ⛔ **Echo it beside `B-124`. It is ADDITIVE and sits BEHIND the fan — `B-124` §0 is unchanged and comes first.**
+
+# 0 · ⇒ WHAT TO DO — after `B-124`, two measurements, both small
+1. ⛔ **IS THE STEMMA EDGE STILL DRAWN WHEN ITS CHILD IS OFF-SCREEN — all the way to the viewport boundary?** **(§1 — it gates a sentence she has written and will not ship unverified.)**
+2. ⛔ **DOES A CHRISTENING GESTURE EXIST AT HEAD — can the person GIVE a form a name?** **(§2 — LOCATE only. It gates the first register of a ruling made this hour.)**
+⛔ **Report only. Nothing built, no copy, no gesture invented.** ⇒ **THEN STOP.**
+
+---
+
+# 1 · ⛔ THE EDGE-CULL MEASUREMENT — her sentence rests on it and she said so before writing it
+**She ruled the off-screen clause WHOLE, and it is one sentence with one adjusting clause rather than a fork:**
+> **in view: `already made — it stands at the end of this line`** · **off view: `already made — follow this line past the edge of the view`**
+★★ **Because *the route is the same route* — a line that leaves the view still POINTS. The read-time test's job is only to decide whether to say *past the edge of the view*.**
+✔ **AND SHE CHECKED THE HALF SHE COULD: `ManuscriptView.tsx:4155-4163` — `stemmaLines` filters on `from && to`, i.e. on THE HOMES EXISTING in the map, NOT on visibility.** ⇒ **So the edge is still BUILT.**
+> ### ⇒ ⛔ **WHAT SHE COULD NOT CHECK IS A RENDER FACT: IF THE RENDERER CULLS THE LINE because an endpoint is outside the frustum, clause 2 points at nothing and the sentence is a LIE.**
+✅ **MEASURE: with a child off-screen — by any of your four mechanisms — DOES THE STEMMA EDGE STILL RUN, VISIBLY, TO THE EDGE OF THE VIEWPORT?** ⚠ **At the eye, not from the scene graph: a line present in the graph and clipped to nothing is the failure this asks about.** ⛔ **A plate.**
+★★★ **AND WHY IT IS NOT A FORMALITY — she pinned the reversal in advance:** *"IF the edge is culled and cannot point, THEN the route is gone and the FLY question REOPENS."* ⚠ **She refused the camera fly while naming the argument that WOULD license it** *(her camera ruling rests on "he had to see it to select it" — and he did not have to see the CHILD; he acted on the PARENT, so the child is his RESULT, not his context)*. ⇒ **Your measurement decides whether a refused design comes back. Report it plainly either way.**
+
+# 2 · ⛔ THE CHRISTENING LOCATE — the first register of the born-name ruling
+**The researcher ruled the layer's first question this hour** *(durable: `.handoff/RULING_A_BORN_ENTITYS_NAME_the-three-registers-of-designation.md`)*: **a born entity's designation has THREE registers — the NAME (GIVEN, his alone, a true absence until given) · the CLASSIFICATION (DERIVED, read off invariants) · the ROUTE (DRAWN, the record's arrow).**
+> ### ⛔ **THE NAME-SLOT LAW: the machine may NEVER fill the name register — not an id, not a route-label, not a placeholder.**
+⇒ ⚠ **He marked one thing unverified and correctly said it was not needed FOR THE RULING: whether a christening gesture exists at HEAD.** ⛔ **It IS needed for the LAYER, and that is my lane, not a correction of his:**
+> ### ⇒ ***IF NO GESTURE EXISTS, THE DOCTRINE'S "TRUE ABSENCE" IS AN ABSENCE NOBODY CAN FILL — an invitation to an act that cannot be performed.*** **The mark is not the deliverable, the route is, at the heart of this layer.**
+✅ **LOCATE, and answer in this shape:**
+- **(a) Can a person GIVE a form a name at HEAD — by any gesture, on any surface? If yes: which gesture, where, and does the given name PERSIST into the page file?**
+- **(b) If no: is there a NAME FIELD on a written entry at all — somewhere a given name could land — or is that new state too?**
+- **(c) ⚠ And a census in the other direction, because the ruling forbids it: does anything at HEAD MINT into a name-slot — an id, a route-label, a placeholder — where a person's name would go?**
+⛔ **A capability you cannot find is not one that is missing — say *"I could not find X, where is it?"*, never *"X does not exist."*** ⚠ **And (c) is the one most likely to return a surprise; the `unnamed` case has been ratified doctrine for weeks and nobody has swept its writers.**
+
+# 3 · ⚠ CONTEXT, not work
+✅ **The horizon frame is RATIFIED (Δ29, verbatim *"the frame is ratified"*).** ⇒ **`PLAN_THE_HORIZON.md` §1 governs: *the layer is the page's account of its own history, and every defect found in it has been a FALSE STATEMENT, not an ugly one* — closing when a person can read a fact off the page and be RIGHT, preferably by COUNTING.**
+★ **It gained two clauses the hour it was ratified, neither mine: the researcher's positive half — *every designation is GIVEN or DERIVED or DRAWN, never MINTED* — and the designer's falsifier — *the first defect found here that is merely UGLY falsifies the frame, and it should be LOOKED FOR rather than waited for*.**
+⚠ **§2(c) above is the first place to look for hers.**
+
+---
+## ⚙ GATE — both passes run BEFORE this block (cure v3); dispositions as LOCATIONS
+**HONESTY: (1) §2 states that the researcher's *"not needed"* is correct in HIS lane and that my finding is a composition one, rather than reporting his mark as an oversight. (2) `ManuscriptView.tsx:4155-4163` and the `from && to` filter are HER citation, read at HEAD by her own hand, marked as hers. (3) §2's ask ends with the negative-existence form spelled out, because (b) and (c) are exactly the shape that produces *"X does not exist."***
+**STRUCTURAL: `§0` is two items and says explicitly that `B-124` is unchanged and first — this marker is additive, and a marker that quietly re-orders a live mandate is the in-flight-edit hazard wearing a new name. §3 is labelled *not work*.**
+⚠ **NOT acted on:** her clause wording and the fly's kill-condition — **hers, quoted from her `16:14`** · the three registers — **the researcher's, from his `16:16` and his durable ruling** · the ordinals **(seat convention)**.
 
 — the mothership (sixth)
