@@ -53,6 +53,7 @@ import {
   visibleStemmaLabels,
 } from './stemmaLabelModel';
 import { spawnHomeForBirth } from './spawnFanModel';
+import type { ImmersedSurfaceKey } from '../lib/surfaceImmersion';
 import {
   readDomainSpecimen,
   readSkeletonSpecimen,
@@ -311,7 +312,10 @@ function BirthCuePulse({
   );
 }
 
-const DIM2_TITLES: Record<string, string> = {
+// B-127: keyed by the CLOSED union — a seventh surface is a compile error
+// here, never a silent raw key at the eye (the three deleted `?? m.surface`
+// fallbacks were mints waiting for a miss).
+const DIM2_TITLES: Record<ImmersedSurfaceKey, string> = {
   torus: 'Torus (T²)',
   klein: 'Klein bottle (K²)',
   rp2: 'RP² (cross-cap)',
@@ -3192,7 +3196,7 @@ export default function ManuscriptView() {
           shape: m.immersion.shape,
           parent: null,
           ancestry: [],
-          title: DIM2_TITLES[m.surface] ?? m.surface,
+          title: DIM2_TITLES[m.surface],
           home: [centered(k, world.dim2.length, layoutCtl.spacing * scaleCtl.dim2Scale * 1.2), rows.dim2Y, 0],
         };
       }
@@ -4083,7 +4087,7 @@ export default function ManuscriptView() {
   // PLUS every act's own carried entry. That is the ratchet said in the one
   // place it has to be true — the live page loses the form, the record does
   // not lose the sentence.
-  const genesis = useMemo(() => {
+  const genesisPopulation = useMemo(() => {
     const population = [...written];
     const seen = new Set(written.map((w) => w.form.shape.id));
     for (const act of acts) {
@@ -4091,13 +4095,14 @@ export default function ManuscriptView() {
       seen.add(act.entry.form.shape.id);
       population.push(act.entry);
     }
-    return readGenesis(genesisStoryShapes(population));
+    return population;
   }, [written, acts]);
+  const genesis = useMemo(() => readGenesis(genesisStoryShapes(genesisPopulation)), [genesisPopulation]);
   const pentimentoShapeIds = genesis?.pentimentoIds ?? new Set<string>();
   const nameOfShapeId = useMemo(() => {
     const names = new Map<string, string>();
     world.dim1.forEach((m) => names.set(m.shape.id, m.title));
-    world.dim2.forEach((m) => names.set(m.immersion.shape.id, DIM2_TITLES[m.surface] ?? m.surface));
+    world.dim2.forEach((m) => names.set(m.immersion.shape.id, DIM2_TITLES[m.surface]));
     dim3All.forEach((m) => names.set(m.shape.id, m.title));
     // ═══ P5 · clause 19 — NO FORCED CASCADE, AND THE RECORD KEEPS ITS SUBJECT.
     // ⛔ Measured, not assumed: `genesisStoryShapes` collects each child's own
@@ -4123,10 +4128,29 @@ export default function ManuscriptView() {
     // cut ever makes a birth line vanish again, that is the boundary crossed.
     removals.forEach((m) => names.set(m.shapeId, m.name));
     written.forEach((w) => names.set(w.form.shape.id, w.form.title));
+    // ═══ B-127 — THE MAP CLOSES OVER THE DAG'S OWN POPULATION, BY
+    // CONSTRUCTION. The record's resolver used to end in `?? id` — a shape
+    // ID in the record sentence's name position, the name-slot law's
+    // forbidden class (address ≠ name). The cure is structural, not a better
+    // fallback: the map is now built over THE SAME ratchet population the
+    // DAG itself is built from, so every id the DAG can hold has a rung —
+    // the acts' carried entries keep their COPIED titles (ADR 0027 §6, the
+    // record's copied designation, never a live lookup), and a carried
+    // parent that never had a page entry falls to its shape's own DERIVED
+    // name (register 2). Every rung DERIVED; no token; no miss left.
+    genesisPopulation.forEach((entry) => {
+      if (!names.has(entry.form.shape.id)) names.set(entry.form.shape.id, entry.form.title);
+    });
+    genesisStoryShapes(genesisPopulation).forEach((shape) => {
+      if (!names.has(shape.id)) names.set(shape.id, shape.name);
+    });
     return names;
-  }, [world, written, dim3All, removals]);
+  }, [world, written, dim3All, removals, genesisPopulation]);
   const recordEntries = useMemo(
-    () => (genesis ? footRecord(genesis, (id) => nameOfShapeId.get(id) ?? id) : []),
+    // `?? ''` is the ADMITTED-ABSENCE terminal (a fallback may end in an
+    // absence, never in a token) — structurally unreachable: the map above
+    // is total over the DAG's population because both read the same input.
+    () => (genesis ? footRecord(genesis, (id) => nameOfShapeId.get(id) ?? '') : []),
     [genesis, nameOfShapeId],
   );
   // shape.id → the page slot (for stemma endpoints), over world + written
@@ -5502,7 +5526,7 @@ export default function ManuscriptView() {
             ],
             k + 7,
             {
-              title: DIM2_TITLES[model.surface] ?? model.surface,
+              title: DIM2_TITLES[model.surface],
               sub: `${model.immersion.correspondence.word === '' ? 'no gluing word' : model.immersion.correspondence.word} · H₁ = ${model.h1Label ?? 'n-a'}`,
               drop: -d.layout.captionDrop * scaleCtl.dim2Scale - 0.9,
             },

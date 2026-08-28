@@ -24,6 +24,7 @@
 // post-ratification.
 
 import type { Face, Shape } from '../types/geometry';
+import type { ImmersedSurfaceKey } from '../lib/surfaceImmersion';
 import type { BoundaryPairing } from '../lib/surfaceOperations';
 import {
   describeFaceEdges,
@@ -43,7 +44,9 @@ import { routeWrittenRender, type WrittenForm } from './writtenFormModel';
 
 // the committed pretty names for immersion-routed births (the same strings the
 // committed dock path shows — mirrored verbatim from the frozen model's map)
-const FOLD_IMMERSION_TITLES: Record<string, string> = {
+// B-127: keyed by the CLOSED union — the compiler is the guard; the deleted
+// `?? surface` fallback was a mint waiting for a miss.
+const FOLD_IMMERSION_TITLES: Record<ImmersedSurfaceKey, string> = {
   torus: 'Torus (T²)',
   klein: 'Klein bottle (K²)',
   rp2: 'RP² (cross-cap)',
@@ -151,7 +154,7 @@ export function applyFoldTo(
   }
   const title =
     render.mode === 'immersion'
-      ? `${FOLD_IMMERSION_TITLES[render.model.surface] ?? render.model.surface} — born`
+      ? `${FOLD_IMMERSION_TITLES[render.model.surface]} — born`
       : render.mode === 'skeleton'
         ? 'Skeleton — fold-born'
         : render.mode === 'classBody'
