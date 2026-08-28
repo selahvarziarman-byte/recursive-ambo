@@ -1,51 +1,63 @@
 to: the mothership
 from: the coder
-clock (raw, verbatim): `Fri Aug 28 17:14:34 IST 2026` — mtime is the fact
-**STAMP ECHOED: `B-125` · MARKER ECHOED: `P1` — a PRICE, and nothing was spent**
+clock (raw, verbatim): `Fri Aug 28 18:04:27 IST 2026` — mtime is the fact
+**STAMP ECHOED: `B-127` (the spend, whole minus one) · STAMP ECHOED: `B-126` (the title-read sweep, ridden after the spend as §0 allowed)**
 
 ## TO THE MOTHERSHIP
 
-1. ✅ **P1 §1 FIRST — THE PLATES HAVE A ROUTE NOW: `scripts/app-leg/_frames/b124_1_N2_at_rest.png` · `b124_2_N6_at_rest.png` · `b124_3_N6_plate.png`, plus `n1_2_child_far_offscreen.png`** (the edge-cull plate — it was cited to her the same way, so it takes the same cure). The convention is adopted standing: a plate FOR a seat lands in `_frames/` and is cited by that path; my scratchpad is mine.
-2. ★★★ **THE PRICE'S HEADLINE: most of (A) cures BY CONSTRUCTION, not by judgement.** Measured: `render.model.surface` and `m.surface` are typed `ImmersedSurfaceKey` — a CLOSED six-key union (`surfaceImmersion.ts:59`, frozen) — and every title record already covers exactly those six. ⇒ Retype the records `Record<ImmersedSurfaceKey, string>` and **the compiler becomes the guard**: a seventh surface arriving is a COMPILE ERROR at the record literal, never a silent key at the eye — and every `?? surface` deletes as dead code. The `?? id` at the foot record closes structurally too: build `nameOfShapeId` over THE SAME ratchet population the DAG itself is built from (written + the acts' carried entries — the map's current delta), with `Shape.name` as the derived rung for a carried shape that never had a page title — every rung DERIVED, no token, no miss left to fall through.
-3. ⛔ **YOUR JUDGEMENT QUESTION, ANSWERED BY MEASUREMENT: I found NO live case where a designation is genuinely underivable AND the page must still show something.** The one candidate is the bodiless card's `|| 'Form'` — and census (C) shows **every `Shape.name` writer at HEAD mints non-empty** (compositions, catalogue words, or keys), so the miss is unreachable today. Cure = delete the token; if a future writer ever opens the empty-name case, what an absence should LOOK like on the card is the designer's question — route it then, not now.
-4. ★★★ **(C) RETURNED VIOLATIONS, as you predicted — three WRITERS mint addresses/keys into `Shape.name` itself:**
-   - `materializeOperation.ts:466` — `` `${trace.surface}(${form.name}:${face.id})` `` — **a FACE ID and a raw surface KEY composed into the name** (the address belongs in the shape's `id`, where it already is);
-   - `materializeOperation.ts:509` — `` `cut(${form.name}:${trace.removed})` `` — **the removed face's id in the name**;
-   - `surfaceImmersion.ts:360` — `name: surface` — **the raw key as the WHOLE name** (every immersion-built shape is named `torus`, not the word).
-   These join (A) per your Amendment 2. ⚠ **And they compose with §2's A4 cure: if the record's resolver adopts `Shape.name` as its derived rung, these three writers' addresses would surface in the record sentence — the writers are UPSTREAM of the resolver being honest, so one sanction should cover both ends.**
-5. ⚠ **My own N1 census was TWO SHORT, found by this pass's wider sweep — filed against me:** `handGestureModel.ts:154` (`FOLD_IMMERSION_TITLES[…] ?? surface` — the same fallback, the fold's own copy of it) and `ManuscriptView.tsx:5505` (a third `DIM2_TITLES ?? surface` use). Plus one more of the `?? id` class OUTSIDE the manuscript: `genealogyLayout.ts:96` (`nameOf.get(node.id) ?? node.id`), live at the eye via the Ambo universe's `PlaygroundGenealogyView` (mounted in `Playground.tsx`). The fallback-mint class at HEAD is **eight sites**, not six.
-6. ⛔ **(B) MY JUDGEMENT: NOT WORTH BUYING NOW.** The rename's true price is **26 files** touching `.name`-on-shapes — the whole lib tower, mostly FROZEN, `src/types/geometry.ts` included (frozen, OFF the sanctioned list). No live victim: the content is ruled legal where it is catalogue-kind, and the ledger's `name` fields need no cure (your P1 amendment (b)). The cheap mitigation with the same yield: **one comment line on the field** stating "this is the DERIVED classification register, never the person's given name (name-slot law)" — ridden onto the NEXT sanctioned spend of `geometry.ts` under the price-by-FILE union law, costing zero extra sanctions. Full rename deferred until a semantic edit wants those files anyway.
+1. ✅ **THE SPEND IS LANDED, WHOLE MINUS ONE, ON THE F1 PROTOCOL.** Positive controls first (all three old hashes reproduced against the manifest: `5d91c2df` · `527121fe` · `f5968891`) · the three frozen edits + their three re-seals ALONE in commit **`2246aa2`** (manifest diff = exactly the three sanctioned rows) · the NOT_FROZEN cargo in the adjacent **`489cb65`** · sweep at that tip verbatim: `124 files · expect exactly ONE fail: diagnose-dual-inspection` → **SWEEP OK**, tsc 0. ⛔ **`genealogyLayout.ts` untouched, its manifest row untouched** (`dcdde159…` stands) — the carve-out held.
+2. ★★★ **THE RETYPE FALSIFIER FIRED, and better than promised:** a scratch seventh union key errored at **THREE record literals** (TS2741 — `SURFACE_WORDS`, a second closed record already living in `surfaceImmersion:103`, and `IMMERSION_TITLES`), then restored, tsc 0. The compiler is the guard, measured.
+3. ⚠ **THE `SURFACE_WORDS` BOUNDARY, both directions:** the six-entry map landed in `surfaceImmersion` beside the union **because :360's cure needs the word there** — that was IN the price (my B-125 row said "+~8-line map, same union"), so no widening. What I did NOT do: dedupe the three manuscript title records onto it — that would widen the cut into unpriced lines. They stay as three compiler-guarded copies of six words; the dedup is an available follow-up, not taken.
+4. ⚠ **ONE BLAST-RADIUS FACT THE `B-126` SWEEP SURFACED, for the board:** the Ambo/playground panels display `shape.name` VERBATIM (`PlaygroundOperationsPanel:192`, `Playground.tsx:153`, the genealogy nodes), and the sanctioned `materializeOperation` cure changes op-born names there too (`glue(square:f7)` → `glue(square)`). **That is the sanctioned cure reaching a surface in the universe he said not to overhaul — but it is the WRITER's content, not that universe's display convention, that changed; the convention (name + address + tags, all shown) is intact.** I could not sight the born name in that panel at the eye (the route's glue door stayed disabled against my drive — retry boundary respected); the composition is two measured facts (the writer's new output at the model layer + the panel printing `shape.name` verbatim), named as such.
+5. ✅ **`B-127` §3 — THE AMBO CONVENTION, MEASURED, and your reading survives in a sharper form:** that universe does not have an "unnamed" case in the manuscript's sense at all — **it designates with NAME + ADDRESS + LETTERED TAGS TOGETHER, all visible, each in its own place** (driven, plates): the History card prints the op word, then `tetrahedron - cell:seed:e7g5rs` (name and id side by side), and a generation tag **`g0`/`g1`**; the genealogy node prints the name, a sub-line **`invoke · d0`**, and the full id in the tooltip's second line. **`?? node.id` is the FALLBACK, not the normal path** (normal = `Shape.name` through a map built from the live shapes), its firing condition is a DAG ancestor absent from the store, **and no gesture in the route removes forms** (button census: beget-only), so it is latent today. ⇒ Whether an id surfacing in THAT universe is a violation at all is the register question you routed to the researcher — my measurement says its convention openly shows addresses beside names, which is not the manuscript's false-statement class.
 
 ---
 
-## 1 · THE PRICE, BY FILE, MANIFEST OPEN — nothing spent
+## 1 · WHAT I SAW (drives, headed, 5174 — stopped, port released)
 
-| file | manifest line (verbatim status) | cargo | size |
-|---|---|---|---|
-| `src/manuscript/writtenFormModel.ts` | **FROZEN** `5d91c2df…` — ⛔ **OFF the sanctioned list** (spent historically at `b08848d`/`a2bf8df`; a new ask is required) | A1: delete `\|\| 'Form'` (:291, dead token) · A2: import `ImmersedSurfaceKey`, retype `IMMERSION_TITLES`, delete `??` (:361) | ~4 lines, ONE union |
-| `src/manuscript/handGestureModel.ts` | NOT_FROZEN | A2′: retype `FOLD_IMMERSION_TITLES`, delete `??` (:154) | 2 lines, free |
-| `src/manuscript/ManuscriptView.tsx` | NOT_FROZEN | A3: retype `DIM2_TITLES`, delete three `??` (:3195/:4100/:5505) · A4: rebuild the resolver over the ratchet population with the derived-rung chain (:4129 + the `nameOfShapeId` memo) | ~10 lines, free |
-| `src/lib/materializeOperation.ts` | **FROZEN** `527121fe…` — on the sanctioned list (ask still required) | C: the two name compositions drop their ADDRESS components (face ids stay in `id` only) and key→word (:466/:509) | 2 lines + the word source (below) |
-| `src/lib/surfaceImmersion.ts` | **FROZEN** `f5968891…` — on the sanctioned list (ask still required) | C: `name: surface` → the word (:360). ★ The natural home for a lib-side six-entry `SURFACE_WORDS` map beside the union — then materializeOperation and the manuscript records could all read ONE producer | 1–2 lines + ~8-line map, same union |
-| `src/playground/genealogyLayout.ts` | **FROZEN** `dcdde159…` — ⛔ OFF the sanctioned list (ask required) | `?? node.id` → an admitted absence (:96); the Ambo panel's absence copy is the designer's IF she wants a visible mark | 1 line |
-| `src/types/geometry.ts` | **FROZEN** `6ebdd92f…` — ⛔ OFF the sanctioned list | (B) only — deferred per §6 above; the comment line rides the next spend | 0 now |
-
-**Union math if (A)+(C) is bought whole:** two NOT_FROZEN files free of sanction + FOUR frozen files (`writtenFormModel` · `materializeOperation` · `surfaceImmersion` · `genealogyLayout`) — one ask, one commit (the F1 precedent: multiple sanctioned frozen files + their re-seals ride one commit), plus the adjacent NOT_FROZEN commit. Witness follow-throughs to expect: legs pinning those files' bytes re-run; the falsifier for the retype is the compiler itself (a scratch 7th key errors at the record literal — verified reasoning, to be run at spend time).
+- **The manuscript after the spend:** invoke + glue → captions `Square — invoked`, `Torus (T²) — born` — the words, unchanged on every hit path (plate `b127_1_manuscript_record.png`).
+- **The Ambo shell:** Workspace card = name / id-in-monospace-beneath / `g0` / children-count; History = op word + `name - id` + `g0`/`g1` (plates `b127_2_ambo_initial.png`, `b127_4_ambo_history.png`).
+- **The `?playground` route (where `PlaygroundGenealogyView` actually mounts — dev-only, `main.tsx:24`):** two standing squares; per node: `square` + `invoke · d0` + tooltip `square · invoke · depth 0 ⏎ shape:multiform:plain:square` (plate `b127_5_playground_initial.png`).
 
 ## 2 · WHAT I RAN
 
-File-reads and greps only (the sites in context · the union type at `surfaceImmersion.ts:59/:62/:74` · both title records' key sets · the census-C writer sweep over `src/lib` + `src/playground` · `Shape.name` reader breadth = 26 files · `genealogyLayout`'s consumers · manifest rows verbatim). No tsc/sweep owed — **zero tracked-tree writes this cycle** (the plates land in the IGNORED `_frames/`; `CLAUDE.md`'s witness-write law untouched). Tip stands at `6ef08f9` with its own green receipt.
+`tsc` ×4 (after the frozen cut · the falsifier RED with three TS2741s · restored 0 · after the NOT_FROZEN cargo 0) · the name-as-key hazard grep (zero `Shape.name` readers switch on key content — the hits are THREE.js object names and type guards) · the witness-pin grep over `scripts/` for every old format (`|| 'Form'` · `?? …surface` · `?? node.id` · `?? id` resolver · `name: surface` · face-id name compositions): **zero pins** · `npm run sweep` at tip `489cb65`: **124 @ 1, SWEEP OK** (runner's own exit 0) · the three drives above · DRIVE FAMILY: not fired — no leg's subject is a designation surface; the one display change (op-born `Shape.name` content) is exercised by the sweep's own model legs.
 
 ## 3 · WHAT I CHANGED
 
-`scripts/app-leg/_frames/` — the four plates (ignored path, the P1 §1 convention). `.handoff/THE_BUILD.md` / `THE_BUILD_REPORT.md` — the record pair. Nothing else; no source, no manifest.
+- **`writtenFormModel.ts` (FROZEN, newly sanctioned)** — A1: `|| 'Form'` deleted (the token; every writer censused non-empty; comment carries the refiled law) · A2: `IMMERSION_TITLES` keyed `Record<ImmersedSurfaceKey, string>`, `?? surface` deleted.
+- **`materializeOperation.ts` (FROZEN, sanctioned)** — `glue(${form.name})` / `cut(${form.name})` — the ADDRESSES dropped from names, kept in `id` where they live. ⚠ One correction to my own B-125 §4: `trace.surface` there is the OP KIND (`'glue' | 'flip-glue'`), a meaning-bearing word — my report called it "a raw surface key"; the only address components were the face ids, now gone.
+- **`surfaceImmersion.ts` (FROZEN, sanctioned)** — `SURFACE_WORDS` (the six words, union-keyed) + `name: SURFACE_WORDS[surface]` — the word, never the key.
+- **`handGestureModel.ts` · `ManuscriptView.tsx` (NOT_FROZEN, adjacent commit)** — the fold record + three `DIM2_TITLES` uses retyped, four fallbacks deleted; the A4 structural closure (the ratchet population lifted; `nameOfShapeId` closes over the DAG's own population — acts' COPIED titles, then the derived `Shape.name` rung; the resolver's `?? id` → the admitted-absence `?? ''`, structurally unreachable).
+- **`docs/governance/ENGINE_FREEZE_MANIFEST.txt`** — exactly three rows: `a81a7e4a…` (writtenFormModel) · `b949492b…` (materializeOperation) · `b81db84d…` (surfaceImmersion).
+- **ADR 0027** — the researcher's one-spot HISTORICAL amendment committed attributed (`85f8489`) under the standing convention before the spend.
+- **The record pair** — this letter + the two consumed mandates.
 
-## 4 · WHAT I COULD NOT REACH
+## 4 · `B-126` — WHERE A FORM'S TITLE IS READ AT HEAD (every surface, its line, what it shows)
 
-Nothing. Every price carries its manifest line; the two frozen files OFF the sanctioned list (`writtenFormModel`, `genealogyLayout`) are named as requiring their own ask, and I did not assume any prior sanction travels.
+**The manuscript (`ManuscriptView.tsx` unless noted):**
+| surface | site | shows |
+|---|---|---|
+| page captions (FormLabel species) | `:535` `data-form-label={title}` | world rows: DIM2_TITLES/world titles (CLASSIFICATION words) · written: `form.title` (the MACHINE TITLE, designation+status) |
+| the record strip (foot sentences) | `:4152` resolver | the closed chain: page titles → the ledger's COPIED names → derived `Shape.name` (post-cure; no id can surface) |
+| the stemma edge labels | `:4196` | `edge.operation` — an OPERATION word, never a form designation (named for completeness) |
+| the specimen/argument card | `:2697` `:2701` `:2710` `:2813` `:2826` | `entry.form.title` + provenance (MACHINE TITLE) |
+| removal/restore site marks | `:640` `:644` | `marks.name` — the ledger's COPIED designation (`X — removed / restored`) |
+| op/fold/combine panels + notices | `:3837` `:3843` `:3968` `:4483` `:4754` `:4760` `:4991` `:4406` `:4499` | titles (MACHINE TITLE) |
+| a refusal sentence | `:4257` | ⚠ **`t.shape.name` — a register-2 NAME in an error sentence** (post-cure: the composed word; pre-cure it could carry a face id) |
+| the room placement select | `:6352` | `placeableForms f.label` (titles) |
+| the aperture menu (corners) | `apertureModel.ts:694-704` | corner designations with the ratified `unnamed` absence — the compliant exemplar (corners, not forms; adjacent register) |
 
-Noted for the board, not worked: Arman's verdict on the fan is recorded as a verdict (no count manufactured); the designer's forms-countable-as-forms constraint waits on her plate-read; F.5's wake-trigger (any form measured ≥ 10 distinct doors) is understood — nobody has counted the maximum, and I will not until asked.
+**The Ambo universe (components/):** `Playground.tsx:70` (`title={shape.name}`) · `:153` (list rows, `shape.name`) · `Panels.tsx:602` `:3198` (inspector, `shape.name`) · `:1115` (`focus.title`) · `PlaygroundOperationsPanel.tsx:192` (**`shape.name (id)` — name and address side by side, deliberate**) · `PlaygroundSnapshotPanel.tsx:35/:38/:48/:127` (`shape.name` in filenames, notices, list) · `PlaygroundGenealogyView.tsx:81/:84/:103` (`node.name`; id in the tooltip's own line) · the main shell's Workspace/History cards (driven: name + id + `g0/g1`).
 
-`B-125` + `P1`'s ask is delivered: priced, split (A)/(B)/(C), spent nothing. ⛔ Nothing further started.
+⛔ **OUTSIDE both: NOTHING.** The tsx-wide sweep excluding the manuscript and the Ambo components returned empty (the one extra hit is `design/stories/panels.stories.tsx` — a dev storybook, not a person's surface). **No loud flag: the layer's display surfaces are exactly the two universes.**
+
+**Her §5 note riding this table:** every manuscript surface above currently shows MACHINE designations; if a GIVEN name lands, the table is the candidate set she rules over — eight manuscript surfaces plus the strip and the stemma's deliberate operation-word exception.
+
+## 5 · WHAT I COULD NOT REACH
+
+One eye-sighting: the op-born name inside the playground panel (the route's glue door stayed disabled against a blind click and a DAG-node selection; per my own retry boundary I stopped at three attempts). Composed from two measurements instead, and named as composition in §TO-THE-MOTHERSHIP item 4.
+
+`B-127`'s spend and measurement, and `B-126`'s sweep, are delivered. ⛔ Nothing further started.
 
 — the coder

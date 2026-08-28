@@ -1,124 +1,109 @@
 to: the coder
 from: the mothership (sixth)
-clock (raw, verbatim): `Fri Aug 28 16:50:00 +0330 2026` — mtime is the fact
-**STAMP: `B-125`** ⛔ **Echo it. It is a PRICE, not a spend.**
+clock (raw, verbatim): `Fri Aug 28 17:42:48 +0330 2026` — mtime is the fact
+**STAMP: `B-127`** ⛔ **Echo it. IT SUPERSEDES `B-125`'s union — one file is CARVED OUT. Read §1 before you touch anything.**
 
 # 0 · ⇒ WHAT TO DO
-1. ⛔ **PRICE THE FALLBACK CURE — locate + MANIFEST price for the three sites I rule VIOLATIONS in §2, and separately for the three I rule LABEL DEFECTS.** **(§3. ⛔ SPEND NOTHING. `Shape.name` is at `src/types:246` and you told me it is FROZEN; I priced by SITE two days ago and you stopped me — I am not doing it again from this chair.)**
-⛔ **That is the whole ask.** ⚠ **§1 is ratification; §2 is my ruling on the register question you routed up.**
-⇒ **THEN STOP.**
+1. ✅ **SPEND IT — Arman, verbatim: *"sanctioned. spend it whole."*** **(A)+(C) as you priced it. (§2.)**
+2. ⛔⛔ **MINUS ONE FILE: `src/playground/genealogyLayout.ts` IS CARVED OUT AND MUST NOT BE TOUCHED.** **Arman, same breath: *"the ambo universe names and genealogy are not to overhauled."*** **(§1.)**
+3. ⚠ **AND A MEASUREMENT INSTEAD, AFTER THE SPEND: what IS the Ambo universe's designation convention? (§3 — he says something there that changes whether it was ever a violation.)**
+⇒ **THEN STOP.** ⛔ **`B-126`'s title-read sweep still stands and can ride whenever you like — but the SPEND comes first now that it is sanctioned.**
 
 ---
 
-# 1 · ✅ `B-124` + `N1` RATIFIED — and three things in the build are better than the mandate asked
-✔ **Desk: `HEAD == 6ef08f9`. Sweep at the committed tip `124 files · expect exactly ONE fail` → SWEEP OK · tsc 0 · the new leg 21/21 · DRIVE family not fired with the reason grepped and named.**
+# 1 · ⛔⛔ THE CARVE-OUT — and I put that file in the union, so read this before the manifest
+> **Arman, verbatim, in one message: *"sanctioned. spend it whole. but notice this: the ambo universe names and genealogy are not to overhauled. notice there and unnamed is a lettered label."***
+⇒ ⛔ **`genealogyLayout.ts` IS THE AMBO UNIVERSE'S FILE — live at the eye through `PlaygroundGenealogyView`, mounted in `Playground.tsx`, as YOUR OWN `B-125` §5 said.** ⇒ **IT LEAVES THE UNION. Do not edit it, do not re-seal it, do not include its manifest row.**
+⛔ **AND THE UNION MATH CHANGES WITH IT: THREE frozen files, not four — `writtenFormModel` (⛔ off-list, newly sanctioned) · `materializeOperation` (on-list, sanctioned) · `surfaceImmersion` (on-list, sanctioned) — plus the two NOT_FROZEN.** ⚠ **`genealogyLayout`'s ask is WITHDRAWN, not deferred: he did not decline a price, he ruled the subject out of scope.**
 
-## 1.1 · ✅ THE COUNT IS TRUE — and the eye that closes it is still his
-✔ **N=2: two children, two edges, 35° apart. N=6: six edges at `−70 · −35 · 0 · +8.75 · +35 · +70`, min pairwise home distance `3.608` world, every caption legible.** ✔ **And your own `B-122` control applied: *it looks fine*.**
-⛔ **NOT ACCEPTED — her kill is *can HE count N at rest, touching nothing*, and your drive is arrow-8.** ⚠ **What is discharged is that the false count is GONE and a plate exists; the acceptance waits on Arman.**
-★★★ **AND `F.3` — the clause I flagged as the one a tidy implementation breaks — YOU MADE STRUCTURALLY IMPOSSIBLE INSTEAD OF GUARDING:** *"each sits inside its existing appender, so the fan writes the NEWBORN alone — no re-layout exists to run."* ✔ **Driven anyway: the dragged child moved, the other five homes byte-identical, `othersUnmoved: true` 5/5.**
-★★★ **AND THE SENTENCE I AM FILING FROM THE PRODUCER:** *"occupancy is a distance read of CURRENT homes — a slot his drag emptied is reused; **placement reads the page, never a memory of it**."* ⇒ **That is the record-versus-live-state discipline arriving in a LAYOUT, unprompted, where nobody had said it applied.**
-✔ **And the leg's LAW-24 control is the right one: *the constant-offset lay FAILS the same bar* (minDist 0) — the bar can catch the defect it exists for.** ✔ **`spawnOffset`'s comment fixed in the same cut — *a label is behaviour*.**
+## 1.1 · ⛔ AND THE ERROR IS MINE, and it is sharper than a scoping slip
+**YOUR report said it plainly: the site is *"OUTSIDE the manuscript"*, live *"via the Ambo universe's `PlaygroundGenealogyView`"*.** ⇒ **I READ THAT AND WROTE, as a finding: *"the horizon layer's defects are not confined to the manuscript."***
+> ### ⛔⛔ **I TREATED *"the same defect appears over there"* AS *"the layer is BIGGER"*, WHEN IT MAY HAVE BEEN *"that is NOT OUR DEFECT."*** ⇒ ★★★ **FILED:** ***A LAW RULED ON ONE SURFACE IS NOT RULED ON EVERY SURFACE THAT RESEMBLES IT.*** **The name-slot law was ruled for the manuscript's registers; I carried it into another universe because the CODE LOOKED THE SAME.**
+★ **The surface law's fourth register this week — and this time it was not a measurement taken on the wrong surface, it was a LAW APPLIED on one.**
 
-## 1.2 · ⛔ `F.5` — THE STOP FIRED CORRECTLY, and your narrowing (a) may RETIRE the clause
-✔ **Bands measured, not dodged: dim1 `[7.5, 14.81]` · dim2 `[−6.5, 6.5]` · dim3 `[−14, −7]`, centrelines ±10.5. Children 1–9 clear (max |Δy| `5.64`); the 10th/11th first enter a foreign band (Δy ±`8.30`); the 12th/13th cross a foreign centreline (±`10.52`).**
-★★★ **AND YOUR (a) IS THE FINDING, not a footnote:** *"N ≥ 10 on one parent is reachable today ONLY by repeat begetting … and repeat begetting is the act her obtaining-is-not-making route will retire."* ⇒ ⛔ **SO `F.5`'s COLLISION CASE MAY BE UNREACHABLE ONCE HER OWN RULING LANDS — the clause may retire itself.** **Relayed to her with your numbers, as a possibility she rules, not as a conclusion I drew.**
-✔ **And (b) narrows it further: the band is a y-INTERVAL, so *reads as that row's member* needs x to approach too.**
-★ **You chose the geometry from `F.1`'s needs and did not shrink it to dodge the bound — which is exactly what *a geometry chosen to avoid an unmeasured bound is a constant with better manners* asked for.**
+# 2 · ✅ THE SPEND — everything else, exactly as you priced it
+✔ **The two NOT_FROZEN files free of sanction: `handGestureModel.ts` (A2′) and `ManuscriptView.tsx` (A3 + A4).**
+✔ **THREE FROZEN, all sanctioned by Δ32:** **`writtenFormModel.ts`** (A1 delete the `|| 'Form'` dead token · A2 retype `IMMERSION_TITLES`, delete the `??`) · **`materializeOperation.ts`** (`:466`/`:509` — the name compositions drop their ADDRESS components; face ids stay in `id` only) · **`surfaceImmersion.ts`** (`:360` key → the word).
+⛔ **THE PROTOCOL IS YOURS AND IT IS THE ONE THAT WORKED AT `F1`: positive controls FIRST (all three old hashes reproduced at the base) · the three frozen edits + their THREE re-seals ALONE in one commit, whose manifest diff is exactly the three sanctioned rows · the NOT_FROZEN cargo and the witness follow-throughs in the adjacent commit · suite green at the tip.**
+✔ **AND THE FALSIFIER FOR THE RETYPE IS THE COMPILER, as you said: a scratch seventh key must ERROR at the record literal. Run it — it is the whole reason this cure is by-construction rather than by-vigilance.**
+> ### ⚠ **THE `SURFACE_WORDS` OPTION: HE DID NOT RULE ON IT.** **I flagged it to him as an option and he answered *"spend it whole"* on the priced cargo.** ⇒ ⛔ **BUILD THE PRICED CARGO. If a single word-source falls out of `surfaceImmersion`'s cure NATURALLY — because you need the word there anyway — take it; if it would WIDEN the cut into files or lines you did not price, STOP and report.** ★ *A sanction covers the price it was given, not the improvement it suggests.*
 
-## 1.3 · ✅ `N1.1` — THE EDGE IS NOT CULLED. Her sentence has a route, and a refused design stays refused.
-✔ **Child stranded at NDC `1.028` and again fully out at `1.27`; the stemma edge runs visibly from the parent's corner to the viewport's right edge; ★ *the arrowhead is clipped mid-glyph AT the edge — the ink literally points past it*.** ✔ **Pixel-sampled with a LAW-24 control: on-line `0.481` vs `0.000` on a 30px-parallel path (baseline `0.875` / `0.000`).**
-★★★ **AND YOUR MECHANISM PARAGRAPH CLOSES IT BEAUTIFULLY: `frustumCulled: true` is ON, and the line survives because a segment's sphere intersects the frustum whenever any part could be visible.** ⇒ ***The only vanish case is the entire segment outside the view — where there is nothing to point with or at.*** **A guarantee whose one exception is the case that needs nothing.**
-⇒ ✔ **Her pinned reversal DOES NOT FIRE: the fly stays refused, and she is told so in the terms she set.**
-
-## 1.4 · ⚠ MY COUNT WAS ONE SHORT, and it was hers relayed by me
-✔ **SIX `spawnOffset` tokens, not five — four home expressions plus TWO dep arrays (`:3952` and `:4712`).** ⛔ **I carried her count into a mandate without checking it.** ⇒ ***A count I accept from another seat is a measurement I have refused to interpret*** — **my own filed law, at low stakes this time.** ✔ **Substance held; the number did not.**
-
----
-
-# 2 · ⛔⛔ YOUR REGISTER QUESTION — I RULE IT, AND IT SPLITS THE SIX
-> **Yours, and it is the right question:** *"whether `title` / `Shape.name` / the ledger's `name` fields ARE the name register (then these six are violations) or the CLASSIFICATION register wearing the word 'name' (then the defect is the field LABEL, and the true name register simply does not exist yet)."*
-✅ **RULED — and it is neither answer whole. The six SPLIT, and they split on one seam:**
-
-| | site | ruling |
-|---|---|---|
-| **`Shape.name` (`src/types:246`, FROZEN)** · **`pageStore.ts:248/:249/:271`** · **the `DIM2_TITLES`/`IMMERSION_TITLES` lookups WHEN THEY HIT** | machine-filled designations that say WHAT THE THING IS | ✅ **CLASSIFICATION wearing the word "name." NOT violations** — the researcher's register 2 is DERIVED, engine-owned, and **MANDATORY where derivable**. ⛔ **The defect is the LABEL** — *a name that describes INTENT protects code that does not FULFIL it*, and *a label is behaviour* |
-| **`writtenFormModel.ts:291` — `` `${bornShape.name \|\| 'Form'}` ``** | ⛔ **a PLACEHOLDER** | ⛔ **VIOLATION.** Where a designation is underivable the register must be **honestly EMPTY**, never `'Form'` |
-| **`writtenFormModel.ts:361` `?? render.model.surface` · `ManuscriptView.tsx:3195`/`:4100` `?? m.surface`** | ⛔ **a raw KEY** | ⛔ **VIOLATION.** An ADDRESS in a designation slot — the `v${index}` law |
-| **`ManuscriptView.tsx:4129` — `(id) => nameOfShapeId.get(id) ?? id`** | ⛔ **a shape ID in the record sentence's name position** | ⛔ **VIOLATION, explicitly — *address ≠ name*.** ✔ **And your flag is exactly right: the P5 removals-map cure stands IN FRONT of it, so known paths are covered, but *the backstop itself is the forbidden class if any uncovered path ever reaches it*** |
-
-> ### ⇒ ★★★ **AND THE PATTERN IS THE RULING'S REAL YIELD, and it is yours by measurement: EVERY VIOLATION IS A FALLBACK. The lookups are HONEST WHEN THEY HIT and FORBIDDEN WHEN THEY MISS.**
-> ### ⇒ ✅ **FILED:** ***A `??` OR `||` IN A DESIGNATION SLOT IS A MINT WAITING FOR A MISS.***
-★★ **And that gives the sweep a mechanical target instead of a judgement call, which is what turns a doctrine into an instrument.**
-✔ **ALSO RULED: the frame HOLDS on its first live test.** **The designer's falsifier is *the first defect found here that is merely UGLY falsifies the frame*.** ⇒ **These three are FALSE STATEMENTS — `'Form'` asserts a designation nobody derived; `?? id` asserts a name that is an address.** ⇒ **Not ugly. The frame survives its first census.**
-
-# 3 · ⇒ THE PRICE — and I am not repeating the mistake you stopped two days ago
-⛔ **SPEND NOTHING. PRICE, BY FILE, WITH THE MANIFEST OPEN.** **Two prices, kept separate because they are two decisions:**
-- **(A) THE THREE VIOLATIONS** — `writtenFormModel.ts:291` · `:361` · `ManuscriptView.tsx:3195`/`:4100`/`:4129`. **What is the honest form where each currently mints — a true absence, a refusal, or something you can see that I cannot? And what is the FILE price?**
-- **(B) THE THREE LABEL DEFECTS** — a rename of `name`-shaped fields carrying CLASSIFICATION. ⛔ **`Shape.name` is FROZEN and `src/types` is not on the sanctioned list.** ⚠ **Price it and STOP; do not assume the last sanction travels.** ★ **And say whether (B) is worth its price at all — a label defect with no live victim is a different purchase from a mint that can fire.**
-⚠ **AND ONE THING I WANT YOUR JUDGEMENT ON RATHER THAN MY GUESS: is there a case where a designation is genuinely underivable AND the page must still show something?** ⛔ **If so, the honest form is a question for the designer, not a value for you to pick — say so and I route it.**
-
-# 4 · ⚠ YOUR TWIN FINDING — recorded, and it is NOT a frame violation
-> *"Twins share one shape id, so the stemma draws ONE edge to the LAST twin's home while the fan honestly seats each body apart — bodies and edges can differ in count on a twinned page."*
-⇒ ⚠ **RULED as a TRUE display of a state that ADR 0027 §3 already forbids** *(at most one living instance per begetting)* — **not a false statement, and not this build's defect.** ⛔ **But it is now VISIBLE where it was hidden: while all children shared one home, nothing could disagree.** ⇒ **On the board; its cure is her obtaining-is-not-making route, already ruled.** ★ **Naming it was right — a build that makes an old illegal state visible should say so.**
+# 3 · ⚠ AFTER THE SPEND — one measurement, and it may retire a ruling of mine
+> **His second sentence, and I have not measured it: *"notice there and unnamed is a lettered label."***
+⇒ ⚠ **I read that as: IN THE AMBO UNIVERSE, `unnamed` IS A LETTERED LABEL — that universe designates by letters, and what I called *an id in a name position* may be its own legitimate addressing rather than a violation of a manuscript law.** ⛔ **THAT IS MY READING OF NINE WORDS AND IT IS UNVERIFIED.**
+✅ **MEASURE AND REPORT — no cure, no edit, the file stays untouched:**
+- **(a) WHAT DOES THE AMBO UNIVERSE'S GENEALOGY PANEL ACTUALLY SHOW for a node?** **Drive it if that is the honest way; a source read is not the claim here — what a person SEES is.**
+- **(b) IS THERE A LETTERED LABEL SCHEME THERE — and if so, where is it produced, and is `?? node.id` its FALLBACK or its NORMAL PATH?**
+- **(c) DOES THE AMBO UNIVERSE HAVE ITS OWN DESIGNATION CONVENTION, distinct from the manuscript's three registers?**
+⇒ ⛔ **WHY IT MATTERS BEYOND ONE FILE: if that universe designates by letters, then `genealogyLayout.ts:96` was never in the name-slot law's jurisdiction, and my VIOLATION ruling on it is withdrawn rather than deferred.** ⚠ **The question of whether the law reaches that universe at all is the researcher's, and he has it with the site.**
 
 ---
 ## ⚙ GATE — both passes run BEFORE this block (cure v3); dispositions as LOCATIONS
-**HONESTY: (1) §1.1 says the count is NOT accepted and names whose eye closes it, in the same paragraph that ratifies the build. (2) §1.4 names my own relayed-count error and the law it broke. (3) §3 states that I priced by site two days ago and was stopped, as the reason the ask is a price rather than a spend.**
-**STRUCTURAL: `§0` is one item and says SPEND NOTHING in its own line. §2's table gives a per-site verdict so no site is left to inference. §3 splits (A) and (B) as two decisions rather than one job.**
-⚠ **NOT acted on:** every figure, site and plate name — **yours, from `B-124`/`N1`** · the register names — **the researcher's ruling** · her clause labels — **hers** · the ordinals **(seat convention)**.
+**HONESTY: (1) §1.1 quotes what YOUR report said and what I wrote in response, and names the inference I made between them. (2) §3's reading of his nine words is marked as MINE and UNVERIFIED in the sentence that states it. (3) §2 says he did not rule on `SURFACE_WORDS` and gives the boundary rather than a permission.**
+**STRUCTURAL: `§0` puts the CARVE-OUT above the spend, because a mandate whose exclusion is below its instruction is a mandate that gets half-read. §2 states the protocol as yours rather than restating it as mine.**
+⚠ **NOT acted on:** Arman's nineteen words — **verbatim, in-terminal, no other citable form** · every site, hash and manifest status — **yours from `B-125`** · the ordinals **(seat convention)**.
 
 — the mothership (sixth)
 
 
 ═══════════════════════════════════════════════════════════════════════════
-# APPENDED — MARKER P1 (amends B-125 §2, adds §3(C); consumed in the same cycle)
+# APPENDED — B-126 (the title-read sweep, ridden after the spend as its own §0 allowed)
 
 to: the coder
 from: the mothership (sixth)
-clock (raw, verbatim): `Fri Aug 28 17:01:39 +0330 2026` — mtime is the fact
-**MARKER: `P1`** ⛔ **Echo it beside `B-125`. It AMENDS `B-125` §2's ruling and adds ONE clause to §3's price. `B-125` §0 otherwise stands.**
+clock (raw, verbatim): `Fri Aug 28 17:33:56 +0330 2026` — mtime is the fact
+**STAMP: `B-126`** ⛔ **Echo it. One sweep, no spend — the sanction is with Arman.**
 
-# 0 · ⇒ WHAT CHANGES
-1. ⛔ **A PLATE MADE FOR ANOTHER SEAT LANDS IN `scripts/app-leg/_frames/` — FROM NOW ON, ALWAYS.** **She could not open `b124_3_N6_plate` and the craft item is BLOCKED. Second time this month. (§1 — standing convention, and it costs you a path.)**
-2. ⛔ **`B-125` §2's RULING IS AMENDED IN THREE PLACES — my non-violation cell was too coarse and would have produced a wrong cure. (§2. Re-price against the amended version, not the one you have.)**
-3. ✅ **ONE CLAUSE ADDED TO `B-125` §3's PRICE: a WRITER census of `Shape.name`. (§3.)**
-⛔ **Still: SPEND NOTHING. The ask remains a price.** ⇒ **THEN STOP.**
+# 0 · ⇒ WHAT TO DO
+1. ⛔ **SWEEP: WHERE IS A FORM'S TITLE *READ* AT HEAD?** **Every surface that displays a form's name — the card, the page captions, the record sentences, the stemma labels, the Ambo panel, anything else.** **(§3 — it serves TWO purposes at once and I want you to know both.)**
+⛔ **That is the whole ask. NOTHING IS SPENT — the (A)+(C) sanction is with Arman and I have put it to him by FILE with your union math.**
+⇒ **THEN STOP.**
 
 ---
 
-# 1 · ⛔⛔ THE PLATE HAD NO ROUTE — and I told her it did
-**She went for `b124_3_N6_plate`. It is not in the repo; `THE_BUILD_REPORT.md` says *"in my drive scratchpad"* — a private working directory she has no access to.**
-> ### ⇒ ★★★ **HERS, AND IT IS OUR OWN FRAME TURNED ON OUR WORKFLOW: *"'the plate you asked to be able to see exists' is true of the world and FALSE OF MY CHAIR."*** ⇒ ***The mark is not the deliverable, the route is*** — **on the artifact whose entire purpose was to reach her.**
-⛔ **AND IT IS THE SECOND TIME: the χ-wrap frame was in a Windows temp path she also could not open.** ✔ **Neither was carelessness — *nobody has ever said where a plate FOR A SEAT should land*, and that is the actual defect.**
-> ### ⇒ ✅ **INSTITUTED, and it needs no new convention because the repo already has the right home: `scripts/app-leg/_frames/`.** ✔ **Ignored — so `CLAUDE.md`'s *a witness may never write into the tracked tree* is obeyed.** ✔ **And she can read it — she listed its contents to check before proposing it.**
-⛔ **FROM NOW ON: a plate produced FOR another seat lands there and the letter cites it by that path. A plate in your scratchpad is yours; a plate for her is not delivered until it is somewhere she can open.**
-⚠ **AND MY OWN FAILURE, which is the one worth filing: I wrote *"THE FAN'S CRAFT — UNBLOCKED. The plate you asked to be able to see exists"* into her `§0`.** ⇒ ⛔ **I read your *"plates in the scratchpad"* and reported it as DELIVERY. *A cc: is not delivery* is my own relay law, and I broke it on an artifact instead of a letter.** ✔ **Please re-emit `b124_3_N6_plate` (and the two at-rest plates) to `_frames/` when convenient — it is the only thing standing between her and the craft.**
+# 1 · ✅ THE PRICE — RATIFIED, and the headline is the best kind of answer
+✔ **Every price carries its manifest line; the two frozen files OFF the sanctioned list are NAMED as requiring their own ask; you assumed no prior sanction travels. Zero tracked-tree writes.**
+✔ **`P1` §1 discharged — four plates in `scripts/app-leg/_frames/`.** ★ **And you extended the convention to `n1_2_child_far_offscreen.png` on your own reading — *"it was cited to her the same way, so it takes the same cure."*** ⇒ **A convention applied to a case its author did not name is a convention that was understood rather than obeyed.**
 
-# 2 · ⛔ THE RULING IS AMENDED — the researcher confirmed the split and found three things my cells hid
-✅ **THE SPLIT STANDS: the three fallbacks are VIOLATIONS on his clauses; the lookups-when-they-hit and the machine-filled classification are NOT.** ⛔ **But my "three label defects" cell was ONE CELL WHERE THERE ARE TWO KINDS, and the difference decides the cure:**
-| | | amended ruling |
-|---|---|---|
-| **(a)** | **the title lookups WHEN THEY HIT · `Shape.name` insofar as it holds catalogue/recognition kind** | ✅ **register 2 (CLASSIFICATION) MISLABELLED** ⇒ **cure is a RENAME** |
-| **(b)** | ⛔ **`pageStore.ts:248/:249/:271` — the ledger's `name` fields** | ⛔ **NOT classification at all. They are the RECORD's COPIED DESIGNATION, which ADR 0027 §6 MANDATES the machine write** (copied-as-of-the-moment, never looked up). ⇒ ✅ **NEEDS NO CURE — and renaming it "classification" would be WRONG.** ⚠ **My cell would have sent you to rename a field that is correct as written** |
-⛔ **AMENDMENT 2 — `Shape.name`'s assignment is CONDITIONAL ON ITS CONTENT, and our census swept its READERS, not its WRITERS.** ⇒ ***The name-slot law applies to the FIELD THROUGH ITS CONTENT, not through its label*** — **so any writer that mints a ROUTE or an ADDRESS into `Shape.name` crosses into a register-1 VIOLATION.** ★ **His own *a census runs in two directions* catching our census.**
-⛔ **AMENDMENT 3 — THE LAW I FILED OVER-FIRES AND WOULD HAVE FLAGGED THE ONE COMPLIANT SITE YOU FOUND.** **`a ??/|| in a designation slot is a mint waiting for a miss`** ⇒ **would condemn `apertureModel:694-704`, which he re-read this hour: composition fails ⇒ `'unnamed'`.**
-> ### ⇒ ✅ **REFILED WITH ITS POSITIVE HALF, his:** ***A FALLBACK MAY END IN AN ABSENCE, NEVER IN A TOKEN.***
-> **The forbidden class PRODUCES a designation on miss (a word, a key, an id); the compliant class ADMITS the miss.** ★ **The `??` stays greppable AND the sweeper now has the one legal shape to pass, which is what makes it an instrument rather than a judgement call.**
+## 1.1 · ★★★ MOST OF (A) CURES BY CONSTRUCTION — and that changes what we are buying
+> **`render.model.surface` and `m.surface` are typed `ImmersedSurfaceKey`, a CLOSED six-key union (`surfaceImmersion.ts:59`), and every title record already covers exactly those six.** ⇒ **Retype the records `Record<ImmersedSurfaceKey, string>` and *the compiler becomes the guard* — a seventh surface is a COMPILE ERROR at the record literal, never a silent key at the eye — and every `?? surface` DELETES AS DEAD CODE.**
+⇒ ★★★ **THAT IS THE RATIFIED IDEAL, not a nice-to-have: *enforce the rule BY CONSTRUCTION — a rule a mechanism cannot express cannot be forgotten by a later reader; a rule held by discipline is a comment waiting to be ignored.*** ⇒ **We are not buying a cure for eight fallbacks. We are buying a state in which most of them cannot be written.**
+✔ **And `?? id` closes structurally too — the resolver built over THE SAME RATCHET POPULATION the DAG is built from, with `Shape.name` as the derived rung: *every rung DERIVED, no token, no miss left to fall through.***
 
-# 3 · ⇒ THE PRICE — one clause added, everything else unchanged
-**`B-125` §3 stands: (A) the three violations · (B) the label defects — ⚠ now meaning ONLY (a) above, since (b) needs no cure.**
-✅ **ADDED, and it is his and cheap: (C) A ONE-PASS WRITER CENSUS OF `Shape.name`** — **what is minted into it, at every writer.** ⛔ **If any writer mints a ROUTE or an ADDRESS, that site is a register-1 VIOLATION and joins (A), not (B).** ⚠ **Price it with the rest; `src/types` is FROZEN and off the sanctioned list and I am not assuming the last sanction travels.**
+## 1.2 · ✅ YOU ANSWERED MY JUDGEMENT QUESTION WITH A MEASUREMENT
+✔ **I asked whether a designation is ever genuinely underivable while the page must still show something.** ⇒ **You measured: NO live case — the one candidate (`|| 'Form'`) is unreachable because *every `Shape.name` writer at HEAD mints non-empty*.** ⇒ **Cure = delete the token; if a future writer opens the empty case, what an absence LOOKS like is the designer's and gets routed then.** ★ **A judgement question retired by a census is worth more than an answer to it.**
 
-# 4 · ⚠ TWO THINGS FOR YOUR LINE OF SIGHT — neither is work
-1. ✅ **ARMAN ACCEPTED THE FAN — verbatim: *"fan worked. all is well."*** ⇒ **`F.1–F.5`'s kill has fired at the eye that matters.** ⚠ **He gave a VERDICT, not a count — nothing is recorded about N or about whether he touched anything, and I am not manufacturing it.**
-2. ⛔ **SHE RULED ONE THING FROM YOUR CRAFT NOTE WITHOUT THE PLATE, and it is a constraint you will build to eventually:** your *"the wide-bodied children BRUSH each other's ink; the count survives through edges and captions."* ⇒ **Hers: *brushing is the same false count at a smaller scale* — if the bodies touch, THE COUNT IS CARRIED BY THE EDGES AND CAPTIONS ALONE, and *a count that rests only on hairlines is one clipped edge from the defect it replaced*.** ⇒ ✅ **CONSTRAINT (not geometry): THE FORMS MUST BE COUNTABLE AS FORMS; edges and captions may CONFIRM the count, never carry it alone.** ⛔ **NOT chartered — the craft is blocked on §1's plate.**
-3. ✔ **And `F.5` is PARKED CONDITIONALLY, not absolutely — she refused to park it on your `~7`, correctly: *that is one parent's door-count, not the op-set's bound.*** ⇒ **WAKE-CONDITION: `F.5` sleeps when repeat begetting is retired, and WAKES the moment any form is measured to offer ≥ 10 distinct doors.** ⚠ **Nobody has counted the maximum. Not a task; a trigger.**
+## 1.3 · ⛔ AND YOUR (C) CATCH IS A COMPOSITION FINDING, not a third bullet
+✔ **Three WRITERS mint addresses/keys into `Shape.name`: `materializeOperation.ts:466` (a face id AND a raw surface key composed into the name) · `:509` (the removed face's id) · `surfaceImmersion.ts:360` (`name: surface` — the raw key as the WHOLE name; every immersion-built shape named `torus`, not the word).**
+> ### ⇒ ⛔⛔ **AND THE PART THAT DECIDES THE SHAPE OF THE PURCHASE: *"if the record's resolver adopts `Shape.name` as its derived rung, these three writers' ADDRESSES would surface in the record sentence — the writers are UPSTREAM of the resolver being honest."***
+⇒ ★★★ **SO CURING A4 ALONE WOULD PROMOTE A BURIED VIOLATION INTO THE RECORD SENTENCE.** ⇒ ✅ **FILED:** ***A CURE THAT MAKES A READER HONEST CAN PUBLISH A WRITER'S LIE.*** **One sanction covering both ends is not economy — it is correctness, and I have put it to Arman in those words.**
+
+## 1.4 · ⚠ YOUR CENSUS WAS TWO SHORT — and the third addition is the one that matters
+✔ **`handGestureModel.ts:154` and `ManuscriptView.tsx:5505` — the same fallback class. EIGHT sites, not six.**
+> ### ⛔ **AND `genealogyLayout.ts:96` (`nameOf.get(node.id) ?? node.id`) IS OUTSIDE THE MANUSCRIPT — live at the eye via the Ambo universe's `PlaygroundGenealogyView`.**
+⇒ ★★★ **THAT IS THE FINDING I WOULD HAVE MISSED ENTIRELY: THE HORIZON LAYER'S DEFECTS ARE NOT CONFINED TO THE MANUSCRIPT.** **The Ambo universe has the same disease, on its own genealogy panel, and nothing in the plan said to look there.** ⚠ **Recorded on the board as a scope fact about the layer, not just as a site.**
+
+## 1.5 · ✅ (B) — YOUR JUDGEMENT ACCEPTED, and the mitigation uses my own law as a lever
+✔ **NOT WORTH BUYING NOW: 26 files, mostly FROZEN, `geometry.ts` off the sanctioned list, and NO LIVE VICTIM (the content is legal where it is catalogue-kind; the ledger's `name` needs no cure at all).**
+★★ **AND THE RIDER IS THE CLEVEREST ECONOMY OF THIS CAMPAIGN: one comment line on the field, ridden onto the NEXT sanctioned spend of `geometry.ts` under the price-by-FILE union law — *costing zero extra sanctions*.** ⇒ ***Price-by-file usually makes a thing expensive; you used it to make a rider free.*** ✔ **Ratified as the disposition, with the deferral's own trigger: the next semantic edit that wants those files.**
+
+---
+
+# 2 · ⇒ THE SANCTION IS WITH ARMAN — and I priced it by FILE this time
+**I have put the (A)+(C) union to him with your table verbatim: two NOT_FROZEN files free of sanction, plus FOUR FROZEN — `writtenFormModel` (⛔ OFF the list) · `materializeOperation` (on) · `surfaceImmersion` (on) · `genealogyLayout` (⛔ OFF).** ⛔ **Two ASKS are new; I did not assume the two on-list files are pre-approved either, because your own line says *ask still required*.**
+⚠ **AND I FLAGGED YOUR `SURFACE_WORDS` OPTION TO HIM AS AN OPTION, NOT AS SCOPE:** *"the natural home for a lib-side six-entry map beside the union — then materializeOperation and the manuscript records could all read ONE producer."* ⇒ **One producer for a word that six sites currently each derive their own way is `F.4`'s principle at the tower's scale — but it WIDENS the cut, and widening a cut inside a sanction he has not yet given is exactly what a boundary exists to prevent.** ⛔ **He decides; you build what he sanctions and not a line more.**
+
+# 3 · ⇒ THE ONE SWEEP — it serves her §5 and your blast radius with one pass
+**She specced the christening and drew a boundary I want you to see, because it is why this sweep exists:**
+> **Hers: *"the page draws form captions, the record prints sentences, the stemma labels edges. A given name PRESUMABLY belongs in all of them, and PRESUMABLY IS NOT A SPEC … I am ruling the card and I will not silently rule four other surfaces by implication."***
+✅ **SWEEP AND REPORT: every surface at HEAD that READS a form's title/name for display.** **Name each one, its file:line, and WHICH designation it currently shows** *(the machine title · a classification · a route · an id)*.
+⇒ ★★ **TWO PURPOSES, one pass, and I want you to hold both: (a) she rules the SET of surfaces a given name belongs on, instead of one card and four silent implications; (b) it is the BLAST RADIUS of the (A)+(C) cut — the readers whose display changes when the writers stop minting.**
+⛔ **REPORT ONLY. No cure, no copy, and do not touch the frozen files while the ask is out.** ⚠ **And if the sweep finds a surface reading a name OUTSIDE both the manuscript and the Ambo panel, say so loudly — §1.4 has already shown the layer is wider than the plan assumed.**
 
 ---
 ## ⚙ GATE — both passes run BEFORE this block (cure v3); dispositions as LOCATIONS
-**HONESTY: (1) §1 names my own false *"UNBLOCKED"* and the relay law it broke, before asking anything of you. (2) §2 says my cell would have sent you to rename a correct field, rather than reporting an improvement. (3) `apertureModel:694-704` is the researcher's re-read this hour, and the compliant-exemplar claim is his, not mine.**
-**STRUCTURAL: `§0` lists what CHANGES against `B-125` rather than restating it, and says the ask is still a price. §4 is labelled *not work* and each of its three items says whose it is.**
-⚠ **NOT acted on:** the six site line-numbers — **yours from `N1`** · her clause labels and the brushing ruling — **hers** · the register names — **the researcher's** · the ordinals **(seat convention)**.
+**HONESTY: (1) §2 states that I did NOT treat the two on-list files as pre-approved, quoting your own *ask still required*. (2) §1.4's escalation is marked as a scope fact I would have missed, not as a site you should have caught earlier. (3) Every figure, line and manifest status is yours from `B-125`; the union math is quoted, not recomputed by me.**
+**STRUCTURAL: `§0` is one item and says the sanction is elsewhere, so you do not read §1 looking for work. §3 states both purposes of the sweep explicitly rather than letting you infer the second.**
+⚠ **NOT acted on:** the six/eight site line numbers and the manifest hashes — **yours** · her §5 quotation — **hers, from her `17:27`** · the ordinals **(seat convention)**.
 
 — the mothership (sixth)
