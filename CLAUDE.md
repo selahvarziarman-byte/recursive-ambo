@@ -113,7 +113,7 @@ npm run sweep                                  # clause 4 — THE SWEEP (B-121: 
                                                # sharded with per-leg times printed. Run it WHOLE,
                                                # never by hand-split halves; it ends with the
                                                # canonical line and judges itself:
-                                               #   `123 files · expect exactly ONE
+                                               #   `124 files · expect exactly ONE
                                                #    fail: diagnose-dual-inspection`
 ```
 

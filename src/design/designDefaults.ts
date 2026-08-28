@@ -373,7 +373,7 @@ export const manuscriptDefaults = {
     // OPERATIONS themselves are the committed PlaygroundOperation registry
     // (writtenFormModel) — no knob invents or alters a transform.
     chrome: {
-      spawnOffset: 6, // where an op-born form lands relative to its parent (x)
+      spawnOffset: 6, // the spawn FAN's ring-1 radius — how far from its parent an op-born form lands; WHERE on that circle is computed from the parent's existing children (spawnFanModel, B-124 — never a constant slot)
     },
     // Phase 3b — the memory (birth · record · shelf). Craft only: WHICH forms
     // are pentimenti is the DAG's own consumed population; the stemma/record

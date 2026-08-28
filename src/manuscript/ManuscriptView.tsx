@@ -52,6 +52,7 @@ import {
   stemmaMidpoint,
   visibleStemmaLabels,
 } from './stemmaLabelModel';
+import { spawnHomeForBirth } from './spawnFanModel';
 import {
   readDomainSpecimen,
   readSkeletonSpecimen,
@@ -3919,7 +3920,7 @@ export default function ManuscriptView() {
           setOpNotice(null);
           setWritten((cur) => [
             ...cur,
-            { form: enacted, home: [target.home[0] + d.world.chrome.spawnOffset, target.home[1], 0] },
+            { form: enacted, home: spawnHomeForBirth(target, cur, d.world.chrome.spawnOffset) },
           ]);
           setSelected(`w:${enacted.id}`);
           return;
@@ -3945,7 +3946,7 @@ export default function ManuscriptView() {
       }
       setWritten((cur) => [
         ...cur,
-        { form: result.born, home: [target.home[0] + d.world.chrome.spawnOffset, target.home[1], 0] },
+        { form: result.born, home: spawnHomeForBirth(target, cur, d.world.chrome.spawnOffset) },
       ]);
       setSelected(`w:${result.born.id}`);
     },
@@ -4674,7 +4675,7 @@ export default function ManuscriptView() {
       }
       setWritten((cur) => [
         ...cur,
-        { form, home: [target.home[0] + d.world.chrome.spawnOffset, target.home[1], 0] },
+        { form, home: spawnHomeForBirth(target, cur, d.world.chrome.spawnOffset) },
       ]);
       setSelected(`w:${form.id}`);
       setCycleTrace(null);
@@ -4705,7 +4706,7 @@ export default function ManuscriptView() {
     setOpNotice(null);
     setWritten((cur) => [
       ...cur,
-      { form: result.born, home: [target.home[0] + d.world.chrome.spawnOffset, target.home[1], 0] },
+      { form: result.born, home: spawnHomeForBirth(target, cur, d.world.chrome.spawnOffset) },
     ]);
     setSelected(`w:${result.born.id}`);
     setFold(null);
