@@ -58,12 +58,12 @@ src/lib/level3Orientation.ts            2ac4b44395ea8ac438d540a52f87c94412c74cb7
 src/lib/level3SoundnessGate.ts          c4f29765a005ea0d5d97ca2bb5e788259acec6ddf01032e9558f1af46fbd645b
 src/lib/level3W1.ts                     469f3c0736f4e94e28f5a60bca2020a11b3340e38a9dc92d41b0e44f1dde8590
 src/lib/lineage.ts                      a2fd474f9e58869ba1015ed16d1d930d37dd2725d48492a2f08dc9dc93ccb0fa
-src/lib/materializeOperation.ts         527121fe18e5b9a4c6d9def92ab07a479ae1728e25a91df6c65500a3d4a85f33
+src/lib/materializeOperation.ts         b949492b18d539e96cd9b3c5c69e7e04351a976c67be1abb4f759adf9d4beb51
 src/lib/multiform.ts                    5d70c6e2583759f2f96af0f45facba7040dfdbbab206eb9f1bb47e925aca37f9
 src/lib/packets.ts                      feaf628678732c01a276ead985b08dd439b2ae8ab09adf5bba865a0dd4811d9f
 src/lib/shape.ts                        8339d97812ac4dac2a68b982936b34d51cdb308069d73e6738f2da366bd5b7b2
 src/lib/surfaceDual.ts                  022a1c68251c3b04c13c4b6f39f1dad7e5d0fcf74cd64570f5d0e9f6c93eec95
-src/lib/surfaceImmersion.ts             f5968891d408ca15b2b711e8af27c29c326f4637c9b7d9846eaf389203d68a5f
+src/lib/surfaceImmersion.ts             b81db84deaf648655a7c0a3d7d1fed16d8cf211dcc756a71d678a41da9783374
 src/lib/surfaceOperations.ts            06a439f357e3a51743a355071819b1ed73dcb4d1607afb0afc64a711877b04b6
 src/lib/transformationLedger.ts         2f77f9b331c9151c00242f40708a4915dc35e8f6408059ad4769f9433d3c162b
 src/manuscript/InkedDomain.tsx          067f04c99043a5606ebe96de4669e47e2cab623166b45ce4067d4ffbb445195b
@@ -77,7 +77,7 @@ src/manuscript/specimenModel.ts         f4368d9f461af99b58c132157093127b06ae4572
 src/manuscript/standardBodies.ts        9ca766a2a39b7c2d915afd29d6ee91de60de124829aa9a1befd0860c685dc020
 src/manuscript/surfaceClassifier.ts     f2e96084220c3fc5c6c5726b74d9293350068334fb27c29d5e41e19848457974
 src/manuscript/worldModel.ts            092012c46886da4215b7922e921765f0b5454185670cadbb9c88ee85ba29cb43
-src/manuscript/writtenFormModel.ts      5d91c2dfb0793544d5479fda574fe27cbe5f8c37ba22ed2959f5b7be4abdbf2e
+src/manuscript/writtenFormModel.ts      a81a7e4a02677cd3ffc7abcca3a4aecf85a7deb9e1f7a40ad98c3254286768e4
 src/playground/bornFormRouting.ts       6f6530d67c5ecfb98a48f35f9df0e12b327ca570c2bdfc45cfe18f0106f411fa
 src/playground/customGluing.ts          2085fb7ef4199bda258d8c3cde23f3a186d16eb7f51d6d809061f72ee7c8ddb5
 src/playground/formInvariants.ts        1079458c3d4a3451cd2df376f62893271ff10014210492b96f411a7718717f96

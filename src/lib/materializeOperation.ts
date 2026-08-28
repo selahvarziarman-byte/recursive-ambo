@@ -463,7 +463,10 @@ export function materializeSurfaceResult(
 
   const shape: Shape = {
     id: shapeId,
-    name: `${trace.surface}(${form.name}:${face.id})`,
+    // B-127 (name-slot law): the ADDRESS stays in `id` alone — a face id in
+    // the NAME was an address in a designation slot. The op word composes
+    // the derived designation the way dual()/cut() always have.
+    name: `${trace.surface}(${form.name})`,
     vertices,
     edges,
     faces,
@@ -506,7 +509,8 @@ export function materializeCutResult(form: Shape, trace: CutTrace): Shape {
   const faces = form.faces.filter((f) => f.id !== trace.removed);
   const shape: Shape = {
     id: `shape:materialized:cut:${form.id}:${trace.removed}`,
-    name: `cut(${form.name}:${trace.removed})`,
+    // B-127 (name-slot law): the removed face's id stays in `id` alone.
+    name: `cut(${form.name})`,
     vertices: form.vertices, // pass through verbatim (retained createdBy — no re-stamp)
     edges: form.edges, // boundary edges remain (now possibly free)
     faces,

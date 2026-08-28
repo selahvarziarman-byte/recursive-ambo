@@ -46,6 +46,7 @@
 // bornFormRouting / InkedForm / certifiers stay byte-unchanged.
 
 import type { FaceId, Shape } from '../types/geometry';
+import type { ImmersedSurfaceKey } from '../lib/surfaceImmersion';
 import { loadForm } from '../lib/multiform';
 import { PRIMITIVE_CATALOGUE } from '../playground/primitiveCatalogue';
 import {
@@ -144,7 +145,10 @@ export const DOCK_OPERATION_GROUPS: ReadonlyArray<{
   { key: 'thicken', label: 'thicken', operationIds: [] },
 ];
 
-const IMMERSION_TITLES: Record<string, string> = {
+// B-127: keyed by the CLOSED union, so the compiler is the guard — a seventh
+// surface is a compile error at this literal, never a silent raw key at the
+// eye (the deleted `?? surface` fallback was a mint waiting for a miss).
+const IMMERSION_TITLES: Record<ImmersedSurfaceKey, string> = {
   torus: 'Torus (T²)',
   klein: 'Klein bottle (K²)',
   rp2: 'RP² (cross-cap)',
@@ -288,7 +292,11 @@ export function buildBodilessWrittenForm(
   }
   return {
     id,
-    title: `${bornShape.name || 'Form'} — enacted, bodiless`,
+    // B-127: the `|| 'Form'` token-fallback is deleted — every Shape.name
+    // writer at HEAD mints non-empty (censused), and if a future writer ever
+    // opens the empty case the honest render is the ADMITTED ABSENCE, never
+    // a placeholder (a fallback may end in an absence, never in a token).
+    title: `${bornShape.name} — enacted, bodiless`,
     shape: bornShape,
     parentShape,
     ...(parentShapes ? { parentShapes } : {}),
@@ -358,7 +366,7 @@ export function applyPlaygroundOperationTo(
   }
   const title =
     render.mode === 'immersion'
-      ? `${IMMERSION_TITLES[render.model.surface] ?? render.model.surface} — born`
+      ? `${IMMERSION_TITLES[render.model.surface]} — born`
       : render.mode === 'skeleton'
         ? 'Skeleton — cut-born'
         : render.mode === 'classBody'

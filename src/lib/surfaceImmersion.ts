@@ -58,6 +58,20 @@ import { createDefaultVertexData, deriveEdges } from './shape';
 // orientable: χ=2, w₁ trivial, every link interior.
 export type ImmersedSurfaceKey = 'torus' | 'klein' | 'rp2' | 'cylinder' | 'mobius' | 'sphere';
 
+// B-127 (name-slot law): the surface's DERIVED designation — a WORD, never
+// the key. An immersion-built Shape used to be named by its raw key
+// (`name: surface` — an address-class token in a designation slot); the
+// shape now carries the word. Keyed by the closed union so a seventh
+// surface is a compile error here, never a silent key at the eye.
+export const SURFACE_WORDS: Record<ImmersedSurfaceKey, string> = {
+  torus: 'Torus (T²)',
+  klein: 'Klein bottle (K²)',
+  rp2: 'RP² (cross-cap)',
+  sphere: 'Sphere (S²)',
+  cylinder: 'Cylinder',
+  mobius: 'Möbius band',
+};
+
 export interface SurfaceImmersionSpec {
   surface: ImmersedSurfaceKey;
   resolution: number; // grid cells per side; integer >= 4 (rejected loudly below)
@@ -357,7 +371,7 @@ export function immerseSurface(spec: SurfaceImmersionSpec): SurfaceImmersion {
 
   const shape: Shape = {
     id: shapeId,
-    name: surface,
+    name: SURFACE_WORDS[surface], // B-127: the word, never the key (the key lives in `id`)
     vertices,
     edges: deriveEdges(faces, shapeId),
     faces,
