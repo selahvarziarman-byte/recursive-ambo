@@ -153,7 +153,10 @@ check(
   '(b) the thread stations all present (2(b) recut): the join hands the OPERAND (`[shape]` rides the file); the POINTER is read FIRST when it resolves on the page (a record read — never a string marriage); the D8 carried map is the mint-time EXACT fallback (the suffix walk + its ambiguity guard are DEAD in the model); base OR refusal still written at BOTH exits; the reader hands either to the D1 floor; the caption slot table holds all three positive marks',
   storeSrc.includes('metricBaseId: band.product.parents?.shapeId ?? null') &&
     storeSrc.includes('shapeId: band.shape.id') &&
-    storeSrc.includes('serializeSnapshot(band.shape, shape.id, [shape])') &&
+    // S2 recut: the call gained the designation 4th arg (sourceName — the
+    // split's cargo); the OPERAND pin's meaning is untouched — `[shape]`
+    // still rides the file as the join's operand
+    storeSrc.includes('serializeSnapshot(band.shape, shape.id, [shape], shape.name)') &&
     viewSrc.includes('productMetricBasesRef.current.set(shapeId, metricBaseId)') &&
     viewSrc.includes('if (pointer && shapeById.has(pointer)) return { baseId: pointer, ambiguity: null };') &&
     viewSrc.includes('resolveCarriedMetricBase(apertureVolume.id, productMetricBasesRef.current)') &&
