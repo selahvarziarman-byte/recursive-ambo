@@ -689,6 +689,14 @@ export function extractSubShape(
   shape: Shape,
   closure: SubComplex,
   label: string,
+  // B-130 §3 — THE SPLIT: `label` serves the ADDRESS purpose (the minted
+  // shape id must name WHICH entity — the distinctness the seal bought);
+  // `designation` serves the PERSON's title. One variable carried both and
+  // W1 measured the cost: the lift notice, the shelf entry and the loaded
+  // card's title all printed `vertex:mid:…` where the person's given name
+  // stood one universe earlier. Defaulted to `label` so every existing
+  // caller (the region lifts, the direct extract callers) is byte-identical.
+  designation: string = label,
 ): LiftedSubShape {
   const reason = validateLiftSelection(shape, closure);
   if (reason) {
@@ -869,7 +877,9 @@ export function extractSubShape(
     }
   }
 
-  const title = `${label} of ${shape.name}`;
+  // the title reads the DESIGNATION; the id keeps the ADDRESS (unchanged
+  // bytes — distinctness and any id-keyed dedup ride exactly as before)
+  const title = `${designation} of ${shape.name}`;
   const lifted: Shape = {
     id: `lift:${label.replace(/\s+/g, '-')}:from:${shape.id}`,
     name: title,
@@ -892,6 +902,22 @@ export function extractSubShape(
   return { shape: lifted, title, closure };
 }
 
+// B-130 §3 — the designation the SUBSTRATE holds for one lifted entity: the
+// packet's own label (a person's given name, a seed letter, a composed
+// midpoint letter — CARRY), trimmed; null when the packet holds none.
+function givenLabelOf(shape: Shape, selection: LiftSelection): string | null {
+  const raw =
+    selection.kind === 'vertex'
+      ? shape.vertices[selection.id]?.data.label
+      : selection.kind === 'edge'
+        ? shape.edges.find((e) => e.id === selection.id)?.data?.label
+        : selection.kind === 'face'
+          ? shape.faces.find((f) => f.id === selection.id)?.data?.label
+          : shape.cells.find((c) => c.id === selection.id)?.data?.label;
+  const trimmed = typeof raw === 'string' ? raw.trim() : '';
+  return trimmed === '' ? null : trimmed;
+}
+
 // the one-call façade the stores use: closure → precondition → extraction
 export function liftSubComplex(shape: Shape, selections: LiftSelection[]): LiftedSubShape {
   const closure = downwardClosure(shape, selections);
@@ -906,7 +932,12 @@ export function liftSubComplex(shape: Shape, selections: LiftSelection[]): Lifte
     selections.length === 1
       ? selections[0].id
       : `${selections.length}-entity region`;
-  return extractSubShape(shape, closure, label);
+  // B-130 §3 — the TITLE takes the designation the substrate holds; where
+  // the packet holds none, the address remains (the source universe
+  // designates name + address openly, and an absence WORD here would be the
+  // designer's copy to mint, not this seam's).
+  const designation = selections.length === 1 ? givenLabelOf(shape, selections[0]) ?? label : label;
+  return extractSubShape(shape, closure, label, designation);
 }
 
 // ---------------------------------------------------------------------------

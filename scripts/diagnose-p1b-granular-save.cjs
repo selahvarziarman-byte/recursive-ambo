@@ -297,6 +297,41 @@ const squareLoaded = deserializeSnapshot(serializeSnapshot(square, 'someuniverse
 check('§5 the deserialize extension adds nothing to a 2D form (same keys, empty arrays verbatim)',
   eq(Object.keys(squareLoaded.shape).sort(), Object.keys(square).sort()));
 
+// ===== [5b] B-130 §3 — THE DESIGNATION/ADDRESS SPLIT AT THE MINT ==============
+// W1 measured the disease: one `label` variable served the minted shape ID
+// (an ADDRESS — distinctness) and the person's TITLE (a DESIGNATION), so the
+// lift notice, the shelf entry and the loaded card's title all printed
+// `vertex:mid:…` while the card's own body printed the person's given name
+// five times. The cure: the title takes the designation THE SUBSTRATE HOLDS
+// (the packet's own label, through the REAL rename gesture); the id keeps
+// the address, byte-identical.
+console.log('\n----- [5b] the mint split: a named vertex lifts under its NAME; the id keeps the address -----');
+{
+  const shape5b = useGeometryStore.getState().shapes[useGeometryStore.getState().currentShapeId];
+  const namedVertexId = Object.keys(shape5b.vertices)[0];
+  useGeometryStore.getState().selectCell(null);
+  useGeometryStore.getState().selectVertex(namedVertexId);
+  // the SAME writer the packet editor's Save drives (B-129 §4's measured gesture)
+  useGeometryStore.getState().updateSelectedVertexData({ label: 'Territories' });
+  const namedTitle = useGeometryStore.getState().liftSelectionToManuscript();
+  const namedShapeAfter = useGeometryStore.getState().shapes[useGeometryStore.getState().currentShapeId];
+  check('§5b ★★ THE TITLE IS THE GIVEN NAME: lifting a vertex the person has named mints `<name> of <shape.name>` — the address no longer stands where the designation belongs',
+    namedTitle === `Territories of ${namedShapeAfter.name}`);
+  const namedItem = useLiftStore.getState().queue[useLiftStore.getState().queue.length - 1];
+  const namedLoaded = loadUniverseSnapshot(namedItem.file);
+  check('§5b ⛔ THE ID KEEPS THE ADDRESS: the minted lift id still names WHICH entity by its id (`lift:<entityId>:from:<shape.id>` — the seal’s distinctness; the loader’s #37 re-root prefixes it), never the given name',
+    namedLoaded.loaded.shape.id.endsWith(`lift:${namedVertexId}:from:${namedShapeAfter.id}`) &&
+    !namedLoaded.loaded.shape.id.includes('Territories'));
+  check('§5b the shelf entry’s title (the three readers’ one source) carries the name — reader-side unchanged, writer-side cured',
+    namedLoaded.title === namedTitle);
+  // the falsifier’s other arm: an UNNAMED entity (no packet label) still
+  // lifts under its address — the latent branch is the address, never a
+  // minted absence word (that word would be the designer’s copy)
+  const bareCell = namedShapeAfter.cells.find((c) => c.kind === 'core');
+  check('§5b ⚠ THE LATENT BRANCH IS THE ADDRESS: a cell with no packet label still mints `<cellId> of …` (§5’s pin above measured it live) — no absence word is fabricated at this seam',
+    bareCell ? !(typeof (bareCell.data && bareCell.data.label) === 'string' && String(bareCell.data.label).trim()) : true);
+}
+
 console.log(
   failures === 0
     ? '\n--- P1b granular save (lift → re-root → committed snapshot → shelf): no failures ---\n\nALL PASS'

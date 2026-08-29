@@ -1677,6 +1677,27 @@ function SpecimenCard({
   const registerLit = (register: string): React.CSSProperties =>
     emphasizedIds?.includes(`register:${register}`) ? { fontWeight: 700 } : {};
   const [certificateOpen, setCertificateOpen] = useState(false);
+  // ═══ B-130 A.2 + A.4 — THE ARGUMENT COMPARTMENT'S STATE ════════════════════
+  // The one compartment that EARNED default-closed (her measurement: the
+  // reading alone is 646 px — 56% of the worst card; closed, the whole card
+  // fits a maximised 1080p window). Two agents, two mechanisms, her rule
+  // verbatim — "attention promotes, data-presence never does":
+  //   · the PERSON calls for it — the heading toggles `argumentOpen`;
+  //   · the SYSTEM needs it — emphasis reaching a row INSIDE the closed
+  //     compartment presents it for the duration (D2's one emphasizedIds
+  //     channel; a hovered ring mark must never bold a row the person
+  //     cannot see). Presentation only — the person's own state is never
+  //     written by the machine.
+  const [argumentOpen, setArgumentOpen] = useState(false);
+  const argumentRowIds = argument
+    ? new Set<string>([
+        ...argument.conceptRows.map((r) => r.resultId),
+        ...argument.relationRows.map((r) => r.resultId),
+        ...argument.composedRelationRows.map((r) => r.id),
+      ])
+    : null;
+  const argumentPresented =
+    argumentOpen || (argumentRowIds !== null && (emphasizedIds ?? []).some((id) => argumentRowIds.has(id)));
   const row: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'space-between',
@@ -1704,8 +1725,26 @@ function SpecimenCard({
         fontFamily: 'Georgia, "Times New Roman", serif',
         fontSize: 13.5,
         lineHeight: 1.5,
+        // ═══ B-130 A.1 — BOUNDED (Arman's ruling: "we need the card to
+        // scroll… without the card being always fully extended") ═════════════
+        // The card may not outgrow the window: capped to the viewport (64 top
+        // + 14 breathing, the mirror of right: 14) and laid as a column so
+        // the acts footer below can pin (A.3). A reading shorter than the cap
+        // behaves exactly as before (auto height, no scrollbar).
+        maxHeight: 'calc(100vh - 78px)',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
+      {/* ═══ B-130 A.3 — THE READING SCROLLS; THE ACTS DO NOT ══════════════════
+          Everything the card has to SAY lives in this scroll region; the acts
+          row sits OUTSIDE it, after it, as the bounded frame's own fixed
+          footer. Her reason, the strong one: once compartments open and close
+          (A.2/A.4), the column's height changes UNDER THE PERSON'S HAND — a
+          control at any offset in the column MOVES WHILE THEY USE IT.
+          minHeight: 0 lets the region shrink inside the flex column (the
+          min-content floor would defeat A.1's cap). */}
+      <div data-specimen-scroll style={{ overflowY: 'auto', minHeight: 0 }}>
       <div style={{ fontSize: 11, letterSpacing: 1.2, opacity: 0.6, fontVariant: 'small-caps' }}>on select</div>
       <div style={{ fontSize: 17, fontWeight: 700 }}>{reading.title}</div>
       <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.72, marginBottom: 7 }}>
@@ -1726,12 +1765,54 @@ function SpecimenCard({
         </div>
       ) : null}
       {argument ? (
-        <ArgumentMapSection
-          argument={argument}
-          paper={paper}
-          emphasizedIds={emphasizedIds}
-          onRowTouch={onRowTouch}
-        />
+        // ═══ B-130 A.2/A.4/A.5/A.6 — THE ARGUMENT READING, COMPARTMENTED ═════
+        // ONE compartment for the whole reading — which is A.6's invariant
+        // ENFORCED BY CONSTRUCTION: the verdict renders only inside
+        // ArgumentMapSection, and ArgumentMapSection mounts whole-or-not-at-
+        // all, so `verdict open while the map is closed` is a state this
+        // mechanism cannot express (a per-section split must re-prove that —
+        // the reveal-order prefix is the shape that keeps it structural).
+        // A.5 — closed-with-content and genuinely-empty differ by
+        // construction too: an ABSENT reading renders no compartment at all
+        // (a true absence, the ordinary unmarked), a CLOSED one shows its
+        // heading + the map's own O-line + the COUNTED words line — how much
+        // is inside, never what it concludes (ADR 0024: map first, even
+        // closed).
+        <div data-compartment-argument data-compartment-state={argumentPresented ? 'open' : 'closed'} style={{ marginTop: 6 }}>
+          <div
+            data-argument-door
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              setArgumentOpen((open) => !open);
+            }}
+            style={{
+              cursor: 'pointer',
+              fontSize: 10.5,
+              letterSpacing: 1,
+              opacity: 0.68,
+              fontVariant: 'small-caps',
+            }}
+          >
+            the argument reading
+          </div>
+          {argumentPresented ? (
+            <ArgumentMapSection
+              argument={argument}
+              paper={paper}
+              emphasizedIds={emphasizedIds}
+              onRowTouch={onRowTouch}
+            />
+          ) : (
+            <div data-argument-closed>
+              <div style={{ fontSize: 13.5 }}>
+                <span style={{ fontFamily: SIGN_HAND, fontWeight: 700 }}>{argument.header.source}</span>
+                <span style={{ fontFamily: SIGN_HAND }}> ⟶ </span>
+                <span style={{ fontFamily: SIGN_HAND, fontWeight: 700 }}>{argument.header.result}</span>
+              </div>
+              <div style={{ fontSize: 12, opacity: 0.78 }}>{argument.words}</div>
+            </div>
+          )}
+        </div>
       ) : null}
       {ringRefusal ? (
         // THE RING ANCHOR RESOLVER — the OPEN refusal (classBody/bodiless):
@@ -1777,86 +1858,6 @@ function SpecimenCard({
           </b>
         </div>
       ))}
-      {/* ═══ P5 — THE TWO FORM-ACTS, THEIR OWN ROW ═══════════════════════════
-          BELOW the record rows, behind a rule of their own, under a heading in
-          a register that is not the operations' — because PLACE SEPARATES
-          KINDS, and that is what place is for. These two act on the PAGE;
-          the affordance line above acts on the FORM.
-          ⚠ SITED HERE, DIRECTLY UNDER THE RECORD ROWS, AND MEASURED — my first
-          build put it at the card's FOOT, which also satisfies *below the
-          record rows*, and it was UNREACHABLE: the card runs 1070 px in an
-          863 px viewport with `overflow: visible` and no max-height, so the
-          foot falls off the page. ⛔ The mark is not the deliverable, the
-          route is — an act a person cannot reach is not built. The card's own
-          overflow is a FORM question and it is reported, not cured here. */}
-      {formActs ? (
-        <div
-          data-form-acts
-          style={{ marginTop: 9, borderTop: `1px solid ${paper.cardBorder}`, paddingTop: 6 }}
-        >
-          <div style={{ fontSize: 10.5, letterSpacing: 1.1, opacity: 0.5, fontVariant: 'small-caps', marginBottom: 4 }}>
-            this page — what you may do with the form itself
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              type="button"
-              data-act-remove
-              onMouseDown={(e) => {
-                e.stopPropagation();
-                // ⛔ NO CONFIRM. Separated from `set aside` by PLACE.
-                formActs.onRemove();
-              }}
-              style={{
-                flex: 1,
-                padding: '4px 0',
-                borderRadius: 3,
-                border: `1px solid ${paper.cardBorder}`,
-                background: 'transparent',
-                color: paper.cardInk,
-                fontFamily: 'Georgia, "Times New Roman", serif',
-                fontSize: 12,
-                cursor: 'pointer',
-              }}
-            >
-              remove
-            </button>
-            {'onSetAside' in formActs.setAside ? (
-              <button
-                type="button"
-                data-act-set-aside
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  (formActs.setAside as { onSetAside: () => void }).onSetAside();
-                }}
-                style={{
-                  flex: 1,
-                  padding: '4px 0',
-                  borderRadius: 3,
-                  border: `1px solid ${paper.cardBorder}`,
-                  background: 'transparent',
-                  color: paper.cardInk,
-                  fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontSize: 12,
-                  cursor: 'pointer',
-                }}
-              >
-                set aside
-              </button>
-            ) : (
-              // ⛔ REASONED, never present-and-inert: the act promises *it
-              // leaves the page whole and WAITS*, and a form with no shelf
-              // entry has nowhere to wait. Said at pick-time, where the limit
-              // costs one look instead of a whole act.
-              <span
-                data-act-set-aside-refused
-                style={{ flex: 1, fontSize: 11, opacity: 0.55, fontStyle: 'italic', alignSelf: 'center' }}
-              >
-                {formActs.setAside.refusal}
-              </span>
-            )}
-          </div>
-        </div>
-      ) : null}
       {fieldDoor ? (
         // M1 — THE FIELD DOOR (ManuscriptChrome's chip idiom; closed by
         // default). Hover touches the field register (§7's one channel);
@@ -1977,6 +1978,89 @@ function SpecimenCard({
       <div style={{ marginTop: 10, fontSize: 10, fontFamily: 'ui-monospace, monospace', opacity: 0.5 }}>
         esc · double-click paper — the specimen sinks, the reading clears
       </div>
+      </div>
+      {/* ═══ P5 — THE TWO FORM-ACTS, THEIR OWN ROW — THE FIXED FOOTER (B-130
+          A.3) ═══════════════════════════════════════════════════════════════
+          Below every record row, behind a rule of their own, under a heading
+          in a register that is not the operations' — PLACE SEPARATES KINDS.
+          These two act on the PAGE; the affordance line above acts on the
+          FORM. ⛔ OUTSIDE THE SCROLL REGION, at the bounded frame's own foot:
+          P5 sited this row directly under the record rows INSIDE the growing
+          column, and the R1 census measured the cost — on the invoked
+          square's 1162 px card, `remove` sat at 987–1069 in a 950 px
+          viewport with no scroll route: on a maximised 1080p browser the act
+          did not exist (Arman: "i do not see no remove no undo"). The scroll
+          region above carries the growth; this footer does not move with it
+          — and once compartments open and close, NOT moving under the
+          person's hand is the point. */}
+      {formActs ? (
+        <div
+          data-form-acts
+          style={{ flexShrink: 0, marginTop: 9, borderTop: `1px solid ${paper.cardBorder}`, paddingTop: 6 }}
+        >
+          <div style={{ fontSize: 10.5, letterSpacing: 1.1, opacity: 0.5, fontVariant: 'small-caps', marginBottom: 4 }}>
+            this page — what you may do with the form itself
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              data-act-remove
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                // ⛔ NO CONFIRM. Separated from `set aside` by PLACE.
+                formActs.onRemove();
+              }}
+              style={{
+                flex: 1,
+                padding: '4px 0',
+                borderRadius: 3,
+                border: `1px solid ${paper.cardBorder}`,
+                background: 'transparent',
+                color: paper.cardInk,
+                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontSize: 12,
+                cursor: 'pointer',
+              }}
+            >
+              remove
+            </button>
+            {'onSetAside' in formActs.setAside ? (
+              <button
+                type="button"
+                data-act-set-aside
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  (formActs.setAside as { onSetAside: () => void }).onSetAside();
+                }}
+                style={{
+                  flex: 1,
+                  padding: '4px 0',
+                  borderRadius: 3,
+                  border: `1px solid ${paper.cardBorder}`,
+                  background: 'transparent',
+                  color: paper.cardInk,
+                  fontFamily: 'Georgia, "Times New Roman", serif',
+                  fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                set aside
+              </button>
+            ) : (
+              // ⛔ REASONED, never present-and-inert: the act promises *it
+              // leaves the page whole and WAITS*, and a form with no shelf
+              // entry has nowhere to wait. Said at pick-time, where the limit
+              // costs one look instead of a whole act.
+              <span
+                data-act-set-aside-refused
+                style={{ flex: 1, fontSize: 11, opacity: 0.55, fontStyle: 'italic', alignSelf: 'center' }}
+              >
+                {formActs.setAside.refusal}
+              </span>
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

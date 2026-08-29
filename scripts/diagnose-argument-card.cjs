@@ -1161,6 +1161,39 @@ check('§14 (SPECIMENS) ★ THE TWO REACHABILITY FINDINGS HOLD: (a) the 10-mark 
 check('§11 (E-NO-UNION) NOTHING FROZEN MOVED: ambo.ts (the mechanism is the LIFT — the T-junction stays real) · InkedForm.tsx (the flat-body guard is ADAPTER-HELD) · types/geometry.ts · lib/shape.ts · store/geometryStore.ts · genesisModel.ts · faithfulBodyModel.ts · inkedFormModel.ts · the MANIFEST — all BYTE-IDENTICAL to HEAD (no union, no new file, no new row owed)',
   ['src/lib/ambo.ts', 'src/manuscript/InkedForm.tsx', 'src/types/geometry.ts', 'src/lib/shape.ts', 'src/store/geometryStore.ts', 'src/manuscript/genesisModel.ts', 'src/manuscript/faithfulBodyModel.ts', 'src/manuscript/inkedFormModel.ts', 'docs/governance/ENGINE_FREEZE_MANIFEST.txt'].every(headEq));
 
+// ===========================================================================
+// §14 (B-130 A.2/A.4/A.5/A.6) — THE ARGUMENT COMPARTMENT, structurally
+// ===========================================================================
+console.log('\n----- §14 (B-130) the argument compartment: one state, closed face counts, verdict never without the map -----');
+{
+  const cardSrc = viewSrc.slice(viewSrc.indexOf('function SpecimenCard'), viewSrc.indexOf('const faceLabel'));
+  check('§14 ⛔ A.6 BY CONSTRUCTION — ONE STATE FOR THE WHOLE READING: ArgumentMapSection mounts exactly once in SpecimenCard, inside the `argumentPresented ?` branch, and NO per-section open state exists (mapOpen/verdictOpen/stanceOpen/incidenceOpen are absent) — so `verdict open while the map is closed` is a state the mechanism cannot express',
+    (cardSrc.match(/<ArgumentMapSection/g) ?? []).length === 1 &&
+    /argumentPresented \? \(\s*<ArgumentMapSection/.test(cardSrc) &&
+    !/mapOpen|verdictOpen|stanceOpen|incidenceOpen/.test(cardSrc));
+  check('§14 ⛔ A.6 THE CLOSED FACE SAYS HOW MUCH, NEVER WHAT IT CONCLUDES: the closed branch renders the map’s own O-line (header.source ⟶ header.result — MAP FIRST even closed) + the COUNTED words line, and touches neither verdict nor stance nor incidence',
+    (() => {
+      const closed = cardSrc.slice(cardSrc.indexOf('data-argument-closed'), cardSrc.indexOf('</div>\n          )}'));
+      return closed.includes('argument.header.source') && closed.includes('argument.header.result') &&
+        closed.includes('argument.words') &&
+        !/argument\.verdict|argument\.stance|argument\.incidence/.test(closed);
+    })());
+  check('§14 ⛔ A.4 — DEFAULT-CLOSED IS THE ARGUMENT’S ALONE, EARNED: argumentOpen starts false (her 646 px measurement), the door toggles it (the person’s "called for"), and the SYSTEM presents without writing the person’s state — emphasis intersecting the compartment’s own row ids presents it for the duration (attention promotes; data-presence never does: no `argument &&`-style auto-open exists)',
+    cardSrc.includes('const [argumentOpen, setArgumentOpen] = useState(false)') &&
+    cardSrc.includes('data-argument-door') &&
+    cardSrc.includes('setArgumentOpen((open) => !open)') &&
+    /argumentOpen \|\| \(argumentRowIds !== null && \(emphasizedIds \?\? \[\]\)\.some\(\(id\) => argumentRowIds\.has\(id\)\)\)/.test(cardSrc));
+  check('§14 ⛔ A.5 — CLOSED-WITH-CONTENT ≠ EMPTY, BY CONSTRUCTION: an absent reading renders NO compartment at all (the `{argument ?` guard — a true absence, the ordinary unmarked), so the closed face (heading + O-line + counts) can never be mistaken for emptiness; the compartment declares its state machine-readably (data-compartment-state)',
+    /\{argument \? \(/.test(cardSrc) &&
+    cardSrc.includes('data-compartment-argument') &&
+    cardSrc.includes("data-compartment-state={argumentPresented ? 'open' : 'closed'}"));
+  check('§14 ⛔ A.1/A.3 — BOUNDED, AND THE ACTS DO NOT RIDE THE COLUMN: the card caps to the viewport, the reading scrolls in its own region, and the acts block sits AFTER the scroll region as the fixed footer (flexShrink: 0) — a control that does not move while compartments change height under the hand',
+    cardSrc.includes("maxHeight: 'calc(100vh - 78px)'") &&
+    cardSrc.includes('data-specimen-scroll') &&
+    cardSrc.indexOf('data-form-acts') > cardSrc.indexOf('data-specimen-scroll') &&
+    cardSrc.slice(cardSrc.indexOf('data-form-acts'), cardSrc.indexOf('data-form-acts') + 200).includes('flexShrink: 0'));
+}
+
 console.log(
   `\n--- THE ARGUMENT-READING CARD — the MAP is the spine, Phase 2 completes the reading, THE LIFT carries identity + grain (the packet is the name, 'lifted' the typing, the id names WHICH entity — one kind prefix, the grain CARRIED edge AND face-interior with the mark only for the un-carriable, 'derived' split from 'identified' on the persist-discriminator): ${
     failures === 0 ? 'no failures' : `${failures} FAILURE(S)`
