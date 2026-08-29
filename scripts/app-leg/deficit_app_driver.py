@@ -171,11 +171,31 @@ def toggle_aperture_panel(page):
     # open panel covering the control is also what starved the exact-click).
     # The panel header reads 'the aperture — …' vs the toggle's bare
     # 'aperture — …', so the presence check cannot hit the toggle itself.
-    if page.get_by_text("the aperture — build a 3-manifold", exact=False).count() > 0:
-        return
-    # the toggle sits bottom-right under the summoned specimen's card — the
-    # busier page starves Playwright's actionability loop (the measured glue-
-    # button class), so send the full sequence by DOM dispatch
+    def panel_up():
+        return page.get_by_text("the aperture — build a 3-manifold", exact=False).count() > 0
+
+    if panel_up():
+        return "already-open"
+    # THE HAND-LIKE PATH FIRST (X1 §6): real move → down → up at the toggle's
+    # own center; DOM dispatch only as the fallback
+    rect = page.evaluate(
+        """() => {
+      const b = [...document.querySelectorAll('button')].find(
+        (x) => (x.textContent ?? '').trim() === 'aperture — build a 3-manifold');
+      if (!b) return null;
+      const r = b.getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    }"""
+    )
+    if rect:
+        page.mouse.move(rect["x"], rect["y"])
+        page.wait_for_timeout(90)
+        page.mouse.down()
+        page.wait_for_timeout(40)
+        page.mouse.up()
+        page.wait_for_timeout(500)
+        if panel_up():
+            return "hand"
     page.evaluate(
         """() => {
       const b = [...document.querySelectorAll('button')].find(
@@ -188,11 +208,31 @@ def toggle_aperture_panel(page):
     }"""
     )
     page.wait_for_timeout(500)
+    return "dispatch" if panel_up() else "neither"
 
 
 def open_explore_window(page):
-    # the `explore inside` chip suffers the same actionability starvation on
-    # a busy page — dispatch the full sequence
+    # the `explore inside` chip, same protocol: the hand-like path first
+    def window_up():
+        return page.locator("[data-explore-window]").count() > 0
+
+    rect = page.evaluate(
+        """() => {
+      const b = document.querySelector('button[aria-label="explore inside"]');
+      if (!b) return null;
+      const r = b.getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    }"""
+    )
+    if rect:
+        page.mouse.move(rect["x"], rect["y"])
+        page.wait_for_timeout(90)
+        page.mouse.down()
+        page.wait_for_timeout(40)
+        page.mouse.up()
+        page.wait_for_timeout(600)
+        if window_up():
+            return "hand"
     page.evaluate(
         """() => {
       const b = document.querySelector('button[aria-label="explore inside"]');
@@ -204,6 +244,7 @@ def open_explore_window(page):
     }"""
     )
     page.wait_for_timeout(600)
+    return "dispatch" if window_up() else "neither"
 
 
 def place_newest_shelf_parcel(page):
