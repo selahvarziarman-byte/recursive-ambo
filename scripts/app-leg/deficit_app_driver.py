@@ -76,6 +76,14 @@ def argument_card_checks(page):
     # the MAP spine + the demoted certificate receipt, plus the sign-hand
     # GLYPH COVERAGE probe — a sign that draws like the notdef box is a
     # BLANK CLAIM, not a degraded card.
+    # B-130: the argument compartment is DEFAULT-CLOSED (the closed face
+    # renders only the O-line and the words) — a driver written against an
+    # always-open card reads a false absence, so OPEN THE DOOR first.
+    if page.get_by_text("map — the spine", exact=True).count() == 0:
+        header = page.get_by_text("the argument reading", exact=True)
+        if header.count() > 0:
+            header.first.click()
+            page.wait_for_timeout(300)
     record(
         "card.mapSection",
         page.get_by_text("map — the spine", exact=True).count() > 0,
@@ -157,6 +165,112 @@ def find_paper_point(page, box, side):
     return None
 
 
+def toggle_aperture_panel(page):
+    # OPEN-IF-CLOSED (measured: placing a volume can leave the panel already
+    # open, and the control is a TOGGLE — a blind click then CLOSES it; the
+    # open panel covering the control is also what starved the exact-click).
+    # The panel header reads 'the aperture — …' vs the toggle's bare
+    # 'aperture — …', so the presence check cannot hit the toggle itself.
+    if page.get_by_text("the aperture — build a 3-manifold", exact=False).count() > 0:
+        return
+    # the toggle sits bottom-right under the summoned specimen's card — the
+    # busier page starves Playwright's actionability loop (the measured glue-
+    # button class), so send the full sequence by DOM dispatch
+    page.evaluate(
+        """() => {
+      const b = [...document.querySelectorAll('button')].find(
+        (x) => (x.textContent ?? '').trim() === 'aperture — build a 3-manifold');
+      if (b) {
+        b.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        b.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        b.click();
+      }
+    }"""
+    )
+    page.wait_for_timeout(500)
+
+
+def open_explore_window(page):
+    # the `explore inside` chip suffers the same actionability starvation on
+    # a busy page — dispatch the full sequence
+    page.evaluate(
+        """() => {
+      const b = document.querySelector('button[aria-label="explore inside"]');
+      if (b) {
+        b.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        b.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        b.click();
+      }
+    }"""
+    )
+    page.wait_for_timeout(600)
+
+
+def place_newest_shelf_parcel(page):
+    # D9 (Sovereign Δ12, measured live this repair): EVERY thicken product
+    # rides the SHELF — "point at it to build a room on its faces" is the
+    # app's own notice. So the product enters the page by the shelf's drag
+    # door (the drive_lift idiom), and the DROP AUTO-SELECTS the placed form
+    # (the view's own contract) — which makes it the aperture's volume.
+    canvas = page.locator("canvas").first
+    box = canvas.bounding_box()
+    count = page.locator('div[draggable="true"]').count()
+    if count == 0:
+        return False
+    item = page.locator('div[draggable="true"]').nth(count - 1)
+    data_transfer = page.evaluate_handle("() => new DataTransfer()")
+    item.dispatch_event("dragstart", {"dataTransfer": data_transfer})
+    canvas.dispatch_event(
+        "drop",
+        {
+            "clientX": box["x"] + box["width"] * 0.55,
+            "clientY": box["y"] + box["height"] * 0.34,
+            "bubbles": True,
+            "dataTransfer": data_transfer,
+        },
+    )
+    page.wait_for_timeout(800)
+    return True
+
+
+def tap_fold_edge(page, slot):
+    # B-105 W3 §1: the fold pick is a TAP ON THE DRAWN FIGURE (the panel lists
+    # no edges); hit meshes are named fold-edge:{slot} and the __manuscriptFold
+    # dev seam publishes each collider's projected center. ⚠ MEASURED HAZARD
+    # (routed as a finding, worked around here): TWO overlay instances (the
+    # page copy + the summoned copy) overwrite the ONE seam key per frame, so
+    # the published targets FLAP between two coordinate frames. So: sample the
+    # seam across frames to collect every candidate position, then probe-tap
+    # (move → down → up — the approach primes the raycast the way a person's
+    # hand does) and let the seam's STATE half (global, stable) judge whether
+    # the edge took. A tap that changes the state is the tap that landed.
+    candidates = page.evaluate(
+        """async (slot) => {
+      const key = `fold-edge:${slot}`;
+      const seen = new Map();
+      for (let i = 0; i < 16; i += 1) {
+        const t = (window.__manuscriptFold?.targets ?? {})[key];
+        if (t && t.on) seen.set(`${Math.round(t.x)}:${Math.round(t.y)}`, { x: t.x, y: t.y });
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      return [...seen.values()];
+    }""",
+        slot,
+    )
+    for c in candidates:
+        before = page.evaluate("() => JSON.stringify(window.__manuscriptFold?.state ?? null)")
+        page.mouse.move(c["x"], c["y"])
+        page.wait_for_timeout(90)
+        page.mouse.down()
+        page.wait_for_timeout(40)
+        page.mouse.up()
+        page.wait_for_timeout(150)
+        after = page.evaluate("() => JSON.stringify(window.__manuscriptFold?.state ?? null)")
+        if after != before:
+            return True
+    return False
+
+
 def drive_fold(page, key, invoke_label, side, cone_text, rim_text, min_presence):
     canvas = page.locator("canvas").first
     box = canvas.bounding_box()
@@ -173,16 +287,30 @@ def drive_fold(page, key, invoke_label, side, cone_text, rim_text, min_presence)
     # 2. invoke the primitive (handleInvoke stamps + AUTO-SELECTS)
     page.locator(f'text="{invoke_label}"').first.click()
     page.wait_for_timeout(500)
-    # M3 E-GENERAL — the INVOKED plain shape rings from its own card (no lift
-    # special-case), and its concept labels are the persistence baseline
+    # M3 E-GENERAL, recut to B-131's christening law: the INVOKED plain shape
+    # rings from its own card — and the ring shows ONLY THE LETTERS (the
+    # concept callouts filter on ownName !== null, so the unnamed prongs are
+    # a RULED absence, said ONCE on the card, never four times on the figure).
     page.wait_for_timeout(300)
-    pre_concepts = page.evaluate(
-        "() => [...document.querySelectorAll('.corr-mark[data-mark-kind=\"concept\"]')].map((el) => (el.textContent ?? '').trim())"
+    pre_ring = page.evaluate(
+        """() => {
+      const marks = [...document.querySelectorAll('.corr-mark')].map((el) => ({
+        kind: el.getAttribute('data-mark-kind'),
+        text: (el.textContent ?? '').trim(),
+      }));
+      return {
+        concepts: marks.filter((m) => m.kind === 'concept').map((m) => m.text),
+        relations: marks.filter((m) => m.kind === 'relation').map((m) => m.text),
+      };
+    }"""
     )
+    pre_concepts = pre_ring["concepts"]
+    absence_said = page.get_by_text("no corner is named yet", exact=True).count()
     record(
         f"{key}.ringGeneral",
-        len(pre_concepts) > 0,
-        f"{len(pre_concepts)} concept marks ring the INVOKED {key} (plain — generality, no lift special-case)",
+        len(pre_ring["relations"]) > 0 and len(pre_concepts) == 0 and absence_said > 0,
+        f"B-131: the INVOKED {key} rings only the letters ({len(pre_ring['relations'])} relation marks · "
+        f"{len(pre_concepts)} unnamed prongs — a RULED absence) · the absence said once on the card ({absence_said})",
     )
     # 3. the dock fold chip (enabled — the invoked 1-face form is selected)
     chip = find_fold_chip(page)
@@ -192,10 +320,11 @@ def drive_fold(page, key, invoke_label, side, cone_text, rim_text, min_presence)
     chip.click()
     page.wait_for_timeout(300)
     record(f"{key}.panel", page.locator("text=write the rim").count() > 0, "the fold panel opens")
-    # 4. tap e0 then e1 -> ONE pair, default mode PRESERVING (the committed reducer)
-    page.locator('button:has-text("e0")').first.click()
-    page.wait_for_timeout(150)
-    page.locator('button:has-text("e1")').first.click()
+    # 4. TWO FIGURE TAPS -> ONE pair, default mode PRESERVING (the committed
+    # reducer; B-105 W3 §1 — the panel lists no edges, the pick is the drawing)
+    tap0 = tap_fold_edge(page, 0)
+    tap1 = tap_fold_edge(page, 1)
+    record(f"{key}.figureTaps", tap0 and tap1, f"edge 0 took: {tap0} · edge 1 took: {tap1} (seam-state-judged)")
     page.wait_for_timeout(300)
     commit = page.locator('button:has-text("commit the fold")').first
     record(f"{key}.commitEnabled", commit.is_enabled(), "the committed preview accepts the word")
@@ -232,23 +361,39 @@ def drive_fold(page, key, invoke_label, side, cone_text, rim_text, min_presence)
     }"""
     )
     post_concepts = [m["text"] for m in persist["marks"] if m["kind"] == "concept"]
-    survivors = [t for t in post_concepts if t in set(pre_concepts)]
-    # B-2026-08-25-A §2 recut (the designer's count ruling, pinned FROM THE
-    # RULE): the fold-born rim merges TWO unnamed roots — the merged label
-    # reads the COUNT form `unnamed ← two unnamed roots`, never the false
-    # set sentence `{unnamed, unnamed}` (identical tokens say "one place
-    # twice"; the count says how many without inventing labels).
-    merged = [t for t in post_concepts if "← " in t]
+    post_relations = [m["text"] for m in persist["marks"] if m["kind"] == "relation"]
+    # B-131 recut: the fold-born FAITHFUL rings FROM ITS OWN CARD — the
+    # LETTERS always; a concept callout exactly when the concept is NAMED
+    # (the prong is the christening's mark), and this all-unnamed subject
+    # therefore rings ZERO concepts with the absence said ONCE on the card.
+    # The old mapped-by-name half is vacuous here by the same law (no named
+    # concept exists on either side of the fold) and is stated, not faked.
+    absence_born = page.get_by_text("no corner is named yet", exact=True).count()
     record(
         f"{key}.ringPersists",
-        persist["rows"] > 0 and len(persist["marks"]) == persist["rows"] and len(survivors) >= 1,
-        f"{len(persist['marks'])} ring marks === {persist['rows']} card rows on the FAITHFUL fold-born · "
-        f"{len(survivors)} concept label(s) mapped by name from the pre-fold ring {survivors}",
+        persist["rows"] > 0
+        and len(post_relations) > 0
+        and len(post_concepts) == 0
+        and len(persist["marks"]) == len(post_relations)
+        and absence_born > 0,
+        f"B-131 census on the FAITHFUL fold-born: {len(persist['marks'])} marks = {len(post_relations)} letters + "
+        f"{len(post_concepts)} named concepts ({persist['rows']} card rows; the unnamed classes are the RULED absence, "
+        f"said once: {absence_born}) · named-mapping vacuous on an all-unnamed subject (pre-fold named: {len(pre_concepts)})",
     )
+    # B-2026-08-25-A §2 + B-131: the merged class's COUNT form
+    # (`unnamed ← two unnamed roots`) lives on the CARD SPINE for an unnamed
+    # class — the ring callout is named-only now. Open the compartment
+    # (B-130 default-closed) and read the card's own sentence.
+    if page.get_by_text("map — the spine", exact=True).count() == 0:
+        header = page.get_by_text("the argument reading", exact=True)
+        if header.count() > 0:
+            header.first.click()
+            page.wait_for_timeout(300)
+    merged_card = page.get_by_text("unnamed ← two unnamed roots", exact=False).count()
     record(
         f"{key}.ringMerged",
-        len(merged) == 1 and merged[0] == "unnamed ← two unnamed roots",
-        f"merged labels: {merged} (ONE merged line, the RULED count form — own name or 'unnamed', roots COUNTED never indexed)",
+        merged_card > 0,
+        f"the CARD spine carries the ruled count form ({merged_card} instance) — the ring callout is named-only by B-131",
     )
     record(
         f"{key}.diedRowAbsent",
@@ -264,7 +409,9 @@ def drive_lift(page, lift_files):
     # file door, ALL place (the dedup admits both edges — the dead collision),
     # and the LIVE card reads the REAL identity + the honest grain mark.
     files = [f for f in lift_files.split(",") if f.strip()]
-    page.set_input_files('input[type="file"]', files)
+    # TWO file inputs ride the chrome now — the single-file page loader and
+    # the MULTIPLE universe loader; the parcels go through the universe door
+    page.set_input_files('input[type="file"][multiple]', files)
     page.wait_for_timeout(700)
     parcels = page.locator('div[draggable="true"]').count()
     record("lift.load", parcels >= 3, f"{parcels} placeable parcels on the shelf")
@@ -317,6 +464,13 @@ def drive_lift(page, lift_files):
         if k == 0:
             # the A-C EDGE lift's card (3 concepts — the life-lines render
             # individually): the real identity + the read-through
+            # B-130: the life-lines ride the argument compartment
+            # (default-closed; the closed face shows the O-line + the words)
+            if page.get_by_text("map — the spine", exact=True).count() == 0:
+                header = page.get_by_text("the argument reading", exact=True)
+                if header.count() > 0:
+                    header.first.click()
+                    page.wait_for_timeout(300)
             record(
                 "lift.cardIdentity",
                 page.get_by_text("lifted from Ambo Dissection Tetrahedron", exact=False).count() > 0
@@ -447,14 +601,23 @@ def drive_correspondence(page):
         if target["vertex"]
         else None
     )
-    page.get_by_text("Reset Camera", exact=True).first.click(timeout=8000)
-    page.wait_for_timeout(700)
+    # the movement half needs a GUARANTEED camera change — Fit and the
+    # composed default can coincide for a subject (measured Δ 2.3px), so the
+    # tracking is proven by an ORBIT (a real gesture), then Reset + Fit
+    cbox = page.locator("canvas").first.bounding_box()
+    page.mouse.move(cbox["x"] + cbox["width"] * 0.5, cbox["y"] + cbox["height"] * 0.45)
+    page.mouse.down()
+    page.mouse.move(cbox["x"] + cbox["width"] * 0.5 + 130, cbox["y"] + cbox["height"] * 0.45 + 40, steps=8)
+    page.mouse.up()
+    page.wait_for_timeout(500)
     after = (
         page.evaluate("(id) => window.__manuscriptCorrespondence.positions[id] ?? null", target["vertex"]["id"])
         if target["vertex"]
         else None
     )
     moved = bool(before and after) and (abs(before["x"] - after["x"]) + abs(before["y"] - after["y"])) > 10
+    page.get_by_text("Reset Camera", exact=True).first.click(timeout=8000)
+    page.wait_for_timeout(700)
     fit_button = page.get_by_text("Fit Selected", exact=True).first
     if fit_button.is_enabled():
         fit_button.click(timeout=8000)
@@ -469,7 +632,7 @@ def drive_correspondence(page):
     record(
         "corr.track",
         moved and bool(restored and restored["onScreen"]),
-        f"Δ {0 if not (before and after) else round(abs(before['x'] - after['x']) + abs(before['y'] - after['y']), 1)}px on Reset · onScreen after Fit {bool(restored and restored['onScreen'])}",
+        f"Δ {0 if not (before and after) else round(abs(before['x'] - after['x']) + abs(before['y'] - after['y']), 1)}px on ORBIT (the guaranteed camera change) · onScreen after Fit {bool(restored and restored['onScreen'])}",
     )
     # E-NO-MARKS: the pick layer is INVISIBLE — every mesh opacity-0
     marks = page.evaluate(
@@ -695,12 +858,23 @@ def drive_d2_marks(page):
     # the ROW side: hover an ENTITY card row (the register rows are M1's —
     # drive_registers walks those) → the seam lights the neighborhood + the
     # MARK bolds (the bidirection's other half)
+    # the ENTITY rows ride the argument compartment (B-130 default-closed) —
+    # open the door before hunting a row; and LEAVE the specimen first so the
+    # 3D hover's emphasized set does not shadow the row's (one channel)
+    page.mouse.move(5, 5)
+    page.wait_for_timeout(300)
+    if page.get_by_text("map — the spine", exact=True).count() == 0:
+        header = page.get_by_text("the argument reading", exact=True)
+        if header.count() > 0:
+            header.first.click()
+            page.wait_for_timeout(300)
     row = page.evaluate(
         """() => {
       const el = [...document.querySelectorAll('[data-row-id]')].find(
         (e) => !(e.getAttribute('data-row-id') ?? '').startsWith('register:'),
       );
       if (!el) return null;
+      el.scrollIntoView({ block: 'center' });
       const r = el.getBoundingClientRect();
       return { id: el.getAttribute('data-row-id'), x: r.x + r.width / 2, y: r.y + r.height / 2 };
     }"""
@@ -709,7 +883,9 @@ def drive_d2_marks(page):
     mark_lit_ok = False
     detail2 = "no card row div"
     if row:
-        page.mouse.move(row["x"], row["y"])
+        page.mouse.move(row["x"] - 60, row["y"])
+        page.wait_for_timeout(120)
+        page.mouse.move(row["x"], row["y"], steps=4)
         page.wait_for_timeout(450)
         emph2 = page.evaluate("() => (window.__manuscriptCorrespondence.emphasizedIds ?? [])")
         row_ok = 2 <= len(emph2) <= 4 and row["id"] in emph2
@@ -719,7 +895,9 @@ def drive_d2_marks(page):
         )
         mark_lit_ok = mark_weight in ("700", "bold")
         detail2 = f"lit {len(emph2)} · the mark fontWeight {mark_weight}"
-        page.mouse.move(box["x"] + box["width"] * 0.06, box["y"] + box["height"] * 0.5)
+        # leave OFF-CANVAS — a paper-adjacent point can re-hover the specimen
+        # and its stuck 3D hover shadows the register rows' channel (measured)
+        page.mouse.move(5, 5)
         page.wait_for_timeout(300)
     record("d2.emphasisRowSide", row_ok and mark_lit_ok, detail2)
 
@@ -1026,21 +1204,35 @@ def drive_ring_modes(page):
     def judge(record_name, tag, want_mode):
         s = ring_state(page)
         r = s["resolution"]
+        # B-131 recut: the resolver anchors EVERY row; the ring DRAWS the
+        # letters plus the NAMED concepts (the prong is the christening's
+        # mark), so marks ≤ anchored with the gap exactly the unnamed
+        # classes — whose absence the card says ONCE. A silent bare (no
+        # letters AND no declaration) is still the RED.
+        kinds = page.evaluate(
+            "() => [...document.querySelectorAll('.corr-mark')].map((e) => e.getAttribute('data-mark-kind'))"
+        )
+        letters = kinds.count("relation")
+        concepts = kinds.count("concept")
+        absence = page.get_by_text("no corner is named yet", exact=True).count()
         anchored_ok = (
             r is not None
             and r["kind"] == "anchored"
             and r["mode"] == want_mode
             and r["unplaced"] == 0
             and r["anchored"] is not None
-            and s["marks"] == r["anchored"]
-            and s["marks"] > 0
+            and s["marks"] <= r["anchored"]
+            and s["marks"] == letters + concepts
+            and letters > 0
+            and (concepts > 0 or absence > 0)
         )
         record(
             record_name,
             anchored_ok,
             f"{tag}: kind={None if not r else r['kind']} mode={None if not r else r['mode']} "
-            f"anchored={None if not r else r['anchored']} · marks {s['marks']} · unplaced {None if not r else r['unplaced']} "
-            f"(a silent bare — no marks AND no declaration — is the RED)",
+            f"anchored={None if not r else r['anchored']} · marks {s['marks']} = {letters} letters + {concepts} named "
+            f"concepts (B-131: the unnamed classes ring nothing; absence line {absence}) · unplaced {None if not r else r['unplaced']} "
+            f"(a silent bare — no letters AND no declaration — is the RED)",
         )
 
     # TORUS (immersion, closed)
@@ -1535,27 +1727,118 @@ def drive_explore(page):
             f"card door opens {reopened} · esc closes the window ALONE {esc_closed} · selection survives {still_selected}",
         )
 
-    # ---- THE DOOR LAW (GPU reset): an OPEN-PAIR room refuses; a fully
-    # paired room OPENS — flat AND cone alike (Amdt 10) ---------------------
+    # ---- THE DOOR LAW (ONE-DOOR RECUT): the apertureSeed machine is
+    # dissolved — a volume is the SELECTED form, and the T³ standing selected
+    # here is FULLY PAIRED (no boundary ⇒ no pair rows: the old
+    # face:cube:* literals timed out against an empty menu). So the drive
+    # builds its own boundary-bearing box by the person's doors — Square ×
+    # Segment through the thicken word (combinatorially the cube: 6 boundary
+    # faces, one cell) — and pairs faces by the ids' OWN structure (the two
+    # ends match `4-gon:0@[01]`, a side carries its base edge), never by the
+    # dissolved seed's literals.
     page.keyboard.press("Escape")
     page.wait_for_timeout(300)
-    page.get_by_text("aperture — build a 3-manifold", exact=True).click()
+    box_err = None
+    try:
+        # invoke on the RIGHT flank — the prism block owns the lower-left
+        # spots, and a crowded palette point starves its Pentagon click
+        for label in ["Segment", "Square"]:
+            page.mouse.click(1290, 760, button="right")
+            page.wait_for_timeout(400)
+            if page.locator("text=invoke — real material").count() == 0:
+                page.mouse.click(1200, 700, button="right")
+                page.wait_for_timeout(400)
+            page.locator(f'text="{label}"').first.click()
+            page.wait_for_timeout(900)
+        newest = page.evaluate(
+            """() => {
+          const scene = window.__manuscriptScene;
+          if (!scene) return [];
+          const names = [];
+          scene.traverse((o) => { if (o.name && o.name.startsWith('written:w')) names.push(o.name); });
+          return names.slice(-2);
+        }"""
+        )
+        seg_name = newest[0] if len(newest) == 2 else None
+        if seg_name is None:
+            raise RuntimeError("the segment/square pair did not land on the scene")
+        page.get_by_text("Fit Selected", exact=True).click()
+        page.wait_for_timeout(1200)
+        sp = project_group_center(page, seg_name)
+        for _ in range(6):
+            if sp and 20 < sp["x"] < 1480 and 20 < sp["y"] < 860:
+                break
+            dy = -180 if (sp and sp["y"] > 860) else 180
+            dx = -160 if (sp and sp["x"] > 1480) else (160 if (sp and sp["x"] < 20) else 0)
+            page.mouse.move(750, 470)
+            page.mouse.down(button="middle")
+            page.mouse.move(750 + dx, 470 + dy, steps=8)
+            page.mouse.up(button="middle")
+            page.wait_for_timeout(450)
+            sp = project_group_center(page, seg_name)
+        if not sp or not (0 < sp["x"] < 1500 and 0 < sp["y"] < 940):
+            raise RuntimeError(f"the segment never entered the viewport ({sp})")
+        page.keyboard.down("Shift")
+        page.mouse.click(sp["x"], sp["y"])
+        page.keyboard.up("Shift")
+        page.wait_for_timeout(400)
+        chip = find_dock_chip(page, "thicken")
+        if chip is None:
+            raise RuntimeError("the thicken dock chip was not found by its hover label")
+        chip.click()
+        page.wait_for_timeout(400)
+        page.get_by_text("thicken — the band", exact=True).click()
+        page.wait_for_timeout(900)
+        # D9: the born box rides the SHELF — place it (the drop auto-selects,
+        # which makes it the one door's volume)
+        if not place_newest_shelf_parcel(page):
+            raise RuntimeError("the born box never reached the shelf")
+    except Exception as err:  # noqa: BLE001
+        box_err = str(err)
+    record(
+        "explore.boxBuilt",
+        box_err is None,
+        "Square × Segment — the person's own box (6 boundary faces, one cell)" if box_err is None else f"the box build failed: {box_err}",
+    )
+    page.evaluate("() => window.scrollTo(0, 0)")
+    page.wait_for_timeout(200)
+    toggle_aperture_panel(page)
     page.wait_for_timeout(400)
     panel_up = page.get_by_text("the aperture — build a 3-manifold", exact=False).count() > 0
-    record("explore.aperturePanel", panel_up, "the build panel opens")
+    record("explore.aperturePanel", panel_up, "the build panel opens (on the person's own box)")
     if panel_up:
-        # the panel's OWN selects (never Leva's hidden ones): the face pickers
-        # carry the cube face ids as option values
-        # anchor on a face NEITHER build ever picks ('back'): it stays in
-        # EVERY face select's option list throughout, so nth(0)/nth(1) are
-        # row 1's A/B by DOM order (a picked face drops out of the OTHER
-        # selects' choices — run 2's timeout, cured)
-        face_selects = page.locator('select:has(option[value="face:cube:back"])')
-        # pair 1: left ~ right, the FLAT map (one glued pair ⇒ a bounded
-        # Euclidean cone-manifold — measured in grounding, kind !== E3)
-        face_selects.nth(0).select_option("face:cube:left")
+        # the panel's OWN selects: the box's END faces by the ids' structure —
+        # thicken mints the two ends as `<base-face-id>@0` / `@1` (thicken.ts
+        # at0/at1), so the end PAIR is the one stem carrying both suffixes,
+        # whatever the base face's id shape
+        box_ends = page.evaluate(
+            """() => {
+          const sels = [...document.querySelectorAll('select')];
+          for (const s of sels) {
+            const all = [...s.options].map((o) => o.value).filter(Boolean);
+            const byStem = {};
+            for (const v of all) {
+              const m = v.match(/^(.*)@([01])$/);
+              if (m) (byStem[m[1]] = byStem[m[1]] ?? []).push(v);
+            }
+            const stem = Object.keys(byStem).find((k) => byStem[k].length === 2);
+            if (stem) return byStem[stem].sort();
+          }
+          return [];
+        }"""
+        )
+        if len(box_ends) < 2:
+            record("explore.openPairRoomBuilt", False, "no end-face pair in the panel's own menus")
+            box_ends = None
+    else:
+        box_ends = None
+    if box_ends:
+        # ONE PAIR (the two ends, the first map): a LEGAL PARTIAL PAIRING is
+        # a room; the four side faces are WALLS
+        face_selects = page.locator(f'select:has(option[value="{box_ends[1]}"])')
+        face_selects.nth(0).select_option(box_ends[0])
         page.wait_for_timeout(200)
-        face_selects.nth(1).select_option("face:cube:right")
+        face_selects.nth(1).select_option(box_ends[1])
         page.wait_for_timeout(400)
         page.evaluate(
             """() => {
@@ -1577,7 +1860,7 @@ def drive_explore(page):
             # researcher's precedent — a legal partial pairing is a room);
             # its four unpaired faces render as WALLS and the caption says
             # where the manifold ends. The old refusal is RETIRED.
-            page.locator('button[aria-label="explore inside"]').first.click()
+            open_explore_window(page)
             page.wait_for_timeout(600)
             window_open_b = page.locator("[data-explore-window]").count() > 0
             try:
@@ -1603,37 +1886,92 @@ def drive_explore(page):
         # pairs give a SOUND Euclidean cone-manifold (2 × 180°, measured in
         # grounding; rodK carries 2s the shader draws HEAVY) ----------------
         if page.get_by_text("the aperture — build a 3-manifold", exact=True).count() == 0:
-            page.get_by_text("aperture — build a 3-manifold", exact=True).click()
+            toggle_aperture_panel(page)
         page.wait_for_timeout(400)
-        # anchor on a face picked LAST ('top'): every face select lists the
-        # unused faces, so the anchor matches all six pickers in DOM order
-        # until the final pick consumes it
-        fsel = page.locator('select:has(option[value="face:cube:top"])')
-        for idx, face in [(0, "face:cube:left"), (1, "face:cube:right"), (2, "face:cube:front"), (3, "face:cube:back"), (4, "face:cube:bottom"), (5, "face:cube:top")]:
-            fsel.nth(idx).select_option(face)
-            page.wait_for_timeout(150)
-        page.evaluate(
+        # THE THREE PAIRS from the box's own id structure — measured live:
+        # the two ENDS share one stem with @0/@1 (the product's end mint);
+        # the four SIDES carry their base edge's hash with @I, so side
+        # OPPOSITION is not readable from the ids. The S² GATE is the judge
+        # anyway: try each of the three side-pairings with the d-1 · d+2 ·
+        # d+3 maps until a room is BORN (a new dim3:built- group — never the
+        # summon of an older room), and let the refusals stand as refusals.
+        pairs_info = page.evaluate(
             """() => {
-          const maps = [...document.querySelectorAll('select')].filter(
-            (s) => [...s.options].some((o) => /^d[+-]/.test(o.value)));
-          const want = ['d-1', 'd+2', 'd+3'];
-          maps.forEach((m, i) => {
-            if ([...m.options].some((o) => o.value === want[i])) {
-              m.value = want[i];
-              m.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-          });
+          const sels = [...document.querySelectorAll('select')];
+          let all = [];
+          for (const s of sels) {
+            const vals = [...s.options].map((o) => o.value).filter(Boolean);
+            if (vals.length >= 6) { all = vals; break; }
+          }
+          if (all.length < 6) return null;
+          const byStem = {};
+          for (const v of all) {
+            const m = v.match(/^(.*)@([01])$/);
+            if (m) (byStem[m[1]] = byStem[m[1]] ?? []).push(v);
+          }
+          const stem = Object.keys(byStem).find((k) => byStem[k].length === 2);
+          const ends = stem ? byStem[stem].sort() : [];
+          const sides = all.filter((v) => !ends.includes(v));
+          if (ends.length !== 2 || sides.length !== 4) return null;
+          return { ends, sides };
         }"""
         )
-        page.wait_for_timeout(300)
-        page.get_by_text("glue — the S² gate judges", exact=True).click()
-        page.wait_for_timeout(1500)
-        page.get_by_text("close the aperture gate", exact=True).click()
-        page.wait_for_timeout(300)
-        cone3_built = select_dim3(page, "written:dim3:built-", last=True)
+
+        def built_room_count():
+            return page.evaluate(
+                """() => {
+              const s = window.__manuscriptScene;
+              let n = 0;
+              if (s) s.traverse((o) => { if (o.name && o.name.startsWith('written:dim3:built-')) n += 1; });
+              return n;
+            }"""
+            )
+
+        cone3_built = False
+        if pairs_info is None:
+            record("explore.conePairs", False, "the box's six faces did not resolve (ends by @0/@1 stem + four sides)")
+        else:
+            ends2 = pairs_info["ends"]
+            sd = pairs_info["sides"]
+            arrangements = [
+                [sd[0], sd[1], sd[2], sd[3]],
+                [sd[0], sd[2], sd[1], sd[3]],
+                [sd[0], sd[3], sd[1], sd[2]],
+            ]
+            base_rooms = built_room_count()
+            for arr in arrangements:
+                fill = [arr[0], arr[1], arr[2], arr[3], ends2[0], ends2[1]]
+                fsel = page.locator(f'select:has(option[value="{ends2[1]}"])')
+                for idx in range(6):
+                    fsel.nth(idx).select_option(fill[idx])
+                    page.wait_for_timeout(150)
+                page.evaluate(
+                    """() => {
+                  const maps = [...document.querySelectorAll('select')].filter(
+                    (s) => [...s.options].some((o) => /^d[+-]/.test(o.value)));
+                  const want = ['d-1', 'd+2', 'd+3'];
+                  maps.forEach((m, i) => {
+                    if ([...m.options].some((o) => o.value === want[i])) {
+                      m.value = want[i];
+                      m.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                  });
+                }"""
+                )
+                page.wait_for_timeout(300)
+                page.get_by_text("glue — the S² gate judges", exact=True).click()
+                page.wait_for_timeout(1500)
+                page.get_by_text("close the aperture gate", exact=True).click()
+                page.wait_for_timeout(400)
+                if built_room_count() > base_rooms:
+                    cone3_built = select_dim3(page, "written:dim3:built-", last=True)
+                    break
+                # this arrangement refused — reopen the gate for the next one
+                toggle_aperture_panel(page)
+                page.wait_for_timeout(400)
         record("explore.coneFormBuilt", cone3_built, "the fully-paired cone form (d-1 · d+2 · d+3) joins the dim-3 band")
         if cone3_built:
-            page.locator('button[aria-label="explore inside"]').first.click()
+            open_explore_window(page)
             page.wait_for_timeout(600)
             window_open_cone = page.locator("[data-explore-window]").count() > 0
             try:
@@ -1661,11 +1999,16 @@ def drive_explore(page):
             page.keyboard.press("Escape")
             page.wait_for_timeout(300)
     # ---- ★ THE DOOR-FEED partial: the PRISM room by the person's own hands —
-    # invoke Pentagon + Segment → thicken (the 8th word FEEDS the aperture
-    # seed) → pair the two pentagon ends → glue → OPEN: 5 boundary WALLS +
-    # the honest caption. Runs LAST: the thicken re-seeds the panel.
+    # invoke Pentagon + Segment → thicken → summon the born prism (the one
+    # door: the panel's volume is the SELECTION) → pair the two pentagon
+    # ends → glue → OPEN: 5 boundary WALLS + the honest caption.
     page.keyboard.press("Escape")
     page.wait_for_timeout(300)
+    # a failed pair pick upstream can leave the gate open — close it so the
+    # panel never shadows this flow
+    if page.get_by_text("close the aperture gate", exact=True).count() > 0:
+        page.get_by_text("close the aperture gate", exact=True).first.click()
+        page.wait_for_timeout(300)
     try:
         # SEGMENT first, PENTAGON second: the invoke AUTO-SELECTS, so the
         # shape operand ends selected with no body-click needed
@@ -1675,7 +2018,11 @@ def drive_explore(page):
             if page.locator("text=invoke — real material").count() == 0:
                 page.mouse.click(200, 820, button="right")
                 page.wait_for_timeout(400)
-            page.locator(f'text="{label}"').first.click()
+            item = page.locator(f'text="{label}"').first
+            try:
+                item.click(timeout=8000)
+            except Exception:  # noqa: BLE001
+                item.click(force=True)
             page.wait_for_timeout(900)
         newest = page.evaluate(
             """() => {
@@ -1720,6 +2067,10 @@ def drive_explore(page):
             page.wait_for_timeout(400)
             page.get_by_text("thicken — the band", exact=True).click()
             page.wait_for_timeout(900)
+            # D9: the born prism rides the SHELF — place it (the drop
+            # auto-selects, which makes it the one door's volume)
+            if not place_newest_shelf_parcel(page):
+                raise RuntimeError("the born prism never reached the shelf")
             pent_ok = True
         # the FEED's witness is the PANEL'S OWN CONTENT: the aperture menus
         # now list the PRODUCT's faces (stronger than any notice text).
@@ -1746,6 +2097,7 @@ def drive_explore(page):
             f"the 8th word FED its single-cell product as the aperture seed — the panel lists the prism's own end faces: {[e[-14:] for e in end_ids]}",
         )
         prism_room_built = False
+        built_name = None
         if len(end_ids) == 2:
             fsel = page.locator(f'select:has(option[value="{end_ids[1]}"])')
             fsel.nth(0).select_option(end_ids[0])
@@ -1842,7 +2194,7 @@ def drive_explore(page):
                     prism_room_built = page.get_by_text("Fit Selected", exact=True).count() > 0
         record("explore.prismRoomBuilt", prism_room_built, f"the pentagon-prism room (ends paired, sides open) joins the dim-3 band · summoned by name {built_name}")
         if prism_room_built:
-            page.locator('button[aria-label="explore inside"]').first.click()
+            open_explore_window(page)
             page.wait_for_timeout(600)
             window_open_p = page.locator("[data-explore-window]").count() > 0
             try:

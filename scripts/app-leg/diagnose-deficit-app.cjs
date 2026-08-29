@@ -195,7 +195,7 @@ function killTree(pid) {
           }
         }
         // E2 gestures + sealed text — the triangle specimen
-        check('§E2 ★★ TRIANGLE — the person\'s own gestures run: an uncovered paper point → right-click → invoke → the fold chip → the panel → e0·e1 (one PRESERVING pair) → the committed preview accepts',
+        check('§E2 ★★ TRIANGLE — the person\'s own gestures run: an uncovered paper point → right-click → invoke → the fold chip → the panel → TWO FIGURE TAPS (one PRESERVING pair — B-105: the panel lists no edges, the pick is the drawing) → the committed preview accepts',
           get('triangle.paperPoint').ok && get('triangle.palette').ok && get('triangle.chip').ok && get('triangle.panel').ok && get('triangle.commitEnabled').ok);
         check('§E2 ★★ TRIANGLE — THE SEALED TEXT off the LIVE card: `cone point · deficit 300°` + `rim turn · 60°` (the card the person reads, not the model)',
           get('triangle.cardCone').ok && get('triangle.cardRim').ok);
@@ -257,7 +257,7 @@ function killTree(pid) {
           get('regs.doorClosedDefault').ok && get('regs.doorPromotesField').ok && get('regs.promoteCardRow').ok,
           `${get('regs.doorClosedDefault').detail} · ${get('regs.doorPromotesField').detail} · ${get('regs.promoteCardRow').detail}`);
         // M3 (SEAL_M3_PERSISTENCE — the feature's completion) — live
-        check('§E-M3 ★★ THE MARKS SURVIVE THE OPERATION (the dropped-info cure): folding a marked shape births a FAITHFUL cone whose ring renders FROM ITS OWN CARD (census equal on the born) with concept labels MAPPED BY NAME from the pre-fold ring (never re-lettered) — measured on BOTH fold subjects',
+        check('§E-M3 ★★ THE MARKS SURVIVE THE OPERATION (the dropped-info cure, B-131 recut): folding births a FAITHFUL cone whose ring renders FROM ITS OWN CARD — the LETTERS always, a concept callout exactly when NAMED (the prong is the christening\'s mark), the unnamed absence said ONCE on the card, and the named-mapping law vacuous on an all-unnamed subject (stated, never faked) — measured on BOTH fold subjects',
           get('triangle.ringPersists').ok && get('square.ringPersists').ok,
           `triangle: ${get('triangle.ringPersists').detail} · square: ${get('square.ringPersists').detail}`);
         check('§E-M3 ★ GENERAL + MERGED + NO FALSE MEMORIAL (B-2026-08-25-A §2 recut): an INVOKED plain shape rings from its own card (no lift special-case); the fold-born merged class wears ONE merged line in the RULED COUNT FORM (`unnamed ← two unnamed roots` — its OWN name or \'unnamed\', roots COUNTED never indexed, never a manufactured set token); died rows read 0 on the absorbing fold (the memorial speaks only a TRUE death)',
@@ -319,7 +319,7 @@ function killTree(pid) {
             })(),
           `${get('regs.fieldAbsentClosed').detail} · ${get('regs.fieldShownOpen').detail} · ${get('regs.doorCopy').detail} · ${get('regs.threeRegisterTogether').detail}`);
         // THE RING ANCHOR RESOLVER (SEAL_THE_RING_ANCHOR_RESOLVER) — live
-        check('§E-RESOLVER ★★ THE RING RENDERS ON EVERY DRIVEABLE MODE (no silent bare): the TORUS and the CYLINDER (immersion — the two bodies measured BARE before the resolver) anchor their rings ON the surface with census === anchored and unplaced 0; the SKELETON (dock cut on the picked face) rings; plain (the invoked squares) and faithful (the fold-born cones) ride the earlier sections. classBody/bodiless have NO committed gesture producer (measured — the died precedent): their refusal branches are model-witnessed (diagnose-argument-card §13) and the card\'s open declaration is source-pinned below',
+        check('§E-RESOLVER ★★ THE RING RENDERS ON EVERY DRIVEABLE MODE (no silent bare, B-131 recut): the TORUS and the CYLINDER (immersion) and the SKELETON anchor with unplaced 0 and DRAW the letters plus the NAMED concepts — marks ≤ anchored with the gap exactly the unnamed classes, whose absence the card says ONCE; plain and faithful ride the earlier sections. classBody/bodiless have NO committed gesture producer (measured — the died precedent): their refusal branches are model-witnessed (diagnose-argument-card §13) and the card\'s open declaration is source-pinned below',
           get('ring.modeTorus').ok && get('ring.modeCylinder').ok && get('ring.modeSkeleton').ok,
           `${get('ring.modeTorus').detail} · ${get('ring.modeCylinder').detail} · ${get('ring.modeSkeleton').detail}`);
         check('§E-RESOLVER THE FLOOR IS COMPILE-TIME + THE CARD DECLARES (source-pinned): resolveRingAnchors carries the `: never` floor (deleting a mode branch cannot compile — the readDeficitForRender pattern), judges ALL SIX mode strings, the view consumes it for the mount AND the card declaration (data-ring-refusal + data-ring-unplaced), the seam mirrors the verdict (ringResolution), and the ring consumes resolver anchors (its own geometry resolution is gone)',
@@ -416,7 +416,7 @@ function killTree(pid) {
           `${get('explore.lookTurns').detail} · ${get('explore.advanceWalks').detail}`);
         check('§E-HORIZON ★ THE LIMIT OF SIGHT IS NAMED + THE FLAT ROOM SAYS SO (C5, Part A): the live window caption carries the deck\'s own geometry line, `copies shown to depth N`, AND — the T³ having no cone edges — the explicit reading `flat · no cone edges` (never silence); the void is PAPER by the shader\'s own law (no fog, no wall — the miss branch returns the page)',
           get('explore.horizonCaption').ok, get('explore.horizonCaption').detail);
-        check('§E-DOOR-LAW ★★ THE BOUNDED BODY OPENS (the DOOR-FEED partial — the researcher\'s precedent: a LEGAL PARTIAL PAIRING is a room; its unpaired faces are WALLS, never an escape); ★ THE CONE OPENS (E-T3-AND-CONE): a one-pair cube room OPENS with the GPU up, walls=4, and the honest boundary caption; a FULLY-PAIRED cone form (d-1 · d+2 · d+3 — a sound Euclidean cone-manifold, 2 × 180°) OPENS with rodK carrying k≠4 entries the shader draws HEAVY — E³, cone, and bounded alike, one transport loop',
+        check('§E-DOOR-LAW ★★ THE BOUNDED BODY OPENS (the DOOR-FEED partial — a LEGAL PARTIAL PAIRING is a room; its unpaired faces are WALLS, never an escape); ★ THE CONE OPENS — both on the PERSON\'S OWN BOX (Square × Segment through the thicken word; the one-door recut — the apertureSeed machine is dissolved and the old cube literals with it): one glued end-pair OPENS with the GPU up, walls=4, the honest boundary caption; the FULLY-PAIRED form (d-1 · d+2 · d+3 on the three opposite pairs) OPENS with rodK carrying k≠4 entries the shader draws HEAVY — E³, cone, and bounded alike, one transport loop',
           get('explore.openPairRoomBuilt').ok && get('explore.boundedRoomOpens').ok && get('explore.coneFormBuilt').ok && get('explore.coneOpens').ok,
           `${get('explore.boundedRoomOpens').detail} · ${get('explore.coneOpens').detail}`);
         check('§E-DOOR-FEED ★★ THE PRISM ROOM BY THE PERSON\'S OWN HANDS (the partial\'s point): invoke Pentagon + Segment → thicken — the 8th word FEEDS its single-cell product as the aperture seed (the notice says so) → pair the two pentagon ends in the panel → glue → the room OPENS with the GPU up, walls=5 (the open sides), the fresh boundary caption ("the manifold ends here; the orbit recurs only through the glued corridors"), and ⛔ NO divergence claim on any caption (no sealed-vs-heuristic exists on single-cell — measured, the honest scope)',
@@ -438,7 +438,7 @@ function killTree(pid) {
               inkSrc.includes('facingBuf[idx]') &&
               inkSrc.includes('chiralityAngleDeg') &&
               inkSrc.includes('nibDepthScale * depth[idx]') &&
-              modelSrc.includes('objPos[3 * idx] = p[0] + v[0] * best.t;') &&
+              modelSrc.includes('objPos[3 * idx] = hitPoint[0];') &&
               modelSrc.includes('export function resolveConeAngleSource') &&
               modelSrc.includes('readPillarDihedrals(lineage.base, shape)') &&
               modelSrc.includes('domain.complex.edgeClassOf(inComplexId(reading.pillarEdgeId))') &&
@@ -491,12 +491,21 @@ function killTree(pid) {
               windowSrc.includes('uFaceWall[fE]>0.5') &&
               windowSrc.includes('the manifold ends here; the orbit recurs only through the glued corridors') &&
               !windowSrc.includes('cone room · edges wind') &&
-              !windowSrc.includes('sealed') &&
-              windowSrc.includes('if (face.wall || !face.g) {') &&
-              viewSrc.includes('readCellSurface(domain, coneEdgesDeclared)') &&
-              viewSrc.includes('setApertureSeed(product)') &&
-              viewSrc.includes('buildFormDomain(product, [],') &&
-              viewSrc.includes('build on the cube again')
+              // the 'sealed' ban narrowed to CLAIMS (string literals): B-114's
+              // comments speak of sealed rooms legitimately; a caption may not
+              !/["'`][^"'`\n]*sealed/.test(windowSrc) &&
+              // B-114: a wall carries neither g nor the direct 4×4
+              windowSrc.includes('if (face.wall || (!face.g && !face.g4)) {') &&
+              // the surface read gained the model arg (curved rooms)
+              viewSrc.includes('readCellSurface(domain, coneEdgesDeclared, gate.model)') &&
+              // THE ONE-DOOR RECUT (2026-08-15): the apertureSeed machine is
+              // dissolved — a volume IS the selected form and the committed
+              // path is buildPersonDomainVerdict → buildFormDomain; the old
+              // seed-feed and its cube copy are asserted ABSENT, the live
+              // builder PRESENT
+              !viewSrc.includes('setApertureSeed(') &&
+              viewSrc.includes("buildFormDomain(apertureVolume, [], 'live-build', 'the build in progress')") &&
+              !viewSrc.includes('build on the cube again')
             );
           })(),
           'the boundary-wall pins');
