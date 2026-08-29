@@ -128,6 +128,7 @@ import {
   PortFacePicker,
   RecordStrip,
   SourcesShelf,
+  CHROME_LAYER_Z,
   ThickenGatePanel,
   type AperturePairRowView,
 } from './ManuscriptChrome';
@@ -1596,6 +1597,19 @@ function ArgumentMapSection({
   );
 }
 
+// ═══ T1 §1 — THE CARD'S FRAME CONSTANTS, one source ══════════════════════════
+// The card's top offset and its breathing room at the foot, used BOTH by the
+// declared `top:` and by the height bound — so the bound is DERIVED from the
+// card's own top, never from a second constant that can drift. ⛔ And the
+// bound is `calc(100% − …)`, never `100vh`: her measured regression was
+// exactly this frame mismatch — `100vh − 78` obeyed the cap while the card's
+// containing block itself sat 52 px down the window, so the open card ran
+// 38 px past the screen at EVERY height (116 − 78). A percentage resolves
+// against the same containing block the `top:` is declared in — one frame,
+// by construction.
+const SPECIMEN_CARD_TOP = 64;
+const SPECIMEN_CARD_BREATH = 14;
+
 // the specimen card — manuscript-styled, rendered IFF a reading is summoned.
 // THE ARGUMENT INVERSION (Phase 1): when the argument reading rides, the MAP
 // is the card's spine and the INVARIANT rows demote into the `certificate`
@@ -1713,8 +1727,12 @@ function SpecimenCard({
     <div
       style={{
         position: 'absolute',
+        // B-131 §5 — the chrome floor, at the cure's own third site: a figure
+        // label rendered between two certificate rows here and READ AS the
+        // table's value. The card now sits above the whole label range.
+        zIndex: CHROME_LAYER_Z,
         right: 14,
-        top: 64,
+        top: SPECIMEN_CARD_TOP,
         width: 264,
         padding: '13px 15px',
         borderRadius: 3,
@@ -1726,12 +1744,18 @@ function SpecimenCard({
         fontSize: 13.5,
         lineHeight: 1.5,
         // ═══ B-130 A.1 — BOUNDED (Arman's ruling: "we need the card to
-        // scroll… without the card being always fully extended") ═════════════
-        // The card may not outgrow the window: capped to the viewport (64 top
-        // + 14 breathing, the mirror of right: 14) and laid as a column so
-        // the acts footer below can pin (A.3). A reading shorter than the cap
-        // behaves exactly as before (auto height, no scrollbar).
-        maxHeight: 'calc(100vh - 78px)',
+        // scroll… without the card being always fully extended"), recut by
+        // T1 §1 ═══════════════════════════════════════════════════════════════
+        // The bound lives in the SAME frame as the top (the constants above —
+        // her 38 px regression was the two frames diverging) and derives from
+        // the card's own declared top, one source. A reading shorter than the
+        // cap behaves exactly as before (auto height, no scrollbar). Her
+        // clause 2's invariant rides the flex construction: the footer is the
+        // column's last non-shrinking child and the region (minHeight: 0,
+        // overflow auto) is the ONLY elastic member — the footer's bottom IS
+        // the card's bottom, and every content variation is absorbed by the
+        // region, in every compartment state.
+        maxHeight: `calc(100% - ${SPECIMEN_CARD_TOP + SPECIMEN_CARD_BREATH}px)`,
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -1764,6 +1788,20 @@ function SpecimenCard({
           {bound}
         </div>
       ) : null}
+      {argument && argument.conceptRows.length > 0 && argument.conceptRows.every((r) => r.ownName === null) ? (
+        // ═══ B-131 §3.2 — THE ABSENCE, SAID ONCE AT THE FORM'S GRAIN ═════════
+        // The figure no longer spends a callout per unnamed corner (§3.1 —
+        // the prong is the christening's mark now); the fact that NO corner
+        // is named is a fact about the FORM, said once, in the form's own
+        // voice, beside its other one-line answers. Renders only in the
+        // all-unnamed state — a partly named form's remaining absences are
+        // the ordinary, unmarked; its named corners carry their own prongs.
+        // ⚠ THE STRING IS HERS — this is her example line from the mandate,
+        // standing until her final wording lands.
+        <div data-corner-absence style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.75, marginBottom: 7 }}>
+          no corner is named yet
+        </div>
+      ) : null}
       {argument ? (
         // ═══ B-130 A.2/A.4/A.5/A.6 — THE ARGUMENT READING, COMPARTMENTED ═════
         // ONE compartment for the whole reading — which is A.6's invariant
@@ -1791,6 +1829,11 @@ function SpecimenCard({
               letterSpacing: 1,
               opacity: 0.68,
               fontVariant: 'small-caps',
+              // T1 §1 — the one new gesture the arrangement turns on meets
+              // her R8 hit-target standard (≥ 24 px; it measured 16)
+              minHeight: 24,
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
             the argument reading
@@ -6191,7 +6234,20 @@ export default function ManuscriptView() {
                     anchors={anchored.anchors}
                     segments={anchored.segments}
                     figurePoints={anchored.figurePoints}
-                    concepts={selectedArgument.conceptRows.map((r) => ({
+                    concepts={selectedArgument.conceptRows
+                      // ═══ B-131 §3 — THE CALLOUT IS THE CHRISTENING'S OWN
+                      // MARK, pointed the right way round (her ruling): a
+                      // concept's prong renders IFF the concept carries a
+                      // POSITIVE name. The old figure spent the diagram's
+                      // strongest device, once per corner, to say NOTHING IS
+                      // THERE — and a designation true of every member of its
+                      // scope designates nothing. The absence is said ONCE,
+                      // at the form's grain, on the card (the corner-absence
+                      // line); the RELATION marks (the letters) are untouched.
+                      // Structural filter — ownName: string | null — never a
+                      // match on the absence word.
+                      .filter((r) => r.ownName !== null)
+                      .map((r) => ({
                       id: r.resultId,
                       // M3.2 — THE MERGED PRESENTATION (researcher-ruled) →
                       // §2 (B-2026-08-25-A, the designer's COUNT ruling): an
@@ -6271,6 +6327,7 @@ export default function ManuscriptView() {
         <div
           style={{
             position: 'absolute',
+            zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
             left: '50%',
             bottom: 118,
             transform: 'translateX(-50%)',
@@ -6293,6 +6350,7 @@ export default function ManuscriptView() {
         <div
           style={{
             position: 'absolute',
+            zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
             left: '50%',
             bottom: 148,
             transform: 'translateX(-50%)',
@@ -6313,6 +6371,7 @@ export default function ManuscriptView() {
         <div
           style={{
             position: 'absolute',
+            zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
             left: 14,
             top: 64,
             width: 250,
@@ -6351,6 +6410,7 @@ export default function ManuscriptView() {
           }}
           style={{
             position: 'absolute',
+            zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
             right: 14,
             bottom: 62,
             padding: '6px 12px',
@@ -6377,6 +6437,7 @@ export default function ManuscriptView() {
         }}
         style={{
           position: 'absolute',
+          zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
           right: 14,
           bottom: 24,
           padding: '6px 12px',
@@ -6450,6 +6511,7 @@ export default function ManuscriptView() {
         <div
           style={{
             position: 'absolute',
+            zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
             left: 14,
             top: 64,
             width: 250,
@@ -6575,6 +6637,7 @@ export default function ManuscriptView() {
           onMouseDown={(e) => e.stopPropagation()}
           style={{
             position: 'absolute',
+            zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
             left: '50%',
             bottom: 92,
             transform: 'translateX(-50%)',
@@ -6796,6 +6859,7 @@ export default function ManuscriptView() {
         <div
           style={{
             position: 'absolute',
+            zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
             right: 18,
             bottom: 132,
             width: 292,
@@ -6931,28 +6995,40 @@ export default function ManuscriptView() {
         accepted={genesis?.accepted ?? true}
         paper={d.paper}
         // ═══ P5 · U.2 + §5 — THE ACTS LINE, composed from the LEDGER ═════════
-        // ⛔ THE DEATH IS NOT ERASED BY THE UNDO: an act that was reverted
-        // reads `Square — removed, then restored` — the record carries BOTH
+        // ⛔ THE DEATH IS NOT ERASED BY THE UNDO: a reverted act still carries
+        // its death (`… · removed, then restored`) — the record holds BOTH
         // traces, because the death happened and cannot un-happen. Composed
         // from the ledger rather than stored as a sentence (RECORD, NOT
         // READING: a stored sentence is a stamp that drifts from the acts).
+        // ═══ B-131 §4 (Δ23's one-line arm, her grammar) ═══════════════════════
+        // ⛔ THE ACT WORD IS NEVER A PEER OF THE TITLE'S OWN WORDS. The
+        // ledger's name is the machine TITLE (`Square — invoked`), whose dash
+        // chain is the title's own composition — so the act rides as its own
+        // STRUCTURE (name + phrase), rendered by the strip with the title
+        // roman and whole and the act in its own face after the register's
+        // `·`. The dash-joined `${name} — ${word}` composition is gone.
         acts={(() => {
           const revertedIds = new Set(acts.filter((a) => a.kind === 'undo').map((a) => a.ofActId));
           return acts
             .filter((a) => a.kind !== 'undo')
             .map((a) => {
               const word = a.kind === 'remove' ? 'removed' : 'set aside';
-              return revertedIds.has(a.id) ? `${a.name} — ${word}, then restored` : `${a.name} — ${word}`;
+              return { name: a.name, phrase: revertedIds.has(a.id) ? `${word}, then restored` : word };
             });
         })()}
-        // ⛔ U.4 — the label is COMPUTED FROM THE ACT, and the control is
-        // ABSENT when there is nothing to undo (never present and inert)
+        // ⛔ U.4 — the WORD is computed from the act, and the control is
+        // ABSENT when there is nothing to undo (never present and inert).
+        // ═══ B-131 §4.2 (her ruling) — THE CONTROL DOES NOT NAME THE FORM:
+        // it sits ON the acts line, and that line already names which form —
+        // *where position carries meaning, repetition is harmless; where
+        // position carries nothing, repetition is a lie* — and here position
+        // carries it. `undo — remove`, never `undo — remove <title>`.
         undo={(() => {
           const revertedIds = new Set(acts.filter((a) => a.kind === 'undo').map((a) => a.ofActId));
           const target = [...acts].reverse().find((a) => a.kind !== 'undo' && !revertedIds.has(a.id));
           if (!target) return undefined;
           const word = target.kind === 'remove' ? 'remove' : 'set aside';
-          return { label: `undo — ${word} ${target.name}`, onUndo: () => undoLastAct() };
+          return { label: `undo — ${word}`, onUndo: () => undoLastAct() };
         })()}
       />
       <SourcesShelf

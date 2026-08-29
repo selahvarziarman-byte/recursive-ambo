@@ -1187,11 +1187,37 @@ console.log('\n----- §14 (B-130) the argument compartment: one state, closed fa
     /\{argument \? \(/.test(cardSrc) &&
     cardSrc.includes('data-compartment-argument') &&
     cardSrc.includes("data-compartment-state={argumentPresented ? 'open' : 'closed'}"));
-  check('§14 ⛔ A.1/A.3 — BOUNDED, AND THE ACTS DO NOT RIDE THE COLUMN: the card caps to the viewport, the reading scrolls in its own region, and the acts block sits AFTER the scroll region as the fixed footer (flexShrink: 0) — a control that does not move while compartments change height under the hand',
-    cardSrc.includes("maxHeight: 'calc(100vh - 78px)'") &&
-    cardSrc.includes('data-specimen-scroll') &&
-    cardSrc.indexOf('data-form-acts') > cardSrc.indexOf('data-specimen-scroll') &&
-    cardSrc.slice(cardSrc.indexOf('data-form-acts'), cardSrc.indexOf('data-form-acts') + 200).includes('flexShrink: 0'));
+  check('§14 ⛔ A.1/A.3 (recut by T1 §1) — BOUNDED IN THE CARD’S OWN FRAME, AND THE ACTS DO NOT RIDE THE COLUMN: the height bound is `calc(100% − …)` derived from the card’s own declared top (one source — never `100vh`, whose frame diverged from the card’s containing block by 52 px in her drive and ran the open card 38 px past every screen), the reading scrolls in its own region, and the acts block sits AFTER the scroll region as the fixed footer (flexShrink: 0)',
+    (() => {
+      const wholeView = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+      return wholeView.includes('const SPECIMEN_CARD_TOP = 64') &&
+        wholeView.includes('const SPECIMEN_CARD_BREATH = 14') &&
+        cardSrc.includes('top: SPECIMEN_CARD_TOP') &&
+        cardSrc.includes('maxHeight: `calc(100% - ${SPECIMEN_CARD_TOP + SPECIMEN_CARD_BREATH}px)`') &&
+        !cardSrc.includes('100vh') &&
+        cardSrc.includes('data-specimen-scroll') &&
+        cardSrc.indexOf('data-form-acts') > cardSrc.indexOf('data-specimen-scroll') &&
+        cardSrc.slice(cardSrc.indexOf('data-form-acts'), cardSrc.indexOf('data-form-acts') + 200).includes('flexShrink: 0');
+    })());
+}
+
+// ===========================================================================
+// §15 (B-131 §3/§5) — the callout is the christening's mark; the chrome floor
+// ===========================================================================
+console.log('\n----- §15 (B-131) the prongs come off unnamed; the absence said once; the chrome floor -----');
+{
+  const chromeSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptChrome.tsx'), 'utf8');
+  check('§15 ⛔ §3.1+§3.3 — THE CALLOUT IS RESERVED FOR THE CHRISTENED CORNER (her ruling: the defect and the christening gesture are one device, pointed the right way round): the ring’s concept marks filter on the STRUCTURAL absence carrier (`ownName !== null` — never a match on the absence word), and the relation letters are untouched',
+    viewSrc.includes('.filter((r) => r.ownName !== null)') &&
+    !/label === 'unnamed'|label !== 'unnamed'/.test(viewSrc.slice(viewSrc.indexOf('<CorrespondenceRing'), viewSrc.indexOf('<CorrespondenceRing') + 3000)));
+  check('§15 ⛔ §3.2 — THE ABSENCE IS SAID ONCE, AT THE FORM’S GRAIN: the card’s corner-absence line renders ONLY in the all-unnamed state (every ownName null, at least one concept) — a partly named form’s remaining absences are the ordinary, unmarked. ⚠ the string is HERS (her example line, standing until her wording lands)',
+    viewSrc.includes('data-corner-absence') &&
+    /argument && argument\.conceptRows\.length > 0 && argument\.conceptRows\.every\(\(r\) => r\.ownName === null\)/.test(viewSrc));
+  check('§15 ⛔ §5 — THE CHROME LAYER’S ONE DECLARED FLOOR: CHROME_LAYER_Z = 50 exported once, ABOVE the drei label range [40,0] and BELOW the windows and menus (60) — so the card-behind-window law holds by NUMBER — and the specimen card (the measured third site) carries it',
+    chromeSrc.includes('export const CHROME_LAYER_Z = 50') &&
+    chromeSrc.includes('zIndex: 60') &&
+    viewSrc.includes('zIndex: CHROME_LAYER_Z') &&
+    (viewSrc.match(/zIndexRange=\{\[40, 0\]\}/g) ?? []).length > 0);
 }
 
 console.log(

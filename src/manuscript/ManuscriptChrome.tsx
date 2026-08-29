@@ -98,6 +98,20 @@ export function FieldDoor({
   );
 }
 
+// ═══ B-131 §5 — THE CHROME LAYER'S ONE DECLARED FLOOR ═══════════════════════
+// The page's drei <Html> labels stack in zIndexRange [40, 0]; the DOM chrome
+// (cards, panels, docks, the strip, the shelf, notices) was z-auto, so a
+// label could land INSIDE a panel's rectangle — and her measured third site
+// made it a first-order defect: a figure's `unnamed` label rendered between
+// two certificate rows and READ AS A TABLE VALUE. A cross-layer collision
+// between a figure and a typed table does not look like a collision; it
+// looks like data. ⇒ the whole chrome layer sits at ONE exported floor,
+// ABOVE the label range and BELOW the windows and menus (60 — the B-106
+// charter number), so the sealed card-behind-window law now holds by NUMBER:
+//   labels [40, 0]  <  chrome 50  <  windows · menus 60.
+// A later overlay imports the floor and cannot be born under a label.
+export const CHROME_LAYER_Z = 50;
+
 const menuStyle = (paper: ChromePaper): React.CSSProperties => ({
   position: 'fixed',
   zIndex: 60,
@@ -332,6 +346,7 @@ export function BirthGatePanel({
     <div
       style={{
         position: 'absolute',
+        zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
         right: 14,
         top: 64,
         width: 264,
@@ -631,6 +646,7 @@ export function ApertureGatePanel({
       data-aperture-panel
       style={{
         position: 'absolute',
+        zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
         left: 14,
         top: 64,
         width: 306,
@@ -856,11 +872,16 @@ export function RecordStrip({
   // AT ALL. It lives with the page's own acts, and this strip IS the page's
   // account of itself. ⛔ U.2: the revert is ITSELF recorded — an untraced
   // undo is the only gesture in this app that would lie about having happened.
-  acts?: string[];
-  // ⛔ U.4 — the control says WHAT it will undo, computed from the act
-  // (`undo — remove Square`); `undo` alone is a promise about a thing he
-  // cannot see. ⚠ And when there is nothing to undo it is ABSENT or REASONED,
-  // never present and inert — so this prop is undefined, not disabled.
+  // ═══ B-131 §4 (her grammar) — STRUCTURED, so the strip can set two faces:
+  // the NAME is the ledger's copied machine title, rendered roman and whole;
+  // the act PHRASE takes its own face after the register's own `·` — the act
+  // word is never a peer of the title's dash chain.
+  acts?: { name: string; phrase: string }[];
+  // ⛔ U.4 — the control's WORD is computed from the act; when there is
+  // nothing to undo it is ABSENT or REASONED, never present and inert — so
+  // this prop is undefined, not disabled. ⛔ B-131 §4.2: the control does NOT
+  // name the form — it sits on the acts line, and position already carries
+  // which form (`undo — remove`, never `undo — remove <title>`).
   undo?: { label: string; onUndo: () => void };
 }) {
   if (!entries.length && !acts?.length && !undo) return null;
@@ -868,6 +889,7 @@ export function RecordStrip({
     <div
       style={{
         position: 'absolute',
+        zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
         left: 16,
         right: 16,
         bottom: 74,
@@ -925,7 +947,19 @@ export function RecordStrip({
             the acts
           </span>
           <span data-record-acts style={{ fontSize: 12, opacity: 0.8 }}>
-            {acts?.length ? acts.join('   ·   ') : <span style={{ opacity: 0.6 }}>—</span>}
+            {acts?.length ? (
+              acts.map((a, k) => (
+                <span key={`${a.name}·${k}`} style={{ whiteSpace: 'nowrap' }}>
+                  {k === 0 ? '' : <span style={{ opacity: 0.55 }}>{'   ·   '}</span>}
+                  {/* B-131 §4 — the title roman and whole; the act in its own
+                      face after the register's own `·` (never on the dash) */}
+                  <span>{a.name}</span>
+                  <span style={{ fontStyle: 'italic', opacity: 0.85 }}> · {a.phrase}</span>
+                </span>
+              ))
+            ) : (
+              <span style={{ opacity: 0.6 }}>—</span>
+            )}
           </span>
           {undo ? (
             <button
@@ -994,6 +1028,7 @@ export function SourcesShelf({
     <div
       style={{
         position: 'absolute',
+        zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
         left: 14,
         // R2 (the left-corner collisions): the shelf is BOTTOM-anchored — the
         // top-left corner belongs to the aperture gate panel (left:14, top:64,
@@ -1290,6 +1325,7 @@ export function OperationsDock({
     <div
       style={{
         position: 'absolute',
+        zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
         left: '50%',
         bottom: 14,
         transform: 'translateX(-50%)',
@@ -1712,6 +1748,7 @@ export function ThickenGatePanel({
     <div
       style={{
         position: 'absolute',
+        zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
         right: 14,
         top: 64,
         width: 264,
@@ -1824,6 +1861,7 @@ export function FoldGatePanel({
     <div
       style={{
         position: 'absolute',
+        zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
         right: 14,
         top: 64,
         width: 264,
@@ -2010,6 +2048,7 @@ export function ChordGatePanel({
     <div
       style={{
         position: 'absolute',
+        zIndex: CHROME_LAYER_Z, // B-131 §5 — the chrome layer's one floor
         left: 14,
         top: 288,
         width: 264,

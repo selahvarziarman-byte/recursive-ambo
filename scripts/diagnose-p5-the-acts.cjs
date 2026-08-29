@@ -232,11 +232,24 @@ reset();
     s2.removals.every((m) => m.restored === true));
   note(`acts: ${s2.acts.map((x) => x.kind).join(' → ')}`);
 
-  check('§4 ⛔ U.4 — THE LABEL IS COMPUTED FROM THE ACT, and the control is ABSENT when there is nothing to undo: the view composes `undo — <word> <name>` from the ledger’s own target and returns `undefined` (not a disabled button) when every act is reverted',
+  check('§4 ⛔ U.4 + B-131 §4.2 — THE WORD IS COMPUTED FROM THE ACT AND THE CONTROL DOES NOT NAME THE FORM: the control sits ON the acts line, which already names which form (*where position carries meaning, repetition is harmless; where position carries nothing, repetition is a lie* — and here position carries it), so the view composes `undo — <word>` alone and returns `undefined` (not a disabled button) when every act is reverted',
     (() => {
       const src = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
-      const body = src.slice(src.indexOf('undo={(() => {'), src.indexOf('undo={(() => {') + 700);
-      return body.includes('if (!target) return undefined;') && body.includes('`undo — ${word} ${target.name}`');
+      const body = src.slice(src.indexOf('undo={(() => {'), src.indexOf('undo={(() => {') + 1400);
+      return body.includes('if (!target) return undefined;') &&
+        body.includes('`undo — ${word}`') &&
+        !body.includes('${target.name}');
+    })());
+
+  check('§4 ⛔ B-131 §4 (Δ23’s one-line arm, her grammar) — THE ACT WORD NEVER JOINS THE TITLE’S DASH: the acts line is STRUCTURED (name + phrase) and the strip renders the title roman and whole with the act in its own face after the register’s own `·`; the dash-joined `${a.name} — ${word}` composition is gone from the composer',
+    (() => {
+      const src = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+      const chrome = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptChrome.tsx'), 'utf8');
+      const composer = src.slice(src.indexOf('acts={(() => {'), src.indexOf('acts={(() => {') + 1600);
+      return composer.includes('{ name: a.name, phrase:') &&
+        !/\$\{a\.name\} — \$\{word\}/.test(composer) &&
+        chrome.includes('acts?: { name: string; phrase: string }[]') &&
+        chrome.includes("<span style={{ fontStyle: 'italic', opacity: 0.85 }}> · {a.phrase}</span>");
     })());
 }
 
