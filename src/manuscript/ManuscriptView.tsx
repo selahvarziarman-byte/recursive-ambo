@@ -5162,7 +5162,14 @@ export default function ManuscriptView() {
       list.push({ index, entry: item.entry, placed: item.placed });
       bySource.set(item.entry.source, list);
     });
-    return [...bySource.entries()].map(([source, entries]) => ({ source, entries }));
+    // S2 — the KEY stays the ADDRESS (grouping unchanged); the DESIGNATION a
+    // person reads rides beside it, the first one any entry carries (null on
+    // old files — the heading then falls back to the address)
+    return [...bySource.entries()].map(([source, entries]) => ({
+      source,
+      sourceName: entries.find((e) => e.entry.sourceName !== null)?.entry.sourceName ?? null,
+      entries,
+    }));
   }, [shelf]);
 
   // ----- craft staging with the pentimento (the DAG's consumed, in pencil) ---

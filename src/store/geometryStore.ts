@@ -481,7 +481,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // GAP2C: the workspace population rides as serialize-time ancestry — the
     // snapshot's predicate carries the chain exactly when the lifted region's
     // own complex is direct-unreadable (a seamed composite), else byte-as-before
-    const file = serializeSnapshot(lifted.shape, shape.id, Object.values(shapes));
+    const file = serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name);
     useLiftStore.getState().push({ title: lifted.title, file });
     if (liftSelection.length > 0) {
       set({ liftSelection: [] });
@@ -528,11 +528,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // own chain additionally rides through its lifted parent
     useLiftStore.getState().push({
       title: lifted.title,
-      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes)),
+      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name),
     });
     useLiftStore.getState().push({
       title: band.shape.name,
-      file: serializeSnapshot(band.shape, shape.id, [lifted.shape, ...Object.values(shapes)]),
+      file: serializeSnapshot(band.shape, shape.id, [lifted.shape, ...Object.values(shapes)], shape.name),
     });
     if (liftSelection.length > 0) {
       set({ liftSelection: [] });
@@ -563,7 +563,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const lifted = openLift(shape, selectedVertexId, selectedCellId);
     useLiftStore.getState().push({
       title: lifted.shape.name,
-      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes)),
+      file: serializeSnapshot(lifted.shape, shape.id, Object.values(shapes), shape.name),
     });
     return lifted.shape.name;
   },
@@ -584,7 +584,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // the base at both arities); the segment still rides the product
     // record. D8 stands: the mint-time shape id keys the carried base for
     // the same-session placed product (exact id — nothing hopped there).
-    useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id, [shape]) });
+    useLiftStore.getState().push({ title: band.shape.name, file: serializeSnapshot(band.shape, shape.id, [shape], shape.name) });
     return { name: band.shape.name, shapeId: band.shape.id, metricBaseId: band.product.parents?.shapeId ?? null };
   },
   // P1 THE LOOP-MAKER (DOORS batch): the FOLD word on a SEGMENT closes it into
@@ -600,7 +600,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const born = closeSegmentIntoLoop(segment, segment.edges[0]);
     useLiftStore.getState().push({
       title: born.shape.name,
-      file: serializeSnapshot(born.shape, segment.id, [segment]),
+      file: serializeSnapshot(born.shape, segment.id, [segment], segment.name),
     });
     return born.shape.name;
   },

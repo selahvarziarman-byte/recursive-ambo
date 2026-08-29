@@ -330,6 +330,18 @@ console.log('\n----- [5b] the mint split: a named vertex lifts under its NAME; t
   const bareCell = namedShapeAfter.cells.find((c) => c.kind === 'core');
   check('§5b ⚠ THE LATENT BRANCH IS THE ADDRESS: a cell with no packet label still mints `<cellId> of …` (§5’s pin above measured it live) — no absence word is fabricated at this seam',
     bareCell ? !(typeof (bareCell.data && bareCell.data.label) === 'string' && String(bareCell.data.label).trim()) : true);
+
+  // ═══ [5c] S2 — THE SOURCE SLOT'S OWN SPLIT (the twice-measured law's second
+  // site, sanctioned): the shelf's grouping KEY stays the shape id, and the
+  // DESIGNATION a person reads rides beside it.
+  console.log('\n----- [5c] S2: the universe designation rides beside the address; old files stay null -----');
+  check('§5c ★★ THE DESIGNATION RIDES THE LIFT: the shelf entry carries sourceName === the source shape’s own name, while `source` (the grouping key, the provenance) is STILL the shape id — split, never renamed',
+    namedLoaded.sourceName === namedShapeAfter.name &&
+    namedLoaded.source === namedShapeAfter.id);
+  const legacyFile2 = serializeSnapshot(namedLoaded.loaded.shape, 'legacy-univ');
+  const legacyEntry2 = loadUniverseSnapshot(legacyFile2);
+  check('§5c ⛔ AN OLD FILE IS A TRUE ABSENCE, never a fabrication: a snapshot serialized WITHOUT the designation loads with sourceName === null (the heading’s fallback is the address — the same latent branch as the mint’s)',
+    legacyEntry2.sourceName === null && !('sourceName' in legacyFile2));
 }
 
 console.log(

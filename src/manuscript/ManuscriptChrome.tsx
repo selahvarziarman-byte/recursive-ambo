@@ -1006,7 +1006,9 @@ export function SourcesShelf({
   onSavePage,
   onLoadPage,
 }: {
-  universes: Array<{ source: string; entries: Array<{ index: number; entry: ShelfEntry; placed: boolean }> }>;
+  // S2 — sourceName is the DESIGNATION half of the split (null on old files);
+  // `source` stays the ADDRESS the grouping keys on
+  universes: Array<{ source: string; sourceName: string | null; entries: Array<{ index: number; entry: ShelfEntry; placed: boolean }> }>;
   paper: ChromePaper;
   // §7 (B-2026-08-24-B, RULED): the page holds work not written down — the
   // QUIET STANDING MARK renders beside `save the page…`, where the act
@@ -1067,8 +1069,13 @@ export function SourcesShelf({
       ) : (
         universes.map((universe) => (
           <div key={universe.source} style={{ marginTop: 6 }}>
+            {/* S2 — the heading reads the DESIGNATION when the file carried
+                one; the address remains where it didn't (old files — the
+                same latent branch the lift mint wears). The quote marks are
+                this renderer's own frame, unchanged; wording refinements are
+                the designer's. */}
             <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10.5, opacity: 0.7 }}>
-              “{universe.source}”
+              “{universe.sourceName ?? universe.source}”
             </div>
             {universe.entries.map(({ index, entry, placed }) => (
               <div
