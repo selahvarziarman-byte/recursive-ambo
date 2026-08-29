@@ -285,7 +285,16 @@ export function footRecord(
 // ---------------------------------------------------------------------------
 
 export interface ShelfEntry {
-  source: string; // the universe name (opaque provenance — never a doorway)
+  // ═══ B-131/S2 — THE SPLIT (the twice-measured law, its second site): A
+  // SLOT SERVING BOTH AN ADDRESS PURPOSE AND A DESIGNATION PURPOSE MUST BE
+  // SPLIT, NEVER RENAMED. `source` is the ADDRESS — the shelf's grouping key
+  // and the provenance, byte-identical forever (its old comment called it
+  // "the universe name", the intent this split finally fulfils); the
+  // DESIGNATION a person reads rides beside it, null when the file carried
+  // none (old files — a true absence, and the heading then falls back to the
+  // address, the same latent branch the lift mint wears).
+  source: string; // the ADDRESS (grouping key + provenance — never a doorway)
+  sourceName: string | null; // the DESIGNATION (the source universe's own name)
   title: string; // the form's display name
   loaded: LoadedSnapshotForm; // the committed deserializeSnapshot output, verbatim
   placeable: boolean;
@@ -306,6 +315,7 @@ export function loadUniverseSnapshot(
   if (quotientBorn) {
     return {
       source: loaded.provenance.source,
+      sourceName: loaded.provenance.sourceName ?? null,
       title: `${shape.name} (${operation})`,
       loaded,
       placeable: false,
@@ -329,6 +339,7 @@ export function loadUniverseSnapshot(
       : { mode: 'plain', shape, invariants, h1Label: h1LabelFromCertified(invariants) };
   return {
     source: loaded.provenance.source,
+    sourceName: loaded.provenance.sourceName ?? null,
     title: shape.name,
     loaded,
     placeable: true,

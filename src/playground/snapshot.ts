@@ -71,6 +71,16 @@ export const SNAPSHOT_VERSION = 1 as const;
 export interface PlaygroundSnapshotFile {
   version: typeof SNAPSHOT_VERSION;
   sourceId: string; // opaque provenance — a name, not a doorway
+  // ═══ B-131/S2 — THE SPLIT (the twice-measured law, its second site): A
+  // SLOT SERVING BOTH AN ADDRESS PURPOSE AND A DESIGNATION PURPOSE MUST BE
+  // SPLIT, NEVER RENAMED — renaming picks one victim; splitting is the cure.
+  // `sourceId` is the ADDRESS (the shelf's grouping key, the provenance —
+  // byte-identical forever); this slot is the DESIGNATION a person reads
+  // (the source universe's own name), present exactly when the writer holds
+  // one. Old files: absent — a true absence, never fabricated. Additive,
+  // optional — every committed 3-arg call is byte-identical (the GAP2C
+  // precedent verbatim).
+  sourceName?: string;
   savedAt: string; // ISO timestamp (the one non-deterministic field)
   shape: Shape; // the form's FULL structure, verbatim (self-contained)
   // GAP2C: present EXACTLY when the form's own complex is direct-unreadable
@@ -82,7 +92,9 @@ export interface PlaygroundSnapshotFile {
 
 export interface LoadedSnapshotForm {
   shape: Shape;
-  provenance: { origin: 'loaded'; source: string };
+  // sourceName — the S2 split's designation half, carried through the load
+  // exactly when the file holds it (see PlaygroundSnapshotFile.sourceName)
+  provenance: { origin: 'loaded'; source: string; sourceName?: string };
   // GAP2C: the carried chain, namespaced under the SAME load source — acquire
   // metadata for the manuscript's lineage argument, NEVER a population entry.
   ancestors?: Shape[];
@@ -110,10 +122,14 @@ export function serializeSnapshot(
   shape: Shape,
   sourceId: string,
   ancestry: Shape[] = [],
+  // the S2 split's designation half — optional and additive; committed
+  // 2-/3-arg callers are byte-identical and their files byte-shaped as before
+  sourceName?: string,
 ): PlaygroundSnapshotFile {
   const source = sourceId.trim();
   if (!source) throw new Error('snapshot: sourceId must be a non-empty name');
   assertKeySafe(source, 'sourceId');
+  const designation = typeof sourceName === 'string' && sourceName.trim() !== '' ? sourceName.trim() : null;
   let ancestors: Shape[] | null = null;
   let walkChain = ancestry.length > 0;
   if (!walkChain) {
@@ -145,6 +161,7 @@ export function serializeSnapshot(
   return {
     version: SNAPSHOT_VERSION,
     sourceId: source,
+    ...(designation ? { sourceName: designation } : {}),
     savedAt: new Date().toISOString(),
     shape: JSON.parse(JSON.stringify(shape)) as Shape,
     ...(ancestors ? { ancestors: JSON.parse(JSON.stringify(ancestors)) as Shape[] } : {}),
@@ -185,6 +202,16 @@ export function deserializeSnapshot(
   const source = (loadSource ?? file.sourceId).trim();
   if (!source) throw new Error('snapshot: load source must be a non-empty name');
   assertKeySafe(source, 'load source');
+  // the S2 split, read side: the designation rides beside the address when
+  // the file holds one — it names the ORIGIN universe, so a loadSource
+  // override does not displace it; absent on old files (a true absence)
+  const carriedSourceName =
+    typeof file.sourceName === 'string' && file.sourceName.trim() !== '' ? file.sourceName.trim() : null;
+  const provenance: LoadedSnapshotForm['provenance'] = {
+    origin: 'loaded',
+    source,
+    ...(carriedSourceName ? { sourceName: carriedSourceName } : {}),
+  };
 
   const ns = (id: VertexId): VertexId => {
     assertKeySafe(id, 'vertex id');
@@ -435,7 +462,7 @@ export function deserializeSnapshot(
       );
       return {
         shape: replay.shape,
-        provenance: { origin: 'loaded', source },
+        provenance,
         ancestors: reconstructed,
       };
     } catch {
@@ -482,13 +509,13 @@ export function deserializeSnapshot(
         if (ownOperation === 'collapse') {
           const trace = collapseFace(parentShape, parentFace);
           const replay = materializeSurfaceResult(parentShape, parentFace, trace);
-          return { shape: replay.shape, provenance: { origin: 'loaded', source }, ancestors: reconstructed };
+          return { shape: replay.shape, provenance, ancestors: reconstructed };
         }
         if (wordPairings) {
           const op = ownOperation === 'flip-glue' ? flipGlueFace : glueFace;
           const trace = op(parentShape, parentFace, wordPairings);
           const replay = materializeSurfaceResult(parentShape, parentFace, trace, wordPairings);
-          return { shape: replay.shape, provenance: { origin: 'loaded', source }, ancestors: reconstructed };
+          return { shape: replay.shape, provenance, ancestors: reconstructed };
         }
       }
     } catch {
@@ -499,7 +526,7 @@ export function deserializeSnapshot(
 
   return {
     shape,
-    provenance: { origin: 'loaded', source },
+    provenance,
     ...(reconstructed.length > 0 ? { ancestors: reconstructed } : {}),
   };
 }
