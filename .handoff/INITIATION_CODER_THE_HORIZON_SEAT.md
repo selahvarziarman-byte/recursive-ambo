@@ -50,12 +50,10 @@ you is a finding, not a nuisance, and YOUR MEASUREMENT WINS over anything
 written there or in `CLAUDE.md`. Say so and it gets corrected. The
 substrate is the arbiter, never the last speaker — including me.
 
-⛔ DO NOT OPEN A BUILD. Your first errand is `STAMP C-1` in §8 of that
-file, and it is a MEASUREMENT, not a diff. Three parts: ground yourself on
-the suite; re-derive a standing failure whose diagnosis you are handed as a
-HYPOTHESIS rather than a finding (§7.2 says who made it and where); and find
-something I have deliberately not told you the location of. Report all
-three before you write any code.
+⛔ DO NOT OPEN A BUILD. Your first errand is `STAMP C-1`, and it is
+waiting in `.handoff/inbox/coder/` — the initiation file tells you why it
+lives there and not in the file itself. It is a MEASUREMENT, not a diff.
+Report it before you write any code.
 
 ⇒ YOUR WIRE, once you are read in:
   • Your inbound queue is `.handoff/inbox/coder/` — ONE office, ONE place
@@ -229,22 +227,15 @@ A bare `path<TAB>hash` row in `docs/governance/ENGINE_FREEZE_MANIFEST.txt` means
 
 ---
 
-## §8 · YOUR FIRST ERRAND — `STAMP C-1`, and it is a MEASUREMENT, not a build
+## §8 · YOUR FIRST ERRAND IS IN YOUR INBOX, NOT IN THIS FILE
 
-⛔ **Do not open a build until this is reported.** The office you are joining is the one that measures; **the first thing I want from the seat is a measurement, not a diff.**
+> ### ⇒ **`STAMP C-1` is waiting in `.handoff/inbox/coder/`. Read it after this file and before you touch anything.**
 
-**§8.1 — GROUND YOURSELF.** Run `npx tsc -b` and `npm run sweep` at `44d2ede` and **report the verdict line VERBATIM.** ⛔ **Do not tell me it matched — paste it, and paste the line `CLAUDE.md` §6 says to expect beside it.** If they differ, that is your first finding and I would far rather have it on day one than inherit it.
+⛔ **Do not open a build until it is reported.** The office you are joining is the one that MEASURES, and **`C-1` is a measurement, not a diff.**
 
-**§8.2 — RE-DERIVE THE STANDING RED (§7.2).** Run `diagnose-deficit-app` yourself. Report the count you get and **whether the departing seat's first-abort cause survives your own reading.** ⛔ **If you find their diagnosis is right, say so with what you ran. If it is wrong, that is the more valuable answer.** Then price the repair — **by FILE** — and route the price to me. **Do not repair it yet.**
+⚠ **Why the errand is not written here, since a previous version of this file DID carry it:** this file is a **STANDING ASSERTION** — doctrine, re-read and amended, the thing a successor re-grounds from. **An errand is a DATED EVENT** — true when issued, never amended, discharged and archived. ⇒ **They do not belong in the same file, and mixing them means every new errand edits a tracked doctrine file.** *(That distinction was ruled the same day this packet was written, went into `.gitignore`'s own comment block as the rule for what gets tracked — and then I found I had broken it inside this very file. It is corrected here rather than explained away.)*
 
-**§8.3 — ⛔ THE LAW-VIOLATION HUNT, and I am telling you it exists and not where.**
-The NAME-SLOT LAW in §2 is **ratified**: *every designation is GIVEN or DERIVED or DRAWN, never MINTED; a fallback in a designation slot may end in an ABSENCE, never in a TOKEN* — ⇒ **a `??` or `||` in a designation slot is a mint waiting for a miss.**
-
-> ⇒ **I found at least one live violation of that law in the argument reading's own model at `44d2ede`. Their closing report does not name it. I am not telling you where it is.**
-
-**Find it, report the file and line, and — before proposing any cure — tell me what a person currently READS because of it.** ⛔ **Do not cure it in this errand.**
-*(I have written the file and line into `.handoff/THE_CLAIMS_LEDGER.md` §5 as **found-and-withheld**, dated to this SHA. ⇒ **This is a test with a recorded answer, not a trap** — and if you find a SECOND one I did not, that is the better result and I want it.)*
-⚠ **The point is not the defect. It is that I need to know whether this seat reads code for MEANING or for conformance, and I would rather learn that on an errand where I already know the answer than on one where I do not.**
+★ **The general form, which will serve you: if it is true today and false next month, it is MAIL. If a stranger would need it to stand this project up, it is DOCTRINE.**
 
 ---
 

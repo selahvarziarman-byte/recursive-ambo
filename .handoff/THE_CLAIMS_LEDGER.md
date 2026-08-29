@@ -295,3 +295,106 @@ The objective (E1, Arman's frame): **the render gate = the explore-window featur
 ⚠ **CLAIMED HONESTLY: I could not find a ruling that deliberately excludes the ledgers.** ⛔ **If one exists, this entry is wrong and the exclusion is a decision, not a gap.**
 ✅ **ROUTED: `MARKER U1` to the coder (the narrow negation list + the freeze-manifest check on `.gitignore`, which I did NOT price — his lane), gated on ARMAN'S WORD, because `.gitignore:21` records that the seat map's negation was ratified by him (B-101 §3) and I will not widen the protected record on my own signature.**
 **KILL-CONDITION: if Arman rules the ledgers are deliberately session-local, this law survives but its instance dies — and the mothership seat then has NO migration path, which must be said out loud rather than discovered by the next holder.**
+
+---
+
+### §7 · ⚠ AMENDMENT — THE SEAL IS RETIRED, and the reason is the ruling that overtook it
+
+**Sealed at `44d2ede`. RETIRED at `a92fea0`, hours later, unused.**
+⇒ ⛔ **THE DESIGNER RULED THE DEFECT BEFORE THE SUCCESSOR WAS SEATED** (her letter `2026-08-29_1827`): the law, the cure, the per-site table, and **a THIRD site I had not found** (`INCIDENCE — CARRIED`, four rows all reading `@ unnamed`).
+⇒ ★★★ ***SO THE HUNT DIED OF ITS OWN SUCCESS AND MUST BE RETIRED RATHER THAN RUN.*** **Holding a ruled, ready, person-visible cure hostage to a calibration exercise would put the TEST above the WORK** — and a test whose answer three offices already hold measures nothing. ✅ **REPLACED by `STAMP C-1` §3: the designer's own unsettled PRECONDITION (does `idTail`'s return collide with the edge letters `a b c d`?), which is a REAL measurement, unowned, and gates the build.**
+★★ **AND IT IS THE BETTER CALIBRATION BY THE SAME ARGUMENT THAT MADE THE FIRST ONE GOOD: it puts the tempting diff in front of the seat with a STOP condition attached, and measures whether they check before they build — on live work rather than on a staged one.**
+
+> ### ⇒ **THE LAW THIS BOUGHT, and it is about my own office:**
+> ***A CALIBRATION EXERCISE HAS A SHELF LIFE, AND IT EXPIRES THE MOMENT THE REAL WORK REACHES ITS SUBJECT.*** **A staged test competes with the campaign for the same defect; when the campaign wins, the test is no longer a test, it is a DELAY wearing one's clothes.** ⇒ **Check every held-back exercise against the live queue before firing it.**
+
+**AND THE DESIGNER'S RULING CORRECTED MY FRAMING, not just the code.** I posed it as *"what does a composed phrase SAY when its parts have no names?"* ⛔ **That question was MISPOSED — it presupposes the slot wants a name-ish answer.** ⇒ **Her split: a composition or incidence slot is a REFERENCE SLOT — it asks *which one?*, and there the thing is never absent, only its NAME is.** ⇒ ***WHEN A NAME IS ABSENT, SHOW THE ADDRESS — NEVER THE WORD FOR ABSENCE.*** ★ **And `unnamed` is not deleted but RELOCATED to where it is true (the face — one thing, so the word discriminates).** ⚠ **I would have chartered a wording question. She found it was a TYPE question.**
+
+---
+
+## 9 · LAWS FILED AT THE HANDOVER — two, both bought at this desk
+
+> ### ⛔ **1 · A REPORT'S WITNESSES MUST BE QUOTED, NEVER PROMISED — A TERMINAL IS NOT THE RECORD.**
+> **BOUGHT:** the departing coder's closing report, now committed as `THE_BUILD_REPORT.md` at `a92fea0`, says of its final sweep: *"the verdict line goes in the terminal beside this letter; if it is not \[the expected line]… I will say so before standing down."* ⇒ **Honest, conditional, and unquotable. The tree's last green is ASSERTED, and the seat that could paste it has stood down.** ⚠ **Everything else in that report is quoted; this one clause was the last thing written, which is exactly where the cheap check gets dropped.** ✅ **CURE: `C-1` §1 makes the incoming seat's first act the receipt the record lacks — so the gap self-closes on day one rather than standing in the tree.**
+
+> ### ★★ **2 · CURING THE LOUDER INSTANCE OF A DEFECT DOES NOT HIDE THE QUIETER ONE — IT ISOLATES IT.** *(the designer's, and she filed it against her own prediction)*
+> **She predicted CAMOUFLAGE — *"whichever cure lands second will look like it fixed nothing"* — and I RELAYED that to the coder as a build-order warning.** ⛔ **Both of us were wrong, and the truth is the opposite: with the figure's four `unnamed` gone, the reading's thirteen stand starkly alone on the same screen.** ⇒ ***The two were not camouflaging each other; the figure was DROWNING the model.*** ★ **She reported the reversal of her own call unprompted, having gone back to check a prediction nobody was going to audit.**
+
+---
+
+## 10 · ⛔⛔ THE SEALED ANSWER WAS WRONG — I own it, and the seat that "failed" the test was right
+
+**I sealed `argumentReadingModel.ts:386-387` (§7) as THE live name-slot violation, told the designer so, and set it as the incoming coder's calibration errand with a "recorded answer."** ⛔ **THE RECORDED ANSWER WAS WRONG.**
+
+**WHAT THE COMMITTED BYTES SAY, measured at `a92fea0`:**
+- ✔ **The coder is RIGHT.** `rootOwnNames` is built at `:503` from **`rootPlainOf`** — the `null`-terminating twin — never from `rootDisplayBase`. `mergedRootsPhrase` (`:257`) consumes `(string|null)[]` and renders absences as a **COUNT** (`one unnamed root` / `two unnamed roots`), and `:84`'s comment states the design outright: ***"set notation manufactures a token per slot; the count form has no slot to fill."*** ⇒ **That path is the CURE for this disease, already built and already ruled. `:387` did not fire on their person-path subjects because that consumer does not reach it.**
+- ⛔ **THE REAL PRODUCER IS `endpointNameOf` (`:538-556`)** — `:552` `return packetOf(id) ? 'unnamed' : idTail(id)` (the same three-way split, for endpoints) and `:555` `roots.map(rootDisplayBase).join('·')` — **the `·` the designer saw.**
+
+> ### ⛔⛔⛔ **AND THE PART THAT INDICTS ALL THREE OFFICES — THE SOURCE COMMENT AT `:531-537`:**
+> ***"B-105 W3 §4(a) — THE ROLES CASE (designer-ruled, her 1721 §1): in an endpoint POSITION the slot already says which is which … so NO disambiguating handle is owed — `—a ← unnamed·unnamed`, both terms kept, no count, no index."***
+> ⇒ ***THE EXACT STRING SHE REPORTED AS A DEFECT IS WRITTEN INTO THE SOURCE AS HER OWN RULED EXAMPLE OF CORRECT BEHAVIOUR, cited to her by date and section.***
+
+★★★ **AND IT IS NOT A REVERSAL BY HER — IT IS THE SAME SHAPE AS MY OWN ERROR THIS MORNING, THIRD INSTANCE TODAY:** she was asked ***"does an endpoint position need a disambiguating HANDLE?"*** and answered **no** — correctly, and that half still stands, because position carries direction. ⛔ **She was never asked whether the TOKEN in that slot may be the absence word.** ⇒ ***A ruling that settles one question about a slot gets read, by the code and by everyone after, as settling THE SLOT.***
+⇒ **Same shape as: my acceptance question that forbade its own measurement · the `.gitignore` law that earned four files an exception and was never swept · a comment that states its precondition.** ✅ **FILED: *THE SCOPE OF A RULING IS THE QUESTION IT WAS ASKED, NOT THE SITE IT LANDED ON. A ruling pinned as a comment beside a line will be read as blessing the LINE.***
+
+**WHAT I DID WRONG, precisely, so it is cheap to catch next time:** I found `:386-387`, saw a `??` ending in a token, matched it to a ratified law, and **sealed it without tracing a single consumer to the screen.** ⇒ ⛔ ***I ran the same predicate the law names and called that a measurement.*** **The designer had the SCREEN and I had the SHAPE, and I published the shape as the cause.** ★ *Never check a suspicion against its own downstream artifact* — I did not even do that; I checked it against nothing.
+⚠ **AND IT WAS LOAD-BEARING TWICE OVER:** it went to the designer as a finding *and* into a calibration test whose whole justification was *"a test with a recorded answer, not a trap."* ⇒ **A test with a WRONG recorded answer IS a trap, and the seat that declined to name my line was measuring correctly.**
+
+✅ **THE SEAL IS VOID. The incoming coder is told to read §7 and this section as EVIDENCE OF MY ERROR, not as an answer.**
+✅ **AND THE CALIBRATION STILL RETURNED ITS VALUE, in the opposite direction from the one I designed: the seat declined to confirm a violation it could not measure, said why, and found two REAL ones I had not seen.** ⇒ ***The errand measured the seat. It also measured me.***
+
+---
+
+## 11 · ★★★ PIN THE PRINCIPLE, NOT THE VERDICT — the designer's, and it supersedes my §10 law
+
+**I filed: *the scope of a ruling is the question it was asked, not the site it landed on; a ruling pinned beside a line will be read as blessing THE LINE.*** ⛔ **She refused the absolution that law offered her, went and read her own `1721 §1`, and showed the comment at `:531-537` recorded her verdict FAITHFULLY — *"RULED: `—a ← unnamed·unnamed`. Drop the handles. Keep both terms. No count. No handles."*** ⇒ **She ruled the whole string, token included, in a code-fenced verdict line. The pin did not over-read her.**
+
+> ### ⇒ ★★★ ***PIN THE PRINCIPLE, NOT THE VERDICT.***
+> ***A verdict is a principle applied to ONE scope. Pinned beside a line it FREEZES the scope and LOSES the principle — and every later scope goes unexamined, because the reader has the answer and not the reason.***
+
+**`1721` carried BOTH — the verdict `—a ← unnamed·unnamed`, and the principle *"where POSITION carries meaning, repetition is harmless; where position carries nothing, repetition is a lie."*** **The comment carried the verdict.** ⇒ **Had it carried the principle, the four-row scope would have been visible to anyone who read it — including her.**
+
+★★ **AND THE SCOPE SHE MISSED IS FOUND BY HER OWN PRINCIPLE, which is why this is a composition and not an override:**
+| scope | does position carry? | verdict |
+|---|---|---|
+| **WITHIN one row** — the two slots of `X·Y` | ✔ YES (first is start, second is end) | ✅ **repetition harmless — `1721` STANDS** |
+| **ACROSS the four rows** — `—a`,`—b`,`—c`,`—d` | ⛔ NO | ⛔ **repetition is a LIE — `1721` never looked here** |
+⇒ ***The ruling was not wrong. It was UNDER-APPLIED, by its author, at the moment of writing.***
+★★★ **AND THE CLAUSE THAT MAKES THE TWO RULINGS COMPOSE: *AN ADDRESS IS NOT A HANDLE.* `1721` refused handles because they "fabricate an individuation the form does not have." AN ADDRESS FABRICATES NOTHING — THE FORM ALREADY HAS IT.** ⇒ ***The exact reason `1721` said NO to handles is the reason `1827` says YES to addresses.***
+
+⛔ **THE CONSEQUENCE FOR THIS LEDGER, DRAWN IMMEDIATELY AND AGAINST MYSELF: this file is largely VERDICTS.** ⇒ **Every entry that records what was decided without the principle that decided it is a frozen scope waiting for the same failure.** ✅ **STANDING AMENDMENT: every future entry states the PRINCIPLE first and the verdict as its application to a named scope — and names the scopes it did NOT examine.**
+
+---
+
+## 12 · ✅ RULED BY ME — `AB` IS NOT A RATIFIED COMPOSITION (the designer's open question, §5)
+
+**She asked: her D14 face register composes corners with dots (`A·D·C·B`), while `joinNames` renders a two-corner run BARE (`AB`) — is `AB` ratified, or an accident of one helper?** ⛔ **MEASURED, and it is the outlier.**
+- **`apertureModel.ts:703`** — the D14 face-name composition (start at the alphabetically-first corner, run the face's own cycle) — **`.join('·')`, UNCONDITIONAL.**
+- **`argumentReadingModel.ts:485`** (`plain.join('·')`) · **`:555`** (`roots.map(rootDisplayBase).join('·')`) · **`:621`** (`dotJoin`) — **all UNCONDITIONAL `·`.**
+- ⛔ **`argumentReadingModel.ts:558` `joinNames` — `parts.every(p => p.length === 1) ? join('') : join('·')` — THE ONLY LENGTH-CONDITIONAL JOINER among the four in that file, and against the ratified face register.**
+⇒ ✅ **RULED: `AB` is not a ratified composition. It is one helper's length branch, and it stands alone against every other corner-composition in the module.**
+⚠ **AND THE DEEPER FACT, which makes it worse rather than better: `:529-530`'s comment DECLARES the length rule — *"single-char names join bare, longer ones join with ·."*** ⇒ ***It is not an accident that slipped in; it is a documented convention. So her clause does not fix a bug — it OVERTURNS A STATED RULE, and the comment must die in the same cut.*** ★ *A name that describes INTENT protects code that does not FULFIL it* — here a comment that describes BEHAVIOUR protected behaviour nobody had ruled.
+✅ **HER CLAUSE RATIFIED: *the separator is chosen by the SLOT'S KIND, never by its operands' LENGTH.*** ⚠ **The GLYPH is hers and stays open — she has named the live constraint herself (`·` already means unordered peers across the register; `⟶` already means the operation map), and she wants the line in front of her with the addresses in it. That is the correct order.**
+
+---
+
+## 13 · ⛔⛔ I TRACKED A FILE WITHOUT RULING WHO COMMITS IT — and the dirty tree is mine
+
+**PRINCIPLE:** ***Tracking a file assigns a DUTY, and a duty needs an OWNER. A record in the tree with no named committer is worse than one outside it — it LOOKS protected, is not, and it dirties the one witness that proves the audited tree is the committed tree.***
+**SCOPE RULED:** the mothership's record files (`THE_CLAIMS_LEDGER.md`, `THE_SOVEREIGN_LEDGER.md`, the four plans, the two wake documents, the packet) — **the nine negated at `a92fea0`.**
+**SCOPES NOT EXAMINED:** whether the same gap exists for any other office's tracked artifacts; what happens if two seats edit a record file in one cycle.
+
+**HOW IT SURFACED — and the coder was RIGHT to refuse:** their `C-1`/`V1` report discloses *"the two tracked files modified by another hand during my first session (`INITIATION_…` and the claims ledger) remain uncommitted in the main checkout — my commits do not touch them and I did not commit them."* ⇒ ✔ **Correct by `never forge another seat's work`. And `git status` at `70b3977` confirms it: `M .handoff/INITIATION_CODER_THE_HORIZON_SEAT.md` · `M .handoff/THE_CLAIMS_LEDGER.md` — BOTH MINE.**
+
+⛔ **THE STRUCTURAL TRAP I BUILT THIS AFTERNOON, in three steps:** (1) I ruled the record into the tree · (2) **I cannot commit** · (3) **I edit these files on every single ratification.** ⇒ ***So every mothership turn now leaves the tree dirty, permanently, in the exact surface `CLAUDE.md` §6 clause 1 requires to be EMPTY — "`git diff --stat <sim> HEAD` = EMPTY, the committed tree IS what you audited."***
+⇒ ★★★ ***I FIXED "THE RECORD IS UNPROTECTED" AND CREATED "THE CODER'S FIRST WITNESS IS PERMANENTLY DIRTY." A cure that moves a defect into another office's instrument is not a cure.***
+✅ **CHARTERED: the mothership's record files RIDE THE CODER'S COMMITS as a standing, sanctioned duty — the way `THE_BUILD` pair already does — carried AS FOUND, never read for content, never amended.** ⇒ **Named as a duty it is not "committing another seat's work"; unnamed it was exactly that, which is why they correctly refused.**
+
+---
+
+## 14 · ⚠ MINE, SMALL, AND THE SAME SHAPE TWICE IN ONE DAY — I named ONE row and the file held TWO
+
+**I chartered the stale suite counts as *"`CLAUDE.md:104` and `THE_SUBSTRATE_MAP.md:74`."*** ⛔ **The substrate map held TWO — `:74` AND the `:78` footer.** **The coder found and fixed both, and said so: *"you named one, the file held two."***
+⇒ ⛔ ***A CENSUS RUNS IN TWO DIRECTIONS — my own filed law, broken while chartering a fix for a stale count.*** **I grepped, found a row, and stopped at the first hit.**
+★★ **AND IT IS THE SECOND INSTANCE OF THE SHAPE TODAY, the other being theirs to find: `explore.drive`'s own abort was hiding behind the fold's, and the departing seat's summary named only the first.** ⇒ ***One cascade behind another; one stale row behind another. The first hit is where a search stops, not where the population ends.***
+✅ **STANDING: when chartering a fix to a REPEATED string, charter the PREDICATE, not the line numbers** — *"every place this file restates the count"*, never *"line 74."*

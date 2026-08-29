@@ -6,7 +6,7 @@
 
 | you hold | your doctrine | your queue | you may commit? |
 |---|---|---|---|
-| **CODER** | **§5–§8 below are yours** + the `coder-seat` skill | `.handoff/THE_BUILD.md` — **one file, always current** | ✅ yes |
+| **CODER** | **§5–§8 below are yours** | `.handoff/inbox/coder/` (Δ21 — the mail IS the queue; `THE_BUILD.md` is the committed history) | ✅ yes |
 | **RESEARCHER** | the `researcher-seat` skill | `.handoff/inbox/researcher/` | ⛔ **no** |
 | **DESIGNER** | your own doctrine | `.handoff/inbox/designer/` | ⛔ **no** |
 | **MOTHERSHIP** | the `mothership-seat` skill | `.handoff/inbox/mothership/` | ⛔ **no** |
@@ -84,6 +84,10 @@ Branch `team-arman`. ⛔ **CHANGED BY ARMAN 2026-08-26 (Δ21) — THE WIRE IS MA
 > **The mothership is the last word on MEANING. Neither overrides the other in the other's lane.**
 
 **A separation of powers, not a rank.** The engineer/lieutenant seat was dissolved on 2026-08-21 because it could not run the app — **and a seat that cannot measure produces prose.**
+
+★ **This seat has NO doctrine skill (Arman's ruling 2026-08-29, the old `coder-seat` line struck): §5–§8 + `.handoff/THE_SEAT_MAP.md` are your doctrine, entire — nothing is missing.** The general engineering skills in the library (`webapp-testing` for the drive family · `engineering:debug` · `engineering:testing-strategy` · `doubt-driven-development` · `codebase-design`) are at your disposal, ⛔ **and this file, the freeze protocol and the witness discipline WIN wherever a general skill disagrees.**
+
+★ **STANDING COURIER DUTY (mothership-chartered `W1`): the mothership's tracked record files ride your commits AS FOUND** — it edits them on every ratification and cannot commit; you are the courier because you are the only office that can. **Never read them for content, never amend them; say in each report that you carried them and at what state; if one looks half-written, STOP and say so rather than commit a torn edit.**
 
 - ⛔ **STOP any mandate whose premise you can falsify.** Report the *measurement*, not the objection. **A refusal that turns out correct must be cheaper to make next time, not more expensive.**
 - ⛔ **Redesign a mechanism that cannot honour the meaning, even against instruction** — say what you changed and why.
