@@ -23,11 +23,28 @@ storybook-static
 # at wake, so it is protected like the seat map — the ignore yields for it too.
 # `.handoff/*`, NOT `.handoff/` — same reason as instruments/* below: git will
 # not descend into an excluded directory, so the negations would silently fail.
+# THE PROTECTED RECORD (U1, ratified by Arman 2026-08-29: "track the record's
+# seven-odd files"): a STANDING ASSERTION is tracked; a DATED EVENT is not.
+# Ledgers, plans and doctrine are standing assertions — re-read and amended,
+# and a successor seat must RE-GROUND from them (a successor cannot re-ground
+# from a file that is not in the tree). Mail, reports, drafts, plates and
+# audits are dated events: true when written, never amended, and the tracked
+# pair above already carries what the record needs from them. The next
+# `.handoff` file decides for itself which side it falls on.
 .handoff/*
 !.handoff/THE_BUILD.md
 !.handoff/THE_BUILD_REPORT.md
 !.handoff/THE_SEAT_MAP.md
 !.handoff/THE_SUBSTRATE_MAP.md
+!.handoff/THE_SOVEREIGN_LEDGER.md
+!.handoff/THE_CLAIMS_LEDGER.md
+!.handoff/PLAN_THE_HORIZON.md
+!.handoff/PLAN_THE_RENDER_GATE.md
+!.handoff/PLAN_THE_LAST_PHASE.md
+!.handoff/BACKLOG.md
+!.handoff/THE_MOTHERSHIP_CALIBRATION.md
+!.handoff/HANDOFF_THE_MOTHERSHIP_SEAT_V3.md
+!.handoff/INITIATION_CODER_THE_HORIZON_SEAT.md
 
 # ── INSTRUMENTS ─────────────────────────────────────────────────────────────
 # "An office may build an INSTRUMENT to KNOW. It may not build the PRODUCT."
