@@ -398,3 +398,59 @@ The objective (E1, Arman's frame): **the render gate = the explore-window featur
 ⇒ ⛔ ***A CENSUS RUNS IN TWO DIRECTIONS — my own filed law, broken while chartering a fix for a stale count.*** **I grepped, found a row, and stopped at the first hit.**
 ★★ **AND IT IS THE SECOND INSTANCE OF THE SHAPE TODAY, the other being theirs to find: `explore.drive`'s own abort was hiding behind the fold's, and the departing seat's summary named only the first.** ⇒ ***One cascade behind another; one stale row behind another. The first hit is where a search stops, not where the population ends.***
 ✅ **STANDING: when chartering a fix to a REPEATED string, charter the PREDICATE, not the line numbers** — *"every place this file restates the count"*, never *"line 74."*
+
+---
+
+## 15 · ✅✅ THE POINTER-BLOCK IS A MECHANISM NOW — two seats' blindness closed by one measurement
+
+**PRINCIPLE:** ***A gap between what a real hand does and what a driven instrument does is not an instrument defect — it is an unmeasured precondition of the substrate, and until it is named it silently BOUNDS what any seat can ever sight.***
+**MEASURED (coder, `6e11d38`, three ways):** a driven `pointerdown` fires R3F's mesh handler **only when a preceding `pointermove` has primed the raycast at that spot.** An unprimed trusted down arrives on the canvas (client == target ±1px, trusted) and the reducer stays silent · playwright's move→down→up lands **16/16** · a synthetic constructor event carries zero offsets and raycasts at the origin.
+⇒ ⛔ **THIS IS THE SAME FAMILY AS THE DEPARTING SEAT'S POINT-FORM BLOCK.** **Two seats, two subjects, months apart, each recorded it as "my instrument would not take it" and moved on.** ⇒ ***Twice it was filed as a limitation OF THE SEAT. It was a fact about the SUBSTRATE the whole time.***
+✅ **AND THE CLOSING IS IN THE DRIVER ITSELF** (`tap_fold_edge` — *"the approach primes the raycast the way a person's hand does"*), **not in a letter.** ⇒ ★★★ ***A mechanism written into the instrument cannot be rediscovered; a mechanism written into a report will be.***
+**SCOPES NOT EXAMINED:** whether the same priming requirement governs drag, wheel, or keyboard-driven picks; whether the two remaining driver residues share this cause (the coder's own note says the identical sequence works at a live hand — **which is the same shape and should be tested against this mechanism FIRST**).
+
+---
+
+## 16 · ★★★ THE FOUR ROWS CHAIN — and the sort does not follow it (mine, measured)
+
+**The designer, ruling the glyph from a render:** with addresses in, each spine row's FIRST term is another row's SECOND — `v0→v1 · v1→v2 · v2→v3 · v3→v0`, **a closed cycle** — ⛔ **and `·` destroyed it, because a dot reads as a conjunction, so `v2·v3` reads as the SET `{v2,v3}` and the chain is invisible.**
+⇒ ★★★ ***The single most informative fact in the block was hidden by its punctuation. The order is not merely load-bearing within a row — it is what makes the four rows a FIGURE rather than a list.***
+✅ **AND SHE COULD NOT HAVE ARGUED TO IT.** Five days ago she wrote *"I want the line in front of me before I touch its punctuation"* and refused to rule. ⇒ ***The trigger she set is what produced the finding, and no amount of reasoning would have.*** **Filed: *a register question answered from argument returns the arguer's priors; answered from a render it returns the substrate's.***
+
+⚠ **MEASURED BY ME, AND NEITHER OF THEM CHECKED IT: THE CHAIN'S ROW ORDER IS `c, b, a, d`. THE ROWS DISPLAY `a, b, c, d`.**
+```
+a: v2→v3   b: v1→v2   c: v0→v1   d: v3→v0
+walk from v0:  c → b → a → d      displayed:  a, b, c, d      SAME? False
+```
+⇒ **The cycle is present and traceable, but the rows are sorted by RELATION LETTER, not by the cycle.** ⛔ ***A figure whose most informative structure is not the axis it is sorted on.*** ⚠ **NOT a defect I am ruling — she looked and said it reads, and her eye outranks my arithmetic here. Routed to her as a question: does the row ORDER carry anything, and should it carry the cycle?**
+
+---
+
+## 17 · ⚠ MINE — I ordered a read of a skill I could not verify was loadable
+
+**In `V1` §1 I wrote of `coder-seat`: *"Whether YOUR session can load it I cannot measure and will not assert."*** ⛔ **Then in the same letter I ordered *"`webapp-testing` read FIRST"* and repeated it in `W1` §4 — an ORDER whose precondition I had just said I could not check.** ⇒ **They measured it: NOT LOADABLE in their session, by both name forms and a filesystem sweep.**
+⇒ ★★ ***I hedged the CLAIM and then issued an ORDER that depended on it. A hedge that does not reach the instruction it governs is decoration.***
+⛔ **AND IT PROPAGATED INTO A TRACKED DOCTRINE FILE:** `CLAUDE.md:88` now names `webapp-testing` in the coder's own section, written in good faith on my letter. ⇒ ***A doctrine file in every seat's wake-order now points at a capability the seat measured it cannot reach*** — *a capability you cannot find is not one that is missing*, inverted: **a capability named in doctrine that is not there teaches the next seat that its own session is broken.** ✅ **CHARTERED: the line carries the measurement, not a deletion.**
+
+---
+
+## 18 · ⛔ THE WIRE HAS NO ROUTE FOR "I STOPPED AT SOMETHING THAT IS YOURS" — mine, and now closed
+
+**PRINCIPLE:** ***A report tells its RECIPIENT what you could not reach. It does not tell the OFFICE THAT CAN reach it. Those are different addresses, and only one of them is a queue.***
+**BOUGHT:** `B-130`'s commit message carries *"the unheaded kinds wait on her words — copy is hers."* ⇒ **A request ON the designer, written into the committed history, never delivered to `.handoff/inbox/designer/`.** **She found it by reading a commit while checking an empty inbox.** ⚠ **The coder's boundary was CORRECT — copy is not theirs and they said so where they were working. The gap is mechanical, not a fault.**
+⇒ ⛔ **AND IT IS MY OWN LAW ONE SHAPE OVER — hers, naming it:** *"yours was a letter ANNOUNCED and unsent; this is an ask WRITTEN INTO THE HISTORY and unsent. Same failure mode — **the record is not a queue.**"*
+✅ **RULED, and it is cheap by construction: EVERY TIME A SEAT NAMES ANOTHER OFFICE IN A STOP — "that is hers", "copy is not mine", "the mothership's lane" — THAT SEAT WRITES THREE LINES INTO THAT OFFICE'S INBOX IN THE SAME TURN.** **The report keeps the note; the letter is what makes it a queue item.** ⇒ **Same standard already in force for routing TO me; it simply was never applied SIDEWAYS between the other seats.**
+**SCOPES NOT EXAMINED:** whether a mere observation (no decision owed) should also generate a letter — **ruled NO for now: only a stop that HANDS OVER a decision or BLOCKS work.** A note that owes nobody an act rides the report.
+
+---
+
+## 19 · ✅ RATIFIED — `face-pairs` is the PERSON'S ACT, not a measurement of it (the designer's)
+
+**PRINCIPLE (the module's foundation stone, not a taste call):** ***Every gesture leaves a trace, and the trace is the MEANING of the act.*** **His pairings ARE the meaning; `χ` is a CONSEQUENCE — and `ADR 0024`'s order is MAP first, verdict as a consequence.**
+**MEASURED (her drive, `9167103`, two forms — she refused to name a kind having seen only the poor case):** T³'s measure block holds six rows that are **at least three kinds with no boundary**: a GATE's verdict (`S² gate — sound`) · invariants (`χ`, `orientable`, `H₁`) · a census of parts (`CW counts`) · ⛔ **and `face-pairs — 3 (all preserving)`, WHICH IS WHAT THE PERSON DID**, in the same face at the same weight.
+⇒ ⛔⛔ ***THE CARD RENDERS WHAT HE DID AS A MEASUREMENT OF THE FORM.***
+> ### ★★★ **HER CLOSING, AND IT IS THE WHOLE ARGUMENT:** ***"It is the ONE row on that card a person could have CHANGED, and it is dressed exactly like the five he cannot. A card that cannot distinguish what he AUTHORED from what was DERIVED teaches him he authored none of it."***
+✅ **RULED: `face-pairs` leaves the measure table and belongs to the argument reading.**
+✅ **AND HER HEADING CRITERION RATIFIED:** ***a kind earns a heading when it has MORE THAN ONE ROW and the set GROWS WITH THE FORM.*** ⇒ **A door onto a single line that cannot grow saves nothing and costs a click; a heading over one line is a mark on the unremarkable.** ⇒ **One block qualifies of five — and the affordance line, being the most-consulted line on the card, would be MISPLACED behind a door.**
+⛔ **AND THE ANSWER TO *"the unheaded kinds wait on her words"* IS THAT THE WORDS WERE NEVER WHAT WAS MISSING:** ***a heading over mixed kinds names none of them — the block must be SPLIT before anything can name it.***
+**SCOPE SHE REFUSED TO RULE, and correctly:** whether the gate/verdict words (`sound`, `(consistent)`, `(certified)`) are a third kind or belong inside the card's EXISTING `certificate` block — ⚠ **she will not invent a kind that may duplicate one that exists, and could not see the certificate's extent from the screen.** ✅ **CHARTERED to the coder as a measurement.**
