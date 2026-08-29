@@ -101,7 +101,7 @@ Branch `team-arman`. ⛔ **CHANGED BY ARMAN 2026-08-26 (Δ21) — THE WIRE IS MA
 1. `git diff --stat <sim> HEAD` = **EMPTY** — the committed tree IS what you audited.
 2. **Freeze manifest** (`docs/governance/ENGINE_FREEZE_MANIFEST.txt`) line printed beside every touched file. A bare `path<TAB>hash` row = **FROZEN** ⇒ the edit + the re-seal in **ONE commit, nothing else in it.**
 3. **Re-seal hashes RECOMPUTED** (`tr -d '\r' < file | sha256sum`) **with a POSITIVE CONTROL** — the OLD hash must reproduce at the base commit.
-4. **Suite 112 @ 1** (`dual-inspection` is the accepted baseline) **+ `tsc` exit 0**, at the real HEAD.
+4. **The sweep green at its OWN canonical verdict line** (`dual-inspection` is the one accepted fail; the line itself names the census — never restate the count here: *a count copied into a doc is a stamp that drifts from the code that made it*) **+ `tsc` exit 0**, at the real HEAD.
 5. ⛔ **THE READING — what does the person SEE, in the frame they are in when they see it?** *A green suite closes nothing a person can see.*
 
 ```bash

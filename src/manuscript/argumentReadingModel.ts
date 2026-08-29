@@ -189,10 +189,11 @@ export interface VerdictReading {
   // THE RIM-TURN SPLIT (mothership 1230): a BOUNDARY +δ is the rim BENDING —
   // a rim-turn — never an interior cone's over-commitment; the split reads
   // the ACQUIRED valence already on the reading
-  // B-103 §2e rider: `conceptId` joins the locals — with the class label
-  // falling to the guard, two locals can honestly share the label 'unnamed';
-  // a label-keyed reader would collide (React's silent-drop class) where the
-  // id keys by the === contract, like every other register.
+  // B-103 §2e rider: `conceptId` joins the locals — two locals can honestly
+  // share a label (the address is universe-relative: a combine-born card can
+  // carry two parents' `v0`), so a label-keyed reader would collide (React's
+  // silent-drop class) where the id keys by the === contract, like every
+  // other register.
   locals: Array<{ conceptLabel: string; conceptId: string; curvatureDeg: number; kind: 'seamless' | 'cone' | 'saddle' | 'rim-turn' }>;
   closed: boolean; // no boundary valence anywhere — the global gate
   totalDeg: number; // gaussBonnetTotal, in degrees
@@ -526,17 +527,25 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
 
   // the relation source is the recorded `sourceVertexIds` (the surviving
   // representative's parent endpoints — measured substrate fact); the source
-  // is NAMED by those endpoints' REAL names (AB / v0·v1 — a reading, not a
-  // mint; single-char names join bare, longer ones join with ·).
-  // B-105 W3 §4(a) — THE ROLES CASE (designer-ruled, her 1721 §1): in an
-  // endpoint POSITION the slot already says which is which (`X·Y` = the run
-  // X → Y; the direction is recorded BY POSITION), so NO disambiguating
-  // handle is owed — `—a ← unnamed·unnamed`, both terms kept, no count, no
-  // index. The base name (rootDisplayBase) replaces the handle-suffixed
-  // rootDisplayOf in every roles position this resolver serves (relation
-  // rows · wordRows slots · absorbed partners).
+  // is NAMED by those endpoints (a reading, never a mint).
+  // THE REFERENCE READ (designer-ruled, composing her roles ruling with its
+  // own principle at a scope it had not examined): a composition or
+  // incidence position asks WHICH ONE — the thing is never absent there,
+  // only its name may be. So: the OWN name where the substrate holds one,
+  // the ADDRESS (the id tail — `v0`) where it does not, NEVER the word for
+  // absence. THE PRINCIPLE, both scopes: WITHIN one row position carries
+  // meaning (`X·Y` is the run X → Y — no handle, no count, no index owed;
+  // an address is not a handle: a handle fabricates an individuation, an
+  // address is one the form already has), but ACROSS rows position carries
+  // nothing, and a repeated token where position carries nothing is a lie.
+  // `unnamed` remains only in NAME slots about one thing (a concept row, the
+  // face register), where it answers "what is this called". The address form
+  // is measured non-colliding with the relation letters (roots tail `v0…`,
+  // edges letter `a…`); it is universe-relative, so a combine-born card can
+  // repeat a tail across parents — a scope not yet ruled, named here.
+  const referenceNameOf = (id: string): string => ownNameOf(id) ?? idTail(id);
   const endpointNameOf = (id: string): string => {
-    if (rootLabelOf.has(id)) return rootDisplayBase(id);
+    if (rootLabelOf.has(id)) return referenceNameOf(id);
     const own = ownNameOf(id);
     if (own) return own;
     // D16: the door's lineage arm here too — the SAME resolver names every
@@ -551,11 +560,15 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
     const roots = shape.vertices[id]
       ? [...primalMultiset(id, shape, memo).keys()].sort()
       : (mergedMembersOf(id) ?? [id]);
-    if (roots.length === 1 && roots[0] === id) return packetOf(id) ? 'unnamed' : idTail(id);
-    return roots.map(rootDisplayBase).join('·');
+    if (roots.length === 1 && roots[0] === id) return referenceNameOf(id);
+    return roots.map(referenceNameOf).join('·');
   };
-  const joinNames = (parts: string[]): string =>
-    parts.every((p) => p.length === 1) ? parts.join('') : parts.join('·');
+  // the separator is chosen by the SLOT'S KIND, never by its operands'
+  // length (designer-ruled: `AB` for the corners A and B is indistinguishable
+  // from ONE corner named AB — a positive fact, that there are two endpoints,
+  // carried by nothing). This joiner serves one kind — endpoint compositions —
+  // so one glyph, the standing `·` (the glyph itself is the designer's).
+  const joinNames = (parts: string[]): string => parts.join('·');
   const endpointLetters = (endpointIds: readonly string[]): string =>
     joinNames(endpointIds.map(endpointNameOf));
   const parentEdgeIds = parent ? new Set(parent.edges.map((e) => e.id)) : null;
@@ -771,7 +784,10 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
         'the complex did not acquire — incidence, stance and verdict refuse (no reading is honest; a false one is not)';
     } else {
       const complex: AssembledComplex = acquired.complex;
-      const conceptLabelOf = new Map(conceptRows.map((r) => [r.resultId, r.label]));
+      // incidence/stance/verdict name their concept by the REFERENCE READ
+      // (endpointNameOf) — these positions ask WHICH corner, so an unnamed
+      // concept reads its address, never the absence word; a named or
+      // real-name-composed class reads exactly what its card row reads
       const relationLetterOf = new Map(relationRows.map((r) => [r.resultId, r.label]));
       // the MEETING is read at the CORNER FLANKS (the oriented face-boundary
       // walk — the only read that disambiguates parallel self-loops: the
@@ -798,7 +814,7 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
         const letters = [...(flankLettersByVertex.get(vertexId) ?? [])].sort();
         const distinct = new Set(letters);
         return {
-          conceptLabel: conceptLabelOf.get(vertexId) ?? vertexId.split(':').pop() ?? vertexId,
+          conceptLabel: endpointNameOf(vertexId),
           conceptId: vertexId,
           relationLetters: letters,
           selfOnly: distinct.size === 1 && letters.length >= 2,
@@ -817,7 +833,7 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
         return corners;
       };
       stance = readings.map((r) => ({
-        conceptLabel: conceptLabelOf.get(r.vertexId) ?? r.vertexId.split(':').pop() ?? r.vertexId,
+        conceptLabel: endpointNameOf(r.vertexId),
         conceptId: r.vertexId,
         valence: r.valence,
         cornersDeg: cornersAt(r.vertexId),
@@ -839,7 +855,7 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
         locals: readings
           .filter((r) => Math.abs(r.curvature) >= EPS)
           .map((r) => ({
-            conceptLabel: conceptLabelOf.get(r.vertexId) ?? r.vertexId,
+            conceptLabel: endpointNameOf(r.vertexId),
             conceptId: r.vertexId,
             curvatureDeg: toDeg(r.curvature),
             // the valence split: boundary +δ = the rim turning (never a

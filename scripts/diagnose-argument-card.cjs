@@ -111,23 +111,23 @@ check('§1 (E1) ★★ THE TORUS MAP READS THE TRACE: ONE concept row, IDENTIFIE
     torusReading.conceptRows[0].sourceIds.length === 4 &&
     torusReading.conceptRows[0].rootIds.length === 4 &&
     rowsAgreeWithSubstrate(torusReading, torus.shape));
-// THE IDENTITY LAW (B-2026-08-23-C recut) → B-105 W3 §4(a) (designer-ruled,
-// THE ROLES CASE): in an endpoint/roles POSITION the slot already says which
-// is which — the direction is recorded BY POSITION — so NO disambiguating
-// handle is owed there: an unnamed end reads bare 'unnamed' and a relation's
-// source reads `unnamed·unnamed`, both terms kept, no count, no index.
+// THE REFERENCE READ (designer-ruled, composing the roles case with its own
+// principle): an endpoint/roles POSITION asks WHICH ONE — the thing is never
+// absent there, only its name may be — so an unnamed end reads its ADDRESS
+// (the id tail), never the absence word; no handle, no count, no index
+// (position carries the direction; an address is not a handle — the form
+// already has it). And the separator is chosen by the SLOT'S KIND, never by
+// operand length: endpoint compositions always join `·`.
 // Recomputed INDEPENDENTLY here from the parent's own packets + the ruled
 // rule — never from the model's output.
 const expectedRootName = (parentShape, id) => {
   const label = parentShape.vertices[id]?.data?.label?.trim() ?? '';
   if (label.length > 0 && label !== id) return label;
-  return parentShape.vertices[id] ? 'unnamed' : (id.split(':').pop() ?? id);
+  return id.split(':').pop() ?? id;
 };
-const packetEndpointName = (parentShape, ids) => {
-  const parts = ids.map((id) => expectedRootName(parentShape, id));
-  return parts.every((p) => p.length === 1) ? parts.join('') : parts.join('·');
-};
-check('§1 (E1) the relations read the RECORDED correspondence (measured substrate: fresh ids + sourceVertexIds, the partner ABSORBED): 2 surviving relation rows each NAMED by its source edge\'s endpoint PACKETS (v0·v1 style — the real minted names, recomputed independently), 2 ABSORBED partners named likewise, and the words count 4→1 · 4→2 · 2 absorbed',
+const packetEndpointName = (parentShape, ids) =>
+  ids.map((id) => expectedRootName(parentShape, id)).join('·');
+check('§1 (E1) the relations read the RECORDED correspondence (measured substrate: fresh ids + sourceVertexIds, the partner ABSORBED): 2 surviving relation rows each NAMED by its source edge\'s endpoint REFERENCE reads (name-or-address, ·-joined — `v0·v1` style, recomputed independently), 2 ABSORBED partners named likewise, and the words count 4→1 · 4→2 · 2 absorbed',
   torusReading !== null &&
     torusReading.relationRows.length === 2 &&
     torusReading.relationRows.every(
@@ -317,7 +317,7 @@ const expectedPairs = torusRecovery
   : [];
 const modelPairs = (torusReading.wordRows ?? []).map((w) => w.slotNames.join('+'));
 note(`torus word: model [${modelPairs.join(' · ')}] vs recomputed [${expectedPairs.join(' · ')}]`);
-check('§7 (P2·E1) ★★ THE RELATION MAP FROM THE WORD: □⟶𝕋² reads TWO attributed pairs recovered through the committed replay-verified word (recoverBornSurface — parsed from the born id, byte-verified), matching the independent recomputation SET-FOR-SET, both preserving; NOT "absorbed", NOT endpoint-inferred. B-105 W3 §4(a): the slots are ROLES — unnamed ends read bare (all four may DISPLAY alike), and the distinctness lives where the record keeps it: four distinct slot INDICES (position carries the role, no handle owed)',
+check('§7 (P2·E1) ★★ THE RELATION MAP FROM THE WORD: □⟶𝕋² reads TWO attributed pairs recovered through the committed replay-verified word (recoverBornSurface — parsed from the born id, byte-verified), matching the independent recomputation SET-FOR-SET, both preserving; NOT "absorbed", NOT endpoint-inferred. THE REFERENCE READ: unnamed ends read their ADDRESSES (never the absence word — each slot distinct), no handle owed, and the record keeps the role in the slot INDICES',
   torusRecovery !== null &&
     torusReading.wordRows !== null &&
     torusReading.wordRows.length === 2 &&
@@ -325,7 +325,7 @@ check('§7 (P2·E1) ★★ THE RELATION MAP FROM THE WORD: □⟶𝕋² reads TW
     modelPairs.every((p, i) => p === expectedPairs[i]) &&
     torusReading.wordRows.every((w) => w.mode === 'preserving') &&
     new Set(torusReading.wordRows.flatMap((w) => w.slotIndices)).size === 4 &&
-    torusReading.wordRows.every((w) => w.slotNames.every((s) => s === 'unnamed·unnamed')));
+    torusReading.wordRows.every((w) => w.slotNames.every((s) => !s.includes('unnamed'))));
 const kleinHost = wireForm(invokePrimitive('square', 976));
 const kleinApplied = applyPlaygroundOperationTo('flip-glue-klein', kleinHost.shape, null, 977, 8, [], null);
 const kleinReading = kleinApplied.ok ? buildArgumentReading(kleinApplied.born) : null;
