@@ -635,13 +635,6 @@ function SiteMemorial({
   const gone = marks.filter((m) => !m.restored);
   const back = marks.filter((m) => m.restored);
   if (gone.length === 0 && back.length === 0) return null;
-  // M.5 — the count form, and it is POSITIVE (`N removed here`), never a blank
-  const goneLine =
-    gone.length === 0 ? null : gone.length === 1 ? `${gone[0].name} — removed` : `${gone.length} removed here`;
-  // U.3 — the revert's own mark at the site: he must be able to tell
-  // *I undid it* from *the view moved*, exactly as for the removal itself
-  const backLine =
-    back.length === 0 ? null : back.length === 1 ? `${back[0].name} — restored` : `${back.length} restored here`;
   return (
     <Html center distanceFactor={13} zIndexRange={[38, 0]} style={{ pointerEvents: 'none' }}>
       <div
@@ -655,8 +648,33 @@ function SiteMemorial({
           fontStyle: 'italic',
         }}
       >
-        {goneLine ? <div style={{ fontSize: 11.5 }}>{goneLine}</div> : null}
-        {backLine ? <div style={{ fontSize: 11.5 }}>{backLine}</div> : null}
+        {/* M.2 + Δ23 (B-129 §3) — the NAME and the word on SEPARATE lines:
+            the name slot carries the ledger's copied TITLE, which already
+            ends in its own birth word in the same dash grammar (`Square —
+            invoked`), so a dash-joined mark read `Square — invoked —
+            removed` — the act's word riding the title's dash, the exact
+            contradiction Arman finished in nine words (Δ23). The words are
+            unchanged; only the join is gone. M.5's count form (POSITIVE,
+            `N removed here`, never a blank) is untouched. */}
+        {gone.length === 1 ? (
+          <div style={{ fontSize: 11.5 }}>
+            <div>{gone[0].name}</div>
+            <div>removed</div>
+          </div>
+        ) : gone.length > 1 ? (
+          <div style={{ fontSize: 11.5 }}>{`${gone.length} removed here`}</div>
+        ) : null}
+        {/* U.3 — the revert's own mark at the site: he must be able to tell
+            *I undid it* from *the view moved*, exactly as for the removal
+            itself — same composition, the word on its own line */}
+        {back.length === 1 ? (
+          <div style={{ fontSize: 11.5 }}>
+            <div>{back[0].name}</div>
+            <div>restored</div>
+          </div>
+        ) : back.length > 1 ? (
+          <div style={{ fontSize: 11.5 }}>{`${back.length} restored here`}</div>
+        ) : null}
       </div>
     </Html>
   );

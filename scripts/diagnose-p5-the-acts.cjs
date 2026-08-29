@@ -280,8 +280,11 @@ console.log('\n----- §6 the memorial: at the site, named, recessed, collapsing,
     viewSrc.includes('data-site-memorial') &&
     viewSrc.includes('<group key={`memorial:${key}`} position={at.home}>'));
 
-  check('§6 ⛔ M.2 + M.3 — THE NAME AND THE WORD, and the word is `removed`, NEVER `died`: same mechanism, two words, and the difference is AGENCY — `died` is what happens to a concept inside an op, `removed` is what happens when HE does it',
-    /\$\{gone\[0\]\.name\} — removed/.test(memorial) && !/\bdied\b/.test(memorial.replace(/\/\/[^\n]*/g, '')));
+  check('§6 ⛔ M.2 + M.3 + Δ23 (B-129 §3) — THE NAME AND THE WORD, the word is `removed` (NEVER `died`), AND THE WORD DOES NOT RIDE THE NAME’S DASH: the ledger’s copied name is the machine TITLE, which already ends in its birth word in the same dash grammar — so the act’s word stands on its OWN line, and the dash-joined `${name} — removed` composition is gone',
+    memorial.includes('<div>{gone[0].name}</div>') &&
+    memorial.includes('<div>removed</div>') &&
+    !/\$\{gone\[0\]\.name\} — removed/.test(memorial) &&
+    !/\bdied\b/.test(memorial.replace(/\/\/[^\n]*/g, '')));
 
   check('§6 ⛔ M.4 — RECESSED, A GHOST AND NOT A FORM: the SAME ink the page titles use, set back, in the page’s own serif — NO NEW SPECIES (no new colour, no new family, no badge)',
     memorial.includes('opacity: 0.42') && memorial.includes("fontFamily: 'Georgia") && memorial.includes('ink'));
@@ -296,7 +299,9 @@ console.log('\n----- §6 the memorial: at the site, named, recessed, collapsing,
   check('§6 ★★★ §5 — THE PAGE NEVER SHOWS A `removed` GHOST BENEATH A PRESENT FORM (the researcher’s strengthening, which would say gone-and-here at once): the site splits its marks on `restored`, drawing the absence for the ones still gone and the RETURN’S OWN POSITIVE MARK for the ones that came back — U.3, so he can tell *I undid it* from *the view moved*',
     memorial.includes('const gone = marks.filter((m) => !m.restored)') &&
     memorial.includes('const back = marks.filter((m) => m.restored)') &&
-    /\$\{back\[0\]\.name\} — restored/.test(memorial) &&
+    memorial.includes('<div>{back[0].name}</div>') &&
+    memorial.includes('<div>restored</div>') &&
+    !/\$\{back\[0\]\.name\} — restored/.test(memorial) &&
     memorial.includes('${back.length} restored here'));
 }
 
