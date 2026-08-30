@@ -171,6 +171,13 @@ def toggle_aperture_panel(page):
     # open panel covering the control is also what starved the exact-click).
     # The panel header reads 'the aperture — …' vs the toggle's bare
     # 'aperture — …', so the presence check cannot hit the toggle itself.
+    # ⚠ THE ADDRESS IS A PREFIX, NEVER EQUALITY (the X1 §6 box residue's
+    # actual mechanism, measured at the probe): the toggle's caption CARRIES
+    # ITS TARGET once a volume is selected — 'aperture — build a 3-manifold
+    # (on 4-gon × I — loaded)' — and D9's drop AUTO-SELECTS, so the flow's
+    # own success renamed the button out from under an equality match. Both
+    # paths then no-opped SILENTLY, and 'neither' conflated ABSENT with
+    # INERT; 'not-found' is the honest third verdict.
     def panel_up():
         return page.get_by_text("the aperture — build a 3-manifold", exact=False).count() > 0
 
@@ -181,25 +188,26 @@ def toggle_aperture_panel(page):
     rect = page.evaluate(
         """() => {
       const b = [...document.querySelectorAll('button')].find(
-        (x) => (x.textContent ?? '').trim() === 'aperture — build a 3-manifold');
+        (x) => ((x.textContent ?? '').trim()).startsWith('aperture — build a 3-manifold'));
       if (!b) return null;
       const r = b.getBoundingClientRect();
       return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
     }"""
     )
-    if rect:
-        page.mouse.move(rect["x"], rect["y"])
-        page.wait_for_timeout(90)
-        page.mouse.down()
-        page.wait_for_timeout(40)
-        page.mouse.up()
-        page.wait_for_timeout(500)
-        if panel_up():
-            return "hand"
+    if rect is None:
+        return "not-found"
+    page.mouse.move(rect["x"], rect["y"])
+    page.wait_for_timeout(90)
+    page.mouse.down()
+    page.wait_for_timeout(40)
+    page.mouse.up()
+    page.wait_for_timeout(500)
+    if panel_up():
+        return "hand"
     page.evaluate(
         """() => {
       const b = [...document.querySelectorAll('button')].find(
-        (x) => (x.textContent ?? '').trim() === 'aperture — build a 3-manifold');
+        (x) => ((x.textContent ?? '').trim()).startsWith('aperture — build a 3-manifold'));
       if (b) {
         b.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
         b.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
@@ -211,11 +219,59 @@ def toggle_aperture_panel(page):
     return "dispatch" if panel_up() else "neither"
 
 
+def explore_chip_mouths(page):
+    # THE CHIP'S OWN MOUTHS (the X1 §6 prism residue's instrument): the
+    # greyed chip SPEAKS (B-104 — opacity 0.38 + a hover tooltip carrying
+    # the reason), and the door's threshold refusal renders by name
+    # ([data-explore-refusal]). A window count alone is a presence proxy
+    # that cannot say WHY — measured: the failing summon left a written
+    # form selected, the chip greyed with 'no single {p,q}: …' spoken in
+    # its tooltip, and the old driver pressed it anyway and read 0.
+    state = page.evaluate(
+        """() => {
+      const b = document.querySelector('button[aria-label="explore inside"]');
+      const refusal = document.querySelector('[data-explore-refusal]');
+      return {
+        chipFound: Boolean(b),
+        chipEnabled: b ? getComputedStyle(b).opacity === '1' : false,
+        refusalText: refusal ? (refusal.textContent ?? '').trim().slice(0, 160) : null,
+        windowCount: document.querySelectorAll('[data-explore-window]').length,
+      };
+    }"""
+    )
+    tip = None
+    if state["chipFound"] and not state["chipEnabled"]:
+        rect = page.evaluate(
+            """() => { const b = document.querySelector('button[aria-label="explore inside"]');
+          const r = b.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; }"""
+        )
+        page.mouse.move(rect["x"], rect["y"])
+        page.wait_for_timeout(300)
+        tip = page.evaluate(
+            """() => {
+          const n = [...document.querySelectorAll('div')].filter((x) =>
+            (x.textContent ?? '').includes('explore inside — walk the habitat'));
+          n.sort((a, b) => a.textContent.length - b.textContent.length);
+          return n[0] ? n[0].textContent.trim().slice(0, 200) : null;
+        }"""
+        )
+    state["tooltip"] = tip
+    return state
+
+
 def open_explore_window(page):
-    # the `explore inside` chip, same protocol: the hand-like path first
+    # the `explore inside` chip, same protocol: the hand-like path first —
+    # but GATED BY THE CHIP'S MOUTH: a disabled chip is never pressed (the
+    # press is silent noise; the mouth already says why), and the returned
+    # mode carries the app's own words for the record.
     def window_up():
         return page.locator("[data-explore-window]").count() > 0
 
+    mouths = explore_chip_mouths(page)
+    if not mouths["chipFound"]:
+        return "no-chip"
+    if not mouths["chipEnabled"]:
+        return "disabled(" + (mouths["tooltip"] or "no spoken reason") + ")"
     rect = page.evaluate(
         """() => {
       const b = document.querySelector('button[aria-label="explore inside"]');
@@ -244,7 +300,12 @@ def open_explore_window(page):
     }"""
     )
     page.wait_for_timeout(600)
-    return "dispatch" if window_up() else "neither"
+    if window_up():
+        return "dispatch"
+    after = explore_chip_mouths(page)
+    if after["refusalText"]:
+        return "refused(" + after["refusalText"] + ")"
+    return "neither"
 
 
 def place_newest_shelf_parcel(page):
@@ -1531,17 +1592,31 @@ def explore_seam(page):
 
 
 def select_dim3(page, group_prefix, expect_fit=True, last=False):
-    # ARMAN'S LAW: summon is a DOUBLE-CLICK; project the room's own group
+    # ARMAN'S LAW: summon is a DOUBLE-CLICK; project the room's own group.
+    # ⚠ MOUTH-JUDGED (measured, both directions in one day): the dblclick
+    # raycast can land on a WRITTEN FORM in front of the room — 'Fit
+    # Selected' still shows (a selection EXISTS), so presence cannot judge
+    # WHICH. The explore chip is enabled exactly when a dim3-family
+    # selection stands (exploreEligible: dim3:/dim3f: — the door's own
+    # predicate), so the chip's opacity judges the summon; re-aim with
+    # small offsets while it stays grey.
     page.evaluate("() => window.scrollTo(0, 0)")
-    pt = project_group_center(page, group_prefix, last=last)
-    if pt is None:
-        return False
-    page.mouse.dblclick(pt["x"], pt["y"])
-    page.wait_for_timeout(1200)  # the C1 select flight settles
+    landed = False
+    for ox, oy in [(0, 0), (18, -14), (-20, 12), (0, -26)]:
+        pt = project_group_center(page, group_prefix, last=last)
+        if pt is None:
+            return False
+        page.mouse.dblclick(pt["x"] + ox, pt["y"] + oy)
+        page.wait_for_timeout(1200)  # the C1 select flight settles
+        if explore_chip_mouths(page)["chipEnabled"]:
+            landed = True
+            break
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(300)
     if not expect_fit:
         return True
     fit = page.get_by_text("Fit Selected", exact=True)
-    return fit.count() > 0
+    return landed and fit.count() > 0
 
 
 def drive_explore(page):
@@ -1744,7 +1819,16 @@ def drive_explore(page):
     # previously-green step); an evaluate forces the queue through first
     page.evaluate("() => 0")
     page.wait_for_timeout(400)
-    page.get_by_text("close — return to the shell", exact=True).click()
+    # the pump alone still starved once (measured, 1-in-6): retry the click
+    # with its own short deadline, pumping between tries — the button is
+    # resolved and visible; only the delivery fence wobbles
+    for _ in range(4):
+        try:
+            page.get_by_text("close — return to the shell", exact=True).click(timeout=8000)
+            break
+        except Exception:  # noqa: BLE001
+            page.evaluate("() => 0")
+            page.wait_for_timeout(600)
     page.wait_for_timeout(500)
     window_gone = page.locator("[data-explore-window]").count() == 0
     fit_still = page.get_by_text("Fit Selected", exact=True).count() > 0
@@ -1755,12 +1839,33 @@ def drive_explore(page):
     card_door = page.locator("[data-explore-door] button")
     record("explore.cardDoorPresent", card_door.count() > 0, "the card's own doorway row (the charter's card-frame site)")
     if card_door.count() > 0:
-        card_door.first.click()
-        page.wait_for_timeout(400)
-        reopened = page.locator("[data-explore-window]").count() > 0
+        try:
+            card_door.first.click(timeout=6000)
+        except Exception:  # noqa: BLE001 — the busy-page overlay starves the
+            # real click's hit-target loop (measured 2-in-10 here); fall to
+            # the dispatch idiom — the window count below stays the judge
+            page.evaluate(
+                """() => { const b = document.querySelector('[data-explore-door] button');
+              if (b) { b.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                       b.dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); b.click(); } }"""
+            )
+        # STATE-JUDGED, not clock-judged (measured: under contention the
+        # click's effect lands late; a fixed 400ms read False and the LATE
+        # window then leaked past this check into the end-of-drive shell
+        # verdict — two records lying about one delivery fence)
+        reopened = False
+        for _ in range(12):
+            page.wait_for_timeout(500)
+            if page.locator("[data-explore-window]").count() > 0:
+                reopened = True
+                break
         page.keyboard.press("Escape")
-        page.wait_for_timeout(400)
-        esc_closed = page.locator("[data-explore-window]").count() == 0
+        esc_closed = False
+        for _ in range(12):
+            page.wait_for_timeout(500)
+            if page.locator("[data-explore-window]").count() == 0:
+                esc_closed = True
+                break
         still_selected = page.get_by_text("Fit Selected", exact=True).count() > 0
         record(
             "explore.cardDoorAndEsc",
@@ -1780,6 +1885,7 @@ def drive_explore(page):
     page.keyboard.press("Escape")
     page.wait_for_timeout(300)
     box_err = None
+    box_group = None
     try:
         # invoke on the RIGHT flank — the prism block owns the lower-left
         # spots, and a crowded palette point starves its Pentagon click
@@ -1834,6 +1940,11 @@ def drive_explore(page):
         # which makes it the one door's volume)
         if not place_newest_shelf_parcel(page):
             raise RuntimeError("the born box never reached the shelf")
+        box_group = page.evaluate(
+            """() => { const scene = window.__manuscriptScene; const names = [];
+          scene.traverse((o) => { if (o.name && o.name.startsWith('written:w')) names.push(o.name); });
+          return names.pop() || null; }"""
+        )
     except Exception as err:  # noqa: BLE001
         box_err = str(err)
     record(
@@ -1843,10 +1954,10 @@ def drive_explore(page):
     )
     page.evaluate("() => window.scrollTo(0, 0)")
     page.wait_for_timeout(200)
-    toggle_aperture_panel(page)
+    toggle_mode = toggle_aperture_panel(page)
     page.wait_for_timeout(400)
     panel_up = page.get_by_text("the aperture — build a 3-manifold", exact=False).count() > 0
-    record("explore.aperturePanel", panel_up, "the build panel opens (on the person's own box)")
+    record("explore.aperturePanel", panel_up, f"the build panel opens (on the person's own box) · toggle {toggle_mode}")
     if panel_up:
         # the panel's OWN selects: the box's END faces by the ids' structure —
         # thicken mints the two ends as `<base-face-id>@0` / `@1` (thicken.ts
@@ -1901,7 +2012,7 @@ def drive_explore(page):
             # researcher's precedent — a legal partial pairing is a room);
             # its four unpaired faces render as WALLS and the caption says
             # where the manifold ends. The old refusal is RETIRED.
-            open_explore_window(page)
+            door_mode_b = open_explore_window(page)
             page.wait_for_timeout(600)
             window_open_b = page.locator("[data-explore-window]").count() > 0
             try:
@@ -1918,127 +2029,214 @@ def drive_explore(page):
                 window_open_b and bool(seam) and seam["gpu"] and seam["walls"] == 4
                 and "the manifold ends here" in b_caption
                 and page.locator("[data-explore-refusal]").count() == 0,
-                f"the bounded room OPENS: window {window_open_b} · gpu {seam and seam['gpu']} · walls {seam and seam['walls']} (the four open faces) · caption: {b_caption[:110]}",
+                f"the bounded room OPENS: window {window_open_b} · door {door_mode_b} · gpu {seam and seam['gpu']} · walls {seam and seam['walls']} (the four open faces) · caption: {b_caption[:110]}",
             )
             page.keyboard.press("Escape")
             page.wait_for_timeout(300)
-        # ---- ★ THE CONE OPENS (the GPU reset's new law): a fully-paired
-        # room with k≠4 classes — keys d-1 · d+2 · d+3 on the three face
-        # pairs give a SOUND Euclidean cone-manifold (2 × 180°, measured in
-        # grounding; rodK carries 2s the shader draws HEAVY) ----------------
-        if page.get_by_text("the aperture — build a 3-manifold", exact=True).count() == 0:
-            toggle_aperture_panel(page)
-        page.wait_for_timeout(400)
-        # THE THREE PAIRS from the box's own id structure — measured live:
-        # the two ENDS share one stem with @0/@1 (the product's end mint);
-        # the four SIDES carry their base edge's hash with @I, so side
-        # OPPOSITION is not readable from the ids. The S² GATE is the judge
-        # anyway: try each of the three side-pairings with the d-1 · d+2 ·
-        # d+3 maps until a room is BORN (a new dim3:built- group — never the
-        # summon of an older room), and let the refusals stand as refusals.
-        pairs_info = page.evaluate(
-            """() => {
-          const sels = [...document.querySelectorAll('select')];
-          let all = [];
-          for (const s of sels) {
-            const vals = [...s.options].map((o) => o.value).filter(Boolean);
-            if (vals.length >= 6) { all = vals; break; }
-          }
-          if (all.length < 6) return null;
-          const byStem = {};
-          for (const v of all) {
-            const m = v.match(/^(.*)@([01])$/);
-            if (m) (byStem[m[1]] = byStem[m[1]] ?? []).push(v);
-          }
-          const stem = Object.keys(byStem).find((k) => byStem[k].length === 2);
-          const ends = stem ? byStem[stem].sort() : [];
-          const sides = all.filter((v) => !ends.includes(v));
-          if (ends.length !== 2 || sides.length !== 4) return null;
-          return { ends, sides };
-        }"""
-        )
-
-        def built_room_count():
-            return page.evaluate(
-                """() => {
-              const s = window.__manuscriptScene;
-              let n = 0;
-              if (s) s.traverse((o) => { if (o.name && o.name.startsWith('written:dim3:built-')) n += 1; });
-              return n;
-            }"""
-            )
-
-        cone3_built = False
-        if pairs_info is None:
-            record("explore.conePairs", False, "the box's six faces did not resolve (ends by @0/@1 stem + four sides)")
-        else:
-            ends2 = pairs_info["ends"]
-            sd = pairs_info["sides"]
-            arrangements = [
-                [sd[0], sd[1], sd[2], sd[3]],
-                [sd[0], sd[2], sd[1], sd[3]],
-                [sd[0], sd[3], sd[1], sd[2]],
-            ]
-            base_rooms = built_room_count()
-            for arr in arrangements:
-                fill = [arr[0], arr[1], arr[2], arr[3], ends2[0], ends2[1]]
-                fsel = page.locator(f'select:has(option[value="{ends2[1]}"])')
-                for idx in range(6):
-                    fsel.nth(idx).select_option(fill[idx])
-                    page.wait_for_timeout(150)
-                page.evaluate(
-                    """() => {
-                  const maps = [...document.querySelectorAll('select')].filter(
-                    (s) => [...s.options].some((o) => /^d[+-]/.test(o.value)));
-                  const want = ['d-1', 'd+2', 'd+3'];
-                  maps.forEach((m, i) => {
-                    if ([...m.options].some((o) => o.value === want[i])) {
-                      m.value = want[i];
-                      m.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                  });
-                }"""
-                )
+        try:
+            # ---- ★ THE CONE OPENS (the GPU reset's new law): a fully-paired
+            # room with k≠4 classes — keys d-1 · d+2 · d+3 on the three face
+            # pairs give a SOUND Euclidean cone-manifold (2 × 180°, measured in
+            # grounding; rodK carries 2s the shader draws HEAVY) ----------------
+            # ⚠ THE ONE-DOOR LAW BITES BACK (measured at the leg): the bounded
+            # build's select_dim3 moved the SELECTION to the born room, and the
+            # panel's volume IS the selection — reopened blind, the panel
+            # targeted the ROOM, whose already-glued end slots render DISABLED,
+            # and the three-pair fill hung 'waiting for enabled' on exactly
+            # that row. Re-select the PLACED BOX first (close the gate so the
+            # panel cannot shadow the click), and read the toggle's own caption
+            # — it NAMES its target — as the verification.
+            if page.get_by_text("close the aperture gate", exact=True).count() > 0:
+                page.get_by_text("close the aperture gate", exact=True).first.click()
                 page.wait_for_timeout(300)
-                page.get_by_text("glue — the S² gate judges", exact=True).click()
-                page.wait_for_timeout(1500)
-                page.get_by_text("close the aperture gate", exact=True).click()
-                page.wait_for_timeout(400)
-                if built_room_count() > base_rooms:
-                    cone3_built = select_dim3(page, "written:dim3:built-", last=True)
+            if box_group:
+                # Reset first (measured): the bounded summon flew the camera
+                # to the born room, and under that framing the box's
+                # projected center sits behind the room's own figure — three
+                # re-clicks still left the caption naming the room. The
+                # default framing puts the drop point back in the clear.
+                page.get_by_text("Reset Camera", exact=True).click()
+                page.wait_for_timeout(900)
+                for ox, oy in [(0, 0), (16, -12), (-18, 10), (44, 0), (0, 46), (-48, -36)]:
+                    bxp = project_group_center(page, box_group)
+                    if not (bxp and 0 < bxp["x"] < 1500 and 0 < bxp["y"] < 940):
+                        break
+                    tx, ty = bxp["x"] + ox, bxp["y"] + oy
+                    top = page.evaluate(
+                        "([x, y]) => { const el = document.elementFromPoint(x, y); return el ? el.tagName : null; }",
+                        [tx, ty],
+                    )
+                    if top != "CANVAS":
+                        # a chrome panel covers this spot — the click would
+                        # hit the panel, never the paper
+                        continue
+                    # ⚠ THE PICK IS A DOUBLE-CLICK (Arman's law, the
+                    # residual-orbit clause: the summon/pick fires only at
+                    # detail ≥ 2) — a single unshifted click on a body is
+                    # INERT by design; measured: three single clicks at the
+                    # box's own clean projected point selected nothing
+                    page.mouse.dblclick(tx, ty)
+                    page.wait_for_timeout(700)
+                    probe_cap = page.evaluate(
+                        """() => { const b = [...document.querySelectorAll('button')].find(
+                        (x) => ((x.textContent ?? '').trim()).startsWith('aperture — build a 3-manifold'));
+                      return b ? b.textContent.trim() : null; }"""
+                    )
+                    if probe_cap and '× I' in probe_cap:
+                        break
+            cone_target = page.evaluate(
+                """() => { const b = [...document.querySelectorAll('button')].find(
+                (x) => ((x.textContent ?? '').trim()).startsWith('aperture — build a 3-manifold'));
+              return b ? b.textContent.trim() : null; }"""
+            )
+            bxp_said = bxp if box_group else None
+            record(
+                "explore.coneTargetsBox",
+                bool(cone_target and '× I' in cone_target),
+                f"the door's own caption names the three-pair build's target: {cone_target} · box projected at {bxp_said}",
+            )
+            # the reopen is MOUTH-JUDGED with a retry (measured: a single
+            # blind press can starve under the crowded sheet, and its
+            # discarded mode was the same absent-vs-inert readout gap)
+            for _ in range(3):
+                if page.get_by_text("the aperture — build a 3-manifold", exact=True).count() > 0:
                     break
-                # this arrangement refused — reopen the gate for the next one
                 toggle_aperture_panel(page)
                 page.wait_for_timeout(400)
-        record("explore.coneFormBuilt", cone3_built, "the fully-paired cone form (d-1 · d+2 · d+3) joins the dim-3 band")
-        if cone3_built:
-            open_explore_window(page)
-            page.wait_for_timeout(600)
-            window_open_cone = page.locator("[data-explore-window]").count() > 0
-            try:
-                page.wait_for_function(
-                    "() => window.__exploreWindow && window.__exploreWindow.gpu && window.__exploreWindow.renderFrames > 3",
-                    timeout=15000,
+            page.wait_for_timeout(400)
+            # THE THREE PAIRS from the box's own id structure — measured live:
+            # the two ENDS share one stem with @0/@1 (the product's end mint);
+            # the four SIDES carry their base edge's hash with @I, so side
+            # OPPOSITION is not readable from the ids. The S² GATE is the judge
+            # anyway: try each of the three side-pairings with the d-1 · d+2 ·
+            # d+3 maps until a room is BORN (a new dim3:built- group — never the
+            # summon of an older room), and let the refusals stand as refusals.
+            pairs_info = None
+            for _ in range(4):
+                pairs_info = page.evaluate(
+                    """() => {
+              const sels = [...document.querySelectorAll('select')];
+              let all = [];
+              for (const s of sels) {
+                const vals = [...s.options].map((o) => o.value).filter(Boolean);
+                if (vals.length >= 6) { all = vals; break; }
+              }
+              if (all.length < 6) return null;
+              const byStem = {};
+              for (const v of all) {
+                const m = v.match(/^(.*)@([01])$/);
+                if (m) (byStem[m[1]] = byStem[m[1]] ?? []).push(v);
+              }
+              const stem = Object.keys(byStem).find((k) => byStem[k].length === 2);
+              const ends = stem ? byStem[stem].sort() : [];
+              const sides = all.filter((v) => !ends.includes(v));
+              if (ends.length !== 2 || sides.length !== 4) return null;
+              return { ends, sides };
+                }"""
                 )
-            except Exception:
-                pass
-            seam = explore_seam(page)
-            rod_k = (seam and seam["rodK"]) or []
-            cone_caption = (seam and seam["caption"]) or ""
-            record(
-                "explore.coneOpens",
-                window_open_cone and bool(seam) and seam["gpu"] and any(k != 4 for k in rod_k)
-                and "cone edges" in cone_caption and "flat" not in cone_caption,
-                f"the cone form OPENS: window {window_open_cone} · gpu {seam and seam['gpu']} · rodK {rod_k} (k≠4 rods ride the shader HEAVY) · caption names the cone edges, never 'flat': {cone_caption[:80]}",
-            )
-            try:
-                pbox = page.locator("[data-explore-window]").bounding_box()
-                page.screenshot(path=_frame_path("gpu_cone_window.png"), clip=pbox)
-                record("explore.conePlate", True, "_frames/gpu_cone_window.png captured")
-            except Exception as err:
-                record("explore.conePlate", False, f"the cone plate failed to capture: {err}")
-            page.keyboard.press("Escape")
-            page.wait_for_timeout(300)
+                if pairs_info is not None:
+                    break
+                page.wait_for_timeout(600)
+
+            def built_room_count():
+                return page.evaluate(
+                    """() => {
+                  const s = window.__manuscriptScene;
+                  let n = 0;
+                  if (s) s.traverse((o) => { if (o.name && o.name.startsWith('written:dim3:built-')) n += 1; });
+                  return n;
+                }"""
+                )
+
+            cone3_built = False
+            if pairs_info is None:
+                record("explore.conePairs", False, "the box's six faces did not resolve (ends by @0/@1 stem + four sides)")
+            else:
+                ends2 = pairs_info["ends"]
+                sd = pairs_info["sides"]
+                arrangements = [
+                    [sd[0], sd[1], sd[2], sd[3]],
+                    [sd[0], sd[2], sd[1], sd[3]],
+                    [sd[0], sd[3], sd[1], sd[2]],
+                ]
+                base_rooms = built_room_count()
+                fill_wall = None
+                for arr in arrangements:
+                    fill = [arr[0], arr[1], arr[2], arr[3], ends2[0], ends2[1]]
+                    fsel = page.locator(f'select:has(option[value="{ends2[1]}"])')
+                    try:
+                        for idx in range(6):
+                            fsel.nth(idx).select_option(fill[idx], timeout=8000)
+                            page.wait_for_timeout(150)
+                    except Exception:  # noqa: BLE001 — the slots' own states speak
+                        fill_wall = page.evaluate(
+                            """(endVal) => [...document.querySelectorAll('select')]
+                          .filter((s) => [...s.options].some((o) => o.value === endVal))
+                          .map((s) => ({ disabled: s.disabled, visible: Boolean(s.offsetParent) }))""",
+                            ends2[1],
+                        )
+                        record(
+                            "explore.conePairFill",
+                            False,
+                            f"the six-slot fill starved — the matching selects' own states: {fill_wall}",
+                        )
+                        break
+                    page.evaluate(
+                        """() => {
+                      const maps = [...document.querySelectorAll('select')].filter(
+                        (s) => [...s.options].some((o) => /^d[+-]/.test(o.value)));
+                      const want = ['d-1', 'd+2', 'd+3'];
+                      maps.forEach((m, i) => {
+                        if ([...m.options].some((o) => o.value === want[i])) {
+                          m.value = want[i];
+                          m.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                      });
+                    }"""
+                    )
+                    page.wait_for_timeout(300)
+                    page.get_by_text("glue — the S² gate judges", exact=True).click()
+                    page.wait_for_timeout(1500)
+                    page.get_by_text("close the aperture gate", exact=True).click()
+                    page.wait_for_timeout(400)
+                    if built_room_count() > base_rooms:
+                        cone3_built = select_dim3(page, "written:dim3:built-", last=True)
+                        break
+                    # this arrangement refused — reopen the gate for the next one
+                    toggle_aperture_panel(page)
+                    page.wait_for_timeout(400)
+            record("explore.coneFormBuilt", cone3_built, "the fully-paired cone form (d-1 · d+2 · d+3) joins the dim-3 band")
+            if cone3_built:
+                door_mode_c = open_explore_window(page)
+                page.wait_for_timeout(600)
+                window_open_cone = page.locator("[data-explore-window]").count() > 0
+                try:
+                    page.wait_for_function(
+                        "() => window.__exploreWindow && window.__exploreWindow.gpu && window.__exploreWindow.renderFrames > 3",
+                        timeout=15000,
+                    )
+                except Exception:
+                    pass
+                seam = explore_seam(page)
+                rod_k = (seam and seam["rodK"]) or []
+                cone_caption = (seam and seam["caption"]) or ""
+                record(
+                    "explore.coneOpens",
+                    window_open_cone and bool(seam) and seam["gpu"] and any(k != 4 for k in rod_k)
+                    and "cone edges" in cone_caption and "flat" not in cone_caption,
+                    f"the cone form OPENS: window {window_open_cone} · door {door_mode_c} · gpu {seam and seam['gpu']} · rodK {rod_k} (k≠4 rods ride the shader HEAVY) · caption names the cone edges, never 'flat': {cone_caption[:80]}",
+                )
+                try:
+                    pbox = page.locator("[data-explore-window]").bounding_box()
+                    page.screenshot(path=_frame_path("gpu_cone_window.png"), clip=pbox)
+                    record("explore.conePlate", True, "_frames/gpu_cone_window.png captured")
+                except Exception as err:
+                    record("explore.conePlate", False, f"the cone plate failed to capture: {err}")
+                page.keyboard.press("Escape")
+                page.wait_for_timeout(300)
+        except Exception as cone_err:  # noqa: BLE001 — a wall in the cone
+            # sub-drive must never silence the prism section's clauses
+            record("explore.coneDrive", False, f"the cone sub-drive died: {cone_err!r}")
     # ---- ★ THE DOOR-FEED partial: the PRISM room by the person's own hands —
     # invoke Pentagon + Segment → thicken → summon the born prism (the one
     # door: the panel's volume is the SELECTION) → pair the two pentagon
@@ -2216,6 +2414,7 @@ def drive_explore(page):
             }"""
             )
             prism_room_built = False
+            summon_mouths = None
             if built_name:
                 bp = project_group_center(page, built_name)
                 for _ in range(6):
@@ -2230,12 +2429,36 @@ def drive_explore(page):
                     page.wait_for_timeout(450)
                     bp = project_group_center(page, built_name)
                 if bp and 0 < bp["x"] < 1500 and 0 < bp["y"] < 940:
-                    page.mouse.dblclick(bp["x"], bp["y"])
-                    page.wait_for_timeout(1400)
-                    prism_room_built = page.get_by_text("Fit Selected", exact=True).count() > 0
-        record("explore.prismRoomBuilt", prism_room_built, f"the pentagon-prism room (ends paired, sides open) joins the dim-3 band · summoned by name {built_name}")
+                    # ⚠ the summon dblclick can land on a WRITTEN FORM in
+                    # front of the room (measured at the probe: 'Fit
+                    # Selected' still shows — a selection EXISTS — while the
+                    # chip greys with the w: tiling reason in its tooltip;
+                    # a judge reading only 'Fit Selected' cannot tell a room
+                    # from a form). Judge by the door's own predicate — the
+                    # chip ENABLED — and re-aim while it stays grey.
+                    for ox, oy in [(0, 0), (18, -14), (-20, 12), (0, -26)]:
+                        bp2 = project_group_center(page, built_name, last=True)
+                        if not bp2:
+                            break
+                        page.mouse.dblclick(bp2["x"] + ox, bp2["y"] + oy)
+                        page.wait_for_timeout(1400)
+                        summon_mouths = explore_chip_mouths(page)
+                        if summon_mouths["chipEnabled"]:
+                            break
+                        page.keyboard.press("Escape")
+                        page.wait_for_timeout(400)
+                    prism_room_built = (
+                        page.get_by_text("Fit Selected", exact=True).count() > 0
+                        and bool(summon_mouths and summon_mouths["chipEnabled"])
+                    )
+        record(
+            "explore.prismRoomBuilt",
+            prism_room_built,
+            f"the pentagon-prism room (ends paired, sides open) joins the dim-3 band · summoned by name {built_name}"
+            + ("" if prism_room_built else f" · summon mouth: {summon_mouths}"),
+        )
         if prism_room_built:
-            open_explore_window(page)
+            door_mode_p = open_explore_window(page)
             page.wait_for_timeout(600)
             window_open_p = page.locator("[data-explore-window]").count() > 0
             try:
@@ -2251,7 +2474,7 @@ def drive_explore(page):
                 "explore.prismRoomOpens",
                 window_open_p and bool(seam) and seam["gpu"] and seam["walls"] == 5
                 and "the manifold ends here" in p_caption and "sealed" not in p_caption,
-                f"the PRISM room OPENS: window {window_open_p} · gpu {seam and seam['gpu']} · walls {seam and seam['walls']} (the five open sides) · caption (no divergence claim): {p_caption[:110]}",
+                f"the PRISM room OPENS: window {window_open_p} · door {door_mode_p} · gpu {seam and seam['gpu']} · walls {seam and seam['walls']} (the five open sides) · caption (no divergence claim): {p_caption[:110]}",
             )
             try:
                 pbox = page.locator("[data-explore-window]").bounding_box()
