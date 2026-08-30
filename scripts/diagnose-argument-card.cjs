@@ -116,8 +116,9 @@ check('§1 (E1) ★★ THE TORUS MAP READS THE TRACE: ONE concept row, IDENTIFIE
 // absent there, only its name may be — so an unnamed end reads its ADDRESS
 // (the id tail), never the absence word; no handle, no count, no index
 // (position carries the direction; an address is not a handle — the form
-// already has it). And the separator is chosen by the SLOT'S KIND, never by
-// operand length: endpoint compositions always join `·`.
+// already has it). THE RUN GLYPH (B-132 §1): the recorded endpoint pair is
+// an ORDERED RUN and joins `→` SET TIGHT — the tight setting makes the pair
+// one unit under the row's loose ` ← `; `·` read as a set and hid the cycle.
 // Recomputed INDEPENDENTLY here from the parent's own packets + the ruled
 // rule — never from the model's output.
 const expectedRootName = (parentShape, id) => {
@@ -126,8 +127,8 @@ const expectedRootName = (parentShape, id) => {
   return id.split(':').pop() ?? id;
 };
 const packetEndpointName = (parentShape, ids) =>
-  ids.map((id) => expectedRootName(parentShape, id)).join('·');
-check('§1 (E1) the relations read the RECORDED correspondence (measured substrate: fresh ids + sourceVertexIds, the partner ABSORBED): 2 surviving relation rows each NAMED by its source edge\'s endpoint REFERENCE reads (name-or-address, ·-joined — `v0·v1` style, recomputed independently), 2 ABSORBED partners named likewise, and the words count 4→1 · 4→2 · 2 absorbed',
+  ids.map((id) => expectedRootName(parentShape, id)).join('→');
+check('§1 (E1) the relations read the RECORDED correspondence (measured substrate: fresh ids + sourceVertexIds, the partner ABSORBED): 2 surviving relation rows each NAMED by its source edge\'s endpoint REFERENCE reads (name-or-address, the ordered run joined `→` SET TIGHT — `v0→v1` style, recomputed independently), 2 ABSORBED partners named likewise, and the words count 4→1 · 4→2 · 2 absorbed',
   torusReading !== null &&
     torusReading.relationRows.length === 2 &&
     torusReading.relationRows.every(

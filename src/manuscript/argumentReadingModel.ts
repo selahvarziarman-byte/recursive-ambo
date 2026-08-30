@@ -563,14 +563,21 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
     if (roots.length === 1 && roots[0] === id) return referenceNameOf(id);
     return roots.map(referenceNameOf).join('·');
   };
-  // the separator is chosen by the SLOT'S KIND, never by its operands'
-  // length (designer-ruled: `AB` for the corners A and B is indistinguishable
-  // from ONE corner named AB — a positive fact, that there are two endpoints,
-  // carried by nothing). This joiner serves one kind — endpoint compositions —
-  // so one glyph, the standing `·` (the glyph itself is the designer's).
-  const joinNames = (parts: string[]): string => parts.join('·');
-  const endpointLetters = (endpointIds: readonly string[]): string =>
-    joinNames(endpointIds.map(endpointNameOf));
+  // THE RUN GLYPH (designer-ruled at the eye, B-132 §1): an edge's recorded
+  // endpoint pair is an ORDERED RUN, and it joins with `→` SET TIGHT — the
+  // tight setting is the mechanism, not a detail: it makes the pair ONE UNIT
+  // so the row's loose ` ← ` stays unambiguously the outer operator (the
+  // spaced variant demonstrably breaks — two operators at one level). With
+  // addresses in, each row's first term is another row's second
+  // (`v0→v1 · v1→v2 · …`) — the tight run is what lets the four rows read
+  // as a FIGURE rather than a list; `·` read as a set and hid the cycle.
+  // The separator is chosen by the SLOT'S KIND, never by its operands: the
+  // ordered pair takes its OWN joiner, and the genuinely unordered joins
+  // (a merged class's members, a composition's roots) keep their `·`.
+  // No collision with `⟶` by construction: a map joins names of FORMS, a
+  // run joins ADDRESSES.
+  const runPair = (endpointIds: readonly string[]): string =>
+    endpointIds.map(endpointNameOf).join('→');
   const parentEdgeIds = parent ? new Set(parent.edges.map((e) => e.id)) : null;
   const relationLabelOf = new Map(
     [...shape.edges].map((e) => e.id).sort().map((id, i) => [id, letterFor(i, RELATION_LETTERS)]),
@@ -614,7 +621,7 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
         ownName: relationOwnName(edge),
         sourceIds,
         rootIds: [],
-        rootLabels: [endpointLetters(sourceEndpoints)], // the source edge, endpoint-named
+        rootLabels: [runPair(sourceEndpoints)], // the source edge, endpoint-named
         rootOwnNames: [], // relations carry no root set — the count form is the concepts'
         typing,
         bornOf: null,
@@ -698,7 +705,7 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
   // own endpoint letters. True vertex deaths counted separately.
   const childEdgeIds = new Set(shape.edges.map((e) => e.id));
   const absorbedRelations = parent
-    ? parent.edges.filter((e) => !childEdgeIds.has(e.id)).map((e) => endpointLetters(e.vertexIds))
+    ? parent.edges.filter((e) => !childEdgeIds.has(e.id)).map((e) => runPair(e.vertexIds))
     : [];
   const absorbedVertexIds = new Set(conceptRows.flatMap((r) => r.sourceIds));
   // M3 — the died IDENTITIES first (the ONE filter), the count derived from
@@ -751,7 +758,7 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
     const face = recovery.parentFace;
     const n = face.vertexIds.length;
     const slotName = (slot: number): string =>
-      endpointLetters([face.vertexIds[slot % n], face.vertexIds[(slot + 1) % n]]);
+      runPair([face.vertexIds[slot % n], face.vertexIds[(slot + 1) % n]]);
     wordRows = recovery.pairings.map((pair, k) => {
       const letter = letterFor(k, RELATION_LETTERS);
       return {
