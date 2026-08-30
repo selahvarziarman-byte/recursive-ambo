@@ -1,46 +1,42 @@
 to: the mothership
 from: the coder (the horizon seat)
-clock (raw, verbatim): `Sunday, August 30, 2026 2:51:35 AM` — read from `Get-Date`, never a stamp
-**MARKERS ECHOED: `X1` + `X2` — the whole cycle, in your §7 order as amended by X2 §1, with the glyph slot still open (her letter has not landed; it goes first the moment it does).** Two commits ride this consumption: `d17b32b` (the priming test + the doctrine line) and the record pair on top. X2 §2's standing rule was practiced twice this cycle (the designer's certificate letter; the seam-stop letter to you).
+clock (raw, verbatim): `Sunday, August 30, 2026 11:57:47 AM` — read from `Get-Date`, never a stamp
+**STAMP ECHOED: `B-132` — §1 BUILT AND SIGHTED; §3 STOPPED AT A FROZEN WALL WITH ITS PRICE MEASURED.** The designer's clause-3 letter (cc'd to me) is consumed with it. Two commits ride: `5d9f6e5` (the glyph) and the record pair. §5's items 3 and 4 were already closed before this letter (the residues stand as X1 §6 named limits, accepted in your own ✔ line; the `CLAUDE.md:88` measurement line landed at `d17b32b`).
 
 ## TO THE MOTHERSHIP
 
-1. ✅ **X2 §1 — THE CERTIFICATE EXTENT, measured and lettered before any commit** (your inbox and hers, `0230`): the Square's block holds `class open / n-a · w₁ class [] · H₁ 0` — no verdict word inside; `(certified)` rides the SURFACED `Euler χ` row because ⛔ **the `'χ'`/`'χ (certified)'` entries in `certificateLabels` are DEAD PREFIXES — the rendered label is `Euler χ`, which never matches, so χ never demotes** (the stamp-drift class; your split should rule which is the law). The T³ has NO certificate block — one unheaded stack holding her three kinds with `sound` and `(consistent)` in it. **Built nothing, as ordered.**
+1. ✅✅ **§1 THE RUN GLYPH — built, witnessed, sighted (`5d9f6e5`).** The pair takes its OWN joiner (`runPair` at the three sites: relation rootLabels · absorbed partners · wordRow slot names), `→` SET TIGHT, the row's ` ← ` loose — both clauses, by her rendering table's own mechanism (the tight setting makes the pair one unit). Not folded into any general joiner; the unordered `·`-joins untouched; row order stays `a b c d`. **At my own eye on the live card:** `—a ← v2→v3 · —b ← v1→v2 · —c ← v0→v1 · —d ← v3→v0` — four distinct runs, the cycle findable exactly as she ruled. The witness's independent comparator recut to the same law — ALL PASS.
 
-2. ⛔ **X1 §4 — THE SEAM-FLAP SANCTION DIED UNSPENT, premise falsified** (the stop letter, `0234`): `<FoldTapOverlay` mounts at exactly ONE site (`ManuscriptView:6205-6223`, per-entry guarded; the entry map renders once at `:5922`). The measured flap was the one overlay tracking the SUMMON's animated transform between rests; the driver's fresh sampling is correct instrumentation for an animated scene, not a workaround. No src cut owed. If a rest-only publish is wanted, that is a design choice — the designer's lane.
+2. ⚠ **HER CENSUS QUESTION, measured and ROUTED (mine to find, not to cut):** three sites still join ORDERED sequences with `·`, each under one of her own earlier rulings — `dotJoin`'s pathLabels (a live edge's endpoint run) and the composed coarse-side labels (her `·`-ALWAYS composed-row ruling, ledger §12), and `apertureModel:703`'s D14 face composition (an ORDERED CYCLE under her ratified composer). Whether the run glyph's law reaches those slots is a ruling between two of her own rulings — hers (or yours), not mine; I name the sites and touched none.
 
-3. ⛔ **X1 §6 — THE PRIMING HYPOTHESIS RUN AND FALSIFIED for the two residues:** both dead controls now try the HAND-LIKE path first (a real move → down → up at the control's own center — your hypothesis in its driver form) with the dispatch as fallback and the EFFECT as the only judge — and the leg reads the same `2 FAILURE(S)`. **By your own §6 clause the residues stand as NAMED LIMITS**, and the hand-first protocol stays in the driver (the more honest instrument even where it did not cure). One datum for whoever returns: the failure is not the event path — neither a hand-shaped real click nor a dispatched one opens these two controls under the driver, while both open at a live hand; whatever separates the driver's page from a person's here is still unmeasured, and it is narrower than the pointer-priming law.
+3. ⛔⛔ **§3 THE SPLIT — STOPPED, the frozen wall, the price measured:** the weld is at the PRODUCER, exactly where your pointer said — `specimenModel.ts:89` (the χ+verdict weld) and `:174-180` (the WHOLE T³ stack, `face-pairs` included), with the same weld shape at `classBodyModel.ts:140/:147`. ⛔ **Both files carry bare freeze-manifest rows and neither is on the standing sanctioned list.** Cutting anywhere but the producer would be a renderer re-reading its own display copy — the exact shape her §4 law outlaws — so there is no unfrozen route to a lawful split. **THE PRICE: two frozen unions, the `b86ae27` pair precedent (both edits + both re-seals in ONE commit, nothing else, positive controls reproduced at the base).** The declared-kind mechanism (each row carries kind 1–4; the prefix list dies; `certificateLabels` and the card's `isCertificateRow` retire) is designed and waiting; nothing spent. ⚠ One adjacent weld noted while measuring, outside the charter: `specimenModel.ts:78-79` writes `(certified)` into legend copy (`core — the ℤ generator (certified)`) — the same kind-3-inside-kind-2 shape, named for the split's scope decision.
 
-4. ✅ **X1 §5 — THE DOCTRINE LINE LANDED** (`CLAUDE.md` §5, riding `d17b32b`): the measurement in your chartered register — `webapp-testing` not loadable at `6e11d38`, check yours, none of the doctrine depends on any of them, the others untested either way.
+4. ✅ **§4's declarability question, answered while measuring:** the kinds ARE cleanly declarable per row at the producer — every row literal in both files is a static object whose kind is knowable where it is written (χ's number/verdict split included, since `inv.chi` and `inv.chiCertified` arrive separately and the weld is exactly the template literal joining them). No row's kind is unknowable at the producer; no STOP on that ground.
 
-5. ✅ **THE COURIER DUTY, exercised:** `THE_CLAIMS_LEDGER.md` (167,783B @ 02:23:24, size-and-write-stable, contents unread) carried AS FOUND in the record commit. Nothing else was dirty.
-
-6. ⚠ **STILL OPEN ON MY QUEUE: the glyph build (X1 §7.1)** — first the moment her letter lands; I build from hers, not your summary, and `joinNames` stays untouched by it (your §7 last clause heard: the pair takes its OWN joiner).
-
-**Witnesses at `d17b32b`:** the recut leg — `2 FAILURE(S)` (the named limits; all else green) · the whole sweep at the tip, verdict verbatim:
+**Witnesses at `5d9f6e5`:** `npx tsc -b` → 0 · `diagnose-argument-card` → ALL PASS · the whole sweep, verdict verbatim:
 
 ```
 124 files · expect exactly ONE fail: diagnose-dual-inspection
 SWEEP OK — the one expected fail, nothing else
-(runner exit 0)
+(runner exit 0; the first run of this sweep was cut off by a session teardown mid-run and re-run whole — witnesses are quoted, never promised)
 ```
 
-**Queue: the glyph with the designer; the split with you (her clause 3); the residues stand named. Next actor: the designer (the glyph letter + her clause 3).**
+**Queue: the two frozen unions with you (the sanction is Arman's word by the protocol); the census contradiction with the designer/you; her clause-3 copy pass after the split. Next actor: you (the sanction).**
 
 ## WHAT I SAW
 
-The T³'s card and a fresh Square's card at my own eye on the running tree (the certificate letters carry both verbatim). The two dead controls refusing a real hand-shaped click under the driver while opening at my live hand — the residues' one datum.
+`—a ← v2→v3` tight under a loose `←` on the live card, four distinct runs, zero dots — and the earlier false sighting owned: my first look showed dots because the ancient measurement tab silently defeated every navigation with a listener-armed leave-guard and kept running a pre-glyph bundle; a fresh tab showed the truth. (Two guarded localhost tabs linger in Chrome — nothing in them; close by hand at leisure.)
 
 ## WHAT I RAN
 
-The certificate drive (app on 5174, both cards read, port released) · the mount census over the tree (`FoldTapOverlay`: one site) · the priming-test leg run → `2 FAILURE(S)` · `python -m py_compile` at every edit · the whole sweep at `d17b32b` (verdict above) · the queue re-read before the commit step (X1 + X2 alone; both archived with this report).
+`npx tsc -b` → 0 · `diagnose-argument-card` ALL PASS (comparator recut first) · the model probe (spine emits `v2→v3 · v0→v1 · v3→v0 · v1→v2`) · the eye drive (fresh tab, invoke, compartment, zoom) · the manifest checks on `specimenModel`/`classBodyModel`/`worldModel` (all bare rows) · the whole sweep at `5d9f6e5` (verdict above) · ports verified released.
 
 ## WHAT I CHANGED
 
-`d17b32b` — `scripts/app-leg/deficit_app_driver.py` (the hand-first protocol on both controls) + `CLAUDE.md` (the §5 measurement line). The record commit — `THE_BUILD.md` (X1 + X2 verbatim) + `THE_BUILD_REPORT.md` (this report) + the ledger carried as found. Three letters into inboxes (the designer's certificate measurement; your certificate report; your seam-stop). `tsconfig.tsbuildinfo` dirty-by-law, unstaged.
+`5d9f6e5` — `src/manuscript/argumentReadingModel.ts` (`runPair`, the ruled comment carrying the principle) + `scripts/diagnose-argument-card.cjs` (the comparator + prose). The record pair rides the commit this report lands in. Nothing frozen touched; `tsconfig.tsbuildinfo` dirty-by-law.
 
 ## WHAT I COULD NOT REACH
 
-The glyph build (her letter not yet landed). The two residues' mechanism (the priming hypothesis falsified; they stand as your named limits). The seam-flap cure (correctly — there was nothing to cure).
+The split (frozen ×2, priced, routed — awaiting sanction). The census contradiction (routed — two of her rulings meet; not my lane). And her clause-3 copy pass (hers, after the split lands).
 
 — the coder
