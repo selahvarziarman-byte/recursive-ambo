@@ -274,10 +274,9 @@ const allRowText = [
   ...torusReading.relationRows.map((r) => r.label),
   torusReading.words,
 ].join(' ');
-check('§5 (E6) THE SCRATCH TEST (structural): the MAP rows and words carry NO invariant token (χ · genus · w₁ · H₁ live ONLY in the demoted certificate; the model routes them by certificateLabels)',
+check('§5 (E6) THE SCRATCH TEST (structural, B-132 recut): the MAP rows and words carry NO invariant token — and the routing constant is DEAD: the model no longer carries certificateLabels (kinds are DECLARED per specimen row at the producer; a classification that matches on display copy changes when someone improves the wording)',
   !/χ|genus|w₁|H₁/.test(allRowText) &&
-    torusReading.certificateLabels.includes('χ') &&
-    torusReading.certificateLabels.includes('H₁'));
+    !('certificateLabels' in torusReading));
 
 // ---------------------------------------------------------------------------
 // §6 (E7) frozen + the completeness row

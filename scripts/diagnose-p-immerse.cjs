@@ -185,10 +185,10 @@ const routeSum = routeWrittenRender(sum, null, 8);
 check('routeWrittenRender: the abstain FELL — mode is "classBody" (it used to THROW here)', routeSum.mode === 'classBody');
 const card = readClassBodySpecimen('genus 2 — born', 'connectedSum', flagship);
 const row = (label) => card.rows.find((r) => r.label === label)?.value;
-check('the card reads the FORM\'s OWN certified invariants: χ "−2 (certified)", class "genus 2", H₁ = ℤ⁴',
-  row('Euler χ') === '-2 (certified)' && row('class') === 'genus 2' && row('H₁') === 'ℤ ⊕ ℤ ⊕ ℤ ⊕ ℤ');
-check('the card carries the NEW boundary-circles row (0) and the honest-representative body row',
-  row('boundary circles') === '0' && String(row('body')).includes('chosen representative'));
+check('the card reads the FORM\'s OWN certified invariants, χ CUT IN TWO (B-132): number "−2" a measure row, "certified" its own check row, class "genus 2", H₁ = ℤ⁴',
+  row('Euler χ') === '-2' && row('χ') === 'certified' && row('class') === 'genus 2' && row('H₁') === 'ℤ ⊕ ℤ ⊕ ℤ ⊕ ℤ');
+check('the card carries the NEW boundary-circles row (0) and the honest-representative body NOTE (B-132: the frame sentence is none of the four kinds — it rides the §5(a) notes register, naming its subject)',
+  row('boundary circles') === '0' && (card.notes ?? []).some((n) => n.includes('chosen representative')));
 check('the honest frame is stated on the model', flagship.frame === CLASS_BODY_FRAME);
 check('the card legend names the 4 drawn generators', eq(card.legend.map((l) => l.key), ['g1', 'g2', 'g3', 'g4']));
 

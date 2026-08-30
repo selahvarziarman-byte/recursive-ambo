@@ -114,7 +114,6 @@ export interface ArgumentReading {
   // produce one.
   diedConceptRows: { id: string; label: string }[];
   words: string; // the map's words-line (counts: "4 concepts become 1 · …")
-  certificateLabels: string[]; // which of the existing card rows demote into the receipt
   // ---- PHASE 2 — the relation half + the reading on it -------------------
   // the ATTRIBUTED pairing from the committed replay-verified word; null
   // where the birth carries no recoverable word (dual, seed, …) — the
@@ -941,6 +940,5 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
     faceRows,
     // the receipt: which existing card rows demote under the hairline (the
     // view filters its OWN rows by these labels — nothing re-derived here)
-    certificateLabels: ['χ', 'χ (certified)', 'class', 'name', 'H₁', 'w₁', 'genus', 'b₁'],
   };
 }

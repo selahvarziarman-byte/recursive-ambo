@@ -1691,6 +1691,11 @@ function SpecimenCard({
   const registerLit = (register: string): React.CSSProperties =>
     emphasizedIds?.includes(`register:${register}`) ? { fontWeight: 700 } : {};
   const [certificateOpen, setCertificateOpen] = useState(false);
+  // B-132 — the measures door (her two-grants law: a DOOR for the kind with
+  // more than one row whose set grows). Open by default: the door ADDS the
+  // ability to close what the card always showed; closed-by-default would
+  // hide the stack behind a click nobody asked for.
+  const [measuresOpen, setMeasuresOpen] = useState(true);
   // ═══ B-130 A.2 + A.4 — THE ARGUMENT COMPARTMENT'S STATE ════════════════════
   // The one compartment that EARNED default-closed (her measurement: the
   // reading alone is 646 px — 56% of the worst card; closed, the whole card
@@ -1719,10 +1724,15 @@ function SpecimenCard({
     borderTop: `1px solid ${paper.cardBorder}55`,
     padding: '4px 0 3px',
   };
-  const isCertificateRow = (label: string): boolean =>
-    Boolean(argument) && argument!.certificateLabels.some((prefix) => label.startsWith(prefix));
-  const certificateRows = reading.rows.filter((r) => isCertificateRow(r.label));
-  const surfacedRows = argument ? reading.rows.filter((r) => !isCertificateRow(r.label)) : reading.rows;
+  // B-132 §4 — the kind is DECLARED by the producer; the prefix machinery
+  // (a constant label list + startsWith on display copy) died with the dead
+  // 'χ' finding: a classification that matches on display copy changes when
+  // someone improves the wording, and a prefix that matches nothing is
+  // indistinguishable from a prefix whose rows are absent.
+  const certificateRows = reading.rows.filter((r) => r.kind === 'certificate');
+  const traceRows = reading.rows.filter((r) => r.kind === 'trace');
+  const measureRows = reading.rows.filter((r) => r.kind === 'measure');
+  const checkRows = reading.rows.filter((r) => r.kind === 'check');
   return (
     <div
       style={{
@@ -1871,24 +1881,88 @@ function SpecimenCard({
           {ringUnplaced.length} cell{ringUnplaced.length > 1 ? 's' : ''} could not anchor — {ringUnplaced[0].reason}
         </div>
       ) : null}
-      {surfacedRows.map((r) => (
-        // the key carries label AND value: R1-REBUILD gave the card its first
-        // multi-row register (two `deficit` rows — cone + rim), and a
-        // label-only key collides (React may duplicate OR OMIT a row — the
-        // silent-drop class). Caught by the app-path witness leg's console
-        // clause on its first run.
-        // §7 — the DEFICIT rows are the deficit register's card presence:
-        // touching one promotes the register (which is FULL anyway — the
-        // researcher's held exception — so the promotion recedes the others).
-        <div
-          key={`${r.label}·${r.value}`}
-          style={{ ...row, ...(r.label === 'deficit' ? registerLit('deficit') : {}) }}
-          {...(r.label === 'deficit' ? registerTouch('deficit') : {})}
-        >
+      {/* ═══ B-132 — FOUR KINDS, DECLARED (never matched) ════════════════════
+          The TRACE rows are the person's own act — they stand beside the
+          argument reading, never under the measures (her clause 1: the one
+          row that is a SUBJECT leaves the table of classifier outputs; the
+          fine landing stays the designer's). Keys carry label AND value
+          (R1-REBUILD: a label-only key collides on the multi-row deficit
+          register — the silent-drop class). */}
+      {traceRows.map((r) => (
+        <div key={`${r.label}·${r.value}`} data-trace-row style={row}>
           <span style={{ opacity: 0.85 }}>{r.label}</span>
           <b style={{ textAlign: 'right', fontWeight: r.emphasize ? 800 : 600 }}>{r.value}</b>
         </div>
       ))}
+      {measureRows.length > 0 ? (
+        <div data-kind-measures>
+          {/* her two grants: the measures earn a HEADING (adjacent to a
+              different kind) and a DOOR (multi-row, grows with the form) */}
+          <div
+            data-measures-door
+            data-compartment-state={measuresOpen ? 'open' : 'closed'}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              setMeasuresOpen((open) => !open);
+            }}
+            style={{
+              cursor: 'pointer',
+              fontSize: 11,
+              letterSpacing: 1,
+              fontVariant: 'small-caps',
+              opacity: 0.68,
+              minHeight: 24,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            the measures
+          </div>
+          {measuresOpen
+            ? measureRows.map((r) => (
+                // §7 — the DEFICIT rows are the deficit register's card
+                // presence: touching one promotes the register (FULL anyway
+                // — the researcher's held exception — so the promotion
+                // recedes the others).
+                <div
+                  key={`${r.label}·${r.value}`}
+                  style={{ ...row, ...(r.label === 'deficit' ? registerLit('deficit') : {}) }}
+                  {...(r.label === 'deficit' ? registerTouch('deficit') : {})}
+                >
+                <span style={{ opacity: 0.85 }}>{r.label}</span>
+          <b style={{ textAlign: 'right', fontWeight: r.emphasize ? 800 : 600 }}>{r.value}</b>
+                </div>
+              ))
+            : null}
+        </div>
+      ) : null}
+      {checkRows.length > 0 ? (
+        <div data-kind-checks>
+          {/* heading, NO door — one row on a Square, two on the T³; closing
+              two rows saves nothing (her grant table). `the checks` is her
+              word: outcome-neutral — a FAILING gate reads under it without
+              irony. */}
+          <div
+            style={{
+              fontSize: 11,
+              letterSpacing: 1,
+              fontVariant: 'small-caps',
+              opacity: 0.68,
+              minHeight: 24,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            the checks
+          </div>
+          {checkRows.map((r) => (
+            <div key={`${r.label}·${r.value}`} style={row}>
+          <span style={{ opacity: 0.85 }}>{r.label}</span>
+          <b style={{ textAlign: 'right', fontWeight: r.emphasize ? 800 : 600 }}>{r.value}</b>
+            </div>
+          ))}
+        </div>
+      ) : null}
       {/* B-105 ADR 0025 §7 — THE DECK-TILING RECORD: `{p,q}`, the vertex
           count and the descent check DEMOTED here from the window (the
           card's business, where an id and a count may live). Rows, not
@@ -1939,8 +2013,12 @@ function SpecimenCard({
           </button>
         </div>
       ) : null}
-      {argument ? (
+      {certificateRows.length > 0 ? (
         // THE CERTIFICATE — the demoted receipt (the seal's expand-in-place
+        // ruling), fed by DECLARED kind now (B-132): it exists exactly when
+        // kind-'certificate' rows exist — the old `argument` gate let an
+        // argument-less card surface class rows flat, and an argument-ful
+        // card with no certificate rows render an empty receipt.
         // ruling): a hairline rule, the word, one graphite line; click
         // expands the full invariant rows IN PLACE, subordinate always.
         <div style={{ marginTop: 7, borderTop: `1px solid ${paper.cardBorder}`, paddingTop: 4 }}>
@@ -2866,20 +2944,26 @@ export default function ManuscriptView() {
               {
                 label: 'cells V·E·F',
                 value: `${laid.counts.v} · ${laid.counts.e} · ${laid.counts.f}`,
+                kind: 'measure',
                 emphasize: true,
               },
               {
                 label: 'boundary',
                 value: `${laid.boundaryCircles} circle${laid.boundaryCircles === 1 ? '' : 's'}`,
+                kind: 'measure',
               },
               // CUT 2 — the crossing declares the DRAWING, in the designer's
-              // words: never a real edge of the form, never a cell
+              // words: never a real edge of the form, never a cell (a counted
+              // fact of the drawn immersion — a measure)
               ...(laid.crossing
-                ? [{ label: `crossings · ${laid.crossing.count}`, value: laid.crossing.caption }]
+                ? [{ label: `crossings · ${laid.crossing.count}`, value: laid.crossing.caption, kind: 'measure' as const }]
                 : []),
-              ...(laid.note ? [{ label: 'note', value: laid.note }] : []),
               ...base.rows.map((row) => (row.label === 'class' ? { ...row, value: laid.classLabel } : row)),
             ],
+            // B-132 — the designer's disclosure is NONE of the four kinds: it
+            // rides the §5(a) notes register (the same move the union made
+            // for the class-body frame row), verbatim
+            notes: [...(base.notes ?? []), ...(laid.note ? [laid.note] : [])],
             legend: (laidInked?.loops ?? []).map((loop) => ({
               key: loop.label,
               text: `${loop.label} — certified H₁ generator (globalW1 basis), drawn on the body`,
@@ -2922,24 +3006,29 @@ export default function ManuscriptView() {
         return speak({
           ...base,
           rows: [
+            // the NAME is the total lookup's OUTPUT — how the form
+            // classifies: the class register's row (kind 'certificate')
             ...(nameReading
               ? [
                   nameReading.named
-                    ? { label: 'name', value: nameReading.name, emphasize: true }
+                    ? { label: 'name', value: nameReading.name, kind: 'certificate' as const, emphasize: true }
                     : {
                         label: 'name',
                         value: `${nameReading.arithmetic} · ⚠ missing table row ${nameReading.missingRow}`,
+                        kind: 'certificate' as const,
                       },
                 ]
               : []),
             {
               label: 'cells V·E·F',
               value: `${render.model.counts.v} · ${render.model.counts.e} · ${render.model.counts.f}`,
+              kind: 'measure',
               emphasize: true,
             },
             {
               label: 'boundary',
               value: `${render.model.boundaryCircles} circle${render.model.boundaryCircles === 1 ? '' : 's'}`,
+              kind: 'measure',
             },
             ...base.rows.map((row) =>
               row.label === 'class' && classValue !== null ? { ...row, value: classValue } : row,
@@ -2964,8 +3053,8 @@ export default function ManuscriptView() {
             twist: null,
           }),
           rows: [
-            { label: 'enacted', value: render.shape.genealogy.operation, emphasize: true },
-            { label: 'no faithful body', value: render.reason },
+            { label: 'enacted', value: render.shape.genealogy.operation, kind: 'trace', emphasize: true },
+            { label: 'no faithful body', value: render.reason, kind: 'check' },
             ...(base ? base.rows : []),
           ],
         });
@@ -3040,7 +3129,8 @@ export default function ManuscriptView() {
   }, [shapeById]);
   // THE ARGUMENT-READING CARD (Phase 1 — the MAP): the birth op's argument,
   // read from the substrate (primalMultiset roots, one-generation sources,
-  // typing). Rides its OWN prop — SpecimenReading is FROZEN and untouched.
+  // typing). Rides its OWN prop beside the specimen reading (whose rows
+  // carry B-132's declared kinds).
   // D16 (B-2026-08-23-C §4): the card takes the door's resolver ENTIRE —
   // the SAME reach the aperture menu reads through, level marks riding.
   const selectedArgument = useMemo<ArgumentReading | null>(() => {

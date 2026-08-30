@@ -93,8 +93,8 @@ const surface = (key) => {
   const model = surface('torus');
   const reading = readSurfaceSpecimen(model);
   const fresh = readFormInvariants(model.immersion.shape);
-  check('χ row reads the certified 0 (measured === certified)',
-    fresh.chi === 0 && fresh.chiCertified === 0 && rowOf(reading, 'Euler χ') === '0 (certified)');
+  check('χ CUT IN TWO (B-132): the number is a measure row, bare; the certifier speaks in its OWN check row',
+    fresh.chi === 0 && fresh.chiCertified === 0 && rowOf(reading, 'Euler χ') === '0' && rowOf(reading, 'χ') === 'certified');
   check("orientable row 'yes' === !cert.nonOrientable", Boolean(fresh.cert) && !fresh.cert.nonOrientable && rowOf(reading, 'orientable') === 'yes');
   check('class row === the certifier classification, verbatim', rowOf(reading, 'class') === fresh.classification);
   check("w₁ row '[0, 0]' === cert.w1Class", rowOf(reading, 'w₁ class') === `[${fresh.cert.w1Class.join(', ')}]` && rowOf(reading, 'w₁ class') === '[0, 0]');
@@ -171,7 +171,7 @@ const surface = (key) => {
   const reading = readDomainSpecimen(model);
   const fresh = level3InvariantTower(model.complex);
   check("S² gate row 'sound' === the gate verdict", fresh.sound === true && rowOf(reading, 'S² gate') === 'sound');
-  check("χ row '0 (consistent)' === the tower", fresh.chi === 0 && fresh.chiConsistent === true && rowOf(reading, 'Euler χ') === '0 (consistent)');
+  check("χ CUT IN TWO (B-132): the tower's number bare in the measure row; 'consistent' in its own check row", fresh.chi === 0 && fresh.chiConsistent === true && rowOf(reading, 'Euler χ') === '0' && rowOf(reading, 'χ') === 'consistent');
   check("orientable 'yes' · H₁ 'Z^3' === tower.homology.H1.pretty",
     fresh.orientable === true && rowOf(reading, 'orientable') === 'yes' &&
     rowOf(reading, 'H₁ (= π₁ abelianized)') === fresh.homology.H1.pretty && fresh.homology.H1.pretty === 'Z^3');

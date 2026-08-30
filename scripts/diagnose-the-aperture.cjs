@@ -490,7 +490,7 @@ check('the room\'s inhabitants are the AUTHORED SCENE (drawn, not scanned — th
 // person's question owns the stage, so the SPECIMEN mount is DISARMED while
 // the door is open (`summoned && !apertureOpen`). The pin now names the door
 // on BOTH mounts; a revert to a door-blind `summoned ?` arming fails it.
-check('the SPECIMEN carries the relocated fundamental domain + pairings + tower: readDomainSpecimen (BYTE-UNCHANGED specimenModel) still reads S² gate · χ · orientable · H₁ · CW counts · face-pairs, and the view mounts the committed InkedDomain at EXACTLY TWO named sites — summoned-on-select while the door is shut (the specimen — the open door disarms it) and the F.0 live-build skeleton (door-gated)',
+check('the SPECIMEN carries the relocated fundamental domain + pairings + tower: readDomainSpecimen (specimenModel — B-132 declared-kind rows) still reads S² gate · χ · orientable · H₁ · CW counts · face-pairs, and the view mounts the committed InkedDomain at EXACTLY TWO named sites — summoned-on-select while the door is shut (the specimen — the open door disarms it) and the F.0 live-build skeleton (door-gated)',
   (() => {
     const reading = readDomainSpecimen(personT3);
     const labels = reading.rows.map((r) => r.label);
