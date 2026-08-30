@@ -2799,13 +2799,15 @@ export default function ManuscriptView() {
           (p): p is Shape => p !== null && p !== undefined,
         );
         const seen = new Set<string>();
-        const rows: { label: string; value: string }[] = [];
+        // B-132 prep — the refine record is the person's own act: kind 'trace'
+        const rows: { label: string; value: string; kind: 'trace' }[] = [];
         for (const parent of sources) {
           const trace = parent.genealogy.resolution;
           if (!trace || seen.has(parent.id)) continue;
           seen.add(parent.id);
           rows.push({
             label: 'resolution',
+            kind: 'trace',
             value: `refined · ${trace.passes} pass${trace.passes === 1 ? '' : 'es'} · ${
               trace.chordEdgeId ? `chord ${trace.chordEdgeId}` : 'no chord'
             } · carrier ${Object.keys(trace.carrier).length} cells new→old · of ${

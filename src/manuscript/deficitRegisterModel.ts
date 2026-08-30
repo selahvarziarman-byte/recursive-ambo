@@ -322,6 +322,11 @@ export function buildDeficitRegisterModel(
 export interface DeficitCardRow {
   label: string;
   value: string;
+  // B-132 prep — the card's rows carry a DECLARED kind (the split's producer
+  // law reaches every row producer): the deficit numbers are MEASURES of the
+  // drawn body. The literal type keeps this assignable to SpecimenRow once
+  // the kind field lands there.
+  kind: 'measure';
 }
 
 export function deficitCardRows(model: DeficitRegisterModel): DeficitCardRow[] {
@@ -330,6 +335,7 @@ export function deficitCardRows(model: DeficitRegisterModel): DeficitCardRow[] {
       {
         label: 'deficit',
         value: `not measured · ${model.refusal ?? 'the reading refused'}`,
+        kind: 'measure',
       },
     ];
   }
@@ -348,6 +354,7 @@ export function deficitCardRows(model: DeficitRegisterModel): DeficitCardRow[] {
   return [...buckets.entries()].map(([phrase, count]) => ({
     label: 'deficit',
     value: count === 1 ? phrase : `${phrase} ×${count}`,
+    kind: 'measure' as const,
   }));
 }
 
