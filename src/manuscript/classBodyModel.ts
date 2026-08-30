@@ -35,7 +35,7 @@ import {
   type SurfaceClass,
 } from './surfaceClassifier';
 import { buildClassBody } from './standardBodies';
-import type { SpecimenReading } from './specimenModel';
+import type { SpecimenReading, SpecimenRow } from './specimenModel';
 
 export const CLASS_BODY_FRAME =
   'the body is a chosen representative of the certified class — the form’s own cells are not laid on it';
@@ -132,31 +132,45 @@ export function readClassBodySpecimen(
   model: ClassBodyModel,
 ): SpecimenReading {
   const inv = model.formInvariants;
-  const chiValue =
+  // B-132: the χ number and the certifier's verdict are two KINDS — cut at
+  // the producer. Where the explicit and certified counts differ (an
+  // assemble child: both true, each named — never an inconsistency verdict
+  // the substrate does not hold) the check row carries the comparison
+  // verbatim; the measure row keeps the bare explicit number.
+  const chiCheckRows: SpecimenRow[] =
     inv.chiCertified === null
-      ? `${inv.chi}`
-      : inv.chiCertified === inv.chi
-        ? `${inv.chi} (certified)`
-        : `${inv.chi} explicit · ${inv.chiCertified} certified`;
+      ? []
+      : [
+          {
+            label: 'χ',
+            value:
+              inv.chiCertified === inv.chi
+                ? 'certified'
+                : `${inv.chi} explicit · ${inv.chiCertified} certified`,
+            kind: 'check',
+          },
+        ];
   const single = model.components.length === 1;
   return {
     kind: 'surface',
     title,
     subtitle: `${provenance} · class body (${model.complexSource})`,
     rows: [
-      { label: 'Euler χ', value: chiValue },
-      { label: 'orientable', value: inv.cert ? (inv.cert.nonOrientable ? 'no' : 'yes') : 'n-a' },
+      { label: 'Euler χ', value: `${inv.chi}`, kind: 'measure' },
+      ...chiCheckRows,
+      { label: 'orientable', value: inv.cert ? (inv.cert.nonOrientable ? 'no' : 'yes') : 'n-a', kind: 'measure' },
       {
         label: single ? 'class' : `class (${model.components.length} components)`,
         value: model.components.map((c) => c.label).join(' + '),
+        kind: 'certificate',
       },
       {
         label: 'boundary circles',
         value: model.components.map((c) => `${c.class.b}`).join(' + '), // ← the NEW counter's row
+        kind: 'measure',
       },
-      { label: 'w₁ class', value: inv.cert ? `[${inv.cert.w1Class.join(', ')}]` : 'n-a' },
-      { label: 'H₁', value: model.h1Label ?? 'n-a', emphasize: true },
-      { label: 'body', value: 'chosen representative — not the form’s own cells' },
+      { label: 'w₁ class', value: inv.cert ? `[${inv.cert.w1Class.join(', ')}]` : 'n-a', kind: 'certificate' },
+      { label: 'H₁', value: model.h1Label ?? 'n-a', kind: 'measure', emphasize: true },
     ],
     legend: model.components.flatMap((component, ci) =>
       component.optionB.generators.map((generator, k) => ({
@@ -167,5 +181,10 @@ export function readClassBodySpecimen(
     ),
     twist:
       inv.cert && inv.cert.nonOrientable ? 'w₁ = 1 — non-orientable (the twist)' : null,
+    // B-132: the honest-representative frame is a NOTE, not an invariant —
+    // it names its subject and rides the §5(a) note register (the old 'body'
+    // row was none of the four kinds; a frame sentence under the measures is
+    // an unlike kind welded by position)
+    notes: ['body — a chosen representative; not the form’s own cells'],
   };
 }

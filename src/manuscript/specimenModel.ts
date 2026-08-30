@@ -32,9 +32,25 @@
 import type { InkedFormModel } from './inkedFormModel';
 import type { DomainModel, SkeletonModel } from './worldModel';
 
+// B-132 (the designer's clause 3 + the mothership's §4 precondition): a
+// row's KIND is DECLARED BY ITS PRODUCER, never inferred from display copy —
+// a classification that matches on display copy changes when someone improves
+// the wording (the dead 'χ' prefix: the rendered label read 'Euler χ' and the
+// row never demoted, so χ surfaced wearing its verdict word). Four kinds:
+//   'trace'       — what he made (the person's own pairings; the argument
+//                   reading's subject, not a predicate)
+//   'measure'     — what it is (the invariants' numbers)
+//   'check'       — the verdicts (outcome-neutral heading: a FAILING gate
+//                   must read under the same word without irony)
+//   'certificate' — how it classifies (the class register, unchanged)
+// The field is REQUIRED — a kindless row cannot be written (the rule held by
+// construction, not by a reader's discipline).
+export type SpecimenRowKind = 'trace' | 'measure' | 'check' | 'certificate';
+
 export interface SpecimenRow {
   label: string;
   value: string;
+  kind: SpecimenRowKind;
   emphasize?: boolean; // the card renders these rows bolder (craft only)
 }
 
@@ -85,12 +101,19 @@ const inkOf = (loop: { letters: Array<'a' | 'b'> }): 'a' | 'b' =>
 export function readSurfaceSpecimen(model: InkedFormModel): SpecimenReading {
   const inv = model.invariants;
   const word = model.immersion.correspondence.word;
+  // B-132: `Euler χ — 0 (certified)` was ONE row carrying TWO kinds — the
+  // number is a measure, the parenthesis a verdict, and a parenthesis is not
+  // a boundary. Cut in two AT THE PRODUCER; the check row exists exactly when
+  // the certifier spoke (a true absence otherwise, never a placeholder).
+  const chiCheckRows: SpecimenRow[] =
+    inv.chiCertified !== null ? [{ label: 'χ', value: 'certified', kind: 'check' }] : [];
   const rows: SpecimenRow[] = [
-    { label: 'Euler χ', value: `${inv.chi}${inv.chiCertified !== null ? ' (certified)' : ''}` },
-    { label: 'orientable', value: inv.cert ? (inv.cert.nonOrientable ? 'no' : 'yes') : 'n-a' },
-    { label: 'class', value: inv.classification },
-    { label: 'w₁ class', value: inv.cert ? `[${inv.cert.w1Class.join(', ')}]` : 'n-a' },
-    { label: 'H₁', value: model.h1Label ?? 'n-a', emphasize: true },
+    { label: 'Euler χ', value: `${inv.chi}`, kind: 'measure' },
+    ...chiCheckRows,
+    { label: 'orientable', value: inv.cert ? (inv.cert.nonOrientable ? 'no' : 'yes') : 'n-a', kind: 'measure' },
+    { label: 'class', value: inv.classification, kind: 'certificate' },
+    { label: 'w₁ class', value: inv.cert ? `[${inv.cert.w1Class.join(', ')}]` : 'n-a', kind: 'certificate' },
+    { label: 'H₁', value: model.h1Label ?? 'n-a', kind: 'measure', emphasize: true },
   ];
   return {
     kind: 'surface',
@@ -114,13 +137,13 @@ export function readSkeletonSpecimen(model: SkeletonModel): SpecimenReading {
   const level1 = inv.level1;
   const components = level1 ? level1.components : null;
   const rows: SpecimenRow[] = [
-    { label: 'components', value: components === null ? 'n-a' : `${components}` },
-    { label: 'H₀', value: components === null ? 'n-a' : components === 1 ? 'ℤ' : `ℤ^${components}` },
-    { label: 'b₁ (level 1)', value: level1 ? `${level1.b1}` : 'n-a' },
-    { label: 'H₁', value: model.h1Label ?? 'n-a', emphasize: true },
-    { label: 'Euler χ', value: `${inv.chi}` },
-    { label: 'orientable', value: 'n-a (1-complex)' },
-    { label: 'class', value: 'n-a (1-complex)' },
+    { label: 'components', value: components === null ? 'n-a' : `${components}`, kind: 'measure' },
+    { label: 'H₀', value: components === null ? 'n-a' : components === 1 ? 'ℤ' : `ℤ^${components}`, kind: 'measure' },
+    { label: 'b₁ (level 1)', value: level1 ? `${level1.b1}` : 'n-a', kind: 'measure' },
+    { label: 'H₁', value: model.h1Label ?? 'n-a', kind: 'measure', emphasize: true },
+    { label: 'Euler χ', value: `${inv.chi}`, kind: 'measure' },
+    { label: 'orientable', value: 'n-a (1-complex)', kind: 'measure' },
+    { label: 'class', value: 'n-a (1-complex)', kind: 'certificate' },
   ];
   return {
     kind: 'skeleton',
@@ -135,22 +158,24 @@ export function readSkeletonSpecimen(model: SkeletonModel): SpecimenReading {
 export function readDomainSpecimen(model: DomainModel): SpecimenReading {
   const tower = model.tower;
   const counts = model.complex.counts;
-  // THE CARD UNION (B-2026-08-22-C) → §5(a) (B-2026-08-24-B, the designer's
-  // words landed): the TWO GRAMMARS stand — a PARENTHESIS says a judgement
-  // was made; a clause says why no judgement exists — but the CLAUSE MOVES
-  // TO THE NOTE REGISTER and the VALUE keeps the bare number (the measured
-  // defect: the in-value clause wrapped the label mid-symbol, "Euler / χ"
-  // interleaving with its own lines). The two clauses differ because the
-  // silences have opposite reasons: bounded is a SOUND object the
-  // closed-check does not fit; unsound is not an object the check can be
-  // asked of. Each note NAMES ITS SUBJECT (`χ — …`) so it shares the note
-  // register with the twist note without positional ambiguity — her exact
-  // words, verbatim. One producer: `tower.isClosed` drives this fork, the
-  // χ predicate, and the subtitle below.
-  const chiRow =
+  // §5(a) (B-2026-08-24-B) recut by B-132: the note-register law stands — a
+  // clause that explains why no judgement exists lives in the notes, naming
+  // its subject; the χ VALUE keeps the bare number. The PARENTHESIS grammar
+  // ("a judgement was made") is RETIRED FROM THIS VALUE by the four-kind
+  // split: the judgement is a CHECK — its own row, its own kind — because
+  // `Euler χ — 0 (consistent)` was one row carrying two kinds, and a
+  // parenthesis is not a boundary. The silences keep their opposite reasons:
+  // bounded is a SOUND object the closed-check does not fit; unsound is not
+  // an object the check can be asked of. One producer: `tower.isClosed`
+  // drives this fork, the χ predicate, and the subtitle below.
+  const chiVerdict =
     tower.sound && tower.isClosed
-      ? `${tower.chi}${tower.chiConsistent === true ? ' (consistent)' : tower.chiConsistent === false ? ' (INCONSISTENT)' : ''}`
-      : `${tower.chi}`;
+      ? tower.chiConsistent === true
+        ? 'consistent'
+        : tower.chiConsistent === false
+          ? 'INCONSISTENT'
+          : null
+      : null;
   const chiNote = !tower.sound
     ? 'χ — a bare count; the S² gate found no manifold for it to describe'
     : !tower.isClosed
@@ -170,13 +195,19 @@ export function readDomainSpecimen(model: DomainModel): SpecimenReading {
         : pairModes.every((m) => m === pairModes[0])
           ? `${pairModes.length} (all ${pairModes[0]})`
           : `${pairModes.length} (mixed)`;
+  const chiCheckRows: SpecimenRow[] =
+    chiVerdict !== null ? [{ label: 'χ', value: chiVerdict, kind: 'check' }] : [];
   const rows: SpecimenRow[] = [
-    { label: 'S² gate', value: tower.sound ? 'sound' : 'NOT sound' },
-    { label: 'Euler χ', value: chiRow },
-    { label: 'orientable', value: tower.orientable ? 'yes' : 'no' },
-    { label: 'H₁ (= π₁ abelianized)', value: tower.homology.H1.pretty, emphasize: true },
-    { label: 'CW counts', value: `v ${counts.v} · e ${counts.e} · f ${counts.f} · c ${counts.c}` },
-    { label: 'face-pairs', value: facePairsRow },
+    { label: 'S² gate', value: tower.sound ? 'sound' : 'NOT sound', kind: 'check' },
+    { label: 'Euler χ', value: `${tower.chi}`, kind: 'measure' },
+    ...chiCheckRows,
+    { label: 'orientable', value: tower.orientable ? 'yes' : 'no', kind: 'measure' },
+    { label: 'H₁ (= π₁ abelianized)', value: tower.homology.H1.pretty, kind: 'measure', emphasize: true },
+    { label: 'CW counts', value: `v ${counts.v} · e ${counts.e} · f ${counts.f} · c ${counts.c}`, kind: 'measure' },
+    // kind 1 — the person's own pairings: the one row that is a SUBJECT in a
+    // table of classifier outputs (her clause 1); the reader lands it beside
+    // the argument reading, never under the measures
+    { label: 'face-pairs', value: facePairsRow, kind: 'trace' },
   ];
   return {
     kind: 'domain',

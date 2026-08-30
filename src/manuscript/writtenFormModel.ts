@@ -62,7 +62,7 @@ import {
   type InkedFormModel,
 } from './inkedFormModel';
 import { h1LabelFromLevel1 } from './worldModel';
-import type { SpecimenReading } from './specimenModel';
+import type { SpecimenReading, SpecimenRow } from './specimenModel';
 import { buildClassBodyModel, type ClassBodyModel } from './classBodyModel';
 import { acquireFaithfulComplex, readBoundary } from './surfaceClassifier';
 import { readIdentificationGate } from '../lib/complexIdentification';
@@ -507,26 +507,36 @@ export function readPlainSpecimen(
   invariants: FormInvariantsReadout,
   h1Label: string | null,
 ): SpecimenReading {
-  // the χ row never over-claims: "(certified)" only when the certifier AGREES
-  // with the explicit-cell count; where they differ (e.g. an assemble child,
-  // whose explicit cells carry the minted merge supports alongside the carried
-  // originals) BOTH numbers show, each named
-  const chiValue =
+  // B-132: the χ number and the certifier's verdict are two KINDS — the old
+  // one-row weld cut at the producer. The check still never over-claims:
+  // 'certified' only when the certifier AGREES with the explicit-cell count;
+  // where they differ (e.g. an assemble child, whose explicit cells carry
+  // the minted merge supports alongside the carried originals) BOTH numbers
+  // show in the check row, each named — a difference, not a verdict word.
+  const chiCheckRows: SpecimenRow[] =
     invariants.chiCertified === null
-      ? `${invariants.chi}`
-      : invariants.chiCertified === invariants.chi
-        ? `${invariants.chi} (certified)`
-        : `${invariants.chi} explicit · ${invariants.chiCertified} certified`;
+      ? []
+      : [
+          {
+            label: 'χ',
+            value:
+              invariants.chiCertified === invariants.chi
+                ? 'certified'
+                : `${invariants.chi} explicit · ${invariants.chiCertified} certified`,
+            kind: 'check',
+          },
+        ];
   return {
     kind: 'surface',
     title,
     subtitle: provenance,
     rows: [
-      { label: 'Euler χ', value: chiValue },
-      { label: 'orientable', value: invariants.cert ? (invariants.cert.nonOrientable ? 'no' : 'yes') : 'n-a' },
-      { label: 'class', value: invariants.classification },
-      { label: 'w₁ class', value: invariants.cert ? `[${invariants.cert.w1Class.join(', ')}]` : 'n-a' },
-      { label: 'H₁', value: h1Label ?? 'n-a', emphasize: true },
+      { label: 'Euler χ', value: `${invariants.chi}`, kind: 'measure' },
+      ...chiCheckRows,
+      { label: 'orientable', value: invariants.cert ? (invariants.cert.nonOrientable ? 'no' : 'yes') : 'n-a', kind: 'measure' },
+      { label: 'class', value: invariants.classification, kind: 'certificate' },
+      { label: 'w₁ class', value: invariants.cert ? `[${invariants.cert.w1Class.join(', ')}]` : 'n-a', kind: 'certificate' },
+      { label: 'H₁', value: h1Label ?? 'n-a', kind: 'measure', emphasize: true },
     ],
     legend: [], // no loop marks on plain renders (Option-B representative drawing — flagged, not faked)
     twist:
