@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev-advance.cjs --advance && vite",
     "build": "tsc -b && vite build",
     "sweep": "node scripts/sweep.cjs",
     "diagnose:atomic-registry": "node scripts/diagnose-atomic-registry.cjs",

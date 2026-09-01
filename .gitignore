@@ -70,6 +70,9 @@ instruments/*
 # cannot untrack an already-tracked file. A future root config needs `git add -f`
 # or an exception below — that friction is deliberate.
 /*.ts
+# the 1849 cut: the config-scope ambient declaration is a TRACKED config
+# (the deliberate friction above, taken by exception as its comment prescribes)
+!/node-minimal.d.ts
 /*.mjs
 !/vite.config.ts
 !/tailwind.config.ts
