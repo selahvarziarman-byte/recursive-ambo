@@ -805,5 +805,28 @@ console.log('\n----- §10 (B-114) the walk window carries the model, and the nou
     })());
 }
 
+// ═════ §10 STATION 2 (STAMP O-1) — the deck's ONE derivable bit ═══════════════
+console.log('\n----- §10 STATION 2: deck abelian — yes/no, from the sealed deck the engine already holds -----');
+{
+  const { readDeckAbelian, DECK_ABELIAN_EPSILON } = req('src/manuscript/deckAbelianModel.ts');
+  const { buildManuscriptWorld } = req('src/manuscript/worldModel.ts');
+  const t3Model = buildManuscriptWorld(8).dim3.find((m) => m.key === 't3');
+  const t3 = t3Model ? readDeckAbelian(t3Model) : null;
+  const sw = readDeckAbelian(swDomain);
+  const pc = readDeckAbelian(pcDomain);
+  const l41 = readDeckAbelian(l41Domain);
+  const bounded = readDeckAbelian(buildFormDomain(dodeca, [], 'b4-s2-bounded', 'bounded control'));
+  note(`T³ ${t3 ? `${t3.row.value} (dev ${t3.maxDeviation.toExponential(1)}, ${t3.mapsTested} maps)` : 'null'} · SW ${sw ? `${sw.row.value} (dev ${sw.maxDeviation.toExponential(1)}, ${sw.mapsTested} maps)` : 'null'} · Poincaré ${pc ? `${pc.row.value} (dev ${pc.maxDeviation.toExponential(1)})` : 'null'} · L(4,1) ${l41 === null ? 'null' : l41.row.value} · bounded ${bounded === null ? 'null' : bounded.row.value}`);
+  check('§10 ⛔ (LAW 24 both ways) THE BIT SWINGS ON THE ENGINE\'S OWN DECKS: the T³ cube deck commutes at exactly float-zero (yes — the euclidean control) while Seifert–Weber\'s twelve witnessed maps (6 doors + inverses, the ADR 0028 App. B construction) refuse at O(10) entry deviation (no) and Poincaré refuses too — H₁ = 0 no longer states its 120 rooms of commutator content by silence',
+    t3 !== null && t3.abelian === true && t3.maxDeviation === 0 &&
+    sw !== null && sw.abelian === false && sw.maxDeviation > 1 && sw.mapsTested === 12 &&
+    pc !== null && pc.abelian === false && pc.maxDeviation > DECK_ABELIAN_EPSILON);
+  check('§10 THE ROW IS PRODUCER-DECLARED (B-132\'s law): label `deck abelian`, value yes/no, kind `measure` — commutativity is what the deck IS, never a gate verdict',
+    t3 !== null && t3.row.label === 'deck abelian' && t3.row.kind === 'measure' && t3.row.value === 'yes' &&
+    sw !== null && sw.row.value === 'no' && sw.row.kind === 'measure');
+  check('§10 ⛔ TRUE ABSENCE WHERE THE SEAL REFUSES — never a placeholder: a fully-bounded room (no pairings — every edge class boundary) reads NO row; and L(4,1) reads NO row because sealDomainRealization itself refuses mixed-k cells — the reader\'s reach IS the walk\'s reach (the app\'s one seal door), a lens deck existing only through the unconsumed realizeLensDomain is a routed finding, not this reader\'s to fabricate',
+    bounded === null && l41 === null);
+}
+
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`} — the non-cube domain`);
 process.exit(failures === 0 ? 0 : 1);

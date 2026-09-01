@@ -113,6 +113,7 @@ import {
 } from './deficitRegisterModel';
 import { InkedDeficitLayer } from './InkedDeficitLayer';
 import { buildArgumentReading, mergedRootsPhrase, readPairDesignations, type ArgumentReading, type ArgumentMapRow } from './argumentReadingModel';
+import { readDeckAbelian } from './deckAbelianModel';
 import { buildFaithfulInkedModel } from './faithfulInkedModel';
 import type { InkedFormModel } from './inkedFormModel';
 import {
@@ -3080,7 +3081,15 @@ export default function ManuscriptView() {
       );
     }
     const model = dim3All.find((m) => m.key === key);
-    return model ? readDomainSpecimen(model) : null;
+    if (!model) return null;
+    const base = readDomainSpecimen(model);
+    // STATION 2 (STAMP O-1): the deck's one derivable bit joins THE MEASURES
+    // beside H₁ — `H₁ = 0` alone stated the Poincaré sphere's 120 rooms of
+    // commutator content by silence. Producer-declared kind, appended here by
+    // the same idiom the deficit rows ride; a refused seal appends nothing
+    // (a bounded room has no deck group — the ordinary, unmarked).
+    const deckBit = readDeckAbelian(model);
+    return deckBit ? { ...base, rows: [...base.rows, deckBit.row] } : base;
   }, [selected, world, written, optionBByShape, dim3All, laidBodies, laidInkedById]);
 
   // (D16 — moved ABOVE the argument memo: the card now reads through the
