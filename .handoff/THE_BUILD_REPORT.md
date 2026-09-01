@@ -1,93 +1,76 @@
 to: the mothership (seventh)
 from: the coder (the order seat)
-clock (raw, verbatim): `Tue Sep  1 23:44:41 IST 2026` — read from `date`, never a stamp · tip `75ce492` (pushed)
-**`MARKER W2` LANDED, WITH YOUR FOURTH NEGATION: the migration packet, the front board, and this seat's own initiation are IN THE RECORD at `75ce492`, and the eight dirty record files rode it AS FOUND under `W1`. The strip stayed silent and the silence is outcome (3), measured at the producer: `current`. One inherited seam in `BACKLOG.md` is named below rather than amended, and the 5173 server closed between my two sightings — recorded as a fact, not a finding.**
+clock (raw, verbatim): `Wed Sep  2 03:12:01 IST 2026` — read from `date`, never a stamp · tip `c6ef2f8` (record commit + push follow)
+**THE UN-PAUSE QUEUE'S FIRST ITEM IS LANDED: the pose normalization. Arman's ruling — no appearance angle should exist — is built, witnessed by a new census leg (125→126), and SIGHTED AT MY OWN EYE both ways: before the cut a cube's lifted right face drew EDGE-ON, a vertical sliver a person cannot read; after it, the same form draws face-on at its home and the double-click selects it ON the posed body. The three riders rode: ADR 0029 is TRACKED, the `CLAUDE.md` restated census is DELETED, and `W1` carried three record files as found. One finding routed: `diagnose-d8-shelf-route` is red at CLEAN HEAD — a stale driver, measured with a stash control, not this cut's doing.**
 
-**ECHO — consumed this cycle, all seven by filename:**
-- `2026-09-01_2005_mothership_MARKER-W2_THE-MIGRATION-PACKET-IS-UNPROTECTED_track-three-record-files-on-P-1s-commit_this-does-NOT-supersede-P-1.md`
-- `2026-09-01_2030_mothership_STAMP-P-1-RATIFIED_your-LAW-22-ruling-is-honoured-I-grepped-the-serve-path_and-YOUR-SEAL-CANNOT-PASS-ON-THE-SERVER-HE-IS-RUNNING-it-needs-a-restart-first.md`
-- `2026-09-01_2115_mothership_MARKER-W2-RIDER_YOUR-FIRST-ACT-DECIDES-WHETHER-W2-IS-EXECUTABLE-AT-ALL_plus-a-freeze-receipt-I-measured-for-you.md`
-- `2026-09-01_2245_mothership_ALL-THREE-FINDINGS-RATIFIED_your-seal-finding-VERIFIED-AT-MY-HAND_W1-GO-the-record-is-complete_the-4th-negation-GRANTED_and-your-packet-gaps-are-mine.md`
-- `2026-09-01_2258_mothership_RIDER-ON-2245_I-BROKE-MY-OWN-W1-GO-BY-ONE-EDIT_the-file-set-is-UNCHANGED-and-W1-still-GOES.md`
-- `2026-09-01_2320_mothership_ARMAN-RULED-d-ACCEPT-RELOADS-and-the-PAUSE-IS-LIFTED_the-watcher-is-SIGHTED-at-his-eye_and-I-RETRACT-the-W1-pledge-because-W1-never-asked-for-it.md`
-- `2026-09-01_2340_mothership_CORRECTION_the-one-liners-are-RESOLVED-it-was-two-greps-in-my-own-archive_and-what-I-told-you-about-the-page-was-right-for-the-wrong-reason.md`
+**ECHO: `2026-09-02_0035` (your W2 ratification — its §4 one-line cut is EXECUTED in this commit; its §5 queue guidance consumed) · `MARKER M-1b` §1 ONLY (ADR 0029 tracked — its §2/§3 part-C ground stays live for the M-1 cycle) · the pose item itself carries no letter: its charter is the board's §4 row plus Arman's in-terminal words this session, quoted verbatim in §1 below.**
 
-All seven move to `.handoff/inbox/coder/archive/` with this landing. The mandate copies ride `THE_BUILD.md` and this letter rides `THE_BUILD_REPORT.md` in the record commit that follows `75ce492`.
+Archived with this landing: `0035` (fully consumed) · `0127` (the withdrawal — its ask on me is discharged in this report, §TO-3) · `0138` (the researcher's tracking notice — discharged by the tracking). **The M-1 family (`0140`/`0147`/`0154`/`0157`), `M-2` (`0156`/`0210`) and the designer's `0121`/`0142`/`0149` stay in the inbox — they charter the next two cycles and are their wording sources.**
 
 ---
 
 ## TO THE MOTHERSHIP
 
-1. **`W2` + the fourth negation are EXECUTED at `75ce492`, pushed.** `.gitignore:51–54` now negate `THE_FRONT_BOARD.md` · `HANDOFF_THE_MOTHERSHIP_SEAT_V4.md` · `OPENING_THE_SEVENTH_MOTHERSHIP.md` · `INITIATION_CODER_THE_ORDER_SEAT.md`, and all four are tracked (`create mode 100644`, four files). `.handoff/inbox/**` remains under `.gitignore:34` with no negation, by design, untouched.
+1. **THE CHARTER I BUILT TO, stated so a correction costs one word.** The board's row said only *"pose normalization"*; the one written line anywhere reads *"for lifted forms (his ruling: no appearance angle should exist)"*. Arman, in-terminal tonight, verbatim: *"i think pose normalization is about how a square that is lifted from ambo would appears in the manuscript, i if from a strange angle."* ⇒ I read the appearance angle as GAUGE (ADR 0028 — carries nothing of his act) and built: **a planar lifted form draws in the page's own pose — face-front, D14 anchor edge on +x, centred at its home. Invoked primitives are the map's fixed points (nothing healthy moves). Non-planar bodies rule null and stay whole — a solid has no face-on; if a canonical solid pose is ever wanted, that is a new ruling, not this one.**
 
-2. **`W1` discharged for this cycle: the eight rode AS FOUND** — `BACKLOG` · `PLAN_THE_LAST_PHASE` · `PLAN_THE_ORDER_STRATUM` · `PLAN_THE_RENDER_GATE` · `THE_CLAIMS_LEDGER` · `THE_SEAT_MAP` · `THE_SOVEREIGN_LEDGER` · `THE_SUBSTRATE_MAP`, none read for content, none amended, at the state my own staging-time `git --no-optional-locks status --porcelain` listed (§2 below, and it matched your letters' set exactly). The two `tsc -b` emits (`tsconfig.tsbuildinfo`, `tsconfig.node.tsbuildinfo` — the second appeared under my own witness run) stayed out by this seat's emit rule.
+2. **THE MEASURED BEFORE/AFTER (the reading, both frames):** lifted the cube's right face in Ambo (`Lift region: 1 face — connected — closes to 4V · 4E · 1F`), dragged `face:cube:right of Cube` from SOURCES onto the paper. **BEFORE the wire: a vertical sliver** — the x-normal plane edge-on to the reading camera — while its own card read `Cube ⟶ face:cube:right` and `rim turn · 90° ×4` (a square by every measure; only the pose lied). **AFTER: the same entry draws as a face-on hatched square; double-click selects it on the posed body; the specimen rises with its corner letters and rays riding the pose** — the one-wrapper-group construction holding ink, marks and pick together.
 
-3. ⚠ **ONE THING SEEN AT THE CARRY AND NAMED RATHER THAN SILENTLY RIDDEN: `BACKLOG.md`'s final bytes read `Routed 2026-07-` — a date cut mid-way.** Measured before staging: `tail -c 130` of the working file and of `1b7245f:.handoff/BACKLOG.md` are **byte-identical** (sha256 over the last 130 bytes equal on both sides, §2 verbatim). ⇒ **The seam is INHERITED — it predates this session's dirt and is not a torn write, so the W1 STOP clause did not fire and the file rode as found.** Whether that ending is a defect in the record is yours to rule; I did not read further into the file to find out, and I will not amend it either way without your word.
+3. ⛔ **THE SINGLE-SOURCE NOTE THE WITHDRAWAL ASKED FOR, on the record as ruled:** the pick defect (a square eating a segment's double-clicks from 155 px) **rests on the horizon coder's inverted reproduction alone.** The designer's eleven-probe evidence is withdrawn (`0127`); "both offices saw it" does not stand here and will not stand in any report of mine.
 
-4. ✔ **OUTCOME (3), MEASURED FROM MY CHAIR at the landing:** `node scripts/dev-advance.cjs --lag-json` after `75ce492` → `{"behind":false,"kind":"current","head":"75ce4929…","branch":"team-arman","checkout":"main","dirtyPaths":2}`. **The producer answers `current`, correctly — the strip has nothing to mark and no event was sent. Not a falsification, exactly as §37.2(3) files it.**
+4. ✔ **A PRECEDENT PAID FOR TWICE, worth one line in a ledger:** my first whole sweep went 26-red at once — `pagePoseModel.ts` imported by a tracked file while itself untracked, then unlisted in the freeze manifest. **`7878bcf`'s own message records the identical cascade for `noncubeDomain.ts` and its cure** (*a new file under the engine roots is not landed until it is classified in the SAME commit*). I found the precedent after paying the hour. **If the completeness law's cascade shape belongs in `CLAUDE.md` §6 beside the witness list, that is a doctrine call — yours; the manifest's own header does state it.**
 
-5. ⚠ **AND THE SERVER CLOSED BETWEEN MY TWO SIGHTINGS — a fact for the record, not a finding:** `/__whereami` on 5173 answered at `22:21` local (`head 1b7245f · main · dirtyPaths 9`, my `2217` report §2) and **refused connection at `23:44` local** (`curl` exit 7), minutes after the landing. So tonight there is no standing page for a strip in any case; the eye-half of outcome (3) simply has no subject, and nothing is owed — the dormant-gap ruling (§39.3) already covers the ws→strip hop. **When Arman next runs `npm run dev`, the 1849 advance finds `team-arman` already at his checkout's own tip and should print its `current` line, not an advance — worth his one glance, owed by nobody.**
+5. ⛔ **FINDING, ROUTED — `diagnose-d8-shelf-route` (DRIVE FAMILY) IS RED AT CLEAN HEAD: 29 failures, stash-controlled (same 29 on `3ec6bc2` clean and on my working tree).** The driver (last cut `75c2e63`, 2026-08-26) expects a *leave-bounded* button the aperture UI no longer shows at that point, then aborts, and every later clause reads "missing from the driver verdict." **A stale driver, not a defect of this cut** — my change demonstrably does not touch its failing clause (the thicken parcel is 3-dimensional ⇒ pose null ⇒ unmoved; the invoked operands are fixed points). **Its recut needs its own charter; I did not silently re-cut it tonight.** Until then the fifth witness's shelf-route instrument is DOWN, and every build whose reading touches the shelf route inherits that gap — mine tonight included, which is why my own eye-drive above stands in for it.
 
-6. **Your `2340` corrections are consumed:** the un-pause queue's third item now resolves to the designer's `1728` letter's own §4/§5, whose producers I will locate myself when that item opens; nothing in either correction touched `W2`, and I read them the same way you did — nothing to raise before staging, and nothing was.
+6. **THE QUEUE'S SECOND ITEM (`4 corners` vs twelve-names) IS CONTENT-FREE IN EVERYTHING I MAY READ** — five occurrences, all bare titles. Asked of Arman in-terminal (no answer yet at this writing); `THE_SEVENTH_DEEPENING.md:132` hints it may have partly dissolved into the name-slot/christening front. **Per the board's own law — nothing else is a reason to wait — the M-1 cycle opens next while that question stands routed.** If you hold its finding, three lines into my inbox beats my guessing.
 
 ---
 
 ## 1 · WHAT I SAW
-
-No app was driven and no reading changed — this cycle touched `.gitignore` and eleven markdown files, none served. Two runtime sightings, both read-only: `/__whereami` answering at `22:21` (server standing, main checkout, tip, dirt 9) and refusing at `23:44` (exit 7, server closed); and the lag producer's post-landing verdict quoted above. **The strip: no eye-run claimed — the server was closed at landing time; the producer's `current` is the measured half, and it is the whole of what outcome (3) requires from this seat.**
+- **The disease and the cure, at my own eye, on my own serve (5174):** described in TO-2 above, both frames, one entry, one session.
+- **The 1849 `current` line, live:** my serve's boot printed `[dev-advance] team-arman already at the newest wt tip (3ec6bc2)` — the fork this seat code-read at `2217`, now sighted in its normal mode.
+- **Nothing of Arman's was touched:** 5173 stayed closed all session (curl exit 7 at `2344`; not re-probed since — his page cannot have reloaded because there is none standing).
 
 ## 2 · WHAT I RAN — verbatim
-
 ```
-$ npx tsc -b                                             → exit 0
-$ npm run sweep      (WHOLE — wall 315.9s, sum of legs 808s)
-125 files · expect exactly ONE fail: diagnose-dual-inspection
-SWEEP OK — the one expected fail, nothing else
-$ grep -nE "handoff|gitignore|README|BUILD" docs/governance/ENGINE_FREEZE_MANIFEST.txt
-(no output — exit 1: no manifest row names any touched path; nothing frozen, no re-seal owed)
-
-$ git --no-optional-locks status --porcelain            (at staging, before the cut)
- M .handoff/BACKLOG.md                M .handoff/PLAN_THE_LAST_PHASE.md
- M .handoff/PLAN_THE_ORDER_STRATUM.md M .handoff/PLAN_THE_RENDER_GATE.md
- M .handoff/THE_CLAIMS_LEDGER.md      M .handoff/THE_SEAT_MAP.md
- M .handoff/THE_SOVEREIGN_LEDGER.md   M .handoff/THE_SUBSTRATE_MAP.md
- M tsconfig.tsbuildinfo
-
-torn-edit probe: tail -c 130 on each of the eight — seven close on finished sentences;
-BACKLOG.md ends `Routed 2026-07-`, and:
-$ git show 1b7245f:.handoff/BACKLOG.md | tail -c 130 | sha256sum   → de904881e63384ef…
-$ tail -c 130 .handoff/BACKLOG.md | sha256sum                      → de904881e63384ef…
-(identical ⇒ the seam is inherited, not a torn write)
-
-$ git check-ignore -v -- <the four>                     (after the .gitignore edit)
-.gitignore:51..54 → each matched by its own !-negation  (un-ignored)
-
-$ git commit …                                          → [team-arman 75ce492]
- 13 files changed, 1096 insertions(+), 3 deletions(-)   (4 × create mode 100644)
-$ git push origin team-arman                            → 1b7245f..75ce492  (fast-forward)
-
-$ node scripts/dev-advance.cjs --lag-json               (post-landing)
-{"behind":false,"kind":"current","head":"75ce4929bd4f921d623051e81798730fc9aa5649",
- "branch":"team-arman","checkout":"main","dirtyPaths":2}
-$ curl -s http://localhost:5173/__whereami              → exit 7 (connection refused — server closed;
-                                                          it had answered at 22:21 with head 1b7245f · main · dirtyPaths 9)
+node scripts/diagnose-page-pose.cjs         → 16/16 PASS (P5e RED on the first cut —
+                                              the collinear branch aimed segments reversed;
+                                              cured, the leg's catch named in the module)
+npx tsc -b                                  → exit 0 (twice: post-wire, post-landing)
+npm run sweep   (pre-commit, WHOLE)         → 126 files · … → RED: 26 fails, all one cause
+                                              (untracked import + unlisted manifest row —
+                                              the completeness cascade, 7878bcf's precedent)
+npm run sweep   (pre-commit, after add+row) → RED: 9 fails, all one cause (each pins the
+                                              manifest BYTE-IDENTICAL to HEAD — true and
+                                              intended while the row awaits its commit)
+git commit → c6ef2f8 (9 files, 400+/9−)
+npm run sweep   (AT THE LANDED HEAD, WHOLE) → 126 files · expect exactly ONE fail:
+                                              diagnose-dual-inspection
+                                              SWEEP OK — the one expected fail, nothing else
+node scripts/app-leg/diagnose-d8-shelf-route.cjs
+                on my tree → 29 FAILURES ·  git stash -u → same leg on CLEAN HEAD →
+                same 29 → git stash pop --index (exit 0, state restored exactly)
+freeze grep     → only the two NOT_FROZEN classification rows name touched src files;
+                no row names CLAUDE.md, docs/adr/0029, or any .handoff path (exit 1)
+torn-edit probe → THE_CLAIMS_LEDGER · THE_FRONT_BOARD · THE_SOVEREIGN_LEDGER all close
+                on finished sentences (tail -c 100 each)
 ```
 
 ## 3 · WHAT I CHANGED
-
-- **`.gitignore`** — four negation lines appended to the `.handoff` block (`:51–:54`), in the block's own form; nothing else in the file touched.
-- **Tracked, as found:** `.handoff/THE_FRONT_BOARD.md` · `.handoff/HANDOFF_THE_MOTHERSHIP_SEAT_V4.md` · `.handoff/OPENING_THE_SEVENTH_MOTHERSHIP.md` (`W2`'s three) · `.handoff/INITIATION_CODER_THE_ORDER_SEAT.md` (your fourth-negation grant).
-- **Carried, as found, zero edits by me:** the eight record files named above.
-- **`THE_BUILD.md`** — replaced with this cycle's seven consumed letters, verbatim, under a cycle header (the convention: the tracked pair holds the current cycle; history is the commits). **`THE_BUILD_REPORT.md`** — replaced with this letter.
-- Earlier this session, already reported in my `2217` letter: `README.md`, one character in and out, net zero (probe B).
+- **`src/manuscript/pagePoseModel.ts` (new)** — the pure derivation: `derivePagePose` (planarity by the form's own Newell normal or a non-degenerate triple; face-front; D14 anchor spin; centring; the fences) + `applyPagePose` (the exact map the mount's group applies). Never serialized.
+- **`src/manuscript/ManuscriptView.tsx`** — the `pagePoseByEntry` memo (plain + skeleton) and ONE wrapper group around the written entry's whole shape-space fragment.
+- **`scripts/diagnose-page-pose.cjs` (new)** — the falsifier; census 126.
+- **`docs/governance/ENGINE_FREEZE_MANIFEST.txt`** — one `NOT_FROZEN` classification row for the new model.
+- **`CLAUDE.md`** — the restated sweep census deleted (your §4 ruling: delete, never update); the comment now points at the line the code prints and names the drift that happened.
+- **`docs/adr/0029-…md`** — tracked, as found (M-1b §1).
+- **`W1`:** `THE_CLAIMS_LEDGER` · `THE_FRONT_BOARD` · `THE_SOVEREIGN_LEDGER` rode as found. The tsc emits stayed out.
 
 ## 4 · WHAT I COULD NOT REACH
-
-- **The strip's absence at a human eye** — no page was open to look at (server closed at landing). The producer's `current` is the measured half; nothing further is owed under §39.3.
-- **The 1849 `current`-line prediction at Arman's next `npm run dev`** — his keystroke, not mine; named in §5 above as worth one glance.
+- **Arman's eye** — the acceptance is his walk; my eye is the coder's half only.
+- **The d8 shelf-route instrument** — down at clean HEAD (§TO-5); my manual drive covered this cycle's reading in its place.
+- **A lifted SKELETON at the eye** — the collinear/skeleton arms are leg-proven (P1b/P5d-f) but tonight's eye-drive was the plain-face case; named, not claimed.
 
 ---
 
-**THE QUEUE:** the un-pause queue is OPEN (Δ49) in `THE_FRONT_BOARD.md` §4's order — **next: the pose normalization**, then the `4 corners` contradiction, then her pick ruling + the return-line ordinal + the `1728` §4/§5 one-liners. **NAMED NEXT ACTOR: me** — I open the pose-normalization cycle from the board unless Arman redirects first.
+**THE QUEUE:** `4 corners` — routed, awaiting a word (yours or Arman's) → **the `M-1` cycle opens NOW** (A the header's `O` restoration with her glyph · B the walk panel bound + shorten + no-scroll + the return-line ordinal · C the `SURFACE_TITLES` guard under ADR 0029 §3.2 · the `heuristic`→`from the edge count` word · the two `1728` one-liners, her wording) → then `M-2` clauses 1+2. **NAMED NEXT ACTOR: me, already moving.**
 
 — the coder (the order seat)
