@@ -775,6 +775,62 @@ $ grep -n -E "handoff|gitignore" docs/governance/ENGINE_FREEZE_MANIFEST.txt   �
 
 ---
 
+## §41 · `W2` + `W1` RATIFIED at `3ec6bc2` — and two findings, one theirs, one mine
+
+### ✅ §41.1 · THE RECORD IS PROTECTED, re-measured rather than read
+✔ `git cat-file -e 3ec6bc2:<path>` exits 0 for all four of `THE_FRONT_BOARD.md` · `HANDOFF_THE_MOTHERSHIP_SEAT_V4.md` · `OPENING_THE_SEVENTH_MOTHERSHIP.md` · `INITIATION_CODER_THE_ORDER_SEAT.md`. ✔ `git diff 1b7245f..3ec6bc2 -- .gitignore` shows exactly four `+!` lines in the `.handoff` block and nothing else. ✔ `.handoff/inbox/**` gained no negation. ✔ `git show 3ec6bc2:.handoff/THE_CLAIMS_LEDGER.md | grep -c "§40 · THE W1 PLEDGE"` → **1** ⇒ **the coder staged the CURRENT state.** ⛔ **That presence test does NOT prove non-amendment; non-amendment is ⚠ on their report, and that is the class `W1` runs on trust for.**
+★ **`W1`'s restated protocol (§40) held on the first cycle it was tried on:** I wrote after my own "GO", they staged what was in the tree, no rider was needed. ***The record is a ratchet, not a snapshot.***
+
+### ✅ §41.2 · THE `BACKLOG` SEAM — the coder's finding, RULED CLOSED
+**They measured `tail -c 130` byte-identical against `1b7245f`, concluded the seam is INHERITED, let the file ride and declined to read further or amend.** ⇒ ✔ **And `.handoff/BACKLOG.md:9` — which `W1` keeps out of their reach — already carries the disposition:** *"⚠ Its last line was found TORN mid-sentence; the acquisition residue it was routing is carried by the claims ledger's P1 row."*
+⇒ ⛔ **RULED: NOT A DEFECT. Found, named and dispositioned at retirement; nothing left to amend.**
+★ ***The read-ban did its work:*** it forced a routing where a silent pass was available, and the routing cost one paragraph and closed in one `sed`.
+
+### ⛔ §41.3 · `CLAUDE.md` §6 STATES ITS OWN LAW AND BREAKS IT TWELVE LINES LATER
+✔ **Both lines in one file, no run needed:**
+- `CLAUDE.md:108` (witness clause 4) — *"the line itself names the census — **never restate the count here: a count copied into a doc is a stamp that drifts from the code that made it**"*
+- `CLAUDE.md:120-121` — restates it: `` `124 files · expect exactly ONE fail: diagnose-dual-inspection` ``
+⇒ ⛔ **RULED A DEFECT. The finding is the RESTATEMENT and is true whatever the number is.** ⚠ **The drift it predicts has already happened — `scripts/sweep.cjs:118` composes the line from `legs.length` at run time, and the coder's whole run printed `125`; that half is ⚠ on their run and is the ILLUSTRATION, not the finding.**
+⇒ **Routed to the coder as a one-line cut riding their next commit: DELETE the number, never update it — an updated number re-arms the same drift.**
+
+### ⛔ §41.4 · AND THE TEST I LEFT WAS NOT A TEST — mine
+**I withheld that discrepancy from `INITIATION_CODER_THE_ORDER_SEAT.md` deliberately, as the packet's room-to-catch** (the practice letter's clause 5: *leave the seat something to discover, so you learn whether you staffed it right*).
+⛔ **Their report does exactly what the packet asked — prints the code's line and nothing else — which is the behaviour that makes the doc's number harmless.** ⇒ **I cannot tell that outcome apart from not having noticed.**
+> ### ⇒ ***A CONTROL THAT CANNOT SEPARATE ITS TWO OUTCOMES IS NOT A CONTROL*** — LAW 24's shape, turned on my own instrument. **And the cost was not only an uninformative test: a stale line in the file every seat loads stayed standing while I called it one.**
+**⇒ STANDING RULE ON MYSELF: a room-to-catch must be one whose two outcomes LOOK DIFFERENT in the seat's own report. If catching it and correctly ignoring it produce the same report, it is not a catch — it is a defect I declined to fix.**
+
+---
+
+## §42 · PHASE 3 RETURNED — both offices ruled, my §0 is WITHDRAWN, and the convergence is by MECHANISM
+
+### ⛔ §42.1 · MY *"THE SILENCE IS TOTAL AND PRINCIPLED"* IS WITHDRAWN
+✔ **Survives:** the namespace is the only *substrate* difference; `apertureModel.ts:708` strips it; showing `w1:v0` would be an id in a designation slot.
+⛔ **FALSE:** *"nothing lawful to show."* **The researcher names two lawful individuators — the RECORD'S ORDER and HIS NAME — and the first needs no gesture.**
+⇒ ★ **The error's shape: I searched the NAME and REFERENCE registers, found both empty, and concluded the SET was empty.** ⇒ ***`SEAL_DOCTRINE` LAW 18 — an elimination argument requires a CLOSED LIST.*** **My list had two entries and I never asked whether it was closed.**
+
+### ✅ §42.2 · THE RESEARCHER'S TWO RULINGS — accepted whole
+- **Q1:** the name-slot law reaches every designation at every grain, **but `shape.name` is the CLASSIFICATION register wearing the word "name"** — register 2, **engine-owned and MANDATORY where derivable**. ⇒ **`4-gon` and `Torus (T²)` are LAWFUL mints; the defect is any READER presenting a classification in the SUBJECT position — C10's own division, which my fork did not contain.** ⛔ **Standing conditional: a writer minting a ROUTE or ADDRESS into that field crosses into register 1.** **Canonical: `.handoff/RULING_A_BORN_ENTITYS_NAME_the-three-registers-of-designation.md` §0 · §0a · §3.**
+- **Q2 — the sentence that dissolves it with no exception:** ***"PICK-TIME REFUSALS ARE PRODUCED BY ENACT-THEN-GATE RUNS ON CANDIDATES."*** **G1 binds the INSTRUMENT (a refusal must be a MEASUREMENT); MISPLACED binds the SURFACE (the person's cheapest meeting-point precedes his spend). The surface pre-runs the instrument.** ⇒ **AND THE TAIL, entered as doctrine: if a person-facing route lets him COMMIT an act whose refusal the instrument could have named at pick, the SURFACE violates MISPLACED — the cure runs the instrument at pick, NEVER adds a pre-refusal to the engine.**
+- ✅ **③ IS NOT A FACE OF Q1** and both its halves have standing rulings (STAMP R-1 Q1 · the YIELD/COEXIST seam). ⇒ **⛔ IT IS NO LONGER A BLOCKER ON THE CHRISTENING REGION — a front change.**
+
+### ✅ §42.3 · THE DESIGNER DROVE IT — and her second letter corrects three parties
+✔ **`4-gon ⟶ Torus (T²)` CONFIRMED AT HER EYE.** A model reading by an office that cannot run the app, confirmed at a screen.
+★★★ **AND THE TRACE IS ALREADY ON THE CARD** — `Glue → Torus (abAB) · gluing word · abAB` above, `4 concepts become 1 · 4 relations become 2 · 2 absorbed` below. ⇒ ***"The card knows the trace and puts the class in the headline."*** ⇒ **The cure is a RE-ORDERING, not an invention.**
+> ### ⇒ ★★★ **HER §6, RATIFIED AS THE FRAME BOTH CURES SIT UNDER:** ***"The header problem is about WHAT KIND OF THING the card names; the anonymity problem is about WHICH ONE. A trace answers the first and cannot answer the second."***
+⇒ **It corrects ME (one question about two things), HER OWN first letter (`abAB` is identical for both squares, so the trace is not the individuator), and it sharpens the researcher (why the trace is not a third individuator).**
+
+### ⛔ §42.4 · AND I CLAIMED AN INDEPENDENCE I CANNOT VERIFY
+**Both ratification letters, as first drafted, headlined that the two offices converged *"without seeing each other's letters."*** ⛔ **I cannot know what either read — both letters arrived in MY inbox.** ⇒ **Withdrawn in both.**
+> ### ⇒ ★ **AND `SEAL_DOCTRINE` LAW 25 SAYS I REACHED FOR THE WEAKER CLAIM: *"a number is corroborated only when the witnesses differ in MECHANISM, not merely in AUTHOR."*** **The mechanisms DO differ and are visible in the two texts — the three-registers doctrine vs a token's internal structure plus her own return-line ordinal ruling.** ⇒ **The checkable, stronger claim was sitting in the documents while I asserted the unverifiable one.**
+⛔ **AND THE CAMPAIGN HAS PAID FOR THIS EXACT SHAPE ALREADY:** `SEAL_THE_MEANING_CLAIMS.md` Amendment 1 records the sixth's commission design running two readers SEQUENTIALLY — *"which would have wired them"* — and Arman's parallel routing being what made that convergence evidence. ⇒ ***I asserted the property that had to be ENGINEERED to be true.***
+
+### ⇒ §42.5 · WHAT IS CHARTERED, AND WHAT IS DELIBERATELY NOT
+- ✅ **CHARTERED — the researcher:** promote the naming doctrine + the three registers of designation + the NAME-SLOT LAW into ONE tracked ADR. **Acceptance: a seat that has read the ADRs and nothing else can answer *"may the machine write this designation?"* for a concept, a form and a route, and cite a line for each.** ⛔ **PROMOTION, not re-ruling; a gap found in the writing is NAMED, not closed silently.**
+- ⛔ **NOT CHARTERED — the two cures.** **The RE-ORDERING waits on the designer's wording (hers, on a screen); the ORDINAL waits on its carrier and form (hers), and her §6.2 rests on my source reading plus one un-driven inference, which she marked.** ⇒ **The measurement that would close it is two anonymous squares side by side; the pick defect makes it expensive and I am not asking her to spend it.**
+- ⚠ **AVAILABLE, UNOWNED:** whether any person-facing route lets him commit an act whose refusal is nameable at pick (the researcher's Q2 tail). **Not ahead of the coder's un-pause queue.**
+
+---
+
 ## §37 · THE ORDER SEAT'S FIRST REPORT — RATIFIED (`2217` letter, at `1b7245f`)
 
 ### ✅ §37.1 · THE SAME-TREE QUESTION IS SETTLED, AND ARMAN WAS RIGHT

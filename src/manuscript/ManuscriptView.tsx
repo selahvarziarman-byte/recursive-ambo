@@ -116,6 +116,10 @@ import { buildArgumentReading, mergedRootsPhrase, readPairDesignations, type Arg
 import { readDeckAbelian } from './deckAbelianModel';
 import { buildFaithfulInkedModel } from './faithfulInkedModel';
 import type { InkedFormModel } from './inkedFormModel';
+// THE POSE NORMALIZATION (the un-pause queue's first item) — the lift
+// family's derived presentation pose; see pagePoseModel's header for the
+// canon and its fences
+import { derivePagePose, type PagePose } from './pagePoseModel';
 import {
   ApertureGatePanel,
   BirthGatePanel,
@@ -2781,6 +2785,29 @@ export default function ManuscriptView() {
         // born single-face surface) draws NO marks — its card already reads
         // the honest n-a; nothing is invented, nothing crashes
       }
+    }
+    return map;
+  }, [written]);
+
+  // THE POSE NORMALIZATION (Arman's ruling: *no appearance angle should
+  // exist*): a form lifted from the Ambo universe arrives with its
+  // SOLID-SPACE positions verbatim, so it used to draw at whatever angle it
+  // sat on the dissected solid — gauge wearing the look of content. The
+  // pose is DERIVED per shape (RECORD, not READING — nothing stored) and
+  // applied at ONE wrapper group around every shape-space layer of the
+  // entry, so ink, marks and the raycast pick transform together BY
+  // CONSTRUCTION. Scope: the lift family (plain + skeleton). Invoked
+  // primitives are the map's fixed points (null — nothing healthy moves);
+  // non-planar bodies rule null and stay whole (no face-on exists).
+  const pagePoseByEntry = useMemo(() => {
+    const map = new Map<string, PagePose>();
+    for (const entry of written) {
+      const render = entry.form.render;
+      const shape =
+        render.mode === 'plain' ? render.shape : render.mode === 'skeleton' ? render.model.shape : null;
+      if (!shape) continue;
+      const pose = derivePagePose(shape);
+      if (pose) map.set(entry.form.id, pose);
     }
     return map;
   }, [written]);
@@ -6146,13 +6173,15 @@ export default function ManuscriptView() {
             cycleTrace.entryRefusal === null &&
             traceComplex !== null &&
             traceComplex.target.shape.id === entry.form.shape.id;
+          // the derived page pose — one group, every shape-space layer inside
+          const pagePose = pagePoseByEntry.get(entry.form.id) ?? null;
           return selectable(
             id,
             entry.form.shape.id,
             entry.home,
             30 + k,
             { title: entry.form.title, sub, drop },
-            <>
+            <group {...(pagePose ? { quaternion: pagePose.quaternion, position: pagePose.position } : {})}>
             {render.mode === 'immersion' ? (
               <group scale={scaleCtl.dim2Scale}>
                 <InkedForm
@@ -6479,7 +6508,7 @@ export default function ManuscriptView() {
                 </group>
               );
             })() : null}
-            </>,
+            </group>,
           );
         })}
 

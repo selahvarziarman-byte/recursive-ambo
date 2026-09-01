@@ -115,10 +115,12 @@ npm run sweep                                  # clause 4 — THE SWEEP (B-121: 
                                                # The same B-111 §2 fold — main family PLUS app-leg
                                                # witnesses classified BY THEIR OWN DECLARATION —
                                                # sharded with per-leg times printed. Run it WHOLE,
-                                               # never by hand-split halves; it ends with the
-                                               # canonical line and judges itself:
-                                               #   `124 files · expect exactly ONE
-                                               #    fail: diagnose-dual-inspection`
+                                               # never by hand-split halves; it ends with its
+                                               # canonical line and judges itself — READ THE LINE
+                                               # THE CODE PRINTS. The census lives in that line
+                                               # and nowhere else (this file once restated it,
+                                               # twelve lines under the law forbidding that, and
+                                               # the copy drifted exactly as the law predicts).
 ```
 
 ### ⛔ THE DRIVE FAMILY — five legs that are NOT in the sweep, and their trigger
