@@ -473,6 +473,28 @@ export function realizeDodecahedralDomain(shape: Shape, target: 'seifert-weber' 
   return realizeRegularDomain(shape, geometry, (2 * Math.PI) / k);
 }
 
+// L-1 (STAMP L-1): the lens seed's OWN structural prerequisites, read off the
+// shape — exactly what realizeLensDomain requires to construct (2p faces all
+// top*/bot* in the seed's id scheme, the p equator vertices e0..e{p-1}, the
+// north/south poles). Detection BY THE SEED'S OWN CONSTRUCTION, never a
+// distance graph or heuristic; a shape failing any prerequisite is simply
+// not a lens seed (null — the caller's regular path proceeds untouched).
+export function readLensSeed(shape: Shape): { p: number } | null {
+  const base = shape.id.replace('shape:seed:', '');
+  if (shape.faces.length < 4 || shape.faces.length % 2 !== 0) return null;
+  const p = shape.faces.length / 2;
+  const keys = shape.faces.map((f) => f.id.replace(`face:${base}:`, ''));
+  if (keys.filter((key) => key.startsWith('top')).length !== p) return null;
+  if (keys.filter((key) => key.startsWith('bot')).length !== p) return null;
+  const vertexIds = new Set(Object.keys(shape.vertices));
+  if (vertexIds.size !== p + 2) return null;
+  for (let k = 0; k < p; k += 1) {
+    if (!vertexIds.has(`vertex:${base}:e${k}`)) return null;
+  }
+  if (!vertexIds.has(`vertex:${base}:north`) || !vertexIds.has(`vertex:${base}:south`)) return null;
+  return { p };
+}
+
 // the lens realization is CONSTRUCTIVE (S³): the equator lies on the binding
 // great circle; all top faces lie on one page (a great 2-sphere through the
 // binding), all bottom faces on the other, the pages meeting at exactly
@@ -1123,8 +1145,14 @@ export const SEAL_CLOSURE_EPSILON_RAD = 1e-4; // the walk's own ε — a seam th
 export interface SealedRealization {
   geometry: 'S3' | 'E3' | 'H3';
   inradius: number | null; // null on E³ — a flat cell has no solved size
-  edgeClassSize: number; // the k every carried class shares
-  euclideanDihedralRad: number; // the cell's own arccos(−c) — what the target was compared against
+  // the k every carried class shares on the REGULAR family; null on a lens
+  // seal (L-1) — the lens's census is mixed BY CONSTRUCTION ({p·k=2, 1·k=p})
+  // and a single number cannot say that truth (measured: no consumer reads
+  // this field today; it is carried for the record)
+  edgeClassSize: number | null;
+  // the cell's own arccos(−c) on the regular family; null on a lens seal —
+  // the constructive realization solves no regular dihedral
+  euclideanDihedralRad: number | null;
   realization: CurvedRealization;
   deck: ModeledDeck;
   fit: DeckFitReport;
@@ -1146,6 +1174,26 @@ export function sealDomainRealization(domain: DomainModel): DomainSeal {
   const classes = domain.tower.gate.edgeLinks.filter((l) => !boundaryRoots.has(l.edgeClass));
   if (classes.length === 0) return refuse('the carried census has no interior edge class to fit');
   const sizes = [...new Set(classes.map((l) => l.memberEdgeIds.length))].sort((a, b) => a - b);
+  // L-1 (STAMP L-1, Arman: "the lens should be there and walkable yes"): THE
+  // LENS ARM — a SECOND realization source on the same proof pipeline. The
+  // guard below is CORRECT and correctly scoped to its own realizer (one
+  // regular solve genuinely cannot serve two k); the never-revisited part was
+  // the DISPATCH — B-109 built realizeLensDomain and the seal never gained a
+  // route to it. Detection is the seed's OWN constructive prerequisites
+  // (readLensSeed), never a heuristic; the lens census is mixed BY
+  // CONSTRUCTION ({p at k=2, 1 at k=p} — measured), so the arm branches
+  // BEFORE the uniform-k refusal and the three proofs judge it exactly as
+  // they judge the regular family.
+  const lens = readLensSeed(shape);
+  if (lens) {
+    let realization: CurvedRealization;
+    try {
+      realization = realizeLensDomain(shape, lens.p);
+    } catch (error) {
+      return refuse((error as Error).message);
+    }
+    return proveAndSeal(domain, shape, 'S3', realization, null, null);
+  }
   if (sizes.length !== 1) {
     return refuse(`the carried edge classes are k = ${sizes.join(', ')} — one regular realization cannot serve two different k, and averaging them would be a fabrication`);
   }
@@ -1182,6 +1230,22 @@ export function sealDomainRealization(domain: DomainModel): DomainSeal {
       return refuse(`the cell degenerates at this size: the solve reaches inradius ${realization.inradius.toFixed(6)} on ${geometry}, where the faces stop bounding a solid (k = ${k} puts ${k} cells around every edge — a fundamental domain needs at least 3)`);
     }
   }
+  return proveAndSeal(domain, shape, geometry, realization, k, euclideanDihedralRad);
+}
+
+// THE ONE PROOF PIPELINE (L-1 extraction — two realization sources, one
+// judge): proofs 1–3 verbatim from the seal's original body; both the
+// regular arm and the lens arm are sealed by exactly this code, so a lens
+// seal can never be weaker than a regular one.
+function proveAndSeal(
+  domain: DomainModel,
+  shape: Shape,
+  geometry: 'S3' | 'E3' | 'H3',
+  realization: CurvedRealization,
+  edgeClassSize: number | null,
+  euclideanDihedralRad: number | null,
+): DomainSeal {
+  const refuse = (reason: string): DomainSeal => ({ sealed: false, reason });
   // PROOF 1 — every carried class closes to 2π on the EMITTED co-vectors.
   // ⚠ E³ measures on the DIRECTION-ONLY co-vectors: the angle Gram is n̂·n̂′
   // and the affine offset the isometry fit needs would corrupt it (the two
@@ -1219,7 +1283,7 @@ export function sealDomainRealization(domain: DomainModel): DomainSeal {
     seal: {
       geometry,
       inradius: realization.inradius,
-      edgeClassSize: k,
+      edgeClassSize,
       euclideanDihedralRad,
       realization,
       deck,

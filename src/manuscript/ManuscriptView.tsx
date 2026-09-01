@@ -241,6 +241,7 @@ import { buildProbeMeshes } from './apertureProbes';
 import { ExploreWindow } from './ExploreWindow';
 import { readCellSurface, faceTraceCycle, apertureParityCensus, apertureNoun, apertureNote } from './apertureModel';
 import { buildFormDomain, pendingPairMarks } from './formDomainModel';
+import { createLensBipyramidShape, lensPairings } from '../lib/noncubeDomain';
 // §2 (B-2026-08-22-A) — the page's store half (A) and file half (B);
 // §7 (B-2026-08-24-B): the unsaved-mark's derived signature
 import { pageSignatureOf, useManuscriptPageStore } from './pageStore';
@@ -336,6 +337,15 @@ const REFERENCE_OPS: Record<string, string> = {
   cylinder: 'glue-cylinder',
   mobius: 'flip-glue-mobius',
 };
+
+// L-1 (STAMP L-1): the zoo's dim-3 arm — the reference lens spaces, summoned
+// by the SAME gesture as the surfaces and re-derived from the recorded act on
+// restore. Titles follow the T³'s own catalogue grammar (class word + the
+// seed's honest noun); the copy is the designer's to refine.
+const ZOO_LENS: Array<{ p: number; q: number; key: string; title: string }> = [
+  { p: 4, q: 1, key: 'lens-4-1', title: 'L(4,1) — lens bipyramid' },
+  { p: 5, q: 2, key: 'lens-5-2', title: 'L(5,2) — lens bipyramid' },
+];
 
 // craft-level colour recede: mix an ink toward the paper tone (pure, deterministic)
 function fadeToward(hex: string, paperHex: string, t: number): string {
@@ -4271,9 +4281,32 @@ export default function ManuscriptView() {
   const zooLoaded = useManuscriptPageStore((s) => s.zooLoaded);
   const recordZooLoaded = useManuscriptPageStore((s) => s.recordZooLoaded);
   const summonZooForms = useCallback((): boolean => {
-    // the authoritative guard reads the STORE fresh (not a render closure):
-    // zustand's set is synchronous, so a re-entrant call sees the forms
-    if (useManuscriptPageStore.getState().written.some((w) => w.zooMember)) return true;
+    // the authoritative guards read the STORE fresh (not a render closure):
+    // zustand's set is synchronous, so a re-entrant call sees the members.
+    // Each family guards itself — an old page file may carry one family and
+    // not the other, and the hydration re-summon must fill exactly the gap.
+    const state = useManuscriptPageStore.getState();
+    const hasWrittenZoo = state.written.some((w) => w.zooMember);
+    const hasLensZoo = state.builtDomains.some((m) => ZOO_LENS.some((z) => z.key === m.key));
+    // L-1 (STAMP L-1, Arman verbatim: "the lens should be there and walkable
+    // yes"): the reference L(p,q) domains join the zoo's ONE gesture — the
+    // zoo records the ACT (zooLoaded) and re-derives the members on restore,
+    // so the lens rides the same record-not-reading idiom as the surfaces.
+    // L(5,2) is the order arc's own negative control (H₁ tells the whole
+    // truth there — five doors and you are home).
+    if (!hasLensZoo) {
+      try {
+        const lensAdds = ZOO_LENS.map(({ p, q, key, title }) => {
+          const seed = createLensBipyramidShape(p);
+          return buildFormDomain(seed, lensPairings(seed, p, q), key, title);
+        });
+        setBuiltDomains((cur) => [...cur, ...lensAdds]);
+      } catch (error) {
+        setOpNotice(`the lens zoo: ${error instanceof Error ? error.message : String(error)}`);
+        return false;
+      }
+    }
+    if (hasWrittenZoo) return true;
     const additions: Array<{ form: WrittenForm; home: [number, number, number]; zooMember: true }> = [];
     for (let k = 0; k < WORLD_SURFACES.length; k += 1) {
       const surface = WORLD_SURFACES[k];
@@ -4319,11 +4352,18 @@ export default function ManuscriptView() {
     if (zooLoaded) return;
     if (summonZooForms()) recordZooLoaded();
   }, [zooLoaded, summonZooForms, recordZooLoaded]);
-  // §4 hydration: the act restored with no zoo on the page ⇒ the SAME
-  // committed door re-runs (the file carried the record, never the reading)
+  // §4 hydration: the act restored with a family missing ⇒ the SAME
+  // committed door re-runs (the file carried the record, never the reading);
+  // the summon's per-family guards fill exactly the gap (an old page file
+  // predating L-1 carries the surfaces and not the lens)
   useEffect(() => {
-    if (zooLoaded && !written.some((w) => w.zooMember)) summonZooForms();
-  }, [zooLoaded, written, summonZooForms]);
+    if (
+      zooLoaded &&
+      (!written.some((w) => w.zooMember) || !builtDomains.some((m) => ZOO_LENS.some((z) => z.key === m.key)))
+    ) {
+      summonZooForms();
+    }
+  }, [zooLoaded, written, builtDomains, summonZooForms]);
 
   // ----- 3b: the genesis reading — ONE committed DAG feeds pentimento + -----
   // ----- stemma + the foot-record (nothing hand-kept) ------------------------

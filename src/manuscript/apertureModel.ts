@@ -1945,7 +1945,7 @@ export interface ApertureModelDeck {
   model: 'E3' | 'S3' | 'H3'; // CARRIED from the seal — never re-inferred here
   doors: ApertureModelDoor[];
   inradius: number | null;
-  edgeClassSize: number;
+  edgeClassSize: number | null;
   /** the cell's own corners in the chart — the scaffold the person actually
    * stands among, which in a curved model is NOT the seed's euclidean cell */
   chartVertices: Map<string, V3>;
@@ -2021,7 +2021,7 @@ export type ApertureGate =
       /** the class the domain EARNED (constructed, then proven by the fit, by
        * every door's witnessed isometry, and by the closure walk) — carried,
        * never re-inferred downstream. `null` = no realization closed. */
-      seal: { geometry: 'E3' | 'S3' | 'H3'; inradius: number | null; edgeClassSize: number; closureWorstRad: number } | null;
+      seal: { geometry: 'E3' | 'S3' | 'H3'; inradius: number | null; edgeClassSize: number | null; closureWorstRad: number } | null;
       /** why no seal, when there is none — named, never silent */
       modelRefusal: string | null;
     }
@@ -2708,7 +2708,7 @@ export function traceAperture(options: {
 // ---------------------------------------------------------------------------
 
 /** The class a gate carries, in the shape a caption needs it. */
-export type ApertureSealedClass = { geometry: 'E3' | 'S3' | 'H3'; inradius: number | null; edgeClassSize: number; closureWorstRad: number };
+export type ApertureSealedClass = { geometry: 'E3' | 'S3' | 'H3'; inradius: number | null; edgeClassSize: number | null; closureWorstRad: number };
 
 // ═══ THE NOUN (B-114 §0 — the designer's rule and her words) ═════════════════
 // ⇒ ★ EVERY WORD IN THE NOUN MUST BE TRUE OF THE GEOMETRY THE NOUN NAMES.

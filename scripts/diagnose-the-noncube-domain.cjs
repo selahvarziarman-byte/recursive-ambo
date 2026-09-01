@@ -824,8 +824,31 @@ console.log('\n----- §10 STATION 2: deck abelian — yes/no, from the sealed de
   check('§10 THE ROW IS PRODUCER-DECLARED (B-132\'s law): label `deck abelian`, value yes/no, kind `measure` — commutativity is what the deck IS, never a gate verdict',
     t3 !== null && t3.row.label === 'deck abelian' && t3.row.kind === 'measure' && t3.row.value === 'yes' &&
     sw !== null && sw.row.value === 'no' && sw.row.kind === 'measure');
-  check('§10 ⛔ TRUE ABSENCE WHERE THE SEAL REFUSES — never a placeholder: a fully-bounded room (no pairings — every edge class boundary) reads NO row; and L(4,1) reads NO row because sealDomainRealization itself refuses mixed-k cells — the reader\'s reach IS the walk\'s reach (the app\'s one seal door), a lens deck existing only through the unconsumed realizeLensDomain is a routed finding, not this reader\'s to fabricate',
-    bounded === null && l41 === null);
+  check('§10 ⛔ TRUE ABSENCE WHERE THE SEAL REFUSES — never a placeholder: a fully-bounded room (no pairings — every edge class boundary) reads NO row; and L(4,1) — the routed finding CURED by L-1 in the same cycle it was routed — now reads a ROW: the curved ABELIAN control (a cyclic deck at float-noise deviation), the order arc\'s own negative control restored',
+    bounded === null && l41 !== null && l41.abelian === true && l41.maxDeviation < 1e-9);
+}
+
+// ═════ §11 L-1 — THE LENS ARM: a second realization source, one proof pipeline ═
+console.log('\n----- §11 L-1: the lens seals through the app\'s own door (Arman: "the lens should be there and walkable yes") -----');
+{
+  const { readLensSeed } = req('src/lib/noncubeDomain.ts');
+  check('§11 ⛔ THE DISPATCH IS THE SEED\'S OWN CONSTRUCTION, never a heuristic: readLensSeed reads exactly realizeLensDomain\'s prerequisites (2p top/bot faces · e0..e{p-1} · the poles) — the lens seeds answer their p, the dodecahedron answers null, so the regular family cannot be re-routed by accident',
+    JSON.stringify(readLensSeed(lens41)) === '{"p":4}' &&
+    JSON.stringify(readLensSeed(lens52)) === '{"p":5}' &&
+    readLensSeed(dodeca) === null);
+  const s41 = sealDomainRealization(l41Domain);
+  const s52 = sealDomainRealization(l52Domain);
+  note(`L(4,1): ${s41.sealed ? `S3 · ${s41.seal.deck.entries.length} doors · closure ${s41.seal.closureWorstRad.toExponential(1)}` : 'REFUSED ' + s41.reason} · L(5,2): ${s52.sealed ? `S3 · ${s52.seal.deck.entries.length} doors · closure ${s52.seal.closureWorstRad.toExponential(1)}` : 'REFUSED ' + s52.reason}`);
+  check('§11 ⛔ BOTH LENS SPACES SEAL ON THE ONE PROOF PIPELINE (proofs 1–3 verbatim — a lens seal can never be weaker than a regular one): S3, the fit passes, every door witnessed, the closure walk returns the room within the seal\'s own ε; edgeClassSize is honestly NULL (the lens census is mixed BY CONSTRUCTION — {p at k=2, 1 at k=p} — and a single number cannot say that truth)',
+    s41.sealed && s41.seal.geometry === 'S3' && s41.seal.deck.entries.length === 4 &&
+    s41.seal.fit.pass && s41.seal.closureWorstRad <= 1e-4 && s41.seal.edgeClassSize === null &&
+    s52.sealed && s52.seal.geometry === 'S3' && s52.seal.deck.entries.length === 5 &&
+    s52.seal.fit.pass && s52.seal.closureWorstRad <= 1e-4 && s52.seal.edgeClassSize === null);
+  const swSeal = sealDomainRealization(swDomain);
+  const pcSeal = sealDomainRealization(pcDomain);
+  check('§11 THE REGULAR FAMILY IS BYTE-BEHAVED BESIDE THE NEW ARM: SW still seals H3 at k=5, Poincaré S3 at k=3 — the mixed-k guard still stands for genuinely un-servable censuses, correctly scoped to its own realizer',
+    swSeal.sealed && swSeal.seal.geometry === 'H3' && swSeal.seal.edgeClassSize === 5 &&
+    pcSeal.sealed && pcSeal.seal.geometry === 'S3' && pcSeal.seal.edgeClassSize === 3);
 }
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`} — the non-cube domain`);
