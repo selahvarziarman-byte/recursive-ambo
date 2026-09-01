@@ -242,7 +242,8 @@ import { buildProbeMeshes } from './apertureProbes';
 import { ExploreWindow } from './ExploreWindow';
 import { readCellSurface, faceTraceCycle, apertureParityCensus, apertureNoun, apertureNote } from './apertureModel';
 import { buildFormDomain, pendingPairMarks } from './formDomainModel';
-import { createLensBipyramidShape, lensPairings } from '../lib/noncubeDomain';
+import { createDodecahedronShape, createLensBipyramidShape, dodecahedralTwistPairings, lensPairings } from '../lib/noncubeDomain';
+import type { FacePairing } from '../lib/faceIdentification';
 // §2 (B-2026-08-22-A) — the page's store half (A) and file half (B);
 // §7 (B-2026-08-24-B): the unsaved-mark's derived signature
 import { pageSignatureOf, useManuscriptPageStore } from './pageStore';
@@ -339,13 +340,47 @@ const REFERENCE_OPS: Record<string, string> = {
   mobius: 'flip-glue-mobius',
 };
 
-// L-1 (STAMP L-1): the zoo's dim-3 arm — the reference lens spaces, summoned
+// L-1 (STAMP L-1) + STAMP O-2 §2 (Arman verbatim: "pay the price fr the
+// family shit"): the zoo's dim-3 arm — the reference curved rooms, summoned
 // by the SAME gesture as the surfaces and re-derived from the recorded act on
-// restore. Titles follow the T³'s own catalogue grammar (class word + the
-// seed's honest noun); the copy is the designer's to refine.
-const ZOO_LENS: Array<{ p: number; q: number; key: string; title: string }> = [
-  { p: 4, q: 1, key: 'lens-4-1', title: 'L(4,1) — lens bipyramid' },
-  { p: 5, q: 2, key: 'lens-5-2', title: 'L(5,2) — lens bipyramid' },
+// restore. The lens pair landed at L-1; the dodecahedral pair joins under the
+// O-2 sanction — Poincaré is the standard pair's other half (H₁ = 0 with
+// deck abelian: no, beside ∂Δ⁴'s honest zero) and Seifert–Weber is the order
+// arc's kill subject. Titles follow the T³'s own catalogue grammar (class
+// word + the trace); the copy is the designer's to refine.
+const ZOO_ROOMS: Array<{ key: string; title: string; build: () => { seed: Shape; pairings: FacePairing[] } }> = [
+  {
+    key: 'lens-4-1',
+    title: 'L(4,1) — lens bipyramid',
+    build: () => {
+      const seed = createLensBipyramidShape(4);
+      return { seed, pairings: lensPairings(seed, 4, 1) };
+    },
+  },
+  {
+    key: 'lens-5-2',
+    title: 'L(5,2) — lens bipyramid',
+    build: () => {
+      const seed = createLensBipyramidShape(5);
+      return { seed, pairings: lensPairings(seed, 5, 2) };
+    },
+  },
+  {
+    key: 'seifert-weber',
+    title: 'Seifert–Weber — dodecahedron, 3/10 twist',
+    build: () => {
+      const seed = createDodecahedronShape();
+      return { seed, pairings: dodecahedralTwistPairings(seed, 3) };
+    },
+  },
+  {
+    key: 'poincare',
+    title: 'Poincaré — dodecahedron, 1/10 twist',
+    build: () => {
+      const seed = createDodecahedronShape();
+      return { seed, pairings: dodecahedralTwistPairings(seed, 1) };
+    },
+  },
 ];
 
 // craft-level colour recede: mix an ink toward the paper tone (pure, deterministic)
@@ -4294,7 +4329,7 @@ export default function ManuscriptView() {
     // not the other, and the hydration re-summon must fill exactly the gap.
     const state = useManuscriptPageStore.getState();
     const hasWrittenZoo = state.written.some((w) => w.zooMember);
-    const hasLensZoo = state.builtDomains.some((m) => ZOO_LENS.some((z) => z.key === m.key));
+    const hasLensZoo = state.builtDomains.some((m) => ZOO_ROOMS.some((z) => z.key === m.key));
     // L-1 (STAMP L-1, Arman verbatim: "the lens should be there and walkable
     // yes"): the reference L(p,q) domains join the zoo's ONE gesture — the
     // zoo records the ACT (zooLoaded) and re-derives the members on restore,
@@ -4303,9 +4338,9 @@ export default function ManuscriptView() {
     // truth there — five doors and you are home).
     if (!hasLensZoo) {
       try {
-        const lensAdds = ZOO_LENS.map(({ p, q, key, title }) => {
-          const seed = createLensBipyramidShape(p);
-          return buildFormDomain(seed, lensPairings(seed, p, q), key, title);
+        const lensAdds = ZOO_ROOMS.map(({ key, title, build }) => {
+          const { seed, pairings } = build();
+          return buildFormDomain(seed, pairings, key, title);
         });
         setBuiltDomains((cur) => [...cur, ...lensAdds]);
       } catch (error) {
@@ -4366,7 +4401,7 @@ export default function ManuscriptView() {
   useEffect(() => {
     if (
       zooLoaded &&
-      (!written.some((w) => w.zooMember) || !builtDomains.some((m) => ZOO_LENS.some((z) => z.key === m.key)))
+      (!written.some((w) => w.zooMember) || !builtDomains.some((m) => ZOO_ROOMS.some((z) => z.key === m.key)))
     ) {
       summonZooForms();
     }
