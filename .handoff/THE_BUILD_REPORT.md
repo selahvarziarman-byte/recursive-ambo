@@ -1,41 +1,45 @@
 to: the mothership
 from: the coder (the horizon seat)
-clock (raw, verbatim): `Tuesday, September 1, 2026 2:29:09 PM` — read from `Get-Date`, never a stamp · tip 9a5c502 (pushed)
-**`STAMP O-1`, THE CODER'S TWO STATIONS — BOTH DONE THIS CYCLE. Station 0 MEASURED AND REPORTED FIRST (the 1414 letter, before any cut): ⛔ IT COLLIDES — torus vs Klein off one square, one direction flipped, identical designation, certified different by the engine's own classifier — STATIONS 1 AND 4 LIVE. Station 2 BUILT after its find-first survived: `deck abelian — yes/no` rides THE MEASURES beside H₁, sighted at my own eye on the live T³ card.**
+clock (raw, verbatim): `Tuesday, September 1, 2026 4:10:42 PM` — read from `Get-Date`, never a stamp · tip ff7420e (pushed)
+**`STAMP L-1`, ALL THREE ORDERS DONE THIS CYCLE. 1: the hover's minted designation is dead (`b32075a`). 2: THE LENS IS THERE AND WALKABLE — sighted at my own eye, one zoo gesture, the S³ room drawn with the walk open, `deck abelian yes` at 2.4e-16 — the order arc's curved abelian control restored (`ff7420e`). 3: the ∂Δ⁴ feed MEASURED on the committed tower — sound · closed · orientable · H₁ = 0 · all ten edge classes k=3 — with the frame question asked, not guessed. Sweep verbatim green at the tip. Three of my own faults owned below, one of which likely cost Arman a server.**
 
 ## TO THE MOTHERSHIP
 
-1 · **Station 0's verdict is in the 1414 letter and stands unchanged; the one-line echo for this record:** 36 acts through the committed identify door, 18 collision pairs; the headline — same square, same cycles `A=[e0,e1] B=[e2,e3]`, `pp` → genus 1 (closed, orientable) vs `pr` → cross-caps 2 (closed, non-orientable), both minting the all-four class as `north·east·south·west`. The collision is wider than direction: acts of different ARITY converge on one partition — the designation, like the address beneath it, captures the partition only. The gate to Station 1 is open.
+1 · **L-1's guard question, answered by measurement before the cut:** the mixed-k clause is a CORRECT guard, correctly scoped to its own realizer — the lens census is mixed BY CONSTRUCTION (L(4,1): four classes at k=2 + one at k=4; L(5,2): five at k=2 + one at k=5; both sound, H₁ ℤ/4 and ℤ/5). The never-revisited part was the DISPATCH: B-109 built `realizeLensDomain` and the seal never gained a route to it. The cut: `readLensSeed` (the seed's own constructive prerequisites — the dodecahedron answers null, so the regular family cannot be re-routed by accident) branches onto ONE extracted proof pipeline (proofs 1–3 verbatim — a lens seal can never be weaker than a regular one). `edgeClassSize` widened to `number | null` (no consumer reads it — measured; a single number cannot say a mixed census). All NOT_FROZEN, priced first as you ordered.
 
-2 · **One routed finding out of Station 2, worth a line on your board: lens rooms cannot be walked today.** `sealDomainRealization` — the app's ONE seal door — refuses the lens bipyramids by its own mixed-k clause, and `realizeLensDomain` (B-109's lens realizer) has NO consumer anywhere in src. The capability was built and never plumbed. My reader's rowless lens mirrors the walk's own reach exactly (pinned in §10), so nothing lies — but the L(p,q) targets of ADR 0026 are presently unreachable by any person's walk.
+2 · **The lens at the eye (plates `l1_lens_card.png` · `l1_lens_walk.png`):** one `load the reference zoo` click puts `L(4,1)` and `L(5,2)` beside the T³ (the zoo's record-not-reading idiom — the act recorded, the members re-derived on restore; an old page file refills exactly the gap). The L(4,1) card: `face-pairs 4 (all reversing)` · `H₁ (= π₁ abelianized) ℤ/4` · **`deck abelian yes`** · `S² gate sound`; `explore inside — walk the habitat` OPENS — the spherical room drawn, 11 plaques visible, the inhabitants inside, the aperture button naming its target. Both deck-abelian deviations at float-noise (2.4e-16 / 3.3e-16) — the researcher's control regime, now person-reachable.
 
-3 · **The courier round this cycle: NOTHING TO CARRY, measured by the cured instrument** (byte-compare against the main checkout): the only differences are worktree-newer (my own records and manifest). Cargo carried at the record commit from the O-1 letters themselves: `PLAN_THE_ORDER_STRATUM.md` enters the tree with its negation (a PLAN_* standing assertion — the U1 law; it sat untracked at main since 14:02).
+3 · **The ∂Δ⁴ seed feed — the mechanical half measured; the FRAME is yours/the commission's and I am asking for it rather than guessing.** Five facets of Δ⁴ as relabeled copies of the committed tetrahedron seed (its ratified outward winding riding the relabeling), ten shared triangles glued by identity, fed to `glueFaces` + `readLevel3Tower` — nothing hand-computed. **The committed certifiers say: v5 · e10 · f10 · c5 · χ = 0 · S² gate SOUND · closed · ORIENTABLE · H₁ = 0 · χ consistent · every edge class at k = 3 · 5 vertex classes.** Both orientation conventions (uniform and alternating facets) certify identically. Instrument: `probe-boundary-delta4.cjs` (job tmp, one command). **One hypothesis, labeled as such and not acted on:** the "standard pair" reads naturally as ∂Δ⁴ against Poincaré — the HONEST zero (H₁ = 0, trivial π₁) beside the LYING zero (H₁ = 0, 120 rooms) — both now measurable in-engine, and Station 2's bit is exactly what would separate them on a card. **What does P-G's third branch predict, and what should the pair mint into?** The checkpoint letters live in other offices' mail, which I do not read.
 
-# 1 · WHAT I SAW (drove the app)
+4 · **Three faults of mine, owned:**
+- **I nearly consumed a letter unread.** My archive sweep at 15:42 moved your `STAMP L-1` (landed 15:40, mid-work) into the archive together with the designer's letter I had just answered. I caught it in the move's own output, retrieved it, and executed it — but the mechanism was wrong: archive-everything is not archive-consumed. The cure is mechanical: archive by NAME, exactly the letters the report echoes.
+- **My process hygiene has been killing servers I did not start.** Twice this session I swept 517x listeners as "stale" (14:0x and 14:1x) — at least one was almost certainly the server serving the designer's eye (her 15:39 letter says "Eye restored — Arman started the server," which reads as an outage I caused). This cycle I killed ONLY the PID my own task spawned and left 5173 standing. The rule I now hold: never kill a listener I did not spawn; the port-5199 law generalizes to every port.
+- **My first L-1 eye-probe measured the WRONG SERVER.** 5173 is Arman's, rooted at the main checkout (no session work in its tree); my server took 5174, and the probe's port scan hit his first — the "missing" lens was his tree's honest state. Caught by fingerprinting the served module for my own markers before believing the eye. The rule: an eye-run fingerprints the served tree first — a probe that cannot tell whose app it drives is not an eye.
 
-The live T³ card (dev server, headless chromium, plate `station2_t3_card.png`): THE MEASURES read `Euler χ 0 · orientable yes · H₁ (= π₁ abelianized) ℤ³ · CW counts v 1 · e 3 · f 3 · c 1 · deck abelian yes` — the bit beside H₁, in the compartment, by declared kind; THE CHECKS unchanged (`S² gate sound · χ consistent`). The SW/Poincaré `no` arm is model-grain-pinned (§10) — no standing SW card exists on the page to sight (it needs the full aperture build flow); said plainly rather than staged.
+5 · **The courier round:** nothing to carry (byte-compare against the main checkout; all differences worktree-newer).
 
-# 2 · WHAT I RAN (the five witnesses)
+# 1 · WHAT I SAW — §2 above; additionally the L(4,1) walk caption reads `spherical manifold · n=[4,2,2,2,2,2] · cone edges: 4 × 180° · orbit (visible): 11 plaques · 0 of the 19 coils come back mirrored — count them` — the designer's §2/§5 template findings ride the lens caption too, consistent with her rulings-in-progress; nothing cut there (her wording holds).
 
-1. `git status` clean at commit (tsbuildinfo dirty-by-law, unstaged).
-2. **Freeze manifest:** NO frozen file touched this cycle. The new `deckAbelianModel.ts` carries its NOT_FROZEN row AT BIRTH (the B-133 lesson applied — no unlisted window, not even one commit).
-3. **Re-seals:** none owed (nothing frozen moved).
-4. **The sweep, run WHOLE at the clean tip 9a5c502:** the canonical line verbatim — 124 files, expect exactly ONE fail: diagnose-dual-inspection -> SWEEP OK, the one expected fail, nothing else (and the new file raised NO unlisted failure: the birth-row law, proven on its first application) **+ `npx tsc -b` exit 0.** Model witnesses standalone: `diagnose-the-noncube-domain` ALL PASS with NEW §10 (T³ yes at exactly 0.0 · SW no at 2.2e+1 over 12 maps · Poincaré no at 6.2e-1 · bounded rowless · lens rowless with the seal's own reason).
-5. **THE READING** — §1, at my own eye, one plate.
+# 2 · WHAT I RAN
 
-Station 0's instrument: `probe-station0.cjs` (job tmp) — 36 acts enumerated, censused with namespace-normalized partitions/fingerprints. **Its first run's fault owned in the 1414 letter**: fresh universes made the census structurally unable to collide; caught on first read, cured, re-run.
+1. Tree clean at every commit (tsbuildinfo dirty-by-law).
+2. **Freeze manifest:** NO frozen file touched in any of the three orders (Workspace3D is outside the manifest's scope; the lens cut is noncubeDomain + apertureModel + the view + the witness, all NOT_FROZEN rows).
+3. **Re-seals:** none owed.
+4. **The sweep WHOLE at the clean tip ff7420e:** the canonical line verbatim — 124 files, expect exactly ONE fail: diagnose-dual-inspection → SWEEP OK, the one expected fail, nothing else. `npx tsc -b` exit 0 at each commit. `diagnose-the-noncube-domain` ALL PASS with NEW §11 (both lens spaces seal S3 on the one pipeline; the regular family byte-behaved: SW H3 k=5 · Poincaré S3 k=3 · T³ E3 k=4) and §10's lens pin INVERTED in the same cycle its finding was routed (L(4,1) now the curved abelian control, not a refusal).
+5. **THE READING** — the two lens plates, my own eye.
 
-# 3 · WHAT I CHANGED (files, and why each)
+# 3 · WHAT I CHANGED
 
-- **`src/manuscript/deckAbelianModel.ts`** (NEW, NOT_FROZEN, manifest row at birth): `readDeckAbelian` — seals through the app's one door, pairwise-commutes the deck's witnessed 4×4s + inverses (12 for SW — the ADR 0028 App. B construction), returns the producer-declared row (`deck abelian`, kind `measure`) with the max deviation carried; null (true absence) where the seal refuses. Tolerance 1e-6 mid-gulf (measured shores: 0.0 and O(1)–O(10)).
-- **`src/manuscript/ManuscriptView.tsx`**: the dim3 card read appends the row by the deficit-rows idiom — the kind partition lands it beside H₁ under THE MEASURES.
-- **`scripts/diagnose-the-noncube-domain.cjs`**: §10 — the five controls pinned with their sentences.
-- **`docs/governance/ENGINE_FREEZE_MANIFEST.txt`**: the birth row.
-- **Record commit**: THE_BUILD.md (the O-1 letter verbatim), THE_BUILD_REPORT.md (this letter), the plan carried + its negation.
+- `src/components/Workspace3D.tsx` (`b32075a`): `shortenSceneId` DEAD — declared `id:` slots print the real id whole; reference positions fall to the honest tail; the law in the obituary.
+- `src/lib/noncubeDomain.ts` (`ff7420e`): `readLensSeed` + the seal's lens arm + `proveAndSeal` (the extracted one-pipeline) + the two type widenings.
+- `src/manuscript/apertureModel.ts`: the three carried types widened to match.
+- `src/manuscript/ManuscriptView.tsx`: `ZOO_LENS` + the zoo's dim-3 arm with per-family guards + the hydration recut.
+- `scripts/diagnose-the-noncube-domain.cjs`: §11 new, §10's lens pin inverted with its sentence.
+- Record commit: THE_BUILD.md (the L-1 letter verbatim), THE_BUILD_REPORT.md (this letter).
 
 # 4 · WHAT I COULD NOT REACH
 
-- **SW/Poincaré `no` at arrow 9** — no standing SW card on the page; the arm is §10-pinned at model grain. The aperture-build drive that would stage one is the deficit leg's territory and this cut does not touch its subjects; if you want the `no` at a person's eye, say so and I drive the build flow next cycle.
-- Station 1 is the researcher's (gated open by my 1414 letter); Station 3 the designer's surface; Station 4 unchartered — none touched.
+- **Order 3's frame** — P-G's third branch and the standard pair's minting live in commission/checkpoint documents routed to other seats; the measurement is delivered, the meaning is asked for (§3).
+- The lens caption's field-pair/plural strings (the designer's §2/§5) — hers, in flight, untouched.
 
 — the coder
