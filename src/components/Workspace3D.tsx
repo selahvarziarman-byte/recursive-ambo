@@ -2486,16 +2486,16 @@ function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): 
     const label = getScenePacketDataDisplayLabel(cell.data);
 
     return label
-      ? `Hovering cell ${label} | ${cellSummary} | id: ${shortenSceneId(cell.id)}`
-      : `Hovering cell ${cellSummary} | id: ${shortenSceneId(cell.id)}`;
+      ? `Hovering cell ${label} | ${cellSummary} | id: ${cell.id}`
+      : `Hovering cell ${cellSummary} | id: ${cell.id}`;
   }
 
   if (target.kind === 'vertex') {
     const label = getSceneVertexLabel(shape, target.vertexId);
 
     return label
-      ? `Hovering vertex ${label} | id: ${shortenSceneId(target.vertexId)}`
-      : `Hovering vertex ${shortenSceneId(target.vertexId)}`;
+      ? `Hovering vertex ${label} | id: ${target.vertexId}`
+      : `Hovering vertex ${sceneIdTail(target.vertexId)}`;
   }
 
   if (target.kind === 'edge') {
@@ -2512,22 +2512,22 @@ function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): 
     const relation = describeSceneEdgeRelation(edge);
 
     return relation
-      ? `Hovering edge ${endpoints} | ${relation} | id: ${shortenSceneId(edge.id)}`
-      : `Hovering edge ${endpoints} | id: ${shortenSceneId(edge.id)}`;
+      ? `Hovering edge ${endpoints} | ${relation} | id: ${edge.id}`
+      : `Hovering edge ${endpoints} | id: ${edge.id}`;
   }
 
   const face = shape.faces.find((candidate) => candidate.id === target.faceId);
 
   if (!face) {
-    return `Hovering face ${shortenSceneId(target.faceId)}`;
+    return `Hovering face ${sceneIdTail(target.faceId)}`;
   }
 
   const label = getScenePacketDataDisplayLabel(face.data);
   const relation = describeSceneFaceRelation(shape, face);
 
   return label
-    ? `Hovering face ${label} | ${relation} | id: ${shortenSceneId(face.id)}`
-    : `Hovering face ${relation} | id: ${shortenSceneId(face.id)}`;
+    ? `Hovering face ${label} | ${relation} | id: ${face.id}`
+    : `Hovering face ${relation} | id: ${face.id}`;
 }
 
 function describeSceneCellTopology(cell: Cell): string {
@@ -2549,7 +2549,7 @@ function getSceneVertexLabel(shape: Shape, vertexId: VertexId): string | null {
 }
 
 function formatSceneVertexRef(shape: Shape, vertexId: VertexId): string {
-  return getSceneVertexLabel(shape, vertexId) ?? shortenSceneId(vertexId);
+  return getSceneVertexLabel(shape, vertexId) ?? sceneIdTail(vertexId);
 }
 
 function describeSceneFaceRelation(shape: Shape, face: Face): string {
@@ -2560,7 +2560,7 @@ function describeSceneFaceRelation(shape: Shape, face: Face): string {
   }
 
   if (face.sourceFaceId) {
-    parts.push(`source face ${shortenSceneId(face.sourceFaceId)}`);
+    parts.push(`source face ${sceneIdTail(face.sourceFaceId)}`);
   }
 
   if (!face.sourceVertexId && !face.sourceFaceId && face.vertexIds.length) {
@@ -2584,11 +2584,11 @@ function describeSceneEdgeRelation(edge: Edge): string | null {
   }
 
   if (edge.sourceEdgeId) {
-    parts.push(`source edge ${shortenSceneId(edge.sourceEdgeId)}`);
+    parts.push(`source edge ${sceneIdTail(edge.sourceEdgeId)}`);
   }
 
   if (edge.sourceFaceId) {
-    parts.push(`source face ${shortenSceneId(edge.sourceFaceId)}`);
+    parts.push(`source face ${sceneIdTail(edge.sourceFaceId)}`);
   }
 
   return parts.length ? parts.join(', ') : null;
@@ -2628,8 +2628,14 @@ function getSceneMeaningfulText(value: unknown): string | null {
   return firstLine.length > 64 ? `${firstLine.slice(0, 61)}...` : firstLine;
 }
 
-function shortenSceneId(id: string): string {
-  return id.length > 30 ? `${id.slice(0, 14)}...${id.slice(-8)}` : id;
+// THE NAME-SLOT LAW (STAMP L-1 order 1; researcher-verified): shortenSceneId
+// DIED here — it MINTED a head…tail splice that exists nowhere in the
+// substrate, printed in slots that declare themselves `id:` and as a name
+// slot's fallback. A declared id: slot prints the REAL id whole; a reference
+// position falls to the honest TAIL (the ratified reference-read: an address
+// is a value the form already has — never a manufactured token).
+function sceneIdTail(id: string): string {
+  return id.split(':').pop() ?? id;
 }
 
 function cellStyle(
