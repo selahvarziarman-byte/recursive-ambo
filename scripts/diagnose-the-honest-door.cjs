@@ -295,7 +295,7 @@ check('★ CLAUSE 6(a) — the KEPT-REFUSAL gate, carried in-memory, VISIBLY FAI
     note(`kept-refusal gate draws: ${drawable}/79 (the honest gate: 79/79)`);
     return drawable === 43;
   })());
-check('★ CLAUSE 6(b) — the S³-EMITTING labeler, carried in-memory, VISIBLY TRIPS clause 2: on the sound n=[3,3,3,3] forms its label contains "S³" (the exact string the no-lie sweep forbids) — where the honest labeler names a Euclidean cone-manifold at 4 × 270°',
+check('★ CLAUSE 6(b) — the S³-EMITTING labeler, carried in-memory, VISIBLY TRIPS clause 2: on the sound n=[3,3,3,3] forms its label contains "S³" (the exact string the no-lie sweep forbids) — where the honest labeler names a Euclidean cone-manifold whose label speaks the 1600-ruled sentence (`four cone edges at 270°` — the fact said once, in words)',
   (() => {
     const s333 = soundSet.find((s) => A.geometryFromTower(s.verdict.domain.tower).n.every((v) => v === 3));
     if (!s333) return false;
@@ -303,7 +303,7 @@ check('★ CLAUSE 6(b) — the S³-EMITTING labeler, carried in-memory, VISIBLY 
     const honestLabel = A.geometryFromTower(s333.verdict.domain.tower).label;
     note(`mutant: "${mutantLabel.slice(0, 60)}" · honest: "${honestLabel.slice(0, 72)}"`);
     return FORBIDDEN.test(mutantLabel) && !FORBIDDEN.test(honestLabel) &&
-      honestLabel.includes('Euclidean cone-manifold') && honestLabel.includes('4 × 270°');
+      honestLabel.includes('Euclidean cone-manifold') && honestLabel.includes('four cone edges at 270°');
   })());
 // fidelity, while the window is open: pre-commit the HEAD reader IS the old
 // mechanism — the carried mutants must agree with it byte-for-byte on labels

@@ -437,12 +437,12 @@ outer: for (const c0 of adjCands[0])
         // the engine's own loud refusal (level3Orientation FOLDED) — reported in the handback, surfaced by the door verbatim
       }
     }
-check('the SOUND n=[3,3,3,3] form (the adjacent matching, found by sweep — refused as "S³" before B.0) now DRAWS: the gate is ok, and the geometry names the honest reading — a Euclidean cone-manifold with cone edges 4 × 270°, never S³ (k is the edge-class size, not an ambient)',
+check('the SOUND n=[3,3,3,3] form (the adjacent matching, found by sweep — refused as "S³" before B.0) now DRAWS: the gate is ok, and the geometry names the honest reading — a Euclidean cone-manifold whose label speaks the 1600-ruled sentence (`four cone edges at 270°` — the fact said once, in words), never S³ (k is the edge-class size, not an ambient)',
   coneFound !== null &&
   coneFound.geometry.n.every((v) => v === 3) &&
   coneFound.geometry.kind === 'cone' &&
   coneFound.geometry.label.includes('Euclidean cone-manifold') &&
-  coneFound.geometry.label.includes('4 × 270°') &&
+  coneFound.geometry.label.includes('four cone edges at 270°') &&
   !/S³|S3|H³|H3|spherical|hyperbolic/.test(coneFound.geometry.label) &&
   (() => {
     const gate = A.buildAperture(coneFound.domain);
@@ -876,6 +876,20 @@ check('…and it is WIRED at the emptiness: the view sets the row refusal exactl
   viewSrcM.includes('mapChoices.length === 0 && refusals.length > 0') &&
   chromeSrcM.includes('row.mapRefusal') &&
   chromeSrcM.includes('data-aperture-no-map'));
+
+// ═════ THE 1555 RULING — the picker is a REFERENCE POSITION ═══════════════════
+console.log('\n----- the 1555 ruling: R4(a) APPLIED at its principle — the picker individuates on a nameless universe -----');
+{
+  const cube = req('src/data/seeds.ts').createSeedShape('cube');
+  for (const v of Object.values(cube.vertices)) v.data.label = '';
+  const refs = cube.faces.map((face) => A.faceReferenceName(cube, face));
+  const names = new Set(cube.faces.map((face) => A.faceDisplayName(cube, face)));
+  note(`all-unnamed picker labels: ${refs.join(' | ')}`);
+  check('⛔ (the designer\'s acceptance, adopted verbatim by the ruling) THE PERSON CAN CHOOSE THE MEANING: on a universe with no names anywhere, the picker\'s reference read gives SIX OPTIONS, SIX DISTINGUISHABLE STRINGS — composed corner addresses, ·-joined (a cycle is SHOWN, not punctuated), and the word `unnamed` appears in NONE of them (a token in a WHICH-slot is not a true absence)',
+    refs.length === 6 && new Set(refs).size === 6 && refs.every((r) => !r.includes('unnamed')));
+  check('AND THE REGISTER SEPARATION HOLDS: the NAME-slot composer (faceDisplayName — the card\'s face register) still reads its lawful absence word on the same faces — R4(a) applied at the picker, not un-ruled anywhere else',
+    names.size === 1 && names.has('unnamed'));
+}
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

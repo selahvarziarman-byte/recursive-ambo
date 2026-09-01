@@ -218,6 +218,7 @@ import {
   describeCandidate,
   dihedralMapCandidates,
   faceDisplayName,
+  faceReferenceName,
   NO_MAP_FITS_SENTENCE,
   resolveCarriedMetricBase,
   subdivideAndReadPersonDomain,
@@ -2210,8 +2211,14 @@ function SpecimenCard({
 // port menu read `unnamed · 4 corners` ×12 beside a card naming every
 // face). The callers hand in the view's own resolveAbsentLabel; no fifth
 // composing path exists.
+// THE 1555 RULING: every caller of this labeler is a PICKER (the face-pick
+// card, the port menus, the chord panel — WHICH-slots all), so it reads the
+// REFERENCE-grade composition (faceReferenceName): R4(a) applied at its
+// principle — six options, six distinguishable strings, on a universe with
+// no names anywhere. Name slots (the card's face register) keep
+// faceDisplayName and its lawful absence word.
 const faceLabel = (shape: Shape, face: Face, resolveAbsent?: AbsentLabelResolver): string =>
-  `${faceDisplayName(shape, face, resolveAbsent)} · ${face.vertexIds.length} corners`;
+  `${faceReferenceName(shape, face, resolveAbsent)} · ${face.vertexIds.length} corners`;
 
 export default function ManuscriptView() {
   const d = manuscriptDefaults;
@@ -4686,14 +4693,14 @@ export default function ManuscriptView() {
       // D9 (Sovereign Δ12, via mothership 1615/1630: "no un-asked-for room at
       // all"): the multi-cell auto-build is DELETED — the cells.length split
       // is gone with it (there was never a second concept). EVERY thicken
-      // product rides the shelf and the person POINTS AT it to open the one
+      // product rides the shelf and the person DRAGS IT ONTO THE PAPER to open the one
       // door; no room exists until they answer. D8: the product-record base
       // is carried at the mint, keyed by the product's shape id, so the door
       // can resolve it on the placed form.
       if (metricBaseId) productMetricBasesRef.current.set(shapeId, metricBaseId);
       // ⛔ COPY PENDING THE DESIGNER (flagged): the notice that points the
       // person at the shelf form is hers to word.
-      setOpNotice(`thicken: "${bandName}" rides the shelf — point at it to build a room on its faces`);
+      setOpNotice(`thicken: "${bandName}" rides the shelf — drag it onto the paper to build a room on its faces`);
     } catch (error) {
       // the committed doors speak for themselves (the 4-manifold stop, the Q1
       // guard) — the sentence is the thrown reason, never re-worded here

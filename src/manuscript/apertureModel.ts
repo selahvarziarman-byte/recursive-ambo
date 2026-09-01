@@ -691,6 +691,27 @@ export function cornerDisplayName(shape: Shape, vertexId: string, resolveAbsent?
   return trimmed.toUpperCase();
 }
 
+// THE 1555 RULING — R4(a) APPLIED AT ITS PRINCIPLE ("this label must
+// individuate"), not its verdict: a PICKER is a REFERENCE POSITION (it asks
+// WHICH face), so its fallback is the COMPOSED CORNER ADDRESSES — own name
+// where a corner holds one, the honest address tail where it does not,
+// NEVER the word `unnamed` (a token in a WHICH-slot is not a true absence).
+// `·` unconditional (her cycle ruling: a cycle is SHOWN, not punctuated —
+// a face has no first corner that is a fact about it); the same D14
+// rotation canonicalizes the start. faceDisplayName below is UNTOUCHED —
+// name slots (the card's face register) keep their lawful absence word.
+export function faceReferenceName(shape: Shape, face: Face, resolveAbsent?: AbsentLabelResolver): string {
+  const tokens = face.vertexIds.map((vertexId) => {
+    const named = cornerDisplayName(shape, vertexId, resolveAbsent);
+    if (named !== null) return named;
+    const raw = vertexId.replace(/^c\d+:/, '');
+    return raw.split(':').pop() ?? raw;
+  });
+  if (tokens.length === 0) return face.id.split(':').pop() ?? face.id;
+  const best = d14NameRotation(tokens);
+  return tokens.map((_, i) => tokens[(best + i) % tokens.length]).join('·');
+}
+
 export function faceDisplayName(shape: Shape, face: Face, resolveAbsent?: AbsentLabelResolver): string {
   const labels: string[] = [];
   for (const vertexId of face.vertexIds) {
@@ -777,7 +798,7 @@ export function boundaryFacesOf(shape: Shape, resolveAbsent?: AbsentLabelResolve
     // the degenerate case: one cell owns every face — the whole menu, raw ids
     return shape.faces
       .filter((face) => shape.cells[0].faceIds.includes(face.id))
-      .map((face) => ({ id: face.id, label: `${faceDisplayName(shape, face, resolveAbsent)} · ${face.vertexIds.length} corners` }));
+      .map((face) => ({ id: face.id, label: `${faceReferenceName(shape, face, resolveAbsent)} · ${face.vertexIds.length} corners` }));
   }
   // the owner census — DISTINCT owning cells per face. ⛔ THE DEGENERATE
   // GUARD (engineer 1420 §1): a face repeated INSIDE one cell's faceIds (a
@@ -806,7 +827,7 @@ export function boundaryFacesOf(shape: Shape, resolveAbsent?: AbsentLabelResolve
   for (const face of shape.faces) {
     const owners = ownersByFace.get(face.id);
     if (!owners || owners.length !== 1) continue; // interior walls (2 owners) are the complex's own identification — never offered
-    entries.push({ id: `c${owners[0]}:${face.id}`, label: `${faceDisplayName(shape, face, resolveAbsent)} · ${face.vertexIds.length} corners` });
+    entries.push({ id: `c${owners[0]}:${face.id}`, label: `${faceReferenceName(shape, face, resolveAbsent)} · ${face.vertexIds.length} corners` });
   }
   return entries;
 }
@@ -1277,7 +1298,34 @@ export function resolveConeAngleSource(domain: DomainModel, lineage?: ConeLineag
   }
 }
 
+// THE CONE-EDGE SENTENCE (the designer's 1600 §3 ruling): the fact is said
+// ONCE, IN WORDS, in both states — flat already says `no cone edges`; the
+// cone state says `one cone edge at 90°` / `two cone edges at 180°` (words
+// pluralise without a template hole; `at <deg>°` carries no rotation word —
+// LAW 20 forbade `turn`). ⚠ THE MIXED-ANGLE CASE IS EXPLICITLY UNRULED
+// ("comes back to me with a figure") — it keeps the carried machine form
+// until her figure lands, disclosed, never invented.
+const CONE_COUNT_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+function coneEdgeSentence(countsByDeg: Map<number, number>): string | null {
+  if (countsByDeg.size === 0) return null;
+  if (countsByDeg.size === 1) {
+    const [deg, count] = [...countsByDeg.entries()][0];
+    const word = CONE_COUNT_WORDS[count] ?? String(count);
+    return `${word} cone edge${count === 1 ? '' : 's'} at ${deg}°`;
+  }
+  const machine = [...countsByDeg.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([deg, count]) => `${count} × ${deg}°`)
+    .join(', ');
+  return `cone edges: ${machine}`;
+}
+
 export interface ApertureGeometry {
+  /** the designer's 1600 ruling: the cone-edge fact said ONCE, IN WORDS
+   * (`one cone edge at 90°`); null when there are none or no claim is
+   * made. The machine field `coneEdges` stays as the CARRIER (gates,
+   * witnesses); this is the person's sentence. */
+  coneEdgesSentence: string | null;
   // B.0 THE HONEST DOOR (researcher-ruled, sealed fab02d7e…e77e2): the engine
   // is EUCLIDEAN — the seed cube has 90° dihedrals and the deck maps are
   // ambient ℝ³ isometries, so cube/~ is ALWAYS a Euclidean cone-manifold.
@@ -1331,6 +1379,7 @@ export function geometryFromTower(tower: DomainModel['tower'], coneSource?: Cone
         n,
         label: `E³ — n=[${n.join(',')}] · every interior pillar measures 2π (the sealed metric)${boundary ? ` · ${boundary}` : ''}`,
         coneEdges: null,
+        coneEdgesSentence: null,
         boundary,
         metricSource: 'measured',
         metricRefusal: null,
@@ -1345,11 +1394,13 @@ export function geometryFromTower(tower: DomainModel['tower'], coneSource?: Cone
       .sort((a, b) => a[0] - b[0])
       .map(([deg, count]) => `${count} × ${deg}°`)
       .join(', ');
+    const sentence = coneEdgeSentence(coneCountsByAngle);
     return {
       kind: 'cone',
       n,
-      label: `Euclidean cone-manifold — n=[${n.join(',')}] · cone edges (measured): ${coneEdges}${boundary ? ` · ${boundary}` : ''}`,
+      label: `Euclidean cone-manifold — n=[${n.join(',')}]${sentence ? ` · ${sentence} (measured)` : ''}${boundary ? ` · ${boundary}` : ''}`,
       coneEdges,
+      coneEdgesSentence: sentence,
       boundary,
       metricSource: 'measured',
       metricRefusal: null,
@@ -1365,6 +1416,7 @@ export function geometryFromTower(tower: DomainModel['tower'], coneSource?: Cone
       n,
       label: `Euclidean cone-manifold — n=[${n.join(',')}] · sealed metric UNRESOLVED: ${source.refusal ?? 'the metric base could not be resolved'}${boundary ? ` · ${boundary}` : ''}`,
       coneEdges: null,
+      coneEdgesSentence: null,
       boundary,
       metricSource: 'unresolved-base',
       metricRefusal: source.refusal,
@@ -1377,6 +1429,7 @@ export function geometryFromTower(tower: DomainModel['tower'], coneSource?: Cone
       n,
       label: `E³ — n=[${n.join(',')}] · 2π/4 = the cube's 90° dihedral${boundary ? ` · ${boundary}` : ''}${refusalNote}`,
       coneEdges: null,
+      coneEdgesSentence: null,
       boundary,
       metricSource: 'heuristic',
       metricRefusal: source.refusal,
@@ -1394,11 +1447,15 @@ export function geometryFromTower(tower: DomainModel['tower'], coneSource?: Cone
         .sort((a, b) => a[0] - b[0])
         .map(([k, count]) => `${count} × ${k * 90}°`)
         .join(', ');
+  const heuristicSentence = coneEdgeSentence(
+    new Map([...coneCounts.entries()].map(([k, count]) => [k * 90, count])),
+  );
   return {
     kind: 'cone',
     n,
-    label: `Euclidean cone-manifold — n=[${n.join(',')}]${coneEdges ? ` · cone edges: ${coneEdges}` : ''}${boundary ? ` · ${boundary}` : ''}${refusalNote}`,
+    label: `Euclidean cone-manifold — n=[${n.join(',')}]${heuristicSentence ? ` · ${heuristicSentence}` : ''}${boundary ? ` · ${boundary}` : ''}${refusalNote}`,
     coneEdges,
+    coneEdgesSentence: heuristicSentence,
     boundary,
     metricSource: 'heuristic',
     metricRefusal: source.refusal,
@@ -1431,6 +1488,7 @@ export interface FoldedApertureGeometry {
   n: number[];
   foldLoci: number; // folded edge classes — no angle applies to them
   coneEdges: string | null; // TRUE cone edges only: k≠4 AND NOT folded, at k×90°
+  coneEdgesSentence: string | null; // the 1600-ruled words (see ApertureGeometry)
   label: string;
 }
 
@@ -1449,12 +1507,16 @@ export function geometryFromFoldedGate(gate: Level3SoundnessReport): FoldedApert
   const coneEdges = coneCounts.size === 0
     ? null
     : [...coneCounts.entries()].sort((a, b) => a[0] - b[0]).map(([k, count]) => `${count} × ${k * 90}°`).join(', ');
+  const foldedSentence = coneEdgeSentence(
+    new Map([...coneCounts.entries()].map(([k, count]) => [k * 90, count])),
+  );
   return {
     kind: 'folded',
     n,
     foldLoci: foldedRoots.size,
     coneEdges,
-    label: `orbifold — n=[${n.join(',')}] · fold loci: ${foldedRoots.size}${coneEdges ? ` · cone edges: ${coneEdges}` : ''}`,
+    coneEdgesSentence: foldedSentence,
+    label: `orbifold — n=[${n.join(',')}] · fold loci: ${foldedRoots.size}${foldedSentence ? ` · ${foldedSentence}` : ''}`,
   };
 }
 
@@ -2742,17 +2804,20 @@ export function apertureNoun(
 ): string {
   if (geometry.kind === 'folded') {
     // the singularity is REAL and survives every realization — no seal speaks here
-    return `orbifold · n=[${geometry.n.join(',')}] · fold loci: ${geometry.foldLoci}${geometry.coneEdges ? ` · cone edges: ${geometry.coneEdges}` : ''}`;
+    return `orbifold · n=[${geometry.n.join(',')}] · fold loci: ${geometry.foldLoci}${geometry.coneEdgesSentence ? ` · ${geometry.coneEdgesSentence}` : ''}`;
   }
   if (seal && seal.geometry !== 'E3') {
     // her noun, verbatim: the class, the census, and the cone figures KEPT in
     // their slot — the note below says whose they are, and hiding a number the
     // engine computed would be worse than marking it
-    return `${MODEL_NOUN[seal.geometry]} · n=[${geometry.n.join(',')}]${geometry.coneEdges ? ` · cone edges: ${geometry.coneEdges}` : ''}`;
+    return `${MODEL_NOUN[seal.geometry]} · n=[${geometry.n.join(',')}]${geometry.coneEdgesSentence ? ` · ${geometry.coneEdgesSentence}` : ''}`;
   }
   return geometry.kind === 'E3'
     ? `E³ · n=[${geometry.n.join(',')}]`
-    : `Euclidean cone-manifold · n=[${geometry.n.join(',')}] · cone edges: ${geometry.coneEdges}`;
+    : // the 1600 ruling + the one unguarded arm CURED: the sentence rides,
+      // guarded — `cone edges: null` (a serialized JS null in person copy,
+      // sighted twice) can no longer print
+      `Euclidean cone-manifold · n=[${geometry.n.join(',')}]${geometry.coneEdgesSentence ? ` · ${geometry.coneEdgesSentence}` : ''}`;
 }
 
 /** THE NOTE — the instrument's register, its own line(s). Her words.
