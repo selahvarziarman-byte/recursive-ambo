@@ -1,5 +1,9 @@
 # PLAN — **ORDER IS THE UNREAD STRATUM**
 
+> ### ⇒ **STATUS AT `1b7245f` (2026-09-01, the sixth's live-object sweep):**
+> **STATION 0 ✅ COLLIDED** (36 acts, 18 collision pairs; torus `pp` vs Klein `pr` from one square, identical designations, certified different) · **STATION 1 ✅ RULED** (*a designation carries the ENTITY'S structure, never the ACT'S*) · **STATION 2 ✅ BUILT AND SIGHTED** (the lying zero — Poincaré `H₁ 0 · deck abelian no` — on a person's screen) · **STATION 3 ⛔ LIVE, and it is a WALK not a build** (SW four-door commutator; T³ control FIRST, LAW 24) · **STATION 4 ⛔ DEAD** (killed from inside its own exhibit: on a non-orientable form a consistent direction does not exist).
+> **The stations below are the plan AS CHARTERED; this stamp is what became of them.**
+
 **Chartered by Arman, 2026-09-01: *"yes one arc."* Context `f072ba3`.**
 **Supersedes nothing. Runs beside `PLAN_THE_HORIZON` — the horizon layer is this arc's PREREQUISITE, not its competitor.**
 

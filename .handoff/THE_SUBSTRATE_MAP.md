@@ -1,5 +1,30 @@
 # THE SUBSTRATE MAP — the person's world, read end to end
 
+> ## ⛔⛔ STALENESS STAMP — the seventh mothership, at `1b7245f` (Δ47 live-object sweep)
+> ### ⛔ **THIS FILE IS THE CODER'S. I HAVE NOT REGENERATED IT AND I MAY NOT** — regenerating it means re-walking the app, and I cannot measure. **I have KILLED DEAD LINES BY PATH and nothing else.** ⇒ **A full regeneration is OWED BY THE CODER** (`PLAN_THE_LAST_PHASE.md` §3 already names it theirs, Δ16.3).
+> **Last regenerated at the `B-105` tip; last committed at `2b80fae`.** ✔ **`git rev-list --count 2b80fae..1b7245f` → `34`** — among them `b3328f5 · b42e850 · 601e8d7 · f3d35f6 · 9ad1823 · cd55e9b · 1b7245f`. ⚠ **34 is every commit in the range, not a count of "substrate" commits — I did not filter it and the word would have been mine, not git's.**
+>
+> **✔ MEASURED DEAD, each at `1b7245f`, by path — do not read these lines as live:**
+>
+> | line here | says | measured at `1b7245f` |
+> |---|---|---|
+> | §3 head · §8.6 | `ManuscriptView.tsx` **6139** | **7242** (`git show 1b7245f:src/manuscript/ManuscriptView.tsx \| wc -l`) |
+> | §8.6 | `apertureModel` **2455** | **2902** |
+> | §3b | `argumentReadingModel.ts` **923** | **990** |
+> | §1 | `pageStore.ts` **251** | **406** |
+> | §3c | `ExploreWindow` **1003** | **1168** |
+> | §3d | `DeckTilingWindow.tsx` **193** | **202** — ⚠ **and it lives at `src/manuscript/`, not `src/components/`; this file gives no directory for it** |
+> | §5 **and the footer** | manifest **46 frozen · 125 NOT_FROZEN** | **47 frozen · 127 NOT_FROZEN** (`grep -cE '^src/'` and `grep -cE '^NOT_FROZEN'`) |
+> | §3b | `endpointNameOf`, **`:530-560`** | **`argumentReadingModel.ts:592`** — ⛔ **the drift the sixth's `HANDOFF_…_V4.md` Appendix A.1 already recorded, never fixed here.** *A line number without a SHA is a stamp.* |
+>
+> ✔ **STILL TRUE, spot-checked by the same `git show 1b7245f:<path> | wc -l` as the table, so the kills above are not read as a general condemnation:** `src/store/geometryStore.ts` **973** · `src/manuscript/deckTilingModel.ts` **712** · `src/store/playgroundStore.ts` **484** · `src/store/liftStore.ts` **48**. **§8.4's refusal to restate the sweep census is CORRECT and is the law the rows above break** — *a copied count drifts from the code that made it*, and this file states the manifest census twice.
+>
+> **⛔ I COULD NOT FIND AN ENTRY HERE FOR EITHER OF THESE — where are they? Both exist at `1b7245f`:**
+> - **`scripts/dev-advance.cjs` + `scripts/diagnose-dev-advance.cjs`** (✔ `git ls-tree -r --name-only 1b7245f`) — the SERVE-IS-THE-ADVANCE mechanism, `/__whereami`, and the go-stale watcher/strip in the vite config (`f3d35f6` · `cd55e9b`; doctrine in `CLAUDE.md` §6). **`CLAUDE.md` §6 makes `npm run dev` the advance for the main checkout, so this is the ground under a serve — and I could find no row for it in this map.**
+> - **`ZOO_ROOMS`** — ✔ four occurrences in `ManuscriptView.tsx` at `1b7245f` (`git grep -c`). Per `b3328f5`'s message, one zoo gesture now summons **five** rooms (T³ · L(4,1) · L(5,2) · Seifert–Weber · Poincaré). ⚠ **On the coder's report, not my sighting.**
+>
+> **⚠ ONE CONTRADICTION I AM ROUTING, NOT RULING — for the coder to measure:** `apertureModel.ts:26-30` at `1b7245f` still comments *"Only the E³ transport is built — S³/H³ … REFUSE honestly for now"*, while `b3328f5`'s message reports the Seifert–Weber walk OPENING as a hyperbolic manifold. **A comment and a committed report disagree about what is built.** ⛔ **I read a COMMENT; I did not drive the transport — this is a question, not a finding.** *(`CLAUDE.md` §3: a comment that states its precondition is a guard that was never written; this one may instead be a limit that has been lifted and left standing.)*
+
 **Coder seat · regenerated at the B-105 tip (post-`e788ed3`; cite SHAs, never dates) · every fact below carries its file:line, read from the WORKING TREE == HEAD THIS SESSION (`git diff HEAD -- src` empty at write time) — no anchor inherited unverified except where a row says CARRIED.**
 **Read at wake. Regenerate at every arc boundary.** *Predecessor baselines: `6436736` (3rd seat's full walk) → `3c4ff8d` (render-arc scope) → THIS (B-105 A1, Arman-ruled Δ16.3): the walk (rung 1, CLOSED at Arman's hand 2026-08-21), the aperture/verdict arc, persistence, the legibility arc (the card · the names · the affordance line), and rung 2 (the deck-tiling, ADR 0025 as amended §7) all postdate the old baselines and are freshly grounded here.*
 **Rung discipline: every claim here is RUNG 1 (committed bytes / import closure) unless it cites a measured artifact.** LINKED ⇒ MOUNTS ⇒ REACHABLE ⇒ REACHED — a claim about "the person" made from rung 1 is not a claim.

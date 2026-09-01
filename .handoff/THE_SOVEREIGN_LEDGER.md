@@ -191,3 +191,23 @@ Every charter, ruling, and sequencing decision I write is walked against this le
 > **I wrote that the team spent 08-22→08-26 on a parked detour while Rung 2 sat free for five days.** ⇒ ⛔ **There was no such window. Rung 2 has been free for ONE day, and three complete build cycles landed and pushed TODAY.** ⇒ ***I invented a tempo failure and filed it in the file of record.***
 > ✔ **What is left, honestly:** **Rung 2 is unblocked and unopened**, and **the plan's content had not been regenerated since `1e09f36`.** **Both are true, both are one day old, and neither is drift.**
 > ★★ **The mechanism worth keeping is the one about MYSELF, not about the tempo: a defect report outranks a plan item in felt urgency — it has a victim and a next action; a plan item has neither. That is why the inbox wins, and it is worth guarding against BEFORE it costs a week.**
+
+---
+
+## Δ44–Δ47 · THE MIGRATION EVENING (2026-09-01, entered at `1b7245f` — the sixth's closing Keeper pass; the Gate's run on the successor packet caught that these were unrecorded)
+
+**Δ44 — THE PAUSE AND ITS LIFT.** *"no before i ran those command let's get the stupid thing that my app lags behind code right. and decisively. we never had this problem. let''s tackel it at the root. everything is on pause until that bit is right"* ⇒ closed: serve-is-the-advance (`f3d35f6`) + the go-stale mark (`cd55e9b`); his own restart passed the seal (`9ad1823 → 1b7245f`).
+
+**Δ45 — THE INITIATION LAW.** *"the mode of initiating a new seat is never via negative, that is never about the failure modes. it must be a positive frame with the failure modes as appendixes. you need to be more in depth about what the seat is and it does rather than what not to do."* ⇒ V4 rewritten as a constitution; the law saved to standing memory; the mothership-seat skill restructured to obey it.
+
+**Δ46 — THE SAME-TREE CHALLENGE.** *"we never had this problem. i will initial new coder along side the new mothership, and i'm sure they will be capable working in the same tree as us. this seems to me a LLM dead end pat&mat scenario"* ⇒ ⛔ **OPEN. Outranks the worktree doctrine.** The new coder's first act is the measurement (front board §3, V4 §6). The sixth's worktree finding is demoted to ⚠ one-session-measured.
+
+**Δ47 — MAPS AND PLANS AS LIVE OBJECTS.** *"add this to the task queue: to update the maps and plans we have at hand and as live objects"* ⇒ swept at `1b7245f`: seat map (T.O + commission added, coder topology → open question) · front board · order-stratum status stamp. **Still owed (front board §4): substrate map · render-gate · last-phase · backlog — and the standing duty thereafter.**
+
+**Δ49 — THE PAUSE, AND THE RELOAD AGREEMENT (2026-09-01, entered by the seventh at `1b7245f`).** ✔ VERBATIM, answering the two questions the seventh put to him: ***"paus is lifted by its own term yes."*** and, choosing from the four options he was given (a coder holds · b save first · c code cuts return to a `wt/*` line · d accept reloads): ***"(d) accept reloads"***.
+⇒ ✅ **THE PAUSE IS LIFTED — confirming the seventh's reading that Δ44's *"everything is on pause until that bit is right"* was a CONDITION, met at his own restart, not a gate he must re-open. The board's §4 un-pause queue is OPEN.**
+⇒ ✅ **(d) RULED: the coder cuts in the main checkout and his page reloads. No serialisation, no save-first ritual, no return to a worktree.**
+⛔ **WHAT (d) DOES NOT RETRACT, and the distinction is the mothership's to hold:** `STAMP P-1`'s **MARK-NEVER-MOVE** ruling forbids a *mechanism* from moving his tree without his act (an auto-advance is unowned and arrives from nowhere). **(d) accepts that ANOTHER PERSON'S DELIBERATE ACT may reload him.** ⇒ **A mechanism may still never advance or reload his page on its own. That ruling stands untouched.**
+⚠ **THE RESIDUE, named once and not relitigated: ✔ measured — `localStorage`/`sessionStorage`/`indexedDB` appear nowhere in `src/manuscript/` or `src/store/`, so a reload costs the whole page unless saved to file, and a WALK cannot be saved at all.** ⇒ **Under (d) any walk in progress is at the coder's timing. It costs nothing to say *"I'm walking"* or *"cutting now"*, and rungs 3–4 are all walks** — offered as courtesy, chartered as nothing.
+
+**Δ48 — THE CLOSING ORDER.** *"once more read your own initiation pack adversarially and refine it as much as possible. then reach into our current mothership skill… make it the best skill you have ever seen relative to the task you actually carried out as the mothership"* ⇒ done: pack refined (lock incident filed §34, same-tree question installed, stale P-1 lines killed); skill rewritten and saved (topology moved to the record per §0 — the cure for the staleness class itself).
