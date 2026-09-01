@@ -86,19 +86,35 @@ const SURFACE_TITLES: Record<string, string> = {
   mobius: 'Möbius band',
 };
 
-// loop naming — geometric where the immersion backs it, generic elsewhere
+// loop glosses — the CLASSIFICATION-SIDE word only (B-133 clause B, STAMP
+// R-1 Q3: the codomain word is legal ONLY on the classification side of the
+// `—`, never as the name); geometric where the immersion backs it, generic
+// elsewhere. The loop's SUBJECT — his edge-class, by its designation — is
+// handed in by the caller (see readSurfaceSpecimen), never re-derived here.
 const LOOP_READINGS: Record<string, Record<string, string>> = {
-  torus: { a: 'a — longitude', b: 'b — meridian' },
-  klein: { a: 'a — identified boundary generator', b: 'b — identified boundary generator' },
-  rp2: { 'a·b': 'a·b — the ℤ/2 generator' },
-  cylinder: { core: 'core — the ℤ generator (certified)' },
-  mobius: { core: 'core — the ℤ generator (certified)' },
+  torus: { a: 'longitude', b: 'meridian' },
+  klein: { a: 'identified boundary generator', b: 'identified boundary generator' },
+  rp2: { 'a·b': 'the ℤ/2 generator' },
+  cylinder: { core: 'the ℤ generator (certified)' },
+  mobius: { core: 'the ℤ generator (certified)' },
 };
 
 const inkOf = (loop: { letters: Array<'a' | 'b'> }): 'a' | 'b' =>
   loop.letters.length === 1 && loop.letters[0] === 'b' ? 'b' : 'a';
 
-export function readSurfaceSpecimen(model: InkedFormModel): SpecimenReading {
+// B-133 clause B (STAMP R-1 Q3): `pairDesignations` — the presented pairing's
+// designations, keyed by word letter, PRODUCED by the argument reading's
+// committed pairing recovery (argumentReadingModel.readPairDesignations — one
+// composer, never re-derived from display copy) and handed in by the caller.
+// Null/absent = no presented designation exists (a fresh unnamed square, the
+// catalogue's standard immersions — whose own letters are then the honest
+// subject at their own presentation's grain), and the legend line stands as
+// letter + gloss, byte-identical to its pre-B-133 reading. A default keeps
+// the reader's arity at 1 (the witness pins the readers' shape).
+export function readSurfaceSpecimen(
+  model: InkedFormModel,
+  pairDesignations: Record<string, string> | null = null,
+): SpecimenReading {
   const inv = model.invariants;
   const word = model.immersion.correspondence.word;
   // B-132: `Euler χ — 0 (certified)` was ONE row carrying TWO kinds — the
@@ -120,11 +136,30 @@ export function readSurfaceSpecimen(model: InkedFormModel): SpecimenReading {
     title: SURFACE_TITLES[model.surface] ?? model.surface,
     subtitle: word === '' ? 'collapse target · no gluing word' : `gluing word · ${word}`,
     rows,
-    legend: model.loops.map((loop) => ({
-      key: loop.label,
-      text: LOOP_READINGS[model.surface]?.[loop.label] ?? loop.label,
-      ink: inkOf(loop),
-    })),
+    legend: model.loops.map((loop) => {
+      const gloss = LOOP_READINGS[model.surface]?.[loop.label];
+      // B-133 clause B (STAMP R-1 Q3): the generator is PRESENTED — its
+      // subject is HIS edge-class, by its designation, and the codomain word
+      // rides only the classification side of the `—`. Presence-first: every
+      // letter of the loop must resolve to a designation or the subject stays
+      // a TRUE ABSENCE (the letter+gloss line then stands — a core loop, a
+      // fresh square, the catalogue band); a·b composes its two letters with
+      // the member joiner.
+      const parts = loop.letters.map((letter) => pairDesignations?.[letter]);
+      const subject =
+        parts.length > 0 && parts.every((p): p is string => typeof p === 'string' && p.length > 0)
+          ? parts.join('·')
+          : null;
+      return {
+        key: loop.label,
+        text: gloss
+          ? subject
+            ? `${loop.label} = ${subject} — ${gloss}`
+            : `${loop.label} — ${gloss}`
+          : loop.label,
+        ink: inkOf(loop),
+      };
+    }),
     twist:
       inv.cert && inv.cert.nonOrientable
         ? 'w₁ = 1 — non-orientable (the twist)'
