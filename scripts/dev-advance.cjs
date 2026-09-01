@@ -176,7 +176,33 @@ function whereamiPayload(cwd) {
   };
 }
 
-module.exports = { advance, whereamiPayload, findAdvanceTarget, BRANCH };
+// STAMP P-1 (the GO-stale mark): the LAG producer — while a server runs, is
+// the served tree behind the wt/* line? Read FRESH per call, same finder as
+// the advance (one producer, one truth). `behind` is true for a clean
+// fast-forwardable gap AND for diverged/ambiguous states — those are also
+// go-stale states (committed work exists that this serve is not showing);
+// `kind` says which. A linked-worktree serve is never behind its own line.
+function lagPayload(cwd) {
+  const base = whereamiPayload(cwd);
+  if (base.checkout !== 'main' || base.branch !== BRANCH) {
+    return { behind: false, kind: 'not-the-main-serve', ...base };
+  }
+  const target = findAdvanceTarget(cwd);
+  if (target.kind === 'none') return { behind: false, kind: 'current', ...base };
+  if (target.kind === 'target') {
+    return { behind: true, kind: 'behind', target: { branch: target.branch, tip: target.tip }, ...base };
+  }
+  return { behind: true, kind: target.kind, branches: target.branches ?? target.candidates, ...base };
+}
+
+module.exports = { advance, whereamiPayload, lagPayload, findAdvanceTarget, BRANCH };
+
+if (require.main === module && process.argv.includes('--lag-json')) {
+  // STAMP P-1's transport arm (the vite watcher spawns this, same idiom as
+  // --whereami-json — the ESM config bundle cannot require CJS)
+  process.stdout.write(JSON.stringify(lagPayload(process.cwd())));
+  process.exit(0);
+}
 
 if (require.main === module && process.argv.includes('--whereami-json')) {
   // the /__whereami transport arm: vite.config spawns this (ONE producer —

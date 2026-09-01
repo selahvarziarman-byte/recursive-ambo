@@ -15,7 +15,7 @@ const os = require('node:os');
 const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..');
-const { advance, whereamiPayload, BRANCH } = require(path.join(repoRoot, 'scripts', 'dev-advance.cjs'));
+const { advance, whereamiPayload, lagPayload, BRANCH } = require(path.join(repoRoot, 'scripts', 'dev-advance.cjs'));
 
 let failures = 0;
 const check = (label, cond) => {
@@ -124,6 +124,24 @@ try {
   check('(h) /__whereami\'s producer answers FRESH per call and names the checkout kind: the main checkout reads main + its branch + its HEAD; the linked worktree reads linked-worktree — the detector behind the prevention',
     wm.checkout === 'main' && wm.branch === BRANCH && wm.head === g(main, 'rev-parse', 'HEAD') &&
     ww.checkout === 'linked-worktree' && typeof wm.at === 'string');
+
+  // (i) STAMP P-1 — the GO-stale producer: behind/diverged/ambiguous are all
+  // go-stale states; current and a worktree serve are quiet
+  const lagAmbiguous = lagPayload(main);
+  note(`(i) ambiguous state: ${JSON.stringify({ behind: lagAmbiguous.behind, kind: lagAmbiguous.kind })}`);
+  const lagWt = lagPayload(wt);
+  g(main, 'worktree', 'remove', '--force', wt2);
+  g(main, 'branch', '-D', 'wt/other');
+  const lagBehind = lagPayload(main);
+  note(`(i) behind state: ${JSON.stringify({ behind: lagBehind.behind, kind: lagBehind.kind, target: lagBehind.target })}`);
+  const adv = advance(main);
+  const lagCurrent = lagPayload(main);
+  check('(i) STAMP P-1 — THE GO-STALE PRODUCER TELLS EVERY TRUTH IN ITS KIND: two independent wt tips read behind:true kind ambiguous (committed work this serve is not showing); one clean gap reads behind:true kind behind WITH the target branch and tip; the advanced state reads behind:false current; and a linked-worktree serve is never behind its own line (not-the-main-serve) — the mark\'s one producer, the same finder as the advance',
+    lagAmbiguous.behind === true && lagAmbiguous.kind === 'ambiguous' &&
+    lagWt.behind === false && lagWt.kind === 'not-the-main-serve' &&
+    lagBehind.behind === true && lagBehind.kind === 'behind' &&
+    lagBehind.target && lagBehind.target.branch === 'wt/test' && lagBehind.target.tip === g(wt, 'rev-parse', 'HEAD') &&
+    adv.kind === 'advanced' && lagCurrent.behind === false && lagCurrent.kind === 'current');
 } finally {
   try {
     fs.rmSync(base, { recursive: true, force: true });
