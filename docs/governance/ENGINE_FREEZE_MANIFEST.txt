@@ -41,7 +41,7 @@
 
 # ─── FROZEN (46) — the engine, import-closed; drift here without a manifest update is a finding ───
 src/data/seeds.ts                       6936376f3c1fcf6b3170d25fe2b3e080afcd9c3eb329dcee4ea37f6435f83274
-src/lib/complexIdentification.ts        0af14869ba1859eef0685e2af6bc7eff1f7776acf0ba47cd18a553a2b7da6ad5
+src/lib/complexIdentification.ts        9e35d7d079f2bda38520b38d4f4811e8ce333fd84dd26aa8b6fd495686f3cf74
 src/lib/conformalAtom.ts                c7eee19c59d0424dfd69f7c6768a00a6811a9cdce658e91c63069847fdae00f5
 src/lib/connectedSum.ts                 d8b6c0d269f6847b50f29c3190199ed290096319d25edbf280ce77effc1df6b9
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c
@@ -58,7 +58,7 @@ src/lib/level3Orientation.ts            2ac4b44395ea8ac438d540a52f87c94412c74cb7
 src/lib/level3SoundnessGate.ts          c4f29765a005ea0d5d97ca2bb5e788259acec6ddf01032e9558f1af46fbd645b
 src/lib/level3W1.ts                     469f3c0736f4e94e28f5a60bca2020a11b3340e38a9dc92d41b0e44f1dde8590
 src/lib/lineage.ts                      a2fd474f9e58869ba1015ed16d1d930d37dd2725d48492a2f08dc9dc93ccb0fa
-src/lib/materializeOperation.ts         b949492b18d539e96cd9b3c5c69e7e04351a976c67be1abb4f759adf9d4beb51
+src/lib/materializeOperation.ts         ec6f9fd6f75a084f14d23e2bbddd61184b39a88e085bc9cfabe4440d98948f9c
 src/lib/multiform.ts                    5d70c6e2583759f2f96af0f45facba7040dfdbbab206eb9f1bb47e925aca37f9
 src/lib/packets.ts                      feaf628678732c01a276ead985b08dd439b2ae8ab09adf5bba865a0dd4811d9f
 src/lib/shape.ts                        8339d97812ac4dac2a68b982936b34d51cdb308069d73e6738f2da366bd5b7b2

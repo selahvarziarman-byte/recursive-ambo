@@ -52,6 +52,7 @@ import {
   type SurfaceTrace,
 } from './surfaceOperations';
 import type { CutTrace } from './cutOperation';
+import { composeDesignation } from './designation';
 import { createDefaultVertexData } from './shape';
 import { decomposeLink, type LinkDecomposition, type LinkValence } from './incidenceTraceRegistry';
 import type { AssembledComplex } from './globalW1';
@@ -298,11 +299,15 @@ export function materializeSurfaceResult(
     vertices[mintedId] = {
       id: mintedId,
       position: centroidOf(sorted.map((m) => form.vertices[m].position)),
-      // LEGIBILITY MIGRATION (B-2026-08-23-A, census site 3, sanctioned
-      // frozen edit): the merged class's label is a TRUE ABSENCE — an id in
-      // the name slot is no name; the display resolves through the carried
-      // sourceVertexIds below (carried-not-minted), never regresses.
-      data: createDefaultVertexData(''),
+      // LEGIBILITY MIGRATION (B-2026-08-23-A, census site 3): an id in the
+      // name slot is no name. B-133 CLAUSE A (STAMP R-1 Q1, sanctioned
+      // frozen edit): ruling out the false name now SUPPLIES the true one —
+      // the merged class's designation is COMPOSED from its members'
+      // designations, the same walk as the id's `~`-join at name grain, in
+      // the same member order, presence-first (any unnamed member leaves the
+      // TRUE ABSENCE), never delegated to a reader; the membership itself
+      // rides sourceVertexIds below (carried-not-minted) either way.
+      data: createDefaultVertexData(composeDesignation(sorted.map((m) => form.vertices[m]?.data.label))),
       createdBy: {
         shapeId,
         operation,

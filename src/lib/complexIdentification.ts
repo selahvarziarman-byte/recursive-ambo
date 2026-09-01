@@ -92,6 +92,7 @@ import {
   type TransformationLedger,
 } from './transformationLedger';
 import { decomposeLink, type LinkValence } from './incidenceTraceRegistry';
+import { composeDesignation } from './designation';
 import { createDefaultVertexData } from './shape';
 import { canonicalEdgeKey } from './ids';
 import { recoverBornSurface } from '../playground/bornFormRouting';
@@ -642,10 +643,14 @@ function identifyOnComplex(
         if (!vertex) throw new Error(`complexIdentification: vertex ${m} not on the form`);
         return vertex.position;
       })),
-      // LEGIBILITY MIGRATION (B-2026-08-23-A, census site 4, sanctioned
-      // frozen edit): the quotient mint writes TRUE ABSENCE — an id in the
-      // name slot is no name; the carried class below is the resolution.
-      data: createDefaultVertexData(''),
+      // LEGIBILITY MIGRATION (B-2026-08-23-A, census site 4): an id in the
+      // name slot is no name. B-133 CLAUSE A (STAMP R-1 Q1, sanctioned
+      // frozen edit): ruling out the false name now SUPPLIES the true one —
+      // the quotient mint COMPOSES the class's designation from its members'
+      // designations (the id's `~`-join walk at name grain, same member
+      // order, presence-first: any unnamed member leaves the TRUE ABSENCE),
+      // never delegated to a reader; the carried class below rides either way.
+      data: createDefaultVertexData(composeDesignation(sorted.map((m) => form.vertices[m]?.data.label))),
       createdBy: {
         shapeId: bornShapeId,
         operation: modes.some((m) => m === 'reversing') ? 'flip-glue' : 'glue',
