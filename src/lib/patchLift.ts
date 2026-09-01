@@ -72,6 +72,7 @@ import type {
   VertexId,
 } from '../types/geometry';
 import { canonicalEdgeKey } from './ids';
+import { composeDesignation } from './designation';
 import { createDefaultVertexData, midpoint } from './shape';
 import {
   buildIncidenceTraceRegistry,
@@ -218,7 +219,8 @@ export function patchLift(source: Shape, centerId: VertexId): PatchLift {
     const b = boundaryCycle[i + half];
     assertKeySafe(a, 'identified parent id');
     assertKeySafe(b, 'identified parent id');
-    const childId: VertexId = `patch-lift:${[a, b].sort((x, y) => x.localeCompare(y)).join('~')}`;
+    const sortedPair = [a, b].sort((x, y) => x.localeCompare(y));
+    const childId: VertexId = `patch-lift:${sortedPair.join('~')}`;
     if (source.vertices[childId] || mergedOf.has(childId)) {
       throw new Error(`patchLift: merged child id "${childId}" collides with an existing site`);
     }
@@ -228,9 +230,13 @@ export function patchLift(source: Shape, centerId: VertexId): PatchLift {
     mintedChildren.push({
       id: childId,
       position: midpoint(source.vertices[a].position, source.vertices[b].position),
-      // LEGIBILITY MIGRATION (B-2026-08-23-A, the latent-producer rider): the manufacture
-      // stops even on the dormant route — dead module, dead id-copy, LIVE vocabulary
-      data: createDefaultVertexData(''),
+      // LEGIBILITY MIGRATION (B-2026-08-23-A, the latent-producer rider): the
+      // manufacture stops even on the dormant route. B-133 CLAUSE A (STAMP
+      // R-1 Q1): ruling out the false name also SUPPLIES the true one — the
+      // merged child's designation composes from its members' own names, in
+      // the id-join's member order, presence-first (any unnamed member leaves
+      // the TRUE ABSENCE), never delegated to a reader.
+      data: createDefaultVertexData(composeDesignation(sortedPair.map((id) => source.vertices[id]?.data.label))),
       createdBy: {
         shapeId: liftShapeId,
         operation: PATCH_LIFT_OPERATION,
