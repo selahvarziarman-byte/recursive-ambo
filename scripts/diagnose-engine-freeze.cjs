@@ -54,19 +54,19 @@ console.log('the engine freeze manifest: one frozen set, one hash per file — a
 // ═════ [a] CLAUSE 4 — ZERO DRIFT AT BASELINE ═══════════════════════════════════
 console.log('----- [a] zero drift at baseline: the manifest matches the tree it was chartered against -----');
 const base = checkEngineFreeze();
-check('★ CLAUSE 4 — ZERO DRIFT AT BASELINE (import-closed at 5f3aecc, THE SMALL RUN; conformalAtom promoted at the APEX-LIFT union, 2026-08-02): ok === true · 46 files checked · drifted [] · missing [] · unlisted [] · nulled [] (any drift here means a hash was mis-taken — HARD FAIL)',
-  base.ok === true && base.checked === 46 &&
+check('★ CLAUSE 4 — ZERO DRIFT AT BASELINE (import-closed at 5f3aecc, THE SMALL RUN; conformalAtom promoted at the APEX-LIFT union, 2026-08-02): ok === true · 47 files checked · drifted [] · missing [] · unlisted [] · nulled [] (any drift here means a hash was mis-taken — HARD FAIL)',
+  base.ok === true && base.checked === 47 &&
   base.drifted.length === 0 && base.missing.length === 0 && base.unlisted.length === 0 &&
   base.nulled.length === 0);
 if (!base.ok) note(`drifted: [${base.drifted}] · missing: [${base.missing}] · unlisted: [${base.unlisted}] · nulled: [${base.nulled}]`);
-check('COMPLETENESS: every .ts/.tsx under src/lib · src/playground · src/manuscript · src/types is classified — 46 FROZEN (the import closure: a frozen file is only as frozen as its dependencies), the rest NOT_FROZEN with a reason; `unlisted` non-empty would FAIL every witness',
-  base.unlisted.length === 0 && base.frozen.length === 46);
+check('COMPLETENESS: every .ts/.tsx under src/lib · src/playground · src/manuscript · src/types is classified — 47 FROZEN (the import closure: a frozen file is only as frozen as its dependencies), the rest NOT_FROZEN with a reason; `unlisted` non-empty would FAIL every witness',
+  base.unlisted.length === 0 && base.frozen.length === 47);
 check('THE COUNT GREW (§1 THE SMALL RUN): the closure added the 17 files the frozen set imports — the core types (src/types/geometry.ts), id-minting (ids.ts), lineage, shape/packets, the level3 tower, faceIdentification, dualization, surfaceDual, seeds, primitiveCatalogue, writtenFormModel',
   base.checked > 27 &&
   ['src/types/geometry.ts', 'src/lib/ids.ts', 'src/lib/lineage.ts', 'src/lib/shape.ts',
    'src/manuscript/writtenFormModel.ts', 'src/lib/faceIdentification.ts',
    'src/lib/level3Invariants.ts', 'src/data/seeds.ts'].every((f) => base.frozen.includes(f)));
-note(`manifest: ${base.manifestPath} — 46 frozen (25 lib · 12 manuscript · 7 playground · 1 types · 1 data)`);
+note(`manifest: ${base.manifestPath} — 47 frozen (26 lib · 12 manuscript · 7 playground · 1 types · 1 data)`);
 
 // ═════ [b] THE ORPHAN IS RE-COVERED — and the old mechanism misses it ══════════
 console.log('\n----- [b] the orphan: an unsanctioned edit to playgroundOperations.ts — the manifest fails; the carried old mechanism catches nothing -----');
@@ -228,11 +228,11 @@ for (const file of base.frozen) {
   const crlf = checkEngineFreeze({ overrides: { [file]: real.replace(/\r/g, '').replace(/\n/g, '\r\n') } });
   if (crlf.ok === true) crlfPasses += 1;
 }
-check('★ CLAUSE 3 — THE BITE: 46/46 one-character in-memory mutations FAIL the freeze (and each names exactly the mutated file)',
-  bitesCaught === 46 && bitesExact === 46);
-check('…and the CR-strip is not itself a hole: 46/46 CRLF re-expressions of the true content PASS (measured, not assumed)',
-  crlfPasses === 46);
-note(`bite: ${bitesCaught}/46 caught, ${bitesExact}/46 exact · CRLF: ${crlfPasses}/46 pass`);
+check('★ CLAUSE 3 — THE BITE: 47/47 one-character in-memory mutations FAIL the freeze (and each names exactly the mutated file)',
+  bitesCaught === 47 && bitesExact === 47);
+check('…and the CR-strip is not itself a hole: 47/47 CRLF re-expressions of the true content PASS (measured, not assumed)',
+  crlfPasses === 47);
+note(`bite: ${bitesCaught}/47 caught, ${bitesExact}/47 exact · CRLF: ${crlfPasses}/47 pass`);
 // §4 THE SMALL RUN — THE NUL LAW BITES: a raw NUL planted in-memory into a
 // frozen file (appended inside a comment — the HASH still matches nothing, but
 // even a hash-PASSING NUL must fail: plant it into content that keeps its

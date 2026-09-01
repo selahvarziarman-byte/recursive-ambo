@@ -112,7 +112,7 @@ import {
   type FaithfulDeficitDatum,
 } from './deficitRegisterModel';
 import { InkedDeficitLayer } from './InkedDeficitLayer';
-import { buildArgumentReading, mergedRootsPhrase, type ArgumentReading, type ArgumentMapRow } from './argumentReadingModel';
+import { buildArgumentReading, mergedRootsPhrase, readPairDesignations, type ArgumentReading, type ArgumentMapRow } from './argumentReadingModel';
 import { buildFaithfulInkedModel } from './faithfulInkedModel';
 import type { InkedFormModel } from './inkedFormModel';
 import {
@@ -2918,7 +2918,11 @@ export default function ManuscriptView() {
           ? r
           : { ...r, rows: [...r.rows, ...resolutionRows, ...deficitRows] };
       if (render.mode === 'immersion') {
-        const base = readSurfaceSpecimen(render.model);
+        // B-133 clause B: the legend's SUBJECT — his edge-classes by their
+        // designations — is PRODUCED by the argument reading's committed
+        // pairing recovery and handed in; the specimen never re-derives it
+        // (null on a fresh/unnamed word: the letter+gloss line stands).
+        const base = readSurfaceSpecimen(render.model, readPairDesignations(entry.form));
         return speak({ ...base, title: entry.form.title, subtitle: `${entry.form.provenance} · ${base.subtitle}` });
       }
       if (render.mode === 'skeleton') {

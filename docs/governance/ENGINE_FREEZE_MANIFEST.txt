@@ -39,12 +39,13 @@
 # sanctioned file’s hash line moved — nothing else.
 # ═══════════════════════════════════════════════════════════════════════════
 
-# ─── FROZEN (46) — the engine, import-closed; drift here without a manifest update is a finding ───
+# ─── FROZEN (47) — the engine, import-closed; drift here without a manifest update is a finding ───
 src/data/seeds.ts                       6936376f3c1fcf6b3170d25fe2b3e080afcd9c3eb329dcee4ea37f6435f83274
 src/lib/complexIdentification.ts        9e35d7d079f2bda38520b38d4f4811e8ce333fd84dd26aa8b6fd495686f3cf74
 src/lib/conformalAtom.ts                c7eee19c59d0424dfd69f7c6768a00a6811a9cdce658e91c63069847fdae00f5
 src/lib/connectedSum.ts                 d8b6c0d269f6847b50f29c3190199ed290096319d25edbf280ce77effc1df6b9
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c
+src/lib/designation.ts                  0a9d0c7520dd91e9d4d28df35f2f6745bc3ff71ba4ebc0b5274b134d9c1d26b2
 src/lib/dualization.ts                  f450a61ca363e915b40374cd0707f6bc878680649d6057389bf49a90eb14d2a0
 src/lib/faceIdentification.ts           3be2c16f050c307df502995c89c3d68234a8ef235ce0d1a3a6e8593c0b5e515d
 src/lib/genealogyDag.ts                 c8b6f219438ce8b9c17088044771123169ca8dc3f48c82904747d71bed890ffc

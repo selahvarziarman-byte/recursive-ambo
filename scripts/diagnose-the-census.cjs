@@ -216,7 +216,7 @@ check('★ CLAUSE 4 — the carried ID-MATCHING census (folded classes excluded 
 console.log('\n----- [g] the frozen pair re-sealed: ok · 44 · no drift (the sanctioned path — never a carve-out) -----');
 const freeze = checkEngineFreeze();
 check('THE ENGINE FREEZE MANIFEST after the re-seal: ok · checked 45 · drifted [] · missing [] · unlisted [] · nulled [] — the two sanctioned hash lines moved in this same change and coverage never lapsed; no third frozen file was touched and the closure pulled nothing new in',
-  freeze.ok === true && freeze.checked === 46 &&
+  freeze.ok === true && freeze.checked === 47 &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 &&
   freeze.unlisted.length === 0 && freeze.nulled.length === 0);
 

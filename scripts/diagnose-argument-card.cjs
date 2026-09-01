@@ -61,7 +61,7 @@ const { invokePrimitive, applyPlaygroundOperationTo } = req('src/manuscript/writ
 const { applyFoldTo } = req('src/manuscript/handGestureModel.ts');
 const { computeSeedCornerAngles } = req('src/lib/conformalAtom.ts');
 const { primalMultiset } = req('src/lib/lineage.ts');
-const { buildArgumentReading, mergedMembersOf, mergedRootsPhrase } = req('src/manuscript/argumentReadingModel.ts');
+const { buildArgumentReading, mergedMembersOf, mergedRootsPhrase, readPairDesignations } = req('src/manuscript/argumentReadingModel.ts');
 
 let failures = 0;
 function check(label, condition) {
@@ -96,7 +96,8 @@ const rowsAgreeWithSubstrate = (reading, shape) => {
 console.log('THE ARGUMENT-READING CARD — Phase 1: the MAP is the spine (the birth op\'s argument, from the substrate)\n');
 
 // ---------------------------------------------------------------------------
-// §1 (E1) ★★ □⟶𝕋² — one identified concept ← the four corners
+// §1 (E1) ★★ the torus map — one identified concept ← the four corners
+// (the header reads carried names since B-133; the □⟶𝕋² sign era is dead)
 // ---------------------------------------------------------------------------
 console.log('----- §1 (E1) ★★ the torus map: •p ← the 4 atomic roots, via primalMultiset -----');
 const sqHost = wireForm(invokePrimitive('square', 970));
@@ -149,8 +150,8 @@ check('§1 (E1) the relations read the RECORDED correspondence (measured substra
     torusReading.words.includes('4 relations become 2') &&
     torusReading.words.includes('2 absorbed') &&
     !torusReading.words.includes('die'));
-check('§1 (E1) the header speaks the map: source □ (the parent 4-gon) ⟶ result 𝕋² (the drawn immersion class)',
-  torusReading !== null && torusReading.header.source === '□' && torusReading.header.result === '𝕋²');
+check('§1 (E1) B-133 clause B — the header speaks the map over CARRIED NAMES, never class-sign substitutions: source = the parent form\'s own carried name (4-gon — the loader\'s mint; a routed producer finding, not the reader\'s) ⟶ result = the born form\'s own carried title word (Torus (T²) — the IMMERSION_TITLES mint, likewise routed); the dead □/𝕋² sign tables may not return',
+  torusReading !== null && torusReading.header.source === '4-gon' && torusReading.header.result === 'Torus (T²)');
 
 // ---------------------------------------------------------------------------
 // §1b (B-2026-08-25-A §2) — THE COUNT FORM, pinned FROM THE RULE (the
@@ -407,8 +408,8 @@ check('§9 (P2·E5) ★★ THE VERDICT GATES ON CLOSURE: the torus (closed) read
     squareVerdict !== null &&
     squareVerdict.closed === false &&
     squareVerdict.global === 'open · local-cone');
-check('§9 (P2·E6) THE FALLBACK + THE POLISH: the dual carrier keeps absorbed (no fabricated pairing, from §7) AND the fold-born header now speaks its class word — `disk`, not the raw op',
-  coneReading.header.result === 'disk' && dualReading.wordRows === null);
+check('§9 (P2·E6) THE FALLBACK + THE CARRIED TITLE: the dual carrier keeps absorbed (no fabricated pairing, from §7) AND the fold-born header reads the form\'s own carried title word (`fold` — the title mint\'s op word, §2.1: the name is the index of the operation); B-133 killed the reader\'s `disk` class-substitution — a codomain word never rides a name slot',
+  coneReading.header.result === 'fold' && dualReading.wordRows === null);
 // THE RIM-TURN SPLIT (mothership 1230; SEAL_RIM_TURN_SPLIT): the locals'
 // kinds judged against an INDEPENDENT recomputation from the readings' own
 // acquired valence + sign — a boundary +δ is the rim BENDING, never a cone
@@ -1218,6 +1219,58 @@ console.log('\n----- §15 (B-131) the prongs come off unnamed; the absence said 
     chromeSrc.includes('zIndex: 60') &&
     viewSrc.includes('zIndex: CHROME_LAYER_Z') &&
     (viewSrc.match(/zIndexRange=\{\[40, 0\]\}/g) ?? []).length > 0);
+}
+
+// ===========================================================================
+// §16 (B-133) — THE DESIGNATION COMPOSER at the producers + the presented
+// pairing's designations (STAMP R-1 Q1/Q3)
+// ===========================================================================
+console.log('\n----- §16 (B-133) the mint composes the designation; the pairing speaks presence-first -----');
+{
+  const christen = (host, names) => {
+    Object.values(host.shape.vertices).forEach((v, i) => {
+      if (names[i] !== undefined) v.data.label = names[i];
+    });
+    return host;
+  };
+  const namedHost = christen(wireForm(invokePrimitive('square', 990)), ['north', 'east', 'south', 'west']);
+  const namedApplied = applyPlaygroundOperationTo('glue-torus', namedHost.shape, null, 991, 8, [], null);
+  const namedTorus = namedApplied.ok ? { ...namedApplied.born } : null;
+  const namedReading = namedTorus ? buildArgumentReading(namedTorus) : null;
+  const namedMerged = namedReading?.conceptRows.find((r) => r.typing === 'identified') ?? null;
+  note(namedMerged ? `named mint: ownName ${JSON.stringify(namedMerged.ownName)} · label ${JSON.stringify(namedMerged.label)}` : 'named torus not born');
+  // pinned FROM THE RULE: the composed designation is the members' packet
+  // labels through the row's OWN carried sourceIds, in that order, ·-joined —
+  // recomputed here from the parent packets, never copied from the output
+  const expectedComposed = namedMerged
+    ? namedMerged.sourceIds.map((id) => namedHost.shape.vertices[id]?.data.label ?? '(missing)').join('·')
+    : null;
+  check('§16 ⛔ (R-1 Q1) THE MINT COMPOSES: a fully-christened square\'s glue-torus mints the identified class\'s designation INTO the packet — ownName reads the members\' labels through the row\'s own carried sourceIds, in the id-join\'s member order, ·-joined (recomputed from the rule, not the output) — and the card row\'s label IS the packet\'s own name (the reader carries what the producer carries; the reader-side re-derivation era is over)',
+    namedMerged !== null &&
+      namedMerged.ownName === expectedComposed &&
+      namedMerged.ownName === 'north·east·south·west' &&
+      namedMerged.label === namedMerged.ownName);
+  check('§16 ⛔ (R-1 Q1) THE ABSENCE LINE GOES FALSE BY CONSTRUCTION on the christened square (the mothership\'s named acceptance): with the mint composing, NOT every ownName is null — the view\'s all-unnamed predicate (pinned structurally in §15) cannot render `no corner is named yet` beside a composed row',
+    namedReading !== null && !namedReading.conceptRows.every((r) => r.ownName === null));
+  check('§16 ⛔ (R-1 Q1) TRUE ABSENCE STANDS where a member is unnamed: the §1 FRESH torus\'s identified row keeps ownName null (no address, no placeholder)',
+    (() => {
+      const row = torusReading?.conceptRows.find((r) => r.typing === 'identified');
+      return row !== undefined && row.ownName === null;
+    })());
+  const partialHost = christen(wireForm(invokePrimitive('square', 992)), ['north', 'east', 'south']);
+  const partialApplied = applyPlaygroundOperationTo('glue-torus', partialHost.shape, null, 993, 8, [], null);
+  const partialMerged = partialApplied.ok
+    ? buildArgumentReading({ ...partialApplied.born }).conceptRows.find((r) => r.typing === 'identified') ?? null
+    : null;
+  check('§16 ⛔ (R-1 Q1) NO BARE PARTIAL (D14\'s guard): three named corners of four mint TRUE ABSENCE — a partially-named class writes no unmarked-hole composition; the membership stays carried for whatever display ruling the partial case receives (hers)',
+    partialMerged !== null && partialMerged.ownName === null && partialMerged.sourceIds.length === 4);
+  const namedPairs = namedTorus ? readPairDesignations(namedTorus) : null;
+  note(`named pairDesignations: ${JSON.stringify(namedPairs)}`);
+  check('§16 ⛔ (R-1 Q3) THE PRESENTED PAIRING\'S DESIGNATIONS: readPairDesignations names his edge-pairs presence-first from their endpoint concepts\' own names — a→north→east·south→west, b→east→south·west→north (the run joiner inside a slot, the member joiner between the pair\'s slots) — and refuses the FRESH square\'s word whole to null (a designation never carries an address)',
+    namedPairs !== null &&
+      namedPairs['a'] === 'north→east·south→west' &&
+      namedPairs['b'] === 'east→south·west→north' &&
+      (torus ? readPairDesignations(torus) : 'missing') === null);
 }
 
 console.log(

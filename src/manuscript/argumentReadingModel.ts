@@ -94,7 +94,10 @@ export interface ArgumentMapRow {
 
 export interface ArgumentReading {
   op: string; // the birth op, verbatim from the genealogy
-  header: { source: string; result: string; gloss: string }; // the map line (□ ⟶ 𝕋²)
+  // the map line — HIS operands by their carried designations (B-133 clause
+  // B: `Square ⟶ Torus (T²)`, never a class-sign substitution like the dead
+  // `□ ⟶ 𝕋²`); the gloss keeps the map's own word
+  header: { source: string; result: string; gloss: string };
   conceptRows: ArgumentMapRow[];
   relationRows: ArgumentMapRow[];
   // MEASURED SUBSTRATE FACT (probe, 2026-08-02 — flags the spec's relation
@@ -201,18 +204,13 @@ export interface VerdictReading {
   atForm: boolean; // closed + uniform ⇒ at its Form
 }
 
-// the sign hand's polygon signs (presentation; a size without a sign stays a word)
-const POLYGON_SIGNS: Record<number, string> = { 3: '△', 4: '□', 5: '⬠', 6: '⬡' };
-
-// the result signs where the drawn class carries one (presentation)
-const SURFACE_SIGNS: Record<string, string> = {
-  torus: '𝕋²',
-  klein: 'K²',
-  rp2: 'ℝP²',
-  sphere: 'S²',
-  cylinder: 'cylinder',
-  mobius: 'Möbius',
-};
+// B-133 clause B (STAMP R-1 Q2/Q3): the sign tables DIED — POLYGON_SIGNS and
+// SURFACE_SIGNS substituted the CLASSIFICATION for both ends of the map
+// (`□ ⟶ 𝕋²` — ADR 0024's predicted failure one level deeper than leading
+// with the verdict). The map names HIS operands by their designations; the
+// classification is the CONSEQUENCE and keeps its own registers (the class
+// certificate row, the specimen title) — a codomain word never rides a name
+// slot again.
 
 // dev-register op words (the designer refines wording; the op token is the value)
 const OP_WORDS: Record<string, string> = {
@@ -294,7 +292,48 @@ export function mergedMembersOf(id: string): string[] | null {
   return members.length >= 2 ? members : null;
 }
 
-function sourceNameFor(form: WrittenForm): string {
+// B-133 CLAUSE B (STAMP R-1 Q3): the PRESENTED pairing's DESIGNATIONS — his
+// edge-pairs, each named presence-first from its endpoint concepts' OWN
+// names ("his edge's designation — given, or composed from its endpoint
+// concepts"; edges carry no given packet names today, so the endpoint
+// composition is the live arm). An unnamed endpoint refuses the whole letter
+// to TRUE ABSENCE — a designation never carries an address; addresses belong
+// to the wordRows' reference positions, a different register by the
+// designer's roles ruling. Keyed by the pairing letter (the same letterFor
+// walk as wordRows — the letters agree with the drawn immersion's loops by
+// the shared committed word). Grammar: `→` joins a run's endpoints (the
+// ordered pair's own tight joiner), `·` joins the class's two member edges —
+// the slot-kind separator law. ONE producer: the specimen legend and any
+// witness read THIS function; the view hands its output into
+// readSurfaceSpecimen — the legend never re-derives it from display copy.
+export function readPairDesignations(form: WrittenForm): Record<string, string> | null {
+  const parent = form.parentShape;
+  if (!parent) return null;
+  const recovery = recoverBornSurface(form.shape, parent);
+  if (!recovery || recovery.pairings.length === 0) return null;
+  const face = recovery.parentFace;
+  const n = face.vertexIds.length;
+  const ownName = (id: string): string | null => {
+    const raw = parent.vertices[id]?.data.label;
+    if (typeof raw !== 'string') return null;
+    const trimmed = raw.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  };
+  const ownRun = (slot: number): string | null => {
+    const ends = [face.vertexIds[slot % n], face.vertexIds[(slot + 1) % n]].map(ownName);
+    return ends.every((e): e is string => e !== null) ? ends.join('→') : null;
+  };
+  const entries: Array<[string, string]> = [];
+  recovery.pairings.forEach((pair, k) => {
+    const runs = [ownRun(pair.edgeA), ownRun(pair.edgeB)];
+    if (runs.every((r): r is string => r !== null)) {
+      entries.push([letterFor(k, RELATION_LETTERS), runs.join('·')]);
+    }
+  });
+  return entries.length > 0 ? Object.fromEntries(entries) : null;
+}
+
+function sourceNameFor(form: WrittenForm, resolveAbsent?: AbsentLabelResolver): string {
   const parent = form.parentShape;
   if (!parent) {
     // THE LIFT: a placed patch-lift has no parent on the sheet (the loader
@@ -315,19 +354,26 @@ function sourceNameFor(form: WrittenForm): string {
     }
     return 'invoked';
   }
-  if (parent.faces.length === 1) {
-    return POLYGON_SIGNS[parent.faces[0].vertexIds.length] ?? `${parent.faces[0].vertexIds.length}-gon`;
+  // B-133 clause B: the operand by ITS designation — the parent form's own
+  // carried name, one law across the single- and multi-face branches (the
+  // single-face branch used to substitute the polygon class-sign). A
+  // nameless single-face parent falls to its face's D14 corner composition —
+  // the face is what he glues, and faceDisplayName is THE composer (its own
+  // 'unnamed' is the ruled name-slot absence word, never a class sign).
+  if (!parent.name && !parent.seedKey && parent.faces.length === 1) {
+    return faceDisplayName(parent, parent.faces[0], resolveAbsent);
   }
   return parent.name || parent.seedKey || 'parent';
 }
 
 function resultNameFor(form: WrittenForm): string {
-  const render = form.render;
-  if (render.mode === 'immersion') return SURFACE_SIGNS[render.model.surface] ?? render.model.surface;
-  // PHASE-2 POLISH: the fold-born faithful family IS the disk family (its own
-  // verdict gate: χ=1, open, orientable) — the header speaks the class word,
-  // not the raw op ('cone' joins once the metric mark rides — the seal's note)
-  if (render.mode === 'faithful') return 'disk';
+  // B-133 clause B: the immersion arm (SURFACE_SIGNS — `𝕋²`) and the faithful
+  // arm ('disk') DIED — both substituted the classification for the result's
+  // name; every non-lift mode now falls through to the form's own carried
+  // title/name (the honest Phase-1 read below). That carried title is itself
+  // class-derived at the producer today (writtenFormModel's IMMERSION_TITLES
+  // mint — frozen, unchartered) — the reader CARRIES it and the mint is
+  // routed, not cured here.
   // THE LIFT: the result is the lifted entity itself — the tag before the
   // mint's own " of " (the full name would repeat the source already named
   // on the left of the arrow)
@@ -915,12 +961,12 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
   return {
     op,
     header: {
-      source: sourceNameFor(form),
+      source: sourceNameFor(form, resolveAbsent),
       result: resultNameFor(form),
       // the lift's gloss names its SPECIFIC source ("lifted from <source>" —
       // the sealed header phrase); every other op keeps its word, with the
       // reasoned `the <op> move` fall-through (never silent)
-      gloss: liftedForm ? `lifted from ${sourceNameFor(form)}` : (OP_WORDS[op] ?? `the ${op} move`),
+      gloss: liftedForm ? `lifted from ${sourceNameFor(form, resolveAbsent)}` : (OP_WORDS[op] ?? `the ${op} move`),
     },
     conceptRows,
     relationRows,

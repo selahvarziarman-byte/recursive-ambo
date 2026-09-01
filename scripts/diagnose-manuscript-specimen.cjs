@@ -51,6 +51,7 @@ const {
   readSkeletonSpecimen,
   readSurfaceSpecimen,
 } = req('src/manuscript/specimenModel.ts');
+const { readPairDesignations } = req('src/manuscript/argumentReadingModel.ts');
 
 let failures = 0;
 function check(label, condition) {
@@ -100,11 +101,29 @@ const surface = (key) => {
   check("w₁ row '[0, 0]' === cert.w1Class", rowOf(reading, 'w₁ class') === `[${fresh.cert.w1Class.join(', ')}]` && rowOf(reading, 'w₁ class') === '[0, 0]');
   check("H₁ row 'ℤ ⊕ ℤ' (genus 1)", rowOf(reading, 'H₁') === 'ℤ ⊕ ℤ' && model.h1Label === 'ℤ ⊕ ℤ');
   check("subtitle carries the gluing word abAB", reading.subtitle.includes('abAB'));
-  check('legend names EXACTLY the drawn certified loops (a → longitude, b → meridian)',
+  check('legend names EXACTLY the drawn certified loops, and (B-133) the FRESH summon reads the ABSENCE arm — letter + gloss, byte-identical to the pre-B-133 line (no designation exists on an unnamed word; a designation never carries an address)',
     reading.legend.length === model.loops.length &&
     JSON.stringify(reading.legend.map((e) => e.key)) === JSON.stringify(model.loops.map((l) => l.label)) &&
     reading.legend[0].text === 'a — longitude' && reading.legend[1].text === 'b — meridian');
   check('twist null (orientable)', reading.twist === null);
+}
+{
+  console.log('----- [surface · torus, christened] B-133 clause B — the legend speaks HIS edge-classes -----');
+  const host = invokePrimitive('square', (summonSeq += 1));
+  Object.values(host.shape.vertices).forEach((v, i) => {
+    v.data.label = ['north', 'east', 'south', 'west'][i];
+  });
+  const res = applyPlaygroundOperationTo('glue-torus', host.shape, null, (summonSeq += 1), 8, [], null);
+  if (!res.ok || res.born.render.mode !== 'immersion') {
+    throw new Error('specimen: the christened torus summon failed');
+  }
+  const pairs = readPairDesignations(res.born);
+  const reading = readSurfaceSpecimen(res.born.render.model, pairs);
+  note(`pairs ${JSON.stringify(pairs)} · legend ${JSON.stringify(reading.legend.map((e) => e.text))}`);
+  check('(B-133, R-1 Q3) THE LEGEND\'S SUBJECT IS HIS EDGE-CLASS, BY ITS DESIGNATION — the codomain word rides only the classification side of the dash: a = north→east·south→west — longitude · b = east→south·west→north — meridian (designations handed in from the argument reading\'s committed pairing recovery; the specimen never re-derives them, and the letter-prefixed codomain-only era is over on a named word)',
+    reading.legend.length === 2 &&
+    reading.legend[0].text === 'a = north→east·south→west — longitude' &&
+    reading.legend[1].text === 'b = east→south·west→north — meridian');
 }
 {
   console.log('----- [surface · klein] the twist + no letter-attribution -----');
