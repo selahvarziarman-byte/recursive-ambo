@@ -498,3 +498,146 @@ walk from v0:  c → b → a → d      displayed:  a, b, c, d      SAME? False
 ✅ **AND SHE AMENDED HER OWN THREE-HOUR-OLD CRITERION, which had WELDED TWO GRANTS:** ***a kind earns a HEADING when it sits adjacent to a DIFFERENT kind and nothing else separates them; it earns a DOOR when it has MORE THAN ONE ROW and the set GROWS.*** ⇒ **Her original failed on `the checks` — one row on a Square, so no heading, so a verdict sits unlabelled beside four invariants: the disease.** ★ ***"My criterion was written against a block where every candidate was multi-row. The single-row kind is the case it did not see — and it is the case that matters, because a lone row is exactly the one that gets absorbed by its neighbours."***
 ✅ **`the checks`, not `what checks out` — because a FAILING gate must read under the same heading without irony.**
 ✅ **AND THE ROW ORDER STAYS, ruled on my arithmetic rather than against it:** ***the table is for LOOKUP and is sorted by its key; the FIGURE is for the walk*** — the square's boundary already draws the cycle at the right grain, and breaking the `a b c d` correspondence with the figure and the incidence rows is paid on EVERY read while walkability is paid once. ⚠ **She owned the error that raised it: *"I SAW A CYCLE AND ASSERTED A TRAVERSAL — a sighting reported as a walk."***
+
+---
+
+## 24 · ⛔ I RATIFIED A GLYPH LAW AND DID NOT ASK FOR ITS CENSUS — the coder swept it unasked
+
+**PRINCIPLE (already on the books, `CLAUDE.md` §3):** ***a ruling that changes what the person READS must sweep the PREDICATE, the SENTENCE, the TYPE and the WITNESSES.***
+⛔ **I ratified the run glyph (`→` tight) across a whole register and never asked: *what else joins an ordered thing?*** **The coder swept it unprompted and found THREE sites still joining ordered sequences with `·`** — `dotJoin`'s pathLabels (a live edge's endpoint run) · the composed coarse-side labels (under her `·`-ALWAYS composed-row ruling, §12 of this ledger) · **`apertureModel:703`'s D14 face composition** (an ORDERED CYCLE under her ratified composer).
+⇒ ⛔⛔ **AND TWO OF THE THREE ARE UNDER RULINGS I MYSELF RATIFIED — §12 of this ledger cited `apertureModel:703` as the EXEMPLAR of correct unconditional `·` joining.** ⇒ ***I ratified a law that contradicts an exemplar I had ratified nine hours earlier, in the same register, and neither ruling named the other.***
+★★★ **AND IT IS `PIN THE PRINCIPLE`'S OWN PREDICTION, third instance in two days: a ruling stored beside its first application, its other scopes unexamined.** ⇒ **The amendment's third clause — *name the scopes you did NOT examine* — would have caught it in the glyph ruling itself.** ⚠ **Neither she nor I wrote that line. The clause is only three hours older than the ruling that needed it.**
+
+### ⇒ THE FRAMING I OFFER, NOT A RULING — the register is hers
+> ### ***A RUN HAS ENDS. A CYCLE HAS NONE — ITS START IS A CONVENTION, NOT A FACT ABOUT THE THING.***
+- **`dotJoin`'s pathLabels — an endpoint run. It HAS ends.** ⇒ **The run law appears to reach it.**
+- ⛔ **`apertureModel:703` — a FACE NAME, a closed cycle whose start is D14's *"alphabetically-first corner"*, a READING CONVENTION.** ⇒ ***`→` would assert a start and an end the face does not have.*** **The order is load-bearing (a reversed cycle is a flipped face) and yet it is not a run.** ⇒ **A THIRD KIND, needing its own glyph ruling or an explicit exemption.**
+- ⚠ **The composed coarse-side labels — I HAVE NOT MEASURED WHAT THEY ARE and will not rule them.**
+**SCOPES NOT EXAMINED:** every other join site in the render path; whether "ordered but closed" recurs anywhere else.
+
+---
+
+## 25 · ⚠ A STALE TAB SERVES A STALE BUNDLE — the eye's version of the stale-bytes scar
+
+**The coder's owned false sighting:** their first look at the glyph build **showed dots**. ⛔ **Cause: an ancient measurement tab silently defeated every navigation with a listener-armed leave-guard and kept running a PRE-GLYPH bundle. A fresh tab showed the truth.**
+⇒ ⛔ ***AN EYE CAN REPORT THE PAST.*** **We already hold *a shell grep through the mount can serve stale bytes* — this is the same scar at arrow-9, and it is worse there, because a stale FILE looks like a file while a stale SCREEN looks like a finding.**
+✅ **FILED: a drive that contradicts a model probe on the same head is a STALENESS suspicion before it is a defect — check the bundle, not the code.** ★ **They caught it themselves and reported the false sighting rather than the corrected one only.**
+
+---
+
+## 26 · ✅ RATIFIED — the seam mark publishes AT REST (the designer's), with her own sequencing
+
+**PRINCIPLE, and she derived it from the producer's own declaring comment rather than from taste** — `handGestureModel.ts:267`: *"Provenance only — no metric, no geometry; derive-only over carried ids."*
+> ### ⇒ ***A PROVENANCE MARK ANSWERS "WHAT IS THIS?" — AND THAT IS A QUESTION ASKED OF A THING AT REST.*** **Its content (*"this edge is your fold"*) is as true before the ease as after, and READABLE only after.**
+**Three grounds, each an existing law reaching a new grain:** the eye is BUSY tracking where the form is going · **LAW 23** (*a number the eye cannot check is forbidden*) ⇒ **a mark the eye cannot check while it moves is the same prohibition at a different grain** · **register subordination** ⇒ ***motion is the loudest promotion there is, and an eased mark is promoted by the ANIMATION rather than by its own importance.***
+★★★ **THE POSITIVE HALF, which makes it a ruling and not a suppression: *SETTLING IS ITSELF A SIGNAL* — a mark that arrives when motion stops tells the person the form has ARRIVED and is now READABLE.** ⇒ ***The quiet is not an absence; it is the mark earning its moment.*** ⛔ **So it is built as *appears at rest*, NEVER as *fades out during motion* — the first is a mark with a moment, the second is a mark being apologised for.**
+★★ **AND THE CONVENTION ALREADY EXISTS AT ANOTHER SITE:** `ExploreWindow.tsx` carries a `settle` value (`:49`, and `:13`'s comment *"settles in only when the hand stops"*). ⇒ ***One glyph-family may not have two behaviours*** — the walk's marks settle; a fold mark that did not would teach a person wrong about the other.
+⚠ **AND HER OWN LIMIT, stated before anything rested on it: SHE DID NOT DRIVE IT.** ⇒ **She can rule WHAT THE MARK IS FOR (the source declares it); she cannot say whether the current behaviour costs a reader anything — *that is an arrow-9 fact she does not have.*** ✅ **HER SEQUENCING ADOPTED VERBATIM: if it rides an already-open cut on that surface, take it; if it would be a cut of its own, HOLD until someone with the gesture in hand says it bothers them.** ⇒ ***"I will not spend a cut on a defect I have only reasoned to."***
+
+---
+
+## 27 · ⛔⛔⛔ THE PROCESSION WALK — the meaning does not FADE across operations, it INVERTS
+
+**DRIVEN BY ME, at Arman's instruction, in his Chrome at `localhost:5173`, his imported named universe, HEAD `6cea7ca`.** ⚠ **BUNDLE CONTROL: `no corner is named yet` (the B-131 absence line) renders ⇒ the bundle is at or after B-131.** ⛔ **AND A FALSE CONTROL I RAN AND MUST OWN: I counted `→` in the DOM and read 4 as "the run glyph is present." They were AMBO-SIDE BUTTON LABELS (`→ Manuscript`). *A count from a predicate that is not the claim* — my own filed law, broken inside my own control.**
+
+**THE SUCCESSION — a FACE lifted from a named Ambo universe, then two operations:**
+| step | the card's TITLE | THE ARGUMENT READING's map | the corners |
+|---|---|---|---|
+| **0 · lifted** | `face:xc1sd of Ambo Dissection Ambo Dissection Tetrahedron — loaded` | `Ambo Dissection Ambo Dissection Tetrahedron ⟶ face:xc1sd` | ✔ **four names on the figure** |
+| **1 · glue → torus** | `Torus (T²) — born` | ⛔ **`□ ⟶ T²`** | ⛔ **`no corner is named yet`** |
+| **2 · dualize** | `Dual — born` | ⛔ **`□ ⟶ Dual`** | ⛔ **`D₁ ← one unnamed root`** |
+
+### ⇒ ⛔ FINDING 1 · THE SOURCE IS DESTROYED AT STEP 1 AND NEVER RECOVERS
+**A face lifted out of a NAMED universe, with four NAMED corners, glued to a torus — and the reading says `□`.** ⇒ **This is `sourceNameFor`'s `parent.faces.length === 1` branch** (the coder's find, ratified §23 as *"a derived designation derived falsely"*). ⇒ ⛔⛔ ***IT IS NOT A CURIOSITY ON A FOLD-BORN TORUS. IT IS ON THE MAIN PROCESSION LINE, AND IT EATS EVERY LIFTED FORM AT THE FIRST OPERATION.***
+
+### ⇒ ⛔⛔ FINDING 2 · `no corner is named yet` IS FALSE — AN ERASURE REPORTED AS AN ORIGINAL ABSENCE
+**Step 0's corners read `Draw-momentHolding-moment` · `Holding-momentAdress-moment` · `Holding-momentDomain-moment` · `Holding-momentTerritoriesU-Universes`. Step 1 says `no corner is named yet`.** ⚠ **The glue IDENTIFIES them — `4 concepts become 1` — so the question *"what is the identification of four named things called?"* is a real one.** ⛔ **What is NOT defensible is answering it with a sentence that says nobody has named it YET.**
+> ### ⇒ ***THE CARD REPORTS A LOSS AS A VIRGINITY.*** **LIFT/IDENTITY/GRAIN: CARRY what the substrate holds · MARK what it does not · **FABRICATE or ERASE neither.** This erases, and then MARKS THE ERASURE AS AN ORIGINAL ABSENCE — which is worse than silence, because it is a positive false statement in the horizon frame's own terms.**
+★★★ **AND AGAINST THE FOUNDATION STONE: *identify a square's four corners into a torus and the torus IS the geometry in which those concepts are identified.*** ⇒ ***Here the torus is the geometry in which those concepts are FORGOTTEN.***
+
+### ⇒ ⛔⛔⛔ FINDING 3 · THE MEANING SURVIVES IN THE MACHINE AND IS PRINTED AS A RAW ADDRESS
+**Step 2's `deficit` row, rendered to the person verbatim:**
+> *not measured · conformalAtom: face `"dualf:mat:shape:ambo-dissection:2:czpwku:vertex:mid:2spi7s~shape:ambo-dissection:2:czpwku:vertex:mid:51cg5d~shape:ambo-dissection:2:czpwku:vertex:mid:7qyc8c~shape:ambo-dissection:2:czpwku:vertex:mid:n6efky"` carries no cornerAngles — the atom is not owned yet*
+⇒ ⛔⛔⛔ ***THOSE FOUR IDS ARE THE FOUR NAMED CORNERS.*** **The identity was never lost — it was DEMOTED TO AN ADDRESS, carried two operations deep, and then PRINTED IN PROSE.**
+> ### ⇒ ★★★ ***THE MEANING TRACE DOES NOT FADE ACROSS OPERATIONS. IT INVERTS: the names vanish from the register where a person reads MEANING, and reappear as raw ids in the register where the machine COMPLAINS.***
+
+### ⇒ ✔ FINDING 4 · THE RECORD IS PERFECT — AND THAT IS THE INDICTMENT
+**`what begat what`, at step 2, complete and correct:** *`face:xc1sd of Ambo Dissection Ambo Dissection Tetrahedron — loaded ─glue→ Torus (T²) — born · Torus (T²) — born ─dualization→ Dual — born`*
+⇒ ⛔ ***TWO REGISTERS ON ONE SCREEN DISAGREE ABOUT WHAT THIS FORM CAME FROM, AND THE WRONG ONE IS THE ONE `ADR 0024` MAKES AUTHORITATIVE FOR MEANING.*** **The page KNOWS. The reading does not say it.** ⇒ **So the cure is not "recover the provenance" — the provenance is one strip below. The cure is *the reading must read the record.***
+
+### ⇒ ⛔ FINDING 5 · `Dual — born` — THE RESULT'S NAME IS THE OPERATION WORD
+**Every dual of anything is called `Dual`.** ⇒ ***A designation that cannot distinguish the things it is composed for*** — the designer's phrase, one stratum up. ⚠ **Under the meaning-trace law the name is the RESULT, the INDEX of the operation — not the operation's own word repeated.**
+
+### ⇒ ⛔ FINDING 6 · THE SOURCE NAME DOUBLES ITS OPERATION WORD
+**`Ambo Dissection Ambo Dissection Tetrahedron`** — twice-dissected, and the name accumulated the op word twice. ⇒ **A designation that GROWS by concatenation per generation. At generation 5 it is unreadable.**
+
+### ⇒ ⛔ FINDING 7 · THE AMBO MINTS MIDPOINT NAMES BY BARE CONCATENATION
+`Holding-moment` + `Domain-moment` = **`Holding-momentDomain-moment`**; the workbench states it: *"midpoint derived from edge Phylum – U-Universes"* → `PhylumU-Universes`. ⇒ ⛔ ***`joinNames`' disease at the SOURCE, and worse than the two-letter case: with `A`+`B` you suspect two; with two long names the seam is INVISIBLE.***
+⚠ **REPORTED, NOT CHARTERED — Arman ruled 2026-08-28 that the Ambo universe's names and genealogy are not to be overhauled. This is a fact for the record, and the manuscript side is where a cure could live.**
+
+### ⇒ ⛔ FINDING 8 · A ROUTE DEFECT ON THE MAIN LINE — the only enabled op was unreachable
+**On the torus, the ops menu listed six REFUSED glue ops first, each with a paragraph of reason, and the enabled `Dual (surface Poincaré)` at viewport-top **`1659px` in a `704px` window**, in a menu that does not scroll.** ⇒ ⛔ ***I reached it by dispatching events. A HAND COULD NOT.*** ⇒ ***MISPLACED — refusals placed before the acts they should serve; and reachable ≠ usable.***
+
+### ⇒ ⚠ FINDING 9 · THE COUNT IS SHOWN, THE MEMBERS ARE NOT — on every card
+**`4 concepts, 4 relations — lifted whole` (step 0) · `4 concepts become 1 · 4 relations become 2` (step 1).** ⛔ **NO spine rows, NO incidence rows render on ANY of these cards — measured in the DOM, not merely unseen: `←` count 0, `⌐` count 0, no hidden elements holding them.** ⇒ ***A COUNT IS NOT A SIGHTING***, and the members are absent rather than closed. ⚠ **The coder sighted the spine on an INVOKED square at `5d9f6e5`; my invoked-square control here shows the same absence. Whether a door exists that I could not find is the coder's to say — I could not find one.**
+
+### ⇒ ⛔ FINDING 10 · THE LIFT DROPS THE FORM AT ITS AMBO WORLD COORDINATES
+**Reset camera: the invoked Square sits centre-stage face-on; the lifted face is a speck at the top-left corner of the sheet, off the working area, at its own scale and attitude.** ⇒ **The lift carries the parent's FRAME — a fact about the tetrahedron's embedding, not about the face.** ⚠ **Arman pointed at this and said it is not rocket science; recorded, not chased.**
+
+---
+
+## 28 · ✅✅ THE MEANING FRAME — RATIFIED, GROUNDED, AND SURVIVED ITS BREAK-ATTEMPT
+
+**PRINCIPLE (Arman, Δ40):** ***A form's reading must name what it is a reading OF. The classification is the CONSEQUENCE; the trace is the SUBJECT; a card that carries only predicates is not a reading of anything.***
+**THE LAW UNDER IT (the researcher's, `STAMP R-1`, durable at `.handoff/RULING_STAMP_R-1_*.md`):**
+> ### ***IDENTITY HERE IS TWO-GRAINED — CLASS (what it is) and MEANING (what it is the identification OF, the constitutive trace). The card reads only class grain; the substrate carries BOTH.***
+
+**Q1 — the identification of N named things = an IDENTIFIED CLASS, designation COMPOSED from its members, presence-first through the carried lineage.**
+⇒ ⛔⛔ ***THE MACHINE ALREADY COMPOSES AT ADDRESS GRAIN — the `~`-join in the dual's atom key. IT COMPOSES ADDRESSES AND FORGOT TO COMPOSE DESIGNATIONS.*** ⇒ **The Ambo/manuscript asymmetry is a DEFECT, not a difference in kind.**
+⚠ **AND MY OWN HYPOTHESIS HALF-REFUTED BY MY OWN EVIDENCE:** I proposed *erase-and-replace*. **Membership IS carried; the gap is carry-addresses-drop-designations.** ⇒ **So `no corner is named yet` was FALSE on his named face and TRUE on a fresh square** — the precision I did not have.
+✅ **AND THE COMPOSITION LAW: *a composed designation must be DECOMPOSABLE BY ITS READER.*** ⇒ **The manuscript's composer MUST separate; the Ambo's bare join is a defect in those terms but sits under Arman's ban — his call.**
+
+**Q2 — THE FRAME STANDS, and the break-attempt found a real casualty: THEIRS.**
+**Two homeomorphic tori are the SAME CLASS bearing DIFFERENT MEANINGS. Individuation does NOT reduce to citing the record: *the record holds the ACTS; the live form holds the CLASSES.*** ⇒ **The two-registers law, not an exception to it.**
+⛔ **AND THEY SHARPENED THE DEFECT PAST MY READING: *`□ ⟶ T²` substitutes the codomain for BOTH ENDS of the map* — 0024's predicted failure one level deeper. I had only seen the left side.**
+★★★ **THE CASUALTY, OWNED BY ITS AUTHOR: `ADR 0027`'s child-set ran at bare CLASS grain, and my Q2 case breaks it as written** — *a standing anonymous torus would block the named face's torus, making Arman's own coexistence sentence impossible.* ✅ **AMENDED (§2.2): child-set / obtained-set / exactly-once run at MEANING grain; fresh-unnamed parents collapse to class grain so every ratified consequence stands.**
+> ### ⇒ ★★★ **THE NAMED CONSEQUENCE, BUILT KNOWINGLY: *NAMING CAN RESTORE GENERATIVE POTENTIAL.*** ***What he can still make is counted over what his acts can still MEAN.***
+
+**Q3 — WELL-POSED at PRESENTATION grain, the module's native grain.** The honest line is ***the class of [his edge, by its designation] — the longitude***: **the codomain word is legal only as the classification-side GLOSS, never as the name.** ⇒ **`a — longitude` prints two codomain tokens and no subject — the same substitution as `□ ⟶ T²`.** ★ ***Presentation-dependence IS the individuation; the word is part of the meaning.***
+
+**Q4 — RULED EXPLICIT, and my assertion corrected: A VERTEX IS NOT A CONCEPT — A VERTEX CARRIES A CONCEPT (the packet's content); a RELATION is an edge's (the incidence between two concepts).** **Grounded in ratified substrate (`diedConcepts` = vertex deaths, `absorbedRelations` = edges).** ⚠ **I was right that nobody had said it, and imprecise about what it says.**
+
+---
+
+## 29 · ★★★ THE DESIGNER: THE FRAME IS OLDER THAN THE WALK — five findings, one principle, never induced
+
+**I invited push-back on a board re-sorted in one turn. Her push came back the OTHER WAY: *the walk did not discover the frame; it named a pattern that had been generating my findings all week.***
+| her filing | what it actually was |
+|---|---|
+| `unnamed` on four prongs — *a designation true of every member of its scope does not designate* | **"constant on isomorphism classes", at CORNER grain** |
+| `—a ← unnamed·unnamed` ×4 | the same, at RELATION grain |
+| `Square — invoked` ×2, one name two forms | the same, at PAGE grain |
+| **`face-pairs` dressed as an invariant** | ★★★ **the frame almost word for word** |
+| the title is the ADDRESS while the body knows the name | a subject demoted to an address — **twelve hours before my walk** |
+> ### ⇒ ⛔ ***FIVE INSTANCES, ONE PRINCIPLE, AND FIVE VERDICTS FILED WITHOUT ASKING WHAT GENERATED THEM.*** **`PIN THE PRINCIPLE, NOT THE VERDICT` — her own law, one day old, and its largest instance is hers.**
+⇒ ✅ **AND IT DISSOLVES MY WORRY RATHER THAN CONFIRMING IT: *a frame that independently generated a week of findings before anyone stated it is not adopted too fast — it is adopted too LATE. The walk was its ninth instance, not its first.***
+
+**AND SHE AMENDED HER OWN RULING OF TWENTY MINUTES EARLIER, IN FLIGHT:** she had ruled *the button reads the PRODUCT — the string the born form will carry.* ⛔ **That string is `4-gon × I` — A CODOMAIN NAME.** ⇒ ***Her cure propagated the disease it was curing: she replaced a FALSE class word with a TRUE class word, and a true classifier output is still an account with no subject in it.***
+✅ **AMENDED: *THE BUTTON NAMES THE ACT ON THESE OPERANDS, NOT THE CLASS OF THE RESULT*** — and the panel already holds both subjects one line above the button, unused.
+
+✅ **AND HER PUSH-BACK ON MY SUSPENSION IS UPHELD, ON MY OWN CRITERION.** I suspended `B-132` because *"it sorts predicates into tidier compartments."* ⇒ ⛔ **TRUE of clauses 2–4. NOT TRUE OF CLAUSE 1: `face-pairs` IS NOT A PREDICATE — IT IS THE PERSON'S TRACE.** ⇒ ***Clause 1 does not sort predicates; it takes the one row that is a SUBJECT out of a table of classifier outputs — the same move as the `□` cure I kept and promoted.*** ✅ **CLAUSE 1 UNSUSPENDED; 2–4 stay held.** ⚠ **Independence IN MEANING is hers; independence IN PRICE is the coder's, and she explicitly refused to ask for the banked union for it.**
+
+---
+
+## 30 · ⛔⛔ I SUSPENDED A BUILD THAT WAS IN FLIGHT — because I treated an INBOX as a STATE CHANNEL
+
+**PRINCIPLE:** ***AN INBOX IS A QUEUE. IT TELLS YOU WHAT YOU SENT; IT NEVER TELLS YOU WHAT THEY ARE DOING.*** **A letter written into it is a fact about MY desk, not about theirs.**
+**BOUGHT:** Arman, in-terminal: ***"B-132 is already in flight and it has been for a long time and the coder while building it has touched 200K tokens."*** ⇒ ⛔ **I wrote *"`B-132` — SUSPENDED"* and *"the frozen union stays banked; it is not to be opened"* — WHILE THEY WERE IN THE MIDDLE OF OPENING IT.**
+⚠ **My one guard held — I did write *"report anything already in flight; I am not asking anyone to abandon a cut mid-way"* — so the instruction was not fatal.** ⛔ **But the guard was luck, not method: I did not KNOW, and I never ASKED.** ⇒ ***My own filed law — `my copy of another office's state is ⚠ until re-asked` — and I re-sequenced their entire queue four times in three hours without one re-ask.***
+
+> ### ⇒ ★★★ **AND THE LARGER FAULT, WHICH IS ABOUT MY OWN OFFICE'S TEMPO:**
+> **At the moment Arman corrected me their inbox held FIVE unconsumed letters (`Y1` 12:03 · `Z1` 12:10 · the frame 14:31 · a researcher notice 14:56 · `B-133` 15:02) — and THREE of them re-order the same queue in different directions.**
+> ⇒ ⛔⛔ ***AN OFFICE THAT WRITES FASTER THAN THE RECEIVING OFFICE CAN READ IS NOT ROUTING — IT IS THRASHING. Every letter after the first unconsumed one changed a plan they had not yet read.***
+✅ **CURE, standing, and it is mechanical: BEFORE WRITING A LETTER THAT RE-SEQUENCES A SEAT'S WORK, LIST THEIR INBOX. IF AN UNCONSUMED LETTER OF MINE IS ALREADY IN IT, THE NEW LETTER MUST *SUPERSEDE* THE STACK EXPLICITLY — never add to it.** ⇒ **A queue with two live orderings has no ordering.**
+✅ **AND A SECOND, CHEAPER ONE: a charter that re-sequences work asks *what are you holding right now?* BEFORE it sequences, not after.**
+⚠ **AND THE LOAD FACT ARMAN SUPPLIED, which I could not have measured: the seat is at ~200K tokens — the same threshold at which the last coder was migrated.** ⇒ ***A seat at migration load, mid-frozen-union, holding five contradictory letters, is the exact condition that produced "under load I substitute the nearest token for a measurement." The remedy for that is a fresh seating, not more discipline in a tired one.***
