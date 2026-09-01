@@ -233,7 +233,7 @@ const counts = domain.complex.counts;
 check('buildFormDomain: sound, counts v12 e26 f20 c5', domain.tower.sound === true && counts.v === 12 && counts.e === 26 && counts.f === 20 && counts.c === 5, JSON.stringify(counts));
 const gate = A.buildAperture(domain, { base: lift.shape });
 check('gate.ok', gate.ok === true, gate.ok ? '' : String(gate.reason).slice(0, 120));
-check('the caption reads the SEALED measured 1 × 300° (heuristic would lie 450°)', Boolean(gate.ok && gate.geometry.label.includes('cone edges (measured): 1 × 300°')), gate.ok ? gate.geometry.label.slice(0, 100) : '');
+check('the caption reads the SEALED measured cone in the 1600-ruled words — one cone edge at 300° (measured) — where the heuristic would lie 450°', Boolean(gate.ok && gate.geometry.label.includes('one cone edge at 300° (measured)')), gate.ok ? gate.geometry.label.slice(0, 100) : '');
 const src = A.resolveConeAngleSource(domain, { base: lift.shape });
 const coneClasses = src.anglesByClass ? [...src.anglesByClass.entries()] : [];
 check('coneSource measured; the cone edge named by the terrain lineage', src.kind === 'measured' && coneClasses.length === 1 && Math.abs(DEG(coneClasses[0][1]) - 300) < 1e-6 && coneClasses[0][0].includes(mid), coneClasses.map(([k, v]) => `${k}=${Math.round(DEG(v))}°`).join(','));

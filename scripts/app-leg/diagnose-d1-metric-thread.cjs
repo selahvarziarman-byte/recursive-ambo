@@ -99,7 +99,7 @@ check(
   '(a) metricSource MEASURED and the label reads the sealed 1 × 300°',
   gateA.ok === true &&
     gateA.geometry.metricSource === 'measured' &&
-    gateA.geometry.label.includes('cone edges (measured): 1 × 300°'),
+    gateA.geometry.label.includes('one cone edge at 300° (measured)'),
   gateA.ok ? gateA.geometry.label.slice(0, 90) : String(gateA.reason).slice(0, 90),
 );
 

@@ -130,7 +130,7 @@ const surfaceB = A.readCellSurface(exitB, true);
 check("(c) EXIT B (explicit 0 pairs) reproduces the sealed room: sound · v12 e26 f20 c5 · doors 0 · the caption still measures 1 × 300° · the BOUNDARY carries 15 face classes (the gate's own label) and the drawn cell's surface carries 7 walls (per-cell — the fan is 5 cells; the two were conflated in the pre-R3d pin)",
   exitB.tower.sound === true && cB.v === 12 && cB.e === 26 && cB.f === 20 && cB.c === 5 &&
     gateB.ok === true && gateB.deck.length === 0 &&
-    gateB.geometry.label.includes('cone edges (measured): 1 × 300°') &&
+    gateB.geometry.label.includes('one cone edge at 300° (measured)') &&
     gateB.geometry.label.includes('∂ carries 15 face class(es)') &&
     surfaceB.wallCount === 7,
   `${JSON.stringify(cB)} · deck ${gateB.ok ? gateB.deck.length : '—'} · walls/cell ${surfaceB.wallCount}`);

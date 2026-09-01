@@ -751,7 +751,7 @@ console.log('\n----- §10 (B-114) the walk window carries the model, and the nou
         coneNoun = A.apertureNoun(g.geometry, g.seal);
       }
       note(`nouns: sealed H³ → "${sw}" · flat → "${flat}" · euclidean cone → "${coneNoun}"`);
-      return sw.startsWith('hyperbolic manifold ·') && sw.includes('cone edges: 6 × 450°') &&
+      return sw.startsWith('hyperbolic manifold ·') && sw.includes('six cone edges at 450°') &&
         flat.startsWith('E³ ·') &&
         coneNoun !== null && coneNoun.startsWith('Euclidean cone-manifold ·');
     })());
