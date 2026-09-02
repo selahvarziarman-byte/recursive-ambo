@@ -1,5 +1,12 @@
 #!/usr/bin/env node
 
+// SWEEP-CEILING: 900s — I-1 clause 3: this leg's honest runtime (~312s, the
+// ~n³ worker pipeline on fixed drawn bodies) sat ~35% under the sweep's
+// 420s default, and two loaded sweeps killed it at the ceiling — a red
+// whose colour depended on load. The declared ceiling restores the
+// headroom; a true hang still dies here, and a breach prints TIMEOUT by
+// name in the sweep's verdict.
+
 // DIAGNOSTIC — THE FIELD IN THE SPECIMEN (C.1; engineer-chartered 2026-07-17,
 // SEAL-BEFORE-BUILD — BUILT BLIND to `.handoff/SEAL_THE_FIELD_IN_THE_SPECIMEN.md`,
 // SHA-256 390c9046…c607, natively measured; every pin below is the builder's

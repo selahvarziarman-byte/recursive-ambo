@@ -917,3 +917,56 @@ $ grep -n -E "handoff|gitignore" docs/governance/ENGINE_FREEZE_MANIFEST.txt   �
 3. **The torn-edit STOP stays exactly as written — and it stays the COURIER'S judgement, at staging, on what they see. My say-so was never the input.**
 
 ★ **THE LAW: *WHEN A SEAT ASKS A QUESTION WHOSE PREMISE IS WRONG, ANSWERING IT IS THE MORE EXPENSIVE MISTAKE.*** **They asked for a guarantee the protocol does not need; I gave it, broke it, and spent two letters on the debris.** ⇒ **Correct the premise, then answer.**
+
+---
+
+## §43 · THE THREE-CYCLE RATIFICATION, THE BOARD'S RANKING, AND ONE CENSUS FINDING (all at `f18d656`)
+
+**Ground for everything in this section: ✔ = run or read by me at `f18d656` on the main checkout, branch `team-arman`; ⚠ = on the coder's or the designer's report.**
+
+### §43.1 · ✔ RE-MEASURED AT MY OWN HAND — receipts another seat may use
+| claim | receipt |
+|---|---|
+| **ADR 0029 is TRACKED** | ✔ `git cat-file -e HEAD:docs/adr/0029-the-designation-doctrine-registers-grains-and-the-name-slot-law.md` → **exit 0.** ⚠ *(my board previously carried it as UNTRACKED; that row was stale and is deleted, not updated.)* |
+| **the migration packet's four files are TRACKED** | ✔ all four `cat-file -e` at HEAD: `THE_FRONT_BOARD` · `HANDOFF_..._V4` · `OPENING_THE_SEVENTH` · `INITIATION_CODER_THE_ORDER_SEAT`. |
+| **the restated sweep census is DELETED, not updated** | ✔ read `CLAUDE.md:118-122` — it now says *"The census lives in that line and nowhere else,"* and keeps the scar of the drift. |
+| **`specimenModel.ts` is FROZEN and did NOT join the standing list** | ✔ `ENGINE_FREEZE_MANIFEST.txt:77` is a bare `path<TAB>hash` row; ✔ `CLAUDE.md:135` still names exactly five. **Δ51 is a one-time spend and the line is unchanged.** |
+| **the drive family is FIVE legs + `sweep.cjs`** | ✔ `grep -rl "DRIVE FAMILY" scripts/` returns six paths; the sweep classifies BY THE DECLARATION, so the sixth is the classifier itself. |
+
+### §43.2 · ⛔⛔ THE CENSUS FINDING — *"two of five are stale" was a census of what was RUN*
+✔ **`git log -1` over every banner leg and its python driver at `f18d656`:**
+```
+d8-shelf-route      75c2e63 / 75c2e63    ⚠ RAN — 29 failures
+d12b-carried-names  75c2e63 / 75c2e63    ⛔ UNRUN in either report
+d13-the-door-speaks 75c2e63 / 6cf7e8c    ⛔ UNRUN — its python half is OLDER than the commit that named the family
+deficit-app         6e11d38 / 557f99f    ⛔ UNRUN
+winding-route       fef8fe9 / (this cycle) ⚠ RAN — 13 failures
+```
+⚠ **The coder's stated cause for d8** — *"its driver (last cut 2026-08-26) predates the current aperture UI"* — ⇒ ⛔ **IS A PROPERTY OF THE COMMIT (`75c2e63`), NOT OF THE LEG.** **Two of the unrun three sit at that same commit.**
+> ### ⇒ **THE LAW, and it is `CLAUDE.md` §3's *a COUNT is not a SIGHTING* at a new surface: A REPORT OF N STALE INSTRUMENTS IS A CENSUS OF WHAT WAS RUN UNTIL SOMEONE ENUMERATES THE SET.**
+⛔ **KILL-CONDITION:** if `STAMP I-1`'s clause-1 census returns the unrun three GREEN, **the era hypothesis is dead and d8's real cause is unknown** — which is the more valuable outcome and must be reported first, not as a setback.
+
+### §43.3 · ⛔ AND I COMMITTED THE SAME ERROR INSIDE THE PARAGRAPH NAMING IT
+**My first draft of that table wrote *"two of the five have no sighting"* — because `deficit-app` had a recent SHA and a blank result column and I read the blank as "current."** ⇒ ***A recent CUT IS NOT A RECENT RUN.*** ⛔ **The Gate subagent caught it (flag 12), not me.**
+★ **Filed as a fourth instance of the load-signal shape recorded at §35: the catch came from outside, in a section whose whole argument was that blanks are not results.**
+
+### §43.4 · ✅ THE RANKING RULED — the instrument repair is a GATE, not a chore
+**`CLAUDE.md`'s FIFTH witness is *what the person SEES*. `PLAN_THE_RENDER_GATE`'s remainder is rungs 3–4, and rungs 3–4 are all WALKS.** ⇒ ⛔ **RULED: the drive-family recut (`STAMP I-1`) sits AHEAD of rungs 3–4 and ahead of Station 3's walk, and BEHIND `M-1` part C and the `faceDisplayName` sweep.**
+⚠ **Ground: the coder's own two sentences — *"the shelf-route instrument DOWN meanwhile"* (`e6ef063`) and the M-1 cycle standing on a manual eye-drive, *"honest, and it does not scale"* (`f18d656`).** ⇒ **I did not measure the legs; I composed their two disclosures against the plan's remainder. That composition is this office's own ground and it is marked as such.**
+⛔ **KILL-CONDITION:** **if the census finds the family healthy, this ranking dissolves and rungs 3–4 move up.** *The gate is the instruments' state, never the charter's existence.*
+
+### §43.5 · ✅ RATIFIED, all ⚠ on their reports
+- **the pose normalization (`c6ef2f8`)** — ★ its charter statement names what it does NOT move (invoked primitives are fixed points; non-planar bodies rule null), reading appearance angle as GAUGE under ADR 0028.
+- **`M-1` A+B and `M-2` 1+2 (`fef8fe9`)** — ★ **the keeper: the coder's first bound used `calc(100dvh − 66px)` and the DESIGNER'S case falsified it (true top 106, not 54).** ⇒ ***A constant replaced by a measurement because a second office's case was allowed to kill it — `enumerate from the screen, never from a constant`, operating BETWEEN offices.***
+- **the designer's ORDINAL ruling** — ★★★ ⚠ her drive (`w1 w2 w3` → remove `w3` → round-trip → `w4`) proves **the ordinal is a RECORD ordinal, not a page position**, so the words are `the fourth you MADE`. ⇒ ⛔ **NO SOURCE READING SEPARATES THOSE TWO; only the drive did.** ⇒ ★ **AND THE STANDING CONSEQUENCE FOR THIS OFFICE, adopted rather than caveated: *a code reading is all I have.* Every reading I hand another seat is provisional in a way their sightings are not.**
+- **the designer's UNLEARNABLE CARD** — ⚠ five headings identical, three open, `cursor` the only difference. ⇒ ***"Every sample a person can take supports a false generalisation."*** ⇒ ⛔ **Not a missing affordance: a missing affordance leaves him IGNORANT; this leaves him CONFIDENTLY WRONG, and the card's own uniformity supplies the confidence.** ✅ **Ruled into the through-line as a SHARPENING of the Δ18 clause: before a person can DO the reading, he must be able to FIND it.**
+
+### §43.6 · ✅ TWO ITEMS DISCHARGED BY SEARCHING MY OWN ARCHIVE, and the law that cost
+**The `4 corners` vs twelve-names contradiction and the `§4/§5 one-liners` shorthand were BOTH one grep away in mail already in my archive — and I had routed both downstream as unresolvable.**
+> ### ⇒ ⛔ **LAW: BEFORE ROUTING AN ITEM AS UNRESOLVABLE, GREP YOUR OWN ARCHIVE.** ***A plan file is a claim; an "unresolvable" I never searched for is a claim I made about my own record.***
+★ **And a third instance of the same shape, caught by the Gate on `PLAN_THE_LAST_PHASE`: the tail carried a bare `:1085` naming no file, through at least two prior copies — an item nobody could act on because nobody could find it.** ✔ **Resolved: `ManuscriptView.tsx:1085`, R-5, live at `PLAN_THE_RENDER_GATE.md:13`.**
+
+### §43.7 · ✅ THE RECORD FILES REGENERATED — and what each one is now for
+- **`THE_FRONT_BOARD.md`** — regenerated WHOLE at `f18d656`; **§2 is new and is the ranking**; six discharged rows moved into §5 with the law each bought.
+- **`PLAN_THE_LAST_PHASE.md`** — **REWRITTEN, the debt named at `1b7245f` and paid here.** The through-line's sixth clause now has its CONTENT (`what kind` vs `which one`), and the DESIGNATION ARC is a first-class arc rather than a scatter of card rows.
+- ⚠ **NOT AUDITED, and carried forward as a scope statement rather than a ✔: `PLAN_THE_LAST_PHASE`'s BOUNDS block.** ⛔ **Several are SUBSTRATE claims** (*"π₁ is not computed and not shown"* · *"No mask-based chirality counter"*) **— the coder's to confirm; I did not drive them.**

@@ -6,108 +6,133 @@
 > ⛔ **THIS IS NOT A PLAN.** Plans are per-arc and hold WHAT and WHY. ⇒ **This file holds WHEN, WHO, and WHAT-BLOCKS-WHAT, ACROSS arcs — the one thing no single plan can see.**
 > ⛔ **ITS ONE LAW: *discovery order is not implementation order.***
 
-**⇒ REGENERATED `2026-09-01 ~2050` at `1b7245f`, by the sixth, at the seat's close. Front changes since last regeneration: P-1 ratified · the restart confirmed the 1849 seal · the lock incident (§34, the sixth's) · Arman's same-tree challenge · both new seats pending.**
+**⇒ REGENERATED WHOLE by the SEVENTH at `f18d656`** *(`git log --oneline -1` at my own hand; branch `team-arman`; working tree carrying only my two record files + the two `tsbuildinfo` emits)*. **Previous generation: `1b7245f`, by the sixth, amended by me at seating.**
+**Front changes folded in: THREE build cycles landed (`75ce492`/`3ec6bc2` W2+W1 · `c6ef2f8`/`e6ef063` the pose normalization · `fef8fe9`/`f18d656` M-1 A+B and M-2 1+2) · ADR 0029 filed, ratified AND tracked · Δ49/Δ50/Δ51 ruled by Arman · the designer's two rulings ratified · SIX §4 rows discharged and moved to §5 with their laws.**
 
-**⇒ AMENDED by the SEVENTH at seating, still at `1b7245f`. Front changes: the seventh mothership is SEATED · `MARKER W2-a` filed into `inbox/coder/` · ✔ the `W2` freeze price MEASURED (no manifest row names any path it touches) · ⛔ a composition finding — `W2` and `W1` are BOTH unexecutable under the worktree branch (§3).**
+⚠ **THE MARK CONVENTION, and it is not decoration: ✔ = I ran or read it at a named SHA · ⚠ = it stands on another seat's report.** ⛔ **Never a ⚠ inside a ✔.** ★ **And ratified last night as a STANDING property of this office, not a caveat on one row: *a code reading is all I have. The designer has a drive that can falsify one; I do not.* Every ⚠ here is provisional in a way her sightings are not.**
 
 ---
 
-## §1 · IN FLIGHT — what a seat is holding RIGHT NOW
+## §1 · IN FLIGHT — what each seat is holding RIGHT NOW
+
 | seat | holding | state |
 |---|---|---|
-| **ARMAN** | ✅ **all three answered (Δ49): pause LIFTED by its own terms · reload agreement = (d) ACCEPT RELOADS · the watcher SIGHTED at his own eye in his served page.** | at rest — nothing owed |
-| **MOTHERSHIP (seventh)** | ✔ Δ47 sweep discharged · the `2217` report RATIFIED (claims-ledger §37) · `2245` letter shipped. **Record files COMPLETE — not editing them further this session, which is W1's go.** | **owed: `PLAN_THE_LAST_PHASE`'s through-line rewrite** |
-| **CODER** (the ORDER seat — seated, first report filed `2217`) | **`W2` + `W1` + the fourth negation, staged to land this session** | ✔ **echoed `W2` · `W2-a` · `STAMP P-1`; the same-tree measurement discharged; three findings returned, all three ratified** |
-| ~~CODER (horizon seat)~~ | — | **succeeded; its three refusals stand true OF THAT SESSION only** |
-| **DESIGNER** | the **register question** (the go-stale strip vs the top edge, letter `2035`) + two older ratifications | **unwoken, not late** |
-| **RESEARCHER** | **③** — the GIVEN name of an identified class vs its DERIVED composition | **unwoken, 0 unread** |
-| **T.O** | nothing owed (three unread ratifications from me) | at rest |
-| **COMMISSION** | open-ended; advances on texts Arman routes | standing |
+| **ARMAN** | ⇒ **nothing owed and nothing waiting on him.** Δ49 (three answers), Δ50 (the pick = option (a)), Δ51 (*"sanctioned. proceed"*) all consumed and relayed. | **at rest — the router's chair is clear** |
+| **CODER** (the ORDER seat) | ✅ **`M-1` part C, SANCTIONED** — `MARKER M-1d` in their inbox, the scope their own price, the boundary stated. | ⚠ **three cycles landed, every echo made; nothing else blocking them** |
+| **DESIGNER** | **four unhurried things, none on a clock:** the subtitle `abAB` ×3 re-read (⇒ **UNBLOCKED — the header landed**) · one glance at the coder's `v0 : no corner angles` · one press on `the field`'s chip · the ordinal's exact string when she sees a `Source` slot | **at rest by my own ruling — I told her *nobody* and meant it as a state** |
+| **RESEARCHER** | nothing owed. ADR 0029 is filed, ratified and tracked; ③ was ruled not-a-blocker by her own hand. | **at rest** |
+| **MOTHERSHIP (seventh)** | ⇒ **the ball is MINE on exactly one thing: §2's ranking is now stated, and `PLAN_THE_LAST_PHASE`'s through-line rewrite follows FROM it.** | **owed: the through-line rewrite** |
+| **T.O · COMMISSION** | nothing routed | standing |
 
-## §2 · ✅ CLOSED THIS CYCLE — with the law each bought
+---
 
-- ✅ **THE LAG CLASS, whole.** START-stale closed at `f3d35f6` (serve-is-the-advance) · GO-stale closed at `cd55e9b` (the watcher + strip; **MARK never move** — no auto-advance may destroy a walk's carried state, LAW 22). **P-1 ratified at claims-ledger §33.** ✔ **The restart PASSED the 1849 seal in its normal mode: `9ad1823 → 1b7245f`, unassisted.** Second seal (strip ≤ ~20 s after the next landed commit) **armed and pending**.
-- ✅ **Era 1 dead by measurement** (three harness refusals) — ⚠ **for THAT session-kind only; see §3's open question.**
-- ⛔ **The install laws, bought in one evening:** *a cure that ships inside the commit it delivers cannot bootstrap itself — the charter names the bootstrap act* (§31) · *a cure in a long-running process installs at RESTART — a seal about a running process names the commit the process was STARTED from* (§33.1) · *an instrument is not read-only because you intend a read — price its internal calls before running it on the live substrate* (§34, **the sixth's own lock**).
-- ✅ **Stations 0/1/2 of the order arc** closed earlier this day; **Station 4 dead**; the maps/plans stamped accordingly.
+## §2 · ⇒ THE ORDER — the ranking, which is this board's whole reason to exist
+
+> ### ⛔ **THE RULING I AM MAKING HERE, and it re-ranks the campaign: THE INSTRUMENT REPAIR IS NOT A CHORE BEHIND THE FRONT. IT IS THE GATE IN FRONT OF RUNGS 3–4.**
+> **`CLAUDE.md`'s fifth witness is *what the person SEES*, and for two subjects its instruments are DOWN** (`diagnose-d8-shelf-route`, 29 failures · the winding-route leg, 13 — ⚠ both stash-controlled at clean HEAD on the coder's own measurement). **The M-1 cycle stood on a manual eye-drive in their place and said so.** ⇒ ⛔ **RUNGS 3–4 ARE ALL WALKS. Walking into the gate's remainder with the walk instruments stale means every reading there is a manual eye-drive by whoever happens to be seated — which is exactly the substitution the coder called *honest, and it does not scale.***
+> ⇒ ***So the recut charter is not maintenance deferred behind the arc. It is the arc's precondition, and it moves ahead of the inhabiting rungs.***
+
+**THE SEQUENCE, as it stands at `f18d656`:**
+
+| # | what | who | why HERE and not elsewhere |
+|---|---|---|---|
+| **1** | **`M-1` part C** — `specimenModel.ts`'s guard | **CODER** | ✅ **sanctioned; it is two lines and a re-seal, and `M-1` closes WHOLE behind it.** *A family left one part open is a family nobody can retire.* |
+| **2** | **THE `faceDisplayName` WHICH-SLOT SWEEP** — *which person-facing WHICH-slots still call the NAME composer?* | **CODER** *(unchartered)* | ⚠ **cheap, one symbol, and it is ADR 0029 §3.5's two-direction census.** ⇒ **It runs HERE because it either finds the `×12` port-menu surface or proves it composes elsewhere — and the card arc below is built on top of that answer.** |
+| **3** | **THE INSTRUMENT REPAIR — ONE charter for both stale legs, plus the contention canary** | **CODER** *(unchartered — ⛔ MINE to write)* | ⛔ **THE GATE, per the ruling above.** ★ **And the canary rides it: a leg whose colour depends on load teaches its readers that a red is a re-run, which is the end of the sweep as a witness.** |
+| **4** | **THE CARD'S DESIGNATION ARC** — the unlearnable card's `— show it` · the ordinal into a `Source` WHICH-slot · the re-ordering | **CODER** *(designer ruled · unchartered)* | ✅ **Both halves are RULED and neither is built.** ⇒ **It sits behind 2 because the ordinal's carrier and the sweep's answer are the same question at two surfaces.** |
+| **5** | **STATION 3 — the SW four-door commutator walk, T³ control FIRST** | **ARMAN** | ⛔ **NEEDS NO BUILD. Rooms exist at HEAD.** ⚠ **But its READING is a walk reading ⇒ it wants 3 done, or it inherits the same gap.** |
+| **6** | **RUNGS 3–4 — INHABITING** | **ARMAN drives · CODER builds** | **the render gate's whole remainder.** ⛔ **Gated on 3 by the ruling above.** |
+| **7** | **REGENERATE `THE_SUBSTRATE_MAP` — a real re-walk** | **CODER** | ⛔ **NOT the mothership's: regenerating it means driving the app.** ⚠ **Three subsystems have NO entry at all** (`scripts/dev-advance.cjs` · the go-stale watcher · `ZOO_ROOMS`' five rooms). **Last, because it is a snapshot and a snapshot taken mid-arc is stale on arrival.** |
+
+⚠ **AND THREE THINGS DELIBERATELY NOT IN THE SEQUENCE, named so their absence is a decision rather than an oversight:**
+- **CLAUSE 3 — the pick ON the shape.** ✅ **Arman's own word is *"for now"* and ⚠ the coder measured it REACHABLE (five raycastable per-face colliders).** ⇒ **His to take; not ranked, not dropped.**
+- **THE DECLARED END — the semantic connection layer** (Δ43, ADR 0028). ⛔ **Not chartered as work; the op-set must not bend toward it.**
+- **THE `wt/*` → strip hop.** **DORMANT by topology, not owed.** *An owed item nobody can discharge is a dropped ball with a date on it.*
+
+---
 
 ## §3 · THE GATES — what blocks what, and nothing else is a reason to wait
 
 ```
-✅ THE SAME-TREE QUESTION — CLOSED 2026-09-01 by the order seat's own probes.
-   BOTH PASSED, no refusal: `git -C <main> rev-parse HEAD` answered, and an Edit-tool
-   round-trip on README.md in the MAIN checkout succeeded and reverted byte-identically.
-   ⇒ ARMAN WAS RIGHT (Δ46). The wt/* topology RETIRES for this seat.
-   ⇒ W2 + W1 EXECUTE AS WRITTEN. The orphan finding below is MOOT by its own kill-condition.
-   ⚠ BOTH RECORDS STAND IN THEIR OWN SCOPE — the horizon session's three refusals were
-     true OF THAT SESSION. Where a seat works is a PER-SESSION fact, measured each seating.
-   ⛔ AND IT COST SOMETHING NOBODY PRICED — see §3a.
+✅ THE SAME-TREE QUESTION — CLOSED. Both probes passed; the wt/* topology RETIRED for this seat.
+   ⚠ PER-SESSION FACT: the horizon session's three refusals were true OF THAT SESSION.
+   Where a seat works is measured each seating, never inherited.
+
+✅ THE HOT-RELOAD AGREEMENT — Δ49 (d) ACCEPT RELOADS.
+   ⛔ (d) does NOT retract MARK-NEVER-MOVE: a MECHANISM may still never move or reload his
+   tree on its own; (d) accepts another PERSON'S deliberate act.
+   ⚠ Residue, recorded once and chartered as nothing: a walk cannot be saved (✔ no browser
+   storage anywhere in src/manuscript/ or src/store/), so under (d) a walk is at the coder's
+   timing. Saying "I'm walking" costs nothing, and rungs 3–4 are all walks.
+
+⛔ THE ONE LIVE GATE:   the two stale drive legs  ──▶  rungs 3–4 (§2 row 3 ──▶ rows 5,6)
+                        everything else in §2 is ORDER, not blockage.
 ```
 
-### ⛔ §3a · THE COST OF THE ANSWER — *retiring a mechanism retires the side-effects nobody chartered it for*
-⚠ **The coder's finding (`2217` report §5), ratified at claims-ledger §37.6:** the `wt/*` topology was **also** what kept this seat's edits out of Arman's module graph. **In the main checkout, every module-graph edit they make while his server serves it HOT-RELOADS HIS PAGE — and a reload under a walk destroys the carried state (LAW 22), the exact hazard `P-1`'s MARK-never-MOVE ruling exists to prevent.**
-⇒ ⛔ **MEANING RULING (mothership): no mechanism may reload Arman's page during a walk — `P-1`'s ruling now reaches the CODER'S OWN EDITS, which nobody intended.** ⇒ **THE WORKING AGREEMENT (serve closed while cuts land · reloads accepted · isolation restored) is ARMAN's — only he knows when he is walking. ⚠ `W2` itself is safe: `.gitignore` and `.handoff/*` are outside the module graph.**
+### ⛔ §3a · THE STANDING COST NOBODY CHARTERED — *retiring a mechanism retires the side-effects nobody chartered it for*
+⚠ **The coder's finding, ratified at claims-ledger §37.6:** the `wt/*` topology was **also** what kept their edits out of Arman's module graph. **In the main checkout every module-graph edit hot-reloads his page while he serves it, and a reload under a walk destroys the carried state (LAW 22).** ⇒ ✅ **Ruled by Δ49 (d) and closed as an AGREEMENT — but the mechanism-level law survives the agreement and is why (d) had to be a person's ruling rather than a seat's convenience.**
 
-### ⛔ THE COMPOSITION FINDING (the seventh's, at `1b7245f`) — the REFUSES branch has a consequence the sixth's board did not carry
-**Each part true. (1) `W2` asks the coder to track three files that exist ONLY in the main checkout's working tree** ✔ (`git cat-file -e 1b7245f:<path>` absent for all three; present under `ls .handoff/`). **(2) Standing courier duty `W1` (`CLAUDE.md` §5) has the coder carry the mothership's tracked record files AS FOUND — four are dirty in the main checkout now** ✔ (`git diff --stat`: `PLAN_THE_ORDER_STRATUM` · `THE_CLAIMS_LEDGER` · `THE_SEAT_MAP` · `THE_SOVEREIGN_LEDGER`, + `tsconfig.tsbuildinfo`). **(3) A linked worktree does not hold either set** ✔ measured: `ls .claude/worktrees/c1-designation-cures/.handoff/` returns the sixteen tracked names and none of `W2`'s three; `sha256sum` on `THE_SEAT_MAP.md` differs between the two checkouts (`6ffed44f…` worktree / `887eb13f…` main).
-> ⇒ ***THE RECORD OF THE OFFICE THAT HOLDS THE RECORD CAN ONLY BE PROTECTED BY A SEAT THAT CAN SEE THE MAIN CHECKOUT.*** ⛔ **Under REFUSES the coder must STOP, not improvise a route** — copying the files across would require reading them, which `W1` forbids. **The fallback is the mothership's and Arman's to rule.**
+---
 
-```
-
-W2 (the packet tracking) ──▶ the seventh wakes into a PROTECTED record
-un-pause ✔ (the lag bit is right) ──▶ the coder queue in §4
-STATION 3 (route reading) ──▶ needs NO build: the SW commutator walk, T³ control FIRST (LAW 24)
-```
-
-## §4 · OWED, BY WHOM
+## §4 · OWED — LIVE ROWS ONLY
 
 | owed | by | note |
 |---|---|---|
-| ~~the same-tree measurement~~ | ~~NEW CODER~~ | ✅ **DISCHARGED — both probes passed; §3 rewritten. Arman was right.** |
-| **`W2` + `W1` — land the tracking and carry the record files AS FOUND** | **CODER** | ⚠ **staged, awaiting ONE input they asked Arman for: is the seventh finished writing the record files (W1's torn-edit clause)?** ⇒ **ANSWERED BY ME in the `2245` letter: the eight are complete; I am not editing them further this session.** ⇒ **GO.** |
-| **a FOURTH `!` negation — `.handoff/INITIATION_CODER_THE_ORDER_SEAT.md`** | **CODER** | ⇒ **GRANTED by rider in the `2245` letter.** ★ **They MEASURED that the packet teaching *an untracked file is an unprotected file* is itself ignored at `.gitignore:34`, and refused to improvise a fourth negation against W2's "exactly as written" — the boundary working.** |
-| ~~the WORKING AGREEMENT on hot-reload~~ | ✅ **RULED (d) — ACCEPT RELOADS (Δ49)** | **The coder cuts in the main checkout; his page reloads. No serialisation, no save-first, no return to a worktree.** ⛔ **(d) does NOT retract MARK-NEVER-MOVE: a MECHANISM may still never move or reload his tree on its own; (d) accepts another PERSON'S deliberate act.** ⚠ **Residue, recorded once: a walk cannot be saved (✔ no browser storage anywhere in `src/manuscript/` or `src/store/`), so under (d) a walk is at the coder's timing. Saying *"I'm walking"* costs nothing and rungs 3–4 are all walks — courtesy, chartered as nothing.** |
-| **the ws → strip hop** | **nobody — DORMANT, not owed** | ⚠ **Under (d) no `wt/*` line runs ahead of his serve, so the producer correctly answers `current` and the strip is correctly silent. The condition cannot arise in this topology.** ⇒ **Moved OFF the owed list (claims-ledger §39.3): an owed item nobody can discharge is a dropped ball with a date on it.** **TRIGGER: the first session serving main while a `wt/*` line runs ahead. If that never recurs, the hop is never sighted — accepted and recorded, not a debt.** |
-| ~~the standing server's BOOT commit~~ | ✅ **CLOSED, and the question was a PROXY** | ⇒ **claims-ledger §39: the seal rested on *is the watcher LOADED*, not on a SHA — and the served HTML answers that directly.** ✔ `serve-lag-strip` is 0 at `9ad1823`, 2 at `cd55e9b`/`1b7245f`, and absent from all app source ⇒ it reaches a page only via `vite.config.ts:75`. **Arman ran view-source and the injected block is there.** |
-| ~~the un-pause — does it lift?~~ | ✅ **CONFIRMED (Δ49)** | *"paus is lifted by its own term yes."* **The §4 queue is OPEN.** |
-| ~~`MARKER W2` + `W1` + the fourth negation~~ | ✅ **DISCHARGED — landed `75ce492`, in history at `3ec6bc2`** | **All four packet files TRACKED; four `!` negations at `.gitignore:51-54`; the eight record files carried AS FOUND.** ✔ **Re-measured at my own hand — ratified at claims-ledger §41.1.** ⛔ **Non-amendment stays ⚠-on-their-report: a presence test cannot prove an absence of edits, and that is the class `W1` runs on trust for.** |
-| **ONE-LINE CUT — delete the restated sweep count at `CLAUDE.md:120-121`** | **CODER** | ⛔ **`CLAUDE.md:108` forbids restating the census (*"a count copied into a doc is a stamp that drifts from the code that made it"*) and `:120` restates it twelve lines later.** ⚠ **The predicted drift has already happened: doc `124`, the coder's whole run `125`.** **DELETE, never update. Rides the next commit; no cycle.** |
-| **two questions out — the argument card's registers** | **RESEARCHER · DESIGNER** | `.handoff/inbox/researcher/2026-09-02_0010_…md` (does the NAME-SLOT LAW reach `shape.name`? · G1's *enact-then-gate* vs MISPLACED) · `.handoff/inbox/designer/2026-09-02_0015_…md` (is the card's header a NAME or a REFERENCE slot — and is ANY lawful surface able to separate two anonymous forms?). **Neither charters work.** ⚠ **If either rules on the card, the un-pause queue's third item changes shape before the coder reaches it.** |
-| ★ **THE PHASE-1/2 CALIBRATION READ** *(Arman, 2026-09-01: "you need much more deepening of your knowledge of what we have been doing here and what we have")* | **MOTHERSHIP** | ✅ **Phases 1 and 2 CLOSED — `.handoff/THE_SEVENTH_DEEPENING.md` carries the log, its findings and the three self-corrections it produced.** **Phase 3 is the two questions above.** |
-| **`MARKER W2-a`** — the rider: the freeze receipt + the REFUSES-branch STOP | **CODER (whichever)** | filed `2115` into `inbox/coder/`; gated (its own appendix carries the Gate's 23 flags and my dispositions) |
-| **a FALLBACK for `W2` under the REFUSES branch** | ⛔ **MOTHERSHIP + ARMAN** | **owed only if the measurement refuses** — do not pre-build it; *smallest measurement first* |
-| **is the standing dev server still the one started at `1b7245f`?** | **ARMAN** | the second P-1 seal's precondition (claims-ledger §33.1). ⚠ **The mothership has NO instrument for this** — its shell is a sandbox with his filesystem mounted, not his network |
-| ⛔ ~~**the second P-1 seal** — strip ≤ ~20 s after the next landed commit~~ | **VOID BY TOPOLOGY CHANGE** | ⛔ **NOT falsified, NOT passed.** ✔ Verified at my own hand on clean bytes (claims-ledger §37.2): a MAIN-checkout commit makes the `wt/*` tip an ancestor of HEAD ⇒ `ahead` empty, `diverged` empty ⇒ `kind:'none'` (`scripts/dev-advance.cjs:75`) ⇒ `{behind:false,kind:'current'}` (`:191`). **The strip will be silent and the silence is the producer being RIGHT — a THIRD outcome; never read it as the other two.** |
-| **the ws → strip hop, still UNSIGHTED** | **nobody — LEFT STANDING** | ⛔ **RULED: do NOT manufacture a `wt/*` advance to fire it.** *A guard that stops firing stays standing; removed only when every condition it stands for has stopped* — and a future worktree-seated session re-creates this one. **KILL/TRIGGER: the next `wt/*`-seated session sights the strip at its first landing.** |
-| **un-pause queue, in order:** pose normalization · `4 corners` vs twelve-names · **`STAMP M-1`** (the pick cure + the return-line ordinal + the two card one-liners + M-1's three parts) | **CODER** | ✅ **THE SHORTHAND IS RESOLVED:** *"the §4/§5 one-liners"* = the designer's `2026-09-01_1728` letter §4 (`2 concepts, 1 relations`) and §5 (`v0 : = 0`) — two one-line COPY cures. ⛔ **I had put that on the board as unresolvable and routed it downstream. It was in my own archive.** |
-| ⛔⛔ **THE PICK DEFECT NOW RESTS ON ONE OFFICE'S MEASUREMENT** | **CODER (evidence) · record correction: MINE, done here** | **The designer WITHDREW her eleven-probe *"the square is unselectable"* finding** (`.handoff/inbox/coder/2026-09-02_0127_designer_WITHDRAWN-…md`): her projection used `object.getWorldPosition()` — the GROUP'S ORIGIN, not the drawn centre — putting the probes 200–280 px off. ✅ **The coder's own inverted reproduction (a square eating a segment's double-clicks at 155 px, their layout, their instruments) is UNTOUCHED and is now the ONLY evidence.** ⇒ ⛔ ***"Both of us saw it" may not stand anywhere in the record.*** ★ **The law it bought, for every seat: *a positive control is not a one-time thing; an instrument validated once and carried forward is an assumption wearing a measurement's clothes.*** |
-| ✅ **`STAMP M-1` — CHARTERED** *(joins the queue's third row; does NOT precede pose normalization)* | **CODER** | **A · restore `O`** — the header is ADR 0024's own `O : Source ⟶ Result` with the MAP deleted; the word is already computed at `specimenModel.ts:137`; absence stays a TRUE absence; **the glyph is the designer's, not yet given.** **B · BOUND the walk panel** — her `A.1` reaching a second surface; *a log that truncates AND clips shows one entry and looks like it shows two* ⇒ the bound and the ordinal are ONE cure at two grains. **C · the missing guard** — ✔ **three tables of the same six strings: `writtenFormModel.ts:151` and `handGestureModel.ts:49` are keyed by the closed `ImmersedSurfaceKey` (`src/lib/surfaceImmersion.ts:59`); `specimenModel.ts:80` is `Record<string, string>` with `?? model.surface` at `:136`.** |
-| **the register question** (strip vs top edge) | **DESIGNER** | routing pre-wired; one producer either way |
-| ~~**③** the GIVEN name of an identified class~~ | ✅ **NOT A BLOCKER — the researcher ruled `2026-09-02_0104` that ③ is not a face of the register question and BOTH its halves already have standing rulings** (the collapse-point designation = `STAMP R-1` Q1; GIVEN-vs-DERIVED = the YIELD/COEXIST seam, `RULING_A_BORN_ENTITYS_NAME…` §0a addendum). ⇒ ⛔ **The christening region is UNBLOCKED.** *(If the board wants them consolidated, that is a charter — offered, not taken.)* |
-| ✅ **`docs/adr/0029` — THE DESIGNATION DOCTRINE: FILED AND RATIFIED** | **researcher wrote · mothership ratified · ⛔ CODER: it is UNTRACKED** | ✔ **Ratified against the charter's own acceptance, its four cited lines re-run at my hand.** **From ratification 0029 is canonical and the `.handoff/` durables are its PROVENANCE.** ⛔ **`git cat-file -e HEAD:docs/adr/0029-…md` → UNTRACKED; not gitignored ⇒ a plain `git add`. It rides the coder's next commit (`MARKER M-1b`).** ★ **§3.2's FALLBACK LAW — *a fallback may end in an ABSENCE, never in a TOKEN* — re-grounds `M-1` part C from type-hygiene to a name-slot violation.** **§5 names three gaps: the picker/reference scope (⇒ chartered as a 0029 amendment, unhurried) · the order-description surface (⇒ the designer's, already hers) · the exchange doctrine's clause (⇒ stays pending).** |
-| ✅ **ORDER: ONE STRATUM, TWO SPECIES — no re-rank** | **researcher, accepted** | **The ORDINAL reading (which-came-first; individuates even perfectly commuting acts; carrier = the record's append order) and the COMMUTATOR reading (route-dependence; carrier = the holonomy; what Stations 2–3 and the 4-door walk read), with the ordinal as the degree-zero case.** ⇒ **The rhyme I kept noticing is real and now has its two names.** |
-| ✅ **`STAMP M-2` + `MARKER M-2a` — ARMAN RULED (a): clauses 1+2 ONLY** | **CODER** *(behind `M-1`)* | ✔ **Δ50, verbatim: *"my answer for the pick is option (a)"*** ⇒ **CONFIRMED: the face picker joins `emphasizedIds`, both directions.** ⚠ **The defect, on her before/after drive: the select changes, the panel speaks a correct refusal, and the solid is IDENTICAL. The channel exists and is bidirectional by its own comment (`CorrespondenceRing.tsx:22`) — the cure is a WIRING.** ⛔ **AND HIS RULING STRIPS THE AUTOMATIC ARM FROM HER PRICE CAVEAT: if 1+2 costs what 3 costs, REPORT IT AND STOP — it returns to him.** ***A person's scope ruling is not a price input.*** |
-| ⛔ **CLAUSE 3 — the pick ON the shape: DEFERRED, NOT DECLINED** | **ARMAN** | **His own word in the option he chose is *"for now."*** ⇒ **His original ask stands open and unbuilt: *"why not letting the user choose the faces they want to identify ON THE SHAPE so they know what they are doing."*** ⛔ **The picker's landing (six identical options → six distinct strings) answered the LIST half only.** ⚠ **ONE MEASUREMENT COULD CHANGE THE QUESTION: are the solid's faces individually addressable in the render? If NO, clause 3 may be UNREACHABLE — asked of the coder as a finding either way, because he would want that rather than an indefinite deferral.** |
-| ⚠ **FOUR ARCHIVE CONVENTIONS ON DISK** | **whoever owns the wire** | ✔ Measured: `.handoff/inbox/_archive/` (what `INBOX_CONVENTION.md` prescribes) · `<seat>/archive/` (mothership · coder · researcher) · `<seat>/_archive/` (mothership · coder · designer · hermeneutics) · technical-officer: neither. ⛔ **And I split my own archive across two of them tonight by obeying the convention literally.** **A wire-level *two producers of one fact*; recorded so it stops being folklore.** |
-| **the CARD's two cures — NOT chartered, waiting on her** | **DESIGNER** | ✅ **She drove it: `4-gon ⟶ Torus (T²)` confirmed at her eye, and THE TRACE IS ALREADY ON THE CARD one line away** ⇒ **(1) the RE-ORDERING** (her wording, on a screen) · **(2) the ORDINAL** — `w${seq}` welds a lawful ORDINAL to a forbidden NAMESPACE and `apertureModel.ts:708` strips both. ⛔ **Her §6 is the frame: *the header problem is WHAT KIND, the anonymity problem is WHICH ONE — a trace answers the first and cannot answer the second.*** |
-| ⚠ **available, UNOWNED:** does any person-facing route let him COMMIT an act whose refusal is nameable at pick? | **nobody yet** | the researcher's Q2 tail. ⛔ **Not ahead of the coder's un-pause queue.** |
-| **the SW four-door commutator walk** (T³ control first, as a ROUTE test) | **ARMAN** | the order arc's phenomenon; rooms exist at HEAD |
-| ★ **LIVE-OBJECT SWEEP of the maps and plans** *(Arman's queue add, 2026-09-01: "update the maps and plans we have at hand and as live objects")* | **SEVENTH MOTHERSHIP** | ✅ **DISCHARGED at `1b7245f`.** Sixth's half: `THE_SEAT_MAP` · this board · `PLAN_THE_ORDER_STRATUM`. **Seventh's half, all four stamped with measured kills BY PATH:** `THE_SUBSTRATE_MAP` (8 dead figures + 2 missing substrate entries + 1 routed contradiction) · `PLAN_THE_RENDER_GATE` (no longer the front; `112 @ 1` dead; the sanctioned-SEVEN line dead; R-1…R-6 statused) · `PLAN_THE_LAST_PHASE` (the through-line does not know 4 ratified arcs; 2 unmarked stale bullets under a SUPERSEDED block) · `BACKLOG` (confirmed retired; **no orphan** — the pairwise check run). **Standing thereafter: regenerate at every front change.** |
-| **REGENERATE `THE_SUBSTRATE_MAP` — a real re-walk** | ⛔ **CODER** | **NOT the mothership's: regenerating it means driving the app, and this office cannot measure.** The staleness stamp at its head names every dead line by path; **`scripts/dev-advance.cjs` + the go-stale watcher + `ZOO_ROOMS`' five rooms have NO entry at all.** |
-| **measure: does `apertureModel.ts:26-30`'s S³/H³ refusal still hold?** | ⛔ **CODER** | a source COMMENT and `b3328f5`'s committed report disagree about what is built. ⚠ **The mothership read the comment and did not drive the transport — routed as a question, ruled by nobody.** |
-| **REWRITE `PLAN_THE_LAST_PHASE`'s through-line** (its own law: rewritten, never appended) | **MOTHERSHIP** | stamped, not rewritten — deliberately: a rewrite re-ranks the campaign and the ranking belongs on this board. **Owed, named rather than done half.** |
-| **seat the new CODER** | **ARMAN** | ✅ **THE PACKET IS WRITTEN: `.handoff/INITIATION_CODER_THE_ORDER_SEAT.md`** — paste its top block as their first message. Untracked ⇒ it joins `W2`'s subject and is unprotected until a coder can carry it. ⛔ **Its Appendix B discloses that I fabricated that appendix before the Gate ran and that the Gate caught it — filed at claims-ledger §36 and left standing in the packet deliberately.** |
-| **track `INITIATION_CODER_THE_ORDER_SEAT.md`** | **CODER** | a fourth `!` negation beside `W2`'s three; ✔ same freeze receipt applies (no manifest row names `.gitignore` or any `.handoff` path) |
+| **REWRITE `PLAN_THE_LAST_PHASE`'s through-line** (its own law: rewritten, never appended) | ⛔ **MOTHERSHIP** | **⇒ NOW UNBLOCKED BY §2: I held it deliberately, because a rewrite re-ranks the campaign and the ranking belongs on this board first. §2 exists now.** ⚠ **The through-line does not know four ratified arcs and carries two unmarked stale bullets under a SUPERSEDED block.** |
+| **WRITE THE INSTRUMENT-REPAIR CHARTER** — one charter, both legs + the canary | ⛔ **MOTHERSHIP** | **§2 row 3. Ruled as the gate; not yet written.** ⚠ **The canary's CURE is mechanism and the coder's; that it NEEDS one is mine and is made.** |
+| **`M-1` part C** | **CODER** | ✅ **Δ51 sanctioned, `MARKER M-1d` filed.** ⛔ **ONE-TIME, ONE FILE, ONE SPEND — `CLAUDE.md:135` stays at five** (✔ re-read at `f18d656`: still exactly five). **If the cut reaches outside the file they STOP again.** |
+| **the `faceDisplayName` WHICH-slot sweep** | **CODER** *(unchartered)* | ⚠ **`Panels.tsx:3427` hands `faceDisplayName` into a field named `displayName` on a `CellFaceRow`. If those rows feed a person-facing WHICH-slot that is the 1555 ruling violated at a second surface.** ⛔ **I read the function, NOT what consumes its rows. NOT calling it a defect.** |
+| **THE CARD IS UNLEARNABLE BY EXPERIMENT** — `— show it` on every door | **CODER** *(unchartered; designer ruled)* | ⚠ **Her drive: five headings identical in size-class, letter-spacing, weight and colour; THREE open; `cursor` the only difference.** ⇒ ***"Trying `the checks` teaches 'headings are inert' — false for three of five. Trying `the measures` teaches 'headings open' — false for two. Every sample a person can take supports a false generalisation."*** ⇒ ⛔ **Not a missing affordance — a missing affordance leaves him IGNORANT; this leaves him CONFIDENTLY WRONG, and the card's own uniformity supplies the confidence.** ⚠ **`the field`'s bordered chip LEFT ALONE: a different destination may carry a different mark; her one unspent press settles it.** |
+| **THE ORDINAL — into a WHICH-slot, never the title** | **CODER** *(unchartered; designer ruled)* | ✅ **RULED: the ordinal lives in the REFERENCE register.** ⚠ **Her drive: `w1 w2 w3` → remove `w3` → round-trip → next is `w4`.** ⇒ ★ ***It is a RECORD ordinal, not a page position — so the words are `the fourth you MADE`, never `the fourth on this page`, and NO SOURCE READING SEPARATES THOSE TWO. The removal drive is what did.*** ✔ **The kind-word stays out on measurement: `seq` is page-wide across kinds.** ⚠ **She holds the exact string until she sees a `Source` slot; I am not asking sooner.** |
+| **REGENERATE `THE_SUBSTRATE_MAP`** | ⛔ **CODER** | **needs a drive; this office cannot measure.** ⚠ **`scripts/dev-advance.cjs` · the go-stale watcher · `ZOO_ROOMS`' five rooms have NO entry at all.** |
+| **measure: does `apertureModel.ts:26-30`'s S³/H³ refusal still hold?** | ⛔ **CODER** | ⚠ **a source COMMENT and `b3328f5`'s committed report disagree about what is built.** ⛔ **I read the comment and did not drive the transport — routed as a question, ruled by nobody.** |
+| **is the standing dev server still the one started at `1b7245f`?** | **ARMAN** | ⚠ **the second P-1 seal's precondition.** ⛔ **This office has NO instrument for it** — its shell is a sandbox with his filesystem mounted, not his network. ⚠ **And the seal it gates is VOID by topology anyway (§5); the question survives only as hygiene.** |
+| ⚠ **FOUR ARCHIVE CONVENTIONS ON DISK** | **whoever owns the wire** | ✔ Measured: `.handoff/inbox/_archive/` (what `INBOX_CONVENTION.md` prescribes) · `<seat>/archive/` · `<seat>/_archive/` · technical-officer: neither. ⛔ **And I split my own archive across two of them by obeying the convention literally.** **A wire-level *two producers of one fact*; recorded so it stops being folklore.** |
+| ⚠ **the measured/heuristic DISTRIBUTION** | **nobody — UNOWNED, not queued** | ⚠ **The coder is right that it is not one query: it is a distribution over what a person BUILDS.** **The designer's asymmetry flag stands unresolved and honestly so.** |
+| ⚠ **available, UNOWNED:** does any person-facing route let him COMMIT an act whose refusal is nameable at pick? | **nobody yet** | the researcher's Q2 tail. ⛔ **Not ahead of §2.** |
+| **the `wt/*` → strip hop** | **nobody — LEFT STANDING, dormant** | ⛔ **RULED: do NOT manufacture a `wt/*` advance to fire it.** *A guard that stops firing stays standing; removed only when every condition it stands for has stopped* — and a future worktree-seated session re-creates this one. **TRIGGER: the next `wt/*`-seated session sights the strip at its first landing.** |
 
-## §5 · THE ARCS — unchanged in content, restated for the seventh
-1. **`PLAN_THE_ORDER_STRATUM`** (`O-1`, live front) — remaining live station is 3; its next act is a WALK, not a build.
+---
+
+## §5 · ✅ CLOSED — with the law each bought
+
+**THIS CYCLE (three build commits, `75ce492` → `f18d656`):**
+
+- ✅ **`W2` + `W1` + the fourth negation — LANDED `75ce492`, in history at `3ec6bc2`.** ✔ **Re-measured at my own hand at `f18d656`: all four packet files TRACKED** (`THE_FRONT_BOARD` · `HANDOFF_..._V4` · `OPENING_THE_SEVENTH` · `INITIATION_CODER_THE_ORDER_SEAT`). ★ **The packet teaching *an untracked file is an unprotected file* was itself ignored at `.gitignore:34` — the coder MEASURED that and refused to improvise a fourth negation against `W2`'s "exactly as written".** ⇒ ***The boundary working.*** ⛔ **Non-amendment stays ⚠-on-their-report: a presence test cannot prove an absence of edits, and that is the class `W1` runs on trust for.**
+- ✅ **THE POSE NORMALIZATION — `c6ef2f8`.** ⚠ **A lifted cube face drew as a vertical SLIVER beside a card reading `rim turn · 90° ×4`; face-on after; both frames at their eye.** ★ **Their charter statement is the keeper: appearance angle read as GAUGE under ADR 0028 — carrying nothing of his act — with invoked primitives as the map's FIXED POINTS and non-planar bodies ruling null.** ⇒ ***A ruling that names what it does NOT move is worth more than one that only names what it does.***
+- ✅ **`M-1` A + B and `M-2` 1+2 — `fef8fe9`.** ⚠ **`abAB : 4-gon ⟶ Torus (T²)`, her weights DOM-measured (700/400/700/400/700); the wordless header byte-as-before on invoked cards ⇒ the TRUE-ABSENCE clause holds.** ⚠ **Five colliders, exactly ONE lit, the lit mesh carrying 3 vertices; hover-on-solid bolds the select — one channel both ways.**
+  > ### ★★★ **AND THE BEST THING IN EITHER REPORT: their first bound used `calc(100dvh − 66px)` AND HER CASE FALSIFIED IT** — the panel's true top is 106, not 54, and a lens caption runs three lines. ⇒ ***A constant was replaced by a measurement because a SECOND OFFICE'S case was allowed to kill it.*** **That is `enumerate from the screen, never from a constant` operating BETWEEN two seats rather than inside one.**
+- ✅ **ADR 0029 — THE DESIGNATION DOCTRINE: filed, ratified, and ✔ TRACKED at `f18d656`** (`git cat-file -e HEAD:docs/adr/0029-…` succeeds). ★ **§3.2's FALLBACK LAW — *a fallback may end in an ABSENCE, never in a TOKEN* — re-grounded `M-1` part C from type-hygiene to a name-slot violation.** ⚠ **§5's three gaps stand: the picker/reference scope (chartered as an amendment, unhurried) · the order-description surface (the designer's) · the exchange doctrine's clause (pending).**
+- ✅ **THE RESTATED SWEEP CENSUS — DELETED, never updated.** ✔ **Re-read at `f18d656`: `CLAUDE.md:118-122` now says *"The census lives in that line and nowhere else (this file once restated it, twelve lines under the law forbidding that, and the copy drifted exactly as the law predicts)."*** ⇒ ***The cure kept the scar.***
+- ✅ **THE `4 CORNERS` vs TWELVE-NAMES ITEM — DISCHARGED by trace, not by guess.** ⚠ **Its origin was the designer's `1539`: the aperture's face picker offering SIX identical `unnamed · 4 corners` while the MAP picker THREE LINES BELOW individuated seven.** ⇒ ***The contradiction was never two strings — it was ONE PANEL HOLDING BOTH BEHAVIOURS***, and the picker cure closed it. ⛔ **I had put it on this board as unresolvable and routed it downstream; it was in my own archive.** ⇒ **What survives is §2 row 2, a sweep with a name rather than a contradiction with none.**
+- ✅ **THE `§4/§5 ONE-LINERS` SHORTHAND — resolved by one grep to the designer's `1728` letter.** ⛔ **Same failure as above, same cure: consult your own record before routing an unresolvable.**
+- ✅ **ORDER: ONE STRATUM, TWO SPECIES** *(researcher, accepted)* — **the ORDINAL reading** (which-came-first; individuates even perfectly commuting acts; carrier = the record's append order) **and the COMMUTATOR reading** (route-dependence; carrier = the holonomy; what Stations 2–3 and the 4-door walk read), **with the ordinal as the degree-zero case.** ⇒ **The rhyme I kept noticing is real and now has its two names.**
+- ✅ **③ — NOT A BLOCKER.** ⚠ **The researcher ruled `0104` that both its halves already have standing rulings.** ⇒ **The christening region is UNBLOCKED.**
+
+**EARLIER, STILL LOAD-BEARING:**
+
+- ✅ **THE LAG CLASS, whole.** START-stale at `f3d35f6` · GO-stale at `cd55e9b` · **P-1 ratified.** ⛔ **THE SECOND P-1 SEAL IS VOID BY TOPOLOGY CHANGE — not falsified, not passed.** ✔ **Verified at my own hand on clean bytes: a MAIN-checkout commit makes the `wt/*` tip an ancestor of HEAD ⇒ `kind:'none'` ⇒ `{behind:false,kind:'current'}`.** ⇒ ***The strip will be SILENT and the silence is the producer being RIGHT — a THIRD outcome; never read it as either of the other two.***
+- ⛔ **THE INSTALL LAWS, bought in one evening:** *a cure that ships inside the commit it delivers cannot bootstrap itself — the charter names the bootstrap act* · *a cure in a long-running process installs at RESTART — a seal about a running process names the commit the process was STARTED from* · *an instrument is not read-only because you intend a read — price its internal calls before running it on the live substrate.*
+- ⛔⛔ **THE PICK DEFECT RESTS ON ONE OFFICE'S MEASUREMENT.** ⚠ **The designer WITHDREW her eleven-probe "the square is unselectable": her projection used `object.getWorldPosition()` — the GROUP'S ORIGIN, not the drawn centre — putting the probes 200–280 px off.** ⇒ **The coder's inverted reproduction is UNTOUCHED and is now the ONLY evidence.** ⛔ ***"Both of us saw it" may not stand anywhere in the record.*** ★ **The law, for every seat: *a positive control is not a one-time thing; an instrument validated once and carried forward is an assumption wearing a measurement's clothes.***
+- ✅ **Stations 0/1/2 of the order arc closed; Station 4 dead.** ✅ **Rungs 1–2 of the render gate closed at Arman's own hand** — and ★ **rung 2 closed on the SECOND walk; the first REJECTED it, and that rejection bought the reading.**
+
+---
+
+## §6 · THE ARCS
+
+1. **`PLAN_THE_ORDER_STRATUM`** (`O-1`) — remaining live station is **3**; its next act is a **WALK, not a build**.
 2. **THE MEANING ARC** (`SEAL_THE_MEANING_CLAIMS.md`, 13 clauses + Amendment 1) — the frame every card and certificate is judged against; C3 three-grained (GAUGE · MEANING · CLASSIFICATION).
-3. **`PLAN_THE_RENDER_GATE`** — rungs 1–2 closed at Arman's hand; remainder is INHABITING (rungs 3–4).
-4. **THE DECLARED END** (Δ43) — the semantic connection layer; `ADR 0028` holds its refinement law. ⛔ Not chartered as work; the op-set must not bend toward it.
-5. **THE COMMISSION'S PREDICTION LEDGER** — cheap cross-cutting measurements; the prediction clause is its anti-drift wall.
+3. **`PLAN_THE_RENDER_GATE`** — rungs 1–2 closed at Arman's hand; **remainder is INHABITING (rungs 3–4)** ⇒ **gated on §2 row 3.**
+4. **THE DESIGNATION ARC** (ADR 0029 + the card's cures) — **newly a first-class arc rather than a scatter of card rows**; §2 rows 2 and 4 are its front.
+5. **THE DECLARED END** (Δ43; `ADR 0028` holds its refinement law). ⛔ **Not chartered as work; the op-set must not bend toward it.**
+6. **THE COMMISSION'S PREDICTION LEDGER** — cheap cross-cutting measurements; the prediction clause is its anti-drift wall.
 
-## §6 · THE STANDING RULES THAT KEEP THIS FILE HONEST
+---
+
+## §7 · THE STANDING RULES THAT KEEP THIS FILE HONEST
 - ⛔ Before re-sequencing a seat: **LIST THEIR INBOX and ask what they are HOLDING** — an inbox tells you what you SENT; supersede a stack explicitly, never add to it.
 - ⛔ **Every sanction names the measurement that would falsify its premise, and that measurement runs FIRST.**
 - ⛔ **An office with unread mail has not been WOKEN.** Arman is the router; this board reports, it does not summon.
+- ⛔ **A row that no seat can discharge comes OFF the owed list and is named as dormant** — *an owed item nobody can discharge is a dropped ball with a date on it.*
+- ⛔ **Before routing an item as unresolvable, GREP YOUR OWN ARCHIVE.** ★ **Bought twice in one night, both times by me: `4 corners` and the `§4/§5` shorthand were each one search away in mail I had already received.**
 - ⛔ **A self-installing cure names its own bootstrap act** · **a seal about a running process names the commit it was started from** · **an instrument is not read-only because you intend a read.**

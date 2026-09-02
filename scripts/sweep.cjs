@@ -57,6 +57,25 @@ const ACCEPTED_FAILURES = new Set(['scripts/diagnose-dual-inspection.cjs']);
 // generous ceiling per leg — far above the slowest measured leg, well under
 // the old ten-minute wall; a TIMEOUT prints as its own word, never a bare FAIL
 const LEG_TIMEOUT_MS = 420_000;
+// STAMP I-1 clause 3 — THE CONTENTION CANARY'S CURE: a leg whose honest
+// runtime sits near the default ceiling (the ~312s field leg had ~35%
+// headroom) goes RED under co-load not by failing but by being KILLED — and
+// a red whose colour depends on load teaches its readers that a red is a
+// re-run, which is the end of the sweep as a witness. So a leg may DECLARE
+// its own ceiling in its head (`SWEEP-CEILING: 900s`) — classification BY
+// THE LEG'S OWN DECLARATION, the same law the drive-family fold rides —
+// and the sweep honours it for that leg alone. A hang still dies, at the
+// stated ceiling; a breach still prints TIMEOUT by name in the verdict.
+function ceilingOf(leg) {
+  try {
+    const head = fs.readFileSync(path.join(repoRoot, leg), 'utf8').slice(0, 2048);
+    const m = head.match(/SWEEP-CEILING:\s*(\d+)s/);
+    if (m) return Number(m[1]) * 1000;
+  } catch {
+    /* an unreadable head falls to the default ceiling */
+  }
+  return LEG_TIMEOUT_MS;
+}
 // cpus−1 (one core left for the OS): measured on this 4-core box — at
 // cpus/2 (=2 workers) the wall was ~340s because everything that is not the
 // one 233s leg ran serially beside it; at 3 workers the 233s leg IS the wall.
@@ -65,6 +84,7 @@ const WORKERS = Math.max(2, os.cpus().length - 1);
 function runLeg(leg) {
   return new Promise((resolve) => {
     const started = Date.now();
+    const ceiling = ceilingOf(leg);
     const child = spawn(process.execPath, [path.join(repoRoot, leg)], {
       cwd: repoRoot,
       stdio: ['ignore', 'ignore', 'ignore'],
@@ -73,7 +93,7 @@ function runLeg(leg) {
     const killer = setTimeout(() => {
       timedOut = true;
       child.kill('SIGKILL');
-    }, LEG_TIMEOUT_MS);
+    }, ceiling);
     child.on('close', (code) => {
       clearTimeout(killer);
       resolve({ leg, ok: code === 0 && !timedOut, timedOut, seconds: (Date.now() - started) / 1000 });
@@ -111,8 +131,15 @@ async function main() {
   console.log(`\nslowest: ${slowest.map((r) => `${r.leg.replace(/^scripts\/(app-leg\/)?diagnose-/, '')} ${r.seconds.toFixed(0)}s`).join(' · ')}`);
   console.log(`wall: ${((Date.now() - started) / 1000).toFixed(1)}s (sum of legs ${results.reduce((s, r) => s + r.seconds, 0).toFixed(0)}s)`);
 
+  // I-1 clause 3: a timeout wears its own word IN THE VERDICT LIST too —
+  // the per-leg row already said TIMEOUT, but the row scrolls and the
+  // verdict is what gets read; a killed leg listed as a bare fail sends its
+  // reader hunting a broken assertion that does not exist.
+  const timedOutSet = new Set(results.filter((r) => r.timedOut).map((r) => r.leg));
   const failed = results.filter((r) => !r.ok).map((r) => r.leg).sort();
-  const unexpectedFails = failed.filter((leg) => !ACCEPTED_FAILURES.has(leg));
+  const unexpectedFails = failed
+    .filter((leg) => !ACCEPTED_FAILURES.has(leg))
+    .map((leg) => (timedOutSet.has(leg) ? `${leg} (TIMEOUT)` : leg));
   const missingAccepted = [...ACCEPTED_FAILURES].filter((leg) => !failed.includes(leg));
 
   console.log(`\n${legs.length} files · expect exactly ONE fail: diagnose-dual-inspection`);

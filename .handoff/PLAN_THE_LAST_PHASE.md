@@ -1,89 +1,86 @@
 # THE LAST PHASE — the plan
 
-**Mothership (6th) · REWRITTEN 2026-08-24 (clock-read) · HEAD `f06eb84`.** *(Prior copy: the 5th's, 2026-08-20 at `1e09f36` — full text in git. It predated the walk's closure at Arman's own hand, persistence, the whole legibility close-out, the engineer seat's dissolution taking effect in the wire, rung 2's build, the BACKLOG's retirement, and Δ14–Δ18.)*
+**Mothership (7th) · REWRITTEN at `f18d656`** *(`git log --oneline -1` at my own hand; branch `team-arman`).*
+*Prior copies, full text in git: the 6th's at `f06eb84` (committed `a92fea0`), stamped-not-rewritten by me at `1b7245f`; the 5th's at `1e09f36`.*
 
-*This is a PLAN — forward-looking. When it changes it is REWRITTEN, never appended. History lives in git and the two ledgers (`THE_CLAIMS_LEDGER.md` = grounds + kill-conditions · `THE_SOVEREIGN_LEDGER.md` = his words verbatim). The render detail lives in `PLAN_THE_RENDER_GATE.md` (the active sub-plan). ⛔ **`BACKLOG.md` IS RETIRED** — Arman-approved with its condition (`THE_SOVEREIGN_LEDGER.md` Δ16.3: *"approved: but before retiring backlog, you should check for what is forgotten from it altogether"*), swept whole before retirement; the disposition is `PLAN_THE_RENDER_GATE.md` §THE-BACKLOG-SWEEP. **The plan is now the ONE queue: no item lives in only one place, and none is duplicated in two.***
+*This is a PLAN — forward-looking. When it changes it is **REWRITTEN, never appended**. History lives in git and the two ledgers (`THE_CLAIMS_LEDGER.md` = grounds + kill-conditions · `THE_SOVEREIGN_LEDGER.md` = his words verbatim). **The IMPLEMENTATION ORDER lives on `THE_FRONT_BOARD.md` §2 and nowhere else** — this file holds WHAT and WHY; that board holds WHEN and WHO. The render detail lives in `PLAN_THE_RENDER_GATE.md`. ⛔ **`BACKLOG.md` IS RETIRED** (Δ16.3, swept whole before retirement; disposition in `PLAN_THE_RENDER_GATE.md` §THE-BACKLOG-SWEEP).*
+
+> ### ⇒ **WHY THIS REWRITE EXISTS, and it is not a housekeeping note.**
+> **I stamped this file at `1b7245f` instead of rewriting it, and said so in the stamp: *a rewrite of the through-line would re-rank the campaign, and the ranking belongs on the board.*** ⇒ ✅ **`THE_FRONT_BOARD.md` §2 now carries that ranking explicitly, so the block is gone and the debt is paid here.**
+> ⚠ **THE MARK CONVENTION HOLDS THROUGHOUT: ✔ = I ran or read it at a named SHA · ⚠ = it stands on another seat's report.** ⛔ **Never a ⚠ inside a ✔.** ★ **And a standing property of this office rather than a caveat on one line: *a code reading is all I have.* Every ⚠ below is provisional in a way a drive-sighting is not.**
 
 ---
 
-> ## ⛔⛔ Δ47 SWEEP — THE THROUGH-LINE, AMENDED BY THE SEVENTH AT `1b7245f`
-> **This file's content stood at `f06eb84` and was last committed at `a92fea0`. Its own standing rule — *when the sub-plan's front moves, this file's through-line is checked in the SAME sitting or it is not a plan* — has failed again; the previous failure is recorded in this file's own §1 amendment box (*"the front has moved SIX times since this text was written and I opened this file none of those times"*). This time it is more than a front move.**
->
-> ### ⇒ **✔ MEASURED, so "does not know they exist" is not a flourish:** `git show 1b7245f:.handoff/PLAN_THE_LAST_PHASE.md | grep -ci <term>` returns **`0`** for every one of: `ORDER_STRATUM` · `order stratum` · `SEAL_THE_MEANING` · `0026` · `0027` · `0028` · `gauge` · `individuat`.
->
-> ### ⇒ **WHAT THE THROUGH-LINE IS MISSING** *(each ratified, each in the record, none of it below)*
-> 1. ⛔ **THE MEANING DIAGNOSIS, and it outranks every clause in §The-through-line.** ✔ **Arman's own words, quoted in `.handoff/HANDOFF_THE_MOTHERSHIP_SEAT_V4.md` §1 (*"The live diagnosis"*):** *"the difference between one torus resulted from square 1 and a torus from a completely different square, are almost identical right now. nothing individuates the forms relative to each other on the meaning level… the whole meaning surfacing in the manuscript is sick right now."* ⇒ **Ratified as the frame in `.handoff/SEAL_THE_MEANING_CLAIMS.md`** (13 clauses + Amendment 1): ***a form's reading must NAME WHAT IT IS A READING OF; the classification is the CONSEQUENCE, the trace is the SUBJECT.*** ⇒ **The through-line below carries FOUR `Can they…` bullets plus the Δ18 clause** (✔ `grep -c '^- \*\*Can they'` → `4`); **this is a SIXTH, and it is the live one.**
-> 2. ⛔ **THE ORDER ARC — `PLAN_THE_ORDER_STRATUM.md` (`O-1`), the live front.** Stations 0/1/2 closed; **Station 4 dead**; **Station 3 remains and its next act is a WALK, not a build.** ⚠ **Station 4's cause on the record** (`.handoff/THE_FRONT_BOARD.md` §2 and `HANDOFF_…_V4.md` §3): *on a non-orientable form a consistent direction does not exist* — **the researcher's ruling, ⚠ on their report, not measured by me.** ✔ **This file names none of it** (the grep above).
-> 3. ⛔ **THE GAUGE READING — `ADR 0028` (Proposed).** The engine is a discrete gauge theory: LAW 20 is covariance · the trap family are gauge artifacts · deck-fit is flatness · ***THE RECORD IS THE WRITTEN GAUGE***, which is WHY the record is load-bearing. **`ADR 0026` (the non-cube domain) and `ADR 0027` (death-is-exhaustion) also postdate this text.**
-> 4. ⛔ **THE DECLARED END (Δ43), which §4 HORIZON does not name:** ✔ Arman, hedge preserved — the semantic connection layer is *"one of its major goals for sure if not its sole ultimate end."* ⛔ **Not chartered as work, and the op-set must not bend toward it. It is what the other arcs are FOR.**
->
-> ### ⇒ **✔ MEASURED DEAD, by path**
-> - ⛔ **§1's last two bullets sit BELOW a `(SUPERSEDED)` block and are NOT marked** — a reader landing there reads **"⛔ R1 STILL OWED"** and **"RUNGS 3–4 — Queued behind rung 2"** as live. ✅ **R1 is CLOSED** (`74be04c`/`026d499`), as §1's own amendment box says in its item 3. ✅ **Rung 2 is CLOSED** (Δ19), so nothing is queued behind it. ⇒ ***Two lines in one file contradicting each other is this file's own recorded disease, and it is still here.***
-> - ⛔ **§3 THE TAIL: *"`THE_SUBSTRATE_MAP.md`'s regeneration (Δ16.3 — the coder's, chartered)"*** ⇒ **it WAS regenerated (committed `2b80fae`) and is stale AGAIN — I stamped its dead lines by path at `1b7245f` and re-routed the regeneration to the coder.** **The row stays live; its referent has moved.**
-> - ⛔ **§4 THE HORIZON: *"Its first question is asked and unanswered: what is a BORN entity's name?"*** ⇒ ✅ **RULED — the researcher's, and `PLAN_THE_RENDER_GATE.md`'s §CLOSED table carries it verbatim: *"the four naming cases complete: CARRIED · COMPOSED · GIVEN · BORN(=`unnamed`)"*, with the NAME-SLOT LAW (the machine never fills the slot).** ⚠ **On the record, not my measurement.** ⛔ **The live successor question is the researcher's ③, carried on `THE_FRONT_BOARD.md` §4, and it is Arman's own:** *what is the point of collapse where `v1=v2=v3=v4` CALLED, and how does a GIVEN name stand to its DERIVED composition?* ⛔ **Nothing builds in the christening region before it is ruled.**
-> - ⚠ **NOT SWEPT, and that is a scope statement rather than a ✔: §The-bounds and §The-drift-guards were not audited by me and nothing above kills a line in either.** ⛔ **Several bounds are substrate claims** (*"π₁ is not computed and not shown"*, *"No mask-based chirality counter"*) — **those are the coder's to confirm, not mine, and I did not.**
->
-> ### ⇒ **THE THROUGH-LINE AS IT ACTUALLY STANDS AT `1b7245f`**
-> **Can they DO it? ✅ · Can they KNOW it? ✅ · Can they SEE it? ✅ both rungs, at his hand · Can they INHABIT it? ⛔ rungs 3–4** *(⚠ **"buildable and uncharTERED" is this file's own §1 amendment item 4 — *"RUNG 3 IS BUILDABLE AND NOBODY HAS CHARTERED IT"* — carried, ⚠ on the sixth's word, not re-measured by me*) **· Can they DO THE READING THEMSELVES? ⛔ live (Δ18) · ⛔⛔ AND — CAN THE READING NAME WHAT IT IS A READING OF? THE MEANING ARC, and it is the front's own ground.**
->
-> ⚠ **I have STAMPED rather than REWRITTEN, against this file's own "rewritten, never appended" rule, and the reason is a boundary: a rewrite of the through-line would re-rank the campaign, and the ranking is on `THE_FRONT_BOARD.md` where it belongs. ⇒ The rewrite is owed and it is mine — it is not owed to anybody else, and I am naming it rather than doing it half.**
+## THE THROUGH-LINE
 
-## The through-line
+**The engine is complete, and so are the person's HANDS, the FAITHFUL BODY, and the CONFORMAL SUBSTRATE. What remains is the last of the person's reach.**
 
-The engine is complete, and so are the person's HANDS, the FAITHFUL BODY, and the CONFORMAL SUBSTRATE.
-**What remains is the last of the person's reach — and this rewrite exists because the gate's own third clause has moved:**
+- **Can they DO it?** ✅ **closed.**
+- **Can they KNOW it?** ✅ **closed.**
+- **Can they SEE it?** ✅ **CLOSED — both rungs, at his own hand.** Rung 1: *"i did walk it. all is good"* (Δ9). Rung 2: *"walk is done, all seems well"* (Δ19), ⚠ hedge preserved. ★ **And rung 2 closed on the SECOND walk — the first REJECTED it, and that rejection bought the reading. A gate that has never refused has never been a gate.**
+- **Can they INHABIT it?** ⛔ **OPEN — rungs 3–4, the curved transports and the arbitrary orbit.** **ADR 0025 §7.2 named its content in advance: the inhabited experience (*comes back* · *the rim never arrives*) is exactly what a still cannot carry**, with rung 1's ratified `back where you started · N doors` banked as its port. ⛔ **AND IT IS GATED — see the ruling under §1.**
+- **Can they DO THE READING THEMSELVES?** ⛔ **OPEN (Δ18).** *"To ring a vertex is nothing but a little ring the designer has drawn around a vertex."* **We drew the person's act and printed its answer.** ⇒ ***A COUNT IS OUR PROOF-TOKEN; THE MARK IS WHAT THE THING DOES.***
+  > ⇒ ⛔ **SHARPENED 2026-09-02, and the sharpening reorders the clause's own inside: BEFORE a person can DO the reading, he must be able to FIND it.** ⚠ **The designer's drive on the argument card: five headings, identical in size-class, letter-spacing, weight and colour; THREE of them open; `cursor` is the only difference.** ⇒ ***"Trying `the checks` teaches 'headings are inert' — false for three of five. Trying `the measures` teaches 'headings open' — false for two. EVERY SAMPLE A PERSON CAN TAKE SUPPORTS A FALSE GENERALISATION."*** ⇒ ⛔ **This is not a missing affordance. A missing affordance leaves him IGNORANT; this leaves him CONFIDENTLY WRONG — and the card's own uniformity is what supplies the confidence.**
+- ⛔⛔ **CAN THE READING NAME WHAT IT IS A READING OF? — THE MEANING ARC, and it is the front's own ground.**
+  ⚠ **Arman's diagnosis, verbatim** (`HANDOFF_THE_MOTHERSHIP_SEAT_V4.md` §1): *"the difference between one torus resulted from square 1 and a torus from a completely different square, are almost identical right now. nothing individuates the forms relative to each other on the meaning level… the whole meaning surfacing in the manuscript is sick right now."*
+  ⇒ **Ratified as the frame in `SEAL_THE_MEANING_CLAIMS.md`** (13 clauses + Amendment 1): ***a form's reading must NAME WHAT IT IS A READING OF; the classification is the CONSEQUENCE, the trace is the SUBJECT.***
+  > ### ⇒ ★★★ **AND THE CLAUSE NOW HAS ITS CONTENT, which the stamp could only name as a heading. The designer's frame, ratified 2026-09-02:**
+  > ### ***THE HEADER PROBLEM IS "WHAT KIND." THE ANONYMITY PROBLEM IS "WHICH ONE." A TRACE ANSWERS THE FIRST AND CANNOT ANSWER THE SECOND.***
+  > ⇒ **Arman's two tori differ in NEITHER — same kind, and nothing distinguishes which.** ⇒ **The arc's whole job is the second half, and `ADR 0029` (filed, ratified, ✔ tracked at `f18d656`) is its law: GIVEN (person only) · READ/classification (engine, mandatory where derivable) · DRAWN/reference (the record designates WITHOUT naming), with the NAME-SLOT LAW — *the machine never fills the given register* — and §3.2's FALLBACK LAW — *a fallback may end in an ABSENCE, never in a TOKEN.***
 
-- **Can they DO it?** ✅ closed.
-- **Can they KNOW it?** ✅ closed.
-- **Can they SEE it?** ✅ **CLOSED — both rungs, at his own hand.** Rung 1: *"i did walk it. all is good"* (Δ9). **Rung 2: *"walk is done, all seems well"* (Δ19)** — ⚠ his hedge preserved; **and it closed on the SECOND walk, the first having rejected it, which is why it closed honestly.**
-- **Can they INHABIT it?** ⛔ **THE ACTIVE GATE, and it is what remains of the whole plan.** Rungs 3–4: the curved transports and the arbitrary orbit — **and ADR 0025 §7.2 named its content in advance: the INHABITED experience (*comes back* · *the rim never arrives*) is exactly what a still cannot carry, with rung 1's ratified `back where you started · N doors` banked as its port and the FLIP's legibility (measured NOT to read at rest) waiting inside it.**
-- ⛔⛔ **AND THE CLAUSE THIS REWRITE ADDS, bought at Δ18: can they DO THE READING THEMSELVES?** *"To ring a vertex is nothing but a little ring the designer has drawn around a vertex."* **We drew the person's act and printed its answer.** ⇒ ***A COUNT IS OUR PROOF-TOKEN; THE MARK IS WHAT THE THING DOES.***
-
-⚠ **The lesson the 5th's copy recorded — a re-aim not written down is a drift — held, and this file is late by its own law: the front moved five times (walk → persistence → legibility close → rung 2 → the reading) while this text stood at `1e09f36`.** The sub-plan carried it; **this file did not, and that is the two-queue disease in the pair that survived the BACKLOG's retirement.** ⇒ **Standing: when the sub-plan's front moves, this file's through-line is checked in the SAME sitting or it is not a plan.**
+⚠ **AND THIS FILE'S OWN STANDING RULE, which it has now broken twice and which the rewrite does not repeal: *when the sub-plan's front moves, this file's through-line is checked in the SAME sitting or it is not a plan.*** ⇒ ***A re-aim not written down is a drift.*** ⛔ **The 6th recorded its own violation here (*"the front has moved SIX times since this text was written and I opened this file none of those times"*); mine was the stamp-not-rewrite. Both are in git.**
 
 **Arman remains the branch-1 instrument, and rungs close ONLY at his hand.**
 
 ---
 
-## The sequence
+## THE SEQUENCE — what and why *(the WHEN is `THE_FRONT_BOARD.md` §2)*
 
-### 1 · THE RENDER GATE — the explore window *(THE ACTIVE GATE; full detail in `PLAN_THE_RENDER_GATE.md`)*
+### 1 · THE RENDER GATE — the explore window *(detail in `PLAN_THE_RENDER_GATE.md`)*
 
 - ✅ **RUNG 1 — THE E³ WINDOW: CLOSED at his own hand** (Δ9). The winding route + interior transport + blind identification; the fan chamber reads `cone edges (measured): 1 × 300°`. **The carry chain's nine arrows all carried at a person's eye.**
-> ### ⛔⛔ **§1 IS STALE BELOW THIS LINE — AMENDED 2026-08-27 (clock-read) BY THE SIXTH, ON ARMAN'S QUESTION *"where are we regarding our plans?"***
-> **This file's own standing rule (through-line, last ¶): *when the sub-plan's front moves, this file's through-line is checked in the SAME sitting or it is not a plan.*** ⛔ **The front has moved SIX times since this text was written and I opened this file none of those times. It was item 3 on my own owed list.** ⇒ ***A re-aim not written down is a drift, and this is the drift.***
-> **THE FOUR FALSE CLAIMS BELOW, each corrected here rather than deleted, so the record shows what stood:**
-> 1. ⛔ *"RUNG 2 — BUILT, WALKED, NOT ACCEPTED"* ⇒ ✅ **RUNG 2 CLOSED at Δ19 (*"walk is done, all seems well"*, hedge preserved).** **This file's own through-line already said so — §1 and the through-line contradicted each other inside one file.**
-> 2. ⛔ *"Three cures stand between it and his acceptance"* ⇒ **all three spent: the READING re-ruled (ADR 0025 §7) · the REGISTER settled by §7.2 · the ROUTE cured (`W1`, the fold card's `e0` addresses).**
-> 3. ⛔ *"R1 STILL OWED"* ⇒ ✅ **R1 CLOSED** (`74be04c`/`026d499` — the icosahedron appears; control fails 30°, relaxed 1.27e-14° ≤ ε).
-> 4. ⛔ *"RUNGS 3–4 — queued behind rung 2"* ⇒ ⚠ **Rung 3's declared head (B.4) LANDED and its routing landed (`B-109`…`B-115`). RUNG 3 IS BUILDABLE AND NOBODY HAS CHARTERED IT** — see the amendment at §1's foot.
-> ⇒ ⛔ **AND THE THING THIS FILE IS FOR, which no ticket said out loud: THE THROUGH-LINE'S ACTIVE CLAUSE IS *CAN THEY INHABIT IT* (rungs 3–4), AND THE LAST TWO DAYS BUILT §4 — THE HORIZON — INSTEAD.** **Not wrongly: Arman routed the genealogy asks himself. But the move was never declared, and a front that moves without being written down is exactly what this file's last rewrite was bought to prevent.**
+- ✅ **RUNG 2 — THE SURFACE DECK-TILING: CLOSED** (Δ19). ⚠ **Its three cures were all spent before it closed: the READING re-ruled (ADR 0025 §7) · the REGISTER settled by §7.2 · the ROUTE cured.** ★ **And ADR 0025 §7's shape is the arc's own lesson: the phenomenon SHOWN, the count DEMOTED to record.**
+- ✅ **R1 — CLOSED** (`74be04c` / `026d499`): the icosahedron appears; the control fails at 30°, the relaxed case at 1.27e-14° ≤ ε, **and the trap was demonstrated lying in-witness.** ⛔ *(Two prior copies of this file carried "R1 STILL OWED" below a superseded block, unmarked, where a reader would take it as live. Deleted here rather than corrected in place — that is what "rewritten, never appended" is for.)*
+- ⛔ **RUNGS 3–4 — THE ACTIVE GATE, and the whole remainder of the plan.** Curved transports · the arbitrary orbit. ⚠ **Rung 3's declared head (B.4 / ADR 0026) LANDED (`7878bcf`) and its routing landed; ⚠ on the sixth's word, rung 3 is BUILDABLE and has never been chartered.**
+  > ### ⛔⛔ **AND IT IS GATED — the ruling made on `THE_FRONT_BOARD.md` §2 and repeated here because it is a WHY, not only a WHEN:**
+  > **`CLAUDE.md`'s fifth witness is *what the person SEES*, and for two subjects its instruments are DOWN** — ⚠ `diagnose-d8-shelf-route` (29 failures) and the winding-route leg (13), **both measured stale at CLEAN HEAD by the coder, stash-controlled on both sides.** ⚠ **The M-1 cycle stood on a manual eye-drive in their place and said so.**
+  > ### ⇒ ⛔⛔ **AND IT IS WORSE THAN TWO, ✔ measured at my own hand at `f18d656` while writing `STAMP I-1`: THREE OF THE FIVE DRIVE LEGS HAVE NO SIGHTING IN EITHER DIRECTION — not green, not red, unrun** (`d12b-carried-names` · `d13-the-door-speaks` · `deficit-app`). **The coder's own stated cause for d8 — *the driver predates the current aperture UI* — is a property of the COMMIT (`75c2e63`), and two of the unrun three sit at that same commit while `d13`'s python half (`6cf7e8c`) is older still.** ⇒ ***"Two of five are stale" was never a census of staleness; it was a census of what was run.***
+  > ⇒ ⛔ **RUNGS 3–4 ARE ALL WALKS. Entering them with the walk instruments in this state means every reading there is a manual eye-drive by whoever happens to be seated.** ⇒ ***The recut is not maintenance deferred behind the arc. It is the arc's precondition.***
 
-- ⛔⛔ *(SUPERSEDED — see the amendment above)* **RUNG 2 — THE SURFACE DECK-TILING: BUILT, WALKED, NOT ACCEPTED.** Four windows exist (Poincaré · plane · stereographic · RP²); the method, the descent check and the two ADR traps were measured by the coder and held (`B-104` report + `diagnose-the-deck-tiling.cjs` at `f06eb84` — ⚠ on their run, the accepted channel). **Three cures stand between it and his acceptance:**
-  1. **THE READING (Δ18, ruled):** the mark is what the cells DO — repeat unchanged · crowd and shrink toward a rim that never arrives · close up and come back. `{p,q}` and the count become RECORD. **Acceptance: with the captions covered, can he tell the three apart?**
-  2. **THE REGISTER (open, designer + researcher):** did rung 2 re-buy `docs/design/adr/0004` Amendment 7's scar — *"the aperture is a PLACE, not a PICTURE"*? **Two of the three phenomena may be motion facts a still cannot carry.** ⛔ **No further window polish until this is ruled** — dressing a still three times is the cost of guessing.
-  3. **THE ROUTE (coder, in flight — `W1`):** the fold card labels his edges `e0, e1, …` — **and in his own words there is *"no way to know what are the edges that you are pairing"*** (Δ17). F.4, one picker over from `B-102`'s cure at `0191dde`.
-  ⚠ **Also carried, honest edges, not defects:** the ADR's worked {4,5} is witness-only (the page's hyperbolic case is {6,6}) · the far-side register is weakly exercised · the RP² presentation is the degenerate dihedron where the doctrine's legible case is the hemicube (with the designer).
-- **RUNGS 3–4** — curved transports · the arbitrary orbit. Queued behind rung 2, unchanged.
-- ⛔ **R1 STILL OWED** — the diagonalized cuboctahedron is not a real icosahedron; a substrate-truth debt under everything the window draws for pyritohedral seeds. **Gated on its re-derivation enumeration** (claims ledger §3).
+### 2 · THE DESIGNATION ARC — *newly first-class, and it is the meaning clause's front*
 
-### 2 · THE PERSON'S READING — closed out, with a live residue *(was "the legibility arc")*
-✅ **CLOSED at his eye or by his ruling:** persistence + #37 (Δ10 — the DOORS model, and Δ16.4 *"doors are enough"* closes the auto-persistence question) · the naming doctrine's four cases · the face register · D16 · the card union · the count form · reason-totality · the census (twelve kinds raise a card — ⚠ the coder's screen census at `dcc68a0`, as are all census figures in this file) · **the Δ11 presentation set — the computed affordance line, the subtractive strip, the bound, the tooltip, the class label falling to its guard** (`B-103` at `1148093`; **the line and the bound also seen by the designer at her own eye, on a drive she made without the mandate** — her letter, mtime `2026-08-24 01:35 +0330`).
-⛔ **LIVE RESIDUE, all with the designer:** the folded verdict body's card (the one illegible kind — her route arrived from the coder) · the roles case (the relation line's slots measured role-bearing) · the empty-open-set word · the identify-entry sentence · fork-(ii)'s sentence is BUILT and awaits a person-reachable case.
+**Ground: `ADR 0029` (registers · grains · the name-slot law) + `SEAL_THE_MEANING_CLAIMS.md`.** ⇒ **The question is WHICH ONE, and every item below is that question at one surface.**
 
-### 3 · THE TAIL — independent, ordered behind the gate
-**From the BACKLOG's sweep, revived and owned:** the FLIP's expired hold (its person-route through a moving window — **a rung-2-register dependency, not an orphan**) · `deserializeSnapshot`'s frozen fix (bridged, owed) · the pinch discriminator (its ride-along trigger fired unnoticed) · `b₁` printing without its ring · the `:1085`-family bare catch · the instrument-honesty quartet.
-**Standing tail:** the seam's deeper cure (signed edge classes) · ARC D (the 3-Klein; **the beautification pass — his own grouped order**) · the orphan sweeps · `THE_SUBSTRATE_MAP.md`'s regeneration (Δ16.3 — the coder's, chartered).
+- ✅ **RULED AND LANDED:** the argument header returns to ADR 0024's own `O : Source ⟶ Result` — ⚠ `abAB : 4-gon ⟶ Torus (T²)` at the coder's eye, her weights DOM-measured, **and the wordless header byte-as-before on invoked cards, so the TRUE-ABSENCE clause holds.** · the aperture's face picker individuates (six identical strings → six distinct).
+- ⛔ **RULED AND UNBUILT — the ORDINAL.** ✅ **It lives in the REFERENCE register and may NOT enter the card's title** *(a description in a title is the machine filling a slot the doctrine reserves for the person)*. ⚠ **Her drive: `w1 w2 w3` → remove `w3` → module round-trip → the next form is `w4`.** ⇒ ★★★ ***It is a RECORD ordinal, not a page position — so the words are `the fourth you MADE`, never `the fourth on this page`. NO SOURCE READING SEPARATES THOSE TWO; the removal drive is what did.*** ✔ **The kind-word stays out on measurement: `seq` is page-wide across kinds.**
+- ⛔ **RULED AND UNBUILT — the UNLEARNABLE CARD.** `— show it` on every door and on no inert heading, the card's own established form. ⚠ **`the field`'s bordered chip left alone: a DIFFERENT DESTINATION MAY CARRY A DIFFERENT MARK, and one unspent press settles it.**
+- ⛔ **UNSWEPT — the `faceDisplayName` WHICH-slot census.** ⚠ **`Panels.tsx:3427` hands the NAME composer into a field called `displayName` on a `CellFaceRow`.** ⛔ **I read the function, NOT what consumes its rows. NOT calling it a defect** — it is `ADR 0029` §3.5's two-direction census at one symbol, and it is cheap.
+- ⚠ **OPEN, `ADR 0029` §5's own three gaps:** the picker/reference scope (an amendment, unhurried) · the order-description surface (the designer's) · the exchange doctrine's clause (pending).
 
-### 4 · THE HORIZON — the semantic / genealogy layer *(the LAST layer · his ruling, 2026-07-28)*
-Unchanged as the far telos: the module is GENERATIVE — forms beget forms — and this layer is that made LEGIBLE. **It does not start from zero:** §2's whole close-out is its inventory (the naming doctrine, positive presence, the packet's slot, the argument reading). ⛔ **Its first question is asked and unanswered: what is a BORN entity's name?** — and Δ18 sharpens it: **the answer must be something the person READS, not a token we print at them.**
+### 3 · THE PERSON'S READING — closed out, with a live residue
+
+✅ **CLOSED at his eye or by his ruling:** persistence + the DOORS model (Δ10, and Δ16.4 *"doors are enough"*) · the naming doctrine's four cases — **CARRIED · COMPOSED · GIVEN · BORN(=`unnamed`)**, with the NAME-SLOT LAW · the face register · D16 · the card union · the count form · reason-totality · the census ⚠(the coder's screen census at `dcc68a0`) · the Δ11 presentation set, **⚠ the line and the bound also seen by the designer at her own eye on a drive she made without the mandate.**
+⛔ **LIVE RESIDUE, all with the designer:** the folded verdict body's card · the roles case · the empty-open-set word · the identify-entry sentence · fork-(ii)'s sentence, BUILT and awaiting a person-reachable case.
+
+### 4 · THE TAIL — independent, ordered behind the gate
+
+**Revived from the BACKLOG's sweep and owned:** the FLIP's expired hold (⚠ a rung-2-register dependency, not an orphan) · `deserializeSnapshot`'s frozen fix · the pinch discriminator · `b₁` printing without its ring · **the bare `catch` at `ManuscriptView.tsx:1085`** *(✔ resolved on this rewrite: two prior copies carried it as a bare `:1085` naming no file — the exact form the Gate's second tell excludes. It is **R-5**, still live and re-pinned at `PLAN_THE_RENDER_GATE.md:13`, and `BACKLOG.md:240` describes it: one predicate carrying six facts.)* · the instrument-honesty quartet.
+**Standing tail:** the seam's deeper cure (signed edge classes) · ARC D (the 3-Klein; the beautification pass — his own grouped order) · the orphan sweeps.
+⇒ ⛔ **`THE_SUBSTRATE_MAP.md`'s REGENERATION IS NOT A TAIL ITEM AND IS NOT THE MOTHERSHIP'S.** ⚠ **It was regenerated once (`2b80fae`) and is stale AGAIN — I stamped its dead lines BY PATH at `1b7245f` and re-routed it.** ⇒ **Regenerating it means DRIVING THE APP, so it is the coder's; and ⚠ three subsystems have no entry at all (`scripts/dev-advance.cjs` · the go-stale watcher · `ZOO_ROOMS`' five rooms).**
+
+### 5 · THE HORIZON — the semantic / genealogy layer *(the LAST layer)*
+
+**The module is GENERATIVE — forms beget forms — and this layer is that made LEGIBLE.** ⇒ **It does not start from zero: §3's whole close-out plus §2's designation ground is its inventory.**
+✅ **Its old first question is RULED and no longer the head:** *what is a BORN entity's name?* ⇒ **`unnamed` — a true absence, ⚠ on the researcher's ruling.**
+⚠ **Its live successor was itself ruled NOT-A-BLOCKER on 2026-09-02** — the researcher found both halves of ③ already covered by standing rulings. ⇒ ⛔ **The christening region is UNBLOCKED, and nothing in it is chartered.**
+> ⇒ ⛔ **THE DECLARED END (Δ43).** ✔ **MEASURED rather than asserted, because "no prior copy named it" is a negative existence claim: `git show <ref>:.handoff/PLAN_THE_LAST_PHASE.md | grep -ci` at the two prior copies `1b7245f` and `a92fea0` returns `0` for each of `Δ43`, `declared end`, and `0028`.** ⇒ **Those two copies did not name it; older copies I did not check.** ✔ **Arman, hedge preserved — the semantic connection layer is *"one of its major goals for sure if not its sole ultimate end."*** **`ADR 0028` holds its refinement law: a connection refines by the LIFT LAW — forced on the skeleton, free at BORN cells.** ⛔ **NOT CHARTERED AS WORK, and the op-set must not bend toward it. It is what the other arcs are FOR.**
 
 ### DROPPED — indefinitely
 **THE FIELD (ARC C)** — out of scope by his ruling (2026-07-23), its claims parked in git.
 
 ---
 
-## The bounds — what we will NOT do *(not negotiable; re-checked this rewrite)*
+## THE BOUNDS — what we will NOT do *(not negotiable)*
 
 1. **No level-4. No general closed-3-manifold classifier.** (ADR 0019.)
 2. **Geometries: E³, S³, H³ — and no further.**
@@ -93,26 +90,53 @@ Unchanged as the far telos: the module is GENERATIVE — forms beget forms — a
 6. **No mask-based chirality counter** (LAW 10) · the 336 unsound-non-folded stay refused.
 7. **Nothing is built without a caller** (LAW 12). Ruled ≠ owed.
 8. **The FULL-metric layer stays HELD (Bound 8)** — the landed conformal layer is distance-free throughout.
-9. ⛔ **NEW, from the op-set's closure:** **the bare vertex-merge is out of scope BY BUSINESS** — its only product is a wedge point and the module builds the inhabitable. `identify` still ENACTS and the gate NAMES junctions; what is absent is a gesture whose only product is a non-manifold.
+9. **The bare vertex-merge is out of scope BY BUSINESS** — its only product is a wedge point and the module builds the inhabitable. `identify` still ENACTS and the gate NAMES junctions; what is absent is a gesture whose only product is a non-manifold.
+
+> ⚠ **A SCOPE STATEMENT, NOT A ✔, and it is carried forward unchanged from my stamp because it is still true: I HAVE NOT AUDITED THESE BOUNDS.** ⛔ **Several are SUBSTRATE claims** (*"π₁ is not computed and not shown"* · *"No mask-based chirality counter"*) **— those are the coder's to confirm and I did not drive them.** ⇒ **They stand as ruled policy; whether the code still honours each is unmeasured.**
 
 ---
 
-## The drift guards — the tripwires *(each bought with a real failure)*
+## THE DRIFT GUARDS — the tripwires *(each bought with a real failure)*
 
 **Carried, all still live:** LAW 0 no free claims · **a ruling is not a receipt** · **THE GATE = RUNGS × CARRY** (no rung closes on a headless green) · a seal must name its surface · **agreement is not correctness** · a mark emitted only on failure is a symptom wearing a glyph · **a capability I cannot find is not one that is missing** · a count comes from a predicate that IS the claim · check the manifest when pricing · **a comment that states its precondition is a guard that was never written** · a guard that stops firing stays standing · **a false claim in the chrome is removed, not balanced** · a re-aim not written into the plan is a drift · **a plan file is a claim like any other** · LAW 23 · the register law · the MOUNT law · **cite SHAs, never typed dates**.
 
-**ADDED THIS REWRITE — each bought in this arc:**
+**FROM THE READING ARC:**
 - ⛔⛔ **WE DREW THE PERSON'S ACT AND PRINTED ITS ANSWER** (Δ18). A drawn invitation that performs itself is not a gesture. **A count is our proof-token; the mark is what the thing DOES.** LAW 23's other half: **a number the eye is never ASKED to check is the same disease as one it cannot.**
-- ⛔⛔ **"I SEE IT" IS NOT "IT IS GOOD."** A presence-report is not a verdict — an acceptance is a sentence he says about the WORK, never one derived from his acknowledging that he looked. *(Mine, Δ18, written into three files before he corrected it.)*
-- ⛔⛔ **AN ACCEPTANCE QUESTION IN THE OFFICE'S VOCABULARY IS THE COMPOSITION DEFECT AIMED AT THE PERSON.** Ask **what did you DO and what did you SEE** — never *"does X satisfy Y."* **A question he must be taught to answer is not yet an acceptance.**
-- ⛔ **A CURE AT ONE PICKER IS NOT A CURE OF THE DISEASE** — sweep every surface that speaks the same fact. *(The map menu got names; the fold card kept `e0` one picker over.)*
+- ⛔⛔ **"I SEE IT" IS NOT "IT IS GOOD."** A presence-report is not a verdict.
+- ⛔⛔ **AN ACCEPTANCE QUESTION IN THE OFFICE'S VOCABULARY IS THE COMPOSITION DEFECT AIMED AT THE PERSON.** Ask **what did you DO and what did you SEE** — never *"does X satisfy Y."*
+- ⛔ **A CURE AT ONE PICKER IS NOT A CURE OF THE DISEASE** — sweep every surface that speaks the same fact.
 - ⛔ **A BYTE-IDENTITY CONTROL IS SOUND ONLY OVER RATIFIED-CORRECT BYTES** — a control pins to the RULE, never the artifact.
 - ⛔ **AN ARCHIVE IS NOT A PROCESSING** — a letter filed without entering the board leaves the board asking a question its answer already reached.
 - ⛔ **A MID-FLIGHT EDIT IS INVISIBLE; AN APPEND IS NOT** — a mid-build ruling is its own file with its own marker, and **consumption is proven by the ECHO.**
-- ⛔ **A TYPED DATE IS A STORED DERIVED VALUE** (the designer's law; it explains the two slips owned this arc — hers and the researcher's — while the fifth's was the different disease of deriving a date from a build stamp): read at a turn's start, stamped at its end. **Print the clock's raw output; mtime is the fact.**
+- ⛔ **A TYPED DATE IS A STORED DERIVED VALUE.** Print the clock's raw output; **mtime is the fact.**
+
+**ADDED THIS REWRITE — each bought in the three cycles `75ce492` · `c6ef2f8` · `fef8fe9`:**
+- ⛔⛔ **A POSITIVE CONTROL IS NOT A ONE-TIME THING.** ⚠ **The designer's eleven-probe "the square is unselectable" was WITHDRAWN: her projection used `object.getWorldPosition()` — the GROUP'S ORIGIN, not the drawn centre — putting every probe 200–280 px off.** ⇒ ***An instrument validated once and carried forward is an assumption wearing a measurement's clothes.*** ⛔ **And its record consequence: *"both of us saw it" may not stand anywhere in the record* — the coder's inverted reproduction is now the pick defect's ONLY evidence.**
+- ⛔⛔ **ENUMERATE AFFORDANCES FROM THE SCREEN, NEVER FROM A CONSTANT — and it operates BETWEEN offices, not only inside one.** ★ ⚠ **The coder's first walk-panel bound used `calc(100dvh − 66px)`; the designer's `800×620` case FALSIFIED it (the panel's true top is 106, not 54, and a lens caption runs three lines).** ⇒ ***A constant was replaced by a measurement because a SECOND OFFICE'S case was allowed to kill it.*** ⚠ **Its twin: she nearly filed the unlearnable card as "one door among four inert headings" from having opened only the door she knew — the constant that time was her own memory of the card.**
+- ⛔⛔ **A LEG WHOSE COLOUR DEPENDS ON LOAD IS THE END OF THE SWEEP AS A WITNESS.** ⚠ **`diagnose-the-field-in-the-specimen` went red twice under load and green standalone twice and in the quiet whole sweep.** ⇒ **The coder's own sentence, adopted as the ruling: cure it *"before it trains anyone to re-run sweeps until green."***
+- ⛔ **A RULING THAT NAMES WHAT IT DOES NOT MOVE IS WORTH MORE THAN ONE THAT ONLY NAMES WHAT IT DOES.** ⚠ **The pose normalization read appearance angle as GAUGE (ADR 0028 — carrying nothing of his act) and built the FIXED POINTS with it: invoked primitives do not move; non-planar bodies rule null and stay whole.**
+- ⛔ **A SANCTION WITH A STATED BOUNDARY CAN BE EXTENDED IN TWO WORDS; A SANCTION WITHOUT ONE GETS STRETCHED IN SILENCE.** ✔ **Re-read at `f18d656`: `CLAUDE.md:135` still names exactly five sanctioned frozen files, and `specimenModel.ts` — sanctioned at Δ51 — is NOT among them and does not join them.**
+- ⛔ **BEFORE ROUTING AN ITEM AS UNRESOLVABLE, GREP YOUR OWN ARCHIVE.** ★ **Bought twice in the seventh's first sitting, both times by me: the `4 corners` contradiction and the `§4/§5 one-liners` shorthand were each one search away in mail already in my own archive.** ⇒ ***A plan file is a claim; an unresolvable I never searched for is a claim I made about my own record.***
+- ⛔ **A CONTROL THAT CANNOT SEPARATE ITS TWO OUTCOMES IS NOT A CONTROL.** ★ **I withheld a known stale line from the coder's packet as a room-to-catch; they did exactly what the packet told them to do, which is indistinguishable from not noticing.** ⇒ **A catch's two outcomes must LOOK DIFFERENT in the seat's report, or it measures nothing.**
 
 ---
 
-## What is closed *(context, not work)*
+## WHAT IS CLOSED *(context, not work)*
 
-**The engine:** generative closure · level 2 · level 3. **The person's hands:** subdivide · fold · thicken (binary product) · edge-select+lift · open-lift · acquire · the doors wave · cycle-identify · **identify to completion on a closed volume**. **The faithful body:** CUT 0/1/1b/2/3 · recognition · unification · the meaning-ledger foundation. **The conformal substrate:** P0–P6 + the ascent, FROZEN · the argument-reading card (ADR 0024, MAP-first). **Rung 1, whole, at his own hand.** **The person's reading:** the Δ11 presentation set · the naming doctrine · the census · persistence's doors. **The op-set's bound:** edge-walks are what it identifies; vertices and symmetries are results and macros (ADR 0021 + the wedge ruling). **The record:** the seat map and ADR 0025 tracked; the frozen-spend record complete for the arc; the BACKLOG retired into this plan.
+**The engine:** generative closure · level 2 · level 3. **The person's hands:** subdivide · fold · thicken (binary product) · edge-select+lift · open-lift · acquire · the doors wave · cycle-identify · identify to completion on a closed volume. **The faithful body:** CUT 0/1/1b/2/3 · recognition · unification · the meaning-ledger foundation. **The conformal substrate:** P0–P6 + the ascent, FROZEN · the argument-reading card (ADR 0024, MAP-first). **Rungs 1 AND 2, whole, at his own hand.** **The person's reading:** the Δ11 presentation set · the naming doctrine · the census · persistence's doors. **The op-set's bound:** edge-walks are what it identifies; vertices and symmetries are results and macros (ADR 0021 + the wedge ruling). **The record:** the seat map, ADR 0025 and **ADR 0029** tracked; the migration packet and this office's own record files tracked (`75ce492`); the BACKLOG retired into this plan. **The lag class, whole** (`f3d35f6` + `cd55e9b`, P-1 ratified). **ORDER: one stratum, two species** — the ORDINAL reading (which-came-first) and the COMMUTATOR reading (route-dependence), with the ordinal as the degree-zero case.
+
+---
+
+## APPENDIX · THE GATE ON THIS REWRITE — 76 flags, three of them real
+
+**Spawned as a subagent on this file with the canned charter verbatim, BEFORE this appendix existed.** ★ **It over-flags by design — RECALL is its job, PRECISION is mine — and 76 flags on a plan file is the expected shape, because a plan RESTATES ratified content and the Gate cannot see the `✔`/`⚠` convention that carries each claim's source.**
+
+**⇒ THE THREE IT CAUGHT, all fixed above:**
+1. ⛔ ***"the `:1085`-family bare catch"*** — **a bare line number naming no file, which is literally the form the Gate's second tell excludes.** ⇒ ✅ **Resolved by search: it is `ManuscriptView.tsx:1085`, R-5, live and re-pinned at `PLAN_THE_RENDER_GATE.md:13`, described at `BACKLOG.md:240`.** ★ **It had been carried as a bare `:1085` through at least two prior copies of this file — a tail item nobody could act on because nobody could find it.**
+2. ⛔ ***"THE DECLARED END (Δ43), which no prior copy of this file named"*** — **a negative existence claim.** ⇒ ✅ **MEASURED instead of asserted, and the claim is now scoped to the two copies I actually checked.**
+3. ⛔ ***"each bought in the last three cycles"*** and ***"sanctioned tonight"*** — **durations and relative dates, against this file's own drift guard *cite SHAs, never typed dates*.** ⇒ ✅ **Replaced with `75ce492` · `c6ef2f8` · `fef8fe9`, and with Δ51.**
+
+**⇒ REFUSED, and this is the PRECISION half — the three largest categories:**
+- **Every `⚠`-marked claim resting on another seat's report** (flags 61–76, the whole tell-4 block). ⛔ **The `⚠` IS the citation under this office's convention: it names exactly whose run to go re-read, and it is the discipline that lets an office with no ground of its own be trustworthy.** ★ **The Gate cannot see the convention — which is exactly why it is worth running, and exactly why its output is a candidate list and never a verdict.**
+- **Every number restated from a ratified ruling** (flags 8–30). ⛔ **A plan is not a proof; it points at where each ruling lives.** ⚠ **BUT one of these is a standing weakness I am recording rather than dismissing: several restated counts here have no pointer at all, and *a count copied into a doc is a stamp that drifts from the code that made it* — the law `CLAUDE.md:118-122` was cut to enforce.** ⇒ **If a number in this file is ever found to disagree with the substrate, the substrate wins and the number comes OUT rather than being updated.**
+- **The BOUNDS block's negatives** (flags 41–45). ⛔ **Those are POLICY — things we have ruled we will not build — not empirical claims about the code.** ⚠ **And the scope statement directly above them already says the unaudited part out loud.**

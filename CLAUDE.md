@@ -103,7 +103,7 @@ Branch `team-arman`. ⛔ **CHANGED BY ARMAN 2026-08-26 (Δ21) — THE WIRE IS MA
 ## 6 · YOUR PRE-COMMIT WITNESS LIST — run it, report it, commit
 
 1. `git diff --stat <sim> HEAD` = **EMPTY** — the committed tree IS what you audited.
-2. **Freeze manifest** (`docs/governance/ENGINE_FREEZE_MANIFEST.txt`) line printed beside every touched file. A bare `path<TAB>hash` row = **FROZEN** ⇒ the edit + the re-seal in **ONE commit, nothing else in it.**
+2. **Freeze manifest** (`docs/governance/ENGINE_FREEZE_MANIFEST.txt`) line printed beside every touched file. A bare `path<TAB>hash` row = **FROZEN** ⇒ the edit + the re-seal in **ONE commit, nothing else in it.** ⛔ **And a NEW file under the engine roots is not landed until it is classified (FROZEN or NOT_FROZEN) in the SAME commit — the completeness law turns ~26 witnesses red at once on an unclassified file, and that cascade has now been paid twice (`7878bcf` for noncubeDomain, the pose cycle for pagePoseModel): classify at the landing, never after the hour.**
 3. **Re-seal hashes RECOMPUTED** (`tr -d '\r' < file | sha256sum`) **with a POSITIVE CONTROL** — the OLD hash must reproduce at the base commit.
 4. **The sweep green at its OWN canonical verdict line** (`dual-inspection` is the one accepted fail; the line itself names the census — never restate the count here: *a count copied into a doc is a stamp that drifts from the code that made it*) **+ `tsc` exit 0**, at the real HEAD.
 5. ⛔ **THE READING — what does the person SEE, in the frame they are in when they see it?** *A green suite closes nothing a person can see.*
@@ -124,7 +124,7 @@ npm run sweep                                  # clause 4 — THE SWEEP (B-121: 
 ```
 
 ### ⛔ THE DRIVE FAMILY — five legs that are NOT in the sweep, and their trigger
-**`scripts/app-leg/`'s five legs carrying a `DRIVE FAMILY` banner DRIVE THE RUNNING APP** (python + playwright; two of them SPAWN their own dev server on 5199). **They cannot pass headless, so folding them into the sweep would install PERMANENT REDS — and a red nobody owns trains its readers to skip it.** They are not witnesses in the sweep's sense.
+**`scripts/app-leg/`'s five legs carrying a `DRIVE FAMILY` banner DRIVE THE RUNNING APP** (python + playwright; each spawns its own dev server on 5199 — the spawn site is in the leg itself, `grep -n "spawn(" <leg>`, so measure the one you are about to run rather than trusting this parenthesis: an earlier version of it said "two of them" and had drifted). **They cannot pass headless, so folding them into the sweep would install PERMANENT REDS — and a red nobody owns trains its readers to skip it.** They are not witnesses in the sweep's sense.
 > ### ⇒ **THEIR TRIGGER IS THE FIFTH WITNESS, never a calendar and never anyone's memory: THE DRIVE FAMILY RUNS AS PART OF ANY BUILD WHOSE READING TOUCHES ITS SUBJECT.** If what a person SEES in a leg's subject is part of what you are reporting, that leg is part of your run.
 
 ### ⛔ THE SERVE IS THE ADVANCE — the lag class, closed by construction (chartered 1829, un-suspended 1849 after the coder's harness measurement killed era 1)
