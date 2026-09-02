@@ -77,7 +77,7 @@ export interface SpecimenReading {
   notes?: string[];
 }
 
-const SURFACE_TITLES: Record<string, string> = {
+const SURFACE_TITLES: Record<InkedFormModel['surface'], string> = {
   torus: 'Torus (T²)',
   klein: 'Klein bottle (K²)',
   rp2: 'RP² (cross-cap)',
@@ -133,7 +133,7 @@ export function readSurfaceSpecimen(
   ];
   return {
     kind: 'surface',
-    title: SURFACE_TITLES[model.surface] ?? model.surface,
+    title: SURFACE_TITLES[model.surface],
     subtitle: word === '' ? 'collapse target · no gluing word' : `gluing word · ${word}`,
     rows,
     legend: model.loops.map((loop) => {

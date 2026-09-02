@@ -74,7 +74,7 @@ src/manuscript/faithfulBodyModel.ts     b72ba46a22118401d7dfde3b08b9c006899bf39e
 src/manuscript/genesisModel.ts          a370aea9165d963fee05069e6b2849d40e659f38ab97cbc47ccc2a2630d51434
 src/manuscript/inkedFormModel.ts        9ddcff0fc8455f8e469726af4d5cdd75b5ab37f620a9bbcf96e84bb70be366fb
 src/manuscript/optionBModel.ts          b8947f23be817e0c1c5312276dfa596a67723c491bba8d7ce97bb2e494dd35b1
-src/manuscript/specimenModel.ts         8c299f8b4f6d1e97ec177d9e992dde3b4e6bf88fe91919bf6115b4819539b12a
+src/manuscript/specimenModel.ts         ee896ad6abebfc5494277b818e828a428847aa60184f359a65f9d45b4b97fec3
 src/manuscript/standardBodies.ts        9ca766a2a39b7c2d915afd29d6ee91de60de124829aa9a1befd0860c685dc020
 src/manuscript/surfaceClassifier.ts     f2e96084220c3fc5c6c5726b74d9293350068334fb27c29d5e41e19848457974
 src/manuscript/worldModel.ts            092012c46886da4215b7922e921765f0b5454185670cadbb9c88ee85ba29cb43
