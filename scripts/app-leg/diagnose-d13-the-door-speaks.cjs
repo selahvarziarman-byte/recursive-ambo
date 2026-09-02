@@ -222,20 +222,55 @@ console.log('\n— (d) D14 · rotation-to-earliest + direction NOT normalized (p
     nameOf(['B', 'A', 'B', 'A']) === 'A·B·A·B · 4 corners',
     nameOf(['B', 'A', 'B', 'A']),
   );
+  // ── I-1 clause 2(b): the two pins below were RE-PINNED FROM RULINGS, not
+  // from observed output. (d5)'s old pin ("one unlabeled corner ⇒ whole face
+  // `unnamed`") predated the 1555 ruling, which made this menu a REFERENCE
+  // POSITION: "own name where a corner holds one, the honest address tail
+  // where it does not, NEVER the word `unnamed`" (faceReferenceName's own
+  // doctrine comment carries it). The NAME register keeps the absence word —
+  // asserted here as the same fixture's second reading, so this arm still
+  // separates the registers and still goes RED if either regresses: the menu
+  // printing `unnamed` again, a partial fabrication in the name slot, or the
+  // two registers collapsing into one another.
   const empty = plant(['A', '', 'C']);
-  check("(d5) ONE unlabeled corner ⇒ the whole face is 'unnamed' (never a partial fabrication)", A.boundaryFacesOf(empty)[0].label === 'unnamed · 3 corners', A.boundaryFacesOf(empty)[0].label);
+  check(
+    "(d5) THE 1555 SPLIT on a TRUE absence — the MENU (reference position) reads the absent corner's honest address tail, never `unnamed`; the NAME register on the same face still refuses whole (compose-over-absence lives where it belongs)",
+    A.boundaryFacesOf(empty)[0].label === 'A·p1·C · 3 corners' && A.faceDisplayName(empty, empty.faces[0]) === 'unnamed',
+    `menu: ${A.boundaryFacesOf(empty)[0].label} · name: ${A.faceDisplayName(empty, empty.faces[0])}`,
+  );
+  // (d6)'s old pin ("id-as-label ⇒ `unnamed`") pinned the scaffold clause,
+  // whose DEATH-CONDITION was met and executed at c859458 (THE TERMINAL CUT,
+  // B-2026-08-23-A 4c): every producer it stood for stopped minting id
+  // copies, so a label is a NAME by POSITIVE PRESENCE and an id-copy label
+  // is present content ('p1' composes, cased, as 'P1'). The refusal that
+  // survives lives in the VIEW-side resolver for pre-migration FILES — not
+  // in the composer. RED again if the scaffold resurrects (this reads
+  // `unnamed`) or positive presence stops composing.
   const idAsLabel = plant(['A', 'B', 'C']);
-  idAsLabel.vertices.p1.data.label = 'p1'; // the id copied into the label — the committed discriminator's degenerate case
-  check("(d6) an id-as-label packet is NO name ⇒ 'unnamed' (the quotient/thicken mint's shape, argumentReadingModel's own law)", A.boundaryFacesOf(idAsLabel)[0].label === 'unnamed · 3 corners', A.boundaryFacesOf(idAsLabel)[0].label);
+  idAsLabel.vertices.p1.data.label = 'p1'; // an id-copy label — present content under the terminal cut
+  check(
+    "(d6) THE TERMINAL CUT (c859458): an id-copy LABEL is present content and composes by POSITIVE PRESENCE — the scaffold that read it as absence is dead with its producers",
+    A.boundaryFacesOf(idAsLabel)[0].label === 'A·P1·C · 3 corners',
+    A.boundaryFacesOf(idAsLabel)[0].label,
+  );
 }
 
-// ---- (e) D14 · the thickened room reads `unnamed`, CORRECTLY ---------------
-console.log('\n— (e) D14 · the thickened room: `unnamed`, the ADR\'s word — not a gap to paper over —');
+// ---- (e) D14 · the thickened room COMPOSES its carried designations --------
+// I-1 clause 2(b): the old pin ("every face reads `unnamed` — thicken:175
+// fabricates id-as-label packets") recorded a disease the migration CURED:
+// c859458's measured census has the thicken mint writing TRUE ABSENCE, and
+// absence resolves through lineage, so the band's menu — a reference
+// position per 1555 — composes carried designations. RED again if any face
+// falls back to `unnamed` (the 1555 regression) or two faces collide (the
+// individuation loss R4(a) was bought on).
+console.log('\n— (e) D14 · the thickened room composes its carried designations — the migration landed —');
 {
+  const unnamedCount = bandMenu.filter((e) => /^unnamed/.test(e.label)).length;
+  const distinct = new Set(bandMenu.map((e) => e.label)).size;
   check(
-    "(e) EVERY boundary face of the thickened band reads 'unnamed · N corners' (thicken:175 fabricates id-as-label packets; the honest report is the ADR's own word)",
-    bandMenu.length > 0 && bandMenu.every((e) => /^unnamed · \d corners$/.test(e.label)),
-    `${bandMenu.length} faces, all unnamed`,
+    "(e) EVERY boundary face of the thickened band composes (none reads `unnamed`, all distinct) — thicken's mint writes TRUE ABSENCE and lineage resolution carries the names (c859458 + the 1555 reference-position law)",
+    bandMenu.length > 0 && unnamedCount === 0 && distinct === bandMenu.length,
+    `${bandMenu.length} faces · ${unnamedCount} unnamed · ${distinct} distinct`,
   );
 }
 
@@ -247,9 +282,13 @@ console.log('\n— (f) the cure\'s source pins —');
   const boundarySrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptErrorBoundary.tsx'), 'utf8');
   const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
   check(
-    '(f1) §2 the render guard: the candidate build is try/caught on the render path (a throw becomes an empty menu)',
-    viewSrc.includes('mapChoices = dihedralMapCandidates(apertureVolume, row.faceA, row.faceB)') &&
-      /catch \{\s*\n\s*mapChoices = \[\];/.test(viewSrc),
+    // I-1 clause 2(b): the pinned call gained B-104 R2's refusal collector
+    // (the empty-menu sentence) after this pin was written — re-pinned to
+    // the call as the ruling shaped it; the guard's substance (a throw
+    // becomes an empty menu, never a crash) is unchanged and still asserted.
+    '(f1) §2 the render guard: the candidate build is try/caught on the render path (a throw becomes an empty menu) — the call threads the B-104 refusal collector',
+    viewSrc.includes('dihedralMapCandidates(apertureVolume, row.faceA, row.faceB, (r) => refusals.push(r))') &&
+      viewSrc.includes('mapChoices = [];'),
   );
   check(
     '(f2) §3 BOTH boundaries mounted with their honest scopes: tight around the panel (the page stands), last-resort in AppShell (the state\'s cost spoken)',

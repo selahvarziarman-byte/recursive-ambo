@@ -107,7 +107,9 @@ def main():
 
         # 1 · the labeled LIFT parcel FIRST (bodies render at their OWN
         # coordinates — placement cannot separate them; measured twice)
-        page.set_input_files('input[type="file"]', [args.lift])
+        # I-1 clause 2(a): the universe door is the only MULTIPLE file input —
+        # the page door landed first in the DOM and the bare selector fed it.
+        page.locator('input[type="file"][multiple]').set_input_files([args.lift])
         page.wait_for_timeout(800)
         pt_lift = place_parcel(page, 0.82, 0.24)
         record("route.liftPlace", pt_lift is not None, "the ambo-corner-triangle lift placed")

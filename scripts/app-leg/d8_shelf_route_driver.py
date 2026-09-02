@@ -42,7 +42,21 @@ def paper_point(page, box, fx, fy):
 
 
 def load_files(page, files):
-    page.set_input_files('input[type="file"]', files)
+    # I-1 clause 2(a) — THE DOMINO, CURED AT ITS SITE: the app grew a SECOND
+    # file input (the page door), and it sits FIRST in the DOM — the bare
+    # selector fed the parcels into the WRONG door, the shelf stayed empty,
+    # and every placement downstream cascaded. The universe door is the only
+    # MULTIPLE input: a structural discriminator, not an order-dependent one.
+    # I-1a (c): a missing door is a MISS and fails LOUDLY — never a skip.
+    # the door is display:none chrome — wait for ATTACHED (never visible),
+    # because a count taken before the panel mounts is a race, not a miss
+    page.wait_for_selector('input[type="file"][multiple]', state='attached', timeout=20000)
+    door = page.locator('input[type="file"][multiple]')
+    if door.count() != 1:
+        raise RuntimeError(
+            f"MISS: the universe file door (input[type=file][multiple]) resolved to {door.count()} — locator stale or the shelf is dead"
+        )
+    door.set_input_files(files)
     page.wait_for_timeout(800)
 
 
@@ -148,8 +162,11 @@ def measure_panel(page, key, expect_rows):
     record(f"d10.{key}.rows", rows_n == expect_rows, f"{rows_n} rows rendered (expected {expect_rows})")
     vh = page.viewport_size["height"]
     panel_bottom = pb["y"] + pb["height"]
-    shelf_title = page.get_by_text("sources — loaded universes")
-    if shelf_title.count() > 0:
+    # I-1a §4: the ruled rename landed INSIDE this recut — the locator moves
+    # to the [data-shelf-title] seam and ALSO asserts the ruled text, so a
+    # future rename reds this line instead of silently skipping D10.
+    shelf_title = page.locator("[data-shelf-title]")
+    if shelf_title.count() > 0 and "the shelf" in (shelf_title.inner_text() or ""):
         sb = shelf_title.bounding_box()
         shelf_top = sb["y"] - 10  # the title sits 9px padding + 1px border inside the shelf
         record(
@@ -158,8 +175,13 @@ def measure_panel(page, key, expect_rows):
             f"panel bottom {panel_bottom:.1f} vs shelf top {shelf_top:.1f} (viewport h {vh})",
         )
     else:
-        # nothing loaded yet — the obstacle is absent; record the measured box
-        record(f"d10.{key}.noOverlap", True, f"no shelf on screen; panel bottom {panel_bottom:.1f} (viewport h {vh})")
+        # I-1a (c): the shelf panel renders its titled frame even when EMPTY
+        # ("nothing loaded yet" sits under the title), so a missing/renamed
+        # title here is a MISS — the locator is stale or the panel is dead —
+        # and a miss records a FAIL by name, never a pass. (The old guard
+        # conflated "the obstacle is absent" with "I could not find it" and
+        # recorded True for both — a stale locator went green.)
+        record(f"d10.{key}.noOverlap", False, "MISS: [data-shelf-title] with the ruled text not found — locator stale or the shelf panel dead")
     leave = page.locator("[data-aperture-leave-bounded]")
     lb = leave.bounding_box() if leave.count() > 0 else None
     record(
@@ -283,10 +305,14 @@ def main():
         # (b) ⛔ NO ROOM AT THICKEN — the Sovereign's bar
         post_rooms = page.get_by_text("built 3-manifold").count()
         record("d9.noRoomAtThicken", post_rooms == pre_rooms, f"'built 3-manifold' texts {pre_rooms} → {post_rooms} across the thicken")
+        # I-1 clause 2(a) re-pin: the old pin held the notice's LIE ("point at
+        # it" — a gesture the app does not accept), which the 1555 letter s4
+        # ruled and unblocked; the landed cure names the true gesture. RED
+        # again if the notice lies about the gesture or goes silent.
         record(
             "d9.doorNotice",
-            page.get_by_text("rides the shelf — point at it").count() > 0,
-            "the door-open notice (flagged copy) is spoken instead of a room",
+            page.get_by_text("rides the shelf — drag it onto the paper").count() > 0,
+            "the door-open notice speaks the TRUE gesture (drag), the 1555 s4 cure",
         )
         shelf_after = page.locator('div[draggable="true"]').count()
         record("d9.bandParcel", shelf_after == shelf_before + 1, f"shelf draggables {shelf_before} → {shelf_after} (the band arrived)")
@@ -308,7 +334,13 @@ def main():
         if press(page, leave):
             page.wait_for_timeout(900)
         seam1 = page.evaluate("() => (window.__manuscriptApertures ?? {})['built-1'] ?? null")
-        plate_300 = page.get_by_text("1 × 300°").count()
+        # I-1 clause 2(b)-in-(a): the plate's `cone edges: 1 × 300°` FIELD PAIR
+        # died by the designer's cone-sentence ruling (the fact is said ONCE,
+        # IN WORDS, in both states); the sentence carries the same sealed
+        # number, so the heuristic control below still separates right math
+        # from wrong (k×90° would print 450°). Cross-witnessed by
+        # diagnose-d1-metric-thread's own `one cone edge at 300° (measured)`.
+        plate_300 = page.get_by_text("one cone edge at 300°").count()
         heur_450 = page.get_by_text("450°").count()
         record(
             "d8.exitB.measured",

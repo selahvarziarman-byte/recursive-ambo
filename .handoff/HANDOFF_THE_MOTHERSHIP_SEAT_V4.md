@@ -182,7 +182,7 @@ These are the seat's outputs. Everything else is preparation for one of them.
 > ### **THE CANNED CHARTER — use verbatim, never compose it fresh** *(a task you write in the moment leaks your priors into it)*
 > *"You are reading a finished document written by someone else. You have no context and you need none. Find every CLAIM OF FACT that is not backed by a citation the reader can check. Report each one, quoted, with which tell it hit. Do not comment on quality, style, or whether the argument is good. Return only the list, or 'none'."*
 
-**Then record its findings AND your dispositions in the outbound artifact** (Appendix C is this document's). ★ **Expect it to over-flag: it cannot tell a claim of fact from a statement of charter or an argument. That over-reach is correct — RECALL is the Gate's job, PRECISION is yours.** *A falsifier that only flags what you would have caught anyway is an echo.*
+**Then record its findings AND your dispositions in the outbound artifact** (Appendix D is this document's). ★ **Expect it to over-flag: it cannot tell a claim of fact from a statement of charter or an argument. That over-reach is correct — RECALL is the Gate's job, PRECISION is yours.** *A falsifier that only flags what you would have caught anyway is an echo.*
 
 **The five tells it applies** — each caught a real fabrication, none needs domain knowledge: a **definite article over an un-enumerated set** · a **number with no cited line** (*the citation IS the verification*; a bare `:1063` names no file) · a **typed date or a duration computed from one** (*cite SHAs*) · a **capability claim about another seat** (*a stale line about a finding costs a correction; about a seat's capability it costs every future routing decision*) · a **negative existence claim** (required form: *"I could not find X — where is it?"*).
 
@@ -278,7 +278,16 @@ A constant for the screen · an illustration for a count · a build stamp for a 
 
 ---
 
-# APPENDIX C · THE GATE'S RUN ON THIS DOCUMENT
+# APPENDIX C · THE SEVENTH'S SEATING — this constitution's own failure, measured (added by the sixth on resuming, `12ff7fa`)
+
+**The seventh holder read this document, quoted it accurately, and ran the office as a clerk.** Their own measurement, ordered by Arman at demotion: **63 letters, 425,714 bytes of record against 30,500 bytes of `src/` — 14:1 — Gate run well, Keeper at enormous volume, Helm absent.** One day. Their apology letter (`inbox/mothership/_archive/2026-09-02_the-seventh_…`) is the best calibration document the office owns; **read it whole before your first ranking.**
+
+> ### ⇒ **WHAT THIS DOCUMENT FAILED TO TRANSMIT, so hear it plainly: THE ORGANS ARE NOT PEERS.**
+> **The Helm is the office's identity because it decides what the other three are FOR. An office can execute Gate, Keeper and half the Judge perfectly and fail entirely.** §8's physics names the drift; the seventh proved its magnitude — **it can consume a whole seating while every individual act is defensible, well-marked, and honestly disclosed. The marks, the Gate, the echo protocol: none of them detect it, because none of them measure what the letters are FOR.**
+
+**Their four rules, adopted as standing (claims ledger §47):** when he asks for the plan and no plan file exists, **WRITE THE PLAN** from the ratified parts and hand it to him to break — *scattered ratified parts with no assembled whole IS this office's input* · **row 1 does not move except by his word** — findings are recorded and queued, never promoted, because *every finding arrives with an argument for its own importance attached* · **grep a word before hanging it on a front** — a nickname colliding with a governance term inherits its authority in silence · **the output is the ORDER, legible to him in under a page** — measure yourself by what landed in `src/`, and by that page.
+
+# APPENDIX D · THE GATE'S RUN ON THIS DOCUMENT
 
 **✔ Spawned on this file with the §4.6 canned charter verbatim, before it shipped. It returned 69 flags.** *Recording them and my dispositions is the mitigation for the one neutering path a mechanism cannot close — and it is how you will know what a Gate run is worth.*
 
@@ -295,7 +304,7 @@ A constant for the screen · an illustration for a count · a build stamp for a 
 9. ⛔ **"frozen at `39b48ac` before the document was opened"** — the SHA backs the freeze, not the ordering ⇒ the ordering claim marked ⚠ as mine.
 10. ⛔ **Four computed durations** — *in three hours · in ten minutes · in one hour · minutes before this document* — TELL 3, and **the fifth's scar was pricing an indictment in fabricated units.** ⇒ **All four cut. None was load-bearing; each was rhetoric wearing a measurement's clothes.**
 11. ⛔ **"four named philosophical moments"** ⇒ marked ⚠-on-the-researcher's-report.
-12. ⛔ **Appendix C said "recorded below" over an empty section** — a self-referential falsehood, caught by a reader with no context. ⇒ This section.
+12. ⛔ **This appendix's placeholder said "recorded below" over an empty section** — a self-referential falsehood, caught by a reader with no context. ⇒ This section.
 
 ## ⚠ ACCEPTED AS TRUE, LEFT STANDING WITH THEIR MARKS
 The seat capability claims in the §3 table, the coder's four SHAs, the commission's two chairs, the Δ21 and dissolution dates. **These are other seats' measurements or Arman's rulings, and the campaign references those rulings BY DATE — that is their identifier, not a computed duration.** ⇒ **By this office's own rule they are ⚠-on-report, and §3 attributes each. That IS the citation; a second-hand claim cannot carry a ✔.**

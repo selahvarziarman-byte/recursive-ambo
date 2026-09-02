@@ -1114,8 +1114,12 @@ export function SourcesShelf({
       }}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <div style={{ fontSize: 10.5, letterSpacing: 1.1, opacity: 0.6, fontVariant: 'small-caps' }}>
-        sources — loaded universes
+      {/* I-1a §4 — the designer's ruled rename, landing INSIDE clause 2(a)'s
+          recut (never before it: this title is the d8 driver's LOCATOR, and
+          a rename landing alone turns its D10 assertion into a silent skip).
+          The module's own word for this panel is the shelf. */}
+      <div data-shelf-title style={{ fontSize: 10.5, letterSpacing: 1.1, opacity: 0.6, fontVariant: 'small-caps' }}>
+        the shelf
       </div>
       {universes.length === 0 ? (
         <div style={{ fontStyle: 'italic', opacity: 0.65, margin: '6px 0' }}>nothing loaded yet</div>

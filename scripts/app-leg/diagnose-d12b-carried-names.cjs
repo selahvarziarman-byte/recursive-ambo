@@ -33,11 +33,15 @@
 // lineage-on-absence. Part 1: thicken:175 writes ABSENCE (never the copy's
 // id, never the source's name). Part 4: the door resolves absence through
 // `createdBy.sourceVertexIds` + the per-corner SUBSCRIPT level mark read
-// from the copy id's own `@k` tail. Part 2 HELD: the `=== id` scaffold
-// stands (13 manufacturers live; deleting it prints ids as names).
+// from the copy id's own `@k` tail. Part 2's scaffold is DEAD — its own
+// death-condition was met and executed at c859458 (THE TERMINAL CUT,
+// B-2026-08-23-A 4c): the mints write TRUE ABSENCE and a label is a NAME
+// by positive presence.
 //
-// ⛔⛔ THE NON-REGRESSION PINS (all three offices, by name): the fold-born
-// loop · the materialize mint · the zoo bodies EACH still read `unnamed`.
+// ⛔⛔ THE (d)/(e) PINS were RE-PINNED at I-1 clause 2(b) from the rulings
+// that superseded their originals — the 1555 reference-position law (a menu
+// reads name-or-address, never `unnamed`) and c859458's terminal cut — and
+// each arm names in its label what would make it RED again.
 
 const { spawn, execFileSync } = require('node:child_process');
 const http = require('node:http');
@@ -172,29 +176,50 @@ check(
   A.faceDisplayName(ambo, tri, resolve),
 );
 
-// ---- (d) a genuinely unnamed source stays unnamed --------------------------
-console.log('\n— (d) the honest absence survives · unnamed source ⇒ unnamed room face —');
+// ---- (d) the honest absence reads its ADDRESS at the menu ------------------
+// I-1 clause 2(b): the old pin ("every face citing the absent corner reads
+// `unnamed`") predated the 1555 ruling, which made this menu a REFERENCE
+// POSITION — own name where the substrate holds one, the honest address
+// tail where it does not, NEVER the word `unnamed` (a token in a WHICH-slot
+// is not a true absence). The pins below come from that ruling's clauses,
+// not from the observed strings: no absence word anywhere in a menu · the
+// absent corner cited BY ADDRESS (a lowercase tail, present in exactly the
+// faces that cite it) · the untouched wall resolving whole · and every
+// option DISTINCT (R4(a)'s principle, the individuation the ruling was
+// bought on). RED again if `unnamed` returns to a menu, if two options
+// collide, or if the wall stops resolving.
+console.log('\n— (d) the honest absence reads its ADDRESS at the menu (1555) · the wall resolves —');
 {
   const bare = JSON.parse(JSON.stringify(lift));
   bare.vertices[tri.vertexIds[0]].data.label = ''; // a TRUE absence at the source
   const bareBand = thicken(bare, inlineSegment()).shape;
   const bareMenu = A.boundaryFacesOf(bareBand, resolverOver([bare]));
   const unnamedFaces = bareMenu.filter((e) => e.label.startsWith('unnamed')).length;
+  const strip = (l) => l.replace(/ · \d corners$/, '');
+  const addressCiting = bareMenu.filter((e) => /(^|·)[a-z][^·]*@/.test(strip(e.label))).length;
+  const distinct = new Set(bareMenu.map((e) => e.label)).size;
   check(
-    '(d1) every face citing the absent-source corner reads `unnamed` (compose-over-absence: never a partial name); the untouched wall still resolves',
-    unnamedFaces === 4 && bareMenu.some((e) => !e.label.startsWith('unnamed')),
+    '(d1) THE 1555 RULING at the menu: zero `unnamed` options · the absent-source corner cited by its ADDRESS in four faces · the untouched wall resolves whole · five distinct strings',
+    unnamedFaces === 0 && addressCiting === 4 && bareMenu.length === 5 && distinct === 5,
     bareMenu.map((e) => e.label).join(' | '),
   );
 }
 
-// ---- (e) ⛔⛔ THE THREE NON-REGRESSION PINS --------------------------------
-console.log('\n— (e) ⛔⛔ the three pins · manufactured labels STILL read `unnamed` (the scaffold holds) —');
+// ---- (e) ⛔⛔ THE THREE PINS, RE-PINNED AT THE TERMINAL CUT ----------------
+// I-1 clause 2(b): the old (e) arms were NON-REGRESSION pins on the
+// id-as-label SCAFFOLD — and the scaffold's own recorded DEATH-CONDITION
+// ("terminal cut after the last person-reachable manufacturer") was MET and
+// EXECUTED at c859458 (THE TERMINAL CUT, B-2026-08-23-A 4c): the mints now
+// write TRUE ABSENCE, a label is a NAME by positive presence, and absence
+// resolves through lineage. The arms below witness the terminal cut's own
+// contract instead of the scaffold it retired — and each names its way
+// back to RED in its label.
+console.log('\n— (e) ⛔⛔ the three pins · the mints write TRUE ABSENCE and the terminal cut holds —');
 {
   // e1 THE FOLD LOOP — the standing exhibit, on the real mint
   const segForLoop = liftSubComplex(createSeedShape('tetrahedron'), [{ kind: 'edge', id: createSeedShape('tetrahedron').edges[0].id }]).shape;
   const loop = closeSegmentIntoLoop(segForLoop, segForLoop.edges[0]).shape;
   const loopVs = Object.values(loop.vertices);
-  const loopManufactured = loopVs.every((v) => (v.data?.label ?? '') === v.id);
   // the loop has no faces — its person surface is the argument card; the
   // scaffold CLASS is proven functionally on a planted face carrying the
   // loop's exact packet shape, WITH a live resolver and resolvable lineage
@@ -208,19 +233,22 @@ console.log('\n— (e) ⛔⛔ the three pins · manufactured labels STILL read `
     ),
     faces: [{ id: 'face:planted', vertexIds: loopVs.map((v) => v.id) }],
   };
+  const loopAbsent = loopVs.every((v) => (v.data?.label ?? '') === '');
+  const withResolver = A.faceDisplayName(planted, planted.faces[0], resolve);
+  const withoutResolver = A.faceDisplayName(planted, planted.faces[0]);
   check(
-    '(e1) THE FOLD LOOP: the real mint still writes id-as-label (measured) — and a face carrying exactly that packet shape reads `unnamed` even with a LIVE resolver and resolvable lineage (an id-copy is NEVER resolved — the migration discipline)',
-    loopManufactured && A.faceDisplayName(planted, planted.faces[0], resolve) === 'unnamed',
-    `loop labels manufactured: ${loopManufactured}`,
+    '(e1) THE FOLD LOOP under the terminal cut: the real mint writes TRUE ABSENCE (c859458 census, measured live) · with a LIVE resolver the absence RESOLVES THROUGH LINEAGE (never `unnamed`, never an id) · without one the name register still refuses whole — RED again if the mint resumes id-copies, if resolution dies, or if the composer starts fabricating without lineage',
+    loopAbsent && withResolver !== 'unnamed' && !/:/.test(withResolver) && withoutResolver === 'unnamed',
+    `mint absent: ${loopAbsent} · resolved: ${withResolver} · resolver-less: ${withoutResolver}`,
   );
   // e2 THE ZOO — a real body from the real mint, faces and all
   const zoo = buildClassBody({ kind: 'orientable', g: 1, b: 0, chi: 0, b1: 2 }, 'd12b-zoo');
   const zooFace = zoo.faces[0];
-  const zooManufactured = zooFace.vertexIds.every((id) => (zoo.vertices[id]?.data?.label ?? '') === id);
+  const zooAbsent = zooFace.vertexIds.every((id) => (zoo.vertices[id]?.data?.label ?? '') === '');
   check(
-    '(e2) THE ZOO BODY (standardBodies:130): its faces still read `unnamed` — with the live resolver handed in',
-    zooManufactured && A.faceDisplayName(zoo, zooFace, resolve) === 'unnamed',
-    `zoo face labels manufactured: ${zooManufactured}`,
+    '(e2) THE ZOO BODY under the terminal cut: standardBodies mints TRUE ABSENCE (c859458 census), and a zoo corner has no person lineage to resolve through — so the NAME register reads the honest `unnamed`, resolver or not. RED again if the mint resumes id-copies or if an unresolvable absence starts composing',
+    zooAbsent && A.faceDisplayName(zoo, zooFace, resolve) === 'unnamed',
+    `zoo mint absent: ${zooAbsent} · read: ${A.faceDisplayName(zoo, zooFace, resolve)}`,
   );
   // e3 THE MATERIALIZE MINT (materializeOperation:301) — source-pinned, and
   // its exact mint shape (id-copy + carried sources) planted through the
@@ -242,8 +270,11 @@ console.log('\n— (e) ⛔⛔ the three pins · manufactured labels STILL read `
     faces: [{ id: 'face:mat', vertexIds: [mintedId, 'b', 'c'] }],
   };
   check(
-    '(e3) THE MATERIALIZE MINT: `createDefaultVertexData(mintedId)` still stands at its source (the migration has not reached it) AND its exact mint shape reads `unnamed` through the reader — one manufactured corner poisons no partial name',
-    matSrc.includes('data: createDefaultVertexData(mintedId)') && A.faceDisplayName(mat, mat.faces[0], resolve) === 'unnamed',
+    '(e3) THE MATERIALIZE MINT under the terminal cut: the mint COMPOSES DESIGNATION from its source labels (`createDefaultVertexData(composeDesignation(...))` — the migration reached it, c859458) · and a hand-planted id-copy label is present content that composes by POSITIVE PRESENCE, never a silent partial. RED again if the mint resumes minting the raw id or the composer re-grows the scaffold',
+    matSrc.includes('data: createDefaultVertexData(composeDesignation(') &&
+      !matSrc.includes('data: createDefaultVertexData(mintedId)') &&
+      A.faceDisplayName(mat, mat.faces[0], resolve) !== 'unnamed',
+    `mint composes: ${matSrc.includes('data: createDefaultVertexData(composeDesignation(')} · planted read: ${A.faceDisplayName(mat, mat.faces[0], resolve)}`,
   );
 }
 
@@ -251,11 +282,11 @@ console.log('\n— (e) ⛔⛔ the three pins · manufactured labels STILL read `
 console.log('\n— (f) part 2 HELD · the scaffold stands, recorded positively; the card\'s file untouched —');
 const modelSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
 check(
-  '(f1) the scaffold clause STANDS in faceDisplayName, and its comment records: SCAFFOLD · thicken CURED · the migration shape · the DEATH-CONDITION (terminal cut after the last person-reachable manufacturer)',
-  modelSrc.includes('trimmed === vertexId') &&
-    modelSrc.includes('THE SCAFFOLD') &&
-    modelSrc.includes('DEATH-CONDITION') &&
-    modelSrc.includes('`thicken.ts:175` is CURED'),
+  '(f1) THE TERMINAL CUT STANDS: the id-as-label scaffold is GONE from faceDisplayName (no `trimmed === vertexId` survives) and the composer file records the cut and the 1555 split in its own doctrine comments — RED again if the scaffold resurrects or the comments stop matching the code they govern',
+  !modelSrc.includes('trimmed === vertexId') &&
+    modelSrc.includes('THE TERMINAL CUT') &&
+    modelSrc.includes('THE 1555 RULING') &&
+    modelSrc.includes('faceDisplayName below is UNTOUCHED'),
 );
 const headArg = execFileSync('git', ['show', 'HEAD:src/manuscript/argumentReadingModel.ts'], { cwd: repoRoot, encoding: 'utf8' });
 const workArg = fs.readFileSync(path.join(repoRoot, 'src/manuscript/argumentReadingModel.ts'), 'utf8');

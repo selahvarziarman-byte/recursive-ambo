@@ -970,3 +970,122 @@ winding-route       fef8fe9 / (this cycle) ⚠ RAN — 13 failures
 - **`THE_FRONT_BOARD.md`** — regenerated WHOLE at `f18d656`; **§2 is new and is the ranking**; six discharged rows moved into §5 with the law each bought.
 - **`PLAN_THE_LAST_PHASE.md`** — **REWRITTEN, the debt named at `1b7245f` and paid here.** The through-line's sixth clause now has its CONTENT (`what kind` vs `which one`), and the DESIGNATION ARC is a first-class arc rather than a scatter of card rows.
 - ⚠ **NOT AUDITED, and carried forward as a scope statement rather than a ✔: `PLAN_THE_LAST_PHASE`'s BOUNDS block.** ⛔ **Several are SUBSTRATE claims** (*"π₁ is not computed and not shown"* · *"No mask-based chirality counter"*) **— the coder's to confirm; I did not drive them.**
+
+---
+
+## §44 · THE PART-C + I-1(1+3) CYCLE — RATIFIED, and ONE CLASS OF ERROR THAT HIT THREE OFFICES IN ONE NIGHT (at `12ff7fa`)
+
+### §44.1 · ✔ PART C — VERIFIED AT MY OWN HAND, not from the report
+| check | result |
+|---|---|
+| **positive control** | `git show f18d656:src/manuscript/specimenModel.ts \| sha256sum` → `8c299f8b…9539b12a` = `docs/governance/ENGINE_FREEZE_MANIFEST.txt:77` at `f18d656`. **Byte for byte.** |
+| **new seal** | `git show 3f096a4:src/manuscript/specimenModel.ts \| sha256sum` → `ee896ad6…4b97fec3` = the same manifest line at `3f096a4`. **Byte for byte.** |
+| **one commit, nothing else** | `git show 3f096a4 --stat` → **2 files, 3+/3−.** A closed enumeration ⇒ the "no rider" absence is lawful. |
+| **the boundary** | `CLAUDE.md:135` at `12ff7fa` still names **exactly five**; `specimenModel.ts` is not among them and its row is bare again. ⇒ **Δ51 spent and closed.** |
+⇒ ✅ **`STAMP M-1` CLOSES WHOLE (A+B+C).**
+
+### §44.2 · ⛔⛔ THE ERA HYPOTHESIS BROKE — and §43.2's kill-condition fired PARTIALLY, which is the informative outcome
+⚠ **On the coder's census (all five, one HEAD):** d8 RED 29 · winding-route RED 13 · d12b RED 13 · d13 RED 7 (**zero aborts — a full clean run**) · **`deficit-app` GREEN, exit 0.**
+⇒ **My §43.2 kill-condition said: if the unrun three come back green, the era hypothesis is dead.** ⇒ **ONE of the three did. The hypothesis did not survive, and it did not survive in the shape I named.**
+> ### ⇒ ✅ **RULED — THREE CLASSES, NOT ONE ERA, and the re-cut of the coder's own split:**
+> **(a) d8 + winding-route — INSTRUMENT ROT.** Both die on the same first domino, *the cube parcel places*, **BEFORE the exit-button expectation the pose-cycle report had blamed.** ★ ***A first-failure read taken from a tail is a guess about which domino fell first; only running it names the domino.***
+> **(b) d12b + d13 — NOT ROT AT ALL: correct instruments speaking a SUPERSEDED VOCABULARY.** Both pin the pre-1555 compose-over-absence rule. ⚠ **d13 proves it: 7 failures, ZERO aborts, subject working end to end.**
+> **(c) `deficit-app` — GREEN, and it is the family's POSITIVE CONTROL.** ⇒ ***Without it four reds read as "the harness is dead"; with it they read as four specific debts.***
+
+### §44.3 · ⛔⛔ THE STRUCTURAL FINDING — a ruling can orphan a witness in silence
+**`CLAUDE.md` §3 already says *a ruling that changes what the person READS must sweep the PREDICATE, the SENTENCE, the TYPE, and the WITNESSES.* The 1555 ruling swept the code; these two witnesses still carry its predecessor.**
+> ### ⇒ ***A WITNESS OUTSIDE THE SWEEP DOES NOT ANNOUNCE THAT A RULING HAS ORPHANED IT.***
+**The drive family's exclusion from the sweep is CORRECT — *a red nobody owns trains its readers to skip it* — and the price of that correctness is silence.** ⛔ **I could find no mechanism that would flag it; whether one is buildable is the coder's, that the hole stands is mine.** **On the board, unchartered.**
+
+### §44.4 · ⛔⛔⛔ ONE ERROR CLASS, THREE INSTANCES, ONE NIGHT — and all three landed on the HEALTHY case
+| whose | the instance | what was read as the subject |
+|---|---|---|
+| **the coder's** | a 10-minute timeout wall killed `deficit-app` mid-gap; they filed it HUNG, then the unbounded retry ran green | ***"A wall I set is not the leg's verdict."*** |
+| **mine** | I read `deficit-app`'s blank result cell as "current" because its cut was recent, and wrote *two* unrun instead of three | ***A recent CUT is not a recent RUN.*** |
+| **the coder's, at the tooling grade** | `grep A && grep B` short-circuited when A matched nothing, silently skipping `sweep.cjs`; they read the empty output as *"no timeout exists anywhere"* | ***A NULL RESULT FROM A BROKEN PIPELINE WEARS INNOCENCE.*** |
+> ### ⇒ ⛔⛔ **THE CLASS: A LIMIT OF THE INSTRUMENT WEARS THE SUBJECT'S CLOTHES.**
+> ★ **And all three landed on `deficit-app` or on an empty result — the cases with NO RED FLAG to catch the eye.** ⇒ ***The healthy case gets the lazy read, because nothing about it demands a second look.***
+⇒ **The third instance is my own Gate's fifth tell (the negative existence claim) arriving from the coder's side, and its required form is the cure: *I could not find X — where is it?*, never *X does not exist*.**
+
+### §44.5 · ⛔ Δ52 vs ADR 0029 §27 — A CONTRADICTION BETWEEN TWO RATIFIED THINGS, ROUTED NOT RESOLVED
+✔ **`docs/adr/0029` §27 at `12ff7fa`: the Ambo scheme's *"letter-readings CARRIED/COMPOSED — Arman's carve-out, grounded as principled."*** ⚠ **Arman, on the coder's relay this cycle: *"the midpoints of ambo get named by the user/reader. the concatenation is a placeholder."***
+✔ **AND THE ENUMERATION IS THE FINDING, not the single site** (my Gate caught me generalizing from one line): `git grep -n "createDefaultVertexData("` at `12ff7fa` shows **three sites composing through `composeDesignation`** (`complexIdentification.ts:653` · `materializeOperation.ts:310` · `patchLift.ts:239`) **and `ambo.ts:116` concatenating INLINE.** ⇒ ⛔ **Ambo is the odd one out among the composing sites.** ⚠ **Consistent with Arman's reading, and equally consistent with the scheme predating the composer. I cannot separate those and I am not guessing.**
+⇒ ⛔⛔ **AND A SECOND SUSPECT NOBODY HAS NAMED: `dualization.ts:462` mints `` `D${index+1}` `` — INDEX-DERIVED, the naming doctrine's own disease (*an address is never a name*).** **Flagged, unchartered.**
+> ### ⇒ ★★★ **THE HAZARD CLASS, worth more than the instance: §27 CITES HIM BY NAME.** ***A CLAUSE THAT CARRIES THE SOVEREIGN'S AUTHORITY IS THE HARDEST KIND TO NOTICE GOING STALE, BECAUSE IT READS AS ALREADY-CONFIRMED — a citation meant to make a ruling SAFER is what makes it least likely to be re-checked.***
+⛔ **KILL/RESOLUTION: the researcher's re-rule of §27's grain, with Arman confirming which reading is his. The survivor's cut stays UNCHARTERED until then** — ✔ **verified: `src/components/Panels.tsx:3423-3431` headlines a PICK TARGET (`:2204`) with the NAME composer, printing a raw `shortId` beneath at `:2213`.** ★ ***The panel already behaves as though the name cannot individuate — it prints an address underneath.***
+
+---
+
+## §45 · THE THIRD FAILURE CLASS — *a stale ASSERTION goes red; a stale LOCATOR goes GREEN* (all at `12ff7fa`)
+
+### §45.1 · ⛔⛔⛔ THE FINDING, and how it was reached
+**I was NOT looking for it. The designer ruled the shelf panel's title (`sources — loaded universes` → `the shelf`) and I was about to charter it — then applied my own §44.3 test: *does this person-facing string change touch a stale leg's subject?***
+✔ **`scripts/app-leg/d8_shelf_route_driver.py:151-162`, read at my own hand:**
+```python
+shelf_title = page.get_by_text("sources — loaded universes")
+if shelf_title.count() > 0:
+    …  record(f"d10.{key}.noOverlap", panel_bottom <= shelf_top + 0.5, …)
+else:
+    # nothing loaded yet — the obstacle is absent; record the measured box
+    record(f"d10.{key}.noOverlap", True, f"no shelf on screen; …")
+```
+> ### ⇒ ⛔⛔ **THE TITLE IS THE LOCATOR, NOT MERELY AN ASSERTION — and the miss path records `True`.**
+> ### ⇒ ***A STALE ASSERTION GOES RED. A STALE LOCATOR GOES GREEN. A LOCATOR THAT MISSES DOES NOT FAIL — IT SKIPS, AND A GUARDED SKIP IS A PASS.***
+⛔ **The guard's REASONING is correct and clearly written (*"nothing loaded yet — the obstacle is absent"*). Its PREDICATE is *the title string is not on screen*, which is true in two different worlds: the shelf is empty (a real pass) and the shelf is there under a new name (a miss).**
+> ### ⇒ ★★★ ***A GUARD WHOSE PREDICATE CONFLATES "THE THING IS ABSENT" WITH "I COULD NOT FIND IT" RECORDS A PASS FOR BOTH.***
+⇒ **`CLAUDE.md` §3's law arriving from the other side: it tells a SEAT *a capability you cannot FIND is not one that is missing*. Here a WITNESS makes that error in code and converts it to a green.**
+
+### §45.2 · ⛔⛔ AND IT UNDERMINES MY OWN §44.2(c) RULING — withdrawn, same session
+✔ **Census at my own hand — `git show 12ff7fa:scripts/app-leg/<LEG>_driver.py | grep -c 'get_by_text'` and `| grep -c 'count() > 0\|count()>0'`:**
+```
+d8_shelf_route  9/9   ·  d12b 0/4  ·  d13 5/4  ·  deficit_app 68/55  ·  winding_route 1/3
+```
+⇒ ⛔ **`deficit-app` — the leg I ruled the family's POSITIVE CONTROL hours earlier — carries 68 text locators and 55 guarded paths.** ⇒ **How much of its green is passing and how much is skipping is unmeasured, and I could find no read that distinguishes them.**
+> ### ⇒ ★★★ **WITHDRAWN: `deficit-app` is not the control until its green is audited.** ***I made a leg the control without asking what its green was made of — in the same letter where I ruled that the healthy case gets the lazy read.*** **The healthy case got the lazy read, and it was mine.** ⇒ **§44.4's class, fourth instance, and the first one where I was the only office involved.**
+⚠ **AND `d12b` HAS ZERO `get_by_text` WITH FOUR GUARDS** ⇒ **it locates by some other means, so my sweep pattern would not have seen it. My scope claim was one search pattern wide and I had not said so — the counterexample was printed four lines above the claim.**
+
+### §45.3 · ✅ SEQUENCING CONSEQUENCE, ruled
+⛔ **THE SHELF RENAME MAY NOT LAND BEFORE d8's RECUT.** ⇒ **Alone it would stop d8's D10 geometric assertion from running while reporting a pass.** ✅ **RULED: it rides INSIDE `STAMP I-1` clause 2's (a) cut, so the recut pins the new title once rather than pinning the old and being recut for a rename.**
+⇒ ✅ **`STAMP I-1` CLAUSE 2 GAINS CLASS (c): THE GUARDED LOCATORS.** **Per leg touched: enumerate the guards and say whether each else-branch is a REAL absence or a MISS.** ★ **Cure shape, borrowed from the coder's own canary fix: give the third outcome its own word — a named SKIP that prints as itself — instead of folding it into PASS or FAIL.**
+⛔ **KILL-CONDITION: if the guards prove separable (each else-branch demonstrably distinguishes absence from miss), class (c) is empty and this section is over-called. That read is cheapest on `deficit-app`, because it runs green and every skip there is visible without fixing anything.**
+
+---
+
+## §46 · THE DESIGNER'S THREE-LETTER HOUR — ratified, with two classes and one code-read that outran a drive
+
+### §46.1 · ✅ RATIFIED
+- ✅ **THE ORDINAL: `abAB : the 4-gon you made third ⟶ Torus (T²)`** — ⚠ four candidates RENDERED in the live header; two died on the WRAP (`Torus (T²)` split across the break). ★ **Candidate 4 died twice, on two mechanisms — measurement (`seq` page-wide) and render — which is LAW 25 satisfied without being invoked.** ✔ **The graceful wrap puts `⟶ Torus (T²)` on line two: ADR 0024's order survives the break and the break lands on the ADR's own boundary.**
+- ✅ **ITS CONDITION:** the ordinal shows only when the class name does not individuate, and when it lengthens it lengthens for EVERY source on the surface. ⇒ ***Do not mark the ordinary***; ***a register whose form varies row by row carries information it does not mean.*** ★ **Her address-length law at form grain.**
+- ✅ **THE SHELF IS `the shelf`** — the module's own word (`ManuscriptView.tsx:4869`, `Panels.tsx:392`), the title at `ManuscriptChrome.tsx:1118`. ⇒ **Cure is the TITLE ALONE; origin is already a per-entry property.**
+- ✅ **THE CHIP:** `the field — shown · other marks step back` ⇒ a change to the DRAWING, so the bordered chip's different treatment is HONEST. ★ **And her `— show it` / `— shown` pair completes a rule the card itself supplied.**
+
+### §46.2 · ✔ TWO FINDINGS OF MINE, both from reading code her drive could not reach
+1. ⛔ **`ManuscriptChrome.tsx:1096` — TWENTY-TWO LINES ABOVE the title — is a comment reading *"with FOUR loaded universes the shelf's…"*** ⇒ ***The panel's own source file calls it the shelf immediately above the line that renders `sources`. The code already knows the right name; the copy is the only place that does not.***
+2. ⛔ **`playgroundOperations.ts:473`'s `Glue → Torus (abAB)` is a SECOND PRODUCER of a word the card computes elsewhere** — ✔ traced: `surfaceImmersion.ts:395` → `argumentReadingModel.ts:983-985` → the header, and `specimenModel.ts:119` → the subtitle. ⇒ ***Two producers of one fact: on a torus they agree and nothing makes them.*** ★ **And it is the SAME STRING her parenthesis law flags for demoting the trace — two offices reaching one string from opposite directions, neither reading finding the other's defect.**
+
+### §46.3 · ⛔ AND THE `abAB` / `abaB` MEASUREMENT — a code read that falsified a drive-sighting
+✔ **At my own hand: `playgroundOperations.ts:473` `'Glue → Torus (abAB)'` · `:494` `'Flip-glue → Klein (abaB)'` · `surfaceImmersion.ts:103-109` `torus 'abAB'` / `klein 'abaB'` · *"capitals = inverse"* at `:101` · pairings at `:475-478` / `:500-501`.**
+⇒ **Her §3 word-collision routing is withdrawn by her own kill-condition.** ⇒ ⛔⛔ **BUT THE REPLACEMENT IS LIVE: she reported the two strings as identical.** ⚠ **Her words are *"the operations menu I CAPTURED"* — a capture, so whether that was a visual read or a transcription slip is HERS to say, and it decides whether this is a legibility finding of the first order or a note.** ⛔ **I stated the fork rather than filling it in; the Gate caught me having filled it in on the first draft.**
+> ### ⇒ ★★★ **AND THE STANDING PROPERTY I RECORDED AT §43.5 NEEDS ITS OTHER HALF: I wrote *a code reading is all I have, and hers can falsify one.* THIS TIME THE CODE READ FALSIFIED THE DRIVE.** ⇒ ***Neither instrument outranks the other. She measures what the screen SHOWS; I measure what the strings ARE — and the GAP BETWEEN THEM IS THE DEFECT, which is visible from neither seat alone.***
+
+### §46.4 · ⛔ MY OWN TWO ERRORS THIS HOUR, both caught by the Gate, both of the same kind
+1. **I wrote ELEVEN LINES in a subject line and TWENTY-TWO in the body of the same letter** — the cited lines give 22. ⇒ ***A number in a subject line is the one nobody re-derives, because it reads as a summary of something already checked.***
+2. **I cited *"a cure at one picker is not a cure of the disease"* to `CLAUDE.md` §3.** ✔ **It is at `PLAN_THE_LAST_PHASE.md:107` — a drift guard I wrote there myself; `CLAUDE.md:63` carries the neighbouring law.** ⇒ ***A citation pointing at the wrong authority is worse than none: it looks checkable, fails the check, and borrows weight the source never gave.***
+
+---
+
+## §47 · THE SEVENTH'S SEATING, ACCEPTED AS THE OFFICE'S BEST CALIBRATION DOCUMENT (entered by the sixth on return, at `12ff7fa`)
+
+✔ **Their letter** (`inbox/mothership/_archive/2026-09-02_the-seventh_TO-THE-SIXTH_…`) **is accepted whole — read it before trusting any summary, including this one.** Their measurement, at their own hand: **63 letters, 425,714 bytes of record against 30,500 bytes of `src/` — 14:1 — with the Gate and Keeper run well and the Helm absent.**
+
+> ### ⇒ ★★★ **THE LAW IT BOUGHT — the sharpest thing the office now owns about itself:**
+> ***AN OFFICE CAN EXECUTE THREE OF ITS FOUR ORGANS PERFECTLY AND STILL FAIL ENTIRELY, BECAUSE THE FOURTH DECIDES WHAT THE OTHER THREE ARE FOR.***
+> **§8's physics predicted the drift (every organ has a completion signal; coherence has none). What the seventh adds is its MAGNITUDE: the drift is not gradual erosion — it can consume a whole seating while every individual act is defensible, WELL-MARKED, and honestly disclosed.** ⛔ **The ✔/⚠ discipline, the Gate, the echo protocol — none of them detect it, because none of them measure what the letters are FOR.**
+
+**THEIR FOUR RULES, ADOPTED AS STANDING (each bought in one day):**
+1. ⛔ **When he asks for the plan and there is no plan FILE, WRITE THE PLAN** — assemble it from the ratified parts and hand it to him to break. ***Scattered ratified parts with no assembled whole is not a missing input to this office. It IS the input.*** *A wrong plan he can correct in one sentence is worth more than an accurate report that there isn't one.*
+2. ⛔ **ROW 1 OF THE BOARD DOES NOT MOVE EXCEPT BY HIS WORD.** ***Every finding arrives with an argument for its own importance attached*** — check the argument, and then ask the question that outranks it: *is this on the plan?* **A gate binds what it gates and nothing upstream; a prerequisite of a parked thing is parked; one item's dependency never re-sequences items that have none.**
+3. ⛔ **BEFORE ADOPTING A WORD FOR A FRONT, GREP IT.** A nickname that collides with a term the governance record already defines inherits its authority in silence — *two producers of one name.*
+4. ⛔ **THE OFFICE'S OUTPUT IS NOT LETTERS. It is the ORDER, and the plans that make it legible to him in under a page.** ⇒ **The quantitative self-test, theirs: bytes of record written vs bytes landed in the work. An order of magnitude of imbalance is the tell.**
+
+⚠ **AND THE FINDING ABOUT MY OWN PACKET, which is mine to own, not theirs:** the seventh read V4, quoted it accurately, and ran the office as a clerk anyway. ⇒ ***A constitution transmitted the LAWS and failed to transmit the RANK AMONG THEM.*** V4 gains Appendix D; the skill gains the same lesson at §1/§3/§8.

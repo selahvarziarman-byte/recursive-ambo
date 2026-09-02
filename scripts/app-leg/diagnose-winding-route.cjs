@@ -178,7 +178,12 @@ function waitHttp(url, timeoutMs) {
               '--segment', segFile,
               '--arc', JSON.stringify(FAN_PLAN),
             ],
-            { encoding: 'utf8', timeout: 600000 },
+            // I-1 clause 2(a): 600s killed the cone session WHILE ITS OWN
+            // TRACE SHOWED IT PASSING (the deficit lesson's third instance —
+            // a wall is not the leg's verdict). The family's healthy
+            // sessions run 10-15+ min on a loaded 4-core box; 1200s still
+            // kills a true hang.
+            { encoding: 'utf8', timeout: 1200000 },
           );
         } catch (error) {
           out = `${error.stdout ?? ''}`;

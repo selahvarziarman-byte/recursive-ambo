@@ -294,7 +294,9 @@ def read_return(page):
 
 
 def run_cone(page, args, arc):
-    page.set_input_files('input[type="file"]', [args.cube])
+    # I-1 clause 2(a): the universe door is the only MULTIPLE file input —
+    # the page door landed first in the DOM and the bare selector fed it.
+    page.locator('input[type="file"][multiple]').set_input_files([args.cube])
     page.wait_for_timeout(800)
     placed = place_parcel(page, 0.78, 0.30) is not None
     record("C.cubePlaced", placed, "the cube parcel placed (auto-points)")
@@ -387,10 +389,10 @@ def run_fan2(page, args, arc):
     # ENCIRCLED in the DEVELOPED cone room — the circuit crosses the seam
     # once and the room comes home EARLY. The ratified reading is pinned:
     # `return 1 · back where you started · after 1 door · the room came back turned`.
-    page.set_input_files('input[type="file"]', [args.fanlift])
+    page.locator('input[type="file"][multiple]').set_input_files([args.fanlift])
     page.wait_for_timeout(800)
     lift_ok = place_parcel(page, 0.44, 0.30) is not None
-    page.set_input_files('input[type="file"]', [args.segment])
+    page.locator('input[type="file"][multiple]').set_input_files([args.segment])
     page.wait_for_timeout(800)
     seg_ok = place_parcel(page, 0.30, 0.62) is not None
     record("E.parcels", lift_ok and seg_ok, "fan lift + segment placed")
@@ -465,7 +467,7 @@ def run_mirror(page, args):
     # THE FOURTH STRING, live (the sweep's corrected fact): the sound word
     # d+0,d+1,d+2 returns the entry on a straight +y walk in ONE door with a
     # reflection deck - the app must announce `the room came back mirrored`.
-    page.set_input_files('input[type="file"]', [args.cube])
+    page.locator('input[type="file"][multiple]').set_input_files([args.cube])
     page.wait_for_timeout(800)
     placed = place_parcel(page, 0.78, 0.30) is not None
     record("M.cubePlaced", placed, "the cube parcel placed")

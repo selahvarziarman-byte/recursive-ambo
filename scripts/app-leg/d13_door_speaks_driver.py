@@ -58,7 +58,9 @@ def main():
         page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
         page.goto(args.url)
         page.wait_for_timeout(2500)
-        page.set_input_files('input[type="file"]', [args.band])
+        # I-1 clause 2(a): the universe door is the only MULTIPLE file input —
+        # the page door landed first in the DOM and the bare selector fed it.
+        page.locator('input[type="file"][multiple]').set_input_files([args.band])
         page.wait_for_timeout(800)
         canvas = page.locator("canvas").first
         box = canvas.bounding_box()
