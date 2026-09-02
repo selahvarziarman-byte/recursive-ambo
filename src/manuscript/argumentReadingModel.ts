@@ -97,7 +97,14 @@ export interface ArgumentReading {
   // the map line — HIS operands by their carried designations (B-133 clause
   // B: `Square ⟶ Torus (T²)`, never a class-sign substitution like the dead
   // `□ ⟶ 𝕋²`); the gloss keeps the map's own word
-  header: { source: string; result: string; gloss: string };
+  // STAMP M-1 part A — THE MAP RESTORED TO THE O POSITION (ADR 0024: a
+  // reading that leads with the verdict and drops the map is the predicted
+  // failure). `word` is the identification map's own letters (`abAB`), read
+  // from the ONE producer that already computes it — the immersion model's
+  // correspondence word — never re-derived and never fabricated: null is a
+  // TRUE absence (no map: seeds, lifts, duals, and the collapse's empty
+  // word), and the header then reads `Source ⟶ Result` exactly as before.
+  header: { word: string | null; source: string; result: string; gloss: string };
   conceptRows: ArgumentMapRow[];
   relationRows: ArgumentMapRow[];
   // MEASURED SUBSTRATE FACT (probe, 2026-08-02 — flags the spec's relation
@@ -776,22 +783,30 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
     ),
   ];
 
-  // the words-line — counts, mechanical (the designer's wording rides later)
+  // the words-line — counts, mechanical (the designer's wording rides later).
+  // THE 1728 §4 ONE-LINER (STAMP M-1's absorbed row): the one line whose job
+  // is to count must agree with its own numbers — `1 relation`, never
+  // `1 relations` (measured on a lifted segment's card; the composed-seed
+  // sub-phrase below already agreed, which proved the module could). Every
+  // noun and verb in this composer now agrees, in all three branches.
+  const nOf = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
   const words = parent
-    ? `${Object.keys(parent.vertices).length} concepts become ${conceptRows.length} · ${parent.edges.length} relations become ${relationRows.length}${
+    ? `${nOf(Object.keys(parent.vertices).length, 'concept becomes', 'concepts become')} ${conceptRows.length} · ${nOf(parent.edges.length, 'relation becomes', 'relations become')} ${relationRows.length}${
         absorbedRelations.length > 0 ? ` · ${absorbedRelations.length} absorbed` : ''
-      }${diedConcepts > 0 ? ` · ${diedConcepts} die` : ''}`
+      }${diedConcepts > 0 ? ` · ${diedConcepts} ${diedConcepts === 1 ? 'dies' : 'die'}` : ''}`
     : liftedForm
-      ? `${conceptRows.length} concepts, ${relationRows.length} ${
-          composedRelationRows.length > 0 ? 'finer relations' : 'relations'
-        }${
+      ? `${nOf(conceptRows.length, 'concept', 'concepts')}, ${nOf(
+          relationRows.length,
+          composedRelationRows.length > 0 ? 'finer relation' : 'relation',
+          composedRelationRows.length > 0 ? 'finer relations' : 'relations',
+        )}${
           // THE TWO-SIDED BAR (Phase C): the count never hides the recorded
           // coarse relations — "9 finer + 3 composed seed", never a bare 9
           composedRelationRows.length > 0
             ? ` + ${composedRelationRows.length} composed seed relation${composedRelationRows.length === 1 ? '' : 's'}`
             : ''
         } — lifted whole${grainMarks.length > 0 ? ' · finer structure not carried' : ''}`
-      : `${conceptRows.length} concepts, ${relationRows.length} relations — the seed's own`;
+      : `${nOf(conceptRows.length, 'concept', 'concepts')}, ${nOf(relationRows.length, 'relation', 'relations')} — the seed's own`;
 
   // ---- PHASE 2 — the relation half + the reading on it -------------------
   // (1) THE ATTRIBUTED PAIRING — the committed replay-verified birth word
@@ -961,6 +976,14 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
   return {
     op,
     header: {
+      // M-1 part A: the immersion route is exactly the render every
+      // word-born surface takes, so its correspondence word IS the map that
+      // bore the form (replay-verified upstream); '' is the collapse's
+      // wordless target — a true absence, never a placeholder
+      word:
+        form.render.mode === 'immersion' && form.render.model.immersion.correspondence.word !== ''
+          ? form.render.model.immersion.correspondence.word
+          : null,
       source: sourceNameFor(form, resolveAbsent),
       result: resultNameFor(form),
       // the lift's gloss names its SPECIFIC source ("lifted from <source>" —

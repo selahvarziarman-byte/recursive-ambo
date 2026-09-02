@@ -7,7 +7,7 @@
 //  1 · THE CONE ROOM (the aperture word d+0,d+0,d+0 — sound, `2 × 180°`):
 //      heading 50° returns the entry in 2 doors with deck trace −1 (the
 //      half-turn) — the walk behind the positive control's
-//      `back where you started · 2 doors · the room came back turned`.
+//      `return 1 · back where you started · after 2 doors · the room came back turned`.
 //  2 · THE FAN CHAMBER (the door-3 5-cell band, EXIT B): the planned 360°
 //      circuit AROUND the k=5 pillar closes on the entry with 0 doors,
 //      0 wall clamps, deck identity — ★ THE INTERIOR-TRANSPORT GAP AS A
@@ -158,8 +158,8 @@ const check = (label, pass, detail = '') => {
   // a circle around the pillar THROUGH the entry; the return law decides
   // where the circuit closes. LAW 20: the room comes home EARLY, counted in
   // doors — one seam crossing, deck trace 1+2·cos(60°) = 2, det +1 (a cone
-  // is never a mirror) ⇒ `back where you started · 1 door · the room came
-  // back turned`.
+  // is never a mirror) ⇒ `return 1 · back where you started · after 1 door ·
+  // the room came back turned`.
   const px = pillar.a[0];
   const py = pillar.a[1];
   const rad = Math.hypot(ENTRY[0] - px, ENTRY[1] - py);
@@ -171,7 +171,7 @@ const check = (label, pass, detail = '') => {
   }
   const sim = simulateWalk(surface, ENTRY, plan);
   check(
-    '(2b) ★ INTERIOR TRANSPORT, PINNED: the pillar circuit comes home EARLY — position-return fires with 1 door, 0 clamps, deck trace 2 (the 60° holonomy), handedness +1 ⇒ `back where you started · 1 door · the room came back turned`',
+    '(2b) ★ INTERIOR TRANSPORT, PINNED: the pillar circuit comes home EARLY — position-return fires with 1 door, 0 clamps, deck trace 2 (the 60° holonomy), handedness +1 ⇒ `return 1 · back where you started · after 1 door · the room came back turned`',
     sim.returned === true && sim.doorsAtReturn === 1 && sim.clamps === 0 &&
       Math.abs(sim.traceAtReturn - 2) < 1e-6 && sim.handedness > 0,
     `returned ${sim.returned} · doorsAtReturn ${sim.doorsAtReturn} · clamps ${sim.clamps} · trace ${sim.traceAtReturn === null ? 'null' : sim.traceAtReturn.toFixed(3)}`,

@@ -334,7 +334,7 @@ def run_cone(page, args, arc):
                 record("C.window", built, "the cone room summons; the window opens")
     got = False
     line = dom = None
-    want = "back where you started · 2 doors · the room came back turned"
+    want = "return 1 · back where you started · after 2 doors · the room came back turned"
     if built:
         heading = [math.cos(math.radians(50)), math.sin(math.radians(50))]
         for attempt in range(6):
@@ -363,7 +363,7 @@ def run_cone(page, args, arc):
     # crossings; the deck does not — the falsifier the mandate names.
     gotB = False
     lineB = domB = None
-    wantB = "back where you started · 2 doors · the room came back the same way up"
+    wantB = "return 1 · back where you started · after 2 doors · the room came back the same way up"
     if built:
         for attempt in range(4):
             if not open_window(page):
@@ -386,7 +386,7 @@ def run_fan2(page, args, arc):
     # acceptance #2, INTERIOR TRANSPORT LANDED (2026-08-21): the pillar
     # ENCIRCLED in the DEVELOPED cone room — the circuit crosses the seam
     # once and the room comes home EARLY. The ratified reading is pinned:
-    # `back where you started · 1 door · the room came back turned`.
+    # `return 1 · back where you started · after 1 door · the room came back turned`.
     page.set_input_files('input[type="file"]', [args.fanlift])
     page.wait_for_timeout(800)
     lift_ok = place_parcel(page, 0.44, 0.30) is not None
@@ -455,7 +455,7 @@ def run_fan2(page, args, arc):
         line, dom = read_return(page)
         # the ratified reading, pinned (a witness that accepts any line pins
         # nothing): one seam crossing, home early, turned
-        wantE = "back where you started · 1 door · the room came back turned"
+        wantE = "return 1 · back where you started · after 1 door · the room came back turned"
         record("E.circuit", line == wantE and dom == line, f"THE LINE, VERBATIM: {line} · doors {seam(page)['doors']}")
     close_window(page)
 
@@ -506,7 +506,7 @@ def run_mirror(page, args):
         got = False
         line = dom = None
         # W.7 recut: the ratified final strings read `1 door` singular
-        want = "back where you started · 1 door · the room came back mirrored"
+        want = "return 1 · back where you started · after 1 door · the room came back mirrored"
         for attempt in range(5):
             if attempt > 0:
                 close_window(page)

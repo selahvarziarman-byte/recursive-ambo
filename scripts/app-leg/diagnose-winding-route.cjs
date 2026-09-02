@@ -89,7 +89,7 @@ const { serializeSnapshot } = req('src/playground/snapshot.ts');
 // leg that straddles it crosses the seam quad, the eye jumps +60° (the
 // holonomy) and goto converges on the far side (a door counts as leg-arrival
 // in goto's own law). Expected reading at the close:
-// `back where you started · 1 door · the room came back turned`.
+// `return 1 · back where you started · after 1 door · the room came back turned`.
 const FAN_PLAN = [
   [-0.35, -0.55, 0.1],
   [-0.13, -0.72, 0.1],
@@ -203,18 +203,18 @@ function waitHttp(url, timeoutMs) {
     clause('C.cubePlaced', 'the cube parcel places');
     clause('C.picks', 'the aperture picks: the cone word d+0,d+0,d+0');
     clause('C.window', 'the room builds, summons, opens');
-    clause('C.turned', '★★ `back where you started · 2 doors · the room came back turned` — seam + DOM');
+    clause('C.turned', '★★ `return 1 · back where you started · after 2 doors · the room came back turned` — seam + DOM');
     clause('B2.retrace', '★ the retrace with a head-turn: `2 doors · the same way up` — the deck falsifier');
     console.log('\n— the fan chamber: the interior-transport gap —');
     clause('E.parcels', 'the fan lift + segment place');
     clause('E.armed', 'the thicken pair arms');
     clause('E.window', 'EXIT B builds the chamber; the window opens');
-    clause('E.circuit', '★ the pillar ENCIRCLED (interior transport landed): `back where you started · 1 door · the room came back turned` — the room comes home EARLY through the seam');
+    clause('E.circuit', '★ the pillar ENCIRCLED (interior transport landed): `return 1 · back where you started · after 1 door · the room came back turned` — the room comes home EARLY through the seam');
     console.log('\n— the mirrored room: the fourth string —');
     clause('M.cubePlaced', 'the cube parcel places');
     clause('M.picks', 'the aperture picks: the word d+0,d+1,d+2');
     clause('M.window', 'the room builds, summons, opens');
-    clause('M.mirrored', '★★ `back where you started · 1 door · the room came back mirrored` — live (W.7 recut: `1 door` singular is the ratified string)');
+    clause('M.mirrored', '★★ `return 1 · back where you started · after 1 door · the room came back mirrored` — live (M-1 part B: the ordinal + `after`; `1 door` singular held)');
     clause('hygiene.console', 'no console error across the sessions');
   } finally {
     try {

@@ -498,6 +498,8 @@ function AperturePickRow({
   onPickFaceB,
   onPickMap,
   paper,
+  onFaceTouch,
+  emphasizedIds,
 }: {
   index: number;
   row: AperturePairRowView;
@@ -505,6 +507,9 @@ function AperturePickRow({
   onPickFaceB: (value: string) => void;
   onPickMap: (value: string) => void;
   paper: ChromePaper;
+  // M-2: the one correspondence channel (see ApertureGatePanel's props)
+  onFaceTouch?: (faceId: string | null) => void;
+  emphasizedIds?: readonly string[];
 }) {
   const selectStyle = {
     display: 'block',
@@ -524,7 +529,28 @@ function AperturePickRow({
       <div style={{ display: 'flex', gap: 6 }}>
         {/* D11 (F.2/F.4): the option TEXT is the person's letter; the face id
             survives as the RECORD — the option's value and its DOM title */}
-        <select value={row.faceA} onChange={(e) => onPickFaceA(e.target.value)} onMouseDown={(e) => e.stopPropagation()} style={{ ...selectStyle, flex: 1 }}>
+        {/* M-2 clauses 1+2: hover/focus speaks the select's CURRENT face on
+            the one channel; choosing speaks the new one; a face emphasized
+            from the solid reads back as weight here. (A native <option>
+            under the open dropdown fires no per-option hover event — the
+            choose and the closed-select hover carry the correspondence;
+            named, not silently narrowed.) */}
+        <select
+          value={row.faceA}
+          onChange={(e) => {
+            onPickFaceA(e.target.value);
+            onFaceTouch?.(e.target.value || null);
+          }}
+          onMouseEnter={() => onFaceTouch?.(row.faceA || null)}
+          onMouseLeave={() => onFaceTouch?.(null)}
+          onFocus={() => onFaceTouch?.(row.faceA || null)}
+          onMouseDown={(e) => e.stopPropagation()}
+          style={{
+            ...selectStyle,
+            flex: 1,
+            ...(row.faceA && emphasizedIds?.includes(row.faceA) ? { fontWeight: 700 } : {}),
+          }}
+        >
           <option value="">— face —</option>
           {row.faceChoicesA.map((f) => (
             <option key={f.id} value={f.id} title={f.id}>
@@ -532,7 +558,22 @@ function AperturePickRow({
             </option>
           ))}
         </select>
-        <select value={row.faceB} onChange={(e) => onPickFaceB(e.target.value)} onMouseDown={(e) => e.stopPropagation()} style={{ ...selectStyle, flex: 1 }}>
+        <select
+          value={row.faceB}
+          onChange={(e) => {
+            onPickFaceB(e.target.value);
+            onFaceTouch?.(e.target.value || null);
+          }}
+          onMouseEnter={() => onFaceTouch?.(row.faceB || null)}
+          onMouseLeave={() => onFaceTouch?.(null)}
+          onFocus={() => onFaceTouch?.(row.faceB || null)}
+          onMouseDown={(e) => e.stopPropagation()}
+          style={{
+            ...selectStyle,
+            flex: 1,
+            ...(row.faceB && emphasizedIds?.includes(row.faceB) ? { fontWeight: 700 } : {}),
+          }}
+        >
           <option value="">— face —</option>
           {row.faceChoicesB.map((f) => (
             <option key={f.id} value={f.id} title={f.id}>
@@ -583,6 +624,8 @@ export function ApertureGatePanel({
   onClose,
   paper,
   accent,
+  onFaceTouch,
+  emphasizedIds,
 }: {
   rows: AperturePairRowView[];
   // F.0e (mothership §3.2): the volume's own boundary-face count for the
@@ -607,6 +650,14 @@ export function ApertureGatePanel({
   notice: string | null;
   onPickFaceA: (index: number, value: string) => void;
   onPickFaceB: (index: number, value: string) => void;
+  // STAMP M-2 clauses 1+2 (Arman ruled (a)) — THE FACE PICKER JOINS THE ONE
+  // CORRESPONDENCE CHANNEL: hovering/focusing/choosing a face select speaks
+  // the face id here (the view's handleRowTouch — the same emphasizedIds
+  // every card row rides), and a face emphasized FROM THE SOLID reads back
+  // as weight on the select that holds it. One channel, both directions,
+  // by construction.
+  onFaceTouch?: (faceId: string | null) => void;
+  emphasizedIds?: readonly string[];
   onPickMap: (index: number, value: string) => void;
   onGlue: () => void;
   // D2 — EXIT B (LEAVE BOUNDED): non-null exactly when a volume is pointed
@@ -735,6 +786,8 @@ export function ApertureGatePanel({
             onPickFaceB={(v) => onPickFaceB(i, v)}
             onPickMap={(v) => onPickMap(i, v)}
             paper={paper}
+            onFaceTouch={onFaceTouch}
+            emphasizedIds={emphasizedIds}
           />
         ))}
       </div>

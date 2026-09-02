@@ -469,6 +469,77 @@ function SpecimenLift({
   );
 }
 
+// STAMP M-2 (Arman ruled (a): clauses 1+2 only) — THE SOLID ACKNOWLEDGES
+// THE FACE. One fan mesh per face of the aperture's target volume: hovering
+// it speaks the face id on the ONE correspondence channel (the same
+// handleRowTouch → emphasizedIds every card row rides), and a face the
+// channel emphasizes — from the picker or from this layer itself — draws a
+// translucent fill over exactly that face. Invisible otherwise (opacity 0
+// keeps the collider live). Mounted INSIDE the entry's pose group, so the
+// marks transform with the ink and the raycast by construction. The fill's
+// look is craft the designer refines; the MECHANISM is the wiring — her
+// ruling's own words: a wiring, not an invention.
+function ApertureFaceCorrespondence({
+  shape,
+  emphasizedIds,
+  onTouch,
+  color,
+}: {
+  shape: Shape;
+  emphasizedIds: readonly string[];
+  onTouch: (faceId: string | null) => void;
+  color: string;
+}) {
+  const faces = useMemo(
+    () =>
+      shape.faces
+        .map((face) => {
+          const cycle = face.vertexIds
+            .map((id) => shape.vertices[id]?.position)
+            .filter((p): p is Vec3 => p !== undefined);
+          if (cycle.length < 3) return null;
+          const positions = new Float32Array(cycle.length * 3);
+          cycle.forEach((p, k) => positions.set(p, k * 3));
+          const index: number[] = [];
+          for (let k = 1; k < cycle.length - 1; k += 1) index.push(0, k, k + 1);
+          const geometry = new THREE.BufferGeometry();
+          geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+          geometry.setIndex(index);
+          geometry.computeVertexNormals();
+          return { id: face.id, geometry };
+        })
+        .filter((f): f is { id: string; geometry: THREE.BufferGeometry } => f !== null),
+    [shape],
+  );
+  useEffect(() => () => faces.forEach((f) => f.geometry.dispose()), [faces]);
+  return (
+    <>
+      {faces.map((f) => (
+        <mesh
+          key={f.id}
+          geometry={f.geometry}
+          renderOrder={3}
+          onPointerOver={(event) => {
+            event.stopPropagation();
+            onTouch(f.id);
+          }}
+          onPointerOut={() => onTouch(null)}
+        >
+          <meshBasicMaterial
+            transparent
+            opacity={emphasizedIds.includes(f.id) ? 0.3 : 0}
+            color={color}
+            side={THREE.DoubleSide}
+            depthWrite={false}
+            polygonOffset
+            polygonOffsetFactor={-2}
+          />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
 // F.0e — THE TRACED PAIR MARK (mothership §2, designer-ruled: a wireframe has
 // no face treatment to modulate — its own edge cycle is the one affordance a
 // skeleton offers, and a traced cycle encloses exactly one face at any angle).
@@ -1443,6 +1514,17 @@ function ArgumentMapSection({
   return (
     <div style={{ marginTop: 6 }}>
       <div style={{ fontSize: 15.5 }}>
+        {/* M-1 part A + M-1a — ADR 0024's O restored: `abAB : 4-gon ⟶ Torus`.
+            The MAP is a term the person made ⇒ WEIGHT 700; its `:` is a
+            connective ⇒ 400, like `⟶` (her ruling: terms are bold,
+            connectives are light). A null word is a TRUE absence — the
+            header reads `Source ⟶ Result`, exactly as before. */}
+        {argument.header.word ? (
+          <>
+            <span style={{ ...sign, fontWeight: 700 }}>{argument.header.word}</span>
+            <span style={sign}> : </span>
+          </>
+        ) : null}
         <span style={{ ...sign, fontWeight: 700 }}>{argument.header.source}</span>
         <span style={sign}> ⟶ </span>
         <span style={{ ...sign, fontWeight: 700 }}>{argument.header.result}</span>
@@ -1599,7 +1681,14 @@ function ArgumentMapSection({
           {argument.stance.slice(0, 8).map((row) => (
             <div key={row.conceptId} style={{ fontSize: 13 }}>
               <span style={sign}>
-                {`${row.conceptLabel} : ${row.cornersDeg.length > 1 ? row.cornersDeg.join(' ⊕ ') : row.cornersDeg.join('')} = ${row.angleSumDeg}`}
+                {/* THE 1728 §5 ONE-LINER: a concept holding NO corners used
+                    to render `v0 : = 0` — an absence carried by a gap,
+                    reading as a typo. An absence takes a WORD (her rule; the
+                    family's own pattern: `no cone edges`, `no gluing word`),
+                    and the sum-of-nothing is not printed as if measured. */}
+                {row.cornersDeg.length === 0
+                  ? `${row.conceptLabel} : no corner angles`
+                  : `${row.conceptLabel} : ${row.cornersDeg.length > 1 ? row.cornersDeg.join(' ⊕ ') : row.cornersDeg.join('')} = ${row.angleSumDeg}`}
               </span>
             </div>
           ))}
@@ -1909,6 +1998,15 @@ function SpecimenCard({
           ) : (
             <div data-argument-closed>
               <div style={{ fontSize: 13.5 }}>
+                {/* M-1 part A + M-1a — the same O restoration on the CLOSED
+                    face (both header mounts, one law; the family swept by
+                    symbol, not by instance) */}
+                {argument.header.word ? (
+                  <>
+                    <span style={{ fontFamily: SIGN_HAND, fontWeight: 700 }}>{argument.header.word}</span>
+                    <span style={{ fontFamily: SIGN_HAND }}> : </span>
+                  </>
+                ) : null}
                 <span style={{ fontFamily: SIGN_HAND, fontWeight: 700 }}>{argument.header.source}</span>
                 <span style={{ fontFamily: SIGN_HAND }}> ⟶ </span>
                 <span style={{ fontFamily: SIGN_HAND, fontWeight: 700 }}>{argument.header.result}</span>
@@ -4114,7 +4212,13 @@ export default function ManuscriptView() {
       // replace — the mechanism accepts whatever she supplies.
       const METRIC_MARK: Record<'measured' | 'heuristic' | 'unresolved-base', string> = {
         measured: '(measured)',
-        heuristic: '(k×90° heuristic)',
+        // M-1c §2 — HER RULED STRING, verbatim: `heuristic` was a claim
+        // about US that he cannot check; `from the edge count` is a claim
+        // about the FORM that he can (he counts edges; he cannot audit our
+        // method) — and apertureModel:1250 calls this fall LEGITIMATE,
+        // while `heuristic` read to a person as guessed. Same length class
+        // as the line it replaces (19 chars against 17), her measurement.
+        heuristic: 'from the edge count',
         'unresolved-base': 'sealed metric UNRESOLVED',
       };
       const metricSource = 'metricSource' in g ? g.metricSource : null;
@@ -6437,6 +6541,20 @@ export default function ManuscriptView() {
                 />
               </group>
             ) : null}
+            {/* M-2 clauses 1+2 — the face correspondence layer, mounted
+                while the aperture points at THIS volume (the FoldTapOverlay
+                idiom: the same frame as the drawn body, inside the pose
+                group, so pick = ink by construction) */}
+            {apertureOpen && apertureVolume && apertureVolume.id === entry.form.shape.id ? (
+              <group scale={scaleCtl.dim1Scale}>
+                <ApertureFaceCorrespondence
+                  shape={entry.form.shape}
+                  emphasizedIds={emphasizedIds}
+                  onTouch={handleRowTouch}
+                  color={generatorsCtl.a}
+                />
+              </group>
+            ) : null}
             {/* THE RING ANCHOR RESOLVER (SEAL_THE_RING_ANCHOR_RESOLVER) —
                 TOTAL over the render union: the resolver returned ANCHORS
                 (this mount) or a DECLARED refusal (the card speaks it below;
@@ -6721,6 +6839,10 @@ export default function ManuscriptView() {
             }
             onGlue={handleApertureGlue}
             onLeaveBounded={apertureVolume ? handleApertureLeaveBounded : null}
+            // M-2 clauses 1+2 — the picker rides the ONE correspondence
+            // channel (handleRowTouch → emphasizedIds), both directions
+            onFaceTouch={handleRowTouch}
+            emphasizedIds={emphasizedIds}
             // B-106 B1: the folded wall crosses the seam as ONE value —
             // sentence + door; the panel cannot render one without the other
             wall={apertureWall ? { sentence: apertureWall.sentence, onSubdivide: handleApertureSubdivide } : null}

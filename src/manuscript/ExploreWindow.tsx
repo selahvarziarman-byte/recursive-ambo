@@ -65,6 +65,12 @@ interface ExploreSeam {
   // the same reading twice means he walked it twice, and a silent de-dup
   // would lie about what he did. Null until the second position-return.
   previousReturnLine: string | null;
+  // M-1 part B (her ruling, from the sentence's own grammar): the RETURN
+  // ORDINAL — `return 3 · after 21 doors` — the count of circuit closes this
+  // session. It makes the two-slot log's truncation HONEST (a person seeing
+  // `return 7` and `return 8` knows six are gone) and it is why the log may
+  // SHORTEN under the bound instead of scrolling.
+  returnCount: number;
   // the walk leg's THROTTLE (an ungated window seam, the committed
   // __manuscriptScene idiom): nothing in the app sets it — the headless
   // driver's pointer pulses have a ~2u floor at the default pace under the
@@ -93,6 +99,7 @@ const seamOf = (): ExploreSeam => {
       walls: 0,
       returnLine: null,
       previousReturnLine: null,
+      returnCount: 0,
       paceOverride: null,
     };
   }
@@ -644,6 +651,7 @@ export function ExploreWindow({
     seam.walls = cellSurface.wallCount;
     seam.returnLine = null;
     seam.previousReturnLine = null;
+    seam.returnCount = 0;
     // INTERIOR TRANSPORT drive find (2026-08-21): the caption was the one
     // session fact the open-reset missed — on RE-OPENING the same room the
     // freshly computed caption equals the seam's stale copy, the change-gated
@@ -1016,6 +1024,7 @@ export function ExploreWindow({
       if (seam.caption !== caption) {
         seam.caption = caption;
         if (captionRef.current) captionRef.current.textContent = caption;
+        fitLog(); // the caption's height just changed — re-fit the bound
       }
       // THE WINDING ROUTE — the position-return test (fires on POSITION
       // ALONE; hazard 1: never gated on W ≠ identity — the flat control's
@@ -1039,9 +1048,16 @@ export function ExploreWindow({
             : deckTrace >= 3 - FRAME_EPS
               ? 'the room came back the same way up'
               : 'the room came back turned';
-        // the ratified final strings: `1 door` singular, `N doors` otherwise
-        // (`0 doors` stays plural) — W.7 recut; the three clauses verbatim.
-        const returnLine = `back where you started · ${seam.doors === 1 ? '1 door' : `${seam.doors} doors`} · ${clause}`;
+        // M-1 part B (her 0121 §3 ruling, superseding the middle term of the
+        // W.7 strings): `back where you started` is about THIS return, the
+        // clause is about THIS return, and the bare door count was CUMULATIVE
+        // — a subject shift mid-sentence that argued for the false reading
+        // ("this return took 21 doors"). `after N doors` restores the one
+        // subject; `return N ·` is the ordinal that keeps the two-slot log
+        // honest about what it dropped. Door-count agreement unchanged
+        // (`1 door` singular, `0 doors` plural).
+        seam.returnCount += 1;
+        const returnLine = `return ${seam.returnCount} · back where you started · after ${seam.doors === 1 ? '1 door' : `${seam.doors} doors`} · ${clause}`;
         // W.7 — the comparison is the mark: the line just standing shifts to
         // the PREVIOUS slot on EVERY circuit close, never gated on the string
         // having changed — an equal reading is a circuit he genuinely walked
@@ -1055,14 +1071,56 @@ export function ExploreWindow({
         }
         seam.returnLine = returnLine;
         if (returnRef.current) returnRef.current.textContent = returnLine;
+        fitLog(); // a second slot may have just filled — re-fit under the bound
       }
       raf = requestAnimationFrame(frame);
     };
+    // M-1 part B + M-1c — THE BOUND'S MECHANISM, measured off real rects
+    // (this panel is absolute inside the app region, so its viewport top is
+    // not its style's `top`, and the caption's height varies by room — no
+    // calc() constant can know either): (1) the CANVAS YIELDS — its width
+    // clamps to the height budget the window leaves after the panel's real
+    // top and real chrome, so the square walk view shrinks uniformly (the
+    // buffer follows client size per frame — crisp at any size, floor
+    // 140px); (2) then the LOG SHORTENS — at extreme shortness the PREVIOUS
+    // return drops, and the ordinal keeps the drop honest (`return 8`
+    // beside a lone slot says seven came before; 24px hysteresis so the
+    // slot does not flicker). NOTHING here scrolls — drag is the walk's own
+    // gesture (M-1c), and a scroll region would give one pointer motion two
+    // meanings decided by pixel position.
+    let logHiddenAtH = 0;
+    const fitLog = () => {
+      const panelEl = canvas.parentElement;
+      if (!panelEl) return;
+      const panelTop = panelEl.getBoundingClientRect().top;
+      const chrome = panelEl.scrollHeight - canvas.clientHeight;
+      const budget = Math.max(140, window.innerHeight - panelTop - chrome - 10);
+      const width = Math.min(panelEl.clientWidth - 24, budget);
+      const wanted = `${Math.round(width)}px`;
+      if (canvas.style.width !== wanted) canvas.style.width = wanted;
+      const prevEl = prevReturnRef.current;
+      if (!prevEl) return;
+      if (prevEl.style.display === 'none') {
+        if (window.innerHeight < logHiddenAtH + 24) return;
+        prevEl.style.display = '';
+        logHiddenAtH = 0;
+      }
+      if (
+        seamOf().previousReturnLine !== null &&
+        panelTop + panelEl.scrollHeight > window.innerHeight - 4
+      ) {
+        prevEl.style.display = 'none';
+        logHiddenAtH = window.innerHeight;
+      }
+    };
+    window.addEventListener('resize', fitLog);
+    fitLog();
     raf = requestAnimationFrame(frame);
 
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
+      window.removeEventListener('resize', fitLog);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);
@@ -1086,6 +1144,16 @@ export function ExploreWindow({
         top: 54,
         transform: 'translateX(-50%)',
         width: 'min(64vh, 700px)',
+        // M-1 part B — THE WALK PANEL IS BOUNDED TO THE WINDOW (her A.1
+        // reaching a second surface: a content-dependent column may not run
+        // past the frame — at 800×620 the older return line clipped at the
+        // viewport's bottom edge, and a log that truncates AND clips shows
+        // one entry and looks like it shows two). The bound's MECHANISM is
+        // fitLog, measured off real rects (a calc() constant cannot know
+        // this panel's true viewport offset — it is absolute inside the app
+        // region, not the window — nor the caption's per-room line count):
+        // the CANVAS yields first, then the log SHORTENS. NOTHING here
+        // scrolls — drag is the walk's own gesture (M-1c).
         padding: '10px 12px 8px',
         borderRadius: 3,
         background: paper.cardBackground,
@@ -1125,7 +1193,14 @@ export function ExploreWindow({
         data-explore-canvas
         style={{
           display: 'block',
+          // M-1 part B — the canvas yields to the bound: fitLog clamps this
+          // width to the measured height budget (viewport minus the panel's
+          // real top and its real chrome), so the square walk view shrinks
+          // uniformly instead of pushing the reading past the window. The
+          // buffer syncs from client size per frame, so a smaller view
+          // stays crisp — nothing distorts, nothing scrolls, nothing clips.
           width: '100%',
+          marginInline: 'auto',
           aspectRatio: '1 / 1',
           background: paper.background,
           cursor: 'crosshair',
