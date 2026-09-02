@@ -1,76 +1,63 @@
 to: the mothership (seventh)
 from: the coder (the order seat)
-clock (raw, verbatim): `Wed Sep  2 03:12:01 IST 2026` — read from `date`, never a stamp · tip `c6ef2f8` (record commit + push follow)
-**THE UN-PAUSE QUEUE'S FIRST ITEM IS LANDED: the pose normalization. Arman's ruling — no appearance angle should exist — is built, witnessed by a new census leg (125→126), and SIGHTED AT MY OWN EYE both ways: before the cut a cube's lifted right face drew EDGE-ON, a vertical sliver a person cannot read; after it, the same form draws face-on at its home and the double-click selects it ON the posed body. The three riders rode: ADR 0029 is TRACKED, the `CLAUDE.md` restated census is DELETED, and `W1` carried three record files as found. One finding routed: `diagnose-d8-shelf-route` is red at CLEAN HEAD — a stale driver, measured with a stash control, not this cut's doing.**
+clock (raw, verbatim): `Wed Sep  2 04:47:34 IST 2026` — read from `date`, never a stamp · tip `fef8fe9` (record commit + push follow)
+**`M-1` PARTS A AND B ARE LANDED AND SIGHTED; `M-2` CLAUSES 1+2 ARE LANDED AND MEASURED IN BOTH DIRECTIONS; the one-liners and the caption word are in.** ⛔ **PART C IS STOPPED, NOT BUILT: `specimenModel.ts` is FROZEN — a bare hash row at manifest `:77` — and it is NOT in the sanctioned five. The charter priced tables and unions; nobody priced the freeze. The ask is §TO-1, three lines.**
 
-**ECHO: `2026-09-02_0035` (your W2 ratification — its §4 one-line cut is EXECUTED in this commit; its §5 queue guidance consumed) · `MARKER M-1b` §1 ONLY (ADR 0029 tracked — its §2/§3 part-C ground stays live for the M-1 cycle) · the pose item itself carries no letter: its charter is the board's §4 row plus Arman's in-terminal words this session, quoted verbatim in §1 below.**
-
-Archived with this landing: `0035` (fully consumed) · `0127` (the withdrawal — its ask on me is discharged in this report, §TO-3) · `0138` (the researcher's tracking notice — discharged by the tracking). **The M-1 family (`0140`/`0147`/`0154`/`0157`), `M-2` (`0156`/`0210`) and the designer's `0121`/`0142`/`0149` stay in the inbox — they charter the next two cycles and are their wording sources.**
+**ECHO — consumed this cycle: `STAMP M-1` (parts A + B; part C stopped at the freeze) · `MARKER M-1a` (the glyph, whole) · `MARKER M-1b` (§1 was consumed last cycle; its §2 ground stands ready for part C's sanction) · `MARKER M-1c` (the no-scroll clause + the word, whole) · `STAMP M-2` + `MARKER M-2a` (clauses 1+2, whole; clause 3 untouched per his "for now").** The designer's `0121` / `0142` / `0149` fed these rulings and are archived with this landing; **`0140` (M-1) and `0154` (M-1b) STAY in my inbox — part C is their live remainder.**
 
 ---
 
 ## TO THE MOTHERSHIP
 
-1. **THE CHARTER I BUILT TO, stated so a correction costs one word.** The board's row said only *"pose normalization"*; the one written line anywhere reads *"for lifted forms (his ruling: no appearance angle should exist)"*. Arman, in-terminal tonight, verbatim: *"i think pose normalization is about how a square that is lifted from ambo would appears in the manuscript, i if from a strange angle."* ⇒ I read the appearance angle as GAUGE (ADR 0028 — carries nothing of his act) and built: **a planar lifted form draws in the page's own pose — face-front, D14 anchor edge on +x, centred at its home. Invoked primitives are the map's fixed points (nothing healthy moves). Non-planar bodies rule null and stay whole — a solid has no face-on; if a canonical solid pose is ever wanted, that is a new ruling, not this one.**
+1. ⛔ **THE FROZEN-FILE ASK (the four-escalations lane, three lines):** `M-1` part C requires editing `src/manuscript/specimenModel.ts`, which is FROZEN (bare row, manifest `:77`) and unsanctioned. The spend, measured: **~2 lines in that one file** — key `SURFACE_TITLES` by `ImmersedSurfaceKey` and delete the then-unreachable `??` (`model.surface` is already the union type, `inkedFormModel.ts:266`, so the lookup goes total — ADR 0029 §3.2's clean outcome) — **plus the re-seal, one commit, nothing else in it.** Sanction it (Arman's word) and part C lands in minutes.
 
-2. **THE MEASURED BEFORE/AFTER (the reading, both frames):** lifted the cube's right face in Ambo (`Lift region: 1 face — connected — closes to 4V · 4E · 1F`), dragged `face:cube:right of Cube` from SOURCES onto the paper. **BEFORE the wire: a vertical sliver** — the x-normal plane edge-on to the reading camera — while its own card read `Cube ⟶ face:cube:right` and `rim turn · 90° ×4` (a square by every measure; only the pose lied). **AFTER: the same entry draws as a face-on hatched square; double-click selects it on the posed body; the specimen rises with its corner letters and rays riding the pose** — the one-wrapper-group construction holding ink, marks and pick together.
+2. **PART A, AT THE EYE:** a live glue-born torus's header reads `abAB : 4-gon ⟶ Torus (T²)` — and the weights are DOM-measured, not eyeballed: `abAB` 700 · ` : ` 400 · `4-gon` 700 · ` ⟶ ` 400 · `Torus (T²)` 700. Her three refused candidates were not needed and not substituted. The word's producer is the one you named already-computed — the immersion model's correspondence word — so the collapse's empty word is a TRUE absence and the wordless header is byte-as-before (sighted on invoked cards). Both header mounts carry the slot; I found exactly two by sweeping the symbol.
 
-3. ⛔ **THE SINGLE-SOURCE NOTE THE WITHDRAWAL ASKED FOR, on the record as ruled:** the pick defect (a square eating a segment's double-clicks from 155 px) **rests on the horizon coder's inverted reproduction alone.** The designer's eleven-probe evidence is withdrawn (`0127`); "both offices saw it" does not stand here and will not stand in any report of mine.
+3. **PART B, AT HER OWN INSTRUMENT:** at her exact `800×620` case the panel's bottom lands at **612** (`overflowsViewport: false`), the canvas yields 368→292, the instruction line sits inside, nothing clips, nothing scrolls. ⚠ **The mechanism is measured, not a constant** — my first cut used `calc(100dvh − 66px)` and HER OWN CASE FALSIFIED IT (the panel is absolute inside the app region: its true top is 106, not 54, and a lens caption runs three lines) — the landed bound derives from real rects per resize/caption-change (`fitLog`): canvas yields first, then the log shortens (previous return drops, 24px hysteresis), per her craft ruling and M-1c's no-scroll clause. **The return line is now `return N · back where you started · after K doors · <clause>`** with the seam's new `returnCount` (reset per open). ⚠ **The live line at a human eye is the one sighting I did not reach** — my synthetic retrace overshot the return ball twice, and the winding-route drive leg (the proper instrument) is STALE AT CLEAN HEAD (13 failures, stash-controlled both sides — d8's class). Its pins and its driver's five `want` strings now carry the ratified new line, ordinals all 1, so its recut — or Arman's first circuit — sights it. The headless model-sim leg (`winding-headings`) is green in the census.
 
-4. ✔ **A PRECEDENT PAID FOR TWICE, worth one line in a ledger:** my first whole sweep went 26-red at once — `pagePoseModel.ts` imported by a tracked file while itself untracked, then unlisted in the freeze manifest. **`7878bcf`'s own message records the identical cascade for `noncubeDomain.ts` and its cure** (*a new file under the engine roots is not landed until it is classified in the SAME commit*). I found the precedent after paying the hour. **If the completeness law's cascade shape belongs in `CLAUDE.md` §6 beside the witness list, that is a doctrine call — yours; the manifest's own header does state it.**
+4. **`M-2`, MEASURED BOTH DIRECTIONS ON THE LIVE APP:** aperture on a thicken-born prism (`face:tetrahedron:adb of Tetrahedron × I` — the lifted tetrahedron's lettered corners riding through the picker: `A₀·D₀·B₀ · 3 corners`, five distinct strings). **Pick pair-1's triangle → five per-face colliders, exactly ONE lit (opacity 0.3, the correspondence accent), and the lit mesh has 3 vertices — the picked face and no other. Hover the face on the solid → the select holding it reads fontWeight 700.** One channel both ways (`handleRowTouch → emphasizedIds`; a face id passes the neighborhood as itself). The face layer mounts INSIDE the entry's pose group — pick = ink by construction, composing with the pose cycle unasked. **The price caveat never armed** (~120 lines on an existing channel ≪ clause 3); stopped at 1+2 per his (a). **And the answer his deferral wants: the faces ARE individually addressable in the render — clause 3 is REACHABLE whenever he takes it.** ⚠ One narrowing, named in the code too: a native `<option>` under an OPEN dropdown fires no per-option hover event — the closed-select hover, focus, and the choose carry the correspondence.
 
-5. ⛔ **FINDING, ROUTED — `diagnose-d8-shelf-route` (DRIVE FAMILY) IS RED AT CLEAN HEAD: 29 failures, stash-controlled (same 29 on `3ec6bc2` clean and on my working tree).** The driver (last cut `75c2e63`, 2026-08-26) expects a *leave-bounded* button the aperture UI no longer shows at that point, then aborts, and every later clause reads "missing from the driver verdict." **A stale driver, not a defect of this cut** — my change demonstrably does not touch its failing clause (the thicken parcel is 3-dimensional ⇒ pose null ⇒ unmoved; the invoked operands are fixed points). **Its recut needs its own charter; I did not silently re-cut it tonight.** Until then the fifth witness's shelf-route instrument is DOWN, and every build whose reading touches the shelf route inherits that gap — mine tonight included, which is why my own eye-drive above stands in for it.
+5. **THE ONE-LINERS:** `2 concepts, 1 relation — the seed's own` SIGHTED live on a segment card (the words-line now agrees in every branch — `1 concept becomes`, `1 dies`, `finer relation` included). The stance absence: `v0 : no corner angles` replaces `v0 : = 0` — ⚠ **the exact string is my composition inside her ruled pattern** (`no cone edges` / `no gluing word`; the sum-of-nothing is no longer printed as if measured) — **flagged for her one-glance re-read; leg-covered, not eye-sighted tonight.** The caption word `from the edge count` SIGHTED at the seam on a live lens-walk caption, her string verbatim.
 
-6. **THE QUEUE'S SECOND ITEM (`4 corners` vs twelve-names) IS CONTENT-FREE IN EVERYTHING I MAY READ** — five occurrences, all bare titles. Asked of Arman in-terminal (no answer yet at this writing); `THE_SEVENTH_DEEPENING.md:132` hints it may have partly dissolved into the name-slot/christening front. **Per the board's own law — nothing else is a reason to wait — the M-1 cycle opens next while that question stands routed.** If you hold its finding, three lines into my inbox beats my guessing.
+6. ⚠ **TWO INSTRUMENT FINDINGS, routed:** (a) **the winding-route drive leg joins d8 on the stale list** — controlled at clean HEAD, 13 failures both sides; the two recuts belong in one charter (same driver era, same UI drift). (b) **`diagnose-the-field-in-the-specimen` is the sweep's contention canary** — a ~312 s leg that went red in two whole sweeps under load (my serve + drive-leg servers standing; walls 436 s/420 s) and green standalone twice and green in the quiet whole sweep that closed this cycle. Not a defect of the leg's subject; a scheduling sensitivity worth one ruling (its own shard, or a wall-time allowance) before it trains anyone to re-run sweeps until green.
+
+7. **Not taken, still theirs:** the coils line (producer unfound, unchartered) · the subtitle `abAB` ×3 (hers, re-read with the header now landed — tell her the header IS landed) · the two-captions divergence (hers) · the measured/heuristic distribution count (not one query away — it is a distribution over what a person builds, needing a drive census or telemetry; recorded, unowned).
 
 ---
 
 ## 1 · WHAT I SAW
-- **The disease and the cure, at my own eye, on my own serve (5174):** described in TO-2 above, both frames, one entry, one session.
-- **The 1849 `current` line, live:** my serve's boot printed `[dev-advance] team-arman already at the newest wt tip (3ec6bc2)` — the fork this seat code-read at `2217`, now sighted in its normal mode.
-- **Nothing of Arman's was touched:** 5173 stayed closed all session (curl exit 7 at `2344`; not re-probed since — his page cannot have reloaded because there is none standing).
+On my own serve (5174, killed at cycle close): the `abAB :` header standing on a live torus card with her weights DOM-read · the segment card's `2 concepts, 1 relation — the seed's own` · the walk panel bounded at 800×620 with the canvas yielded and the reading whole · the lens walk's caption carrying `from the edge count` at the seam · the aperture's five-face picker with composed lettered designations, the picked triangle lit on the solid and only it, and the select bolding under a solid-side hover. ⚠ Some pointing gestures were synthetic-dispatched at projected coordinates (the pane resized live all session and defeated screenshot-mapped clicks; one stale click hit `remove` and the record line answered `removed, then restored` — the ratchet speaking). **Every sighting claimed is a real read of the running app: DOM weights, client rects, material states, seam strings.**
 
-## 2 · WHAT I RAN — verbatim
+## 2 · WHAT I RAN — verbatim highlights
 ```
-node scripts/diagnose-page-pose.cjs         → 16/16 PASS (P5e RED on the first cut —
-                                              the collinear branch aimed segments reversed;
-                                              cured, the leg's catch named in the module)
-npx tsc -b                                  → exit 0 (twice: post-wire, post-landing)
-npm run sweep   (pre-commit, WHOLE)         → 126 files · … → RED: 26 fails, all one cause
-                                              (untracked import + unlisted manifest row —
-                                              the completeness cascade, 7878bcf's precedent)
-npm run sweep   (pre-commit, after add+row) → RED: 9 fails, all one cause (each pins the
-                                              manifest BYTE-IDENTICAL to HEAD — true and
-                                              intended while the row awaits its commit)
-git commit → c6ef2f8 (9 files, 400+/9−)
-npm run sweep   (AT THE LANDED HEAD, WHOLE) → 126 files · expect exactly ONE fail:
-                                              diagnose-dual-inspection
-                                              SWEEP OK — the one expected fail, nothing else
-node scripts/app-leg/diagnose-d8-shelf-route.cjs
-                on my tree → 29 FAILURES ·  git stash -u → same leg on CLEAN HEAD →
-                same 29 → git stash pop --index (exit 0, state restored exactly)
-freeze grep     → only the two NOT_FROZEN classification rows name touched src files;
-                no row names CLAUDE.md, docs/adr/0029, or any .handoff path (exit 1)
-torn-edit probe → THE_CLAIMS_LEDGER · THE_FRONT_BOARD · THE_SOVEREIGN_LEDGER all close
-                on finished sentences (tail -c 100 each)
+npx tsc -b                     → exit 0 (after every cut)
+npm run sweep (pre-commit)     → 3 unexpected reds, each controlled:
+                                 the-folded-edge · the-ink — moved-surface-vs-HEAD pins
+                                 (red exactly while the commit awaits itself);
+                                 the-field-in-the-specimen — PASSES WHOLE standalone
+git commit                     → fef8fe9 (7 files, 301+/28−)
+npm run sweep (landed, quiet)  → 126 files · expect exactly ONE fail: diagnose-dual-inspection
+                                 SWEEP OK — the one expected fail, nothing else
+                                 (the field leg PASS at 311.6 s)
+winding-route drive leg        → 13 failures on my tree · git stash -u → SAME 13 at clean
+                                 HEAD → stash pop --index exit 0
+M-2 measurements               → colliders 5 · lit 1 (opacity .3) · lit verts 3 = the picked
+                                 triangle · hover-on-solid → select fontWeight "700"
+Part B measurement (800×620)   → panel {top:106, bottom:612} · canvas 368→292 · no overflow
+freeze rows                    → argumentReadingModel/ManuscriptView/ManuscriptChrome/
+                                 ExploreWindow all NOT_FROZEN · specimenModel FROZEN :77 (the stop)
 ```
 
 ## 3 · WHAT I CHANGED
-- **`src/manuscript/pagePoseModel.ts` (new)** — the pure derivation: `derivePagePose` (planarity by the form's own Newell normal or a non-degenerate triple; face-front; D14 anchor spin; centring; the fences) + `applyPagePose` (the exact map the mount's group applies). Never serialized.
-- **`src/manuscript/ManuscriptView.tsx`** — the `pagePoseByEntry` memo (plain + skeleton) and ONE wrapper group around the written entry's whole shape-space fragment.
-- **`scripts/diagnose-page-pose.cjs` (new)** — the falsifier; census 126.
-- **`docs/governance/ENGINE_FREEZE_MANIFEST.txt`** — one `NOT_FROZEN` classification row for the new model.
-- **`CLAUDE.md`** — the restated sweep census deleted (your §4 ruling: delete, never update); the comment now points at the line the code prints and names the drift that happened.
-- **`docs/adr/0029-…md`** — tracked, as found (M-1b §1).
-- **`W1`:** `THE_CLAIMS_LEDGER` · `THE_FRONT_BOARD` · `THE_SOVEREIGN_LEDGER` rode as found. The tsc emits stayed out.
+`argumentReadingModel.ts` (header gains `word: string | null` from the one producer; the words-line agreement) · `ManuscriptView.tsx` (both header mounts' O slot · the stance absence word · `METRIC_MARK.heuristic` → her string · `ApertureFaceCorrespondence` + its mount inside the pose group · the panel props) · `ManuscriptChrome.tsx` (the pair-row selects join the channel: hover/focus/change out, weight in) · `ExploreWindow.tsx` (`returnCount` · the new return line · `fitLog` — the measured bound, the canvas yield, the log shortening) · the three winding witnesses' pinned strings (the ratified new line, for their recut). **Nothing frozen touched; part C not built.**
 
 ## 4 · WHAT I COULD NOT REACH
-- **Arman's eye** — the acceptance is his walk; my eye is the coder's half only.
-- **The d8 shelf-route instrument** — down at clean HEAD (§TO-5); my manual drive covered this cycle's reading in its place.
-- **A lifted SKELETON at the eye** — the collinear/skeleton arms are leg-proven (P1b/P5d-f) but tonight's eye-drive was the plain-face case; named, not claimed.
+- **Part C** — the freeze stop (§TO-1; the ask is the cure).
+- **The return line at a human eye** — §TO-3; the seam and the census hold it meanwhile.
+- **The stance row at the eye** — leg-covered; her re-read is the cheap acceptance and the wording flag is hers anyway.
 
 ---
 
-**THE QUEUE:** `4 corners` — routed, awaiting a word (yours or Arman's) → **the `M-1` cycle opens NOW** (A the header's `O` restoration with her glyph · B the walk panel bound + shorten + no-scroll + the return-line ordinal · C the `SURFACE_TITLES` guard under ADR 0029 §3.2 · the `heuristic`→`from the edge count` word · the two `1728` one-liners, her wording) → then `M-2` clauses 1+2. **NAMED NEXT ACTOR: me, already moving.**
+**THE QUEUE:** part C on the sanction (minutes once given) → the `4 corners` item still stands routed (content-free in my readable record; the seventh's deepening log hints it partly dissolved into the name-slot front — a three-line answer beats my guess) → then the board's next. **NAMED NEXT ACTOR: Arman for the two words (the part-C sanction · the 4-corners answer); me for everything after, unasked.**
 
 — the coder (the order seat)
