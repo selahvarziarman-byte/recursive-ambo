@@ -2208,8 +2208,24 @@ function CellComposition({
             >
               <span className="flex items-start justify-between gap-2">
                 <span className="min-w-0">
-                  <span className="block truncate text-stone-200">{row.displayName}</span>
-                  <span className="mt-1 block truncate font-mono text-xs text-stone-500">
+                  {/* STAMP C-1 item 4 — the researcher's GRADING (superseding
+                      the v-index reading): keep both, grade them — the NAME
+                      line is the DESIGNATION register (its absence word is
+                      styled AS an absence, never as a designation doing
+                      WHICH-work), and the id line is the REFERENCE POSITION
+                      (the address a person may point with). The violation
+                      was the id leading or alone; graded, neither lies. */}
+                  <span
+                    className={`block truncate ${
+                      row.displayName === 'unnamed' ? 'italic text-stone-500' : 'text-stone-200'
+                    }`}
+                  >
+                    {row.displayName}
+                  </span>
+                  <span
+                    title="reference — the face's address"
+                    className="mt-1 block truncate font-mono text-xs text-stone-500"
+                  >
                     {row.shortId}
                   </span>
                 </span>

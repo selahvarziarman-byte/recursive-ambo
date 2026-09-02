@@ -120,6 +120,8 @@ import type { InkedFormModel } from './inkedFormModel';
 // family's derived presentation pose; see pagePoseModel's header for the
 // canon and its fences
 import { derivePagePose, type PagePose } from './pagePoseModel';
+// C-1 item 3 — the escaped-field class's one seam filter
+import { personReadableRefusal } from './refusalCopy';
 import {
   ApertureGatePanel,
   BirthGatePanel,
@@ -1652,7 +1654,8 @@ function ArgumentMapSection({
       </div>
       {argument.refusal ? (
         <div style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.75, marginTop: 4 }}>
-          incidence · stance · verdict — not measured · {argument.refusal.slice(0, 140)}
+          {/* C-1 item 3 — the refusal crosses the card seam PERSON-GRADE */}
+          incidence · stance · verdict — not measured · {personReadableRefusal(argument.refusal).slice(0, 140)}
         </div>
       ) : null}
       {argument.incidence ? (
@@ -1984,9 +1987,16 @@ function SpecimenCard({
               minHeight: 24,
               display: 'flex',
               alignItems: 'center',
+              gap: 7,
             }}
           >
             the argument reading
+            {/* STAMP C-1 item 1 — her door grammar on EVERY card door (the
+                field door spoke it alone): a person sampling any heading
+                learns the truth about all headings. */}
+            <span style={{ fontSize: 10, opacity: 0.6, letterSpacing: 0, fontVariant: 'normal' }}>
+              {argumentPresented ? '— shown' : '— show it'}
+            </span>
           </div>
           {argumentPresented ? (
             <ArgumentMapSection
@@ -2063,9 +2073,14 @@ function SpecimenCard({
               minHeight: 24,
               display: 'flex',
               alignItems: 'center',
+              gap: 7,
             }}
           >
             the measures
+            {/* C-1 item 1 — the same door grammar, one convention card-wide */}
+            <span style={{ fontSize: 10, opacity: 0.6, letterSpacing: 0, fontVariant: 'normal' }}>
+              {measuresOpen ? '— shown' : '— show it'}
+            </span>
           </div>
           {measuresOpen
             ? measureRows.map((r) => (
@@ -2179,6 +2194,8 @@ function SpecimenCard({
             style={{ cursor: 'pointer', fontSize: 11, opacity: 0.68, display: 'flex', gap: 8, alignItems: 'baseline' }}
           >
             <span style={{ letterSpacing: 1, fontVariant: 'small-caps' }}>certificate</span>
+            {/* C-1 item 1 — the door grammar joins the demoted receipt too */}
+            <span style={{ fontSize: 10, opacity: 0.6 }}>{certificateOpen ? '— shown' : '— show it'}</span>
             {!certificateOpen ? (
               <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10.5 }}>
                 {certificateRows.map((r) => `${r.label} ${r.value}`).join(' · ') || '—'}
@@ -3317,6 +3334,31 @@ export default function ManuscriptView() {
       return labels.size === 1 ? [...labels][0] : null;
     };
   }, [shapeById]);
+  // STAMP C-1 item 2 — THE ORDINAL'S CONDITION (her ruling): the phrase
+  // rides ONLY when the class name fails to individuate — two or more
+  // sources of one class on this surface — and then it rides for EVERY
+  // source in that class (each dependent header lengthens together, so the
+  // convention teaches itself). The carrier is the RECORD's append order
+  // (the written list's own insertion order — the ordinal reading's ruled
+  // carrier), never a page position; groups key by the shape's own class
+  // name, the exact string the header's source slot prints on its
+  // name-branch.
+  const sourceOrdinalByShape = useMemo(() => {
+    const groups = new Map<string, string[]>();
+    for (const w of written) {
+      const cls = (w.form.shape.name ?? '').trim();
+      if (!cls) continue;
+      const list = groups.get(cls) ?? [];
+      list.push(w.form.shape.id);
+      groups.set(cls, list);
+    }
+    const map = new Map<string, { rank: number; total: number }>();
+    for (const list of groups.values()) {
+      if (list.length < 2) continue;
+      list.forEach((id, i) => map.set(id, { rank: i + 1, total: list.length }));
+    }
+    return map;
+  }, [written]);
   // THE ARGUMENT-READING CARD (Phase 1 — the MAP): the birth op's argument,
   // read from the substrate (primalMultiset roots, one-generation sources,
   // typing). Rides its OWN prop beside the specimen reading (whose rows
@@ -3328,8 +3370,14 @@ export default function ManuscriptView() {
     const [band, key] = selected.split(':');
     if (band !== 'w') return null;
     const entry = written.find((w) => w.form.id === key);
-    return entry ? buildArgumentReading(entry.form, resolveAbsentLabel) : null;
-  }, [selected, written, resolveAbsentLabel]);
+    return entry
+      ? buildArgumentReading(
+          entry.form,
+          resolveAbsentLabel,
+          entry.form.parentShape ? sourceOrdinalByShape.get(entry.form.parentShape.id) ?? null : null,
+        )
+      : null;
+  }, [selected, written, resolveAbsentLabel, sourceOrdinalByShape]);
   // THE RING ANCHOR RESOLVER — the TOTAL verdict for the selected specimen:
   // anchors (any rendering mode) or a DECLARED refusal the card speaks.
   const ringResolution = useMemo(() => {

@@ -401,7 +401,26 @@ function resultNameFor(form: WrittenForm): string {
 // view hands in ITS OWN AbsentLabelResolver (the page-population reach the
 // aperture menu already reads through). Optional: a caller without a page
 // (the witnesses' direct reads) keeps the pre-D16 composition unchanged.
-export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLabelResolver): ArgumentReading {
+// STAMP C-1 item 2 — THE ORDINAL PHRASE (her ruling, verbatim shape:
+// `the 4-gon you made third`): an ACT-ORDER reading, the researcher's
+// ordinal species at degree zero — its carrier is the record's append
+// order, NEVER a page position. The CONDITION lives with the caller (the
+// view, which sees the surface's population): the phrase rides only when
+// the class name fails to individuate — two sources of one class on the
+// surface — and then it rides for every source in that class.
+const ORDINAL_WORDS = [
+  'first', 'second', 'third', 'fourth', 'fifth', 'sixth',
+  'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth',
+];
+const ordinalWord = (rank: number): string => ORDINAL_WORDS[rank - 1] ?? `${rank}th`;
+
+export function buildArgumentReading(
+  form: WrittenForm,
+  resolveAbsent?: AbsentLabelResolver,
+  // the view's individuation verdict for this form's SOURCE: null/absent =
+  // the class name individuates alone and the header stays short
+  sourceOrdinal?: { rank: number; total: number } | null,
+): ArgumentReading {
   const shape = form.shape;
   const parent = form.parentShape ?? null;
   const op = shape.genealogy.operation;
@@ -984,7 +1003,10 @@ export function buildArgumentReading(form: WrittenForm, resolveAbsent?: AbsentLa
         form.render.mode === 'immersion' && form.render.model.immersion.correspondence.word !== ''
           ? form.render.model.immersion.correspondence.word
           : null,
-      source: sourceNameFor(form, resolveAbsent),
+      source:
+        sourceOrdinal && sourceOrdinal.total > 1
+          ? `the ${sourceNameFor(form, resolveAbsent)} you made ${ordinalWord(sourceOrdinal.rank)}`
+          : sourceNameFor(form, resolveAbsent),
       result: resultNameFor(form),
       // the lift's gloss names its SPECIFIC source ("lifted from <source>" —
       // the sealed header phrase); every other op keeps its word, with the

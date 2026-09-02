@@ -86,6 +86,8 @@ const {
   readDeficitForRender,
   DEFICIT_RADIUS_FRACTION,
 } = req('src/manuscript/deficitRegisterModel.ts');
+// C-1 item 3: the seam filter — imported only to pin the ROUTING (§4-FIX-B E3)
+const { personReadableRefusal } = req('src/manuscript/refusalCopy.ts');
 
 let failures = 0;
 function check(label, condition) {
@@ -305,8 +307,16 @@ check('§4-FIX-B (E2) ★★ THE REFUSED FORM SPEAKS: the junction/pinch model y
     pinchRows[0].value.startsWith('not measured · ') &&
     pinchRows[0].value.includes('link valence "junction"') &&
     torusRows.length === 0);
-check('§4-FIX-B (E3) THE REFUSAL IS HONEST: the row prints the reader\'s sentence VERBATIM and carries NO degree glyph, NO number-with-°, NO "flat"/"0°" (not-measured is never zero)',
-  pinchRows[0].value.includes(String(pinchModel.refusal)) &&
+// STAMP C-1 item 3 RECUT (the ruled copy supersedes the old VERBATIM pin):
+// the card seam now routes every refusal through refusalCopy's
+// personReadableRefusal — the module prefix goes, a machine id drops to the
+// person's word — so `includes(raw)` can never green again. The pin is the
+// ROUTING: the row equals `not measured · <the filtered sentence>` exactly
+// (the filter's own behaviour is pinned independently by
+// diagnose-refusal-copy.cjs — reader B never reads reader A's judgement,
+// only the composition). The honesty constraints stand unchanged.
+check('§4-FIX-B (E3) THE REFUSAL IS HONEST (C-1 item 3): the row prints the reader\'s sentence THROUGH THE RULED FILTER verbatim (`not measured · personReadableRefusal(refusal)`) and carries NO degree glyph, NO number-with-°, NO "flat"/"0°" (not-measured is never zero)',
+  pinchRows[0].value === `not measured · ${personReadableRefusal(String(pinchModel.refusal))}` &&
     !pinchRows[0].value.includes('°') &&
     !pinchRows[0].value.toLowerCase().includes('flat'));
 // THE PLANT (runs every time): force a MEASURED-flat model into the refused

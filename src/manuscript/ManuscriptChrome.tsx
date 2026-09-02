@@ -1100,6 +1100,16 @@ export function SourcesShelf({
         // min(560, 100vh−340) cap so the two tenants cannot meet. Content
         // beyond the bound scrolls. ⛔ mechanical margins only — the real
         // column layout is the designer's (flagged).
+        // C-1 item 5 measured (2026-09-02, the coder): the 140px floor now
+        // CLIPS the shelf's own chrome — title + empty note + THREE doors
+        // ≈ 241px since the page-door pair landed — so short viewports hide
+        // the doors behind a scroll (her located clip: 103px hidden while
+        // the shelf held "nothing loaded yet"). A bigger floor is NOT the
+        // cure: non-overlap with the panel needs shelfHeight ≤ 100vh − 192
+        // − min(560, 100vh−340) = 148px at 900vh — the column simply cannot
+        // hold a full panel AND the grown chrome below ~1004px. The cure is
+        // the flagged column layout (or a measured shared budget, the
+        // fitLog class) — the DESIGNER's plate, routed with these numbers.
         maxHeight: 'max(140px, calc(100vh - 762px))',
         overflowY: 'auto',
         width: 208,

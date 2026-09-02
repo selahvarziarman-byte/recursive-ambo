@@ -48,6 +48,7 @@ import type { AssembledComplex } from '../lib/globalW1';
 import { acquireFaithfulComplex, type ComplexSource } from './surfaceClassifier';
 import type { FaithfulBodyModel } from './faithfulBodyModel';
 import type { WrittenRender } from './writtenFormModel';
+import { personReadableRefusal } from './refusalCopy';
 
 // the flat tolerance: below this the deficit is silence, not a mark
 export const DEFICIT_EPS = 1e-9;
@@ -334,7 +335,9 @@ export function deficitCardRows(model: DeficitRegisterModel): DeficitCardRow[] {
     return [
       {
         label: 'deficit',
-        value: `not measured · ${model.refusal ?? 'the reading refused'}`,
+        // C-1 item 3 — the refusal crosses the card seam PERSON-GRADE
+        // (refusalCopy): the sentence rides, the field stays in the log
+        value: `not measured · ${personReadableRefusal(model.refusal ?? 'the reading refused')}`,
         kind: 'measure',
       },
     ];

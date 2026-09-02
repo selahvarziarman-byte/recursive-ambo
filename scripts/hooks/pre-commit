@@ -1,0 +1,5 @@
+#!/bin/sh
+# RIDER R-1 — the inbox gate (claims §48). Logic lives in the node script so
+# no sh portability drift can rot the check; this shim only dispatches.
+# Wired by:  git config core.hooksPath scripts/hooks
+exec node "$(git rev-parse --show-toplevel)/scripts/hooks/check-coder-inbox.cjs"

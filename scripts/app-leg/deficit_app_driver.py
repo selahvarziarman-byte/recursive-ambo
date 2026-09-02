@@ -71,6 +71,36 @@ def scene_presence(page):
     )
 
 
+def open_argument_door(page):
+    # STAMP C-1 item 1 RECUT (the ruled copy): every card door now SPEAKS ITS
+    # STATE — the closed header's DOM text is "the argument reading— show it"
+    # (flex gap, no text node) — so the old get_by_text(..., exact=True)
+    # locator can never match again; its miss silently skipped the click and
+    # the section arms cascaded red at four sites (the one-domino class, the
+    # recut cycle's own lesson). The app's structural seam
+    # [data-argument-door] is the locator now, the closed-state copy is
+    # PINNED, and a missing door RAISES BY NAME (I-1a: a skip never wears a
+    # pass — nor a silent red).
+    if page.get_by_text("map — the spine", exact=True).count() > 0:
+        return  # already open
+    door = page.locator("[data-argument-door]")
+    n = door.count()
+    if n != 1:
+        raise RuntimeError(
+            f"MISS: [data-argument-door] resolved {n} times (need exactly 1) — "
+            "the card's door seam moved; recut me from the ruling"
+        )
+    text = (door.first.text_content() or "").strip()
+    if "show it" not in text:
+        raise RuntimeError(
+            f"MISS: the argument door reads {text!r} without the closed-state "
+            "copy ('— show it', C-1 item 1) while the map is absent — the "
+            "ruled copy changed; recut me"
+        )
+    door.first.click()
+    page.wait_for_timeout(300)
+
+
 def argument_card_checks(page):
     # THE ARGUMENT CARD (Phase 1) on the LIVE card of the selected fold-born:
     # the MAP spine + the demoted certificate receipt, plus the sign-hand
@@ -78,12 +108,9 @@ def argument_card_checks(page):
     # BLANK CLAIM, not a degraded card.
     # B-130: the argument compartment is DEFAULT-CLOSED (the closed face
     # renders only the O-line and the words) — a driver written against an
-    # always-open card reads a false absence, so OPEN THE DOOR first.
-    if page.get_by_text("map — the spine", exact=True).count() == 0:
-        header = page.get_by_text("the argument reading", exact=True)
-        if header.count() > 0:
-            header.first.click()
-            page.wait_for_timeout(300)
+    # always-open card reads a false absence, so OPEN THE DOOR first
+    # (open_argument_door: the C-1 item 1 recut — seam locator, ruled copy).
+    open_argument_door(page)
     record(
         "card.mapSection",
         page.get_by_text("map — the spine", exact=True).count() > 0,
@@ -485,12 +512,8 @@ def drive_fold(page, key, invoke_label, side, cone_text, rim_text, min_presence)
     # B-2026-08-25-A §2 + B-131: the merged class's COUNT form
     # (`unnamed ← two unnamed roots`) lives on the CARD SPINE for an unnamed
     # class — the ring callout is named-only now. Open the compartment
-    # (B-130 default-closed) and read the card's own sentence.
-    if page.get_by_text("map — the spine", exact=True).count() == 0:
-        header = page.get_by_text("the argument reading", exact=True)
-        if header.count() > 0:
-            header.first.click()
-            page.wait_for_timeout(300)
+    # (B-130 default-closed; the C-1 item 1 recut) and read the card's own sentence.
+    open_argument_door(page)
     merged_card = page.get_by_text("unnamed ← two unnamed roots", exact=False).count()
     record(
         f"{key}.ringMerged",
@@ -567,12 +590,9 @@ def drive_lift(page, lift_files):
             # the A-C EDGE lift's card (3 concepts — the life-lines render
             # individually): the real identity + the read-through
             # B-130: the life-lines ride the argument compartment
-            # (default-closed; the closed face shows the O-line + the words)
-            if page.get_by_text("map — the spine", exact=True).count() == 0:
-                header = page.get_by_text("the argument reading", exact=True)
-                if header.count() > 0:
-                    header.first.click()
-                    page.wait_for_timeout(300)
+            # (default-closed; the closed face shows the O-line + the words;
+            # the C-1 item 1 recut opens it by seam)
+            open_argument_door(page)
             record(
                 "lift.cardIdentity",
                 page.get_by_text("lifted from Ambo Dissection Tetrahedron", exact=False).count() > 0
@@ -965,11 +985,7 @@ def drive_d2_marks(page):
     # 3D hover's emphasized set does not shadow the row's (one channel)
     page.mouse.move(5, 5)
     page.wait_for_timeout(300)
-    if page.get_by_text("map — the spine", exact=True).count() == 0:
-        header = page.get_by_text("the argument reading", exact=True)
-        if header.count() > 0:
-            header.first.click()
-            page.wait_for_timeout(300)
+    open_argument_door(page)
     row = page.evaluate(
         """() => {
       const el = [...document.querySelectorAll('[data-row-id]')].find(
