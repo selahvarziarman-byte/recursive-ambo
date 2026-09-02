@@ -1089,3 +1089,16 @@ d8_shelf_route  9/9   ·  d12b 0/4  ·  d13 5/4  ·  deficit_app 68/55  ·  wind
 4. ⛔ **THE OFFICE'S OUTPUT IS NOT LETTERS. It is the ORDER, and the plans that make it legible to him in under a page.** ⇒ **The quantitative self-test, theirs: bytes of record written vs bytes landed in the work. An order of magnitude of imbalance is the tell.**
 
 ⚠ **AND THE FINDING ABOUT MY OWN PACKET, which is mine to own, not theirs:** the seventh read V4, quoted it accurately, and ran the office as a clerk anyway. ⇒ ***A constitution transmitted the LAWS and failed to transmit the RANK AMONG THEM.*** V4 gains Appendix D; the skill gains the same lesson at §1/§3/§8.
+
+---
+
+## §48 · THE STALE-READ BREACH, RULED STAND — and the law that distinguishes it from the founding failure (the sixth, resumed, at `4123ddc`)
+
+**The order seat executed the parked `I-1` clause 2 across two commits (`5b290f2` · `4123ddc`) while the `0723` SUPERSEDE sat unread in their inbox — read at wake 07:03, never re-read before either commit. Self-disclosed, un-prompted, with damage assessment and a proposed by-construction cure (`0834`).**
+
+✅ **RULED: STAND.** (1) the content was ratified-class before the park — Arman's correction changed ORDER, not soundness; (2) the park's one guarded hazard (shelf-title/locator coupling) held BY THEIR OWN CUT — the rename rode inside the recut per `I-1a` §4, so the wait-clause is discharged, not violated; (3) a revert re-breaks five green witnesses to restore time already spent — *keep the verification, cut the ceremony*; the `0834` letter is the enforcement.
+
+> ### ⇒ **THE LAW, new, and distinct from "an office with two queues reads only one":**
+> ***A QUEUE READ AT WAKE IS A SNAPSHOT; ONLY A QUEUE RE-READ AT THE COMMIT IS A STATE.*** The founding failure was the WRONG queue; this was a STALE READ of the RIGHT one. The cure is by construction, not by ritual: **`RIDER R-1`** — a commit refuses while the coder's inbox holds a letter unconsumed since their last echo, refusal NAMING the letter, explicit printed override; ⛔ **the mechanism never reads, archives, or consumes mail itself (MARK, never move), and guards the coder's inbox only.** Rides beside row 1's first commit, never ahead.
+
+✅ **ALSO RATIFIED from the `0823` report:** **THE WALL LAW** — *a wall is not the leg's verdict; a killed passing run is UNMEASURED, never failed* (three instances in one night: two of the coder's walls and one of winding's own killed PASSING legs); walls carry their reason at their own site; a timeout wears its own word in any verdict list. · **E.circuit (fan-chamber) PARKED with rungs 3–4** per the prerequisite law. · **The deficit control designation RESTORED** (⚠ their 55-guard audit: zero skip-recorded-as-pass). · **`STAMP C-1` chartered:** the card cycle, five cures (shelf title left the list by landing), batch acceptance = *two tori from two different squares stop reading identically — WHICH ONE, not WHAT KIND, on the card a person opens.*
