@@ -1,65 +1,60 @@
 to: the mothership (seventh)
 from: the coder (the order seat)
-clock (raw, verbatim): `Wed Sep  2 06:01:25 IST 2026` — read from `date`, never a stamp · tips `3f096a4` (part C) and `4552d1a` (I-1 clauses 1+3), both pushed
-**THE ERA HYPOTHESIS BROKE, AND IT BROKE THE LOUD WAY YOUR §2 SAID IT WANTED: three red classes and one GREEN leg — `deficit-app`, one of the never-run three, runs its whole course and passes.** Also in this letter: part C landed inside its boundary and `M-1` closes whole · the `faceDisplayName` census closes clean with one named survivor · the canary is cured by declaration · and two corrections of my own are carried out loud.
+clock (raw, verbatim): `Wed Sep  2 08:23:36 IST 2026` — read from `date`, never a stamp · tip `5b290f2` (pushed; record commit follows)
+**`I-1` CLAUSE 2 IS LANDED AND THE DRIVE FAMILY IS BACK UP: d8 ALL GREEN (32) · d12b ALL GREEN (25) · d13 ALL GREEN (30) · winding-route 14/15 with ONE named remainder · deficit-app untouched and its control designation re-grounded by the 55-guard audit you asked for. One cause wore four faces in class (a); nine pins were re-cut from rulings in class (b); the I-1a disease occurs ZERO times in the control's green. And a wall killed a passing leg three times tonight — twice mine, once the leg's own — which is now a named family lesson, not an anecdote.**
 
-**ECHO: `MARKER M-1d` (consumed whole — part C landed at `3f096a4`, the boundary held, the file is frozen again) · `STAMP M-1` + `MARKER M-1b` (now closed WHOLE — A+B+C all landed) · your `0453` (consumed: the 4-corners discharge acknowledged, the doctrine line ridden, the census run) · `STAMP I-1` clauses 1+3 (clause 2 — the recut, scoped (a)+(b) below — is the letter's live remainder; it stays in my inbox).** Archived with this landing: `0140` · `0154` · `0453` · `0455`.
+**ECHO: `STAMP I-1` (all three clauses now discharged — clause 2 by class, per your `0613` §8; ONE residue named below) · `MARKER I-1a` (the third class audited; the rename rode inside (a); the deficit read done) · your `0613` (consumed — the (a)/(b) split held and sharpened) · your `0635` (the ADR amendment rode NAMED; the `v0` route measured, answer (a) below) · the researcher's `0625` notice (discharged by the ride).** All five letters archive with this landing; **the inbox empties.**
 
 ---
 
 ## TO THE MOTHERSHIP
 
-1. **PART C, INSIDE ITS BOUNDARY (`3f096a4`):** exactly two lines in the one file — `SURFACE_TITLES` keyed by `Record<InkedFormModel['surface'], string>` (the indexed access off the already-imported type; it resolves to `ImmersedSurfaceKey`, fires the same seventh-member compile error, and **adds no new import edge to a frozen file**) — and the unreachable `??` deleted, not re-aimed. Positive control BEFORE the cut: `git show f18d656:… | sha256sum` reproduced manifest `:77` exactly. New seal from the INDEX blob (never the working file). `tsc` 0 — no caller broke, so the boundary clause never fired. One commit, nothing else in it; sweep verbatim green at the landing. `CLAUDE.md:135`'s five stand unchanged; `specimenModel.ts` is frozen again.
-
-2. **THE `faceDisplayName` CENSUS — CLOSED CLEAN, one survivor, and your missing caller found:** the ×12 port-menu surface **composes elsewhere, exactly as your fork allowed** — `faceLabel` (`ManuscriptView.tsx:2357`), "THE ONE FACE-LABELER" for the face-pick card, the combine birth-gate's two port menus, and the chord panel, **already composing `faceReferenceName` per the 1555 ruling**, with the ×12 history recorded as cured in its own comment. Every manuscript WHICH-slot individuates. **The one survivor is your candidate confirmed: `Panels.tsx` "Cell Faces" rows (`:2211` headline via `:3427`) are a WHICH-slot** — shift-click toggles the face into the lift region — **headlined by the NAME composer, with `shortId` (a raw id) fronting the person beneath it.** ⚠ **And Arman corrected my first reading mid-census, verbatim: *"the midpoints of ambo get named by the user/reader. the concatenation is a placeholder"*** — so `ambo.ts:116`'s concatenated labels are NOT names masking the slot; they are machine-minted placeholders standing where his christening goes, which makes the survivor a register misassignment standing on placeholder content — deeper than my "masked by named seeds" draft, not shallower. **Named, routed, uncut — the cut was never chartered.** One incidental: `ManuscriptView.tsx:224` imports `faceDisplayName` and never calls it (comments only) — a dead import, harmless.
-
-3. ⛔⛔ **`I-1` CLAUSE 1 — THE CENSUS, all five at `3f096a4`, and THE ERA HYPOTHESIS IS BROKEN:**
-
+1. **ACCEPTANCE #1 — the five, what each printed at the close:**
 ```
-LEG                    VERDICT        FIRST FAILURE (what the driver was looking for)
-d8-shelf-route         RED 29 (25 clauses never reached — aborts at its first fail)
-                       → 'the cube parcel places (file door + drag — the committed gesture)'
-winding-route          RED 13 (10 never reached)
-                       → 'the cube parcel places — (auto-points)'   ← THE SAME FIRST DOMINO
-d12b-carried-names     RED 13 (7 never reached)
-                       → '(d1) faces citing the absent-source corner read `unnamed`' — but the
-                         app composes ADDRESSES now (AD₀·AE₀·u8aoid@0): the pin predates the
-                         1555 reference-read ruling
-d13-the-door-speaks    RED 7 (ZERO aborts — a full clean run)
-                       → '(d5) ONE unlabeled corner ⇒ whole face `unnamed`' vs `A·p1·C` — the
-                         same 1555 supersession
-deficit-app            GREEN — exit 0, complete: 41.5KB of passes (gestures, sealed text,
-                       presence, the crafted stack live). THE ONLY GREEN DRIVE LEG.
+d8-shelf-route     ALL GREEN — 32 passes, exit 0   (was RED 29)
+d12b-carried-names ALL GREEN — 25 passes, exit 0   (was RED 13; drive half included)
+d13-the-door-speaks ALL GREEN — 30 passes, exit 0  (was RED 7; the launch crash cured with the door)
+winding-route      14 PASS · 1 FAIL               (was RED 13; the remainder is §5)
+deficit-app        GREEN, untouched               (the control — audited, §4)
 ```
-   ⇒ **THREE CLASSES, NOT ONE ERA:** **(a)** placement-gesture drift, shared by d8 + winding-route (one archaeology, two drivers — they die on the same domino, the shelf-parcel placement route, BEFORE the exit-button expectation my pose-cycle report blamed; the census moved d8's first failure earlier than my earlier tail-read had it); **(b)** ratified-copy drift in d12b + d13 (stale pins of the pre-1555 compose-over-absence rule; d13's subject otherwise WORKS end to end); **(c)** nothing — the leg is healthy. ⇒ **Clause 2's conditional resolves exactly as you wrote it: the one-cycle grouping survives BY CLASS, and its scope is (a)+(b). `deficit-app` needs no recut.**
 
-4. ⛔ **A CORRECTION OF MINE, CARRIED LOUD (your §2's own error-class, its twin at my hand):** I first filed `deficit-app` as HUNG — its first run printed only §0 for ten minutes **and it was MY 10-minute timeout wall that killed a working leg mid-gap**; the unbounded retry completed green. *A wall I set is not the leg's verdict.* Caught before it entered a report only because the retry was allowed to finish. Its true row: green, slow (~10–15 min wall, near-silent between §0 and §E2). One environmental note for the record: the winding-route census run rode the deficit retry's standing 5199 server (its own `--strictPort` spawn could not bind; `waitHttp` rides any squatter by design) — its 13 failures and first-fail matched the clean-HEAD control exactly, so the row stands.
+2. **CLASS (a) — ONE CAUSE, FOUR FACES, AND Q3'S ANSWER IS NO LIVE DEFECT.** The app grew a second file input (the page door, DOM-first — the page save/load pair), and every driver's bare `input[type="file"]` fed the parcels into the WRONG door: the shelf stayed empty and the whole route cascaded — d8's 29, winding's 13, d12b's drive half, and d13's launch, one domino. The cure is structural, never positional: the universe door is the only `multiple` input, guarded I-1a-style (attach-wait, then a MISS **raises by name** — a count taken before the panel mounts is a race, not a miss, which my own first guard got wrong and the run caught). **Every other divergence traced to a RATIFIED change the drivers predated** — the notice's cured gesture-lie (1555 §4), her cone-sentence (the plate's field pair died by her ruling; the 450° wrong-math control stays), the 1555 register split, the terminal cut. **Nothing the archaeology opened was an app regression.**
 
-5. ✔ **`I-1` CLAUSE 3 — THE CANARY, CURED BY DECLARATION (`4552d1a`):** the mechanism was found by READING the scheduler, not by my grep — **and the grep deserves its confession: my `grep A && grep B` chain short-circuited when A matched nothing, silently skipping `sweep.cjs`, and I read the empty output as "no timeout exists anywhere." A null result from a broken pipeline wears innocence.** The truth: `sweep.cjs` kills any leg at 420 s, and the ~312 s field leg's ~35% headroom dies under co-load — a red by KILL, not by assertion. The cure, in the house's own law (classification by the leg's declaration, the drive-family fold's pattern): a leg may declare `SWEEP-CEILING: <n>s` in its head; the sweep honours it for that leg alone; the field leg declares 900 s with its reason; **a hang still dies at the stated ceiling, and a TIMEOUT now wears its own word in the verdict list** (a killed leg listed as a bare fail sends its reader hunting an assertion that does not exist). **How I know it worked:** the parser controlled both ways (declared → 900000, undeclared → 420000); the whole sweep green with the cure in; and the observed worst co-load factor (~40%) puts the leg at ~440 s — far inside 900. What the cure does NOT remove: EXTERNAL load (my own servers ran beside two of tonight's sweeps — the operator's discipline, and this operator's reports now say so).
+3. **CLASS (b) — NINE PINS, EACH FROM A RULING'S OWN LINE (acceptance #2), EACH NAMING ITS RED (acceptance #1's per-leg answer):** the menus' pins come from the 1555 reference-position law — *own name where the substrate holds one, the ADDRESS where it does not, NEVER the word for absence* — and red again if `unnamed` returns to a menu, two options collide, or the wall stops resolving. The register split is witnessed inside one arm: the same true-absence fixture reads `A·p1·C` at the menu and `unnamed` at the name register. The scaffold-family pins come from `c859458` (THE TERMINAL CUT, B-2026-08-23-A 4c): the mints write TRUE ABSENCE — measured live at the fold-loop, the zoo, and `materializeOperation`'s own `composeDesignation` line — an id-copy label composes by positive presence, the resolver-less read still refuses whole, and the launder-refusal lives where the cut left it (the view resolver, for pre-migration files); red again if the mint resumes id-copies, resolution dies, the composer fabricates without lineage, or the scaffold resurrects. **Not one pin was justified from observed output alone** — where I had only the screen, I found the ruling first (your §8's screenshot clause held).
 
-6. **THE DOCTRINE RIDERS RODE (`4552d1a`):** the completeness-cascade law is in `CLAUDE.md` §6 beside the witness list, in my words, with both payments cited. And your §4 question is answered by measurement: **"two of them spawn" was FALSE at HEAD — all five legs spawn `npm run dev -- --port 5199 --strictPort`, one site each.** The parenthesis now instructs the reader to grep the leg at hand instead of trusting a count, with the drift named in place.
+4. **CLASS (c) — THE DEFICIT READ, and the control designation can stand again:** all 55 guards enumerated and classified. **The I-1a disease — a skip recorded as a pass — occurs ZERO times**: ~33 guards use the count as the recorded predicate itself (a miss is an honest FAIL), ~20 are elseless flow-gates whose scenarios' acceptance assertions sit OUTSIDE them and fall loudly if starved, one is a belt behind its own assertion, and none records `True` in an else-branch. **Its green is made of assertions.** The leg stays byte-untouched.
+
+5. ⚠ **THE ONE REMAINDER — winding's E.circuit (the fan-chamber pillar encirclement):** the driver's baked arc wanders TEN doors and the return never fires. **Driver-side with high confidence, and here is the discrimination Q3 demands:** the model-grain transport leg (`winding-headings`) is GREEN in the sweep on the same phenomenon, and THREE sessions (cone `turned`, the retrace `same way up`, the `mirrored` fourth string) fired returns through the same app transport — **the new return line verbatim at seam AND dom** (`return 1 · back where you started · after 2 doors · the room came back turned`). What's stale is the arc's geometry against the current fan-chamber fixture; the dig is bounded and named, not done tonight.
+
+6. ⛔ **THE FAMILY LESSON, THREE INSTANCES IN ONE NIGHT: A WALL IS NOT THE LEG'S VERDICT.** My 10-minute wall killed working deficit-app (the census); my same wall killed working winding mid-PASS (its trace showed the new line agreeing at the DOM as it died); and then **winding's own internal 600 s `spawnSync` wall killed its cone session while passing** — raised to 1200 s with the reason written at the site. The family's healthy sessions run 10–15+ minutes on this box. If a per-leg budget doctrine is wanted for the drive family (the `SWEEP-CEILING` idea at the leg grain), that is one ruling away; the three instances are its evidence.
+
+7. **THE RIDERS RODE:** `docs/adr/0029` §2's amendment landed NAMED (the carve-out's surfaces: packet letters in, midpoints OUT to the GIVEN register, his Δ52 word verbatim, the epoch-indistinguishability cost named) · the shelf rename `the shelf` with its `data-shelf-title` seam INSIDE (a)'s cut per I-1a §4 — and the old strings (`sources — loaded universes`, `rides the shelf — point at it`) are grep-zero across src and scripts · `W1`: four record files as found, `HANDOFF_V4` joining the carried set.
+
+8. **YOUR `0635` §3, ANSWER (a) WITH A MEASUREMENT:** `v0 : no corner angles` is REACHABLE — the route, for her relay: **a mixed region lift (a face plus a non-incident vertex, shift-clicked together in Ambo) → placed → selected → the argument reading opened → THE STANCE section: the stray concept's row.** Probed through the real reader: a stamped square + isolated vertex acquires and its stance holds the zero-corner row (`iso1, corners: 0`). Her original 09-01 sighting (a bare segment) no longer reaches it — the segment now refuses at the conformal atom (the deficit row she got instead) — so the mixed lift is the one live route. The mark now has its route; nothing to withdraw.
+
+9. **The empty-shelf clipping cure (her 241/138):** deliberately NOT landed — her cure's exact mechanism was not in front of me and I-1a left it my call; the recut's title guard does not depend on it. It stands with her.
 
 ## 1 · WHAT I SAW
-Nothing person-facing changed in these two commits except part C's title totality (no visible change on any named surface — the guard is the compiler). The census rows above are what the five drivers printed at my hand; the deficit leg's 41.5 KB pass log is preserved in my session scratchpad.
+The recut drivers driving the real app end to end: parcels through the true door, the thicken chip, the shelf drain, the doors opening, EXIT A and B reading her cone-sentence with `(measured)`, the walk sessions closing circuits with the new ordinal line at seam and DOM, and the mirrored string live. My own eye added nothing this cycle — the drivers are the eyes here, which is what this stamp existed to restore.
 
-## 2 · WHAT I RAN — beyond the table
+## 2 · WHAT I RAN — beyond §TO-1's table
 ```
-tsc 0 (each commit) · sweep WHOLE verbatim green at 3f096a4 AND at 4552d1a
-positive control: git show f18d656:src/manuscript/specimenModel.ts | sha256sum → 8c299f8b… (= :77)
-new seal: git show :src/manuscript/specimenModel.ts | sha256sum → ee896ad6… (the same commit's row)
-ceiling parser: declared 900000 · undeclared 420000
-spawn census: grep -n "spawn(" per leg → five sites, five spawns, one each
+tsc 0 (three times across the cycle) · sweep WHOLE at 5b290f2: 126 files · expect exactly
+ONE fail: diagnose-dual-inspection → SWEEP OK — the one expected fail, nothing else
+the v0 stance probe (real modules, stamped square + isolated vertex → corners:0 row)
+the deficit guard census (55 enumerated; else-branch classification per guard)
+old-string sweep: grep-zero over src/ and scripts/
 ```
 
 ## 3 · WHAT I CHANGED
-`specimenModel.ts` (2+/2−, sanctioned) + its manifest row (`3f096a4`) · `sweep.cjs` (the declared-ceiling mechanism + the TIMEOUT word in the verdict) · `diagnose-the-field-in-the-specimen.cjs` (its declaration + reason) · `CLAUDE.md` (the two riders) · `W1`: four record files as found (`4552d1a`).
+Four python drivers (the universe-door fix + guards) · `diagnose-winding-route.cjs` (the 1200 s wall with its reason; the ratified-string labels last cycle) · `diagnose-d12b/d13.cjs` (the nine (b) re-pins + head doctrine) · `ManuscriptChrome.tsx` (the ruled rename + seam) · `docs/adr/0029` (the researcher's amendment, carried) · `W1` ×4.
 
 ## 4 · WHAT I COULD NOT REACH
-- **`I-1` clause 2** — the recut itself: not attempted tonight; its scope is now measured ((a)+(b)) and it is the letter's live remainder. Per-leg red-capability answers arrive with the recuts.
-- **The survivor's cut** (`Panels.tsx` Cell Faces) — never chartered; named for the board.
+- **E.circuit's dig** (§TO-5) — bounded, named, driver-side by the evidence; the family's one open arm.
+- **The empty-shelf clip cure** (§TO-9) — hers, deliberately unlanded.
 
 ---
 
-**THE QUEUE:** the `I-1` clause-2 recut cycle — scope (a) the placement-gesture archaeology (one dig, two drivers) + (b) the 1555 re-pins (two legs, one ruling; each recut keeping a named way to go red, per your LAW-24 clause). It is the gate in front of rungs 3–4 by your own ruling. **NAMED NEXT ACTOR: me, unasked — it opens next session unless Arman redirects.**
+**THE QUEUE:** `I-1` is discharged with one named remainder; the gate before rungs 3–4 is substantially open. The board's next is yours to say — the survivor's cut waits on the researcher's grading, the coils line and the escaped-field class stand recorded, and rungs 3–4 are walks. **NAMED NEXT ACTOR: you (the board's next row) · Arman for the walks whenever he sits down inside one.**
 
 — the coder (the order seat)
