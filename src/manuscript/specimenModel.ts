@@ -102,6 +102,63 @@ const LOOP_READINGS: Record<string, Record<string, string>> = {
 const inkOf = (loop: { letters: Array<'a' | 'b'> }): 'a' | 'b' =>
   loop.letters.length === 1 && loop.letters[0] === 'b' ? 'b' : 'a';
 
+// A-4 item 1 (STAMP A-4 · Arman's sanction, Δ66): DERIVE, DON'T CARRY. The
+// definitional spine of a 1-complex — components, the cycle rank
+// b₁ = E − V + c, H₁ = ℤ^b₁ (free: a graph carries no torsion), orientability
+// (trivially yes) and w₁ (= 0, written in the register's own notation: one
+// coefficient per generator) — is DERIVED HERE from the shape's own vertices
+// and edges at read time, by ONE producer serving both readers below (a
+// cut-born Arc and an invoked Segment then agree by construction). The
+// carried `h1Label` was a stored derived value (a stamp that drifts from the
+// code that made it) and is no longer read for a 1-complex. The committed
+// level-1 rung rides beside the derivation as a FALSIFIER, never as the
+// source: where the two disagree the card says so in the note register,
+// naming its subject. No new import — the freeze's closure holds.
+function skeletonSpine(shape: SkeletonModel['shape']): { v: number; e: number; components: number; b1: number } {
+  const parent = new Map<string, string>();
+  const find = (x: string): string => {
+    if (!parent.has(x)) parent.set(x, x);
+    let root = x;
+    while (parent.get(root) !== root) root = parent.get(root) as string;
+    return root;
+  };
+  for (const id of Object.keys(shape.vertices)) find(id);
+  for (const edge of shape.edges) parent.set(find(edge.vertexIds[0]), find(edge.vertexIds[1]));
+  const roots = new Set<string>();
+  for (const id of Object.keys(shape.vertices)) roots.add(find(id));
+  const v = Object.keys(shape.vertices).length;
+  const e = shape.edges.length;
+  return { v, e, components: roots.size, b1: e - v + roots.size };
+}
+
+const freeH1Label = (rank: number): string =>
+  rank === 0 ? '0' : Array.from({ length: rank }, () => 'ℤ').join(' ⊕ ');
+
+function spineReading(
+  shape: SkeletonModel['shape'],
+  inv: SkeletonModel['invariants'],
+): { rows: SpecimenRow[]; notes: string[] } {
+  const spine = skeletonSpine(shape);
+  const level1 = inv.level1;
+  const disagreement =
+    level1 && (level1.components !== spine.components || level1.b1 !== spine.b1)
+      ? `level-1 rung — the committed readout carries components ${level1.components} · b₁ ${level1.b1}; the 1-skeleton derives ${spine.components} · ${spine.b1}`
+      : null;
+  return {
+    rows: [
+      { label: 'components', value: `${spine.components}`, kind: 'measure' },
+      { label: 'H₀', value: spine.components === 1 ? 'ℤ' : `ℤ^${spine.components}`, kind: 'measure' },
+      { label: 'b₁ (level 1)', value: `${spine.b1}`, kind: 'measure' },
+      { label: 'H₁', value: freeH1Label(spine.b1), kind: 'measure', emphasize: true },
+      { label: 'Euler χ', value: `${inv.chi}`, kind: 'measure' },
+      { label: 'orientable', value: 'yes', kind: 'measure' },
+      { label: 'class', value: 'n-a (1-complex)', kind: 'certificate' },
+      { label: 'w₁ class', value: `[${Array.from({ length: spine.b1 }, () => '0').join(', ')}]`, kind: 'certificate' },
+    ],
+    notes: disagreement === null ? [] : [disagreement],
+  };
+}
+
 // B-133 clause B (STAMP R-1 Q3): `pairDesignations` — the presented pairing's
 // designations, keyed by word letter, PRODUCED by the argument reading's
 // committed pairing recovery (argumentReadingModel.readPairDesignations — one
@@ -123,19 +180,28 @@ export function readSurfaceSpecimen(
   // the certifier spoke (a true absence otherwise, never a placeholder).
   const chiCheckRows: SpecimenRow[] =
     inv.chiCertified !== null ? [{ label: 'χ', value: 'certified', kind: 'check' }] : [];
-  const rows: SpecimenRow[] = [
-    { label: 'Euler χ', value: `${inv.chi}`, kind: 'measure' },
-    ...chiCheckRows,
-    { label: 'orientable', value: inv.cert ? (inv.cert.nonOrientable ? 'no' : 'yes') : 'n-a', kind: 'measure' },
-    { label: 'class', value: inv.classification, kind: 'certificate' },
-    { label: 'w₁ class', value: inv.cert ? `[${inv.cert.w1Class.join(', ')}]` : 'n-a', kind: 'certificate' },
-    { label: 'H₁', value: model.h1Label ?? 'n-a', kind: 'measure', emphasize: true },
-  ];
+  // A-4 item 1 (Arman's sanction, Δ66): a FACE-LESS shape reaching this reader
+  // (an invoked Segment rides the immersion route) is a 1-complex — its spine
+  // is DERIVED by the one producer above, never read off a carried label or
+  // written 'n-a'. Surfaces keep the certifier's rows verbatim, 'n-a' where
+  // the certifier did not speak (a 2-complex's H₁ is the certifier's to say).
+  const graph = model.immersion.shape.faces.length === 0 ? spineReading(model.immersion.shape, inv) : null;
+  const rows: SpecimenRow[] = graph
+    ? graph.rows
+    : [
+        { label: 'Euler χ', value: `${inv.chi}`, kind: 'measure' },
+        ...chiCheckRows,
+        { label: 'orientable', value: inv.cert ? (inv.cert.nonOrientable ? 'no' : 'yes') : 'n-a', kind: 'measure' },
+        { label: 'class', value: inv.classification, kind: 'certificate' },
+        { label: 'w₁ class', value: inv.cert ? `[${inv.cert.w1Class.join(', ')}]` : 'n-a', kind: 'certificate' },
+        { label: 'H₁', value: model.h1Label ?? 'n-a', kind: 'measure', emphasize: true },
+      ];
   return {
     kind: 'surface',
     title: SURFACE_TITLES[model.surface],
     subtitle: word === '' ? 'collapse target · no gluing word' : `gluing word · ${word}`,
     rows,
+    ...(graph ? { notes: graph.notes } : {}),
     legend: model.loops.map((loop) => {
       const gloss = LOOP_READINGS[model.surface]?.[loop.label];
       // B-133 clause B (STAMP R-1 Q3): the generator is PRESENTED — its
@@ -168,25 +234,17 @@ export function readSurfaceSpecimen(
 }
 
 export function readSkeletonSpecimen(model: SkeletonModel): SpecimenReading {
-  const inv = model.invariants;
-  const level1 = inv.level1;
-  const components = level1 ? level1.components : null;
-  const rows: SpecimenRow[] = [
-    { label: 'components', value: components === null ? 'n-a' : `${components}`, kind: 'measure' },
-    { label: 'H₀', value: components === null ? 'n-a' : components === 1 ? 'ℤ' : `ℤ^${components}`, kind: 'measure' },
-    { label: 'b₁ (level 1)', value: level1 ? `${level1.b1}` : 'n-a', kind: 'measure' },
-    { label: 'H₁', value: model.h1Label ?? 'n-a', kind: 'measure', emphasize: true },
-    { label: 'Euler χ', value: `${inv.chi}`, kind: 'measure' },
-    { label: 'orientable', value: 'n-a (1-complex)', kind: 'measure' },
-    { label: 'class', value: 'n-a (1-complex)', kind: 'certificate' },
-  ];
+  // A-4 item 1: the spine is derived from the shape by the one producer above;
+  // the carried `h1Label` is not read.
+  const spine = spineReading(model.shape, model.invariants);
   return {
     kind: 'skeleton',
     title: model.title,
     subtitle: 'cut-born 1-complex · real positions',
-    rows,
+    rows: spine.rows,
     legend: [], // a bare skeleton's ink IS its cycle set — nothing separate to light
     twist: null,
+    notes: spine.notes,
   };
 }
 
