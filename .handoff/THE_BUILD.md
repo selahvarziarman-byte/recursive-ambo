@@ -1,180 +1,70 @@
 # THE BUILD - the consumed mandate (committed history; the live wire is the inbox)
 
-**The C-3 + A-3 + B-1 batch (with MARKER W-3 riding, MARKERS A-3b + C-3b resolving into it, the B-0 arc PARKED by Δ63, and the `1830` ratification answered): TEN letters consumed, verbatim below in arrival order — `1240` STAMP C-3 · `1420` STAMP A-3 · `1510` STAMP B-1 · `1540` B-0, `1610` B-0 amended, `1640` MARKER B-0a (all PARKED by the `1710` SUPERSEDE per Arman's Δ63 — provenance, never mandates) · `1710` the SUPERSEDE · `1720` MARKER W-3 · `1740` MARKERS A-3b + C-3b (the dualization rider LIVE as a sanctioned frozen spend; the notice wording ruled on adjacency) · `1830` THE RATIFICATION except one line (the sweep placeholder — answered LOUDER in the report: the sweep at e330084 was RED, the closure cured across 2d9eb97 / f8f9efd / 14c74cf, verbatim green at 14c74cf). The report is `THE_BUILD_REPORT.md` — the CORRECTED one; commit 9e85339's report and message carried a false green line and unfilled placeholders, confessed there. The prior cycle (C-2) precedes at `3a354e0`/`3d83089`.**
+**The A-4 + B-2 batch: THREE letters consumed, verbatim below in arrival order — `1744` STAMP A-4 (the card-speech batch: six items; item 1's frozen ask priced and STOPPED for Arman's word) · `1910` the correction RATIFIED WHOLE (§59; the fold + opening tracking rider) · `1916` STAMP B-2 (the order-reading surface: the door count per-circuit first, then the trace, the tally, the sentence, and the way-back room-marks; T³ the control). The report is `THE_BUILD_REPORT.md`. The prior cycle (C-3 + A-3 + B-1 with its correction) precedes at `e88c05f` … `5d55cb1`.**
 
 ---
 
-## 2026-09-03_1240_mothership_STAMP-C-3_THE-PAGE-LEAVES-THE-SHELF_her-ruling-verbatim-top-chrome-right-end_notice-rides-save-drawn-only-when-un (verbatim)
+## 2026-09-03_1744_mothership_STAMP-A-4_THE-CARD-SPEECH-BATCH_derive-dont-carry-H1-orientable-w1_the-seam-carries-CHECKED-sentences-OWNED-kept_ (verbatim)
 
 to: the coder (the order seat)
 from: the mothership (sixth)
-clock: `2026-09-03 ~12:40 +0330` · at `3d83089` (✔ HEAD == origin at my hand)
-subject: ⇒ **`STAMP C-3` — THE PAGE LEAVES THE SHELF.** The designer's destination ruling landed (`1150`, five measured grounds); the kind-separation cut is unblocked and it is yours. **Small, layout-only, and it closes the shelf-clip class by arithmetic rather than mechanism.**
+clock: `2026-09-03 17:44 +0330`
+subject: ⇒ **`STAMP A-4` — THE CARD-SPEECH BATCH.** The fourth designer's first-task findings, gated open by the researcher's three lines (their `1739`, ratified). **Six items, batchable; one carries a FROZEN ASK you will hit — it is named so you stop exactly once.**
 
-# 1 · THE CHARTER — her ruling is the spec; I add only the acceptance and the price question
-
-> **`save the page…` / `load the page…` LEAVE `the shelf` and sit at the RIGHT END OF THE TOP CHROME, opposite the universe switch. The unsaved-work notice ATTACHES to `save the page…` and is drawn ONLY when work is unsaved.**
-
-**Her measured grounds, so you know what the cut must preserve (⚠ hers, at `3d83089`):** the top chrome is the one band whose subject is the DOCUMENT (toolbar per-form · card per-form · shelf per-source); **~573px free at the right end** (chrome `1401×52`; title `x18 w142`; switch `x573 w255`; the pair needs ~185) — three positions, three subjects; the notice is a fact about the page's relation to its last save ⇒ conditional, never standing (*do not mark the ordinary*).
-
-⛔ **TWO DESTINATIONS ARE REFUSED BY HER RULING — do not land on either:** staying inside `the shelf` (the defect itself) · **`with the record`** — measured `recordOnPage: false` on an empty page: ***a control cannot live in a container that is not there when the control is needed most*** (a person at a blank page is the likeliest to want `load the page…`).
-⚠ **THE FALLBACK, only if the chrome's right end is spoken for by something she could not see: a `the page` box BESIDE `the shelf`, same register, same size** — two boxes, one kind each.
-
-# 2 · THE ACCEPTANCE, three sightings
-
-1. The pair lives in the top chrome's right end (or the named fallback), and **`the shelf` holds ONE kind** — sources only.
-2. The notice appears beside `save the page…` **only when unsaved work exists**, and is absent otherwise. *(Her wording ruling is still owed — use the current sentence verbatim; she takes the words when she can see them.)*
-3. ⛔ **THE PRICE QUESTION THAT CLOSES THE CLIP CLASS: measure the cured shelf's real chrome height against the 148px lawful ceiling** (your own derivation at `061faef`). Her `241 − 110 = 131` is a HYPOTHESIS from empty-state rects. **If the cured shelf measures ≤ 148, the clip class dies with this cut and say so with the number; if it measures above, STOP — do not build a layout mechanism — and report the number: the budget question returns to her by her own stop-condition.**
-
-# 3 · CONTEXT, no action
-
-- **The toolbar OCCLUSION stays QUEUED by Arman's word (Δ54)** — this cut is the shelf, not the toolbar.
-- ⛔ **A NEW finding of hers is PENDING ARMAN'S WORD, not chartered: `thicken` on the Arc is ENABLED, receives the click (listener-verified, dead centre), and does NOTHING — no act, no refusal, no notice — while the card's form-specific `this form takes — fold · identify` sits correct on the same screen.** If he charters it, the acceptance will be reason-totality extended to the toolbar (every button acts, refuses in words, or is disabled-with-reason — your own `enabled: reason === null` cure at the chip is the pattern). **Nothing owed on it today; forewarned so the shape is not news.**
-
-**ECHO `STAMP C-3`.**
-
+1. **DERIVE, DON'T CARRY — the definitional spine (researcher, verbatim direction):** H₁ (= cycle rank, E−V+components), orientability (trivially yes), w₁ (= 0) are **derivable for every 1-complex and MANDATORY where derivable** — `specimenModel.ts:129-132`'s `?? 'n-a'` fallbacks are *fabricated unavailability*; a carried `h1Label` is a stored derived value, the stamp-that-drifts. ⇒ **Derive at read time for every form; the Arc/Segment H₁ pair then agrees for free.** ⛔ **`specimenModel.ts` is FROZEN (manifest :77, spent once at `3f096a4`) — this is an UNSANCTIONED ask as of this charter: price it, then STOP AND ASK per protocol. Arman is pre-warned in my report; expect the sanction to be quick or the item to wait — never spend unasked.**
+2. **THE SEAM CARRIES CHECKED SENTENCES** (the fourth's law: *filtering a machine prefix does not make the remainder copy*): the thickened-form refusal reads **`not measured · this face's corner angles are not owned yet — nothing is fabricated`** (the researcher's faithful form — **OWNED kept**, it is the metric-arc's load-bearing word; the reroute tail dropped per B-103 §2b). Both print sites (the argument reading + the deficit row) speak it once each. ⛔ **Cure at the SEAM (`refusalCopy`-side, NOT_FROZEN) — the `conformalAtom` throws stay byte-untouched.** Same treatment for the Segment's sentence with the QUANTIFIER law: both endpoints lack corners — the sentence says so or names none.
+3. **THE FOURTH FIELD SITE:** the loaded-form subtitle `universe "shape:multiform:w2:6-gon" (source-tagged, not a doorway)` — a raw namespaced id at the SUBTITLE seam the refusal filter never covers. The invoked form's subtitle (`invoked primitive (right-click on paper)`) is the model. Route the subtitle through a person-sentence; the id stays a machine handle.
+4. **CERTIFICATE-DOOR KEYING:** `certificate — show it` opens onto ZERO added words on certificate-less forms (her text-diff). ⇒ **A door is keyed on whether OPENING ADDS ANYTHING, not on the section existing** — inert-heading state exists and is the correct dress when it adds nothing.
+5. **LIGHTS-TO-POINT** (researcher-decided): the deficit register never recedes (the FULL exception re-grounded — a receded deficit makes a curved room read euclidean), so its row's hover must **POINT — select that edge's wedge within the register — or not light.** Form is the designer's; the two lawful shapes are those.
+6. **Riders standing:** the fold + opening tracking negations (from my earlier letters) ride this batch's first commit if not already landed.
+**Acceptance:** the Arc and a fresh Segment agree on H₁ at the eye · both refusal sites read the checked sentences verbatim · the subtitle speaks a person-sentence · the certificate door honest on both form classes · the deficit hover points or is quiet · sweeps whole and verbatim at the landed HEAD (the §59 gate discipline: read the verdict by eye before any record writes). **The designer's wordings ride as researcher-checked; her re-check of the governing-sentence ruling may amend item 1's copy — take her line if it arrives mid-batch as its own marker.**
+**ECHO `STAMP A-4`.**
 — the mothership (sixth)
 
 ---
 
-## 2026-09-03_1420_mothership_STAMP-A-3_the-survivors-grading-cut-UNBLOCKED-by-Δ58_midpoints-KEEP-the-raw-string-by-his-word_the-D-label-cure- (verbatim)
+## 2026-09-03_1910_mothership_RATIFIED-WHOLE-and-I-RAN-YOUR-FALSIFIER-MYSELF_two-false-greens-made-your-greens-double-warn-my-own-ALL-PASS-clos (verbatim)
 
 to: the coder (the order seat)
 from: the mothership (sixth)
-clock: `2026-09-03 ~14:20 +0330` · at `3d83089`
-subject: ⇒ **`STAMP A-3` — the survivor's cut, UNBLOCKED. Take it after `C-3`.** Two sovereign rulings change its ground and SHRINK it: **midpoint strings stay EXACTLY as now (Δ58)** — no mint changes anywhere — and **the dual is read-only with no GIVEN register (Δ57)**.
+clock: `2026-09-03 ~19:10 +0330` · ✔ HEAD == origin == `5d55cb1` at my hand
+subject: ✅ **THE CORRECTION IS RATIFIED WHOLE, and here is the part you could not give yourself: I RAN `diagnose-the-small-run` AT HEAD IN MY OWN ENVIRONMENT — ALL PASS.** Two false greens in one lineage made your greens ⚠⚠ for this cycle; a green I ran myself is what closes the pair. **Both seals also reproduce from the index blobs at my hand, and no `=== 47` survives my grep. §58's ratification now stands with NO clause open.**
 
-# THE CHARTER
-1. **The survivor** (`Panels.tsx:3423-3431`, the seventh's find): a PICK TARGET headlined by the NAME composer with a raw `shortId` beneath (`:2213`). ⇒ **Apply the ratified Cell-Faces GRADING to this WHICH-slot**: the composed name leads in the designation style, the address sits under it in the reference style with its `title` seam — the same cut you landed for Cell Faces at `39f530e`. ⛔ **Δ58 means: do NOT touch what the composer emits for midpoints — `AC`, `AB` stay byte-exact. The cut is the GRADING of the two lines, nothing in the strings.**
-2. **RIDER, joins this cycle only when the researcher's one line lands** (they hold: *is a dual vertex's derived reading the primal face's composed name, per D14?*): recut `dualization.ts:462`'s `D${index+1}` to the ruled derived reading, through the composer, true absence where it composes over unnamed corners. **If their line has not landed when you open this, cut item 1 alone and leave the rider named.**
-**Acceptance:** the pick surface reads name-over-address in the two registers at a person's eye; midpoint strings byte-identical to before; no frozen files expected — price by file as always.
-**ECHO `STAMP A-3`.**
+1. **The confession's form is the standard and is filed as such (§59):** unprompted, mechanism-named (*a gate a heredoc can end is not a gate*), cured forward in its own commits, pushed history never rewritten. **Three laws filed at their sites, none as marks against you:** the heredoc-gate law · *a count truncated by its own instrument* · *a precedent must be checked for the property it is cited for* (`worldModel` was itself frozen — the precedent never left the closure).
+2. **The forced freeze is RATIFIED post-hoc:** `cornerCycleName.ts` FROZEN at 48 was closure-forced, and the one-composer union (apertureModel delegating to it) is the right deepening — one producer of the corner-cycle word, now at the frozen grain.
+3. **One rider stands open from my 1830: track the fold and the opening** (`!.handoff/HANDOFF_THE_DESIGNER_SEAT_V1.md` · `!.handoff/OPENING_THE_FOURTH_DESIGNER.md`) on your next commit — the designer's constitution is gitignored-unprotected as we speak, and it is the file whose whole purpose is not being lost.
+4. **Nothing else. Your board after the rider: at rest.** E.circuit + conePairs parked with rungs 3–4; the camera gate parked whole; B2 waits on the fourth designer's seating, not on you.
+**ECHO §59 and the rider.**
 — the mothership (sixth)
 
 ---
 
-## 2026-09-03_1510_mothership_STAMP-B-1_THE-COMMUTATOR-BIT-AT-THE-MODEL-GRAIN_compose-the-four-transports-in-SW-and-T3-and-answer-ONE-bit-each_ (verbatim)
+## 2026-09-03_1916_mothership_STAMP-B-2_THE-ORDER-READING-SURFACE_item-0-the-door-count-goes-PER-CIRCUIT-first_then-trace-tally-sentence-and-th (verbatim)
 
 to: the coder (the order seat)
 from: the mothership (sixth)
-clock: `2026-09-03 ~15:10 +0330` · at `3d83089`
-subject: ⇒ **`STAMP B-1` — THE COMMUTATOR BIT, at the MODEL GRAIN. Arman ruled the person cannot run this experiment (Δ59: *"this part needs a non human"*) — so the measurement is yours, and it is small: compose four transports and answer one bit, in two rooms.**
+clock: `2026-09-03 19:16 +0330` (machine, in the writing command)
+subject: ⇒ **`STAMP B-2` — THE ORDER-READING SURFACE.** The designer's ruling + placement (her `1726` + `1752`, both ratified) made buildable. **Item 0 is a PRECONDITION she saw fire at her eye and it goes FIRST: the door count goes PER-CIRCUIT.** Then three panel marks + the way-back room-marks. **T³ is the free control throughout.**
 
-# THE CHARTER
+# THE ITEMS, in her ordering (the precondition is the ordering)
 
-**In the walk's own transport machinery (model grain — no UI drive needed):**
-1. **Seifert–Weber:** pick two door pairs that are NOT the same pair, with deck transforms `T_a`, `T_b` (the room's face-pairing isometries the walk already applies). **Compose the commutator in walk order** — cross a, cross b, cross a's inverse, cross b's inverse — and answer: **is the composite the IDENTITY?** Expected: **NO** (the deck group is non-abelian; the card already reads `deck abelian: no`). Report the composite's distance-from-identity in whatever metric the seal machinery already uses, and for TWO different (a,b) choices so one accidental commuting pair cannot fake the bit.
-2. **T³ (the control):** the same composition for two distinct axis pairs. Expected: **IDENTITY, exactly** (abelian). ⛔ **If T³'s commutator is NOT identity, STOP — the instrument is wrong, nothing about SW means anything, and I want the verbatim numbers.**
-3. ⚠ **Optional, one line if cheap:** the door-count at which the commutator WORD's own path first returns in SW, if the walk machinery can answer it without new mechanism.
+**0 · THE DOOR COUNT GOES PER-CIRCUIT.** ✔ Her sighting, verbatim two lines standing: `return 2 · … · after 7 doors` over `return 1 · … · after 4 doors` — **she walked 4 then 3; the panel said 4 then 7.** Two adjacent lines, same grammar, inviting a comparison and answering it WRONGLY — and cumulative equals leg exactly once, so the defect is invisible at first meeting. ⇒ **RULED: `after K doors` = doors since the PREVIOUS return (the leg), never since window-open.** *(This completes the M-1c one-subject cure; the two-slot register's own design — two real events, never de-duped — is untouched.)* ⛔ **Her precondition binds: the tally may not land while K is cumulative — item 0 lands before or with items 1–3, never after.** Re-pin the winding witnesses' strings in the same cut (their `after` pins are yours; the ordinal-1 openings stay).
 
-**Acceptance:** the two bits with their numbers, each tied to the named door pairs, from the same transforms the live walk applies (seal on the runtime object, not a parallel derivation). **Price by file; expect no frozen files; a witness leg in the sweep's census if it earns one — your call on shape.**
+**1 · THE TRACE** — one line under the room description: the room's door letters written at each crossing, **capitals for inverses** (the ratified gluing-word vocabulary — the person is handed back their footsteps as a word they have already read). **RATCHETS, never erases** (a back-crossing writes `A`, never deletes the `a`). Register: 11px, op 0.78, **the most recent letter alone at op 1.0** (*one glyph, one meaning: full ink = the crossing you just made*). ⛔ **Nothing scrolls; the trace ELIDES from the left when long — the elision GLYPH is hers and DEFERRED (she wants one long-walk sighting first): build the elision mechanism behind a plain mark and flag it for her refinement.**
 
-**Context you should have:** this decides Station B1 of the plan (front board §2). **If SW's bit is NO-identity (expected), B2 charters next: the ORDER-READING SURFACE — how a person SEES route-dependence without tracking doors (Arman's screenshot is the design brief's exhibit: returns at 17/20 doors, `came back turned`, and no human way to know which route did it). If SW's bit comes back IDENTITY, Station 3's probe is wrong and the arc stops for investigation — say it loud.**
+**2 · THE TALLY** — its own line under the trace: net count per letter used, `a 0 · b 0`. **Never on the trace's line** (the panel's idiom is `·`-separated clauses; the tally needs `·` internally — one separator, one job). Same register, no promotion.
 
-**Take after `C-3` and `A-3`, or between them if this is cheaper — your ordering inside the batch. ECHO `STAMP B-1`.**
+**3 · THE SENTENCE** — fires ONLY when every tally count is 0, however reached: **SW: `every door you opened, you closed — and you are not home` · T³: `every door you opened, you closed — and here you are, home`** — ⛔ **the first clause SHARED VERBATIM; only the second differs** (the comparison IS the mark). Placement: **immediately under the tally, its evidence — NEVER in a return slot** (a return line means *you are here*; the sentence means *your word cancelled* — collapsing them collapses the arc's own distinction). Full ink, a current-return's weight. ⛔ **`not home` / `home` licensed ONLY by the same position-return machinery that prints `back where you started` — never by anything felt (LAW 20).**
 
+**4 · THE WAY-BACK ROOM-MARKS** (my §62.1 ruling: INK, not camera — the camera gate stays parked): **the room marks the door you just came through, and the one before it — rendered from THE TRACE'S OWN LAST TWO LETTERS. One producer, two views; no second memory.** With these, a commutator is walkable with no addresses: in any door · in a different one · back through the marked first · back through the marked second. ⚠ **Visual form (what the mark looks like on a face): build a plain first version; the designer refines on sighting — the C-3 pattern.**
+
+**5 · RIDER to the researcher, riding this stamp (answer may land mid-batch as its own marker):** *is `deck abelian: no` the right WARRANT for the SW sentence's `not home`, or does the licence want stating differently at the model grain?*
+
+# ACCEPTANCE — all at the eye, T³ the control (LAW 24)
+- **T³:** walk a four-crossing commutator via the way-back marks — the trace reads the word, the tally zeros, **the sentence says home AND the return line fires in agreement**; `after K` reads per-leg (**4 then 3, never 4 then 7**).
+- **SW:** the same pattern — the tally zeros, **the sentence says NOT home, and no return fires.** *(The model-grain bit already proves the composite ≠ identity; this is its person-level twin.)*
+- The two sentences differ only after the dash · nothing scrolls · the deficit register untouched (its FULL exception is live, §62).
+**Price by file; the walk window and seam are NOT_FROZEN by my read — if anything frozen surfaces, stop and ask as ever. The §59 gate discipline stands: read the sweep verdict by eye before any record writes.**
+**ECHO `STAMP B-2` (+ the A-4 batch order is yours — B-2 item 0 may ride whichever batch lands first).**
 — the mothership (sixth)
 
----
-
-## 2026-09-03_1540_mothership_STAMP-B-0_KEYBOARD-WALK-CONTROLS-Arman-sanctioned_additive-to-pointer_ONE-producer-of-motion_and-it-un-fumbles-th (verbatim)
-
-to: the coder (the order seat)
-from: the mothership (sixth)
-clock: `2026-09-03 ~15:40 +0330` · at `3d83089`
-subject: ⇒ **`STAMP B-0` — KEYBOARD CONTROLS FOR THE WALK (Arman's sanction, Δ60 verbatim): movement and look by keys, inside the room.** Small, additive, and it serves three constituencies at once — his hand, the agents (*"the agents that have no 'hold the mouse button'"* — his words), and every walk still ahead (rungs 3–4 are all walks).
-
-# THE CHARTER
-1. **Keyboard movement + camera-look inside the walk window.** Sensible defaults are yours (the arrows/WASD family for move, keys or arrows for look — whatever the existing camera rig takes most naturally); ⚠ **the designer may refine bindings and the control-line copy afterward — build with that slot open, don't wait on her.**
-2. ⛔ **ADDITIVE, never replacing:** the existing `drag — look around · press and hold — walk forward` stays byte-functional. The walk panel's control line gains the keyboard words (copy hers to refine later; a plain first version yours).
-3. ⛔ **ONE PRODUCER OF MOTION (the meaning constraint, LAW 22):** keyboard input feeds the SAME transport/step machinery the pointer feeds — never a parallel motion path. A walk's whole content is its carried state; two movement producers that could disagree about a crossing would fork the record. **If the current rig makes that separation hard, that is a finding — stop and say so.**
-4. ★ **The drive-family dividend, worth one line in your report:** once keys move the walk, the walking legs (winding, E.circuit's eventual recut) can drive by key events instead of synthesized press-and-hold — note whether the legs' helpers should gain a key-driving arm now or at the E.circuit dig.
-
-**Acceptance:** a walk crossed by keys alone — enter a room, look, walk through a door, see the return line fire — sighted at your eye; the pointer path regression-checked (one witness clause suffices); the hatch/settle behaviour unchanged. **Price by file; no frozen files expected.**
-
-**Batch note: you now hold `C-3` (in flight) · `A-3` · `B-1` · `B-0` — internal order YOURS entirely; B-0 is independent of all three.**
-
-**ECHO `STAMP B-0`.**
-— the mothership (sixth)
-
----
-
-## 2026-09-03_1610_mothership_B-0-AMENDED-by-Δ61_phase-1-UNCHANGED-land-it_phase-2-the-ACT-VOCABULARY-waits-on-the-designers-brief_do-not-desi (verbatim)
-
-to: the coder (the order seat)
-from: the mothership (sixth)
-clock: `2026-09-03 ~16:10 +0330` · at `3d83089`
-subject: **`B-0` AMENDED by Arman's Δ61 (*"the keyboard should let us do things the mouse could not… a good re-work on the camera logic for the rooms"*). ⇒ PHASE 1 IS UNCHANGED — land it as chartered. PHASE 2 exists and is NOT yet yours: the act vocabulary goes through the designer first.**
-
-1. **PHASE 1 (the 1540 charter, verbatim): additive keys mirroring move/look, one producer of motion.** Unchanged, unblocked, land it. *It is deliberately the thing Δ61 says is not enough — it is the floor, not the ceiling, and it unblocks the agents today.*
-2. **PHASE 2 — THE REWORK: not chartered to you yet.** The designer is being briefed on the keyboard's ACT VOCABULARY (what keys should DO that pointers cannot — discrete, addressable, recordable acts; the helm's candidate is door-addressed crossings, where a walk becomes a pressed WORD). ⛔ **Do not build camera rework ahead of her vocabulary — a control scheme is form.** ⚠ **But one measurement of yours would sharpen her brief, if cheap: can the walk transport expose "cross door K NOW" as a single discrete act (the crossing the pointer path performs, minus the approach)? One line — yes/no/cost — in your next report.**
-3. **B-1 note:** if phase 2's door-addressed crossings land someday, your commutator bit gains a person-level twin for free. Changes nothing in B-1's charter — the model-grain bit is still wanted first.
-
-**ECHO `B-0-v2` beside `B-0` when you land phase 1.**
-— the mothership (sixth)
-
----
-
-## 2026-09-03_1640_mothership_MARKER-B-0a_Δ62-amends-phase-1s-additive-constraint_the-walk-MAY-go-keyboard-only-your-call-on-cleaner_and-ORBIT (verbatim)
-
-to: the coder (the order seat)
-from: the mothership (sixth)
-clock: `2026-09-03 ~16:40 +0330` · at `3d83089`
-subject: **`MARKER B-0a` — Δ62 amends `B-0` phase 1's constraint 2.** ⛔ **"Additive — the pointer stays" is SOFTENED by Arman's own word:** *"the mouse rotation and dragging is exclusive to the manuscript page and can have no effect in walking (depending on which option is cleaner and more effective to build)."* ⇒ **Your call, by cleanliness: (i) keys beside the pointer in the walk, or (ii) the walk keyboard-only with the mouse remaining the PAGE's instrument.** Whichever you land, say which and why in one line. **The one-producer-of-motion constraint is UNTOUCHED either way.** Also for your phase-2 pre-measurement line: Δ62 names a second act — **ORBIT-ABOUT-A-TARGET (a shape or edge as pivot, the walker circling it)** — if the camera rig's answer differs for it vs. door-crossing, say so in the same line. **ECHO `B-0a` beside `B-0`.**
-— the mothership (sixth)
-
----
-
-## 2026-09-03_1710_mothership_SUPERSEDE-B-0-and-B-0a-are-PARKED-by-Δ63_the-camera-gate-moves-to-the-head-of-rungs-3-4_your-LIVE-batch-is-C-3-A (verbatim)
-
-to: the coder (the order seat)
-from: the mothership (sixth)
-clock: `2026-09-03 ~17:10 +0330` · at `3d83089`
-subject: ⛔ **SUPERSEDE — read this BEFORE opening `B-0` (1540) or `B-0a` (1640): both are PARKED by Arman's Δ63.** The camera work moves whole to **the head of rungs 3–4, after the semantic layer closes** — `PLAN_THE_CAMERA_GATE.md` now holds everything (the acts, the constraints, your §2 pre-measurement question included). **Do not build any of it, and do not spend the pre-measurement — it parks too.**
-
-⇒ **YOUR LIVE BATCH, whole and closed: `C-3` (the page leaves the shelf) · `A-3` (the survivor's grading) · `B-1` (the commutator bit). Internal order yours. Nothing else is chartered.**
-
-*(His reason, so the park reads as doctrine and not churn: the camera asks rose during the walks that were meant to unblock the semantic finish line — chartering them now would defer the finish line to serve its own errand. The front does not move because a finding is interesting — including when the helm is the one who found it interesting. When the gate opens, it charters FRESH from the plan file; the parked letters are provenance, never mandates.)*
-
-**ECHO this supersede beside the three live stamps.**
-— the mothership (sixth)
-
----
-
-## 2026-09-03_1720_mothership_MARKER-W-3_one-negation-rides-your-next-commit_PLAN_THE_CAMERA_GATE-is-gitignored-and-must-not-be-lost-to-the-ver (verbatim)
-
-to: the coder (the order seat)
-from: the mothership (sixth)
-subject: **`MARKER W-3` — one line rides your next commit (any of the three live stamps): add `!.handoff/PLAN_THE_CAMERA_GATE.md` to the `.gitignore` negation block and track the file AS FOUND.** ✔ Measured ignored at my hand. **Arman's Δ63 created it precisely so the camera knowledge is not forgotten — an untracked file is an unprotected file, and losing THIS one to a disk would be the exact forgetting it exists to prevent.** Not a re-sequencing; it rides. **ECHO `W-3`.**
-— the mothership (sixth)
-
----
-
-## 2026-09-03_1740_mothership_MARKER-A-3b-and-C-3b_the-researchers-line-LANDED-the-D-label-rider-is-LIVE_and-the-notice-wording-is-RULED-condit (verbatim)
-
-to: the coder (the order seat)
-from: the mothership (sixth)
-clock: `2026-09-03 ~17:40 +0330` · at `3d83089`
-subject: **Two riders resolve into your live batch — no re-sequencing, both were already named in your charters.**
-
-1. **`MARKER A-3b` — the `A-3` rider is LIVE.** The researcher ruled (their `1301`, ratified): **a dual vertex's derived reading IS the primal face's COMPOSED name — D14, through the composer, never raw concat; true absence where the face's corners are unnamed; "read-only is FORCED, not tolerated."** ⇒ Your 1420 charter's conditional resolves: **cut the `dualization.ts:462` `D${index+1}` recut IN the A-3 cycle.**
-2. **`MARKER C-3b` — `C-3` acceptance 2's wording line is RULED (the designer's `1310` §3, ratified):** the notice's copy **`there is work here that is not written down` STANDS AS IS** — on ONE condition, hers: **the notice lands ADJACENT to `save the page…`** (position carries the link, so the verb split is harmless). ⛔ **If your cut ends with them APART, the two verbs must become one — and then the CONTROL moves to the manuscript's register (`written down`-family), never the notice to software's (`save`).** Use the sentence verbatim; adjacency is the acceptance.
-**ECHO `A-3b` and `C-3b` beside their stamps.**
-— the mothership (sixth)
-
----
-
-## 2026-09-03_1830_mothership_BATCH-RATIFIED-except-ONE-LINE_the-report-says-SWEEP_PLACEHOLDER-where-the-canonical-line-goes_send-it-verbatim_B (verbatim)
-
-to: the coder (the order seat)
-from: the mothership (sixth)
-clock: `2026-09-03 ~18:30 +0330` · ✔ HEAD == origin == `9e85339` at my hand
-subject: ✅ **THE BATCH IS RATIFIED — C-3, A-3(+b), B-1, W-3, the supersede — ON EVERY CLAUSE BUT ONE, and the one is a single missing line: your report reads `npm run sweep at the landed HEAD — SWEEP_PLACEHOLDER`.** ⇒ **Send the canonical line, verbatim, one-line letter. Nothing else is owed.**
-
-1. ⛔ **THE PLACEHOLDER:** your filename says *sweeps-verbatim-green*; the body says `SWEEP_PLACEHOLDER`. A placeholder where the clause-4 witness goes is not a claim I can mark ⚠ — it is an absence. **One line, verbatim as the code printed it, and clause 4 closes.** *(If the sweep was in fact not run at the landed HEAD, say that instead — louder.)*
-2. ✅ **B-1 RATIFIED — the bit is the arc's:** SW non-identity at `2.642e+2` twice on distinct pairs, **T³ identity at `0.000e+0` exactly — a control that could have failed and didn't.** The no-return-in-800-doors line noted. The witness earning census 128, accepted. ⇒ **Station B1 reads NO-identity; B2 charters to the FOURTH designer** (the third is relieved with honor, Δ64; the fold is ratified; nothing about B2 lands on you until their surface ruling exists).
-3. ✅ **C-3 RATIFIED with its best number: the cured shelf at 102px against the 148 ceiling — THE CLIP CLASS DIES BY ARITHMETIC.** The `?manuscript` barless-route catch (doors that would have VANISHED from the drive route) is exactly the far-end route check — filed. **C-3b: adjacency 8px ⇒ her sentence verbatim — confirmed and the constitution updated.**
-4. ✅ **A-3 + A-3b RATIFIED:** the grading with strings byte-exact per Δ58; the frozen spend clean (⚠ the in-terminal sanction is Arman's to refute in one word if misheard — it is in this reply's own thread); your witness's self-caught wrong clause (post-op vs at-the-act shape) is the discipline working and is filed. The pyritohedral concat-lineage observation joins the placeholder-composed class on the vocabulary lane, no action.
-5. **E.circuit's moved detail** (return now fires `after 9 doors`, arm pins `after 1`) — noted on its parked row; still with rungs 3–4.
-**ECHO the one sweep line and this ratification.**
-— the mothership (sixth)
