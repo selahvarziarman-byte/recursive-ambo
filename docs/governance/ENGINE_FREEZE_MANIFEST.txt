@@ -46,7 +46,8 @@ src/lib/conformalAtom.ts                c7eee19c59d0424dfd69f7c6768a00a6811a9cdc
 src/lib/connectedSum.ts                 d8b6c0d269f6847b50f29c3190199ed290096319d25edbf280ce77effc1df6b9
 src/lib/cutOperation.ts                 1610ac706e4dc66d8903544236a2442e58798213b52c19c86148be6319b8ea9c
 src/lib/designation.ts                  0a9d0c7520dd91e9d4d28df35f2f6745bc3ff71ba4ebc0b5274b134d9c1d26b2
-src/lib/dualization.ts                  94f6aad354967e7ce56433355815447e938d33f2512b450b5fdff820b3878f91
+src/lib/cornerCycleName.ts             21665ff6ee1e02567c1b81b111b7100943e68a341843652d5d6842617562d446
+src/lib/dualization.ts                  f77b3d973ac5cf68c31b231d64eb452b07659119a9479f27e55822847ebf0411
 src/lib/faceIdentification.ts           3be2c16f050c307df502995c89c3d68234a8ef235ce0d1a3a6e8593c0b5e515d
 src/lib/genealogyDag.ts                 c8b6f219438ce8b9c17088044771123169ca8dc3f48c82904747d71bed890ffc
 src/lib/globalW1.ts                     3209127d540d80c7a0734c6989f745423fc1cb3c1fe3103bbfb73dc1da13e207

@@ -28,10 +28,11 @@ import {
   packetSourceRef,
 } from './packets';
 import { createDefaultVertexData, deriveEdges, getCellFaces } from './shape';
-// A-3b: the ONE face composer (D14 through faceDisplayName) — a lib→manuscript
-// import with precedent (noncubeDomain's DomainModel); no cycle (apertureModel
-// reaches neither dualView nor transformationLedger, dualization's only importers).
-import { faceDisplayName } from '../manuscript/apertureModel';
+// A-3b: the ONE corner-cycle composer (D14 rotation + join), FROZEN beside
+// this file — a frozen producer may import only frozen files (the freeze's
+// import closure, §8's falsifier); apertureModel's faceDisplayName delegates
+// to the same function, so the mint and the card cannot disagree.
+import { composeCornerCycleName } from './cornerCycleName';
 
 interface DualizationSourceTopology {
   cell: Cell;
@@ -454,8 +455,15 @@ function createDualVertices(
       // through the ONE composer, never raw concat — and TRUE ABSENCE ('' —
       // the sibling mints' own idiom) where the face composes over unnamed
       // corners. The positional `D-n` was a placeholder wearing a name.
-      const composed = faceDisplayName(shape, sourceFace);
-      const derivedLabel = composed === 'unnamed' ? '' : composed;
+      const composed = composeCornerCycleName(
+        sourceFace.vertexIds.map((vertexId) => {
+          const label = shape.vertices[vertexId]?.data?.label;
+          // the present-branch read of cornerDisplayName, verbatim (trim +
+          // upper-case); an empty label is an absent corner → null
+          return typeof label === 'string' && label.trim().length > 0 ? label.trim().toUpperCase() : null;
+        }),
+      );
+      const derivedLabel = composed ?? '';
       const lineage = deriveFaceLineage(
         [
           packetSourceRef('face', sourceFace.id, 'source-face'),
