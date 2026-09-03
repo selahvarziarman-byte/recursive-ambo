@@ -6,6 +6,8 @@
 > ⛔ **THIS IS NOT A PLAN.** Plans are per-arc and hold WHAT and WHY. ⇒ **This file holds WHEN, WHO, and WHAT-BLOCKS-WHAT, ACROSS arcs — the one thing no single plan can see.**
 > ⛔ **ITS ONE LAW: *discovery order is not implementation order.***
 
+**⇒ AMENDED at `061faef` — ROW 1 CLOSED: `C-1`+`R-1` LANDED AND RATIFIED (§49). The batch acceptance met in the arc's words: two tori read *"the 4-gon you made first / second"* — WHICH ONE, not WHAT KIND. The inbox gate GUARDS COMMITS (bootstrap named, hooks tracked). `STAMP C-2` chartered (the source speaks the ACT's word — "the Square you made first"; researcher veto open one cycle). The shelf-clip cure REFUSED BY ARITHMETIC (148px lawful ceiling @900px) and relayed to the designer BY LETTER. `conePairs` pair queued beside E.circuit — both run first when rungs 3–4 unpark.**
+
 **⇒ AMENDED by the SIXTH (resumed) at `4123ddc` — `I-1` clause 2 LANDED over an unread SUPERSEDE (breach ruled STAND, claims §48; *a queue read at wake is a snapshot; only a queue re-read at the commit is a state*); the drive family is BACK UP (d8 32 · d12b 25 · d13 30 · winding 14/15; deficit's control designation RESTORED by the 55-guard audit); the shelf title LANDED inside the recut (its wait-clause discharged); ADR 0029 §2's amendment RODE (2c discharged); E.circuit PARKED with rungs 3–4; `RIDER R-1` (the inbox commit-hook) rides row 1's first commit; `STAMP C-1` chartered — THE CARD CYCLE IS IN FLIGHT.**
 
 **⇒ AMENDED AGAIN at `12ff7fa`** — **the researcher RULED the ambo midpoint (GIVEN register; ADR 0029 §2 amended, ⛔ UNCOMMITTED) · the designer closed FOUR things in one hour · and `MARKER I-1a` adds a THIRD failure class to the drive family: *a stale ASSERTION goes red; a stale LOCATOR goes GREEN.*** ⛔ **`deficit-app`'s positive-control designation is WITHDRAWN pending an audit of its 55 guarded paths.**
@@ -23,10 +25,10 @@
 | seat | holding | state |
 |---|---|---|
 | **ARMAN** | ⇒ **nothing owed and nothing waiting on him.** Δ49 (three answers), Δ50 (the pick = option (a)), Δ51 (*"sanctioned. proceed"*) all consumed and relayed. | **at rest — the router's chair is clear** |
-| **CODER** (the ORDER seat) | ⇒ **`STAMP C-1` — THE CARD CYCLE (row 1): five ruled cures, batchable, + `RIDER R-1` on the first commit** | **IN FLIGHT** (the 0910 ruling; seven cycles landed and pushed through `4123ddc`) |
+| **CODER** (the ORDER seat) | ⇒ **`STAMP C-2`** — the source phrase speaks the ACT's word (one item, small; acceptance in the 2359 letter) | **IN FLIGHT** (eight cycles landed and pushed through `061faef`) |
 | **DESIGNER** | ✅ **CLOSED IN ONE HOUR: the header ACCEPTED at her eye · the chip PRESSED · `1 relation` cured · the SHELF FORK ruled · the ORDINAL'S STRING ruled by rendering four candidates.** ⛔ **Holding two: the subtitle §2 re-ground (its premise falsified by my `abaB` measurement) and the escaped field's third site.** | **at rest; neither is on a clock** |
 | **RESEARCHER** | ✅ **RULED and ratified: the midpoint's NAME is GIVEN (his); a COMPOSED READING also exists and must go through the composer, never raw concat. ADR 0029 §2 amended with its surfaces named.** | **nothing owed** ⛔ **but her amendment is UNCOMMITTED — routed to the coder** |
-| **MOTHERSHIP (sixth, RESUMED 09-02)** | the seventh demoted (Δ53; their calibration letter accepted at §47); the recut ruled STAND (§48); `C-1`+`R-1` chartered; the v0 route relayed to the designer | **nothing owed** |
+| **MOTHERSHIP (sixth)** | `C-1`+`R-1` ratified (§49) · `C-2` chartered · two relays delivered to the designer by letter | **nothing owed** |
 | **T.O · COMMISSION** | nothing routed | standing |
 
 ---
