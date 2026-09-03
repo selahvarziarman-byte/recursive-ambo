@@ -61,6 +61,7 @@ import {
 import { readLevel3Tower, type Level3TowerReading } from '../lib/level3Invariants';
 // step 8 (THE INSIDE-VIEW HATCH): the SEALED metric — read-only, derive-only
 import { readPillarDihedrals } from '../lib/conformalAtom';
+import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { bisectEdges, liftPairingsToBisected } from '../lib/level3Subdivision';
 import type { Level3SoundnessReport } from '../lib/level3SoundnessGate';
 // B-113 THE RENDER: the model the transport already carries, reaching the
@@ -708,42 +709,27 @@ export function faceReferenceName(shape: Shape, face: Face, resolveAbsent?: Abse
     return raw.split(':').pop() ?? raw;
   });
   if (tokens.length === 0) return face.id.split(':').pop() ?? face.id;
-  const best = d14NameRotation(tokens);
-  return tokens.map((_, i) => tokens[(best + i) % tokens.length]).join('·');
+  // the reference position composes through the same frozen rotation
+  return composeCornerCycleName(tokens) ?? (face.id.split(':').pop() ?? face.id);
 }
 
 export function faceDisplayName(shape: Shape, face: Face, resolveAbsent?: AbsentLabelResolver): string {
-  const labels: string[] = [];
-  for (const vertexId of face.vertexIds) {
-    const display = cornerDisplayName(shape, vertexId, resolveAbsent);
-    if (display === null) return 'unnamed';
-    labels.push(display);
-  }
-  if (labels.length === 0) return 'unnamed';
-  const best = d14NameRotation(labels);
-  return labels.map((_, i) => labels[(best + i) % labels.length]).join('·');
+  // A-3b (2d9eb97): the rotation + join live in the FROZEN lib composer
+  // (cornerCycleName) so a frozen producer — the dualization mint — composes
+  // through the SAME function; this reader resolves the corners (lineage
+  // included) and wraps the composer's null in the name slot's lawful
+  // absence word. ONE composer, two wrappers.
+  const composed = composeCornerCycleName(
+    face.vertexIds.map((vertexId) => cornerDisplayName(shape, vertexId, resolveAbsent)),
+  );
+  return composed ?? 'unnamed';
 }
 
-// D14's rotation, extracted (F.0e): rotate to the earliest label; a TIE
-// (duplicate labels on one cycle) is broken by the lexicographically least
-// full rotation, so the name is total and stable — still a rotation, never a
-// reversal. SHARED by the printed name (faceDisplayName) and the drawn trace
-// (faceTraceCycle) so the two cannot disagree — one rotation, two readers.
-export function d14NameRotation(labels: string[]): number {
-  let best = 0;
-  for (let k = 1; k < labels.length; k += 1) {
-    for (let i = 0; i < labels.length; i += 1) {
-      const a = labels[(best + i) % labels.length];
-      const b = labels[(k + i) % labels.length];
-      if (b < a) {
-        best = k;
-        break;
-      }
-      if (a < b) break;
-    }
-  }
-  return best;
-}
+// D14's rotation (F.0e), now FROZEN in the lib composer (A-3b, 2d9eb97) and
+// re-exported here for its readers — the printed name (faceDisplayName) and
+// the drawn trace (faceTraceCycle) still share ONE rotation, and so does the
+// dualization mint.
+export { d14NameRotation } from '../lib/cornerCycleName';
 
 // F.0e — THE TRACE IS THE NAME (mothership §2, designer-ruled): a face's
 // pair-mark is its own edge cycle TRACED in D14 order — start at the

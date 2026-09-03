@@ -725,7 +725,7 @@ check('★ CLAUSE 4 — the measured diff surface, CR-INSENSITIVELY: every src f
   (() => {
     const { checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.cjs'));
     const freeze = checkEngineFreeze();
-    return freeze.ok === true && freeze.checked === 47 && freeze.unlisted.length === 0;
+    return freeze.ok === true && freeze.checked === 48 /* 47 → 48: cornerCycleName.ts joined the frozen set at the A-3b closure cure (2d9eb97) — the ONE corner-cycle composer frozen beside its frozen consumer */ && freeze.unlisted.length === 0;
   })());
 note(`diff candidates: ${diffCandidates.length} · content-moved: [${changedSrc.join(', ') || 'empty'}]`);
 // …and the CR-insensitive listing still BITES (a filter that cannot fail is a
@@ -754,7 +754,7 @@ const { checkEngineFreeze } = require(path.join(__dirname, 'lib', 'engineFreeze.
 const freeze = checkEngineFreeze();
 // 27 → 44 (2026-07-14, THE SMALL RUN): the freeze closed under imports.
 check('THE ENGINE FREEZE MANIFEST: all 45 frozen engine files (import-closed) match their manifest hashes and every source file under the engine roots is classified (the aperture\'s two NEW manuscript files ride as NOT_FROZEN lines — the completeness law working) — drifted [] · missing [] · unlisted []',
-  freeze.ok === true && freeze.checked === 47 &&
+  freeze.ok === true && freeze.checked === 48 /* 47 → 48: cornerCycleName.ts joined the frozen set at the A-3b closure cure (2d9eb97) — the ONE corner-cycle composer frozen beside its frozen consumer */ &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 && freeze.unlisted.length === 0);
 const FREEZE_SENTINEL = 'src/lib/incidenceTraceRegistry.ts';
 const sentinelContent = fs.readFileSync(path.join(repoRoot, FREEZE_SENTINEL), 'utf8');
