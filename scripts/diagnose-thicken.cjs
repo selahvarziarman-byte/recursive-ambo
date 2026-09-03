@@ -289,7 +289,7 @@ check('THE MANIFEST CARRIES THIS RUN\'S EXACT WEIGHT: the freeze reads ok at 45 
         sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, 'src/types/geometry.ts'), 'utf8')),
       );
     note(arrived ? 'the re-seal has ARRIVED at HEAD' : 'pre-commit: the four lines ride this change');
-    return freeze.ok === true && freeze.checked === 47 && (preCommit || arrived);
+    return freeze.ok === true && freeze.checked === 48 /* 47 → 48: cornerCycleName.ts joined the frozen set at the A-3b closure cure (2d9eb97) — the ONE corner-cycle composer frozen beside its frozen consumer */ && (preCommit || arrived);
   })());
 
 console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAILURE(S)`);

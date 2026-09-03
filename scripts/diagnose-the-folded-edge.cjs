@@ -460,7 +460,7 @@ check('the CR-insensitive content-moved surface is exactly the riding mandates\'
   (() => {
     const freeze = checkEngineFreeze();
     // 27 → 44 (2026-07-14, THE SMALL RUN): the freeze closed under imports
-    return freeze.ok === true && freeze.checked === 47 && freeze.unlisted.length === 0;
+    return freeze.ok === true && freeze.checked === 48 /* 47 → 48: cornerCycleName.ts joined the frozen set at the A-3b closure cure (2d9eb97) — the ONE corner-cycle composer frozen beside its frozen consumer */ && freeze.unlisted.length === 0;
   })());
 note(`content-moved vs HEAD: [${moved.join(', ') || 'empty'}]`);
 

@@ -302,7 +302,7 @@ check('★ CLAUSE 6(b) — the FOLD-CLAIMING caption, carried in-memory, VISIBLY
 console.log('\n----- [g] the freeze: ok · 44 · no drift — no re-seal was needed; 0.2 lives beside the engine, never inside it -----');
 const freeze = checkEngineFreeze();
 check('THE ENGINE FREEZE MANIFEST is UNTOUCHED: ok · checked 45 · drifted [] · missing [] · unlisted [] · nulled [] (apertureModel and ManuscriptView are NOT_FROZEN seams; a drift here would mean 0.2 reached into the engine — the mandate\'s STOP condition, which never fired)',
-  freeze.ok === true && freeze.checked === 47 &&
+  freeze.ok === true && freeze.checked === 48 /* 47 → 48: cornerCycleName.ts joined the frozen set at the A-3b closure cure (2d9eb97) — the ONE corner-cycle composer frozen beside its frozen consumer */ &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 &&
   freeze.unlisted.length === 0 && freeze.nulled.length === 0);
 

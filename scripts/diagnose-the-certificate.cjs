@@ -165,7 +165,7 @@ note(`id-against-key finds: ${idAgainstKeyHits}/200 · membership finds: ${membe
 console.log('\n----- [e] the freeze: ok · 44 · no drift (a reading, not an edit — you may not change the thing you certify) -----');
 const freeze = checkEngineFreeze();
 check('THE ENGINE FREEZE MANIFEST is untouched: ok · checked 45 · drifted [] · missing [] · unlisted [] · nulled [] — this build is ONE witness file; the op, the gate, the tower and the transport it certifies are byte-identical to what the manifest already sealed',
-  freeze.ok === true && freeze.checked === 47 &&
+  freeze.ok === true && freeze.checked === 48 /* 47 → 48: cornerCycleName.ts joined the frozen set at the A-3b closure cure (2d9eb97) — the ONE corner-cycle composer frozen beside its frozen consumer */ &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 &&
   freeze.unlisted.length === 0 && freeze.nulled.length === 0);
 

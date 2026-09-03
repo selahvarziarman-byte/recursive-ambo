@@ -335,7 +335,7 @@ check('…and the carried mutants are REAL, not strawmen: pre-commit, the HEAD-c
 console.log('\n----- [g] the freeze holds; apertureModel rides as NOT_FROZEN (its classification at this baseline — see the handback disclosure) -----');
 const freeze = checkEngineFreeze();
 check('THE ENGINE FREEZE MANIFEST: ok at 45 · drifted [] · missing [] · unlisted [] · nulled [] (apertureModel.ts is classified NOT_FROZEN at this baseline — no hash line exists to move; the mandate\'s premise that it is frozen is handed back as a disclosure)',
-  freeze.ok === true && freeze.checked === 47 &&
+  freeze.ok === true && freeze.checked === 48 /* 47 → 48: cornerCycleName.ts joined the frozen set at the A-3b closure cure (2d9eb97) — the ONE corner-cycle composer frozen beside its frozen consumer */ &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 &&
   freeze.unlisted.length === 0 && freeze.nulled.length === 0);
 

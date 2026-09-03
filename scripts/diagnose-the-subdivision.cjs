@@ -322,7 +322,7 @@ check('★ CLAUSE 4 — all 512 un-subdivided verdicts read BYTE-IDENTICALLY thr
   })());
 const freeze = checkEngineFreeze();
 check('THE ENGINE FREEZE MANIFEST: ok at 45 (import-closed) · drifted [] · missing [] · unlisted [] (the new subdivision module rides as a NOT_FROZEN line — the completeness law working) · nulled []',
-  freeze.ok === true && freeze.checked === 47 &&
+  freeze.ok === true && freeze.checked === 48 /* 47 → 48: cornerCycleName.ts joined the frozen set at the A-3b closure cure (2d9eb97) — the ONE corner-cycle composer frozen beside its frozen consumer */ &&
   freeze.drifted.length === 0 && freeze.missing.length === 0 && freeze.unlisted.length === 0 && freeze.nulled.length === 0);
 
 console.log(`\n${failures === 0 ? 'ALL PASS' : `${failures} FAILURE(S)`}`);

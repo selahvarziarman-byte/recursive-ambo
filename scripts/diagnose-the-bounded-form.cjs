@@ -355,7 +355,7 @@ check('THE FULL PROTOCOL\'S BOOKKEEPING: the freeze reads ok at 45 with zero dri
       (file) => sha256OfCrStripped(fs.readFileSync(path.join(repoRoot, file), 'utf8')) === sha256OfCrStripped(headBlobOf(file)),
     );
     note(`freeze: ok=${freeze.ok} checked=${freeze.checked} · the two re-sealed hashes present in the manifest: ${sealedHere}`);
-    return freeze.ok === true && freeze.checked === 47 && sealedHere && unmoved;
+    return freeze.ok === true && freeze.checked === 48 /* 47 → 48: cornerCycleName.ts joined the frozen set at the A-3b closure cure (2d9eb97) — the ONE corner-cycle composer frozen beside its frozen consumer */ && sealedHere && unmoved;
   })());
 
 console.log(failures === 0 ? '\nALL PASS' : `\n${failures} FAILURE(S)`);
