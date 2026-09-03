@@ -178,8 +178,45 @@ const surface = (key) => {
     Boolean(fresh.level1) && fresh.level1.components === 1 && fresh.level1.b1 === 1 &&
     rowOf(reading, 'components') === '1' && rowOf(reading, 'H₀') === 'ℤ' &&
     rowOf(reading, 'b₁ (level 1)') === '1' && rowOf(reading, 'H₁') === 'ℤ');
-  check("surface rows honest n-a on a 1-complex",
-    rowOf(reading, 'orientable') === 'n-a (1-complex)' && rowOf(reading, 'class') === 'n-a (1-complex)');
+  // A-4 item 1 (Arman's sanction, Δ66 — DERIVE, DON'T CARRY): orientability and
+  // w₁ are DERIVABLE for every 1-complex (trivially yes · zero, one coefficient
+  // per generator in the register's own notation), so 'n-a' there was
+  // fabricated unavailability; the class row stays the honest n-a (a
+  // 1-complex has no surface classification — not in the sanction's spine).
+  check("the derived spine on a 1-complex: orientable 'yes' · w₁ class '[0]' (one zero per generator) · class the honest 'n-a (1-complex)'",
+    rowOf(reading, 'orientable') === 'yes' && rowOf(reading, 'w₁ class') === '[0]' && rowOf(reading, 'class') === 'n-a (1-complex)');
+  // THE CARRIED LABEL IS NO LONGER READ — a lying h1Label cannot reach the card
+  const lying = readSkeletonSpecimen({ ...model, h1Label: 'LIE' });
+  check("the carried h1Label is DEAD to the card: a model carrying h1Label 'LIE' still reads H₁ 'ℤ' — derived from the shape's own vertices and edges",
+    rowOf(lying, 'H₁') === 'ℤ' && rowOf(lying, 'b₁ (level 1)') === '1');
+  // THE FALSIFIER RIDES: a level-1 rung that disagrees with the shape is SAID, in the note register
+  const disagreeing = readSkeletonSpecimen({ ...model, invariants: { ...model.invariants, level1: { components: 1, b1: 7 } } });
+  check("a committed level-1 rung that disagrees with the 1-skeleton is named in the note register (b₁ 7 vs derived 1), never silently preferred",
+    rowOf(disagreeing, 'b₁ (level 1)') === '1' && Array.isArray(disagreeing.notes) && disagreeing.notes.length === 1 && /b₁ 7/.test(disagreeing.notes[0]) && /derives 1 · 1/.test(disagreeing.notes[0]));
+  check("…and an agreeing rung leaves the note register EMPTY (no mark on the ordinary)", Array.isArray(reading.notes) && reading.notes.length === 0);
+  // THE ARC — the dim-1 null case: H₁ '0' · w₁ class '[]' (no generator, no coefficient)
+  const arc = readSkeletonSpecimen(world.dim1.find((m) => m.key === 'arc'));
+  check("the Arc: components 1 · b₁ 0 · H₁ '0' · orientable 'yes' · w₁ class '[]' — the spine derived on the null case",
+    rowOf(arc, 'components') === '1' && rowOf(arc, 'b₁ (level 1)') === '0' && rowOf(arc, 'H₁') === '0' && rowOf(arc, 'orientable') === 'yes' && rowOf(arc, 'w₁ class') === '[]');
+  // TWO COMPONENTS — the derivation counts components from the shape, not from a carried number
+  const twoArcs = { ...model, shape: { ...model.shape, vertices: { p: { id: 'p', position: [0, 0, 0] }, q: { id: 'q', position: [1, 0, 0] }, r: { id: 'r', position: [0, 1, 0] }, s: { id: 's', position: [1, 1, 0] } }, edges: [{ id: 'pq', vertexIds: ['p', 'q'] }, { id: 'rs', vertexIds: ['r', 's'] }], faces: [] }, invariants: { ...model.invariants, level1: { components: 2, b1: 0 } } };
+  const two = readSkeletonSpecimen(twoArcs);
+  check("two disjoint segments: components '2' · H₀ 'ℤ^2' · b₁ '0' · H₁ '0' · w₁ class '[]' — components are COUNTED from the edges' vertex ids",
+    rowOf(two, 'components') === '2' && rowOf(two, 'H₀') === 'ℤ^2' && rowOf(two, 'b₁ (level 1)') === '0' && rowOf(two, 'H₁') === '0' && rowOf(two, 'w₁ class') === '[]');
+  // THE ACCEPTANCE'S PAIR — the Arc and a FRESH SEGMENT agree, BY CONSTRUCTION: the invoked
+  // Segment is a face-less PLAIN render (writtenFormModel.invokePrimitive), whose card the
+  // view routes through the same skeleton reader; the two readings' rows are identical.
+  const { invokePrimitive } = req('src/manuscript/writtenFormModel.ts');
+  const segment = invokePrimitive('segment', 1);
+  const segRender = segment.render;
+  const segReading = segRender.mode === 'plain' && segRender.shape.faces.length === 0
+    ? readSkeletonSpecimen({ key: segment.id, title: segment.title, shape: segRender.shape, invariants: segRender.invariants, h1Label: segRender.h1Label })
+    : null;
+  check("a FRESH SEGMENT is a face-less plain render (invokePrimitive) and, read through the skeleton reader, its rows EQUAL the Arc's label for label and value for value — H₁ '0' agreeing at the seam the eye reads",
+    segReading !== null && JSON.stringify(segReading.rows) === JSON.stringify(arc.rows) && rowOf(segReading, 'H₁') === '0' && rowOf(segReading, 'orientable') === 'yes' && rowOf(segReading, 'w₁ class') === '[]');
+  const viewSrc = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ManuscriptView.tsx'), 'utf8');
+  check("…and the VIEW routes a face-less plain render through readSkeletonSpecimen before readPlainSpecimen can write 'n-a' (source-pinned: the guard `render.shape.faces.length === 0` precedes the plain call)",
+    viewSrc.includes("if (render.shape.faces.length === 0) {") && viewSrc.indexOf("if (render.shape.faces.length === 0) {") < viewSrc.indexOf("const base = readPlainSpecimen(entry.form.title, personReadableProvenance(entry.form.provenance, sourceNameBySource), render.invariants, render.h1Label);"));
   check('legend empty (the ink IS the cycle set) · twist null', reading.legend.length === 0 && reading.twist === null);
 }
 

@@ -3297,6 +3297,22 @@ export default function ManuscriptView() {
           ],
         });
       }
+      // A-4 item 1 (Arman's sanction, Δ66 — measured at the eye): an INVOKED
+      // Segment is a plain render whose shape carries no face — a 1-complex.
+      // Its rows are the skeleton reader's (the one spine producer in the
+      // sanctioned specimenModel), so the Arc and a fresh Segment agree by
+      // construction; readPlainSpecimen (frozen writtenFormModel) keeps the
+      // surfaces — its 'n-a' was never the truth about a graph.
+      if (render.shape.faces.length === 0) {
+        const graph = readSkeletonSpecimen({
+          key: entry.form.id,
+          title: entry.form.title,
+          shape: render.shape,
+          invariants: render.invariants,
+          h1Label: render.h1Label,
+        });
+        return speak({ ...graph, title: entry.form.title, subtitle: personReadableProvenance(entry.form.provenance, sourceNameBySource) });
+      }
       const base = readPlainSpecimen(entry.form.title, personReadableProvenance(entry.form.provenance, sourceNameBySource), render.invariants, render.h1Label);
       // Option B: name the drawn certified generators in the summoned legend
       const optionB = optionBByShape.get(render.shape.id);
