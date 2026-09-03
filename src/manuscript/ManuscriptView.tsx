@@ -135,6 +135,7 @@ import {
   PortFacePicker,
   RecordStrip,
   SourcesShelf,
+  PageChrome,
   CHROME_LAYER_Z,
   ThickenGatePanel,
   type AperturePairRowView,
@@ -7439,13 +7440,14 @@ export default function ManuscriptView() {
           return { label: `undo — ${word}`, onUndo: () => undoLastAct() };
         })()}
       />
+      {/* STAMP C-3: the page doors + §7 mark live in the top chrome's right
+          end now (PageChrome portals into AppShell's slot) — the shelf holds
+          ONE kind, sources. */}
+      <PageChrome paper={d.paper} dirty={pageDirty} onSavePage={handleSavePage} onLoadPage={handleLoadPage} />
       <SourcesShelf
         universes={shelfUniverses}
         paper={d.paper}
-        dirty={pageDirty}
         onLoadFiles={handleLoadFiles}
-        onSavePage={handleSavePage}
-        onLoadPage={handleLoadPage}
         onDragEntry={(index) => {
           dragIndexRef.current = index;
         }}

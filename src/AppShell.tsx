@@ -202,6 +202,23 @@ function ShellBar({
         })}
       </nav>
 
+      {/* STAMP C-3 (the designer's 1150 destination ruling): the page pair's
+          HOME — the top chrome's right end, opposite the switch (this band's
+          subject is the DOCUMENT; toolbar/card/shelf carry per-form and
+          per-source). The shell owns only the SLOT and its visibility — the
+          manuscript module fills it by portal so the handlers stay beside
+          the state they act on — and the slot hides whenever the manuscript
+          is not the active module: presence follows the module exactly like
+          the rest of its chrome. */}
+      <div
+        id="shell-bar-page-slot"
+        style={{
+          marginLeft: 'auto',
+          display: active === 'manuscript' ? 'flex' : 'none',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      />
     </header>
   );
 }

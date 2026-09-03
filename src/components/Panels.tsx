@@ -2164,10 +2164,27 @@ function CellComposition({
               >
                 <span className="flex items-start justify-between gap-2">
                   <span className="min-w-0">
-                    <span className="mt-1 block truncate text-stone-200">
+                    {/* STAMP A-3 — the survivor's grading (the ratified
+                        Cell-Faces cut applied to this WHICH-slot): the name
+                        line wears the DESIGNATION style only when it IS one —
+                        this composer's absence branch echoes the id
+                        (`?? shortenId`), so `displayLabel === shortId` is the
+                        structural mark of a non-designation doing name-work,
+                        graded like the absence register. The address line
+                        below wears the reference seam. ⛔ Δ58: the STRINGS
+                        are byte-untouched — midpoint labels (`AC`, `AB`)
+                        ride exactly as minted and grade as present content. */}
+                    <span
+                      className={`mt-1 block truncate ${
+                        row.displayLabel === row.shortId ? 'italic text-stone-500' : 'text-stone-200'
+                      }`}
+                    >
                       {row.displayLabel}
                     </span>
-                    <span className="block truncate font-mono text-xs text-stone-500">
+                    <span
+                      title="reference — the vertex's address"
+                      className="block truncate font-mono text-xs text-stone-500"
+                    >
                       {row.shortId}
                     </span>
                     {row.packetDetail ? (

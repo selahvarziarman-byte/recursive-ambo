@@ -15,6 +15,7 @@
 // verbatim) — this layer invents no operability.
 
 import { useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { PrimitiveCatalogueEntry } from '../playground/primitiveCatalogue';
 import type { OperationAvailability } from './writtenFormModel';
 import { DOCK_OPERATION_GROUPS } from './writtenFormModel';
@@ -1053,32 +1054,17 @@ export function RecordStrip({
 export function SourcesShelf({
   universes,
   paper,
-  dirty,
   onLoadFiles,
   onDragEntry,
-  onSavePage,
-  onLoadPage,
 }: {
   // S2 — sourceName is the DESIGNATION half of the split (null on old files);
   // `source` stays the ADDRESS the grouping keys on
   universes: Array<{ source: string; sourceName: string | null; entries: Array<{ index: number; entry: ShelfEntry; placed: boolean }> }>;
   paper: ChromePaper;
-  // §7 (B-2026-08-24-B, RULED): the page holds work not written down — the
-  // QUIET STANDING MARK renders beside `save the page…`, where the act
-  // lives, while the person still has a choice. UNSAVED only (the saved
-  // state is the ordinary case and carries no mark).
-  dirty: boolean;
   onLoadFiles: (files: FileList) => void;
   onDragEntry: (index: number) => void; // dragstart — the view places on canvas drop
-  // §2B (B-2026-08-22-A): THE PAGE DOORS — VISIBLE, ruled ("not a right-click,
-  // not a hidden gesture"): the whole page saved to and restored from an
-  // explicit versioned file. ⛔ COPY PENDING THE DESIGNER (flagged): the
-  // buttons' wording holds the slots, nothing authored here.
-  onSavePage: () => void;
-  onLoadPage: (files: FileList) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const pageFileRef = useRef<HTMLInputElement>(null);
   return (
     <div
       style={{
@@ -1191,74 +1177,9 @@ export function SourcesShelf({
       >
         load universe… (.snapshot.json)
       </button>
-      {/* §7 (B-2026-08-24-B, RULED): the QUIET STANDING MARK — unsaved work,
-          stated where the act lives, while he still has a choice. Only the
-          UNSAVED state is marked. The second line speaks the ruled asymmetry
-          ("an unmount survives; a full reload does not") in the person's own
-          vocabulary. ⛔ final wording + look the DESIGNER's (flagged); the
-          lines state the ruled facts and nothing more. */}
-      {dirty ? (
-        <div data-unsaved-mark style={{ marginTop: 7, fontSize: 10.5, fontStyle: 'italic', opacity: 0.75 }}>
-          there is work here that is not written down
-          <div style={{ marginTop: 1, opacity: 0.85 }}>
-            switching modules keeps it · a full reload loses it — save the page… writes it down
-          </div>
-        </div>
-      ) : null}
-      {/* §2B — THE PAGE DOORS, visible beside the universe door. ⛔ COPY
-          PENDING THE DESIGNER (flagged): wording holds the slots. */}
-      <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
-        <button
-          type="button"
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            onSavePage();
-          }}
-          style={{
-            flex: 1,
-            padding: '5px 0',
-            borderRadius: 3,
-            border: `1px solid ${paper.cardBorder}`,
-            background: 'transparent',
-            color: paper.cardInk,
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: 12,
-            cursor: 'pointer',
-          }}
-        >
-          save the page…
-        </button>
-        <button
-          type="button"
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            pageFileRef.current?.click();
-          }}
-          style={{
-            flex: 1,
-            padding: '5px 0',
-            borderRadius: 3,
-            border: `1px solid ${paper.cardBorder}`,
-            background: 'transparent',
-            color: paper.cardInk,
-            fontFamily: 'Georgia, "Times New Roman", serif',
-            fontSize: 12,
-            cursor: 'pointer',
-          }}
-        >
-          load the page…
-        </button>
-      </div>
-      <input
-        ref={pageFileRef}
-        type="file"
-        accept=".json,application/json"
-        style={{ display: 'none' }}
-        onChange={(e) => {
-          if (e.target.files && e.target.files.length) onLoadPage(e.target.files);
-          e.target.value = '';
-        }}
-      />
+      {/* STAMP C-3 (the designer's 1150 destination ruling): the page doors
+          and the §7 unsaved mark LEFT this box for the top chrome's right
+          end (PageChrome below) — the shelf now holds ONE kind: sources. */}
       <input
         ref={fileRef}
         type="file"
@@ -1270,6 +1191,126 @@ export function SourcesShelf({
           e.target.value = '';
         }}
       />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// STAMP C-3 — THE PAGE CHROME (the designer's 1150 destination ruling): the
+// page doors sit at the RIGHT END OF THE TOP CHROME, opposite the universe
+// switch — the one band whose subject is the DOCUMENT (staying in the shelf
+// was the defect; `with the record` is refused by her own measurement — a
+// control cannot live in a container that is not there when the control is
+// needed most). Rendered by PORTAL into AppShell's #shell-bar-page-slot so
+// the handlers stay beside the page state they act on; the SHELL owns the
+// slot's visibility (manuscript-active only).
+//
+// §7 (B-2026-08-24-B, RULED) rides along: the QUIET STANDING MARK attaches
+// to `save the page…` — where the act lives — and is drawn ONLY when work
+// is unsaved (the saved state is the ordinary case and carries no mark).
+// The sentences ride VERBATIM (her wording ruling still owed); only the
+// frame is bar-sized. ⛔ button copy still holds the §2B designer slots.
+// ---------------------------------------------------------------------------
+
+export function PageChrome({
+  paper,
+  dirty,
+  onSavePage,
+  onLoadPage,
+}: {
+  paper: ChromePaper;
+  dirty: boolean;
+  onSavePage: () => void;
+  onLoadPage: (files: FileList) => void;
+}) {
+  const pageFileRef = useRef<HTMLInputElement>(null);
+  const slot = typeof document === 'undefined' ? null : document.getElementById('shell-bar-page-slot');
+  const doorStyle: React.CSSProperties = {
+    padding: '4px 11px',
+    borderRadius: 3,
+    border: `1px solid ${paper.cardBorder}`,
+    background: 'transparent',
+    color: paper.cardInk,
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    fontSize: 12,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  };
+  const content = (
+    <>
+      {dirty ? (
+        <div
+          data-unsaved-mark
+          style={{
+            fontSize: 10,
+            fontStyle: 'italic',
+            opacity: 0.75,
+            color: paper.cardInk,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            textAlign: 'right',
+            lineHeight: 1.25,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          there is work here that is not written down
+          <div style={{ opacity: 0.85 }}>
+            switching modules keeps it · a full reload loses it — save the page… writes it down
+          </div>
+        </div>
+      ) : null}
+      <button
+        type="button"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          onSavePage();
+        }}
+        style={doorStyle}
+      >
+        save the page…
+      </button>
+      <button
+        type="button"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          pageFileRef.current?.click();
+        }}
+        style={doorStyle}
+      >
+        load the page…
+      </button>
+      <input
+        ref={pageFileRef}
+        type="file"
+        accept=".json,application/json"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          if (e.target.files && e.target.files.length) onLoadPage(e.target.files);
+          e.target.value = '';
+        }}
+      />
+    </>
+  );
+  if (slot) return createPortal(content, slot);
+  // The BARLESS route (`?manuscript` — the dev mount without AppShell): the
+  // slot does not exist, so the same strip renders FIXED at the TOP-LEFT
+  // (measured: the top-right corner is the leva panel's — a right-end strip
+  // hides behind it; top-left above the aperture panel's y64 is free). The
+  // doors must never vanish from the route the person actually drives; the
+  // ruled right-end destination is the REAL app's bar slot above.
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 8,
+        left: 14,
+        zIndex: CHROME_LAYER_Z,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+      }}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      {content}
     </div>
   );
 }
