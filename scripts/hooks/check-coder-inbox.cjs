@@ -15,7 +15,8 @@
 // move").
 //
 // THE GESTURE: after actually reading the letters, touch the marker —
-//     node scripts/hooks/check-coder-inbox.cjs --mark-reviewed
+//     node scripts/hooks/check-coder-inbox.cjs --mark-reviewed --expect <N>
+// where N is the count of letters READ IN FULL (the gate refuses any other N).
 // The marker (.handoff/inbox/coder/.reviewed) lives inside the gitignored
 // inbox; letters are *.md so the dotfile is never counted as mail. A letter
 // that arrives AFTER the touch is newer than the marker and refuses the next
@@ -40,12 +41,39 @@ const inboxDir = path.join(mainRoot, '.handoff', 'inbox', 'coder');
 const markerPath = path.join(inboxDir, '.reviewed');
 
 if (process.argv.includes('--mark-reviewed')) {
-  // The consumption gesture — a deliberate act, never automatic.
+  // The consumption gesture — a deliberate act, never automatic — and it
+  // REQUIRES `--expect <N>`: the number of letters the reader has READ IN
+  // FULL. The gate refuses to set the marker when the inbox holds a different
+  // count, so a chain that lists and marks in one breath FAILS BY
+  // CONSTRUCTION: the number it carries was typed before the listing ran.
+  // (Bought 2026-09-03, twice in one hour: MARKER W-4 at 23:19 and the
+  // researcher's 23:26 notice were both marked read by a landing chain that
+  // had only printed their names — a listing is not a reading.)
+  const present = fs.existsSync(inboxDir)
+    ? fs.readdirSync(inboxDir).filter((n) => n.endsWith('.md')).sort()
+    : [];
+  const naming = present.map((n) => `  · ${n}`).join(String.fromCharCode(10));
+  const expectAt = process.argv.indexOf('--expect');
+  const expected = expectAt >= 0 ? Number(process.argv[expectAt + 1]) : NaN;
+  if (!Number.isInteger(expected)) {
+    console.error(
+      `inbox gate — REFUSED to mark: --expect <N> is required (N = the letters you have read in full). The inbox holds ${present.length}:
+${naming}`,
+    );
+    process.exit(1);
+  }
+  if (expected !== present.length) {
+    console.error(
+      `inbox gate — REFUSED to mark: you declared ${expected} letter(s) read; the inbox holds ${present.length}. Read what is there, then declare its count:
+${naming}`,
+    );
+    process.exit(1);
+  }
   fs.mkdirSync(inboxDir, { recursive: true });
   fs.closeSync(fs.openSync(markerPath, 'a'));
   const now = new Date();
   fs.utimesSync(markerPath, now, now);
-  console.log(`inbox gate — marked reviewed at ${now.toISOString()} (${markerPath})`);
+  console.log(`inbox gate — marked reviewed at ${now.toISOString()} — ${present.length} letter(s) declared read in full (${markerPath})`);
   process.exit(0);
 }
 

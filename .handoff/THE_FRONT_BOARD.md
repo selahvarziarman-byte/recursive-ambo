@@ -6,6 +6,14 @@
 > ⛔ **THIS IS NOT A PLAN.** Plans are per-arc and hold WHAT and WHY. ⇒ **This file holds WHEN, WHO, and WHAT-BLOCKS-WHAT, ACROSS arcs — the one thing no single plan can see.**
 > ⛔ **ITS ONE LAW: *discovery order is not implementation order.***
 
+**⇒ AMENDED at `d4d80fa` (23:19 — Δ67: THE DECLARED END IS SCOPED, §67): Arman ruled **`a+c`** — the AMBO end and the WALK end, built **C-FIRST in three steps** (`PLAN_THE_CONNECTION_LAYER.md`, filed): Ambo transports → the LIFT carries → the WALK carries, each step a person's own sentence. ✔ The order is FORCED, not preferred (the packet editor mounts in the Ambo inspector ALONE — concepts are GIVEN there and reach the Manuscript by lift). ★ a+c is not two features: it is the chain `ADR 0028`'s lift-law clause already describes. ⇒ **`STAMP C-2AMBO` CHARTERED — the researcher rules step 1's definitions.****
+
+**⇒ AMENDED at `d4d80fa` (22:23 — ADR 0030 RATIFIED, §66): THE LAYER HAS ITS DEFINITIONS — fiber = the packet; door-transports (geometric DERIVED · semantic GIVEN, a traced act; an unassigned door a TRUE ABSENCE); the two readings (home ⇒ cargo-change is CURVATURE · not-home ⇒ ROUTE-DISAGREEMENT); the warrant per-word, the bit cited never substituted; instance-zero = the ADR-0013 wave instrument. The fold-pair law adjudicated to its lawful form (odd-χ links even by duality; the Klein counterexample; opposition = 2-torsion) — the office's four reading clauses SURVIVE; `STAMP F-1` (the cheap parity census) chartered; sentence cures queue behind C. ⛔ **THE ONE OPEN WORD: ARMAN'S Δ43 SCOPE CALL — doors-first recommended.** Coder: the sanctioned spend, then F-1.**
+
+**⇒ AMENDED at `d4d80fa` (21:46 — STATION B CLOSES, STATION C OPENS, §65/Δ66): the `specimenModel` spend SANCTIONED (the coder's one item) · the person-acceptance CLOSED BY OBSERVATION (Arman watched the walk and accepts; *"we need to proceed"*) · **`STAMP C-1ADR` CHARTERED — the researcher writes the CONNECTION ADR against 0028** (concept-transport against the live order surface; warrant folded in; registers untouched; the op-set does not bend; ADR-only). ★ **THE PLAN: A ✅ · B ✅ · C IN ITS FIRST ACT — the finish line is the live front.****
+
+**⇒ AMENDED at `d4d80fa` (21:39 — A-4 FIVE-OF-SIX + B-2 ITEMS 0–4 LANDED AND RATIFIED, §64): THE ORDER-READING SURFACE IS LIVE — T³ `BAba` → tally zero → "here you are, home" with the return agreeing; SW `AfaF` (the turn-back by the VEIL alone) → "you are not home", no return. ★ THE ARC'S PERSON-FACING PROOF-PAIR EXISTS. Per-circuit K live. The card speaks checked sentences (OWNED kept; the certificate door re-keyed on what opening ADDS after a self-caught forbidden first key; lights-to-point → not-light). ⛔ A-4 ITEM 1 STOPPED AND PRICED AT THE FROZEN GATE — WITH ARMAN (~25 lines, `specimenModel.ts`, one word). REMAINING ON STATION B: the PERSON-acceptance — his walk or the fourth's independent drive. Two walk-model findings queued (oblique start · on-plane landing).**
+
 **⇒ AMENDED at `5d55cb1` (19:16 — `STAMP B-2` CHARTERED, §63): the placement ruled against the LIVE panel (IS·DOING·HAPPENED by tempo; the sentence never in a return slot; last letter at full ink; elision deferred pending one sighting) — and her PRECONDITION seen firing (`after 4` then `after 7` on a three-door leg) is RULED: the door count goes PER-CIRCUIT, item 0, first. The way-back room-marks ride as item 4 (the trace's last two letters drawn in place). Her 1607 §2 withdrawn by her own hand; the residue is the keying law at the card's grain (the `n-a` keys on the certifier's silence, not the fact's absence — A-4 item 1 is its cure). STATION B FULLY IN BUILD: B1 measured · B2 ruled+placed+chartered · the warrant rider to the researcher.**
 
 **⇒ AMENDED at `5d55cb1` (17:45 — B2 RULED AND THE CONTRADICTION CALLED, §62): the order-reading surface is THREE MARKS (trace · tally · sentence — the page WATCHES for the cancellation instead of asking the person to construct it); the §6 contradiction (the acceptance needs door-choosing; addressing is parked) is DISSOLVED by my ruling — THE WAY-BACK MARK IS INK, NOT CAMERA (the trace's own tail drawn in place; Arman's veto open one word); the camera gate stays parked whole. `STAMP A-4` (the card-speech batch, six items) CHARTERED — ⛔ item 1 carries a FROZEN ask on `specimenModel.ts`, named. The researcher's three lines ratified (derive-don't-carry · OWNED kept · lights-to-POINT). NEW: the APERTURE HALF-COVER (threshold 780–790; dim-3's only MAKER half-dead) joins the §9.3 occlusion as THE NO-REFLOW CLASS, two members, under Δ54's word. The fourth's clock confession taken at her sharper framing (a false receipt, cured by construction).**
@@ -40,10 +48,10 @@
 
 | seat | holding | state |
 |---|---|---|
-| **ARMAN** | **two one-word items: (1) the §62.1 veto window (the way-back mark ruled ink-not-camera) · (2) the A-4 frozen sanction when the coder's ask arrives (`specimenModel.ts`, second spend)** | **neither urgent; the veto lapses by silence** |
-| **CODER** (the ORDER seat) | ⇒ **TWO stamps: `A-4` (card-speech, six items; ⛔ the frozen ask on `specimenModel.ts` named) · `B-2` (the order-reading surface: item 0 per-circuit K FIRST, then trace·tally·sentence·way-back marks)** — batch order theirs | **the plan's whole buildable front, again** |
-| **DESIGNER (fourth)** | ✅ placement DELIVERED and ratified; 1607 §2 withdrawn at her own hand (the keying law is the residue) · **holding: the elision glyph (one long-walk sighting) · the way-back mark's visual refinement on first sighting** | **at rest until B-2's first sighting** |
-| **RESEARCHER** | **one rider (B-2 item 5): is `deck abelian: no` the right WARRANT for the SW sentence's `not home`?** | **one line; may land mid-batch** |
+| **ARMAN** | ✅ **Δ67 given: `a+c`.** Nothing owed — the next thing wanted from him is STEP 1's own acceptance at his eye (*"I said what these passages do, I followed them round, my concept came back changed"*) | **at rest; the end is scoped** |
+| **CODER** (the ORDER seat) | ⇒ **the sanctioned `specimenModel` spend (first) · `F-1` the fold-parity census + the instance-zero one-liner (after)** | **two items, order fixed by the sanction** |
+| **DESIGNER (fourth)** | **B-2 IS SIGHTABLE: her independent drive closes the person-acceptance if Arman defers — and her two refinements (the elision glyph · the veil's look) ride the same sighting** | **one drive, three birds** |
+| **RESEARCHER** | ⇒ **`STAMP C-2AMBO` — STEP 1's DEFINITIONAL RULING** (the fiber's first form · absence-vs-identity at the transport grain · what a triangle's residue IS · what the act leaves) | **the declared end's first act** |
 | **MOTHERSHIP (sixth)** | drove the falsifier at its own eye (§53) · §2 rewritten as THE PLAN (Δ55) · the coasting filed against itself (§53.2) | **nothing owed; the plan pressed** |
 | **T.O · COMMISSION** | nothing routed | standing |
 
@@ -71,7 +79,12 @@
 | B3 | the gate's instrument arms (E.circuit · conePairs) | coder | **parked with rungs 3–4, BEHIND the camera gate at their head (Δ63)** |
 
 ### STATION C — THE CONNECTION LAYER: *the finish line*
-**Chartered only when A and B stand.** First act when its time comes: **the researcher writes the connection ADR against `0028`** (the lift law is its skeleton; the 2-torsion catch is our antipode rule); the op-set does not bend toward it before that (standing doctrine). **Scope and the go are Arman's Δ43 call.**
+✅ **OPEN AND SCOPED (Δ67: `a+c`, C-FIRST). Definitions: `ADR 0030` ratified. Order: `PLAN_THE_CONNECTION_LAYER.md` — three steps, each a person's sentence:**
+| # | step | who | state |
+|---|---|---|---|
+| **C1** | **THE AMBO END** — assign a transport to an edge; follow a triangle; read what came back | researcher → designer → coder | ⇒ **`STAMP C-2AMBO` LIVE (the researcher's definitional ruling)** |
+| C2 | **THE LIFT CARRIES IT** — 0028's anomaly matching made concrete; a born cell's transport is a TRUE ABSENCE | researcher + coder | gated on C1 |
+| C3 | **THE WALK CARRIES IT** — the cargo beside trace·tally·sentence; curvature at home, route-disagreement when displaced; T³ vs SW the free control | designer + coder | gated on C2 |
 
 ### THE QUEUE BESIDE THE PLAN (not of it): the toolbar occlusion (Δ54, his word) · the seventh-surface menu label (latent) · the two-producer Klein hazard (latent) · the four-archive convention · `THE_SUBSTRATE_MAP` regeneration (coder, needs a drive).
 
