@@ -28,6 +28,10 @@ import {
   packetSourceRef,
 } from './packets';
 import { createDefaultVertexData, deriveEdges, getCellFaces } from './shape';
+// A-3b: the ONE face composer (D14 through faceDisplayName) — a lib→manuscript
+// import with precedent (noncubeDomain's DomainModel); no cycle (apertureModel
+// reaches neither dualView nor transformationLedger, dualization's only importers).
+import { faceDisplayName } from '../manuscript/apertureModel';
 
 interface DualizationSourceTopology {
   cell: Cell;
@@ -443,8 +447,15 @@ function createDualVertices(
 ): DualVertexEntry[] {
   return [...sourceFaces]
     .sort((a, b) => a.id.localeCompare(b.id))
-    .map((sourceFace, index) => {
+    .map((sourceFace) => {
       const dualVertexId = makeDualVertexId(shapeId, sourceFace.id);
+      // A-3b (researcher 1301, ratified; Arman's sanction 2026-09-03): a dual
+      // vertex's derived reading IS the primal face's COMPOSED name — D14
+      // through the ONE composer, never raw concat — and TRUE ABSENCE ('' —
+      // the sibling mints' own idiom) where the face composes over unnamed
+      // corners. The positional `D-n` was a placeholder wearing a name.
+      const composed = faceDisplayName(shape, sourceFace);
+      const derivedLabel = composed === 'unnamed' ? '' : composed;
       const lineage = deriveFaceLineage(
         [
           packetSourceRef('face', sourceFace.id, 'source-face'),
@@ -459,7 +470,7 @@ function createDualVertices(
         vertex: {
           id: dualVertexId,
           position: faceCentroid(shape, sourceFace),
-          data: createDefaultVertexData(`D${index + 1}`, '#c084fc', {}, lineage),
+          data: createDefaultVertexData(derivedLabel, '#c084fc', {}, lineage),
           createdBy: {
             shapeId,
             operation: 'dualization',
