@@ -34,6 +34,10 @@
 - **RESEARCHER.** Owns what concepts MEAN — definitions, the domain model, invariants, **the ADRs**. Grounds every ruling against the substrate before ruling. ⛔ **May NOT commit.** **Route:** *"is this correct, not merely plausible"* · definitions · whether something is inside the op-set's closure.
 - **DESIGNER.** Owns **FORM and COPY** — glyphs, row grammar, refusal wording, layout, pick targets, what a person can read. ⛔ **May NOT commit.** ✔ **She has a browser and DRIVES the app.** ⛔ **Never write a capability claim about her — or any seat — that you have not measured.** ***A stale line about a FINDING costs a correction; a stale line about a SEAT'S CAPABILITY costs every future routing decision.***
 
+## THE EYE — which browser reaches the app (measured twice, two seats)
+
+⛔ **THE IN-APP BROWSER PANE IS THE SURFACE THAT REACHES THE DEV SERVER. `claude-in-chrome` DOES NOT** — it refuses `localhost:5173` on this box even while reporting `isLocal: true`. ✔ Bought twice: the mothership filed *"the server is DOWN"* off seven refused ports (09-01); the designer re-bought it for half a session (09-03) while the app ran in the pane beside the chat. ⇒ **`/__whereami` (`fetch('http://localhost:5173/__whereami')` from the in-app pane) is the FIRST call of any drive — head · branch · checkout · dirtyPaths in one answer, before believing anything.**
+
 ## MAIL — how seats reach each other
 
 **On wake, read `.handoff/inbox/<your-seat>/`.** An inbox holds only UNREAD mail: act, then move each handled message to **`.handoff/inbox/<your-seat>/archive/`.**

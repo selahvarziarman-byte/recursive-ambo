@@ -6,6 +6,12 @@
 > ⛔ **THIS IS NOT A PLAN.** Plans are per-arc and hold WHAT and WHY. ⇒ **This file holds WHEN, WHO, and WHAT-BLOCKS-WHAT, ACROSS arcs — the one thing no single plan can see.**
 > ⛔ **ITS ONE LAW: *discovery order is not implementation order.***
 
+**⇒ REGENERATED WHOLE at `3d83089` (09-03 afternoon, on Arman's Δ55 wake-up) — §2 is now THE PLAN TO THE FINISH LINE, not an inbox ledger. The inert-toolbar finding is WITHDRAWN at my own eye (§53: both fixtures refuse IN WORDS — `thicken — select two forms — click the shape, shift-click the segment`, verbatim, standard Segment AND legacy Arc); the Δ52/0029§27 collision was RESOLVED by the researcher's §2 amendment (landed `5b290f2`) — LIVE GATE 2 below is struck as stale. ⛔ THE STANDING FACT THE REWRITE SURFACED: the meaning arc's two remaining gates are ARMAN'S OWN ACTS (the ambo visit · the walks) and had never been pressed — that was the stillness.**
+
+**⇒ AMENDED at `3d83089` (09-03 midday, the 1148/1150/1214 triple) — ASK 2 RULED and `STAMP C-3` CHARTERED (the page leaves the shelf: top chrome right end, notice conditional, refused destinations in the charter, the 131-vs-148 price closes the clip class or STOPS). Her 1148 blocker RETRACTED by her own 1214 (the gesture was DOUBLE-CLICK, on the card and in her notes — the eye supplied it); what survives is the night's species, filed twice with its one-call cure (*an instrument fault narrated as a substrate fact — check the event ARRIVED before explaining where it went*). ⛔⛔ NEW DEFECT, PUT TO ARMAN not chartered: ENABLED-BUT-INERT — `thicken` enabled, clicked dead-centre, silent, while the card's form-specific list is RIGHT on the same screen (§52.1); if chartered, acceptance = reason-totality at the toolbar. The escaped-field re-sight stays OPEN (the Arc is a source, not a site; thicken-free routes named). The palette falsifier DISCHARGED in its third branch.**
+
+**⇒ AMENDED at `061faef` (09-03, the designer's five-letter night + the anomaly sweep) — ALL FIVE RATIFIED as her `0030` retraction leaves them (§50): the `0208` door ruling landed WHOLE; the title-surface set DISCHARGED (the map slot drops `— born`, ADR 0024 in copy); the shelf clip is a KIND error (kind-separation chartered pending HER destination line); the seventh-surface hazard is ONE guardless site, LATENT; her board law TAKEN (*a pile rebuilt at a seat change inherits what was ASKED, not what was ANSWERED*) and the strip item STRUCK. ⛔ NEW DEFECT DRIVEN + CONTROLLED: below ~1050px the card covers the op toolbar and `identify`'s centre lands on `remove` with NO second route — ✅ RULED QUEUED by Arman (Δ54: *"queue it."*). Her escaped-field sites 2–3 UNVERIFIED against C-1's cure — re-sight chartered before any cut. The anomaly sweep: substrate CLEAN; unmeasurable residue voided by notice.**
+
 **⇒ AMENDED at `061faef` — ROW 1 CLOSED: `C-1`+`R-1` LANDED AND RATIFIED (§49). The batch acceptance met in the arc's words: two tori read *"the 4-gon you made first / second"* — WHICH ONE, not WHAT KIND. The inbox gate GUARDS COMMITS (bootstrap named, hooks tracked). `STAMP C-2` chartered (the source speaks the ACT's word — "the Square you made first"; researcher veto open one cycle). The shelf-clip cure REFUSED BY ARITHMETIC (148px lawful ceiling @900px) and relayed to the designer BY LETTER. `conePairs` pair queued beside E.circuit — both run first when rungs 3–4 unpark.**
 
 **⇒ AMENDED by the SIXTH (resumed) at `4123ddc` — `I-1` clause 2 LANDED over an unread SUPERSEDE (breach ruled STAND, claims §48; *a queue read at wake is a snapshot; only a queue re-read at the commit is a state*); the drive family is BACK UP (d8 32 · d12b 25 · d13 30 · winding 14/15; deficit's control designation RESTORED by the 55-guard audit); the shelf title LANDED inside the recut (its wait-clause discharged); ADR 0029 §2's amendment RODE (2c discharged); E.circuit PARKED with rungs 3–4; `RIDER R-1` (the inbox commit-hook) rides row 1's first commit; `STAMP C-1` chartered — THE CARD CYCLE IS IN FLIGHT.**
@@ -24,47 +30,40 @@
 
 | seat | holding | state |
 |---|---|---|
-| **ARMAN** | ⇒ **nothing owed and nothing waiting on him.** Δ49 (three answers), Δ50 (the pick = option (a)), Δ51 (*"sanctioned. proceed"*) all consumed and relayed. | **at rest — the router's chair is clear** |
-| **CODER** (the ORDER seat) | ⇒ **`STAMP C-2`** — the source phrase speaks the ACT's word (one item, small; acceptance in the 2359 letter) | **IN FLIGHT** (eight cycles landed and pushed through `061faef`) |
-| **DESIGNER** | ✅ **CLOSED IN ONE HOUR: the header ACCEPTED at her eye · the chip PRESSED · `1 relation` cured · the SHELF FORK ruled · the ORDINAL'S STRING ruled by rendering four candidates.** ⛔ **Holding two: the subtitle §2 re-ground (its premise falsified by my `abaB` measurement) and the escaped field's third site.** | **at rest; neither is on a clock** |
-| **RESEARCHER** | ✅ **RULED and ratified: the midpoint's NAME is GIVEN (his); a COMPOSED READING also exists and must go through the composer, never raw concat. ADR 0029 §2 amended with its surfaces named.** | **nothing owed** ⛔ **but her amendment is UNCOMMITTED — routed to the coder** |
-| **MOTHERSHIP (sixth)** | `C-1`+`R-1` ratified (§49) · `C-2` chartered · two relays delivered to the designer by letter | **nothing owed** |
+| **ARMAN** | ✅ **nothing — Δ64 "grant" consumed and relayed.** Next word wanted from him: none until the fold returns (he pastes the FOURTH designer's opening after ratification) | **at rest** |
+| **CODER** (the ORDER seat) | **THREE live stamps (the 1710 supersede governs): `C-3` · `A-3` · `B-1`** — internal order theirs; B-0/B-0a parked unconsumed | **unwoken; the batch is ready** |
+| **DESIGNER (third, RELIEVED with honor — Δ64)** | **holding ONE thing: THE FOLD** (`HANDOFF_THE_DESIGNER_SEAT_V1.md`, 1750 charter; Gate-as-suspect → my ratification → Arman seats the FOURTH) · answers questions of FACT while reachable, rules nothing | **site 2 waits as the fourth's first catch** |
+| **RESEARCHER** | ✅ **answered (1301, ratified §57): the dual vertex reads the primal face's COMPOSED name — D14, through the composer; read-only is FORCED.** `A-3b` fired to the coder | **nothing owed; inbox empty** |
+| **MOTHERSHIP (sixth)** | drove the falsifier at its own eye (§53) · §2 rewritten as THE PLAN (Δ55) · the coasting filed against itself (§53.2) | **nothing owed; the plan pressed** |
 | **T.O · COMMISSION** | nothing routed | standing |
 
 ---
 
-## §2 · ⇒ THE ORDER — the ranking, which is this board's whole reason to exist
+## §2 · ⇒ THE PLAN TO THE FINISH LINE — the semantics layer, whole, with its stations
 
-> ### ⛔⛔ **RULING WITHDRAWN 2026-09-02 BY ARMAN, AND THE WITHDRAWAL IS THE MORE IMPORTANT ENTRY.**
-> **I had ruled the drive-family recut *"the gate in front of rungs 3–4"* and then placed it at #1.** ⇒ ⛔ **His correction, verbatim: *"you move pre-requisit of a run that has been parked behind to the front of everything."***
-> ### ⇒ ***A PREREQUISITE OF A PARKED THING IS PARKED. A GATE BINDS WHAT IT GATES AND NOTHING UPSTREAM OF IT.***
-> **Rungs 3–4 are PARKED. Therefore the recut is parked with them.** ⛔ **It does not lead this board and it never should have.**
-> ★ **AND THE STANDING RULE THIS BUYS, because the failure was not the ranking but the re-ranking: *the front does not move because a finding is interesting.* The semantics layer is the plan; findings about instruments are recorded and queued behind it, never promoted past it.**
+> **THE FINISH LINE (Δ43, his word, hedge preserved): the SEMANTIC CONNECTION LAYER** — concepts at vertices, carried through walks by the LIFT LAW (`ADR 0028`: forced along the skeleton, free at BORN cells). **The chain the record already holds (`PLAN_THE_ORDER_STRATUM:54-55`): READING LAYER → ROUTE READING → THE CONNECTION LAYER.** Everything below is one of those three stations or it is queue, not plan.
 
-⇒ ⛔ **THE PLAN IS THE SEMANTICS LAYER — Arman's own diagnosis, and it has not moved:** ***"nothing individuates the forms relative to each other on the meaning level… the whole meaning surfacing in the manuscript is sick right now."*** ⇒ **WHICH ONE, not WHAT KIND.** ⛔ **It has produced five rulings and ZERO landed cures. That, and only that, is row 1.**
-
-**THE SEQUENCE, as it stands at `12ff7fa`:**
-
-| # | what | who | why HERE and not elsewhere |
+### STATION A — THE READING LAYER: *the card speaks the act* (mostly landed)
+| # | item | who | state |
 |---|---|---|---|
-| ~~1~~ | ✅ **`M-1` part C — LANDED `3f096a4`. `STAMP M-1` CLOSES WHOLE (A+B+C).** | ~~CODER~~ | ✔ **Verified at my own hand: both seals reproduce byte-for-byte, the commit is 2 files / 3+/3−, and `CLAUDE.md:135` still names exactly five.** ⇒ **Δ51 spent and closed; the file is frozen again.** |
-| ~~2~~ | ✅ **THE `faceDisplayName` CENSUS — CLOSED CLEAN, one survivor.** | ~~CODER~~ | ⚠ **The ×12 port menus compose elsewhere: `faceLabel` (`ManuscriptView.tsx:2357`) already uses `faceReferenceName`** ✔(read at my hand). ⛔ **THE SURVIVOR — `Panels.tsx:3423-3431` headlines a PICK TARGET (`:2204`) with the NAME composer, a raw `shortId` beneath (`:2213`) — is NAMED, ROUTED, UNCUT, and now BLOCKED on the researcher (§3).** |
-| **1** | ⇒ **THE CARD CYCLE — THE SEMANTICS LAYER'S CASH-OUT — SIX ruled-and-unbuilt cures, batchable** | **CODER** *(designer + researcher ruled · unchartered)* | ✅ **`— show it` / `— shown` on the card's doors** · ✅ **the ordinal string `abAB : the 4-gon you made third ⟶ Torus (T²)` WITH its condition (shown only when the class name fails to individuate; when it lengthens it lengthens for every source)** · ✅ **the escaped-field class (2 sites located, a 3rd named)** · ✅ **the `Panels` Cell-Faces GRADING (keep both, grade them: name = designation, id = reference-position — the researcher's, replacing my `v${index}` reading)** · ⛔ **the SHELF TITLE — RIDES INSIDE row 1's (a) cut, never before it** · ⚠ **the bound sweep (3 surfaces; `fitLog` is a CLOSURE at `ExploreWindow.tsx:1092`, so it is an extraction + 2 call sites, not 3 calls).** |
-| **2b** | ⛔ **THE AMBO CURE — blocked on ARMAN** | **ARMAN, one visit** | **The researcher routes THREE as one question — *what does an unnamed-but-readable thing LOOK like?*: the midpoint's true absence (GIVEN empty + the composed reading shown AS a reading, with EPOCH-DISTINGUISHABILITY the only requirement — a christened `AD` and a placeholder `AD` may not be byte-identical) · `dualization.ts:462`'s `D${index+1}` · the join glyph.** ⛔ **All three sit at the ban's edge; his call.** |
-| **2c** | ⛔ **CARRY: ADR 0029 §2's amendment is UNCOMMITTED** | **CODER** | ✔ `git status --porcelain -- docs/adr/` → `M docs/adr/0029-…`; `git diff --stat` → 2+/1−; `git check-ignore` → no rule. ⇒ **`docs/adr/` is NOT gitignored, so this edit is genuinely unprotected.** **Rides the next commit, NAMED.** |
-| **3** | ⛔ **THE ORPHANED-WITNESS HOLE** — *what tells anyone a ruling has superseded a drive leg's pins?* | **nobody — unchartered** | ⇒ ***A WITNESS OUTSIDE THE SWEEP DOES NOT ANNOUNCE THAT A RULING HAS ORPHANED IT.*** **The drive family's exclusion is CORRECT (*a red nobody owns trains its readers to skip it*) and silence is its price.** ⛔ **I could find no mechanism that would flag it. Whether one is buildable is the coder's; that the hole stands is mine.** |
-| **4** | ⛔ **`dualization.ts:462` — `` `D${index+1}` ``, an INDEX-DERIVED label** | **nobody — flagged, unchartered** | ✔ **Found at my own hand while enumerating the label-minting sites rather than generalizing from one.** ⚠ **The naming doctrine's own named disease (*an address is never a name*) at a site outside every sweep so far.** ⇒ **Sits behind the researcher's ruling, which may govern it too.** |
-| **5** | **STATION 3 — the SW four-door commutator walk, T³ control FIRST** | **ARMAN** | ⛔ **NEEDS NO BUILD. Rooms exist at HEAD.** ⚠ **But its READING is a walk reading ⇒ it wants 3 done, or it inherits the same gap.** |
-| **6** | **RUNGS 3–4 — INHABITING** | **ARMAN drives · CODER builds** | **the render gate's whole remainder. PARKED.** |
-| **6a** | ⛔ **`STAMP I-1` CLAUSE 2 + `MARKER I-1a` — THE DRIVE-FAMILY RECUT** | **CODER — PARKED WITH ROW 6, not before it** | ⛔ **PARKED BY ARMAN'S CORRECTION. It is rungs 3–4's prerequisite and it waits where they wait.** ⚠ **The findings stand and are not withdrawn — (a) d8 + winding-route are real rot · (b) d12b + d13 speak a superseded vocabulary · (c) a stale LOCATOR goes GREEN (`d8_shelf_route_driver.py:151`), and `deficit-app`'s control designation stays withdrawn.** ⇒ **Recorded, queued, NOT promoted.** ⛔ **One consequence survives into row 1: the SHELF TITLE rename rides this cut, so it is the one card-cycle item that waits.** |
-| **7** | **REGENERATE `THE_SUBSTRATE_MAP` — a real re-walk** | **CODER** | ⛔ **NOT the mothership's: regenerating it means driving the app.** ⚠ **Three subsystems have NO entry at all** (`scripts/dev-advance.cjs` · the go-stale watcher · `ZOO_ROOMS`' five rooms). **Last, because it is a snapshot and a snapshot taken mid-arc is stale on arrival.** |
+| A0 | the card cures — ordinal individuation (`C-1`) · the act's word (`C-2`) · doors · grading · the refusal class | coder | ✅ **LANDED AND SIGHTED** — two tori individuate; the source speaks his word |
+| A1 | the escaped-field re-sight (sites 2–3 vs C-1's cure) | designer | ⚠ open — ✔ **my own segment drive showed the deficit row already speaking the person-sentence**, so likely CURED; her eye closes it |
+| ~~A2~~ | ✅ **THE AMBO VISIT — CLOSED WHOLE (Δ57+Δ58):** ① midpoints KEEP the raw string exactly as now · ② the dual is READ-ONLY, no GIVEN register · ③ the `·` blessed. **The gating hypothetical is filed as a law against the office (§54)** | ~~ARMAN~~ | ✅ **Station A has NO remaining human item** |
+| A3 | ⇒ **`STAMP A-3` CHARTERED (1420)** — the survivor's grading cut + the D-label rider (when the researcher's line lands) | coder | **queued behind `C-3`; strings byte-exact per Δ58** |
+| A4 | `C-3` — the page leaves the shelf | coder | **IN FLIGHT** (housekeeping riding beside the plan, not of it) |
 
-⚠ **AND THREE THINGS DELIBERATELY NOT IN THE SEQUENCE, named so their absence is a decision rather than an oversight:**
-- **CLAUSE 3 — the pick ON the shape.** ✅ **Arman's own word is *"for now"* and ⚠ the coder measured it REACHABLE (five raycastable per-face colliders).** ⇒ **His to take; not ranked, not dropped.**
-- **THE DECLARED END — the semantic connection layer** (Δ43, ADR 0028). ⛔ **Not chartered as work; the op-set must not bend toward it.**
-- **THE `wt/*` → strip hop.** **DORMANT by topology, not owed.** *An owed item nobody can discharge is a dropped ball with a date on it.*
+### STATION B — THE ROUTE READING: *the walk speaks the order* (the order arc's live station 3)
+| # | item | who | state |
+|---|---|---|---|
+| **B1** | ⇒ **`STAMP B-1` (1510): THE COMMUTATOR BIT AT THE MODEL GRAIN** — compose the four transports in SW (expect NO-identity, two door-pairs) and T³ (the true control, expect identity, exactly) | **CODER** | **CHARTERED — Δ59: *"this part needs a non human"*; the person-protocol was ruled inhuman and the T³ door-4 control was near-vacuous (§55)** |
+| B2 | **the ORDER-READING SURFACE** — how a person SEES route-dependence without tracking doors. **Exhibit: Δ59's screenshot** · ★ **B0-phase-2's door-addressed vocabulary may supply its input half free: the route displayed AS the word walked** | designer + coder | **charters on B-1's expected NO; watch the B0-p2 convergence** |
+| ~~B0~~ | ⛔ **THE CAMERA GATE — PARKED WHOLE by Δ63** (*"we should not let it drift us… move it at the head of rung3-4, just after the semantic layer is done"*). Everything known and wanted is in **`PLAN_THE_CAMERA_GATE.md`** (Δ60/Δ61/Δ62, five acts, constraints, the pre-measurement); B-0/B-0a/B-0b and the 1615 brief superseded-to-parked unconsumed | — | **opens at the HEAD of rungs 3–4, chartered fresh from the plan file** |
+| B3 | the gate's instrument arms (E.circuit · conePairs) | coder | **parked with rungs 3–4, BEHIND the camera gate at their head (Δ63)** |
 
----
+### STATION C — THE CONNECTION LAYER: *the finish line*
+**Chartered only when A and B stand.** First act when its time comes: **the researcher writes the connection ADR against `0028`** (the lift law is its skeleton; the 2-torsion catch is our antipode rule); the op-set does not bend toward it before that (standing doctrine). **Scope and the go are Arman's Δ43 call.**
+
+### THE QUEUE BESIDE THE PLAN (not of it): the toolbar occlusion (Δ54, his word) · the seventh-surface menu label (latent) · the two-producer Klein hazard (latent) · the four-archive convention · `THE_SUBSTRATE_MAP` regeneration (coder, needs a drive).
 
 ## §3 · THE GATES — what blocks what, and nothing else is a reason to wait
 
@@ -83,10 +82,9 @@
 ⛔ LIVE GATE 1:  the drive-family recut (I-1 clause 2)  ──▶  Station 3's walk ──▶ rungs 3–4
                  four of five legs red at one HEAD; deficit-app green is the control.
 
-⛔ LIVE GATE 2:  the researcher's AMBO ruling  ──▶  the survivor's cut  ──▶  the card arc's
-                 Ambo-side half.  Δ52 (Arman: the concatenation is a PLACEHOLDER) collides
-                 with ADR 0029 §27 (letter-readings CARRIED/COMPOSED — "Arman's carve-out").
-                 A contradiction between two ratified things: routed, NOT resolved by me.
+✅ GATE 2 STRUCK AS STALE (09-03): the Δ52/0029§27 collision was RESOLVED by the
+                 researcher's §2 amendment (midpoints → the GIVEN register; landed 5b290f2).
+                 The survivor's cut now waits on STATION A2 — the AMBO VISIT — alone.
 
                  Everything else in §2 is ORDER, not blockage.
 ```

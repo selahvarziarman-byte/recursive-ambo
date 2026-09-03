@@ -165,6 +165,9 @@ function runPathToDodecahedron(scenario, silent) {
   }
 
   const sourceCellId = sourceCell.id;
+  // A-3b: the shape AT THE ACT — dualization retires the primal cell's faces
+  // from the live list, so the derived reading composes from this record
+  const shapeBeforeDual = shape;
   shape = applyDualization(shape, sourceCell.id);
 
   if (!silent) {
@@ -182,6 +185,7 @@ function runPathToDodecahedron(scenario, silent) {
   const verification = verifyDualizationResult({
     scenarioName: scenario.name,
     shape,
+    shapeBeforeDual,
     resultCell,
     sourceCellId,
     sourceFaceIds,
@@ -204,6 +208,7 @@ function runPathToDodecahedron(scenario, silent) {
 function verifyDualizationResult({
   scenarioName,
   shape,
+  shapeBeforeDual,
   resultCell,
   sourceCellId,
   sourceFaceIds,
@@ -258,6 +263,34 @@ function verifyDualizationResult({
       `${scenarioName}: dual vertex lineage missing source cell`,
     );
     createdSourceFaceIds.push(vertex.createdBy.sourceFaceId);
+  }
+
+  // ── A-3b (researcher 1301, ratified; the frozen spend Arman sanctioned
+  //    2026-09-03): a dual vertex's derived reading IS the primal face's
+  //    COMPOSED name — D14 through the ONE composer (faceDisplayName), never
+  //    raw concat — and TRUE ABSENCE ('' — the sibling mints' idiom) where
+  //    the face composes over unnamed corners. The positional `D-n` was a
+  //    placeholder wearing a name; a red here means it (or any manufactured
+  //    label) came back. Pinned per vertex against the composer's own read of
+  //    the primal face, plus the D-n resurrection guard. ──
+  {
+    const { faceDisplayName } = require(path.join(repoRoot, 'src/manuscript/apertureModel.ts'));
+    // the primal face as it stood AT THE ACT (the op retires it from the live
+    // face list) — the same record the mint read, never the post-op shape
+    const facesById = new Map(shapeBeforeDual.faces.map((face) => [face.id, face]));
+    for (const vertex of createdVertices) {
+      const sourceFace = facesById.get(vertex.createdBy.sourceFaceId);
+      const composed = sourceFace ? faceDisplayName(shapeBeforeDual, sourceFace) : null;
+      const ruled = composed === null || composed === 'unnamed' ? '' : composed;
+      expect(
+        vertex.data.label === ruled,
+        `${scenarioName}: A-3b — dual vertex ${vertex.id} reads ${JSON.stringify(vertex.data.label)}, the ruled derived reading is ${JSON.stringify(ruled)} (the primal face's composed name through faceDisplayName; '' = true absence)`,
+      );
+      expect(
+        !/^D\d+$/.test(vertex.data.label ?? ''),
+        `${scenarioName}: A-3b — the positional D-n placeholder resurfaced on ${vertex.id}`,
+      );
+    }
   }
 
   expectSameCounts(

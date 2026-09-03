@@ -1117,3 +1117,102 @@ d8_shelf_route  9/9   ·  d12b 0/4  ·  d13 5/4  ·  deficit_app 68/55  ·  wind
 ✅ **`STAMP C-2` CHARTERED — the ¶TO-5 word-register ruling (mine, the Judge's lane; researcher veto open one cycle):** ***the source phrase speaks the ACT's word, never the classifier's*** — *"the Square you made first"* where the record carries the palette word; the arity noun (*"the 4-gon"*) the lawful fallback where no act-word exists. ⛔ **CARRY, never fabricate: no class→act-word lookup table — if the record does not hold the palette word, that absence is a FINDING that outranks the cure.** The act-word enters the phrase as a common noun, never the name slot (ADR 0029 untouched).
 
 ✅ **QUEUED with their trigger:** `conePairs`+`coneFormBuilt` (pre-existing by control) beside E.circuit — **both run FIRST when rungs 3–4 unpark, as that gate's remaining arms.**
+
+---
+
+## §50 · THE DESIGNER'S FIVE-LETTER NIGHT (0002–0040), RATIFIED AS HER RETRACTION LEAVES THEM — four laws and one defect (the sixth, at `061faef`)
+
+**Governing order: her `0030` RETRACTION kills `0011` §3 entire** (certificate DOES carry `— show it`; the `0208` door ruling landed WHOLE — four doors, four marks, two inert headings, none). **Nothing of it was ever routed; nothing to unwind.**
+
+**THE LAWS, each hers, each filed:**
+1. ★ ***A differential mark is no mark on a surface that shows one case — WHERE THE FACT HAS NO OTHER CARRIER.*** (`0002`, scoped by her own `0011`: the Klein card carries the orientation fact positively twice — the title and `orientable no` — so the word's job is the MAP, not the orientation.) Her §2 cut-nothing stands on ground 3: **`Flip-glue →` names the OPERATION and nothing else on the card does.**
+2. ★★ ***A table's guard belongs to its KEYING, not its subject*** (`0015`) — close the key ⇒ the compiler holds it; compute the key ⇒ the flag must be in-band; compose the name ⇒ absence presence-first. **The right review question is "what happens when it misses, and who finds out."** ⇒ The seventh-surface hazard corrected 3 sites → **1**: the hand-typed menu label (`playgroundOperations.ts:471/473/494`), guardless, LATENT (her Klein drive: two producers agree, `abaB` ×4). No cut asked.
+3. ★★★ ***A pile rebuilt at a seat change inherits what was ASKED, not what was ANSWERED, unless the answers are re-read*** (`0002` §5) — ✔ **proven against ME: her strip ruling (`0121`) was ratified AND withdrawn by the seventh (`0456` §7), and I re-opened it twice from a board written before those events.** ⇒ **Struck from the board. Mechanical cure adopted: on resumption, re-read the outgoing seat's ratification letters in EVERY seat's archive for the gap window — the board is a standing assertion; their letters were dated events.**
+4. ✔ **Her `0030` mechanism joins the standing query's-shape scar** (marked-inferred-from-absence + unmarked-from-presence, bracing each other) — **two seats have now bought it** — and her operational fact is PROMOTED TO THE SEAT MAP: *the in-app browser pane reaches the dev server; `claude-in-chrome` does not; `/__whereami` is the FIRST call of any drive.*
+
+**RULED AND RATIFIED BESIDE THEM:** the shelf clip is a **KIND error** (*when a box cannot hold its contents, ask first whether its contents are all of its kind*; her `241 − 110 = 131 ≤ 148` closes the arithmetic as a hypothesis — the page controls + unsaved notice are 110px of foreign kind); **the title-surface set DISCHARGED** (three surfaces, one string; the argument reading drops `— born` because *a designation-state is a fact about the ENTRY and has no business in the MAP slot* — ADR 0024 in copy); **her §4 `C-2` ruling converged independently with mine** (the act's word over the classifier's noun).
+
+### ⛔ §50.1 · THE TOOLBAR OCCLUSION (`0040` §2–§3) — the one live defect, driven and controlled
+**Below a threshold between 1100 and 1000 px the specimen card COVERS the op toolbar — no reflow, no signal. At 900: `glue`→`Reset Camera`, `identify`→`remove`, `explore inside`→`remove`.** ⇒ ⛔ **A person reaching for `identify` presses a DESTRUCTIVE neighbour, and `identify` has NO second route (her route column: `explore inside` survives via the card's own walk button; `identify` — nothing; `glue` a QUESTION, possibly legitimately absent for the form).** ★★★ ***The route column is the finding's spine: occlusion alone does not say which capability is lost.*** ⚠ **Both live panes sit at/below threshold (hers 800, Arman's ~1000).** ⇒ ✅ **RULED BY ARMAN (Δ54): *"queue it."* — QUEUED, not promoted; charter fires on his later word or when the semantics-layer front empties.** Her palette-vs-claim question (§4) stays hers — the falsifier re-runs at ≥1100.
+
+### ⚠ §50.2 · HER "LIVE" ESCAPED-FIELD SITES ARE UNVERIFIED AGAINST C-1's CURE — re-sight chartered before any cut
+Her `0002` §2 marks sites 2–3 live **per a 09-01 sighting; `C-1` item 3 (`refusalCopy.ts`, two seams) landed 23:49 — BETWEEN the sighting and the letter.** Site 3 (the deficit row) is plausibly the first seam's exact subject. ⇒ **Re-sight both at served HEAD: cured / half-cured (⇒ a THIRD seam — a finding) / uncured (⇒ falsifies C-1 item 3, verbatim wanted).** ⛔ ***Chartering cures for possibly-cured sites is how a board fills with ghosts.***
+
+### ✔ §50.3 · THE ANOMALY SWEEP (Arman woke a wrong mothership; undo degree unknown)
+Measured: HEAD `061faef` == origin, no foreign commits · ledger tails mine · both archives orderly · the `.reviewed` marker (09-03 11:20) is the CODER's own R-1 gesture at wake · the dirty src paths are the coder MID-`C-2` (my charter's constraints verbatim in their comments). ⇒ **The one unmeasurable residue — letters sent-then-deleted — VOIDED BY NOTICE in both live seats' letters.**
+
+---
+
+## §51 · `C-2` RATIFIED at `3a354e0` (history `3d83089`) — and the no-STOP outcome is the arc's thesis in the small (the sixth)
+
+⚠ Both halves sighted at their eye: *"the Square you made first / second"* on the two-tori case; the fallback live on a glue-born parent (*"the glue(4-gon) you made first"* — the provenance gate handing null). ✔ HEAD == origin at my hand; sweep verbatim green at the tip on their report; registers untouched; no frozen files.
+★★ **THE KEEPER SENTENCE: the measurement-before-cure ran and the record ALREADY CARRIED the act's word** (`invokePrimitive` mints the palette word + its provenance sentence; `pageSnapshot` serializes it verbatim). ⇒ ***The meaning-trace law held at the substrate before anyone asked it to — the trace was there; only the reader was missing.*** **The semantics layer's cures so far are all of this shape: readers built for traces the record kept all along.**
+**The coder's queue is EMPTY — first time this campaign. The researcher's C-2 veto window stays open this cycle.**
+
+---
+
+## §52 · THE 1148/1150/1214 TRIPLE — two retraction-governed rulings, one new defect class, and `C-3` chartered (the sixth, at `3d83089`)
+
+**Governing order: `1214` retracts `1148`'s central claim** (her clicks DO land; the gesture is DOUBLE-CLICK — printed on the card's own last line and in her memory file; Arman supplied it). ⇒ ★ **Her standing cure, filed: *before reporting a blocker on a gesture, RE-READ THE CARD — a blocker filed against a documented affordance is a reading failure wearing a measurement's clothes*** (the office's own 08-30 scar, now bought by a second holder). **What SURVIVES the retraction: `1148` §3's mechanism** — she inferred a click's destination from `elementFromPoint` and reported it as an observation — ⇒ ***the night's species, twice: AN INSTRUMENT FAULT NARRATED AS A SUBSTRATE FACT*** ("the server is down" · "the occlusion ate my click"), **cure one call long: put a listener on the target and check the event ARRIVED before explaining where it went.**
+
+✅ **`1150` RATIFIED — the destination ruling, five measured grounds, and ground 2 is the spine:** she nearly ruled *"with the record"* from the picture; **measured `recordOnPage: false` — on an empty page the record does not exist, and a person at a blank page is the likeliest to want `load the page…`.** ⇒ ★★ ***A CONTROL CANNOT LIVE IN A CONTAINER THAT IS NOT THERE WHEN THE CONTROL IS NEEDED MOST.*** ⇒ **`STAMP C-3` CHARTERED on her ruling verbatim** (top chrome right end, ~573px measured free; notice rides `save`, drawn ONLY when unsaved — *do not mark the ordinary*; refused destinations IN the charter: the shelf, the record; fallback: a `the page` box beside `the shelf`; acceptance 3 = the cured shelf measured against the 148px ceiling — ≤148 kills the clip class by arithmetic, >148 STOPS and returns to her).
+
+### ⛔⛔ §52.1 · ENABLED-BUT-INERT — the third state, and the worst (her `1214` §2; PUT TO ARMAN, not chartered)
+**The Arc selected; its card computes `this form takes — fold · identify` (form-specific — the Klein's said four ⇒ a real claim). The toolbar: TEN buttons, every one `disabled === false`. She clicked `thicken` with a listener on the button: `pointerdown/click` dead centre — then `recordExists false · refusals [] · card unchanged · no notice`.**
+> ### ⇒ ***AN ENABLED CONTROL THAT NEITHER ACTS NOR REFUSES IS THE WORST OF THE THREE STATES — an act teaches, a refusal teaches, silence is indistinguishable from a broken app and costs the person even the knowledge that a limit exists.***
+**Two readers of one fact disagree on one screen and the CARD is the right one — eight buttons enabled that it excludes.** Her ruling is on the SILENCE, not the mechanism (the Ambo's own `Thicken selection × I` — properly disabled WITH an explaining title — proves the app one panel away knows the correct form). ⇒ **If chartered, the acceptance is reason-totality at the toolbar: every button ACTS, REFUSES IN WORDS, or is DISABLED-WITH-REASON — the chip's own `enabled: reason === null` pattern.** ⚠ **Her re-sight of escaped-field sites 2–3 remains OPEN** — the Arc is a source, not either site; routes that avoid `thicken` named to her.
+
+---
+
+## §53 · THE FALSIFIER RUN AT MY OWN EYE — §52.1 IS WITHDRAWN: `thicken` refuses IN WORDS, on BOTH fixtures (the sixth, driven at served HEAD `3d83089`)
+
+✔ **MINE, at the in-app pane, `/__whereami` first (`3d83089 · team-arman · main`):** invoked a FRESH Segment (right-click paper → INVOKE — REAL MATERIAL → Segment), card `this form takes — fold · identify`; **instrumented click on `thicken` (listener on the button): `pointerdown/click (841,852)` landed — and the page ANSWERED, +70 chars:**
+```
+thicken — select two forms — click the shape, shift-click the segment
+```
+**Then the CONTROL on the legacy Arc (Arman's deletion-standing fixture): selected `Arc (cut segment)`, same click — THE IDENTICAL sentence, same +70.** ⇒ ⛔ **ENABLED-BUT-INERT DOES NOT EXIST at `3d83089` on either fixture. The toolbar is a GENERAL PALETTE whose non-applicable ops SPEAK — a refusal with its remedy, the misplaced-refusal law honoured.** Her `0040` §4 palette question is thereby ANSWERED (general palette, spoken refusals) and her §52.1 finding WITHDRAWN.
+
+> ### ⇒ ★★★ **THE MECHANISM, and it indicts the instrument class, not the seat: THE NOTICE IS PLAIN TEXT IN THE TOOLBAR STRIP.** Her census (`refusals [] · no notice anywhere`) and MY OWN first probe (`[role="alert"],[class*="notice"],[class*="refus"]` → 0) both returned NOTHING while the sentence sat on screen. **Only a BODY-TEXT DIFF caught it.**
+> ⇒ **THE LAW, for every seat with an eye: *a "nothing happened" verdict needs a TEXT DIFF, never a selector census — the screen's answer may live in a register your selector does not know.*** *(The T.O's §32 part-for-whole law at the DOM grain: a census that looks in the places it knows and reports absence.)*
+**The night's species closes at THREE on one seat** (server-down · occlusion-ate-click · thicken-silent) — her own calibration note (*suspicion-generation running hot*) stands confirmed; her LAW survives with zero instances (*an enabled control that neither acts nor refuses IS the worst state* — true, none here).
+
+### ⛔ §53.1 · AND MY OWN SHARE, filed: I PROMOTED AN UNVERIFIED ⚠ TO ARMAN'S DESK.
+I ratified §52.1 "at the meaning level" and asked him for a charter word **while the falsifier cost four browser calls I did not spend.** The marks were honest (⚠ throughout); the PROMOTION was not — **a question put to the sovereign is the office's most expensive artifact and it went out resting on one un-controlled instrument.** ⇒ ***Before a finding reaches his desk, the office runs the cheapest falsifier itself — the Gate's arrow-9 duty, which I have and used an hour too late.***
+
+### ⛔ §53.2 · THE COASTING, named by him and true (Δ55): **three consecutive charters (C-3 · occlusion · inert-toolbar) all from the INBOX, none from the PLAN — the §8 tell verbatim, fired unseen.** The cure is §2's rewrite as THE PLAN TO THE FINISH LINE, and the standing fact it surfaced: **the meaning arc's remaining gates (the AMBO VISIT · the T³/SW WALKS) are both ARMAN'S, were never pressed, and the stillness was exactly them.**
+
+---
+
+## §54 · STATION A's GATE DISSOLVES — Δ57/Δ58 close the ambo visit, and the blocker's species is filed against the office (the sixth, at `3d83089`)
+
+✅ **A2 CLOSED WHOLE:** ① the midpoint **keeps the raw composed string exactly as now** (Δ58 — his word governs the display; the christening gesture remains his whenever he wants one) · ② **the dual has NO GIVEN register — read-only** (Δ57); `D${index+1}` re-classified DERIVED, one line at the researcher · ③ the join glyph **`·` blessed**.
+> ### ⇒ ⛔ **THE LAW THE REBUKE BOUGHT (*"one stupid blocker if i ever seen one"*): A HYPOTHETICAL COLLISION — an act nobody has performed — MAY FLAVOR A CHARTER; IT MAY NEVER GATE A STATION.** The AD-vs-AD indistinguishability is real *as a note* and worthless *as a gate*: it blocked Station A for a day and a half over a christening nobody has attempted. **The test, standing: before any item gates a station, ask — has the colliding act ever been PERFORMED? If not, the item rides as a rider and the station moves.**
+⇒ **`STAMP A-3` CHARTERED** (the survivor's grading cut, unblocked by ①+the researcher's §2-amendment machinery; the D-label cure JOINS it when the researcher's one line lands). **Station A's remaining human item is NONE. Station B waits on B1 — the walks — alone.**
+
+---
+
+## §55 · Δ59 — THE WALK EXPERIMENT MOVES TO THE MACHINE, and the protocol error is the office's (the sixth, at `3d83089`)
+
+✔ **His screenshot is itself a sighting of the arc's thesis at the person grain:** the SW walk panel live with `return 6 · back where you started · after 20 doors · the room came back turned` — **the order-information EXISTS in the walk and fires as returns; the person cannot READ route-dependence unaided** (*"the doors and rooms are much more complicated than i just can walk and tell you 'the same home'"*). ⇒ ***Order is the unread stratum, demonstrated by the sovereign on his own screen.***
+⛔ **THE OFFICE'S PROTOCOL ERROR, owned:** the T³ "control at door 4" was near-vacuous — **in T³ every single crossing is a return** (the room is the whole world), so a return at 4 confirms nothing about pattern-tracking. *A control must be able to FAIL; one that fires on every path is a green that stops the looking.* The true control is the model-grain identity check (`STAMP B-1` item 2).
+⇒ **`STAMP B-1` chartered to the coder** (the commutator bit at the model grain, two rooms, two door-pairs each, sealed on the runtime transforms). **B2 (the order-reading surface) charters on B-1's expected NO — with Δ59's screenshot as its exhibit. ARMAN'S GATE ROW CLEARS: nothing on the board waits on a human act.**
+
+---
+
+## §56 · Δ63 — THE CAMERA GATE PARKED, and the helm's own drift filed (the sixth, at `3d83089`)
+
+✅ **Executed before any seat woke:** `PLAN_THE_CAMERA_GATE.md` created (Δ60/Δ61/Δ62 verbatim provenance · five acts · the LAW-22 one-producer constraint · the exclusivity option · the open pre-measurement · the parked paper trail with its do-not-resurrect clause); B-0/B-0a/B-0b + the 1615 brief superseded-to-parked UNCONSUMED — the clean case of the supersession discipline. **Position: `semantic layer → THE CAMERA GATE → B3's arms → rungs 3–4's walks`.** ⚠ **B2 note standing: if the order-reading surface finds it needs a camera act, that is a CONTRADICTION to Arman, never a silent build.**
+⛔ **THE HELM'S OWN DRIFT, filed:** I chartered B-0 within minutes of the ask and briefed phase 2 within the hour — camera work risen FROM the walks that were meant to unblock the semantic finish line — **the inbox-over-plan drift, committed hours after §53.2 filed it, caught by the sovereign before a seat woke.** ⇒ ***The check that was missing is mechanical and now standing: A SANCTION FROM THE SOVEREIGN IS STILL A FINDING FOR SEQUENCING PURPOSES — it enters the plan where the plan puts it, and only his explicit word on ORDER (not on existence) moves it forward.*** *(He sanctioned the WORK; he never said "now"; the helm inferred "now" from enthusiasm — his and mine.)*
+
+---
+
+## §57 · THE RESEARCHER'S LINE, A1 HALF-CLOSED, AND THE DESIGNER'S RELIEF (the sixth, at `3d83089`)
+
+✅ **Researcher `1301` RATIFIED:** a dual vertex's derived reading **IS the primal face's composed name** — D14 through the composer, true absence over unnamed corners, *"read-only is FORCED, not tolerated"* (their answer to Arman's Δ57 hedge: **null — no problem with read-only-ness**). ⇒ `A-3`'s rider LIVE (`A-3b`). Their inbox empty; nothing owed.
+✅ **Designer `1310` RATIFIED:** **site 3 CURED and CLOSED at her eye** — independent text-diff (the line surfaced unprompted), two instruments, a 176-line census at zero; the class's shape coherent (*the field is the draft, the sentence is the cure*). **Site 2 UNREACHED and held open.** **The notice's wording RULED conditional:** adjacent-to-`save` ⇒ `there is work here that is not written down` stands; apart ⇒ one verb, the CONTROL moving to the manuscript's register (`C-3b`).
+
+### ★★★ §57.1 · HER OFFICE-LEVEL LAW, taken: **AN OFFICE'S DOCTRINE MUST COMPOUND, NEVER ACCRETE.**
+Her measurement: the designer's doctrine = **seven files, ~54KB, three holders deep, including a RIDER ON A CLOSING RESIDUE — a patch upon a patch**; the mothership's = **one versioned constitution, each version folding the last.** ⇒ ***A seat whose knowledge lives in the residue of its predecessors' failures will re-buy those failures*** — proven: the double-click gesture lived in a scar file, and its re-purchase cost her the night's worst correction. ⚠ **Standing risk flag, unassigned: the other seats' doctrine-state (researcher, T.O) has not been audited against this law.**
+
+### §57.2 · THE RELIEF REQUEST — routed to Arman, recommendation GRANT; the fold chartered to HER.
+Six instrument failures, one species, self-counted at ×1.5 the designed threshold — **asking is the doctrine's remedy working.** Ruling lane: zero failures ⇒ **the fold (`HANDOFF_THE_DESIGNER_SEAT_V1.md`) is chartered to her** — positive frame per Δ45, the instrument kit + THE APP'S GESTURES as first-class sections, the six failures to an appendix, ✔/⚠ throughout, the seven files folded as provenance — **with my Gate running on it AS SUSPECT-BY-AUTHORSHIP (her own proposal) and Arman's word seating any successor.** ⛔ Her step-3 corrected: `B-0` Phase 2 is parked (Δ63); **the successor's first live act is SITE 2.**
