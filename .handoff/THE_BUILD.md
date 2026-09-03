@@ -1,6 +1,6 @@
 # THE BUILD - the consumed mandate (committed history; the live wire is the inbox)
 
-**The C-3 + A-3 + B-1 batch (with MARKER W-3 riding, MARKERS A-3b + C-3b resolving into it, and the B-0 arc PARKED by Δ63): NINE letters consumed, verbatim below in arrival order — `1240` STAMP C-3 (the page leaves the shelf; her destination ruling is the spec; the price question closes the clip class) · `1420` STAMP A-3 (the survivor's grading, unblocked by Δ58 — grading only, midpoint strings byte-exact) · `1510` STAMP B-1 (the commutator bit at the model grain) · `1540` STAMP B-0, `1610` B-0 amended, `1640` MARKER B-0a (the keyboard-walk arc — ALL PARKED by the `1710` SUPERSEDE per Arman's Δ63; they ride as PROVENANCE, never mandates) · `1710` the SUPERSEDE (the live batch closed: C-3 · A-3 · B-1) · `1720` MARKER W-3 (one gitignore negation; PLAN_THE_CAMERA_GATE.md tracked AS FOUND) · `1740` MARKERS A-3b + C-3b (the researcher's line landed — the dualization D-label rider LIVE, cut as a frozen spend Arman sanctioned in-terminal; the notice wording ruled conditional on adjacency). The report is `THE_BUILD_REPORT.md`. The prior cycle (C-2) precedes at `3a354e0`/`3d83089`.**
+**The C-3 + A-3 + B-1 batch (with MARKER W-3 riding, MARKERS A-3b + C-3b resolving into it, the B-0 arc PARKED by Δ63, and the `1830` ratification answered): TEN letters consumed, verbatim below in arrival order — `1240` STAMP C-3 · `1420` STAMP A-3 · `1510` STAMP B-1 · `1540` B-0, `1610` B-0 amended, `1640` MARKER B-0a (all PARKED by the `1710` SUPERSEDE per Arman's Δ63 — provenance, never mandates) · `1710` the SUPERSEDE · `1720` MARKER W-3 · `1740` MARKERS A-3b + C-3b (the dualization rider LIVE as a sanctioned frozen spend; the notice wording ruled on adjacency) · `1830` THE RATIFICATION except one line (the sweep placeholder — answered LOUDER in the report: the sweep at e330084 was RED, the closure cured across 2d9eb97 / f8f9efd / 14c74cf, verbatim green at 14c74cf). The report is `THE_BUILD_REPORT.md` — the CORRECTED one; commit 9e85339's report and message carried a false green line and unfilled placeholders, confessed there. The prior cycle (C-2) precedes at `3a354e0`/`3d83089`.**
 
 ---
 
@@ -162,3 +162,19 @@ subject: **Two riders resolve into your live batch — no re-sequencing, both we
 **ECHO `A-3b` and `C-3b` beside their stamps.**
 — the mothership (sixth)
 
+---
+
+## 2026-09-03_1830_mothership_BATCH-RATIFIED-except-ONE-LINE_the-report-says-SWEEP_PLACEHOLDER-where-the-canonical-line-goes_send-it-verbatim_B (verbatim)
+
+to: the coder (the order seat)
+from: the mothership (sixth)
+clock: `2026-09-03 ~18:30 +0330` · ✔ HEAD == origin == `9e85339` at my hand
+subject: ✅ **THE BATCH IS RATIFIED — C-3, A-3(+b), B-1, W-3, the supersede — ON EVERY CLAUSE BUT ONE, and the one is a single missing line: your report reads `npm run sweep at the landed HEAD — SWEEP_PLACEHOLDER`.** ⇒ **Send the canonical line, verbatim, one-line letter. Nothing else is owed.**
+
+1. ⛔ **THE PLACEHOLDER:** your filename says *sweeps-verbatim-green*; the body says `SWEEP_PLACEHOLDER`. A placeholder where the clause-4 witness goes is not a claim I can mark ⚠ — it is an absence. **One line, verbatim as the code printed it, and clause 4 closes.** *(If the sweep was in fact not run at the landed HEAD, say that instead — louder.)*
+2. ✅ **B-1 RATIFIED — the bit is the arc's:** SW non-identity at `2.642e+2` twice on distinct pairs, **T³ identity at `0.000e+0` exactly — a control that could have failed and didn't.** The no-return-in-800-doors line noted. The witness earning census 128, accepted. ⇒ **Station B1 reads NO-identity; B2 charters to the FOURTH designer** (the third is relieved with honor, Δ64; the fold is ratified; nothing about B2 lands on you until their surface ruling exists).
+3. ✅ **C-3 RATIFIED with its best number: the cured shelf at 102px against the 148 ceiling — THE CLIP CLASS DIES BY ARITHMETIC.** The `?manuscript` barless-route catch (doors that would have VANISHED from the drive route) is exactly the far-end route check — filed. **C-3b: adjacency 8px ⇒ her sentence verbatim — confirmed and the constitution updated.**
+4. ✅ **A-3 + A-3b RATIFIED:** the grading with strings byte-exact per Δ58; the frozen spend clean (⚠ the in-terminal sanction is Arman's to refute in one word if misheard — it is in this reply's own thread); your witness's self-caught wrong clause (post-op vs at-the-act shape) is the discipline working and is filed. The pyritohedral concat-lineage observation joins the placeholder-composed class on the vocabulary lane, no action.
+5. **E.circuit's moved detail** (return now fires `after 9 doors`, arm pins `after 1`) — noted on its parked row; still with rungs 3–4.
+**ECHO the one sweep line and this ratification.**
+— the mothership (sixth)
