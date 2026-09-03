@@ -71,6 +71,30 @@ interface ExploreSeam {
   // `return 7` and `return 8` knows six are gone) and it is why the log may
   // SHORTEN under the bound instead of scrolling.
   returnCount: number;
+  // B-2 item 0 (the designer's sighting: she walked 4 then 3; the panel said
+  // 4 then 7): `after K doors` is PER-CIRCUIT — doors since the PREVIOUS
+  // return, never since window-open. This is the door count at the last
+  // return; K = doors − doorsAtLastReturn. Completes M-1c's one-subject cure.
+  doorsAtLastReturn: number;
+  // B-2 THE ORDER-READING SURFACE (the designer's 1726/1752 rulings): the
+  // TRACE — the room's door letters written at each crossing, capitals for
+  // inverses (the gluing-word vocabulary he has already read), RATCHETING —
+  // a back-crossing writes `A`, never deletes the `a`. The tally, the
+  // sentence, and the way-back room-marks are all DERIVED from this one
+  // string — one producer, several views, no second memory.
+  trace: string;
+  // the way-back marks as uploaded (16 faces: 1 = the door just crossed's
+  // way back, 0.5 = the one before, 0 = none) — a view of the trace
+  faceMark: number[];
+  // the sentence as printed (null = silent), for the seam's own witnesses
+  sentence: string | null;
+  // the camera frame's other two axes (beside `forward`) and the room's faces
+  // with their door letters — witness seams for a driver that must aim
+  right: Vec3 | null;
+  up: Vec3 | null;
+  uniformProbe: ((name: string) => unknown) | null;
+  faceMarkBuffer: Float32Array | null;
+  faces: Array<{ n: Vec3; d: number; wall: boolean; door: { pair: number; side: 'a' | 'b' } | null }>;
   // the walk leg's THROTTLE (an ungated window seam, the committed
   // __manuscriptScene idiom): nothing in the app sets it — the headless
   // driver's pointer pulses have a ~2u floor at the default pace under the
@@ -100,6 +124,15 @@ const seamOf = (): ExploreSeam => {
       returnLine: null,
       previousReturnLine: null,
       returnCount: 0,
+      doorsAtLastReturn: 0,
+      trace: '',
+      faceMark: new Array<number>(16).fill(0),
+      sentence: null,
+      right: null,
+      up: null,
+      faces: [],
+      uniformProbe: null,
+      faceMarkBuffer: null,
       paceOverride: null,
     };
   }
@@ -141,6 +174,7 @@ uniform int   uFaceCount;               // ≤ 16 (the multi-cell cut: a fan roo
 uniform vec3  uFaceN[16];
 uniform float uFaceD[16];
 uniform float uFaceWall[16];            // 1 = wall
+uniform float uFaceMark[16];            // B-2 way-back marks: 1 = the door just crossed (its way back), .5 = the one before
 uniform mat4  uFaceG[16];               // portal transform (identity on walls)
 // INTERIOR TRANSPORT (2026-08-21): a BOUNDED face is a real quad, not a
 // whole plane — the developed cone room's seam planes cut through material
@@ -302,6 +336,7 @@ void main(){
   vec3 p=uEye;
   mat3 acc=mat3(1.0);              // the accumulated deck word — its det tells MIRRORED
   float travel=0., echo=0.;
+  float mark=0.; // B-2 way-back veil, accumulated at marked-door crossings
   bool hit=false; vec3 nrmOut=vec3(0); float idOut=-1.; float dep=0.;
 
   for(int b=0;b<12;b++){
@@ -338,6 +373,11 @@ void main(){
     }
     // TRANSPORT — the engine's own gluing isometry (ratified; never churned)
     echo += 1.;
+    // B-2 way-back marks: a ray that passes through a MARKED door carries a
+    // faint veil — INK, not camera (§62.1): the room shows the door you came
+    // through (full) and the one before (half), read off the trace's own
+    // last two letters. Plain first form; the designer refines on sighting.
+    if(uFaceMark[fE]>0.25) mark=max(mark,uFaceMark[fE]);
     vec3 q=p+v*tE;
     mat4 g = uFaceG[fE];
     if(uModel==0){
@@ -370,7 +410,10 @@ void main(){
     p += v*2e-4;
   }
 
-  if(!hit){ o=vec4(PAPER,1.); return; }                 // THE VOID IS PAPER
+  // THE VOID IS PAPER — and B-2's way-back veil rides the paper too: a ray
+  // that left through a MARKED door and met nothing still carries the mark
+  // (without this the veil showed only on inhabitants, invisible at a door)
+  if(!hit){ o=vec4(mix(PAPER, vec3(0.17,0.15,0.12), 0.35*mark),1.); return; }
 
   float fade=exp(-echo/2.4);
   vec3 key=normalize(vec3(-0.45,-0.30,0.84));
@@ -444,6 +487,9 @@ void main(){
   line  *= weightScale;
   vec3 col = mix(PAPER, base, body*0.85);
   col = mix(col, INK, max(hatch, line*0.92));
+  // B-2 way-back marks — a faint graphite veil on rays that passed through a
+  // marked door (full for the door just crossed, half for the one before)
+  col = mix(col, vec3(0.17,0.15,0.12), 0.35*mark);
   o=vec4(col,1.);
 }`;
 
@@ -631,6 +677,14 @@ export function ExploreWindow({
   const captionRef = useRef<HTMLDivElement | null>(null);
   const returnRef = useRef<HTMLDivElement | null>(null);
   const prevReturnRef = useRef<HTMLDivElement | null>(null);
+  // B-2 THE ORDER-READING SURFACE — the three lines' DOM handles (written
+  // imperatively like the return line: no re-render per crossing) and the
+  // way-back marks as the shader receives them (uploaded per frame)
+  const traceHeadRef = useRef<HTMLSpanElement | null>(null);
+  const traceLastRef = useRef<HTMLSpanElement | null>(null);
+  const tallyRef = useRef<HTMLDivElement | null>(null);
+  const sentenceRef = useRef<HTMLDivElement | null>(null);
+  const faceMarkArray = useRef<Float32Array>(new Float32Array(16));
   const liveRef = useRef({ level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho });
   liveRef.current = { level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho };
 
@@ -652,6 +706,71 @@ export function ExploreWindow({
     seam.returnLine = null;
     seam.previousReturnLine = null;
     seam.returnCount = 0;
+    seam.doorsAtLastReturn = 0;
+    seam.trace = '';
+    seam.faceMark = new Array<number>(16).fill(0);
+    seam.sentence = null;
+    // B-2 (a witness seam, the drive family's idiom): the room's faces with
+    // their door letters, so a headless driver can AIM at a marked door the
+    // way a person does by sight — nothing in the app reads this
+    seam.faces = cellSurface.faces.map((f) => ({ n: [...f.n] as Vec3, d: f.d, wall: f.wall, door: f.door ? { ...f.door } : null }));
+    faceMarkArray.current.fill(0);
+    // B-2: the crossing's LETTER — side a (the pairing's forward map) writes
+    // the lowercase letter, side b (the inverse map) the capital: the
+    // gluing-word vocabulary, one letter per pairing in the room's own order
+    const doorLetter = (door: { pair: number; side: 'a' | 'b' }): string =>
+      String.fromCharCode((door.side === 'a' ? 97 : 65) + door.pair);
+    // B-2: EVERY order-reading view is derived from the trace here — the tally,
+    // the sentence, the two panel spans, and the way-back marks. One producer.
+    const refreshOrderSurface = () => {
+      const trace = seam.trace;
+      const net = new Map<number, number>();
+      for (const ch of trace) {
+        const code = ch.charCodeAt(0);
+        const lower = code >= 97;
+        const pair = lower ? code - 97 : code - 65;
+        net.set(pair, (net.get(pair) ?? 0) + (lower ? 1 : -1));
+      }
+      const pairs = [...net.keys()].sort((x, y) => x - y);
+      const tally = pairs.map((k) => `${String.fromCharCode(97 + k)} ${net.get(k)}`).join(' · ');
+      // the sentence fires ONLY when every count is 0, however reached; its
+      // second clause is licensed by the position-return machinery alone
+      // (a return fired at THIS door count) — never by anything felt (LAW 20)
+      const cancelled = trace.length > 0 && pairs.every((k) => net.get(k) === 0);
+      const home = seam.returnCount > 0 && seam.doorsAtLastReturn === seam.doors;
+      seam.sentence = cancelled
+        ? `every door you opened, you closed — and ${home ? 'here you are, home' : 'you are not home'}`
+        : null;
+      // the trace: nothing scrolls — it ELIDES from the left behind a plain
+      // mark (⚠ the glyph is the designer's, deferred to a long-walk sighting)
+      const LIMIT = 40;
+      const shown = trace.length > LIMIT ? `…${trace.slice(trace.length - (LIMIT - 1))}` : trace;
+      if (traceHeadRef.current) traceHeadRef.current.textContent = shown.slice(0, Math.max(0, shown.length - 1));
+      if (traceLastRef.current) traceLastRef.current.textContent = shown.slice(-1);
+      if (tallyRef.current) tallyRef.current.textContent = tally;
+      if (sentenceRef.current) sentenceRef.current.textContent = seam.sentence ?? '';
+      // the way-back marks: the way BACK through a crossed door is its PARTNER
+      // face — came through side a (letter `a`), go back through side b
+      const marks = new Array<number>(16).fill(0);
+      const wayBack = (ch: string): number => {
+        const code = ch.charCodeAt(0);
+        const lower = code >= 97;
+        const pair = lower ? code - 97 : code - 65;
+        const side: 'a' | 'b' = lower ? 'b' : 'a';
+        return cellSurface.faces.findIndex((f) => f.door !== undefined && f.door.pair === pair && f.door.side === side);
+      };
+      if (trace.length >= 2) {
+        const i = wayBack(trace[trace.length - 2]);
+        if (i >= 0) marks[i] = 0.5;
+      }
+      if (trace.length >= 1) {
+        const i = wayBack(trace[trace.length - 1]);
+        if (i >= 0) marks[i] = 1;
+      }
+      seam.faceMark = marks;
+      faceMarkArray.current.set(marks);
+    };
+    refreshOrderSurface();
     // INTERIOR TRANSPORT drive find (2026-08-21): the caption was the one
     // session fact the open-reset missed — on RE-OPENING the same room the
     // freshly computed caption equals the seam's stale copy, the change-gated
@@ -704,6 +823,13 @@ export function ExploreWindow({
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const U = (n: string): WebGLUniformLocation | null => gl.getUniformLocation(pr, n);
+    // B-2 witness seam (drive-family idiom, nothing in the app reads it): read a
+    // uniform's LIVE value back from the program, and the mark buffer as uploaded
+    seam.uniformProbe = (name: string) => {
+      const loc = U(name);
+      return loc ? (gl.getUniform(pr, loc) as unknown) : null;
+    };
+    seam.faceMarkBuffer = faceMarkArray.current;
     gl.uniform1i(U('uFaceCount'), packed.faceCount);
     gl.uniform1i(U('uModel'), packed.model); // B-114 — the room's own geometry
     gl.uniform3fv(U('uFaceN[0]'), packed.faceN);
@@ -826,6 +952,8 @@ export function ExploreWindow({
           deckF = deckN[0]; deckR = deckN[1]; deckU = deckN[2];
           prev = eye;
           seam.doors += 1;
+          if (face.door) seam.trace += doorLetter(face.door);
+          refreshOrderSurface();
           // the orientation of a PROJECTIVE door is its 4×4 determinant — the
           // 3×3 block is not it. Same reading, same meaning, read correctly.
           seam.frameHanded *= mat4Det(g4) < 0 ? -1 : 1;
@@ -846,6 +974,8 @@ export function ExploreWindow({
         // with prev == eye a bounded face cannot re-fire without a real move
         prev = eye;
         seam.doors += 1;
+        if (face.door) seam.trace += doorLetter(face.door);
+        refreshOrderSurface();
         seam.frameHanded *= det3of(g) < 0 ? -1 : 1;
       }
     };
@@ -993,6 +1123,7 @@ export function ExploreWindow({
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.uniform2f(U('uRes'), canvas.width, canvas.height);
       gl.uniform3f(U('uEye'), eye[0], eye[1], eye[2]);
+      gl.uniform1fv(U('uFaceMark[0]'), faceMarkArray.current);
       gl.uniform3f(U('uFwd'), camF[0], camF[1], camF[2]);
       gl.uniform3f(U('uRight'), camR[0], camR[1], camR[2]);
       gl.uniform3f(U('uUp'), camU[0], camU[1], camU[2]);
@@ -1007,6 +1138,8 @@ export function ExploreWindow({
       seam.renderFrames += 1;
       seam.eye = [...eye] as Vec3;
       seam.forward = [...camF] as Vec3;
+      seam.right = [...camR] as Vec3;
+      seam.up = [...camU] as Vec3;
       seam.settle = settle;
       // the boundary is SPOKEN, fresh (never the winding-tag's wording): a
       // room with walls AND corridors says how its orbit still recurs; a
@@ -1057,7 +1190,13 @@ export function ExploreWindow({
         // honest about what it dropped. Door-count agreement unchanged
         // (`1 door` singular, `0 doors` plural).
         seam.returnCount += 1;
-        const returnLine = `return ${seam.returnCount} · back where you started · after ${seam.doors === 1 ? '1 door' : `${seam.doors} doors`} · ${clause}`;
+        // B-2 item 0 — the LEG, not the session: doors since the previous return
+        const legDoors = seam.doors - seam.doorsAtLastReturn;
+        seam.doorsAtLastReturn = seam.doors;
+        // B-2 item 3: `home` is licensed ONLY here — by the position-return
+        // machinery, never by anything felt (LAW 20). The sentence re-reads.
+        refreshOrderSurface();
+        const returnLine = `return ${seam.returnCount} · back where you started · after ${legDoors === 1 ? '1 door' : `${legDoors} doors`} · ${clause}`;
         // W.7 — the comparison is the mark: the line just standing shifts to
         // the PREVIOUS slot on EVERY circuit close, never gated on the string
         // having changed — an equal reading is a circuit he genuinely walked
@@ -1211,6 +1350,36 @@ export function ExploreWindow({
         ref={captionRef}
         data-explore-caption
         style={{ marginTop: 6, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.78, minHeight: 15, whiteSpace: 'pre-line' }}
+      />
+      {/* B-2 THE ORDER-READING SURFACE (the designer's 1726/1752): three lines
+          under the room description, each its own line, one separator one
+          job. THE TRACE — door letters at each crossing, capitals for
+          inverses, ratcheting; the most recent letter alone at full ink (one
+          glyph, one meaning: full ink = the crossing you just made); elides
+          from the LEFT when long behind a plain mark (⚠ the elision glyph is
+          hers, deferred to a long-walk sighting). THE TALLY — net count per
+          letter used. THE SENTENCE — fires only when every count is 0,
+          immediately under the tally as its evidence, NEVER in a return slot
+          (a return line means the eye stands at its start again; the sentence
+          means the WORD cancelled — collapsing them collapses the arc's own
+          distinction); its second clause is licensed by the position-return
+          machinery alone. */}
+      <div
+        data-explore-trace
+        style={{ marginTop: 4, fontFamily: 'ui-monospace, monospace', fontSize: 11, minHeight: 15, letterSpacing: 1 }}
+      >
+        <span ref={traceHeadRef} style={{ opacity: 0.78 }} />
+        <span ref={traceLastRef} style={{ opacity: 1 }} />
+      </div>
+      <div
+        ref={tallyRef}
+        data-explore-tally
+        style={{ marginTop: 1, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.78, minHeight: 15 }}
+      />
+      <div
+        ref={sentenceRef}
+        data-explore-sentence
+        style={{ marginTop: 1, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 1, minHeight: 15 }}
       />
       {/* THE WINDING ROUTE (Q2): the return line — same surface, same ink,
           its OWN line. The caption above says what the room IS; this line

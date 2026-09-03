@@ -121,7 +121,7 @@ import type { InkedFormModel } from './inkedFormModel';
 // canon and its fences
 import { derivePagePose, type PagePose } from './pagePoseModel';
 // C-1 item 3 — the escaped-field class's one seam filter
-import { personReadableRefusal } from './refusalCopy';
+import { personReadableProvenance, personReadableRefusal } from './refusalCopy';
 import {
   ApertureGatePanel,
   BirthGatePanel,
@@ -1874,6 +1874,16 @@ function SpecimenCard({
   // someone improves the wording, and a prefix that matches nothing is
   // indistinguishable from a prefix whose rows are absent.
   const certificateRows = reading.rows.filter((r) => r.kind === 'certificate');
+  // A-4 item 4 (her text-diff: `— show it` opened onto ZERO added words): a
+  // DOOR is keyed on whether OPENING ADDS ANYTHING, never on the section
+  // existing. The collapsed heading carries the FIRST row as its digest; the
+  // door is live exactly when rows beyond the digest exist — opening adds
+  // them, or there is no door. Measured on the Arc: one row (`class n-a
+  // (1-complex)`), so the heading is inert; on a Square: two, so it opens.
+  const certificateDigest = certificateRows[0] ?? null;
+  const certificateHidden = certificateRows.slice(1);
+  const certificateDoor = certificateHidden.length > 0;
+  const certificateShown = certificateOpen && certificateDoor;
   const traceRows = reading.rows.filter((r) => r.kind === 'trace');
   const measureRows = reading.rows.filter((r) => r.kind === 'measure');
   const checkRows = reading.rows.filter((r) => r.kind === 'check');
@@ -2091,8 +2101,13 @@ function SpecimenCard({
                 // recedes the others).
                 <div
                   key={`${r.label}·${r.value}`}
-                  style={{ ...row, ...(r.label === 'deficit' ? registerLit('deficit') : {}) }}
-                  {...(r.label === 'deficit' ? registerTouch('deficit') : {})}
+                  // A-4 item 5 (researcher-decided, LIGHTS-TO-POINT): the deficit
+                  // register NEVER recedes (its FULL exception — a receded deficit
+                  // makes a curved room read euclidean), so touching its summary
+                  // row could only light a register that cannot answer; the two
+                  // lawful shapes are POINT or NOT LIGHT, and a summary row over
+                  // every wedge has nothing to point at — so it does not light.
+                  style={{ ...row }}
                 >
                 <span style={{ opacity: 0.85 }}>{r.label}</span>
           <b style={{ textAlign: 'right', fontWeight: r.emphasize ? 800 : 600 }}>{r.value}</b>
@@ -2190,20 +2205,32 @@ function SpecimenCard({
           <div
             onMouseDown={(e) => {
               e.stopPropagation();
-              setCertificateOpen((open) => !open);
+              if (certificateDoor) setCertificateOpen((open) => !open);
             }}
-            style={{ cursor: 'pointer', fontSize: 11, opacity: 0.68, display: 'flex', gap: 8, alignItems: 'baseline' }}
+            style={{
+              // A-4 item 4 — inert (no pointer, no door grammar) when opening
+              // would add nothing; see certificateDoor above.
+              cursor: certificateDoor ? 'pointer' : 'default',
+              fontSize: 11,
+              opacity: 0.68,
+              display: 'flex',
+              gap: 8,
+              alignItems: 'baseline',
+            }}
           >
             <span style={{ letterSpacing: 1, fontVariant: 'small-caps' }}>certificate</span>
-            {/* C-1 item 1 — the door grammar joins the demoted receipt too */}
-            <span style={{ fontSize: 10, opacity: 0.6 }}>{certificateOpen ? '— shown' : '— show it'}</span>
-            {!certificateOpen ? (
+            {/* C-1 item 1 — the door grammar joins the demoted receipt too;
+                A-4 item 4 — only where opening adds something */}
+            {certificateDoor ? (
+              <span style={{ fontSize: 10, opacity: 0.6 }}>{certificateShown ? '— shown' : '— show it'}</span>
+            ) : null}
+            {!certificateShown ? (
               <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10.5 }}>
-                {certificateRows.map((r) => `${r.label} ${r.value}`).join(' · ') || '—'}
+                {certificateDigest ? `${certificateDigest.label} ${certificateDigest.value}` : '—'}
               </span>
             ) : null}
           </div>
-          {certificateOpen
+          {certificateShown
             ? certificateRows.map((r) => (
                 <div key={`${r.label}·${r.value}`} style={{ ...row, fontSize: 12.5, opacity: 0.85 }}>
                   <span>{r.label}</span>
@@ -3047,6 +3074,17 @@ export default function ManuscriptView() {
   // the analytic reading — built ON SELECT from the committed certifiers'
   // readouts (specimenModel/writtenFormModel), cleared on deselect: summoned,
   // never ambient
+  // A-4 item 3 — the S2 split's DESIGNATION half, keyed by the ADDRESS, for
+  // the subtitle seam: a loaded form's provenance line is minted in the frozen
+  // genesisModel with the raw source id; the card speaks the universe's own
+  // name where the file carried one, a plain sentence where it did not.
+  const sourceNameBySource = useMemo(() => {
+    const map = new Map<string, string>();
+    shelf.forEach((item) => {
+      if (item.entry.sourceName) map.set(item.entry.source, item.entry.sourceName);
+    });
+    return map;
+  }, [shelf]);
   const reading = useMemo<SpecimenReading | null>(() => {
     if (!selected) return null;
     const [band, key] = selected.split(':');
@@ -3119,11 +3157,11 @@ export default function ManuscriptView() {
         // pairing recovery and handed in; the specimen never re-derives it
         // (null on a fresh/unnamed word: the letter+gloss line stands).
         const base = readSurfaceSpecimen(render.model, readPairDesignations(entry.form));
-        return speak({ ...base, title: entry.form.title, subtitle: `${entry.form.provenance} · ${base.subtitle}` });
+        return speak({ ...base, title: entry.form.title, subtitle: `${personReadableProvenance(entry.form.provenance, sourceNameBySource)} · ${base.subtitle}` });
       }
       if (render.mode === 'skeleton') {
         const base = readSkeletonSpecimen(render.model);
-        return speak({ ...base, title: entry.form.title, subtitle: entry.form.provenance });
+        return speak({ ...base, title: entry.form.title, subtitle: personReadableProvenance(entry.form.provenance, sourceNameBySource) });
       }
       if (render.mode === 'classBody') {
         // CUT 1b — a LAID form's card: the form's own certified rows plus the
@@ -3132,7 +3170,7 @@ export default function ManuscriptView() {
         // would now be false; the class row still speaks the classifier.
         const laid = laidBodies.get(entry.form.shape.id);
         if (laid) {
-          const base = readPlainSpecimen(entry.form.title, entry.form.provenance, laid.invariants, laid.h1Label);
+          const base = readPlainSpecimen(entry.form.title, personReadableProvenance(entry.form.provenance, sourceNameBySource), laid.invariants, laid.h1Label);
           // UNIFICATION — the basis is DRAWN now, and the card's legend names
           // it (retiring the tourniquet fallback for every laid form with
           // loops): one entry per drawn certified loop, in the ink it wears
@@ -3173,7 +3211,7 @@ export default function ManuscriptView() {
         }
         // P-IMMERSE: the form's OWN certified invariants + the honest frame +
         // the body's drawn certified generators, named (classBodyModel)
-        return speak(readClassBodySpecimen(entry.form.title, entry.form.provenance, render.model));
+        return speak(readClassBodySpecimen(entry.form.title, personReadableProvenance(entry.form.provenance, sourceNameBySource), render.model));
       }
       if (render.mode === 'faithful') {
         // CUT 1 — the counted caption (EYE-CHECK 1): the card prints V/E/F OF
@@ -3185,7 +3223,7 @@ export default function ManuscriptView() {
         // unnamed triple prints its arithmetic + the flagged missing row.
         const base = readPlainSpecimen(
           entry.form.title,
-          entry.form.provenance,
+          personReadableProvenance(entry.form.provenance, sourceNameBySource),
           render.model.invariants,
           render.model.h1Label,
         );
@@ -3241,13 +3279,13 @@ export default function ManuscriptView() {
         // committed invariant rows join ONLY when the readout computed —
         // a pinch that refuses certification shows none (never fabricated)
         const base = render.invariants
-          ? readPlainSpecimen(entry.form.title, entry.form.provenance, render.invariants, null)
+          ? readPlainSpecimen(entry.form.title, personReadableProvenance(entry.form.provenance, sourceNameBySource), render.invariants, null)
           : null;
         return speak({
           ...(base ?? {
             kind: 'surface' as const,
             title: entry.form.title,
-            subtitle: entry.form.provenance,
+            subtitle: personReadableProvenance(entry.form.provenance, sourceNameBySource),
             rows: [],
             legend: [],
             twist: null,
@@ -3259,7 +3297,7 @@ export default function ManuscriptView() {
           ],
         });
       }
-      const base = readPlainSpecimen(entry.form.title, entry.form.provenance, render.invariants, render.h1Label);
+      const base = readPlainSpecimen(entry.form.title, personReadableProvenance(entry.form.provenance, sourceNameBySource), render.invariants, render.h1Label);
       // Option B: name the drawn certified generators in the summoned legend
       const optionB = optionBByShape.get(render.shape.id);
       return speak(
@@ -3285,7 +3323,7 @@ export default function ManuscriptView() {
     // (a bounded room has no deck group — the ordinary, unmarked).
     const deckBit = readDeckAbelian(model);
     return deckBit ? { ...base, rows: [...base.rows, deckBit.row] } : base;
-  }, [selected, world, written, optionBByShape, dim3All, laidBodies, laidInkedById]);
+  }, [selected, world, written, optionBByShape, dim3All, laidBodies, laidInkedById, sourceNameBySource]);
 
   // (D16 — moved ABOVE the argument memo: the card now reads through the
   // door's resolver, so the page population and the reach must exist first;

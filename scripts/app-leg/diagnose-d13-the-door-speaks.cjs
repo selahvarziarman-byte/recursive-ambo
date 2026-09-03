@@ -306,7 +306,11 @@ console.log('\n— (f) the cure\'s source pins —');
   const mainSrc = fs.readFileSync(path.join(repoRoot, 'src/main.tsx'), 'utf8');
   check(
     '(f4) the fabricated letter is DEAD: the menuLetter FUNCTION is gone from the model (only the deletion comment remembers it); the name rule + unnamed are the only sources',
-    !modelSrc.includes('function menuLetter') && modelSrc.includes("return 'unnamed'") && modelSrc.includes('function faceDisplayName'),
+    // A-3b (f8f9efd): faceDisplayName DELEGATES to the frozen corner-cycle
+    // composer and wraps its null as the name slot's absence word — the
+    // spelling moved from `return 'unnamed'` to `return composed ?? 'unnamed'`;
+    // the RULE (the absence word minted only here) is what this pins
+    !modelSrc.includes('function menuLetter') && /return (composed \?\? )?'unnamed'/.test(modelSrc) && modelSrc.includes('function faceDisplayName'),
   );
   check(
     '(f6) the last-resort boundary rides EVERY mount of the page — AppShell AND the `?manuscript` dev route in main.tsx (the route the crash was found on had NO boundary; the leg caught it)',

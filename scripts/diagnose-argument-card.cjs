@@ -300,6 +300,17 @@ check('§5 (E6) THE SCRATCH TEST (structural, B-132 recut): the MAP rows and wor
   !/χ|genus|w₁|H₁/.test(allRowText) &&
     !('certificateLabels' in torusReading));
 
+check('§5 (A-4 item 4) THE CERTIFICATE DOOR IS KEYED ON WHETHER OPENING ADDS ANYTHING — the collapsed heading carries the FIRST row as its digest and the door is live exactly when rows beyond the digest exist (certificateDoor = certificateHidden.length > 0): the pointer, the door grammar and the toggle all key on it, and no site keys the door on the rows merely existing (the forbidden key — measured on the Arc, one row, the door once opened onto zero added words)',
+  viewSrc.includes('const certificateDigest = certificateRows[0] ?? null;') &&
+    viewSrc.includes('const certificateHidden = certificateRows.slice(1);') &&
+    viewSrc.includes('const certificateDoor = certificateHidden.length > 0;') &&
+    viewSrc.includes("cursor: certificateDoor ? 'pointer' : 'default'") &&
+    viewSrc.includes('if (certificateDoor) setCertificateOpen') &&
+    viewSrc.includes("{certificateShown ? '— shown' : '— show it'}") &&
+    !viewSrc.includes("certificateRows.length > 0 ? 'pointer'") &&
+    !viewSrc.includes('if (certificateRows.length > 0) setCertificateOpen') &&
+    !viewSrc.includes("certificateRows.map((r) => `${r.label} ${r.value}`).join(' · ')"));
+
 // ---------------------------------------------------------------------------
 // §6 (E7) frozen + the completeness row
 // ---------------------------------------------------------------------------

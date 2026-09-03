@@ -1550,6 +1550,11 @@ export interface ApertureCellFace {
   // transport an eye standing legitimately inside another wedge. Absent =
   // the plane is the whole story (every convex-cell face, byte-identical).
   bounds?: { c: V3; u: V3; w: V3 };
+  /** B-2 (the order-reading surface): WHICH door this portal is — the pairing's
+   * index and which side of it. The walk writes the crossing as a letter
+   * (side `a` → `a`, `b`, `c`…; side `b`, the inverse map → `A`, `B`, `C`…):
+   * the gluing-word vocabulary the person has already read. Absent on walls. */
+  door?: { pair: number; side: 'a' | 'b' };
 }
 
 export interface ApertureCellRod {
@@ -1879,11 +1884,11 @@ export function readCellSurface(
   // may be, since `shiftDeckTransform` is an affine conjugation that a
   // projective door does not admit.
   if (model && model.model !== 'E3') {
-    const doorByFace = new Map<string, { m: Mat4 }>();
-    for (const door of model.doors) {
-      doorByFace.set(door.faceA, { m: door.m });
-      doorByFace.set(door.faceB, { m: door.mi });
-    }
+    const doorByFace = new Map<string, { m: Mat4; pair: number; side: 'a' | 'b' }>();
+    model.doors.forEach((door, pair) => {
+      doorByFace.set(door.faceA, { m: door.m, pair, side: 'a' });
+      doorByFace.set(door.faceB, { m: door.mi, pair, side: 'b' });
+    });
     const faces: ApertureCellFace[] = [];
     for (const face of geometry.seed.faces) {
       const plane = model.chartPlanes.get(face.id);
@@ -1894,7 +1899,7 @@ export function readCellSurface(
       const door = doorByFace.get(face.id);
       faces.push(
         door
-          ? { n: plane.n, d: plane.d, wall: false, g: null, g4: door.m }
+          ? { n: plane.n, d: plane.d, wall: false, g: null, g4: door.m, door: { pair: door.pair, side: door.side } }
           : { n: plane.n, d: plane.d, wall: true, g: null },
       );
     }
@@ -1937,9 +1942,10 @@ export function readCellSurface(
       const fc = sub(geometry.faceCentroid(face.id), c);
       const n = norm(fc);
       const d = dot(fc, n);
-      for (const entry of deck) {
-        if (near(entry.nA, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.g, c) };
-        if (near(entry.nB, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.gi, c) };
+      for (let pair = 0; pair < deck.length; pair += 1) {
+        const entry = deck[pair];
+        if (near(entry.nA, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.g, c), door: { pair, side: 'a' as const } };
+        if (near(entry.nB, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.gi, c), door: { pair, side: 'b' as const } };
       }
       return { n, d, wall: true, g: null };
     });
