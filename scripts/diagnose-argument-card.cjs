@@ -150,8 +150,29 @@ check('§1 (E1) the relations read the RECORDED correspondence (measured substra
     torusReading.words.includes('4 relations become 2') &&
     torusReading.words.includes('2 absorbed') &&
     !torusReading.words.includes('die'));
-check('§1 (E1) B-133 clause B — the header speaks the map over CARRIED NAMES, never class-sign substitutions: source = the parent form\'s own carried name (4-gon — the loader\'s mint; a routed producer finding, not the reader\'s) ⟶ result = the born form\'s own carried title word (Torus (T²) — the IMMERSION_TITLES mint, likewise routed); the dead □/𝕋² sign tables may not return',
+check('§1 (E1) B-133 clause B — the header speaks the map over CARRIED NAMES, never class-sign substitutions: source = the parent form\'s own carried name (4-gon — the loader\'s mint; a routed producer finding, not the reader\'s) ⟶ result = the born form\'s own carried title word (Torus (T²) — the IMMERSION_TITLES mint, likewise routed); the dead □/𝕋² sign tables may not return — AND (C-2) this call passes NO act-word, so it is now also the ruled FALLBACK\'s own pin: a source without palette provenance keeps the arity noun',
   torusReading !== null && torusReading.header.source === '4-gon' && torusReading.header.result === 'Torus (T²)');
+
+// ---------------------------------------------------------------------------
+// STAMP C-2 — THE SOURCE SPEAKS THE ACT'S WORD (the mothership's ruling on
+// the coder's ¶TO-5): where the view CARRIES the invoke gesture's own word
+// off the parent entry's record, the source phrase speaks it ("the Square
+// you made first" — the source as the person MET it); the arity noun stays
+// the fallback (the B-133 pin above, now double-duty). The model takes the
+// word as an INPUT — it derives nothing (a class→word table would be the
+// classifier minting the act). Both branches pinned here at the model grain;
+// the view's provenance-gated lookup is the eye-run's clause.
+// ---------------------------------------------------------------------------
+console.log('\n----- STAMP C-2 — the source speaks the ACT\'s word (carried in, never derived) -----');
+const actWordPlain = torus ? buildArgumentReading(torus, undefined, null, 'Square') : null;
+check('C-2 (bare) the act-word rides the source slot verbatim when carried in: source === \'Square\' (result untouched)',
+  actWordPlain !== null && actWordPlain.header.source === 'Square' && actWordPlain.header.result === 'Torus (T²)');
+const actWordOrdinal = torus ? buildArgumentReading(torus, undefined, { rank: 1, total: 2 }, 'Square') : null;
+check('C-2 (ordinal) the act-word composes WITH the C-1 ordinal: source === \'the Square you made first\'',
+  actWordOrdinal !== null && actWordOrdinal.header.source === 'the Square you made first');
+const arityOrdinal = torus ? buildArgumentReading(torus, undefined, { rank: 2, total: 2 }, null) : null;
+check('C-2 (fallback+ordinal) a null act-word keeps the arity noun inside the ordinal phrase: source === \'the 4-gon you made second\'',
+  arityOrdinal !== null && arityOrdinal.header.source === 'the 4-gon you made second');
 
 // ---------------------------------------------------------------------------
 // §1b (B-2026-08-25-A §2) — THE COUNT FORM, pinned FROM THE RULE (the

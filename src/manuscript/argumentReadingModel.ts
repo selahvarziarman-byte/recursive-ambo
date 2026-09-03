@@ -420,6 +420,13 @@ export function buildArgumentReading(
   // the view's individuation verdict for this form's SOURCE: null/absent =
   // the class name individuates alone and the header stays short
   sourceOrdinal?: { rank: number; total: number } | null,
+  // STAMP C-2: the ACT's word for this form's source, CARRIED from the
+  // parent entry's own record by the view (provenance-gated at the lookup —
+  // only the invoke gesture's mint qualifies). null = no act-word on the
+  // record, and the arity noun below is the ruled fallback. The model never
+  // derives this — a class→word table would be the classifier minting the
+  // act (the ruling's named fabrication).
+  sourceActWord?: string | null,
 ): ArgumentReading {
   const shape = form.shape;
   const parent = form.parentShape ?? null;
@@ -1003,10 +1010,15 @@ export function buildArgumentReading(
         form.render.mode === 'immersion' && form.render.model.immersion.correspondence.word !== ''
           ? form.render.model.immersion.correspondence.word
           : null,
+      // C-2: the source speaks the ACT's word where the record carries one
+      // ("the Square you made first" — the source as the person MET it);
+      // the arity noun is the lawful fallback (a source with no palette
+      // provenance keeps "the 4-gon"). The word rides the PHRASE slot only —
+      // the name registers are untouched.
       source:
         sourceOrdinal && sourceOrdinal.total > 1
-          ? `the ${sourceNameFor(form, resolveAbsent)} you made ${ordinalWord(sourceOrdinal.rank)}`
-          : sourceNameFor(form, resolveAbsent),
+          ? `the ${sourceActWord ?? sourceNameFor(form, resolveAbsent)} you made ${ordinalWord(sourceOrdinal.rank)}`
+          : (sourceActWord ?? sourceNameFor(form, resolveAbsent)),
       result: resultNameFor(form),
       // the lift's gloss names its SPECIFIC source ("lifted from <source>" —
       // the sealed header phrase); every other op keeps its word, with the

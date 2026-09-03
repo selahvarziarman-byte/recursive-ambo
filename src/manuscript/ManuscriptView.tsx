@@ -3370,13 +3370,28 @@ export default function ManuscriptView() {
     const [band, key] = selected.split(':');
     if (band !== 'w') return null;
     const entry = written.find((w) => w.form.id === key);
-    return entry
-      ? buildArgumentReading(
-          entry.form,
-          resolveAbsentLabel,
-          entry.form.parentShape ? sourceOrdinalByShape.get(entry.form.parentShape.id) ?? null : null,
-        )
-      : null;
+    if (!entry) return null;
+    const parentShape = entry.form.parentShape;
+    // STAMP C-2 — the source speaks the ACT's word, CARRIED from the record:
+    // the invoke gesture minted `title: "<palette word> — invoked"` plus its
+    // own provenance sentence on the parent's entry (both serialized
+    // verbatim by the page file), so the word is read off that mint —
+    // provenance-gated: only the invoke act qualifies, every other parent
+    // hands null and the arity noun stays (the ruled fallback). The view
+    // owns the lookup, the model composes the phrase (the C-1 division).
+    const parentEntry = parentShape ? written.find((w) => w.form.shape.id === parentShape.id) : undefined;
+    const sourceActWord =
+      parentEntry &&
+      parentEntry.form.provenance === 'invoked primitive (right-click on paper)' &&
+      parentEntry.form.title.endsWith(' — invoked')
+        ? parentEntry.form.title.slice(0, -' — invoked'.length)
+        : null;
+    return buildArgumentReading(
+      entry.form,
+      resolveAbsentLabel,
+      parentShape ? sourceOrdinalByShape.get(parentShape.id) ?? null : null,
+      sourceActWord,
+    );
   }, [selected, written, resolveAbsentLabel, sourceOrdinalByShape]);
   // THE RING ANCHOR RESOLVER — the TOTAL verdict for the selected specimen:
   // anchors (any rendering mode) or a DECLARED refusal the card speaks.
