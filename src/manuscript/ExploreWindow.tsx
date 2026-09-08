@@ -37,6 +37,7 @@ import type { Vec3 } from '../types/geometry';
 import type { ApertureCellSurface } from './apertureModel';
 // B-114 — the orientation of a projective door is its 4×4 determinant
 import { mat4Det } from '../lib/noncubeDomain';
+import { LONGEST_CANCEL_SENTENCE, TRACE_WINDOW, cancelSentence, elisionMark, windowTrace } from './orderTrace';
 
 interface ExploreSeam {
   open: string | null;
@@ -83,6 +84,7 @@ interface ExploreSeam {
   // sentence, and the way-back room-marks are all DERIVED from this one
   // string — one producer, several views, no second memory.
   trace: string;
+  traceHidden: number; // B-3: letters older than the trace line's window — the elision's count
   // the way-back marks as uploaded (16 faces: 1 = the door just crossed's
   // way back, 0.5 = the one before, 0 = none) — a view of the trace
   faceMark: number[];
@@ -126,6 +128,7 @@ const seamOf = (): ExploreSeam => {
       returnCount: 0,
       doorsAtLastReturn: 0,
       trace: '',
+      traceHidden: 0,
       faceMark: new Array<number>(16).fill(0),
       sentence: null,
       right: null,
@@ -680,10 +683,11 @@ export function ExploreWindow({
   // B-2 THE ORDER-READING SURFACE — the three lines' DOM handles (written
   // imperatively like the return line: no re-render per crossing) and the
   // way-back marks as the shader receives them (uploaded per frame)
+  const elisionRef = useRef<HTMLSpanElement | null>(null);
   const traceHeadRef = useRef<HTMLSpanElement | null>(null);
   const traceLastRef = useRef<HTMLSpanElement | null>(null);
   const tallyRef = useRef<HTMLDivElement | null>(null);
-  const sentenceRef = useRef<HTMLDivElement | null>(null);
+  const sentenceRef = useRef<HTMLSpanElement | null>(null);
   const faceMarkArray = useRef<Float32Array>(new Float32Array(16));
   const liveRef = useRef({ level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho });
   liveRef.current = { level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho };
@@ -708,6 +712,7 @@ export function ExploreWindow({
     seam.returnCount = 0;
     seam.doorsAtLastReturn = 0;
     seam.trace = '';
+    seam.traceHidden = 0;
     seam.faceMark = new Array<number>(16).fill(0);
     seam.sentence = null;
     // B-2 (a witness seam, the drive family's idiom): the room's faces with
@@ -738,13 +743,16 @@ export function ExploreWindow({
       // (a return fired at THIS door count) — never by anything felt (LAW 20)
       const cancelled = trace.length > 0 && pairs.every((k) => net.get(k) === 0);
       const home = seam.returnCount > 0 && seam.doorsAtLastReturn === seam.doors;
-      seam.sentence = cancelled
-        ? `every door you opened, you closed — and ${home ? 'here you are, home' : 'you are not home'}`
-        : null;
-      // the trace: nothing scrolls — it ELIDES from the left behind a plain
-      // mark (⚠ the glyph is the designer's, deferred to a long-walk sighting)
-      const LIMIT = 40;
-      const shown = trace.length > LIMIT ? `…${trace.slice(trace.length - (LIMIT - 1))}` : trace;
+      seam.sentence = cancelled ? cancelSentence(home) : null;
+      // B-3 (items 1–3): the trace LINE is a WINDOW of the newest TRACE_WINDOW
+      // letters while the tally counts the whole trace, so the elision STATES
+      // ITS COUNT — the tally knows more than this line shows, and the number
+      // says how much (LAW 23: hidden + shown = the trace, checkable). The
+      // mark is ON the line, in its own span with its own tracking — never a
+      // letter IN the run. One producer: orderTrace.
+      const { hidden, shown } = windowTrace(trace, TRACE_WINDOW);
+      seam.traceHidden = hidden;
+      if (elisionRef.current) elisionRef.current.textContent = elisionMark(hidden);
       if (traceHeadRef.current) traceHeadRef.current.textContent = shown.slice(0, Math.max(0, shown.length - 1));
       if (traceLastRef.current) traceLastRef.current.textContent = shown.slice(-1);
       if (tallyRef.current) tallyRef.current.textContent = tally;
@@ -1368,6 +1376,11 @@ export function ExploreWindow({
         data-explore-trace
         style={{ marginTop: 4, fontFamily: 'ui-monospace, monospace', fontSize: 11, minHeight: 15, letterSpacing: 1 }}
       >
+        {/* B-3 item 3 — the elision is a MARK on the line, not a letter in the
+            run: its own span, its own tracking (the run's letterSpacing is
+            the word's; the count is not a word), its own register. Empty —
+            nothing rendered — while nothing is hidden. */}
+        <span ref={elisionRef} data-explore-elision style={{ letterSpacing: 0, fontStyle: 'italic', opacity: 0.6 }} />
         <span ref={traceHeadRef} style={{ opacity: 0.78 }} />
         <span ref={traceLastRef} style={{ opacity: 1 }} />
       </div>
@@ -1376,11 +1389,29 @@ export function ExploreWindow({
         data-explore-tally
         style={{ marginTop: 1, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.78, minHeight: 15 }}
       />
+      {/* B-3 item 4 — THE DOING/HAPPENED BOUNDARY IS A CONSTANT: trace + tally
+          are what you are DOING, sentence + return what HAPPENED. The gap
+          between the groups is this margin, held whether the sentence slot
+          is empty or fired — the designer measured the old grouping living on
+          the sentence's EMPTY height, which collapsed at the design's most
+          important instant. The reserved blank (minHeight) STAYS: an empty
+          slot is a true absence and a strip that jumps under a walking eye
+          is worse. */}
       <div
-        ref={sentenceRef}
         data-explore-sentence
-        style={{ marginTop: 1, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 1, minHeight: 15 }}
-      />
+        style={{ marginTop: 9, position: 'relative', fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 1, minHeight: 15 }}
+      >
+        {/* the reserved blank is SIZED BY THE PRODUCER'S OWN LONGEST SENTENCE —
+            an invisible copy holds the slot at whatever width the panel has,
+            so the return line below never moves when the sentence fires
+            (measured: at a narrow panel the fired sentence wrapped and the
+            return line jumped 18px). Invisible, never read: the live text
+            lies over it. */}
+        <span aria-hidden data-explore-sentence-ghost style={{ visibility: 'hidden' }}>
+          {LONGEST_CANCEL_SENTENCE}
+        </span>
+        <span ref={sentenceRef} data-explore-sentence-text style={{ position: 'absolute', left: 0, top: 0, right: 0 }} />
+      </div>
       {/* THE WINDING ROUTE (Q2): the return line — same surface, same ink,
           its OWN line. The caption above says what the room IS; this line
           says what just HAPPENED. It appears on the first position-return
