@@ -40,6 +40,9 @@
 
 ## MAIL — how seats reach each other
 
+> ### ⛔ **THE PREMISE-DISCLOSURE CONVENTION (campaign-wide, installed 2026-09-05 19:24 +0330 on the hermeneutic office's diagnosis, widened by the researcher, taken by the mothership):**
+> ***State every premise your conclusion needs — including any established in ANOTHER CHANNEL — and MARK any that stands against a ruling.*** *Bought with a real failure (2026-09-04): a letter whose two halves were each true and correctly graded rode on a premise argued in conversation that CONTRADICTED a standing ruling; the joint failed and marking caught nothing.* ⇒ **The sharp half: a premise that contradicts a ruling is the one most likely argued elsewhere and least likely repeated — exactly the one a convention that binds only FACTS will lose.** A letter's self-containment binds its PREMISES, not only its facts.
+
 **On wake, read `.handoff/inbox/<your-seat>/`.** An inbox holds only UNREAD mail: act, then move each handled message to **`.handoff/inbox/<your-seat>/archive/`.**
 > ⚠ **BUT WHEN YOU SWEEP YOUR OWN ARCHIVE, READ BOTH NAMES: `archive/` AND `_archive/`.** **Some seats' LIVE archive is still `_archive/`** — measured, not remembered: `mothership/archive` and `researcher/archive` against `coder/_archive` and `designer/_archive`, **and the two `_archive`s were written into the same day as the two `archive`s.** ⛔ **The two names track WHICH SEAT WAS SITTING, not what kind of letter it is — so a sweep that reads one name will silently miss a live pile.** ⇒ **`archive/` is the convention for what you write; both names are the truth for what you read.** *(A shared `.handoff/inbox/_archive/` also exists and holds an older pile. **No migration** — untracked is not worthless and the tree has no revert for it.)*
 

@@ -15,6 +15,11 @@
 > - **§6.2b** — **NEW: three instrument laws.** `canvas.toDataURL()` is **blind to marks** (with the `esc` control that proves it, and the two positive controls that work); **the pane is Arman's own window and goes to `innerWidth: 0` when he dismisses it**; ⛔ **never click under viewport emulation — it breaks the pointer frame.** ⚠ *Clause 7 carries its own correction notice: the first version of this section named a cause that merely FIT, and it was wrong. Read it before you amend anything.*
 > - **§8** — the clock line made **mechanical**, after the author fabricated three of four in one sitting and labelled them `(machine, date)`.
 > - **§9.1** — SITE 2 **sighted and CLOSED**, with the full route recorded for the next holder.
+>
+> **A-2 · the same holder, at `b67e728`, after a sitting in the AMBO — the module this office had never driven.** Three amendments, all bought there:
+> - **§4.5** — **NEW LAW, and it is the missing half of the office's own scar: *A GESTURE THE APP STATES NOWHERE IS NOT A READING FAILURE — IT IS A DESIGN FAILURE, AND IT IS OURS.***
+> - **§6.2b** — **clause 8: in the AMBO, DRIVE THE DOM, NEVER THE RAYCAST.** The canvas is unaimable in this pane; every DOM control lands first time.
+> - **§7** — **the AMBO's gestures recorded for the first time**, since the app will not state them.
 
 ---
 
@@ -116,6 +121,11 @@
 - ⚠★ **BUT DO NOT MARK THE ORDINARY.** A mark on the unremarkable is a mark that stops meaning anything — *and it spends the one position that must still be legible when it fires.*
 - ⛔ **THE MARK IS NOT THE DELIVERABLE — THE ROUTE IS. Reachable ≠ usable.** *And a mark a person must be TOLD how to read is not yet a mark.*
 - ⛔ **ENUMERATE AFFORDANCES FROM THE SCREEN, NEVER FROM A CONSTANT** — and **the hardest constant to notice is your own earlier reading.**
+- ⛔⛔ **A GESTURE STATED ONLY IN A TOOLTIP IS CONFIRMABLE BUT NOT DISCOVERABLE — and that is a DESIGN failure, this seat's, not a reading failure.** ✔ *Bought at `b67e728` in the Ambo, and **corrected within the hour** — see the history below, which is the more useful half.*
+  > **THE MANUSCRIPT PRINTS ITS GESTURES IN THE COPY** (`esc · double-click paper — the specimen sinks, the reading clears`, on the card's last line) **and a holder who misses them has failed to READ.**
+  > **THE AMBO PUTS ITS GESTURES IN `title` ATTRIBUTES** — `"shift-click: toggle in the lift region"` on a face row (`Panels.tsx:2219`); `"Select a cell, a vertex, or an edge — or shift-click a region…"` on `Lift selection → Manuscript`. ⇒ ⛔ **A tooltip fires only for a person already hovering that exact control, which means it can CONFIRM a suspicion and can never PLANT one.** **Its visible copy states one gesture, the passive one:** `Hover a cell or inspector row to preview correspondence`.
+  ⚠ **THE HISTORY, because it is the lesson and it is mine:** I first wrote this clause as *"the Ambo states NONE of its own gestures."* **That was FALSE — it states them in tooltips — and I found the tooltips only by reading the source for something else.** ⇒ ***Three times in one sitting I called a capability absent when it was somewhere I had not looked*** — the edge register (it was in `LAYER 3 WITNESS`), the dev server (it was up; the PANE was closed), and this. ★ **The species is one: *I could not reach it* reported as *it is not there.* The cure is not more caution — it is to name the place you looked and say only that.**
+  ⇒ ⛔ **When you add an act to the Ambo, build the place where it is STATED IN THE COPY. A `title` is not that place.**
 - ⛔ **MISPLACED** — a view, a type, or a REFUSAL placed after the act it should serve. *From the person's chair a misplaced view is indistinguishable from a missing one.*
 - ★ **THE FIELD IS THE DRAFT, THE SENTENCE IS THE CURE** — when a machine field escapes into person-facing copy, **keep the provenance mark, delete the machine half, keep the sentence.** ✔ *Twice applied, twice landed (`cone edges: null` → `no cone edges`; `conformalAtom: vertex "w3:v0"` → `the vertex v0`).*
   > ### ⛔ **AMENDED BY THE FOURTH HOLDER at `5d55cb1` — THIS LAW WAS WRITTEN AS IF IT FINISHED THE JOB. IT CURES THE FIELD HALF ONLY, AND THE FIELD HALF IS THE EASY ONE.**
@@ -195,6 +205,9 @@
    ⇒ ★ **Emulation is for GEOMETRY only** (`elementFromPoint` sweeps across widths — that is how the occlusion threshold was pinned, and it is sound). ⛔ **For anything you intend to CLICK, clear it first and work native.**
    ⚠ **And take a FRESH SCREENSHOT immediately before a click that matters** — the tool derives the pointer frame from the last capture and says so in its own error (*"could not be attributed to a frame… take a fresh screenshot and retry"*).
    > ### ⛔ **THE HONEST HISTORY OF THIS CLAUSE, because it is the lesson: the first version of §6.2b blamed "the screenshot frame is not the CSS frame." THAT WAS A MECHANISM THAT FIT, WRITTEN INTO THE CONSTITUTION WITHIN THE HOUR, AND THE CAUSE WAS WRONG.** The real causes are a zero-size pane and the emulation/pointer divergence — both measured only after **Arman asked "why can't you look suddenly?"** ⇒ ***A wrong cause in a law is worse than no law: it stops the next holder from looking.*** **Amend on a measurement, never on a plausible story.**
+8. ⛔ **IN THE AMBO, DRIVE THE DOM — NEVER THE RAYCAST.** ✔ *Measured at `b67e728` with a proper control:* after several shift-clicks on the solid did nothing, I clicked **the same point with no modifier** — which must select a cell — **and that did nothing either.** ⇒ **A FAILED POSITIVE CONTROL: the clicks were never reaching the geometry.** The pane's framing drifts between the screenshot you aim from and the click that follows, so **canvas picking is unaimable here and every null it gives you is worthless.**
+   ⇒ ✅ **THE ROUTE THAT WORKS, every time:** set a `<select>` by value (`form_input`), click rows and buttons **by element reference** (`find` → `ref_N`), read state from the DOM. **The filter and the packet rows landed first time on every attempt.**
+   ★ **And the general shape, which is why this is a law and not a tip: *when a control has both a canvas route and a DOM route, the DOM route is the instrument and the canvas route is the subject.*** **Drive the one to look at the other.**
 
 ## 6.3 · Measuring what a person can reach ✔
 - **Occlusion is `document.elementFromPoint` at a control's own centre** — geometry, so a broken click cannot falsify it. **Sweep several viewport widths and report the THRESHOLD**; a person can check a threshold by dragging a window (LAW 23).
@@ -225,6 +238,18 @@
 - **RIGHT-CLICK with a form selected** opens that form's **OPERATIONS** menu instead — *two menus, one gesture, disambiguated by selection state.*
 - **`esc`, or double-click bare paper** — the specimen sinks, the reading clears.
 - **Forms are CANVAS objects, not DOM.** `read_page` will not show them. **Selection is a camera raycast** — do not hunt it by coordinate; **use the eye.**
+
+## THE AMBO'S GESTURES — recorded here because the app states none of them ✔ *(read at `b67e728`, `Workspace3D.tsx:311–338`)*
+> ⛔ **The Ambo's only hint is `Hover a cell or inspector row to preview correspondence` — the passive one. Everything below a person can only be TOLD.**
+> ✅ **THE SELECTION GRAIN IS WIDER THAN IT LOOKS — all four strata are addressable.** The lift button's own tooltip: **`"Select a cell, a vertex, or an EDGE — or shift-click a region…"`** ⇒ **cell · vertex · EDGE · face (by shift-click) · dual-inspection target.** ⛔ **Do not repeat my error and read the visible copy as the whole set.**
+- **CLICK a cell** — selects it for inspection (opens `LAYER 3 WITNESS` when the form carries one). *(`:336–337`)*
+- **SHIFT-CLICK a face** — toggles that face into the **LIFT SET** (what will be lifted to the Manuscript). ⛔ **Not an inspection select** — its only feedback is the three `… → Manuscript` buttons in the FAR-LEFT panel enabling, ~800px from the click. *(`:326–332`)*
+- **SHIFT+ALT-CLICK** — toggles the whole **CELL** into the lift set. *(`:322–324`)*
+- **SHIFT-CLICK a vertex** — toggles the vertex into the lift set. *(`:494–496`)*
+- **SHIFT-CLICK an inspector row** — the same toggle from the DOM side (`Panels.tsx:2148`, `:2215`).
+- ⚠ **A silent path, read not observed:** the face pick ends `if (pickedFace) …` — **when the face cannot be resolved it does nothing at all: no refusal, no mark.** *(`:330`)*
+- ✅ **THE PACKET EDITOR is where a concept is GIVEN:** select a vertex → `EDIT SELECTED PACKET` → `Label · Color · Tags · Notes · Custom JSON` → **explicit `Save packet`**. ⇒ **The giving idiom is: select the thing · a form appears in the inspector · fill · commit.**
+- ✅ **THE REGISTER VOCABULARY ALREADY EXISTS, one stratum down:** `named` (GIVEN) · `lineage-only` (DERIVED — provenance, no given content) · the `Empty / unresolved` filter (TRUE ABSENCE). **Carry it up a dimension; do not invent it.**
 
 **THE OP TOOLBAR** ✔ — ten ops: `glue · flip-glue · collapse · cut · dualize · sew · fold · thicken · identify · explore inside`. **It is a GENERAL PALETTE: ops the form cannot take REFUSE IN WORDS, with the remedy** — e.g. `thicken — select two forms — click the shape, shift-click the segment`. ⚠ **The refusal is PLAIN TEXT in the toolbar strip and a selector census will not see it (§6.2 rule 1).**
 **THE CARD** ✔ — `this form takes — …` is **computed and form-specific**, and it is a real claim: a Klein reads four ops, an Arc reads two. **Openable headings carry `— show it`; open ones read `— shown`; inert headings carry nothing.**

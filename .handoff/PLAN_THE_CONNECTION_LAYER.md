@@ -1,6 +1,9 @@
 # PLAN — THE CONNECTION LAYER *(Station C · the campaign's declared end)*
 
 **Scoped by Arman, 2026-09-03 (Δ67): `a+c` — the Ambo end AND the walk end, built C-FIRST, in three steps.**
+**AMENDED 2026-09-04 13:27 (§72) — SUPERSEDED. AMENDED 2026-09-05 19:24 +0330 (§73): Arman ruled P0 — CONCEPTS ARE SPACES (Δ71). The coordinate picture is RETIRED; Step 1 is BLOCKED on four definitional questions; Step 3's §72 rewrite is REVERSED (route-disagreement is LIVE again).**
+**AMENDED 2026-09-08 10:17 (§74): THE FOOTING — corners are CAST concept-spaces; an edge is the AMALGAM over a GIVEN J; a face is the loop's MONODROMY. ~~FIRST BUILD CHARTERED: `C-4AMALGAM`~~ WITHDRAWN (§75: a port with no person).**
+**⛔ AMENDED 2026-09-08 10:42 +0330 (Δ73, §76): THE LAYER IS DEFINITIONAL BY ARMAN'S WORD — no build until the third corner is cast, one face's monodromy is computed and UNDERSTOOD, and the understanding is written as a THEOREM that becomes the engine's ground. Only then is the packet's new nature — and every build on it — priced.**
 **Definitions: `ADR 0030` (ratified, claims §66). Refinement law: `ADR 0028`. Registers: `ADR 0029`. This file holds the ORDER and the ACCEPTANCES; 0030 holds the meaning.**
 
 > ### ⇒ **THE ONE PICTURE, and the reason the order is forced:**
@@ -12,9 +15,44 @@
 
 ## STEP 1 — THE AMBO END: assign a transport, read a triangle *(the researcher first, then the designer, then the coder)*
 **What a person does:** picks an edge of the dissected solid between two concept-carrying vertices and says what carrying a concept along it DOES; then walks a closed triangle of edges **with their eye** and reads what came back.
-**The acceptance, in the person's terms:** *"I said what these three passages do. I followed them round. My concept came back CHANGED — and the page says so and says by what."*
+**The acceptance, in the person's terms** *(re-cut §74 for the footing)*: **C-4 (the edge):** *"Flow and Φ sit on two corners. I said which of their roles are ONE. The edge between them shows me what it holds — the roles that are both, Flow's own, Φ's own — and I can see every relation survived."* · **C-5 (the face):** *"I followed three edges round. For each role the page says: it came back the same, it came back as something else, or it did not come back — and it says by what."* ⛔ **Empty-core guarded: *nothing came back* is never printed as *nothing changed*.**
 **Sequence inside the step:** (1) **researcher** — the definitional charter: what a transport may BE at this grain (the fiber group's first form; the identity/absence distinction; what a triangle's residue IS and how it is stated) · (2) **designer** — the surface: how a transport is assigned, how an unassigned edge shows its TRUE ABSENCE, how a residue reads · (3) **coder** — the build, with a witness.
 ⛔ **Boundaries:** the op-set does not bend (a connection is a FIELD, never an identification) · the transport is a traced GIVEN act (never fabricated; the trivial connection is a CHOICE) · the layer transports the given register, never writes it.
+> ### ⛔⛔ **RETIRED 2026-09-05 19:24 +0330 (§73) — the box below described the COORDINATE picture (a concept = a name carrying six amounts; a passage = one number). ARMAN RULED P0 (Δ71, verbatim *"space"*): CONCEPTS ARE SPACES, INSTANCES ARE THEIR POINTS, THE SIX QUALITIES ARE SIX OPERATIONS BETWEEN SPACES.** ⇒ **"ONE NUMBER PER PASSAGE" IS DEAD. Nothing is drawn to that slot.**
+> **WHAT DIES:** coordinates/amounts · the mid-walk reading · the graded interpolant and the "decreasing series" (Δ69 §6 retired) · SIX-DISTINCT §1's diagonal model (its §2–3 re-derived for automorphisms) · "a passage's quality is its eigenvector" · add/multiply. ⚠ **CONDITIONAL:** the three regimes + the spectrum unification survive ONLY if concept-spaces are ruled LINEAR.
+> **WHAT SURVIVES:** six distinct OPERATIONS · holonomy at a basepoint · **ROUTE-DISAGREEMENT (Step 3's reading — intact, and cleaner)** · Bianchi · the eigen-frame for LOOPS · the invariant closure as a loop object · the boundary stone (if invertibility is kept) · the registers.
+> ### ✅ **THE BLOCK CLEARED (2026-09-08 10:17 +0330, §74) — and it cleared BY CONSTRUCTION, not by ruling: Arman had two corners CAST as finite relational structures in his other project (Flow: 14 roles · 13 types · 49 relations; Φ: 9 roles · 14 types · 22 relations), via the researcher's MOLD, by researchers who know nothing of this engine.** ⇒ **THE FOOTING OF STEP 1, as it now stands:**
+> - **A CORNER is a CAST concept-space** — roles (points ARE their relational positions; members optional), arity-1 TYPES (a type is a relation), typed DIRECTED relations, axioms (checked at every amalgam; a failed antecedent = a dissolved bound, marked), MARKS (weights, dynamics — carried, never read). **Cast OUTSIDE the engine; the engine TAKES it.** ⛔ *A cast can REFUTE the model and never ESTABLISH it* (Arman's catch, Δ72).
+> - **AN EDGE is the AMALGAM (pushout) of its two corners over a GIVEN J** — *which roles across the two concepts are ONE*, chosen from computed candidate cores, possibly EMPTY (= "beside"). **The passage is FORCED by the geometry and POPULATED by the amalgam** (Arman's reframe). ★ **THE BORN MIDPOINT OF AN EDGE IS THE AMALGAM OF ITS PARENTS** — 0028's COMPOSED clause made exact; Δ52's placeholder ANSWERED. "Did not carry" is abolished as a negative: those roles are the midpoint's content. **The boundary stone is INTACT** (each half-edge a total injection; walking back is exact on the image, undefined off it).
+> - **A FACE is the MONODROMY of the loop's colimit** — per role THREE outcomes (returned unchanged · returned changed · did not return); ⛔ **the EMPTY CORE is a named vacuity class** (*nothing returned ≠ nothing moved* — a build printing the first as the second repeats the telescoping error).
+> - ⛔ **J IS GIVEN, NEVER MACHINE-POSITED** (the name-slot law at the fiber grain — the hermeneutic office's discipline concern, answered: a residue means exactly as far as J is the person's commitment) · **cell-inconsistency between six J's is CONTENT, not error** (the amalgam glues both; the extra gluing IS the residue).
+> - **THE OP-SET BOUNDARY HOLDS VERBATIM:** J identifies ROLES in fibers; the op-set identifies CELLS of the base; the tetra keeps four vertices and six edges. **The layer is a DIAGRAM of concept-spaces over the ambo's incidence — a field on the complex, never an identification of it.**
+> ### ⇒ **THE FOUR QUESTIONS, as they closed:** (a) roles · (b) a finite relational structure — neither a bare set nor a vector space, so the name-poverty does not arise · (c) named · (d) the cast + J. ⚠ *(a)–(c) closed by construction; the researcher confirms in their vocabulary (asked).* **The invertibility fork is CLOSED by the stone standing.**
+> ### ⛔ **THE ORDER OF STEP 1 — RULED BY ARMAN (Δ73), and it is DEFINITIONAL FIRST, BUILD LAST:**
+> 1. **THE THIRD CORNER (U) is cast like the other two** — in the other project, on his clock.
+> 2. **ONE FACE's MONODROMY is computed** — the researcher, on the three casts and their three J's.
+> 3. **It is UNDERSTOOD** — *"so we can understand what we are doing."*
+> 4. **The understanding is written as a THEOREM.**
+> 5. **The theorem becomes THE ENGINE'S GROUND** (an ADR; the definitional footing the packet will rest on).
+> 6. **ONLY THEN: what the packet IS · how a corner takes a cast · how vertices become concept-spaces — priced (frozen-file check first) and built.**
+> ⛔ **NO LAYER BUILD BEFORE (5).** ~~C-4 the edge now~~ (withdrawn, §75). *The two-cast amalgam stays a computed fact in the researcher's instruments until the theorem says what an edge IS in the engine.* ★ His own sense of the ground: *"getting closer to intuitionistic type theory almost."*
+>
+> <details><summary>the four questions as they stood while blocked (superseded)</summary>
+>
+> **(was:) STEP 1 IS BLOCKED ON FOUR DEFINITIONAL QUESTIONS, in blocking order:**
+> **(a) WHAT POPULATES A CONCEPT-SPACE?** *Sky is a space — of what?* Four names, four empty spaces; a function has nothing to carry until they have points. **BLOCKS EVERYTHING — with Arman now.** (Candidates, none ruled: hand-given instances · the packet workbench read as points · dissection's born concepts read as instances.)
+> **(b) WHAT KIND OF SPACE?** Bare set ⇒ passages permute instances ⇒ cycle-type residues — *the C-2AMBO poverty returns one level down*. Linear ⇒ spectra. **P0 relocates the poverty question; it does not escape it.**
+> **(c) ARE INSTANCES NAMED?** Named ⇒ no gauge ⇒ all six passages content. Anonymous ⇒ gauge ⇒ `6 = 3+3`.
+> **(d) WHAT IS GIVEN PER PASSAGE?** A function between populated spaces — answerable only after (a)–(c).
+> ⚠ **THE SECOND SOVEREIGN FORK, open beside (a): ARE PASSAGES INVERTIBLE?** INVERTIBLE ⇒ the standard gauge-invariant bundle (holonomy fully live; the boundary stone STANDS; no new types — born concepts are new INSTANCES). NON-INVERTIBLE ⇒ born concepts can be NEW TYPES (pushouts) and the stone must be RE-OPENED (a non-invertible passage is by ruling a pooling). **The researcher recommends INVERTIBLE; the word is Arman's.**
+> ⚠ **Δ52's born-midpoint reading RETURNS as an open question** (no interpolant remains to replace the placeholder).
+> </details>
+
+<details><summary>the retired coordinate-picture box, kept for the record</summary>
+
+> ### ⇒ **THE FIBER IS SETTLED (Δ70, and the frame reaches the surface): ONE FORM, THREE REGIMES — permutation (the degenerate case, what remains when the fiber is stripped to names) · rotation (norm-preserving) · GRADED (real positive eigenvalues — Arman's transcendence series).** The classification unifies in the SPECTRUM: each eigenvalue `λ = r·e^{iθ}` carries an ANGLE (the metric cone's coordinate) and a GAIN (his degree). ⇒ ⛔ **AN EDGE'S SLOT HOLDS A TRANSPORT — the first build merely DISPLAYS the degenerate regime. Drawn as *"assign a permutation"* it gets rebuilt when degrees arrive; drawn as *"assign a transport, shown here as a relabeling"* it GENERALISES.**
+> ⛔ **And on an ABELIAN fiber the six edge-values MUST BE GIVEN INDEPENDENTLY** — derivation from endpoint coordinates telescopes to zero and makes the first acceptance vacuous. ⛔ **The quality space is ITS OWN space and MUST NOT be the drawing's** (keying meaning to positions is the trap family's next row — and, combined with derivation, it IS the telescoping from the other side).
+</details>
 
 ## STEP 2 — THE LIFT CARRIES IT *(the doctrine's own clause, tested)*
 **What a person does:** lifts a region they have given transports to, and finds the transports still there on the lifted form.
@@ -23,11 +61,30 @@
 
 ## STEP 3 — THE WALK CARRIES IT *(the (a) end, on the surface Station B built)*
 **What a person does:** glues a room from lifted, transport-bearing material and walks it carrying a concept.
-**The acceptance:** the CARGO rides beside the trace/tally/sentence, and its two readings (`ADR 0030` §2) fire correctly — **cancelled-and-HOME with a changed cargo ⇒ CURVATURE, read at an edge · cancelled-and-NOT-HOME ⇒ ROUTE-DISAGREEMENT.** ⚠ **The control is free and structural, as ever: T³ against Seifert–Weber.**
+
+> ### ✅ **§72's AMENDMENT REVERSED (2026-09-05 19:24 +0330, §73): the "abelian ⇒ route-disagreement is EMPTY" finding was a fact about the RETIRED diagonal model. Under P0 with invertible passages the round trip is an AUTOMORPHISM of sky-space and route-disagreement is a COMPARISON in mortals-space of two arrivals — LIVE, and the researcher calls the acceptance *"intact and cleaner."* ⇒ Step 3's acceptance returns to 0030 §2's two readings, re-derived for automorphisms when (a)–(d) close.** ⚠ *My own law, taken (§73): a computed fact about a MODEL inherits the model's provisionality — an amendment to an acceptance on such a fact must carry the model's name and die with it. §72's did not name it loudly enough; kept below for the record.*
+>
+> <details><summary>§72's amendment as written (superseded)</summary>
+>
+> **(was:) ACCEPTANCE AMENDED (2026-09-04, the sixth, on the researcher's computed finding):**
+> **Arman ruled the fiber SIX DISTINCT (Δ70) ⇒ each passage moves its own quality and leaves the other five untouched ⇒ THE CONNECTION IS DIAGONAL, HENCE ABELIAN.** ✔ Computed: `a·b·a⁻¹·b⁻¹` returns the cargo EXACTLY unchanged (`max|K−I| = 0.00e+00`); the transport depends only on the TALLY. ⇒ ⛔ **`ADR 0030` §2's SECOND reading — cancelled-and-NOT-HOME ⇒ route-disagreement — HAS NO INSTANCES on this fiber. It is not wrong; it is EMPTY.**
+> ⇒ ***An acceptance written on an empty reading is unfalsifiable in the OTHER direction: the cargo comes home always, and a person could not tell a correct build from a broken one.***
+
+**THE ACCEPTANCE AS IT NOW STANDS — the two things Step 3 can honestly show:**
+1. ✅ **CURVATURE (0030 §2's FIRST reading), which is live and non-vacuous:** cancelled-and-HOME with a CHANGED cargo — the walker went round an edge and came back holding something different. **This is the semantic cone at the person's feet and it is what the diagonal fiber buys.**
+2. ✅ **THE CONTRAST, and it is worth having as an acceptance in its own right:** the deck group is non-abelian (geometry) while the connection is abelian (meaning) ⇒ ***"the room moved you; your ideas came back intact."*** **A true, readable sentence about a real difference between the two structures — written as ITSELF, never as a failed route-disagreement.**
+⚠ **The control is free and structural, as ever: T³ against Seifert–Weber.**
+⇒ ✔ **THE ROUTE-DISAGREEMENT READING IS NOT LOST — IT IS PRICED: one MIXING passage (a transport touching two qualities) makes the cargo route-dependent at once** (computed: `max|K−I| = 0.0518`). **Diagonal buys the CONE; mixing buys the COMMUTATOR.** ⛔ **Whether he ever gives a mixing passage is ARMAN'S QUESTION, and it is due when Step 3 charters — not now.**
+> </details>
+
+⇒ ★ **Also placed (the researcher, 1616): even on the OLD picture a NON-ABELIAN connection existed on the bare K₄ from ONE declared rule (the S₄ transposition acting on edge-labels — holonomy round S·E·M = `(E M)`), so "mixing is a later gift" was already over-priced. Under P0 the question is moot in that form and returns inside (d).**
 
 ---
 
 ## THE STANDING RULES OF THIS PLAN
+- ⛔⛔ **EVERY ACCEPTANCE IN THIS LAYER IS CHECKED FOR ARITHMETIC VACUITY BEFORE IT CHARTERS.** *(Bought twice in one hour, 2026-09-04: a DERIVED abelian transport telescopes — every triangle reads "nothing moved" as a certainty, not a measurement (step 1's acceptance) · a DIAGONAL connection commutes — the cargo comes home always (step 3's).)* ⇒ ***In this layer the ARITHMETIC can empty an acceptance in a way the PROSE cannot show: a test that cannot fail reads exactly like a test that passes.*** **Name the fiber, then ask what the algebra forces, then write the sentence.**
+- ⛔⛔ **A RATIO IS NEVER A REASON TO BUILD** *(bought §75: five days at zero commits frightened the mothership into chartering a port with no person; Arman caught it in one line).* ⇒ **A definitional phase declared by the sovereign has the RECORD as its substrate — theorems and rulings — and its silence on commits is the phase, not a failure. The record-to-substrate ratio is read against the DECLARED phase, never against a calendar.**
+- ⛔⛔ **A COMPUTED FACT ABOUT A MODEL INHERITS THE MODEL'S PROVISIONALITY.** *(Bought at §72→§73: "the connection is abelian" was exact — for the diagonal model, which was ONE READING of Arman's gift; the acceptance rewritten on it had to be reversed a day later when he ruled P0.)* ⇒ **An acceptance amended on a model-fact CARRIES THE MODEL'S NAME in its first line and is written to RETIRE with it.**
 - ⛔ **Each step's acceptance is a PERSON'S sentence, and each step is usable alone.** A step that only makes the next step possible has not been built.
 - ⛔ **Nothing here re-scopes the op-set, and nothing here writes the GIVEN register.**
 - ⚠ **The fiber's generality stays open** (the trivial and `±1` cases exist today — instance-zero is `connectionWaveInstrumentV0`, ADR 0013). The compass document's S₄-on-four-moments is the natural first rich case; **it is not chartered by this plan.**
