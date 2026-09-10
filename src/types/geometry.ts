@@ -85,6 +85,53 @@ export interface PacketLineage {
   operationId?: string;
 }
 
+// ═══ THE CONCEPT LAYER'S FIRST BYTES — `STAMP C-6TYPE`, sanctioned by Arman
+// verbatim ("sanctioned (a)", Δ75), on the coder's own price (C-6PRICE) ═════
+//
+// A CORNER of the ambo HOLDS a CAST concept-space (ADR 0031 §1.1, §5; the
+// mothership's ruling of the meaning question, claims §79.1: ADDITIVE — the
+// corner holds a cast, and a corner without one is a TRUE ABSENCE). The cast
+// is CAST OUTSIDE THE ENGINE by the mold; the engine TAKES it and never
+// writes it. Nothing in this commit reads or writes either field: this is the
+// type alone — no surface, no loader, no producer, no consumer.
+//
+// ⛔ THREE-VALUED BY CONSTRUCTION. A relation-instance is known-true,
+// known-false, or UNRECORDED — and the third is the ABSENCE of a tuple from
+// `relations`, never a stored token. A stored "unknown" would be a
+// placeholder wearing a value (positive presence); an unlisted tuple is
+// unknown, not false (MOLD v4 §2.6, §8 G2).
+// ⛔ ARITY IS ANY FINITE n, carried on the signature (MOLD §8 G1 — "arity is
+// two" was WITHDRAWN); `terms` is the tuple, and the signature says how long
+// it must be. ⛔ AXIOMS are sentences over the signature that the engine
+// CARRIES and never evaluates here. ⛔ MARKS and WARRANT are carried, NEVER
+// READ — warrant is a fact about the record, and reading it as a type would
+// individuate roles by how much someone read (MOLD §8 G3).
+export interface ConceptRole {
+  id: string;
+  label?: string; // the CASTER's word for this role — never the corner's name-slot
+  types?: Record<string, string | 'UNKNOWN'>; // arity-1 relations, declared per role or UNKNOWN
+  marks?: PacketData; // amounts, windows, substrate-indexed facts — carried, never read
+}
+
+export interface ConceptRelationType {
+  type: string;
+  arity: number; // any finite n — the tuple length `terms` must have
+}
+
+export interface ConceptRelation {
+  type: string;
+  terms: string[]; // role ids, `arity` of them
+  polarity: 'holds' | 'does-not-hold'; // the two KNOWN values; an unlisted tuple is UNRECORDED
+}
+
+export interface ConceptSpace {
+  roles: ConceptRole[];
+  signature: ConceptRelationType[];
+  relations: ConceptRelation[];
+  axioms: string[]; // quantified sentences over the signature — carried, not evaluated
+  warrant?: PacketData; // substrates seen · sources · second reader — about the RECORD
+}
+
 export interface VertexDataPacket {
   label: string;
   notes: string;
@@ -92,6 +139,14 @@ export interface VertexDataPacket {
   tags: string[];
   custom: PacketData;
   lineage?: PacketLineage;
+  // C-6TYPE: the corner HOLDS a cast. OPTIONAL because the person has not
+  // chosen one — a corner without a cast is a TRUE ABSENCE, never a default
+  // and never a placeholder, so `createDefaultVertexData` stays untouched.
+  // ⛔ Two registers side by side, never merged by the machine: `label` is the
+  // person's christening (the name-slot, ADR 0029) and the cast's own roles
+  // carry the CASTER's vocabulary. A loader that filled `label` from a file
+  // would be the machine filling the name slot — MOLD v4 §7's first refusal.
+  cast?: ConceptSpace;
 }
 
 export interface VertexCreation {
@@ -128,6 +183,21 @@ export interface ComposedRelationStamp {
   sourceVertexIds: VertexId[]; // the coarse entity's corners — this shape's own
 }
 
+// C-6TYPE — `J`, the person's identification across an edge (ADR 0031 §1.3):
+// a PARTIAL ISOMORPHISM, given by the person from the candidates the device
+// offers, NEVER machine-posited (the name-slot law at the fiber grain).
+// ⛔ SYMMETRIC BY CONSTRUCTION: ONE record per edge, read forward as `J_e` and
+// backward as `J_e⁻¹` — there is no stored reverse that could drift from its
+// own inverse (0031 §6.1). ⛔ The op-set does not bend: `J` identifies ROLES
+// inside the spaces the cells carry; the op-set identifies CELLS of the base.
+// The tetra keeps four vertices and six edges; nothing in the geometry glues.
+export interface EdgeIdentification {
+  roles: Array<[string, string]>; // role of the edge's first corner ↦ role of its second
+  types: Array<[string, string]>; // the relation-type identification τ, arity-preserving
+  support?: Record<string, number>; // per pair: the known agreements that back it
+  fiat?: string[]; // pairs the person gave with no support — marked, never hidden
+}
+
 export interface Edge {
   id: EdgeId;
   vertexIds: [VertexId, VertexId];
@@ -142,6 +212,11 @@ export interface Edge {
   // part · the shared-by record names on the kept twin
   composes?: ComposedRelationStamp;
   sharedBy?: string[];
+  // C-6TYPE: the person's `J` for this edge. OPTIONAL — an edge with none has
+  // NO identification, which is a STATE (the corners stand beside each other),
+  // not a blank; the EMPTY `J` is a given act and a later concern of the
+  // surface, not of this type.
+  identification?: EdgeIdentification;
 }
 
 export type FaceRole =
