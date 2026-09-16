@@ -46,8 +46,10 @@ import {
   elisionMark,
   faceForLetter,
   letterForKey,
+  walkKeyAct,
   windowTrace,
 } from './orderTrace';
+import type { WalkAct } from './orderTrace';
 
 interface ExploreSeam {
   open: string | null;
@@ -167,6 +169,11 @@ const RETURN_ARM = RETURN_EPS * 1.75;
 // isometries only (never the look gesture), so drift is numerical — a real
 // turn moves the trace by ≥ 1 (a 90° class); 1e-3 is three orders inside.
 const FRAME_EPS = 1e-3;
+// K-2a — THE HELD TURN KEY'S RATE: a quarter turn per second of hold, stated
+// once. The drag's angle is the person's pixels × lookSensitivity; a key has
+// no pixels, so its angle is TIME × this rate — and both land in the one
+// frame writer below, so a key and a drag write the same heading.
+const KEY_TURN_RATE = Math.PI / 2;
 
 const VS = `#version 300 es
 in vec2 p; void main(){ gl_Position=vec4(p,0.,1.); }`;
@@ -511,19 +518,11 @@ void main(){
 const m4 = (g: number[]): Float32Array =>
   new Float32Array([g[0], g[3], g[6], 0, g[1], g[4], g[7], 0, g[2], g[5], g[8], 0, g[9], g[10], g[11], 1]);
 
-const rot3 = (v: Vec3, ax: Vec3, th: number): Vec3 => {
-  const c = Math.cos(th);
-  const s = Math.sin(th);
-  return [
-    (c + ax[0] * ax[0] * (1 - c)) * v[0] + (ax[0] * ax[1] * (1 - c) - ax[2] * s) * v[1] + (ax[0] * ax[2] * (1 - c) + ax[1] * s) * v[2],
-    (ax[1] * ax[0] * (1 - c) + ax[2] * s) * v[0] + (c + ax[1] * ax[1] * (1 - c)) * v[1] + (ax[1] * ax[2] * (1 - c) - ax[0] * s) * v[2],
-    (ax[2] * ax[0] * (1 - c) - ax[1] * s) * v[0] + (ax[2] * ax[1] * (1 - c) + ax[0] * s) * v[1] + (c + ax[2] * ax[2] * (1 - c)) * v[2],
-  ];
-};
 const nrm3 = (v: Vec3): Vec3 => {
   const L = Math.hypot(v[0], v[1], v[2]) || 1;
   return [v[0] / L, v[1] / L, v[2] / L];
 };
+const neg3 = (v: Vec3): Vec3 => [-v[0], -v[1], -v[2]];
 const applyM = (g: number[], p: Vec3): Vec3 => [
   g[0] * p[0] + g[1] * p[1] + g[2] * p[2] + g[9],
   g[3] * p[0] + g[4] * p[1] + g[5] * p[2] + g[10],
@@ -897,6 +896,21 @@ export function ExploreWindow({
     let keyedLeft = 0;
     let keyedClock: number | null = null;
     let keyedCrossed = false; // the named door is behind the eye
+    // K-2a — THE HELD KEYS: which walk acts are down right now, the SIGN the
+    // walk hands the one integrator (+1 forward · −1 back · 0 none), the two
+    // turn signs, and the input clocks their integrals run on (the
+    // event-timeStamp domain, exactly as the pointer's advClock).
+    const heldActs = new Set<WalkAct>();
+    let keyWalk = 0;
+    let keyWalkClock = 0;
+    // ⚠ THE SIGN IS MEASURED, not assumed (2026-09-16, at the eye): the frame
+    // writer's POSITIVE yaw swings forward onto the carried RIGHT — the view
+    // turns right — and its positive pitch looks DOWN; so LEFT and UP are the
+    // NEGATIVE angles, applied where the rate is spent (the two rotateFrame
+    // calls below), never re-derived from the frame.
+    let keyYaw = 0; // +1 left · −1 right (the person's words; the writer's sign is applied at the call)
+    let keyPitch = 0; // +1 up · −1 down
+    let keyLookClock = 0;
 
     // the JS-side walk transport over the room's OWN faces: a portal applies
     // its deck transform (the same isometry law); a WALL stops the eye AT the
@@ -1033,15 +1047,41 @@ export function ExploreWindow({
     let advClock = 0; // ms, event-timeStamp domain — the walk's integrator
     let holdTimer: number | null = null;
     let advancing = false;
+    // K-2a — THE ONE FRAME WRITER (LAW 22: a heading is state the observer
+    // CARRIES, and one producer writes it). Every look — the drag's pixel
+    // deltas and a held turn key's swept angle — rotates the carried frame
+    // HERE, about its own up (yaw) and then its own right (pitch). There is no
+    // second heading anywhere for a key to write.
+    // ⛔ MEASURED 2026-09-16 (K-2a's LAW-22 witness in Seifert–Weber): after a
+    // PROJECTIVE door the carried frame is unit in the ROOM'S metric, not the
+    // chart's (chart norms 0.51 · 0.32 · 0.48 at one landing), and the old
+    // writer rotated with Rodrigues' formula about that non-unit axis and then
+    // renormalised in the chart — not a rotation there: a π drag turned 119°,
+    // a π key-hold 120°, the two 11.8° apart, and the up axis was rescaled.
+    // So the writer rotates WITHIN the frame's own planes — yaw in F–R, pitch
+    // in F–U — which is exact in every metric because the frame is orthonormal
+    // in the room's own metric, needs no unit axis and no renormalisation, and
+    // is the same map as before at E³ (where the frame is chart-orthonormal).
+    // The frame's handedness is untouched: nothing is re-derived, the three
+    // carried axes are only recombined in their own planes.
+    const rotateFrame = (yaw: number, pitch: number): void => {
+      const cy = Math.cos(yaw);
+      const sy = Math.sin(yaw);
+      const f1: Vec3 = [camF[0] * cy + camR[0] * sy, camF[1] * cy + camR[1] * sy, camF[2] * cy + camR[2] * sy];
+      const r1: Vec3 = [camR[0] * cy - camF[0] * sy, camR[1] * cy - camF[1] * sy, camR[2] * cy - camF[2] * sy];
+      camF = f1;
+      camR = r1;
+      const cp = Math.cos(pitch);
+      const sp = Math.sin(pitch);
+      const f2: Vec3 = [camF[0] * cp - camU[0] * sp, camF[1] * cp - camU[1] * sp, camF[2] * cp - camU[2] * sp];
+      const u2: Vec3 = [camU[0] * cp + camF[0] * sp, camU[1] * cp + camF[1] * sp, camU[2] * cp + camF[2] * sp];
+      camF = f2;
+      camU = u2;
+      lastMove = performance.now();
+    };
     const turnBy = (dxPx: number, dyPx: number): void => {
       const s = liveRef.current.lookSensitivity;
-      const dx = -dxPx * s;
-      const dy = -dyPx * s;
-      camF = nrm3(rot3(camF, camU, dx));
-      camR = nrm3(rot3(camR, camU, dx));
-      camF = nrm3(rot3(camF, camR, dy));
-      camU = nrm3(rot3(camU, camR, dy));
-      lastMove = performance.now();
+      rotateFrame(-dxPx * s, -dyPx * s);
     };
     // K-1 — THE ONE PRODUCER OF MOTION. The direction and a chart bound are
     // INPUTS now (the pointer hands `camF` and no bound — byte-identical to
@@ -1066,6 +1106,61 @@ export function ExploreWindow({
       lastMove = performance.now();
       return s;
     };
+    // K-2a — THE WALK'S CLOSE, shared by the pointer's up and a key's up: the
+    // integral is closed at the input's own TRUE time and the eye transported
+    // NOW — a starved RAF may not tick for seconds, and a release is where a
+    // walk ends whoever asked for it. The two instruments stop the same way
+    // because they stop HERE.
+    const closeWalk = (from: number, at: number, dir: Vec3 = camF): void => {
+      const before: Vec3 = [eye[0], eye[1], eye[2]];
+      advanceBy(at - from, dir);
+      transportWalk(before);
+    };
+    // === K-2a — THE HELD KEYS (Arman, verbatim: "we meant for the keyboard
+    // control to be the complete control") ===
+    // A held walk key IS the pointer's press-and-hold: it hands the one
+    // integrator a SIGN (forward +1, back −1 — the same call with the direction
+    // negated, never a second path) and its input clock; the frame below
+    // advances it exactly as it advances the pointer's hold, and the release
+    // closes it through the same closeWalk. Opposite keys held together cancel
+    // to a stop, honestly: the person is asking for both and gets neither.
+    const resolveKeyWalk = (at: number): void => {
+      const want = heldActs.has('forward') === heldActs.has('back') ? 0 : heldActs.has('forward') ? 1 : -1;
+      if (want === keyWalk) return;
+      if (keyWalk !== 0) closeWalk(keyWalkClock, at, keyWalk > 0 ? camF : neg3(camF));
+      keyWalk = want;
+      if (want !== 0) {
+        keyWalkClock = at;
+        keyedDir = null; // the hand took the wheel — the same law as the pointer's hold
+        seam.advances += 1; // an advance is an advance, whoever asked for it
+        lastMove = performance.now();
+      }
+    };
+    // A held turn key is the drag: the SAME frame writer, its angle the stated
+    // rate × input-clock time, closed at the release's true time like the walk.
+    const resolveKeyLook = (at: number): void => {
+      const yaw = heldActs.has('left') === heldActs.has('right') ? 0 : heldActs.has('left') ? 1 : -1;
+      const pitch = heldActs.has('up') === heldActs.has('down') ? 0 : heldActs.has('up') ? 1 : -1;
+      if (yaw === keyYaw && pitch === keyPitch) return;
+      const wasLooking = keyYaw !== 0 || keyPitch !== 0;
+      if (wasLooking) {
+        const dt = Math.max(0, at - keyLookClock) / 1000;
+        rotateFrame(-keyYaw * KEY_TURN_RATE * dt, -keyPitch * KEY_TURN_RATE * dt);
+      }
+      keyYaw = yaw;
+      keyPitch = pitch;
+      keyLookClock = at;
+      if (!wasLooking && (yaw !== 0 || pitch !== 0)) seam.looks += 1; // a look is a look, whoever asked
+    };
+    // A key released while the window has no focus never sends its keyup — so
+    // losing focus, or the pointer taking the wheel, RELEASES every held key at
+    // one true time, through the same two resolvers a keyup runs.
+    const releaseKeys = (at: number = performance.now()): void => {
+      if (heldActs.size === 0) return;
+      heldActs.clear();
+      resolveKeyWalk(at);
+      resolveKeyLook(at);
+    };
     // === K-1 — THE KEYBOARD WALK (Arman, 15:38, a pocket out of any queue) ===
     // The doors already know their own names. `KeyboardEvent.key` IS the trace
     // letter — 'a'…'f' for a door's own side, and shift already yields the
@@ -1081,6 +1176,20 @@ export function ExploreWindow({
       if (ev.ctrlKey || ev.altKey || ev.metaKey || ev.repeat) return;
       const el = ev.target as HTMLElement | null;
       if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+      // K-2a — THE WALK KEYS. A bound key (never a single character — the doors
+      // own the alphabet; see walkKeyAct) records a held act and lets the two
+      // resolvers hand the integrator its sign and the frame writer its rate.
+      // The press moves nothing itself; the frame below moves the eye, exactly
+      // as it does for the pointer's hold. Auto-repeats returned above.
+      const act = walkKeyAct(ev.key);
+      if (act) {
+        ev.preventDefault(); // the page never scrolls under a walk
+        if (heldActs.has(act)) return;
+        heldActs.add(act);
+        resolveKeyWalk(ev.timeStamp);
+        resolveKeyLook(ev.timeStamp);
+        return;
+      }
       // ⛔ THE MEASURED STOP (2026-09-14, three runs): in a SEALED CURVED room
       // the keyed crossing cannot be made honest at this seam. The budget a
       // press spends is the room's own width across the pairing — the two
@@ -1099,7 +1208,7 @@ export function ExploreWindow({
       if (cellSurface.model) return;
       const at = faceForLetter(cellSurface.faces, letterForKey(ev.key, ev.shiftKey));
       if (at < 0) return; // an unbound key does nothing and mints nothing — esc keeps its meaning
-      if (keyedDir || advancing) return; // one crossing at a time; a walk in flight is never queued behind
+      if (keyedDir || advancing || keyWalk !== 0) return; // one crossing at a time; a walk in flight is never queued behind
       const span = crossingSpan(cellSurface.faces, at);
       if (span <= 0) return;
       ev.preventDefault();
@@ -1111,6 +1220,14 @@ export function ExploreWindow({
       seam.advances += 1; // an advance is an advance, whoever asked for it
       lastMove = performance.now();
     };
+    const onKeyUp = (ev: KeyboardEvent): void => {
+      const act = walkKeyAct(ev.key);
+      if (!act || !heldActs.has(act)) return;
+      heldActs.delete(act);
+      resolveKeyWalk(ev.timeStamp);
+      resolveKeyLook(ev.timeStamp);
+    };
+    const onBlur = (): void => releaseKeys();
     const onDown = (ev: PointerEvent): void => {
       ev.preventDefault();
       try { canvas.setPointerCapture(ev.pointerId); } catch { /* no active pointer to capture (synthetic or already-lifted) — the gesture still runs */ }
@@ -1123,6 +1240,7 @@ export function ExploreWindow({
         mode = 'advance';
         advancing = true;
         keyedDir = null; // K-1: the hand took the wheel — the keyed remainder is not resumed
+        releaseKeys(downT + ADVANCE_HOLD_MS); // K-2a: and the held keys close at the same true time — one wheel
         seam.advances += 1;
         // the hold's input truth: the advance began one hold-window after
         // the press, even when this timer itself fired late
@@ -1170,9 +1288,7 @@ export function ExploreWindow({
         } else if (mode === 'advance' && advancing) {
           // close the walk's integral at the up's true time and transport
           // NOW — a starved RAF may not tick for seconds
-          const before: Vec3 = [eye[0], eye[1], eye[2]];
-          advanceBy(ev.timeStamp - advClock);
-          transportWalk(before);
+          closeWalk(advClock, ev.timeStamp);
         }
       }
       pressed = false;
@@ -1183,6 +1299,8 @@ export function ExploreWindow({
       try { canvas.releasePointerCapture(ev.pointerId); } catch { /* released */ }
     };
     window.addEventListener('keydown', onKey);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onBlur);
     canvas.addEventListener('pointerdown', onDown);
     canvas.addEventListener('pointermove', onMove);
     canvas.addEventListener('pointerup', onUp);
@@ -1196,10 +1314,24 @@ export function ExploreWindow({
       // hold measured 0.036 units. The transport while-loop absorbs
       // multi-door steps; the up handler closes the integral when no frame
       // lands inside the hold at all.
+      // K-2a: a held turn key sweeps the carried frame at the stated rate over
+      // input-clock time — through the ONE frame writer the drag uses — before
+      // this frame's advance, so a walk follows the heading it is being turned to
+      if (keyYaw !== 0 || keyPitch !== 0) {
+        const dt = Math.max(0, now - keyLookClock) / 1000;
+        rotateFrame(-keyYaw * KEY_TURN_RATE * dt, -keyPitch * KEY_TURN_RATE * dt);
+        keyLookClock = Math.max(keyLookClock, now);
+      }
       const beforeAdvance: Vec3 = [eye[0], eye[1], eye[2]];
       if (advancing) {
         advanceBy(now - advClock);
         advClock = Math.max(advClock, now); // a RAF stamp may predate the timer's engage — never rewind the integrator
+      } else if (keyWalk !== 0) {
+        // K-2a: a held walk key IS the pointer's hold — the same integrator, the
+        // same pace, the same clock law; BACK is the same call with the
+        // direction negated, never a second motion path (LAW 22)
+        advanceBy(now - keyWalkClock, keyWalk > 0 ? camF : neg3(camF));
+        keyWalkClock = Math.max(keyWalkClock, now);
       } else if (keyedDir) {
         // K-1: the same integrator, the same pace, bounded by what is left of
         // the room's own width across this door's pairing. The clock starts at
@@ -1380,6 +1512,8 @@ export function ExploreWindow({
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', fitLog);
       window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);
@@ -1548,8 +1682,14 @@ export function ExploreWindow({
         style={{ marginTop: 1, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.45, minHeight: 15 }}
       />
       <div style={{ marginTop: 3, fontSize: 10.5, opacity: 0.55 }}>
-        drag — look around · press and hold — walk forward · press a door's letter — cross it, shift for the other way · the
-        hatch settles in when you stand still · esc returns to the shell
+        {/* K-2a: the gesture line states EVERY act the window offers here — the
+            keyboard's acts first, the pointer's beside them — and it is true
+            per room: in a sealed curved room the door letters REST (the
+            measured stop of K-1) while the walk keys do not, because a held
+            key is the pointer's own hold on the same integrator. */}
+        {cellSurface.model
+          ? '↑/↓ — walk forward and back · ←/→ — turn · PgUp/PgDn — look up and down · the door letters rest in this curved room, the walk keys do not · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell'
+          : "↑/↓ — walk forward and back · ←/→ — turn · PgUp/PgDn — look up and down · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell"}
       </div>
     </div>
   );

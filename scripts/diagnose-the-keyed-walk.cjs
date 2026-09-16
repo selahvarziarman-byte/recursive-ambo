@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// DIAGNOSTIC — THE KEYBOARD WALK (STAMP K-1, Arman verbatim through the
+// DIAGNOSTIC — THE KEYBOARD WALK (STAMP K-1 + STAMP K-2a §5, Arman verbatim through the
 // mothership 2026-09-10 15:40: *"no i myself want the keyboard control in… a
 // pocket implementation for this one issue only"*).
 //
@@ -126,7 +126,7 @@ check('§3 the letter is not re-spelled in the view: `doorLetter` is IMPORTED fr
 check('§3 the guards stand: the browser\'s own chords pass through, an auto-repeat is not a second press, a focused text field keeps its keys, and a walk in flight is never queued behind',
   keyHandler.includes('ev.ctrlKey || ev.altKey || ev.metaKey || ev.repeat') &&
     keyHandler.includes('faceForLetter(cellSurface.faces, letterForKey(ev.key, ev.shiftKey))') &&
-    keyHandler.includes("el.tagName === 'INPUT'") && keyHandler.includes('if (keyedDir || advancing) return;'));
+    keyHandler.includes("el.tagName === 'INPUT'") && keyHandler.includes('if (keyedDir || advancing || keyWalk !== 0) return;'));
 check('§3 the hand takes the wheel: engaging the pointer\'s hold drops a keyed crossing in flight rather than integrating two directions at once',
   viewSrc.includes("keyedDir = null; // K-1: the hand took the wheel"));
 check('§3 ★ ONE PRESS IS ONE CROSSING: once the named door is behind the eye the remaining width is clamped SHORT of the next door\'s plane, read off the SAME plane test the transport reads — the width is a budget, never a licence to fall through a second door',
@@ -139,10 +139,58 @@ check('§3 …and the heading is CARRIED through a door like the frame, in both 
     viewSrc.includes('if (keyedDir) keyedDir = nrm3(applyRot(g, keyedDir));'));
 
 console.log('\n----- §4 the gesture is STATED where the panel already states its gestures -----');
-check('§4 the walk panel\'s own line names the keys — one clause added to the line that already carries drag · hold · esc (a gesture the app states nowhere is a design failure)',
-  /drag — look around · press and hold — walk forward · press a door's letter — cross it, shift for the other way/.test(
+check('§4 the walk panel\'s own line names the letter act and keeps the pointer\'s acts beside it (K-2a rewrote the line as the keyboard\'s — §5 pins it whole; a gesture the app states nowhere is a design failure)',
+  /a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward/.test(
     viewSrc.replace(/\s+/g, ' '),
   ));
 
-console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-KEYED-WALK: ALL PASS — the key addresses a door by its own name, and one producer moves the eye' : `DIAGNOSE-THE-KEYED-WALK: ${failures} FAILURE(S)`}`);
+console.log('\n----- §5 ★★ STAMP K-2a — THE COMPLETE KEYBOARD WALK: everything the pointer does, by keys, on the SAME producers -----');
+const { walkKeyAct, WALK_KEYS } = req('src/manuscript/orderTrace.ts');
+check('§5 ★ THE BINDING TABLE, RUN: ↑ walks forward · ↓ back · ← turns left · → right · PgUp looks up · PgDn down — six acts, six keys, stated once in orderTrace',
+  walkKeyAct('ArrowUp') === 'forward' && walkKeyAct('ArrowDown') === 'back' && walkKeyAct('ArrowLeft') === 'left' &&
+    walkKeyAct('ArrowRight') === 'right' && walkKeyAct('PageUp') === 'up' && walkKeyAct('PageDown') === 'down' && WALK_KEYS.length === 6);
+const alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -=[];\',./`'.split('');
+check('§5 ★★ THE ALPHABET IS THE DOORS\' — BY CONSTRUCTION: every single-character key (all 52 letters, the digits, the symbols) is refused as a walk key before the table is read, so no room of up to 26 pairings can ever have a door and a walk act on one key. W/A/S/D in particular: `a` is door 0 in EVERY room and `d`/`e` are doors in a six-pairing room — measured, and why the mandate\'s second spelling is not bound',
+  alphabet.every((k) => walkKeyAct(k) === null) && ['w', 'a', 's', 'd', 'W', 'A', 'S', 'D', 'q', 'e'].every((k) => walkKeyAct(k) === null));
+check('§5 …and the doors keep their letters untouched: `a` still addresses face 0 of the T³ fixture and shift still means the inverse (K-1 as landed)',
+  faceForLetter(T3, letterForKey('a', false)) === 0 && faceForLetter(T3, letterForKey('a', true)) === 1);
+check('§5 LAW 24 — the table can refuse: Escape, Shift, Enter, Space, Tab, Home, End and the unbound function keys walk nothing (esc keeps its meaning)',
+  ['Escape', 'Shift', 'Enter', ' ', 'Tab', 'Home', 'End', 'F5', 'Control', 'Alt', 'Meta', ''].every((k) => walkKeyAct(k) === null));
+check('§5 ★★ STILL ONE MOTION SITE: the held walk added no eye assignment — `advanceBy` is the only place outside the transport that moves the eye, for the pointer\'s hold, the held key AND the letter alike',
+  (viewSrc.match(/eye = \[eye\[0\] \+ /g) ?? []).length === 1);
+check('§5 ★★ THE HELD KEY IS THE POINTER\'S HOLD: the frame integrates it through the same call on the same clock law — forward hands `camF`, BACK hands the SAME call the negated direction (never a second path) — and the pointer\'s own line is byte-unchanged',
+  viewSrc.includes('advanceBy(now - keyWalkClock, keyWalk > 0 ? camF : neg3(camF));') &&
+    viewSrc.includes('keyWalkClock = Math.max(keyWalkClock, now);') &&
+    /        advanceBy\(now - advClock\);\r?\n        advClock = Math\.max\(advClock, now\);/.test(viewSrc));
+check('§5 ★★ ONE CLOSE FOR BOTH INSTRUMENTS: the pointer\'s up and a key\'s up end a walk through the same `closeWalk` (the integral to the release\'s TRUE time, then the transport) — `transportWalk` has exactly two callers: the frame and that close',
+  viewSrc.includes('closeWalk(advClock, ev.timeStamp);') &&
+    viewSrc.includes('if (keyWalk !== 0) closeWalk(keyWalkClock, at, keyWalk > 0 ? camF : neg3(camF));') &&
+    (viewSrc.match(/transportWalk\(/g) ?? []).length === 2,
+  `transportWalk call sites: ${(viewSrc.match(/transportWalk\(/g) ?? []).length}`);
+check("§5 ★★ ONE FRAME WRITER (LAW 22): the drag and the held turn key both rotate the carried frame through `rotateFrame`, and it rotates WITHIN the frame's own planes (yaw in F–R, pitch in F–U) — exact in every metric because the frame is orthonormal in the room's own metric; no Rodrigues axis and no chart renormalisation remain in the view (measured 2026-09-16: after a projective door the old axis-rotation turned a π drag 119° and a π key-hold 120°, 11.8° apart)",
+  viewSrc.includes('const rotateFrame = (yaw: number, pitch: number): void => {') &&
+    viewSrc.includes('const f1: Vec3 = [camF[0] * cy + camR[0] * sy, camF[1] * cy + camR[1] * sy, camF[2] * cy + camR[2] * sy];') &&
+    viewSrc.includes('const u2: Vec3 = [camU[0] * cp + camF[0] * sp, camU[1] * cp + camF[1] * sp, camU[2] * cp + camF[2] * sp];') &&
+    !/rot3\(/.test(viewSrc) && !/nrm3\(rot3\(/.test(viewSrc) &&
+    viewSrc.includes('rotateFrame(-dxPx * s, -dyPx * s);'));
+check('§5 ★ THE SIGN IS MEASURED: left and up are the NEGATIVE angles at the writer (a +90° yaw was sighted turning the view RIGHT, a +90° pitch looking DOWN), applied at both spends — the frame\'s sweep and the release\'s close',
+  (viewSrc.match(/rotateFrame\(-keyYaw \* KEY_TURN_RATE \* dt, -keyPitch \* KEY_TURN_RATE \* dt\);/g) ?? []).length === 2 &&
+    viewSrc.includes('const KEY_TURN_RATE = Math.PI / 2;'));
+check('§5 a RELEASE ends the walk as the pointer\'s does: keyup is listened for and removed with keydown; and losing focus RELEASES every held key (a key let go while the window has no focus never sends its keyup) — the pointer\'s hold taking the wheel releases them at the hold\'s true time too',
+  viewSrc.includes("window.addEventListener('keyup', onKeyUp);") && viewSrc.includes("window.removeEventListener('keyup', onKeyUp);") &&
+    viewSrc.includes("window.addEventListener('blur', onBlur);") && viewSrc.includes("window.removeEventListener('blur', onBlur);") &&
+    viewSrc.includes('releaseKeys(downT + ADVANCE_HOLD_MS);'));
+const keyHandler5 = viewSrc.slice(viewSrc.indexOf('const onKey = (ev: KeyboardEvent)'), viewSrc.indexOf('const onKeyUp = (ev: KeyboardEvent)'));
+check('§5 the key handler still moves nothing itself: a bound key records a held act and hands the two resolvers its time — no eye assignment, no transport, no trace write in the handler; the walk keys are read BEFORE the letters and never as a letter',
+  keyHandler5.length > 0 && !/\beye\s*=/.test(keyHandler5) && !keyHandler5.includes('transportWalk') && !keyHandler5.includes('seam.trace') &&
+    keyHandler5.indexOf('const act = walkKeyAct(ev.key);') < keyHandler5.indexOf('faceForLetter(cellSurface.faces') &&
+    keyHandler5.includes('if (keyedDir || advancing || keyWalk !== 0) return;'));
+check('§5 NO INSTRUMENT TAG, still: the seam carries no keyed/instrument field and the trace is written at the two crossing sites only',
+  !/seam\.(keyed|instrument|inputSource|bySource|byKeyboard|viaKey|heldKey)/.test(viewSrc) &&
+    (viewSrc.match(/seam\.trace \+= doorLetter\(/g) ?? []).length === 2);
+const flat = viewSrc.replace(/\s+/g, ' ');
+check('§5 ★ THE LINE IS TRUE AND COMPLETE, per room: in a flat room every bound key is named with its act and the letters offered; in a sealed curved room the SAME line says the door letters REST and the walk keys do not — the line is keyed on the room\'s own carried mark',
+  /\{cellSurface\.model \? '↑\/↓ — walk forward and back · ←\/→ — turn · PgUp\/PgDn — look up and down · the door letters rest in this curved room, the walk keys do not · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell' : "↑\/↓ — walk forward and back · ←\/→ — turn · PgUp\/PgDn — look up and down · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell"\}/.test(flat));
+
+console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-KEYED-WALK: ALL PASS — the key addresses a door by its own name, the held keys walk and turn on the pointer\'s own producers, and one producer moves the eye' : `DIAGNOSE-THE-KEYED-WALK: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

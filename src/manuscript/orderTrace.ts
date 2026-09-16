@@ -120,3 +120,40 @@ export function crossingSpan(faces: readonly LetteredFace[], index: number): num
   }
   return 2 * face.d;
 }
+
+// ═══ STAMP K-2a — THE WALK KEYS (Arman, verbatim: "we meant for the keyboard
+// control to be the complete control") ═══════════════════════════════════════
+// Everything the pointer does, by keys: WALK forward/back while held, TURN
+// left/right and LOOK up/down while held. The table is stated ONCE, here,
+// beside the letter rule, so the view, the panel line and the witness read
+// one vocabulary.
+//
+// ⛔ THE ALPHABET IS THE DOORS'. K-1 gave every door its letter — side a in
+// lowercase, the inverse a capital — and the doors are numbered from `a`, so
+// `a` is a door in EVERY room and `d`/`e` are doors in every six-pairing room
+// (Seifert–Weber, Poincaré). A walk bound to W/A/S/D would cross door `a` when
+// the hand meant to turn left. So a walk key is NEVER a single character, BY
+// CONSTRUCTION (`walkKeyAct` refuses one before it reads the table): the walk
+// keys are the arrows and the page keys, and no room of up to 26 pairings can
+// ever have a door and a walk act share a key. Both spellings of "forward" the
+// mandate named would have needed a letter; the measurement above is why the
+// table carries one spelling, named in the panel line.
+export type WalkAct = 'forward' | 'back' | 'left' | 'right' | 'up' | 'down';
+
+export const WALK_KEYS: ReadonlyArray<readonly [key: string, act: WalkAct]> = [
+  ['ArrowUp', 'forward'],
+  ['ArrowDown', 'back'],
+  ['ArrowLeft', 'left'],
+  ['ArrowRight', 'right'],
+  ['PageUp', 'up'],
+  ['PageDown', 'down'],
+];
+
+/** The walk act a key is bound to, or null. `KeyboardEvent.key` is the input;
+ * a single character (any letter, digit or symbol) is refused before the table
+ * is read — the doors own the alphabet. */
+export function walkKeyAct(key: string): WalkAct | null {
+  if (key.length === 1) return null;
+  for (const [bound, act] of WALK_KEYS) if (bound === key) return act;
+  return null;
+}
