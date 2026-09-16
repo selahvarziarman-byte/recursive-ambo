@@ -71,9 +71,17 @@ export const modelOrthonormalise = (model: WalkModel, k: Vec3, axes: Vec3[]): Ve
 export const frameAt = (model: WalkModel | null | undefined, k: Vec3, axes: Vec3[]): Vec3[] =>
   model ? modelOrthonormalise(model, k, axes) : axes.map((a) => [a[0], a[1], a[2]] as Vec3);
 
-/** THE METRE at the seam — the true distance between two chart points */
-export const walkDistance = (model: WalkModel | null | undefined, a: Vec3, b: Vec3): number =>
-  chartDistance(model ?? 'E3', a, b);
+/** THE METRE at the seam — the true distance between two chart points. OFF
+ * THE BALL there is no honest metric and the chart's own length is returned
+ * (the inner product's own law) — the walk's frame must never die on a
+ * throw: measured 2026-09-16, a starved-frame runaway put the eye outside the
+ * Klein ball, the metre threw, and the frame loop ended for good. */
+export const walkDistance = (model: WalkModel | null | undefined, a: Vec3, b: Vec3): number => {
+  if (model === 'H3' && (dot3(a, a) >= 1 - 1e-9 || dot3(b, b) >= 1 - 1e-9)) {
+    return Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+  }
+  return chartDistance(model ?? 'E3', a, b);
+};
 
 // the quadric lift of a chart point and of a chart tangent at it —
 //   H³ (Klein):    X = (k, 1)·s, s = 1/√(1−k·k), ⟨X,X⟩ = −1 (Minkowski, w time-like)
