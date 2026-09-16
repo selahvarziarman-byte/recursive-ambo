@@ -37,11 +37,24 @@ import type { Vec3 } from '../types/geometry';
 import type { ApertureCellSurface } from './apertureModel';
 // B-114 — the orientation of a projective door is its 4×4 determinant
 import { mat4Det } from '../lib/noncubeDomain';
+// K-1e — the walk's own metric: transport along a leg, carriage through a door,
+// the true distance, the frame angle. One producer, run by the witness too.
+import {
+  affinePoint,
+  affineVector,
+  frameAngleDeg,
+  frameAt,
+  modelIP,
+  modelOrthonormalise,
+  projectiveDirection,
+  projectivePoint,
+  transportAlong,
+  walkDistance,
+} from './walkMetric';
 import {
   LONGEST_CANCEL_SENTENCE,
   TRACE_WINDOW,
   cancelSentence,
-  crossingSpan,
   doorLetter,
   elisionMark,
   faceForLetter,
@@ -102,6 +115,13 @@ interface ExploreSeam {
   faceMark: number[];
   // the sentence as printed (null = silent), for the seam's own witnesses
   sentence: string | null;
+  // K-1e — THE LAST PRESS: the letter pressed (the ACT), the letters actually
+  // crossed (the trace's own word for it), the true length of the period
+  // d(p, g·p) (the currency, LAW 23) and the true length the integrator walked
+  press: { letter: string; word: string; length: number; walked: number } | null;
+  // K-1e addendum — the last return's frame holonomy in degrees (null when the
+  // frame came back mirrored — a fold is never named a rotation)
+  returnTurnDeg: number | null;
   // the camera frame's other two axes (beside `forward`) and the room's faces
   // with their door letters — witness seams for a driver that must aim
   right: Vec3 | null;
@@ -143,6 +163,8 @@ const seamOf = (): ExploreSeam => {
       traceHidden: 0,
       faceMark: new Array<number>(16).fill(0),
       sentence: null,
+      press: null,
+      returnTurnDeg: null,
       right: null,
       up: null,
       faces: [],
@@ -523,68 +545,8 @@ const nrm3 = (v: Vec3): Vec3 => {
   return [v[0] / L, v[1] / L, v[2] / L];
 };
 const neg3 = (v: Vec3): Vec3 => [-v[0], -v[1], -v[2]];
-const applyM = (g: number[], p: Vec3): Vec3 => [
-  g[0] * p[0] + g[1] * p[1] + g[2] * p[2] + g[9],
-  g[3] * p[0] + g[4] * p[1] + g[5] * p[2] + g[10],
-  g[6] * p[0] + g[7] * p[1] + g[8] * p[2] + g[11],
-];
-const applyRot = (g: number[], v: Vec3): Vec3 => [
-  g[0] * v[0] + g[1] * v[1] + g[2] * v[2],
-  g[3] * v[0] + g[4] * v[1] + g[5] * v[2],
-  g[6] * v[0] + g[7] * v[1] + g[8] * v[2],
-];
 const det3of = (g: number[]): number =>
   g[0] * (g[4] * g[8] - g[5] * g[7]) - g[1] * (g[3] * g[8] - g[5] * g[6]) + g[2] * (g[3] * g[7] - g[4] * g[6]);
-
-// ═══ B-114 — THE PERSON'S CARRIED FRAME THROUGH A PROJECTIVE DOOR ═══════════
-// ⛔ THIS IS THE PART THAT IS NOT A TRANSLATION. `applyRot` is correct only
-// because an affine door's linear part is the SAME map at every point. Under
-// a projective door a direction's transport DEPENDS ON THE BASE POINT — the
-// differential of chart∘M at k. That differential is exactly `pushChartRay`'s
-// direction formula, so the carry is not invented here; what IS new is that
-// the frame must be re-orthonormalised in THE MODEL's inner product, because
-// three chart vectors that were orthonormal at the old point are not
-// orthonormal at the new one.
-// ⛔ LAW 22: HANDEDNESS IS STATE THE OBSERVER CARRIES, and the window's mirror
-// reading is pinned on this frame. So the orthonormalisation is GRAM–SCHMIDT
-// IN ORDER (forward first, then right, then up), which preserves the frame's
-// handedness by construction — it can rotate the frame, never reflect it. The
-// only thing that may flip the mirror is a door whose own 4×4 determinant is
-// negative, which is exactly what the reading means. ⇒ The mirror reading's
-// MEANING is unchanged; only the arithmetic that carries the frame is.
-const modelIP = (model: 'S3' | 'H3', k: Vec3, a: Vec3, b: Vec3): number => {
-  // the tangent-space inner product at chart point k, pulled back from the
-  // quadric: ⟨da, db⟩ where a chart displacement da at k lifts to (da, 0)
-  // corrected by the radial part — for the Klein/gnomonic charts this is
-  //   H³: (a·b)/(1−k·k) + (k·a)(k·b)/(1−k·k)²
-  //   S³: (a·b)/(1+k·k) − (k·a)(k·b)/(1+k·k)²
-  const kk = k[0] * k[0] + k[1] * k[1] + k[2] * k[2];
-  const ab = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-  const ka = k[0] * a[0] + k[1] * a[1] + k[2] * a[2];
-  const kb = k[0] * b[0] + k[1] * b[1] + k[2] * b[2];
-  if (model === 'H3') {
-    const s = 1 - kk;
-    if (s < 1e-9) return ab; // off the ball — no honest metric; the chart's own
-    return ab / s + (ka * kb) / (s * s);
-  }
-  const s = 1 + kk;
-  return ab / s - (ka * kb) / (s * s);
-};
-
-/** Gram–Schmidt in the model's metric, IN ORDER — rotates, never reflects. */
-const modelOrthonormalise = (model: 'S3' | 'H3', k: Vec3, axes: Vec3[]): Vec3[] => {
-  const out: Vec3[] = [];
-  for (const raw of axes) {
-    let v: Vec3 = [raw[0], raw[1], raw[2]];
-    for (const done of out) {
-      const c = modelIP(model, k, v, done);
-      v = [v[0] - c * done[0], v[1] - c * done[1], v[2] - c * done[2]];
-    }
-    const nn = Math.sqrt(Math.max(1e-12, modelIP(model, k, v, v)));
-    out.push([v[0] / nn, v[1] / nn, v[2] / nn]);
-  }
-  return out;
-};
 
 /** THE CELL PACK (DOOR-FEED partial): the room's own surface → the shader's
  * uniform arrays — per-face plane + wall flag + portal transform (exiting
@@ -689,6 +651,7 @@ export function ExploreWindow({
   const captionRef = useRef<HTMLDivElement | null>(null);
   const returnRef = useRef<HTMLDivElement | null>(null);
   const prevReturnRef = useRef<HTMLDivElement | null>(null);
+  const pressRef = useRef<HTMLDivElement | null>(null); // K-1e
   // B-2 THE ORDER-READING SURFACE — the three lines' DOM handles (written
   // imperatively like the return line: no re-render per crossing) and the
   // way-back marks as the shader receives them (uploaded per frame)
@@ -724,6 +687,8 @@ export function ExploreWindow({
     seam.traceHidden = 0;
     seam.faceMark = new Array<number>(16).fill(0);
     seam.sentence = null;
+    seam.press = null;
+    seam.returnTurnDeg = null;
     // B-2 (a witness seam, the drive family's idiom): the room's faces with
     // their door letters, so a headless driver can AIM at a marked door the
     // way a person does by sight — nothing in the app reads this
@@ -880,6 +845,17 @@ export function ExploreWindow({
     let deckF: Vec3 = [1, 0, 0];
     let deckR: Vec3 = [0, 1, 0];
     let deckU: Vec3 = [0, 0, 1];
+    // K-1e addendum: in a sealed curved room both frames are orthonormal in
+    // the ROOM'S metric from the first frame (at E³ this is the identity), so
+    // the first door does not change what "unit" means and the deck frame's
+    // return comparison is a comparison of two frames of the same metric.
+    if (cellSurface.model) {
+      [camF, camR, camU] = frameAt(cellSurface.model, eye, [camF, camR, camU]);
+      [deckF, deckR, deckU] = frameAt(cellSurface.model, eye, [deckF, deckR, deckU]);
+    }
+    // the deck frame's ENTRY value — the reference every return is read against,
+    // parallel-transported to wherever the return fires (K-1e addendum)
+    const entryDeck: Vec3[] = [[...deckF] as Vec3, [...deckR] as Vec3, [...deckU] as Vec3];
     // the entry POSITION + the return hysteresis: the announcement arms only
     // after the person walks OUT of the entry ball (else standing at the
     // start would fire it at once), and fires on each re-entry (position-
@@ -890,12 +866,11 @@ export function ExploreWindow({
     let raf = 0;
     let disposed = false;
 
-    // K-1's carried heading — declared with the walk's own state because the
-    // transport CARRIES it through a door exactly as it carries the frame
-    let keyedDir: Vec3 | null = null;
-    let keyedLeft = 0;
-    let keyedClock: number | null = null;
-    let keyedCrossed = false; // the named door is behind the eye
+    // K-1e — THE PRESS IN FLIGHT: one period of the named door's deck element,
+    // walked by the one integrator toward `target` = g·p, the target CARRIED
+    // through every fold exactly as the eye is (after the last fold it is p
+    // itself), the letters crossed collected as the press's own word.
+    let press: { letter: string; target: Vec3; word: string; length: number; walked: number; clock: number | null } | null = null;
     // K-2a — THE HELD KEYS: which walk acts are down right now, the SIGN the
     // walk hands the one integrator (+1 forward · −1 back · 0 none), the two
     // turn signs, and the input clocks their integrals run on (the
@@ -971,15 +946,8 @@ export function ExploreWindow({
             g4[12] * eye[0] + g4[13] * eye[1] + g4[14] * eye[2] + g4[15],
           ];
           if (Math.abs(K[3]) < 1e-9) break; // the chart horizon — the eye stops, never a fabricated place
-          const push = (v: Vec3): Vec3 => {
-            const W = [
-              g4[0] * v[0] + g4[1] * v[1] + g4[2] * v[2],
-              g4[4] * v[0] + g4[5] * v[1] + g4[6] * v[2],
-              g4[8] * v[0] + g4[9] * v[1] + g4[10] * v[2],
-              g4[12] * v[0] + g4[13] * v[1] + g4[14] * v[2],
-            ];
-            return [W[0] * K[3] - K[0] * W[3], W[1] * K[3] - K[1] * W[3], W[2] * K[3] - K[2] * W[3]];
-          };
+          const at: Vec3 = [eye[0], eye[1], eye[2]];
+          const push = (v: Vec3): Vec3 => projectiveDirection(g4, at, v);
           const pushedCam = [push(camF), push(camR), push(camU)];
           const pushedDeck = [push(deckF), push(deckR), push(deckU)];
           eye = [K[0] / K[3], K[1] / K[3], K[2] / K[3]];
@@ -989,12 +957,14 @@ export function ExploreWindow({
           const camN = modelOrthonormalise(model, eye, pushedCam);
           const deckN = modelOrthonormalise(model, eye, pushedDeck);
           camF = camN[0]; camR = camN[1]; camU = camN[2];
-          // K-1: a keyed walk's DIRECTION is carried through the door exactly
-          // as the frame is — LAW 22, a heading is state the observer CARRIES.
-          // Without this the walk kept a chart direction the door had already
-          // turned, and in a curved room it re-crossed one pair over and over
-          // (measured 2026-09-10: `DdDdDdDd…`, the eye run out past |12|).
-          if (keyedDir) keyedDir = nrm3(push(keyedDir));
+          // K-1e: the press's TARGET folds with the eye — the same door, the
+          // same map — so after the last fold it is the point the press began
+          // at, and the straight chart line to it is still the geodesic.
+          if (press) {
+            const carried = projectivePoint(g4, press.target);
+            if (carried) press.target = carried;
+            else press = null; // the horizon — the press stops, never a fabricated place
+          }
           deckF = deckN[0]; deckR = deckN[1]; deckU = deckN[2];
           prev = eye;
           seam.doors += 1;
@@ -1009,14 +979,14 @@ export function ExploreWindow({
         // other, and the model branch consumed g4 — so this is the affine one
         const g = face.g;
         if (!g) break;
-        eye = applyM(g, eye);
-        camF = applyRot(g, camF);
-        camR = applyRot(g, camR);
-        camU = applyRot(g, camU);
-        deckF = applyRot(g, deckF);
-        deckR = applyRot(g, deckR);
-        deckU = applyRot(g, deckU);
-        if (keyedDir) keyedDir = nrm3(applyRot(g, keyedDir)); // K-1: the heading is carried (see the projective branch)
+        eye = affinePoint(g, eye);
+        camF = affineVector(g, camF);
+        camR = affineVector(g, camR);
+        camU = affineVector(g, camU);
+        deckF = affineVector(g, deckF);
+        deckR = affineVector(g, deckR);
+        deckU = affineVector(g, deckU);
+        if (press) press.target = affinePoint(g, press.target); // K-1e: the target folds with the eye
         // the next guard iteration's segment starts at the LANDED point —
         // with prev == eye a bounded face cannot re-fire without a real move
         prev = eye;
@@ -1102,7 +1072,19 @@ export function ExploreWindow({
       const model = cellSurface.model;
       const raw = model ? step / Math.sqrt(Math.max(1e-12, modelIP(model, eye, dir, dir))) : step;
       const s = Math.min(raw, maxChart);
+      const from: Vec3 = [eye[0], eye[1], eye[2]];
       eye = [eye[0] + dir[0] * s, eye[1] + dir[1] * s, eye[2] + dir[2] * s];
+      // K-1e addendum — ALONG A LEG THE FRAMES ARE PARALLEL-TRANSPORTED in the
+      // room's own metric, here, at the one motion site, so every instrument's
+      // walk carries them the same way (at E³ the transport is the identity).
+      if (model && s > 0) {
+        camF = transportAlong(model, from, eye, camF);
+        camR = transportAlong(model, from, eye, camR);
+        camU = transportAlong(model, from, eye, camU);
+        deckF = transportAlong(model, from, eye, deckF);
+        deckR = transportAlong(model, from, eye, deckR);
+        deckU = transportAlong(model, from, eye, deckU);
+      }
       lastMove = performance.now();
       return s;
     };
@@ -1131,7 +1113,7 @@ export function ExploreWindow({
       keyWalk = want;
       if (want !== 0) {
         keyWalkClock = at;
-        keyedDir = null; // the hand took the wheel — the same law as the pointer's hold
+        press = null; // the hand took the wheel — the same law as the pointer's hold
         seam.advances += 1; // an advance is an advance, whoever asked for it
         lastMove = performance.now();
       }
@@ -1190,33 +1172,41 @@ export function ExploreWindow({
         resolveKeyLook(ev.timeStamp);
         return;
       }
-      // ⛔ THE MEASURED STOP (2026-09-14, three runs): in a SEALED CURVED room
-      // the keyed crossing cannot be made honest at this seam. The budget a
-      // press spends is the room's own width across the pairing — the two
-      // plane offsets, a CHART quantity — and in E³ that is the true width, so
-      // the walk covers exactly one period and the crossing is exact. In S³/H³
-      // it is not: the walk's own record carries the geometry MARK alone
-      // (`cellSurface.model`, 'S3' | 'H3' — the realization's inradius is not
-      // at this seam), and a chart-straight line of chart length is not a
-      // geodesic there. Measured in Seifert–Weber: one press spent its width
-      // across 8, then 11, then 16 doors, the eye run past |12| and the
-      // transport left ping-ponging across one pair. So the letter is REFUSED
-      // in a curved room rather than minting crossings the person did not
-      // make — the same law as an unbound key: nothing happens, nothing is
-      // minted. ⚠ REPORTED: the curved half of K-1's acceptance is UNMET and
-      // needs the realization at the seam (a measurement, not a fork).
-      if (cellSurface.model) return;
+      // ═══ K-1e — THE LETTER-PRESS IS ONE PERIOD (the researcher's ruling K-1d,
+      // on 1,476 periods in the engine's own chart; the mothership's stamp).
+      // A press of door X at p traverses the geodesic p → g·p, g the deck
+      // element ENTERED through X — which is the PARTNER face's own map (the
+      // face carries M, its partner M⁻¹; crossing X applies M, so the cell
+      // beyond X is M⁻¹·D). The target is CARRIED through every fold exactly
+      // as the eye is, so after the last fold it is p itself; the walk is the
+      // one integrator, bounded by the chart distance to the target (a straight
+      // chart line is the geodesic in the Klein and gnomonic charts); the trace
+      // is the doors actually crossed; the currency is d(p, g·p), true. In a
+      // box this IS the normal (K-1's T³ seal stands, byte-identical); in
+      // Seifert–Weber the period leaves through the named face from every
+      // point; in the Poincaré cell it may write a word of 2–3 letters —
+      // written honestly, never refused, never re-aimed. The curved-room REST
+      // of K-1 is lifted: the letters work in every room.
       const at = faceForLetter(cellSurface.faces, letterForKey(ev.key, ev.shiftKey));
       if (at < 0) return; // an unbound key does nothing and mints nothing — esc keeps its meaning
-      if (keyedDir || advancing || keyWalk !== 0) return; // one crossing at a time; a walk in flight is never queued behind
-      const span = crossingSpan(cellSurface.faces, at);
-      if (span <= 0) return;
+      if (press || advancing || keyWalk !== 0) return; // one period at a time; a walk in flight is never queued behind
+      const named = cellSurface.faces[at];
+      const partner = named.door
+        ? cellSurface.faces.find((f) => f.door && f.door.pair === named.door!.pair && f.door.side !== named.door!.side)
+        : undefined;
+      if (!partner) return; // a door without a partner has no deck element — nothing to traverse
+      const target = cellSurface.model && partner.g4 ? projectivePoint(partner.g4, eye) : partner.g ? affinePoint(partner.g, eye) : null;
+      if (!target) return; // the horizon, or a face with no map — nothing is minted
+      if (Math.hypot(target[0] - eye[0], target[1] - eye[1], target[2] - eye[2]) < 1e-9) return; // a fixed point — no period to walk
       ev.preventDefault();
-      const n = cellSurface.faces[at].n;
-      keyedDir = [n[0], n[1], n[2]];
-      keyedLeft = span;
-      keyedClock = null; // the walk's clock starts at the frame that carries it
-      keyedCrossed = false;
+      press = {
+        letter: letterForKey(ev.key, ev.shiftKey),
+        target,
+        word: '',
+        length: walkDistance(cellSurface.model, eye, target),
+        walked: 0,
+        clock: null, // the walk's clock starts at the frame that carries it
+      };
       seam.advances += 1; // an advance is an advance, whoever asked for it
       lastMove = performance.now();
     };
@@ -1239,7 +1229,7 @@ export function ExploreWindow({
         if (!pressed || mode !== 'undecided') return;
         mode = 'advance';
         advancing = true;
-        keyedDir = null; // K-1: the hand took the wheel — the keyed remainder is not resumed
+        press = null; // K-1: the hand took the wheel — the period's remainder is not resumed
         releaseKeys(downT + ADVANCE_HOLD_MS); // K-2a: and the held keys close at the same true time — one wheel
         seam.advances += 1;
         // the hold's input truth: the advance began one hold-window after
@@ -1332,37 +1322,48 @@ export function ExploreWindow({
         // direction negated, never a second motion path (LAW 22)
         advanceBy(now - keyWalkClock, keyWalk > 0 ? camF : neg3(camF));
         keyWalkClock = Math.max(keyWalkClock, now);
-      } else if (keyedDir) {
-        // K-1: the same integrator, the same pace, bounded by what is left of
-        // the room's own width across this door's pairing. The clock starts at
-        // the frame that carries the walk, so a starved first frame cannot
-        // spend the whole crossing in one step and rob the walk of its travel.
-        if (keyedClock === null) keyedClock = now;
-        // ⛔ ONE PRESS IS ONE CROSSING. Once the named door is behind the eye,
-        // what remains of the width is clamped SHORT of the next door's own
-        // plane: the width is a budget, never a licence to fall through a
-        // second door. (Measured 2026-09-14 before this clamp: in the sealed
-        // hyperbolic room one press spent its width across eight doors,
-        // because a chart-straight line there is not a geodesic and the walk
-        // kept finding new planes. The clamp reads the SAME plane test the
-        // transport reads, so the two cannot disagree about where a door is.)
-        if (keyedCrossed) {
-          let ahead = Infinity;
-          for (const f of cellSurface.faces) {
-            const dn = keyedDir[0] * f.n[0] + keyedDir[1] * f.n[1] + keyedDir[2] * f.n[2];
-            if (dn <= 1e-9) continue;
-            const t = (f.d - (eye[0] * f.n[0] + eye[1] * f.n[1] + eye[2] * f.n[2])) / dn;
-            if (t >= 0 && t < ahead) ahead = t;
-          }
-          if (ahead < Infinity) keyedLeft = Math.min(keyedLeft, Math.max(0, ahead - 1e-3));
+      } else if (press) {
+        // K-1e: the same integrator, the same pace, bounded by the chart
+        // distance to the carried target — the last step lands ON it. The
+        // clock starts at the frame that carries the walk, so a starved first
+        // frame cannot spend the whole period in one step.
+        if (press.clock === null) press.clock = now;
+        const gap: Vec3 = [press.target[0] - eye[0], press.target[1] - eye[1], press.target[2] - eye[2]];
+        const left = Math.hypot(gap[0], gap[1], gap[2]);
+        if (left > 1e-9) {
+          const dir = nrm3(gap);
+          const here: Vec3 = [eye[0], eye[1], eye[2]];
+          const s = advanceBy(now - press.clock, dir, left);
+          // the true length this step spent — the chart step read in the
+          // room's metric at the point it left (LAW 23: the sum is checkable
+          // against d(p, g·p))
+          press.walked += s * Math.sqrt(cellSurface.model ? modelIP(cellSurface.model, here, dir, dir) : 1);
         }
-        keyedLeft -= advanceBy(now - keyedClock, keyedDir, keyedLeft);
-        keyedClock = now;
-        if (keyedLeft <= 1e-9) keyedDir = null;
+        press.clock = now;
       }
+      // K-1e: THE ARMING IS READ AT THE FOLD TOO. A period's excursion from the
+      // entry is at least half its length, but it may all lie BEFORE the fold
+      // (the far face) or all AFTER it (the near face) — and under a starved
+      // frame one step carries the outbound leg, folds, and lands most of the
+      // way home, so a read at the frame's end alone never sees it (measured
+      // 2026-09-16: `A` in Seifert–Weber came home to the digit unannounced).
+      // The same position-alone rule, read at the pre-fold position as well.
+      if (!awayFromEntry && walkDistance(cellSurface.model, eye, entryEye) > RETURN_ARM) awayFromEntry = true;
       const doorsBeforeTransport = seam.doors;
+      const traceBeforeTransport = seam.trace.length;
       transportWalk(beforeAdvance);
-      if (keyedDir && seam.doors > doorsBeforeTransport) keyedCrossed = true;
+      if (press) {
+        // the press's own word: the letters the transport wrote this frame
+        if (seam.trace.length > traceBeforeTransport) press.word += seam.trace.slice(traceBeforeTransport);
+        const d = Math.hypot(press.target[0] - eye[0], press.target[1] - eye[1], press.target[2] - eye[2]);
+        if (d <= 1e-6) {
+          seam.press = { letter: press.letter, word: press.word, length: press.length, walked: press.walked };
+          if (pressRef.current) {
+            pressRef.current.textContent = `pressed ${press.letter} · crossed ${press.word || 'nothing'} · walked ${press.length.toFixed(2)}`;
+          }
+          press = null;
+        }
+      }
       const still = (now - lastMove) / 1000;
       const settle = Math.max(0, Math.min(1, (still - 0.12) / 0.45));
       const w = canvas.clientWidth;
@@ -1420,18 +1421,37 @@ export function ExploreWindow({
       // PERSISTS on its own surface line (W.4/Q2) and never resets (W.5).
       // ⛔ the three strings are the designer's ratified wording, verbatim;
       // the door count is a plain numeral (W.6 HELD — flagged, not styled).
-      const dEntry = Math.hypot(eye[0] - entryEye[0], eye[1] - entryEye[1], eye[2] - entryEye[2]);
+      // K-1e: THE RETURN BALL IS READ IN THE ROOM'S OWN METRIC (at E³ the chart's
+      // own hypot, byte-unchanged). Measured 2026-09-16 in Seifert–Weber: a press
+      // of `A` from the entry walked its whole period (2.41 true) and came home
+      // to the digit, yet its CHART excursion never left the arming radius —
+      // near the Klein boundary a true metre is a chart inch — so no return
+      // fired and the sentence said "not home" of a walk that was home. The
+      // ball keeps its size (0.35, a hand's walk at the default pace) in TRUE
+      // distance, where every period's excursion is at least half its length.
+      const dEntry = walkDistance(cellSurface.model, eye, entryEye);
       if (!awayFromEntry && dEntry > RETURN_ARM) {
         awayFromEntry = true;
       } else if (awayFromEntry && dEntry <= RETURN_EPS) {
         awayFromEntry = false;
-        const deckTrace = deckF[0] + deckR[1] + deckU[2];
+        // K-1e addendum: the deck frame is compared with its ENTRY value carried
+        // to this point by the room's own transport (at E³ the entry frame
+        // itself), and the angle of the rotation between them is the
+        // covariant number the line prints (LAW 23). `mirrored` on det −1 as
+        // before; `the same way up` when the trace is within FRAME_EPS of 3.
+        const ref = entryDeck.map((v) => transportAlong(cellSurface.model, entryEye, eye, v));
+        const deckTrace = [deckF, deckR, deckU].reduce(
+          (acc, v, i) => acc + (cellSurface.model ? modelIP(cellSurface.model, eye, v, ref[i]) : v[0] * ref[i][0] + v[1] * ref[i][1] + v[2] * ref[i][2]),
+          0,
+        );
+        const turnDeg = frameAngleDeg(cellSurface.model, eye, [deckF, deckR, deckU], ref);
+        seam.returnTurnDeg = seam.frameHanded < 0 ? null : turnDeg;
         const clause =
           seam.frameHanded < 0
             ? 'the room came back mirrored'
             : deckTrace >= 3 - FRAME_EPS
               ? 'the room came back the same way up'
-              : 'the room came back turned';
+              : `the room came back turned by ${Math.round(turnDeg)}°`;
         // M-1 part B (her 0121 §3 ruling, superseding the middle term of the
         // W.7 strings): `back where you started` is about THIS return, the
         // clause is about THIS return, and the bare door count was CUMULATIVE
@@ -1681,15 +1701,21 @@ export function ExploreWindow({
         data-explore-return-previous
         style={{ marginTop: 1, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.45, minHeight: 15 }}
       />
+      {/* K-1e — THE PRESS LINE: the letter pressed (the act), the letters the
+          transport actually wrote for it, and the true length of the period
+          as a number the person can read (LAW 23). Empty until the first
+          press; the wording is the designer's to refine at K-2b. */}
+      <div
+        ref={pressRef}
+        data-explore-press
+        style={{ marginTop: 1, fontFamily: 'ui-monospace, monospace', fontSize: 11, opacity: 0.78, minHeight: 15 }}
+      />
       <div style={{ marginTop: 3, fontSize: 10.5, opacity: 0.55 }}>
-        {/* K-2a: the gesture line states EVERY act the window offers here — the
-            keyboard's acts first, the pointer's beside them — and it is true
-            per room: in a sealed curved room the door letters REST (the
-            measured stop of K-1) while the walk keys do not, because a held
-            key is the pointer's own hold on the same integrator. */}
-        {cellSurface.model
-          ? '↑/↓ — walk forward and back · ←/→ — turn · PgUp/PgDn — look up and down · the door letters rest in this curved room, the walk keys do not · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell'
-          : "↑/↓ — walk forward and back · ←/→ — turn · PgUp/PgDn — look up and down · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell"}
+        {/* K-2a: the gesture line states EVERY act the window offers — the
+            keyboard's acts first, the pointer's beside them. K-1e lifted the
+            curved-room rest of the letters, so the line is ONE line in every
+            room. */}
+        {"↑/↓ — walk forward and back · ←/→ — turn · PgUp/PgDn — look up and down · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell"}
       </div>
     </div>
   );

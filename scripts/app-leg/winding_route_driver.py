@@ -336,7 +336,8 @@ def run_cone(page, args, arc):
                 record("C.window", built, "the cone room summons; the window opens")
     got = False
     line = dom = None
-    want = "return 1 · back where you started · after 2 doors · the room came back turned"
+    # K-1e addendum: the return line PRINTS the frame holonomy — the cone word's two 180° doors compose to a half-turn
+    want = "return 1 · back where you started · after 2 doors · the room came back turned by 180°"
     if built:
         heading = [math.cos(math.radians(50)), math.sin(math.radians(50))]
         for attempt in range(6):
@@ -457,7 +458,8 @@ def run_fan2(page, args, arc):
         line, dom = read_return(page)
         # the ratified reading, pinned (a witness that accepts any line pins
         # nothing): one seam crossing, home early, turned
-        wantE = "return 1 · back where you started · after 1 door · the room came back turned"
+        # K-1e addendum: the angle is printed — the seam's 60° holonomy (deck trace 2 = 1 + 2·cos 60°, the headings witness's own pin)
+        wantE = "return 1 · back where you started · after 1 door · the room came back turned by 60°"
         record("E.circuit", line == wantE and dom == line, f"THE LINE, VERBATIM: {line} · doors {seam(page)['doors']}")
     close_window(page)
 

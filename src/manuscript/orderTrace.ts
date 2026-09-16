@@ -100,26 +100,6 @@ export function faceForLetter(faces: readonly LetteredFace[], key: string): numb
   return -1;
 }
 
-/** The room's own width across the pairing this door belongs to: the distance
- * between the door's plane and its PARTNER's (the two carry reversed outward
- * normals, so the offsets add). It is the PERIOD a crossing covers — walk this
- * far along the door's normal and the room's own identification has put the
- * eye where the crossing leaves it, which is why a keyed crossing is a walk of
- * exactly this length and not a jump to the plane. Falls back to twice the
- * door's own offset if the room records no partner; `0` on a face with no
- * door (unreachable through `faceForLetter`, total anyway). */
-export function crossingSpan(faces: readonly LetteredFace[], index: number): number {
-  const face = faces[index];
-  const door = face?.door;
-  if (!door) return 0;
-  for (let i = 0; i < faces.length; i += 1) {
-    const other = faces[i].door;
-    if (i !== index && other && other.pair === door.pair && other.side !== door.side) {
-      return face.d + faces[i].d;
-    }
-  }
-  return 2 * face.d;
-}
 
 // ═══ STAMP K-2a — THE WALK KEYS (Arman, verbatim: "we meant for the keyboard
 // control to be the complete control") ═══════════════════════════════════════

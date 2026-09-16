@@ -29,14 +29,14 @@
 // keep both or neither).
 //
 // THE THREE SESSIONS (all deterministic under the throttle):
-//   cone   · the POSITIVE CONTROL — `2 doors · the room came back turned`
+//   cone   · the POSITIVE CONTROL — `2 doors · the room came back turned by 180°`
 //            on the amendment-10 cone room (word d+0,d+0,d+0, built through
 //            the aperture door) + the RETRACE on the same room —
 //            `2 doors · the same way up` with a half-circle head-turn
 //            between the crossings (the deck falsifier);
 //   fan2   · the pillar CIRCUIT on the 5-cell fan chamber — the person
 //            winds 300° around the k=5 cone edge and the room reads
-//            `1 door · the room came back turned` (INTERIOR TRANSPORT on the
+//            `1 door · the room came back turned by 60°` (INTERIOR TRANSPORT on the
 //            person's own surface; when its cure lands, this reading is
 //            re-derived — see diagnose-winding-headings' pinned trigger);
 //   mirror · THE FOURTH STRING — the sweep's corrected fact, live: the
@@ -89,7 +89,7 @@ const { serializeSnapshot } = req('src/playground/snapshot.ts');
 // leg that straddles it crosses the seam quad, the eye jumps +60° (the
 // holonomy) and goto converges on the far side (a door counts as leg-arrival
 // in goto's own law). Expected reading at the close:
-// `return 1 · back where you started · after 1 door · the room came back turned`.
+// `return 1 · back where you started · after 1 door · the room came back turned by 60°`.
 const FAN_PLAN = [
   [-0.35, -0.55, 0.1],
   [-0.13, -0.72, 0.1],
@@ -208,13 +208,13 @@ function waitHttp(url, timeoutMs) {
     clause('C.cubePlaced', 'the cube parcel places');
     clause('C.picks', 'the aperture picks: the cone word d+0,d+0,d+0');
     clause('C.window', 'the room builds, summons, opens');
-    clause('C.turned', '★★ `return 1 · back where you started · after 2 doors · the room came back turned` — seam + DOM');
+    clause('C.turned', '★★ `return 1 · back where you started · after 2 doors · the room came back turned by 180°` — seam + DOM (K-1e addendum: the line prints the holonomy)');
     clause('B2.retrace', '★ the retrace with a head-turn: `2 doors · the same way up` — the deck falsifier');
     console.log('\n— the fan chamber: the interior-transport gap —');
     clause('E.parcels', 'the fan lift + segment place');
     clause('E.armed', 'the thicken pair arms');
     clause('E.window', 'EXIT B builds the chamber; the window opens');
-    clause('E.circuit', '★ the pillar ENCIRCLED (interior transport landed): `return 1 · back where you started · after 1 door · the room came back turned` — the room comes home EARLY through the seam');
+    clause('E.circuit', '★ the pillar ENCIRCLED (interior transport landed): `return 1 · back where you started · after 1 door · the room came back turned by 60°` — the room comes home EARLY through the seam');
     console.log('\n— the mirrored room: the fourth string —');
     clause('M.cubePlaced', 'the cube parcel places');
     clause('M.picks', 'the aperture picks: the word d+0,d+1,d+2');
