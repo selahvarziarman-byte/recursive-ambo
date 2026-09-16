@@ -2487,6 +2487,9 @@ export default function ManuscriptView() {
   const exploreCtl = useControls('world · explore', {
     pace: { value: d.world.explore.pace, min: 0.1, max: 1.2, step: 0.02 },
     lookSensitivity: { value: d.world.explore.lookSensitivity, min: 0.001, max: 0.012, step: 0.001 },
+    // K-2c: the counted register's two constants — hers at the eye, ONE each, stated in the panel line as numbers
+    stepUnit: { value: d.world.explore.stepUnit, min: 0.05, max: 1, step: 0.05 },
+    turnFraction: { value: d.world.explore.turnFraction, min: 4, max: 36, step: 1 },
     smoothRodRecede: { value: d.world.explore.smoothRodRecede, min: 0, max: 1, step: 0.05 },
     depthWeightRatio: { value: d.world.explore.depthWeightRatio, min: 1, max: 12, step: 0.25 },
     lodMidEcho: { value: d.world.explore.lodMidEcho, min: 0, max: 8, step: 1 },
@@ -7133,6 +7136,8 @@ export default function ManuscriptView() {
           level={apertureCtl.level}
           pace={exploreCtl.pace}
           lookSensitivity={exploreCtl.lookSensitivity}
+          stepUnit={exploreCtl.stepUnit}
+          turnFraction={exploreCtl.turnFraction}
           smoothRodRecede={exploreCtl.smoothRodRecede}
           depthWeightRatio={exploreCtl.depthWeightRatio}
           lodMidEcho={exploreCtl.lodMidEcho}

@@ -118,7 +118,7 @@ export function faceForLetter(faces: readonly LetteredFace[], key: string): numb
 // ever have a door and a walk act share a key. Both spellings of "forward" the
 // mandate named would have needed a letter; the measurement above is why the
 // table carries one spelling, named in the panel line.
-export type WalkAct = 'forward' | 'back' | 'left' | 'right' | 'up' | 'down';
+export type WalkAct = 'forward' | 'back' | 'left' | 'right' | 'up' | 'down' | 'faceDoor' | 'entryLook';
 
 export const WALK_KEYS: ReadonlyArray<readonly [key: string, act: WalkAct]> = [
   ['ArrowUp', 'forward'],
@@ -127,6 +127,12 @@ export const WALK_KEYS: ReadonlyArray<readonly [key: string, act: WalkAct]> = [
   ['ArrowRight', 'right'],
   ['PageUp', 'up'],
   ['PageDown', 'down'],
+  // STAMP K-2c — the two snaps ruled lawful on their face: FACE THE NEAREST
+  // DOOR squarely (a wall the person can see, LAW 20) and FACE AS YOU ENTERED
+  // (the entry orientation carried along the walker's own path). Non-letter,
+  // non-walk keys, as the alphabet law binds.
+  ['End', 'faceDoor'],
+  ['Home', 'entryLook'],
 ];
 
 /** The walk act a key is bound to, or null. `KeyboardEvent.key` is the input;

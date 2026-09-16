@@ -42,10 +42,12 @@ import { mat4Det } from '../lib/noncubeDomain';
 import {
   affinePoint,
   affineVector,
+  expMap,
   frameAngleDeg,
   frameAt,
   modelIP,
   modelOrthonormalise,
+  perpendicularToward,
   projectiveDirection,
   projectivePoint,
   transportAlong,
@@ -122,6 +124,8 @@ interface ExploreSeam {
   // K-1e addendum — the last return's frame holonomy in degrees (null when the
   // frame came back mirrored — a fold is never named a rotation)
   returnTurnDeg: number | null;
+  // K-2c — the last snap taken ('faceDoor' | 'entryLook'), and the door it faced
+  snap: { act: string; letter: string | null } | null;
   // the camera frame's other two axes (beside `forward`) and the room's faces
   // with their door letters — witness seams for a driver that must aim
   right: Vec3 | null;
@@ -165,6 +169,7 @@ const seamOf = (): ExploreSeam => {
       sentence: null,
       press: null,
       returnTurnDeg: null,
+      snap: null,
       right: null,
       up: null,
       faces: [],
@@ -196,6 +201,10 @@ const FRAME_EPS = 1e-3;
 // no pixels, so its angle is TIME × this rate — and both land in the one
 // frame writer below, so a key and a drag write the same heading.
 const KEY_TURN_RATE = Math.PI / 2;
+// K-2c — THE TAP WINDOW: a walk or turn key released inside it is a TAP — ONE
+// counted step of the stated unit, ONE counted fraction of a turn — and held
+// past it is the glide or the sweep, unchanged. Stated once.
+const TAP_MS = 200;
 
 const VS = `#version 300 es
 in vec2 p; void main(){ gl_Position=vec4(p,0.,1.); }`;
@@ -616,6 +625,8 @@ export interface ExploreWindowProps {
   level: number;
   pace: number; // advance, world units / s (the cell spans 2)
   lookSensitivity: number; // rad / px
+  stepUnit: number; // K-2c: one counted step (a tap of ↑/↓), true distance
+  turnFraction: number; // K-2c: one counted turn (a tap of ←/→ · PgUp/PgDn) is 1/this of a full turn
   // PART A (2026-08-11 seal): the legibility dials — structure here, the
   // designer's eye gates the values. DIAL-AXIS (2026-08-12): the LOD dials
   // read ECHO (transport count — the fade's own axis), not world travel.
@@ -638,6 +649,8 @@ export function ExploreWindow({
   level,
   pace,
   lookSensitivity,
+  stepUnit,
+  turnFraction,
   smoothRodRecede,
   depthWeightRatio,
   lodMidEcho,
@@ -661,8 +674,8 @@ export function ExploreWindow({
   const tallyRef = useRef<HTMLDivElement | null>(null);
   const sentenceRef = useRef<HTMLSpanElement | null>(null);
   const faceMarkArray = useRef<Float32Array>(new Float32Array(16));
-  const liveRef = useRef({ level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho });
-  liveRef.current = { level, pace, lookSensitivity, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho };
+  const liveRef = useRef({ level, pace, lookSensitivity, stepUnit, turnFraction, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho });
+  liveRef.current = { level, pace, lookSensitivity, stepUnit, turnFraction, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho };
 
   const packed = useMemo(() => packCell(cellSurface), [cellSurface]);
 
@@ -689,6 +702,7 @@ export function ExploreWindow({
     seam.sentence = null;
     seam.press = null;
     seam.returnTurnDeg = null;
+    seam.snap = null;
     // B-2 (a witness seam, the drive family's idiom): the room's faces with
     // their door letters, so a headless driver can AIM at a marked door the
     // way a person does by sight — nothing in the app reads this
@@ -876,6 +890,14 @@ export function ExploreWindow({
     // turn signs, and the input clocks their integrals run on (the
     // event-timeStamp domain, exactly as the pointer's advClock).
     const heldActs = new Set<WalkAct>();
+    const heldSince = new Map<WalkAct, number>(); // K-2c: the input time each act went down — a tap is read at its release
+    // K-2c: a walk key that went down while a counted step in its direction was
+    // still walking waits behind it — this is its hold window, a TIMER on the
+    // input clock (the pointer's own hold law, holdTimer), never a frame's
+    // reading of the two clocks: exact under a starved frame, and the frame's
+    // stamp is not the input's (measured in the in-app pane: a frame-clock
+    // reading of the window took the wheel 1.2 s late)
+    const deferTimers = new Map<WalkAct, number>();
     let keyWalk = 0;
     let keyWalkClock = 0;
     // ⚠ THE SIGN IS MEASURED, not assumed (2026-09-16, at the eye): the frame
@@ -1140,8 +1162,53 @@ export function ExploreWindow({
     const releaseKeys = (at: number = performance.now()): void => {
       if (heldActs.size === 0) return;
       heldActs.clear();
+      heldSince.clear();
+      for (const id of deferTimers.values()) window.clearTimeout(id);
+      deferTimers.clear();
       resolveKeyWalk(at);
       resolveKeyLook(at);
+    };
+    // K-2c — THE TWO SNAPS, ruled lawful on their face. FACE THE NEAREST DOOR
+    // SQUARELY: the door whose plane is nearest the eye, faced along the
+    // geodesic that meets it at right angles (the plane's covector projected
+    // to the eye's tangent space — the chart normal at E³), written by the one
+    // frame writer in the frame's own planes (yaw, then pitch — no roll, so
+    // the up stays as level as the look was). FACE AS YOU ENTERED: the looked
+    // frame becomes the DECK frame — the entry frame carried along the
+    // walker's own path by the doors' isometries and the legs' transport
+    // (K-1e addendum) — a recorded landmark, never re-derived. Both count as
+    // a look. ⛔ "level the horizon" is not here (a meaning question, K-1d §2).
+    const snapTo = (act: 'faceDoor' | 'entryLook'): void => {
+      if (act === 'entryLook') {
+        camF = [deckF[0], deckF[1], deckF[2]];
+        camR = [deckR[0], deckR[1], deckR[2]];
+        camU = [deckU[0], deckU[1], deckU[2]];
+        seam.snap = { act, letter: null };
+        seam.looks += 1;
+        lastMove = performance.now();
+        return;
+      }
+      let nearest = -1;
+      let nearestGap = Infinity;
+      cellSurface.faces.forEach((f, i) => {
+        if (f.wall || !f.door) return;
+        const gap = f.d - (eye[0] * f.n[0] + eye[1] * f.n[1] + eye[2] * f.n[2]);
+        if (gap < nearestGap) { nearestGap = gap; nearest = i; }
+      });
+      if (nearest < 0) return; // a room of walls has no door to face
+      const face = cellSurface.faces[nearest];
+      const toward = perpendicularToward(cellSurface.model, eye, face.n, face.d);
+      const ip = (a: Vec3, b: Vec3): number => (cellSurface.model ? modelIP(cellSurface.model, eye, a, b) : a[0] * b[0] + a[1] * b[1] + a[2] * b[2]);
+      const dF = ip(toward, camF);
+      const dR = ip(toward, camR);
+      const dU = ip(toward, camU);
+      // the aim in the frame's own planes: yaw brings F onto the F–R shadow of
+      // the direction, then pitch lifts it out of that plane — the writer's
+      // own sign (a +pitch looks down)
+      rotateFrame(Math.atan2(dR, dF), -Math.atan2(dU, Math.hypot(dF, dR)));
+      seam.snap = { act, letter: face.door ? doorLetter(face.door) : null };
+      seam.looks += 1;
+      lastMove = performance.now();
     };
     // === K-1 — THE KEYBOARD WALK (Arman, 15:38, a pocket out of any queue) ===
     // The doors already know their own names. `KeyboardEvent.key` IS the trace
@@ -1166,8 +1233,29 @@ export function ExploreWindow({
       const act = walkKeyAct(ev.key);
       if (act) {
         ev.preventDefault(); // the page never scrolls under a walk
+        if (act === 'faceDoor' || act === 'entryLook') {
+          snapTo(act);
+          return;
+        }
         if (heldActs.has(act)) return;
         heldActs.add(act);
+        heldSince.set(act, ev.timeStamp);
+        // K-2c: while a counted STEP in the same direction is still walking, the
+        // key does not take the wheel yet — released inside the tap window it
+        // ADDS a unit to that step; held past it, the frame lets the hold take
+        // the wheel (the glide) at that moment.
+        if ((act === 'forward' || act === 'back') && press && press.letter === (act === 'forward' ? '↑' : '↓')) {
+          const since = ev.timeStamp;
+          deferTimers.set(act, window.setTimeout(() => {
+            deferTimers.delete(act);
+            if (!heldActs.has(act)) return;
+            press = null; // the hand took the wheel — the step's remainder is not resumed (the pointer's law)
+            // the hold's input truth: the glide began one tap-window after the
+            // key went down, even when this timer itself fired late
+            resolveKeyWalk(since + TAP_MS);
+          }, TAP_MS));
+          return;
+        }
         resolveKeyWalk(ev.timeStamp);
         resolveKeyLook(ev.timeStamp);
         return;
@@ -1214,8 +1302,55 @@ export function ExploreWindow({
       const act = walkKeyAct(ev.key);
       if (!act || !heldActs.has(act)) return;
       heldActs.delete(act);
+      const since = heldSince.get(act);
+      heldSince.delete(act);
+      const deferred = deferTimers.get(act);
+      if (deferred !== undefined) { window.clearTimeout(deferred); deferTimers.delete(act); } // released inside its window: a tap, counted below
+      const wasWalking = keyWalk;
+      const wasYaw = keyYaw;
+      const wasPitch = keyPitch;
+      const stepSign = act === 'forward' ? 1 : act === 'back' ? -1 : 0;
       resolveKeyWalk(ev.timeStamp);
       resolveKeyLook(ev.timeStamp);
+      // K-2c — A TAP: released inside the window, the act is COUNTED. The glide
+      // or sweep it already spent (exact to the input clock) is topped up to
+      // exactly one unit — a step walks its remainder by the same bounded
+      // walk a letter-press uses (the one integrator, folding at the doors);
+      // a turn's remainder is written by the one frame writer.
+      if (since !== undefined && ev.timeStamp - since < TAP_MS) {
+        const held = Math.max(0, ev.timeStamp - since) / 1000;
+        if (stepSign !== 0 && keyWalk === 0 && !advancing) {
+          const unit = liveRef.current.stepUnit;
+          const spent = wasWalking !== 0 ? (seam.paceOverride ?? liveRef.current.pace) * held : 0;
+          const remainder = Math.max(0, unit - spent);
+          const dir = stepSign > 0 ? camF : neg3(camF);
+          const arrow = stepSign > 0 ? '↑' : '↓';
+          if (press && press.letter === arrow) {
+            // a tap landing while the previous step still walks ADDS its unit to
+            // the step in flight — along the same line, from the carried target —
+            // so N taps are N units however fast the hand (measured: one of five
+            // taps at 1.5 s spacing fell through while a step was still walking)
+            const gap: Vec3 = [press.target[0] - eye[0], press.target[1] - eye[1], press.target[2] - eye[2]];
+            press.target = expMap(cellSurface.model, press.target, gap, unit);
+            press.length += unit;
+          } else if (!press && remainder > 1e-9) {
+            press = {
+              letter: arrow,
+              target: expMap(cellSurface.model, eye, dir, remainder),
+              word: '',
+              length: unit,
+              walked: spent,
+              clock: null,
+            };
+          }
+        } else if ((act === 'left' || act === 'right' || act === 'up' || act === 'down') && (wasYaw !== 0 || wasPitch !== 0)) {
+          const fraction = (2 * Math.PI) / liveRef.current.turnFraction;
+          const swept = KEY_TURN_RATE * held;
+          const remainder = Math.max(0, fraction - swept);
+          if (act === 'left' || act === 'right') rotateFrame(-wasYaw * remainder, 0);
+          else rotateFrame(0, -wasPitch * remainder);
+        }
+      }
     };
     const onBlur = (): void => releaseKeys();
     const onDown = (ev: PointerEvent): void => {
@@ -1359,7 +1494,9 @@ export function ExploreWindow({
         if (d <= 1e-6) {
           seam.press = { letter: press.letter, word: press.word, length: press.length, walked: press.walked };
           if (pressRef.current) {
-            pressRef.current.textContent = `pressed ${press.letter} · crossed ${press.word || 'nothing'} · walked ${press.length.toFixed(2)}`;
+            pressRef.current.textContent = press.letter === '↑' || press.letter === '↓'
+              ? `stepped ${press.letter} · ${press.length.toFixed(2)}${press.word ? ` · crossed ${press.word}` : ''}`
+              : `pressed ${press.letter} · crossed ${press.word || 'nothing'} · walked ${press.length.toFixed(2)}`;
           }
           press = null;
         }
@@ -1530,6 +1667,8 @@ export function ExploreWindow({
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
+      for (const id of deferTimers.values()) window.clearTimeout(id);
+      deferTimers.clear();
       window.removeEventListener('resize', fitLog);
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('keyup', onKeyUp);
@@ -1715,7 +1854,7 @@ export function ExploreWindow({
             keyboard's acts first, the pointer's beside them. K-1e lifted the
             curved-room rest of the letters, so the line is ONE line in every
             room. */}
-        {"↑/↓ — walk forward and back · ←/→ — turn · PgUp/PgDn — look up and down · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell"}
+        {`↑/↓ — walk (tap: one step of ${stepUnit.toFixed(2)} · hold: glide) · ←/→ — turn (tap: 1/${turnFraction} turn · hold: sweep) · PgUp/PgDn — look up and down (the same) · End — face the nearest door · Home — face as you entered · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell`}
       </div>
     </div>
   );

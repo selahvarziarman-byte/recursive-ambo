@@ -353,6 +353,8 @@ export const manuscriptDefaults = {
     explore: {
       pace: 0.45, // advance, world units/s — the cell spans 2; a cloister walk
       lookSensitivity: 0.004, // rad/px of drag
+      stepUnit: 0.2, // K-2c: one counted step of ↑/↓ (a tap), in the room's own units (true distance)
+      turnFraction: 16, // K-2c: one counted turn of ←/→ · PgUp/PgDn (a tap) is 1/this of a full turn — four presses a quarter
       smoothRodRecede: 0.85, // smooth-rod (k=4) WEIGHT recede, 0..1 — the class color survives; cone rods stay bold (designer eye-gate, mothership 1526). DIAL-AXIS 2026-08-12: the mapping is LOG-SPACE now (the linear mix's useful zone was the top ~20% — her finding); endpoints exact, 0.85 lands within ~5-8% of the committed look
       depthWeightRatio: 9, // focal hierarchy: nearest:furthest contour ratio (designer eye-gate 5→9, mothership 1526 — the near rank carries the frame harder)
       // DIAL-AXIS (2026-08-12): the LOD ladder reads the ECHO axis — the

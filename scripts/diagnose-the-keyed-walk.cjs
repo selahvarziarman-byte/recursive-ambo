@@ -336,16 +336,17 @@ check('§3 the metric lives in ONE module the view imports and this witness RUNS
 
 // ═══════════════════════════════ §5 STAMP K-2a (kept) ═══════════════════════════════
 console.log('\n----- §5 ★★ STAMP K-2a — THE COMPLETE KEYBOARD WALK: everything the pointer does, by keys, on the SAME producers -----');
-check('§5 ★ THE BINDING TABLE, RUN: ↑ walks forward · ↓ back · ← turns left · → right · PgUp looks up · PgDn down — six acts, six keys, stated once in orderTrace',
+check('§5 ★ THE BINDING TABLE, RUN: ↑ walks forward · ↓ back · ← turns left · → right · PgUp looks up · PgDn down · End faces the nearest door · Home faces as you entered — eight acts, eight keys, stated once in orderTrace (K-2c added the two snaps)',
   walkKeyAct('ArrowUp') === 'forward' && walkKeyAct('ArrowDown') === 'back' && walkKeyAct('ArrowLeft') === 'left' &&
-    walkKeyAct('ArrowRight') === 'right' && walkKeyAct('PageUp') === 'up' && walkKeyAct('PageDown') === 'down' && WALK_KEYS.length === 6);
+    walkKeyAct('ArrowRight') === 'right' && walkKeyAct('PageUp') === 'up' && walkKeyAct('PageDown') === 'down' &&
+    walkKeyAct('End') === 'faceDoor' && walkKeyAct('Home') === 'entryLook' && WALK_KEYS.length === 8);
 const alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -=[];\',./`'.split('');
 check('§5 ★★ THE ALPHABET IS THE DOORS\' — BY CONSTRUCTION: every single-character key (all 52 letters, the digits, the symbols) is refused as a walk key before the table is read, so no room of up to 26 pairings can ever have a door and a walk act on one key. W/A/S/D in particular: `a` is door 0 in EVERY room and `d`/`e` are doors in a six-pairing room — measured, and why the mandate\'s second spelling is not bound',
   alphabet.every((k) => walkKeyAct(k) === null) && ['w', 'a', 's', 'd', 'W', 'A', 'S', 'D', 'q', 'e'].every((k) => walkKeyAct(k) === null));
 check('§5 …and the doors keep their letters untouched: `a` still addresses face 0 of the T³ fixture and shift still means the inverse (K-1 as landed)',
   faceForLetter(T3, letterForKey('a', false)) === 0 && faceForLetter(T3, letterForKey('a', true)) === 1);
-check('§5 LAW 24 — the table can refuse: Escape, Shift, Enter, Space, Tab, Home, End and the unbound function keys walk nothing (esc keeps its meaning)',
-  ['Escape', 'Shift', 'Enter', ' ', 'Tab', 'Home', 'End', 'F5', 'Control', 'Alt', 'Meta', ''].every((k) => walkKeyAct(k) === null));
+check('§5 LAW 24 — the table can refuse: Escape, Shift, Enter, Space, Tab, Insert, Delete and the unbound function keys walk nothing (esc keeps its meaning)',
+  ['Escape', 'Shift', 'Enter', ' ', 'Tab', 'Insert', 'Delete', 'F5', 'Control', 'Alt', 'Meta', ''].every((k) => walkKeyAct(k) === null));
 check('§5 ★★ THE HELD KEY IS THE POINTER\'S HOLD: the frame integrates it through the same call on the same clock law — forward hands `camF`, BACK hands the SAME call the negated direction (never a second path) — and the pointer\'s own line is byte-unchanged',
   viewSrc.includes('advanceBy(now - keyWalkClock, keyWalk > 0 ? camF : neg3(camF));') &&
     viewSrc.includes('keyWalkClock = Math.max(keyWalkClock, now);') &&
@@ -369,9 +370,84 @@ check('§5 a RELEASE ends the walk as the pointer\'s does: keyup is listened for
 check('§5 the key handler still moves nothing itself: a bound key records a held act and hands the two resolvers its time — no eye assignment, no transport, no trace write in the handler; the walk keys are read BEFORE the letters and never as a letter',
   keyHandler.length > 0 && !/\beye\s*=/.test(keyHandler) && !keyHandler.includes('transportWalk') && !keyHandler.includes('seam.trace') &&
     keyHandler.indexOf('const act = walkKeyAct(ev.key);') < keyHandler.indexOf('faceForLetter(cellSurface.faces'));
-check('§5 ★ THE LINE IS TRUE AND COMPLETE, and it is ONE line in every room now: every bound key named with its act, the letters offered everywhere (K-1e lifted the curved-room rest), the pointer\'s acts beside them',
-  viewSrc.replace(/\s+/g, ' ').includes("{\"↑/↓ — walk forward and back · ←/→ — turn · PgUp/PgDn — look up and down · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell\"}") &&
+check('§5 ★ THE LINE IS TRUE AND COMPLETE, ONE line in every room, and it prints the counted register\'s NUMBERS (LAW 23): every bound key named with its act — the step unit and the turn fraction as the live values — the letters offered everywhere, the two snaps, the pointer\'s acts beside them',
+  viewSrc.replace(/\s+/g, ' ').includes("{`↑/↓ — walk (tap: one step of ${stepUnit.toFixed(2)} · hold: glide) · ←/→ — turn (tap: 1/${turnFraction} turn · hold: sweep) · PgUp/PgDn — look up and down (the same) · End — face the nearest door · Home — face as you entered · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell`}") &&
     !viewSrc.includes('the door letters rest in this curved room'));
 
-console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-KEYED-WALK: ALL PASS — the key addresses a door by its own name, a press is one period of its deck element in every room, the frames ride the room\'s own transport, and one producer moves the eye' : `DIAGNOSE-THE-KEYED-WALK: ${failures} FAILURE(S)`}`);
+// ═══════════════════════════════ §6 STAMP K-2c — THE COUNTED REGISTER ═══════════════════════════════
+console.log('\n----- §6 ★★ STAMP K-2c — counted steps, fractional turns, two snaps — the same producers, RUN -----');
+const rngE = mulberry(23);
+const expOK = (model) => {
+  for (let i = 0; i < 40; i += 1) {
+    const sc = model === 'H3' ? 0.5 : 0.8;
+    const k = [(rngE() * 2 - 1) * sc, (rngE() * 2 - 1) * sc, (rngE() * 2 - 1) * sc];
+    const dir = [rngE() - 0.5, rngE() - 0.5, rngE() - 0.5];
+    const u = 0.05 + rngE() * 0.5;
+    const y = M.expMap(model, k, dir, u);
+    const d = M.walkDistance(model, k, y);
+    if (Math.abs(d - u) > 1e-9) return `distance ${d} for u ${u}`;
+    const gap = sub(y, k);
+    const cross = [gap[1] * dir[2] - gap[2] * dir[1], gap[2] * dir[0] - gap[0] * dir[2], gap[0] * dir[1] - gap[1] * dir[0]];
+    if (len(cross) > 1e-9 * len(gap) * len(dir) + 1e-12) return 'off the chart line';
+    if (dot(gap, dir) <= 0) return 'walked backwards';
+  }
+  return true;
+};
+check('§6 ★★ THE EXPONENTIAL MAP: the counted step\'s target lies at EXACTLY the true distance u from the eye (1e-9), on the chart line of the direction, ahead of it — 40 random points and directions in H³ and in S³ (a step is one clean unit of the room\'s own metre)',
+  expOK('H3') === true && expOK('S3') === true, `${expOK('H3')} · ${expOK('S3')}`);
+check('§6 …and at E³ it is the chart\'s own k + û·u',
+  (() => { const y = M.expMap(null, [0.1, 0.2, 0.3], [0, 3, 4], 0.5); return Math.abs(y[0] - 0.1) < 1e-12 && Math.abs(y[1] - 0.5) < 1e-12 && Math.abs(y[2] - 0.7) < 1e-12; })());
+const perpOK = (model, faces, k) => {
+  for (const f of faces) {
+    if (f.wall) continue;
+    const dir = M.perpendicularToward(model, k, f.n, f.d);
+    const dn = dot(dir, f.n);
+    if (dn <= 1e-12) return `direction does not approach the plane (${dn})`;
+    const tt = (f.d - dot(k, f.n)) / dn;
+    const h = [k[0] + dir[0] * tt, k[1] + dir[1] * tt, k[2] + dir[2] * tt];
+    // two independent in-plane chart directions at the hit point
+    const a = Math.abs(f.n[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+    const e1 = [a[1] * f.n[2] - a[2] * f.n[1], a[2] * f.n[0] - a[0] * f.n[2], a[0] * f.n[1] - a[1] * f.n[0]];
+    const e2 = [f.n[1] * e1[2] - f.n[2] * e1[1], f.n[2] * e1[0] - f.n[0] * e1[2], f.n[0] * e1[1] - f.n[1] * e1[0]];
+    const ip = (x, y) => M.walkIP(model, h, x, y);
+    const n1 = Math.sqrt(ip(dir, dir) * ip(e1, e1));
+    const n2 = Math.sqrt(ip(dir, dir) * ip(e2, e2));
+    if (Math.abs(ip(dir, e1)) / n1 > 1e-9 || Math.abs(ip(dir, e2)) / n2 > 1e-9) return `not perpendicular at the plane: ${ip(dir, e1) / n1}, ${ip(dir, e2) / n2}`;
+  }
+  return true;
+};
+check('§6 ★★ THE PERPENDICULAR TOWARD A DOOR: from the walk\'s entry, the direction handed to "face the nearest door squarely" meets EVERY door\'s plane at right angles in the room\'s own metric — Seifert–Weber (H³) and the Poincaré cell (S³) from an interior point, and T³ (E³: the plane normal itself)',
+  perpOK('H3', SW.faces, ENTRY) === true && perpOK('S3', PC.faces, PROBE_POINT) === true && perpOK(null, T3, ENTRY) === true,
+  `${perpOK('H3', SW.faces, ENTRY)} · ${perpOK('S3', PC.faces, PROBE_POINT)} · ${perpOK(null, T3, ENTRY)}`);
+check('§6 ★ THE TAP WINDOW is stated once, and a tap is COUNTED at its release whether or not a glide ran: the glide it already spent (exact to the input clock) is topped up to exactly ONE unit by the same bounded walk a letter-press uses — a step is a press with the exponential map\'s point as its target; a tap landing while a step still walks ADDS its unit to that step (the key defers, so N taps are N units however fast the hand), and a key held past the window takes the wheel from the step (the glide) at EXACTLY one window after it went down on the input clock — a timer, the pointer\'s own hold law, never a frame\'s reading of the two clocks',
+  viewSrc.includes('const TAP_MS = 200;') && viewSrc.includes('if (since !== undefined && ev.timeStamp - since < TAP_MS) {') &&
+    viewSrc.includes('target: expMap(cellSurface.model, eye, dir, remainder),') &&
+    viewSrc.includes('letter: arrow,') && viewSrc.includes('const remainder = Math.max(0, unit - spent);') &&
+    viewSrc.includes('press.target = expMap(cellSurface.model, press.target, gap, unit);') && viewSrc.includes('press.length += unit;') &&
+    viewSrc.includes("if ((act === 'forward' || act === 'back') && press && press.letter === (act === 'forward' ? '↑' : '↓')) {") &&
+    viewSrc.includes('deferTimers.set(act, window.setTimeout(() => {') && viewSrc.includes('resolveKeyWalk(since + TAP_MS);') &&
+    !viewSrc.includes('now - since >= TAP_MS'));
+check('§6 ★ A TURN-TAP is ONE known fraction of a turn: the swept part plus its remainder, written by the one frame writer (yaw for ←/→, pitch for PgUp/PgDn), the fraction the live constant',
+  viewSrc.includes('const fraction = (2 * Math.PI) / liveRef.current.turnFraction;') &&
+    viewSrc.includes("if (act === 'left' || act === 'right') rotateFrame(-wasYaw * remainder, 0);") &&
+    viewSrc.includes('else rotateFrame(0, -wasPitch * remainder);'));
+check('§6 ★★ THE TWO SNAPS: "face the nearest door squarely" aims the one frame writer along the perpendicular toward the nearest door\'s plane; "face as you entered" makes the looked frame the DECK frame — the entry frame carried along the walker\'s own path — a recorded landmark, never re-derived; each counts as a look and is recorded on the seam',
+  viewSrc.includes("const snapTo = (act: 'faceDoor' | 'entryLook'): void => {") &&
+    viewSrc.includes('const toward = perpendicularToward(cellSurface.model, eye, face.n, face.d);') &&
+    viewSrc.includes('rotateFrame(Math.atan2(dR, dF), -Math.atan2(dU, Math.hypot(dF, dR)));') &&
+    viewSrc.includes('camF = [deckF[0], deckF[1], deckF[2]];') && viewSrc.includes('camU = [deckU[0], deckU[1], deckU[2]];') &&
+    viewSrc.includes('seam.snap = { act, letter: face.door ? doorLetter(face.door) : null };') &&
+    viewSrc.includes("if (act === 'faceDoor' || act === 'entryLook') {"));
+check('§6 the two constants are the person\'s, ONE each: `stepUnit` and `turnFraction` arrive as props, live in the same ref as the pace, and are stated in the line as numbers',
+  viewSrc.includes('  stepUnit: number; // K-2c: one counted step (a tap of ↑/↓), true distance') &&
+    viewSrc.includes('  turnFraction: number; // K-2c: one counted turn (a tap of ←/→ · PgUp/PgDn) is 1/this of a full turn') &&
+    viewSrc.includes('const liveRef = useRef({ level, pace, lookSensitivity, stepUnit, turnFraction,'));
+check('§6 ONE PRODUCER, still: the eye is moved in exactly one place outside the transport, `transportWalk` keeps two callers, and no motion or trace write entered the key handlers',
+  (viewSrc.match(/eye = \[eye\[0\] \+ /g) ?? []).length === 1 && (viewSrc.match(/transportWalk\(/g) ?? []).length === 2 &&
+    !/\beye\s*=/.test(viewSrc.slice(viewSrc.indexOf('const onKeyUp = (ev: KeyboardEvent)'), viewSrc.indexOf('const onBlur = '))));
+check('§6 ★ "level the horizon" is NOT here — the snaps are the two ruled lawful; no level snap exists in the table or the view',
+  !/level/i.test(viewSrc.slice(viewSrc.indexOf('const snapTo ='), viewSrc.indexOf('const snapTo =') + 2600).replace(/⛔ "level the horizon" is not here[^\n]*/, '')) && walkKeyAct('Insert') === null);
+
+
+console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-KEYED-WALK: ALL PASS — the key addresses a door by its own name, a press is one period of its deck element in every room, the frames ride the room\'s own transport, a tap is one counted unit, and one producer moves the eye' : `DIAGNOSE-THE-KEYED-WALK: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

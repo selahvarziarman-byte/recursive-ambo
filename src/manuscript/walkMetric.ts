@@ -132,6 +132,41 @@ export const transportAlong = (model: WalkModel | null | undefined, from: Vec3, 
   return projectTangent(Y, W);
 };
 
+/** THE EXPONENTIAL MAP in the chart (STAMP K-2c, the counted step): the chart
+ * point at TRUE distance `u` from `k` along the chart direction `dir` — on the
+ * quadric Y = cosh(u)·X + sinh(u)·V (H³) or cos(u)·X + sin(u)·V (S³), V the
+ * unit tangent, projected back; at E³ the chart's own k + û·u. A counted step
+ * then walks to this point by the same bounded walk a letter-press uses. */
+export const expMap = (model: WalkModel | null | undefined, k: Vec3, dir: Vec3, u: number): Vec3 => {
+  const L = Math.hypot(dir[0], dir[1], dir[2]) || 1;
+  if (!model) return [k[0] + (dir[0] / L) * u, k[1] + (dir[1] / L) * u, k[2] + (dir[2] / L) * u];
+  const X = liftPoint(model, k);
+  const V0 = liftTangent(model, k, dir);
+  const nv = Math.sqrt(Math.abs(quadricDot(model, V0, V0))) || 1;
+  const V: Vec4 = [V0[0] / nv, V0[1] / nv, V0[2] / nv, V0[3] / nv];
+  const c = model === 'H3' ? Math.cosh(u) : Math.cos(u);
+  const sn = model === 'H3' ? Math.sinh(u) : Math.sin(u);
+  const Y: Vec4 = [c * X[0] + sn * V[0], c * X[1] + sn * V[1], c * X[2] + sn * V[2], c * X[3] + sn * V[3]];
+  return [Y[0] / Y[3], Y[1] / Y[3], Y[2] / Y[3]];
+};
+
+/** THE PERPENDICULAR TOWARD A PLANE (STAMP K-2c, "face the nearest door
+ * squarely"): the chart direction at `k` of the geodesic that meets the plane
+ * {x : x·n = d} at right angles — the plane's own covector projected to the
+ * tangent space at k (H³: U = (n, d) with ⟨U,X⟩ = s(n·k − d); S³: U = (n, −d)),
+ * T = U − ⟨U,X⟩/⟨X,X⟩ · X, projected back to the chart. At E³ it is n itself.
+ * The witness runs it: the geodesic reaches the plane with its tangent
+ * orthogonal, in the room's metric, to every in-plane direction. */
+export const perpendicularToward = (model: WalkModel | null | undefined, k: Vec3, n: Vec3, d: number): Vec3 => {
+  if (!model) return [n[0], n[1], n[2]];
+  const X = liftPoint(model, k);
+  const U: Vec4 = model === 'H3' ? [n[0], n[1], n[2], d] : [n[0], n[1], n[2], -d];
+  const sgn = model === 'H3' ? -1 : 1; // ⟨X,X⟩
+  const ux = quadricDot(model, U, X);
+  const T: Vec4 = [U[0] - (ux / sgn) * X[0], U[1] - (ux / sgn) * X[1], U[2] - (ux / sgn) * X[2], U[3] - (ux / sgn) * X[3]];
+  return projectTangent(X, T);
+};
+
 /** a chart point carried through a projective door; null AT THE HORIZON —
  * the eye stops there, never a fabricated place (the transport's own law) */
 export const projectivePoint = (g4: Mat4, k: Vec3): Vec3 | null => {
