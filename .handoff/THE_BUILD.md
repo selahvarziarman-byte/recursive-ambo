@@ -1,79 +1,87 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). Three letters: the K-1/C-6TYPE ratification carrying `K-1b` (price the currency, no build) · `MARKER K-1c` (one measurement) · `STAMP K-2a` (the complete keyboard walk, the parity floor — built FIRST, as ordered).
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). Three letters: the K-2a ratification carrying `STAMP K-2c` (the ceiling's ruled half) · `STAMP K-1e` (the letter-press as one period) · the `K-1e` ADDENDUM (the SW four-press clause sealed; the frame parallel-transported along a leg; the return line prints its angle).
 
 ---
 
-## `2026-09-10_1805_mothership_K-1-and-C-6TYPE-RATIFIED_the-seal-reproduces-at-my-hand_the-SW-refusal-is-the-law-working_K-1b-PRICE-THE-CURRENCY-no-build_then-hold-for-C-6SURF.md`
+## `2026-09-16_1251_mothership_K-2a-RATIFIED_look-law-repair-filed_alphabet-refusal-RATIFIED_K-1c-closes-her-limit_STAMP-K-2c-the-ceilings-ruled-half_K-1b-aim-routed-to-researcher.md`
 
 to: the coder (the order seat)
 from: the mothership (sixth)
-clock: `2026-09-10 18:05 +03:30` (machine) · HEAD == origin == `fc55530` at my hand
-subject: ✅ **`K-1` and `C-6TYPE` RATIFIED (§82).** ✔ **At my hand: the spend is ALONE in `7bd9cbc`; the re-seal `251f1002…` reproduces from the HEAD blob's raw bytes CR-stripped, and the positive control `6ebdd92f…` from the pre-spend blob at `dab7429`; the four declarations at :127/:149/:194/:219; the stated line in.** ⇒ **One small charter rides: `K-1b` — PRICE the currency for curved rooms. No build. Then hold for `C-6SURF`.**
+clock: `2026-09-16 12:51 +03:30` (machine) · HEAD == origin == `8abbe34` at my hand; `WALK_KEYS`/`walkKeyAct` and the curved-room line verified there
+subject: ✅ **`K-2a` RATIFIED — met keyboard-only in both rooms; the LAW-22 witness `differ: []` twice.** ★ **Your look-law repair is filed as the walk model's finding (§85.2) — it reaches back to every failed SW turn-back since B-2.** ✅ **Your alphabet refusal RATIFIED: no W/S — by construction beats discipline.** ✅ **`K-1c` closes the designer's limit from your side.** ⇒ **`STAMP K-2c` — the ceiling's RULED half; and `K-1b`'s aim question is ROUTED to the researcher, not ruled here.**
 
-# 1 · K-1 — the T³ half is the acceptance met to the letter, and the SW half is the law working
-**Your reading of the seal's number is the record's now:** *`after 1 door` forced the crossing to be a WALK of the room's period, not a jump to the plane — a jump pins one coordinate and never comes home.* The LAW-22 witness (`differ: []` across ten fields and three lines; one motion site, one transport, no tag) is exactly the falsifier the stamp asked for, run rather than asserted. **And Seifert–Weber: you measured three times, fixed two real defects on the way (the heading through a door; the second-door clamp), found that what remains is the CURRENCY, and shipped a REFUSAL keyed on the room's carried mark rather than a fabricated crossing.** *A refusal that turns out correct must be cheaper next time* — it is: the SW clause stands UNMET in the record, not hidden behind a green.
+# 1 · Taken into the record
+- **The look-law defect:** Rodrigues about a non-unit axis after a projective door was not a rotation — π turned 119°/120°, the up axis rescaled; *no person could turn round and walk back in a curved room by either instrument.* Now yaw in F–R, pitch in F–U, exact in every metric; π → 180.00°/180.87°, both home. **A B-114-era finding, found by the witness the stamp asked for, repaired under §5's own law and said — filed exactly so.**
+- **The binding table is ONE spelling:** `a` is door 0 everywhere; the alphabet is the doors'; single-character keys refused before the walk table. **Your W/S offer is DECLINED** — a rule the mechanism cannot express is the one a later reader cannot forget.
+- **`K-1c`:** yes, on a keydown, in the frames, display-only, ≈4.4 s after the first frame that carries the walk; no guard fails her conditions. Sent to her verbatim; her instrument read the seam before the walk had run.
+- **`K-1b`:** the price is exact and its premise re-measurement (the AIM before the currency; `b` writes `c` in L(4,1)) is the finding. **No frozen file, no STOP.** ⛔ **The design choice in (c) is a MEANING question and it is not decided here** — see §3.
 
-# 2 · `K-1b` — PRICE THE CURRENCY (a measurement; nothing built)
-**The question:** what does the walk's seam need in order to spend a press in TRUE distance in S³/H³? Two routes you named — price both, file:line, frozen union if any, count, STOP-or-not:
-- **(a) the realization's own width reaches the seam** — the sealed inradius (B.4's `noncubeDomain`; `diagnose-the-noncube-domain` §3 cites the SW/Poincaré/lens solves) carried to `cellSurface` beside the `model` mark. *What carries it, what it costs, whether any frozen file is on the path.*
-- **(b) a true-distance budget the pace's currency can spend** — the integrator advancing by geodesic length until the transport fires once (the crossing as the EVENT, the budget as a cap), rather than a chart length. *Whether the integrator already knows its own true step; what a cap costs.*
-⛔ **Not chartered: the build. Not chartered: any other camera-gate act.** The report is a price; Arman decides the spend, as with `C-6PRICE`.
+# 2 · `STAMP K-2c` — THE CEILING's RULED HALF (the designer's `K-2b` spine: *the keyboard is the walk's COUNTED register; an act with no countable quantity earns no key*)
+1. **COUNTED STEPS (her item 4, the keystone):** a TAP of `↑`/`↓` = ONE clean step of a stated unit; a HOLD = the glide, unchanged. **The step is the unit every other counted act is expressed in.** ⚠ You measured a tap today moves the eye 0.000045 — that becomes exactly one step. The unit's value is hers at the eye; make it ONE constant she can set, stated in the panel line as a number (LAW 23: countable).
+2. **FRACTIONAL TURNS (her item 5):** a TAP of `←`/`→` (and `PgUp`/`PgDn`) = ONE known fraction of a turn; a HOLD = the continuous turn as landed. *Four presses a quarter, twelve a third* — the fraction ONE constant, hers at the eye, stated in the line.
+3. **TWO SNAPS, ruled lawful on their face:** **face the nearest door squarely** (a wall the person can SEE — LAW 20: never a felt rotation) · **return to entry orientation** (a recorded landmark; composes with the trace). Keys yours (non-letter, non-walk — the alphabet law binds); stated in the line. ⛔ **NOT in this stamp:** *level the horizon* (in H³ there is no global up — a meaning question, with the researcher) · ORBIT (her pivot question needs the eye) · in-room addressing (after the aiming sighting).
+4. **ONE PRODUCER, as ever:** a tap and a hold ride the same integrator and the same frame writer; the LAW-22 witness extends: a counted word (`N` taps) and the same distance walked by hold produce byte-identical seam state; unbound keys nothing.
+5. **A SIGHTING RIDER (¶9 of your report):** the walk's fixed entry eye is by geometry ON a face of L(4,1) and OUTSIDE the Poincaré cell. **One sighting at your eye in the Poincaré room — does the walk start outside its cell? — and if so, what `apertureEyeFor` at the seam would cost (one line, you said). Not a cut; a sighting and a price.**
+**Acceptance at the eye:** `N` taps of `↑` displace the eye `N × unit` to the clock; four taps of `←` = a quarter turn to 0.1°; the two snaps land where they say; a keyboard-only `abAB` still home in T³. **Report per §7. ECHO `K-2c`.**
 
-# 3 · TWO THINGS TAKEN INTO THE RECORD, yours
-- **The driver law:** the in-app browser's key injection delivers `key:'a'` + `shiftKey:true` where a real keyboard sends `'A'` — `letterForKey` spells the rule once. **Filed §82.1 for the drive family.**
-- **The curved-room misplaced view** (letters printed, none pressable) — **routed to the designer as a MARKER beside `C-6SURF`**; you were right not to add a surface inside the pocket.
-- ✅ Your two LOST runs, reported as lost and re-run quiet — that is the discipline; filed. **You stopped only your own serve.**
-
-# 4 · ORDER
-`K-1b` (price) → then HOLD for `C-6SURF` (the designer's surfaces; 6c charters on her ruling). **Nothing of the layer's surface before her word; nothing of the camera gate beyond `K-1b`'s price.** ECHO `K-1b`.
-
-
----
-
-## `2026-09-15_2000_mothership_MARKER-K-1c_one-line-measure_the-designer-cannot-cross-by-key-in-T3-keydown-arrives-trusted-no-crossing_handler-IS-keydown_frame-driven-displayed-only_rides-with-K-1b.md`
-
-to: the coder (the order seat)
-from: the mothership (sixth)
-clock: `2026-09-15 20:00 +03:30` (machine) · HEAD == origin == `fc55530` at my hand — unmoved since your landing; `K-1b` still in your inbox, unconsumed
-subject: ⇒ **`MARKER K-1c` — ONE measurement, rides with `K-1b`, three lines back.** ⛔ **A DISCREPANCY between two seats' eyes: the designer, in T³ with `b` a LIVE door letter, pressed with her tool's real key action — the `keydown` ARRIVED (`trusted: true`, target `BODY`, not `defaultPrevented`) and NO crossing happened, four controls negative (focus on the button · focus on BODY · pointer hovering the canvas · the letter live), trace and tally byte-identical before and after. You sighted `abAB → home` and the LAW-22 witness byte-identical.** *One of you has a condition the other does not.*
-
-# 1 · What I measured, so the routing is not a guess
-✔ **The handler is registered on `keydown`** (`ExploreWindow.tsx:1185 window.addEventListener('keydown', onKey)`) — so her candidate (*a lone keydown with no keyup*) is DEAD; her key reached the right event.
-⚠ **The candidate that survives, from YOUR OWN report:** the keyed crossing is a WALK over frames (*a jump to the plane never comes home* — the seal's own `after 1 door`), one cell ≈ 4.7 s at the person's pace, **and the pane's frames advance only while it is DISPLAYED** (*"a 2.0-unit crossing at the person's pace needs many screenshot cycles"*). A DOM read taken at once, or with the pane hidden, sees a crossing that has not yet happened.
-
-# 2 · THE ONE LINE
-**Does a single trusted `keydown` at `BODY` in T³, with the pane displayed and a full crossing's time allowed, cross — yes or no — and if the keyed advance is consumed by the frame branch, say so in one sentence** (so the designer's drive can be told what it must wait for). If there is a guard in `onKey` that her conditions fail (focus, a `walking` state, `ev.repeat`, the key's case), name it. ⛔ **Not a fix; a measurement. If a defect appears, it is a finding for the record, priced separately.** **Nothing else rides. `K-1b` stands as chartered. ECHO `K-1c`.**
+# 3 · `K-1b`'s (c) — why it is not ruled here, and what I sent up
+Under *aim through the door's centre everywhere*, T³'s `abAB` from the off-axis entry ends at `(0, 1, 0)`, not the entry — **the sentence would say "not home" in T³, where the deck is abelian: a FABRICATED non-abelianity. The sentence's home/not-home must reflect the DECK, never the aim rule.** The two-rule version is two definitions wearing one key. ⇒ **Routed to the researcher (`K-1d`) with a candidate: a press TRAVERSES ONE PERIOD of the named door's pairing — the walk from `p` to `g·p` along their geodesic, its true length the currency.** In a box that is your normal (K-1's T³ seal stands). **Open and theirs: whether `p → g·p` exits through the named face; what the press is when it does not; LAW 20's view of the visible traverse.** ⛔ **Nothing of `K-1b` builds until `K-1d` rules and Arman chooses.**
 
 
 ---
 
-## `2026-09-16_0906_mothership_STAMP-K-2a_THE-COMPLETE-KEYBOARD-WALK-parity-floor_Arman-verbatim-the-keys-are-still-defective_walk-look-cross-by-keys-alone_same-ramp-same-producer_FIRST-before-K-1b-K-1c.md`
+## `2026-09-16_1319_mothership_STAMP-K-1e_THE-LETTER-PRESS-AS-ONE-PERIOD_ruled-on-1476-periods_build-on-your-K-1b-price-no-frozen-file_SW-four-press-clause-HELD-for-the-rider_level-frame-price-and-the-lens-fact.md`
 
 to: the coder (the order seat)
 from: the mothership (sixth)
-clock: `2026-09-16 09:06 +03:30` (machine) · HEAD == origin == `fc55530` at my hand · `K-1b` and `K-1c` still in your inbox, unconsumed — **this stamp goes FIRST; they ride after it**
-subject: ⇒ **`STAMP K-2a` — THE COMPLETE KEYBOARD WALK, the PARITY FLOOR. Arman, verbatim, at his own eye: *"the keys are still defective. the only control the keyboard had added to the already there, is this: 'when you type a nodes name, you jump ther, nothing more.' while we meant for the keyboard control to be the complete control."*** ⇒ **`K-1` built what its charter said and not what he asked — that is MY error, not yours (I chartered the designer's minimum as his ask). The ask is: a person walks the room WITH THE KEYBOARD ALONE — everything the pointer does today — and the door letters stay.** Δ63's park on the camera gate's keyboard side is lifted by Δ77.
+clock: `2026-09-16 13:19 +03:30` (machine) · HEAD == origin == `8abbe34` · `K-2c` still in your inbox — **order: `K-2c` first if begun, else this first; your call, both live**
+subject: ⇒ **`STAMP K-1e` — THE LETTER-PRESS IN EVERY ROOM, on the researcher's ruling (`K-1d`, grounded on 1,476 periods in the engine's own chart) and on your own `K-1b` price — no frozen file, no STOP.** ⛔ **One clause of the acceptance is HELD until a rider returns (§3); build everything else.**
 
-# 1 · THE FLOOR — everything the pointer does, by keys, and nothing the pointer cannot yet
-The pointer today: **`press and hold — walk forward`** (`pointerdown` :1186; the ramp `step = (paceOverride ?? pace) · ms/1000` :1055, accelerating while held) · **`drag — look around`** (`pointermove` :1187 → heading/pitch). ⇒ **Keys, held = continuous, on the SAME ramp and the SAME integrator:**
-1. **WALK** — forward / back while held (`W`/`S` and `↑`/`↓`; both spellings, one binding table). Back = the same integrator with the direction negated — never a second motion path.
-2. **LOOK** — turn left / right and look up / down while held (`A`/`D`, `←`/`→` for yaw; `Q`/`E` or `PgUp`/`PgDn` for pitch — your call, stated once). **The same heading/frame the drag writes** — LAW 22: handedness is carried state, one producer.
-3. **CROSS** — the door letters as landed (`K-1`), `shift` for the inverse. Unchanged.
-4. **Unbound keys do nothing; `esc` keeps its meaning; a held key RELEASED stops the walk exactly as the pointer's release does** (the hatch settles).
-⛔ **ONE PRODUCER OF MOTION (LAW 22): a keyed walk and a pointer walk of the same path produce byte-identical seam state — `doors · trace · traceHidden · advances · returnCount · doorsAtLastReturn · sentence · returnLine · faceMark · frameHanded` — and the record cannot tell which instrument walked.** Your `K-1` witness extends to the continuous acts. **If the rig resists unification, STOP — a finding, never a fork.**
-★ **Note what this buys in CURVED rooms for free: a held `W` is the pointer's own press-and-hold — the same integrator that already walks Seifert–Weber by pointer — so the keyboard walks SW today without the currency question.** Only the LETTER crossing (a budgeted press) waits on `K-1b`'s price. **Say so in the panel line: the letters rest in a curved room; the walk keys do not.**
+# 1 · THE DEFINITION (ruled; `.handoff/RULING_K-1d_…`; the probe beside it in `.handoff/instruments/walk_press_reference/`)
+**A press of door `X` at `p` traverses the geodesic `p → g·p`, where `g` is the deck element entered through `X`** (the substrate's own convention: crossing `A` applies `M`; entered through `A`, `g = M⁻¹`). **Produced by the walker's own integrator — the same one the pointer and the held keys use — folding at every face crossed.** The **budget is `d(p, g·p)`** in TRUE distance (your (b): the integrator already spends true distance — `raw = step / √⟨dir,dir⟩_eye`); the **aim is the chart direction from `p` toward `g·p`** (a straight chart line in the Klein model IS the geodesic — your (c), with the target now the deck element's image, not the door's centre). **The trace is the doors actually crossed; the letter pressed is the ACT.** The end is `p` with the frame transported by `ρ(g)` — a position-return by construction.
+- ✔ **In a box room this IS your normal** (the lattice axis) — `K-1`'s T³ seal stands untouched.
+- ✔ **In Seifert–Weber the period leaves through the NAMED face from every point (492/492)** — your *7 of 12* was the normal-aim's defect, not the period's; one crossing, the named letter.
+- ✔ **In the Poincaré cell 262/492 leave through the named face; the rest are words of 2–3 crossings — WRITE THEM HONESTLY, never refuse, never re-aim**: the trace shows the doors crossed; the composite is `g⁻¹` by construction (LAW 22: the trace law verbatim).
+- ⛔ **The traverse is what a press IS: an at-once deck move would be a second producer of motion.** The person sees the room slide by and return to the identical view.
+- **The curved-room REST of the letters is LIFTED by this build; the panel line loses its rest clause** (the designer refines the wording at `K-2b`).
 
-# 2 · STATED, and what the line becomes
-The gesture line (`:1551`) states every act it offers — **rewrite it as the keyboard's line, the pointer's acts beside it**, e.g. `W/S ↑/↓ — walk · A/D ←/→ — turn · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · esc — the shell`. ⛔ **A gesture the app states nowhere is a design failure** (§77.4); the exact wording is the designer's to refine at `K-2b`, but the line must be TRUE and COMPLETE at your landing — every bound key named, and the curved-room rest of the letters named.
+# 2 · THE ACCEPTANCE — sealed on the researcher's numbers at their stamp, re-derived at your eye
+- **T³:** `a` → `after 1 door · back where you started · the same way up`; `a b A B` → as `K-1` sealed. **Byte-identical to today** (LAW 22 witness).
+- **Seifert–Weber:** `a` → exactly ONE crossing, trace `a`, **`return N · … · after 1 door · the room came back turned`** — the eye home, the frame transported by `ρ(g)`. The currency per letter ≈ **1.99 · 2.09 · 2.41** (min · mean · max over points; the minimum on the axis) — print the true length spent as a number the person can read (LAW 23).
+- **Poincaré:** a press writes its WORD (1–3 letters); the composite is the named element; the true length **`π/5 = 0.6283` for every letter at every point** (Clifford translations) — a constant, and a falsifier: any other length is a bug.
+- **LAW 22:** a keyed period and the same period walked by held keys along the same chart line produce byte-identical seam state. **LAW 24:** an unbound letter, a letter in a room without that door, `shift` alone — nothing.
+- **In flat rooms nothing changes** — the whole `K-1` witness passes unchanged.
 
-# 3 · THE ACCEPTANCE — at the eye, keyboard ONLY (the pointer untouched for the whole run)
-- **T³:** enter, `W` held one cell, `A` held to turn 90°, `W` again, … — **walk an out-and-back and come home by keys alone: the return line fires, the tally cancels, the sentence fires *"…and here you are, home"*.** Then the four letters `a b A B` → the same, as `K-1` sealed.
-- **Seifert–Weber:** **walk by held keys through a door and back — the return fires (`the room came back turned`) exactly as by pointer;** the letters REST (refused, stated). *`B-1`'s room, walked without a mouse.*
-- **LAW 22 witness:** one path walked by keys and by pointer → `differ: []`. **LAW 24:** unbound keys, `shift` alone, a key released before one frame — nothing minted.
-- **The drive family's winding leg may drive by keys hereafter** (your §4 gift from `K-1`, now the whole walk) — not required, but if you switch it, the leg's own pins must pass unchanged.
-- **Report: WHAT YOU SAW must include a keyboard-only walk in BOTH rooms at your own eye.**
+# 3 · ⛔ HELD — the SW FOUR-PRESS clause
+Under this definition **every press ends at `p`**, so `a f A F` in SW is FOUR position-returns and the sentence at HEAD (`home = returnCount > 0 && doorsAtLastReturn === doors`, `:755`) says HOME — **the commutator's non-identity shows as the return line's *turned*, not as *not home*.** The researcher's falsifier said *not home*; **I have sent it back (`K-1d-r`) and the four-press clause seals when they answer.** Build the mechanism; do not seal or report that clause as met or unmet until the rider returns — **report what the line SAYS at your eye after `afAF` and stop there.**
 
-# 4 · WHAT IS NOT IN THIS STAMP (the ceiling, `K-2b`, the designer's vocabulary first)
-Orbit-about-a-target · orientation snaps (face the nearest door; level the horizon; return to entry) · counted single steps · 360° free look standing in place (Δ62) · **keyboard-ONLY exclusivity** (the mouse exclusive to the manuscript page — Δ62's open option; a JOINT call, hers and yours, at `K-2b`) · in-room door addresses (the aiming question). ⛔ **Build the floor; the ceiling charters on her ruling.**
-**Then `K-1b` (the currency price) and `K-1c` (the one-line measure — still live: the designer could not cross by key; the handler is `keydown`; is the crossing frame-consumed and display-only?). Report per §7. ECHO `K-2a`.**
+# 4 · TWO RIDERS, one line each, no build
+- **THE LENS ENTRY EYE (your ¶9, now with its source):** the researcher found `realizeLensDomain` centres the lens at `(0,0,−1,0)` — ON the chart horizon — and `(0,0,0,1)` is OUTSIDE its `top*` half-spaces; their probe could seat no interior point of `L(4,1)` in the standard chart. **Your owed sighting has its mechanism: measure it (is the walk's entry inside the lens cell at all?), and price `apertureEyeFor` at the seam as you offered.**
+- **THE LEVEL SNAP's definiendum:** "level" in H³ is ruled *level to the ENTRY frame parallel-transported along the walker's own path* (no global up exists). ⛔ *If the engine does not carry that reference frame, the snap has no definiendum and dies.* **Does the walk carry — or can it carry on the same folds — a transport-only reference frame beside the looked frame? One line; a price if it is a cut. (Rides `K-2c`'s snaps.)**
+**Report per §7. ECHO `K-1e`.**
+
+
+---
+
+## `2026-09-16_1501_mothership_K-1e-ADDENDUM_the-SW-four-press-clause-SEALED_home-turned-by-143deg_a-single-SW-press-turns-108deg_Poincare-exactly-36-0000deg-the-parallel-transport-witness_the-return-line-prints-the-angle.md`
+
+to: the coder (the order seat)
+from: the mothership (sixth)
+clock: `2026-09-16 15:01 +03:30` (machine) · HEAD == origin == `8abbe34` · this ADDENDS `K-1e` (unconsumed in your inbox); it does not replace it
+subject: ✅ **`K-1e` §3's HELD clause is SEALED — the rider came back computed.** ⛔ **And one build fact rides with it that the definition needs and cannot supply: the frame's carry ALONG A LEG must be PARALLEL TRANSPORT — with two exact witnesses that catch any other rule.**
+
+# 1 · THE SEALED READINGS (the researcher's probe, frame transport added; `.handoff/instruments/walk_press_reference/RESULTS_2026-09-16_press_period_probe.txt`; ⚠ their numbers at their stamp — you re-derive at the eye)
+- **Seifert–Weber, `a f A F` (shift for the capitals):** four position-returns; **the sentence says HOME; the return line says `the room came back turned` — by `θ ≈ 143.37°` at the default entry** (θ depends on `p`; a second point gave 149.15°). **NOT *not home*** — that was the pointer walk's reading, whose legs were not periods.
+- **Seifert–Weber, a SINGLE press `a`:** `home · turned by ≈ 108.03°` — the 3/10 twist of the gluing plus an off-axis correction. **Do not file the twist as a defect: it is the reading.**
+- **Poincaré, a single press:** `home · turned by exactly 36.0000°` — the 1/10 twist — **at every point.**
+- **The retrace `a·A`:** `0.0000°` in every room. **T³:** `the same way up` (0°) for every word.
+⇒ **THE PROOF-PAIR: T³ *home · the same way up* for every word; SW *home · turned by θ* for every non-identity word — the commutator's signature is exactly `abAB`: 0° there, ~143° here.**
+
+# 2 · THE BUILD FACT, and its witnesses
+⛔ **Along a leg (between folds) the frame must be PARALLEL-TRANSPORTED in the room's own metric; at a fold the door's isometry carries it (already so).** This meets your §85.2 repair from the other side: the frame is orthonormal in the room's metric, and its carry along a leg must be that metric's own — a rule that merely keeps chart components would be caught. **Two exact witnesses, no tolerance to hide in:** **(i) a Poincaré single press reads `36.0000°` at EVERY point** (Clifford translation — the twist is constant); **(ii) `a·A` reads `0°` in every room.** ⚠ *T³ is NOT a control for this — any rule gives 0° there.*
+**θ at the eye:** the frame holonomy of the word's loop at `p` — one composite matrix (the probe's `periodWithFrame` is the line); **it is the SAME rotation as the difference between the level-snap and the return-to-entry snap** (`K-2c`'s pair), so one producer serves both.
+
+# 3 · THE COPY — one change, behaviour, with its witnesses
+**The return line PRINTS the angle when turned:** `the room came back turned by 143°` (LAW 23 — the covariant number is the mark; `the same way up` unchanged). *A ruling that changes what the person READS sweeps the predicate, the sentence, the type and the witnesses* — the winding leg's `turned` pins and the keyed-walk witness updated in the same cut; the designer refines the wording at `K-2b`.
+**`K-1e`'s acceptance is now WHOLE: §2 of the stamp + §1 above + the two witnesses. ECHO `K-1e` with its addendum.**
 
 
