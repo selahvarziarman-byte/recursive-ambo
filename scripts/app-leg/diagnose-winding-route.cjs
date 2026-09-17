@@ -210,7 +210,7 @@ function waitHttp(url, timeoutMs) {
     clause('C.window', 'the room builds, summons, opens');
     clause('C.turned', '★★ `return 1 · back where you started · after 2 doors · the room came back turned by 180°` — seam + DOM (K-1e addendum: the line prints the holonomy)');
     clause('B2.retrace', '★ the retrace with a head-turn: `2 doors · the same way up` — the deck falsifier');
-    clause('P.period', '★ LAW 22 AT EQUAL LENGTH (the K-1e rider): the nearest door faced squarely and crossed by its LETTER, against the same door crossed by a HELD ↑ of exactly one period on the input clock — the seam byte-identical but for the eye (the clock's) and the register's own press line');
+    clause('P.period', "★ LAW 22 AT EQUAL LENGTH (the K-1e rider): the nearest door faced squarely and crossed by its LETTER, against the same door crossed by a HELD ↑ of exactly one period on the input clock — the seam byte-identical but for the eye (the clock's) and the register's own press line");
     console.log('\n— the fan chamber: the interior-transport gap —');
     clause('E.parcels', 'the fan lift + segment place');
     clause('E.armed', 'the thicken pair arms');
