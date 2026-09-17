@@ -978,7 +978,10 @@ function SelectionPanel() {
           id="selection-composition"
           title="Cell Composition"
           count={`${selectedCellFaces.length}F / ${selectedCellEdges.length}E`}
-          defaultOpen={false}
+          // C-6a part 2 (§94, ruled): OPEN by default — this section holds the ONLY
+          // route to lifting an edge (the canvas has no edge handler), and a row a
+          // person has never seen has never shown its tooltip
+          defaultOpen
           resetKey={selectedCell.id}
         >
           <CellComposition

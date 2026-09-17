@@ -69,9 +69,9 @@ export function Workspace3D() {
   );
 
   return (
-    <div className="relative h-full min-h-0 w-full bg-neutral-950">
+    <div className="relative flex h-full min-h-0 w-full flex-col bg-neutral-950">
       <Canvas
-        className="h-full w-full"
+        className="min-h-0 w-full flex-1"
         camera={{ position: [3.2, 2.4, 3.8], fov: 45 }}
         onPointerMissed={() => {
           selectCell(null);
@@ -103,8 +103,19 @@ export function Workspace3D() {
           resetCameraRequest={resetCameraRequest}
         />
       </Canvas>
-      <div className="pointer-events-none absolute left-3 top-3 rounded border border-stone-800 bg-stone-950/85 px-3 py-2 text-xs text-stone-300 shadow-lg">
-        {formatHoverStatus(shape, hoverTarget)}
+      {/* C-6a part 2 (§94, ruled): the readout's empty state is a TRUE ABSENCE —
+          no words, no glyph. The gesture line below teaches hover now; this slot
+          only ever reports what IS under the pointer. A hidden ghost holds one
+          line's height so the panel does not jump between empty and filled. */}
+      <div
+        data-ambo-hover-readout="true"
+        className="pointer-events-none absolute left-3 top-3 rounded border border-stone-800 bg-stone-950/85 px-3 py-2 text-xs text-stone-300 shadow-lg"
+      >
+        {formatHoverStatus(shape, hoverTarget) ?? (
+          <span aria-hidden="true" data-ambo-hover-ghost="true" style={{ visibility: 'hidden' }}>
+            Hovering cell
+          </span>
+        )}
       </div>
       <div className="absolute right-3 top-3 flex gap-2">
         <button
@@ -129,6 +140,17 @@ export function Workspace3D() {
         >
           Reset Camera
         </button>
+      </div>
+      {/* C-6a part 2 — THE GESTURE LINE, the designer's VERBATIM (§94): the module
+          states every act it offers, in its OWN persistent row under the canvas —
+          never in the hover readout's field, which content overwrites. The line
+          teaches; the tooltips confirm. The idiom is the walk's (ExploreWindow's
+          line); the register is the Ambo's own. */}
+      <div
+        data-ambo-gesture-line="true"
+        className="shrink-0 border-t border-stone-800 bg-stone-950 px-3 py-2 text-xs leading-relaxed text-stone-400"
+      >
+        {`click — select what you point at, on the solid or in the inspector · shift-click — toggle it in the lift region (on the solid: the face you hit) · shift+alt-click the solid — the whole cell instead · edges lift from the inspector's rows only · hover — preview what corresponds · drag — orbit · right-drag — pan · wheel or middle-drag — zoom`}
       </div>
     </div>
   );
@@ -2470,9 +2492,11 @@ function isVertexHoverTarget(target: InspectionHoverTarget | null, vertexId: str
   return target.kind === 'edge' && target.vertexIds.includes(vertexId);
 }
 
-function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): string {
+function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): string | null {
+  // C-6a part 2: nothing under the pointer is a true absence — the gesture line
+  // teaches hover; this readout never names a gesture (no words, no glyph)
   if (!target) {
-    return 'Hover a cell or inspector row to preview correspondence';
+    return null;
   }
 
   if (target.kind === 'cell') {

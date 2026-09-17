@@ -69,11 +69,43 @@ check('§1 ⛔ NO select-face act was invented: `selectFace` does not appear in 
   !panels.includes('selectFace') && !workspace.includes('selectFace'));
 
 // ── boundaries ──
-check('§1 formatHoverStatus is untouched — its `if (!target)` branch still returns the one sentence the designer measured, and no gesture line was put in its slot',
-  workspace.includes("  if (!target) {\n    return 'Hover a cell or inspector row to preview correspondence';\n  }\n"));
+check('§1 formatHoverStatus\'s CONTENT branches are untouched — the cell, vertex, edge and face readouts still say what is under the pointer',
+  ['`Hovering cell ${label} | ${cellSummary} | id: ${cell.id}`', '`Hovering vertex ${label} | id: ${target.vertexId}`',
+   '`Hovering edge ${endpoints} | ${relation} | id: ${edge.id}`', '`Hovering face ${label} | ${relation} | id: ${face.id}`'].every((s) => workspace.includes(s)));
 check('§1 no new store action rode in: the inspector\'s row handlers call only selectVertex · selectEdge · toggleLiftSelection · setEdgeNotice · setHoverTarget',
   ['selectVertex(', 'selectEdge(', 'toggleLiftSelection(', 'setEdgeNotice(', 'setHoverTarget('].every((s) => panels.includes(s)) &&
     !/\bselectFace\(|\bselectCellFace\(|\binspectFace\(/.test(panels));
 
-console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ALL PASS — the edge row says click: select, the face row is no longer dressed as a control, the vertex row is as it was' : `DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ${failures} FAILURE(S)`}`);
+// ═══════════════ §2 — C-6a PART 2: the designer's line, in its own row, with the two rulings that ride ═══════════════
+console.log('\n----- §2 ★★ C-6a part 2 — the Ambo states every act it offers, in its OWN row -----');
+const explore = readLf('src/manuscript/ExploreWindow.tsx');
+const THE_LINE = 'click — select what you point at, on the solid or in the inspector · shift-click — toggle it in the lift region (on the solid: the face you hit) · shift+alt-click the solid — the whole cell instead · edges lift from the inspector\'s rows only · hover — preview what corresponds · drag — orbit · right-drag — pan · wheel or middle-drag — zoom';
+const lineAt = workspace.indexOf('{`' + THE_LINE + '`}');
+const canvasCloseAt = workspace.indexOf('</Canvas>');
+const readoutAt = workspace.indexOf('data-ambo-hover-readout="true"');
+const gestureAt = workspace.indexOf('data-ambo-gesture-line="true"');
+check('§2 ★★ THE LINE IS PRESENT VERBATIM, ONCE, in its OWN element (`data-ambo-gesture-line`) — a row after the canvas, not the hover readout\'s field',
+  lineAt > 0 && workspace.indexOf('{`' + THE_LINE + '`}', lineAt + 1) < 0 && gestureAt > canvasCloseAt && lineAt > gestureAt && lineAt - gestureAt < 400 &&
+    !(lineAt > readoutAt && lineAt < readoutAt + 700),
+  JSON.stringify({ lineAt, gestureAt, canvasCloseAt, readoutAt }));
+check('§2 ★ the canvas and the line share a COLUMN: the wrapper is a flex column, the canvas grows, the line is its own row under it',
+  workspace.includes('<div className="relative flex h-full min-h-0 w-full flex-col bg-neutral-950">') &&
+    workspace.includes('className="min-h-0 w-full flex-1"') && workspace.includes('className="shrink-0 border-t border-stone-800 bg-stone-950 px-3 py-2 text-xs leading-relaxed text-stone-400"'));
+check('§2 ★★ THE READOUT\'S EMPTY STATE IS A TRUE ABSENCE: `formatHoverStatus` returns null for no target (the sentence that named a gesture is GONE from the module), and the slot holds its height with a hidden, aria-hidden ghost — no words shown, no glyph, no em-dash',
+  workspace.includes('function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): string | null {') &&
+    workspace.includes('  if (!target) {\n    return null;\n  }\n') &&
+    !workspace.includes('Hover a cell or inspector row to preview correspondence') &&
+    workspace.includes('{formatHoverStatus(shape, hoverTarget) ?? (') &&
+    workspace.includes('<span aria-hidden="true" data-ambo-hover-ghost="true" style={{ visibility: \'hidden\' }}>') &&
+    !/data-ambo-hover-ghost[^<]*>\s*—/.test(workspace));
+check('§2 ★ CELL COMPOSITION OPENS BY DEFAULT — the only route to lifting an edge (the canvas has no edge handler: its two mesh clicks select a cell or toggle a face/cell)',
+  /id="selection-composition"\n\s+title="Cell Composition"\n[\s\S]{0,400}?\n\s+defaultOpen\n/.test(panels) &&
+    !/id="selection-composition"[\s\S]{0,500}?defaultOpen=\{false\}/.test(panels) &&
+    (workspace.match(/onClick=/g) ?? []).length === 5 && !workspace.includes("toggleLiftSelection({ kind: 'edge'") && !workspace.includes('selectEdge('));
+check('§2 THE WALK\'S LINE IS UNTOUCHED (the idiom was transplanted, not the text)',
+  explore.includes("{`↑/↓ — walk (tap: one step of ${stepUnit.toFixed(2)} · hold: glide) · ←/→ — turn (tap: 1/${turnFraction} turn · hold: sweep) · PgUp/PgDn — look up and down (the same) · End — face the nearest door · Home — face as you entered · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell`}"));
+check('§2 the two riders on her one line are NOT cut: the vertex row still says `click: inspect`; the three camera buttons are not in the line',
+  panels.includes('title="click: inspect · shift-click: toggle in the lift region"') && !THE_LINE.includes('fit') && !THE_LINE.includes('reset'));
+
+console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ALL PASS — the rows say what a click does, the line states every act in its own row, the readout\'s empty state is a true absence, and the composition opens by default' : `DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);
