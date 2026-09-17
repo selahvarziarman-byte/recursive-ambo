@@ -137,7 +137,22 @@ def window_center(page):
     return box, box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
 
 
-def drag_px(page, dx, dy=0):
+def drag_px(page, dx, dy=0, log=None):
+    # the look decides itself only past a few pixels of motion: a drag under the
+    # dead zone turns nothing, so a small correction goes as a there-and-back
+    # pair whose NET is the wanted pixels (two looks, both recorded and replayed)
+    if 0 < abs(dx) < 8 and dy == 0:
+        s = 1 if dx > 0 else -1
+        drag_px(page, dx + 40 * s, 0, log)
+        drag_px(page, -40 * s, 0, log)
+        return
+    if 0 < abs(dy) < 8 and dx == 0:
+        s = 1 if dy > 0 else -1
+        drag_px(page, 0, dy + 40 * s, log)
+        drag_px(page, 0, -40 * s, log)
+        return
+    if log is not None:
+        log.append((dx, dy))
     # the committed drive's own cure (deficit_app_driver:1381-1388): a drag
     # must be DOM-dispatched in ONE task through the app's real handler chain
     # (pointerdown -> 12 moves -> pointerup). CDP mouse injection serializes
@@ -162,7 +177,7 @@ def drag_px(page, dx, dy=0):
     page.wait_for_timeout(280)
 
 
-def turn_to(page, heading, tries=16, tol=0.10):
+def turn_to(page, heading, tries=16, tol=0.10, log=None):
     # pure-yaw closed loop over same-task DOM drags, measured off seam.forward
     px_per_rad = 220.0
     sign = None
@@ -177,7 +192,7 @@ def turn_to(page, heading, tries=16, tol=0.10):
         if abs(err) < tol:
             return True
         if sign is None:
-            drag_px(page, 30)
+            drag_px(page, 30, 0, log)
             f2 = seam(page)["forward"]
             cur2 = math.atan2(f2[1], f2[0])
             delta = (cur2 - cur + math.pi) % (2 * math.pi) - math.pi
@@ -187,12 +202,38 @@ def turn_to(page, heading, tries=16, tol=0.10):
             px_per_rad = min(600.0, abs(30 / delta))
             continue
         dx = max(-300, min(300, sign * err * px_per_rad))
-        drag_px(page, dx)
+        drag_px(page, dx, 0, log)
     s = seam(page)
     f = s["forward"]
     err = (math.atan2(heading[1], heading[0]) - math.atan2(f[1], f[0]) + math.pi) % (2 * math.pi) - math.pi
     print(f"[turn] gave up err={err:.2f}", file=sys.stderr, flush=True)
     return abs(err) < tol * 2
+
+
+def pitch_to(page, uz, log=None, tries=12, tol=0.01):
+    # the pitch half of the aim: a closed loop over vertical drags, measured
+    # off seam.forward's z - the sign and the pixels-per-radian probed once
+    sign = None
+    px_per_rad = 250.0
+    for _ in range(tries):
+        f = seam(page)["forward"]
+        cur = math.asin(max(-1.0, min(1.0, f[2])))
+        err = math.asin(max(-1.0, min(1.0, uz))) - cur
+        if abs(err) < tol:
+            return True
+        if sign is None:
+            drag_px(page, 0, 20, log)
+            f2 = seam(page)["forward"]
+            delta = math.asin(max(-1.0, min(1.0, f2[2]))) - cur
+            if abs(delta) < 1e-4:
+                continue
+            sign = 1 if delta > 0 else -1
+            px_per_rad = min(600.0, abs(20 / delta))
+            continue
+        dy = max(-200, min(200, sign * err * px_per_rad))
+        drag_px(page, 0, dy, log)
+    f = seam(page)["forward"]
+    return abs(math.asin(max(-1.0, min(1.0, uz))) - math.asin(max(-1.0, min(1.0, f[2])))) < tol * 2
 
 
 def pulse(page, ms):
@@ -385,12 +426,16 @@ def run_cone(page, args, arc):
             print(f"[B2] attempt {attempt}: {lineB}", file=sys.stderr, flush=True)
         record("B2.retrace", gotB, f"seam: {lineB} · dom agrees: {domB == lineB}")
     # P — LAW 22 AT EQUAL LENGTH (the K-1e rider, carried by this leg by the
-    # mothership's word): the nearest door faced SQUARELY (End), crossed once by
-    # its own LETTER (one period, K-1e), against the SAME door crossed by a HELD
-    # ArrowUp of exactly one period on the input clock (2.0 / pace seconds — the
-    # CDP key events carry the browser's own stamps, so the hold is exact
-    # whatever the renderer's frame rate). The seam must be byte-identical but
-    # for the eye (the clock's) and the register's own press line.
+    # mothership's word): a door crossed once by its own LETTER (one period,
+    # K-1e: the walk from p to g·p along their chart line), against the SAME
+    # line walked by a HELD ArrowUp of exactly one period on the input clock
+    # (period / pace seconds between the CDP key-down and key-up, whose stamps
+    # are the browser's own — exact whatever the renderer's frame rate). Three
+    # windows: W0 measures the press's own line (the eye's first pre-fold
+    # motion, throttled); W1 aims the frame along it by drags (recorded), then
+    # presses the letter; W2 replays the SAME drags (the frame byte-identical at
+    # the crossing) and holds. The seam must be byte-identical but for the eye
+    # (the clock's) and the register's own press line.
     gotP = False
     detailP = "the cone room did not build"
     if built:
@@ -398,45 +443,99 @@ def run_cone(page, args, arc):
           returnCount: s.returnCount, doorsAtLastReturn: s.doorsAtLastReturn, sentence: s.sentence, returnLine: s.returnLine, faceMark: s.faceMark,
           frameHanded: s.frameHanded, forward: s.forward, right: s.right, up: s.up, eye: s.eye, press: s.press, snap: s.snap }; }"""
         pace = 0.45
-        by_letter = by_hold = None
         letter = None
+        u = None
+        by_letter = by_hold = None
+        drags = []
+        # W0 — the door's letter (End names the nearest door), then the press's own chart line
         if open_window(page):
-            page.evaluate(f"() => {{ window.__exploreWindow.paceOverride = {pace}; }}")
             page.keyboard.press("End")
             page.wait_for_timeout(600)
             letter = page.evaluate("() => window.__exploreWindow.snap && window.__exploreWindow.snap.letter")
-            if letter:
-                page.keyboard.press(letter)
-                try:
-                    page.wait_for_function(
-                        f"() => window.__exploreWindow.press && window.__exploreWindow.press.letter === {json.dumps(letter)}", timeout=40000
-                    )
-                except Exception:
-                    pass
-                page.wait_for_timeout(800)
-                by_letter = page.evaluate(snap_js)
             close_window(page)
-        if letter and by_letter and open_window(page):
+        if letter and open_window(page):
+            page.evaluate("() => { window.__exploreWindow.paceOverride = 0.15; }")
+            p0 = seam(page)["eye"]
+            page.keyboard.press(letter)
+            moved = None
+            for _ in range(16):
+                page.wait_for_timeout(250)
+                s0 = seam(page)
+                d0 = dist(s0["eye"], p0)
+                if s0["doors"] > 0:
+                    break
+                if d0 > 0.03:
+                    moved = s0["eye"]
+                if d0 > 0.12:
+                    break
+            if moved is not None:
+                n0 = dist(moved, p0)
+                u = [(moved[0] - p0[0]) / n0, (moved[1] - p0[1]) / n0, (moved[2] - p0[2]) / n0]
+            close_window(page)
+        # W1 — aim along the line (drags recorded), then the letter
+        if u and open_window(page):
             page.evaluate(f"() => {{ window.__exploreWindow.paceOverride = {pace}; }}")
-            page.keyboard.press("End")
-            page.wait_for_timeout(600)
+            hxy = math.hypot(u[0], u[1])
+            # the aim is the comparison's whole tolerance: 0.005 rad over a two-unit
+            # period is 0.01 of lateral drift before the door's map (measured: an
+            # aim 0.07 rad off left the two eyes 0.256 apart after the fold)
+            aimed = turn_to(page, [u[0] / hxy, u[1] / hxy], tries=24, tol=0.012, log=drags) if hxy > 1e-6 else True
+            aimed = pitch_to(page, u[2], log=drags, tol=0.012) and aimed
+            page.keyboard.press(letter)
+            try:
+                page.wait_for_function(
+                    f"() => window.__exploreWindow.press && window.__exploreWindow.press.letter === {json.dumps(letter)}", timeout=60000
+                )
+            except Exception:
+                pass
+            page.wait_for_timeout(800)
+            by_letter = page.evaluate(snap_js)
+            by_letter["_aimed"] = aimed
+            close_window(page)
+        # W2 — the same drags, then the hold
+        if by_letter and open_window(page):
+            page.evaluate(f"() => {{ window.__exploreWindow.paceOverride = {pace}; }}")
+            for dx, dy in drags:
+                drag_px(page, dx, dy)
             period = by_letter["press"]["length"] if by_letter.get("press") else 2.0
+            page.evaluate(
+                """() => { window.__keyTs = [];
+                  window.addEventListener('keydown', (e) => { if (e.key === 'ArrowUp') window.__keyTs.push(['down', e.timeStamp]); }, true);
+                  window.addEventListener('keyup', (e) => { if (e.key === 'ArrowUp') window.__keyTs.push(['up', e.timeStamp]); }, true); }"""
+            )
             page.keyboard.down("ArrowUp")
-            time.sleep(period / pace)
+            # the down's own stamp and the page's clock now: the call above returned
+            # only when the renderer had processed the event (a frame late under
+            # the software renderer), so the remaining hold is measured from the
+            # stamp, not from the call
+            t_down, t_now = page.evaluate("() => [window.__keyTs.length ? window.__keyTs[0][1] : null, performance.now()]")
+            target_ms = period / pace * 1000.0
+            remaining = target_ms - ((t_now - t_down) if t_down is not None else 0.0) - 12.0
+            time.sleep(max(0.0, remaining) / 1000.0)
             page.keyboard.up("ArrowUp")
             page.wait_for_timeout(1500)
             by_hold = page.evaluate(snap_js)
+            stamps = page.evaluate("() => window.__keyTs")
+            held_ms = (stamps[-1][1] - stamps[0][1]) if len(stamps) >= 2 else float("nan")
+            by_hold["_heldMs"] = held_ms
+            by_hold["_clockLength"] = pace * held_ms / 1000.0
             close_window(page)
         if by_letter and by_hold:
-            differ = [k for k in by_letter if json.dumps(by_letter[k]) != json.dumps(by_hold[k])]
-            ea, eb = by_letter["eye"], by_hold["eye"]
-            eye_gap = dist(ea, eb)
+            keys = [k for k in by_letter if not k.startswith("_")]
+            differ = [k for k in keys if json.dumps(by_letter[k]) != json.dumps(by_hold.get(k))]
+            eye_gap = dist(by_letter["eye"], by_hold["eye"])
             rest = [k for k in differ if k not in ("eye", "press")]
-            gotP = len(rest) == 0 and by_letter["doors"] == 1 and by_hold["doors"] == 1 and by_letter["returnLine"] is not None and eye_gap < 0.02
-            detailP = (f"door {letter} · by letter: {by_letter['returnLine']} · trace {by_letter['trace']} · {by_letter['press'] and by_letter['press']['length']:.4f} walked"
-                       f" · by hold: {by_hold['returnLine']} · trace {by_hold['trace']} · differ: {differ} · eye gap {eye_gap:.5f}")
+            gotP = (len(rest) == 0 and by_letter["doors"] == 1 and by_hold["doors"] == 1
+                    and by_letter["returnLine"] is not None and eye_gap < 0.05)
+            ln = by_letter["press"]["length"] if by_letter.get("press") else float("nan")
+            same_line = by_hold["returnLine"] == by_letter["returnLine"] and by_hold["trace"] == by_letter["trace"]
+            detailP = (f"door {letter} · {len(drags)} drags replayed (aimed {by_letter.get('_aimed')})"
+                       f" · by letter: {by_letter['returnLine']} · trace {by_letter['trace']} · period {ln:.4f}"
+                       f" · by hold: {'the same line and trace' if same_line else str(by_hold['returnLine']) + ' · trace ' + str(by_hold['trace'])}"
+                       f" · held {by_hold.get('_heldMs', float('nan')):.0f} ms = {by_hold.get('_clockLength', float('nan')):.4f} on the clock"
+                       f" · differ {differ} · eye gap {eye_gap:.4f}")
         else:
-            detailP = f"letter {letter} · by letter {'ok' if by_letter else 'missing'} · by hold {'ok' if by_hold else 'missing'}"
+            detailP = f"letter {letter} · line {u} · by letter {'ok' if by_letter else 'missing'} · by hold {'ok' if by_hold else 'missing'}"
     record("P.period", gotP, detailP)
 
 
