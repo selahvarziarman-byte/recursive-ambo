@@ -15,6 +15,7 @@
 # the default pace; a person's 60fps hand samples every ~0.07u for free.
 import argparse
 import json
+import time
 import math
 
 from playwright.sync_api import sync_playwright
@@ -383,6 +384,60 @@ def run_cone(page, args, arc):
                 break
             print(f"[B2] attempt {attempt}: {lineB}", file=sys.stderr, flush=True)
         record("B2.retrace", gotB, f"seam: {lineB} · dom agrees: {domB == lineB}")
+    # P — LAW 22 AT EQUAL LENGTH (the K-1e rider, carried by this leg by the
+    # mothership's word): the nearest door faced SQUARELY (End), crossed once by
+    # its own LETTER (one period, K-1e), against the SAME door crossed by a HELD
+    # ArrowUp of exactly one period on the input clock (2.0 / pace seconds — the
+    # CDP key events carry the browser's own stamps, so the hold is exact
+    # whatever the renderer's frame rate). The seam must be byte-identical but
+    # for the eye (the clock's) and the register's own press line.
+    gotP = False
+    detailP = "the cone room did not build"
+    if built:
+        snap_js = """() => { const s = window.__exploreWindow; return { doors: s.doors, trace: s.trace, traceHidden: s.traceHidden, looks: s.looks,
+          returnCount: s.returnCount, doorsAtLastReturn: s.doorsAtLastReturn, sentence: s.sentence, returnLine: s.returnLine, faceMark: s.faceMark,
+          frameHanded: s.frameHanded, forward: s.forward, right: s.right, up: s.up, eye: s.eye, press: s.press, snap: s.snap }; }"""
+        pace = 0.45
+        by_letter = by_hold = None
+        letter = None
+        if open_window(page):
+            page.evaluate(f"() => {{ window.__exploreWindow.paceOverride = {pace}; }}")
+            page.keyboard.press("End")
+            page.wait_for_timeout(600)
+            letter = page.evaluate("() => window.__exploreWindow.snap && window.__exploreWindow.snap.letter")
+            if letter:
+                page.keyboard.press(letter)
+                try:
+                    page.wait_for_function(
+                        f"() => window.__exploreWindow.press && window.__exploreWindow.press.letter === {json.dumps(letter)}", timeout=40000
+                    )
+                except Exception:
+                    pass
+                page.wait_for_timeout(800)
+                by_letter = page.evaluate(snap_js)
+            close_window(page)
+        if letter and by_letter and open_window(page):
+            page.evaluate(f"() => {{ window.__exploreWindow.paceOverride = {pace}; }}")
+            page.keyboard.press("End")
+            page.wait_for_timeout(600)
+            period = by_letter["press"]["length"] if by_letter.get("press") else 2.0
+            page.keyboard.down("ArrowUp")
+            time.sleep(period / pace)
+            page.keyboard.up("ArrowUp")
+            page.wait_for_timeout(1500)
+            by_hold = page.evaluate(snap_js)
+            close_window(page)
+        if by_letter and by_hold:
+            differ = [k for k in by_letter if json.dumps(by_letter[k]) != json.dumps(by_hold[k])]
+            ea, eb = by_letter["eye"], by_hold["eye"]
+            eye_gap = dist(ea, eb)
+            rest = [k for k in differ if k not in ("eye", "press")]
+            gotP = len(rest) == 0 and by_letter["doors"] == 1 and by_hold["doors"] == 1 and by_letter["returnLine"] is not None and eye_gap < 0.02
+            detailP = (f"door {letter} · by letter: {by_letter['returnLine']} · trace {by_letter['trace']} · {by_letter['press'] and by_letter['press']['length']:.4f} walked"
+                       f" · by hold: {by_hold['returnLine']} · trace {by_hold['trace']} · differ: {differ} · eye gap {eye_gap:.5f}")
+        else:
+            detailP = f"letter {letter} · by letter {'ok' if by_letter else 'missing'} · by hold {'ok' if by_hold else 'missing'}"
+    record("P.period", gotP, detailP)
 
 
 def run_fan2(page, args, arc):
