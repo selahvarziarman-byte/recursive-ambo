@@ -1576,6 +1576,13 @@ export interface ApertureCellSurface {
    * in all three models — so the walk's plane tests are unchanged and only
    * the transport and the metre differ. */
   model?: 'S3' | 'H3';
+  /** K-2d — THE ROOM'S OWN SCALE: the ratio of the sealed chart's inradius
+   * to the seed's (the deck's `sceneScale`), 1 for every euclidean room. The
+   * walk's ENTRY is scaled by it exactly as the plate's eye is (`apertureEyeFor`,
+   * one rule — `scaleToRoom`), so the walk never starts outside its own cell
+   * (measured 2026-09-16: the Poincaré trace read `acD` at open, before any act;
+   * its raw entry lay 0.262 outside the cell, Seifert–Weber's scale is 0.5522). */
+  sceneScale: number;
 }
 
 const shiftDeckTransform = (g: DeckTransform, c: V3): DeckTransform => {
@@ -1813,7 +1820,7 @@ function developedConeSurface(
     const vals = pts.map((p) => p[axis]);
     span = Math.max(span, Math.max(...vals) - Math.min(...vals));
   }
-  return { faces, rods, span, wallCount: faces.filter((f) => f.wall).length };
+  return { faces, rods, span, wallCount: faces.filter((f) => f.wall).length, sceneScale: 1 };
 }
 
 export function readCellSurface(
@@ -1912,7 +1919,7 @@ export function readCellSurface(
     }
     let span = 0;
     for (const q of model.chartVertices.values()) span = Math.max(span, 2 * Math.max(Math.abs(q[0]), Math.abs(q[1]), Math.abs(q[2])));
-    return { faces, rods, span, wallCount: faces.filter((f) => f.wall).length, model: model.model };
+    return { faces, rods, span, wallCount: faces.filter((f) => f.wall).length, model: model.model, sceneScale: model.sceneScale };
   }
   // THE MULTI-CELL CUT: the room's walk-region is the UNION of the cells —
   // a face owned by TWO cells is INTERIOR (the region spans it; it is not an
@@ -1962,7 +1969,7 @@ export function readCellSurface(
     geometry.bboxHi[1] - geometry.bboxLo[1],
     geometry.bboxHi[2] - geometry.bboxLo[2],
   );
-  return { faces, rods, span, wallCount: faces.filter((f) => f.wall).length };
+  return { faces, rods, span, wallCount: faces.filter((f) => f.wall).length, sceneScale: 1 };
 }
 
 // ---------------------------------------------------------------------------
@@ -2264,8 +2271,9 @@ export function buildApertureScene(
  * size, and an eye left at the euclidean coordinate would be standing
  * OUTSIDE a Poincaré cell (chart inradius 0.325 against the seed's 1.114) —
  * the same relative place in the room is the honest carry. */
+export const scaleToRoom = (sceneScale: number, p: V3): V3 => (sceneScale !== 1 ? mulS(p, sceneScale) : p);
 export const apertureEyeFor = (model: ApertureModelDeck | null | undefined, eye: V3): V3 =>
-  model && model.sceneScale !== 1 ? mulS(eye, model.sceneScale) : eye;
+  scaleToRoom(model ? model.sceneScale : 1, eye);
 
 function shapeEdges(shape: Shape): [string, string][] {
   return shape.edges.map((e) => [e.vertexIds[0], e.vertexIds[1]]);

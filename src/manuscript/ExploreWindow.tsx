@@ -34,7 +34,7 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import type { Vec3 } from '../types/geometry';
-import type { ApertureCellSurface } from './apertureModel';
+import { type ApertureCellSurface, scaleToRoom } from './apertureModel';
 // B-114 — the orientation of a projective door is its 4×4 determinant
 import { mat4Det } from '../lib/noncubeDomain';
 // K-1e — the walk's own metric: transport along a leg, carriage through a door,
@@ -846,7 +846,15 @@ export function ExploreWindow({
     gl.uniform1fv(U('uRodHeavy[0]'), packed.rodHeavy);
 
     // ★★ THE CARRIED FRAME — the observer's handedness is the space's to take
-    let eye: Vec3 = [-0.35, -0.55, 0.1];
+    // K-2d: the entry is the SEED's euclidean coordinate; a sealed room is a
+    // different size, and the plate already stands its eye at the same
+    // RELATIVE place by the deck's sceneScale (apertureEyeFor) — the walk takes
+    // that one rule (scaleToRoom), so it never starts outside its own cell
+    // (measured: the Poincaré trace read `acD` at open, before any act — the
+    // raw entry stood 0.262 outside the cell). Euclidean rooms scale by 1, so
+    // their entry is byte-identical to what it always was.
+    const ENTRY_SEED: Vec3 = [-0.35, -0.55, 0.1];
+    let eye: Vec3 = scaleToRoom(cellSurface.sceneScale, ENTRY_SEED);
     let camF: Vec3 = nrm3([Math.cos(1.2), Math.sin(1.2), 0]);
     let camR: Vec3 = nrm3([-Math.sin(1.2), Math.cos(1.2), 0]);
     let camU: Vec3 = [0, 0, 1];

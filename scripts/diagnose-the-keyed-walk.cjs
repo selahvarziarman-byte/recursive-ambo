@@ -163,7 +163,7 @@ const roomOf = (name, domain) => {
   const gate = buildAperture(domain);
   if (!gate.ok) throw new Error(`${name}: the gate refused — ${gate.reason}`);
   const surface = readCellSurface(domain, false, gate.model);
-  return { name, model: surface.model ?? null, faces: surface.faces };
+  return { name, model: surface.model ?? null, faces: surface.faces, sceneScale: surface.sceneScale, deck: gate.model ?? null };
 };
 const insideRoom = (faces, k) => faces.every((f) => dot(k, f.n) - f.d < -1e-9);
 const mulberry = (seed) => () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -275,6 +275,46 @@ check('§2 L(4,1) in its euclidean chart: from the chart origin every letter\'s 
     'abcdABCD'.split('').every((l) => { const r = pressPeriod(null, LENS.faces, l, lensPoint, [[1, 0, 0], [0, 1, 0], [0, 0, 1]]); return r && !r.wall && r.home && r.word.length >= 1; }),
   JSON.stringify('abcdABCD'.split('').map((l) => { const r = pressPeriod(null, LENS.faces, l, lensPoint, [[1, 0, 0], [0, 1, 0], [0, 0, 1]]); return r && [l, r.word, r.home]; })));
 note(`the walk's entry in L(4,1): inside ${insideRoom(LENS.faces, ENTRY)} · in the Poincaré cell: inside ${insideRoom(PC.faces, ENTRY)} · in Seifert–Weber: inside ${insideRoom(SW.faces, ENTRY)}`);
+
+// ═══════════════════════════════ K-2d — THE ENTRY, SCALED ═══════════════════════════════
+console.log('\n----- §2 ★ K-2d — THE WALK STANDS WHERE THE PLATE STANDS ITS EYE: the entry scaled by the room\'s own sceneScale, one rule -----');
+const { scaleToRoom, apertureEyeFor } = req('src/manuscript/apertureModel.ts');
+const near4 = (x, y) => Math.abs(x - y) < 5e-4;
+check('§2 ★ THE SURFACE CARRIES THE ROOM\'S SCALE, RUN: Seifert–Weber 0.5522 · the Poincaré cell 0.2361 · a euclidean room (L(4,1), no sealed model) exactly 1 — each the deck\'s own sceneScale (the ratio of the chart inradius to the seed\'s)',
+  near4(SW.sceneScale, 0.5522) && near4(PC.sceneScale, 0.2361) && LENS.sceneScale === 1 &&
+    SW.deck && SW.sceneScale === SW.deck.sceneScale && PC.deck && PC.sceneScale === PC.deck.sceneScale,
+  JSON.stringify({ sw: SW.sceneScale, pc: PC.sceneScale, lens: LENS.sceneScale }));
+const SW_ENTRY = scaleToRoom(SW.sceneScale, ENTRY);
+const PC_ENTRY = scaleToRoom(PC.sceneScale, ENTRY);
+check('§2 ★★ THE DEFECT AND ITS CURE, RUN (LAW 24 — the raw entry is the positive control): the RAW entry stands OUTSIDE the Poincaré cell (0.262 past a face plane) and inside Seifert–Weber; SCALED by the room\'s own rule it stands INSIDE both — Poincaré at (−0.083, −0.130, 0.024), Seifert–Weber at (−0.193, −0.304, 0.055)',
+  !insideRoom(PC.faces, ENTRY) && insideRoom(SW.faces, ENTRY) && insideRoom(PC.faces, PC_ENTRY) && insideRoom(SW.faces, SW_ENTRY) &&
+    near4(PC_ENTRY[0], -0.0826) && near4(PC_ENTRY[1], -0.1298) && near4(SW_ENTRY[0], -0.1933) && near4(SW_ENTRY[1], -0.3037),
+  JSON.stringify({ pc: PC_ENTRY, sw: SW_ENTRY }));
+check('§2 ★ ONE RULE: the walk\'s scaling IS the plate\'s — `apertureEyeFor(deck, p)` and `scaleToRoom(deck.sceneScale, p)` agree bytewise in both sealed rooms, and a euclidean room (no deck, scale 1) returns the very same point',
+  JSON.stringify(apertureEyeFor(SW.deck, ENTRY)) === JSON.stringify(SW_ENTRY) && JSON.stringify(apertureEyeFor(PC.deck, ENTRY)) === JSON.stringify(PC_ENTRY) &&
+    apertureEyeFor(null, ENTRY) === ENTRY && scaleToRoom(1, ENTRY) === ENTRY);
+check('§2 the lens cannot be moved by the scale (it is realized in the euclidean chart, scale 1): its entry stays ON a face plane — the sighting says what it sees and stops (the lens realization is not this rider\'s)',
+  LENS.sceneScale === 1 && !insideRoom(LENS.faces, ENTRY) && Math.abs(Math.min(...LENS.faces.map((f) => f.d - dot(ENTRY, f.n)))) < 1e-9);
+const swScaledA = pressPeriod('H3', SW.faces, 'a', SW_ENTRY, M.frameAt('H3', SW_ENTRY, [[1, 0, 0], [0, 1, 0], [0, 0, 1]]));
+const swScaledAdeg = wordAngle('H3', SW.faces, 'a', SW_ENTRY);
+const swScaledAFAF = wordAngle('H3', SW.faces, 'afAF', SW_ENTRY);
+const pcScaledA = pressPeriod('S3', PC.faces, 'a', PC_ENTRY, M.frameAt('S3', PC_ENTRY, [[1, 0, 0], [0, 1, 0], [0, 0, 1]]));
+const pcScaledAdeg = wordAngle('S3', PC.faces, 'a', PC_ENTRY);
+check('§2 ★ FROM THE SCALED ENTRY the press is still one period: Seifert–Weber `a` leaves through the named face and comes home (currency ≥ 1.99); the Poincaré press comes home writing its word with the currency π/5 = 0.6283',
+  swScaledA && swScaledA.word === 'a' && swScaledA.home && swScaledA.length >= 1.99 && pcScaledA && pcScaledA.home && Math.abs(pcScaledA.length - Math.PI / 5) < 1e-6 &&
+    pcScaledAdeg && Math.abs(pcScaledAdeg.deg - 36) < 1e-6,
+  JSON.stringify({ sw: swScaledA && [swScaledA.word, swScaledA.home, swScaledA.length], pc: pcScaledA && [pcScaledA.word, pcScaledA.home, pcScaledA.length, pcScaledAdeg && pcScaledAdeg.deg] }));
+note(`THE EYE'S PREDICTION at the walk's SCALED Seifert–Weber entry (${SW_ENTRY.map((x) => x.toFixed(4)).join(', ')}): press a → turned ${swScaledAdeg ? swScaledAdeg.deg.toFixed(2) : '?'}° · walked ${swScaledA ? swScaledA.length.toFixed(4) : '?'} · afAF → turned ${swScaledAFAF ? swScaledAFAF.deg.toFixed(2) : '?'}° (home ${swScaledAFAF && swScaledAFAF.home}) — θ depends on p: the raw entry read 120.35° / 167.21°`);
+note(`THE EYE'S PREDICTION at the walk's SCALED Poincaré entry (${PC_ENTRY.map((x) => x.toFixed(4)).join(', ')}): press a → word ${pcScaledA && pcScaledA.word} · walked ${pcScaledA ? pcScaledA.length.toFixed(4) : '?'} · turned ${pcScaledAdeg ? pcScaledAdeg.deg.toFixed(4) : '?'}°`);
+{
+  const view = fs.readFileSync(path.join(repoRoot, 'src/manuscript/ExploreWindow.tsx'), 'utf8');
+  const aperture = fs.readFileSync(path.join(repoRoot, 'src/manuscript/apertureModel.ts'), 'utf8');
+  check('§3 ★ THE VIEW SCALES ITS ENTRY BY THE SURFACE\'S OWN SCALE through the plate\'s rule — the seed literal is named once and never stands alone as the eye; the surface states its scale on every return (1 on the two euclidean returns, the deck\'s on the sealed one)',
+    view.includes('const ENTRY_SEED: Vec3 = [-0.35, -0.55, 0.1];') && view.includes('let eye: Vec3 = scaleToRoom(cellSurface.sceneScale, ENTRY_SEED);') &&
+      !view.includes('let eye: Vec3 = [-0.35, -0.55, 0.1];') && aperture.includes('sceneScale: model.sceneScale };') &&
+      (aperture.match(/sceneScale: 1 };/g) ?? []).length === 2 && aperture.includes('export const scaleToRoom = (sceneScale: number, p: V3): V3 =>') &&
+      aperture.includes('  scaleToRoom(model ? model.sceneScale : 1, eye);'));
+}
 
 // ═══════════════════════════════ §3 the view, source-pinned ═══════════════════════════════
 console.log('\n----- §3 ★★ ONE PRODUCER OF MOTION (LAW 22) — source-pinned in the view -----');
