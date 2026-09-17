@@ -2217,7 +2217,11 @@ function CellComposition({
               onPointerEnter={() => setHoverTarget({ kind: 'face', faceId: row.face.id })}
               onPointerLeave={() => setHoverTarget(null)}
               title="shift-click: toggle in the lift region"
-              className={`cursor-pointer rounded border px-3 py-2 text-sm ${
+              // C-6a (§92.3, ruled): a plain click does NOTHING here — the Ambo's faces
+              // are READINGS and the face's plain-click act is C-5's to give, with a
+              // meaning. A control that cannot act must not appear as one: the
+              // pointer cursor is taken, not a select-face act invented.
+              className={`cursor-default rounded border px-3 py-2 text-sm ${
                 inLiftSet('face', row.face.id)
                   ? 'border-emerald-400 bg-emerald-400/10'
                   : 'border-stone-800 bg-stone-950'
@@ -2297,7 +2301,8 @@ function CellComposition({
               }`}
               title={
                 edge.edgeId !== null
-                  ? `${edge.vertexIds.join(' - ')} · shift-click: toggle in the lift region`
+                  ? // C-6a: the row tells the truth about its plain click — the vertex row's grammar
+                    `${edge.vertexIds.join(' - ')} · click: select · shift-click: toggle in the lift region`
                   : `${edge.vertexIds.join(' - ')} · an identified pair — cannot be lifted`
               }
             >
