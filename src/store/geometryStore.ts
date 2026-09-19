@@ -18,6 +18,7 @@ import type {
   Cell,
   CellId,
   EdgeId,
+  EdgeIdentification,
   FaceId,
   SeedKey,
   Shape,
@@ -201,6 +202,15 @@ interface GeometryState {
   setPinnedFieldAtlasProbeRef: (probeRef: string | null) => void;
   clearPinnedFieldAtlasProbeRef: () => void;
   updateSelectedVertexData: (patch: Partial<VertexDataPacket>) => void;
+  // C-6d (β) — THE J REGISTER'S RECORD. τ given on an edge BEFORE a take is held here,
+  // not in the record: the FROZEN `EdgeIdentification` (roles and types both required)
+  // cannot mark "τ given, not yet acted" apart from "none taken", so the take is what
+  // writes τ into the record; a withdrawal hands it back here. Not exported with the
+  // workspace (the record is; said in the report).
+  edgeTauDrafts: Record<EdgeId, EdgeIdentification['types']>;
+  setEdgeTau: (edgeId: EdgeId, types: EdgeIdentification['types']) => void;
+  takeEdgeIdentification: (edgeId: EdgeId, roles: EdgeIdentification['roles']) => void;
+  withdrawEdgeIdentification: (edgeId: EdgeId) => void;
   exportWorkspace: () => PersistedWorkspaceV1;
   importWorkspace: (workspace: PersistedWorkspaceV1) => void;
 }
@@ -228,6 +238,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   selectedCellId: null,
   selectedVertexId: null,
   selectedEdgeId: null,
+  edgeTauDrafts: {},
   liftSelection: [],
   dualInspectionTarget: null,
   cellVisibility: defaultCellVisibility,
@@ -804,6 +815,60 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       },
     });
   },
+  // ═══ C-6d (β) — the person's `J` on an edge: `Edge.identification` (FROZEN type, untouched)
+  // is WRITTEN by `writeEdgeIdentification` below and nowhere else — `roles` and `types`
+  // (τ) ONLY; `support` and `fiat` are DERIVED at every read and written by nothing. No
+  // history entry: an identification is the person's record on the edge, like a packet
+  // edit, not an operation on the shape. ═══
+  setEdgeTau: (edgeId, types) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    const edge = shape?.edges.find((candidate) => candidate.id === edgeId);
+    if (!shape || !edge) {
+      return;
+    }
+    if (edge.identification) {
+      // a TAKEN J survives a τ change as the person's record: the roles stay, τ changes, the marks re-derive
+      writeEdgeIdentification(set, state, shape, edgeId, { roles: edge.identification.roles, types });
+      return;
+    }
+    const edgeTauDrafts = { ...state.edgeTauDrafts };
+    if (types.length) {
+      edgeTauDrafts[edgeId] = types;
+    } else {
+      delete edgeTauDrafts[edgeId];
+    }
+    set({ edgeTauDrafts });
+  },
+  takeEdgeIdentification: (edgeId, roles) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    const edge = shape?.edges.find((candidate) => candidate.id === edgeId);
+    if (!shape || !edge) {
+      return;
+    }
+    // the τ in force at the take — the record's if one stands, else the draft; `none` is a take too (roles empty)
+    const types = edge.identification ? edge.identification.types : state.edgeTauDrafts[edgeId] ?? [];
+    const edgeTauDrafts = { ...state.edgeTauDrafts };
+    delete edgeTauDrafts[edgeId];
+    writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edgeId, { roles, types });
+  },
+  withdrawEdgeIdentification: (edgeId) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    const edge = shape?.edges.find((candidate) => candidate.id === edgeId);
+    if (!shape || !edge || !edge.identification) {
+      return;
+    }
+    // the act undone: the record leaves the edge; its τ goes back to the draft so the offering stands as it was
+    const edgeTauDrafts = { ...state.edgeTauDrafts };
+    if (edge.identification.types.length) {
+      edgeTauDrafts[edgeId] = edge.identification.types;
+    } else {
+      delete edgeTauDrafts[edgeId];
+    }
+    writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edgeId, undefined);
+  },
   exportWorkspace: () => {
     const state = get();
 
@@ -907,6 +972,44 @@ function restoreWorkspaceSnapshot(snapshot: WorkspaceSnapshot): WorkspaceSnapsho
     selectedCellId,
     selectedVertexId,
   };
+}
+
+// C-6d (β): THE ONE WRITER of `Edge.identification` — every action routes here; the concept-type
+// census pins this site alone. `roles` and `types` only: a stored derived value is a stamp that drifts.
+function writeEdgeIdentification(
+  set: (partial: Partial<GeometryState>) => void,
+  state: GeometryState,
+  shape: Shape,
+  edgeId: EdgeId,
+  next: { roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] } | undefined,
+): void {
+  const edges = shape.edges.map((edge) => {
+    if (edge.id !== edgeId) {
+      return edge;
+    }
+    const rest = { ...edge };
+    delete rest.identification;
+    if (!next) {
+      return rest;
+    }
+    return {
+      ...rest,
+      identification: {
+        roles: next.roles.map(([x, y]) => [x, y] as [string, string]),
+        types: next.types.map(([x, y]) => [x, y] as [string, string]),
+      },
+    };
+  });
+  set({
+    edgeTauDrafts: state.edgeTauDrafts,
+    shapes: {
+      ...state.shapes,
+      [shape.id]: {
+        ...shape,
+        edges,
+      },
+    },
+  });
 }
 
 function pushHistory(

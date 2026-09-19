@@ -29,7 +29,7 @@ const path = require('node:path');
 const ts = require('typescript');
 
 const TRANSPILE_OPTIONS = {
-  compilerOptions: { esModuleInterop: true, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
+  compilerOptions: { esModuleInterop: true, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX },
 };
 require.extensions['.ts'] = (module, filename) => {
   module._compile(
@@ -38,6 +38,7 @@ require.extensions['.ts'] = (module, filename) => {
   );
 };
 require.extensions['.tsx'] = require.extensions['.ts'];
+require.extensions['.css'] = () => {};
 
 const repoRoot = path.resolve(__dirname, '..');
 const req = (p) => require(path.join(repoRoot, p));
@@ -299,6 +300,140 @@ check('§9 ★ a RELATIONAL conflict is named in the same words, the other way r
     return asm.conflicts.length === 1 && describeConflict(asm.conflicts[0]) === 'p(x, y) holds here · p(a, b) does-not-hold there' && asm.relational === 0;
   })());
 
+// ═══ §10 C-6d (β) — THE SURFACE: the J register on the selected cell's seams, pinned by BEHAVIOUR (rendered to a string under node, the store driven) and by SOURCE ═══
+console.log("\n----- §10 ★★ C-6d (β) — the J register's surface: the five states, τ above the offers, all offers by reading, the take, the fiat pair, none -----");
+const React = require('react');
+const { renderToString } = require('react-dom/server');
+const { JRegisterPanel, SURFACE_BUDGET, tieSentence } = req('src/components/JRegisterPanel.tsx');
+const { useGeometryStore } = req('src/store/geometryStore.ts');
+const seedState = useGeometryStore.getState();
+const seed = seedState.shapes[seedState.currentShapeId];
+const seam = seed.edges[0];
+const [cornerA, cornerB] = seam.vertexIds;
+const withCasts = (A, B, identification) => ({
+  ...seed,
+  vertices: {
+    ...seed.vertices,
+    [cornerA]: { ...seed.vertices[cornerA], data: { ...seed.vertices[cornerA].data, cast: A } },
+    [cornerB]: { ...seed.vertices[cornerB], data: { ...seed.vertices[cornerB].data, cast: B } },
+  },
+  edges: seed.edges.map((e) => (e.id === seam.id && identification ? { ...e, identification } : e)),
+});
+const rowsOf = (shape) => shape.edges.map((e) => ({ edgeId: e.id, vertexIds: e.vertexIds, displayLabel: e.vertexIds.join(' - ') }));
+// React separates adjacent text expressions with `<!-- -->`; stripped here so a text capture reads a whole sentence
+const render = (shape, tauDrafts = {}, budget = SURFACE_BUDGET) => renderToString(React.createElement(JRegisterPanel, { shape, edges: rowsOf(shape), tauDrafts, budget })).replace(/<!-- -->/g, '');
+const unescapeHtml = (s) => (s ?? '').replace(/<!-- -->/g, '').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
+const attr = (html, name) => { const m = html.match(new RegExp(`${name}="([^"]*)"`)); return m ? unescapeHtml(m[1]) : null; };
+const textOf = (html, name) => { const m = html.match(new RegExp(`${name}="[^"]*"[^>]*>([^<]*)<`)); return m ? unescapeHtml(m[1]) : null; };
+const countOf = (html, name) => (html.match(new RegExp(`${name}="`, 'g')) || []).length;
+const pairAttr = (html, pair, name) => { const m = html.match(new RegExp(`data-j-pair="${pair}" data-j-support="(\\d+)"( data-j-unbacked="true")?`)); return m ? (name === 'support' ? Number(m[1]) : Boolean(m[2])) : null; };
+const ROLES3 = [['F5', 'Φ7'], ['F7', 'Φ1'], ['F8', 'Φ2']];
+const noneAtAll = render(seed);
+check('§10 ★★ A SEAM WHOSE CORNERS DO NOT BOTH HOLD A CAST HAS NO REGISTER — a true absence, no state attribute: the seed\'s six seams render six rows and no state; with casts on the two corners of one seam, exactly ONE row carries a state',
+  countOf(noneAtAll, 'data-j-row') === 6 && countOf(noneAtAll, 'data-j-state') === 0 && countOf(render(withCasts(tri, tcell)), 'data-j-state') === 1);
+const stateA = render(withCasts(tri, tcell));
+check('§10 ★★ STATE 1 — EMPTY CORE (a) RENDERS ITS SENTENCE WITH THE τ INPUT BESIDE IT (the sentence IS the affordance): triangle × t-cell reads `no relation-type in common — a translation is yours to give`, the two type selects present, no offer, `no translation given` under τ',
+  attr(stateA, 'data-j-state') === 'empty core (a)' && textOf(stateA, 'data-j-sentence') === 'no relation-type in common — a translation is yours to give' &&
+    countOf(stateA, 'data-j-tau-x') === 1 && countOf(stateA, 'data-j-tau-y') === 1 && countOf(stateA, 'data-j-offer') === 0 && countOf(stateA, 'data-j-tau-none') === 1,
+  JSON.stringify({ state: attr(stateA, 'data-j-state'), sentence: textOf(stateA, 'data-j-sentence') }));
+check('§10 ★★ STATE 2 — EMPTY CORE (b): the device LOOKED — a cast with no relations against itself reads `no relation to agree on`',
+  (() => {
+    const bare = readCastFile(JSON.stringify({ roles: [{ id: 'x' }, { id: 'y' }], signature: [{ type: 'r', arity: 2 }], relations: [] })).cast;
+    const h = render(withCasts(bare, bare));
+    return attr(h, 'data-j-state') === 'empty core (b)' && textOf(h, 'data-j-sentence') === 'no relation to agree on';
+  })());
+const drafts3 = { [seam.id]: TAU3 };
+const tiny = render(withCasts(flow, phi), drafts3, 10);
+check('§10 ★★ STATE 3 — NOT COMPUTED (the device DID NOT LOOK) renders in the designer\'s words plus the budget in mine, exactly where the offers would have been (LAW 24 — the state RENDERS, not only returns): at a budget of 10 nodes Flow × Φ reads `not computed — this pair is beyond the budget (the register spends at most 10 nodes at a look; this pair needs more)`',
+  attr(tiny, 'data-j-state') === 'not computed' && textOf(tiny, 'data-j-sentence') === 'not computed — this pair is beyond the budget' && tiny.includes('spends at most 10 nodes at a look; this pair needs more') && countOf(tiny, 'data-j-offer') === 0);
+const offered = render(withCasts(flow, phi), drafts3);
+const readingAtSurface = registerReading(flow, phi, TAU3, SURFACE_BUDGET, { keepAll: true, countFull: false });
+check('§10 ★★ STATE 4 — OFFERED, NOT YET ACTED: Flow × Φ under τ₃ renders EVERY offer the register reads at the surface\'s budget (18 — the ruling\'s reading), grouped by READING within weight (16 groups), weight-ordered; the tie sentence leads with the reading — `1 tied · 1 reading — one offer at the top weight (this cast has 2, that one 1)`; the top offer\'s three counts of three different things, never a ratio; `take none` offered; no given-mark',
+  attr(offered, 'data-j-state') === 'offered' && readingAtSurface.state === 'offers' && countOf(offered, 'data-j-offer') === readingAtSurface.offers.length && readingAtSurface.offers.length === 18 &&
+    countOf(offered, 'data-j-reading') === readingAtSurface.readings.reduce((n, w) => n + w.groups.length, 0) && countOf(offered, 'data-j-reading') === 16 &&
+    textOf(offered, 'data-j-tie') === '1 tied · 1 reading — one offer at the top weight (this cast has 2, that one 1)' &&
+    textOf(offered, 'data-j-offer-counts') === 'relational weight 4 · 31 unrecorded · 1 known on one side only · types: 3 agree · 0 unknown' &&
+    countOf(offered, 'data-j-take-none') === 1 && countOf(offered, 'data-j-given') === 0 && offered.indexOf('data-j-weight="4"') < offered.indexOf('data-j-weight="2"'),
+  JSON.stringify({ state: attr(offered, 'data-j-state'), offers: countOf(offered, 'data-j-offer'), readings: countOf(offered, 'data-j-reading'), tie: textOf(offered, 'data-j-tie'), counts: textOf(offered, 'data-j-offer-counts') }));
+check('§10 ★★ τ IS PRINTED ABOVE THE OFFERS AS THE STATED PREMISE, its pairs marked as the person\'s (`yours`), each withdrawable; the shared-signature line beneath it names the types shared by name, the types shared under τ, and the roles\' key shared',
+  offered.indexOf('data-j-tau=') < offered.indexOf('data-j-offering=') && attr(offered, 'data-j-tau') === JSON.stringify(TAU3) &&
+    countOf(offered, 'data-j-tau-pair') === 3 && countOf(offered, 'data-j-tau-withdraw') === 3 && (offered.match(/>yours</g) || []).length === 3 &&
+    unescapeHtml(offered).includes('shared by name: disjoins') && unescapeHtml(offered).includes('shared under τ: sustains ↦ descends-from · presupposes ↦ specifies · exceeds-in-size ↦ lodges-in') &&
+    unescapeHtml(offered).includes('types on the roles shared: member-status'));
+check('§10 ★ THE TWO-ARITIES FACT IS A POSITIVE MARK on the shared line: `"r" is arity 2 here and arity 3 there — not a shared name`',
+  (() => {
+    const p = readCastFile(JSON.stringify({ roles: [{ id: 'x' }, { id: 'y' }], signature: [{ type: 'r', arity: 2 }], relations: [{ type: 'r', terms: ['x', 'y'], polarity: 'holds' }] })).cast;
+    const q = readCastFile(JSON.stringify({ roles: [{ id: 'a' }, { id: 'b' }], signature: [{ type: 'r', arity: 3 }, { type: 's', arity: 2 }], relations: [{ type: 's', terms: ['a', 'b'], polarity: 'holds' }] })).cast;
+    const h = unescapeHtml(render(withCasts(p, q)));
+    return h.includes('"r" is arity 2 here and arity 3 there — not a shared name') && attr(h, 'data-j-state') === 'empty core (a)';
+  })());
+const given = render(withCasts(flow, phi, { roles: ROLES3, types: TAU3 }));
+check('§10 ★★ STATE 5 — J GIVEN: the record on the edge renders the given-mark, each pair marked by its DERIVED support (F5↦Φ7 1 · F7↦Φ1 3 · F8↦Φ2 2), the counts of the given J, `withdraw` offered, `take none` gone; the offer whose pairs are the record\'s wears `given — this one`',
+  attr(given, 'data-j-state') === 'given' && attr(given, 'data-j-given') === 'pairs' && pairAttr(given, 'F5↦Φ7', 'support') === 1 && pairAttr(given, 'F7↦Φ1', 'support') === 3 && pairAttr(given, 'F8↦Φ2', 'support') === 2 &&
+    textOf(given, 'data-j-given-counts') === 'relational weight 4 · 31 unrecorded · 1 known on one side only · types: 3 agree · 0 unknown' &&
+    countOf(given, 'data-j-withdraw') === 1 && countOf(given, 'data-j-take-none') === 0 && countOf(given, 'data-j-offer-given') === 1 && given.includes('given — this one') && countOf(given, 'data-j-unbacked') === 0,
+  JSON.stringify({ state: attr(given, 'data-j-state'), given: attr(given, 'data-j-given'), counts: textOf(given, 'data-j-given-counts') }));
+const fiat = unescapeHtml(render(withCasts(flow, phi, { roles: [...ROLES3, ['F1', 'Φ9']], types: TAU3 })));
+check('§10 ★★ A FIAT PAIR IS VISIBLY DISTINCT and its conflict is printed BY NAME beside it: F1↦Φ9 added to the taken J reads `support 0 — yours, backed by no offer under this τ` with `in conflict: member-status: F1 has · Φ9 none-by-nature` under it; the three offered pairs keep their supports; the third value lives only there (no count of conflicts anywhere)',
+  attr(fiat, 'data-j-state') === 'given' && pairAttr(fiat, 'F1↦Φ9', 'support') === 0 && pairAttr(fiat, 'F1↦Φ9', 'unbacked') === true && fiat.includes('support 0 — yours, backed by no offer under this τ') &&
+    countOf(fiat, 'data-j-conflict') === 1 && fiat.includes('in conflict: member-status: F1 has · Φ9 none-by-nature') && pairAttr(fiat, 'F7↦Φ1', 'support') === 3 && !/conflicts?:\s*\d/.test(fiat));
+const tauChanged = unescapeHtml(render(withCasts(flow, phi, { roles: ROLES3, types: [['sustains', 'descends-from']] })));
+check('§10 ★ A TAKEN J SURVIVES A τ CHANGE as the person\'s record and its marks RE-DERIVE: with τ cut to sustains↦descends-from alone the same three pairs read F5 1 · F7 1 · F8 0 — the third now `yours, backed by no offer under this τ` (the same mark as a fiat pair, because it is the same fact), never erased by the device',
+  attr(tauChanged, 'data-j-state') === 'given' && pairAttr(tauChanged, 'F5↦Φ7', 'support') === 1 && pairAttr(tauChanged, 'F7↦Φ1', 'support') === 1 && pairAttr(tauChanged, 'F8↦Φ2', 'support') === 0 && pairAttr(tauChanged, 'F8↦Φ2', 'unbacked') === true && countOf(tauChanged, 'data-j-pair') === 3);
+const none = render(withCasts(flow, phi, { roles: [], types: TAU3 }));
+check('§10 ★★ `none` IS A TAKE TOO: the record with no pairs renders `nothing identified` WITH the given-mark — never an empty field — and is withdrawable',
+  attr(none, 'data-j-state') === 'given' && attr(none, 'data-j-given') === 'none' && countOf(none, 'data-j-nothing-identified') === 1 && countOf(none, 'data-j-withdraw') === 1 && countOf(none, 'data-j-pair') === 0);
+check('§10 ★★ THE TIE SENTENCE LEADS WITH THE READING (the designer\'s rider 3, in its truthful form): triangle × triangle-symmetric renders `6 tied · 1 reading — they differ only by symmetry, so pick any (this cast has 3, that one 6)`; several readings read `15 tied · 13 readings — genuinely different choices; within a reading they differ only by symmetry (this cast has 2, that one 1)`; t-cell × t-cell renders its ten offers under `1 tied · 1 reading — one offer at the top weight (this cast has 1, that one 1)` with the seal\'s counts on the top offer',
+  (() => {
+    const symH = render(withCasts(tri, sym));
+    const tH = render(withCasts(tcell, tcell));
+    return textOf(symH, 'data-j-tie') === '6 tied · 1 reading — they differ only by symmetry, so pick any (this cast has 3, that one 6)' && countOf(symH, 'data-j-offer') === 6 && countOf(symH, 'data-j-reading') === 1 &&
+      tieSentence(15, 13, [2, 1], true) === '15 tied · 13 readings — genuinely different choices; within a reading they differ only by symmetry (this cast has 2, that one 1)' &&
+      textOf(tH, 'data-j-tie') === '1 tied · 1 reading — one offer at the top weight (this cast has 1, that one 1)' && countOf(tH, 'data-j-offer') === 10 &&
+      textOf(tH, 'data-j-offer-counts') === 'relational weight 11 · 1489 unrecorded · 0 known on one side only · types: 10 agree · 0 unknown';
+  })());
+// the store, by behaviour: the record's one writer, `roles` and `types` only; τ before a take in the draft; no history entry
+check('§10 ★★ THE STORE, BY BEHAVIOUR: τ given before a take lands in the draft (the record untouched); the take writes the record `{ roles, types }` — those two keys and no other — and clears the draft; a τ change on a taken J changes `types` and keeps `roles`; a fiat take extends `roles`; `none` is `roles: []`; withdrawing hands τ back to the draft and removes the record; no history entry is pushed by any of it',
+  (() => {
+    const before = useGeometryStore.getState();
+    const shape = withCasts(flow, phi);
+    useGeometryStore.setState({ shapes: { ...before.shapes, [shape.id]: shape }, edgeTauDrafts: {} });
+    const s = () => useGeometryStore.getState();
+    const edge = () => s().shapes[s().currentShapeId].edges.find((e) => e.id === seam.id);
+    const history = s().operationHistory.length;
+    s().setEdgeTau(seam.id, TAU3);
+    const draftHeld = JSON.stringify(s().edgeTauDrafts[seam.id]) === JSON.stringify(TAU3) && edge().identification === undefined;
+    s().takeEdgeIdentification(seam.id, ROLES3);
+    const taken = JSON.stringify(edge().identification) === JSON.stringify({ roles: ROLES3, types: TAU3 }) && JSON.stringify(Object.keys(edge().identification).sort()) === '["roles","types"]' && s().edgeTauDrafts[seam.id] === undefined;
+    s().setEdgeTau(seam.id, [['sustains', 'descends-from']]);
+    const tauChangedRec = JSON.stringify(edge().identification.roles) === JSON.stringify(ROLES3) && JSON.stringify(edge().identification.types) === JSON.stringify([['sustains', 'descends-from']]);
+    s().takeEdgeIdentification(seam.id, [...ROLES3, ['F1', 'Φ9']]);
+    const fiatRec = edge().identification.roles.length === 4 && JSON.stringify(edge().identification.types) === JSON.stringify([['sustains', 'descends-from']]);
+    s().withdrawEdgeIdentification(seam.id);
+    const withdrawn = edge().identification === undefined && JSON.stringify(s().edgeTauDrafts[seam.id]) === JSON.stringify([['sustains', 'descends-from']]);
+    s().takeEdgeIdentification(seam.id, []);
+    const noneRec = JSON.stringify(edge().identification) === JSON.stringify({ roles: [], types: [['sustains', 'descends-from']] });
+    const noHistory = s().operationHistory.length === history && s().undoStack.length === before.undoStack.length;
+    useGeometryStore.setState({ shapes: before.shapes, edgeTauDrafts: {} });
+    return draftHeld && taken && tauChangedRec && fiatRec && withdrawn && noneRec && noHistory;
+  })());
+// source pins
+const panelSrc = readLf('src/components/JRegisterPanel.tsx');
+const panelsSrc = readLf('src/components/Panels.tsx');
+const storeSrc = readLf('src/store/geometryStore.ts');
+check('§10 ★ SOURCE: the register is MOUNTED in the selection panel once, before the Layer 3 Witness and before the composition, under the selected cell; the panel imports the register\'s arithmetic and the store, nothing from the manuscript, the explore window, three or the camera',
+  (panelsSrc.match(/<JRegisterPanel /g) || []).length === 1 && panelsSrc.indexOf('id="selection-j-register"') < panelsSrc.indexOf('id="selection-layer3-witness"') && panelsSrc.indexOf('id="selection-j-register"') < panelsSrc.indexOf('id="selection-composition"') &&
+    panelsSrc.includes("import { JRegisterPanel } from './JRegisterPanel';") && /from '\.\.\/lib\/jRegister'/.test(panelSrc) && /from '\.\.\/store\/geometryStore'/.test(panelSrc) &&
+    (panelSrc.match(/from '[^']+';/g) || []).every((clause) => /^from '(react|\.\.\/lib\/jRegister|\.\.\/store\/geometryStore|\.\.\/types\/geometry)';$/.test(clause)) && (panelSrc.match(/from '[^']+';/g) || []).length === 4 &&
+    !/\bcamera\b|ExploreWindow|manuscript/i.test(panelSrc.replace(/^\s*\/\/.*$/gm, '')));
+check('§10 ★ SOURCE — RECORD, NOT READING: the panel never writes the store (no `setState`, no `set(`) — it calls exactly the three actions; it never reads `identification.support` or `.fiat` (both derived by `assess` at every render); the store\'s one writer writes `roles` and `types` and no other key',
+  !/setState\(|\bset\(/.test(panelSrc) && ['setEdgeTau', 'takeEdgeIdentification', 'withdrawEdgeIdentification'].every((a) => panelSrc.includes(`state.${a}`)) &&
+    !/identification\.(support|fiat)|\.support\?\.|\.fiat\b/.test(panelSrc) && panelSrc.includes('assess(X, Y, new Map(identification.roles), shared)') &&
+    /identification: \{\s*roles: next\.roles\.map[^}]*types: next\.types\.map[^}]*\}/s.test(storeSrc) && !/identification: \{[^}]*(support|fiat)/s.test(storeSrc));
+check('§10 ★ SOURCE: the five states are five sentences, each its own words — the two empty-core sentences from the register, `not computed — this pair is beyond the budget` from the designer, `offered` and `given` as the row\'s state; ALL offers rendered (no slice, no threshold, no "top N")',
+  panelSrc.includes("'no relation-type in common — a translation is yours to give'") && panelSrc.includes("'not computed — this pair is beyond the budget'") && panelSrc.includes("reading.sentence") &&
+    !/\.slice\(0,\s*\d|threshold|topN|top \d/i.test(panelSrc) && panelSrc.includes('reading.readings.map((w) =>'));
+
 // ═══ §6 boundaries, source-pinned ═══
 const src = readLf('src/lib/jRegister.ts');
 check('§6 ⛔ NO STORE, NO WRITTEN J: the module is pure over two ConceptSpaces and an optional τ — it imports only the types, and nothing under the store imports it',
@@ -307,5 +442,5 @@ check('§6 ⛔ NO STORE, NO WRITTEN J: the module is pure over two ConceptSpaces
 check('§6 RECORD, NOT READING: `support` is DERIVED at every read (the assessment computes it; nothing reads `identification.support` or `.fiat` back)',
   src.includes('support: Record<string, number>') && !/\.support\b(?!\[)/.test(src.replace(/support: Record<string, number>/g, '').replace(/ev\.support|coreEv\.support|ext\.support|\.support\[/g, '')) && !src.includes('.fiat'));
 
-console.log(`\n${failures === 0 ? "DIAGNOSE-THE-J-REGISTER: ALL PASS — the second implementation reads the corrected seal's numbers, the offers follow relational support, the unary home refuses and is counted apart, and the empty core is named both ways" : `DIAGNOSE-THE-J-REGISTER: ${failures} FAILURE(S)`}`);
+console.log(`\n${failures === 0 ? "DIAGNOSE-THE-J-REGISTER: ALL PASS — the second implementation reads the corrected seal's numbers, the offers follow relational support, the unary home refuses and is counted apart, the empty core is named both ways, and the surface renders the five states, the take and the fiat pair by name" : `DIAGNOSE-THE-J-REGISTER: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

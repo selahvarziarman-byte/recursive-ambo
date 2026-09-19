@@ -187,12 +187,14 @@ for (const dir of ['src/lib', 'src/manuscript', 'src/playground', 'src/component
 }
 // C-6d (α) (2026-09-19): the J register's quantities are COMPUTED ON THE TYPE in
 // src/lib/jRegister.ts — it reads ConceptSpace and the τ/roles of an
-// EdgeIdentification as INPUTS and writes nothing; no surface, no store action.
-const CAST_READERS = ['src/components/Panels.tsx', 'src/components/VertexPacketEditor.tsx', 'src/lib/castLoader.ts', 'src/lib/jRegister.ts'];
-check('§4 ★ THE CAST HAS EXACTLY ITS FOUR (C-6c + C-6d (α)): the loader (src/lib/castLoader.ts), the writer (the packet editor), the reader (the card in Panels) and the register that computes on the type (src/lib/jRegister.ts) — no other file under the engine roots, the components or the store mentions `cast` or `ConceptSpace`',
+// EdgeIdentification as INPUTS and writes nothing. C-6d (β): the register's
+// SURFACE (src/components/JRegisterPanel.tsx) reads the two corners' casts and
+// the edge's identification; the store's ONE writer writes `roles` and `types`.
+const CAST_READERS = ['src/components/JRegisterPanel.tsx', 'src/components/Panels.tsx', 'src/components/VertexPacketEditor.tsx', 'src/lib/castLoader.ts', 'src/lib/jRegister.ts'];
+check('§4 ★ THE CAST HAS EXACTLY ITS FIVE (C-6c + C-6d (α) + (β)): the loader (src/lib/castLoader.ts), the writer (the packet editor), the reader (the card in Panels), the register that computes on the type (src/lib/jRegister.ts) and the register\'s surface (src/components/JRegisterPanel.tsx) — no other file under the engine roots, the components or the store mentions `cast` or `ConceptSpace`',
   JSON.stringify([...castReaders].sort()) === JSON.stringify(CAST_READERS), `readers: ${JSON.stringify(castReaders)}`);
-check('§4 ★ THE IDENTIFICATION IS READ BY THE REGISTER ALONE AND WRITTEN BY NOTHING: the only file mentioning `EdgeIdentification` outside the type is src/lib/jRegister.ts (its τ and roles are the register\'s INPUTS), and no file under the engine roots, the components or the store assigns `identification` — no J is written anywhere (C-6c\'s and C-6d (α)\'s boundary)',
-  JSON.stringify(identificationReaders) === JSON.stringify(['src/lib/jRegister.ts']) &&
+check('§4 ★ THE IDENTIFICATION IS WRITTEN BY EXACTLY ONE SITE AND READ BY THREE NAMED FILES (C-6d (β), RECORD NOT READING): the files mentioning the edge\'s `identification` or `EdgeIdentification` are the register (src/lib/jRegister.ts — τ and roles as INPUTS), its surface (src/components/JRegisterPanel.tsx — reads the record, derives support and fiat at every render) and the store (src/store/geometryStore.ts — the one writer, `writeEdgeIdentification`, `roles` and `types` only); exactly ONE write site in the whole tree, in the store; `support` and `fiat` written by nothing',
+  JSON.stringify([...identificationReaders].sort()) === JSON.stringify(['src/components/JRegisterPanel.tsx', 'src/lib/jRegister.ts', 'src/store/geometryStore.ts']) &&
     (() => {
       const writes = [];
       for (const dir of ['src/lib', 'src/manuscript', 'src/playground', 'src/components', 'src/store']) {
@@ -204,12 +206,18 @@ check('§4 ★ THE IDENTIFICATION IS READ BY THE REGISTER ALONE AND WRITTEN BY N
             if (e.isDirectory()) walk(f);
             // a WRITE of the edge's field: an assignment to it, or an inline J literal — not the word in another
             // vocabulary (multiform's BoundaryIdentification parameter, the manuscript's rim identification)
-            else if (/\.tsx?$/.test(e.name) && /\.identification\s*=[^=]|\bidentification\s*:\s*\{/.test(fs.readFileSync(f, 'utf8'))) writes.push(path.relative(repoRoot, f));
+            else if (/\.tsx?$/.test(e.name)) {
+              const src = fs.readFileSync(f, 'utf8');
+              const sites = src.match(/\.identification\s*=[^=]|\bidentification\s*:\s*\{/g) ?? [];
+              for (const s of sites) writes.push(`${path.relative(repoRoot, f).split(path.sep).join('/')}: ${s.trim()}`);
+              // the derived fields are written by nothing — no `support:` or `fiat:` inside an identification literal anywhere
+              if (/\bidentification\s*:\s*\{[^}]*\b(support|fiat)\s*:/s.test(src)) writes.push(`${path.relative(repoRoot, f)}: writes a derived field`);
+            }
           }
         };
         walk(root);
       }
-      return writes.length === 0;
+      return writes.length === 1 && writes[0].startsWith('src/store/geometryStore.ts:');
     })(),
   `readers: ${JSON.stringify(identificationReaders)}`);
 
