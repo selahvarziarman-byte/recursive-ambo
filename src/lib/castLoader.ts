@@ -359,8 +359,11 @@ export function castSummaryLine(cast: ConceptSpace): string {
     `${c.roles} ${c.roles === 1 ? 'role' : 'roles'}`,
     `${c.relationTypes} relation-${c.relationTypes === 1 ? 'type' : 'types'}`,
     `${c.relations} ${c.relations === 1 ? 'relation' : 'relations'}`,
-    `${c.axioms} ${c.axioms === 1 ? 'axiom' : 'axioms'} carried, never evaluated`,
   ];
+  // C-6d rider 1 (the designer's own correction of her template, 2137 §5b): the axioms
+  // clause is CONDITIONAL, exactly as the warrant clause — `0 axioms carried` marked the
+  // ordinary and claimed a carry that did not happen
+  if (c.axioms > 0) parts.push(`${c.axioms} ${c.axioms === 1 ? 'axiom' : 'axioms'} carried, never evaluated`);
   if (cast.warrant !== undefined) parts.push('warrant carried, never read');
   return `taken — ${parts.join(' · ')}`;
 }

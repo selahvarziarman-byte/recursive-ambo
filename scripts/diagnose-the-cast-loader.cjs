@@ -54,8 +54,10 @@ check('§1 ★★ ARMAN\'S TRIANGLE IS TAKEN: three roles (bare ids — the thin
 const triCounts = tri.taken ? castCounts(tri.cast) : null;
 check('§1 ★★ THE ORDERINGS LINE reads `r · 3 tuples · none reversed` (term order is content: the directed triangle)',
   triCounts && triCounts.orderings.length === 1 && orderingLine(triCounts.orderings[0]) === 'r · 3 tuples · none reversed', JSON.stringify(triCounts));
-check('§1 ★ THE CARD\'S LINE for the triangle: `taken — 3 roles · 1 relation-type · 3 relations · 0 axioms carried, never evaluated` — and NO `warrant carried` clause, because there is none (a positive fact needs a positive mark)',
-  tri.taken && castSummaryLine(tri.cast) === 'taken — 3 roles · 1 relation-type · 3 relations · 0 axioms carried, never evaluated', tri.taken && castSummaryLine(tri.cast));
+check('§1 ★ THE CARD\'S LINE for the triangle: `taken — 3 roles · 1 relation-type · 3 relations` — and NO `axioms carried` clause and NO `warrant carried` clause, because there are none (C-6d rider 1, the designer\'s own correction: `0 axioms carried` marked the ordinary and claimed a carry that did not happen; a positive fact needs a positive mark)',
+  tri.taken && castSummaryLine(tri.cast) === 'taken — 3 roles · 1 relation-type · 3 relations', tri.taken && castSummaryLine(tri.cast));
+check('§1 ★ LAW 24 for the axioms clause: the same triangle carrying ONE axiom (one-axiom.cast.json) reads `taken — 3 roles · 1 relation-type · 3 relations · 1 axiom carried, never evaluated`',
+  (() => { const r = readCastFile(fixture('one-axiom.cast.json')); return r.taken && r.cast.axioms.length === 1 && castSummaryLine(r.cast) === 'taken — 3 roles · 1 relation-type · 3 relations · 1 axiom carried, never evaluated'; })());
 const sym = readCastFile(fixture('triangle-symmetric.cast.json'));
 const symCounts = sym.taken ? castCounts(sym.cast) : null;
 check('§1 ★ LAW 24 for the orderings count: the SAME triangle cast symmetric reads `r · 6 tuples · every one reversed`',
@@ -72,13 +74,13 @@ check('§2 ★★ THE T CELL IS TAKEN from the mold profile: 10 roles · 6 signa
 check('§2 ★ THE ROLE\'S EXTRAS ride on its marks, never read: gloss · source · properties · warrant carried per role; an EMPTY label is an absence (no label), never a name',
   tcell.taken && tcell.cast.roles.every((r) => r.label === undefined && r.marks && r.marks.source === 'first_face_and_tower.py' && r.marks.warrant !== undefined));
 const tCounts = tcell.taken ? castCounts(tcell.cast) : null;
-check('§2 ★★ ONE NUMBER, BOTH HOMES: relation-types 7 (6 in the signature + member_status declared on the roles) · relations 21 (11 tuples + 10 role-type entries) — relations.length alone would undercount',
+check('§2 ★★ ONE NUMBER, BOTH HOMES: relation-types 7 (6 in the signature + member_status declared on the roles) · relations 21 (11 tuples + 10 role-type entries) — relations.length alone would undercount; `t-cell.cast.json` IS the fixture of the both-homes COUNT (C-6d rider 2: the refusal\'s fixture is `one-name-two-homes.cast.json`, named for its defect)',
   tCounts && tCounts.relationTypes === 7 && tCounts.relations === 21 && tCounts.roles === 10 && tCounts.unknownTypes === 0, JSON.stringify(tCounts));
 check('§2 the T cell\'s orderings: sustains · 5 tuples · none reversed (r1→r0 holds and r8→r0 does-not-hold are different tuples, not reversals); removes · 1 tuple · none reversed (arity 3 generalises)',
   tCounts && orderingLine(tCounts.orderings.find((o) => o.type === 'sustains')) === 'sustains · 5 tuples · none reversed' &&
     orderingLine(tCounts.orderings.find((o) => o.type === 'removes')) === 'removes · 1 tuple · none reversed', JSON.stringify(tCounts && tCounts.orderings));
-check('§2 THE CARD\'S LINE for the T cell names the warrant it carries: `taken — 10 roles · 7 relation-types · 21 relations · 0 axioms carried, never evaluated · warrant carried, never read`',
-  tcell.taken && castSummaryLine(tcell.cast) === 'taken — 10 roles · 7 relation-types · 21 relations · 0 axioms carried, never evaluated · warrant carried, never read', tcell.taken && castSummaryLine(tcell.cast));
+check('§2 THE CARD\'S LINE for the T cell names the warrant it carries and NO axioms clause (it carries none — measured: the rider\'s "line unchanged" premise was false, said): `taken — 10 roles · 7 relation-types · 21 relations · warrant carried, never read`',
+  tcell.taken && castSummaryLine(tcell.cast) === 'taken — 10 roles · 7 relation-types · 21 relations · warrant carried, never read', tcell.taken && castSummaryLine(tcell.cast));
 
 // ═══ §2b C-6c (i)'s rider — the subject matter, typed ═══
 check('§2b ★ THE SUBJECT MATTER HAS ITS HOME (C-6c (i), sanctioned): the T cell\'s `subject_matter` lands on `cast.subject` as the string the caster wrote, and LEAVES the warrant (no `subject_matter` under warrant.file any more); it enters no check and no refusal',
@@ -122,8 +124,8 @@ check('§3b ★★ δ2 — a role id listed twice with IDENTICAL content is REDU
   twiceSame.taken && twiceSame.cast.roles.length === 3 && twiceSame.marks.length === 0 &&
     !twiceDiff.taken && twiceDiff.refusal === 'not taken — the record states two things about one role · role id "x" is declared twice',
   JSON.stringify({ twiceSame, twiceDiff }).slice(0, 300));
-const bothHomes = readCastFile(fixture('both-homes.cast.json'));
-check('§3b ★★ δ3 (amended) — ONE NAME, ONE HOME: `member_status` declared in the signature AND on a role\'s types is the contradiction, refused at the cast and named — no negative invented (the roles\' home is categorical)',
+const bothHomes = readCastFile(fixture('one-name-two-homes.cast.json'));
+check('§3b ★★ δ3 (amended) — ONE NAME, ONE HOME: `member_status` declared in the signature AND on a role\'s types is the contradiction, refused at the cast and named — no negative invented (the roles\' home is categorical); the fixture is `one-name-two-homes.cast.json`, named for the DEFECT it exercises like its siblings (it was `both-homes`, which read as the count\'s fixture — C-6d rider 2)',
   !bothHomes.taken && bothHomes.refusal === 'not taken — the record states two things about one name · "member_status" is declared in the signature and on the roles', JSON.stringify(bothHomes));
 check('§3b δ3 LAW 24 — the T cell as landed (unary only on the roles) loads unchanged: 10 roles · 7 relation-types · 21 relations, not double-counted',
   tcell.taken && tCounts && tCounts.relationTypes === 7 && tCounts.relations === 21);
