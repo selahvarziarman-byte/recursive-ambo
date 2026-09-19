@@ -129,6 +129,14 @@ export interface ConceptSpace {
   signature: ConceptRelationType[];
   relations: ConceptRelation[];
   axioms: string[]; // quantified sentences over the signature — carried, not evaluated
+  // C-6c (i) — SANCTIONED by Arman ("yes sanctioned", Δ79, 2026-09-19): what the
+  // concept is OF. The researcher's ground: a concept is a STRUCTURE TOGETHER
+  // WITH ITS SUBJECT MATTER — load-bearing for identity across isomorphic
+  // casts. READ on the card beside the person's label, in the caster's
+  // register; never the corner's `label` (the name-slot) and never `warrant`
+  // (about the record, carried unread). OPTIONAL: absent = absent, never
+  // filled by the device; it enters no structural check and no refusal.
+  subject?: string;
   warrant?: PacketData; // substrates seen · sources · second reader — about the RECORD
 }
 
