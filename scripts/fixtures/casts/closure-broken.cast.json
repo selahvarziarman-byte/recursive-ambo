@@ -1,0 +1,54 @@
+{
+  "roles": [
+    {
+      "id": "x"
+    },
+    {
+      "id": "y"
+    },
+    {
+      "id": "z"
+    }
+  ],
+  "signature": [
+    {
+      "type": "r",
+      "arity": 2
+    }
+  ],
+  "relations": [
+    {
+      "type": "r",
+      "terms": [
+        "x",
+        "y"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "r",
+      "terms": [
+        "y",
+        "throughput"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "r",
+      "terms": [
+        "z",
+        "x"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "r",
+      "terms": [
+        "x",
+        "y",
+        "z"
+      ],
+      "polarity": "holds"
+    }
+  ]
+}

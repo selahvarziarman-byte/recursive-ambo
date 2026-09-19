@@ -1,0 +1,352 @@
+{
+  "concept": "T",
+  "subject_matter": "the T cell of the first face (ADR 0031 §4) — transcribed from first_face_and_tower.py:29–35",
+  "premises": [],
+  "roles": [
+    {
+      "id": "r0",
+      "label": "",
+      "gloss": "",
+      "source": "first_face_and_tower.py",
+      "types": {
+        "member_status": "has"
+      },
+      "properties": {},
+      "marks": {},
+      "warrant": {
+        "substrates_seen": 1,
+        "sources": [
+          "first_face_and_tower.py"
+        ],
+        "second_reader": false
+      }
+    },
+    {
+      "id": "r1",
+      "label": "",
+      "gloss": "",
+      "source": "first_face_and_tower.py",
+      "types": {
+        "member_status": "has"
+      },
+      "properties": {},
+      "marks": {},
+      "warrant": {
+        "substrates_seen": 1,
+        "sources": [
+          "first_face_and_tower.py"
+        ],
+        "second_reader": false
+      }
+    },
+    {
+      "id": "r2",
+      "label": "",
+      "gloss": "",
+      "source": "first_face_and_tower.py",
+      "types": {
+        "member_status": "has"
+      },
+      "properties": {},
+      "marks": {},
+      "warrant": {
+        "substrates_seen": 1,
+        "sources": [
+          "first_face_and_tower.py"
+        ],
+        "second_reader": false
+      }
+    },
+    {
+      "id": "r3",
+      "label": "",
+      "gloss": "",
+      "source": "first_face_and_tower.py",
+      "types": {
+        "member_status": "has"
+      },
+      "properties": {},
+      "marks": {},
+      "warrant": {
+        "substrates_seen": 1,
+        "sources": [
+          "first_face_and_tower.py"
+        ],
+        "second_reader": false
+      }
+    },
+    {
+      "id": "r4",
+      "label": "",
+      "gloss": "",
+      "source": "first_face_and_tower.py",
+      "types": {
+        "member_status": "has"
+      },
+      "properties": {},
+      "marks": {},
+      "warrant": {
+        "substrates_seen": 1,
+        "sources": [
+          "first_face_and_tower.py"
+        ],
+        "second_reader": false
+      }
+    },
+    {
+      "id": "r5",
+      "label": "",
+      "gloss": "",
+      "source": "first_face_and_tower.py",
+      "types": {
+        "member_status": "has"
+      },
+      "properties": {},
+      "marks": {},
+      "warrant": {
+        "substrates_seen": 1,
+        "sources": [
+          "first_face_and_tower.py"
+        ],
+        "second_reader": false
+      }
+    },
+    {
+      "id": "r6",
+      "label": "",
+      "gloss": "",
+      "source": "first_face_and_tower.py",
+      "types": {
+        "member_status": "has"
+      },
+      "properties": {},
+      "marks": {},
+      "warrant": {
+        "substrates_seen": 1,
+        "sources": [
+          "first_face_and_tower.py"
+        ],
+        "second_reader": false
+      }
+    },
+    {
+      "id": "r7",
+      "label": "",
+      "gloss": "",
+      "source": "first_face_and_tower.py",
+      "types": {
+        "member_status": "has"
+      },
+      "properties": {},
+      "marks": {},
+      "warrant": {
+        "substrates_seen": 1,
+        "sources": [
+          "first_face_and_tower.py"
+        ],
+        "second_reader": false
+      }
+    },
+    {
+      "id": "r8",
+      "label": "",
+      "gloss": "",
+      "source": "first_face_and_tower.py",
+      "types": {
+        "member_status": "has"
+      },
+      "properties": {},
+      "marks": {},
+      "warrant": {
+        "substrates_seen": 1,
+        "sources": [
+          "first_face_and_tower.py"
+        ],
+        "second_reader": false
+      }
+    },
+    {
+      "id": "r9",
+      "label": "",
+      "gloss": "",
+      "source": "first_face_and_tower.py",
+      "types": {
+        "member_status": "has"
+      },
+      "properties": {},
+      "marks": {},
+      "warrant": {
+        "substrates_seen": 1,
+        "sources": [
+          "first_face_and_tower.py"
+        ],
+        "second_reader": false
+      }
+    }
+  ],
+  "signature": [
+    {
+      "type": "sustains",
+      "meaning": "",
+      "arity": 2,
+      "properties": [],
+      "subtypes": []
+    },
+    {
+      "type": "outlasts",
+      "meaning": "",
+      "arity": 2,
+      "properties": [],
+      "subtypes": []
+    },
+    {
+      "type": "individuates",
+      "meaning": "",
+      "arity": 2,
+      "properties": [],
+      "subtypes": []
+    },
+    {
+      "type": "removes",
+      "meaning": "",
+      "arity": 3,
+      "properties": [],
+      "subtypes": []
+    },
+    {
+      "type": "starts",
+      "meaning": "",
+      "arity": 2,
+      "properties": [],
+      "subtypes": []
+    },
+    {
+      "type": "answers-to",
+      "meaning": "",
+      "arity": 2,
+      "properties": [],
+      "subtypes": []
+    }
+  ],
+  "relations": [
+    {
+      "type": "sustains",
+      "terms": [
+        "r1",
+        "r0"
+      ],
+      "polarity": "holds",
+      "reason": "",
+      "annotations": {}
+    },
+    {
+      "type": "sustains",
+      "terms": [
+        "r8",
+        "r0"
+      ],
+      "polarity": "does-not-hold",
+      "reason": "",
+      "annotations": {}
+    },
+    {
+      "type": "sustains",
+      "terms": [
+        "r8",
+        "r2"
+      ],
+      "polarity": "holds",
+      "reason": "",
+      "annotations": {}
+    },
+    {
+      "type": "outlasts",
+      "terms": [
+        "r2",
+        "r0"
+      ],
+      "polarity": "holds",
+      "reason": "",
+      "annotations": {}
+    },
+    {
+      "type": "individuates",
+      "terms": [
+        "r4",
+        "r0"
+      ],
+      "polarity": "holds",
+      "reason": "",
+      "annotations": {}
+    },
+    {
+      "type": "removes",
+      "terms": [
+        "r8",
+        "r3",
+        "r2"
+      ],
+      "polarity": "holds",
+      "reason": "",
+      "annotations": {}
+    },
+    {
+      "type": "starts",
+      "terms": [
+        "r6",
+        "r1"
+      ],
+      "polarity": "holds",
+      "reason": "",
+      "annotations": {}
+    },
+    {
+      "type": "sustains",
+      "terms": [
+        "r6",
+        "r0"
+      ],
+      "polarity": "does-not-hold",
+      "reason": "",
+      "annotations": {}
+    },
+    {
+      "type": "sustains",
+      "terms": [
+        "r9",
+        "r1"
+      ],
+      "polarity": "holds",
+      "reason": "",
+      "annotations": {}
+    },
+    {
+      "type": "answers-to",
+      "terms": [
+        "r1",
+        "r7"
+      ],
+      "polarity": "holds",
+      "reason": "",
+      "annotations": {}
+    },
+    {
+      "type": "starts",
+      "terms": [
+        "r5",
+        "r1"
+      ],
+      "polarity": "does-not-hold",
+      "reason": "",
+      "annotations": {}
+    }
+  ],
+  "axioms": [],
+  "derived_check": {
+    "ordering": "",
+    "matches_picture": true,
+    "warrant": "underdetermined"
+  },
+  "open_forks": [],
+  "did_not_fit": []
+}

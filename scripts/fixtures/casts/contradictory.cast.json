@@ -1,0 +1,34 @@
+{
+  "roles": [
+    {
+      "id": "A"
+    },
+    {
+      "id": "B"
+    }
+  ],
+  "signature": [
+    {
+      "type": "r",
+      "arity": 2
+    }
+  ],
+  "relations": [
+    {
+      "type": "r",
+      "terms": [
+        "A",
+        "B"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "r",
+      "terms": [
+        "A",
+        "B"
+      ],
+      "polarity": "does-not-hold"
+    }
+  ]
+}

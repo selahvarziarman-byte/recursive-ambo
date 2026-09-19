@@ -1,10 +1,15 @@
 import {
   type KeyboardEvent,
   useEffect,
+  useRef,
   useMemo,
   useState,
 } from 'react';
 import { useGeometryStore } from '../store/geometryStore';
+// C-6c (ii)+(iii): a corner TAKES a cast from a file — the loader checks a
+// structure and never grades; this editor writes the selected corner's `cast`
+// and nothing else (the five promises, discharged by behaviour)
+import { readCastFile, castSummaryLine } from '../lib/castLoader';
 import type {
   Cell,
   JsonValue,
@@ -43,6 +48,9 @@ export function VertexPacketEditorContent() {
   const [tagInput, setTagInput] = useState('');
   const [customText, setCustomText] = useState('{}');
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  // the load's own line: the loader's words (taken — with its marks · or the refusal by name); null = nothing loaded yet
+  const [castLoadLine, setCastLoadLine] = useState<{ text: string; refused: boolean } | null>(null);
+  const castFileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (vertex) {
@@ -53,6 +61,7 @@ export function VertexPacketEditorContent() {
       setTagInput('');
       setCustomText(JSON.stringify(vertex.data.custom, null, 2));
       setSaveMessage(null);
+      setCastLoadLine(null); // PER CORNER: another corner's load line is not this one's
     }
   }, [vertex?.id]);
 
@@ -130,6 +139,21 @@ export function VertexPacketEditorContent() {
     setSaveMessage('Packet saved.');
 
     return { saved: true, nextRows };
+  };
+
+  // C-6c: `.cast.json` → the selected corner's `cast`. Refused files write
+  // NOTHING (the corner keeps what it held); a taken file writes `cast` alone —
+  // never `label`, never anything of the edge.
+  const loadCastFile = async (file: File) => {
+    const text = await file.text();
+    const load = readCastFile(text);
+    if (!load.taken) {
+      setCastLoadLine({ text: load.refusal, refused: true });
+      return;
+    }
+    updateSelectedVertexData({ cast: load.cast });
+    const marks = load.marks.length ? ` · ${load.marks.length} ${load.marks.length === 1 ? 'mark' : 'marks'}: ${load.marks.join(' · ')}` : '';
+    setCastLoadLine({ text: `${castSummaryLine(load.cast)}${marks}`, refused: false });
   };
 
   const saveAndNextUnresolved = () => {
@@ -252,7 +276,10 @@ export function VertexPacketEditorContent() {
       </label>
       {!customValidation.ok ? <p className="text-xs text-rose-300">{customValidation.message}</p> : null}
 
-      <div className="grid grid-cols-2 gap-2">
+      {/* C-6c surface 1 (the designer's siting): the load sits beside `Save packet`
+          — a FILE door, not a text field: the `Custom JSON` blob above is typed,
+          this opens the file chooser; the grain is the section's (the packet) */}
+      <div className="grid grid-cols-3 gap-2">
         <button
           type="button"
           onClick={saveDraft}
@@ -269,7 +296,32 @@ export function VertexPacketEditorContent() {
         >
           Save and next unresolved
         </button>
+        <button
+          type="button"
+          onClick={() => castFileInputRef.current?.click()}
+          title="a corner takes a concept-space from a .cast.json file — the device checks its structure and never grades it"
+          className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-violet-300 hover:text-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-400"
+        >
+          load cast… (.cast.json)
+        </button>
+        <input
+          ref={castFileInputRef}
+          type="file"
+          accept=".json,application/json"
+          data-cast-file-input="true"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = '';
+            if (file) void loadCastFile(file);
+          }}
+        />
       </div>
+      {castLoadLine ? (
+        <p data-cast-load-result="true" className={`text-xs ${castLoadLine.refused ? 'text-rose-300' : 'text-stone-400'}`}>
+          {castLoadLine.text}
+        </p>
+      ) : null}
       {saveMessage ? (
         <p
           className={`text-xs ${

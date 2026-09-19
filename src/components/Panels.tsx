@@ -64,6 +64,9 @@ import { SelectedVertexRelations } from './SelectedVertexRelations';
 import { SiteTraceSlot } from './SiteTraceSlot';
 import { SiteWitnessTracePanel } from './SiteWitnessTracePanel';
 import { VertexPacketEditorContent } from './VertexPacketEditor';
+// C-6c (iv): the card reads a HELD cast — every number re-derived from it, never stored
+import { castCounts, castMarks, castSummaryLine, orderingLine } from '../lib/castLoader';
+import type { ConceptSpace } from '../types/geometry';
 
 type TopologyFilter =
   | 'all'
@@ -2611,8 +2614,86 @@ function SelectedVertexSummary({
       <dd className="text-stone-200">{selectedVertexCells.length}</dd>
       <dt className="text-stone-500">Faces</dt>
       <dd className="text-stone-200">{containingFaces.length}</dd>
+      {/* C-6c surface 2 (the designer's ruling): THREE STATES — no cast → NO ROW (a
+          true absence, never n-a); a cast of nothing; a cast with content. ONE
+          number for relations counting both homes; the term-order count per
+          relation-type (term order is content — no verdict, a count); two
+          registers side by side, each marked as whose; UNKNOWN shown where written
+          plus one count, omission silent; the marks re-derived, never stored. */}
+      {vertex.data.cast ? (
+        <CastCardRows cast={vertex.data.cast} personLabel={vertex.data.label} />
+      ) : null}
       <SelectedVertexRelations shape={shape} selectedCell={selectedCell} vertexId={vertex.id} />
     </dl>
+  );
+}
+
+function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: string }) {
+  const counts = castCounts(cast);
+  const marks = castMarks(cast);
+  const unknownWhere = cast.roles.flatMap((role) =>
+    Object.entries(role.types ?? {})
+      .filter(([, value]) => value === 'UNKNOWN')
+      .map(([type]) => `${role.id}: ${type}`),
+  );
+  return (
+    <>
+      <dt className="text-stone-500">Cast</dt>
+      <dd data-cast-card-row="summary" className="text-stone-200">{castSummaryLine(cast)}</dd>
+      {cast.roles.length ? (
+        <>
+          <dt className="text-stone-500">Roles</dt>
+          <dd data-cast-card-row="roles" className="min-w-0 text-stone-200">
+            <span className="block text-xs text-stone-500">the corner, by the person: {personLabel.trim() ? personLabel : 'unnamed'}</span>
+            <span className="block text-xs text-stone-500">the roles, by the caster:</span>
+            <span className="block">
+              {cast.roles.map((role, index) => (
+                <span key={role.id}>
+                  {role.label ? (
+                    <span>{role.label}</span>
+                  ) : (
+                    <span className="font-mono text-xs text-stone-400" title="an address, not a name — the caster gave no label">{role.id}</span>
+                  )}
+                  {index < cast.roles.length - 1 ? <span className="text-stone-600">{' · '}</span> : null}
+                </span>
+              ))}
+            </span>
+            {cast.roles.some((role) => !role.label) ? (
+              <span className="block text-xs text-stone-500">an id is an address, not a name</span>
+            ) : null}
+          </dd>
+        </>
+      ) : null}
+      {counts.orderings.length ? (
+        <>
+          <dt className="text-stone-500">Term order</dt>
+          <dd data-cast-card-row="orderings" className="text-stone-200">
+            {counts.orderings.map((ordering) => (
+              <span key={ordering.type} className="block">{orderingLine(ordering)}</span>
+            ))}
+          </dd>
+        </>
+      ) : null}
+      {counts.unknownTypes ? (
+        <>
+          <dt className="text-stone-500">Unknown</dt>
+          <dd data-cast-card-row="unknown" className="text-stone-200">
+            <span className="block">{`${counts.unknownTypes} ${counts.unknownTypes === 1 ? 'type' : 'types'} marked unknown`}</span>
+            <span className="block font-mono text-xs text-stone-400">{unknownWhere.join(' · ')}</span>
+          </dd>
+        </>
+      ) : null}
+      {marks.length ? (
+        <>
+          <dt className="text-stone-500">Marks</dt>
+          <dd data-cast-card-row="marks" className="text-stone-200">
+            {marks.map((mark) => (
+              <span key={mark} className="block">{mark}</span>
+            ))}
+          </dd>
+        </>
+      ) : null}
+    </>
   );
 }
 

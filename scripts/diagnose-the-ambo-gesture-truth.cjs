@@ -83,7 +83,8 @@ check('§1 no new store action rode in: the inspector\'s row handlers call only 
 // ═══════════════ §2 — C-6a PART 2: the designer's line, in its own row, with the two rulings that ride ═══════════════
 console.log('\n----- §2 ★★ C-6a part 2 — the Ambo states every act it offers, in its OWN row -----');
 const explore = readLf('src/manuscript/ExploreWindow.tsx');
-const THE_LINE = 'click — select what you point at, on the solid or in the inspector · shift-click — toggle it in the lift region (on the solid: the face you hit) · shift+alt-click the solid — the whole cell instead · edges lift from the inspector\'s rows only · hover — preview what corresponds · drag — orbit · right-drag — pan · wheel or middle-drag — zoom';
+// C-6c (iii): the line gains her clause verbatim — `a corner takes a concept-space from the packets tab`
+const THE_LINE = 'click — select what you point at, on the solid or in the inspector · shift-click — toggle it in the lift region (on the solid: the face you hit) · shift+alt-click the solid — the whole cell instead · edges lift from the inspector\'s rows only · hover — preview what corresponds · drag — orbit · right-drag — pan · wheel or middle-drag — zoom · a corner takes a concept-space from the packets tab';
 const lineAt = workspace.indexOf('{`' + THE_LINE + '`}');
 const canvasCloseAt = workspace.indexOf('</Canvas>');
 const readoutAt = workspace.indexOf('data-ambo-hover-readout="true"');
