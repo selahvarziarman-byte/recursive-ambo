@@ -30,6 +30,12 @@
 > - **§4.5** — **NEW: *a place that states the gestures does not cure a surface that misstates itself*** — with its ORDER (surfaces first, the place second).
 > - **§4.5** — *A CONTROL THAT CANNOT ACT MUST NOT APPEAR AS ONE* paired to the positive-mark law so it is findable from either side, **and marked with the fact that this holder RE-BOUGHT it while it stood in the list.** ⇒ ***a law you cannot find is not one that is missing.***
 > - **§7** — the AMBO census CORRECTED from 'a few canvas gestures' to **FOURTEEN**, of which **ONE** is stated — and that one is `formatHoverStatus`'s empty state, **overwritten by the first hover.**
+>
+> **A-5 · the same holder, at `8bda983` — the fullscreen hour: the two owed sightings taken, and two laws of this office's own instrument corrected or bought.**
+> - **§6.2b clause 9** — ⛔ **its MECHANISM falsified** (`hidden` + `innerWidth: 0` + **`framesIn1s: 54`**): frame rate, width and visibility are **three independent facts**. **The LAW and the RECIPE survived — and the recipe's own printed control is what caught it.**
+> - **§6.2b clause 10** — **NEW: the capture races the render; a synthetic pointer is not an instrument for this canvas.** Both halves one species: ***the instrument's clock is early.***
+> - **✔ SIGHTED:** `drag — orbit` and `wheel — zoom` in the Ambo, at this seat's own eye. ⛔ `right-drag` and `middle-drag` remain **uncited by me** — no way to drive them.
+> - **✔ MEASURED, camera pinned:** the inspector column is **3.65 screens**; the edge rows — the module's ONLY route to lifting an edge — sit **3.42 screens down and last**, and **get FARTHER as the window widens** (2178 px @1400 → 2710 px @1689). ***Open-but-last is not reachable.***
 
 ---
 
@@ -220,12 +226,17 @@
    ⇒ ✅ **THE ROUTE THAT WORKS, every time:** set a `<select>` by value (`form_input`), click rows and buttons **by element reference** (`find` → `ref_N`), read state from the DOM. **The filter and the packet rows landed first time on every attempt.**
    ★ **And the general shape, which is why this is a law and not a tip: *when a control has both a canvas route and a DOM route, the DOM route is the instrument and the canvas route is the subject.*** **Drive the one to look at the other.**
 
-9. ⛔⛔ **A HIDDEN PANE IS NOT FROZEN — IT RUNS AT ~1.4 fps. THAT IS THE WHOLE OF THIS OFFICE'S “UNRESOLVED” KEYED-CROSSING CLASS.**
-   ✔ **Measured 2026-09-17 09:42 +03:30, one call, served HEAD `99c85a6`: a `requestAnimationFrame` loop over 1437 ms returned `framesIn1s: 2` — ≈ 1.4 fps, against ≈ 40 fps displayed. **A ≈ 30× slowdown, NOT a stop.**
-   ⇒ **The keyed crossing `K-1c` clocks at ≈ 4.4 s DISPLAYED takes ≈ 2 MINUTES here.** Four times this office read the seam after ≈ 5 s, saw byte-identical state, and filed a negative. ⛔ **The app was never broken and the frames were never stopped. THE WAIT WAS IN THE WRONG UNIT.**
-   > ### ⇒ ★★ **THE LAW — and it is the SAME law this office ruled onto the gesture line the same hour: *WAIT IN THE UNIT THE PHENOMENON IS COUNTED IN.* A frame-carried event is counted in FRAMES. Waiting seconds for it measures a quantity in a unit it does not own.**
-   ⇒ **THE RECIPE, mechanical:** never `sleep(n)`; **poll `requestAnimationFrame` and count to N FRAMES** (≈ 176 for one crossing, from the displayed clock). Correct at 40 fps and at 1.4 fps alike, and it needs no display check to be sound.
-   ⚠ **AND THE POSITIVE CONTROL THAT MAKES A NEGATIVE MEAN ANYTHING (LAW 24): print `framesIn1s` BESIDE every frame-carried negative.** A null at 1.4 fps is a claim about the PANE; a null at 40 fps is a claim about the APP. **They are different sentences, and this office wrote the first while meaning the second.**
+9. ⛔⛔ **FRAME RATE, WIDTH AND VISIBILITY ARE THREE INDEPENDENT FACTS. MEASURE THE ONE YOU NEED; INFER NONE OF THEM.**
+   > ### ⛔ **CORRECTED 2026-09-18 09:39 +03:30 — THE MECHANISM THIS CLAUSE ASSERTED YESTERDAY IS FALSE.** It read *“a hidden pane runs at ~1.4 fps”*. ✔ **Measured today at `8bda983`: `visibilityState: "hidden"` AND `innerWidth: 0` AND `framesIn1s: 54`** — dismissed, invisible, and rendering at FULL RATE. **Yesterday's 1.4 fps was ONE pane state, not the meaning of `hidden`.** ⇒ ★ **No one of the three predicts another.**
+   ★★ **WHAT SURVIVES, AND IT IS THE PART THAT MATTERED: the LAW and the RECIPE were right even while the cause was wrong** — ***wait in the unit the phenomenon is counted in*** (poll `requestAnimationFrame` to N FRAMES, never `sleep(n)`), and ***print `framesIn1s` beside every frame-carried claim*** (LAW 24). ⇒ **It is precisely because the recipe prints its own control that this clause's own mechanism was caught in ONE call.** ★ ***An instrument that reports its own conditions corrects the theory that built it.***
+   ⚠ **AND THE SCOPE OF EACH FACT:** `innerWidth: 0` ⇒ **layout is meaningless — NO geometry, position, occlusion or depth claim, at all.** Text, DOM content and app state stay sound. Frame rate says only what the render loop is doing. **This is the THIRD cause this office named that merely FIT** (§6.2b clause 7's notice, A-3's `innerWidth`, and now this one). ⇒ ***Name the measurement, not the mechanism — and when you must name a mechanism, write the measurement that would kill it in the same sentence.***
+
+
+10. ⛔⛔ **THE CAPTURE RACES THE RENDER — AND A SYNTHETIC POINTER IS NOT AN INSTRUMENT FOR THIS APP'S CANVAS.** ✔ *Bought 2026-09-18 09:50 +03:30 at `8bda983`, in the first hour this seat ever had `visible` + full width + full frame rate at once.*
+   **(a) A SCREENSHOT TAKEN IMMEDIATELY AFTER AN ACT CAN PRECEDE THE RENDER IT IS MEANT TO MEASURE.** A real 130 px drag DID orbit the Ambo's camera; captured at once it looked unchanged and **I recorded a true event as a null.** ⇒ **WAIT, THEN CAPTURE — and CAPTURE TWICE AND REQUIRE AGREEMENT, so a racing capture appears as a DISAGREEMENT instead of reading as a null.**
+   **(b) DISPATCHED `PointerEvent`s DO NOT DRIVE THE CANVAS.** OrbitControls captures the pointer **on the canvas element**, so `pointermove`s dispatched on `window` are invisible to it — **while the `pointerdown`/`pointerup` still reach R3F as a CLICK at one point.** ⇒ A synthetic "drag" on this canvas is silently **a click**, and it selected a cell while I believed I was orbiting. ⛔ **USE THE REAL POINTER (`computer`) FOR EVERY CANVAS GESTURE.** *(§6.2b clause 8's "drive the DOM, never the raycast" holds for PANELS; the canvas has no DOM route, so the real pointer is the only instrument — and at native size only, per clause 7.)*
+   > ### ⇒ ★★ **BOTH HALVES ARE ONE SPECIES, AND IT IS THIS SEAT'S STANDING HAZARD: *THE INSTRUMENT'S CLOCK IS EARLY.*** Yesterday it was frames at 1.4 fps; today the capture at 61 fps. **Two units, one rule: never read a result before the act has landed, and print the condition you read it under.**
+   ⚠ **AND THE CONFOUND IT NEARLY BOUGHT:** one frame carried two effects from two causes (a real drag's orbit + a synthetic click's selection) and **a finding — *"a drag on the solid also selects"* — was one sentence from being filed.** It is FALSE: measured cleanly, the solid stays unselected through an orbit. ⇒ ***When one frame shows two changes, you have two causes until you have separated them.***
 
 
 ## 6.3 · Measuring what a person can reach ✔
