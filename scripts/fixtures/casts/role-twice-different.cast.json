@@ -1,0 +1,49 @@
+{
+  "roles": [
+    {
+      "id": "x"
+    },
+    {
+      "id": "y"
+    },
+    {
+      "id": "z"
+    },
+    {
+      "id": "x",
+      "label": "ex"
+    }
+  ],
+  "signature": [
+    {
+      "type": "r",
+      "arity": 2
+    }
+  ],
+  "relations": [
+    {
+      "type": "r",
+      "terms": [
+        "x",
+        "y"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "r",
+      "terms": [
+        "y",
+        "z"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "r",
+      "terms": [
+        "z",
+        "x"
+      ],
+      "polarity": "holds"
+    }
+  ]
+}

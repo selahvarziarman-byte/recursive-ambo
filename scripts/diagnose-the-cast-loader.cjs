@@ -89,7 +89,7 @@ check('§2b LAW 24 — absent = absent: the triangle has no subject and gets non
     (() => { const r = readCastFile(JSON.stringify({ subject: 'three things in a ring', roles: [{ id: 'x' }], signature: [], relations: [] })); return r.taken && r.cast.subject === 'three things in a ring' && r.cast.warrant === undefined; })() &&
     (() => { const r = readCastFile(JSON.stringify({ subject_matter: 7, roles: [{ id: 'x' }], signature: [], relations: [] })); return r.taken && r.cast.subject === undefined && r.cast.warrant && r.cast.warrant.file && r.cast.warrant.file.subject_matter === 7; })());
 check('§2b ★ THE CARD prints the subject beside the person\'s label in the caster\'s register ONLY when held — the row renders under `cast.subject ?`, never a placeholder',
-  panels.includes('{cast.subject ? (') && panels.includes('data-cast-card-row="subject"') && panels.includes('the subject matter, by the caster:'));
+  (() => { const card = readLf('src/components/Panels.tsx'); return card.includes('{cast.subject ? (') && card.includes('data-cast-card-row="subject"') && card.includes('the subject matter, by the caster:'); })());
 
 // ═══ §3 the two refusals, by name ═══
 const contra = readCastFile(fixture('contradictory.cast.json'));
@@ -97,7 +97,7 @@ check('§3 ★★ REFUSAL 2 — a contradictory record is refused AT THE CAST, p
   !contra.taken && contra.refusal === 'not taken — the record states two things about one tuple · r(A, B) is listed both holds and does-not-hold', JSON.stringify(contra));
 check('§3 …its siblings: a role id declared twice; a type declared with two arities',
   (() => {
-    const r1 = readCastFile(JSON.stringify({ roles: [{ id: 'A' }, { id: 'A' }], signature: [], relations: [] }));
+    const r1 = readCastFile(JSON.stringify({ roles: [{ id: 'A' }, { id: 'A', label: 'a' }], signature: [], relations: [] }));
     const r2 = readCastFile(JSON.stringify({ roles: [{ id: 'A' }], signature: [{ type: 'r', arity: 2 }, { type: 'r', arity: 3 }], relations: [] }));
     return !r1.taken && r1.refusal === 'not taken — the record states two things about one role · role id "A" is declared twice' &&
       !r2.taken && r2.refusal === 'not taken — the record states two things about one type · type "r" is declared with arity 2 and arity 3';
@@ -108,6 +108,41 @@ check('§3 ★★ REFUSAL 1 — `this file is not a cast`: a JSON object with no
   !notCast.taken && notCast.refusal === NOT_A_CAST && !broken.taken && broken.refusal === NOT_A_CAST && NOT_A_CAST === 'this file is not a cast');
 check('§3 LAW 24 — the refusals are not the loader\'s reflex: the triangle, the T cell and the cast of nothing are all TAKEN',
   tri.taken && tcell.taken && readCastFile(fixture('nothing.cast.json')).taken);
+
+// ═══ §3b C-6c (vi) — the researcher's line: effect at the cast, address at the tuple; redundancy read once; one name, one home; the malformed carried ═══
+const three = readCastFile(fixture('three-contradictions.cast.json'));
+check('§3b ★★ δ1 — THREE contradictions (two tuples, one type) are refused ONCE, the one refusal naming all three: `not taken — the record states two things about 2 tuples and 1 type · r(A, B) … · r(B, C) … · type "r" is declared with arity 2 and arity 3`',
+  !three.taken && three.refusal === 'not taken — the record states two things about 2 tuples and 1 type · r(A, B) is listed both holds and does-not-hold · r(B, C) is listed both holds and does-not-hold · type "r" is declared with arity 2 and arity 3',
+  JSON.stringify(three));
+check('§3b δ1 — the count of names in the refusal equals the count planted (3), and LAW 24: the one-contradiction fixture still names exactly one (`one tuple`)',
+  !three.taken && three.refusal.split(' · ').length - 1 === 3 && !contra.taken && contra.refusal.startsWith('not taken — the record states two things about one tuple · ') && contra.refusal.split(' · ').length - 1 === 1);
+const twiceSame = readCastFile(fixture('role-twice-identical.cast.json'));
+const twiceDiff = readCastFile(fixture('role-twice-different.cast.json'));
+check('§3b ★★ δ2 — a role id listed twice with IDENTICAL content is REDUNDANCY: taken as 3 roles, no mark, no refusal; the same file with the second `x` carrying a different label is refused naming `x`',
+  twiceSame.taken && twiceSame.cast.roles.length === 3 && twiceSame.marks.length === 0 &&
+    !twiceDiff.taken && twiceDiff.refusal === 'not taken — the record states two things about one role · role id "x" is declared twice',
+  JSON.stringify({ twiceSame, twiceDiff }).slice(0, 300));
+const bothHomes = readCastFile(fixture('both-homes.cast.json'));
+check('§3b ★★ δ3 (amended) — ONE NAME, ONE HOME: `member_status` declared in the signature AND on a role\'s types is the contradiction, refused at the cast and named — no negative invented (the roles\' home is categorical)',
+  !bothHomes.taken && bothHomes.refusal === 'not taken — the record states two things about one name · "member_status" is declared in the signature and on the roles', JSON.stringify(bothHomes));
+check('§3b δ3 LAW 24 — the T cell as landed (unary only on the roles) loads unchanged: 10 roles · 7 relation-types · 21 relations, not double-counted',
+  tcell.taken && tCounts && tCounts.relationTypes === 7 && tCounts.relations === 21);
+const redundant = readCastFile(fixture('redundant.cast.json'));
+check('§3b ★ REDUNDANCY IS READ ONCE, nothing erased, no mark: a tuple listed twice with the same polarity and a signature entry twice with the same arity load as 3 relations · 1 relation-type (a relation is a set; a signature is a set)',
+  redundant.taken && redundant.cast.relations.length === 3 && redundant.cast.signature.length === 1 && redundant.marks.length === 0 &&
+    castCounts(redundant.cast).relations === 3 && castCounts(redundant.cast).relationTypes === 1, JSON.stringify(redundant).slice(0, 300));
+const malformedRel = readCastFile(fixture('malformed-relation.cast.json'));
+check('§3b ★★ RIDER (b) — a malformed item is CARRIED beside its mark: one relation without terms loads with the mark `relation 3: has no type or no terms — not taken` AND the raw item on the warrant at `relations.3`; the three good tuples present',
+  malformedRel.taken && malformedRel.cast.relations.length === 3 && malformedRel.marks.includes('relation 3: has no type or no terms — not taken') &&
+    malformedRel.cast.warrant && malformedRel.cast.warrant.malformed && malformedRel.cast.warrant.malformed['relations.3'] &&
+    malformedRel.cast.warrant.malformed['relations.3'].reason === 'the terms were lost in transcription', JSON.stringify(malformedRel).slice(0, 400));
+check('§3b RIDER (b) LAW 24 — a clean fixture carries nothing under `malformed` (the triangle, the T cell); and the other three homes carry too: a role without an id at `roles.i`, a signature entry without an arity at `signature.i`, an axiom without a sentence at `axioms.i`',
+  tri.taken && !(tri.cast.warrant && tri.cast.warrant.malformed) && tcell.taken && !(tcell.cast.warrant && tcell.cast.warrant.malformed) &&
+    (() => {
+      const r = readCastFile(JSON.stringify({ roles: [{ id: 'x' }, { label: 'no id' }], signature: [{ type: 'r', arity: 2 }, { type: 'q' }], relations: [], axioms: ['all x. r(x, x)', { hypothesis: [] }] }));
+      return r.taken && r.cast.warrant && r.cast.warrant.malformed && r.cast.warrant.malformed['roles.1'] && r.cast.warrant.malformed['signature.1'] && r.cast.warrant.malformed['axioms.1'] &&
+        r.marks.length === 3 && r.cast.roles.length === 1 && r.cast.signature.length === 1 && r.cast.axioms.length === 1;
+    })());
 
 // ═══ §4 closure and arity — taken and MARKED, never refused ═══
 const cb = readCastFile(fixture('closure-broken.cast.json'));

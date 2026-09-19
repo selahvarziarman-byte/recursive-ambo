@@ -24,9 +24,10 @@
 //                arities.
 // TWO REFUSALS, BY NAME — nothing else refuses:
 //   (1) NOT A CAST   unparseable, or no `roles` / `signature` / `relations`;
-//   (2) A CONTRADICTORY RECORD   refused at the CAST (the designer's ruling;
-//       one line with the researcher — a tuple-level answer is a one-line
-//       change), pointing at the line.
+//   (2) A CONTRADICTORY RECORD   refused at the CAST, and NAMED at the tuple
+//       (C-6c (vi), the researcher's line): ONE refusal listing every offending
+//       tuple, role id, signature name and both-homes name; a repetition with
+//       identical content is redundancy, read once.
 // CLOSURE and ARITY breaks are LOCAL → TAKEN AND MARKED, never refused: carry
 // what the substrate holds · mark what it does not · erase neither. The marks
 // are COUNTS and NAMES, never verdicts.
@@ -62,6 +63,14 @@ const polarityOf = (v: unknown): ConceptRelation['polarity'] | null =>
 
 const tupleKey = (r: { type: string; terms: string[] }): string => `${r.type}(${r.terms.join(', ')})`;
 
+/** the refusal's head: `one tuple` · `one name` · `2 tuples and 1 type` — what the record states two things about */
+function contradictionHead(items: Array<{ kind: 'tuple' | 'role' | 'type' | 'name' }>): string {
+  const counts = new Map<string, number>();
+  for (const c of items) counts.set(c.kind, (counts.get(c.kind) ?? 0) + 1);
+  const parts = [...counts.entries()].map(([kind, n]) => (n === 1 && items.length === 1 ? `one ${kind}` : `${n} ${kind}${n === 1 ? '' : 's'}`));
+  return parts.length <= 1 ? parts.join('') : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+}
+
 /** THE READ — text in, a cast (taken, with its marks) or a refusal (by name) out. */
 export function readCastFile(text: string): CastLoad {
   let parsed: JsonValue;
@@ -74,16 +83,21 @@ export function readCastFile(text: string): CastLoad {
     return { taken: false, refusal: NOT_A_CAST };
   }
   const marks: string[] = [];
+  // rider (b) on (vi), the researcher's line: a malformed item is not an item OF the
+  // structure, but it is bytes the person wrote — CARRIED on the warrant, keyed
+  // by its home and index, beside the mark that names it (never erased)
+  const malformed: PacketData = {};
 
   // ── roles: id (required — a role without one is not a role), label (the CASTER's word), types, the rest carried ──
-  const roles: ConceptRole[] = [];
+  const rolesRead: ConceptRole[] = [];
   parsed.roles.forEach((raw, i) => {
     if (!isObject(raw) || !isString(raw.id) || raw.id.length === 0) {
       if (isString(raw) && raw.length > 0) {
-        roles.push({ id: raw }); // a bare id is a role — the thin cast
+        rolesRead.push({ id: raw }); // a bare id is a role — the thin cast
         return;
       }
       marks.push(`role ${i}: has no id — not taken`);
+      malformed[`roles.${i}`] = raw;
       return;
     }
     const role: ConceptRole = { id: raw.id };
@@ -95,36 +109,39 @@ export function readCastFile(text: string): CastLoad {
     }
     const carried = rest(raw, ['id', 'label', 'types']);
     if (Object.keys(carried).length > 0) role.marks = carried;
-    roles.push(role);
+    rolesRead.push(role);
   });
 
   // ── the signature: type · arity; the rest (meaning · properties · subtypes) carried on the warrant ──
-  const signature: ConceptRelationType[] = [];
+  const signatureRead: ConceptRelationType[] = [];
   const signatureCarried: PacketData = {};
   parsed.signature.forEach((raw, i) => {
     if (!isObject(raw) || !isString(raw.type) || raw.type.length === 0 || typeof raw.arity !== 'number' || !Number.isInteger(raw.arity) || raw.arity < 1) {
       marks.push(`signature ${i}: has no type or no whole arity — not taken`);
+      malformed[`signature.${i}`] = raw;
       return;
     }
-    signature.push({ type: raw.type, arity: raw.arity });
+    signatureRead.push({ type: raw.type, arity: raw.arity });
     const carried = rest(raw, ['type', 'arity']);
     if (Object.keys(carried).length > 0) signatureCarried[raw.type] = carried;
   });
 
   // ── relations: type · terms · polarity; reason/annotations carried on the warrant by index ──
-  const relations: ConceptRelation[] = [];
+  const relationsRead: ConceptRelation[] = [];
   const relationCarried: PacketData = {};
   parsed.relations.forEach((raw, i) => {
     if (!isObject(raw) || !isString(raw.type) || !Array.isArray(raw.terms) || !raw.terms.every(isString)) {
       marks.push(`relation ${i}: has no type or no terms — not taken`);
+      malformed[`relations.${i}`] = raw;
       return;
     }
     const polarity = polarityOf(raw.polarity);
     if (polarity === null) {
       marks.push(`relation ${i}: polarity "${String(raw.polarity)}" is neither holds nor does-not-hold — not taken`);
+      malformed[`relations.${i}`] = raw;
       return;
     }
-    relations.push({ type: raw.type, terms: raw.terms as string[], polarity });
+    relationsRead.push({ type: raw.type, terms: raw.terms as string[], polarity });
     const carried = rest(raw, ['type', 'terms', 'polarity']);
     if (Object.keys(carried).length > 0) relationCarried[String(i)] = carried;
   });
@@ -139,33 +156,78 @@ export function readCastFile(text: string): CastLoad {
         axioms.push(raw.sentence);
         const carried = rest(raw, ['sentence']);
         if (Object.keys(carried).length > 0) axiomCarried[String(i)] = carried;
-      } else marks.push(`axiom ${i}: has no sentence — not taken`);
+      } else {
+        marks.push(`axiom ${i}: has no sentence — not taken`);
+        malformed[`axioms.${i}`] = raw;
+      }
     });
   }
 
-  // ── CONSISTENCY — the record is a function; a contradiction refuses the CAST, pointing at the line ──
-  const seenRole = new Set<string>();
-  for (const role of roles) {
-    if (seenRole.has(role.id)) return { taken: false, refusal: `not taken — the record states two things about one role · role id "${role.id}" is declared twice` };
-    seenRole.add(role.id);
+  // ── CONSISTENCY (C-6c (vi), the researcher's line, ratified §98.1) — the record is a
+  // FUNCTION. Every contradiction is COLLECTED and the CAST refused ONCE, the
+  // refusal naming each at its address (effect at the cast, address at the tuple).
+  // A repetition with IDENTICAL content is REDUNDANCY — a relation is a set, a
+  // signature is a set, a role is one: read once, nothing erased, no mark. And
+  // one name has ONE home (δ3 as amended): a type-name declared in the signature
+  // that also appears as a key in any role's `types` is itself the contradiction —
+  // the roles' home is categorical (`K: v` denies every other value; its negative
+  // is another value, never a polarity; UNKNOWN is unrecorded), so no negative is
+  // needed and none is invented. ──
+  const contradictions: Array<{ kind: 'tuple' | 'role' | 'type' | 'name'; line: string }> = [];
+  const roleById = new Map<string, ConceptRole>();
+  const roleSet: ConceptRole[] = [];
+  const contradictedRoles = new Set<string>();
+  for (const role of rolesRead) {
+    const prior = roleById.get(role.id);
+    if (prior === undefined) {
+      roleById.set(role.id, role);
+      roleSet.push(role);
+    } else if (JSON.stringify(prior) !== JSON.stringify(role) && !contradictedRoles.has(role.id)) {
+      contradictedRoles.add(role.id);
+      contradictions.push({ kind: 'role', line: `role id "${role.id}" is declared twice` });
+    }
   }
   const arityOf = new Map<string, number>();
-  for (const s of signature) {
+  const signatureSet: ConceptRelationType[] = [];
+  const contradictedTypes = new Set<string>();
+  for (const s of signatureRead) {
     const prior = arityOf.get(s.type);
-    if (prior !== undefined && prior !== s.arity) {
-      return { taken: false, refusal: `not taken — the record states two things about one type · type "${s.type}" is declared with arity ${prior} and arity ${s.arity}` };
+    if (prior === undefined) {
+      arityOf.set(s.type, s.arity);
+      signatureSet.push(s);
+    } else if (prior !== s.arity && !contradictedTypes.has(s.type)) {
+      contradictedTypes.add(s.type);
+      contradictions.push({ kind: 'type', line: `type "${s.type}" is declared with arity ${prior} and arity ${s.arity}` });
     }
-    arityOf.set(s.type, s.arity);
+  }
+  const roleTypeKeys = new Set<string>();
+  for (const role of roleSet) for (const k of Object.keys(role.types ?? {})) roleTypeKeys.add(k);
+  for (const name of arityOf.keys()) {
+    if (roleTypeKeys.has(name)) contradictions.push({ kind: 'name', line: `"${name}" is declared in the signature and on the roles` });
   }
   const polarityByTuple = new Map<string, ConceptRelation['polarity']>();
-  for (const r of relations) {
+  const relationSet: ConceptRelation[] = [];
+  const contradictedTuples = new Set<string>();
+  for (const r of relationsRead) {
     const key = tupleKey(r);
     const prior = polarityByTuple.get(key);
-    if (prior !== undefined && prior !== r.polarity) {
-      return { taken: false, refusal: `not taken — the record states two things about one tuple · ${key} is listed both holds and does-not-hold` };
+    if (prior === undefined) {
+      polarityByTuple.set(key, r.polarity);
+      relationSet.push(r);
+    } else if (prior !== r.polarity && !contradictedTuples.has(key)) {
+      contradictedTuples.add(key);
+      contradictions.push({ kind: 'tuple', line: `${key} is listed both holds and does-not-hold` });
     }
-    polarityByTuple.set(key, r.polarity);
   }
+  if (contradictions.length > 0) {
+    // the addresses in the order the researcher's line names them: tuples, then roles, types, names
+    const rank = { tuple: 0, role: 1, type: 2, name: 3 } as const;
+    contradictions.sort((a, b) => rank[a.kind] - rank[b.kind]);
+    return { taken: false, refusal: `not taken — the record states two things about ${contradictionHead(contradictions)} · ${contradictions.map((c) => c.line).join(' · ')}` };
+  }
+  const roles = roleSet;
+  const signature = signatureSet;
+  const relations = relationSet;
 
   // ── C-6c (i)'s rider: the SUBJECT MATTER has a typed home (sanctioned, Δ79) — a
   // string, read on the card beside the person's label in the caster's register;
@@ -182,6 +244,7 @@ export function readCastFile(text: string): CastLoad {
   if (Object.keys(signatureCarried).length > 0) warrant.signature = signatureCarried;
   if (Object.keys(relationCarried).length > 0) warrant.relations = relationCarried;
   if (Object.keys(axiomCarried).length > 0) warrant.axioms = axiomCarried;
+  if (Object.keys(malformed).length > 0) warrant.malformed = malformed;
 
   const cast: ConceptSpace = { roles, signature, relations, axioms };
   if (subject !== undefined) cast.subject = subject;

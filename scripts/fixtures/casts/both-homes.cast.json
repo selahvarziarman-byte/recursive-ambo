@@ -1,0 +1,36 @@
+{
+  "roles": [
+    {
+      "id": "r0",
+      "types": {
+        "member_status": "has"
+      }
+    },
+    {
+      "id": "r1",
+      "types": {
+        "member_status": "has"
+      }
+    }
+  ],
+  "signature": [
+    {
+      "type": "member_status",
+      "arity": 1
+    },
+    {
+      "type": "sustains",
+      "arity": 2
+    }
+  ],
+  "relations": [
+    {
+      "type": "sustains",
+      "terms": [
+        "r1",
+        "r0"
+      ],
+      "polarity": "holds"
+    }
+  ]
+}
