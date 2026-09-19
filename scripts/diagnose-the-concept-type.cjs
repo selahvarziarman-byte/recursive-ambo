@@ -185,11 +185,33 @@ for (const dir of ['src/lib', 'src/manuscript', 'src/playground', 'src/component
   };
   walk(root);
 }
-const CAST_READERS = ['src/components/Panels.tsx', 'src/components/VertexPacketEditor.tsx', 'src/lib/castLoader.ts'];
-check('§4 ★ THE CAST HAS EXACTLY ITS THREE (C-6c): the loader (src/lib/castLoader.ts), the writer (the packet editor) and the reader (the card in Panels) — no other file under the engine roots, the components or the store mentions `cast` or `ConceptSpace`',
+// C-6d (α) (2026-09-19): the J register's quantities are COMPUTED ON THE TYPE in
+// src/lib/jRegister.ts — it reads ConceptSpace and the τ/roles of an
+// EdgeIdentification as INPUTS and writes nothing; no surface, no store action.
+const CAST_READERS = ['src/components/Panels.tsx', 'src/components/VertexPacketEditor.tsx', 'src/lib/castLoader.ts', 'src/lib/jRegister.ts'];
+check('§4 ★ THE CAST HAS EXACTLY ITS FOUR (C-6c + C-6d (α)): the loader (src/lib/castLoader.ts), the writer (the packet editor), the reader (the card in Panels) and the register that computes on the type (src/lib/jRegister.ts) — no other file under the engine roots, the components or the store mentions `cast` or `ConceptSpace`',
   JSON.stringify([...castReaders].sort()) === JSON.stringify(CAST_READERS), `readers: ${JSON.stringify(castReaders)}`);
-check('§4 ★ THE IDENTIFICATION STAYS ALONE: no file under the engine roots, the components or the store mentions `identification` or `EdgeIdentification` — no J is written anywhere (C-6c\'s boundary)',
-  identificationReaders.length === 0, `readers: ${JSON.stringify(identificationReaders)}`);
+check('§4 ★ THE IDENTIFICATION IS READ BY THE REGISTER ALONE AND WRITTEN BY NOTHING: the only file mentioning `EdgeIdentification` outside the type is src/lib/jRegister.ts (its τ and roles are the register\'s INPUTS), and no file under the engine roots, the components or the store assigns `identification` — no J is written anywhere (C-6c\'s and C-6d (α)\'s boundary)',
+  JSON.stringify(identificationReaders) === JSON.stringify(['src/lib/jRegister.ts']) &&
+    (() => {
+      const writes = [];
+      for (const dir of ['src/lib', 'src/manuscript', 'src/playground', 'src/components', 'src/store']) {
+        const root = path.join(repoRoot, dir);
+        if (!fs.existsSync(root)) continue;
+        const walk = (d) => {
+          for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+            const f = path.join(d, e.name);
+            if (e.isDirectory()) walk(f);
+            // a WRITE of the edge's field: an assignment to it, or an inline J literal — not the word in another
+            // vocabulary (multiform's BoundaryIdentification parameter, the manuscript's rim identification)
+            else if (/\.tsx?$/.test(e.name) && /\.identification\s*=[^=]|\bidentification\s*:\s*\{/.test(fs.readFileSync(f, 'utf8'))) writes.push(path.relative(repoRoot, f));
+          }
+        };
+        walk(root);
+      }
+      return writes.length === 0;
+    })(),
+  `readers: ${JSON.stringify(identificationReaders)}`);
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CONCEPT-TYPE: ALL PASS — the corner may hold a cast, the edge may carry a J, and the absence of either is lawful' : `DIAGNOSE-THE-CONCEPT-TYPE: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);
