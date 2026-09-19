@@ -42,8 +42,8 @@ const check = (name, cond, detail) => {
 console.log('THE AMBO TELLS THE TRUTH ABOUT ITS GESTURES — the inspector rows say what a click does (C-6a part 1)\n');
 
 // ── the vertex row: the grammar the other rows take, unchanged ──
-const vertexTitle = 'title="click: inspect · shift-click: toggle in the lift region"';
-check('§1 THE VERTEX ROW is untouched: `click: inspect · shift-click: toggle in the lift region`, once, on a button whose plain click inspects and whose shift-click toggles the lift set',
+const vertexTitle = 'title="click: select · shift-click: toggle in the lift region"';
+check('§1 THE VERTEX ROW says what its click does in the module\'s own verb (C-6b: the consumers are named on SELECTION): `click: select · shift-click: toggle in the lift region`, once, on a button whose plain click selects and whose shift-click toggles the lift set',
   (panels.match(new RegExp(vertexTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) ?? []).length === 1 &&
     panels.includes("                  selectVertex(row.vertex.id);\n") &&
     panels.includes("                    toggleLiftSelection({ kind: 'vertex', id: row.vertex.id });\n"));
@@ -69,9 +69,13 @@ check('§1 ⛔ NO select-face act was invented: `selectFace` does not appear in 
   !panels.includes('selectFace') && !workspace.includes('selectFace'));
 
 // ── boundaries ──
-check('§1 formatHoverStatus\'s CONTENT branches are untouched — the cell, vertex, edge and face readouts still say what is under the pointer',
-  ['`Hovering cell ${label} | ${cellSummary} | id: ${cell.id}`', '`Hovering vertex ${label} | id: ${target.vertexId}`',
-   '`Hovering edge ${endpoints} | ${relation} | id: ${edge.id}`', '`Hovering face ${label} | ${relation} | id: ${face.id}`'].every((s) => workspace.includes(s)));
+check('§1 formatHoverStatus\'s CONTENT branches say what is under the pointer — the identification, clean (C-6b: no branch begins with `Hovering `; the ordinary is not marked)',
+  ['`cell ${label} | ${cellSummary} | id: ${cell.id}`', '`vertex ${label} | id: ${target.vertexId}`',
+   '`edge ${endpoints} | ${relation} | id: ${edge.id}`', '`face ${label} | ${relation} | id: ${face.id}`'].every((s) => workspace.includes(s)) &&
+    !/return\s+`Hovering |return\s+'Hovering /.test(workspace) && !workspace.includes('Hovering '));
+check('§1 ★ THE BARE CELL BRANCH (priced, then cut — C-6b item 3): a cell id the shape does not hold is a STALE target across a shape change, so it is the true absence (null), never a word; the face branch of the same class likewise; the identified-pair edge keeps its sentence (a real state)',
+  workspace.includes('    if (!cell) {\n      return null;\n    }\n') && workspace.includes('  if (!face) {\n    return null;\n  }\n') &&
+    workspace.includes('    if (!edge) {\n      return `edge ${endpoints}`;\n    }\n'));
 check('§1 no new store action rode in: the inspector\'s row handlers call only selectVertex · selectEdge · toggleLiftSelection · setEdgeNotice · setHoverTarget',
   ['selectVertex(', 'selectEdge(', 'toggleLiftSelection(', 'setEdgeNotice(', 'setHoverTarget('].every((s) => panels.includes(s)) &&
     !/\bselectFace\(|\bselectCellFace\(|\binspectFace\(/.test(panels));
@@ -104,8 +108,8 @@ check('§2 ★ CELL COMPOSITION OPENS BY DEFAULT — the only route to lifting a
     (workspace.match(/onClick=/g) ?? []).length === 5 && !workspace.includes("toggleLiftSelection({ kind: 'edge'") && !workspace.includes('selectEdge('));
 check('§2 THE WALK\'S LINE IS UNTOUCHED (the idiom was transplanted, not the text)',
   explore.includes("{`↑/↓ — walk (tap: one step of ${stepUnit.toFixed(2)} · hold: glide) · ←/→ — turn (tap: 1/${turnFraction} turn · hold: sweep) · PgUp/PgDn — look up and down (the same) · End — face the nearest door · Home — face as you entered · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell`}"));
-check('§2 the two riders on her one line are NOT cut: the vertex row still says `click: inspect`; the three camera buttons are not in the line',
-  panels.includes('title="click: inspect · shift-click: toggle in the lift region"') && !THE_LINE.includes('fit') && !THE_LINE.includes('reset'));
+check('§2 the verb rider is CUT (C-6b: `select`) and the buttons rider is not: the three camera buttons are not in the line',
+  !panels.includes('click: inspect') && !THE_LINE.includes('fit') && !THE_LINE.includes('reset'));
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ALL PASS — the rows say what a click does, the line states every act in its own row, the readout\'s empty state is a true absence, and the composition opens by default' : `DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

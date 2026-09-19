@@ -2156,7 +2156,10 @@ function CellComposition({
                 }}
                 onPointerEnter={() => setHoverTarget({ kind: 'vertex', vertexId: row.vertex.id })}
                 onPointerLeave={() => setHoverTarget(null)}
-                title="click: inspect · shift-click: toggle in the lift region"
+                // C-6b (§96, the designer): the module's consumers are named on SELECTION
+                // (`Lift selection → Manuscript` · `Fit Selected`) — `inspect` named the
+                // consequence and severed the chain; the three rows speak alike now
+                title="click: select · shift-click: toggle in the lift region"
                 className={`rounded border px-3 py-2 text-left text-sm transition ${
                   isLifted
                     ? 'border-emerald-400 bg-emerald-400/10 text-emerald-100'

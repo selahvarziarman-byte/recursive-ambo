@@ -113,7 +113,7 @@ export function Workspace3D() {
       >
         {formatHoverStatus(shape, hoverTarget) ?? (
           <span aria-hidden="true" data-ambo-hover-ghost="true" style={{ visibility: 'hidden' }}>
-            Hovering cell
+            cell
           </span>
         )}
       </div>
@@ -2502,24 +2502,31 @@ function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): 
   if (target.kind === 'cell') {
     const cell = shape.cells.find((candidate) => candidate.id === target.cellId);
 
+    // C-6b (§96, priced then cut): a cell id the shape does not hold can only be
+    // a STALE target — the pointer rests on a cell while the shape is replaced
+    // under it (measured: hover the seed, apply the dissection by script, the
+    // old id stays in the store until the pointer moves). Nothing under the
+    // pointer that this shape holds is the true absence — the slot goes empty.
     if (!cell) {
-      return 'Hovering cell';
+      return null;
     }
 
     const cellSummary = `${cell.kind}/${describeSceneCellTopology(cell)} g${cell.generationDepth}`;
     const label = getScenePacketDataDisplayLabel(cell.data);
 
+    // C-6b: no branch opens with the hovering-word — the person knows they are
+    // hovering, the slot's appearing IS the statement; the identification, clean
     return label
-      ? `Hovering cell ${label} | ${cellSummary} | id: ${cell.id}`
-      : `Hovering cell ${cellSummary} | id: ${cell.id}`;
+      ? `cell ${label} | ${cellSummary} | id: ${cell.id}`
+      : `cell ${cellSummary} | id: ${cell.id}`;
   }
 
   if (target.kind === 'vertex') {
     const label = getSceneVertexLabel(shape, target.vertexId);
 
     return label
-      ? `Hovering vertex ${label} | id: ${target.vertexId}`
-      : `Hovering vertex ${sceneIdTail(target.vertexId)}`;
+      ? `vertex ${label} | id: ${target.vertexId}`
+      : `vertex ${sceneIdTail(target.vertexId)}`;
   }
 
   if (target.kind === 'edge') {
@@ -2529,29 +2536,33 @@ function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): 
       target.vertexIds[1],
     )}`;
 
+    // an edge row whose pair is IDENTIFIED has no single shape edge to find —
+    // a real state (the endpoints are real), so it keeps its sentence
     if (!edge) {
-      return `Hovering edge ${endpoints}`;
+      return `edge ${endpoints}`;
     }
 
     const relation = describeSceneEdgeRelation(edge);
 
     return relation
-      ? `Hovering edge ${endpoints} | ${relation} | id: ${edge.id}`
-      : `Hovering edge ${endpoints} | id: ${edge.id}`;
+      ? `edge ${endpoints} | ${relation} | id: ${edge.id}`
+      : `edge ${endpoints} | id: ${edge.id}`;
   }
 
   const face = shape.faces.find((candidate) => candidate.id === target.faceId);
 
+  // the same class as the cell branch above: a face id the shape does not hold
+  // is a stale target across a shape change — the true absence
   if (!face) {
-    return `Hovering face ${sceneIdTail(target.faceId)}`;
+    return null;
   }
 
   const label = getScenePacketDataDisplayLabel(face.data);
   const relation = describeSceneFaceRelation(shape, face);
 
   return label
-    ? `Hovering face ${label} | ${relation} | id: ${face.id}`
-    : `Hovering face ${relation} | id: ${face.id}`;
+    ? `face ${label} | ${relation} | id: ${face.id}`
+    : `face ${relation} | id: ${face.id}`;
 }
 
 function describeSceneCellTopology(cell: Cell): string {
