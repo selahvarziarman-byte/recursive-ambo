@@ -161,7 +161,13 @@ const geomSrc = fs.readFileSync(geometryPath, 'utf8');
 check('§4 the type lives INLINE in the frozen types file — a separate module this frozen file imported would itself freeze by the closure law, so inline is the smaller union (the file\'s own imports are unchanged: it imports nothing)',
   /export interface ConceptSpace \{/.test(geomSrc) && /export interface EdgeIdentification \{/.test(geomSrc) &&
     !/^import /m.test(geomSrc));
-const readers = [];
+// C-6c (2026-09-19) superseded the "nothing reads either field" law for the CAST:
+// the corner's cast now has exactly one loader (castLoader), one writer (the
+// packet editor, `updateSelectedVertexData({ cast })`) and one reader (the
+// card in Panels). The identification stays ALONE — no J is written anywhere
+// (C-6c's boundary; the five promises' second).
+const castReaders = [];
+const identificationReaders = [];
 for (const dir of ['src/lib', 'src/manuscript', 'src/playground', 'src/components', 'src/store', 'src/types']) {
   const root = path.join(repoRoot, dir);
   if (!fs.existsSync(root)) continue;
@@ -169,18 +175,21 @@ for (const dir of ['src/lib', 'src/manuscript', 'src/playground', 'src/component
     for (const e of fs.readdirSync(d, { withFileTypes: true })) {
       const f = path.join(d, e.name);
       if (e.isDirectory()) walk(f);
-      else if (/\.tsx?$/.test(e.name)) {
+      else if (/\.tsx?$/.test(e.name) && f !== geometryPath.split('/').join(path.sep)) {
         const src = fs.readFileSync(f, 'utf8');
-        if (/\.cast\b|\.identification\b|\bConceptSpace\b|\bEdgeIdentification\b/.test(src) && f !== geometryPath.split('/').join(path.sep)) {
-          readers.push(path.relative(repoRoot, f).split(path.sep).join('/'));
-        }
+        const rel = path.relative(repoRoot, f).split(path.sep).join('/');
+        if (/\.cast\b|\bConceptSpace\b/.test(src)) castReaders.push(rel);
+        if (/\.identification\b|\bEdgeIdentification\b/.test(src)) identificationReaders.push(rel);
       }
     }
   };
   walk(root);
 }
-check('§4 ★ NOTHING WRITES OR READS EITHER FIELD YET: no file under the engine roots, the components or the store mentions `cast`, `identification`, `ConceptSpace` or `EdgeIdentification` — the type landed ALONE, with no surface, no loader, no producer and no consumer, exactly as the stamp ordered',
-  readers.length === 0, `readers: ${JSON.stringify(readers)}`);
+const CAST_READERS = ['src/components/Panels.tsx', 'src/components/VertexPacketEditor.tsx', 'src/lib/castLoader.ts'];
+check('§4 ★ THE CAST HAS EXACTLY ITS THREE (C-6c): the loader (src/lib/castLoader.ts), the writer (the packet editor) and the reader (the card in Panels) — no other file under the engine roots, the components or the store mentions `cast` or `ConceptSpace`',
+  JSON.stringify([...castReaders].sort()) === JSON.stringify(CAST_READERS), `readers: ${JSON.stringify(castReaders)}`);
+check('§4 ★ THE IDENTIFICATION STAYS ALONE: no file under the engine roots, the components or the store mentions `identification` or `EdgeIdentification` — no J is written anywhere (C-6c\'s boundary)',
+  identificationReaders.length === 0, `readers: ${JSON.stringify(identificationReaders)}`);
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CONCEPT-TYPE: ALL PASS — the corner may hold a cast, the edge may carry a J, and the absence of either is lawful' : `DIAGNOSE-THE-CONCEPT-TYPE: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);
