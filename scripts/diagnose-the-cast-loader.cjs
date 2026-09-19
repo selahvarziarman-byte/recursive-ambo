@@ -32,7 +32,7 @@ require.extensions['.tsx'] = require.extensions['.ts'];
 
 const repoRoot = path.resolve(__dirname, '..');
 const req = (p) => require(path.join(repoRoot, p));
-const { readCastFile, castMarks, castCounts, orderingLine, castSummaryLine, NOT_A_CAST } = req('src/lib/castLoader.ts');
+const { readCastFile, castMarks, castCounts, orderingLine, castSummaryLine, notTakenAddresses, notTakenLine, NOT_A_CAST } = req('src/lib/castLoader.ts');
 const readLf = (p) => fs.readFileSync(path.join(repoRoot, p), 'utf8').split('\r\n').join('\n');
 const fixture = (name) => fs.readFileSync(path.join(repoRoot, 'scripts/fixtures/casts', name), 'utf8');
 
@@ -143,6 +143,21 @@ check('§3b RIDER (b) LAW 24 — a clean fixture carries nothing under `malforme
       return r.taken && r.cast.warrant && r.cast.warrant.malformed && r.cast.warrant.malformed['roles.1'] && r.cast.warrant.malformed['signature.1'] && r.cast.warrant.malformed['axioms.1'] &&
         r.marks.length === 3 && r.cast.roles.length === 1 && r.cast.signature.length === 1 && r.cast.axioms.length === 1;
     })());
+
+// ═══ §3c C-6e — the items not taken, the device's own record, on the card by KEY only ═══
+check('§3c ★★ THE NOT-TAKEN CLAUSE reads the ADDRESSES under warrant.malformed and nothing under them: the malformed-relation file → `1 item not taken: relation 3`; three homes → `3 items not taken: role 1 · signature entry 1 · axiom 1` in the file\'s order',
+  malformedRel.taken && notTakenLine(notTakenAddresses(malformedRel.cast)) === '1 item not taken: relation 3' &&
+    (() => {
+      const r = readCastFile(JSON.stringify({ roles: [{ id: 'x' }, { label: 'no id' }], signature: [{ type: 'r', arity: 2 }, { type: 'q' }], relations: [], axioms: ['all x. r(x, x)', { hypothesis: [] }] }));
+      return r.taken && notTakenLine(notTakenAddresses(r.cast)) === '3 items not taken: role 1 · signature entry 1 · axiom 1';
+    })());
+check('§3c LAW 24 — a clean cast has no clause (null, so the card prints no row): the triangle, the T cell; and THE TWO KINDS NEVER MERGE: the closure-broken file has its two marks and NO not-taken clause',
+  tri.taken && notTakenLine(notTakenAddresses(tri.cast)) === null && tcell.taken && notTakenLine(notTakenAddresses(tcell.cast)) === null &&
+    (() => { const cbLocal = readCastFile(fixture('closure-broken.cast.json')); return cbLocal.taken && castMarks(cbLocal.cast).length === 2 && notTakenLine(notTakenAddresses(cbLocal.cast)) === null; })());
+check('§3c ★ THE CARD prints the clause as its own line in the Marks row (`data-cast-not-taken`), the row rendered when EITHER kind is present, and reads no value under the keys (the source reads `Object.keys(malformed)` only)',
+  (() => { const card = readLf('src/components/Panels.tsx'); const loader = readLf('src/lib/castLoader.ts');
+    return card.includes('{marks.length || notTaken ? (') && card.includes('data-cast-not-taken="true"') && card.includes('const notTaken = notTakenLine(notTakenAddresses(cast));') &&
+      /export function notTakenAddresses[\s\S]*?Object\.keys\(malformed\)/.test(loader) && !/malformed\[[^\]]+\]/.test(loader.slice(loader.indexOf('export function notTakenAddresses'), loader.indexOf('export function notTakenLine'))); })());
 
 // ═══ §4 closure and arity — taken and MARKED, never refused ═══
 const cb = readCastFile(fixture('closure-broken.cast.json'));

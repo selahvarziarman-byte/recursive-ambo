@@ -112,5 +112,15 @@ check('§2 THE WALK\'S LINE IS UNTOUCHED (the idiom was transplanted, not the te
 check('§2 the verb rider is CUT (C-6b: `select`) and the buttons rider is not: the three camera buttons are not in the line',
   !panels.includes('click: inspect') && !THE_LINE.includes('fit') && !THE_LINE.includes('reset'));
 
-console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ALL PASS — the rows say what a click does, the line states every act in its own row, the readout\'s empty state is a true absence, and the composition opens by default' : `DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ${failures} FAILURE(S)`}`);
+// ═══════════════ §3 — C-6e: the Layer-3 witness panel prints each site's seam fact ONCE, labelled, in words ═══════════════
+console.log('\n----- §3 ★ C-6e — one printing, under its label; the value in words; a dash is a separator, never a value -----');
+const layer3 = readLf('src/components/Layer3WitnessPanel.tsx');
+const siteBlock = layer3.slice(layer3.indexOf('Six X_K sites in loop order'), layer3.indexOf('</ul>', layer3.indexOf('Six X_K sites in loop order')));
+check('§3 ★ THE SEAM FACT IS PRINTED ONCE, under `on seam?` — the unlabelled second printing beside the site key is gone',
+  (siteBlock.match(/\{seamLabel\}/g) ?? []).length === 1 && siteBlock.includes('<dt className="text-stone-500">on seam?</dt>') &&
+    !siteBlock.includes('<span className="text-stone-500">{seamLabel}</span>'));
+check('§3 ★ THE VALUE IS IN WORDS: `on seam (bd–cd)` / `not on seam` — no dash stands as a value in the block (the separators stay separators)',
+  layer3.includes("seamLabel: incidentSeams.length ? `on seam (${incidentSeams.join(', ')})` : 'not on seam',") && !layer3.includes(": '—'"));
+
+console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ALL PASS — the rows say what a click does, the line states every act in its own row, the readout\'s empty state is a true absence, the composition opens by default, and the Layer-3 panel prints its seam fact once in words' : `DIAGNOSE-THE-AMBO-GESTURE-TRUTH: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

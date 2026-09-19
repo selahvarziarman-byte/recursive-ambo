@@ -252,6 +252,27 @@ export function readCastFile(text: string): CastLoad {
   return { taken: true, cast, marks: [...marks, ...castMarks(cast)] };
 }
 
+/**
+ * THE ITEMS NOT TAKEN (C-6e, ruled): the addresses under `warrant.malformed` — the device's OWN record of what it
+ * declined, read by KEY only (never a value: the warrant's content stays the caster's, unread). `relations.3` → `relation 3`,
+ * `roles.1` → `role 1`, `signature.2` → `signature entry 2`, `axioms.1` → `axiom 1` — in the file's order.
+ */
+export function notTakenAddresses(cast: ConceptSpace): string[] {
+  const malformed = cast.warrant?.malformed;
+  if (!malformed || typeof malformed !== 'object' || Array.isArray(malformed)) return [];
+  const noun: Record<string, string> = { roles: 'role', signature: 'signature entry', relations: 'relation', axioms: 'axiom' };
+  return Object.keys(malformed).map((k) => {
+    const [home, index] = k.split('.');
+    return `${noun[home] ?? home} ${index}`;
+  });
+}
+
+/** the clause the card prints beside the closure/arity marks — never folded into their count (one glyph, one meaning) */
+export function notTakenLine(addresses: string[]): string | null {
+  if (addresses.length === 0) return null;
+  return `${addresses.length} ${addresses.length === 1 ? 'item' : 'items'} not taken: ${addresses.join(' · ')}`;
+}
+
 /** CLOSURE and ARITY, re-derived from a held cast (RECORD, NOT READING): counts and names, never verdicts. */
 export function castMarks(cast: ConceptSpace): string[] {
   const marks: string[] = [];

@@ -62,9 +62,10 @@ export function Layer3WitnessPanel() {
         <ul className="grid gap-2">
           {packet.siteRows.map(({ site, seamLabel, connectionSign }) => (
             <li key={site.siteId} className="border-t border-stone-800 pt-2">
+              {/* C-6e (the designer's §5, ruled): the seam fact is printed ONCE, under
+                  its label below — never a second time, unlabelled, beside the key */}
               <div className="flex items-center justify-between gap-3">
                 <span className="font-mono text-stone-100">{site.siteKey}</span>
-                <span className="text-stone-500">{seamLabel}</span>
               </div>
               <dl className="mt-2 grid grid-cols-[120px_minmax(0,1fr)] gap-x-3 gap-y-1">
                 <dt className="text-stone-500">director axis</dt>
@@ -98,7 +99,8 @@ function buildLayer3WitnessPacket(): Layer3WitnessPacket {
 
     return {
       site,
-      seamLabel: incidentSeams.length ? `on seam (${incidentSeams.join(', ')})` : '—',
+      // C-6e: the value in WORDS — a dash is a separator in this block, never a value
+      seamLabel: incidentSeams.length ? `on seam (${incidentSeams.join(', ')})` : 'not on seam',
       connectionSign: getIncidentConnectionSign(state, index),
     };
   });

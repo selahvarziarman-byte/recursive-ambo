@@ -65,7 +65,7 @@ import { SiteTraceSlot } from './SiteTraceSlot';
 import { SiteWitnessTracePanel } from './SiteWitnessTracePanel';
 import { VertexPacketEditorContent } from './VertexPacketEditor';
 // C-6c (iv): the card reads a HELD cast — every number re-derived from it, never stored
-import { castCounts, castMarks, castSummaryLine, orderingLine } from '../lib/castLoader';
+import { castCounts, castMarks, castSummaryLine, notTakenAddresses, notTakenLine, orderingLine } from '../lib/castLoader';
 import type { ConceptSpace } from '../types/geometry';
 
 type TopologyFilter =
@@ -2631,6 +2631,9 @@ function SelectedVertexSummary({
 function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: string }) {
   const counts = castCounts(cast);
   const marks = castMarks(cast);
+  // C-6e: the device's own record of what it did not take — the addresses under
+  // warrant.malformed, read by KEY only, a second clause never folded into the marks
+  const notTaken = notTakenLine(notTakenAddresses(cast));
   const unknownWhere = cast.roles.flatMap((role) =>
     Object.entries(role.types ?? {})
       .filter(([, value]) => value === 'UNKNOWN')
@@ -2696,13 +2699,14 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
           </dd>
         </>
       ) : null}
-      {marks.length ? (
+      {marks.length || notTaken ? (
         <>
           <dt className="text-stone-500">Marks</dt>
           <dd data-cast-card-row="marks" className="text-stone-200">
             {marks.map((mark) => (
               <span key={mark} className="block">{mark}</span>
             ))}
+            {notTaken ? <span data-cast-not-taken="true" className="block">{notTaken}</span> : null}
           </dd>
         </>
       ) : null}
