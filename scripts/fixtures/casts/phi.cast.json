@@ -1,0 +1,295 @@
+{
+  "source": "hinge_data.py — Φ, exactly as cast (role grain; duplicate role-level edges collapse); member-status per role as first_face_and_tower.py declares it",
+  "roles": [
+    {
+      "id": "Φ1",
+      "types": {
+        "member-status": "has"
+      }
+    },
+    {
+      "id": "Φ2",
+      "types": {
+        "member-status": "has"
+      }
+    },
+    {
+      "id": "Φ3",
+      "types": {
+        "member-status": "has"
+      }
+    },
+    {
+      "id": "Φ4",
+      "types": {
+        "member-status": "has"
+      }
+    },
+    {
+      "id": "Φ5",
+      "types": {
+        "member-status": "has"
+      }
+    },
+    {
+      "id": "Φ6",
+      "types": {
+        "member-status": "has"
+      }
+    },
+    {
+      "id": "Φ7",
+      "types": {
+        "member-status": "has"
+      }
+    },
+    {
+      "id": "Φ8",
+      "types": {
+        "member-status": "has"
+      }
+    },
+    {
+      "id": "Φ9",
+      "types": {
+        "member-status": "none-by-nature"
+      }
+    }
+  ],
+  "signature": [
+    {
+      "type": "component-of",
+      "arity": 2
+    },
+    {
+      "type": "converges-on",
+      "arity": 2
+    },
+    {
+      "type": "decays",
+      "arity": 2
+    },
+    {
+      "type": "descends-from",
+      "arity": 2
+    },
+    {
+      "type": "disjoins",
+      "arity": 2
+    },
+    {
+      "type": "displaces",
+      "arity": 2
+    },
+    {
+      "type": "exceeds-in-power",
+      "arity": 2
+    },
+    {
+      "type": "fills",
+      "arity": 2
+    },
+    {
+      "type": "inverts",
+      "arity": 2
+    },
+    {
+      "type": "lodges-in",
+      "arity": 2
+    },
+    {
+      "type": "presupposes",
+      "arity": 2
+    },
+    {
+      "type": "re-creates",
+      "arity": 2
+    },
+    {
+      "type": "specifies",
+      "arity": 2
+    },
+    {
+      "type": "transmits",
+      "arity": 2
+    }
+  ],
+  "relations": [
+    {
+      "type": "component-of",
+      "terms": [
+        "Φ4",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "component-of",
+      "terms": [
+        "Φ7",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "converges-on",
+      "terms": [
+        "Φ1",
+        "Φ5"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "converges-on",
+      "terms": [
+        "Φ6",
+        "Φ5"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "decays",
+      "terms": [
+        "Φ2",
+        "Φ9"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "descends-from",
+      "terms": [
+        "Φ1",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "descends-from",
+      "terms": [
+        "Φ1",
+        "Φ8"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "descends-from",
+      "terms": [
+        "Φ6",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "descends-from",
+      "terms": [
+        "Φ7",
+        "Φ7"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "disjoins",
+      "terms": [
+        "Φ1",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "disjoins",
+      "terms": [
+        "Φ8",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "displaces",
+      "terms": [
+        "Φ1",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "displaces",
+      "terms": [
+        "Φ5",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "exceeds-in-power",
+      "terms": [
+        "Φ1",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "fills",
+      "terms": [
+        "Φ6",
+        "Φ9"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "inverts",
+      "terms": [
+        "Φ1",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "lodges-in",
+      "terms": [
+        "Φ2",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "presupposes",
+      "terms": [
+        "Φ1",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "presupposes",
+      "terms": [
+        "Φ1",
+        "Φ7"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "re-creates",
+      "terms": [
+        "Φ3",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "specifies",
+      "terms": [
+        "Φ2",
+        "Φ1"
+      ],
+      "polarity": "holds"
+    },
+    {
+      "type": "transmits",
+      "terms": [
+        "Φ3",
+        "Φ2"
+      ],
+      "polarity": "holds"
+    }
+  ]
+}

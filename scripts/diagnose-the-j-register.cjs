@@ -1,5 +1,12 @@
 #!/usr/bin/env node
 
+// SWEEP-CEILING: 900s — I-1 clause 3 (C-6c (vii)): this leg's honest standalone
+// runtime is 242 s (measured 2026-09-19 at the (vii) tree: t-cell × t-cell 47 s,
+// Flow × Φ 13 s + 27 s, the both-homes and keep-all searches to their budgets),
+// ~42% under the sweep's 420 s default under 23 workers — the neighbourhood the
+// field leg was killed in under co-load. Declared so a red here means a red,
+// never a load; a hang still dies at 900 s and prints TIMEOUT by name.
+
 // DIAGNOSTIC — THE J REGISTER'S QUANTITIES (STAMP C-6d (α), 2026-09-19): the
 // second implementation, RUN on the fixture pairs, pinned to the researcher's
 // seal (their instrument j_register_quantities.py; the mothership's own run of
@@ -29,7 +36,7 @@ require.extensions['.tsx'] = require.extensions['.ts'];
 const repoRoot = path.resolve(__dirname, '..');
 const req = (p) => require(path.join(repoRoot, p));
 const { readCastFile } = req('src/lib/castLoader.ts');
-const { registerReading, recordOf, automorphisms, sharedSignature } = req('src/lib/jRegister.ts');
+const { registerReading, recordOf, automorphisms, sharedSignature, gaugeOrbits } = req('src/lib/jRegister.ts');
 const readLf = (p) => fs.readFileSync(path.join(repoRoot, p), 'utf8').split('\r\n').join('\n');
 const cast = (name) => {
   const r = readCastFile(fs.readFileSync(path.join(repoRoot, 'scripts/fixtures/casts', name), 'utf8'));
@@ -123,6 +130,72 @@ check('§5 ★★ triangle × (triangle + an isolated w): EVERY offer has size 3
 check('§5 ★ LAW 24 — X × X unchanged beside it: 3 tied, one orbit', b.state === 'offers' && b.tied === 3 && b.orbits === 1);
 check('§5 |X| ≠ |Y| changes nothing: (triangle + w) × triangle offers are the same three cores, none touching w',
   (() => { const r = registerReading(triPlusW, tri); return r.state === 'offers' && r.tied === 3 && r.offers.every((o) => o.pairs.length === 3 && !o.pairs.some(([x]) => x === 'w')); })());
+
+// ═══ §7 C-6c (vii) — Flow × Φ, the wild case, against the researcher's 09-08 run (edge_candidates_partial_isomorphism.py) ═══
+console.log('\n----- §7 ★★ C-6c (vii) — Flow × Φ from the record (hinge_data.py), the wild clause -----');
+const flow = cast('flow.cast.json');
+const phi = cast('phi.cast.json');
+// the 09-08 instrument reads RELATIONS ONLY and SEARCHES τ; the ruling's record reads BOTH homes and takes τ from the
+// person. To pin against their numbers the register is run on the relations-only reading with THEIR τ; the both-homes
+// reading is printed beside it — a disagreement reopens the definition, never the code.
+const relationsOnly = (c) => ({ ...c, roles: c.roles.map((r) => ({ id: r.id })) });
+const flowR = relationsOnly(flow);
+const phiR = relationsOnly(phi);
+const TAU_SIZE3 = [['sustains', 'descends-from'], ['presupposes', 'lodges-in'], ['exceeds-in-size', 'specifies']];
+const TAU_SIZE4 = [['exceeds-in-speed', 'transmits'], ['generates', 'lodges-in'], ['precedes', 'component-of'], ['sustains', 'disjoins']];
+const pairsOf = (o) => o.pairs.map(([x, y]) => `${x}↦${y}`).join(' · ');
+const WILD_BUDGET = 1_000_000; // the offers search's budget at the real pair; the full count's is 4× that
+const w3 = registerReading(flowR, phiR, TAU_SIZE3, WILD_BUDGET);
+const w4 = registerReading(flowR, phiR, TAU_SIZE4, WILD_BUDGET);
+check('§7 ★★ THE WILD CLAUSE, relations only, under the researcher\'s size-3 τ {sustains↦descends-from · presupposes↦lodges-in · exceeds-in-size↦specifies}: the top weight is 4 and the weight-4 offers include the size-3 core F5↦Φ7 · F7↦Φ1 · F8↦Φ2 — and NO offer of size 5 (the 09-08 "size-5 candidate" carried two unsupported riders)',
+  w3.state === 'offers' && w3.topWeight === 4 && w3.offers.some((o) => o.weight === 4 && pairsOf(o) === 'F5↦Φ7 · F7↦Φ1 · F8↦Φ2') && !w3.offers.some((o) => o.pairs.length >= 5),
+  JSON.stringify(w3.state === 'offers' ? { top: w3.topWeight, tied: w3.tied, sizes: w3.offers.map((o) => o.pairs.length), offers: w3.offers.map(pairsOf) } : w3).slice(0, 500));
+check('§7 ★★ …and under their size-4 τ {exceeds-in-speed↦transmits · generates↦lodges-in · precedes↦component-of · sustains↦disjoins}: the top weight is 4 and the weight-4 offers include the size-4 core F1↦Φ3 · F2↦Φ2 · F3↦Φ4 · F5↦Φ1 — weight-4 offers of size 3 and of size 4 side by side, each under its own τ',
+  w4.state === 'offers' && w4.topWeight === 4 && w4.offers.some((o) => o.weight === 4 && pairsOf(o) === 'F1↦Φ3 · F2↦Φ2 · F3↦Φ4 · F5↦Φ1'),
+  JSON.stringify(w4.state === 'offers' ? { top: w4.topWeight, tied: w4.tied, sizes: w4.offers.map((o) => o.pairs.length), offers: w4.offers.map(pairsOf) } : w4).slice(0, 500));
+check('§7 LAW 24 — the 09-08 size-5 candidate {F3↦Φ5 · F7↦Φ1 · F6↦Φ3 · F8↦Φ2 · F5↦Φ7} under the size-3 τ: conflict-free with weight 4, but F3↦Φ5 and F6↦Φ3 have support 0 — its supported core IS the size-3 offer, so it is not a distinct offer',
+  (() => {
+    const { evaluate } = req('src/lib/jRegister.ts');
+    const X = recordOf(flowR); const Y = recordOf(phiR); const sh = sharedSignature(X, Y, TAU_SIZE3);
+    const j = new Map([['F3', 'Φ5'], ['F7', 'Φ1'], ['F6', 'Φ3'], ['F8', 'Φ2'], ['F5', 'Φ7']]);
+    const ev = evaluate(X, Y, j, sh);
+    return ev && ev.agreements === 4 && ev.support.F3 === 0 && ev.support.F6 === 0 && ev.support.F5 > 0 && ev.support.F7 > 0 && ev.support.F8 > 0;
+  })());
+// the ruling's record, BOTH homes (member-status on every role of both casts) — printed, and the divergence named
+const b3 = registerReading(flow, phi, TAU_SIZE3, WILD_BUDGET);
+const b4 = registerReading(flow, phi, TAU_SIZE4, WILD_BUDGET);
+const byName = registerReading(flow, phi, undefined, WILD_BUDGET);
+note(`BOTH HOMES (the ruling's record: member-status on the roles of both) under the size-3 τ: ${b3.state === 'offers' ? `top weight ${b3.topWeight} · ${b3.tied} tied · sizes ${JSON.stringify(b3.offers.filter((o) => o.weight === b3.topWeight).map((o) => o.pairs.length))} · first ${pairsOf(b3.offers[0])}` : b3.state}`);
+note(`BOTH HOMES under the size-4 τ: ${b4.state === 'offers' ? `top weight ${b4.topWeight} · ${b4.tied} tied · sizes ${JSON.stringify(b4.offers.filter((o) => o.weight === b4.topWeight).map((o) => o.pairs.length))} · first ${pairsOf(b4.offers[0])}` : b4.state}`);
+note(`BY NAME ONLY (no τ — presupposes and disjoins are shared by name, plus member-status): ${byName.state === 'offers' ? `top weight ${byName.topWeight} · ${byName.tied} tied · sizes ${JSON.stringify(byName.offers.filter((o) => o.weight === byName.topWeight).map((o) => o.pairs.length))}` : byName.state}`);
+note(`⚠ THE DIVERGENCE, REPORTED NOT TUNED: the 09-08 instrument reads relations only; under the ruling's both-homes record every mapped pair of two has-roles is a member-status agreement, so weight grows with size and the size-3/size-4 tie of the relations-only reading breaks — the definition of the shared unary home at Flow × Φ is the researcher's to rule.`);
+check('§7 ★ THE BUDGET AT THE REAL PAIR, measured (the number I could not have until the files existed): Flow × Φ relations-only under either τ — the OFFERS are found inside a 1,000,000-node budget (the tuple-driven search), and the full-injection COUNT (P(14,9) = 726,485,760 injections) is beyond its 4,000,000-node budget and says so as `null`, never a number; under the ruling\'s BOTH-HOMES record the offers search itself is `beyond the budget` at this pair — every mapped pair of has-roles is a candidate agreement and the bound cannot prune',
+  w3.state === 'offers' && w3.consistentFull === null && w4.state === 'offers' && w4.consistentFull === null &&
+    b3.state === 'beyond the budget' && b4.state === 'beyond the budget' && byName.state === 'beyond the budget',
+  JSON.stringify({ w3: w3.state, w3full: w3.state === 'offers' ? w3.consistentFull : null, b3: b3.state, byName: byName.state }));
+if (w3.state === 'offers') note(`Flow × Φ (relations only, size-3 τ) took ${w3.millis} ms · ${w3.nodes} nodes in all · consistent full injections ${w3.consistentFull}; under the size-4 τ ${w4.state === 'offers' ? `${w4.millis} ms · ${w4.nodes} nodes · ${w4.consistentFull} full` : w4.state}; both homes by name ${byName.state === 'offers' ? `${byName.millis} ms · ${byName.nodes} nodes` : byName.state}`);
+
+// ═══ §8 THE OFFER COUNT, printed not pinned — the second implementation of a number the researcher was asked for ═══
+console.log('\n----- §8 the offer count — DISTINCT offers, the weight distribution (top down), the orbits at the top two weights — PRINTED, not asserted -----');
+const distribution = (label, X, Y, tau) => {
+  const r = registerReading(X, Y, tau, WILD_BUDGET, { keepAll: true });
+  if (r.state !== 'offers') { note(`${label}: ${r.state}`); return; }
+  const byWeight = new Map();
+  for (const o of r.offers) byWeight.set(o.weight, (byWeight.get(o.weight) ?? 0) + 1);
+  const weights = [...byWeight.keys()].sort((a, b) => b - a);
+  const autX = automorphisms(recordOf(X)).list; const autY = automorphisms(recordOf(Y)).list;
+  const orbitsAt = (w) => gaugeOrbits(r.offers.filter((o) => o.weight === w), autX, autY);
+  const topTwo = weights.slice(0, 2).map((w) => `weight ${w}: ${byWeight.get(w)} offers · ${orbitsAt(w)} orbit(s)`).join(' · ');
+  note(`${label}: ${r.offers.length} distinct offers · distribution ${weights.map((w) => `${w}×${byWeight.get(w)}`).join(' · ')} · ${topTwo}`);
+};
+distribution('triangle × triangle-symmetric', tri, sym);
+distribution('triangle × triangle', tri, tri);
+distribution('t-cell × t-cell', tcell, tcell);
+distribution('triangle × t-cell', tri, tcell);
+distribution('Flow × Φ (relations only, size-3 τ)', flowR, phiR, TAU_SIZE3);
+distribution('Flow × Φ (relations only, size-4 τ)', flowR, phiR, TAU_SIZE4);
+distribution('Flow × Φ (both homes, size-3 τ)', flow, phi, TAU_SIZE3);
+note('(a distribution that reads `beyond the budget` is the keep-all search past 1,000,000 nodes — the count is not known, and is not guessed)');
 
 // ═══ §6 boundaries, source-pinned ═══
 const src = readLf('src/lib/jRegister.ts');

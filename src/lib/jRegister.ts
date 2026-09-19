@@ -224,6 +224,24 @@ export type RegisterReading =
       millis: number;
     };
 
+/** gauge orbits among offers: two are ONE READING iff j' = β ∘ j ∘ α⁻¹ (α ∈ Aut X, β ∈ Aut Y) */
+export function gaugeOrbits(offers: Offer[], autX: Array<Map<string, string>>, autY: Array<Map<string, string>>): number {
+  const seen = new Set<string>();
+  let orbits = 0;
+  for (const o of offers) {
+    const k = JSON.stringify(o.pairs);
+    if (seen.has(k)) continue;
+    orbits += 1;
+    for (const alpha of autX) {
+      for (const beta of autY) {
+        const moved = o.pairs.map(([x, y]) => [alpha.get(x) as string, beta.get(y) as string] as [string, string]).sort((a, b) => (a[0] < b[0] ? -1 : 1));
+        seen.add(JSON.stringify(moved));
+      }
+    }
+  }
+  return orbits;
+}
+
 /**
  * THE OFFERS on X × Y (clause 2 as amended): maximal conflict-free candidates whose every pair is supported,
  * found by a branch-and-bound over partial injections (each X-role mapped or left out), the bound being the
@@ -231,7 +249,13 @@ export type RegisterReading =
  * core, checked for maximality, and kept if its weight reaches the best seen. `consistentFull` counts the
  * conflict-free injections of size min(|X|, |Y|) separately (the researcher's enumeration, for the seal).
  */
-export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?: EdgeIdentification['types'], nodeBudget = 5_000_000): RegisterReading {
+export interface RegisterOptions {
+  /** keep every maximal supported core at every weight (the printed distribution) instead of the top weight alone */
+  keepAll?: boolean;
+}
+
+export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?: EdgeIdentification['types'], nodeBudget = 5_000_000, options: RegisterOptions = {}): RegisterReading {
+  const keepAll = options.keepAll === true;
   const started = Date.now();
   const X = recordOf(spaceX);
   const Y = recordOf(spaceY);
@@ -281,7 +305,7 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
     for (const [x, y] of j) if ((ev.support[x] ?? 0) > 0) core.set(x, y);
     if (core.size === 0) return;
     const coreEv = core.size === j.size ? ev : evaluate(X, Y, core, shared);
-    if (!coreEv || coreEv.agreements < best) return;
+    if (!coreEv || (!keepAll && coreEv.agreements < best)) return;
     // maximality: no supported pair can be added without a conflict
     const coreImg = new Set(core.values());
     for (const x of X.roles) {
@@ -299,7 +323,7 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
     if (cores.has(k)) return;
     if (coreEv.agreements > best) {
       best = coreEv.agreements;
-      for (const [kk, o] of cores) if (o.weight < best) cores.delete(kk);
+      if (!keepAll) for (const [kk, o] of cores) if (o.weight < best) cores.delete(kk);
     }
     cores.set(k, { pairs, weight: coreEv.agreements, exposure: coreEv.exposure, unrecorded: coreEv.unrecorded, support: coreEv.support });
   };
@@ -307,7 +331,7 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
     if (overBudget) return;
     nodes += 1;
     if (nodes > nodeBudget) { overBudget = true; return; }
-    if (agreements + (xTuples.length - i) < best) return; // the bound: every remaining tuple could add one
+    if (!keepAll && agreements + (xTuples.length - i) < best) return; // the bound: every remaining tuple could add one
     if (i === xTuples.length) { leaf(); return; }
     const tt = xTuples[i];
     const yt = yTypeOf(shared, tt.type) as { yName: string; arity: number };
@@ -385,20 +409,7 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
   const autX = automorphisms(X, nodeBudget);
   const autY = automorphisms(Y, nodeBudget);
   const top = offers.filter((o) => o.weight === best);
-  // gauge orbits among the tied: j' = β ∘ j ∘ α⁻¹
-  const seen = new Set<string>();
-  let orbits = 0;
-  for (const o of top) {
-    const k = JSON.stringify(o.pairs);
-    if (seen.has(k)) continue;
-    orbits += 1;
-    for (const alpha of autX.list) {
-      for (const beta of autY.list) {
-        const moved = o.pairs.map(([x, y]) => [alpha.get(x) as string, beta.get(y) as string] as [string, string]).sort((a, b) => (a[0] < b[0] ? -1 : 1));
-        seen.add(JSON.stringify(moved));
-      }
-    }
-  }
+  const orbits = gaugeOrbits(top, autX.list, autY.list);
   return {
     state: 'offers',
     shared: [...shared.types.keys()],
