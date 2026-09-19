@@ -167,8 +167,15 @@ export function readCastFile(text: string): CastLoad {
     polarityByTuple.set(key, r.polarity);
   }
 
+  // ── C-6c (i)'s rider: the SUBJECT MATTER has a typed home (sanctioned, Δ79) — a
+  // string, read on the card beside the person's label in the caster's register;
+  // MOLD v4 §5 names it `subject_matter`, a bare cast may say `subject`. Absent =
+  // absent (never filled); anything but a non-empty string is carried unread as
+  // before. It enters no structural check and no refusal.
+  const subjectRaw = parsed.subject_matter !== undefined ? parsed.subject_matter : parsed.subject;
+  const subject = isString(subjectRaw) && subjectRaw.trim().length > 0 ? subjectRaw : undefined;
   // ── the rest of the file — carried on the warrant, never read ──
-  const fileCarried = rest(parsed, ['roles', 'signature', 'relations', 'axioms', 'warrant']);
+  const fileCarried = rest(parsed, ['roles', 'signature', 'relations', 'axioms', 'warrant', ...(subject !== undefined ? ['subject_matter', 'subject'] : [])]);
   const warrant: PacketData = {};
   if (isObject(parsed.warrant)) warrant.warrant = parsed.warrant;
   if (Object.keys(fileCarried).length > 0) warrant.file = fileCarried;
@@ -177,6 +184,7 @@ export function readCastFile(text: string): CastLoad {
   if (Object.keys(axiomCarried).length > 0) warrant.axioms = axiomCarried;
 
   const cast: ConceptSpace = { roles, signature, relations, axioms };
+  if (subject !== undefined) cast.subject = subject;
   if (Object.keys(warrant).length > 0) cast.warrant = warrant;
   return { taken: true, cast, marks: [...marks, ...castMarks(cast)] };
 }

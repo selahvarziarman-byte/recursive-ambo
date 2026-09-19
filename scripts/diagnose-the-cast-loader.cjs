@@ -63,10 +63,10 @@ check('§1 ★ LAW 24 for the orderings count: the SAME triangle cast symmetric 
 
 // ═══ §2 the T cell — the mold-shaped profile ═══
 const tcell = readCastFile(fixture('t-cell.cast.json'));
-check('§2 ★★ THE T CELL IS TAKEN from the mold profile: 10 roles · 6 signature types (one of arity 3: removes) · 11 tuples (3 does-not-hold) · 0 axioms; the file\'s concept/subject_matter/derived_check/open_forks/did_not_fit CARRIED UNREAD on the warrant',
+check('§2 ★★ THE T CELL IS TAKEN from the mold profile: 10 roles · 6 signature types (one of arity 3: removes) · 11 tuples (3 does-not-hold) · 0 axioms; the file\'s concept/premises/derived_check/open_forks/did_not_fit CARRIED UNREAD on the warrant (its subject_matter has a typed home since C-6c (i) — §2b)',
   tcell.taken && tcell.cast.roles.length === 10 && tcell.cast.signature.length === 6 && tcell.cast.signature.find((s) => s.type === 'removes').arity === 3 &&
     tcell.cast.relations.length === 11 && tcell.cast.relations.filter((r) => r.polarity === 'does-not-hold').length === 3 && tcell.cast.axioms.length === 0 &&
-    tcell.cast.warrant && tcell.cast.warrant.file && tcell.cast.warrant.file.concept === 'T' && typeof tcell.cast.warrant.file.subject_matter === 'string' &&
+    tcell.cast.warrant && tcell.cast.warrant.file && tcell.cast.warrant.file.concept === 'T' && Array.isArray(tcell.cast.warrant.file.premises) &&
     tcell.cast.warrant.file.derived_check !== undefined && tcell.marks.length === 0,
   JSON.stringify(tcell).slice(0, 400));
 check('§2 ★ THE ROLE\'S EXTRAS ride on its marks, never read: gloss · source · properties · warrant carried per role; an EMPTY label is an absence (no label), never a name',
@@ -79,6 +79,17 @@ check('§2 the T cell\'s orderings: sustains · 5 tuples · none reversed (r1→
     orderingLine(tCounts.orderings.find((o) => o.type === 'removes')) === 'removes · 1 tuple · none reversed', JSON.stringify(tCounts && tCounts.orderings));
 check('§2 THE CARD\'S LINE for the T cell names the warrant it carries: `taken — 10 roles · 7 relation-types · 21 relations · 0 axioms carried, never evaluated · warrant carried, never read`',
   tcell.taken && castSummaryLine(tcell.cast) === 'taken — 10 roles · 7 relation-types · 21 relations · 0 axioms carried, never evaluated · warrant carried, never read', tcell.taken && castSummaryLine(tcell.cast));
+
+// ═══ §2b C-6c (i)'s rider — the subject matter, typed ═══
+check('§2b ★ THE SUBJECT MATTER HAS ITS HOME (C-6c (i), sanctioned): the T cell\'s `subject_matter` lands on `cast.subject` as the string the caster wrote, and LEAVES the warrant (no `subject_matter` under warrant.file any more); it enters no check and no refusal',
+  tcell.taken && typeof tcell.cast.subject === 'string' && tcell.cast.subject.startsWith('the T cell of the first face') &&
+    !(tcell.cast.warrant && tcell.cast.warrant.file && 'subject_matter' in tcell.cast.warrant.file) && tcell.marks.length === 0);
+check('§2b LAW 24 — absent = absent: the triangle has no subject and gets none (no field, never filled); a bare `subject` string on a thin cast is taken; a non-string subject is carried unread on the warrant, not typed',
+  tri.taken && tri.cast.subject === undefined &&
+    (() => { const r = readCastFile(JSON.stringify({ subject: 'three things in a ring', roles: [{ id: 'x' }], signature: [], relations: [] })); return r.taken && r.cast.subject === 'three things in a ring' && r.cast.warrant === undefined; })() &&
+    (() => { const r = readCastFile(JSON.stringify({ subject_matter: 7, roles: [{ id: 'x' }], signature: [], relations: [] })); return r.taken && r.cast.subject === undefined && r.cast.warrant && r.cast.warrant.file && r.cast.warrant.file.subject_matter === 7; })());
+check('§2b ★ THE CARD prints the subject beside the person\'s label in the caster\'s register ONLY when held — the row renders under `cast.subject ?`, never a placeholder',
+  panels.includes('{cast.subject ? (') && panels.includes('data-cast-card-row="subject"') && panels.includes('the subject matter, by the caster:'));
 
 // ═══ §3 the two refusals, by name ═══
 const contra = readCastFile(fixture('contradictory.cast.json'));

@@ -2640,6 +2640,19 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
     <>
       <dt className="text-stone-500">Cast</dt>
       <dd data-cast-card-row="summary" className="text-stone-200">{castSummaryLine(cast)}</dd>
+      {/* C-6c (i)'s rider: the subject matter — what the concept is OF — beside the
+          person's label, in the caster's register, printed ONLY when held (a
+          positive fact needs a positive mark; the triangle has none, the T cell has one) */}
+      {cast.subject ? (
+        <>
+          <dt className="text-stone-500">Of</dt>
+          <dd data-cast-card-row="subject" className="min-w-0 text-stone-200">
+            <span className="block text-xs text-stone-500">the corner, by the person: {personLabel.trim() ? personLabel : 'unnamed'}</span>
+            <span className="block text-xs text-stone-500">the subject matter, by the caster:</span>
+            <span className="block">{cast.subject}</span>
+          </dd>
+        </>
+      ) : null}
       {cast.roles.length ? (
         <>
           <dt className="text-stone-500">Roles</dt>
