@@ -1,7 +1,7 @@
-// ═══ THE J REGISTER'S QUANTITIES — `STAMP C-6d (α)`, 2026-09-19, with the two
-// MARKERs on it (the mothership's 1835 and 2030, the researcher's own corrections)
-// and the ratio fix (2310 §0): computed on the TYPE. NOT_FROZEN while only
-// witnesses and components import it.
+// ═══ THE J REGISTER'S QUANTITIES — `STAMP C-6d (α)`, 2026-09-19, the MARKERs on
+// it (1835 support · 2030 weight · 2310 §0 the ratio) and `STAMP C-6d (γ)`,
+// 2026-09-20 (τ REPLACES; the mold's types by definition): computed on the TYPE.
+// NOT_FROZEN while only witnesses and components import it.
 //
 // THE SECOND IMPLEMENTATION. The researcher's instruments
 // (.handoff/instruments/connection_layer_reference/j_register_quantities.py ·
@@ -9,23 +9,36 @@
 // sealed their numbers on the landed fixtures; this module re-implements them
 // INDEPENDENTLY on `ConceptSpace` / `EdgeIdentification` — the ADR 0031
 // kill-condition pattern: a disagreement between the two implementations reopens
-// the DEFINITION, never tunes the code to the number. (It bit once, on the third
-// pair: the unary home supported every pair and 3,104,904 offers followed —
-// the definition was corrected, this code followed it.)
+// the DEFINITION, never tunes the code to the number. It has bitten twice: the
+// unary home supported every pair (3,104,904 offers; the definition corrected),
+// and a maximality read one pair at a time (19 offers where the seal says 10;
+// the mechanism corrected). The (γ) line — τ REPLACES the device's by-name
+// sharing — was found by this pattern too (18 / 62 against the seal's 16 / 37).
 //
 // THE DEFINITIONS (the ruling `.handoff/RULING_THE-J-REGISTERS-QUANTITIES-ON-THE-TYPE_…`,
-// the mothership's 1621 + 1641, and the MARKERs 1835 (support) + 2030 (weight)):
+// the mothership's 1621 + 1641, the MARKERs 1835 + 2030, and (γ) §1 — the researcher's 0137):
 //   the record of a cast   the KNOWN tuples of both homes as one map — (σ, terms) ↦
 //                          polarity from `relations`, and each role's categorical
 //                          unary keys (K, [x]) ↦ value from `roles[].types`; UNKNOWN
 //                          and absence are unrecorded.
-//   shared signature       RELATIONAL types (arity ≥ 2) by NAME with the same arity,
-//                          plus the person's τ (`EdgeIdentification.types`,
-//                          arity-preserving — a unary key is a type of arity 1 in
-//                          the roles' home, so τ may translate one to one); the
-//                          unary keys on roles of both, by name or by τ. A name with
-//                          two arities across the casts is NOT shared — named,
-//                          never refused.
+//   the shared signature   has a RULED part and a GIVEN part.
+//     RULED                the types the MOLD DEFINES (`MOLD_TYPES`, one constant in
+//                          the loader) are shared BY DEFINITION, without τ — every
+//                          cast's `member_status` IS that type; compared by name.
+//     GIVEN                τ — ONE function, the PERSON's, arity-preserving (a
+//                          categorical key is a type of arity 1 in the roles' home,
+//                          so τ may translate one to one). Caster-defined types —
+//                          everything in `signature` or invented as a `types` key —
+//                          are shared ONLY by τ. A given τ REPLACES the device's
+//                          by-name sharing WHOLESALE: what τ does not mention is
+//                          untranslated.
+//     PROPOSED             when NO τ is given, the device's τ_name — same name, same
+//                          arity, caster-defined relational types — is the reading's
+//                          premise, MARKED AS PROPOSED (the instrument's own
+//                          `τ_name`); under a given τ its remaining pairs are
+//                          PROPOSABLE additions, never applied silently. A name with
+//                          two arities across the casts is NOT shared — named, never
+//                          refused.
 //   candidate              a partial injection j of X's roles into Y's with NO KNOWN
 //                          CONFLICT — relational OR unary (a tuple over dom j known on
 //                          both sides has the same value) — and weight > 0.
@@ -34,37 +47,37 @@
 //                          SAME value; does-not-hold = does-not-hold IS one.
 //   SUPPORT of a pair      = the relational agreements whose X-tuple contains the
 //                          pair's role — structure BETWEEN identified roles.
-//   THE UNARY HOME         REFUSES on conflict (the first face's member-status
+//   THE UNARY HOME         REFUSES on conflict (the first face's member_status
 //                          refusal) and is PRINTED as its own two counts —
 //                          `types: a agree · u unknown` (three-valued: agree ·
 //                          refuse · unknown; a refusing type kills the pair, so on
 //                          an offer only agree/unknown are reachable) — never summed
-//                          into the weight, never supporting a pair. (A value every
-//                          role shares backs every pair equally, i.e. backs none.)
-//   exposure · unrecorded  known on exactly one side · the arithmetic remainder of
+//                          into the weight, never supporting a pair.
+//   exposure · unrecorded  known on exactly one side — counted BY SIDE (`here` = X
+//                          knows, `there` = Y knows) · the arithmetic remainder of
 //                          Σ|dom j|^arity over the shared signature INCLUDING the
 //                          unary types, minus every agreement and every exposure.
-//   OFFER (clause 2 as AMENDED, the researcher's 1632): a maximal conflict-free
-//                          candidate whose EVERY pair is SUPPORTED — takes part in at
-//                          least one relational agreement — extended until no further
-//                          supported pair can be added without a conflict. SIZE
+//   OFFER (clause 2 as AMENDED, the researcher's 1632): an INCLUSION-maximal
+//                          conflict-free candidate whose EVERY pair is SUPPORTED —
+//                          takes part in at least one relational agreement. SIZE
 //                          FOLLOWS FROM SUPPORT, never from |X| or |Y|. Offers are
 //                          ordered by WEIGHT.
 //   Aut(X)                 permutations of X's roles preserving the WHOLE record
 //                          exactly, on the full signature (both homes). Two offers are
 //                          ONE READING iff j' = β∘j∘α⁻¹ (α ∈ Aut X, β ∈ Aut Y) — a
-//                          gauge orbit; the count the register prints is ORBITS, and
-//                          the surface groups the offers by orbit within weight.
-//   the empty core         (a) no RELATIONAL type shared — by name or by τ (unary keys
-//                          alone cannot make a core: they support nothing); (b) shared
-//                          relational types and every conflict-free injection of
-//                          weight 0.
+//                          gauge orbit; the surface groups the offers by reading
+//                          within weight.
+//   the empty core         (a) no RELATIONAL type in force — none proposed and none
+//                          given (the mold's keys alone cannot make a core: they
+//                          support nothing); (b) relational types in force and every
+//                          conflict-free injection of weight 0.
 // RECORD, NOT READING: `EdgeIdentification.roles` and `.types` are the inputs;
 // `support` and `fiat` are DERIVED — re-derived at every read, never read back.
 // THE BUDGET is a node count, and a pair beyond it returns that in words — a
 // limit found at pick-time costs one pick (never after the person has waited).
 
 import type { ConceptSpace, EdgeIdentification } from '../types/geometry';
+import { MOLD_TYPES } from './castLoader';
 
 export interface CastRecord {
   roles: string[];
@@ -108,40 +121,55 @@ export function arityIn(record: CastRecord, name: string): number | undefined {
   return record.unary.has(name) ? 1 : undefined;
 }
 
+export type TypePair = [string, string];
+
 export interface SharedSignature {
-  /** X's relational type-name ↦ Y's type-name, with the arity (≥ 2), for every shared relational type — by name, or by the person's τ */
+  /** the relational types IN FORCE: X's name ↦ Y's name with the arity — the given τ's pairs, or the proposal's when no τ is given */
   types: Map<string, { yName: string; arity: number }>;
-  byName: string[]; // relational types shared by name (same arity)
-  underTau: Array<[string, string]>; // relational types shared by the person's τ
-  unary: Map<string, string>; // X's categorical key ↦ Y's — by name, or by τ at arity 1
-  notSame: string[]; // names present in both with DIFFERENT arities (or a τ pair across arities) — named, never shared
-  unknownNames: Array<[string, string]>; // τ pairs naming a type one cast does not declare — named, never shared
+  /** the unary keys IN FORCE: X's key ↦ Y's — the mold's by definition, caster keys by τ */
+  unary: Map<string, string>;
+  ruled: string[]; // the mold's types shared by definition (declared on roles of both casts)
+  given: TypePair[]; // the person's τ pairs in force (relational and unary), as given
+  proposed: TypePair[]; // the device's τ_name: caster-defined relational types of the same name and arity on both
+  proposalInForce: boolean; // no τ given — the proposal is the reading's premise, marked as the device's
+  proposable: TypePair[]; // under a given τ: the τ_name pairs it does not mention — never applied
+  notSame: string[]; // a name present in both with DIFFERENT arities, or a τ pair across arities — named, never shared
+  unknownNames: TypePair[]; // τ pairs naming a type one cast does not declare — named, never shared
 }
 
-/** the shared signature: relational types by name with the same arity, plus the person's τ (arity-preserving, unary keys included at arity 1), plus unary keys on both */
+/** the shared signature: the mold's types by definition; the person's τ in force, or the device's proposal when none is given */
 export function sharedSignature(X: CastRecord, Y: CastRecord, tau?: EdgeIdentification['types']): SharedSignature {
   const types = new Map<string, { yName: string; arity: number }>();
-  const byName: string[] = [];
-  const underTau: Array<[string, string]> = [];
   const unary = new Map<string, string>();
+  const ruled: string[] = [];
   const notSame: string[] = [];
-  const unknownNames: Array<[string, string]> = [];
+  const unknownNames: TypePair[] = [];
+  const proposed: TypePair[] = [];
   for (const [name, arity] of X.arityOf) {
     const yArity = Y.arityOf.get(name);
     if (yArity === undefined) continue;
-    if (yArity === arity && arity >= 2) { types.set(name, { yName: name, arity }); byName.push(name); }
+    if (yArity === arity && arity >= 2) proposed.push([name, name]);
     else if (yArity !== arity) notSame.push(name);
   }
-  for (const [xName, yName] of tau ?? []) {
+  for (const mold of MOLD_TYPES) {
+    if (X.unary.has(mold.name) && Y.unary.has(mold.name)) { unary.set(mold.name, mold.name); ruled.push(mold.name); }
+  }
+  const givenPairs = (tau ?? []).map(([x, y]) => [x, y] as TypePair);
+  const given: TypePair[] = [];
+  for (const [xName, yName] of givenPairs) {
     const a = arityIn(X, xName);
     const b = arityIn(Y, yName);
     if (a === undefined || b === undefined) { unknownNames.push([xName, yName]); continue; }
     if (a !== b) { notSame.push(`${xName}↦${yName}`); continue; }
-    if (a >= 2) { types.set(xName, { yName, arity: a }); underTau.push([xName, yName]); }
+    if (a >= 2) types.set(xName, { yName, arity: a });
     else unary.set(xName, yName);
+    given.push([xName, yName]);
   }
-  for (const k of X.unary) if (Y.unary.has(k) && !unary.has(k)) unary.set(k, k);
-  return { types, byName, underTau, unary, notSame, unknownNames };
+  const proposalInForce = givenPairs.length === 0;
+  if (proposalInForce) for (const [name] of proposed) types.set(name, { yName: name, arity: X.arityOf.get(name) as number });
+  const mentioned = new Set(givenPairs.map(([x]) => x));
+  const proposable = proposalInForce ? [] : proposed.filter(([x]) => !mentioned.has(x));
+  return { types, unary, ruled, given, proposed, proposalInForce, proposable, notSame, unknownNames };
 }
 
 /** a KNOWN CONFLICT, by name: the same tuple known on both sides with different values */
@@ -155,7 +183,7 @@ export interface Conflict {
   yValue: string;
 }
 
-/** the conflict in words — arity ≥ 2: `r(x, y) holds here · s(a, b) does-not-hold there`; arity 1: `K: x has · K': y none-by-nature` */
+/** the conflict in words — arity ≥ 2: `r(x, y) holds here · s(a, b) does-not-hold there`; arity 1: `K: x has · y none-by-nature` (`K: x has · K': y …` under a τ on the key) */
 export function describeConflict(c: Conflict): string {
   if (c.arity === 1) {
     const yKey = c.yType === c.type ? '' : `${c.yType}: `;
@@ -169,6 +197,8 @@ export interface Assessment {
   typesAgree: number; // unary agreements over dom j
   typesUnknown: number; // unary cells over dom j that agree on nothing and refuse on nothing (one or both sides unknown)
   exposure: number; // known on exactly one side, over the shared signature including the unary types
+  exposureHere: number; // known here (X), unrecorded there
+  exposureThere: number; // known there (Y), unrecorded here
   unrecorded: number; // the arithmetic remainder
   support: Record<string, number>; // per X-role in dom j — relational agreements only
   conflicts: Conflict[]; // every known conflict, relational and unary, by name — empty on a candidate
@@ -184,7 +214,8 @@ export function assess(X: CastRecord, Y: CastRecord, j: Map<string, string>, sha
   for (const [x, y] of j) jInv.set(y, x);
   let relational = 0;
   let typesAgree = 0;
-  let exposure = 0;
+  let exposureHere = 0;
+  let exposureThere = 0;
   const support: Record<string, number> = {};
   for (const x of dom) support[x] = 0;
   const conflicts: Conflict[] = [];
@@ -196,7 +227,7 @@ export function assess(X: CastRecord, Y: CastRecord, j: Map<string, string>, sha
     const yName = rel ? rel.yName : (un as string);
     const yTerms = t.terms.map((r) => j.get(r) as string);
     const vy = Y.known.get(key(yName, yTerms));
-    if (vy === undefined) exposure += 1;
+    if (vy === undefined) exposureHere += 1;
     else if (vy !== t.value) conflicts.push({ arity: rel ? rel.arity : 1, type: t.type, yType: yName, xTerms: [...t.terms], xValue: t.value, yTerms, yValue: vy });
     else if (rel) {
       relational += 1;
@@ -210,18 +241,21 @@ export function assess(X: CastRecord, Y: CastRecord, j: Map<string, string>, sha
   for (const t of Y.knownList) {
     const xName = xNameOf.get(t.type);
     if (xName === undefined || !t.terms.every((r) => img.has(r))) continue;
-    if (!X.known.has(key(xName, t.terms.map((r) => jInv.get(r) as string)))) exposure += 1;
+    if (!X.known.has(key(xName, t.terms.map((r) => jInv.get(r) as string)))) exposureThere += 1;
   }
   let total = 0;
   for (const t of shared.types.values()) total += dom.size ** t.arity;
   const unaryCells = shared.unary.size * dom.size;
   total += unaryCells;
   const unaryConflicts = conflicts.filter((c) => c.arity === 1).length;
+  const exposure = exposureHere + exposureThere;
   return {
     relational,
     typesAgree,
     typesUnknown: unaryCells - typesAgree - unaryConflicts,
     exposure,
+    exposureHere,
+    exposureThere,
     unrecorded: total - relational - typesAgree - exposure - conflicts.length,
     support,
     conflicts,
@@ -273,6 +307,8 @@ export interface Offer {
   typesAgree: number;
   typesUnknown: number;
   exposure: number;
+  exposureHere: number;
+  exposureThere: number;
   unrecorded: number;
   support: Record<string, number>;
 }
@@ -283,18 +319,16 @@ export interface WeightReadings {
   groups: Offer[][]; // one group per orbit; within a group the offers differ only by symmetry
 }
 
+type SignatureFacts = Pick<SharedSignature, 'ruled' | 'given' | 'proposed' | 'proposalInForce' | 'proposable' | 'notSame' | 'unknownNames'>;
+
 export type RegisterReading =
-  | { state: 'empty core (a)'; sentence: string; notSame: string[]; unknownNames: Array<[string, string]>; sharedUnary: string[] }
-  | { state: 'empty core (b)'; sentence: string; shared: string[]; notSame: string[]; unknownNames: Array<[string, string]>; consistentFull: number | null; unaryRefusals: number; nodes: number }
+  | ({ state: 'empty core (a)'; sentence: string; sharedUnary: string[] } & SignatureFacts)
+  | ({ state: 'empty core (b)'; sentence: string; shared: string[]; sharedUnary: string[]; consistentFull: number | null; unaryRefusals: number; nodes: number } & SignatureFacts)
   | { state: 'beyond the budget'; sentence: string; nodes: number; budget: number }
-  | {
+  | ({
       state: 'offers';
-      shared: string[]; // X's relational type names shared (by name or τ)
-      sharedByName: string[];
-      sharedUnderTau: Array<[string, string]>;
-      sharedUnary: string[];
-      notSame: string[];
-      unknownNames: Array<[string, string]>;
+      shared: string[]; // X's relational type names in force
+      sharedUnary: string[]; // X's unary keys in force (the mold's, and caster keys under τ)
       offers: Offer[]; // ordered by weight, descending
       readings: WeightReadings[]; // weight-ordered; each weight's offers grouped by orbit
       topWeight: number;
@@ -306,7 +340,7 @@ export type RegisterReading =
       unaryRefusals: number; // search nodes refused by the unary home alone (relations fine)
       nodes: number;
       millis: number;
-    };
+    } & SignatureFacts);
 
 const pairsKey = (pairs: Array<[string, string]>): string => JSON.stringify(pairs);
 
@@ -346,12 +380,22 @@ export interface RegisterOptions {
   countFull?: boolean;
 }
 
+const facts = (shared: SharedSignature): SignatureFacts => ({
+  ruled: shared.ruled,
+  given: shared.given,
+  proposed: shared.proposed,
+  proposalInForce: shared.proposalInForce,
+  proposable: shared.proposable,
+  notSame: shared.notSame,
+  unknownNames: shared.unknownNames,
+});
+
 /**
- * THE OFFERS on X × Y (clause 2 as amended): maximal conflict-free candidates whose every pair is supported,
- * found by a branch-and-bound over partial injections, the bound being the relational agreements so far plus
- * the X-known shared relational tuples that could still agree; every leaf is reduced to its supported core,
- * checked for maximality, and kept if its weight reaches the best seen (or at every weight under `keepAll`).
- * `consistentFull` counts the conflict-free injections of size min(|X|, |Y|) separately (for the seal).
+ * THE OFFERS on X × Y (clause 2 as amended): inclusion-maximal conflict-free candidates whose every pair is
+ * supported, found by a branch-and-bound over partial injections, the bound being the relational agreements so far
+ * plus the X-known shared relational tuples that could still agree; every leaf is reduced to its supported core and
+ * kept if its weight reaches the best seen (or at every weight under `keepAll`); the cores another core strictly
+ * contains are dropped. `consistentFull` counts the conflict-free injections of size min(|X|, |Y|) separately.
  */
 export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?: EdgeIdentification['types'], nodeBudget = 5_000_000, options: RegisterOptions = {}): RegisterReading {
   const keepAll = options.keepAll === true;
@@ -361,7 +405,7 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
   const Y = recordOf(spaceY);
   const shared = sharedSignature(X, Y, tau);
   if (shared.types.size === 0) {
-    return { state: 'empty core (a)', sentence: 'no relation-type in common — a translation is yours to give', notSame: shared.notSame, unknownNames: shared.unknownNames, sharedUnary: [...shared.unary.keys()] };
+    return { state: 'empty core (a)', sentence: 'no relation-type in common — a translation is yours to give', sharedUnary: [...shared.unary.keys()], ...facts(shared) };
   }
   // THE SEARCH is TUPLE-DRIVEN: an offer's pairs all come from relational
   // agreements, so the candidates are built by mapping X's known shared
@@ -370,8 +414,8 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
   // of Y tuples per type, and a tuple that can no longer match prunes at once.
   // The unary home never drives a pair; it only REFUSES one. Every pair is
   // supported BY CONSTRUCTION; the leaf is re-evaluated whole (tuples left out
-  // may agree anyway) and checked for maximality; the bound is the agreements so
-  // far plus the tuples not yet decided.
+  // may agree anyway); the bound is the agreements so far plus the tuples not
+  // yet decided.
   const xTuples = X.knownList.filter((tt) => shared.types.has(tt.type));
   const yByTypeValue = new Map<string, Array<string[]>>();
   for (const u of Y.knownList) {
@@ -420,18 +464,6 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
     if (core.size === 0) return;
     const coreEv = core.size === j.size ? ev : evaluate(X, Y, core, shared);
     if (!coreEv || (!keepAll && coreEv.relational < best)) return;
-    // maximality: no supported pair can be added without a conflict
-    const coreImg = new Set(core.values());
-    for (const x of X.roles) {
-      if (core.has(x)) continue;
-      for (const y of Y.roles) {
-        if (coreImg.has(y)) continue;
-        core.set(x, y);
-        const ext = evaluate(X, Y, core, shared);
-        core.delete(x);
-        if (ext && ext.relational > coreEv.relational && (ext.support[x] ?? 0) > 0) return; // extendable — not maximal
-      }
-    }
     const pairs = [...core.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)) as Array<[string, string]>;
     const k = pairsKey(pairs);
     if (cores.has(k)) return;
@@ -439,7 +471,7 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
       best = coreEv.relational;
       if (!keepAll) for (const [kk, o] of cores) if (o.weight < best) cores.delete(kk);
     }
-    cores.set(k, { pairs, weight: coreEv.relational, typesAgree: coreEv.typesAgree, typesUnknown: coreEv.typesUnknown, exposure: coreEv.exposure, unrecorded: coreEv.unrecorded, support: coreEv.support });
+    cores.set(k, { pairs, weight: coreEv.relational, typesAgree: coreEv.typesAgree, typesUnknown: coreEv.typesUnknown, exposure: coreEv.exposure, exposureHere: coreEv.exposureHere, exposureThere: coreEv.exposureThere, unrecorded: coreEv.unrecorded, support: coreEv.support });
   };
   const rec = (i: number, agreements: number): void => {
     if (overBudget) return;
@@ -517,12 +549,12 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
     if (over) consistentFull = null;
   }
   if (best === 0) {
-    return { state: 'empty core (b)', sentence: 'no relation to agree on', shared: [...shared.types.keys()], notSame: shared.notSame, unknownNames: shared.unknownNames, consistentFull, unaryRefusals, nodes };
+    return { state: 'empty core (b)', sentence: 'no relation to agree on', shared: [...shared.types.keys()], sharedUnary: [...shared.unary.keys()], consistentFull, unaryRefusals, nodes, ...facts(shared) };
   }
   // MAXIMALITY IS INCLUSION among the supported cores (the researcher's offers_count.py: the inclusion-maximal
   // induced maps): a core another core strictly contains is not an offer — the leaf's one-pair-at-a-time check
-  // above cannot see an extension by a whole tuple matching (two new pairs at once), this filter can. A superset
-  // core carries at least its subset's agreements, so at the top weight the superset is found beside it.
+  // cannot see an extension by a whole tuple matching (two new pairs at once), this filter can. A superset core
+  // carries at least its subset's agreements, so at the top weight the superset is found beside it.
   const found = [...cores.values()];
   const contains = (big: Offer, small: Offer): boolean => big.pairs.length > small.pairs.length && small.pairs.every(([x, y]) => big.pairs.some(([px, py]) => px === x && py === y));
   const offers = found.filter((o) => !found.some((p) => contains(p, o))).sort((a, b) => b.weight - a.weight || b.pairs.length - a.pairs.length);
@@ -534,11 +566,7 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
   return {
     state: 'offers',
     shared: [...shared.types.keys()],
-    sharedByName: shared.byName,
-    sharedUnderTau: shared.underTau,
     sharedUnary: [...shared.unary.keys()],
-    notSame: shared.notSame,
-    unknownNames: shared.unknownNames,
     offers,
     readings,
     topWeight: best,
@@ -550,5 +578,6 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
     unaryRefusals,
     nodes,
     millis: Date.now() - started,
+    ...facts(shared),
   };
 }

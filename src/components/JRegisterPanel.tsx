@@ -1,7 +1,8 @@
-// ═══ THE J REGISTER — `STAMP C-6d (β)`, 2026-09-19: the connection layer's first
-// GIVEN surface. `Layer 3 Witness` generalised WITNESS → GIVEN (§96.3): the
-// layer's own edge register — an edge table of the selected cell's seams, and
-// each edge whose two corners BOTH hold a cast carries the person's `J`.
+// ═══ THE J REGISTER — `STAMP C-6d (β)`, 2026-09-19, and its second cut
+// `STAMP C-6d (γ)`, 2026-09-20 (definitions and copy): the connection layer's
+// first GIVEN surface. `Layer 3 Witness` generalised WITNESS → GIVEN (§96.3):
+// the layer's own edge register — an edge table of the selected cell's seams,
+// and each edge whose two corners BOTH hold a cast carries the person's `J`.
 //
 // NOTHING HERE POSITS A `J`: the device OFFERS (the register's arithmetic,
 // src/lib/jRegister.ts), the person TAKES. `Edge.identification` (FROZEN type,
@@ -9,16 +10,23 @@
 // store's one writer; `support` and `fiat` are DERIVED at every read here and
 // written by nothing (RECORD, NOT READING).
 //
-//   (i)   τ — the offering's STATED PREMISE, printed ABOVE the offers, its pairs
-//         marked as the person's; the shared-signature line beneath it; given
-//         where it is needed (the empty core's sentence IS the affordance);
-//         withdrawable — and the register SAYS the offers were re-derived.
+//   (i)   τ — the offering's STATED PREMISE, printed ABOVE the offers. τ is ONE
+//         function and it is the person's: a given τ REPLACES the device's
+//         by-name sharing wholesale ((γ) §1.1). With no τ given, the device's
+//         by-name pairs (same name, same arity) stand as its PROPOSAL, marked as
+//         the device's, confirmable into the person's; under a given τ the
+//         remaining by-name pairs are PROPOSABLE additions, never applied
+//         silently. The mold's own types are shared by definition and say so on
+//         their own line ((γ) §1.2). Withdrawable — and the register SAYS the
+//         offers were re-derived.
 //   (ii)  THE OFFERING — ALL offers, grouped by READING (gauge orbit) within
 //         weight, weight-ordered; ALL OR NONE, never a truncated offering; each
-//         offer's pairs marked by support; three counts of three different
-//         things, never a ratio; the tie sentence leads with the READING; the
-//         FIVE states never collapsed — the device found nothing and the device
-//         did not look are different facts.
+//         offer's pairs marked by support; counts of different things, never a
+//         ratio — the unary counts ABSENT when no unary type is in force,
+//         exposure BY SIDE ((γ) §2.2–2.3); the reading sentence ON each weight
+//         group and only when the group holds more than one offer ((γ) §2.1);
+//         the FIVE states never collapsed — the device found nothing and the
+//         device did not look are different facts.
 //   (iii) THE TAKE — taking an offer writes the record and carries the
 //         given-mark; withdrawable; `none` is a take too (`nothing identified` +
 //         the given-mark); a FIAT pair is visibly distinct — support 0, marked as
@@ -37,8 +45,10 @@ import {
   recordOf,
   registerReading,
   sharedSignature,
+  type Assessment,
   type Conflict,
   type Offer,
+  type TypePair,
 } from '../lib/jRegister';
 import { useGeometryStore } from '../store/geometryStore';
 import type { ConceptSpace, EdgeId, EdgeIdentification, Shape, VertexId } from '../types/geometry';
@@ -86,6 +96,31 @@ const typeNames = (cast: ConceptSpace): Array<{ name: string; arity: number }> =
   }
   return out;
 };
+const pairText = (pairs: TypePair[]): string => pairs.map(([x, y]) => `${x} ↦ ${y}`).join(' · ');
+
+/** exposure BY SIDE ((γ) §2.3, the designer's words): `2 known here only` · `1 known there only` · `known 1 here · 1 there`; nothing when none */
+export function exposureText(here: number, there: number): string | null {
+  if (here === 0 && there === 0) return null;
+  if (there === 0) return `${here} known here only`;
+  if (here === 0) return `${there} known there only`;
+  return `known ${here} here · ${there} there`;
+}
+
+/** the counts of an offer or a given J: counts of different things, never a ratio; the unary counts only when a unary type is in force */
+export function countsLine(a: Pick<Assessment, 'relational' | 'unrecorded' | 'exposureHere' | 'exposureThere' | 'typesAgree' | 'typesUnknown'>, unaryInForce: boolean): string {
+  const parts = [`relational weight ${a.relational}`, `${a.unrecorded} unrecorded`];
+  const exposure = exposureText(a.exposureHere, a.exposureThere);
+  if (exposure) parts.push(exposure);
+  if (unaryInForce) parts.push(`types: ${a.typesAgree} agree · ${a.typesUnknown} unknown`);
+  return parts.join(' · ');
+}
+
+/** the weight group's line ((γ) §2.1, the designer's ruling): the reading sentence ON the group, and only when it holds more than one offer */
+export function groupLine(weight: number, offers: number, readings: number, aut: [number, number], autComplete: boolean): string {
+  if (offers === 1) return `relational weight ${weight} · 1 offer`;
+  const symmetries = `(this cast has ${aut[0]}, that one ${aut[1]}${autComplete ? '' : ' — not fully counted within the budget'})`;
+  return `relational weight ${weight} · ${offers} offers · ${readings} reading${readings === 1 ? '' : 's'} — within a reading they differ only by symmetry ${symmetries}`;
+}
 
 function JRegisterRow({ shape, row, draft, budget }: { shape: Shape; row: JRegisterEdgeRow; draft: EdgeIdentification['types'] | undefined; budget: number }) {
   const castA = shape.vertices[row.vertexIds[0]]?.data.cast;
@@ -133,6 +168,7 @@ function JRegisterRow({ shape, row, draft, budget }: { shape: Shape; row: JRegis
   const yChoices = pickXArity === undefined ? [] : yTypes.filter((t) => t.arity === pickXArity);
   const canWrite = row.edgeId !== null;
   const state = identification ? 'given' : reading.state === 'offers' ? 'offered' : reading.state === 'beyond the budget' ? 'not computed' : reading.state;
+  const unaryInForce = shared.unary.size > 0;
   const arityLine = (name: string): string => `"${name}" is arity ${arityIn(X, name)} here and arity ${arityIn(Y, name)} there — not a shared name`;
   const crossLine = (pair: string): string => {
     const [x, y] = pair.split('↦');
@@ -140,6 +176,8 @@ function JRegisterRow({ shape, row, draft, budget }: { shape: Shape; row: JRegis
   };
   const mappedX = new Set((identification?.roles ?? []).map(([x]) => x));
   const mappedY = new Set((identification?.roles ?? []).map(([, y]) => y));
+  const aut: [number, number] = reading.state === 'offers' ? reading.aut : [0, 0];
+  const autComplete = reading.state === 'offers' ? reading.autComplete : true;
 
   return (
     <li data-j-row={row.vertexIds.join('|')} data-j-edge={row.edgeId ?? undefined} data-j-state={state} className="border-t border-stone-800 pt-2">
@@ -151,27 +189,59 @@ function JRegisterRow({ shape, row, draft, budget }: { shape: Shape; row: JRegis
         <p className="mt-1 text-xs text-rose-300/80" data-j-no-entity="true">no edge entity carries this pair — a J cannot be recorded here</p>
       ) : null}
 
-      {/* (i) τ — the stated premise, ABOVE the offers, the pairs marked as the person's */}
-      <div className="mt-2 grid gap-1" data-j-tau={pairsKey(tau)}>
-        <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">τ — the translation, given by you</span>
-        {tau.length ? (
-          <ul className="grid gap-1">
-            {tau.map(([x, y]) => (
-              <li key={`${x}|${y}`} className="flex items-center justify-between gap-2 text-xs" data-j-tau-pair={`${x}↦${y}`}>
-                <span className="font-mono text-stone-200">{x} ↦ {y}</span>
-                <span className="flex items-center gap-2">
-                  <span className="text-stone-500">yours</span>
-                  {canWrite ? (
-                    <button type="button" className="rounded border border-stone-700 px-1.5 py-0.5 text-stone-300 hover:border-stone-500" data-j-tau-withdraw={`${x}↦${y}`} onClick={() => changeTau(tau.filter(([px, py]) => !(px === x && py === y)), 'withdrawn')}>
-                      withdraw
-                    </button>
-                  ) : null}
-                </span>
-              </li>
-            ))}
-          </ul>
+      {/* (i) τ — the stated premise, ABOVE the offers: the person's τ, or the device's PROPOSAL marked as the device's */}
+      <div className="mt-2 grid gap-1" data-j-tau={pairsKey(tau)} data-j-premise={shared.proposalInForce ? 'proposed' : 'given'}>
+        {shared.proposalInForce ? (
+          shared.proposed.length ? (
+            <div className="grid gap-1 rounded border border-dashed border-stone-700 px-2 py-1" data-j-proposed={pairsKey(shared.proposed)}>
+              <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">τ — proposed by the device (same name, same arity)</span>
+              <span className="font-mono text-xs text-stone-300">{pairText(shared.proposed)}</span>
+              <span className="flex items-center justify-between gap-2 text-xs text-stone-500">
+                <span>the device&apos;s, until you confirm it — the offers below rest on it</span>
+                {canWrite ? (
+                  <button type="button" data-j-confirm="true" className="rounded border border-stone-700 px-1.5 py-0.5 text-stone-300 hover:border-stone-500" onClick={() => changeTau(shared.proposed.map(([x, y]) => [x, y] as Pair), 'given')}>
+                    confirm as yours
+                  </button>
+                ) : null}
+              </span>
+            </div>
+          ) : (
+            <span className="text-xs text-stone-500" data-j-tau-none="true">no translation given — none proposed (no caster type shares a name and arity)</span>
+          )
         ) : (
-          <span className="text-xs text-stone-500" data-j-tau-none="true">no translation given</span>
+          <>
+            <span className="text-xs font-semibold uppercase tracking-wide text-stone-500">τ — the translation, given by you</span>
+            <ul className="grid gap-1">
+              {tau.map(([x, y]) => (
+                <li key={`${x}|${y}`} className="flex items-center justify-between gap-2 text-xs" data-j-tau-pair={`${x}↦${y}`}>
+                  <span className="font-mono text-stone-200">{x} ↦ {y}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="text-stone-500">yours</span>
+                    {canWrite ? (
+                      <button type="button" className="rounded border border-stone-700 px-1.5 py-0.5 text-stone-300 hover:border-stone-500" data-j-tau-withdraw={`${x}↦${y}`} onClick={() => changeTau(tau.filter(([px, py]) => !(px === x && py === y)), 'withdrawn')}>
+                        withdraw
+                      </button>
+                    ) : null}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {shared.proposable.length ? (
+              <div className="grid gap-0.5 text-xs text-stone-500" data-j-proposable={pairsKey(shared.proposable)}>
+                <span>proposable by the device (same name, same arity, not in your τ — not applied):</span>
+                {shared.proposable.map(([x, y]) => (
+                  <span key={`${x}|${y}`} className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-stone-400">{x} ↦ {y}</span>
+                    {canWrite ? (
+                      <button type="button" data-j-proposable-add={`${x}↦${y}`} className="rounded border border-stone-700 px-1.5 py-0.5 text-stone-300 hover:border-stone-500" onClick={() => changeTau([...tau, [x, y]], 'given')}>
+                        add to yours
+                      </button>
+                    ) : null}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </>
         )}
         {canWrite ? (
           <div className="flex flex-wrap items-center gap-1 text-xs">
@@ -193,11 +263,9 @@ function JRegisterRow({ shape, row, draft, budget }: { shape: Shape; row: JRegis
             </button>
           </div>
         ) : null}
-        {/* the shared-signature line: by name · under τ · the two-arities fact as a positive mark · the roles' keys */}
+        {/* the ruled part of the shared signature (the mold's types, by definition), the two-arities fact as a positive mark, a τ pair naming an undeclared type */}
         <div className="grid gap-0.5 text-xs text-stone-400" data-j-shared="true">
-          {shared.byName.length ? <span>shared by name: {shared.byName.join(' · ')}</span> : null}
-          {shared.underTau.length ? <span>shared under τ: {shared.underTau.map(([x, y]) => `${x} ↦ ${y}`).join(' · ')}</span> : null}
-          {[...shared.unary.entries()].length ? <span>types on the roles shared: {[...shared.unary.entries()].map(([x, y]) => (x === y ? x : `${x} ↦ ${y}`)).join(' · ')}</span> : null}
+          {shared.ruled.length ? <span data-j-mold={shared.ruled.join(' · ')}>shared by the mold: {shared.ruled.join(' · ')}</span> : null}
           {shared.notSame.map((name) => (
             <span key={name} data-j-not-same={name}>{name.includes('↦') ? crossLine(name) : arityLine(name)}</span>
           ))}
@@ -245,9 +313,7 @@ function JRegisterRow({ shape, row, draft, budget }: { shape: Shape; row: JRegis
             <span className="text-xs text-stone-300" data-j-nothing-identified="true">nothing identified</span>
           )}
           {identification.roles.length ? (
-            <span className="text-xs text-stone-400" data-j-given-counts="true">
-              relational weight {given.relational} · {given.unrecorded} unrecorded · {given.exposure} known on one side only · types: {given.typesAgree} agree · {given.typesUnknown} unknown
-            </span>
+            <span className="text-xs text-stone-400" data-j-given-counts="true">{countsLine(given, unaryInForce)}</span>
           ) : null}
           {canWrite ? (
             <div className="flex flex-wrap items-center gap-1 text-xs">
@@ -289,35 +355,36 @@ function JRegisterRow({ shape, row, draft, budget }: { shape: Shape; row: JRegis
           </p>
         ) : (
           <>
-            <p className="text-xs text-stone-200" data-j-tie="true">{tieSentence(reading.tied, reading.readings[0].groups.length, reading.aut, reading.autComplete)}</p>
-            {reading.unaryRefusals > 0 ? <span className="text-xs text-stone-400">{reading.unaryRefusals} matching{reading.unaryRefusals === 1 ? '' : 's'} refused by a type on the roles</span> : null}
+            {reading.unaryRefusals > 0 ? <span className="text-xs text-stone-400" data-j-refusals={reading.unaryRefusals}>{reading.unaryRefusals} matching{reading.unaryRefusals === 1 ? '' : 's'} refused by a type on the roles</span> : null}
             {!identification && canWrite ? (
               <button type="button" data-j-take-none="true" className="justify-self-start rounded border border-stone-700 px-1.5 py-0.5 text-xs text-stone-300 hover:border-stone-500" onClick={() => { if (row.edgeId) takeEdgeIdentification(row.edgeId, []); }}>
                 take none
               </button>
             ) : null}
-            {reading.readings.map((w) => (
-              <div key={w.weight} data-j-weight={w.weight} className="grid gap-1">
-                <span className="text-xs text-stone-400">
-                  relational weight {w.weight} · {w.groups.flat().length} offer{w.groups.flat().length === 1 ? '' : 's'} · {w.groups.length} reading{w.groups.length === 1 ? '' : 's'}
-                </span>
-                {w.groups.map((group, g) => (
-                  <div key={g} data-j-reading={`${w.weight}:${g + 1}`} className="grid gap-1 border-l border-stone-800 pl-2">
-                    <span className="text-[11px] text-stone-500">reading {g + 1} · {group.length} member{group.length === 1 ? '' : 's'}</span>
-                    {group.map((offer) => (
-                      <OfferRow
-                        key={pairsKey(offer.pairs)}
-                        offer={offer}
-                        castA={castA}
-                        castB={castB}
-                        isGiven={identification ? samePairs(identification.roles, offer.pairs) : false}
-                        onTake={canWrite ? () => { if (row.edgeId) takeEdgeIdentification(row.edgeId, offer.pairs); } : null}
-                      />
-                    ))}
-                  </div>
-                ))}
-              </div>
-            ))}
+            {reading.readings.map((w) => {
+              const count = w.groups.flat().length;
+              return (
+                <div key={w.weight} data-j-weight={w.weight} className="grid gap-1">
+                  <span className="text-xs text-stone-400" data-j-group="true">{groupLine(w.weight, count, w.groups.length, aut, autComplete)}</span>
+                  {w.groups.map((group, g) => (
+                    <div key={g} data-j-reading={`${w.weight}:${g + 1}`} className="grid gap-1 border-l border-stone-800 pl-2">
+                      {count > 1 ? <span className="text-[11px] text-stone-500">reading {g + 1} · {group.length} member{group.length === 1 ? '' : 's'}</span> : null}
+                      {group.map((offer) => (
+                        <OfferRow
+                          key={pairsKey(offer.pairs)}
+                          offer={offer}
+                          castA={castA}
+                          castB={castB}
+                          unaryInForce={unaryInForce}
+                          isGiven={identification ? samePairs(identification.roles, offer.pairs) : false}
+                          onTake={canWrite ? () => { if (row.edgeId) takeEdgeIdentification(row.edgeId, offer.pairs); } : null}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
           </>
         )}
       </div>
@@ -325,15 +392,7 @@ function JRegisterRow({ shape, row, draft, budget }: { shape: Shape; row: JRegis
   );
 }
 
-/** the tie sentence leads with the READING (the designer's rider 3, in the truthful form: orbit sizes vary) */
-export function tieSentence(tied: number, readings: number, aut: [number, number], autComplete: boolean): string {
-  const symmetries = `(this cast has ${aut[0]}, that one ${aut[1]}${autComplete ? '' : ' — not fully counted within the budget'})`;
-  if (tied === 1) return `1 tied · 1 reading — one offer at the top weight ${symmetries}`;
-  if (readings === 1) return `${tied} tied · 1 reading — they differ only by symmetry, so pick any ${symmetries}`;
-  return `${tied} tied · ${readings} readings — genuinely different choices; within a reading they differ only by symmetry ${symmetries}`;
-}
-
-function OfferRow({ offer, castA, castB, isGiven, onTake }: { offer: Offer; castA: ConceptSpace; castB: ConceptSpace; isGiven: boolean; onTake: (() => void) | null }) {
+function OfferRow({ offer, castA, castB, unaryInForce, isGiven, onTake }: { offer: Offer; castA: ConceptSpace; castB: ConceptSpace; unaryInForce: boolean; isGiven: boolean; onTake: (() => void) | null }) {
   return (
     <div data-j-offer={pairsKey(offer.pairs)} data-j-offer-given={isGiven ? 'true' : undefined} className={`grid gap-0.5 rounded border px-2 py-1 text-xs ${isGiven ? 'border-amber-300/50 bg-amber-300/5' : 'border-stone-900 bg-stone-950/70'}`}>
       <div className="flex items-start justify-between gap-2">
@@ -354,9 +413,7 @@ function OfferRow({ offer, castA, castB, isGiven, onTake }: { offer: Offer; cast
           </button>
         ) : null}
       </div>
-      <span className="text-stone-400" data-j-offer-counts="true">
-        relational weight {offer.weight} · {offer.unrecorded} unrecorded · {offer.exposure} known on one side only · types: {offer.typesAgree} agree · {offer.typesUnknown} unknown
-      </span>
+      <span className="text-stone-400" data-j-offer-counts="true">{countsLine({ relational: offer.weight, unrecorded: offer.unrecorded, exposureHere: offer.exposureHere, exposureThere: offer.exposureThere, typesAgree: offer.typesAgree, typesUnknown: offer.typesUnknown }, unaryInForce)}</span>
     </div>
   );
 }

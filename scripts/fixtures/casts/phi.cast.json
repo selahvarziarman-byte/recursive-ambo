@@ -1,58 +1,58 @@
 {
-  "source": "hinge_data.py — Φ, exactly as cast (role grain; duplicate role-level edges collapse); member-status per role as first_face_and_tower.py declares it",
+  "source": "hinge_data.py — Φ, exactly as cast (role grain; duplicate role-level edges collapse); member_status per role as first_face_and_tower.py declares it",
   "roles": [
     {
       "id": "Φ1",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "Φ2",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "Φ3",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "Φ4",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "Φ5",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "Φ6",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "Φ7",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "Φ8",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "Φ9",
       "types": {
-        "member-status": "none-by-nature"
+        "member_status": "none-by-nature"
       }
     }
   ],

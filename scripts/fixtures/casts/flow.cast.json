@@ -1,88 +1,88 @@
 {
-  "source": "hinge_data.py — Flow, in-universe as cast; the two structurally inconsistent self-loops removed (dup / irreflexive-violating); member-status per role as first_face_and_tower.py declares it",
+  "source": "hinge_data.py — Flow, in-universe as cast; the two structurally inconsistent self-loops removed (dup / irreflexive-violating); member_status per role as first_face_and_tower.py declares it",
   "roles": [
     {
       "id": "F1",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F2",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F3",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F4",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F5",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F6",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F7",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F8",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F9",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F10",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F11",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F12",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F13",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     },
     {
       "id": "F14",
       "types": {
-        "member-status": "has"
+        "member_status": "has"
       }
     }
   ],

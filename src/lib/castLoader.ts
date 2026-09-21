@@ -296,7 +296,24 @@ export interface CastOrdering {
   type: string;
   tuples: number;
   reversed: number; // tuples whose terms appear, in another order, as another listed tuple of the same type and polarity
+  // arity 2: `symmetric` iff every listed tuple is reversed; arity ≥ 3: `symmetric` ONLY when every permutation of
+  // every listed tuple is listed (a weaker `every one reversed` reads `directed`); null when nothing is listed
+  reading: OrderingReading | null;
 }
+
+// ═══ THE MOLD'S OWN TYPES — `STAMP C-6d (γ)` §1.2 (the researcher's line): types the MOLD
+// DEFINES are shared BY DEFINITION, without τ — `member_status` is the device's contract
+// with casters (MOLD v4 §2.1), not a caster's word; every cast's `member_status` IS that
+// type, compared by name, and the first face's refusal fires by name. Caster-defined
+// types — everything in `signature` or invented as a `types` key — are shared only by τ.
+// ONE constant, here, read by the register (src/lib/jRegister.ts) — never a second list.
+export const MOLD_TYPES: ReadonlyArray<{ readonly name: string; readonly arity: 1; readonly values: readonly string[] }> = [
+  { name: 'member_status', arity: 1, values: ['has', 'unrecorded', 'none-by-nature'] },
+];
+export const isMoldType = (name: string): boolean => MOLD_TYPES.some((mold) => mold.name === name);
+
+/** the device's READING of a relation-type's term order — disclosed, never posited (C-6d (γ) §3.1, the designer's ruling) */
+export type OrderingReading = 'directed' | 'symmetric';
 
 export interface CastCounts {
   roles: number;
@@ -331,7 +348,10 @@ export function castCounts(cast: ConceptSpace): CastCounts {
       const sameMultiset = listed.filter((o) => o !== r && o.polarity === r.polarity && JSON.stringify([...o.terms].sort()) === sorted && keyOf(o) !== keyOf(r));
       if (sameMultiset.length > 0) reversed += 1;
     }
-    orderings.push({ type: s.type, tuples: listed.length, reversed });
+    const keys = new Set(listed.map(keyOf));
+    const everyPermutationListed = listed.every((r) => permutations(r.terms).every((terms) => keys.has(`${r.polarity}|${JSON.stringify(terms)}`)));
+    const reading: OrderingReading | null = listed.length === 0 ? null : s.arity === 2 ? (reversed === listed.length ? 'symmetric' : 'directed') : everyPermutationListed ? 'symmetric' : 'directed';
+    orderings.push({ type: s.type, tuples: listed.length, reversed, reading });
   }
   const bothHomesTypes = new Set([...signatureTypes, ...roleTypeKeys]);
   return {
@@ -344,11 +364,37 @@ export function castCounts(cast: ConceptSpace): CastCounts {
   };
 }
 
-/** the orderings line: `r · 3 tuples · none reversed` · `r · 6 tuples · every one reversed` · `r · 5 tuples · 2 reversed` */
+/** every distinct ordering of a tuple's terms (the arity is small; a repeated term yields no duplicate) */
+function permutations(terms: string[]): string[][] {
+  if (terms.length <= 1) return [terms];
+  const out: string[][] = [];
+  const seen = new Set<string>();
+  terms.forEach((head, i) => {
+    for (const rest of permutations([...terms.slice(0, i), ...terms.slice(i + 1)])) {
+      const p = [head, ...rest];
+      const k = JSON.stringify(p);
+      if (!seen.has(k)) { seen.add(k); out.push(p); }
+    }
+  });
+  return out;
+}
+
+/**
+ * the orderings line, the READING stated beside the evidence (C-6d (γ) §3.1): `r · 3 tuples · none reversed — read as
+ * directed` · `r · 6 tuples · every one reversed — read as symmetric` · `r · 5 tuples · 2 reversed — read as directed`;
+ * a type with nothing listed has no reading to state.
+ */
 export function orderingLine(o: CastOrdering): string {
   const tuples = `${o.tuples} ${o.tuples === 1 ? 'tuple' : 'tuples'}`;
   const reversed = o.tuples === 0 ? 'none listed' : o.reversed === 0 ? 'none reversed' : o.reversed === o.tuples ? 'every one reversed' : `${o.reversed} reversed`;
-  return `${o.type} · ${tuples} · ${reversed}`;
+  return `${o.type} · ${tuples} · ${reversed}${o.reading ? ` — read as ${o.reading}` : ''}`;
+}
+
+/** the cast's ONE reading clause (C-6d (γ) §3.2): `directed` if any relation-type reads directed, `symmetric` only if every one does, absent when nothing of arity ≥ 2 is listed */
+export function castReading(counts: CastCounts): OrderingReading | null {
+  const readings = counts.orderings.map((o) => o.reading).filter((r): r is OrderingReading => r !== null);
+  if (readings.length === 0) return null;
+  return readings.every((r) => r === 'symmetric') ? 'symmetric' : 'directed';
 }
 
 /** THE CARD'S FIRST LINE — three states: no cast → NO ROW (the caller renders nothing); a cast of nothing; a cast with content. */
@@ -360,6 +406,10 @@ export function castSummaryLine(cast: ConceptSpace): string {
     `${c.relationTypes} relation-${c.relationTypes === 1 ? 'type' : 'types'}`,
     `${c.relations} ${c.relations === 1 ? 'relation' : 'relations'}`,
   ];
+  // C-6d (γ) §3.2 (the designer's ruling): the ACT's line carries the device's reading of term order;
+  // the card's rows keep the evidence per type — summary and detail, nothing printed twice
+  const reading = castReading(c);
+  if (reading) parts.push(`read as ${reading}`);
   // C-6d rider 1 (the designer's own correction of her template, 2137 §5b): the axioms
   // clause is CONDITIONAL, exactly as the warrant clause — `0 axioms carried` marked the
   // ordinary and claimed a carry that did not happen
