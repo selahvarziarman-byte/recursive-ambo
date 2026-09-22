@@ -2633,6 +2633,12 @@ function SelectedVertexSummary({
   );
 }
 
+// C-7f item 5 (the designer, measured at a corner holding the T cell: the card 312 × 1119 px, 1.4× the viewport — a GRID
+// MISMATCH, not a size to tune: the inspector's grid is `dt` LABEL / `dd` VALUE with a 187 px value cell, and the cast's
+// rows are SENTENCES, so seven relation-type rows wrap every time). RULED: the card has ONE grid and it is a label·value
+// grid — A SENTENCE MAY NOT BE PUT IN ITS VALUE HALF. Every cast row is sentence-shaped, so each SPANS the card's full
+// width (`col-span-2` on its label and its sentence); label·value pairs elsewhere keep the two-column grid. The height
+// and the aspect ratio had one cause. Item 7: the card's own sub-lines read at ≥ 4.5:1 (no value dimmer than its label).
 function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: string }) {
   const counts = castCounts(cast);
   const marks = castMarks(cast);
@@ -2646,27 +2652,27 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
   );
   return (
     <>
-      <dt className="text-stone-500">Cast</dt>
-      <dd data-cast-card-row="summary" className="text-stone-200">{castSummaryLine(cast)}</dd>
+      <dt className="col-span-2 text-stone-500">Cast</dt>
+      <dd data-cast-card-row="summary" className="col-span-2 text-stone-200">{castSummaryLine(cast)}</dd>
       {/* C-6c (i)'s rider: the subject matter — what the concept is OF — beside the
           person's label, in the caster's register, printed ONLY when held (a
           positive fact needs a positive mark; the triangle has none, the T cell has one) */}
       {cast.subject ? (
         <>
-          <dt className="text-stone-500">Of</dt>
-          <dd data-cast-card-row="subject" className="min-w-0 text-stone-200">
-            <span className="block text-xs text-stone-500">the corner, by the person: {personLabel.trim() ? personLabel : 'unnamed'}</span>
-            <span className="block text-xs text-stone-500">the subject matter, by the caster:</span>
+          <dt className="col-span-2 text-stone-500">Of</dt>
+          <dd data-cast-card-row="subject" className="col-span-2 min-w-0 text-stone-200">
+            <span className="block text-xs text-stone-400">the corner, by the person: {personLabel.trim() ? personLabel : 'unnamed'}</span>
+            <span className="block text-xs text-stone-400">the subject matter, by the caster:</span>
             <span className="block">{cast.subject}</span>
           </dd>
         </>
       ) : null}
       {cast.roles.length ? (
         <>
-          <dt className="text-stone-500">Roles</dt>
-          <dd data-cast-card-row="roles" className="min-w-0 text-stone-200">
-            <span className="block text-xs text-stone-500">the corner, by the person: {personLabel.trim() ? personLabel : 'unnamed'}</span>
-            <span className="block text-xs text-stone-500">the roles, by the caster:</span>
+          <dt className="col-span-2 text-stone-500">Roles</dt>
+          <dd data-cast-card-row="roles" className="col-span-2 min-w-0 text-stone-200">
+            <span className="block text-xs text-stone-400">the corner, by the person: {personLabel.trim() ? personLabel : 'unnamed'}</span>
+            <span className="block text-xs text-stone-400">the roles, by the caster:</span>
             <span className="block">
               {cast.roles.map((role, index) => (
                 <span key={role.id}>
@@ -2680,15 +2686,15 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
               ))}
             </span>
             {cast.roles.some((role) => !role.label) ? (
-              <span className="block text-xs text-stone-500">an id is an address, not a name</span>
+              <span className="block text-xs text-stone-400">an id is an address, not a name</span>
             ) : null}
           </dd>
         </>
       ) : null}
       {counts.orderings.length ? (
         <>
-          <dt className="text-stone-500">Term order</dt>
-          <dd data-cast-card-row="orderings" className="text-stone-200">
+          <dt className="col-span-2 text-stone-500">Term order</dt>
+          <dd data-cast-card-row="orderings" className="col-span-2 text-stone-200">
             {counts.orderings.map((ordering) => (
               <span key={ordering.type} className="block">{orderingLine(ordering)}</span>
             ))}
@@ -2697,8 +2703,8 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
       ) : null}
       {counts.unknownTypes ? (
         <>
-          <dt className="text-stone-500">Unknown</dt>
-          <dd data-cast-card-row="unknown" className="text-stone-200">
+          <dt className="col-span-2 text-stone-500">Unknown</dt>
+          <dd data-cast-card-row="unknown" className="col-span-2 text-stone-200">
             <span className="block">{`${counts.unknownTypes} ${counts.unknownTypes === 1 ? 'type' : 'types'} marked unknown`}</span>
             <span className="block font-mono text-xs text-stone-400">{unknownWhere.join(' · ')}</span>
           </dd>
@@ -2706,8 +2712,8 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
       ) : null}
       {marks.length || notTaken ? (
         <>
-          <dt className="text-stone-500">Marks</dt>
-          <dd data-cast-card-row="marks" className="text-stone-200">
+          <dt className="col-span-2 text-stone-500">Marks</dt>
+          <dd data-cast-card-row="marks" className="col-span-2 text-stone-200">
             {marks.map((mark) => (
               <span key={mark} className="block">{mark}</span>
             ))}

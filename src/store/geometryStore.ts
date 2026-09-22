@@ -102,6 +102,12 @@ export interface MidpointRefusal {
   conflicts: Conflict[]; // the contradictions, by name — empty on a refusal of the form
 }
 
+/** C-7f item 3 (the designer) — a pair the store RE-MADE when the person withdrew the half they judged wrong; the surface attributes it (`yours · re-made when you withdrew r8 ↦ Φ6`). Transient, like the refusal — never exported */
+export interface MidpointRemade {
+  act: MidpointAct; // the pair that stands, re-made
+  withdrawn: MidpointAct; // the person's withdrawal that re-made it
+}
+
 export type InspectionHoverTarget =
   | { kind: 'cell'; cellId: CellId }
   | { kind: 'vertex'; vertexId: VertexId }
@@ -236,6 +242,8 @@ interface GeometryState {
   // C-7b — the midpoint's acts on the source edge, checked at the act; a refusal per edge,
   // transient (never exported — the record is)
   midpointRefusals: Record<EdgeId, MidpointRefusal>;
+  // C-7f item 3 — the attribution of a re-made pair, per edge; transient
+  midpointRemade: Record<EdgeId, MidpointRemade>;
   giveRolePair: (edgeId: EdgeId, x: string, y: string) => void;
   withdrawRolePair: (edgeId: EdgeId, x: string, y: string) => void;
   giveWordPair: (edgeId: EdgeId, s: string, t: string) => void;
@@ -270,6 +278,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   selectedEdgeId: null,
   edgeTauDrafts: {},
   midpointRefusals: {},
+  midpointRemade: {},
   liftSelection: [],
   dualInspectionTarget: null,
   cellVisibility: defaultCellVisibility,
@@ -1097,6 +1106,7 @@ function carryDraftsByPair(set: Setter, get: Getter, from: Shape, to: Shape): vo
   const state = get();
   const byPair = new Map(from.edges.map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
   const edgeTauDrafts = { ...state.edgeTauDrafts };
+  const midpointRemade = { ...state.midpointRemade };
   const pending: Array<[EdgeId, MidpointAct]> = [];
   for (const edge of to.edges) {
     const source = byPair.get(canonicalEdgeKey(...edge.vertexIds));
@@ -1106,8 +1116,10 @@ function carryDraftsByPair(set: Setter, get: Getter, from: Shape, to: Shape): vo
     if (draft) edgeTauDrafts[edge.id] = draft.map(flip);
     const refusal = state.midpointRefusals[source.id];
     if (refusal) pending.push([edge.id, { kind: refusal.act.kind, pair: flip(refusal.act.pair) }]);
+    const remade = state.midpointRemade[source.id]; // C-7f item 3 — the attribution rides with its pair
+    if (remade) midpointRemade[edge.id] = { act: { kind: remade.act.kind, pair: flip(remade.act.pair) }, withdrawn: { kind: remade.withdrawn.kind, pair: flip(remade.withdrawn.pair) } };
   }
-  set({ edgeTauDrafts });
+  set({ edgeTauDrafts, midpointRemade });
   for (const [edgeId, act] of pending) midpointAct(set, get, edgeId, act);
 }
 
@@ -1161,6 +1173,13 @@ function midpointWithdraw(set: Setter, get: Getter, edgeId: EdgeId, act: Midpoin
   const nextTypes = act.kind === 'word' ? types.filter(([a, b]) => !(a === act.pair[0] && b === act.pair[1])) : types;
   if (nextRoles.length === roles.length && nextTypes.length === types.length) return; // nothing of that name to withdraw
   midpointWrite(set, state, shape, edge, nextRoles, nextTypes);
+  // C-7f item 3 — the attribution of a re-made pair leaves with the pair
+  const attributed = get().midpointRemade[edgeId];
+  if (attributed && attributed.act.kind === act.kind && attributed.act.pair[0] === act.pair[0] && attributed.act.pair[1] === act.pair[1]) {
+    const midpointRemade = { ...get().midpointRemade };
+    delete midpointRemade[edgeId];
+    set({ midpointRemade });
+  }
   // a PENDING attempt is re-made: the person removed the half they judged wrong; the act they made stands to be made
   const pending = get().midpointRefusals[edgeId];
   if (pending) {
@@ -1168,6 +1187,9 @@ function midpointWithdraw(set: Setter, get: Getter, edgeId: EdgeId, act: Midpoin
     delete midpointRefusals[edgeId];
     set({ midpointRefusals });
     midpointAct(set, get, edgeId, pending.act);
+    // C-7f item 3 (the designer: "a pair that appears without a gesture is otherwise indistinguishable from a device-made
+    // one") — when the re-made act was MADE (no refusal stands), the surface attributes it to the person's withdrawal
+    if (get().midpointRefusals[edgeId] === undefined) set({ midpointRemade: { ...get().midpointRemade, [edgeId]: { act: pending.act, withdrawn: act } } });
   }
 }
 

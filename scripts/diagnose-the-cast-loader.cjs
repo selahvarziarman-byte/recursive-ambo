@@ -244,10 +244,11 @@ check('§7 ★ SURFACE 1 — `load cast… (.cast.json)` sits in the packet edit
     editor.includes('data-cast-load-result') && editor.includes('readCastFile('));
 check('§7 ★ THE AMBO\'S LINE gains her clause VERBATIM: `a corner takes a concept-space from the packets tab` (C-7d appends the midpoint\'s two-halves clause after it — hers stands verbatim, no longer the line\'s tail)',
   workspace.includes(' · a corner takes a concept-space from the packets tab · '));
-check('§7 ★★ SURFACE 2 — the card: NO ROW without a cast (the rows render only under `vertex.data.cast`), the summary line, the orderings per type, the two registers, UNKNOWN\'s count, the marks re-derived',
+check('§7 ★★ SURFACE 2 — the card: NO ROW without a cast (the rows render only under `vertex.data.cast`), the summary line, the orderings per type, the two registers, UNKNOWN\'s count, the marks re-derived; C-7f item 5 (the designer, measured: the card 312 × 1119 px at a corner holding the T cell — a GRID MISMATCH, sentences in a 187 px value cell): the card has ONE grid and it is a label·value grid, so every sentence-shaped cast row SPANS the card\'s full width (`col-span-2` on all six labels and all six sentences) and no cast sub-line sits below the floor (no `text-stone-500` value in the rows)',
   panels.includes('{vertex.data.cast ? (') && panels.includes('<CastCardRows cast={vertex.data.cast} personLabel={vertex.data.label} />') &&
     panels.includes('{castSummaryLine(cast)}') && panels.includes('orderingLine(') && panels.includes('data-cast-card-row="summary"') &&
-    panels.includes('const marks = castMarks(cast);') && panels.includes('an address, not a name') && panels.includes("marked unknown"));
+    panels.includes('const marks = castMarks(cast);') && panels.includes('an address, not a name') && panels.includes("marked unknown") &&
+    (() => { const body = panels.slice(panels.indexOf('function CastCardRows('), panels.indexOf('function AtomicRegistryLens(')); return (body.match(/<dt className="col-span-2 text-stone-500">/g) || []).length === 6 && (body.match(/data-cast-card-row="[^"]+" className="col-span-2/g) || []).length === 6 && !/text-xs text-stone-500/.test(body); })());
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CAST-LOADER: ALL PASS — a corner takes a cast, the checks read a structure, the refusals are two by name, the marks are counts and names, and the card reads what is held' : `DIAGNOSE-THE-CAST-LOADER: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

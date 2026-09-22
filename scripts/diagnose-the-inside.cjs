@@ -155,42 +155,47 @@ const attrsOf = (html, name) => [...html.matchAll(new RegExp(`${name}="([^"]*)"`
 const countOf = (html, name) => (html.match(new RegExp(`${name}="`, 'g')) || []).length;
 const textsOf = (html, name) => [...html.matchAll(new RegExp(`${name}="[^"]*"[^>]*>([^<]*)<`, 'g'))].map((m) => unescapeHtml(m[1]));
 const visibleText = (html) => unescapeHtml(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
+// C-7f item 1 — the foot rows: one <text> per point per side, its words as tspans naming their arc's ordinal
+const footRows = (html) => [...html.matchAll(/<text[^>]*data-inside-foot-words="([^"]*)"[^>]*>([\s\S]*?)<\/text>/g)].map((m) => ({ foot: unescapeHtml(m[1]), y: Number((m[0].match(/ y="([^"]*)"/) || [])[1]), words: [...m[2].matchAll(/data-inside-arc-word="(\d+)"[^>]*>([^<]*)</g)].map((w) => ({ i: Number(w[1]), text: unescapeHtml(w[2]) })) }));
+const innerText = (html, name) => [...html.matchAll(new RegExp(`<text[^>]*${name}="[^"]*"[^>]*>([\\s\\S]*?)</text>`, 'g'))].map((m) => unescapeHtml(m[1].replace(/<[^>]+>/g, '')));
 const drawFlow = render(React.createElement(CastInsideDiagram, { inside: insides.flow, id: 'flow' }));
 const drawT = render(React.createElement(CastInsideDiagram, { inside: insides['t-cell'], id: 't' }));
 const drawPhi = render(React.createElement(CastInsideDiagram, { inside: insides.phi, id: 'phi' }));
-check('§4 ★★ FLOW DRAWN: 14 points, 31 arcs, 3 loops, 0 tuple-nodes; every arc carries its word at the apex and its side; the 14 badges read `member_status=has` and are marked the mold\'s; every point marked an ADDRESS (no caster label)',
+check('§4 ★★ FLOW DRAWN: 14 points, 31 arcs, 3 loops, 0 tuple-nodes; every arc carries its word AT ITS FOOT — in the row of the point it LEAVES FROM, on its own side (C-7f item 1) — and its side; the 14 badges read `member_status=has` and are marked the mold\'s; every point marked an ADDRESS (no caster label)',
   countOf(drawFlow, 'data-inside-point') === 14 && countOf(drawFlow, 'data-inside-arc') === 31 && countOf(drawFlow, 'data-inside-loop') === 3 && countOf(drawFlow, 'data-inside-node') === 0 &&
-    J(textsOf(drawFlow, 'data-inside-arc-word')) === J(insides.flow.arcs.map((a) => a.type)) && attrsOf(drawFlow, 'data-inside-arc').every((v, i) => v.endsWith(`|${insides.flow.arcs[i].side}`)) &&
+    (() => { const all = footRows(drawFlow).flatMap((r) => r.words.map((w) => ({ ...w, foot: r.foot }))); return all.length === 31 && all.every((w) => { const a = insides.flow.arcs[w.i]; return a && w.text === a.type && w.foot === `${insides.flow.points[a.from].id}|${a.side}`; }); })() && attrsOf(drawFlow, 'data-inside-arc').every((v, i) => v.endsWith(`|${insides.flow.arcs[i].side}`)) &&
     attrsOf(drawFlow, 'data-inside-badge').length === 14 && attrsOf(drawFlow, 'data-inside-badge').every((b) => b === 'member_status=has') && countOf(drawFlow, 'data-inside-mold') === 14 && countOf(drawFlow, 'data-inside-address') === 14,
   `${countOf(drawFlow, 'data-inside-point')} · ${countOf(drawFlow, 'data-inside-arc')} · ${countOf(drawFlow, 'data-inside-loop')} · badges ${attrsOf(drawFlow, 'data-inside-badge').length}`);
 check('§4 ★★ THE T CELL DRAWN: 10 points, 10 arcs, ONE tuple-node `removes|r8,r3,r2|holds` with legs numbered 1 · 2 · 3 in the tuple\'s order; the three negatives wear the `¬` glyph on their word (`¬ sustains` · `¬ sustains` · `¬ starts`) and the dashed stroke — the seven positive words carry no glyph',
   countOf(drawT, 'data-inside-point') === 10 && countOf(drawT, 'data-inside-arc') === 10 && J(attrsOf(drawT, 'data-inside-node')) === '["removes|r8,r3,r2|holds"]' && J(attrsOf(drawT, 'data-inside-leg')) === '["1","2","3"]' &&
-    J(textsOf(drawT, 'data-inside-arc-word').filter((w) => w.startsWith('¬ '))) === '["¬ sustains","¬ sustains","¬ starts"]' && textsOf(drawT, 'data-inside-arc-word').filter((w) => !w.startsWith('¬')).length === 7 && (drawT.match(/stroke-dasharray="4 3"/g) || []).length === 3,
+    J(textsOf(drawT, 'data-inside-arc-word').filter((w) => w.startsWith('¬ ')).sort()) === '["¬ starts","¬ sustains","¬ sustains"]' && textsOf(drawT, 'data-inside-arc-word').filter((w) => !w.startsWith('¬')).length === 7 && (drawT.match(/stroke-dasharray="4 3"/g) || []).length === 3,
   J(attrsOf(drawT, 'data-inside-node')));
 check('§4 ★★ Φ DRAWN: six loops at Φ1 (six rings; their words ONCE in one row in the same order: descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes) and one at Φ7; Φ9\'s badge `member_status=none-by-nature`',
   attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ1').length === 6 && J(attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ1').map((v) => v.split('|')[0])) === '["descends-from","disjoins","displaces","exceeds-in-power","inverts","presupposes"]' &&
     attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ7').length === 1 && attrsOf(drawPhi, 'data-inside-badge').includes('member_status=none-by-nature') &&
-    textsOf(drawPhi, 'data-inside-loop-words').length === 2 && textsOf(drawPhi, 'data-inside-loop-words')[0] === 'descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes' && textsOf(drawPhi, 'data-inside-loop-words')[1] === 'descends-from');
-check('§4 ★ THE WORD RIDES ITS OWN ARC: every arc word is a textPath on that arc\'s own path (31 on Flow, each `href` naming an `id` that exists once in the drawing) — a word on its own curve cannot pile on another\'s (found at the eye)',
+    innerText(drawPhi, 'data-inside-loop-words').length === 2 && innerText(drawPhi, 'data-inside-loop-words')[0] === 'descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes' && innerText(drawPhi, 'data-inside-loop-words')[1] === 'descends-from');
+check('§4 ★★ THE WORD AT THE FOOT (C-7f item 1 — the designer\'s cut from this build\'s own geometry: bulge is a function of span and spans repeat, so APEXES CLUSTER into a band; FEET cannot — a foot sits at a point and the points are the rows): no textPath and no startOffset anywhere; every arc\'s word is a tspan in the foot row of the point it LEAVES FROM on its own side — the down-feet 13 px below the row line to the right of the point, the up-feet 11 px above it to the left; Flow\'s 31 words stand in its 14 rows (the rows per side printed)',
   (() => {
-    const hrefs = attrsOf(drawFlow, 'href').filter((h) => h.startsWith('#'));
-    const ids = attrsOf(drawFlow, 'id');
-    return hrefs.length === 31 && hrefs.every((h) => ids.filter((i) => `#${i}` === h).length === 1) && (drawFlow.match(/<textPath /g) || []).length === 31;
+    const rows = footRows(drawFlow);
+    if ((drawFlow.match(/<textPath /g) || []).length || /startOffset/.test(drawFlow)) return false;
+    const cy = (id) => Number((drawFlow.match(new RegExp(`data-inside-point="${id.replace(/[^A-Za-z0-9_-]/g, '.')}"[\\s\\S]*?<circle[^>]*cy="([^"]*)"`)) || [])[1]);
+    note(`Flow's feet: ${rows.filter((r) => r.foot.endsWith('|down')).length} down rows · ${rows.filter((r) => r.foot.endsWith('|up')).length} up rows · words per row ${J(rows.map((r) => r.words.length))}`);
+    return rows.length > 0 && rows.every((r) => { const [id, side] = r.foot.split('|'); const y = cy(id); return Number.isFinite(y) && (side === 'down' ? Math.abs(r.y - (y + 13)) < 0.01 : Math.abs(r.y - (y - 11)) < 0.01); }) && rows.flatMap((r) => r.words).length === 31;
   })());
 check('§4 ★ THE DRAWING DERIVES NOTHING: the number of drawn arcs + loops + nodes equals the listed tuples on every fixture, and NO count is printed as text on the canvas (the column\'s card reads the counts; the census rides only as attributes)',
   [['flow', drawFlow], ['t-cell', drawT], ['phi', drawPhi]].every(([n, html]) => countOf(html, 'data-inside-arc') + countOf(html, 'data-inside-loop') + countOf(html, 'data-inside-node') === insides[n].arcs.length + insides[n].loops.length + insides[n].nodes.length) &&
     !/\b\d+ (points|arrows|loops|marks|words)\b/.test(visibleText(drawFlow)) && attrsOf(drawFlow, 'data-inside-arrows')[0] === '31');
 check('§4 ★★ THE COVERING CURED (C-7d item 3, measured at the eye: 22 of 46 arcs passed under an opaque label rect): no `<rect` halo in any point group; every label, loop-row and arc word wears its GLYPH OUTLINE as its halo (`paint-order:stroke` with the ground colour) — an arc through the label lane stays visible between the letters',
-  !/data-inside-point="[^"]*"[^>]*>\s*<rect/.test(drawFlow) && (drawFlow.match(/<rect/g) || []).length === 0 && (drawFlow.match(/paint-order:stroke/g) || []).length >= 14 + 31 &&
+  !/data-inside-point="[^"]*"[^>]*>\s*<rect/.test(drawFlow) && (drawFlow.match(/<rect/g) || []).length === 0 && (drawFlow.match(/<text /g) || []).length === (drawFlow.match(/paint-order:stroke/g) || []).length && (drawFlow.match(/paint-order:stroke/g) || []).length >= 14 &&
     /data-inside-label="true"/.test(drawFlow) && drawFlow.indexOf('paint-order:stroke;stroke:#0c0a09;stroke-width:3') > 0);
-check('§4 ★ THE ARC WORDS ARE SPREAD ALONG THEIR OWN ARCS (the 1315 letter §2.1: 120 word-to-word box overlaps on Flow\'s column before the cut): the offset cycles 50% · 32% · 68% · 42% · 58% by the arc\'s ordinal — a function of the drawing order, never of meaning',
-  J(attrsOf(drawFlow, 'startOffset').slice(0, 6)) === J(['50%', '32%', '68%', '42%', '58%', '50%']));
-check('§4 ★ THE SIZES (named for the designer): the column row 30 px, its labels 12 px and arc words 10 px; `compact` (the projection sources) row 22 px, labels 11 px, arc words 9 px',
+check('§4 ★ EVERY WORD ONCE, NEXT TO A THING IT IS ABOUT: across Flow, the T cell and Φ the arc-word tspans number exactly the arcs (31 · 10 · 15), no ordinal twice; the apex band carries no text',
+  [['flow', drawFlow], ['t-cell', drawT], ['phi', drawPhi]].every(([n, html]) => { const ids = attrsOf(html, 'data-inside-arc-word'); return ids.length === insides[n].arcs.length && new Set(ids).size === ids.length; }));
+check('§4 ★ THE SIZES (C-7f item 7, the designer\'s scale — three sizes, each with a job; the dense data UP from 10): the row 30 px; the labels 12 px; the arc, loop and node words and the leg numbers 11 px; NO 10 px or 9 px text in any drawing; `compact` RETIRED (item 6 — a source is whole, or words, never a thumbnail)',
   (() => {
     const { insideGeometry } = req('src/components/CastInsideDiagram.tsx');
-    const g = insideGeometry(insides.flow); const c = insideGeometry(insides.flow, { compact: true });
-    const compact = render(React.createElement(CastInsideDiagram, { inside: insides.flow, compact: true, id: 'c' }));
-    return g.row === 30 && c.row === 22 && /font-size="12"[^>]*style="paint-order/.test(drawFlow) && /font-size="10"[^>]*style="paint-order:stroke;stroke:#0c0a09;stroke-width:2\.5/.test(drawFlow) && /font-size="11"[^>]*style="paint-order/.test(compact) && /font-size="9"/.test(compact);
+    const sizes = (html) => [...html.matchAll(/font-size="(\d+)"/g)].map((m) => Number(m[1]));
+    const all = [...sizes(drawFlow), ...sizes(drawT), ...sizes(drawPhi)];
+    return insideGeometry(insides.flow).row === 30 && /font-size="12"[^>]*style="paint-order/.test(drawFlow) && /data-inside-foot-words="[^"]*"[^>]*font-size="11"[^>]*style="paint-order:stroke;stroke:#0c0a09;stroke-width:2\.5/.test(drawFlow) && all.length > 0 && all.every((s) => s === 12 || s === 11) && !/compact\?:|compact:|\{ compact|compact =/.test(readLf('src/components/CastInsideDiagram.tsx'));
   })());
 check('§4 ★ POSITIONS CARRY NOTHING: the points are laid top to bottom in the caster\'s order (F1 first, F14 last), no sort of the device\'s anywhere in the module or the drawing',
   attrsOf(drawFlow, 'data-inside-point')[0] === 'F1' && attrsOf(drawFlow, 'data-inside-point')[13] === 'F14' && !/\.sort\(/.test(readLf('src/lib/castInside.ts')) && !/\.sort\(/.test(readLf('src/components/CastInsideDiagram.tsx')));

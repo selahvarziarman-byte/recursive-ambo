@@ -190,7 +190,7 @@ export function VertexPacketEditorContent() {
             {formatVertexEditorOrigin(vertex)}
           </span>
         </div>
-        <p className="mt-2 truncate text-stone-500">{formatVertexLineageSummary(shape, vertex)}</p>
+        <p className="mt-2 truncate text-stone-400">{formatVertexLineageSummary(shape, vertex)}</p>
       </div>
 
       <label className="grid gap-1 text-sm text-stone-300">
@@ -241,7 +241,7 @@ export function VertexPacketEditorContent() {
                 <button
                   type="button"
                   onClick={() => removeTag(tag)}
-                  className="text-stone-500 transition hover:text-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  className="text-stone-400 transition hover:text-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-400"
                   aria-label={`Remove ${tag}`}
                 >
                   x
@@ -249,7 +249,7 @@ export function VertexPacketEditorContent() {
               </span>
             ))
           ) : (
-            <span className="text-xs text-stone-500">No tags.</span>
+            <span className="text-xs text-stone-400">No tags.</span>
           )}
         </div>
       </div>
@@ -569,7 +569,8 @@ function packetStatusClassName(status: PacketStatus): string {
     return `${base} border-amber-400/40 bg-amber-400/10 text-amber-200`;
   }
 
-  return `${base} border-stone-700 bg-stone-900 text-stone-500`;
+  // C-7f item 7: a status a person reads (`empty`) at the floor — stone-500 on stone-900 read 3.6:1
+  return `${base} border-stone-700 bg-stone-900 text-stone-300`;
 }
 
 function getVertexRole(vertex: Vertex): string {

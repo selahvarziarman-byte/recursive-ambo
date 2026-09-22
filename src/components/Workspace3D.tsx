@@ -136,11 +136,14 @@ export function Workspace3D() {
         >
           Fit View
         </button>
+        {/* C-7f item 7 (the designer): a control a person cannot read is a control they cannot find — disabled, `Fit
+            Selected` read at 2.6:1 (stone-600 on the ground); its disabled text is now stone-400 (the border and the
+            ground still say disabled) */}
         <button
           type="button"
           onClick={() => setFitSelectedRequest((request) => request + 1)}
           disabled={!selectedSceneBounds}
-          className="rounded border border-stone-700 bg-stone-950/90 px-3 py-2 text-xs font-semibold text-stone-100 shadow-lg transition hover:border-cyan-300 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950/70 disabled:text-stone-600"
+          className="rounded border border-stone-700 bg-stone-950/90 px-3 py-2 text-xs font-semibold text-stone-100 shadow-lg transition hover:border-cyan-300 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:cursor-not-allowed disabled:border-stone-800 disabled:bg-stone-950/70 disabled:text-stone-400"
         >
           Fit Selected
         </button>

@@ -37,8 +37,8 @@ MEASURE = """() => {
   const inter = (p, q) => p.x < q.r && q.x < p.r && p.y < q.b && q.y < p.b;
   const drawing = panel.querySelector('[data-midpoint-drawing]');
   const perColumn = drawing ? [...drawing.querySelectorAll('[data-inside-column]')].map((col) => {
-    const words = [...col.querySelectorAll('[data-inside-arc-word]')].map((e) => box(e.closest('text')));
-    const labels = [...col.querySelectorAll('[data-inside-point] text')].map((e) => box(e));
+    const words = [...col.querySelectorAll('[data-inside-arc-word]')].map((e) => box(e));
+    const labels = [...col.querySelectorAll('[data-inside-label]')].map((e) => box(e.closest('text')));
     let ww = 0; let wl = 0;
     for (let i = 0; i < words.length; i += 1) for (let j = i + 1; j < words.length; j += 1) if (inter(words[i], words[j])) ww += 1;
     for (const w of words) for (const l of labels) if (inter(w, l)) wl += 1;
@@ -55,6 +55,13 @@ MEASURE = """() => {
     wordChipsAreButtons: [...panel.querySelectorAll('[data-midpoint-word]')].every((e) => e.tagName === 'BUTTON'),
     sentence: t('[data-midpoint-sentence]')[0] || null, lines: a('[data-midpoint-line]', 'data-midpoint-line'), wordPairs: a('[data-midpoint-word-pair]', 'data-midpoint-word-pair'),
     counts: t('[data-midpoint-counts]')[0] || null, core: t('[data-midpoint-core]')[0] || null,
+    residuals: t('[data-midpoint-residuals]')[0] || null,
+    ownOrigins: a('[data-midpoint-own-drawing] [data-inside-origin]', 'data-inside-origin'), ownText: (panel.querySelector('[data-midpoint-own-drawing]') || { textContent: '' }).textContent,
+    remade: a('[data-midpoint-remade]', 'data-midpoint-remade'),
+    sourceWords: t('[data-midpoint-source-words]'), sourceOpen: a('[data-midpoint-source-open]', 'data-midpoint-source-open'), sourcePoints: panel.querySelectorAll('[data-midpoint-source] [data-inside-point]').length,
+    sourceFonts: [...panel.querySelectorAll('[data-midpoint-source-drawing] text')].map((e) => Number(e.getAttribute('font-size'))),
+    footRows: drawing ? drawing.querySelectorAll('[data-inside-foot-words]').length : 0, textPaths: drawing ? drawing.querySelectorAll('textPath').length : 0,
+    drawingFonts: drawing ? [...drawing.querySelectorAll('text')].map((e) => Number(e.getAttribute('font-size'))) : [],
     own: a('[data-midpoint-own]', 'data-midpoint-own')[0] || null, ownPoints: panel.querySelectorAll('[data-midpoint-own-drawing] [data-inside-point]').length, ownBoth: a('[data-midpoint-own-drawing] [data-midpoint-own-origin]', 'data-midpoint-own-origin').filter((o) => o === 'both').length,
     sourceActs: t('[data-midpoint-source-acts]'), faces: a('[data-midpoint-face]', 'data-midpoint-face'),
     refusal: a('[data-midpoint-refusal]', 'data-midpoint-refusal')[0] || null, conflicts: a('[data-midpoint-conflict]', 'data-midpoint-conflict'), hands: a('[data-midpoint-refusal] [data-midpoint-withdraw]', 'data-midpoint-withdraw'),
@@ -65,6 +72,58 @@ MEASURE = """() => {
 }"""
 LOAD_LINE = "() => { const p = document.querySelector('[data-cast-load-result]'); return p ? p.innerText : null; }"
 WHEREAMI = "() => fetch('/__whereami').then((r) => r.json()).catch(() => null)"
+# C-7f item 7 — THE TEXT CENSUS, both readings per text node: `composited` (the text's colour against its ground, every
+# ancestor's translucent background composited down onto the app's ground #0c0a09 — what the pixels show) and `blind`
+# (against the nearest ancestor's background colour with its alpha IGNORED — a tinted badge read as its opaque colour;
+# this reproduces the designer's five worst numbers). SVG text reads `fill`, not `color`.
+CONTRAST = """(rootSel) => {
+  const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+  const parse = (s) => { const m = (s || '').match(/rgba?\\(([^)]+)\\)/); if (!m) return null; const p = m[1].split(/[\\s,\\/]+/).filter(Boolean).map((x) => parseFloat(x)); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; };
+  const GROUND = { r: 12, g: 10, b: 9, a: 1 };
+  const ratio = (fg, bg) => { const l1 = lum(fg); const l2 = lum(bg); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
+  const over = (top, under) => ({ r: top.r * top.a + under.r * (1 - top.a), g: top.g * top.a + under.g * (1 - top.a), b: top.b * top.a + under.b * (1 - top.a), a: 1 });
+  const layersOf = (el) => { const layers = []; for (let e = el; e; e = e.parentElement) { const bg = parse(getComputedStyle(e).backgroundColor); if (bg && bg.a > 0) layers.push(bg); } return layers; };
+  const composited = (layers) => layers.reduceRight((acc, l) => over(l, acc), GROUND);
+  const blind = (layers) => (layers.length ? { ...layers[0], a: 1 } : GROUND);
+  const roots = rootSel === '@controls'
+    ? [...document.querySelectorAll('button')].filter((b) => /^(Fit Selected|workspace)$/i.test(b.textContent.trim()))
+    : rootSel === '@packets' ? [document.querySelector('[data-cast-file-input]')].filter(Boolean).map((e) => e.closest('.grid') || e.parentElement) : [...document.querySelectorAll(rootSel)];
+  const out = [];
+  for (const root of roots) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let n;
+    while ((n = walker.nextNode())) {
+      const text = n.textContent.replace(/\\s+/g, ' ').trim();
+      if (!text) continue;
+      const el = n.parentElement;
+      if (!el) continue;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      const svg = el.namespaceURI === 'http://www.w3.org/2000/svg';
+      const fg = parse(svg ? cs.fill : cs.color);
+      if (!fg) continue;
+      const layers = layersOf(el);
+      const ground = composited(layers);
+      const fgFlat = fg.a < 1 ? over(fg, ground) : fg;
+      out.push({ text: text.slice(0, 40), size: parseFloat(cs.fontSize), composited: Math.round(ratio(fgFlat, ground) * 100) / 100, blind: Math.round(ratio({ ...fg, a: 1 }, blind(layers)) * 100) / 100, disabled: !!el.closest('[disabled]') });
+    }
+  }
+  return out;
+}"""
+CARD = """() => {
+  const row = document.querySelector('[data-cast-card-row="summary"]');
+  if (!row) return { present: false };
+  const dl = row.closest('dl');
+  const R = (el) => { const b = el.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) }; };
+  const cs = getComputedStyle(dl);
+  const inner = dl.getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - parseFloat(cs.borderLeftWidth) - parseFloat(cs.borderRightWidth);
+  const castRows = [...dl.querySelectorAll('[data-cast-card-row]')];
+  const castHeight = castRows.length ? Math.round(castRows[castRows.length - 1].getBoundingClientRect().bottom - castRows[0].getBoundingClientRect().top) : 0;
+  return { present: true, card: R(dl), inner: Math.round(inner), castHeight, viewport: window.innerHeight, ratio: Math.round((dl.getBoundingClientRect().width / dl.getBoundingClientRect().height) * 100) / 100,
+    rows: [...dl.querySelectorAll('[data-cast-card-row]')].map((e) => ({ row: e.getAttribute('data-cast-card-row'), ...R(e), spans: e.getBoundingClientRect().width >= inner - 1 })) };
+}"""
 
 
 def tab(page, name):
@@ -112,6 +171,15 @@ def select_core(page):
     rows.first.click(); page.wait_for_timeout(600)
 
 
+def census(page, sel):
+    """the text census over a root: every text node with both readings; the summary the leg prints and pins"""
+    rows = page.evaluate(CONTRAST, sel)
+    below = [r for r in rows if r['composited'] < 4.5]
+    blind_below = [r for r in rows if r['blind'] < 4.5]
+    worst = sorted(rows, key=lambda r: r['composited'])[:8]
+    return {'nodes': len(rows), 'belowComposited': len(below), 'belowBlind': len(blind_below), 'worst': worst, 'below': below[:24]}
+
+
 def select_cell(page, pattern):
     """select a cell in the workspace tree by its row's accessible name (the topology word comes first)"""
     tab(page, "workspace")
@@ -136,6 +204,7 @@ def main():
         page = browser.new_page(viewport={"width": args.width, "height": args.height})
         page.goto(args.url); page.wait_for_timeout(3000)
         out['whereami'] = page.evaluate(WHEREAMI)
+        out['census'] = {'controlsAtStart': census(page, '@controls')}  # Fit Selected disabled, the workspace tab active
         click_canvas_center(page)
         for index, fixture in ((0, "flow.cast.json"), (1, "phi.cast.json"), (2, "t-cell.cast.json"), (3, "phi.cast.json")):
             out[f'load{index}'] = load_cast(page, index, fixture)
@@ -152,6 +221,9 @@ def main():
         word(page, "A", "presupposes"); word(page, "B", "specifies"); word(page, "A", "exceeds-in-size"); word(page, "B", "lodges-in")
         out['glued'] = page.evaluate(MEASURE)
         page.screenshot(path=f"{args.frames}/concept-layer-ab-glued-{args.width}x{args.height}.png")
+        # C-7f item 1 — the foot-anchored plate: the drawing scrolled into view (the plate the designer rules)
+        page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const d = el.querySelector('[data-midpoint-drawing]'); if (d) d.scrollIntoView(); }"); page.wait_for_timeout(300)
+        page.screenshot(path=f"{args.frames}/concept-layer-ab-foot-words-{args.width}x{args.height}.png")
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const own = el.querySelector('[data-midpoint-own]'); if (own) own.scrollIntoView(); }"); page.wait_for_timeout(300)
         page.screenshot(path=f"{args.frames}/concept-layer-ab-own-diagram-{args.width}x{args.height}.png")
         # the refusal at the act, with its hands
@@ -172,6 +244,37 @@ def main():
         out['abWithNeighbour'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('sourceActs', 'faces', 'lines')}
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
         page.screenshot(path=f"{args.frames}/concept-layer-ab-sources-carry-acts-{args.width}x{args.height}.png")
+        # ─── C-7f — the designer's eight at the eye ───
+        # item 6 — the source above says what it holds; its drawing opens on request, WHOLE
+        page.locator('[data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
+        out['sourceOpened'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('sourceOpen', 'sourcePoints', 'sourceFonts', 'sourceWords')}
+        page.screenshot(path=f"{args.frames}/concept-layer-source-open-{args.width}x{args.height}.png")
+        page.locator('[data-midpoint-source-open]').first.click(); page.wait_for_timeout(300)
+        # item 3 — the re-made pair attributed, at CD (C holds the T cell, D holds Φ; the edge's orientation decides the sides)
+        out['selectCD'] = select_vertex_labelled(page, "CD")
+        cd_a = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
+        if 'r8' in cd_a:
+            point(page, "A", "r8"); point(page, "B", "Φ6"); word(page, "A", "sustains"); word(page, "B", "descends-from"); point(page, "A", "r0"); point(page, "B", "Φ1")
+            prior = '[data-midpoint-withdraw="role|r8|Φ6"]'
+        else:
+            point(page, "A", "Φ6"); point(page, "B", "r8"); word(page, "A", "descends-from"); word(page, "B", "sustains"); point(page, "A", "Φ1"); point(page, "B", "r0")
+            prior = '[data-midpoint-withdraw="role|Φ6|r8"]'
+        out['cdRefused'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'conflicts', 'hands')}
+        page.locator(prior).first.click(); page.wait_for_timeout(500)
+        out['cdRemade'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs', 'remade', 'sentence')}
+        page.screenshot(path=f"{args.frames}/concept-layer-cd-remade-{args.width}x{args.height}.png")
+        # item 7 — the census of the panel's text, both readings
+        out['census']['panel'] = census(page, '[data-midpoint-surface]')
+        # item 5 — the card at C (the T cell): the parent cell's corners in the selection tab
+        out['selectParent'] = select_cell(page, r"^tetrahedron")
+        out['selectC'] = select_vertex_labelled(page, "C")
+        out['card'] = page.evaluate(CARD)
+        out['census']['card'] = census(page, 'dl:has([data-cast-card-row])')
+        page.evaluate("() => { const r = document.querySelector('[data-cast-card-row=\"summary\"]'); if (r) r.closest('dl').scrollIntoView(); }"); page.wait_for_timeout(300)
+        page.screenshot(path=f"{args.frames}/concept-layer-card-{args.width}x{args.height}.png")
+        tab(page, "packets")
+        out['census']['packets'] = census(page, '@packets')
+        out['census']['controlsWithSelection'] = census(page, '@controls')
         # C-7e (Δ84 "pay the price") — THE SECOND DISSECTION AT THE EYE: with the pairs given at AB (3 + τ₃) and at AC
         # (1 + 1), the core dissected again; at gen 2 the octahedron (the gen-1 core, now the parent) holds the gen-1
         # midpoints as its corners — AB selected from it, and what the person sees read: the pairs, the own diagram, the
