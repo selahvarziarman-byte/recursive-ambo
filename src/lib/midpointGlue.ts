@@ -43,6 +43,15 @@
 //                      side). A partition — never an order on acts.
 // ⛔ NEVER: a trace of a map not made; two traces side by side; a candidate; a
 // weight; a ranking; a proposal. A trace is a function of ONE act.
+//
+// `STAMP C-7d` item 1 (Δ82, Arman's word: "a midpoint after mapping should have
+// its own diagram, not just the mapping"): THE GLUED SPACE AS A CONCEPT-SPACE —
+// `gluedSpace` turns the amalgam into the same `ConceptSpace` shape a corner
+// holds, so ONE presentation (`insideOf` → the inside column) serves the corner
+// and the midpoint: the researcher's §1 — a midpoint's inside is the same
+// presentation plus an ORIGIN colouring; a corner is the one-colour case. The
+// midpoint MINTS geometrically and INHERITS semantically (CONTEXT.md's law in
+// its own register). Derived at every read, never stored (RECORD, NOT READING).
 
 import type { ConceptSpace, EdgeIdentification } from '../types/geometry';
 import { isMoldType, moldJoin } from './castLoader';
@@ -204,6 +213,58 @@ export function glue(A: ConceptSpace, B: ConceptSpace, roles: EdgeIdentification
       originOf,
     },
   };
+}
+
+/** the glued space drawn as ONE cast, with the origin of every role, word and tuple beside it (the colouring's key) */
+export interface GluedSpace {
+  space: ConceptSpace;
+  roleOrigin: Map<string, Origin>; // by the space's role id (the glued key)
+  wordOrigin: Map<string, Origin>; // by the space's signature type (the display word)
+  tupleOrigin: Map<string, Origin>; // by `type|terms` of the space's relations
+}
+
+/**
+ * THE MAPPED MIDPOINT'S OWN SPACE — the amalgam as a ConceptSpace: roles in the order `glue` emits (A's in the caster's
+ * order, then B's unglued ones), each labelled by the casters' words (`F5 ≡ Φ7` for a glued pair — the `≡` is the
+ * person's act), the marks as `types`; the words as the signature — a translated pair ONE word `s ≡ t`, a foreign word
+ * plain, and a foreign word spelled alike on both sides kept apart as `w [A]` / `w [B]` (two words, never merged by
+ * spelling); the tuples as relations. The origin of everything rides beside it for the colouring.
+ */
+export function gluedSpace(A: ConceptSpace, B: ConceptSpace, M: Midpoint): GluedSpace {
+  const labelIn = (space: ConceptSpace, id: string): string => {
+    const r = space.roles.find((x) => x.id === id);
+    return r && r.label && r.label.length ? r.label : id;
+  };
+  const arityIn = (space: ConceptSpace, name: string): number | undefined => space.signature.find((s) => s.type === name)?.arity;
+  const roleOrigin = new Map<string, Origin>();
+  const roles = M.roles.map((r) => {
+    roleOrigin.set(r.key, r.origin);
+    const label = r.origin === 'both' ? `${labelIn(A, r.a as string)} ≡ ${labelIn(B, r.b as string)}` : r.a !== null ? labelIn(A, r.a) : labelIn(B, r.b as string);
+    const types: Record<string, string> = {};
+    for (const m of M.marks) if (m.role === r.key) types[m.type.startsWith('A:') || m.type.startsWith('B:') ? m.type.slice(2) : m.type] = m.value;
+    return Object.keys(types).length ? { id: r.key, label, types } : { id: r.key, label };
+  });
+  // the display word for each glued word key
+  const alike = new Set<string>();
+  const seenA = new Set(M.words.filter((w) => w.origin === 'A').map((w) => w.a as string));
+  for (const w of M.words) if (w.origin === 'B' && seenA.has(w.b as string)) alike.add(w.b as string);
+  const display = new Map<string, string>();
+  const wordOrigin = new Map<string, Origin>();
+  const signature: ConceptSpace['signature'] = [];
+  for (const w of M.words) {
+    const name = w.origin === 'both' ? `${w.a as string} ≡ ${w.b as string}` : w.origin === 'A' ? (alike.has(w.a as string) ? `${w.a as string} [A]` : (w.a as string)) : alike.has(w.b as string) ? `${w.b as string} [B]` : (w.b as string);
+    display.set(w.key, name);
+    wordOrigin.set(name, w.origin);
+    const arity = w.a !== null ? arityIn(A, w.a) : arityIn(B, w.b as string);
+    signature.push({ type: name, arity: arity ?? 2 });
+  }
+  const tupleOrigin = new Map<string, Origin>();
+  const relations: ConceptSpace['relations'] = M.tuples.map((t) => {
+    const type = display.get(t.word) ?? t.word;
+    tupleOrigin.set(`${type}|${JSON.stringify(t.terms)}`, t.origin);
+    return { type, terms: [...t.terms], polarity: t.value };
+  });
+  return { space: { roles, signature, relations, axioms: [] }, roleOrigin, wordOrigin, tupleOrigin };
 }
 
 export interface RoleTrace {

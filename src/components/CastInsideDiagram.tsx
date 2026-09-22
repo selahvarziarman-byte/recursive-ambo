@@ -28,8 +28,24 @@
 // THE TWO ABSENCES: no cast → the panel returns null (nothing, no frame); a
 // cast of nothing → the card's own sentence `a cast of nothing — no roles`,
 // never an empty column (which reads as *not loaded*).
-// Labels and badges are drawn AFTER the arcs with a halo so an arc that passes
-// behind a word leaves it legible; the arcs themselves are never moved for it.
+// THE COVERING (C-7d item 3, Arman's word: "diagrams being covered by the text
+// layer") — MEASURED: every up-arc leaves its point HORIZONTALLY to the left,
+// straight through the label lane, and the labels were drawn after the arcs
+// with an OPAQUE RECT halo (painter's order inside the SVG: a later sibling
+// covers an earlier one), so the rects hid the first segment of every arc that
+// ended at that row. CURED: the halo is now the GLYPH'S OWN OUTLINE
+// (`paint-order: stroke` with the ground colour), no rect — an arc is hidden
+// only inside the letters, never in a box. The arc WORDS (the 1315 letter §2.1:
+// "stacked in the same vertical band, crossing one another") are spread along
+// their own arcs by a fixed cycle of offsets (a function of the arc's ordinal —
+// positions carry nothing) instead of every word at its apex; the row pitch and
+// the fonts are raised (the row 30 px, labels 12 px, arc words 10 px; compact
+// 22 / 11 / 9 — the designer rules what `compact` may mean).
+// C-7d item 1: the ORIGIN COLOURING of a single glued column — `both` alone gets
+// the glyph; `from A` / `from B`, no longer stated by position, are told apart
+// by a QUIET TINT behind one prop (`originTint`; default 'tint': B's marks and
+// points in a cooler stroke, A's in the ground stroke) — the distinction is the
+// designer's; the default is named in the report.
 
 import { useMemo } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
@@ -40,6 +56,7 @@ import { insideOf, type Inside, type InsideArc, type InsideLoop, type InsidePoin
 export interface MarkExtra {
   emphasis?: boolean; // the amber stroke — `both`, or a point in the person's map
   glyph?: string; // the glyph before the word (`≡` for both)
+  tint?: boolean; // C-7d: the quiet tint — a mark from the OTHER side in a single glued column
   attrs?: Record<string, string>;
 }
 
@@ -47,8 +64,14 @@ export interface MarkExtra {
 export interface PointExtra {
   onClick?: () => void;
   emphasis?: boolean; // a point the person has picked or paired
+  tint?: boolean; // C-7d: a role from the other side in a single glued column
   attrs?: Record<string, string>;
 }
+
+/** the ground colour behind a glyph's outline (the canvas panel's ground) */
+const GROUND = '#0c0a09';
+/** the fixed cycle of positions along an arc where its word rides — a function of the arc's ordinal, never of its meaning */
+const WORD_OFFSETS = ['50%', '32%', '68%', '42%', '58%'];
 
 export interface InsideLayoutOptions {
   /** the row pitch — the column degrades by scrolling, never by shrinking below legibility */
@@ -78,7 +101,7 @@ const idSafe = (s: string): string => s.replace(/[^A-Za-z0-9_-]/g, '-');
 
 /** the geometry the column occupies — computed from the inside alone, so a composite (the midpoint's unfolding) can place two columns without overlap */
 export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}): InsideGeometry {
-  const row = options.row ?? (options.compact ? 18 : 26);
+  const row = options.row ?? (options.compact ? 22 : 30);
   const px = options.px ?? 0;
   const top = options.top ?? 0;
   const yOf = (index: number): number => top + row * (index + 0.5);
@@ -131,7 +154,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
 }) {
   const g = geometry;
   const seenPair = new Map<string, number>();
-  const fontSize = g.row <= 18 ? 10 : 11;
+  const fontSize = g.row <= 22 ? 11 : 12;
   const nodeX = g.px + (g.rightReach - (inside.nodes.length ? 120 : 0)) - 20;
   return (
     <g data-inside-column="true">
@@ -145,10 +168,10 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
         const pathId = `${idSafe(idPrefix)}-a${i}`;
         return (
           <g key={`arc-${i}`} data-inside-arc={`${arc.type}|${inside.points[arc.from].id}|${inside.points[arc.to].id}|${arc.polarity}|${arc.side}`} {...(extra?.attrs ?? {})}>
-            <path id={pathId} d={p.d} fill="none" className={extra?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300/80' : 'stroke-stone-400/80'} strokeWidth={extra?.emphasis ? 2.2 : 1.2} strokeDasharray={negative ? '4 3' : undefined} />
-            {/* the word RIDES its own arc, outward of the stroke: glyph tops face away from the column on both sides */}
-            <text dy={-3} fontSize={fontSize - 1} className={extra?.emphasis ? 'fill-amber-200' : negative ? 'fill-rose-300' : 'fill-stone-400'}>
-              <textPath data-inside-arc-word="true" href={`#${pathId}`} startOffset="50%" textAnchor="middle">
+            <path id={pathId} d={p.d} fill="none" className={extra?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300/80' : extra?.tint ? 'stroke-sky-300/70' : 'stroke-stone-400/80'} strokeWidth={extra?.emphasis ? 2.2 : 1.2} strokeDasharray={negative ? '4 3' : undefined} />
+            {/* the word RIDES its own arc: its place along the arc cycles by the arc's ordinal, and it sits OUTSIDE the stroke on even ordinals and INSIDE it on odd ones — two bands instead of one, so neighbouring words do not stack (a function of the drawing order, never of meaning) */}
+            <text dy={i % 2 === 0 ? -3 : fontSize + 4} fontSize={fontSize - 2} className={extra?.emphasis ? 'fill-amber-200' : negative ? 'fill-rose-300' : extra?.tint ? 'fill-sky-200/90' : 'fill-stone-400'} style={{ paintOrder: 'stroke', stroke: GROUND, strokeWidth: 2.5, strokeLinejoin: 'round' }}>
+              <textPath data-inside-arc-word="true" href={`#${pathId}`} startOffset={WORD_OFFSETS[i % WORD_OFFSETS.length]} textAnchor="middle">
                 {`${extra?.glyph ? `${extra.glyph} ` : ''}${wordOf(arc.type, arc.polarity)}`}
               </textPath>
             </text>
@@ -173,8 +196,8 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
                 </g>
               );
             })}
-            <circle cx={nodeX} cy={ny} r={5} className={nx?.emphasis ? 'fill-stone-950 stroke-amber-300' : negative ? 'fill-stone-950 stroke-rose-300' : 'fill-stone-950 stroke-stone-300'} strokeWidth={nx?.emphasis ? 2 : 1.2} />
-            <text x={nodeX + 9} y={ny + 3.5} fontSize={fontSize - 1} className={nx?.emphasis ? 'fill-amber-200' : negative ? 'fill-rose-300' : 'fill-stone-300'}>{`${nx?.glyph ? `${nx.glyph} ` : ''}${wordOf(node.type, node.polarity)}`}</text>
+            <circle cx={nodeX} cy={ny} r={5} className={nx?.emphasis ? 'fill-stone-950 stroke-amber-300' : negative ? 'fill-stone-950 stroke-rose-300' : nx?.tint ? 'fill-stone-950 stroke-sky-300' : 'fill-stone-950 stroke-stone-300'} strokeWidth={nx?.emphasis ? 2 : 1.2} />
+            <text x={nodeX + 9} y={ny + 3.5} fontSize={fontSize - 1} className={nx?.emphasis ? 'fill-amber-200' : negative ? 'fill-rose-300' : nx?.tint ? 'fill-sky-200' : 'fill-stone-300'}>{`${nx?.glyph ? `${nx.glyph} ` : ''}${wordOf(node.type, node.polarity)}`}</text>
           </g>
         );
       })}
@@ -183,8 +206,6 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
         const loops = inside.loops.filter((l) => l.at === point.index);
         const extra = pointExtra?.(point) ?? null;
         const labelText = point.label ?? point.id;
-        const badgeText = point.badges.map((b) => (b.home === 'signature' ? `${b.key} ${b.value}` : b.value)).join(' · ');
-        const w = Math.min(LABEL_LANE, 6.2 * (labelText.length + (badgeText ? badgeText.length + 3 : 0)) + 8);
         return (
           <g
             key={point.id}
@@ -194,8 +215,8 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
             onClick={extra?.onClick}
             {...(extra?.attrs ?? {})}
           >
-            <rect x={g.px - 10 - w} y={y - g.row / 2 + 2} width={w} height={g.row - 4} rx={3} className="fill-stone-950/85" />
-            <text x={g.px - 10} y={y + 3.5} textAnchor="end" fontSize={fontSize} className={point.label ? 'fill-stone-100' : 'fill-stone-300'}>
+            {/* the halo is the glyphs' own outline — an arc passing the label lane stays visible between the letters */}
+            <text x={g.px - 10} y={y + 3.5} textAnchor="end" fontSize={fontSize} className={extra?.tint ? 'fill-sky-100' : point.label ? 'fill-stone-100' : 'fill-stone-300'} style={{ paintOrder: 'stroke', stroke: GROUND, strokeWidth: 3, strokeLinejoin: 'round' }}>
               <tspan data-inside-label="true" className={point.label ? '' : 'font-mono'}>{labelText}</tspan>
               {point.badges.map((b, bi) => (
                 <tspan key={`${b.key}-${bi}`} data-inside-badge={`${b.key}=${b.value}`} data-inside-mold={b.mold ? 'true' : undefined} className={b.value === 'UNKNOWN' ? 'fill-amber-200' : 'fill-stone-400'}>
@@ -203,19 +224,19 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
                 </tspan>
               ))}
             </text>
-            <circle cx={g.px} cy={y} r={extra?.emphasis ? 4.2 : 3.2} className={extra?.emphasis ? 'fill-amber-300 stroke-amber-100' : 'fill-stone-200 stroke-stone-950'} strokeWidth={1} />
+            <circle cx={g.px} cy={y} r={extra?.emphasis ? 4.2 : 3.2} className={extra?.emphasis ? 'fill-amber-300 stroke-amber-100' : extra?.tint ? 'fill-sky-200 stroke-stone-950' : 'fill-stone-200 stroke-stone-950'} strokeWidth={1} />
             {loops.map((loop, li) => {
               const cx = g.px + 10 + li * 14;
               const negative = loop.polarity === 'does-not-hold';
               const lx = loopExtra?.(loop) ?? null;
               return (
                 <g key={`loop-${li}`} data-inside-loop={`${loop.type}|${point.id}|${loop.polarity}`} {...(lx?.attrs ?? {})}>
-                  <circle cx={cx} cy={y - 8} r={5} fill="none" className={lx?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300' : 'stroke-stone-300'} strokeWidth={lx?.emphasis ? 2 : 1.1} strokeDasharray={negative ? '3 2' : undefined} />
+                  <circle cx={cx} cy={y - 8} r={5} fill="none" className={lx?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300' : lx?.tint ? 'stroke-sky-300' : 'stroke-stone-300'} strokeWidth={lx?.emphasis ? 2 : 1.1} strokeDasharray={negative ? '3 2' : undefined} />
                 </g>
               );
             })}
             {loops.length ? (
-              <text data-inside-loop-words={point.id} x={g.px + 10 + loops.length * 14 + 2} y={y - 5} fontSize={fontSize - 2} className={loops.some((l) => l.polarity === 'does-not-hold') ? 'fill-rose-300' : 'fill-stone-400'}>
+              <text data-inside-loop-words={point.id} x={g.px + 10 + loops.length * 14 + 2} y={y - 5} fontSize={fontSize - 2} className={loops.some((l) => l.polarity === 'does-not-hold') ? 'fill-rose-300' : 'fill-stone-400'} style={{ paintOrder: 'stroke', stroke: GROUND, strokeWidth: 2.5, strokeLinejoin: 'round' }}>
                 {loops.map((l) => { const lx = loopExtra?.(l) ?? null; return `${lx?.glyph ? `${lx.glyph} ` : ''}${wordOf(l.type, l.polarity)}`; }).join(' · ')}
               </text>
             ) : null}
@@ -238,7 +259,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
 
 /** THE DIAGRAM — one cast, one SVG */
 export function CastInsideDiagram({ inside, compact = false, id }: { inside: Inside; compact?: boolean; id?: string }) {
-  const g = useMemo(() => insideGeometry(inside, { compact, px: 0, top: 0 }), [inside, compact]);
+  const g = useMemo(() => insideGeometry(inside, { compact, px: 0, top: 14 }), [inside, compact]);
   const width = g.leftReach + g.rightReach;
   return (
     <svg
@@ -251,8 +272,8 @@ export function CastInsideDiagram({ inside, compact = false, id }: { inside: Ins
       data-inside-words={String(inside.census.words)}
       data-inside-marks={String(inside.census.marks)}
       width={width}
-      height={g.height}
-      viewBox={`${-g.leftReach} 0 ${width} ${g.height}`}
+      height={g.height + 14}
+      viewBox={`${-g.leftReach} 0 ${width} ${g.height + 14}`}
       className="block overflow-visible"
     >
       <InsideColumn inside={inside} geometry={g} idPrefix={id ?? 'cast'} />

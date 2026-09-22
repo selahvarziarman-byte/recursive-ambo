@@ -42,7 +42,8 @@ const repoRoot = path.resolve(__dirname, '..');
 const req = (p) => require(path.join(repoRoot, p));
 const readLf = (p) => fs.readFileSync(path.join(repoRoot, p), 'utf8').split('\r\n').join('\n');
 const { readCastFile } = req('src/lib/castLoader.ts');
-const { glue, traceOf } = req('src/lib/midpointGlue.ts');
+const { glue, traceOf, gluedSpace } = req('src/lib/midpointGlue.ts');
+const { insideOf } = req('src/lib/castInside.ts');
 const { describeConflict, wordPairForm, refusalOf } = req('src/lib/jRegister.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
 const { applyAmboDissection } = req('src/lib/ambo.ts');
@@ -115,6 +116,24 @@ check('§1 ★ WORDS OUTSIDE τ ARE FOREIGN EVEN WHEN SPELLED ALIKE (LAW 24 both
   (() => { const a = glue(flow, phi, [['F4', 'Φ1']], []); const b = glue(flow, phi, [['F4', 'Φ1']], [['disjoins', 'disjoins']]); return !a.refused && a.midpoint.counts.both === 0 && !b.refused && b.midpoint.counts.both === 1 && b.midpoint.words.some((w) => w.key === 'disjoins≡disjoins'); })());
 check('§1 ★ THE FORM of a word pair: `sustains ↦ descends-from` has it; `removes ↦ decays` names arity 3 against 2 (`"removes" is arity 3 here and "decays" is arity 2 there — a translation keeps the arity`); an undeclared word is named',
   wordPairForm(flow, phi, 'sustains', 'descends-from') === null && wordPairForm(tcell, phi, 'removes', 'decays') === '"removes" is arity 3 here and "decays" is arity 2 there — a translation keeps the arity' && wordPairForm(flow, phi, 'nope', 'decays') === '"nope" is not a word this cast declares');
+// C-7d item 1 — THE GLUED SPACE AS A CAST: one presentation for the corner and the midpoint
+check('§1 ★★ THE MAPPED MIDPOINT\'S OWN SPACE (C-7d item 1): `gluedSpace` under (J₃, τ₃) is a ConceptSpace of 20 roles in the glue\'s order (A\'s, then B\'s unglued), 22 signature words, 52 relations and 20 marks; the glued roles labelled by the casters\' words `F5 ≡ Φ7` (the ≡ is the person\'s act), the translated words ONE word `sustains ≡ descends-from`, foreign words plain; `insideOf` draws it as 20 points and 52 arcs + loops; the origins ride beside it — 4 tuples `both`, 3 roles `both`',
+  (() => {
+    if (!M3) return false;
+    const own = gluedSpace(flow, phi, M3);
+    const ins = insideOf(own.space);
+    const marks = own.space.roles.reduce((n, r) => n + Object.keys(r.types ?? {}).length, 0);
+    return own.space.roles.length === 20 && own.space.roles[0].id === 'A:F1' && own.space.roles[4].label === 'F5 ≡ Φ7' && own.space.roles[14].label === 'Φ3' && own.space.signature.length === 22 && own.space.relations.length === 52 && marks === 20 &&
+      own.space.signature.some((s) => s.type === 'sustains ≡ descends-from') && own.space.signature.some((s) => s.type === 'disjoins [A]') && own.space.signature.some((s) => s.type === 'disjoins [B]') && own.space.signature.some((s) => s.type === 'generates') &&
+      ins.census.points === 20 && ins.census.arrows + ins.census.loops === 52 && ins.census.hyper === 0 && ins.census.words === 22 && ins.census.marks === 20 &&
+      [...own.tupleOrigin.values()].filter((o) => o === 'both').length === 4 && [...own.roleOrigin.values()].filter((o) => o === 'both').length === 3 && own.wordOrigin.get('sustains ≡ descends-from') === 'both' && own.wordOrigin.get('disjoins [B]') === 'B';
+  })());
+check('§1 ★ the unmapped midpoint\'s own space is the disjoint union as one cast: 23 roles · 25 words (the alike spellings kept apart as `w [A]` / `w [B]`) · 56 relations · 23 marks, nothing `both`; and a cast of the glued space is RECOVERABLE by the inside (faithfulness holds on the derived space too)',
+  (() => {
+    const own = gluedSpace(flow, phi, empty.midpoint);
+    const ins = insideOf(own.space);
+    return own.space.roles.length === 23 && own.space.signature.length === 25 && own.space.relations.length === 56 && ins.census.points === 23 && ins.census.arrows + ins.census.loops === 56 && [...own.tupleOrigin.values()].every((o) => o !== 'both') && own.space.signature.filter((s) => /^disjoins \[(A|B)\]$/.test(s.type)).length === 2 && ins.unplaced.length === 0;
+  })());
 check('§1 a pair naming a role a cast does not hold is NOT glued and NOT refused by the glue (the surface names it): flow × phi with F99↦Φ1 glues as the disjoint union',
   (() => { const r = glue(flow, phi, [['F99', 'Φ1']], []); return !r.refused && r.midpoint.pairs.length === 0 && r.midpoint.counts.roles === 23; })());
 
@@ -300,6 +319,32 @@ const torn = surface(S().shapes[ambo.id], midpointSiteOf(S().shapes[ambo.id], pa
 check('§4 ★ A RECORD THAT CONTRADICTS ITSELF (a fiat pair the retired register let through) reads `record-in-conflict` — the conflict by name and a withdrawal per pair and per word; no trace of it (a trace is a function of one act that glued)',
   attrsOf(torn, 'data-midpoint-state')[0] === 'record-in-conflict' && countOf(torn, 'data-midpoint-record-conflict') === 1 && attrsOf(torn, 'data-midpoint-conflict').length === 1 && countOf(torn, 'data-midpoint-trace') === 0 && attrsOf(torn, 'data-midpoint-withdraw').length >= 7);
 S().withdrawEdgeIdentification(edgeAB);
+// C-7d item 0 — THE TWO HALVES REACHABLE: the word half ABOVE the drawing, the chips controls, one sentence naming both halves
+check('§4 ★★ THE WORD HALF STANDS ABOVE THE DRAWING (C-7d item 0, Δ83 — measured at the eye: the rows sat 107 px below the panel\'s fold at 1689 × 897): in the rendered order the word half (`data-midpoint-word-half`) and both word rows precede the drawing; the sentence at the top names BOTH halves and where each is made; the chips are buttons styled as controls',
+  glued.indexOf('data-midpoint-word-half="true"') < glued.indexOf('data-midpoint-drawing="true"') && glued.indexOf('data-midpoint-words="A"') < glued.indexOf('data-midpoint-drawing="true"') && glued.indexOf('data-midpoint-words="B"') < glued.indexOf('data-midpoint-drawing="true"') &&
+    textsOf(glued, 'data-midpoint-gesture')[0].startsWith('two halves, both yours: a role — click a point in') && /a word — click a word in/.test(textsOf(glued, 'data-midpoint-gesture')[0]) &&
+    /<button[^>]*data-midpoint-word="A\|sustains"[^>]*class="[^"]*border[^"]*"/.test(glued) && visibleText(glued).includes('the words — τ, the translation, given by you'));
+check('§4 ★★ THE MAPPED MIDPOINT\'S OWN DIAGRAM (C-7d item 1): under (J₃, τ₃) the surface draws the glued space as ONE column — 20 points in the glue\'s order, the three glued roles marked, 4 tuples wearing `≡` as `both`, the other side\'s marks tinted (the default, named), translated words `sustains ≡ descends-from` on their arcs; the unglued midpoint draws NO third column and says its own space is the two columns above',
+  (() => {
+    const ownHtml = (glued.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-trace=')[0];
+    return attrsOf(glued, 'data-midpoint-own').includes('glued') && countOf(ownHtml, 'data-inside-point') === 20 && attrsOf(ownHtml, 'data-midpoint-own-role').filter((o) => o === 'both').length === 3 && attrsOf(ownHtml, 'data-midpoint-own-origin').filter((o) => o === 'both').length === 4 &&
+      attrsOf(ownHtml, 'data-midpoint-own-origin').filter((o) => o === 'B').length > 0 && /stroke-sky-300/.test(ownHtml) && ownHtml.includes('sustains ≡ descends-from') && visibleText(glued).includes('its own space, one column: 20 roles · 22 words · 52 tuples · 20 marks') &&
+      attrsOf(fresh, 'data-midpoint-own')[0] === 'unglued' && countOf(fresh, 'data-midpoint-own-drawing') === 0 && visibleText(fresh).includes('its own space is the two casts side by side, the columns above: no pair given yet');
+  })(), `${attrsOf(glued, 'data-midpoint-own').join(',')} own · ${countOf((glued.split('data-midpoint-own="glued"')[1] || ''), 'data-inside-point')} points`);
+check('§4 ★★ THE PROJECTION SOURCES CARRY THE PERSON\'S ACTS (C-7d item 2): with nothing given on A–C and B–C each source reads `raw material — nothing given yet on the edges that reach it (…)`; after a pair on the A–C edge (given at the AC midpoint) C reads `on A–C: F1 ↦ r0 · sustains ↦ sustains` beside `no identification given yet on B–C` — his own maps as they stand, nothing computed, nothing composed',
+  (() => {
+    const before = attrsOf(glued, 'data-midpoint-source-acts');
+    S().giveRolePair(edgeAC, ...roleAC('F1', 'r0'));
+    const after = surface(S().shapes[ambo.id], midpointSiteOf(S().shapes[ambo.id], packetAB.trace.siteId, packetAB.trace));
+    const words = textsOf(after, 'data-midpoint-source-acts');
+    S().withdrawRolePair(edgeAC, ...roleAC('F1', 'r0'));
+    const labelAC = `${ambo.vertices[siteAC.a].data.label}–${ambo.vertices[siteAC.b].data.label}`;
+    const pairAC = fwdAC ? 'F1 ↦ r0' : 'r0 ↦ F1';
+    return before.length === 2 && before.every((x) => x === 'none') && visibleText(glued).includes('raw material — nothing given yet on the edges that reach it') &&
+      attrsOf(after, 'data-midpoint-source-acts').includes('given') && words.some((w) => w.includes(`on ${labelAC}: ${pairAC} · sustains ↦ sustains`) && /no identification given yet on/.test(w));
+  })());
+check('§4 ★ THE GESTURE LINE under the canvas names the midpoint\'s two halves (C-6a\'s ruling: the module states every act it offers in its own persistent row)',
+  /at a midpoint, two halves: a role here then a role there in the drawing, a word here then a word there in the rows above it — each pair yours, withdrawable/.test(readLf('src/components/Workspace3D.tsx')));
 check('§4 ⛔ NEVER a candidate, a weight, a ranking, a proposal, a hint (Δ80): the surface\'s text carries none of `offer`, `weight`, `candidate`, `propos`, `tied`, `orbit`, `rank`, `support`; and no sort of the device\'s on either side (the caster\'s order stands)',
   !/offer|weight|candidate|propos|tied|orbit|rank|support/i.test(visibleText(glued) + visibleText(fresh) + visibleText(refusedHtml)) && !/\.sort\(/.test(readLf('src/components/MidpointSurface.tsx')));
 const noneAmbo = applyAmboDissection(seed);
@@ -310,6 +355,24 @@ check('§4 ★★ THE CHOOSER: a midpoint whose parents do not both hold a cast 
   render(React.createElement(ConceptSurface, { shape: noneAmbo, vertexId: noneSite })) === '' &&
     countOf(render(React.createElement(ConceptSurface, { shape: ambo, vertexId: a })), 'data-inside-panel') === 1 &&
     countOf(render(React.createElement(ConceptSurface, { shape: ambo, vertexId: packetAB.trace.siteId })), 'data-midpoint-surface') === 1);
+
+check('§4 ★★ ONE CODE PATH, TWO SITES (C-7d item 1\'s closing clause): a mapped midpoint dissected again and selected as a corner draws its glued space through the SAME chooser and column — with the record carried onto the gen-2 edge (by hand here; the carry is C-7c\'s price, not built) `ConceptSurface` at gen 2 renders `data-midpoint-own="glued"` with the same 20-point column; LAW 24 — without the carry it renders `data-midpoint-own="unglued"`, the honest state today',
+  (() => {
+    const g1 = withCast(withCast(applyAmboDissection(seed), a, flow), b, phi);
+    const r1 = buildGeneralSitePacketPresenterReport(g1);
+    const p1 = r1.packets.find((p) => p.trace.parentIds.includes(a) && p.trace.parentIds.includes(b));
+    const s1 = midpointSiteOf(g1, p1.trace.siteId, p1.trace);
+    const fwd1 = s1.a === a;
+    const rec = { roles: (fwd1 ? J3 : J3.map(([x, y]) => [y, x])), types: (fwd1 ? T3 : T3.map(([x, y]) => [y, x])) };
+    const g2 = applyAmboDissection(g1, g1.cells.find((x) => x.kind === 'core').id);
+    const pairOf = (e) => [...e.vertexIds].sort().join('|');
+    const carried = { ...g2, edges: g2.edges.map((e) => (pairOf(e) === pairOf(s1.edge) ? { ...e, identification: rec } : e)) };
+    const withCarry = render(React.createElement(ConceptSurface, { shape: carried, vertexId: p1.trace.siteId }));
+    const without = render(React.createElement(ConceptSurface, { shape: g2, vertexId: p1.trace.siteId }));
+    const ownHtml = (withCarry.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-trace=')[0];
+    return countOf(withCarry, 'data-midpoint-surface') === 1 && attrsOf(withCarry, 'data-midpoint-own').includes('glued') && countOf(ownHtml, 'data-inside-point') === 20 && attrsOf(ownHtml, 'data-midpoint-own-origin').filter((o) => o === 'both').length === 4 &&
+      countOf(without, 'data-midpoint-surface') === 1 && attrsOf(without, 'data-midpoint-own')[0] === 'unglued';
+  })());
 
 // ═══ §5 THE MOUNT and the boundaries, source-pinned ═══
 console.log('\n----- §5 the check at the act lives with the writer; the presenter\'s FACE is not consumed; the boundaries -----');
@@ -322,7 +385,7 @@ check('§5 ★★ THE PRESENTER\'S TRACE IS CONSUMED AND ITS FACE IS NOT: the su
   surf.includes("import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';") && !surf.includes('renderPacketFace') && !/Name the concept|Across the cell|howToName|namingDecision/.test(surf) && readLf('src/components/Panels.tsx').includes('buildGeneralSitePacketPresenterReport(shape)'));
 check('§5 ⛔ THE GLUE IS PURE OVER TWO CASTS AND THE PERSON\'S (J, τ): midpointGlue.ts imports only the types, the mold\'s join from the loader and the register\'s record/refusal/shared signature; no store, no component; the surface reaches the store only to act (five actions, two reads in the chooser)',
   (gl.match(/^import /gm) || []).length === 3 && gl.includes("import { isMoldType, moldJoin } from './castLoader';") && gl.includes("import { recordOf, refusalOf, sharedSignature, type Conflict } from './jRegister';") && !/from '\.\.\/store|from '\.\.\/components/.test(gl) &&
-    (surf.match(/useGeometryStore\(\(s\) => s\.(give|withdraw)/g) || []).length === 5 && !/updateSelected|\.cast\s*=/.test(surf));
+    (surf.match(/useGeometryStore\(\(s\) => s\.(give|withdraw)/g) || []).length === 5 && !/updateSelected|\.cast\s*=/.test(surf) && !/J_CB|∘/.test(surf));
 check('§5 the surface is sited on the canvas through the chooser (Workspace3D mounts `ConceptSurface`), and nothing of it enters Panels.tsx or the manuscript',
   readLf('src/components/Workspace3D.tsx').includes("import { ConceptSurface } from './MidpointSurface';") && !readLf('src/components/Panels.tsx').includes('MidpointSurface') && !/from '\.\.\/manuscript|explore/.test(surf));
 

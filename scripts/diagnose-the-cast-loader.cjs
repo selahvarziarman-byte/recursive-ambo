@@ -242,8 +242,8 @@ const workspace = readLf('src/components/Workspace3D.tsx');
 check('§7 ★ SURFACE 1 — `load cast… (.cast.json)` sits in the packet editor beside `Save packet`, opens a FILE (an input of type file, a single one — the shelf\'s multiple-file door untouched), and its result line is the loader\'s own words',
   editor.includes('load cast… (.cast.json)') && editor.includes('type="file"') && !/type="file"[^>]*multiple/.test(editor) && editor.includes('Save packet') &&
     editor.includes('data-cast-load-result') && editor.includes('readCastFile('));
-check('§7 ★ THE AMBO\'S LINE gains her clause VERBATIM: `a corner takes a concept-space from the packets tab`',
-  workspace.includes(' · a corner takes a concept-space from the packets tab`}'));
+check('§7 ★ THE AMBO\'S LINE gains her clause VERBATIM: `a corner takes a concept-space from the packets tab` (C-7d appends the midpoint\'s two-halves clause after it — hers stands verbatim, no longer the line\'s tail)',
+  workspace.includes(' · a corner takes a concept-space from the packets tab · '));
 check('§7 ★★ SURFACE 2 — the card: NO ROW without a cast (the rows render only under `vertex.data.cast`), the summary line, the orderings per type, the two registers, UNKNOWN\'s count, the marks re-derived',
   panels.includes('{vertex.data.cast ? (') && panels.includes('<CastCardRows cast={vertex.data.cast} personLabel={vertex.data.label} />') &&
     panels.includes('{castSummaryLine(cast)}') && panels.includes('orderingLine(') && panels.includes('data-cast-card-row="summary"') &&

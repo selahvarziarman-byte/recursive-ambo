@@ -161,7 +161,7 @@ export function Workspace3D() {
         data-ambo-gesture-line="true"
         className="shrink-0 border-t border-stone-800 bg-stone-950 px-3 py-2 text-xs leading-relaxed text-stone-400"
       >
-        {`click — select what you point at, on the solid or in the inspector · shift-click — toggle it in the lift region (on the solid: the face you hit) · shift+alt-click the solid — the whole cell instead · edges lift from the inspector's rows only · hover — preview what corresponds · drag — orbit · right-drag — pan · wheel or middle-drag — zoom · a corner takes a concept-space from the packets tab`}
+        {`click — select what you point at, on the solid or in the inspector · shift-click — toggle it in the lift region (on the solid: the face you hit) · shift+alt-click the solid — the whole cell instead · edges lift from the inspector's rows only · hover — preview what corresponds · drag — orbit · right-drag — pan · wheel or middle-drag — zoom · a corner takes a concept-space from the packets tab · at a midpoint, two halves: a role here then a role there in the drawing, a word here then a word there in the rows above it — each pair yours, withdrawable`}
       </div>
     </div>
   );

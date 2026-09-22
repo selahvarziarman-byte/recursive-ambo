@@ -180,6 +180,18 @@ check('§4 ★ THE WORD RIDES ITS OWN ARC: every arc word is a textPath on that 
 check('§4 ★ THE DRAWING DERIVES NOTHING: the number of drawn arcs + loops + nodes equals the listed tuples on every fixture, and NO count is printed as text on the canvas (the column\'s card reads the counts; the census rides only as attributes)',
   [['flow', drawFlow], ['t-cell', drawT], ['phi', drawPhi]].every(([n, html]) => countOf(html, 'data-inside-arc') + countOf(html, 'data-inside-loop') + countOf(html, 'data-inside-node') === insides[n].arcs.length + insides[n].loops.length + insides[n].nodes.length) &&
     !/\b\d+ (points|arrows|loops|marks|words)\b/.test(visibleText(drawFlow)) && attrsOf(drawFlow, 'data-inside-arrows')[0] === '31');
+check('§4 ★★ THE COVERING CURED (C-7d item 3, measured at the eye: 22 of 46 arcs passed under an opaque label rect): no `<rect` halo in any point group; every label, loop-row and arc word wears its GLYPH OUTLINE as its halo (`paint-order:stroke` with the ground colour) — an arc through the label lane stays visible between the letters',
+  !/data-inside-point="[^"]*"[^>]*>\s*<rect/.test(drawFlow) && (drawFlow.match(/<rect/g) || []).length === 0 && (drawFlow.match(/paint-order:stroke/g) || []).length >= 14 + 31 &&
+    /data-inside-label="true"/.test(drawFlow) && drawFlow.indexOf('paint-order:stroke;stroke:#0c0a09;stroke-width:3') > 0);
+check('§4 ★ THE ARC WORDS ARE SPREAD ALONG THEIR OWN ARCS (the 1315 letter §2.1: 120 word-to-word box overlaps on Flow\'s column before the cut): the offset cycles 50% · 32% · 68% · 42% · 58% by the arc\'s ordinal — a function of the drawing order, never of meaning',
+  J(attrsOf(drawFlow, 'startOffset').slice(0, 6)) === J(['50%', '32%', '68%', '42%', '58%', '50%']));
+check('§4 ★ THE SIZES (named for the designer): the column row 30 px, its labels 12 px and arc words 10 px; `compact` (the projection sources) row 22 px, labels 11 px, arc words 9 px',
+  (() => {
+    const { insideGeometry } = req('src/components/CastInsideDiagram.tsx');
+    const g = insideGeometry(insides.flow); const c = insideGeometry(insides.flow, { compact: true });
+    const compact = render(React.createElement(CastInsideDiagram, { inside: insides.flow, compact: true, id: 'c' }));
+    return g.row === 30 && c.row === 22 && /font-size="12"[^>]*style="paint-order/.test(drawFlow) && /font-size="10"[^>]*style="paint-order:stroke;stroke:#0c0a09;stroke-width:2\.5/.test(drawFlow) && /font-size="11"[^>]*style="paint-order/.test(compact) && /font-size="9"/.test(compact);
+  })());
 check('§4 ★ POSITIONS CARRY NOTHING: the points are laid top to bottom in the caster\'s order (F1 first, F14 last), no sort of the device\'s anywhere in the module or the drawing',
   attrsOf(drawFlow, 'data-inside-point')[0] === 'F1' && attrsOf(drawFlow, 'data-inside-point')[13] === 'F14' && !/\.sort\(/.test(readLf('src/lib/castInside.ts')) && !/\.sort\(/.test(readLf('src/components/CastInsideDiagram.tsx')));
 // the two absences, through the panel
