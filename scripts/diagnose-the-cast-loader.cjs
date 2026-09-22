@@ -187,14 +187,22 @@ check('§4 arity presupposes closure: a tuple whose TYPE is not in the signature
   })());
 check('§4 LAW 24 — the marks are not the loader\'s reflex: the triangle and the T cell carry NO mark', tri.taken && tri.marks.length === 0 && tcell.taken && tcell.marks.length === 0);
 
-// ═══ §4b C-6d (γ) §1.2 — the mold's own types, ONE constant ═══
+// ═══ §4b C-6d (γ) §1.2 — the mold's own types, ONE constant; C-7pre — their ROLE-FACTS on it ═══
+check('§4b ★ C-7pre (the researcher\'s finding §108.1.2): the mold\'s values carry the ROLE-FACT they assert ON the constant — `has` and `unrecorded` one fact (members exist), `none-by-nature` its own — and `moldJoin` reads the union record\'s value: has ⊔ unrecorded = has · unrecorded ⊔ unrecorded = unrecorded · has ⊔ none-by-nature = null (a contradiction) · a caster\'s key joins nothing',
+  (() => {
+    const { MOLD_TYPES, moldJoin } = req('src/lib/castLoader.ts');
+    const m = MOLD_TYPES[0];
+    return m.roleFact.has === m.roleFact.unrecorded && m.roleFact['none-by-nature'] !== m.roleFact.has && Object.keys(m.roleFact).length === 3 && m.values.every((v) => m.roleFact[v] !== undefined) &&
+      moldJoin('member_status', 'has', 'unrecorded') === 'has' && moldJoin('member_status', 'unrecorded', 'has') === 'has' && moldJoin('member_status', 'unrecorded', 'unrecorded') === 'unrecorded' &&
+      moldJoin('member_status', 'has', 'none-by-nature') === null && moldJoin('member_status', 'unrecorded', 'none-by-nature') === null && moldJoin('member-status', 'has', 'unrecorded') === null && moldJoin('member-status', 'has', 'has') === 'has';
+  })());
 check('§4b ★ THE MOLD\'S TYPES ARE ONE CONSTANT (C-6d (γ) §1.2): `MOLD_TYPES` in the loader names `member_status` (arity 1; has · unrecorded · none-by-nature) and the register imports it — no second list anywhere under src',
   (() => {
     const { MOLD_TYPES, isMoldType } = req('src/lib/castLoader.ts');
     const reg = readLf('src/lib/jRegister.ts');
     const others = fs.readdirSync(path.join(repoRoot, 'src/lib')).filter((f) => /\.tsx?$/.test(f) && f !== 'castLoader.ts').filter((f) => /MOLD_TYPES\s*[:=]/.test(fs.readFileSync(path.join(repoRoot, 'src/lib', f), 'utf8')));
     return MOLD_TYPES.length === 1 && MOLD_TYPES[0].name === 'member_status' && MOLD_TYPES[0].arity === 1 && JSON.stringify(MOLD_TYPES[0].values) === '["has","unrecorded","none-by-nature"]' &&
-      isMoldType('member_status') && !isMoldType('member-status') && reg.includes("import { MOLD_TYPES } from './castLoader';") && others.length === 0;
+      isMoldType('member_status') && !isMoldType('member-status') && reg.includes("import { MOLD_TYPES, isMoldType, moldJoin } from './castLoader';") && others.length === 0;
   })());
 
 // ═══ §5 the three states and UNKNOWN ═══

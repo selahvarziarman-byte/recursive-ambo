@@ -307,10 +307,50 @@ export interface CastOrdering {
 // type, compared by name, and the first face's refusal fires by name. Caster-defined
 // types — everything in `signature` or invented as a `types` key — are shared only by τ.
 // ONE constant, here, read by the register (src/lib/jRegister.ts) — never a second list.
-export const MOLD_TYPES: ReadonlyArray<{ readonly name: string; readonly arity: 1; readonly values: readonly string[] }> = [
-  { name: 'member_status', arity: 1, values: ['has', 'unrecorded', 'none-by-nature'] },
+//
+// `STAMP C-7pre` (2026-09-22, the researcher's finding §108.1.2, MOLD v4 §2.1 amended): the
+// mold's values are compared as the ROLE-FACT they assert, never as bare tokens. `unrecorded`
+// was DEFINED as "members EXIST, none on record" — so `has` and `unrecorded` assert ONE
+// role-fact (members exist) and differ only in a RECORD-fact the device never reads; a
+// refusal of `has × unrecorded` named a contradiction that was not one (a fabricated
+// refusal, found by the researcher's own seal firing). The glued value is the UNION
+// record's — the union of two records lists members iff one of them does: `has ⊔
+// unrecorded = has`. Only `none-by-nature` against either contradicts. UNKNOWN and
+// omission stay absence (never a value). The role-facts live ON the constant — one place.
+export interface MoldType {
+  readonly name: string;
+  readonly arity: 1;
+  readonly values: readonly string[];
+  /** the ROLE-FACT each value asserts — two values with one role-fact agree */
+  readonly roleFact: Readonly<Record<string, string>>;
+  /** the UNION record's value for a role-fact two different values assert */
+  readonly union: Readonly<Record<string, string>>;
+}
+export const MOLD_TYPES: ReadonlyArray<MoldType> = [
+  {
+    name: 'member_status',
+    arity: 1,
+    values: ['has', 'unrecorded', 'none-by-nature'],
+    roleFact: { has: 'members exist', unrecorded: 'members exist', 'none-by-nature': 'no members' },
+    union: { 'members exist': 'has' },
+  },
 ];
 export const isMoldType = (name: string): boolean => MOLD_TYPES.some((mold) => mold.name === name);
+
+/**
+ * C-7pre — two KNOWN values of a mold type at the glue: the same value, or two values asserting ONE role-fact, give the
+ * glued value (`has ⊔ unrecorded = has`; `unrecorded ⊔ unrecorded = unrecorded`); anything else is a CONTRADICTION (null).
+ * A name the mold does not define agrees by bare value only.
+ */
+export function moldJoin(name: string, u: string, v: string): string | null {
+  if (u === v) return u;
+  const mold = MOLD_TYPES.find((m) => m.name === name);
+  if (!mold) return null;
+  const fu = mold.roleFact[u];
+  const fv = mold.roleFact[v];
+  if (fu === undefined || fv === undefined || fu !== fv) return null;
+  return mold.union[fu] ?? null;
+}
 
 /** the device's READING of a relation-type's term order — disclosed, never posited (C-6d (γ) §3.1, the designer's ruling) */
 export type OrderingReading = 'directed' | 'symmetric';

@@ -77,7 +77,7 @@
 // limit found at pick-time costs one pick (never after the person has waited).
 
 import type { ConceptSpace, EdgeIdentification } from '../types/geometry';
-import { MOLD_TYPES } from './castLoader';
+import { MOLD_TYPES, isMoldType, moldJoin } from './castLoader';
 
 export interface CastRecord {
   roles: string[];
@@ -88,6 +88,15 @@ export interface CastRecord {
 }
 
 const key = (type: string, terms: string[]): string => `${type}|${JSON.stringify(terms)}`;
+
+/**
+ * C-7pre (the researcher's finding §108.1.2): two KNOWN values AGREE when they are equal — and, for the MOLD's own type
+ * (shared by definition, so the same name on both sides), when they assert ONE role-fact (`has ⊔ unrecorded = has`,
+ * the loader's `moldJoin`). A caster key and a relation agree by bare value; a caster key τ maps onto the mold's name
+ * is the caster's word and stays bare. Bare `vy !== value` here once refused `has × unrecorded` — a fabricated refusal.
+ */
+export const valuesAgree = (xName: string, yName: string, u: string, v: string): boolean =>
+  xName === yName && isMoldType(xName) ? moldJoin(xName, u, v) !== null : u === v;
 
 /** the KNOWN tuples of both homes, as one record */
 export function recordOf(space: ConceptSpace): CastRecord {
@@ -137,8 +146,13 @@ export interface SharedSignature {
   unknownNames: TypePair[]; // τ pairs naming a type one cast does not declare — named, never shared
 }
 
-/** the shared signature: the mold's types by definition; the person's τ in force, or the device's proposal when none is given */
-export function sharedSignature(X: CastRecord, Y: CastRecord, tau?: EdgeIdentification['types']): SharedSignature {
+export interface SharedSignatureOptions {
+  /** C-7b (Δ80): `false` puts NO proposal in force — words outside τ are FOREIGN even when spelled alike; the mold's types alone are shared by definition */
+  propose?: boolean;
+}
+
+/** the shared signature: the mold's types by definition; the person's τ in force, or the device's proposal when none is given (and `propose` is not false) */
+export function sharedSignature(X: CastRecord, Y: CastRecord, tau?: EdgeIdentification['types'], options: SharedSignatureOptions = {}): SharedSignature {
   const types = new Map<string, { yName: string; arity: number }>();
   const unary = new Map<string, string>();
   const ruled: string[] = [];
@@ -165,7 +179,7 @@ export function sharedSignature(X: CastRecord, Y: CastRecord, tau?: EdgeIdentifi
     else unary.set(xName, yName);
     given.push([xName, yName]);
   }
-  const proposalInForce = givenPairs.length === 0;
+  const proposalInForce = options.propose !== false && givenPairs.length === 0;
   if (proposalInForce) for (const [name] of proposed) types.set(name, { yName: name, arity: X.arityOf.get(name) as number });
   const mentioned = new Set(givenPairs.map(([x]) => x));
   const proposable = proposalInForce ? [] : proposed.filter(([x]) => !mentioned.has(x));
@@ -228,7 +242,7 @@ export function assess(X: CastRecord, Y: CastRecord, j: Map<string, string>, sha
     const yTerms = t.terms.map((r) => j.get(r) as string);
     const vy = Y.known.get(key(yName, yTerms));
     if (vy === undefined) exposureHere += 1;
-    else if (vy !== t.value) conflicts.push({ arity: rel ? rel.arity : 1, type: t.type, yType: yName, xTerms: [...t.terms], xValue: t.value, yTerms, yValue: vy });
+    else if (!valuesAgree(t.type, yName, t.value, vy)) conflicts.push({ arity: rel ? rel.arity : 1, type: t.type, yType: yName, xTerms: [...t.terms], xValue: t.value, yTerms, yValue: vy });
     else if (rel) {
       relational += 1;
       for (const r of new Set(t.terms)) support[r] += 1;
@@ -428,7 +442,7 @@ export function registerReading(spaceX: ConceptSpace, spaceY: ConceptSpace, tau?
     for (const [kx, ky] of shared.unary) {
       const vx = X.known.get(key(kx, [x]));
       const vy = Y.known.get(key(ky, [y]));
-      if (vx !== undefined && vy !== undefined && vx !== vy) return true;
+      if (vx !== undefined && vy !== undefined && !valuesAgree(kx, ky, vx, vy)) return true;
     }
     return false;
   };

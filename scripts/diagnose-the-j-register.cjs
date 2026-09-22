@@ -303,6 +303,73 @@ check('§9 ★ a RELATIONAL conflict is named in the same words, the other way r
     return asm.conflicts.length === 1 && describeConflict(asm.conflicts[0]) === 'p(x, y) holds here · p(a, b) does-not-hold there' && asm.relational === 0;
   })());
 
+// ═══ §9b STAMP C-7pre (2026-09-22, the researcher's finding §108.1.2) — THE FABRICATED REFUSAL CORRECTED: the mold's values compared as the ROLE-FACT ═══
+console.log("\n----- §9b C-7pre — `has` and `unrecorded` assert ONE role-fact (members exist): `has ⊔ unrecorded = has`; only `none-by-nature` against either refuses -----");
+const { moldJoin, MOLD_TYPES } = req('src/lib/castLoader.ts');
+const unrec = cast('unrecorded.cast.json');
+const U = recordOf(unrec);
+const minimal = (role, value) => readCastFile(JSON.stringify({ roles: [{ id: role, types: { member_status: value } }], signature: [], relations: [] })).cast;
+const glueOne = (u, v) => {
+  const X = recordOf(minimal('x', u));
+  const Y = recordOf(minimal('y', v));
+  const asm = assess(X, Y, new Map([['x', 'y']]), sharedSignature(X, Y));
+  return { conflicts: asm.conflicts.length, agree: asm.typesAgree, unknown: asm.typesUnknown, named: asm.conflicts.map(describeConflict) };
+};
+check("§9b ★★ THE FIXTURE THAT USES `unrecorded` (unrecorded.cast.json — no landed fixture did): u1 (member_status unrecorded) against Flow's F1 (has) is NOT refused — `assess` names no conflict and counts the type as AGREEING (one role-fact, two record-facts); the glued value is the union record's, `moldJoin` = `has`",
+  (() => {
+    const F = recordOf(flow);
+    const asm = assess(U, F, new Map([['u1', 'F1']]), sharedSignature(U, F));
+    return unrec.roles[0].types.member_status === 'unrecorded' && asm.conflicts.length === 0 && asm.typesAgree === 1 && asm.typesUnknown === 0 && moldJoin('member_status', 'unrecorded', 'has') === 'has' && moldJoin('member_status', 'has', 'unrecorded') === 'has';
+  })());
+check("§9b ★★ THE SAME ROLE against Φ9 (none-by-nature) IS refused, one name, in the ratified words: `member_status: u1 unrecorded · Φ9 none-by-nature` — and `moldJoin` is null (a contradiction)",
+  (() => {
+    const asm = assess(U, P, new Map([['u1', 'Φ9']]), sharedSignature(U, P));
+    return asm.conflicts.length === 1 && describeConflict(asm.conflicts[0]) === 'member_status: u1 unrecorded · Φ9 none-by-nature' && moldJoin('member_status', 'unrecorded', 'none-by-nature') === null;
+  })());
+check("§9b ★★ THE RESEARCHER'S FIVE MINIMAL CASES (inside_midpoint_trace.py, the mold section — implemented independently): has × unrecorded → glued (agree); unrecorded × none-by-nature → REFUSED; has × none-by-nature → REFUSED; UNKNOWN × has → glued, the one side unknown (absence, never a value); UNKNOWN × none-by-nature → glued the same way",
+  (() => {
+    const a = glueOne('has', 'unrecorded');
+    const b = glueOne('unrecorded', 'none-by-nature');
+    const c = glueOne('has', 'none-by-nature');
+    const d = glueOne('UNKNOWN', 'has');
+    const e = glueOne('UNKNOWN', 'none-by-nature');
+    note(`has × unrecorded ${J(a)} · unrecorded × none ${J(b)} · has × none ${J(c)} · UNKNOWN × has ${J(d)} · UNKNOWN × none ${J(e)}`);
+    return a.conflicts === 0 && a.agree === 1 && b.conflicts === 1 && b.named[0] === 'member_status: x unrecorded · y none-by-nature' && c.conflicts === 1 && c.named[0] === 'member_status: x has · y none-by-nature' &&
+      d.conflicts === 0 && d.agree === 0 && d.unknown === 1 && e.conflicts === 0 && e.agree === 0 && e.unknown === 1;
+  })());
+check("§9b ★ THE GLUED VALUE IS THE UNION RECORD'S, ON THE CONSTANT (one place — no second list): `unrecorded ⊔ unrecorded = unrecorded` (two records listing no members list none) · `has ⊔ has = has` · `none-by-nature ⊔ none-by-nature = none-by-nature`; the role-facts live on `MOLD_TYPES[0]` (has and unrecorded share one, none-by-nature its own)",
+  moldJoin('member_status', 'unrecorded', 'unrecorded') === 'unrecorded' && moldJoin('member_status', 'has', 'has') === 'has' && moldJoin('member_status', 'none-by-nature', 'none-by-nature') === 'none-by-nature' &&
+    MOLD_TYPES[0].roleFact.has === MOLD_TYPES[0].roleFact.unrecorded && MOLD_TYPES[0].roleFact['none-by-nature'] !== MOLD_TYPES[0].roleFact.has && MOLD_TYPES[0].union[MOLD_TYPES[0].roleFact.has] === 'has');
+check("§9b ★ LAW 24 — THE JOIN IS THE MOLD'S ALONE: the same two values under a CASTER key (`member-status`, the (vii) spelling) are compared bare and `has × unrecorded` REFUSES there (`member-status: x has · y unrecorded`); a name the mold does not define joins nothing (`moldJoin('member-status', …)` null)",
+  (() => {
+    const X = recordOf(readCastFile(JSON.stringify({ roles: [{ id: 'x', types: { 'member-status': 'has' } }], signature: [], relations: [] })).cast);
+    const Y = recordOf(readCastFile(JSON.stringify({ roles: [{ id: 'y', types: { 'member-status': 'unrecorded' } }], signature: [], relations: [] })).cast);
+    const asm = assess(X, Y, new Map([['x', 'y']]), sharedSignature(X, Y, [['member-status', 'member-status']]));
+    return asm.conflicts.length === 1 && describeConflict(asm.conflicts[0]) === 'member-status: x has · y unrecorded' && moldJoin('member-status', 'has', 'unrecorded') === null;
+  })());
+check("§9b ★ THE SEARCH AGREES WITH THE CHECK (one rule, `valuesAgree`): the unrecorded cast against its own `has` twin (v1 has · v2 has · r(v1, v2)) reads ONE offer u1↦v1 · u2↦v2 with 0 unary refusals and `types: 2 agree · 0 unknown`; LAW 24 — the twin with v1 none-by-nature reads EMPTY CORE (b) with 1 unary refusal",
+  (() => {
+    const twin = (v1) => readCastFile(JSON.stringify({ roles: [{ id: 'v1', types: { member_status: v1 } }, { id: 'v2', types: { member_status: 'has' } }], signature: [{ type: 'r', arity: 2 }], relations: [{ type: 'r', terms: ['v1', 'v2'], polarity: 'holds' }] })).cast;
+    const one = registerReading(unrec, twin('has'));
+    const none = registerReading(unrec, twin('none-by-nature'));
+    return one.state === 'offers' && one.offers.length === 1 && pairsOf(one.offers[0]) === 'u1↦v1 · u2↦v2' && one.unaryRefusals === 0 && one.offers[0].typesAgree === 2 && one.offers[0].typesUnknown === 0 &&
+      none.state === 'empty core (b)' && none.unaryRefusals === 1;
+  })());
+check("§9b ★ THE SEAL STANDS BESIDE THE CUT (LAW 24 the other way): T × Φ under answers-to↦decays is STILL refused by name (`has × none-by-nature` is a contradiction), and the t-cell × t-cell top offer still reads `types: 10 agree · 0 unknown`",
+  (() => {
+    const r = registerReading(tcell, phi, TAU_A);
+    const c2 = registerReading(tcell, tcell, undefined, 5_000_000, { countFull: false });
+    return r.state === 'empty core (b)' && r.unaryRefusals === 1 && c2.state === 'offers' && c2.offers[0].typesAgree === 10 && c2.offers[0].typesUnknown === 0;
+  })());
+check("§9b ⛔ NO PROPOSAL WHEN TOLD (C-7b's ground, Δ80): `sharedSignature(X, Y, undefined, { propose: false })` puts NO relational type in force — Flow × Φ share `disjoins` and `presupposes` by name and neither is shared; the mold's key alone is; with a τ the given pairs are in force as before",
+  (() => {
+    const F = recordOf(flow);
+    const shNo = sharedSignature(F, P, undefined, { propose: false });
+    const shTau = sharedSignature(F, P, [['sustains', 'descends-from']], { propose: false });
+    const shDefault = sharedSignature(F, P);
+    return shNo.types.size === 0 && !shNo.proposalInForce && J(shNo.ruled) === '["member_status"]' && shDefault.types.size === 2 && shDefault.proposalInForce && shTau.types.size === 1 && shTau.types.get('sustains').yName === 'descends-from';
+  })());
+
 // ═══ §10 C-6d (β) + (γ) — THE SURFACE: the J register on the selected cell's seams, pinned by BEHAVIOUR (rendered to a string under node, the store driven) and by SOURCE ═══
 console.log("\n----- §10 ★★ C-6d (β) + (γ) — the J register's surface: the five states, the proposal above the offers, the group lines, exposure by side, the take, the fiat pair, none -----");
 const React = require('react');
@@ -456,7 +523,7 @@ check("§10 ★ SOURCE: the five states are five sentences, each its own words; 
 // ═══ §6 boundaries, source-pinned ═══
 const src = readLf('src/lib/jRegister.ts');
 check("§6 ⛔ NO STORE, NO WRITTEN J: the module is pure over two ConceptSpaces and an optional τ — it imports only the types and the mold's ONE constant from the loader, and nothing under the store imports it",
-  /import type \{ ConceptSpace, EdgeIdentification \} from '\.\.\/types\/geometry';/.test(src) && src.includes("import { MOLD_TYPES } from './castLoader';") && (src.match(/^import /gm) || []).length === 2 &&
+  /import type \{ ConceptSpace, EdgeIdentification \} from '\.\.\/types\/geometry';/.test(src) && src.includes("import { MOLD_TYPES, isMoldType, moldJoin } from './castLoader';") && (src.match(/^import /gm) || []).length === 2 &&
     !/from '\.\.\/store|from '\.\.\/components|useGeometryStore|updateSelected/.test(src) &&
     !fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts'), 'utf8').includes('jRegister'));
 check('§6 RECORD, NOT READING: `support` is DERIVED at every read (the assessment computes it; nothing reads `identification.support` or `.fiat` back)',

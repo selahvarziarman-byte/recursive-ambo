@@ -1,0 +1,34 @@
+{
+  "source": "STAMP C-7pre (2026-09-22): a cast that USES `unrecorded` on a role — the mold's honest value when the members EXIST and the record has none (REPLY_TO_THE_U_SEAT_89 :9). No landed fixture did, the researcher's own note; this one is the positive control for the role-fact comparison: u1 (unrecorded) against a `has` role is NOT refused and the glued role reads `has`; against a `none-by-nature` role it IS refused, one name.",
+  "roles": [
+    {
+      "id": "u1",
+      "types": {
+        "member_status": "unrecorded"
+      }
+    },
+    {
+      "id": "u2",
+      "types": {
+        "member_status": "has"
+      }
+    }
+  ],
+  "signature": [
+    {
+      "type": "r",
+      "arity": 2
+    }
+  ],
+  "relations": [
+    {
+      "type": "r",
+      "terms": [
+        "u1",
+        "u2"
+      ],
+      "polarity": "holds"
+    }
+  ],
+  "axioms": []
+}
