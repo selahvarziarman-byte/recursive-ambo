@@ -59,7 +59,6 @@ import type {
 import { DiagonalizationMatrixSection } from './DiagonalizationMatrixSection';
 import { Panel } from './Panel';
 import { GeneralSiteFacePanel } from './GeneralSiteFacePanel';
-import { JRegisterPanel } from './JRegisterPanel';
 import { Layer3WitnessPanel } from './Layer3WitnessPanel';
 import { SelectedVertexRelations } from './SelectedVertexRelations';
 import { SiteTraceSlot } from './SiteTraceSlot';
@@ -745,7 +744,6 @@ function SelectionPanel() {
   const isolateSelectedCell = useGeometryStore((state) => state.viewLayout.isolateSelectedCell);
   const toggleIsolateSelectedCell = useGeometryStore((state) => state.toggleIsolateSelectedCell);
   const selectedCell = findCell(shape, selectedCellId);
-  const edgeTauDrafts = useGeometryStore((state) => state.edgeTauDrafts);
   const vertex = selectedVertexId ? shape.vertices[selectedVertexId] : null;
   const rows = useMemo(() => getWorkspaceCellRows(shape), [shape]);
   const selectedCellRow = selectedCell ? rows.find((row) => row.id === selectedCell.id) ?? null : null;
@@ -923,22 +921,11 @@ function SelectionPanel() {
         </SidebarSection>
       ) : null}
 
-      {/* C-6d (β): the connection layer's first GIVEN surface — the layer's own edge
-          register, an edge table of the selected cell's seams; a row whose corners
-          BOTH hold a cast carries the person's J (the device offers, the person takes);
-          mounted before the composition, which is untouched */}
-      {selectedCell ? (
-        <SidebarSection
-          id="selection-j-register"
-          title="J Register"
-          count={`${selectedCellEdges.length} seams`}
-          defaultOpen
-          resetKey={selectedCell.id}
-        >
-          <JRegisterPanel shape={shape} edges={selectedCellEdges} tauDrafts={edgeTauDrafts} />
-        </SidebarSection>
-      ) : null}
-
+      {/* C-7c (2026-09-22, Δ80): the `J Register` (C-6d (β)/(γ)) is UNMOUNTED — its offering
+          was retired as a surface, its one unique path (a J at a g0 edge before the ambo)
+          does not reach the ambo shape, and one record wearing two sentences was the defect
+          class. The module and its file stay on disk; the act now lives at the midpoint on
+          the canvas (the unfolded midpoint). The Layer 3 Witness below is untouched. */}
       <SidebarSection
         id="selection-layer3-witness"
         title="Layer 3 Witness"

@@ -147,6 +147,26 @@ check('§2 ★ A LATER GENERATION (the ambo of the core, an octahedral host): th
     const s2 = midpointSiteOf(gen2, p2.trace.siteId, p2.trace);
     return p2.trace.complementVertexIds.length === 4 && s2 !== null && s2.sources.length === 2 && s2.sources.every((s) => s.apexes.length === 1 && p2.trace.complementVertexIds.includes(s.apexes[0]));
   })());
+// C-7c item 1 (2026-09-22) — THE SECOND DISSECTION, MEASURED: a record given at a gen-1 midpoint, then the ambo again.
+// The MECHANISM is pinned (the pair survives as a parent-cell-face edge with a FRESH id — `makeEdgeId(shapeId, pair)`
+// depends on the shape id; the gen-1 shape keeps its record); the gen-2 record's state is PRINTED as a note, never
+// pinned as expected — a carry across the dissection is priced in the report, not built here.
+check('§2 ★★ THE SECOND DISSECTION, MEASURED (C-7c item 1): a J given on the gen-1 edge A–B, then the core dissected — the pair A–B exists in gen 2 as a parent-cell-face edge with a DIFFERENT id (the mint depends on the shape id), the gen-1 shape keeps its record intact, and the AB midpoint\'s site at gen 2 resolves to the NEW edge; what that edge carries is printed beneath, as a fact',
+  (() => {
+    const g1 = withCast(withCast(applyAmboDissection(seed), a, flow), b, phi);
+    const r1 = buildGeneralSitePacketPresenterReport(g1);
+    const p1 = r1.packets.find((p) => p.trace.parentIds.includes(a) && p.trace.parentIds.includes(b));
+    const s1 = midpointSiteOf(g1, p1.trace.siteId, p1.trace);
+    const given = { ...g1, edges: g1.edges.map((e) => (e.id === s1.edge.id ? { ...e, identification: { roles: [['F5', 'Φ7']], types: [['sustains', 'descends-from']] } } : e)) };
+    const g2 = applyAmboDissection(given, given.cells.find((x) => x.kind === 'core').id);
+    const pairOf = (e) => [...e.vertexIds].sort().join('|');
+    const twin = g2.edges.filter((e) => pairOf(e) === pairOf(s1.edge));
+    const r2 = buildGeneralSitePacketPresenterReport(g2);
+    const p2 = r2.packets.find((p) => p.trace.siteId === p1.trace.siteId);
+    const s2 = p2 ? midpointSiteOf(g2, p2.trace.siteId, p2.trace) : null;
+    note(`gen-1 edge ${s1.edge.id} → gen-2 edge ${twin.map((e) => e.id).join(',')} · the gen-2 edge carries: ${JSON.stringify(twin[0] && twin[0].identification)} · any record in gen 2: ${g2.edges.filter((e) => e.identification).length} · the AB surface at gen 2 reads ${s2 && s2.edge.identification ? 'glued' : 'no pair given yet'}`);
+    return twin.length === 1 && twin[0].id !== s1.edge.id && given.edges.find((e) => e.id === s1.edge.id).identification.roles.length === 1 && s2 !== null && s2.edge.id === twin[0].id && !g2.edges.some((e) => e.id === s1.edge.id);
+  })());
 check('§2 a site whose parents do not both hold a cast has NO surface: the AD midpoint (A holds Flow, D holds Φ) has one; a seed with casts on A alone yields none for AB (the chooser falls to the corner\'s own inside, or nothing)',
   (() => { const one = applyAmboDissection(withCast(seed, byLabel(seed, 'A'), flow)); const rep = buildGeneralSitePacketPresenterReport(one); const p = rep.packets.find((x) => x.trace.parentIds.includes(byLabel(one, 'A')) && x.trace.parentIds.includes(byLabel(one, 'B'))); const s = midpointSiteOf(one, p.trace.siteId, p.trace); return s !== null && !(one.vertices[s.a].data.cast && one.vertices[s.b].data.cast); })());
 

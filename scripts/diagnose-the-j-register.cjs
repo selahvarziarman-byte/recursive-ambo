@@ -506,9 +506,9 @@ check('§10 ★★ THE STORE, BY BEHAVIOUR: τ given before a take lands in the 
 const panelSrc = readLf('src/components/JRegisterPanel.tsx');
 const panelsSrc = readLf('src/components/Panels.tsx');
 const storeSrc = readLf('src/store/geometryStore.ts');
-check("§10 ★ SOURCE: the register is MOUNTED in the selection panel once, before the Layer 3 Witness and before the composition, under the selected cell; the panel imports the register's arithmetic, the store and the types — nothing from the manuscript, the explore window, three or the camera",
-  (panelsSrc.match(/<JRegisterPanel /g) || []).length === 1 && panelsSrc.indexOf('id="selection-j-register"') < panelsSrc.indexOf('id="selection-layer3-witness"') && panelsSrc.indexOf('id="selection-j-register"') < panelsSrc.indexOf('id="selection-composition"') &&
-    panelsSrc.includes("import { JRegisterPanel } from './JRegisterPanel';") &&
+check("§10 ★ SOURCE (C-7c, Δ80): the register's surface is UNMOUNTED — Panels.tsx imports no JRegisterPanel and mounts no `selection-j-register` section, while the Layer 3 Witness and the composition stand; the panel's file stays on disk (this witness renders it directly) and imports the register's arithmetic, the store and the types — nothing from the manuscript, the explore window, three or the camera",
+  (panelsSrc.match(/<JRegisterPanel /g) || []).length === 0 && !panelsSrc.includes('id="selection-j-register"') && panelsSrc.includes('id="selection-layer3-witness"') && panelsSrc.includes('id="selection-composition"') &&
+    !panelsSrc.includes("from './JRegisterPanel'") && fs.existsSync(path.join(repoRoot, 'src/components/JRegisterPanel.tsx')) &&
     (panelSrc.match(/from '[^']+';/g) || []).every((clause) => /^from '(react|\.\.\/lib\/jRegister|\.\.\/store\/geometryStore|\.\.\/types\/geometry)';$/.test(clause)) && (panelSrc.match(/from '[^']+';/g) || []).length === 4 &&
     !/\bcamera\b|ExploreWindow|manuscript/i.test(panelSrc.replace(/^\s*\/\/.*$/gm, '')));
 check("§10 ★ SOURCE — RECORD, NOT READING: the panel never writes the store (no `setState`, no `set(`) — it calls exactly the three actions; it never reads `identification.support` or `.fiat` (both derived by `assess` at every render); the store's one writer writes `roles` and `types` and no other key",

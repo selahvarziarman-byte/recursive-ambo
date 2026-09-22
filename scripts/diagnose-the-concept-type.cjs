@@ -229,5 +229,22 @@ check('§4 ★ THE IDENTIFICATION IS WRITTEN BY EXACTLY ONE SITE AND READ BY FIV
     })(),
   `readers: ${JSON.stringify(identificationReaders)}`);
 
+// C-7c (2026-09-22, Δ80): the register's surface is UNMOUNTED but its file stays on disk by charter — so
+// it still READS the type and stays in both lists above (the census is by disk, not by mount; the
+// letter's "readers drop by one" premise was measured false and said). The mount is pinned apart.
+check('§4 ★ THE RETIRED SURFACE IS UNMOUNTED AND STILL COUNTED (C-7c): no file under src imports JRegisterPanel (Panels.tsx no longer mounts it); the file stays on disk, so the census lists above keep it — a reader by disk, not by mount',
+  (() => {
+    const importers = [];
+    const walk = (d) => {
+      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const f = path.join(d, e.name);
+        if (e.isDirectory()) walk(f);
+        else if (/\.tsx?$/.test(e.name) && fs.readFileSync(f, 'utf8').includes("from './JRegisterPanel'")) importers.push(path.relative(repoRoot, f).split(path.sep).join('/'));
+      }
+    };
+    walk(path.join(repoRoot, 'src'));
+    return importers.length === 0 && fs.existsSync(path.join(repoRoot, 'src/components/JRegisterPanel.tsx'));
+  })());
+
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CONCEPT-TYPE: ALL PASS — the corner may hold a cast, the edge may carry a J, and the absence of either is lawful' : `DIAGNOSE-THE-CONCEPT-TYPE: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);
