@@ -3,6 +3,9 @@ import { Canvas, type ThreeEvent } from '@react-three/fiber';
 // to the shared SceneCameraRig (verbatim semantics — every default is this
 // file's old literal) so the Ambo + Manuscript ride ONE mechanism.
 import { SceneCameraControls, type SceneBounds } from './SceneCameraRig';
+// C-7a: the selected corner's concept-space drawn ON THE CANVAS (the designer's
+// siting, ratified §110.2) — the world shows the thing, the column reads it
+import { CastInsidePanel } from './CastInsideDiagram';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import {
@@ -103,6 +106,11 @@ export function Workspace3D() {
           resetCameraRequest={resetCameraRequest}
         />
       </Canvas>
+      {/* C-7a — THE INSIDE of the selected corner's concept-space, an arc diagram on
+          the canvas: visible from every sidebar tab, so the act (the packets tab) and
+          its reading are never one tab apart, and the column is not re-inflated. The
+          panel renders NOTHING when the corner holds no cast (a true absence, no frame). */}
+      {selectedVertexId ? <CastInsidePanel shape={shape} vertexId={selectedVertexId} /> : null}
       {/* C-6a part 2 (§94, ruled): the readout's empty state is a TRUE ABSENCE —
           no words, no glyph. The gesture line below teaches hover now; this slot
           only ever reports what IS under the pointer. A hidden ghost holds one

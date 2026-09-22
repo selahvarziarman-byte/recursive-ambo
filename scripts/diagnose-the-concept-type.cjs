@@ -190,8 +190,12 @@ for (const dir of ['src/lib', 'src/manuscript', 'src/playground', 'src/component
 // EdgeIdentification as INPUTS and writes nothing. C-6d (β): the register's
 // SURFACE (src/components/JRegisterPanel.tsx) reads the two corners' casts and
 // the edge's identification; the store's ONE writer writes `roles` and `types`.
-const CAST_READERS = ['src/components/JRegisterPanel.tsx', 'src/components/Panels.tsx', 'src/components/VertexPacketEditor.tsx', 'src/lib/castLoader.ts', 'src/lib/jRegister.ts'];
-check('§4 ★ THE CAST HAS EXACTLY ITS FIVE (C-6c + C-6d (α) + (β)): the loader (src/lib/castLoader.ts), the writer (the packet editor), the reader (the card in Panels), the register that computes on the type (src/lib/jRegister.ts) and the register\'s surface (src/components/JRegisterPanel.tsx) — no other file under the engine roots, the components or the store mentions `cast` or `ConceptSpace`',
+// C-7a (2026-09-22): THE INSIDE — the incidence presentation computed on the type
+// (src/lib/castInside.ts) and its drawing on the canvas (src/components/CastInsideDiagram.tsx),
+// both readers of the corner's cast; Workspace3D mounts the panel by vertex id and reads
+// no cast itself.
+const CAST_READERS = ['src/components/CastInsideDiagram.tsx', 'src/components/JRegisterPanel.tsx', 'src/components/Panels.tsx', 'src/components/VertexPacketEditor.tsx', 'src/lib/castInside.ts', 'src/lib/castLoader.ts', 'src/lib/jRegister.ts'];
+check('§4 ★ THE CAST HAS EXACTLY ITS SEVEN (C-6c + C-6d (α) + (β) + C-7a): the loader (src/lib/castLoader.ts), the writer (the packet editor), the reader (the card in Panels), the register that computes on the type (src/lib/jRegister.ts), the register\'s surface (src/components/JRegisterPanel.tsx), the INSIDE computed on the type (src/lib/castInside.ts) and its diagram on the canvas (src/components/CastInsideDiagram.tsx) — no other file under the engine roots, the components or the store mentions `cast` or `ConceptSpace`',
   JSON.stringify([...castReaders].sort()) === JSON.stringify(CAST_READERS), `readers: ${JSON.stringify(castReaders)}`);
 check('§4 ★ THE IDENTIFICATION IS WRITTEN BY EXACTLY ONE SITE AND READ BY THREE NAMED FILES (C-6d (β), RECORD NOT READING): the files mentioning the edge\'s `identification` or `EdgeIdentification` are the register (src/lib/jRegister.ts — τ and roles as INPUTS), its surface (src/components/JRegisterPanel.tsx — reads the record, derives support and fiat at every render) and the store (src/store/geometryStore.ts — the one writer, `writeEdgeIdentification`, `roles` and `types` only); exactly ONE write site in the whole tree, in the store; `support` and `fiat` written by nothing',
   JSON.stringify([...identificationReaders].sort()) === JSON.stringify(['src/components/JRegisterPanel.tsx', 'src/lib/jRegister.ts', 'src/store/geometryStore.ts']) &&
