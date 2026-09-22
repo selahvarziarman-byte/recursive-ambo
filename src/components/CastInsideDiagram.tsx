@@ -34,7 +34,21 @@
 import { useMemo } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
 import { castSummaryLine } from '../lib/castLoader';
-import { insideOf, type Inside, type InsideArc, type InsidePoint } from '../lib/castInside';
+import { insideOf, type Inside, type InsideArc, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
+
+/** C-7b — what the midpoint's unfolding adds to a mark: the origin colouring (`both` alone gets a glyph) */
+export interface MarkExtra {
+  emphasis?: boolean; // the amber stroke — `both`, or a point in the person's map
+  glyph?: string; // the glyph before the word (`≡` for both)
+  attrs?: Record<string, string>;
+}
+
+/** C-7b — a point that can be pointed at */
+export interface PointExtra {
+  onClick?: () => void;
+  emphasis?: boolean; // a point the person has picked or paired
+  attrs?: Record<string, string>;
+}
 
 export interface InsideLayoutOptions {
   /** the row pitch — the column degrades by scrolling, never by shrinking below legibility */
@@ -101,15 +115,19 @@ const arcPath = (arc: InsideArc, g: InsideGeometry, k: number): { d: string; ape
 };
 
 /** ONE COLUMN, as SVG children — the midpoint's unfolding composes two of these in one drawing */
-export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, pointExtra }: {
+export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, loopExtra, nodeExtra, pointExtra }: {
   inside: Inside;
   geometry: InsideGeometry;
   /** distinct per column — the arc paths carry ids the words ride on */
   idPrefix?: string;
-  /** the midpoint's origin colouring (C-7b) — a class and a glyph for an arc, by its key `type|from|to` */
-  arcExtra?: (arc: InsideArc) => { className?: string; glyph?: string; attrs?: Record<string, string> } | null;
+  /** the midpoint's origin colouring (C-7b) on an arc */
+  arcExtra?: (arc: InsideArc) => MarkExtra | null;
+  /** …on a loop */
+  loopExtra?: (loop: InsideLoop) => MarkExtra | null;
+  /** …on a tuple-node */
+  nodeExtra?: (node: InsideTupleNode) => MarkExtra | null;
   /** C-7b — a point that can be pointed at */
-  pointExtra?: (point: InsidePoint) => { onClick?: () => void; className?: string; attrs?: Record<string, string> } | null;
+  pointExtra?: (point: InsidePoint) => PointExtra | null;
 }) {
   const g = geometry;
   const seenPair = new Map<string, number>();
@@ -127,9 +145,9 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
         const pathId = `${idSafe(idPrefix)}-a${i}`;
         return (
           <g key={`arc-${i}`} data-inside-arc={`${arc.type}|${inside.points[arc.from].id}|${inside.points[arc.to].id}|${arc.polarity}|${arc.side}`} {...(extra?.attrs ?? {})}>
-            <path id={pathId} d={p.d} fill="none" className={extra?.className ?? (negative ? 'stroke-rose-300/80' : 'stroke-stone-400/80')} strokeWidth={extra?.className ? 2.2 : 1.2} strokeDasharray={negative ? '4 3' : undefined} />
+            <path id={pathId} d={p.d} fill="none" className={extra?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300/80' : 'stroke-stone-400/80'} strokeWidth={extra?.emphasis ? 2.2 : 1.2} strokeDasharray={negative ? '4 3' : undefined} />
             {/* the word RIDES its own arc, outward of the stroke: glyph tops face away from the column on both sides */}
-            <text dy={-3} fontSize={fontSize - 1} className={extra?.className ? 'fill-amber-200' : negative ? 'fill-rose-300' : 'fill-stone-400'}>
+            <text dy={-3} fontSize={fontSize - 1} className={extra?.emphasis ? 'fill-amber-200' : negative ? 'fill-rose-300' : 'fill-stone-400'}>
               <textPath data-inside-arc-word="true" href={`#${pathId}`} startOffset="50%" textAnchor="middle">
                 {`${extra?.glyph ? `${extra.glyph} ` : ''}${wordOf(arc.type, arc.polarity)}`}
               </textPath>
@@ -141,8 +159,9 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
         const ys = node.legs.map((leg) => g.yOf(leg));
         const ny = ys.reduce((a, b) => a + b, 0) / ys.length;
         const negative = node.polarity === 'does-not-hold';
+        const nx = nodeExtra?.(node) ?? null;
         return (
-          <g key={`node-${i}`} data-inside-node={`${node.type}|${node.legs.map((leg) => inside.points[leg].id).join(',')}|${node.polarity}`}>
+          <g key={`node-${i}`} data-inside-node={`${node.type}|${node.legs.map((leg) => inside.points[leg].id).join(',')}|${node.polarity}`} {...(nx?.attrs ?? {})}>
             {node.legs.map((leg, li) => {
               const ly = g.yOf(leg);
               const tx = nodeX + (g.px - nodeX) * 0.22;
@@ -154,8 +173,8 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
                 </g>
               );
             })}
-            <circle cx={nodeX} cy={ny} r={5} className={negative ? 'fill-stone-950 stroke-rose-300' : 'fill-stone-950 stroke-stone-300'} strokeWidth={1.2} />
-            <text x={nodeX + 9} y={ny + 3.5} fontSize={fontSize - 1} className={negative ? 'fill-rose-300' : 'fill-stone-300'}>{wordOf(node.type, node.polarity)}</text>
+            <circle cx={nodeX} cy={ny} r={5} className={nx?.emphasis ? 'fill-stone-950 stroke-amber-300' : negative ? 'fill-stone-950 stroke-rose-300' : 'fill-stone-950 stroke-stone-300'} strokeWidth={nx?.emphasis ? 2 : 1.2} />
+            <text x={nodeX + 9} y={ny + 3.5} fontSize={fontSize - 1} className={nx?.emphasis ? 'fill-amber-200' : negative ? 'fill-rose-300' : 'fill-stone-300'}>{`${nx?.glyph ? `${nx.glyph} ` : ''}${wordOf(node.type, node.polarity)}`}</text>
           </g>
         );
       })}
@@ -171,7 +190,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
             key={point.id}
             data-inside-point={point.id}
             data-inside-address={point.label ? undefined : 'true'}
-            className={extra?.className ?? (extra?.onClick ? 'cursor-pointer' : undefined)}
+            className={extra?.onClick ? 'cursor-pointer' : undefined}
             onClick={extra?.onClick}
             {...(extra?.attrs ?? {})}
           >
@@ -184,19 +203,20 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
                 </tspan>
               ))}
             </text>
-            <circle cx={g.px} cy={y} r={3.2} className={extra?.className ? 'fill-amber-300 stroke-amber-100' : 'fill-stone-200 stroke-stone-950'} strokeWidth={1} />
+            <circle cx={g.px} cy={y} r={extra?.emphasis ? 4.2 : 3.2} className={extra?.emphasis ? 'fill-amber-300 stroke-amber-100' : 'fill-stone-200 stroke-stone-950'} strokeWidth={1} />
             {loops.map((loop, li) => {
               const cx = g.px + 10 + li * 14;
               const negative = loop.polarity === 'does-not-hold';
+              const lx = loopExtra?.(loop) ?? null;
               return (
-                <g key={`loop-${li}`} data-inside-loop={`${loop.type}|${point.id}|${loop.polarity}`}>
-                  <circle cx={cx} cy={y - 8} r={5} fill="none" className={negative ? 'stroke-rose-300' : 'stroke-stone-300'} strokeWidth={1.1} strokeDasharray={negative ? '3 2' : undefined} />
+                <g key={`loop-${li}`} data-inside-loop={`${loop.type}|${point.id}|${loop.polarity}`} {...(lx?.attrs ?? {})}>
+                  <circle cx={cx} cy={y - 8} r={5} fill="none" className={lx?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300' : 'stroke-stone-300'} strokeWidth={lx?.emphasis ? 2 : 1.1} strokeDasharray={negative ? '3 2' : undefined} />
                 </g>
               );
             })}
             {loops.length ? (
               <text data-inside-loop-words={point.id} x={g.px + 10 + loops.length * 14 + 2} y={y - 5} fontSize={fontSize - 2} className={loops.some((l) => l.polarity === 'does-not-hold') ? 'fill-rose-300' : 'fill-stone-400'}>
-                {loops.map((l) => wordOf(l.type, l.polarity)).join(' · ')}
+                {loops.map((l) => { const lx = loopExtra?.(l) ?? null; return `${lx?.glyph ? `${lx.glyph} ` : ''}${wordOf(l.type, l.polarity)}`; }).join(' · ')}
               </text>
             ) : null}
           </g>

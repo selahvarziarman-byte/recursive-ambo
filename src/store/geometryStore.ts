@@ -14,9 +14,14 @@ import {
   type PersistedWorkspaceV1,
 } from '../lib/workspacePersistence';
 import { getOperation } from '../operations/registry';
+// C-7b — THE REFUSAL AT THE ACT: the register's check on a pair the person gives (the mold's
+// types by definition, caster words only by τ) and the FORM of a word pair; imported by the
+// store because the act IS the store action — no write without the check, by construction
+import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 import type {
   Cell,
   CellId,
+  Edge,
   EdgeId,
   EdgeIdentification,
   FaceId,
@@ -79,6 +84,21 @@ export type FieldAtlasSampleRenderMode =
   | 'intensity'
   | 'phase'
   | 'dominance';
+
+// C-7b — THE MIDPOINT'S ACTS: the person points role to role and word to word on the
+// source edge; a refused act stays PENDING beside its refusal (the FORM in words, or the
+// contradictions by name) so the person can withdraw EITHER half — the attempt, or the
+// prior act it conflicts with — and a withdrawal of a prior half re-makes the attempt.
+export interface MidpointAct {
+  kind: 'role' | 'word';
+  pair: [string, string]; // this cast's ↦ that cast's (the edge's first corner ↦ its second)
+}
+
+export interface MidpointRefusal {
+  act: MidpointAct;
+  form?: string; // a refusal of the FORM (a role already paired · a word across arities · a name not declared)
+  conflicts: Conflict[]; // the contradictions, by name — empty on a refusal of the form
+}
 
 export type InspectionHoverTarget =
   | { kind: 'cell'; cellId: CellId }
@@ -211,6 +231,14 @@ interface GeometryState {
   setEdgeTau: (edgeId: EdgeId, types: EdgeIdentification['types']) => void;
   takeEdgeIdentification: (edgeId: EdgeId, roles: EdgeIdentification['roles']) => void;
   withdrawEdgeIdentification: (edgeId: EdgeId) => void;
+  // C-7b — the midpoint's acts on the source edge, checked at the act; a refusal per edge,
+  // transient (never exported — the record is)
+  midpointRefusals: Record<EdgeId, MidpointRefusal>;
+  giveRolePair: (edgeId: EdgeId, x: string, y: string) => void;
+  withdrawRolePair: (edgeId: EdgeId, x: string, y: string) => void;
+  giveWordPair: (edgeId: EdgeId, s: string, t: string) => void;
+  withdrawWordPair: (edgeId: EdgeId, s: string, t: string) => void;
+  withdrawMidpointAttempt: (edgeId: EdgeId) => void;
   exportWorkspace: () => PersistedWorkspaceV1;
   importWorkspace: (workspace: PersistedWorkspaceV1) => void;
 }
@@ -239,6 +267,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   selectedVertexId: null,
   selectedEdgeId: null,
   edgeTauDrafts: {},
+  midpointRefusals: {},
   liftSelection: [],
   dualInspectionTarget: null,
   cellVisibility: defaultCellVisibility,
@@ -869,6 +898,22 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     }
     writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edgeId, undefined);
   },
+  // ═══ C-7b — THE MIDPOINT'S ACTS (the record placement stands, 0031 §5: `identification`
+  // on the source edge between the two parents, in the current shape; the midpoint READS it).
+  // Every act is CHECKED AT THE ACT — the FORM first, then the register's refusal — and a
+  // contradiction refuses with NOTHING glued (the edge keeps its prior state). τ before the
+  // first role pair lives in the draft, as (β) held it; a record leaves the edge when its last
+  // role pair is withdrawn, its τ handed back to the draft. Every write routes through THE ONE
+  // WRITER. No history entry — the person's record on the edge, like a packet edit. ═══
+  giveRolePair: (edgeId, x, y) => midpointAct(set, get, edgeId, { kind: 'role', pair: [x, y] }),
+  giveWordPair: (edgeId, s, t) => midpointAct(set, get, edgeId, { kind: 'word', pair: [s, t] }),
+  withdrawRolePair: (edgeId, x, y) => midpointWithdraw(set, get, edgeId, { kind: 'role', pair: [x, y] }),
+  withdrawWordPair: (edgeId, s, t) => midpointWithdraw(set, get, edgeId, { kind: 'word', pair: [s, t] }),
+  withdrawMidpointAttempt: (edgeId) => {
+    const midpointRefusals = { ...get().midpointRefusals };
+    delete midpointRefusals[edgeId];
+    set({ midpointRefusals });
+  },
   exportWorkspace: () => {
     const state = get();
 
@@ -1002,6 +1047,7 @@ function writeEdgeIdentification(
   });
   set({
     edgeTauDrafts: state.edgeTauDrafts,
+    midpointRefusals: state.midpointRefusals,
     shapes: {
       ...state.shapes,
       [shape.id]: {
@@ -1010,6 +1056,89 @@ function writeEdgeIdentification(
       },
     },
   });
+}
+
+// ─── C-7b — the midpoint's acts, behind the one writer ───
+type Getter = () => GeometryState;
+type Setter = (partial: Partial<GeometryState>) => void;
+
+/** the record in force on an edge: the identification's roles and τ, or no roles and the draft's τ */
+function midpointRecord(state: GeometryState, edge: Edge): { roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] } {
+  const rec = edge.identification;
+  return { roles: rec ? rec.roles : [], types: rec ? rec.types : state.edgeTauDrafts[edge.id] ?? [] };
+}
+
+/** the roles and τ written as the record when a role pair stands; τ alone goes to the draft; nothing at all clears both */
+function midpointWrite(set: Setter, state: GeometryState, shape: Shape, edge: Edge, roles: EdgeIdentification['roles'], types: EdgeIdentification['types']): void {
+  const edgeTauDrafts = { ...state.edgeTauDrafts };
+  if (roles.length === 0) {
+    if (types.length) edgeTauDrafts[edge.id] = types;
+    else delete edgeTauDrafts[edge.id];
+    writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edge.id, undefined);
+    return;
+  }
+  delete edgeTauDrafts[edge.id];
+  writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edge.id, { roles, types });
+}
+
+function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct): void {
+  const state = get();
+  const shape = state.shapes[state.currentShapeId];
+  const edge = shape?.edges.find((candidate) => candidate.id === edgeId);
+  if (!shape || !edge) return;
+  const A = shape.vertices[edge.vertexIds[0]]?.data.cast;
+  const B = shape.vertices[edge.vertexIds[1]]?.data.cast;
+  if (!A || !B) return; // a seam whose corners do not both hold a cast has no act
+  const { roles, types } = midpointRecord(state, edge);
+  const refuse = (form: string | undefined, conflicts: Conflict[]): void => {
+    set({ midpointRefusals: { ...get().midpointRefusals, [edgeId]: { act, ...(form ? { form } : {}), conflicts } } });
+  };
+  let nextRoles = roles;
+  let nextTypes = types;
+  if (act.kind === 'role') {
+    const [x, y] = act.pair;
+    if (!A.roles.some((r) => r.id === x)) return refuse(`"${x}" is not a role this cast holds`, []);
+    if (!B.roles.some((r) => r.id === y)) return refuse(`"${y}" is not a role that cast holds`, []);
+    const px = roles.find(([a]) => a === x);
+    if (px) return refuse(`${x} is already paired with ${px[1]} — one role, one partner`, []);
+    const py = roles.find(([, b]) => b === y);
+    if (py) return refuse(`${y} is already paired with ${py[0]} — one role, one partner`, []);
+    nextRoles = [...roles, [x, y]];
+  } else {
+    const [s, w] = act.pair;
+    const form = wordPairForm(A, B, s, w);
+    if (form) return refuse(form, []);
+    const ps = types.find(([a]) => a === s);
+    if (ps) return refuse(`${s} is already translated to ${ps[1]} — one word, one translation`, []);
+    const pw = types.find(([, b]) => b === w);
+    if (pw) return refuse(`${w} is already the translation of ${pw[0]} — one word, one translation`, []);
+    nextTypes = [...types, [s, w]];
+  }
+  const conflicts = refusalOf(A, B, nextRoles, nextTypes);
+  if (conflicts.length) return refuse(undefined, conflicts);
+  const midpointRefusals = { ...state.midpointRefusals };
+  delete midpointRefusals[edgeId];
+  midpointWrite(set, { ...state, midpointRefusals }, shape, edge, nextRoles, nextTypes);
+}
+
+function midpointWithdraw(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct): void {
+  const state = get();
+  const shape = state.shapes[state.currentShapeId];
+  const edge = shape?.edges.find((candidate) => candidate.id === edgeId);
+  if (!shape || !edge) return;
+  const { roles, types } = midpointRecord(state, edge);
+  const nextRoles = act.kind === 'role' ? roles.filter(([a, b]) => !(a === act.pair[0] && b === act.pair[1])) : roles;
+  const nextTypes = act.kind === 'word' ? types.filter(([a, b]) => !(a === act.pair[0] && b === act.pair[1])) : types;
+  if (nextRoles.length === roles.length && nextTypes.length === types.length) return; // nothing of that name to withdraw
+  midpointWrite(set, state, shape, edge, nextRoles, nextTypes);
+  // a PENDING attempt is re-made: the person removed the half they judged wrong; the act they made stands to be made
+  const pending = get().midpointRefusals[edgeId];
+  if (pending) {
+    const midpointRefusals = { ...get().midpointRefusals };
+    delete midpointRefusals[edgeId];
+    set({ midpointRefusals });
+    midpointAct(set, get, edgeId, pending.act);
+  }
 }
 
 function pushHistory(

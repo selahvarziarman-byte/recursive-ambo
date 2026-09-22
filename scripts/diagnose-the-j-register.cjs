@@ -522,10 +522,14 @@ check("§10 ★ SOURCE: the five states are five sentences, each its own words; 
 
 // ═══ §6 boundaries, source-pinned ═══
 const src = readLf('src/lib/jRegister.ts');
-check("§6 ⛔ NO STORE, NO WRITTEN J: the module is pure over two ConceptSpaces and an optional τ — it imports only the types and the mold's ONE constant from the loader, and nothing under the store imports it",
+check("§6 ⛔ NO STORE IN THE MODULE, NO WRITTEN J: the module is pure over two ConceptSpaces and an optional τ — it imports only the types and the mold's ONE constant from the loader; the store imports EXACTLY the check at the act (C-7b: `refusalOf`, `wordPairForm` and the Conflict type — no offer, no reading, no search) and nothing else of the register",
   /import type \{ ConceptSpace, EdgeIdentification \} from '\.\.\/types\/geometry';/.test(src) && src.includes("import { MOLD_TYPES, isMoldType, moldJoin } from './castLoader';") && (src.match(/^import /gm) || []).length === 2 &&
     !/from '\.\.\/store|from '\.\.\/components|useGeometryStore|updateSelected/.test(src) &&
-    !fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts'), 'utf8').includes('jRegister'));
+    (() => {
+      const store = fs.readFileSync(path.join(repoRoot, 'src/store/geometryStore.ts'), 'utf8');
+      const lines = store.split('\n').filter((l) => l.includes('jRegister'));
+      return lines.length === 1 && lines[0].trim() === "import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';" && !/registerReading|gaugeOrbit|automorphisms/.test(store);
+    })());
 check('§6 RECORD, NOT READING: `support` is DERIVED at every read (the assessment computes it; nothing reads `identification.support` or `.fiat` back)',
   src.includes('support: Record<string, number>') && !/\.support\b(?!\[)/.test(src.replace(/support: Record<string, number>/g, '').replace(/ev\.support|coreEv\.support|ext\.support|\.support\[/g, '')) && !src.includes('.fiat'));
 

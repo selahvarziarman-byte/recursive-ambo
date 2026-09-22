@@ -276,6 +276,34 @@ export function assess(X: CastRecord, Y: CastRecord, j: Map<string, string>, sha
   };
 }
 
+/**
+ * C-7b — THE REFUSAL AT THE ACT (Δ80: the device's check on a pair the PERSON gives): the known conflicts of the
+ * person's (J, τ) as given — the mold's types by definition, caster words ONLY by τ (no proposal; words outside τ are
+ * FOREIGN even when spelled alike). Empty = nothing to refuse; the glue may proceed. Every conflict names both tuples
+ * and both values; the surface adds the parents' names.
+ */
+export function refusalOf(A: ConceptSpace, B: ConceptSpace, roles: EdgeIdentification['roles'], types: EdgeIdentification['types']): Conflict[] {
+  const X = recordOf(A);
+  const Y = recordOf(B);
+  const j = new Map<string, string>();
+  for (const [x, y] of roles) if (!j.has(x)) j.set(x, y);
+  return assess(X, Y, j, sharedSignature(X, Y, types, { propose: false })).conflicts;
+}
+
+/**
+ * C-7b — THE FORM of a word pair (what a translation must be): both names declared, at ONE arity. A refusal in words,
+ * or null when the pair has the form.
+ */
+export function wordPairForm(A: ConceptSpace, B: ConceptSpace, s: string, tName: string): string | null {
+  const a = arityIn(recordOf(A), s);
+  const b = arityIn(recordOf(B), tName);
+  if (a === undefined && b === undefined) return `neither "${s}" here nor "${tName}" there is a declared word`;
+  if (a === undefined) return `"${s}" is not a word this cast declares`;
+  if (b === undefined) return `"${tName}" is not a word that cast declares`;
+  if (a !== b) return `"${s}" is arity ${a} here and "${tName}" is arity ${b} there — a translation keeps the arity`;
+  return null;
+}
+
 /** the assessment of a CANDIDATE — null on any KNOWN CONFLICT (then j is no candidate) */
 export function evaluate(X: CastRecord, Y: CastRecord, j: Map<string, string>, shared: SharedSignature): Evaluation | null {
   const a = assess(X, Y, j, shared);
