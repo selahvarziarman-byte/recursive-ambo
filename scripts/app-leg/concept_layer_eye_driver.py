@@ -10,6 +10,9 @@ witness that locates a control by its data attribute proves it exists; only an e
     the person's (`yours · withdraw`);
   · the midpoint's OWN diagram after mapping; the projection sources carrying the acts on A–C once given;
   · the refusal at the act with its hands; the covering (halo rects) and the arc-word collisions, counted;
+  · C-7e (Δ84): the core dissected AGAIN with the pairs given — at gen 2 the AB midpoint's pairs, own diagram, trace and
+    its source's neighbouring act, read as a person would (the octahedron — the gen-1 core, now the parent — selected in
+    the workspace tree, AB selected from its corners);
   · plates into scripts/app-leg/_frames/ (the ignored dir — a witness never writes into the tracked tree).
 Prints ONE JSON line at the end; the .cjs leg asserts on it.
 """
@@ -51,6 +54,7 @@ MEASURE = """() => {
     drawing: r(drawing), drawingTopVisible: drawing ? r(drawing).y < P.bottom - 80 : false,
     wordChipsAreButtons: [...panel.querySelectorAll('[data-midpoint-word]')].every((e) => e.tagName === 'BUTTON'),
     sentence: t('[data-midpoint-sentence]')[0] || null, lines: a('[data-midpoint-line]', 'data-midpoint-line'), wordPairs: a('[data-midpoint-word-pair]', 'data-midpoint-word-pair'),
+    counts: t('[data-midpoint-counts]')[0] || null, core: t('[data-midpoint-core]')[0] || null,
     own: a('[data-midpoint-own]', 'data-midpoint-own')[0] || null, ownPoints: panel.querySelectorAll('[data-midpoint-own-drawing] [data-inside-point]').length, ownBoth: a('[data-midpoint-own-drawing] [data-midpoint-own-origin]', 'data-midpoint-own-origin').filter((o) => o === 'both').length,
     sourceActs: t('[data-midpoint-source-acts]'), faces: a('[data-midpoint-face]', 'data-midpoint-face'),
     refusal: a('[data-midpoint-refusal]', 'data-midpoint-refusal')[0] || null, conflicts: a('[data-midpoint-conflict]', 'data-midpoint-conflict'), hands: a('[data-midpoint-refusal] [data-midpoint-withdraw]', 'data-midpoint-withdraw'),
@@ -108,6 +112,17 @@ def select_core(page):
     rows.first.click(); page.wait_for_timeout(600)
 
 
+def select_cell(page, pattern):
+    """select a cell in the workspace tree by its row's accessible name (the topology word comes first)"""
+    tab(page, "workspace")
+    rows = page.get_by_role("button", name=re.compile(pattern, re.I))
+    if rows.count() == 0:
+        return None
+    text = rows.first.inner_text().replace('\n', ' ')
+    rows.first.click(); page.wait_for_timeout(600)
+    return text
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--url', required=True)
@@ -157,6 +172,18 @@ def main():
         out['abWithNeighbour'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('sourceActs', 'faces', 'lines')}
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
         page.screenshot(path=f"{args.frames}/concept-layer-ab-sources-carry-acts-{args.width}x{args.height}.png")
+        # C-7e (Δ84 "pay the price") — THE SECOND DISSECTION AT THE EYE: with the pairs given at AB (3 + τ₃) and at AC
+        # (1 + 1), the core dissected again; at gen 2 the octahedron (the gen-1 core, now the parent) holds the gen-1
+        # midpoints as its corners — AB selected from it, and what the person sees read: the pairs, the own diagram, the
+        # trace, C's act on A–C; then AC.
+        select_core(page)
+        page.get_by_role("button", name=re.compile("^Apply Ambo Dissection$")).first.click(); page.wait_for_timeout(1500)
+        out['selectGen2Parent'] = select_cell(page, r"^octahedron")
+        out['selectAB3'] = select_vertex_labelled(page, "AB")
+        out['gen2'] = page.evaluate(MEASURE)
+        page.screenshot(path=f"{args.frames}/concept-layer-ab-gen2-carried-{args.width}x{args.height}.png")
+        out['selectAC2'] = select_vertex_labelled(page, "AC")
+        out['gen2AC'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('present', 'lines', 'wordPairs', 'state')}
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 

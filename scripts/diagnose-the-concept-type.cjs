@@ -201,8 +201,11 @@ for (const dir of ['src/lib', 'src/manuscript', 'src/playground', 'src/component
 const CAST_READERS = ['src/components/CastInsideDiagram.tsx', 'src/components/JRegisterPanel.tsx', 'src/components/MidpointSurface.tsx', 'src/components/Panels.tsx', 'src/components/VertexPacketEditor.tsx', 'src/lib/castInside.ts', 'src/lib/castLoader.ts', 'src/lib/jRegister.ts', 'src/lib/midpointGlue.ts', 'src/store/geometryStore.ts'];
 check('§4 ★ THE CAST HAS EXACTLY ITS TEN (C-6c + C-6d (α) + (β) + C-7a + C-7b): the loader (src/lib/castLoader.ts), the writer (the packet editor), the reader (the card in Panels), the register that computes on the type (src/lib/jRegister.ts), the register\'s surface (src/components/JRegisterPanel.tsx), the INSIDE computed on the type (src/lib/castInside.ts) and its diagram on the canvas (src/components/CastInsideDiagram.tsx), the MIDPOINT computed on the type (src/lib/midpointGlue.ts) and its unfolded surface (src/components/MidpointSurface.tsx), and the store — which reads the two corners\' casts ONLY to check an act at the act (the refusal is the act\'s, by construction) — no other file under the engine roots, the components or the store mentions `cast` or `ConceptSpace`',
   JSON.stringify([...castReaders].sort()) === JSON.stringify(CAST_READERS), `readers: ${JSON.stringify(castReaders)}`);
-check('§4 ★ THE IDENTIFICATION IS WRITTEN BY EXACTLY ONE SITE AND READ BY FIVE NAMED FILES (C-6d (β) + C-7b, RECORD NOT READING): the files mentioning the edge\'s `identification` or `EdgeIdentification` are the register (src/lib/jRegister.ts — τ and roles as INPUTS; the refusal at the act), its surface (src/components/JRegisterPanel.tsx — reads the record, derives support and fiat at every render), the midpoint\'s glue (src/lib/midpointGlue.ts — roles and τ as INPUTS to the pushout), the midpoint\'s surface (src/components/MidpointSurface.tsx — reads the source edge\'s record) and the store (src/store/geometryStore.ts — the one writer, `writeEdgeIdentification`, `roles` and `types` only; the midpoint\'s acts route through it); exactly ONE write site in the whole tree, in the store; `support` and `fiat` written by nothing',
-  JSON.stringify([...identificationReaders].sort()) === JSON.stringify(['src/components/JRegisterPanel.tsx', 'src/components/MidpointSurface.tsx', 'src/lib/jRegister.ts', 'src/lib/midpointGlue.ts', 'src/store/geometryStore.ts']) &&
+// C-7e (2026-09-22, Δ84): THE CARRY — src/lib/ambo.ts reads the parent shape's record as INPUT and copies its `roles`
+// and `types` onto the re-derived edge of the same pair (mirrored when the edge is walked the other way); a second site
+// that puts `identification` on an edge, NAMED here as the carrier — never a new record, never a derived field.
+check('§4 ★ THE IDENTIFICATION HAS ONE WRITER AND ONE CARRIER, AND SIX NAMED READERS (C-6d (β) + C-7b + C-7e, RECORD NOT READING): the files mentioning the edge\'s `identification` or `EdgeIdentification` are the register (src/lib/jRegister.ts — τ and roles as INPUTS; the refusal at the act), its surface (src/components/JRegisterPanel.tsx — reads the record, derives support and fiat at every render), the midpoint\'s glue (src/lib/midpointGlue.ts — roles and τ as INPUTS to the pushout), the midpoint\'s surface (src/components/MidpointSurface.tsx — reads the source edge\'s record), the store (src/store/geometryStore.ts — the one WRITER, `writeEdgeIdentification`, `roles` and `types` only; the midpoint\'s acts route through it) and the ambo (src/lib/ambo.ts — the CARRIER: copies a parent edge\'s record onto the same pair at a dissection, `roles` and `types` from the source record and nothing else); exactly TWO sites put `identification` on an edge in the whole tree — the writer and the carrier, each named; `support` and `fiat` written by nothing',
+  JSON.stringify([...identificationReaders].sort()) === JSON.stringify(['src/components/JRegisterPanel.tsx', 'src/components/MidpointSurface.tsx', 'src/lib/ambo.ts', 'src/lib/jRegister.ts', 'src/lib/midpointGlue.ts', 'src/store/geometryStore.ts']) &&
     (() => {
       const writes = [];
       for (const dir of ['src/lib', 'src/manuscript', 'src/playground', 'src/components', 'src/store']) {
@@ -225,7 +228,9 @@ check('§4 ★ THE IDENTIFICATION IS WRITTEN BY EXACTLY ONE SITE AND READ BY FIV
         };
         walk(root);
       }
-      return writes.length === 1 && writes[0].startsWith('src/store/geometryStore.ts:');
+      const amboSrc = fs.readFileSync(path.join(repoRoot, 'src/lib/ambo.ts'), 'utf8');
+      return writes.length === 2 && writes.some((w) => w.startsWith('src/store/geometryStore.ts:')) && writes.some((w) => w.startsWith('src/lib/ambo.ts:')) &&
+        /identification: \{ roles: copy\(source\.identification\.roles\), types: copy\(source\.identification\.types\) \}/.test(amboSrc);
     })(),
   `readers: ${JSON.stringify(identificationReaders)}`);
 

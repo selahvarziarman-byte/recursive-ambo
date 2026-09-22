@@ -22,6 +22,12 @@
 // withdrawal, the re-made attempt, the draft); the surface is rendered to a
 // string under node with the record as props; the mount and the boundaries are
 // source-pinned. LAW 24 on every refusal: the glue that DOES glue is beside it.
+//
+// C-7e (Δ84 "pay the price", 2026-09-22): THE RECORD AND THE DRAFTS RIDE THE
+// DISSECTION — §2 measures the carry on the engine's arm (the copy, the true
+// absence both ways, the MIRROR on a pair the new shape walks the other way —
+// measured in the wild at gen 2 → gen 3), §3 the drafts through the store's own
+// ambo action, §4 the chain's closing clause TRUE at gen 2 with no hand.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -166,25 +172,71 @@ check('§2 ★ A LATER GENERATION (the ambo of the core, an octahedral host): th
     const s2 = midpointSiteOf(gen2, p2.trace.siteId, p2.trace);
     return p2.trace.complementVertexIds.length === 4 && s2 !== null && s2.sources.length === 2 && s2.sources.every((s) => s.apexes.length === 1 && p2.trace.complementVertexIds.includes(s.apexes[0]));
   })());
-// C-7c item 1 (2026-09-22) — THE SECOND DISSECTION, MEASURED: a record given at a gen-1 midpoint, then the ambo again.
-// The MECHANISM is pinned (the pair survives as a parent-cell-face edge with a FRESH id — `makeEdgeId(shapeId, pair)`
-// depends on the shape id; the gen-1 shape keeps its record); the gen-2 record's state is PRINTED as a note, never
-// pinned as expected — a carry across the dissection is priced in the report, not built here.
-check('§2 ★★ THE SECOND DISSECTION, MEASURED (C-7c item 1): a J given on the gen-1 edge A–B, then the core dissected — the pair A–B exists in gen 2 as a parent-cell-face edge with a DIFFERENT id (the mint depends on the shape id), the gen-1 shape keeps its record intact, and the AB midpoint\'s site at gen 2 resolves to the NEW edge; what that edge carries is printed beneath, as a fact',
+// C-7c item 1 (2026-09-22) MEASURED the second dissection — a record given at a gen-1 midpoint did NOT survive the
+// ambo: the pair survives as a parent-cell-face edge with a FRESH id (`makeEdgeId(shapeId, pair)` depends on the shape
+// id; the gen-1 shape keeps its record) and the fresh edge carried nothing. C-7e (Δ84 "pay the price") CARRIES it: the
+// mechanism stays (the mint is FROZEN and untouched — that is why the carry exists) and the expectation INVERTS.
+check('§2 ★★ THE SECOND DISSECTION — THE RECORD CARRIES (C-7e, Δ84; C-7c\'s measurement is the reason): a J given on the gen-1 edge A–B, then the core dissected — the pair A–B exists in gen 2 as a parent-cell-face edge with a DIFFERENT id (the mint `makeEdgeId(shapeId, pair)` depends on the shape id — shape.ts and ids.ts untouched), the gen-1 shape keeps its record intact, the AB midpoint\'s site at gen 2 resolves to the NEW edge — and that edge CARRIES the record: the same roles and τ as a COPY (not the gen-1 object), exactly ONE record in gen 2 for the one in gen 1, and the AB surface at gen 2 reads glued',
   (() => {
     const g1 = withCast(withCast(applyAmboDissection(seed), a, flow), b, phi);
     const r1 = buildGeneralSitePacketPresenterReport(g1);
     const p1 = r1.packets.find((p) => p.trace.parentIds.includes(a) && p.trace.parentIds.includes(b));
     const s1 = midpointSiteOf(g1, p1.trace.siteId, p1.trace);
-    const given = { ...g1, edges: g1.edges.map((e) => (e.id === s1.edge.id ? { ...e, identification: { roles: [['F5', 'Φ7']], types: [['sustains', 'descends-from']] } } : e)) };
+    const rec = { roles: [['F5', 'Φ7']], types: [['sustains', 'descends-from']] };
+    const given = { ...g1, edges: g1.edges.map((e) => (e.id === s1.edge.id ? { ...e, identification: rec } : e)) };
     const g2 = applyAmboDissection(given, given.cells.find((x) => x.kind === 'core').id);
     const pairOf = (e) => [...e.vertexIds].sort().join('|');
     const twin = g2.edges.filter((e) => pairOf(e) === pairOf(s1.edge));
     const r2 = buildGeneralSitePacketPresenterReport(g2);
     const p2 = r2.packets.find((p) => p.trace.siteId === p1.trace.siteId);
     const s2 = p2 ? midpointSiteOf(g2, p2.trace.siteId, p2.trace) : null;
-    note(`gen-1 edge ${s1.edge.id} → gen-2 edge ${twin.map((e) => e.id).join(',')} · the gen-2 edge carries: ${JSON.stringify(twin[0] && twin[0].identification)} · any record in gen 2: ${g2.edges.filter((e) => e.identification).length} · the AB surface at gen 2 reads ${s2 && s2.edge.identification ? 'glued' : 'no pair given yet'}`);
-    return twin.length === 1 && twin[0].id !== s1.edge.id && given.edges.find((e) => e.id === s1.edge.id).identification.roles.length === 1 && s2 !== null && s2.edge.id === twin[0].id && !g2.edges.some((e) => e.id === s1.edge.id);
+    note(`gen-1 edge ${s1.edge.id} → gen-2 edge ${twin.map((e) => e.id).join(',')} · the gen-2 edge carries: ${J(twin[0] && twin[0].identification)} · records in gen 2: ${g2.edges.filter((e) => e.identification).length} · the AB surface at gen 2 reads ${s2 && s2.edge.identification ? 'glued' : 'no pair given yet'}`);
+    return twin.length === 1 && twin[0].id !== s1.edge.id && given.edges.find((e) => e.id === s1.edge.id).identification === rec && !g2.edges.some((e) => e.id === s1.edge.id) &&
+      s2 !== null && s2.edge.id === twin[0].id && J(twin[0].identification) === J(rec) && twin[0].identification !== rec && twin[0].identification.roles !== rec.roles &&
+      g2.edges.filter((e) => e.identification).length === 1 && Boolean(s2.edge.identification);
+  })());
+check('§2 ★★ THE CARRY COPIES, NEVER RE-DERIVES, AND A TRUE ABSENCE CARRIES AS A TRUE ABSENCE (LAW 24 both ways): a gen-1 shape with NO record dissects to a gen 2 with none; with records on A–B and A–C alone, gen 2 carries exactly those two, each on its own pair, every other pair carries nothing — and no pair of the parent is lost',
+  (() => {
+    const g1 = withCast(withCast(withCast(applyAmboDissection(seed), a, flow), b, phi), c, tcell);
+    const core = g1.cells.find((x) => x.kind === 'core').id;
+    const none = applyAmboDissection(g1, core);
+    const rep = buildGeneralSitePacketPresenterReport(g1);
+    const siteOf = (x, y) => { const p = rep.packets.find((q) => q.trace.parentIds.includes(x) && q.trace.parentIds.includes(y)); return midpointSiteOf(g1, p.trace.siteId, p.trace); };
+    const eAB = siteOf(a, b).edge; const eAC = siteOf(a, c).edge;
+    const two = { ...g1, edges: g1.edges.map((e) => (e.id === eAB.id ? { ...e, identification: { roles: [['F5', 'Φ7']], types: [] } } : e.id === eAC.id ? { ...e, identification: { roles: [['F1', 'r0']], types: [['sustains', 'sustains']] } } : e)) };
+    const g2 = applyAmboDissection(two, core);
+    const pairOf = (e) => [...e.vertexIds].sort().join('|');
+    const carried = g2.edges.filter((e) => e.identification);
+    const pairs = new Set(carried.map(pairOf));
+    return none.edges.every((e) => !e.identification) && carried.length === 2 && pairs.has(pairOf(eAB)) && pairs.has(pairOf(eAC)) &&
+      two.edges.every((p) => g2.edges.some((e) => pairOf(e) === pairOf(p)));
+  })());
+// THE ORIENTATION, MEASURED (C-7e): a record reads FIRST corner ↦ SECOND, and `deriveEdges` walks a re-derived edge by
+// whichever face it meets first — gen 1 → gen 2 keeps every pair's order; gen 2 → gen 3 on the core walks 12 of 78 the
+// other way (printed below, pinned as at least one). So a carried record is MIRRORED on a pair walked the other way: the
+// same act, said from the new first corner — never a blind copy, which would name each role as the other cast's.
+check('§2 ★★ THE CARRY HONOURS THE EDGE\'S ORIENTATION: on a pair the new shape walks the other way (gen 2 → gen 3 on the core — found in the wild, the count printed) a record `[x ↦ y]` carries as `[y ↦ x]`, x still a role of the cast on its own corner; on a pair walked the same way it carries as it was — the positive control beside it',
+  (() => {
+    const g1 = applyAmboDissection(seed);
+    const g2 = applyAmboDissection(g1, g1.cells.find((x) => x.kind === 'core').id);
+    const core2 = g2.cells.find((x) => x.kind === 'core' && x.generationDepth === 2).id;
+    const pairOf = (e) => [...e.vertexIds].sort().join('|');
+    const probe = applyAmboDissection(g2, core2);
+    const twinOf = (e) => probe.edges.find((x) => pairOf(x) === pairOf(e));
+    const reversed = g2.edges.filter((e) => twinOf(e) && twinOf(e).vertexIds[0] !== e.vertexIds[0]);
+    const kept = g2.edges.filter((e) => twinOf(e) && twinOf(e).vertexIds[0] === e.vertexIds[0]);
+    note(`gen 2 → gen 3 on the core: ${reversed.length} of ${g2.edges.length} surviving pairs walked the other way, ${kept.length} the same way (gen 1 → gen 2: ${g1.edges.filter((e) => { const t = g2.edges.find((x) => pairOf(x) === pairOf(e)); return t && t.vertexIds[0] !== e.vertexIds[0]; }).length} of ${g1.edges.length})`);
+    const rE = reversed[0];
+    const kE = kept.find((e) => !e.vertexIds.some((v) => rE && rE.vertexIds.includes(v)));
+    if (!rE || !kE) return false;
+    const cast2 = withCast(withCast(withCast(withCast(g2, rE.vertexIds[0], flow), rE.vertexIds[1], phi), kE.vertexIds[0], flow), kE.vertexIds[1], phi);
+    const rec = { roles: [['F5', 'Φ7']], types: [['sustains', 'descends-from']] };
+    const given = { ...cast2, edges: cast2.edges.map((e) => (e.id === rE.id || e.id === kE.id ? { ...e, identification: rec } : e)) };
+    const g3 = applyAmboDissection(given, core2);
+    const r3 = g3.edges.find((x) => pairOf(x) === pairOf(rE)); const k3 = g3.edges.find((x) => pairOf(x) === pairOf(kE));
+    const firstCast = (s, e) => s.vertices[e.vertexIds[0]].data.cast;
+    return r3.vertexIds[0] === rE.vertexIds[1] && J(r3.identification) === J({ roles: [['Φ7', 'F5']], types: [['descends-from', 'sustains']] }) && firstCast(g3, r3).roles.some((r) => r.id === 'Φ7') &&
+      k3.vertexIds[0] === kE.vertexIds[0] && J(k3.identification) === J(rec) && firstCast(g3, k3).roles.some((r) => r.id === 'F5');
   })());
 check('§2 a site whose parents do not both hold a cast has NO surface: the AD midpoint (A holds Flow, D holds Φ) has one; a seed with casts on A alone yields none for AB (the chooser falls to the corner\'s own inside, or nothing)',
   (() => { const one = applyAmboDissection(withCast(seed, byLabel(seed, 'A'), flow)); const rep = buildGeneralSitePacketPresenterReport(one); const p = rep.packets.find((x) => x.trace.parentIds.includes(byLabel(one, 'A')) && x.trace.parentIds.includes(byLabel(one, 'B'))); const s = midpointSiteOf(one, p.trace.siteId, p.trace); return s !== null && !(one.vertices[s.a].data.cast && one.vertices[s.b].data.cast); })());
@@ -250,6 +302,26 @@ check('§3 ★ the first role pair takes the draft\'s τ into the record and cle
   (() => { const r = recordOfEdge(edgeAC); const ok = r && r.roles.length === 1 && r.types.length === 1 && S().edgeTauDrafts[edgeAC] === undefined; S().withdrawRolePair(edgeAC, ...roleAC('F1', 'r0')); return ok && recordOfEdge(edgeAC) === null && J(S().edgeTauDrafts[edgeAC]) === J([roleAC('sustains', 'sustains')]); })());
 check('§3 a withdrawal of a pair not on the record writes nothing; an act on a seam whose corners do not both hold a cast writes nothing and refuses nothing',
   (() => { const before = J(S().shapes[ambo.id].edges); S().withdrawRolePair(edgeAB, 'F13', 'Φ4'); const other = ambo.edges.find((e) => e.vertexIds.every((v) => ambo.vertices[v].createdBy.operation === 'ambo-dissection')); S().giveRolePair(other.id, 'x', 'y'); return J(S().shapes[ambo.id].edges) === before && S().midpointRefusals[other.id] === undefined; })());
+
+// C-7e (Δ84) item 2 — THE DRAFTS RIDE THE DISSECTION BY PAIR, through the store's OWN ambo action: the state after the
+// acts above (AB: three pairs and τ₃; AC: the draft `sustains ↦ sustains`; CD: nothing) plus a pending attempt on AB.
+const snapshot = S();
+S().giveRolePair(edgeAB, ...role('F1', 'Φ9'));
+S().selectCell(ambo.cells.find((x) => x.kind === 'core').id);
+S().applyAmboDissectionToCurrent();
+check('§3 ★★ THE DRAFTS RIDE THE DISSECTION BY PAIR (C-7e item 2): the store\'s own `Apply Ambo Dissection` on the core — at gen 2 the A–B edge (a fresh id) carries the record\'s three pairs and τ₃ (the carrier\'s copy), the A–C edge carries the draft `sustains ↦ sustains` under its new id, and the pending attempt F1 ↦ Φ9 on A–B is RE-MADE there through the same check — refused again by the mold\'s name, nothing glued; C–D carries nothing; the gen-1 keys stay and the gen-1 shape keeps its record and its draft',
+  (() => {
+    const st = S(); const g2 = st.shapes[st.currentShapeId]; if (!g2 || g2.id === ambo.id) return false;
+    const pairOf = (e) => [...e.vertexIds].sort().join('|');
+    const twin = (edgeId) => g2.edges.find((e) => pairOf(e) === pairOf(ambo.edges.find((x) => x.id === edgeId)));
+    const ab2 = twin(edgeAB); const ac2 = twin(edgeAC); const cd2 = twin(edgeCD);
+    const ref = st.midpointRefusals[ab2.id];
+    return ab2.id !== edgeAB && ab2.identification && ab2.identification.roles.length === 3 && ab2.identification.types.length === 3 &&
+      J(st.edgeTauDrafts[ac2.id]) === J([roleAC('sustains', 'sustains')]) && ac2.identification === undefined && cd2.identification === undefined && st.edgeTauDrafts[cd2.id] === undefined && st.midpointRefusals[cd2.id] === undefined &&
+      ref && !ref.form && ref.conflicts.length === 1 && ref.conflicts[0].arity === 1 && J(ref.act) === J({ kind: 'role', pair: role('F1', 'Φ9') }) &&
+      st.midpointRefusals[edgeAB] !== undefined && J(st.edgeTauDrafts[edgeAC]) === J([roleAC('sustains', 'sustains')]) && st.shapes[ambo.id].edges.find((e) => e.id === edgeAB).identification.roles.length === 3;
+  })(), J({ current: S().currentShapeId === ambo.id ? 'gen 1 (the action did not run)' : 'gen 2', drafts: Object.keys(S().edgeTauDrafts).length, refusals: Object.keys(S().midpointRefusals).length }));
+useGeometryStore.setState(snapshot, true);
 
 // ═══ §4 THE SURFACE, BY BEHAVIOUR — rendered to a string with the record as props ═══
 console.log('\n----- §4 the surface: unglued in words, both columns, the lines marked yours, only `both` gets a glyph, the trace, the residual on the lines, the refusal with every withdrawal -----');
@@ -356,7 +428,7 @@ check('§4 ★★ THE CHOOSER: a midpoint whose parents do not both hold a cast 
     countOf(render(React.createElement(ConceptSurface, { shape: ambo, vertexId: a })), 'data-inside-panel') === 1 &&
     countOf(render(React.createElement(ConceptSurface, { shape: ambo, vertexId: packetAB.trace.siteId })), 'data-midpoint-surface') === 1);
 
-check('§4 ★★ ONE CODE PATH, TWO SITES (C-7d item 1\'s closing clause): a mapped midpoint dissected again and selected as a corner draws its glued space through the SAME chooser and column — with the record carried onto the gen-2 edge (by hand here; the carry is C-7c\'s price, not built) `ConceptSurface` at gen 2 renders `data-midpoint-own="glued"` with the same 20-point column; LAW 24 — without the carry it renders `data-midpoint-own="unglued"`, the honest state today',
+check('§4 ★★ ONE CODE PATH, TWO SITES — TRUE AT GEN 2 (C-7d item 1\'s closing clause, made true by C-7e\'s carry): a mapped midpoint dissected again and selected as a corner draws its glued space through the SAME chooser and column — the engine\'s own carry, no hand — `ConceptSurface` at gen 2 renders `data-midpoint-own="glued"` with the same 20-point column and 4 both; LAW 24 — a gen-1 midpoint with NO record, dissected, renders `data-midpoint-own="unglued"` at gen 2 (a true absence carries as a true absence)',
   (() => {
     const g1 = withCast(withCast(applyAmboDissection(seed), a, flow), b, phi);
     const r1 = buildGeneralSitePacketPresenterReport(g1);
@@ -364,11 +436,10 @@ check('§4 ★★ ONE CODE PATH, TWO SITES (C-7d item 1\'s closing clause): a ma
     const s1 = midpointSiteOf(g1, p1.trace.siteId, p1.trace);
     const fwd1 = s1.a === a;
     const rec = { roles: (fwd1 ? J3 : J3.map(([x, y]) => [y, x])), types: (fwd1 ? T3 : T3.map(([x, y]) => [y, x])) };
-    const g2 = applyAmboDissection(g1, g1.cells.find((x) => x.kind === 'core').id);
-    const pairOf = (e) => [...e.vertexIds].sort().join('|');
-    const carried = { ...g2, edges: g2.edges.map((e) => (pairOf(e) === pairOf(s1.edge) ? { ...e, identification: rec } : e)) };
-    const withCarry = render(React.createElement(ConceptSurface, { shape: carried, vertexId: p1.trace.siteId }));
-    const without = render(React.createElement(ConceptSurface, { shape: g2, vertexId: p1.trace.siteId }));
+    const given = { ...g1, edges: g1.edges.map((e) => (e.id === s1.edge.id ? { ...e, identification: rec } : e)) };
+    const core = g1.cells.find((x) => x.kind === 'core').id;
+    const withCarry = render(React.createElement(ConceptSurface, { shape: applyAmboDissection(given, core), vertexId: p1.trace.siteId }));
+    const without = render(React.createElement(ConceptSurface, { shape: applyAmboDissection(g1, core), vertexId: p1.trace.siteId }));
     const ownHtml = (withCarry.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-trace=')[0];
     return countOf(withCarry, 'data-midpoint-surface') === 1 && attrsOf(withCarry, 'data-midpoint-own').includes('glued') && countOf(ownHtml, 'data-inside-point') === 20 && attrsOf(ownHtml, 'data-midpoint-own-origin').filter((o) => o === 'both').length === 4 &&
       countOf(without, 'data-midpoint-surface') === 1 && attrsOf(without, 'data-midpoint-own')[0] === 'unglued';

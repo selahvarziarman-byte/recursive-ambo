@@ -14,6 +14,8 @@ import {
   type PersistedWorkspaceV1,
 } from '../lib/workspacePersistence';
 import { getOperation } from '../operations/registry';
+// C-7e — the pair key the ambo mints edges by (ids.ts is FROZEN; imported, not edited)
+import { canonicalEdgeKey } from '../lib/ids';
 // C-7b — THE REFUSAL AT THE ACT: the register's check on a pair the person gives (the mold's
 // types by definition, caster words only by τ) and the FORM of a word pair; imported by the
 // store because the act IS the store action — no write without the check, by construction
@@ -478,6 +480,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       pinnedFieldAtlasProbeRef: null,
       historySequence,
     });
+    // C-7e (Δ84): the drafts ride the ambo by PAIR, once the new shape is current (the record itself is carried in ambo.ts)
+    if (operation.id === 'ambo-dissection') carryDraftsByPair(set, get, currentShape, nextShape);
   },
   // P1b — the granular ambo→manuscript save: lift the selection's downward
   // closure as a self-contained sub-Shape, serialize it through the COMMITTED
@@ -1079,6 +1083,32 @@ function midpointWrite(set: Setter, state: GeometryState, shape: Shape, edge: Ed
   }
   delete edgeTauDrafts[edge.id];
   writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edge.id, { roles, types });
+}
+
+// C-7e (Δ84, 2026-09-22) — THE DRAFTS RIDE THE DISSECTION BY PAIR: `edgeTauDrafts` (a τ before the first role
+// pair) and a pending `midpointRefusals` entry are keyed by edge id, and the ambo mints every edge of the new
+// shape fresh (`makeEdgeId(shapeId, pair)`); the record itself is carried in ambo.ts, mirrored when the new edge
+// is walked the other way — a pair reads first corner ↦ second, so a draft mirrors likewise. A draft is copied
+// onto the new edge of the same pair; a pending attempt is RE-MADE there through the same check every act takes
+// (the person's act is the input; its refusal is a reading — RECORD, NOT READING). The old keys stay: the gen-1
+// shape keeps its record and its drafts alike. (A τ before the first role pair is the parked persistence price's
+// own case — this makes it survive a dissection, not a reload.)
+function carryDraftsByPair(set: Setter, get: Getter, from: Shape, to: Shape): void {
+  const state = get();
+  const byPair = new Map(from.edges.map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
+  const edgeTauDrafts = { ...state.edgeTauDrafts };
+  const pending: Array<[EdgeId, MidpointAct]> = [];
+  for (const edge of to.edges) {
+    const source = byPair.get(canonicalEdgeKey(...edge.vertexIds));
+    if (!source) continue;
+    const flip = <T,>([x, y]: [T, T]): [T, T] => (source.vertexIds[0] === edge.vertexIds[0] ? [x, y] : [y, x]);
+    const draft = state.edgeTauDrafts[source.id];
+    if (draft) edgeTauDrafts[edge.id] = draft.map(flip);
+    const refusal = state.midpointRefusals[source.id];
+    if (refusal) pending.push([edge.id, { kind: refusal.act.kind, pair: flip(refusal.act.pair) }]);
+  }
+  set({ edgeTauDrafts });
+  for (const [edgeId, act] of pending) midpointAct(set, get, edgeId, act);
 }
 
 function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct): void {

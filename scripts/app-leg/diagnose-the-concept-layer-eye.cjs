@@ -17,6 +17,12 @@
 // (Arman's viewport, from his own plate) and at 1400 × 900, before it clicks
 // anything. A build that adds or moves a control on the canvas overlay runs
 // this leg, or says why not in words that survive Arman's eye.
+// ⇒ AND THE §114.2 HOLE IS CLOSED BY CONSTRUCTION FOR THIS SURFACE (the
+// mothership's 1442 ratification, §4): THIS LEG CANNOT PASS BY FINDING A HOOK,
+// BECAUSE IT READS THE BOX BEFORE IT TOUCHES ONE — reachability is measured on
+// the freshly selected midpoint, before any click, and the served tree is
+// fingerprinted (`/__whereami` against `git rev-parse HEAD`) before anything
+// is believed.
 // ⇒ The sweep classifies BY THIS DECLARATION: the sweep set is
 // `grep -L "DRIVE FAMILY"` over scripts/app-leg/diagnose-*.cjs. The plates
 // land in the ignored scripts/app-leg/_frames/ — a witness never writes into
@@ -28,7 +34,10 @@
 // role pair and a word pair made by a person's clicks; the midpoint's own
 // diagram after mapping; the projection sources carrying the acts on A–C once
 // given; the refusal at the act with its hands; the covering and the arc-word
-// collisions counted.
+// collisions counted. C-7e (Δ84 "pay the price"): the core dissected AGAIN with
+// the pairs given — the acts, the own diagram, the trace and the neighbouring act
+// read at the eye at gen 2 (a person's acts surviving a dissection is a
+// person-facing fact, and only the eye can say so).
 
 const { spawn, execFileSync } = require('node:child_process');
 const fs = require('node:fs');
@@ -114,6 +123,16 @@ const waitUp = () =>
             out.abWithNeighbour.sourceActs.some((s) => /^on [A-D]–[A-D]: .+ ↦ .+ · sustains ↦ sustains · no identification given yet on/.test(s) || /^on [A-D]–[A-D]: .+ ↦ .+ · sustains ↦ sustains/.test(s)),
           J(out.abWithNeighbour.sourceActs));
         check(`§1 [${w}×${h}] the words of the retired offering are absent from the surface`, !u.forbidden && !g.forbidden);
+        // C-7e — THE SECOND DISSECTION AT THE EYE
+        const g2 = out.gen2 || { present: false, lines: [], wordPairs: [], sourceActs: [] };
+        note(`gen 2 — selected ${J(out.selectGen2Parent)} then ${J(out.selectAB3)} · panel ${J(g2.panel)} · word half ${J(g2.wordHalf)} · drawing top ${g2.drawing ? g2.drawing.y : '?'} · ${g2.counts || 'no counts'}`);
+        check(`§2 [${w}×${h}] ★★ THE ACTS SURVIVE THE SECOND DISSECTION (C-7e, Δ84 "pay the price"): the core dissected again with the pairs given at gen 1 — at gen 2 the AB midpoint reads the same 3 role pairs and 3 word pairs (yours), draws its own diagram (20 points, 4 both) and its trace (20 roles), its source C still carries the A–C act, and the AC midpoint still reads its one pair of each`,
+          g2.present && g2.lines.length === 3 && g2.wordPairs.length === 3 && g2.own === 'glued' && g2.ownPoints === 20 && g2.ownBoth === 4 && /20 roles/.test(g2.counts || '') && /3 role pairs · 3 word pairs — yours/.test(g2.sentence || '') &&
+            g2.sourceActs.some((s) => /^on [A-D]–[A-D]: .+ ↦ .+ · sustains ↦ sustains/.test(s)) && Boolean(out.gen2AC && out.gen2AC.present) && out.gen2AC.lines.length === 1 && out.gen2AC.wordPairs.length === 1,
+          J({ present: g2.present, lines: g2.lines, wordPairs: g2.wordPairs, own: g2.own, ownPoints: g2.ownPoints, ownBoth: g2.ownBoth, counts: g2.counts, sentence: g2.sentence, sourceActs: g2.sourceActs, ac: out.gen2AC }));
+        check(`§2 [${w}×${h}] ★ at gen 2 both halves are still inside the visible box at scroll 0 — the same reading as gen 1, on the carried record`,
+          g2.present && g2.scrollTop === 0 && g2.gestureVisible && g2.wordHalfVisible && g2.wordsVisible && g2.drawingTopVisible,
+          J({ gestureVisible: g2.gestureVisible, wordHalfVisible: g2.wordHalfVisible, wordsVisible: g2.wordsVisible, drawingTopVisible: g2.drawingTopVisible, panel: g2.panel }));
       }
     }
   } finally {
@@ -124,6 +143,6 @@ const waitUp = () =>
       /* the server may have gone already */
     }
   }
-  console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint\'s act are in the person\'s visible box and made by clicks; the midpoint draws its own space; the sources carry the person\'s neighbouring acts' : `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ${failures} FAILURE(S)`}`);
+  console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint\'s act are in the person\'s visible box and made by clicks; the midpoint draws its own space; the sources carry the person\'s neighbouring acts; the acts survive a second dissection' : `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ${failures} FAILURE(S)`}`);
   process.exit(failures === 0 ? 0 : 1);
 })();

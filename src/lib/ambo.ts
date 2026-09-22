@@ -166,13 +166,32 @@ function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Sh
   ];
   const createdVertexIds = Array.from(midpointIds.values());
   const createdAt = new Date().toISOString();
+  // C-7e (Δ84 "pay the price", 2026-09-22) — THE CARRY: the person's record on an edge RIDES the dissection.
+  // `deriveEdges` mints every edge of the new shape fresh — `makeEdgeId(shapeId, pair)` depends on the SHAPE id
+  // (shape.ts and ids.ts, FROZEN, untouched; measured at C-7c: `edge:251ovc` → `edge:1njwrxo`) — so the record
+  // is COPIED onto the re-derived edge of the SAME PAIR: copied, never re-derived (an identification the person
+  // did not give does not appear; `roles` and `types` only, as the one writer keeps them), and a pair whose
+  // parent edge held none carries none — a true absence carries as a true absence. The record reads FIRST
+  // corner ↦ SECOND, and a re-derived edge is walked by whichever face `deriveEdges` meets first — MEASURED:
+  // gen 1 → gen 2 keeps every pair's order, gen 2 → gen 3 on the core walks 12 of 78 surviving pairs the other
+  // way — so on a pair walked the other way the pairs are MIRRORED (the same act, said from the new first
+  // corner). Every pair of the parent survives (the dissected cell's faces become parent-cell-faces; the other
+  // cells' faces are kept). Nothing here assumes the order of the person's acts across generations.
+  const recordedByPair = new Map(parent.edges.filter((edge) => edge.identification).map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
+  const edges = deriveEdges(faces, shapeId).map((edge) => {
+    const source = recordedByPair.get(canonicalEdgeKey(...edge.vertexIds));
+    if (!source?.identification) return edge;
+    const mirrored = source.vertexIds[0] !== edge.vertexIds[0];
+    const copy = (pairs: Array<[string, string]>): Array<[string, string]> => pairs.map(([x, y]): [string, string] => (mirrored ? [y, x] : [x, y]));
+    return { ...edge, identification: { roles: copy(source.identification.roles), types: copy(source.identification.types) } };
+  });
 
   return {
     id: shapeId,
     name: `Ambo Dissection ${parent.name}`,
     seedKey: parent.seedKey,
     vertices,
-    edges: deriveEdges(faces, shapeId),
+    edges,
     faces,
     cells,
     generations: [
