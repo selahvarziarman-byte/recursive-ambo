@@ -145,6 +145,7 @@ export function VertexPacketEditorContent() {
   // NOTHING (the corner keeps what it held); a taken file writes `cast` alone —
   // never `label`, never anything of the edge.
   const loadCastFile = async (file: File) => {
+    if (!vertex || vertex.createdBy.operation !== 'seed') return; // C-8 item 2 (Δ86): a cast is loaded onto a seed corner alone — the offer is absent elsewhere; this is the same rule at the function
     const text = await file.text();
     const load = readCastFile(text);
     if (!load.taken) {
@@ -296,26 +297,35 @@ export function VertexPacketEditorContent() {
         >
           Save and next unresolved
         </button>
-        <button
-          type="button"
-          onClick={() => castFileInputRef.current?.click()}
-          title="a corner takes a concept-space from a .cast.json file — the device checks its structure and never grades it"
-          className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-violet-300 hover:text-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-400"
-        >
-          load cast… (.cast.json)
-        </button>
-        <input
-          ref={castFileInputRef}
-          type="file"
-          accept=".json,application/json"
-          data-cast-file-input="true"
-          className="hidden"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            event.target.value = '';
-            if (file) void loadCastFile(file);
-          }}
-        />
+        {/* C-8 item 2 — ARMAN'S RULE, BY CONSTRUCTION (Δ86: "no cast loading is only for the seed"): `load cast…` is OFFERED
+            on the seed's own corners ALONE — a whitelist by what the vertex IS (`createdBy.operation === 'seed'`), never a
+            blacklist of generated midpoints that would leave another born vertex open — and ABSENT on every other vertex:
+            never disabled, and no word added (the reason is on screen already; a fourth copy would mark the ordinary).
+            The precondition once lived in this button's title and was never a guard (C-6c). */}
+        {vertex?.createdBy.operation === 'seed' ? (
+          <>
+            <button
+              type="button"
+              onClick={() => castFileInputRef.current?.click()}
+              title="a corner takes a concept-space from a .cast.json file — the device checks its structure and never grades it"
+              className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-sm font-semibold text-stone-100 transition hover:border-violet-300 hover:text-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-400"
+            >
+              load cast… (.cast.json)
+            </button>
+            <input
+              ref={castFileInputRef}
+              type="file"
+              accept=".json,application/json"
+              data-cast-file-input="true"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = '';
+                if (file) void loadCastFile(file);
+              }}
+            />
+          </>
+        ) : null}
       </div>
       {castLoadLine ? (
         <p data-cast-load-result="true" className={`text-xs ${castLoadLine.refused ? 'text-rose-300' : 'text-stone-400'}`}>

@@ -1,0 +1,363 @@
+#!/usr/bin/env node
+
+// DIAGNOSTIC — THE BORN ROOM, REACHABLE LAWFULLY (STAMP C-8, 2026-09-23): `spaceOf(vertex)`, ONE
+// resolver for the concept-space a vertex holds, re-derived at every read (src/lib/spaceOf.ts); the
+// KIND of an edge fixing the J its midpoint glues over — a SEED edge the person's record, a CORNER
+// edge the carried injection, a MEDIAL edge the MEET of everything both endpoints hold ∪ the
+// person's BORN pairs; the loader offered on the seed's own corners ALONE (Δ86); the composed
+// identity shown and never a pair; the born room the only place a pair is taken; the dependency
+// refusal across generations; the record's home and the site said in words.
+//
+// ⛔ THE INSTRUMENT SHARES THE CLAIM'S TYPE SYSTEM: the resolver is RUN — on the record's own
+// fixtures through the store's own actions (the lawful path: casts on the seed's corners, pairs by
+// pointing, the core dissected), and on this witness's OWN generator of random towers (seeds of 5
+// roles and 2 words, random partial injections) — and read against the researcher's seals
+// (space_of_resolver.py · g3_meet_vs_parent.py, run at the mothership's hand): the SHAPE of every
+// law is pinned here on this generator; the researcher's figures (A twice in 3,000 of 3,000 under
+// the record alone; 960 of 3,000 pooled under the parent's rule; 2,926 name-matched duplicates;
+// 2,993 of 3,000 moved by J_AB) are quoted from THEIR run and not reproduced — this generator is
+// not theirs (C-5's rule on numbers in charters). The one hand-sealed face IS reproduced: |A| = 5 ·
+// |M_AB| = 8 · |M_CA| = 10 ⇒ the station 8, ABAC 13 (record-only 18; name-matched 15).
+
+const fs = require('node:fs');
+const path = require('node:path');
+const ts = require('typescript');
+
+const TRANSPILE_OPTIONS = {
+  compilerOptions: { esModuleInterop: true, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX },
+};
+require.extensions['.ts'] = (module, filename) => {
+  module._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), { ...TRANSPILE_OPTIONS, fileName: filename }).outputText, filename);
+};
+require.extensions['.tsx'] = require.extensions['.ts'];
+
+const repoRoot = path.resolve(__dirname, '..');
+const req = (p) => require(path.join(repoRoot, p));
+const readLf = (p) => fs.readFileSync(path.join(repoRoot, p), 'utf8').split('\r\n').join('\n');
+const J = (x) => JSON.stringify(x);
+
+let failures = 0;
+const check = (name, cond, detail) => {
+  console.log(`${cond ? 'PASS' : 'FAIL'} - ${name}${detail !== undefined && !cond ? ` — ${detail}` : ''}`);
+  if (!cond) failures += 1;
+};
+const note = (line) => console.log(`      ${line}`);
+
+const { spaceOf, edgeKind, generationOf, composedOn, duplicatedSeeds, pooledRoles, brokenBornActs, isSeedVertex } = req('src/lib/spaceOf.ts');
+const { glue } = req('src/lib/midpointGlue.ts');
+const { readCastFile } = req('src/lib/castLoader.ts');
+const { createSeedShape } = req('src/data/seeds.ts');
+const { applyAmboDissection } = req('src/lib/ambo.ts');
+const { edgeBetween } = req('src/lib/faceReading.ts');
+const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
+const cast = (name) => readCastFile(fs.readFileSync(path.join(repoRoot, 'scripts/fixtures/casts', name), 'utf8')).cast;
+
+console.log('THE BORN ROOM — one resolver, the edge\'s kind fixing its J, the meet on a medial edge, the loader on the seed alone, the composed identity never a pair, the dependency refusal (C-8)\n');
+
+// ─── this witness's own generator: a synthetic shape of seeds, midpoints and the edges between them ───
+const seedCast = (X, n, m) => ({ roles: Array.from({ length: n }, (_, i) => ({ id: `${X.toLowerCase()}${i}` })), signature: Array.from({ length: m }, (_, i) => ({ type: `w${X.toLowerCase()}${i}`, arity: 2 })), relations: [], axioms: [] });
+function shapeBuilder() {
+  const vertices = {};
+  const edges = [];
+  const seed = (id, c) => { vertices[id] = { id, position: [0, 0, 0], data: { label: id, notes: '', color: '', tags: [], custom: {}, cast: c }, createdBy: { shapeId: 'synthetic', operation: 'seed', sourceVertexIds: [] } }; return id; };
+  const mid = (id, p, q) => { vertices[id] = { id, position: [0, 0, 0], data: { label: id, notes: '', color: '', tags: [], custom: {} }, createdBy: { shapeId: 'synthetic', operation: 'ambo-dissection', sourceVertexIds: [p, q] } }; return id; };
+  const edge = (a, b, identification) => { const e = { id: `e:${a}:${b}`, vertexIds: [a, b], sourceVertexIds: [a, b], ...(identification ? { identification } : {}) }; edges.push(e); return e; };
+  const shape = () => ({ id: 'synthetic', vertices, edges, faces: [], cells: [] });
+  return { seed, mid, edge, shape };
+}
+const rngOf = (seed) => {
+  let s = seed >>> 0;
+  const next = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
+  return { next, int: (lo, hi) => lo + Math.floor(next() * (hi - lo + 1)), sample: (arr, k) => { const a = [...arr]; for (let i = a.length - 1; i > 0; i -= 1) { const j = Math.floor(next() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, k); } };
+};
+const rndPinj = (rng, src, dst, total = false) => { const k = total ? Math.min(src.length, dst.length) : rng.int(0, Math.min(src.length, dst.length)); const xs = rng.sample(src, k); const ys = rng.sample(dst, k); return xs.map((x, i) => [x, ys[i]]); };
+const ids = (c) => c.roles.map((r) => r.id);
+const words = (c) => c.signature.map((s) => s.type);
+/** one face A, B, C with random records on its three seed edges; gen 1 = M_AB, M_BC, M_CA; gen 2 = the station S on A–M_AB and P_A, P_B on the medial edges; gen 3 = Q on P_A–P_B */
+function tower(rng, opts = {}) {
+  const { seed, mid, edge, shape } = shapeBuilder();
+  const A = seedCast('A', 5, 2); const B = seedCast('B', 5, 2); const C = seedCast('C', 5, 2);
+  seed('A', A); seed('B', B); seed('C', C);
+  const J_AB = opts.J_AB ?? { roles: rndPinj(rng, ids(A), ids(B), opts.total), types: rndPinj(rng, words(A), words(B)) };
+  const J_BC = opts.J_BC ?? { roles: rndPinj(rng, ids(B), ids(C), opts.total), types: rndPinj(rng, words(B), words(C)) };
+  let J_CA = opts.J_CA ?? { roles: rndPinj(rng, ids(C), ids(A), opts.total), types: rndPinj(rng, words(C), words(A)) };
+  if (opts.flat) { const jab = new Map(J_AB.roles); const jbc = new Map(J_BC.roles); J_CA = { roles: [...jab].filter(([, b]) => jbc.has(b)).map(([a, b]) => [jbc.get(b), a]), types: [] }; }
+  edge('A', 'B', J_AB); edge('B', 'C', J_BC); edge('C', 'A', J_CA);
+  mid('M_AB', 'A', 'B'); mid('M_BC', 'B', 'C'); mid('M_CA', 'C', 'A');
+  edge('A', 'M_AB'); edge('M_AB', 'B'); // corner edges
+  edge('M_CA', 'M_AB', opts.born_CA_AB); edge('M_AB', 'M_BC', opts.born_AB_BC); edge('M_BC', 'M_CA'); // medial edges (gen 1's)
+  mid('S', 'A', 'M_AB'); mid('P_A', 'M_CA', 'M_AB'); mid('P_B', 'M_AB', 'M_BC');
+  edge('P_A', 'P_B'); // the gen-2 medial edge
+  mid('Q', 'P_A', 'P_B');
+  return { shape: shape(), A, B, C, J_AB, J_BC, J_CA };
+}
+const fingerprint = (R) => J([...R.roleContent.values()].map((s) => [...s].sort().join(',')).sort());
+
+// ═══ §1 THE KINDS, on the real shapes ═══
+console.log('----- §1 the kind of an edge, by what its ends are — never by name -----');
+const seed0 = createSeedShape('tetrahedron');
+const byLabel = (shape, label) => Object.values(shape.vertices).find((v) => v.data.label === label).id;
+const withCast = (shape, id, c) => ({ ...shape, vertices: { ...shape.vertices, [id]: { ...shape.vertices[id], data: { ...shape.vertices[id].data, cast: c } } } });
+const flow = cast('flow.cast.json'); const tcell = cast('t-cell.cast.json'); const phi = cast('phi.cast.json');
+let seeded = seed0;
+for (const [label, c] of [['A', flow], ['B', tcell], ['C', phi], ['D', phi]]) seeded = withCast(seeded, byLabel(seeded, label), c);
+const g1 = applyAmboDissection(seeded);
+const g2 = applyAmboDissection(g1, g1.cells.find((x) => x.kind === 'core').id);
+const kinds = (shape) => { const n = { seed: 0, corner: 0, medial: 0 }; for (const e of shape.edges) n[edgeKind(shape, e.vertexIds[0], e.vertexIds[1])] += 1; return n; };
+note(`gen 1 (${g1.edges.length} edges): ${J(kinds(g1))} · gen 2 (${g2.edges.length} edges): ${J(kinds(g2))}`);
+check('§1 ★★ THREE KINDS BY WHAT THE ENDS ARE: on the gen-1 shape A–B is a SEED edge, A–AB a CORNER edge (a born vertex to its own parent), AB–AC a MEDIAL edge (two born vertices, neither the other\'s parent); at gen 2 the same three edges keep their kinds and AB–ABAC is a corner edge; every edge is one of the three and the counts sum to the shape\'s',
+  (() => {
+    const a = byLabel(g1, 'A'); const b = byLabel(g1, 'B'); const ab = byLabel(g1, 'AB'); const ac = byLabel(g1, 'AC');
+    const k1 = kinds(g1); const k2 = kinds(g2);
+    return edgeKind(g1, a, b) === 'seed' && edgeKind(g1, a, ab) === 'corner' && edgeKind(g1, ab, ac) === 'medial' && edgeKind(g2, a, b) === 'seed' && edgeKind(g2, a, ab) === 'corner' && edgeKind(g2, ab, ac) === 'medial' && edgeKind(g2, ab, byLabel(g2, 'ABAC')) === 'corner' &&
+      k1.seed + k1.corner + k1.medial === g1.edges.length && k2.seed + k2.corner + k2.medial === g2.edges.length && k1.medial > 0 && k2.medial > k1.medial;
+  })());
+// MEASURED (this witness's first run): dissecting the CORE mints midpoints on the octahedron's edges alone — no midpoint
+// stands on a corner edge A–AB at gen 2; the STATION on A–AB is minted when the CORNER CELL at A (the residue tetrahedron
+// A · AB · AC · AD) is dissected. The researcher's model has both; the build makes each by its own cell.
+const cornerCellAt = (shape, corner, born) => shape.cells.find((c) => c.kind !== 'core' && c.vertexIds.includes(corner) && c.vertexIds.includes(born));
+const g2c = applyAmboDissection(g1, cornerCellAt(g1, byLabel(g1, 'A'), byLabel(g1, 'AB')).id);
+const stationIn = (shape, corner, born) => Object.values(shape.vertices).find((v) => v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(corner) && v.createdBy.sourceVertexIds.includes(born));
+check('§1 ★ THE GENERATION is derived from what made a vertex: the seed\'s corners 0, a gen-1 midpoint 1, ABAC 2 (the core dissected), the station on A–AB 2 (the corner cell at A dissected — one more than its greatest parent); the core\'s dissection mints NO midpoint on a corner edge (measured)',
+  generationOf(g2, byLabel(g2, 'A')) === 0 && generationOf(g2, byLabel(g2, 'AB')) === 1 && generationOf(g2, byLabel(g2, 'ABAC')) === 2 && stationIn(g2, byLabel(g2, 'A'), byLabel(g2, 'AB')) === undefined &&
+    (() => { const st = stationIn(g2c, byLabel(g2c, 'A'), byLabel(g2c, 'AB')); return st && generationOf(g2c, st.id) === 2 && edgeKind(g2c, byLabel(g2c, 'A'), byLabel(g2c, 'AB')) === 'corner'; })());
+
+// ═══ §2 THE RESOLVER on the record's fixtures ═══
+console.log('\n----- §2 the resolver: a seed corner\'s cast; a midpoint the gluing over its edge\'s J; the station; ABAC; the controls -----');
+const { useGeometryStore } = req('src/store/geometryStore.ts');
+useGeometryStore.setState({ shapes: { [seeded.id]: seeded }, currentShapeId: seeded.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {} });
+const S = () => useGeometryStore.getState();
+const cur = () => S().shapes[S().currentShapeId];
+S().applyAmboDissectionToCurrent();
+const G1 = cur();
+const a1 = byLabel(G1, 'A'); const b1 = byLabel(G1, 'B'); const c1 = byLabel(G1, 'C');
+const give = (X, Y, map) => { const e = edgeBetween(cur().edges, X, Y); for (const [x, y] of Object.entries(map)) { if (e.vertexIds[0] === X) S().giveRolePair(e.id, x, y); else S().giveRolePair(e.id, y, x); } return e.id; };
+const giveWord = (X, Y, s, t) => { const e = edgeBetween(cur().edges, X, Y); if (e.vertexIds[0] === X) S().giveWordPair(e.id, s, t); else S().giveWordPair(e.id, t, s); };
+check('§2 ★★ A SEED CORNER resolves to ITS CAST, every role and word carrying its own seed tag; a midpoint of an UNMAPPED seed edge resolves to the DISJOINT UNION by the same construction (23 roles for Flow ⊔ Φ — the midpoint witness\'s seal), no branch',
+  (() => {
+    const RA = spaceOf(G1, a1);
+    const abid = byLabel(G1, 'AB'); const acid = byLabel(G1, 'AC');
+    const RAB0 = spaceOf(G1, abid); const RAC0 = spaceOf(G1, acid);
+    return RA && RA.origin === 'seed' && RA.space === flow && [...RA.roleContent.values()].every((s) => s.size === 1 && [...s][0].startsWith(`${a1}|`)) && RA.wordContent.size === flow.signature.length &&
+      RAB0 && RAB0.origin === 'derived' && RAB0.edge.kind === 'seed' && RAB0.space.roles.length === flow.roles.length + tcell.roles.length && RAC0 && RAC0.space.roles.length === flow.roles.length + phi.roles.length && RAC0.space.roles.length === 23;
+  })());
+give(a1, b1, { F1: 'r0', F5: 'r2', F7: 'r8' });
+giveWord(a1, b1, 'sustains', 'sustains');
+give(a1, c1, { F1: 'Φ1', F7: 'Φ3', F13: 'Φ9' });
+const RAB1 = spaceOf(G1 === cur() ? cur() : cur(), byLabel(cur(), 'AB'));
+check('§2 ★★ A MAPPED SEED MIDPOINT resolves to the gluing over the person\'s RECORD (the same construction the surface read before): AB with three pairs and one τ has 14 + 10 − 3 = 21 roles, and each glued role carries BOTH seed tags; the τ pair is one word carrying both',
+  (() => {
+    const R = spaceOf(cur(), byLabel(cur(), 'AB'));
+    const glued = R.space.roles.filter((r) => r.id.includes('≡'));
+    const w = [...R.wordContent.entries()].find(([k]) => k.includes('≡'));
+    return R && R.edge.kind === 'seed' && R.edge.born.roles.length === 3 && R.space.roles.length === 21 && glued.length === 3 && glued.every((r) => R.roleContent.get(r.id).size === 2) && w && w[1].size === 2;
+  })());
+S().selectCell(cur().cells.find((x) => x.kind === 'core').id);
+S().applyAmboDissectionToCurrent();
+const G2 = cur();
+const A2 = byLabel(G2, 'A'); const AB2 = byLabel(G2, 'AB'); const AC2 = byLabel(G2, 'AC'); const ABAC = byLabel(G2, 'ABAC');
+const RAB2 = spaceOf(G2, AB2); const RAC2 = spaceOf(G2, AC2); const RABAC = spaceOf(G2, ABAC);
+// the station: the corner cell at A dissected on the gen-1 shape WITH its records (the store's), read through the resolver
+const G1r = S().shapes[G1.id];
+const G2c = applyAmboDissection(G1r, cornerCellAt(G1r, a1, byLabel(G1r, 'AB')).id);
+const station = stationIn(G2c, byLabel(G2c, 'A'), byLabel(G2c, 'AB')).id;
+const RS = spaceOf(G2c, station); const RABc = spaceOf(G2c, byLabel(G2c, 'AB'));
+note(`gen 2 (the core dissected): AB ${RAB2.space.roles.length} roles · AC ${RAC2.space.roles.length} · ABAC ${RABAC.space.roles.length} (${RABAC.edge.kind}, ${RABAC.edge.composed.roles.length} composed pairs, ${RABAC.edge.composed.words.length} composed words, ${RABAC.edge.composed.conflicts.length} conflicts) · duplicated seeds at ABAC ${J(duplicatedSeeds(RABAC))} · (the corner cell at A dissected): the station on A–AB ${RS.space.roles.length} roles (${RS.edge.kind}, ${RS.edge.composed.roles.length} carried) against AB's ${RABc.space.roles.length}`);
+check('§2 ★★ THE STATION on the CORNER edge A–AB (the corner cell at A dissected) is AB\'s OWN SPACE (Arman\'s stations theorem): the same role count as AB, no seed role or word duplicated, the injection of A total (14 carried pairs — one per role of A — and Flow\'s 11 words), no record read',
+  RS && RS.edge.kind === 'corner' && RS.space.roles.length === RABc.space.roles.length && duplicatedSeeds(RS).roles === 0 && duplicatedSeeds(RS).words === 0 && RS.edge.composed.roles.length === flow.roles.length && RS.edge.composed.words.length === flow.signature.length && RS.edge.born.roles.length === 0 && RS.edge.born.types.length === 0);
+check('§2 ★★ ABAC on the MEDIAL edge with NO born pair: |M_AB| + |M_CA| − |A| roles (21 + 21 − 14 = 28), the shared corner A composed ONCE (14 pairs, 11 words), 0 seed roles and 0 seed words duplicated; the record alone would house A twice (42 roles), and matching NAMES leaves the glued A-roles apart (`F1 ≡ r0` ≠ `Φ1 ≡ F1`) — both controls measured',
+  (() => {
+    const want = RAB2.space.roles.length + RAC2.space.roles.length - flow.roles.length;
+    const recordOnly = glue(RAB2.space, RAC2.space, [], []);
+    const labelOf = (space, id) => { const r = space.roles.find((x) => x.id === id); return r && r.label ? r.label : id; };
+    const byName = RAB2.space.roles.map((r) => [r.id, RAC2.space.roles.find((s) => labelOf(RAC2.space, s.id) === labelOf(RAB2.space, r.id))?.id]).filter(([, y]) => y !== undefined);
+    const named = glue(RAB2.space, RAC2.space, byName, []);
+    note(`ABAC: kind-aware ${RABAC.space.roles.length} roles (sealed by hand ${want}) · record-only ${recordOnly.refused ? 'refused' : recordOnly.midpoint.roles.length} · name-matched ${named.refused ? 'refused' : named.midpoint.roles.length} (${byName.length} names matched)`);
+    return RABAC.edge.kind === 'medial' && RABAC.space.roles.length === want && RABAC.edge.composed.roles.length === flow.roles.length && RABAC.edge.composed.words.length === flow.signature.length && RABAC.edge.composed.conflicts.length === 0 &&
+      duplicatedSeeds(RABAC).roles === 0 && duplicatedSeeds(RABAC).words === 0 && !recordOnly.refused && recordOnly.midpoint.roles.length === RAB2.space.roles.length + RAC2.space.roles.length && !named.refused && named.midpoint.roles.length > want;
+  })());
+check('§2 ★ THE HAND-SEALED FACE (the researcher\'s one instance, reproduced on this generator\'s shape): |A| = 5 · |M_AB| = 8 · |M_CA| = 10 ⇒ the station on A–M_AB 8 roles, 0 duplicated · ABAC with no born pair 8 + 10 − 5 = 13 roles, 0 duplicated · the record alone 18 · names matched 15',
+  (() => {
+    const rng = rngOf(7);
+    const t = tower(rng, { J_AB: { roles: [['a0', 'b0'], ['a1', 'b1']], types: [] }, J_CA: { roles: [], types: [] }, J_BC: { roles: [], types: [] } });
+    const R_AB = spaceOf(t.shape, 'M_AB'); const R_CA = spaceOf(t.shape, 'M_CA'); const R_S = spaceOf(t.shape, 'S'); const R_P = spaceOf(t.shape, 'P_A');
+    const recordOnly = glue(R_CA.space, R_AB.space, [], []);
+    const labelOf = (space, id) => { const r = space.roles.find((x) => x.id === id); return r && r.label ? r.label : id; };
+    const byName = R_CA.space.roles.map((r) => [r.id, R_AB.space.roles.find((s) => labelOf(R_AB.space, s.id) === labelOf(R_CA.space, r.id))?.id]).filter(([, y]) => y !== undefined);
+    const named = glue(R_CA.space, R_AB.space, byName, []);
+    note(`the hand-sealed face: |A| 5 · |M_AB| ${R_AB.space.roles.length} · |M_CA| ${R_CA.space.roles.length} · station ${R_S.space.roles.length} (dup ${duplicatedSeeds(R_S).roles}) · ABAC ${R_P.space.roles.length} (dup ${duplicatedSeeds(R_P).roles}) · record-only ${recordOnly.midpoint.roles.length} · name-matched ${named.midpoint.roles.length}`);
+    return R_AB.space.roles.length === 8 && R_CA.space.roles.length === 10 && R_S.space.roles.length === 8 && duplicatedSeeds(R_S).roles === 0 && R_P.space.roles.length === 13 && duplicatedSeeds(R_P).roles === 0 && recordOnly.midpoint.roles.length === 18 && named.midpoint.roles.length === 15;
+  })());
+
+// ═══ §3 THE MEET against the parent's identity — random towers, this witness's own generator ═══
+console.log('\n----- §3 the meet: the shared corner\'s identity at gen 2; at gen 3 the meet never pools where the parent\'s rule does; the doubling is the meet\'s conflicts; invariant 9 -----');
+/** RULE P (the control, the researcher\'s 1055): pair through the shared PARENT's roles traced into each endpoint — every role of the parent's space finds the one role of each endpoint holding its tags */
+const parentIdentity = (shape, U, V, parentId) => {
+  const P = spaceOf(shape, parentId);
+  const find = (R, tags) => [...R.roleContent.entries()].filter(([, s]) => [...tags].every((t) => s.has(t))).map(([id]) => id);
+  const pairs = [];
+  for (const [, tags] of P.roleContent) { const u = find(U, tags); const v = find(V, tags); if (u.length === 1 && v.length === 1) pairs.push([u[0], v[0]]); }
+  return pairs;
+};
+const contentOfGlue = (U, V, M) => { const m = new Map(); for (const r of M.roles) m.set(r.key, new Set([...(r.a !== null ? U.roleContent.get(r.a) : []), ...(r.b !== null ? V.roleContent.get(r.b) : [])])); return m; };
+const pooledIn = (content) => { let n = 0; for (const s of content.values()) { const per = new Map(); for (const t of s) { const c = t.slice(0, t.indexOf('|')); per.set(c, (per.get(c) ?? 0) + 1); } if ([...per.values()].some((k) => k > 1)) n += 1; } return n; };
+const doubledA = (content) => { const cnt = new Map(); for (const s of content.values()) for (const t of s) cnt.set(t, (cnt.get(t) ?? 0) + 1); return new Set([...cnt].filter(([t, k]) => k > 1 && t.startsWith('A|')).map(([t]) => t.slice(2))); };
+const formula = (t) => {
+  const JAB = new Map(t.J_AB.roles); const JBC = new Map(t.J_BC.roles); const JCA = new Map(t.J_CA.roles);
+  const h = new Map(); for (const [a, b] of JAB) if (JBC.has(b) && JCA.has(JBC.get(b))) h.set(a, JCA.get(JBC.get(b)));
+  const reach = new Set([...JAB].filter(([, b]) => JBC.has(b)).map(([a]) => a));
+  const out = new Set(); for (const a of JCA.values()) if (h.get(a) !== a) out.add(a); for (const a of reach) if (!h.has(a)) out.add(a);
+  return out;
+};
+(() => {
+  const rng = rngOf(251);
+  const N = 3000;
+  let t1 = 0; let t2 = 0; let t6m = 0; let t6p = 0; let t3 = 0; let dupBelow = 0; let inv9 = 0; let inv9ctl = 0; let inv9n = 0;
+  for (let i = 0; i < N; i += 1) {
+    const t = tower(rng);
+    const R_CA = spaceOf(t.shape, 'M_CA'); const R_AB = spaceOf(t.shape, 'M_AB'); const R_BC = spaceOf(t.shape, 'M_BC');
+    // T1 — at gen 2 the meet IS the shared corner's identity
+    const meet2 = composedOn(R_CA, R_AB);
+    const ident = parentIdentity(t.shape, R_CA, R_AB, 'A');
+    if (J([...meet2.roles].sort()) !== J([...ident].sort()) || meet2.conflicts.length) t1 += 1;
+    // below gen 3 nothing doubles
+    for (const id of ['M_AB', 'M_BC', 'M_CA', 'S', 'P_A', 'P_B']) { const d = duplicatedSeeds(spaceOf(t.shape, id)); if (d.roles || d.words) dupBelow += 1; }
+    // gen 3 — Q on P_A–P_B: the meet (the build) against RULE P (the control)
+    const R_PA = spaceOf(t.shape, 'P_A'); const R_PB = spaceOf(t.shape, 'P_B'); const R_Q = spaceOf(t.shape, 'Q');
+    const pP = parentIdentity(t.shape, R_PA, R_PB, 'M_AB');
+    const QP = glue(R_PA.space, R_PB.space, pP, []);
+    const contentQP = QP.refused ? null : contentOfGlue(R_PA, R_PB, QP.midpoint);
+    if (pooledRoles(R_Q) > 0) t6m += 1;
+    if (contentQP && pooledIn(contentQP) > 0) t6p += 1;
+    if (contentQP && [...contentQP.values()].length) { const dP = duplicatedSeeds({ roleContent: contentQP, wordContent: new Map() }).roles; if (dP > duplicatedSeeds(R_Q).roles) t3 += 1; }
+    // T2 — the doubled A-roles at Q equal the ratified 09-16 set (empty born rooms)
+    if (J([...doubledA(R_Q.roleContent)].sort()) !== J([...formula(t)].sort())) t2 += 1;
+    // invariant 9 at gen 2 — vary J_BC (the opposite vertex of AB–AC, not an ancestor): P_A byte-identical; vary J_AB (a parent): P_A moves (the control)
+    const t2b = tower(rng, { J_AB: t.J_AB, J_CA: t.J_CA });
+    if (fingerprint(spaceOf(t2b.shape, 'P_A')) !== fingerprint(R_PA)) inv9 += 1;
+    const t2c = tower(rng, { J_BC: t.J_BC, J_CA: t.J_CA });
+    inv9n += 1;
+    if (fingerprint(spaceOf(t2c.shape, 'P_A')) !== fingerprint(R_PA)) inv9ctl += 1;
+  }
+  note(`${N} random faces (A, B, C: 5 roles, 2 words; random partial injections on the three seed edges; born rooms empty): T1 the gen-2 meet ≠ the shared corner's identity ${t1} · duplicated seeds below gen 3 ${dupBelow} · T6 POOLING at gen 3 — the meet ${t6m} faces, the parent's rule ${t6p} faces · T3 the parent's rule doubles more ${t3} · T2 the doubling ≠ the 09-16 set ${t2} · invariant 9: J_BC varied, ABAC moved ${inv9} of ${N}; J_AB varied, ABAC moved ${inv9ctl} of ${inv9n} (the control)`);
+  check('§3 ★★ AT GEN 2 THE MEET IS THE SHARED CORNER\'S IDENTITY (T1, sealed 0): on every face the meet on M_CA–M_AB equals the identity on A traced through both injections, with no conflict; and NOTHING doubles below gen 3 (every gen-1 and gen-2 space free of duplicated seeds)', t1 === 0 && dupBelow === 0, J({ t1, dupBelow }));
+  check('§3 ★★ THE MEET NEVER POOLS (T6 — 0031 §6 invariant 3, THE STONE): at gen 3 no role of Q holds two seed roles of one corner under the meet, in 0 faces — where THE PARENT\'S IDENTITY ALONE (the control, the researcher\'s own 1055 rule) pools in > 0 faces ("it pools the disagreement and doubles the agreement: exactly backwards") and doubles more than the meet in > 0', t6m === 0 && t6p > 0 && t3 > 0, J({ t6m, t6p, t3 }));
+  check('§3 ★★ THE DOUBLING IS THE MEET\'S CONFLICTS (T2, sealed 0): with every born room empty the doubled A-roles at Q are exactly the ratified 09-16 set (im J_CA ∖ Fix h_A) ∪ (dom(J_BC∘J_AB) ∖ dom h_A) on every face — an independent reproduction of that theorem, built recursively', t2 === 0, J({ t2 }));
+  check('§3 ★★ INVARIANT 9 AT GEN 2, the byte-identical falsifier on a NON-ANCESTOR opposite vertex: J_BC re-cast (BC is ABAC\'s opposite vertex in the medial triangle, not an ancestor) — ABAC unchanged on every face; J_AB re-cast (a PARENT) — ABAC changed on most (the control > 0)', inv9 === 0 && inv9ctl > 0, J({ inv9, inv9ctl }));
+})();
+check('§3 ★ THE CLASSICAL SUB-CASE IS SILENT (T4): on flat faces with total maps (h = 1) the meet doubles nothing at gen 3',
+  (() => { const rng = rngOf(97); let bad = 0; let n = 0; for (let i = 0; i < 300; i += 1) { const t = tower(rng, { total: true, flat: true }); if (t.J_CA.roles.length !== 5) continue; n += 1; if (duplicatedSeeds(spaceOf(t.shape, 'Q')).roles) bad += 1; } note(`${n} flat total faces: doubled ${bad}`); return n > 0 && bad === 0; })());
+
+// ═══ §4 THE STORE AND THE SURFACE on the lawful path ═══
+console.log('\n----- §4 the born room at ABAC: the composed identity never a pair, a born pair taken, a pair on a composed role refused by name, the dependency refusal, the home and the site -----');
+const React = require('react');
+const { renderToString } = require('react-dom/server');
+const { ConceptSurface } = req('src/components/MidpointSurface.tsx');
+const render = (el) => renderToString(el).replace(/<!-- -->/g, '');
+const unescapeHtml = (s) => (s ?? '').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '<');
+const attrsOf = (html, name) => [...html.matchAll(new RegExp(`${name}="([^"]*)"`, 'g'))].map((m) => unescapeHtml(m[1]));
+const countOf = (html, name) => (html.match(new RegExp(`${name}="`, 'g')) || []).length;
+const visibleText = (html) => unescapeHtml(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
+const surfaceAt = (id) => render(React.createElement(ConceptSurface, { shape: cur(), vertexId: id }));
+// the surface with a REFUSAL passed as a prop — the chooser reads the store's refusals through hooks, and a server render
+// reads the store's initial state (the midpoint witness's own way, C-7b)
+const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
+const surfaceWith = (shape, siteId, refusal) => {
+  const rep = buildGeneralSitePacketPresenterReport(shape);
+  const p = rep.packets.find((x) => x.trace.siteId === siteId);
+  const site = midpointSiteOf(shape, siteId, p ? p.trace : null);
+  const memo = new Map();
+  const parents = [spaceOf(shape, site.a, {}, memo), spaceOf(shape, site.b, {}, memo)];
+  const resolved = spaceOf(shape, siteId, {}, memo);
+  return render(React.createElement(MidpointSurface, { shape, site, parents, resolved, refusal, remade: null }));
+};
+const siteABAC = (() => { const rep = buildGeneralSitePacketPresenterReport(G2); const p = rep.packets.find((x) => x.trace.siteId === ABAC); const { midpointSiteOf } = req('src/components/MidpointSurface.tsx'); return midpointSiteOf(G2, ABAC, p.trace); })();
+const bornA = RABAC.edge.parents[0] === AB2 ? RAB2 : RAC2; const bornB = RABAC.edge.parents[0] === AB2 ? RAC2 : RAB2;
+const freeOf = (R) => R.space.roles.map((r) => r.id).filter((id) => ![...R.roleContent.get(id)].some((t) => t.startsWith(`${A2}|`)));
+const xBorn = freeOf(bornA)[0]; const yBorn = freeOf(bornB)[0];
+check('§4 ★★ THE SURFACE AT ABAC ON THE LAWFUL PATH: the unfolding PRESENT with the shared corner\'s 14 roles marked `composed · corner A` on BOTH sides (never pickable — no click handler), NO line across the fold, the sentence naming the born room, the record\'s home said (`a medial edge (generation 1)`, the site `generation 2`), and every composed point in the own column marked `composed`',
+  (() => {
+    const html = surfaceAt(ABAC);
+    const text = visibleText(html);
+    const composedPts = attrsOf(html, 'data-midpoint-composed');
+    const ownComposed = attrsOf(html, 'data-midpoint-own-role').filter((o) => o === 'composed').length;
+    return countOf(html, 'data-midpoint-surface') === 1 && composedPts.length === 2 * flow.roles.length && composedPts.every((c) => c === 'A') && countOf(html, 'data-midpoint-line') === 0 &&
+      /14 roles and 11 words one by the solid — corner A's, composed, not yours to pair or withdraw · the born room: \d+ roles of A[BC] and \d+ of A[BC] stand apart · no pair of yours yet/.test(text) &&
+      /the record's home: A[BC]–A[BC], a medial edge \(generation 1\) · this site: ABAC, generation 2 — a pair beyond the shared corner is born here, yours/.test(text) && ownComposed === flow.roles.length && !/data-midpoint-composed="[^"]*"[^>]*class="cursor-pointer"/.test(html);
+  })(), visibleText(surfaceAt(ABAC)).slice(0, 500));
+check('§4 ★★ A PAIR ON A COMPOSED ROLE IS REFUSED BY NAME (item 3), nothing written: the store\'s `giveRolePair` on ABAC\'s edge naming the shared corner\'s role reads `… is already one with … by the solid — composed · corner A; not yours to pair or withdraw`, and the record on that edge stays empty',
+  (() => {
+    const cx = RABAC.edge.composed.roles[0];
+    S().giveRolePair(siteABAC.edge.id, cx[0], cx[1]);
+    const ref = S().midpointRefusals[siteABAC.edge.id];
+    const rec = cur().edges.find((e) => e.id === siteABAC.edge.id).identification;
+    S().withdrawMidpointAttempt(siteABAC.edge.id);
+    return ref && /is already one with .+ by the solid — composed · corner A; not yours to pair or withdraw/.test(ref.form || '') && rec === undefined;
+  })());
+check('§4 ★★ A BORN PAIR IS TAKEN (item 3): a role of AB\'s own part paired with a role of AC\'s own part is written to the medial edge\'s record — the record holds the born pair ALONE (never the composed identity), the space grows by one fewer role, the surface draws ONE line across the fold marked `yours, born here`',
+  (() => {
+    const before = spaceOf(cur(), ABAC).space.roles.length;
+    S().giveRolePair(siteABAC.edge.id, xBorn, yBorn);
+    const rec = cur().edges.find((e) => e.id === siteABAC.edge.id).identification;
+    const R = spaceOf(cur(), ABAC);
+    const html = surfaceAt(ABAC);
+    return rec && rec.roles.length === 1 && rec.roles[0][0] === xBorn && rec.roles[0][1] === yBorn && R.space.roles.length === before - 1 && countOf(html, 'data-midpoint-line') === 1 && /1 role pair · 0 word pairs — yours, born here/.test(visibleText(html)) && S().midpointRefusals[siteABAC.edge.id] === undefined;
+  })());
+// the seed edge A–B in the gen-2 shape carries the gen-0 record; an act there that re-glues the role the born pair named
+const eAB2 = edgeBetween(cur().edges, A2, byLabel(cur(), 'B'));
+const bornSideB = xBorn.startsWith('B:') || yBorn.startsWith('B:') ? (xBorn.startsWith('B:') ? xBorn : yBorn) : null; // the B-side role named by the born pair, as AB's space keys it
+check('§4 ★★ THE DEPENDENCY REFUSAL (item 4): at the gen-2 shape\'s seed edge A–B, a gen-0 pair that RE-GLUES the role the born act named is refused, naming the born act — `not taken — …: your pair at ABAC, one generation up, rests on the role this would re-glue`, with TWO hands (here: withdraw this attempt · at ABAC: withdraw … first) — and the record on A–B unchanged; the far hand taken (the born pair withdrawn through the store), the same gen-0 act is then TAKEN',
+  (() => {
+    if (!bornSideB) return false;
+    const rRaw = bornSideB.slice(2); // the B role (r…) the born pair named
+    const before = J(cur().edges.find((e) => e.id === eAB2.id).identification);
+    const freeA = flow.roles.map((r) => r.id).find((id) => !eAB2.identification.roles.some(([x]) => x === id) && !eAB2.identification.roles.some(([, y]) => y === id));
+    const act = eAB2.vertexIds[0] === A2 ? [freeA, rRaw] : [rRaw, freeA];
+    S().giveRolePair(eAB2.id, act[0], act[1]);
+    const ref = S().midpointRefusals[eAB2.id];
+    const html = surfaceWith(cur(), byLabel(cur(), 'AB'), ref ?? null);
+    const text = visibleText(html);
+    const unchanged = J(cur().edges.find((e) => e.id === eAB2.id).identification) === before;
+    const grammar = ref && ref.dependency && ref.dependency.generationsUp === 1 && /not taken — .+: your pair at ABAC, one generation up, rests on the role this would re-glue/.test(text) && /here, on [AB]–[AB]: withdraw this attempt/.test(text) && /at ABAC \(one generation up\): withdraw .+ ↦ .+ first/.test(text);
+    // the far hand: the born pair withdrawn at ABAC — then the gen-0 act is taken
+    S().withdrawMidpointAttempt(eAB2.id);
+    S().withdrawRolePair(siteABAC.edge.id, xBorn, yBorn);
+    S().giveRolePair(eAB2.id, act[0], act[1]);
+    const after = S().midpointRefusals[eAB2.id];
+    const taken = after === undefined && cur().edges.find((e) => e.id === eAB2.id).identification.roles.length === eAB2.identification.roles.length + 1;
+    S().withdrawRolePair(eAB2.id, act[0], act[1]);
+    note(`the dependency: ${ref && ref.dependency ? `${ref.dependency.act.pair.join(' ↦ ')} at ${ref.dependency.siteId ? cur().vertices[ref.dependency.siteId].data.label : '?'}, ${ref.dependency.generationsUp} generation up — ${ref.dependency.why}` : 'none'} · the act ${J(act)} after the far hand: ${after ? `refused (${after.form || J(after.conflicts.slice(0, 1))})` : 'taken'}`);
+    if (!(grammar && unchanged && taken)) note(`  detail: grammar ${grammar} · unchanged ${unchanged} · taken ${taken} · refusal keys ${J(Object.keys(S().midpointRefusals))} · eAB2 ${eAB2.id} · surfaces ${countOf(html, 'data-midpoint-surface')} · refusal boxes ${countOf(html, 'data-midpoint-refusal')} · text ${text.slice(0, 400)}`);
+    return grammar && unchanged && taken;
+  })());
+check('§4 ★ A WITHDRAWAL AT GEN 0 THAT BREAKS NO BORN ACT IS TAKEN (the positive control for the withdrawal check): with the born pair standing again, withdrawing F1 ↦ r0 on A–B goes through — no born act named it',
+  (() => {
+    S().giveRolePair(siteABAC.edge.id, xBorn, yBorn);
+    const pair = eAB2.vertexIds[0] === A2 ? ['F1', 'r0'] : ['r0', 'F1'];
+    S().withdrawRolePair(eAB2.id, pair[0], pair[1]);
+    const gone = !cur().edges.find((e) => e.id === eAB2.id).identification.roles.some(([x, y]) => x === pair[0] && y === pair[1]);
+    S().giveRolePair(eAB2.id, pair[0], pair[1]);
+    return gone && S().midpointRefusals[eAB2.id] === undefined;
+  })());
+
+// ═══ §5 THE LOADER on the seed alone; the boundaries ═══
+console.log('\n----- §5 the loader offered on the seed\'s corners alone; the boundaries -----');
+const editor = readLf('src/components/VertexPacketEditor.tsx');
+const lib = readLf('src/lib/spaceOf.ts');
+const surf = readLf('src/components/MidpointSurface.tsx');
+const store = readLf('src/store/geometryStore.ts');
+check('§5 ★★ THE LOADER IS OFFERED ON THE SEED\'S OWN CORNERS ALONE, BY CONSTRUCTION (item 2, Δ86): the packet editor renders `load cast…` and its file input only under `vertex?.createdBy.operation === \'seed\'` — a WHITELIST by what the vertex is, never a blacklist of midpoints; the button is never `disabled`; no word is added; the load function refuses the same way',
+  /\{vertex\?\.createdBy\.operation === 'seed' \? \(\s*<>\s*<button/.test(editor) && !/load cast[^]*?disabled=/.test(editor.slice(editor.indexOf("vertex?.createdBy.operation === 'seed'"), editor.indexOf('data-cast-file-input'))) && editor.includes("if (!vertex || vertex.createdBy.operation !== 'seed') return;") && !/isGeneratedMidpointVertex\(vertex\)[^]{0,80}load cast/.test(editor));
+// The editor RENDERED under node cannot carry this clause: the packet editor reads its selection through the store's hooks,
+// and a server render reads the store's INITIAL state (measured here — `No vertex selected.` whatever the state set) — so the
+// offer's absence at a midpoint and its presence at a corner are read AT THE EYE by the drive leg (its §6), where the
+// selection is the person's; here the rule is pinned in the source, by construction.
+check('§5 ⛔ THE RESOLVER IS PURE: spaceOf.ts imports only the types, the mold predicate from the loader, `edgeBetween` from the face, the glue and the register\'s check — no store, no component, nothing written (`.cast =` and `identification =` nowhere); the chooser, the inside\'s panel and the store read `spaceOf`, and `data.cast` is read in the surface by nothing',
+  (lib.match(/^import /gm) || []).length === 5 && lib.includes("import { isMoldType } from './castLoader';") && lib.includes("import { edgeBetween } from './faceReading';") && lib.includes("import { glue, gluedSpace, type Midpoint } from './midpointGlue';") && lib.includes("import { refusalOf, type Conflict } from './jRegister';") &&
+    !/useGeometryStore|from '\.\.\/store|from '\.\.\/components|\.cast\s*=|identification\s*=/.test(lib) && !/\.data\.cast/.test(surf) && !/\.data\.cast/.test(store) && !/\.data\.cast/.test(readLf('src/components/CastInsideDiagram.tsx')) &&
+    surf.includes("import { generationOf, holdsLoadedCast, isSeedVertex, nameIn, spaceOf, type Resolved } from '../lib/spaceOf';") && store.includes("from '../lib/spaceOf';"));
+check('§5 the manifest classifies the resolver NOT_FROZEN at its landing', /^NOT_FROZEN src\/lib\/spaceOf\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')));
+check('§5 the face at gen 0 stays the seed\'s: `FaceRecord` mounts only when every corner of the face is a seed vertex', surf.includes("cycle.length === 3 && cycle.every((v) => isSeedVertex(shape, v)) ? <FaceRecord"));
+
+console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-BORN-ROOM: ALL PASS — one resolver; the edge\'s kind fixes its J; the meet never pools and reproduces the doubling; the loader on the seed alone; the composed identity never a pair; a born pair taken; a later act that would break it refused by name' : `DIAGNOSE-THE-BORN-ROOM: ${failures} FAILURE(S)`}`);
+process.exit(failures === 0 ? 0 : 1);

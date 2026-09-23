@@ -114,8 +114,11 @@ import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } fr
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
 import { insideOf, type Inside, type InsideArc, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
-import { glue, gluedSpace, traceOf, type Midpoint, type Origin, type ParentTrace, type Side } from '../lib/midpointGlue';
+import { gluedSpace, traceOf, type Midpoint, type Origin, type ParentTrace, type Side } from '../lib/midpointGlue';
 import { type Conflict } from '../lib/jRegister';
+// C-8 — THE RESOLVER: the chooser and the surface read `spaceOf`, never `data.cast` (a seed corner's cast; a born corner's
+// space derived from its parents over the J its edge's kind fixes); the record's home and the site by generation
+import { generationOf, holdsLoadedCast, isSeedVertex, nameIn, spaceOf, type Resolved } from '../lib/spaceOf';
 import { CastInsideDiagram, CastInsidePanel, InsideColumn, insideGeometry, type MarkExtra, type PointExtra } from './CastInsideDiagram';
 
 export interface ProjectionSource {
@@ -182,17 +185,22 @@ export interface NeighbourActs {
   present: boolean;
   roles: EdgeIdentification['roles'];
   types: EdgeIdentification['types'];
+  roleWords: Array<[string, string]>; // the role pairs as a person reads them — the spaces' labels
 }
 
 export const neighbourActsOn = (shape: Shape, x: VertexId, y: VertexId): NeighbourActs => {
   const edge = shape.edges.find((e) => (e.vertexIds[0] === x && e.vertexIds[1] === y) || (e.vertexIds[0] === y && e.vertexIds[1] === x));
   const rec = edge?.identification;
   const edgeLabel = edge ? `${labelOf(shape, edge.vertexIds[0])}–${labelOf(shape, edge.vertexIds[1])}` : `${labelOf(shape, x)}–${labelOf(shape, y)}`;
-  return { edgeLabel, present: !!rec && (rec.roles.length > 0 || rec.types.length > 0), roles: rec?.roles ?? [], types: rec?.types ?? [] };
+  // C-8: a born pair's record holds the endpoint spaces' own ids (a glued space's id is a local key) — the words are the spaces' labels
+  const U = edge ? spaceOf(shape, edge.vertexIds[0]) : null;
+  const V = edge ? spaceOf(shape, edge.vertexIds[1]) : null;
+  const roles = rec?.roles ?? [];
+  return { edgeLabel, present: !!rec && (rec.roles.length > 0 || rec.types.length > 0), roles, types: rec?.types ?? [], roleWords: roles.map(([a, b]) => [U ? nameIn(U.space, a) : a, V ? nameIn(V.space, b) : b] as [string, string]) };
 };
 
 export const neighbourActsWords = (n: NeighbourActs): string =>
-  n.present ? `on ${n.edgeLabel}: ${[...n.roles.map(([x, y]) => `${x} ↦ ${y}`), ...n.types.map(([s, t]) => `${s} ↦ ${t}`)].join(' · ')}` : `no identification given yet on ${n.edgeLabel}`;
+  n.present ? `on ${n.edgeLabel}: ${[...n.roleWords.map(([x, y]) => `${x} ↦ ${y}`), ...n.types.map(([s, t]) => `${s} ↦ ${t}`)].join(' · ')}` : `no identification given yet on ${n.edgeLabel}`;
 
 /** the acts a refusal rests on — the attempt, then each prior act the conflicts name; every one withdrawable */
 export function actsOfRefusal(refusal: MidpointRefusal, roles: EdgeIdentification['roles'], types: EdgeIdentification['types']): Array<{ kind: 'role' | 'word'; pair: [string, string]; attempt: boolean }> {
@@ -239,17 +247,26 @@ const TOP = 26;
  * stays as reinforcement, never the carrier; an alike spelling is shown plain with its origin beside it, a translated word
  * keeps its mark `s ≡ t`; no `≡` glyph before a tuple's word — the word `both` says it.
  */
-function ownColouring(own: ReturnType<typeof gluedSpace>, inside: Inside, originTint: boolean, la: string, lb: string) {
-  const words = (origin: Origin): string => (origin === 'both' ? 'both' : origin === 'A' ? `from ${la}` : `from ${lb}`);
+function ownColouring(own: ReturnType<typeof gluedSpace>, inside: Inside, originTint: boolean, la: string, lb: string, composedKeys: Set<string> = new Set()) {
+  // C-8 item 3 (the designer): a FOURTH origin word — `both` is witnessed by both parents THROUGH THE PERSON'S ACT;
+  // `composed` is in both parents BECAUSE THE SOLID MADE IT SO (a role the meet made one; a tuple every term of which is such a role)
+  const words = (origin: Origin, composedHere = false): string => (origin === 'both' ? (composedHere ? 'composed' : 'both') : origin === 'A' ? `from ${la}` : `from ${lb}`);
   const plain = (type: string): string => type.replace(/ \[[AB]\]$/, '');
-  const mark = (type: string, origin: Origin | undefined): MarkExtra | null =>
-    origin === undefined ? null : { emphasis: origin === 'both', tint: origin === 'B' && originTint, word: plain(type), origin: words(origin), attrs: { 'data-midpoint-own-origin': origin } };
+  const mark = (type: string, origin: Origin | undefined, terms: string[]): MarkExtra | null => {
+    if (origin === undefined) return null;
+    const composedHere = origin === 'both' && terms.length > 0 && terms.every((t) => composedKeys.has(t));
+    return { emphasis: origin === 'both', tint: origin === 'B' && originTint, word: plain(type), origin: words(origin, composedHere), attrs: { 'data-midpoint-own-origin': composedHere ? 'composed' : origin } };
+  };
   const key = (type: string, terms: string[]): string => `${type}|${JSON.stringify(terms)}`;
   return {
-    arc: (arc: InsideArc) => mark(arc.type, own.tupleOrigin.get(key(arc.type, [inside.points[arc.from].id, inside.points[arc.to].id]))),
-    loop: (loop: InsideLoop) => mark(loop.type, own.tupleOrigin.get(key(loop.type, [inside.points[loop.at].id, inside.points[loop.at].id]))),
-    node: (node: InsideTupleNode) => mark(node.type, own.tupleOrigin.get(key(node.type, node.legs.map((i) => inside.points[i].id)))),
+    arc: (arc: InsideArc) => mark(arc.type, own.tupleOrigin.get(key(arc.type, [inside.points[arc.from].id, inside.points[arc.to].id])), [inside.points[arc.from].id, inside.points[arc.to].id]),
+    loop: (loop: InsideLoop) => mark(loop.type, own.tupleOrigin.get(key(loop.type, [inside.points[loop.at].id, inside.points[loop.at].id])), [inside.points[loop.at].id]),
+    node: (node: InsideTupleNode) => mark(node.type, own.tupleOrigin.get(key(node.type, node.legs.map((i) => inside.points[i].id))), node.legs.map((i) => inside.points[i].id)),
     point: (point: InsidePoint): PointExtra | null => {
+      if (composedKeys.has(point.id)) {
+        const o = own.roleOrigin.get(point.id);
+        return o === undefined ? null : { emphasis: false, origin: 'composed', attrs: { 'data-midpoint-own-role': 'composed' } };
+      }
       const o = own.roleOrigin.get(point.id);
       return o === undefined ? null : { emphasis: o === 'both', tint: o === 'B' && originTint, origin: words(o), attrs: { 'data-midpoint-own-role': o } };
     },
@@ -257,12 +274,13 @@ function ownColouring(own: ReturnType<typeof gluedSpace>, inside: Inside, origin
 }
 
 /** THE SURFACE — the unfolded midpoint, pure over its props */
-export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, remade, originTint = true }: {
+export function MidpointSurface({ shape, site, parents, resolved, refusal, remade, originTint = true }: {
   shape: Shape;
   site: MidpointSite;
-  castA: ConceptSpace;
-  castB: ConceptSpace;
-  tauDraft: EdgeIdentification['types'];
+  /** C-8: the two parents RESOLVED, in the edge's own orientation — a seed corner's cast, a born corner's space derived from its parents */
+  parents: [Resolved, Resolved];
+  /** C-8: this midpoint RESOLVED — the gluing over the J its edge's KIND fixes ∪ the record the edge lawfully carries; nothing here glues again */
+  resolved: Resolved;
   refusal: MidpointRefusal | null;
   /** C-7f item 3: the pair the store re-made when the person withdrew a half — attributed on its line */
   remade: MidpointRemade | null;
@@ -274,11 +292,21 @@ export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, 
   const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
   const withdrawWordPair = useGeometryStore((s) => s.withdrawWordPair);
   const withdrawMidpointAttempt = useGeometryStore((s) => s.withdrawMidpointAttempt);
-  const record = site.edge.identification;
-  const roles = useMemo(() => (record ? record.roles : []), [record]);
-  const types = useMemo(() => (record ? record.types : tauDraft), [record, tauDraft]);
-  const result = useMemo(() => glue(castA, castB, roles, types), [castA, castB, roles, types]);
-  const M: Midpoint | null = result.refused ? null : result.midpoint;
+  const castA = parents[0].space;
+  const castB = parents[1].space;
+  // C-8: a glued space's role id is a LOCAL key (`A:r3`, `F1≡r0`) — a person reads the space's label for it, never the key
+  const nA = (id: string): string => nameIn(castA, id);
+  const nB = (id: string): string => nameIn(castB, id);
+  const pairWords = (kind: 'role' | 'word', pair: [string, string]): string => (kind === 'role' ? `${nA(pair[0])} ↦ ${nB(pair[1])}` : `${pair[0]} ↦ ${pair[1]}`);
+  const edgeInfo = resolved.edge;
+  const kind = edgeInfo?.kind ?? 'seed';
+  // C-8 — the identity the SOLID fixed on this seam (nothing on a seed edge), the person's record (a seed edge's whole
+  // record; a medial edge's BORN pairs), and the amalgam over both — all the resolver's, read here
+  const composed = useMemo(() => edgeInfo?.composed ?? { roles: [], words: [], conflicts: [], corners: new Map<string, VertexId[]>() }, [edgeInfo]);
+  const roles = useMemo(() => edgeInfo?.born.roles ?? [], [edgeInfo]);
+  const types = useMemo(() => edgeInfo?.born.types ?? [], [edgeInfo]);
+  const refusedRecord = edgeInfo?.refused ?? null;
+  const M: Midpoint | null = refusedRecord ? null : (edgeInfo?.midpoint ?? null);
   const trace = useMemo(() => (M ? traceOf(castA, castB, M) : null), [castA, castB, M]);
   const insideA = useMemo(() => insideOf(castA), [castA]);
   const insideB = useMemo(() => insideOf(castB), [castB]);
@@ -288,12 +316,23 @@ export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, 
   const lb = labelOf(shape, site.b);
   const lm = labelOf(shape, site.siteId);
   const edgeId = site.edge.id;
-  const state = result.refused ? 'record-in-conflict' : roles.length === 0 && types.length === 0 ? 'unglued' : 'glued';
+  const state = refusedRecord ? 'record-in-conflict' : roles.length === 0 && types.length === 0 && composed.roles.length === 0 && composed.words.length === 0 ? 'unglued' : 'glued';
+  // C-8 item 3 — the composed identity's roles in the unfolding (by side) and in the own column (by glued key); the corners it shares
+  const composedA = useMemo(() => new Map(composed.roles), [composed]);
+  const composedB = useMemo(() => new Map(composed.roles.map(([a, b]) => [b, a] as [string, string])), [composed]);
+  const composedKeys = useMemo(() => new Set(composed.roles.map(([a, b]) => `${a}≡${b}`)), [composed]);
+  const cornerWords = (key: string): string => (composed.corners.get(key) ?? []).map((id) => labelOf(shape, id)).join(' · ');
+  const cornersAll = [...new Set([...composed.corners.values()].flat())].map((id) => labelOf(shape, id)).join(' · ');
+  // C-8 item 5 — the record's HOME (the edge, its kind, its generation) and the SITE (where the person stands), derived from what made them
+  const edgeGen = Math.max(generationOf(shape, site.a), generationOf(shape, site.b));
+  const siteGen = generationOf(shape, site.siteId);
+  // the born room: what each side still holds beyond the solid's identity and the person's pairs
+  const bornRoom = { a: castA.roles.length - composed.roles.length - roles.length, b: castB.roles.length - composed.roles.length - roles.length };
   // C-7d item 1 — the mapped midpoint's own space, the same presentation a corner gets
   const own = useMemo(() => (M && state === 'glued' ? gluedSpace(castA, castB, M) : null), [castA, castB, M, state]);
   const ownInside = useMemo(() => (own ? insideOf(own.space) : null), [own]);
   const ownG = useMemo(() => (ownInside ? insideGeometry(ownInside, { top: 14, footExtra: 8 }) : null), [ownInside]);
-  const ownColour = useMemo(() => (own && ownInside ? ownColouring(own, ownInside, originTint, la, lb) : null), [own, ownInside, originTint, la, lb]);
+  const ownColour = useMemo(() => (own && ownInside ? ownColouring(own, ownInside, originTint, la, lb, composedKeys) : null), [own, ownInside, originTint, la, lb, composedKeys]);
   // C-7f item 3 — a pair the store RE-MADE when the person withdrew the half they judged wrong says so: the act being honoured is the person's earlier one
   const remadeNote = (kind: 'role' | 'word', pair: [string, string]): string | null =>
     remade && remade.act.kind === kind && remade.act.pair[0] === pair[0] && remade.act.pair[1] === pair[1] ? `re-made when you withdrew ${remade.withdrawn.pair[0]} ↦ ${remade.withdrawn.pair[1]}` : null;
@@ -347,15 +386,24 @@ export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, 
   const extraB = bothExtra('B', insideB);
   const pairedA = new Set(roles.map(([x]) => x));
   const pairedB = new Set(roles.map(([, y]) => y));
-  const pointExtra = (side: Side) => (point: { id: string }) => ({
-    onClick: () => onPoint(side, point.id),
-    emphasis: (pick !== null && pick.side === side && pick.role === point.id) || (side === 'A' ? pairedA.has(point.id) : pairedB.has(point.id)),
-    attrs: {
-      'data-midpoint-side': side,
-      ...(pick && pick.side === side && pick.role === point.id ? { 'data-midpoint-picked': 'true' } : {}),
-      ...((side === 'A' ? pairedA.has(point.id) : pairedB.has(point.id)) ? { 'data-midpoint-paired': 'true' } : {}),
-    },
-  });
+  const pointExtra = (side: Side) => (point: { id: string }): PointExtra => {
+    // C-8 item 3 (the designer): the composed identity is NOT A PAIR and is never drawn as one — no stroke across the fold,
+    // no control (`withdraw`, `take`), never pickable; marked in words on the point, `composed · corner A`, on both sides
+    const partner = side === 'A' ? composedA.get(point.id) : composedB.get(point.id);
+    if (partner !== undefined) {
+      const corners = cornerWords(`${side === 'A' ? 0 : 1}|${point.id}`);
+      return { origin: `composed · corner ${corners}`, attrs: { 'data-midpoint-side': side, 'data-midpoint-composed': corners } };
+    }
+    return {
+      onClick: () => onPoint(side, point.id),
+      emphasis: (pick !== null && pick.side === side && pick.role === point.id) || (side === 'A' ? pairedA.has(point.id) : pairedB.has(point.id)),
+      attrs: {
+        'data-midpoint-side': side,
+        ...(pick && pick.side === side && pick.role === point.id ? { 'data-midpoint-picked': 'true' } : {}),
+        ...((side === 'A' ? pairedA.has(point.id) : pairedB.has(point.id)) ? { 'data-midpoint-paired': 'true' } : {}),
+      },
+    };
+  };
   // the pairs drawn across the fold; a pair naming a role a cast does not hold is named, never erased
   const lines = roles.map(([x, y]) => ({ x, y, iA: insideA.points.findIndex((p) => p.id === x), iB: insideB.points.findIndex((p) => p.id === y) }));
   const acts = refusal ? actsOfRefusal(refusal, roles, types) : [];
@@ -369,15 +417,33 @@ export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, 
     const translated = side === 'A' ? types.some(([s]) => s === w) : types.some(([, t]) => t === w);
     return `rounded border px-1.5 py-0.5 text-xs transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-1 focus:ring-amber-300 ${picked ? 'border-amber-300 bg-amber-400/10 text-amber-200' : translated ? 'border-amber-700 text-amber-200' : 'border-stone-600 bg-stone-900 text-stone-200'}`;
   };
+  // C-8 item 4 — THE DEPENDENCY REFUSAL in the designer's grammar (her 1054): the same grammar as the face's hands, the
+  // generation in the WHERE; the refused-against act attributed as the person's own; both hands, the far one naming its generation
+  const dep = refusal?.dependency ?? null;
+  const depSite = dep ? (dep.siteId !== null ? labelOf(shape, dep.siteId) : `the edge ${dep.edgeId}`) : '';
+  const depGens = dep ? (dep.generationsUp === 0 ? 'the same generation' : dep.generationsUp > 0 ? `${dep.generationsUp === 1 ? 'one generation' : `${dep.generationsUp} generations`} up` : `${-dep.generationsUp === 1 ? 'one generation' : `${-dep.generationsUp} generations`} down`) : '';
   const refusalBox = refusal ? (
-    <div data-midpoint-refusal={`${refusal.act.kind}|${refusal.act.pair[0]}|${refusal.act.pair[1]}`} className="my-2 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
-      <span className="block">{`refused — ${refusal.act.pair[0]} ↦ ${refusal.act.pair[1]} (${refusal.act.kind === 'role' ? 'a role pair' : 'a word pair'}): nothing glued, the edge keeps its prior state`}</span>
-      {refusal.form ? <span data-midpoint-refusal-form="true" className="block">{refusal.form}</span> : null}
+    <div data-midpoint-refusal={`${refusal.act.kind}|${refusal.act.pair[0]}|${refusal.act.pair[1]}`} data-midpoint-refusal-dependency={dep ? `${dep.edgeId}|${dep.act.pair[0]}|${dep.act.pair[1]}|${dep.generationsUp}` : undefined} className="my-2 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
+      {dep ? (
+        <>
+          <span className="block">{`not taken — ${refusal.act.withdrawal ? `withdrawing ${pairWords(refusal.act.kind, refusal.act.pair)}` : pairWords(refusal.act.kind, refusal.act.pair)}: your pair at ${depSite}, ${depGens}, rests on ${refusal.act.withdrawal ? 'what this would undo' : refusal.act.kind === 'role' ? 'the role this would re-glue' : 'the word this would re-translate'} — ${dep.why}`}</span>
+          <span className="mt-1 block text-stone-300">
+            <button type="button" data-midpoint-withdraw={`attempt|${refusal.act.pair[0]}|${refusal.act.pair[1]}`} data-midpoint-withdraw-attempt="true" className="mr-3 underline" onClick={() => withdrawMidpointAttempt(edgeId)}>
+              {`here, on ${la}–${lb}: withdraw this attempt`}
+            </button>
+            <button type="button" data-midpoint-dependency-withdraw={`${dep.edgeId}|${dep.act.kind}|${dep.act.pair[0]}|${dep.act.pair[1]}`} className="mr-3 underline" onClick={() => (dep.act.kind === 'role' ? withdrawRolePair(dep.edgeId, dep.act.pair[0], dep.act.pair[1]) : withdrawWordPair(dep.edgeId, dep.act.pair[0], dep.act.pair[1]))}>
+              {`at ${depSite} (${depGens}): withdraw ${dep.names[0]} ↦ ${dep.names[1]} first`}
+            </button>
+          </span>
+        </>
+      ) : null}
+      {dep ? null : <span className="block">{`refused — ${pairWords(refusal.act.kind, refusal.act.pair)} (${refusal.act.kind === 'role' ? 'a role pair' : 'a word pair'}): nothing glued, the edge keeps its prior state`}</span>}
+      {!dep && refusal.form ? <span data-midpoint-refusal-form="true" className="block">{refusal.form}</span> : null}
       {refusal.conflicts.map((c, i) => (
         <span key={i} data-midpoint-conflict={conflictWords(c, la, lb)} className="block">{`in conflict: ${conflictWords(c, la, lb)}`}</span>
       ))}
       <span className="mt-1 block text-stone-300">
-        {acts.map((act) => (
+        {(dep ? [] : acts).map((act) => (
           <span key={`${act.kind}|${act.pair.join('|')}`} className="mr-3">
             <button
               type="button"
@@ -447,10 +513,23 @@ export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, 
         {state === 'unglued' && disjoint
           ? `no pair given yet — ${la} and ${lb} stand apart: ${disjoint.roles} roles · ${disjoint.words} words · ${disjoint.tuples} tuples · ${disjoint.marks} marks`
           : state === 'glued'
-            ? `${roles.length} ${roles.length === 1 ? 'role pair' : 'role pairs'} · ${types.length} ${types.length === 1 ? 'word pair' : 'word pairs'} — yours`
-            : `the record on this edge contradicts itself — a pair given before this surface; withdraw a half`}
-        {pick ? <span data-midpoint-pick={`${pick.side}|${pick.role}`} className="ml-2 text-amber-200">{`${pick.role} in ${pick.side === 'A' ? la : lb} chosen — now a point in ${pick.side === 'A' ? lb : la}`}</span> : null}
+            ? kind === 'seed'
+              ? `${roles.length} ${roles.length === 1 ? 'role pair' : 'role pairs'} · ${types.length} ${types.length === 1 ? 'word pair' : 'word pairs'} — yours`
+              : kind === 'corner'
+                ? `${composed.roles.length} roles and ${composed.words.length} words one by the solid — ${la} carried into ${lb}, composed · a corner edge holds no born room: nothing here is yours to pair`
+                : `${composed.roles.length} roles and ${composed.words.length} words one by the solid — corner ${cornersAll}'s, composed, not yours to pair or withdraw · the born room: ${bornRoom.a} roles of ${la} and ${bornRoom.b} of ${lb} stand apart${roles.length || types.length ? ` · ${roles.length} ${roles.length === 1 ? 'role pair' : 'role pairs'} · ${types.length} ${types.length === 1 ? 'word pair' : 'word pairs'} — yours, born here` : ' · no pair of yours yet'}`
+            : `the record on this edge contradicts itself${kind === 'medial' ? ' under the identity the solid fixed' : ''} — a pair given before this surface; withdraw a half`}
+        {pick ? <span data-midpoint-pick={`${pick.side}|${pick.role}`} className="ml-2 text-amber-200">{`${pick.side === 'A' ? nA(pick.role) : nB(pick.role)} in ${pick.side === 'A' ? la : lb} chosen — now a point in ${pick.side === 'A' ? lb : la}`}</span> : null}
       </div>
+      {/* C-8 item 5 — THE TRACE carries the record's HOME and the SITE: the edge that holds the record, its kind and generation; where the person stands */}
+      <div data-midpoint-home={`${kind}|${edgeGen}|${siteGen}`} className="my-1 text-stone-400">
+        {`the record's home: ${la}–${lb}, a ${kind} edge (generation ${edgeGen}) · this site: ${lm}, generation ${siteGen}${kind === 'medial' ? ' — a pair beyond the shared corner is born here, yours' : kind === 'corner' ? ' — a corner edge carries; no act lands on it' : ''}`}
+      </div>
+      {[[site.siteId, resolved, lm], [site.a, parents[0], la], [site.b, parents[1], lb]]
+        .filter(([, r]) => (r as Resolved).loadedIgnored)
+        .map(([id, , name]) => (
+          <div key={String(id)} data-midpoint-loaded-ignored={String(id)} className="my-1 text-amber-200">{`${String(name)} holds a loaded cast — not read: a midpoint's space is derived from its parents (cast loading is for the seed alone)`}</div>
+        ))}
       <div className="overflow-x-auto">
         <svg data-midpoint-drawing="true" width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block overflow-visible">
           <text x={gA.px} y={14} textAnchor="middle" fontSize={12} className="fill-stone-100">{la}</text>
@@ -463,7 +542,7 @@ export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, 
               <g key={`${l.x}|${l.y}`} data-midpoint-line={`${l.x}↦${l.y}`} data-midpoint-remade={remadeNote('role', [l.x, l.y]) ?? undefined}>
                 <line x1={gA.px} y1={gA.yOf(l.iA)} x2={gB.px} y2={gB.yOf(l.iB)} className="stroke-amber-300/90" strokeWidth={1.6} />
                 <text x={foldX} y={(gA.yOf(l.iA) + gB.yOf(l.iB)) / 2 - 4} textAnchor="middle" fontSize={11} className="fill-amber-200" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>
-                  <tspan>{`${l.x} ↦ ${l.y} · yours${remadeNote('role', [l.x, l.y]) ? ` · ${remadeNote('role', [l.x, l.y])}` : ''} · `}</tspan>
+                  <tspan>{`${nA(l.x)} ↦ ${nB(l.y)} · yours${kind === 'medial' ? ', born here' : ''}${remadeNote('role', [l.x, l.y]) ? ` · ${remadeNote('role', [l.x, l.y])}` : ''} · `}</tspan>
                   <tspan data-midpoint-withdraw={`role|${l.x}|${l.y}`} className="cursor-pointer fill-stone-300 underline" onClick={() => withdrawRolePair(edgeId, l.x, l.y)}>withdraw</tspan>
                 </text>
               </g>
@@ -478,7 +557,7 @@ export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, 
             return (
               <g data-midpoint-refused-line={`${x}↦${y}`}>
                 <line x1={gA.px} y1={gA.yOf(iA)} x2={gB.px} y2={gB.yOf(iB)} className="stroke-rose-400/90" strokeWidth={1.6} strokeDasharray="5 4" />
-                <text x={foldX} y={(gA.yOf(iA) + gB.yOf(iB)) / 2 - 4} textAnchor="middle" fontSize={11} className="fill-rose-300" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{`${x} ↦ ${y} · refused — see below the drawing`}</text>
+                <text x={foldX} y={(gA.yOf(iA) + gB.yOf(iB)) / 2 - 4} textAnchor="middle" fontSize={11} className="fill-rose-300" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{`${nA(x)} ↦ ${nB(y)} · refused — see below the drawing`}</text>
               </g>
             );
           })()}
@@ -502,15 +581,15 @@ export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, 
         <div className="mt-1 text-amber-200">
           {lines.filter((l) => l.iA < 0 || l.iB < 0).map((l) => (
             <span key={`${l.x}|${l.y}`} data-midpoint-unheld={`${l.x}↦${l.y}`} className="mr-3">
-              {`${l.x} ↦ ${l.y} names a role a cast does not hold · `}
+              {`${nA(l.x)} ↦ ${nB(l.y)} names a role a cast does not hold · `}
               <button type="button" data-midpoint-withdraw={`role|${l.x}|${l.y}`} className="underline" onClick={() => withdrawRolePair(edgeId, l.x, l.y)}>withdraw</button>
             </span>
           ))}
         </div>
       ) : null}
-      {result.refused ? (
+      {refusedRecord ? (
         <div data-midpoint-record-conflict="true" className="mt-2 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
-          {result.conflicts.map((c, i) => (
+          {refusedRecord.map((c, i) => (
             <span key={i} data-midpoint-conflict={conflictWords(c, la, lb)} className="block">{`in conflict: ${conflictWords(c, la, lb)}`}</span>
           ))}
           <span className="mt-1 block text-stone-300">
@@ -533,7 +612,7 @@ export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, 
           <div className="mb-1 text-stone-400">
             <span className="text-stone-100">{lm}</span>
             {` — its own space, one column: ${M.counts.roles} roles · ${M.counts.words} words · ${M.counts.tuples} tuples · ${M.counts.marks} marks · `}
-            <span className="text-stone-300">{`every role and tuple says where it is from — both · from ${la} · from ${lb}`}</span>
+            <span className="text-stone-300">{`every role and tuple says where it is from — both · from ${la} · from ${lb}${kind === 'seed' ? '' : ' · composed (in both because the solid made it so)'}`}</span>
             {originTint ? <span>{` (from ${lb} also in `}<span className="text-sky-200">a cooler stroke</span>{`)`}</span> : null}
             {' · a translated word keeps its mark, s ≡ t'}
           </div>
@@ -553,7 +632,7 @@ export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, 
           <span data-midpoint-core="true" className="text-stone-400">{`what both confirm: ${M.core.roles} ${M.core.roles === 1 ? 'role' : 'roles'} · ${M.core.tuples} ${M.core.tuples === 1 ? 'tuple' : 'tuples'} · ${M.core.marks} ${M.core.marks === 1 ? 'mark' : 'marks'}`}</span>
           {trace.glued.map((r) => (
             <span key={r.key} data-midpoint-role-trace={r.key}>
-              {`${r.a} ≡ ${r.b} · ${r.about} ${r.about === 1 ? 'tuple' : 'tuples'} about it: both ${r.both} · ${la} ${r.fromA} · ${lb} ${r.fromB}`}
+              {`${nA(r.a)} ≡ ${nB(r.b)} · ${r.about} ${r.about === 1 ? 'tuple' : 'tuples'} about it: both ${r.both} · ${la} ${r.fromA} · ${lb} ${r.fromB}`}
               {r.mark ? ` · ${r.mark.type} ${r.mark.value} (${r.mark.witnesses.map((w) => (w === 'A' ? la : lb)).join(', ')})` : ''}
             </span>
           ))}
@@ -588,7 +667,8 @@ function ProjectionRecord({ shape, site, source, position }: { shape: Shape; sit
  */
 function SourceRecord({ shape, site, apex, faceName, cycle }: { shape: Shape; site: MidpointSite; apex: VertexId; faceName: string; cycle: VertexId[] }) {
   const [open, setOpen] = useState(false);
-  const cast = shape.vertices[apex]?.data.cast;
+  // C-8 — the source's space through the one resolver: a seed corner's cast, a born corner's derived space
+  const cast = useMemo(() => spaceOf(shape, apex)?.space, [shape, apex]);
   const inside = useMemo(() => (cast ? insideOf(cast) : null), [cast]);
   const label = labelOf(shape, apex);
   const acts = [neighbourActsOn(shape, site.a, apex), neighbourActsOn(shape, site.b, apex)];
@@ -617,7 +697,8 @@ function SourceRecord({ shape, site, apex, faceName, cycle }: { shape: Shape; si
           ? `raw material — nothing given yet on the edges that reach it (${acts.map((n) => n.edgeLabel).join(' · ')}); its clue is live once you have mapped them`
           : acts.map((n) => neighbourActsWords(n)).join(' · ')}
       </span>
-      {cycle.length === 3 ? <FaceRecord shape={shape} cycle={cycle as [VertexId, VertexId, VertexId]} faceName={faceName} here={site.edge.id} /> : null}
+      {/* C-5 reads the face at gen 0 — the seed's own faces, whose edges hold the person's records; a face with a born corner is not read here (its edges carry born pairs and the solid's identity, the tower's later work) */}
+      {cycle.length === 3 && cycle.every((v) => isSeedVertex(shape, v)) ? <FaceRecord shape={shape} cycle={cycle as [VertexId, VertexId, VertexId]} faceName={faceName} here={site.edge.id} /> : null}
       {open && inside && inside.census.points > 0 ? (
         <div data-midpoint-source-drawing={apex} className="overflow-x-auto">
           <CastInsideDiagram inside={inside} id={`source-${apex}`} />
@@ -642,7 +723,8 @@ const tupleWords = (t: FaceTuple): string => `${t.type}(${t.terms.join(', ')}) $
  */
 function FaceRecord({ shape, cycle, faceName, here }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceName: string; here: Edge['id'] }) {
   const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
-  const casts = useMemo(() => Object.fromEntries(cycle.map((v) => [v, shape.vertices[v]?.data.cast])) as Record<VertexId, ConceptSpace | undefined>, [shape, cycle]);
+  // C-8: the three corners' spaces through the one resolver (a seed corner's cast — this block mounts on seed faces alone)
+  const casts = useMemo(() => Object.fromEntries(cycle.map((v) => [v, spaceOf(shape, v)?.space])) as Record<VertexId, ConceptSpace | undefined>, [shape, cycle]);
   const result = useMemo(() => (cycle.every((v) => casts[v]) ? faceOf(cycle, casts, shape.edges) : null), [cycle, casts, shape.edges]);
   if (!result) return null; // a corner without a cast: the source line already says `holds no cast`
   const L = (v: VertexId): string => labelOf(shape, v);
@@ -706,10 +788,25 @@ export function ConceptSurface({ shape, vertexId }: { shape: Shape; vertexId: Ve
   const report = useMemo(() => buildGeneralSitePacketPresenterReport(shape), [shape]);
   const packet = useMemo(() => report.packets.find((p) => p.trace.siteId === vertexId) ?? null, [report, vertexId]);
   const site = useMemo(() => midpointSiteOf(shape, vertexId, packet ? packet.trace : null), [shape, vertexId, packet]);
-  const castA = site ? shape.vertices[site.a]?.data.cast : undefined;
-  const castB = site ? shape.vertices[site.b]?.data.cast : undefined;
-  if (site && castA && castB) {
-    return <MidpointSurface shape={shape} site={site} castA={castA} castB={castB} tauDraft={tauDrafts[site.edge.id] ?? []} refusal={refusals[site.edge.id] ?? null} remade={remades[site.edge.id] ?? null} />;
+  // C-8 item 1 — ONE resolver, re-derived at every read: the two parents and the midpoint itself; `data.cast` is read by nothing here
+  const resolved = useMemo(() => {
+    const options = { tauDrafts };
+    const memo = new Map<VertexId, Resolved | null>();
+    return { a: site ? spaceOf(shape, site.a, options, memo) : null, b: site ? spaceOf(shape, site.b, options, memo) : null, self: site ? spaceOf(shape, vertexId, options, memo) : null };
+  }, [shape, site, vertexId, tauDrafts]);
+  if (site && resolved.a && resolved.b && resolved.self) {
+    return <MidpointSurface shape={shape} site={site} parents={[resolved.a, resolved.b]} resolved={resolved.self} refusal={refusals[site.edge.id] ?? null} remade={remades[site.edge.id] ?? null} />;
   }
-  return <CastInsidePanel shape={shape} vertexId={vertexId} />;
+  // C-8 item 2 (Δ86): a born vertex holding a LOADED cast — a workspace saved before the loader's whitelist, or the old route — is SAID, never read and never silently preferred
+  const loadedIgnored = holdsLoadedCast(shape, vertexId);
+  return (
+    <>
+      {loadedIgnored ? (
+        <div data-midpoint-loaded-ignored={vertexId} className="pointer-events-auto absolute left-3 top-14 rounded border border-amber-900 bg-stone-950/85 px-3 py-2 text-xs text-amber-200">
+          {`${labelOf(shape, vertexId)} holds a loaded cast — not read: a midpoint's space is derived from its parents (cast loading is for the seed alone)`}
+        </div>
+      ) : null}
+      <CastInsidePanel shape={shape} vertexId={vertexId} />
+    </>
+  );
 }

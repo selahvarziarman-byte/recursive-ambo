@@ -47,7 +47,16 @@
 // the eye — the empty-core guard in words, the face REFUSED with its three hands
 // as controls, one hand withdrawn and the face READ with its direction stated;
 // and ITEM 0 — a pair at a gen-2 midpoint between two BORN corners, walked and
-// PRINTED as a measurement ahead of the mothership's ruling, never blessed.
+// PRINTED as a measurement ahead of the mothership's ruling, never blessed —
+// RETIRED by C-8: that arm loaded casts onto AB and AC, an act Arman named as
+// not his (Δ86: "no cast loading is only for the seed"), so it measured the
+// shortcut, not the chain. C-8 (Δ85 · Δ86): THE DRIVE FAMILY RUNS ON THE LAWFUL
+// PATH ONLY — a cast is loaded on the seed's corners and nowhere else; the born
+// room at ABAC reached by pointing at AB and AC and dissecting: the shared
+// corner's roles marked composed on both sides and never a pair, a composed
+// point unpickable, a born pair by two clicks, the record's home and the site
+// in words, the dependency refusal with its two hands and the act taken after
+// the far hand, the loader absent at a midpoint.
 // C-7g (the designer's second cut — 1008 §3 and 1110 §3): the label lane is
 // arity-1's (no binary word left of its point at the eye, none end-anchored);
 // the width bounded by the wrap (the drawing against the panel and the widest
@@ -200,10 +209,25 @@ const waitUp = () =>
               (fr.handTexts || []).length === 3 && fr.handTexts.every((t) => /^(here, )?on [A-D]–[A-D]: withdraw .+ ↦ .+$/.test(t)) && fr.here === 1 && fr.handTexts.filter((t) => /^here, /.test(t)).length === 1;
           })(), J({ lines: fd.lines, hands: fr.handTexts, here: fr.here }));
         note(`the face's reading at the eye (fix · mov · und · core per corner): ${J((fd.corners || []).map((c) => `${c.corner} ${c.fix}·${c.mov}·${c.und}·${c.core}`))} · the block ${J(fd.box)} · the word half beneath it ${J((out.faceRead || {}).wordHalf)} at scroll ${(out.faceRead || {}).scrollTop} · the refusal's hands ${J(fr.hands)}`);
-        // ITEM 0 — printed as a measurement, never blessed
-        const i0 = out.item0 || { present: false };
-        note(`ITEM 0 (1705 §4): casts loaded onto the BORN corners AB and AC at gen 1 (${J(out.loadAB)} · ${J(out.loadAC)}), the core dissected, the gen-2 midpoint ABAC selected from the cuboctahedron (${J(out.selectABAC)}) — a surface for pairing: ${i0.present ? `PRESENT — ${i0.sentence || ''}` : 'ABSENT'}${out.item0After ? ` · a pair given by two clicks: ${J(out.item0After.lines)} — ${out.item0After.sentence || ''}` : ''}`);
-        check(`§5 [${w}×${h}] ITEM 0 MEASURED (reported, not ruled on): the route was walked and the surface's presence at a midpoint between two born corners was read — the fact is printed above`, typeof i0.present === 'boolean' && out.selectABAC !== null && out.selectABAC !== undefined, J({ selectABAC: out.selectABAC, present: i0.present }));
+        // ─── C-8 — THE BORN ROOM at the eye, on the lawful path ───
+        const lm = out.loaderAtMidpoint || {}; const lc = out.loaderAtCorner || {};
+        check(`§6 [${w}×${h}] ★★ THE LOADER IS ABSENT AT A MIDPOINT AND PRESENT AT A CORNER (C-8 item 2, Δ86): the packets tab with AB selected offers no \`load cast…\` and holds no file input, and adds no word about it; with the seed corner A selected it offers both`,
+          lm.inputs === 0 && lm.offer === 0 && lm.words === false && lc.inputs === 1 && lc.offer === 1, J({ midpoint: lm, corner: lc }));
+        const br = out.bornRoom || { present: false };
+        note(`C-8 the born room: ABAC selected from the cuboctahedron (${J(out.selectABAC)}) — ${br.present ? `PRESENT — ${br.sentence || ''} · ${br.home || ''} · composed points ${(br.composedPoints || []).length} (${J([...new Set(br.composedPoints || [])])}) · lines ${J(br.lines)} · free points ${(br.freeA || []).length} / ${(br.freeB || []).length} · own column composed ${br.ownComposed}` : 'ABSENT'}`);
+        check(`§6 [${w}×${h}] ★★ THE BORN ROOM IS REACHED LAWFULLY (C-8 item 0 at the eye — nothing loaded on a midpoint; AB and AC mapped by pointing): the surface at ABAC is PRESENT with the shared corner A's 14 roles marked \`composed · corner A\` on BOTH sides, NO line across the fold, the sentence naming the born room, the record's home a medial edge (generation 1) and the site generation 2, every composed role in the own column marked composed`,
+          br.present && (br.composedPoints || []).length === 28 && (br.composedPoints || []).every((c) => c === 'A') && (br.lines || []).length === 0 && /one by the solid — corner A's, composed, not yours to pair or withdraw · the born room: \d+ roles of A[BC] and \d+ of A[BC] stand apart · no pair of yours yet/.test(br.sentence || '') && /a medial edge \(generation 1\) · this site: ABAC, generation 2/.test(br.home || '') && br.ownComposed === 14 && br.composedClickable === 0,
+          J({ present: br.present, composed: (br.composedPoints || []).length, lines: br.lines, sentence: br.sentence, home: br.home, ownComposed: br.ownComposed }));
+        const cc = out.composedClick || {};
+        check(`§6 [${w}×${h}] ★ A COMPOSED POINT CLICKED PICKS NOTHING (item 3 — never a pair, never a control): no pick, no line, no refusal`, br.present && cc.pick === null && (cc.lines || []).length === 0 && !cc.refusal, J(cc));
+        const bp = out.bornPair || {};
+        check(`§6 [${w}×${h}] ★★ A BORN PAIR BY TWO CLICKS in the born room: one line across the fold marked yours, born here — the record on the medial edge holds the born pair alone`, bp.lines && bp.lines.length === 1 && bp.lines[0] === `${bp.x}↦${bp.y}` && /1 role pair · 0 word pairs — yours, born here/.test(bp.sentence || '') && !bp.refusal, J(bp));
+        const dp = out.dependency || {}; const da = out.dependencyAfter || {};
+        note(`the dependency at AB (gen 2): the attempt ${J(dp.attempt)} → ${dp.refusalText || 'no refusal'} · hands ${J(dp.dependencyHands)} · after the far hand: ${J(da)}`);
+        check(`§6 [${w}×${h}] ★★ THE DEPENDENCY REFUSAL AT THE EYE (item 4, the designer's grammar): back at AB, a gen-0 pair that re-glues the role the born pair named is NOT TAKEN — \`your pair at ABAC, one generation up, rests on the role this would re-glue\` — with two hands, \`here, on A–B: withdraw this attempt\` and \`at ABAC (one generation up): withdraw … first\`; the far hand clicked and the attempt withdrawn, the same pair made again is TAKEN`,
+          dp.dependency && /^[^|]+\|[^|]+\|[^|]+\|1$/.test(dp.dependency) && /not taken — .+: your pair at ABAC, one generation up, rests on the role this would re-glue/.test(dp.refusalText || '') && (dp.dependencyHands || []).length === 2 && /^here, on A–B: withdraw this attempt$/.test(dp.dependencyHands[0]) && /^at ABAC \(one generation up\): withdraw .+ ↦ .+ first$/.test(dp.dependencyHands[1]) &&
+            da.refusal === null && Array.isArray(da.lines) && da.lines.includes(`${dp.attempt[0]}↦${dp.attempt[1]}`),
+          J({ dp, da }));
         // C-7e — THE SECOND DISSECTION AT THE EYE
         const g2 = out.gen2 || { present: false, lines: [], wordPairs: [], sourceActs: [] };
         note(`gen 2 — selected ${J(out.selectGen2Parent)} then ${J(out.selectAB3)} · panel ${J(g2.panel)} · word half ${J(g2.wordHalf)} · drawing top ${g2.drawing ? g2.drawing.y : '?'} · ${g2.counts || 'no counts'}`);
@@ -225,6 +249,6 @@ const waitUp = () =>
       /* the server may have gone already */
     }
   }
-  console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint\'s act are in the person\'s visible box and made by clicks; the midpoint draws its own space; the sources carry the person\'s neighbouring acts; the acts survive a second dissection; the designer\'s eight read at the eye; the face refuses and reads with its direction stated; her second cut read at the eye — the lane, the width, the card, the face\'s lines' : `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ${failures} FAILURE(S)`}`);
+  console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint\'s act are in the person\'s visible box and made by clicks; the midpoint draws its own space; the sources carry the person\'s neighbouring acts; the acts survive a second dissection; the designer\'s eight read at the eye; the face refuses and reads with its direction stated; her second cut read at the eye — the lane, the width, the card, the face\'s lines; the born room reached lawfully, a born pair taken, a later act that would break it refused with two hands' : `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ${failures} FAILURE(S)`}`);
   process.exit(failures === 0 ? 0 : 1);
 })();

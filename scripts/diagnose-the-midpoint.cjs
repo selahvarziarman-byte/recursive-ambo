@@ -300,8 +300,26 @@ check('§3 ★★ A WORD PAIR BEFORE ANY ROLE PAIR lives in the DRAFT (the froze
 S().giveRolePair(edgeAC, ...roleAC('F1', 'r0'));
 check('§3 ★ the first role pair takes the draft\'s τ into the record and clears the draft; withdrawing it hands τ back',
   (() => { const r = recordOfEdge(edgeAC); const ok = r && r.roles.length === 1 && r.types.length === 1 && S().edgeTauDrafts[edgeAC] === undefined; S().withdrawRolePair(edgeAC, ...roleAC('F1', 'r0')); return ok && recordOfEdge(edgeAC) === null && J(S().edgeTauDrafts[edgeAC]) === J([roleAC('sustains', 'sustains')]); })());
-check('§3 a withdrawal of a pair not on the record writes nothing; an act on a seam whose corners do not both hold a cast writes nothing and refuses nothing',
-  (() => { const before = J(S().shapes[ambo.id].edges); S().withdrawRolePair(edgeAB, 'F13', 'Φ4'); const other = ambo.edges.find((e) => e.vertexIds.every((v) => ambo.vertices[v].createdBy.operation === 'ambo-dissection')); S().giveRolePair(other.id, 'x', 'y'); return J(S().shapes[ambo.id].edges) === before && S().midpointRefusals[other.id] === undefined; })());
+check('§3 a withdrawal of a pair not on the record writes nothing; an act on a seam whose ends do not both hold a SPACE writes nothing and refuses nothing (a seed corner without a cast); C-8: a seam between two BORN corners whose parents hold casts HAS a space (derived) — an act naming a role neither holds is refused by name there, and nothing is written',
+  (() => {
+    const before = J(S().shapes[ambo.id].edges);
+    S().withdrawRolePair(edgeAB, 'F13', 'Φ4');
+    const other = ambo.edges.find((e) => e.vertexIds.every((v) => ambo.vertices[v].createdBy.operation === 'ambo-dissection'));
+    S().giveRolePair(other.id, 'x', 'y');
+    const bornRefused = S().midpointRefusals[other.id];
+    const midpointRefusals = { ...S().midpointRefusals }; delete midpointRefusals[other.id]; useGeometryStore.setState({ midpointRefusals });
+    // a seed corner without a cast: the seam C–D with D's cast removed resolves to nothing — no act, no refusal
+    const d = byLabel(ambo, 'D');
+    const noD = { ...ambo, vertices: { ...ambo.vertices, [d]: { ...ambo.vertices[d], data: { ...ambo.vertices[d].data, cast: undefined } } } };
+    const snap = S();
+    useGeometryStore.setState({ shapes: { ...S().shapes, [noD.id]: noD }, currentShapeId: noD.id });
+    const cd = noD.edges.find((e) => (e.vertexIds[0] === byLabel(noD, 'C') && e.vertexIds[1] === d) || (e.vertexIds[1] === byLabel(noD, 'C') && e.vertexIds[0] === d));
+    const beforeCD = J(S().shapes[noD.id].edges);
+    S().giveRolePair(cd.id, 'r0', 'Φ1');
+    const silent = J(S().shapes[noD.id].edges) === beforeCD && S().midpointRefusals[cd.id] === undefined;
+    useGeometryStore.setState(snap, true);
+    return J(S().shapes[ambo.id].edges) === before && bornRefused !== undefined && /"x" is not a role this cast holds/.test(bornRefused.form || '') && silent;
+  })());
 
 // C-7e (Δ84) item 2 — THE DRAFTS RIDE THE DISSECTION BY PAIR, through the store's OWN ambo action: the state after the
 // acts above (AB: three pairs and τ₃; AC: the draft `sustains ↦ sustains`) plus a pending attempt on AB and, on CD, a
@@ -339,7 +357,16 @@ const attrsOf = (html, name) => [...html.matchAll(new RegExp(`${name}="([^"]*)"`
 const countOf = (html, name) => (html.match(new RegExp(`${name}="`, 'g')) || []).length;
 const textsOf = (html, name) => [...html.matchAll(new RegExp(`${name}="[^"]*"[^>]*>([^<]*)<`, 'g'))].map((m) => unescapeHtml(m[1]));
 const visibleText = (html) => unescapeHtml(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
-const surface = (shape, site, tauDraft = [], refusal = null, remade = null) => render(React.createElement(MidpointSurface, { shape, site, castA: shape.vertices[site.a].data.cast, castB: shape.vertices[site.b].data.cast, tauDraft, refusal, remade }));
+// C-8: the surface takes the RESOLVED parents and midpoint (one resolver, `spaceOf`); a τ draft rides the resolver's options as the store's drafts do
+const { spaceOf } = req('src/lib/spaceOf.ts');
+const { edgeBetween } = req('src/lib/faceReading.ts');
+const surface = (shape, site, tauDraft = [], refusal = null, remade = null) => {
+  const options = { tauDrafts: tauDraft.length ? { [site.edge.id]: tauDraft } : {} };
+  const memo = new Map();
+  const parents = [spaceOf(shape, site.a, options, memo), spaceOf(shape, site.b, options, memo)];
+  const resolved = spaceOf(shape, site.siteId, options, memo);
+  return render(React.createElement(MidpointSurface, { shape, site, parents, resolved, refusal, remade }));
+};
 const la = ambo.vertices[siteAB.a].data.label;
 const lb = ambo.vertices[siteAB.b].data.label;
 const fresh = surface(ambo, siteAB);
@@ -463,27 +490,34 @@ check('§4 ★★ ONE CODE PATH, TWO SITES — TRUE AT GEN 2 (C-7d item 1\'s clo
       countOf(without, 'data-midpoint-surface') === 1 && attrsOf(without, 'data-midpoint-own')[0] === 'unglued';
   })());
 
-// C-5 ITEM 0 (the mothership's 1705 §4, a MEASUREMENT ahead of a ruling — ADR 0031 §3.5 says no identification is given above
-// generation 0; the researcher found the writer takes any edge id): does the mechanism expose an edge between two BORN corners
-// for pairing? MEASURED here and printed as a fact, never blessed — the ruling flips the clause, not the mechanism.
-check('§4 ★★ ITEM 0 MEASURED (C-5, 1705 §4): casts loaded onto two BORN corners — the gen-1 midpoints AB and AC — then the core dissected: the gen-2 midpoint of the edge AB–AC has a site whose parents both hold a cast, the chooser renders the UNFOLDING for it (a surface for pairing), and the store\'s `giveRolePair` on that edge WRITES a record — a pair whose two roles no gen-0 record relates; the fact is printed beneath',
+// C-5 ITEM 0 was MEASURED here on the SHORTCUT (casts loaded onto the gen-1 midpoints AB and AC — an act Arman named as not
+// his, Δ86: "no cast loading is only for the seed"); C-8 item 0 reads the LAWFUL path — casts on the seed's corners only, AB
+// and AC mapped by pointing, nothing loaded on a midpoint — and the shortcut's loaded casts are NOT READ (said, never
+// silently preferred). The born room itself is scripts/diagnose-the-born-room.cjs's.
+check('§4 ★★ C-8 ITEM 0 — THE LAWFUL PATH, and the shortcut retired: with records on A–B and A–C given through the store and NOTHING loaded on a midpoint, the core dissected, the gen-2 midpoint ABAC has a site whose parents both RESOLVE (derived) and the chooser renders the UNFOLDING with the shared corner\'s roles marked `composed` on both sides and NO line across the fold; the same shape with casts loaded onto AB and AC (the shortcut) resolves them to the SAME derived spaces — the loaded casts not read (`loadedIgnored`), the surface saying so',
   (() => {
-    const g1 = applyAmboDissection(seed);
-    const ab = byLabel(g1, 'AB'); const ac = byLabel(g1, 'AC');
-    const born = withCast(withCast(g1, ab, flow), ac, phi);
-    const g2 = applyAmboDissection(born, born.cells.find((x) => x.kind === 'core').id);
-    const abac = byLabel(g2, 'ABAC');
-    const rep2 = buildGeneralSitePacketPresenterReport(g2);
-    const p2 = rep2.packets.find((p) => p.trace.siteId === abac);
-    const s2 = p2 ? midpointSiteOf(g2, p2.trace.siteId, p2.trace) : null;
-    const html = render(React.createElement(ConceptSurface, { shape: g2, vertexId: abac }));
     const snap = S();
-    useGeometryStore.setState({ shapes: { ...S().shapes, [g2.id]: g2 }, currentShapeId: g2.id });
-    if (s2) S().giveRolePair(s2.edge.id, ...(s2.a === ab ? ['F1', 'Φ1'] : ['Φ1', 'F1']));
-    const written = s2 ? S().shapes[g2.id].edges.find((e) => e.id === s2.edge.id).identification : undefined;
+    const g1 = applyAmboDissection(seeded); // the seed's four corners hold casts — the only lawful loading
+    useGeometryStore.setState({ shapes: { ...S().shapes, [g1.id]: g1 }, currentShapeId: g1.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {} });
+    const a1 = byLabel(g1, 'A'); const b1 = byLabel(g1, 'B'); const c1 = byLabel(g1, 'C');
+    const give = (X, Y, map) => { const e = edgeBetween(S().shapes[g1.id].edges, X, Y); for (const [x, y] of Object.entries(map)) { if (e.vertexIds[0] === X) S().giveRolePair(e.id, x, y); else S().giveRolePair(e.id, y, x); } };
+    give(a1, b1, { F5: 'Φ7', F7: 'Φ1' }); // A holds Flow, B holds Φ in this witness's seed
+    give(a1, c1, { F1: 'r0', F5: 'r2' }); // C holds the T cell
+    S().selectCell(S().shapes[g1.id].cells.find((x) => x.kind === 'core').id);
+    S().applyAmboDissectionToCurrent();
+    const g2 = S().shapes[S().currentShapeId];
+    const abac = byLabel(g2, 'ABAC');
+    const ab = byLabel(g2, 'AB'); const ac = byLabel(g2, 'AC');
+    const html = render(React.createElement(ConceptSurface, { shape: g2, vertexId: abac }));
+    const RAB = spaceOf(g2, ab); const RAC = spaceOf(g2, ac); const RM = spaceOf(g2, abac);
+    // the shortcut: the same gen-2 shape with casts LOADED onto AB and AC — not read
+    const shortcut = withCast(withCast(g2, ab, flow), ac, phi);
+    const RABs = spaceOf(shortcut, ab);
+    const htmlS = render(React.createElement(ConceptSurface, { shape: shortcut, vertexId: abac }));
     useGeometryStore.setState(snap, true);
-    note(`ITEM 0: the gen-2 midpoint ABAC — parents ${s2 ? `${g2.vertices[s2.a].data.label} · ${g2.vertices[s2.b].data.label}` : 'no site'} (both born at gen 1) · the chooser renders ${countOf(html, 'data-midpoint-surface')} unfolding · the store's giveRolePair on AB–AC wrote ${J(written)} — REACHABLE in the mechanism; the surface's reachability at the eye is the drive leg's`);
-    return s2 !== null && p2.trace.parentIds.includes(ab) && p2.trace.parentIds.includes(ac) && countOf(html, 'data-midpoint-surface') === 1 && written !== undefined && written.roles.length === 1;
+    note(`C-8 ITEM 0 (the lawful path): ABAC's parents AB (${RAB ? `${RAB.space.roles.length} roles, derived` : 'nothing'}) · AC (${RAC ? `${RAC.space.roles.length} roles, derived` : 'nothing'}) · the chooser renders ${countOf(html, 'data-midpoint-surface')} unfolding · composed points ${countOf(html, 'data-midpoint-composed')} · lines across the fold ${countOf(html, 'data-midpoint-line')} · ABAC ${RM ? `${RM.space.roles.length} roles, ${RM.edge.kind} edge, ${RM.edge.composed.roles.length} composed pairs` : 'nothing'} · the shortcut's loaded cast on AB: ${RABs ? `ignored=${RABs.loadedIgnored}, ${RABs.space.roles.length} roles (derived, not Flow's 14)` : 'nothing'} · the notice ${countOf(htmlS, 'data-midpoint-loaded-ignored')}`);
+    return RAB && RAC && RM && RM.edge.kind === 'medial' && countOf(html, 'data-midpoint-surface') === 1 && countOf(html, 'data-midpoint-composed') === 2 * RM.edge.composed.roles.length && RM.edge.composed.roles.length === flow.roles.length && countOf(html, 'data-midpoint-line') === 0 &&
+      RABs && RABs.loadedIgnored === true && RABs.space.roles.length === RAB.space.roles.length && countOf(htmlS, 'data-midpoint-loaded-ignored') >= 1;
   })());
 
 // ═══ §5 THE MOUNT and the boundaries, source-pinned ═══
@@ -491,8 +525,9 @@ console.log('\n----- §5 the check at the act lives with the writer; the present
 const store = readLf('src/store/geometryStore.ts');
 const surf = readLf('src/components/MidpointSurface.tsx');
 const gl = readLf('src/lib/midpointGlue.ts');
-check('§5 ★★ NO WRITE WITHOUT THE CHECK, BY CONSTRUCTION: the store\'s acts call `refusalOf` before every write and route every write through `writeEdgeIdentification` (`midpointWrite` → the one writer); the store imports the check and the form from the register and nothing else of it',
-  /const conflicts = refusalOf\(A, B, nextRoles, nextTypes\);\s*if \(conflicts\.length\) return refuse\(undefined, conflicts\);/.test(store) && (store.match(/writeEdgeIdentification\(set,/g) || []).length >= 5 && store.includes("import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';"));
+check('§5 ★★ NO WRITE WITHOUT THE CHECK, BY CONSTRUCTION: the store\'s acts call `refusalOf` before every write — over the identity the SOLID fixed on the seam ∪ the record (C-8: the composed pairs enter the check and never the record) — then read every born act again under the act as a CANDIDATE (item 4) and route every write through `writeEdgeIdentification` (`midpointWrite` → the one writer); the store imports the check and the form from the register and nothing else of it',
+  /const conflicts = refusalOf\(A, B, \[\.\.\.\(composed \? composed\.roles : \[\]\), \.\.\.nextRoles\], \[\.\.\.\(composed \? composed\.words : \[\]\), \.\.\.nextTypes\]\);\s*if \(conflicts\.length\) return refuse\(undefined, conflicts\);/.test(store) && (store.match(/brokenBornActs\(shape, \{ tauDrafts: state\.edgeTauDrafts, candidate: \{ edgeId, roles: nextRoles, types: nextTypes \} \}, edgeId\)/g) || []).length === 2 &&
+    (store.match(/writeEdgeIdentification\(set,/g) || []).length >= 5 && store.includes("import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';"));
 check('§5 ★★ THE PRESENTER\'S TRACE IS CONSUMED AND ITS FACE IS NOT: the surface imports `buildGeneralSitePacketPresenterReport` (one producer, many consumers — Panels consumes it too) and never `renderPacketFace`; no sentence of the naming era (`Name the concept`, `Across the cell`) in the surface',
   surf.includes("import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';") && !surf.includes('renderPacketFace') && !/Name the concept|Across the cell|howToName|namingDecision/.test(surf) && readLf('src/components/Panels.tsx').includes('buildGeneralSitePacketPresenterReport(shape)'));
 check('§5 ⛔ THE GLUE IS PURE OVER TWO CASTS AND THE PERSON\'S (J, τ): midpointGlue.ts imports only the types, the mold\'s join from the loader and the register\'s record/refusal/shared signature; no store, no component; the surface reaches the store only to act (the midpoint\'s five actions and the face\'s one hand — `withdrawRolePair` again, in FaceRecord (C-5); three state reads in the chooser)',

@@ -20,6 +20,10 @@ import { canonicalEdgeKey } from '../lib/ids';
 // types by definition, caster words only by τ) and the FORM of a word pair; imported by the
 // store because the act IS the store action — no write without the check, by construction
 import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
+// C-8 — THE RESOLVER: the two ends of a seam resolved (a seed corner's cast; a born corner's derived space), the identity
+// the SOLID fixes on the seam (the check runs over it; the record never holds it), and every born act read again under
+// the shape an act would leave (the dependency refusal, item 4)
+import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
 import type {
   Cell,
   CellId,
@@ -94,12 +98,29 @@ export type FieldAtlasSampleRenderMode =
 export interface MidpointAct {
   kind: 'role' | 'word';
   pair: [string, string]; // this cast's ↦ that cast's (the edge's first corner ↦ its second)
+  withdrawal?: true; // C-8 item 4: the act was a WITHDRAWAL of this pair (refused only when a born act rests on it)
+}
+
+/**
+ * C-8 item 4 — THE DEPENDENCY REFUSAL, across generations (the researcher's, forced by the lift law): a later act that
+ * would BREAK an earlier born act is refused at the act, naming the born act it would break — where it lives (its edge,
+ * its site), how many generations up, and the act itself; the person may withdraw the older act first. Accepting it and
+ * dropping the born act ERASES; accepting both FABRICATES; refusing the new act is neither.
+ */
+export interface MidpointDependency {
+  edgeId: EdgeId; // the medial edge holding the born act
+  siteId: VertexId | null; // the midpoint minted on that edge, when the shape holds it
+  generationsUp: number; // the born act's site against this act's site
+  act: MidpointAct; // the born act, as its record holds it
+  names: [string, string]; // the born act as a person reads it — the spaces' labels, never a local key
+  why: string; // what this act would do to it, in words
 }
 
 export interface MidpointRefusal {
   act: MidpointAct;
-  form?: string; // a refusal of the FORM (a role already paired · a word across arities · a name not declared)
+  form?: string; // a refusal of the FORM (a role already paired · a word across arities · a name not declared · a role the solid made one already)
   conflicts: Conflict[]; // the contradictions, by name — empty on a refusal of the form
+  dependency?: MidpointDependency; // C-8 item 4 — the born act this act would break
 }
 
 /** C-7f item 3 (the designer) — a pair the store RE-MADE when the person withdrew the half they judged wrong; the surface attributes it (`yours · re-made when you withdrew r8 ↦ Φ6`). Transient, like the refusal — never exported */
@@ -1123,24 +1144,61 @@ function carryDraftsByPair(set: Setter, get: Getter, from: Shape, to: Shape): vo
   for (const [edgeId, act] of pending) midpointAct(set, get, edgeId, act);
 }
 
+/** C-8 — the two ends of a seam RESOLVED, in the edge's own orientation (the record reads first ↦ second); null when either end holds no space */
+function resolvedEnds(state: GeometryState, shape: Shape, edge: Edge): [Resolved, Resolved] | null {
+  const options = { tauDrafts: state.edgeTauDrafts };
+  const memo = new Map<VertexId, Resolved | null>();
+  const A = spaceOf(shape, edge.vertexIds[0], options, memo);
+  const B = spaceOf(shape, edge.vertexIds[1], options, memo);
+  return A && B ? [A, B] : null;
+}
+
+/** the midpoint minted on an edge — the vertex whose two parents are its ends — when the shape holds it */
+const midpointOf = (shape: Shape, edge: Edge): VertexId | null =>
+  Object.values(shape.vertices).find((v) => v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(edge.vertexIds[0]) && v.createdBy.sourceVertexIds.includes(edge.vertexIds[1]))?.id ?? null;
+
+/** C-8 item 4 — the born act an attempt on `edge` would break, as the refusal names it: its edge, its site, the generations between the two sites, the act, and why */
+function dependencyOf(shape: Shape, edge: Edge, broken: BrokenBornAct): MidpointDependency {
+  const here = midpointOf(shape, edge);
+  const hereGen = here !== null ? generationOf(shape, here) : 1 + Math.max(generationOf(shape, edge.vertexIds[0]), generationOf(shape, edge.vertexIds[1]));
+  const thereGen = broken.siteId !== null ? generationOf(shape, broken.siteId) : hereGen;
+  return { edgeId: broken.edgeId, siteId: broken.siteId, generationsUp: thereGen - hereGen, act: { kind: broken.kind, pair: broken.pair }, names: broken.names, why: broken.why };
+}
+
 function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct): void {
   const state = get();
   const shape = state.shapes[state.currentShapeId];
   const edge = shape?.edges.find((candidate) => candidate.id === edgeId);
   if (!shape || !edge) return;
-  const A = shape.vertices[edge.vertexIds[0]]?.data.cast;
-  const B = shape.vertices[edge.vertexIds[1]]?.data.cast;
-  if (!A || !B) return; // a seam whose corners do not both hold a cast has no act
+  // C-8 item 1 — the two ends RESOLVED: a seed corner's cast, a born corner's space derived from its parents (never a
+  // loaded file on a midpoint, Δ86); a seam whose ends do not both hold a space has no act
+  const ends = resolvedEnds(state, shape, edge);
+  if (!ends) return;
+  const [RA, RB] = ends;
+  const A = RA.space;
+  const B = RB.space;
   const { roles, types } = midpointRecord(state, edge);
-  const refuse = (form: string | undefined, conflicts: Conflict[]): void => {
-    set({ midpointRefusals: { ...get().midpointRefusals, [edgeId]: { act, ...(form ? { form } : {}), conflicts } } });
+  const refuse = (form: string | undefined, conflicts: Conflict[], dependency?: MidpointDependency): void => {
+    set({ midpointRefusals: { ...get().midpointRefusals, [edgeId]: { act, ...(form ? { form } : {}), conflicts, ...(dependency ? { dependency } : {}) } } });
   };
+  // C-8 items 1 and 3 — the identity the SOLID fixes on this seam (nothing on a seed edge): the check runs over it and the
+  // record never holds it; a pair colliding with it is refused by name — the composed identity is never entered, never
+  // withdrawable, never a proposal
+  const kind = edgeKind(shape, edge.vertexIds[0], edge.vertexIds[1]);
+  const composed = kind === 'seed' ? null : composedOn(RA, RB);
+  const cornerWords = (key: string): string => (composed?.corners.get(key) ?? []).map((id) => shape.vertices[id]?.data.label || id).join(' · ');
   let nextRoles = roles;
   let nextTypes = types;
   if (act.kind === 'role') {
     const [x, y] = act.pair;
     if (!A.roles.some((r) => r.id === x)) return refuse(`"${x}" is not a role this cast holds`, []);
     if (!B.roles.some((r) => r.id === y)) return refuse(`"${y}" is not a role that cast holds`, []);
+    if (composed) {
+      const cx = composed.roles.find(([a]) => a === x);
+      if (cx) return refuse(`${nameIn(A, x)} is already one with ${nameIn(B, cx[1])} by the solid — composed · corner ${cornerWords(`0|${x}`)}; not yours to pair or withdraw`, []);
+      const cy = composed.roles.find(([, b]) => b === y);
+      if (cy) return refuse(`${nameIn(B, y)} is already one with ${nameIn(A, cy[0])} by the solid — composed · corner ${cornerWords(`1|${y}`)}; not yours to pair or withdraw`, []);
+    }
     const px = roles.find(([a]) => a === x);
     if (px) return refuse(`${x} is already paired with ${px[1]} — one role, one partner`, []);
     const py = roles.find(([, b]) => b === y);
@@ -1150,14 +1208,24 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     const [s, w] = act.pair;
     const form = wordPairForm(A, B, s, w);
     if (form) return refuse(form, []);
+    if (composed) {
+      const cs = composed.words.find(([a]) => a === s);
+      if (cs) return refuse(`${s} is already one word with ${cs[1]} by the solid — composed; not yours to translate or withdraw`, []);
+      const cw = composed.words.find(([, b]) => b === w);
+      if (cw) return refuse(`${w} is already one word with ${cw[0]} by the solid — composed; not yours to translate or withdraw`, []);
+    }
     const ps = types.find(([a]) => a === s);
     if (ps) return refuse(`${s} is already translated to ${ps[1]} — one word, one translation`, []);
     const pw = types.find(([, b]) => b === w);
     if (pw) return refuse(`${w} is already the translation of ${pw[0]} — one word, one translation`, []);
     nextTypes = [...types, [s, w]];
   }
-  const conflicts = refusalOf(A, B, nextRoles, nextTypes);
+  const conflicts = refusalOf(A, B, [...(composed ? composed.roles : []), ...nextRoles], [...(composed ? composed.words : []), ...nextTypes]);
   if (conflicts.length) return refuse(undefined, conflicts);
+  // C-8 item 4 — THE DEPENDENCY REFUSAL: every born act elsewhere read again with this act's record as a CANDIDATE on this
+  // edge (an option to the read, never a shape written or fabricated)
+  const broken = brokenBornActs(shape, { tauDrafts: state.edgeTauDrafts, candidate: { edgeId, roles: nextRoles, types: nextTypes } }, edgeId);
+  if (broken.length) return refuse(undefined, [], dependencyOf(shape, edge, broken[0]));
   const midpointRefusals = { ...state.midpointRefusals };
   delete midpointRefusals[edgeId];
   midpointWrite(set, { ...state, midpointRefusals }, shape, edge, nextRoles, nextTypes);
@@ -1172,6 +1240,12 @@ function midpointWithdraw(set: Setter, get: Getter, edgeId: EdgeId, act: Midpoin
   const nextRoles = act.kind === 'role' ? roles.filter(([a, b]) => !(a === act.pair[0] && b === act.pair[1])) : roles;
   const nextTypes = act.kind === 'word' ? types.filter(([a, b]) => !(a === act.pair[0] && b === act.pair[1])) : types;
   if (nextRoles.length === roles.length && nextTypes.length === types.length) return; // nothing of that name to withdraw
+  // C-8 item 4 — a withdrawal that would BREAK a born act elsewhere is refused the same way: the born act rests on what this pair made
+  const broken = brokenBornActs(shape, { tauDrafts: state.edgeTauDrafts, candidate: { edgeId, roles: nextRoles, types: nextTypes } }, edgeId);
+  if (broken.length) {
+    set({ midpointRefusals: { ...state.midpointRefusals, [edgeId]: { act: { ...act, withdrawal: true }, conflicts: [], dependency: dependencyOf(shape, edge, broken[0]) } } });
+    return;
+  }
   midpointWrite(set, state, shape, edge, nextRoles, nextTypes);
   // C-7f item 3 — the attribution of a re-made pair leaves with the pair
   const attributed = get().midpointRemade[edgeId];

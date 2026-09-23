@@ -221,6 +221,7 @@ export interface GluedSpace {
   roleOrigin: Map<string, Origin>; // by the space's role id (the glued key)
   wordOrigin: Map<string, Origin>; // by the space's signature type (the display word)
   tupleOrigin: Map<string, Origin>; // by `type|terms` of the space's relations
+  wordName: Map<string, string>; // C-8: by a glued word's key, the display word it became — the resolver composes seed content down through it
 }
 
 /**
@@ -264,7 +265,7 @@ export function gluedSpace(A: ConceptSpace, B: ConceptSpace, M: Midpoint): Glued
     tupleOrigin.set(`${type}|${JSON.stringify(t.terms)}`, t.origin);
     return { type, terms: [...t.terms], polarity: t.value };
   });
-  return { space: { roles, signature, relations, axioms: [] }, roleOrigin, wordOrigin, tupleOrigin };
+  return { space: { roles, signature, relations, axioms: [] }, roleOrigin, wordOrigin, tupleOrigin, wordName: display };
 }
 
 export interface RoleTrace {

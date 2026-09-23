@@ -262,7 +262,7 @@ const lib = readLf('src/lib/castInside.ts');
 const comp = readLf('src/components/CastInsideDiagram.tsx');
 check('§5 ★★ SITED ON THE CANVAS, NOT THE INSPECTOR COLUMN (the designer\'s ruling): Workspace3D mounts the concept layer\'s chooser `ConceptSurface` for the selected vertex beside the R3F canvas (an overlay in the canvas frame, visible from every sidebar tab), and the chooser delegates a corner to `CastInsidePanel` (C-7b: an ambo midpoint whose parents both hold a cast takes the unfolding instead); Panels.tsx mounts no inside',
   ws.includes("import { ConceptSurface } from './MidpointSurface';") && /\{selectedVertexId \? <ConceptSurface shape=\{shape\} vertexId=\{selectedVertexId\} \/> : null\}/.test(ws) && !readLf('src/components/Panels.tsx').includes('CastInsidePanel') &&
-    /return <CastInsidePanel shape=\{shape\} vertexId=\{vertexId\} \/>;/.test(readLf('src/components/MidpointSurface.tsx')));
+    /<CastInsidePanel shape=\{shape\} vertexId=\{vertexId\} \/>/.test(readLf('src/components/MidpointSurface.tsx')));
 check('§5 ⛔ THE MODULE IS PURE OVER A CAST: castInside.ts imports only the type and the mold predicate from the loader; the drawing imports no store (it reads props and acts on nothing), nothing from manuscript, explore, three or the camera; no cast is written anywhere here',
   /import type \{ ConceptSpace \} from '\.\.\/types\/geometry';/.test(lib) && lib.includes("import { isMoldType } from './castLoader';") && (lib.match(/^import /gm) || []).length === 2 &&
     !/useGeometryStore|from '\.\.\/store|from '\.\.\/manuscript|explore|from 'three'|@react-three/.test(comp) && !/updateSelected|\.cast\s*=/.test(comp + lib));

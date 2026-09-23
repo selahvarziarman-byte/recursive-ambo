@@ -89,6 +89,7 @@ import { useMemo, type ReactElement } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
 import { castSummaryLine } from '../lib/castLoader';
 import { insideOf, type ArcSide, type Inside, type InsideArc, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
+import { spaceOf } from '../lib/spaceOf';
 
 /** C-7b — what the midpoint's unfolding adds to a mark: the origin colouring (`both` alone gets a glyph) */
 export interface MarkExtra {
@@ -459,18 +460,21 @@ export function CastInsideDiagram({ inside, id }: { inside: Inside; id?: string 
  */
 export function CastInsidePanel({ shape, vertexId }: { shape: Shape; vertexId: VertexId }) {
   const vertex = shape.vertices[vertexId];
-  const cast = vertex?.data.cast;
+  // C-8 item 1 — through the one resolver: a seed corner's cast; a born corner's space derived from its parents (never a loaded file on a midpoint, Δ86)
+  const resolved = useMemo(() => spaceOf(shape, vertexId), [shape, vertexId]);
+  const cast = resolved?.space;
   const inside = useMemo(() => (cast ? insideOf(cast) : null), [cast]);
-  if (!vertex || !cast || !inside) return null;
+  if (!vertex || !resolved || !cast || !inside) return null;
   const personLabel = vertex.data.label.trim() ? vertex.data.label : 'unnamed';
   return (
     <div
       data-inside-panel={vertexId}
+      data-inside-origin-of-space={resolved.origin}
       className="pointer-events-auto absolute bottom-20 left-3 top-14 max-w-[74%] overflow-auto rounded border border-stone-800 bg-stone-950/85 px-3 py-2 shadow-lg"
     >
       <div className="mb-1 text-xs text-stone-400">
         <span className="text-stone-300">{personLabel}</span>
-        {' · the inside of the cast it holds'}
+        {resolved.origin === 'seed' ? ' · the inside of the cast it holds' : ' · the inside of the space it holds, derived from its parents'}
         {cast.subject ? <span className="block text-stone-400">{`of: ${cast.subject}`}</span> : null}
       </div>
       {cast.roles.length === 0 ? (

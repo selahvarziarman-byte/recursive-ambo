@@ -14,8 +14,13 @@ witness that locates a control by its data attribute proves it exists; only an e
     its source's neighbouring act, read as a person would (the octahedron — the gen-1 core, now the parent — selected in
     the workspace tree, AB selected from its corners);
   · C-5 (1705): the FACE at the eye — the empty-core guard in words, the face REFUSED with three hands, one hand withdrawn
-    and the face READ with its direction stated; ITEM 0 — casts onto two born corners, the core dissected again, the gen-2
-    midpoint between them selected and its surface read (a measurement, printed);
+    and the face READ with its direction stated;
+  · C-8 (Δ85 · Δ86 — THE DRIVE FAMILY RUNS ON THE LAWFUL PATH ONLY: a cast is loaded on the seed's corners and NOWHERE
+    else; the C-5 item-0 arm that loaded casts onto AB and AC — the shortcut — is retired): THE BORN ROOM at the gen-2
+    midpoint ABAC reached by pointing at AB and AC and dissecting — the shared corner's roles marked composed on both
+    sides and never a pair, a composed point unpickable, a born pair by two clicks in the born room, the record's home
+    and the site in words; the DEPENDENCY REFUSAL at the eye — back at AB, a gen-0 pair that re-glues the role the born
+    pair named refused with two hands, the far hand taken and the act then taken; the loader ABSENT at a midpoint;
   · C-7g (the designer's second cut): the label lane is arity-1's — no binary word left of its point, none end-anchored;
     the width bounded by the wrap (the widest positioned line and the drawing's width against the panel, printed); the
     card's term-order rows grouped by reading, its height at the T cell (C) and at Φ (B); the face block's clauses each on
@@ -89,6 +94,16 @@ MEASURE = """() => {
     haloRects: drawing ? drawing.querySelectorAll('[data-inside-point] rect').length : null, perColumn,
     gestureLineHasMidpointClause: gesture ? /at a midpoint, two halves/.test(gesture.textContent) : false, gestureLineBox: r(gesture),
     forbidden: /offer|weight|candidate|propos|tied|orbit|rank|support/i.test(panel.textContent),
+    // C-8 — the born room at the eye
+    composedPoints: a('[data-midpoint-drawing] [data-midpoint-composed]', 'data-midpoint-composed'),
+    freeA: [...panel.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]:not([data-midpoint-composed])')].map((e) => e.getAttribute('data-inside-point')),
+    freeB: [...panel.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]:not([data-midpoint-composed])')].map((e) => e.getAttribute('data-inside-point')),
+    composedClickable: [...panel.querySelectorAll('[data-midpoint-drawing] [data-midpoint-composed]')].filter((e) => e.classList.contains('cursor-pointer')).length,
+    ownComposed: a('[data-midpoint-own-drawing] [data-midpoint-own-role]', 'data-midpoint-own-role').filter((o) => o === 'composed').length,
+    home: t('[data-midpoint-home]')[0] || null, pick: a('[data-midpoint-pick]', 'data-midpoint-pick')[0] || null,
+    loadedIgnored: t('[data-midpoint-loaded-ignored]'),
+    refusalText: t('[data-midpoint-refusal]')[0] || null, dependency: a('[data-midpoint-refusal-dependency]', 'data-midpoint-refusal-dependency')[0] || null,
+    dependencyHands: t('[data-midpoint-withdraw-attempt], [data-midpoint-dependency-withdraw]'),
   };
 }"""
 LOAD_LINE = "() => { const p = document.querySelector('[data-cast-load-result]'); return p ? p.innerText : null; }"
@@ -215,6 +230,10 @@ def pair(page, x, y):
         point(page, "A", x); point(page, "B", y)
     else:
         point(page, "A", y); point(page, "B", x)
+
+
+def x_is_flow(role):
+    return re.match(r'^F\d+$', role or '') is not None
 
 
 def give_map(page, m):
@@ -354,10 +373,13 @@ def main():
         page.locator('[data-midpoint-face-withdraw]').first.click(); page.wait_for_timeout(500)
         out['faceRead'] = page.evaluate(FACE)
         page.screenshot(path=f"{args.frames}/concept-layer-face-read-{args.width}x{args.height}.png")
-        # ITEM 0 (1705 §4) — casts onto two BORN corners (the gen-1 midpoints AB and AC) before the dissection below
+        # C-8 item 2 at the eye — the loader ABSENT at a midpoint (the packets tab with AB selected shows no file input, no word), PRESENT at a corner
         select_core(page)
-        out['loadAB'] = load_cast(page, 0, "flow.cast.json")
-        out['loadAC'] = load_cast(page, 1, "phi.cast.json")
+        select_vertex_labelled(page, "AB"); tab(page, "packets")
+        out['loaderAtMidpoint'] = page.evaluate("() => ({ inputs: document.querySelectorAll('[data-cast-file-input]').length, offer: [...document.querySelectorAll('button')].filter((b) => /load cast/.test(b.textContent)).length, words: /only the seed|seed alone|cannot load/i.test(document.body.innerText) })")
+        select_cell(page, r"^tetrahedron"); select_vertex_labelled(page, "A"); tab(page, "packets")
+        out['loaderAtCorner'] = page.evaluate("() => ({ inputs: document.querySelectorAll('[data-cast-file-input]').length, offer: [...document.querySelectorAll('button')].filter((b) => /load cast/.test(b.textContent)).length })")
+        select_core(page)
         # the records as they stand just before the dissection — the carry is compared against THESE at gen 2
         out['selectAB6'] = select_vertex_labelled(page, "AB")
         out['abBefore'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs', 'own', 'ownPoints', 'ownBoth')}
@@ -375,14 +397,46 @@ def main():
         page.screenshot(path=f"{args.frames}/concept-layer-ab-gen2-carried-{args.width}x{args.height}.png")
         out['selectAC2'] = select_vertex_labelled(page, "AC")
         out['gen2AC'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('present', 'lines', 'wordPairs', 'state')}
-        # ITEM 0 — the gen-2 midpoint between the two born corners: its surface, and a pair by two clicks (a measurement, printed)
+        # C-8 — THE BORN ROOM at the gen-2 midpoint ABAC, reached lawfully (AB and AC mapped by pointing above; nothing loaded on a midpoint)
         out['selectGen2Core'] = select_cell(page, r"^cuboctahedron")
         out['selectABAC'] = select_vertex_labelled(page, "ABAC")
-        out['item0'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('present', 'sentence', 'state', 'lines')}
-        if out['item0'].get('present'):
-            pair(page, "F1", "Φ1")
-            out['item0After'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'sentence', 'state')}
-            page.screenshot(path=f"{args.frames}/concept-layer-item0-born-parents-{args.width}x{args.height}.png")
+        out['bornRoom'] = page.evaluate(MEASURE)
+        page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+        page.screenshot(path=f"{args.frames}/concept-layer-born-room-{args.width}x{args.height}.png")
+        br = out['bornRoom']
+        if br.get('present') and br.get('composedPoints'):
+            # a composed point clicked: nothing picked (never a pair, never a control)
+            page.locator('[data-midpoint-drawing] [data-midpoint-side="A"][data-midpoint-composed] text').first.click(); page.wait_for_timeout(300)
+            out['composedClick'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('pick', 'lines', 'refusal')}
+            # a born pair by two clicks: a role of AB's own part and a role of AC's own part
+            if br.get('freeA') and br.get('freeB'):
+                xb, yb = br['freeA'][0], br['freeB'][0]
+                point(page, "A", xb); point(page, "B", yb)
+                out['bornPair'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'sentence', 'state', 'refusal', 'home')}
+                out['bornPair']['x'] = xb; out['bornPair']['y'] = yb
+                page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const l = el.querySelector('[data-midpoint-line]'); if (l) l.scrollIntoView(); }"); page.wait_for_timeout(200)
+                page.screenshot(path=f"{args.frames}/concept-layer-born-pair-{args.width}x{args.height}.png")
+                # THE DEPENDENCY REFUSAL: back at AB (gen 2), a gen-0 pair that re-glues the role the born pair named (the Φ-side role of AB's own part)
+                # the born pair's role on AB's own part is a Φ role (B holds Φ); its key carries the edge's side prefix, stripped here
+                phi_role = next((k[2:] for k in (xb, yb) if k[2:].startswith('Φ')), None)
+                if phi_role:
+                    out['selectGen2Parent2'] = select_cell(page, r"^octahedron")
+                    out['selectAB7'] = select_vertex_labelled(page, "AB")
+                    a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]:not([data-midpoint-paired])')].map((e) => e.getAttribute('data-inside-point'))")
+                    b_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]:not([data-midpoint-paired])')].map((e) => e.getAttribute('data-inside-point'))")
+                    free_flow = [r for r in (a_side if 'F1' in a_side or any(x.startswith('F') for x in a_side) else b_side) if x_is_flow(r)][0]
+                    pair(page, free_flow, phi_role)
+                    out['dependency'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'refusalText', 'dependency', 'dependencyHands', 'lines')}
+                    out['dependency']['attempt'] = [free_flow, phi_role]
+                    page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const r = el.querySelector('[data-midpoint-refusal]'); if (r) r.scrollIntoView(); }"); page.wait_for_timeout(200)
+                    page.screenshot(path=f"{args.frames}/concept-layer-dependency-refusal-{args.width}x{args.height}.png")
+                    # the far hand: the born pair withdrawn at ABAC — then the same act made again is TAKEN
+                    far = page.locator('[data-midpoint-dependency-withdraw]')
+                    if far.count():
+                        far.first.click(); page.wait_for_timeout(400)
+                        page.locator('[data-midpoint-withdraw-attempt]').first.click(); page.wait_for_timeout(300)
+                        pair(page, free_flow, phi_role)
+                        out['dependencyAfter'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'lines')}
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 
