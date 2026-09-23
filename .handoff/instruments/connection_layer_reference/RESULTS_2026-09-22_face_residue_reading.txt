@@ -1,0 +1,28 @@
+A · 20000 random triples of partial injections (6+6+6 roles)
+   A1: failures      0   sealed 0   ✔
+   A2: failures      0   sealed 0   ✔
+   A3: failures      0   sealed 0   ✔
+   A4: failures      0   sealed 0   ✔
+   A5: occurrences   7204   sealed > 0   ✔
+   A6: occurrences   5860   sealed > 0   ✔
+
+B1 · 4000 random corners carrying declared negatives, one Mov pair each: refusals 524   sealed > 0   ✔
+     one instance: merging {'x2': 'x4'} makes the corner's own record say — q('x4', 'x4')=holds against q('x2', 'x4')=does-not-hold — once x4≡x2, one tuple with two values
+
+B2/B3 · the record's own first face (Flow · Φ · T) — the corner-local check at all three bases
+     ⇒ t-cell under ((i)+B'+P): Mov [('r0', 'r2'), ('r2', 'r0')] → 1 refusal(s): sustains('r8', 'r2')=holds against sustains('r8', 'r0')=does-not-hold — once r2≡r0, one tuple with two values
+     ⇒ t-cell under ((i)+B'+R): Mov [('r0', 'r2'), ('r2', 'r0')] → 1 refusal(s): sustains('r8', 'r2')=holds against sustains('r8', 'r0')=does-not-hold — once r2≡r0, one tuple with two values
+     ⇒ t-cell under ((i)+S1+Q): Mov [('r1', 'r8')] → 1 refusal(s): sustains('r8', 'r0')=does-not-hold against sustains('r1', 'r0')=holds — once r8≡r1, one tuple with two values
+     ⇒ t-cell under ((i)+S4+Q): Mov [('r1', 'r8')] → 1 refusal(s): sustains('r8', 'r0')=does-not-hold against sustains('r1', 'r0')=holds — once r8≡r1, one tuple with two values
+     ⇒ t-cell under ((ii)+D+P): Mov [('r0', 'r2'), ('r1', 'r0'), ('r6', 'r1')] → 2 refusal(s): sustains('r8', 'r2')=holds against sustains('r8', 'r0')=does-not-hold — once r2≡r0, one tuple with two values
+     ⇒ t-cell under ((ii)+D+R): Mov [('r0', 'r2')] → 1 refusal(s): sustains('r8', 'r2')=holds against sustains('r8', 'r0')=does-not-hold — once r2≡r0, one tuple with two values
+     flow   : 76 Mov pairs over 42 triples → 0 corner-local refusals   sealed 0 ✔
+     t-cell : 39 Mov pairs over 42 triples → 7 corner-local refusals   (not sealed — the run rules)
+     phi    : 45 Mov pairs over 42 triples → 0 corner-local refusals   (not sealed — the run rules)
+     flow declares 0 negatives and 1 distinct mark value(s) — the reason B2 could not have fired
+     t-cell declares 3 negatives; phi declares 0
+
+C · 3000 random spans, two constructions built separately
+   C1: ORDER 1 ≠ ORDER 2 with the diagram FIXED:     0   sealed 0   ✔
+   control: a MIS-INDUCED second step differs:        2256   sealed > 0   ✔
+   C2: a FRESH gen-1 act changes the result:          2862   sealed > 0   ✔

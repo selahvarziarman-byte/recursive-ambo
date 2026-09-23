@@ -1,0 +1,15 @@
+PART L · the collision, on the first face (42 hand triples)
+   CARRIED (the space as fiber): 33 distinct residues at base Flow · triples refused at T: 6
+   COLLAPSED, record DROPPED: 1 distinct residue(s) [(('•', '•'),)] · refused: 0
+   COLLAPSED, record KEPT — flow  : 34 tuples fold to 11; contradictions inside the cast itself: 0
+   COLLAPSED, record KEPT — t-cell: 11 tuples fold to 6; contradictions inside the cast itself: 3  ⇒ the cast is REFUSED at the cast
+   COLLAPSED, record KEPT — phi   : 22 tuples fold to 14; contradictions inside the cast itself: 0
+   L1 ✔   L2 ✔ (6 → 0)   L2' T self-contradicts when its record is kept: ✔   L3 ✔
+
+PART R · the 0030 §2 rider — 4000 random connections per kind (5 vertices, 8 edges, 5 roles), closed words with spurs
+   R1  failures   302   sealed 0   ⛔ SEAL FIRED
+   R2  failures     0   sealed 0   ✔   (over 779 null-homotopic words)
+   R4  failures     0   sealed 0   ✔
+   R3  occurrences   444   sealed > 0   ✔
+   R5  occurrences  1175   sealed > 0   ✔
+   R6  CONTROL (total): lost 0 · presence route-dependent 0   sealed 0 and 0   ✔
