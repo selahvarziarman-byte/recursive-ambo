@@ -100,6 +100,27 @@ MEASURE = """() => {
     freeB: [...panel.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]:not([data-midpoint-composed])')].map((e) => e.getAttribute('data-inside-point')),
     composedClickable: [...panel.querySelectorAll('[data-midpoint-drawing] [data-midpoint-composed]')].filter((e) => e.classList.contains('cursor-pointer')).length,
     ownComposed: a('[data-midpoint-own-drawing] [data-midpoint-own-role]', 'data-midpoint-own-role').filter((o) => o === 'composed').length,
+    // C-7h — the designer's third cut at the eye: the glyph census, the names, the composed mark, foot ownership, the one grammar
+    glyphedWords: drawing ? [...drawing.querySelectorAll('[data-inside-arc-word], [data-inside-loop-word]')].filter((e) => /^≡ /.test(e.textContent)).length : 0,
+    bothMarks: drawing ? drawing.querySelectorAll('[data-midpoint-both]').length : 0,
+    composedTuples: drawing ? drawing.querySelectorAll('[data-midpoint-composed-tuple]').length : 0,
+    labelsAll: [...panel.querySelectorAll('[data-inside-label]')].map((e) => e.textContent),
+    wordNames: [...panel.querySelectorAll('[data-midpoint-word]')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()),
+    ownWords: [...panel.querySelectorAll('[data-midpoint-own-drawing] [data-inside-arc-word], [data-midpoint-own-drawing] [data-inside-loop-word]')].map((e) => e.textContent.replace(/^≡ /, '')),
+    composedOriginWords: panel.querySelectorAll('[data-midpoint-composed] [data-inside-origin]').length,
+    composedHollow: panel.querySelectorAll('[data-midpoint-composed] circle[data-inside-solid]').length,
+    composedWordCount: (panel.textContent.match(/composed/g) || []).length,
+    ownership: [...panel.querySelectorAll('[data-midpoint-drawing] [data-inside-column]')].flatMap((col) => {
+      const rows = [...col.querySelectorAll('[data-inside-point]')].map((p) => { const b = p.querySelector('circle').getBoundingClientRect(); return { id: p.getAttribute('data-inside-point'), cy: b.y + b.height / 2 }; });
+      return [...col.querySelectorAll('[data-inside-foot-words], [data-inside-loop-words]')].map((tx) => {
+        const b = tx.getBoundingClientRect(); const attr = tx.getAttribute('data-inside-foot-words') || (tx.getAttribute('data-inside-loop-words') + '|loops'); const [id, side] = attr.split('|');
+        const own = rows.find((rw) => rw.id === id); const cy = b.y + b.height / 2; const dOwn = own ? Math.abs(cy - own.cy) : null; const others = rows.filter((rw) => rw.id !== id).map((rw) => Math.abs(cy - rw.cy)); const dOther = others.length ? Math.min(...others) : null;
+        return { id, side, lines: tx.querySelectorAll('[data-inside-line]').length, own: dOwn === null ? null : Math.round(dOwn * 10) / 10, nearestOther: dOther === null ? null : Math.round(dOther * 10) / 10, ownIsNearest: dOwn !== null && (dOther === null || dOwn < dOther) };
+      });
+    }),
+    refusalAct: t('[data-midpoint-refusal-act]')[0] || null, refusalCollision: t('[data-midpoint-refusal-collision]')[0] || null, refusalHands: t('[data-midpoint-refusal] [data-midpoint-withdraw]'),
+    oldGrammar: /refused —|the act just made|nothing glued/.test(panel.textContent),
+    faceIdsInPanel: (panel.textContent.match(/\\bface:[a-z0-9]{3,}/g) || []).length,
     home: t('[data-midpoint-home]')[0] || null, pick: a('[data-midpoint-pick]', 'data-midpoint-pick')[0] || null,
     loadedIgnored: t('[data-midpoint-loaded-ignored]'),
     refusalText: t('[data-midpoint-refusal]')[0] || null, dependency: a('[data-midpoint-refusal-dependency]', 'data-midpoint-refusal-dependency')[0] || null,
@@ -180,7 +201,15 @@ CARD = """() => {
   const castHeight = castRows.length ? Math.round(castRows[castRows.length - 1].getBoundingClientRect().bottom - castRows[0].getBoundingClientRect().top) : 0;
   return { present: true, card: R(dl), inner: Math.round(inner), castHeight, viewport: window.innerHeight, ratio: Math.round((dl.getBoundingClientRect().width / dl.getBoundingClientRect().height) * 100) / 100,
     rows: [...dl.querySelectorAll('[data-cast-card-row]')].map((e) => ({ row: e.getAttribute('data-cast-card-row'), ...R(e), spans: e.getBoundingClientRect().width >= inner - 1 })),
-    orderings: [...dl.querySelectorAll('[data-cast-orderings-row]')].map((e) => ({ key: e.getAttribute('data-cast-orderings-row'), h: Math.round(e.getBoundingClientRect().height), text: e.textContent.replace(/\\s+/g, ' ').trim() })) };
+    orderings: [...dl.querySelectorAll('[data-cast-orderings-row]')].map((e) => ({ key: e.getAttribute('data-cast-orderings-row'), h: Math.round(e.getBoundingClientRect().height), text: e.textContent.replace(/\\s+/g, ' ').trim() })),
+    faceIdsOnPage: (document.body.textContent.match(/\\bface:[a-z0-9]{3,}/g) || []).length, faceIdsAsNames: (document.body.textContent.match(/face face:[a-z0-9]+/g) || []).length };
+}"""
+# C-7h item 10 — the card at a BORN vertex: one `Space` row, no cast rows; item 11 — no face named by its id on the page
+CARD_BORN = """() => {
+  const rows = [...document.querySelectorAll('[data-space-card-row]')].map((e) => ({ row: e.getAttribute('data-space-card-row'), text: e.textContent.replace(/\\s+/g, ' ').trim() }));
+  const dl = rows.length ? document.querySelector('[data-space-card-row]').closest('dl') : null;
+  return { spaceRows: rows, castRows: document.querySelectorAll('[data-cast-card-row]').length, faceIdsOnPage: (document.body.textContent.match(/\\bface:[a-z0-9]{3,}/g) || []).length, faceIdsAsNames: (document.body.textContent.match(/face face:[a-z0-9]+/g) || []).length,
+    faceLines: dl ? [...dl.querySelectorAll('span')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()).filter((x) => /^face /.test(x)).slice(0, 6) : [], cardText: dl ? dl.textContent.replace(/\\s+/g, ' ').trim().slice(0, 500) : null };
 }"""
 
 
@@ -304,7 +333,7 @@ def main():
         page.screenshot(path=f"{args.frames}/concept-layer-ab-own-diagram-{args.width}x{args.height}.png")
         # the refusal at the act, with its hands
         point(page, "A", "F1"); point(page, "B", "Φ9")
-        out['refused'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'conflicts', 'hands', 'lines')}
+        out['refused'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'conflicts', 'hands', 'lines', 'refusalText', 'refusalHands', 'oldGrammar')}
         page.locator('[data-midpoint-withdraw-attempt]').first.click(); page.wait_for_timeout(400)
         # the neighbouring act on A–C, then AB's source C carries it
         out['selectAC'] = select_vertex_labelled(page, "AC")
@@ -375,7 +404,7 @@ def main():
         page.screenshot(path=f"{args.frames}/concept-layer-face-read-{args.width}x{args.height}.png")
         # C-8 item 2 at the eye — the loader ABSENT at a midpoint (the packets tab with AB selected shows no file input, no word), PRESENT at a corner
         select_core(page)
-        select_vertex_labelled(page, "AB"); tab(page, "packets")
+        select_vertex_labelled(page, "AB"); out['cardAB'] = page.evaluate(CARD_BORN); tab(page, "packets")
         out['loaderAtMidpoint'] = page.evaluate("() => ({ inputs: document.querySelectorAll('[data-cast-file-input]').length, offer: [...document.querySelectorAll('button')].filter((b) => /load cast/.test(b.textContent)).length, words: /only the seed|seed alone|cannot load/i.test(document.body.innerText) })")
         select_cell(page, r"^tetrahedron"); select_vertex_labelled(page, "A"); tab(page, "packets")
         out['loaderAtCorner'] = page.evaluate("() => ({ inputs: document.querySelectorAll('[data-cast-file-input]').length, offer: [...document.querySelectorAll('button')].filter((b) => /load cast/.test(b.textContent)).length })")
@@ -426,7 +455,7 @@ def main():
                     b_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]:not([data-midpoint-paired])')].map((e) => e.getAttribute('data-inside-point'))")
                     free_flow = [r for r in (a_side if 'F1' in a_side or any(x.startswith('F') for x in a_side) else b_side) if x_is_flow(r)][0]
                     pair(page, free_flow, phi_role)
-                    out['dependency'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'refusalText', 'dependency', 'dependencyHands', 'lines')}
+                    out['dependency'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'refusalText', 'dependency', 'dependencyHands', 'lines', 'refusalAct', 'refusalCollision', 'oldGrammar')}
                     out['dependency']['attempt'] = [free_flow, phi_role]
                     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const r = el.querySelector('[data-midpoint-refusal]'); if (r) r.scrollIntoView(); }"); page.wait_for_timeout(200)
                     page.screenshot(path=f"{args.frames}/concept-layer-dependency-refusal-{args.width}x{args.height}.png")

@@ -231,7 +231,13 @@ export interface GluedSpace {
  * plain, and a foreign word spelled alike on both sides kept apart as `w [A]` / `w [B]` (two words, never merged by
  * spelling); the tuples as relations. The origin of everything rides beside it for the colouring.
  */
-export function gluedSpace(A: ConceptSpace, B: ConceptSpace, M: Midpoint): GluedSpace {
+/** C-7h item 1 — an optional NAMING of the amalgam's roles and words by the caller (the resolver's rule: `≡` is the person's act and only that); a hook returning undefined leaves the glue's own default */
+export interface GluedNaming {
+  role?: (r: Midpoint['roles'][number]) => string | undefined;
+  word?: (w: Midpoint['words'][number]) => string | undefined;
+}
+
+export function gluedSpace(A: ConceptSpace, B: ConceptSpace, M: Midpoint, naming: GluedNaming = {}): GluedSpace {
   const labelIn = (space: ConceptSpace, id: string): string => {
     const r = space.roles.find((x) => x.id === id);
     return r && r.label && r.label.length ? r.label : id;
@@ -240,7 +246,7 @@ export function gluedSpace(A: ConceptSpace, B: ConceptSpace, M: Midpoint): Glued
   const roleOrigin = new Map<string, Origin>();
   const roles = M.roles.map((r) => {
     roleOrigin.set(r.key, r.origin);
-    const label = r.origin === 'both' ? `${labelIn(A, r.a as string)} ≡ ${labelIn(B, r.b as string)}` : r.a !== null ? labelIn(A, r.a) : labelIn(B, r.b as string);
+    const label = naming.role?.(r) ?? (r.origin === 'both' ? `${labelIn(A, r.a as string)} ≡ ${labelIn(B, r.b as string)}` : r.a !== null ? labelIn(A, r.a) : labelIn(B, r.b as string));
     const types: Record<string, string> = {};
     for (const m of M.marks) if (m.role === r.key) types[m.type.startsWith('A:') || m.type.startsWith('B:') ? m.type.slice(2) : m.type] = m.value;
     return Object.keys(types).length ? { id: r.key, label, types } : { id: r.key, label };
@@ -253,7 +259,7 @@ export function gluedSpace(A: ConceptSpace, B: ConceptSpace, M: Midpoint): Glued
   const wordOrigin = new Map<string, Origin>();
   const signature: ConceptSpace['signature'] = [];
   for (const w of M.words) {
-    const name = w.origin === 'both' ? `${w.a as string} ≡ ${w.b as string}` : w.origin === 'A' ? (alike.has(w.a as string) ? `${w.a as string} [A]` : (w.a as string)) : alike.has(w.b as string) ? `${w.b as string} [B]` : (w.b as string);
+    const name = naming.word?.(w) ?? (w.origin === 'both' ? `${w.a as string} ≡ ${w.b as string}` : w.origin === 'A' ? (alike.has(w.a as string) ? `${w.a as string} [A]` : (w.a as string)) : alike.has(w.b as string) ? `${w.b as string} [B]` : (w.b as string));
     display.set(w.key, name);
     wordOrigin.set(name, w.origin);
     const arity = w.a !== null ? arityIn(A, w.a) : arityIn(B, w.b as string);

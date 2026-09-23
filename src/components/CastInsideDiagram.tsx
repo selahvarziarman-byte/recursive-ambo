@@ -98,6 +98,7 @@ export interface MarkExtra {
   tint?: boolean; // C-7d: the quiet tint — a mark from the OTHER side in a single glued column (reinforcement, never the carrier)
   word?: string; // C-7f item 4: the word as displayed — an alike spelling shown plain, its origin written beside it
   origin?: string; // C-7f item 4: the origin in WORDS (`both` · `from A` · `from B`), written after the word
+  solid?: boolean; // C-7h item 2: a tuple the SOLID composed — in the solid's grey, no glyph, no word (the site's sentence states the identity once)
   attrs?: Record<string, string>;
 }
 
@@ -107,6 +108,7 @@ export interface PointExtra {
   emphasis?: boolean; // a point the person has picked or paired
   tint?: boolean; // C-7d: a role from the other side in a single glued column
   origin?: string; // C-7f item 4: the role's origin in words, after its label
+  solid?: boolean; // C-7h item 2 (the designer: do not mark the ordinary; the least mark that still separates composed from the person's act and from the untouched): a role the SOLID composed — its point a HOLLOW ring, its label in the solid's grey, no words; the site's sentence names the mark once
   attrs?: Record<string, string>;
 }
 
@@ -211,9 +213,15 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
     const loops = wrapItems(loopsHere, ({ l }) => wordOf(l.type, l.polarity), footExtra, loopsHere.length * 14 + 2).map((line) => line.map(({ i }) => i));
     return { up, loops, down, above: up.length, below: loops.length + down.length };
   });
-  // the rows: each point's row is the base pitch, grown by a line for every wrapped line on that side of its row line
-  const topExtent = (l: PointLines): number => half + LINE * Math.max(0, l.above - 1);
-  const bottomExtent = (l: PointLines): number => half + LINE * Math.max(0, l.below - 1);
+  // C-7h item 4 (the designer's live drive: Φ1's down block centred 74 px below its row and 31 px from another — a foot block
+  // may not cross the MIDPOINT to the next row; where the wrap would, the rows OPEN to hold it): a row's extent on a side is
+  // at least twice the depth of its last line there, less the neighbour's own half-row (the neighbour's extent is at least
+  // that), rounded up to the half-row grid — so every line of a block is nearer its own row line than the next; a row with
+  // one line a side keeps the base pitch. Above the line the block hangs at 3.5 px, below it starts at 11.5 (item 3: the
+  // down-words FIRST, at the up-words' distance; the loops' block, led by its rings, beneath them)
+  const onGrid = (need: number): number => half + LINE * Math.max(0, Math.ceil((need - half) / LINE));
+  const topExtent = (l: PointLines): number => (l.above ? onGrid(2 * (3.5 + LINE * (l.above - 1)) - half) : half);
+  const bottomExtent = (l: PointLines): number => (l.below ? onGrid(2 * (11.5 + LINE * (l.below - 1)) - half) : half);
   const ys: number[] = [];
   let y = top;
   for (const l of linesAt) {
@@ -278,7 +286,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
   const arcExtras = inside.arcs.map((arc) => arcExtra?.(arc) ?? null);
   const markWord = (extra: MarkExtra | null, type: string, polarity: 'holds' | 'does-not-hold'): string =>
     `${extra?.glyph ? `${extra.glyph} ` : ''}${extra?.word !== undefined ? wordOf(extra.word, polarity) : wordOf(type, polarity)}`;
-  const wordFill = (extra: MarkExtra | null, negative: boolean): string => (extra?.emphasis ? 'fill-amber-200' : negative ? 'fill-rose-300' : extra?.tint ? 'fill-sky-200/90' : 'fill-stone-300');
+  const wordFill = (extra: MarkExtra | null, negative: boolean): string => (extra?.emphasis ? 'fill-amber-200' : negative ? 'fill-rose-300' : extra?.solid ? 'fill-stone-500' : extra?.tint ? 'fill-sky-200/90' : 'fill-stone-300');
   // C-7f item 1 — THE WORD AT THE FOOT: the words of the arcs leaving a point stand at that point (feet cannot cluster: a
   // foot sits at a point, and the points are the rows). C-7g item 1 — THE LABEL LANE IS ARITY-1'S: every word block stands
   // to the RIGHT of the point, start-anchored — the up-arcs' block above the row line, the loops' (led by the rings) and
@@ -316,10 +324,11 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
     if (!lines.length) return null;
     const y = g.yOf(point.index);
     // ONE GRID: every baseline in the column is a half-row apart — the up block's LAST line 3.5 px above the row line, the
-    // down block's first line 11.5 px below it (beneath the loops' block, whose first line sits beside the rings), so the
-    // last line of one row's down block and the first line of the next row's up block are a half-row apart too (measured
-    // at the eye: at −5 / +13 they were 12 px apart and the blind metric counted their boxes as touching)
-    const y0 = side === 'up' ? y - 3.5 - LINE * (lines.length - 1) : y + 11.5 + LINE * L.loops.length;
+    // down block's FIRST line 11.5 px below it (C-7h item 3: the down-words hug their row as the up-words do — measured at
+    // the eye by the designer, the down blocks sat 22 px from their row under the loops' line, a 1 px margin from the next);
+    // the loops' block, led by its rings, follows beneath the down block (measured at C-7g: at −5 / +13 the blocks of
+    // neighbouring rows were 12 px apart and the blind metric counted their boxes as touching)
+    const y0 = side === 'up' ? y - 3.5 - LINE * (lines.length - 1) : y + 11.5;
     return wordBlock({ 'data-inside-foot-words': `${point.id}|${side}` }, g.px + 10, y0, lines, arcWordSpan);
   };
   return (
@@ -377,7 +386,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
             {...(extra?.attrs ?? {})}
           >
             {/* the halo is the glyphs' own outline — an arc passing the label lane stays visible between the letters */}
-            <text x={g.px - 10} y={y + 3.5} textAnchor="end" fontSize={LABEL} className={extra?.tint ? 'fill-sky-100' : point.label ? 'fill-stone-100' : 'fill-stone-300'} style={halo(3)}>
+            <text x={g.px - 10} y={y + 3.5} textAnchor="end" fontSize={LABEL} className={extra?.solid ? 'fill-stone-500' : extra?.tint ? 'fill-sky-100' : point.label ? 'fill-stone-100' : 'fill-stone-300'} style={halo(3)}>
               <tspan data-inside-label="true" className={point.label ? '' : 'font-mono'}>{labelText}</tspan>
               {point.badges.map((b, bi) => (
                 <tspan key={`${b.key}-${bi}`} data-inside-badge={`${b.key}=${b.value}`} data-inside-mold={b.mold ? 'true' : undefined} className={b.value === 'UNKNOWN' ? 'fill-amber-200' : 'fill-stone-400'}>
@@ -386,7 +395,8 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
               ))}
               {extra?.origin ? <tspan data-inside-origin={extra.origin} className="fill-stone-400">{` · ${extra.origin}`}</tspan> : null}
             </text>
-            <circle cx={g.px} cy={y} r={extra?.emphasis ? 4.2 : 3.2} className={extra?.emphasis ? 'fill-amber-300 stroke-amber-100' : extra?.tint ? 'fill-sky-200 stroke-stone-950' : 'fill-stone-200 stroke-stone-950'} strokeWidth={1} />
+            {/* C-7h item 2: a role the solid composed is a HOLLOW ring — one glyph, one meaning, named once in the site's sentence */}
+            <circle cx={g.px} cy={y} r={extra?.emphasis ? 4.2 : 3.2} fill={extra?.solid ? 'none' : undefined} data-inside-solid={extra?.solid ? 'true' : undefined} className={extra?.solid ? 'stroke-stone-400' : extra?.emphasis ? 'fill-amber-300 stroke-amber-100' : extra?.tint ? 'fill-sky-200 stroke-stone-950' : 'fill-stone-200 stroke-stone-950'} strokeWidth={extra?.solid ? 1.2 : 1} />
             {loops.map((loop, li) => {
               const cx = g.px + 10 + li * 14;
               const negative = loop.polarity === 'does-not-hold';
@@ -394,12 +404,12 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
               return (
                 <g key={`loop-${li}`} data-inside-loop={`${loop.type}|${point.id}|${loop.polarity}`} {...(lx?.attrs ?? {})}>
                   {/* the rings lead their words' block below the row line — a wrapped block hangs from them and reads top to bottom */}
-                  <circle cx={cx} cy={y + 8} r={5} fill="none" className={lx?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300' : lx?.tint ? 'stroke-sky-300' : 'stroke-stone-300'} strokeWidth={lx?.emphasis ? 2 : 1.1} strokeDasharray={negative ? '3 2' : undefined} />
+                  <circle cx={cx} cy={y + 8 + LINE * g.lines(point.index).down.length} r={5} fill="none" className={lx?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300' : lx?.solid ? 'stroke-stone-500' : lx?.tint ? 'stroke-sky-300' : 'stroke-stone-300'} strokeWidth={lx?.emphasis ? 2 : 1.1} strokeDasharray={negative ? '3 2' : undefined} />
                 </g>
               );
             })}
             {loops.length
-              ? wordBlock({ 'data-inside-loop-words': point.id }, g.px + 10 + loops.length * 14 + 2, y + 11.5, g.lines(point.index).loops.map((line) => line.map((i) => loops.indexOf(inside.loops[i]))), (li) => {
+              ? wordBlock({ 'data-inside-loop-words': point.id }, g.px + 10 + loops.length * 14 + 2, y + 11.5 + LINE * g.lines(point.index).down.length, g.lines(point.index).loops.map((line) => line.map((i) => loops.indexOf(inside.loops[i]))), (li) => {
                   const l = loops[li];
                   const lx = loopExtra?.(l) ?? null;
                   const negative = l.polarity === 'does-not-hold';

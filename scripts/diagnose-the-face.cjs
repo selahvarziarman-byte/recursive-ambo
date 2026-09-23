@@ -307,7 +307,7 @@ check('§5 ★★ THE THREE RECORDS ACCEPTED AT THEIR EDGES, THE FACE REFUSED (t
       attrsOf(fb, 'data-midpoint-face-here').length === 1;
   })(), visibleText(faceBlock(surfaceAB())).slice(0, 600));
 withdraw(b, c, 'r1', 'Φ1');
-check('§5 ★★ ONE HAND WITHDRAWN THROUGH THE STORE, THE FACE READS: the surface states the direction as the face\'s own (`walked in the face\'s own direction, A → B → C → A` — C-7g item 7: no control to walk the other way, D14; no word about the other way), and at each corner ONE CLAUSE PER LINE in the ruled order (C-7g item 6, ADR 0024: map first, the verdict a consequence) — `returned to itself` · `returned elsewhere` (as, never a pair glyph) · `N did not return — n broke at A–B: … · m at B–C: …` (the counts per edge BEFORE the names, so a wrap cannot orphan the verdict; every Und role with its edge) · `the face\'s core at A, derived: N of its 14 roles` CLOSING the corner\'s block; the words "has not said" nowhere',
+check('§5 ★★ ONE HAND WITHDRAWN THROUGH THE STORE, THE FACE READS: the surface states the direction as the face\'s own (`walked in the face\'s own direction, A → B → C → A` — C-7g item 7: no control to walk the other way, D14; no word about the other way), and at each corner ONE CLAUSE PER LINE in the ruled order (C-7g item 6, ADR 0024: map first, the verdict a consequence) — `returned to itself` · `returned elsewhere` (as, never a pair glyph), or, where NOTHING returned, the one line `nothing returned` (C-7h item 5, the designer) · `N did not return — n broke at A–B: … · m at B–C: …` (the counts per edge BEFORE the names, so a wrap cannot orphan the verdict; every Und role with its edge) · `the face\'s core at A, derived: N of its 14 roles` CLOSING the corner\'s block; the words "has not said" nowhere',
   (() => {
     const html = surfaceAB();
     const fb = faceBlock(html);
@@ -318,7 +318,7 @@ check('§5 ★★ ONE HAND WITHDRAWN THROUGH THE STORE, THE FACE READS: the surf
     const und = lineTexts.filter((l) => l.kind === 'und');
     return attrsOf(html, 'data-midpoint-face-state').includes('read') && attrsOf(fb, 'data-midpoint-face-walk')[0] === 'A → B → C → A' && J(corners) === J(['A', 'B', 'C']) &&
       /walked in the face's own direction, A → B → C → A/.test(text) && !/reads differently|the other way/.test(text) &&
-      J(lines) === J(['fix', 'mov', 'und', 'core', 'fix', 'mov', 'und', 'core', 'fix', 'mov', 'und', 'core']) &&
+      J(lines) === J(attrsOf(fb, 'data-midpoint-face-fix').map((fx, k) => (Number(fx) + Number(attrsOf(fb, 'data-midpoint-face-mov')[k]) > 0 ? ['fix', 'mov'] : ['none']).concat(['und', 'core'])).flat()) && lineTexts.filter((l) => l.kind === 'none').every((l) => l.text === 'nothing returned') && !/returned to itself: none returned elsewhere: none/.test(text) && (note(`corners reading nothing returned: ${lineTexts.filter((l) => l.kind === 'none').length} of 3 · lines ${J(lines)}`), true) &&
       und.length === 3 && und.every((l) => /^\d+ did not return( — \d+ broke at [A-C]–[A-C]: [^·]+( · \d+ at [A-C]–[A-C]: [^·]+)*)?$/.test(l.text)) && /^\d+ did not return — \d+ broke at A–B: /.test(und[0].text) &&
       lineTexts.filter((l) => l.kind === 'core')[0].text.match(/^the face's core at A, derived: \d+ of its 14 roles$/) && !/has not said/.test(text) && !/↦.*returned elsewhere|returned elsewhere: [^·]*↦/.test(text);
   })(), visibleText(faceBlock(surfaceAB())).slice(0, 700));

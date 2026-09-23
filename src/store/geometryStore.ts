@@ -1206,7 +1206,7 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     // C-8c — THE STONE AT THE ACT (0031 §6 invariant 3): the class this pair would make holds two seed roles of ONE
     // corner ⇒ refused by name — the two seed roles by their own labels and their corner — nothing written
     const stone = stoneOn(RA, RB, x, y, 'role');
-    if (stone) return refuse(stoneWords(shape, stone), []);
+    if (stone) return refuse(stoneWords(shape, stone, `${nameIn(A, x)} ↦ ${nameIn(B, y)}`), []);
     nextRoles = [...roles, [x, y]];
   } else {
     const [s, w] = act.pair;
@@ -1224,7 +1224,7 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     if (pw) return refuse(`${w} is already the translation of ${pw[0]} — one word, one translation`, []);
     // C-8c — the stone on words: two seed words of ONE corner made one ⇒ refused by name
     const stone = stoneOn(RA, RB, s, w, 'word');
-    if (stone) return refuse(stoneWords(shape, stone), []);
+    if (stone) return refuse(stoneWords(shape, stone, `${s} ↦ ${w}`), []);
     nextTypes = [...types, [s, w]];
   }
   const conflicts = refusalOf(A, B, [...(composed ? composed.roles : []), ...nextRoles], [...(composed ? composed.words : []), ...nextTypes]);

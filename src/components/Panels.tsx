@@ -66,6 +66,7 @@ import { SiteWitnessTracePanel } from './SiteWitnessTracePanel';
 import { VertexPacketEditorContent } from './VertexPacketEditor';
 // C-6c (iv): the card reads a HELD cast — every number re-derived from it, never stored
 import { castCounts, castMarks, castSummaryLine, notTakenAddresses, notTakenLine, orderingRows } from '../lib/castLoader';
+import { holdsLoadedCast, spaceOf } from '../lib/spaceOf';
 import type { ConceptSpace } from '../types/geometry';
 
 type TopologyFilter =
@@ -1290,9 +1291,8 @@ function formatFaceSummary(shape: Shape, face: Face): string {
   const packetLabel = getPacketDataDisplayLabel(face.data);
   const roleLabel = face.role.replace(/-/g, ' ');
 
-  return packetLabel
-    ? `${packetLabel} (${roleLabel}; ${shortenId(face.id)})`
-    : `${roleLabel}; ${shortenId(face.id)}`;
+  // C-7h item 11: the face by its corners' name (D14), never by its id
+  return `${packetLabel ?? faceDisplayName(shape, face)} (${roleLabel})`;
 }
 
 function formatFaceSourceRelation(shape: Shape, face: Face): string | null {
@@ -2625,9 +2625,10 @@ function SelectedVertexSummary({
           relation-type (term order is content — no verdict, a count); two
           registers side by side, each marked as whose; UNKNOWN shown where written
           plus one count, omission silent; the marks re-derived, never stored. */}
-      {vertex.data.cast ? (
+      {vertex.createdBy.operation === 'seed' && vertex.data.cast ? (
         <CastCardRows cast={vertex.data.cast} personLabel={vertex.data.label} />
       ) : null}
+      {vertex.createdBy.operation !== 'seed' ? <SpaceCardRow shape={shape} vertexId={vertex.id} /> : null}
       <SelectedVertexRelations shape={shape} selectedCell={selectedCell} vertexId={vertex.id} />
     </dl>
   );
@@ -2643,6 +2644,35 @@ function SelectedVertexSummary({
 // `read as directed` once per relation-type, seven times on one card, the wrap breaking each sentence before its verdict.
 // So the term-order rows GROUP BY READING, not by relation-type: one row per (reading × reversal) class, the reading once
 // per row, every word with its count (`orderingRows`) — the FORM of C-6d (γ) §3.2's clause changed, its meaning kept.
+// C-7h item 10 (the designer's live drive, §125.1: "the card at a born vertex is silent about a space it has — a positive fact
+// carried by nothing being there"): a BORN vertex's card says the space it holds in ONE row, its own counts derived at every
+// read through the resolver, never a Cast row (the vertex holds no cast; its space is its parents' gluing); a born vertex
+// still holding an old LOADED cast says so in one line and shows no cast rows — the card follows the layer: not read (Δ86)
+function SpaceCardRow({ shape, vertexId }: { shape: Shape; vertexId: VertexId }) {
+  const resolved = useMemo(() => spaceOf(shape, vertexId), [shape, vertexId]);
+  const loaded = holdsLoadedCast(shape, vertexId);
+  if (!resolved && !loaded) return null;
+  const label = (id: VertexId): string => getVertexDisplayLabel(shape, id);
+  return (
+    <>
+      {loaded ? (
+        <>
+          <dt className="col-span-2 text-stone-500">Cast</dt>
+          <dd data-space-card-row="loaded-ignored" className="col-span-2 text-stone-400">a loaded cast — not read: a midpoint's space is derived from its parents</dd>
+        </>
+      ) : null}
+      {resolved && resolved.edge ? (
+        <>
+          <dt className="col-span-2 text-stone-500">Space</dt>
+          <dd data-space-card-row="derived" className="col-span-2 text-stone-200">
+            {`derived from ${label(resolved.edge.parents[0])} and ${label(resolved.edge.parents[1])} — ${resolved.space.roles.length} roles · ${resolved.space.signature.length} words · ${resolved.space.relations.length} tuples`}
+          </dd>
+        </>
+      ) : null}
+    </>
+  );
+}
+
 function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: string }) {
   const counts = castCounts(cast);
   const marks = castMarks(cast);
@@ -4155,10 +4185,13 @@ function getVertexDisplayLabel(shape: Shape, vertexId: VertexId): string {
   return vertex ? getPacketDisplayLabel(vertex.data) ?? shortenId(vertexId) : shortenId(vertexId);
 }
 
+// C-7h item 11 (CLAUDE.md §2.5 and §2.8 — the designer saw `face face:wpx1fn` in the card): a face is NAMED FROM ITS CORNERS
+// by D14 (the one composer, through apertureModel's wrapper), and where that yields nothing the name slot's lawful absence
+// word — NEVER its id; a face the shape no longer holds is said so, not addressed
 function getFaceDisplayLabel(shape: Shape, faceId: string): string {
   const face = shape.faces.find((candidate) => candidate.id === faceId);
 
-  return face ? getPacketDataDisplayLabel(face.data) ?? shortenId(faceId) : shortenId(faceId);
+  return face ? getPacketDataDisplayLabel(face.data) ?? faceDisplayName(shape, face) : 'a face this shape no longer holds';
 }
 
 function getCellDisplayLabel(shape: Shape, cellId: string): string {

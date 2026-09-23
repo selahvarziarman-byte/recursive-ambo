@@ -60,7 +60,7 @@
 import type { ConceptSpace, Edge, EdgeIdentification, Shape, VertexId } from '../types/geometry';
 import { isMoldType } from './castLoader';
 import { edgeBetween } from './faceReading';
-import { glue, gluedSpace, type Midpoint } from './midpointGlue';
+import { glue, gluedSpace, type GluedNaming, type GluedSpace, type Midpoint } from './midpointGlue';
 import { refusalOf, type Conflict } from './jRegister';
 
 export type EdgeKind = 'seed' | 'corner' | 'medial';
@@ -88,12 +88,21 @@ export interface ResolvedEdge {
   refused: Conflict[] | null; // the glue's refusal of composed ∪ born — then the space is the disjoint union, said by the surface
   midpoint: Midpoint; // the amalgam the space IS (the disjoint union's when refused): its `a`/`b` are the coprojections a child keeps of its parents
   wordName: Map<string, string>; // a glued word's key → the display word it became
+  glued: GluedSpace; // C-7h — the amalgam as the surface draws it (the origins beside the names), named by the resolver's rule: ONE derivation, the surface never re-glues
+}
+
+/** C-7h item 1 — a NAME is a chain of segments, one per seed role (or word) the class holds, in the order the person's acts joined them */
+export interface NameSeg {
+  tag: SeedTag;
+  text: string; // the seed's own label for it
 }
 
 export interface Resolved {
   space: ConceptSpace;
   roleContent: Map<string, Set<SeedTag>>; // by the space's role id
   wordContent: Map<string, Set<SeedTag>>; // by the space's signature type (the display word)
+  roleSegs: Map<string, NameSeg[]>; // C-7h item 1 — by role id: the segments its name is made of
+  wordSegs: Map<string, NameSeg[]>; // by display word
   origin: 'seed' | 'derived';
   edge: ResolvedEdge | null; // for a derived space: its parents' edge
   loadedIgnored: boolean; // a born vertex holding a loaded cast — not read (Δ86)
@@ -156,6 +165,8 @@ function seedResolved(vertexId: VertexId, cast: ConceptSpace): Resolved {
     space: cast,
     roleContent: new Map(cast.roles.map((r) => [r.id, new Set([tagOf(vertexId, r.id)])])),
     wordContent: new Map(cast.signature.map((s) => [s.type, new Set([tagOf(vertexId, s.type)])])),
+    roleSegs: new Map(cast.roles.map((r) => [r.id, [{ tag: tagOf(vertexId, r.id), text: r.label && r.label.length ? r.label : r.id }]])),
+    wordSegs: new Map(cast.signature.map((s) => [s.type, [{ tag: tagOf(vertexId, s.type), text: s.type }]])),
     origin: 'seed',
     edge: null,
     loadedIgnored: false,
@@ -319,6 +330,59 @@ export function composedOn(shape: Shape, U: Resolved, V: Resolved, parents: [Ver
 const emptyComposed = (): Composed => ({ roles: [], words: [], conflicts: [], corners: new Map(), by: 'none', sharedParent: null, anchoredPairs: 0 });
 
 /**
+ * C-7h item 1 (the designer's live drive, ratified §125.1) — `≡` IS THE PERSON'S ACT AND ONLY THAT, one rule for roles, words
+ * and chains. A name is a chain of SEGMENTS (one per seed role or word the class holds, in the order the person's acts joined
+ * them), displayed joined by `≡`. (1) A pair the SOLID composed shares a seed: its two chains MERGE on that seed — printed
+ * once, never `F1 ≡ F1`, never `≡` across a composed word. (2) A pair the PERSON made joins two chains; two segments of one
+ * spelling under different seeds carry their CORNERS in brackets (`sustains [C] ≡ sustains [A] ≡ descends-from [B]` — the
+ * chain wears its corners when a spelling repeats within it; a lone name wears one when another LONE name in the space is
+ * spelled alike under another seed, `disjoins [A]` — the glue's alike rule, the corner in place of the side). A doubled seed (two classes holding it —
+ * the lawful gen-3 doubling) is told apart by the parent it came through. The rule is a predicate on the RECORD (which pairs
+ * were the person's — `Composed` against `born`), never on spelling. The mold's own types are one by definition: plain.
+ */
+function namingOf(shape: Shape, U: Resolved, V: Resolved, parents: [VertexId, VertexId], M: Midpoint, composed: Composed): { naming: GluedNaming; roleSegs: Map<string, NameSeg[]>; wordSegs: Map<string, NameSeg[]> } {
+  const merge = (sa: NameSeg[], sb: NameSeg[]): NameSeg[] => [...sa, ...sb.filter((s) => !sa.some((t) => t.tag === s.tag))];
+  const cr = new Set(composed.roles.map(([a, b]) => `${a}\u0000${b}`));
+  const cw = new Set(composed.words.map(([a, b]) => `${a}\u0000${b}`));
+  const segsOf = (a: string | null, b: string | null, SA: Map<string, NameSeg[]>, SB: Map<string, NameSeg[]>, cset: Set<string>): NameSeg[] => {
+    const sa = a !== null ? SA.get(a) ?? [] : [];
+    const sb = b !== null ? SB.get(b) ?? [] : [];
+    return a !== null && b !== null ? (cset.has(`${a}\u0000${b}`) ? merge(sa, sb) : [...sa, ...sb]) : a !== null ? sa : sb;
+  };
+  const roleSegs = new Map(M.roles.map((r) => [r.key, segsOf(r.a, r.b, U.roleSegs, V.roleSegs, cr)] as [string, NameSeg[]]));
+  const wordSegs = new Map(M.words.map((w) => [w.key, segsOf(w.a, w.b, U.wordSegs, V.wordSegs, cw)] as [string, NameSeg[]]));
+  const cornerLabel = (tag: SeedTag): string => { const id = cornerOfTag(tag); return shape.vertices[id]?.data.label || id; };
+  const parentLabel = (side: 0 | 1): string => shape.vertices[parents[side]]?.data.label || parents[side];
+  const displays = (segsByKey: Map<string, NameSeg[]>, sideOf: (key: string) => 0 | 1, isWord: boolean): Map<string, string> => {
+    // a LONE name wears its corner when another lone name in the space is spelled alike under another seed (the glue's
+    // alike rule, the corner in place of the side); a CHAIN wears its corners when a spelling repeats WITHIN it (her rule 2)
+    const lone = new Map<string, Set<SeedTag>>();
+    for (const segs of segsByKey.values()) if (segs.length === 1) (lone.get(segs[0].text) ?? lone.set(segs[0].text, new Set()).get(segs[0].text)!).add(segs[0].tag);
+    const bracketed = (segs: NameSeg[]): boolean => (segs.length > 1 ? new Set(segs.map((s) => s.text)).size < segs.length : (lone.get(segs[0].text)?.size ?? 0) > 1);
+    const out = new Map<string, string>();
+    for (const [key, segs] of segsByKey) {
+      if (segs.length === 0) continue; // nothing to name: the glue's own default stands
+      if (isWord && segs.every((s) => isMoldType(s.text))) { out.set(key, segs[0].text); continue; }
+      const bracket = bracketed(segs);
+      out.set(key, segs.map((s) => (bracket ? `${s.text} [${cornerLabel(s.tag)}]` : s.text)).join(' ≡ '));
+    }
+    // the doubling: one display for two classes — each names the parent it came through, then its key as the last resort
+    const byDisplay = new Map<string, string[]>();
+    for (const [key, d] of out) (byDisplay.get(d) ?? byDisplay.set(d, []).get(d)!).push(key);
+    for (const keys of byDisplay.values()) if (keys.length > 1) for (const key of keys) out.set(key, `${out.get(key)} (through ${parentLabel(sideOf(key))})`);
+    const again = new Map<string, number>();
+    for (const d of out.values()) again.set(d, (again.get(d) ?? 0) + 1);
+    for (const [key, d] of out) if ((again.get(d) ?? 0) > 1) out.set(key, `${d} · ${key}`);
+    return out;
+  };
+  const roleSide = new Map(M.roles.map((r) => [r.key, r.a !== null ? 0 : 1] as [string, 0 | 1]));
+  const wordSide = new Map(M.words.map((w) => [w.key, w.a !== null ? 0 : 1] as [string, 0 | 1]));
+  const roleDisplay = displays(roleSegs, (k) => roleSide.get(k) ?? 0, false);
+  const wordDisplay = displays(wordSegs, (k) => wordSide.get(k) ?? 0, true);
+  return { naming: { role: (r) => roleDisplay.get(r.key), word: (w) => wordDisplay.get(w.key) }, roleSegs, wordSegs };
+}
+
+/**
  * THE RESOLVER. A seed vertex holds its cast; a midpoint holds the gluing of its parents' spaces over the J its edge's
  * kind fixes ∪ the record that edge lawfully carries. `memo` is one read's own cache — nothing survives the call.
  */
@@ -347,7 +411,11 @@ export function spaceOf(shape: Shape, vertexId: VertexId, options: SpaceOfOption
         result = glue(U.space, V.space, [], []); // the disjoint union never refuses: nothing shared, nothing to contradict
       }
       if (!result.refused) {
-        const g = gluedSpace(U.space, V.space, result.midpoint);
+        // C-7h item 1 — the names by the resolver's rule (the record decides which `≡` is the person's), given to the glue
+        const named = namingOf(shape, U, V, parents, result.midpoint, composed);
+        const g = gluedSpace(U.space, V.space, result.midpoint, named.naming);
+        const wordSegs = new Map<string, NameSeg[]>();
+        for (const w of result.midpoint.words) wordSegs.set(g.wordName.get(w.key) ?? w.key, named.wordSegs.get(w.key) ?? []);
         const roleContent = new Map<string, Set<SeedTag>>();
         for (const r of result.midpoint.roles) roleContent.set(r.key, new Set([...(r.a !== null ? U.roleContent.get(r.a) ?? [] : []), ...(r.b !== null ? V.roleContent.get(r.b) ?? [] : [])]));
         const wordContent = new Map<string, Set<SeedTag>>();
@@ -356,8 +424,10 @@ export function spaceOf(shape: Shape, vertexId: VertexId, options: SpaceOfOption
           space: g.space,
           roleContent,
           wordContent,
+          roleSegs: named.roleSegs,
+          wordSegs,
           origin: 'derived',
-          edge: { id: e ? e.id : null, kind, parents, composed, born, refused, midpoint: result.midpoint, wordName: g.wordName },
+          edge: { id: e ? e.id : null, kind, parents, composed, born, refused, midpoint: result.midpoint, wordName: g.wordName, glued: g },
           loadedIgnored: v.data.cast !== undefined,
         };
       }
@@ -393,8 +463,11 @@ export function pooledRoles(R: Resolved): number {
  * space pools two roles of one corner has become the op-set"): the two seed roles (or words) of ONE corner a pair would
  * make one. The class the site would hold for the pair is EXACTLY x's content ∪ y's content (every identification on the
  * edge is one-to-one by the checks made before this one), so the stone is read on the two ends — and it holds where the
- * site is not yet minted (a seam acted on before its dissection). Null when the pair pools nothing: a pair SHARING a seed
- * dissolves a doubling (lawful), a pair of disjoint content joins two corners' own roles.
+ * site is not yet minted (a seam acted on before its dissection). Null when the pair pools NOTHING: a pair of disjoint
+ * content joins two corners' own roles, and a pair sharing a seed that holds no two seeds of one corner between its two
+ * classes dissolves a doubling (lawful). A pair that shares a seed AND holds two other seeds of one corner is refused like
+ * any other — the test is every cross pair of DIFFERENT seeds of one corner; the shared seed is the null case only (the
+ * researcher's read, 1615 §2; C-7h item 12).
  */
 export interface Stone {
   corner: VertexId;
@@ -407,8 +480,10 @@ export function stoneOn(U: Resolved, V: Resolved, x: string, y: string, kind: 'r
   for (const t of cu) for (const s of cv) if (t !== s && cornerOfTag(t) === cornerOfTag(s)) return { corner: cornerOfTag(t), kind, seeds: [seedOfTag(t), seedOfTag(s)] };
   return null;
 }
-/** the stone's sentence — the two seed roles by their own labels and their corner (a DEFAULT; the designer rules the words) */
-export const stoneWords = (shape: Shape, st: Stone): string => `${st.seeds[0]} and ${st.seeds[1]} would be one: two ${st.kind === 'role' ? 'roles' : 'words'} of ${shape.vertices[st.corner]?.data.label || st.corner}, which the corner keeps apart`;
+/** C-7h item 7 (the designer, §125.1) — the stone's CLAUSE, `c1 and c3 one: two roles of corner C, which the corner keeps apart`: the act's sentence puts the pair before it (`Φ2 ↦ r1 would make …`), the dependency reading says `would then make …` */
+export const stoneClause = (shape: Shape, st: Stone): string => `${st.seeds[0]} and ${st.seeds[1]} one: two ${st.kind === 'role' ? 'roles' : 'words'} of corner ${shape.vertices[st.corner]?.data.label || st.corner}, which the corner keeps apart`;
+/** the stone at the act, in the one refusal grammar (the head `not taken —` is the box's): `Φ2 ↦ r1 would make c1 and c3 one: …` */
+export const stoneWords = (shape: Shape, st: Stone, pairText: string): string => `${pairText} would make ${stoneClause(shape, st)}`;
 
 /** a born act that a candidate shape BREAKS — read again under the shape as it would be (C-8 item 4, the dependency refusal) */
 export interface BrokenBornAct {
@@ -417,7 +492,7 @@ export interface BrokenBornAct {
   kind: 'role' | 'word';
   pair: [string, string]; // as the record holds it — the endpoint spaces' own ids
   names: [string, string]; // as a person reads it — the spaces' labels (a glued space's id is a local key, never shown)
-  why: string;
+  why: string; // C-7h item 8 (the designer): the COLLISION as a clause after `your pair at <site>, <generation>,` — `needs Φ3 as its own role` · `needs c2 as its own — under this act it would be the solid's, composed` (item 9: never a thing one with itself) · `would then make c1 and c3 one: …` · `would then contradict itself: …`
 }
 
 /** a role's name as a person reads it — the space's label for it, else the id (a seed cast's id IS its address) */
@@ -447,38 +522,41 @@ export function brokenBornActs(shape: Shape, options: SpaceOfOptions = {}, excep
       out.push({ edgeId: e.id, siteId, kind, pair, names, why });
     };
     if (!U || !V) {
-      for (const pair of born.roles) name(pair, 'role', 'its endpoints no longer hold a space');
-      for (const pair of born.types) name(pair, 'word', 'its endpoints no longer hold a space');
+      for (const pair of born.roles) name(pair, 'role', 'needs a space at both of its ends — this act leaves none');
+      for (const pair of born.types) name(pair, 'word', 'needs a space at both of its ends — this act leaves none');
       continue;
     }
     const composed = composedOn(shape, U, V, e.vertexIds, 'medial', options.meet);
+    // C-7h item 9 (the designer): a role reached by two parents is ONE role — never "one with itself"; say it would become the solid's
+    const oneWith = (p: string, q: string, kind: 'role' | 'word'): string =>
+      p === q ? `needs ${p} as its own ${kind} — under this act it would be the solid's, composed` : `needs ${p} apart from ${q} — under this act the solid would make them one, composed`;
     const dom = new Map(composed.roles);
     const im = new Map(composed.roles.map(([a, b]) => [b, a] as [string, string]));
     for (const [x, y] of born.roles) {
-      if (!U.space.roles.some((r) => r.id === x)) name([x, y], 'role', `${shownName(U.space, x)} is no longer a role there — this act re-glues it`);
-      else if (!V.space.roles.some((r) => r.id === y)) name([x, y], 'role', `${shownName(V.space, y)} is no longer a role there — this act re-glues it`);
-      else if (dom.has(x)) name([x, y], 'role', `${nameIn(U.space, x)} would be one with ${nameIn(V.space, dom.get(x) as string)} by the solid`);
-      else if (im.has(y)) name([x, y], 'role', `${nameIn(V.space, y)} would be one with ${nameIn(U.space, im.get(y) as string)} by the solid`);
+      if (!U.space.roles.some((r) => r.id === x)) name([x, y], 'role', `needs ${shownName(U.space, x)} as its own role`);
+      else if (!V.space.roles.some((r) => r.id === y)) name([x, y], 'role', `needs ${shownName(V.space, y)} as its own role`);
+      else if (dom.has(x)) name([x, y], 'role', oneWith(nameIn(U.space, x), nameIn(V.space, dom.get(x) as string), 'role'));
+      else if (im.has(y)) name([x, y], 'role', oneWith(nameIn(V.space, y), nameIn(U.space, im.get(y) as string), 'role'));
       else {
         const st = stoneOn(U, V, x, y, 'role');
-        if (st) name([x, y], 'role', `with this act ${stoneWords(shape, st)}`);
+        if (st) name([x, y], 'role', `would then make ${stoneClause(shape, st)}`);
       }
     }
     const wdom = new Map(composed.words);
     const wim = new Map(composed.words.map(([a, b]) => [b, a] as [string, string]));
     for (const [s, t] of born.types) {
-      if (!U.space.signature.some((w) => w.type === s)) name([s, t], 'word', `${s} is no longer a word there`);
-      else if (!V.space.signature.some((w) => w.type === t)) name([s, t], 'word', `${t} is no longer a word there`);
-      else if (wdom.has(s)) name([s, t], 'word', `${s} would be one with ${wdom.get(s) as string} by the solid`);
-      else if (wim.has(t)) name([s, t], 'word', `${t} would be one with ${wim.get(t) as string} by the solid`);
+      if (!U.space.signature.some((w) => w.type === s)) name([s, t], 'word', `needs ${s} as its own word`);
+      else if (!V.space.signature.some((w) => w.type === t)) name([s, t], 'word', `needs ${t} as its own word`);
+      else if (wdom.has(s)) name([s, t], 'word', oneWith(s, wdom.get(s) as string, 'word'));
+      else if (wim.has(t)) name([s, t], 'word', oneWith(t, wim.get(t) as string, 'word'));
       else {
         const st = stoneOn(U, V, s, t, 'word');
-        if (st) name([s, t], 'word', `with this act ${stoneWords(shape, st)}`);
+        if (st) name([s, t], 'word', `would then make ${stoneClause(shape, st)}`);
       }
     }
     if (!out.some((b) => b.edgeId === e.id)) {
       const conflicts = refusalOf(U.space, V.space, [...composed.roles, ...born.roles], [...composed.words, ...born.types]);
-      if (conflicts.length && born.roles.length) name(born.roles[0], 'role', `under the solid's identity its record would contradict: ${conflicts[0].type}(${conflicts[0].xTerms.join(', ')}) ${conflicts[0].xValue} against ${conflicts[0].yType}(${conflicts[0].yTerms.join(', ')}) ${conflicts[0].yValue}`);
+      if (conflicts.length && born.roles.length) name(born.roles[0], 'role', `would then contradict itself: ${conflicts[0].type}(${conflicts[0].xTerms.join(', ')}) ${conflicts[0].xValue} against ${conflicts[0].yType}(${conflicts[0].yTerms.join(', ')}) ${conflicts[0].yValue}`);
     }
   }
   return out;

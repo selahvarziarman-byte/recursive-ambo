@@ -1,3 +1,4 @@
+import { faceDisplayName } from '../manuscript/apertureModel';
 import { useMemo } from 'react';
 import { formatVec3 } from '../lib/shape';
 import { type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
@@ -188,7 +189,7 @@ function FaceOppositeRowValue({
   if (row.status === 'missing-face') {
     return (
       <span className="block rounded border border-stone-800 bg-stone-950/70 px-2 py-1.5 text-xs text-stone-500">
-        missing face: <span className="font-mono">{shortenId(row.faceId)}</span>
+        a face this shape no longer holds
       </span>
     );
   }
@@ -766,10 +767,13 @@ function getVertexDisplayLabel(shape: Shape, vertexId: VertexId): string {
   return vertex ? getPacketDisplayLabel(vertex.data) ?? shortenId(vertexId) : shortenId(vertexId);
 }
 
+// C-7h item 11 (CLAUDE.md §2.5 and §2.8 — the designer saw `face face:wpx1fn` in the card): a face is NAMED FROM ITS CORNERS
+// by D14 (the one composer, through apertureModel's wrapper), and where that yields nothing the name slot's lawful absence
+// word — NEVER its id; a face the shape no longer holds is said so, not addressed
 function getFaceDisplayLabel(shape: Shape, faceId: string): string {
   const face = shape.faces.find((candidate) => candidate.id === faceId);
 
-  return face ? getPacketDataDisplayLabel(face.data) ?? shortenId(faceId) : shortenId(faceId);
+  return face ? getPacketDataDisplayLabel(face.data) ?? faceDisplayName(shape, face) : 'a face this shape no longer holds';
 }
 
 function formatEdgeRef(shape: Shape, vertexIds: [VertexId, VertexId]): string {

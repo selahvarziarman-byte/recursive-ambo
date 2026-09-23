@@ -44,6 +44,7 @@ const check = (name, cond, detail) => {
 const note = (line) => console.log(`      ${line}`);
 
 const { spaceOf, edgeKind, generationOf, composedOn, duplicatedSeeds, pooledRoles, brokenBornActs, isSeedVertex, nameIn } = req('src/lib/spaceOf.ts');
+const { isMoldType } = req('src/lib/castLoader.ts');
 const { glue } = req('src/lib/midpointGlue.ts');
 const { readCastFile } = req('src/lib/castLoader.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
@@ -206,6 +207,42 @@ check('§2 ★★ ABAC on the MEDIAL edge with NO born pair: |M_AB| + |M_CA| −
   const host = G2.cells.find((c) => c.id === p.trace.hostCellId);
   note(`C-8c item 4 — the faces of the gen-1 complex holding AB–AC: ${holding.length} — ${J(byCell)} · the surface at ABAC shows as sources the host cell's (${host ? `${host.kind}${host.topology ? `:${host.topology}` : ''}` : '?'}) incident faces: ${J(site ? site.sources.map((s) => `${s.faceName} (apex ${s.apexes.map((a) => G2.vertices[a].data.label).join(',')})`) : null)}`);
 })();
+check('§2 ★ THE INDUCED WALK — the mothership\'s one measurement (1535 §3 / 1642 §1) by the researcher\'s test (a cell\'s walk on its face is the vertex order whose right-hand normal points OUT of it: n = (v₂ − v₁) × (v₃ − v₁), the order that cell\'s iff n · (face centroid − cell centroid) > 0): at gen 1 and gen 2 every face held by two cells is TWO records with ONE cyclic order — the core\'s ring face and the residue\'s base from the same `midpointRingForVertex` (ambo.ts), the parent-cell copies verbatim — and on the build\'s OWN positions that order is the HOST cell\'s own walk (the core\'s, the parent\'s) on every shared face; the residue\'s walk is held by NO record (it is the reverse — derivable from the record itself, no positions needed); the researcher\'s regular-tetrahedron control reproduced (+1 the corner cell, −1 the core)',
+  (() => {
+    const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+    const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+    const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    const centroid = (pts) => pts.reduce((c, p) => [c[0] + p[0] / pts.length, c[1] + p[1] / pts.length, c[2] + p[2] / pts.length], [0, 0, 0]);
+    const cyc = (ids) => { const i = ids.indexOf([...ids].sort()[0]); return [...ids.slice(i), ...ids.slice(0, i)].join('>'); };
+    const measure = (shape) => {
+      const pos = (v) => shape.vertices[v].position;
+      const byKey = new Map();
+      for (const f of shape.faces) { const k = [...f.vertexIds].sort().join('|'); (byKey.get(k) ?? byKey.set(k, []).get(k)).push(f); }
+      let shared = 0; let oneOrder = 0; let hostWalk = 0; let residueHeld = 0; const rows = [];
+      for (const recs of byKey.values()) {
+        const cells = [...new Set(recs.flatMap((f) => shape.cells.filter((c) => c.faceIds.includes(f.id))))];
+        if (cells.length < 2) continue;
+        shared += 1;
+        const fc = centroid(recs[0].vertexIds.map(pos));
+        const orient = (f, cell) => { const [v1, v2, v3] = f.vertexIds.map(pos); return Math.sign(dot(cross(sub(v2, v1), sub(v3, v1)), sub(fc, centroid(cell.vertexIds.map(pos))))); };
+        if (new Set(recs.map((f) => cyc(f.vertexIds))).size === 1) oneOrder += 1;
+        const host = cells.find((c) => c.kind === 'core' || c.kind === 'parent'); const residue = cells.find((c) => c.kind === 'residue');
+        if (host && residue && recs.every((f) => orient(f, host) > 0 && orient(f, residue) < 0)) hostWalk += 1;
+        if (residue && recs.some((f) => orient(f, residue) > 0)) residueHeld += 1;
+        rows.push(`${recs.map((f) => f.vertexIds.map((v) => shape.vertices[v].data.label).join('·')).join(' = ')} held by ${cells.map((c) => `${c.kind}:${c.topology ?? '?'}`).join(' + ')}: ${host ? `the ${host.kind}'s walk` : '?'}`);
+      }
+      return { shared, oneOrder, hostWalk, residueHeld, rows };
+    };
+    const m1 = measure(G1); const m2 = measure(G2);
+    const T = { A: [1, 1, 1], B: [1, -1, -1], C: [-1, 1, -1], D: [-1, -1, 1] };
+    const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2];
+    const face = [mid(T.A, T.C), mid(T.A, T.B), mid(T.A, T.D)];
+    const fc = centroid(face); const n = cross(sub(face[1], face[0]), sub(face[2], face[0]));
+    const corner = Math.sign(dot(n, sub(fc, centroid([T.A, ...face])))); const core = Math.sign(dot(n, sub(fc, centroid([mid(T.A, T.B), mid(T.A, T.C), mid(T.A, T.D), mid(T.B, T.C), mid(T.B, T.D), mid(T.C, T.D)]))));
+    note(`gen 1: ${m1.shared} shared faces, one cyclic order ${m1.oneOrder}, the host's walk ${m1.hostWalk}, the residue's walk held ${m1.residueHeld} — ${J(m1.rows)}`);
+    note(`gen 2: ${m2.shared} shared faces, one cyclic order ${m2.oneOrder}, the host's walk ${m2.hostWalk}, the residue's walk held ${m2.residueHeld} · the seed's positions ${J(Object.values(G1.vertices).filter((v) => v.createdBy.operation === 'seed').map((v) => `${v.data.label} ${J(v.position)}`))} · the researcher's control: AC·AB·AD the corner cell's ${corner}, the core's ${core}`);
+    return m1.shared === 4 && m1.oneOrder === 4 && m1.hostWalk === 4 && m1.residueHeld === 0 && m2.shared === 10 && m2.oneOrder === 10 && m2.hostWalk === 10 && m2.residueHeld === 0 && corner === 1 && core === -1;
+  })());
 check('§2 ★ THE HAND-SEALED FACE (the researcher\'s one instance, reproduced on this generator\'s shape): |A| = 5 · |M_AB| = 8 · |M_CA| = 10 ⇒ the station on A–M_AB 8 roles, 0 duplicated · ABAC with no born pair 8 + 10 − 5 = 13 roles, 0 duplicated · the record alone 18 · names matched 15',
   (() => {
     const rng = rngOf(7);
@@ -398,6 +435,21 @@ check('§3b ★★ THE WITHDRAWAL GUARD\'S FALSIFIER, RE-MEASURED ON CLEAN PAIRS
     return faces > 0 && tried > 0 && (breaking > 0 || (note('⚠ no gen-0 withdrawal breaks a clean born pair on this generator in this bound — the bound is printed, not the case'), true));
   })());
 
+check('§3b ★ THE TRIPWIRE (§124.2, the mothership: the content-meet fallback is a TRIPWIRE, not a rule): on 300 towers of this generator, at EVERY generation built (gen 1 to gen 4), every corner edge composes `by: carried` and every medial edge `by: anchored` — `by: content` 0 of them; a nonzero count is a STOP-and-report (a medial edge without one shared parent is a kind the layer does not define)',
+  (() => {
+    const rng = rngOf(77); const by = new Map(); let born = 0;
+    for (let i = 0; i < 300; i += 1) {
+      const sh = tower(rng).shape;
+      for (const v of Object.values(sh.vertices)) {
+        if (v.createdBy.sourceVertexIds.length !== 2) continue;
+        const R = spaceOf(sh, v.id); if (!R || !R.edge) continue;
+        born += 1; const k = `${R.edge.kind}:${R.edge.composed.by}`; by.set(k, (by.get(k) ?? 0) + 1);
+      }
+    }
+    note(`300 towers · ${born} born vertices at gen 1–4 · composed by ${J([...by])}`);
+    return born > 0 && (by.get('medial:content') ?? 0) === 0 && (by.get('corner:content') ?? 0) === 0 && (by.get('medial:anchored') ?? 0) > 0 && (by.get('corner:carried') ?? 0) > 0 && [...by.keys()].every((k) => k === 'medial:anchored' || k === 'corner:carried' || k === 'seed:none');
+  })());
+
 // ═══ §4 THE STORE AND THE SURFACE on the lawful path ═══
 console.log('\n----- §4 the born room at ABAC: the composed identity never a pair, a born pair taken, a pair on a composed role refused by name, the dependency refusal, the home and the site -----');
 const React = require('react');
@@ -425,16 +477,33 @@ const siteABAC = (() => { const rep = buildGeneralSitePacketPresenterReport(G2);
 const bornA = RABAC.edge.parents[0] === AB2 ? RAB2 : RAC2; const bornB = RABAC.edge.parents[0] === AB2 ? RAC2 : RAB2;
 const freeOf = (R) => R.space.roles.map((r) => r.id).filter((id) => ![...R.roleContent.get(id)].some((t) => t.startsWith(`${A2}|`)));
 const xBorn = freeOf(bornA)[0]; const yBorn = freeOf(bornB)[0];
-check('§4 ★★ THE SURFACE AT ABAC ON THE LAWFUL PATH: the unfolding PRESENT with the shared corner\'s 14 roles marked `composed · corner A` on BOTH sides (never pickable — no click handler), NO line across the fold, the sentence naming the born room, the record\'s home said (`a medial edge (generation 1)`, the site `generation 2`), and every composed point in the own column marked `composed`',
+check('§4 ★★ THE SURFACE AT ABAC ON THE LAWFUL PATH: the unfolding PRESENT with the shared corner\'s 14 roles composed on BOTH sides (never pickable — no click handler), NO line across the fold, the composed identity STATED ONCE in the sentence — `corner A\'s 14 roles and 11 words stand on both sides as one — composed, not yours (their points hollow)` (C-7h item 2, the designer: do not mark the ordinary) — its points HOLLOW rings carrying no words, the word `composed` once on the whole surface, the born room named, the record\'s home said (`a medial edge (generation 1)`, the site `generation 2`), and every composed point in the own column marked composed in its data and drawn hollow',
   (() => {
     const html = surfaceAt(ABAC);
     const text = visibleText(html);
     const composedPts = attrsOf(html, 'data-midpoint-composed');
     const ownComposed = attrsOf(html, 'data-midpoint-own-role').filter((o) => o === 'composed').length;
-    return countOf(html, 'data-midpoint-surface') === 1 && composedPts.length === 2 * flow.roles.length && composedPts.every((c) => c === 'A') && countOf(html, 'data-midpoint-line') === 0 &&
-      /14 roles and 11 words one by the solid — corner A's, composed, not yours to pair or withdraw · the born room: \d+ roles of A[BC] and \d+ of A[BC] stand apart · no pair of yours yet/.test(text) &&
+    const groups = (marker) => html.split(marker).slice(1).map((g) => g.slice(0, g.indexOf('</g>')));
+    const quiet = groups('data-midpoint-composed="').every((g) => !/data-inside-origin/.test(g) && /data-inside-solid="true"/.test(g)) && groups('data-midpoint-own-role="composed"').every((g) => !/data-inside-origin/.test(g) && /data-inside-solid="true"/.test(g));
+    note(`ABAC: composed points ${composedPts.length} · own column composed ${ownComposed} · the word composed on the surface ${(text.match(/composed/g) || []).length} time(s) · the sentence: ${(text.match(/corner A's[^·]*·[^·]*·[^·]*/) || [''])[0]}`);
+    return countOf(html, 'data-midpoint-surface') === 1 && composedPts.length === 2 * flow.roles.length && composedPts.every((c) => c === 'A') && countOf(html, 'data-midpoint-line') === 0 && quiet &&
+      /corner A's 14 roles and 11 words stand on both sides as one — composed, not yours \(their points hollow\) · the born room: \d+ roles of A[BC] and \d+ of A[BC] stand apart · no pair of yours yet/.test(text) && (text.match(/composed/g) || []).length === 1 &&
       /the record's home: A[BC]–A[BC], a medial edge \(generation 1\) · this site: ABAC, generation 2 — a pair beyond the shared corner is born here, yours/.test(text) && ownComposed === flow.roles.length && !/data-midpoint-composed="[^"]*"[^>]*class="cursor-pointer"/.test(html);
   })(), visibleText(surfaceAt(ABAC)).slice(0, 500));
+check('§4 ★★ `≡` IS THE PERSON\'S ACT AND ONLY THAT (C-7h item 1, the designer\'s live drive: nine composed words wore `≡`, `r0 ≡ F1 ≡ F1` joined a role to itself): at ABAC every role\'s and word\'s name is a chain of DISTINCT seeds joined by `≡` — no seed printed twice (one reached through two parents is printed once), every `≡` joining two different seeds (the person\'s acts); the mold\'s own words plain; a chain with one spelling under two seeds carries its corners in brackets',
+  (() => {
+    const R = spaceOf(cur(), ABAC);
+    const chains = [...R.roleSegs.entries()].map(([id, segs]) => ({ id, segs, label: nameIn(R.space, id) }));
+    const wchains = [...R.wordSegs.entries()].filter(([, segs]) => !segs.every((x) => isMoldType(x.text))).map(([name, segs]) => ({ name, segs }));
+    const distinct = (segs) => new Set(segs.map((x) => x.tag)).size === segs.length;
+    const joins = (label, segs) => (label.match(/ ≡ /g) || []).length === Math.max(0, segs.length - 1);
+    const names = [...chains.map((c) => c.label), ...wchains.map((w) => w.name)];
+    const selfJoined = names.filter((l) => l.split(' ≡ ').map((seg) => seg.replace(/ \[[^\]]+\]$/, '')).some((seg, k, all) => all.indexOf(seg) !== k && !/ \[[^\]]+\]/.test(l)));
+    const bracketed = names.filter((l) => / \[[A-D]\] ≡ /.test(l));
+    const composedLabels = RABAC.edge.composed.roles.map(([a, b]) => nameIn(R.space, `${a}≡${b}`));
+    note(`ABAC names: ${chains.length} roles, ${wchains.length} words · chains of 2+ seeds: ${chains.filter((c) => c.segs.length > 1).length} roles, ${wchains.filter((w) => w.segs.length > 1).length} words · a name joined to itself: ${selfJoined.length} · composed roles read ${J(composedLabels.slice(0, 5))} · bracketed chains: ${J(bracketed.slice(0, 4))}`);
+    return chains.length > 0 && chains.every((c) => distinct(c.segs) && joins(c.label, c.segs)) && wchains.every((w) => distinct(w.segs) && joins(w.name, w.segs)) && selfJoined.length === 0 && composedLabels.length === flow.roles.length && composedLabels.every((l) => !/(^|≡ )(\S+) ≡ \2(?= ≡|$)/.test(l));
+  })());
 check('§4 ★★ A PAIR ON A COMPOSED ROLE IS REFUSED BY NAME (item 3), nothing written: the store\'s `giveRolePair` on ABAC\'s edge naming the shared corner\'s role reads `… is already one with … by the solid — composed · corner A; not yours to pair or withdraw`, and the record on that edge stays empty',
   (() => {
     const cx = RABAC.edge.composed.roles[0];
@@ -456,7 +525,7 @@ check('§4 ★★ A BORN PAIR IS TAKEN (item 3): a role of AB\'s own part paired
 // the seed edge A–B in the gen-2 shape carries the gen-0 record; an act there that re-glues the role the born pair named
 const eAB2 = edgeBetween(cur().edges, A2, byLabel(cur(), 'B'));
 const bornSideB = xBorn.startsWith('B:') || yBorn.startsWith('B:') ? (xBorn.startsWith('B:') ? xBorn : yBorn) : null; // the B-side role named by the born pair, as AB's space keys it
-check('§4 ★★ THE DEPENDENCY REFUSAL (item 4): at the gen-2 shape\'s seed edge A–B, a gen-0 pair that RE-GLUES the role the born act named is refused, naming the born act — `not taken — …: your pair at ABAC, one generation up, rests on the role this would re-glue`, with TWO hands (here: withdraw this attempt · at ABAC: withdraw … first) — and the record on A–B unchanged; the far hand taken (the born pair withdrawn through the store), the same gen-0 act is then TAKEN',
+check('§4 ★★ THE DEPENDENCY REFUSAL (item 4): at the gen-2 shape\'s seed edge A–B, a gen-0 pair that RE-GLUES the role the born act named is refused, naming the born act in TWO sentences (C-7h item 8, the designer) — `not taken — F1 ↦ Φ3 would make Φ3 one with F1.` then `your pair at ABAC, one generation up, needs Φ3 as its own role: r3 ↦ Φ3.` — with TWO hands (here: withdraw this attempt · at ABAC: withdraw … first) — and the record on A–B unchanged; the far hand taken (the born pair withdrawn through the store), the same gen-0 act is then TAKEN',
   (() => {
     if (!bornSideB) return false;
     const rRaw = bornSideB.slice(2); // the B role (r…) the born pair named
@@ -468,7 +537,7 @@ check('§4 ★★ THE DEPENDENCY REFUSAL (item 4): at the gen-2 shape\'s seed ed
     const html = surfaceWith(cur(), byLabel(cur(), 'AB'), ref ?? null);
     const text = visibleText(html);
     const unchanged = J(cur().edges.find((e) => e.id === eAB2.id).identification) === before;
-    const grammar = ref && ref.dependency && ref.dependency.generationsUp === 1 && /not taken — .+: your pair at ABAC, one generation up, rests on the role this would re-glue/.test(text) && /here, on [AB]–[AB]: withdraw this attempt/.test(text) && /at ABAC \(one generation up\): withdraw .+ ↦ .+ first/.test(text);
+    const grammar = ref && ref.dependency && ref.dependency.generationsUp === 1 && /not taken — .+ ↦ .+ would make .+ one with .+\./.test(text) && /your pair at ABAC, one generation up, needs .+ as its own role: .+ ↦ .+\./.test(text) && /here, on [AB]–[AB]: withdraw this attempt/.test(text) && /at ABAC \(one generation up\): withdraw .+ ↦ .+ first/.test(text) && !/refused —|the act just made|nothing glued|rests on the role|rests on what/.test(text);
     // the far hand: the born pair withdrawn at ABAC — then the gen-0 act is taken
     S().withdrawMidpointAttempt(eAB2.id);
     S().withdrawRolePair(siteABAC.edge.id, xBorn, yBorn);
@@ -477,6 +546,7 @@ check('§4 ★★ THE DEPENDENCY REFUSAL (item 4): at the gen-2 shape\'s seed ed
     const taken = after === undefined && cur().edges.find((e) => e.id === eAB2.id).identification.roles.length === eAB2.identification.roles.length + 1;
     S().withdrawRolePair(eAB2.id, act[0], act[1]);
     note(`the dependency: ${ref && ref.dependency ? `${ref.dependency.act.pair.join(' ↦ ')} at ${ref.dependency.siteId ? cur().vertices[ref.dependency.siteId].data.label : '?'}, ${ref.dependency.generationsUp} generation up — ${ref.dependency.why}` : 'none'} · the act ${J(act)} after the far hand: ${after ? `refused (${after.form || J(after.conflicts.slice(0, 1))})` : 'taken'}`);
+    if (!(grammar && unchanged && taken)) note(`  culprits: ${J((text.match(/.{50}(refused —|the act just made|nothing glued|rests on the role|rests on what).{50}/g) || []).slice(0, 4))} · act sentence ${/not taken — .+ ↦ .+ would make .+ one with .+\./.test(text)} · collision ${/your pair at ABAC, one generation up, needs .+ as its own role: .+ ↦ .+\./.test(text)} · hands ${/here, on [AB]–[AB]: withdraw this attempt/.test(text) && /at ABAC \(one generation up\): withdraw .+ ↦ .+ first/.test(text)}`);
     if (!(grammar && unchanged && taken)) note(`  detail: grammar ${grammar} · unchanged ${unchanged} · taken ${taken} · refusal keys ${J(Object.keys(S().midpointRefusals))} · eAB2 ${eAB2.id} · surfaces ${countOf(html, 'data-midpoint-surface')} · refusal boxes ${countOf(html, 'data-midpoint-refusal')} · text ${text.slice(0, 400)}`);
     return grammar && unchanged && taken;
   })());
@@ -510,7 +580,7 @@ const stoneRun = (() => {
     if (p) {
       pooled += 1;
       const r = throughStore(sh, 'e:P_A:P_B', p.u, p.v);
-      if (!r.written && r.form) { refused += 1; if (/would be one: two roles of [ABC], which the corner keeps apart/.test(r.form)) named += 1; if (!ex) ex = { pair: [p.u, p.v], tags: [p.cu, p.cv], form: r.form }; }
+      if (!r.written && r.form) { refused += 1; if (/^.+ ↦ .+ would make \w+ and \w+ one: two roles of corner [ABC], which the corner keeps apart$/.test(r.form)) named += 1; if (!ex) ex = { pair: [p.u, p.v], tags: [p.cu, p.cv], form: r.form }; }
     }
     const s = candidateOf(sh, 'e:P_A:P_B', 'share');
     if (s) { shares += 1; if (throughStore(sh, 'e:P_A:P_B', s.u, s.v).written) sharesTaken += 1; }
@@ -519,23 +589,24 @@ const stoneRun = (() => {
   }
   return { faces, pooled, refused, named, shares, sharesTaken, disj, disjTaken, ex };
 })();
-check('§4b ★★ THE STONE AT THE ACT (C-8c item 1 — 0031 §6 invariant 3): through the STORE, at a gen-3 site (Q on P_A–P_B) a born pair whose two roles hold two seed roles of ONE corner is REFUSED BY NAME — the two seed roles by their own labels and their corner, `… would be one: two roles of C, which the corner keeps apart` — and nothing is written; the positive controls at the same site: a pair that SHARES a seed and pools nothing is TAKEN (it dissolves a doubling), a DISJOINT clean pair is TAKEN',
+check('§4b ★★ THE STONE AT THE ACT (C-8c item 1 — 0031 §6 invariant 3): through the STORE, at a gen-3 site (Q on P_A–P_B) a born pair whose two roles hold two seed roles of ONE corner is REFUSED BY NAME — the two seed roles by their own labels and their corner, in the one grammar (C-7h item 7, the designer\'s words): `Φ2 ↦ r1 would make c1 and c3 one: two roles of corner C, which the corner keeps apart` — and nothing is written; the positive controls at the same site: a pair that SHARES a seed and pools nothing is TAKEN (it dissolves a doubling), a DISJOINT clean pair is TAKEN',
   (() => {
     const { faces, pooled, refused, named, shares, sharesTaken, disj, disjTaken, ex } = stoneRun;
     note(`${faces} faces through the store at Q: pooling pairs tried ${pooled} — refused ${refused}, named ${named} · share-a-seed pairs tried ${shares} — taken ${sharesTaken} · disjoint pairs tried ${disj} — taken ${disjTaken} · the first refusal: ${J(ex)}`);
     return pooled > 0 && refused === pooled && named === pooled && shares > 0 && sharesTaken === shares && disj > 0 && disjTaken === disj;
   })());
-check('§4b ★ THE STONE AS THE PERSON READS IT — the refusal box rendered at ABAC (the real gen-2 shape) with the store\'s own refusal as a prop (the midpoint witness\'s way, the box as it stands): the head `refused — … (a role pair): nothing glued, the edge keeps its prior state`, the stone\'s sentence on the form line VERBATIM, ONE hand (the act just made) naming the pair through the spaces\' LABELS (the keys kept in the data attribute alone), no dependency box',
+check('§4b ★ THE STONE AS THE PERSON READS IT — the refusal box rendered at ABAC (the real gen-2 shape) with the store\'s own refusal as a prop, in the ONE grammar (C-7h items 6–7): the head `not taken — <pair> would make c1 and c3 one: two roles of corner C, which the corner keeps apart`, ONE hand `here, on AC–AB: withdraw this attempt` naming nothing by a key, no `refused`, no `(the act just made)`, no `nothing glued`, no dependency box',
   (() => {
     const form = stoneRun.ex ? stoneRun.ex.form : null;
     if (!form) return false;
     const html = surfaceWith(G2, ABAC, { act: { kind: 'role', pair: [xBorn, yBorn] }, form, conflicts: [] });
     const text = visibleText(html);
-    note(`the box at ABAC: ${text.slice(text.indexOf('refused —'), text.indexOf('refused —') + 260)}`);
-    const lab = (id) => { for (const v of ['AB', 'AC']) { const R = spaceOf(G2, byLabel(G2, v)); if (R && R.space.roles.some((r) => r.id === id)) return nameIn(R.space, id); } return id; };
-    const hand = `withdraw ${lab(xBorn)} ↦ ${lab(yBorn)} (the act just made)`;
-    note(`the hand: \`${hand}\` — the pair's keys ${J([xBorn, yBorn])} never shown`);
-    return countOf(html, 'data-midpoint-refusal') === 1 && attrsOf(html, 'data-midpoint-refusal-form').length === 1 && text.includes(form) && /refused — .+ \(a role pair\): nothing glued, the edge keeps its prior state/.test(text) && countOf(html, 'data-midpoint-withdraw-attempt') === 1 && countOf(html, 'data-midpoint-refusal-dependency') === 0 && text.includes(hand) && !text.includes(`withdraw ${xBorn} ↦`) && attrsOf(html, 'data-midpoint-withdraw').includes(`attempt|${xBorn}|${yBorn}`);
+    const la = G2.vertices[siteABAC.a].data.label; const lb = G2.vertices[siteABAC.b].data.label;
+    const at = Math.max(0, text.indexOf('not taken —'));
+    note(`the box at ABAC: ${text.slice(at, at + 240)}`);
+    const hand = `here, on ${la}–${lb}: withdraw this attempt`;
+    note(`  culprits: ${J((text.match(/.{50}(refused —|the act just made|nothing glued).{50}/g) || []).slice(0, 4))} · form ${attrsOf(html, 'data-midpoint-refusal-form').length} · head ${text.includes(`not taken — ${form}`)} · attempt hands ${countOf(html, 'data-midpoint-withdraw-attempt')} · dependency ${countOf(html, 'data-midpoint-refusal-dependency')} · hand ${text.includes(hand)} · keys shown ${text.includes(`withdraw ${xBorn} ↦`)} · attr ${attrsOf(html, 'data-midpoint-withdraw').includes(`attempt|${xBorn}|${yBorn}`)}`);
+    return countOf(html, 'data-midpoint-refusal') === 1 && attrsOf(html, 'data-midpoint-refusal-form').length === 1 && text.includes(`not taken — ${form}`) && /^.+ ↦ .+ would make \w+ and \w+ one: two roles of corner [A-D], which the corner keeps apart$/.test(form) && countOf(html, 'data-midpoint-withdraw-attempt') === 1 && countOf(html, 'data-midpoint-refusal-dependency') === 0 && text.includes(hand) && !/refused —|the act just made|nothing glued/.test(text) && !text.includes(`withdraw ${xBorn} ↦`) && attrsOf(html, 'data-midpoint-withdraw').includes(`attempt|${xBorn}|${yBorn}`);
   })());
 check('§4b ★★ THE GEN-2 BORN ROOM IS UNAFFECTED (the behaviour-neutral half): at P_A on M_CA–M_AB every candidate born pair joins two corners\' own roles — 0 of them pool under the resolver (this generator\'s census, all faces), and through the store a disjoint pair is taken exactly as before, none refused by the stone',
   (() => {
@@ -634,7 +705,7 @@ check('§5 ★★ THE LOADER IS OFFERED ON THE SEED\'S OWN CORNERS ALONE, BY CON
 // offer's absence at a midpoint and its presence at a corner are read AT THE EYE by the drive leg (its §6), where the
 // selection is the person's; here the rule is pinned in the source, by construction.
 check('§5 ⛔ THE RESOLVER IS PURE: spaceOf.ts imports only the types, the mold predicate from the loader, `edgeBetween` from the face, the glue and the register\'s check — no store, no component, nothing written (`.cast =` and `identification =` nowhere); the chooser, the inside\'s panel and the store read `spaceOf`, and `data.cast` is read in the surface by nothing',
-  (lib.match(/^import /gm) || []).length === 5 && lib.includes("import { isMoldType } from './castLoader';") && lib.includes("import { edgeBetween } from './faceReading';") && lib.includes("import { glue, gluedSpace, type Midpoint } from './midpointGlue';") && lib.includes("import { refusalOf, type Conflict } from './jRegister';") &&
+  (lib.match(/^import /gm) || []).length === 5 && lib.includes("import { isMoldType } from './castLoader';") && lib.includes("import { edgeBetween } from './faceReading';") && lib.includes("import { glue, gluedSpace, type GluedNaming, type GluedSpace, type Midpoint } from './midpointGlue';") && lib.includes("import { refusalOf, type Conflict } from './jRegister';") &&
     !/useGeometryStore|from '\.\.\/store|from '\.\.\/components|\.cast\s*=|identification\s*=/.test(lib) && !/\.data\.cast/.test(surf) && !/\.data\.cast/.test(store) && !/\.data\.cast/.test(readLf('src/components/CastInsideDiagram.tsx')) &&
     surf.includes("import { generationOf, holdsLoadedCast, isSeedVertex, nameIn, spaceOf, type Resolved } from '../lib/spaceOf';") && store.includes("from '../lib/spaceOf';"));
 check('§5 the manifest classifies the resolver NOT_FROZEN at its landing', /^NOT_FROZEN src\/lib\/spaceOf\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')));

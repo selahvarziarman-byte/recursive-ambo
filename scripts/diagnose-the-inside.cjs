@@ -191,7 +191,7 @@ check('§4 ★★ THE WORD AT THE FOOT, RIGHT OF THE POINT (C-7f item 1 — a fo
     return rows.length > 0 && rows.every((r) => {
       const [id, side] = r.foot.split('|');
       const y = circleAt(drawFlow, id, 'cy'); const x = circleAt(drawFlow, id, 'cx');
-      const y0 = side === 'up' ? y - 3.5 - 15 * (r.lines - 1) : y + 11.5 + 15 * loopLinesAt(drawFlow, id);
+      const y0 = side === 'up' ? y - 3.5 - 15 * (r.lines - 1) : y + 11.5; // C-7h item 3: the down block FIRST, at the up block's distance; the loops' block beneath it
       return Number.isFinite(y) && Number.isFinite(x) && r.anchor === 'start' && Math.abs(r.x - (x + 10)) < 0.01 && Math.abs(r.y - y0) < 0.01 && r.lines >= 1;
     }) && rows.flatMap((r) => r.words).length === 31;
   })());
@@ -218,9 +218,29 @@ check('§4 ★★ THE WIDTH TAKES THE NEXT LINE (C-7g item 2, the designer\'s �
     const phiLines = loopLinesAt(drawPhi, 'Φ1');
     note(`the wide point's block: ${rowsW[0] ? rowsW[0].lines : '?'} lines · pitch to the next point ${gw.yOf(1) - gw.yOf(0)} px (control ${gn.yOf(1) - gn.yOf(0)}) · right reach ${Math.round(gw.rightReach)} (WRAP ${WRAP}; control ${Math.round(gn.rightReach)}) · the span-8 arc's rx ${dm ? dm[1] : '?'} ry ${dm ? dm[2] : '?'} · Φ1's loop block ${phiLines} lines`);
     return WRAP === 200 && rowsW.length === 1 && rowsW[0].lines === 4 && rowsW[0].words.length === 8 && new Set(rowsW[0].words.map((w) => w.i)).size === 8 &&
-      gw.yOf(1) - gw.yOf(0) === 75 && gn.yOf(1) - gn.yOf(0) === 30 && gw.rightReach <= WRAP + 14 && gn.rightReach < gw.rightReach &&
+      gw.yOf(1) - gw.yOf(0) === 120 && gn.yOf(1) - gn.yOf(0) === 30 && gw.rightReach <= WRAP + 14 && gn.rightReach < gw.rightReach &&
       dm && Math.abs(Number(dm[1]) - 8 * 15 * 0.62) < 0.01 && Number(dm[2]) > 120 && (hw.match(/<textPath /g) || []).length === 0 &&
       phiLines >= 2 && innerText(drawPhi, 'data-inside-loop-words')[0] === 'descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes';
+  })());
+check('§4 ★★ NO FOOT BLOCK CROSSES THE MIDPOINT TO THE NEXT ROW (C-7h item 4, the designer\'s live drive: Φ1\'s down block centred 74 px below its row and 31 px from another): in Flow, the T cell, Φ and the manufactured wide point, every line of every block — up, down, loops — has its baseline nearer its OWN row line than any other row line, by the geometry\'s own rule (a row opens to twice the depth of its last line, on the half-row grid); and the down-words hug their row at the up-words\' distance (item 3): the first down line 11.5 px below the row line, the loops\' block beneath it, its rings 8 px below the last down line',
+  (() => {
+    const { insideGeometry } = req('src/components/CastInsideDiagram.tsx');
+    const mk = (n, type) => readCastFile(J({ roles: ['x', ...Array.from({ length: 9 }, (_, i) => `z${i + 1}`)], signature: [{ type, arity: 2 }], relations: Array.from({ length: n }, (_, i) => ({ type, terms: ['x', `z${i + 1}`], polarity: 'holds' })) })).cast;
+    const test = (inside) => {
+      const g = insideGeometry(inside); const ys = inside.points.map((_, i) => g.yOf(i)); let lines = 0; let crossed = 0; let worst = Infinity;
+      inside.points.forEach((_, i) => {
+        const L = g.lines(i); const y = ys[i];
+        const bases = [...L.up.map((_, k) => y - 3.5 - 15 * (L.up.length - 1 - k)), ...L.down.map((_, k) => y + 11.5 + 15 * k), ...L.loops.map((_, k) => y + 11.5 + 15 * (L.down.length + k))];
+        for (const b of bases) { lines += 1; const own = Math.abs(b - y); const others = ys.filter((_, j) => j !== i).map((yj) => Math.abs(b - yj)); const other = others.length ? Math.min(...others) : Infinity; if (!(own < other)) crossed += 1; worst = Math.min(worst, other - own); }
+      });
+      return { lines, crossed, worst: Number.isFinite(worst) ? worst : null };
+    };
+    const results = { flow: test(insides.flow), t: test(insides['t-cell']), phi: test(insides.phi), wide: test(insideOf(mk(8, 'abcdefghijkl'))) };
+    const loopY = (html, id) => Number((html.match(new RegExp(`<text[^>]*data-inside-loop-words="${id.replace(/[^A-Za-z0-9_-]/g, '.')}"[^>]* y="([^"]*)"`)) || [])[1]);
+    const downLinesAt = (html, id) => (footRows(html).find((r) => r.foot === `${id}|down`) || { lines: 0 }).lines;
+    const loopsPlaced = [drawFlow, drawT, drawPhi].every((html) => attrsOf(html, 'data-inside-loop-words').every((id) => Math.abs(loopY(html, id) - (circleAt(html, id, 'cy') + 11.5 + 15 * downLinesAt(html, id))) < 0.01));
+    note(`ownership by the geometry (lines · crossing the midpoint · the tightest margin): ${J(results)} · the loops' blocks beneath the down blocks: ${loopsPlaced}`);
+    return Object.values(results).every((r) => r.lines > 0 && r.crossed === 0 && r.worst > 0) && loopsPlaced;
   })());
 check('§4 ★ THE BLIND METRIC\'S OWN CONTROL (C-8b rider 5 — a loosened metric that cannot be seen to fail is not yet a metric): the drive leg\'s box test, read from the driver\'s own source and run here on manufactured boxes — an overlap of 5 px COUNTS, an overlap of 0.6 px counts, a touch to a millionth of a pixel does NOT, an overlap of 0.4 px does not (the half-pixel threshold, measured at C-7g: 15 px boxes on a 15 px grid meet without colliding)',
   (() => {

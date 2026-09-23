@@ -114,8 +114,9 @@ import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } fr
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
 import { insideOf, type Inside, type InsideArc, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
-import { gluedSpace, traceOf, type Midpoint, type Origin, type ParentTrace, type Side } from '../lib/midpointGlue';
+import { traceOf, type GluedSpace, type Midpoint, type Origin, type ParentTrace, type Side } from '../lib/midpointGlue';
 import { type Conflict } from '../lib/jRegister';
+import { isMoldType } from '../lib/castLoader';
 // C-8 — THE RESOLVER: the chooser and the surface read `spaceOf`, never `data.cast` (a seed corner's cast; a born corner's
 // space derived from its parents over the J its edge's kind fixes); the record's home and the site by generation
 import { generationOf, holdsLoadedCast, isSeedVertex, nameIn, spaceOf, type Resolved } from '../lib/spaceOf';
@@ -247,15 +248,20 @@ const TOP = 26;
  * stays as reinforcement, never the carrier; an alike spelling is shown plain with its origin beside it, a translated word
  * keeps its mark `s ≡ t`; no `≡` glyph before a tuple's word — the word `both` says it.
  */
-function ownColouring(own: ReturnType<typeof gluedSpace>, inside: Inside, originTint: boolean, la: string, lb: string, composedKeys: Set<string> = new Set()) {
-  // C-8 item 3 (the designer): a FOURTH origin word — `both` is witnessed by both parents THROUGH THE PERSON'S ACT;
-  // `composed` is in both parents BECAUSE THE SOLID MADE IT SO (a role the meet made one; a tuple every term of which is such a role)
-  const words = (origin: Origin, composedHere = false): string => (origin === 'both' ? (composedHere ? 'composed' : 'both') : origin === 'A' ? `from ${la}` : `from ${lb}`);
-  const plain = (type: string): string => type.replace(/ \[[AB]\]$/, '');
+function ownColouring(own: GluedSpace, inside: Inside, originTint: boolean, la: string, lb: string, composedKeys: Set<string> = new Set()) {
+  // C-8 item 3 (the designer): a FOURTH origin — `both` is witnessed by both parents THROUGH THE PERSON'S ACT; `composed` is
+  // in both parents BECAUSE THE SOLID MADE IT SO (a role the meet made one; a tuple every term of which is such a role).
+  // C-7h item 2 (her live drive — `composed` printed 28 times, on most of both columns: do not mark the ordinary): the solid's
+  // share carries NO word per point or tuple — the site's sentence states it once — and the least mark that still separates
+  // it from the person's act (amber, `≡`) and from the untouched: the solid's grey, the point a hollow ring
+  const words = (origin: Origin): string => (origin === 'both' ? 'both' : origin === 'A' ? `from ${la}` : `from ${lb}`);
+  // an alike spelling shown plain, its origin beside it (C-7f item 4) — a CHAIN keeps its corners (C-7h item 1)
+  const plain = (type: string): string => (type.includes(' ≡ ') ? type : type.replace(/ \[[^\]]+\]$/, ''));
   const mark = (type: string, origin: Origin | undefined, terms: string[]): MarkExtra | null => {
     if (origin === undefined) return null;
     const composedHere = origin === 'both' && terms.length > 0 && terms.every((t) => composedKeys.has(t));
-    return { emphasis: origin === 'both', tint: origin === 'B' && originTint, word: plain(type), origin: words(origin, composedHere), attrs: { 'data-midpoint-own-origin': composedHere ? 'composed' : origin } };
+    if (composedHere) return { emphasis: false, tint: false, word: plain(type), solid: true, attrs: { 'data-midpoint-own-origin': 'composed' } };
+    return { emphasis: origin === 'both', tint: origin === 'B' && originTint, word: plain(type), origin: words(origin), attrs: { 'data-midpoint-own-origin': origin } };
   };
   const key = (type: string, terms: string[]): string => `${type}|${JSON.stringify(terms)}`;
   return {
@@ -265,7 +271,7 @@ function ownColouring(own: ReturnType<typeof gluedSpace>, inside: Inside, origin
     point: (point: InsidePoint): PointExtra | null => {
       if (composedKeys.has(point.id)) {
         const o = own.roleOrigin.get(point.id);
-        return o === undefined ? null : { emphasis: false, origin: 'composed', attrs: { 'data-midpoint-own-role': 'composed' } };
+        return o === undefined ? null : { emphasis: false, solid: true, attrs: { 'data-midpoint-own-role': 'composed' } };
       }
       const o = own.roleOrigin.get(point.id);
       return o === undefined ? null : { emphasis: o === 'both', tint: o === 'B' && originTint, origin: words(o), attrs: { 'data-midpoint-own-role': o } };
@@ -321,6 +327,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const composedA = useMemo(() => new Map(composed.roles), [composed]);
   const composedB = useMemo(() => new Map(composed.roles.map(([a, b]) => [b, a] as [string, string])), [composed]);
   const composedKeys = useMemo(() => new Set(composed.roles.map(([a, b]) => `${a}≡${b}`)), [composed]);
+  const composedWordsA = useMemo(() => new Set(composed.words.map(([a]) => a)), [composed]);
+  const composedWordsB = useMemo(() => new Set(composed.words.map(([, b]) => b)), [composed]);
   const cornerWords = (key: string): string => (composed.corners.get(key) ?? []).map((id) => labelOf(shape, id)).join(' · ');
   const cornersAll = [...new Set([...composed.corners.values()].flat())].map((id) => labelOf(shape, id)).join(' · ');
   // C-8 item 5 — the record's HOME (the edge, its kind, its generation) and the SITE (where the person stands), derived from what made them
@@ -329,7 +337,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // the born room: what each side still holds beyond the solid's identity and the person's pairs
   const bornRoom = { a: castA.roles.length - composed.roles.length - roles.length, b: castB.roles.length - composed.roles.length - roles.length };
   // C-7d item 1 — the mapped midpoint's own space, the same presentation a corner gets
-  const own = useMemo(() => (M && state === 'glued' ? gluedSpace(castA, castB, M) : null), [castA, castB, M, state]);
+  // C-7h: the own column is the resolver's own amalgam (named by its rule) — the surface never re-glues (one derivation, never two readers agreeing)
+  const own = useMemo(() => (M && state === 'glued' && edgeInfo ? edgeInfo.glued : null), [M, state, edgeInfo]);
   const ownInside = useMemo(() => (own ? insideOf(own.space) : null), [own]);
   const ownG = useMemo(() => (ownInside ? insideGeometry(ownInside, { top: 14, footExtra: 8 }) : null), [ownInside]);
   const ownColour = useMemo(() => (own && ownInside ? ownColouring(own, ownInside, originTint, la, lb, composedKeys) : null), [own, ownInside, originTint, la, lb, composedKeys]);
@@ -375,7 +384,18 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     setWordPick({ side, word });
   };
   const bothExtra = (side: Side, inside: Inside) => {
-    const origin = (type: string, terms: string[]): MarkExtra | null => (M?.originOf[side].get(`${type}|${JSON.stringify(terms)}`) === 'both' ? { emphasis: true, glyph: '≡', attrs: { 'data-midpoint-both': side } } : null);
+    // C-7h item 1 (the designer's live drive: nine composed words wore `≡` at ABAC): a tuple in both parents BY COMPOSITION —
+    // every term a composed role and its word composed (or the mold's own) — is the solid's: no glyph, no amber, the grey;
+    // `≡` marks the tuple the PERSON's act matched across the fold, and only that
+    const cmap = side === 'A' ? composedA : composedB;
+    const cwords = side === 'A' ? composedWordsA : composedWordsB;
+    const composedTuple = (type: string, terms: string[]): boolean => terms.length > 0 && terms.every((t) => cmap.has(t)) && (cwords.has(type) || isMoldType(type));
+    const origin = (type: string, terms: string[]): MarkExtra | null =>
+      M?.originOf[side].get(`${type}|${JSON.stringify(terms)}`) === 'both'
+        ? composedTuple(type, terms)
+          ? { solid: true, attrs: { 'data-midpoint-composed-tuple': side } }
+          : { emphasis: true, glyph: '≡', attrs: { 'data-midpoint-both': side } }
+        : null;
     return {
       arc: (arc: { type: string; from: number; to: number }) => origin(arc.type, [inside.points[arc.from].id, inside.points[arc.to].id]),
       loop: (loop: { type: string; at: number }) => origin(loop.type, [inside.points[loop.at].id, inside.points[loop.at].id]),
@@ -388,11 +408,12 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const pairedB = new Set(roles.map(([, y]) => y));
   const pointExtra = (side: Side) => (point: { id: string }): PointExtra => {
     // C-8 item 3 (the designer): the composed identity is NOT A PAIR and is never drawn as one — no stroke across the fold,
-    // no control (`withdraw`, `take`), never pickable; marked in words on the point, `composed · corner A`, on both sides
+    // no control (`withdraw`, `take`), never pickable. C-7h item 2 (her live drive): the mark shrinks to the least — a
+    // HOLLOW ring and the solid's grey, no words on the point; the site's sentence states the identity once, with the mark
     const partner = side === 'A' ? composedA.get(point.id) : composedB.get(point.id);
     if (partner !== undefined) {
       const corners = cornerWords(`${side === 'A' ? 0 : 1}|${point.id}`);
-      return { origin: `composed · corner ${corners}`, attrs: { 'data-midpoint-side': side, 'data-midpoint-composed': corners } };
+      return { solid: true, attrs: { 'data-midpoint-side': side, 'data-midpoint-composed': corners } };
     }
     return {
       onClick: () => onPoint(side, point.id),
@@ -420,13 +441,27 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // C-8 item 4 — THE DEPENDENCY REFUSAL in the designer's grammar (her 1054): the same grammar as the face's hands, the
   // generation in the WHERE; the refused-against act attributed as the person's own; both hands, the far one naming its generation
   const dep = refusal?.dependency ?? null;
+  // C-7h items 6–9 (the designer, §125.1 — ONE refusal grammar at every midpoint site): the head `not taken`; the local hand
+  // `here, on <edge>: withdraw this attempt`; distant hands `at <site> (<generation>): withdraw … first`; `refused`,
+  // `(the act just made)` and `nothing glued, the edge keeps its prior state` retired. The dependency box in TWO
+  // sentences — what this act does, then what it collides with, where first
+  const actSentence = refusal
+    ? refusal.act.kind === 'role'
+      ? refusal.act.withdrawal
+        ? `withdrawing ${pairWords('role', refusal.act.pair)} would part ${nB(refusal.act.pair[1])} from ${nA(refusal.act.pair[0])}.`
+        : `${pairWords('role', refusal.act.pair)} would make ${nB(refusal.act.pair[1])} one with ${nA(refusal.act.pair[0])}.`
+      : refusal.act.withdrawal
+        ? `withdrawing ${pairWords('word', refusal.act.pair)} would part ${refusal.act.pair[1]} from ${refusal.act.pair[0]}.`
+        : `${pairWords('word', refusal.act.pair)} would make ${refusal.act.pair[1]} one word with ${refusal.act.pair[0]}.`
+    : '';
   const depSite = dep ? (dep.siteId !== null ? labelOf(shape, dep.siteId) : `the edge ${dep.edgeId}`) : '';
   const depGens = dep ? (dep.generationsUp === 0 ? 'the same generation' : dep.generationsUp > 0 ? `${dep.generationsUp === 1 ? 'one generation' : `${dep.generationsUp} generations`} up` : `${-dep.generationsUp === 1 ? 'one generation' : `${-dep.generationsUp} generations`} down`) : '';
   const refusalBox = refusal ? (
     <div data-midpoint-refusal={`${refusal.act.kind}|${refusal.act.pair[0]}|${refusal.act.pair[1]}`} data-midpoint-refusal-dependency={dep ? `${dep.edgeId}|${dep.act.pair[0]}|${dep.act.pair[1]}|${dep.generationsUp}` : undefined} className="my-2 rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
       {dep ? (
         <>
-          <span className="block">{`not taken — ${refusal.act.withdrawal ? `withdrawing ${pairWords(refusal.act.kind, refusal.act.pair)}` : pairWords(refusal.act.kind, refusal.act.pair)}: your pair at ${depSite}, ${depGens}, rests on ${refusal.act.withdrawal ? 'what this would undo' : refusal.act.kind === 'role' ? 'the role this would re-glue' : 'the word this would re-translate'} — ${dep.why}`}</span>
+          <span data-midpoint-refusal-act="true" className="block">{`not taken — ${actSentence}`}</span>
+          <span data-midpoint-refusal-collision="true" className="block">{`your pair at ${depSite}, ${depGens}, ${dep.why}: ${dep.names[0]} ↦ ${dep.names[1]}.`}</span>
           <span className="mt-1 block text-stone-300">
             <button type="button" data-midpoint-withdraw={`attempt|${refusal.act.pair[0]}|${refusal.act.pair[1]}`} data-midpoint-withdraw-attempt="true" className="mr-3 underline" onClick={() => withdrawMidpointAttempt(edgeId)}>
               {`here, on ${la}–${lb}: withdraw this attempt`}
@@ -437,8 +472,11 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           </span>
         </>
       ) : null}
-      {dep ? null : <span className="block">{`refused — ${pairWords(refusal.act.kind, refusal.act.pair)} (${refusal.act.kind === 'role' ? 'a role pair' : 'a word pair'}): nothing glued, the edge keeps its prior state`}</span>}
-      {!dep && refusal.form ? <span data-midpoint-refusal-form="true" className="block">{refusal.form}</span> : null}
+      {dep ? null : refusal.form ? (
+        <span data-midpoint-refusal-form="true" className="block">{`not taken — ${refusal.form}`}</span>
+      ) : (
+        <span data-midpoint-refusal-act="true" className="block">{`not taken — ${pairWords(refusal.act.kind, refusal.act.pair)}: the two records contradict under it`}</span>
+      )}
       {refusal.conflicts.map((c, i) => (
         <span key={i} data-midpoint-conflict={conflictWords(c, la, lb)} className="block">{`in conflict: ${conflictWords(c, la, lb)}`}</span>
       ))}
@@ -452,7 +490,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               className="underline"
               onClick={() => (act.attempt ? withdrawMidpointAttempt(edgeId) : withdrawAct(act.kind, act.pair))}
             >
-              {`withdraw ${pairWords(act.kind, act.pair)}${act.attempt ? ' (the act just made)' : ''}`}
+              {act.attempt ? `here, on ${la}–${lb}: withdraw this attempt` : `here, on ${la}–${lb}: withdraw ${pairWords(act.kind, act.pair)}`}
             </button>
           </span>
         ))}
@@ -516,8 +554,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             ? kind === 'seed'
               ? `${roles.length} ${roles.length === 1 ? 'role pair' : 'role pairs'} · ${types.length} ${types.length === 1 ? 'word pair' : 'word pairs'} — yours`
               : kind === 'corner'
-                ? `${composed.roles.length} roles and ${composed.words.length} words one by the solid — ${la} carried into ${lb}, composed · a corner edge holds no born room: nothing here is yours to pair`
-                : `${composed.roles.length} roles and ${composed.words.length} words one by the solid — corner ${cornersAll}'s, composed, not yours to pair or withdraw · the born room: ${bornRoom.a} roles of ${la} and ${bornRoom.b} of ${lb} stand apart${roles.length || types.length ? ` · ${roles.length} ${roles.length === 1 ? 'role pair' : 'role pairs'} · ${types.length} ${types.length === 1 ? 'word pair' : 'word pairs'} — yours, born here` : ' · no pair of yours yet'}`
+                ? `${la}'s ${composed.roles.length} roles and ${composed.words.length} words carried into ${lb} as one — composed, not yours (their points hollow) · a corner edge holds no born room: nothing here is yours to pair`
+                : `corner ${cornersAll}'s ${composed.roles.length} roles and ${composed.words.length} words stand on both sides as one — composed, not yours (their points hollow) · the born room: ${bornRoom.a} roles of ${la} and ${bornRoom.b} of ${lb} stand apart${roles.length || types.length ? ` · ${roles.length} ${roles.length === 1 ? 'role pair' : 'role pairs'} · ${types.length} ${types.length === 1 ? 'word pair' : 'word pairs'} — yours, born here` : ' · no pair of yours yet'}`
             : `the record on this edge contradicts itself${kind === 'medial' ? ' under the identity the solid fixed' : ''} — a pair given before this surface; withdraw a half`}
         {pick ? <span data-midpoint-pick={`${pick.side}|${pick.role}`} className="ml-2 text-amber-200">{`${pick.side === 'A' ? nA(pick.role) : nB(pick.role)} in ${pick.side === 'A' ? la : lb} chosen — now a point in ${pick.side === 'A' ? lb : la}`}</span> : null}
       </div>
@@ -557,7 +595,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             return (
               <g data-midpoint-refused-line={`${x}↦${y}`}>
                 <line x1={gA.px} y1={gA.yOf(iA)} x2={gB.px} y2={gB.yOf(iB)} className="stroke-rose-400/90" strokeWidth={1.6} strokeDasharray="5 4" />
-                <text x={foldX} y={(gA.yOf(iA) + gB.yOf(iB)) / 2 - 4} textAnchor="middle" fontSize={11} className="fill-rose-300" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{`${nA(x)} ↦ ${nB(y)} · refused — see below the drawing`}</text>
+                <text x={foldX} y={(gA.yOf(iA) + gB.yOf(iB)) / 2 - 4} textAnchor="middle" fontSize={11} className="fill-rose-300" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{`${nA(x)} ↦ ${nB(y)} · not taken — see below the drawing`}</text>
               </g>
             );
           })()}
@@ -612,7 +650,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           <div className="mb-1 text-stone-400">
             <span className="text-stone-100">{lm}</span>
             {` — its own space, one column: ${M.counts.roles} roles · ${M.counts.words} words · ${M.counts.tuples} tuples · ${M.counts.marks} marks · `}
-            <span className="text-stone-300">{`every role and tuple says where it is from — both · from ${la} · from ${lb}${kind === 'seed' ? '' : ' · composed (in both because the solid made it so)'}`}</span>
+            <span className="text-stone-300">{`every role and tuple says where it is from — both · from ${la} · from ${lb}${kind === 'seed' ? '' : ' · the solid\'s share hollow and grey, as above'}`}</span>
             {originTint ? <span>{` (from ${lb} also in `}<span className="text-sky-200">a cooler stroke</span>{`)`}</span> : null}
             {' · a translated word keeps its mark, s ≡ t'}
           </div>
@@ -766,8 +804,15 @@ function FaceRecord({ shape, cycle, faceName, here }: { shape: Shape; cycle: [Ve
           // return` leads with its counts per edge before the names, so a wrap cannot orphan the verdict; the core closes the block
           <span key={r.corner} data-midpoint-face-corner={L(r.corner)} data-midpoint-face-fix={String(r.fix.length)} data-midpoint-face-mov={String(r.mov.length)} data-midpoint-face-und={String(r.und.length)} data-midpoint-face-core={String(r.core.length)} className="grid">
             <span className="text-stone-100">{`at ${L(r.corner)}`}</span>
-            <span data-midpoint-face-line="fix">{`returned to itself: ${r.fix.length ? r.fix.join(' · ') : 'none'}`}</span>
-            <span data-midpoint-face-line="mov">{`returned elsewhere: ${r.mov.length ? r.mov.map(([x, y]) => `${x} as ${y}`).join(' · ') : 'none'}`}</span>
+            {/* C-7h item 5 (the designer): a corner where NOTHING returned says so once; where something returned the full split stays — there the Fix/Mov division is the content */}
+            {r.fix.length === 0 && r.mov.length === 0 ? (
+              <span data-midpoint-face-line="none">nothing returned</span>
+            ) : (
+              <>
+                <span data-midpoint-face-line="fix">{`returned to itself: ${r.fix.length ? r.fix.join(' · ') : 'none'}`}</span>
+                <span data-midpoint-face-line="mov">{`returned elsewhere: ${r.mov.length ? r.mov.map(([x, y]) => `${x} as ${y}`).join(' · ') : 'none'}`}</span>
+              </>
+            )}
             <span data-midpoint-face-line="und">{`${r.und.length} did not return${r.und.length ? ` — ${by.map((s, k) => `${s.roles.length} ${k === 0 ? 'broke ' : ''}at ${edgeWords(s.from, s.to)}: ${s.roles.join(' ')}`).join(' · ')}` : ''}`}</span>
             <span data-midpoint-face-line="core">{`the face's core at ${L(r.corner)}, derived: ${r.core.length} of its ${r.ambient.length} roles`}</span>
           </span>

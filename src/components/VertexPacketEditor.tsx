@@ -1,3 +1,4 @@
+import { faceDisplayName } from '../manuscript/apertureModel';
 import {
   type KeyboardEvent,
   useEffect,
@@ -699,10 +700,13 @@ function getVertexDisplayLabel(shape: Shape, vertexId: VertexId): string {
   return vertex ? getPacketDisplayLabel(vertex.data) ?? shortenId(vertexId) : shortenId(vertexId);
 }
 
+// C-7h item 11 (CLAUDE.md §2.5 and §2.8 — the designer saw `face face:wpx1fn` in the card): a face is NAMED FROM ITS CORNERS
+// by D14 (the one composer, through apertureModel's wrapper), and where that yields nothing the name slot's lawful absence
+// word — NEVER its id; a face the shape no longer holds is said so, not addressed
 function getFaceDisplayLabel(shape: Shape, faceId: string): string {
   const face = shape.faces.find((candidate) => candidate.id === faceId);
 
-  return face ? getPacketDataDisplayLabel(face.data) ?? shortenId(faceId) : shortenId(faceId);
+  return face ? getPacketDataDisplayLabel(face.data) ?? faceDisplayName(shape, face) : 'a face this shape no longer holds';
 }
 
 function getCellDisplayLabel(shape: Shape, cellId: string): string {
