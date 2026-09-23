@@ -16,15 +16,27 @@
 //     SEED edge         the person's record, possibly empty — an unmapped midpoint is
 //                       then the disjoint union by the same construction, no branch;
 //     CORNER edge       (a born vertex to its own parent) the CARRIED injection of the
-//                       parent into its born vertex — derived; no record is read,
-//                       because none can exist (a corner edge has no free slot: the
-//                       injection is total on the parent and onto its image);
-//     MEDIAL edge       the MEET of the identities on EVERYTHING both endpoints hold —
-//                       each class of one endpoint paired with the ONE class of the
-//                       other that holds what it holds of the seeds; a class spread
-//                       over two, or two onto one, is a CONFLICT: left out, and the
-//                       pushout houses it twice — ∪ the person's BORN pairs (the
-//                       record on the medial edge; extension only).
+//                       parent into its born vertex — C-8b item 1a (§122), BY
+//                       CONSTRUCTION: the born end's OWN coprojection of that parent,
+//                       read from its own gluing (`coprojectionOf`), never from content;
+//                       no record is read, because none can exist — the coprojection is
+//                       total on the parent and onto its image by what the glue IS, so
+//                       the station is the born vertex's own space at every generation
+//                       (measured: content parted from it at a station over a doubled
+//                       vertex in 2,918 of 3,000 faces; the coprojection never);
+//     MEDIAL edge       C-8b item 1b (§123.2, the researcher's gen4_compounding.py,
+//                       cited): ONE PRINCIPLE, TWO SITES — the coprojections witness
+//                       identity first, content decides only what they leave open. The
+//                       ends' ONE shared parent's classes are ANCHORED through each end's
+//                       own coprojection where CONSISTENT (neither image holds a seed the
+//                       other side keeps elsewhere; one-to-one both ways), then the
+//                       content MEET on what remains — each class paired with the ONE
+//                       class of the other that holds what it holds of the seeds; a class
+//                       spread over two, two onto one, or holding a seed the other side
+//                       keeps only in an anchored class, is a CONFLICT: left out, and the
+//                       pushout houses it twice — ∪ the person's BORN pairs (the record
+//                       on the medial edge; extension only). No one shared parent: the
+//                       content meet alone, said as `by: 'content'`.
 //   THE TYPE            every role and word of every space CARRIES the seed roles and
 //                       seed words it holds (`${seedVertexId}|${id}`), composed down
 //                       through the injections at every level; the meet reads that
@@ -59,8 +71,12 @@ export type SeedTag = string;
 export interface Composed {
   roles: Array<[string, string]>;
   words: Array<[string, string]>;
-  conflicts: string[]; // classes of the first endpoint spread over two of the other, or two onto one — left out; the pushout houses them twice
+  conflicts: string[]; // classes of the first endpoint spread over two of the other, or two onto one, or holding a seed the other side keeps only in an anchored class — left out; the pushout houses them twice
   corners: Map<string, VertexId[]>; // by `0|role` (the first endpoint's) and `1|role` (the second's): the seed corners the pair shares
+  /** C-8b — HOW the identity was fixed: `carried` (a corner edge — the born end's own coprojection of its parent), `anchored` (a medial edge — the shared parent's coprojections where consistent, then the content meet on what remains), `content` (a medial edge with no one shared parent — the content meet alone, said), `none` (a seed edge) */
+  by: 'carried' | 'anchored' | 'content' | 'none';
+  sharedParent: VertexId | null; // a medial edge's ONE shared parent, by what made the ends — never by name
+  anchoredPairs: number; // the role pairs the coprojections fixed before content decided anything
 }
 
 export interface ResolvedEdge {
@@ -70,7 +86,8 @@ export interface ResolvedEdge {
   composed: Composed;
   born: { roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] }; // the record read: a seed edge's whole record, a medial edge's born pairs; nothing on a corner edge
   refused: Conflict[] | null; // the glue's refusal of composed ∪ born — then the space is the disjoint union, said by the surface
-  midpoint: Midpoint | null; // the amalgam, when not refused
+  midpoint: Midpoint; // the amalgam the space IS (the disjoint union's when refused): its `a`/`b` are the coprojections a child keeps of its parents
+  wordName: Map<string, string>; // a glued word's key → the display word it became
 }
 
 export interface Resolved {
@@ -87,6 +104,8 @@ export interface SpaceOfOptions {
   tauDrafts?: Record<string, EdgeIdentification['types']>;
   /** C-8 item 4 — a CANDIDATE record on one edge, read in place of what the edge holds: the shape as an act would leave it, without writing it anywhere (RECORD, NOT READING — the candidate is an option to the read, never a fabricated shape) */
   candidate?: { edgeId: Edge['id']; roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] };
+  /** ⛔ A WITNESS'S CONTROL ONLY — `content`: the content meet on every born edge, the mechanism C-8b replaced (it houses a doubled class twice at a gen-4 station and splits a shared class held identically at gen 4); the app never sets it. Default `structural`: the carried coprojection on a corner edge, the anchored meet on a medial one. */
+  meet?: 'structural' | 'content';
 }
 
 /** the record in force on an edge for a read: the candidate when the read carries one for this edge, else what the edge holds (τ alone from the drafts) */
@@ -163,21 +182,139 @@ function meetOf(U: Map<string, Set<SeedTag>>, V: Map<string, Set<SeedTag>>): { p
   return { pairs: [...image].filter(([a]) => !conflicts.has(a)), conflicts: [...conflicts] };
 }
 
-/** the identity the solid fixes between two resolved spaces — the meet on roles and on the casters' words (the mold's own types are one by definition already, ruled by the register) */
-export function composedOn(U: Resolved, V: Resolved): Composed {
-  const r = meetOf(U.roleContent, V.roleContent);
-  const w = meetOf(new Map([...U.wordContent].filter(([k]) => !isMoldType(k))), new Map([...V.wordContent].filter(([k]) => !isMoldType(k))));
+/** the seed corners each pair shares — what `composed · corner A` names on the point */
+function cornersOf(U: Resolved, V: Resolved, pairs: Array<[string, string]>): Map<string, VertexId[]> {
   const corners = new Map<string, VertexId[]>();
-  for (const [a, b] of r.pairs) {
+  for (const [a, b] of pairs) {
     const shared = [...(U.roleContent.get(a) ?? [])].filter((t) => V.roleContent.get(b)?.has(t)).map(cornerOfTag);
     const list = [...new Set(shared)];
     corners.set(`0|${a}`, list);
     corners.set(`1|${b}`, list);
   }
-  return { roles: r.pairs, words: w.pairs, conflicts: r.conflicts, corners };
+  return corners;
 }
 
-const emptyComposed = (): Composed => ({ roles: [], words: [], conflicts: [], corners: new Map() });
+const nonMold = (m: Map<string, Set<SeedTag>>): Map<string, Set<SeedTag>> => new Map([...m].filter(([k]) => !isMoldType(k)));
+
+/**
+ * THE CONTENT MEET alone — on roles and on the casters' words (the mold's own types are one by definition already, ruled
+ * by the register). C-8b: the mechanism a corner edge and a medial edge used before the coprojections; kept as the
+ * witnesses' CONTROL (`options.meet = 'content'`) and as what a medial edge falls back to when it has no one shared parent.
+ */
+export function contentMeet(U: Resolved, V: Resolved): Composed {
+  const r = meetOf(U.roleContent, V.roleContent);
+  const w = meetOf(nonMold(U.wordContent), nonMold(V.wordContent));
+  return { roles: r.pairs, words: w.pairs, conflicts: r.conflicts, corners: cornersOf(U, V, r.pairs), by: 'content', sharedParent: null, anchoredPairs: 0 };
+}
+
+/**
+ * C-8b item 1a — a born end's OWN COPROJECTION of one parent: which role and word of the parent became which of the born
+ * end, taken from the born vertex's own gluing (the glue's `a`/`b` beside each key) — STRUCTURAL, never content. Null
+ * when the vertex is not that parent's child.
+ */
+export function coprojectionOf(child: Resolved, parentId: VertexId): { roles: Array<[string, string]>; words: Array<[string, string]> } | null {
+  const e = child.edge;
+  if (!e) return null;
+  const side: 'a' | 'b' | null = e.parents[0] === parentId ? 'a' : e.parents[1] === parentId ? 'b' : null;
+  if (side === null) return null;
+  const roles = e.midpoint.roles.filter((r) => r[side] !== null).map((r) => [r[side] as string, r.key] as [string, string]);
+  const words = e.midpoint.words.filter((w) => w[side] !== null).map((w) => [w[side] as string, e.wordName.get(w.key) ?? w.key] as [string, string]);
+  return { roles, words };
+}
+
+/**
+ * C-8b item 1a — THE CARRY BY CONSTRUCTION: on a CORNER edge (a born vertex to its own parent) the J IS the born end's own
+ * coprojection of that parent, in the edge's own orientation (a corner edge may be walked either way); no content is read
+ * — content cannot tell a doubled seed's two homes apart (measured: a gen-4 station over a doubled vertex housed the
+ * parent's doubled class again in 2,918 of 3,000 faces under the content meet; over the coprojection, never).
+ */
+function carriedOn(U: Resolved, V: Resolved, parents: [VertexId, VertexId]): Composed {
+  const vChild = V.edge !== null && V.edge.parents.includes(parents[0]);
+  const uChild = !vChild && U.edge !== null && U.edge.parents.includes(parents[1]);
+  let roles: Array<[string, string]> = [];
+  let words: Array<[string, string]> = [];
+  if (vChild) {
+    const c = coprojectionOf(V, parents[0]);
+    if (c) { roles = c.roles; words = c.words; }
+  } else if (uChild) {
+    const c = coprojectionOf(U, parents[1]);
+    if (c) { roles = c.roles.map(([p, k]) => [k, p] as [string, string]); words = c.words.map(([p, k]) => [k, p] as [string, string]); }
+  }
+  return { roles, words, conflicts: [], corners: cornersOf(U, V, roles), by: 'carried', sharedParent: vChild ? parents[0] : uChild ? parents[1] : null, anchoredPairs: roles.length };
+}
+
+/** the content meet on the classes not already anchored (the researcher's `remaining_content_meet`, gen4_compounding.py:24–37): a class holding a seed the other side keeps ONLY in an anchored class is a conflict, housed twice */
+function remainingMeet(Uc: Map<string, Set<SeedTag>>, Vc: Map<string, Set<SeedTag>>, skipU: Set<string>, skipV: Set<string>): { pairs: Array<[string, string]>; conflicts: string[] } {
+  const where = new Map<SeedTag, Set<string>>();
+  for (const [id, tags] of Vc) { if (skipV.has(id)) continue; for (const t of tags) (where.get(t) ?? where.set(t, new Set()).get(t)!).add(id); }
+  const Vall = new Set<SeedTag>();
+  for (const tags of Vc.values()) for (const t of tags) Vall.add(t);
+  const image = new Map<string, string>();
+  const conflicts = new Set<string>();
+  for (const [id, tags] of Uc) {
+    if (skipU.has(id)) continue;
+    const targets = new Set<string>();
+    for (const t of tags) for (const w of where.get(t) ?? []) targets.add(w);
+    const heldElsewhere = [...tags].some((s) => Vall.has(s) && !where.has(s));
+    if (targets.size === 1 && !heldElsewhere) image.set(id, [...targets][0]);
+    else if (targets.size > 0 || heldElsewhere) conflicts.add(id);
+  }
+  const back = new Map<string, string[]>();
+  for (const [a, b] of image) (back.get(b) ?? back.set(b, []).get(b)!).push(a);
+  for (const sources of back.values()) if (sources.length > 1) for (const s of sources) conflicts.add(s);
+  return { pairs: [...image].filter(([a]) => !conflicts.has(a)), conflicts: [...conflicts] };
+}
+
+/** the anchor (the researcher's `anchored_meet`, gen4_compounding.py:39–51): the shared parent's two images paired where CONSISTENT — neither holds a seed the other side keeps elsewhere — and one-to-one both ways; then the content meet on what remains */
+function anchoredPairs(Uc: Map<string, Set<SeedTag>>, Vc: Map<string, Set<SeedTag>>, intoU: Array<[string, string]>, intoV: Array<[string, string]>): { pairs: Array<[string, string]>; conflicts: string[]; anchored: number } {
+  const toV = new Map(intoV);
+  const anchor = new Map<string, Set<string>>();
+  for (const [w, u] of intoU) { const v = toV.get(w); if (v === undefined) continue; (anchor.get(u) ?? anchor.set(u, new Set()).get(u)!).add(v); }
+  const all = (m: Map<string, Set<SeedTag>>): Set<SeedTag> => { const s = new Set<SeedTag>(); for (const tags of m.values()) for (const t of tags) s.add(t); return s; };
+  const Uall = all(Uc); const Vall = all(Vc);
+  const back = new Map<string, string[]>();
+  for (const [u, vs] of anchor) {
+    if (vs.size !== 1) continue;
+    const v = [...vs][0];
+    const cu = Uc.get(u) ?? new Set<SeedTag>(); const cv = Vc.get(v) ?? new Set<SeedTag>();
+    const consistent = [...cu].every((s) => !Vall.has(s) || cv.has(s)) && [...cv].every((s) => !Uall.has(s) || cu.has(s));
+    if (consistent) (back.get(v) ?? back.set(v, []).get(v)!).push(u);
+  }
+  const pairs: Array<[string, string]> = [];
+  for (const [v, us] of back) if (us.length === 1) pairs.push([us[0], v]);
+  const rest = remainingMeet(Uc, Vc, new Set(pairs.map(([u]) => u)), new Set(pairs.map(([, v]) => v)));
+  return { pairs: [...pairs, ...rest.pairs], conflicts: rest.conflicts, anchored: pairs.length };
+}
+
+/**
+ * C-8b item 1b — THE ANCHORED MEET on a MEDIAL edge (§123.2, the researcher's gen4_compounding.py, cited not re-derived):
+ * ONE PRINCIPLE, TWO SITES — the coprojections witness identity first; content decides only what they leave open. W = the
+ * ends' one shared parent (by what made them); for each class of W its two images through each end's own coprojection
+ * are anchored where consistent; then the content meet on what remains. Roles and words by the one principle. No one
+ * shared parent (none, or two) → the content meet alone, said as `by: 'content'`.
+ */
+function anchoredOn(shape: Shape, U: Resolved, V: Resolved, parents: [VertexId, VertexId]): Composed {
+  const pu = shape.vertices[parents[0]]?.createdBy.sourceVertexIds ?? [];
+  const pv = shape.vertices[parents[1]]?.createdBy.sourceVertexIds ?? [];
+  const shared = pu.filter((p) => pv.includes(p));
+  if (shared.length !== 1) return contentMeet(U, V);
+  const W = shared[0];
+  const cu = coprojectionOf(U, W);
+  const cv = coprojectionOf(V, W);
+  if (!cu || !cv) return contentMeet(U, V);
+  const r = anchoredPairs(U.roleContent, V.roleContent, cu.roles, cv.roles);
+  const w = anchoredPairs(nonMold(U.wordContent), nonMold(V.wordContent), cu.words, cv.words);
+  return { roles: r.pairs, words: w.pairs, conflicts: r.conflicts, corners: cornersOf(U, V, r.pairs), by: 'anchored', sharedParent: W, anchoredPairs: r.anchored };
+}
+
+/** the identity the SOLID fixes on an edge, by its KIND: nothing on a seed edge; the carry on a corner edge; the anchored meet on a medial edge (`meet: 'content'` — the witnesses' control — the content meet on either) */
+export function composedOn(shape: Shape, U: Resolved, V: Resolved, parents: [VertexId, VertexId], kind: EdgeKind, meet: 'structural' | 'content' = 'structural'): Composed {
+  if (kind === 'seed') return emptyComposed();
+  if (meet === 'content') return contentMeet(U, V);
+  return kind === 'corner' ? carriedOn(U, V, parents) : anchoredOn(shape, U, V, parents);
+}
+
+const emptyComposed = (): Composed => ({ roles: [], words: [], conflicts: [], corners: new Map(), by: 'none', sharedParent: null, anchoredPairs: 0 });
 
 /**
  * THE RESOLVER. A seed vertex holds its cast; a midpoint holds the gluing of its parents' spaces over the J its edge's
@@ -199,7 +336,7 @@ export function spaceOf(shape: Shape, vertexId: VertexId, options: SpaceOfOption
     const V = spaceOf(shape, parents[1], options, memo);
     if (U && V) {
       const kind = edgeKind(shape, parents[0], parents[1]);
-      const composed = kind === 'seed' ? emptyComposed() : composedOn(U, V);
+      const composed = composedOn(shape, U, V, parents, kind, options.meet);
       const born = kind === 'corner' ? { roles: [], types: [] } : recordOn(e, options);
       let result = glue(U.space, V.space, [...composed.roles, ...born.roles], [...composed.words, ...born.types]);
       let refused: Conflict[] | null = null;
@@ -218,7 +355,7 @@ export function spaceOf(shape: Shape, vertexId: VertexId, options: SpaceOfOption
           roleContent,
           wordContent,
           origin: 'derived',
-          edge: { id: e ? e.id : null, kind, parents, composed, born, refused, midpoint: refused ? null : result.midpoint },
+          edge: { id: e ? e.id : null, kind, parents, composed, born, refused, midpoint: result.midpoint, wordName: g.wordName },
           loadedIgnored: v.data.cast !== undefined,
         };
       }
@@ -289,7 +426,7 @@ export function brokenBornActs(shape: Shape, options: SpaceOfOptions = {}, excep
       for (const pair of born.types) name(pair, 'word', 'its endpoints no longer hold a space');
       continue;
     }
-    const composed = composedOn(U, V);
+    const composed = composedOn(shape, U, V, e.vertexIds, 'medial', options.meet);
     const dom = new Map(composed.roles);
     const im = new Map(composed.roles.map(([a, b]) => [b, a] as [string, string]));
     for (const [x, y] of born.roles) {

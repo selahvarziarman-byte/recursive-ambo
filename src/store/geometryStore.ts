@@ -1185,7 +1185,7 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
   // record never holds it; a pair colliding with it is refused by name — the composed identity is never entered, never
   // withdrawable, never a proposal
   const kind = edgeKind(shape, edge.vertexIds[0], edge.vertexIds[1]);
-  const composed = kind === 'seed' ? null : composedOn(RA, RB);
+  const composed = kind === 'seed' ? null : composedOn(shape, RA, RB, [edge.vertexIds[0], edge.vertexIds[1]], kind);
   const cornerWords = (key: string): string => (composed?.corners.get(key) ?? []).map((id) => shape.vertices[id]?.data.label || id).join(' · ');
   let nextRoles = roles;
   let nextTypes = types;

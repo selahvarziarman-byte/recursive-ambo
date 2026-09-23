@@ -89,8 +89,26 @@ function tower(rng, opts = {}) {
   mid('S', 'A', 'M_AB'); mid('P_A', 'M_CA', 'M_AB'); mid('P_B', 'M_AB', 'M_BC');
   edge('P_A', 'P_B'); // the gen-2 medial edge
   mid('Q', 'P_A', 'P_B');
+  // C-8b — the tower grows: the gen-4 STATION S4 on the corner edge P_A–Q (P_A is Q's own parent — §122's site), and the
+  // gen-4 COMPOUNDING at R = mid(Q, Q2) on the medial edge Q–Q2 whose ends share the parent P_B (§123.2's site)
+  edge('P_A', 'Q'); mid('S4', 'P_A', 'Q');
+  mid('P_C', 'M_BC', 'M_CA'); edge('P_B', 'P_C'); mid('Q2', 'P_B', 'P_C');
+  edge('Q', 'Q2'); mid('R', 'Q', 'Q2');
   return { shape: shape(), A, B, C, J_AB, J_BC, J_CA };
 }
+/** a born pair on a medial edge of the synthetic shape, written as the store would: a role of one end holding only `left`'s seeds ↦ a role of the other holding only `right`'s */
+const bornOn = (shape, edgeId, left, right) => {
+  const e = shape.edges.find((x) => x.id === edgeId);
+  const U = spaceOf(shape, e.vertexIds[0]); const V = spaceOf(shape, e.vertexIds[1]);
+  const only = (R, corner) => [...R.roleContent].filter(([, s]) => [...s].every((t) => t.startsWith(`${corner}|`))).map(([k]) => k);
+  const u = only(U, left)[0]; const v = only(V, right)[0];
+  if (u === undefined || v === undefined) return null;
+  e.identification = { roles: [[u, v]], types: [] };
+  return [u, v];
+};
+const mult = (R) => { const c = new Map(); for (const s of R.roleContent.values()) for (const t of s) c.set(t, (c.get(t) ?? 0) + 1); return Math.max(0, ...c.values()); };
+const wordMult = (R) => { const c = new Map(); for (const s of R.wordContent.values()) for (const t of s) c.set(t, (c.get(t) ?? 0) + 1); return Math.max(0, ...c.values()); };
+const bytes = (R) => J([R.space.roles.map((r) => [r.id, r.label ?? null]), [...R.roleContent].map(([k, s]) => [k, [...s].sort()]), R.space.signature.map((w) => w.type), [...R.wordContent].map(([k, s]) => [k, [...s].sort()])]);
 const fingerprint = (R) => J([...R.roleContent.values()].map((s) => [...s].sort().join(',')).sort());
 
 // ═══ §1 THE KINDS, on the real shapes ═══
@@ -217,7 +235,7 @@ const formula = (t) => {
     const t = tower(rng);
     const R_CA = spaceOf(t.shape, 'M_CA'); const R_AB = spaceOf(t.shape, 'M_AB'); const R_BC = spaceOf(t.shape, 'M_BC');
     // T1 — at gen 2 the meet IS the shared corner's identity
-    const meet2 = composedOn(R_CA, R_AB);
+    const meet2 = composedOn(t.shape, R_CA, R_AB, ['M_CA', 'M_AB'], 'medial');
     const ident = parentIdentity(t.shape, R_CA, R_AB, 'A');
     if (J([...meet2.roles].sort()) !== J([...ident].sort()) || meet2.conflicts.length) t1 += 1;
     // below gen 3 nothing doubles
@@ -247,6 +265,109 @@ const formula = (t) => {
 })();
 check('§3 ★ THE CLASSICAL SUB-CASE IS SILENT (T4): on flat faces with total maps (h = 1) the meet doubles nothing at gen 3',
   (() => { const rng = rngOf(97); let bad = 0; let n = 0; for (let i = 0; i < 300; i += 1) { const t = tower(rng, { total: true, flat: true }); if (t.J_CA.roles.length !== 5) continue; n += 1; if (duplicatedSeeds(spaceOf(t.shape, 'Q')).roles) bad += 1; } note(`${n} flat total faces: doubled ${bad}`); return n > 0 && bad === 0; })());
+
+// ═══ §3b C-8b — THE CARRY BY CONSTRUCTION (§122) and THE ANCHORED MEET (§123.2), at gen 4 where content parts from structure ═══
+console.log('\n----- §3b C-8b: the station over a DOUBLED vertex is its own space by construction; the anchored meet compounds to at most one copy per lineage; gen ≤ 3 byte-identical, born pairs too -----');
+const { coprojectionOf, contentMeet } = req('src/lib/spaceOf.ts');
+(() => {
+  const rng = rngOf(251);
+  const N = 3000;
+  const content = { meet: 'content' };
+  let dblQ = 0; let s4own = 0; let s4dupMore = 0; let ctlFail = 0; let ctlN = 0;
+  let rMax = 0; let rAbove3 = 0; let rPool = 0; let rSplit = 0; let rSpurious = 0; let rFacesSpurious = 0;
+  let cMax = 0; let cGe4 = 0; let cSplit = 0; let cSpurious = 0; let cFacesSpurious = 0;
+  let wMax = 0; let wMaxContent = 0; let gen3diff = 0; let gen3n = 0; let bornDiff = 0; let bornN = 0; let byAnch = 0; let byContent = 0;
+  const splits = (sh, opt) => {
+    const RQ = spaceOf(sh, 'Q', opt); const RQ2 = spaceOf(sh, 'Q2', opt); const RR = spaceOf(sh, 'R', opt); const RPB = spaceOf(sh, 'P_B', opt);
+    const q = new Map(coprojectionOf(RQ, 'P_B').roles); const q2 = new Map(coprojectionOf(RQ2, 'P_B').roles);
+    const rq = new Map(coprojectionOf(RR, 'Q').roles); const rq2 = new Map(coprojectionOf(RR, 'Q2').roles);
+    let split = 0; let spurious = 0;
+    for (const p of RPB.space.roles.map((r) => r.id)) {
+      const xq = q.get(p); const xq2 = q2.get(p);
+      if (xq === undefined || xq2 === undefined) continue;
+      if (rq.get(xq) !== rq2.get(xq2)) { split += 1; if (J([...RQ.roleContent.get(xq)].sort()) === J([...RQ2.roleContent.get(xq2)].sort())) spurious += 1; }
+    }
+    return { split, spurious, R: RR };
+  };
+  for (let i = 0; i < N; i += 1) {
+    const t = tower(rng); const sh = t.shape;
+    // §122 — the gen-4 station over the doubled vertex Q, on the corner edge P_A–Q
+    const RQ = spaceOf(sh, 'Q'); const RS4 = spaceOf(sh, 'S4');
+    const dQ = duplicatedSeeds(RQ).roles; if (dQ > 0) dblQ += 1;
+    const sameMult = (a, b) => { const m = (R) => { const c = new Map(); for (const s of R.roleContent.values()) for (const x of s) c.set(x, (c.get(x) ?? 0) + 1); return J([...c].sort()); }; return m(a) === m(b); };
+    if (RS4.space.roles.length === RQ.space.roles.length && sameMult(RS4, RQ) && RS4.edge.composed.by === 'carried' && RS4.edge.composed.conflicts.length === 0) s4own += 1;
+    if (duplicatedSeeds(RS4).roles > dQ) s4dupMore += 1;
+    // the CONTROL: the content meet on the same corner edge (the mechanism replaced) — must fail on > 0 faces
+    const RS4c = spaceOf(sh, 'S4', content); ctlN += 1;
+    if (RS4c.space.roles.length !== RQ.space.roles.length) ctlFail += 1;
+    // §123.2 — the anchored meet at R against the content meet
+    const a = splits(sh, {}); const c = splits(sh, content);
+    const ma = mult(a.R); const mc = mult(c.R);
+    rMax = Math.max(rMax, ma); cMax = Math.max(cMax, mc);
+    if (ma > 3) rAbove3 += 1; if (mc >= 4) cGe4 += 1;
+    if (pooledRoles(a.R) > 0) rPool += 1;
+    rSplit += a.split; rSpurious += a.spurious; if (a.spurious) rFacesSpurious += 1;
+    cSplit += c.split; cSpurious += c.spurious; if (c.spurious) cFacesSpurious += 1;
+    if (a.R.edge.composed.by === 'anchored') byAnch += 1; else byContent += 1;
+    wMax = Math.max(wMax, wordMult(a.R)); wMaxContent = Math.max(wMaxContent, wordMult(c.R));
+    // gen ≤ 3 byte-identical under both mechanisms, every vertex
+    for (const id of ['M_AB', 'M_BC', 'M_CA', 'S', 'P_A', 'P_B', 'P_C', 'Q', 'Q2']) { gen3n += 1; if (bytes(spaceOf(sh, id)) !== bytes(spaceOf(sh, id, content))) gen3diff += 1; }
+    // … and with BORN pairs on the gen-1 medial edges (a C-only role of M_CA ↦ a B-only role of M_AB; an A-only of M_AB ↦ a C-only of M_BC)
+    if (bornOn(sh, 'e:M_CA:M_AB', 'C', 'B') && bornOn(sh, 'e:M_AB:M_BC', 'A', 'C')) {
+      for (const id of ['P_A', 'P_B', 'Q']) { bornN += 1; if (bytes(spaceOf(sh, id)) !== bytes(spaceOf(sh, id, content))) bornDiff += 1; }
+    }
+  }
+  note(`${N} random faces: Q doubles in ${dblQ} · the gen-4 station S4 on P_A–Q is Q's own space (count, seed multiplicities, carried, no conflict) in ${s4own} of ${N}, more duplicated than Q in ${s4dupMore} · the CONTROL (the content meet on the corner edge): |S4| ≠ |Q| in ${ctlFail} of ${ctlN}`);
+  note(`the gen-4 compounding at R (Q–Q2, shared parent P_B): ANCHORED — max copies of a seed ${rMax}, above 3 in ${rAbove3} faces, pools ${rPool}, shared-parent classes split ${rSplit} (spurious ${rSpurious} in ${rFacesSpurious} faces), by anchor ${byAnch} / by content ${byContent} · the CONTROL (the content meet) — max ${cMax}, a seed in 4 roles in ${cGe4} faces, split ${cSplit} (spurious ${cSpurious} in ${cFacesSpurious} faces) · WORDS at R: max copies of a seed word ${wMax} anchored, ${wMaxContent} under the content meet`);
+  note(`gen ≤ 3 under both mechanisms: ${gen3diff} of ${gen3n} spaces differ (empty born rooms) · ${bornDiff} of ${bornN} differ with born pairs standing on the gen-1 medial edges`);
+  check('§3b ★★ THE CARRY BY CONSTRUCTION (C-8b item 1a, §122): the gen-4 station on the corner edge P_A–Q is Q\'s OWN SPACE on every face — the same role count and the same seed multiplicities, the J carried from Q\'s own coprojection of P_A, no conflict — where Q holds a seed twice (the lawful gen-3 doubling); the CONTROL — the content meet on the same corner edge, the mechanism replaced — parts from Q on > 0 faces (the mothership\'s copy of this generator: 2,918 of 3,000)', s4own === N && s4dupMore === 0 && dblQ > 0 && ctlFail > 0, J({ s4own, s4dupMore, dblQ, ctlFail }));
+  check('§3b ★★ THE ANCHORED MEET COMPOUNDS LAWFULLY (C-8b item 1b, §123.2 — the researcher\'s gen4_compounding.py G4–G6 on this generator): at R = mid(Q, Q2) a seed stands in at most 3 roles (one per lineage), never above; R pools in 0 faces; 0 SPURIOUS splits (a class of the shared parent P_B that Q and Q2 hold identically, split in R); every R anchored on its one shared parent — the CONTROL, the content meet at the same edges: a seed in 4 roles in > 0 faces and spurious splits > 0 (the researcher\'s run: 15,415 spurious; the mothership\'s on a copy of this generator: max 4 in 2,983)', rMax <= 3 && rAbove3 === 0 && rPool === 0 && rSpurious === 0 && byContent === 0 && cGe4 > 0 && cSpurious > 0, J({ rMax, rAbove3, rPool, rSpurious, byContent, cGe4, cSpurious }));
+  check('§3b ★★ GEN ≤ 3 IS BYTE-IDENTICAL under the structural and the content mechanisms — every vertex up to Q and Q2 with the born rooms empty, and P_A, P_B, Q with born pairs standing on the gen-1 medial edges: 0 differences (a behaviour-neutral cut below gen 4, measured, not argued)', gen3n > 0 && gen3diff === 0 && bornN > 0 && bornDiff === 0, J({ gen3diff, gen3n, bornDiff, bornN }));
+})();
+// rider 2 — the ACT's positive controls (the mothership's dependency_control.cjs on this generator, run at its hand 1,626 of 1,626 each)
+check('§3b ★★ THE DEPENDENCY READING\'S TWO CONTROLS FOR ACTS (C-8b rider 2): with a born pair standing on M_CA–M_AB, an UNRELATED gen-0 act on A–B is TAKEN (nothing broken) on every face; the act gluing the born pair\'s own B-role is REFUSED (the born act named) on every face',
+  (() => {
+    const rng = rngOf(7); let n = 0; let ctlTaken = 0; let falsRefused = 0; let falsN = 0;
+    for (let i = 0; i < 3000; i += 1) {
+      const t = tower(rng); const sh = t.shape;
+      const eAB = sh.edges.find((e) => e.id === 'e:A:B');
+      const pair = bornOn(sh, 'e:M_CA:M_AB', 'C', 'B');
+      if (!pair || brokenBornActs(sh).length) continue;
+      const RAB = spaceOf(sh, 'M_AB');
+      const bornB = [...RAB.roleContent.get(pair[1])][0].split('|')[1];
+      const domA = new Set(eAB.identification.roles.map(([a]) => a)); const imB = new Set(eAB.identification.roles.map(([, b]) => b));
+      const freeA = ['a0', 'a1', 'a2', 'a3', 'a4'].filter((a) => !domA.has(a)); const freeB = ['b0', 'b1', 'b2', 'b3', 'b4'].filter((b) => !imB.has(b));
+      const otherB = freeB.filter((b) => b !== bornB);
+      if (!freeA.length) continue;
+      n += 1;
+      if (otherB.length) { if (brokenBornActs(sh, { candidate: { edgeId: 'e:A:B', roles: [...eAB.identification.roles, [freeA[0], otherB[0]]], types: eAB.identification.types } }).length === 0) ctlTaken += 1; } else ctlTaken += 1;
+      if (freeB.includes(bornB)) { falsN += 1; if (brokenBornActs(sh, { candidate: { edgeId: 'e:A:B', roles: [...eAB.identification.roles, [freeA[0], bornB]], types: eAB.identification.types } }).length > 0) falsRefused += 1; }
+    }
+    note(`faces used ${n}: an unrelated gen-0 act taken while a born pair stands ${ctlTaken} of ${n} · the act gluing the born pair's own B-role refused ${falsRefused} of ${falsN}`);
+    return n > 0 && ctlTaken === n && falsN > 0 && falsRefused === falsN;
+  })());
+// rider 3 — the withdrawal guard's falsifier, searched at gen 3
+check('§3b ★★ THE WITHDRAWAL GUARD\'S FALSIFIER, FOUND AND PINNED (C-8b rider 3): with a born pair standing on Q\'s edge P_A–P_B (gen 3), every gen-0 withdrawal on A–B, B–C, C–A is read as a candidate — and some BREAK the born act (a withdrawal at gen 0 moves the solid\'s identity at gen 3 onto the role the born pair named); the guard on withdrawals (C-8 item 4) has its case, and the first is printed',
+  (() => {
+    const rng = rngOf(3); let faces = 0; let tried = 0; let breaking = 0; let ex = null;
+    for (let i = 0; i < 3000; i += 1) {
+      const t = tower(rng); const sh = t.shape;
+      const pair = bornOn(sh, 'e:P_A:P_B', 'C', 'C') ?? bornOn(sh, 'e:P_A:P_B', 'B', 'C') ?? bornOn(sh, 'e:P_A:P_B', 'C', 'B');
+      if (!pair || brokenBornActs(sh).length) continue;
+      faces += 1;
+      for (const id of ['e:A:B', 'e:B:C', 'e:C:A']) {
+        const e = sh.edges.find((x) => x.id === id);
+        for (let k = 0; k < e.identification.roles.length; k += 1) {
+          tried += 1;
+          const rest = e.identification.roles.filter((_, j) => j !== k);
+          const broken = brokenBornActs(sh, { candidate: { edgeId: id, roles: rest, types: e.identification.types } }, id);
+          if (broken.length) { breaking += 1; if (!ex) ex = { face: i, edge: id, withdrawn: e.identification.roles[k], born: pair, why: broken[0].why }; }
+        }
+      }
+    }
+    note(`${faces} faces with a born pair standing at Q · ${tried} gen-0 withdrawals read as candidates · ${breaking} would break the born act${ex ? ` — first: ${J(ex)}` : ' — none found in this bound'}`);
+    return faces > 0 && tried > 0 && breaking > 0;
+  })());
 
 // ═══ §4 THE STORE AND THE SURFACE on the lawful path ═══
 console.log('\n----- §4 the born room at ABAC: the composed identity never a pair, a born pair taken, a pair on a composed role refused by name, the dependency refusal, the home and the site -----');

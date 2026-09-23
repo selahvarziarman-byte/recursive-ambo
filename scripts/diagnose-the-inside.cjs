@@ -222,6 +222,20 @@ check('§4 ★★ THE WIDTH TAKES THE NEXT LINE (C-7g item 2, the designer\'s �
       dm && Math.abs(Number(dm[1]) - 8 * 15 * 0.62) < 0.01 && Number(dm[2]) > 120 && (hw.match(/<textPath /g) || []).length === 0 &&
       phiLines >= 2 && innerText(drawPhi, 'data-inside-loop-words')[0] === 'descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes';
   })());
+check('§4 ★ THE BLIND METRIC\'S OWN CONTROL (C-8b rider 5 — a loosened metric that cannot be seen to fail is not yet a metric): the drive leg\'s box test, read from the driver\'s own source and run here on manufactured boxes — an overlap of 5 px COUNTS, an overlap of 0.6 px counts, a touch to a millionth of a pixel does NOT, an overlap of 0.4 px does not (the half-pixel threshold, measured at C-7g: 15 px boxes on a 15 px grid meet without colliding)',
+  (() => {
+    const driver = readLf('scripts/app-leg/concept_layer_eye_driver.py');
+    const m = driver.match(/const inter = (\([^\n]*)\n/);
+    if (!m) return false;
+    const inter = new Function(`return ${m[1].replace(/;\s*$/, '')}`)();
+    const box = (x, y, r, b) => ({ x, y, r, b });
+    const overlap5 = inter(box(0, 0, 60, 15), box(55, 0, 120, 15));
+    const overlapSmall = inter(box(0, 0, 60, 15), box(59.4, 0, 120, 15));
+    const touch = inter(box(0, 0, 60, 15), box(0, 15.0000003, 60, 30.0000003));
+    const under = inter(box(0, 0, 60, 15), box(59.6, 0, 120, 15));
+    note(`the metric's control: overlap 5 px → ${overlap5} · overlap 0.6 px → ${overlapSmall} · a touch (3e-7 px) → ${touch} · overlap 0.4 px → ${under}`);
+    return overlap5 === true && overlapSmall === true && touch === false && under === false;
+  })());
 check('§4 ★ THE DRAWING DERIVES NOTHING: the number of drawn arcs + loops + nodes equals the listed tuples on every fixture, and NO count is printed as text on the canvas (the column\'s card reads the counts; the census rides only as attributes)',
   [['flow', drawFlow], ['t-cell', drawT], ['phi', drawPhi]].every(([n, html]) => countOf(html, 'data-inside-arc') + countOf(html, 'data-inside-loop') + countOf(html, 'data-inside-node') === insides[n].arcs.length + insides[n].loops.length + insides[n].nodes.length) &&
     !/\b\d+ (points|arrows|loops|marks|words)\b/.test(visibleText(drawFlow)) && attrsOf(drawFlow, 'data-inside-arrows')[0] === '31');
