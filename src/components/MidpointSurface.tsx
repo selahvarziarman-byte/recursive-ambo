@@ -452,7 +452,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               className="underline"
               onClick={() => (act.attempt ? withdrawMidpointAttempt(edgeId) : withdrawAct(act.kind, act.pair))}
             >
-              {`withdraw ${act.pair[0]} ↦ ${act.pair[1]}${act.attempt ? ' (the act just made)' : ''}`}
+              {`withdraw ${pairWords(act.kind, act.pair)}${act.attempt ? ' (the act just made)' : ''}`}
             </button>
           </span>
         ))}

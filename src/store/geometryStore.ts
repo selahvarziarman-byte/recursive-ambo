@@ -23,7 +23,7 @@ import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 // C-8 — THE RESOLVER: the two ends of a seam resolved (a seed corner's cast; a born corner's derived space), the identity
 // the SOLID fixes on the seam (the check runs over it; the record never holds it), and every born act read again under
 // the shape an act would leave (the dependency refusal, item 4)
-import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
+import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
 import type {
   Cell,
   CellId,
@@ -1203,6 +1203,10 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     if (px) return refuse(`${x} is already paired with ${px[1]} — one role, one partner`, []);
     const py = roles.find(([, b]) => b === y);
     if (py) return refuse(`${y} is already paired with ${py[0]} — one role, one partner`, []);
+    // C-8c — THE STONE AT THE ACT (0031 §6 invariant 3): the class this pair would make holds two seed roles of ONE
+    // corner ⇒ refused by name — the two seed roles by their own labels and their corner — nothing written
+    const stone = stoneOn(RA, RB, x, y, 'role');
+    if (stone) return refuse(stoneWords(shape, stone), []);
     nextRoles = [...roles, [x, y]];
   } else {
     const [s, w] = act.pair;
@@ -1218,6 +1222,9 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     if (ps) return refuse(`${s} is already translated to ${ps[1]} — one word, one translation`, []);
     const pw = types.find(([, b]) => b === w);
     if (pw) return refuse(`${w} is already the translation of ${pw[0]} — one word, one translation`, []);
+    // C-8c — the stone on words: two seed words of ONE corner made one ⇒ refused by name
+    const stone = stoneOn(RA, RB, s, w, 'word');
+    if (stone) return refuse(stoneWords(shape, stone), []);
     nextTypes = [...types, [s, w]];
   }
   const conflicts = refusalOf(A, B, [...(composed ? composed.roles : []), ...nextRoles], [...(composed ? composed.words : []), ...nextTypes]);

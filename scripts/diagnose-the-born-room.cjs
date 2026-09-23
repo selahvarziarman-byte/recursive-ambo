@@ -43,7 +43,7 @@ const check = (name, cond, detail) => {
 };
 const note = (line) => console.log(`      ${line}`);
 
-const { spaceOf, edgeKind, generationOf, composedOn, duplicatedSeeds, pooledRoles, brokenBornActs, isSeedVertex } = req('src/lib/spaceOf.ts');
+const { spaceOf, edgeKind, generationOf, composedOn, duplicatedSeeds, pooledRoles, brokenBornActs, isSeedVertex, nameIn } = req('src/lib/spaceOf.ts');
 const { glue } = req('src/lib/midpointGlue.ts');
 const { readCastFile } = req('src/lib/castLoader.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
@@ -194,6 +194,18 @@ check('§2 ★★ ABAC on the MEDIAL edge with NO born pair: |M_AB| + |M_CA| −
     return RABAC.edge.kind === 'medial' && RABAC.space.roles.length === want && RABAC.edge.composed.roles.length === flow.roles.length && RABAC.edge.composed.words.length === flow.signature.length && RABAC.edge.composed.conflicts.length === 0 &&
       duplicatedSeeds(RABAC).roles === 0 && duplicatedSeeds(RABAC).words === 0 && !recordOnly.refused && recordOnly.midpoint.roles.length === RAB2.space.roles.length + RAC2.space.roles.length && !named.refused && named.midpoint.roles.length > want;
   })());
+// C-8c item 4 — ONE MEASUREMENT for C-9, no build: which FACES of the gen-1 complex hold the edge AB–AC, and which does the surface at ABAC show as sources today
+(() => {
+  const { midpointSiteOf } = req('src/components/MidpointSurface.tsx');
+  const L = (v) => G1.vertices[v].data.label;
+  const holding = G1.faces.filter((f) => f.vertexIds.includes(byLabel(G1, 'AB')) && f.vertexIds.includes(byLabel(G1, 'AC')));
+  const byCell = holding.map((f) => ({ face: f.vertexIds.map(L).join('·'), cells: G1.cells.filter((c) => c.faceIds.includes(f.id)).map((c) => `${c.kind}${c.topology ? `:${c.topology}` : ''}`) }));
+  const rep = buildGeneralSitePacketPresenterReport(G2);
+  const p = rep.packets.find((x) => x.trace.siteId === ABAC);
+  const site = midpointSiteOf(G2, ABAC, p ? p.trace : null);
+  const host = G2.cells.find((c) => c.id === p.trace.hostCellId);
+  note(`C-8c item 4 — the faces of the gen-1 complex holding AB–AC: ${holding.length} — ${J(byCell)} · the surface at ABAC shows as sources the host cell's (${host ? `${host.kind}${host.topology ? `:${host.topology}` : ''}` : '?'}) incident faces: ${J(site ? site.sources.map((s) => `${s.faceName} (apex ${s.apexes.map((a) => G2.vertices[a].data.label).join(',')})`) : null)}`);
+})();
 check('§2 ★ THE HAND-SEALED FACE (the researcher\'s one instance, reproduced on this generator\'s shape): |A| = 5 · |M_AB| = 8 · |M_CA| = 10 ⇒ the station on A–M_AB 8 roles, 0 duplicated · ABAC with no born pair 8 + 10 − 5 = 13 roles, 0 duplicated · the record alone 18 · names matched 15',
   (() => {
     const rng = rngOf(7);
@@ -347,13 +359,30 @@ check('§3b ★★ THE DEPENDENCY READING\'S TWO CONTROLS FOR ACTS (C-8b rider 2
     return n > 0 && ctlTaken === n && falsN > 0 && falsRefused === falsN;
   })());
 // rider 3 — the withdrawal guard's falsifier, searched at gen 3
-check('§3b ★★ THE WITHDRAWAL GUARD\'S FALSIFIER, FOUND AND PINNED (C-8b rider 3): with a born pair standing on Q\'s edge P_A–P_B (gen 3), every gen-0 withdrawal on A–B, B–C, C–A is read as a candidate — and some BREAK the born act (a withdrawal at gen 0 moves the solid\'s identity at gen 3 onto the role the born pair named); the guard on withdrawals (C-8 item 4) has its case, and the first is printed',
+const cornerOfSeed = (t) => t.slice(0, t.indexOf('|'));
+const poolsTags = (tags) => { const m = new Map(); for (const t of tags) { const c = cornerOfSeed(t); m.set(c, (m.get(c) ?? 0) + 1); } return [...m.values()].some((k) => k > 1); };
+/** a candidate born pair of the wanted kind at a synthetic medial edge — `pool` (two seeds of one corner), `share` (a seed in common, dissolving a doubling), `disjoint` (clean) */
+const candidateOf = (shape, edgeId, want) => {
+  const e = shape.edges.find((x) => x.id === edgeId);
+  const U = spaceOf(shape, e.vertexIds[0]); const V = spaceOf(shape, e.vertexIds[1]);
+  const comp = composedOn(shape, U, V, e.vertexIds, 'medial');
+  const dom = new Set(comp.roles.map(([a]) => a)); const im = new Set(comp.roles.map(([, b]) => b));
+  for (const [u, cu] of [...U.roleContent].filter(([k]) => !dom.has(k))) for (const [v, cv] of [...V.roleContent].filter(([k]) => !im.has(k))) {
+    const union = new Set([...cu, ...cv]);
+    const kind = poolsTags(union) ? 'pool' : [...cu].some((t) => cv.has(t)) ? 'share' : 'disjoint';
+    if (kind === want) return { u, v, cu: [...cu], cv: [...cv] };
+  }
+  return null;
+};
+check('§3b ★★ THE WITHDRAWAL GUARD\'S FALSIFIER, RE-MEASURED ON CLEAN PAIRS (C-8b rider 3, corrected by C-8c): with a CLEAN born pair standing on Q\'s edge P_A–P_B (gen 3) — disjoint content, else sharing a seed, never two roles of one corner (the stone refuses those at the act, and the C-8b run\'s 596 were measured on exactly those) — every gen-0 withdrawal on A–B, B–C, C–A is read as a candidate, and some BREAK the born act; the guard on withdrawals (C-8 item 4) has its case on lawful pairs, and the first is printed (else the bound)',
   (() => {
-    const rng = rngOf(3); let faces = 0; let tried = 0; let breaking = 0; let ex = null;
+    const rng = rngOf(3); let faces = 0; let tried = 0; let breaking = 0; let ex = null; const why = new Map();
     for (let i = 0; i < 3000; i += 1) {
       const t = tower(rng); const sh = t.shape;
-      const pair = bornOn(sh, 'e:P_A:P_B', 'C', 'C') ?? bornOn(sh, 'e:P_A:P_B', 'B', 'C') ?? bornOn(sh, 'e:P_A:P_B', 'C', 'B');
-      if (!pair || brokenBornActs(sh).length) continue;
+      const d = candidateOf(sh, 'e:P_A:P_B', 'disjoint') ?? candidateOf(sh, 'e:P_A:P_B', 'share');
+      if (!d) continue;
+      sh.edges.find((x) => x.id === 'e:P_A:P_B').identification = { roles: [[d.u, d.v]], types: [] };
+      if (brokenBornActs(sh).length) continue;
       faces += 1;
       for (const id of ['e:A:B', 'e:B:C', 'e:C:A']) {
         const e = sh.edges.find((x) => x.id === id);
@@ -361,12 +390,12 @@ check('§3b ★★ THE WITHDRAWAL GUARD\'S FALSIFIER, FOUND AND PINNED (C-8b rid
           tried += 1;
           const rest = e.identification.roles.filter((_, j) => j !== k);
           const broken = brokenBornActs(sh, { candidate: { edgeId: id, roles: rest, types: e.identification.types } }, id);
-          if (broken.length) { breaking += 1; if (!ex) ex = { face: i, edge: id, withdrawn: e.identification.roles[k], born: pair, why: broken[0].why }; }
+          if (broken.length) { breaking += 1; const w = broken[0].why.replace(/^.*?(no longer a role|would be one with|which the corner keeps apart|contradict).*$/, '$1'); why.set(w, (why.get(w) ?? 0) + 1); if (!ex) ex = { face: i, edge: id, withdrawn: e.identification.roles[k], born: [d.u, d.v], why: broken[0].why }; }
         }
       }
     }
-    note(`${faces} faces with a born pair standing at Q · ${tried} gen-0 withdrawals read as candidates · ${breaking} would break the born act${ex ? ` — first: ${J(ex)}` : ' — none found in this bound'}`);
-    return faces > 0 && tried > 0 && breaking > 0;
+    note(`${faces} faces with a CLEAN born pair standing at Q · ${tried} gen-0 withdrawals read as candidates · ${breaking} would break the born act — by reason ${J([...why])}${ex ? ` — first: ${J(ex)}` : ' — none found in this bound'}`);
+    return faces > 0 && tried > 0 && (breaking > 0 || (note('⚠ no gen-0 withdrawal breaks a clean born pair on this generator in this bound — the bound is printed, not the case'), true));
   })());
 
 // ═══ §4 THE STORE AND THE SURFACE on the lawful path ═══
@@ -459,6 +488,137 @@ check('§4 ★ A WITHDRAWAL AT GEN 0 THAT BREAKS NO BORN ACT IS TAKEN (the posit
     const gone = !cur().edges.find((e) => e.id === eAB2.id).identification.roles.some(([x, y]) => x === pair[0] && y === pair[1]);
     S().giveRolePair(eAB2.id, pair[0], pair[1]);
     return gone && S().midpointRefusals[eAB2.id] === undefined;
+  })());
+
+// ═══ §4b C-8c — THE STONE AT THE ACT (§123.3): a born pair that would pool two roles of one corner is refused by name; the gen-2 born room is unaffected ═══
+console.log('\n----- §4b C-8c: the stone at the act — through the STORE on this generator; the positive controls; gen 2 unchanged; the dependency arm -----');
+/** the store loaded with a synthetic tower; an act through `giveRolePair`; what the record and the refusal say after */
+const throughStore = (shape, edgeId, u, v) => {
+  const snap = S();
+  useGeometryStore.setState({ shapes: { synthetic: JSON.parse(J(shape)) }, currentShapeId: 'synthetic', edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {} });
+  S().giveRolePair(edgeId, u, v);
+  const rec = S().shapes.synthetic.edges.find((x) => x.id === edgeId).identification;
+  const ref = S().midpointRefusals[edgeId] ?? null;
+  useGeometryStore.setState(snap, true);
+  return { written: !!rec && rec.roles.some(([a, b]) => a === u && b === v), form: ref ? ref.form ?? null : null, dependency: ref ? ref.dependency ?? null : null, conflicts: ref ? ref.conflicts.length : 0 };
+};
+const stoneRun = (() => {
+  const rng = rngOf(251); let faces = 0; let pooled = 0; let refused = 0; let named = 0; let shares = 0; let sharesTaken = 0; let disj = 0; let disjTaken = 0; let ex = null;
+  for (let i = 0; i < 300 && (pooled < 60 || shares < 30 || disj < 30); i += 1) {
+    const sh = tower(rng).shape; faces += 1;
+    const p = candidateOf(sh, 'e:P_A:P_B', 'pool');
+    if (p) {
+      pooled += 1;
+      const r = throughStore(sh, 'e:P_A:P_B', p.u, p.v);
+      if (!r.written && r.form) { refused += 1; if (/would be one: two roles of [ABC], which the corner keeps apart/.test(r.form)) named += 1; if (!ex) ex = { pair: [p.u, p.v], tags: [p.cu, p.cv], form: r.form }; }
+    }
+    const s = candidateOf(sh, 'e:P_A:P_B', 'share');
+    if (s) { shares += 1; if (throughStore(sh, 'e:P_A:P_B', s.u, s.v).written) sharesTaken += 1; }
+    const d = candidateOf(sh, 'e:P_A:P_B', 'disjoint');
+    if (d) { disj += 1; if (throughStore(sh, 'e:P_A:P_B', d.u, d.v).written) disjTaken += 1; }
+  }
+  return { faces, pooled, refused, named, shares, sharesTaken, disj, disjTaken, ex };
+})();
+check('§4b ★★ THE STONE AT THE ACT (C-8c item 1 — 0031 §6 invariant 3): through the STORE, at a gen-3 site (Q on P_A–P_B) a born pair whose two roles hold two seed roles of ONE corner is REFUSED BY NAME — the two seed roles by their own labels and their corner, `… would be one: two roles of C, which the corner keeps apart` — and nothing is written; the positive controls at the same site: a pair that SHARES a seed and pools nothing is TAKEN (it dissolves a doubling), a DISJOINT clean pair is TAKEN',
+  (() => {
+    const { faces, pooled, refused, named, shares, sharesTaken, disj, disjTaken, ex } = stoneRun;
+    note(`${faces} faces through the store at Q: pooling pairs tried ${pooled} — refused ${refused}, named ${named} · share-a-seed pairs tried ${shares} — taken ${sharesTaken} · disjoint pairs tried ${disj} — taken ${disjTaken} · the first refusal: ${J(ex)}`);
+    return pooled > 0 && refused === pooled && named === pooled && shares > 0 && sharesTaken === shares && disj > 0 && disjTaken === disj;
+  })());
+check('§4b ★ THE STONE AS THE PERSON READS IT — the refusal box rendered at ABAC (the real gen-2 shape) with the store\'s own refusal as a prop (the midpoint witness\'s way, the box as it stands): the head `refused — … (a role pair): nothing glued, the edge keeps its prior state`, the stone\'s sentence on the form line VERBATIM, ONE hand (the act just made) naming the pair through the spaces\' LABELS (the keys kept in the data attribute alone), no dependency box',
+  (() => {
+    const form = stoneRun.ex ? stoneRun.ex.form : null;
+    if (!form) return false;
+    const html = surfaceWith(G2, ABAC, { act: { kind: 'role', pair: [xBorn, yBorn] }, form, conflicts: [] });
+    const text = visibleText(html);
+    note(`the box at ABAC: ${text.slice(text.indexOf('refused —'), text.indexOf('refused —') + 260)}`);
+    const lab = (id) => { for (const v of ['AB', 'AC']) { const R = spaceOf(G2, byLabel(G2, v)); if (R && R.space.roles.some((r) => r.id === id)) return nameIn(R.space, id); } return id; };
+    const hand = `withdraw ${lab(xBorn)} ↦ ${lab(yBorn)} (the act just made)`;
+    note(`the hand: \`${hand}\` — the pair's keys ${J([xBorn, yBorn])} never shown`);
+    return countOf(html, 'data-midpoint-refusal') === 1 && attrsOf(html, 'data-midpoint-refusal-form').length === 1 && text.includes(form) && /refused — .+ \(a role pair\): nothing glued, the edge keeps its prior state/.test(text) && countOf(html, 'data-midpoint-withdraw-attempt') === 1 && countOf(html, 'data-midpoint-refusal-dependency') === 0 && text.includes(hand) && !text.includes(`withdraw ${xBorn} ↦`) && attrsOf(html, 'data-midpoint-withdraw').includes(`attempt|${xBorn}|${yBorn}`);
+  })());
+check('§4b ★★ THE GEN-2 BORN ROOM IS UNAFFECTED (the behaviour-neutral half): at P_A on M_CA–M_AB every candidate born pair joins two corners\' own roles — 0 of them pool under the resolver (this generator\'s census, all faces), and through the store a disjoint pair is taken exactly as before, none refused by the stone',
+  (() => {
+    const rng = rngOf(251); let pairs = 0; let pools = 0; let tried = 0; let taken = 0;
+    for (let i = 0; i < 3000; i += 1) {
+      const sh = tower(rng).shape;
+      const e = sh.edges.find((x) => x.id === 'e:M_CA:M_AB');
+      const U = spaceOf(sh, e.vertexIds[0]); const V = spaceOf(sh, e.vertexIds[1]);
+      const comp = composedOn(sh, U, V, e.vertexIds, 'medial');
+      const dom = new Set(comp.roles.map(([a]) => a)); const im = new Set(comp.roles.map(([, b]) => b));
+      for (const [, cu] of [...U.roleContent].filter(([k]) => !dom.has(k))) for (const [, cv] of [...V.roleContent].filter(([k]) => !im.has(k))) { pairs += 1; if (poolsTags(new Set([...cu, ...cv]))) pools += 1; }
+      if (i < 60) { const d = candidateOf(sh, 'e:M_CA:M_AB', 'disjoint'); if (d) { tried += 1; const r = throughStore(sh, 'e:M_CA:M_AB', d.u, d.v); if (r.written && !r.form) taken += 1; } }
+    }
+    note(`gen 2 born room over 3000 faces: ${pairs} candidate pairs, ${pools} pool · through the store: ${tried} disjoint pairs tried, ${taken} taken`);
+    return pairs > 0 && pools === 0 && tried > 0 && taken === tried;
+  })());
+/** the stone read by this witness's own hand: two DIFFERENT seeds of one corner, one in each content (never a shared tag — that dissolves a doubling) */
+const crossPools = (cu, cv) => { for (const t of cu) for (const u of cv) if (t !== u && cornerOfSeed(t) === cornerOfSeed(u)) return true; return false; };
+const depArm = (() => {
+  const rng = rngOf(11); let faces = 0; let tried = 0; let poolBreaks = 0; let found = 0; let disagree = 0; let ex = null;
+  let triedW = 0; let poolBreaksW = 0; let foundW = 0; let disagreeW = 0; let exW = null;
+  /** under a candidate record on a gen-0 edge, would the standing born pair at Q pool by this witness's own reading — with the resolver's earlier reasons (no longer a role; composed) excluded the same way? */
+  let kept = 0; let keptChanged = 0;
+  const contentOf = (R, id) => J([...(R.roleContent.get(id) ?? [])].sort());
+  const wouldPool = (sh, id, roles, born, standing) => {
+    const options = { candidate: { edgeId: id, roles, types: sh.edges.find((x) => x.id === id).identification.types } };
+    const U = spaceOf(sh, 'P_A', options); const V = spaceOf(sh, 'P_B', options);
+    if (!U || !V) return false;
+    if (!U.space.roles.some((r) => r.id === born[0]) || !V.space.roles.some((r) => r.id === born[1])) return false;
+    kept += 1;
+    if (contentOf(U, born[0]) !== standing[0] || contentOf(V, born[1]) !== standing[1]) keptChanged += 1;
+    const comp = composedOn(sh, U, V, ['P_A', 'P_B'], 'medial');
+    if (comp.roles.some(([a]) => a === born[0]) || comp.roles.some(([, b]) => b === born[1])) return false;
+    return crossPools(U.roleContent.get(born[0]), V.roleContent.get(born[1]));
+  };
+  for (let i = 0; i < 3000 && faces < 400; i += 1) {
+    const sh = tower(rng).shape;
+    const d = candidateOf(sh, 'e:P_A:P_B', 'disjoint') ?? candidateOf(sh, 'e:P_A:P_B', 'share');
+    if (!d) continue;
+    sh.edges.find((x) => x.id === 'e:P_A:P_B').identification = { roles: [[d.u, d.v]], types: [] };
+    if (brokenBornActs(sh).length) continue;
+    faces += 1;
+    const standing = (() => { const U0 = spaceOf(sh, 'P_A'); const V0 = spaceOf(sh, 'P_B'); return [contentOf(U0, d.u), contentOf(V0, d.v)]; })();
+    for (const id of ['e:A:B', 'e:B:C', 'e:C:A']) {
+      const e = sh.edges.find((x) => x.id === id);
+      const X = e.vertexIds[0].toLowerCase(); const Y = e.vertexIds[1].toLowerCase();
+      const dom = new Set(e.identification.roles.map(([a]) => a)); const im = new Set(e.identification.roles.map(([, b]) => b));
+      for (const a of [0, 1, 2, 3, 4].map((k) => `${X}${k}`).filter((r) => !dom.has(r))) for (const b of [0, 1, 2, 3, 4].map((k) => `${Y}${k}`).filter((r) => !im.has(r))) {
+        tried += 1;
+        const roles = [...e.identification.roles, [a, b]];
+        const broken = brokenBornActs(sh, { candidate: { edgeId: id, roles, types: e.identification.types } }, id);
+        const pooling = broken.find((x) => /which the corner keeps apart/.test(x.why));
+        const own = wouldPool(sh, id, roles, [d.u, d.v], standing);
+        if (pooling) { poolBreaks += 1; if (!ex) ex = { face: i, edge: id, act: [a, b], born: [d.u, d.v], why: pooling.why }; }
+        if (own) found += 1;
+        if (Boolean(pooling) !== own) disagree += 1;
+      }
+      for (const [a, b] of e.identification.roles) {
+        triedW += 1;
+        const roles = e.identification.roles.filter(([x, y]) => !(x === a && y === b));
+        const broken = brokenBornActs(sh, { candidate: { edgeId: id, roles, types: e.identification.types } }, id);
+        const pooling = broken.find((x) => /which the corner keeps apart/.test(x.why));
+        const own = wouldPool(sh, id, roles, [d.u, d.v], standing);
+        if (pooling) { poolBreaksW += 1; if (!exW) exW = { face: i, edge: id, withdraw: [a, b], born: [d.u, d.v], why: pooling.why }; }
+        if (own) foundW += 1;
+        if (Boolean(pooling) !== own) disagreeW += 1;
+      }
+    }
+  }
+  return { faces, tried, poolBreaks, found, disagree, ex, triedW, poolBreaksW, foundW, disagreeW, exW, kept, keptChanged };
+})();
+check('§4b ★★ THE STONE IN THE DEPENDENCY READING (C-8c item 2): with a clean born pair standing at Q (gen 3), a LOWER ACT (a gen-0 pair on A–B, B–C or C–A) that would make that born pair POOL is refused naming it — a third reason beside `no longer a role there` and `would be one with … by the solid` — PINNED against this witness\'s own reading of the stone (the resolver\'s earlier reasons excluded the same way): the two readings agree on every act; the case found, else its bound printed WITH ITS MECHANISM — a born pair\'s role that keeps its key keeps its content (0 changed under the kept), so on this key scheme the earlier reason precedes the stone',
+  (() => {
+    const { faces, tried, poolBreaks, found, disagree, ex, kept, keptChanged } = depArm;
+    note(`${faces} faces with a clean born pair standing at Q · ${tried} gen-0 acts read as candidates · ${poolBreaks} would make the born pair pool and are refused naming it · this witness\'s own reading finds ${found} (${disagree} disagreements)${ex ? ` — first: ${J(ex)}` : ' — none in this bound'}`);
+    note(`the MECHANISM of the bound, measured: under ${kept} candidates (acts and withdrawals) the born pair\'s two roles kept their KEYS — and kept their CONTENT under every one of them (${keptChanged} changed): a class is renamed when its content changes, so \`no longer a role there\` precedes the stone on this key scheme`);
+    return faces > 0 && tried > 0 && disagree === 0 && poolBreaks === found && kept > 0 && keptChanged === 0 && (poolBreaks > 0 || (note('⚠ no gen-0 act makes the born pair pool on this generator in this bound — the bound is printed, not the case'), true));
+  })());
+check('§4b ★ THE STONE IN THE DEPENDENCY READING, ON WITHDRAWALS (C-8c item 2 — "a lower act, or a withdrawal"): every standing gen-0 pair withdrawn as a candidate under the same born pair — the resolver and this witness\'s own reading agree on every withdrawal; found and pinned, or its bound printed',
+  (() => {
+    const { faces, triedW, poolBreaksW, foundW, disagreeW, exW } = depArm;
+    note(`${faces} faces · ${triedW} gen-0 withdrawals read as candidates · ${poolBreaksW} would make the born pair pool and are refused naming it · this witness\'s own reading finds ${foundW} (${disagreeW} disagreements)${exW ? ` — first: ${J(exW)}` : ' — none in this bound: a withdrawal splits classes and cannot join two seeds of one corner; the bound is printed'}`);
+    return faces > 0 && triedW > 0 && disagreeW === 0 && poolBreaksW === foundW;
   })());
 
 // ═══ §5 THE LOADER on the seed alone; the boundaries ═══

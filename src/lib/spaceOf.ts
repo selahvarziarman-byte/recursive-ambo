@@ -148,6 +148,8 @@ export function generationOf(shape: Shape, id: VertexId, memo: Map<VertexId, num
 const tagOf = (vertexId: VertexId, id: string): SeedTag => `${vertexId}|${id}`;
 /** the seed corner a tag names */
 export const cornerOfTag = (t: SeedTag): VertexId => t.slice(0, t.indexOf('|'));
+/** the seed's own role or word a tag names — its label at the corner (a seed cast's id IS its address) */
+export const seedOfTag = (t: SeedTag): string => t.slice(t.indexOf('|') + 1);
 
 function seedResolved(vertexId: VertexId, cast: ConceptSpace): Resolved {
   return {
@@ -386,6 +388,28 @@ export function pooledRoles(R: Resolved): number {
   return n;
 }
 
+/**
+ * C-8c — THE STONE AT THE ACT (0031 §6 invariant 3, ratified §123.3: "every vertex-to-edge map injective — a vertex whose
+ * space pools two roles of one corner has become the op-set"): the two seed roles (or words) of ONE corner a pair would
+ * make one. The class the site would hold for the pair is EXACTLY x's content ∪ y's content (every identification on the
+ * edge is one-to-one by the checks made before this one), so the stone is read on the two ends — and it holds where the
+ * site is not yet minted (a seam acted on before its dissection). Null when the pair pools nothing: a pair SHARING a seed
+ * dissolves a doubling (lawful), a pair of disjoint content joins two corners' own roles.
+ */
+export interface Stone {
+  corner: VertexId;
+  kind: 'role' | 'word';
+  seeds: [string, string]; // the two seed roles (or words) by their own labels at the corner
+}
+export function stoneOn(U: Resolved, V: Resolved, x: string, y: string, kind: 'role' | 'word'): Stone | null {
+  const cu = (kind === 'role' ? U.roleContent : U.wordContent).get(x) ?? new Set<SeedTag>();
+  const cv = (kind === 'role' ? V.roleContent : V.wordContent).get(y) ?? new Set<SeedTag>();
+  for (const t of cu) for (const s of cv) if (t !== s && cornerOfTag(t) === cornerOfTag(s)) return { corner: cornerOfTag(t), kind, seeds: [seedOfTag(t), seedOfTag(s)] };
+  return null;
+}
+/** the stone's sentence — the two seed roles by their own labels and their corner (a DEFAULT; the designer rules the words) */
+export const stoneWords = (shape: Shape, st: Stone): string => `${st.seeds[0]} and ${st.seeds[1]} would be one: two ${st.kind === 'role' ? 'roles' : 'words'} of ${shape.vertices[st.corner]?.data.label || st.corner}, which the corner keeps apart`;
+
 /** a born act that a candidate shape BREAKS — read again under the shape as it would be (C-8 item 4, the dependency refusal) */
 export interface BrokenBornAct {
   edgeId: Edge['id']; // the medial edge holding the born act
@@ -403,8 +427,9 @@ const shownName = (space: ConceptSpace, id: string): string => space.roles.find(
 
 /**
  * C-8 item 4 — every born act read again under `shape` (the shape as a candidate act would leave it): a born pair whose
- * role or word no longer exists in its endpoint's space, or that now collides with the composed identity, or that
- * contradicts under it, is BROKEN — the later act that made the shape so is refused, naming the born act it would break.
+ * role or word no longer exists in its endpoint's space, or that now collides with the composed identity, or that would
+ * now POOL two seed roles of one corner (C-8c — the stone, the third reason), or that contradicts under it, is BROKEN —
+ * the later act that made the shape so is refused, naming the born act it would break.
  */
 export function brokenBornActs(shape: Shape, options: SpaceOfOptions = {}, except: Edge['id'] | null = null): BrokenBornAct[] {
   const memo = new Map<VertexId, Resolved | null>();
@@ -434,6 +459,10 @@ export function brokenBornActs(shape: Shape, options: SpaceOfOptions = {}, excep
       else if (!V.space.roles.some((r) => r.id === y)) name([x, y], 'role', `${shownName(V.space, y)} is no longer a role there — this act re-glues it`);
       else if (dom.has(x)) name([x, y], 'role', `${nameIn(U.space, x)} would be one with ${nameIn(V.space, dom.get(x) as string)} by the solid`);
       else if (im.has(y)) name([x, y], 'role', `${nameIn(V.space, y)} would be one with ${nameIn(U.space, im.get(y) as string)} by the solid`);
+      else {
+        const st = stoneOn(U, V, x, y, 'role');
+        if (st) name([x, y], 'role', `with this act ${stoneWords(shape, st)}`);
+      }
     }
     const wdom = new Map(composed.words);
     const wim = new Map(composed.words.map(([a, b]) => [b, a] as [string, string]));
@@ -442,6 +471,10 @@ export function brokenBornActs(shape: Shape, options: SpaceOfOptions = {}, excep
       else if (!V.space.signature.some((w) => w.type === t)) name([s, t], 'word', `${t} is no longer a word there`);
       else if (wdom.has(s)) name([s, t], 'word', `${s} would be one with ${wdom.get(s) as string} by the solid`);
       else if (wim.has(t)) name([s, t], 'word', `${t} would be one with ${wim.get(t) as string} by the solid`);
+      else {
+        const st = stoneOn(U, V, s, t, 'word');
+        if (st) name([s, t], 'word', `with this act ${stoneWords(shape, st)}`);
+      }
     }
     if (!out.some((b) => b.edgeId === e.id)) {
       const conflicts = refusalOf(U.space, V.space, [...composed.roles, ...born.roles], [...composed.words, ...born.types]);
