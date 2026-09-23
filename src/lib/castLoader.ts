@@ -419,15 +419,41 @@ function permutations(terms: string[]): string[][] {
   return out;
 }
 
+/** C-7g item 3 — one of the card's term-order rows: its class (reading × reversal) and its sentence */
+export interface OrderingRow {
+  key: string; // `directed-none` · `symmetric-all` · `directed-partly` · … · `nothing-listed`
+  text: string;
+}
+
+/** the reversal class of a relation-type's listed tuples — `none` · `all` · `partly`; null when nothing is listed */
+const reversalClass = (o: CastOrdering): 'none' | 'all' | 'partly' | null => (o.tuples === 0 ? null : o.reversed === 0 ? 'none' : o.reversed === o.tuples ? 'all' : 'partly');
+
 /**
- * the orderings line, the READING stated beside the evidence (C-6d (γ) §3.1): `r · 3 tuples · none reversed — read as
- * directed` · `r · 6 tuples · every one reversed — read as symmetric` · `r · 5 tuples · 2 reversed — read as directed`;
- * a type with nothing listed has no reading to state.
+ * THE CARD'S TERM-ORDER ROWS, GROUPED BY READING (C-7g item 3, the designer — measured on the card: `read as directed`
+ * seven times on one card, once per relation-type, and the wrap breaking each sentence before its verdict; "a sentence
+ * broken before its verdict orphans the verdict; a list broken between items loses nothing"): ONE ROW PER (reading ×
+ * reversal) CLASS, the READING stated once per row instead of once per word (C-6d (γ) §3.1's disclosure, its form changed
+ * and its meaning kept) — `read as directed — none reversed: sustains 5 · outlasts 1 · …` · `read as symmetric — all
+ * reversed: disjoins 6` · `read as directed — partly reversed: opposes 5 (2 reversed)`. Every word keeps its count; a
+ * partly-reversed word keeps its reversed count. The rows come in a fixed order — none reversed, all reversed, partly
+ * reversed (directed before symmetric within a class) — then the types with nothing listed (`nothing listed: r`), which
+ * have no reading to state. A cast of binary types listed fills at most three reading rows; an arity ≥ 3 type whose every
+ * tuple is reversed yet not every order listed reads `directed — all reversed` (C-6d (γ) §3.1 ⚠) — a fourth.
  */
-export function orderingLine(o: CastOrdering): string {
-  const tuples = `${o.tuples} ${o.tuples === 1 ? 'tuple' : 'tuples'}`;
-  const reversed = o.tuples === 0 ? 'none listed' : o.reversed === 0 ? 'none reversed' : o.reversed === o.tuples ? 'every one reversed' : `${o.reversed} reversed`;
-  return `${o.type} · ${tuples} · ${reversed}${o.reading ? ` — read as ${o.reading}` : ''}`;
+export function orderingRows(orderings: CastOrdering[]): OrderingRow[] {
+  const keyOf = (o: CastOrdering): string => {
+    const cls = reversalClass(o);
+    return cls === null || o.reading === null ? 'nothing-listed' : `${o.reading}-${cls}`;
+  };
+  const order = ['directed-none', 'symmetric-none', 'directed-all', 'symmetric-all', 'directed-partly', 'symmetric-partly', 'nothing-listed'];
+  return order
+    .filter((key) => orderings.some((o) => keyOf(o) === key))
+    .map((key) => {
+      const members = orderings.filter((o) => keyOf(o) === key);
+      if (key === 'nothing-listed') return { key, text: `nothing listed: ${members.map((o) => o.type).join(' · ')}` };
+      const [reading, cls] = key.split('-');
+      return { key, text: `read as ${reading} — ${cls} reversed: ${members.map((o) => `${o.type} ${o.tuples}${cls === 'partly' ? ` (${o.reversed} reversed)` : ''}`).join(' · ')}` };
+    });
 }
 
 /** the cast's ONE reading clause (C-6d (γ) §3.2): `directed` if any relation-type reads directed, `symmetric` only if every one does, absent when nothing of arity ≥ 2 is listed */

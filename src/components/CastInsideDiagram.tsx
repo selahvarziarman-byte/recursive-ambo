@@ -10,23 +10,47 @@
 //   a badge        the value in words, after the label — `member_status` and any
 //                  caster key on the role; UNKNOWN only where written
 //   an arc         an arc from t₁ to t₂ (a flattened half-ellipse — the bulge a
-//                  LINEAR function of the span, ≈ 0.30: measured by the designer
-//                  from this build's plate, span IS encoded) with its word AT ITS
-//                  FOOT, beside the point it leaves from (C-7f item 1, her cut from
-//                  this build's own geometry: because bulge is a function of span
-//                  and spans REPEAT, apexes CLUSTER into a band — and the word sat
-//                  at the apex; FEET cannot cluster, a foot sits at a point and the
+//                  LINEAR function of the span in ROWS, ≈ 0.30: measured by the
+//                  designer from this build's plate, span IS encoded; the height is
+//                  the rows' own, which C-7g lets grow) with its word AT ITS FOOT,
+//                  beside the point it leaves from (C-7f item 1, her cut from this
+//                  build's own geometry: because bulge is a function of span and
+//                  spans REPEAT, apexes CLUSTER into a band — and the word sat at
+//                  the apex; FEET cannot cluster, a foot sits at a point and the
 //                  points are the column's own rows); the SIDE is the tuple's:
 //                  `down` the caster's order on the RIGHT, `up` it on the LEFT —
-//                  ruled at her eye (the two sides read as two directions). The
-//                  words of the arcs leaving one point stand in ONE ROW on that
-//                  side: the down-arcs' just below the row line to the right of the
-//                  point, the up-arcs' just above it to the left (the label lane is
-//                  on the row line; the up-feet ride above it).
+//                  ruled at her eye (the two sides read as two directions).
+//                  C-7g item 1 (the designer's second cut, from her own ratified
+//                  law — only arity 2 is an arrow; arity 1 is a mark on the node —
+//                  applied to WORDS: a unary relation IS a property of the point,
+//                  so its word belongs in the label lane; a binary relation's word
+//                  is a property of its ARC): THE LABEL LANE IS ARITY-1'S. At the
+//                  eye the up-feet, end-anchored above the row line in that lane,
+//                  read as a CAPTION of the role below them (`F4 · has ·
+//                  presupposes`, a role with two properties). So EVERY arc word
+//                  stands to the RIGHT of the point, at its arc's foot, on the side
+//                  of the row line its arc goes: the up-arcs' words in a block
+//                  ABOVE the row line, the down-arcs' in a block BELOW it, each
+//                  block read top to bottom and start-anchored at the point — never
+//                  end-anchored, never left of the point, never on the row line
+//                  where the label and its badges are. (The up-arc bows left, its
+//                  word sits right of its foot: a default named for her eye.)
+//   the width      C-7g item 2 (hers — the only option that bounds the width BY
+//                  CONSTRUCTION; scrolling and a narrower fold ruled out by her
+//                  measurement): a block of words WRAPS at `WRAP` px by the
+//                  geometry's own estimate (≈ 30 characters at the dense size —
+//                  a default, hers to move), the row GROWS by a line for each
+//                  wrapped line on that side, and a line that continues ends with
+//                  the separator. The column degrades by height, never by width.
 //   does-not-hold  a DISTINCT glyph: the stroke dashed and the word prefixed `¬`
-//   a loop         a small ring at the point per loop, the words in one row after
-//                  the rings in the same order (six at Φ1 — found at the eye: a word
-//                  above each ring overlapped its neighbours)
+//   a loop         a small ring at the point per loop — below the row line, to the
+//                  right, LEADING their words' block (the rings are the block's
+//                  bullet, so a wrapped block hangs from them and reads top to
+//                  bottom; C-7g item 2 — Φ1's six words fall under the wrap rule,
+//                  her confirmation reopened); the words in the rings' order,
+//                  indented past the rings; the down-arcs' block follows beneath
+//                  (six at Φ1 — found at the eye at C-7c: a word above each ring
+//                  overlapped its neighbours)
 //   arity ≥ 3      a tuple-node offset right of the column, legs numbered 1 … n at
 //                  the node, the word on the node
 //   axioms/warrant text beneath, carried
@@ -61,7 +85,7 @@
 // act, and the rare one); an untranslated word is the ground state and carries
 // none — an alike spelling is shown plain (`MarkExtra.word`), its origin beside it.
 
-import { useMemo } from 'react';
+import { useMemo, type ReactElement } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
 import { castSummaryLine } from '../lib/castLoader';
 import { insideOf, type ArcSide, type Inside, type InsideArc, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
@@ -92,14 +116,23 @@ const LABEL = 12;
 const DENSE = 11;
 
 export interface InsideLayoutOptions {
-  /** the row pitch — the column degrades by scrolling, never by shrinking below legibility */
+  /** the base row pitch — a row GROWS by a line per wrapped line on either side (C-7g); the column degrades by height, never by width or by shrinking below legibility */
   row?: number;
   /** the point column's x inside the group */
   px?: number;
   /** the group's top y */
   top?: number;
-  /** characters a caller's extras add to every foot word (the glued column writes ` from A` after each) — for the reach estimate */
+  /** characters a caller's extras add to every word (the glued column writes ` from A` after each) — for the wrap and the reach estimate */
   footExtra?: number;
+}
+
+/** C-7g — the words at one point, WRAPPED into lines by the geometry (the drawing reads them; it never re-wraps): ordinals into `inside.arcs` / the point's own loops */
+export interface PointLines {
+  up: number[][]; // the up-arcs' words — the block ABOVE the row line, right of the point
+  loops: number[][]; // the loops' words — the block BELOW the row line, led by the rings, indented past them
+  down: number[][]; // the down-arcs' words — the block beneath the loops'
+  above: number; // lines above the row line
+  below: number; // lines below it
 }
 
 export interface InsideGeometry {
@@ -107,20 +140,46 @@ export interface InsideGeometry {
   px: number;
   top: number;
   height: number;
+  columnBottom: number; // the y where the last row ends — the text lines beneath start here
   leftReach: number; // how far the up-arcs and labels reach left of px
-  rightReach: number; // how far the down-arcs and tuple-nodes reach right of px
+  rightReach: number; // how far the down-arcs, the word blocks and tuple-nodes reach right of px
   yOf: (index: number) => number;
+  lines: (index: number) => PointLines;
 }
 
 const LABEL_LANE = 118;
 const NODE_GAP = 46;
 /** the arc's horizontal reach as a fraction of its half-span — a flattened half-ellipse; the side and the nesting are untouched by it */
 const ARC_FLATTEN = 0.62;
+/** C-7g item 2 — the width a block of words takes before it WRAPS, by the geometry's own estimate (≈ 30 characters at the dense size): the column's width is bounded by construction. A default, the designer's to move. */
+export const WRAP = 200;
+/** the line pitch inside a wrapped block and between one row's down block and the next row's up block — HALF A ROW (15 px for the 11 px dense size; measured at the eye: at 12 and at 13 px the line boxes of the default sans, ≈ 14.2 px tall at 11 px, still touched by a pixel and the blind metric counted them though no glyph met another; at half a row the column's vertical grid is one pitch throughout) */
+const LINE = 15;
 const idSafe = (s: string): string => s.replace(/[^A-Za-z0-9_-]/g, '-');
 
 const wordOf = (type: string, polarity: 'holds' | 'does-not-hold'): string => (polarity === 'does-not-hold' ? `¬ ${type}` : type);
-/** a row of words in one text — the rings' words, the feet's words: an estimate of its width at the dense size */
-const wordsWide = (words: string[], extra = 0): number => (words.length === 0 ? 0 : 6 * words.reduce((n, w) => n + w.length + extra + 3, 0) + 10);
+/** one word's width in a row, by the estimate — the word, a caller's extra, the separator */
+const wordWide = (word: string, extra: number): number => 6 * (word.length + extra + 3);
+/** a line of words in one text — an estimate of its width at the dense size */
+const lineWide = (words: string[], extra: number, lead = 0): number => (words.length === 0 ? 0 : lead + words.reduce((n, w) => n + wordWide(w, extra), 0) + 10);
+/** greedy wrap at WRAP: items into lines, a line never wider than WRAP by the estimate unless one word alone exceeds it (a word is never broken); `lead` is what the first line already holds (the rings) */
+function wrapItems<T>(items: T[], word: (item: T) => string, extra: number, lead = 0): T[][] {
+  const lines: T[][] = [];
+  let line: T[] = [];
+  let width = lead;
+  for (const item of items) {
+    const w = wordWide(word(item), extra);
+    if (line.length && width + w > WRAP) {
+      lines.push(line);
+      line = [];
+      width = 0;
+    }
+    line.push(item);
+    width += w;
+  }
+  if (line.length) lines.push(line);
+  return lines;
+}
 
 /** the geometry the column occupies — computed from the inside alone, so a composite (the midpoint's unfolding) can place two columns without overlap */
 export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}): InsideGeometry {
@@ -128,7 +187,7 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
   const px = options.px ?? 0;
   const top = options.top ?? 0;
   const footExtra = options.footExtra ?? 0;
-  const yOf = (index: number): number => top + row * (index + 0.5);
+  const half = row / 2;
   let maxDown = 0;
   let maxUp = 0;
   const multiplicity = new Map<string, number>();
@@ -139,23 +198,59 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
     if (a.side === 'down') maxDown = Math.max(maxDown, r);
     else maxUp = Math.max(maxUp, r);
   }
-  // the loop row's width is the rings plus the words in one row (found at the eye: Φ1's six words ran past the frame)
-  const loopsWide = Math.max(0, ...inside.points.map((p) => {
-    const loops = inside.loops.filter((l) => l.at === p.index);
-    return loops.length === 0 ? 0 : loops.length * 14 + wordsWide(loops.map((l) => wordOf(l.type, l.polarity)), footExtra) + 20;
-  }));
-  // C-7f item 1 — the feet: the words of the arcs leaving a point stand in one row on the arc's side
-  const feetWide = (side: ArcSide): number => Math.max(0, ...inside.points.map((p) => wordsWide(inside.arcs.filter((a) => a.from === p.index && a.side === side).map((a) => wordOf(a.type, a.polarity)), footExtra)));
-  const rightReach = Math.max(maxDown + 40, loopsWide, feetWide('down') + 14) + (inside.nodes.length ? NODE_GAP + 110 : 0);
-  const leftReach = Math.max(maxUp + 40, LABEL_LANE + 12, feetWide('up') + 14);
-  return { row, px, top, height: row * Math.max(inside.points.length, 1) + (inside.axioms.length + (inside.warrantCarried ? 1 : 0) + inside.unplaced.length) * 16 + 12, leftReach, rightReach, yOf };
+  // C-7g — the words at each point, WRAPPED: the up-arcs' block above the row line, the loops' (led by their rings) and then
+  // the down-arcs' below it — all to the RIGHT of the point (item 1: the label lane is arity-1's); no line wider than WRAP
+  // by the estimate (item 2: the width takes the next line, and the row grows)
+  const arcWord = (i: number): string => wordOf(inside.arcs[i].type, inside.arcs[i].polarity);
+  const linesAt: PointLines[] = inside.points.map((p) => {
+    const ordinals = (side: ArcSide): number[] => inside.arcs.map((a, i) => ({ a, i })).filter(({ a }) => a.from === p.index && a.side === side).map(({ i }) => i);
+    const loopsHere = inside.loops.map((l, i) => ({ l, i })).filter(({ l }) => l.at === p.index);
+    const up = wrapItems(ordinals('up'), arcWord, footExtra);
+    const down = wrapItems(ordinals('down'), arcWord, footExtra);
+    const loops = wrapItems(loopsHere, ({ l }) => wordOf(l.type, l.polarity), footExtra, loopsHere.length * 14 + 2).map((line) => line.map(({ i }) => i));
+    return { up, loops, down, above: up.length, below: loops.length + down.length };
+  });
+  // the rows: each point's row is the base pitch, grown by a line for every wrapped line on that side of its row line
+  const topExtent = (l: PointLines): number => half + LINE * Math.max(0, l.above - 1);
+  const bottomExtent = (l: PointLines): number => half + LINE * Math.max(0, l.below - 1);
+  const ys: number[] = [];
+  let y = top;
+  for (const l of linesAt) {
+    y += topExtent(l);
+    ys.push(y);
+    y += bottomExtent(l);
+  }
+  const columnBottom = inside.points.length ? y : top + row;
+  const yOf = (index: number): number => ys[index];
+  // the widest line by the estimate — bounded by WRAP unless one word alone exceeds it; the rings lead the loops' first line
+  let widest = 0;
+  linesAt.forEach((l, pi) => {
+    for (const line of l.up) widest = Math.max(widest, lineWide(line.map(arcWord), footExtra));
+    for (const line of l.down) widest = Math.max(widest, lineWide(line.map(arcWord), footExtra));
+    const rings = inside.loops.filter((loop) => loop.at === pi).length;
+    for (const line of l.loops) widest = Math.max(widest, lineWide(line.map((i) => wordOf(inside.loops[i].type, inside.loops[i].polarity)), footExtra, rings * 14 + 2));
+  });
+  const rightReach = Math.max(maxDown + 40, widest + 14) + (inside.nodes.length ? NODE_GAP + 110 : 0);
+  const leftReach = Math.max(maxUp + 40, LABEL_LANE + 12);
+  return {
+    row,
+    px,
+    top,
+    height: columnBottom - top + (inside.axioms.length + (inside.warrantCarried ? 1 : 0) + inside.unplaced.length) * 16 + 12,
+    columnBottom,
+    leftReach,
+    rightReach,
+    yOf,
+    lines: (index: number) => linesAt[index],
+  };
 }
 
 const arcPath = (arc: InsideArc, g: InsideGeometry, k: number): string => {
   const y1 = g.yOf(arc.from);
   const y2 = g.yOf(arc.to);
   const ry = Math.abs(y2 - y1) / 2;
-  const rx = ry * ARC_FLATTEN + 7 * k;
+  // the bulge is a function of the SPAN IN ROWS (the designer measured span encoded), not of the pixels a grown row adds
+  const rx = ((Math.abs(arc.to - arc.from) * g.row) / 2) * ARC_FLATTEN + 7 * k;
   // the same sweep for both: from an earlier point down to a later one the arc bows RIGHT; from a later point up to an earlier one it bows LEFT — the side is the tuple's
   return `M ${g.px} ${y1} A ${rx} ${ry} 0 0 1 ${g.px} ${y2}`;
 };
@@ -183,28 +278,48 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
   const markWord = (extra: MarkExtra | null, type: string, polarity: 'holds' | 'does-not-hold'): string =>
     `${extra?.glyph ? `${extra.glyph} ` : ''}${extra?.word !== undefined ? wordOf(extra.word, polarity) : wordOf(type, polarity)}`;
   const wordFill = (extra: MarkExtra | null, negative: boolean): string => (extra?.emphasis ? 'fill-amber-200' : negative ? 'fill-rose-300' : extra?.tint ? 'fill-sky-200/90' : 'fill-stone-300');
-  // C-7f item 1 — THE WORD AT THE FOOT: the words of the arcs leaving a point stand in ONE ROW on the arc's own side — the
-  // down-arcs' just below the row line to the right of the point, the up-arcs' just above it to the left (the label lane is
-  // on the row line; the up-feet ride above it). Feet cannot cluster: a foot sits at a point, and the points are the rows.
-  const footRow = (point: InsidePoint, side: ArcSide) => {
-    const feet = inside.arcs.map((arc, i) => ({ arc, i })).filter(({ arc }) => arc.from === point.index && arc.side === side);
-    if (!feet.length) return null;
-    const y = g.yOf(point.index);
+  // C-7f item 1 — THE WORD AT THE FOOT: the words of the arcs leaving a point stand at that point (feet cannot cluster: a
+  // foot sits at a point, and the points are the rows). C-7g item 1 — THE LABEL LANE IS ARITY-1'S: every word block stands
+  // to the RIGHT of the point, start-anchored — the up-arcs' block above the row line, the loops' (led by the rings) and
+  // the down-arcs' below it. C-7g item 2 — a block WRAPS at the geometry's width: one <text> per block, one positioned
+  // tspan per line, read top to bottom; a line that continues ends with the separator.
+  const arcWordSpan = (i: number) => {
+    const arc = inside.arcs[i];
+    const extra = arcExtras[i];
+    const negative = arc.polarity === 'does-not-hold';
     return (
-      <text data-inside-foot-words={`${point.id}|${side}`} x={side === 'down' ? g.px + 10 : g.px - 10} y={side === 'down' ? y + 13 : y - 11} textAnchor={side === 'down' ? 'start' : 'end'} fontSize={DENSE} style={halo(2.5)}>
-        {feet.map(({ arc, i }, k) => {
-          const extra = arcExtras[i];
-          const negative = arc.polarity === 'does-not-hold';
-          return (
-            <tspan key={`w-${i}`}>
-              {k > 0 ? <tspan className="fill-stone-400">{' · '}</tspan> : null}
-              <tspan data-inside-arc-word={String(i)} className={wordFill(extra, negative)}>{markWord(extra, arc.type, arc.polarity)}</tspan>
-              {extra?.origin ? <tspan data-inside-origin={extra.origin} className="fill-stone-400">{` ${extra.origin}`}</tspan> : null}
-            </tspan>
-          );
-        })}
-      </text>
+      <tspan key={`w-${i}`}>
+        <tspan data-inside-arc-word={String(i)} className={wordFill(extra, negative)}>{markWord(extra, arc.type, arc.polarity)}</tspan>
+        {extra?.origin ? <tspan data-inside-origin={extra.origin} className="fill-stone-400">{` ${extra.origin}`}</tspan> : null}
+      </tspan>
     );
+  };
+  const wordBlock = (attrs: Record<string, string>, x: number, y0: number, lines: number[][], span: (ordinal: number) => ReactElement) => (
+    <text {...attrs} x={x} y={y0} textAnchor="start" fontSize={DENSE} style={halo(2.5)}>
+      {lines.map((line, li) => (
+        <tspan key={`l-${li}`} data-inside-line={String(li)} x={x} y={y0 + LINE * li}>
+          {line.map((ordinal, k) => (
+            <tspan key={`k-${ordinal}`}>
+              {k > 0 ? <tspan className="fill-stone-400">{' · '}</tspan> : null}
+              {span(ordinal)}
+            </tspan>
+          ))}
+          {li < lines.length - 1 ? <tspan className="fill-stone-400">{' · '}</tspan> : null}
+        </tspan>
+      ))}
+    </text>
+  );
+  const footBlock = (point: InsidePoint, side: ArcSide) => {
+    const L = g.lines(point.index);
+    const lines = side === 'up' ? L.up : L.down;
+    if (!lines.length) return null;
+    const y = g.yOf(point.index);
+    // ONE GRID: every baseline in the column is a half-row apart — the up block's LAST line 3.5 px above the row line, the
+    // down block's first line 11.5 px below it (beneath the loops' block, whose first line sits beside the rings), so the
+    // last line of one row's down block and the first line of the next row's up block are a half-row apart too (measured
+    // at the eye: at −5 / +13 they were 12 px apart and the blind metric counted their boxes as touching)
+    const y0 = side === 'up' ? y - 3.5 - LINE * (lines.length - 1) : y + 11.5 + LINE * L.loops.length;
+    return wordBlock({ 'data-inside-foot-words': `${point.id}|${side}` }, g.px + 10, y0, lines, arcWordSpan);
   };
   return (
     <g data-inside-column="true">
@@ -277,32 +392,31 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
               const lx = loopExtra?.(loop) ?? null;
               return (
                 <g key={`loop-${li}`} data-inside-loop={`${loop.type}|${point.id}|${loop.polarity}`} {...(lx?.attrs ?? {})}>
-                  <circle cx={cx} cy={y - 8} r={5} fill="none" className={lx?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300' : lx?.tint ? 'stroke-sky-300' : 'stroke-stone-300'} strokeWidth={lx?.emphasis ? 2 : 1.1} strokeDasharray={negative ? '3 2' : undefined} />
+                  {/* the rings lead their words' block below the row line — a wrapped block hangs from them and reads top to bottom */}
+                  <circle cx={cx} cy={y + 8} r={5} fill="none" className={lx?.emphasis ? 'stroke-amber-300' : negative ? 'stroke-rose-300' : lx?.tint ? 'stroke-sky-300' : 'stroke-stone-300'} strokeWidth={lx?.emphasis ? 2 : 1.1} strokeDasharray={negative ? '3 2' : undefined} />
                 </g>
               );
             })}
-            {loops.length ? (
-              <text data-inside-loop-words={point.id} x={g.px + 10 + loops.length * 14 + 2} y={y - 5} fontSize={DENSE} style={halo(2.5)}>
-                {loops.map((l, li) => {
+            {loops.length
+              ? wordBlock({ 'data-inside-loop-words': point.id }, g.px + 10 + loops.length * 14 + 2, y + 11.5, g.lines(point.index).loops.map((line) => line.map((i) => loops.indexOf(inside.loops[i]))), (li) => {
+                  const l = loops[li];
                   const lx = loopExtra?.(l) ?? null;
                   const negative = l.polarity === 'does-not-hold';
                   return (
                     <tspan key={`lw-${li}`}>
-                      {li > 0 ? <tspan className="fill-stone-400">{' · '}</tspan> : null}
                       <tspan data-inside-loop-word={String(li)} className={wordFill(lx, negative)}>{markWord(lx, l.type, l.polarity)}</tspan>
                       {lx?.origin ? <tspan data-inside-origin={lx.origin} className="fill-stone-400">{` ${lx.origin}`}</tspan> : null}
                     </tspan>
                   );
-                })}
-              </text>
-            ) : null}
-            {footRow(point, 'down')}
-            {footRow(point, 'up')}
+                })
+              : null}
+            {footBlock(point, 'up')}
+            {footBlock(point, 'down')}
           </g>
         );
       })}
       {(() => {
-        const base = g.top + g.row * Math.max(inside.points.length, 1) + 10;
+        const base = g.columnBottom + 10;
         const lines: Array<{ key: string; text: string; attr: Record<string, string>; className: string }> = [];
         inside.unplaced.forEach((u, i) => lines.push({ key: `unplaced-${i}`, text: `${wordOf(u.type, u.polarity)}(${u.terms.join(', ')}) — not placed: ${u.reason}`, attr: { 'data-inside-unplaced': `${u.type}(${u.terms.join(', ')})` }, className: 'fill-amber-200' }));
         inside.axioms.forEach((a, i) => lines.push({ key: `axiom-${i}`, text: `axiom, carried never evaluated: ${a}`, attr: { 'data-inside-axiom': 'true' }, className: 'fill-stone-400' }));

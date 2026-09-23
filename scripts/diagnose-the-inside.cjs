@@ -155,8 +155,16 @@ const attrsOf = (html, name) => [...html.matchAll(new RegExp(`${name}="([^"]*)"`
 const countOf = (html, name) => (html.match(new RegExp(`${name}="`, 'g')) || []).length;
 const textsOf = (html, name) => [...html.matchAll(new RegExp(`${name}="[^"]*"[^>]*>([^<]*)<`, 'g'))].map((m) => unescapeHtml(m[1]));
 const visibleText = (html) => unescapeHtml(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
-// C-7f item 1 — the foot rows: one <text> per point per side, its words as tspans naming their arc's ordinal
-const footRows = (html) => [...html.matchAll(/<text[^>]*data-inside-foot-words="([^"]*)"[^>]*>([\s\S]*?)<\/text>/g)].map((m) => ({ foot: unescapeHtml(m[1]), y: Number((m[0].match(/ y="([^"]*)"/) || [])[1]), words: [...m[2].matchAll(/data-inside-arc-word="(\d+)"[^>]*>([^<]*)</g)].map((w) => ({ i: Number(w[1]), text: unescapeHtml(w[2]) })) }));
+// C-7f item 1 — the foot blocks: one <text> per point per side, its words as tspans naming their arc's ordinal; C-7g — the
+// text's own x, y and anchor (its first line), and its positioned lines counted
+const footRows = (html) => [...html.matchAll(/<text([^>]*)data-inside-foot-words="([^"]*)"([^>]*)>([\s\S]*?)<\/text>/g)].map((m) => {
+  const attrs = m[1] + m[3];
+  return { foot: unescapeHtml(m[2]), x: Number((attrs.match(/ x="([^"]*)"/) || [])[1]), y: Number((attrs.match(/ y="([^"]*)"/) || [])[1]), anchor: (attrs.match(/text-anchor="([^"]*)"/) || [])[1], lines: (m[4].match(/data-inside-line="/g) || []).length, words: [...m[4].matchAll(/data-inside-arc-word="(\d+)"[^>]*>([^<]*)</g)].map((w) => ({ i: Number(w[1]), text: unescapeHtml(w[2]) })) };
+});
+// the loops' block at a point: its lines counted
+const loopLinesAt = (html, id) => { const m = html.match(new RegExp(`<text[^>]*data-inside-loop-words="${id.replace(/[^A-Za-z0-9_-]/g, '.')}"[^>]*>([\\s\\S]*?)</text>`)); return m ? (m[1].match(/data-inside-line="/g) || []).length : 0; };
+// every <text> of a drawing with its attributes and inner markup
+const textsAll = (html) => [...html.matchAll(/<text([^>]*)>([\s\S]*?)<\/text>/g)].map((m) => ({ attrs: m[1], inner: m[2], x: Number((m[1].match(/ x="([^"]*)"/) || [])[1]), anchor: (m[1].match(/text-anchor="([^"]*)"/) || [])[1] || 'start' }));
 const innerText = (html, name) => [...html.matchAll(new RegExp(`<text[^>]*${name}="[^"]*"[^>]*>([\\s\\S]*?)</text>`, 'g'))].map((m) => unescapeHtml(m[1].replace(/<[^>]+>/g, '')));
 const drawFlow = render(React.createElement(CastInsideDiagram, { inside: insides.flow, id: 'flow' }));
 const drawT = render(React.createElement(CastInsideDiagram, { inside: insides['t-cell'], id: 't' }));
@@ -170,17 +178,49 @@ check('§4 ★★ THE T CELL DRAWN: 10 points, 10 arcs, ONE tuple-node `removes|
   countOf(drawT, 'data-inside-point') === 10 && countOf(drawT, 'data-inside-arc') === 10 && J(attrsOf(drawT, 'data-inside-node')) === '["removes|r8,r3,r2|holds"]' && J(attrsOf(drawT, 'data-inside-leg')) === '["1","2","3"]' &&
     J(textsOf(drawT, 'data-inside-arc-word').filter((w) => w.startsWith('¬ ')).sort()) === '["¬ starts","¬ sustains","¬ sustains"]' && textsOf(drawT, 'data-inside-arc-word').filter((w) => !w.startsWith('¬')).length === 7 && (drawT.match(/stroke-dasharray="4 3"/g) || []).length === 3,
   J(attrsOf(drawT, 'data-inside-node')));
-check('§4 ★★ Φ DRAWN: six loops at Φ1 (six rings; their words ONCE in one row in the same order: descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes) and one at Φ7; Φ9\'s badge `member_status=none-by-nature`',
+check('§4 ★★ Φ DRAWN: six loops at Φ1 (six rings leading their words\' block; the words ONCE, in the rings\' order, one row read through its lines: descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes) and one at Φ7; Φ9\'s badge `member_status=none-by-nature`',
   attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ1').length === 6 && J(attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ1').map((v) => v.split('|')[0])) === '["descends-from","disjoins","displaces","exceeds-in-power","inverts","presupposes"]' &&
     attrsOf(drawPhi, 'data-inside-loop').filter((v) => v.split('|')[1] === 'Φ7').length === 1 && attrsOf(drawPhi, 'data-inside-badge').includes('member_status=none-by-nature') &&
     innerText(drawPhi, 'data-inside-loop-words').length === 2 && innerText(drawPhi, 'data-inside-loop-words')[0] === 'descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes' && innerText(drawPhi, 'data-inside-loop-words')[1] === 'descends-from');
-check('§4 ★★ THE WORD AT THE FOOT (C-7f item 1 — the designer\'s cut from this build\'s own geometry: bulge is a function of span and spans repeat, so APEXES CLUSTER into a band; FEET cannot — a foot sits at a point and the points are the rows): no textPath and no startOffset anywhere; every arc\'s word is a tspan in the foot row of the point it LEAVES FROM on its own side — the down-feet 13 px below the row line to the right of the point, the up-feet 11 px above it to the left; Flow\'s 31 words stand in its 14 rows (the rows per side printed)',
+const circleAt = (html, id, attr) => Number((html.match(new RegExp(`data-inside-point="${id.replace(/[^A-Za-z0-9_-]/g, '.')}"[\\s\\S]*?<circle[^>]*${attr}="([^"]*)"`)) || [])[1]);
+check('§4 ★★ THE WORD AT THE FOOT, RIGHT OF THE POINT (C-7f item 1 — a foot sits at a point and the points are the rows, so FEET cannot cluster as apexes did; C-7g item 1, the designer\'s second cut from her own law — only arity 2 is an arrow, arity 1 is a mark on the node — applied to WORDS: an up-foot end-anchored above the row line in the label lane read at the eye as a CAPTION of the role below it, `F4 · has · presupposes`): no textPath and no startOffset anywhere; every arc\'s word is a tspan in the foot block of the point it LEAVES FROM on its own side of the row line — the up-arcs\' block ABOVE it, its last line 3.5 px above; the down-arcs\' block BELOW it, its first line 11.5 px under, beneath the loops\' block when there is one (every baseline in the column a half-row apart — ONE GRID) — and EVERY block start-anchored 10 px RIGHT of the point, none end-anchored, none left of it; Flow\'s 31 words stand in its 14 rows (the blocks per side printed)',
   (() => {
     const rows = footRows(drawFlow);
     if ((drawFlow.match(/<textPath /g) || []).length || /startOffset/.test(drawFlow)) return false;
-    const cy = (id) => Number((drawFlow.match(new RegExp(`data-inside-point="${id.replace(/[^A-Za-z0-9_-]/g, '.')}"[\\s\\S]*?<circle[^>]*cy="([^"]*)"`)) || [])[1]);
-    note(`Flow's feet: ${rows.filter((r) => r.foot.endsWith('|down')).length} down rows · ${rows.filter((r) => r.foot.endsWith('|up')).length} up rows · words per row ${J(rows.map((r) => r.words.length))}`);
-    return rows.length > 0 && rows.every((r) => { const [id, side] = r.foot.split('|'); const y = cy(id); return Number.isFinite(y) && (side === 'down' ? Math.abs(r.y - (y + 13)) < 0.01 : Math.abs(r.y - (y - 11)) < 0.01); }) && rows.flatMap((r) => r.words).length === 31;
+    note(`Flow's feet: ${rows.filter((r) => r.foot.endsWith('|down')).length} down blocks · ${rows.filter((r) => r.foot.endsWith('|up')).length} up blocks · words per block ${J(rows.map((r) => r.words.length))} · lines per block ${J(rows.map((r) => r.lines))}`);
+    return rows.length > 0 && rows.every((r) => {
+      const [id, side] = r.foot.split('|');
+      const y = circleAt(drawFlow, id, 'cy'); const x = circleAt(drawFlow, id, 'cx');
+      const y0 = side === 'up' ? y - 3.5 - 15 * (r.lines - 1) : y + 11.5 + 15 * loopLinesAt(drawFlow, id);
+      return Number.isFinite(y) && Number.isFinite(x) && r.anchor === 'start' && Math.abs(r.x - (x + 10)) < 0.01 && Math.abs(r.y - y0) < 0.01 && r.lines >= 1;
+    }) && rows.flatMap((r) => r.words).length === 31;
+  })());
+check('§4 ★★ THE LABEL LANE IS ARITY-1\'S (C-7g item 1): in Flow, the T cell and Φ every text LEFT of the point column (end-anchored) is a LABEL with its badges — a `data-inside-label` tspan, `data-inside-badge` tspans for the unary marks, never an arc word, never a loop word — and every arc-word and loop-word tspan sits in a start-anchored text at or right of cx + 10; the axiom and warrant lines beneath the column are the only other text on the left and carry no arc word',
+  [drawFlow, drawT, drawPhi].every((html) => {
+    const texts = textsAll(html);
+    const left = texts.filter((t) => t.anchor === 'end');
+    const wordy = texts.filter((t) => /data-inside-(arc|loop)-word=/.test(t.inner));
+    const cx = circleAt(html, attrsOf(html, 'data-inside-point')[0], 'cx');
+    return left.length === countOf(html, 'data-inside-point') && left.every((t) => /data-inside-label="true"/.test(t.inner) && !/data-inside-(arc|loop)-word=/.test(t.inner)) &&
+      wordy.length > 0 && wordy.every((t) => t.anchor === 'start' && t.x >= cx + 10 - 0.01) && !texts.some((t) => /data-inside-(axiom|warrant|unplaced)=/.test(t.attrs) && /data-inside-arc-word=/.test(t.inner));
+  }));
+check('§4 ★★ THE WIDTH TAKES THE NEXT LINE (C-7g item 2, the designer\'s — the only option that bounds the width BY CONSTRUCTION; scroll and a narrower fold ruled out by her measurement): a manufactured point carrying eight down-arcs of twelve-letter words wraps into four positioned lines (`data-inside-line`), every word once, no line wider than WRAP (200) by the geometry\'s own estimate; the row GROWS by a line per wrapped line (the next point 75 px lower — 30 + 3 × 15, the line pitch HALF A ROW: the column\'s vertical grid one pitch throughout — where the unwrapped control with two short words keeps the 30 px pitch); the column\'s right reach is bounded at WRAP + 14 (the control\'s is its arcs\'); the arc\'s BULGE stays a function of the span in ROWS while its height is the grown rows\' (rx 74.4 for x → z8, a span of 8; its ry above the 120 an ungrown span of 8 would give); Φ1\'s six loop words wrap into lines led by the rings (printed), their innerText one row in the rings\' order',
+  (() => {
+    const { insideGeometry, WRAP } = req('src/components/CastInsideDiagram.tsx');
+    const mk = (n, type) => readCastFile(J({ roles: ['x', ...Array.from({ length: 9 }, (_, i) => `z${i + 1}`)], signature: [{ type, arity: 2 }], relations: Array.from({ length: n }, (_, i) => ({ type, terms: ['x', `z${i + 1}`], polarity: 'holds' })) })).cast;
+    const wide = insideOf(mk(8, 'abcdefghijkl'));
+    const narrow = insideOf(mk(2, 'r'));
+    const gw = insideGeometry(wide); const gn = insideGeometry(narrow);
+    const hw = render(React.createElement(CastInsideDiagram, { inside: wide, id: 'wide' }));
+    const rowsW = footRows(hw);
+    const arcTo9 = (hw.match(/data-inside-arc="abcdefghijkl\|x\|z8\|holds\|down"[\s\S]*?<path[^>]*d="([^"]*)"/) || [])[1] || '';
+    const dm = arcTo9.match(/A ([\d.]+) ([\d.]+) /);
+    const phiLines = loopLinesAt(drawPhi, 'Φ1');
+    note(`the wide point's block: ${rowsW[0] ? rowsW[0].lines : '?'} lines · pitch to the next point ${gw.yOf(1) - gw.yOf(0)} px (control ${gn.yOf(1) - gn.yOf(0)}) · right reach ${Math.round(gw.rightReach)} (WRAP ${WRAP}; control ${Math.round(gn.rightReach)}) · the span-8 arc's rx ${dm ? dm[1] : '?'} ry ${dm ? dm[2] : '?'} · Φ1's loop block ${phiLines} lines`);
+    return WRAP === 200 && rowsW.length === 1 && rowsW[0].lines === 4 && rowsW[0].words.length === 8 && new Set(rowsW[0].words.map((w) => w.i)).size === 8 &&
+      gw.yOf(1) - gw.yOf(0) === 75 && gn.yOf(1) - gn.yOf(0) === 30 && gw.rightReach <= WRAP + 14 && gn.rightReach < gw.rightReach &&
+      dm && Math.abs(Number(dm[1]) - 8 * 15 * 0.62) < 0.01 && Number(dm[2]) > 120 && (hw.match(/<textPath /g) || []).length === 0 &&
+      phiLines >= 2 && innerText(drawPhi, 'data-inside-loop-words')[0] === 'descends-from · disjoins · displaces · exceeds-in-power · inverts · presupposes';
   })());
 check('§4 ★ THE DRAWING DERIVES NOTHING: the number of drawn arcs + loops + nodes equals the listed tuples on every fixture, and NO count is printed as text on the canvas (the column\'s card reads the counts; the census rides only as attributes)',
   [['flow', drawFlow], ['t-cell', drawT], ['phi', drawPhi]].every(([n, html]) => countOf(html, 'data-inside-arc') + countOf(html, 'data-inside-loop') + countOf(html, 'data-inside-node') === insides[n].arcs.length + insides[n].loops.length + insides[n].nodes.length) &&

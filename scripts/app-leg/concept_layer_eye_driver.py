@@ -16,6 +16,10 @@ witness that locates a control by its data attribute proves it exists; only an e
   · C-5 (1705): the FACE at the eye — the empty-core guard in words, the face REFUSED with three hands, one hand withdrawn
     and the face READ with its direction stated; ITEM 0 — casts onto two born corners, the core dissected again, the gen-2
     midpoint between them selected and its surface read (a measurement, printed);
+  · C-7g (the designer's second cut): the label lane is arity-1's — no binary word left of its point, none end-anchored;
+    the width bounded by the wrap (the widest positioned line and the drawing's width against the panel, printed); the
+    card's term-order rows grouped by reading, its height at the T cell (C) and at Φ (B); the face block's clauses each on
+    its own line with the verdict never orphaned, the hands leading with WHERE;
   · plates into scripts/app-leg/_frames/ (the ignored dir — a witness never writes into the tracked tree).
 Prints ONE JSON line at the end; the .cjs leg asserts on it.
 """
@@ -37,7 +41,9 @@ MEASURE = """() => {
   const t = (sel) => [...panel.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim());
   const a = (sel, name) => [...panel.querySelectorAll(sel)].map((e) => e.getAttribute(name));
   const box = (el) => { const b = el.getBoundingClientRect(); return { x: b.x, y: b.y, r: b.right, b: b.bottom }; };
-  const inter = (p, q) => p.x < q.r && q.x < p.r && p.y < q.b && q.y < p.b;
+  // C-7g: an overlap is MORE THAN HALF A PIXEL — measured: two lines on the column's 15 px grid have 15 px boxes that meet
+  // at the same y to a few millionths of a pixel, and the strict test counted that touch as an overlap
+  const inter = (p, q) => p.x < q.r - 0.5 && q.x < p.r - 0.5 && p.y < q.b - 0.5 && q.y < p.b - 0.5;
   const drawing = panel.querySelector('[data-midpoint-drawing]');
   const perColumn = drawing ? [...drawing.querySelectorAll('[data-inside-column]')].map((col) => {
     const words = [...col.querySelectorAll('[data-inside-arc-word]')].map((e) => box(e));
@@ -47,8 +53,20 @@ MEASURE = """() => {
     for (const w of words) for (const l of labels) if (inter(w, l)) wl += 1;
     return { arcWords: words.length, wordWordOverlaps: ww, wordLabelOverlaps: wl };
   }) : [];
+  // C-7g item 1 — THE LABEL LANE IS ARITY-1'S: per column, arc/loop words whose box lies left of the column's point x, and
+  // end-anchored texts holding one (both must be 0); item 2 — the positioned lines' widths and the blocks that wrapped
+  const laneOf = (root) => (root ? [...root.querySelectorAll('[data-inside-column]')].map((col) => {
+    const c = col.querySelector('[data-inside-point] circle');
+    const cx = c ? c.getBoundingClientRect().x + c.getBoundingClientRect().width / 2 : null;
+    const words = [...col.querySelectorAll('[data-inside-arc-word], [data-inside-loop-word]')];
+    return { cx: cx === null ? null : Math.round(cx), words: words.length, inLane: cx === null ? null : words.filter((e) => e.getBoundingClientRect().right <= cx).length, endAnchored: [...col.querySelectorAll('text[text-anchor="end"]')].filter((t) => t.querySelector('[data-inside-arc-word], [data-inside-loop-word]')).length };
+  }) : []);
+  const linesOf = (root) => (root ? [...root.querySelectorAll('[data-inside-line]')].map((e) => e.getBoundingClientRect().width) : []);
+  const wrappedOf = (root) => (root ? [...root.querySelectorAll('text')].filter((t) => t.querySelectorAll('[data-inside-line]').length > 1).length : 0);
+  const ownDrawing = panel.querySelector('[data-midpoint-own-drawing]');
   const gesture = document.querySelector('[data-ambo-gesture-line]');
   return {
+    laneWords: laneOf(drawing), ownLane: laneOf(ownDrawing), widestLine: linesOf(drawing).length ? Math.round(Math.max(...linesOf(drawing))) : 0, lines: linesOf(drawing).length, wrappedBlocks: wrappedOf(drawing), ownWidestLine: linesOf(ownDrawing).length ? Math.round(Math.max(...linesOf(ownDrawing))) : 0, ownWrappedBlocks: wrappedOf(ownDrawing),
     present: true, state: panel.getAttribute('data-midpoint-state'), scrollTop: panel.scrollTop, scrollHeight: panel.scrollHeight, clientHeight: panel.clientHeight, panel: P,
     gestureSentence: t('[data-midpoint-gesture]')[0] || null, gestureVisible: inside(r(panel.querySelector('[data-midpoint-gesture]'))),
     wordHalf: r(panel.querySelector('[data-midpoint-word-half]')), wordHalfVisible: inside(r(panel.querySelector('[data-midpoint-word-half]'))),
@@ -123,13 +141,18 @@ FACE = """() => {
     const r = b.getBoundingClientRect();
     return {
       face: b.getAttribute('data-midpoint-face-reading'), state: b.getAttribute('data-midpoint-face-state'), walk: b.getAttribute('data-midpoint-face-walk'),
-      text: b.textContent.replace(/\\s+/g, ' ').trim().slice(0, 700),
+      text: b.textContent.replace(/\\s+/g, ' ').trim().slice(0, 2400),
       hands: [...b.querySelectorAll('[data-midpoint-face-withdraw]')].map((e) => e.getAttribute('data-midpoint-face-withdraw')),
       corners: [...b.querySelectorAll('[data-midpoint-face-corner]')].map((e) => ({ corner: e.getAttribute('data-midpoint-face-corner'), fix: e.getAttribute('data-midpoint-face-fix'), mov: e.getAttribute('data-midpoint-face-mov'), und: e.getAttribute('data-midpoint-face-und'), core: e.getAttribute('data-midpoint-face-core') })),
+      lines: [...b.querySelectorAll('[data-midpoint-face-line]')].map((e) => { const q = e.getBoundingClientRect(); return { kind: e.getAttribute('data-midpoint-face-line'), y: Math.round(q.y), h: Math.round(q.height), text: e.textContent.replace(/\\s+/g, ' ').trim().slice(0, 90) }; }),
+      handTexts: [...b.querySelectorAll('[data-midpoint-face-withdraw]')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()), here: b.querySelectorAll('[data-midpoint-face-here]').length,
       box: { y: Math.round(r.y), h: Math.round(r.height), insidePanel: r.y >= P.y && r.bottom <= P.bottom },
     };
   });
-  return { present: true, blocks };
+  // C-7g — the word half's box while the face block stands above it (the block grew by its lines; is the act still in the box?)
+  const wh = panel.querySelector('[data-midpoint-word-half]');
+  const whq = wh ? wh.getBoundingClientRect() : null;
+  return { present: true, blocks, wordHalf: whq ? { y: Math.round(whq.y), bottom: Math.round(whq.bottom), insidePanel: whq.y >= P.y && whq.bottom <= P.bottom } : null, scrollTop: panel.scrollTop };
 }"""
 CARD = """() => {
   const row = document.querySelector('[data-cast-card-row="summary"]');
@@ -141,7 +164,8 @@ CARD = """() => {
   const castRows = [...dl.querySelectorAll('[data-cast-card-row]')];
   const castHeight = castRows.length ? Math.round(castRows[castRows.length - 1].getBoundingClientRect().bottom - castRows[0].getBoundingClientRect().top) : 0;
   return { present: true, card: R(dl), inner: Math.round(inner), castHeight, viewport: window.innerHeight, ratio: Math.round((dl.getBoundingClientRect().width / dl.getBoundingClientRect().height) * 100) / 100,
-    rows: [...dl.querySelectorAll('[data-cast-card-row]')].map((e) => ({ row: e.getAttribute('data-cast-card-row'), ...R(e), spans: e.getBoundingClientRect().width >= inner - 1 })) };
+    rows: [...dl.querySelectorAll('[data-cast-card-row]')].map((e) => ({ row: e.getAttribute('data-cast-card-row'), ...R(e), spans: e.getBoundingClientRect().width >= inner - 1 })),
+    orderings: [...dl.querySelectorAll('[data-cast-orderings-row]')].map((e) => ({ key: e.getAttribute('data-cast-orderings-row'), h: Math.round(e.getBoundingClientRect().height), text: e.textContent.replace(/\\s+/g, ' ').trim() })) };
 }"""
 
 
@@ -308,6 +332,11 @@ def main():
         tab(page, "packets")
         out['census']['packets'] = census(page, '@packets')
         out['census']['controlsWithSelection'] = census(page, '@controls')
+        # C-7g item 3 — the card at B (Φ, 15 relation-types): its height beside the T cell's
+        out['selectB'] = select_vertex_labelled(page, "B")
+        out['cardPhi'] = page.evaluate(CARD)
+        page.evaluate("() => { const r = document.querySelector('[data-cast-card-row=\"summary\"]'); if (r) r.closest('dl').scrollIntoView(); }"); page.wait_for_timeout(300)
+        page.screenshot(path=f"{args.frames}/concept-layer-card-phi-{args.width}x{args.height}.png")
         # ─── C-5 — THE FACE at the eye: the face A·B·C through the source C, read at the AB midpoint ───
         select_core(page)
         out['selectAB4'] = select_vertex_labelled(page, "AB")

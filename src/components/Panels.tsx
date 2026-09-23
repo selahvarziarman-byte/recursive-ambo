@@ -65,7 +65,7 @@ import { SiteTraceSlot } from './SiteTraceSlot';
 import { SiteWitnessTracePanel } from './SiteWitnessTracePanel';
 import { VertexPacketEditorContent } from './VertexPacketEditor';
 // C-6c (iv): the card reads a HELD cast — every number re-derived from it, never stored
-import { castCounts, castMarks, castSummaryLine, notTakenAddresses, notTakenLine, orderingLine } from '../lib/castLoader';
+import { castCounts, castMarks, castSummaryLine, notTakenAddresses, notTakenLine, orderingRows } from '../lib/castLoader';
 import type { ConceptSpace } from '../types/geometry';
 
 type TopologyFilter =
@@ -2638,7 +2638,11 @@ function SelectedVertexSummary({
 // rows are SENTENCES, so seven relation-type rows wrap every time). RULED: the card has ONE grid and it is a label·value
 // grid — A SENTENCE MAY NOT BE PUT IN ITS VALUE HALF. Every cast row is sentence-shaped, so each SPANS the card's full
 // width (`col-span-2` on its label and its sentence); label·value pairs elsewhere keep the two-column grid. The height
-// and the aspect ratio had one cause. Item 7: the card's own sub-lines read at ≥ 4.5:1 (no value dimmer than its label).
+// and the aspect ratio had one cause — MEASURED after: the height stayed (327 × 1133), the second cause the sentences'
+// length. C-7g item 3 (the designer, from that measurement): the second cause is REPETITION, not width — the reading
+// `read as directed` once per relation-type, seven times on one card, the wrap breaking each sentence before its verdict.
+// So the term-order rows GROUP BY READING, not by relation-type: one row per (reading × reversal) class, the reading once
+// per row, every word with its count (`orderingRows`) — the FORM of C-6d (γ) §3.2's clause changed, its meaning kept.
 function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: string }) {
   const counts = castCounts(cast);
   const marks = castMarks(cast);
@@ -2695,8 +2699,8 @@ function CastCardRows({ cast, personLabel }: { cast: ConceptSpace; personLabel: 
         <>
           <dt className="col-span-2 text-stone-500">Term order</dt>
           <dd data-cast-card-row="orderings" className="col-span-2 text-stone-200">
-            {counts.orderings.map((ordering) => (
-              <span key={ordering.type} className="block">{orderingLine(ordering)}</span>
+            {orderingRows(counts.orderings).map((row) => (
+              <span key={row.key} data-cast-orderings-row={row.key} className="block">{row.text}</span>
             ))}
           </dd>
         </>

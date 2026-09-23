@@ -48,6 +48,13 @@
 // as controls, one hand withdrawn and the face READ with its direction stated;
 // and ITEM 0 — a pair at a gen-2 midpoint between two BORN corners, walked and
 // PRINTED as a measurement ahead of the mothership's ruling, never blessed.
+// C-7g (the designer's second cut — 1008 §3 and 1110 §3): the label lane is
+// arity-1's (no binary word left of its point at the eye, none end-anchored);
+// the width bounded by the wrap (the drawing against the panel and the widest
+// positioned line, printed; the fit pinned at her viewport); the card's
+// term-order rows grouped by reading, its height at the T cell and at Φ
+// (printed); the face block's clauses each on their own line, the verdict
+// never orphaned, the direction the face's own, the hands leading with WHERE.
 
 const { spawn, execFileSync } = require('node:child_process');
 const fs = require('node:fs');
@@ -162,6 +169,16 @@ const waitUp = () =>
         check(`§3 [${w}×${h}] ★★ THE FLOOR (item 7c): every text node in the midpoint's panel reads at ≥ 4.5:1 against its composited ground`, c.panel && c.panel.nodes > 100 && c.panel.belowComposited === 0, J((c.panel || {}).below));
         const fit = (k) => ((c[k] || {}).worst || []).filter((r) => /Fit Selected/.test(r.text));
         check(`§3 [${w}×${h}] ★ Fit Selected reads at ≥ 4.5:1 disabled and enabled (composited); the workspace tab's active label is printed with both readings, not cut — composited it stands above the floor`, fit('controlsAtStart').length === 1 && fit('controlsAtStart')[0].disabled && fit('controlsAtStart')[0].composited >= 4.5 && fit('controlsWithSelection').length === 1 && fit('controlsWithSelection')[0].composited >= 4.5, J({ start: fit('controlsAtStart'), later: fit('controlsWithSelection') }));
+        // ─── C-7g — the designer's second cut at the eye ───
+        check(`§4 [${w}×${h}] ★★ THE LABEL LANE IS ARITY-1'S (C-7g item 1): in both unfolded columns and in the midpoint's own drawing no arc word and no loop word has its box left of its column's points, and no end-anchored text holds one — every binary word stands right of its point, in the block on its arc's side of the row line`,
+          Array.isArray(f.laneWords) && f.laneWords.length === 2 && f.laneWords.every((c) => c.words > 0 && c.inLane === 0 && c.endAnchored === 0) && Array.isArray(f.ownLane) && f.ownLane.length === 1 && f.ownLane.every((c) => c.words > 0 && c.inLane === 0 && c.endAnchored === 0), J({ lane: f.laneWords, own: f.ownLane }));
+        note(`C-7g the width: the AB drawing ${f.drawing ? f.drawing.w : '?'} px wide in a ${f.panel ? f.panel.w : '?'} px panel (the C-7f run read 1618 in 1025 at 1689 × 897) · the widest positioned line ${f.widestLine} px against WRAP 200 by the geometry's estimate · ${f.wrappedBlocks} of its blocks wrapped · the own drawing: widest line ${f.ownWidestLine} px, ${f.ownWrappedBlocks} blocks wrapped`);
+        check(`§4 [${w}×${h}] ★★ THE WIDTH TAKES THE NEXT LINE (C-7g item 2): the AB drawing fits the panel's width at the designer's viewport, 1689 × 897 (she measured an overflow ≈ 593 there); at 1400 × 900 the width is printed against the panel; the wrap happened (blocks of more than one line)`,
+          (w !== 1689 || (f.drawing && f.panel && f.drawing.w <= f.panel.w)) && f.wrappedBlocks > 0 && f.widestLine > 0, J({ drawing: f.drawing, panel: f.panel, wrapped: f.wrappedBlocks }));
+        const cp = out.cardPhi || { present: false };
+        check(`§4 [${w}×${h}] ★★ THE CARD'S TERM ORDER GROUPS BY READING (C-7g item 3): at C (the T cell) and at B (Φ, 15 relation-types) the term-order row holds at most three rows, each stating its reading once — never a row per relation-type; the cards' boxes printed for her eye`,
+          card.present && cp.present && Array.isArray(card.orderings) && card.orderings.length >= 1 && card.orderings.length <= 3 && cp.orderings.length >= 1 && cp.orderings.length <= 3 && [...card.orderings, ...cp.orderings].every((r) => (r.text.match(/read as/g) || []).length === (r.key === 'nothing-listed' ? 0 : 1)), J({ c: card.orderings, phi: cp.orderings }));
+        if (card.present && cp.present) note(`the card at C (the T cell): ${card.card.w} × ${card.card.h} px, its term-order rows ${J(card.orderings.map((r) => `${r.key} ${r.h} px`))}, the cast's rows ${card.castHeight} px · at B (Φ): ${cp.card.w} × ${cp.card.h} px, ${J(cp.orderings.map((r) => `${r.key} ${r.h} px`))}, the cast's rows ${cp.castHeight} px`);
         // ─── C-5 — THE FACE at the eye ───
         const blk = (m, face) => (((m || {}).blocks || []).find((x) => x.face === face) || {});
         const fa = blk(out.faceAbsent, 'A·B·C'); const fr = blk(out.faceRefused, 'A·B·C'); const fd = blk(out.faceRead, 'A·B·C');
@@ -170,8 +187,19 @@ const waitUp = () =>
         check(`§5 [${w}×${h}] ★★ THE FACE REFUSED, at the eye (the researcher's guard): with (i) on A–B, S1 on C–A and Q on B–C — each accepted at its own edge — the face A·B·C reads NO FACE: C's own record's two tuples with their values, the merged pair, the three edges, and THREE hands as controls`,
           fr.state === 'refused' && /NO FACE/.test(fr.text || '') && /sustains\(r8, r0\) does-not-hold against sustains\(r1, r0\) holds/.test(fr.text || '') && /r8 and r1 made one/.test(fr.text || '') && (fr.hands || []).length === 3, J(fr));
         check(`§5 [${w}×${h}] ★★ ONE HAND WITHDRAWN AT THE EYE, THE FACE READS, THE DIRECTION STATED: the block reads at each of A, B, C — returned to itself · returned elsewhere · did not return, with the edge it broke at — walked A → B → C → A; "has not said" nowhere`,
-          fd.state === 'read' && fd.walk === 'A → B → C → A' && (fd.corners || []).length === 3 && /did not return/.test(fd.text || '') && !/has not said/.test(fd.text || '') && /the other way round reads differently/.test(fd.text || ''), J(fd));
-        note(`the face's reading at the eye (fix · mov · und · core per corner): ${J((fd.corners || []).map((c) => `${c.corner} ${c.fix}·${c.mov}·${c.und}·${c.core}`))} · the block ${J(fd.box)} · the refusal's hands ${J(fr.hands)}`);
+          fd.state === 'read' && fd.walk === 'A → B → C → A' && (fd.corners || []).length === 3 && /did not return/.test(fd.text || '') && !/has not said/.test(fd.text || '') && /walked in the face's own direction, A → B → C → A/.test(fd.text || '') && !/reads differently|the other way/.test(fd.text || ''), J(fd));
+        check(`§5 [${w}×${h}] ★★ THE FACE'S CLAUSES EACH ON THEIR OWN LINE, THE VERDICT NEVER ORPHANED (C-7g items 6–9, the designer's): at each of A, B, C the four lines fix · mov · und · core stand one under the other (their tops ascending), the und line LEADS with its counts (\`N did not return — n broke at …\`), the core CLOSES the block; the head says walked in the face's own direction and nothing about the other way (item 7 — D14: a reversed cycle is a flipped face); in the refusal the three hands lead with WHERE and exactly one says here (item 8); "composed" nowhere in either block (item 9)`,
+          (() => {
+            const L = fd.lines || [];
+            if (L.length !== 12) return false;
+            for (let k = 0; k < 3; k += 1) {
+              const q = L.slice(4 * k, 4 * k + 4);
+              if (q.map((l) => l.kind).join() !== 'fix,mov,und,core' || !(q[0].y < q[1].y && q[1].y < q[2].y && q[2].y < q[3].y) || !/^\d+ did not return/.test(q[2].text) || !/^the face's core at [A-C], derived: \d+ of its \d+ roles$/.test(q[3].text)) return false;
+            }
+            return /walked in the face's own direction, A → B → C → A/.test(fd.text || '') && !/reads differently|the other way|composed/.test((fd.text || '') + (fr.text || '')) &&
+              (fr.handTexts || []).length === 3 && fr.handTexts.every((t) => /^(here, )?on [A-D]–[A-D]: withdraw .+ ↦ .+$/.test(t)) && fr.here === 1 && fr.handTexts.filter((t) => /^here, /.test(t)).length === 1;
+          })(), J({ lines: fd.lines, hands: fr.handTexts, here: fr.here }));
+        note(`the face's reading at the eye (fix · mov · und · core per corner): ${J((fd.corners || []).map((c) => `${c.corner} ${c.fix}·${c.mov}·${c.und}·${c.core}`))} · the block ${J(fd.box)} · the word half beneath it ${J((out.faceRead || {}).wordHalf)} at scroll ${(out.faceRead || {}).scrollTop} · the refusal's hands ${J(fr.hands)}`);
         // ITEM 0 — printed as a measurement, never blessed
         const i0 = out.item0 || { present: false };
         note(`ITEM 0 (1705 §4): casts loaded onto the BORN corners AB and AC at gen 1 (${J(out.loadAB)} · ${J(out.loadAC)}), the core dissected, the gen-2 midpoint ABAC selected from the cuboctahedron (${J(out.selectABAC)}) — a surface for pairing: ${i0.present ? `PRESENT — ${i0.sentence || ''}` : 'ABSENT'}${out.item0After ? ` · a pair given by two clicks: ${J(out.item0After.lines)} — ${out.item0After.sentence || ''}` : ''}`);
@@ -197,6 +225,6 @@ const waitUp = () =>
       /* the server may have gone already */
     }
   }
-  console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint\'s act are in the person\'s visible box and made by clicks; the midpoint draws its own space; the sources carry the person\'s neighbouring acts; the acts survive a second dissection; the designer\'s eight read at the eye; the face refuses and reads with its direction stated' : `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ${failures} FAILURE(S)`}`);
+  console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint\'s act are in the person\'s visible box and made by clicks; the midpoint draws its own space; the sources carry the person\'s neighbouring acts; the acts survive a second dissection; the designer\'s eight read at the eye; the face refuses and reads with its direction stated; her second cut read at the eye — the lane, the width, the card, the face\'s lines' : `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ${failures} FAILURE(S)`}`);
   process.exit(failures === 0 ? 0 : 1);
 })();

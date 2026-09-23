@@ -32,7 +32,7 @@ require.extensions['.tsx'] = require.extensions['.ts'];
 
 const repoRoot = path.resolve(__dirname, '..');
 const req = (p) => require(path.join(repoRoot, p));
-const { readCastFile, castMarks, castCounts, orderingLine, castSummaryLine, notTakenAddresses, notTakenLine, NOT_A_CAST } = req('src/lib/castLoader.ts');
+const { readCastFile, castMarks, castCounts, orderingRows, castSummaryLine, notTakenAddresses, notTakenLine, NOT_A_CAST } = req('src/lib/castLoader.ts');
 const readLf = (p) => fs.readFileSync(path.join(repoRoot, p), 'utf8').split('\r\n').join('\n');
 const fixture = (name) => fs.readFileSync(path.join(repoRoot, 'scripts/fixtures/casts', name), 'utf8');
 
@@ -52,29 +52,35 @@ check('§1 ★★ ARMAN\'S TRIANGLE IS TAKEN: three roles (bare ids — the thin
     tri.cast.warrant === undefined && tri.marks.length === 0 && tri.cast.roles.every((r) => r.label === undefined),
   JSON.stringify(tri));
 const triCounts = tri.taken ? castCounts(tri.cast) : null;
-check('§1 ★★ THE ORDERINGS LINE reads `r · 3 tuples · none reversed — read as directed` (term order is content: the directed triangle; the device DISCLOSES its reading beside the evidence — C-6d (γ) §3.1, the designer\'s ruling)',
-  triCounts && triCounts.orderings.length === 1 && orderingLine(triCounts.orderings[0]) === 'r · 3 tuples · none reversed — read as directed' && triCounts.orderings[0].reading === 'directed', JSON.stringify(triCounts));
+check('§1 ★★ THE TERM-ORDER ROW reads `read as directed — none reversed: r 3` (term order is content: the directed triangle; the device DISCLOSES its reading beside the evidence — C-6d (γ) §3.1, the designer\'s ruling; C-7g item 3, hers: the rows GROUP BY READING, the reading once per row, every word with its count)',
+  triCounts && triCounts.orderings.length === 1 && JSON.stringify(orderingRows(triCounts.orderings)) === JSON.stringify([{ key: 'directed-none', text: 'read as directed — none reversed: r 3' }]) && triCounts.orderings[0].reading === 'directed', JSON.stringify(triCounts));
 check('§1 ★ THE CARD\'S LINE for the triangle: `taken — 3 roles · 1 relation-type · 3 relations` — and NO `axioms carried` clause and NO `warrant carried` clause, because there are none (C-6d rider 1, the designer\'s own correction: `0 axioms carried` marked the ordinary and claimed a carry that did not happen; a positive fact needs a positive mark)',
   tri.taken && castSummaryLine(tri.cast) === 'taken — 3 roles · 1 relation-type · 3 relations · read as directed', tri.taken && castSummaryLine(tri.cast));
 check('§1 ★ LAW 24 for the axioms clause: the same triangle carrying ONE axiom (one-axiom.cast.json) reads `taken — 3 roles · 1 relation-type · 3 relations · 1 axiom carried, never evaluated`',
   (() => { const r = readCastFile(fixture('one-axiom.cast.json')); return r.taken && r.cast.axioms.length === 1 && castSummaryLine(r.cast) === 'taken — 3 roles · 1 relation-type · 3 relations · read as directed · 1 axiom carried, never evaluated'; })());
 const sym = readCastFile(fixture('triangle-symmetric.cast.json'));
 const symCounts = sym.taken ? castCounts(sym.cast) : null;
-check('§1 ★ LAW 24 for the orderings count AND the reading: the SAME triangle cast symmetric reads `r · 6 tuples · every one reversed — read as symmetric`, and its line `taken — 3 roles · 1 relation-type · 6 relations · read as symmetric` (C-6d (γ) §3.2: the act\'s line carries the reading; the card keeps the evidence)',
-  symCounts && orderingLine(symCounts.orderings[0]) === 'r · 6 tuples · every one reversed — read as symmetric' && sym.taken && castSummaryLine(sym.cast) === 'taken — 3 roles · 1 relation-type · 6 relations · read as symmetric', JSON.stringify(symCounts));
-check('§1 ★ ARITY ≥ 3 (C-6d (γ) §3.1 ⚠): `read as symmetric` ONLY when every permutation of every tuple is listed — a ternary type listing all six orders of one triple reads symmetric; five of the six reads `every one reversed` under the reversal count yet `read as directed`; a cast with ternary and binary types of MIXED readings says `read as directed` on its line and the rows say which',
+check('§1 ★ LAW 24 for the orderings count AND the reading: the SAME triangle cast symmetric reads `read as symmetric — all reversed: r 6`, and its line `taken — 3 roles · 1 relation-type · 6 relations · read as symmetric` (C-6d (γ) §3.2: the act\'s line carries the reading; the card keeps the evidence)',
+  symCounts && JSON.stringify(orderingRows(symCounts.orderings)) === JSON.stringify([{ key: 'symmetric-all', text: 'read as symmetric — all reversed: r 6' }]) && sym.taken && castSummaryLine(sym.cast) === 'taken — 3 roles · 1 relation-type · 6 relations · read as symmetric', JSON.stringify(symCounts));
+check('§1 ★ ARITY ≥ 3 (C-6d (γ) §3.1 ⚠): `read as symmetric` ONLY when every permutation of every tuple is listed — a ternary type listing all six orders of one triple reads `read as symmetric — all reversed: t 6`; five of the six reads `all reversed` under the reversal count yet `read as directed` — a FOURTH row class, `read as directed — all reversed: t 5` (the mothership\'s "at most three rows, whatever the cast" holds for binary types listed; a ternary type can be directed with every tuple reversed — measured, said); a cast with ternary and binary types of MIXED readings says `read as directed` on its line and TWO rows say which',
   (() => {
     const orders = [['a', 'b', 'c'], ['a', 'c', 'b'], ['b', 'a', 'c'], ['b', 'c', 'a'], ['c', 'a', 'b'], ['c', 'b', 'a']];
     const mk = (perms, extra) => readCastFile(JSON.stringify({ roles: [{ id: 'a' }, { id: 'b' }, { id: 'c' }], signature: [{ type: 't', arity: 3 }, ...(extra ? [{ type: 'r', arity: 2 }] : [])],
       relations: [...perms.map((terms) => ({ type: 't', terms, polarity: 'holds' })), ...(extra ? [{ type: 'r', terms: ['a', 'b'], polarity: 'holds' }] : [])] }));
     const full = mk(orders, false); const five = mk(orders.slice(0, 5), false); const mixed = mk(orders, true);
-    const fullO = castCounts(full.cast).orderings[0]; const fiveO = castCounts(five.cast).orderings[0]; const mixedO = castCounts(mixed.cast).orderings;
-    return full.taken && orderingLine(fullO) === 't · 6 tuples · every one reversed — read as symmetric' && castSummaryLine(full.cast) === 'taken — 3 roles · 1 relation-type · 6 relations · read as symmetric' &&
-      five.taken && orderingLine(fiveO) === 't · 5 tuples · every one reversed — read as directed' && castSummaryLine(five.cast) === 'taken — 3 roles · 1 relation-type · 5 relations · read as directed' &&
-      mixed.taken && castSummaryLine(mixed.cast) === 'taken — 3 roles · 2 relation-types · 7 relations · read as directed' && mixedO.find((o) => o.type === 't').reading === 'symmetric' && mixedO.find((o) => o.type === 'r').reading === 'directed';
+    const fullR = orderingRows(castCounts(full.cast).orderings); const fiveR = orderingRows(castCounts(five.cast).orderings); const mixedO = castCounts(mixed.cast).orderings; const mixedR = orderingRows(mixedO);
+    return full.taken && JSON.stringify(fullR) === JSON.stringify([{ key: 'symmetric-all', text: 'read as symmetric — all reversed: t 6' }]) && castSummaryLine(full.cast) === 'taken — 3 roles · 1 relation-type · 6 relations · read as symmetric' &&
+      five.taken && JSON.stringify(fiveR) === JSON.stringify([{ key: 'directed-all', text: 'read as directed — all reversed: t 5' }]) && castSummaryLine(five.cast) === 'taken — 3 roles · 1 relation-type · 5 relations · read as directed' &&
+      mixed.taken && castSummaryLine(mixed.cast) === 'taken — 3 roles · 2 relation-types · 7 relations · read as directed' && mixedO.find((o) => o.type === 't').reading === 'symmetric' && mixedO.find((o) => o.type === 'r').reading === 'directed' &&
+      JSON.stringify(mixedR) === JSON.stringify([{ key: 'directed-none', text: 'read as directed — none reversed: r 1' }, { key: 'symmetric-all', text: 'read as symmetric — all reversed: t 6' }]);
   })());
-check('§1 a relation-type with NOTHING listed has no reading to state (`none listed`, no clause), and a cast whose arity ≥ 2 types list nothing has no reading clause on its line — absent, never `read as directed` by default',
-  (() => { const r = readCastFile(JSON.stringify({ roles: [{ id: 'x' }], signature: [{ type: 'r', arity: 2 }], relations: [] })); const o = castCounts(r.cast).orderings[0]; return r.taken && orderingLine(o) === 'r · 0 tuples · none listed' && o.reading === null && castSummaryLine(r.cast) === 'taken — 1 role · 1 relation-type · 0 relations'; })());
+check('§1 a relation-type with NOTHING listed has no reading to state — its row `nothing listed: r` carries no `read as`, and a cast whose arity ≥ 2 types list nothing has no reading clause on its line — absent, never `read as directed` by default; a partly-reversed type keeps its reversed count in its row (`read as directed — partly reversed: r 3 (2 reversed)`)',
+  (() => {
+    const r = readCastFile(JSON.stringify({ roles: [{ id: 'x' }], signature: [{ type: 'r', arity: 2 }], relations: [] })); const o = castCounts(r.cast).orderings[0];
+    const p = readCastFile(JSON.stringify({ roles: [{ id: 'x' }, { id: 'y' }, { id: 'z' }], signature: [{ type: 'r', arity: 2 }], relations: [{ type: 'r', terms: ['x', 'y'], polarity: 'holds' }, { type: 'r', terms: ['y', 'x'], polarity: 'holds' }, { type: 'r', terms: ['x', 'z'], polarity: 'holds' }] }));
+    return r.taken && JSON.stringify(orderingRows([o])) === JSON.stringify([{ key: 'nothing-listed', text: 'nothing listed: r' }]) && o.reading === null && castSummaryLine(r.cast) === 'taken — 1 role · 1 relation-type · 0 relations' &&
+      p.taken && JSON.stringify(orderingRows(castCounts(p.cast).orderings)) === JSON.stringify([{ key: 'directed-partly', text: 'read as directed — partly reversed: r 3 (2 reversed)' }]);
+  })());
 
 // ═══ §2 the T cell — the mold-shaped profile ═══
 const tcell = readCastFile(fixture('t-cell.cast.json'));
@@ -89,9 +95,18 @@ check('§2 ★ THE ROLE\'S EXTRAS ride on its marks, never read: gloss · source
 const tCounts = tcell.taken ? castCounts(tcell.cast) : null;
 check('§2 ★★ ONE NUMBER, BOTH HOMES: relation-types 7 (6 in the signature + member_status declared on the roles) · relations 21 (11 tuples + 10 role-type entries) — relations.length alone would undercount; `t-cell.cast.json` IS the fixture of the both-homes COUNT (C-6d rider 2: the refusal\'s fixture is `one-name-two-homes.cast.json`, named for its defect)',
   tCounts && tCounts.relationTypes === 7 && tCounts.relations === 21 && tCounts.roles === 10 && tCounts.unknownTypes === 0, JSON.stringify(tCounts));
-check('§2 the T cell\'s orderings: sustains · 5 tuples · none reversed (r1→r0 holds and r8→r0 does-not-hold are different tuples, not reversals); removes · 1 tuple · none reversed (arity 3 generalises)',
-  tCounts && orderingLine(tCounts.orderings.find((o) => o.type === 'sustains')) === 'sustains · 5 tuples · none reversed — read as directed' &&
-    orderingLine(tCounts.orderings.find((o) => o.type === 'removes')) === 'removes · 1 tuple · none reversed — read as directed', JSON.stringify(tCounts && tCounts.orderings));
+check('§2 the T cell\'s orderings: sustains 5 tuples, none reversed (r1→r0 holds and r8→r0 does-not-hold are different tuples, not reversals); removes 1 tuple, none reversed (arity 3 generalises) — both in the ONE row `read as directed — none reversed: …` (C-7g item 3); the T cell\'s rows and Φ\'s printed (the card\'s height at each is the drive leg\'s to measure)',
+  (() => {
+    if (!tCounts) return false;
+    const rowsT = orderingRows(tCounts.orderings);
+    const phi = readCastFile(fixture('phi.cast.json'));
+    const rowsPhi = phi.taken ? orderingRows(castCounts(phi.cast).orderings) : [];
+    console.log(`      the T cell's term-order rows: ${JSON.stringify(rowsT.map((r) => r.text))}`);
+    console.log(`      Φ's term-order rows: ${JSON.stringify(rowsPhi.map((r) => r.text))}`);
+    const none = rowsT.find((r) => r.key === 'directed-none');
+    return tCounts.orderings.find((o) => o.type === 'sustains').tuples === 5 && tCounts.orderings.find((o) => o.type === 'sustains').reversed === 0 &&
+      none && / sustains 5( ·|$)/.test(none.text) && / removes 1( ·|$)/.test(none.text) && rowsT.length <= 3 && rowsPhi.length <= 3 && rowsT.every((r) => (r.text.match(/read as/g) || []).length === (r.key === 'nothing-listed' ? 0 : 1));
+  })(), JSON.stringify(tCounts && tCounts.orderings));
 check('§2 THE CARD\'S LINE for the T cell names the warrant it carries and NO axioms clause (it carries none — measured: the rider\'s "line unchanged" premise was false, said): `taken — 10 roles · 7 relation-types · 21 relations · warrant carried, never read`',
   tcell.taken && castSummaryLine(tcell.cast) === 'taken — 10 roles · 7 relation-types · 21 relations · read as directed · warrant carried, never read', tcell.taken && castSummaryLine(tcell.cast));
 
@@ -244,9 +259,9 @@ check('§7 ★ SURFACE 1 — `load cast… (.cast.json)` sits in the packet edit
     editor.includes('data-cast-load-result') && editor.includes('readCastFile('));
 check('§7 ★ THE AMBO\'S LINE gains her clause VERBATIM: `a corner takes a concept-space from the packets tab` (C-7d appends the midpoint\'s two-halves clause after it — hers stands verbatim, no longer the line\'s tail)',
   workspace.includes(' · a corner takes a concept-space from the packets tab · '));
-check('§7 ★★ SURFACE 2 — the card: NO ROW without a cast (the rows render only under `vertex.data.cast`), the summary line, the orderings per type, the two registers, UNKNOWN\'s count, the marks re-derived; C-7f item 5 (the designer, measured: the card 312 × 1119 px at a corner holding the T cell — a GRID MISMATCH, sentences in a 187 px value cell): the card has ONE grid and it is a label·value grid, so every sentence-shaped cast row SPANS the card\'s full width (`col-span-2` on all six labels and all six sentences) and no cast sub-line sits below the floor (no `text-stone-500` value in the rows)',
+check('§7 ★★ SURFACE 2 — the card: NO ROW without a cast (the rows render only under `vertex.data.cast`), the summary line, the term-order rows GROUPED BY READING (C-7g item 3 — `orderingRows`, one `data-cast-orderings-row` per class, never a row per relation-type), the two registers, UNKNOWN\'s count, the marks re-derived; C-7f item 5 (the designer, measured: the card 312 × 1119 px at a corner holding the T cell — a GRID MISMATCH, sentences in a 187 px value cell): the card has ONE grid and it is a label·value grid, so every sentence-shaped cast row SPANS the card\'s full width (`col-span-2` on all six labels and all six sentences) and no cast sub-line sits below the floor (no `text-stone-500` value in the rows)',
   panels.includes('{vertex.data.cast ? (') && panels.includes('<CastCardRows cast={vertex.data.cast} personLabel={vertex.data.label} />') &&
-    panels.includes('{castSummaryLine(cast)}') && panels.includes('orderingLine(') && panels.includes('data-cast-card-row="summary"') &&
+    panels.includes('{castSummaryLine(cast)}') && panels.includes('orderingRows(counts.orderings)') && panels.includes('data-cast-orderings-row={row.key}') && !panels.includes('orderingLine') && panels.includes('data-cast-card-row="summary"') &&
     panels.includes('const marks = castMarks(cast);') && panels.includes('an address, not a name') && panels.includes("marked unknown") &&
     (() => { const body = panels.slice(panels.indexOf('function CastCardRows('), panels.indexOf('function AtomicRegistryLens(')); return (body.match(/<dt className="col-span-2 text-stone-500">/g) || []).length === 6 && (body.match(/data-cast-card-row="[^"]+" className="col-span-2/g) || []).length === 6 && !/text-xs text-stone-500/.test(body); })());
 

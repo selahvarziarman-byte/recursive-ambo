@@ -61,7 +61,7 @@ const check = (name, cond, detail) => {
 const note = (line) => console.log(`      ${line}`);
 const J = (x) => JSON.stringify(x);
 
-console.log('THE FACE — the three records composed around a face, read at each corner with the direction stated; the guard: the face is refusable (C-5)\n');
+console.log('THE FACE — the three records walked in turn around a face, read at each corner with the direction stated as the face\'s own; the guard: the face is refusable (C-5; C-7g items 6–9)\n');
 
 const flow = cast('flow.cast.json');
 const tcell = cast('t-cell.cast.json');
@@ -286,32 +286,41 @@ const packetAB = report.packets.find((p) => p.trace.parentIds.includes(a) && p.t
 const surfaceAB = () => render(React.createElement(ConceptSurface, { shape: cur(), vertexId: packetAB.trace.siteId }));
 const faceBlock = (html) => (html.split('data-midpoint-face-reading="A·B·C"')[1] || '').split(/data-midpoint-source-acts=|data-midpoint-word-half=|data-midpoint-source="/)[0];
 give(a, b, inv(HAND_TF.S1));
-check('§5 ★★ THE ABSENT STATE, in words, at the midpoint: with a record on A–B alone the AB surface\'s source C reads `the face A·B·C, walked A → B → C → A: no reading yet — it needs a record on each of its three edges; none on B–C · C–A`',
-  (() => { const html = surfaceAB(); return attrsOf(html, 'data-midpoint-face-state').includes('absent') && visibleText(faceBlock(html)).includes('the face A·B·C, walked A → B → C → A: no reading yet — it needs a record on each of its three edges; none on B–C · C–A'); })(), visibleText(faceBlock(surfaceAB())).slice(0, 300));
+check('§5 ★★ THE ABSENT STATE, in words, at the midpoint: with a record on A–B alone the AB surface\'s source C reads `the face A·B·C, walked in the face\'s own direction, A → B → C → A: no reading yet — it needs a record on each of its three edges; none on B–C · C–A` (C-7g item 7: the direction is the face\'s own, no word about the other way)',
+  (() => { const html = surfaceAB(); return attrsOf(html, 'data-midpoint-face-state').includes('absent') && visibleText(faceBlock(html)).includes("the face A·B·C, walked in the face's own direction, A → B → C → A: no reading yet — it needs a record on each of its three edges; none on B–C · C–A"); })(), visibleText(faceBlock(surfaceAB())).slice(0, 300));
 give(b, c, HAND_TP.Q);
 give(c, a, inv(J_FP['(i)']));
-check('§5 ★★ THE THREE RECORDS ACCEPTED AT THEIR EDGES, THE FACE REFUSED (the new site, the new cause): every pair of (i)+S1+Q passed the edge\'s own check (no refusal pending on any of the three edges) — and the AB surface\'s source C reads `NO FACE`, naming T\'s two tuples with their values, the corner B, the merged pair (r8 and r1 made one), the three edges, and THREE hands as buttons — `withdraw r1 ↦ Φ1 on B–C` · `withdraw Φ1 ↦ F7 on C–A` (as stored) · `withdraw F7 ↦ r8 on A–B` (as stored)',
+check('§5 ★★ THE THREE RECORDS ACCEPTED AT THEIR EDGES, THE FACE REFUSED (the new site, the new cause): every pair of (i)+S1+Q passed the edge\'s own check (no refusal pending on any of the three edges) — and the AB surface\'s source C reads `NO FACE: the three acts around it, walked in turn, …` (C-7g item 9: never `composed` — the solid\'s word), naming T\'s two tuples with their values, the corner B, the merged pair (r8 and r1 made one), the three edges, and THREE hands as buttons, EACH LEADING WITH WHERE and the local one saying `here` (C-7g item 8) — `on B–C: withdraw r1 ↦ Φ1` · `on C–A: withdraw Φ1 ↦ F7` (as stored) · `here, on A–B: withdraw F7 ↦ r8` (as stored; A–B is the midpoint\'s own edge)',
   (() => {
     const html = surfaceAB();
     const fb = faceBlock(html);
     const text = visibleText(fb);
     const hands = attrsOf(fb, 'data-midpoint-face-withdraw');
+    const handTexts = [...fb.matchAll(/data-midpoint-face-withdraw="[^"]*"[^>]*>([^<]*)</g)].map((m) => unescapeHtml(m[1]));
     const eBC = edgeOf(b, c); const eCA = edgeOf(c, a); const eAB = edgeOf(a, b);
     const stored = (e, X, x, y) => (e.vertexIds[0] === X ? `${e.id}|${x}|${y}` : `${e.id}|${y}|${x}`);
-    return Object.keys(S().midpointRefusals).length === 0 && attrsOf(html, 'data-midpoint-face-state').includes('refused') && /NO FACE/.test(text) &&
-      text.includes("B's own record: sustains(r8, r0) does-not-hold against sustains(r1, r0) holds — with r8 and r1 made one") && /walked A → B → C → A/.test(text) &&
+    return Object.keys(S().midpointRefusals).length === 0 && attrsOf(html, 'data-midpoint-face-state').includes('refused') && /NO FACE: the three acts around it, walked in turn, make/.test(text) && !/composed/.test(text) &&
+      text.includes("B's own record: sustains(r8, r0) does-not-hold against sustains(r1, r0) holds — with r8 and r1 made one") && /walked in the face's own direction, A → B → C → A/.test(text) &&
       hands.length === 3 && hands[0] === stored(eBC, b, 'r1', 'Φ1') && hands[1] === stored(eCA, c, 'Φ1', 'F7') && hands[2] === stored(eAB, a, 'F7', 'r8') &&
-      !/Fix|returned to itself/.test(text) && text.includes('withdraw one of the three acts') && text.includes(eBC.vertexIds[0] === b ? 'withdraw r1 ↦ Φ1 on B–C' : 'withdraw Φ1 ↦ r1 on C–B');
+      !/Fix|returned to itself/.test(text) && text.includes('withdraw one of the three acts') &&
+      handTexts.length === 3 && handTexts[0] === (eBC.vertexIds[0] === b ? 'on B–C: withdraw r1 ↦ Φ1' : 'on C–B: withdraw Φ1 ↦ r1') && handTexts[2] === (eAB.vertexIds[0] === a ? 'here, on A–B: withdraw F7 ↦ r8' : 'here, on B–A: withdraw r8 ↦ F7') && !/^here/.test(handTexts[1]) &&
+      attrsOf(fb, 'data-midpoint-face-here').length === 1;
   })(), visibleText(faceBlock(surfaceAB())).slice(0, 600));
 withdraw(b, c, 'r1', 'Φ1');
-check('§5 ★★ ONE HAND WITHDRAWN THROUGH THE STORE, THE FACE READS: the surface states the direction (`walked A → B → C → A — the reading is the walk\'s; the other way round reads differently`), and at each corner in words — `returned to itself` · `returned elsewhere` (as, never a pair glyph) · `did not return`, each Und role with the edge it broke at; `the face\'s core at A, derived: N of its 14 roles`; the words "has not said" nowhere',
+check('§5 ★★ ONE HAND WITHDRAWN THROUGH THE STORE, THE FACE READS: the surface states the direction as the face\'s own (`walked in the face\'s own direction, A → B → C → A` — C-7g item 7: no control to walk the other way, D14; no word about the other way), and at each corner ONE CLAUSE PER LINE in the ruled order (C-7g item 6, ADR 0024: map first, the verdict a consequence) — `returned to itself` · `returned elsewhere` (as, never a pair glyph) · `N did not return — n broke at A–B: … · m at B–C: …` (the counts per edge BEFORE the names, so a wrap cannot orphan the verdict; every Und role with its edge) · `the face\'s core at A, derived: N of its 14 roles` CLOSING the corner\'s block; the words "has not said" nowhere',
   (() => {
     const html = surfaceAB();
     const fb = faceBlock(html);
     const text = visibleText(fb);
     const corners = attrsOf(fb, 'data-midpoint-face-corner');
+    const lines = attrsOf(fb, 'data-midpoint-face-line');
+    const lineTexts = [...fb.matchAll(/data-midpoint-face-line="(\w+)"[^>]*>([^<]*)</g)].map((m) => ({ kind: m[1], text: unescapeHtml(m[2]) }));
+    const und = lineTexts.filter((l) => l.kind === 'und');
     return attrsOf(html, 'data-midpoint-face-state').includes('read') && attrsOf(fb, 'data-midpoint-face-walk')[0] === 'A → B → C → A' && J(corners) === J(['A', 'B', 'C']) &&
-      /did not return: .+ broke at A–B/.test(text) && /the face's core at A, derived: \d+ of its 14 roles/.test(text) && !/has not said/.test(text) && !/↦.*returned elsewhere|returned elsewhere: [^·]*↦/.test(text) && /the other way round reads differently/.test(text);
+      /walked in the face's own direction, A → B → C → A/.test(text) && !/reads differently|the other way/.test(text) &&
+      J(lines) === J(['fix', 'mov', 'und', 'core', 'fix', 'mov', 'und', 'core', 'fix', 'mov', 'und', 'core']) &&
+      und.length === 3 && und.every((l) => /^\d+ did not return( — \d+ broke at [A-C]–[A-C]: [^·]+( · \d+ at [A-C]–[A-C]: [^·]+)*)?$/.test(l.text)) && /^\d+ did not return — \d+ broke at A–B: /.test(und[0].text) &&
+      lineTexts.filter((l) => l.kind === 'core')[0].text.match(/^the face's core at A, derived: \d+ of its 14 roles$/) && !/has not said/.test(text) && !/↦.*returned elsewhere|returned elsewhere: [^·]*↦/.test(text);
   })(), visibleText(faceBlock(surfaceAB())).slice(0, 700));
 check('§5 ★ THE COUNTS AT EACH CORNER ARE THE MODULE\'S OWN, read from the same records: the surface\'s data attributes (fix · mov · und · core per corner) equal `faceOf` on the current shape\'s edges in the D14 walk',
   (() => {
