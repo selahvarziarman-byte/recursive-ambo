@@ -121,6 +121,11 @@ MEASURE = """() => {
     refusalAct: t('[data-midpoint-refusal-act]')[0] || null, refusalCollision: t('[data-midpoint-refusal-collision]')[0] || null, refusalHands: t('[data-midpoint-refusal] [data-midpoint-withdraw]'),
     oldGrammar: /refused —|the act just made|nothing glued/.test(panel.textContent),
     faceIdsInPanel: (panel.textContent.match(/\\bface:[a-z0-9]{3,}/g) || []).length,
+    // C-9 — the born faces read at this site, in the sources
+    bornFaces: [...panel.querySelectorAll('[data-midpoint-born-face]')].map((b) => ({ face: b.getAttribute('data-midpoint-born-face'), cells: b.getAttribute('data-midpoint-born-face-cells'), alike: b.getAttribute('data-midpoint-born-face-alike'),
+      states: [...b.querySelectorAll('[data-midpoint-born-face-state]')].map((e) => e.getAttribute('data-midpoint-born-face-state')), ground: b.querySelectorAll('[data-midpoint-born-face-line="ground"]').length, noNews: b.querySelectorAll('[data-midpoint-born-face-line="no-news"]').length,
+      news: [...b.querySelectorAll('[data-midpoint-born-face-news]')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()), hands: [...b.querySelectorAll('[data-midpoint-born-face-hands]')].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()), alikeLine: b.querySelectorAll('[data-midpoint-born-face-alike-line]').length,
+      box: r(b), inPanel: (() => { const q = b.getBoundingClientRect(); return q.y >= P.y && q.bottom <= P.bottom; })(), head: (b.textContent.match(/^\\s*the face [^,]+, [^,]+, [A-Z]+ → [A-Z]+ → [A-Z]+ → [A-Z]+/) || [''])[0].trim() })),
     home: t('[data-midpoint-home]')[0] || null, pick: a('[data-midpoint-pick]', 'data-midpoint-pick')[0] || null,
     loadedIgnored: t('[data-midpoint-loaded-ignored]'),
     refusalText: t('[data-midpoint-refusal]')[0] || null, dependency: a('[data-midpoint-refusal-dependency]', 'data-midpoint-refusal-dependency')[0] || null,
@@ -441,7 +446,7 @@ def main():
             if br.get('freeA') and br.get('freeB'):
                 xb, yb = br['freeA'][0], br['freeB'][0]
                 point(page, "A", xb); point(page, "B", yb)
-                out['bornPair'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'sentence', 'state', 'refusal', 'home')}
+                out['bornPair'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'sentence', 'state', 'refusal', 'home', 'bornFaces')}
                 out['bornPair']['x'] = xb; out['bornPair']['y'] = yb
                 page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const l = el.querySelector('[data-midpoint-line]'); if (l) l.scrollIntoView(); }"); page.wait_for_timeout(200)
                 page.screenshot(path=f"{args.frames}/concept-layer-born-pair-{args.width}x{args.height}.png")

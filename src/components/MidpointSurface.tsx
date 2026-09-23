@@ -113,6 +113,7 @@ import { useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
+import { bornFaceOf, readAlike, type BornAct, type BornFaceResult } from '../lib/bornFace';
 import { insideOf, type Inside, type InsideArc, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
 import { traceOf, type GluedSpace, type Midpoint, type Origin, type ParentTrace, type Side } from '../lib/midpointGlue';
 import { type Conflict } from '../lib/jRegister';
@@ -123,6 +124,7 @@ import { generationOf, holdsLoadedCast, isSeedVertex, nameIn, spaceOf, type Reso
 import { CastInsideDiagram, CastInsidePanel, InsideColumn, insideGeometry, type MarkExtra, type PointExtra } from './CastInsideDiagram';
 
 export interface ProjectionSource {
+  faceId: string; // C-9: the face record — the cells holding it name an interior face's two walks
   faceName: string; // composed from the face's corners (D14)
   apexes: VertexId[]; // the face's corners other than the two parents
   cycle: VertexId[]; // C-5: the face's corners in D14's order — the direction the face is walked (a rotation, never a reversal)
@@ -154,6 +156,7 @@ export function midpointSiteOf(shape: Shape, siteId: VertexId, trace: GeneralSit
     const labels = f.vertexIds.map((v) => labelOf(shape, v));
     const rot = d14NameRotation(labels);
     return {
+      faceId: f.id,
       faceName: composeCornerCycleName(f.vertexIds.map((v) => shape.vertices[v]?.data.label ?? null)) ?? labels.join(''),
       apexes: f.vertexIds.filter((v) => v !== p && v !== q),
       cycle: f.vertexIds.map((_, i) => f.vertexIds[(rot + i) % f.vertexIds.length]),
@@ -691,7 +694,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
 function ProjectionRecord({ shape, site, source, position }: { shape: Shape; site: MidpointSite; source: ProjectionSource; position: 'above' | 'below' }) {
   return (
     <div data-midpoint-source={position} data-midpoint-face={source.faceName} className={`${position === 'above' ? 'mb-1 border-b' : 'mt-2 border-t'} border-stone-800 py-1`}>
-      {source.apexes.map((apex) => <SourceRecord key={apex} shape={shape} site={site} apex={apex} faceName={source.faceName} cycle={source.cycle} />)}
+      {source.apexes.map((apex) => <SourceRecord key={apex} shape={shape} site={site} apex={apex} faceName={source.faceName} faceId={source.faceId} cycle={source.cycle} />)}
     </div>
   );
 }
@@ -703,7 +706,7 @@ function ProjectionRecord({ shape, site, source, position }: { shape: Shape; sit
  * answers it falsely" — the root of Arman's `decorative`. So the source SAYS what it holds in words (a count is readable
  * at any size) and its drawing OPENS WHEN THE PERSON ASKS, at the one size a corner gets.
  */
-function SourceRecord({ shape, site, apex, faceName, cycle }: { shape: Shape; site: MidpointSite; apex: VertexId; faceName: string; cycle: VertexId[] }) {
+function SourceRecord({ shape, site, apex, faceName, faceId, cycle }: { shape: Shape; site: MidpointSite; apex: VertexId; faceName: string; faceId: string; cycle: VertexId[] }) {
   const [open, setOpen] = useState(false);
   // C-8 — the source's space through the one resolver: a seed corner's cast, a born corner's derived space
   const cast = useMemo(() => spaceOf(shape, apex)?.space, [shape, apex]);
@@ -736,7 +739,12 @@ function SourceRecord({ shape, site, apex, faceName, cycle }: { shape: Shape; si
           : acts.map((n) => neighbourActsWords(n)).join(' · ')}
       </span>
       {/* C-5 reads the face at gen 0 — the seed's own faces, whose edges hold the person's records; a face with a born corner is not read here (its edges carry born pairs and the solid's identity, the tower's later work) */}
-      {cycle.length === 3 && cycle.every((v) => isSeedVertex(shape, v)) ? <FaceRecord shape={shape} cycle={cycle as [VertexId, VertexId, VertexId]} faceName={faceName} here={site.edge.id} /> : null}
+      {cycle.length === 3 && cycle.every((v) => isSeedVertex(shape, v)) ? (
+        <FaceRecord shape={shape} cycle={cycle as [VertexId, VertexId, VertexId]} faceName={faceName} here={site.edge.id} />
+      ) : cycle.length === 3 ? (
+        // C-9 — THE BORN FACE: a face with a born corner is read through the resolver at this site
+        <BornFaceRecord shape={shape} cycle={cycle as [VertexId, VertexId, VertexId]} faceName={faceName} faceId={faceId} here={site.edge.id} siteId={site.siteId} />
+      ) : null}
       {open && inside && inside.census.points > 0 ? (
         <div data-midpoint-source-drawing={apex} className="overflow-x-auto">
           <CastInsideDiagram inside={inside} id={`source-${apex}`} />
@@ -747,6 +755,119 @@ function SourceRecord({ shape, site, apex, faceName, cycle }: { shape: Shape; si
 }
 
 const tupleWords = (t: FaceTuple): string => `${t.type}(${t.terms.join(', ')}) ${t.value}`;
+
+/**
+ * C-9 — THE BORN FACE at its edge's site (the designer's §125.1 rulings): the SOLID part QUIET, stated once — it is the
+ * ground, derived and never an act; the EXTENSION MARKED and ATTRIBUTED to the born pair that made each added route;
+ * `Und`'s two hands in the one grammar, where first — a born pair on the born face's edge at its site · an act on the
+ * descended-from seed edge at its midpoint — the device never chooses between them. An INTERIOR face lies between two
+ * cells whose walks are opposite (the record's own order is the HOST cell's walk — C-7h's measurement; the reverse is the
+ * other cell's, a face of the solid, never a flipped face): ONE block when both read alike (saying so), BOTH blocks named
+ * by their cells, the host's first, when they differ. The corner cell's face carries no block: it always returns all of its
+ * corner to itself — the solid's ordinary, no news.
+ */
+function BornFaceRecord({ shape, cycle, faceName, faceId, here, siteId }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceName: string; faceId: string; here: Edge['id']; siteId: VertexId }) {
+  const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
+  // the cells holding this face — by VERTEX SET: each cell holds its OWN record of a shared face (C-7h's measurement: one order written twice), so the id names one cell's copy
+  const cells = useMemo(() => {
+    const own = shape.faces.find((f) => f.id === faceId);
+    const set = new Set(own ? own.vertexIds : cycle);
+    const same = (id: string): boolean => { const f = shape.faces.find((x) => x.id === id); return Boolean(f) && (f as { vertexIds: VertexId[] }).vertexIds.length === set.size && (f as { vertexIds: VertexId[] }).vertexIds.every((v) => set.has(v)); };
+    return shape.cells.filter((c) => c.faceIds.some(same));
+  }, [shape, faceId, cycle]);
+  const host = cells.find((c) => c.kind === 'core' || c.kind === 'parent') ?? cells[0] ?? null;
+  const other = cells.find((c) => c !== host) ?? null;
+  const cornerCellFace = cells.length === 1 && cells[0].kind === 'residue' && cycle.some((v) => isSeedVertex(shape, v));
+  const forward = useMemo(() => bornFaceOf(shape, cycle), [shape, cycle]);
+  const reversed = useMemo(() => (other ? bornFaceOf(shape, [cycle[0], cycle[2], cycle[1]]) : null), [shape, cycle, other]);
+  if (cornerCellFace) return null;
+  const L = (v: VertexId): string => labelOf(shape, v);
+  const cellWords = (c: (typeof cells)[number]): string => (c.kind === 'residue' ? `the residue ${c.topology ?? 'cell'} at ${L(c.vertexIds[0])}` : `the ${c.kind === 'parent' ? 'parent' : 'core'} ${c.topology ?? 'cell'}`);
+  const alike = reversed ? readAlike(forward, reversed) : true;
+  const walkWords = (cs: [VertexId, VertexId, VertexId]): string => `${L(cs[0])} → ${L(cs[1])} → ${L(cs[2])} → ${L(cs[0])}`;
+  return (
+    <div data-midpoint-born-face={faceName} data-midpoint-born-face-cells={String(cells.length)} data-midpoint-born-face-alike={other ? (alike ? 'true' : 'false') : undefined} className="grid gap-0.5">
+      <BornFaceBlock shape={shape} result={forward} head={`the face ${faceName}, ${other && host ? `between ${cellWords(host)} and ${cellWords(other)} — walked as ${cellWords(host)}'s` : "walked in the face's own direction"}, ${walkWords(cycle)}`} here={here} siteId={siteId} withdraw={withdrawRolePair} />
+      {other && alike ? <span data-midpoint-born-face-alike-line="true" className="text-stone-500">{`walked as ${cellWords(other)}'s, the reverse, it reads alike — one reading, both cells'`}</span> : null}
+      {other && !alike && reversed ? <BornFaceBlock shape={shape} result={reversed} head={`walked as ${cellWords(other)}'s, the reverse, ${walkWords([cycle[0], cycle[2], cycle[1]])}`} here={here} siteId={siteId} withdraw={withdrawRolePair} /> : null}
+    </div>
+  );
+}
+
+function BornFaceBlock({ shape, result, head, here, siteId, withdraw }: { shape: Shape; result: BornFaceResult; head: string; here: Edge['id']; siteId: VertexId; withdraw: (edgeId: Edge['id'], x: string, y: string) => void }) {
+  const L = (v: VertexId): string => labelOf(shape, v);
+  const edgeWords = (from: VertexId, to: VertexId): string => `${L(from)}–${L(to)}`;
+  const spaces = useMemo(() => {
+    const memo = new Map<VertexId, Resolved | null>();
+    const out = new Map<VertexId, ConceptSpace>();
+    if (result.state === 'absent') return out;
+    for (const c of result.walk.corners) { const r = spaceOf(shape, c, {}, memo); if (r) out.set(c, r.space); }
+    return out;
+  }, [shape, result]);
+  const nameAt = (v: VertexId, id: string): string => { const sp = spaces.get(v); return sp ? nameIn(sp, id) : id; };
+  const where = (act: BornAct): string => (act.edge.id === here ? `here, on ${edgeWords(act.from, act.to)}` : `at ${act.siteId !== null ? L(act.siteId) : 'its midpoint'}, on ${edgeWords(act.from, act.to)}`);
+  const pairWords = (act: BornAct): string => `${nameAt(act.from, act.pair[0])} ↦ ${nameAt(act.to, act.pair[1])}`;
+  if (result.state === 'absent') {
+    return <span data-midpoint-born-face-state="absent" className="text-stone-400">{`${head}: no reading — ${result.missing.map(L).join(' · ')} ${result.missing.length === 1 ? 'holds' : 'hold'} no space here`}</span>;
+  }
+  if (result.state === 'refused') {
+    return (
+      <div data-midpoint-born-face-state="refused" className="rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
+        <span className="block">{`${head} — NO FACE: a corner's own record would say two things about one tuple; the edges keep their records`}</span>
+        {result.refusals.map((r, i) => (
+          <span key={i} data-midpoint-born-face-refusal={`${L(r.corner)}|${r.kind}|${r.inherited ? 'inherited' : 'born'}`} className="block">
+            {`${L(r.corner)}'s own record: ${tupleWords(r.first)} against ${tupleWords(r.second)} — with ${r.merged.map(([x, y]) => `${nameAt(r.corner, x)} and ${nameAt(r.corner, y)} made one`).join(' · ')}, one ${r.kind === 'mark' ? 'role with two marks' : 'tuple with two values'}; `}
+            {r.inherited ? (
+              <span data-midpoint-born-face-inherited="true">inherited from the seed face — the solid's own, its hands at the seed edges' midpoints</span>
+            ) : (
+              <>
+                {'through your pair'}{r.through.length === 1 ? '' : 's'}{': '}
+                {r.through.map((act, k) => (
+                  <button key={k} type="button" data-midpoint-born-face-withdraw={`${act.edge.id}|${act.stored[0]}|${act.stored[1]}`} className="mr-2 underline" onClick={() => withdraw(act.edge.id, act.stored[0], act.stored[1])}>
+                    {`${where(act)}: withdraw ${pairWords(act)}`}
+                  </button>
+                ))}
+              </>
+            )}
+          </span>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div data-midpoint-born-face-state="read" className="grid gap-0.5 text-stone-400">
+      <span>{head}</span>
+      {result.readings.map((r, k) => {
+        const rot = [result.walk.steps[k], result.walk.steps[(k + 1) % 3], result.walk.steps[(k + 2) % 3]];
+        const broken = rot.map((step) => ({ step, roles: r.und.filter((u) => u.brokeAt.from === step.from && u.brokeAt.to === step.to).map((u) => u.role) })).filter((b) => b.roles.length);
+        return (
+          <span key={r.corner} data-midpoint-born-face-corner={L(r.corner)} data-midpoint-born-face-news-count={String(r.news.length)} data-midpoint-born-face-und={String(r.und.length)} className="grid">
+            <span className="text-stone-100">{`at ${L(r.corner)}`}</span>
+            {/* the solid part QUIET, once — the ground */}
+            <span data-midpoint-born-face-line="ground" className="text-stone-500">{`the solid's ground: ${r.solid.fix.length} returned to itself · ${r.solid.mov.length} elsewhere · ${r.solid.und.length} did not return`}</span>
+            {/* the extension MARKED, each route attributed to the born pair it runs through */}
+            {r.news.length ? r.news.map((n) => (
+              <span key={n.role} data-midpoint-born-face-news={`${n.role}|${n.to}`} className="text-amber-200">
+                {`+ ${nameAt(r.corner, n.role)} ${n.role === n.to ? 'returns to itself' : `returns as ${nameAt(r.corner, n.to)}`} — through your pair${n.through.length === 1 ? '' : 's'} ${n.through.map((act) => `${pairWords(act)} at ${act.siteId !== null ? L(act.siteId) : edgeWords(act.from, act.to)}`).join(' · ')}`}
+              </span>
+            )) : (
+              <span data-midpoint-born-face-line="no-news">nothing added by a pair of yours yet</span>
+            )}
+            <span data-midpoint-born-face-line="und">{`${r.und.length} did not return${broken.length ? ` — ${broken.map((b, i) => `${b.roles.length} ${i === 0 ? 'broke ' : ''}at ${edgeWords(b.step.from, b.step.to)}: ${b.roles.map((x) => nameAt(r.corner, x)).join(' ')}`).join(' · ')}` : ''}`}</span>
+            <span data-midpoint-born-face-line="core">{`the face's core at ${L(r.corner)}, derived: ${r.full.core.length} of its ${r.full.ambient.length} roles`}</span>
+          </span>
+        );
+      })}
+      {/* Und's two hands, ONCE per edge of the face, where first — the device never chooses between them */}
+      {result.walk.steps.filter((step) => result.readings.some((r) => r.und.some((u) => u.brokeAt.from === step.from && u.brokeAt.to === step.to))).map((step) => (
+        <span key={`${step.from}|${step.to}`} data-midpoint-born-face-hands={edgeWords(step.from, step.to)} className="text-stone-300">
+          {`${step.edge.id === here ? `here, on ${edgeWords(step.from, step.to)}` : `at ${step.siteId !== null ? L(step.siteId) : 'its midpoint'}, on ${edgeWords(step.from, step.to)}`}: a pair of yours`}
+          {step.descent ? ` · or at ${L(step.from)}, on ${edgeWords(step.descent.from, step.descent.to)}: an act on the edge it descends from` : ''}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 /**
  * C-5 — THE FACE'S READING, where the person reaches it: at the midpoint, beside the opposite corner seen through this

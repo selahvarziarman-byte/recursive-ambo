@@ -709,7 +709,7 @@ check('§5 ⛔ THE RESOLVER IS PURE: spaceOf.ts imports only the types, the mold
     !/useGeometryStore|from '\.\.\/store|from '\.\.\/components|\.cast\s*=|identification\s*=/.test(lib) && !/\.data\.cast/.test(surf) && !/\.data\.cast/.test(store) && !/\.data\.cast/.test(readLf('src/components/CastInsideDiagram.tsx')) &&
     surf.includes("import { generationOf, holdsLoadedCast, isSeedVertex, nameIn, spaceOf, type Resolved } from '../lib/spaceOf';") && store.includes("from '../lib/spaceOf';"));
 check('§5 the manifest classifies the resolver NOT_FROZEN at its landing', /^NOT_FROZEN src\/lib\/spaceOf\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')));
-check('§5 the face at gen 0 stays the seed\'s: `FaceRecord` mounts only when every corner of the face is a seed vertex', surf.includes("cycle.length === 3 && cycle.every((v) => isSeedVertex(shape, v)) ? <FaceRecord"));
+check('§5 the face at gen 0 stays the seed\'s: `FaceRecord` mounts only when every corner of the face is a seed vertex', surf.includes("cycle.length === 3 && cycle.every((v) => isSeedVertex(shape, v)) ? (\n        <FaceRecord") && surf.includes(") : cycle.length === 3 ? (\n        // C-9 — THE BORN FACE"));
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-BORN-ROOM: ALL PASS — one resolver; the edge\'s kind fixes its J; the meet never pools and reproduces the doubling; the loader on the seed alone; the composed identity never a pair; a born pair taken; a later act that would break it refused by name' : `DIAGNOSE-THE-BORN-ROOM: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

@@ -118,7 +118,7 @@ export interface SpaceOfOptions {
 }
 
 /** the record in force on an edge for a read: the candidate when the read carries one for this edge, else what the edge holds (τ alone from the drafts) */
-function recordOn(e: Edge | undefined, options: SpaceOfOptions): { roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] } {
+export function recordOn(e: Edge | undefined, options: SpaceOfOptions): { roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] } {
   if (!e) return { roles: [], types: [] };
   if (options.candidate && options.candidate.edgeId === e.id) return { roles: options.candidate.roles, types: options.candidate.types };
   const record = e.identification;
