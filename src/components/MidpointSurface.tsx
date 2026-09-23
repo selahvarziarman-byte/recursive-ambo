@@ -75,6 +75,21 @@
 //                   (never *nothing identified*); given; refused at the act; a record
 //                   that contradicts itself (a pair the retired register let through)
 //                   → named, with its withdrawals.
+//   THE FACE        (C-5, 1705 §4 — the mothership; the researcher's guard): the three
+//                   records around a face of the seed, composed and read at each
+//                   corner — sited HERE, beside the opposite corner seen through that
+//                   face (the source already carries the person's acts on the two edges
+//                   that reach it; the face is those two and this one, walked). The
+//                   direction is D14's and STATED; each corner reads `returned to
+//                   itself` · `returned elsewhere` (as — never a pair glyph: the image
+//                   is derived, not given) · `did not return` with the edge it broke at
+//                   (0031 §1.5's word — never a phrase that says the person was silent); the core at
+//                   the corner DERIVED; the empty-core guard in words. THE FACE IS
+//                   REFUSABLE: once the walk makes two of a corner's roles one, that
+//                   corner's own record may say two things about one tuple — then NO
+//                   FACE, named in four things, with THREE hands (the acts that produced
+//                   the merge, each withdrawable on its own edge); the device chooses
+//                   none. On a refused face nothing else is read.
 //   C-7f            (the designer's eight, 1529): the empty map's residual lines BARE
 //                   (item 2 — a residual is the trace OF AN ACT; none until a pair
 //                   exists); a RE-MADE pair attributed (item 3 — `yours · re-made when
@@ -90,7 +105,8 @@ import { useMemo, useState } from 'react';
 import type { ConceptSpace, Edge, EdgeIdentification, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../store/geometryStore';
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
-import { composeCornerCycleName } from '../lib/cornerCycleName';
+import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
+import { faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
 import { insideOf, type Inside, type InsideArc, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
 import { glue, gluedSpace, traceOf, type Midpoint, type Origin, type ParentTrace, type Side } from '../lib/midpointGlue';
 import { type Conflict } from '../lib/jRegister';
@@ -99,6 +115,7 @@ import { CastInsideDiagram, CastInsidePanel, InsideColumn, insideGeometry, type 
 export interface ProjectionSource {
   faceName: string; // composed from the face's corners (D14)
   apexes: VertexId[]; // the face's corners other than the two parents
+  cycle: VertexId[]; // C-5: the face's corners in D14's order — the direction the face is walked (a rotation, never a reversal)
 }
 
 export interface MidpointSite {
@@ -123,10 +140,15 @@ export function midpointSiteOf(shape: Shape, siteId: VertexId, trace: GeneralSit
   if (!edge) return null;
   const host = shape.cells.find((c) => c.id === trace.hostCellId);
   const faces = host ? shape.faces.filter((f) => host.faceIds.includes(f.id) && f.vertexIds.includes(p) && f.vertexIds.includes(q)) : [];
-  const sources = faces.map((f) => ({
-    faceName: composeCornerCycleName(f.vertexIds.map((v) => shape.vertices[v]?.data.label ?? null)) ?? f.vertexIds.map((v) => labelOf(shape, v)).join(''),
-    apexes: f.vertexIds.filter((v) => v !== p && v !== q),
-  }));
+  const sources = faces.map((f) => {
+    const labels = f.vertexIds.map((v) => labelOf(shape, v));
+    const rot = d14NameRotation(labels);
+    return {
+      faceName: composeCornerCycleName(f.vertexIds.map((v) => shape.vertices[v]?.data.label ?? null)) ?? labels.join(''),
+      apexes: f.vertexIds.filter((v) => v !== p && v !== q),
+      cycle: f.vertexIds.map((_, i) => f.vertexIds[(rot + i) % f.vertexIds.length]),
+    };
+  });
   return { siteId, edge, a: edge.vertexIds[0], b: edge.vertexIds[1], hostCellId: trace.hostCellId, sources };
 }
 
@@ -546,7 +568,7 @@ export function MidpointSurface({ shape, site, castA, castB, tauDraft, refusal, 
 function ProjectionRecord({ shape, site, source, position }: { shape: Shape; site: MidpointSite; source: ProjectionSource; position: 'above' | 'below' }) {
   return (
     <div data-midpoint-source={position} data-midpoint-face={source.faceName} className={`${position === 'above' ? 'mb-1 border-b' : 'mt-2 border-t'} border-stone-800 py-1`}>
-      {source.apexes.map((apex) => <SourceRecord key={apex} shape={shape} site={site} apex={apex} faceName={source.faceName} />)}
+      {source.apexes.map((apex) => <SourceRecord key={apex} shape={shape} site={site} apex={apex} faceName={source.faceName} cycle={source.cycle} />)}
     </div>
   );
 }
@@ -558,7 +580,7 @@ function ProjectionRecord({ shape, site, source, position }: { shape: Shape; sit
  * answers it falsely" — the root of Arman's `decorative`. So the source SAYS what it holds in words (a count is readable
  * at any size) and its drawing OPENS WHEN THE PERSON ASKS, at the one size a corner gets.
  */
-function SourceRecord({ shape, site, apex, faceName }: { shape: Shape; site: MidpointSite; apex: VertexId; faceName: string }) {
+function SourceRecord({ shape, site, apex, faceName, cycle }: { shape: Shape; site: MidpointSite; apex: VertexId; faceName: string; cycle: VertexId[] }) {
   const [open, setOpen] = useState(false);
   const cast = shape.vertices[apex]?.data.cast;
   const inside = useMemo(() => (cast ? insideOf(cast) : null), [cast]);
@@ -589,11 +611,70 @@ function SourceRecord({ shape, site, apex, faceName }: { shape: Shape; site: Mid
           ? `raw material — nothing given yet on the edges that reach it (${acts.map((n) => n.edgeLabel).join(' · ')}); its clue is live once you have mapped them`
           : acts.map((n) => neighbourActsWords(n)).join(' · ')}
       </span>
+      {cycle.length === 3 ? <FaceRecord shape={shape} cycle={cycle as [VertexId, VertexId, VertexId]} faceName={faceName} /> : null}
       {open && inside && inside.census.points > 0 ? (
         <div data-midpoint-source-drawing={apex} className="overflow-x-auto">
           <CastInsideDiagram inside={inside} id={`source-${apex}`} />
         </div>
       ) : null}
+    </div>
+  );
+}
+
+const tupleWords = (t: FaceTuple): string => `${t.type}(${t.terms.join(', ')}) ${t.value}`;
+
+/**
+ * C-5 — THE FACE'S READING, where the person reaches it: at the midpoint, beside the opposite corner seen through this
+ * face. The three records around the face (this edge's and the two that reach the apex) are composed in D14's direction and
+ * read at each corner; the direction is stated (the other way reads differently — Und(h⁻¹) = R ∖ im h). The empty-core
+ * guard says which edges lack a record. THE GUARD: the colimit is attempted, never assumed — a refusal names the two
+ * tuples with their values, the corner, the merged pair and the three edges, and offers the three acts as hands; on a
+ * refused face nothing else is read. Nothing here composes a route for the person or proposes a pair (0031 §8(c)).
+ */
+function FaceRecord({ shape, cycle, faceName }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceName: string }) {
+  const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
+  const casts = useMemo(() => Object.fromEntries(cycle.map((v) => [v, shape.vertices[v]?.data.cast])) as Record<VertexId, ConceptSpace | undefined>, [shape, cycle]);
+  const result = useMemo(() => (cycle.every((v) => casts[v]) ? faceOf(cycle, casts, shape.edges) : null), [cycle, casts, shape.edges]);
+  if (!result) return null; // a corner without a cast: the source line already says `holds no cast`
+  const L = (v: VertexId): string => labelOf(shape, v);
+  const walkWords = `${L(cycle[0])} → ${L(cycle[1])} → ${L(cycle[2])} → ${L(cycle[0])}`;
+  const edgeWords = (from: VertexId, to: VertexId): string => `${L(from)}–${L(to)}`;
+  if (result.state === 'absent') {
+    return (
+      <span data-midpoint-face-reading={faceName} data-midpoint-face-state="absent" className="text-stone-400">
+        {`the face ${faceName}, walked ${walkWords}: no reading yet — it needs a record on each of its three edges; none on ${result.missing.map((m) => edgeWords(m.from, m.to)).join(' · ')}`}
+      </span>
+    );
+  }
+  if (result.state === 'refused') {
+    return (
+      <div data-midpoint-face-reading={faceName} data-midpoint-face-state="refused" className="rounded border border-rose-900 bg-rose-950/30 px-2 py-1 text-rose-200">
+        <span className="block">{`the face ${faceName}, walked ${walkWords} — NO FACE: the three acts around it, composed, make a corner's own record say two things about one tuple; the edges keep their records`}</span>
+        {result.refusals.map((r, i) => (
+          <span key={i} data-midpoint-face-refusal={`${L(r.corner)}|${tupleWords(r.first)}|${tupleWords(r.second)}|${r.merged.map(([x, y]) => `${x}≡${y}`).join(',')}`} className="block">
+            {`${L(r.corner)}'s own record: ${tupleWords(r.first)} against ${tupleWords(r.second)} — with ${r.merged.map(([x, y]) => `${x} and ${y} made one`).join(' · ')}, one ${r.kind === 'mark' ? 'role with two marks' : 'tuple with two values'}; merged by the walk through ${cycle.map((v, k) => edgeWords(v, cycle[(k + 1) % 3])).join(' · ')} · withdraw one of the three acts: `}
+            {r.hands.map((h, k) => (
+              <button key={k} type="button" data-midpoint-face-withdraw={`${h.edge.id}|${h.pair[0]}|${h.pair[1]}`} className="mr-2 underline" onClick={() => withdrawRolePair(h.edge.id, h.pair[0], h.pair[1])}>
+                {`withdraw ${h.pair[0]} ↦ ${h.pair[1]} on ${edgeWords(h.from, h.to)}`}
+              </button>
+            ))}
+          </span>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div data-midpoint-face-reading={faceName} data-midpoint-face-state="read" data-midpoint-face-walk={walkWords} className="grid gap-0.5 text-stone-400">
+      <span>{`the face ${faceName}, walked ${walkWords} — the reading is the walk's; the other way round reads differently`}</span>
+      {result.readings.map((r) => {
+        const by = undByStep(r).filter((s) => s.roles.length);
+        return (
+          <span key={r.corner} data-midpoint-face-corner={L(r.corner)} data-midpoint-face-fix={String(r.fix.length)} data-midpoint-face-mov={String(r.mov.length)} data-midpoint-face-und={String(r.und.length)} data-midpoint-face-core={String(r.core.length)}>
+            <span className="text-stone-100">{`at ${L(r.corner)}`}</span>
+            {` — returned to itself: ${r.fix.length ? r.fix.join(' · ') : 'none'} · returned elsewhere: ${r.mov.length ? r.mov.map(([x, y]) => `${x} as ${y}`).join(' · ') : 'none'} · did not return: ${r.und.length ? by.map((s) => `${s.roles.join(' ')} broke at ${edgeWords(s.from, s.to)}`).join(' · ') : 'none'} · the face's core at ${L(r.corner)}, derived: ${r.core.length} of its ${r.ambient.length} roles`}
+          </span>
+        );
+      })}
     </div>
   );
 }

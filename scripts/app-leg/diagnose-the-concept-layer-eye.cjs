@@ -43,7 +43,11 @@
 // column's origins written, the card one grid, the source in words with its
 // drawing on request, and the TEXT CENSUS with BOTH readings — composited over
 // the ground, and alpha-blind (a tinted badge read as its opaque colour, which
-// reproduces her five worst numbers to the hundredth).
+// reproduces her five worst numbers to the hundredth). C-5 (1705): THE FACE at
+// the eye — the empty-core guard in words, the face REFUSED with its three hands
+// as controls, one hand withdrawn and the face READ with its direction stated;
+// and ITEM 0 — a pair at a gen-2 midpoint between two BORN corners, walked and
+// PRINTED as a measurement ahead of the mothership's ruling, never blessed.
 
 const { spawn, execFileSync } = require('node:child_process');
 const fs = require('node:fs');
@@ -158,13 +162,28 @@ const waitUp = () =>
         check(`§3 [${w}×${h}] ★★ THE FLOOR (item 7c): every text node in the midpoint's panel reads at ≥ 4.5:1 against its composited ground`, c.panel && c.panel.nodes > 100 && c.panel.belowComposited === 0, J((c.panel || {}).below));
         const fit = (k) => ((c[k] || {}).worst || []).filter((r) => /Fit Selected/.test(r.text));
         check(`§3 [${w}×${h}] ★ Fit Selected reads at ≥ 4.5:1 disabled and enabled (composited); the workspace tab's active label is printed with both readings, not cut — composited it stands above the floor`, fit('controlsAtStart').length === 1 && fit('controlsAtStart')[0].disabled && fit('controlsAtStart')[0].composited >= 4.5 && fit('controlsWithSelection').length === 1 && fit('controlsWithSelection')[0].composited >= 4.5, J({ start: fit('controlsAtStart'), later: fit('controlsWithSelection') }));
+        // ─── C-5 — THE FACE at the eye ───
+        const blk = (m, face) => (((m || {}).blocks || []).find((x) => x.face === face) || {});
+        const fa = blk(out.faceAbsent, 'A·B·C'); const fr = blk(out.faceRefused, 'A·B·C'); const fd = blk(out.faceRead, 'A·B·C');
+        check(`§5 [${w}×${h}] ★★ THE FACE'S EMPTY-CORE GUARD IN WORDS (C-5): at AB, the source C's face A·B·C reads absent — "no reading yet … none on B–C" — while A–B and C–A hold records`,
+          fa.state === 'absent' && /no reading yet/.test(fa.text || '') && /none on B–C/.test(fa.text || ''), J(fa));
+        check(`§5 [${w}×${h}] ★★ THE FACE REFUSED, at the eye (the researcher's guard): with (i) on A–B, S1 on C–A and Q on B–C — each accepted at its own edge — the face A·B·C reads NO FACE: C's own record's two tuples with their values, the merged pair, the three edges, and THREE hands as controls`,
+          fr.state === 'refused' && /NO FACE/.test(fr.text || '') && /sustains\(r8, r0\) does-not-hold against sustains\(r1, r0\) holds/.test(fr.text || '') && /r8 and r1 made one/.test(fr.text || '') && (fr.hands || []).length === 3, J(fr));
+        check(`§5 [${w}×${h}] ★★ ONE HAND WITHDRAWN AT THE EYE, THE FACE READS, THE DIRECTION STATED: the block reads at each of A, B, C — returned to itself · returned elsewhere · did not return, with the edge it broke at — walked A → B → C → A; "has not said" nowhere`,
+          fd.state === 'read' && fd.walk === 'A → B → C → A' && (fd.corners || []).length === 3 && /did not return/.test(fd.text || '') && !/has not said/.test(fd.text || '') && /the other way round reads differently/.test(fd.text || ''), J(fd));
+        note(`the face's reading at the eye (fix · mov · und · core per corner): ${J((fd.corners || []).map((c) => `${c.corner} ${c.fix}·${c.mov}·${c.und}·${c.core}`))} · the block ${J(fd.box)} · the refusal's hands ${J(fr.hands)}`);
+        // ITEM 0 — printed as a measurement, never blessed
+        const i0 = out.item0 || { present: false };
+        note(`ITEM 0 (1705 §4): casts loaded onto the BORN corners AB and AC at gen 1 (${J(out.loadAB)} · ${J(out.loadAC)}), the core dissected, the gen-2 midpoint ABAC selected from the cuboctahedron (${J(out.selectABAC)}) — a surface for pairing: ${i0.present ? `PRESENT — ${i0.sentence || ''}` : 'ABSENT'}${out.item0After ? ` · a pair given by two clicks: ${J(out.item0After.lines)} — ${out.item0After.sentence || ''}` : ''}`);
+        check(`§5 [${w}×${h}] ITEM 0 MEASURED (reported, not ruled on): the route was walked and the surface's presence at a midpoint between two born corners was read — the fact is printed above`, typeof i0.present === 'boolean' && out.selectABAC !== null && out.selectABAC !== undefined, J({ selectABAC: out.selectABAC, present: i0.present }));
         // C-7e — THE SECOND DISSECTION AT THE EYE
         const g2 = out.gen2 || { present: false, lines: [], wordPairs: [], sourceActs: [] };
         note(`gen 2 — selected ${J(out.selectGen2Parent)} then ${J(out.selectAB3)} · panel ${J(g2.panel)} · word half ${J(g2.wordHalf)} · drawing top ${g2.drawing ? g2.drawing.y : '?'} · ${g2.counts || 'no counts'}`);
-        check(`§2 [${w}×${h}] ★★ THE ACTS SURVIVE THE SECOND DISSECTION (C-7e, Δ84 "pay the price"): the core dissected again with the pairs given at gen 1 — at gen 2 the AB midpoint reads the same 3 role pairs and 3 word pairs (yours), draws its own diagram (20 points, 4 both) and its trace (20 roles), its source C still carries the A–C act, and the AC midpoint still reads its one pair of each`,
-          g2.present && g2.lines.length === 3 && g2.wordPairs.length === 3 && g2.own === 'glued' && g2.ownPoints === 20 && g2.ownBoth === 4 && /20 roles/.test(g2.counts || '') && /3 role pairs · 3 word pairs — yours/.test(g2.sentence || '') &&
-            g2.sourceActs.some((s) => /^on [A-D]–[A-D]: .+ ↦ .+ · sustains ↦ sustains/.test(s)) && Boolean(out.gen2AC && out.gen2AC.present) && out.gen2AC.lines.length === 1 && out.gen2AC.wordPairs.length === 1,
-          J({ present: g2.present, lines: g2.lines, wordPairs: g2.wordPairs, own: g2.own, ownPoints: g2.ownPoints, ownBoth: g2.ownBoth, counts: g2.counts, sentence: g2.sentence, sourceActs: g2.sourceActs, ac: out.gen2AC }));
+        const ab0 = out.abBefore || {}; const ac0 = out.acBefore || {};
+        check(`§2 [${w}×${h}] ★★ THE ACTS SURVIVE THE SECOND DISSECTION (C-7e, Δ84 "pay the price"): the core dissected again with the records as they stood — at gen 2 the AB midpoint reads THE SAME role pairs and word pairs it read just before (3 + 3, yours), draws its own diagram (20 points, 4 both) and its trace (20 roles), its source C still carries the C–A acts, and the AC midpoint reads the same pairs it read before (after C-5's arm: S1's five and one word pair)`,
+          g2.present && J(g2.lines) === J(ab0.lines) && J(g2.wordPairs) === J(ab0.wordPairs) && g2.lines.length === 3 && g2.wordPairs.length === 3 && g2.own === 'glued' && g2.ownPoints === 20 && g2.ownBoth === 4 && /20 roles/.test(g2.counts || '') && /3 role pairs · 3 word pairs — yours/.test(g2.sentence || '') &&
+            g2.sourceActs.some((s) => /^on [A-D]–[A-D]: .+ ↦ .+ · sustains ↦ sustains/.test(s)) && Boolean(out.gen2AC && out.gen2AC.present) && J(out.gen2AC.lines) === J(ac0.lines) && J(out.gen2AC.wordPairs) === J(ac0.wordPairs) && (ac0.lines || []).length > 0,
+          J({ present: g2.present, lines: g2.lines, before: ab0.lines, wordPairs: g2.wordPairs, own: g2.own, ownPoints: g2.ownPoints, ownBoth: g2.ownBoth, counts: g2.counts, sentence: g2.sentence, sourceActs: g2.sourceActs, ac: out.gen2AC, acBefore: ac0 }));
         check(`§2 [${w}×${h}] ★ at gen 2 both halves are still inside the visible box at scroll 0 — the same reading as gen 1, on the carried record`,
           g2.present && g2.scrollTop === 0 && g2.gestureVisible && g2.wordHalfVisible && g2.wordsVisible && g2.drawingTopVisible,
           J({ gestureVisible: g2.gestureVisible, wordHalfVisible: g2.wordHalfVisible, wordsVisible: g2.wordsVisible, drawingTopVisible: g2.drawingTopVisible, panel: g2.panel }));
@@ -178,6 +197,6 @@ const waitUp = () =>
       /* the server may have gone already */
     }
   }
-  console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint\'s act are in the person\'s visible box and made by clicks; the midpoint draws its own space; the sources carry the person\'s neighbouring acts; the acts survive a second dissection; the designer\'s eight read at the eye' : `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ${failures} FAILURE(S)`}`);
+  console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-CONCEPT-LAYER-EYE: ALL PASS — both halves of the midpoint\'s act are in the person\'s visible box and made by clicks; the midpoint draws its own space; the sources carry the person\'s neighbouring acts; the acts survive a second dissection; the designer\'s eight read at the eye; the face refuses and reads with its direction stated' : `DIAGNOSE-THE-CONCEPT-LAYER-EYE: ${failures} FAILURE(S)`}`);
   process.exit(failures === 0 ? 0 : 1);
 })();

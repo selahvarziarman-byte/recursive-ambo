@@ -463,6 +463,29 @@ check('§4 ★★ ONE CODE PATH, TWO SITES — TRUE AT GEN 2 (C-7d item 1\'s clo
       countOf(without, 'data-midpoint-surface') === 1 && attrsOf(without, 'data-midpoint-own')[0] === 'unglued';
   })());
 
+// C-5 ITEM 0 (the mothership's 1705 §4, a MEASUREMENT ahead of a ruling — ADR 0031 §3.5 says no identification is given above
+// generation 0; the researcher found the writer takes any edge id): does the mechanism expose an edge between two BORN corners
+// for pairing? MEASURED here and printed as a fact, never blessed — the ruling flips the clause, not the mechanism.
+check('§4 ★★ ITEM 0 MEASURED (C-5, 1705 §4): casts loaded onto two BORN corners — the gen-1 midpoints AB and AC — then the core dissected: the gen-2 midpoint of the edge AB–AC has a site whose parents both hold a cast, the chooser renders the UNFOLDING for it (a surface for pairing), and the store\'s `giveRolePair` on that edge WRITES a record — a pair whose two roles no gen-0 record relates; the fact is printed beneath',
+  (() => {
+    const g1 = applyAmboDissection(seed);
+    const ab = byLabel(g1, 'AB'); const ac = byLabel(g1, 'AC');
+    const born = withCast(withCast(g1, ab, flow), ac, phi);
+    const g2 = applyAmboDissection(born, born.cells.find((x) => x.kind === 'core').id);
+    const abac = byLabel(g2, 'ABAC');
+    const rep2 = buildGeneralSitePacketPresenterReport(g2);
+    const p2 = rep2.packets.find((p) => p.trace.siteId === abac);
+    const s2 = p2 ? midpointSiteOf(g2, p2.trace.siteId, p2.trace) : null;
+    const html = render(React.createElement(ConceptSurface, { shape: g2, vertexId: abac }));
+    const snap = S();
+    useGeometryStore.setState({ shapes: { ...S().shapes, [g2.id]: g2 }, currentShapeId: g2.id });
+    if (s2) S().giveRolePair(s2.edge.id, ...(s2.a === ab ? ['F1', 'Φ1'] : ['Φ1', 'F1']));
+    const written = s2 ? S().shapes[g2.id].edges.find((e) => e.id === s2.edge.id).identification : undefined;
+    useGeometryStore.setState(snap, true);
+    note(`ITEM 0: the gen-2 midpoint ABAC — parents ${s2 ? `${g2.vertices[s2.a].data.label} · ${g2.vertices[s2.b].data.label}` : 'no site'} (both born at gen 1) · the chooser renders ${countOf(html, 'data-midpoint-surface')} unfolding · the store's giveRolePair on AB–AC wrote ${J(written)} — REACHABLE in the mechanism; the surface's reachability at the eye is the drive leg's`);
+    return s2 !== null && p2.trace.parentIds.includes(ab) && p2.trace.parentIds.includes(ac) && countOf(html, 'data-midpoint-surface') === 1 && written !== undefined && written.roles.length === 1;
+  })());
+
 // ═══ §5 THE MOUNT and the boundaries, source-pinned ═══
 console.log('\n----- §5 the check at the act lives with the writer; the presenter\'s FACE is not consumed; the boundaries -----');
 const store = readLf('src/store/geometryStore.ts');
@@ -472,9 +495,9 @@ check('§5 ★★ NO WRITE WITHOUT THE CHECK, BY CONSTRUCTION: the store\'s acts
   /const conflicts = refusalOf\(A, B, nextRoles, nextTypes\);\s*if \(conflicts\.length\) return refuse\(undefined, conflicts\);/.test(store) && (store.match(/writeEdgeIdentification\(set,/g) || []).length >= 5 && store.includes("import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';"));
 check('§5 ★★ THE PRESENTER\'S TRACE IS CONSUMED AND ITS FACE IS NOT: the surface imports `buildGeneralSitePacketPresenterReport` (one producer, many consumers — Panels consumes it too) and never `renderPacketFace`; no sentence of the naming era (`Name the concept`, `Across the cell`) in the surface',
   surf.includes("import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';") && !surf.includes('renderPacketFace') && !/Name the concept|Across the cell|howToName|namingDecision/.test(surf) && readLf('src/components/Panels.tsx').includes('buildGeneralSitePacketPresenterReport(shape)'));
-check('§5 ⛔ THE GLUE IS PURE OVER TWO CASTS AND THE PERSON\'S (J, τ): midpointGlue.ts imports only the types, the mold\'s join from the loader and the register\'s record/refusal/shared signature; no store, no component; the surface reaches the store only to act (five actions, three reads in the chooser)',
+check('§5 ⛔ THE GLUE IS PURE OVER TWO CASTS AND THE PERSON\'S (J, τ): midpointGlue.ts imports only the types, the mold\'s join from the loader and the register\'s record/refusal/shared signature; no store, no component; the surface reaches the store only to act (the midpoint\'s five actions and the face\'s one hand — `withdrawRolePair` again, in FaceRecord (C-5); three state reads in the chooser)',
   (gl.match(/^import /gm) || []).length === 3 && gl.includes("import { isMoldType, moldJoin } from './castLoader';") && gl.includes("import { recordOf, refusalOf, sharedSignature, type Conflict } from './jRegister';") && !/from '\.\.\/store|from '\.\.\/components/.test(gl) &&
-    (surf.match(/useGeometryStore\(\(s\) => s\.(give|withdraw)/g) || []).length === 5 && !/updateSelected|\.cast\s*=/.test(surf) && !/J_CB|∘/.test(surf));
+    (surf.match(/useGeometryStore\(\(s\) => s\.(give|withdraw)/g) || []).length === 6 && !/updateSelected|\.cast\s*=/.test(surf) && !/J_CB|∘/.test(surf));
 check('§5 the surface is sited on the canvas through the chooser (Workspace3D mounts `ConceptSurface`), and nothing of it enters Panels.tsx or the manuscript',
   readLf('src/components/Workspace3D.tsx').includes("import { ConceptSurface } from './MidpointSurface';") && !readLf('src/components/Panels.tsx').includes('MidpointSurface') && !/from '\.\.\/manuscript|explore/.test(surf));
 

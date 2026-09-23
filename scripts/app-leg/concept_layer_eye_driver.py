@@ -13,6 +13,9 @@ witness that locates a control by its data attribute proves it exists; only an e
   · C-7e (Δ84): the core dissected AGAIN with the pairs given — at gen 2 the AB midpoint's pairs, own diagram, trace and
     its source's neighbouring act, read as a person would (the octahedron — the gen-1 core, now the parent — selected in
     the workspace tree, AB selected from its corners);
+  · C-5 (1705): the FACE at the eye — the empty-core guard in words, the face REFUSED with three hands, one hand withdrawn
+    and the face READ with its direction stated; ITEM 0 — casts onto two born corners, the core dissected again, the gen-2
+    midpoint between them selected and its surface read (a measurement, printed);
   · plates into scripts/app-leg/_frames/ (the ignored dir — a witness never writes into the tracked tree).
 Prints ONE JSON line at the end; the .cjs leg asserts on it.
 """
@@ -112,6 +115,22 @@ CONTRAST = """(rootSel) => {
   }
   return out;
 }"""
+FACE = """() => {
+  const panel = document.querySelector('[data-midpoint-surface]');
+  if (!panel) return { present: false };
+  const P = panel.getBoundingClientRect();
+  const blocks = [...panel.querySelectorAll('[data-midpoint-face-reading]')].map((b) => {
+    const r = b.getBoundingClientRect();
+    return {
+      face: b.getAttribute('data-midpoint-face-reading'), state: b.getAttribute('data-midpoint-face-state'), walk: b.getAttribute('data-midpoint-face-walk'),
+      text: b.textContent.replace(/\\s+/g, ' ').trim().slice(0, 700),
+      hands: [...b.querySelectorAll('[data-midpoint-face-withdraw]')].map((e) => e.getAttribute('data-midpoint-face-withdraw')),
+      corners: [...b.querySelectorAll('[data-midpoint-face-corner]')].map((e) => ({ corner: e.getAttribute('data-midpoint-face-corner'), fix: e.getAttribute('data-midpoint-face-fix'), mov: e.getAttribute('data-midpoint-face-mov'), und: e.getAttribute('data-midpoint-face-und'), core: e.getAttribute('data-midpoint-face-core') })),
+      box: { y: Math.round(r.y), h: Math.round(r.height), insidePanel: r.y >= P.y && r.bottom <= P.bottom },
+    };
+  });
+  return { present: true, blocks };
+}"""
 CARD = """() => {
   const row = document.querySelector('[data-cast-card-row="summary"]');
   if (!row) return { present: false };
@@ -163,6 +182,20 @@ def point(page, side, role):
 
 def word(page, side, w):
     page.locator(f'[data-midpoint-word="{side}|{w}"]').first.click(); page.wait_for_timeout(350)
+
+
+def pair(page, x, y):
+    """give the role pair x ↦ y at the open midpoint, whichever side holds x (the record's orientation is the edge's own)"""
+    a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
+    if x in a_side:
+        point(page, "A", x); point(page, "B", y)
+    else:
+        point(page, "A", y); point(page, "B", x)
+
+
+def give_map(page, m):
+    for x, y in m.items():
+        pair(page, x, y)
 
 
 def select_core(page):
@@ -275,6 +308,32 @@ def main():
         tab(page, "packets")
         out['census']['packets'] = census(page, '@packets')
         out['census']['controlsWithSelection'] = census(page, '@controls')
+        # ─── C-5 — THE FACE at the eye: the face A·B·C through the source C, read at the AB midpoint ───
+        select_core(page)
+        out['selectAB4'] = select_vertex_labelled(page, "AB")
+        out['faceAbsent'] = page.evaluate(FACE)   # A–B holds (i), C–A holds F1 ↦ r0; B–C holds nothing → the guard in words
+        # the records of (i)+S1+Q: (i) stands on A–B; S1 on C–A replaces the earlier F1 ↦ r0 (S1 pairs F1 with r2); Q on B–C
+        out['selectAC3'] = select_vertex_labelled(page, "AC")
+        page.locator('[data-midpoint-withdraw="role|F1|r0"], [data-midpoint-withdraw="role|r0|F1"]').first.click(); page.wait_for_timeout(400)
+        give_map(page, {"r0": "F13", "r1": "F9", "r2": "F1", "r4": "F12", "r6": "F3", "r8": "F7"})
+        out['selectBC'] = select_vertex_labelled(page, "BC")
+        give_map(page, {"r9": "Φ6", "r1": "Φ1", "r0": "Φ8", "r7": "Φ5", "r6": "Φ2"})
+        out['selectAB5'] = select_vertex_labelled(page, "AB")
+        out['faceRefused'] = page.evaluate(FACE)
+        page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-face-reading]'); if (f) f.scrollIntoView(); }"); page.wait_for_timeout(300)
+        page.screenshot(path=f"{args.frames}/concept-layer-face-refused-{args.width}x{args.height}.png")
+        page.locator('[data-midpoint-face-withdraw]').first.click(); page.wait_for_timeout(500)
+        out['faceRead'] = page.evaluate(FACE)
+        page.screenshot(path=f"{args.frames}/concept-layer-face-read-{args.width}x{args.height}.png")
+        # ITEM 0 (1705 §4) — casts onto two BORN corners (the gen-1 midpoints AB and AC) before the dissection below
+        select_core(page)
+        out['loadAB'] = load_cast(page, 0, "flow.cast.json")
+        out['loadAC'] = load_cast(page, 1, "phi.cast.json")
+        # the records as they stand just before the dissection — the carry is compared against THESE at gen 2
+        out['selectAB6'] = select_vertex_labelled(page, "AB")
+        out['abBefore'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs', 'own', 'ownPoints', 'ownBoth')}
+        out['selectAC4'] = select_vertex_labelled(page, "AC")
+        out['acBefore'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs')}
         # C-7e (Δ84 "pay the price") — THE SECOND DISSECTION AT THE EYE: with the pairs given at AB (3 + τ₃) and at AC
         # (1 + 1), the core dissected again; at gen 2 the octahedron (the gen-1 core, now the parent) holds the gen-1
         # midpoints as its corners — AB selected from it, and what the person sees read: the pairs, the own diagram, the
@@ -287,6 +346,14 @@ def main():
         page.screenshot(path=f"{args.frames}/concept-layer-ab-gen2-carried-{args.width}x{args.height}.png")
         out['selectAC2'] = select_vertex_labelled(page, "AC")
         out['gen2AC'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('present', 'lines', 'wordPairs', 'state')}
+        # ITEM 0 — the gen-2 midpoint between the two born corners: its surface, and a pair by two clicks (a measurement, printed)
+        out['selectGen2Core'] = select_cell(page, r"^cuboctahedron")
+        out['selectABAC'] = select_vertex_labelled(page, "ABAC")
+        out['item0'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('present', 'sentence', 'state', 'lines')}
+        if out['item0'].get('present'):
+            pair(page, "F1", "Φ1")
+            out['item0After'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'sentence', 'state')}
+            page.screenshot(path=f"{args.frames}/concept-layer-item0-born-parents-{args.width}x{args.height}.png")
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 
