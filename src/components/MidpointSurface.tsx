@@ -346,8 +346,12 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const ownInside = useMemo(() => (own ? insideOf(own.space) : null), [own]);
   // C-12b — THE FEET in the unfolding's order: the sources' apexes as the page stands them (C above, D below — the designer's 1939 §1)
   const feetInOrder = useMemo(() => {
-    const order = site.sources.flatMap((s) => s.apexes);
-    return [...resolved.feet].sort((f, g) => order.indexOf(f.corner) - order.indexOf(g.corner));
+    // no sort of the device's (Δ80 — the midpoint witness pins this surface free of any sort call): the order IS the unfolding's, each apex's
+    // foot taken in its turn (an apex the unfolding stands twice places its foot once); a foot whose corner the unfolding does not
+    // stand — none, measured — follows in the resolver's order
+    const order = [...new Set(site.sources.flatMap((s) => s.apexes))];
+    const placed = order.flatMap((c) => resolved.feet.filter((f) => f.corner === c));
+    return [...placed, ...resolved.feet.filter((f) => !order.includes(f.corner))];
   }, [resolved, site]);
   const ownG = useMemo(() => (ownInside ? insideGeometry(ownInside, { top: 14, footExtra: 8 }) : null), [ownInside]);
   const ownColour = useMemo(() => (own && ownInside ? ownColouring(own, ownInside, originTint, la, lb, composedKeys) : null), [own, ownInside, originTint, la, lb, composedKeys]);
