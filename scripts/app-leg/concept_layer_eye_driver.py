@@ -573,6 +573,207 @@ def door_arm(page, args):
     return res
 
 
+# ─── C-11b — THE CARGO ON THE WALK (§135): the built room walked with a role in hand ───
+MEASURE_CARGO = """() => {
+  const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
+  const line = document.querySelector('[data-explore-cargo]');
+  const seam = window.__exploreWindow ? JSON.parse(JSON.stringify({ doors: window.__exploreWindow.doors, trace: window.__exploreWindow.trace, cargo: window.__exploreWindow.cargo })) : null;
+  if (!line) return { present: false, seam };
+  const b = line.getBoundingClientRect();
+  return {
+    present: true, seam,
+    state: line.getAttribute('data-explore-cargo-state'), route: line.getAttribute('data-explore-cargo-route'),
+    words: txt(line.querySelector('[data-explore-cargo-words]')), text: txt(line),
+    rods: [...line.querySelectorAll('[data-explore-cargo-rod]')].map((e) => txt(e)),
+    picks: [...line.querySelectorAll('[data-explore-cargo-pick]')].map((e) => txt(e)),
+    hand: txt(line.querySelector('[data-explore-cargo-withdraw]')),
+    box: { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) }, inViewport: b.y >= 0 && b.bottom <= window.innerHeight,
+    legend: (document.querySelector('[data-explore-window]') || document.body).textContent.includes('carry it along — move the cargo corner to corner, one rod per press'),
+    tallyLine: txt(document.querySelector('[data-explore-tally]')), sentence: txt(document.querySelector('[data-explore-sentence-text]')),
+  };
+}"""
+
+
+def project_group(page, prefix):
+    return page.evaluate("""(prefix) => {
+      const scene = window.__manuscriptScene, camera = window.__manuscriptCamera;
+      if (!scene || !camera) return null;
+      const canvas = document.querySelector('canvas');
+      const rect = canvas.getBoundingClientRect();
+      let best = null;
+      scene.traverse((o) => {
+        if (best || !o.isMesh || !o.geometry) return;
+        let g = o, name = '';
+        while (g) { if ((g.name || '').startsWith(prefix)) { name = g.name; break; } g = g.parent; }
+        if (!name) return;
+        if (o.geometry.computeBoundingSphere) o.geometry.computeBoundingSphere();
+        const bs = o.geometry.boundingSphere;
+        if (!bs) return;
+        const c = bs.center.clone();
+        o.localToWorld(c);
+        const p = c.project(camera);
+        best = { name, sx: rect.left + ((p.x + 1) / 2) * rect.width, sy: rect.top + ((1 - (p.y + 1) / 2)) * rect.height };
+      });
+      return best;
+    }""", prefix)
+
+
+def cargo_rod(page, words):
+    return page.locator('[data-explore-cargo-rod]').filter(has_text=re.compile('^' + re.escape(words) + '$'))
+
+
+def cargo_arm(page, args):
+    """C-11b: the built room (the gen-1 residue with the hinge door carrying F1's line) summoned on the sheet, the walk window
+    opened; F1 picked at A, carried along A–AC, through the door a, home along AD–A; then F2 the same way — lost at the door.
+    Whatever happens inside, the arm ends back in the Ambo (the later arms need its tabs) and reports what it saw."""
+    res = {}
+    try:
+        cargo_arm_body(page, args, res)
+    except Exception as e:
+        res['error'] = str(e)[:400]
+    try:
+        page.keyboard.press("Escape"); page.wait_for_timeout(300)
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+    except Exception as e:
+        res['returnError'] = str(e)[:200]
+    return res
+
+
+def cargo_arm_body(page, args, res):
+    page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click(); page.wait_for_timeout(800)
+    page.keyboard.press("Escape"); page.wait_for_timeout(300)
+    res['dim3Groups'] = page.evaluate("() => { const out = []; const scene = window.__manuscriptScene; if (!scene) return null; scene.traverse((o) => { if ((o.name || '').startsWith('written:dim3')) out.push(o.name); }); return out; }")
+    res['canvasRect'] = page.evaluate("() => { const c = document.querySelector('canvas'); const r = c.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }")
+    pt = project_group(page, 'written:dim3:built-')
+    res['room'] = pt
+    if not pt:
+        return
+    # what stands at the projected point — the double-click must reach the canvas (an overlay there takes the pointer)
+    res['atPoint'] = page.evaluate("([x, y]) => { const e = document.elementFromPoint(x, y); if (!e) return null; const chain = []; let n = e; while (n && chain.length < 5) { chain.push(n.tagName + ([...n.attributes].filter((a) => a.name.startsWith('data-')).map((a) => `[${a.name}=${a.value.slice(0, 40)}]`).join('') || '')); n = n.parentElement; } return chain; }", [pt['sx'], pt['sy']])
+    # the selection itself: the chip is ENABLED (opacity 1) only for a selected room; 'Fit Selected' stands for any selection
+    CHIP_STATE = "() => { const c = document.querySelector('button[aria-label=\"explore inside\"]'); return c ? { opacity: getComputedStyle(c).opacity, cursor: getComputedStyle(c).cursor } : null; }"
+    # the summon is a real double-click ON the room's surface (Arman's law): the first mesh's sphere centre may project onto
+    # empty space inside the outline, so the candidates are every mesh's projected VERTICES under the group, in order, each
+    # tried until the chip enables
+    candidates = page.evaluate("""(prefix) => {
+      const scene = window.__manuscriptScene, camera = window.__manuscriptCamera;
+      if (!scene || !camera) return [];
+      const canvas = document.querySelector('canvas'); const rect = canvas.getBoundingClientRect();
+      const out = [];
+      scene.traverse((o) => {
+        if (!o.isMesh || !o.geometry || out.length > 40) return;
+        let g = o, name = ''; while (g) { if ((g.name || '').startsWith(prefix)) { name = g.name; break; } g = g.parent; }
+        if (!name) return;
+        const pos = o.geometry.getAttribute('position'); if (!pos) return;
+        // points on the segment from the mesh's projected centre toward its projected vertices: on a rod they lie on the
+        // rod itself, on a shell inside its silhouette — where a real double-click meets the surface
+        const V = o.position.constructor;
+        if (o.geometry.computeBoundingSphere) o.geometry.computeBoundingSphere();
+        const bs = o.geometry.boundingSphere; if (!bs) return;
+        const cw = bs.center.clone(); o.localToWorld(cw); const pc = cw.project(camera);
+        const cx = rect.left + ((pc.x + 1) / 2) * rect.width, cy = rect.top + ((1 - (pc.y + 1) / 2)) * rect.height;
+        const step = Math.max(1, Math.floor(pos.count / 6));
+        for (let i = 0; i < pos.count && out.length <= 60; i += step) {
+          const v = new V(pos.getX(i), pos.getY(i), pos.getZ(i));
+          o.localToWorld(v); const p = v.clone().project(camera);
+          const vx = rect.left + ((p.x + 1) / 2) * rect.width, vy = rect.top + ((1 - (p.y + 1) / 2)) * rect.height;
+          for (const f of [0.55, 0.8, 1.0]) {
+            const sx = cx + (vx - cx) * f, sy = cy + (vy - cy) * f;
+            if (sx > rect.left + 2 && sx < rect.right - 2 && sy > rect.top + 2 && sy < rect.bottom - 2) out.push({ mesh: o.name || o.type, sx, sy });
+          }
+        }
+      });
+      return out;
+    }""", 'written:dim3:built-')
+    res['candidates'] = len(candidates)
+    tried = []
+    for cand in [pt] + candidates[:60]:
+        page.mouse.dblclick(cand['sx'], cand['sy']); page.wait_for_timeout(900)
+        state = page.evaluate(CHIP_STATE)
+        tried.append([round(cand['sx']), round(cand['sy']), state and state['opacity']])
+        if state and state['opacity'] == '1':
+            break
+    res['summonTries'] = tried
+    res['chipAfterDblclick'] = page.evaluate(CHIP_STATE)
+    chip = page.locator('button[aria-label="explore inside"]')
+    res['exploreChip'] = chip.count()
+    if not chip.count():
+        return
+    # the room's caption under its title (the aperture gate's own words) and the chip's box, before the press
+    res['roomCaption'] = page.evaluate("() => { const t = document.body.innerText; const i = t.indexOf('built 3-manifold 1'); const ap = window.__manuscriptApertures || null; return { text: i >= 0 ? t.slice(i, i + 300) : null, apertureSeam: ap ? ap['built-1'] || null : 'no seam', apertureKeys: ap ? Object.keys(ap) : null }; }")
+    box = chip.first.bounding_box()
+    res['chipBox'] = box
+    chip.first.click(); page.wait_for_timeout(600)
+    res['afterFirstPress'] = page.evaluate("() => ({ seam: Boolean(window.__exploreWindow), windows: document.querySelectorAll('[data-explore-window]').length, refusal: (document.querySelector('[data-explore-refusal]') || {}).textContent || null })")
+    if not res['afterFirstPress']['windows'] and box:
+        # a second way: the pointer pressed on the chip's own centre (the chip opens on mousedown)
+        page.mouse.move(box['x'] + box['width'] / 2, box['y'] + box['height'] / 2); page.wait_for_timeout(150)
+        page.mouse.down(); page.wait_for_timeout(80); page.mouse.up(); page.wait_for_timeout(600)
+        res['afterSecondPress'] = page.evaluate("() => ({ seam: Boolean(window.__exploreWindow), windows: document.querySelectorAll('[data-explore-window]').length, refusal: (document.querySelector('[data-explore-refusal]') || {}).textContent || null })")
+    try:
+        page.wait_for_function("() => window.__exploreWindow && window.__exploreWindow.gpu && window.__exploreWindow.renderFrames > 3", timeout=30000)
+    except Exception as e:
+        res['windowWait'] = str(e)[:200]
+    # what the door said: the refusal at the threshold (by name), the window's presence, the seam's shape
+    res['threshold'] = page.evaluate("() => ({ seam: Boolean(window.__exploreWindow), seamOpen: window.__exploreWindow ? window.__exploreWindow.open : null, gpu: window.__exploreWindow ? window.__exploreWindow.gpu : null, frames: window.__exploreWindow ? window.__exploreWindow.renderFrames : null, windows: document.querySelectorAll('[data-explore-window]').length, refusals: [...document.querySelectorAll('div, p, span')].map((e) => e.textContent.trim()).filter((t) => /refus|no walk|nothing recurs|does not open|there is no/i.test(t) && t.length < 400).slice(0, 4) })")
+    res['opened'] = page.evaluate(MEASURE_CARGO)
+    page.screenshot(path=f"{args.frames}/concept-layer-cargo-pick-{args.width}x{args.height}.png")
+    pick = page.locator('[data-explore-cargo-pick]').filter(has_text=re.compile(r'^F1$'))
+    if not pick.count():
+        return
+    pick.first.click(); page.wait_for_timeout(400)
+    res['picked'] = page.evaluate(MEASURE_CARGO)
+    r = cargo_rod(page, 'A–AC')
+    res['rodAC'] = r.count()
+    if r.count():
+        r.first.click(); page.wait_for_timeout(400)
+    res['afterRod'] = page.evaluate(MEASURE_CARGO)
+    page.screenshot(path=f"{args.frames}/concept-layer-cargo-rod-{args.width}x{args.height}.png")
+    # the door by its letter — one press, one period (K-1e); the crossing carries the cargo at AC across to AD
+    page.evaluate("() => { window.__exploreWindow.paceOverride = 0.6; }")
+    page.locator('[data-explore-window] canvas').first.hover(); page.wait_for_timeout(200)
+    page.keyboard.press('a')
+    try:
+        page.wait_for_function("() => window.__exploreWindow.doors >= 1", timeout=60000)
+    except Exception as e:
+        res['doorWait'] = str(e)[:200]
+    page.wait_for_timeout(800)
+    res['afterDoor'] = page.evaluate(MEASURE_CARGO)
+    page.screenshot(path=f"{args.frames}/concept-layer-cargo-door-{args.width}x{args.height}.png")
+    r = cargo_rod(page, 'AD–A')
+    res['rodA'] = r.count()
+    if r.count():
+        r.first.click(); page.wait_for_timeout(400)
+    res['home'] = page.evaluate(MEASURE_CARGO)
+    page.screenshot(path=f"{args.frames}/concept-layer-cargo-home-{args.width}x{args.height}.png")
+    # a second cargo the door does not carry: the window closed and reopened (a room opened is a walk begun), F2 picked
+    page.keyboard.press("Escape"); page.wait_for_timeout(500)
+    chip = page.locator('button[aria-label="explore inside"]')
+    if chip.count():
+        chip.first.click(); page.wait_for_timeout(600)
+        try:
+            page.wait_for_function("() => window.__exploreWindow && window.__exploreWindow.gpu && window.__exploreWindow.renderFrames > 3 && window.__exploreWindow.doors === 0", timeout=30000)
+        except Exception as e:
+            res['reopenWait'] = str(e)[:200]
+        res['reopened'] = page.evaluate(MEASURE_CARGO)
+        pick = page.locator('[data-explore-cargo-pick]').filter(has_text=re.compile(r'^F2$'))
+        if pick.count():
+            pick.first.click(); page.wait_for_timeout(300)
+            r = cargo_rod(page, 'A–AC')
+            if r.count():
+                r.first.click(); page.wait_for_timeout(300)
+            page.evaluate("() => { window.__exploreWindow.paceOverride = 0.6; }")
+            page.locator('[data-explore-window] canvas').first.hover(); page.wait_for_timeout(200)
+            page.keyboard.press('a')
+            try:
+                page.wait_for_function("() => window.__exploreWindow.doors >= 1", timeout=60000)
+            except Exception as e:
+                res['doorWait2'] = str(e)[:200]
+            page.wait_for_timeout(800)
+            res['lost'] = page.evaluate(MEASURE_CARGO)
+            page.screenshot(path=f"{args.frames}/concept-layer-cargo-lost-{args.width}x{args.height}.png")
+
+
 # ─── C-10b — the face's HOME, the site's lines, the canvas note, the lineage line (§131, the designer's four blockers) ───
 SITE_FACES = """() => {
   const panel = document.querySelector('[data-midpoint-surface]');
@@ -655,6 +856,10 @@ def main():
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": args.width, "height": args.height})
+        page_errors = []
+        page.on('pageerror', lambda e: page_errors.append(f'pageerror: {str(e)[:400]}'))
+        page.on('console', lambda m: page_errors.append(f'console.{m.type}: {m.text[:400]}') if m.type in ('error', 'warning') else None)
+        out['pageErrors'] = page_errors
         page.goto(args.url); page.wait_for_timeout(3000)
         out['whereami'] = page.evaluate(WHEREAMI)
         out['census'] = {'controlsAtStart': census(page, '@controls')}  # Fit Selected disabled, the workspace tab active
@@ -811,6 +1016,8 @@ def main():
                 out['lift'] = lift_arm(page, args)
                 # C-11a — THE DOOR's ACT at the aperture's pairing row, on the gen-1 residue placed beside the C-10 form
                 out['door'] = door_arm(page, args)
+                # C-11b — THE CARGO ON THE WALK: the room just built, walked with F1 in hand
+                out['cargo'] = cargo_arm(page, args)
                 # THE DEPENDENCY REFUSAL: back at AB (gen 2), a gen-0 pair that re-glues the role the born pair named (the Φ-side role of AB's own part)
                 # the born pair's role on AB's own part is a Φ role (B holds Φ); its key carries the edge's side prefix, stripped here
                 phi_role = next((k[2:] for k in (xb, yb) if k[2:].startswith('Φ')), None)

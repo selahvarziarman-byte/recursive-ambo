@@ -32,9 +32,11 @@
 // TWO GESTURES (the ratified rung-1 law): drag = look (rotate the carried
 // frame) · press-and-hold = advance along forward. No strafe, no roll.
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Vec3 } from '../types/geometry';
 import { type ApertureCellSurface, scaleToRoom } from './apertureModel';
+// C-11b — THE CARGO: the role the walker carries, its acts and its reading (react-free; the window draws it)
+import { cargoReading, crossDoor, pickCargo, stepRod, withdrawStep, type CargoRoom, type CargoState } from './cargoModel';
 // B-114 — the orientation of a projective door is its 4×4 determinant
 import { mat4Det } from '../lib/noncubeDomain';
 // K-1e — the walk's own metric: transport along a leg, carriage through a door,
@@ -133,6 +135,10 @@ interface ExploreSeam {
   uniformProbe: ((name: string) => unknown) | null;
   faceMarkBuffer: Float32Array | null;
   faces: Array<{ n: Vec3; d: number; wall: boolean; door: { pair: number; side: 'a' | 'b' } | null }>;
+  // C-11b — THE CARGO, the fourth field (§135): the role at a corner the walker carries — picked at the entry corner,
+  // carried along a rod by his press, crossing a door by that door's transport at its corner (or lost, or left behind);
+  // its route (rods and door letters) beside the trace. Null until a pick; transient like the trace.
+  cargo: CargoState | null;
   // the walk leg's THROTTLE (an ungated window seam, the committed
   // __manuscriptScene idiom): nothing in the app sets it — the headless
   // driver's pointer pulses have a ~2u floor at the default pace under the
@@ -173,6 +179,7 @@ const seamOf = (): ExploreSeam => {
       right: null,
       up: null,
       faces: [],
+      cargo: null,
       uniformProbe: null,
       faceMarkBuffer: null,
       paceOverride: null,
@@ -620,6 +627,9 @@ export interface ExploreWindowProps {
   openKey: string;
   title: string;
   cellSurface: ApertureCellSurface; // the room's own faces (portal/wall) + rods
+  // C-11b — the room as the cargo reads it (the seed's corners, the doors' transports, the record's J's); null on a
+  // room with no record (the committed zoo, a form invoked on the page) — then the cargo line is absent, not marked
+  cargoRoom?: CargoRoom | null;
   deckLine: string; // the caption's geometry line (the gate's own label words)
   deckNote?: string | null; // B-114 §0 — the instrument's register, ITS OWN LINE
   level: number;
@@ -644,6 +654,7 @@ export function ExploreWindow({
   openKey,
   title,
   cellSurface,
+  cargoRoom = null,
   deckLine,
   deckNote,
   level,
@@ -678,6 +689,17 @@ export function ExploreWindow({
   liveRef.current = { level, pace, lookSensitivity, stepUnit, turnFraction, smoothRodRecede, depthWeightRatio, lodMidEcho, lodSmallEcho, lodTinyEcho };
 
   const packed = useMemo(() => packCell(cellSurface), [cellSurface]);
+  // C-11b — THE CARGO: the walk's fourth seam field, mirrored as React state for the line's controls (the pick, the rods,
+  // the one hand). The walk loop reads the ref and writes the seam; the state follows — one writer, `cargoSet`.
+  const [cargo, setCargo] = useState<CargoState | null>(null);
+  const cargoRef = useRef<CargoState | null>(null);
+  const cargoRoomRef = useRef<CargoRoom | null>(cargoRoom);
+  cargoRoomRef.current = cargoRoom;
+  const cargoSet = (next: CargoState | null): void => {
+    cargoRef.current = next;
+    seamOf().cargo = next;
+    setCargo(next);
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -700,6 +722,10 @@ export function ExploreWindow({
     seam.traceHidden = 0;
     seam.faceMark = new Array<number>(16).fill(0);
     seam.sentence = null;
+    // C-11b: a room opened is a walk begun — nothing carried yet
+    seam.cargo = null;
+    cargoRef.current = null;
+    setCargo(null);
     seam.press = null;
     seam.returnTurnDeg = null;
     seam.snap = null;
@@ -768,6 +794,14 @@ export function ExploreWindow({
       faceMarkArray.current.set(marks);
     };
     refreshOrderSurface();
+    // C-11b — THE CROSSING carries the cargo: the door's transport at the crossed face's corners (§24 — all of them at
+    // once; a cargo off that face stays behind). Called at BOTH crossing sites, beside the letter the trace writes.
+    const cargoCross = (faceIndex: number, door: { pair: number; side: 'a' | 'b' }): void => {
+      const room = cargoRoomRef.current;
+      const cur = cargoRef.current;
+      if (!room || !cur) return;
+      cargoSet(crossDoor(room, cur, faceIndex, door));
+    };
     // INTERIOR TRANSPORT drive find (2026-08-21): the caption was the one
     // session fact the open-reset missed — on RE-OPENING the same room the
     // freshly computed caption equals the seam's stale copy, the change-gated
@@ -999,6 +1033,7 @@ export function ExploreWindow({
           prev = eye;
           seam.doors += 1;
           if (face.door) seam.trace += doorLetter(face.door);
+          if (face.door) cargoCross(exited, face.door);
           refreshOrderSurface();
           // the orientation of a PROJECTIVE door is its 4×4 determinant — the
           // 3×3 block is not it. Same reading, same meaning, read correctly.
@@ -1022,6 +1057,7 @@ export function ExploreWindow({
         prev = eye;
         seam.doors += 1;
         if (face.door) seam.trace += doorLetter(face.door);
+        if (face.door) cargoCross(exited, face.door);
         refreshOrderSurface();
         seam.frameHanded *= det3of(g) < 0 ? -1 : 1;
       }
@@ -1825,6 +1861,77 @@ export function ExploreWindow({
         </span>
         <span ref={sentenceRef} data-explore-sentence-text style={{ position: 'absolute', left: 0, top: 0, right: 0 }} />
       </div>
+      {/* C-11b — THE CARGO LINE, one line beside trace · tally · sentence (the designer's 1500 §2 + 1520 §134): the pick
+          at the entry corner; the reading in her words (home Fix · Mov · Und with the reduced route; a spur told from a
+          residue; away identity and presence by the route — never two routes side by side); the rods from the cargo's
+          corner as buttons — one press, one rod, corner to corner (an act on the record, not motion; nothing lit, no rod
+          marked as carrying or losing before it is pressed); the one hand after a rod loss. Absent on a room with no
+          record — the ordinary, unmarked. */}
+      {cargoRoom
+        ? (() => {
+            const reading = cargoReading(cargoRoom, cargo);
+            const mono = { fontFamily: 'ui-monospace, monospace', fontSize: 11 } as const;
+            const chip = { ...mono, padding: '0 4px', marginLeft: 3, borderRadius: 3, border: `1px dashed ${paper.cardBorder}`, background: 'transparent', color: paper.cardInk, cursor: 'pointer' } as const;
+            const hand = { ...mono, border: 'none', background: 'transparent', color: paper.cardInk, cursor: 'pointer', textDecoration: 'underline', padding: 0, marginLeft: 6 } as const;
+            return (
+              <div data-explore-cargo data-explore-cargo-state={reading.state} data-explore-cargo-route={reading.route} style={{ ...mono, marginTop: 4, minHeight: 15, opacity: 0.9, lineHeight: 1.5 }}>
+                {reading.words ? <span data-explore-cargo-words>{reading.words}</span> : null}
+                {reading.hand ? (
+                  <button
+                    type="button"
+                    data-explore-cargo-withdraw
+                    style={hand}
+                    onClick={() => {
+                      const cur = cargoRef.current;
+                      if (cur) cargoSet(withdrawStep(cur));
+                    }}
+                  >
+                    {reading.hand}
+                  </button>
+                ) : null}
+                {reading.rods.length > 0 ? (
+                  <span data-explore-cargo-rods>
+                    <span style={{ opacity: 0.7 }}>{' · carry it along:'}</span>
+                    {reading.rods.map((r) => (
+                      <button
+                        key={r.to}
+                        type="button"
+                        data-explore-cargo-rod={r.to}
+                        style={chip}
+                        onClick={() => {
+                          const room = cargoRoomRef.current;
+                          const cur = cargoRef.current;
+                          if (room && cur) cargoSet(stepRod(room, cur, r.to));
+                        }}
+                      >
+                        {r.words}
+                      </button>
+                    ))}
+                  </span>
+                ) : null}
+                {reading.pickWords ? (
+                  <span data-explore-cargo-picks>
+                    <span style={{ opacity: 0.7 }}>{reading.words ? ` · ${reading.pickWords}` : reading.pickWords}</span>
+                    {reading.picks.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        data-explore-cargo-pick={p.id}
+                        style={chip}
+                        onClick={() => {
+                          const room = cargoRoomRef.current;
+                          if (room) cargoSet(pickCargo(room, room.entry, p.id));
+                        }}
+                      >
+                        {p.name}
+                      </button>
+                    ))}
+                  </span>
+                ) : null}
+              </div>
+            );
+          })()
+        : null}
       {/* THE WINDING ROUTE (Q2): the return line — same surface, same ink,
           its OWN line. The caption above says what the room IS; this line
           says what just HAPPENED. It appears on the first position-return
@@ -1863,6 +1970,7 @@ export function ExploreWindow({
             curved-room rest of the letters, so the line is ONE line in every
             room. */}
         {`↑/↓ — walk (tap: one step of ${stepUnit.toFixed(2)} · hold: glide) · ←/→ — turn (tap: 1/${turnFraction} turn · hold: sweep) · PgUp/PgDn — look up and down (the same) · End — face the nearest door · Home — face as you entered · a door's letter — cross it, shift for the other way · drag — look around · press and hold — walk forward · the hatch settles in when you stand still · esc returns to the shell`}
+        {cargoRoom ? ' · carry it along — move the cargo corner to corner, one rod per press' : ''}
       </div>
     </div>
   );

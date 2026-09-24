@@ -314,6 +314,25 @@ const waitUp = () =>
         check(`§10 [${w}×${h}] ★★ THE DOOR GLUED INTO A ROOM with its transport riding the row into the built record: \`glue — the S² gate judges\` → \`glued — H₁ 0 · the aperture opens in the dim-3 band\`; the rows reset (no door block stands) — the record persists what he gave (pinned under node by diagnose-the-doors-act §3)`,
           dr.glueButton >= 1 && dGlued.present && dGlued.door === null && /^glued — H₁ 0 · the aperture opens in the dim-3 band$/.test(dGlued.notice || ''),
           J({ glue: dr.glueButton, glued: { door: dGlued.door, notice: dGlued.notice } }));
+        // ─── C-11b — THE CARGO ON THE WALK at the eye (§135) ───
+        const cg = out.cargo || {};
+        const cOpen = cg.opened || {}; const cPick = cg.picked || {}; const cRod = cg.afterRod || {}; const cDoor = cg.afterDoor || {}; const cHome = cg.home || {}; const cLost = cg.lost || {};
+        note(`C-11b the cargo at the eye: room ${J(cg.room && cg.room.name)} · summon ${J({ candidates: cg.candidates, tries: (cg.summonTries || []).length, last: (cg.summonTries || []).slice(-1)[0] })} · chip ${cg.exploreChip} · opened ${J({ present: cOpen.present, state: cOpen.state, picks: (cOpen.picks || []).length, text: cOpen.text, legend: cOpen.legend, box: cOpen.box })} · picked ${J({ state: cPick.state, words: cPick.words, rods: cPick.rods })} · rod ${J({ state: cRod.state, words: cRod.words, route: cRod.route })} · door ${J({ state: cDoor.state, words: cDoor.words, route: cDoor.route, doors: cDoor.seam && cDoor.seam.doors, trace: cDoor.seam && cDoor.seam.trace })} · home ${J({ state: cHome.state, words: cHome.words, route: cHome.route })} · lost ${J({ state: cLost.state, words: cLost.words, route: cLost.route, picks: (cLost.picks || []).length })}`);
+        check(`§11 [${w}×${h}] ★★ THE ROOM WALKED WITH A CARGO (C-11b): the room built from the lifted gen-1 residue is summoned on the sheet, its walk window opens, and the cargo line stands beside trace · tally · sentence in the PICK state — \`carry from the corner A:\` with A's 14 roles as buttons; the legend states the rod act`,
+          cg.room && cg.exploreChip >= 1 && cOpen.present && cOpen.state === 'pick' && /^carry from the corner A:/.test(cOpen.text || '') && (cOpen.picks || []).length === 14 && cOpen.legend === true && cOpen.inViewport === true,
+          J({ room: cg.room, chip: cg.exploreChip, opened: cOpen }));
+        check(`§11 [${w}×${h}] ★★ PICKED AND CARRIED BY HIS HAND: F1 picked — \`carrying F1 — at the corner A\` with the rods A–AC · A–AB · A–AD as buttons (nothing lit); the rod A–AC pressed — \`carrying F1 — at the corner AC, came along A–AC as r2 ≡ F1\` (the class this run's own pair on C–A names)`,
+          cPick.state === 'carrying' && cPick.words === 'carrying F1 — at the corner A' && J((cPick.rods || []).slice().sort()) === J(['A–AB', 'A–AC', 'A–AD']) && cg.rodAC >= 1 && cRod.state === 'away' && cRod.words === 'carrying F1 — at the corner AC, came along A–AC as r2 ≡ F1' && cRod.route === 'A–AC',
+          J({ picked: cPick, rod: cRod }));
+        check(`§11 [${w}×${h}] ★★ THROUGH THE DOOR by its letter: one press of \`a\` walks one period — the trace writes \`a\`, doors 1 — and the door's transport at AC carries the cargo to AD: \`carrying F1 — at the corner AD as F1, by A–AC · a\``,
+          cDoor.seam && cDoor.seam.doors === 1 && cDoor.seam.trace === 'a' && cDoor.state === 'away' && cDoor.words === 'carrying F1 — at the corner AD as F1, by A–AC · a' && cDoor.route === 'A–AC · a',
+          J({ door: cDoor }));
+        check(`§11 [${w}×${h}] ★★ HOME: the rod AD–A pressed — \`carrying F1 — returned to itself by A–AC · a · AD–A\` (Fix, the reduced route printed)`,
+          cg.rodA >= 1 && cHome.state === 'home-fix' && cHome.words === 'carrying F1 — returned to itself by A–AC · a · AD–A' && cHome.route === 'A–AC · a · AD–A',
+          J({ home: cHome }));
+        check(`§11 [${w}×${h}] ★★ A CARGO THE DOOR DOES NOT CARRY: the window reopened (a room opened is a walk begun — nothing carried), F2 picked, carried along A–AC, the door \`a\` pressed — \`carrying F2 — not here by A–AC · a: lost at the door a, which does not carry it\` and the picks return (\`carry again from the corner A:\`)`,
+          cLost.state === 'lost-door' && cLost.words === 'carrying F2 — not here by A–AC · a: lost at the door a, which does not carry it' && /carry again from the corner A:/.test(cLost.text || '') && (cLost.picks || []).length === 14,
+          J({ reopened: cg.reopened && { state: cg.reopened.state, doors: cg.reopened.seam && cg.reopened.seam.doors }, lost: cLost }));
         const cc = out.composedClick || {};
         check(`§6 [${w}×${h}] ★ A COMPOSED POINT CLICKED PICKS NOTHING (item 3 — never a pair, never a control): no pick, no line, no refusal`, br.present && cc.pick === null && (cc.lines || []).length === 0 && !cc.refusal, J(cc));
         const bp = out.bornPair || {};

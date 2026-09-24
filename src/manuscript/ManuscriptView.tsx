@@ -243,6 +243,8 @@ import {
 // C-11a — THE DOOR's ACT (§133, Option R): the door's sides on the carried
 // record, the act, the whole-line withdrawal and the words — react-free
 import { actAt, doorReadingOf, refusalWords, sideOf, takenWords, withdrawLine, type DoorSideResult } from './doorTransportModel';
+// C-11b — THE CARGO ON THE WALK: the room as the cargo reads it, from the built record and the carried record
+import { cargoRoomOf } from './cargoModel';
 import type { DoorRowView } from './DoorTransportSection';
 // THE PROBES (2026-07-14): the real scans — the mask, held in a hand. The
 // mask does recurrence; THE HAND does chirality (a face is its own mirror).
@@ -2888,6 +2890,8 @@ export default function ManuscriptView() {
   // the D1 floor.
   const productMetricBasesRef = useRef<Map<string, string>>(new Map());
   const builtDomains = useManuscriptPageStore((s) => s.builtDomains);
+  // C-11b — the built rooms' RECORDS (seed + rows): the cargo's room is read from them, never from the domain alone
+  const builtRecords = useManuscriptPageStore((s) => s.builtRecords);
   const setBuiltDomains = useManuscriptPageStore((s) => s.setBuiltDomains);
   // 0.2 THE ORBIFOLD'S BODY: the folded verdicts' tower-less bodies — a
   // SIBLING list, never mixed into dim3All (the specimen register and every
@@ -4514,9 +4518,15 @@ export default function ManuscriptView() {
         // window appends its own terms (the boundary sentence, the depth) to
         // the geometry line, and a note carried inside it would land those
         // terms on the note's line — the disclaimer swallowing the counts.
+        const cellSurface = readCellSurface(domain, coneEdgesDeclared, gate.model);
+        // C-11b — the cargo's room: a BUILT room's record (its seed verbatim, its rows with C-11a's transports) and the
+        // carried record the seed reads (the C-10 reader's, by the seed's own shape id); null on a room with no record
+        const built = builtRecords.find((r) => r.key === domain.key) ?? null;
+        const cargoRoom = built ? cargoRoomOf(built.seed, shelfAncestors.get(built.seed.id) ?? [], built.rows, cellSurface, resolveAbsentLabel) : null;
         return {
           title,
-          cellSurface: readCellSurface(domain, coneEdgesDeclared, gate.model),
+          cellSurface,
+          cargoRoom,
           deckLine,
           deckNote: noteLines.length > 0 ? noteLines.join(' · ') : null,
         };
@@ -4535,7 +4545,7 @@ export default function ManuscriptView() {
       return resolve(`${foldedBodies[k].title} — folded`, foldedApertures[k].gate, foldedBodies[k]);
     }
     return null;
-  }, [exploreOpen, dim3All, apertures, foldedBodies, foldedApertures]);
+  }, [exploreOpen, dim3All, apertures, foldedBodies, foldedApertures, builtRecords, shelfAncestors, resolveAbsentLabel]);
   const placeableForms = useMemo(() => {
     const out: { id: string; label: string }[] = [];
     written.forEach((w) => out.push({ id: w.form.shape.id, label: w.form.title }));
@@ -7309,6 +7319,7 @@ export default function ManuscriptView() {
           openKey={exploreOpen}
           title={exploreRoom.title}
           cellSurface={exploreRoom.cellSurface}
+          cargoRoom={exploreRoom.cargoRoom}
           deckLine={exploreRoom.deckLine}
           deckNote={exploreRoom.deckNote}
           level={apertureCtl.level}

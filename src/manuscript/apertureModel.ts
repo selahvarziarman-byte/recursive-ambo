@@ -1570,11 +1570,18 @@ export interface ApertureCellFace {
    * (side `a` → `a`, `b`, `c`…; side `b`, the inverse map → `A`, `B`, `C`…):
    * the gluing-word vocabulary the person has already read. Absent on walls. */
   door?: { pair: number; side: 'a' | 'b' };
+  /** C-11b — THE FACE'S CORNERS (the seed's vertex ids, the face's own cycle): what a cargo
+   * crossing this face is at — the door's transport applies at all of them at once (§24).
+   * Absent on a developed cone surface (its seam faces name no corners). */
+  corners?: string[];
 }
 
 export interface ApertureCellRod {
   a: V3;
   b: V3; // endpoints, centered coords
+  /** C-11b — the rod's two corners (the seed edge's vertex ids): the cargo is carried along it by
+   * the person's press, corner to corner, by the edge's J on the carried record. */
+  ends?: [string, string];
   k: number; // the edge-class SIZE (the heuristic census counts k×90°)
   cls: number; // a small palette index per distinct class root
   heavy: boolean; // drawn HEAVY only when the geometry's own census declared cone edges and this class is k≠4 — never fabricated on a census that read none
@@ -1921,8 +1928,8 @@ export function readCellSurface(
       const door = doorByFace.get(face.id);
       faces.push(
         door
-          ? { n: plane.n, d: plane.d, wall: false, g: null, g4: door.m, door: { pair: door.pair, side: door.side } }
-          : { n: plane.n, d: plane.d, wall: true, g: null },
+          ? { n: plane.n, d: plane.d, wall: false, g: null, g4: door.m, door: { pair: door.pair, side: door.side }, corners: [...face.cycle] }
+          : { n: plane.n, d: plane.d, wall: true, g: null, corners: [...face.cycle] },
       );
     }
     const rods: ApertureCellRod[] = [];
@@ -1930,7 +1937,7 @@ export function readCellSurface(
       const qa = model.chartVertices.get(edge.vertexIds[0]);
       const qb = model.chartVertices.get(edge.vertexIds[1]);
       if (!qa || !qb) continue;
-      rods.push(rodFor(edge.id, qa, qb));
+      rods.push({ ...rodFor(edge.id, qa, qb), ends: [edge.vertexIds[0], edge.vertexIds[1]] });
     }
     let span = 0;
     for (const q of model.chartVertices.values()) span = Math.max(span, 2 * Math.max(Math.abs(q[0]), Math.abs(q[1]), Math.abs(q[2])));
@@ -1964,12 +1971,14 @@ export function readCellSurface(
       const fc = sub(geometry.faceCentroid(face.id), c);
       const n = norm(fc);
       const d = dot(fc, n);
+      // C-11b: the face's own corners ride beside its plane (raw ids — the cargo's corners are the seed's)
+      const corners = face.cycle.map(stripId);
       for (let pair = 0; pair < deck.length; pair += 1) {
         const entry = deck[pair];
-        if (near(entry.nA, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.g, c), door: { pair, side: 'a' as const } };
-        if (near(entry.nB, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.gi, c), door: { pair, side: 'b' as const } };
+        if (near(entry.nA, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.g, c), door: { pair, side: 'a' as const }, corners };
+        if (near(entry.nB, n)) return { n, d, wall: false, g: shiftDeckTransform(entry.gi, c), door: { pair, side: 'b' as const }, corners };
       }
-      return { n, d, wall: true, g: null };
+      return { n, d, wall: true, g: null, corners };
     });
   // per seed EDGE: the rod through the hoisted class law (one law, both rooms)
   const rods: ApertureCellRod[] = [];
@@ -1977,7 +1986,7 @@ export function readCellSurface(
     const qa = positions.get(edge.vertexIds[0]);
     const qb = positions.get(edge.vertexIds[1]);
     if (!qa || !qb) continue;
-    rods.push(rodFor(edge.id, sub(qa, c), sub(qb, c)));
+    rods.push({ ...rodFor(edge.id, sub(qa, c), sub(qb, c)), ends: [edge.vertexIds[0], edge.vertexIds[1]] });
   }
   const span = Math.max(
     geometry.bboxHi[0] - geometry.bboxLo[0],
