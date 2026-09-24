@@ -97,7 +97,8 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
     const r = held ? spaceOf(record as Shape, id, {}, memo) : null;
     let absence: string | null = null;
     if (held && !r) {
-      const bare = seedsUnder(record as Shape, id).filter((s) => !(record as Shape).vertices[s]?.data.cast);
+      // through the ONE resolver: a seed resolves to nothing exactly when it holds no cast — this file reads no cast itself
+      const bare = seedsUnder(record as Shape, id).filter((s) => spaceOf(record as Shape, s, {}, memo) === null);
       absence = isSeedVertex(record as Shape, id)
         ? 'holds no cast'
         : bare.length
