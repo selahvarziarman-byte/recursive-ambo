@@ -115,18 +115,18 @@ const giftByLines = (i, x, y, SA, SB) => {
   const L = SA.lines[la.line].nodes.length;
   return { ok: true, la: la.line, lb: lb.line, q: (((lb.idx - la.idx) % L) + L) % L / 3 };
 };
-const linePairMap = (la, lb, q, k) => {
-  const e = [0, 1, 2].map(() => new Map());
+const linePairMap = (la, lb, q, k, corners = 3) => {
+  const e = Array.from({ length: corners }, () => new Map());
   la.nodes.forEach(([c, x], p) => { const [c2, y] = la.kind === 'path' ? lb.nodes[p] : lb.nodes[(p + q * k) % lb.nodes.length]; if (c !== c2) throw new Error('a line pair off its corners'); e[c].set(x, y); });
   return e;
 };
 // the ONE-WAY reading — the first run's (N): forward propagation only, one diagonal of each strip — carried IN-MEMORY as the D10 control
 const extendOneWay = (i, x, y, Jm, Km) => {
-  const k = Jm.length; const e = [0, 1, 2].map(() => new Map()); const stack = [[i, x, y]];
+  const k = Jm.length; const e = Array.from({ length: k }, () => new Map()); const stack = [[i, x, y]];
   while (stack.length) { const [c, a, b] = stack.pop(); if (e[c].has(a)) { if (e[c].get(a) !== b) return null; continue; } e[c].set(a, b); if (Jm[c].has(a) !== Km[c].has(b)) return null; if (Jm[c].has(a)) stack.push([(c + 1) % k, Jm[c].get(a), Km[c].get(b)]); }
   return e;
 };
-const lawfulOneWay = (e, Jm, Km) => Jm.every((_, i) => mapEq(comp(e[(i + 1) % 3], Jm[i]), comp(Km[i], e[i])));
+const lawfulOneWay = (e, Jm, Km) => Jm.every((_, i) => mapEq(comp(e[(i + 1) % Jm.length], Jm[i]), comp(Km[i], e[i])));
 const out = {}; const bad = { d2: 0, d2law: 0, d2whole: 0, d3: 0, d10back: 0, unlawfulTaken: 0 };
 let carried = [0, 0, 0]; let uniq = 0; let oneOnly = 0; let oneOnlyLaw = 0; const recCache = new Map(); const recRefused = [0, 0, 0]; const ex = {};
 const t0 = Date.now();
@@ -223,9 +223,11 @@ const doorOn = (file) => {
   const lab = (v) => shape.vertices[v]?.data.label || v;
   const menu = A.boundaryFacesOf(shape);
   const faceWith = (set) => menu.find((m) => { const t = m.label.split(' · ')[0].split('·'); return t.length === set.length && set.every((x) => t.includes(x)); });
-  const fA = faceWith(['A', 'AB', 'AC']); const fB = faceWith(['A', 'AB', 'AD']);
+  // §148 ruling 1 (2026-09-24): the gen-2 residue lifts at the FINER grain — its sides are opened through the midpoints on them
+  // (A·AC·ABAC·AB, A·AB·ABAD·AD); the gen-1 residue's sides stay triangles. The hinge A–AB admits ABAC→ABAD on the quads.
+  const fA = faceWith(['A', 'AB', 'AC']) ?? faceWith(['A', 'AC', 'ABAC', 'AB']); const fB = faceWith(['A', 'AB', 'AD']) ?? faceWith(['A', 'AB', 'ABAD', 'AD']);
   const cands = A.dihedralMapCandidates(shape, fA.id, fB.id);
-  const hinge = cands.find((c) => c.correspondence.every(([a, b]) => lab(a) === lab(b) || (lab(a) === 'AC' && lab(b) === 'AD')));
+  const hinge = cands.find((c) => c.correspondence.every(([a, b]) => lab(a) === lab(b) || (lab(a) === 'AC' && lab(b) === 'AD') || (lab(a) === 'ABAC' && lab(b) === 'ABAD')));
   const cycleA = hinge.correspondence.map(([a]) => a); const cycleB = hinge.correspondence.map(([, b]) => b);
   const memo = new Map();
   const nameA = fA.label.split(' · ')[0]; const nameB = fB.label.split(' · ')[0];
@@ -238,13 +240,14 @@ const D2 = doorOn(liftOf(G2id, (s) => residueAt(s, 'A')));
 note(`gen-1 residue: ${Object.keys(D1.shape.vertices).length} corners · concept ${D1.concept.state} ${D1.concept.held}/${D1.concept.resolved} · menu ${D1.menu.map((m) => m.label).join(' | ')} · hinge ${D1.hinge.key} ${D1.hinge.correspondence.map(([a, b]) => `${D1.lab(a)}→${D1.lab(b)}`).join(' · ')} (${D1.hinge.derivedMode}) · verdicts ${D1.verdicts.join(' · ')}`);
 note(`gen-2 residue: ${Object.keys(D2.shape.vertices).length} corners (the grain law) · hinge ${D2.hinge.key} · verdicts ${D2.verdicts.join(' · ')}`);
 check('§2 the door\'s faces are D14-named (never ids) and the hinge candidate exists on both lifted residues: A→A · AC→AD · AB→AB (preserving, derived); on the gen-1 residue it glues SOUND (H₁ = 0) — a room, not a fold', /^A·A[BC]·A[BC]$/.test(D1.nameA) && /^A·A[BD]·A[BD]$/.test(D1.nameB) && D1.hinge.derivedMode === 'preserving' && D2.hinge && D1.verdicts.some((v) => v.startsWith(`${D1.hinge.key} sound=true H1=0`)), J([D1.nameA, D1.nameB, D1.verdicts]));
-note(`the gen-2 residue's glue: every candidate ${D2.verdicts.every((v) => /THROWS/.test(v)) ? 'THROWS in the level-3 link extractor (a cell whose shared face is subdivided — the grain law\'s residue cannot be glued today; printed, not pinned)' : 'does not throw'}`);
+note(`the gen-2 residue's glue (§148 ruling 1 — the finer boundary, the sides opened through their midpoints): ${D2.verdicts.every((v) => /THROWS/.test(v)) ? 'every candidate THROWS in the level-3 link extractor' : 'no candidate throws; the preserving hinge is SOUND'}`);
+check('§2 ★★ THE GEN-2 RESIDUE GLUES (§148 ruling 1): lifted at the finer grain its side faces are the quads A·AC·ABAC·AB and A·AB·ABAD·AD (4 corners), the hinge A→A · AC→AD · ABAC→ABAD · AB→AB exists, and the S² gate judges the preserving candidate SOUND (H₁ 0) where every candidate threw in the frozen extractor before', D2.nameA === 'A·AC·ABAC·AB' && D2.nameB === 'A·AB·ABAD·AD' && D2.cycleA.length === 4 && D2.verdicts.some((v) => /sound=true H1=0/.test(v)) && !D2.verdicts.some((v) => /THROWS/.test(v)), J({ nameA: D2.nameA, nameB: D2.nameB, verdicts: D2.verdicts }));
 const shapesOf = (Sd) => { const c = {}; for (const l of Sd.lines) c[l.shape] = (c[l.shape] || 0) + 1; return c; };
 check('§2 ★★ THE SIDES READ ON THE RECORD (the one resolver at every corner, each boundary edge\'s J by its kind — the seed edge A–AC the person\'s record, the corner edge AB→A the carried coprojection, the medial edge AC→AB the anchored meet): on the gen-1 residue face A·AC·AB has 28 lines (14 cycles of one round — A\'s roles carried all the way round — and 7 + 7 lines of one at AC and AB) and face A·AB·AD 30 (14 cycles, 9 + 7); both J\'s of the hinge edge identical (the same edge, read the same way)',
   D1.SA.state === 'read' && D1.SB.state === 'read' && J(shapesOf(D1.SA.side)) === J({ 'path:1:0': 7, 'path:2:0': 7, 'cycle:1': 14 }) && J(shapesOf(D1.SB.side)) === J({ 'path:1:0': 9, 'path:2:0': 7, 'cycle:1': 14 }) && mapEq(D1.SA.side.J[2], D1.SB.side.J[2]), J([D1.SA.state, D1.SB.state, D1.SA.state === 'read' ? shapesOf(D1.SA.side) : null, D1.SB.state === 'read' ? shapesOf(D1.SB.side) : null]));
 const censusOn = (D) => {
   const out2 = {}; const eg = {};
-  for (let i = 0; i < 3; i += 1) for (const x of D.SA.side.spaces[i].roles) for (const y of D.SB.side.spaces[i].roles) {
+  for (let i = 0; i < D.SA.side.spaces.length; i += 1) for (const x of D.SA.side.spaces[i].roles) for (const y of D.SB.side.spaces[i].roles) {
     const r = M.actAt(D.SA.side, D.SB.side, [], i, x.id, y.id);
     const key = `${D.lab(D.cycleA[i])} ${r.taken ? 'taken' : r.refusal.kind}`;
     out2[key] = (out2[key] || 0) + 1;
@@ -283,7 +286,7 @@ note(`gen-2 door: A ${J(shapesOf(D2.SA.side))} · B ${J(shapesOf(D2.SB.side))} �
 // BOTH faces (the reference's D10: the one-way reading depends on which face is called A; the two-way does not)
 const oneWayOnly = (SA, SB, lab, cycle) => {
   let n = 0; let ex = null;
-  for (let i = 0; i < 3; i += 1) for (const x of SA.spaces[i].roles) for (const y of SB.spaces[i].roles) {
+  for (let i = 0; i < SA.spaces.length; i += 1) for (const x of SA.spaces[i].roles) for (const y of SB.spaces[i].roles) {
     const one = extendOneWay(i, x.id, y.id, SA.J, SB.J);
     if (one && lawfulOneWay(one, SA.J, SB.J) && !M.lawful(one, SA.J, SB.J)) { n += 1; const r = M.extendPair(i, x.id, y.id, SA.J, SB.J); if (!ex) ex = { pair: `${nameIn(SA.spaces[i], x.id)} ↦ ${nameIn(SB.spaces[i], y.id)} at ${lab(cycle[i])}`, taken: r.taken, kind: r.taken ? null : r.refusal.kind, words: r.taken ? null : M.refusalWords(SA, SB, r.refusal, lab) }; }
   }
@@ -294,8 +297,8 @@ const fromB = oneWayOnly(D2.SB.side, D2.SA.side, D2.lab, D2.cycleB);
 const gen1FromA = oneWayOnly(D1.SA.side, D1.SB.side, D1.lab, D1.cycleA);
 const gen1FromB = oneWayOnly(D1.SB.side, D1.SA.side, D1.lab, D1.cycleB);
 note(`one-way admits and two-way refuses — the gen-2 door read with A·AC·AB as A: ${fromA.n} · read with A·AB·AD as A: ${fromB.n} (e.g. ${J(fromB.ex)}) · the gen-1 door: ${gen1FromA.n} · ${gen1FromB.n}`);
-check('§2 ★★ THE BORN PAIR IS EXACTLY WHAT CANNOT CROSS: on the gen-2 residue the person\'s born pair on AB–AC rides the record as one line of length one (Φ2 at AC → r1 at AB) with no equal-shape line opposite, and the door says so ONCE, quietly — `cannot cross this door — no line opposite: on A·AC·AB Φ2 at AC · r1 at AB`; every other role can cross', J(shapesOf(D2.SA.side)) === J({ 'path:1:1': 1, 'path:1:0': 6, 'path:2:0': 6, 'cycle:1': 14 }) && /^cannot cross this door — no line opposite: on A·AC·AB [^ ]+ at AC · [^ ]+ at AB$/.test(R2.cannotCross || ''), J([shapesOf(D2.SA.side), R2.cannotCross]));
-check('§2 ★★ THE ONE-WAY CONTROL ON THE RECORD (D10 — the one-way reading depends on which face is called A; the model does not): the gen-2 door read with the born pair\'s face as A admits nothing one-way that the two-way refuses (no path ends on the other face), but read the OTHER way it does (> 0): the born pair\'s line ends at r1 on AB, and the one-way reading lets the other face\'s r1 cross to it — the model refuses it from either face, into AB, naming the faces since the names coincide (`not taken — into AB from AD, r1 (on A·AC·AB) has a predecessor and r1 (on A·AB·AD) has none`); the gen-1 door, with no path of length one, has none either way', fromA.n === 0 && fromB.n > 0 && fromB.ex && !fromB.ex.taken && fromB.ex.kind === 'into' && /^not taken — into AB from AD, r1 \(on A·AC·AB\) has a predecessor and r1 \(on A·AB·AD\) has none$/.test(fromB.ex.words) && gen1FromA.n === 0 && gen1FromB.n === 0, J([fromA.n, fromB.n, fromB.ex, gen1FromA.n, gen1FromB.n]));
+check('§2 ★★ THE BORN PAIR IS EXACTLY WHAT CANNOT CROSS: on the gen-2 residue the person\'s born pair on AB–AC rides the record as one line of length TWO through the born corner it made (Φ2 at AC → Φ2 ≡ r1 at ABAC → r1 at AB — §148 ruling 1: the side is opened through ABAC) with no equal-shape line opposite, and the door says so ONCE, quietly — `cannot cross this door — no line opposite: on A·AC·ABAC·AB Φ2 at AC · Φ2 ≡ r1 at ABAC · r1 at AB`; every other role can cross', J(shapesOf(D2.SA.side)) === J({ 'path:1:2': 1, 'path:1:1': 6, 'path:2:1': 6, 'cycle:1': 14 }) && /^cannot cross this door — no line opposite: on A·AC·ABAC·AB [^ ]+ at AC · .+ at ABAC · [^ ]+ at AB$/.test(R2.cannotCross || ''), J([shapesOf(D2.SA.side), R2.cannotCross]));
+check('§2 ★★ THE ONE-WAY CONTROL ON THE RECORD (D10 — the one-way reading depends on which face is called A; the model does not): the gen-2 door read with the born pair\'s face as A admits nothing one-way that the two-way refuses (no path ends on the other face), but read the OTHER way it does (> 0): the born pair\'s line ends at r1 on AB, and the one-way reading lets the other face\'s r1 cross to it — the model refuses it from either face, into the born corner ABAD (§148 ruling 1 — the side opened through ABAC and ABAD; the names no longer coincide, so no face is named: `not taken — into ABAD from AD, Φ2 ≡ r1 has a predecessor and r1 has none`); the gen-1 door, with no path of length one, has none either way', fromA.n === 0 && fromB.n > 0 && fromB.ex && !fromB.ex.taken && fromB.ex.kind === 'into' && /^not taken — into ABAD from AD, Φ2 ≡ r1 has a predecessor and r1 has none$/.test(fromB.ex.words) && gen1FromA.n === 0 && gen1FromB.n === 0, J([fromA.n, fromB.n, fromB.ex, gen1FromA.n, gen1FromB.n]));
 
 // ═══ §3 PERSISTENCE ═══
 console.log('\n----- §3 persistence: the transport rides the row into the built record and the page file; a save → load round trip carries it verbatim; the restored record reads the same lines -----');
@@ -341,7 +344,7 @@ check('§4 ★★ THE EMPTY STATE is a positive mark, the designer\'s words verb
 check('§4 ★★ NOTHING OFFERED, NOTHING LIT: a role that can cross and one that cannot wear the SAME chip (one style over all 114 chips of the empty door — nothing differs by `crosses`); only a role on a taken line is marked (bold, `data-door-role-taken` naming its partner: 12 chips for 6 pairs, both sides) and only the picked one outlined', (() => { const chips = [...emptyHtml.matchAll(/<button[^>]*data-door-role="[^"]*"[^>]*>/g)].map((m) => m[0].replace(/data-door-role="[^"]*"|data-door-role-name="[^"]*"|data-door-role-crosses="(true|false)"|title="[^"]*"/g, '')); return chips.length === 114 && new Set(chips).size === 1; })() && countOf(takenHtml, /data-door-role-taken="/g) === 12 && countOf(emptyHtml, /data-door-role-taken="/g) === 0 && countOf(emptyHtml, /data-door-role-picked/g) === 0, J([countOf(takenHtml, /data-door-role-taken="/g)]));
 check('§4 ★★ TAKEN — THE WHOLE LINE, ONE HAND, EACH PAIR AT ITS CORNER (C-12a item 1): two lines read `yours · a whole line along A→AC→AB→A: at A F1 ↦ F1 · at AC Φ1 ≡ F1 ↦ F1 · at AB F1 ≡ r0 ↦ F1 ≡ r0` and F5\'s; exactly ONE `withdraw the line …` hand per line (2 hands for 6 pairs — never a hand per pair); the head reads `carries 6 role pairs on 2 whole lines`; the TAKEN sentence names the pointed pair and the whole line', countOf(takenHtml, /data-door-line="/g) === 2 && countOf(takenHtml, /data-door-withdraw-line="/g) === 2 && /yours · a whole line along A→AC→AB→A: at A F1 ↦ F1 · at AC Φ1 ≡ F1 ↦ F1 · at AB F1 ≡ r0 ↦ F1 ≡ r0/.test(takenHtml) && countOf(takenHtml, />withdraw the line F[15] ↦ F[15]</g) === 2 && /carries 6 role pairs on 2 whole lines/.test(takenHtml) && /data-door-taken="true"[^>]*>taken — F5 ↦ F5 at A, and with it the whole line along A→AC→AB→A: at A F5 ↦ F5 · at AC /.test(takenHtml), J([countOf(takenHtml, /data-door-line="/g), countOf(takenHtml, /data-door-withdraw-line="/g)]));
 check('§4 ★★ THE REFUSAL in the one grammar with its LOCAL hand: `not taken — along AC→AB, Φ1 ≡ F1\'s line runs on and Φ1\'s stops` · `here, at the door: withdraw this attempt` (one hand, a button); the standing lines keep theirs', /data-door-refusal-words="true"[^>]*>not taken — along AC→AB, Φ1 ≡ F1's line runs on and Φ1's stops</.test(refusedHtml) && countOf(refusedHtml, /data-door-withdraw-attempt="true"[^>]*>here, at the door: withdraw this attempt</g) === 1 && countOf(refusedHtml, /data-door-withdraw-line="/g) === 2);
-check('§4 ★ THE CANNOT-CROSS LINE, once per door, quietly (italic, dimmed) — on the gen-2 door `cannot cross this door — no line opposite: on A·AC·AB … at AC · … at AB`; absent on the gen-1 door', countOf(gen2Html, /data-door-cannot-cross="true"/g) === 1 && /cannot cross this door — no line opposite: on A·AC·AB [^<]+ at AC · [^<]+ at AB</.test(gen2Html) && /data-door-cannot-cross="true" style="[^"]*font-style:italic/.test(gen2Html) && countOf(emptyHtml, /data-door-cannot-cross/g) === 0);
+check('§4 ★ THE CANNOT-CROSS LINE, once per door, quietly (italic, dimmed) — on the gen-2 door `cannot cross this door — no line opposite: on A·AC·ABAC·AB … at AC · … at ABAC · … at AB` (§148 ruling 1: the side opened through the born corner); absent on the gen-1 door', countOf(gen2Html, /data-door-cannot-cross="true"/g) === 1 && /cannot cross this door — no line opposite: on A·AC·ABAC·AB [^<]+ at AC · [^<]+ at ABAC · [^<]+ at AB</.test(gen2Html) && /data-door-cannot-cross="true" style="[^"]*font-style:italic/.test(gen2Html) && countOf(emptyHtml, /data-door-cannot-cross/g) === 0);
 const absentHtml = strip(renderToString(React.createElement(DoorTransportSection, { door: { faceA: 'A·B·C', faceB: 'A·B·D', state: 'no-record', absence: 'nothing carried — this form was not lifted from a universe (invoked primitive): no corner of this door holds a space, so nothing can cross it', reading: null, pick: null, notice: null, refusal: null }, ...noop, paper })));
 check('§4 a door on a form that carries no record says C-10\'s absence and mounts no chip, no line, no hand', /data-door-absence="no-record"[^>]*>nothing carried — this form was not lifted from a universe/.test(absentHtml) && !/data-door-role=/.test(absentHtml) && !/data-door-withdraw/.test(absentHtml));
 // the chrome: the panel mounts the section under the complete row, with the three selects addressable
