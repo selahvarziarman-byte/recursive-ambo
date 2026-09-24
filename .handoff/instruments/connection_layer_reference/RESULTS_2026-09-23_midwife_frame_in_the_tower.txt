@@ -1,0 +1,18 @@
+midwife_frame_in_the_tower.py — run 2026-09-23 17:43:14 +0330 · HEAD a44a44f · Python 3.10.12 · stdlib only
+
+THE PROJECTED VERTEX — 4000 random faces (5 roles a corner, random partial J's) + the 42 hand triples
+ W1  mid(M_BC, M_CA) = (C + M_AB)/2 exactly, 200 random rational triangles: failures 0   (sealed 0)
+ W2  Λ glues A with B exactly along proj_C = J_CB∘J_AC: disagreements 0   (sealed 0) · M_AB along J_AB: 0 · the two gluings differ in 3736 of 4000   (sealed > 0)
+ W3  the stone in Λ: failures 0   (sealed 0)
+ W4  M_AB and Λ agree on a ⇔ a ∈ Fix(h_A): disagreements 0   (sealed 0)
+ W5  C's two projections into M_AB land on one role ⇔ c ∈ Fix(h_C): disagreements 0   (sealed 0)
+ W6  re-cast C's two edges: M_AB moved in 0 (structural 0) · Λ moved in 3997 of 4000   (sealed > 0)
+ W7  Λ's born room = B ∖ dom J_BC and A ∖ im J_CA: failures 0   (sealed 0)
+
+ FIXTURES (A = flow · B = t-cell · C = phi): W2 0 · W2ctl 0 · W3 0 · W4 0 · W5 0 · W7 0   (sealed 0 each)
+   A–B pairs the person's midpoint M_AB glues (|J_AB|): [(5, 18), (6, 24)]
+   A–B pairs the route child Λ glues (|proj_C|):         [(1, 7), (2, 21), (3, 14)]
+   pairs the two children agree on (= Fix h_A):           [(0, 36), (1, 6)] — triples where they agree on nothing: 36 of 42
+   W5 — phi's 9 roles projected into M_AB, summed over the 42 triples: {'two images': 85, 'one route only': 175, 'does not reach': 112, 'one image': 6}
+   the ⊖ FORK — phi's tuples landing wholly on A–B roles of Λ: [(15, 7), (16, 7), (17, 21), (20, 7)] (of 22 tuples in phi's record) — in 42 of 42 triples X would carry the opposite vertex's own relations if '⊖ J' kept them
+wall 1.57 s

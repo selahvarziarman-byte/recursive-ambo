@@ -1,0 +1,7 @@
+3000 faces (A, B, C: 5 roles; random partial maps; empty born rooms) — the same towers under both rules
+   CONTENT meet (as built): 3+ copies at R in 2990 faces · max 4 · above 3 in 2777 · pools Q 0 R 0
+      P_B classes split in R: 15415 (2990 faces) — SPURIOUS (held identically by Q and Q2): 15415 (2990 faces)
+   ANCHORED meet:           3+ copies at R in 2185 faces · max 3 · above 3 in 0 · pools Q 0 R 0
+      P_B classes split in R: 508 (474 faces) — SPURIOUS: 0
+   G1 content shape (3+ in most, max 4): ✔   G2 spurious splits exist: ✔
+   G3 gen 3 identical under both rules: 0 differ ✔   G4 anchored max ≤ 3: ✔   G5 anchored never pools: ✔   G6 anchored splits nothing held identically: ✔

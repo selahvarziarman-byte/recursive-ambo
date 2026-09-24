@@ -1,0 +1,8 @@
+   one pooled class under RULE P: ['A:a3', 'B:b3', 'C:c1', 'C:c4']
+3000 random faces (A, B, C: 5 roles, 2 words), empty born rooms unless stated
+   T1  failures     0   sealed 0     ✔
+   T2  failures     0   sealed 0     ✔
+   T4  failures     0   sealed 0     ✔   (over 500 flat total faces)
+   T3  RULE P doubles more than RULE M in   399 faces   sealed > 0   ✔
+   T6  POOLING — RULE M: 0 faces (sealed 0 ✔)  ·  RULE P: 960 faces (sealed > 0 ✔)
+   T5  with born acts (1930 faces carrying at least one): the doubling differs from the empty-room formula in 749  — grows 381 · shrinks 307 · neither-contains 61

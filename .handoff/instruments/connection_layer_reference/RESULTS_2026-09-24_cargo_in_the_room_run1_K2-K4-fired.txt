@@ -1,0 +1,11 @@
+cargo_in_the_room.py â€” run 2026-09-24 15:02:27 +0330 Â· HEAD 67eb506 Â· Python 3.12.10 Â· stdlib Â· Arman's machine (Code tab)
+
+THE CARGO IN A GLUED ROOM — 1764 rooms (bottom triple X × top triple Y over the 42 hand triples), one door
+ K1  reverse walk = inverse map: failures 0   (sealed 0)
+ K2  the door loop brings a cargo home MOVED: 0 of 1764 rooms   (sealed > 0) · e.g. None
+ K3  PRESENCE differs between the door loop and the side loop: 1764 of 1764   (sealed > 0) · e.g. ('A+P+(i)', 'A+P+(i)', ['F10', 'F11', 'F14', 'F2'])
+ K4  IDENTITY differs (both deliver, different roles): 0 of 1764   (sealed > 0) · e.g. None
+ K5  a spur moved a cargo: 0   (sealed 0) · rooms where the spur loses a cargo the door loop delivers: 1764
+ K6  CONTROL X = Y, door the identity (42 rooms): moved 0 · lost 0   (sealed 0, 0)
+ K7  CONTROL total and flat (2,000 rooms): moved 0 · lost 0 · loops disagree 0   (sealed 0, 0, 0)
+     rooms whose given door carries nothing at F (every cargo crossing there arrives Und): 0 of 1764

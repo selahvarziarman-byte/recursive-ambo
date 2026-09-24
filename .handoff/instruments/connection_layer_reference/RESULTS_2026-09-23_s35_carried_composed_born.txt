@@ -1,0 +1,14 @@
+4000 random faces (A, B, C of 5 roles each, random partial injections); born acts tried 2802, G6 1033, G7 2802
+   G1    failures        0   sealed 0     ✔
+   G2    failures        0   sealed 0     ✔
+   G3    failures        0   sealed 0     ✔
+   G4    failures        0   sealed 0     ✔
+   G5b   failures        0   sealed 0     ✔
+   G6w   failures        0   sealed 0     ✔
+   G6r   failures        0   sealed 0     ✔
+   G2ctl occurrences  2802   sealed > 0   ✔
+   G5ctl occurrences   709   sealed > 0   ✔
+   G5m   occurrences  1400   sealed > 0   ✔
+   G7a   occurrences  2802   sealed > 0   ✔
+   G7b   occurrences  2802   sealed > 0   ✔
+   (control denominators: G5ctl of 2776 mis-refinements; G7 of 2802 eligible)

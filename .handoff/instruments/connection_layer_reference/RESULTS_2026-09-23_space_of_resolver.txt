@@ -1,0 +1,15 @@
+3000 random faces (A, B, C: 5 roles, 3 words each; random partial role- and word-maps; 0–2 born pairs)
+   S1   failures        0   sealed 0     ✔   ← STRUCTURAL in this model (the resolver takes only the two parents); the falsifier that matters is the BUILD's resolver
+   S2   failures        0   sealed 0     ✔
+   S3   failures        0   sealed 0     ✔
+   S4   failures        0   sealed 0     ✔   ← STRUCTURAL in this model (the resolver takes only the two parents); the falsifier that matters is the BUILD's resolver
+   S2ro  occurrences  3000   sealed > 0   ✔   (RECORD-ONLY station duplicates A)
+   S3ro  occurrences  3000   sealed > 0   ✔   (RECORD-ONLY ABAC duplicates A)
+   S4ctl occurrences  2993   sealed > 0   ✔   (CONTROL: a parent's J_AB changes ABAC)
+   S5    occurrences  2926   sealed > 0   ✔   (NAME-MATCHED identity duplicates an A-role)
+
+   one face: |A|=5 |M_AB|=8 |M_CA|=10
+     station on A—M_AB   kind-aware 8 roles, duplicated (0, 0)  |  record-only 13 roles, duplicated (5, 3)
+     ABAC (no born pair) kind-aware 13 roles, duplicated (0, 0)  |  record-only 18 roles, duplicated (5, 3)  |  name-matched 15 roles, duplicated (2, 3)
+     sealed by hand: kind-aware ABAC = |M_AB| + |M_CA| − |A| = 8 + 10 − 5 = 13   → measured 13  ✔
+     sealed by hand: record-only ABAC = |M_AB| + |M_CA| = 18   → measured 18  ✔

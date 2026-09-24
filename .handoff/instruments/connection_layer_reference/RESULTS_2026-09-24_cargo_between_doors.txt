@@ -1,0 +1,9 @@
+cargo_between_doors.py — run 2026-09-24 15:16:55 +0330 · HEAD 67eb506 · Python 3.12.10 · stdlib
+
+THE CARGO BETWEEN DOORS — 1764 rooms (the prism, two doors g and h), the cargo from F on the bottom face
+ L1  maps injective: failures 0   (sealed 0)
+ L2  home (h·h·h or g·h·g⁻¹·h⁻¹) with a cargo MOVED: 0 of 1764   (sealed > 0) · e.g. None
+ L3  PRESENCE differs, g·h against h·g (one position): 0 of 1764   (sealed > 0)
+ L4  IDENTITY differs, g·h against h·g: 0 of 1764   (sealed > 0) · e.g. None
+ L5  a spur moved a cargo: 0   (sealed 0)
+ L6  CONTROL (one cast, identity maps): moved 28 · identity disagreements 0   (sealed 0, 0) · presence differs on 14 roles (the legs' own absences, not curvature) · cargos home after h·h·h 14 of 14

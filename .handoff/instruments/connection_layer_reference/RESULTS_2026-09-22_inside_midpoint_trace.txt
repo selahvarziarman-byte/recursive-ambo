@@ -1,0 +1,58 @@
+=== THE INSIDE — what the type holds, drawn ===
+  triangle  points 3 · arrows 3 · loops 0 [] · hyper 0 [] · neg 0 · words 1 · marks 0 (UNKNOWN by the caster: 0) · carried unread: axioms 0, warrant False
+  triangle-symmetric points 3 · arrows 6 · loops 0 [] · hyper 0 [] · neg 0 · words 1 · marks 0 (UNKNOWN by the caster: 0) · carried unread: axioms 0, warrant False
+  t-cell    points 10 · arrows 10 · loops 0 [] · hyper 1 [('removes', ('r8', 'r3', 'r2'))] · neg 3 · words 6 · marks 10 (UNKNOWN by the caster: 0) · carried unread: axioms 0, warrant False
+  flow      points 14 · arrows 31 · loops 3 [('disjoins', 'F4'), ('sustains', 'F5'), ('sustains', 'F7')] · hyper 0 [] · neg 0 · words 11 · marks 14 (UNKNOWN by the caster: 0) · carried unread: axioms 0, warrant False
+  phi       points 9 · arrows 15 · loops 7 [('descends-from', 'Φ1'), ('descends-from', 'Φ7'), ('disjoins', 'Φ1'), ('displaces', 'Φ1'), ('exceeds-in-power', 'Φ1'), ('inverts', 'Φ1'), ('presupposes', 'Φ1')] · hyper 0 [] · neg 0 · words 14 · marks 9 (UNKNOWN by the caster: 0) · carried unread: axioms 0, warrant False
+  — against the Gaifman graph (lossy): tuples → edges
+    triangle  3 tuples → 3 Gaifman edges
+    triangle-symmetric 6 tuples → 3 Gaifman edges
+    t-cell    11 tuples → 12 Gaifman edges
+    flow      34 tuples → 16 Gaifman edges
+    phi       22 tuples → 11 Gaifman edges
+
+=== THE MOLD'S TYPE at the glue — has · unrecorded · none-by-nature (minimal casts) ===
+  has        × unrecorded      → glued, glued value has witnesses ['A', 'B']
+  unrecorded × unrecorded      → glued, glued value unrecorded witnesses ['A', 'B']
+  has        × has             → glued, glued value has witnesses ['A', 'B']
+  unrecorded × none-by-nature  → refused ["member_status(y)=none-by-nature [b] against the other side's unrecorded on the same glued tuple"]
+  has        × none-by-nature  → refused ["member_status(y)=none-by-nature [b] against the other side's has on the same glued tuple"]
+  UNKNOWN    × has             → glued, glued value has witnesses ['B']
+  UNKNOWN    × none-by-nature  → glued, glued value none-by-nature witnesses ['B']
+  UNKNOWN    × UNKNOWN         → glued, glued value — (no value: both absent) witnesses []
+
+=== A CASTER unary key spelled alike on both casts — FOREIGN unless τ pairs it (the falsifier for the amendment) ===
+  colour=red × colour=blue, τ_key = ∅ (foreign)                → glued: 2 marks on the one glued role — two records, side by side
+  colour=red × colour=blue, τ_key = {colour ↦ colour} (paired) → refused: ["colour(y)=blue [b] against the other side's red on the same glued tuple"]
+
+=== THE UNMAPPED MIDPOINT — flow ⊔_∅ phi (J = τ = ∅) ===
+  glued
+  glued: 23 roles (= 14 + 9 − 0) · 25 words · 56 relation tuples (0 'both') · 23 marks
+  WHAT NOW SITS ON ONE ROLE (relation tuples about each glued role, by origin):
+  WHAT flow STILL HOLDS ALONE: 14 roles met no partner · 34 tuples on them · 0 on mapped roles in untranslated words · 0 in translated words the other side has UNRECORDED
+  WHAT phi STILL HOLDS ALONE: 9 roles met no partner · 22 tuples on them · 0 on mapped roles in untranslated words · 0 in translated words the other side has UNRECORDED
+
+=== A GIVEN MAP — flow × phi, the 09-08 size-3 map under τ₃ (the PERSON's, here; nothing is offered) ===
+  glued
+  glued: 20 roles (= 14 + 9 − 3) · 22 words · 52 relation tuples (4 'both') · 20 marks
+  WHAT NOW SITS ON ONE ROLE (relation tuples about each glued role, by origin):
+    [F5 ≡ Φ7] 7: both 1 · flow 4 · phi 2   mark member_status: has (A/B)
+    [F7 ≡ Φ1] 24: both 3 · flow 7 · phi 14   mark member_status: has (A/B)
+    [F8 ≡ Φ2] 7: both 2 · flow 3 · phi 2   mark member_status: has (A/B)
+  WHAT flow STILL HOLDS ALONE: 11 roles met no partner · 27 tuples on them · 3 on mapped roles in untranslated words · 0 in translated words the other side has UNRECORDED
+  WHAT phi STILL HOLDS ALONE: 6 roles met no partner · 11 tuples on them · 7 on mapped roles in untranslated words · 0 in translated words the other side has UNRECORDED
+  the core K = flow ×_M phi: 3 roles · 4 relation tuples · 3 marks;  M = flow ⊔_K phi: 14 + 9 − 3 = 20 roles ✔
+
+=== THE REFUSAL — t-cell × phi, r8↦Φ6 · r0↦Φ1 under sustains↦descends-from ===
+  refused: ["descends-from(Φ6, Φ1)=holds [phi] against the other side's does-not-hold on the same glued tuple"]
+
+=== THE REFUSAL on the mold's type — t-cell × phi, r7↦Φ9, τ = ∅ ===
+  refused: ["member_status(Φ9)=none-by-nature [phi] against the other side's has on the same glued tuple"]
+
+=== NOT A REFUSAL — flow × phi, F2↦Φ1 under disjoins↦descends-from (the 09-08 fabrication site) ===
+  glued
+  glued: 22 roles (= 14 + 9 − 1) · 24 words · 56 relation tuples (0 'both') · 22 marks
+  WHAT NOW SITS ON ONE ROLE (relation tuples about each glued role, by origin):
+    [F2 ≡ Φ1] 23: both 0 · flow 6 · phi 17   mark member_status: has (A/B)
+  WHAT flow STILL HOLDS ALONE: 13 roles met no partner · 34 tuples on them · 0 on mapped roles in untranslated words · 0 in translated words the other side has UNRECORDED
+  WHAT phi STILL HOLDS ALONE: 8 roles met no partner · 16 tuples on them · 5 on mapped roles in untranslated words · 1 in translated words the other side has UNRECORDED

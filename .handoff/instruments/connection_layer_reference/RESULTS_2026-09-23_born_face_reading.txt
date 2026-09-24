@@ -1,0 +1,22 @@
+THE FACE AT GEN ≥ 1 — the fixtures: A=flow B=t-cell C=phi D=triangle; 42 hand triples on A–B–C; D's edges unmapped; 40 born-pair draws per triple
+   a1     failures     0   sealed 0     ✔
+   a2     failures     0   sealed 0     ✔
+   a3     failures     0   sealed 0     ✔
+   a3g    failures     0   sealed 0     ✔
+   a4     failures     0   sealed 0     ✔
+   a4news failures     0   sealed 0     ✔
+   b1     failures     0   sealed 0     ✔
+   b2     failures     0   sealed 0     ✔
+   b3     failures     0   sealed 0     ✔
+   b3pair failures     0   sealed 0     ✔
+   d1     failures     0   sealed 0     ✔
+   d2     failures     0   sealed 0     ✔
+   one_class failures     0   sealed 0     ✔
+   a3more  triples where the medial loop MOVES a B-only role into an A-role: 9 of 42   sealed > 0   ✔
+   e1      interior triangle, both ways, Und sets differ: 92 of 1680 draws   sealed > 0   ✔
+   VACUITY (sums over the 42 triples): glued roles at M_AB 234 · dom h_A 82 · dom of the medial loop 91 (of which Fix 6) · B-only roles the medial loop moves 9
+   (b1) inherited refusals, born room empty — triples refusing: 6 of 42 · refusals by corner: flow 0 · T 7 · phi 0
+   (b3) born draws that add a refusal: 315 of 1680 · (the run-1 NAMED-grain count, an artifact of first-met naming: 5)
+   (d)  Und at M_AB on the medial triangle (sum over triples): 683 — first break M_AB→M_BC 354 · M_BC→M_CA 210 · M_CA→M_AB 119
+   (d3) breaks at M_AB→M_BC with a FREE born slot for that role: 354 of 354
+   (a4) news: routes that exist only through a born pair: 3307 over 1680 draws; interior-triangle moves (born only): 92

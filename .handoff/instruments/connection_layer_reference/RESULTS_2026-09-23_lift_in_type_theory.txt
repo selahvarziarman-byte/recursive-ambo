@@ -1,0 +1,12 @@
+T1  pushout of sets along embeddings is a set: failures 0   (sealed 0)   CONTROL circles in 524 of 4000   (sealed > 0)
+T2  one circle per periodic orbit of h: failures 0   (sealed 0) · circles forgotten by π₀ across the trials: 577
+    π₀ restricted to A = the orbits of h (0031's face world): failures 0   (sealed 0)
+T3  π₀ pools two roles of one corner ⇔ Mov ≠ ∅: disagreements 0   (sealed 0)
+T4  door exists ⇔ same cycle–path type: disagreements 0 · reversing door 0   (sealed 0, 0)
+    intertwining corner map closes round the boundary: failures 0 of 16529 · non-intertwining (total h) closes anyway: 0 (of 19471 non-intertwining tried)   (sealed 0, 0)
+T5  the first face at base Flow: 10 cycle–path classes over 42 triples — class sizes [14, 11, 7, 2, 2, 2, 1, 1, 1, 1]
+    the largest class, type ((), (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1)): 14 triples — a door between two of THESE faces can carry a total corner map; across classes it cannot
+
+FIXTURES (the first face, 42 hand triples) — declared negatives: {'flow': 0, 't-cell': 3, 'phi': 0}
+   set-level refinement ‖Σ‖₀ would POOL two roles of one corner (⇔ Mov ≠ ∅) at base flow in 40 · t-cell 30 · phi 31 triples; at some corner in 41 of 42
+   circles the face's set-truncation forgets (periodic orbits of h at base flow, summed over 42): 8
