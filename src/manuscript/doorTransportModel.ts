@@ -37,12 +37,15 @@
 //
 // ADDITIVE · DERIVE-ONLY · react-free (the section draws what this returns; the witness runs this under node).
 
-import type { ConceptSpace, Shape, VertexId } from '../types/geometry';
+import type { Shape, VertexId } from '../types/geometry';
 import { nameIn, spaceOf, type Resolved } from '../lib/spaceOf';
 import { bornStepOf } from '../lib/bornFace';
 import type { RoleMap } from '../lib/faceReading';
 import { refusalOf, type Conflict } from '../lib/jRegister';
 import type { DoorTransport } from './apertureModel';
+
+/** a corner's space AS THE RESOLVER HANDS IT — this file reads resolved spaces, never a cast as held (C-8's law: the resolver is the one reader of a seed corner's cast; the ten readers of the type stand as ratified) */
+export type CornerSpace = Resolved['space'];
 
 export interface DoorLine {
   kind: 'path' | 'cycle';
@@ -54,7 +57,7 @@ export interface DoorLine {
 export interface DoorSide {
   name: string; // the face's OWN name (D14 — composed from its corners in the face's own direction, never the door's order, which may run the other way)
   corners: VertexId[];
-  spaces: ConceptSpace[];
+  spaces: CornerSpace[];
   J: RoleMap[]; // J[i]: corner i's roles ⇀ corner i+1's
   lines: DoorLine[];
   place: Map<string, { line: number; idx: number }>; // by `${corner}|${role}`
@@ -120,7 +123,7 @@ export function linesOf(J: RoleMap[], corners: string[][]): { lines: DoorLine[];
 }
 
 /** a side from spaces and J's already in hand (the witness's fixture door; the app reads them off the record through `sideOf`) */
-export function sideFrom(corners: VertexId[], spaces: ConceptSpace[], J: RoleMap[], name: string = corners.join('·')): DoorSide {
+export function sideFrom(corners: VertexId[], spaces: CornerSpace[], J: RoleMap[], name: string = corners.join('·')): DoorSide {
   const ids = spaces.map((s) => s.roles.map((r) => r.id));
   return { name, corners, spaces, J, ...linesOf(J, ids) };
 }
@@ -128,7 +131,7 @@ export function sideFrom(corners: VertexId[], spaces: ConceptSpace[], J: RoleMap
 /** a side read on the RECORD: each corner's space through the one resolver; each boundary edge's J by its kind (bornStepOf), in the door's direction */
 export function sideOf(record: Shape, cycle: VertexId[], memo: Map<VertexId, Resolved | null> = new Map(), name?: string): DoorSideResult {
   const k = cycle.length;
-  const spaces: ConceptSpace[] = [];
+  const spaces: CornerSpace[] = [];
   const missing: string[] = [];
   for (const v of cycle) {
     const r = record.vertices[v] ? spaceOf(record, v, {}, memo) : null;
