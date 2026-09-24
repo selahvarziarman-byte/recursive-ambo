@@ -57,11 +57,16 @@
 // the shared corner's identity; the gen-3 doubling is exactly the meet's conflicting
 // classes, and with every born room empty it is the ratified 09-16 set.
 
-import type { ConceptSpace, Edge, EdgeIdentification, Shape, VertexId } from '../types/geometry';
+import type { ConceptSpace, Edge, EdgeIdentification, Face, Shape, VertexId } from '../types/geometry';
 import { isMoldType } from './castLoader';
 import { edgeBetween } from './faceReading';
 import { glue, gluedSpace, type GluedNaming, type GluedSpace, type Midpoint } from './midpointGlue';
 import { refusalOf, type Conflict } from './jRegister';
+import { footTypeName } from './feet';
+// C-12b — THE FEET: each foot composes the J of two edges BY THEIR KIND through C-9's ONE reader (bornFace's bornStepOf
+// — a seed edge the record, a corner edge the carried coprojection, a medial edge the anchored meet ∪ the born pairs).
+// bornFace imports this module; the cycle resolves at call time, never at load (nothing here is used at module scope).
+import { bornStepOf } from './bornFace';
 
 export type EdgeKind = 'seed' | 'corner' | 'medial';
 /** a seed tag — `${seedVertexId}|${roleId}` or `${seedVertexId}|${word}`: what a role or word carries from the seed down through every injection */
@@ -97,6 +102,28 @@ export interface NameSeg {
   text: string; // the seed's own label for it
 }
 
+/**
+ * C-12b — THE FOOT of an opposite corner X on the edge A–B (ADR 0031 §3.10; the researcher's §25 and §27; the mothership's
+ * §147 MARKER): `foot_X = J_XB ∘ J_AX : A ⇀ B`, derived from the person's own pairings on the two other edges of a
+ * triangular face holding A–B, each edge's J by its kind through C-9's one reader. On M_AB's points it is the relation
+ * `≡_X`, IN M⁺'s signature, holds-only and three-valued in the record: FIX (a loop — [a] = [foot(a)]), MOV split into
+ * DISAGREEMENT (J_AB(a) defined and ≠ foot(a)) and PROPOSAL (J_AB(a) undefined), UND (silence — no tuple). One foot per
+ * triangular face holding the edge (a face of more corners names no single opposite corner); composed at every read,
+ * stored nowhere, never a record entry of the edge. ⛔ A proposal is RECORD, never an offer (Δ80; §8(c)).
+ */
+export interface Foot {
+  corner: VertexId; // the warrant X
+  faceId: string;
+  type: string; // the relation-type's name in M⁺'s signature — `≡_<X's label>`
+  edges: [Edge | null, Edge | null]; // A–X and X–B in the shape (null when the shape holds none)
+  given: [boolean, boolean]; // whether each of the two edges carries any pair — the silent line names the empty ones
+  map: Map<string, string>; // foot_X on A's role ids (the parents' orientation: the first parent's roles ↦ the second's)
+  fix: Array<[string, string]>; // a ↦ foot(a) agreeing with the pairing in force on A–B (a loop in M⁺)
+  disagreement: Array<[string, string, string]>; // a, foot(a), the b the person paired a with (a link)
+  proposal: Array<[string, string]>; // a, foot(a) — a not paired on A–B (a link)
+  links: Array<[string, string]>; // the tuples on M's points: a loop [c, c] for FIX, [c_a, c_foot] for MOV — in the record's order
+}
+
 export interface Resolved {
   space: ConceptSpace;
   roleContent: Map<string, Set<SeedTag>>; // by the space's role id
@@ -105,6 +132,7 @@ export interface Resolved {
   wordSegs: Map<string, NameSeg[]>; // by display word
   origin: 'seed' | 'derived';
   edge: ResolvedEdge | null; // for a derived space: its parents' edge
+  feet: Foot[]; // C-12b — the born vertex's feet, in the shape's face order (none on a seed)
   loadedIgnored: boolean; // a born vertex holding a loaded cast — not read (Δ86)
 }
 
@@ -113,6 +141,8 @@ export interface SpaceOfOptions {
   tauDrafts?: Record<string, EdgeIdentification['types']>;
   /** C-8 item 4 — a CANDIDATE record on one edge, read in place of what the edge holds: the shape as an act would leave it, without writing it anywhere (RECORD, NOT READING — the candidate is an option to the read, never a fabricated shape) */
   candidate?: { edgeId: Edge['id']; roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] };
+  /** ⛔ A WITNESS'S CONTROL ONLY — `false`: the feet NOT composed (C-12b) — the space exactly as built before the stone, so a witness can show every moved number is the feet's alone */
+  feet?: boolean;
   /** ⛔ A WITNESS'S CONTROL ONLY — `content`: the content meet on every born edge, the mechanism C-8b replaced (it houses a doubled class twice at a gen-4 station and splits a shared class held identically at gen 4); the app never sets it. Default `structural`: the carried coprojection on a corner edge, the anchored meet on a medial one. */
   meet?: 'structural' | 'content';
 }
@@ -169,7 +199,83 @@ function seedResolved(vertexId: VertexId, cast: ConceptSpace): Resolved {
     wordSegs: new Map(cast.signature.map((s) => [s.type, [{ tag: tagOf(vertexId, s.type), text: s.type }]])),
     origin: 'seed',
     edge: null,
+    feet: [],
     loadedIgnored: false,
+  };
+}
+
+// ─── C-12b — THE FEET ───────────────────────────────────────────────────────────────────────────────────────────────────
+/** the triangular faces of the shape holding both parents — one foot each, ONE PER DISTINCT TRIANGLE BY VERTEX SET (a triangle
+ * held by two cells — a residue's face and the dissected cell's own marker of it — counts once, ADR 0031 §3.10); the opposite
+ * corner is the third */
+function facesHolding(shape: Shape, p: VertexId, q: VertexId): Face[] {
+  const seen = new Set<string>();
+  const out: Face[] = [];
+  for (const f of shape.faces) {
+    if (f.vertexIds.length !== 3 || !f.vertexIds.includes(p) || !f.vertexIds.includes(q)) continue;
+    const key = [...f.vertexIds].sort().join('\u0000');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(f);
+  }
+  return out;
+}
+
+/** the feet of the born vertex on the edge (p, q), read on M (the amalgam as built): each foot's map through C-9's reader, its
+ * three states against the pairing in force (the class holding both an A-role and a B-role), and its links on M's points */
+function feetOf(shape: Shape, parents: [VertexId, VertexId], M: Midpoint, options: SpaceOfOptions, memo: Map<VertexId, Resolved | null>): Foot[] {
+  const [p, q] = parents;
+  const classOfA = new Map<string, string>();
+  const classOfB = new Map<string, string>();
+  const pairedB = new Map<string, string>(); // the pairing in force on A–B: a ↦ the b in its class
+  for (const r of M.roles) {
+    if (r.a !== null) classOfA.set(r.a, r.key);
+    if (r.b !== null) classOfB.set(r.b, r.key);
+    if (r.a !== null && r.b !== null) pairedB.set(r.a, r.b);
+  }
+  const feet: Foot[] = [];
+  for (const face of facesHolding(shape, p, q)) {
+    const X = face.vertexIds.find((v) => v !== p && v !== q) as VertexId;
+    const s1 = bornStepOf(shape, p, X, options, memo);
+    const s2 = bornStepOf(shape, X, q, options, memo);
+    const map = new Map<string, string>();
+    if (s1 && s2) for (const [a, x] of s1.map) { const b = s2.map.get(x); if (b !== undefined) map.set(a, b); }
+    const fix: Array<[string, string]> = [];
+    const disagreement: Array<[string, string, string]> = [];
+    const proposal: Array<[string, string]> = [];
+    const links: Array<[string, string]> = [];
+    for (const [a, b] of map) {
+      const ca = classOfA.get(a);
+      const cb = classOfB.get(b);
+      if (ca === undefined || cb === undefined) continue; // a role the amalgam does not house — nothing to mark
+      const paired = pairedB.get(a);
+      if (paired === undefined) { proposal.push([a, b]); links.push([ca, cb]); }
+      else if (ca === cb) { fix.push([a, b]); links.push([ca, ca]); }
+      else { disagreement.push([a, b, paired]); links.push([ca, cb]); }
+    }
+    feet.push({
+      corner: X,
+      faceId: face.id,
+      type: footTypeName(shape.vertices[X]?.data.label || X),
+      edges: [edgeBetween(shape.edges, p, X) ?? null, edgeBetween(shape.edges, X, q) ?? null],
+      given: [Boolean(s1 && s1.map.size > 0), Boolean(s2 && s2.map.size > 0)],
+      map,
+      fix,
+      disagreement,
+      proposal,
+      links,
+    });
+  }
+  return feet;
+}
+
+/** M⁺ = M plus one relation-type per foot and its links, holds-only; the points untouched, J_AB untouched */
+function withFeet(space: ConceptSpace, feet: Foot[]): ConceptSpace {
+  if (feet.length === 0) return space;
+  return {
+    ...space,
+    signature: [...space.signature, ...feet.map((f) => ({ type: f.type, arity: 2 }))],
+    relations: [...space.relations, ...feet.flatMap((f) => f.links.map(([u, v]) => ({ type: f.type, terms: [u, v], polarity: 'holds' as const })))],
   };
 }
 
@@ -422,14 +528,24 @@ export function spaceOf(shape: Shape, vertexId: VertexId, options: SpaceOfOption
         for (const r of result.midpoint.roles) roleContent.set(r.key, new Set([...(r.a !== null ? U.roleContent.get(r.a) ?? [] : []), ...(r.b !== null ? V.roleContent.get(r.b) ?? [] : [])]));
         const wordContent = new Map<string, Set<SeedTag>>();
         for (const w of result.midpoint.words) wordContent.set(g.wordName.get(w.key) ?? w.key, new Set([...(w.a !== null ? U.wordContent.get(w.a) ?? [] : []), ...(w.b !== null ? V.wordContent.get(w.b) ?? [] : [])]));
+        // C-12b — THE FEET composed into the born vertex's space: M⁺ = M plus `≡_X` per opposite corner (holds-only). The
+        // amalgam the surface DRAWS (`glued`) stays M — the foot is WORDS under the own column, never a glyph; the SPACE the
+        // lift, the door and the next pushout read is M⁺. A foot's word content and name segments are its own (a foreign word
+        // at the next generation, never shared by spelling — Δ80).
+        const feet = options.feet === false ? [] : feetOf(shape, parents, result.midpoint, options, memo);
+        for (const f of feet) {
+          wordContent.set(f.type, new Set([tagOf(vertexId, f.type)]));
+          wordSegs.set(f.type, [{ tag: tagOf(vertexId, f.type), text: f.type }]);
+        }
         out = {
-          space: g.space,
+          space: withFeet(g.space, feet),
           roleContent,
           wordContent,
           roleSegs: named.roleSegs,
           wordSegs,
           origin: 'derived',
           edge: { id: e ? e.id : null, kind, parents, composed, born, refused, midpoint: result.midpoint, wordName: g.wordName, glued: g },
+          feet,
           loadedIgnored: v.data.cast !== undefined,
         };
       }

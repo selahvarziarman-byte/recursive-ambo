@@ -1012,6 +1012,21 @@ def door_arm_gen2(page, args):
     return res
 
 
+# ─── C-12b — THE FEET at the eye (§145 · the §147 MARKER; the designer's 1939): the blocks under the midpoint's own column ───
+MEASURE_FEET = """() => {
+  const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null;
+  const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
+  const own = s.querySelector('[data-midpoint-own="glued"]');
+  const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) }; };
+  return {
+    blocks: [...s.querySelectorAll('[data-midpoint-foot]')].map((b) => ({ corner: b.getAttribute('data-midpoint-foot'), state: b.getAttribute('data-midpoint-foot-state'), head: txt(b.querySelector('[data-midpoint-foot-head]')), lines: [...b.querySelectorAll('[data-midpoint-foot-line]')].map((l) => [l.getAttribute('data-midpoint-foot-line'), txt(l)]), buttons: b.querySelectorAll('button').length, inOwn: Boolean(own && own.contains(b)), box: r(b), font: (() => { const l = b.querySelector('[data-midpoint-foot-line]') || b; const cs = getComputedStyle(l); return `${cs.fontSize}|${cs.fontWeight}|${cs.color}`; })() })),
+    headFont: (() => { const h = s.querySelector('[data-midpoint-foot-head]'); if (!h) return null; const cs = getComputedStyle(h); return `${cs.fontSize}|${cs.fontWeight}|${cs.color}`; })(),
+    ownFootGlyphs: [...s.querySelectorAll('[data-midpoint-own-drawing] [data-inside-arc-word], [data-midpoint-own-drawing] [data-inside-loop-word]')].filter((e) => /≡_/.test(e.textContent)).length,
+    ownWords: (own ? txt(own.querySelector('div')) : null),
+  };
+}"""
+
+
 # ─── C-10b — the face's HOME, the site's lines, the canvas note, the lineage line (§131, the designer's four blockers) ───
 SITE_FACES = """() => {
   const panel = document.querySelector('[data-midpoint-surface]');
@@ -1195,6 +1210,10 @@ def main():
         page.locator('[data-midpoint-face-withdraw]').first.click(); page.wait_for_timeout(500)
         out['faceRead'] = page.evaluate(FACE)
         page.screenshot(path=f"{args.frames}/concept-layer-face-read-{args.width}x{args.height}.png")
+        # C-12b — the feet at AB with (i) on A–B, S1 on A–C and Q on B–C: C's block reads, D's block its silent line
+        page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-foot]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
+        out['feet'] = page.evaluate(MEASURE_FEET)
+        page.screenshot(path=f"{args.frames}/concept-layer-feet-{args.width}x{args.height}.png")
         # C-8 item 2 at the eye — the loader ABSENT at a midpoint (the packets tab with AB selected shows no file input, no word), PRESENT at a corner
         select_core(page)
         select_vertex_labelled(page, "AB"); out['cardAB'] = page.evaluate(CARD_BORN); tab(page, "packets")

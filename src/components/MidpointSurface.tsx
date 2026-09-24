@@ -344,6 +344,11 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // C-7h: the own column is the resolver's own amalgam (named by its rule) — the surface never re-glues (one derivation, never two readers agreeing)
   const own = useMemo(() => (M && state === 'glued' && edgeInfo ? edgeInfo.glued : null), [M, state, edgeInfo]);
   const ownInside = useMemo(() => (own ? insideOf(own.space) : null), [own]);
+  // C-12b — THE FEET in the unfolding's order: the sources' apexes as the page stands them (C above, D below — the designer's 1939 §1)
+  const feetInOrder = useMemo(() => {
+    const order = site.sources.flatMap((s) => s.apexes);
+    return [...resolved.feet].sort((f, g) => order.indexOf(f.corner) - order.indexOf(g.corner));
+  }, [resolved, site]);
   const ownG = useMemo(() => (ownInside ? insideGeometry(ownInside, { top: 14, footExtra: 8 }) : null), [ownInside]);
   const ownColour = useMemo(() => (own && ownInside ? ownColouring(own, ownInside, originTint, la, lb, composedKeys) : null), [own, ownInside, originTint, la, lb, composedKeys]);
   // C-7f item 3 — a pair the store RE-MADE when the person withdrew the half they judged wrong says so: the act being honoured is the person's earlier one
@@ -681,6 +686,33 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               <InsideColumn inside={ownInside} geometry={ownG} idPrefix={`own-${site.siteId}`} arcExtra={ownColour.arc} loopExtra={ownColour.loop} nodeExtra={ownColour.node} pointExtra={ownColour.point} />
             </svg>
           </div>
+          {/* C-12b — THE FEET (the designer's 1939): WORDS, not glyphs — a ring and a line are both spent in the drawing above. One block
+              per opposite corner under the own column, in the unfolding's order; the head names the corner (never `[C]`, never `C:`);
+              agreement leads; a proposal is a conditional sentence in the same size, weight and colour — never a control, never lit;
+              silence is absent per point, one line when the whole corner is silent, naming the pairings it waits for. */}
+          {feetInOrder.map((f) => {
+            const lx = labelOf(shape, f.corner);
+            const silent = f.map.size === 0;
+            const empty = [!f.given[0] ? `${la}–${lx}` : null, !f.given[1] ? `${lx}–${lb}` : null].filter((x): x is string => x !== null);
+            const silentLine = empty.length === 2
+              ? `${lx} says nothing about ${la}–${lb} — you have paired nothing on ${la}–${lx} or ${lx}–${lb} yet`
+              : empty.length === 1
+                ? `${lx} says nothing about ${la}–${lb} — you have paired nothing on ${empty[0]} yet`
+                : `${lx} says nothing about ${la}–${lb} — your pairings on ${la}–${lx} and ${lx}–${lb} do not meet`;
+            return (
+              <div key={f.corner} data-midpoint-foot={lx} data-midpoint-foot-state={silent ? 'silent' : 'read'} className="mt-1 grid gap-0.5 text-stone-300">
+                <span data-midpoint-foot-head="true">{`${lx}'s view of your pairing on ${la}–${lb} — read from your pairings on ${la}–${lx} and ${lx}–${lb}`}</span>
+                {f.fix.length > 0 ? <span data-midpoint-foot-line="agrees">{`agrees on ${f.fix.length}: ${f.fix.map(([a, b]) => `${nA(a)} ≡ ${nB(b)}`).join(' · ')}`}</span> : null}
+                {f.disagreement.map(([a, b, p]) => (
+                  <span key={`d-${a}`} data-midpoint-foot-line="would-pair">{`would pair ${nA(a)} otherwise: with ${nB(b)} — you paired it with ${nB(p)}`}</span>
+                ))}
+                {f.proposal.map(([a, b]) => (
+                  <span key={`p-${a}`} data-midpoint-foot-line="would-join">{`would join what you left apart: ${nA(a)} with ${nB(b)}`}</span>
+                ))}
+                {silent ? <span data-midpoint-foot-line="silent">{silentLine}</span> : null}
+              </div>
+            );
+          })}
         </div>
       ) : state === 'unglued' ? (
         <div data-midpoint-own="unglued" className="mt-2 text-stone-400">{`${lm} — its own space is the two casts side by side, the columns above: no pair given yet`}</div>
