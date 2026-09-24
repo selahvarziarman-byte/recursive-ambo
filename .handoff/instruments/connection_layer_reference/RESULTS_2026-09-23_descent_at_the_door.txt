@@ -1,0 +1,41 @@
+descent_at_the_door.py — run 2026-09-23 17:27:02 +0330 · HEAD 6fe02bb · Python 3.10.12 · stdlib only · (N) two-way, as amended after run1
+
+RANDOM DOORS — exhaustive over every e: 300 doors k=3 n=2 · 120 doors k=4 n=2 · 25 doors k=3 n=3; fold doors: 300, n=2
+ D1  (N) ⇔ whole line-pairs of equal shape at their places: disagreements 0 (fold 0)   (sealed 0) — lawful 1660 of 1373620 e's (fold 1450 of 102900)
+     the count formula: disagreements 0 (fold 0)   (sealed 0)
+ D2  one pointed pair — extension exists ⇔ equal shape and place: disagreements 0 (fold 0) · the extension lawful: failures 0 · it is the whole line-pair: failures 0 (fold 0)   (sealed 0)
+     taken 757 · refused 5438 (fold: taken 666 · refused 2934)
+ D3  the EMPTY transport refused: 0   (sealed 0) · CONTROL, e's refused by (N): 1473410   (sealed > 0)
+ D4  TOTAL sub-case — a transport total at every corner exists ⇔ conjugate residues: disagreements 0   (sealed 0) — exists in 394 of 1040
+ D5  total at the base ⇔ the lines touching the base alike (against the exhaustive set): disagreements 0 (fold 0)   (sealed 0)
+     over 40,000 random partial doors: (N) allows total-at-base in 444 · §17.4's criterion holds in 24456
+     … (N) ⇒ the criterion: failures 0   (sealed 0) · the criterion holds and (N) allows none: 24012   (sealed > 0)
+ D6  one residue on the glued face, e_0 h_A = h_B e_0 on every lawful e: failures 0   (sealed 0)
+ D7  fold door — lawful e's that MOVE a role at the hinge corner A: 450   (sealed > 0)
+ D9  (the disjoint-face doors) the JOIN refuses a lawful e: 0   (sealed 0) · accepts an e that (N) refuses (n = 2): 119231   (sealed > 0)
+ D10 the ONE-WAY reading: e lawful A → B with e⁻¹ not lawful B → A: 10891   (sealed > 0) · e's the one-way reading admits and the two-way refuses: 10891
+
+D8  THE FIXTURES — a prism of two first faces (F · T · Φ = flow · t-cell · phi), the translation door, 42 × 42 triple pairs
+   the 42 faces' LINES: 803 (795 paths, 8 cycles); roles on a line (= what ONE gift carries; the forced part is one fewer): {1: 529, 2: 119, 3: 69, 4: 48, 5: 19, 6: 13, 7: 4, 8: 1, 11: 1}
+   classes by §17.4's criterion at F (the cycle–path type of h at F): 10 — sizes [14, 11, 7, 2, 2, 2, 1, 1, 1, 1] — ordered door pairs inside a class: 382
+   classes by (N), a transport TOTAL AT F: 42 — sizes [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] — ordered door pairs inside a class: 42
+   classes by (N), a transport TOTAL AT EVERY CORNER: 42 — sizes [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] — ordered door pairs inside a class: 42
+   CONTROL — a door between two copies of ONE triple, e = the identity: descends, record included, in 42 of 42   (sealed 42)
+   door pairs: 1764 ordered · §17.4's criterion holds and (N) allows no transport total at F: 340 · (N) allows one and the criterion fails: 0   (sealed 0)
+   roles a door CAN carry (their line has an equal-shape line on the other face), over the 1764 doors: F 18714 of 24696 (75.8%) · T 12434 of 17640 (70.5%) · Φ 10269 of 15876 (64.7%)
+   doors whose LARGEST lawful transport is unique (the J's force 'carry all that can be carried'): 0 of 1764
+   ONE POINTED PAIR at F (345744 = 14² × 1764): taken 90036 · refused by the lines 255708 (one continues/stops 184742 · one has a predecessor 70542 · different rounds 424) · of the taken, refused by the RECORD 0
+   ONE POINTED PAIR at T (176400 = 10² × 1764): taken 26416 · refused by the lines 149984 (one continues/stops 96668 · one has a predecessor 53012 · different rounds 304) · of the taken, refused by the RECORD 0
+   ONE POINTED PAIR at Φ (142884 = 9² × 1764): taken 19480 · refused by the lines 123404 (one continues/stops 72174 · one has a predecessor 51006 · different rounds 224) · of the taken, refused by the RECORD 5880
+      e.g. along  at F: door (i)+A+P → (i)+A+P, F1 ↦ F2: ('along 0→1 one continues and the other stops', 0, 'F1', 'F2')
+      e.g. into   at F: door (i)+A+P → (i)+A+P, F1 ↦ F7: ('into 0 from 2 one has a predecessor and the other has none', 0, 'F1', 'F7')
+      e.g. the    at F: door (i)+A+P → (i)+A+Q, F7 ↦ F7: ('the lines close after different rounds', 0, 'F1', 'F7')
+      e.g. along  at T: door (i)+A+P → (i)+A+P, r0 ↦ r2: ('along 0→1 one continues and the other stops', 0, 'F7', 'F5')
+      e.g. into   at T: door (i)+A+P → (i)+A+P, r0 ↦ r1: ('into 0 from 2 one has a predecessor and the other has none', 0, 'F1', 'F7')
+      e.g. the    at T: door (i)+A+P → (i)+A+Q, r1 ↦ r1: ('the lines close after different rounds', 1, 'r0', 'r1')
+      e.g. along  at Φ: door (i)+A+P → (i)+A+P, Φ1 ↦ Φ3: ('along 2→0 one continues and the other stops', 2, 'Φ1', 'Φ3')
+      e.g. into   at Φ: door (i)+A+P → (i)+A+P, Φ1 ↦ Φ2: ('into 0 from 2 one has a predecessor and the other has none', 0, 'F1', 'F7')
+      e.g. record at Φ: door (i)+A+P → (i)+A+P, Φ4 ↦ Φ9: ('Φ', "member_status(Φ9)=none-by-nature [phi] against the other side's has on the same glued tuple")
+      e.g. the    at Φ: door (i)+A+P → (i)+A+Q, Φ2 ↦ Φ1: ('the lines close after different rounds', 2, 'Φ1', 'Φ1')
+   D8 checks: (shape, place) vs the propagation 0 disagreements · a taken gift not lawful 0   (sealed 0, 0)
+wall 16.47 s
