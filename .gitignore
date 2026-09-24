@@ -106,6 +106,7 @@ scripts/.sweep-times.json
 !.handoff/RESEARCHER_RULING_INTERIOR_CONTENT.md
 !.handoff/RESEARCHER_RULING_QM1_QM3_BASISCYCLE_TO_IMMERSION.md
 !.handoff/RESEARCHER_RULING_ROUTE_B_LINEAGE_CARRIAGE.md
+!.handoff/RESEARCHER_RULING_ZOO_EXPANSION_CORRECTED.md
 !.handoff/RULING_A_BORN_ENTITYS_NAME_the-three-registers-of-designation.md
 !.handoff/RULING_C-2AMBO_STEP-1_the-transport-at-the-ambo-grain.md
 !.handoff/RULING_DEATH_IS_EXHAUSTION_the-two-registers.md
@@ -127,12 +128,16 @@ scripts/.sweep-times.json
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-10_first-face-and-tower_and-t-cell_run-in-the-in-app-browser.md
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-10_first_face_and_tower_PYTHON-on-Armans-machine.txt
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-10_t_cell_derived_check_PYTHON-on-Armans-machine.txt
+!.handoff/instruments/connection_layer_reference/RESULTS_2026-09-19_flow_phi_offers_under_tau.txt
+!.handoff/instruments/connection_layer_reference/RESULTS_2026-09-19_j_register_quantities.txt
+!.handoff/instruments/connection_layer_reference/RESULTS_2026-09-19_offers_count.txt
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-22_face_residue_reading.txt
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-23_lift_ground.txt
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-23_lift_ground_run1_empty-word-read-as-0.txt
 !.handoff/instruments/connection_layer_reference/amalgam_pushout_flow_phi.py
 !.handoff/instruments/connection_layer_reference/bianchi_for_partial_identifications.py
 !.handoff/instruments/connection_layer_reference/born_face_reading.py
+!.handoff/instruments/connection_layer_reference/descent_at_the_door.py
 !.handoff/instruments/connection_layer_reference/edge_candidates_partial_isomorphism.py
 !.handoff/instruments/connection_layer_reference/face_residue_reading.py
 !.handoff/instruments/connection_layer_reference/first_face_and_tower.py
@@ -141,9 +146,11 @@ scripts/.sweep-times.json
 !.handoff/instruments/connection_layer_reference/g3_meet_vs_parent.py
 !.handoff/instruments/connection_layer_reference/gen4_compounding.py
 !.handoff/instruments/connection_layer_reference/hinge_data.py
+!.handoff/instruments/connection_layer_reference/hinge_maximum_carried_core.py
 !.handoff/instruments/connection_layer_reference/inside_midpoint_trace.py
 !.handoff/instruments/connection_layer_reference/j_register_quantities.py
 !.handoff/instruments/connection_layer_reference/lift_ground.py
+!.handoff/instruments/connection_layer_reference/lift_in_type_theory.py
 !.handoff/instruments/connection_layer_reference/offers_count.py
 !.handoff/instruments/connection_layer_reference/projection_route_is_the_face_residue.py
 !.handoff/instruments/connection_layer_reference/s35_carried_composed_born.py
