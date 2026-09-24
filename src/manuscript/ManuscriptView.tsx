@@ -240,6 +240,10 @@ import {
   type CarriedMetricBaseResolution,
   type FoldedDomain,
 } from './apertureModel';
+// C-11a — THE DOOR's ACT (§133, Option R): the door's sides on the carried
+// record, the act, the whole-line withdrawal and the words — react-free
+import { actAt, doorReadingOf, refusalWords, sideOf, takenWords, withdrawLine, type DoorSideResult } from './doorTransportModel';
+import type { DoorRowView } from './DoorTransportSection';
 // THE PROBES (2026-07-14): the real scans — the mask, held in a hand. The
 // mask does recurrence; THE HAND does chirality (a face is its own mirror).
 import { buildProbeMeshes } from './apertureProbes';
@@ -2919,6 +2923,11 @@ export default function ManuscriptView() {
   const emptyApertureRows = (count = 3): AperturePairRow[] =>
     Array.from({ length: Math.max(1, count) }, () => ({ faceA: null, faceB: null, candidateKey: null }));
   const [apertureRows, setApertureRows] = useState<AperturePairRow[]>(emptyApertureRows);
+  // C-11a — THE DOOR's ACT at the pairing row: the pick in progress, the last
+  // TAKEN sentence and the standing refusal, per row — transient, like the
+  // midpoint's refusal; the TRANSPORT itself rides the row
+  // (`AperturePairRow.transports`) and the built record
+  const [doorStates, setDoorStates] = useState<Record<number, { pick: { corner: number; side: 'A' | 'B'; role: string } | null; notice: string | null; refusal: string | null }>>({});
   const [apertureNotice, setApertureNotice] = useState<string | null>(null);
   // THE SUBDIVISION (ARC 0.1) recut as ONE ATOM (B-106 B1 — the doorless-wall
   // lifetime): the folded WALL is the verdict's sentence PLUS the rows whose
@@ -3879,6 +3888,45 @@ export default function ManuscriptView() {
     [apertureVolume, resolveAbsentLabel],
   );
 
+  // C-11a — the door's two SIDES on the carried record (the C-10 reader's
+  // record): each corner's space through the one resolver, each boundary
+  // edge's J by its kind, read in the door's direction — re-derived per door
+  // identity (faces + map), stored nowhere. Guarded: the candidate build sits
+  // on the render path (D13) — a throw reads as no door, never a black page.
+  const doorLabel = useCallback(
+    (v: string): string => (apertureVolume ? cornerDisplayName(apertureVolume, v, resolveAbsentLabel) : null) ?? (v.split(':').pop() ?? v),
+    [apertureVolume, resolveAbsentLabel],
+  );
+  const doorFaceName = useCallback(
+    (menuId: string): string => {
+      if (!apertureVolume) return menuId;
+      const raw = menuId.replace(/^c\d+:/, '');
+      const face = apertureVolume.faces.find((f) => f.id === raw);
+      return face ? faceReferenceName(apertureVolume, face, resolveAbsentLabel) : (raw.split(':').pop() ?? raw);
+    },
+    [apertureVolume, resolveAbsentLabel],
+  );
+  const apertureDoorKeys = apertureRows.map((row) => `${row.faceA ?? ''}|${row.faceB ?? ''}|${row.candidateKey ?? ''}`).join(';');
+  const apertureDoorSides = useMemo((): Array<{ A: DoorSideResult; B: DoorSideResult } | null> => {
+    return apertureRows.map((row) => {
+      if (!apertureVolume || !liftedConcept || liftedConcept.state !== 'read' || !row.faceA || !row.faceB || !row.candidateKey) return null;
+      try {
+        const chosen = dihedralMapCandidates(apertureVolume, row.faceA, row.faceB).find((c) => c.key === row.candidateKey);
+        if (!chosen) return null;
+        const strip = (id: string): string => id.replace(/^c\d+:/, '');
+        const memo = new Map();
+        return {
+          A: sideOf(liftedConcept.record, chosen.correspondence.map(([a]) => strip(a)), memo, doorFaceName(row.faceA)),
+          B: sideOf(liftedConcept.record, chosen.correspondence.map(([, b]) => strip(b)), memo, doorFaceName(row.faceB)),
+        };
+      } catch (error) {
+        console.warn(`aperture: the door ${row.faceA} ~ ${row.faceB} could not be read on the record`, error);
+        return null;
+      }
+    });
+    // the sides depend on the doors' identity (faces + map) and the record — never on the transport
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apertureDoorKeys, apertureVolume, liftedConcept, doorFaceName]);
   // the gate panel's rows with the MAP MENU — the face's own dihedral orbit;
   // each option prints its vertex correspondence + the DERIVED mode (recorded,
   // never chosen — the knob that lies does not exist here)
@@ -3931,6 +3979,27 @@ export default function ManuscriptView() {
           mapChoices = [];
         }
       }
+      // C-11a — THE DOOR's ACT rides the complete row (faces + map) of a
+      // WRITTEN form: read on the record the lift carried, or the absence said
+      // (C-10's own words); a form outside the concept layer carries no door act
+      let door: DoorRowView | null = null;
+      if (row.faceA && row.faceB && row.candidateKey && liftedConcept) {
+        const names = { faceA: doorFaceName(row.faceA), faceB: doorFaceName(row.faceB) };
+        const st = doorStates[i] ?? { pick: null, notice: null, refusal: null };
+        if (liftedConcept.state === 'no-record') {
+          door = { ...names, state: 'no-record', absence: `nothing carried — this form was not lifted from a universe (${liftedConcept.provenance}): no corner of this door holds a space, so nothing can cross it`, reading: null, pick: null, notice: null, refusal: null };
+        } else if (liftedConcept.state === 'born-on-page') {
+          door = { ...names, state: 'born-on-page', absence: `born on the page (${liftedConcept.provenance}) — no transport carried: a form born after the lift holds no concept-space, and none is minted`, reading: null, pick: null, notice: null, refusal: null };
+        } else {
+          const sides = apertureDoorSides[i];
+          if (sides && sides.A.state === 'read' && sides.B.state === 'read') {
+            door = { ...names, state: 'read', absence: null, reading: doorReadingOf(sides.A.side, sides.B.side, row.transports ?? [], doorLabel), pick: st.pick, notice: st.notice, refusal: st.refusal };
+          } else if (sides) {
+            const missing = [...(sides.A.state === 'absent' ? sides.A.missing : []), ...(sides.B.state === 'absent' ? sides.B.missing : [])];
+            door = { ...names, state: 'absent', absence: `this door's corners hold no space on the record the lift carried — ${missing.map((m) => m.split('→').map(doorLabel).join('→')).join(' · ')}`, reading: null, pick: null, notice: null, refusal: null };
+          }
+        }
+      }
       return {
         faceA: row.faceA ?? '',
         faceB: row.faceB ?? '',
@@ -3939,9 +4008,10 @@ export default function ManuscriptView() {
         faceChoicesB: allFaces.filter((f) => !takenB.has(f.id) || f.id === row.faceB),
         mapChoices,
         mapRefusal,
+        door,
       };
     });
-  }, [apertureRows, apertureVolume, apertureFaceMenu, resolveAbsentLabel]);
+  }, [apertureRows, apertureVolume, apertureFaceMenu, resolveAbsentLabel, liftedConcept, apertureDoorSides, doorStates, doorLabel, doorFaceName]);
   const apertureRefusal = useMemo(
     () => (apertureVolume ? aperturePairingRefusal(apertureVolume, apertureRows) : apertureVolumeRefusal),
     [apertureVolume, apertureRows, apertureVolumeRefusal],
@@ -4087,8 +4157,50 @@ export default function ManuscriptView() {
   useEffect(() => {
     setApertureRows(emptyApertureRows(derivedApertureRowCount()));
     setApertureWall(null);
+    setDoorStates({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apertureVolume?.id, apertureFaceMenu.length]);
+  // C-11a — THE ACT at the door (the designer's 1500 §1 at the row): point a
+  // role at one side's corner, then a role at the other's — the WHOLE line-pair
+  // taken (the transport rides the row), or the refusal named in the one
+  // grammar; a taken line has ONE hand; a refusal has the local hand
+  const handleDoorPick = useCallback(
+    (i: number, corner: number, side: 'A' | 'B', role: string) => {
+      const sides = apertureDoorSides[i];
+      if (!sides || sides.A.state !== 'read' || sides.B.state !== 'read') return;
+      const st = doorStates[i] ?? { pick: null, notice: null, refusal: null };
+      if (!st.pick || st.pick.side === side || st.pick.corner !== corner) {
+        setDoorStates((cur) => ({ ...cur, [i]: { pick: { corner, side, role }, notice: null, refusal: null } }));
+        return;
+      }
+      const x = side === 'A' ? role : st.pick.role;
+      const y = side === 'B' ? role : st.pick.role;
+      const A = sides.A.side;
+      const B = sides.B.side;
+      const result = actAt(A, B, apertureRows[i]?.transports ?? [], corner, x, y);
+      if (result.taken) {
+        setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, transports: result.transports } : r)));
+        setDoorStates((cur) => ({ ...cur, [i]: { pick: null, notice: takenWords(A, B, result.e, corner, x, y, doorLabel), refusal: null } }));
+      } else {
+        setDoorStates((cur) => ({ ...cur, [i]: { pick: null, notice: null, refusal: refusalWords(A, B, result.refusal, doorLabel) } }));
+      }
+    },
+    [apertureDoorSides, doorStates, apertureRows, doorLabel],
+  );
+  const handleDoorWithdrawLine = useCallback(
+    (i: number, key: string) => {
+      const sides = apertureDoorSides[i];
+      if (!sides || sides.A.state !== 'read' || sides.B.state !== 'read') return;
+      const bar = key.indexOf('|');
+      const next = withdrawLine(sides.A.side, sides.B.side, apertureRows[i]?.transports ?? [], Number(key.slice(0, bar)), key.slice(bar + 1));
+      setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, transports: next } : r)));
+      setDoorStates((cur) => ({ ...cur, [i]: { pick: null, notice: null, refusal: null } }));
+    },
+    [apertureDoorSides, apertureRows],
+  );
+  const handleDoorWithdrawAttempt = useCallback((i: number) => {
+    setDoorStates((cur) => ({ ...cur, [i]: { pick: null, notice: null, refusal: null } }));
+  }, []);
   const handleApertureGlue = useCallback(() => {
     if (!apertureVolume) return; // the door's chip is gated on the refusal line
     try {
@@ -4139,6 +4251,7 @@ export default function ManuscriptView() {
       // holds after an exit on the same volume too
       setApertureRows(emptyApertureRows(derivedApertureRowCount()));
       setApertureWall(null);
+      setDoorStates({});
     } catch (error) {
       unbumpBuiltCount();
       // a door-level refusal (an incomplete matching, an unknown candidate) — named
@@ -4207,6 +4320,7 @@ export default function ManuscriptView() {
       // D2 residual (disclosed): the derived ⌊menu/2⌋ count, post-exit too
       setApertureRows(emptyApertureRows(derivedApertureRowCount()));
       setApertureWall(null);
+      setDoorStates({});
     } catch (error) {
       unbumpBuiltCount();
       setApertureNotice(`the engine refused: ${(error as Error).message}`);
@@ -7005,15 +7119,23 @@ export default function ManuscriptView() {
             refusal={apertureRefusal}
             pristine={aperturePristine}
             notice={apertureNotice}
-            onPickFaceA={(i, v) =>
-              setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, faceA: v || null, candidateKey: null } : r)))
-            }
-            onPickFaceB={(i, v) =>
-              setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, faceB: v || null, candidateKey: null } : r)))
-            }
-            onPickMap={(i, v) =>
-              setApertureRows((cur) => cur.map((r, k) => (k === i ? { ...r, candidateKey: v || null } : r)))
-            }
+            // C-11a: a changed face or map is a NEW door — the old transport and
+            // the old attempt do not linger on it (a fresh row of exactly three fields)
+            onPickFaceA={(i, v) => {
+              setApertureRows((cur) => cur.map((r, k) => (k === i ? { faceA: v || null, faceB: r.faceB, candidateKey: null } : r)));
+              setDoorStates((cur) => ({ ...cur, [i]: { pick: null, notice: null, refusal: null } }));
+            }}
+            onPickFaceB={(i, v) => {
+              setApertureRows((cur) => cur.map((r, k) => (k === i ? { faceA: r.faceA, faceB: v || null, candidateKey: null } : r)));
+              setDoorStates((cur) => ({ ...cur, [i]: { pick: null, notice: null, refusal: null } }));
+            }}
+            onPickMap={(i, v) => {
+              setApertureRows((cur) => cur.map((r, k) => (k === i ? { faceA: r.faceA, faceB: r.faceB, candidateKey: v || null } : r)));
+              setDoorStates((cur) => ({ ...cur, [i]: { pick: null, notice: null, refusal: null } }));
+            }}
+            onDoorPick={handleDoorPick}
+            onDoorWithdrawLine={handleDoorWithdrawLine}
+            onDoorWithdrawAttempt={handleDoorWithdrawAttempt}
             onGlue={handleApertureGlue}
             onLeaveBounded={apertureVolume ? handleApertureLeaveBounded : null}
             // M-2 clauses 1+2 — the picker rides the ONE correspondence

@@ -368,12 +368,16 @@ def lift_arm(page, args):
     res['manuscript'] = page.evaluate("() => ({ canvases: document.querySelectorAll('canvas').length, shelf: document.querySelectorAll('[title=\"drag onto the sheet\"]').length, placedTitles: [...document.querySelectorAll('[title=\"already on the sheet\"]')].map((e) => e.textContent), boundary: (document.body.innerText.match(/manuscript page[^\\n]{0,200}/) || [null])[0] })")
     shelf = page.locator('[title="drag onto the sheet"]')
     res['shelfEntries'] = shelf.count()
+    res['shelfTitles'] = [shelf.nth(k).inner_text().replace('\n', ' ') for k in range(shelf.count())]
     if shelf.count():
-        res['shelfTitle'] = shelf.first.inner_text()
+        # C-11a: the shelf holds two lifts now (the gen-1 residue lifted before the second dissection, then this one) — the
+        # C-10 arm places the MOST RECENT (the gen-2 residue with the finer grain); the door arm places the other
+        entry = shelf.nth(shelf.count() - 1)
+        res['shelfTitle'] = entry.inner_text()
         canvases = page.locator('canvas')
         res['canvases'] = canvases.count()
         target = canvases.nth(canvases.count() - 1)
-        shelf.first.drag_to(target); page.wait_for_timeout(1500)
+        entry.drag_to(target); page.wait_for_timeout(1500)
     res['placed'] = page.evaluate(MEASURE_LIFT)
     # C-10b: the corner's line is WORDS; `open the drawing` mounts the drawing on the sheet at its own size
     row = page.locator('[data-lifted-vertex-row]').filter(has_text=re.compile(r'^AB '))
@@ -400,6 +404,171 @@ def lift_arm(page, args):
     page.evaluate("() => { const s = document.querySelector('[data-lifted-face]'); if (s) s.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
     res['scrolledFace'] = page.evaluate(MEASURE_LIFT)
     page.screenshot(path=f"{args.frames}/concept-layer-lift-carries-{args.width}x{args.height}.png")
+    page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+    return res
+
+
+# ─── C-11a — THE DOOR's ACT at the aperture's pairing row (§133, Option R; the designer's 1500 §1 placed at the room's door) ───
+MEASURE_DOOR = """() => {
+  const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height), bottom: Math.round(b.bottom), right: Math.round(b.right) }; };
+  const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
+  const panel = document.querySelector('[data-aperture-panel]');
+  if (!panel) return { present: false };
+  const rows = panel.querySelector('[data-aperture-rows]');
+  const door = panel.querySelector('[data-door]');
+  const notice = [...panel.querySelectorAll('div')].map((e) => txt(e)).find((t) => t && /^(glued|left bounded|the engine refused|subdivided)/.test(t)) || null;
+  if (!door) return { present: true, door: null, rowsBox: r(rows), rowsScrollTop: rows ? rows.scrollTop : null, notice, glueButton: [...panel.querySelectorAll('button')].some((b) => /^glue — the S² gate judges$/.test(txt(b))) };
+  const chips = [...door.querySelectorAll('[data-door-role]')].filter((c) => !c.hasAttribute('data-door-role-taken') && !c.hasAttribute('data-door-role-picked'));
+  const styleOf = (c) => { const cs = getComputedStyle(c); return `${cs.borderStyle}|${cs.borderColor}|${cs.backgroundColor}|${cs.color}|${cs.fontWeight}|${cs.outlineStyle}`; };
+  const styles = new Set(chips.map(styleOf));
+  const crossing = new Set(chips.map((c) => c.getAttribute('data-door-role-crosses')));
+  const D = r(door); const RB = r(rows);
+  return {
+    present: true, notice, glueButton: [...panel.querySelectorAll('button')].some((b) => /^glue — the S² gate judges$/.test(txt(b))),
+    door: {
+      id: door.getAttribute('data-door'), state: door.getAttribute('data-door-state'), pairs: door.getAttribute('data-door-pairs'), lines: door.getAttribute('data-door-lines'),
+      empty: txt(door.querySelector('[data-door-empty]')), head: txt(door.querySelector('[data-door-head]')),
+      lineBlocks: [...door.querySelectorAll('[data-door-line]')].map((l) => ({ key: l.getAttribute('data-door-line'), kind: l.getAttribute('data-door-line-kind'), pairs: l.getAttribute('data-door-line-pairs'), words: txt(l.querySelector('[data-door-line-words]')), hands: [...l.querySelectorAll('[data-door-withdraw-line]')].map((b) => txt(b)) })),
+      taken: txt(door.querySelector('[data-door-taken]')),
+      refusal: txt(door.querySelector('[data-door-refusal-words]')), refusalHands: [...door.querySelectorAll('[data-door-withdraw-attempt]')].map((b) => txt(b)),
+      corners: [...door.querySelectorAll('[data-door-corner]')].map((c) => ({ pair: c.getAttribute('data-door-corner-pair'), a: c.querySelectorAll('[data-door-side="A"] [data-door-role]').length, b: c.querySelectorAll('[data-door-side="B"] [data-door-role]').length })),
+      chipStyles: styles.size, chipCrossing: [...crossing].sort(), takenChips: door.querySelectorAll('[data-door-role-taken]').length, pickedChips: door.querySelectorAll('[data-door-role-picked]').length,
+      cannotCross: txt(door.querySelector('[data-door-cannot-cross]')), unlawful: txt(door.querySelector('[data-door-unlawful]')),
+      box: D, rowsBox: RB, rowsScrollTop: rows ? rows.scrollTop : null, rowsScrollHeight: rows ? rows.scrollHeight : null, topInsideRows: D && RB ? D.y >= RB.y - 0.5 && D.y < RB.bottom - 20 : null, inViewport: D ? D.y >= 0 && D.y < window.innerHeight : null,
+    },
+  };
+}"""
+
+
+def lift_gen1_arm(page, args):
+    """C-11a: the gen-1 residue at A lifted BEFORE the second dissection — the form the door arm builds a room from (the Ambo
+    mounts no way back to an earlier shape, and the gen-2 residue's finer grain cannot be glued today)"""
+    res = {}
+    res['cellRow'] = select_residue_at(page, 'A')
+    lift = page.get_by_role("button", name=re.compile(r"^Lift selection → Manuscript$"))
+    res['liftButton'] = lift.count()
+    if lift.count():
+        lift.first.click(); page.wait_for_timeout(600)
+        res['liftNotice'] = page.evaluate("() => { const p = [...document.querySelectorAll('p')].find((e) => /lifted|Manuscript shelf/i.test(e.textContent)); return p ? p.textContent : null; }")
+    return res
+
+
+def door_chip(page, corner, side, name):
+    return page.locator(f'[data-door-corner="{corner}"] [data-door-side="{side}"] [data-door-role-name="{name}"]')
+
+
+def door_arm(page, args):
+    """C-11a: the door's act at the eye — the gen-1 residue placed, the aperture opened on it, the hinge door A·AC·AB ~ A·AB·AD
+    given, F1 ↦ F1 taken with its whole line, a pair refused by the lines, a pair refused by the record, the line withdrawn
+    and given again, the door glued into a room"""
+    res = {}
+    page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click()
+    try:
+        page.wait_for_selector('[title="drag onto the sheet"]', timeout=30000)
+    except Exception as e:
+        res['shelfWait'] = str(e)[:200]
+    shelf = page.locator('[title="drag onto the sheet"]')
+    res['shelfDraggable'] = shelf.count()
+    res['shelfTitles'] = [shelf.nth(k).inner_text().replace('\n', ' ') for k in range(shelf.count())]
+    if not shelf.count():
+        return res
+    # the C-10b arm leaves the lifted drawing open on the sheet — its overlay intercepts a drag onto the canvas; close it first
+    closer = page.locator('[data-lifted-drawing-state="open"]')
+    res['drawingClosed'] = closer.count()
+    if closer.count():
+        closer.first.click(); page.wait_for_timeout(400)
+    canvases = page.locator('canvas')
+    shelf.first.drag_to(canvases.nth(canvases.count() - 1)); page.wait_for_timeout(1500)
+    res['placed'] = page.evaluate(MEASURE_LIFT)
+    # the aperture on the placed form
+    ap = page.get_by_role("button", name=re.compile(r"^aperture — build a 3-manifold"))
+    res['apertureButton'] = ap.first.inner_text() if ap.count() else None
+    if not ap.count():
+        return res
+    ap.first.click(); page.wait_for_timeout(600)
+    try:
+        page.wait_for_selector('[data-aperture-panel]', timeout=10000)
+    except Exception as e:
+        res['panelWait'] = str(e)[:200]
+        return res
+    row = page.locator('[data-aperture-rows]').first
+    sel_a = row.locator('[data-aperture-select="faceA"]').first
+    sel_b = row.locator('[data-aperture-select="faceB"]').first
+    sel_m = row.locator('[data-aperture-select="map"]').first
+    opts = sel_a.evaluate("(el) => [...el.options].map((o) => ({ value: o.value, label: o.textContent }))")
+    res['faceOptions'] = [o['label'] for o in opts]
+    def face_with(corners):
+        for o in opts:
+            t = o['label'].split(' · ')[0].split('·')
+            if len(t) == len(corners) and all(c in t for c in corners):
+                return o
+        return None
+    fa = face_with(['A', 'AB', 'AC']); fb = face_with(['A', 'AB', 'AD'])
+    res['faces'] = [fa and fa['label'], fb and fb['label']]
+    if not fa or not fb:
+        return res
+    sel_a.select_option(fa['value']); page.wait_for_timeout(300)
+    sel_b.select_option(fb['value']); page.wait_for_timeout(300)
+    mopts = sel_m.evaluate("(el) => [...el.options].map((o) => ({ value: o.value, label: o.textContent }))")
+    res['mapOptions'] = [o['label'] for o in mopts]
+    hinge = next((o for o in mopts if re.match(r'^A→A · AC→AD · AB→AB', o['label'])), None)
+    res['hinge'] = hinge and hinge['label']
+    if not hinge:
+        return res
+    sel_m.select_option(hinge['value']); page.wait_for_timeout(700)
+    res['empty'] = page.evaluate(MEASURE_DOOR)
+    page.screenshot(path=f"{args.frames}/concept-layer-door-empty-{args.width}x{args.height}.png")
+    # the door scrolled into the rows region's view (the rows region owns a bounded scroll — D10)
+    page.evaluate("() => { const d = document.querySelector('[data-door]'); if (d) d.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+    res['scrolled'] = page.evaluate(MEASURE_DOOR)
+    # TAKEN — F1 ↦ F1 at A, the whole line with it
+    door_chip(page, 0, 'A', 'F1').first.click(); page.wait_for_timeout(200)
+    res['picked'] = page.evaluate(MEASURE_DOOR)
+    door_chip(page, 0, 'B', 'F1').first.click(); page.wait_for_timeout(500)
+    res['taken'] = page.evaluate(MEASURE_DOOR)
+    page.screenshot(path=f"{args.frames}/concept-layer-door-taken-{args.width}x{args.height}.png")
+    # REFUSED BY THE LINES — at AC → AD, an A-role (on a cycle: A's roles ride A→AC→AB→A through the corner edges) pointed at a
+    # D-role (a line of one): one continues and the other stops. At the eye C holds the T cell and D holds Φ; F2 is glued
+    # nowhere on the path, Φ1 is D's own.
+    door_chip(page, 1, 'A', 'F2').first.click(); page.wait_for_timeout(200)
+    door_chip(page, 1, 'B', 'Φ1').first.click(); page.wait_for_timeout(500)
+    res['refusedLines'] = page.evaluate(MEASURE_DOOR)
+    page.screenshot(path=f"{args.frames}/concept-layer-door-refused-{args.width}x{args.height}.png")
+    hand = page.locator('[data-door-withdraw-attempt]')
+    if hand.count():
+        hand.first.click(); page.wait_for_timeout(300)
+    res['afterHand'] = page.evaluate(MEASURE_DOOR)
+    # REFUSED BY THE RECORD — at AB → AB (the hinge corner the two faces share; B holds Φ), Φ4 ↦ Φ9: two lines of one, equal in
+    # shape, and the record refuses — the mold's member_status said two ways on the glued tuple (Φ4 has · Φ9 none-by-nature)
+    door_chip(page, 2, 'A', 'Φ4').first.click(); page.wait_for_timeout(200)
+    door_chip(page, 2, 'B', 'Φ9').first.click(); page.wait_for_timeout(500)
+    res['refusedRecord'] = page.evaluate(MEASURE_DOOR)
+    page.screenshot(path=f"{args.frames}/concept-layer-door-record-{args.width}x{args.height}.png")
+    hand = page.locator('[data-door-withdraw-attempt]')
+    if hand.count():
+        hand.first.click(); page.wait_for_timeout(300)
+    # the ONE hand: the whole line withdrawn — the empty state again; then given again for the room
+    wl = page.locator('[data-door-withdraw-line]')
+    res['lineHands'] = wl.count()
+    if wl.count():
+        wl.first.click(); page.wait_for_timeout(400)
+    res['withdrawn'] = page.evaluate(MEASURE_DOOR)
+    door_chip(page, 0, 'A', 'F1').first.click(); page.wait_for_timeout(200)
+    door_chip(page, 0, 'B', 'F1').first.click(); page.wait_for_timeout(500)
+    res['givenAgain'] = page.evaluate(MEASURE_DOOR)
+    # the GLUE — the S² gate judges; the room joins the dim-3 band; the rows reset
+    glue = page.get_by_role("button", name=re.compile(r"^glue — the S² gate judges$"))
+    res['glueButton'] = glue.count()
+    if glue.count():
+        glue.first.click(); page.wait_for_timeout(1500)
+    res['glued'] = page.evaluate(MEASURE_DOOR)
+    page.screenshot(path=f"{args.frames}/concept-layer-door-glued-{args.width}x{args.height}.png")
+    # the panel's own × (the bottom toggle can sit under the selected form's acts bar — measured, intercepted)
+    try:
+        page.locator('[data-aperture-panel] button', has_text=re.compile(r'^×$')).first.click(timeout=5000); page.wait_for_timeout(300)
+        res['closed'] = True
+    except Exception as e:
+        res['closed'] = str(e)[:120]
     page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
     return res
 
@@ -593,6 +762,8 @@ def main():
         out['abBefore'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs', 'own', 'ownPoints', 'ownBoth')}
         out['selectAC4'] = select_vertex_labelled(page, "AC")
         out['acBefore'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs')}
+        # C-11a — the gen-1 residue at A lifted NOW, before the second dissection (the door arm builds a room from it)
+        out['liftGen1'] = lift_gen1_arm(page, args)
         # C-7e (Δ84 "pay the price") — THE SECOND DISSECTION AT THE EYE: with the pairs given at AB (3 + τ₃) and at AC
         # (1 + 1), the core dissected again; at gen 2 the octahedron (the gen-1 core, now the parent) holds the gen-1
         # midpoints as its corners — AB selected from it, and what the person sees read: the pairs, the own diagram, the
@@ -638,6 +809,8 @@ def main():
                 out['selectABAC5'] = select_vertex_labelled(page, "ABAC")
                 # C-10 — THE LIFT CARRIES: with the born pair standing on AB–AC, lift the gen-1 residue at A and read it on the Manuscript
                 out['lift'] = lift_arm(page, args)
+                # C-11a — THE DOOR's ACT at the aperture's pairing row, on the gen-1 residue placed beside the C-10 form
+                out['door'] = door_arm(page, args)
                 # THE DEPENDENCY REFUSAL: back at AB (gen 2), a gen-0 pair that re-glues the role the born pair named (the Φ-side role of AB's own part)
                 # the born pair's role on AB's own part is a Φ role (B holds Φ); its key carries the edge's side prefix, stripped here
                 phi_role = next((k[2:] for k in (xb, yb) if k[2:].startswith('Φ')), None)

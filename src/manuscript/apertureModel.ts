@@ -580,6 +580,21 @@ export interface AperturePairRow {
   faceA: string | null;
   faceB: string | null;
   candidateKey: string | null; // the picked MAP (never a mode)
+  // C-11a (§133, Option R) — THE DOOR's TRANSPORT: the person's INPUT beside
+  // `FacePairing` (never inside the frozen type), per corner pair of the picked
+  // candidate — which role of one side's corner crosses to which of the
+  // other's (and the word pairs, when given). ABSENT = no concept given yet:
+  // the empty transport, a true absence, always lawful (descent D3). Persisted
+  // by the page file as it stands — the built record keeps its rows verbatim;
+  // the glue's resolver reads faces and map and ignores it. Read, never
+  // written, by src/manuscript/doorTransportModel.ts.
+  transports?: DoorTransport[];
+}
+
+export interface DoorTransport {
+  corners: [string, string]; // [faceA's corner, its image on faceB] — the candidate's correspondence, menu-space ids
+  roles: Array<[string, string]>; // role of the first corner ↦ role of the second
+  types: Array<[string, string]>; // the word pairs across the door, arity-preserving (none given by any act yet — carried as the record's shape)
 }
 
 // D2 — THE ONE DOOR (2026-08-15, sovereign-ruled: "building manifold-3

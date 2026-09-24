@@ -25,6 +25,9 @@ import type { GluingPreviewResult } from '../playground/customGluing';
 import type { BoundaryPairing } from '../lib/surfaceOperations';
 import type { ChordSplit, FoldState } from './handGestureModel';
 import type { ApertureParityCensus } from './apertureModel';
+// C-11a — THE DOOR's ACT at the pairing row (§133, Option R): the section draws
+// the model's reading under a complete row of a written form
+import { DoorTransportSection, type DoorRowView } from './DoorTransportSection';
 
 export interface ChromePaper {
   cardBackground: string;
@@ -490,6 +493,10 @@ export interface AperturePairRowView {
   // are picked, corner counts match, and EVERY candidate was refused by the
   // fit (the view supplies the one ruled string; this chrome invents none)
   mapRefusal?: string | null;
+  // C-11a — the door's act: present exactly when the row is a complete door
+  // (both faces + a map) of a WRITTEN form — read on the record the lift
+  // carried, or the absence said; absent on a form outside the concept layer
+  door?: DoorRowView | null;
 }
 
 function AperturePickRow({
@@ -501,6 +508,9 @@ function AperturePickRow({
   paper,
   onFaceTouch,
   emphasizedIds,
+  onDoorPick,
+  onDoorWithdrawLine,
+  onDoorWithdrawAttempt,
 }: {
   index: number;
   row: AperturePairRowView;
@@ -511,6 +521,10 @@ function AperturePickRow({
   // M-2: the one correspondence channel (see ApertureGatePanel's props)
   onFaceTouch?: (faceId: string | null) => void;
   emphasizedIds?: readonly string[];
+  // C-11a — the door's three hands, threaded from the view (see ApertureGatePanel)
+  onDoorPick?: (corner: number, side: 'A' | 'B', role: string) => void;
+  onDoorWithdrawLine?: (key: string) => void;
+  onDoorWithdrawAttempt?: () => void;
 }) {
   const selectStyle = {
     display: 'block',
@@ -537,6 +551,7 @@ function AperturePickRow({
             choose and the closed-select hover carry the correspondence;
             named, not silently narrowed.) */}
         <select
+          data-aperture-select="faceA"
           value={row.faceA}
           onChange={(e) => {
             onPickFaceA(e.target.value);
@@ -560,6 +575,7 @@ function AperturePickRow({
           ))}
         </select>
         <select
+          data-aperture-select="faceB"
           value={row.faceB}
           onChange={(e) => {
             onPickFaceB(e.target.value);
@@ -584,6 +600,7 @@ function AperturePickRow({
         </select>
       </div>
       <select
+        data-aperture-select="map"
         value={row.mapKey}
         onChange={(e) => onPickMap(e.target.value)}
         onMouseDown={(e) => e.stopPropagation()}
@@ -603,6 +620,13 @@ function AperturePickRow({
         <div data-aperture-no-map style={{ marginTop: 3, fontSize: 10.5, fontStyle: 'italic', opacity: 0.8 }}>
           {row.mapRefusal}
         </div>
+      ) : null}
+      {/* C-11a — THE DOOR's ACT, where the door is given (§133, Option R):
+          under the complete row, the door's corners with both sides' roles, the
+          lines taken with one hand each, the refusal in the one grammar, the
+          empty state as a positive mark; the words are the model's */}
+      {row.door && onDoorPick && onDoorWithdrawLine && onDoorWithdrawAttempt ? (
+        <DoorTransportSection door={row.door} onPick={onDoorPick} onWithdrawLine={onDoorWithdrawLine} onWithdrawAttempt={onDoorWithdrawAttempt} paper={paper} />
       ) : null}
     </div>
   );
@@ -627,6 +651,9 @@ export function ApertureGatePanel({
   accent,
   onFaceTouch,
   emphasizedIds,
+  onDoorPick,
+  onDoorWithdrawLine,
+  onDoorWithdrawAttempt,
 }: {
   rows: AperturePairRowView[];
   // F.0e (mothership §3.2): the volume's own boundary-face count for the
@@ -675,6 +702,11 @@ export function ApertureGatePanel({
   onClose: () => void;
   paper: ChromePaper;
   accent: string;
+  // C-11a — THE DOOR's ACT: the view's three hands per row (the transport rides
+  // the row — `AperturePairRow.transports`; this chrome holds no state of it)
+  onDoorPick?: (index: number, corner: number, side: 'A' | 'B', role: string) => void;
+  onDoorWithdrawLine?: (index: number, key: string) => void;
+  onDoorWithdrawAttempt?: (index: number) => void;
 }) {
   // D10 (engineer 1629): the panel must be usable at ANY row count — the
   // count is ⌊boundary/2⌋ and unbounded, so the ROWS region owns a bounded
@@ -789,6 +821,9 @@ export function ApertureGatePanel({
             paper={paper}
             onFaceTouch={onFaceTouch}
             emphasizedIds={emphasizedIds}
+            onDoorPick={onDoorPick ? (c, s, r) => onDoorPick(i, c, s, r) : undefined}
+            onDoorWithdrawLine={onDoorWithdrawLine ? (key) => onDoorWithdrawLine(i, key) : undefined}
+            onDoorWithdrawAttempt={onDoorWithdrawAttempt ? () => onDoorWithdrawAttempt(i) : undefined}
           />
         ))}
       </div>
