@@ -370,3 +370,6 @@ Every charter, ruling, and sequencing decision I write is walked against this le
 ⇒ **READ: the per-step acceptance walks are the MOTHERSHIP's** (step 2 closes on §129.2's walk; step 3 closes on this office's walk of `C-11b`). **The finish line = the engine brought whole; then Arman, with another agent, USES it as it is meant to be used and reports what breaks** — those reports enter the chain as the first findings after the finish.
 
 **Δ94 — THE ANGLES: PARKED FOR THE BUILD, KEPT ALIVE IN HERMENEUTICS (2026-09-24, entered 17:56 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"meanwhile, write to the hermeneutics and tell them that the line of enquiry on the angles has been aborted by Arman and his need to race to the finish line first. but they are to keep working that line and see whether they can find a stone strong and useful enough that make us rebuild."*
+
+**Δ92 — BEWARE DRIFT AND CYCLES OF MINUTIAE (2026-09-24, heard 17:49 +03:30 in-terminal; ⛔ entered LATE at 19:33 — filed then only in the claims ledger §138, found missing here on the coder's courier report).** ✔ VERBATIM: *"the coder is building but i want you to be weary of drift and cycles of minutiae."*
+⇒ **READ:** the race freeze (§138) — one last build, ratified on its acceptance alone; findings parked in one line.
