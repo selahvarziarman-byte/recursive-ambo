@@ -766,8 +766,11 @@ const tupleWords = (t: FaceTuple): string => `${t.type}(${t.terms.join(', ')}) $
  * by their cells, the host's first, when they differ. The corner cell's face carries no block: it always returns all of its
  * corner to itself — the solid's ordinary, no news.
  */
-function BornFaceRecord({ shape, cycle, faceName, faceId, here, siteId }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceName: string; faceId: string; here: Edge['id']; siteId: VertexId }) {
+// C-10: EXPORTED for the Manuscript's card (the lifted face read on the record the lift carried) — `here` null there (no site
+// is local to the page), `hands` 'words' there (the acts are the Ambo's, at the sites the words name; never an act on the copy)
+export function BornFaceRecord({ shape, cycle, faceName, faceId, here, siteId, hands = 'act' }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceName: string; faceId: string; here: Edge['id'] | null; siteId?: VertexId; hands?: 'act' | 'words' }) {
   const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
+  const withdraw = hands === 'act' ? withdrawRolePair : undefined;
   // the cells holding this face — by VERTEX SET: each cell holds its OWN record of a shared face (C-7h's measurement: one order written twice), so the id names one cell's copy
   const cells = useMemo(() => {
     const own = shape.faces.find((f) => f.id === faceId);
@@ -787,14 +790,14 @@ function BornFaceRecord({ shape, cycle, faceName, faceId, here, siteId }: { shap
   const walkWords = (cs: [VertexId, VertexId, VertexId]): string => `${L(cs[0])} → ${L(cs[1])} → ${L(cs[2])} → ${L(cs[0])}`;
   return (
     <div data-midpoint-born-face={faceName} data-midpoint-born-face-cells={String(cells.length)} data-midpoint-born-face-alike={other ? (alike ? 'true' : 'false') : undefined} className="grid gap-0.5">
-      <BornFaceBlock shape={shape} result={forward} head={`the face ${faceName}, ${other && host ? `between ${cellWords(host)} and ${cellWords(other)} — walked as ${cellWords(host)}'s` : "walked in the face's own direction"}, ${walkWords(cycle)}`} here={here} siteId={siteId} withdraw={withdrawRolePair} />
+      <BornFaceBlock shape={shape} result={forward} head={`the face ${faceName}, ${other && host ? `between ${cellWords(host)} and ${cellWords(other)} — walked as ${cellWords(host)}'s` : "walked in the face's own direction"}, ${walkWords(cycle)}`} here={here} siteId={siteId} withdraw={withdraw} />
       {other && alike ? <span data-midpoint-born-face-alike-line="true" className="text-stone-500">{`walked as ${cellWords(other)}'s, the reverse, it reads alike — one reading, both cells'`}</span> : null}
-      {other && !alike && reversed ? <BornFaceBlock shape={shape} result={reversed} head={`walked as ${cellWords(other)}'s, the reverse, ${walkWords([cycle[0], cycle[2], cycle[1]])}`} here={here} siteId={siteId} withdraw={withdrawRolePair} /> : null}
+      {other && !alike && reversed ? <BornFaceBlock shape={shape} result={reversed} head={`walked as ${cellWords(other)}'s, the reverse, ${walkWords([cycle[0], cycle[2], cycle[1]])}`} here={here} siteId={siteId} withdraw={withdraw} /> : null}
     </div>
   );
 }
 
-function BornFaceBlock({ shape, result, head, here, siteId, withdraw }: { shape: Shape; result: BornFaceResult; head: string; here: Edge['id']; siteId: VertexId; withdraw: (edgeId: Edge['id'], x: string, y: string) => void }) {
+function BornFaceBlock({ shape, result, head, here, withdraw }: { shape: Shape; result: BornFaceResult; head: string; here: Edge['id'] | null; siteId?: VertexId; withdraw?: (edgeId: Edge['id'], x: string, y: string) => void }) {
   const L = (v: VertexId): string => labelOf(shape, v);
   const edgeWords = (from: VertexId, to: VertexId): string => `${L(from)}–${L(to)}`;
   const spaces = useMemo(() => {
@@ -823,9 +826,16 @@ function BornFaceBlock({ shape, result, head, here, siteId, withdraw }: { shape:
               <>
                 {'through your pair'}{r.through.length === 1 ? '' : 's'}{': '}
                 {r.through.map((act, k) => (
-                  <button key={k} type="button" data-midpoint-born-face-withdraw={`${act.edge.id}|${act.stored[0]}|${act.stored[1]}`} className="mr-2 underline" onClick={() => withdraw(act.edge.id, act.stored[0], act.stored[1])}>
-                    {`${where(act)}: withdraw ${pairWords(act)}`}
-                  </button>
+                  withdraw ? (
+                    <button key={k} type="button" data-midpoint-born-face-withdraw={`${act.edge.id}|${act.stored[0]}|${act.stored[1]}`} className="mr-2 underline" onClick={() => withdraw(act.edge.id, act.stored[0], act.stored[1])}>
+                      {`${where(act)}: withdraw ${pairWords(act)}`}
+                    </button>
+                  ) : (
+                    // C-10: the hand as WORDS — the act is the Ambo's, at the site named
+                    <span key={k} data-midpoint-born-face-hand-words={`${act.edge.id}|${act.stored[0]}|${act.stored[1]}`} className="mr-2">
+                      {`${where(act)}: withdraw ${pairWords(act)}`}
+                    </span>
+                  )
                 ))}
               </>
             )}
@@ -880,7 +890,8 @@ function BornFaceBlock({ shape, result, head, here, siteId, withdraw }: { shape:
  * person's register says `walked in turn`, never `composed` (C-7g item 9: `composed` is the solid's word — C-8's origin).
  * Nothing here composes a route for the person or proposes a pair (0031 §8(c)).
  */
-function FaceRecord({ shape, cycle, faceName, here }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceName: string; here: Edge['id'] }) {
+// C-10: EXPORTED for the Manuscript's card — see BornFaceRecord
+export function FaceRecord({ shape, cycle, faceName, here, hands = 'act' }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceName: string; here: Edge['id'] | null; hands?: 'act' | 'words' }) {
   const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
   // C-8: the three corners' spaces through the one resolver (a seed corner's cast — this block mounts on seed faces alone)
   const casts = useMemo(() => Object.fromEntries(cycle.map((v) => [v, spaceOf(shape, v)?.space])) as Record<VertexId, ConceptSpace | undefined>, [shape, cycle]);
@@ -906,9 +917,16 @@ function FaceRecord({ shape, cycle, faceName, here }: { shape: Shape; cycle: [Ve
             {`${L(r.corner)}'s own record: ${tupleWords(r.first)} against ${tupleWords(r.second)} — with ${r.merged.map(([x, y]) => `${x} and ${y} made one`).join(' · ')}, one ${r.kind === 'mark' ? 'role with two marks' : 'tuple with two values'}; merged by the walk through ${cycle.map((v, k) => edgeWords(v, cycle[(k + 1) % 3])).join(' · ')} · withdraw one of the three acts: `}
             {r.hands.map((h, k) => (
               // C-7g item 8 (the designer): every hand leads with WHERE, the local one says `here` — the edge this midpoint sits on
-              <button key={k} type="button" data-midpoint-face-withdraw={`${h.edge.id}|${h.pair[0]}|${h.pair[1]}`} data-midpoint-face-here={h.edge.id === here ? 'true' : undefined} className="mr-2 underline" onClick={() => withdrawRolePair(h.edge.id, h.pair[0], h.pair[1])}>
-                {`${h.edge.id === here ? 'here, ' : ''}on ${edgeWords(h.from, h.to)}: withdraw ${h.pair[0]} ↦ ${h.pair[1]}`}
-              </button>
+              hands === 'act' ? (
+                <button key={k} type="button" data-midpoint-face-withdraw={`${h.edge.id}|${h.pair[0]}|${h.pair[1]}`} data-midpoint-face-here={h.edge.id === here ? 'true' : undefined} className="mr-2 underline" onClick={() => withdrawRolePair(h.edge.id, h.pair[0], h.pair[1])}>
+                  {`${h.edge.id === here ? 'here, ' : ''}on ${edgeWords(h.from, h.to)}: withdraw ${h.pair[0]} ↦ ${h.pair[1]}`}
+                </button>
+              ) : (
+                // C-10: the hand as WORDS on the Manuscript's copy of the record
+                <span key={k} data-midpoint-face-hand-words={`${h.edge.id}|${h.pair[0]}|${h.pair[1]}`} className="mr-2">
+                  {`on ${edgeWords(h.from, h.to)}: withdraw ${h.pair[0]} ↦ ${h.pair[1]}`}
+                </span>
+              )
             ))}
           </span>
         ))}

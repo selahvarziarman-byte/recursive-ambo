@@ -173,6 +173,9 @@ import { resolveRingAnchors } from '../components/ringAnchorResolver';
 // own door fires the arity-2 product and shelves the band
 import { segmentGateReason } from '../lib/thicken';
 import { useGeometryStore } from '../store/geometryStore';
+// C-10 — THE LIFT CARRIES: the concept layer of a lifted form, read on the record the lift carried
+import { liftedConceptOf, type LiftedConcept } from './liftedConceptModel';
+import { LiftedConceptSection, type LiftedConceptPick } from './LiftedConceptSection';
 // H2 THE PERSON'S HANDS — the two gestures' react-free model: the fold (the
 // 7th dock word over customGluing's committed seam) and the aimed chord (the
 // committed subdivideFace as a person gesture + the combine fork). The view
@@ -1764,6 +1767,9 @@ const SPECIMEN_CARD_BREATH = 14;
 function SpecimenCard({
   reading,
   argument,
+  concept,
+  conceptPick,
+  onConceptPick,
   paper,
   generatorInks,
   emphasizedIds,
@@ -1779,6 +1785,11 @@ function SpecimenCard({
 }: {
   reading: SpecimenReading;
   argument?: ArgumentReading | null;
+  // C-10 — THE LIFT CARRIES: the concept layer read on the record the lift carried (or its absence, said); the
+  // person's picks on it. Absent on the world rows and the built rooms — they carry no record of this kind.
+  concept?: LiftedConcept | null;
+  conceptPick?: LiftedConceptPick | null;
+  onConceptPick?: (next: LiftedConceptPick) => void;
   // B-103 §2a — the computed affordance line (the form's own answer). B-105
   // W3 §4(b): a zero total SPEAKS (her sentence); null means only that no
   // form is resolved here — never an empty total carried by absence
@@ -2050,6 +2061,11 @@ function SpecimenCard({
         <div data-ring-unplaced style={{ marginTop: 4, fontSize: 11.5, fontStyle: 'italic', opacity: 0.75 }}>
           {ringUnplaced.length} cell{ringUnplaced.length > 1 ? 's' : ''} could not anchor — {ringUnplaced[0].reason}
         </div>
+      ) : null}
+      {/* ═══ C-10 — THE LIFT CARRIES: the concept layer the lifted form carries, read on the record (or the absence
+          said); the corner's inside and the face's reading are the Ambo's own blocks, reused ═══ */}
+      {concept && onConceptPick ? (
+        <LiftedConceptSection concept={concept} pick={conceptPick ?? null} onPick={onConceptPick} paper={paper} />
       ) : null}
       {/* ═══ B-132 — FOUR KINDS, DECLARED (never matched) ════════════════════
           The TRACE rows are the person's own act — they stand beside the
@@ -3423,6 +3439,18 @@ export default function ManuscriptView() {
   // carry B-132's declared kinds).
   // D16 (B-2026-08-23-C §4): the card takes the door's resolver ENTIRE —
   // the SAME reach the aperture menu reads through, level marks riding.
+  // ═══ C-10 — THE LIFT CARRIES: the selected written form's concept layer, read on the RECORD the lift carried (the
+  // shelf entry's own carried ancestors — never the page's lineage: a form born on the page by an act reads no record).
+  // Derived at every read from the record; nothing stored. The picks (a corner, a face) are the person's, per form.
+  const liftedConcept = useMemo<LiftedConcept | null>(() => {
+    if (!selected) return null;
+    const [band, key] = selected.split(':');
+    if (band !== 'w') return null;
+    const entry = written.find((w) => w.form.id === key);
+    if (!entry) return null;
+    return liftedConceptOf(entry.form, shelfAncestors.get(entry.form.shape.id) ?? [], resolveAbsentLabel);
+  }, [selected, written, shelfAncestors, resolveAbsentLabel]);
+  const [liftedPicks, setLiftedPicks] = useState<Record<string, LiftedConceptPick>>({});
   const selectedArgument = useMemo<ArgumentReading | null>(() => {
     if (!selected) return null;
     const [band, key] = selected.split(':');
@@ -7254,6 +7282,11 @@ export default function ManuscriptView() {
         <SpecimenCard
           reading={reading}
           argument={selectedArgument}
+          concept={liftedConcept}
+          conceptPick={selected ? liftedPicks[selected] ?? null : null}
+          onConceptPick={(next) => {
+            if (selected) setLiftedPicks((cur) => ({ ...cur, [selected]: next }));
+          }}
           affordance={affordanceLine}
           bound={quotientBound}
           deckRecord={deckRecord}

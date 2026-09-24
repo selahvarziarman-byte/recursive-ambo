@@ -301,6 +301,105 @@ def select_cell(page, pattern):
     return text
 
 
+
+# ─── C-10 — THE LIFT CARRIES at the eye: the Manuscript's card section for the placed lifted form ───
+MEASURE_LIFT = """() => {
+  const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height), bottom: Math.round(b.bottom), right: Math.round(b.right) }; };
+  const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
+  const scroll = document.querySelector('[data-specimen-scroll]');
+  const sec = document.querySelector('[data-lifted-concept]');
+  if (!sec) return { present: false, cardPresent: Boolean(scroll), shelfCount: document.querySelectorAll('[title="drag onto the sheet"], [title="already on the sheet"]').length };
+  const S = r(scroll); const B = r(sec);
+  const inside = (b) => b && S && b.y >= S.y - 0.5 && b.bottom <= S.bottom + 0.5;
+  const topInside = (b) => b && S && b.y >= S.y - 0.5 && b.y < S.bottom - 20;
+  const insidePanel = sec.querySelector('[data-inside-panel]');
+  const face = sec.querySelector('[data-lifted-face]');
+  return {
+    present: true, state: sec.getAttribute('data-lifted-concept'), held: sec.getAttribute('data-lifted-concept-held'), resolved: sec.getAttribute('data-lifted-concept-resolved'),
+    door: sec.querySelector('[data-lifted-concept-door]')?.getAttribute('data-compartment-state') ?? null,
+    recordLine: txt(sec.querySelector('[data-lifted-concept-record]')),
+    rows: [...sec.querySelectorAll('[data-lifted-vertex-row]')].map((e) => ({ id: e.getAttribute('data-lifted-vertex-row'), space: e.getAttribute('data-lifted-vertex-space'), picked: e.getAttribute('data-lifted-vertex-picked') === 'true', text: txt(e), inside: inside(r(e)) })),
+    scrollBox: S, sectionBox: B, sectionInside: inside(B), scrollTop: scroll ? scroll.scrollTop : null, scrollHeight: scroll ? scroll.scrollHeight : null,
+    insidePanel: insidePanel ? { id: insidePanel.getAttribute('data-inside-panel'), origin: insidePanel.getAttribute('data-inside-origin-of-space'), placement: insidePanel.getAttribute('data-inside-placement'), points: insidePanel.querySelectorAll('[data-inside-point]').length, glyphed: [...insidePanel.querySelectorAll('[data-inside-label]')].filter((l) => /≡/.test(l.textContent)).length, labels: [...insidePanel.querySelectorAll('[data-inside-label]')].map((l) => txt(l)).slice(0, 40), box: r(insidePanel), inside: inside(r(insidePanel)), topInside: topInside(r(insidePanel)), head: txt(insidePanel.firstElementChild) } : null,
+    absence: txt(sec.querySelector('[data-lifted-vertex-absence]')),
+    faceOptions: [...(sec.querySelector('[data-lifted-face-pick]')?.options ?? [])].map((o) => ({ value: o.value, label: o.textContent })),
+    face: face ? { id: face.getAttribute('data-lifted-face'), kind: face.getAttribute('data-lifted-face-kind'), states: [...face.querySelectorAll('[data-midpoint-born-face-state], [data-midpoint-face-state]')].map((e) => e.getAttribute('data-midpoint-born-face-state') || e.getAttribute('data-midpoint-face-state')), head: txt(face.querySelector('[data-midpoint-born-face-state="read"] > span, [data-midpoint-face-state="read"] > span')), ground: face.querySelectorAll('[data-midpoint-born-face-line="ground"]').length, news: [...face.querySelectorAll('[data-midpoint-born-face-news]')].map((e) => txt(e)), noNews: face.querySelectorAll('[data-midpoint-born-face-line="no-news"]').length, hands: [...face.querySelectorAll('[data-midpoint-born-face-hands]')].map((e) => txt(e)), buttons: face.querySelectorAll('button').length, withdraws: face.querySelectorAll('[data-midpoint-born-face-withdraw], [data-midpoint-face-withdraw]').length, handWords: face.querySelectorAll('[data-midpoint-born-face-hand-words], [data-midpoint-face-hand-words]').length, box: r(face), inside: inside(r(face)), topInside: topInside(r(face)), text: txt(face).slice(0, 600) } : null,
+    cornerCell: txt(sec.querySelector('[data-lifted-face-corner-cell]')),
+  };
+}"""
+
+
+def select_residue_at(page, corner):
+    """the gen-1 residue tetrahedron holding the seed corner: each `tetrahedron … residue … g1` row selected in turn until the selection tab lists the corner"""
+    tab(page, "workspace")
+    rows = page.get_by_role("button", name=re.compile(r"^tetrahedron .*residue.* g1", re.I))
+    n = rows.count()
+    for i in range(n):
+        tab(page, "workspace")
+        rows = page.get_by_role("button", name=re.compile(r"^tetrahedron .*residue.* g1", re.I))
+        text = rows.nth(i).inner_text().replace('\n', ' ')
+        rows.nth(i).click(); page.wait_for_timeout(500)
+        vr = vertex_rows(page)
+        labels = [vr.nth(k).inner_text().replace('\n', ' ').split(' ')[0] for k in range(vr.count())]
+        if corner in labels:
+            return {'row': text, 'labels': labels, 'candidates': n}
+    return {'row': None, 'labels': [], 'candidates': n}
+
+
+def lift_arm(page, args):
+    """C-10: lift the gen-1 residue at A (its edge AB–AC holds the born pair), place it on the sheet, read a corner and a face on the record"""
+    res = {}
+    res['cellRow'] = select_residue_at(page, 'A')
+    # the lift takes the MOST SPECIFIC selection: a vertex row clicked in the selection tab would be lifted instead of the cell —
+    # select_residue_at ends on the selection tab with the cell selected and no vertex row clicked
+    lift = page.get_by_role("button", name=re.compile(r"^Lift selection → Manuscript$"))
+    res['liftButton'] = lift.count()
+    if not lift.count():
+        return res
+    lift.first.click(); page.wait_for_timeout(600)
+    res['liftNotice'] = page.evaluate("() => { const p = [...document.querySelectorAll('p')].find((e) => /lifted|Manuscript shelf/i.test(e.textContent)); return p ? p.textContent : null; }")
+    page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click()
+    try:
+        page.wait_for_selector('[title="drag onto the sheet"]', timeout=30000)
+    except Exception as e:
+        res['shelfWait'] = str(e)[:200]
+    res['manuscript'] = page.evaluate("() => ({ canvases: document.querySelectorAll('canvas').length, shelf: document.querySelectorAll('[title=\"drag onto the sheet\"]').length, placedTitles: [...document.querySelectorAll('[title=\"already on the sheet\"]')].map((e) => e.textContent), boundary: (document.body.innerText.match(/manuscript page[^\\n]{0,200}/) || [null])[0] })")
+    shelf = page.locator('[title="drag onto the sheet"]')
+    res['shelfEntries'] = shelf.count()
+    if shelf.count():
+        res['shelfTitle'] = shelf.first.inner_text()
+        canvases = page.locator('canvas')
+        res['canvases'] = canvases.count()
+        target = canvases.nth(canvases.count() - 1)
+        shelf.first.drag_to(target); page.wait_for_timeout(1500)
+    res['placed'] = page.evaluate(MEASURE_LIFT)
+    row = page.locator('[data-lifted-vertex-row]').filter(has_text=re.compile(r'^AB ·'))
+    res['abRows'] = row.count()
+    if row.count():
+        row.first.click(); page.wait_for_timeout(600)
+    res['pickedAB'] = page.evaluate(MEASURE_LIFT)
+    sel = page.locator('[data-lifted-face-pick]')
+    if sel.count():
+        opts = sel.first.evaluate("(el) => [...el.options].map((o) => ({ value: o.value, label: o.textContent }))")
+        medial = next((o for o in opts if re.match(r'^AB·A[CD]·A[CD]', o['label'])), None)
+        res['medialOption'] = medial
+        if medial:
+            sel.first.select_option(medial['value']); page.wait_for_timeout(600)
+    res['pickedFace'] = page.evaluate(MEASURE_LIFT)
+    # the section scrolled into the card's box (the reading scrolls; the acts do not) — its position printed
+    page.evaluate("() => { const s = document.querySelector('[data-lifted-concept]'); if (s) s.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+    res['scrolled'] = page.evaluate(MEASURE_LIFT)
+    # the reading SCROLLS (B-130 A.3): each block reached by the card's own scroll — its top inside the box, its height printed
+    page.evaluate("() => { const s = document.querySelector('[data-lifted-inside]'); if (s) s.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+    res['scrolledInside'] = page.evaluate(MEASURE_LIFT)
+    page.screenshot(path=f"{args.frames}/concept-layer-lift-inside-{args.width}x{args.height}.png")
+    page.evaluate("() => { const s = document.querySelector('[data-lifted-face]'); if (s) s.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+    res['scrolledFace'] = page.evaluate(MEASURE_LIFT)
+    page.screenshot(path=f"{args.frames}/concept-layer-lift-carries-{args.width}x{args.height}.png")
+    page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+    return res
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--url', required=True)
@@ -450,6 +549,8 @@ def main():
                 out['bornPair']['x'] = xb; out['bornPair']['y'] = yb
                 page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const l = el.querySelector('[data-midpoint-line]'); if (l) l.scrollIntoView(); }"); page.wait_for_timeout(200)
                 page.screenshot(path=f"{args.frames}/concept-layer-born-pair-{args.width}x{args.height}.png")
+                # C-10 — THE LIFT CARRIES: with the born pair standing on AB–AC, lift the gen-1 residue at A and read it on the Manuscript
+                out['lift'] = lift_arm(page, args)
                 # THE DEPENDENCY REFUSAL: back at AB (gen 2), a gen-0 pair that re-glues the role the born pair named (the Φ-side role of AB's own part)
                 # the born pair's role on AB's own part is a Φ role (B holds Φ); its key carries the edge's side prefix, stripped here
                 phi_role = next((k[2:] for k in (xb, yb) if k[2:].startswith('Φ')), None)

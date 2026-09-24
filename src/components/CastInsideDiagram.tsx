@@ -468,7 +468,9 @@ export function CastInsideDiagram({ inside, id }: { inside: Inside; id?: string 
  * THE PANEL ON THE CANVAS — the selected corner's inside. No cast → NULL (a true absence, no frame); a cast of
  * nothing → the card's own sentence; a cast → the diagram, headed by the corner's label in the person's register.
  */
-export function CastInsidePanel({ shape, vertexId }: { shape: Shape; vertexId: VertexId }) {
+// C-10 (2026-09-24): `inline` — the SAME panel through the SAME resolver, placed in the flow of the Manuscript's card
+// (the lifted form's corner) instead of over the Ambo's canvas; the Ambo's mount passes nothing and is byte-as-before
+export function CastInsidePanel({ shape, vertexId, inline = false }: { shape: Shape; vertexId: VertexId; inline?: boolean }) {
   const vertex = shape.vertices[vertexId];
   // C-8 item 1 — through the one resolver: a seed corner's cast; a born corner's space derived from its parents (never a loaded file on a midpoint, Δ86)
   const resolved = useMemo(() => spaceOf(shape, vertexId), [shape, vertexId]);
@@ -480,7 +482,8 @@ export function CastInsidePanel({ shape, vertexId }: { shape: Shape; vertexId: V
     <div
       data-inside-panel={vertexId}
       data-inside-origin-of-space={resolved.origin}
-      className="pointer-events-auto absolute bottom-20 left-3 top-14 max-w-[74%] overflow-auto rounded border border-stone-800 bg-stone-950/85 px-3 py-2 shadow-lg"
+      data-inside-placement={inline ? 'inline' : 'overlay'}
+      className={inline ? 'rounded border border-stone-800 bg-stone-950/85 px-3 py-2' : 'pointer-events-auto absolute bottom-20 left-3 top-14 max-w-[74%] overflow-auto rounded border border-stone-800 bg-stone-950/85 px-3 py-2 shadow-lg'}
     >
       <div className="mb-1 text-xs text-stone-400">
         <span className="text-stone-300">{personLabel}</span>
