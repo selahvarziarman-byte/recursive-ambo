@@ -250,8 +250,9 @@ useGeometryStore.getState().selectCell(liveCore.id);
 const fallbackWatermark = useLiftStore.getState().queue.length; // R1.2 watermark idiom
 const fallbackTitle = useGeometryStore.getState().liftSelectionToManuscript();
 const fallbackPushed = useLiftStore.getState().queue.slice(fallbackWatermark);
-check("§5 NO REGRESSION: with an empty set, the single inspection-selected cell still lifts — titled by WHICH entity ('<cellId> of …', the distinct-id mint; SLICE2 un-doubled the kind: the entity id already carries it) — the committed P1b path",
-  fallbackTitle === `${liveCore.id} of ${live.name}` &&
+const { cellDesignationOf } = req('src/lib/subComplexLift.ts');
+check("§5 NO REGRESSION: with an empty set, the single inspection-selected cell still lifts — titled by its KIND and CORNERS (`the octahedron AB·AC·AD·BC·BD·CD of …`, C-12a item 2 — the address `<cellId>` still mints the distinct shape id, never the title) — the committed P1b path",
+  fallbackTitle === `${cellDesignationOf(live, liveCore.id)} of ${live.name}` && /^the octahedron [A-Z·]+ of /.test(fallbackTitle) && !/cell:/.test(fallbackTitle) &&
   fallbackPushed.length === 1 &&
   loadUniverseSnapshot(fallbackPushed[0].file).placeable === true);
 // clear control

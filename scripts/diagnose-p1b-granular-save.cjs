@@ -260,8 +260,9 @@ const storeCore = storeShape.cells.find((c) => c.kind === 'core');
 useGeometryStore.getState().selectCell(storeCore.id);
 const liftedTitle = useGeometryStore.getState().liftSelectionToManuscript();
 const queued = useLiftStore.getState().queue;
-check('§5 geometryStore.liftSelectionToManuscript pushes ONE item onto the channel with the honest title — named by WHICH entity (`<cellId> of …`, the distinct-id mint; SLICE2 un-doubled the kind: the entity id already carries it)',
-  queued.length === 1 && queued[0].title === liftedTitle && liftedTitle === `${storeCore.id} of ${storeShape.name}`);
+const { cellDesignationOf } = req('src/lib/subComplexLift.ts');
+check('§5 geometryStore.liftSelectionToManuscript pushes ONE item onto the channel with the honest title — the cell designated by its KIND and CORNERS (`the octahedron AB·AC·AD·BC·BD·CD of …`, C-12a item 2; the address `<cellId>` still mints the distinct shape id, never the title)',
+  queued.length === 1 && queued[0].title === liftedTitle && liftedTitle === `${cellDesignationOf(storeShape, storeCore.id)} of ${storeShape.name}` && /^the octahedron [A-Z·]+ of /.test(liftedTitle) && !/cell:/.test(liftedTitle));
 // R1.2 (the fresh-session drain): the channel RETAINS its items — no
 // destructive drain exists; consumers ingest IDEMPOTENTLY by the item's own
 // monotone `key`. The old "hands over exactly once" law is REPLACED by this.
@@ -328,7 +329,7 @@ console.log('\n----- [5b] the mint split: a named vertex lifts under its NAME; t
   // lifts under its address — the latent branch is the address, never a
   // minted absence word (that word would be the designer’s copy)
   const bareCell = namedShapeAfter.cells.find((c) => c.kind === 'core');
-  check('§5b ⚠ THE LATENT BRANCH IS THE ADDRESS: a cell with no packet label still mints `<cellId> of …` (§5’s pin above measured it live) — no absence word is fabricated at this seam',
+  check('§5b ⚠ THE LATENT BRANCH IS THE SUBSTRATE\'S OWN DESIGNATION: a cell with no packet label is titled by its kind and corners (`the octahedron … of …`, C-12a item 2 — §5’s pin above measured it live), never the address and never a fabricated absence word',
     bareCell ? !(typeof (bareCell.data && bareCell.data.label) === 'string' && String(bareCell.data.label).trim()) : true);
 
   // ═══ [5c] S2 — THE SOURCE SLOT'S OWN SPLIT (the twice-measured law's second
