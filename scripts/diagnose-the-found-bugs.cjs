@@ -90,8 +90,8 @@ note(`titles: gen 0 ${J(t0)} · gen 1 ${J(t1)} · gen 2 ${J(t2)} · the placed f
 check('§1 ★★ THE CELL NAMED BY ITS KIND AND CORNERS (item 2): the residue at A lifted from gen 1 is titled `the tetrahedron A·AB·AC·AD of Ambo Dissection Tetrahedron` (the corners alphabetical — the cell\'s record holds them A·AC·AB·AD), the shelf entry and the placed form carry the same words, no `cell:` anywhere; the seed cell at gen 0 likewise by its kind',
   t1 === 'the tetrahedron A·AB·AC·AD of Ambo Dissection Tetrahedron' && form1.title === `${t1} — loaded` && form1.shape.name === t1 && !/cell:/.test(t0 + t1 + t2 + form1.title + form2.title) && /^the (tetrahedron|seed) A·B·C·D of Tetrahedron$/.test(t0),
   J({ t0, t1, form1: form1.title, name: form1.shape.name }));
-check('§1 ★★ THE NAME ONCE (item 2): the universe is `Ambo Dissection Tetrahedron` at gen 1, gen 2 AND gen 3 — never `Ambo Dissection Ambo Dissection …`; the residue at A lifted from gen 2 (the finer grain on its face rides the shape: 7 corners) is titled by the same four corners of the same universe',
-  S().shapes[G1id].name === 'Ambo Dissection Tetrahedron' && S().shapes[G2id].name === 'Ambo Dissection Tetrahedron' && S().shapes[G3id].name === 'Ambo Dissection Tetrahedron' && S().shapes[G0id].name === 'Tetrahedron' && t2 === t1 && Object.keys(form2.shape.vertices).length === 7 && Object.keys(form1.shape.vertices).length === 4,
+check('§1 ★★ THE NAME ONCE (item 2): the universe is `Ambo Dissection Tetrahedron` at gen 1, gen 2 AND gen 3 — never `Ambo Dissection Ambo Dissection …`; the residue at A lifted from gen 2 is titled by the SOURCE cell\'s record — its four corners, the same words as gen 1\'s — while the lifted shape carries the FINER grain (§148 ruling 1: 7 corners, the three midpoints on its face born corners; the lifted cell\'s own record names all seven — the title reads the source, said in the report)',
+  S().shapes[G1id].name === 'Ambo Dissection Tetrahedron' && S().shapes[G2id].name === 'Ambo Dissection Tetrahedron' && S().shapes[G3id].name === 'Ambo Dissection Tetrahedron' && S().shapes[G0id].name === 'Tetrahedron' && t2 === t1 && Object.keys(form2.shape.vertices).length === 7 && form2.shape.cells[0].vertexIds.length === 7 && Object.keys(form1.shape.vertices).length === 4,
   J({ names: [S().shapes[G0id].name, S().shapes[G1id].name, S().shapes[G2id].name, S().shapes[G3id].name], t2, corners: [Object.keys(form1.shape.vertices).length, Object.keys(form2.shape.vertices).length] }));
 // a GIVEN name wins; a vertex lift unchanged; the designation of a cell not held is null
 S().selectShape(G1id);
@@ -233,6 +233,67 @@ const badCargo = exploreReadOf({ domain: t3, coneEdgesDeclared: false, model: nu
 check('§4 ★★ THE REFUSAL SAID (item 7): a read whose surface throws returns `cannot walk this room — its surface could not be read: <reason>` with the very message the throw carried — never null, never a paraphrase; a throw in the cargo\'s room is caught by the same guard',
   thrownBySurface !== null && 'refusal' in badSurface && badSurface.refusal === `cannot walk this room — its surface could not be read: ${thrownBySurface.message}` && badSurface.refusal === exploreRefusalWords(thrownBySurface) && 'refusal' in badCargo && /^cannot walk this room — its surface could not be read: ./.test(badCargo.refusal),
   J({ thrown: thrownBySurface && thrownBySurface.message, surface: badSurface.refusal, cargo: badCargo.refusal }));
+
+// ─── §6 §148 ruling 1 — THE FINER BOUNDARY OF A LIFTED CELL, and the glue that used to throw ─────────────────────────────
+console.log('§6 — the gen-2 corner cell lifted at the finer grain; glued into a room; the door\'s act and the cargo on it');
+const A = req('src/manuscript/apertureModel.ts');
+const D = req('src/manuscript/doorTransportModel.ts');
+const C = req('src/manuscript/cargoModel.ts');
+{
+  let seeded6 = createSeedShape('tetrahedron');
+  for (const [label, c] of [['A', flow], ['B', tcell], ['C', phi], ['D', phi]]) seeded6 = withCast(seeded6, byLabel(seeded6, label), c);
+  reset(seeded6);
+  S().applyAmboDissectionToCurrent();
+  const K1 = cur().id;
+  give('A', 'B', { F1: 'r0', F5: 'r2', F7: 'r8' }); giveWord('A', 'B', 'sustains', 'sustains');
+  give('A', 'C', { F1: 'Φ1', F7: 'Φ3' });
+  S().selectCell(coreOf().id); S().applyAmboDissectionToCurrent();
+  const liftAt = (label) => { S().selectCell(residueAt(label).id); S().liftSelectionToManuscript(); const entry = loadUniverseSnapshot(lastLift().file); return { entry, shape: placeShelfEntry(entry, 0).shape }; };
+  const { entry: e2, shape: g2 } = liftAt('A');
+  const L6 = (id) => g2.vertices[id]?.data.label || id;
+  const cell6 = g2.cells[0];
+  const cellFaces = new Set(cell6.faceIds);
+  const incident = (e) => g2.faces.filter((f) => f.vertexIds.some((a, i) => { const b = f.vertexIds[(i + 1) % f.vertexIds.length]; return (a === e.vertexIds[0] && b === e.vertexIds[1]) || (a === e.vertexIds[1] && b === e.vertexIds[0]); }));
+  const names = (f) => f.vertexIds.map(L6).join('·');
+  const sides = g2.faces.filter((f) => f.vertexIds.length === 4); const tris = g2.faces.filter((f) => f.vertexIds.length === 3);
+  note(`the gen-2 residue at A lifted: V ${Object.keys(g2.vertices).length} · E ${g2.edges.length} · F ${g2.faces.length} · the cell's faces ${cell6.faceIds.length} · corners ${cell6.vertexIds.map(L6).join('·')} · faces ${g2.faces.map(names).join(' | ')}`);
+  check('§6 ★★ ONE BOUNDARY, THE FINER (§148 ruling 1): the gen-2 residue at A lifts as 7 corners · 12 edges · 7 faces — its three sides OPENED through the midpoints on them (4 corners each, the midpoint a straight 180° corner: A·AC·ABAC·AB and its two fellows) and the four finer triangles that tile its dissected face; the cell\'s record names those 7 faces and its 7 corners; EVERY edge lies on exactly two of the cell\'s faces (the frozen extractor\'s law); nothing erased — the coarse face AC·AB·AD stands recorded on its four tiles\' `composes`, each coarse side on its two halves\'',
+  Object.keys(g2.vertices).length === 7 && g2.edges.length === 12 && g2.faces.length === 7 && cell6.faceIds.length === 7 && cell6.vertexIds.length === 7 && g2.faces.every((f) => cellFaces.has(f.id)) && sides.length === 3 && tris.length === 4 && sides.every((f) => f.cornerAngles && f.cornerAngles.some((a) => Math.abs(a - Math.PI) < 1e-6)) && g2.edges.every((e) => incident(e).filter((f) => cellFaces.has(f.id)).length === 2) && tris.every((f) => f.composes && f.composes.sourceVertexIds.map(L6).sort().join('·') === 'AB·AC·AD') && g2.edges.filter((e) => e.composes).length === 6 && sides.every((f) => !f.composes),
+  J({ V: Object.keys(g2.vertices).length, E: g2.edges.length, F: g2.faces.length, cellFaces: cell6.faceIds.length, corners: cell6.vertexIds.length, sides: sides.map(names), tris: tris.map(names), twoFaced: g2.edges.filter((e) => incident(e).filter((f) => cellFaces.has(f.id)).length === 2).length, composedEdges: g2.edges.filter((e) => e.composes).length }));
+  const menu = A.boundaryFacesOf(g2);
+  const faceWith = (set) => menu.find((m) => { const t = m.label.split(' · ')[0].split('·'); return t.length === set.length && set.every((x) => t.includes(x)); });
+  const fA = faceWith(['A', 'AC', 'ABAC', 'AB']); const fB = faceWith(['A', 'AB', 'ABAD', 'AD']);
+  const cands = fA && fB ? A.dihedralMapCandidates(g2, fA.id, fB.id) : [];
+  const lab = (v) => A.cornerDisplayName(g2, v);
+  const hinge = cands.find((c) => /^A→A · AC→AD · ABAC→ABAD · AB→AB — preserving/.test(A.describeCandidate(c, lab)));
+  check('§6 ★★ THE FINER BOUNDARY OFFERED BY D14 NAME AT THE APERTURE: seven faces — `A·AC·ABAC·AB · 4 corners`, `A·AB·ABAD·AD · 4 corners`, `A·AD·ACAD·AC · 4 corners`, `ABAC·ABAD·ACAD · 3 corners` and the three corner triangles; the two sides at the hinge A–AB admit two maps, the preserving one `A→A · AC→AD · ABAC→ABAD · AB→AB`',
+    menu.length === 7 && ['A·AC·ABAC·AB · 4 corners', 'A·AB·ABAD·AD · 4 corners', 'A·AD·ACAD·AC · 4 corners', 'ABAC·ABAD·ACAD · 3 corners'].every((n) => menu.some((m) => m.label === n)) && menu.filter((m) => / · 4 corners$/.test(m.label)).length === 3 && cands.length === 2 && Boolean(hinge),
+    J({ menu: menu.map((m) => m.label), cands: cands.map((c) => A.describeCandidate(c, lab)) }));
+  let verdict6 = null; let threw6 = null; let surface6 = null; let room6 = null; let act6 = null; let rows6 = null;
+  if (fA && fB && hinge) {
+    const record = e2.loaded.ancestors[0];
+    const memo = new Map();
+    const SA = D.sideOf(record, hinge.correspondence.map(([a]) => a), memo, fA.label.split(' · ')[0]);
+    const SB = D.sideOf(record, hinge.correspondence.map(([, b]) => b), memo, fB.label.split(' · ')[0]);
+    act6 = D.actAt(SA.side, SB.side, [], 0, 'F1', 'F1');
+    rows6 = [{ faceA: fA.id, faceB: fB.id, candidateKey: hinge.key, transports: act6.taken ? act6.transports : [] }, { faceA: null, faceB: null, candidateKey: null }];
+    try {
+      verdict6 = A.buildPersonDomainVerdict(g2, rows6, 'built-2', 'built 3-manifold 2');
+      surface6 = A.readCellSurface(verdict6.domain, false);
+      room6 = C.cargoRoomOf(g2, e2.loaded.ancestors ?? [], rows6, surface6);
+    } catch (e) { threw6 = e.message; }
+  }
+  note(`the glue on the finer boundary: ${threw6 ? `THROWS ${threw6.slice(0, 120)}` : verdict6 ? `sound=${verdict6.domain.tower.sound} · counts ${J(verdict6.domain.complex.counts)} · chi ${verdict6.domain.complex.chi}` : 'not reached'} · the act at A: ${act6 ? (act6.taken ? `taken, ${act6.transports.length} corner pairs` : `refused ${act6.refusal && act6.refusal.kind}`) : 'none'} · the cargo room: ${room6 ? `entry ${room6.entry ? L6(room6.entry) : '?'} · rods ${room6.rods ? room6.rods.length : '?'} · faces ${room6.faces ? room6.faces.length : '?'} · doors ${room6.doors ? room6.doors.length : '?'}` : 'none'}`);
+  check('§6 ★★ THE GLUE THAT USED TO THROW: the hinge door on the two side faces, F1 ↦ F1 at A taken with its line (four corner pairs on the 4-cycle), the S² gate judges the finer boundary SOUND (the level-3 census v 5 · e 9 · f 6 · c 1, χ 1 — a bounded room, five walls); the cell surface reads 7 faces (corners 4/4/4/3/3/3/3) and 12 rods; the cargo\'s room stands from the built record — entry A, 12 rods, 7 faces, one door',
+    threw6 === null && act6 && act6.taken === true && act6.transports.length === 4 && verdict6 && !verdict6.folded && verdict6.domain.tower.sound === true && J(verdict6.domain.complex.counts) === J({ v: 5, e: 9, f: 6, c: 1 }) && surface6 && surface6.faces.length === 7 && surface6.rods.length === 12 && J(surface6.faces.map((f) => (f.corners || []).length)) === J([4, 4, 4, 3, 3, 3, 3]) && room6 && L6(room6.entry) === 'A' && room6.rods.length === 12 && room6.faces.length === 7 && room6.doors.length === 1,
+    J({ threw: threw6, taken: act6 && act6.taken, pairs: act6 && act6.transports && act6.transports.length, sound: verdict6 && verdict6.domain.tower.sound, counts: verdict6 && verdict6.domain.complex.counts, surface: surface6 && [surface6.faces.length, surface6.rods.length], room: room6 && { entry: L6(room6.entry), rods: room6.rods.length, faces: room6.faces.length, doors: room6.doors.length } }));
+  // the control: the gen-1 residue lifts as it always did (no finer structure — nothing composed, nothing opened)
+  S().selectShape(K1);
+  const { shape: g1 } = liftAt('A');
+  check('§6 ★ THE CONTROL — a lift with no finer structure is byte-as-before: the gen-1 residue at A lifts as 4 corners · 6 edges · 4 faces, nothing composed, no face opened',
+    Object.keys(g1.vertices).length === 4 && g1.edges.length === 6 && g1.faces.length === 4 && g1.faces.every((f) => f.vertexIds.length === 3 && !f.composes) && g1.edges.every((e) => !e.composes) && g1.cells[0].faceIds.length === 4 && g1.cells[0].vertexIds.length === 4,
+    J({ V: Object.keys(g1.vertices).length, E: g1.edges.length, F: g1.faces.length }));
+}
 
 // ─── §5 THE SURFACES BY SOURCE, PURITY, THE MANIFEST ─────────────────────────────────────────────────────────────────────
 console.log('§5 — the surfaces by source; purity; the manifest');

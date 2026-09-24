@@ -389,7 +389,8 @@ def lift_arm(page, args):
     sel = page.locator('[data-lifted-face-pick]')
     if sel.count():
         opts = sel.first.evaluate("(el) => [...el.options].map((o) => ({ value: o.value, label: o.textContent }))")
-        medial = next((o for o in opts if re.match(r'^AB·A[CD]·A[CD]', o['label'])), None)
+        # §148 ruling 1: the gen-2 residue lifts at the FINER grain — its medial face is the finer ABAC·ABAD·ACAD (the coarse AB·AC·AD is recorded on its tiles, not offered)
+        medial = next((o for o in opts if re.match(r'^ABAC·ABAD·ACAD', o['label'])), None)
         res['medialOption'] = medial
         if medial:
             sel.first.select_option(medial['value']); page.wait_for_timeout(600)
@@ -731,12 +732,12 @@ def genealogy_arm(page, args):
     return res
 
 
-def cargo_arm_body(page, args, res):
+def cargo_arm_body(page, args, res, prefix='written:dim3:built-', tag='cargo'):
     page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click(); page.wait_for_timeout(800)
     page.keyboard.press("Escape"); page.wait_for_timeout(300)
     res['dim3Groups'] = page.evaluate("() => { const out = []; const scene = window.__manuscriptScene; if (!scene) return null; scene.traverse((o) => { if ((o.name || '').startsWith('written:dim3')) out.push(o.name); }); return out; }")
     res['canvasRect'] = page.evaluate("() => { const cs = document.querySelectorAll('canvas'); const c = cs[cs.length - 1]; const r = c.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }")
-    pt = project_group(page, 'written:dim3:built-')
+    pt = project_group(page, prefix)
     res['room'] = pt
     if not pt:
         return
@@ -776,7 +777,7 @@ def cargo_arm_body(page, args, res):
         }
       });
       return out;
-    }""", 'written:dim3:built-')
+    }""", prefix)
     res['candidates'] = len(candidates)
     # C-12a item 8 — a room already selected (the glue can leave it so) would be TOGGLED OFF by a double-click (`pick`
     # toggles; Arman's law); the paper is double-clicked first (dismiss) so the summon is measured from an unselected room
@@ -797,10 +798,10 @@ def cargo_arm_body(page, args, res):
     # C-12a item 8 — THE HIT HULL: the room selected, its domain is drawn above the plaque; a double-click in the domain's
     # interior must reach the ROOM's group (its own click handler, detail 2) and never the paper's (whose double-click
     # dismisses) — the group's toggle turns the room off, and the same point turns it on again
-    res['domainInterior'] = page.evaluate(DOMAIN_INTERIOR, 'written:dim3:built-')
+    res['domainInterior'] = page.evaluate(DOMAIN_INTERIOR, prefix)
     di = res['domainInterior']
     if di and di.get('centre'):
-        page.evaluate(INSTRUMENT_CLICKS, 'written:dim3:built-')
+        page.evaluate(INSTRUMENT_CLICKS, prefix)
         page.mouse.dblclick(di['centre'][0], di['centre'][1]); page.wait_for_timeout(700)
         res['domainInteriorClicks'] = page.evaluate("() => window.__c12aLog.splice(0)")
         res['chipAfterInterior'] = page.evaluate(CHIP_STATE)
@@ -829,7 +830,7 @@ def cargo_arm_body(page, args, res):
     # what the door said: the refusal at the threshold (by name), the window's presence, the seam's shape
     res['threshold'] = page.evaluate("() => ({ seam: Boolean(window.__exploreWindow), seamOpen: window.__exploreWindow ? window.__exploreWindow.open : null, gpu: window.__exploreWindow ? window.__exploreWindow.gpu : null, frames: window.__exploreWindow ? window.__exploreWindow.renderFrames : null, windows: document.querySelectorAll('[data-explore-window]').length, refusals: [...document.querySelectorAll('div, p, span')].map((e) => e.textContent.trim()).filter((t) => /refus|no walk|nothing recurs|does not open|there is no/i.test(t) && t.length < 400).slice(0, 4) })")
     res['opened'] = page.evaluate(MEASURE_CARGO)
-    page.screenshot(path=f"{args.frames}/concept-layer-cargo-pick-{args.width}x{args.height}.png")
+    page.screenshot(path=f"{args.frames}/concept-layer-{tag}-pick-{args.width}x{args.height}.png")
     pick = page.locator('[data-explore-cargo-pick]').filter(has_text=re.compile(r'^F1$'))
     if not pick.count():
         return
@@ -840,7 +841,7 @@ def cargo_arm_body(page, args, res):
     if r.count():
         r.first.click(); page.wait_for_timeout(400)
     res['afterRod'] = page.evaluate(MEASURE_CARGO)
-    page.screenshot(path=f"{args.frames}/concept-layer-cargo-rod-{args.width}x{args.height}.png")
+    page.screenshot(path=f"{args.frames}/concept-layer-{tag}-rod-{args.width}x{args.height}.png")
     # the door by its letter — one press, one period (K-1e); the crossing carries the cargo at AC across to AD
     page.evaluate("() => { window.__exploreWindow.paceOverride = 0.6; }")
     page.locator('[data-explore-window] canvas').first.hover(); page.wait_for_timeout(200)
@@ -851,13 +852,13 @@ def cargo_arm_body(page, args, res):
         res['doorWait'] = str(e)[:200]
     page.wait_for_timeout(800)
     res['afterDoor'] = page.evaluate(MEASURE_CARGO)
-    page.screenshot(path=f"{args.frames}/concept-layer-cargo-door-{args.width}x{args.height}.png")
+    page.screenshot(path=f"{args.frames}/concept-layer-{tag}-door-{args.width}x{args.height}.png")
     r = cargo_rod(page, 'AD–A')
     res['rodA'] = r.count()
     if r.count():
         r.first.click(); page.wait_for_timeout(400)
     res['home'] = page.evaluate(MEASURE_CARGO)
-    page.screenshot(path=f"{args.frames}/concept-layer-cargo-home-{args.width}x{args.height}.png")
+    page.screenshot(path=f"{args.frames}/concept-layer-{tag}-home-{args.width}x{args.height}.png")
     # a second cargo the door does not carry: the window closed and reopened (a room opened is a walk begun), F2 picked
     page.keyboard.press("Escape"); page.wait_for_timeout(500)
     chip = page.locator('button[aria-label="explore inside"]')
@@ -883,7 +884,132 @@ def cargo_arm_body(page, args, res):
                 res['doorWait2'] = str(e)[:200]
             page.wait_for_timeout(800)
             res['lost'] = page.evaluate(MEASURE_CARGO)
-            page.screenshot(path=f"{args.frames}/concept-layer-cargo-lost-{args.width}x{args.height}.png")
+            page.screenshot(path=f"{args.frames}/concept-layer-{tag}-lost-{args.width}x{args.height}.png")
+
+
+
+# ─── §148 ruling 1 — THE FINER GRAIN AT THE EYE: the gen-2 residue at A (7 corners) glued into a room by its two side faces at the
+# hinge A–AB, the door's act on it, the cargo walked through it ───
+def select_written_volume(page, want_faces):
+    """double-click a written form on the sheet until the aperture opened on the SELECTED volume offers `want_faces` faces — the
+    placed forms are `written:w:w1`, `w2`… (the placed order) and nothing in the DOM marks the selection: the aperture's own face
+    menu is the instrument (a room offers no face, the gen-1 residue four, the gen-2 residue seven); candidates as the room
+    summon's — each mesh's projected centre, then points toward its projected vertices (a wireframe is hit on its rods)"""
+    CANDS = """(prefix) => {
+      const scene = window.__manuscriptScene, camera = window.__manuscriptCamera; if (!scene || !camera) return [];
+      const cs = document.querySelectorAll('canvas'); const canvas = cs[cs.length - 1]; const rect = canvas.getBoundingClientRect();
+      const out = [];
+      scene.traverse((o) => {
+        if (!o.isMesh || !o.geometry || out.length > 30) return;
+        let g = o, name = ''; while (g) { if ((g.name || '') === prefix) { name = g.name; break; } g = g.parent; }
+        if (!name) return;
+        const pos = o.geometry.getAttribute('position') || o.geometry.getAttribute('instanceStart'); if (!pos) return;
+        const V = o.position.constructor;
+        if (o.geometry.computeBoundingSphere) o.geometry.computeBoundingSphere();
+        const bs = o.geometry.boundingSphere; if (!bs) return;
+        const cw = bs.center.clone(); o.localToWorld(cw); const pc = cw.project(camera);
+        const cx = rect.left + ((pc.x + 1) / 2) * rect.width, cy = rect.top + ((1 - (pc.y + 1) / 2)) * rect.height;
+        out.push({ mesh: o.name || o.type, sx: cx, sy: cy });
+        const step = Math.max(1, Math.floor(pos.count / 6));
+        for (let i = 0; i < pos.count && out.length <= 30; i += step) {
+          const v = new V(pos.getX(i), pos.getY(i), pos.getZ(i)); o.localToWorld(v); const p = v.clone().project(camera);
+          const vx = rect.left + ((p.x + 1) / 2) * rect.width, vy = rect.top + ((1 - (p.y + 1) / 2)) * rect.height;
+          for (const f of [0.55, 0.8, 1.0]) { const sx = cx + (vx - cx) * f, sy = cy + (vy - cy) * f; if (sx > rect.left + 2 && sx < rect.right - 2 && sy > rect.top + 2 && sy < rect.bottom - 2) out.push({ mesh: o.name || o.type, sx, sy }); }
+        }
+      });
+      return out;
+    }"""
+    groups = page.evaluate("() => { const out = []; const scene = window.__manuscriptScene; if (!scene) return out; scene.traverse((o) => { if (/^written:w:/.test(o.name || '')) out.push(o.name); }); return out; }")
+    res = {'groups': groups, 'tries': [], 'selected': None}
+    for g in groups:
+        cands = page.evaluate(CANDS, g)
+        for cand in cands[:24]:
+            page.mouse.dblclick(cand['sx'], cand['sy']); page.wait_for_timeout(700)
+            n_faces = None
+            ap = page.get_by_role("button", name=re.compile(r"^aperture — build a 3-manifold"))
+            if ap.count():
+                ap.first.click(); page.wait_for_timeout(600)
+                try:
+                    page.wait_for_selector('[data-aperture-panel]', timeout=5000)
+                    opts = page.locator('[data-aperture-rows]').first.locator('[data-aperture-select="faceA"]').first.evaluate("(el) => [...el.options].map((o) => o.textContent)")
+                    n_faces = len([o for o in opts if '·' in o])
+                except Exception:
+                    n_faces = None
+            res['tries'].append([g, round(cand['sx']), round(cand['sy']), n_faces])
+            if n_faces == want_faces:
+                res['selected'] = g
+                return res
+            try:
+                page.locator('[data-aperture-panel] button', has_text=re.compile(r'^×$')).first.click(timeout=2000); page.wait_for_timeout(300)
+            except Exception:
+                pass
+    return res
+
+
+def door_arm_gen2(page, args):
+    """§148 ruling 1: the gen-2 residue at A placed by the C-10 arm (7 corners) is selected on the sheet, its aperture offers the finer
+    boundary by D14 name, the two side faces at the hinge A–AB are picked with the preserving map, F1 ↦ F1 at A is taken with its
+    line, the door is glued into a room; then the cargo walked through that room as C-11b's was"""
+    res = {}
+    page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click(); page.wait_for_timeout(800)
+    page.keyboard.press("Escape"); page.wait_for_timeout(300)
+    closer = page.locator('[data-lifted-drawing-state="open"]')
+    if closer.count():
+        closer.first.click(); page.wait_for_timeout(400)
+    try:
+        res['selected'] = select_written_volume(page, 7)  # the aperture is OPEN on the gen-2 residue when this returns selected
+        res['apertureButton'] = 1 if res['selected'].get('selected') else 0
+        if not res['selected'].get('selected'):
+            return res
+        row = page.locator('[data-aperture-rows]').first
+        sel_a = row.locator('[data-aperture-select="faceA"]').first
+        sel_b = row.locator('[data-aperture-select="faceB"]').first
+        sel_m = row.locator('[data-aperture-select="map"]').first
+        opts = sel_a.evaluate("(el) => [...el.options].map((o) => ({ value: o.value, label: o.textContent }))")
+        res['faceOptions'] = [o['label'] for o in opts]
+        def face_with(corners):
+            for o in opts:
+                t = o['label'].split(' · ')[0].split('·')
+                if len(t) == len(corners) and all(c in t for c in corners):
+                    return o
+            return None
+        fa = face_with(['A', 'AC', 'ABAC', 'AB']); fb = face_with(['A', 'AB', 'ABAD', 'AD'])
+        res['faces'] = [fa and fa['label'], fb and fb['label']]
+        if not fa or not fb:
+            return res
+        sel_a.select_option(fa['value']); page.wait_for_timeout(300)
+        sel_b.select_option(fb['value']); page.wait_for_timeout(300)
+        mopts = sel_m.evaluate("(el) => [...el.options].map((o) => ({ value: o.value, label: o.textContent }))")
+        res['mapOptions'] = [o['label'] for o in mopts]
+        hinge = next((o for o in mopts if re.match(r'^A→A · AC→AD · ABAC→ABAD · AB→AB', o['label'])), None)
+        res['hinge'] = hinge and hinge['label']
+        if not hinge:
+            return res
+        sel_m.select_option(hinge['value']); page.wait_for_timeout(700)
+        res['empty'] = page.evaluate(MEASURE_DOOR)
+        page.evaluate("() => { const d = document.querySelector('[data-door]'); if (d) d.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+        door_chip(page, 0, 'A', 'F1').first.click(); page.wait_for_timeout(200)
+        door_chip(page, 0, 'B', 'F1').first.click(); page.wait_for_timeout(500)
+        res['taken'] = page.evaluate(MEASURE_DOOR)
+        page.screenshot(path=f"{args.frames}/concept-layer-gen2-door-taken-{args.width}x{args.height}.png")
+        glue = page.get_by_role("button", name=re.compile(r"^glue — the S² gate judges$"))
+        res['glueButton'] = glue.count()
+        if glue.count():
+            glue.first.click(); page.wait_for_timeout(1500)
+        res['glued'] = page.evaluate(MEASURE_DOOR)
+        page.screenshot(path=f"{args.frames}/concept-layer-gen2-door-glued-{args.width}x{args.height}.png")
+        try:
+            page.locator('[data-aperture-panel] button', has_text=re.compile(r'^×$')).first.click(timeout=5000); page.wait_for_timeout(300)
+            res['closed'] = True
+        except Exception as e:
+            res['closed'] = str(e)[:120]
+        # the cargo through the gen-2 room (the second built room): F1 out along A–AC, through the door a, home along AD–A
+        cargo_arm_body(page, args, res, 'written:dim3:built-2', 'gen2')
+    except Exception as e:
+        res['error'] = str(e)[:400]
+    finally:
+        page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+    return res
 
 
 # ─── C-10b — the face's HOME, the site's lines, the canvas note, the lineage line (§131, the designer's four blockers) ───
@@ -1133,6 +1259,7 @@ def main():
                 out['door'] = door_arm(page, args)
                 # C-11b — THE CARGO ON THE WALK: the room just built, walked with F1 in hand
                 out['cargo'] = cargo_arm(page, args)
+                out['gen2Door'] = door_arm_gen2(page, args)  # §148 ruling 1 at the eye
                 # THE DEPENDENCY REFUSAL: back at AB (gen 2), a gen-0 pair that re-glues the role the born pair named (the Φ-side role of AB's own part)
                 # the born pair's role on AB's own part is a Φ role (B holds Φ); its key carries the edge's side prefix, stripped here
                 phi_role = next((k[2:] for k in (xb, yb) if k[2:].startswith('Φ')), None)

@@ -476,6 +476,16 @@ export function downwardClosure(shape: Shape, selections: LiftSelection[]): SubC
         edgeTwinKey.set(key, edgeId);
       }
     }
+  }
+  // C-12a item 4 (§148 ruling 1, 2026-09-24) — THE FINER BOUNDARY FOR A SINGLE-CELL LIFT. The compositions below ran for
+  // SURFACE closures only ("a lifted volume keeps its per-cell walls" — true of a MULTI-cell lift, whose cells share walls);
+  // a ONE-cell lift has no wall to share, and keeping its coarse face beside the finer tiling the grain pass pulled left the
+  // lifted cell of TWO grains (measured on the gen-2 residue at A: the coarse face AC·AB·AD AND its four finer triangles,
+  // six finer edges on one face each) — the frozen extractor refused it at the glue. The grain the solid holds NOW is the
+  // finer one (the three midpoints are born corners carrying the person's acts); so for one cell the coarse sides and the
+  // coarse face compose into their parts exactly as a surface's do, and the extract below opens the cell's faces through
+  // the stations. Nothing is erased: the relation IS the record (`composes`, stamped in extract).
+  if (cellIds.size <= 1) {
     // 2 · coarse sides of closure faces → composed-of their half chain
     const closureFaces = [...faceIds]
       .map((id) => shape.faces.find((f) => f.id === id))
@@ -594,13 +604,22 @@ export function validateLiftSelection(shape: Shape, set: SubComplex): string | n
     return 'the selection is empty — pick an entity to lift';
   }
   const byEndpoints = edgesByEndpoints(shape);
+  // C-12a item 4 (§148 ruling 1) — a coarse entity the closure COMPOSED (dropped from the live sets, recorded composed-of
+  // its live parts) is present THROUGH its parts: a cell's coarse face by its finer tiling, a face's coarse side by its
+  // halves — the single-cell lift at the finer grain walks them; the record is not a hole in the closure
+  const composedFaces = new Set(
+    (set.composedRelations ?? []).filter((r) => r.kind === 'face' && r.relation === 'composed-of' && r.parts.every((p) => faces.has(p))).map((r) => r.id),
+  );
+  const composedEdges = new Set(
+    (set.composedRelations ?? []).filter((r) => r.kind === 'edge' && r.relation === 'composed-of' && r.parts.every((p) => edges.has(p))).map((r) => r.id),
+  );
 
   // ---- downward-closed: everything below a member is a member -------------
   for (const cellId of cells) {
     const cell = shape.cells.find((c) => c.id === cellId);
     if (!cell) return `cell "${cellId}" is not in the source shape`;
     for (const faceId of cell.faceIds) {
-      if (!faces.has(faceId)) {
+      if (!faces.has(faceId) && !composedFaces.has(faceId)) {
         return `not downward-closed: cell "${cellId}" carries face "${faceId}" which is not in the selection`;
       }
     }
@@ -620,7 +639,7 @@ export function validateLiftSelection(shape: Shape, set: SubComplex): string | n
     }
     for (const [a, b] of faceSidePairs(face)) {
       for (const edge of byEndpoints.get(unorderedKey(a, b)) ?? []) {
-        if (!edges.has(edge.id)) {
+        if (!edges.has(edge.id) && !composedEdges.has(edge.id)) {
           return `not downward-closed: face "${faceId}" carries edge "${edge.id}" which is not in the selection`;
         }
       }
@@ -730,6 +749,54 @@ export function extractSubShape(
       }
       return copy;
     });
+  // C-12a item 4 (§148 ruling 1) — THE LIFTED FACES WALK THE HALVES, THE ONE CELL NAMES ITS LIVE BOUNDARY. For a single-
+  // cell lift the closure has dropped each coarse side composed of carried halves and each coarse face composed of its
+  // finer tiling (composed-of records); a lifted face's side (u, v) that such an edge record names is opened through the
+  // record's stations (u · the midpoints in order · v), so no live face names a dropped edge; the cell's record then
+  // names the live faces and every corner they walk. The frozen extractor meets a consistent cell — every edge of the
+  // lifted shape on exactly two of its faces (the gen-2 residue at A: 7 corners · 12 edges · 7 faces — three sides opened
+  // through their midpoints, four finer triangles — χ = 2). A multi-cell lift is untouched (its cells keep their walls).
+  if (closure.cellIds.length === 1 && cells.length === 1) {
+    const composedEdges = (closure.composedRelations ?? []).filter((r) => r.kind === 'edge' && r.relation === 'composed-of');
+    const stationsOf = (rec: NonNullable<SubComplex['composedRelations']>[number]): VertexId[] => {
+      // the chain's stations from sourceVertexIds[0] to sourceVertexIds[1], through the halves' shared ends (parts in order)
+      const stations: VertexId[] = [rec.sourceVertexIds[0]];
+      let at = rec.sourceVertexIds[0];
+      for (const partId of rec.parts) {
+        const h = shape.edges.find((e) => e.id === partId);
+        if (!h) return [];
+        const next = h.vertexIds[0] === at ? h.vertexIds[1] : h.vertexIds[0];
+        stations.push(next);
+        at = next;
+      }
+      return at === rec.sourceVertexIds[1] ? stations : [];
+    };
+    const stationsBySide = new Map<string, VertexId[]>();
+    for (const rec of composedEdges) {
+      const st = stationsOf(rec);
+      if (st.length > 2) stationsBySide.set(unorderedKey(rec.sourceVertexIds[0], rec.sourceVertexIds[1]), st);
+    }
+    for (const face of faces) {
+      const cycle = face.vertexIds;
+      const opened: VertexId[] = [];
+      for (let k = 0; k < cycle.length; k += 1) {
+        const u = cycle[k];
+        const v = cycle[(k + 1) % cycle.length];
+        opened.push(u);
+        const st = stationsBySide.get(unorderedKey(u, v));
+        if (!st) continue;
+        const inner = st[0] === u ? st.slice(1, -1) : [...st].reverse().slice(1, -1);
+        opened.push(...inner);
+      }
+      if (opened.length !== cycle.length) face.vertexIds = opened; // the P5 stamp below re-measures the corners on the opened cycle
+    }
+    const cell = cells[0];
+    cell.faceIds = faces.map((f) => f.id);
+    const corners = [...cell.vertexIds.filter((id) => vertexSet.has(id))];
+    for (const face of faces) for (const id of face.vertexIds) if (!corners.includes(id)) corners.push(id);
+    cell.vertexIds = corners;
+  }
+
   // generations RESTRICTED to the lifted members (id lists filtered; records
   // that touch nothing lifted are dropped — the sub-shape's own history only)
   const generations: Generation[] = shape.generations
