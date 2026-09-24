@@ -69,7 +69,7 @@ import { SiteWitnessTracePanel } from './SiteWitnessTracePanel';
 import { VertexPacketEditorContent } from './VertexPacketEditor';
 // C-6c (iv): the card reads a HELD cast — every number re-derived from it, never stored
 import { castCounts, castMarks, castSummaryLine, notTakenAddresses, notTakenLine, orderingRows } from '../lib/castLoader';
-import { holdsLoadedCast, isSeedVertex, spaceOf } from '../lib/spaceOf';
+import { holdsLoadedCast, isSeedVertex, spaceCounts, spaceOf } from '../lib/spaceOf';
 import type { ConceptSpace } from '../types/geometry';
 
 type TopologyFilter =
@@ -2728,7 +2728,7 @@ function SpaceCardRow({ shape, vertexId }: { shape: Shape; vertexId: VertexId })
         <>
           <dt className="col-span-2 text-stone-500">Space</dt>
           <dd data-space-card-row="derived" className="col-span-2 text-stone-200">
-            {`derived from ${label(resolved.edge.parents[0])} and ${label(resolved.edge.parents[1])} — ${resolved.space.roles.length} roles · ${resolved.space.signature.length} words · ${resolved.space.relations.length} tuples`}
+            {`derived from ${label(resolved.edge.parents[0])} and ${label(resolved.edge.parents[1])} — ${spaceCounts(resolved.space).roles} roles · ${spaceCounts(resolved.space).words} words · ${spaceCounts(resolved.space).tuples} tuples`}
           </dd>
         </>
       ) : null}

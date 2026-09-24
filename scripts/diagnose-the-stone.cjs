@@ -47,7 +47,7 @@ const check = (name, cond, detail) => {
 };
 const note = (line) => console.log(`      ${line}`);
 
-const { spaceOf, nameIn, isSeedVertex } = req('src/lib/spaceOf.ts');
+const { spaceOf, nameIn, isSeedVertex, spaceCounts, feetShareOf } = req('src/lib/spaceOf.ts');
 const { refusalOf } = req('src/lib/jRegister.ts');
 const { insideOf } = req('src/lib/castInside.ts');
 const { footTypeName, isFootType } = req('src/lib/feet.ts');
@@ -248,6 +248,54 @@ let same = 0; let differ = 0;
 for (const x of U.space.roles) for (const y of V.space.roles) { const a = refusalOf(U.space, V.space, [[x.id, y.id]], []); const b = refusalOf(Un.space, Vn.space, [[x.id, y.id]], []); if (J(a.map((c) => c.type)) === J(b.map((c) => c.type)) && a.length === b.length) same += 1; else differ += 1; }
 check('§4 ★★ THE RECORD CHECK READS THE FEET AND FINDS NOTHING TO CONTRADICT (§147: holds-only, never shared by spelling): `refusalOf` on the gen-2 edge AB–AC gives the same conflicts with and without the feet for EVERY pointed pair (360 pairs, 0 differ); the door\'s census and the cargo\'s K1–K7 are pinned unchanged by their own witnesses in the sweep',
   same === 360 && differ === 0, J({ same, differ }));
+
+// ═══ §6 ONE COUNT EVERYWHERE, THE SPACE'S (§149 — the mothership's finding at its eye: the own column's head said M's size while the card said M⁺'s) ═══
+console.log('----- §6 one count everywhere — the head and the card agree on the mothership\'s path and on mine -----');
+const { cornersViewWords } = req('src/components/MidpointSurface.tsx');
+const headOf = (html) => { const m = /data-midpoint-counts="true"[^>]*>([^<]*)</.exec(html); return m ? m[1].replace(/&#x27;/g, "'").replace(/&quot;/g, '"') : null; };
+const leadOf = (html) => { const m = /its own space, one column: ([^<]*)</.exec(html); return m ? m[1].replace(/&#x27;/g, "'") : null; };
+const cardLineOf = (space) => { const c = spaceCounts(space); return `${c.roles} roles · ${c.words} words · ${c.tuples} tuples`; }; // the card's own expression (Panels.tsx prints spaceCounts thrice — pinned below)
+const surfaceAt = (siteId) => { const packet = buildGeneralSitePacketPresenterReport(cur()).packets.find((p) => p.trace.siteId === siteId); const site = midpointSiteOf(cur(), siteId, packet.trace); const parents = [spaceOf(cur(), site.a), spaceOf(cur(), site.b)]; return renderToString(React.createElement(MidpointSurface, { shape: cur(), site, parents, resolved: spaceOf(cur(), siteId), refusal: null, remade: null })).replace(/<!-- -->/g, ''); };
+// the mothership's path (§149, its own drive): A flow · B phi · C t-cell · D phi; F5↦Φ7 · F7↦Φ1 · F8↦Φ2 on A–B, no word pairs; r0↦F1 on A–C; Φ1↦r0 on B–C
+let seeded6 = createSeedShape('tetrahedron');
+for (const [label, c] of [['A', flow], ['B', phi], ['C', tcell], ['D', phi]]) seeded6 = withCast(seeded6, byLabel(seeded6, label), c);
+reset(seeded6);
+S().applyAmboDissectionToCurrent();
+give('A', 'B', { F5: 'Φ7', F7: 'Φ1', F8: 'Φ2' });
+give('C', 'A', { r0: 'F1' });
+give('C', 'B', { r0: 'Φ1' });
+const AB6 = byLabel(cur(), 'AB');
+const RM = spaceOf(cur(), AB6); const cM = spaceCounts(RM.space); const shM = feetShareOf(RM.feet);
+const htmlM = surfaceAt(AB6); const headM = headOf(htmlM); const leadM = leadOf(htmlM);
+const footC6 = RM.feet.find((f) => f.corner === byLabel(cur(), 'C'));
+note(`the mothership's path at AB: space ${J(cM)} · feet's share ${J(shM)} · C's foot proposal ${J(footC6 ? footC6.proposal : null)} · head "${headM}" · lead "${leadM}"`);
+check('§6 ★★ THE MOTHERSHIP\'S PATH REPRODUCED (the positive control that this is its path): at AB the space counts 20 roles · 27 words · 57 tuples — its 25 words · 56 tuples plus the two feet\'s relation-types and C\'s one proposal (F1 with Φ1, the sentence it saw); the feet\'s share {2 words, 1 tuple}',
+  cM.roles === 20 && cM.words === 27 && cM.tuples === 57 && shM.words === 2 && shM.tuples === 1 && footC6 && J(footC6.proposal) === J([['F1', 'Φ1']]),
+  J({ cM, shM, proposal: footC6 && footC6.proposal }));
+check('§6 ★★ ONE COUNT EVERYWHERE — the head and the card AGREE on the mothership\'s path: the own column\'s head reads `AB: 20 roles (14 + 9 − 3) · 27 words · 57 tuples (N both) · 20 marks · 2 of the words and 1 tuple are the corners\' views` — the space\'s count, the card\'s own expression, the feet\'s share said beside it; the lead-in the same count with the same words',
+  headM !== null && new RegExp(`^AB: ${cM.roles} roles \\(14 \\+ 9 − 3\\) · ${cM.words} words · ${cM.tuples} tuples \\(\\d+ both\\) · 20 marks · ${cornersViewWords(shM).replace(/[()]/g, '\\$&')}$`).test(headM) && headM.includes(cardLineOf(RM.space).replace('20 roles', '')) && headM.includes("2 of the words and 1 tuple are the corners' views") &&
+    leadM !== null && leadM.startsWith(`${cardLineOf(RM.space)} · 20 marks · ${cornersViewWords(shM)} · `),
+  J({ headM, leadM, card: cardLineOf(RM.space) }));
+// and on mine — the §3 state (the eye's path: S1 on A–C, Q on B–C; the three proposals)
+reset(seeded3);
+S().applyAmboDissectionToCurrent();
+give('A', 'B', { F5: 'Φ7', F7: 'Φ1', F8: 'Φ2' });
+give('C', 'A', { r0: 'F13', r1: 'F9', r2: 'F1', r4: 'F12', r6: 'F3', r8: 'F7' });
+give('C', 'B', { r9: 'Φ6', r1: 'Φ1', r0: 'Φ8', r7: 'Φ5', r6: 'Φ2' });
+const AB3 = byLabel(cur(), 'AB');
+const R3 = spaceOf(cur(), AB3); const c3 = spaceCounts(R3.space); const sh3 = feetShareOf(R3.feet); const html3 = surfaceAt(AB3); const head3 = headOf(html3);
+check('§6 ★★ …AND ON MINE: at the eye\'s state (three proposals) the head reads the space\'s 27 words · 59 tuples with `2 of the words and 3 tuples are the corners\' views`, equal to the card\'s expression; the feet\'s share equals the space\'s own foot-typed entries (by construction — `withFeet` added exactly them)',
+  c3.words === 27 && c3.tuples === 59 && sh3.words === 2 && sh3.tuples === 3 && head3 !== null && head3.includes(`· ${c3.words} words · ${c3.tuples} tuples (`) && head3.endsWith(` · ${cornersViewWords(sh3)}`) &&
+    R3.space.signature.filter((t) => isFootType(t.type)).length === sh3.words && R3.space.relations.filter((r) => isFootType(r.type)).length === sh3.tuples,
+  J({ c3, sh3, head3 }));
+check('§6 ★★ THE ONE EXPRESSION, BY CONSTRUCTION: the card (Panels.tsx), the lifted card (liftedConceptModel.ts) and the surface (its sizes memo) all print `spaceCounts(…)` from the resolver — no `.space.signature.length` or `.space.relations.length` printed anywhere else in the components or the manuscript; the surface\'s three lines carry the feet\'s share through `cornersViewWords`',
+  (() => {
+    const panels = readLf('src/components/Panels.tsx'); const lifted = readLf('src/manuscript/liftedConceptModel.ts'); const surf = readLf('src/components/MidpointSurface.tsx');
+    const stray = (t) => /\.space\.(signature|relations|roles)\.length/.test(t);
+    return panels.includes('${spaceCounts(resolved.space).roles} roles · ${spaceCounts(resolved.space).words} words · ${spaceCounts(resolved.space).tuples} tuples') && !stray(panels) &&
+      lifted.includes('roles: r ? spaceCounts(r.space).roles : 0') && lifted.includes('tuples: r ? spaceCounts(r.space).tuples : 0') && !stray(lifted) &&
+      surf.includes('const sizes = useMemo(() => spaceCounts(resolved.space), [resolved]);') && (surf.match(/\$\{sizes\.words\} words · \$\{sizes\.tuples\} tuples/g) || []).length === 3 && (surf.match(/\$\{sizes\.roles\} roles/g) || []).length === 3 && (surf.match(/\$\{cornersClause\}/g) || []).length === 3 && !/M\.counts\.(words|tuples|roles)/.test(surf) && !stray(surf);
+  })());
 
 // ═══ §5 THE SURFACE — the designer's words, under the own column ═══
 console.log('----- §5 the surface: the blocks under the own column (renderToString), the drawing free of foot glyphs, the manifest, purity -----');

@@ -26,7 +26,7 @@
 // ADDITIVE · DERIVE-ONLY · react-free (the section draws what this returns; the witness runs this under node).
 
 import type { Face, Shape, VertexId } from '../types/geometry';
-import { isSeedVertex, spaceOf, type Resolved } from '../lib/spaceOf';
+import { isSeedVertex, spaceCounts, spaceOf, type Resolved } from '../lib/spaceOf';
 import { faceReferenceName } from './apertureModel';
 
 export type AbsentResolver = Parameters<typeof faceReferenceName>[2];
@@ -111,9 +111,9 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
       label: labelOf(form.shape, id),
       held,
       space: r ? r.origin : 'none',
-      roles: r ? r.space.roles.length : 0,
-      words: r ? r.space.signature.length : 0,
-      tuples: r ? r.space.relations.length : 0,
+      roles: r ? spaceCounts(r.space).roles : 0, // §149: the one count, the space's — the same helper the card and the surface print
+      words: r ? spaceCounts(r.space).words : 0,
+      tuples: r ? spaceCounts(r.space).tuples : 0,
       absence: held ? absence : 'not in the record the lift carried',
     };
   });

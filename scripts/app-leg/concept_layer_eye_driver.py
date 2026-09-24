@@ -1023,6 +1023,7 @@ MEASURE_FEET = """() => {
     headFont: (() => { const h = s.querySelector('[data-midpoint-foot-head]'); if (!h) return null; const cs = getComputedStyle(h); return `${cs.fontSize}|${cs.fontWeight}|${cs.color}`; })(),
     ownFootGlyphs: [...s.querySelectorAll('[data-midpoint-own-drawing] [data-inside-arc-word], [data-midpoint-own-drawing] [data-inside-loop-word]')].filter((e) => /≡_/.test(e.textContent)).length,
     ownWords: (own ? txt(own.querySelector('div')) : null),
+    counts: txt(s.querySelector('[data-midpoint-counts]')),
   };
 }"""
 

@@ -280,6 +280,17 @@ function withFeet(space: ConceptSpace, feet: Foot[]): ConceptSpace {
 }
 
 /**
+ * §149 (C-12c) — ONE COUNT EVERYWHERE, THE SPACE'S: the three sizes every card, head and line prints of a concept-space.
+ * A born space is M⁺ — the amalgam plus its feet (ruling (a): the feet ARE in the signature) — so the count is taken on the
+ * resolved space itself, never on the glue's amalgam; the surface says beside it what the feet contribute (`feetShareOf`).
+ */
+export interface SpaceCounts { roles: number; words: number; tuples: number }
+export const spaceCounts = (space: ConceptSpace): SpaceCounts => ({ roles: space.roles.length, words: space.signature.length, tuples: space.relations.length });
+
+/** the feet's share of those counts — one word (its relation-type) per foot, one tuple per point a foot reads; exactly what `withFeet` added */
+export const feetShareOf = (feet: Foot[]): { words: number; tuples: number } => ({ words: feet.length, tuples: feet.reduce((n, f) => n + f.links.length, 0) });
+
+/**
  * THE MEET — pairs by SHARED SEED CONTENT: a class of U with the ONE class of V holding what U's class holds of V's
  * seeds; a class of U spread over two of V, or two of U onto one of V, is a CONFLICT and is left out (the pushout then
  * houses it twice — the lawful gen-3 doubling, never below).

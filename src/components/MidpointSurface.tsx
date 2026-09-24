@@ -120,7 +120,7 @@ import { type Conflict } from '../lib/jRegister';
 import { isMoldType } from '../lib/castLoader';
 // C-8 — THE RESOLVER: the chooser and the surface read `spaceOf`, never `data.cast` (a seed corner's cast; a born corner's
 // space derived from its parents over the J its edge's kind fixes); the record's home and the site by generation
-import { generationOf, holdsLoadedCast, isSeedVertex, nameIn, spaceOf, type Resolved } from '../lib/spaceOf';
+import { feetShareOf, generationOf, holdsLoadedCast, isSeedVertex, nameIn, spaceCounts, spaceOf, type Resolved } from '../lib/spaceOf';
 import { CastInsideDiagram, CastInsidePanel, InsideColumn, insideGeometry, type MarkExtra, type PointExtra } from './CastInsideDiagram';
 
 export interface ProjectionSource {
@@ -177,6 +177,15 @@ export const conflictWords = (c: Conflict, la: string, lb: string): string => {
     return `${c.type}: ${c.xTerms[0]} ${c.xValue} in ${la} · ${yKey}${c.yTerms[0]} ${c.yValue} in ${lb}`;
   }
   return `${c.type}(${c.xTerms.join(', ')}) ${c.xValue} in ${la} · ${c.yType}(${c.yTerms.join(', ')}) ${c.yValue} in ${lb}`;
+};
+
+/** §149 — what the feet contribute to the space's count, said in words beside it (the count is the space's, M⁺; the feet are the corners' views, drawn nowhere, read in their blocks) */
+export const cornersViewWords = (share: { words: number; tuples: number }): string => {
+  if (share.words === 0) return '';
+  const views = share.words === 1 ? "the corner's view" : "the corners' views";
+  return share.tuples === 0
+    ? `${share.words} of the words ${share.words === 1 ? 'is' : 'are'} ${views} (no tuple yet)`
+    : `${share.words} of the words and ${share.tuples} ${share.tuples === 1 ? 'tuple' : 'tuples'} are ${views}`;
 };
 
 /** the residual a parent still holds alone — the label of the parent→child line, never bare */
@@ -446,6 +455,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     else withdrawWordPair(edgeId, pair[0], pair[1]);
   };
   const disjoint = useMemo(() => (M && state === 'unglued' ? M.counts : null), [M, state]);
+  // §149 — ONE COUNT EVERYWHERE, THE SPACE'S: every size this surface prints is the resolved space's (M⁺), through the resolver's one
+  // helper — the same expression the card and the lifted card print; the feet's share said beside it in words
+  const sizes = useMemo(() => spaceCounts(resolved.space), [resolved]);
+  const cornersClause = useMemo(() => { const w = cornersViewWords(feetShareOf(resolved.feet)); return w ? ` · ${w}` : ''; }, [resolved]);
   const wordChip = (side: Side, w: string): string => {
     const picked = wordPick?.side === side && wordPick.word === w;
     const translated = side === 'A' ? types.some(([s]) => s === w) : types.some(([, t]) => t === w);
@@ -580,7 +593,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       </div>
       <div data-midpoint-sentence="true" className="my-1 text-stone-400">
         {state === 'unglued' && disjoint
-          ? `no pair given yet — ${la} and ${lb} stand apart: ${disjoint.roles} roles · ${disjoint.words} words · ${disjoint.tuples} tuples · ${disjoint.marks} marks`
+          ? `no pair given yet — ${la} and ${lb} stand apart: ${sizes.roles} roles · ${sizes.words} words · ${sizes.tuples} tuples · ${disjoint.marks} marks${cornersClause}`
           : state === 'glued'
             ? kind === 'seed'
               ? `${roles.length} ${roles.length === 1 ? 'role pair' : 'role pairs'} · ${types.length} ${types.length === 1 ? 'word pair' : 'word pairs'} — yours`
@@ -680,7 +693,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         <div data-midpoint-own="glued" className="mt-2 rounded border border-stone-800 bg-stone-950/60 px-2 py-1">
           <div className="mb-1 text-stone-400">
             <span className="text-stone-100">{lm}</span>
-            {` — its own space, one column: ${M.counts.roles} roles · ${M.counts.words} words · ${M.counts.tuples} tuples · ${M.counts.marks} marks · `}
+            {` — its own space, one column: ${sizes.roles} roles · ${sizes.words} words · ${sizes.tuples} tuples · ${M.counts.marks} marks${cornersClause} · `}
             <span className="text-stone-300">{`every role and tuple says where it is from — both · from ${la} · from ${lb}${kind === 'seed' ? '' : ' · the solid\'s share hollow and grey, as above'}`}</span>
             {originTint ? <span>{` (from ${lb} also in `}<span className="text-sky-200">a cooler stroke</span>{`)`}</span> : null}
             {' · a translated word keeps its mark, s ≡ t'}
@@ -724,7 +737,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       {/* THE TRACE — the origin partition of the one glued record, as description */}
       {M && trace && state === 'glued' ? (
         <div data-midpoint-trace="true" className="mt-2 grid gap-0.5 text-stone-300">
-          <span data-midpoint-counts="true">{`${lm}: ${M.counts.roles} roles (${castA.roles.length} + ${castB.roles.length} − ${M.pairs.length}) · ${M.counts.words} words · ${M.counts.tuples} tuples (${M.counts.both} both) · ${M.counts.marks} marks`}</span>
+          <span data-midpoint-counts="true">{`${lm}: ${sizes.roles} roles (${castA.roles.length} + ${castB.roles.length} − ${M.pairs.length}) · ${sizes.words} words · ${sizes.tuples} tuples (${M.counts.both} both) · ${M.counts.marks} marks${cornersClause}`}</span>
           <span data-midpoint-core="true" className="text-stone-400">{`what both confirm: ${M.core.roles} ${M.core.roles === 1 ? 'role' : 'roles'} · ${M.core.tuples} ${M.core.tuples === 1 ? 'tuple' : 'tuples'} · ${M.core.marks} ${M.core.marks === 1 ? 'mark' : 'marks'}`}</span>
           {trace.glued.map((r) => (
             <span key={r.key} data-midpoint-role-trace={r.key}>

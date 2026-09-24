@@ -358,7 +358,11 @@ const countOf = (html, name) => (html.match(new RegExp(`${name}="`, 'g')) || [])
 const textsOf = (html, name) => [...html.matchAll(new RegExp(`${name}="[^"]*"[^>]*>([^<]*)<`, 'g'))].map((m) => unescapeHtml(m[1]));
 const visibleText = (html) => unescapeHtml(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
 // C-8: the surface takes the RESOLVED parents and midpoint (one resolver, `spaceOf`); a τ draft rides the resolver's options as the store's drafts do
-const { spaceOf } = req('src/lib/spaceOf.ts');
+const { spaceOf, spaceCounts, feetShareOf } = req('src/lib/spaceOf.ts');
+// §149 — ONE COUNT EVERYWHERE, THE SPACE'S: the surface's sizes are the resolved space's (M⁺), the feet's share said beside them;
+// computed here from the resolver on the same shape the surface renders, never restated (the copy of the clause pinned verbatim)
+const cornersViewWords = (share) => { if (share.words === 0) return ''; const views = share.words === 1 ? "the corner's view" : "the corners' views"; return share.tuples === 0 ? `${share.words} of the words ${share.words === 1 ? 'is' : 'are'} ${views} (no tuple yet)` : `${share.words} of the words and ${share.tuples} ${share.tuples === 1 ? 'tuple' : 'tuples'} are ${views}`; };
+const sizesAt = (shape, siteId) => { const r = spaceOf(shape, siteId); const c = spaceCounts(r.space); const w = cornersViewWords(feetShareOf(r.feet)); return { ...c, share: feetShareOf(r.feet), clause: w ? ` · ${w}` : '' }; };
 const { edgeBetween } = req('src/lib/faceReading.ts');
 const surface = (shape, site, tauDraft = [], refusal = null, remade = null) => {
   const options = { tauDrafts: tauDraft.length ? { [site.edge.id]: tauDraft } : {} };
@@ -370,8 +374,9 @@ const surface = (shape, site, tauDraft = [], refusal = null, remade = null) => {
 const la = ambo.vertices[siteAB.a].data.label;
 const lb = ambo.vertices[siteAB.b].data.label;
 const fresh = surface(ambo, siteAB);
-check('§4 ★★ THE UNGLUED STATE says so in words — never *nothing identified*: `no pair given yet — A and B stand apart: 23 roles · 25 words · 56 tuples · 23 marks`; both columns present (14 + 9 points, each side marked), NO line across the fold, the word rows with nothing translated said',
-  attrsOf(fresh, 'data-midpoint-state')[0] === 'unglued' && textsOf(fresh, 'data-midpoint-sentence')[0] === `no pair given yet — ${la} and ${lb} stand apart: 23 roles · 25 words · 56 tuples · 23 marks` &&
+const zAB = sizesAt(ambo, siteAB.siteId);
+check(`§4 ★★ THE UNGLUED STATE says so in words — never *nothing identified*: \`no pair given yet — A and B stand apart: ${zAB.roles} roles · ${zAB.words} words · ${zAB.tuples} tuples · 23 marks${zAB.clause}\` (§149: the space's count — the amalgam's 23 · 25 · 56 plus the feet's ${zAB.share.words} words and ${zAB.share.tuples} tuples, said beside it); both columns present (14 + 9 points, each side marked), NO line across the fold, the word rows with nothing translated said`,
+  attrsOf(fresh, 'data-midpoint-state')[0] === 'unglued' && textsOf(fresh, 'data-midpoint-sentence')[0] === `no pair given yet — ${la} and ${lb} stand apart: ${zAB.roles} roles · ${zAB.words} words · ${zAB.tuples} tuples · 23 marks${zAB.clause}` && zAB.roles === 23 && zAB.words === 25 + zAB.share.words && zAB.tuples === 56 + zAB.share.tuples &&
     attrsOf(fresh, 'data-midpoint-side').filter((s) => s === 'A').length === (forward ? 14 : 9) && attrsOf(fresh, 'data-midpoint-side').filter((s) => s === 'B').length === (forward ? 9 : 14) && countOf(fresh, 'data-midpoint-line') === 0 && visibleText(fresh).includes('no word translated — every word foreign to the other side, alike spellings included'),
   textsOf(fresh, 'data-midpoint-sentence')[0]);
 const glued = surface(S().shapes[ambo.id], midpointSiteOf(S().shapes[ambo.id], packetAB.trace.siteId, packetAB.trace));
@@ -390,13 +395,15 @@ check('§4 ★★ THE PAIRS ARE LINES ACROSS THE FOLD marked `yours` with `withd
   `${countOf(glued, 'data-midpoint-line')} lines · ${textsOf(glued, 'data-midpoint-sentence')[0]}`);
 check('§4 ★★ ONLY `both` GETS A GLYPH: in the unfolded layout `from A` and `from B` are stated by position — exactly 4 marks in this cast\'s column and 4 in that cast\'s wear `≡` (the four glued tuples, each drawn where its two witnesses drew it); none in the unglued state',
   attrsOf(glued, 'data-midpoint-both').filter((s) => s === 'A').length === 4 && attrsOf(glued, 'data-midpoint-both').filter((s) => s === 'B').length === 4 && (glued.match(/≡ /g) || []).length >= 8 && countOf(fresh, 'data-midpoint-both') === 0);
-check('§4 ★★ THE TRACE, as description: the counts `AB: 20 roles (14 + 9 − 3) · 22 words · 52 tuples (4 both) · 20 marks` (or with the corners the other way), `what both confirm: 3 roles · 4 tuples · 3 marks`, and per glued role `F5 ≡ Φ7 · 7 tuples about it: both 1 · A 4 · B 2 · member_status has (A, B)` (the sides named by the corners\' labels)',
+const gAB = sizesAt(S().shapes[ambo.id], packetAB.trace.siteId);
+check(`§4 ★★ THE TRACE, as description: the counts \`AB: 20 roles (14 + 9 − 3) · ${gAB.words} words · ${gAB.tuples} tuples (4 both) · 20 marks${gAB.clause}\` (§149: the space's count — the amalgam's 20 · 22 · 52 plus the feet's ${gAB.share.words} words and ${gAB.share.tuples} tuples, said beside it; or with the corners the other way), \`what both confirm: 3 roles · 4 tuples · 3 marks\`, and per glued role \`F5 ≡ Φ7 · 7 tuples about it: both 1 · A 4 · B 2 · member_status has (A, B)\` (the sides named by the corners\' labels)`,
   (() => {
     const counts = textsOf(glued, 'data-midpoint-counts')[0];
     const core = textsOf(glued, 'data-midpoint-core')[0];
     const rows = textsOf(glued, 'data-midpoint-role-trace');
     const lm = ambo.vertices[packetAB.trace.siteId].data.label;
-    const expectedCounts = forward ? `${lm}: 20 roles (14 + 9 − 3) · 22 words · 52 tuples (4 both) · 20 marks` : `${lm}: 20 roles (9 + 14 − 3) · 22 words · 52 tuples (4 both) · 20 marks`;
+    const expectedCounts = forward ? `${lm}: 20 roles (14 + 9 − 3) · ${gAB.words} words · ${gAB.tuples} tuples (4 both) · 20 marks${gAB.clause}` : `${lm}: 20 roles (9 + 14 − 3) · ${gAB.words} words · ${gAB.tuples} tuples (4 both) · 20 marks${gAB.clause}`;
+    if (!(gAB.roles === 20 && gAB.words === 22 + gAB.share.words && gAB.tuples === 52 + gAB.share.tuples)) return false;
     const expectRow = forward ? `F5 ≡ Φ7 · 7 tuples about it: both 1 · ${la} 4 · ${lb} 2 · member_status has (${la}, ${lb})` : `Φ7 ≡ F5 · 7 tuples about it: both 1 · ${la} 2 · ${lb} 4 · member_status has (${la}, ${lb})`;
     return counts === expectedCounts && core === 'what both confirm: 3 roles · 4 tuples · 3 marks' && rows.length === 3 && rows[0] === expectRow;
   })(), `${textsOf(glued, 'data-midpoint-counts')[0]} | ${textsOf(glued, 'data-midpoint-role-trace')[0]}`);
@@ -445,7 +452,7 @@ check('§4 ★★ THE MAPPED MIDPOINT\'S OWN DIAGRAM, ITS ORIGINS WRITTEN (C-7d 
     return attrsOf(glued, 'data-midpoint-own').includes('glued') && countOf(ownHtml, 'data-inside-point') === 20 && attrsOf(ownHtml, 'data-midpoint-own-role').filter((o) => o === 'both').length === 3 && attrsOf(ownHtml, 'data-midpoint-own-origin').filter((o) => o === 'both').length === 4 &&
       origins.length === 72 && origins.filter((o) => o === 'both').length === 7 && origins.filter((o) => /^from [AB]$/.test(o)).length === 65 && /stroke-sky-300/.test(ownHtml) &&
       ownHtml.includes('sustains ≡ descends-from') && !/ \[[AB]\]/.test(visibleText(ownHtml)) && footWords.length > 0 && footWords.every((w) => !w.startsWith('≡')) &&
-      visibleText(glued).includes('its own space, one column: 20 roles · 22 words · 52 tuples · 20 marks') && /every role and tuple says where it is from — both · from [AB] · from [AB]/.test(visibleText(glued)) &&
+      visibleText(glued).includes(`its own space, one column: 20 roles · ${gAB.words} words · ${gAB.tuples} tuples · 20 marks${gAB.clause} ·`) && /every role and tuple says where it is from — both · from [AB] · from [AB]/.test(visibleText(glued)) &&
       attrsOf(fresh, 'data-midpoint-own')[0] === 'unglued' && countOf(fresh, 'data-midpoint-own-drawing') === 0 && visibleText(fresh).includes('its own space is the two casts side by side, the columns above: no pair given yet');
   })(), `${attrsOf(glued, 'data-midpoint-own').join(',')} own · ${countOf((glued.split('data-midpoint-own="glued"')[1] || ''), 'data-inside-point')} points · origins ${attrsOf((glued.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-trace=')[0], 'data-inside-origin').length}`);
 check('§4 ★★ THE PROJECTION SOURCES CARRY THE PERSON\'S ACTS (C-7d item 2): with nothing given on A–C and B–C each source reads `raw material — nothing given yet on the edges that reach it (…)`; after a pair on the A–C edge (given at the AC midpoint) C reads `on A–C: F1 ↦ r0 · sustains ↦ sustains` beside `no identification given yet on B–C` — his own maps as they stand, nothing computed, nothing composed',
