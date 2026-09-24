@@ -326,7 +326,7 @@ MEASURE_LIFT = """() => {
     face: face ? { id: face.getAttribute('data-lifted-face'), kind: face.getAttribute('data-lifted-face-kind'), states: [...face.querySelectorAll('[data-midpoint-born-face-state], [data-midpoint-face-state]')].map((e) => e.getAttribute('data-midpoint-born-face-state') || e.getAttribute('data-midpoint-face-state')), head: txt(face.querySelector('[data-midpoint-born-face-state="read"] > span, [data-midpoint-face-state="read"] > span')), ground: face.querySelectorAll('[data-midpoint-born-face-line="ground"]').length, news: [...face.querySelectorAll('[data-midpoint-born-face-news]')].map((e) => txt(e)), noNews: face.querySelectorAll('[data-midpoint-born-face-line="no-news"]').length, hands: [...face.querySelectorAll('[data-midpoint-born-face-hands]')].map((e) => txt(e)), buttons: face.querySelectorAll('button').length, withdraws: face.querySelectorAll('[data-midpoint-born-face-withdraw], [data-midpoint-face-withdraw]').length, handWords: face.querySelectorAll('[data-midpoint-born-face-hand-words], [data-midpoint-face-hand-words]').length, box: r(face), inside: inside(r(face)), topInside: topInside(r(face)), text: txt(face).slice(0, 600) } : null,
     cornerCell: txt(sec.querySelector('[data-lifted-face-corner-cell]')),
     openButtons: sec.querySelectorAll('[data-lifted-open-drawing]').length, openState: [...sec.querySelectorAll('[data-lifted-drawing-state="open"]')].length,
-    drawing: (() => { const ov = document.querySelector('[data-lifted-drawing]'); if (!ov) return null; const p = ov.querySelector('[data-inside-panel]'); const svg = ov.querySelector('svg'); const b = r(ov); const sb = svg ? r(svg) : null; return { box: b, scrollWidth: ov.scrollWidth, clientWidth: ov.clientWidth, scrollHeight: ov.scrollHeight, clientHeight: ov.clientHeight, svg: sb, points: p ? p.querySelectorAll('[data-inside-point]').length : 0, glyphed: p ? [...p.querySelectorAll('[data-inside-label]')].filter((l) => /≡/.test(l.textContent)).length : 0, head: p ? txt(p.firstElementChild) : null, inViewport: b.x >= 0 && b.y >= 0 && b.right <= window.innerWidth && b.bottom <= window.innerHeight, clipped: ov.scrollWidth > ov.clientWidth + 1, outsideCard: S ? (b.right <= S.x || b.x >= S.right) : null }; })(),
+    drawing: (() => { const ov = document.querySelector('[data-lifted-drawing]'); if (!ov) return null; const p = ov.querySelector('[data-inside-panel]'); const svg = ov.querySelector('svg'); const b = r(ov); const sb = svg ? r(svg) : null; return { box: b, scrollWidth: ov.scrollWidth, clientWidth: ov.clientWidth, scrollHeight: ov.scrollHeight, clientHeight: ov.clientHeight, svg: sb, points: p ? p.querySelectorAll('[data-inside-point]').length : 0, words: p ? [...p.querySelectorAll('[data-inside-arc-word], [data-inside-loop-word]')].map((t) => txt(t)) : [], glyphed: p ? [...p.querySelectorAll('[data-inside-label]')].filter((l) => /≡/.test(l.textContent)).length : 0, head: p ? txt(p.firstElementChild) : null, inViewport: b.x >= 0 && b.y >= 0 && b.right <= window.innerWidth && b.bottom <= window.innerHeight, clipped: ov.scrollWidth > ov.clientWidth + 1, outsideCard: S ? (b.right <= S.x || b.x >= S.right) : null }; })(),
   };
 }"""
 
@@ -598,7 +598,9 @@ def project_group(page, prefix):
     return page.evaluate("""(prefix) => {
       const scene = window.__manuscriptScene, camera = window.__manuscriptCamera;
       if (!scene || !camera) return null;
-      const canvas = document.querySelector('canvas');
+      // C-12a item 8 — the Manuscript's canvas is the LAST on the page; the first is the Ambo's (hidden, 760 px wide at x=280):
+      // projecting through it put every point off the room, and the summon needed up to 13 tries
+      const cs = document.querySelectorAll('canvas'); const canvas = cs[cs.length - 1];
       const rect = canvas.getBoundingClientRect();
       let best = null;
       scene.traverse((o) => {
@@ -639,11 +641,95 @@ def cargo_arm(page, args):
     return res
 
 
+# C-12a item 8 — the drawn domain's interior, projected through the Manuscript's canvas: the hit hull's centroid when the hull
+# stands (the cure), else the wireframe's (the defect's own geometry — the point that met only the paper)
+DOMAIN_INTERIOR = """(prefix) => {
+  const scene = window.__manuscriptScene, camera = window.__manuscriptCamera; if (!scene || !camera) return null;
+  const cs = document.querySelectorAll('canvas'); const canvas = cs[cs.length - 1]; const rect = canvas.getBoundingClientRect();
+  const P = (v) => { const q = v.clone().project(camera); return [rect.left + ((q.x + 1) / 2) * rect.width, rect.top + ((1 - (q.y + 1) / 2)) * rect.height]; };
+  let hull = null, wire = null;
+  scene.traverse((o) => {
+    let g = o, name = ''; while (g) { if ((g.name || '').startsWith(prefix)) { name = g.name; break; } g = g.parent; }
+    if (!name || !o.isMesh || !o.geometry) return;
+    if (o.name === 'hit-hull' && !hull) hull = o;
+    if (o.geometry.type === 'LineSegmentsGeometry' && !wire) wire = o;
+  });
+  const centroidOf = (o, attr) => { const a = o.geometry.getAttribute(attr); if (!a) return null; const V = o.position.constructor; const c = new V(); for (let i = 0; i < a.count; i++) { const v = new V(a.getX(i), a.getY(i), a.getZ(i)); o.localToWorld(v); c.add(v); } return c.multiplyScalar(1 / a.count); };
+  const src = hull || wire; if (!src) return { hull: Boolean(hull), wire: Boolean(wire), centre: null };
+  const c = centroidOf(src, hull ? 'position' : 'instanceStart');
+  return { hull: Boolean(hull), wire: Boolean(wire), centre: c ? P(c) : null, hullTriangles: hull ? hull.geometry.getAttribute('position').count / 3 : 0 };
+}"""
+# the handlers of the room's group and of the paper (a handler-bearing mesh under the scene root) wrapped to log what fires
+INSTRUMENT_CLICKS = """(prefix) => {
+  const scene = window.__manuscriptScene; const log = []; window.__c12aLog = log;
+  const wrap = (o, tag) => { const h = o.__r3f && o.__r3f.handlers; if (!h) return; for (const k of Object.keys(h)) { if (k !== 'onClick' && k !== 'onPointerDown') continue; const orig = h[k]; h[k] = (e) => { log.push({ on: k, obj: tag, detail: e && e.nativeEvent ? e.nativeEvent.detail : null, hit: e && e.object ? (e.object.name || e.object.type) : null }); return orig(e); }; } };
+  scene.traverse((o) => { let g = o, name = ''; while (g) { if ((g.name || '').startsWith(prefix)) { name = g.name; break; } g = g.parent; } if (name) wrap(o, 'Group'); });
+  scene.children.forEach((o) => wrap(o, 'ROOT:' + (o.name || o.type)));
+  return true;
+}"""
+
+
+def badge_click(page):
+    """C-12a item 5 — measured, the premise did not reproduce: a click on the `· has` badge beside F1 picks F1 — on the box's
+    top edge (the whitespace between glyphs) and at its centre; the label click unpicks (the pick toggles); the state restored"""
+    PICKED = "() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-picked]')].map((e) => e.getAttribute('data-midpoint-side') + '|' + e.getAttribute('data-inside-point'))"
+    box = page.evaluate("() => { const g = document.querySelector('[data-midpoint-drawing] [data-midpoint-side=\"A\"][data-inside-point=\"F1\"]'); if (!g) return null; const b = g.querySelector('[data-inside-badge]'); if (!b) return null; const r = b.getBoundingClientRect(); return { badge: b.getAttribute('data-inside-badge'), x: r.x, y: r.y, w: r.width, h: r.height }; }")
+    res = {'box': box}
+    if not box:
+        return res
+    page.mouse.click(box['x'] + box['w'] * 0.7, box['y'] + 1.5); page.wait_for_timeout(300)
+    res['afterTopEdge'] = page.evaluate(PICKED)
+    page.locator('[data-midpoint-drawing] [data-midpoint-side="A"][data-inside-point="F1"] [data-inside-label]').first.click(); page.wait_for_timeout(300)
+    res['afterLabel'] = page.evaluate(PICKED)
+    page.mouse.click(box['x'] + box['w'] / 2, box['y'] + box['h'] / 2); page.wait_for_timeout(300)
+    res['afterCentre'] = page.evaluate(PICKED)
+    page.mouse.click(box['x'] + box['w'] / 2, box['y'] + box['h'] / 2); page.wait_for_timeout(300)
+    res['afterCentreAgain'] = page.evaluate(PICKED)
+    return res
+
+
+# C-12a item 6 — the words AB reads after the pairs: the own drawing's text and the own block's, and the sources' word chips
+WORDS_AT_AB = """() => {
+  const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null;
+  const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ') : '');
+  return { own: txt(s.querySelector('[data-midpoint-own-drawing]')), ownBlock: txt(s.querySelector('[data-midpoint-own]')), chips: [...s.querySelectorAll('[data-midpoint-word]')].map((e) => e.getAttribute('data-midpoint-word')) };
+}"""
+
+
+def cell_rows(page):
+    """the workspace tree's cell rows — buttons named by their topology word first; the Genealogy rows (their `shape:`/`seed seed` tails) excluded; PRINTED by the leg, not pinned"""
+    return page.get_by_role("button", name=re.compile(r"^(?!.*(shape:|seed seed))(tetrahedron|octahedron|cuboctahedron|square-pyramid|cube)\b", re.I))
+
+
+def genealogy_arm(page, args):
+    """C-12a item 3 — THE WAY BACK: the Genealogy panel in the workspace tab lists the session's shapes (the current marked);
+    gen 1 chosen becomes current (the selection tab lists gen 1's vertices), then gen 2 chosen again (the arm ends on gen 2)"""
+    ROWS = "() => [...document.querySelectorAll('button')].map((b) => ({ t: b.innerText.replace(/\\s+/g, ' ').trim(), b })).filter(({ t, b }) => /\\bg\\d+\\b/.test(t) && /(seed|ambo-dissection|patch-lift)/.test(t) && b.querySelector('span')).map(({ t, b }) => ({ text: t, current: /border-teal-400/.test(b.className) }))"
+    res = {}
+    tab(page, "workspace")
+    res['rows'] = page.evaluate(ROWS)
+    page.screenshot(path=f"{args.frames}/concept-layer-genealogy-{args.width}x{args.height}.png")
+    g1 = page.get_by_role("button", name=re.compile(r"^Ambo Dissection Tetrahedron\s*g1\b"))
+    res['g1Buttons'] = g1.count()
+    if not g1.count():
+        return res
+    g1.first.click(); page.wait_for_timeout(500)
+    res['rowsAtG1'] = page.evaluate(ROWS)
+    res['cellRowsAtG1'] = cell_rows(page).count()  # the workspace tree lists the CURRENT shape's cells: gen 1 = 4 residues + 1 core
+    g2 = page.get_by_role("button", name=re.compile(r"^Ambo Dissection Tetrahedron\s*g2\b"))
+    res['g2Buttons'] = g2.count()
+    if g2.count():
+        g2.first.click(); page.wait_for_timeout(500)
+    res['rowsAtG2'] = page.evaluate(ROWS)
+    res['cellRowsAtG2'] = cell_rows(page).count()  # gen 2 = 4 + 6 + 1
+    return res
+
+
 def cargo_arm_body(page, args, res):
     page.get_by_role("button", name=re.compile(r"^Manuscript$")).first.click(); page.wait_for_timeout(800)
     page.keyboard.press("Escape"); page.wait_for_timeout(300)
     res['dim3Groups'] = page.evaluate("() => { const out = []; const scene = window.__manuscriptScene; if (!scene) return null; scene.traverse((o) => { if ((o.name || '').startsWith('written:dim3')) out.push(o.name); }); return out; }")
-    res['canvasRect'] = page.evaluate("() => { const c = document.querySelector('canvas'); const r = c.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }")
+    res['canvasRect'] = page.evaluate("() => { const cs = document.querySelectorAll('canvas'); const c = cs[cs.length - 1]; const r = c.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }")
     pt = project_group(page, 'written:dim3:built-')
     res['room'] = pt
     if not pt:
@@ -658,7 +744,7 @@ def cargo_arm_body(page, args, res):
     candidates = page.evaluate("""(prefix) => {
       const scene = window.__manuscriptScene, camera = window.__manuscriptCamera;
       if (!scene || !camera) return [];
-      const canvas = document.querySelector('canvas'); const rect = canvas.getBoundingClientRect();
+      const cs = document.querySelectorAll('canvas'); const canvas = cs[cs.length - 1]; const rect = canvas.getBoundingClientRect();
       const out = [];
       scene.traverse((o) => {
         if (!o.isMesh || !o.geometry || out.length > 40) return;
@@ -686,6 +772,12 @@ def cargo_arm_body(page, args, res):
       return out;
     }""", 'written:dim3:built-')
     res['candidates'] = len(candidates)
+    # C-12a item 8 — a room already selected (the glue can leave it so) would be TOGGLED OFF by a double-click (`pick`
+    # toggles; Arman's law); the paper is double-clicked first (dismiss) so the summon is measured from an unselected room
+    res['chipBeforeSummon'] = page.evaluate(CHIP_STATE)
+    if res['chipBeforeSummon'] and res['chipBeforeSummon']['opacity'] == '1':
+        cr = res['canvasRect']; page.mouse.dblclick(cr['x'] + 14, cr['y'] + cr['h'] * 0.5); page.wait_for_timeout(700)
+        res['chipAfterDismiss'] = page.evaluate(CHIP_STATE)
     tried = []
     for cand in [pt] + candidates[:60]:
         page.mouse.dblclick(cand['sx'], cand['sy']); page.wait_for_timeout(900)
@@ -694,7 +786,21 @@ def cargo_arm_body(page, args, res):
         if state and state['opacity'] == '1':
             break
     res['summonTries'] = tried
+    res['summonTakenAt'] = len(tried) if tried and tried[-1][2] == '1' else None
     res['chipAfterDblclick'] = page.evaluate(CHIP_STATE)
+    # C-12a item 8 — THE HIT HULL: the room selected, its domain is drawn above the plaque; a double-click in the domain's
+    # interior must reach the ROOM's group (its own click handler, detail 2) and never the paper's (whose double-click
+    # dismisses) — the group's toggle turns the room off, and the same point turns it on again
+    res['domainInterior'] = page.evaluate(DOMAIN_INTERIOR, 'written:dim3:built-')
+    di = res['domainInterior']
+    if di and di.get('centre'):
+        page.evaluate(INSTRUMENT_CLICKS, 'written:dim3:built-')
+        page.mouse.dblclick(di['centre'][0], di['centre'][1]); page.wait_for_timeout(700)
+        res['domainInteriorClicks'] = page.evaluate("() => window.__c12aLog.splice(0)")
+        res['chipAfterInterior'] = page.evaluate(CHIP_STATE)
+        # the room's own handler TOGGLED it off (`pick`'s law) and its domain is no longer drawn — the plaque takes it back
+        page.mouse.dblclick(pt['sx'], pt['sy']); page.wait_for_timeout(900)
+        res['chipAfterReselect'] = page.evaluate(CHIP_STATE)
     chip = page.locator('button[aria-label="explore inside"]')
     res['exploreChip'] = chip.count()
     if not chip.count():
@@ -871,6 +977,7 @@ def main():
         out['selectAB'] = select_vertex_labelled(page, "AB")
         out['unglued'] = page.evaluate(MEASURE)
         page.screenshot(path=f"{args.frames}/concept-layer-ab-unglued-{args.width}x{args.height}.png")
+        out['badgeClick'] = badge_click(page)  # C-12a item 5
         # the two halves, as a person makes them: a role pair in the drawing, a word pair in the rows
         point(page, "A", "F5"); point(page, "B", "Φ7")
         word(page, "A", "sustains"); word(page, "B", "descends-from")
@@ -878,6 +985,7 @@ def main():
         point(page, "A", "F7"); point(page, "B", "Φ1"); point(page, "A", "F8"); point(page, "B", "Φ2")
         word(page, "A", "presupposes"); word(page, "B", "specifies"); word(page, "A", "exceeds-in-size"); word(page, "B", "lodges-in")
         out['glued'] = page.evaluate(MEASURE)
+        out['abWords'] = page.evaluate(WORDS_AT_AB)  # C-12a item 6
         page.screenshot(path=f"{args.frames}/concept-layer-ab-glued-{args.width}x{args.height}.png")
         # C-7f item 1 — the foot-anchored plate: the drawing scrolled into view (the plate the designer rules)
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const d = el.querySelector('[data-midpoint-drawing]'); if (d) d.scrollIntoView(); }"); page.wait_for_timeout(300)
@@ -981,6 +1089,7 @@ def main():
         page.screenshot(path=f"{args.frames}/concept-layer-ab-gen2-carried-{args.width}x{args.height}.png")
         out['selectAC2'] = select_vertex_labelled(page, "AC")
         out['gen2AC'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('present', 'lines', 'wordPairs', 'state')}
+        out['genealogy'] = genealogy_arm(page, args)  # C-12a item 3 — ends back on gen 2
         # C-8 — THE BORN ROOM at the gen-2 midpoint ABAC, reached lawfully (AB and AC mapped by pointing above; nothing loaded on a midpoint)
         out['selectGen2Core'] = select_cell(page, r"^cuboctahedron")
         out['selectABAC'] = select_vertex_labelled(page, "ABAC")

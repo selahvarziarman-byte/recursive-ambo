@@ -735,6 +735,10 @@ function WorkspacePanel() {
     <section className="grid gap-4 p-4">
       <WorkspaceTopologyContent />
       <AmboSupportFrontier />
+      {/* C-12a item 3 (§144, Δ95) — THE WAY BACK: the genealogy stood defined and mounted nowhere; a person who dissected twice
+          could not return to gen 1. Every shape of the session, the current one marked; choosing an earlier one makes it current
+          (`selectShape` — measured: it keeps only the selections the chosen shape holds, clears the lift set and the inspection). */}
+      <GenealogyViewer />
     </section>
   );
 }

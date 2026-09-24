@@ -354,11 +354,13 @@ function namingOf(shape: Shape, U: Resolved, V: Resolved, parents: [VertexId, Ve
   const cornerLabel = (tag: SeedTag): string => { const id = cornerOfTag(tag); return shape.vertices[id]?.data.label || id; };
   const parentLabel = (side: 0 | 1): string => shape.vertices[parents[side]]?.data.label || parents[side];
   const displays = (segsByKey: Map<string, NameSeg[]>, sideOf: (key: string) => 0 | 1, isWord: boolean): Map<string, string> => {
-    // a LONE name wears its corner when another lone name in the space is spelled alike under another seed (the glue's
-    // alike rule, the corner in place of the side); a CHAIN wears its corners when a spelling repeats WITHIN it (her rule 2)
-    const lone = new Map<string, Set<SeedTag>>();
-    for (const segs of segsByKey.values()) if (segs.length === 1) (lone.get(segs[0].text) ?? lone.set(segs[0].text, new Set()).get(segs[0].text)!).add(segs[0].tag);
-    const bracketed = (segs: NameSeg[]): boolean => (segs.length > 1 ? new Set(segs.map((s) => s.text)).size < segs.length : (lone.get(segs[0].text)?.size ?? 0) > 1);
+    // a LONE name wears its corner when ANY other name in the space — lone, or a segment of a chain — is spelled alike
+    // under another seed (the glue's alike rule, the corner in place of the side; C-12a item 6: `presupposes [B]` beside
+    // `presupposes ≡ specifies`, which holds A's presupposes — the ≡ rule's bracket, §125.1; a lone-against-lone rule left
+    // the two untold apart); a CHAIN wears its corners when a spelling repeats WITHIN it (her rule 2)
+    const spelled = new Map<string, Set<SeedTag>>();
+    for (const segs of segsByKey.values()) for (const s of segs) (spelled.get(s.text) ?? spelled.set(s.text, new Set()).get(s.text)!).add(s.tag);
+    const bracketed = (segs: NameSeg[]): boolean => (segs.length > 1 ? new Set(segs.map((s) => s.text)).size < segs.length : (spelled.get(segs[0].text)?.size ?? 0) > 1);
     const out = new Map<string, string>();
     for (const [key, segs] of segsByKey) {
       if (segs.length === 0) continue; // nothing to name: the glue's own default stands

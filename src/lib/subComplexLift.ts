@@ -918,6 +918,16 @@ function givenLabelOf(shape: Shape, selection: LiftSelection): string | null {
   return trimmed === '' ? null : trimmed;
 }
 
+// C-12a item 2 — the designation the SUBSTRATE holds for a cell that carries no given name: its kind (the cell's own
+// `topology` when the record holds one, else its `kind`) and its corners' labels in alphabetical order (a cell has no
+// cycle; D14's start is the alphabetically-first corner) — `the tetrahedron A·AB·AC·AD`. Null when the cell is not held.
+export function cellDesignationOf(shape: Shape, cellId: string): string | null {
+  const cell = shape.cells.find((c) => c.id === cellId);
+  if (!cell) return null;
+  const corners = cell.vertexIds.map((v) => shape.vertices[v]?.data.label || v).sort((a, b) => a.localeCompare(b));
+  return `the ${cell.topology ?? cell.kind} ${corners.join('·')}`;
+}
+
 // the one-call façade the stores use: closure → precondition → extraction
 export function liftSubComplex(shape: Shape, selections: LiftSelection[]): LiftedSubShape {
   const closure = downwardClosure(shape, selections);
@@ -936,7 +946,12 @@ export function liftSubComplex(shape: Shape, selections: LiftSelection[]): Lifte
   // the packet holds none, the address remains (the source universe
   // designates name + address openly, and an absence WORD here would be the
   // designer's copy to mint, not this seam's).
-  const designation = selections.length === 1 ? givenLabelOf(shape, selections[0]) ?? label : label;
+  // C-12a item 2 — a CELL with no given name is designated by its KIND and its CORNERS (`the tetrahedron A·AB·AC·AD`),
+  // never by its address: the notice, the shelf and the placed card printed `cell:residue:1u8g0d of …`
+  const designation =
+    selections.length === 1
+      ? givenLabelOf(shape, selections[0]) ?? (selections[0].kind === 'cell' ? cellDesignationOf(shape, selections[0].id) : null) ?? label
+      : label;
   return extractSubShape(shape, closure, label, designation);
 }
 

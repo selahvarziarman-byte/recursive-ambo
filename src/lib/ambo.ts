@@ -188,7 +188,10 @@ function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Sh
 
   return {
     id: shapeId,
-    name: `Ambo Dissection ${parent.name}`,
+    // C-12a item 2 — the universe's name says the dissection ONCE: a parent already named `Ambo Dissection …` keeps its
+    // name (the generation rides `genealogy.generationDepth`, printed beside the name where the shapes are listed);
+    // `Ambo Dissection Ambo Dissection Tetrahedron` was the doubling, measured at the lift from gen 2
+    name: parent.name.startsWith('Ambo Dissection ') ? parent.name : `Ambo Dissection ${parent.name}`,
     seedKey: parent.seedKey,
     vertices,
     edges,

@@ -331,7 +331,9 @@ export function doorReadingOf(A: DoorSide, B: DoorSide, transports: DoorTranspor
     const pairs = ordered.map(({ c, x, y }) => `${roleName(A, c, x)} ↦ ${roleName(B, c, y)} at ${label(A.corners[c])}`);
     const head = ordered.length ? `${roleName(A, ordered[0].c, ordered[0].x)} ↦ ${roleName(B, ordered[0].c, ordered[0].y)}` : '';
     const along = alongWords(A, line, label);
-    const words = ordered.length === 1 ? `yours · a line of one at ${label(A.corners[ordered[0].c])}: ${pairs[0].replace(/ at [^ ]+$/, '')}` : `yours · a whole line along ${along}: ${ordered.map(({ c, x, y }) => `${roleName(A, c, x)} ↦ ${roleName(B, c, y)}`).join(' · ')}`;
+    // C-12a item 1 — each pair on the line NAMES ITS CORNER (`at A F1 ↦ F1 · at AC F1 ↦ F1 · at AB F1 ↦ F1`): three pairs
+    // spelled alike were three corners untold apart
+    const words = ordered.length === 1 ? `yours · a line of one at ${label(A.corners[ordered[0].c])}: ${pairs[0].replace(/ at [^ ]+$/, '')}` : `yours · a whole line along ${along}: ${ordered.map(({ c, x, y }) => `at ${label(A.corners[c])} ${roleName(A, c, x)} ↦ ${roleName(B, c, y)}`).join(' · ')}`;
     return { key: ordered.length ? at(ordered[0].c, ordered[0].x) : at(line.nodes[0][0], line.nodes[0][1]), kind: line.kind, along, head, pairs, words, hand: `withdraw the line ${head}` };
   });
   const stuckA = A.lines.filter((l) => !shapesB.has(l.shape)).flatMap((l) => l.nodes.map(([c, x]) => `${roleName(A, c, x)} at ${label(A.corners[c])}`));
@@ -396,6 +398,7 @@ export function takenWords(A: DoorSide, B: DoorSide, e: RoleMap[], i: number, x:
   const line = p ? A.lines[p.line] : null;
   const head = `${roleName(A, i, x)} ↦ ${roleName(B, i, y)} at ${label(A.corners[i])}`;
   if (!line || line.nodes.length === 1) return `taken — ${head}, a line of one: nothing else rides with it`;
-  const pairs = line.nodes.map(([c, a]) => `${roleName(A, c, a)} ↦ ${roleName(B, c, e[c].get(a) as string)}`);
+  // C-12a item 1 — the taken sentence names each pair's corner likewise
+  const pairs = line.nodes.map(([c, a]) => `at ${label(A.corners[c])} ${roleName(A, c, a)} ↦ ${roleName(B, c, e[c].get(a) as string)}`);
   return `taken — ${head}, and with it the whole line along ${alongWords(A, line, label)}: ${pairs.join(' · ')}`;
 }

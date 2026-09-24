@@ -244,7 +244,8 @@ import {
 // record, the act, the whole-line withdrawal and the words — react-free
 import { actAt, doorReadingOf, refusalWords, sideOf, takenWords, withdrawLine, type DoorSideResult } from './doorTransportModel';
 // C-11b — THE CARGO ON THE WALK: the room as the cargo reads it, from the built record and the carried record
-import { cargoRoomOf } from './cargoModel';
+import { exploreReadOf } from './exploreRead';
+import { DomainHitHull } from './DomainHitHull';
 import type { DoorRowView } from './DoorTransportSection';
 // THE PROBES (2026-07-14): the real scans — the mask, held in a hand. The
 // mask does recurrence; THE HAND does chirality (a face is its own mirror).
@@ -4460,7 +4461,7 @@ export default function ManuscriptView() {
   // the opened room, resolved from the live gate — E³/cone (dim3:) and
   // folded (dim3f:) alike; the shader takes the room's OWN cell surface
   // (faces as portals/walls + the seed's rods)
-  const exploreRoom = useMemo(() => {
+  const exploreRead = useMemo(() => {
     if (!exploreOpen) return null;
     const resolve = (
       title: string,
@@ -4513,26 +4514,31 @@ export default function ManuscriptView() {
       // the heavy flag is the census's own declaration — no cone edges
       // declared ⇒ no heavy rods (never fabricated on a bounded body)
       const coneEdgesDeclared = g.kind !== 'folded' && g.kind !== 'E3' && Boolean(g.coneEdges);
-      try {
-        // ⛔ the note travels SEPARATELY, not glued to the geometry line: the
-        // window appends its own terms (the boundary sentence, the depth) to
-        // the geometry line, and a note carried inside it would land those
-        // terms on the note's line — the disclaimer swallowing the counts.
-        const cellSurface = readCellSurface(domain, coneEdgesDeclared, gate.model);
-        // C-11b — the cargo's room: a BUILT room's record (its seed verbatim, its rows with C-11a's transports) and the
-        // carried record the seed reads (the C-10 reader's, by the seed's own shape id); null on a room with no record
-        const built = builtRecords.find((r) => r.key === domain.key) ?? null;
-        const cargoRoom = built ? cargoRoomOf(built.seed, shelfAncestors.get(built.seed.id) ?? [], built.rows, cellSurface, resolveAbsentLabel) : null;
-        return {
-          title,
-          cellSurface,
-          cargoRoom,
-          deckLine,
-          deckNote: noteLines.length > 0 ? noteLines.join(' · ') : null,
-        };
-      } catch {
-        return null;
-      }
+      // ⛔ the note travels SEPARATELY, not glued to the geometry line: the
+      // window appends its own terms (the boundary sentence, the depth) to
+      // the geometry line, and a note carried inside it would land those
+      // terms on the note's line — the disclaimer swallowing the counts.
+      // C-11b — the cargo's room: a BUILT room's record (its seed verbatim, its rows with C-11a's transports) and the
+      // carried record the seed reads (the C-10 reader's, by the seed's own shape id); null on a room with no record.
+      // C-12a item 7 — the guarded read SAYS its refusal (exploreRead.ts): a throw in the surface read used to return
+      // null here and the window silently did not open; it is now a positive mark in the one grammar, printed at the door
+      const built = builtRecords.find((r) => r.key === domain.key) ?? null;
+      const read = exploreReadOf({
+        domain,
+        coneEdgesDeclared,
+        model: gate.model,
+        built,
+        ancestors: built ? shelfAncestors.get(built.seed.id) ?? [] : [],
+        resolveAbsent: resolveAbsentLabel,
+      });
+      if ('refusal' in read) return { refusal: read.refusal };
+      return {
+        title,
+        cellSurface: read.cellSurface,
+        cargoRoom: read.cargoRoom,
+        deckLine,
+        deckNote: noteLines.length > 0 ? noteLines.join(' · ') : null,
+      };
     };
     if (exploreOpen.startsWith('dim3:')) {
       const k = dim3All.findIndex((m) => `dim3:${m.key}` === exploreOpen);
@@ -4546,6 +4552,9 @@ export default function ManuscriptView() {
     }
     return null;
   }, [exploreOpen, dim3All, apertures, foldedBodies, foldedApertures, builtRecords, shelfAncestors, resolveAbsentLabel]);
+  // C-12a item 7 — the read's two outcomes told apart: the room the window opens on, or the refusal the door prints
+  const exploreRoom = exploreRead && !('refusal' in exploreRead) ? exploreRead : null;
+  const exploreReadRefusal = exploreRead && 'refusal' in exploreRead ? exploreRead.refusal : null;
   const placeableForms = useMemo(() => {
     const out: { id: string; label: string }[] = [];
     written.forEach((w) => out.push({ id: w.form.shape.id, label: w.form.title }));
@@ -6037,6 +6046,8 @@ export default function ManuscriptView() {
           // (C1 measures the drawn bounds by name).
           (window as unknown as { __manuscriptScene?: unknown }).__manuscriptScene = state.scene;
           (window as unknown as { __manuscriptCamera?: unknown }).__manuscriptCamera = state.camera;
+          // C-12a item 8 — the raycaster beside them: a hit test at a point the eye measures, never a guess about what a ray meets
+          (window as unknown as { __manuscriptRaycaster?: unknown }).__manuscriptRaycaster = state.raycaster;
           sceneRef.current = state.scene;
         }}
         onPointerMissed={(event) => {
@@ -6339,6 +6350,8 @@ export default function ManuscriptView() {
                     markColors={d.world.domain.markColors}
                     markRadius={d.world.domain.markRadius}
                   />
+                  {/* C-12a item 8 — the hit hull: a double-click anywhere inside the drawn body reaches this room's group (InkedDomain is frozen) */}
+                  <DomainHitHull shape={model.shape} />
                 </group>
               ) : null}
             </group>,
@@ -7282,8 +7295,9 @@ export default function ManuscriptView() {
         }}
         onExploreToggle={handleExploreDoor}
       />
-      {exploreRefusal ? (
+      {exploreRefusal || exploreReadRefusal ? (
         // RUNG 1 — THE THRESHOLD REFUSAL: fires AT the door, with the reason
+        // (C-12a item 7: or the room's READ refused — the throw the view once swallowed, said here in the one grammar)
         // (the geometry's own census / the declared later rung) — the window
         // NEVER opens on a habitat the transport cannot honestly walk
         <div
@@ -7308,7 +7322,7 @@ export default function ManuscriptView() {
             lineHeight: 1.45,
           }}
         >
-          {exploreRefusal.reason}
+          {exploreRefusal ? exploreRefusal.reason : exploreReadRefusal}
         </div>
       ) : null}
       {exploreOpen && exploreRoom ? (
