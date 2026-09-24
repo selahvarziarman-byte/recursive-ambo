@@ -393,6 +393,18 @@ check('§4 ★★ BOTH OPPOSITE VERTICES AS RECORD, one above and one below, eac
 check('§4 ★★ THE PAIRS ARE LINES ACROSS THE FOLD marked `yours` with `withdraw` (the landed idiom kept): three lines for the three pairs; the three word pairs listed `yours · withdraw`; the sentence `3 role pairs · 3 word pairs — yours`',
   attrsOf(glued, 'data-midpoint-state')[0] === 'glued' && countOf(glued, 'data-midpoint-line') === 3 && attrsOf(glued, 'data-midpoint-line').every((l) => gRec.roles.some(([x, y]) => `${x}↦${y}` === l)) && (glued.match(/· yours · /g) || []).length === 6 && countOf(glued, 'data-midpoint-word-pair') === 3 && textsOf(glued, 'data-midpoint-sentence')[0] === '3 role pairs · 3 word pairs — yours',
   `${countOf(glued, 'data-midpoint-line')} lines · ${textsOf(glued, 'data-midpoint-sentence')[0]}`);
+check('§4 ★★ THE PICK MOVES NOTHING, BY CONSTRUCTION (§149 rider — the mothership\'s ruling on the coder\'s finding: at 1400 × 900 a role pick appended to the sentence line wrapped it and the drawing moved 16 px between the two clicks of one act; a word pick appended to the pairs row could do the same above it): each half\'s pick words live in a line of their own, reserved in EVERY state — the word half\'s under the pairs row, the role half\'s under the sentence line — one line high and never wrapping (`h-4 leading-4 truncate`); the pick spans render ONLY inside them, the sentence line and the pairs row carry none; rendered unglued and glued, both lines stand and are EMPTY (nothing picked) — the picked states are the eye\'s (the leg\'s §12, 0 px at both viewports)',
+  (() => {
+    const src = readLf('src/components/MidpointSurface.tsx');
+    const upToDiv = (key) => { const i = src.indexOf(key); return i < 0 ? '' : src.slice(i, src.indexOf('</div>', i)); };
+    const lineClasses = (html, k) => { const m = new RegExp(`<div data-midpoint-pick-line="${k}" class="([^"]*)"></div>`).exec(html); return m ? m[1].split(/\s+/) : null; };
+    const oneLine = (cls) => !!cls && ['h-4', 'leading-4', 'truncate'].every((c) => cls.includes(c));
+    return J(attrsOf(fresh, 'data-midpoint-pick-line')) === J(['word', 'role']) && J(attrsOf(glued, 'data-midpoint-pick-line')) === J(['word', 'role']) &&
+      ['word', 'role'].every((k) => oneLine(lineClasses(fresh, k)) && oneLine(lineClasses(glued, k))) &&
+      (src.match(/data-midpoint-pick=\{/g) || []).length === 1 && (src.match(/data-midpoint-word-pick=\{/g) || []).length === 1 &&
+      upToDiv('data-midpoint-pick-line="role"').includes('data-midpoint-pick={') && upToDiv('data-midpoint-pick-line="word"').includes('data-midpoint-word-pick={') &&
+      !upToDiv('data-midpoint-sentence="true"').includes('data-midpoint-pick') && !upToDiv('data-midpoint-word-pairs="true"').includes('data-midpoint-word-pick');
+  })(), J({ fresh: attrsOf(fresh, 'data-midpoint-pick-line'), glued: attrsOf(glued, 'data-midpoint-pick-line') }));
 check('§4 ★★ ONLY `both` GETS A GLYPH: in the unfolded layout `from A` and `from B` are stated by position — exactly 4 marks in this cast\'s column and 4 in that cast\'s wear `≡` (the four glued tuples, each drawn where its two witnesses drew it); none in the unglued state',
   attrsOf(glued, 'data-midpoint-both').filter((s) => s === 'A').length === 4 && attrsOf(glued, 'data-midpoint-both').filter((s) => s === 'B').length === 4 && (glued.match(/≡ /g) || []).length >= 8 && countOf(fresh, 'data-midpoint-both') === 0);
 const gAB = sizesAt(S().shapes[ambo.id], packetAB.trace.siteId);

@@ -356,6 +356,18 @@ const waitUp = () =>
           bc.box && /member_status=has/.test(bc.box.badge || '') && J(bc.afterTopEdge) === J(['A|F1']) && J(bc.afterLabel) === J([]) && J(bc.afterCentre) === J(['A|F1']) && J(bc.afterCentreAgain) === J([]), J(bc));
         // MEASURED, PRINTED, NOT PINNED (§149's landing, the leg at cd1fea0): once F1 is picked the badge's box moves DOWN one line at 1400 × 900 and not at 1689 × 897 — the
         // second pick is taken at the badge's new centre; the blocks above the drawing before/after the pick name what grew. Reported to the mothership; its ruling decides the cure.
+        // §149 rider (the mothership's ruling on the coder's finding) — THE PICK MOVES NOTHING: a pick's words enter a line reserved for them,
+        // so nothing below moves between the two clicks of one act; every block of the surface down to the drawing keeps its y and height
+        const sameBlocks = (a, b) => !!(a && b && a.blocks && b.blocks && a.blocks.length === b.blocks.length && a.blocks.every((x, i) => x.y === b.blocks[i].y && x.h === b.blocks[i].h) && a.drawing && b.drawing && a.drawing.y === b.drawing.y);
+        const rl = bc.roleLine || {};
+        check(`§12 [${w}×${h}] ★★ THE PICK MOVES NOTHING (§149 rider — the role pick used to wrap the sentence line at 1400 × 900 and move the drawing 16 px between the two clicks of one act): F1 picked, the badge's box and the partner point's (${(bc.partnerBefore || {}).point}) stand at the same y before and after the pick — 0 px — and every block of the surface down to the drawing keeps its y and height; the pick's words read in the role half's own reserved line (one line, 16 px, whole — not cut), none left in the sentence line`,
+          bc.shiftY === 0 && bc.partnerShiftY === 0 && sameBlocks(bc.blocksBefore, bc.blocksAfterCentre) && rl.present === true && rl.pick === 'A|F1' && rl.inOld === 0 && rl.h === 16 && rl.scrollW <= rl.clientW && /^F1 in [A-D] chosen — now a point in [A-D]$/.test(rl.text || ''),
+          J({ shiftY: bc.shiftY, partnerShiftY: bc.partnerShiftY, partner: bc.partnerBefore, roleLine: rl, blocksBefore: bc.blocksBefore, blocksAfter: bc.blocksAfterCentre }));
+        const wp = out.wordPickShift || {};
+        const wl = wp.line || {};
+        check(`§12 [${w}×${h}] ★★ A WORD PICK MOVES NOTHING EITHER (§149 rider, the same construction in the word half): \`${(wp.word || '').replace(/^A\|/, '')}\` picked in A's row, the first chip of B's row (the word act's second target) at the same y — 0 px — and every block down to the drawing unmoved; the words read in the word half's own reserved line (one line, 16 px, whole), none in the pairs row; the same chip clicked again unpicks`,
+          !!wp.word && wp.chipShiftY === 0 && sameBlocks(wp.blocksBefore, wp.blocksAfter) && wl.present === true && wl.pick === wp.word && wl.inOld === 0 && wl.h === 16 && wl.scrollW <= wl.clientW && / chosen — now a word in [A-D]$/.test(wl.text || '') && wp.restored === true,
+          J({ word: wp.word, chipShiftY: wp.chipShiftY, line: wl, restored: wp.restored, blocksBefore: wp.blocksBefore, blocksAfter: wp.blocksAfter }));
         note(`C-12a item 5, measured further at [${w}×${h}]: the badge's shift on pick ${bc.shiftY} px · blocks before ${J((bc.blocksBefore || {}).blocks)} · drawing ${J((bc.blocksBefore || {}).drawing)} → after ${J((bc.blocksAfterCentre || {}).blocks)} · drawing ${J((bc.blocksAfterCentre || {}).drawing)}`);
         const aw = out.abWords || {};
         const ownDraw = aw.own || '';

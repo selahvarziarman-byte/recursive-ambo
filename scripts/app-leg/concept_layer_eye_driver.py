@@ -670,6 +670,15 @@ INSTRUMENT_CLICKS = """(prefix) => {
 }"""
 
 
+# the vertical boxes of the midpoint surface's top-level blocks down to the drawing (C-12a item 5 measured further; §149 rider's witness)
+SURFACE_BLOCKS = "() => { const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null; const d = s.querySelector('[data-midpoint-drawing]'); const out = []; for (const c of s.children) { const b = c.getBoundingClientRect(); out.push({ tag: c.tagName.toLowerCase(), key: [...c.attributes].filter((a) => a.name.startsWith('data-')).map((a) => a.name + '=' + a.value).slice(0, 2).join(' ') || (c.textContent || '').slice(0, 40), y: Math.round(b.y * 10) / 10, h: Math.round(b.height * 10) / 10 }); if (c === d || c.contains(d)) break; } return { blocks: out, drawing: d ? (() => { const b = d.getBoundingClientRect(); return { y: Math.round(b.y * 10) / 10, h: Math.round(b.height * 10) / 10 }; })() : null }; }"
+# §149 rider — the PARTNER: the first B point's label box in the fold drawing, the target of a role act's second click
+PARTNER_BOX = "() => { const g = document.querySelector('[data-midpoint-drawing] [data-midpoint-side=\"B\"][data-inside-point]'); if (!g) return null; const l = g.querySelector('[data-inside-label]') || g; const r = l.getBoundingClientRect(); return { point: g.getAttribute('data-inside-point'), x: r.x, y: r.y, w: r.width, h: r.height }; }"
+# §149 rider — a half's reserved pick line: its words, its one-line height, whether it cuts them (scroll > client), and whether the
+# line that used to carry the words (the sentence line / the pairs row) still holds a pick span
+PICK_LINE = """(half) => { const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null; const l = s.querySelector(`[data-midpoint-pick-line=\"${half}\"]`); if (!l) return { present: false }; const old = s.querySelector(half === 'role' ? '[data-midpoint-sentence]' : '[data-midpoint-word-pairs]'); const span = l.querySelector(half === 'role' ? '[data-midpoint-pick]' : '[data-midpoint-word-pick]'); const b = l.getBoundingClientRect(); return { present: true, text: l.textContent.trim(), pick: span ? span.getAttribute(half === 'role' ? 'data-midpoint-pick' : 'data-midpoint-word-pick') : null, h: Math.round(b.height * 10) / 10, scrollW: l.scrollWidth, clientW: l.clientWidth, inOld: old ? old.querySelectorAll(half === 'role' ? '[data-midpoint-pick]' : '[data-midpoint-word-pick]').length : null }; }"""
+
+
 def badge_click(page):
     """C-12a item 5 — measured, the premise did not reproduce: a click on the `· has` badge beside F1 picks F1 — on the box's
     top edge (the whitespace between glyphs) and at its centre; the label click unpicks (the pick toggles); the state restored"""
@@ -677,8 +686,8 @@ def badge_click(page):
     BOX = "() => { const g = document.querySelector('[data-midpoint-drawing] [data-midpoint-side=\"A\"][data-inside-point=\"F1\"]'); if (!g) return null; const b = g.querySelector('[data-inside-badge]'); if (!b) return null; const r = b.getBoundingClientRect(); return { badge: b.getAttribute('data-inside-badge'), x: r.x, y: r.y, w: r.width, h: r.height }; }"
     box = page.evaluate(BOX)
     # the vertical boxes of the surface's top-level blocks down to the drawing — measured before and after the first pick: what GROWS is the mechanism of a shift
-    BLOCKS = "() => { const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null; const d = s.querySelector('[data-midpoint-drawing]'); const out = []; for (const c of s.children) { const b = c.getBoundingClientRect(); out.push({ tag: c.tagName.toLowerCase(), key: [...c.attributes].filter((a) => a.name.startsWith('data-')).map((a) => a.name + '=' + a.value).slice(0, 2).join(' ') || (c.textContent || '').slice(0, 40), y: Math.round(b.y * 10) / 10, h: Math.round(b.height * 10) / 10 }); if (c === d || c.contains(d)) break; } return { blocks: out, drawing: d ? (() => { const b = d.getBoundingClientRect(); return { y: Math.round(b.y * 10) / 10, h: Math.round(b.height * 10) / 10 }; })() : null }; }"
-    res = {'box': box, 'blocksBefore': page.evaluate(BLOCKS)}
+    BLOCKS = SURFACE_BLOCKS
+    res = {'box': box, 'blocksBefore': page.evaluate(BLOCKS), 'partnerBefore': page.evaluate(PARTNER_BOX)}
     if not box:
         return res
     page.mouse.click(box['x'] + box['w'] * 0.7, box['y'] + 1.5); page.wait_for_timeout(300)
@@ -689,6 +698,10 @@ def badge_click(page):
     res['afterCentre'] = page.evaluate(PICKED)
     res['boxAfterCentre'] = page.evaluate(BOX)  # the badge's box once F1 is picked — MEASURED: at 1400×900 it moves down one line (y +16), at 1689×897 it does not
     res['blocksAfterCentre'] = page.evaluate(BLOCKS)
+    res['partnerAfterPick'] = page.evaluate(PARTNER_BOX)  # §149 rider — the second target, with F1 picked
+    res['roleLine'] = page.evaluate(PICK_LINE, 'role')
+    if res.get('partnerBefore') and res.get('partnerAfterPick'):
+        res['partnerShiftY'] = round(res['partnerAfterPick']['y'] - res['partnerBefore']['y'], 1)
     b2 = res['boxAfterCentre'] or box
     res['shiftY'] = round(b2['y'] - box['y'], 1)
     # two PICKS, never one double-click (700 ms past the platform's interval); the second pick at the badge's NEW centre — a person
@@ -696,6 +709,26 @@ def badge_click(page):
     page.wait_for_timeout(700)
     page.mouse.click(b2['x'] + b2['w'] / 2, b2['y'] + b2['h'] / 2); page.wait_for_timeout(300)
     res['afterCentreAgain'] = page.evaluate(PICKED)
+    return res
+
+
+def word_pick_shift(page):
+    """§149 rider — a WORD pick moves nothing either: the first untranslated word of A's row picked; the first chip of B's row (the
+    word act's second target) and the surface's blocks down to the drawing measured before and after; the pick's words read in the
+    word half's own reserved line, never in the pairs row; the same chip clicked again (past the double-click interval) unpicks"""
+    CHIP_B = "() => { const c = document.querySelector('[data-midpoint-words=\"B\"] [data-midpoint-word]'); if (!c) return null; const r = c.getBoundingClientRect(); return { word: c.getAttribute('data-midpoint-word'), x: r.x, y: r.y, w: r.width, h: r.height }; }"
+    chip = page.locator('[data-midpoint-words="A"] [data-midpoint-word]:not([data-midpoint-word-translated])').first
+    res = {'word': chip.get_attribute('data-midpoint-word') if chip.count() else None}
+    if not res['word']:
+        return res
+    res['blocksBefore'] = page.evaluate(SURFACE_BLOCKS); res['chipBefore'] = page.evaluate(CHIP_B)
+    chip.click(); page.wait_for_timeout(300)
+    res['blocksAfter'] = page.evaluate(SURFACE_BLOCKS); res['chipAfter'] = page.evaluate(CHIP_B); res['line'] = page.evaluate(PICK_LINE, 'word')
+    if res['chipBefore'] and res['chipAfter']:
+        res['chipShiftY'] = round(res['chipAfter']['y'] - res['chipBefore']['y'], 1)
+    page.wait_for_timeout(700)
+    chip.click(); page.wait_for_timeout(300)
+    res['restored'] = page.evaluate("() => document.querySelectorAll('[data-midpoint-word-pick]').length") == 0
     return res
 
 
@@ -1136,6 +1169,7 @@ def main():
         out['unglued'] = page.evaluate(MEASURE)
         page.screenshot(path=f"{args.frames}/concept-layer-ab-unglued-{args.width}x{args.height}.png")
         out['badgeClick'] = badge_click(page)  # C-12a item 5
+        out['wordPickShift'] = word_pick_shift(page)  # §149 rider — a word pick moves nothing either
         # the two halves, as a person makes them: a role pair in the drawing, a word pair in the rows
         point(page, "A", "F5"); point(page, "B", "Φ7")
         word(page, "A", "sustains"); word(page, "B", "descends-from")

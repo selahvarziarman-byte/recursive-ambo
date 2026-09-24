@@ -586,7 +586,13 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                 <button type="button" data-midpoint-withdraw={`word|${s}|${t}`} className="underline" onClick={() => withdrawWordPair(edgeId, s, t)}>withdraw</button>
               </span>
             )) : <span className="text-stone-400">no word translated — every word foreign to the other side, alike spellings included</span>}
-            {wordPick ? <span data-midpoint-word-pick={`${wordPick.side}|${wordPick.word}`} className="text-amber-200">{`${wordPick.word} in ${wordPick.side === 'A' ? la : lb} chosen — now a word in ${wordPick.side === 'A' ? lb : la}`}</span> : null}
+          </div>
+          {/* §149 rider — THE PICK MOVES NOTHING (the mothership's ruling): a pick's words never enter a line that can wrap. Appended
+              to the pairs row they could wrap it at 1400 px and move everything below between the two clicks of one act; the word
+              half's pick words live in this line of their own, reserved in every state, one line high, never wrapping (cut with an
+              ellipsis only on a panel narrower than the words — measured whole at both viewports) */}
+          <div data-midpoint-pick-line="word" className="h-4 truncate leading-4 text-amber-200">
+            {wordPick ? <span data-midpoint-word-pick={`${wordPick.side}|${wordPick.word}`}>{`${wordPick.word} in ${wordPick.side === 'A' ? la : lb} chosen — now a word in ${wordPick.side === 'A' ? lb : la}`}</span> : null}
           </div>
         </div>
         {refusal && refusal.act.kind === 'word' ? refusalBox : null}
@@ -601,7 +607,11 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                 ? `${la}'s ${composed.roles.length} roles and ${composed.words.length} words carried into ${lb} as one — composed, not yours (their points hollow) · a corner edge holds no born room: nothing here is yours to pair`
                 : `corner ${cornersAll}'s ${composed.roles.length} roles and ${composed.words.length} words stand on both sides as one — composed, not yours (their points hollow) · the born room: ${bornRoom.a} roles of ${la} and ${bornRoom.b} of ${lb} stand apart${roles.length || types.length ? ` · ${roles.length} ${roles.length === 1 ? 'role pair' : 'role pairs'} · ${types.length} ${types.length === 1 ? 'word pair' : 'word pairs'} — yours, born here` : ' · no pair of yours yet'}`
             : `the record on this edge contradicts itself${kind === 'medial' ? ' under the identity the solid fixed' : ''} — a pair given before this surface; withdraw a half`}
-        {pick ? <span data-midpoint-pick={`${pick.side}|${pick.role}`} className="ml-2 text-amber-200">{`${pick.side === 'A' ? nA(pick.role) : nB(pick.role)} in ${pick.side === 'A' ? la : lb} chosen — now a point in ${pick.side === 'A' ? lb : la}`}</span> : null}
+      </div>
+      {/* §149 rider — the role half's pick words in their own reserved line, one line high, never wrapping: appended to the sentence
+          line they wrapped it at 1400 × 900 and the drawing moved 16 px under the person's cursor between the two clicks of one act */}
+      <div data-midpoint-pick-line="role" className="my-1 h-4 truncate leading-4 text-amber-200">
+        {pick ? <span data-midpoint-pick={`${pick.side}|${pick.role}`}>{`${pick.side === 'A' ? nA(pick.role) : nB(pick.role)} in ${pick.side === 'A' ? la : lb} chosen — now a point in ${pick.side === 'A' ? lb : la}`}</span> : null}
       </div>
       {/* C-8 item 5 — THE TRACE carries the record's HOME and the SITE: the edge that holds the record, its kind and generation; where the person stands */}
       <div data-midpoint-home={`${kind}|${edgeGen}|${siteGen}`} className="my-1 text-stone-400">
