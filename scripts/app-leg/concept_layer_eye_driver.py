@@ -716,6 +716,12 @@ def genealogy_arm(page, args):
     g1.first.click(); page.wait_for_timeout(500)
     res['rowsAtG1'] = page.evaluate(ROWS)
     res['cellRowsAtG1'] = cell_rows(page).count()  # the workspace tree lists the CURRENT shape's cells: gen 1 = 4 residues + 1 core
+    # §148 ruling 3 at the eye: gen 1's core dissected AGAIN returns the EXISTING gen 2 (no fourth row; its acts intact — the
+    # arms that follow read them)
+    select_core(page)
+    page.get_by_role("button", name=re.compile("^Apply Ambo Dissection$")).first.click(); page.wait_for_timeout(1200)
+    tab(page, "workspace")
+    res['rowsAfterRedissect'] = page.evaluate(ROWS)
     g2 = page.get_by_role("button", name=re.compile(r"^Ambo Dissection Tetrahedron\s*g2\b"))
     res['g2Buttons'] = g2.count()
     if g2.count():

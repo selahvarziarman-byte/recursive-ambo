@@ -488,6 +488,16 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     }
 
     const nextShape = operation.execute(context);
+    // §148 ruling 3 (2026-09-24, after C-12a's measurement) — THE EXISTING CHILD IS MADE CURRENT, NEVER RE-DERIVED. The
+    // child's id indexes the act (the parent AND the dissected cell ride the mint's hashed argument — ambo.ts); when the
+    // act's result is already held, the person returns to it. Re-deriving it from the parent's records alone DROPPED every
+    // act the person had given at the child (measured: a born pair 1 → 0, with no mark — the data-loss class), and before
+    // the mint change a DIFFERENT cell of the same parent minted the same id and overwrote the first child. Nothing is
+    // stored, nothing enters the history; the derivation above is discarded.
+    if (shapes[nextShape.id]) {
+      get().selectShape(nextShape.id);
+      return;
+    }
     const nextShapeOrder = shapeOrder.includes(nextShape.id)
       ? shapeOrder
       : [...shapeOrder, nextShape.id];

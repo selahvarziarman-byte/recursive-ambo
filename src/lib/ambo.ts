@@ -88,7 +88,12 @@ function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Sh
   const { cell: sourceCell } = topology;
   const generationDepth = sourceCell.generationDepth + 1;
   const shapeGenerationDepth = Math.max(parent.genealogy.generationDepth, generationDepth);
-  const shapeId = makeShapeId(parent.id, 'ambo-dissection', shapeGenerationDepth);
+  // §148 ruling 3 (2026-09-24) — THE ID INDEXES THE ACT: parent AND cell. The frozen mint hashes its first argument whole
+  // with the operation and the depth; hashed on the parent alone, two different cells of one parent minted ONE id and the
+  // second child silently overwrote the first in the session (measured: gen 1's core and its residue at A both minted
+  // `…:2:czpwku`). The parent's id and the dissected cell's id ride the hashed argument together; the id's form is the
+  // mint's own, the genealogy still names the parent by itself.
+  const shapeId = makeShapeId(`${parent.id}/${sourceCell.id}`, 'ambo-dissection', shapeGenerationDepth);
   const parentCellId = makeCellId(shapeId, 'parent', sourceCell.id, sourceCell.vertexIds);
   const midpointIds = new Map<string, VertexId>();
   const vertices = cloneParentVertices(parent.vertices);

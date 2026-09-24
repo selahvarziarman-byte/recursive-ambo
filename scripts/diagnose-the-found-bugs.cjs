@@ -130,19 +130,31 @@ S().selectShape('shape:nope');
 check('§2 ★ A SELECTION THE SHAPE HOLDS SURVIVES; AN UNKNOWN ID MOVES NOTHING: gen 1\'s residue selected, `selectShape(gen 1)` again keeps it; `selectShape(\'shape:nope\')` leaves gen 1 current',
   heldInG1 !== null && S().selectedCellId === heldInG1 && S().currentShapeId === G1id, J({ heldInG1, after: S().selectedCellId, current: S().currentShapeId }));
 const orderBefore = [...S().shapeOrder];
-const gen2Object = S().shapes[G2id]; // the object gen 2 IS before the re-mint
-const redoBefore = S().redoOperationHistory.length;
+const gen2Object = S().shapes[G2id]; // the object gen 2 IS — the same act must return it, not re-derive it
+const historyBefore = S().historySequence;
 S().selectCell(coreOf().id);
 let threw = null;
 try { S().applyAmboDissectionToCurrent(); } catch (e) { threw = e.message; }
-const branch = cur();
+const back2 = cur();
 const orderAfter = [...S().shapeOrder];
-const redoAfter = S().redoOperationHistory.length;
-note(`the branch from gen 1: order before ${J(orderBefore.map((id) => id.split(':').slice(1, 3).join(':')))} → after ${J(orderAfter.map((id) => id.split(':').slice(1, 3).join(':')))} · redo branch ${redoBefore} → ${redoAfter} · shapes held ${Object.keys(S().shapes).length}`);
+note(`the same dissection after the way back: order before ${J(orderBefore.map((id) => id.split(':').slice(1, 3).join(':')))} → after ${J(orderAfter.map((id) => id.split(':').slice(1, 3).join(':')))} · history ${historyBefore} → ${S().historySequence} · shapes held ${Object.keys(S().shapes).length}`);
+check('§2 ★★ THE EXISTING CHILD IS MADE CURRENT, NEVER RE-DERIVED (§148 ruling 3): gen 1\'s core dissected again after the way back returns gen 2 ITSELF — the same id AND the same object, no throw, nothing minted, no history entry, the order and the count of shapes unchanged, gen 3 still held',
+  threw === null && back2.id === G2id && back2 === gen2Object && J(orderAfter) === J(orderBefore) && S().historySequence === historyBefore && Object.keys(S().shapes).length === 4 && Boolean(S().shapes[G3id]) && S().currentShapeId === G2id,
+  J({ threw, sameId: back2.id === G2id, sameObject: back2 === gen2Object, history: [historyBefore, S().historySequence], order: orderAfter.length, current: S().currentShapeId === G2id }));
+// the sibling act: a DIFFERENT cell of gen 1 dissected — a different child, both held (the id indexes parent AND cell)
+S().selectShape(G1id);
+const g1Core = coreOf();
+const g1ResidueA = residueAt('A');
+S().selectCell(g1ResidueA.id);
+S().applyAmboDissectionToCurrent();
+const sibling = cur();
+// a child's `parent` cell is the marker of the cell it dissected — the same vertex set (the generation's parentCellIds name that marker, never the source cell)
+const sameSet = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+const dissected = (child, source) => child.cells.some((c) => c.kind === 'parent' && sameSet(c.vertexIds, source.vertexIds));
+check('§2 ★★ A DIFFERENT CELL OF THE SAME PARENT MINTS A DIFFERENT CHILD (§148 ruling 3\'s reason, measured further): gen 1\'s residue at A dissected — its child is NOT gen 2 (the mint hashed on the parent alone minted ONE id for every cell of gen 1 and the second child overwrote the first); both children held, each marking the cell it dissected as its `parent` cell (the same corners); gen 2 still the core\'s child, the same object as before',
+  sibling.id !== G2id && sibling.genealogy.parentShapeId === G1id && Boolean(S().shapes[G2id]) && S().shapes[G2id] === gen2Object && dissected(sibling, g1ResidueA) && dissected(S().shapes[G2id], g1Core) && !dissected(sibling, g1Core) && Object.keys(S().shapes).length === 5,
+  J({ siblingDistinct: sibling.id !== G2id, gen2Held: Boolean(S().shapes[G2id]), gen2Same: S().shapes[G2id] === gen2Object, siblingMarksResidue: dissected(sibling, g1ResidueA), gen2MarksCore: dissected(S().shapes[G2id], g1Core), shapes: Object.keys(S().shapes).length }));
 S().selectShape(G2id);
-check('§2 ★★ A DISSECTION AFTER THE WAY BACK RE-MINTS THE CHILD (measured, not ruled): gen 1\'s core dissected again mints THE SAME shape id as gen 2 (the id indexes the act — the same cell of the same parent), a NEW object under it, its parent gen 1; no throw; the order and the count of shapes unchanged; gen 3 still held; gen 2 made current again',
-  threw === null && branch.id === G2id && branch !== gen2Object && branch.genealogy.parentShapeId === G1id && J(orderAfter) === J(orderBefore) && Object.keys(S().shapes).length === 4 && Boolean(S().shapes[G3id]) && S().currentShapeId === G2id,
-  J({ threw, sameId: branch.id === G2id, newObject: branch !== gen2Object, parent: branch.genealogy.parentShapeId === G1id, order: orderAfter.length, current: S().currentShapeId === G2id }));
 
 // ─── §3 item 6 — THE LONE WORD'S BRACKET AGAINST A CHAIN'S SEGMENT ────────────────────────────────────────────────────────
 console.log('§3 — the lone word wears its corner beside a chain spelled alike');
@@ -202,9 +214,9 @@ S().applyAmboDissectionToCurrent();
 const remade = cur();
 const gen2RecordAfter = bornAtGen2 ? recordOn(remade, bornAtGen2.edge) : null;
 const gen1Carried = recordOn(remade, edgeBetween(remade.edges, byLabel(remade, 'A'), byLabel(remade, 'B')).id);
-note(`the way back then the same dissection: gen 2 ${remade.id === H2id ? 're-minted under its own id' : 'a new id'} · the born pair given at gen 2 (${bornAtGen2 && bornAtGen2.pair}) before ${gen2RecordBefore} → after ${gen2RecordAfter} · gen 1's pairs on A–B carried ${gen1Carried}`);
-check('§3 ★ MEASURED, REPORTED, NOT CURED (beyond item 3): after the way back, the same dissection re-mints gen 2 from gen 1\'s records ALONE — the born pair the person gave at gen 2 is DROPPED (1 → 0) while gen 1\'s three pairs on A–B carry; `selectShape` is safe, the re-mint is not silent-safe — the mothership holds the question (the same act on the same cell: return the child that exists, or re-derive it)',
-  bornAtGen2 !== null && remade.id === H2id && gen2RecordBefore === 1 && gen2RecordAfter === 0 && gen1Carried === 3,
+note(`the way back then the same dissection: gen 2 ${remade.id === H2id ? 'returned under its own id' : 'a new id'} · the born pair given at gen 2 (${bornAtGen2 && bornAtGen2.pair}) before ${gen2RecordBefore} → after ${gen2RecordAfter} · gen 1's pairs on A–B carried ${gen1Carried}`);
+check('§3 ★★ THE BORN PAIR STANDS (§148 ruling 3, the witness the ruling asked for): a born pair given at gen 2, the way back to gen 1, the same cell dissected again — gen 2 returned as it was, the pair standing 1 → 1 (it was dropped 1 → 0 before the cure), gen 1\'s three pairs on A–B as before',
+  bornAtGen2 !== null && remade.id === H2id && gen2RecordBefore === 1 && gen2RecordAfter === 1 && gen1Carried === 3,
   J({ born: bornAtGen2, before: gen2RecordBefore, after: gen2RecordAfter, gen1: gen1Carried, sameId: remade.id === H2id }));
 
 // ─── §4 item 7 — THE EXPLORE ROOM'S READ SAYS ITS REFUSAL ────────────────────────────────────────────────────────────────
