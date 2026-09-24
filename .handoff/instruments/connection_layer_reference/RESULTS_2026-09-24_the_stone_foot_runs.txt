@@ -1,0 +1,13 @@
+the_stone_foot_runs.py — run 2026-09-24 19:32:07 +0330 · HEAD 6cea4a1 · Python 3.12.10 · stdlib
+
+THE STONE — M⁺ on the first face (F = flow · T = t-cell · Φ = phi), 42 hand triples; the foot of Φ on F–T
+ R1  distinct feet per J_FT (7 pairings, 6 triples each): [6, 6, 6, 6, 6, 6, 6]   (sealed > 1) · CONTROL same triple twice: 0 differences (sealed 0)
+ R2  non-loop links = |MOV|: failures 0   (sealed 0) · M⁺ adds no point and J_FT is untouched: structural (links are marks, never merges)
+     CONTROL flat (the route re-set to agree with J_FT): non-loop links 0   (sealed 0)
+ R3  (a) corner-FIX role with a non-loop link: 0 · (b) corner-MOV return not a non-loop link at J_FT(f): 0 · (c) non-loop < corner-MOV: 0   (sealed 0, 0, 0)
+     EXCESS (non-loop links where the corner reads UND): on 40 of 42 triples, 77 roles in all   (sealed > 0 — KILL if 0)
+     CONTROL total flat (1,000 random): non-loop links 0   (sealed 0)
+     over the 42 × 14 flow roles: {'UND': 497, 'PRO': 46, 'DIS': 39, 'FIX': 6} (DIS = disagreement, PRO = proposal)
+     per triple (non-loop, corner-MOV, excess): [((0, 0, 0), 1), ((1, 0, 1), 1), ((1, 1, 1), 7), ((2, 1, 2), 6), ((2, 2, 0), 1), ((2, 2, 2), 15), ((3, 2, 1), 1), ((3, 2, 2), 1), ((3, 3, 1), 1), ((3, 3, 2), 1), ((3, 3, 3), 7)]
+ R4  corner triangle A·M_AB·M_CA, non-loop links on its three sides over the 42: 0   (sealed 0 — KILL)
+     medial triangle non-loop ⇔ gen-0 face non-loop, disagreements: 0   (sealed 0 — KILL) · non-loop links: medial 573 · gen-0 307

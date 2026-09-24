@@ -1,16 +1,22 @@
-# THE BUILD — the letter consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). One letter, the mothership's §135 — `STAMP C-11b`, THE CARGO ON THE WALK, after `C-11a` — the last build of the race (1521). The §133 letter (`STAMP C-11a`) entered the record with C-11a's landing, a2d44e1.
+# THE BUILD — the letter consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). One letter, the mothership's §144 — Δ95, NOT at the finish: `STAMP C-12a`, THE FOUND BUGS, ONE CUT (1938). The §135 letter (`STAMP C-11b`) entered the record with C-11b's landing, 6cea4a1.
 
 ---
 
-## `2026-09-24_1521_mothership_s135_STAMP-C-11b-THE-CARGO-ON-THE-WALK-after-C-11a.md`
+## `2026-09-24_1938_mothership_s144_Delta95_NOT-at-the-finish_STAMP-C-12a-the-found-bugs-one-cut.md`
 
 to: the coder (the order seat)
 from: the mothership (sixth)
-clock: `2026-09-24 15:21 +0330` · HEAD == origin == `67eb506`
-re: **§135 — `STAMP C-11b` — THE CARGO ON THE WALK — after `C-11a`.** The last build of the race. Race rule 1 (item 0, proceed; STOP only on a frozen file, a meaning question, a falsified premise).
-**Ground:** ruling §23 (ratified §132) + §24 (ratified §134, option A). **Surface:** the designer's §131 (her `1500` §2 + `1508` amendment, my naming precision) and §135 (her `1520`) — read them in `.handoff/inbox/mothership/archive/`.
-1. **The cargo = a role at a corner** `(v, r)`, picked at the walk's entrance from the entry corner's roles (caster's order). It lives as a fourth field on `ExploreSeam` (your `1511` §3).
-2. **At a door crossing** (`{pair, side}`): the door's transport `e` (from `C-11a`'s row) applies at ALL the door face's corners — the cargo at corner `c` crosses by `e_c` (side `b` = `e⁻¹`) or is lost (`did not return`, at that door). **A cargo at a corner NOT on the exit face stays behind** — `carrying nothing — F7 stayed at A …`.
-3. **Inside a cell, ONLY the person moves it:** the cargo line lists the rods from its corner as buttons; one press composes that rod's `J` from the carried record (the C-10 reader) — arrives, or `broke at the rod A–B: its J does not carry F7` with `here, on A–B: withdraw this step`. **No rule computes an in-cell route** (refused, ruling §24).
-4. **The readings, one line beside trace · tally · sentence:** home `Fix · Mov · Und` in the face block's words; **a spur told from a residue by the REDUCED word, printed**; away, identity AND presence by the route printed — **presence never worded as curvature; never two routes side by side.** The walk's record gains the rod steps beside the door letters.
-**Witness:** `cargo_in_the_room.py` is the reference (the prism, two faces, the door) — reproduce K1–K7's shapes on the build (curvature through the door > 0, presence route-dependent > 0, identity route-dependent > 0, a spur moves nothing, the T³ and total-flat controls silent) — plus the rod clauses (a rod the `J` carries moves the cargo by exactly that `J`; a rod it does not carries nothing, withdrawable). **Eye leg arm** at 1689 × 897: build the room from a lifted form, give the door's transport, enter carrying a role, cross, step along a rod, come home, read the line. **Acceptance:** those clauses · sweep OK · tsc 0 · no frozen file. **Ring me when filed — this is the finish line's last build; Arman's STEP-3 walk follows.**
+clock: `2026-09-24 19:38 +0330` · HEAD == origin == `4332af2`
+re: **Δ95 — Arman: *"no i want the stone re-build before the final use. also i want the bugs you have already find addressed. we are not still at the finish line."* ⇒ `STAMP C-12a` — THE FOUND BUGS, ONE CUT — now. `C-12b` (the stone) follows when its ground and surface land.** Race discipline stands (§138): to the acceptance, findings parked in one line; STOP only on a frozen file, a meaning question, a falsified premise.
+
+**Measure each first (item 0), then cure:**
+1. **The door's taken line names no corner** — `yours · a whole line along A→AC→AB→A: F1 ↦ F1 · F1 ↦ F1 · F1 ↦ F1` ⇒ each pair names its corner: `at A F1 ↦ F1 · at AC F1 ↦ F1 · at AB F1 ↦ F1` (the taken sentence likewise).
+2. **A cell named by its id** in the lift notice and the shelf (`cell:residue:1u8g0d of …`) ⇒ by its kind and corners (`the tetrahedron A·AB·AC·AD of …`); and the universe name that doubles when lifted from gen 2 (`Ambo Dissection Ambo Dissection Tetrahedron`) ⇒ once.
+3. **No way back to an earlier shape** — `GenealogyViewer` (Panels.tsx) is defined and mounted nowhere ⇒ mount it where the person reaches it (the workspace tab); selecting an earlier shape makes it current. Measure that the store's `selectShape` is safe first; if it is not, STOP and say why.
+4. **A gen-2 corner cell cannot be glued into a room** (`level3LinkExtractor: edge … lies on 0 faces of cell …` — the cell's record names its coarse face, the lifted shape holds the finer ones) ⇒ cure where the link is extracted; if that touches a frozen file, STOP and name it.
+5. **The unary `· has` badge beside a role** does not pick the role ⇒ a click anywhere on the role's label picks it.
+6. **`presupposes ≡ specifies` and a plain `presupposes`** in one word row, untold apart ⇒ the lone one wears its corner (`presupposes [B]`) — the ≡ rule's bracket (§125.1).
+7. **The explore room's guarded read returns null SILENTLY on a throw** ⇒ say it where the room is read (a positive mark for a refusal, in the one grammar).
+8. **A room is hard to select on the sheet** (a double-click on its visible body can miss — your driver needed up to 13 tries; so did I) ⇒ the pick takes the room wherever its drawn body is hit.
+
+**Acceptance:** each cured, each with a witness clause or eye-leg arm; the eye leg ALL PASS; sweep OK; tsc 0; no frozen file (else STOP). **Ring me when filed.** W1: the sovereign ledger (Δ95) and the claims ledger (§144).

@@ -373,3 +373,6 @@ Every charter, ruling, and sequencing decision I write is walked against this le
 
 **Δ92 — BEWARE DRIFT AND CYCLES OF MINUTIAE (2026-09-24, heard 17:49 +03:30 in-terminal; ⛔ entered LATE at 19:33 — filed then only in the claims ledger §138, found missing here on the coder's courier report).** ✔ VERBATIM: *"the coder is building but i want you to be weary of drift and cycles of minutiae."*
 ⇒ **READ:** the race freeze (§138) — one last build, ratified on its acceptance alone; findings parked in one line.
+
+**Δ95 — THE STONE IS BUILT BEFORE THE FINAL USE; THE FOUND BUGS ARE FIXED; NOT YET AT THE FINISH (2026-09-24, entered 19:38 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"no i want the stone re-build before the final use. also i want the bugs you have already find addressed. we are not still at the finish line. good work by the hermeneutics."*
+⇒ **READ: the finish line MOVES** — it is now the engine with M⁺ (the foot) built and the found defects cured; §142's "finished" is withdrawn to "three steps met". Then his use.

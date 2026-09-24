@@ -152,6 +152,7 @@ scripts/.sweep-times.json
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-24_cargo_between_doors.txt
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-24_cargo_in_the_room.txt
 !.handoff/instruments/connection_layer_reference/RESULTS_2026-09-24_cargo_in_the_room_run1_K2-K4-fired.txt
+!.handoff/instruments/connection_layer_reference/RESULTS_2026-09-24_the_stone_foot_runs.txt
 !.handoff/instruments/connection_layer_reference/amalgam_pushout_flow_phi.py
 !.handoff/instruments/connection_layer_reference/angle_cannot_see_the_foot.py
 !.handoff/instruments/connection_layer_reference/bianchi_for_partial_identifications.py
@@ -181,6 +182,8 @@ scripts/.sweep-times.json
 !.handoff/instruments/connection_layer_reference/six_distinct.py
 !.handoff/instruments/connection_layer_reference/space_of_resolver.py
 !.handoff/instruments/connection_layer_reference/t_cell_derived_check.py
+!.handoff/instruments/connection_layer_reference/the_stone_fifth_run.py
+!.handoff/instruments/connection_layer_reference/the_stone_foot_runs.py
 !.handoff/instruments/connection_layer_reference/thin_cast_readings.py
 !.handoff/instruments/connection_layer_reference/triangulated_midpoint.py
 !.handoff/instruments/noncommutativity_probe/
