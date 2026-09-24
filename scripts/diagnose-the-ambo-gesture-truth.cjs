@@ -59,26 +59,30 @@ check('§1 …and the identified pair, whose plain click and shift-click both RE
     (edgeSlice.match(/setEdgeNotice\('an identified pair — cannot be lifted'\);/g) ?? []).length === 2);
 check('§1 the edge row is still a control (it acts on a plain click): `cursor-pointer` stays', edgeSlice.includes('className={`cursor-pointer rounded border px-2 py-1 text-xs text-stone-400 ${'));
 
-// ── the face row: a control that cannot act must not appear as one ──
+// ── the face row: a control now — its act has a meaning (C-10b, §131 item 2: the face's reading mounts at its home) ──
 const faceSlice = panels.slice(panels.indexOf('<SelectionSubsection title="Cell Faces"'), panels.indexOf('</SelectionSubsection>', panels.indexOf('<SelectionSubsection title="Cell Faces"')));
-check('§1 ★ THE FACE ROW takes `cursor-default` — its onClick acts ONLY under shift (a plain click does nothing, measured LAW 24), so the pointer cursor is taken, not a select-face act invented',
-  faceSlice.includes('className={`cursor-default rounded border px-3 py-2 text-sm ${') && !faceSlice.includes('cursor-pointer') &&
-    faceSlice.includes("                if (event.shiftKey) toggleLiftSelection({ kind: 'face', id: row.face.id });\n") &&
-    faceSlice.includes('title="shift-click: toggle in the lift region"'));
-check('§1 ⛔ NO select-face act was invented: `selectFace` does not appear in the Ambo (Panels · Workspace3D) — it exists only in the Playground store',
-  !panels.includes('selectFace') && !workspace.includes('selectFace'));
+check('§1 ★ THE FACE ROW IS A CONTROL NOW (C-10b superseding C-6a\'s "no select-face act": the act has its meaning — the face\'s reading mounts at its home): `cursor-pointer`, a plain click calls `selectFace(row.face.id)`, shift-click toggles the lift set, and the tooltip says both — `click: read the face · shift-click: toggle in the lift region`',
+  faceSlice.includes('className={`cursor-pointer rounded border px-3 py-2 text-sm ${') && !faceSlice.includes('cursor-default') &&
+    faceSlice.includes("                selectFace(row.face.id);\n") && faceSlice.includes("                  toggleLiftSelection({ kind: 'face', id: row.face.id });\n") &&
+    faceSlice.includes('title="click: read the face · shift-click: toggle in the lift region"'));
+const store = readLf('src/store/geometryStore.ts');
+check('§1 ★ THE ONE select-face act is NAMED, with its meaning and its home: the store\'s `selectFace` (keeps the cell, clears vertex and edge — the edge\'s own rule), called from the face row (Panels) and from the solid\'s plain click on the face you hit (Workspace3D); the selection panel mounts `SelectedFaceReading` at `selection-face-home` when a face is selected',
+  store.includes('  selectFace: (faceId) => {') && panels.includes('selectFace(row.face.id);') && workspace.includes('if (hitFace) selectFace(hitFace.id);') &&
+    panels.includes('<SidebarSection id="selection-face-home" title="Selected Face" defaultOpen resetKey={selectedFace.id}>') && panels.includes('<SelectedFaceReading shape={shape} faceId={selectedFace.id} />'));
 
 // ── boundaries ──
 check('§1 formatHoverStatus\'s CONTENT branches say what is under the pointer — the identification, clean (C-6b: no branch begins with `Hovering `; the ordinary is not marked)',
   ['`cell ${label} | ${cellSummary} | id: ${cell.id}`', '`vertex ${label} | id: ${target.vertexId}`',
-   '`edge ${endpoints} | ${relation} | id: ${edge.id}`', '`face ${label} | ${relation} | id: ${face.id}`'].every((s) => workspace.includes(s)) &&
+   '`edge ${endpoints} | ${relation} | id: ${edge.id}`', '`face ${label} · ${name}`', '`face ${name}`'].every((s) => workspace.includes(s)) &&
+    // C-10b (§131 item 3, the designer's blocker): the FACE branch names the face by D14 — never `kind … | id: face:…` (the id keeps its home in Technical IDs)
+    !workspace.includes('`face ${label} | ${relation} | id: ${face.id}`') && !workspace.includes('`face ${relation} | id: ${face.id}`') && workspace.includes('const name = faceDisplayName(shape, face);') &&
     !/return\s+`Hovering |return\s+'Hovering /.test(workspace) && !workspace.includes('Hovering '));
 check('§1 ★ THE BARE CELL BRANCH (priced, then cut — C-6b item 3): a cell id the shape does not hold is a STALE target across a shape change, so it is the true absence (null), never a word; the face branch of the same class likewise; the identified-pair edge keeps its sentence (a real state)',
   workspace.includes('    if (!cell) {\n      return null;\n    }\n') && workspace.includes('  if (!face) {\n    return null;\n  }\n') &&
     workspace.includes('    if (!edge) {\n      return `edge ${endpoints}`;\n    }\n'));
-check('§1 no new store action rode in: the inspector\'s row handlers call only selectVertex · selectEdge · toggleLiftSelection · setEdgeNotice · setHoverTarget',
-  ['selectVertex(', 'selectEdge(', 'toggleLiftSelection(', 'setEdgeNotice(', 'setHoverTarget('].every((s) => panels.includes(s)) &&
-    !/\bselectFace\(|\bselectCellFace\(|\binspectFace\(/.test(panels));
+check('§1 the inspector\'s row handlers call selectVertex · selectEdge · selectFace (C-10b, the one named addition) · toggleLiftSelection · setEdgeNotice · setHoverTarget — and no other face act (`selectCellFace` · `inspectFace` nowhere)',
+  ['selectVertex(', 'selectEdge(', 'selectFace(', 'toggleLiftSelection(', 'setEdgeNotice(', 'setHoverTarget('].every((s) => panels.includes(s)) &&
+    !/\bselectCellFace\(|\binspectFace\(/.test(panels));
 
 // ═══════════════ §2 — C-6a PART 2: the designer's line, in its own row, with the two rulings that ride ═══════════════
 console.log('\n----- §2 ★★ C-6a part 2 — the Ambo states every act it offers, in its OWN row -----');

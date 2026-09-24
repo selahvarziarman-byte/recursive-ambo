@@ -38,6 +38,7 @@ export interface LiftedVertexRow {
   space: 'seed' | 'derived' | 'none'; // the resolver's origin on the record — or nothing
   roles: number;
   words: number;
+  tuples: number; // C-10b: the card's words carry the space's three counts (the Ambo's own card line)
   absence: string | null; // the words for `none`: which seed corner holds no cast
 }
 
@@ -112,6 +113,7 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
       space: r ? r.origin : 'none',
       roles: r ? r.space.roles.length : 0,
       words: r ? r.space.signature.length : 0,
+      tuples: r ? r.space.relations.length : 0,
       absence: held ? absence : 'not in the record the lift carried',
     };
   });

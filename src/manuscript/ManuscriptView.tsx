@@ -176,6 +176,8 @@ import { useGeometryStore } from '../store/geometryStore';
 // C-10 — THE LIFT CARRIES: the concept layer of a lifted form, read on the record the lift carried
 import { liftedConceptOf, type LiftedConcept } from './liftedConceptModel';
 import { LiftedConceptSection, type LiftedConceptPick } from './LiftedConceptSection';
+// C-10b (§131 item 1): the lifted corner's drawing opens on the SHEET at its own size — the Ambo's own panel, inline in an overlay
+import { CastInsidePanel } from '../components/CastInsideDiagram';
 // H2 THE PERSON'S HANDS — the two gestures' react-free model: the fold (the
 // 7th dock word over customGluing's committed seam) and the aimed chord (the
 // committed subdivideFace as a person gesture + the combine fork). The view
@@ -6810,6 +6812,32 @@ export default function ManuscriptView() {
           }}
         />
       </Canvas>
+      {/* ═══ C-10b — THE LIFTED CORNER'S DRAWING, WHOLE (the designer's item 1: whole or words, never a thumbnail): the card holds
+          the words; the drawing opens HERE, on the sheet, at its own size — an overlay between the left chrome and the card, scrolling
+          only where the viewport is narrower than the drawing (the Ambo's own panel behaves the same at 1400 wide) ═══ */}
+      {liftedConcept && liftedConcept.state === 'read' && selected && liftedPicks[selected]?.vertex && liftedConcept.record.vertices[liftedPicks[selected].vertex as string] ? (
+        <div
+          data-lifted-drawing={liftedPicks[selected].vertex as string}
+          className="text-xs"
+          onMouseDown={(event) => event.stopPropagation()}
+          style={{
+            position: 'absolute',
+            zIndex: CHROME_LAYER_Z,
+            left: 284,
+            right: 300,
+            top: 64,
+            bottom: 100,
+            overflow: 'auto',
+            background: '#0c0a09',
+            color: '#d6d3d1',
+            borderRadius: 4,
+            padding: 6,
+            boxShadow: '0 2px 9px rgba(58, 51, 38, 0.35)',
+          }}
+        >
+          <CastInsidePanel shape={liftedConcept.record} vertexId={liftedPicks[selected].vertex as string} inline />
+        </div>
+      ) : null}
       {/* P1a-craft: the dev title overlay is gone — the shared shell bar names
           the app, the toggle names the section. (The shift-click combine hint
           died with it; its proper return is a real help affordance, later.) */}

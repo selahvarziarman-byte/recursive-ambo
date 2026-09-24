@@ -8,11 +8,13 @@
 //   · a form that carried no record: said.
 // The hands on a face block are WORDS here, never acts: the acts are the Ambo's, at the sites the words name — a
 // withdrawal from this page would reach into the source universe the record was copied from.
-// The inside and the face block keep the Ambo's dark ground (their ink is drawn for it) inside the paper card.
+// C-10b (§131 item 1, the designer's blocker — the inside CLIPPED in the card's 232 px column): on the card the inside is
+// WORDS — `AB · holds a space of 20 roles · 22 words · 52 tuples · open the drawing` — and opened, the drawing mounts at its
+// OWN size on the sheet (ManuscriptView's overlay, the canvas side — as a source's drawing opens in the Ambo), never in the
+// column: no drawing may be mounted narrower than itself. The face block keeps the Ambo's dark ground (its ink is drawn for it).
 
 import { useState } from 'react';
 import type { VertexId } from '../types/geometry';
-import { CastInsidePanel } from '../components/CastInsideDiagram';
 import { BornFaceRecord, FaceRecord } from '../components/MidpointSurface';
 import type { LiftedConcept } from './liftedConceptModel';
 
@@ -69,9 +71,9 @@ export function LiftedConceptSection({
     );
   }
   const { record, vertices, faces } = concept;
+  void record;
   const pickedVertex = current.vertex && vertices.find((v) => v.id === current.vertex) ? current.vertex : null;
   const pickedFace = current.face ? faces.find((f) => f.id === current.face) ?? null : null;
-  const pickedRow = pickedVertex ? vertices.find((v) => v.id === pickedVertex) ?? null : null;
   return (
     <div data-lifted-concept="read" data-lifted-concept-held={String(concept.held)} data-lifted-concept-resolved={String(concept.resolved)}>
       {head}
@@ -80,45 +82,31 @@ export function LiftedConceptSection({
           <div data-lifted-concept-record style={{ fontSize: 12, marginBottom: 4 }}>
             {`read from the record the lift carried — ${concept.source}: ${concept.resolved} of ${vertices.length} corners hold a space · the acts are the Ambo's, at the sites the words name`}
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 4 }}>
+          <div style={{ display: 'grid', gap: 2, marginBottom: 4 }}>
+            {/* C-10b — WHOLE OR WORDS: each corner one line of words; the drawing opens on the sheet at its own size */}
             {vertices.map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                data-lifted-vertex-row={v.id}
-                data-lifted-vertex-space={v.space}
-                data-lifted-vertex-picked={pickedVertex === v.id ? 'true' : undefined}
-                onMouseDown={(e) => e.stopPropagation()}
-                onClick={() => onPick({ ...current, vertex: pickedVertex === v.id ? null : v.id })}
-                title={v.absence ?? `${v.roles} roles · ${v.words} words — open its inside`}
-                style={{
-                  appearance: 'none',
-                  font: 'inherit',
-                  fontSize: 11.5,
-                  padding: '2px 7px',
-                  borderRadius: 3,
-                  border: `1px solid ${paper.cardBorder}`,
-                  background: pickedVertex === v.id ? paper.cardInk : paper.cardBackground,
-                  color: pickedVertex === v.id ? paper.cardBackground : paper.cardInk,
-                  opacity: v.space === 'none' ? 0.6 : 1,
-                  cursor: 'pointer',
-                }}
-              >
-                {`${v.label} · ${v.space === 'none' ? (v.absence ?? 'holds no space') : `${v.roles} roles · ${v.words} words`}`}
-              </button>
+              <div key={v.id} data-lifted-vertex-row={v.id} data-lifted-vertex-space={v.space} data-lifted-vertex-picked={pickedVertex === v.id ? 'true' : undefined} style={{ fontSize: 11.5, opacity: v.space === 'none' ? 0.7 : 1 }}>
+                <span style={{ fontWeight: 600 }}>{v.label}</span>
+                {v.space === 'none' ? (
+                  <span data-lifted-vertex-absence={v.id}>{` · ${v.absence ?? 'holds no space'}`}</span>
+                ) : (
+                  <>
+                    {` · holds a space of ${v.roles} roles · ${v.words} words · ${v.tuples} tuples · `}
+                    <button
+                      type="button"
+                      data-lifted-open-drawing={v.id}
+                      data-lifted-drawing-state={pickedVertex === v.id ? 'open' : 'closed'}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={() => onPick({ ...current, vertex: pickedVertex === v.id ? null : v.id })}
+                      style={{ appearance: 'none', font: 'inherit', fontSize: 11.5, padding: 0, border: 'none', background: 'none', color: paper.cardInk, textDecoration: 'underline', cursor: 'pointer' }}
+                    >
+                      {pickedVertex === v.id ? 'close the drawing' : 'open the drawing'}
+                    </button>
+                  </>
+                )}
+              </div>
             ))}
           </div>
-          {pickedRow ? (
-            pickedRow.space === 'none' ? (
-              <div data-lifted-vertex-absence={pickedRow.id} style={{ fontSize: 12, fontStyle: 'italic', opacity: 0.8, marginBottom: 4 }}>
-                {`${pickedRow.label} ${pickedRow.absence ?? 'holds no space'}`}
-              </div>
-            ) : (
-              <div data-lifted-inside={pickedRow.id} className="text-xs" style={{ background: '#0c0a09', color: '#d6d3d1', borderRadius: 4, padding: 6, marginBottom: 6, overflowX: 'auto' }}>
-                <CastInsidePanel shape={record} vertexId={pickedRow.id} inline />
-              </div>
-            )
-          ) : null}
           {faces.length > 0 ? (
             <label style={{ display: 'block', fontSize: 11.5 }}>
               <span style={{ opacity: 0.7 }}>a face of the lifted form, read on the record</span>

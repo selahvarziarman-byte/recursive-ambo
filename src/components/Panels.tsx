@@ -39,6 +39,9 @@ import { downwardClosure, validateLiftSelection } from '../lib/subComplexLift';
 // TASK D (B-2026-08-23-C §5): the composer that exists — the face's D14
 // name, shared with the aperture menu (never a second composer, never the id)
 import { faceDisplayName } from '../manuscript/apertureModel';
+// C-10b: the face's home reuses the Ambo's own face blocks; a dissected source face is named through the workspace's ancestry
+import { BornFaceRecord, FaceRecord, faceCellsOf } from './MidpointSurface';
+import { dissectedFaceWords, faceThroughAncestors } from './faceNames';
 import {
   type DualInspectionTarget,
   type OperationHistoryEntry,
@@ -66,7 +69,7 @@ import { SiteWitnessTracePanel } from './SiteWitnessTracePanel';
 import { VertexPacketEditorContent } from './VertexPacketEditor';
 // C-6c (iv): the card reads a HELD cast — every number re-derived from it, never stored
 import { castCounts, castMarks, castSummaryLine, notTakenAddresses, notTakenLine, orderingRows } from '../lib/castLoader';
-import { holdsLoadedCast, spaceOf } from '../lib/spaceOf';
+import { holdsLoadedCast, isSeedVertex, spaceOf } from '../lib/spaceOf';
 import type { ConceptSpace } from '../types/geometry';
 
 type TopologyFilter =
@@ -736,10 +739,45 @@ function WorkspacePanel() {
   );
 }
 
+/** C-10b (§131 item 2, the designer's blocker — the interior face 3,900 px down): THE FACE'S HOME. A selected face's reading is
+ * printed ONCE, here — reached his way (explode, point at the face and click), by the Cell Faces list, or by the line at a midpoint
+ * site. A seed face reads through C-5's block, a born face through C-9's; the corner cell's face is the solid's ordinary (no reading
+ * to mark). The hands are ACTS here (the Ambo's own store); no site is local to this home, so every hand names where it is. */
+export function SelectedFaceReading({ shape, faceId }: { shape: Shape; faceId: string }) {
+  const face = shape.faces.find((f) => f.id === faceId);
+  if (!face) return null;
+  const name = getPacketDataDisplayLabel(face.data) ?? faceDisplayName(shape, face);
+  if (face.vertexIds.length !== 3) {
+    return (
+      <p data-face-home={name} data-face-home-kind="not-a-triangle" className="text-xs text-stone-400">
+        {`the face ${name} — ${face.vertexIds.length} corners: the reading walks a triangle; a larger face is not read yet`}
+      </p>
+    );
+  }
+  const cycle = [face.vertexIds[0], face.vertexIds[1], face.vertexIds[2]] as [VertexId, VertexId, VertexId];
+  const seeds = cycle.every((v) => isSeedVertex(shape, v));
+  const words = faceCellsOf(shape, face.id, cycle);
+  const kind = seeds ? 'seed' : words.cornerCellFace ? 'corner-cell' : words.other ? 'interior' : 'one-cell';
+  return (
+    <div data-face-home={name} data-face-home-kind={kind} className="grid gap-1 text-xs text-stone-400">
+      <p data-face-home-head="true" className="text-stone-200">{`the face ${name} — ${seeds ? 'a seed face' : words.kindWords}`}</p>
+      {seeds ? (
+        <FaceRecord shape={shape} cycle={cycle} faceName={name} here={null} />
+      ) : words.cornerCellFace ? (
+        <p data-face-home-state="corner-cell">the corner cell's own face — it returns all of its corner to itself: the solid's ordinary, nothing to mark</p>
+      ) : (
+        <BornFaceRecord shape={shape} cycle={cycle} faceName={name} faceId={face.id} here={null} />
+      )}
+    </div>
+  );
+}
+
 function SelectionPanel() {
   const shape = useCurrentShape();
   const selectedCellId = useGeometryStore((state) => state.selectedCellId);
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
+  const selectedFaceId = useGeometryStore((state) => state.selectedFaceId); // C-10b
+  const selectedFace = selectedFaceId ? shape.faces.find((f) => f.id === selectedFaceId) ?? null : null;
   const dualInspectionTarget = useGeometryStore((state) => state.dualInspectionTarget);
   const dualViewEnabled = useGeometryStore((state) => state.viewLayout.dualViewEnabled);
   const isolateSelectedCell = useGeometryStore((state) => state.viewLayout.isolateSelectedCell);
@@ -795,6 +833,10 @@ function SelectionPanel() {
       label: 'Cell',
       count: `${selectedCell.vertexIds.length}V`,
     });
+  }
+
+  if (selectedFace) {
+    sectionIndexEntries.push({ id: 'selection-face-home', label: 'Face' }); // C-10b: the face's home
   }
 
   if (vertex) {
@@ -892,6 +934,13 @@ function SelectionPanel() {
               />
             </label>
           </div>
+        </SidebarSection>
+      ) : null}
+
+      {selectedFace ? (
+        // C-10b (§131 item 2): THE FACE'S HOME — the selected face's reading, printed once, here
+        <SidebarSection id="selection-face-home" title="Selected Face" defaultOpen resetKey={selectedFace.id}>
+          <SelectedFaceReading shape={shape} faceId={selectedFace.id} />
         </SidebarSection>
       ) : null}
 
@@ -2133,6 +2182,8 @@ function CellComposition({
   const selectedVertexId = useGeometryStore((state) => state.selectedVertexId);
   const selectEdge = useGeometryStore((state) => state.selectEdge);
   const selectedEdgeId = useGeometryStore((state) => state.selectedEdgeId);
+  const selectFace = useGeometryStore((state) => state.selectFace); // C-10b: the face's plain click reads it
+  const selectedFaceId = useGeometryStore((state) => state.selectedFaceId);
   const setHoverTarget = useGeometryStore((state) => state.setHoverTarget);
   // multi-region lift: shift-click any row toggles the entity into the set
   const toggleLiftSelection = useGeometryStore((state) => state.toggleLiftSelection);
@@ -2225,20 +2276,28 @@ function CellComposition({
           {faceRows.map((row) => (
             <div
               key={row.face.id}
+              data-face-row={row.face.id}
+              aria-selected={selectedFaceId === row.face.id}
               onClick={(event) => {
-                if (event.shiftKey) toggleLiftSelection({ kind: 'face', id: row.face.id });
+                if (event.shiftKey) {
+                  toggleLiftSelection({ kind: 'face', id: row.face.id });
+                  return;
+                }
+                selectFace(row.face.id);
               }}
               onPointerEnter={() => setHoverTarget({ kind: 'face', faceId: row.face.id })}
               onPointerLeave={() => setHoverTarget(null)}
-              title="shift-click: toggle in the lift region"
-              // C-6a (§92.3, ruled): a plain click does NOTHING here — the Ambo's faces
-              // are READINGS and the face's plain-click act is C-5's to give, with a
-              // meaning. A control that cannot act must not appear as one: the
-              // pointer cursor is taken, not a select-face act invented.
-              className={`cursor-default rounded border px-3 py-2 text-sm ${
-                inLiftSet('face', row.face.id)
-                  ? 'border-emerald-400 bg-emerald-400/10'
-                  : 'border-stone-800 bg-stone-950'
+              title="click: read the face · shift-click: toggle in the lift region"
+              // C-6a (§92.3) held that a plain click does NOTHING here until the face's act had a
+              // meaning. C-10b (§131 item 2, the designer's blocker) gives it one: the plain click
+              // SELECTS the face and its reading (C-5 at gen 0, C-9 born) mounts at the face's home
+              // in this panel — so the row is a control now and takes the pointer cursor.
+              className={`cursor-pointer rounded border px-3 py-2 text-sm ${
+                selectedFaceId === row.face.id
+                  ? 'border-amber-400 bg-amber-400/10'
+                  : inLiftSet('face', row.face.id)
+                    ? 'border-emerald-400 bg-emerald-400/10'
+                    : 'border-stone-800 bg-stone-950'
               }`}
             >
               <span className="flex items-start justify-between gap-2">
@@ -2268,7 +2327,7 @@ function CellComposition({
                   {row.size} vertices
                 </span>
               </span>
-              <span className="mt-2 block truncate text-xs text-stone-500">
+              <span data-face-row-lineage="true" className="mt-2 block truncate text-xs text-stone-500">
                 {row.lineageSummary}
               </span>
             </div>
@@ -4189,9 +4248,10 @@ function getVertexDisplayLabel(shape: Shape, vertexId: VertexId): string {
 // by D14 (the one composer, through apertureModel's wrapper), and where that yields nothing the name slot's lawful absence
 // word — NEVER its id; a face the shape no longer holds is said so, not addressed
 function getFaceDisplayLabel(shape: Shape, faceId: string): string {
-  const face = shape.faces.find((candidate) => candidate.id === faceId);
+  // C-10b: a face this shape no longer holds is named through the workspace's ancestry when an ancestor holds it
+  const found = faceThroughAncestors(shape, faceId);
 
-  return face ? getPacketDataDisplayLabel(face.data) ?? faceDisplayName(shape, face) : 'a face this shape no longer holds';
+  return found ? getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face) : 'a face this shape no longer holds';
 }
 
 function getCellDisplayLabel(shape: Shape, cellId: string): string {
@@ -4348,10 +4408,14 @@ function formatFaceLineageSummary(shape: Shape, face: Face): string {
 
   if (face.lineage.inheritanceMode === 'derived-from-face') {
     const sourceFace = findLineageSource(face.lineage, 'face');
-
-    return sourceFace
-      ? `face derived from source face ${formatSourceRef(shape, sourceFace)}`
-      : 'face derived from source face';
+    if (!sourceFace) return 'face derived from source face';
+    // C-10b (§131 item 4, the designer's blocker): the source face is usually the SEED face, DISSECTED — it lives in an ancestor
+    // shape and has a D14 name there; the absence word only where no ancestor holds it either
+    const found = faceThroughAncestors(shape, sourceFace.id);
+    if (found && found.dissected) {
+      return `face derived from ${dissectedFaceWords(found, getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face), shape)}`;
+    }
+    return `face derived from source face ${formatSourceRef(shape, sourceFace)}`;
   }
 
   if (face.lineage.inheritanceMode === 'derived-from-vertex') {

@@ -1,4 +1,5 @@
 import { faceDisplayName } from '../manuscript/apertureModel';
+import { faceThroughAncestors } from './faceNames'; // C-10b: a dissected source face named through the ancestry
 import { useMemo } from 'react';
 import { formatVec3 } from '../lib/shape';
 import { type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
@@ -187,9 +188,13 @@ function FaceOppositeRowValue({
   onHoverTarget: (target: InspectionHoverTarget | null) => void;
 }) {
   if (row.status === 'missing-face') {
+    // C-10b (§131 item 4): the face is usually the SOURCE face, dissected — named through the workspace's ancestry when it can be
+    const found = faceThroughAncestors(shape, row.faceId);
     return (
-      <span className="block rounded border border-stone-800 bg-stone-950/70 px-2 py-1.5 text-xs text-stone-500">
-        a face this shape no longer holds
+      <span data-face-opposite-missing={found ? 'dissected' : 'unnamed'} className="block rounded border border-stone-800 bg-stone-950/70 px-2 py-1.5 text-xs text-stone-500">
+        {found
+          ? `the ${found.in.genealogy.operation === 'seed' ? 'seed face' : 'face'} ${getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face)}, dissected — this shape holds its finer faces`
+          : 'a face this shape no longer holds'}
       </span>
     );
   }
@@ -771,9 +776,10 @@ function getVertexDisplayLabel(shape: Shape, vertexId: VertexId): string {
 // by D14 (the one composer, through apertureModel's wrapper), and where that yields nothing the name slot's lawful absence
 // word — NEVER its id; a face the shape no longer holds is said so, not addressed
 function getFaceDisplayLabel(shape: Shape, faceId: string): string {
-  const face = shape.faces.find((candidate) => candidate.id === faceId);
+  // C-10b: a face this shape no longer holds is named through the workspace's ancestry when an ancestor holds it
+  const found = faceThroughAncestors(shape, faceId);
 
-  return face ? getPacketDataDisplayLabel(face.data) ?? faceDisplayName(shape, face) : 'a face this shape no longer holds';
+  return found ? getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face) : 'a face this shape no longer holds';
 }
 
 function formatEdgeRef(shape: Shape, vertexIds: [VertexId, VertexId]): string {

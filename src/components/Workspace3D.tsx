@@ -24,6 +24,8 @@ import {
 import { type DualInspectionTarget, type InspectionHoverTarget, useGeometryStore } from '../store/geometryStore';
 import type { LiftSelection } from '../lib/subComplexLift';
 import type { Cell, Edge, Face, Shape, Vec3, Vertex, VertexId } from '../types/geometry';
+// C-10b (§131 item 3): a face is named from its corners — the D14 composer, the one every reader uses
+import { faceDisplayName } from '../manuscript/apertureModel';
 
 export function Workspace3D() {
   const shape = useGeometryStore((state) => state.shapes[state.currentShapeId]);
@@ -256,6 +258,7 @@ function CellMesh({
   renderIndex: number;
 }) {
   const selectCell = useGeometryStore((state) => state.selectCell);
+  const selectFace = useGeometryStore((state) => state.selectFace); // C-10b: the face you hit is selected to be read
   const clearDualInspectionTarget = useGeometryStore((state) => state.clearDualInspectionTarget);
   const setDualInspectionTarget = useGeometryStore((state) => state.setDualInspectionTarget);
   const dualInspectionTarget = useGeometryStore((state) => state.dualInspectionTarget);
@@ -371,18 +374,29 @@ function CellMesh({
 
           clearDualInspectionTarget();
           selectCell(cell.id);
+          // C-10b (§131 item 2, Arman's route — explode, point at the face): the plain click also selects the FACE
+          // you hit, within its cell; the face's reading mounts at its home in the selection panel
+          const hitFace =
+            event.faceIndex == null ? null : getRenderFaceForTriangleIndex(renderGeometry.faces, event.faceIndex);
+          if (hitFace) selectFace(hitFace.id);
         }}
         onPointerMove={(event) => {
           event.stopPropagation();
           if (!usesDualInspectionTargets) {
-            onHoverTarget({ kind: 'cell', cellId: cell.id });
+            // C-10b: pointing at the solid names the FACE under the pointer (the thing the click will select); the cell
+            // where no face resolves
+            const under =
+              event.faceIndex == null ? null : getRenderFaceForTriangleIndex(renderGeometry.faces, event.faceIndex);
+            onHoverTarget(under ? { kind: 'face', faceId: under.id } : { kind: 'cell', cellId: cell.id });
           }
           document.body.style.cursor = 'pointer';
         }}
         onPointerOver={(event) => {
           event.stopPropagation();
           if (!usesDualInspectionTargets) {
-            onHoverTarget({ kind: 'cell', cellId: cell.id });
+            const under =
+              event.faceIndex == null ? null : getRenderFaceForTriangleIndex(renderGeometry.faces, event.faceIndex);
+            onHoverTarget(under ? { kind: 'face', faceId: under.id } : { kind: 'cell', cellId: cell.id });
           }
           document.body.style.cursor = 'pointer';
         }}
@@ -2571,12 +2585,12 @@ function formatHoverStatus(shape: Shape, target: InspectionHoverTarget | null): 
     return null;
   }
 
+  // C-10b (§131 item 3, the designer's blocker): the face is NAMED — from its corners by D14 (its packet label first when the
+  // person gave one) — never `kind … | id: face:…`; the id keeps its home in Technical IDs
   const label = getScenePacketDataDisplayLabel(face.data);
-  const relation = describeSceneFaceRelation(shape, face);
+  const name = faceDisplayName(shape, face);
 
-  return label
-    ? `face ${label} | ${relation} | id: ${face.id}`
-    : `face ${relation} | id: ${face.id}`;
+  return label ? `face ${label} · ${name}` : `face ${name}`;
 }
 
 function describeSceneCellTopology(cell: Cell): string {
@@ -2599,30 +2613,6 @@ function getSceneVertexLabel(shape: Shape, vertexId: VertexId): string | null {
 
 function formatSceneVertexRef(shape: Shape, vertexId: VertexId): string {
   return getSceneVertexLabel(shape, vertexId) ?? sceneIdTail(vertexId);
-}
-
-function describeSceneFaceRelation(shape: Shape, face: Face): string {
-  const parts: string[] = [face.role];
-
-  if (face.sourceVertexId) {
-    parts.push(`source vertex ${formatSceneVertexRef(shape, face.sourceVertexId)}`);
-  }
-
-  if (face.sourceFaceId) {
-    parts.push(`source face ${sceneIdTail(face.sourceFaceId)}`);
-  }
-
-  if (!face.sourceVertexId && !face.sourceFaceId && face.vertexIds.length) {
-    const vertexLabels = face.vertexIds
-      .slice(0, 3)
-      .map((vertexId) => formatSceneVertexRef(shape, vertexId))
-      .join(', ');
-    const suffix = face.vertexIds.length > 3 ? ', ...' : '';
-
-    parts.push(`vertices ${vertexLabels}${suffix}`);
-  }
-
-  return parts.join(', ');
 }
 
 function describeSceneEdgeRelation(edge: Edge): string | null {

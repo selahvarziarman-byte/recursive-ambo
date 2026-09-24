@@ -325,6 +325,8 @@ MEASURE_LIFT = """() => {
     faceOptions: [...(sec.querySelector('[data-lifted-face-pick]')?.options ?? [])].map((o) => ({ value: o.value, label: o.textContent })),
     face: face ? { id: face.getAttribute('data-lifted-face'), kind: face.getAttribute('data-lifted-face-kind'), states: [...face.querySelectorAll('[data-midpoint-born-face-state], [data-midpoint-face-state]')].map((e) => e.getAttribute('data-midpoint-born-face-state') || e.getAttribute('data-midpoint-face-state')), head: txt(face.querySelector('[data-midpoint-born-face-state="read"] > span, [data-midpoint-face-state="read"] > span')), ground: face.querySelectorAll('[data-midpoint-born-face-line="ground"]').length, news: [...face.querySelectorAll('[data-midpoint-born-face-news]')].map((e) => txt(e)), noNews: face.querySelectorAll('[data-midpoint-born-face-line="no-news"]').length, hands: [...face.querySelectorAll('[data-midpoint-born-face-hands]')].map((e) => txt(e)), buttons: face.querySelectorAll('button').length, withdraws: face.querySelectorAll('[data-midpoint-born-face-withdraw], [data-midpoint-face-withdraw]').length, handWords: face.querySelectorAll('[data-midpoint-born-face-hand-words], [data-midpoint-face-hand-words]').length, box: r(face), inside: inside(r(face)), topInside: topInside(r(face)), text: txt(face).slice(0, 600) } : null,
     cornerCell: txt(sec.querySelector('[data-lifted-face-corner-cell]')),
+    openButtons: sec.querySelectorAll('[data-lifted-open-drawing]').length, openState: [...sec.querySelectorAll('[data-lifted-drawing-state="open"]')].length,
+    drawing: (() => { const ov = document.querySelector('[data-lifted-drawing]'); if (!ov) return null; const p = ov.querySelector('[data-inside-panel]'); const svg = ov.querySelector('svg'); const b = r(ov); const sb = svg ? r(svg) : null; return { box: b, scrollWidth: ov.scrollWidth, clientWidth: ov.clientWidth, scrollHeight: ov.scrollHeight, clientHeight: ov.clientHeight, svg: sb, points: p ? p.querySelectorAll('[data-inside-point]').length : 0, glyphed: p ? [...p.querySelectorAll('[data-inside-label]')].filter((l) => /≡/.test(l.textContent)).length : 0, head: p ? txt(p.firstElementChild) : null, inViewport: b.x >= 0 && b.y >= 0 && b.right <= window.innerWidth && b.bottom <= window.innerHeight, clipped: ov.scrollWidth > ov.clientWidth + 1, outsideCard: S ? (b.right <= S.x || b.x >= S.right) : null }; })(),
   };
 }"""
 
@@ -373,11 +375,13 @@ def lift_arm(page, args):
         target = canvases.nth(canvases.count() - 1)
         shelf.first.drag_to(target); page.wait_for_timeout(1500)
     res['placed'] = page.evaluate(MEASURE_LIFT)
-    row = page.locator('[data-lifted-vertex-row]').filter(has_text=re.compile(r'^AB ·'))
+    # C-10b: the corner's line is WORDS; `open the drawing` mounts the drawing on the sheet at its own size
+    row = page.locator('[data-lifted-vertex-row]').filter(has_text=re.compile(r'^AB '))
     res['abRows'] = row.count()
     if row.count():
-        row.first.click(); page.wait_for_timeout(600)
+        row.first.locator('[data-lifted-open-drawing]').first.click(); page.wait_for_timeout(700)
     res['pickedAB'] = page.evaluate(MEASURE_LIFT)
+    page.screenshot(path=f"{args.frames}/concept-layer-lift-drawing-{args.width}x{args.height}.png")
     sel = page.locator('[data-lifted-face-pick]')
     if sel.count():
         opts = sel.first.evaluate("(el) => [...el.options].map((o) => ({ value: o.value, label: o.textContent }))")
@@ -397,6 +401,77 @@ def lift_arm(page, args):
     res['scrolledFace'] = page.evaluate(MEASURE_LIFT)
     page.screenshot(path=f"{args.frames}/concept-layer-lift-carries-{args.width}x{args.height}.png")
     page.get_by_role("button", name=re.compile(r"^Ambo Universe$")).first.click(); page.wait_for_timeout(800)
+    return res
+
+
+# ─── C-10b — the face's HOME, the site's lines, the canvas note, the lineage line (§131, the designer's four blockers) ───
+SITE_FACES = """() => {
+  const panel = document.querySelector('[data-midpoint-surface]');
+  const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
+  if (!panel) return { present: false };
+  return { present: true, lines: [...panel.querySelectorAll('[data-midpoint-born-face-at-site]')].map((e) => ({ face: e.getAttribute('data-midpoint-born-face-at-site'), kind: e.getAttribute('data-midpoint-born-face-kind'), text: txt(e), button: Boolean(e.querySelector('[data-midpoint-select-face]')) })), blocks: panel.querySelectorAll('[data-midpoint-born-face]').length };
+}"""
+FACE_HOME = """() => {
+  const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height), bottom: Math.round(b.bottom), right: Math.round(b.right) }; };
+  const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
+  const h = document.querySelector('[data-face-home]');
+  const readout = document.querySelector('[data-ambo-hover-readout="true"]');
+  if (!h) return { present: false, readout: txt(readout) };
+  const blocks = [...h.querySelectorAll('[data-midpoint-born-face]')].map((b) => ({ face: b.getAttribute('data-midpoint-born-face'), cells: b.getAttribute('data-midpoint-born-face-cells'), alike: b.getAttribute('data-midpoint-born-face-alike'), states: [...b.querySelectorAll('[data-midpoint-born-face-state]')].map((e) => e.getAttribute('data-midpoint-born-face-state')), ground: b.querySelectorAll('[data-midpoint-born-face-line="ground"]').length, noNews: b.querySelectorAll('[data-midpoint-born-face-line="no-news"]').length, news: [...b.querySelectorAll('[data-midpoint-born-face-news]')].map((e) => txt(e)), hands: [...b.querySelectorAll('[data-midpoint-born-face-hands]')].map((e) => txt(e)), alikeLine: b.querySelectorAll('[data-midpoint-born-face-alike-line]').length, withdraws: b.querySelectorAll('[data-midpoint-born-face-withdraw]').length, head: txt(b.querySelector('[data-midpoint-born-face-state="read"] > span')) }));
+  const seed = h.querySelector('[data-midpoint-face-reading]');
+  const b = r(h);
+  return { present: true, name: h.getAttribute('data-face-home'), kind: h.getAttribute('data-face-home-kind'), head: txt(h.querySelector('[data-face-home-head]')), blocks, seedState: seed ? seed.getAttribute('data-midpoint-face-state') : null, cornerCell: Boolean(h.querySelector('[data-face-home-state="corner-cell"]')), box: b, inViewport: b.y >= 0 && b.y < window.innerHeight, readout: txt(readout) };
+}"""
+FACE_ROWS = """() => { const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null); return [...document.querySelectorAll('[data-face-row]')].map((e) => ({ id: e.getAttribute('data-face-row'), name: txt(e.querySelector('span span')), lineage: txt(e.querySelector('[data-face-row-lineage]')), selected: e.getAttribute('aria-selected') === 'true' })); }"""
+READOUT = """() => { const e = document.querySelector('[data-ambo-hover-readout="true"]'); return e ? e.textContent.replace(/\\s+/g, ' ').trim() : null; }"""
+EXPLODE = """() => { const lab = [...document.querySelectorAll('label')].find((e) => /^Explode View/.test(e.textContent.trim())); if (!lab) return null; const input = lab.querySelector('input[type="range"]'); if (!input) return null; const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; setter.call(input, '60'); input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); return input.value; }"""
+
+
+def face_home_arm(page, args, kind):
+    """C-10b: at the site (ABAC selected), the line for the born face of the given kind → `select it to read it` → the face's home in the selection tab; the face rows' lineage lines and the note while hovering a row"""
+    res = {'site': page.evaluate(SITE_FACES)}
+    lines = res['site'].get('lines') or []
+    buttons = [l for l in lines if l['button']]
+    target = next((l for l in buttons if l['kind'] == kind), None)
+    res['target'] = target
+    if target:
+        page.locator('[data-midpoint-select-face]').nth(buttons.index(target)).click(); page.wait_for_timeout(500)
+        tab(page, "selection")
+        res['home'] = page.evaluate(FACE_HOME)
+        page.evaluate("() => { const s = document.querySelector('[data-face-home]'); if (s) s.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(200)
+        res['homeScrolled'] = page.evaluate(FACE_HOME)
+        page.screenshot(path=f"{args.frames}/concept-layer-face-home-{kind}-{args.width}x{args.height}.png")
+    rows = page.locator('[data-face-row]')
+    res['rowCount'] = rows.count()
+    if rows.count():
+        rows.first.hover(); page.wait_for_timeout(300)
+        res['readoutOnRow'] = page.evaluate(READOUT)
+    res['rows'] = page.evaluate(FACE_ROWS)
+    return res
+
+
+def canvas_face_arm(page, args):
+    """C-10b: Arman's route — the explode view, point at a face on the solid (the note names it), click (its reading mounts at its home)"""
+    res = {}
+    # a selected VERTEX mounts the midpoint panel over the solid — select the cell alone, so the solid is under the pointer
+    res['cellRow'] = select_cell(page, r"^octahedron")
+    tab(page, "workspace")
+    res['explode'] = page.evaluate(EXPLODE); page.wait_for_timeout(500)
+    box = page.locator("canvas").first.bounding_box()
+    hits = []
+    for dx, dy in ((0, 0), (-90, -40), (90, 40), (-60, 70), (60, -70)):
+        x = box["x"] + box["width"] / 2 + dx; y = box["y"] + box["height"] / 2 + dy
+        page.mouse.move(x, y); page.wait_for_timeout(250)
+        hover = page.evaluate(READOUT)
+        hits.append({'dx': dx, 'dy': dy, 'hover': hover})
+        if hover and hover.startswith('face '):
+            page.mouse.down(); page.wait_for_timeout(40); page.mouse.up(); page.wait_for_timeout(600)
+            tab(page, "selection")
+            res['home'] = page.evaluate(FACE_HOME)
+            res['hover'] = hover
+            page.screenshot(path=f"{args.frames}/concept-layer-canvas-face-{args.width}x{args.height}.png")
+            break
+    res['hits'] = hits
     return res
 
 
@@ -534,6 +609,12 @@ def main():
         out['selectGen2Core'] = select_cell(page, r"^cuboctahedron")
         out['selectABAC'] = select_vertex_labelled(page, "ABAC")
         out['bornRoom'] = page.evaluate(MEASURE)
+        # C-10b: the born faces named at the site, read at their homes — the interior face, then the one-cell (medial) face
+        out['faceHomeInterior'] = face_home_arm(page, args, 'interior')
+        out['selectABAC2'] = select_vertex_labelled(page, "ABAC")
+        out['faceHomeOneCell'] = face_home_arm(page, args, 'one-cell')
+        out['selectABAC3'] = select_vertex_labelled(page, "ABAC")
+        out['bornRoom'] = page.evaluate(MEASURE)
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
         page.screenshot(path=f"{args.frames}/concept-layer-born-room-{args.width}x{args.height}.png")
         br = out['bornRoom']
@@ -549,6 +630,12 @@ def main():
                 out['bornPair']['x'] = xb; out['bornPair']['y'] = yb
                 page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const l = el.querySelector('[data-midpoint-line]'); if (l) l.scrollIntoView(); }"); page.wait_for_timeout(200)
                 page.screenshot(path=f"{args.frames}/concept-layer-born-pair-{args.width}x{args.height}.png")
+                # C-10b: after the born pair, the one-cell (medial) face's home — where a closed route is the news
+                out['faceHomeAfter'] = face_home_arm(page, args, 'one-cell')
+                out['selectABAC4'] = select_vertex_labelled(page, "ABAC")
+                # C-10b: Arman's route — the explode view, point at a face on the solid, click
+                out['canvasFace'] = canvas_face_arm(page, args)
+                out['selectABAC5'] = select_vertex_labelled(page, "ABAC")
                 # C-10 — THE LIFT CARRIES: with the born pair standing on AB–AC, lift the gen-1 residue at A and read it on the Manuscript
                 out['lift'] = lift_arm(page, args)
                 # THE DEPENDENCY REFUSAL: back at AB (gen 2), a gen-0 pair that re-glues the role the born pair named (the Φ-side role of AB's own part)

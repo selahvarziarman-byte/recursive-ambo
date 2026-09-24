@@ -301,6 +301,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
   const withdrawWordPair = useGeometryStore((s) => s.withdrawWordPair);
   const withdrawMidpointAttempt = useGeometryStore((s) => s.withdrawMidpointAttempt);
+  const selectFace = useGeometryStore((s) => s.selectFace); // C-10b: the route from the site to a born face's reading
   const castA = parents[0].space;
   const castB = parents[1].space;
   // C-8: a glued space's role id is a LOCAL key (`A:r3`, `F1≡r0`) — a person reads the space's label for it, never the key
@@ -520,6 +521,24 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         {`two halves, both yours: a role — click a point in ${la}'s column, then a point in ${lb}'s, in the drawing · a word — click a word in ${la}'s row, then a word in ${lb}'s, just above the drawing · withdraw undoes either`}
       </div>
       {/* the projection source ABOVE — shown whole, as record, with the person's acts on the edges that reach it */}
+      {/* C-10b (§131 item 2): at the site's TOP, one line per BORN face through this site — its kind by the cells holding it — and the
+          route to its reading (`select it to read it` → the face's home in the selection panel); the reading itself prints there, once */}
+      {site.sources.filter((src) => src.cycle.length === 3 && !src.cycle.every((v) => isSeedVertex(shape, v))).map((src) => {
+        const words = faceCellsOf(shape, src.faceId, src.cycle);
+        return (
+          <span key={src.faceId} data-midpoint-born-face-at-site={src.faceName} data-midpoint-born-face-kind={words.cornerCellFace ? 'corner-cell' : words.other ? 'interior' : 'one-cell'} className="block text-stone-400">
+            {`the face ${src.faceName} — ${words.kindWords}`}
+            {words.cornerCellFace ? ' · it returns all of its corner to itself' : (
+              <>
+                {' · '}
+                <button type="button" data-midpoint-select-face={src.faceId} className="underline hover:text-amber-100" onClick={() => selectFace(src.faceId)}>
+                  select it to read it
+                </button>
+              </>
+            )}
+          </span>
+        );
+      })}
       {site.sources[0] ? <ProjectionRecord shape={shape} site={site} source={site.sources[0]} position="above" /> : null}
       {/* C-7d item 0 — THE WORD HALF, above the drawing: τ, the premise the drawing rests on */}
       <div data-midpoint-word-half="true" className="my-1 rounded border border-stone-800 bg-stone-950/60 px-2 py-1">
@@ -738,12 +757,11 @@ function SourceRecord({ shape, site, apex, faceName, faceId, cycle }: { shape: S
           ? `raw material — nothing given yet on the edges that reach it (${acts.map((n) => n.edgeLabel).join(' · ')}); its clue is live once you have mapped them`
           : acts.map((n) => neighbourActsWords(n)).join(' · ')}
       </span>
-      {/* C-5 reads the face at gen 0 — the seed's own faces, whose edges hold the person's records; a face with a born corner is not read here (its edges carry born pairs and the solid's identity, the tower's later work) */}
+      {/* C-5 reads the face at gen 0 — the seed's own faces, whose edges hold the person's records. C-10b (§131 item 2, the designer's
+          blocker — the interior face 3,900 px down): a BORN face's reading is printed ONCE, at ITS home — the selection panel with the
+          face selected (explode, point at it; or the Cell Faces list; or the line at this site's top) — never here */}
       {cycle.length === 3 && cycle.every((v) => isSeedVertex(shape, v)) ? (
         <FaceRecord shape={shape} cycle={cycle as [VertexId, VertexId, VertexId]} faceName={faceName} here={site.edge.id} />
-      ) : cycle.length === 3 ? (
-        // C-9 — THE BORN FACE: a face with a born corner is read through the resolver at this site
-        <BornFaceRecord shape={shape} cycle={cycle as [VertexId, VertexId, VertexId]} faceName={faceName} faceId={faceId} here={site.edge.id} siteId={site.siteId} />
       ) : null}
       {open && inside && inside.census.points > 0 ? (
         <div data-midpoint-source-drawing={apex} className="overflow-x-auto">
@@ -755,6 +773,23 @@ function SourceRecord({ shape, site, apex, faceName, faceId, cycle }: { shape: S
 }
 
 const tupleWords = (t: FaceTuple): string => `${t.type}(${t.terms.join(', ')}) ${t.value}`;
+
+/** C-9 / C-10b — the cells holding a face BY VERTEX SET (each cell holds its own record of a shared face — C-7h's measurement), the
+ * host (the core's or the parent's copy) and the other, and the corner cell's face (one residue, a seed corner — it returns all of
+ * its corner to itself: the solid's ordinary, no reading to mark). One producer for the site's lines and the face's home. */
+export function faceCellsOf(shape: Shape, faceId: string, cycle: VertexId[]): { cells: Shape['cells']; host: Shape['cells'][number] | null; other: Shape['cells'][number] | null; cornerCellFace: boolean; kindWords: string } {
+  const own = shape.faces.find((f) => f.id === faceId);
+  const set = new Set(own ? own.vertexIds : cycle);
+  const same = (id: string): boolean => { const f = shape.faces.find((x) => x.id === id); return Boolean(f) && (f as { vertexIds: VertexId[] }).vertexIds.length === set.size && (f as { vertexIds: VertexId[] }).vertexIds.every((v) => set.has(v)); };
+  const cells = shape.cells.filter((c) => c.faceIds.some(same));
+  const host = cells.find((c) => c.kind === 'core' || c.kind === 'parent') ?? cells[0] ?? null;
+  const other = cells.find((c) => c !== host) ?? null;
+  const cornerCellFace = cells.length === 1 && cells[0].kind === 'residue' && cycle.some((v) => isSeedVertex(shape, v));
+  const L = (v: VertexId): string => labelOf(shape, v);
+  const cellWords = (c: Shape['cells'][number]): string => (c.kind === 'residue' ? `the residue ${c.topology ?? 'cell'} at ${L(c.vertexIds[0])}` : `the ${c.kind === 'parent' ? 'parent' : 'core'} ${c.topology ?? 'cell'}`);
+  const kindWords = cornerCellFace ? `the corner cell's own` : other && host ? `interior, between ${cellWords(host)} and ${cellWords(other)}` : host ? `${cellWords(host)}'s` : 'of no cell';
+  return { cells, host, other, cornerCellFace, kindWords };
+}
 
 /**
  * C-9 — THE BORN FACE at its edge's site (the designer's §125.1 rulings): the SOLID part QUIET, stated once — it is the
@@ -771,16 +806,8 @@ const tupleWords = (t: FaceTuple): string => `${t.type}(${t.terms.join(', ')}) $
 export function BornFaceRecord({ shape, cycle, faceName, faceId, here, siteId, hands = 'act' }: { shape: Shape; cycle: [VertexId, VertexId, VertexId]; faceName: string; faceId: string; here: Edge['id'] | null; siteId?: VertexId; hands?: 'act' | 'words' }) {
   const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
   const withdraw = hands === 'act' ? withdrawRolePair : undefined;
-  // the cells holding this face — by VERTEX SET: each cell holds its OWN record of a shared face (C-7h's measurement: one order written twice), so the id names one cell's copy
-  const cells = useMemo(() => {
-    const own = shape.faces.find((f) => f.id === faceId);
-    const set = new Set(own ? own.vertexIds : cycle);
-    const same = (id: string): boolean => { const f = shape.faces.find((x) => x.id === id); return Boolean(f) && (f as { vertexIds: VertexId[] }).vertexIds.length === set.size && (f as { vertexIds: VertexId[] }).vertexIds.every((v) => set.has(v)); };
-    return shape.cells.filter((c) => c.faceIds.some(same));
-  }, [shape, faceId, cycle]);
-  const host = cells.find((c) => c.kind === 'core' || c.kind === 'parent') ?? cells[0] ?? null;
-  const other = cells.find((c) => c !== host) ?? null;
-  const cornerCellFace = cells.length === 1 && cells[0].kind === 'residue' && cycle.some((v) => isSeedVertex(shape, v));
+  // the cells holding this face — by VERTEX SET (C-7h's measurement: one order written twice), the one producer (C-10b)
+  const { cells, host, other, cornerCellFace } = useMemo(() => faceCellsOf(shape, faceId, cycle), [shape, faceId, cycle]);
   const forward = useMemo(() => bornFaceOf(shape, cycle), [shape, cycle]);
   const reversed = useMemo(() => (other ? bornFaceOf(shape, [cycle[0], cycle[2], cycle[1]]) : null), [shape, cycle, other]);
   if (cornerCellFace) return null;

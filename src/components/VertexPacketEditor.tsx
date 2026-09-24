@@ -1,4 +1,5 @@
 import { faceDisplayName } from '../manuscript/apertureModel';
+import { faceThroughAncestors } from './faceNames'; // C-10b: a dissected source face named through the ancestry
 import {
   type KeyboardEvent,
   useEffect,
@@ -704,9 +705,10 @@ function getVertexDisplayLabel(shape: Shape, vertexId: VertexId): string {
 // by D14 (the one composer, through apertureModel's wrapper), and where that yields nothing the name slot's lawful absence
 // word — NEVER its id; a face the shape no longer holds is said so, not addressed
 function getFaceDisplayLabel(shape: Shape, faceId: string): string {
-  const face = shape.faces.find((candidate) => candidate.id === faceId);
+  // C-10b: a face this shape no longer holds is named through the workspace's ancestry when an ancestor holds it
+  const found = faceThroughAncestors(shape, faceId);
 
-  return face ? getPacketDataDisplayLabel(face.data) ?? faceDisplayName(shape, face) : 'a face this shape no longer holds';
+  return found ? getPacketDataDisplayLabel(found.face.data) ?? faceDisplayName(found.in, found.face) : 'a face this shape no longer holds';
 }
 
 function getCellDisplayLabel(shape: Shape, cellId: string): string {

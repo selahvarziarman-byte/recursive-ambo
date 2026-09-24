@@ -228,6 +228,7 @@ console.log('\n----- §3 the surface: the born face read at ABAC in the unfoldin
 const React = require('react');
 const { renderToString } = require('react-dom/server');
 const { ConceptSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
+const { SelectedFaceReading } = req('src/components/Panels.tsx'); // C-10b: the face's HOME — where a born face's reading prints, once
 const { useGeometryStore } = req('src/store/geometryStore.ts');
 const render = (el) => renderToString(el).replace(/<!-- -->/g, '');
 const unescapeHtml = (s) => (s ?? '').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '<');
@@ -247,12 +248,20 @@ S().applyAmboDissectionToCurrent();
 const G2 = cur();
 const ABAC = Object.values(G2.vertices).find((v) => v.data.label === 'ABAC').id;
 const surfaceAt = (id) => render(React.createElement(ConceptSurface, { shape: cur(), vertexId: id }));
+// C-10b (§131 item 2): the site's TOP names each born face through it in a line; the READING prints once, at the face's home
+const homeAt = (faceId) => render(React.createElement(SelectedFaceReading, { shape: cur(), faceId }));
+const siteFaceIds = () => midpointSiteOf(cur(), ABAC, buildGeneralSitePacketPresenterReport(cur()).packets.find((x) => x.trace.siteId === ABAC).trace).sources.filter((s) => s.cycle.length === 3).map((s) => s.faceId);
+const blocksAtHome = () => siteFaceIds().flatMap((fid) => blocksOf(homeAt(fid)));
+const linesAt = (html) => [...html.matchAll(/data-midpoint-born-face-at-site="([^"]*)" data-midpoint-born-face-kind="([^"]*)"/g)].map((m) => ({ name: unescapeHtml(m[1]), kind: m[2] }));
 const blocksOf = (html) => html.split('data-midpoint-born-face="').slice(1).map((s) => { const name = s.slice(0, s.indexOf('"')); const body = s.slice(0, s.indexOf('data-midpoint-source=') > 0 ? s.indexOf('data-midpoint-source=') : undefined); return { name, cells: (body.match(/data-midpoint-born-face-cells="(\d)"/) || [])[1], alike: (body.match(/data-midpoint-born-face-alike="(\w+)"/) || [])[1] ?? null, states: attrsOf(body, 'data-midpoint-born-face-state'), ground: (body.match(/data-midpoint-born-face-line="ground"/g) || []).length, noNews: (body.match(/data-midpoint-born-face-line="no-news"/g) || []).length, news: attrsOf(body, 'data-midpoint-born-face-news'), hands: [...body.matchAll(/data-midpoint-born-face-hands="[^"]*"[^>]*>([^<]*)</g)].map((m) => unescapeHtml(m[1])), alikeLine: countOf(body, 'data-midpoint-born-face-alike-line'), text: visibleText(body).slice(0, 700) }; });
-const before = blocksOf(surfaceAt(ABAC));
+const before = blocksAtHome();
 note(`ABAC before a born pair: ${J(before.map((b) => ({ name: b.name, cells: b.cells, alike: b.alike, states: b.states, ground: b.ground, noNews: b.noNews, news: b.news, hands: b.hands })))}`);
-check('§3 ★★ THE BORN FACES AT ABAC (the site of the medial edge AB–AC): the two sources\' faces are read through the resolver — the MEDIAL face AB·BC·AC (one cell) and the INTERIOR face AB·AD·AC (two cells, walked as the host\'s, its other walk reading ALIKE with the born rooms empty — one block and one line saying so); each read, the solid\'s GROUND stated once per corner (quiet), `nothing added by a pair of yours yet` before any born pair, Und\'s hands leading with WHERE (`here, on AC–AB` at this site) and naming the descent; the corner cell\'s face A·AB·AC carries no block (not a source here)',
+check('§3 ★★ THE SITE NAMES ITS BORN FACES, ONCE EACH, AT ITS TOP (C-10b, §131 item 2): the surface at ABAC carries one line per born face through it — the medial face (one cell) and the interior face (two cells) — each with `select it to read it`, and NO born-face block (the reading prints at the face\'s home)',
+  (() => { const html = surfaceAt(ABAC); const lines = linesAt(html); return lines.length === 2 && lines.some((l) => l.kind === 'one-cell') && lines.some((l) => l.kind === 'interior') && !/data-midpoint-born-face="/.test(html) && (html.match(/data-midpoint-select-face="/g) || []).length === 2 && /select it to read it/.test(html); })(),
+  J(linesAt(surfaceAt(ABAC))));
+check('§3 ★★ THE BORN FACES AT ABAC READ AT THEIR HOMES (C-10b places C-9\'s blocks where the face is selected): the two sources\' faces are read through the resolver — the MEDIAL face AB·BC·AC (one cell) and the INTERIOR face AB·AD·AC (two cells, walked as the host\'s, its other walk reading ALIKE with the born rooms empty — one block and one line saying so); each read, the solid\'s GROUND stated once per corner (quiet), `nothing added by a pair of yours yet` before any born pair, Und\'s hands leading with WHERE (`here, on AC–AB` at this site) and naming the descent; the corner cell\'s face A·AB·AC carries no block (not a source here)',
   before.length === 2 && before.some((b) => /AB·BC·AC|AC·AB·BC|BC·AC·AB/.test(b.name) && b.cells === '1') && before.some((b) => /AB·AD·AC|AC·AB·AD|AD·AC·AB/.test(b.name) && b.cells === '2' && b.alike === 'true' && b.alikeLine === 1) &&
-    before.every((b) => b.states.length === 1 && b.states[0] === 'read' && b.ground === 3 && b.noNews === 3 && b.news.length === 0 && b.hands.length > 0 && b.hands.every((h) => /^(here, on [A-Z]+–[A-Z]+|at [A-Z]+, on [A-Z]+–[A-Z]+): a pair of yours( · or at [A-Z]+, on [A-Z]–[A-Z]: an act on the edge it descends from)?$/.test(h)) && b.hands.some((h) => /^here, on /.test(h))),
+    before.every((b) => b.states.length === 1 && b.states[0] === 'read' && b.ground === 3 && b.noNews === 3 && b.news.length === 0 && b.hands.length > 0 && b.hands.every((h) => /^(here, on [A-Z]+–[A-Z]+|at [A-Z]+, on [A-Z]+–[A-Z]+): a pair of yours( · or at [A-Z]+, on [A-Z]–[A-Z]: an act on the edge it descends from)?$/.test(h)) && b.hands.some((h) => /^at ABAC, on /.test(h))),
   J(before.map((b) => ({ name: b.name, cells: b.cells, alike: b.alike, states: b.states, ground: b.ground, noNews: b.noNews, hands: b.hands, text: b.text.slice(0, 300) }))));
 // a born pair on AB–AC that CLOSES a route: search the free slots for one whose route returns at some corner
 const site = midpointSiteOf(G2, ABAC, buildGeneralSitePacketPresenterReport(G2).packets.find((x) => x.trace.siteId === ABAC).trace);
@@ -266,7 +275,7 @@ outer: for (const x of free0) for (const y of free1) {
   S().giveRolePair(eAC.id, x, y);
   const taken = cur().edges.find((e) => e.id === eAC.id).identification?.roles.some(([a, b]) => a === x && b === y);
   if (taken) {
-    const after = blocksOf(surfaceAt(ABAC));
+    const after = blocksAtHome();
     if (after.some((b) => b.news.length)) { closing = { x, y, after }; break outer; }
     S().withdrawRolePair(eAC.id, x, y);
   } else S().withdrawMidpointAttempt(eAC.id);
@@ -276,15 +285,18 @@ check('§3 ★★ THE EXTENSION MARKED AND ATTRIBUTED after a born pair (the des
   closing ? closing.after.some((b) => b.news.length > 0) && closing.after.every((b) => b.ground === 3) && closing.after.some((b) => new RegExp(`through your pair ${nameIn(R0.space, closing.x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} ↦ ${nameIn(R1.space, closing.y).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} at ABAC`).test(b.text) || new RegExp(`through your pair ${nameIn(R1.space, closing.y).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} ↦ ${nameIn(R0.space, closing.x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} at ABAC`).test(b.text)) : (note('⚠ no route closed by a single born pair on this path — the bound'), true),
   closing ? J(closing.after.map((b) => b.text.slice(0, 400))) : 'none');
 check('§3 ★ THE INTERIOR FACE\'S TWO WALKS, NAMED BY THEIR CELLS: with the born pair standing the interior face AB·AD·AC either still reads alike (one block, the alike line) or reads differently (TWO blocks, the host\'s first, each named by its cell — `walked as the parent octahedron\'s` · `walked as the residue tetrahedron at A\'s, the reverse`); the block count follows the engine\'s `readAlike`',
-  (() => { const html = surfaceAt(ABAC); const blocks = blocksOf(html); const int = blocks.find((b) => b.cells === '2'); if (!int) return false; const both = /walked as the parent octahedron's/.test(int.text) || /walked as the core/.test(int.text); return int.alike === 'true' ? int.states.length === 1 && int.alikeLine === 1 && both : int.states.length === 2 && int.alikeLine === 0 && both && /walked as the residue tetrahedron at A's, the reverse/.test(int.text); })(),
-  J(blocksOf(surfaceAt(ABAC)).map((b) => ({ name: b.name, cells: b.cells, alike: b.alike, states: b.states, text: b.text.slice(0, 260) }))));
+  (() => { const blocks = blocksAtHome(); const int = blocks.find((b) => b.cells === '2'); if (!int) return false; const both = /walked as the parent octahedron's/.test(int.text) || /walked as the core/.test(int.text); return int.alike === 'true' ? int.states.length === 1 && int.alikeLine === 1 && both : int.states.length === 2 && int.alikeLine === 0 && both && /walked as the residue tetrahedron at A's, the reverse/.test(int.text); })(),
+  J(blocksAtHome().map((b) => ({ name: b.name, cells: b.cells, alike: b.alike, states: b.states, text: b.text.slice(0, 260) }))));
 
 // ═══ §4 THE SOURCE — the engine's boundary and its classification ═══
 const lib = readLf('src/lib/bornFace.ts');
 const surf = readLf('src/components/MidpointSurface.tsx');
 check('§4 ⛔ THE ENGINE IS PURE: bornFace.ts imports the types, the resolver, the gen-0 face and the register\'s agreement — no store, no component, nothing written (`.cast =` and `identification =` nowhere; the record read through the resolver\'s `recordOn`); the manifest classifies it NOT_FROZEN at its landing; the surface mounts `FaceRecord` on seed faces and `BornFaceRecord` on born faces',
   (lib.match(/^import /gm) || []).length === 4 && lib.includes("from './spaceOf';") && lib.includes("from './faceReading';") && lib.includes("import { valuesAgree } from './jRegister';") && !/useGeometryStore|from '\.\.\/store|from '\.\.\/components|\.cast\s*=|identification\s*=|\.identification\b/.test(lib) &&
-    /^NOT_FROZEN src\/lib\/bornFace\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')) && surf.includes('<BornFaceRecord shape={shape} cycle={cycle as [VertexId, VertexId, VertexId]} faceName={faceName} faceId={faceId} here={site.edge.id} siteId={site.siteId} />') && surf.includes("cycle.every((v) => isSeedVertex(shape, v)) ? (\n        <FaceRecord"));
+    /^NOT_FROZEN src\/lib\/bornFace\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')) &&
+    // C-10b: the site mounts FaceRecord on seed faces alone and NAMES each born face in a line; the born face's block mounts ONCE, at the face's home (Panels)
+    !surf.includes('<BornFaceRecord ') && surf.includes("cycle.every((v) => isSeedVertex(shape, v)) ? (\n        <FaceRecord") && surf.includes('data-midpoint-born-face-at-site=') &&
+    readLf('src/components/Panels.tsx').includes('<BornFaceRecord shape={shape} cycle={cycle} faceName={name} faceId={face.id} here={null} />'));
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-THE-BORN-FACE: ALL PASS — the born face reads through the resolver: the solid part the ground, the extension the news attributed to the born pair, a refusal a pair of tuples inherited or born, Und with its descent; read at the site with the interior face\'s two walks named' : `DIAGNOSE-THE-BORN-FACE: ${failures} FAILURE(S)`}`);
 process.exit(failures === 0 ? 0 : 1);
