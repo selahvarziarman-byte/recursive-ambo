@@ -354,6 +354,9 @@ const waitUp = () =>
         const bc = out.badgeClick || {};
         check(`§12 [${w}×${h}] ★★ THE BADGE PICKS (item 5 — measured; the premise did not reproduce): a click on the \`· has\` badge beside F1 at the AB drawing — on the box's top edge (whitespace between glyphs) and at its centre — picks F1; the label click unpicks (the pick toggles); the state restored before the acts`,
           bc.box && /member_status=has/.test(bc.box.badge || '') && J(bc.afterTopEdge) === J(['A|F1']) && J(bc.afterLabel) === J([]) && J(bc.afterCentre) === J(['A|F1']) && J(bc.afterCentreAgain) === J([]), J(bc));
+        // MEASURED, PRINTED, NOT PINNED (§149's landing, the leg at cd1fea0): once F1 is picked the badge's box moves DOWN one line at 1400 × 900 and not at 1689 × 897 — the
+        // second pick is taken at the badge's new centre; the blocks above the drawing before/after the pick name what grew. Reported to the mothership; its ruling decides the cure.
+        note(`C-12a item 5, measured further at [${w}×${h}]: the badge's shift on pick ${bc.shiftY} px · blocks before ${J((bc.blocksBefore || {}).blocks)} · drawing ${J((bc.blocksBefore || {}).drawing)} → after ${J((bc.blocksAfterCentre || {}).blocks)} · drawing ${J((bc.blocksAfterCentre || {}).drawing)}`);
         const aw = out.abWords || {};
         const ownDraw = aw.own || '';
         const liftWords = ((((out.lift || {}).pickedAB || {}).drawing || {}).words) || [];

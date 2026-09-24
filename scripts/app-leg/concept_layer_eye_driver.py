@@ -674,8 +674,11 @@ def badge_click(page):
     """C-12a item 5 — measured, the premise did not reproduce: a click on the `· has` badge beside F1 picks F1 — on the box's
     top edge (the whitespace between glyphs) and at its centre; the label click unpicks (the pick toggles); the state restored"""
     PICKED = "() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-picked]')].map((e) => e.getAttribute('data-midpoint-side') + '|' + e.getAttribute('data-inside-point'))"
-    box = page.evaluate("() => { const g = document.querySelector('[data-midpoint-drawing] [data-midpoint-side=\"A\"][data-inside-point=\"F1\"]'); if (!g) return null; const b = g.querySelector('[data-inside-badge]'); if (!b) return null; const r = b.getBoundingClientRect(); return { badge: b.getAttribute('data-inside-badge'), x: r.x, y: r.y, w: r.width, h: r.height }; }")
-    res = {'box': box}
+    BOX = "() => { const g = document.querySelector('[data-midpoint-drawing] [data-midpoint-side=\"A\"][data-inside-point=\"F1\"]'); if (!g) return null; const b = g.querySelector('[data-inside-badge]'); if (!b) return null; const r = b.getBoundingClientRect(); return { badge: b.getAttribute('data-inside-badge'), x: r.x, y: r.y, w: r.width, h: r.height }; }"
+    box = page.evaluate(BOX)
+    # the vertical boxes of the surface's top-level blocks down to the drawing — measured before and after the first pick: what GROWS is the mechanism of a shift
+    BLOCKS = "() => { const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null; const d = s.querySelector('[data-midpoint-drawing]'); const out = []; for (const c of s.children) { const b = c.getBoundingClientRect(); out.push({ tag: c.tagName.toLowerCase(), key: [...c.attributes].filter((a) => a.name.startsWith('data-')).map((a) => a.name + '=' + a.value).slice(0, 2).join(' ') || (c.textContent || '').slice(0, 40), y: Math.round(b.y * 10) / 10, h: Math.round(b.height * 10) / 10 }); if (c === d || c.contains(d)) break; } return { blocks: out, drawing: d ? (() => { const b = d.getBoundingClientRect(); return { y: Math.round(b.y * 10) / 10, h: Math.round(b.height * 10) / 10 }; })() : null }; }"
+    res = {'box': box, 'blocksBefore': page.evaluate(BLOCKS)}
     if not box:
         return res
     page.mouse.click(box['x'] + box['w'] * 0.7, box['y'] + 1.5); page.wait_for_timeout(300)
@@ -684,7 +687,14 @@ def badge_click(page):
     res['afterLabel'] = page.evaluate(PICKED)
     page.mouse.click(box['x'] + box['w'] / 2, box['y'] + box['h'] / 2); page.wait_for_timeout(300)
     res['afterCentre'] = page.evaluate(PICKED)
-    page.mouse.click(box['x'] + box['w'] / 2, box['y'] + box['h'] / 2); page.wait_for_timeout(300)
+    res['boxAfterCentre'] = page.evaluate(BOX)  # the badge's box once F1 is picked — MEASURED: at 1400×900 it moves down one line (y +16), at 1689×897 it does not
+    res['blocksAfterCentre'] = page.evaluate(BLOCKS)
+    b2 = res['boxAfterCentre'] or box
+    res['shiftY'] = round(b2['y'] - box['y'], 1)
+    # two PICKS, never one double-click (700 ms past the platform's interval); the second pick at the badge's NEW centre — a person
+    # follows the target; the shift itself is printed with the clause and reported, never hidden by the instrument
+    page.wait_for_timeout(700)
+    page.mouse.click(b2['x'] + b2['w'] / 2, b2['y'] + b2['h'] / 2); page.wait_for_timeout(300)
     res['afterCentreAgain'] = page.evaluate(PICKED)
     return res
 
