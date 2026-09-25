@@ -201,7 +201,22 @@ scripts/.sweep-times.json
 .handoff/instruments/tiling_reference/*
 !.handoff/instruments/tiling_reference/rp2_quotient.py
 !.handoff/instruments/tiling_reference/tiling_generators.py
+!.handoff/instruments/use-server/
+.handoff/instruments/use-server/*
+!.handoff/instruments/use-server/start.cmd
+!.handoff/instruments/use-server/stop.cmd
+!.handoff/instruments/use-server/update.ps1
 !.handoff/instruments/walk_press_reference/
 .handoff/instruments/walk_press_reference/*
 !.handoff/instruments/walk_press_reference/RESULTS_2026-09-16_press_period_probe.txt
 !.handoff/instruments/walk_press_reference/press_period_probe.cjs
+
+# ── STANDING BY NAME (USE-1, 2026-09-25 — the mothership's stamp on the technical officer's release scripts): files tracked BY A
+# RULING, never by a citation — the U1 sweep above takes no .cmd/.ps1 — and carried whole by the sweep across every regeneration.
+# The use server on :5180 (the customer's pinned release, C:\Dev\202cl\USE): start it, stop it (port-scoped), move its pin on an
+# announcement. Tracked as they stand; the parent directory un-ignored and its children re-ignored before each file is negated.
+!.handoff/instruments/use-server/
+.handoff/instruments/use-server/*
+!.handoff/instruments/use-server/start.cmd
+!.handoff/instruments/use-server/stop.cmd
+!.handoff/instruments/use-server/update.ps1

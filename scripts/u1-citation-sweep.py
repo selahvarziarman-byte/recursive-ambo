@@ -12,6 +12,7 @@ on its own. Mail (.handoff/inbox), archives and the retired codex are never cand
 
   python scripts/u1-citation-sweep.py            # dry run: the wave, its bytes, the .gitignore block
   python scripts/u1-citation-sweep.py --apply    # regenerate the U1 block of .gitignore whole and print the files to `git add`
+                                                # (a `# ── STANDING BY NAME` section after the block is preserved whole — USE-1)
 """
 import io, json, os, re, subprocess, sys
 
@@ -150,9 +151,17 @@ block = '\n'.join(lines) + '\n'
 if '--apply' in sys.argv:
     gi = io.open('.gitignore', encoding='utf-8', newline='').read()
     marker = '\n# ── U1 RECORD RIDER'
+    # USE-1 (2026-09-25): a STANDING BY NAME section after this block — files tracked by a RULING, never by a citation (this sweep's
+    # candidate predicate takes no .cmd/.ps1) — is carried whole across every regeneration; without it a by-name negation after the
+    # block would be dropped at the next apply, and one before it re-ignored by the block's own `.handoff/instruments/*`
+    standing_marker = '\n# ── STANDING BY NAME'
+    standing = ''
+    if standing_marker in gi:
+        standing = gi[gi.index(standing_marker):]
+        gi = gi[:gi.index(standing_marker)]
     if marker in gi:
         gi = gi[:gi.index(marker)]
-    io.open('.gitignore', 'w', encoding='utf-8', newline='').write(gi.rstrip('\n') + '\n' + block)
+    io.open('.gitignore', 'w', encoding='utf-8', newline='').write(gi.rstrip('\n') + '\n' + block + standing)
     print('.gitignore regenerated; the files to `git add`:')
     print(json.dumps(sorted(closure), ensure_ascii=False, indent=1))
 else:
