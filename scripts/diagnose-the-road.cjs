@@ -1,0 +1,89 @@
+#!/usr/bin/env node
+// DIAGNOSE-THE-ROAD — STAMP C-13 (the mothership's 1158 letter; Arman's Δ104: "fix F1 and F4. F2 must be fixed."): three
+// defects found on the new seat's road — his four seeds → a cast each → the tetrahedron → two Ambo dissections → the six
+// squares of g2 lifted one by one → the Manuscript. Landed in the order the road meets them, each with its own section here:
+//
+//   §a  C-13a (F2) — a cast quality value that is not text was dropped with no mark: the loader now carries it on the warrant
+//       under its home, marks it by name in the house's form, counts it in the card's not-taken line; UNKNOWN and an omitted
+//       quality stay absence. The same site's two siblings (a label that is not text; qualities that are not a set of named
+//       values) take the same cure — said in the report.
+//
+// ⛔ RECORD, NOT READING: nothing here stores a reading; every line is re-derived from the record at the read.
+
+const fs = require('node:fs');
+const path = require('node:path');
+const ts = require('typescript');
+
+const TRANSPILE_OPTIONS = {
+  compilerOptions: { esModuleInterop: true, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX },
+};
+require.extensions['.ts'] = (m, f) => { m._compile(ts.transpileModule(fs.readFileSync(f, 'utf8'), { ...TRANSPILE_OPTIONS, fileName: f }).outputText, f); };
+require.extensions['.tsx'] = require.extensions['.ts'];
+require.extensions['.css'] = () => {};
+
+const repoRoot = path.resolve(__dirname, '..');
+const req = (p) => require(path.join(repoRoot, p));
+const readLf = (p) => fs.readFileSync(path.join(repoRoot, p), 'utf8').split('\r\n').join('\n');
+const J = (x) => JSON.stringify(x);
+
+let failures = 0;
+const check = (name, cond, detail) => {
+  console.log(`${cond ? 'PASS' : 'FAIL'} - ${name}${cond ? '' : ` — ${detail ?? ''}`}`);
+  if (!cond) failures += 1;
+};
+const note = (line) => console.log(`      ${line}`);
+
+console.log('DIAGNOSE-THE-ROAD — C-13, three found on the road (a · b · c), each in the order the road meets it');
+
+// ═══ §a C-13a — A CAST QUALITY VALUE THAT IS NOT TEXT (F2) ═══
+console.log('----- §a a quality value that is not text: not taken, carried on the warrant under its home, marked by name, counted -----');
+const { readCastFile, notTakenAddresses, notTakenLine } = req('src/lib/castLoader.ts');
+const castOf = (roles, extra = {}) => JSON.stringify({ roles, signature: [{ type: 'r', arity: 2 }], relations: [], ...extra });
+const load = (roles, extra) => readCastFile(castOf(roles, extra));
+const line = (r) => (r.taken ? notTakenLine(notTakenAddresses(r.cast)) : null);
+const malformed = (r) => (r.taken && r.cast.warrant ? r.cast.warrant.malformed ?? null : null);
+
+const letter = load([{ id: 'x', types: { weight: 3, kind: 'a' } }]);
+note(`the letter's role at the cure: roles ${J(letter.cast && letter.cast.roles)} · marks ${J(letter.marks)} · warrant ${J(letter.cast && letter.cast.warrant)} · card ${J(line(letter))}`);
+check('§a ★★ THE LETTER\'S ROLE `{ id: "x", types: { weight: 3, kind: "a" } }` (✔ RAN at the base d95de24: `types: { kind: \'a\' }`, `marks: []`, `warrant: null` — the number gone, nothing saying so): the kind stays categorical (`kind: a` taken, the number NOT a quality); the value CARRIED on the warrant under its home `roles.0.types.weight`; MARKED by name `role 0: quality "weight" is not text — not taken`; COUNTED in the card\'s line `1 item not taken: role 0\'s quality "weight"`',
+  letter.taken === true && J(letter.cast.roles) === J([{ id: 'x', types: { kind: 'a' } }]) && J(letter.marks) === J(['role 0: quality "weight" is not text — not taken']) &&
+    J(malformed(letter)) === J({ 'roles.0.types.weight': 3 }) && line(letter) === '1 item not taken: role 0\'s quality "weight"',
+  J({ roles: letter.cast && letter.cast.roles, marks: letter.marks, malformed: malformed(letter), card: line(letter) }));
+
+const others = load([{ id: 'x', types: { n: null, a: [1], o: { c: 1 }, b: true, kind: 'a' } }]);
+check('§a ★ EVERY VALUE THAT IS NOT TEXT takes the same road — null, an array, an object, a boolean: each marked by its name, carried by its name with its bytes unchanged, counted (4 items), the text quality beside them taken',
+  others.taken && J(others.cast.roles) === J([{ id: 'x', types: { kind: 'a' } }]) && others.marks.length === 4 && ['n', 'a', 'o', 'b'].every((k) => others.marks.includes(`role 0: quality "${k}" is not text — not taken`)) &&
+    J(malformed(others)) === J({ 'roles.0.types.n': null, 'roles.0.types.a': [1], 'roles.0.types.o': { c: 1 }, 'roles.0.types.b': true }) &&
+    line(others) === '4 items not taken: role 0\'s quality "n" · role 0\'s quality "a" · role 0\'s quality "o" · role 0\'s quality "b"',
+  J({ roles: others.cast && others.cast.roles, marks: others.marks, malformed: malformed(others), card: line(others) }));
+
+const absent = load([{ id: 'x', types: { kind: 'UNKNOWN' } }, { id: 'y' }, { id: 'z', label: '' }]);
+check('§a ★ UNKNOWN AND AN OMITTED QUALITY STAY ABSENCE, UNCHANGED (and an empty label, as before): `kind: UNKNOWN` kept verbatim, the role with no qualities holds none, the empty label no label — no mark, no warrant, no card line',
+  absent.taken && J(absent.cast.roles) === J([{ id: 'x', types: { kind: 'UNKNOWN' } }, { id: 'y' }, { id: 'z' }]) && absent.marks.length === 0 && absent.cast.warrant === undefined && line(absent) === null,
+  J({ roles: absent.cast && absent.cast.roles, marks: absent.marks, warrant: absent.cast && absent.cast.warrant }));
+
+const siblings = load([{ id: 'x', label: 5 }, { id: 'y', types: ['a', 'b'] }, { id: 'z', types: 'weight' }]);
+check('§a ★★ THE SAME SITE\'S TWO SIBLINGS, THE SAME CURE (the coder\'s widening, said in the report — measured at the base: both erased with no mark): a label that is not text (`role 0: its label is not text — not taken`, carried under `roles.0.label`) and qualities that are not a set of named values (an array, a string — `role N: its qualities are not a set of named values — not taken`, carried under `roles.N.types`); each counted by its home',
+  siblings.taken && J(siblings.cast.roles) === J([{ id: 'x' }, { id: 'y' }, { id: 'z' }]) &&
+    J(siblings.marks) === J(['role 0: its label is not text — not taken', 'role 1: its qualities are not a set of named values — not taken', 'role 2: its qualities are not a set of named values — not taken']) &&
+    J(malformed(siblings)) === J({ 'roles.0.label': 5, 'roles.1.types': ['a', 'b'], 'roles.2.types': 'weight' }) &&
+    line(siblings) === '3 items not taken: role 0\'s label · role 1\'s qualities · role 2\'s qualities',
+  J({ marks: siblings.marks, malformed: malformed(siblings), card: line(siblings) }));
+
+const mixed = load([{ id: 'x', types: { weight: 3 } }, { label: 'no id' }], { relations: [{ type: 'r', terms: ['x', 'x'], polarity: 'maybe' }] });
+check('§a ★ THE HOUSE FORMS STAND BESIDE THE NEW ONES, IN THE FILE\'S ORDER: a role with no id reads `role 1: has no id — not taken` (address `role 1`), a relation with no polarity `relation 0`; the card line counts all three — `3 items not taken: role 0\'s quality "weight" · role 1 · relation 0`',
+  mixed.taken && mixed.marks.includes('role 1: has no id — not taken') && mixed.marks.includes('role 0: quality "weight" is not text — not taken') && line(mixed) === '3 items not taken: role 0\'s quality "weight" · role 1 · relation 0',
+  J({ marks: mixed.marks, card: line(mixed) }));
+
+const dotted = load([{ id: 'x', types: { 'a.b': 3 } }]);
+check('§a ★ A QUALITY\'S NAME MAY HOLD A DOT: `{ "a.b": 3 }` is carried under `roles.0.types.a.b` and read back whole — `role 0\'s quality "a.b"` (everything after `types.` is the name)',
+  dotted.taken && J(malformed(dotted)) === J({ 'roles.0.types.a.b': 3 }) && line(dotted) === '1 item not taken: role 0\'s quality "a.b"', J({ malformed: malformed(dotted), card: line(dotted) }));
+
+check('§a ★ ONE READER EACH WAY: the card\'s Cast rows print `notTakenLine(notTakenAddresses(cast))` — the warrant read by key, re-derived at every read; the load line joins the loader\'s own marks; the manifest classifies the loader NOT_FROZEN',
+  readLf('src/components/Panels.tsx').includes('const notTaken = notTakenLine(notTakenAddresses(cast));') && readLf('src/components/VertexPacketEditor.tsx').includes("load.marks.join(' · ')") &&
+    /^NOT_FROZEN src\/lib\/castLoader\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')));
+
+console.log('');
+if (failures === 0) console.log('DIAGNOSE-THE-ROAD: ALL PASS — a cast quality value that is not text is carried, marked and counted, never dropped');
+else console.log(`DIAGNOSE-THE-ROAD: ${failures} FAILURE(S)`);
+process.exit(failures === 0 ? 0 : 1);

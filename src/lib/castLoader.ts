@@ -101,11 +101,31 @@ export function readCastFile(text: string): CastLoad {
       return;
     }
     const role: ConceptRole = { id: raw.id };
-    if (isString(raw.label) && raw.label.length > 0) role.label = raw.label;
+    // C-13a (Δ104; the mothership's C-13 letter, F2): a field of a TAKEN role that the loader reads but cannot take is bytes the
+    // person wrote — never taken as what it is not, CARRIED on the warrant under its home (the role's index and the field; a
+    // quality by its name), MARKED by name in the house's form, COUNTED in the card's not-taken line (rider (b): never erased).
+    // The qualities stay categorical: a value that is not text is not a quality. UNKNOWN and an omitted quality stay absence;
+    // an empty label stays absence, as before.
+    if (isString(raw.label)) {
+      if (raw.label.length > 0) role.label = raw.label;
+    } else if (raw.label !== undefined) {
+      marks.push(`role ${i}: its label is not text — not taken`);
+      malformed[`roles.${i}.label`] = raw.label;
+    }
     if (isObject(raw.types)) {
       const types: Record<string, string | 'UNKNOWN'> = {};
-      for (const [k, v] of Object.entries(raw.types)) if (isString(v)) types[k] = v;
+      for (const [k, v] of Object.entries(raw.types)) {
+        if (isString(v)) {
+          types[k] = v;
+        } else {
+          marks.push(`role ${i}: quality "${k}" is not text — not taken`);
+          malformed[`roles.${i}.types.${k}`] = v;
+        }
+      }
       if (Object.keys(types).length > 0) role.types = types;
+    } else if (raw.types !== undefined) {
+      marks.push(`role ${i}: its qualities are not a set of named values — not taken`);
+      malformed[`roles.${i}.types`] = raw.types;
     }
     const carried = rest(raw, ['id', 'label', 'types']);
     if (Object.keys(carried).length > 0) role.marks = carried;
@@ -255,15 +275,20 @@ export function readCastFile(text: string): CastLoad {
 /**
  * THE ITEMS NOT TAKEN (C-6e, ruled): the addresses under `warrant.malformed` — the device's OWN record of what it
  * declined, read by KEY only (never a value: the warrant's content stays the caster's, unread). `relations.3` → `relation 3`,
- * `roles.1` → `role 1`, `signature.2` → `signature entry 2`, `axioms.1` → `axiom 1` — in the file's order.
+ * `roles.1` → `role 1`, `signature.2` → `signature entry 2`, `axioms.1` → `axiom 1` — in the file's order. C-13a: a field of
+ * a taken role carries its home past the index — `roles.0.types.weight` → `role 0's quality "weight"` (a quality's name may
+ * hold a dot: everything after `types.` is the name), `roles.0.label` → `role 0's label`, `roles.0.types` → `role 0's qualities`.
  */
 export function notTakenAddresses(cast: ConceptSpace): string[] {
   const malformed = cast.warrant?.malformed;
   if (!malformed || typeof malformed !== 'object' || Array.isArray(malformed)) return [];
   const noun: Record<string, string> = { roles: 'role', signature: 'signature entry', relations: 'relation', axioms: 'axiom' };
   return Object.keys(malformed).map((k) => {
-    const [home, index] = k.split('.');
-    return `${noun[home] ?? home} ${index}`;
+    const [home, index, field, ...name] = k.split('.');
+    const address = `${noun[home] ?? home} ${index}`;
+    if (home !== 'roles' || field === undefined) return address;
+    if (field === 'types') return name.length > 0 ? `${address}'s quality "${name.join('.')}"` : `${address}'s qualities`;
+    return `${address}'s ${field}`;
   });
 }
 
