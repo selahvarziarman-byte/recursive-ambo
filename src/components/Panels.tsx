@@ -36,6 +36,7 @@ import {
   type TopologyFrontierGroup,
 } from '../lib/topologySignature';
 import { parseWorkspaceImport } from '../lib/workspacePersistence';
+import { askServerHead, pageVersionLine } from '../lib/pageVersion';
 import { downwardClosure, validateLiftSelection } from '../lib/subComplexLift';
 // TASK D (B-2026-08-23-C §5): the composer that exists — the face's D14
 // name, shared with the aperture menu (never a second composer, never the id)
@@ -503,6 +504,42 @@ export function OperationControls() {
   );
 }
 
+// STAMP USE-2 (2026-09-25) — THE PAGE SAYS WHICH VERSION IT RUNS: the version it was loaded from, asked of /__whereami
+// ONCE when this panel mounts (a reload remounts it, so the label is the load's by construction; the meaning and the
+// measurement are in src/lib/pageVersion.ts). Nothing here polls, listens or reloads: the stamp's item 2 — a line for a
+// page left running across a release — was built and CUT before landing on Arman's ruling (2026-09-25 20:54): that page
+// is implementation scaffolding, worked around by halting the use while the coder works. The label stays because a
+// reader of the PAGE needs what the page runs, and a label that ever differs from /__whereami is that rule's falsifier.
+function usePageHead(): string | null {
+  const [pageHead, setPageHead] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    void askServerHead().then((head) => {
+      if (alive) setPageHead(head);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  return pageHead;
+}
+
+function PageVersionLine() {
+  const pageHead = usePageHead();
+
+  if (pageHead === null) {
+    return null; // the true absence — the server did not answer with a head: no version, no placeholder
+  }
+
+  return (
+    <p data-page-version="true" className="mt-2 text-xs leading-5 text-stone-500">
+      {pageVersionLine(pageHead)}
+    </p>
+  );
+}
+
 function WorkspacePersistenceControls() {
   const exportWorkspace = useGeometryStore((state) => state.exportWorkspace);
   const importWorkspace = useGeometryStore((state) => state.importWorkspace);
@@ -557,6 +594,7 @@ function WorkspacePersistenceControls() {
       <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
         Save / Load
       </h3>
+      <PageVersionLine />
       <div className="mt-3 grid gap-2">
         <button
           type="button"
