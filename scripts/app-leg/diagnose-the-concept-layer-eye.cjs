@@ -368,6 +368,32 @@ const waitUp = () =>
         check(`§12 [${w}×${h}] ★★ A WORD PICK MOVES NOTHING EITHER (§149 rider, the same construction in the word half): \`${(wp.word || '').replace(/^A\|/, '')}\` picked in A's row, the first chip of B's row (the word act's second target) at the same y — 0 px — and every block down to the drawing unmoved; the words read in the word half's own reserved line (one line, 16 px, whole), none in the pairs row; the same chip clicked again unpicks`,
           !!wp.word && wp.chipShiftY === 0 && sameBlocks(wp.blocksBefore, wp.blocksAfter) && wl.present === true && wl.pick === wp.word && wl.inOld === 0 && wl.h === 16 && wl.scrollW <= wl.clientW && / chosen — now a word in [A-D]$/.test(wl.text || '') && wp.restored === true,
           J({ word: wp.word, chipShiftY: wp.chipShiftY, line: wl, restored: wp.restored, blocksBefore: wp.blocksBefore, blocksAfter: wp.blocksAfter }));
+        // ─── C-13 at the eye — the three found on the road, read where the person reads them ───
+        const c13 = out.c13 || {};
+        const rowsOf = (rows, re) => (rows || []).filter((r) => re.test(r.label));
+        const statusOf = (rows, label) => { const r = (rows || []).find((x) => x.label === label); return r ? r.status : null; };
+        const lineageOnly = (rows) => (rows || []).filter((r) => r.status === 'lineage-only').length;
+        check(`§15 [${w}×${h}] ★★ C-13b AT THE EYE (F4; Δ58 · Δ104 as M1 rules them): A christened \`apex\` by the packet editor's Save — the midpoints beside it read the NEW letters and keep \`lineage-only\` (\`apexB\`, and one generation down \`apexBapexC\`), \`apex\` itself \`named\`, the unresolved count unchanged; the midpoint surface's head reads \`apexB · the midpoint between apex and B\`; \`A\` saved again — the strings follow back and the rows read exactly as before`,
+          c13.editorStatusApex === 'named' &&
+            statusOf(c13.rowsAfter, 'apexB') === 'lineage-only' && statusOf(c13.rowsAfter, 'apexBapexC') === 'lineage-only' && rowsOf(c13.rowsAfter, /^apex/).length >= 4 && statusOf(c13.rowsAfter, 'AB') === null &&
+            lineageOnly(c13.rowsAfter) === lineageOnly(c13.rowsBefore) && /^apexB · the midpoint between apex and B/.test(c13.headApexB || '') && J(c13.rowsRestored) === J(c13.rowsBefore),
+          J({ before: rowsOf(c13.rowsBefore, /^(A|AB|AC|ABAC)$/), after: rowsOf(c13.rowsAfter, /^apex/), editorStatusApex: c13.editorStatusApex, head: c13.headApexB, restoredEqual: J(c13.rowsRestored) === J(c13.rowsBefore), counts: [lineageOnly(c13.rowsBefore), lineageOnly(c13.rowsAfter)] }));
+        check(`§15 [${w}×${h}] ★★ C-13c AT THE EYE (F1): a square of g2 shift-clicked into the lift region from the core's face rows and lifted — the notice reads \`lifted “<its four corners> of Ambo Dissection Tetrahedron” → the Manuscript shelf\`, the square's composed name, never its id`,
+          typeof c13.squareRow === 'string' && c13.liftButton === 1 && /^lifted “[A-D]{4}·[A-D]{4}·[A-D]{4}·[A-D]{4} of Ambo Dissection Tetrahedron” → the Manuscript shelf$/.test(c13.liftNotice || '') && !/face:/.test(c13.liftNotice || ''),
+          J({ squareRow: c13.squareRow, liftRegion: c13.liftRegion, notice: c13.liftNotice }));
+        check(`§15 [${w}×${h}] ★★ C-13a AT THE EYE (F2): a cast whose quality \`weight\` is the number 3 loaded onto A — the load line carries the mark \`role 0: quality "weight" is not text — not taken\`, and A's card counts it: \`1 item not taken: role 0's quality "weight"\``,
+          /role 0: quality "weight" is not text — not taken/.test(c13.loadResult || '') && ((c13.castCard || {}).notTaken || '') === '1 item not taken: role 0\'s quality "weight"',
+          J({ loadResult: c13.loadResult, card: c13.castCard }));
+        const rl13 = c13.roleListing || {}; const rb = rl13.before || {}; const rw = rl13.afterWithdraw || {}; const rr = rl13.afterRepair || {};
+        const sameBox = (a, b) => !!(a && b && a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h);
+        check(`§15 [${w}×${h}] ★★ C-13e AT THE EYE: at AB the role pairs read in their own listing below the drawing — each whole (\`x ↦ y · yours · withdraw\`), indexed like its line, its withdraw a button, none inside the drawing; no text in the drawing carries a pair; the first pair withdrawn from the listing and made again by two clicks on its points — the drawing's box and a column point's box the same before, between and after, in the surface's own coordinates (the panel scrolls under the clicks; only a layout move is a move: 0 px, §149), the listing restored to its count`,
+          Array.isArray(rb.listing) && rb.listing.length >= 3 && rb.listing.every((e) => e.button === 1 && e.insideDrawing === false && /↦ .* · yours(, born here)?( · .*)? · withdraw$/.test(e.text)) && rb.lines === rb.listing.length && J(rb.marks) === J(rb.listing.map((e) => e.index)) && Array.isArray(rb.svgTextsWithPairs) && rb.svgTextsWithPairs.length === 0 &&
+            rw.listing && rw.listing.length === rb.listing.length - 1 && rr.listing && rr.listing.length === rb.listing.length && sameBox(rb.drawing, rw.drawing) && sameBox(rb.drawing, rr.drawing) && sameBox(rb.point, rw.point) && sameBox(rb.point, rr.point),
+          J({ before: rb, afterWithdraw: rw && { n: (rw.listing || []).length, drawing: rw.drawing, point: rw.point }, afterRepair: rr && { n: (rr.listing || []).length, drawing: rr.drawing, point: rr.point } }));
+        const ll = c13.longLabel || {};
+        check(`§15 [${w}×${h}] ★★ C-13d AT THE EYE (the new seat's first report — \`he involuntary omission\`): the cast loaded onto A carries the role \`the involuntary omission\`; in the drawing over the solid its label is read WHOLE — the text's rendered box inside the svg's own box and the panel's (no part past the left edge), no ellipsis, the lane the drawing wrote for it wider than the old fixed 118`,
+          ll.found === true && ll.whole === true && ll.insideSvg === true && ll.insidePanel === true && Number(ll.lane) > 118 && ll.bboxX >= ll.viewBoxLeft,
+          J(ll));
         note(`C-12a item 5, measured further at [${w}×${h}]: the badge's shift on pick ${bc.shiftY} px · blocks before ${J((bc.blocksBefore || {}).blocks)} · drawing ${J((bc.blocksBefore || {}).drawing)} → after ${J((bc.blocksAfterCentre || {}).blocks)} · drawing ${J((bc.blocksAfterCentre || {}).drawing)}`);
         const aw = out.abWords || {};
         const ownDraw = aw.own || '';

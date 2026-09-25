@@ -732,6 +732,114 @@ def word_pick_shift(page):
     return res
 
 
+# ─── C-13 at the eye — the three found on the road, read where the person reads them (the last acts of the run) ───
+PACKET_ROWS = """() => [...document.querySelectorAll('button')].map((b) => { const badge = [...b.querySelectorAll('span')].find((s) => /(^| )rounded border px-2 py-0\\.5/.test(s.className)); return badge ? { text: b.innerText.replace(/\\s+/g, ' ').trim(), label: (b.innerText.split('\\n')[0] || '').trim(), status: badge.textContent.trim() } : null; }).filter(Boolean)"""
+LONG_LABEL = """() => { const t = [...document.querySelectorAll('tspan[data-inside-label]')].find((e) => e.textContent === 'the involuntary omission'); if (!t) return { found: false, labels: [...document.querySelectorAll('tspan[data-inside-label]')].map((e) => e.textContent).slice(0, 12) }; const text = t.parentElement; const svg = text.closest('svg'); const panel = svg.closest('[data-inside-panel]') || svg.parentElement; const tb = text.getBoundingClientRect(); const sb = svg.getBoundingClientRect(); const pb = panel.getBoundingClientRect(); return { found: true, text: t.textContent, whole: t.textContent === 'the involuntary omission', lane: svg.getAttribute('data-inside-label-lane'), textLeft: Math.round(tb.left * 10) / 10, svgLeft: Math.round(sb.left * 10) / 10, panelLeft: Math.round(pb.left * 10) / 10, insideSvg: tb.left >= sb.left - 0.5, insidePanel: tb.left >= pb.left - 0.5, bboxX: Math.round(text.getBBox().x * 10) / 10, viewBoxLeft: Number(svg.getAttribute('viewBox').split(' ')[0]) }; }"""
+EDITOR_STATUS = "() => { const s = [...document.querySelectorAll('span')].find((e) => !e.closest('button') && /(^| )rounded border px-2 py-0\\.5/.test(e.className) && /^(named|annotated|empty|lineage-only)$/.test(e.textContent.trim())); return s ? s.textContent.trim() : null; }"
+LOAD_RESULT = "() => { const p = document.querySelector('[data-cast-load-result]'); return p ? p.textContent.trim() : null; }"
+CAST_CARD = "() => ({ notTaken: (document.querySelector('[data-cast-not-taken]') || {}).textContent || null, marks: (document.querySelector('[data-cast-card-row=\"marks\"]') || {}).textContent || null, summary: (document.querySelector('[data-cast-card-row=\"summary\"]') || {}).textContent || null })"
+
+
+def rename_selected(page, label):
+    """the packet editor's Save with a changed Label — the person's christening act, as he makes it"""
+    tab(page, "packets")
+    field = page.get_by_label("Label").first
+    field.fill(label); page.wait_for_timeout(200)
+    page.get_by_role("button", name=re.compile(r"^Save packet$")).first.click(); page.wait_for_timeout(700)
+
+
+ROLE_LISTING = """() => { const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null; const d = s.querySelector('[data-midpoint-drawing]'); const sb = s.getBoundingClientRect(); const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round((b.x - sb.x + s.scrollLeft) * 10) / 10, y: Math.round((b.y - sb.y + s.scrollTop) * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 }; }; const pt = d ? d.querySelector('[data-midpoint-side=\"A\"][data-inside-point] text') : null; return { lines: d ? d.querySelectorAll('[data-midpoint-line]').length : 0, marks: d ? [...d.querySelectorAll('[data-midpoint-line-index]')].map((e) => e.textContent) : [], svgTextsWithPairs: d ? [...d.querySelectorAll('text')].map((e) => e.textContent).filter((t) => /↦|yours|withdraw/.test(t)) : null, listing: [...s.querySelectorAll('[data-midpoint-role-pairs] [data-midpoint-line-listing]')].map((e) => ({ pair: e.getAttribute('data-midpoint-line-listing'), index: e.getAttribute('data-midpoint-line-listing-index'), text: e.textContent.replace(/\\s+/g, ' ').trim(), button: e.querySelectorAll('button[data-midpoint-withdraw]').length, insideDrawing: d ? d.contains(e) : null })), drawing: r(d), point: r(pt) }; }"""
+
+
+def role_listing_arm(page):
+    """C-13e at the eye — at AB (gen 2, the (i) pairs standing): the role pairs read in their own listing below the drawing, each whole with
+    its withdraw, none drawn in the drawing; the first pair withdrawn from the listing and made again by two clicks on its points —
+    the drawing's box and a column point's box the same before and after (§149 by construction), the listing restored"""
+    res = {}
+    res['cell'] = select_cell(page, r"^octahedron")
+    res['selectAB'] = select_vertex_labelled(page, 'AB')
+    res['before'] = page.evaluate(ROLE_LISTING)
+    if not res['before'] or not res['before']['listing']:
+        return res
+    first = res['before']['listing'][0]['pair']
+    x, y = first.split('↦')
+    page.locator(f'[data-midpoint-role-pairs] [data-midpoint-withdraw="role|{x}|{y}"]').first.click(); page.wait_for_timeout(500)
+    res['afterWithdraw'] = page.evaluate(ROLE_LISTING)
+    pair(page, x, y)
+    res['afterRepair'] = page.evaluate(ROLE_LISTING)
+    return res
+
+
+def c13_arm(page, args):
+    """(b) A christened `apex` on the current shape (gen 2): the midpoints beside it keep `lineage-only` and read the new
+    letters (`apexB`, `apexBapexC` one generation down), the surface's head reads them; then `A` again — the strings follow
+    back and the rows read exactly as before. (c) a g2 square shift-clicked into the lift region and lifted — the notice
+    titles it by its corners. (a) a cast whose quality value is a number loaded onto A — the load line marks it, the card
+    counts it (A's cast replaced: the run's last act)."""
+    res = {}
+    res['roleListing'] = role_listing_arm(page)  # C-13e, before the acts below change AB's corners
+    res['cellA'] = select_residue_at(page, 'A')
+    res['selectA'] = select_vertex_labelled(page, 'A')
+    tab(page, "packets")
+    res['rowsBefore'] = page.evaluate(PACKET_ROWS)
+    rename_selected(page, 'apex')
+    res['rowsAfter'] = page.evaluate(PACKET_ROWS)
+    page.screenshot(path=f"{args.frames}/concept-layer-c13b-rows-{args.width}x{args.height}.png")
+    res['selectApexB'] = select_vertex_labelled(page, 'apexB')
+    res['headApexB'] = page.evaluate("() => { const s = document.querySelector('[data-midpoint-surface]'); return s ? s.textContent.replace(/\\s+/g, ' ').trim().slice(0, 160) : null; }")
+    page.screenshot(path=f"{args.frames}/concept-layer-c13b-head-{args.width}x{args.height}.png")
+    res['selectApex'] = select_vertex_labelled(page, 'apex')
+    tab(page, "packets")
+    res['editorStatusApex'] = page.evaluate(EDITOR_STATUS)  # the packet editor's own badge for A: `named` (the Packets list is filtered to the midpoints)
+    rename_selected(page, 'A')
+    res['rowsRestored'] = page.evaluate(PACKET_ROWS)
+    # (c) the lift of a square
+    select_core(page)
+    tab(page, "selection")
+    faces = page.locator('[title="click: read the face · shift-click: toggle in the lift region"]')
+    res['faceRows'] = faces.count()
+    picked = None
+    for i in range(faces.count()):
+        text = faces.nth(i).inner_text().replace('\n', ' ')
+        if re.search(r'\b[A-D]{4}·[A-D]{4}·[A-D]{4}·[A-D]{4}\b', text):
+            picked = text; faces.nth(i).click(modifiers=['Shift']); page.wait_for_timeout(500); break
+    res['squareRow'] = picked
+    res['liftRegion'] = page.evaluate("() => { const s = [...document.querySelectorAll('span')].find((e) => /^Lift region:/.test(e.textContent.trim())); return s ? s.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+    btn = page.get_by_role("button", name=re.compile(r"^Lift region → Manuscript$"))
+    res['liftButton'] = btn.count()
+    if btn.count():
+        btn.first.click(); page.wait_for_timeout(700)
+    res['liftNotice'] = page.evaluate("() => { const p = [...document.querySelectorAll('p')].find((e) => /lifted|Manuscript shelf/i.test(e.textContent)); return p ? p.textContent.trim() : null; }")
+    page.screenshot(path=f"{args.frames}/concept-layer-c13c-notice-{args.width}x{args.height}.png")
+    # (a) the cast with a number for a quality
+    cast_path = f"{args.frames}/c13a-weight.cast.json"
+    with open(cast_path, 'w', encoding='utf-8') as f:
+        json.dump({ 'roles': [{ 'id': 'x', 'label': 'the involuntary omission', 'types': { 'weight': 3, 'kind': 'a' } }, { 'id': 'y', 'label': 'B' }], 'signature': [{ 'type': 'r', 'arity': 2 }], 'relations': [{ 'type': 'r', 'terms': ['x', 'y'], 'polarity': 'holds' }] }, f)
+    res['cellA2'] = select_residue_at(page, 'A')
+    res['selectA2'] = select_vertex_labelled(page, 'A')
+    tab(page, "packets")
+    page.locator('[data-cast-file-input]').first.set_input_files(cast_path); page.wait_for_timeout(800)
+    try:
+        page.wait_for_selector('[data-cast-load-result]', timeout=4000)
+    except Exception as e:
+        res['loadResultWait'] = str(e)[:120]
+    res['loadResult'] = page.evaluate(LOAD_RESULT)
+    tab(page, "selection")
+    res['castCard'] = page.evaluate(CAST_CARD)
+    if not res['castCard'].get('notTaken'):
+        tab(page, "packets")
+        res['castCardPackets'] = page.evaluate(CAST_CARD)
+        if res['castCardPackets'].get('notTaken'):
+            res['castCard'] = res['castCardPackets']
+    page.screenshot(path=f"{args.frames}/concept-layer-c13a-card-{args.width}x{args.height}.png")
+    # C-13d — the drawing over the solid (the inside of the cast A holds): the seat's long label read WHOLE, its rendered box inside
+    # the svg's own box and the panel's, the lane the drawing wrote for it
+    page.wait_for_timeout(400)
+    res['longLabel'] = page.evaluate(LONG_LABEL)
+    page.screenshot(path=f"{args.frames}/concept-layer-c13d-label-{args.width}x{args.height}.png")
+    return res
+
+
 # C-12a item 6 — the words AB reads after the pairs: the own drawing's text and the own block's, and the sources' word chips
 WORDS_AT_AB = """() => {
   const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null;
@@ -1345,6 +1453,7 @@ def main():
                         page.locator('[data-midpoint-withdraw-attempt]').first.click(); page.wait_for_timeout(300)
                         pair(page, free_flow, phi_role)
                         out['dependencyAfter'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('refusal', 'lines')}
+                out['c13'] = c13_arm(page, args)  # C-13 at the eye — the run's last acts
         browser.close()
     print(json.dumps(out, ensure_ascii=False))
 
