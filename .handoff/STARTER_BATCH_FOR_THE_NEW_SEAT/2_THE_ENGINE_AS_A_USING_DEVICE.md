@@ -18,7 +18,8 @@ The device keeps the record. It never decides for you, and it never proposes. Th
 
 ## Where it is
 
-- In a web browser at **`http://localhost:5173`**. Arman keeps it running.
+- In a web browser at **`http://localhost:5180`**. This server is yours alone. It runs one version, which the mothership has checked, and it changes only when the mothership announces a new version; work on the engine never reaches it in between. If the page does not answer (after the computer restarts, say), ask Arman to start it.
+- **Which version you are on:** open **`http://localhost:5180/__whereami`**. Its `head` is the version. Put it at the top of each report.
 - Two workspaces, switched at the top: **Ambo Universe** and **Manuscript**. Switching keeps your work. A full reload of the page loses whatever you have not saved (see **Saving**, below).
 
 ## The words you will meet
@@ -80,14 +81,16 @@ Under the solid, one line lists the gestures. It begins *click — select what y
    A respect joins nothing by itself, and it binds no other face: the other face through the same edge keeps its own light.
    - **How:** at the midpoint, **open the opposite corner's drawing**. That enters its light, and the head reads, for example, *pointing a triad on the face A·B·C — in C's light*. Opening the other corner's drawing changes the light.
    - **The three picks:** a point in A's column, one in B's, one in the opened drawing, in any order. While the act is open it shows as one line, *a triad in C's light: …*, with *withdraw this attempt*. Once all three are picked the triad is recorded. If one leg is refused, nothing is entered and the refused leg is named.
+   - **You need no pairs first.** Until you have paired on the opposite corner's own two edges, its block reads, for example, *its light is open to a triad now; its own reading of A–B needs your pairs on C–A and B–C*. The triad can be pointed at once. Only the corner's own reading of the edge waits for those pairs.
+   - **Word triads** work the same way. Opening the corner's drawing also adds a third row of words above the drawing, *C's words*, next to A's and B's. The words come in the order the cast gives them, and none is lit, sorted or paired for you. A word in each of the three rows, picked in any order, is one act. While it is open it shows as *a word triad in C's light: …*, with *withdraw this attempt*.
    - **Which three items are the same, and in which light, is Arman's decision.**
 4. **What the midpoint tells you:**
-   - its own space so far, for example *A and B together, as two — … roles · … words · … tuples*;
+   - its own space so far, for example *A and B together, as two — … roles · … words · … tuples · … marks*. Each opposite corner that holds a concept adds one word of its own to that count: its view of your pairing, which is read in its block and drawn nowhere. The line says how many, for example *· 2 of the words are the corners' views (no tuple yet)*;
    - the words translated so far, for example *no word translated yet — each word still its own side's, alike spellings included*;
    - **below the drawing**, every pair you gave, listed whole: role pairs with *· yours, plain · withdraw*, and the word pairs;
    - **the glue:** two items are joined on an edge only when you have paired them in **every** light through that edge (both faces), or paired them plainly. The pairs line says so, for example *F7 ≡ Φ1 · glued — you gave it in C's light and in D's*. Until both faces have spoken it says *only C's light has spoken on A–B; nothing glues here by respects until D's does*. A pair that would join one item twice is *left out*, and a pair that would break a pair one generation down is *held back*; each says why. Where the two faces' lights differ on this edge, it says so once, as a fact;
    - **your respects,** in each opposite corner's block, first, as what you said. For example *you said: F7 is Φ1, as regards r3 — honored*, or *— broken at C–B: there you paired r6 with Φ5*, or *— not yet: nothing paired on A–C*. These are readings: nothing asks you to re-pair. A triad's one control is *withdraw this triad*.
-   - under the midpoint's own column, what **each opposite corner** makes of your pairing, for example *C's view of your pairing on A–B* with *agrees on …*, *would pair … otherwise*, *would join what you left apart: …*. These are readings, never buttons.
+   - under the midpoint's own column, what **each opposite corner** makes of your pairing, for example *C's view of your pairing on A–B* with *agrees on …*, *would pair … otherwise*, *would join what you have not paired: …*. These are readings, never buttons.
 5. **A face reads** once all three of its edges hold pairs. For the face **A·B·C**, walked in its own direction (A → B → C → A), each role is *returned to itself*, *returned elsewhere*, or *did not return*. Until then the midpoint says what the face still needs, for example *no reading yet — it needs a record on each of its three edges*.
 6. ✎ **The midpoint's name.** Each midpoint has a packet of its own, like a corner, with a **Label**. The Packets tab counts them (*unresolved generated midpoint packets*) and steps through them with **Previous unresolved**, **Next unresolved** and **Save and next unresolved**.
 
@@ -146,6 +149,7 @@ Under the solid, one line lists the gestures. It begins *click — select what y
 ## Saving, and coming back
 
 - **Ambo Universe:** **Export Workspace JSON** writes the universe to a file. **Import Workspace JSON** reads one back.
+- **Export after every step that matters.** A reload loses what is not saved, and so does a new version (the page reloads when one arrives, and the mothership announces each one before it does). The saved file brings your work back.
 - **Manuscript:** at the top right the page says *there is work here that is not written down* and *switching modules keeps it · a full reload loses it — save the page… writes it down*. Use **save the page…** and **load the page…**. The shelf's **load universe… (.snapshot.json)** puts a universe on the shelf.
 
 ## What the device promises
