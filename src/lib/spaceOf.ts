@@ -67,6 +67,11 @@ import { footTypeName } from './feet';
 // — a seed edge the record, a corner edge the carried coprojection, a medial edge the anchored meet ∪ the born pairs).
 // bornFace imports this module; the cycle resolves at call time, never at load (nothing here is used at module scope).
 import { bornStepOf } from './bornFace';
+// C-14 — THE MEET-CORE and THE RESPECTS: the one reader of an edge's record (`recordOn`) returns the core in force — his
+// unconditional pairs ∪ the meet of every light, conflicts and held-back pairs out — so every reader (the glue, the feet, the
+// doors, the born acts) reads ONE J per edge by construction. respects.ts imports this module for the corners' spaces and the
+// born acts; the cycle resolves at call time, never at load.
+import { meetCoreOf, readRespects, respectLinksOf, withRespects, type MeetCore, type RespectReading } from './respects';
 
 export type EdgeKind = 'seed' | 'corner' | 'medial';
 /** a seed tag — `${seedVertexId}|${roleId}` or `${seedVertexId}|${word}`: what a role or word carries from the seed down through every injection */
@@ -133,6 +138,8 @@ export interface Resolved {
   origin: 'seed' | 'derived';
   edge: ResolvedEdge | null; // for a derived space: its parents' edge
   feet: Foot[]; // C-12b — the born vertex's feet, in the shape's face order (none on a seed)
+  core: MeetCore | null; // C-14 — the edge's core in force, with what the meet left out and held back, SAID (null on a seed)
+  respects: RespectReading[]; // C-14 — the edge's respects read against the core, leg by leg — marks (none on a seed)
   loadedIgnored: boolean; // a born vertex holding a loaded cast — not read (Δ86)
 }
 
@@ -143,16 +150,24 @@ export interface SpaceOfOptions {
   candidate?: { edgeId: Edge['id']; roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] };
   /** ⛔ A WITNESS'S CONTROL ONLY — `false`: the feet NOT composed (C-12b) — the space exactly as built before the stone, so a witness can show every moved number is the feet's alone */
   feet?: boolean;
+  /** ⛔ A WITNESS'S CONTROL ONLY — `false`: the respects NOT read (C-14) — the core his unconditional pairs alone, no `⟨X⟩` type, no reading: the space exactly as built before the triad, so a witness can show every moved number is the respects' alone */
+  respects?: boolean;
   /** ⛔ A WITNESS'S CONTROL ONLY — `content`: the content meet on every born edge, the mechanism C-8b replaced (it houses a doubled class twice at a gen-4 station and splits a shared class held identically at gen 4); the app never sets it. Default `structural`: the carried coprojection on a corner edge, the anchored meet on a medial one. */
   meet?: 'structural' | 'content';
+  /** C-14 — `false`: the meet-core's dependency reading (condition ii) NOT evaluated on this read — set by the reading itself for the reads it makes one edge deep, so the guard never chases itself */
+  meetDependency?: boolean;
 }
 
-/** the record in force on an edge for a read: the candidate when the read carries one for this edge, else what the edge holds (τ alone from the drafts) */
-export function recordOn(e: Edge | undefined, options: SpaceOfOptions): { roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] } {
+/**
+ * THE ONE READER of an edge's record: the CORE in force for a read — C-14 (ADR 0031 §3.11): his unconditional pairs (the
+ * candidate when the read carries one for this edge, else what the edge holds; τ alone from the drafts) ∪ the MEET of the
+ * respect-pairs given in every light through the edge, conflicts left out and born acts guarded (respects.ts). Re-derived at
+ * every read, stored nowhere; one J per edge, shared by both faces, by construction.
+ */
+export function recordOn(shape: Shape, e: Edge | undefined, options: SpaceOfOptions): { roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] } {
   if (!e) return { roles: [], types: [] };
-  if (options.candidate && options.candidate.edgeId === e.id) return { roles: options.candidate.roles, types: options.candidate.types };
-  const record = e.identification;
-  return { roles: record ? record.roles : [], types: record ? record.types : (options.tauDrafts?.[e.id] ?? []) };
+  const core = meetCoreOf(shape, e, options);
+  return { roles: core.roles, types: core.types };
 }
 
 export const isSeedVertex = (shape: Shape, id: VertexId): boolean => shape.vertices[id]?.createdBy.operation === 'seed';
@@ -200,6 +215,8 @@ function seedResolved(vertexId: VertexId, cast: ConceptSpace): Resolved {
     origin: 'seed',
     edge: null,
     feet: [],
+    core: null,
+    respects: [],
     loadedIgnored: false,
   };
 }
@@ -522,7 +539,9 @@ export function spaceOf(shape: Shape, vertexId: VertexId, options: SpaceOfOption
     if (U && V) {
       const kind = edgeKind(shape, parents[0], parents[1]);
       const composed = composedOn(shape, U, V, parents, kind, options.meet);
-      const born = kind === 'corner' ? { roles: [], types: [] } : recordOn(e, options);
+      // C-14 — the CORE in force on the edge (the meet-core), the one J the glue reads; what it left out and held back rides the resolution, said
+      const core = e && kind !== 'corner' ? meetCoreOf(shape, e, options) : null;
+      const born = core ? { roles: core.roles, types: core.types } : { roles: [], types: [] };
       let result = glue(U.space, V.space, [...composed.roles, ...born.roles], [...composed.words, ...born.types]);
       let refused: Conflict[] | null = null;
       if (result.refused) {
@@ -548,8 +567,16 @@ export function spaceOf(shape: Shape, vertexId: VertexId, options: SpaceOfOption
           wordContent.set(f.type, new Set([tagOf(vertexId, f.type)]));
           wordSegs.set(f.type, [{ tag: tagOf(vertexId, f.type), text: f.type }]);
         }
+        // C-14 — THE RESPECTS on the born concept: one holds-only relation-type `⟨X⟩` per light that has spoken, its tuples on
+        // M's points ([a], [b]), `c` the record's warrant and never a term; drawn nowhere (the designer), a foreign word at the next
+        // generation like the foot. The readings ride beside, marks only.
+        const respectLinks = e && kind !== 'corner' && options.respects !== false ? respectLinksOf(shape, e, result.midpoint) : [];
+        for (const l of respectLinks) {
+          wordContent.set(l.type, new Set([tagOf(vertexId, l.type)]));
+          wordSegs.set(l.type, [{ tag: tagOf(vertexId, l.type), text: l.type }]);
+        }
         out = {
-          space: withFeet(g.space, feet),
+          space: withRespects(withFeet(g.space, feet), respectLinks),
           roleContent,
           wordContent,
           roleSegs: named.roleSegs,
@@ -557,6 +584,8 @@ export function spaceOf(shape: Shape, vertexId: VertexId, options: SpaceOfOption
           origin: 'derived',
           edge: { id: e ? e.id : null, kind, parents, composed, born, refused, midpoint: result.midpoint, wordName: g.wordName, glued: g },
           feet,
+          core,
+          respects: e && kind !== 'corner' && options.respects !== false ? readRespects(shape, e, options) : [],
           loadedIgnored: v.data.cast !== undefined,
         };
       }
@@ -640,7 +669,7 @@ export function brokenBornActs(shape: Shape, options: SpaceOfOptions = {}, excep
   const out: BrokenBornAct[] = [];
   for (const e of shape.edges) {
     if (e.id === except) continue;
-    const born = recordOn(e, options);
+    const born = recordOn(shape, e, options);
     if (born.roles.length === 0 && born.types.length === 0) continue;
     if (edgeKind(shape, e.vertexIds[0], e.vertexIds[1]) !== 'medial') continue;
     const siteId = Object.values(shape.vertices).find((v) => v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(e.vertexIds[0]) && v.createdBy.sourceVertexIds.includes(e.vertexIds[1]))?.id ?? null;

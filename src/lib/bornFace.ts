@@ -118,7 +118,7 @@ export function bornStepOf(shape: Shape, from: VertexId, to: VertexId, options: 
   if (!R0 || !R1) return null;
   const kind = edgeKind(shape, e.vertexIds[0], e.vertexIds[1]);
   const composed = composedOn(shape, R0, R1, [e.vertexIds[0], e.vertexIds[1]], kind, options.meet);
-  const record = kind === 'corner' ? { roles: [], types: [] } : recordOn(e, options);
+  const record = kind === 'corner' ? { roles: [], types: [] } : recordOn(shape, e, options);
   const reversed = e.vertexIds[0] !== from;
   const solidMap: RoleMap = new Map();
   // a seed edge's record is the ground too (a born face never holds one; the type allows it)

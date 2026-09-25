@@ -25,6 +25,7 @@ import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 // the shape an act would leave (the dependency refusal, item 4)
 import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
 import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
+import { triadLegsOf, triadOf, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import type {
   Cell,
   CellId,
@@ -272,11 +273,20 @@ interface GeometryState {
   midpointRefusals: Record<EdgeId, MidpointRefusal>;
   // C-7f item 3 — the attribution of a re-made pair, per edge; transient
   midpointRemade: Record<EdgeId, MidpointRemade>;
+  // C-14 — a triad refused at a face, by name, with the person's picks: the surface shows it beside the face until he withdraws the attempt (never persisted — an attempt is not a record)
+  triadRefusals: Record<string, TriadRefusal & { kind: RespectKind; picks: TriadPick[] }>;
   giveRolePair: (edgeId: EdgeId, x: string, y: string) => void;
   withdrawRolePair: (edgeId: EdgeId, x: string, y: string) => void;
   giveWordPair: (edgeId: EdgeId, s: string, t: string) => void;
   withdrawWordPair: (edgeId: EdgeId, s: string, t: string) => void;
   withdrawMidpointAttempt: (edgeId: EdgeId) => void;
+  // C-14 — THE TRIAD AS RESPECTS, the person's act at a face (ADR 0031 §3.11): three picks, one per corner, recorded ON THE FACE
+  // (positional in its corner order, no id inside — src/lib/respects.ts); its three respects, one per edge in the light of the
+  // third corner, are read from it — ATOMIC: a refused leg enters nothing and is named. No history entry: a triad is the
+  // person's record on the face, like a pairing on the edge. The one hand back is the whole triad.
+  giveTriad: (faceId: string, kind: RespectKind, picks: TriadPick[]) => TriadRefusal | null;
+  withdrawTriad: (faceId: string, kind: RespectKind, picks: TriadPick[]) => void;
+  withdrawTriadAttempt: (faceId: string) => void;
   exportWorkspace: () => PersistedWorkspaceV1;
   importWorkspace: (workspace: PersistedWorkspaceV1) => void;
 }
@@ -308,6 +318,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   edgeTauDrafts: {},
   midpointRefusals: {},
   midpointRemade: {},
+  triadRefusals: {},
   liftSelection: [],
   dualInspectionTarget: null,
   cellVisibility: defaultCellVisibility,
@@ -1007,6 +1018,36 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   giveWordPair: (edgeId, s, t) => midpointAct(set, get, edgeId, { kind: 'word', pair: [s, t] }),
   withdrawRolePair: (edgeId, x, y) => midpointWithdraw(set, get, edgeId, { kind: 'role', pair: [x, y] }),
   withdrawWordPair: (edgeId, s, t) => midpointWithdraw(set, get, edgeId, { kind: 'word', pair: [s, t] }),
+  giveTriad: (faceId, kind, picks) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    if (!shape) return { corner: null, item: null, leg: null, why: 'no current shape' };
+    const triad = triadOf(shape, faceId, kind, picks, { tauDrafts: state.edgeTauDrafts });
+    if (triad.refused) {
+      set({ triadRefusals: { ...state.triadRefusals, [faceId]: { ...triad.refused, kind, picks } } });
+      return triad.refused;
+    }
+    // atomic: ONE record written in one set — the face the act was pointed at (its three respects are read from it), nothing else
+    const faces = shape.faces.map((f) => (f.id === faceId ? withTriad(f, kind, triad.record) : f));
+    const triadRefusals = { ...state.triadRefusals };
+    delete triadRefusals[faceId];
+    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, triadRefusals });
+    return null;
+  },
+  withdrawTriad: (faceId, kind, picks) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    if (!shape) return;
+    const triad = triadLegsOf(shape, faceId, picks); // the structure alone: a triad withdraws whole even when a corner's space has since changed
+    if (triad.refused) return;
+    const faces = shape.faces.map((f) => (f.id === faceId ? withoutTriad(f, kind, triad.record) : f));
+    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } } });
+  },
+  withdrawTriadAttempt: (faceId) => {
+    const triadRefusals = { ...get().triadRefusals };
+    delete triadRefusals[faceId];
+    set({ triadRefusals });
+  },
   withdrawMidpointAttempt: (edgeId) => {
     const midpointRefusals = { ...get().midpointRefusals };
     delete midpointRefusals[edgeId];

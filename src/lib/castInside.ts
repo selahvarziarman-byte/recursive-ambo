@@ -41,7 +41,7 @@
 
 import type { ConceptSpace } from '../types/geometry';
 import { isMoldType } from './castLoader';
-import { isFootType } from './feet';
+import { isFootType, isRespectType } from './feet';
 
 export type Polarity = 'holds' | 'does-not-hold';
 /** the side an arc is drawn on — a function of the tuple: `down` the caster's order (from an earlier point to a later one) or `up` it */
@@ -99,6 +99,7 @@ export interface InsideCensus {
   unknown: number; // the entries written UNKNOWN
   unplaced: number;
   feet: number; // C-12b — the feet's tuples the drawing left to the words under the own column (never a glyph)
+  respects: number; // C-14 — the respects' tuples, the person's own, drawn nowhere in the drawing (the designer's ruling): read in words, counted here
 }
 
 export interface Inside {
@@ -136,12 +137,14 @@ export function insideOf(cast: ConceptSpace): Inside {
   const unplaced: InsideUnplaced[] = [];
   let negatives = 0;
   let feet = 0;
+  let respects = 0;
   const seen = new Set<string>();
   for (const r of cast.relations) {
     // C-12b — a FOOT's tuple is never a glyph: a ring at a point is a tuple the caster wrote and a line between points is a
     // recorded relation (the designer's 1939 §0 — both spent), so the feet stay out of the drawing and are said in WORDS
     // under the midpoint's own column; counted here so the census says what the drawing left to the words
     if (isFootType(r.type)) { feet += 1; continue; }
+    if (isRespectType(r.type)) { respects += 1; continue; }
     const k = `${r.type}|${JSON.stringify(r.terms)}`;
     if (seen.has(k)) continue; // a relation is a set — a repetition is read once
     seen.add(k);
@@ -181,6 +184,7 @@ export function insideOf(cast: ConceptSpace): Inside {
       words: words.length,
       marks,
       feet,
+      respects,
       unknown,
       unplaced: unplaced.length,
     },

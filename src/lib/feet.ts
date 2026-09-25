@@ -13,3 +13,17 @@ export const footTypeName = (cornerLabel: string): string => `${FOOT_PREFIX}${co
 
 /** whether a signature type is a foot's (a caster's own word never begins `≡_` — said in the report, not enforced) */
 export const isFootType = (type: string): boolean => type.startsWith(FOOT_PREFIX);
+
+// C-14 (ADR 0031 §3.11): THE RESPECT's relation-type — the foot's GIVEN twin. A respect `a ↦ b ⟨c⟩` given in the light of the
+// opposite corner X stands on M⁺ as a holds-only relation-type `⟨X⟩` on the points [a], [b], with c its WARRANT (the record's,
+// never a term). One leaf for both derived-mark names, so the resolver and the inside builder agree by construction: the
+// respect is drawn nowhere in the drawing (the designer's ruling on part f) and reads in the word rows at the next generation
+// as a foreign word, like the foot.
+export const RESPECT_OPEN = '⟨';
+export const RESPECT_CLOSE = '⟩';
+
+/** the relation-type's name for the respects given in the light of the corner with this label */
+export const respectTypeName = (cornerLabel: string): string => `${RESPECT_OPEN}${cornerLabel}${RESPECT_CLOSE}`;
+
+/** whether a signature type is a respect's (a caster's own word never begins `⟨` — said, not enforced, as for the foot) */
+export const isRespectType = (type: string): boolean => type.startsWith(RESPECT_OPEN) && type.endsWith(RESPECT_CLOSE);

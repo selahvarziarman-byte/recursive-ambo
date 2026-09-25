@@ -35,6 +35,7 @@ import { createDefaultVertexData, deriveEdges, getCellFaces, midpoint } from './
 // angles are acos-imported from the carried positions (measure, never stamp)
 import { importCornerAngles } from './cornerAngleImport';
 import { midpointLetters } from './christening';
+import { carriedTriads, TRIADS_KEY } from './respects';
 
 const DEFAULT_MIDPOINT_COLOR = '#eab308';
 
@@ -184,6 +185,8 @@ function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Sh
   // way — so on a pair walked the other way the pairs are MIRRORED (the same act, said from the new first
   // corner). Every pair of the parent survives (the dissected cell's faces become parent-cell-faces; the other
   // cells' faces are kept). Nothing here assumes the order of the person's acts across generations.
+  // C-14 — the RESPECTS ride the FACE, not the edge: a dissected cell's face record is carried onto its parent-cell-face by
+  // `createParentCellFaces` (positional in the corner order that copy keeps); every other face is kept whole with its packet.
   const recordedByPair = new Map(parent.edges.filter((edge) => edge.identification).map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
   const edges = deriveEdges(faces, shapeId).map((edge) => {
     const source = recordedByPair.get(canonicalEdgeKey(...edge.vertexIds));
@@ -519,16 +522,22 @@ function createParentCellFaces(
   parentCellId: string,
   sourceFaces: Face[],
 ): Face[] {
-  return sourceFaces.map((face) => ({
-    id: makeFaceId(shapeId, 'parent-cell-face', face.id, face.vertexIds),
-    vertexIds: face.vertexIds,
-    role: 'parent-cell-face',
-    sourceCellId: parentCellId,
-    sourceFaceId: face.id,
-    // the copy RIDES the source's owned atom (additive — absent stays absent)
-    ...(face.cornerAngles ? { cornerAngles: face.cornerAngles } : {}),
-    lineage: deriveFromSourceFace(face.id, shapeId),
-  }));
+  return sourceFaces.map((face) => {
+    // C-14 — THE RECORD RIDES THE FACE: the person's triads on the dissected cell's face (positional in the corner order this
+    // copy keeps — `vertexIds: face.vertexIds`) onto its parent-cell-face; the triads and nothing else of the packet; absent stays absent
+    const triads = carriedTriads(face.data);
+    return {
+      id: makeFaceId(shapeId, 'parent-cell-face', face.id, face.vertexIds),
+      vertexIds: face.vertexIds,
+      role: 'parent-cell-face',
+      sourceCellId: parentCellId,
+      sourceFaceId: face.id,
+      // the copy RIDES the source's owned atom (additive — absent stays absent)
+      ...(face.cornerAngles ? { cornerAngles: face.cornerAngles } : {}),
+      ...(triads !== undefined ? { data: { [TRIADS_KEY]: triads } } : {}),
+      lineage: deriveFromSourceFace(face.id, shapeId),
+    };
+  });
 }
 
 function createCoreCell(

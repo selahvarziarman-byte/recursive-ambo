@@ -50,7 +50,7 @@ const note = (line) => console.log(`      ${line}`);
 const { spaceOf, nameIn, isSeedVertex, spaceCounts, feetShareOf } = req('src/lib/spaceOf.ts');
 const { refusalOf } = req('src/lib/jRegister.ts');
 const { insideOf } = req('src/lib/castInside.ts');
-const { footTypeName, isFootType } = req('src/lib/feet.ts');
+const { footTypeName, isFootType, respectTypeName, isRespectType } = req('src/lib/feet.ts');
 const { readCastFile } = req('src/lib/castLoader.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
 const { edgeBetween } = req('src/lib/faceReading.ts');
@@ -329,8 +329,8 @@ check('§5 ★★ AGREEMENT LEADS, DISAGREEMENT NAMES BOTH: F13 ↦ Φ8 paired o
   J({ agree: Ragree.fix, dis: Rdis.disagreement, lines: disLines.slice(0, 4) }));
 const manifest = readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt');
 const feetSrc = readLf('src/lib/feet.ts'); const spaceSrc = readLf('src/lib/spaceOf.ts'); const insideSrc = readLf('src/lib/castInside.ts');
-check('§5 ★ THE MANIFEST AND PURITY: feet.ts classified NOT_FROZEN (a leaf — no import); spaceOf composes the feet through C-9\'s one reader (`bornStepOf`, a deferred use) and names them through the leaf; castInside keeps them out of the glyphs through the same leaf; spaceOf and castInside stay NOT_FROZEN; the foot type is `≡_<label>`',
-  /^NOT_FROZEN src\/lib\/feet\.ts — STAMP C-12b/m.test(manifest) && !/^import /m.test(feetSrc) && /import \{ bornStepOf \} from '\.\/bornFace';/.test(spaceSrc) && /import \{ footTypeName \} from '\.\/feet';/.test(spaceSrc) && /import \{ isFootType \} from '\.\/feet';/.test(insideSrc) && /^NOT_FROZEN src\/lib\/spaceOf\.ts/m.test(manifest) && /^NOT_FROZEN src\/lib\/castInside\.ts/m.test(manifest) && footTypeName('C') === '≡_C' && isFootType('≡_C') && !isFootType('sustains'),
+check('§5 ★ THE MANIFEST AND PURITY: feet.ts classified NOT_FROZEN (a leaf — no import); spaceOf composes the feet through C-9\'s one reader (`bornStepOf`, a deferred use) and names them through the leaf; castInside keeps them out of the glyphs through the same leaf; spaceOf and castInside stay NOT_FROZEN; the foot type is `≡_<label>`; C-14: castInside imports the respect\'s test beside the foot\'s from the same leaf, and the respect type `⟨<label>⟩` is told from a foot',
+  /^NOT_FROZEN src\/lib\/feet\.ts — STAMP C-12b/m.test(manifest) && !/^import /m.test(feetSrc) && /import \{ bornStepOf \} from '\.\/bornFace';/.test(spaceSrc) && /import \{ footTypeName \} from '\.\/feet';/.test(spaceSrc) && /import \{ isFootType, isRespectType \} from '\.\/feet';/.test(insideSrc) && /^NOT_FROZEN src\/lib\/spaceOf\.ts/m.test(manifest) && /^NOT_FROZEN src\/lib\/castInside\.ts/m.test(manifest) && footTypeName('C') === '≡_C' && isFootType('≡_C') && !isFootType('sustains') && respectTypeName('C') === '⟨C⟩' && isRespectType('⟨C⟩') && !isRespectType('≡_C') && !isFootType('⟨C⟩'),
   '');
 
 console.log(`\nDIAGNOSE-THE-STONE: ${failures === 0 ? 'ALL PASS — the born concept carries its opposite corners\' feet, in the signature, as words under the own column; the four runs reproduced, the tower through the app\'s own resolver' : `${failures} FAILED`}`);
