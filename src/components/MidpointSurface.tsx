@@ -341,6 +341,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // the triad's picks by corner, in any order — the act completes at the third
   const [light, setLight] = useState<VertexId | null>(null);
   const [triadPicks, setTriadPicks] = useState<Record<VertexId, string>>({});
+  const [wordTriadPicks, setWordTriadPicks] = useState<Record<VertexId, string>>({}); // C-14g — the word triad's picks, a word in each of the three rows
   const la = labelOf(shape, site.a);
   const lb = labelOf(shape, site.b);
   const lm = labelOf(shape, site.siteId);
@@ -349,6 +350,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const lightSource = light !== null ? (site.sources.find((s) => s.apexes.includes(light)) ?? null) : null;
   const lightFace = lightSource ? lightSource.faceId : null;
   const lightLabel = light !== null ? labelOf(shape, light) : '';
+  // C-14g — the light's words (the designer's §4): its row opens WITH the light, in the caster's order, none lit, sorted or pre-paired
+  const lightInside = useMemo(() => { if (light === null) return null; const sp = spaceOf(shape, light); return sp ? insideOf(sp.space) : null; }, [shape, light]);
   const nX = (corner: VertexId, id: string): string => { const sp = spaceOf(shape, corner); return sp ? nameIn(sp.space, id) : id; };
   const core = resolved.core;
   const respectsAt = (corner: VertexId): RespectReading[] => resolved.respects.filter((r) => r.corner === corner);
@@ -415,6 +418,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     setPick({ side, role });
   };
   const onWord = (side: Side, word: string): void => {
+    if (light !== null) { wordTriadPickAt(side === 'A' ? site.a : site.b, word); return; } // in a light, a row's word is the word triad's
     if (wordPick && wordPick.side === side && wordPick.word === word) {
       setWordPick(null);
       return;
@@ -442,12 +446,25 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     }
     setTriadPicks(next);
   };
+  const wordTriadPickAt = (corner: VertexId, item: string): void => {
+    if (lightFace === null || light === null) return;
+    const next: Record<VertexId, string> = { ...wordTriadPicks };
+    if (next[corner] === item) delete next[corner];
+    else next[corner] = item;
+    const a = next[site.a]; const b = next[site.b]; const c = next[light];
+    if (a !== undefined && b !== undefined && c !== undefined) {
+      giveTriad(lightFace, 'word', [{ corner: site.a, item: a }, { corner: site.b, item: b }, { corner: light, item: c }]);
+      setWordTriadPicks({});
+      return;
+    }
+    setWordTriadPicks(next);
+  };
   const withdrawTriadOf = (corner: VertexId, kind: 'role' | 'word', tuple: RespectTuple): void => {
     const src = site.sources.find((s) => s.apexes.includes(corner));
     if (!src) return;
     withdrawTriad(src.faceId, kind, [{ corner: site.a, item: tuple[0] }, { corner: site.b, item: tuple[1] }, { corner, item: tuple[2] }]);
   };
-  const openLight = (apex: VertexId | null): void => { setLight(apex); setTriadPicks({}); setPick(null); };
+  const openLight = (apex: VertexId | null): void => { setLight(apex); setTriadPicks({}); setWordTriadPicks({}); setPick(null); setWordPick(null); };
   const bothExtra = (side: Side, inside: Inside) => {
     // C-7h item 1 (the designer's live drive: nine composed words wore `≡` at ABAC): a tuple in both parents BY COMPOSITION —
     // every term a composed role and its word composed (or the mold's own) — is the solid's: no glyph, no amber, the grey;
@@ -504,7 +521,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const sizes = useMemo(() => spaceCounts(resolved.space), [resolved]);
   const cornersClause = useMemo(() => { const w = cornersViewWords(feetShareOf(resolved.feet)); return w ? ` · ${w}` : ''; }, [resolved]);
   const wordChip = (side: Side, w: string): string => {
-    const picked = wordPick?.side === side && wordPick.word === w;
+    const picked = (wordPick?.side === side && wordPick.word === w) || (light !== null && wordTriadPicks[side === 'A' ? site.a : site.b] === w);
     const translated = side === 'A' ? types.some(([s]) => s === w) : types.some(([, t]) => t === w);
     return `rounded border px-1.5 py-0.5 text-xs transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-1 focus:ring-amber-300 ${picked ? 'border-amber-300 bg-amber-400/10 text-amber-200' : translated ? 'border-amber-700 text-amber-200' : 'border-stone-600 bg-stone-900 text-stone-200'}`;
   };
@@ -625,6 +642,17 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               <button key={w} type="button" data-midpoint-word={`B|${w}`} data-midpoint-word-translated={types.some(([, t]) => t === w) ? 'true' : undefined} onClick={() => onWord('B', w)} className={wordChip('B', w)}>{w}</button>
             ))}
           </div>
+          {/* C-14g — THE LIGHT'S WORD ROW (the designer's §4): opening a corner's drawing adds its words, in the caster's order, none lit,
+              sorted or pre-paired; one row per open light (D's replaces C's); a word here is the word triad's third pick; the row appears
+              on opening the light — its own act, before the picks — and no chip changes size on a pick (colour only) */}
+          {light !== null && lightInside ? (
+            <div data-midpoint-words="light" data-midpoint-light-words={lightLabel} className="flex flex-wrap items-center gap-1">
+              <span className="mr-1 text-stone-400">{`${lightLabel}'s words`}</span>
+              {lightInside.words.map((w) => (
+                <button key={w} type="button" data-midpoint-light-word={w} data-midpoint-light-word-picked={wordTriadPicks[light] === w ? 'true' : undefined} onClick={() => wordTriadPickAt(light, w)} className={`rounded border px-1.5 py-0.5 text-xs transition hover:border-amber-300 hover:text-amber-100 focus:outline-none focus:ring-1 focus:ring-amber-300 ${wordTriadPicks[light] === w ? 'border-amber-300 bg-amber-400/10 text-amber-200' : 'border-stone-600 bg-stone-900 text-stone-200'}`}>{w}</button>
+              ))}
+            </div>
+          ) : null}
           {/* C-14 f (the designer's §2 — C-13e's residue): the box of word pairs made lives BELOW the drawing; the rows stay here, and a chip's
               box never changes size when picked (colour and weight only) — so the second click of a word pair lands where the first saw it */}
           {/* §149 rider — THE PICK MOVES NOTHING (the mothership's ruling): a pick's words never enter a line that can wrap. Appended
@@ -710,7 +738,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           {lines.map((l, i) =>
             l.iA >= 0 && l.iB >= 0 ? (
               <span key={`${l.x}|${l.y}`} data-midpoint-line-listing={`${l.x}↦${l.y}`} data-midpoint-line-listing-index={String(i + 1)} data-midpoint-glued-by={byLights('role', [l.x, l.y]) ? 'lights' : 'plain'}>
-                <span className="mr-1 text-stone-400">{String(i + 1)}</span>
+                <span className="text-stone-400">{`${i + 1} `}</span>
                 {byLights('role', [l.x, l.y])
                   ? `${nA(l.x)} ≡ ${nB(l.y)} · glued — you gave it ${lightsWords}` /* C-14 f — glued by respects: the pair is his, given in every light; its hand is each triad's own, in the corner's block */
                   : (
@@ -735,6 +763,12 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         <div data-midpoint-triad-pending={`${triadPicks[site.a] ?? ''}|${triadPicks[site.b] ?? ''}|${triadPicks[light] ?? ''}`} className="my-1 text-amber-200">
           {`a triad in ${lightLabel}'s light: ${triadPicks[site.a] !== undefined ? nA(triadPicks[site.a]) : '—'} · ${triadPicks[site.b] !== undefined ? nB(triadPicks[site.b]) : '—'} · ${triadPicks[light] !== undefined ? nX(light, triadPicks[light]) : '—'} · `}
           <button type="button" data-midpoint-triad-withdraw-attempt="pending" className="underline" onClick={() => setTriadPicks({})}>withdraw this attempt</button>
+        </div>
+      ) : null}
+      {light !== null && (wordTriadPicks[site.a] !== undefined || wordTriadPicks[site.b] !== undefined || wordTriadPicks[light] !== undefined) ? (
+        <div data-midpoint-word-triad-pending={`${wordTriadPicks[site.a] ?? ''}|${wordTriadPicks[site.b] ?? ''}|${wordTriadPicks[light] ?? ''}`} className="my-1 text-amber-200">
+          {`a word triad in ${lightLabel}'s light: ${wordTriadPicks[site.a] ?? '—'} · ${wordTriadPicks[site.b] ?? '—'} · ${wordTriadPicks[light] ?? '—'} · `}
+          <button type="button" data-midpoint-word-triad-withdraw-attempt="pending" className="underline" onClick={() => setWordTriadPicks({})}>withdraw this attempt</button>
         </div>
       ) : null}
       {lightFace !== null && triadRefusals[lightFace] ? (
@@ -990,7 +1024,7 @@ function SourceRecord({ shape, site, apex, faceName, faceId, cycle, open, onOpen
       </span>
       <span data-midpoint-source-acts={raw ? 'none' : 'given'} className={raw ? 'text-stone-400' : 'text-amber-200'}>
         {raw
-          ? `raw material — nothing given yet on the edges that reach it (${acts.map((n) => n.edgeLabel).join(' · ')}); its clue is live once you have mapped them`
+          ? `its light is open to a triad now; its own reading of ${labelOf(shape, site.a)}–${labelOf(shape, site.b)} needs your pairs on ${acts.map((n) => n.edgeLabel).join(' and ')}` /* C-14g §1 — since Δ111 the light is live from the start; the 1939 foot still needs the pairs */
           : acts.map((n) => neighbourActsWords(n)).join(' · ')}
       </span>
       {/* C-5 reads the face at gen 0 — the seed's own faces, whose edges hold the person's records. C-10b (§131 item 2, the designer's

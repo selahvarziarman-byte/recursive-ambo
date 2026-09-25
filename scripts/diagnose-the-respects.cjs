@@ -46,7 +46,7 @@ const check = (name, cond, detail) => {
 };
 const note = (line) => console.log(`      ${line}`);
 
-const { spaceOf, recordOn, brokenBornActs, cornerOfTag } = req('src/lib/spaceOf.ts');
+const { spaceOf, recordOn, brokenBornActs, cornerOfTag, spaceCounts } = req('src/lib/spaceOf.ts');
 const R = req('src/lib/respects.ts');
 const { respectTypeName, isRespectType, isFootType } = req('src/lib/feet.ts');
 const { insideOf } = req('src/lib/castInside.ts');
@@ -501,6 +501,74 @@ const listing4 = elementsOf(h4, 'data-midpoint-line-listing');
 check('§g ★★ THE GLUE SAYS BY WHICH LIGHTS (the designer\'s §4): (F7, r0, x) given in D\'s light too — the meet glues F7 ≡ r0: a line across the fold and its listing entry `F7 ≡ r0 · glued — you gave it in C\'s light and in D\'s` with NO withdraw (its hands are the triads\'); the plain pair F8 ↦ r1 reads `· yours, plain · withdraw`; the one-light line gone',
   listing4.length === 2 && listing4.some((l) => l.text.replace(/^\d+ /, '') === (aFirst ? "F7 ≡ r0 · glued — you gave it in C's light and in D's" : "r0 ≡ F7 · glued — you gave it in C's light and in D's") && l.buttons === 0) && listing4.some((l) => l.text.replace(/^\d+ /, '') === (aFirst ? 'F8 ↦ r1 · yours, plain · withdraw' : 'r1 ↦ F8 · yours, plain · withdraw') && l.buttons === 1) && (h4.match(/data-midpoint-line=/g) || []).length === 2 && (h4.match(/data-midpoint-glued-by="lights"/g) || []).length === 1 && lightLines(h4).length === 0,
   J({ listing: listing4, lights: lightLines(h4) }));
+
+// ═══ §h C-14g — the false line, withdraw-all byte-equal, the index, word triads, the import round trip (C-14g · M1) ═══
+console.log('\n----- §h C-14g: the cured line, withdraw-all byte-equal, the index, word triads, the import round trip -----');
+const canon = (v) => JSON.stringify(v, (k, x) => (x instanceof Map ? [...x] : x instanceof Set ? [...x] : x));
+const readingOf = (shape, id) => { const r = spaceOf(shape, id); return r ? canon({ space: r.space, core: r.core, respects: r.respects, born: r.edge && r.edge.born, feet: r.feet.map((f) => [f.type, [...f.map], f.links]) }) : null; };
+const srcOutsideComments = (p) => readLf(p).replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\s\/\/ .*$/gm, '');
+const srcHits = srcFiles.filter((f) => /clue is live|once you have mapped/.test(srcOutsideComments(f)));
+reset(seeded4());
+S().applyAmboDissectionToCurrent();
+const Gh = cur(); const ABh = byLabel(Gh, 'AB');
+const hh0 = surfaceAt(ABh);
+const actsLines = elementsOf(hh0, 'data-midpoint-source-acts').map((e) => e.text);
+check('§h ★★ THE FALSE LINE CURED (C-14g §1 — since Δ111 the light is live from the start): with nothing given on the edges that reach C or D, each source reads `its light is open to a triad now; its own reading of A–B needs your pairs on …` — the triad\'s availability first, the derived view\'s dependency second; no source under src says `clue is live` or `once you have mapped` outside a comment',
+  actsLines.length === 2 && actsLines.every((t) => /^its light is open to a triad now; its own reading of A–B needs your pairs on [A-D]–[A-D] and [A-D]–[A-D]$/.test(t)) && srcHits.length === 0, J({ actsLines, srcHits }));
+// withdraw-all byte-equal — at the eye's own casting (A flow · B phi · C t-cell · D phi), unglued and glued
+let eye = createSeedShape('tetrahedron'); for (const [l, c] of [['A', flow], ['B', phi], ['C', tcell], ['D', phi]]) eye = withCast(eye, byLabel(eye, l), c);
+reset(eye); S().applyAmboDissectionToCurrent();
+const Ge = cur(); const ABe = byLabel(Ge, 'AB');
+const wordsAt = () => spaceCounts(spaceOf(cur(), ABe).space).words;
+const u0 = readingOf(cur(), ABe); const wU = wordsAt();
+triad(['A', 'B', 'C'], ['F13', 'Φ8', 'r0']);
+const u1 = readingOf(cur(), ABe); const wU1 = wordsAt();
+untriad(['A', 'B', 'C'], ['F13', 'Φ8', 'r0']);
+const u2 = readingOf(cur(), ABe); const wU2 = wordsAt();
+give('A', 'B', { F5: 'Φ7', F7: 'Φ1', F8: 'Φ2' }); S().giveWordPair(E(cur(), 'A', 'B').id, ...(E(cur(), 'A', 'B').vertexIds[0] === byLabel(cur(), 'A') ? ['sustains', 'descends-from'] : ['descends-from', 'sustains'])); S().giveWordPair(E(cur(), 'A', 'B').id, ...(E(cur(), 'A', 'B').vertexIds[0] === byLabel(cur(), 'A') ? ['presupposes', 'specifies'] : ['specifies', 'presupposes'])); S().giveWordPair(E(cur(), 'A', 'B').id, ...(E(cur(), 'A', 'B').vertexIds[0] === byLabel(cur(), 'A') ? ['exceeds-in-size', 'lodges-in'] : ['lodges-in', 'exceeds-in-size']));
+const g0 = readingOf(cur(), ABe); const wG = wordsAt();
+triad(['A', 'B', 'C'], ['F13', 'Φ8', 'r0']); triad(['A', 'B', 'D'], ['F13', 'Φ8', 'Φ1']);
+const g1 = readingOf(cur(), ABe); const wG1 = wordsAt();
+untriad(['A', 'B', 'D'], ['F13', 'Φ8', 'Φ1']); untriad(['A', 'B', 'C'], ['F13', 'Φ8', 'r0']);
+const g2 = readingOf(cur(), ABe); const wG2 = wordsAt();
+const feetTypes = spaceOf(cur(), ABe).feet.map((f) => f.type);
+note(`the eye's AB: words unglued ${wU} (the feet ${J(feetTypes)} among them) · with C's triad ${wU1} · withdrawn ${wU2} · glued (three pairs, three words) ${wG} · with C's and D's triads ${wG1} · withdrawn ${wG2}`);
+check(`§h ★★ WITHDRAW-ALL IS BYTE-EQUAL (C-14g §2a): at the eye's casting, unglued, a triad in C's light changes AB's reading (the control: \`⟨C⟩\` enters, ${wU} → ${wU1} words) and withdrawing it returns the reading byte-equal to before; glued (three pairs, three word pairs), C's and D's triads change it (${wG} → ${wG1}) and withdrawing both returns it byte-equal — nothing of a withdrawn act remains; the 2 words the sentence counts as \`the corners' views\` are the FEET \`≡_C\` and \`≡_D\` (C-12b, in the signature from the first read), not a residue`,
+  u1 !== u0 && u1.includes('⟨C⟩') && u2 === u0 && g1 !== g0 && g1.includes('⟨D⟩') && g2 === g0 && wU1 === wU + 1 && wU2 === wU && wG1 === wG + 2 && wG2 === wG && J(feetTypes) === J(['≡_C', '≡_D']) && spaceOf(cur(), ABe).feet.every((f) => f.links.length === 0),
+  J({ wU, wU1, wU2, wG, wG1, wG2, feetTypes, u2eq: u2 === u0, g2eq: g2 === g0 }));
+// the index, spaced in the text
+const hh1 = surfaceAt(ABe);
+const listingH = elementsOf(hh1, 'data-midpoint-line-listing');
+check('§h ★ THE LISTING\'S INDEX IS SPACED IN THE TEXT (C-14g §2b — `innerText` read `1F13`): the index is one text node `1 ` before the pair, so the text reads `1 F5 ↦ Φ7 …` — the eye reads the browser\'s text at both viewports',
+  surfSrc.includes('<span className="text-stone-400">{`${i + 1} `}</span>') && !surfSrc.includes('<span className="mr-1 text-stone-400">{String(i + 1)}</span>') && listingH.length === 3 && listingH.every((e) => /^\d+ \S/.test(e.text)), J(listingH.map((e) => e.text)));
+// word triads through the store, read on the surface
+reset(seeded4());
+S().applyAmboDissectionToCurrent();
+const Gw = cur(); const ABw = byLabel(Gw, 'AB');
+const rw1 = triad(['A', 'B', 'C'], ['sustains', 'sustains', 'disjoins'], 'word');
+const hw1 = surfaceAt(ABw);
+const wordLines = elementsOf(hw1, 'data-midpoint-respect-line').filter((e) => /as regards disjoins/.test(e.text));
+const aFirstW = E(cur(), 'A', 'B').vertexIds[0] === byLabel(cur(), 'A');
+const rw2 = triad(['A', 'B', 'D'], ['sustains', 'sustains', 'r'], 'word');
+give('A', 'B', { F7: 'r0' }); S().giveWordPair(E(cur(), 'A', 'B').id, ...(aFirstW ? ['disjoins', 'outlasts'] : ['outlasts', 'disjoins'])); // a plain word pair: flow's `disjoins`, the T cell's `outlasts`
+const hw2 = surfaceAt(ABw);
+const wordBox = elementsOf(hw2, 'data-midpoint-word-pair');
+check('§h ★★ WORD TRIADS (C-14g §3): (sustains, sustains, disjoins) given as a WORD triad at A·B·C reads in C\'s block in the same grammar — `you said: sustains is sustains, as regards disjoins — not yet: nothing paired on A–C · nothing paired on C–B` with `withdraw this triad`, marked a word respect; the same pair given in D\'s light too (sustains, sustains, r) glues by respects — the word-pairs box reads `sustains ≡ sustains · glued — you gave it in C\'s light and in D\'s` with no withdraw, beside a plain word pair `· yours, plain · withdraw`; the light\'s row is built from the corner\'s own words in the caster\'s order with no translated mark and no sort (pinned in the source)',
+  rw1 === null && rw2 === null && wordLines.length === 1 && wordLines[0].value === 'NOT YET' && wordLines[0].text === `you said: sustains is sustains, as regards disjoins — not yet: ${aFirstW ? 'nothing paired on A–C · nothing paired on C–B' : 'nothing paired on B–C · nothing paired on C–A'} · withdraw this triad` && hw1.includes('data-midpoint-respect-kind="word"') && wordBox.some((e) => e.text === "sustains ≡ sustains · glued — you gave it in C's light and in D's" && e.buttons === 0) && wordBox.some((e) => e.text === `${aFirstW ? 'disjoins ↦ outlasts' : 'outlasts ↦ disjoins'} · yours, plain · withdraw` && e.buttons === 1) && surfSrc.includes('data-midpoint-words="light"') && surfSrc.includes('lightInside.words.map((w) => (') && !/data-midpoint-light-word=[\s\S]{0,300}data-midpoint-word-translated/.test(surfSrc) && !/\.sort\(/.test(surfSrc),
+  J({ rw1, rw2, wordLines, wordBox }));
+// the import round trip (C-14g · M1), and the input's construction
+const roundBefore = readingOf(cur(), ABw);
+const exportedW = S().exportWorkspace(); const exportedText = JSON.stringify(exportedW);
+give('A', 'B', { F9: 'r2' }); // the control — a pair made AFTER the export
+const controlLines = E(cur(), 'A', 'B').identification.roles.length;
+reset(seeded4());
+S().importWorkspace(JSON.parse(exportedText));
+const reExport = JSON.stringify(S().exportWorkspace());
+const importedAB = byLabel(cur(), 'AB');
+const panelsSrc = readLf('src/components/Panels.tsx'); const editorSrc = readLf('src/components/VertexPacketEditor.tsx');
+check(`§h ★★ THE EXPORT → IMPORT ROUND TRIP (C-14g · M1): a workspace holding four casts, a plain pair, a plain word pair, a role triad and two word triads exported, a fresh workspace, the text imported — the shapes byte-equal to the export (the whole re-export byte-equal: ${reExport === exportedText}), AB's reading the same; POSITIVE CONTROL — the pair F9 ↦ r2 made after the export (${controlLines} pairs then) is absent after the import; THE INPUT'S CONSTRUCTION — Panels' import input is a hidden input (\`className="hidden"\`) with \`data-workspace-import-input\`, opened by its button through a ref, exactly as the cast input (\`data-cast-file-input\`, \`hidden\`, a ref-clicked button); no \`sr-only\` file input remains`,
+  JSON.stringify(S().exportWorkspace().shapes) === JSON.stringify(exportedW.shapes) && readingOf(cur(), importedAB) === roundBefore && controlLines === 2 && E(cur(), 'A', 'B').identification.roles.length === 1 && !E(cur(), 'A', 'B').identification.roles.some(([x, y]) => x === 'F9' || y === 'F9') && panelsSrc.includes('data-workspace-import-input="true"') && /data-workspace-import-input="true"\n\s*className="hidden"/.test(panelsSrc) && panelsSrc.includes('ref={importInputRef}') && panelsSrc.includes('onClick={() => importInputRef.current?.click()}') && !/type="file"[\s\S]{0,200}sr-only/.test(panelsSrc) && !/<label[^>]*>\s*Import Workspace JSON/.test(panelsSrc) && editorSrc.includes('data-cast-file-input="true"') && /data-cast-file-input="true"\n\s*className="hidden"/.test(editorSrc),
+  J({ shapesEqual: JSON.stringify(S().exportWorkspace().shapes) === JSON.stringify(exportedW.shapes), reExportEqual: reExport === exportedText, readingEqual: readingOf(cur(), importedAB) === roundBefore, controlLines, after: E(cur(), 'A', 'B').identification.roles }));
 
 console.log(`\nDIAGNOSE-THE-RESPECTS: ${failures === 0 ? 'ALL PASS — the respect is a record keyed by its light, the triad enters it whole or not at all, the core is the meet re-derived at every read with its conflicts and its held-back pairs said, the readings are marks, and the carry follows the pairing\'s' : `${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

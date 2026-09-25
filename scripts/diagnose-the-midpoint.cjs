@@ -467,7 +467,7 @@ check('§4 ★★ THE MAPPED MIDPOINT\'S OWN DIAGRAM, ITS ORIGINS WRITTEN (C-7d 
       visibleText(glued).includes(`its own space, one column: 20 roles · ${gAB.words} words · ${gAB.tuples} tuples · 20 marks${gAB.clause} ·`) && /every role and tuple says where it is from — both · from [AB] · from [AB]/.test(visibleText(glued)) &&
       attrsOf(fresh, 'data-midpoint-own')[0] === 'unglued' && countOf(fresh, 'data-midpoint-own-drawing') === 0 && visibleText(fresh).includes('its own space is the two casts side by side, the columns above: no pair given yet');
   })(), `${attrsOf(glued, 'data-midpoint-own').join(',')} own · ${countOf((glued.split('data-midpoint-own="glued"')[1] || ''), 'data-inside-point')} points · origins ${attrsOf((glued.split('data-midpoint-own="glued"')[1] || '').split('data-midpoint-trace=')[0], 'data-inside-origin').length}`);
-check('§4 ★★ THE PROJECTION SOURCES CARRY THE PERSON\'S ACTS (C-7d item 2): with nothing given on A–C and B–C each source reads `raw material — nothing given yet on the edges that reach it (…)`; after a pair on the A–C edge (given at the AC midpoint) C reads `on A–C: F1 ↦ r0 · sustains ↦ sustains` beside `no identification given yet on B–C` — his own maps as they stand, nothing computed, nothing composed',
+check('§4 ★★ THE PROJECTION SOURCES CARRY THE PERSON\'S ACTS (C-7d item 2): with nothing given on A–C and B–C each source reads `its light is open to a triad now; its own reading of A–B needs your pairs on (…)`; after a pair on the A–C edge (given at the AC midpoint) C reads `on A–C: F1 ↦ r0 · sustains ↦ sustains` beside `no identification given yet on B–C` — his own maps as they stand, nothing computed, nothing composed',
   (() => {
     const before = attrsOf(glued, 'data-midpoint-source-acts');
     S().giveRolePair(edgeAC, ...roleAC('F1', 'r0'));
@@ -476,7 +476,7 @@ check('§4 ★★ THE PROJECTION SOURCES CARRY THE PERSON\'S ACTS (C-7d item 2):
     S().withdrawRolePair(edgeAC, ...roleAC('F1', 'r0'));
     const labelAC = `${ambo.vertices[siteAC.a].data.label}–${ambo.vertices[siteAC.b].data.label}`;
     const pairAC = fwdAC ? 'F1 ↦ r0' : 'r0 ↦ F1';
-    return before.length === 2 && before.every((x) => x === 'none') && visibleText(glued).includes('raw material — nothing given yet on the edges that reach it') &&
+    return before.length === 2 && before.every((x) => x === 'none') && visibleText(glued).includes('its light is open to a triad now; its own reading of A–B needs your pairs on') &&
       attrsOf(after, 'data-midpoint-source-acts').includes('given') && words.some((w) => w.includes(`on ${labelAC}: ${pairAC} · sustains ↦ sustains`) && /no identification given yet on/.test(w));
   })());
 check('§4 ★ THE GESTURE LINE under the canvas names the midpoint\'s two halves (C-6a\'s ruling: the module states every act it offers in its own persistent row)',

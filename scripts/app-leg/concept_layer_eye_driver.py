@@ -965,6 +965,103 @@ def triad_arm(page, args):
     return res
 
 
+
+# ─── C-14g at the eye — the word triad in the light's word row; the import round trip through the input's new construction ───
+WORD_STATE = """() => {
+  const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null;
+  const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
+  const P = s.getBoundingClientRect();
+  const rel = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round((b.x - P.x) * 10) / 10, y: Math.round((b.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 }; };
+  const d = s.querySelector('[data-midpoint-drawing]');
+  const pending = s.querySelector('[data-midpoint-word-triad-pending]');
+  const blocks = []; for (const c of s.children) { const b = rel(c); blocks.push({ key: [...c.attributes].filter((a) => a.name.startsWith('data-')).map((a) => a.name + '=' + a.value).slice(0, 2).join(' ') || (c.textContent || '').slice(0, 30), y: b.y, h: b.h }); if (c === d || c.contains(d)) break; }
+  return {
+    light: s.getAttribute('data-midpoint-light'),
+    rows: [...s.querySelectorAll('[data-midpoint-words]')].map((r) => ({ kind: r.getAttribute('data-midpoint-words'), label: txt(r.querySelector('span')), chips: [...r.querySelectorAll('button')].map((b) => ({ text: b.textContent.trim(), translated: b.hasAttribute('data-midpoint-word-translated'), picked: b.hasAttribute('data-midpoint-light-word-picked') })) })),
+    pending: pending ? { text: txt(pending), belowDrawing: d ? pending.getBoundingClientRect().y >= d.getBoundingClientRect().bottom : null } : null,
+    drawing: rel(d), blocks,
+    respects: [...s.querySelectorAll('[data-midpoint-foot]')].map((b) => ({ corner: b.getAttribute('data-midpoint-foot'), lines: [...b.querySelectorAll('[data-midpoint-respect-line]')].map((c) => [c.getAttribute('data-midpoint-respect-line'), txt(c), c.getAttribute('data-midpoint-respect-kind')]) })),
+    wordPairs: [...s.querySelectorAll('[data-midpoint-word-pair]')].map((e) => ({ pair: e.getAttribute('data-midpoint-word-pair'), by: e.getAttribute('data-midpoint-glued-by'), text: txt(e), buttons: e.querySelectorAll('button').length })),
+    lines: [...s.querySelectorAll('[data-midpoint-line]')].map((e) => e.getAttribute('data-midpoint-line')),
+  };
+}"""
+CHIP_AT = """(sel) => { const s = document.querySelector('[data-midpoint-surface]'); const c = document.querySelector(sel); if (!s || !c) return null; const P = s.getBoundingClientRect(); const r = c.getBoundingClientRect(); return { x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; }"""
+
+
+def light_word(page, w):
+    page.locator(f'[data-midpoint-light-word="{w}"]').first.click(); page.wait_for_timeout(350)
+
+
+def word_triad_arm(page, args):
+    """C-14g §3 — at AB (gen 1): C's drawing opened adds C's word row; a word in each of the three rows, any order, one act, the same pending
+    line; the word respect in C's block in the same grammar; D's light glues a word pair by respects; both withdrawn, the light left"""
+    res = {}
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+    res['before'] = page.evaluate(WORD_STATE)
+    a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
+    flow_side, phi_side = ('A', 'B') if any(x_is_flow(r) for r in a_side) else ('B', 'A')
+    res['flowSide'] = flow_side
+    page.locator('[data-midpoint-source="above"] [data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
+    res['opened'] = page.evaluate(WORD_STATE)
+    res['chipCBefore'] = page.evaluate(CHIP_AT, '[data-midpoint-light-word="removes"]')
+    res['chipABefore'] = page.evaluate(CHIP_AT, f'[data-midpoint-word="{flow_side}|disjoins"]')
+    word(page, flow_side, 'disjoins'); res['pick1'] = page.evaluate(WORD_STATE)
+    res['chipAPicked'] = page.evaluate(CHIP_AT, f'[data-midpoint-word="{flow_side}|disjoins"]')
+    light_word(page, 'removes'); res['pick2'] = page.evaluate(WORD_STATE)
+    res['chipCPicked'] = page.evaluate(CHIP_AT, '[data-midpoint-light-word="removes"]')
+    page.screenshot(path=f"{args.frames}/concept-layer-word-triad-pending-{args.width}x{args.height}.png")
+    word(page, phi_side, 'component-of'); res['act1'] = page.evaluate(WORD_STATE)
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-respect-kind=\"word\"]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
+    page.screenshot(path=f"{args.frames}/concept-layer-word-triad-said-{args.width}x{args.height}.png")
+    page.locator('[data-midpoint-source="below"] [data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
+    res['openedD'] = page.evaluate(WORD_STATE)
+    word(page, flow_side, 'disjoins'); word(page, phi_side, 'component-of'); light_word(page, 'decays'); res['actD'] = page.evaluate(WORD_STATE)
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-word-pairs]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
+    page.screenshot(path=f"{args.frames}/concept-layer-word-triad-glued-{args.width}x{args.height}.png")
+    n = 0
+    while page.locator('[data-midpoint-triad-withdraw^="word|"]').count() and n < 6:
+        page.locator('[data-midpoint-triad-withdraw^="word|"]').first.click(); page.wait_for_timeout(400); n += 1
+    opened = page.locator('[data-midpoint-source-open="open"]')
+    if opened.count():
+        opened.first.click(); page.wait_for_timeout(500)
+    res['restored'] = page.evaluate(WORD_STATE)
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+    return res
+
+
+def import_arm(page, args):
+    """C-14g · M1 — the workspace exported (the download captured), a pair made after it, the file set on the import input (hidden, beside its
+    button — the cast input's construction): the state as exported, the later pair absent"""
+    res = {}
+    res['inputs'] = page.evaluate("() => { const i = document.querySelector('[data-workspace-import-input]'); const c = document.querySelector('[data-cast-file-input]'); const hid = (el) => (el ? getComputedStyle(el).display === 'none' : null); return { import: document.querySelectorAll('[data-workspace-import-input]').length, importHidden: hid(i), importInLabel: i ? !!i.closest('label') : null, srOnlyFileInputs: [...document.querySelectorAll('input[type=file]')].filter((e) => e.classList.contains('sr-only')).length, castHidden: hid(c), castPresent: !!c }; }")
+    res['before'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs', 'state')}
+    path = f"{args.frames}/workspace-export-{args.width}x{args.height}.json"
+    with page.expect_download() as dl:
+        page.locator('[data-workspace-export]').first.click()
+    dl.value.save_as(path); page.wait_for_timeout(300)
+    import os as _os
+    res['bytes'] = _os.path.getsize(path)
+    res['suggested'] = dl.value.suggested_filename
+    a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]:not([data-midpoint-paired])')].map((e) => e.getAttribute('data-inside-point'))")
+    b_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]:not([data-midpoint-paired])')].map((e) => e.getAttribute('data-inside-point'))")
+    x = next((r for r in a_side if x_is_flow(r)), None) or a_side[0]; y = next((r for r in b_side if not x_is_flow(r)), None) or b_side[0]
+    pair(page, x, y); page.wait_for_timeout(300)
+    mid = page.evaluate(MEASURE)
+    res['changed'] = J_(mid.get('lines')) != J_(res['before']['lines']) or mid.get('refusal') is not None
+    res['pairAfterExport'] = [x, y, mid.get('refusal')]
+    page.locator('[data-workspace-import-input]').first.set_input_files(path); page.wait_for_timeout(1000)
+    res['status'] = page.evaluate("() => { const h = [...document.querySelectorAll('h3')].find((e) => /Save \\/ Load/.test(e.textContent)); return h && h.parentElement ? h.parentElement.textContent.replace(/\\s+/g, ' ').trim() : null; }")
+    present = page.evaluate("() => !!document.querySelector('[data-midpoint-surface]')")
+    if not present:
+        res['reselect'] = [select_core(page), select_vertex_labelled(page, 'AB')]
+    res['after'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs', 'state')}
+    return res
+
+
+def J_(v):
+    return json.dumps(v, ensure_ascii=False, sort_keys=True)
+
+
 # C-12a item 6 — the words AB reads after the pairs: the own drawing's text and the own block's, and the sources' word chips
 WORDS_AT_AB = """() => {
   const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null;
@@ -1493,6 +1590,8 @@ def main():
         out['feet'] = page.evaluate(MEASURE_FEET)
         page.screenshot(path=f"{args.frames}/concept-layer-feet-{args.width}x{args.height}.png")
         out['triad'] = triad_arm(page, args)  # C-14 f — the triad in the light; the word pair below the drawing; the copy
+        out['wordTriad'] = word_triad_arm(page, args)  # C-14g — the word triad in the light's word row
+        out['importRoundTrip'] = import_arm(page, args)  # C-14g · M1 — export → a later pair → import through the input's new construction
         # C-8 item 2 at the eye — the loader ABSENT at a midpoint (the packets tab with AB selected shows no file input, no word), PRESENT at a corner
         select_core(page)
         select_vertex_labelled(page, "AB"); out['cardAB'] = page.evaluate(CARD_BORN); tab(page, "packets")

@@ -3,6 +3,7 @@ import {
   type ReactNode,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { seedRegistry } from '../data/seeds';
@@ -506,6 +507,7 @@ function WorkspacePersistenceControls() {
   const exportWorkspace = useGeometryStore((state) => state.exportWorkspace);
   const importWorkspace = useGeometryStore((state) => state.importWorkspace);
   const [status, setStatus] = useState<{ kind: 'success' | 'error'; message: string } | null>(null);
+  const importInputRef = useRef<HTMLInputElement | null>(null); // C-14g · M1 — the import input opened by its button through a ref, as the cast input is
 
   function handleExport() {
     try {
@@ -558,20 +560,32 @@ function WorkspacePersistenceControls() {
       <div className="mt-3 grid gap-2">
         <button
           type="button"
+          data-workspace-export="true"
           onClick={handleExport}
           className="h-9 w-full rounded border border-stone-700 bg-stone-900 px-3 text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
         >
           Export Workspace JSON
         </button>
-        <label className="flex h-9 w-full cursor-pointer items-center justify-center rounded border border-stone-700 bg-stone-900 px-3 text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus-within:ring-2 focus-within:ring-stone-500">
+        {/* C-14g · M1 — THE IMPORT INPUT BY THE CAST INPUT'S CONSTRUCTION. Measured: the cast input is `display:none` (`hidden`) with a data
+            attribute, always mounted with its panel and opened by a sibling button through a ref; this one was a visually-hidden (`sr-only`)
+            input inside a label with no attribute — an automation that sets files by an attribute could not find it, and one that clicks the
+            label meets the OS dialog. Now the same construction: a button, and a hidden input with `data-workspace-import-input`. */}
+        <button
+          type="button"
+          data-workspace-import="true"
+          onClick={() => importInputRef.current?.click()}
+          className="h-9 w-full rounded border border-stone-700 bg-stone-900 px-3 text-sm text-stone-100 transition hover:border-stone-500 hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500"
+        >
           Import Workspace JSON
-          <input
-            type="file"
-            accept=".json,application/json"
-            onChange={handleImport}
-            className="sr-only"
-          />
-        </label>
+        </button>
+        <input
+          ref={importInputRef}
+          type="file"
+          accept=".json,application/json"
+          data-workspace-import-input="true"
+          className="hidden"
+          onChange={handleImport}
+        />
       </div>
       {status ? (
         <p
