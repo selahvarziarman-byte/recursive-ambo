@@ -631,13 +631,14 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           <InsideColumn inside={insideB} geometry={gB} idPrefix={`m-${site.siteId}-b`} arcExtra={extraB.arc} loopExtra={extraB.loop} nodeExtra={extraB.node} pointExtra={pointExtra('B')} />
           {/* C-13e — THE LINE STAYS, ITS WORDS MOVE OUT (the new seat's four long pairs made the middle unreadable: each pair's words
               with the withdraw were a <text> at the fold's mid-height, over both columns' text): the drawing keeps the pair's line and
-              marks it at the fold with the pair's INDEX — one numeral inside the fold's own gap (FOLD wide, no column's text there by
-              the geometry); the pair is read whole, with its withdraw, in the listing below the drawing */}
+              marks it at the fold with the pair's INDEX — one numeral at the dense size inside the fold's own gap (FOLD wide, no column's
+              text there by the geometry); the pair is read whole, with its withdraw, in the listing below the drawing */}
           {lines.map((l, i) =>
             l.iA >= 0 && l.iB >= 0 ? (
               <g key={`${l.x}|${l.y}`} data-midpoint-line={`${l.x}↦${l.y}`} data-midpoint-remade={remadeNote('role', [l.x, l.y]) ?? undefined}>
                 <line x1={gA.px} y1={gA.yOf(l.iA)} x2={gB.px} y2={gB.yOf(l.iB)} className="stroke-amber-300/90" strokeWidth={1.6} />
-                <text data-midpoint-line-index={String(i + 1)} x={foldX} y={(gA.yOf(l.iA) + gB.yOf(l.iB)) / 2 + 3.5} textAnchor="middle" fontSize={9} className="fill-amber-200" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{String(i + 1)}</text>
+                {/* the mark at the dense size, 11 px — the drawing's text is 12 px (labels) and 11 px (dense data) only, the designer's item 7 */}
+                <text data-midpoint-line-index={String(i + 1)} x={foldX} y={(gA.yOf(l.iA) + gB.yOf(l.iB)) / 2 + 4} textAnchor="middle" fontSize={11} className="fill-amber-200" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{String(i + 1)}</text>
               </g>
             ) : null,
           )}
