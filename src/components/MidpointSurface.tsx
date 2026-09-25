@@ -629,14 +629,15 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           <line x1={foldX} y1={TOP} x2={foldX} y2={columnsBottom} className="stroke-stone-800" strokeDasharray="2 4" />
           <InsideColumn inside={insideA} geometry={gA} idPrefix={`m-${site.siteId}-a`} arcExtra={extraA.arc} loopExtra={extraA.loop} nodeExtra={extraA.node} pointExtra={pointExtra('A')} />
           <InsideColumn inside={insideB} geometry={gB} idPrefix={`m-${site.siteId}-b`} arcExtra={extraB.arc} loopExtra={extraB.loop} nodeExtra={extraB.node} pointExtra={pointExtra('B')} />
-          {lines.map((l) =>
+          {/* C-13e — THE LINE STAYS, ITS WORDS MOVE OUT (the new seat's four long pairs made the middle unreadable: each pair's words
+              with the withdraw were a <text> at the fold's mid-height, over both columns' text): the drawing keeps the pair's line and
+              marks it at the fold with the pair's INDEX — one numeral inside the fold's own gap (FOLD wide, no column's text there by
+              the geometry); the pair is read whole, with its withdraw, in the listing below the drawing */}
+          {lines.map((l, i) =>
             l.iA >= 0 && l.iB >= 0 ? (
               <g key={`${l.x}|${l.y}`} data-midpoint-line={`${l.x}↦${l.y}`} data-midpoint-remade={remadeNote('role', [l.x, l.y]) ?? undefined}>
                 <line x1={gA.px} y1={gA.yOf(l.iA)} x2={gB.px} y2={gB.yOf(l.iB)} className="stroke-amber-300/90" strokeWidth={1.6} />
-                <text x={foldX} y={(gA.yOf(l.iA) + gB.yOf(l.iB)) / 2 - 4} textAnchor="middle" fontSize={11} className="fill-amber-200" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>
-                  <tspan>{`${nA(l.x)} ↦ ${nB(l.y)} · yours${kind === 'medial' ? ', born here' : ''}${remadeNote('role', [l.x, l.y]) ? ` · ${remadeNote('role', [l.x, l.y])}` : ''} · `}</tspan>
-                  <tspan data-midpoint-withdraw={`role|${l.x}|${l.y}`} className="cursor-pointer fill-stone-300 underline" onClick={() => withdrawRolePair(edgeId, l.x, l.y)}>withdraw</tspan>
-                </text>
+                <text data-midpoint-line-index={String(i + 1)} x={foldX} y={(gA.yOf(l.iA) + gB.yOf(l.iB)) / 2 + 3.5} textAnchor="middle" fontSize={9} className="fill-amber-200" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{String(i + 1)}</text>
               </g>
             ) : null,
           )}
@@ -649,7 +650,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             return (
               <g data-midpoint-refused-line={`${x}↦${y}`}>
                 <line x1={gA.px} y1={gA.yOf(iA)} x2={gB.px} y2={gB.yOf(iB)} className="stroke-rose-400/90" strokeWidth={1.6} strokeDasharray="5 4" />
-                <text x={foldX} y={(gA.yOf(iA) + gB.yOf(iB)) / 2 - 4} textAnchor="middle" fontSize={11} className="fill-rose-300" style={{ paintOrder: 'stroke', stroke: '#0c0a09', strokeWidth: 2.5, strokeLinejoin: 'round' }}>{`${nA(x)} ↦ ${nB(y)} · not taken — see below the drawing`}</text>
+                {/* C-13e: the refused pair's words moved out too — its dashed line is the one dashed line in the drawing; its words read in the listing below */}
               </g>
             );
           })()}
@@ -660,6 +661,26 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           <line x1={gB.px} y1={columnsBottom + 4} x2={foldX + 8} y2={mY - 2} className="stroke-stone-600" />
         </svg>
       </div>
+      {/* C-13e — THE ROLE PAIRS LISTED, in a place of their own outside the drawing, like the word pairs: each pair whole with its index
+          and its withdraw; the refused pair's words beside them in rose. Placed BELOW the drawing so that a listing appearing or
+          leaving moves neither the drawing nor the column points — §149's law kept by construction (a listing above would shift the
+          next act's targets when it appears; the word pairs above still do — said in the report, not this letter's). */}
+      {state === 'glued' && (lines.some((l) => l.iA >= 0 && l.iB >= 0) || (refusal && refusal.act.kind === 'role')) ? (
+        <div data-midpoint-role-pairs="true" className="my-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-amber-200">
+          {lines.map((l, i) =>
+            l.iA >= 0 && l.iB >= 0 ? (
+              <span key={`${l.x}|${l.y}`} data-midpoint-line-listing={`${l.x}↦${l.y}`} data-midpoint-line-listing-index={String(i + 1)}>
+                <span className="mr-1 text-stone-400">{String(i + 1)}</span>
+                {`${nA(l.x)} ↦ ${nB(l.y)} · yours${kind === 'medial' ? ', born here' : ''}${remadeNote('role', [l.x, l.y]) ? ` · ${remadeNote('role', [l.x, l.y])}` : ''} · `}
+                <button type="button" data-midpoint-withdraw={`role|${l.x}|${l.y}`} className="underline" onClick={() => withdrawRolePair(edgeId, l.x, l.y)}>withdraw</button>
+              </span>
+            ) : null,
+          )}
+          {refusal && refusal.act.kind === 'role' && insideA.points.some((pt) => pt.id === refusal.act.pair[0]) && insideB.points.some((pt) => pt.id === refusal.act.pair[1]) ? (
+            <span data-midpoint-refused-listing={`${refusal.act.pair[0]}↦${refusal.act.pair[1]}`} className="text-rose-300">{`${nA(refusal.act.pair[0])} ↦ ${nB(refusal.act.pair[1])} · not taken — see below the drawing`}</span>
+          ) : null}
+        </div>
+      ) : null}
       {refusal && refusal.act.kind === 'role' ? refusalBox : null}
       {/* C-7f item 2 (the designer): a residual is the trace OF AN ACT — in the unglued state no act has been made, so the lines go BARE; the standing-apart sentence already describes the two records */}
       {trace && state === 'glued' ? (

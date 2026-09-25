@@ -258,7 +258,55 @@ check('§d ★★ THE CURE: the lane DERIVES from the longest label — the geom
     J({ floorLane: gFloor.labelLane, floorReach: gFloor.leftReach }));
 }
 
+// ═══ §e C-13e — ROLE-PAIR LABELS WERE DRAWN ACROSS THE MIDDLE OF THE MIDPOINT DRAWING, OVER THE COLUMNS' TEXT ═══
+console.log('----- §e every role pair listed whole outside the drawing with its withdraw; the drawing keeps the line, marked by index; nothing over a column\'s text -----');
+const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
+const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
+const { edgeBetween } = req('src/lib/faceReading.ts');
+const longCastOf = (ids, labels) => readCastFile(JSON.stringify({ roles: ids.map((id, i) => ({ id, label: labels[i] })), signature: [{ type: 'bears-on', arity: 2 }], relations: [{ type: 'bears-on', terms: [ids[0], ids[1]], polarity: 'holds' }, { type: 'bears-on', terms: [ids[2], ids[3]], polarity: 'holds' }] })).cast;
+const castA = longCastOf(['a1', 'a2', 'a3', 'a4'], ['the involuntary doing', 'the deed', 'the voluntary doing', 'the omission']);
+const castB = longCastOf(['b1', 'b2', 'b3', 'b4'], ['the general positive fact', 'the particular positive fact', 'the general negative fact', 'the particular negative fact']);
+const withCast = (shape, id, c) => ({ ...shape, vertices: { ...shape.vertices, [id]: { ...shape.vertices[id], data: { ...shape.vertices[id].data, cast: c } } } });
+let seededE = createSeedShape('tetrahedron');
+seededE = withCast(seededE, byLabel(seededE, 'A').id, castA);
+seededE = withCast(seededE, byLabel(seededE, 'B').id, castB);
+reset(seededE);
+S().selectCell(cur().cells[0].id); S().applyAmboDissectionToCurrent();
+const eA = byLabel(cur(), 'A').id; const eB = byLabel(cur(), 'B').id; const eAB = byLabel(cur(), 'AB').id;
+{
+  const e = edgeBetween(cur().edges, eA, eB);
+  for (const [x, y] of [['a1', 'b1'], ['a2', 'b2'], ['a3', 'b3'], ['a4', 'b4']]) { if (e.vertexIds[0] === eA) S().giveRolePair(e.id, x, y); else S().giveRolePair(e.id, y, x); }
+}
+const surfaceE = (siteId) => { const packet = buildGeneralSitePacketPresenterReport(cur()).packets.find((p) => p.trace.siteId === siteId); const site = midpointSiteOf(cur(), siteId, packet.trace); const parents = [spaceOf(cur(), site.a), spaceOf(cur(), site.b)]; return renderToString(React.createElement(MidpointSurface, { shape: cur(), site, parents, resolved: spaceOf(cur(), siteId), refusal: null, remade: null })).replace(/<!-- -->/g, ''); };
+const { spaceOf } = req('src/lib/spaceOf.ts');
+const htmlE = surfaceE(eAB);
+const drawingE = (htmlE.split('data-midpoint-drawing="true"')[1] || '').split('</svg>')[0];
+const svgTexts = [...drawingE.matchAll(/<text[^>]*>([\s\S]*?)<\/text>/g)].map((m) => m[1].replace(/<[^>]+>/g, ''));
+const FOLD_E = 150;
+const longest = 'the involuntary doing ↦ the general positive fact · yours · withdraw';
+check('§e ★★ THE POSITIVE CONTROL, BY THE RULE AS IT STOOD (✔ read: each pair\'s words with the withdraw were a <text> centred at the fold\'s mid-height, `textAnchor="middle"`, 11 px): the seat\'s longest pair `' + longest + '` is ' + longest.length + ' glyphs ≈ ' + Math.round(longest.length * 6.2) + ' px at that size, against a fold gap of ' + FOLD_E + ' px — it ran ' + Math.round((longest.length * 6.2 - FOLD_E) / 2) + ' px over EACH column\'s text; four such pairs stacked at the middle',
+  longest.length * 6.2 > FOLD_E + 200, J({ glyphs: longest.length, px: longest.length * 6.2, fold: FOLD_E }));
+check('§e ★★ NOTHING IS DRAWN OVER A COLUMN\'S TEXT: in the drawing every text is a column\'s own or a pair\'s INDEX at the fold — no <text> holds `↦`, `yours` or `withdraw`; the four lines stand (`data-midpoint-line`), each with one index mark at the fold (`data-midpoint-line-index` 1…4, a single numeral, 9 px)',
+  (drawingE.match(/data-midpoint-line="/g) || []).length === 4 && !svgTexts.some((t) => /↦|yours|withdraw/.test(t)) && [1, 2, 3, 4].every((k) => new RegExp(`data-midpoint-line-index="${k}"[^>]*>${k}<`).test(drawingE)) && (drawingE.match(/font-size="9"/g) || []).length >= 4,
+  J({ lines: (drawingE.match(/data-midpoint-line="/g) || []).length, texts: svgTexts.filter((t) => /↦|yours|withdraw/.test(t)) }));
+{
+  const listing = (htmlE.split('data-midpoint-role-pairs="true"')[1] || '').split('data-midpoint-trace=')[0];
+  const entries = [...listing.matchAll(/data-midpoint-line-listing="([^"]*)" data-midpoint-line-listing-index="(\d+)"/g)].map((m) => [m[1], m[2]]);
+  const texts = [...listing.matchAll(/<span data-midpoint-line-listing=[^>]*>([\s\S]*?)<\/span>\s*<\/span>|data-midpoint-line-listing=[^>]*>([\s\S]*?)<\/span>/g)];
+  const plain = listing.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  check('§e ★★ EVERY PAIR READ WHOLE IN A PLACE OF ITS OWN, WITH ITS WITHDRAW: the listing (`data-midpoint-role-pairs`) holds the four pairs in the record\'s order, indexed 1…4 like their lines, each `<long A-name> ↦ <long B-name> · yours · withdraw` whole (the seat\'s own words), the withdraw a BUTTON carrying the same `data-midpoint-withdraw="role|x|y"` the witnesses and the eye already press; `· yours · ` counted once per pair; the listing stands AFTER the drawing in the page (below it) and before the role refusal box',
+    entries.length === 4 && entries.map(([, i]) => i).join('') === '1234' && entries.map(([p]) => p).join(' ') === 'a1↦b1 a2↦b2 a3↦b3 a4↦b4' &&
+      plain.includes('the involuntary doing ↦ the general positive fact · yours · withdraw') && plain.includes('the omission ↦ the particular negative fact · yours · withdraw') &&
+      (listing.match(/<button type="button" data-midpoint-withdraw="role\|a\d\|b\d"/g) || []).length === 4 && (htmlE.match(/· yours · /g) || []).length === 4 &&
+      htmlE.indexOf('data-midpoint-role-pairs="true"') > htmlE.indexOf('</svg>') && readLf('src/components/MidpointSurface.tsx').includes("      {refusal && refusal.act.kind === 'role' ? refusalBox : null}\n") && readLf('src/components/MidpointSurface.tsx').indexOf('data-midpoint-role-pairs="true"') < readLf('src/components/MidpointSurface.tsx').indexOf("      {refusal && refusal.act.kind === 'role' ? refusalBox : null}\n"),
+    J({ entries, plain: plain.slice(0, 400) }));
+}
+check('§e ★ THE REFUSED PAIR FOLLOWS THE SAME MOVE: its dashed line stays in the drawing with no words on it (`data-midpoint-refused-line` holds a <line> and no <text>); its words `… · not taken — see below the drawing` read in the listing (`data-midpoint-refused-listing`), in rose, beside the pairs — the source, since a refusal needs the store\'s own act to render',
+  (() => { const src = readLf('src/components/MidpointSurface.tsx'); const g = src.split('data-midpoint-refused-line={')[1].split('</g>')[0]; return !g.includes('<text') && g.includes('<line') && src.includes('data-midpoint-refused-listing={`${refusal.act.pair[0]}↦${refusal.act.pair[1]}`}') && src.includes('· not taken — see below the drawing`}</span>') && !src.includes('fill-rose-300" style={{ paintOrder'); })());
+check('§e ★ §149 BY CONSTRUCTION: the listing is placed below the drawing, so a pair appearing or leaving moves neither the drawing nor the column points; and with no pair and no refusal the listing is absent (the sentence line already says `0 role pairs`)',
+  (() => { const src = readLf('src/components/MidpointSurface.tsx'); const i = src.indexOf('</svg>\n      </div>\n'); const j = src.indexOf('data-midpoint-role-pairs="true"'); const k = src.indexOf('data-midpoint-own="glued"'); return i > 0 && j > i && k > j && src.includes("{state === 'glued' && (lines.some((l) => l.iA >= 0 && l.iB >= 0) || (refusal && refusal.act.kind === 'role')) ? ("); })());
+
 console.log('');
-if (failures === 0) console.log('DIAGNOSE-THE-ROAD: ALL PASS — the three found on the road stay cured: a quality that is not text carried, marked and counted; a midpoint\'s slot keeping its composed string, following its corners, christened by the person\'s own mark; a lifted face titled by its corners, never its id; every role\'s name read whole in the drawing');
+if (failures === 0) console.log('DIAGNOSE-THE-ROAD: ALL PASS — the three found on the road stay cured: a quality that is not text carried, marked and counted; a midpoint\'s slot keeping its composed string, following its corners, christened by the person\'s own mark; a lifted face titled by its corners, never its id; every role\'s name read whole in the drawing; every role pair listed whole outside it');
 else console.log(`DIAGNOSE-THE-ROAD: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);
