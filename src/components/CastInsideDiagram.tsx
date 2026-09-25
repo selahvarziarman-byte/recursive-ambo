@@ -85,7 +85,7 @@
 // act, and the rare one); an untranslated word is the ground state and carries
 // none — an alike spelling is shown plain (`MarkExtra.word`), its origin beside it.
 
-import { useMemo, type ReactElement } from 'react';
+import { type ReactElement, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Shape, VertexId } from '../types/geometry';
 import { castSummaryLine } from '../lib/castLoader';
 import { insideOf, type ArcSide, type Inside, type InsideArc, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
@@ -127,6 +127,8 @@ export interface InsideLayoutOptions {
   top?: number;
   /** characters a caller's extras add to every word (the glued column writes ` from A` after each) — for the wrap and the reach estimate */
   footExtra?: number;
+  /** C-13d: a floor for the label lane from a MEASUREMENT of the rendered labels (the browser's pass) — never below the estimate */
+  labelLane?: number;
 }
 
 /** C-7g — the words at one point, WRAPPED into lines by the geometry (the drawing reads them; it never re-wraps): ordinals into `inside.arcs` / the point's own loops */
@@ -145,12 +147,21 @@ export interface InsideGeometry {
   height: number;
   columnBottom: number; // the y where the last row ends — the text lines beneath start here
   leftReach: number; // how far the up-arcs and labels reach left of px
+  labelLane: number; // C-13d: the lane the labels are laid in — the longest label's estimate, the floor, or a measured floor, whichever is widest
   rightReach: number; // how far the down-arcs, the word blocks and tuple-nodes reach right of px
   yOf: (index: number) => number;
   lines: (index: number) => PointLines;
 }
 
+/** C-13d: the label lane's FLOOR — the lane itself derives from the longest label (see `labelWide`); 118 was the whole rule once
+ * and clipped the new seat's `the involuntary omission` at the drawing's left edge (Arman's names will often be long) */
 const LABEL_LANE = 118;
+/** a role's label with its badges, as the row prints it — an estimate at the label size (7.2 px a glyph, the mono ids wider): what the lane must hold */
+const labelWide = (point: InsidePoint): number => {
+  const text = point.label ?? point.id;
+  const badges = point.badges.reduce((n, b) => n + 3 + (b.home === 'signature' ? `${b.key} ${b.value}` : b.value).length, 0);
+  return (text.length + badges) * (point.label ? 7.2 : 7.6);
+};
 const NODE_GAP = 46;
 /** the arc's horizontal reach as a fraction of its half-span — a flattened half-ellipse; the side and the nesting are untouched by it */
 const ARC_FLATTEN = 0.62;
@@ -240,7 +251,10 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
     for (const line of l.loops) widest = Math.max(widest, lineWide(line.map((i) => wordOf(inside.loops[i].type, inside.loops[i].polarity)), footExtra, rings * 14 + 2));
   });
   const rightReach = Math.max(maxDown + 40, widest + 14) + (inside.nodes.length ? NODE_GAP + 110 : 0);
-  const leftReach = Math.max(maxUp + 40, LABEL_LANE + 12);
+  // C-13d — EVERY NAME READ WHOLE: the lane holds the longest label with its badges (the estimate), never less than the floor;
+  // a measured floor from the browser's pass overrides both when a rendered label still crossed the edge
+  const labelLane = Math.max(LABEL_LANE, ...inside.points.map((p) => labelWide(p) + 8), options.labelLane ?? 0);
+  const leftReach = Math.max(maxUp + 40, labelLane + 12);
   return {
     row,
     px,
@@ -248,6 +262,7 @@ export function insideGeometry(inside: Inside, options: InsideLayoutOptions = {}
     height: columnBottom - top + (inside.axioms.length + (inside.warrantCarried ? 1 : 0) + inside.unplaced.length) * 16 + 12,
     columnBottom,
     leftReach,
+    labelLane,
     rightReach,
     yOf,
     lines: (index: number) => linesAt[index],
@@ -433,7 +448,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
         inside.axioms.forEach((a, i) => lines.push({ key: `axiom-${i}`, text: `axiom, carried never evaluated: ${a}`, attr: { 'data-inside-axiom': 'true' }, className: 'fill-stone-400' }));
         if (inside.warrantCarried) lines.push({ key: 'warrant', text: 'warrant carried, never read', attr: { 'data-inside-warrant': 'true' }, className: 'fill-stone-400' });
         return lines.map((l, i) => (
-          <text key={l.key} x={g.px - 10 - LABEL_LANE} y={base + i * 16} fontSize={DENSE} className={l.className} style={halo(2.5)} {...l.attr}>{l.text}</text>
+          <text key={l.key} x={g.px - 10 - g.labelLane} y={base + i * 16} fontSize={DENSE} className={l.className} style={halo(2.5)} {...l.attr}>{l.text}</text>
         ));
       })()}
     </g>
@@ -442,11 +457,31 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
 
 /** THE DIAGRAM — one cast, one SVG */
 export function CastInsideDiagram({ inside, id }: { inside: Inside; id?: string }) {
-  const g = useMemo(() => insideGeometry(inside, { px: 0, top: 14 }), [inside]);
+  // C-13d — THE MEASUREMENT PASS: after a paint, every label's rendered box is read (getBBox, in the drawing's own units); if one
+  // still crosses the left edge the lane grows by exactly that much and the drawing lays out again — an estimate is never the
+  // last word on a person's name. Grows only; settles in one pass; absent under a server render (no box to read).
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [laneFloor, setLaneFloor] = useState(0);
+  const g = useMemo(() => insideGeometry(inside, { px: 0, top: 14, labelLane: laneFloor }), [inside, laneFloor]);
+  useLayoutEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    let need = 0;
+    svg.querySelectorAll('tspan[data-inside-label]').forEach((tspan) => {
+      const text = tspan.parentNode as SVGTextElement | null;
+      if (!text || typeof text.getBBox !== 'function') return;
+      const box = text.getBBox();
+      const overflow = -g.leftReach + 4 - box.x;
+      if (overflow > need) need = overflow;
+    });
+    if (need > 0.5) setLaneFloor(g.labelLane + need);
+  }, [g]);
   const width = g.leftReach + g.rightReach;
   return (
     <svg
+      ref={svgRef}
       data-inside={id ?? 'cast'}
+      data-inside-label-lane={String(Math.round(g.labelLane))}
       data-inside-points={String(inside.census.points)}
       data-inside-arrows={String(inside.census.arrows)}
       data-inside-loops={String(inside.census.loops)}

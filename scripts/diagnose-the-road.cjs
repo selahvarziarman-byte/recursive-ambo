@@ -222,7 +222,43 @@ check('§c ★ THE SIX SQUARES OF g2 READ BY THEIR CORNERS (the name the inspect
 check('§c ★ THE COMPOSER IS CONSUMED, NOT COPIED: subComplexLift imports `composeCornerCycleName` from the FROZEN cornerCycleName (row 49) and holds no rotation of its own; the manifest classifies the lift NOT_FROZEN; a vertex or an edge with no given label still falls to its address — outside C-13, said in the source',
   (() => { const src = readLf('src/lib/subComplexLift.ts'); return src.includes("import { composeCornerCycleName } from './cornerCycleName';") && !/d14NameRotation|localeCompare\(\)/.test(src.split('export function faceDesignationOf')[1].split('\n}\n')[0]) && src.includes("(selections[0].kind === 'face' ? (faceDesignationOf(shape, selections[0].id) ?? '') : null) ??") && /^NOT_FROZEN src\/lib\/subComplexLift\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')) && /^src\/lib\/cornerCycleName\.ts\s+[0-9a-f]{64}/m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')); })());
 
+// ═══ §d C-13d — A LONG ROLE LABEL WAS CLIPPED AT THE DRAWING'S LEFT EDGE (the new seat's first report: `he involuntary omission`) ═══
+console.log('----- §d every role\'s name is read whole: the label lane derives from the longest label, and a measured pass grows it further -----');
+const { insideOf } = req('src/lib/castInside.ts');
+const { insideGeometry, CastInsideDiagram } = req('src/components/CastInsideDiagram.tsx');
+const React = require('react');
+const { renderToString } = require('react-dom/server');
+const LONG = 'the involuntary omission';
+const longCast = readCastFile(JSON.stringify({ roles: [{ id: 'x', label: LONG, types: { kind: 'a' } }, { id: 'y', label: 'B' }], signature: [{ type: 'r', arity: 2 }], relations: [{ type: 'r', terms: ['x', 'y'], polarity: 'holds' }] })).cast;
+const shortCast = readCastFile(JSON.stringify({ roles: [{ id: 'x', label: 'F1' }, { id: 'y', label: 'F2' }], signature: [{ type: 'r', arity: 2 }], relations: [{ type: 'r', terms: ['x', 'y'], polarity: 'holds' }] })).cast;
+const gLong = insideGeometry(insideOf(longCast), { px: 0, top: 14 });
+const gShort = insideGeometry(insideOf(shortCast), { px: 0, top: 14 });
+const est = (label, badges) => (label.length + badges) * 7.2; // the drawing's own estimate at the label size
+const longExtent = -10 - est(LONG, 3 + 'a'.length); // the label ends at px − 10, anchored end, with its ` · a` badge — this is its left edge by the estimate
+const ruleAsItStood = Math.max(0, 118 + 12); // the fixed lane: the left edge of the viewBox was −130 for a cast with no up-arcs
+check('§d ★★ THE POSITIVE CONTROL, BY THE RULE AS IT STOOD (✔ read at d95de24: `LABEL_LANE = 118`, `leftReach = max(maxUp + 40, 118 + 12)`): the seat\'s label `the involuntary omission` ends at px − 10 anchored end and, with its badge, reaches ' + Math.round(-longExtent) + ' px left by the estimate — past a left edge at −130 by ' + Math.round(-longExtent - ruleAsItStood) + ' px: clipped (`he involuntary omission`, the seat read)',
+  -longExtent > ruleAsItStood, J({ longExtent, ruleAsItStood }));
+check('§d ★★ THE CURE: the lane DERIVES from the longest label — the geometry\'s `labelLane` holds the label with its badges (' + Math.round(gLong.labelLane) + ' px), the viewBox\'s left edge (−leftReach = ' + Math.round(-gLong.leftReach) + ') lies left of the label\'s extent (' + Math.round(longExtent) + '), and a drawing of short labels keeps the floor (lane 118, as before — nothing moves for the casts the leg reads)',
+  gLong.labelLane >= est(LONG, 4) + 8 && -gLong.leftReach <= longExtent - 4 && gShort.labelLane === 118 && gLong.leftReach === Math.max(gLong.leftReach, gLong.labelLane + 12),
+  J({ lane: gLong.labelLane, leftReach: gLong.leftReach, extent: longExtent, shortLane: gShort.labelLane }));
+{
+  const html = renderToString(React.createElement(CastInsideDiagram, { inside: insideOf(longCast), id: 'long' }));
+  const vb = /viewBox="(-?[\d.]+) 0 ([\d.]+) [\d.]+"/.exec(html);
+  const lane = /data-inside-label-lane="(\d+)"/.exec(html);
+  check('§d ★ THE DRAWING RENDERED (a server render — the estimate alone): the svg\'s viewBox starts at −leftReach, wide enough for the whole label; the lane written on the svg (`data-inside-label-lane`) for the eye to read; the label\'s tspan whole — no ellipsis anywhere in the drawing\'s text',
+    vb !== null && Number(vb[1]) === -gLong.leftReach && Number(vb[1]) <= longExtent - 4 && lane !== null && Number(lane[1]) === Math.round(gLong.labelLane) && html.includes(`>${LONG}<`) && !/…|\.\.\./.test(html.replace(/<!--[\s\S]*?-->/g, '')),
+    J({ viewBox: vb && vb[0], lane: lane && lane[1] }));
+}
+{
+  // the measured floor: a caller's floor from a measurement wins over the estimate and the floor, and grows the reach with it
+  const gFloor = insideGeometry(insideOf(longCast), { px: 0, top: 14, labelLane: gLong.labelLane + 30 });
+  check('§d ★ THE MEASUREMENT PASS HAS ITS SEAM: a measured floor handed to the geometry (`options.labelLane`) widens the lane and the reach by exactly that much; the component reads every label\'s rendered box after a paint (getBBox) and hands the overflow back as that floor — grows only, settles in one pass, absent under a server render',
+    gFloor.labelLane === gLong.labelLane + 30 && gFloor.leftReach === gLong.leftReach + 30 &&
+      (() => { const src = readLf('src/components/CastInsideDiagram.tsx'); return src.includes("svg.querySelectorAll('tspan[data-inside-label]')") && src.includes('text.getBBox()') && src.includes('if (need > 0.5) setLaneFloor(g.labelLane + need);') && src.includes('x={g.px - 10 - g.labelLane}') && !src.includes('x={g.px - 10 - LABEL_LANE}'); })(),
+    J({ floorLane: gFloor.labelLane, floorReach: gFloor.leftReach }));
+}
+
 console.log('');
-if (failures === 0) console.log('DIAGNOSE-THE-ROAD: ALL PASS — the three found on the road stay cured: a quality that is not text carried, marked and counted; a midpoint\'s slot keeping its composed string, following its corners, christened by the person\'s own mark; a lifted face titled by its corners, never its id');
+if (failures === 0) console.log('DIAGNOSE-THE-ROAD: ALL PASS — the three found on the road stay cured: a quality that is not text carried, marked and counted; a midpoint\'s slot keeping its composed string, following its corners, christened by the person\'s own mark; a lifted face titled by its corners, never its id; every role\'s name read whole in the drawing');
 else console.log(`DIAGNOSE-THE-ROAD: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);
