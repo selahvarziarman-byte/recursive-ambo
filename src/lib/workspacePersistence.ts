@@ -28,6 +28,13 @@ export interface PersistedOperationHistoryEntry {
   createdAt: string;
 }
 
+/**
+ * F3 (2026-09-25, Arman's Δ113 — persistence only): the word pairs given on an edge with no plain role pair live in the store's
+ * `edgeTauDrafts` (τ before the first role pair, C-7e), not in the edge's record; they ride the workspace file under this field,
+ * keyed by the edge's id, and an Import restores the file's and drops the session's. Absent on files saved before F3.
+ */
+export type PersistedEdgeTauDrafts = Record<string, Array<[string, string]>>;
+
 export interface PersistedWorkspaceV1 {
   schema: typeof WORKSPACE_PERSISTENCE_SCHEMA;
   version: typeof WORKSPACE_PERSISTENCE_VERSION;
@@ -43,6 +50,7 @@ export interface PersistedWorkspaceV1 {
   historySequence: number;
   cellVisibility?: PersistedCellVisibility;
   viewLayout?: PersistedViewLayout;
+  edgeTauDrafts?: PersistedEdgeTauDrafts;
 }
 
 export interface WorkspacePersistenceSnapshot {
@@ -56,6 +64,7 @@ export interface WorkspacePersistenceSnapshot {
   historySequence: number;
   cellVisibility?: PersistedCellVisibility;
   viewLayout?: PersistedViewLayout;
+  edgeTauDrafts?: PersistedEdgeTauDrafts;
 }
 
 export type WorkspaceImportValidationResult =
@@ -81,6 +90,7 @@ export function serializeWorkspaceSnapshot(
     historySequence: snapshot.historySequence,
     cellVisibility: snapshot.cellVisibility,
     viewLayout: snapshot.viewLayout,
+    edgeTauDrafts: snapshot.edgeTauDrafts ?? {},
   };
 }
 
@@ -196,6 +206,10 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
     errors.push('Workspace viewLayout is malformed.');
   }
 
+  if (input.edgeTauDrafts !== undefined && !isEdgeTauDrafts(input.edgeTauDrafts)) {
+    errors.push('Workspace edgeTauDrafts is malformed.');
+  }
+
   if (errors.length) {
     return { ok: false, errors };
   }
@@ -249,6 +263,16 @@ function isViewLayout(value: unknown): value is PersistedViewLayout {
       typeof value.showFieldAtlasSamples === 'boolean') &&
     typeof value.explodeAmount === 'number' &&
     Number.isFinite(value.explodeAmount)
+  );
+}
+
+/** F3 — a record of edge id → word pairs, each pair two strings; a file saved before F3 has no field at all (accepted) */
+function isEdgeTauDrafts(value: unknown): value is PersistedEdgeTauDrafts {
+  return (
+    isRecord(value) &&
+    Object.values(value).every(
+      (pairs) => Array.isArray(pairs) && pairs.every((pair) => Array.isArray(pair) && pair.length === 2 && pair.every((w) => typeof w === 'string')),
+    )
   );
 }
 

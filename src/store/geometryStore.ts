@@ -1074,6 +1074,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       historySequence: state.historySequence,
       cellVisibility: state.cellVisibility,
       viewLayout: state.viewLayout,
+      edgeTauDrafts: state.edgeTauDrafts, // F3 — the word pairs given alone ride the file
     });
   },
   importWorkspace: (workspace) => {
@@ -1102,6 +1103,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       shapes: Object.fromEntries(Object.entries(importedWorkspace.shapes).map(([id, held]) => [id, migrateChristening(held)])),
       shapeOrder: importedWorkspace.shapeOrder,
       currentShapeId: importedWorkspace.currentShapeId,
+      edgeTauDrafts: importedWorkspace.edgeTauDrafts ?? {}, // F3 — the file's word pairs given alone restored; the session's dropped (a file saved before F3 carries none)
       liftSelection: [],
       selectedCellId,
       selectedVertexId,
