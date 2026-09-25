@@ -122,7 +122,11 @@ const waitUp = () =>
             maxBuffer: 64 * 1024 * 1024,
           });
         } catch (e) {
-          check(`§1 the driver ran at ${w} × ${h}`, false, String(e.stderr || e.message).slice(-600));
+          // the driver's whole stderr kept in the ignored frames folder (a 600-character tail once lost the message under its traceback)
+          const errText = String(e.stderr || e.message || e);
+          try { fs.writeFileSync(path.join(FRAMES, `driver-stderr-${w}x${h}.txt`), errText); } catch { /* the tail below still prints */ }
+          const lines = errText.trim().split('\n');
+          check(`§1 the driver ran at ${w} × ${h}`, false, `${lines.slice(-6).join(' ⏎ ').slice(-1400)} (whole stderr: _frames/driver-stderr-${w}x${h}.txt)`);
           continue;
         }
         const lines = raw.trim().split('\n');
@@ -245,11 +249,13 @@ const waitUp = () =>
         (() => {
           const head = (out.feet || {}).counts || ''; const cardRow = ((cab.spaceRows || [])[0] || {}).text || '';
           const num = (t, re) => { const m = re.exec(t); return m ? m.slice(1).map(Number) : null; };
-          const h = num(head, /(\d+) roles \([^)]*\) · (\d+) words · (\d+) tuples/); const c = num(cardRow, /(\d+) roles · (\d+) words · (\d+) tuples/);
+          const h = num(head, /(\d+) roles \([^)]*\) · (\d+) words, [^·]* · (\d+) tuples/); const c = num(cardRow, /(\d+) roles · (\d+) words · (\d+) tuples/);
           const fb = ((out.feet || {}).blocks || []); const fw = fb.length; const ft = fb.reduce((n, b) => n + (b.lines || []).reduce((m, pair) => { const k = pair[0], t = pair[1] || ''; if (k === 'agrees') { const mm = /agrees on (\d+):/.exec(t); return m + (mm ? Number(mm[1]) : 0); } return m + ((k === 'would-pair' || k === 'would-join') ? 1 : 0); }, 0), 0);
-          const clause = ft === 0 ? `${fw} of the words are the corners' views (no tuple yet)` : `${fw} of the words and ${ft} ${ft === 1 ? 'tuple' : 'tuples'} are the corners' views`;
-          check(`§14 [${w}×${h}] ★★ ONE COUNT EVERYWHERE (§149): at AB the own column's head and the card's Space row agree — \`${cardRow}\` and the head's ${h ? h.join(' · ') : '∅'} — and the head ends with the feet's share in words, \`${clause}\`, computed from the foot blocks on the same screen`,
-            h !== null && c !== null && h[0] === c[0] && h[1] === c[1] && h[2] === c[2] && head.endsWith(` · ${clause}`) && fw === 2,
+          // C-14h — the feet's share after the word count, the corners by their own labels in the order of their blocks
+          const owners = fb.map((b) => `${b.corner}'s`); const who = owners.length <= 1 ? `the view of the opposite corner, ${owners[0] || ''}` : `the views of the opposite corners, ${owners.slice(0, -1).join(', ')} and ${owners[owners.length - 1]}`;
+          const clause = ft === 0 ? `${fw} of them ${who} — no tuple on them yet` : `${fw} of them ${who} — ${ft} ${ft === 1 ? 'tuple' : 'tuples'} on them`;
+          check(`§14 [${w}×${h}] ★★ ONE COUNT EVERYWHERE (§149): at AB the own column's head and the card's Space row agree — \`${cardRow}\` and the head's ${h ? h.join(' · ') : '∅'} — and the head carries the feet's share after its word count, \`${clause}\` (C-14h — the corners by their own labels, no ≡), computed from the foot blocks on the same screen`,
+            h !== null && c !== null && h[0] === c[0] && h[1] === c[1] && h[2] === c[2] && head.includes(` · ${h[1]} words, ${clause} · `) && !head.includes('≡') && fw === 2,
             J({ head, cardRow, h, c, fw, ft }));
         })();
         // C-12b (§147): the card's words and tuples GROW BY THE FEET ALONE — one word per foot (its type, silent or not), one tuple per point the foot reads

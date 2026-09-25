@@ -181,13 +181,23 @@ export const conflictWords = (c: Conflict, la: string, lb: string): string => {
 };
 
 /** §149 — what the feet contribute to the space's count, said in words beside it (the count is the space's, M⁺; the feet are the corners' views, drawn nowhere, read in their blocks) */
-export const cornersViewWords = (share: { words: number; tuples: number }): string => {
+/**
+ * C-14h (the designer's words, §187) — the feet's share said AFTER the word count, in one phrase: `27 words, 2 of them the views of the
+ * opposite corners, C's and D's — no tuple on them yet` (the with-tuples variant `… — 1 tuple on them`); each corner by its OWN label,
+ * the address only where none is given; "views" is the foot block's own word, so one word names one thing; no `≡` (spent on the
+ * pairs line — one glyph, one meaning). The three lines that print the count read this one function.
+ */
+export const cornersViewWords = (share: { words: number; tuples: number }, names: string[]): string => {
   if (share.words === 0) return '';
-  const views = share.words === 1 ? "the corner's view" : "the corners' views";
+  const owners = names.map((n) => `${n}'s`);
+  const who = owners.length <= 1 ? `the view of the opposite corner, ${owners[0] ?? ''}` : `the views of the opposite corners, ${owners.slice(0, -1).join(', ')} and ${owners[owners.length - 1]}`;
+  const them = share.words === 1 ? 'it' : 'them';
   return share.tuples === 0
-    ? `${share.words} of the words ${share.words === 1 ? 'is' : 'are'} ${views} (no tuple yet)`
-    : `${share.words} of the words and ${share.tuples} ${share.tuples === 1 ? 'tuple' : 'tuples'} are ${views}`;
+    ? `${share.words} of them ${who} — no tuple on ${them} yet`
+    : `${share.words} of them ${who} — ${share.tuples} ${share.tuples === 1 ? 'tuple' : 'tuples'} on ${them}`;
 };
+/** a corner's own label, or its address where no label is given (C-14h — the sentence names the corners, never a type or a glyph) */
+export const cornerNameOf = (shape: Shape, id: VertexId): string => { const l = shape.vertices[id]?.data.label ?? ''; return l.trim() ? l : id; };
 
 /** the residual a parent still holds alone — the label of the parent→child line, never bare */
 export const residualWords = (t: ParentTrace, label: string, other: string): string =>
@@ -519,7 +529,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // §149 — ONE COUNT EVERYWHERE, THE SPACE'S: every size this surface prints is the resolved space's (M⁺), through the resolver's one
   // helper — the same expression the card and the lifted card print; the feet's share said beside it in words
   const sizes = useMemo(() => spaceCounts(resolved.space), [resolved]);
-  const cornersClause = useMemo(() => { const w = cornersViewWords(feetShareOf(resolved.feet)); return w ? ` · ${w}` : ''; }, [resolved]);
+  // C-14h — the feet's share after the word count, the corners named in the unfolding's order (the same order as their blocks below)
+  const cornersClause = useMemo(() => cornersViewWords(feetShareOf(resolved.feet), feetInOrder.map((f) => cornerNameOf(shape, f.corner))), [resolved, feetInOrder, shape]);
+  const wordsWords = cornersClause ? `${sizes.words} words, ${cornersClause}` : `${sizes.words} words`;
   const wordChip = (side: Side, w: string): string => {
     const picked = (wordPick?.side === side && wordPick.word === w) || (light !== null && wordTriadPicks[side === 'A' ? site.a : site.b] === w);
     const translated = side === 'A' ? types.some(([s]) => s === w) : types.some(([, t]) => t === w);
@@ -666,7 +678,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       </div>
       <div data-midpoint-sentence="true" className="my-1 text-stone-400">
         {state === 'unglued' && disjoint
-          ? `${la} and ${lb} together, as two — ${sizes.roles} roles · ${sizes.words} words · ${sizes.tuples} tuples · ${disjoint.marks} marks${cornersClause}`
+          ? `${la} and ${lb} together, as two — ${sizes.roles} roles · ${wordsWords} · ${sizes.tuples} tuples · ${disjoint.marks} marks`
           : state === 'glued'
             ? kind === 'seed'
               ? `${roles.length} ${roles.length === 1 ? 'role pair' : 'role pairs'} · ${types.length} ${types.length === 1 ? 'word pair' : 'word pairs'} — yours`
@@ -871,7 +883,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         <div data-midpoint-own="glued" className="mt-2 rounded border border-stone-800 bg-stone-950/60 px-2 py-1">
           <div className="mb-1 text-stone-400">
             <span className="text-stone-100">{lm}</span>
-            {` — its own space, one column: ${sizes.roles} roles · ${sizes.words} words · ${sizes.tuples} tuples · ${M.counts.marks} marks${cornersClause} · `}
+            {` — its own space, one column: ${sizes.roles} roles · ${wordsWords} · ${sizes.tuples} tuples · ${M.counts.marks} marks · `}
             <span className="text-stone-300">{`every role and tuple says where it is from — both · from ${la} · from ${lb}${kind === 'seed' ? '' : ' · the solid\'s share hollow and grey, as above'}`}</span>
             {originTint ? <span>{` (from ${lb} also in `}<span className="text-sky-200">a cooler stroke</span>{`)`}</span> : null}
             {' · a translated word keeps its mark, s ≡ t'}
@@ -957,7 +969,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       {/* THE TRACE — the origin partition of the one glued record, as description */}
       {M && trace && state === 'glued' ? (
         <div data-midpoint-trace="true" className="mt-2 grid gap-0.5 text-stone-300">
-          <span data-midpoint-counts="true">{`${lm}: ${sizes.roles} roles (${castA.roles.length} + ${castB.roles.length} − ${M.pairs.length}) · ${sizes.words} words · ${sizes.tuples} tuples (${M.counts.both} both) · ${M.counts.marks} marks${cornersClause}`}</span>
+          <span data-midpoint-counts="true">{`${lm}: ${sizes.roles} roles (${castA.roles.length} + ${castB.roles.length} − ${M.pairs.length}) · ${wordsWords} · ${sizes.tuples} tuples (${M.counts.both} both) · ${M.counts.marks} marks`}</span>
           <span data-midpoint-core="true" className="text-stone-400">{`what both confirm: ${M.core.roles} ${M.core.roles === 1 ? 'role' : 'roles'} · ${M.core.tuples} ${M.core.tuples === 1 ? 'tuple' : 'tuples'} · ${M.core.marks} ${M.core.marks === 1 ? 'mark' : 'marks'}`}</span>
           {trace.glued.map((r) => (
             <span key={r.key} data-midpoint-role-trace={r.key}>
