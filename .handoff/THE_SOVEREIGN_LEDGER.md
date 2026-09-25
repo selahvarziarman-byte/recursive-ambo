@@ -376,3 +376,52 @@ Every charter, ruling, and sequencing decision I write is walked against this le
 
 **Δ95 — THE STONE IS BUILT BEFORE THE FINAL USE; THE FOUND BUGS ARE FIXED; NOT YET AT THE FINISH (2026-09-24, entered 19:38 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"no i want the stone re-build before the final use. also i want the bugs you have already find addressed. we are not still at the finish line. good work by the hermeneutics."*
 ⇒ **READ: the finish line MOVES** — it is now the engine with M⁺ (the foot) built and the found defects cured; §142's "finished" is withdrawn to "three steps met". Then his use.
+
+**Δ96 — THE USE AS AN OFFICE: A SUB-COMMITTEE WITH AUTHORITY (2026-09-25, entered 01:38 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"assess whether it would be better to turn this into a "office", a mission? an independent session i will start only for this and they will be amongst the team as the user/bug finder as we go using the thing. i want the new seat to be a sub-committee of some sort. i will work the structure with themselves, but i want them to have the authority."*
+⇒ **READ:** Δ93's "another agent" may become a standing seat — an independent session he starts, amongst the team as the user and bug-finder while the engine is used; a sub-committee; **its structure his to work out with it, its authority his grant.** The mothership's part is the assessment (claims ledger §151).
+
+**Δ97 — A STARTER BATCH FOR THE USE OFFICE; THE RECRUIT IS A NEW CUSTOMER (2026-09-25, entered 09:22 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"think of a starter batch for them. what should be in it?
+one thing that must be: we should have an intoruduction to the engine as a usuing device for the agent that i will recruit. they are tabula rasa and will be treated like a new costumer. 
+what else beside this?"*
+⇒ **READ:** the batch's one MUST is an introduction to the engine as a device one USES, for a recruit with no context, treated as a new customer; the rest is the mothership's to propose (claims ledger §152).
+
+**Δ98 — §152 VETOED: THE OFFICE IS ON THE CUSTOMER'S SIDE ALTOGETHER (2026-09-25, entered 09:42 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"drop the whole of (3).
+their mission does not even touch sample cast. fuck sample casts in their ass. we start from scratch as if we know nothing of nothing, the whole attitude is wrong. they are not one of the implementers, they are on the side of the costumer altogether. i veto yourshit. think deeper and better you lazy ass box"*
+⇒ **READ:** §152 VETOED whole, item 3 dropped. The office is NOT an implementer and not the makers' instrument: it stands on the customer's side altogether. Its mission never touches our sample casts. Start from scratch, as if we know nothing of nothing.
+
+**Δ99 — THE OFFICE'S PIPELINE: HIS FOUR SEEDS; THE DEVICE PART IS THEIRS, THE THOUGHT PART HIS (2026-09-25, entered 10:08 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"no still not right. i want them for this pipe line:
+i have the four seeds---> they make a cast foe each of them--- they mount the casts, and we go in, meaning we start amboing.---> in each case they will do the device part of the naming, i do the thought part of it, lol like a true division of labour. through this process and from what i have always expected from the app i report functional and conceptual bugs and needs, they report the technical part. this will start from a tetrahedron seed and go all the way to lifting the six squares of g2, and working with the in manuscript after wards. l"*
+⇒ **READ:** §153 not right. The pipeline: HIS four seeds → the office makes a cast of each → mounts them → the Ambo, together; at every naming the office does the DEVICE part and he the THOUGHT part. He reports functional and conceptual bugs and needs; the office reports the technical part. Scope: the tetrahedron seed → the six squares of g2 lifted → work in the Manuscript.
+
+**Δ100 — §154 APPROVED; THE SQUARES MAY LIFT ONE BY ONE (2026-09-25, entered 10:14 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"approved.
+the multiple face is not what i am looking for necessarily. they might be lifted one by one. but in any case the option for face lifting and multiple face choosing is i think shfit+click"*
+⇒ **READ:** the starter batch of §154 APPROVED as proposed. The six squares of g2 may be lifted ONE BY ONE (a multi-face lift is not necessarily wanted); the gesture that chooses a face to lift, and several, is shift+click by his recollection (⚠ to be seen at the mothership's walk).
+
+**Δ101 — THE SEAT'S ROOM, FURTHER APART (2026-09-25, entered 11:21 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"can the folder be even further apart like in dev/obsidian/obsidian"*
+⇒ **READ:** a question: may the new seat's folder live in his Obsidian vault (`C:\Dev\Obsidian\Obsidian`) rather than beside the repo. Answered at §156.
+
+**Δ102 — THE SEAT IS NAMED: VIRGIN LAND (2026-09-25, entered 11:27 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"ok call them <Virgin Land>.
+tell me thou, would this break our line of communication?"*
+⇒ **READ:** the seat is named **Virgin Land**; its room is the vault folder (Δ101). A question follows: does a room in the vault break the line of communication? Answered at §157.
+
+**Δ103 — BOOT THEM FROM THE DOCS (2026-09-25, entered 11:42 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"but also navigate them to boot up from the docs you wrote. did you?"*
+⇒ **READ:** Virgin Land must be pointed to its three pages as its starting point; I had not done it (claims ledger §159). Done at 11:42.
+
+**Δ104 — F1, F2 AND F4 ARE TO BE FIXED (2026-09-25, entered 11:58 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"fix F1 and F4. 
+F2 must be fixed."*
+⇒ **READ:** all three findings go to the coder: F1 (a lifted face is titled by its id), F2 (a cast quality value that is not text is dropped without a mark), F4 (renaming a corner makes its midpoints look named, with stale letters). Chartered as STAMP C-13 (claims ledger §162).
+
+**Δ105 — PAIRING HALTED: DOES THE OPPOSITE CORNER CONSTRAIN A MIDPOINT'S PAIRINGS? (2026-09-25, entered 13:21 +03:30; ⚠ RELAYED verbatim by Virgin Land's 13:17 letter, not heard by me directly).** ✔ VERBATIM, as relayed: *"we will not go forward without it."* · *"the presence of the projected vertex changes even the mappings."*
+⇒ **READ:** all pairing stops until the mothership answers whether the opposite corner ("the projected vertex", J) is meant to constrain a midpoint's pairings, and how. He is sure it was in the design. Answered at §166.
+
+**Δ106 — A NEW NEED: THE OPPOSITE CORNER CHANGES THE MAPPINGS; THE USE HALTS UNTIL IT IS BUILT (2026-09-25, entered 13:23 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"new need. the use halts until that is built"*
+⇒ **READ:** the answer to §166's fork: not "go on as built" but a NEW NEED. The opposite corner ("the projected vertex", Δ105's words: *"the presence of the projected vertex changes even the mappings"*) must act on a midpoint's pairings beyond reading them. Virgin Land's use halts until it is built. Its exact form is his to state; the design goes back to the researcher and the hermeneutic commission's open line, then to the coder.
+
+**Δ107 — IT WAS WORKED THROUGH; NOTHING IS UNDECIDED (2026-09-25, entered 13:30 +03:30; heard by me, in-terminal, as his answer to my three-option question).** ✔ VERBATIM: *"this has been worked through with other seats. what are you talking about? is there anything undecided yet? are you stupid? which one?"*
+⇒ **READ:** my question asked him to design what his own record already settles. Answered at §167.
+
+**Δ108 — PAIR, THEN THE CONSTRAINT, THEN RE-PAIR: IS IT THEORETICALLY FORCED? (2026-09-25, entered 13:38 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"no but this is wrong. notice how you must first pair and only then the constraint on pairings come in and then you should re-pair.!. this is the result of taking the whole edge with the first pairing. i genuinely don't understand that choice. is it theoretically forced?"*
+⇒ **READ:** §167's "nothing to build" is REJECTED. The defect he names is the ORDER the design imposes (pair → read → re-pair), traced by him to "taking the whole edge with the first pairing". The question is whether that choice is forced. Answered at §168; the researcher asked.
+
+**Δ109 — THE HERMENEUTICS ARE ASKED TOO (2026-09-25, entered 13:42 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"ping the hermeneutics also, tell them to share their best formulation of this."*
+⇒ **READ:** the hermeneutic commission gives its best formulation of the opposite vertex present AT the act (Δ108's problem), in parallel with the researcher. See §169.

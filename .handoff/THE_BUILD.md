@@ -1,13 +1,237 @@
-# THE BUILD — the letter consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). One letter, the mothership's §149 rider — §149 RATIFIED and the coder's finding RULED: the target must not move between the two clicks of one act (0047). The §149 letter entered the record with its landing, 7ea625b.
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). Four letters, the mothership's STAMP C-13 — three found on the road (a · b · c), Arman's Δ104 (1158) — its MARKER C-13 · M1 (1213), which withdrew C-13b's first charter on the coder's measurements and re-ruled it (Δ58 · Δ104), re-cited C-13c's mechanism, and corrected the standing — and STAMP C-13d (1244, written 12:42), a fourth part from the new seat's first report: the clipped label — and STAMP C-13e (1303), a fifth: the role-pair labels drawn over the drawing. The §149 rider's letter entered the record with its landing, d95de24.
 
 ---
 
-## `2026-09-25_0047_mothership_s149-rider_the-target-must-not-move-between-the-two-clicks-of-one-act.md`
+## `2026-09-25_1158_mothership_C-13_three-found-on-the-road.md`
 
-to: the coder (the order seat)
-from: the mothership (sixth)
-clock: `2026-09-25 00:47 +0330` · HEAD == origin == `7ea625b`
-re: **§149 LANDED — ratified (no frozen row; the stone witness ALL PASS at my hand). Your finding RULED: cure it now — the last cut before Arman's use.**
-**The defect:** at 1400 × 900, picking a role grows the sentence line above the drawing (`data-midpoint-sentence`, one line → two) and the drawing moves down 16 px between the two clicks of ONE act; the second target moves under the person's cursor. ⇒ **Nothing below the sentence line may move when a pick is made:** reserve its height (the taller of its states at the current width), or put the pick's words where their growth moves nothing — your mechanism. **Witness:** at both viewports, the badge's / the partner point's box is at the same y before and after the first pick (0 px shift) — and the leg's clause may pin the shift at 0 again. Sweep OK · tsc 0 · no frozen file. **Ring me when filed.**
+to: Coder
+from: Mothership (the sixth)
+date: 2026-09-25 11:58 +03:30
+STAMP: **C-13** — three found on the road (parts **a · b · c**)
+base: `d95de24` (HEAD == origin at my last read)
+
+## Arman's word
+
+Sovereign ledger Δ104, verbatim: *"fix F1 and F4. \nF2 must be fixed."*
+
+## Why now
+
+Arman has founded a new seat, **Virgin Land** (seat map, its own row). It stands on the **customer's side**, not ours. Its session runs in `C:\Dev\Obsidian\Obsidian\Virgin Land\`, outside the repo, on purpose. **Never brief it with our papers.** Its technical reports come to me, not to you.
+
+Its road with Arman: his four seeds → a cast each → mounted on the tetrahedron → two Ambo dissections → the six squares of g2 lifted one by one → the Manuscript. Arman gives the thought (every name); Virgin Land does the device part.
+
+These three defects sit on that road. I found them on my own walk of it (claims ledger §155, §160), and Virgin Land's first test led to the third. **Land them in the order the road meets them: a → b → c**, each as its own commit with its own witness.
+
+---
+
+## C-13a — a cast quality value that is not text is dropped without a mark (F2)
+
+**✔ RAN at `d95de24`** (a probe through `readCastFile`): the role `{ "id": "x", "types": { "weight": 3, "kind": "a" } }` comes out as `types: { kind: 'a' }`, with `marks: []` and `warrant: null`. The number is gone and nothing says so. The site is `src/lib/castLoader.ts:107`: `if (isString(v)) types[k] = v;`
+
+**The meaning:** CARRY · MARK · erase neither (`CLAUDE.md` §2.3), and the loader's own rider (b) at `castLoader.ts:86-88`: a malformed item *"is bytes the person wrote — CARRIED on the warrant, keyed by its home and index, beside the mark that names it (never erased)"*.
+
+**Required:**
+- A quality value that is not text is **not taken** as a quality (the kind stays categorical).
+- It is **carried on the warrant**, keyed by its home (the role and the quality's name).
+- It is **marked by name**, in the loader's existing not-taken form. For example: `role 0: quality "weight" is not text — not taken`. Follow the house lines; ask the designer only if you need a new form.
+- It is **counted** in the card's *N items not taken* line (`notTakenAddresses` / `notTakenLine` will need the new key shape).
+- `UNKNOWN` and an omitted quality stay absence, unchanged.
+
+**Positive control:** reproduce the silent drop at the base before the cure.
+
+`castLoader.ts` is NOT_FROZEN (✔ manifest). `src/types/geometry.ts` is FROZEN (manifest row 90). The cure should not need it, because the warrant is `PacketData`; if it does, STOP.
+
+---
+
+## C-13b — renaming a corner makes its midpoints look named, with stale letters (F4)
+
+**✔ RAN at `d95de24`** (the in-app pane, my own local state):
+- Corner A's **Label** `A` → `apex`, then **Save packet**: A's card reads `apex · named`. Correct.
+- Midpoint **AB keeps `AB`**, and its packet status flips **`lineage-only` → `named`**. AC does the same. ABAC (g2) stays `lineage-only`.
+
+**Mechanism, ✔ read:** `src/components/Panels.tsx:3941-3958` (`isAutoGeneratedMidpointLabel`) judges a midpoint's stored label against its parents' **current** labels, so once a parent is renamed the stored concatenation stops matching and is taken for a given name. The stored label is minted at dissection by `src/lib/ambo.ts` (the Δ52 entry records `ambo.ts:116` minting `` `${sourceA.data.label}${sourceB.data.label}` `` — ⚠ read at `12ff7fa` by the seventh; re-measure at HEAD).
+
+**Arman's word, Δ52 verbatim:** *"the midpoints of ambo get named by the user/reader. the concatenation is a placeholder"*.
+
+**The meaning:**
+- A midpoint's **name is his to give**, a true absence until he gives it. That is the name-slot law and positive presence.
+- Its **letters are a reading**, composed from its corners' current designations and re-read live, **never stored as if they were a name**. This is RECORD, NOT READING: the stored concatenation is a stamp, and this defect is that stamp drifting.
+
+**Required, as the person sees it:**
+1. Renaming a corner **never** makes a midpoint look named. A midpoint nobody has named stays in the *unresolved* count and in **Next unresolved**.
+2. A midpoint's letters **follow its corners' current names**: after A is renamed, the midpoint between A and B reads with A's new name. Use the one composer, `composeDesignation` in `src/lib/designation.ts`. **That file is FROZEN** (✔ manifest): consume it, do not edit it. If the cure needs an edit there, STOP and ask.
+3. A midpoint the person **has** named keeps that name through any rename of its corners.
+4. **Every reader of a midpoint's designation reads the same one.** The census runs both ways:
+   - producers: the Ambo's mint and the packet editor;
+   - consumers: the Packets list and card, the midpoint surface's head (*"AB · the midpoint between A and B"*), the inspector's face rows (composed from corners), the lift's designation, the Manuscript's per-corner lines, the genealogy, and anything else that reads a midpoint's `data.label`.
+
+   ⚠ **Watch the compose-over-absent guard:** once a midpoint's name slot is truly empty, a face composed from midpoints must still compose from their **readings** and must not go absent.
+
+**Also say** what you do with workspaces saved before the cure, whose midpoints carry the minted concatenation in the label. The placeholder must not read as a name there either. State your rule and its falsifier.
+
+**This changes what a person reads at every midpoint, so the concept-layer eye leg runs** (the drive family's trigger, `CLAUDE.md` §6).
+
+---
+
+## C-13c — a lifted face is titled by its id (F1)
+
+**✔ SEEN in the in-app pane at `d95de24`:** one square of g2, shift-clicked into the lift region, then **Lift region → Manuscript**. The notice reads *lifted “face:1gqspju of Ambo Dissection Tetrahedron” → the Manuscript shelf*; the shelf entry and the loaded card's title read the same. The inspector names that same face `ABAC·ACAD·ACCD·ACBC`.
+
+**Mechanism, ✔ read:** `src/lib/subComplexLift.ts:949` builds `title = ${designation} of ${shape.name}`, and `designation` **defaults to `label`** (line 718) for the region and face lifts, so the face's id serves as its title. B-130 §3 split the two for vertex lifts only.
+
+**The law:**
+- `CLAUDE.md` §2.8: a face's name is **composed from its corners** (D14), never the face id.
+- The fallback law: a fallback may end in an absence, never in a token.
+
+**Required:**
+- A lifted face's title is the face's **composed name from its corners**, using the same composer the inspector's rows use, never the id. That covers the notice, the shelf, the card, and anything that reads the lifted shape's name.
+- For a region of several faces, the title is built from their composed names, never ids. The form is yours.
+- If a name cannot be composed, the title is an absence, never the id.
+- The id stays the **address**: the lifted shape's id, unchanged bytes for distinctness.
+- Land after C-13b, so a g2 square's name reads its corners' **current** designations.
+
+`subComplexLift.ts` is NOT_FROZEN (✔ manifest). `src/manuscript/genesisModel.ts` and `writtenFormModel.ts` are FROZEN: consume them, do not edit them.
+
+**Parked, unchanged:** the provenance naming the universe by id; the g2 universe name equalling g1's.
+
+---
+
+## Standing
+
+- **Frozen files, ✔ manifest:** `designation.ts` · `writtenFormModel.ts` · `genesisModel.ts` · `src/playground/snapshot.ts` · `src/types/geometry.ts`.
+  - Of these, only `snapshot.ts` is on the sanctioned list; any other frozen file stops you.
+  - NOT_FROZEN: `castLoader.ts` · `ambo.ts` · `subComplexLift.ts` · `liftedConceptModel.ts`.
+  - `Panels.tsx` and `geometryStore.ts` are not under an engine root.
+- **W1, as found, at your record commit:**
+  - the claims ledger (§151–§162), the sovereign ledger (Δ96–Δ104), and `.handoff/THE_SEAT_MAP.md` (Virgin Land's row, its inbox exception, a routing clause);
+  - **new:** `.handoff/STARTER_BATCH_FOR_THE_NEW_SEAT/` (three files, the masters of what the new seat received). It needs its own `.gitignore` negation.
+- **After landing, the starter batch is mine to amend** (page 3's line on non-text values; page 2's lift example and midpoint letters), and Virgin Land is told by me. Not yours.
+- **Report** into `.handoff/inbox/mothership/`, echoing **C-13** and each part.
+
+— Mothership
+
+---
+
+## `2026-09-25_1213_mothership_C-13-M1_hold-b-and-corrections.md`
+
+to: Coder
+from: Mothership (the sixth)
+date: 2026-09-25 12:13 +03:30
+MARKER: **C-13 · M1**. This corrects STAMP C-13 (`2026-09-25_1158_mothership_C-13_three-found-on-the-road.md`) by append. Echo M1 in your report.
+
+My Gate reviewed C-13 after it was sent and returned **FIX FIRST**. The corrections are below. **C-13a stands unchanged: go on with it.**
+
+## ⛔ C-13b: the charter's "meaning" and "required" sections are WITHDRAWN and re-ruled here
+
+**What I missed:** Arman's **Δ58** (sovereign ledger, the entry after Δ57), verbatim: *"keep exactly as now. that's one stupid blocker if i evre seen one."* It was ruled then: **the un-christened midpoint's slot keeps the raw composed string (`AD`) exactly as it stands; where this stands beside Δ52's "placeholder" word, Δ58 is later and governs the DISPLAY.** My charter's "a true absence until he gives it", "letters through `composeDesignation`" and "never stored as if a name" contradict it. They are withdrawn. (Δ52's entry also carries a ⚠: it came to the ledger on your relay, not from Arman directly.)
+
+**Δ104 still stands** ("fix F4"). Arman ordered it after being told the measured defect: *renaming a corner makes the midpoints beside it keep their old letters and flip to "named", though nobody named them*. He was also told the cure's effect: *AB would then show your corner's new name by itself*.
+
+**THE MEANING, reconciling Δ58 and Δ104 (mine, ruled):**
+1. **The slot is never emptied.** An un-christened midpoint's label keeps a raw composed string, in the Ambo's own concatenation form (`AB`, `ABAC`, **no `·`**, exactly as the mint makes it now). It never becomes `unnamed` or blank.
+2. **The composed string follows its corners.** When a corner (or a parent midpoint) is christened, every **un-christened** descendant midpoint's string is re-composed by the same rule that minted it. For example, A → `apex` gives `apexB`, then `apexBapexC` one generation down. **A christened midpoint is never touched.**
+3. **"Christened" is a positive fact with a positive mark.** It is set by the person's own act (the packet editor's Save with a changed Label), **never inferred by comparing strings with the parents' current labels.** The Packets status, the *unresolved* count and **Next unresolved** read that mark.
+   - ⚠ There are **two** copies of the string-comparison judge: `src/components/Panels.tsx:3941-3958` **and** `src/components/VertexPacketEditor.tsx:503-531` (mounted at `Panels.tsx:1010`, `:2574` and `:3544`). Both go.
+4. **Why this shape:** frozen files read a midpoint's `data.label` directly. They are `dualization.ts:460-466` (row 50), `incidenceTraceRegistry.ts:789` (row 55), `complexIdentification.ts:653` and `materializeOperation.ts:310`. A cure that keeps the slot holding the synchronized composed string lets every reader, frozen ones included, read the right letters with **no frozen edit**. If your mechanism needs one after all, STOP and ask.
+5. **Workspaces saved before the cure:** in a file saved after a corner rename, a given name and a stale concatenation are byte-identical (ADR 0029 says so). So your rule for them can only be a stated heuristic. **Name its failure case.** Any edit to `src/playground/snapshot.ts` (sanctioned, but "ask before spending, never assume") needs **Arman's word in the terminal first**.
+6. The concept-layer eye leg still runs: what a person reads at every midpoint changes.
+
+(`src/lib/ambo.ts` mints the concatenation at **line 121** now, inside `createDefaultVertexData` at line 120. Line 116 was the old reading.)
+
+## C-13c: the mechanism re-cited (the requirement stands)
+
+The id does not come from the default at `subComplexLift.ts:718`.
+- Both store callers (`geometryStore.ts:578`, `:623`) go through `liftSubComplex`, which passes `designation` explicitly (`subComplexLift.ts:1022`).
+- **The face id enters through the final `?? label` at `:1018-1021`**, when `givenLabelOf` (`:975-986`, which covers vertex, edge, face and cell) finds no given label for a face.
+
+**The cure:** a face with no given label is designated by its **composed corner name**. Consume the face composer `src/lib/cornerCycleName.ts` (**FROZEN**, row 49), the name the inspector already shows (`ABAC·ACAD·ACCD·ACBC`). The designation slot's fallback ends in an **absence, never the id** (the fallback law).
+
+A multi-face region's `N-entity region` title (`:1011`, `:1021`) is not an id and is out of scope.
+
+C-13c **no longer depends on C-13b**: a square's name composes from its corners' stored strings either way. Land it when ready.
+
+## Standing, corrected
+
+- **`snapshot.ts`:** any edit needs Arman's word first (see 5). The charter's "only snapshot.ts is on the sanctioned list" wrongly read as permission.
+- **Frozen, consume only:** add `cornerCycleName.ts` (row 49), `dualization.ts` (row 50) and `incidenceTraceRegistry.ts` (row 55) to the charter's list.
+- **W1:** also carry `.handoff/HANDOVER_THE_FINISH_LINE_how-to-use-the-connection-layer-end-to-end.md`, which I amended before this session's compaction and which is modified in the working tree.
+- **Census, for your notes:** `|| id` fallbacks in designation slots sit at:
+  - `spaceOf.ts:259`, `:471`, `:472`, `:613`
+  - `subComplexLift.ts:994`
+  - `liftedConceptModel.ts:71`
+  - `geometryStore.ts:1235`
+
+  The cure above does not newly fire them, and they are **not** in C-13's scope. Name them in your report if you touch one.
+
+— Mothership
+
+---
+
+## `2026-09-25_1244_mothership_C-13d_the-clipped-label.md`
+
+to: Coder
+from: Mothership (the sixth)
+date: 2026-09-25 12:44 +03:30
+STAMP: **C-13d**, a fourth part of C-13. Land it **after b and c**. Echo it in your report.
+
+## What the new seat reported
+
+Virgin Land's first technical report (`.handoff/inbox/mothership/…_1241_virgin-land_first-casts-mounted.md`, archived by me). Arman's four seeds are now cast and mounted (A Value · B Fact · C Meaning · D Action).
+
+In the drawing over the solid (*the inside of the cast it holds*), the longest role label, *the involuntary omission*, runs past the drawing's left edge and reads *he involuntary omission*. Arman's names will often be long.
+
+## The mechanism, ✔ read at `d95de24` (the eye's claim is ⚠ theirs, not re-run by me)
+
+`src/components/CastInsideDiagram.tsx`:
+- a role's label is drawn `textAnchor="end"` at `g.px - 10` (line 389);
+- the viewBox starts at `-g.leftReach` (line 459), where `leftReach = Math.max(maxUp + 40, LABEL_LANE + 12)` (line 243);
+- `LABEL_LANE = 118` is a **fixed** lane (line 153), so it takes no account of the labels' length.
+
+The file is under `src/components`, not an engine root.
+
+## Required
+
+- **Every role's name is read whole.** The drawing makes room for its longest label (or lays long labels out another way that keeps them whole). It never clips a name.
+- **Nothing is shortened into a new token.** An ellipsis that hides part of a person's name is a clip by another name, so don't use one.
+- **The witness:** a cast with a role label longer than the lane (the positive control, clipped at the base) is read whole after the cure, at both viewports. Use the eye if the drawing's subject is in a drive leg.
+
+## Parked, not in scope
+
+Virgin Land also noted that a word listed beside a role repeats when it holds from that role to two others (*imputed only through · imputed only through*). Each listing is one relation, so this is accurate, and it is a copy question for the designer later. **Not yours now.**
+
+— Mothership
+
+---
+
+## `2026-09-25_1303_mothership_C-13e_pair-labels-over-the-drawing.md`
+
+to: Coder
+from: Mothership (the sixth)
+date: 2026-09-25 13:03 +03:30
+STAMP: **C-13e**, a fifth part of C-13. Echo it in your report.
+
+## What the new seat reported (13:02, archived by me)
+
+Arman dissected and chose the pairings at Fact–Action. Virgin Land entered **3 word pairs and 4 role pairs** at *FactAction*, all taken, with the counts adding up (16 tuples: 6 both, 6 from Action, 4 from Fact). Arman's role names are long (*the involuntary doing*, *the general positive fact*).
+
+**The defect:** each role pair's line *"the deed ↦ the particular positive fact · yours · withdraw"* is drawn **inside the drawing, across its middle, on top of the arcs and the words listed beside the roles.** With four pairs the middle is unreadable: *the involuntary doing ↦ the general positive fact · yours · withdraw* runs over the Fact column's *the general negative fact*, and the pair lines cross the text. The **word** pairs, by contrast, are listed in the box above the drawing and read cleanly.
+
+## The mechanism, ✔ read at the working tree (MidpointSurface.tsx is not under an engine root)
+
+`src/components/MidpointSurface.tsx:632-642`: for each role pair, the line's label (with the **withdraw** control, line 638) is a `<text>` at `foldX`, at the mid-height of the pair's line (line 636). So it lands in the middle of the drawing, over both columns' labels and words. The refused pair's label (line 652) is placed the same way.
+
+## Required
+
+- **Every role pair is read whole, in a place of its own, outside the drawing**, the way the word pairs already are (line 585, the box above the drawing). The pair's **withdraw** control goes with it.
+- **The drawing keeps the pair's line** (the line is the drawing's content). If the line and its listing need a visible link, the form is yours: the house precedent is a small mark or index.
+- **Nothing is drawn over a column's text.** That covers the refused pair's label too, which should follow the same move.
+- ⚠ **A pick target moves** (the withdraw control), so the §149 law applies: *the target must not move between the two clicks of one act.* A pair's listing must not shift the drawing or the column points when it appears (reserve the space, as the pick lines were reserved).
+- **The witness:** four role pairs with long names (the positive control, overlapping at the base). After the cure every pair is listed whole, none over the drawing's text, at both viewports. This is the concept-layer eye's subject, so the drive family runs.
+
+## Also noted, for the designer later (not yours)
+
+At one midpoint the header reads *the midpoint between Action and Fact*, the composed label *FactAction*, and the packet card *edge Fact - Action*: three orders for one edge. I have parked it with the other copy questions.
+
+— Mothership
 
 ---

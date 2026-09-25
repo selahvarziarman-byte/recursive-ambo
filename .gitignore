@@ -57,6 +57,8 @@ storybook-static
 !.handoff/OPENING_THE_FOURTH_DESIGNER.md
 !.handoff/PLAN_THE_CONNECTION_LAYER.md
 !.handoff/HANDOVER_THE_FINISH_LINE_how-to-use-the-connection-layer-end-to-end.md
+# C-13 (2026-09-25): the starter batch for the new seat, the mothership's masters of what Virgin Land received — a standing set, un-ignored by its own negation
+!.handoff/STARTER_BATCH_FOR_THE_NEW_SEAT/
 
 # ── INSTRUMENTS ─────────────────────────────────────────────────────────────
 # "An office may build an INSTRUMENT to KNOW. It may not build the PRODUCT."
@@ -185,6 +187,7 @@ scripts/.sweep-times.json
 !.handoff/instruments/connection_layer_reference/the_stone_fifth_run.py
 !.handoff/instruments/connection_layer_reference/the_stone_foot_runs.py
 !.handoff/instruments/connection_layer_reference/thin_cast_readings.py
+!.handoff/instruments/connection_layer_reference/triadic_act.py
 !.handoff/instruments/connection_layer_reference/triangulated_midpoint.py
 !.handoff/instruments/noncommutativity_probe/
 .handoff/instruments/noncommutativity_probe/*
