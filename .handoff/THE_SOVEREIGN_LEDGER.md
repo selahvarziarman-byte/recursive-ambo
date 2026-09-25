@@ -434,3 +434,6 @@ F2 must be fixed."*
 
 **Δ112 — A SERVER OF ITS OWN FOR THE USE; A PAINTING PANE FOR THE DESIGNER; THE USE WAITS FOR SAVING (2026-09-25, entered 18:14 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"yes on both, set it up. but virgin land or the use waits until the saving problem is addressed."*
 ⇒ **READ:** (1) the use runs on its own pinned server (a release: the last ratified commit, changed only when announced); (2) the designer gets a pane that paints. **The use HALTS again until the saving problem is addressed:** its work must survive (export → import restores it; the import input is reachable).
+
+**Δ113 — FIX F3 (2026-09-25, entered 19:23 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"yes fix F3"*
+⇒ **READ:** F3 is to be fixed: a word pair given on an edge before its first role pair lives outside the saved shapes (`edgeTauDrafts`) and is lost on Export → Import. At Δ104 (11:58) he had chosen F1, F2 and F4; F3 was put to him again after the Gate's first pass found it to be the one gap left in the saving the use relies on (claims ledger §188). Chartered as STAMP F3 (§190). The use does not wait for it: Virgin Land is told the gap and its workaround (a role pair on the edge first).
