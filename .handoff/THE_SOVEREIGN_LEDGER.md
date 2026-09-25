@@ -425,3 +425,9 @@ F2 must be fixed."*
 
 **Δ109 — THE HERMENEUTICS ARE ASKED TOO (2026-09-25, entered 13:42 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"ping the hermeneutics also, tell them to share their best formulation of this."*
 ⇒ **READ:** the hermeneutic commission gives its best formulation of the opposite vertex present AT the act (Δ108's problem), in parallel with the researcher. See §169.
+
+**Δ110 — WHY IS THE EDGE THE PAIRING? (2026-09-25, entered 14:04 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"i genuinely am baffled. you say A-C pairings as if A-C edge is that pairing. why that identification? before any pairing by me, the triangulation and so the relations between the three/four concepts are there. what is this idea? explain clearly or route to the researcher"*
+⇒ **READ:** a challenge to the formal system's founding choice (ADR 0031: an edge's content IS his J, possibly empty; the triangulation gives sites only). He holds that the triangulation relates the concepts before any pairing. Explained in-terminal and routed to the researcher (§176).
+
+**Δ111 — ADOPTED: THE TRIAD OF RESPECTS AND THE MEET-CORE; GO BUILD (2026-09-25, entered 14:51 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"yes, adopt it. go build"*
+⇒ **READ:** the design put to him at §177 is adopted: the act is the triad AS RESPECTS on a face (atomic, face-local); the glue is the MEET-CORE (every light ∪ his unconditional pairs; conflicts left out and said; held-back pairs naming born acts); the readings are marks, never demands; grounded by §177's two grains. Built as C-14 (§179).

@@ -177,9 +177,11 @@ scripts/.sweep-times.json
 !.handoff/instruments/connection_layer_reference/j_register_quantities.py
 !.handoff/instruments/connection_layer_reference/lift_ground.py
 !.handoff/instruments/connection_layer_reference/lift_in_type_theory.py
+!.handoff/instruments/connection_layer_reference/meet_core_P6.py
 !.handoff/instruments/connection_layer_reference/midwife_frame_in_the_tower.py
 !.handoff/instruments/connection_layer_reference/offers_count.py
 !.handoff/instruments/connection_layer_reference/projection_route_is_the_face_residue.py
+!.handoff/instruments/connection_layer_reference/respect_pairing_P2.py
 !.handoff/instruments/connection_layer_reference/s35_carried_composed_born.py
 !.handoff/instruments/connection_layer_reference/six_distinct.py
 !.handoff/instruments/connection_layer_reference/space_of_resolver.py

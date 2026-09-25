@@ -380,3 +380,103 @@ In a groupoid these are one equation; in an inverse category they are two, and t
 
 ## 27 · `≡_X` IS IN THE SIGNATURE (appended `%a %b %d %H:%M:%S %z %Y`, HEAD `4332af2`; the mothership's §147 on the office's 1915 §7.5)
 **Ruled (a).** `≡_X` is a binary relation-type of `M⁺`, one per opposite corner, named by its warrant. Under P0 a concept IS its relational structure, so a different `X` makes a different space — Arman's *both*, delivered. It is COMPOSED (0028): the resolver derives it at every read, never stored and never person-written, so RECORD, NOT READING holds. It is holds-only (link = holds, silence = unrecorded, no negative can exist), so the record check reads it and can never refuse on it — structural, not measured. **Carries:** the lift (re-derived on the carried record); the next pushout (the parents' tuples as FOREIGN words; that generation's own feet derived afresh); the door (preserved like any tuple, never in conflict). **Does not carry:** the walk's transport — the cargo is a role moved by `J` and `e`, never by `≡`. §3.10 amended by one sentence-group.
+
+---
+
+## 28 · Δ108 — EDGE-AT-A-TIME IS NOT FORCED; ONE J PER EDGE IS; THE TRIADIC ACT IS LAWFUL, AND ON THE TETRAHEDRON IT MAKES EVERY FACE FLAT BY CONSTRUCTION (appended `Fri Sep 25 13:42:33 +0330 2026`, HEAD `6974190`; the mothership's 2026-09-25 1337 letter; `triadic_act.py` + RESULTS — one seal fired, and it is the finding)
+**28.1 · What is forced, and what is not.**
+- **FORCED: ONE partial isomorphism per edge, shared by both faces.** The layer is a connection on the 1-skeleton: the born vertex `M_AB` is one point of both faces, a walk crosses `AB` once, and a door's lines (§18) read one `J` per boundary edge. Two `J`s on one edge would leave all three undefined.
+- **NOT FORCED: entering that `J` one pair at a time, one edge at a time.** No theorem of §3 depends on how the pairs were entered; it is §1.3's DEFINITION of the act.
+- **FORCED BY A RULING, NOT BY MATHEMATICS:** the opposite vertex speaks about `A–B` only through his own pairings into it (Δ80, §8(c)).
+**28.2 · The triadic act.** At a face `X·Y·Z` he points `(x, y, z)` as one act. It enters the three pairs, each checked one-to-one exactly as today. The act is ATOMIC: if any leg is refused, nothing is entered and the leg is named.
+- **Honesty line:** every pair is his, pointed; nothing is posited. **§12.4:** these are identifications, not a blend. **§12.5:** `M_AB` stays the pushout over `J_AB`, and `z`'s role never enters its points. **LAWFUL.**
+- **The other face through the edge (`ABD`) is bound by what is already paired:** a triad naming a different partner for an already-paired role is refused (0 taken in 2,550 probes).
+**28.3 · The finding (T2 fired: sealed > 0, read 0).** On the TETRAHEDRON a configuration made only of triads can NEVER hold a `Mov`, at any corner of any face (4,000 random tetrahedra; T1 read 0, as sealed).
+- **The argument:** a route `a → b → c′ → a′` round `ABC` uses pairs from triads on `ABC`, `ABD`, `BCD` or `ACD`. Each of those faces other than `ABC` holds the fourth corner `D`, and one-to-one on the edges to `D` forces `a′ = a`.
+- ⇒ **Under triads, disagreement cannot arise after the act; it is REFUSED AT the act, by name.** That answers his "no re-pair": the constraint arrives while he points.
+- **The stone** keeps loops and PROPOSALS (`C` and `D` both joining an `a` and a `b` he never paired) and never shows a DISAGREEMENT (T5: 0 failures).
+- ⚠ **Scope:** the argument needs the three neighbouring faces to share one opposite corner. It does not transfer to the octahedron after a dissection; that case is not measured.
+**28.4 · What triads alone cannot say (T4).** Every triad-made pair lies in a closed trio (0 exceptions), whereas single pairs make trio-less pairs in 4,000 of 4,000 tetrahedra. So "A and B share this, and no third corner does" cannot be said by triads alone. Keeping the single-pair act beside the triad is his call.
+**28.5 · Per face-edge pairings (two `J`s on one edge): REFUSED.** It breaks the forced part of 28.1: `M_AB` would be two concepts at one point, or would pool two roles of one corner. It also makes the face a third parent of the edge's born concept (§12.5). The opposite vertex's presence on the child is already in the theory, as `≡_C` in `M⁺`'s signature (§27).
+**28.6 · Fences.**
+1. One `J` per edge, shared by both faces.
+2. The triad is atomic; each refused leg is named with its existing partner and its face.
+3. The device never completes a triad from two legs — that is the route pre-fill §8(c) forbids.
+4. `M_AB` stays the span's pushout; `z` never enters it.
+5. Words stay separate unless he points them too.
+6. No face is named or walked.
+
+---
+
+## 29 · Δ108 — THE RESPECT-PAIRING: SOUND as a second record kind; its P2 is half vacuous and half FALSE as written; the office's point (4) against the triad CONFIRMED — and the same point applies to the respect's own legs (appended `Fri Sep 25 13:52:11 +0330 2026`, HEAD `7abb8f7`; the office's 2026-09-25 1347 letter, the mothership's 1349 ask; `respect_pairing_P2.py` + RESULTS, seals before the run)
+**29.1 · The type.** A GIVEN record kind, keyed by (edge, opposite corner): tuples `(a, b, c)`, with `a ∈ R_A`, `b ∈ R_B`, and `c ∈ R_C` a role of that face's third corner.
+- No one-to-one requirement: respects stand together. Holds-only. Words likewise.
+- On `M⁺` it is a relation-type `⟨C⟩` in the signature, binary on `M_AB`'s points `([a], [b])`, with `c` as the TUPLE's warrant — never a term, so closure holds.
+- It is INPUT, serialized as the person's act (unlike the derived foot); RECORD, NOT READING holds.
+- **It keeps** §1.3 (the core untouched), invariant 9's construction, §8 (nothing offered or pre-filled — he points `c`), §3.10 (a) (the same signature status as `≡_C`), Δ80, §12.4 and §12.5 (`c` is a warrant, never a point of `M_AB`).
+- **Carries by §27's rules:** the lift (verbatim — it is record); the next pushout (FOREIGN words); a door (cannot conflict). **Not** the cargo.
+**29.2 · The reading, fixed leg by leg.** The office's words left one case open (a leg missing at one end while its other end is taken elsewhere).
+- Each leg reads KEPT (paired as the respect says) · BROKEN (either end paired elsewhere on that edge) · OPEN.
+- HONORED = both legs KEPT · BROKEN = either leg BROKEN, the leg named · NOT YET = otherwise.
+**29.3 · P2 on the 42 hand triples (face flow · t-cell · phi, respect corner phi).**
+- **P2a and P2c VACUOUS by construction:** respects synthesized FROM the legs read HONORED (91 of 91), and wrong respects never do (0 of 728). They check the implementation, not the theory.
+- **P2b FALSE as the office wrote it:** "the derived foot at `a` is a loop" fails in 85 of 91. The stone's loop is `J_AB(a) = foot(a)`, and the synthesized `b` IS the foot, so it is a loop exactly where the CORE agrees — 6 of 91, the stone's 6 FIX roles. The 85 are the stone's 39 disagreements + 46 proposals (§25).
+- **P2d, NON-VACUOUS:** every core pair against every role of phi as its respect — HONORED 6 · BROKEN 1,905 (at A–C 1,161, at C–B 744) · NOT YET 195.
+- **P2e (no gluing):** STRUCTURAL — the pushout reads only `J_AB`.
+**29.4 · The office's (4) against the triad — CONFIRMED.** A triad's `a↦b` is a core pair; the other face's triad naming another partner is refused (my T3: 0 taken in 2,550). Withdraw-and-re-pair moves to the other face.
+- One correction to their (iii): on the tetrahedron triads make the residue impossible BETWEEN faces too (my §28.3: 0 in 4,000), not only within one.
+**29.5 · ⛔ The same point applies to the respect-pairing's own remedy.** A BROKEN reading is answered "on the leg" — and a leg IS a core pair on `A–C` or `C–B`, shared by that edge's other face. So acting on it is a withdraw-and-re-pair of an unconditional pairing, binding another face.
+⇒ **The respect-pairing moves Δ108's loop off `A–B` and onto the legs; it does not remove it.**
+- The only formulation that removes it entirely makes EVERY act face-local: respects on all three edges of the face, read against each other, never against a core — the triad AS RESPECTS, `a↦b⟨c⟩ · a↦c⟨b⟩ · c↦b⟨a⟩`, merging nothing and binding no other face.
+- Its price: the core, which alone glues, stays whatever he gives unconditionally — possibly empty — so the born concept is the disjoint union with marks unless he also pairs unconditionally.
+- A fork for Arman; not ruled here.
+**29.6 · Fences, added to the office's.**
+1. A respect's `c` must be a role of the face's third corner, pointed by him.
+2. A respect never glues, never enters a door's lines, never causes or answers a refusal.
+3. The reading names the leg; it never proposes the leg's repair.
+4. The device never synthesizes a respect from the legs (P2a's construction is an instrument only — shown to him, it would be the route pre-fill §8(c) forbids).
+
+---
+
+## 30 · Δ108 — THE MEET-CORE: SOUND with two conditions the office did not write; a one-light edge's core is his unconditional pairs alone; P6 is an identity; "no core byte moves" contradicts the meet-core (appended `Fri Sep 25 13:58:30 +0330 2026`, HEAD `7abb8f7`; the office's 2026-09-25 1355 letter, the mothership's 1356 ask; `meet_core_P6.py` + RESULTS, seals before the run)
+**30.1 · Against the premises.**
+- **§1.3.** The core becomes COMPOSED (0028) from his pointings — pairs he gave in both lights — plus his unconditional pairs. That is the gen-2 composed identity's standing: derived from his acts, never posited. §1.3's words must change from "given by pointing" to "given by pointing, unconditionally or in every light".
+- **Δ80.** Nothing is posited: every meet pair is one he pointed twice.
+- **§12.5.** The respects' warrants (`c`, `d`) never enter `M_AB`; the core holds only A–B pairs.
+- **Invariant 9.** The amalgam stays a functor of the span, with the meet as its `J`. `M_AB` now depends on the opposite corners through whether his respects in their faces STAND — a respect whose `c` is re-cast away drops, and the meet moves. The refused "byte-identical" sentence stays refused.
+**30.2 · Two conditions, needed for soundness — not in the office's letter.**
+- **(i) CONFLICTS LEFT OUT.** Respects are not one-to-one, so the meet can pair one role twice (47 of 4,000 random tetrahedra). Taken whole it POOLS two roles of one corner (the stone). As at the gen-2 medial meet, a conflicting meet pair is left out and SAID. The same holds against his unconditional pairs: an unconditional pair contradicting another is refused as today, while a meet pair contradicting an unconditional one is left out (a respect never causes a refusal).
+- **(ii) THE DEPENDENCY READING.** A second face's respects CHANGE the core (958 of 4,000). A core change on a seed edge can break a born pair one generation up — the existing dependency refusal's case (C-8). Since a respect may never be refused, the meet pair that would break a born act is held back from the core and SAID, naming the born act, until he withdraws it or the born act.
+**30.3 · One light only.** On an edge whose other face has given no respects the meet is EMPTY (0 exceptions): the core is his unconditional pairs alone, and the child is the disjoint union plus the marks. That is honest — one light is not every light. The office's "on a boundary edge the meet is that face's section" holds only for a TRUE boundary edge, and the tetrahedron has none. **So on his seed no child glues anything by respects until both faces through its edge have spoken.**
+**30.4 · P6.**
+- **Against itself:** a section reads HONORED — structural (its respects are each other's legs), not measured.
+- **Against the core:** "BROKEN = the foot's non-loop links" holds on all 42, but it is an IDENTITY when the section is built from the core's legs (`b` is the foot). For sections he could give independently the counts differ on 42 of 42 — the section's reading is its own content, not the stone's census restated.
+- **"No core byte moves; no other face's record changes"** is true for respects ALONE and FALSE under the meet-core — the office's two proposals contradict each other on this point, and the meet-core's version is the one to keep.
+**30.5 · For Arman's P5.** The measure is his: whether the pairs he would give under BOTH lights on Fact–Action form a non-empty set. The office's kill stands (empty on every edge ⇒ §3 withdrawn).
+
+---
+
+## 31 · Δ110 — THE EDGE IS NOT THE PAIRING: two grains (appended `Fri Sep 25 14:05:17 +0330 2026`, HEAD `7abb8f7`; the mothership's 2026-09-25 1403 letter)
+**Plain words.** Arman is right: the edge is not his pairing. There are two GRAINS in the design, and they were run together.
+- The **CONCEPT grain:** each corner taken whole — Value, Fact, Meaning, Action. The triangulation is content here, before he pairs anything: *Fact and Action are related* (an edge); *Fact, Action and Value belong together* (a face); *Value stands opposite Fact–Action* (the opposite vertex); and the angles among all of them (all equal on the regular seed).
+- The **ROLE grain:** the items inside each concept. The triangulation says NOTHING here — which item of Fact is which item of Action. The regular geometry is the same on every edge, so it cannot tell one item from another. That silence is exactly what Δ80 protects: the device may not guess it.
+- **What ADR 0031 describes is the role grain only.** Its "to each edge the person's identification J" names what the concept layer puts ON the edge, not what the edge IS. The design then wrote the edge as "empty" before pairing, and the midpoint as "A and B stand apart". That wording dropped the concept-grain relation the edge already is. **"Edge = J" is a DEFINITION (the gauge reading's choice of what the fibre layer carries), not forced.** What IS forced, by Δ80, is only this: no role-to-role content without him.
+
+**What the triangulation carries before any pairing — all concept-grain, all content, none of it a pairing:**
+1. **The edge:** A and B are related. It is already read by the base's argument register (`CONTEXT.md`: a vertex is a proposition, an edge an inference) — the "two registers of one vertex" of §16–§17. The concept layer never took it up.
+2. **The face:** A, B and C co-present in one triangle — a three-way belonging, not three two-way ones.
+3. **The opposite vertex, projected:** C stands opposite A–B, and its altitude lands on the midpoint of A–B. At the concept grain, C is present AT that midpoint as a whole. **This is the Midwife's J** (the sublated / projection vertex), and it is GIVEN by the triangulation.
+4. **The angles** (ADR 0023, already first-class and carried): how a concept's two relations stand to each other. Definite, from the seed, never his.
+5. **After a dissection:** the octahedron's adjacencies — which born concepts touch which — the same kind of content one level up.
+
+**Can it be content without positing a pairing? YES — at the concept grain, and only there.** Formally, the base complex with its incidences and angles is a structure on the corners-as-wholes. The concept layer is a family OVER that base: fibres at the corners, and on the edges his role-grain identifications. Nothing in the base reaches inside a fibre. So it never posits which item is which, and Δ80 stands untouched.
+
+**What changes (the wording and the reading; no construction):**
+- **What an edge carries:** its concept-grain relation (given) AND its role-grain `J` (his, possibly empty). An edge with no pairing is not empty; it is a given relation not yet articulated at the role grain.
+- **The midpoint before pairing:** still `A ⊔ B`, but read correctly — *A and B together, as two, joined by the triangulation, no item yet identified.* Its opposite corners are named on it from the start: the stone's blocks, one per opposite corner, present and silent.
+- **A face before pairing:** at the role grain it reads nothing, since no route exists yet. At the concept grain it reads the three concepts co-present with their angles.
+- **The Midwife's J restored:** the opposite vertex projected into the midpoint is GIVEN at the concept grain (C present at `M_AB` as a whole). **The foot (0031 §3.10) is its ROLE-GRAIN articulation**, derived from his pairings into C. The respect `⟨c⟩` is his articulation of it at the act. **Given presence; derived foot; given respect — one relation at three depths.**
+- **The pending design (triad as respects + meet-core, §29–§30): NOT re-founded — it becomes better grounded.** A respect is exactly the concept-grain face (C present) reaching into a role-grain act, and the meet-core is the role-grain articulation of an edge that holds in every face through it. Both are role-grain; the triangulation supplies their SITE and their WARRANT (the face, the opposite corner). Nothing in §29–§30 changes.
+
+**No run:** nothing here is a number. It is a correction of what the definitions SAY, and the constructions stay as built.
+**ADR text (held with the rest):** 0031 §0/§1 should read *"to each edge, beside the relation the triangulation gives it, the person's identification J at the role grain"*, and the disjoint union *"A and B together as two"*, never *"apart"*.
