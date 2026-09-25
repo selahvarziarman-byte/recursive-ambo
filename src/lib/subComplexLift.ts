@@ -51,6 +51,7 @@ import type {
 // P5 — Part B reads the committed apex-trace (the registry is the ONE source
 // of the (M, C) relation; consumed by import, never re-derived)
 import { buildIncidenceTraceRegistry } from './incidenceTraceRegistry';
+import { composeCornerCycleName } from './cornerCycleName';
 
 export type LiftEntityKind = 'cell' | 'face' | 'edge' | 'vertex';
 
@@ -945,8 +946,10 @@ export function extractSubShape(
   }
 
   // the title reads the DESIGNATION; the id keeps the ADDRESS (unchanged
-  // bytes — distinctness and any id-keyed dedup ride exactly as before)
-  const title = `${designation} of ${shape.name}`;
+  // bytes — distinctness and any id-keyed dedup ride exactly as before).
+  // C-13c: an absent designation makes an absent title — never the id, and never a sentence with a hole in it; the word for
+  // the absence, if one is ever shown, is the designer's
+  const title = designation === '' ? '' : `${designation} of ${shape.name}`;
   const lifted: Shape = {
     id: `lift:${label.replace(/\s+/g, '-')}:from:${shape.id}`,
     name: title,
@@ -995,6 +998,16 @@ export function cellDesignationOf(shape: Shape, cellId: string): string | null {
   return `the ${cell.topology ?? cell.kind} ${corners.join('·')}`;
 }
 
+// C-13c (F1; Arman's Δ104 "fix F1"; the mothership's C-13 · M1): a FACE with no given label is designated by its COMPOSED
+// CORNER NAME — the frozen composer every reader uses (cornerCycleName: D14's rotation to the alphabetically-first corner, the
+// face's own cycle direction, `·`-joined), the name the inspector's rows show (`ABAC·ACAD·ACCD·ACBC`) — never the face id.
+// Null when the shape does not hold the face or a corner carries no label (the composer's own absence).
+export function faceDesignationOf(shape: Shape, faceId: string): string | null {
+  const face = shape.faces.find((f) => f.id === faceId);
+  if (!face) return null;
+  return composeCornerCycleName(face.vertexIds.map((v) => shape.vertices[v]?.data.label ?? null));
+}
+
 // the one-call façade the stores use: closure → precondition → extraction
 export function liftSubComplex(shape: Shape, selections: LiftSelection[]): LiftedSubShape {
   const closure = downwardClosure(shape, selections);
@@ -1015,9 +1028,15 @@ export function liftSubComplex(shape: Shape, selections: LiftSelection[]): Lifte
   // designer's copy to mint, not this seam's).
   // C-12a item 2 — a CELL with no given name is designated by its KIND and its CORNERS (`the tetrahedron A·AB·AC·AD`),
   // never by its address: the notice, the shelf and the placed card printed `cell:residue:1u8g0d of …`
+  // C-13c — a FACE with no given label is designated by its composed corner name (faceDesignationOf); THE FALLBACK LAW: where
+  // no name composes, the designation is an ABSENCE ('' — the packet's ruled absence value), never the id; the id stays the
+  // ADDRESS below, unchanged bytes. (A vertex or an edge with no given label still falls to its address — outside C-13, said.)
   const designation =
     selections.length === 1
-      ? givenLabelOf(shape, selections[0]) ?? (selections[0].kind === 'cell' ? cellDesignationOf(shape, selections[0].id) : null) ?? label
+      ? givenLabelOf(shape, selections[0]) ??
+        (selections[0].kind === 'cell' ? cellDesignationOf(shape, selections[0].id) : null) ??
+        (selections[0].kind === 'face' ? (faceDesignationOf(shape, selections[0].id) ?? '') : null) ??
+        label
       : label;
   return extractSubShape(shape, closure, label, designation);
 }

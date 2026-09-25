@@ -162,7 +162,67 @@ check('§b ★★ BOTH STRING-COMPARISON JUDGES ARE GONE (M1 §3 ⚠): Panels.ts
       /^NOT_FROZEN src\/lib\/christening\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')) && !readLf('src/lib/christening.ts').includes('composeDesignation');
   })());
 
+// ═══ §c C-13c — A LIFTED FACE WAS TITLED BY ITS ID (F1) ═══
+console.log('----- §c a lifted face is designated by its composed corner name, never its id; where no name composes, an absence -----');
+const { liftSubComplex, faceDesignationOf } = req('src/lib/subComplexLift.ts');
+const { composeCornerCycleName } = req('src/lib/cornerCycleName.ts');
+const { faceDisplayName } = req('src/manuscript/apertureModel.ts');
+const { useLiftStore } = req('src/store/liftStore.ts');
+reset(createSeedShape('tetrahedron'));
+S().selectCell(cur().cells[0].id); S().applyAmboDissectionToCurrent();
+const c1 = cur().id;
+S().selectCell(coreOf().id); S().applyAmboDissectionToCurrent();
+const c2 = cur().id;
+const g2s = S().shapes[c2];
+const squares = g2s.faces.filter((f) => f.vertexIds.length === 4 && f.vertexIds.every((v) => (g2s.vertices[v]?.data.label ?? '').length === 4));
+const squareNames = squares.map((f) => faceDesignationOf(g2s, f.id));
+const namedSquare = squares.find((f) => faceDesignationOf(g2s, f.id) === 'ABAC·ACAD·ACCD·ACBC');
+note(`the six squares of g2 by their composed names: ${J(squareNames)}`);
+check('§c ★ THE SIX SQUARES OF g2 READ BY THEIR CORNERS (the name the inspector shows — the ONE frozen composer, cornerCycleName, through `faceDesignationOf`): twelve 4-corner face records of gen-2 midpoints (each square held by two cells, recorded once per cell), SIX distinct squares by name, each named by its corners with no `face:` in it, the mothership\'s own square `ABAC·ACAD·ACCD·ACBC` among them; `faceDesignationOf` equals the inspector\'s `faceDisplayName` on every record',
+  squares.length === 12 && new Set(squareNames).size === 6 && squareNames.every((n) => typeof n === 'string' && /^[A-D]{4}(·[A-D]{4}){3}$/.test(n)) && namedSquare !== undefined && squares.every((f) => faceDesignationOf(g2s, f.id) === faceDisplayName(g2s, f)),
+  J({ n: squares.length, distinct: new Set(squareNames).size, names: [...new Set(squareNames)] }));
+{
+  const lifted = liftSubComplex(g2s, [{ kind: 'face', id: namedSquare.id }]);
+  check('§c ★★ THE LIFTED SQUARE IS TITLED BY ITS COMPOSED NAME, NEVER ITS ID (✔ SEEN at d95de24: `lifted “face:1gqspju of Ambo Dissection Tetrahedron”`): the title reads `ABAC·ACAD·ACCD·ACBC of <the universe\'s name>`, the lifted shape\'s name the same; the id stays the ADDRESS — `lift:face:…:from:…`, the face id inside it, unchanged bytes',
+    lifted.title === `ABAC·ACAD·ACCD·ACBC of ${g2s.name}` && lifted.shape.name === lifted.title && !/face:/.test(lifted.title) && lifted.shape.id === `lift:${namedSquare.id}:from:${g2s.id}` && namedSquare.id.startsWith('face:'),
+    J({ title: lifted.title, id: lifted.shape.id }));
+  // the store's own act: the region set, the lift taken, the notice's title and the shelf's entry read the same name
+  useGeometryStore.setState({ liftSelection: [{ kind: 'face', id: namedSquare.id }] });
+  const before = useLiftStore.getState();
+  const noticeTitle = S().liftSelectionToManuscript();
+  const after = useLiftStore.getState();
+  const shelf = after.queue;
+  const last = Array.isArray(shelf) && shelf.length ? shelf[shelf.length - 1] : null;
+  check('§c ★★ THE STORE\'S ACT, THE NOTICE AND THE SHELF READ THE SAME NAME: `liftSelectionToManuscript` returns the title the notice prints (`lifted “<title>” → the Manuscript shelf`, Panels.tsx), and the shelf\'s new entry carries it — `ABAC·ACAD·ACCD·ACBC of …`, never the id',
+    noticeTitle === `ABAC·ACAD·ACCD·ACBC of ${g2s.name}` && last !== null && last.title === noticeTitle && readLf('src/components/Panels.tsx').includes('setLiftNotice(`lifted “${title}” → the Manuscript shelf`);') && before !== after,
+    J({ noticeTitle, last: last && last.title, keys: Object.keys(after) }));
+}
+{
+  // after C-13b: a corner christened, then a gen-1 face lifted — the title reads the corners' CURRENT designations
+  S().selectShape(c1);
+  const gA = byLabel(S().shapes[c1], 'A').id;
+  S().selectVertex(gA); S().updateSelectedVertexData({ label: 'apex' });
+  const g1s = S().shapes[c1];
+  const face = g1s.faces.find((f) => f.vertexIds.length === 3 && f.vertexIds.includes(gA) && f.vertexIds.every((v) => ['apex', 'apexB', 'apexC', 'apexD'].includes(g1s.vertices[v].data.label)));
+  const lifted = liftSubComplex(g1s, [{ kind: 'face', id: face.id }]);
+  const expected = composeCornerCycleName(face.vertexIds.map((v) => g1s.vertices[v].data.label));
+  check('§c ★ AFTER C-13b THE TITLE READS THE CORNERS\' CURRENT DESIGNATIONS: A christened `apex` at gen 1, the corner triangle at A lifted — its title composes from `apex` and the re-composed midpoint strings (`apex·apexB·apexC`, the composer\'s own rotation), never the old letters, never the id',
+    lifted.title === `${expected} of ${g1s.name}` && /^apex·apex[B-D]·apex[B-D] of /.test(lifted.title), J({ title: lifted.title, expected }));
+}
+{
+  // the fallback law: where no name composes (a corner without a label), the designation and the title are an ABSENCE, never the id
+  const g = S().shapes[c1];
+  const face = g.faces[0];
+  const hole = { ...g, vertices: { ...g.vertices, [face.vertexIds[0]]: { ...g.vertices[face.vertexIds[0]], data: { ...g.vertices[face.vertexIds[0]].data, label: '' } } } };
+  const lifted = liftSubComplex(hole, [{ kind: 'face', id: face.id }]);
+  check('§c ★ THE FALLBACK LAW: a face with a corner that carries no label composes no name — the designation is an ABSENCE and so is the title (`\'\'`), never the id; the lifted shape\'s id still the address',
+    faceDesignationOf(hole, face.id) === null && lifted.title === '' && lifted.shape.name === '' && lifted.shape.id === `lift:${face.id}:from:${hole.id}` && !/face:/.test(lifted.title),
+    J({ title: lifted.title, id: lifted.shape.id }));
+}
+check('§c ★ THE COMPOSER IS CONSUMED, NOT COPIED: subComplexLift imports `composeCornerCycleName` from the FROZEN cornerCycleName (row 49) and holds no rotation of its own; the manifest classifies the lift NOT_FROZEN; a vertex or an edge with no given label still falls to its address — outside C-13, said in the source',
+  (() => { const src = readLf('src/lib/subComplexLift.ts'); return src.includes("import { composeCornerCycleName } from './cornerCycleName';") && !/d14NameRotation|localeCompare\(\)/.test(src.split('export function faceDesignationOf')[1].split('\n}\n')[0]) && src.includes("(selections[0].kind === 'face' ? (faceDesignationOf(shape, selections[0].id) ?? '') : null) ??") && /^NOT_FROZEN src\/lib\/subComplexLift\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')) && /^src\/lib\/cornerCycleName\.ts\s+[0-9a-f]{64}/m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')); })());
+
 console.log('');
-if (failures === 0) console.log('DIAGNOSE-THE-ROAD: ALL PASS — a cast quality value that is not text is carried, marked and counted, never dropped; a midpoint\'s slot keeps its composed string, the string follows its corners, christened is the person\'s own mark');
+if (failures === 0) console.log('DIAGNOSE-THE-ROAD: ALL PASS — the three found on the road stay cured: a quality that is not text carried, marked and counted; a midpoint\'s slot keeping its composed string, following its corners, christened by the person\'s own mark; a lifted face titled by its corners, never its id');
 else console.log(`DIAGNOSE-THE-ROAD: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);
