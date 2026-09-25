@@ -24,6 +24,7 @@ import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 // the SOLID fixes on the seam (the check runs over it; the record never holds it), and every born act read again under
 // the shape an act would leave (the dependency refusal, item 4)
 import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
+import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import type {
   Cell,
   CellId,
@@ -900,6 +901,31 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       return;
     }
 
+    const patchedData = { ...vertex.data, ...patch };
+    // C-13b (Δ58 · Δ104 as M1 reconciles them) — THE CHRISTENING ACT. A changed label is the person's word on this corner
+    // wherever the corner is shown: it reaches the copy of this vertex in every shape of the genealogy, and for a midpoint
+    // it sets the positive mark (a non-empty label christens; an emptied one un-christens — the slot is never emptied, the
+    // composed string returns). Then every un-christened midpoint's slot, in every shape, is re-composed by the mint's own
+    // rule so the letters follow their corners; a christened midpoint is never touched.
+    if (patch.label !== undefined && patch.label !== vertex.data.label) {
+      const label = patch.label;
+      const christened = isGeneratedMidpoint(vertex) ? label.trim().length > 0 : null;
+      const marked = (data: VertexDataPacket): VertexDataPacket => (christened === null ? data : { ...data, custom: withChristened(data.custom, christened) });
+      const next: Record<ShapeId, Shape> = {};
+      for (const [id, held] of Object.entries(shapes)) {
+        let target = held;
+        if (id === shape.id) {
+          target = { ...shape, vertices: { ...shape.vertices, [selectedVertexId]: { ...vertex, data: marked(patchedData) } } };
+        } else if (held.vertices[selectedVertexId]) {
+          const copy = held.vertices[selectedVertexId];
+          target = { ...held, vertices: { ...held.vertices, [selectedVertexId]: { ...copy, data: marked({ ...copy.data, label }) } } };
+        }
+        next[id] = recomposeUnchristened(target);
+      }
+      set({ shapes: next });
+      return;
+    }
+
     set({
       shapes: {
         ...shapes,
@@ -909,10 +935,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
             ...shape.vertices,
             [selectedVertexId]: {
               ...vertex,
-              data: {
-                ...vertex.data,
-                ...patch,
-              },
+              data: patchedData,
             },
           },
         },
@@ -1027,7 +1050,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
 
     set({
       selectedSeedKey: importedWorkspace.selectedSeedKey,
-      shapes: importedWorkspace.shapes,
+      // C-13b — workspaces saved before the christened mark existed: the stated heuristic, once, at import (src/lib/christening.ts)
+      shapes: Object.fromEntries(Object.entries(importedWorkspace.shapes).map(([id, held]) => [id, migrateChristening(held)])),
       shapeOrder: importedWorkspace.shapeOrder,
       currentShapeId: importedWorkspace.currentShapeId,
       liftSelection: [],

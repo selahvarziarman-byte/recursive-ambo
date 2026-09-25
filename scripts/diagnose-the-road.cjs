@@ -83,7 +83,86 @@ check('§a ★ ONE READER EACH WAY: the card\'s Cast rows print `notTakenLine(no
   readLf('src/components/Panels.tsx').includes('const notTaken = notTakenLine(notTakenAddresses(cast));') && readLf('src/components/VertexPacketEditor.tsx').includes("load.marks.join(' · ')") &&
     /^NOT_FROZEN src\/lib\/castLoader\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')));
 
+// ═══ §b C-13b — RENAMING A CORNER MADE ITS MIDPOINTS LOOK NAMED, WITH STALE LETTERS (F4) — Δ58 · Δ104 as C-13 · M1 reconciles them ═══
+console.log('----- §b the slot keeps the composed string; the string follows its corners; christened is a positive mark set by the act -----');
+const { createSeedShape } = req('src/data/seeds.ts');
+const { useGeometryStore } = req('src/store/geometryStore.ts');
+const { givenLabelOf, isChristened, isGeneratedMidpoint, midpointLetters, migrateChristening, withChristened, CHRISTENED_KEY } = req('src/lib/christening.ts');
+const S = () => useGeometryStore.getState();
+const cur = () => S().shapes[S().currentShapeId];
+const byLabel = (shape, label) => Object.values(shape.vertices).find((v) => v.data.label === label);
+const reset = (seeded) => useGeometryStore.setState({ shapes: { [seeded.id]: seeded }, shapeOrder: [seeded.id], currentShapeId: seeded.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {}, liftSelection: [], selectedCellId: null, selectedVertexId: null, selectedEdgeId: null, selectedFaceId: null });
+const coreOf = () => cur().cells.find((c) => c.kind === 'core');
+const act = (shapeId, vertexId, label) => { S().selectShape(shapeId); S().selectVertex(vertexId); S().updateSelectedVertexData({ label }); }; // the packet editor's Save with a changed Label, as the store receives it
+const lab = (shapeId, id) => S().shapes[shapeId].vertices[id].data.label;
+const given = (shapeId, id) => givenLabelOf(S().shapes[shapeId].vertices[id]);
+const marked = (shapeId, id) => isChristened(S().shapes[shapeId].vertices[id].data);
+// the OLD judge (Panels.tsx:3941 / VertexPacketEditor.tsx:513 at d95de24), kept here as the positive control of the mechanism
+const oldJudgeReadsAName = (shape, v) => { const [a, b] = v.createdBy.sourceVertexIds.map((id) => shape.vertices[id].data.label); return !new Set([`${a}${b}`, `${b}${a}`, `${a}-${b}`, `${b}-${a}`]).has(v.data.label); };
+
+reset(createSeedShape('tetrahedron'));
+S().selectCell(cur().cells[0].id); S().applyAmboDissectionToCurrent();
+const g1 = cur().id;
+const vA = byLabel(cur(), 'A').id; const vAB = byLabel(cur(), 'AB').id; const vAC = byLabel(cur(), 'AC').id; const vBC = byLabel(cur(), 'BC').id;
+S().selectCell(coreOf().id); S().applyAmboDissectionToCurrent();
+const g2 = cur().id;
+const vABAC = byLabel(cur(), 'ABAC').id;
+check('§b ★ THE MINT AS NOW (Δ58 "keep exactly as now"): a fresh dissection\'s midpoints hold the composed string in the Ambo\'s own form — `AB` · `AC` · `BC`, then `ABAC` — un-christened, no mark, the judge reading no name; the mint and the re-composition read ONE rule (`midpointLetters`)',
+  [lab(g1, vAB), lab(g1, vAC), lab(g1, vBC), lab(g2, vABAC)].join(' ') === 'AB AC BC ABAC' && [[g1, vAB], [g1, vAC], [g2, vABAC]].every(([s, id]) => !marked(s, id) && given(s, id) === null) && midpointLetters('A', 'B') === 'AB' &&
+    readLf('src/lib/ambo.ts').includes('midpointLetters(sourceA.data.label, sourceB.data.label),') && readLf('src/lib/ambo.ts').includes("import { midpointLetters } from './christening';"),
+  J({ g1: [lab(g1, vAB), lab(g1, vAC), lab(g1, vBC)], g2: lab(g2, vABAC) }));
+{
+  // the positive control of the mechanism: a corner renamed with the strings left as the base left them — the OLD judge reads AB as a name
+  const stale = { ...S().shapes[g1], vertices: { ...S().shapes[g1].vertices, [vA]: { ...S().shapes[g1].vertices[vA], data: { ...S().shapes[g1].vertices[vA].data, label: 'apex' } } } };
+  check('§b ★★ THE DEFECT\'S MECHANISM, REPRODUCED (the positive control — the mothership\'s ✔ RAN at d95de24): with A renamed `apex` and the strings left as they stood, the OLD string-comparison judge reads AB (`AB`) as a NAME; the one judge reads no name there',
+    oldJudgeReadsAName(stale, stale.vertices[vAB]) === true && givenLabelOf(stale.vertices[vAB]) === null, J({ old: oldJudgeReadsAName(stale, stale.vertices[vAB]), judge: givenLabelOf(stale.vertices[vAB]) }));
+}
+act(g1, vA, 'apex');
+check('§b ★★ THE STRING FOLLOWS ITS CORNERS (M1 §2): A → `apex` at gen 1 — AB reads `apexB`, AC `apexC`, BC stays `BC`; every one still un-christened, the judge reading no name (the Packets status, the unresolved count and Next unresolved read that); and ONE GENERATION DOWN gen 2\'s copy of A reads `apex`, its AB `apexB`, its ABAC `apexBapexC` — the person\'s word on a corner reaches every shape holding it',
+  lab(g1, vA) === 'apex' && lab(g1, vAB) === 'apexB' && lab(g1, vAC) === 'apexC' && lab(g1, vBC) === 'BC' && [vAB, vAC, vBC].every((id) => !marked(g1, id) && given(g1, id) === null) &&
+    lab(g2, vA) === 'apex' && lab(g2, vAB) === 'apexB' && lab(g2, vAC) === 'apexC' && lab(g2, vABAC) === 'apexBapexC' && !marked(g2, vABAC) && given(g2, vABAC) === null,
+  J({ g1: [lab(g1, vA), lab(g1, vAB), lab(g1, vAC), lab(g1, vBC)], g2: [lab(g2, vA), lab(g2, vAB), lab(g2, vAC), lab(g2, vABAC)] }));
+act(g1, vAB, 'the bridge');
+act(g1, vA, 'top');
+check('§b ★★ CHRISTENED IS A POSITIVE MARK SET BY THE ACT (M1 §3), AND A CHRISTENED MIDPOINT IS NEVER TOUCHED: AB christened `the bridge` at gen 1 — the mark `custom.christened: true` set by the act, the judge reading the name, gen 2\'s copy christened alike; then A → `top`: AB keeps `the bridge` in both shapes, AC follows (`topC`), gen 2\'s ABAC composes from its parents\' strings as they stand — `the bridgetopC`',
+  marked(g1, vAB) && S().shapes[g1].vertices[vAB].data.custom[CHRISTENED_KEY] === true && given(g1, vAB) === 'the bridge' && marked(g2, vAB) && given(g2, vAB) === 'the bridge' &&
+    lab(g1, vA) === 'top' && lab(g1, vAB) === 'the bridge' && lab(g1, vAC) === 'topC' && lab(g2, vAB) === 'the bridge' && lab(g2, vAC) === 'topC' && lab(g2, vABAC) === 'the bridgetopC',
+  J({ g1: [lab(g1, vA), lab(g1, vAB), lab(g1, vAC)], g2: [lab(g2, vAB), lab(g2, vAC), lab(g2, vABAC)], marks: [marked(g1, vAB), marked(g2, vAB)] }));
+act(g1, vAB, '');
+check('§b ★ THE SLOT IS NEVER EMPTIED (M1 §1): AB\'s label cleared by the person — the mark cleared (no `false` left behind), the composed string returns, `topB`, in both shapes, gen 2\'s ABAC following (`topBtopC`); the judge reads no name',
+  !marked(g1, vAB) && S().shapes[g1].vertices[vAB].data.custom[CHRISTENED_KEY] === undefined && lab(g1, vAB) === 'topB' && lab(g2, vAB) === 'topB' && lab(g2, vABAC) === 'topBtopC' && given(g1, vAB) === null,
+  J({ g1: lab(g1, vAB), g2: [lab(g2, vAB), lab(g2, vABAC)], custom: S().shapes[g1].vertices[vAB].data.custom }));
+{
+  // workspaces saved before the mark: the stated heuristic and its named failure case
+  const base = S().shapes[g1];
+  const withLabel = (shape, id, label, custom) => ({ ...shape, vertices: { ...shape.vertices, [id]: { ...shape.vertices[id], data: { ...shape.vertices[id].data, label, custom: custom ?? {} } } } });
+  let old = withLabel(base, vAB, 'AB', {});           // stale: A reads `top` now — the old defect's own trace
+  old = withLabel(old, vAC, 'topC', {});              // in step with its corners
+  old = withLabel(old, vBC, 'the river', {});         // a name the person gave before the cure, no mark
+  const vB = byLabel(base, 'B').id; const vC = byLabel(base, 'C').id; void vB; void vC;
+  const migrated = migrateChristening(old);
+  check('§b ★ WORKSPACES SAVED BEFORE THE MARK (M1 §5) — the stated heuristic, once at import: a slot that differs from every form the old mint or judge composed from its corners\' labels as they stand now is taken as a given name and MARKED (`the river`); one equal to them stays un-christened (`topC`); ITS FAILURE CASE, NAMED AND PINNED: a slot left stale by a corner renamed before the cure (`AB` with A now `top`) is byte-identical to a given name and is marked christened — the old defect kept for that one vertex until the person clears it; nothing else in the packet touched',
+    isChristened(migrated.vertices[vBC].data) && !isChristened(migrated.vertices[vAC].data) && isChristened(migrated.vertices[vAB].data) && migrated.vertices[vAB].data.label === 'AB' && migrated.vertices[vBC].data.label === 'the river' &&
+      J(withChristened(migrated.vertices[vBC].data.custom, false)) === J({}) && readLf('src/store/geometryStore.ts').includes('migrateChristening(held)'),
+    J({ AB: migrated.vertices[vAB].data, AC: migrated.vertices[vAC].data.custom, BC: migrated.vertices[vBC].data.custom }));
+  // the import path applies it: the store's own export, re-imported
+  const exported = S().exportWorkspace();
+  exported.shapes[g1] = old;
+  S().importWorkspace(exported);
+  check('§b ★ THE IMPORT PATH APPLIES IT: the store\'s own export with the pre-cure shape in it, re-imported — `the river` and the stale `AB` come back christened, `topC` un-christened; the labels as saved',
+    S().currentShapeId !== undefined && isChristened(S().shapes[g1].vertices[vBC].data) && isChristened(S().shapes[g1].vertices[vAB].data) && !isChristened(S().shapes[g1].vertices[vAC].data) && S().shapes[g1].vertices[vBC].data.label === 'the river' && S().shapes[g1].vertices[vAB].data.label === 'AB',
+    J({ AB: S().shapes[g1].vertices[vAB].data, BC: S().shapes[g1].vertices[vBC].data.custom }));
+}
+check('§b ★★ BOTH STRING-COMPARISON JUDGES ARE GONE (M1 §3 ⚠): Panels.tsx and VertexPacketEditor.tsx read `givenLabelOf(vertex)` from src/lib/christening.ts and hold no `isAutoGeneratedMidpointLabel`; the editor\'s Save sets the mark by the act (`withChristened`); the store\'s act propagates the label to every copy and re-composes (`recomposeUnchristened`); the manifest classifies the module NOT_FROZEN; the frozen readers (dualization row 50, incidenceTraceRegistry row 55) read the slot as before',
+  (() => {
+    const p = readLf('src/components/Panels.tsx'); const e = readLf('src/components/VertexPacketEditor.tsx'); const st = readLf('src/store/geometryStore.ts');
+    return !p.includes('isAutoGeneratedMidpointLabel') && !e.includes('isAutoGeneratedMidpointLabel') && p.includes('return givenLabelOf(vertex);') && e.includes('return givenLabelOf(vertex);') &&
+      p.includes("import { givenLabelOf } from '../lib/christening';") && e.includes("import { givenLabelOf, isGeneratedMidpoint, withChristened } from '../lib/christening';") &&
+      e.includes('withChristened(validation.custom, labelDraft.trim().length > 0)') && st.includes('next[id] = recomposeUnchristened(target);') && st.includes("import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';") &&
+      /^NOT_FROZEN src\/lib\/christening\.ts /m.test(readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt')) && !readLf('src/lib/christening.ts').includes('composeDesignation');
+  })());
+
 console.log('');
-if (failures === 0) console.log('DIAGNOSE-THE-ROAD: ALL PASS — a cast quality value that is not text is carried, marked and counted, never dropped');
+if (failures === 0) console.log('DIAGNOSE-THE-ROAD: ALL PASS — a cast quality value that is not text is carried, marked and counted, never dropped; a midpoint\'s slot keeps its composed string, the string follows its corners, christened is the person\'s own mark');
 else console.log(`DIAGNOSE-THE-ROAD: ${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);

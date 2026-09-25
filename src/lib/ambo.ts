@@ -34,6 +34,7 @@ import { createDefaultVertexData, deriveEdges, getCellFaces, midpoint } from './
 // R2 (2026-08-14): the regular stamp is RETIRED at these mint sites — the
 // angles are acos-imported from the carried positions (measure, never stamp)
 import { importCornerAngles } from './cornerAngleImport';
+import { midpointLetters } from './christening';
 
 const DEFAULT_MIDPOINT_COLOR = '#eab308';
 
@@ -117,8 +118,9 @@ function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Sh
     vertices[midpointId] = {
       id: midpointId,
       position: midpoint(sourceA.position, sourceB.position),
+      // C-13b (Δ58): the slot holds the composed string, by the one rule the re-composition also reads (src/lib/christening.ts)
       data: createDefaultVertexData(
-        `${sourceA.data.label}${sourceB.data.label}`,
+        midpointLetters(sourceA.data.label, sourceB.data.label),
         averageVertexColors(sourceA.data.color, sourceB.data.color),
         {},
         midpointPacket.lineage,
