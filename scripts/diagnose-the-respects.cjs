@@ -99,7 +99,7 @@ const amboSrc = readLf('src/lib/ambo.ts'); const feetSrc = readLf('src/lib/feet.
 check('§0 ★ THE HOME: respects.ts classified NOT_FROZEN at its landing (the C-14 row); feet.ts still a leaf (no import); geometry.ts (FROZEN) untouched by the record — it names no respect: the record lives in the FACE\'s open packet field `data.triads`, positional in the face\'s corner order, NO ID INSIDE (the C-13b precedent; the lift\'s namespace hop re-roots no key of it — measured at the first cut, where an edge-held record keyed by a corner id read `⟨vertex:tetrahedron:c⟩` in the carried record)',
   /^NOT_FROZEN src\/lib\/respects\.ts — C-14/m.test(manifest) && !/^import /m.test(feetSrc) && !/respect/i.test(geomSrc) && respSrc.includes("export const TRIADS_KEY = 'triads';") && respSrc.includes('face?.data?.[TRIADS_KEY]') && !/data\.respects|RESPECTS_KEY/.test(respSrc), '');
 check('§0 ★ PURITY: respects.ts imports the types, the face\'s `edgeBetween`, the leaf\'s names, the glue\'s Midpoint type and the resolver (deferred across the cycle, nothing at module scope) — five import lines; no store, no component, no manuscript, no three; it writes no `.cast` and no `identification`; the store writes the record through `withTriad` / `withoutTriad` alone, on the face the act was pointed at (no `data.triads` literal there)',
-  (respSrc.match(/^import /gm) || []).length === 5 && !/useGeometryStore|from '\.\.\/store|from '\.\.\/components|from '\.\.\/manuscript|from 'three'|@react-three|\.cast\s*=|identification\s*=/.test(respSrc) && storeSrc.includes('withTriad(f, kind, triad.record)') && storeSrc.includes('withoutTriad(f, kind, triad.record)') && !/data\.triads|TRIADS_KEY|data\.respects/.test(storeSrc),
+  (respSrc.match(/^import /gm) || []).length === 5 && !/useGeometryStore|from '\.\.\/store|from '\.\.\/components|from '\.\.\/manuscript|from 'three'|@react-three|\.cast\s*=|identification\s*=/.test(respSrc) && storeSrc.includes('withTriad(f, kind, triad.record)') && storeSrc.includes('withoutTriad(f, kind, t.record)') && !/data\.triads|TRIADS_KEY|data\.respects/.test(storeSrc),
   J(respSrc.match(/^import .*/gm) || []));
 
 // ═══ §a THE RECORD ═══
@@ -298,8 +298,8 @@ const rdH = readAt();
 check('§d ★★ HONORED: F7 ↦ Φ1 on A–C and Φ1 ↦ r0 on C–B — both legs KEPT against the core', rdH.length === 1 && rdH[0].verdict === 'HONORED' && rdH[0].legs.every((l) => l.reading === 'KEPT') && rdH[0].brokenLeg === null, J(rdH));
 take('C', 'B', { Φ1: 'r0' }); give('C', 'B', { Φ1: 'r5' });
 const rdB = readAt();
-check('§d ★★ BROKEN AT C–B, the leg named: Φ1 ↦ r5 instead on C–B — that leg BROKEN, the other KEPT; `brokenLeg` = {C, B}; the reading has no field but corner · kind · tuple · legs · verdict · brokenLeg — nothing proposed, nothing to repair (marks only)',
-  rdB[0].verdict === 'BROKEN' && sameSet(legLabels(rdB[0].brokenLeg), ['C', 'B']) && rdB[0].legs.some((l) => l.reading === 'KEPT') && rdB[0].legs.some((l) => l.reading === 'BROKEN') && J(Object.keys(rdB[0]).sort()) === J(['brokenLeg', 'corner', 'kind', 'legs', 'tuple', 'verdict']),
+check('§d ★★ BROKEN AT C–B, the leg named: Φ1 ↦ r5 instead on C–B — that leg BROKEN, the other KEPT; `brokenLeg` = {C, B}; the reading has no field but corner · kind · tuple · legs · verdict · brokenLeg · brokenPair (HIS pair on the broken leg, named — never a repair) — nothing proposed (marks only)',
+  rdB[0].verdict === 'BROKEN' && sameSet(legLabels(rdB[0].brokenLeg), ['C', 'B']) && rdB[0].legs.some((l) => l.reading === 'KEPT') && rdB[0].legs.some((l) => l.reading === 'BROKEN') && J(Object.keys(rdB[0]).sort()) === J(['brokenLeg', 'brokenPair', 'corner', 'kind', 'legs', 'tuple', 'verdict']) && J(rdB[0].brokenPair) === J(['Φ1', 'r5']),
   J(rdB));
 take('C', 'B', { Φ1: 'r5' }); give('C', 'B', { Φ1: 'r0' }); take('A', 'C', { F7: 'Φ1' }); give('A', 'C', { F7: 'Φ2' });
 const rdB2 = readAt(); const refusedAC = S().midpointRefusals[E(cur(), 'A', 'C').id];
@@ -432,12 +432,75 @@ const writers = mentioning(/withTriad\(|withoutTriad\(/);
 const actCallers = mentioning(/giveTriad\(/);
 const recordTouchers = mentioning(/TRIADS_KEY|data\??\.triads\b/); // the packet's key — a bench's own `.triads` field (medialHubTriadicClosureBenchV0) is another vocabulary
 note(`writers of the record ${J(writers)} · callers of the act ${J(actCallers)} · files touching the record's key ${J(recordTouchers)}`);
-check('§f ★★ FENCES 2 · 3 · 4 — NO DEVICE-NAMED RESPECT, NONE COMPLETED FROM TWO LEGS, NONE SYNTHESIZED FROM THE LEGS: the record\'s only writers are respects.ts (`withTriad` / `withoutTriad`, on the person\'s triad) and the store\'s triad act, which takes the person\'s three picks and nothing else (`triadLegsOf` demands three, one per corner; the tuples are built from the picks alone — `itemAt` — and respects.ts reads no J to make one: no `bornStepOf`, no `.map.get`); the act has NO caller under src until the surface (part f — re-pinned there); the key `triads` is touched by respects.ts and the carrier (ambo.ts) alone',
-  sameSet(writers, ['src/lib/respects.ts', 'src/store/geometryStore.ts']) && actCallers.length === 0 && respSrc.includes("if (picks.length !== 3 || new Set(picks.map((p) => p.corner)).size !== 3") && respSrc.includes('tuple: [itemAt.get(first) as string, itemAt.get(second) as string, itemAt.get(Z) as string]') && !/bornStepOf|\.map\.get/.test(respSrc) && sameSet(recordTouchers, ['src/lib/respects.ts', 'src/lib/ambo.ts']),
+check('§f ★★ FENCES 2 · 3 · 4 — NO DEVICE-NAMED RESPECT, NONE COMPLETED FROM TWO LEGS, NONE SYNTHESIZED FROM THE LEGS: the record\'s only writers are respects.ts (`withTriad` / `withoutTriad`, on the person\'s triad) and the store\'s triad act, which takes the person\'s three picks and nothing else (`triadLegsOf` demands three, one per corner; the tuples are built from the picks alone — `itemAt` — and respects.ts reads no J to make one: no `bornStepOf`, no `.map.get`); the act\'s one caller under src is the surface (part f); the key `triads` is touched by respects.ts and the carrier (ambo.ts) alone',
+  sameSet(writers, ['src/lib/respects.ts', 'src/store/geometryStore.ts']) && sameSet(actCallers, ['src/components/MidpointSurface.tsx']) && respSrc.includes("if (picks.length !== 3 || new Set(picks.map((p) => p.corner)).size !== 3") && respSrc.includes('tuple: [itemAt.get(first) as string, itemAt.get(second) as string, itemAt.get(Z) as string]') && !/bornStepOf|\.map\.get/.test(respSrc) && sameSet(recordTouchers, ['src/lib/respects.ts', 'src/lib/ambo.ts']),
   J({ writers, actCallers, recordTouchers }));
 check('§f ★★ FENCE 5 · 6 BY CONSTRUCTION: the resolver glues the child over THE CORE and nothing else — `born` is the core\'s roles and types, handed to `glue` beside the composed identity; `recordOn` returns the core\'s pairs; the respect enters the space only as `⟨X⟩` tuples on M\'s points through `respectLinksOf` (never a pairing); the door reads J through `bornStepOf` (the core) and lines from roles — respects.ts and feet.ts are imported by no manuscript file',
   spaceSrc.includes("const core = e && kind !== 'corner' ? meetCoreOf(shape, e, options) : null;") && spaceSrc.includes('const born = core ? { roles: core.roles, types: core.types } : { roles: [], types: [] };') && spaceSrc.includes('let result = glue(U.space, V.space, [...composed.roles, ...born.roles], [...composed.words, ...born.types]);') && spaceSrc.includes('return { roles: core.roles, types: core.types };') && spaceSrc.includes('space: withRespects(withFeet(g.space, feet), respectLinks),') && mentioning(/from '\.\.\/lib\/respects'|from '\.\.\/lib\/feet'/).every((f) => !f.startsWith('src/manuscript/')),
   '');
+
+// ═══ §g THE SURFACE (part f — the designer's D111 ruling, ratified C-14 · M1), rendered under node ═══
+console.log('\n----- §g the surface: the copy, the respects in the corner\'s block first, the glue by lights, the boxes below the drawing -----');
+const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
+const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
+const React = require('react');
+const { renderToString } = require('react-dom/server');
+const unescapeHtml = (s) => s.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '<');
+const visible = (html) => unescapeHtml(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
+const surfaceAt = (siteId) => { const packet = buildGeneralSitePacketPresenterReport(cur()).packets.find((p) => p.trace.siteId === siteId); const site = midpointSiteOf(cur(), siteId, packet ? packet.trace : null); const parents = [spaceOf(cur(), site.a), spaceOf(cur(), site.b)]; return renderToString(React.createElement(MidpointSurface, { shape: cur(), site, parents, resolved: spaceOf(cur(), siteId), refusal: null, remade: null })).replace(/<!-- -->/g, ''); };
+// an element by its data attribute, its content taken to the closing tag that BALANCES it (a listing entry nests a span for its index)
+const elementsOf = (html, attr) => {
+  const out = [];
+  const re = new RegExp(`<(span|div) ${attr}="([^"]*)"[^>]*>`, 'g');
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const tag = m[1]; let depth = 1; let i = re.lastIndex;
+    const open = new RegExp(`<${tag}\\b`, 'g'); const close = new RegExp(`</${tag}>`, 'g');
+    while (depth > 0 && i < html.length) {
+      open.lastIndex = i; close.lastIndex = i;
+      const o = open.exec(html); const c = close.exec(html);
+      if (!c) { i = html.length; break; }
+      if (o && o.index < c.index) { depth += 1; i = o.index + 1; } else { depth -= 1; i = c.index + c[0].length; }
+    }
+    const inner = html.slice(re.lastIndex, i).replace(new RegExp(`</${tag}>$`), '');
+    out.push({ value: m[2], text: visible(inner).trim(), buttons: (inner.match(/<button/g) || []).length });
+  }
+  return out;
+};
+reset(seeded4());
+S().applyAmboDissectionToCurrent();
+const Gs = cur(); const ABs = byLabel(Gs, 'AB');
+const h0 = surfaceAt(ABs);
+const surfSrc = readLf('src/components/MidpointSurface.tsx');
+const surfStrings = surfSrc.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\s\/\/ .*$/gm, '');
+check('§g ★★ THE COPY (the designer\'s §5): unglued, the sentence reads `A and B together, as two — 24 roles · … words · … tuples · … marks …`; the word-pairs box reads `no word translated yet — each word still its own side\'s, alike spellings included`; no person-facing `apart` or `foreign` in the surface\'s text, nor in its source outside comments',
+  /^A and B together, as two — 24 roles · \d+ words · \d+ tuples · \d+ marks/.test((elementsOf(h0, 'data-midpoint-sentence')[0] || {}).text || '') && ((elementsOf(h0, 'data-midpoint-word-pairs')[0] || {}).text || '').includes("no word translated yet — each word still its own side's, alike spellings included") && !/\bapart\b|\bforeign\b/.test(visible(h0)) && !/\bapart\b|\bforeign\b/.test(surfStrings),
+  J({ sentence: (elementsOf(h0, 'data-midpoint-sentence')[0] || {}).text, words: (elementsOf(h0, 'data-midpoint-word-pairs')[0] || {}).text, srcHits: (surfStrings.match(/.{0,60}\b(apart|foreign)\b.{0,40}/g) || []) }));
+check('§g ★★ BELOW THE DRAWING, BY CONSTRUCTION (§149 structural — the designer\'s §1–§2): in the surface\'s own order the word-pairs box, the lights\' lines and the triad\'s pending line and refusal are placed after the drawing; the word rows and the two reserved pick lines stay above it',
+  h0.indexOf('data-midpoint-word-pairs=') > h0.indexOf('data-midpoint-drawing=') && h0.indexOf('data-midpoint-words="A"') < h0.indexOf('data-midpoint-drawing=') && h0.indexOf('data-midpoint-pick-line="word"') < h0.indexOf('data-midpoint-drawing=') && h0.indexOf('data-midpoint-pick-line="role"') < h0.indexOf('data-midpoint-drawing=') && surfSrc.indexOf('data-midpoint-triad-pending=') > surfSrc.indexOf('data-midpoint-drawing="true"') && surfSrc.indexOf('data-midpoint-triad-refusal=') > surfSrc.indexOf('data-midpoint-drawing="true"') && surfSrc.indexOf('data-midpoint-lights=') > surfSrc.indexOf('data-midpoint-drawing="true"'), '');
+triad(['A', 'B', 'C'], ['F7', 'r0', 'Φ1']);
+const h1 = surfaceAt(ABs);
+const respectLines = (html) => elementsOf(html, 'data-midpoint-respect-line');
+const lightLines = (html) => elementsOf(html, 'data-midpoint-light-line');
+const ABedge = E(cur(), 'A', 'B'); const aFirst = ABedge.vertexIds[0] === byLabel(cur(), 'A');
+const said = (x, y, c) => (aFirst ? `you said: ${x} is ${y}, as regards ${c}` : `you said: ${y} is ${x}, as regards ${c}`);
+check('§g ★★ THE RESPECT READS IN C\'s BLOCK, FIRST, AS HIS ACT (the designer\'s §3) — before any pair: the block stands in the unglued state too; `you said: F7 is r0, as regards Φ1 — not yet: nothing paired on A–C · nothing paired on C–B` with its one hand `withdraw this triad`; the lights\' line `only C\'s light has spoken on A–B; nothing glues here by respects until D\'s does`; no line in the drawing; the respect drawn nowhere',
+  respectLines(h1).length === 1 && respectLines(h1)[0].value === 'NOT YET' && respectLines(h1)[0].text === `${said('F7', 'r0', 'Φ1')} — not yet: ${aFirst ? 'nothing paired on A–C · nothing paired on C–B' : 'nothing paired on B–C · nothing paired on C–A'} · withdraw this triad` && respectLines(h1)[0].buttons === 1 && h1.includes('data-midpoint-foot="C"') && h1.indexOf('data-midpoint-foot="C"') > h1.indexOf('data-midpoint-own="unglued"') && J(lightLines(h1).map((l) => [l.value, l.text])) === J([['one-spoken', "only C's light has spoken on A–B; nothing glues here by respects until D's does"]]) && !/data-midpoint-line=/.test(h1) && !/⟨|you said/.test((h1.match(/<svg data-midpoint-drawing[\s\S]*?<\/svg>/) || [''])[0]),
+  J({ lines: respectLines(h1), lights: lightLines(h1), aFirst }));
+give('A', 'C', { F7: 'Φ1' }); give('C', 'B', { Φ1: 'r0' });
+const h2 = surfaceAt(ABs);
+take('C', 'B', { Φ1: 'r0' }); give('C', 'B', { Φ1: 'r5' });
+const h3 = surfaceAt(ABs);
+check('§g ★★ HONORED, THEN BROKEN NAMING THE LEG AND HIS PAIR (never a repair): with F7 ↦ Φ1 on A–C and Φ1 ↦ r0 on C–B the line reads `… — honored`; with Φ1 ↦ r5 instead on C–B it reads `… — broken at C–B: there you paired Φ1 with r5` — no `should`, no second control',
+  respectLines(h2)[0].value === 'HONORED' && respectLines(h2)[0].text === `${said('F7', 'r0', 'Φ1')} — honored · withdraw this triad` && respectLines(h3)[0].value === 'BROKEN' && respectLines(h3)[0].text === `${said('F7', 'r0', 'Φ1')} — broken at ${aFirst ? 'C–B: there you paired Φ1 with r5' : 'B–C: there you paired r5 with Φ1'} · withdraw this triad` && !/should|to honou?r it/.test(visible(h3)) && respectLines(h3)[0].buttons === 1,
+  J({ honored: respectLines(h2), broken: respectLines(h3) }));
+triad(['A', 'B', 'D'], ['F7', 'r0', 'x']);
+give('A', 'B', { F8: 'r1' });
+const h4 = surfaceAt(ABs);
+const listing4 = elementsOf(h4, 'data-midpoint-line-listing');
+check('§g ★★ THE GLUE SAYS BY WHICH LIGHTS (the designer\'s §4): (F7, r0, x) given in D\'s light too — the meet glues F7 ≡ r0: a line across the fold and its listing entry `F7 ≡ r0 · glued — you gave it in C\'s light and in D\'s` with NO withdraw (its hands are the triads\'); the plain pair F8 ↦ r1 reads `· yours, plain · withdraw`; the one-light line gone',
+  listing4.length === 2 && listing4.some((l) => l.text.replace(/^\d+ /, '') === (aFirst ? "F7 ≡ r0 · glued — you gave it in C's light and in D's" : "r0 ≡ F7 · glued — you gave it in C's light and in D's") && l.buttons === 0) && listing4.some((l) => l.text.replace(/^\d+ /, '') === (aFirst ? 'F8 ↦ r1 · yours, plain · withdraw' : 'r1 ↦ F8 · yours, plain · withdraw') && l.buttons === 1) && (h4.match(/data-midpoint-line=/g) || []).length === 2 && (h4.match(/data-midpoint-glued-by="lights"/g) || []).length === 1 && lightLines(h4).length === 0,
+  J({ listing: listing4, lights: lightLines(h4) }));
 
 console.log(`\nDIAGNOSE-THE-RESPECTS: ${failures === 0 ? 'ALL PASS — the respect is a record keyed by its light, the triad enters it whole or not at all, the core is the meet re-derived at every read with its conflicts and its held-back pairs said, the readings are marks, and the carry follows the pairing\'s' : `${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

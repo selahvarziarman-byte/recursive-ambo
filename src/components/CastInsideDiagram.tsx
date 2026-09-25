@@ -456,7 +456,7 @@ export function InsideColumn({ inside, geometry, idPrefix = 'inside', arcExtra, 
 }
 
 /** THE DIAGRAM — one cast, one SVG */
-export function CastInsideDiagram({ inside, id }: { inside: Inside; id?: string }) {
+export function CastInsideDiagram({ inside, id, pointExtra }: { inside: Inside; id?: string; pointExtra?: (point: { id: string }) => PointExtra }) {
   // C-13d — THE MEASUREMENT PASS: after a paint, every label's rendered box is read (getBBox, in the drawing's own units); if one
   // still crosses the left edge the lane grows by exactly that much and the drawing lays out again — an estimate is never the
   // last word on a person's name. Grows only; settles in one pass; absent under a server render (no box to read).
@@ -494,7 +494,7 @@ export function CastInsideDiagram({ inside, id }: { inside: Inside; id?: string 
       viewBox={`${-g.leftReach} 0 ${width} ${g.height + 14}`}
       className="block overflow-visible"
     >
-      <InsideColumn inside={inside} geometry={g} idPrefix={id ?? 'cast'} />
+      <InsideColumn inside={inside} geometry={g} idPrefix={id ?? 'cast'} pointExtra={pointExtra} />
     </svg>
   );
 }

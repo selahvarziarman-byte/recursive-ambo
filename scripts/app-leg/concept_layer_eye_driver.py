@@ -120,6 +120,7 @@ MEASURE = """() => {
     }),
     refusalAct: t('[data-midpoint-refusal-act]')[0] || null, refusalCollision: t('[data-midpoint-refusal-collision]')[0] || null, refusalHands: t('[data-midpoint-refusal] [data-midpoint-withdraw]'),
     oldGrammar: /refused —|the act just made|nothing glued/.test(panel.textContent),
+    wordPairsText: t('[data-midpoint-word-pairs]')[0] || null, oldFamily: (panel.textContent.match(/\\b(apart|foreign)\\b/g) || []).length, // C-14 f — the retired copy family, counted in every measured state
     faceIdsInPanel: (panel.textContent.match(/\\bface:[a-z0-9]{3,}/g) || []).length,
     // C-9 — the born faces read at this site, in the sources
     bornFaces: [...panel.querySelectorAll('[data-midpoint-born-face]')].map((b) => ({ face: b.getAttribute('data-midpoint-born-face'), cells: b.getAttribute('data-midpoint-born-face-cells'), alike: b.getAttribute('data-midpoint-born-face-alike'),
@@ -840,6 +841,130 @@ def c13_arm(page, args):
     return res
 
 
+
+# ─── C-14 f at the eye — the triad pointed in the unfolding, in the opened corner's light (the designer's D111, ratified C-14 · M1) ───
+# every box in the surface's OWN coordinates (relative to the scroll box, plus its scroll) — the C-13 lesson: a click scrolls the panel
+TRIAD_STATE = """() => {
+  const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null;
+  const txt = (el) => (el ? el.textContent.replace(/\\s+/g, ' ').trim() : null);
+  const P = s.getBoundingClientRect();
+  const rel = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return { x: Math.round((b.x - P.x) * 10) / 10, y: Math.round((b.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(b.width * 10) / 10, h: Math.round(b.height * 10) / 10 }; };
+  const d = s.querySelector('[data-midpoint-drawing]');
+  const pending = s.querySelector('[data-midpoint-triad-pending]');
+  const blocks = []; for (const c of s.children) { const b = rel(c); blocks.push({ key: [...c.attributes].filter((a) => a.name.startsWith('data-')).map((a) => a.name + '=' + a.value).slice(0, 2).join(' ') || (c.textContent || '').slice(0, 30), y: b.y, h: b.h }); if (c === d || c.contains(d)) break; }
+  return {
+    light: s.getAttribute('data-midpoint-light'), head: txt(s.querySelector('[data-midpoint-triad-head]')),
+    sourceOpen: [...s.querySelectorAll('[data-midpoint-source-open]')].map((e) => e.getAttribute('data-midpoint-source-open')),
+    pending: pending ? { text: txt(pending), picks: pending.getAttribute('data-midpoint-triad-pending'), box: rel(pending), belowDrawing: d ? pending.getBoundingClientRect().y >= d.getBoundingClientRect().bottom : null, hand: pending.querySelectorAll('[data-midpoint-triad-withdraw-attempt]').length } : null,
+    refusal: txt(s.querySelector('[data-midpoint-triad-refusal]')),
+    drawing: rel(d), blocks,
+    lightPicked: [...s.querySelectorAll('[data-midpoint-light-picked]')].map((e) => e.getAttribute('data-inside-point')),
+    columnPicked: [...s.querySelectorAll('[data-midpoint-triad-picked]')].map((e) => e.getAttribute('data-midpoint-side') + '|' + e.getAttribute('data-inside-point')),
+    respects: [...s.querySelectorAll('[data-midpoint-foot]')].map((b) => ({ corner: b.getAttribute('data-midpoint-foot'), lines: [...b.children].map((c) => [c.getAttribute('data-midpoint-respect-line') || c.getAttribute('data-midpoint-foot-line') || (c.hasAttribute('data-midpoint-foot-head') ? 'head' : '?'), txt(c)]), hands: [...b.querySelectorAll('[data-midpoint-triad-withdraw]')].map((e) => e.getAttribute('data-midpoint-triad-withdraw')), buttons: b.querySelectorAll('button').length })),
+    lines: [...s.querySelectorAll('[data-midpoint-line]')].map((e) => e.getAttribute('data-midpoint-line')),
+    listing: [...s.querySelectorAll('[data-midpoint-line-listing]')].map((e) => ({ pair: e.getAttribute('data-midpoint-line-listing'), by: e.getAttribute('data-midpoint-glued-by'), text: txt(e), buttons: e.querySelectorAll('button').length })),
+    lights: [...s.querySelectorAll('[data-midpoint-light-line]')].map((e) => [e.getAttribute('data-midpoint-light-line'), txt(e)]),
+    wordPairsBox: rel(s.querySelector('[data-midpoint-word-pairs]')), wordPairsBelow: d && s.querySelector('[data-midpoint-word-pairs]') ? s.querySelector('[data-midpoint-word-pairs]').getBoundingClientRect().y >= d.getBoundingClientRect().bottom : null,
+    wordPairs: [...s.querySelectorAll('[data-midpoint-word-pair]')].map((e) => e.getAttribute('data-midpoint-word-pair')), wordPairsText: txt(s.querySelector('[data-midpoint-word-pairs]')),
+    sentence: txt(s.querySelector('[data-midpoint-sentence]')), gesture: txt(s.querySelector('[data-midpoint-gesture]')),
+    drawingTexts: d ? [...d.querySelectorAll('text')].map((t) => t.textContent) : [],
+    oldFamily: (s.textContent.match(/\\b(apart|foreign)\\b/g) || []).length,
+  };
+}"""
+LIGHT_POINT_BOX = """(id) => { const s = document.querySelector('[data-midpoint-surface]'); const g = document.querySelector(`[data-midpoint-source-drawing] [data-midpoint-light-point][data-inside-point="${id}"]`); if (!s || !g) return null; const P = s.getBoundingClientRect(); const r = g.getBoundingClientRect(); return { x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; }"""
+COLUMN_POINT_BOX = """([side, id]) => { const s = document.querySelector('[data-midpoint-surface]'); const g = document.querySelector(`[data-midpoint-drawing] [data-midpoint-side="${side}"][data-inside-point="${id}"]`); if (!s || !g) return null; const P = s.getBoundingClientRect(); const r = g.getBoundingClientRect(); return { x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; }"""
+CHIP_BOX = """(w) => { const s = document.querySelector('[data-midpoint-surface]'); const c = document.querySelector(`[data-midpoint-word="${w}"]`); if (!s || !c) return null; const P = s.getBoundingClientRect(); const r = c.getBoundingClientRect(); return { word: w, x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10, translated: c.getAttribute('data-midpoint-word-translated') }; }"""
+
+
+def light_point(page, role):
+    page.locator(f'[data-midpoint-source-drawing] [data-midpoint-light-point][data-inside-point="{role}"] text').first.click(); page.wait_for_timeout(350)
+
+
+def word_pair_below(page):
+    """C-14 f §2 — a whole WORD PAIR by two clicks: B's chip (the act's second target) at the same place before the first click and after
+    the pair; the pairs box (with the new pair, or the refusal) lies below the drawing; then the state restored"""
+    a = page.locator('[data-midpoint-words="A"] [data-midpoint-word]:not([data-midpoint-word-translated])').first
+    b = page.locator('[data-midpoint-words="B"] [data-midpoint-word]:not([data-midpoint-word-translated])').first
+    res = {'a': a.get_attribute('data-midpoint-word') if a.count() else None, 'b': b.get_attribute('data-midpoint-word') if b.count() else None}
+    if not res['a'] or not res['b']:
+        return res
+    res['chipBefore'] = page.evaluate(CHIP_BOX, res['b']); res['stateBefore'] = page.evaluate(TRIAD_STATE)
+    a.click(); page.wait_for_timeout(300)
+    res['chipAfterFirst'] = page.evaluate(CHIP_BOX, res['b'])
+    page.locator(f'[data-midpoint-word="{res["b"]}"]').first.click(); page.wait_for_timeout(500)
+    res['chipAfterPair'] = page.evaluate(CHIP_BOX, res['b']); res['stateAfter'] = page.evaluate(TRIAD_STATE)
+    res['refused'] = page.evaluate("() => { const r = document.querySelector('[data-midpoint-refusal]'); return r ? r.getAttribute('data-midpoint-refusal') : null; }")
+    s, t = res['a'].split('|', 1)[1], res['b'].split('|', 1)[1]
+    if res['refused']:
+        page.locator('[data-midpoint-withdraw-attempt]').first.click(); page.wait_for_timeout(400)
+    else:
+        page.locator(f'[data-midpoint-word-pairs] [data-midpoint-withdraw="word|{s}|{t}"]').first.click(); page.wait_for_timeout(400)
+    res['restored'] = page.evaluate(TRIAD_STATE)
+    return res
+
+
+def triad_arm(page, args):
+    """C-14 f at the eye — at AB (gen 1; (i) on A–B, S1 on A–C, Q on B–C): C's drawing opened is C's light entered; the picks A · C · B make
+    ONE act; nothing above the drawing moves between the open and each pick; the respect reads first in C's block; a second and a third
+    triad read BROKEN (his pair named) and NOT YET; the one-light line; then D's light — the same pair given in D's light glues by
+    respects (the listing says by which lights, the plain pairs say plain); withdrawn, the core is plain again; every triad withdrawn"""
+    res = {}
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+    res['before'] = page.evaluate(TRIAD_STATE)
+    a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
+    flow_side, phi_side = ('A', 'B') if any(x_is_flow(r) for r in a_side) else ('B', 'A')
+    res['flowSide'] = flow_side
+    page.locator('[data-midpoint-source="above"] [data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
+    res['opened'] = page.evaluate(TRIAD_STATE)
+    res['lightPointBefore'] = page.evaluate(LIGHT_POINT_BOX, 'r0')
+    res['columnPointBefore'] = page.evaluate(COLUMN_POINT_BOX, [phi_side, 'Φ8'])
+    point(page, flow_side, 'F13'); res['pick1'] = page.evaluate(TRIAD_STATE)
+    light_point(page, 'r0'); res['pick2'] = page.evaluate(TRIAD_STATE)
+    res['lightPointPicked'] = page.evaluate(LIGHT_POINT_BOX, 'r0')
+    res['columnPointMid'] = page.evaluate(COLUMN_POINT_BOX, [phi_side, 'Φ8'])
+    page.screenshot(path=f"{args.frames}/concept-layer-triad-pending-{args.width}x{args.height}.png")
+    point(page, phi_side, 'Φ8'); res['act1'] = page.evaluate(TRIAD_STATE)
+    point(page, flow_side, 'F9'); light_point(page, 'r1'); point(page, phi_side, 'Φ5'); res['act2'] = page.evaluate(TRIAD_STATE)
+    point(page, flow_side, 'F2'); light_point(page, 'r3'); point(page, phi_side, 'Φ3'); res['act3'] = page.evaluate(TRIAD_STATE)
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-respect-line]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
+    page.screenshot(path=f"{args.frames}/concept-layer-triad-respects-{args.width}x{args.height}.png")
+    # the one hand: the third triad withdrawn from C's block (its hand names the tuple as the edge holds it)
+    hands = page.locator('[data-midpoint-foot="C"] [data-midpoint-triad-withdraw]')
+    res['handsBefore'] = [hands.nth(i).get_attribute('data-midpoint-triad-withdraw') for i in range(hands.count())]
+    third = next((h for h in res['handsBefore'] if h.endswith('|r3')), None)
+    if third:
+        page.locator(f'[data-midpoint-triad-withdraw="{third}"]').first.click(); page.wait_for_timeout(500)
+    res['withdrawn3'] = page.evaluate(TRIAD_STATE)
+    # D's light: (F13, Φ8, Φ1) — D holds Φ; the same pair now given in every light: the meet glues it
+    page.locator('[data-midpoint-source="below"] [data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
+    res['openedD'] = page.evaluate(TRIAD_STATE)
+    point(page, flow_side, 'F13'); light_point(page, 'Φ1'); point(page, phi_side, 'Φ8'); res['actD'] = page.evaluate(TRIAD_STATE)
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-role-pairs]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
+    page.screenshot(path=f"{args.frames}/concept-layer-triad-glued-by-lights-{args.width}x{args.height}.png")
+    page.locator('[data-midpoint-foot="D"] [data-midpoint-triad-withdraw]').first.click(); page.wait_for_timeout(500)
+    res['withdrawnD'] = page.evaluate(TRIAD_STATE)
+    n = 0
+    while page.locator('[data-midpoint-triad-withdraw]').count() and n < 6:
+        page.locator('[data-midpoint-triad-withdraw]').first.click(); page.wait_for_timeout(400); n += 1
+    res['restored'] = page.evaluate(TRIAD_STATE)
+    # leaving the light: the surface must STAND through the close (measured at the first run: the state read null right after the click — probed here over time)
+    PRESENT = "() => !!document.querySelector('[data-midpoint-surface]')"
+    page.locator('[data-midpoint-source-open="open"]').first.click(); page.wait_for_timeout(300)
+    probe = {'presentAt300': page.evaluate(PRESENT)}
+    page.wait_for_timeout(700); probe['presentAt1000'] = page.evaluate(PRESENT)
+    if not probe['presentAt1000']:
+        page.wait_for_timeout(1000); probe['presentAt2000'] = page.evaluate(PRESENT)
+        probe['selectionRows'] = page.evaluate("() => [...document.querySelectorAll('button')].filter((b) => /^(AB|AC|AD|BC|BD|CD)\b/.test(b.textContent.trim()) && /amber/.test(b.className)).map((b) => b.textContent.trim().slice(0, 30))")
+        if not probe['presentAt2000']:
+            probe['reselected'] = True; probe['reselect'] = select_vertex_labelled(page, 'AB')
+    probe['state'] = page.evaluate(TRIAD_STATE)
+    res['closeProbe'] = probe
+    res['closed'] = probe['state']
+    res['wordPair'] = word_pair_below(page)
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+    return res
+
+
 # C-12a item 6 — the words AB reads after the pairs: the own drawing's text and the own block's, and the sources' word chips
 WORDS_AT_AB = """() => {
   const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null;
@@ -1367,6 +1492,7 @@ def main():
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const f = el.querySelector('[data-midpoint-foot]'); if (f) f.scrollIntoView({ block: 'center' }); }"); page.wait_for_timeout(300)
         out['feet'] = page.evaluate(MEASURE_FEET)
         page.screenshot(path=f"{args.frames}/concept-layer-feet-{args.width}x{args.height}.png")
+        out['triad'] = triad_arm(page, args)  # C-14 f — the triad in the light; the word pair below the drawing; the copy
         # C-8 item 2 at the eye — the loader ABSENT at a midpoint (the packets tab with AB selected shows no file input, no word), PRESENT at a corner
         select_core(page)
         select_vertex_labelled(page, "AB"); out['cardAB'] = page.evaluate(CARD_BORN); tab(page, "packets")

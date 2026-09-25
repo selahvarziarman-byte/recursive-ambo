@@ -1038,9 +1038,16 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const state = get();
     const shape = state.shapes[state.currentShapeId];
     if (!shape) return;
-    const triad = triadLegsOf(shape, faceId, picks); // the structure alone: a triad withdraws whole even when a corner's space has since changed
-    if (triad.refused) return;
-    const faces = shape.faces.map((f) => (f.id === faceId ? withoutTriad(f, kind, triad.record) : f));
+    const face = shape.faces.find((f) => f.id === faceId);
+    if (!face) return;
+    // the structure alone: a triad withdraws whole even when a corner's space has since changed — from every face record of
+    // this vertex set (a face two cells hold is two records; the readers gather them as one light)
+    const twin = (f: Shape['faces'][number]): boolean => f.vertexIds.length === face.vertexIds.length && face.vertexIds.every((v) => f.vertexIds.includes(v));
+    const faces = shape.faces.map((f) => {
+      if (!twin(f)) return f;
+      const t = triadLegsOf(shape, f.id, picks);
+      return t.refused ? f : withoutTriad(f, kind, t.record);
+    });
     set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } } });
   },
   withdrawTriadAttempt: (faceId) => {

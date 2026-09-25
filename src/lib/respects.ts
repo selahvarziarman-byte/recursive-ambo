@@ -332,11 +332,16 @@ export type RespectVerdict = 'HONORED' | 'BROKEN' | 'NOT YET';
 
 /** one leg against the core it crosses: KEPT when the core pairs `from` to `to`; BROKEN when either end is paired elsewhere there; OPEN otherwise */
 export function legReading(core: Map<string, string>, from: string, to: string): LegReading {
+  return legReadingWith(core, from, to).reading;
+}
+
+/** the leg's reading with HIS pair there when it breaks the respect (the surface names the leg and his pair, never a repair — the designer's ruling on part f) */
+export function legReadingWith(core: Map<string, string>, from: string, to: string): { reading: LegReading; pair: [string, string] | null } {
   const got = core.get(from);
-  if (got === to) return 'KEPT';
-  if (got !== undefined) return 'BROKEN';
-  for (const [x, y] of core) if (y === to && x !== from) return 'BROKEN';
-  return 'OPEN';
+  if (got === to) return { reading: 'KEPT', pair: null };
+  if (got !== undefined) return { reading: 'BROKEN', pair: [from, got] };
+  for (const [x, y] of core) if (y === to && x !== from) return { reading: 'BROKEN', pair: [x, y] };
+  return { reading: 'OPEN', pair: null };
 }
 
 export function verdictOf(first: LegReading, second: LegReading): { verdict: RespectVerdict; brokenLeg: 0 | 1 | null } {
@@ -365,9 +370,10 @@ export interface RespectReading {
   corner: VertexId; // the light
   kind: RespectKind;
   tuple: RespectTuple;
-  legs: [{ edge: [VertexId, VertexId]; reading: LegReading }, { edge: [VertexId, VertexId]; reading: LegReading }]; // first: A → C · second: C → B
+  legs: [{ edge: [VertexId, VertexId]; reading: LegReading; given: boolean }, { edge: [VertexId, VertexId]; reading: LegReading; given: boolean }]; // first: A → C · second: C → B; `given`: that edge's core holds a pair at all
   verdict: RespectVerdict;
   brokenLeg: [VertexId, VertexId] | null; // the leg named, when BROKEN
+  brokenPair: [string, string] | null; // HIS pair on that leg (from → to, the leg's direction) that breaks the respect — named, never repaired
 }
 
 /** THE READINGS of an edge's respects, each against the core of its two legs — marks, never demands */
@@ -384,16 +390,17 @@ export function readRespects(shape: Shape, edge: Edge, options: SpaceOfOptions =
       const J2 = coreMapOf(shape, corner, Q, kind, options);
       for (const tuple of tuples) {
         const [a, b, c] = tuple;
-        const first = J1 ? legReading(J1, a, c) : 'OPEN';
-        const second = J2 ? legReading(J2, c, b) : 'OPEN';
-        const v = verdictOf(first, second);
+        const first = J1 ? legReadingWith(J1, a, c) : { reading: 'OPEN' as LegReading, pair: null };
+        const second = J2 ? legReadingWith(J2, c, b) : { reading: 'OPEN' as LegReading, pair: null };
+        const v = verdictOf(first.reading, second.reading);
         out.push({
           corner,
           kind,
           tuple,
-          legs: [{ edge: [P, corner], reading: first }, { edge: [corner, Q], reading: second }],
+          legs: [{ edge: [P, corner], reading: first.reading, given: !!J1 && J1.size > 0 }, { edge: [corner, Q], reading: second.reading, given: !!J2 && J2.size > 0 }],
           verdict: v.verdict,
           brokenLeg: v.brokenLeg === null ? null : v.brokenLeg === 0 ? [P, corner] : [corner, Q],
+          brokenPair: v.brokenLeg === null ? null : v.brokenLeg === 0 ? first.pair : second.pair,
         });
       }
     }
