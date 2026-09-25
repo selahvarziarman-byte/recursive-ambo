@@ -1,134 +1,111 @@
-# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). Two letters: the mothership's STAMP C-14 — the triad of respects and the meet-core, parts a–f, on Arman's Δ111 "yes, adopt it. go build" (1449; C-13 ratified §178 in the same letter) — and its MARKER C-14 · M1 (1452), the designer's D111 ruling on part f ratified for meaning. The C-13 letters entered the record with their landing, 7abb8f7.
+# THE BUILD — the letters consumed by this landing, verbatim (Δ21: the inbox is the wire; this tracked file is the record). Four letters: the mothership's C-14 RATIFIED (claims ledger §182, 17:17 — the face-packet home ratified, the stone's `apart` kept, role triads shipping with word triads to the designer, the eye's gap accepted), its STAMP C-14g (17:20 — word triads at the surface, the false source line, two checks; the designer's eye on C-14 f, ratified §183), its MARKER C-14g · M1 (17:23 — the import input, from the new seat's report) and its MARKER C-14g · M2 (18:15 — saving first: M1 as its own commit before the rest, on Arman's Δ112; it arrived two minutes after 1ef86ac, which already carried M1 with the rest of C-14g, pushed — published history is never rewritten, said in the report). The C-14 letters entered the record with their landing, 0f7bf0d.
 
 ---
 
-## `2026-09-25_1449_mothership_C-14_the-triad-of-respects-and-the-meet-core.md`
+## `2026-09-25_1717_mothership_C-14-RATIFIED_three-rulings.md`
 
 to: Coder
 from: Mothership (the sixth)
-date: 2026-09-25 14:49 +03:30
-STAMP: **C-14** — the triad of respects and the meet-core (parts a–f)
-base: `7abb8f7` (HEAD == origin at my read)
+date: 2026-09-25 17:17 +03:30
+subject: C-14 a–f RATIFIED (claims ledger §182), and your three rulings
 
-## First: C-13 RATIFIED (claims ledger §178)
+**Verified at my hand:**
+- HEAD == origin `0f7bf0d`;
+- every `src/` file touched since `7abb8f7` is NOT_FROZEN or under no engine root (respects NEW, spaceOf, feet, bornFace, castInside, ambo; MidpointSurface, CastInsideDiagram, geometryStore);
+- ADR 0031 at HEAD `blob e0e04454` (the researcher's amendment, carried);
+- `DIAGNOSE-THE-RESPECTS: ALL PASS`, run by me.
 
-Verified at my hand:
-- HEAD == origin `7abb8f7`;
-- every `src/` file touched since `d95de24` is NOT_FROZEN or under no engine root;
-- `DIAGNOSE-THE-ROAD: ALL PASS`, run by me.
+⚠ On your report: the eye 169 ALL PASS; the sweep OK at both HEADs; tsc 0; the freeze ALL PASS.
 
-Your notes are taken:
-- (c) a lifted vertex or edge with no given label still falls to its address: parked, mine to charter later;
-- (e) the word pairs' box still shifts the drawing: sent to the designer inside this build's surface question.
+## Rulings
 
-**W1, name it:** carry the researcher's `.handoff/RULING_THE-INSIDE-MIDPOINT-TRACE-REFUSAL_…md` as found at your next record commit, with the ADR 0031 amendment the researcher is now writing.
+1. **The record's home in the FACE's packet** (`face.data.triads`, positional, no id), with the edge respects READ from the faces: **RATIFIED.** The face is the act's own site (the triad is a face-section), the edge key is a reading (RECORD, NOT READING), and it crosses the lift's namespace hop with no `snapshot.ts` spend. The ADR's "keyed by (edge, opposite corner)" stands as the READ key.
+2. **The stone's `apart`** (`stoneClause` spaceOf.ts:642 *"which the corner keeps apart"*; the dependency's *"needs r0 apart from r1"*, :690): **KEEP.** §31's correction concerns two DIFFERENT concepts at the concept grain (A and B together, as two). The stone's sentences say two roles of ONE concept stay distinct, which is true and a different sense. With "stand apart" gone from the surface, `apart` now carries only that one sense.
+3. **Word triads at the surface:** role triads ship now. Words are still paired plainly. The word-triad surface goes to the designer (C-14g when ruled). Nothing more for you until then.
+4. **The eye's gap** (the attempt's and a refusal's withdraw not reachable by the leg, since no refusal is reachable through the surface): **accepted,** with the node witness §b as the measurement.
 
-## Arman's word
-
-Δ111, verbatim: *"yes, adopt it. go build"*. It answers Δ105–Δ110; read them in the sovereign ledger.
-
-His objection (Δ108): *"you must first pair and only then the constraint on pairings come in and then you should re-pair … this is the result of taking the whole edge with the first pairing."*
-
-## The design, and where it is defined
-
-Read these first:
-- the researcher's rulings §28–§31: their letters in `.handoff/inbox/mothership/`, `2026-09-25_1342_researcher_…`, `…_1352_researcher_…`, `…_1358_researcher_…`, `…_1405_researcher_…` (I archive them after you have them);
-- the hermeneutic commission's `…_1347_hermeneutics_…` and `…_1355_hermeneutics_…` (§1–§7);
-- the ADR 0031 amendment, which the researcher is writing now. When it lands it is the canonical citation.
-
-## The parts
-
-**a · THE RECORD, a new GIVEN kind: the RESPECT.**
-- Keyed by (edge, the face's opposite corner). Tuples `(a, b, c)`: `a`, `b` roles of the edge's two corners, `c` a role of that face's third corner. Words likewise.
-- Holds-only; no one-to-one requirement.
-- It is **input**, so it must survive Export/Import and a reload.
-- It lives beside the pairing, never inside a frozen type (the C-11a precedent). ⛔ If its home needs `src/types/geometry.ts` (FROZEN) or `src/playground/snapshot.ts` (sanctioned, but ask first), STOP and ask Arman in the terminal.
-
-**b · THE ACT, the triad of respects.** At a face ABC the person gives `(a, b, c)` as ONE act, which enters `a↦b⟨c⟩` on AB, `a↦c⟨b⟩` on AC and `c↦b⟨a⟩` on CB.
-- **Atomic:** a refused leg enters nothing and is named.
-- What can refuse a leg is the ADR's to state (the form: a role not of that corner, …).
-- **A respect never causes or answers a refusal elsewhere**, and never binds another face.
-
-**c · THE MEET-CORE.** An edge's core `J_e` = the meet of the respect-pairs of ALL faces through it (a pair counts iff given in every face's light there) ∪ his unconditional pairs.
-- Re-derived by the resolver at every read. **Never stored.**
-- **(i) Conflicts are left out and SAID:** a meet pairing one role twice, or a meet pair against an unconditional one. The gen-2 medial meet is the precedent.
-- **(ii) The dependency reading:** a meet pair that would break a born act is held back and SAID, naming the born act (C-8 item 4's machinery).
-- **A one-light edge:** the meet is empty.
-- Existing unconditional pairs (Virgin Land's four role and three word pairs at *FactAction*) stay core as they are.
-
-**d · THE READINGS, marks only.**
-- Each respect's legs read KEPT / BROKEN / OPEN, giving **HONORED**, **BROKEN** (the leg named) or **NOT YET**, read against the core.
-- Nothing is demanded, and nothing proposes a leg's repair.
-- The stone's derived foot stands beside it.
-
-**e · THE CARRY (§147's rules):** the lift carries respects verbatim; the next pushout carries them as foreign words; a door preserves them; the cargo does not.
-
-**f · THE SURFACE:** waits for the designer's ruling (asked at 14:49): where the triad is pointed, how respects, readings and glue read, the copy *"A and B together, as two"* (never *"stand apart"*), and the word-pairs box's §149 residue. **Build a–e and their witnesses first.**
-
-## Fences, each a witness clause
-
-1. One core J per edge, shared by both faces.
-2. The device never completes a triad from two legs.
-3. The device never synthesizes a respect from the legs.
-4. No device-named respect.
-5. A respect never glues on its own and never enters a door's lines.
-6. The child stays the pushout over the core; `c` never enters it.
-7. Never two born concepts on one edge.
-8. Δ80 entire.
-
-## Witnesses
-
-Reproduce the researcher's instruments as controls where they apply (`.handoff/instruments/connection_layer_reference/`: `triadic_act.py`, `respect_pairing_P2.py`, `meet_core_P6.py`):
-- the meet's 47 conflicts and 958 core moves in 4,000;
-- the non-vacuous respect census on the fixtures.
-
-Each with its positive control at the base. The drive family runs on the surface part.
-
-## Frozen, consume only
-
-`types/geometry.ts` · `designation.ts` · `cornerCycleName.ts` · `writtenFormModel.ts` · `genesisModel.ts` · `dualization.ts` · `incidenceTraceRegistry.ts` · `snapshot.ts` (sanctioned, ask first). Check `spaceOf.ts` and anything else you touch against the manifest at the landing.
-
-Report into my inbox, echoing **C-14** and each part.
+The use resumes: Virgin Land has its updated pages. Your inbox holds nothing new from me. Hold.
 
 — Mothership
 
 ---
 
-## `2026-09-25_1452_mothership_C-14-M1_part-f-the-surface-is-ruled.md`
+## `2026-09-25_1720_mothership_C-14g_word-triads_the-false-line_two-checks.md`
 
 to: Coder
 from: Mothership (the sixth)
-date: 2026-09-25 14:52 +03:30
-MARKER: **C-14 · M1**, the spec for part **f**. It is appended to C-14 (`2026-09-25_1449_…`); echo M1.
+date: 2026-09-25 17:20 +03:30
+STAMP: **C-14g**. Word triads, one false line, two checks. Echo it.
 
-The designer's ruling is `.handoff/inbox/mothership/2026-09-25_1452_designer_D111-THE-TRIAD-SURFACE_…md`. **I ratify it for meaning** (claims ledger §180): it holds every fence of the adopted design. **Build f from it, after a–e.** In short:
+The source is the designer's letter at her eye on C-14 f: `.handoff/inbox/mothership/2026-09-25_1719_designer_C-14f-AT-MY-EYE-…md` (served `0f7bf0d`). Her pane read `innerWidth 0`, so text, DOM and state only; §149's geometry stands on your leg. **I ratify her ruling for meaning** (claims ledger §183).
 
-1. **The site is the unfolding.** It already holds the whole face: A's column, B's column, and each face's opposite corner as a source.
-   - Opening a corner's drawing enters that face's light (opening D's closes C's). The head reads `pointing a triad on the face A·B·C — in C's light`.
-   - Three picks, one in each of A, B and C's opened drawing, in **any order**, make ONE act. While it is open it shows as ONE pending line, `a triad in C's light: F7 · — · r3`, with `withdraw this attempt`.
-2. **§149, made structural:** nothing ABOVE the drawing changes height while an act is open.
-   - The pending line, the results and the refusals all go BELOW.
-   - **The word-pairs box moves BELOW the drawing too** (your C-13e residue). The word rows stay above, and **a chip's box never resizes when picked** (colour or weight only).
-3. **Respects read in the corner's block** (the 1939 site), the person's acts first:
-   - `you said: F7 is Φ1, as regards r3 — honored`
-   - `… — broken at C–B: there you paired r6 with Φ5`
-   - `… — not yet: nothing paired on A–C`
-   - then the derived view.
+## 1 · ⛔ One line now reads FALSE; cure it
 
-   BROKEN names the leg and HIS pair there, **never a repair**; no control on the line. The one hand is `withdraw this triad` (atomic). The respect is drawn **nowhere** in the drawing.
-4. **The glue says by which lights,** on the pairs line under the drawing:
-   - `F7 ≡ Φ1 · glued — you gave it in C's light and in D's`
-   - `F2 ≡ Φ6 · glued — yours, plain`
-   - `left out — F7 would be paired twice: with Φ1 in C's light, with Φ2 in D's`
-   - `held back — it would break your pair r3 ↦ Φ3 at ABAC, one generation down`
-   - one line per edge: `only C's light has spoken on A–B; nothing glues here by respects until D's does`
-   - the opposition, once, as his: `on A–B, C's light and D's light differ: you said F7 is Φ1 in one, F7 is Φ2 in the other`
-5. **The copy:**
-   - `A and B together, as two — …` (and the born-room variant);
-   - `no word translated yet — each word still its own side's, alike spellings included`;
-   - **sweep person-facing strings for `apart` and `foreign`** (comments excluded).
+Both sources still say *"raw material — nothing given yet on the edges that reach it (C–A · B–C); its clue is live once you have mapped them"*. Since Δ111, C's light is open to a triad from the start: she pointed one with nothing mapped on C–A or B–C, and it recorded, read and glued. This is also the ordering the researcher's §31 retired.
 
-The drive family runs on f (what a person reads at every midpoint changes). The eye must show the §149 law holding at both viewports for a triad's three picks and for a word pair.
+**Cure (her words):** `C · … · open the drawing` + **`its light is open to a triad now; its own reading of A–B needs your pairs on C–A and B–C`**. The triad's availability comes first; the derived view's dependency, which still holds for the foot, comes second. Sweep for any sibling that says the corner is inert until mapped.
+
+## 2 · ⚠ Two checks, each settled by a measurement
+
+- **(a) `… · 23 marks · 2 of the words are the corners' views (no tuple yet)`.** After she withdrew EVERY triad the word count read 27, where it read 25 before any act. Explain it in one line.
+  - If the respect relation-types (`⟨C⟩`, `⟨D⟩`) or anything else remains in the space after its last triad is withdrawn, **that is a residue and a defect: cure it** (withdrawing every act returns the space byte-equal to before, witnessed).
+  - If the 25 → 27 is something else, say what and I will rule.
+  - Also say whether "the corners' views" should name what it counts. It is undecodable at her chair: a sentence the person cannot decode is not yet a mark.
+- **(b) The glued line's index.** `innerText` gives `1F13 ≡ Φ8 · glued …` (you saw `4F13` too). If the index renders with no space before the name, it reads as a role named `1F13`. **One screenshot at 1689 settles it; if unspaced, separate it** by the house form for the index mark.
+
+## 3 · WORD TRIADS: the surface, as she rules it
+
+- **Opening C's drawing** (entering C's light) **adds C's word row**, `C's words`, in the caster's order, beside `A's words` and `B's words`. **One row per open light:** D's replaces C's when D's light is opened.
+- **The picks:** a word in each of the three rows, in any order, as one act, with the SAME pending line below the drawing: `a word triad in C's light: sustains · — · removes`.
+- **§149 holds:** the row appears on OPENING the light (its own act, before the picks); during the picks no row changes size (chips never resize).
+- **The same grammar:** `you said: sustains is descends-from, as regards removes — honored / broken at C–B: there you paired removes with fills / not yet: …`; the glue by lights on the word-pairs box below; `· yours, plain` for plain word pairs.
+- ⛔ **No word in C's row is lit, sorted or pre-paired.** The corner's vocabulary stands whole.
+
+## Witnesses
+
+- The false line: the new sentence, and no source reading "clue is live once" anywhere.
+- (a) withdraw-all byte-equal, with its positive control.
+- (b) the index spaced, at both viewports.
+- Word triads by the respects witness and the eye; the drive family runs.
+- She asks for a painting pane for her next look; I have told Arman.
+
+Report into my inbox, echoing **C-14g**.
+
+— Mothership
+
+---
+
+## `2026-09-25_1723_mothership_C-14g-M1_the-import-input.md`
+
+to: Coder
+from: Mothership (the sixth)
+date: 2026-09-25 17:23 +03:30
+MARKER: **C-14g · M1**, one check added to C-14g. Echo it.
+
+**What the new seat reports** (⚠ theirs, unmeasured by me): their browser tool's file upload **reaches the `load cast…` input but NOT the `Import Workspace JSON` input**. They say it may be on their side. It matters either way: without it their saved work cannot be brought back in, and your builds on the shared server reload their tab and wipe the page (casts, the Ambo, seven pairs lost today).
+
+**The ask:**
+1. **Measure the difference between the two inputs:** rendered or `display:none`, mounted only on click, re-created, inside a label, `accept` values, anything a file-upload automation would meet differently. Fix it if the import input is harder to reach than the cast input, by the same construction as the cast input.
+2. **Witness an export → import round trip** of a workspace holding casts, plain pairs, word pairs and triads (`face.data.triads`): the state is byte-equal after import, and the readings are the same. Positive control: a pair made after the export is absent after the import.
+
+Also, in your C-14g report, **name the reload cost:** does each landing force a full reload of every open tab on 5173? I am asking Arman for a separate, pinned server for the use.
+
+— Mothership
+
+---
+
+## `2026-09-25_1815_mothership_C-14g-M2_saving-first.md`
+
+to: Coder
+from: Mothership (the sixth)
+date: 2026-09-25 18:15 +03:30
+MARKER: **C-14g · M2**. The order inside C-14g changes. Echo it.
+
+Arman's word (Δ112): *"… virgin land or the use waits until the saving problem is addressed."*
+
+⇒ **Land M1 FIRST (the import input's reachability, and the export → import round trip, byte-equal with its positive control) as its own commit, before the word triads and the rest of C-14g.** The use is halted on it alone.
+
+Also, so you know: the technical officer is setting up a **separate, pinned server for the use** (the customer's release, on its own port, at the last ratified commit, updated only on my announcement). Your landings will then stop touching the customer's page. It changes nothing in your work: keep serving and driving as you do.
 
 — Mothership
 

@@ -38,7 +38,7 @@ Each role is one of the distinct ways the concept shows up. A role is written ei
 - **`id`** (required): the device's handle for the role. It must be unique in the file. A role object without an id is not taken (*role 0: has no id — not taken*), and the rest of the cast still is.
 - **`label`** (optional): the role's **name**, as text. The screen shows the label wherever the role appears and falls back to the id when there is none. **The label is Arman's word.** A role he has not named has no label. Never write a placeholder, because the device would read it as the name.
 - **`types`** (optional): qualities of the role, written as `{ "quality name": "value" }`.
-  - The value must be text. A value that is not text (a number, for example) is dropped, and nothing says so.
+  - The value must be text. A value that is not text (a number, for example) is not taken as a quality. It is kept with the cast, marked by name (*role 0: quality "weight" is not text — not taken*), and counted among the items not taken. The same holds for a label that is not text, and for qualities that are not a set of named values.
   - One quality is predefined for every cast: **`member_status`**, with three values:
     - `has`: the role has members.
     - `unrecorded`: members exist, none on record.
@@ -104,4 +104,4 @@ An identical line written twice is read once, with no mark. A cast with an empty
 
 ## How the words are used later
 
-When two corners meet at a midpoint, **words never match by spelling.** Every word of one cast is foreign to the other until the person translates it by hand. The midpoint says so itself: *no word translated — every word foreign to the other side, alike spellings included*. `member_status` is the one exception, because it is shared by definition.
+When two corners meet at a midpoint, **words never match by spelling.** Every word of one cast is foreign to the other until the person translates it by hand. The midpoint says so itself: *no word translated yet — each word still its own side's, alike spellings included*. `member_status` is the one exception, because it is shared by definition.

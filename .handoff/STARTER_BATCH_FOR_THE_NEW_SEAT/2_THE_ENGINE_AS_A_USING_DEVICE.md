@@ -37,7 +37,10 @@ The device keeps the record. It never decides for you, and it never proposes. Th
 | **generation** (g0, g1, g2) | how many dissections deep you are |
 | **cell** / **face** | one solid piece / one flat side of a piece |
 | **inspector** | the **Selection** tab: what is selected, with rows for its parts that you can click |
-| **pair** | your act at a midpoint: this role of A is that role of B, or this word of A is that word of B |
+| **pair** | your act at a midpoint: this role of A is that role of B, or this word of A is that word of B. A **plain** pair joins them at once, on the whole edge |
+| **light** | a face seen from its opposite corner. To pair "in C's light" is to pair *as regards C* |
+| **respect** / **triad** | a pairing made in a light ("a is b, as regards c"). A **triad** is three of them made as one act on one face |
+| **glued** | two items joined on an edge: paired in every light through it, or paired plainly |
 | **lift** | carrying a chosen piece from the Ambo Universe onto the Manuscript's shelf |
 | **shelf** / **page** | in the Manuscript: where lifted pieces wait, and where you place them |
 | **3-manifold** | a space with three directions that you can be inside and walk around in. In the Manuscript you build one by gluing a solid's faces to each other in pairs |
@@ -68,10 +71,22 @@ Under the solid, one line lists the gestures. It begins *click — select what y
    - **withdraw** undoes either.
    - A pair that the record contradicts is *not taken*, and the reason is given.
 
-   Which role of A is which role of B, and which word translates which, is Arman's decision. The device never offers a pair.
+   Which role of A is which role of B, and which word translates which, is Arman's decision. The device never offers a pair. These are **plain** pairs: each one joins its two roles at once, on the whole edge.
+3b. ✎ **A triad, in a face's light.** On a face you can also pair in a light. Pick one item in each of the face's three concepts, say a fact, an action and a value, and point them as one act. That records three **respects**:
+   - this fact is this action, **as regards this value**;
+   - this fact is this value, as regards this action;
+   - this action is this value, as regards this fact.
+
+   A respect joins nothing by itself, and it binds no other face: the other face through the same edge keeps its own light.
+   - **How:** at the midpoint, **open the opposite corner's drawing**. That enters its light, and the head reads, for example, *pointing a triad on the face A·B·C — in C's light*. Opening the other corner's drawing changes the light.
+   - **The three picks:** a point in A's column, one in B's, one in the opened drawing, in any order. While the act is open it shows as one line, *a triad in C's light: …*, with *withdraw this attempt*. Once all three are picked the triad is recorded. If one leg is refused, nothing is entered and the refused leg is named.
+   - **Which three items are the same, and in which light, is Arman's decision.**
 4. **What the midpoint tells you:**
-   - its own space so far, for example *no pair given yet — A and B stand apart: … roles · … words · … tuples*;
-   - the words translated so far, for example *no word translated — every word foreign to the other side, alike spellings included*;
+   - its own space so far, for example *A and B together, as two — … roles · … words · … tuples*;
+   - the words translated so far, for example *no word translated yet — each word still its own side's, alike spellings included*;
+   - **below the drawing**, every pair you gave, listed whole: role pairs with *· yours, plain · withdraw*, and the word pairs;
+   - **the glue:** two items are joined on an edge only when you have paired them in **every** light through that edge (both faces), or paired them plainly. The pairs line says so, for example *F7 ≡ Φ1 · glued — you gave it in C's light and in D's*. Until both faces have spoken it says *only C's light has spoken on A–B; nothing glues here by respects until D's does*. A pair that would join one item twice is *left out*, and a pair that would break a pair one generation down is *held back*; each says why. Where the two faces' lights differ on this edge, it says so once, as a fact;
+   - **your respects,** in each opposite corner's block, first, as what you said. For example *you said: F7 is Φ1, as regards r3 — honored*, or *— broken at C–B: there you paired r6 with Φ5*, or *— not yet: nothing paired on A–C*. These are readings: nothing asks you to re-pair. A triad's one control is *withdraw this triad*.
    - under the midpoint's own column, what **each opposite corner** makes of your pairing, for example *C's view of your pairing on A–B* with *agrees on …*, *would pair … otherwise*, *would join what you left apart: …*. These are readings, never buttons.
 5. **A face reads** once all three of its edges hold pairs. For the face **A·B·C**, walked in its own direction (A → B → C → A), each role is *returned to itself*, *returned elsewhere*, or *did not return*. Until then the midpoint says what the face still needs, for example *no reading yet — it needs a record on each of its three edges*.
 6. ✎ **The midpoint's name.** Each midpoint has a packet of its own, like a corner, with a **Label**. The Packets tab counts them (*unresolved generated midpoint packets*) and steps through them with **Previous unresolved**, **Next unresolved** and **Save and next unresolved**.
@@ -82,7 +97,7 @@ Under the solid, one line lists the gestures. It begins *click — select what y
 2. The octahedron is cut into a **cuboctahedron** (the new core, g2) and six **square pyramids**. New midpoints appear between the first ones: **ABAC, ABAD, …**
 3. **The born room.** Open a new midpoint, such as **ABAC**, from the Packets tab. It reads *ABAC · the midpoint between AC and AB* and shows two kinds of thing:
    - what the solid has already made one, for example *… stand on both sides as one — composed, not yours (their points hollow)*;
-   - what is left for the person, for example *the born room: 10 roles of AC and 9 of AB stand apart · no pair of yours yet*. Once you pair here, those pairs read *yours, born here*.
+   - what is left for the person, for example *the born room: 10 roles of AC and 9 of AB together, as two · no pair of yours yet*. Once you pair here, those pairs read *yours, born here*.
 
    A pair here that would break a pair elsewhere is refused, and both acts are named.
 4. ✎ The same acts apply at every new midpoint: pairing roles, translating words, and giving the midpoint's packet its Label.
@@ -148,6 +163,7 @@ Under the solid, one line lists the gestures. It begins *click — select what y
 2. **Inside a cast:** the role labels, the words, the quality names and values, and the subject matter (page 3).
 3. A **midpoint's Label** (Packets tab, generated midpoints), at both generations.
 4. **Pairs at a midpoint:** which role of one side is which role of the other, and which word translates which.
+4b. **Triads, in a face's light:** which item of each of the face's three concepts are the same, as regards the third.
 5. **In the Manuscript:** **identify** (which corners become one concept), and a **door's concept** (which role goes through).
 
 At every one of them, Arman gives the thought and you make the device take it.

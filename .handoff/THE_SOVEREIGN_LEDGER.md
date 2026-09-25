@@ -431,3 +431,6 @@ F2 must be fixed."*
 
 **Δ111 — ADOPTED: THE TRIAD OF RESPECTS AND THE MEET-CORE; GO BUILD (2026-09-25, entered 14:51 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"yes, adopt it. go build"*
 ⇒ **READ:** the design put to him at §177 is adopted: the act is the triad AS RESPECTS on a face (atomic, face-local); the glue is the MEET-CORE (every light ∪ his unconditional pairs; conflicts left out and said; held-back pairs naming born acts); the readings are marks, never demands; grounded by §177's two grains. Built as C-14 (§179).
+
+**Δ112 — A SERVER OF ITS OWN FOR THE USE; A PAINTING PANE FOR THE DESIGNER; THE USE WAITS FOR SAVING (2026-09-25, entered 18:14 +03:30; heard by me, in-terminal).** ✔ VERBATIM: *"yes on both, set it up. but virgin land or the use waits until the saving problem is addressed."*
+⇒ **READ:** (1) the use runs on its own pinned server (a release: the last ratified commit, changed only when announced); (2) the designer gets a pane that paints. **The use HALTS again until the saving problem is addressed:** its work must survive (export → import restores it; the import input is reachable).
