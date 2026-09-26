@@ -36,6 +36,7 @@ import { createDefaultVertexData, deriveEdges, getCellFaces, midpoint } from './
 import { importCornerAngles } from './cornerAngleImport';
 import { midpointLetters } from './christening';
 import { carriedTriads, TRIADS_KEY } from './respects';
+import { carriedRelatings, relatingsHeld, RELATINGS_KEY } from './relatings';
 
 const DEFAULT_MIDPOINT_COLOR = '#eab308';
 
@@ -187,13 +188,17 @@ function applyGenericAmboDissection(parent: Shape, topology: SourceTopology): Sh
   // cells' faces are kept). Nothing here assumes the order of the person's acts across generations.
   // C-14 — the RESPECTS ride the FACE, not the edge: a dissected cell's face record is carried onto its parent-cell-face by
   // `createParentCellFaces` (positional in the corner order that copy keeps); every other face is kept whole with its packet.
-  const recordedByPair = new Map(parent.edges.filter((edge) => edge.identification).map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
+  // MODES-1 · B1 — the RELATINGS ride the edge's packet (`edge.data.relatings`, the other modes and the bars) and are carried onto
+  // the same pair exactly as the record is: copied, mirrored (x ↔ y) where the derived edge is walked the other way, never re-derived.
+  const recordedByPair = new Map(parent.edges.filter((edge) => edge.identification || relatingsHeld(edge).length > 0).map((edge) => [canonicalEdgeKey(...edge.vertexIds), edge]));
   const edges = deriveEdges(faces, shapeId).map((edge) => {
     const source = recordedByPair.get(canonicalEdgeKey(...edge.vertexIds));
-    if (!source?.identification) return edge;
+    if (!source) return edge;
     const mirrored = source.vertexIds[0] !== edge.vertexIds[0];
     const copy = (pairs: Array<[string, string]>): Array<[string, string]> => pairs.map(([x, y]): [string, string] => (mirrored ? [y, x] : [x, y]));
-    return { ...edge, identification: { roles: copy(source.identification.roles), types: copy(source.identification.types) } };
+    const withRecord = source.identification ? { ...edge, identification: { roles: copy(source.identification.roles), types: copy(source.identification.types) } } : edge;
+    const relatings = carriedRelatings(source.data, mirrored);
+    return relatings === undefined ? withRecord : { ...withRecord, data: { ...(withRecord.data ?? {}), [RELATINGS_KEY]: relatings } };
   });
 
   return {

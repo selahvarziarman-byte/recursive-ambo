@@ -51,6 +51,7 @@ export interface PersistedWorkspaceV1 {
   cellVisibility?: PersistedCellVisibility;
   viewLayout?: PersistedViewLayout;
   edgeTauDrafts?: PersistedEdgeTauDrafts;
+  lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
 }
 
 export interface WorkspacePersistenceSnapshot {
@@ -65,6 +66,7 @@ export interface WorkspacePersistenceSnapshot {
   cellVisibility?: PersistedCellVisibility;
   viewLayout?: PersistedViewLayout;
   edgeTauDrafts?: PersistedEdgeTauDrafts;
+  lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
 }
 
 export type WorkspaceImportValidationResult =
@@ -91,6 +93,7 @@ export function serializeWorkspaceSnapshot(
     cellVisibility: snapshot.cellVisibility,
     viewLayout: snapshot.viewLayout,
     edgeTauDrafts: snapshot.edgeTauDrafts ?? {},
+    lexicon: snapshot.lexicon ?? [],
   };
 }
 
@@ -210,6 +213,10 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
     errors.push('Workspace edgeTauDrafts is malformed.');
   }
 
+  if (input.lexicon !== undefined && !isLexicon(input.lexicon)) {
+    errors.push('Workspace lexicon is malformed.');
+  }
+
   if (errors.length) {
     return { ok: false, errors };
   }
@@ -274,6 +281,11 @@ function isEdgeTauDrafts(value: unknown): value is PersistedEdgeTauDrafts {
       (pairs) => Array.isArray(pairs) && pairs.every((pair) => Array.isArray(pair) && pair.length === 2 && pair.every((w) => typeof w === 'string')),
     )
   );
+}
+
+/** MODES-1 · B1 — the declared modes: words, in the person's order; a file saved before B1 has no field at all (accepted) */
+function isLexicon(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((w) => typeof w === 'string' && w.trim().length > 0);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

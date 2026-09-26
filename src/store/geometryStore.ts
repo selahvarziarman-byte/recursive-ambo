@@ -26,6 +26,7 @@ import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
 import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
+import { IS, relatingOf, relatingsHeld, withRelating, withoutRelating, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
 import type {
   Cell,
   CellId,
@@ -287,6 +288,18 @@ interface GeometryState {
   giveTriad: (faceId: string, kind: RespectKind, picks: TriadPick[]) => TriadRefusal | null;
   withdrawTriad: (faceId: string, kind: RespectKind, picks: TriadPick[]) => void;
   withdrawTriadAttempt: (faceId: string) => void;
+  // MODES-1 · B1 — THE EDGE RECORD IN MODES (the projection ruling D1–D3, D12; src/lib/relatings.ts). The lexicon L: the words the
+  // person DECLARED, in his order (a declaration is an act; persisted with the workspace; IS and the words in use are derived
+  // beside it by `lexiconOf`). A relating (w, x, y, ±) is given on an edge and recorded in the edge's packet — its one writer is
+  // `writeEdgeRelatings` below; an IS-instance is the pairing itself and routes to `giveRolePair` (one home for IS). A refusal
+  // per edge, transient (never persisted — an attempt is not a record). No history entry: a relating is the person's record.
+  lexicon: string[];
+  relatingRefusals: Record<EdgeId, RelatingRefusal & { relating: Relating }>;
+  declareMode: (word: string) => void;
+  withdrawMode: (word: string) => void;
+  giveRelating: (edgeId: EdgeId, w: string, x: string, y: string, sign: Sign) => RelatingRefusal | null;
+  withdrawRelating: (edgeId: EdgeId, w: string, x: string, y: string) => void;
+  withdrawRelatingAttempt: (edgeId: EdgeId) => void;
   exportWorkspace: () => PersistedWorkspaceV1;
   importWorkspace: (workspace: PersistedWorkspaceV1) => void;
 }
@@ -316,6 +329,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   selectedEdgeId: null,
   selectedFaceId: null,
   edgeTauDrafts: {},
+  lexicon: [],
+  relatingRefusals: {},
   midpointRefusals: {},
   midpointRemade: {},
   triadRefusals: {},
@@ -1055,6 +1070,54 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     delete triadRefusals[faceId];
     set({ triadRefusals });
   },
+  // ═══ MODES-1 · B1 — the lexicon and the relatings ═══
+  declareMode: (word) => {
+    const mode = word.trim();
+    const { lexicon } = get();
+    if (!mode || mode === IS || lexicon.includes(mode)) return;
+    set({ lexicon: [...lexicon, mode] });
+  },
+  withdrawMode: (word) => {
+    const { lexicon } = get();
+    if (!lexicon.includes(word)) return;
+    set({ lexicon: lexicon.filter((w) => w !== word) }); // the relatings in it stay — they are the person's record; the word stays in use
+  },
+  giveRelating: (edgeId, w, x, y, sign) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    if (!shape) return { corner: null, item: null, why: 'no current shape' };
+    if (w.trim() === IS && sign === '+') {
+      // an IS-instance IS the pairing: one home, the typed record, through the pairing's own act and its refusals
+      state.giveRolePair(edgeId, x, y);
+      return null;
+    }
+    const act = relatingOf(shape, edgeId, w, x, y, sign, { tauDrafts: state.edgeTauDrafts });
+    if (act.refused) {
+      set({ relatingRefusals: { ...state.relatingRefusals, [edgeId]: { ...act.refused, relating: [w, x, y, sign] } } });
+      return act.refused;
+    }
+    const relatingRefusals = { ...state.relatingRefusals };
+    delete relatingRefusals[edgeId];
+    writeEdgeRelatings(set, { ...state, relatingRefusals }, shape, edgeId, (edge) => withRelating(edge, act.relating));
+    return null;
+  },
+  withdrawRelating: (edgeId, w, x, y) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    if (!shape) return;
+    if (w.trim() === IS) {
+      const edge = shape.edges.find((c) => c.id === edgeId);
+      if (edge && relatingsHeld(edge).some((r) => r[0] === IS && r[1] === x && r[2] === y)) writeEdgeRelatings(set, state, shape, edgeId, (e) => withoutRelating(e, IS, x, y)); // an IS bar, the packet's
+      else state.withdrawRolePair(edgeId, x, y); // an IS-instance, the pairing's
+      return;
+    }
+    writeEdgeRelatings(set, state, shape, edgeId, (edge) => withoutRelating(edge, w.trim(), x, y));
+  },
+  withdrawRelatingAttempt: (edgeId) => {
+    const relatingRefusals = { ...get().relatingRefusals };
+    delete relatingRefusals[edgeId];
+    set({ relatingRefusals });
+  },
   withdrawMidpointAttempt: (edgeId) => {
     const midpointRefusals = { ...get().midpointRefusals };
     delete midpointRefusals[edgeId];
@@ -1075,6 +1138,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       cellVisibility: state.cellVisibility,
       viewLayout: state.viewLayout,
       edgeTauDrafts: state.edgeTauDrafts, // F3 — the word pairs given alone ride the file
+      lexicon: state.lexicon, // B1 — the declared modes ride the file (the relatings ride the edges' packets inside `shapes`)
     });
   },
   importWorkspace: (workspace) => {
@@ -1104,6 +1168,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       shapeOrder: importedWorkspace.shapeOrder,
       currentShapeId: importedWorkspace.currentShapeId,
       edgeTauDrafts: importedWorkspace.edgeTauDrafts ?? {}, // F3 — the file's word pairs given alone restored; the session's dropped (a file saved before F3 carries none)
+      lexicon: importedWorkspace.lexicon ?? [], // B1 — the file's declared modes restored; the session's dropped (a file saved before B1 carries none)
+      relatingRefusals: {},
       liftSelection: [],
       selectedCellId,
       selectedVertexId,
@@ -1210,6 +1276,13 @@ function writeEdgeIdentification(
       },
     },
   });
+}
+
+// MODES-1 · B1: THE ONE WRITER of an edge's relatings (the packet, `edge.data.relatings`) — every act routes here; the
+// module's pure `withRelating`/`withoutRelating` shape the packet, this site alone puts it on a shape.
+function writeEdgeRelatings(set: (partial: Partial<GeometryState>) => void, state: GeometryState, shape: Shape, edgeId: EdgeId, change: (edge: Edge) => Edge): void {
+  const edges = shape.edges.map((edge) => (edge.id === edgeId ? change(edge) : edge));
+  set({ relatingRefusals: state.relatingRefusals, shapes: { ...state.shapes, [shape.id]: { ...shape, edges } } });
 }
 
 // ─── C-7b — the midpoint's acts, behind the one writer ───
