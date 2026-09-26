@@ -38,7 +38,7 @@
 // ADDITIVE · DERIVE-ONLY · react-free (the section draws what this returns; the witness runs this under node).
 
 import type { Shape, VertexId } from '../types/geometry';
-import { nameIn, spaceOf, type Resolved } from '../lib/spaceOf';
+import { nameIn, spaceOf, TRANSPORT_OPTIONS, type Resolved } from '../lib/spaceOf';
 import { bornStepOf } from '../lib/bornFace';
 import type { RoleMap } from '../lib/faceReading';
 import { refusalOf, type Conflict } from '../lib/jRegister';
@@ -134,14 +134,14 @@ export function sideOf(record: Shape, cycle: VertexId[], memo: Map<VertexId, Res
   const spaces: CornerSpace[] = [];
   const missing: string[] = [];
   for (const v of cycle) {
-    const r = record.vertices[v] ? spaceOf(record, v, {}, memo) : null;
+    const r = record.vertices[v] ? spaceOf(record, v, TRANSPORT_OPTIONS, memo) : null; // B6 (D12): the door rides IS-instances only
     if (r) spaces.push(r.space);
     else missing.push(v);
   }
   if (missing.length) return { state: 'absent', missing };
   const J: RoleMap[] = [];
   for (let i = 0; i < k; i += 1) {
-    const step = bornStepOf(record, cycle[i], cycle[(i + 1) % k], {}, memo);
+    const step = bornStepOf(record, cycle[i], cycle[(i + 1) % k], TRANSPORT_OPTIONS, memo);
     if (!step) return { state: 'absent', missing: [`${cycle[i]}→${cycle[(i + 1) % k]}`] };
     J.push(step.map);
   }

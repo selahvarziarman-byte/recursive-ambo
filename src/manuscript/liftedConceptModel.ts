@@ -26,7 +26,7 @@
 // ADDITIVE · DERIVE-ONLY · react-free (the section draws what this returns; the witness runs this under node).
 
 import type { Face, Shape, VertexId } from '../types/geometry';
-import { isSeedVertex, spaceCounts, spaceOf, type Resolved } from '../lib/spaceOf';
+import { isSeedVertex, spaceCounts, spaceOf, TRANSPORT_OPTIONS, type Resolved } from '../lib/spaceOf';
 import { faceReferenceName } from './apertureModel';
 
 export type AbsentResolver = Parameters<typeof faceReferenceName>[2];
@@ -95,11 +95,11 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
   const memo = new Map<VertexId, Resolved | null>();
   const vertices: LiftedVertexRow[] = ids.map((id) => {
     const held = Boolean((record as Shape).vertices[id]);
-    const r = held ? spaceOf(record as Shape, id, {}, memo) : null;
+    const r = held ? spaceOf(record as Shape, id, TRANSPORT_OPTIONS, memo) : null; // B6 (D12): the lift rides IS-instances only
     let absence: string | null = null;
     if (held && !r) {
       // through the ONE resolver: a seed resolves to nothing exactly when it holds no cast — this file reads no cast itself
-      const bare = seedsUnder(record as Shape, id).filter((s) => spaceOf(record as Shape, s, {}, memo) === null);
+      const bare = seedsUnder(record as Shape, id).filter((s) => spaceOf(record as Shape, s, TRANSPORT_OPTIONS, memo) === null);
       absence = isSeedVertex(record as Shape, id)
         ? 'holds no cast'
         : bare.length

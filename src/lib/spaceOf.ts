@@ -143,14 +143,24 @@ export interface Resolved {
   loadedIgnored: boolean; // a born vertex holding a loaded cast — not read (Δ86)
 }
 
+/**
+ * MODES-1 · B6 — THE TRANSPORT'S READING (the projection ruling D12; ADR 0031 §9.1 D12): the lift, the door and the cargo walk ride
+ * IS-INSTANCES ONLY — the core is his unconditional pairs alone (B1: the pairing IS the IS-instances), no respect is read into it
+ * (a C-14 triad's meet pair is a light, never an instance — D7) and no foot is composed (nothing through a third is in the child's
+ * signature — §9.4 on §3.10). One named option, handed by the three manuscript models to every resolver call; measured by
+ * scripts/diagnose-modes1-the-transport.cjs: what rode before B6 (the meet pairs, the `≡_X` and `⟨X⟩` words and their tuples) and
+ * that nothing else did. The Ambo's own surface reads without it — the identity regime stands there as built.
+ */
+export const TRANSPORT_OPTIONS: SpaceOfOptions = { respects: false, feet: false };
+
 export interface SpaceOfOptions {
   /** the store's τ drafts by edge id — a τ before the first role pair, read where the edge holds no record */
   tauDrafts?: Record<string, EdgeIdentification['types']>;
   /** C-8 item 4 — a CANDIDATE record on one edge, read in place of what the edge holds: the shape as an act would leave it, without writing it anywhere (RECORD, NOT READING — the candidate is an option to the read, never a fabricated shape) */
   candidate?: { edgeId: Edge['id']; roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] };
-  /** ⛔ A WITNESS'S CONTROL ONLY — `false`: the feet NOT composed (C-12b) — the space exactly as built before the stone, so a witness can show every moved number is the feet's alone */
+  /** `false`: the feet NOT composed (C-12b) — the space exactly as built before the stone. A witness's control, and since MODES-1 · B6 THE TRANSPORT'S READING (D12: the lift, the door and the cargo ride IS-instances only — `TRANSPORT_OPTIONS`) */
   feet?: boolean;
-  /** ⛔ A WITNESS'S CONTROL ONLY — `false`: the respects NOT read (C-14) — the core his unconditional pairs alone, no `⟨X⟩` type, no reading: the space exactly as built before the triad, so a witness can show every moved number is the respects' alone */
+  /** `false`: the respects NOT read (C-14) — the core his unconditional pairs alone, no `⟨X⟩` type, no reading: the space exactly as built before the triad, so a witness can show every moved number is the respects' alone — a witness's control, and since MODES-1 · B6 THE TRANSPORT'S READING (D12, `TRANSPORT_OPTIONS`) */
   respects?: boolean;
   /** ⛔ A WITNESS'S CONTROL ONLY — `content`: the content meet on every born edge, the mechanism C-8b replaced (it houses a doubled class twice at a gen-4 station and splits a shared class held identically at gen 4); the app never sets it. Default `structural`: the carried coprojection on a corner edge, the anchored meet on a medial one. */
   meet?: 'structural' | 'content';
