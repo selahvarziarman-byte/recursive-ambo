@@ -1,0 +1,24 @@
+THE FAR-END COLLISION — the researcher's probe on the 42 hand triples (F · T · Φ), the view Φ on F–T and its mirror
+
+HELD  S1 the stone's census on F–T equals the B3 witness's {UND 497 · PRO 46 · DIS 39 · FIX 6} (positive control: this reference is that reference)
+        {"triples":42,"census":{"UND":497,"FIX":6,"DIS":39,"PRO":46}}
+HELD  S2 the coder's sorting on F–T reads exactly the stone's DISAGREEMENTs as TENSIONs, per triple (control: source-side bar = the stone)
+        mismatching triples: 0
+HELD  S3 the mirror's DISAGREEMENTs = the F-side PROPOSALs whose b is taken + the F-side DISAGREEMENTs whose b is taken, per triple (a collision seen from b is a disagreement at b)
+        mismatching triples: 0
+HELD  S4 the mirror's taken PROPOSALs = the F-side single DISAGREEMENTs, per triple (the same identity, the other way)
+        mismatching triples: 0
+HELD  S5 the coder's sorting in the mirror orientation reads the mirror's DISAGREEMENTs as TENSIONs, per triple
+        mismatching triples: 0
+
+      · PROPOSALs on F–T: 46 = FREE 4 + TAKEN (collision) 42
+      · DISAGREEMENTs on F–T: 39 = SINGLE 5 + DOUBLE 34
+      · the mirror (Φ on T–F, from T's 10 roles): FIX 6 · DIS 76 · PRO 9 (taken 5) · UND 329
+      · under the full one-to-one law (a path composing to (IS, a, b) is a TENSION when a OR b is paired elsewhere): TENSION 81 · LIGHT 4 of 85 non-FIX paths
+      · triples with at least one collision: 29 of 42
+      · triples the built reading calls COHERENT: 12; of these, with a collision standing (FALSE COHERENT): 11; coherent in both orientations: 1
+      · example A·Q·(ii): F5 → Φ → r1, but r1 is F7's
+      · example A·R·(ii): F5 → Φ → r0, but r0 is F1's
+      · example C·P·(i): F5 → Φ → r2, but r2 is F3's; F7 → Φ → r0, but r0 is F9's; F8 → Φ → r1, but r1 is F13's
+
+ALL SEALS HELD

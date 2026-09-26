@@ -3181,3 +3181,50 @@ At 16:21 the researcher ran `git status` through the sandbox mount **without `--
   - The seats that restart when Arman opens them show the same pattern (the coder, researcher and designer read "started 8–23 min ago").
   - The letters all arrived; only the rings failed.
   - Arman: *"you have done something wrong im sure."* No setting of mine closes the session (measured). The cure within my reach is a background inbox watcher in this session, which wakes me on a new letter and may keep the session running between turns. Whether it keeps the session reachable is ⚠ until his next message shows no resume.
+
+## §208 — MODES-1 B1–B3 RATIFIED (`cc4ef0a` · `ec81833` + `4e7c687` · `9561699` · record `08e0abd`): F4 HELD ON BOTH HALVES; go B4 → B5 → B6; no release until B5 *(2026-09-26 18:21 +0330)*
+- **✔ ran (mine, 18:20):**
+  - `DIAGNOSE-MODES1-THE-EDGE-IN-MODES` · `-THE-INSTANCE-SPACE` · `-THE-SORTING`: ALL PASS.
+  - **F4:** under IS-only, the instance space's core on flow ⊔ phi with (J₃, τ₃) is `3 · 4 · 3`, the roles `F5≡Φ7 · F7≡Φ1 · F8≡Φ2`, typed IS. Under IS ; IS = IS the view's kinds equal the stone's reference port role for role over the 42 hand triples (0 mismatches; census {UND 497 · PRO 46 · DIS 39 · FIX 6}), and the loop equals `composeThroughCorner` at all three bases (Mov pairs Flow 76 · T 39 · Φ 45).
+  - `git diff 82c9350 HEAD -- geometry.ts snapshot.ts` is EMPTY: no frozen spend, as ruled (design (A)).
+  - `src/`: eight files, three NEW and NOT_FROZEN (`relatings.ts`, `instanceSpace.ts`, `sorting.ts`), plus the store, `workspacePersistence`, `ambo`, `faceReading` and `MidpointSurface`.
+  - **⚠ HEAD `08e0abd` was one AHEAD of origin (`9561699`) at 18:20: the record commit was not yet pushed.** Asked.
+- **⚠ coder-run:**
+  - the sweep at `9561699` (152 files, SWEEP OK); tsc 0; the freeze ALL PASS;
+  - the drive family at `9561699` (183 clauses, 181 → 183 with M1's §18: the light does not carry across midpoints);
+  - the neighbours ALL PASS.
+- **The after on Virgin Land's record:** edges joined by triads alone read UNDETECTED with LIGHTS, with no instance made of a light and nothing CLOSED. At Value–Action both lights' proposals are kept as record (C-14 glued the one and silenced the disagreement). The C-14 readers STAND, reproduced as the identity regime's special case; nothing was removed.
+- **The three defects are cured as properties:**
+  1. the face reading reads through the reader its caller hands (`.identification` is gone from the module);
+  2. names, never role ids;
+  3. a foot is silent only where no path exists. Defect 3 had a SECOND site: the unglued block, hard-wired silent under a respect, which is the one Virgin Land saw and why the export did not reproduce it through the resolver.
+- **M1:** `≡` is IS only, by construction; the light rule is built and driven (§18). **The ABAC measurement: the build shows the COMPOSED mark, not D10's light**, which is B4's "before".
+- **Taken:**
+  - the definition read off the reference (IS's implicit bar on the path's OWN x alone, since F4 forces it), sent to the researcher to hold in §9.2;
+  - the HLV fixture, which is not in the construction file: my charter repeated the ruling's B2 words unchecked, so the question went to the researcher;
+  - the coder's two scars (B2 pushed with the sweep red on a census pin and healed forward at `4e7c687`, the push now gated on SWEEP OK; a heredoc escape caught by `node --check`).
+- **Next: B4 (descent) → B5 (display, the designer's words) → B6 (transport measured).** No release to :5180 until B5 is ratified; the use stays paused (Δ115).
+- **The watcher worked:** my session was NOT restarted between Arman's 17:17 message and the coder's letter at 18:18 (no resume hook), and the inbox watcher woke me at 18:18:35.
+
+## §209 — the record `08e0abd` PUSHED; two W1 riders refused by the ignore file carried by name at `043581e`; B4 begun *(2026-09-26 18:26 +0330)*
+- **✔ ran (mine, 18:26):** HEAD == origin `043581e`. All five of the ruling's files are tracked: the ruling, the instrument and its RESULTS rode `08e0abd`; the CONSTRUCTION (blob `60947d49`) and THE SHAPE SO FAR (`228a99ad`) were refused by `.gitignore:34` (`.handoff/*`; cited by nothing U1 reads) and entered at `043581e` through the STANDING BY NAME section (the USE-1 route), which the U1 sweep carries whole. The coder appended a postscript to its filed letter and to `THE_BUILD_REPORT.md` (a postscript on its own unsent-to-anyone-else report, not a rewrite of a sent letter's body).
+- **⚠ coder-run:** the sweep at both commits (152 files, SWEEP OK).
+- **B4 (descent, D10) begun** at 18:25. Its "before" is measured: at ABAC the build shows the COMPOSED mark. Its control: an inner edge with only derivable links reads UNDETECTED with its light shown.
+- No release until B5 is ratified; the use stays paused (Δ115).
+
+## §210 — B4 (descent) RATIFIED at `3e48549`; RULED: on a medium the composed identity is the solid's, the IS refusal stands, a mode relating is accepted *(2026-09-26 21:42 +0330)*
+- **✔ ran (mine, 21:41):** HEAD == origin `3e48549`. **⚠ coder-run:** the B4 witness (19, ALL PASS); tsc 0; the freeze ALL PASS; the sweep 153 files, SWEEP OK. Nothing a person sees changes; the drive family not triggered. B4's control holds: AB–AC after one dissection reads UNDETECTED with one light `F7≡r0` ~ `Φ1≡F7` through A, the built resolver byte-equal beside it.
+- **The coder's meaning question:** on the medial edge AB–AC, the person's IS-relating between the child's roles (the very link D10 shows as a light) is refused by the pairing's own act (C-8b's *composed · corner A; not yours to pair or withdraw*). Which word stands for IS on a medium, the solid's or the person's?
+- **RULED (21:44), from two ratified things that AGREE:** C-8 item 3 (§122: a composed identity is one thing reached by two parents, the solid's fact, never the person's pair) and D10 (a derivable link is LIGHT, never a relating; the device has no reader). In IS there is nothing left for the person to say on a composed class, so D10 is honoured, not lifted: the class reads as light, and the IS act is refused by name (returned from `giveRelating`, never silence). **A relating in any other mode on the same medium is accepted:** it says HOW the two relate, which the solid did not say. B6 does not re-read this.
+- **Housekeeping:** the coder's postscript to its 18:18 letter re-created the letter's path as a fragment after I had archived it; joined to the archived letter, the fragment kept beside it. The rule stands: a sent-and-archived letter is not appended to, you send another.
+- **B5 begun** on the designer's words. No release until B5 is ratified; the use stays paused.
+
+## §211 — THE FAR-END COLLISION: the researcher's §9.7 RATIFIED; my 18:20 acceptance WITHDRAWN; MODES-1 · M2 chartered; the HLV fixture struck; a direction question routed *(2026-09-26 22:04 +0330)*
+- **The researcher (22:02) ruled OTHERWISE on my question 1:** IS's one-to-one law bars an entry at BOTH ends: `(IS, a′, b)` bars `(IS, a, b)` for a ≠ a′ and `(IS, a, b′)` bars it for b ≠ b′. A path composing to a barred entry is a TENSION whichever end bars it, named at its end. The stone's PROPOSAL is a MERGE (LIGHT ∪ tension at the target), because `feetOf` compares each first-parent role with its OWN partner and never looks at the target. Ruled as ADR 0031 §9.7 (blob `7b0be86e` → `1b316eab`, sha256-LF `409e678e`, re-hashed by me).
+- **✔ ran (mine, 22:03):** the probe `the_far_end_collision.cjs`, ALL SEALS HELD: PROPOSAL 46 = 4 free + 42 collisions; DISAGREEMENT 39 = 5 single + 34 double; under the full law TENSION 81 · LIGHT 4 of 85 non-FIX paths; 29 of 42 triples hold a collision; of the 12 the built reading calls COHERENT, 11 have a collision standing (FALSE COHERENT). The mirror reading shows the same 81 conflicts from the other end, so one orientation is complete under the full law.
+- **Why I withdraw (the deciding point is a law I ratified):** under the own-x rule a light onto a role already paired elsewhere reads as an invitation the act then refuses, the MISPLACED class. And the coherence clue is hollow on the fixture (11 false-coherent of 12). The coder built to F4 as written, and said the rule was "read off" the reference; that honesty surfaced it. F4's word *exactly* had forced the stone's blindness into the modes layer; the researcher owns that in §9.7.
+- **MODES-1 · M2 chartered (22:04):** `barred()` consults the target's IS-partner (the first IS-instance per y); the tension names its far-end instance; F4's second half merges (FIX = COMPOSED · DIS = source tension · PRO = LIGHT ∪ target tension · UND = no path) before comparing, 0 mismatches the gate; the derivable count (PRO_TAKEN, 42 on the hand triples) must agree with the sorting, on the hand triples AND on Virgin Land's record. The screen word for a target-end tension is the designer's. No release until B5 is ratified and M2 is in.
+- **The HLV fixture: STRUCK** (the construction's §3 is A · B · C with five pairings; HLV was the vault's run; "six" a miscount). The words were the researcher's; the passing was mine (§208).
+- **Routed to the coder to measure, not rule:** where does the person say "y carries x" on XY as distinct from "x carries y"? The record is directed (Q2), the carry mirrors, `relatingsFrom` swaps on reorientation, and I found no gesture for direction in `MediumBlock.tsx` either. The falsifier: give `(carries, x, y)`, dissect so the derived edge flips, read the carried relating and the path through it. If the person has no way to say it, the gesture is the designer's.
+- **B5 landed** (`f079d45` · `103609b`, HEAD == origin) before its report reached me; it is read when the report lands.
+- **W1:** the ADR, the ruling (`530a077c`) and the probe with its RESULTS (`8df3858a`, `aad5dd88`), at the next record commit.
