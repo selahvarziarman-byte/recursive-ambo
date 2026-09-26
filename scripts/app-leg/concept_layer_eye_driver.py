@@ -1012,8 +1012,9 @@ MEDIUM_STATE = """() => { const s = document.querySelector('[data-medium]'); if 
 
 def medium_arm(page, args):
     """MODES-1 · B5 at the eye — the medium in the designer's words under the own column at AB: the counts head, the modes, the state
-    line and the passages read before any act; a mode declared (`carries`) and chosen; two picks (A's column, B's column) make a
-    relating in it, read as its sentence; withdrawn; IS chosen again — the state as found."""
+    line and the passages read before any act; a mode declared (`carries`) and chosen; two picks — F2 in the flow's column, Φ3 in
+    Φ's, neither paired on A–B nor composed through C (a composed point is never offered) — make a relating in it, read as its
+    sentence; withdrawn; IS chosen again — the state as found."""
     res = {}
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
     res['before'] = page.evaluate(MEDIUM_STATE)
@@ -1024,9 +1025,16 @@ def medium_arm(page, args):
     page.locator('[data-medium-mode="carries"]').first.click(); page.wait_for_timeout(300)
     res['chosen'] = page.evaluate(MEDIUM_STATE)
     a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
-    flow_side, t_side = ('A', 'B') if any(x_is_flow(r) for r in a_side) else ('B', 'A')
+    b_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]')].map((e) => e.getAttribute('data-inside-point'))")
+    res['sides'] = {'A': a_side, 'B': b_side}
+    flow_side, other_side = ('A', 'B') if any(x_is_flow(r) for r in a_side) else ('B', 'A')
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
-    point(page, flow_side, 'F2'); point(page, t_side, 'r3'); page.wait_for_timeout(400)
+    try:
+        point(page, flow_side, 'F2')
+        res['afterFirstPick'] = page.evaluate("() => ({ pick: (document.querySelector('[data-midpoint-pick]') || {}).getAttribute ? document.querySelector('[data-midpoint-pick]').getAttribute('data-midpoint-pick') : null, B: [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=B]')].map((e) => e.getAttribute('data-inside-point')) })")
+        point(page, other_side, 'Φ3'); page.wait_for_timeout(400)
+    except Exception as e:  # a pick the page did not offer is REPORTED, never a crash that costs the other clauses
+        res['pickError'] = str(e).splitlines()[0][:300]
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
     res['related'] = page.evaluate(MEDIUM_STATE)
     page.screenshot(path=f"{args.frames}/concept-layer-medium-{args.width}x{args.height}.png")
