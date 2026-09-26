@@ -107,7 +107,7 @@
 // Pure over its props — the store is reached only to act (a zustand hook under a
 // server render reads the initial state; the witness passes the record as props).
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ConceptSpace, Edge, EdgeIdentification, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../store/geometryStore';
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
@@ -475,6 +475,16 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     withdrawTriad(src.faceId, kind, [{ corner: site.a, item: tuple[0] }, { corner: site.b, item: tuple[1] }, { corner, item: tuple[2] }]);
   };
   const openLight = (apex: VertexId | null): void => { setLight(apex); setTriadPicks({}); setWordTriadPicks({}); setPick(null); setWordPick(null); };
+  // MODES-1 · M1 (the designer's §5.2, 2026-09-26): a light is opened AT a midpoint and FOR that midpoint — leaving the midpoint
+  // closes it, with the picks made in it. Measured before the cure: this component persists across sites and its light carried
+  // silently to the next midpoint (Virgin Land's finding). The effect is keyed on the site alone.
+  useEffect(() => {
+    setLight(null);
+    setTriadPicks({});
+    setWordTriadPicks({});
+    setPick(null);
+    setWordPick(null);
+  }, [site.siteId]);
   const bothExtra = (side: Side, inside: Inside) => {
     // C-7h item 1 (the designer's live drive: nine composed words wore `≡` at ABAC): a tuple in both parents BY COMPOSITION —
     // every term a composed role and its word composed (or the mold's own) — is the solid's: no glyph, no amber, the grey;

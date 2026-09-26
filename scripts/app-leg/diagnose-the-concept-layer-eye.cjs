@@ -400,6 +400,11 @@ const waitUp = () =>
         check(`§15 [${w}×${h}] ★★ C-13d AT THE EYE (the new seat's first report — \`he involuntary omission\`): the cast loaded onto A carries the role \`the involuntary omission\`; in the drawing over the solid its label is read WHOLE — the text's rendered box inside the svg's own box and the panel's (no part past the left edge), no ellipsis, the lane the drawing wrote for it wider than the old fixed 118`,
           ll.found === true && ll.whole === true && ll.insideSvg === true && ll.insidePanel === true && Number(ll.lane) > 118 && ll.bboxX >= ll.viewBoxLeft,
           J(ll));
+        // ─── MODES-1 · M1 at the eye — a light is opened AT a midpoint and FOR that midpoint (the designer's §5.2) ───
+        const lightLeaves = out.lightLeaves || {};
+        check(`§18 [${w}×${h}] ★★ A LIGHT IS OPENED AT A MIDPOINT AND FOR THAT MIDPOINT (MODES-1 · M1, the designer's §5.2): at AB no light before; C's drawing opened names the light and the head; the midpoint AC selected — no light and no head there; AB selected again — none (the light does not carry across midpoints)`,
+          !!lightLeaves.before && lightLeaves.before.light === null && !!lightLeaves.openedAtAB && !!lightLeaves.openedAtAB.light && !!lightLeaves.openedAtAB.head && lightLeaves.atAC !== null && !!lightLeaves.lightAtAC && lightLeaves.lightAtAC.light === null && lightLeaves.lightAtAC.head === null && lightLeaves.lightAtAC.sentence !== lightLeaves.openedAtAB.sentence && lightLeaves.backAtAB !== null && !!lightLeaves.lightBackAtAB && lightLeaves.lightBackAtAB.light === null && lightLeaves.lightBackAtAB.head === null,
+          J(ll));
         // ─── C-14 f at the eye — the triad pointed in the unfolding, in the opened corner's light (the designer's D111, ratified C-14 · M1) ───
         const tr = out.triad || {};
         const sameBlocksRel = (a, b) => !!(a && b && a.blocks && b.blocks && a.blocks.length === b.blocks.length && a.blocks.every((x, i) => x.y === b.blocks[i].y && x.h === b.blocks[i].h) && a.drawing && b.drawing && a.drawing.y === b.drawing.y && a.drawing.h === b.drawing.h);

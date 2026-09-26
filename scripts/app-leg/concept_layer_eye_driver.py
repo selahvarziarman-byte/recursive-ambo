@@ -988,6 +988,25 @@ WORD_STATE = """() => {
 CHIP_AT = """(sel) => { const s = document.querySelector('[data-midpoint-surface]'); const c = document.querySelector(sel); if (!s || !c) return null; const P = s.getBoundingClientRect(); const r = c.getBoundingClientRect(); return { x: Math.round((r.x - P.x) * 10) / 10, y: Math.round((r.y - P.y + s.scrollTop) * 10) / 10, w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 }; }"""
 
 
+LIGHT_ATTR = """() => { const s = document.querySelector('[data-midpoint-surface]'); if (!s) return null; const t = (sel) => { const e = s.querySelector(sel); return e ? e.textContent.replace(/\\s+/g, ' ').trim() : null; }; return { light: s.getAttribute('data-midpoint-light'), head: t('[data-midpoint-triad-head]'), sentence: t('[data-midpoint-sentence]') }; }"""
+
+
+def light_leaves_arm(page, args):
+    """MODES-1 · M1 (the designer's §5.2, 2026-09-26) — a light is opened AT a midpoint and FOR that midpoint: at AB, C's drawing opened
+    names the light; the midpoint AC selected — no light there and no head; AB selected again — still none. Measured before the cure:
+    the light carried silently to the next midpoint (Virgin Land's finding). The state is left as found: no light open."""
+    res = {}
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+    res['before'] = page.evaluate(LIGHT_ATTR)
+    page.locator('[data-midpoint-source="above"] [data-midpoint-source-open]').first.click(); page.wait_for_timeout(500)
+    res['openedAtAB'] = page.evaluate(LIGHT_ATTR)
+    res['atAC'] = select_vertex_labelled(page, 'AC'); page.wait_for_timeout(400)
+    res['lightAtAC'] = page.evaluate(LIGHT_ATTR)
+    res['backAtAB'] = select_vertex_labelled(page, 'AB'); page.wait_for_timeout(400)
+    res['lightBackAtAB'] = page.evaluate(LIGHT_ATTR)
+    return res
+
+
 def light_word(page, w):
     page.locator(f'[data-midpoint-light-word="{w}"]').first.click(); page.wait_for_timeout(350)
 
@@ -1590,6 +1609,7 @@ def main():
         out['feet'] = page.evaluate(MEASURE_FEET)
         page.screenshot(path=f"{args.frames}/concept-layer-feet-{args.width}x{args.height}.png")
         out['triad'] = triad_arm(page, args)  # C-14 f — the triad in the light; the word pair below the drawing; the copy
+        out['lightLeaves'] = light_leaves_arm(page, args)  # MODES-1 · M1 — a light is opened AT a midpoint and FOR it; leaving closes it
         out['wordTriad'] = word_triad_arm(page, args)  # C-14g — the word triad in the light's word row
         out['importRoundTrip'] = import_arm(page, args)  # C-14g · M1 — export → a later pair → import through the input's new construction
         # C-8 item 2 at the eye — the loader ABSENT at a midpoint (the packets tab with AB selected shows no file input, no word), PRESENT at a corner
