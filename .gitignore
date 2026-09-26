@@ -223,3 +223,12 @@ scripts/.sweep-times.json
 !.handoff/instruments/use-server/start.cmd
 !.handoff/instruments/use-server/stop.cmd
 !.handoff/instruments/use-server/update.ps1
+# MODES-1 (2026-09-26, the mothership's stamp and the researcher's note): two W1 riders the ignore file refused at the record commit 08e0abd,
+# tracked BY NAME as USE-1's were — the construction THE PROJECTION and the Grundrisse readers' THE SHAPE SO FAR; the parent
+# directories un-ignored and their children re-ignored before each file is negated.
+!.handoff/CONSTRUCTION_THE-PROJECTION_the-excluded-form-of-the-opposite-vertex-on-the-edge-child.md
+!.handoff/COMMISSIONS/
+.handoff/COMMISSIONS/*
+!.handoff/COMMISSIONS/GRUNDRISSE_READERS/
+.handoff/COMMISSIONS/GRUNDRISSE_READERS/*
+!.handoff/COMMISSIONS/GRUNDRISSE_READERS/THE_SHAPE_SO_FAR.md
