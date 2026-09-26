@@ -2982,3 +2982,202 @@ At 16:21 the researcher ran `git status` through the sandbox mount **without `--
 - **Virgin Land (19:54, version `2027c6d`), from its tool log:** B, C and D ran in one batch: click the card; at once triple-click **Label** and type; **Save packet**; load the cast; after 1 s, read *taken*. **Save packet** was pressed for C before D's card. The field was NOT read between steps; afterwards C's card read *C*. A single run with a wait after the card click took.
 - **Its reading:** the typing raced the editor's re-render after the card click, the field reset to the saved label (the corner-change reset, `VertexPacketEditor.tsx:58-69`, per the Gate's read), and **Save packet** saved *C*. That fits B and D taking and C not. ⚠ A reading consistent with the source, not a measurement.
 - **Ruled:** no repeat (it would cost the use for little); PARKED as a driving race. If it ever happens when a person picks a corner and types by hand at normal speed, it is the device's, and is to be reported.
+
+## §194 — F3, USE-1 AND USE-2 RATIFIED (`cc41ec4` · `4d8fead` · `aa5fd56` · record `82c9350`); Arman's Δ114 (to the coder, 20:54); the release to `82c9350` by handshake *(2026-09-25 21:57 +0330)*
+- **✔ ran (mine, 21:49–21:51):** HEAD == origin `82c9350`.
+  - **F3:** `workspacePersistence.ts` +24 (`PersistedEdgeTauDrafts`: optional, validated by name, files saved before F3 accepted) and `geometryStore.ts` +2 (the export carries `edgeTauDrafts`; the import sets the file's `?? {}`, dropping the session's). This is PERSISTENCE ONLY, as ruled (§190). `DIAGNOSE-F3: ALL PASS`; the coder's control FAILED 5 of 7 at `2027c6d`; §d prints the lift, parked.
+  - **USE-1:** the three scripts are tracked (`git ls-files`), and `git check-ignore` is silent. `scripts/u1-citation-sweep.py` keeps a STANDING BY NAME section; `.gitignore` +15.
+  - **USE-2:** `src/lib/pageVersion.ts` NEW, NOT_FROZEN (its manifest row in the commit). `Panels.tsx` +38: one ask at mount; `data-page-version`; the text `this page: <7 characters>` right under the Save / Load heading; nothing without a head. `DIAGNOSE-USE2-THE-PAGE-SAYS-ITS-VERSION: ALL PASS`.
+- **⚠ coder-run:**
+  - the sweep at `aa5fd56` (149 files, SWEEP OK); tsc 0; the freeze ALL PASS;
+  - **USE-2's step 0, on a scratch port (5211):** a VISIBLE page is reloaded by vite's client within a second of the server's return, which wipes the unpersisted store. A HIDDEN page does not reload while hidden, and reloads when it is shown (a stub of the show event in the pane, plus one show by hand in Chrome; the real show was not driven);
+  - the eye: every tab read `this page: 4d8fead` (the coder's checkout HEAD at its load).
+- **Δ114** (Arman to the coder at 20:54; entered on its citation): the problem is scaffolding; he halts the use while the coder works; only what is not redundant lands. So item 2 was built, witnessed and CUT; item 3 is unpriced; item 1 landed.
+- **The reading at my hand: PENDING.** :5173 did not answer at 21:50 (Arman's server; not touched). The line is read on :5180 after the release.
+- **The release, by handshake:**
+  1. Virgin Land exports and says so.
+  2. The TO moves :5180 to `82c9350`.
+  3. Virgin Land reloads, reads *this page: 82c9350* under Save / Load, imports, and resumes.
+  - Page 2 is updated: the page's own version line, and the saving gap closed.
+- The coder's report is dated 21:10 but was written at 21:06:29; I have said so. The designer's letter, the coder's report and all the TO's letters are archived; the inbox is empty.
+
+## §195 — THE RELEASE `82c9350` ON :5180, VERIFIED, INCLUDING THE PAGE'S OWN VERSION LINE; the use resumes by handshake *(2026-09-25 22:03 +0330)*
+- **The handshake held:**
+  - Virgin Land exported and said *exported* (21:58);
+  - the go went to the TO at 21:59;
+  - the TO's `update.ps1 82c9350` ran (ff-only guard PASS from `2027c6d`, clean guard PASS, lockfile unchanged so the install was skipped);
+  - Virgin Land was told to reload, check, import and resume at 22:02.
+- **✔ ran (mine, 22:01–22:02):**
+  - :5180 `/__whereami` → `82c93507b5…` · `branch HEAD` · `linked-worktree` · `dirtyPaths 0`;
+  - the USE tree is clean at `82c9350`;
+  - the listener is pid 46796 (started 22:00:21), and its parent 47248 is not running;
+  - **THE READING:** a freshly loaded :5180 page reads `this page: 82c9350` in `[data-page-version]`, placed after the *Save / Load* heading (loaded 22:02:03). USE-2's item 1 is seen at the release it serves.
+- **⚠ TO-measured:** the survival on this release (pid 46796, its parent gone). Its own :5180 tab still runs the 18:31 bundle across three releases: the hidden case, which reloads when shown. The VISIBLE case is not unmeasured: the coder measured it (§194). I have told the TO.
+- **The TO's instruments:** it verified before use that `update.ps1` is the tracked form (USE-1, `4d8fead`) with no local edits; its scripts change only with a letter first. It did NOT read the page line ("yours by your own word"): the right refusal. Its letter was dated by the writing command.
+- :5173 is still down (Arman's server; not touched).
+
+## §196 — CORRECTION to §195 (the TO's precision, 22:04): the HIDDEN-then-SHOWN reload is ⚠ derived, not measured *(2026-09-25 22:04 +0330)*
+- §195 says the TO's 18:31 tab is *"the hidden case, which reloads when shown"*, and my 22:02 message to the TO said the same, as fact. **That overstated the record.**
+  - **MEASURED (the coder, §194):** a page VISIBLE across the restart is reloaded by vite's client within a second of the server's return.
+  - **NOT DRIVEN:** a page HIDDEN across the restart and SHOWN LATER. The evidence is a stub of the show event in the pane (0.3 s) and one show by hand in Chrome, which the coder itself marks ⚠ derived, not driven. It stays the Gate's reading of `client.mjs`, read, not run.
+  - §194 kept this line; §195 and my message dropped it. Corrected here by a new entry, not by rewriting §195.
+- **Why it no longer bears weight (the TO's point, recorded beside it):** USE-2's line covers both branches by construction. A page that did not reload SAYS `this page: <its old sha>`, so the customer is told either way. The mechanism made the measurement optional.
+- **To settle it, if ever wanted:** a fresh tab left hidden across a release, then shown. The TO's 18:31 tab is gone (its pane was closed). Not chartered.
+
+## §197 — THE RELEASE CLOSED AT THE CUSTOMER'S EYE: `82c9350` read, the cross-version round trip held *(2026-09-25 22:05 +0330)*
+- **✔ customer-measured (Virgin Land, 22:04):** reloaded; the page read *this page: 82c9350* (USE-2's line, used at its far end by the person it serves); the file exported by `2027c6d` imported into `82c9350` — FactAction back with *4 role pairs · 3 word pairs*, *what both confirm: 4 roles · 6 tuples · 0 marks*; nothing to remake. F3's "a file saved before F3 still accepted" held in the wild. The use continues on `82c9350`.
+
+## §198 — :5180 DOWN (seen by Arman at 23:02): died silently with the Claude app's restart, CAUSE UNKNOWN (my hypothesis refuted by the TO); closed by Arman's Δ115; back at `82c9350` on his start *(2026-09-25 23:23 +0330)*
+- **✔ measured (mine, 23:04):**
+  - nothing listens on :5180; `C:\Dev\202cl\use-server.log` ends at the server's 22:00:23 start with no exit line;
+  - no reboot (boot 09-22 21:34); the USE worktree clean at `82c9350`;
+  - :5173 back (pid 35460, started 23:01:49, Arman's) and answering;
+  - the TO's session, Virgin Land's and others read "started 5 to 19 min ago", so the Claude app restarted at about 22:45 to 22:50;
+  - my own session came back on a NEW message address (`Mothership [447b2f]`, where it was `[840cd0]`), and Virgin Land found my old pipe stale. ListAgents at wake is the practice.
+- **My hypothesis (sent to the TO at 23:05), REFUTED by its measurement:** I guessed the app's restart ended its sessions' processes (a job that kills its members). The TO read its session shell's job limits: `LimitFlags=0x00000000`, with NO `KILL_ON_JOB_CLOSE`. Its control killed the easy confirmation: a process that cannot be the app's child (WMI-created) also reads "in a job", so being in a job does not separate the cases. **The cause is unknown**, and nobody manufactured one. The TO's over-claim, named by itself: it had measured that the server outlives its LAUNCHER, not the app's restart.
+- **CLOSED by Arman's Δ115 (23:15, to the TO):** *"i will just not work at the same time when the coder is working. stop the madness"*. No durable form is priced or built. My "when convenient" question opened a hunt past proportion, and he stopped it (memory `audit-proportionality-cost` updated).
+- **Virgin Land:** its state is safe (the 21:58 export, confirmed after import at 22:05: *4 role pairs · 3 word pairs*, all four casts). It asked Arman, as page 2 says, and it has been told the version is unchanged (*this page: 82c9350*).
+- **The restart:** Arman started it at about 23:17 (`use-server.log` re-stamped 23:17:28). ✔ Mine at 23:23: `/__whereami` → `82c93507b5…` · `linked-worktree` · `dirtyPaths 0`. Virgin Land told to reload, check the line, import if needed, and carry on when Arman is ready.
+
+## §199 — VIRGIN LAND: TRIADS WORK END TO END ON `82c9350`; ONE READER MISSED BY C-14's "ONE J BY CONSTRUCTION": the face reading counts plain pairs only *(2026-09-25 23:48 +0330)*
+- **✔ customer-measured (Virgin Land, 23:47, *this page: 82c9350*):** Arman rebuilt from scratch and gave four role triads (three sharing Meaning's *the use*).
+  - One act wrote a respect on each edge of its face; *only Action's light has spoken on Value–Fact; nothing glues here by respects until Meaning's does* read as briefed.
+  - The glue: *the deed ≡ the particular positive fact · glued — you gave it in Value's light and in Meaning's*, on all three edges.
+  - Respects flipped to *honored*, and the views gained tuples (*agrees on 1: the self-value ≡ the deed*; *13 words, 2 of them the views of the opposite corners, Fact's and Meaning's — 2 tuples on them*).
+- **THE MISMATCH, read in the source by me (⚠ read, not run):** with all three edges of the face Action·Fact·Value glued by respects, the face line reads *no reading yet — it needs a record on each of its three edges; none on Action–Fact · Fact–Value · Value–Action*.
+  - `src/lib/faceReading.ts:142` (`walkOf` → `faceOf`, NOT_FROZEN) reads `edge?.identification?.roles`: the edge's PLAIN record only.
+  - The one reader, `recordOn` in `spaceOf.ts:167` (→ `meetCoreOf`), serves the glue, the feet and bornFace's step; `faceOf` never calls it.
+  - **Ruled on meaning:** the face reading takes the edge's J, the meet-core (Δ111; ADR 0031 as amended); "none" is the device's miss, not a wording question.
+  - **MY MISS:** C-14 claimed *"every reader … reads ONE J per edge by construction"*, and I ratified it (§182) against the readers it named, without a CONSUMER census of every direct reader of `edge.identification` (memory `census-runs-in-two-directions`).
+- **The fix, for Arman's timing** (Δ114/Δ115: the use pauses while the coder works):
+  - route `faceOf` through the one reader;
+  - take a census of every direct reader of `edge.identification` under `src/`, each routed or named with why it must read the plain record;
+  - the witness: this face, "none on" at `82c9350` (the control), reading after the fix;
+  - the drive family, since what a person sees changes.
+- **Noted, not defects:** a corner's light stays open across midpoints (*handy, but the head line changes silently*), for the designer as a copy question when she next looks. *unresolved 4 of 6* is as expected.
+
+## §200 — VIRGIN LAND BREAKS A FACE ON PURPOSE: the readings hold, and two more defects join the face-reading fix *(2026-09-25 23:59 +0330)*
+- **✔ customer-measured (Virgin Land, 23:58, *this page: 82c9350*):**
+  - **By lights:** differing lights on Value–Action are said as such (*Fact's light and Meaning's light differ: …*); no glue; the dependent respects go back to *not yet*.
+  - **By plain pairs:** *would pair the self-value otherwise: with the deed — you paired it with the forbearance*; *— broken at Value–Action: there you paired the self-value with the forbearance*; the face reading *returned elsewhere … · 3 did not return — 3 broke at Action–Fact …*. "All of it is right as a reading."
+- **DEFECT 1, read in the source by me:** the face reading prints role IDS, not labels. `MidpointSurface.tsx:1261` renders `returned elsewhere: ${x} as ${y}` from raw ids (*tl as tr*), and likewise the *broke at* lists. The ids are the caster's; the labels are Arman's. Against §2.5: a name is positive content, never an id.
+- **DEFECT 2, probable, to be measured:** *Fact says nothing about Value–Action — your pairings on … do not meet* was shown while Value–Fact and Fact–Action were glued by respects, meeting at *the particular positive fact*.
+  - The line is chosen when both legs are `given` and the composed map is EMPTY (`MidpointSurface.tsx:902-908`).
+  - With plain pairs on the same edges, the view composed.
+  - So the feet's composition may fail over respect-glued legs in some orientation or configuration (⚠ not measured; at 23:47 other views composed over triads alone).
+  - The export after the first break has been asked of Virgin Land for the coder's reproduction.
+- **Explained (page 2's master, delivered with the next release):** *the face's core at X, derived: N of its M roles* is the number of X's roles that come back at all after the walk (`faceReading.ts:37`: dom h_X). The silent view's three forms, *do not meet* among them.
+- **The face-reading cut, for Arman's timing** (§199 plus these), in one charter:
+  - `faceOf` reads the one reader (the meet-core), with the consumer census;
+  - labels, never ids, in the face reading;
+  - DEFECT 2 measured from the export and fixed, in the reader or the words.
+- **Noted for the designer:** a light opened or closed at one midpoint opens or closes at all midpoints; the head line changes silently.
+
+## §201 — THE PROJECTION ROUTED TO THE RESEARCHER (Δ116): its MECHANISM is not built; what was built is his own pairings, composed in an order *(2026-09-26 10:41 +0330)*
+- **His words, relayed by Virgin Land (10:37):**
+  - 25 Sept 23:50: *"i don't think we have the mechanism of the projection yet tbh. and notice we are in fact doing the midpoint casting/mapping one by one in an order and calling it the projection effect."*
+  - This morning: *"route the problem up, to the researcher."*
+  - The fuller 13:16 form of Δ105.
+  - Entered as Δ116.
+- **Read against my own record, first:** the researcher's §31 (claims §177) restored the opposite vertex's presence at the midpoint as GIVEN at the concept grain (the Midwife's J), but as *"wording and reading, no construction"*. Δ111 built the derived foot (C-12b's views) and the given respect (C-14's triads and meet-core). Both are his pairings, composed and read back; the cast of the opposite corner never acts. His 23:50 names exactly that, and Virgin Land's use measured it (the order of midpoints shapes the others; the walk dies at the first unpaired role).
+- **Routed (10:41)** to `.handoff/inbox/researcher/`, self-contained, with Virgin Land's letter as received beside it.
+  - The question: what is the projection's MECHANISM, how does the given presence change the mappings, as distinct from the composition?
+  - Virgin Land's frame (a) cast acting / (b) composition / (c) the three-way relation as the unit, given as a frame only.
+  - The fences: Δ80, Midwife §12.4/§12.5, 0031's discipline, the parked angles line (Δ89, Δ94).
+  - Asked back: a ruling; whether 0031 reopens; what becomes buildable.
+- **The route for questions:** the researcher's questions for Arman come to me, never through Virgin Land, since the customer seat stays outside the makers' vocabulary. Virgin Land has been told so.
+- **Pending beside it:** the face-reading fix (§199–§200). It is unaffected, since it routes the face reading through the one reader, whatever that becomes. It awaits his timing.
+
+## §202 — THE PROJECTION'S ROUTE, AMENDED BY ARMAN: he is grilled directly in the researcher's session *(2026-09-26 10:44 +0330)*
+- **The researcher (10:44), ⚠ its account and not verbatim:** Arman is in its session and asked it at 10:37 to grill him on the projection problem from the ground up. So for this thread the questions go to him THERE, at his instruction, not through the mothership.
+- That supersedes §201's "questions for Arman come to me" for this thread. The customer seat stays outside it either way.
+- The researcher files the ruling to my inbox, with what it reopens and what becomes buildable. I ratify it for meaning and route any build. It keeps the two letters until then.
+
+## §203 — THE PROJECTION RULING RECEIVED (the researcher's 1642; Arman's Δ117): identity → MODES; ratified for MEANING; the build awaits his WHEN *(2026-09-26 16:48 +0330)*
+- **Received:** `.handoff/inbox/mothership/2026-09-26_1642_researcher_RULING-the-projection_…`. The ruling file is `.handoff/RULING_THE-PROJECTION_the-edge-is-relatings-with-modes_the-child-is-the-instance-space.md`: ✔ blob `c4a3f753`, sha256-LF `b91bb229` (re-hashed by me; matches its citation). Its record files, hashed by me:
+  - CONSTRUCTION (blob `60947d49`, sha256-LF `836403bd`);
+  - `the_excluded_form.py` (`9e924fde`);
+  - its RESULTS (`86ecc281`);
+  - `THE_SHAPE_SO_FAR.md` (`228a99ad`).
+  - All five are UNTRACKED, and the coder carries them as W1 with the build.
+- **The ruling (D0–D12):**
+  - across an edge the person gives RELATINGS (w, x, y, ±) in named modes from a shared lexicon (IS is one mode, for transport only);
+  - the child is the space of positive instances (never the parents' leftovers), with an induced record where discordance is kept as content;
+  - the device computes PATHS through each opposite corner and sorts every instance as OWN or the CENTROID'S, with every path composed, LIGHT or UNRULED; the person gives verdicts and names rules;
+  - states run UNDETECTED … COHERENT/CLOSED; *coherence is the naming clue, closedness a finding*;
+  - the third corner contributes no content (the projection IS the sorting).
+  - The finding that forced it: under identity a face is a tautology or an error; the triads measured 0 of 4000 non-flat.
+- **✔ MY MEANING CHECK, against the ratified fences:**
+  - Δ80's spirit holds by construction: detection is the person's act only; the extent is shown as extent and counts, never as roles; LIGHT paths are the opposite corner's proposals shown as form, never acted; "the device has no reader".
+  - The Midwife §12.4 holds: no parent blend, since the child is the instances only.
+  - §12.5 holds: the third contributes no role and no relating.
+  - The naming doctrine holds: the device never fills the name slot, and a name is kept with its state, "named under a coarser resolution", never renamed.
+  - RECORD, NOT READING holds: relatings and verdicts stored, all else re-derived.
+  - The ruling carries its own falsifiers (F1–F5). F4 is a hard gate: under IS-only relatings the instance space and the sorting must reproduce the core K (3 roles · 4 tuples · 3 marks under (J₃, τ₃)) and the stone's four link kinds EXACTLY, or nothing lands.
+  - No contradiction with a ratified thing that the ruling does not itself name as superseded.
+- **SUPERSEDED, marked here (append-only; the entries stand as the record of the identity regime). By the census below:**
+  - the claims about invariant 9 (its positive half and restatement), the flat count, and the feet `≡_X` in M⁺'s signature, where they appear in §100 · §108 · §110 · §121 · §122 · §126 · §132 · §143 · §145 · §149 · §150 · §167 · §168 · §169 · §172 · §174 · §179 · §181;
+  - the triads and meet-core as "the projection" (C-14, §179–§182);
+  - the pending face-reading fix (§199–§200), which FOLDS INTO B3: the new face reading reads OWN / CENTROID'S / LIGHT / TENSION over modes, by the one reader, by label. The three defects Virgin Land found become B3's acceptance, and its break export is a fixture.
+  - The census is ⚠ a grep for the terms; an entry that only mentions a term is marked with the rest.
+- **What it asks me, and where each stands:**
+  1. **Charter B1–B3** (the edge record with the lexicon and the migration of every pair as (IS, a, b, +); the child as instance space; paths, verdicts, rules, exceptions, sorting, states) as ONE union, with F4's controls. This is a row-1 move and so needs **Arman's WHEN**: the use pauses while the coder works (Δ115). The frozen spends are priced first: `types/geometry.ts` (the edge record) and `snapshot.ts` are expected, and B1 migrates the persisted format.
+  2. The designer's words for the ruling's §4 terms, chartered with the build.
+  3. ADR 0031's amendment is the researcher's, after the charter.
+  4. W1: the five untracked files ride the build's first record commit.
+- **Owned, the same hour:** since 22:02 on 09-25 I answered Virgin Land by message only, never by letter (the one-channel law). Its folder showed nothing, and it asked. It was cured at 16:47 by one letter covering everything since then.
+
+## §204 — Δ118 "start the build now": STAMP MODES-1 CHARTERED (B1–B3 of the projection ruling, one union); the designer, the researcher and the customer written to *(2026-09-26 16:52 +0330)*
+- **To the coder (16:51):** `.handoff/inbox/coder/2026-09-26_1651_mothership_STAMP-MODES-1_…`.
+  - **STEP 0 first:**
+    - price the frozen spends: `src/types/geometry.ts` (manifest l.90, NOT on the sanctioned list) and `src/playground/snapshot.ts` (l.89, sanctioned but ask-before-spending), each sent to me before it is touched;
+    - measure what C-14 produces under D8;
+    - take the census of every direct reader of `edge.identification`.
+  - **B1:** the edge record in modes; every pair migrates as (IS, a, b, +); a round-trip seal.
+  - **B2:** the child as the instance space; the core-K control; the history · language · virtuality fixture.
+  - **B3:** paths, verdicts, rules, exceptions, the sorting and the states. The stone's four link kinds and the face classification are the control; the customer's three face-reading defects are acceptance, with Virgin Land's break export copied to the coder's inbox as the fixture.
+  - **THE GATE (F4):** under IS-only, the core K and the four link kinds reproduce EXACTLY, or nothing lands.
+  - No new term on screen without the designer's words. W1 carries the researcher's five untracked files at the first record commit.
+  - Frozen status measured by me from the manifest: `midpointGlue`, `feet`, `respects`, `faceReading`, `spaceOf`, `workspacePersistence`, `castInside` and `bornFace` are NOT_FROZEN; `liftedConceptModel`, `doorTransportModel`, `cargoModel` and `geometryStore` have no row.
+- **To the designer (16:51):** the ruling's §4 terms, in the person's words, with no deadline; plus Virgin Land's note that a light opened or closed at one midpoint opens or closes at all.
+- **To the researcher (16:51):** RATIFIED for meaning (§203); ADR 0031's amendment is now theirs.
+- **To Virgin Land (16:51):** the use pauses; export and stop; I will write before the new version.
+- **⚠ NO CODER, RESEARCHER, DESIGNER OR TO SESSION RUNNING at 16:52** (ListAgents; the researcher's session closed after its filing). Only Virgin Land's bell was delivered. The letters wait in their inboxes, the one channel, and each seat reads its inbox at wake. **The build begins when Arman opens a coder session.**
+- The researcher's ruling letter is archived (discharged: ratified and chartered).
+
+## §205 — Virgin Land stopped (Δ118's pause); a hidden page's reload SEEN once in the wild *(2026-09-26 16:53 +0330)*
+- **Virgin Land (16:53):** stopped. When it went to export, its page had already reloaded on its own (generation 0, casts gone, *this page: 82c9350*). Nothing was lost: the whole state is in its 23:55 export from last night, and nothing was done after it. It waits for the new version's letter.
+- **Bearing on §196:** a page hidden across a server restart (:5180 restarted at about 23:17) had reloaded by the time it was next looked at. That is one customer sighting of the hidden-then-shown case, ⚠ still not driven. It is consistent with the coder's stub and vite's client. Nothing is chartered: USE-2's line and "export when a version is announced" cover it either way.
+
+## §206 — MODES-1 step 0 (the coder's 1703): NO FROZEN SPEND; design (A), the packet home, RULED; defect 3 not reproduced and not chased; GO B1 → B3 *(2026-09-26 17:06 +0330)*
+- **⚠ coder-measured:**
+  - **the lift:** `snapshot.ts` `namespaceOne` (l.226–300) spreads an edge whole, carrying `identification` and `data` verbatim, and re-roots only the ids it names. Role ids are cast-local.
+  - **(A):** relatings other than IS and every bar in `edge.data.relatings`; `identification.roles` read as the IS-instances by the one reader, a read-time migration (the record law); verdicts and exceptions on the face packet; lexicon declarations in the store and the workspace file. **No frozen file.**
+  - **(B)**, the typed field in `geometry.ts`, is one spend that buys no behaviour.
+- **RULED (A)** (1706), with the condition that no packet holds a vertex id (memory: a record holding a vertex id in an open field does not cross the lift hop). **Nothing goes to Arman for a sanction.** (B) is not chartered; it could be promoted later by the #37 route.
+- **C-14 under D8,** measured on Virgin Land's export (four triads, no plain pair):
+  - four edges read EXHAUSTED · CLOSED: every path became an instance, on edges the person never related directly;
+  - Value–Action and Meaning–Action read UNDETECTED, because two lights proposing different pairs meet in the empty set, so a disagreement between views reads as silence;
+  - `faceReading.ts:142` returns null on every edge of the triad faces (defect 1, confirmed at its line);
+  - this is the ruling's §4 finding, measured, and it becomes B3's before and after.
+- **Defect 3 is NOT reproduced from the export:** Fact's foot at Value–Action is given/given with map tl→tl, PROPOSAL 1, so it reads, not silent. The observation came from another state. **Not chased** (memory `price-the-chase-by-the-failures-cost…`): B3 replaces the feet with paths. It is carried as a property: no reading says the legs do not meet where a path exists. Defect 2 (ids for labels) is confirmed at its line, read not driven.
+- **The census:** 19 sites in 6 files, each routed or named (the one writer; the carry in `ambo.ts`; the one reader's base in `respects.ts`; `faceReading` routed; `neighbourActsOn` a plain view of the record; `JRegisterPanel` on IS by D12).
+- **The rings:** the coder's ring failed because my session had restarted (a new address, `Mothership [42d847]`); its letter arrived regardless. Arman: *"nobody can see nobody apparently."* The files hold and the bells break on each restart, so each seat re-registers at wake.
+
+## §207 — ADR 0031 AMENDED for MODES (the researcher's 1714); THE DESIGNER'S WORDS RATIFIED for meaning (her 1715); the light rule to the coder (MODES-1 · M1); the mothership unreachable between turns, measured *(2026-09-26 17:20 +0330)*
+- **ADR 0031** (✔ hashed by me): blob `7b0be86e`, sha256-LF `c4446166`.
+  - It has a NEW §9 (MODES): D0–D12, the identity regime as sub-case with F4's controls in §9.2, Δ117 in §9.3, the supersessions in §9.4, F1–F5 in §9.5, and §9.6 (a rider on D7's "proposal", appended at 17:17).
+  - Superseded passages stay in place, marked. It was written at the charter, ahead of the landing, and says so in its first line.
+  - W1 on the next record commit.
+- **The designer's words (24 entries and 3 riders), RATIFIED for meaning:**
+  - Arman's grill words are kept (*medium · relating · mode · passage · looked into*), and the researcher's coinages stay off the screen.
+  - The grammar is by owner: his acts read *you …*; the sorting reads as *where it sits* (*theirs alone* / *the face's* / *only in Meaning's light* / *against your bar*); the states are one line with a count, never a grade.
+  - `≡` is IS only. The light line is conditional (*would read*), never "proposal", with no control (Δ80). *Coherent* is *nothing against it*; *closed* is *all the face's*, a finding.
+  - The words go into B5 when B1–B3 land.
+- **Her rider 2, a ruling in her lane:** a light is opened AT a midpoint, FOR that midpoint, and leaving closes it (Virgin Land's silent carry-over cured). **Rider 3:** the coder measures which mark (`composed` or D10's light) the build shows at ABAC. Both went to the coder as MARKER MODES-1 · M1 (1720).
+- **THE MOTHERSHIP UNREACHABLE BETWEEN TURNS, measured.**
+  - My session (title "Mothership", not archived, auto-archive "Never") is NOT RUNNING between Arman's messages. Each message resumes it on a new address: `[840cd0]` → `[447b2f]` → `[69dbf7]` → `[42d847]` → `[32d74c]`.
+  - While it is stopped it is invisible. The researcher saw no "Mothership", only a "temp-30" it could not identify, and so could not ring me.
+  - The seats that restart when Arman opens them show the same pattern (the coder, researcher and designer read "started 8–23 min ago").
+  - The letters all arrived; only the rings failed.
+  - Arman: *"you have done something wrong im sure."* No setting of mine closes the session (measured). The cure within my reach is a background inbox watcher in this session, which wakes me on a new letter and may keep the session running between turns. Whether it keeps the session reachable is ⚠ until his next message shows no resume.

@@ -19,7 +19,7 @@ The device keeps the record. It never decides for you, and it never proposes. Th
 ## Where it is
 
 - In a web browser at **`http://localhost:5180`**. This server is yours alone. It runs one version, which the mothership has checked, and it changes only when the mothership announces a new version; work on the engine never reaches it in between. If the page does not answer (after the computer restarts, say), ask Arman to start it.
-- **Which version:** open **`http://localhost:5180/__whereami`**. Its `head` is the version the server runs. Your page runs the version it was loaded with. Export when a new version is announced; once it has arrived, reload the page and import that file. Put the version your page was loaded with at the top of each report.
+- **Which version:** the page says it in the left panel, under **Save / Load**: *this page: …*. That is the version your page runs; put it at the top of each report. `http://localhost:5180/__whereami` tells the version the server runs. After a new version arrives, the two differ until your page reloads.
 - Two workspaces, switched at the top: **Ambo Universe** and **Manuscript**. Switching keeps your work. A full reload of the page loses whatever you have not saved (see **Saving**, below).
 
 ## The words you will meet
@@ -91,8 +91,9 @@ Under the solid, one line lists the gestures. It begins *click — select what y
    - **the glue:** two items are joined on an edge only when you have paired them in **every** light through that edge (both faces), or paired them plainly. The pairs line says so, for example *F7 ≡ Φ1 · glued — you gave it in C's light and in D's*. Until both faces have spoken it says *only C's light has spoken on A–B; nothing glues here by respects until D's does*. A pair that would join one item twice is *left out*, and a pair that would break a pair one generation down is *held back*; each says why. Where the two faces' lights differ on this edge, it says so once, as a fact;
    - **your respects,** in each opposite corner's block, first, as what you said. For example *you said: F7 is Φ1, as regards r3 — honored*, or *— broken at C–B: there you paired r6 with Φ5*, or *— not yet: nothing paired on A–C*. These are readings: nothing asks you to re-pair. A triad's one control is *withdraw this triad*.
    - under the midpoint's own column, what **each opposite corner** makes of your pairing, for example *C's view of your pairing on A–B* with *agrees on …*, *would pair … otherwise*, *would join what you have not paired: …*. These are readings, never buttons.
-5. **A face reads** once all three of its edges hold pairs. For the face **A·B·C**, walked in its own direction (A → B → C → A), each role is *returned to itself*, *returned elsewhere*, or *did not return*. Until then the midpoint says what the face still needs, for example *no reading yet — it needs a record on each of its three edges*.
-6. ✎ **The midpoint's name.** Each midpoint has a packet of its own, like a corner, with a **Label**. The Packets tab counts them (*unresolved generated midpoint packets*) and steps through them with **Previous unresolved**, **Next unresolved** and **Save and next unresolved**.
+5. **A face reads** once all three of its edges hold pairs. For the face **A·B·C**, walked in its own direction (A → B → C → A), each role is *returned to itself*, *returned elsewhere*, or *did not return*. At each corner the reading also says *the face's core at A, derived: N of its M roles*: how many of that corner's roles come back at all after the walk, to themselves or elsewhere. *Derived* means the device computed it; nobody gave it. Until then the midpoint says what the face still needs, for example *no reading yet — it needs a record on each of its three edges*.
+6. **When an opposite corner's view is silent,** it says why: *C says nothing about A–B — you have paired nothing on A–C yet*, or, when both of its edges hold pairs that do not chain through any of its roles, *— your pairings on A–C and C–B do not meet*.
+7. ✎ **The midpoint's name.** Each midpoint has a packet of its own, like a corner, with a **Label**. The Packets tab counts them (*unresolved generated midpoint packets*) and steps through them with **Previous unresolved**, **Next unresolved** and **Save and next unresolved**.
 
 ## Part 3 · The second dissection (generation 2)
 
@@ -149,7 +150,7 @@ Under the solid, one line lists the gestures. It begins *click — select what y
 ## Saving, and coming back
 
 - **Ambo Universe:** **Export Workspace JSON** writes the universe to a file. **Import Workspace JSON** reads one back.
-- **Export after every step that matters.** A reload loses what is not saved. The mothership announces each new version before it arrives: export first (the page may reload by itself when the version arrives), and once it has arrived, reload the page yourself and import your file. The saved file brings your work back, with one known gap: **a word pair on an edge where you have made no plain role pair (one listed *· yours*) is not saved.** If Arman has given a role pair for that edge, make it before you export; otherwise note those word pairs and make them again after importing.
+- **Export after every step that matters.** A reload loses what is not saved. The mothership announces each new version before it arrives: export first (the page may reload by itself when the version arrives), and once it has arrived, reload the page yourself and import your file. The saved file brings your work back, word pairs included.
 - **Manuscript:** at the top right the page says *there is work here that is not written down* and *switching modules keeps it · a full reload loses it — save the page… writes it down*. Use **save the page…** and **load the page…**. The shelf's **load universe… (.snapshot.json)** puts a universe on the shelf.
 
 ## What the device promises

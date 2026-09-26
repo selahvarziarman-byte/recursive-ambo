@@ -1,0 +1,22 @@
+the_excluded_form.py -- run at Sat Sep 26 14:27:04 IST 2026
+seals: S1-S7 as in the file header; regime unsealed
+
+S7 worked example: PASS  ShA=['a2', 'a3'] ShB=['b2'] K=[('a2', 'b2')] rho={'a2': 'FIX', 'a3': 'UND'} act=['a1']+['b1', 'b3'] act_J={'a1': 'b1'}
+S1 p=0.2: 2000/2000 PASS
+S2 p=0.2: 2000/2000 PASS
+S3 p=0.2: 2000/2000 PASS
+S4 p=0.2: 2000/2000 PASS
+regime p=0.2 (n=6, 2000 trials): VACUOUS view C 7.1% | EXHAUSTED under C+D 0.0% | POCKET (C,D disagree on a passage) 0.5%
+S1 p=0.5: 2000/2000 PASS
+S2 p=0.5: 2000/2000 PASS
+S3 p=0.5: 2000/2000 PASS
+S4 p=0.5: 2000/2000 PASS
+regime p=0.5 (n=6, 2000 trials): VACUOUS view C 0.1% | EXHAUSTED under C+D 3.5% | POCKET (C,D disagree on a passage) 28.5%
+S1 p=0.8: 2000/2000 PASS
+S2 p=0.8: 2000/2000 PASS
+S3 p=0.8: 2000/2000 PASS
+S4 p=0.8: 2000/2000 PASS
+regime p=0.8 (n=6, 2000 trials): VACUOUS view C 0.0% | EXHAUSTED under C+D 62.0% | POCKET (C,D disagree on a passage) 91.7%
+S5: 500/500 PASS
+S6: 500/500 PASS
+THE-EXCLUDED-FORM: ALL SEALS HELD
