@@ -144,7 +144,7 @@ check('§g the child on A–B under J_AB = {a1~b1, a2~b2} is exactly its two IS-
 console.log('\n----- §h exposure -----');
 const walk = (dir, out = []) => { for (const f of fs.readdirSync(dir)) { const p = path.join(dir, f); if (fs.statSync(p).isDirectory()) walk(p, out); else if (/\.(ts|tsx)$/.test(f)) out.push(p); } return out; };
 const importers = walk(path.join(repoRoot, 'src')).filter((f) => /from '\.{1,2}\/(lib\/)?instanceSpace'/.test(fs.readFileSync(f, 'utf8'))).map((f) => path.relative(repoRoot, f).split(path.sep).join('/'));
-check('§h THE IMPORTERS of the instance space under src/ are exactly B4\'s descent and the store (the act\'s role check through `childSpaceOf`) — no surface prints it before B5', J(importers.sort()) === J(['src/lib/descent.ts', 'src/store/geometryStore.ts']), J(importers));
+check('§h THE IMPORTERS of the instance space under src/ are exactly B4\'s descent, the store (the act\'s role check through `childSpaceOf`) and B5\'s block (the corners\' names)', J(importers.sort()) === J(['src/components/MediumBlock.tsx', 'src/lib/descent.ts', 'src/store/geometryStore.ts']), J(importers));
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-MODES1-THE-INSTANCE-SPACE: ALL PASS — the child is the instances alone, its core under IS-only is the built glue\'s K exactly (3 · 4 · 3), a discordance is kept as content, bars are form, strays are carried and marked, and an edge without a relating is undetected' : `DIAGNOSE-MODES1-THE-INSTANCE-SPACE: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);
