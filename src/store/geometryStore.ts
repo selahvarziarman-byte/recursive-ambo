@@ -28,6 +28,7 @@ import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChr
 import { triadLegsOf, triadOf, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import { IS, relatingOf, relatingsHeld, withRelating, withoutRelating, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
 import { IS_RULE, withVerdict, withoutVerdict, type Rule, type VerdictRecord } from '../lib/sorting';
+import { childSpaceOf } from '../lib/instanceSpace';
 import type {
   Cell,
   CellId,
@@ -1098,11 +1099,14 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const shape = state.shapes[state.currentShapeId];
     if (!shape) return { corner: null, item: null, why: 'no current shape' };
     if (w.trim() === IS && sign === '+') {
-      // an IS-instance IS the pairing: one home, the typed record, through the pairing's own act and its refusals
+      // an IS-instance IS the pairing: one home, the typed record, through the pairing's own act and its refusals — a refusal the
+      // pairing records (the midpoint's, by name) is returned here too, so the caller never reads silence for a refused act (B4)
       state.giveRolePair(edgeId, x, y);
-      return null;
+      const refused = get().midpointRefusals[edgeId];
+      return refused && refused.act.kind === 'role' && refused.act.pair[0] === x && refused.act.pair[1] === y ? { corner: null, item: null, why: refused.form ?? 'the pairing refused this pair' } : null;
     }
-    const act = relatingOf(shape, edgeId, w, x, y, sign, { tauDrafts: state.edgeTauDrafts });
+    // B4 (D10): the roles a relating may name are the modes layer's — a seed's cast, a born corner's own child (its instances)
+    const act = relatingOf(shape, edgeId, w, x, y, sign, { tauDrafts: state.edgeTauDrafts }, (s, c, o) => childSpaceOf(s, c, o));
     if (act.refused) {
       set({ relatingRefusals: { ...state.relatingRefusals, [edgeId]: { ...act.refused, relating: [w, x, y, sign] } } });
       return act.refused;

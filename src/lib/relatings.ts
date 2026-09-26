@@ -26,7 +26,7 @@
 
 import type { Edge, JsonValue, PacketData, Shape, VertexId } from '../types/geometry';
 import { unconditionalOn } from './respects';
-import { spaceOf, type Resolved, type SpaceOfOptions } from './spaceOf';
+import { spaceOf, type SpaceOfOptions } from './spaceOf';
 
 /** the word of L reserved for transport (D12) */
 export const IS = 'IS';
@@ -125,7 +125,11 @@ const refuse = (corner: VertexId | null, item: string | null, why: string): Rela
  * act's — it is the pairing's (`giveRolePair`), so the record keeps one home for it. Refused whole with the pick named, else the
  * relating as the edge will store it.
  */
-export function relatingOf(shape: Shape, edgeId: string, w: string, x: string, y: string, sign: Sign, options: SpaceOfOptions = {}, memo: Map<VertexId, Resolved | null> = new Map()): RelatingAct {
+/** the source of a corner's roles for the act's check: the resolver's space by default; the store hands the modes layer's reader (B4: a born corner's roles are its instances) */
+export type RoleSource = (shape: Shape, corner: VertexId, options: SpaceOfOptions) => { roles: Array<{ id: string }> } | null;
+const resolverRoles: RoleSource = (shape, corner, options) => { const R = spaceOf(shape, corner, options); return R ? R.space : null; };
+
+export function relatingOf(shape: Shape, edgeId: string, w: string, x: string, y: string, sign: Sign, options: SpaceOfOptions = {}, roleSource: RoleSource = resolverRoles): RelatingAct {
   const label = (id: VertexId): string => shape.vertices[id]?.data.label || id;
   const e = shape.edges.find((c) => c.id === edgeId);
   if (!e) return refuse(null, null, 'no such edge on this solid');
@@ -135,9 +139,9 @@ export function relatingOf(shape: Shape, edgeId: string, w: string, x: string, y
   const [X, Y] = e.vertexIds;
   for (const [corner, item] of [[X, x], [Y, y]] as Array<[VertexId, string]>) {
     if (!isWord(item)) return refuse(corner, item, `nothing pointed at ${label(corner)}`);
-    const R = spaceOf(shape, corner, options, memo);
-    if (!R) return refuse(corner, item, `${label(corner)} holds no space — nothing to relate there`);
-    if (!R.space.roles.some((r) => r.id === item)) return refuse(corner, item, `${item} is not a role of ${label(corner)}`);
+    const sp = roleSource(shape, corner, options);
+    if (!sp) return refuse(corner, item, `${label(corner)} holds no space — nothing to relate there`);
+    if (!sp.roles.some((r) => r.id === item)) return refuse(corner, item, `${item} is not a role of ${label(corner)}`);
   }
   return { relating: [mode, x, y, sign], refused: null };
 }

@@ -28,6 +28,7 @@
 
 import type { ConceptRelationType, ConceptRole, ConceptSpace, Edge, Shape, VertexId } from '../types/geometry';
 import { isMoldType } from './castLoader';
+import { edgeBetween } from './faceReading';
 import { recordOf, sharedSignature } from './jRegister';
 import type { Polarity, Side } from './midpointGlue';
 import { barsOn, instancesOn, IS, type Relating } from './relatings';
@@ -221,13 +222,37 @@ export function instanceSpaceFromCasts(A: ConceptSpace, B: ConceptSpace, relatin
   };
 }
 
-/** THE CHILD of an edge on a shape: the corners' spaces through the resolver, the relatings through B1's one reader, τ from the pairing in force (the drafts where none stands) */
-export function instanceSpaceOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}): InstanceSpace | null {
+/**
+ * B4 (D10) — THE MODES LAYER'S SPACE OF A VERTEX: a seed corner's cast as held (the resolver's one reader of it); a born vertex
+ * with two parents — its CHILD, the instance space of the edge between them, read recursively (children are casts at every
+ * generation, D4); any other vertex — none. Stored nowhere; memoized per read; a cycle reads as none.
+ */
+export function childSpaceOf(shape: Shape, v: VertexId, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): ConceptSpace | null {
+  const known = memo.get(v);
+  if (known !== undefined) return known;
+  memo.set(v, null);
+  const vertex = shape.vertices[v];
+  if (!vertex) return null;
+  let out: ConceptSpace | null = null;
+  if (vertex.createdBy.operation === 'seed') {
+    const R = spaceOf(shape, v, options);
+    out = R ? R.space : null;
+  } else if (vertex.createdBy.sourceVertexIds.length === 2) {
+    const [p, q] = vertex.createdBy.sourceVertexIds;
+    const child = instanceSpaceOf(shape, edgeBetween(shape.edges, p, q), options, memo);
+    out = child ? child.space : null;
+  }
+  memo.set(v, out);
+  return out;
+}
+
+/** THE CHILD of an edge on a shape: the corners' spaces through the modes layer's reader (a seed's cast; a born corner's own child — B4), the relatings through B1's one reader, τ from the pairing in force (the drafts where none stands) */
+export function instanceSpaceOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): InstanceSpace | null {
   if (!edge) return null;
   const [p, q] = edge.vertexIds as [VertexId, VertexId];
-  const U = spaceOf(shape, p, options);
-  const V = spaceOf(shape, q, options);
+  const U = childSpaceOf(shape, p, options, memo);
+  const V = childSpaceOf(shape, q, options, memo);
   if (!U || !V) return null;
   const relatings = [...instancesOn(edge, options), ...barsOn(edge, options)];
-  return instanceSpaceFromCasts(U.space, V.space, relatings, unconditionalOn(edge, options).types);
+  return instanceSpaceFromCasts(U, V, relatings, unconditionalOn(edge, options).types);
 }

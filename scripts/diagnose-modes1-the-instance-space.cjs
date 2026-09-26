@@ -54,7 +54,7 @@ const sortedKeys = (list, f) => list.map(f).sort();
 // ═══ §0 PURITY ═══
 console.log('THE CHILD AS THE INSTANCE SPACE — B2 (MODES-1)\n\n----- §0 purity -----');
 const src = readLf('src/lib/instanceSpace.ts');
-check('§0 instanceSpace.ts is react-free and store-free (the types, the mold helper, the register\'s translation, the glue\'s types, B1\'s reader, the respects\' base read, the resolver)', (src.match(/^import /gm) || []).length === 7 && !/useGeometryStore|from '\.\.\/store|from '\.\.\/components|from '\.\.\/manuscript|from 'react'|from 'three'|@react-three/.test(src));
+check('§0 instanceSpace.ts is react-free and store-free (the types, the mold helper, the face reading\'s edgeBetween (B4), the register\'s translation, the glue\'s types, B1\'s reader, the respects\' base read, the resolver)', (src.match(/^import /gm) || []).length === 8 && !/useGeometryStore|from '\.\.\/store|from '\.\.\/components|from '\.\.\/manuscript|from 'react'|from 'three'|@react-three/.test(src));
 check('§0 the module never touches `.identification` (it reads through B1\'s one reader and the resolver\'s base read) and never refuses (no `refused`, no `throw`)', !/\.identification\b|EdgeIdentification|refused|throw /.test(src));
 check('§0 `≡` is IS and nothing else (the designer\'s rule 3, M1): the key is `x≡y` for IS and `x w y` for any other mode', /mode === IS \? `\$\{x\}≡\$\{y\}` : `\$\{x\} \$\{mode\} \$\{y\}`/.test(src));
 
@@ -144,7 +144,7 @@ check('§g the child on A–B under J_AB = {a1~b1, a2~b2} is exactly its two IS-
 console.log('\n----- §h exposure -----');
 const walk = (dir, out = []) => { for (const f of fs.readdirSync(dir)) { const p = path.join(dir, f); if (fs.statSync(p).isDirectory()) walk(p, out); else if (/\.(ts|tsx)$/.test(f)) out.push(p); } return out; };
 const importers = walk(path.join(repoRoot, 'src')).filter((f) => /from '\.{1,2}\/(lib\/)?instanceSpace'/.test(fs.readFileSync(f, 'utf8'))).map((f) => path.relative(repoRoot, f).split(path.sep).join('/'));
-check('§h B2 EXPOSES NOTHING YET: no file under src/ imports the instance space (the sorting, B3, will; the screen, B5, in the designer\'s words)', importers.length === 0, J(importers));
+check('§h THE IMPORTERS of the instance space under src/ are exactly B4\'s descent and the store (the act\'s role check through `childSpaceOf`) — no surface prints it before B5', J(importers.sort()) === J(['src/lib/descent.ts', 'src/store/geometryStore.ts']), J(importers));
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-MODES1-THE-INSTANCE-SPACE: ALL PASS — the child is the instances alone, its core under IS-only is the built glue\'s K exactly (3 · 4 · 3), a discordance is kept as content, bars are form, strays are carried and marked, and an edge without a relating is undetected' : `DIAGNOSE-MODES1-THE-INSTANCE-SPACE: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);
