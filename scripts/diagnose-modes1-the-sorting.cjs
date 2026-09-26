@@ -77,6 +77,7 @@ const links = (J_AB, J_AX, J_XB, A_roles) => { const foot = comp(J_XB, J_AX); co
 const triples = [];
 for (const tf of Object.keys(HAND_TF)) for (const tp of Object.keys(HAND_TP)) for (const fp of Object.keys(J_FP)) triples.push({ tf, tp, fp });
 let kindMismatch = 0; const kinds = {}; let loopMismatch = 0; const mov = { F: 0, T: 0, P: 0 }; let sortedTriples = 0;
+let targetTensions = 0; let proTaken = 0; let sourceTensions = 0;
 const casts = { F: flow, T: tcell, P: phi };
 for (const { tf, tp, fp } of triples) {
   const J_FT = inv(toMap(HAND_TF[tf])); const J_TP = toMap(HAND_TP[tp]); const J_PF = inv(toMap(J_FP[fp]));
@@ -91,6 +92,11 @@ for (const { tf, tp, fp } of triples) {
     if (mine !== ref) kindMismatch += 1;
     kinds[mine] = (kinds[mine] || 0) + 1;
   }
+  // M2 (§9.7): the target-end tensions — a proposal onto a T-role already paired elsewhere — counted from the sorting and DERIVED from the pairings alone
+  targetTensions += v.tensions.filter((t) => t.end === 'target').length;
+  sourceTensions += v.tensions.filter((t) => t.end === 'source').length;
+  const takenT = new Map([...J_FT].map(([f, t]) => [t, f]));
+  for (const [a, [k, b]] of L) if (k === 'PRO' && takenT.has(b) && takenT.get(b) !== a) proTaken += 1;
   sortedTriples += 1;
   // the loop at the three bases against the face reading
   const edges = [edgeOf('e-FT', 'F', 'T', J_FT), edgeOf('e-TP', 'T', 'P', J_TP), edgeOf('e-PF', 'P', 'F', J_PF)];
@@ -106,11 +112,14 @@ for (const { tf, tp, fp } of triples) {
     mov[c] += r.mov.length;
   }
 }
-check(`§a ★★ THE LANDING GATE, SECOND HALF (the stone): over the ${sortedTriples} hand triples, the view's kinds under IS ; IS = IS equal the stone's reference port ROLE FOR ROLE (0 mismatches) and reproduce its census {UND 497 · PRO 46 · DIS 39 · FIX 6}`, sortedTriples === 42 && kindMismatch === 0 && J(kinds) === J({ UND: 497, PRO: 46, DIS: 39, FIX: 6 }), J({ kindMismatch, kinds }));
+check(`§a ★★ THE LANDING GATE, SECOND HALF (the stone, as §9.7 corrects it): over the ${sortedTriples} hand triples, the view's kinds under IS ; IS = IS equal the stone's reference port ROLE FOR ROLE after the merge (FIX = COMPOSED · DIS = a tension at the source · PRO = a light or a tension at the target · UND = no path) — 0 mismatches — and reproduce its census {UND 497 · PRO 46 · DIS 39 · FIX 6}`, sortedTriples === 42 && kindMismatch === 0 && J(kinds) === J({ UND: 497, PRO: 46, DIS: 39, FIX: 6 }), J({ kindMismatch, kinds }));
+check(`§a ★★ THE FAR-END COLLISION (M2, §9.7): on the hand triples the sorting reads ${targetTensions} tensions at the TARGET — a proposal onto a T-role already paired elsewhere — and that count is DERIVABLE from the pairings alone (the probe's PRO_TAKEN, 42): derived ${proTaken}; the tensions at the source are the stone's ${sourceTensions} DIS`, targetTensions === 42 && proTaken === 42 && sourceTensions === 39, J({ targetTensions, proTaken, sourceTensions }));
 check('§a ★★ THE LANDING GATE, SECOND HALF (the face): at all three bases of every triple the loop equals `composeThroughCorner` — Fix, Mov (with the return) and Und (with the step it broke at) — 0 mismatches; the seal\'s Mov pairs reproduced: Flow 76 · T 39 · Φ 45', loopMismatch === 0 && mov.F === 76 && mov.T === 39 && mov.P === 45, J({ loopMismatch, mov }));
 const T3 = { x: 'x', y: 'y', z: 'z' };
 const s1 = SO.sortFromRecords(['X', 'Y'], [['IS', 'x1', 'y1', '+'], ['IS', 'x2', 'y3', '+']], [{ view: 'Z', faceId: 'f', xz: [['IS', 'x1', 'z1', '+'], ['IS', 'x2', 'z2', '+'], ['IS', 'x3', 'z3', '+']], zy: [['IS', 'z1', 'y1', '+'], ['IS', 'z2', 'y2', '+']], triads: [], verdicts: [] }], []);
-check('§a the four kinds by name on a small record: x1 → z1 → y1 with x1 ≡ y1 given: FIX (COMPOSED, y1 the centroid\'s); x2 → z2 → y2 with x2 ≡ y3 given: DIS (TENSION on IS\'s one-to-one law, pressing on x2 ≡ y3); x3 → z3 with no z3 → Y: UND; and OWN = {x2 ≡ y3}', J([...s1.views[0].feet].map(([x, f]) => [x, f.kind]).sort()) === J([['x1', 'FIX'], ['x2', 'DIS'], ['x3', 'UND']]) && J(s1.centroid) === J(['IS|x1|y1']) && J(s1.own) === J(['IS|x2|y3']) && s1.views[0].tensions.length === 1 && s1.views[0].tensions[0].direct === 'IS|x2|y3', J({ feet: [...s1.views[0].feet], own: s1.own, centroid: s1.centroid }));
+check('§a the four kinds by name on a small record: x1 → z1 → y1 with x1 ≡ y1 given: FIX (COMPOSED, y1 the centroid\'s); x2 → z2 → y2 with x2 ≡ y3 given: DIS (a TENSION at the SOURCE, pressing on x2 ≡ y3); x3 → z3 with no z3 → Y: UND; and OWN = {x2 ≡ y3}', J([...s1.views[0].feet].map(([x, f]) => [x, f.kind]).sort()) === J([['x1', 'FIX'], ['x2', 'DIS'], ['x3', 'UND']]) && J(s1.centroid) === J(['IS|x1|y1']) && J(s1.own) === J(['IS|x2|y3']) && s1.views[0].tensions.length === 1 && s1.views[0].tensions[0].direct === 'IS|x2|y3' && s1.views[0].tensions[0].end === 'source', J({ feet: [...s1.views[0].feet], own: s1.own, centroid: s1.centroid }));
+const sT = SO.sortFromRecords(['X', 'Y'], [['IS', 'x9', 'y1', '+']], [{ view: 'Z', faceId: 'f', xz: [['IS', 'x1', 'z1', '+']], zy: [['IS', 'z1', 'y1', '+']], triads: [], verdicts: [] }], []);
+check('§a THE TARGET END (M2, §9.7): x1 → z1 → y1 where y1 is already x9\'s (x9 ≡ y1 given, x1 unpaired) is a TENSION at the TARGET, naming the far-end instance x9 ≡ y1 it presses on — never a light; in the identity regime it reads PRO (the stone\'s proposal is a merge)', sT.views[0].tensions.length === 1 && sT.views[0].tensions[0].end === 'target' && sT.views[0].tensions[0].direct === 'IS|x9|y1' && sT.views[0].lights.length === 0 && sT.views[0].feet.get('x1').kind === 'PRO', J({ tensions: sT.views[0].tensions.map((t) => [t.end, t.direct]), feet: [...sT.views[0].feet] }));
 const s2 = SO.sortFromRecords(['X', 'Y'], [], [{ view: 'Z', faceId: 'f', xz: [['IS', 'x1', 'z1', '+']], zy: [['IS', 'z1', 'y1', '+']], triads: [], verdicts: [] }], []);
 check('§a PRO is LIGHT: x1 → z1 → y1 with nothing given on X–Y composes to (IS, x1, y1) — Z\'s light, no instance made of it (the edge stays UNDETECTED)', s2.views[0].feet.get('x1').kind === 'PRO' && s2.views[0].lights.length === 1 && s2.instances.length === 0 && s2.state === 'UNDETECTED' && !s2.closed, J({ lights: s2.views[0].lights.map((l) => l.reading), state: s2.state }));
 void T3;
@@ -164,6 +173,9 @@ if (fs.existsSync(vlPath)) {
   const va = rows.find((r) => r.edge === 'Value–Action' || r.edge === 'Action–Value');
   check('§d ★★ THE AFTER (the mothership\'s 17:06 §2): every edge joined by triads alone is UNDETECTED with LIGHTS — no instance made of a light, nothing CLOSED; every path is a triad\'s', rows.length === 6 && rows.every((r) => r.state === 'UNDETECTED' && !r.closed && r.instances === 0 && r.lights.length === r.paths && r.lights.every((l) => l.endsWith('·triad'))), J(rows.map((r) => [r.edge, r.state, r.lights.length])));
   check('§d ★★ THE DISAGREEMENT SHOWN at Value–Action: Fact\'s light proposes tl → tl and Meaning\'s tl → tr — both lights listed on one x (C-14 read this as silence; §9.6: light is record, never an offer)', !!va && va.lights.length === 2 && va.lights.some((l) => l.startsWith('Fact:tl→tl')) && va.lights.some((l) => l.startsWith('Meaning:tl→tr')), va && J(va.lights));
+  const vlPairs = vlShape.edges.reduce((n, e) => n + M.instancesOn(e).filter((r) => r[0] === 'IS').length, 0);
+  const vlTargetTensions = vlShape.edges.map((e) => SO.sortingOf(vlShape, e, {}, [])).filter(Boolean).reduce((n, s) => n + s.views.reduce((m, v) => m + v.tensions.filter((t) => t.end === 'target').length, 0), 0);
+  check(`§d THE FAR-END COUNT on Virgin Land\'s record (M2): derived from its pairings alone — ${vlPairs} IS-instances, so 0 roles paired elsewhere for a proposal to land on — and the sorting reads ${vlTargetTensions} target-end tensions: they agree`, vlPairs === 0 && vlTargetTensions === 0, J({ vlPairs, vlTargetTensions }));
 } else note('Virgin Land\'s fixture is not beside the inbox on this checkout — §d skipped here');
 
 // ═══ §e the shape route; the resolver's feet ═══

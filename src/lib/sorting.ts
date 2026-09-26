@@ -9,13 +9,15 @@
 // the person's rules ride the store — or by the person's VERDICT on that path: `composed` to the direct (w″, x, y), or `not`.
 // An EXCEPTION is a verdict that overrides a rule on one path; it is recorded and the rule is flagged. Neither is proposed here.
 // THE READING of a path (D7): COMPOSED — its composite is a direct instance of e (that instance is the CENTROID'S); TENSION — its
-// composite meets a BAR (the person's, or IS's own one-to-one law on the path's own x: an IS-instance (x, y′), y′ ≠ y, bars
-// (IS, x, y) — the identity regime's DISAGREEMENT); LIGHT — its composite is no direct and meets no bar: Z's light, RECORD never
+// composite meets a BAR (the person's, or IS's own one-to-one law AT EITHER END, §9.7: an IS-instance (x, y′), y′ ≠ y, bars
+// (IS, x, y), and so does (x′, y), x′ ≠ x — the reading names the end; at the source it is the identity regime's DISAGREEMENT,
+// at the target the stone's PROPOSAL onto a role paired elsewhere); LIGHT — its composite is no direct and meets no bar: Z's light, RECORD never
 // an offer (§9.6); NOT — the person's verdict says this path is not that instance; UNRULED — no rule and no verdict.
 // THE SORTING (D7). Per view Z: an instance is OWN if no path through Z composes to it, the CENTROID'S otherwise. Over the views:
 // OWN = the intersection of the per-view own parts (the exclusion is the union); the forms are kept one per view. Z contributes
 // no role and no relating. THE STONE's four link kinds are the identity regime's reading of a view, per x of X in Z's shadow:
-// FIX (composed) · DISAGREEMENT (tension) · PROPOSAL (light) · UND (x reaches Z but Z does not reach Y — no path).
+// FIX (composed) · DISAGREEMENT (a tension at the source) · PROPOSAL (a light, or a tension at the target — the stone's proposal
+// is a MERGE, §9.7) · UND (x reaches Z but Z does not reach Y — no path).
 // THE STATES (D8): UNDETECTED · VACUOUS (per view) · EXHAUSTED · POCKET (D9) · UNRULED · COHERENT · CLOSED — read, never stored.
 // THE LOOP at a base corner (the face reading's Fix · Mov · Und, C-5) is the same machinery read from a base: the direct on XY
 // then the path back from y through Z to X — returned to itself, returned elsewhere, or broke at one of the three steps.
@@ -66,6 +68,7 @@ export interface ReadPath {
   exception: boolean;
   reading: PathReading;
   direct: string | null; // the direct instance's key it composes to (COMPOSED) or presses on (TENSION)
+  end?: 'source' | 'target' | 'bar' | null; // a TENSION's end: the source's pairing, the target's, or the person's own bar (M2, §9.7)
 }
 export type FootKind = 'FIX' | 'DIS' | 'PRO' | 'UND';
 export interface ViewSorting {
@@ -117,16 +120,26 @@ export function sortFromRecords(
   const bars = direct.filter((r) => r[3] === '-');
   const directKeys = new Set(instances.map(relKey));
   const barKeys = new Set(bars.map(relKey));
-  // IS's one-to-one law as an implicit bar, on the path's OWN x: the person's IS-instance (x, y′), y′ ≠ y, bars (IS, x, y) — the
-  // identity regime's DISAGREEMENT (the stone: "a, foot(a), the b the person paired a with"). A y already paired with another x′
-  // is NOT a bar on this path (the stone reads it as a PROPOSAL; the register refuses the collision at the act, not the reading).
+  // IS's one-to-one law as an implicit bar AT BOTH ENDS (ADR 0031 §9.7, M2 — the researcher's probe the_far_end_collision, ALL
+  // SEALS HELD): the person's IS-instance (x, y′), y′ ≠ y, bars (IS, x, y), and so does (x′, y), x′ ≠ x. The law is the mode's and
+  // symmetric, not the reading's direction. A path composing to a barred entry is a TENSION whichever end bars it, and the reading
+  // names the end it presses on — the source's pairing (the stone's DISAGREEMENT) or the target's (a proposal onto a role already
+  // paired elsewhere, which the act would refuse: a refusal placed after the act is misplaced, so it is read here). Other modes have
+  // no such law; their bars are the person's entries only.
   const isX = new Map<string, string>();
-  for (const r of instances) if (r[0] === IS && !isX.has(r[1])) isX.set(r[1], r[2]);
+  const isY = new Map<string, string>();
+  for (const r of instances) if (r[0] === IS) { if (!isX.has(r[1])) isX.set(r[1], r[2]); if (!isY.has(r[2])) isY.set(r[2], r[1]); }
+  /** the far-end IS-instance a composite (IS, x, y) presses on: the source's pairing first, else the target's; null when none */
+  const pressedOn = (x: string, y: string): { end: 'source' | 'target'; key: string } | null => {
+    const yx = isX.get(x);
+    if (yx !== undefined && yx !== y) return { end: 'source', key: isKey(x, yx) };
+    const xy = isY.get(y);
+    if (xy !== undefined && xy !== x) return { end: 'target', key: isKey(xy, y) };
+    return null;
+  };
   const barred = (w: string, x: string, y: string): boolean => {
     if (barKeys.has(`${w}|${x}|${y}`)) return true;
-    if (w !== IS) return false;
-    const yx = isX.get(x);
-    return yx !== undefined && yx !== y;
+    return w === IS && pressedOn(x, y) !== null;
   };
   const out: ViewSorting[] = [];
   for (const v of views) {
@@ -143,7 +156,7 @@ export function sortFromRecords(
       let exception = false;
       if (verdict) {
         exception = Boolean(verdict.exception) || (ruled !== null && (verdict.verdict === 'not' || verdict.w3 !== ruled));
-        if (verdict.verdict === 'not') return { path: p, composite: null, by: 'verdict', exception, reading: 'NOT', direct: null };
+        if (verdict.verdict === 'not') return { path: p, composite: null, by: 'verdict', exception, reading: 'NOT', direct: null, end: null };
         composite = verdict.w3;
         by = 'verdict';
       } else if (p.source === 'triad') {
@@ -153,11 +166,14 @@ export function sortFromRecords(
         composite = ruled;
         by = 'rule';
       }
-      if (composite === null) return { path: p, composite: null, by: null, exception, reading: 'UNRULED', direct: null };
+      if (composite === null) return { path: p, composite: null, by: null, exception, reading: 'UNRULED', direct: null, end: null };
       const k = `${composite}|${p.x}|${p.y}`;
-      if (directKeys.has(k)) return { path: p, composite, by, exception, reading: 'COMPOSED', direct: k };
-      if (barred(composite, p.x, p.y)) return { path: p, composite, by, exception, reading: 'TENSION', direct: composite === IS && isX.get(p.x) !== undefined && isX.get(p.x) !== p.y ? isKey(p.x, isX.get(p.x) as string) : null };
-      return { path: p, composite, by, exception, reading: 'LIGHT', direct: null };
+      if (directKeys.has(k)) return { path: p, composite, by, exception, reading: 'COMPOSED', direct: k, end: null };
+      if (barred(composite, p.x, p.y)) {
+        const pressed = composite === IS ? pressedOn(p.x, p.y) : null;
+        return { path: p, composite, by, exception, reading: 'TENSION', direct: pressed ? pressed.key : null, end: pressed ? pressed.end : barKeys.has(`${composite}|${p.x}|${p.y}`) ? 'bar' : null };
+      }
+      return { path: p, composite, by, exception, reading: 'LIGHT', direct: null, end: null };
     });
     const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').map((r) => r.direct as string));
     const own = instances.map(relKey).filter((k) => !composedTo.has(k));
@@ -168,9 +184,9 @@ export function sortFromRecords(
       if (a[0] !== IS || feet.has(a[1])) continue;
       const p = read.find((r) => r.path.x === a[1] && r.path.z === a[2] && r.path.w === IS && r.path.w2 === IS);
       if (!p) feet.set(a[1], { kind: 'UND', y: null });
-      else feet.set(a[1], { kind: p.reading === 'COMPOSED' ? 'FIX' : p.reading === 'TENSION' ? 'DIS' : p.reading === 'LIGHT' ? 'PRO' : 'UND', y: p.path.y });
+      else feet.set(a[1], { kind: p.reading === 'COMPOSED' ? 'FIX' : p.reading === 'TENSION' && p.end === 'source' ? 'DIS' : p.reading === 'LIGHT' || (p.reading === 'TENSION' && p.end === 'target') ? 'PRO' : 'UND', y: p.path.y });
     }
-    for (const [x, y, z] of v.triads) if (!feet.has(x)) { const p = read.find((r) => r.path.x === x && r.path.z === z && r.path.y === y); if (p) feet.set(x, { kind: p.reading === 'COMPOSED' ? 'FIX' : p.reading === 'TENSION' ? 'DIS' : p.reading === 'LIGHT' ? 'PRO' : 'UND', y }); }
+    for (const [x, y, z] of v.triads) if (!feet.has(x)) { const p = read.find((r) => r.path.x === x && r.path.z === z && r.path.y === y); if (p) feet.set(x, { kind: p.reading === 'COMPOSED' ? 'FIX' : p.reading === 'TENSION' && p.end === 'source' ? 'DIS' : p.reading === 'LIGHT' || (p.reading === 'TENSION' && p.end === 'target') ? 'PRO' : 'UND', y }); }
     out.push({ view: v.view, faceId: v.faceId, vacuous: xzIn.length === 0 && zyIn.length === 0 && v.triads.length === 0, paths: read, own, centroid, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet });
   }
   const keys = instances.map(relKey);
