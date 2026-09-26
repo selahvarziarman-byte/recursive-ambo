@@ -29,6 +29,7 @@ import { triadLegsOf, triadOf, withTriad, withoutTriad, type RespectKind, type T
 import { IS, relatingOf, relatingsHeld, withRelating, withoutRelating, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
 import { IS_RULE, withVerdict, withoutVerdict, type Rule, type VerdictRecord } from '../lib/sorting';
 import { childSpaceOf } from '../lib/instanceSpace';
+import { sortingOf } from '../lib/sorting';
 import type {
   Cell,
   CellId,
@@ -948,7 +949,23 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (patch.label !== undefined && patch.label !== vertex.data.label) {
       const label = patch.label;
       const christened = isGeneratedMidpoint(vertex) ? label.trim().length > 0 : null;
-      const marked = (data: VertexDataPacket): VertexDataPacket => (christened === null ? data : { ...data, custom: withChristened(data.custom, christened) });
+      // MODES-1 · B5 (D11): a name is kept WITH THE STATE IT WAS GIVEN UNDER — the relatings on the parents' edge and what was theirs
+      // alone at that moment (role keys and a count; no id) — so the surface can say `named when it was: …` and list what moved;
+      // an un-christened midpoint keeps no such state
+      const namedUnder = ((): Record<string, unknown> | null => {
+        if (christened !== true || vertex.createdBy.sourceVertexIds.length !== 2) return null;
+        const [p, q] = vertex.createdBy.sourceVertexIds;
+        const e = shape.edges.find((c) => (c.vertexIds[0] === p && c.vertexIds[1] === q) || (c.vertexIds[0] === q && c.vertexIds[1] === p));
+        const s = sortingOf(shape, e, { tauDrafts: get().edgeTauDrafts }, get().rules);
+        return s ? { relatings: s.instances.length, own: [...s.own] } : { relatings: 0, own: [] };
+      })();
+      const marked = (data: VertexDataPacket): VertexDataPacket => {
+        if (christened === null) return data;
+        const custom = { ...withChristened(data.custom, christened) };
+        if (namedUnder) custom['namedUnder'] = namedUnder as unknown as VertexDataPacket['custom'][string];
+        else delete custom['namedUnder'];
+        return { ...data, custom };
+      };
       const next: Record<ShapeId, Shape> = {};
       for (const [id, held] of Object.entries(shapes)) {
         let target = held;

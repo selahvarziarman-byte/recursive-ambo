@@ -1007,6 +1007,39 @@ def light_leaves_arm(page, args):
     return res
 
 
+MEDIUM_STATE = """() => { const s = document.querySelector('[data-medium]'); if (!s) return null; const t = (sel) => [...s.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); const a = (sel, attr) => [...s.querySelectorAll(sel)].map((e) => e.getAttribute(attr)); return { state: s.getAttribute('data-medium-state'), head: t('[data-medium-head]')[0] || null, modes: a('[data-medium-mode]', 'data-medium-mode'), chosen: a('[data-medium-mode-chosen]', 'data-medium-mode-chosen').length ? a('[data-medium-mode][data-medium-mode-chosen]', 'data-medium-mode')[0] : null, gesture: t('[data-medium-gesture]')[0] || null, relatings: t('[data-medium-relating]'), bars: t('[data-medium-bar]'), child: t('[data-medium-child]')[0] || null, viewHeads: t('[data-medium-view-head]'), passages: a('[data-medium-passage]', 'data-medium-passage-reading'), passageTexts: t('[data-medium-passage]'), own: t('[data-medium-own]')[0] || null, faces: t('[data-medium-faces]'), stateLine: t('[data-medium-state-line]')[0] || null, refusal: t('[data-medium-refusal]')[0] || null, text: s.textContent.replace(/\\s+/g, ' ').trim(), box: (() => { const b = s.getBoundingClientRect(); return { y: Math.round(b.y), h: Math.round(b.height) }; })() }; }"""
+
+
+def medium_arm(page, args):
+    """MODES-1 · B5 at the eye — the medium in the designer's words under the own column at AB: the counts head, the modes, the state
+    line and the passages read before any act; a mode declared (`carries`) and chosen; two picks (A's column, B's column) make a
+    relating in it, read as its sentence; withdrawn; IS chosen again — the state as found."""
+    res = {}
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+    res['before'] = page.evaluate(MEDIUM_STATE)
+    if not res['before']:
+        return res
+    page.fill('[data-medium-mode-input]', 'carries'); page.locator('[data-medium-mode-declare]').first.click(); page.wait_for_timeout(300)
+    res['declared'] = page.evaluate(MEDIUM_STATE)
+    page.locator('[data-medium-mode="carries"]').first.click(); page.wait_for_timeout(300)
+    res['chosen'] = page.evaluate(MEDIUM_STATE)
+    a_side = page.evaluate("() => [...document.querySelectorAll('[data-midpoint-drawing] [data-midpoint-side=A]')].map((e) => e.getAttribute('data-inside-point'))")
+    flow_side, t_side = ('A', 'B') if any(x_is_flow(r) for r in a_side) else ('B', 'A')
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+    point(page, flow_side, 'F13'); point(page, t_side, 'r8'); page.wait_for_timeout(400)
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+    res['related'] = page.evaluate(MEDIUM_STATE)
+    page.screenshot(path=f"{args.frames}/concept-layer-medium-{args.width}x{args.height}.png")
+    hands = page.locator('[data-medium-withdraw]')
+    if hands.count():
+        hands.first.click(); page.wait_for_timeout(400)
+    res['withdrawn'] = page.evaluate(MEDIUM_STATE)
+    page.locator('[data-medium-mode="IS"]').first.click(); page.wait_for_timeout(300)
+    res['after'] = page.evaluate(MEDIUM_STATE)
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+    return res
+
+
 def light_word(page, w):
     page.locator(f'[data-midpoint-light-word="{w}"]').first.click(); page.wait_for_timeout(350)
 
@@ -1610,6 +1643,7 @@ def main():
         page.screenshot(path=f"{args.frames}/concept-layer-feet-{args.width}x{args.height}.png")
         out['triad'] = triad_arm(page, args)  # C-14 f — the triad in the light; the word pair below the drawing; the copy
         out['lightLeaves'] = light_leaves_arm(page, args)  # MODES-1 · M1 — a light is opened AT a midpoint and FOR it; leaving closes it
+        out['medium'] = medium_arm(page, args)  # MODES-1 · B5 — the medium in the designer's words
         out['wordTriad'] = word_triad_arm(page, args)  # C-14g — the word triad in the light's word row
         out['importRoundTrip'] = import_arm(page, args)  # C-14g · M1 — export → a later pair → import through the input's new construction
         # C-8 item 2 at the eye — the loader ABSENT at a midpoint (the packets tab with AB selected shows no file input, no word), PRESENT at a corner

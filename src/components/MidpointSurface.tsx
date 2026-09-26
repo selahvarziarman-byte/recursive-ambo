@@ -115,6 +115,7 @@ import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName'
 import { edgeBetween, faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
 import { instancesOn, IS } from '../lib/relatings';
 import { sortingOf } from '../lib/sorting';
+import { MediumBlock } from './MediumBlock';
 
 /** MODES-1 · B3 — the face reading reads the IS-instances through the one reader, never the plain record (defect 1) */
 const readInstances = (e: Edge): Array<[string, string]> => instancesOn(e).filter((r) => r[0] === IS).map((r) => [r[1], r[2]] as [string, string]);
@@ -329,6 +330,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const selectFace = useGeometryStore((s) => s.selectFace); // C-10b: the route from the site to a born face's reading
   // C-14 f — THE TRIAD's hands: the act (three picks, one per corner, in the opened corner's light), its one hand back, the attempt's
   const giveTriad = useGeometryStore((s) => s.giveTriad);
+  const giveRelating = useGeometryStore((s) => s.giveRelating); // B5 — the two-pick act in a chosen mode, or barred
   const withdrawTriad = useGeometryStore((s) => s.withdrawTriad);
   const withdrawTriadAttempt = useGeometryStore((s) => s.withdrawTriadAttempt);
   const triadRefusals = useGeometryStore((s) => s.triadRefusals);
@@ -355,6 +357,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // C-14 f — THE LIGHT: the opened corner's drawing (one at a time — opening D's closes C's: the face is chosen by opening its corner);
   // the triad's picks by corner, in any order — the act completes at the third
   const [light, setLight] = useState<VertexId | null>(null);
+  // MODES-1 · B5 — the mode the next two picks relate in (IS: the pairing, as before), and whether they bar; chosen in the medium's block
+  const [mode, setMode] = useState<string>(IS);
+  const [barNext, setBarNext] = useState(false);
   const [triadPicks, setTriadPicks] = useState<Record<VertexId, string>>({});
   const [wordTriadPicks, setWordTriadPicks] = useState<Record<VertexId, string>>({}); // C-14g — the word triad's picks, a word in each of the three rows
   const la = labelOf(shape, site.a);
@@ -371,7 +376,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const core = resolved.core;
   const respectsAt = (corner: VertexId): RespectReading[] => resolved.respects.filter((r) => r.corner === corner);
   // MODES-1 · B3 — the sorting of the source edge (the paths through each opposite corner), read for the feet's silence alone here; its words are B5's
-  const sorting = useMemo(() => sortingOf(shape, edgeBetween(shape.edges, site.a, site.b), {}, []), [shape, site.a, site.b]);
+  const sourceEdge = useMemo(() => edgeBetween(shape.edges, site.a, site.b), [shape, site.a, site.b]);
+  const sorting = useMemo(() => sortingOf(shape, sourceEdge, {}, []), [shape, sourceEdge]);
   const spokenLabels = core ? core.spoken.map((v) => labelOf(shape, v)) : [];
   const lightsWords = spokenLabels.length === 0 ? '' : spokenLabels.length === 1 ? `in ${spokenLabels[0]}'s light` : `in ${spokenLabels.slice(0, -1).map((l) => `${l}'s light`).join(', ')} and in ${spokenLabels[spokenLabels.length - 1]}'s`;
   const byLights = (kind: 'role' | 'word', pair: [string, string]): boolean => !!core && (kind === 'role' ? core.meet.roles : core.meet.types).some((p) => p[0] === pair[0] && p[1] === pair[1]) && !(kind === 'role' ? core.unconditional.roles : core.unconditional.types).some((p) => p[0] === pair[0] && p[1] === pair[1]);
@@ -427,8 +433,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       return;
     }
     if (pick && pick.side !== side) {
-      if (side === 'B') giveRolePair(edgeId, pick.role, role);
-      else giveRolePair(edgeId, role, pick.role);
+      const [x, y] = side === 'B' ? [pick.role, role] : [role, pick.role];
+      // B5: in IS the two picks are the pairing (the typed record, as before); in another mode, or barred, they are a relating
+      if (mode === IS && !barNext) giveRolePair(edgeId, x, y);
+      else giveRelating(edgeId, mode, x, y, barNext ? '-' : '+');
       setPick(null);
       return;
     }
@@ -491,6 +499,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     setWordTriadPicks({});
     setPick(null);
     setWordPick(null);
+    setMode(IS);
+    setBarNext(false);
   }, [site.siteId]);
   const bothExtra = (side: Side, inside: Inside) => {
     // C-7h item 1 (the designer's live drive: nine composed words wore `≡` at ABAC): a tuple in both parents BY COMPOSITION —
@@ -992,6 +1002,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           }) : null}
         </div>
       ) : null}
+      {/* MODES-1 · B5 — THE MEDIUM in the designer's words: under the own column and the feet, never above the drawing */}
+      {sourceEdge ? <MediumBlock shape={shape} edge={sourceEdge} siteId={site.siteId} la={la} lb={lb} options={{}} mode={mode} setMode={setMode} bar={barNext} setBar={setBarNext} /> : null}
       {/* THE TRACE — the origin partition of the one glued record, as description */}
       {M && trace && state === 'glued' ? (
         <div data-midpoint-trace="true" className="mt-2 grid gap-0.5 text-stone-300">
