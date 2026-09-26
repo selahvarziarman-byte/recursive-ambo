@@ -27,6 +27,7 @@ import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, st
 import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import { IS, relatingOf, relatingsHeld, withRelating, withoutRelating, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
+import { IS_RULE, withVerdict, withoutVerdict, type Rule, type VerdictRecord } from '../lib/sorting';
 import type {
   Cell,
   CellId,
@@ -300,6 +301,15 @@ interface GeometryState {
   giveRelating: (edgeId: EdgeId, w: string, x: string, y: string, sign: Sign) => RelatingRefusal | null;
   withdrawRelating: (edgeId: EdgeId, w: string, x: string, y: string) => void;
   withdrawRelatingAttempt: (edgeId: EdgeId) => void;
+  // MODES-1 · B3 — VERDICTS, RULES, EXCEPTIONS (the projection ruling D6; src/lib/sorting.ts). A verdict is the person's word on ONE
+  // path at a face — `composed` to a direct instance's mode, or `not` — recorded ON THE FACE, positional (no id inside); a RULE
+  // (w, w′) ↦ w‴ names a composite for every path with that word-pair, mesh-wide (the store; persisted); a verdict against a rule
+  // is an EXCEPTION, recorded as the verdict it is. IS ; IS = IS is built in and never stored. Nothing here proposes either.
+  rules: Rule[];
+  nameRule: (w: string, w2: string, w3: string) => void;
+  withdrawRule: (w: string, w2: string) => void;
+  giveVerdict: (faceId: string, record: VerdictRecord) => string | null;
+  withdrawVerdict: (faceId: string, record: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>) => void;
   exportWorkspace: () => PersistedWorkspaceV1;
   importWorkspace: (workspace: PersistedWorkspaceV1) => void;
 }
@@ -331,6 +341,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   edgeTauDrafts: {},
   lexicon: [],
   relatingRefusals: {},
+  rules: [],
   midpointRefusals: {},
   midpointRemade: {},
   triadRefusals: {},
@@ -1118,6 +1129,42 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     delete relatingRefusals[edgeId];
     set({ relatingRefusals });
   },
+  // ═══ MODES-1 · B3 — the rules and the verdicts ═══
+  nameRule: (w, w2, w3) => {
+    const a = w.trim(); const b = w2.trim(); const c = w3.trim();
+    if (!a || !b || !c) return;
+    if (a === IS_RULE[0] && b === IS_RULE[1]) return; // the identity regime's rule is built in, never stored
+    const rules = get().rules.filter((r) => !(r[0] === a && r[1] === b));
+    set({ rules: [...rules, [a, b, c]] });
+  },
+  withdrawRule: (w, w2) => {
+    const rules = get().rules.filter((r) => !(r[0] === w && r[1] === w2));
+    if (rules.length !== get().rules.length) set({ rules });
+  },
+  giveVerdict: (faceId, record) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    if (!shape) return 'no current shape';
+    const face = shape.faces.find((f) => f.id === faceId);
+    if (!face) return 'no such face on this solid';
+    if (face.vertexIds.length !== 3) return `a verdict is given on a triangle — this face has ${face.vertexIds.length} corners`;
+    const [i, j] = record.base;
+    if (![0, 1, 2].includes(i) || ![0, 1, 2].includes(j) || i === j) return 'the verdict names two corners of the face by their positions';
+    if (![record.x, record.w, record.z, record.w2, record.y, record.w3].every((s) => typeof s === 'string' && s.trim().length > 0)) return 'a verdict names the path whole — x, its mode, z, its mode, y — and the direct’s mode';
+    const faces = shape.faces.map((f) => (f.id === faceId ? withVerdict(f, { ...record, base: [i, j] }) : f));
+    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } } });
+    return null;
+  },
+  withdrawVerdict: (faceId, record) => {
+    const state = get();
+    const shape = state.shapes[state.currentShapeId];
+    if (!shape) return;
+    const face = shape.faces.find((f) => f.id === faceId);
+    if (!face) return;
+    const twin = (f: Shape['faces'][number]): boolean => f.vertexIds.length === face.vertexIds.length && face.vertexIds.every((v, k) => f.vertexIds[k] === v);
+    const faces = shape.faces.map((f) => (twin(f) ? withoutVerdict(f, record) : f));
+    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } } });
+  },
   withdrawMidpointAttempt: (edgeId) => {
     const midpointRefusals = { ...get().midpointRefusals };
     delete midpointRefusals[edgeId];
@@ -1139,6 +1186,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       viewLayout: state.viewLayout,
       edgeTauDrafts: state.edgeTauDrafts, // F3 — the word pairs given alone ride the file
       lexicon: state.lexicon, // B1 — the declared modes ride the file (the relatings ride the edges' packets inside `shapes`)
+      rules: state.rules, // B3 — the person's rules ride the file (the verdicts ride the faces' packets inside `shapes`)
     });
   },
   importWorkspace: (workspace) => {
@@ -1169,6 +1217,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       currentShapeId: importedWorkspace.currentShapeId,
       edgeTauDrafts: importedWorkspace.edgeTauDrafts ?? {}, // F3 — the file's word pairs given alone restored; the session's dropped (a file saved before F3 carries none)
       lexicon: importedWorkspace.lexicon ?? [], // B1 — the file's declared modes restored; the session's dropped (a file saved before B1 carries none)
+      rules: importedWorkspace.rules ?? [], // B3 — the file's rules restored; the session's dropped
       relatingRefusals: {},
       liftSelection: [],
       selectedCellId,

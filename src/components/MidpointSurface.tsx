@@ -112,7 +112,12 @@ import type { ConceptSpace, Edge, EdgeIdentification, Shape, VertexId } from '..
 import { useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../store/geometryStore';
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
-import { faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
+import { edgeBetween, faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
+import { instancesOn, IS } from '../lib/relatings';
+import { sortingOf } from '../lib/sorting';
+
+/** MODES-1 · B3 — the face reading reads the IS-instances through the one reader, never the plain record (defect 1) */
+const readInstances = (e: Edge): Array<[string, string]> => instancesOn(e).filter((r) => r[0] === IS).map((r) => [r[1], r[2]] as [string, string]);
 import { bornFaceOf, readAlike, type BornAct, type BornFaceResult } from '../lib/bornFace';
 import { insideOf, type Inside, type InsideArc, type InsideLoop, type InsidePoint, type InsideTupleNode } from '../lib/castInside';
 import { traceOf, type GluedSpace, type Midpoint, type Origin, type ParentTrace, type Side } from '../lib/midpointGlue';
@@ -365,6 +370,8 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   const nX = (corner: VertexId, id: string): string => { const sp = spaceOf(shape, corner); return sp ? nameIn(sp.space, id) : id; };
   const core = resolved.core;
   const respectsAt = (corner: VertexId): RespectReading[] => resolved.respects.filter((r) => r.corner === corner);
+  // MODES-1 · B3 — the sorting of the source edge (the paths through each opposite corner), read for the feet's silence alone here; its words are B5's
+  const sorting = useMemo(() => sortingOf(shape, edgeBetween(shape.edges, site.a, site.b), {}, []), [shape, site.a, site.b]);
   const spokenLabels = core ? core.spoken.map((v) => labelOf(shape, v)) : [];
   const lightsWords = spokenLabels.length === 0 ? '' : spokenLabels.length === 1 ? `in ${spokenLabels[0]}'s light` : `in ${spokenLabels.slice(0, -1).map((l) => `${l}'s light`).join(', ')} and in ${spokenLabels[spokenLabels.length - 1]}'s`;
   const byLights = (kind: 'role' | 'word', pair: [string, string]): boolean => !!core && (kind === 'role' ? core.meet.roles : core.meet.types).some((p) => p[0] === pair[0] && p[1] === pair[1]) && !(kind === 'role' ? core.unconditional.roles : core.unconditional.types).some((p) => p[0] === pair[0] && p[1] === pair[1]);
@@ -909,7 +916,10 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
               silence is absent per point, one line when the whole corner is silent, naming the pairings it waits for. */}
           {feetInOrder.map((f) => {
             const lx = labelOf(shape, f.corner);
-            const silent = f.map.size === 0;
+            // MODES-1 · B3 (defect 3, claims §200): no reading says the legs do not meet where a PATH through the corner exists — a path
+            // from two instances on the legs or a triad given at the face (src/lib/sorting.ts); the silent line is for a corner with none
+            const view = sorting ? sorting.views.find((v) => v.view === f.corner) ?? null : null;
+            const silent = f.map.size === 0 && !(view && view.paths.length > 0);
             const empty = [!f.given[0] ? `${la}–${lx}` : null, !f.given[1] ? `${lx}–${lb}` : null].filter((x): x is string => x !== null);
             const silentLine = empty.length === 2
               ? `${lx} says nothing about ${la}–${lb} — you have paired nothing on ${la}–${lx} or ${lx}–${lb} yet`
@@ -953,8 +963,12 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           {/* C-14 f — a respect stands before any pair: the corner's block reads it here, the feet silent beside it */}
           {resolved.respects.length > 0 ? feetInOrder.filter((f) => respectsAt(f.corner).length > 0).map((f) => {
             const lx = labelOf(shape, f.corner);
+            // MODES-1 · B3 (defect 3, claims §200 — the customer's line): a respect IS a path through this corner (§9.4 on §1.3), so the
+            // corner's view is `read` and no line says the legs do not meet; the silent line is for a corner the sorting finds no path through
+            const view = sorting ? sorting.views.find((v) => v.view === f.corner) ?? null : null;
+            const hasPath = !!view && view.paths.length > 0;
             return (
-              <div key={f.corner} data-midpoint-foot={lx} data-midpoint-foot-state="silent" className="mt-1 grid gap-0.5 text-stone-300">
+              <div key={f.corner} data-midpoint-foot={lx} data-midpoint-foot-state={hasPath ? 'read' : 'silent'} className="mt-1 grid gap-0.5 text-stone-300">
                 <span data-midpoint-foot-head="true">{`${lx}'s view of your pairing on ${la}–${lb} — read from your pairings on ${la}–${lx} and ${lx}–${lb}`}</span>
                 {respectsAt(f.corner).map((r) => {
                   const legWords = (leg: [VertexId, VertexId]): string => `${labelOf(shape, leg[0])}–${labelOf(shape, leg[1])}`;
@@ -970,7 +984,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                     </span>
                   );
                 })}
-                <span data-midpoint-foot-line="silent">{`${lx} says nothing about ${la}–${lb} — ${[!f.given[0] ? `${la}–${lx}` : null, !f.given[1] ? `${lx}–${lb}` : null].filter((x): x is string => x !== null).length === 2 ? `you have paired nothing on ${la}–${lx} or ${lx}–${lb} yet` : 'your pairings do not meet'}`}</span>
+                {hasPath ? null : (
+                  <span data-midpoint-foot-line="silent">{`${lx} says nothing about ${la}–${lb} — ${[!f.given[0] ? `${la}–${lx}` : null, !f.given[1] ? `${lx}–${lb}` : null].filter((x): x is string => x !== null).length === 2 ? `you have paired nothing on ${la}–${lx} or ${lx}–${lb} yet` : 'your pairings do not meet'}`}</span>
+                )}
               </div>
             );
           }) : null}
@@ -1214,7 +1230,9 @@ export function FaceRecord({ shape, cycle, faceName, here, hands = 'act' }: { sh
   const withdrawRolePair = useGeometryStore((s) => s.withdrawRolePair);
   // C-8: the three corners' spaces through the one resolver (a seed corner's cast — this block mounts on seed faces alone)
   const casts = useMemo(() => Object.fromEntries(cycle.map((v) => [v, spaceOf(shape, v)?.space])) as Record<VertexId, ConceptSpace | undefined>, [shape, cycle]);
-  const result = useMemo(() => (cycle.every((v) => casts[v]) ? faceOf(cycle, casts, shape.edges) : null), [cycle, casts, shape.edges]);
+  const result = useMemo(() => (cycle.every((v) => casts[v]) ? faceOf(cycle, casts, shape.edges, readInstances) : null), [cycle, casts, shape.edges]);
+  // MODES-1 · B3 (defect 2): a role by its corner's own name, from the cast the face reads
+  const nameAt = (v: VertexId, id: string): string => { const sp = casts[v]; return sp ? nameIn(sp, id) : id; };
   if (!result) return null; // a corner without a cast: the source line already says `holds no cast`
   const L = (v: VertexId): string => labelOf(shape, v);
   const walkWords = `${L(cycle[0])} → ${L(cycle[1])} → ${L(cycle[2])} → ${L(cycle[0])}`;
@@ -1267,11 +1285,12 @@ export function FaceRecord({ shape, cycle, faceName, here, hands = 'act' }: { sh
               <span data-midpoint-face-line="none">nothing returned</span>
             ) : (
               <>
-                <span data-midpoint-face-line="fix">{`returned to itself: ${r.fix.length ? r.fix.join(' · ') : 'none'}`}</span>
-                <span data-midpoint-face-line="mov">{`returned elsewhere: ${r.mov.length ? r.mov.map(([x, y]) => `${x} as ${y}`).join(' · ') : 'none'}`}</span>
+                {/* MODES-1 · B3 (defect 2, claims §199): the roles by the corner's own names, never their ids */}
+                <span data-midpoint-face-line="fix">{`returned to itself: ${r.fix.length ? r.fix.map((x) => nameAt(r.corner, x)).join(' · ') : 'none'}`}</span>
+                <span data-midpoint-face-line="mov">{`returned elsewhere: ${r.mov.length ? r.mov.map(([x, y]) => `${nameAt(r.corner, x)} as ${nameAt(r.corner, y)}`).join(' · ') : 'none'}`}</span>
               </>
             )}
-            <span data-midpoint-face-line="und">{`${r.und.length} did not return${r.und.length ? ` — ${by.map((s, k) => `${s.roles.length} ${k === 0 ? 'broke ' : ''}at ${edgeWords(s.from, s.to)}: ${s.roles.join(' ')}`).join(' · ')}` : ''}`}</span>
+            <span data-midpoint-face-line="und">{`${r.und.length} did not return${r.und.length ? ` — ${by.map((s, k) => `${s.roles.length} ${k === 0 ? 'broke ' : ''}at ${edgeWords(s.from, s.to)}: ${s.roles.map((x) => nameAt(r.corner, x)).join(' ')}`).join(' · ')}` : ''}`}</span>
             <span data-midpoint-face-line="core">{`the face's core at ${L(r.corner)}, derived: ${r.core.length} of its ${r.ambient.length} roles`}</span>
           </span>
         );

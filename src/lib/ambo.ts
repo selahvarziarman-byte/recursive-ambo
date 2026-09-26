@@ -8,6 +8,7 @@ import type {
   Vertex,
   VertexDataPacket,
   VertexId,
+  JsonValue,
 } from '../types/geometry';
 import {
   canonicalEdgeKey,
@@ -37,6 +38,7 @@ import { importCornerAngles } from './cornerAngleImport';
 import { midpointLetters } from './christening';
 import { carriedTriads, TRIADS_KEY } from './respects';
 import { carriedRelatings, relatingsHeld, RELATINGS_KEY } from './relatings';
+import { verdictsOn, VERDICTS_KEY } from './sorting';
 
 const DEFAULT_MIDPOINT_COLOR = '#eab308';
 
@@ -531,6 +533,7 @@ function createParentCellFaces(
     // C-14 — THE RECORD RIDES THE FACE: the person's triads on the dissected cell's face (positional in the corner order this
     // copy keeps — `vertexIds: face.vertexIds`) onto its parent-cell-face; the triads and nothing else of the packet; absent stays absent
     const triads = carriedTriads(face.data);
+    const verdicts = verdictsOn(face); // MODES-1 · B3 — the verdicts ride the face with the triads, positional in the same corner order
     return {
       id: makeFaceId(shapeId, 'parent-cell-face', face.id, face.vertexIds),
       vertexIds: face.vertexIds,
@@ -539,7 +542,7 @@ function createParentCellFaces(
       sourceFaceId: face.id,
       // the copy RIDES the source's owned atom (additive — absent stays absent)
       ...(face.cornerAngles ? { cornerAngles: face.cornerAngles } : {}),
-      ...(triads !== undefined ? { data: { [TRIADS_KEY]: triads } } : {}),
+      ...(triads !== undefined || verdicts.length > 0 ? { data: { ...(triads !== undefined ? { [TRIADS_KEY]: triads } : {}), ...(verdicts.length > 0 ? { [VERDICTS_KEY]: verdicts as unknown as JsonValue } : {}) } } : {}),
       lineage: deriveFromSourceFace(face.id, shapeId),
     };
   });

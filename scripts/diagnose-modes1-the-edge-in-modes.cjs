@@ -183,7 +183,7 @@ check('§f no other edge of the child carries a relating (a true absence carries
 
 // ═══ §g THE SEAL — the existing readers read as before ═══
 console.log('\n----- §g the seal: the readers unchanged with the packet present; every IS-instance is a pair of the pairing in force -----');
-const readAll = (shape) => shape.edges.map((e) => ({ id: e.id, rec: recordOn(shape, e, {}), core: (() => { const c = R.meetCoreOf(shape, e); return { roles: c.roles, types: c.types, meet: c.meet, leftOut: c.leftOut.length }; })(), resp: R.readRespects(shape, e).map((r) => r.verdict), step: (() => { const st = readStep(shape.edges, e.vertexIds[0], e.vertexIds[1]); return st ? [...st.map] : null; })(), space: (() => { const r = spaceOf(shape, e.vertexIds[0]); return r ? r.space.roles.length + ':' + r.space.relations.length : null; })() }));
+const readAll = (shape) => shape.edges.map((e) => ({ id: e.id, rec: recordOn(shape, e, {}), core: (() => { const c = R.meetCoreOf(shape, e); return { roles: c.roles, types: c.types, meet: c.meet, leftOut: c.leftOut.length }; })(), resp: R.readRespects(shape, e).map((r) => r.verdict), step: (() => { const st = readStep(shape.edges, e.vertexIds[0], e.vertexIds[1], (x) => (x.identification ? x.identification.roles : [])); return st ? [...st.map] : null; })(), space: (() => { const r = spaceOf(shape, e.vertexIds[0]); return r ? r.space.roles.length + ':' + r.space.relations.length : null; })() }));
 reset(seeded4());
 S().giveRolePair(eAB.id, ...(eAB.vertexIds[0] === A ? [a1, b1] : [b1, a1]));
 const faceABC = cur().faces.find((f) => f.vertexIds.length === 3 && [A, B, byLabel(cur(), 'C')].every((v) => f.vertexIds.includes(v)));
@@ -213,8 +213,8 @@ for (const f of walk(path.join(repoRoot, 'src'))) {
   const n = (fs.readFileSync(f, 'utf8').match(/\.identification\b/g) || []).length;
   if (n) sites[rel] = n;
 }
-const expected = { 'src/store/geometryStore.ts': 11, 'src/lib/ambo.ts': 4, 'src/components/JRegisterPanel.tsx': 3, 'src/lib/respects.ts': 1, 'src/lib/faceReading.ts': 1, 'src/components/MidpointSurface.tsx': 1 };
-check('§h ★ THE CENSUS OF `.identification` UNDER src/ (the step-0 letter\'s table, each site routed or NAMED): the store (the one WRITER and its callers, `midpointRecord`), the ambo (the CARRIER, mirrored), the register\'s surface (the person\'s own IS record), the respects (the one reader\'s base read), the face reading (routed at B3, on paths) and the midpoint surface (the neighbouring acts as given) — and NOTHING ELSE; relatings.ts adds no site', J(Object.fromEntries(Object.entries(sites).sort())) === J(Object.fromEntries(Object.entries(expected).sort())), J(sites));
+const expected = { 'src/store/geometryStore.ts': 11, 'src/lib/ambo.ts': 4, 'src/components/JRegisterPanel.tsx': 3, 'src/lib/respects.ts': 1, 'src/components/MidpointSurface.tsx': 1 }; // B3: the face reading routed — off the census
+check('§h ★ THE CENSUS OF `.identification` UNDER src/ (the step-0 letter\'s table, each site routed or NAMED): the store (the one WRITER and its callers, `midpointRecord`), the ambo (the CARRIER, mirrored), the register\'s surface (the person\'s own IS record), the respects (the one reader\'s base read), the midpoint surface (the neighbouring acts as given) — and NOTHING ELSE; relatings.ts adds no site', J(Object.fromEntries(Object.entries(sites).sort())) === J(Object.fromEntries(Object.entries(expected).sort())), J(sites));
 const writers = {};
 for (const f of walk(path.join(repoRoot, 'src'))) {
   const rel = path.relative(repoRoot, f).split(path.sep).join('/');

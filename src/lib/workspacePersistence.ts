@@ -52,6 +52,7 @@ export interface PersistedWorkspaceV1 {
   viewLayout?: PersistedViewLayout;
   edgeTauDrafts?: PersistedEdgeTauDrafts;
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
+  rules?: Array<[string, string, string]>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`)
 }
 
 export interface WorkspacePersistenceSnapshot {
@@ -67,6 +68,7 @@ export interface WorkspacePersistenceSnapshot {
   viewLayout?: PersistedViewLayout;
   edgeTauDrafts?: PersistedEdgeTauDrafts;
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
+  rules?: Array<[string, string, string]>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`)
 }
 
 export type WorkspaceImportValidationResult =
@@ -94,6 +96,7 @@ export function serializeWorkspaceSnapshot(
     viewLayout: snapshot.viewLayout,
     edgeTauDrafts: snapshot.edgeTauDrafts ?? {},
     lexicon: snapshot.lexicon ?? [],
+    rules: snapshot.rules ?? [],
   };
 }
 
@@ -217,6 +220,10 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
     errors.push('Workspace lexicon is malformed.');
   }
 
+  if (input.rules !== undefined && !isRules(input.rules)) {
+    errors.push('Workspace rules is malformed.');
+  }
+
   if (errors.length) {
     return { ok: false, errors };
   }
@@ -286,6 +293,11 @@ function isEdgeTauDrafts(value: unknown): value is PersistedEdgeTauDrafts {
 /** MODES-1 · B1 — the declared modes: words, in the person's order; a file saved before B1 has no field at all (accepted) */
 function isLexicon(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((w) => typeof w === 'string' && w.trim().length > 0);
+}
+
+/** MODES-1 · B3 — the person's rules (w, w′) ↦ w‴: triples of words; a file saved before B3 has no field (accepted) */
+function isRules(value: unknown): value is Array<[string, string, string]> {
+  return Array.isArray(value) && value.every((r) => Array.isArray(r) && r.length === 3 && r.every((w) => typeof w === 'string' && w.trim().length > 0));
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

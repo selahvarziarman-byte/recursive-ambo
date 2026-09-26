@@ -46,7 +46,13 @@ const repoRoot = path.resolve(__dirname, '..');
 const req = (p) => require(path.join(repoRoot, p));
 const readLf = (p) => fs.readFileSync(path.join(repoRoot, p), 'utf8').split('\r\n').join('\n');
 const { readCastFile } = req('src/lib/castLoader.ts');
-const { faceOf, composeThroughCorner, cornerRefusals, walkOf, readStep, firstBreak, undByStep, edgeBetween } = req('src/lib/faceReading.ts');
+const FR = req('src/lib/faceReading.ts');
+// MODES-1 · B3: the module reads through the reader its caller hands; this witness's fixtures ARE plain records, so it hands the plain one
+const plain = (e) => (e.identification ? e.identification.roles : []);
+const faceOf = (corners, casts, edges, options) => FR.faceOf(corners, casts, edges, plain, options);
+const walkOf = (corners, edges) => FR.walkOf(corners, edges, plain);
+const readStep = (edges, from, to) => FR.readStep(edges, from, to, plain);
+const { composeThroughCorner, cornerRefusals, firstBreak, undByStep, edgeBetween } = FR;
 const { createSeedShape } = req('src/data/seeds.ts');
 const { applyAmboDissection } = req('src/lib/ambo.ts');
 const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');

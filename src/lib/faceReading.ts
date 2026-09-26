@@ -62,6 +62,10 @@ import { valuesAgree } from './jRegister';
 
 export type RoleMap = Map<string, string>;
 
+/** MODES-1 · B3 (defect 1, claims §199): the record of an edge is read THROUGH THE READER THE CALLER HANDS — the resolver's one
+ *  reader of instances — never the plain record here; this module stays pure over three casts and the edges (the face witness's §6) */
+export type RecordReader = (edge: Edge) => Array<[string, string]>;
+
 /** one step of the walk — the edge's record read in the walk's direction, from its `vertexIds` at the moment of reading */
 export interface FaceStep {
   from: VertexId;
@@ -137,9 +141,9 @@ export function edgeBetween(edges: Edge[], x: VertexId, y: VertexId): Edge | und
 }
 
 /** the record read in the walk's direction — from the edge's `vertexIds` at the moment of reading */
-export function readStep(edges: Edge[], from: VertexId, to: VertexId): FaceStep | null {
+export function readStep(edges: Edge[], from: VertexId, to: VertexId, read: RecordReader): FaceStep | null {
   const edge = edgeBetween(edges, from, to);
-  const roles = edge?.identification?.roles ?? [];
+  const roles = edge ? read(edge) : [];
   if (!edge || roles.length === 0) return null;
   const reversed = edge.vertexIds[0] !== from;
   const map: RoleMap = new Map();
@@ -151,9 +155,9 @@ export function readStep(edges: Edge[], from: VertexId, to: VertexId): FaceStep 
 }
 
 /** the walk around the face in the given direction; null (with the missing edges) when any edge carries no record */
-export function walkOf(corners: [VertexId, VertexId, VertexId], edges: Edge[]): { walk: FaceWalk | null; missing: Array<{ from: VertexId; to: VertexId }> } {
+export function walkOf(corners: [VertexId, VertexId, VertexId], edges: Edge[], read: RecordReader): { walk: FaceWalk | null; missing: Array<{ from: VertexId; to: VertexId }> } {
   const legs: Array<[VertexId, VertexId]> = [[corners[0], corners[1]], [corners[1], corners[2]], [corners[2], corners[0]]];
-  const steps = legs.map(([from, to]) => readStep(edges, from, to));
+  const steps = legs.map(([from, to]) => readStep(edges, from, to, read));
   const missing = legs.filter((_, i) => steps[i] === null).map(([from, to]) => ({ from, to }));
   if (missing.length) return { walk: null, missing };
   return { walk: { corners, steps: steps as [FaceStep, FaceStep, FaceStep] }, missing: [] };
@@ -313,8 +317,8 @@ export function cornerRefusals(walk: FaceWalk, reading: CornerReading, cast: Con
  * THE FACE: the three corners in the direction to walk, their casts, the current shape's edges. The empty-core guard first;
  * then the colimit ATTEMPTED at every corner (the guard); only an unrefused face is read.
  */
-export function faceOf(corners: [VertexId, VertexId, VertexId], casts: Record<VertexId, ConceptSpace | undefined>, edges: Edge[], options: FaceOptions = {}): FaceResult {
-  const { walk, missing } = walkOf(corners, edges);
+export function faceOf(corners: [VertexId, VertexId, VertexId], casts: Record<VertexId, ConceptSpace | undefined>, edges: Edge[], read: RecordReader, options: FaceOptions = {}): FaceResult {
+  const { walk, missing } = walkOf(corners, edges, read);
   if (!walk) return { state: 'absent', missing };
   const readings = corners.map((c) => {
     const cast = casts[c];
