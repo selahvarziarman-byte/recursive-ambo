@@ -247,6 +247,13 @@ const C = req('src/manuscript/cargoModel.ts');
   const K1 = cur().id;
   give('A', 'B', { F1: 'r0', F5: 'r2', F7: 'r8' }); giveWord('A', 'B', 'sustains', 'sustains');
   give('A', 'C', { F1: 'Φ1', F7: 'Φ3' });
+  // MODES-4 · row 5 (D12 amended, D11): the door rides the IDENTIFICATION STRUCTURE alone — F1's line closes round either side face
+  // of the hinge only where HIS pairings close the loop: F1 ≡ Φ1 on A–D as on A–C, and r0 ≡ Φ1 on B–C and on B–D (the inherited ≡ of
+  // AB–AC and of AB–AD, D15 — on the finer boundary the line runs THROUGH ABAC and ABAD by them). The sweep at 594525f read this
+  // clause red with the fixture as it stood (the act refused along A→AC: F1 paired on A–C and not on A–D) — the fixture, not the code.
+  give('A', 'D', { F1: 'Φ1' });
+  give('B', 'C', { r0: 'Φ1' });
+  give('B', 'D', { r0: 'Φ1' });
   S().selectCell(coreOf().id); S().applyAmboDissectionToCurrent();
   const liftAt = (label) => { S().selectCell(residueAt(label).id); S().liftSelectionToManuscript(); const entry = loadUniverseSnapshot(lastLift().file); return { entry, shape: placeShelfEntry(entry, 0).shape }; };
   const { entry: e2, shape: g2 } = liftAt('A');
@@ -284,7 +291,7 @@ const C = req('src/manuscript/cargoModel.ts');
     } catch (e) { threw6 = e.message; }
   }
   note(`the glue on the finer boundary: ${threw6 ? `THROWS ${threw6.slice(0, 120)}` : verdict6 ? `sound=${verdict6.domain.tower.sound} · counts ${J(verdict6.domain.complex.counts)} · chi ${verdict6.domain.complex.chi}` : 'not reached'} · the act at A: ${act6 ? (act6.taken ? `taken, ${act6.transports.length} corner pairs` : `refused ${act6.refusal && act6.refusal.kind}`) : 'none'} · the cargo room: ${room6 ? `entry ${room6.entry ? L6(room6.entry) : '?'} · rods ${room6.rods ? room6.rods.length : '?'} · faces ${room6.faces ? room6.faces.length : '?'} · doors ${room6.doors ? room6.doors.length : '?'}` : 'none'}`);
-  check('§6 ★★ THE GLUE THAT USED TO THROW: the hinge door on the two side faces, F1 ↦ F1 at A taken with its line (four corner pairs on the 4-cycle), the S² gate judges the finer boundary SOUND (the level-3 census v 5 · e 9 · f 6 · c 1, χ 1 — a bounded room, five walls); the cell surface reads 7 faces (corners 4/4/4/3/3/3/3) and 12 rods; the cargo\'s room stands from the built record — entry A, 12 rods, 7 faces, one door',
+  check('§6 ★★ THE GLUE THAT USED TO THROW: the hinge door on the two side faces, F1 ↦ F1 at A taken with its line (four corner pairs on the 4-cycle — through ABAC and ABAD by the INHERITED ≡, his loops closed on A–D, B–C and B–D: MODES-4 · row 5), the S² gate judges the finer boundary SOUND (the level-3 census v 5 · e 9 · f 6 · c 1, χ 1 — a bounded room, five walls); the cell surface reads 7 faces (corners 4/4/4/3/3/3/3) and 12 rods; the cargo\'s room stands from the built record — entry A, 12 rods, 7 faces, one door',
     threw6 === null && act6 && act6.taken === true && act6.transports.length === 4 && verdict6 && !verdict6.folded && verdict6.domain.tower.sound === true && J(verdict6.domain.complex.counts) === J({ v: 5, e: 9, f: 6, c: 1 }) && surface6 && surface6.faces.length === 7 && surface6.rods.length === 12 && J(surface6.faces.map((f) => (f.corners || []).length)) === J([4, 4, 4, 3, 3, 3, 3]) && room6 && L6(room6.entry) === 'A' && room6.rods.length === 12 && room6.faces.length === 7 && room6.doors.length === 1,
     J({ threw: threw6, taken: act6 && act6.taken, pairs: act6 && act6.transports && act6.transports.length, sound: verdict6 && verdict6.domain.tower.sound, counts: verdict6 && verdict6.domain.complex.counts, surface: surface6 && [surface6.faces.length, surface6.rods.length], room: room6 && { entry: L6(room6.entry), rods: room6.rods.length, faces: room6.faces.length, doors: room6.doors.length } }));
   // the control: the gen-1 residue lifts as it always did (no finer structure — nothing composed, nothing opened)
