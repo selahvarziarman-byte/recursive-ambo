@@ -174,3 +174,7 @@ D14's *never an entry of the extent* is the wordless structural link. The entrie
 ## §19 · Substitution through transparent modes only (appended `Tue Sep 29 13:23:43 IST 2026`; ADR 0031 §9.13; from the Wolfendale fold §1)
 
 A correction of §1's substitution law, forced by an argument read blind: D13's substitution for every mode, with §9.12's "no hand", deploys the indiscernibility of identicals unquestioned, and an intensional word would carry a geometric pairing it should not. A mode is transparent by default and may be declared opaque, once, at its declaration; substitution rides through transparent modes only; a mixed path through an opaque mode composes to nothing, shown as held apart, no hand. The law and §9.12 are otherwise unchanged. Falsifier in §9.13; the count of mixed paths on the runs is the coder's, and may be empty.
+
+## §20 · A chain is one key (appended `Tue Sep 29 17:37:08 IST 2026`, on the designer's 17:32 §4 and the mothership's 17:35; ADR 0031 §9.14)
+
+§1's "four keys along the walk" is corrected: the walk's sense is the edge's stored order, the device's, and a rule keyed on it would depend on the dissection's vertex order. A rule is keyed on the word pair and the path's intrinsic SHAPE — chain, fork, join — three keys per pair; a chain is one key whichever way it crosses the edge, its composite in the chain's own direction; forks and joins are keys of their own whose composite's direction the rule names; a declared converse reads a fork or a join as a chain. The gestures are the designer's.
