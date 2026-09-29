@@ -56,7 +56,7 @@ console.log('THE CHILD AS THE INSTANCE SPACE — B2 (MODES-1)\n\n----- §0 purit
 const src = readLf('src/lib/instanceSpace.ts');
 check('§0 instanceSpace.ts is react-free and store-free (the types, the mold helper, the face reading\'s edgeBetween (B4), the register\'s translation, the glue\'s types, B1\'s reader, the respects\' base read, the resolver)', (src.match(/^import /gm) || []).length === 8 && !/useGeometryStore|from '\.\.\/store|from '\.\.\/components|from '\.\.\/manuscript|from 'react'|from 'three'|@react-three/.test(src));
 check('§0 the module never touches `.identification` (it reads through B1\'s one reader and the resolver\'s base read) and never refuses (no `refused`, no `throw`)', !/\.identification\b|EdgeIdentification|refused|throw /.test(src));
-check('§0 `≡` is IS and nothing else (the designer\'s rule 3, M1): the key is `x≡y` for IS and `x w y` for any other mode', /mode === IS \? `\$\{x\}≡\$\{y\}` : `\$\{x\} \$\{mode\} \$\{y\}`/.test(src));
+check('§0 `≡` is IS and nothing else (the designer\'s rule 3, M1): the key is `x≡y` for IS and, for any other mode, HIS SENTENCE — `x w y` said from the first corner, `y w x` from the second (D13, MODES-4)', /mode === IS \? `\$\{x\}≡\$\{y\}` : dir === ALONG \? `\$\{x\} \$\{mode\} \$\{y\}` : `\$\{y\} \$\{mode\} \$\{x\}`/.test(src));
 
 // ═══ §a F4 — the core K under IS-only ═══
 console.log('\n----- §a F4: the core under IS-only reproduces K exactly -----');

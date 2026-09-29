@@ -52,7 +52,9 @@ export interface PersistedWorkspaceV1 {
   viewLayout?: PersistedViewLayout;
   edgeTauDrafts?: PersistedEdgeTauDrafts;
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
-  rules?: Array<[string, string, string]>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`)
+  rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape, a 3-tuple the chain
+  converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations, `y w′ x ≡ x w y`
+  opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque (substitution does not ride through them)
 }
 
 export interface WorkspacePersistenceSnapshot {
@@ -68,7 +70,9 @@ export interface WorkspacePersistenceSnapshot {
   viewLayout?: PersistedViewLayout;
   edgeTauDrafts?: PersistedEdgeTauDrafts;
   lexicon?: string[]; // MODES-1 · B1 — the declared modes (the relatings ride the edges' packets inside `shapes`)
-  rules?: Array<[string, string, string]>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`)
+  rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape
+  converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations
+  opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque
 }
 
 export type WorkspaceImportValidationResult =
@@ -97,6 +101,8 @@ export function serializeWorkspaceSnapshot(
     edgeTauDrafts: snapshot.edgeTauDrafts ?? {},
     lexicon: snapshot.lexicon ?? [],
     rules: snapshot.rules ?? [],
+    converses: snapshot.converses ?? [],
+    opaque: snapshot.opaque ?? [],
   };
 }
 
@@ -224,6 +230,14 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
     errors.push('Workspace rules is malformed.');
   }
 
+  if (input.converses !== undefined && !isConverses(input.converses)) {
+    errors.push('Workspace converses is malformed.');
+  }
+
+  if (input.opaque !== undefined && !isLexicon(input.opaque)) {
+    errors.push('Workspace opaque is malformed.');
+  }
+
   if (errors.length) {
     return { ok: false, errors };
   }
@@ -295,9 +309,15 @@ function isLexicon(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((w) => typeof w === 'string' && w.trim().length > 0);
 }
 
-/** MODES-1 · B3 — the person's rules (w, w′) ↦ w‴: triples of words; a file saved before B3 has no field (accepted) */
-function isRules(value: unknown): value is Array<[string, string, string]> {
-  return Array.isArray(value) && value.every((r) => Array.isArray(r) && r.length === 3 && r.every((w) => typeof w === 'string' && w.trim().length > 0));
+/** MODES-1 · B3 — the person's rules (w, w′) ↦ w‴: triples of words, or (MODES-4) a triple with the path's shape — chain · fork · join; a file saved before B3 has no field (accepted) */
+function isRules(value: unknown): value is Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']> {
+  const word = (w: unknown): boolean => typeof w === 'string' && w.trim().length > 0;
+  return Array.isArray(value) && value.every((r) => Array.isArray(r) && ((r.length === 3 && r.every(word)) || (r.length === 4 && r.slice(0, 3).every(word) && ['chain', 'fork', 'join'].includes(r[3]))));
+}
+
+/** MODES-4 · D13 — the person's converse equations: pairs of words; a file saved before MODES-4 has no field (accepted) */
+function isConverses(value: unknown): value is Array<[string, string]> {
+  return Array.isArray(value) && value.every((r) => Array.isArray(r) && r.length === 2 && r.every((w) => typeof w === 'string' && w.trim().length > 0));
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

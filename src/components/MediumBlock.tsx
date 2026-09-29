@@ -11,10 +11,9 @@
 // MARKER MODES-1 · M3 (2026-09-29; her eye of 10:16 in Arman's Chrome at 7c64c61 — eleven lines read wrong, one cut):
 //   S1 a tension's line names WHAT PRESSES by its end — his pair (`against your pair — … — you paired Φ1 with F7`) or his bar
 //      (`against your bar — … — which you barred`); never `which you barred` for a pair.
-//   S3 `≡` for IS inside every sentence.  S4 each leg printed AS HE SAID IT, never mirrored (the sorting's `said`); a passage with
-//      a directed leg against the walk reads `not yet said` and offers `that is not it` only (the mothership's interim ruling).
-//   S5 no IS fallback in the say-hand: the `that is "…"` hand exists only where a rule or his say gives the word, and never on a
-//      tension (a say against his own pair or bar is refused at the act — the hand is absent; the line names what presses).
+//   S3 `≡` for IS inside every sentence.  S4 each leg printed AS HE SAID IT, never mirrored (the sorting's `said`).
+//   S5 no IS fallback in the say-hand; never a `that is` on a tension (a say against his own pair or bar is refused at the act —
+//      the hand is absent; the line names what presses).
 //   S6 the exception line prints only against a rule HE named and quotes only a mode word; a not-it say prints once.
 //   S7 `your modes: IS · carries`, the chosen one underlined; the polarity is on the act line, each state marked: `it holds ·
 //      it does not hold`.  S8 the hand reads `add it` and is a hand only with a word in the field.  S9 the child line prints
@@ -23,15 +22,30 @@
 //      light: (r8 ≡ F7) with (F7 ≡ Φ1) — both hold F7 — no relating between AC and Honesty says so`; related, `in A's light too:
 //      … — you related them`; no `~`, the device never the speaker; each light says what it goes through.
 //   R1 a zero passage count gives its reason.  R2 `nothing against it — no passage through C or D yet` when every view is
-//      silent.  R3 `since then, …` from the first move on.  R4 `its one relating is also said through C`.
+//   silent.  R3 `since then, …` from the first move on.  R4 `its one relating is also said through C`.
+// MARKER MODES-4 · M2 and M3 (2026-09-29; the designer's forms of 17:32, ratified §231; the researcher's 17:37, ADR 0031 §9.14):
+//   HER TWO REGISTERS — what he declares once about a WORD (its converse, whether a pair passes through it) sits with the MODES LINE
+//   and holds everywhere; what he chooses for the NEXT ACT (the mode, the direction, holds or not) sits on the ACT LINE and resets
+//   when he leaves the midpoint; each choice shows every state, the chosen one underlined. HIS SENTENCE PRINTS ONLY AS HE SAID IT —
+//   the direction is never an arrow and never a rewriting; a passage's shape is said in words.
+//   §1 the mode's declaration (the chosen mode, never IS): `carries the other way round: [your word] name it` → `… carried-by —
+//      "y carried-by x" is "x carries y" · withdraw`; the opaque bit `a pair passes through carries · a pair stops at carries`.
+//   §2 the direction, a choice on the act line: `it reads "A's point carries B's point" · "B's point carries A's point"`.
+//   §3 the shape said before the legs when they do not run A → B: `from B to A: …` · `both from r3: …` · `both into r3: …`; an
+//      opaque mode's mixed passage `— held apart: the pair F13 ≡ r0 stops at pictures` — no reading after it, no hand, no count.
+//   §4 the rule gesture BY SHAPE (M3: a chain one key whichever way it crosses the edge, in the chain's own order; a fork and a
+//      join their own keys): `name the two in a row: …` · `name the two from one point: … and … =` · `name the two into one point`.
+//   §5 the per-passage word on a two-mode-leg passage, beside `that is not it`: `that is F2 [your word] Φ4 · say it`.
+//   §6 the refused route on the instance wherever it is listed: `F2 carries Φ3 — not by way of C, you said`.
+//   §8 `both relatings are also said through C or D` in the own line and EXHAUSTED's line alike.
 
 import { Fragment, useState } from 'react';
 import type { Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore } from '../store/geometryStore';
 import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
 import { inheritedReadingOf, mediumOf, type DerivedLight } from '../lib/descent';
-import { lexiconOf, IS, type Relating } from '../lib/relatings';
-import { relKey, type ReadPath, type Sorting, type ViewSorting } from '../lib/sorting';
+import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, type Dir, type Relating } from '../lib/relatings';
+import { relKey, type ReadPath, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
 import type { SpaceOfOptions } from '../lib/spaceOf';
 
 export interface NamedUnder {
@@ -53,25 +67,36 @@ export function namedUnderOf(shape: Shape, siteId: VertexId | null): NamedUnder 
 const join = (xs: string[]): string => xs.join(' · ');
 const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 const modeWord = (w: string): string => (w === IS ? '≡' : w);
+/** a list in words: `C` · `C or D` · `C, D or E` */
+const orList = (xs: string[]): string => (xs.length <= 1 ? xs[0] ?? '' : xs.length === 2 ? `${xs[0]} or ${xs[1]}` : `${xs.slice(0, -1).join(', ')} or ${xs[xs.length - 1]}`);
+const andList = (xs: string[]): string => (xs.length <= 1 ? xs[0] ?? '' : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
 
-export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMode, bar, setBar }: { shape: Shape; edge: Edge; siteId: VertexId | null; la: string; lb: string; options: SpaceOfOptions; mode: string; setMode: (w: string) => void; bar: boolean; setBar: (b: boolean) => void }) {
-  // the block SUBSCRIBES to these three (a change re-renders it) and reads their LIVE value from the store: react-dom/server
+export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMode, bar, setBar, dir, setDir }: { shape: Shape; edge: Edge; siteId: VertexId | null; la: string; lb: string; options: SpaceOfOptions; mode: string; setMode: (w: string) => void; bar: boolean; setBar: (b: boolean) => void; dir: Dir; setDir: (d: Dir) => void }) {
+  // the block SUBSCRIBES to these (a change re-renders it) and reads their LIVE value from the store: react-dom/server
   // hands a hook the store's INITIAL snapshot, so a witness rendering under node would read `rules: []` while the store held a
   // rule (measured); the page and the witness now read the same state
   useGeometryStore((s) => s.lexicon);
   useGeometryStore((s) => s.rules);
   useGeometryStore((s) => s.relatingRefusals);
-  const { lexicon, rules, relatingRefusals } = useGeometryStore.getState();
+  useGeometryStore((s) => s.converses);
+  useGeometryStore((s) => s.opaque);
+  const { lexicon, rules, relatingRefusals, converses, opaque } = useGeometryStore.getState();
   const declareMode = useGeometryStore((s) => s.declareMode);
   const nameRule = useGeometryStore((s) => s.nameRule);
   const withdrawRule = useGeometryStore((s) => s.withdrawRule);
   const giveVerdict = useGeometryStore((s) => s.giveVerdict);
   const withdrawVerdict = useGeometryStore((s) => s.withdrawVerdict);
   const withdrawRelatingAttempt = useGeometryStore((s) => s.withdrawRelatingAttempt);
+  const declareConverse = useGeometryStore((s) => s.declareConverse);
+  const withdrawConverse = useGeometryStore((s) => s.withdrawConverse);
+  const setOpaque = useGeometryStore((s) => s.setOpaque);
   const [newMode, setNewMode] = useState('');
   const [ruleWords, setRuleWords] = useState<Record<string, string>>({});
+  const [sayWords, setSayWords] = useState<Record<string, string>>({});
+  const [converseWord, setConverseWord] = useState('');
 
-  const medium = mediumOf(shape, edge, options, rules);
+  const facts = { converses, opaque };
+  const medium = mediumOf(shape, edge, options, rules, facts);
   if (!medium || !medium.child || !medium.sorting) return null;
   const { child, sorting, lights } = medium;
   const [X, Y] = edge.vertexIds;
@@ -85,20 +110,34 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
   const words = lexiconOf(shape, lexicon);
   const rolesA = spaceX ? spaceX.roles.length : 0;
   const rolesB = spaceY ? spaceY.roles.length : 0;
-  const sentence = (r: Relating | [string, string, string]): string => `${nameA(r[1])} ${modeWord(r[0])} ${nameB(r[2])}`;
+  // a relating AS HE SAID IT (D13): from the first corner `x w y`, from the second `y w x`; IS symmetric
+  const sentence = (r: Relating): string => (dirOf(r) === ALONG ? `${nameA(r[1])} ${modeWord(r[0])} ${nameB(r[2])}` : `${nameB(r[2])} ${modeWord(r[0])} ${nameA(r[1])}`);
+  const instanceOf = (k: string): Relating => sorting.instances.find((r) => relKey(r) === k) as Relating;
   const viewLabel = (v: ViewSorting): string => labelOf(v.view);
   const cornersWords = sorting.views.length === 0 ? '' : sorting.views.map(viewLabel).join(' or ');
-  // S4 — each leg as he said it: the sorting hands the leg in the edge's stored order; its two terms are named at their own corners
+  // §6 — the refused route is the instance's FORM wherever it is listed (D16): `F2 carries Φ3 — not by way of C, you said`
+  const withForm = (k: string): string => { const vs = sorting.refused.get(k); return `${sentence(instanceOf(k))}${vs && vs.length ? ` — not by way of ${orList(vs.map(labelOf))}, you said` : ''}`; };
+  // S4 — each leg as he said it: the sorting hands the leg as (subject, mode, object) with its sense along the walk; its two terms
+  // are named at their own corners
   const legWords = (p: ReadPath, leg: 0 | 1): string => {
     const [s, w, o] = p.path.said[leg];
     const z = p.path.view;
-    const ends: [VertexId, VertexId] = leg === 0 ? (s === p.path.x && o === p.path.z ? [X, z] : [z, X]) : (s === p.path.z && o === p.path.y ? [z, Y] : [Y, z]);
+    const along = p.path.dirs[leg] === ALONG;
+    const ends: [VertexId, VertexId] = leg === 0 ? (along ? [X, z] : [z, X]) : (along ? [z, Y] : [Y, z]);
     return `${nameZ(ends[0], s)} ${modeWord(w)} ${nameZ(ends[1], o)}`;
   };
-  const passageWords = (p: ReadPath): string => `${legWords(p, 0)} · ${legWords(p, 1)}`;
-  // a mixed path composed by substitution whose directed leg ran against the walk reads its composite the other way round (y w x —
-  // the direction carried through, the second resolution §1); never a word on swapped coordinates
-  const compositeWords = (p: ReadPath): string => (p.path.reversed ? `${nameB(p.path.y)} ${p.composite === null ? '?' : modeWord(p.composite)} ${nameA(p.path.x)}` : `${nameA(p.path.x)} ${p.composite === null ? '?' : modeWord(p.composite)} ${nameB(p.path.y)}`);
+  // §3 — the passage's SHAPE said in words before its legs when they do not run from A to B: a chain from B to A, both from one
+  // point, both into one point; a chain from A to B as today (nothing said)
+  const shapeWords = (p: ReadPath): string => {
+    if (p.path.source === 'triad' || p.path.mixed) return ''; // a mixed passage has no shape to say: its IS leg is symmetric
+    if (p.path.shape === 'chain') return p.path.from === 'y' ? `from ${lb} to ${la}: ` : '';
+    return p.path.shape === 'fork' ? `both from ${nameZ(p.path.view, p.path.z)}: ` : `both into ${nameZ(p.path.view, p.path.z)}: `;
+  };
+  // a chain from B to A prints its legs in the CHAIN's own order (B's leg first — her §3); every other shape as the walk meets them
+  const passageWords = (p: ReadPath): string => (p.path.from === 'y' && p.path.source !== 'triad' ? `${shapeWords(p)}${legWords(p, 1)} · ${legWords(p, 0)}` : `${shapeWords(p)}${legWords(p, 0)} · ${legWords(p, 1)}`);
+  // the composite in ITS OWN direction (D13, §9.14): a chain's, the mode leg's under substitution, the rule's for a fork or a join —
+  // never a word on swapped coordinates
+  const compositeWords = (p: ReadPath): string => (p.compositeDir === AGAINST ? `${nameB(p.path.y)} ${p.composite === null ? '?' : modeWord(p.composite)} ${nameA(p.path.x)}` : `${nameA(p.path.x)} ${p.composite === null ? '?' : modeWord(p.composite)} ${nameB(p.path.y)}`);
   // S1 — a tension names what presses, by its end: his pair at the target, his pair at the source, or his own bar
   const pressWords = (p: ReadPath, lz: string): string => {
     const key = (p.direct ?? '').split('|');
@@ -106,13 +145,18 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
     if (p.end === 'source' && key.length === 3) return `against your pair — through ${lz} it would say ${compositeWords(p)} — you paired ${nameA(p.path.x)} with ${nameB(key[2])}`;
     return `against your bar — through ${lz} it would say ${compositeWords(p)} — which you barred`;
   };
+  // §3 — held apart (§9.13): the pair named as he said it, the mode's declaration's own words
+  const heldWords = (p: ReadPath): string => { const pair = p.path.w === IS ? legWords(p, 0) : legWords(p, 1); const w = p.path.w === IS ? p.path.w2 : p.path.w; return `held apart: the pair ${pair} stops at ${w}`; };
   const readingWords = (p: ReadPath, lz: string): string => {
     if (p.reading === 'COMPOSED') return `the face's — said between them and through ${lz} too: ${compositeWords(p)}`;
     if (p.reading === 'LIGHT') return `only in ${lz}'s light — through ${lz} it would read: ${compositeWords(p)} — no relating between ${la} and ${lb} says so`;
     if (p.reading === 'TENSION') return pressWords(p, lz);
     if (p.reading === 'NOT') return 'you said: that is not it';
+    if (p.reading === 'HELD') return heldWords(p);
     return 'not yet said';
   };
+  // §5 — the per-passage word's sentence, in the passage's own direction: `that is F2 [your word] Φ4` · from B to A `that is Φ4 [your word] F2`
+  const sayEnds = (p: ReadPath): [string, string] => (p.path.from === 'y' ? [nameB(p.path.y), nameA(p.path.x)] : [nameA(p.path.x), nameB(p.path.y)]);
   // R1 — a zero passage count gives its reason: the empty leg named, or the two legs that do not meet
   const viewHead = (v: ViewSorting): string => {
     const lz = viewLabel(v);
@@ -123,21 +167,19 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
     return `through ${lz}: no passage — what you related on ${la}–${lz} and on ${lz}–${lb} does not meet`;
   };
   const related = sorting.instances.length;
-  const alsoSaid = (): string => `nothing theirs alone — ${related === 1 ? 'its one relating is' : 'all ' + related + ' relatings are'} also said through ${cornersWords}`;
+  // R4 with her §8: one · both · all N
+  const alsoSaid = (): string => `nothing theirs alone — ${related === 1 ? 'its one relating is' : related === 2 ? 'both relatings are' : 'all ' + related + ' relatings are'} also said through ${cornersWords}`;
   // M4 §1 — VACUOUS in the undetected line's shape: he has related, no corner has seen it (`seen through` is the light's own sense)
   const vacuousLine = (): string => {
     const names = sorting.views.map(viewLabel);
-    const through = names.length <= 1 ? names[0] ?? '' : names.length === 2 ? `${names[0]} or ${names[1]}` : `${names.slice(0, -1).join(', ')} or ${names[names.length - 1]}`;
     const which = names.length <= 1 ? 'it' : names.length === 2 ? 'either' : 'any';
-    return `${la} and ${lb}, ${plural(related, 'relating', 'relatings')} — not yet seen through ${through}: no passage through ${which} yet`;
+    return `${la} and ${lb}, ${plural(related, 'relating', 'relatings')} — not yet seen through ${orList(names)}: no passage through ${which} yet`;
   };
   // M4 §2 — COHERENT names its two positive facts: the passages counted at the corners that hold them, none unsaid; then the negations
   const coherentLine = (): string => {
     const holding = sorting.views.filter((v) => v.paths.length > 0);
     const count = holding.reduce((n, v) => n + v.paths.length, 0);
-    const corners = holding.map(viewLabel);
-    const through = corners.length <= 1 ? corners[0] ?? '' : `${corners.slice(0, -1).join(', ')} and ${corners[corners.length - 1]}`;
-    return `nothing against it — ${plural(count, 'passage', 'passages')} through ${through}, none unsaid; no bar pressed, no say differs, the views agree on what is theirs alone`;
+    return `nothing against it — ${plural(count, 'passage', 'passages')} through ${andList(holding.map(viewLabel))}, none unsaid; no bar pressed, no say differs, the views agree on what is theirs alone`;
   };
   // THE STATE LINE reads the sorting's ONE token at §8's precedence (MODES-2 (d)): UNDETECTED · VACUOUS · UNRULED (the counts; the
   // per-view line says which passage is unsaid — her §3) · POCKET · EXHAUSTED · CLOSED · COHERENT · otherwise the counts
@@ -158,12 +200,11 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
   const pocketLines = (): Array<[string, string]> => (sorting.state !== 'POCKET' ? [] : sorting.instances
     .map((r): [string, Relating] => [relKey(r), r])
     .filter(([k]) => sorting.views.some((v) => v.own.includes(k)))
-    .map(([k, r]) => {
+    .map(([k]) => {
       const alone = sorting.views.filter((v) => v.own.includes(k)).map(viewLabel);
       const faces = sorting.views.filter((v) => v.centroid.includes(k)).map(viewLabel);
-      const list = (xs: string[]): string => (xs.length <= 1 ? xs[0] ?? '' : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
-      const facesPart = faces.length ? " · the face's through " + list(faces) : '';
-      return [k, `${sentence(r)} — theirs alone through ${list(alone)}${facesPart}`];
+      const facesPart = faces.length ? " · the face's through " + andList(faces) : '';
+      return [k, `${withForm(k)} — theirs alone through ${andList(alone)}${facesPart}`];
     }));
   const named = namedUnderOf(shape, siteId);
   const siteName = siteId ? labelOf(siteId) : null;
@@ -175,12 +216,15 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
     if (!f) return null;
     return [f.vertexIds.indexOf(X), f.vertexIds.indexOf(Y)];
   };
-  // a `composed` say names the direct's mode (w3); a `not` say speaks of no direct and carries none
+  // a `composed` say names the direct's mode (w3); a `not` say speaks of no direct and carries none; the legs' senses ride the
+  // record only where one runs against the walk (D13 — a record of two `→` legs reads as before)
   const verdictRecord = (v: ViewSorting, p: ReadPath, verdict: 'composed' | 'not', w3?: string) => {
     const base = facePositions(v);
     if (!base) return null;
-    return { base, x: p.path.x, w: p.path.w, z: p.path.z, w2: p.path.w2, y: p.path.y, ...(verdict === 'composed' && w3 ? { w3 } : {}), verdict };
+    const dirs = p.path.dirs[0] === ALONG && p.path.dirs[1] === ALONG ? {} : { dirs: p.path.dirs };
+    return { base, x: p.path.x, w: p.path.w, z: p.path.z, w2: p.path.w2, y: p.path.y, ...dirs, ...(verdict === 'composed' && w3 ? { w3 } : {}), verdict };
   };
+  const passageKey = (p: ReadPath): string => { const { x, w, z, w2, y, dirs } = p.path; return `${x}|${w}|${z}|${w2}|${y}${dirs[0] === ALONG && dirs[1] === ALONG ? '' : `|${dirs.join('')}`}`; };
   // S11 with her §4 — a light through a relating of the third corner says what it goes through (the opposite-midpoint kind, a
   // light still); the shared-coordinate kind is NOT a light (the second resolution D14/D15, the mothership's amendment to M3): it is
   // the parent's passage INHERITED, read at the child's resolution with the EXISTING forms (the face's · the light · the tension ·
@@ -188,7 +232,7 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
   // structure, shown by the surface (MODES-3), never a light — no line here
   const linkWords = (l: DerivedLight): string => ('role' in l.link ? `both hold ${nameZ(l.through, l.link.role)}` : `by ${nameZ(l.link.corners[0], l.link.relating[0])} ${modeWord(l.link.relating[1])} ${nameZ(l.link.corners[1], l.link.relating[2])}`);
   const inheritedWords = (l: DerivedLight): { text: string; reading: string } | null => {
-    const got = inheritedReadingOf(shape, l, options, rules);
+    const got = inheritedReadingOf(shape, l, options, rules, facts);
     if (!got) return null;
     const { path: rp, edge: [E0, E1] } = got;
     const lt = labelOf(l.through);
@@ -208,6 +252,15 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
     return { text: l.held ? `in ${labelOf(l.through)}'s light too: ${nameA(l.x)} with ${nameB(l.y)} — ${linkWords(l)} — you related them` : `only in ${labelOf(l.through)}'s light: ${nameA(l.x)} with ${nameB(l.y)} — ${linkWords(l)} — no relating between ${la} and ${lb} says so`, inherited: null };
   };
   const holdWord = mode === IS ? '≡' : mode;
+  // §1 — the chosen mode's declaration (never IS): its converse, and the opaque bit
+  const converse = mode === IS ? null : converseOf(facts, mode);
+  const stops = mode !== IS && isOpaque(facts, mode);
+  // §4 — the rule gesture by shape: the key a passage OFFERS (its own shape's, or the chain a converse and a rule already read it as)
+  const ruleOf = (k: RuleKey) => rules.find((r) => (r.length === 4 ? r[3] : 'chain') === k.shape && ((r[0] === k.w && r[1] === k.w2) || (k.shape !== 'chain' && r[0] === k.w2 && r[1] === k.w)));
+  const keyOffered = (p: ReadPath): RuleKey | null => { if (!p.path.readable || p.path.keys.length === 0) return null; return p.path.keys.find((k) => ruleOf(k)) ?? p.path.keys[0]; };
+  const keyId = (k: RuleKey): string => `${k.w}|${k.w2}${k.shape === 'chain' ? '' : `|${k.shape}`}`;
+  const gestureWords = (k: RuleKey): string => (k.shape === 'chain' ? `name the two in a row: ${k.w}, then ${k.w2} =` : k.shape === 'fork' ? `name the two from one point: ${k.w} and ${k.w2} =` : `name the two into one point: ${k.w} and ${k.w2} =`);
+  const namedWords = (k: RuleKey, w3: string): string => (k.shape === 'chain' ? `you named it: ${k.w}, then ${k.w2} = ${w3} — your word for the two in a row; holds on every such passage` : k.shape === 'fork' ? `you named it: ${k.w} and ${k.w2} from one point = ${w3} — your word for the two from one point; holds on every such passage` : `you named it: ${k.w} and ${k.w2} into one point = ${w3} — your word for the two into one point; holds on every such passage`);
 
   return (
     <div data-medium="true" data-medium-state={sorting.state} data-medium-coherent={String(sorting.coherent)} data-medium-closed={String(sorting.closed)} data-medium-rules={String(rules.length)} className="mt-2 grid gap-0.5 rounded border border-stone-800 bg-stone-950/60 px-2 py-1 text-stone-300">
@@ -224,8 +277,48 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
           </Fragment>
         ))}
       </span>
+      {/* §1 — THE MODE'S DECLARATION (the lexicon register: declared once, where the mode lives, mesh-wide) — for the chosen mode, never
+          for IS (symmetric, its law fixed): the converse, an equation of his; the opaque bit, `passes through` by default */}
+      {mode !== IS ? (
+        <>
+          <span data-medium-converse={mode} data-medium-converse-word={converse ?? undefined} className="flex flex-wrap items-center gap-x-2">
+            {converse !== null ? (
+              <>
+                <span>{`${mode} the other way round: ${converse} — "y ${converse} x" is "x ${mode} y"`}</span>
+                {' · '}
+                <button type="button" data-medium-converse-withdraw={mode} className="underline" onClick={() => withdrawConverse(mode)}>withdraw</button>
+              </>
+            ) : (
+              <>
+                <span>{`${mode} the other way round:`}</span>
+                {' '}
+                <input data-medium-converse-input={mode} value={converseWord} onChange={(e) => setConverseWord(e.target.value)} placeholder="your word" className="h-5 w-24 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100" />
+                {converseWord.trim() ? <>{' '}<button type="button" data-medium-converse-name={mode} className="underline" onClick={() => { declareConverse(mode, converseWord); setConverseWord(''); }}>name it</button></> : null}
+              </>
+            )}
+          </span>
+          <span data-medium-opaque-line={mode} className="flex flex-wrap items-center gap-x-2">
+            <button type="button" data-medium-opaque="through" data-medium-opaque-chosen={stops ? undefined : 'true'} className={stops ? 'text-stone-300' : 'underline text-stone-100'} onClick={() => setOpaque(mode, false)}>{`a pair passes through ${mode}`}</button>
+            {' · '}
+            <button type="button" data-medium-opaque="stops" data-medium-opaque-chosen={stops ? 'true' : undefined} className={stops ? 'underline text-stone-100' : 'text-stone-300'} onClick={() => setOpaque(mode, true)}>{`a pair stops at ${mode}`}</button>
+          </span>
+        </>
+      ) : null}
+      {/* §2 — THE ACT LINE (the act register: resets on leaving the midpoint): the direction as a CHOICE, both sentence shapes written
+          out and the chosen one underlined — never the order of the picks; absent for IS; then the polarity (S7) */}
       <span data-medium-gesture="true" className="flex flex-wrap items-center gap-x-2 text-stone-400">
-        <span>{`a relating — pick a point in ${la} and one in ${lb}; it reads "${la}'s point ${holdWord} ${lb}'s point" —`}</span>
+        {mode === IS ? (
+          <span>{`a relating — pick a point in ${la} and one in ${lb}; it reads "${la}'s point ${holdWord} ${lb}'s point" —`}</span>
+        ) : (
+          <>
+            <span>{`a relating — pick a point in ${la} and one in ${lb}; it reads`}</span>
+            {' '}
+            <button type="button" data-medium-dir="→" data-medium-dir-chosen={dir === ALONG ? 'true' : undefined} className={dir === ALONG ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setDir(ALONG)}>{`"${la}'s point ${mode} ${lb}'s point"`}</button>
+            {' · '}
+            <button type="button" data-medium-dir="←" data-medium-dir-chosen={dir === AGAINST ? 'true' : undefined} className={dir === AGAINST ? 'underline text-stone-100' : 'text-stone-400'} onClick={() => setDir(AGAINST)}>{`"${lb}'s point ${mode} ${la}'s point"`}</button>
+            {' —'}
+          </>
+        )}
         {' '}
         <button type="button" data-medium-hold="+" data-medium-hold-chosen={bar ? undefined : 'true'} className={bar ? 'text-stone-400' : 'underline text-stone-100'} onClick={() => setBar(false)}>it holds</button>
         {' · '}
@@ -249,64 +342,64 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
       ))}
       {sorting.views.map((v) => {
         const lz = viewLabel(v);
-        // M6 (the designer's second eye, 12:44; the mothership 12:48): the rule gesture and the rule line exist only for the passages a
-        // rule can READ — two mode legs (an IS leg composes by the transport's law, §9.12) and no directed leg against the walk (the
-        // interim, S4: no rule keys on that pattern until D13's directed keys land) — never offered from a passage they cannot answer,
-        // never claiming a hold on one that stays `not yet said`
-        const readable = v.paths.filter((p) => p.path.w !== IS && p.path.w2 !== IS && !p.path.against);
-        const pairsSeen = [...new Set(readable.map((p) => `${p.path.w}|${p.path.w2}`))];
+        // M6 with §4 (M3): the rule gesture and the rule line exist only for the passages a rule can READ — two mode legs (an IS leg
+        // composes by the transport's law, §9.12) — keyed BY SHAPE: the key each passage offers, grouped
+        const offered: Array<[string, RuleKey]> = [];
+        for (const p of v.paths) { const k = keyOffered(p); if (k && !offered.some(([id]) => id === keyId(k))) offered.push([keyId(k), k]); }
         return (
           <div key={v.view} data-medium-view={lz} data-medium-view-vacuous={String(v.vacuous)} className="grid gap-0.5">
             <span data-medium-view-head="true" className="text-stone-100">{viewHead(v)}</span>
             {v.paths.map((p) => {
-              // the `that is "…"` hand exists only where a rule, substitution or his say gives the word (S5 a), never on a tension
-              // (S5 b — the say would set the barred entry by the back door; the line names what presses), never on a passage read
-              // against the walk (S4, interim). `that is not it` stays on a MODE tension (an exception to his rule on this path —
-              // the second resolution §6) and is absent on an IS tension (the one-to-one law, IS ; IS = IS, substitution are the
-              // transport's, not his rules: no say at all; the route is the pairing)
-              // M5 (the researcher's 12:21, ADR 0031 §9.12): the verdict hands of D6 live on paths of TWO MODE LEGS only — on every
-              // path with an IS leg the composite is the transport's law (two IS legs compose to IS; one IS leg and a mode leg
-              // compose by substitution), and a law is not his to except: an IS light, a mixed light, an IS or mixed tension carry
-              // no hand; the store refuses a say there by name — the guard is the rule, the absence follows from it
-              const twoModeLegs = p.path.w !== IS && p.path.w2 !== IS;
-              const sayable = twoModeLegs && p.composite !== null && p.reading !== 'TENSION' && !p.path.against;
-              const notSayable = twoModeLegs;
+              // THE HANDS (M5, ADR 0031 §9.12): the verdict hands of D6 live on paths of TWO MODE LEGS only — on every path with an IS
+              // leg the composite is the transport's law (two IS legs compose to IS; one IS leg and a mode leg compose by substitution,
+              // or are held apart by an opaque mode), and a law is not his to except: no hand; the store refuses a say there by name.
+              // §5 — the per-passage word `that is F2 [your word] Φ4 · say it` beside `that is not it`, never on a TENSION (S5 b — the
+              // say would set the barred entry by the back door; the line names what presses); `that is not it` stays on a MODE
+              // tension (an exception to his rule on this path — the second resolution §6)
+              const sayable = p.path.readable && p.reading !== 'TENSION';
+              const notSayable = p.path.readable;
+              const pk = passageKey(p);
+              const [sx, sy] = sayEnds(p);
               return (
-                <span key={`${p.path.x}|${p.path.w}|${p.path.z}|${p.path.w2}|${p.path.y}`} data-medium-passage={`${p.path.x}|${p.path.w}|${p.path.z}|${p.path.w2}|${p.path.y}`} data-medium-passage-reading={p.reading} data-medium-passage-by={p.by ?? undefined} data-medium-passage-end={p.end ?? undefined} data-medium-passage-against={p.path.against ? 'true' : undefined} className="flex flex-wrap gap-x-2">
+                <span key={pk} data-medium-passage={pk} data-medium-passage-reading={p.reading} data-medium-passage-by={p.by ?? undefined} data-medium-passage-end={p.end ?? undefined} data-medium-passage-against={p.path.against ? 'true' : undefined} data-medium-passage-shape={p.path.source === 'triad' ? undefined : p.path.shape} data-medium-passage-from={p.path.from ?? undefined} className="flex flex-wrap items-center gap-x-2">
                   <span>{`${passageWords(p)} — ${readingWords(p, lz)}`}</span>
                   {p.by === 'verdict' || p.recorded ? (
                     <>
-                      {/* a composed say stored on an against-path before the interim ruling is read as `not yet said` but PRINTED with its
-                          withdraw (12:19 (ii): a record he cannot see is a fact with no mark) */}
+                      {/* a composed say stored on a passage no hand of his reaches (a mixed path, before §9.12) is read as `not yet said` but
+                          PRINTED with its withdraw (12:19 (ii): a record he cannot see is a fact with no mark) */}
                       {p.reading === 'NOT' ? null : <span data-medium-said="true" data-medium-said-recorded={p.recorded ? 'true' : undefined}>{`you said: that is "${p.recorded ? `${nameA(p.path.x)} ${modeWord(p.recorded)} ${nameB(p.path.y)}` : compositeWords(p)}"`}</span>}
                       {p.exception && p.composite !== null ? <span data-medium-exception="true">{`except here — you said this passage is "${p.composite}"`}</span> : null}
                       <button type="button" data-medium-say-withdraw="true" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw what you said</button>
                     </>
                   ) : (
                     <>
-                      {sayable ? <button type="button" data-medium-say={`composed|${p.composite}`} className="underline" onClick={() => { const r = verdictRecord(v, p, 'composed', p.composite ?? undefined); if (r) giveVerdict(v.faceId, r); }}>{`that is "${compositeWords(p)}"`}</button> : null}
+                      {sayable ? (
+                        <>
+                          <span>{`that is ${sx}`}</span>
+                          <input data-medium-say-input={pk} value={sayWords[pk] ?? ''} onChange={(e) => setSayWords({ ...sayWords, [pk]: e.target.value })} placeholder="your word" className="h-5 w-24 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100" />
+                          <span>{sy}</span>
+                          {(sayWords[pk] ?? '').trim() ? <>{' · '}<button type="button" data-medium-say="composed" className="underline" onClick={() => { const r = verdictRecord(v, p, 'composed', (sayWords[pk] ?? '').trim()); if (r) giveVerdict(v.faceId, r); setSayWords({ ...sayWords, [pk]: '' }); }}>say it</button></> : null}
+                        </>
+                      ) : null}
                       {notSayable ? <button type="button" data-medium-say="not" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) giveVerdict(v.faceId, r); }}>that is not it</button> : null}
                     </>
                   )}
                 </span>
               );
             })}
-            {pairsSeen.map((pair) => {
-              const [w, w2] = pair.split('|');
-              const rule = rules.find((r) => r[0] === w && r[1] === w2);
-              const builtIn = w === IS || w2 === IS; // M5: a word pair with an IS leg composes by the transport's law — no rule of his keys on it, no gesture offers one
-              const exceptions = readable.filter((p) => p.path.w === w && p.path.w2 === w2 && p.exception).length;
-              if (builtIn) return null;
+            {offered.map(([id, k]) => {
+              const rule = ruleOf(k);
+              const exceptions = v.paths.filter((p) => { const kk = keyOffered(p); return kk !== null && keyId(kk) === id && p.exception; }).length;
               return rule ? (
-                <span key={pair} data-medium-rule={`${w}|${w2}|${rule[2]}`}>
-                  {`you named it: ${w}, then ${w2} = ${rule[2]} — your word for the two in a row; holds on every passage with those two${exceptions ? ` — yours, with ${plural(exceptions, 'exception', 'exceptions')}` : ''} · `}
-                  <button type="button" data-medium-rule-withdraw={`${w}|${w2}`} className="underline" onClick={() => withdrawRule(w, w2)}>withdraw</button>
+                <span key={id} data-medium-rule={`${id}|${rule[2]}`}>
+                  {`${namedWords(k, rule[2])}${exceptions ? ` — yours, with ${plural(exceptions, 'exception', 'exceptions')}` : ''} · `}
+                  <button type="button" data-medium-rule-withdraw={id} className="underline" onClick={() => withdrawRule(k.w, k.w2, k.shape)}>withdraw</button>
                 </span>
               ) : (
-                <span key={pair} data-medium-rule-gesture={`${w}|${w2}`} className="flex flex-wrap items-center gap-x-2">
-                  <span>{`name the two in a row: ${w}, then ${w2} =`}</span>
-                  <input data-medium-rule-input={`${w}|${w2}`} value={ruleWords[pair] ?? ''} onChange={(e) => setRuleWords({ ...ruleWords, [pair]: e.target.value })} placeholder="your word" className="h-5 w-24 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100" />
-                  <button type="button" data-medium-rule-name={`${w}|${w2}`} className="underline" onClick={() => { nameRule(w, w2, ruleWords[pair] ?? ''); setRuleWords({ ...ruleWords, [pair]: '' }); }}>name it</button>
+                <span key={id} data-medium-rule-gesture={id} className="flex flex-wrap items-center gap-x-2">
+                  <span>{gestureWords(k)}</span>
+                  <input data-medium-rule-input={id} value={ruleWords[id] ?? ''} onChange={(e) => setRuleWords({ ...ruleWords, [id]: e.target.value })} placeholder="your word" className="h-5 w-24 rounded border border-stone-700 bg-stone-900 px-1 text-xs text-stone-100" />
+                  <button type="button" data-medium-rule-name={id} className="underline" onClick={() => { nameRule(k.w, k.w2, ruleWords[id] ?? '', k.shape); setRuleWords({ ...ruleWords, [id]: '' }); }}>name it</button>
                 </span>
               );
             })}
@@ -321,10 +414,10 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
         return differ.map(([k, s]) => <span key={k} data-medium-says-differ={k}>{`your says differ across the faces: ${s.map(([lz, c]) => `through ${lz} you said "${c}"`).join(', ')}`}</span>);
       })()}
       {sorting.instances.length > 0 && sorting.state !== 'VACUOUS' ? (
-        <span data-medium-own={String(sorting.own.length)}>{sorting.own.length ? `${la} and ${lb}'s alone — no passage through ${cornersWords || 'any corner'} comes to it: ${join(sorting.own.map((k) => sentence(sorting.instances.find((r) => relKey(r) === k) as Relating)))}` : alsoSaid()}</span>
+        <span data-medium-own={String(sorting.own.length)}>{sorting.own.length ? `${la} and ${lb}'s alone — no passage through ${cornersWords || 'any corner'} comes to it: ${join(sorting.own.map(withForm))}` : alsoSaid()}</span>
       ) : null}
       {sorting.views.filter((v) => v.centroid.length > 0).map((v) => (
-        <span key={`c-${v.view}`} data-medium-faces={viewLabel(v)}>{`the face's — said between them and through ${viewLabel(v)} too: ${join(v.centroid.map((k) => sentence(sorting.instances.find((r) => relKey(r) === k) as Relating)))}`}</span>
+        <span key={`c-${v.view}`} data-medium-faces={viewLabel(v)}>{`the face's — said between them and through ${viewLabel(v)} too: ${join(v.centroid.map(withForm))}`}</span>
       ))}
       <span data-medium-state-line="true" className="text-stone-400">{stateLine()}</span>
       {pocketLines().map(([k, text]) => <span key={`p-${k}`} data-medium-pocket-line={k} className="text-stone-400">{text}</span>)}

@@ -26,9 +26,9 @@ import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
 import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
 import { triadLegsOf, triadOf, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
-import { IS, relatingOf, relatingsHeld, withRelating, withoutRelating, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
-import { IS_RULE, withVerdict, withoutVerdict, type Rule, type VerdictRecord } from '../lib/sorting';
-import { childSpaceOf } from '../lib/instanceSpace';
+import { ALONG, IS, relating, relatingOf, relatingsHeld, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
+import { IS_RULE, ruleReads, verdictNamesPath, withVerdict, withoutVerdict, type Rule, type Shape3, type VerdictRecord } from '../lib/sorting';
+import { childSpaceOf, instanceSpaceOf, termWordsOf } from '../lib/instanceSpace';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
 import type {
@@ -301,16 +301,28 @@ interface GeometryState {
   relatingRefusals: Record<EdgeId, RelatingRefusal & { relating: Relating }>;
   declareMode: (word: string) => void;
   withdrawMode: (word: string) => void;
-  giveRelating: (edgeId: EdgeId, w: string, x: string, y: string, sign: Sign) => RelatingRefusal | null;
-  withdrawRelating: (edgeId: EdgeId, w: string, x: string, y: string) => void;
+  // MODES-4 · D13 (the second resolution §1; ADR 0031 §9.8): the act carries the person's DIRECTION — `→` the first corner's role is
+  // the subject, `←` the second's; positional in the record, never a vertex id; IS symmetric (the pairing, as before)
+  giveRelating: (edgeId: EdgeId, w: string, x: string, y: string, sign: Sign, dir?: Dir) => RelatingRefusal | null;
+  withdrawRelating: (edgeId: EdgeId, w: string, x: string, y: string, dir?: Dir) => void;
   withdrawRelatingAttempt: (edgeId: EdgeId) => void;
+  // MODES-4 · D13 and §9.13 — THE LEXICON'S FACTS beside the words (the designer's §1: declared once, where the mode lives, mesh-wide):
+  // a CONVERSE equation `y w′ x ≡ x w y` (a rule of the converse kind; optional, his), and the OPAQUE bit — a mode is transparent
+  // by default; declared opaque, substitution does not ride through it (a mixed path there composes to nothing, held apart)
+  converses: Array<[string, string]>;
+  opaque: string[];
+  declareConverse: (w: string, w2: string) => void;
+  withdrawConverse: (w: string) => void;
+  setOpaque: (w: string, opaque: boolean) => void;
   // MODES-1 · B3 — VERDICTS, RULES, EXCEPTIONS (the projection ruling D6; src/lib/sorting.ts). A verdict is the person's word on ONE
   // path at a face — `composed` to a direct instance's mode, or `not` — recorded ON THE FACE, positional (no id inside); a RULE
   // (w, w′) ↦ w‴ names a composite for every path with that word-pair, mesh-wide (the store; persisted); a verdict against a rule
   // is an EXCEPTION, recorded as the verdict it is. IS ; IS = IS is built in and never stored. Nothing here proposes either.
   rules: Rule[];
-  nameRule: (w: string, w2: string, w3: string) => void;
-  withdrawRule: (w: string, w2: string) => void;
+  // MODES-4 · M3 (ADR 0031 §9.14): a rule is keyed on the word pair and the path's SHAPE — chain (a 3-tuple; one key whichever way
+  // the chain crosses the edge) · fork · join (the pair order-free)
+  nameRule: (w: string, w2: string, w3: string, shape?: Shape3) => void;
+  withdrawRule: (w: string, w2: string, shape?: Shape3) => void;
   giveVerdict: (faceId: string, record: VerdictRecord) => string | null;
   withdrawVerdict: (faceId: string, record: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>) => void;
   exportWorkspace: () => PersistedWorkspaceV1;
@@ -344,6 +356,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   edgeTauDrafts: {},
   lexicon: [],
   relatingRefusals: {},
+  converses: [],
+  opaque: [],
   rules: [],
   midpointRefusals: {},
   midpointRemade: {},
@@ -1112,7 +1126,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (!lexicon.includes(word)) return;
     set({ lexicon: lexicon.filter((w) => w !== word) }); // the relatings in it stay — they are the person's record; the word stays in use
   },
-  giveRelating: (edgeId, w, x, y, sign) => {
+  giveRelating: (edgeId, w, x, y, sign, dir = ALONG) => {
     const state = get();
     const shape = state.shapes[state.currentShapeId];
     if (!shape) return { corner: null, item: null, why: 'no current shape' };
@@ -1124,9 +1138,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       return refused && refused.act.kind === 'role' && refused.act.pair[0] === x && refused.act.pair[1] === y ? { corner: null, item: null, why: refused.form ?? 'the pairing refused this pair' } : null;
     }
     // B4 (D10): the roles a relating may name are the modes layer's — a seed's cast, a born corner's own child (its instances)
-    const act = relatingOf(shape, edgeId, w, x, y, sign, { tauDrafts: state.edgeTauDrafts }, (s, c, o) => childSpaceOf(s, c, o));
+    const act = relatingOf(shape, edgeId, w, x, y, sign, { tauDrafts: state.edgeTauDrafts }, (s, c, o) => childSpaceOf(s, c, o), dir);
     if (act.refused) {
-      set({ relatingRefusals: { ...state.relatingRefusals, [edgeId]: { ...act.refused, relating: [w, x, y, sign] } } });
+      set({ relatingRefusals: { ...state.relatingRefusals, [edgeId]: { ...act.refused, relating: relating(w, x, y, sign, dir) } } });
       return act.refused;
     }
     const relatingRefusals = { ...state.relatingRefusals };
@@ -1134,7 +1148,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     writeEdgeRelatings(set, { ...state, relatingRefusals }, shape, edgeId, (edge) => withRelating(edge, act.relating));
     return null;
   },
-  withdrawRelating: (edgeId, w, x, y) => {
+  withdrawRelating: (edgeId, w, x, y, dir = ALONG) => {
     const state = get();
     const shape = state.shapes[state.currentShapeId];
     if (!shape) return;
@@ -1144,7 +1158,25 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       else state.withdrawRolePair(edgeId, x, y); // an IS-instance, the pairing's
       return;
     }
-    writeEdgeRelatings(set, state, shape, edgeId, (edge) => withoutRelating(edge, w.trim(), x, y));
+    writeEdgeRelatings(set, state, shape, edgeId, (edge) => withoutRelating(edge, w.trim(), x, y, dir));
+  },
+  // ═══ MODES-4 · D13, §9.13 — the lexicon's facts: a converse equation, the opaque bit ═══
+  declareConverse: (w, w2) => {
+    const a = w.trim(); const b = w2.trim();
+    if (!a || !b || a === IS || b === IS) return; // IS is symmetric and its law is fixed: no converse of it
+    const converses = get().converses.filter(([p, q]) => p !== a && q !== a && p !== b && q !== b); // one equation per word
+    set({ converses: [...converses, [a, b]] });
+  },
+  withdrawConverse: (w) => {
+    const converses = get().converses.filter(([p, q]) => p !== w && q !== w);
+    if (converses.length !== get().converses.length) set({ converses });
+  },
+  setOpaque: (w, opaque) => {
+    const a = w.trim();
+    if (!a || a === IS) return; // the pairing carries no opaque bit
+    const held = get().opaque.includes(a);
+    if (opaque && !held) set({ opaque: [...get().opaque, a] });
+    if (!opaque && held) set({ opaque: get().opaque.filter((m) => m !== a) });
   },
   withdrawRelatingAttempt: (edgeId) => {
     const relatingRefusals = { ...get().relatingRefusals };
@@ -1152,18 +1184,19 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     set({ relatingRefusals });
   },
   // ═══ MODES-1 · B3 — the rules and the verdicts ═══
-  nameRule: (w, w2, w3) => {
+  nameRule: (w, w2, w3, shape = 'chain') => {
     const a = w.trim(); const b = w2.trim(); const c = w3.trim();
     if (!a || !b || !c) return;
     if (a === IS_RULE[0] && b === IS_RULE[1]) return; // the identity regime's rule is built in, never stored
     // M6 (ADR 0031 §9.12): a pair with an IS word composes by SUBSTITUTION — a law, not a rule of his; a rule keyed on it is never
     // stored (the surface offers no gesture for it; the act, reached by script, is a no-op like IS ; IS)
     if (a === IS || b === IS) return;
-    const rules = get().rules.filter((r) => !(r[0] === a && r[1] === b));
-    set({ rules: [...rules, [a, b, c]] });
+    // MODES-4 · M3 (§9.14): one rule per (pair, shape) — a chain in its own order; a fork or a join order-free
+    const rules = get().rules.filter((r) => !ruleReads(r, { w: a, w2: b, shape }));
+    set({ rules: [...rules, shape === 'chain' ? [a, b, c] : [a, b, c, shape]] });
   },
-  withdrawRule: (w, w2) => {
-    const rules = get().rules.filter((r) => !(r[0] === w && r[1] === w2));
+  withdrawRule: (w, w2, shape = 'chain') => {
+    const rules = get().rules.filter((r) => !ruleReads(r, { w, w2, shape }));
     if (rules.length !== get().rules.length) set({ rules });
   },
   giveVerdict: (faceId, record) => {
@@ -1185,9 +1218,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // store refuses the act itself, so the rule holds by construction, not by the hand's absence.
     {
       const edge = edgeBetween(shape.edges, face.vertexIds[i], face.vertexIds[j]);
-      const sorting = sortingOf(shape, edge, {}, state.rules);
+      const sorting = sortingOf(shape, edge, {}, state.rules, { converses: state.converses, opaque: state.opaque });
       const view = sorting ? sorting.views.find((v) => v.faceId === faceId || shape.faces.find((f) => f.id === v.faceId)?.vertexIds.every((v2) => face.vertexIds.includes(v2))) : undefined;
-      const path = view ? view.paths.find((p) => p.path.x === record.x && p.path.w === record.w && p.path.z === record.z && p.path.w2 === record.w2 && p.path.y === record.y) : undefined;
+      const path = view ? view.paths.find((p) => verdictNamesPath(record, p.path, view.paths.map((q) => q.path))) : undefined;
       const la = shape.vertices[face.vertexIds[i]]?.data.label || face.vertexIds[i];
       const lb = shape.vertices[face.vertexIds[j]]?.data.label || face.vertexIds[j];
       // M5 (the researcher's 12:21, ADR 0031 §9.12): NO SAY on any path with an IS leg — its composite is the transport's law (two IS
@@ -1206,7 +1239,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
           return `${record.x} ${record.w3} ${record.y} is barred by you on ${la}–${lb} — withdraw the bar first`;
         }
       }
-      if (path && path.path.against && record.verdict === 'composed') return 'a leg of this passage runs against the walk — what it comes to is not yet said (the direction is not yet ruled)';
+      // (the interim fence on a leg read against the walk is lifted by D13 — a path of any shape takes his say, §9.14)
     }
     const faces = shape.faces.map((f) => (f.id === faceId ? withVerdict(f, { ...record, base: [i, j] }) : f));
     set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } } });
@@ -1244,6 +1277,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       edgeTauDrafts: state.edgeTauDrafts, // F3 — the word pairs given alone ride the file
       lexicon: state.lexicon, // B1 — the declared modes ride the file (the relatings ride the edges' packets inside `shapes`)
       rules: state.rules, // B3 — the person's rules ride the file (the verdicts ride the faces' packets inside `shapes`)
+      converses: state.converses, // MODES-4 · D13 — his converse equations ride the file
+      opaque: state.opaque, // MODES-4 · §9.13 — the modes he declared opaque ride the file
     });
   },
   importWorkspace: (workspace) => {
@@ -1275,6 +1310,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       edgeTauDrafts: importedWorkspace.edgeTauDrafts ?? {}, // F3 — the file's word pairs given alone restored; the session's dropped (a file saved before F3 carries none)
       lexicon: importedWorkspace.lexicon ?? [], // B1 — the file's declared modes restored; the session's dropped (a file saved before B1 carries none)
       rules: importedWorkspace.rules ?? [], // B3 — the file's rules restored; the session's dropped
+      converses: importedWorkspace.converses ?? [], // MODES-4 — the file's converse equations restored (a file saved before MODES-4 carries none)
+      opaque: importedWorkspace.opaque ?? [], // MODES-4 — the file's opaque modes restored
       relatingRefusals: {},
       liftSelection: [],
       selectedCellId,
@@ -1492,6 +1529,20 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
     const [x, y] = act.pair;
     if (!A.roles.some((r) => r.id === x)) return refuse(`"${x}" is not a role this cast holds`, []);
     if (!B.roles.some((r) => r.id === y)) return refuse(`"${y}" is not a role that cast holds`, []);
+    // MODES-4 · M1 (ADR 0031 §9.10; the designer's 11:00 §1; the ruling of 10:58): on a CORNER edge the pair of the parent's role a
+    // and an instance i with a = π_P(i) is the coordinate map itself — never an entry of the extent (D14); the IS act on it is refused
+    // by name, the subject the relating, so the line reads the same whichever order the two were given in: `(F7 ≡ Φ1) already holds
+    // F7 — it is carried there`. `holds` is the one structure word. A mode word on the same pair is an ordinary entry (§9.10)
+    if (kind === 'corner') {
+      const parentFirst = shape.vertices[edge.vertexIds[1]]?.createdBy.sourceVertexIds.includes(edge.vertexIds[0]) ?? false;
+      const P = parentFirst ? edge.vertexIds[0] : edge.vertexIds[1];
+      const C = parentFirst ? edge.vertexIds[1] : edge.vertexIds[0];
+      const [a, i] = parentFirst ? [x, y] : [y, x];
+      const [p0, p1] = shape.vertices[C]?.createdBy.sourceVertexIds ?? [];
+      const child = p0 !== undefined && p1 !== undefined ? instanceSpaceOf(shape, edgeBetween(shape.edges, p0, p1), { tauDrafts: get().edgeTauDrafts }) : null;
+      const inst = child?.instances.find((k) => k.key === i);
+      if (inst && ((p0 === P && inst.x === a) || (p1 === P && inst.y === a))) return refuse(`${termWordsOf(shape, C, i, { tauDrafts: get().edgeTauDrafts })} already holds ${nameIn(parentFirst ? A : B, a)} — it is carried there`, []);
+    }
     if (composed) {
       const cx = composed.roles.find(([a]) => a === x);
       if (cx) return refuse(`${nameIn(A, x)} is already one with ${nameIn(B, cx[1])} by the solid — composed · corner ${cornerWords(`0|${x}`)}; not yours to pair or withdraw`, []);

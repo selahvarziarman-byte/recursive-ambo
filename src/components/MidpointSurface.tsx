@@ -113,7 +113,7 @@ import { useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { edgeBetween, faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
-import { barsOn, instancesOn, IS } from '../lib/relatings';
+import { ALONG, barsOn, dirOf, instancesOn, IS, type Dir } from '../lib/relatings';
 import { sortingOf } from '../lib/sorting';
 import { childSpaceOf } from '../lib/instanceSpace';
 import { MediumBlock } from './MediumBlock';
@@ -362,6 +362,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // MODES-1 · B5 — the mode the next two picks relate in (IS: the pairing, as before), and whether they bar; chosen in the medium's block
   const [mode, setMode] = useState<string>(IS);
   const [barNext, setBarNext] = useState(false);
+  // MODES-4 · D13 (the designer's §2): the DIRECTION the next relating reads in — a choice on the act line, never the order of the
+  // picks; `→` A's point is the subject, `←` B's; absent for IS; resets with the mode when he leaves the midpoint (her register rule)
+  const [dir, setDir] = useState<Dir>(ALONG);
   const [triadPicks, setTriadPicks] = useState<Record<VertexId, string>>({});
   const [wordTriadPicks, setWordTriadPicks] = useState<Record<VertexId, string>>({}); // C-14g — the word triad's picks, a word in each of the three rows
   const la = labelOf(shape, site.a);
@@ -445,7 +448,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       const [x, y] = side === 'B' ? [pick.role, role] : [role, pick.role];
       // B5: in IS the two picks are the pairing (the typed record, as before); in another mode, or barred, they are a relating
       if (mode === IS && !barNext) giveRolePair(edgeId, x, y);
-      else giveRelating(edgeId, mode, x, y, barNext ? '-' : '+');
+      else giveRelating(edgeId, mode, x, y, barNext ? '-' : '+', dir);
       setPick(null);
       return;
     }
@@ -510,6 +513,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
     setWordPick(null);
     setMode(IS);
     setBarNext(false);
+    setDir(ALONG);
   }, [site.siteId]);
   const bothExtra = (side: Side, inside: Inside) => {
     // C-7h item 1 (the designer's live drive: nine composed words wore `≡` at ABAC): a tuple in both parents BY COMPOSITION —
@@ -808,16 +812,18 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           ) : null}
           {/* M3 S10 (the designer's eye): his relatings in other modes and his bars are his OTHER ACTS, listed here where the two
               picks are made — unnumbered (the numbers index drawn lines; a drawn line for these waits for a glyph, R5) */}
+          {/* MODES-4 · D13: each prints AS HE SAID IT — from A `x w y`, from B `y w x` (never an arrow, never rewritten); the entry's key
+              carries `|←` where he said it from B (two entries, D13) */}
           {modeActs.relatings.map((r) => (
-            <span key={`${r[0]}|${r[1]}|${r[2]}`} data-medium-relating={`${r[0]}|${r[1]}|${r[2]}`}>
-              {`${nA(r[1])} ${r[0]} ${nB(r[2])} · yours · `}
-              <button type="button" data-medium-withdraw={`${r[0]}|${r[1]}|${r[2]}`} className="underline" onClick={() => withdrawRelating(edgeId, r[0], r[1], r[2])}>withdraw</button>
+            <span key={`${r[0]}|${r[1]}|${r[2]}${dirOf(r) === ALONG ? '' : '|←'}`} data-medium-relating={`${r[0]}|${r[1]}|${r[2]}${dirOf(r) === ALONG ? '' : '|←'}`}>
+              {`${dirOf(r) === ALONG ? `${nA(r[1])} ${r[0]} ${nB(r[2])}` : `${nB(r[2])} ${r[0]} ${nA(r[1])}`} · yours · `}
+              <button type="button" data-medium-withdraw={`${r[0]}|${r[1]}|${r[2]}${dirOf(r) === ALONG ? '' : '|←'}`} className="underline" onClick={() => withdrawRelating(edgeId, r[0], r[1], r[2], dirOf(r))}>withdraw</button>
             </span>
           ))}
           {modeActs.bars.map((b) => (
-            <span key={`${b[0]}|${b[1]}|${b[2]}|-`} data-medium-bar={`${b[0]}|${b[1]}|${b[2]}`}>
-              {`barred by you: ${nA(b[1])} ${b[0] === IS ? '≡' : b[0]} ${nB(b[2])} · `}
-              <button type="button" data-medium-withdraw={`${b[0]}|${b[1]}|${b[2]}`} className="underline" onClick={() => withdrawRelating(edgeId, b[0], b[1], b[2])}>withdraw</button>
+            <span key={`${b[0]}|${b[1]}|${b[2]}|-${dirOf(b) === ALONG ? '' : '|←'}`} data-medium-bar={`${b[0]}|${b[1]}|${b[2]}${dirOf(b) === ALONG ? '' : '|←'}`}>
+              {`barred by you: ${b[0] === IS ? `${nA(b[1])} ≡ ${nB(b[2])}` : dirOf(b) === ALONG ? `${nA(b[1])} ${b[0]} ${nB(b[2])}` : `${nB(b[2])} ${b[0]} ${nA(b[1])}`} · `}
+              <button type="button" data-medium-withdraw={`${b[0]}|${b[1]}|${b[2]}${dirOf(b) === ALONG ? '' : '|←'}`} className="underline" onClick={() => withdrawRelating(edgeId, b[0], b[1], b[2], dirOf(b))}>withdraw</button>
             </span>
           ))}
         </div>
@@ -1038,7 +1044,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
         </div>
       ) : null}
       {/* MODES-1 · B5 — THE MEDIUM in the designer's words: under the own column and the feet, never above the drawing */}
-      {sourceEdge ? <MediumBlock shape={shape} edge={sourceEdge} siteId={site.siteId} la={la} lb={lb} options={{}} mode={mode} setMode={setMode} bar={barNext} setBar={setBarNext} /> : null}
+      {sourceEdge ? <MediumBlock shape={shape} edge={sourceEdge} siteId={site.siteId} la={la} lb={lb} options={{}} mode={mode} setMode={setMode} bar={barNext} setBar={setBarNext} dir={dir} setDir={setDir} /> : null}
       {/* THE TRACE — the origin partition of the one glued record, as description */}
       {M && trace && state === 'glued' ? (
         <div data-midpoint-trace="true" className="mt-2 grid gap-0.5 text-stone-300">

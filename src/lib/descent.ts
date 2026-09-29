@@ -24,8 +24,8 @@
 import type { Edge, Shape, VertexId } from '../types/geometry';
 import { edgeBetween } from './faceReading';
 import { childSpaceOf, instanceSpaceOf, type Instance, type InstanceSpace } from './instanceSpace';
-import { instancesOn, IS, type Relating } from './relatings';
-import { legAgainst, relatingsFrom, sortingOf, type ReadPath, type Rule, type Sorting } from './sorting';
+import { ALONG, dirOf, instancesOn, IS, NO_FACTS, type LexiconFacts, type Relating } from './relatings';
+import { relatingsFrom, sortingOf, type ReadPath, type Rule, type Sorting } from './sorting';
 import { edgeKind, type EdgeKind, type SpaceOfOptions } from './spaceOf';
 
 export type LinkKind = 'shared-coordinate' | 'opposite-midpoint' | 'coordinate';
@@ -98,26 +98,29 @@ export function derivedLightsOf(shape: Shape, edge: Edge | undefined, options: S
   // verdict inherited — never a light of its own, never an entry of the medium; the printing reads `inheritedReadingOf`)
   for (const i of xs) for (const j of ys) if (i.p === j.p) push('shared-coordinate', i.key, j.key, shared, i.p, { role: i.p, restates: { edge: [Q, R], q: i.q, r: j.q } });
   // through the opposite midpoint ⟨Q, R⟩ — an instance (q, r) on Q–R links (p, q) and (p′, r); the link is that relating, AS HE
-  // SAID IT (the walk Q → R may run against the edge's stored order — the mirror is undone for the words, never for the key)
+  // SAID IT — `relatingsFrom` walks Q → R mirroring x ↔ y AND the direction where the stored order runs the other way (D13), so the
+  // subject is read off the direction bit, never off the stored order; the key is the sentence he said (the instance's own key)
   const eQR = edgeBetween(shape.edges, Q, R);
   if (eQR) {
     const opposite = Object.values(shape.vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(Q) && v.createdBy.sourceVertexIds.includes(R));
     const qr = relatingsFrom(shape, Q, R, options).filter((r: Relating) => r[3] === '+');
-    const against = legAgainst(shape, Q, R);
-    for (const i of xs) for (const j of ys) for (const k of qr) if (k[1] === i.q && k[2] === j.q) push('opposite-midpoint', i.key, j.key, opposite ? opposite.id : Q, k[0] === IS ? `${k[1]}≡${k[2]}` : `${k[1]} ${k[0]} ${k[2]}`, against ? { relating: [k[2], k[0], k[1]], corners: [R, Q] } : { relating: [k[1], k[0], k[2]], corners: [Q, R] });
+    for (const i of xs) for (const j of ys) for (const k of qr) if (k[1] === i.q && k[2] === j.q) {
+      const along = dirOf(k) === ALONG;
+      push('opposite-midpoint', i.key, j.key, opposite ? opposite.id : Q, k[0] === IS ? `${k[1]}≡${k[2]}` : along ? `${k[1]} ${k[0]} ${k[2]}` : `${k[2]} ${k[0]} ${k[1]}`, along ? { relating: [k[1], k[0], k[2]], corners: [Q, R] } : { relating: [k[2], k[0], k[1]], corners: [R, Q] });
+    }
   }
   return out;
 }
 
 /** THE MEDIUM: the edge's own child and sorting (the person's relatings on it) beside its derivable lights — laid side by side, never merged */
-export function mediumOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, rules: readonly Rule[] = []): Medium | null {
+export function mediumOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS): Medium | null {
   if (!edge) return null;
   const [X, Y] = edge.vertexIds as [VertexId, VertexId];
   const px = parentsOf(shape, X);
   const py = parentsOf(shape, Y);
   const shared = px.length === 2 && py.length === 2 ? (px.find((v) => py.includes(v)) ?? null) : px.length === 0 && py.includes(X) ? X : py.length === 0 && px.includes(Y) ? Y : null;
   const child = instanceSpaceOf(shape, edge, options);
-  const sorting = sortingOf(shape, edge, options, rules);
+  const sorting = sortingOf(shape, edge, options, rules, facts);
   const lights = derivedLightsOf(shape, edge, options);
   const spaceX = childSpaceOf(shape, X, options);
   const spaceY = childSpaceOf(shape, Y, options);
@@ -141,12 +144,12 @@ export function mediumOf(shape: Shape, edge: Edge | undefined, options: SpaceOfO
  * to. Null for a link that restates nothing (the opposite-midpoint kind, a corner edge's coordinate structure) or where the passage
  * is not found. A reader of the parent's sorting, never of this medium's: the lights and the medium's sorting stay side by side.
  */
-export function inheritedReadingOf(shape: Shape, light: DerivedLight, options: SpaceOfOptions = {}, rules: readonly Rule[] = []): { path: ReadPath; edge: [VertexId, VertexId] } | null {
+export function inheritedReadingOf(shape: Shape, light: DerivedLight, options: SpaceOfOptions = {}, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS): { path: ReadPath; edge: [VertexId, VertexId] } | null {
   if (!('role' in light.link) || !light.link.restates) return null;
   const { edge: [Q, R], q, r } = light.link.restates;
   const e = edgeBetween(shape.edges, Q, R);
   if (!e) return null;
-  const parent = sortingOf(shape, e, options, rules);
+  const parent = sortingOf(shape, e, options, rules, facts);
   const view = parent ? parent.views.find((v) => v.view === light.through) : undefined;
   if (!view) return null;
   const qFirst = e.vertexIds[0] === Q;

@@ -25,24 +25,44 @@
 // face reading's classification on the existing tetrahedron fixtures — pinned by the witness against the stone's reference port
 // and against `composeThroughCorner` itself, triple for triple. React-free; DOM-free; no vertex id in any packet (the verdict
 // record is positional in the face's corner order). Pinned by scripts/diagnose-modes1-the-sorting.cjs.
-// MARKER MODES-1 · M3 (2026-09-29; the designer's eye, S4 · S5 · S6 · R1; the mothership's interim ruling on S4): THE RECORD'S
-// DIRECTION IS THE EDGE'S ORIENTATION, NOT THE PERSON'S (§212) — `relatingsFrom` mirrors x ↔ y keeping the word when the walk runs
-// against the edge's stored order, lawful for IS alone. A composite computed from a mirrored DIRECTED leg would be the device
-// asserting a direction he never gave (Δ80). RULED, until the researcher rules Q2: a path with a directed (non-IS) leg read
-// against the walk's order takes NO rule and NO composite — it reads UNRULED (`not yet said`) with its legs AS HE SAID THEM
-// (`Path.said`), and a `not` verdict is the only say it takes; IS legs are unaffected. An EXCEPTION is read only against a rule
-// HE named (the built-in IS ; IS = IS names none — S6). A `not` verdict speaks of no direct: its record carries no `w3`.
-// A TENSION always names the end it presses on (`end` is total: source · target · his bar). Each view says which legs hold
-// relatings (`legs`), so a zero passage count can give its reason (R1).
+// MARKER MODES-1 · M3 (2026-09-29): a leg prints AS HE SAID IT (`Path.said`); an EXCEPTION is read only against a rule HE named
+// (the built-in IS ; IS = IS names none — S6); a `not` verdict carries no `w3`; a TENSION's end is total; each view says which
+// legs hold relatings (`legs`, R1). MODES-2 (d): the site's state is ONE token at §8's precedence.
+// STAMP MODES-4 (2026-09-29; the second resolution §1 D13 and §4 D16 — ADR 0031 §9.8, §9.11–§9.14; MARKER MODES-4 · M3, the
+// researcher's 17:37): DIRECTION IN THE SORTING. A leg carries its direction (`→` the walk's from-role is the subject, `←` the
+// to-role is) — `relatingsFrom` mirrors x ↔ y AND flips the direction when it walks an edge against its stored order, so a word is
+// never kept on swapped coordinates and a leg read against the walk prints as the person said it. A path's SHAPE is intrinsic to
+// his two relatings (§9.14): a CHAIN (one direction through z — from x or from y), a FORK (both from z), a JOIN (both into z). A
+// RULE is keyed on the word pair and the SHAPE — three keys per pair, never four along the walk: a 3-tuple rule is the chain; a
+// CHAIN IS ONE KEY WHICHEVER WAY IT CROSSES THE EDGE, its pair read in the chain's own order and its composite in the chain's own
+// direction (`Φ4 carries r3 · r3 carries F2` under `carries, then carries = supports` ↦ `Φ4 supports F2`, recorded `←`); a fork
+// and a join are keys of their own (the pair order-free), the composite's direction named by the rule as he gave the words: the
+// end of the first-named word is the subject. A declared CONVERSE (`y w′ x ≡ x w y`, the lexicon's fact) reads a fork or a join
+// as a chain — the against leg in its converse word, along — and that chain's rule reads it; a chain needs none. A path no rule
+// keys is UNRULED. SUBSTITUTION is built in beside IS ; IS = IS — `(x ≡ z, z w y) ↦ x w y`, either order, the mode leg's own
+// direction carried through — through TRANSPARENT modes only (§9.13): through a mode the person declared OPAQUE a mixed path
+// composes to NOTHING, held apart by the mode (`HELD` — never a light, never a tension, no hand). The verdict hands of D6 live on
+// paths of two mode legs, whatever their shape (§9.12). D16 · THE REFUSED ROUTE: a NOT on a path whose word (the rule's composite,
+// or the word the NOT record itself names) has a direct standing at the endpoints is that instance's FORM, kept per instance
+// (`refused`), never a state, never a tension (§9.11). Pinned by scripts/diagnose-modes4-the-record-and-the-sorting.cjs beside
+// the B3 witness.
 
 import type { Edge, Face, JsonValue, PacketData, Shape, VertexId } from '../types/geometry';
 import { edgeBetween } from './faceReading';
-import { barsOn, instancesOn, IS, type Relating } from './relatings';
+import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isOpaque, mirrored, NO_FACTS, type Dir, type LexiconFacts, type Relating } from './relatings';
 import { facesThrough, respectsOn } from './respects';
 import type { SpaceOfOptions } from './spaceOf';
 
-export type Rule = [string, string, string]; // (w, w′) ↦ w‴
+/** a path's SHAPE (§9.14), intrinsic to the two relatings: a chain (one direction through z), a fork (both from z), a join (both into z) */
+export type Shape3 = 'chain' | 'fork' | 'join';
+/** the shape from the two legs' senses along the walk x → z → y */
+export const shapeOf = (s1: Dir, s2: Dir): Shape3 => (s1 === s2 ? 'chain' : s1 === AGAINST ? 'fork' : 'join');
+/** a rule (w, w′) ↦ w‴ keyed on the word pair and the shape: a 3-tuple is the chain (one key whichever way it crosses the edge); the fourth names a fork or a join */
+export type Rule = [string, string, string] | [string, string, string, Shape3];
 export const IS_RULE: Rule = [IS, IS, IS];
+export const ruleShape = (r: Rule): Shape3 => (r.length === 4 ? r[3] : 'chain');
+/** a rule key as a path carries it: the pair in the shape's own order (a chain: the chain's order; a fork or a join: the x-side word first) and the composite's direction along the walk if the rule's first word is the first */
+export interface RuleKey { w: string; w2: string; shape: Shape3; dir: Dir; }
 export type Verdict = 'composed' | 'not';
 
 /** a verdict as the FACE stores it (positional — the two base corners by their POSITIONS in the face's corner order; no id) */
@@ -56,6 +76,7 @@ export interface VerdictRecord {
   w3?: string; // the direct's mode a `composed` verdict speaks of; a `not` verdict speaks of no direct and carries none (M3 S5)
   verdict: Verdict;
   exception?: boolean; // an override of a rule on this one path
+  dirs?: [Dir, Dir]; // the two legs' senses along the walk from base[0] to base[1] (D13) — absent, both `→` (every verdict before D13)
 }
 export const VERDICTS_KEY = 'verdicts';
 
@@ -68,21 +89,26 @@ export interface Path {
   w2: string;
   y: string;
   source: 'legs' | 'triad'; // two instances on the legs, or a C-14 triad (a path given whole with `composed`)
-  said: [[string, string, string], [string, string, string]]; // each leg AS HE SAID IT — (subject, mode, object) in the edge's stored order (M3 S4)
-  against: boolean; // NO IS leg and a directed leg read against the walk's order — no rule is keyed on that pattern and no converse is declared (D13; the interim, scoped by the second resolution §1)
-  mixed: boolean; // exactly one IS leg: SUBSTITUTION composes it (`x ≡ z, z w y ↦ x w y`, either order), the direction carried through — IS's meaning, never excepted (§1)
-  reversed: boolean; // a mixed path whose directed leg runs against the walk: its composite reads y w x (the subject is the second corner's role) — never a word on swapped coordinates
+  said: [[string, string, string], [string, string, string]]; // each leg AS HE SAID IT — (subject, mode, object) (M3 S4; D13)
+  dirs: [Dir, Dir]; // the two legs' senses along the walk x → z → y (D13) — part of the path; an IS leg reads `→`
+  shape: Shape3; // the path's intrinsic shape (§9.14): chain · fork · join
+  from: 'x' | 'y' | 'z' | null; // where a chain starts (x: with the walk; y: from the far corner), z for a fork, null for a join
+  keys: RuleKey[]; // the rule keys this path carries, in order: its own shape's key first, then the chains a declared converse lets it read as (empty on a mixed path or a triad)
+  against: boolean; // a directed leg read against the walk (the raw fact the said legs show)
+  mixed: boolean; // exactly one IS leg: SUBSTITUTION composes it (`x ≡ z, z w y ↦ x w y`, either order), the direction carried through — IS's meaning (§1)
+  readable: boolean; // two mode legs: a rule can read it by its shape, and the verdict hands of D6 live here (§9.12, M5/M6)
 }
-export type PathReading = 'COMPOSED' | 'TENSION' | 'LIGHT' | 'NOT' | 'UNRULED';
+export type PathReading = 'COMPOSED' | 'TENSION' | 'LIGHT' | 'NOT' | 'UNRULED' | 'HELD';
 export interface ReadPath {
   path: Path;
   composite: string | null; // w‴ when a rule, a verdict, a triad or substitution gives it
+  compositeDir: Dir | null; // the composite's direction (D13): `→` x w‴ y · `←` y w‴ x
   by: 'rule' | 'verdict' | 'triad' | 'substitution' | null;
   exception: boolean;
   reading: PathReading;
   direct: string | null; // the direct instance's key it composes to (COMPOSED) or presses on (TENSION)
   end?: 'source' | 'target' | 'bar' | null; // a TENSION's end: the source's pairing, the target's, or the person's own bar (M2, §9.7)
-  recorded?: string | null; // a composed say he stored on an against-path BEFORE the interim ruling: read as UNRULED, printed with its withdraw (a record he cannot see is a fact with no mark — the mothership's 12:19 (ii)); honoured when D13 lands
+  recorded?: string | null; // a composed say he stored on a path no rule can read now: read as UNRULED, printed with its withdraw (12:19 (ii))
 }
 export type FootKind = 'FIX' | 'DIS' | 'PRO' | 'UND';
 export interface ViewSorting {
@@ -111,36 +137,61 @@ export interface Sorting {
   // disagreement, no pocket) · OPEN (otherwise — the counts)
   state: 'UNDETECTED' | 'VACUOUS' | 'UNRULED' | 'POCKET' | 'EXHAUSTED' | 'CLOSED' | 'COHERENT' | 'OPEN';
   looked: boolean; // a passage through some view exists
-  refusedRoutes: number; // NOT says on paths whose word (the one they would compose to) has a direct standing at the endpoints — D16's refused route, the instance's form, never a state (M4 corrected: it does not bar COHERENT)
+  refusedRoutes: number; // NOT says on paths whose word (the rule's composite, or the word the NOT record itself names) has a direct standing at the endpoints — D16's refused route, the instance's form, never a state (M4 corrected: it does not bar COHERENT)
+  refused: Map<string, VertexId[]>; // D16 — per instance key, the views through which a route to it was refused (the instance's FORM, printed wherever it is listed)
   unruled: boolean;
   coherent: boolean;
   closed: boolean;
 }
 
-export const relKey = (r: Relating | [string, string, string]): string => `${r[0]}|${r[1]}|${r[2]}`;
+/** an instance's key: `w|x|y`, and `|←` when the person said it the other way round (D13 — every key before D13 is `→` by reading) */
+export const relKey = (r: Relating | [string, string, string]): string => (r.length >= 4 && dirOf(r as Relating) === AGAINST ? `${r[0]}|${r[1]}|${r[2]}|←` : `${r[0]}|${r[1]}|${r[2]}`);
 const isKey = (x: string, y: string): string => `${IS}|${x}|${y}`;
+const keyOf = (w: string, x: string, y: string, dir: Dir): string => (w === IS || dir === ALONG ? `${w}|${x}|${y}` : `${w}|${x}|${y}|←`);
 
-/** the composite of a path under the rules, or null (the identity regime's rule is always in force) */
-export function composeBy(rules: readonly Rule[], w: string, w2: string): string | null {
-  for (const [a, b, c] of [IS_RULE, ...rules]) if (a === w && b === w2) return c;
+/** whether a rule reads a key: a chain in the key's own order; a fork or a join order-free (the two are one shape from one point) */
+export const ruleReads = (r: Rule, k: Pick<RuleKey, 'w' | 'w2' | 'shape'>): boolean => ruleShape(r) === k.shape && ((r[0] === k.w && r[1] === k.w2) || (k.shape !== 'chain' && r[0] === k.w2 && r[1] === k.w));
+/** the composite of a path under the rules with its direction, or null (the identity regime's rule is always in force). A chain's composite runs in the chain's own direction; a fork's or a join's has the end of the rule's FIRST-NAMED word as its subject — as he saw it when he named it */
+export function composeBy(rules: readonly Rule[], w: string, w2: string, shape: Shape3 = 'chain', dir: Dir = ALONG): { word: string; dir: Dir } | null {
+  if (w === IS && w2 === IS) return { word: IS, dir: ALONG }; // symmetric: every shape
+  for (const r of rules) if (ruleReads(r, { w, w2, shape })) return { word: r[2], dir: shape === 'chain' || r[0] === w ? dir : dir === ALONG ? AGAINST : ALONG };
   return null;
 }
 /** the composite a rule HE named gives, or null — the built-in IS ; IS = IS names none (an exception is read only against his rule, S6) */
-export function namedBy(rules: readonly Rule[], w: string, w2: string): string | null {
-  for (const [a, b, c] of rules) if (a === w && b === w2) return c;
+export function namedBy(rules: readonly Rule[], w: string, w2: string, shape: Shape3 = 'chain'): string | null {
+  for (const r of rules) if (ruleReads(r, { w, w2, shape })) return r[2];
   return null;
+}
+/** THE KEYS a path carries, in order (§9.14; the converse's law): its own shape's key — a chain in the chain's own order (from y, the pair reversed, the composite `←`); a fork or a join as the walk prints it — then, for a fork or a join, each chain a declared converse lets it read as (the against leg first, the along leg second) */
+export function ruleKeysOf(w: string, w2: string, s1: Dir, s2: Dir, facts: LexiconFacts): RuleKey[] {
+  const shape = shapeOf(s1, s2);
+  if (shape === 'chain') return s1 === ALONG ? [{ w, w2, shape, dir: ALONG }] : [{ w: w2, w2: w, shape, dir: AGAINST }];
+  const out: RuleKey[] = [{ w, w2, shape, dir: ALONG }];
+  const cw = converseOf(facts, w); const cw2 = converseOf(facts, w2);
+  if (shape === 'fork') {
+    // z w x (←) · z w2 y (→): flip the first leg into its converse along ⇒ a chain x cw z · z w2 y; flip the second ⇒ a chain from y: y cw2 z · z w x
+    if (cw !== null) out.push({ w: cw, w2, shape: 'chain', dir: ALONG });
+    if (cw2 !== null) out.push({ w: cw2, w2: w, shape: 'chain', dir: AGAINST });
+  } else {
+    // x w z (→) · y w2 z (←): flip the second leg ⇒ a chain x w z · z cw2 y; flip the first ⇒ a chain from y: y w2 z · z cw x
+    if (cw2 !== null) out.push({ w, w2: cw2, shape: 'chain', dir: ALONG });
+    if (cw !== null) out.push({ w: w2, w2: cw, shape: 'chain', dir: AGAINST });
+  }
+  return out;
 }
 
 /**
  * THE SORTING of one edge from its records (the pure core): the direct relatings on e (x of X, y of Y), each view's leg
- * instances (XZ oriented X → Z, ZY oriented Z → Y), its triads (x, y, z), its verdicts (already resolved to this edge's
- * orientation), and the rules in force; `rolesX` is Z's shadow's domain for the identity regime's UND.
+ * instances (XZ oriented X → Z, ZY oriented Z → Y — mirrored with their direction flipped where the walk runs against the
+ * stored order, `relatingsFrom`), its triads (x, y, z), its verdicts (already resolved to this edge's orientation), the rules in
+ * force and the lexicon's facts (the converses, the opaque modes).
  */
 export function sortFromRecords(
   edge: [VertexId, VertexId],
   direct: Relating[],
-  views: Array<{ view: VertexId; faceId: string; xz: Relating[]; zy: Relating[]; triads: Array<[string, string, string]>; verdicts: Array<Omit<VerdictRecord, 'base'>>; xzAgainst?: boolean; zyAgainst?: boolean }>,
+  views: Array<{ view: VertexId; faceId: string; xz: Relating[]; zy: Relating[]; triads: Array<[string, string, string]>; verdicts: Array<Omit<VerdictRecord, 'base'>> }>,
   rules: readonly Rule[],
+  facts: LexiconFacts = NO_FACTS,
 ): Sorting {
   const instances = direct.filter((r) => r[3] === '+');
   const bars = direct.filter((r) => r[3] === '-');
@@ -163,8 +214,8 @@ export function sortFromRecords(
     if (xy !== undefined && xy !== x) return { end: 'target', key: isKey(xy, y) };
     return null;
   };
-  const barred = (w: string, x: string, y: string): boolean => {
-    if (barKeys.has(`${w}|${x}|${y}`)) return true;
+  const barred = (w: string, x: string, y: string, dir: Dir): boolean => {
+    if (barKeys.has(keyOf(w, x, y, dir))) return true;
     return w === IS && pressedOn(x, y) !== null;
   };
   const out: ViewSorting[] = [];
@@ -172,69 +223,79 @@ export function sortFromRecords(
     const xzIn = v.xz.filter((r) => r[3] === '+');
     const zyIn = v.zy.filter((r) => r[3] === '+');
     const paths: Path[] = [];
-    // each leg as he said it: the leg's record reads first corner ↦ second; a DIRECTED leg walked against its stored order was
-    // mirrored by `relatingsFrom`, so his sentence is the mirror back — and such a leg puts the path AGAINST (no rule, no composite).
-    // An IS leg is symmetric (≡): it prints in the walk's order, as the designer's S3 reads it, and is unaffected
-    const saidLeg = (r: Relating, flipped: boolean): [string, string, string] => (flipped && r[0] !== IS ? [r[2], r[0], r[1]] : [r[1], r[0], r[2]]);
+    const saidLeg = (r: Relating): [string, string, string] => (dirOf(r) === ALONG ? [r[1], r[0], r[2]] : [r[2], r[0], r[1]]);
     for (const a of xzIn) for (const b of zyIn) if (a[2] === b[1]) {
+      const s1 = dirOf(a); const s2 = dirOf(b);
       const isA = a[0] === IS; const isB = b[0] === IS;
-      const aAgainst = Boolean(v.xzAgainst) && !isA; const bAgainst = Boolean(v.zyAgainst) && !isB;
-      // the second resolution §1: substitution composes a MIXED path whatever the directed leg's sense (the direction carried
-      // through — reversed when that leg runs against the walk); a path with NO IS leg and a directed leg against the walk has no
-      // rule keyed on its pattern and no converse declared (the interim, scoped): no rule, no composite
-      paths.push({ view: v.view, faceId: v.faceId, x: a[1], w: a[0], z: a[2], w2: b[0], y: b[2], source: 'legs', said: [saidLeg(a, Boolean(v.xzAgainst)), saidLeg(b, Boolean(v.zyAgainst))], against: !isA && !isB && (aAgainst || bAgainst), mixed: isA !== isB, reversed: (isA && bAgainst) || (isB && aAgainst) });
+      const mixed = isA !== isB;
+      const twoModes = !isA && !isB;
+      const shape = shapeOf(s1, s2);
+      paths.push({ view: v.view, faceId: v.faceId, x: a[1], w: a[0], z: a[2], w2: b[0], y: b[2], source: 'legs', said: [saidLeg(a), saidLeg(b)], dirs: [s1, s2], shape, from: shape === 'chain' ? (s1 === ALONG ? 'x' : 'y') : shape === 'fork' ? 'z' : null, keys: twoModes ? ruleKeysOf(a[0], b[0], s1, s2, facts) : [], against: (s1 === AGAINST && !isA) || (s2 === AGAINST && !isB), mixed, readable: twoModes });
     }
-    for (const [x, y, z] of v.triads) if (!paths.some((p) => p.x === x && p.z === z && p.y === y && p.w === IS && p.w2 === IS)) paths.push({ view: v.view, faceId: v.faceId, x, w: IS, z, w2: IS, y, source: 'triad', said: [[x, IS, z], [z, IS, y]], against: false, mixed: false, reversed: false });
+    for (const [x, y, z] of v.triads) if (!paths.some((p) => p.x === x && p.z === z && p.y === y && p.w === IS && p.w2 === IS)) paths.push({ view: v.view, faceId: v.faceId, x, w: IS, z, w2: IS, y, source: 'triad', said: [[x, IS, z], [z, IS, y]], dirs: [ALONG, ALONG], shape: 'chain', from: 'x', keys: [], against: false, mixed: false, readable: false });
+    const namesPath = (r: Omit<VerdictRecord, 'base'>, p: Path): boolean => verdictNamesPath(r, p, paths);
+    /** the composite a rule gives a two-mode-leg path: the first of its keys some rule reads (its own shape's key first) */
+    const ruledOf = (p: Path): { word: string; dir: Dir } | null => { for (const k of p.keys) { const c = composeBy(rules, k.w, k.w2, k.shape, k.dir); if (c !== null) return c; } return null; };
+    /** the composite a rule HE named gives (S6 — the exception is read against the rule of the path's own shape, or the chain a converse makes of it) */
+    const namedOf = (p: Path): string | null => { for (const k of p.keys) { const c = namedBy(rules, k.w, k.w2, k.shape); if (c !== null) return c; } return null; };
+    /** a verdict's composite direction: a chain's own direction (from y: `←`); a fork or a join as the walk prints it */
+    const verdictDir = (p: Path): Dir => (p.from === 'y' ? AGAINST : ALONG);
     const read: ReadPath[] = paths.map((p) => {
-      const verdict = v.verdicts.find((r) => r.x === p.x && r.w === p.w && r.z === p.z && r.w2 === p.w2 && r.y === p.y);
-      const ruled = composeBy(rules, p.w, p.w2);
-      const named = namedBy(rules, p.w, p.w2); // his rule alone — the built-in one names no exception (S6)
+      const verdict = v.verdicts.find((r) => namesPath(r, p));
+      // the identity regime's rule is always in force (IS ; IS = IS, every shape); a rule of his reads a two-mode-leg path by its keys
+      const ruled = p.readable ? ruledOf(p) : p.w === IS && p.w2 === IS ? composeBy(rules, IS, IS) : null;
+      const named = p.readable ? namedOf(p) : null;
       let composite: string | null = null;
+      let compositeDir: Dir | null = null;
       let by: ReadPath['by'] = null;
       let exception = false;
       if (verdict) {
         exception = Boolean(verdict.exception) || (named !== null && (verdict.verdict === 'not' || verdict.w3 !== named));
-        if (verdict.verdict === 'not') return { path: p, composite: null, by: 'verdict', exception, reading: 'NOT', direct: null, end: null };
-        // a composed say on an against-path (stored before the interim ruling; the store refuses a new one) is not read as a composite —
-        // the path stays `not yet said` — but it is CARRIED for printing with its withdraw, never hidden (12:19 (ii))
-        if (p.against) return { path: p, composite: null, by: null, exception, reading: 'UNRULED', direct: null, end: null, recorded: verdict.w3 ?? null };
+        if (verdict.verdict === 'not') return { path: p, composite: null, compositeDir: null, by: 'verdict', exception, reading: 'NOT', direct: null, end: null };
+        // a composed say stored on a path no hand of his reaches (a mixed path — the store refuses a new one, §9.12) is not read as a
+        // composite — the path stays `not yet said` — but it is CARRIED for printing with its withdraw, never hidden (12:19 (ii))
+        if (!p.readable && p.source !== 'triad') return { path: p, composite: null, compositeDir: null, by: null, exception, reading: 'UNRULED', direct: null, end: null, recorded: verdict.w3 ?? null };
         composite = verdict.w3 ?? null;
+        compositeDir = composite === null ? null : verdictDir(p);
         by = composite === null ? null : 'verdict';
       } else if (p.source === 'triad') {
-        composite = IS;
+        composite = IS; compositeDir = ALONG;
         by = 'triad';
       } else if (p.mixed) {
-        composite = p.w === IS ? p.w2 : p.w; // SUBSTITUTION: the identification substitutes in the relating he made (§1) — the directed leg's word, its direction carried through
+        // SUBSTITUTION: the identification substitutes in the relating he made (§1) — the mode leg's word with its own direction carried
+        // through — through a TRANSPARENT mode only (§9.13): through an opaque mode the path composes to nothing, held apart
+        const modeLeg = p.w === IS ? 1 : 0;
+        const w = modeLeg === 0 ? p.w : p.w2;
+        if (isOpaque(facts, w)) return { path: p, composite: null, compositeDir: null, by: null, exception, reading: 'HELD', direct: null, end: null };
+        composite = w; compositeDir = p.dirs[modeLeg];
         by = 'substitution';
-      } else if (ruled !== null && !p.against) {
-        composite = ruled;
+      } else if (ruled !== null) {
+        composite = ruled.word; compositeDir = ruled.dir;
         by = 'rule';
       }
-      if (composite === null) return { path: p, composite: null, by: null, exception, reading: 'UNRULED', direct: null, end: null };
-      // a reversed composite (y w x) is a word on the other coordinate order: today's record holds no such entry (every relating is x → y
-      // until D13's direction bits land), so it meets no direct and no bar — Z's light in his word, printed as substitution gives it
-      if (p.reversed) return { path: p, composite, by, exception, reading: 'LIGHT', direct: null, end: null };
-      const k = `${composite}|${p.x}|${p.y}`;
-      if (directKeys.has(k)) return { path: p, composite, by, exception, reading: 'COMPOSED', direct: k, end: null };
-      if (barred(composite, p.x, p.y)) {
+      if (composite === null || compositeDir === null) return { path: p, composite: null, compositeDir: null, by: null, exception, reading: 'UNRULED', direct: null, end: null };
+      const k = keyOf(composite, p.x, p.y, compositeDir);
+      if (directKeys.has(k)) return { path: p, composite, compositeDir, by, exception, reading: 'COMPOSED', direct: k, end: null };
+      if (barred(composite, p.x, p.y, compositeDir)) {
         // the end is TOTAL: an IS composite pressed by his pairing names that end; else the bar is his own (the only other way in)
         const pressed = composite === IS ? pressedOn(p.x, p.y) : null;
-        return { path: p, composite, by, exception, reading: 'TENSION', direct: pressed ? pressed.key : `${composite}|${p.x}|${p.y}`, end: pressed ? pressed.end : 'bar' };
+        return { path: p, composite, compositeDir, by, exception, reading: 'TENSION', direct: pressed ? pressed.key : k, end: pressed ? pressed.end : 'bar' };
       }
-      return { path: p, composite, by, exception, reading: 'LIGHT', direct: null, end: null };
+      return { path: p, composite, compositeDir, by, exception, reading: 'LIGHT', direct: null, end: null };
     });
     const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').map((r) => r.direct as string));
     const own = instances.map(relKey).filter((k) => !composedTo.has(k));
     const centroid = instances.map(relKey).filter((k) => composedTo.has(k));
     // the identity regime's kinds per x of X in Z's shadow (an IS-instance from x to Z)
     const feet = new Map<string, { kind: FootKind; y: string | null }>();
+    const kindOf = (p: ReadPath): FootKind => (p.reading === 'COMPOSED' ? 'FIX' : p.reading === 'TENSION' && p.end === 'source' ? 'DIS' : p.reading === 'LIGHT' || (p.reading === 'TENSION' && p.end === 'target') ? 'PRO' : 'UND');
     for (const a of xzIn) {
       if (a[0] !== IS || feet.has(a[1])) continue;
       const p = read.find((r) => r.path.x === a[1] && r.path.z === a[2] && r.path.w === IS && r.path.w2 === IS);
       if (!p) feet.set(a[1], { kind: 'UND', y: null });
-      else feet.set(a[1], { kind: p.reading === 'COMPOSED' ? 'FIX' : p.reading === 'TENSION' && p.end === 'source' ? 'DIS' : p.reading === 'LIGHT' || (p.reading === 'TENSION' && p.end === 'target') ? 'PRO' : 'UND', y: p.path.y });
+      else feet.set(a[1], { kind: kindOf(p), y: p.path.y });
     }
-    for (const [x, y, z] of v.triads) if (!feet.has(x)) { const p = read.find((r) => r.path.x === x && r.path.z === z && r.path.y === y); if (p) feet.set(x, { kind: p.reading === 'COMPOSED' ? 'FIX' : p.reading === 'TENSION' && p.end === 'source' ? 'DIS' : p.reading === 'LIGHT' || (p.reading === 'TENSION' && p.end === 'target') ? 'PRO' : 'UND', y }); }
+    for (const [x, y, z] of v.triads) if (!feet.has(x)) { const p = read.find((r) => r.path.x === x && r.path.z === z && r.path.y === y); if (p) feet.set(x, { kind: kindOf(p), y }); }
     out.push({ view: v.view, faceId: v.faceId, vacuous: xzIn.length === 0 && zyIn.length === 0 && v.triads.length === 0, legs: [xzIn.length > 0 || v.triads.length > 0, zyIn.length > 0 || v.triads.length > 0], paths: read, own, centroid, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet });
   }
   const keys = instances.map(relKey);
@@ -244,11 +305,27 @@ export function sortFromRecords(
   const looked = out.some((v) => v.paths.length > 0);
   const unruled = out.some((v) => v.unruled.length > 0);
   const tension = out.some((v) => v.tensions.length > 0);
-  // D16's refused route (the second resolution §4): a NOT on a path whose word (the one it would compose to) has a direct standing
-  // at its endpoints — the instance stays own against that path and the refusal is its form, never a state; it does NOT bar
-  // COHERENT (M4 corrected, ADR §9.11: "pending" struck). The mark on the instance is MODES-4's; the count is read here
-  const wordOfPath = (p: Path): string | null => (p.source === 'triad' ? IS : p.mixed ? (p.w === IS ? p.w2 : p.w) : p.against ? null : composeBy(rules, p.w, p.w2));
-  const refusedRoutes = out.reduce((n, v) => n + v.paths.filter((r) => { if (r.reading !== 'NOT' || r.path.reversed) return false; const w = wordOfPath(r.path); return w !== null && directKeys.has(`${w}|${r.path.x}|${r.path.y}`); }).length, 0);
+  // D16's refused route (the second resolution §4; §9.11): a NOT on a path whose word — the rule's composite, or the word the NOT
+  // record itself names (`w3` on a NOT stored before M3 S5, when the hand named a standing direct's word) — has a direct standing at
+  // its endpoints: the instance stays own against that path and the refusal is its FORM, kept per instance with the views through
+  // which the route was refused; never a state, never a tension; it does NOT bar COHERENT (M4 corrected: "pending" struck)
+  const refused = new Map<string, VertexId[]>();
+  for (const v of out) for (const r of v.paths) {
+    if (r.reading !== 'NOT') continue;
+    const rec = views.find((w) => w.view === v.view)?.verdicts.find((h) => h.verdict === 'not' && h.x === r.path.x && h.w === r.path.w && h.z === r.path.z && h.w2 === r.path.w2 && h.y === r.path.y);
+    const wordOfNot = ((): { word: string; dir: Dir } | null => {
+      // the word the NOT record names was offered as `x w3 y` — a record with the legs' senses reads its composite in the path's own
+      // direction; one without them (before D13) was offered along the walk, whatever the legs' senses read as now
+      if (rec?.w3) return { word: rec.w3, dir: rec.dirs && r.path.from === 'y' ? AGAINST : ALONG };
+      if (!r.path.readable) return null;
+      for (const k of r.path.keys) { const c = composeBy(rules, k.w, k.w2, k.shape, k.dir); if (c !== null) return c; }
+      return null;
+    })();
+    if (!wordOfNot) continue;
+    const key = keyOf(wordOfNot.word, r.path.x, r.path.y, wordOfNot.dir);
+    if (directKeys.has(key)) refused.set(key, [...(refused.get(key) ?? []), v.view]);
+  }
+  const refusedRoutes = [...refused.values()].reduce((n, vs) => n + vs.length, 0);
   // a verdict disagreement: one word-pair composed to different words across faces
   const said = new Map<string, Set<string>>();
   for (const v of out) for (const r of v.paths) if (r.by === 'verdict' && r.composite !== null) { const k = `${r.path.w}|${r.path.w2}`; said.set(k, new Set([...(said.get(k) ?? []), r.composite])); }
@@ -266,7 +343,18 @@ export function sortFromRecords(
           : ownAll.length === 0 && instances.length > 0 ? (light ? 'EXHAUSTED' : 'CLOSED')
             : coherent ? 'COHERENT'
               : 'OPEN';
-  return { edge, instances, bars, views: out, own: ownAll, centroid: centroidAll, state, looked, refusedRoutes, unruled, coherent, closed };
+  return { edge, instances, bars, views: out, own: ownAll, centroid: centroidAll, state, looked, refusedRoutes, refused, unruled, coherent, closed };
+}
+
+/** whether a verdict record names a path: by its five names and, where the record carries them, the legs' senses; a record WITHOUT
+ *  `dirs` (every record before D13 — the senses were then the stored order's) names the one path with those five names, or the
+ *  `→ →` one where the person has since said the same words the other way round too */
+export function verdictNamesPath(r: Pick<VerdictRecord, 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs'>, p: Pick<Path, 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs'>, paths: ReadonlyArray<Pick<Path, 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs'>>): boolean {
+  const five = (q: Pick<Path, 'x' | 'w' | 'z' | 'w2' | 'y'>): boolean => r.x === q.x && r.w === q.w && r.z === q.z && r.w2 === q.w2 && r.y === q.y;
+  if (!five(p)) return false;
+  if (r.dirs) return r.dirs[0] === p.dirs[0] && r.dirs[1] === p.dirs[1];
+  const along = p.dirs[0] === ALONG && p.dirs[1] === ALONG;
+  return along || !paths.some((q) => q !== p && five(q) && q.dirs[0] === ALONG && q.dirs[1] === ALONG);
 }
 
 /** the verdicts a face holds, positional (well-formed items only) */
@@ -277,19 +365,23 @@ export function verdictsOn(face: Face | undefined): VerdictRecord[] {
     if (!v || typeof v !== 'object' || Array.isArray(v)) return false;
     const o = v as Record<string, unknown>;
     const word = (k: string): boolean => typeof o[k] === 'string' && (o[k] as string).length > 0;
-    // a `composed` say names the direct's mode; a `not` say speaks of no direct and may carry none (M3 S5)
-    return Array.isArray(o.base) && o.base.length === 2 && o.base.every((n) => typeof n === 'number') && ['x', 'w', 'z', 'w2', 'y'].every(word) && ((o.verdict === 'composed' && word('w3')) || (o.verdict === 'not' && (o.w3 === undefined || word('w3'))));
+    // a `composed` say names the direct's mode; a `not` say speaks of no direct and may carry none (M3 S5); the legs' senses, absent, are both `→` (D13)
+    const isDir = (d: unknown): boolean => d === ALONG || d === AGAINST;
+    return Array.isArray(o.base) && o.base.length === 2 && o.base.every((n) => typeof n === 'number') && ['x', 'w', 'z', 'w2', 'y'].every(word) && ((o.verdict === 'composed' && word('w3')) || (o.verdict === 'not' && (o.w3 === undefined || word('w3')))) && (o.dirs === undefined || (Array.isArray(o.dirs) && o.dirs.length === 2 && o.dirs.every(isDir)));
   }).map((v) => ({ ...v, base: [v.base[0], v.base[1]] }));
 }
+/** two records name one path when their senses agree — or when either carries none (a record before D13 and its successor are one path's) */
+const sameDirsOf = (a: [Dir, Dir] | undefined, b: [Dir, Dir] | undefined): boolean => !a || !b || (a[0] === b[0] && a[1] === b[1]);
+const samePath = (h: VerdictRecord, v: Pick<VerdictRecord, 'base' | 'x' | 'w' | 'z' | 'w2' | 'y' | 'dirs'>): boolean => h.base[0] === v.base[0] && h.base[1] === v.base[1] && h.x === v.x && h.w === v.w && h.z === v.z && h.w2 === v.w2 && h.y === v.y && sameDirsOf(h.dirs, v.dirs);
 export function withVerdict(face: Face, v: VerdictRecord): Face {
-  const held = verdictsOn(face).filter((h) => !(h.base[0] === v.base[0] && h.base[1] === v.base[1] && h.x === v.x && h.w === v.w && h.z === v.z && h.w2 === v.w2 && h.y === v.y));
+  const held = verdictsOn(face).filter((h) => !samePath(h, v));
   const rest: PacketData = { ...(face.data ?? {}) };
   rest[VERDICTS_KEY] = [...held, { ...v }] as unknown as JsonValue;
   return { ...face, data: rest };
 }
 export function withoutVerdict(face: Face, v: Omit<VerdictRecord, 'verdict' | 'w3' | 'exception'>): Face {
   const held = verdictsOn(face);
-  const next = held.filter((h) => !(h.base[0] === v.base[0] && h.base[1] === v.base[1] && h.x === v.x && h.w === v.w && h.z === v.z && h.w2 === v.w2 && h.y === v.y));
+  const next = held.filter((h) => !samePath(h, v));
   if (next.length === held.length) return face;
   const rest: PacketData = { ...(face.data ?? {}) };
   delete rest[VERDICTS_KEY];
@@ -297,12 +389,12 @@ export function withoutVerdict(face: Face, v: Omit<VerdictRecord, 'verdict' | 'w
   return Object.keys(rest).length ? { ...face, data: rest } : (({ data: _d, ...f }) => { void _d; return f; })(face);
 }
 
-/** an edge's instances and bars oriented from `from` to `to` (the record reads first corner ↦ second) */
+/** an edge's instances and bars oriented from `from` to `to` (the record reads first corner ↦ second): walked against the stored order, each relating is MIRRORED — x ↔ y with its direction flipped (D13) — never a word kept on swapped coordinates */
 export function relatingsFrom(shape: Shape, from: VertexId, to: VertexId, options: SpaceOfOptions): Relating[] {
   const e = edgeBetween(shape.edges, from, to);
   if (!e) return [];
   const list = [...instancesOn(e, options), ...barsOn(e, options)];
-  return e.vertexIds[0] === from ? list : list.map((r): Relating => [r[0], r[2], r[1], r[3]]);
+  return e.vertexIds[0] === from ? list : list.map(mirrored);
 }
 /** whether a walk from `from` to `to` runs AGAINST the edge's stored order (the record's direction is the edge's orientation, §212) */
 export function legAgainst(shape: Shape, from: VertexId, to: VertexId): boolean {
@@ -310,8 +402,8 @@ export function legAgainst(shape: Shape, from: VertexId, to: VertexId): boolean 
   return !!e && e.vertexIds[0] !== from;
 }
 
-/** THE SORTING of an edge on a shape: every triangular face through it a view; the legs, the triads and the verdicts read from the shape; the rules given */
-export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, rules: readonly Rule[] = []): Sorting | null {
+/** THE SORTING of an edge on a shape: every triangular face through it a view; the legs, the triads and the verdicts read from the shape; the rules and the lexicon's facts given */
+export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS): Sorting | null {
   if (!edge) return null;
   const [X, Y] = edge.vertexIds as [VertexId, VertexId];
   const direct = [...instancesOn(edge, options), ...barsOn(edge, options)];
@@ -324,12 +416,12 @@ export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOf
     // the triad's tuple reads a of the edge's first corner, b of its second, c of the light — the edge's own orientation already
     const triads: Array<[string, string, string]> = rec ? rec.roles.map((t) => [t[0], t[1], t[2]] as [string, string, string]) : [];
     const verdicts = verdictsOn(f).filter((v) => v.base[0] === iX && v.base[1] === iY).map(({ base: _b, ...rest }) => { void _b; return rest; });
-    return { view: Z, faceId: f.id, xz: relatingsFrom(shape, X, Z, options), zy: relatingsFrom(shape, Z, Y, options), triads, verdicts, xzAgainst: legAgainst(shape, X, Z), zyAgainst: legAgainst(shape, Z, Y) };
+    return { view: Z, faceId: f.id, xz: relatingsFrom(shape, X, Z, options), zy: relatingsFrom(shape, Z, Y, options), triads, verdicts };
   });
   // several Face objects with one vertex set are one view (a face two cells hold): keep the first per light
   const seen = new Set<VertexId>();
   const oneEach = views.filter((v) => { if (seen.has(v.view)) return false; seen.add(v.view); return true; });
-  return sortFromRecords([X, Y], direct, oneEach, rules);
+  return sortFromRecords([X, Y], direct, oneEach, rules, facts);
 }
 
 /** THE LOOP at a base corner X of a face X·Y·Z — the face reading's classification, from the same paths: h(x) is the direct on

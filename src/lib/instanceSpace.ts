@@ -31,15 +31,16 @@ import { isMoldType } from './castLoader';
 import { edgeBetween } from './faceReading';
 import { recordOf, sharedSignature } from './jRegister';
 import type { Polarity, Side } from './midpointGlue';
-import { barsOn, instancesOn, IS, type Relating } from './relatings';
+import { ALONG, barsOn, dirOf, instancesOn, IS, type Dir, type Relating } from './relatings';
 import { unconditionalOn } from './respects';
 import { nameIn, spaceOf, type SpaceOfOptions } from './spaceOf';
 
 export interface Instance {
-  key: string; // `x≡y` for IS (≡ is IS only), `x w y` for any other mode
+  key: string; // HIS SENTENCE: `x≡y` for IS (≡ is IS only), `x w y` for a mode said from the first corner, `y w x` for one said from the second (D13 — never a word on swapped coordinates)
   mode: string;
   x: string; // the role of the edge's first corner
   y: string; // the role of its second
+  dir: Dir; // the direction, positional (D13): `→` x is the subject, `←` y is; IS carries `→` (symmetric)
 }
 export interface InducedEntry {
   word: string; // the child's word key: `s≡t`, `A:s` or `B:t`
@@ -80,7 +81,8 @@ export interface InstanceSpace {
   space: ConceptSpace; // the child as ONE cast (D0): the instances, the words, the agreed and one-sided entries; discordances beside it
 }
 
-export const instanceKey = (mode: string, x: string, y: string): string => (mode === IS ? `${x}≡${y}` : `${x} ${mode} ${y}`);
+/** an instance's key — the sentence as he said it: `x≡y` for IS; `x w y` said from the first corner; `y w x` said from the second (D13) */
+export const instanceKey = (mode: string, x: string, y: string, dir: Dir = ALONG): string => (mode === IS ? `${x}≡${y}` : dir === ALONG ? `${x} ${mode} ${y}` : `${y} ${mode} ${x}`);
 
 /** THE CHILD from two casts and the relatings across them (the pure core; `instanceSpaceOf` reads them off a shape) */
 export function instanceSpaceFromCasts(A: ConceptSpace, B: ConceptSpace, relatings: Relating[], tau: Array<[string, string]>): InstanceSpace {
@@ -116,8 +118,8 @@ export function instanceSpaceFromCasts(A: ConceptSpace, B: ConceptSpace, relatin
       strays.push(r);
       continue;
     }
-    const key = instanceKey(r[0], r[1], r[2]);
-    if (!instances.some((i) => i.key === key)) instances.push({ key, mode: r[0], x: r[1], y: r[2] });
+    const key = instanceKey(r[0], r[1], r[2], dirOf(r));
+    if (!instances.some((i) => i.key === key)) instances.push({ key, mode: r[0], x: r[1], y: r[2], dir: dirOf(r) });
   }
   const byX = new Map<string, Instance[]>();
   const byY = new Map<string, Instance[]>();
@@ -269,7 +271,8 @@ export function termWordsOf(shape: Shape, corner: VertexId, id: string, options:
     const [p, q] = v.createdBy.sourceVertexIds;
     const child = instanceSpaceOf(shape, edgeBetween(shape.edges, p, q), options, memo);
     const inst = child ? child.instances.find((i) => i.key === id) : undefined;
-    if (inst) return `(${termWordsOf(shape, p, inst.x, options, memo)} ${inst.mode === IS ? '≡' : inst.mode} ${termWordsOf(shape, q, inst.y, options, memo)})`;
+    // the sentence as he said it (D13): from the first corner `x w y`, from the second `y w x`; IS symmetric
+    if (inst) return inst.dir === ALONG ? `(${termWordsOf(shape, p, inst.x, options, memo)} ${inst.mode === IS ? '≡' : inst.mode} ${termWordsOf(shape, q, inst.y, options, memo)})` : `(${termWordsOf(shape, q, inst.y, options, memo)} ${inst.mode} ${termWordsOf(shape, p, inst.x, options, memo)})`;
   }
   const space = childSpaceOf(shape, corner, options, memo);
   return space ? nameIn(space, id) : id;

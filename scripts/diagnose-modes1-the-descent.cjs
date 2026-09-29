@@ -157,7 +157,7 @@ check('§g ★★ B4 EXPOSES NOTHING TO THE BUILT RESOLVER: with a mode relating
 // ═══ §h the store hands the modes layer's reader ═══
 console.log('\n----- §h the act\'s check -----');
 const storeSrc = readLf('src/store/geometryStore.ts');
-check('§h giveRelating checks the picks against `childSpaceOf` (a seed\'s cast; a born corner\'s own child), handed to relatingOf', /relatingOf\(shape, edgeId, w, x, y, sign, \{ tauDrafts: state\.edgeTauDrafts \}, \(s, c, o\) => childSpaceOf\(s, c, o\)\)/.test(storeSrc));
+check('§h giveRelating checks the picks against `childSpaceOf` (a seed\'s cast; a born corner\'s own child), handed to relatingOf', /relatingOf\(shape, edgeId, w, x, y, sign, \{ tauDrafts: state\.edgeTauDrafts \}, \(s, c, o\) => childSpaceOf\(s, c, o\), dir\)/.test(storeSrc));
 const relSrc = readLf('src/lib/relatings.ts');
 check('§h relatingOf takes the role source as a parameter (the resolver\'s space by default) — three imports still', /roleSource: RoleSource = resolverRoles/.test(relSrc) && (relSrc.match(/^import /gm) || []).length === 3);
 
