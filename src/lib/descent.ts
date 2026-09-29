@@ -25,7 +25,7 @@ import type { Edge, Shape, VertexId } from '../types/geometry';
 import { edgeBetween } from './faceReading';
 import { childSpaceOf, instanceSpaceOf, type Instance, type InstanceSpace } from './instanceSpace';
 import { instancesOn, IS, type Relating } from './relatings';
-import { relatingsFrom, sortingOf, type Rule, type Sorting } from './sorting';
+import { legAgainst, relatingsFrom, sortingOf, type ReadPath, type Rule, type Sorting } from './sorting';
 import { edgeKind, type EdgeKind, type SpaceOfOptions } from './spaceOf';
 
 export type LinkKind = 'shared-coordinate' | 'opposite-midpoint' | 'coordinate';
@@ -34,7 +34,8 @@ export interface DerivedLight {
   x: string; // the first corner's role (a parent's role on a corner edge; an instance key on a medial edge)
   y: string; // the second corner's role
   through: VertexId; // the shared parent, the opposite midpoint's edge's corners' … — the passage, named by its vertex
-  via: string | null; // the opposite midpoint's instance key that links them (opposite-midpoint), else null
+  via: string; // WHAT THE LINK GOES THROUGH, as a key: the role both hold (shared-coordinate · coordinate) or the opposite midpoint's instance key — two lights with one pair of ends and different links are two lights (M3 S11 with her §4; MODES-2 (b))
+  link: { role: string; restates?: { edge: [VertexId, VertexId]; q: string; r: string } } | { relating: [string, string, string]; corners: [VertexId, VertexId] }; // the same, for the words: the role of `through` — on a medial edge with the generation-1 passage it RESTATES (q of Q, r of R, through P: the second resolution D14) — or the linking relating AS HE SAID IT (subject, mode, object) with its corners
   held: boolean; // a person's IS-instance stands at these endpoints on the medium (beside the light, never made by it)
 }
 export interface Medium {
@@ -45,7 +46,7 @@ export interface Medium {
   child: InstanceSpace | null; // the medium's own child (D4) — the person's relatings on it
   sorting: Sorting | null; // B3's sorting of the person's relatings on it (its views are the faces through it)
   lights: DerivedLight[]; // the derivable links, light never relatings
-  state: 'UNDETECTED' | 'EXHAUSTED' | 'POCKET' | 'OPEN' | 'NO-SPACE';
+  state: 'UNDETECTED' | 'VACUOUS' | 'EXHAUSTED' | 'POCKET' | 'OPEN' | 'NO-SPACE';
 }
 
 const parentsOf = (shape: Shape, v: VertexId): VertexId[] => {
@@ -71,16 +72,16 @@ export function derivedLightsOf(shape: Shape, edge: Edge | undefined, options: S
   const py = parentsOf(shape, Y);
   const held = new Set(instancesOn(edge, options).filter((r) => r[0] === IS).map((r) => `${r[1]}|${r[2]}`));
   const out: DerivedLight[] = [];
-  const push = (kind: LinkKind, x: string, y: string, through: VertexId, via: string | null): void => {
-    if (!out.some((l) => l.kind === kind && l.x === x && l.y === y && l.through === through && l.via === via)) out.push({ kind, x, y, through, via, held: held.has(`${x}|${y}`) });
+  const push = (kind: LinkKind, x: string, y: string, through: VertexId, via: string, link: DerivedLight['link']): void => {
+    if (!out.some((l) => l.kind === kind && l.x === x && l.y === y && l.through === through && l.via === via)) out.push({ kind, x, y, through, via, link, held: held.has(`${x}|${y}`) });
   };
   // a corner edge: the parent P and its child X = ⟨P, Q⟩ — the coordinate map is the light
   const cornerLights = (P: VertexId, C: VertexId, parentFirst: boolean): void => {
     const Q = parentsOf(shape, C).find((v) => v !== P);
     if (Q === undefined) return;
     for (const i of instancesFrom(shape, P, Q, options)) {
-      if (parentFirst) push('coordinate', i.p, i.key, P, null);
-      else push('coordinate', i.key, i.p, P, null);
+      if (parentFirst) push('coordinate', i.p, i.key, P, i.p, { role: i.p });
+      else push('coordinate', i.key, i.p, P, i.p, { role: i.p });
     }
   };
   if (px.length === 0 && py.length === 2 && py.includes(X)) { cornerLights(X, Y, true); return out; }
@@ -92,14 +93,18 @@ export function derivedLightsOf(shape: Shape, edge: Edge | undefined, options: S
   const R = py.find((v) => v !== shared) as VertexId;
   const xs = instancesFrom(shape, shared, Q, options); // (w, p, q)
   const ys = instancesFrom(shape, shared, R, options); // (w′, p′, r)
-  // shared coordinate — the passage through the shared parent
-  for (const i of xs) for (const j of ys) if (i.p === j.p) push('shared-coordinate', i.key, j.key, shared, null);
-  // through the opposite midpoint ⟨Q, R⟩ — an instance (q, r) on Q–R links (p, q) and (p′, r)
+  // shared coordinate — the passage through the shared parent: the link is the role both hold, and what it RESTATES is the
+  // generation-1 passage from q (of Q) to r (of R) through P (the second resolution D14: read at the child's resolution, its
+  // verdict inherited — never a light of its own, never an entry of the medium; the printing reads `inheritedReadingOf`)
+  for (const i of xs) for (const j of ys) if (i.p === j.p) push('shared-coordinate', i.key, j.key, shared, i.p, { role: i.p, restates: { edge: [Q, R], q: i.q, r: j.q } });
+  // through the opposite midpoint ⟨Q, R⟩ — an instance (q, r) on Q–R links (p, q) and (p′, r); the link is that relating, AS HE
+  // SAID IT (the walk Q → R may run against the edge's stored order — the mirror is undone for the words, never for the key)
   const eQR = edgeBetween(shape.edges, Q, R);
   if (eQR) {
     const opposite = Object.values(shape.vertices).find((v) => v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2 && v.createdBy.sourceVertexIds.includes(Q) && v.createdBy.sourceVertexIds.includes(R));
     const qr = relatingsFrom(shape, Q, R, options).filter((r: Relating) => r[3] === '+');
-    for (const i of xs) for (const j of ys) for (const k of qr) if (k[1] === i.q && k[2] === j.q) push('opposite-midpoint', i.key, j.key, opposite ? opposite.id : Q, k[0] === IS ? `${k[1]}≡${k[2]}` : `${k[1]} ${k[0]} ${k[2]}`);
+    const against = legAgainst(shape, Q, R);
+    for (const i of xs) for (const j of ys) for (const k of qr) if (k[1] === i.q && k[2] === j.q) push('opposite-midpoint', i.key, j.key, opposite ? opposite.id : Q, k[0] === IS ? `${k[1]}≡${k[2]}` : `${k[1]} ${k[0]} ${k[2]}`, against ? { relating: [k[2], k[0], k[1]], corners: [R, Q] } : { relating: [k[1], k[0], k[2]], corners: [Q, R] });
   }
   return out;
 }
@@ -126,4 +131,26 @@ export function mediumOf(shape: Shape, edge: Edge | undefined, options: SpaceOfO
     lights,
     state: !spaceX || !spaceY ? 'NO-SPACE' : sorting ? sorting.state : 'UNDETECTED',
   };
+}
+
+/**
+ * THE INHERITED READING of a shared-coordinate link (the second resolution D14, chartered for M3 by amendment): the passage from
+ * q to r through P at generation n−1, read from the PARENT edge Q–R's own sorting — composed there (the person paired q ≡ r: an
+ * inherited IS-instance, the face's), a light there (P's light — where the pairing would live), a tension there (his pair at q or
+ * r presses), NOT if he said so there, UNRULED if unruled there. The person answers a passage once, at the generation it belongs
+ * to. Null for a link that restates nothing (the opposite-midpoint kind, a corner edge's coordinate structure) or where the passage
+ * is not found. A reader of the parent's sorting, never of this medium's: the lights and the medium's sorting stay side by side.
+ */
+export function inheritedReadingOf(shape: Shape, light: DerivedLight, options: SpaceOfOptions = {}, rules: readonly Rule[] = []): { path: ReadPath; edge: [VertexId, VertexId] } | null {
+  if (!('role' in light.link) || !light.link.restates) return null;
+  const { edge: [Q, R], q, r } = light.link.restates;
+  const e = edgeBetween(shape.edges, Q, R);
+  if (!e) return null;
+  const parent = sortingOf(shape, e, options, rules);
+  const view = parent ? parent.views.find((v) => v.view === light.through) : undefined;
+  if (!view) return null;
+  const qFirst = e.vertexIds[0] === Q;
+  const [x, y] = qFirst ? [q, r] : [r, q];
+  const path = view.paths.find((p) => p.path.x === x && p.path.y === y && p.path.w === IS && p.path.w2 === IS);
+  return path ? { path, edge: [e.vertexIds[0] as VertexId, e.vertexIds[1] as VertexId] } : null;
 }

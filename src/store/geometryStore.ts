@@ -30,6 +30,7 @@ import { IS, relatingOf, relatingsHeld, withRelating, withoutRelating, type Rela
 import { IS_RULE, withVerdict, withoutVerdict, type Rule, type VerdictRecord } from '../lib/sorting';
 import { childSpaceOf } from '../lib/instanceSpace';
 import { sortingOf } from '../lib/sorting';
+import { edgeBetween } from '../lib/faceReading';
 import type {
   Cell,
   CellId,
@@ -1171,7 +1172,34 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (face.vertexIds.length !== 3) return `a verdict is given on a triangle — this face has ${face.vertexIds.length} corners`;
     const [i, j] = record.base;
     if (![0, 1, 2].includes(i) || ![0, 1, 2].includes(j) || i === j) return 'the verdict names two corners of the face by their positions';
-    if (![record.x, record.w, record.z, record.w2, record.y, record.w3].every((s) => typeof s === 'string' && s.trim().length > 0)) return 'a verdict names the path whole — x, its mode, z, its mode, y — and the direct’s mode';
+    if (![record.x, record.w, record.z, record.w2, record.y].every((s) => typeof s === 'string' && s.trim().length > 0)) return 'a verdict names the path whole — x, its mode, z, its mode, y';
+    // M3 S5: a `composed` say names the direct's mode; a `not` say speaks of no direct and carries none
+    if (record.verdict === 'composed' && !(typeof record.w3 === 'string' && record.w3.trim().length > 0)) return 'a composed say names the direct’s mode';
+    // M3 S5 (b), RULED: a say against his own pair or bar is refused BY NAME AT THE ACT (the pairing's precedent) — a tension is a
+    // path pressing on his own record, and `that is "…"` on it would enter a contradiction in one click; his route is to withdraw
+    // the pair or the bar, after which the path re-reads. S4 (interim, until Q2): a path with a directed leg read against the walk
+    // takes no composite — a composed say on it would be the device's direction, not his. The screen offers neither hand; the
+    // store refuses the act itself, so the rule holds by construction, not by the hand's absence.
+    {
+      const edge = edgeBetween(shape.edges, face.vertexIds[i], face.vertexIds[j]);
+      const sorting = sortingOf(shape, edge, {}, state.rules);
+      const view = sorting ? sorting.views.find((v) => v.faceId === faceId || shape.faces.find((f) => f.id === v.faceId)?.vertexIds.every((v2) => face.vertexIds.includes(v2))) : undefined;
+      const path = view ? view.paths.find((p) => p.path.x === record.x && p.path.w === record.w && p.path.z === record.z && p.path.w2 === record.w2 && p.path.y === record.y) : undefined;
+      const la = shape.vertices[face.vertexIds[i]]?.data.label || face.vertexIds[i];
+      const lb = shape.vertices[face.vertexIds[j]]?.data.label || face.vertexIds[j];
+      if (path && path.reading === 'TENSION') {
+        const key = (path.direct ?? '').split('|');
+        // the second resolution §6: on an IS tension NO say at all (the one-to-one law, IS ; IS = IS and substitution are the
+        // transport's, not his rules; "a ≡ z, z ≡ c, but not a ≡ c" denies what ≡ means) — the route is the pairing
+        if (path.composite === IS && record.verdict === 'not') return `nothing is yours to say against ≡ here — ${record.x} ≡ ${record.y} is barred by your own pairing on ${la}–${lb}; the route is the pair`;
+        if (record.verdict === 'composed') {
+          if (path.end === 'target' && key.length === 3) return `${record.x} ${record.w3} ${record.y} presses on your pair ${key[1]} ≡ ${record.y} on ${la}–${lb} — withdraw the pair first`;
+          if (path.end === 'source' && key.length === 3) return `${record.x} ${record.w3} ${record.y} presses on your pair ${record.x} ≡ ${key[2]} on ${la}–${lb} — withdraw the pair first`;
+          return `${record.x} ${record.w3} ${record.y} is barred by you on ${la}–${lb} — withdraw the bar first`;
+        }
+      }
+      if (path && path.path.against && record.verdict === 'composed') return 'a leg of this passage runs against the walk — what it comes to is not yet said (the direction is not yet ruled)';
+    }
     const faces = shape.faces.map((f) => (f.id === faceId ? withVerdict(f, { ...record, base: [i, j] }) : f));
     set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } } });
     return null;

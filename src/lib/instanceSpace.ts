@@ -33,7 +33,7 @@ import { recordOf, sharedSignature } from './jRegister';
 import type { Polarity, Side } from './midpointGlue';
 import { barsOn, instancesOn, IS, type Relating } from './relatings';
 import { unconditionalOn } from './respects';
-import { spaceOf, type SpaceOfOptions } from './spaceOf';
+import { nameIn, spaceOf, type SpaceOfOptions } from './spaceOf';
 
 export interface Instance {
   key: string; // `x≡y` for IS (≡ is IS only), `x w y` for any other mode
@@ -255,4 +255,22 @@ export function instanceSpaceOf(shape: Shape, edge: Edge | undefined, options: S
   if (!U || !V) return null;
   const relatings = [...instancesOn(edge, options), ...barsOn(edge, options)];
   return instanceSpaceFromCasts(U, V, relatings, unconditionalOn(edge, options).types);
+}
+
+/**
+ * A TERM'S WORDS at a corner (the designer's §1, 2026-09-29, ratified as meaning §215; S11's amendment): a role by its name; a role
+ * that is itself a relating — a born corner's instance, a SENTENCE — in parentheses, its mode's word between its two terms (IS as
+ * `≡`), each term read the same way at its own corner: `(r3 carries F2)` · `(r8 ≡ F7)` · `((r8 ≡ F7) ≡ (F7 ≡ Φ1))` at generation 3.
+ * A point's own label stands alone and takes none. Read, never stored.
+ */
+export function termWordsOf(shape: Shape, corner: VertexId, id: string, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): string {
+  const v = shape.vertices[corner];
+  if (v && v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2) {
+    const [p, q] = v.createdBy.sourceVertexIds;
+    const child = instanceSpaceOf(shape, edgeBetween(shape.edges, p, q), options, memo);
+    const inst = child ? child.instances.find((i) => i.key === id) : undefined;
+    if (inst) return `(${termWordsOf(shape, p, inst.x, options, memo)} ${inst.mode === IS ? '≡' : inst.mode} ${termWordsOf(shape, q, inst.y, options, memo)})`;
+  }
+  const space = childSpaceOf(shape, corner, options, memo);
+  return space ? nameIn(space, id) : id;
 }

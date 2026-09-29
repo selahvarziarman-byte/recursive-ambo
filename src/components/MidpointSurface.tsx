@@ -113,7 +113,7 @@ import { useGeometryStore, type MidpointRefusal, type MidpointRemade } from '../
 import { buildGeneralSitePacketPresenterReport, type GeneralSitePacketTrace } from '../lib/generalSitePacketPresenterV0';
 import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName';
 import { edgeBetween, faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
-import { instancesOn, IS } from '../lib/relatings';
+import { barsOn, instancesOn, IS } from '../lib/relatings';
 import { sortingOf } from '../lib/sorting';
 import { MediumBlock } from './MediumBlock';
 
@@ -331,6 +331,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // C-14 f — THE TRIAD's hands: the act (three picks, one per corner, in the opened corner's light), its one hand back, the attempt's
   const giveTriad = useGeometryStore((s) => s.giveTriad);
   const giveRelating = useGeometryStore((s) => s.giveRelating); // B5 — the two-pick act in a chosen mode, or barred
+  const withdrawRelating = useGeometryStore((s) => s.withdrawRelating); // M3 S10 — the hand on a relating or a bar listed under the drawing
   const withdrawTriad = useGeometryStore((s) => s.withdrawTriad);
   const withdrawTriadAttempt = useGeometryStore((s) => s.withdrawTriadAttempt);
   const triadRefusals = useGeometryStore((s) => s.triadRefusals);
@@ -378,6 +379,9 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // MODES-1 · B3 — the sorting of the source edge (the paths through each opposite corner), read for the feet's silence alone here; its words are B5's
   const sourceEdge = useMemo(() => edgeBetween(shape.edges, site.a, site.b), [shape, site.a, site.b]);
   const sorting = useMemo(() => sortingOf(shape, sourceEdge, {}, []), [shape, sourceEdge]);
+  // M3 S10 — his relatings in other modes and his bars on this edge: listed UNDER THE DRAWING, where the two picks are made (the
+  // block below keeps them in its sorting); read through B1's one reader, IS excluded (the pairs have their numbered lines)
+  const modeActs = useMemo(() => (sourceEdge ? { relatings: instancesOn(sourceEdge).filter((r) => r[0] !== IS), bars: barsOn(sourceEdge) } : { relatings: [], bars: [] }), [sourceEdge]);
   const spokenLabels = core ? core.spoken.map((v) => labelOf(shape, v)) : [];
   const lightsWords = spokenLabels.length === 0 ? '' : spokenLabels.length === 1 ? `in ${spokenLabels[0]}'s light` : `in ${spokenLabels.slice(0, -1).map((l) => `${l}'s light`).join(', ')} and in ${spokenLabels[spokenLabels.length - 1]}'s`;
   const byLights = (kind: 'role' | 'word', pair: [string, string]): boolean => !!core && (kind === 'role' ? core.meet.roles : core.meet.types).some((p) => p[0] === pair[0] && p[1] === pair[1]) && !(kind === 'role' ? core.unconditional.roles : core.unconditional.types).some((p) => p[0] === pair[0] && p[1] === pair[1]);
@@ -772,7 +776,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           and its withdraw; the refused pair's words beside them in rose. Placed BELOW the drawing so that a listing appearing or
           leaving moves neither the drawing nor the column points — §149's law kept by construction (a listing above would shift the
           next act's targets when it appears; the word pairs above still do — said in the report, not this letter's). */}
-      {state === 'glued' && (lines.some((l) => l.iA >= 0 && l.iB >= 0) || (refusal && refusal.act.kind === 'role')) ? (
+      {(state === 'glued' && (lines.some((l) => l.iA >= 0 && l.iB >= 0) || (refusal && refusal.act.kind === 'role'))) || modeActs.relatings.length > 0 || modeActs.bars.length > 0 ? (
         <div data-midpoint-role-pairs="true" className="my-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-amber-200">
           {lines.map((l, i) =>
             l.iA >= 0 && l.iB >= 0 ? (
@@ -792,6 +796,20 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
           {refusal && refusal.act.kind === 'role' && insideA.points.some((pt) => pt.id === refusal.act.pair[0]) && insideB.points.some((pt) => pt.id === refusal.act.pair[1]) ? (
             <span data-midpoint-refused-listing={`${refusal.act.pair[0]}↦${refusal.act.pair[1]}`} className="text-rose-300">{`${nA(refusal.act.pair[0])} ↦ ${nB(refusal.act.pair[1])} · not taken — see below the drawing`}</span>
           ) : null}
+          {/* M3 S10 (the designer's eye): his relatings in other modes and his bars are his OTHER ACTS, listed here where the two
+              picks are made — unnumbered (the numbers index drawn lines; a drawn line for these waits for a glyph, R5) */}
+          {modeActs.relatings.map((r) => (
+            <span key={`${r[0]}|${r[1]}|${r[2]}`} data-medium-relating={`${r[0]}|${r[1]}|${r[2]}`}>
+              {`${nA(r[1])} ${r[0]} ${nB(r[2])} · yours · `}
+              <button type="button" data-medium-withdraw={`${r[0]}|${r[1]}|${r[2]}`} className="underline" onClick={() => withdrawRelating(edgeId, r[0], r[1], r[2])}>withdraw</button>
+            </span>
+          ))}
+          {modeActs.bars.map((b) => (
+            <span key={`${b[0]}|${b[1]}|${b[2]}|-`} data-medium-bar={`${b[0]}|${b[1]}|${b[2]}`}>
+              {`barred by you: ${nA(b[1])} ${b[0] === IS ? '≡' : b[0]} ${nB(b[2])} · `}
+              <button type="button" data-medium-withdraw={`${b[0]}|${b[1]}|${b[2]}`} className="underline" onClick={() => withdrawRelating(edgeId, b[0], b[1], b[2])}>withdraw</button>
+            </span>
+          ))}
         </div>
       ) : null}
       {refusal && refusal.act.kind === 'role' ? refusalBox : null}
@@ -959,9 +977,16 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
                 {f.disagreement.map(([a, b, p]) => (
                   <span key={`d-${a}`} data-midpoint-foot-line="would-pair">{`would pair ${nA(a)} otherwise: with ${nB(b)} — you paired it with ${nB(p)}`}</span>
                 ))}
-                {f.proposal.map(([a, b]) => (
-                  <span key={`p-${a}`} data-midpoint-foot-line="would-join">{`would join what you have not paired: ${nA(a)} with ${nB(b)}`}</span>
-                ))}
+                {f.proposal.map(([a, b]) => {
+                  // M3 S2 (the designer's eye; M2 §9.7): the view's sentence SPLITS BY END. A light keeps `would join what you have not
+                  // paired`; a path onto a role his pair holds elsewhere (a tension at the target) takes the source end's own form,
+                  // pivoting on the paired role — the kinds stay for the stone; the sentence reads the sorting's end
+                  const path = view ? view.paths.find((p) => p.path.w === IS && p.path.w2 === IS && p.path.x === a && p.path.y === b) : undefined;
+                  const key = path && path.reading === 'TENSION' && path.end === 'target' && path.direct ? path.direct.split('|') : null;
+                  return key && key.length === 3
+                    ? <span key={`p-${a}`} data-midpoint-foot-line="would-pair">{`would pair ${nB(b)} otherwise: with ${nA(a)} — you paired it with ${nA(key[1])}`}</span>
+                    : <span key={`p-${a}`} data-midpoint-foot-line="would-join">{`would join what you have not paired: ${nA(a)} with ${nB(b)}`}</span>;
+                })}
                 {silent ? <span data-midpoint-foot-line="silent">{silentLine}</span> : null}
               </div>
             );

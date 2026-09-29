@@ -147,17 +147,39 @@ const dis = SO.sortFromRecords(['X', 'Y'], [], [
 ], []);
 check('§b two verdicts on one word-pair (carries, resists) that disagree across faces (sustains at Z, detaches at W) — the edge is not COHERENT (the disagreement is shown, never resolved)', dis.coherent === false && dis.views.every((v) => v.paths[0].by === 'verdict'));
 
+// ═══ §b′ MARKER MODES-1 · M3 (2026-09-29): the interim ruling on S4, a not-it say without a direct, exceptions against HIS rule alone, the legs held, the tension's end ═══
+console.log('\n----- §b′ M3: a directed leg against the walk · a not-it say carries no w3 · an exception only against his rule · the legs held · the end is total -----');
+const ag = SO.sortFromRecords(['X', 'Y'], [['sustains', 'x1', 'y1', '+']], [{ ...legs[0], xzAgainst: true }], [['carries', 'resists', 'sustains']]);
+check('§b′ THE INTERIM RULING (S4, the mothership, until Q2): a path whose DIRECTED leg is read against the walk\'s order takes NO rule and NO composite — UNRULED (`not yet said`) with (carries, resists) ↦ sustains in force; `path.against` says so; that leg prints AS HE SAID IT (`z1 carries x1` — the record\'s first corner first), the leg with the walk as walked; the direct stays OWN',
+  ag.views[0].paths[0].reading === 'UNRULED' && ag.views[0].paths[0].path.against === true && ag.views[0].paths[0].composite === null && ag.views[0].paths[0].by === null && J(ag.views[0].paths[0].path.said) === J([['z1', 'carries', 'x1'], ['z1', 'resists', 'y1']]) && J(ag.own) === J(['sustains|x1|y1']), J(ag.views[0].paths[0]));
+const agIS = SO.sortFromRecords(['X', 'Y'], [['IS', 'x1', 'y1', '+']], [{ view: 'Z', faceId: 'f', xz: [['IS', 'x1', 'z1', '+']], zy: [['IS', 'z1', 'y1', '+']], triads: [], verdicts: [], xzAgainst: true, zyAgainst: true }], []);
+check('§b′ IS legs are unaffected: both legs against the walk, the path still composes by IS ; IS = IS (COMPOSED) and its legs print in the walk\'s order (≡ is symmetric — the designer\'s S3)', agIS.views[0].paths[0].reading === 'COMPOSED' && agIS.views[0].paths[0].path.against === false && J(agIS.views[0].paths[0].path.said) === J([['x1', 'IS', 'z1'], ['z1', 'IS', 'y1']]));
+const agNot = SO.sortFromRecords(['X', 'Y'], [['sustains', 'x1', 'y1', '+']], [{ ...legs[0], xzAgainst: true, verdicts: [{ x: 'x1', w: 'carries', z: 'z1', w2: 'resists', y: 'y1', verdict: 'not' }] }], [['carries', 'resists', 'sustains']]);
+check('§b′ a `not` say is the one say such a path takes, and a not-it say carries NO w3 (it speaks of no direct — S5): the path reads NOT, by verdict', agNot.views[0].paths[0].reading === 'NOT' && agNot.views[0].paths[0].by === 'verdict');
+const agComposed = SO.sortFromRecords(['X', 'Y'], [['sustains', 'x1', 'y1', '+']], [{ ...legs[0], xzAgainst: true, verdicts: [{ ...notV, verdict: 'composed' }] }], []);
+check('§b′ a `composed` say on an against-path is NOT READ (the store refuses the act by name; a record from before the ruling stays, unread, never rewritten): UNRULED, by nobody', agComposed.views[0].paths[0].reading === 'UNRULED' && agComposed.views[0].paths[0].by === null);
+const exIS = SO.sortFromRecords(['X', 'Y'], [['IS', 'x1', 'y1', '+']], [{ view: 'Z', faceId: 'f', xz: [['IS', 'x1', 'z1', '+']], zy: [['IS', 'z1', 'y1', '+']], triads: [], verdicts: [{ x: 'x1', w: 'IS', z: 'z1', w2: 'IS', y: 'y1', verdict: 'not' }] }], []);
+check('§b′ S6: an EXCEPTION is read only against a rule HE named — a not-it on an IS ; IS path is no exception (the built-in rule names none), against his (carries, resists) ↦ sustains it is (u4)', exIS.views[0].paths[0].reading === 'NOT' && exIS.views[0].paths[0].exception === false && u4.views[0].paths[0].exception === true);
+const legsHeld = SO.sortFromRecords(['X', 'Y'], [['IS', 'x1', 'y1', '+']], [
+  { view: 'Z', faceId: 'f1', xz: [], zy: [], triads: [], verdicts: [] },
+  { view: 'W', faceId: 'f2', xz: [['IS', 'x1', 'w1', '+']], zy: [], triads: [], verdicts: [] },
+  { view: 'V', faceId: 'f3', xz: [['IS', 'x1', 'v1', '+']], zy: [['IS', 'v2', 'y1', '+']], triads: [], verdicts: [] },
+], []);
+check('§b′ R1: each view says which legs hold a relating — none · the first only · both (and the two do not meet: no path)', J(legsHeld.views.map((v) => [v.legs, v.paths.length])) === J([[[false, false], 0], [[true, false], 0], [[true, true], 0]]), J(legsHeld.views.map((v) => v.legs)));
+const srcT = SO.sortFromRecords(['X', 'Y'], [['IS', 'x1', 'y2', '+']], [{ view: 'Z', faceId: 'f', xz: [['IS', 'x1', 'z1', '+']], zy: [['IS', 'z1', 'y1', '+']], triads: [], verdicts: [] }], []);
+check('§b′ the TENSION\'s end is TOTAL and names what presses: his bar → `bar` with the bar\'s own key; his pair at the source → `source` with that pair (x1 ≡ y2); at the target → `target` with that pair (x9 ≡ y1)', u3.views[0].paths[0].end === 'bar' && u3.views[0].paths[0].direct === 'sustains|x1|y1' && srcT.views[0].paths[0].end === 'source' && srcT.views[0].paths[0].direct === 'IS|x1|y2' && sT.views[0].paths[0].end === 'target' && sT.views[0].paths[0].direct === 'IS|x9|y1');
+
 // ═══ §c the states ═══
 console.log('\n----- §c the states -----');
 const vac = SO.sortFromRecords(['X', 'Y'], [['IS', 'x1', 'y1', '+']], [{ view: 'Z', faceId: 'f', xz: [], zy: [], triads: [], verdicts: [] }], []);
-check('§c VACUOUS: a view with no relating from X or Y to Z says so; the instance is OWN (no path through that view)', vac.views[0].vacuous && J(vac.own) === J(['IS|x1|y1']) && vac.state === 'OPEN' && vac.coherent);
+check('§c VACUOUS is the SITE\'s own state (the second resolution §8, M4): a view with no relating from X or Y to Z says so; the instance is OWN (no path through that view); with no passage through any view the site is VACUOUS and NOT coherent (coherence presupposes a passage)', vac.views[0].vacuous && J(vac.own) === J(['IS|x1|y1']) && vac.state === 'VACUOUS' && !vac.looked && !vac.coherent);
 const pocket = SO.sortFromRecords(['X', 'Y'], [['IS', 'x1', 'y1', '+'], ['IS', 'x2', 'y2', '+']], [
   { view: 'Z', faceId: 'f1', xz: [['IS', 'x1', 'z1', '+']], zy: [['IS', 'z1', 'y1', '+']], triads: [], verdicts: [] },
   { view: 'W', faceId: 'f2', xz: [['IS', 'x2', 'w1', '+']], zy: [['IS', 'w1', 'y2', '+']], triads: [], verdicts: [] },
 ], []);
 check('§c POCKET (D9): two views, each own part non-empty ({x2 ≡ y2} under Z, {x1 ≡ y1} under W), their intersection empty — the site is contested, not coherent, not exhausted', pocket.state === 'POCKET' && J(pocket.views[0].own) === J(['IS|x2|y2']) && J(pocket.views[1].own) === J(['IS|x1|y1']) && pocket.own.length === 0 && !pocket.coherent);
 const undet = SO.sortFromRecords(['X', 'Y'], [], [], []);
-check('§c UNDETECTED with no view at all: no instance, no path; not closed', undet.state === 'UNDETECTED' && !undet.closed && undet.coherent);
+check('§c UNDETECTED with no view at all: no instance, no path; not closed; not coherent (nothing looked at — §8)', undet.state === 'UNDETECTED' && !undet.closed && !undet.coherent);
 
 // ═══ §d Virgin Land's record — the after ═══
 console.log('\n----- §d Virgin Land\'s record: triads alone read LIGHT, the disagreement shown -----');
@@ -223,7 +245,7 @@ check('§f a verdict refused by name: a face of four corners, positions out of r
 give('A', 'B', { F13: 'r0' }); give('A', 'C', { F13: 'Φ8' }); give('C', 'B', { Φ8: 'r0' });
 const sV = SO.sortingOf(cur(), E(cur(), 'A', 'B'), {}, S().rules);
 const pV = sV.views.find((v) => v.view === byLabel(cur(), 'C')).paths.find((p) => p.path.x === 'F13');
-check('§f THE VERDICT READ ON THE SHAPE: F13 → Φ8 → r0 with F13 ≡ r0 given would be FIX, but the person said `not` — the path reads NOT, an exception to IS ; IS = IS, and F13 ≡ r0 stays OWN', !!pV && pV.reading === 'NOT' && pV.exception === true && J(sV.own) === J(['IS|F13|r0']));
+check('§f THE VERDICT READ ON THE SHAPE: F13 → Φ8 → r0 with F13 ≡ r0 given would be FIX, but the person said `not` — the path reads NOT, NO exception (M3 S6: the built-in IS ; IS = IS names none — an exception is against a rule HE named), and F13 ≡ r0 stays OWN', !!pV && pV.reading === 'NOT' && pV.exception === false && J(sV.own) === J(['IS|F13|r0']));
 const file = JSON.parse(J(S().exportWorkspace()));
 reset(seeded4()); S().nameRule('stale', 'session', 'rule');
 S().importWorkspace(JSON.parse(J(file)));
