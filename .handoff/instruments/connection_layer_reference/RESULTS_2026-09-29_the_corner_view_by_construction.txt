@@ -1,0 +1,29 @@
+THE CORNER VIEW BY CONSTRUCTION — the researcher's probe on run 2's saved sortings (A: no corner acts · B: the corner view by hand)
+
+HELD  S1 the own parts at the 12 medial sites total 41 in A and 29 in B (the mothership's verification, as the control)
+        medial sites 12 · own A 41 · own B 29
+HELD  S2 NOTHING ENTERED an own part between A and B
+        entered: 0
+HELD  S3 what LEFT each own part is exactly own(A) ∩ the seed corner's face line in B — per site, nothing else left
+        left outside the seed face: 0 · sites where predicted ≠ left: 0
+HELD  S4 every passage through a seed corner in B reads COMPOSED or NOT (decidable by construction), and their count per site is the view line's
+        seed passages 80 · not COMPOSED/NOT: 0 · count mismatches: 0
+HELD  S5 every `your says differ` flag in B names the seed corner alone (the coordinate pseudo-word)
+        differ lines 11 · naming another view: 0
+
+      · seed-corner passages at the medial sites in B: 80 (the report says 80 of the 228 opened by the corner acts were at the medial sites)
+      · corner sites: 12; UNDETECTED in A: 12; states in B: OPEN OPEN OPEN POCKET OPEN OPEN OPEN OPEN OPEN OPEN OPEN OPEN
+      · AdequationValue-relevance: own 1 → 0 · left 1 (seed composes 1) · entered 0 · seed passages 2 · OPEN → POCKET
+      · AdequationEvent: own 4 → 2 · left 2 (seed composes 2) · entered 0 · seed passages 15 · OPEN → OPEN
+      · Value-relevanceEvent: own 2 → 2 · left 0 (seed composes 0) · entered 0 · seed passages 3 · OPEN → OPEN
+      · Value-relevanceImport: own 3 → 2 · left 1 (seed composes 1) · entered 0 · seed passages 6 · OPEN → OPEN
+      · Value-relevancePractical reason: own 4 → 3 · left 1 (seed composes 1) · entered 0 · seed passages 4 · OPEN → OPEN
+      · ImportPractical reason: own 4 → 3 · left 1 (seed composes 1) · entered 0 · seed passages 7 · OPEN → OPEN
+      · ImportAdequation: own 4 → 3 · left 1 (seed composes 1) · entered 0 · seed passages 5 · OPEN → OPEN
+      · ImportInstitution: own 4 → 3 · left 1 (seed composes 1) · entered 0 · seed passages 4 · OPEN → OPEN
+      · AdequationInstitution: own 4 → 2 · left 2 (seed composes 2) · entered 0 · seed passages 12 · OPEN → OPEN
+      · EventPractical reason: own 4 → 3 · left 1 (seed composes 1) · entered 0 · seed passages 11 · OPEN → OPEN
+      · EventInstitution: own 4 → 3 · left 1 (seed composes 1) · entered 0 · seed passages 6 · OPEN → OPEN
+      · Practical reasonInstitution: own 3 → 3 · left 0 (seed composes 0) · entered 0 · seed passages 5 · OPEN → OPEN
+
+ALL SEALS HELD
