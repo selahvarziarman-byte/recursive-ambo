@@ -1156,6 +1156,9 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const a = w.trim(); const b = w2.trim(); const c = w3.trim();
     if (!a || !b || !c) return;
     if (a === IS_RULE[0] && b === IS_RULE[1]) return; // the identity regime's rule is built in, never stored
+    // M6 (ADR 0031 §9.12): a pair with an IS word composes by SUBSTITUTION — a law, not a rule of his; a rule keyed on it is never
+    // stored (the surface offers no gesture for it; the act, reached by script, is a no-op like IS ; IS)
+    if (a === IS || b === IS) return;
     const rules = get().rules.filter((r) => !(r[0] === a && r[1] === b));
     set({ rules: [...rules, [a, b, c]] });
   },

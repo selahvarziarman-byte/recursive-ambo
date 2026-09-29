@@ -249,7 +249,12 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
       ))}
       {sorting.views.map((v) => {
         const lz = viewLabel(v);
-        const pairsSeen = [...new Set(v.paths.map((p) => `${p.path.w}|${p.path.w2}`))];
+        // M6 (the designer's second eye, 12:44; the mothership 12:48): the rule gesture and the rule line exist only for the passages a
+        // rule can READ — two mode legs (an IS leg composes by the transport's law, §9.12) and no directed leg against the walk (the
+        // interim, S4: no rule keys on that pattern until D13's directed keys land) — never offered from a passage they cannot answer,
+        // never claiming a hold on one that stays `not yet said`
+        const readable = v.paths.filter((p) => p.path.w !== IS && p.path.w2 !== IS && !p.path.against);
+        const pairsSeen = [...new Set(readable.map((p) => `${p.path.w}|${p.path.w2}`))];
         return (
           <div key={v.view} data-medium-view={lz} data-medium-view-vacuous={String(v.vacuous)} className="grid gap-0.5">
             <span data-medium-view-head="true" className="text-stone-100">{viewHead(v)}</span>
@@ -290,7 +295,7 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
               const [w, w2] = pair.split('|');
               const rule = rules.find((r) => r[0] === w && r[1] === w2);
               const builtIn = w === IS || w2 === IS; // M5: a word pair with an IS leg composes by the transport's law — no rule of his keys on it, no gesture offers one
-              const exceptions = v.paths.filter((p) => p.path.w === w && p.path.w2 === w2 && p.exception).length;
+              const exceptions = readable.filter((p) => p.path.w === w && p.path.w2 === w2 && p.exception).length;
               if (builtIn) return null;
               return rule ? (
                 <span key={pair} data-medium-rule={`${w}|${w2}|${rule[2]}`}>
