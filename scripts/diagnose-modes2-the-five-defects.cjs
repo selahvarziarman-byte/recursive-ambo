@@ -82,7 +82,7 @@ const renderAt = (shape, siteId) => {
   const after = start >= 0 ? html.indexOf('<div data-midpoint-trace="true"', start) : -1;
   const block = start >= 0 ? html.slice(start, after > 0 ? after : undefined) : '';
   const attr = (name) => { const m = block.match(new RegExp(`<div data-medium="true"[^>]*${name}="([^"]*)"`)); return m ? m[1] : null; };
-  return { html, block, site, errors, sentence: (linesIn(html, 'data-midpoint-sentence')[0] || [])[1] || '', head: (linesIn(block, 'data-medium-head')[0] || [])[1] || '', stateLine: (linesIn(block, 'data-medium-state-line')[0] || [])[1] || '', state: attr('data-medium-state'), pocketLines: linesIn(block, 'data-medium-pocket-line').map(([, s]) => s), lights: linesIn(block, 'data-medium-light-derived') };
+  return { html, block, site, errors, sentence: (linesIn(html, 'data-midpoint-sentence')[0] || [])[1] || '', home: (linesIn(html, 'data-midpoint-home')[0] || [])[1] || '', head: (linesIn(block, 'data-medium-head')[0] || [])[1] || '', stateLine: (linesIn(block, 'data-medium-state-line')[0] || [])[1] || '', state: attr('data-medium-state'), pocketLines: linesIn(block, 'data-medium-pocket-line').map(([, s]) => s), lights: linesIn(block, 'data-medium-light-derived') };
 };
 const S = () => useGeometryStore.getState();
 const loadWorkspace = (file) => {
@@ -166,10 +166,11 @@ if (fs.existsSync(G2C)) {
     const [pa, pb] = v.createdBy.sourceVertexIds;
     const seed = isBorn(shape, pa) ? pb : pa; const child = isBorn(shape, pa) ? pa : pb;
     const ls = shape.vertices[seed].data.label; const lc = shape.vertices[child].data.label;
-    return { site: v.data.label || v.id, seedFirst: r.sentence.startsWith(`${ls}'s `), carried: new RegExp(`^${ls.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}'s \\d+ roles and \\d+ words carried into ${lc.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')} as one — composed, not yours \\(their points hollow\\)$`).test(r.sentence), clause: /holds no born room|nothing here is yours to pair/.test(r.sentence), sentence: r.sentence, head: r.head };
+    return { site: v.data.label || v.id, seedFirst: r.sentence.startsWith(`${ls}'s `), carried: new RegExp(`^${ls.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}'s \\d+ roles and \\d+ words carried into ${lc.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')} as one — composed, not yours \\(their points hollow\\)$`).test(r.sentence), clause: /holds no born room|nothing here is yours to pair/.test(r.sentence), twin: /no act lands on it|a corner edge carries/.test(r.home), home: r.home, sentence: r.sentence, head: r.head };
   });
-  note(`corner sites: ${rows.length} · e.g. ${rows[0] ? `${rows[0].site}: ${rows[0].sentence} ‖ ${rows[0].head}` : '—'}`);
+  note(`corner sites: ${rows.length} · e.g. ${rows[0] ? `${rows[0].site}: ${rows[0].sentence} ‖ ${rows[0].head} ‖ ${rows[0].home}` : '—'}`);
   check('(c) ★★ THE FALSE CLAUSE IS STRUCK: no corner site prints `a corner edge holds no born room: nothing here is yours to pair` — the store takes the act (the agent gave 70) and the sentence no longer denies it; no replacement (the head, the columns and the gesture say what the site is)', rows.length > 0 && rows.every((r) => !r.clause), J(rows.filter((r) => r.clause).slice(0, 2).map((r) => r.sentence)));
+  check('(c) M2 ★★ ITS TWIN IS STRUCK TOO (the designer\'s eye of 17:12): no corner site\'s home line carries ` — a corner edge carries; no act lands on it` — the line reads `the record\'s home: X–Y, a corner edge (generation 1) · this site: …, generation 2` and stops; no replacement (the medial arm\'s `— a pair beyond the shared corner is born here, yours` stays for MODES-3)', rows.length > 0 && rows.every((r) => !r.twin && /^the record's home: .+, a corner edge \(generation \d+\) · this site: .+, generation \d+$/.test(r.home)), J(rows.filter((r) => r.twin || !/generation \d+$/.test(r.home)).slice(0, 2).map((r) => r.home)));
   check('(a) ★★ AT A CORNER SITE THE SEED IS THE CARRIED SIDE AND COMES FIRST, whichever corner is stored first: `⟨seed⟩\'s N roles and M words carried into ⟨child⟩ as one — composed, not yours (their points hollow)` on all 12', rows.every((r) => r.seedFirst && r.carried), J(rows.filter((r) => !(r.seedFirst && r.carried)).slice(0, 2).map((r) => r.sentence)));
   const cornerRelated = rows.map((r) => { const m = r.head.match(/(\d+) related/); return m ? Number(m[1]) : -1; });
   note(`the corner cards' heads count the agent's relatings: ${J(cornerRelated)}`);
@@ -180,7 +181,7 @@ console.log('\n----- the source: one reader, no parse -----');
 const textOf = (s) => s.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
 const ms = textOf(readLf('src/components/MidpointSurface.tsx'));
 check('(a) the sentence counts through `childSpaceOf` — the block\'s head\'s own reader — and `instancesOn` for what is related here; the seed-first flag reads the record (`createdBy.operation === \'seed\'`)', /childCounts = useMemo\(\(\) => \(\{ a: childSpaceOf\(shape, site\.a\)\?\.roles\.length \?\? 0, b: childSpaceOf\(shape, site\.b\)\?\.roles\.length \?\? 0 \}\)/.test(ms) && /relatedHere = useMemo\(\(\) => \(sourceEdge \? instancesOn\(sourceEdge\)\.length : 0\)/.test(ms) && /seedFirst = shape\.vertices\[site\.a\]\?\.createdBy\.operation === 'seed'/.test(ms) && !/bornRoom\b/.test(ms));
-check('(c) the clause is gone from the source', !/holds no born room/.test(ms));
+check('(c) the clause and its twin are gone from the source (M2): neither `holds no born room` nor `no act lands on it` prints; the home line\'s corner arm is empty, the medial arm stands', !/holds no born room/.test(ms) && !/no act lands on it|a corner edge carries/.test(ms) && /kind === 'medial' \? ' — a pair beyond the shared corner is born here, yours' : ''/.test(ms));
 const ar = readLf('src/manuscript/argumentReadingModel.ts');
 check('(e) the argument card never reads inside a name: no `indexOf(\' of \')` in the model; the result slot takes the lift\'s name whole; the source comes from the record through a shape resolver (pinned in scripts/diagnose-argument-card.cjs §10 with the fixture)', !/indexOf\(' of '\)/.test(ar) && /operation === 'patch-lift' && form\.shape\.name\) return form\.shape\.name;/.test(ar) && /resolveShape\?: ShapeResolver/.test(ar));
 const so = readLf('src/lib/sorting.ts');

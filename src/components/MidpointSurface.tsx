@@ -735,7 +735,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
       </div>
       {/* C-8 item 5 — THE TRACE carries the record's HOME and the SITE: the edge that holds the record, its kind and generation; where the person stands */}
       <div data-midpoint-home={`${kind}|${edgeGen}|${siteGen}`} className="my-1 text-stone-400">
-        {`the record's home: ${la}–${lb}, a ${kind} edge (generation ${edgeGen}) · this site: ${lm}, generation ${siteGen}${kind === 'medial' ? ' — a pair beyond the shared corner is born here, yours' : kind === 'corner' ? ' — a corner edge carries; no act lands on it' : ''}`}
+        {`the record's home: ${la}–${lb}, a ${kind} edge (generation ${edgeGen}) · this site: ${lm}, generation ${siteGen}${kind === 'medial' ? ' — a pair beyond the shared corner is born here, yours' : ''}`}
       </div>
       {[[site.siteId, resolved, lm], [site.a, parents[0], la], [site.b, parents[1], lb]]
         .filter(([, r]) => (r as Resolved).loadedIgnored)
