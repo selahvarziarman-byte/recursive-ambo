@@ -1,0 +1,191 @@
+{
+ "subject_matter": "Relation — the third heading: how existences bear on one another in time",
+ "source": "Kant, Critique of Pure Reason, the table of categories A80/B106; the schemata A142–145/B182–184; B110 on the third category of each class",
+ "roles": [
+  {
+   "id": "R1",
+   "label": "Inherence and Subsistence",
+   "types": {
+    "member_status": "has"
+   }
+  },
+  {
+   "id": "R2",
+   "label": "Causality and Dependence",
+   "types": {
+    "member_status": "has"
+   }
+  },
+  {
+   "id": "R3",
+   "label": "Community",
+   "types": {
+    "member_status": "has"
+   }
+  }
+ ],
+ "signature": [
+  {
+   "type": "synthesis",
+   "arity": 3,
+   "meaning": "the third arises from the combination of the second with the first (B110): synthesis(third, second, first)"
+  },
+  {
+   "type": "correlate",
+   "arity": 1,
+   "meaning": "the category has a correlate (B110: the dynamical classes have correlates, the mathematical do not)"
+  },
+  {
+   "type": "persistence",
+   "arity": 1
+  },
+  {
+   "type": "succession",
+   "arity": 1
+  },
+  {
+   "type": "simultaneity",
+   "arity": 1
+  }
+ ],
+ "relations": [
+  {
+   "type": "synthesis",
+   "terms": [
+    "R1",
+    "R2",
+    "R3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "R1",
+    "R3",
+    "R2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "R2",
+    "R1",
+    "R3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "R2",
+    "R3",
+    "R1"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "R3",
+    "R1",
+    "R2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "R3",
+    "R2",
+    "R1"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "correlate",
+   "terms": [
+    "R1"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "correlate",
+   "terms": [
+    "R2"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "correlate",
+   "terms": [
+    "R3"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "persistence",
+   "terms": [
+    "R1"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "persistence",
+   "terms": [
+    "R2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "persistence",
+   "terms": [
+    "R3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "succession",
+   "terms": [
+    "R1"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "succession",
+   "terms": [
+    "R2"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "succession",
+   "terms": [
+    "R3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "simultaneity",
+   "terms": [
+    "R1"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "simultaneity",
+   "terms": [
+    "R2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "simultaneity",
+   "terms": [
+    "R3"
+   ],
+   "polarity": "holds"
+  }
+ ]
+}

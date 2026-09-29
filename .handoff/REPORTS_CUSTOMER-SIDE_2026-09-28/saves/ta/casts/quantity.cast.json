@@ -1,0 +1,191 @@
+{
+ "subject_matter": "Quantity — the first heading of the table of categories: how much",
+ "source": "Kant, Critique of Pure Reason, the table of categories A80/B106; the schemata A142–145/B182–184; B110 on the third category of each class",
+ "roles": [
+  {
+   "id": "Q1",
+   "label": "Unity",
+   "types": {
+    "member_status": "has"
+   }
+  },
+  {
+   "id": "Q2",
+   "label": "Plurality",
+   "types": {
+    "member_status": "has"
+   }
+  },
+  {
+   "id": "Q3",
+   "label": "Totality",
+   "types": {
+    "member_status": "has"
+   }
+  }
+ ],
+ "signature": [
+  {
+   "type": "synthesis",
+   "arity": 3,
+   "meaning": "the third arises from the combination of the second with the first (B110): synthesis(third, second, first)"
+  },
+  {
+   "type": "correlate",
+   "arity": 1,
+   "meaning": "the category has a correlate (B110: the dynamical classes have correlates, the mathematical do not)"
+  },
+  {
+   "type": "one",
+   "arity": 1
+  },
+  {
+   "type": "many",
+   "arity": 1
+  },
+  {
+   "type": "all",
+   "arity": 1
+  }
+ ],
+ "relations": [
+  {
+   "type": "synthesis",
+   "terms": [
+    "Q1",
+    "Q2",
+    "Q3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "Q1",
+    "Q3",
+    "Q2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "Q2",
+    "Q1",
+    "Q3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "Q2",
+    "Q3",
+    "Q1"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "Q3",
+    "Q1",
+    "Q2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "Q3",
+    "Q2",
+    "Q1"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "correlate",
+   "terms": [
+    "Q1"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "correlate",
+   "terms": [
+    "Q2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "correlate",
+   "terms": [
+    "Q3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "one",
+   "terms": [
+    "Q1"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "one",
+   "terms": [
+    "Q2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "one",
+   "terms": [
+    "Q3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "many",
+   "terms": [
+    "Q1"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "many",
+   "terms": [
+    "Q2"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "many",
+   "terms": [
+    "Q3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "all",
+   "terms": [
+    "Q1"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "all",
+   "terms": [
+    "Q2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "all",
+   "terms": [
+    "Q3"
+   ],
+   "polarity": "holds"
+  }
+ ]
+}

@@ -1,0 +1,35 @@
+{
+ "subject_matter": "Fact — the concept space of fact in philosophical discourse: what is the case, what makes true, what is instituted, what one is thrown into, what is made",
+ "source": "Husserl, Logical Investigations (Sachverhalt); Wittgenstein, Tractatus 2–2.01; Russell, The Philosophy of Logical Atomism (1918); Armstrong, A World of States of Affairs (1997); Durkheim, The Rules of Sociological Method (1895); Searle, The Construction of Social Reality (1995); Heidegger, Being and Time §29 (Faktizität); Sartre, Being and Nothingness; Fleck, Genesis and Development of a Scientific Fact (1935); Latour & Woolgar, Laboratory Life (1979)",
+ "roles": [
+  { "id": "F1", "label": "State of affairs", "types": { "world": "objective" } },
+  { "id": "F2", "label": "Truth-maker", "types": { "world": "objective" } },
+  { "id": "F3", "label": "Social fact", "types": { "world": "social" } },
+  { "id": "F4", "label": "Facticity", "types": { "world": "subjective" } },
+  { "id": "F5", "label": "Constituted fact", "types": { "world": "symbolic" } }
+ ],
+ "signature": [
+  { "type": "counts-as", "arity": 2, "meaning": "X counts as Y in context C (Searle): the first is taken as the second under a constitutive rule" },
+  { "type": "constituted-by", "arity": 2, "meaning": "the first is constituted by the second (collective representation, thought collective, constitution)" },
+  { "type": "thrown-into", "arity": 2, "meaning": "the first finds itself delivered over to the second (Geworfenheit)" },
+  { "type": "grounds", "arity": 2, "meaning": "the first grounds the second" },
+  { "type": "independent-of", "arity": 2, "meaning": "the first obtains independently of the second" }
+ ],
+ "relations": [
+  { "type": "counts-as", "terms": ["F1", "F3"], "polarity": "holds" },
+  { "type": "counts-as", "terms": ["F3", "F1"], "polarity": "does-not-hold" },
+  { "type": "constituted-by", "terms": ["F3", "F5"], "polarity": "holds" },
+  { "type": "constituted-by", "terms": ["F5", "F3"], "polarity": "holds" },
+  { "type": "constituted-by", "terms": ["F1", "F5"], "polarity": "does-not-hold" },
+  { "type": "thrown-into", "terms": ["F4", "F1"], "polarity": "holds" },
+  { "type": "thrown-into", "terms": ["F4", "F3"], "polarity": "holds" },
+  { "type": "thrown-into", "terms": ["F1", "F4"], "polarity": "does-not-hold" },
+  { "type": "grounds", "terms": ["F1", "F3"], "polarity": "holds" },
+  { "type": "grounds", "terms": ["F3", "F5"], "polarity": "holds" },
+  { "type": "grounds", "terms": ["F5", "F1"], "polarity": "does-not-hold" },
+  { "type": "independent-of", "terms": ["F1", "F5"], "polarity": "holds" },
+  { "type": "independent-of", "terms": ["F3", "F5"], "polarity": "does-not-hold" },
+  { "type": "independent-of", "terms": ["F4", "F1"], "polarity": "does-not-hold" },
+  { "type": "independent-of", "terms": ["F2", "F3"], "polarity": "holds" }
+ ]
+}

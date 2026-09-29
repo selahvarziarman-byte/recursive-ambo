@@ -237,3 +237,8 @@ scripts/.sweep-times.json
 !.handoff/COMMISSIONS/GRUNDRISSE_READERS/
 .handoff/COMMISSIONS/GRUNDRISSE_READERS/*
 !.handoff/COMMISSIONS/GRUNDRISSE_READERS/THE_SHAPE_SO_FAR.md
+# MODES-2 (2026-09-29, the mothership's 10:00 and 10:27): the customer-side agent's reports and saves — the person's two runs at 925a177,
+# customer-side evidence read as such (52 files; saves/INDEX.md names each) — tracked BY NAME whole, as chartered; carried across
+# every regeneration of the U1 block above.
+!.handoff/REPORTS_CUSTOMER-SIDE_2026-09-28/
+!.handoff/REPORTS_CUSTOMER-SIDE_2026-09-28/**

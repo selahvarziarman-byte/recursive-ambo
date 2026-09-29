@@ -1,0 +1,37 @@
+{
+ "subject_matter": "Action — the concept space of action in philosophical discourse: intention, reason, the deed, the communicative act, imputation",
+ "source": "Anscombe, Intention (1957); Davidson, 'Actions, Reasons, and Causes' (1963); Arendt, The Human Condition (1958); Nietzsche, On the Genealogy of Morals I §13; Hegel, Philosophy of Right §§115–118; Austin, How to Do Things with Words (1962); Habermas, The Theory of Communicative Action (1981); Kant, Metaphysics of Morals 6:227 (Zurechnung); Ricoeur, Oneself as Another (1990)",
+ "roles": [
+  { "id": "A1", "label": "Intention under a description", "types": { "world": "subjective" } },
+  { "id": "A2", "label": "Reason as cause", "types": { "world": "subjective" } },
+  { "id": "A3", "label": "Deed as beginning", "types": { "world": "objective" } },
+  { "id": "A4", "label": "Communicative act", "types": { "world": "social" } },
+  { "id": "A5", "label": "Imputation", "types": { "world": "social" } }
+ ],
+ "signature": [
+  { "type": "rationalizes", "arity": 2, "meaning": "the first rationalizes the second (a primary reason shows the action in a favourable light)" },
+  { "type": "causes", "arity": 2, "meaning": "the first causes the second" },
+  { "type": "under-description", "arity": 2, "meaning": "the first is what it is under the description the second gives" },
+  { "type": "begins", "arity": 2, "meaning": "the first begins the second (natality: action starts a new chain among others)" },
+  { "type": "answers-for", "arity": 2, "meaning": "the first answers for the second (ascription, responsibility)" },
+  { "type": "grounds", "arity": 2, "meaning": "the first grounds the second" },
+  { "type": "independent-of", "arity": 2, "meaning": "the first holds independently of the second" }
+ ],
+ "relations": [
+  { "type": "rationalizes", "terms": ["A2", "A1"], "polarity": "holds" },
+  { "type": "rationalizes", "terms": ["A1", "A2"], "polarity": "does-not-hold" },
+  { "type": "causes", "terms": ["A2", "A3"], "polarity": "holds" },
+  { "type": "causes", "terms": ["A1", "A3"], "polarity": "does-not-hold" },
+  { "type": "under-description", "terms": ["A3", "A1"], "polarity": "holds" },
+  { "type": "under-description", "terms": ["A3", "A5"], "polarity": "holds" },
+  { "type": "begins", "terms": ["A3", "A4"], "polarity": "holds" },
+  { "type": "answers-for", "terms": ["A5", "A3"], "polarity": "holds" },
+  { "type": "answers-for", "terms": ["A5", "A2"], "polarity": "does-not-hold" },
+  { "type": "grounds", "terms": ["A2", "A1"], "polarity": "holds" },
+  { "type": "grounds", "terms": ["A4", "A5"], "polarity": "holds" },
+  { "type": "grounds", "terms": ["A3", "A2"], "polarity": "does-not-hold" },
+  { "type": "independent-of", "terms": ["A3", "A2"], "polarity": "does-not-hold" },
+  { "type": "independent-of", "terms": ["A4", "A1"], "polarity": "does-not-hold" },
+  { "type": "independent-of", "terms": ["A5", "A4"], "polarity": "does-not-hold" }
+ ]
+}

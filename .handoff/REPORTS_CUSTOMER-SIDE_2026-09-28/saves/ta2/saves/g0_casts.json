@@ -1,0 +1,1228 @@
+{
+  "schema": "platonic-engine.workspace",
+  "version": 1,
+  "exportedAt": "2026-09-28T21:42:23.091Z",
+  "label": "PlatonicEngine workspace",
+  "selectedSeedKey": "tetrahedron",
+  "shapes": {
+    "shape:seed:tetrahedron": {
+      "id": "shape:seed:tetrahedron",
+      "name": "Tetrahedron",
+      "seedKey": "tetrahedron",
+      "vertices": {
+        "vertex:tetrahedron:a": {
+          "id": "vertex:tetrahedron:a",
+          "position": [
+            1,
+            1,
+            1
+          ],
+          "data": {
+            "label": "Fact",
+            "notes": "",
+            "color": "#14b8a6",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "F1",
+                  "label": "State of affairs",
+                  "types": {
+                    "world": "objective"
+                  }
+                },
+                {
+                  "id": "F2",
+                  "label": "Truth-maker",
+                  "types": {
+                    "world": "objective"
+                  }
+                },
+                {
+                  "id": "F3",
+                  "label": "Social fact",
+                  "types": {
+                    "world": "social"
+                  }
+                },
+                {
+                  "id": "F4",
+                  "label": "Facticity",
+                  "types": {
+                    "world": "subjective"
+                  }
+                },
+                {
+                  "id": "F5",
+                  "label": "Constituted fact",
+                  "types": {
+                    "world": "symbolic"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "counts-as",
+                  "arity": 2
+                },
+                {
+                  "type": "constituted-by",
+                  "arity": 2
+                },
+                {
+                  "type": "thrown-into",
+                  "arity": 2
+                },
+                {
+                  "type": "grounds",
+                  "arity": 2
+                },
+                {
+                  "type": "independent-of",
+                  "arity": 2
+                }
+              ],
+              "relations": [
+                {
+                  "type": "counts-as",
+                  "terms": [
+                    "F1",
+                    "F3"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "counts-as",
+                  "terms": [
+                    "F3",
+                    "F1"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "constituted-by",
+                  "terms": [
+                    "F3",
+                    "F5"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "constituted-by",
+                  "terms": [
+                    "F5",
+                    "F3"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "constituted-by",
+                  "terms": [
+                    "F1",
+                    "F5"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "thrown-into",
+                  "terms": [
+                    "F4",
+                    "F1"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "thrown-into",
+                  "terms": [
+                    "F4",
+                    "F3"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "thrown-into",
+                  "terms": [
+                    "F1",
+                    "F4"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "grounds",
+                  "terms": [
+                    "F1",
+                    "F3"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "grounds",
+                  "terms": [
+                    "F3",
+                    "F5"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "grounds",
+                  "terms": [
+                    "F5",
+                    "F1"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "F1",
+                    "F5"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "F3",
+                    "F5"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "F4",
+                    "F1"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "F2",
+                    "F3"
+                  ],
+                  "polarity": "holds"
+                }
+              ],
+              "axioms": [],
+              "subject": "Fact — the concept space of fact in philosophical discourse: what is the case, what makes true, what is instituted, what one is thrown into, what is made",
+              "warrant": {
+                "file": {
+                  "source": "Husserl, Logical Investigations (Sachverhalt); Wittgenstein, Tractatus 2–2.01; Russell, The Philosophy of Logical Atomism (1918); Armstrong, A World of States of Affairs (1997); Durkheim, The Rules of Sociological Method (1895); Searle, The Construction of Social Reality (1995); Heidegger, Being and Time §29 (Faktizität); Sartre, Being and Nothingness; Fleck, Genesis and Development of a Scientific Fact (1935); Latour & Woolgar, Laboratory Life (1979)"
+                },
+                "signature": {
+                  "counts-as": {
+                    "meaning": "X counts as Y in context C (Searle): the first is taken as the second under a constitutive rule"
+                  },
+                  "constituted-by": {
+                    "meaning": "the first is constituted by the second (collective representation, thought collective, constitution)"
+                  },
+                  "thrown-into": {
+                    "meaning": "the first finds itself delivered over to the second (Geworfenheit)"
+                  },
+                  "grounds": {
+                    "meaning": "the first grounds the second"
+                  },
+                  "independent-of": {
+                    "meaning": "the first obtains independently of the second"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        },
+        "vertex:tetrahedron:b": {
+          "id": "vertex:tetrahedron:b",
+          "position": [
+            -1,
+            -1,
+            1
+          ],
+          "data": {
+            "label": "Value",
+            "notes": "",
+            "color": "#f97316",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "V1",
+                  "label": "Good in itself",
+                  "types": {
+                    "world": "objective"
+                  }
+                },
+                {
+                  "id": "V2",
+                  "label": "Instrumental value",
+                  "types": {
+                    "world": "objective"
+                  }
+                },
+                {
+                  "id": "V3",
+                  "label": "Value-positing",
+                  "types": {
+                    "world": "subjective"
+                  }
+                },
+                {
+                  "id": "V4",
+                  "label": "Fittingness",
+                  "types": {
+                    "world": "subjective"
+                  }
+                },
+                {
+                  "id": "V5",
+                  "label": "Validity claim",
+                  "types": {
+                    "world": "social"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "for-the-sake-of",
+                  "arity": 2
+                },
+                {
+                  "type": "posits",
+                  "arity": 2
+                },
+                {
+                  "type": "merits",
+                  "arity": 2
+                },
+                {
+                  "type": "binds",
+                  "arity": 2
+                },
+                {
+                  "type": "grounds",
+                  "arity": 2
+                },
+                {
+                  "type": "independent-of",
+                  "arity": 2
+                }
+              ],
+              "relations": [
+                {
+                  "type": "for-the-sake-of",
+                  "terms": [
+                    "V2",
+                    "V1"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "for-the-sake-of",
+                  "terms": [
+                    "V1",
+                    "V2"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "posits",
+                  "terms": [
+                    "V3",
+                    "V1"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "merits",
+                  "terms": [
+                    "V1",
+                    "V4"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "merits",
+                  "terms": [
+                    "V4",
+                    "V1"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "binds",
+                  "terms": [
+                    "V5",
+                    "V3"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "binds",
+                  "terms": [
+                    "V3",
+                    "V5"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "grounds",
+                  "terms": [
+                    "V1",
+                    "V2"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "grounds",
+                  "terms": [
+                    "V1",
+                    "V4"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "grounds",
+                  "terms": [
+                    "V4",
+                    "V1"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "V1",
+                    "V3"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "V5",
+                    "V3"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "V2",
+                    "V1"
+                  ],
+                  "polarity": "does-not-hold"
+                }
+              ],
+              "axioms": [],
+              "subject": "Value — the concept space of value in philosophical discourse: the good in itself, the instrumental, the posited, the fitting, the valid",
+              "warrant": {
+                "file": {
+                  "source": "Aristotle, Nicomachean Ethics I.7; Moore, Principia Ethica (1903); Dewey, Theory of Valuation (1939); Marx, Capital I ch. 1 (use value); Nietzsche, On the Genealogy of Morals (Wertsetzung); Heidegger, 'Nietzsche's Word: God is Dead'; Brentano, The Origin of our Knowledge of Right and Wrong (1889); Scheler, Formalism in Ethics (1913); Scanlon, What We Owe to Each Other (1998); Weber, 'Science as a Vocation' (1919); Habermas, The Theory of Communicative Action (1981); Kant, Groundwork"
+                },
+                "signature": {
+                  "for-the-sake-of": {
+                    "meaning": "the first is chosen or valued for the sake of the second"
+                  },
+                  "posits": {
+                    "meaning": "the first posits the second as a value (a valuation sets it)"
+                  },
+                  "merits": {
+                    "meaning": "the first merits the second (a fitting attitude, a correct love)"
+                  },
+                  "binds": {
+                    "meaning": "the first binds the second (an ought, a validity claim that obliges)"
+                  },
+                  "grounds": {
+                    "meaning": "the first grounds the second"
+                  },
+                  "independent-of": {
+                    "meaning": "the first holds independently of the second"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        },
+        "vertex:tetrahedron:c": {
+          "id": "vertex:tetrahedron:c",
+          "position": [
+            -1,
+            1,
+            -1
+          ],
+          "data": {
+            "label": "Meaning",
+            "notes": "",
+            "color": "#a3e635",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "M1",
+                  "label": "Sense",
+                  "types": {
+                    "world": "symbolic"
+                  }
+                },
+                {
+                  "id": "M2",
+                  "label": "Reference",
+                  "types": {
+                    "world": "objective"
+                  }
+                },
+                {
+                  "id": "M3",
+                  "label": "Use",
+                  "types": {
+                    "world": "social"
+                  }
+                },
+                {
+                  "id": "M4",
+                  "label": "Différance",
+                  "types": {
+                    "world": "symbolic"
+                  }
+                },
+                {
+                  "id": "M5",
+                  "label": "Significance",
+                  "types": {
+                    "world": "subjective"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "determines",
+                  "arity": 2
+                },
+                {
+                  "type": "constituted-by",
+                  "arity": 2
+                },
+                {
+                  "type": "defers",
+                  "arity": 2
+                },
+                {
+                  "type": "projects",
+                  "arity": 2
+                },
+                {
+                  "type": "grounds",
+                  "arity": 2
+                },
+                {
+                  "type": "independent-of",
+                  "arity": 2
+                }
+              ],
+              "relations": [
+                {
+                  "type": "determines",
+                  "terms": [
+                    "M1",
+                    "M2"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "determines",
+                  "terms": [
+                    "M4",
+                    "M1"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "determines",
+                  "terms": [
+                    "M3",
+                    "M2"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "constituted-by",
+                  "terms": [
+                    "M1",
+                    "M3"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "constituted-by",
+                  "terms": [
+                    "M2",
+                    "M3"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "defers",
+                  "terms": [
+                    "M4",
+                    "M2"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "defers",
+                  "terms": [
+                    "M4",
+                    "M5"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "projects",
+                  "terms": [
+                    "M5",
+                    "M1"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "projects",
+                  "terms": [
+                    "M1",
+                    "M5"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "grounds",
+                  "terms": [
+                    "M5",
+                    "M3"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "grounds",
+                  "terms": [
+                    "M2",
+                    "M1"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "M2",
+                    "M3"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "M1",
+                    "M4"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "M5",
+                    "M2"
+                  ],
+                  "polarity": "holds"
+                }
+              ],
+              "axioms": [],
+              "subject": "Meaning — the concept space of meaning in philosophical discourse: sense, reference, use, difference, significance",
+              "warrant": {
+                "file": {
+                  "source": "Frege, 'On Sense and Reference' (1892); Husserl, Ideas I (noema); Russell, 'On Denoting' (1905); Wittgenstein, Philosophical Investigations §43; Austin, How to Do Things with Words (1962); Saussure, Course in General Linguistics (1916); Derrida, Of Grammatology (1967), 'Différance' (1968); Dilthey, The Formation of the Historical World; Heidegger, Being and Time §32; Gadamer, Truth and Method (1960)"
+                },
+                "signature": {
+                  "determines": {
+                    "meaning": "the first determines the second (sense determines reference; difference determines sense)"
+                  },
+                  "constituted-by": {
+                    "meaning": "the first is constituted by the second (meaning constituted by use)"
+                  },
+                  "defers": {
+                    "meaning": "the first defers the second (presence, reference, significance postponed in the play of differences)"
+                  },
+                  "projects": {
+                    "meaning": "the first is that upon which the second is projected (significance as the Woraufhin of understanding)"
+                  },
+                  "grounds": {
+                    "meaning": "the first grounds the second"
+                  },
+                  "independent-of": {
+                    "meaning": "the first holds independently of the second"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        },
+        "vertex:tetrahedron:d": {
+          "id": "vertex:tetrahedron:d",
+          "position": [
+            1,
+            -1,
+            -1
+          ],
+          "data": {
+            "label": "Action",
+            "notes": "",
+            "color": "#38bdf8",
+            "tags": [],
+            "custom": {},
+            "lineage": {
+              "inheritanceMode": "default",
+              "sources": []
+            },
+            "cast": {
+              "roles": [
+                {
+                  "id": "A1",
+                  "label": "Intention under a description",
+                  "types": {
+                    "world": "subjective"
+                  }
+                },
+                {
+                  "id": "A2",
+                  "label": "Reason as cause",
+                  "types": {
+                    "world": "subjective"
+                  }
+                },
+                {
+                  "id": "A3",
+                  "label": "Deed as beginning",
+                  "types": {
+                    "world": "objective"
+                  }
+                },
+                {
+                  "id": "A4",
+                  "label": "Communicative act",
+                  "types": {
+                    "world": "social"
+                  }
+                },
+                {
+                  "id": "A5",
+                  "label": "Imputation",
+                  "types": {
+                    "world": "social"
+                  }
+                }
+              ],
+              "signature": [
+                {
+                  "type": "rationalizes",
+                  "arity": 2
+                },
+                {
+                  "type": "causes",
+                  "arity": 2
+                },
+                {
+                  "type": "under-description",
+                  "arity": 2
+                },
+                {
+                  "type": "begins",
+                  "arity": 2
+                },
+                {
+                  "type": "answers-for",
+                  "arity": 2
+                },
+                {
+                  "type": "grounds",
+                  "arity": 2
+                },
+                {
+                  "type": "independent-of",
+                  "arity": 2
+                }
+              ],
+              "relations": [
+                {
+                  "type": "rationalizes",
+                  "terms": [
+                    "A2",
+                    "A1"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "rationalizes",
+                  "terms": [
+                    "A1",
+                    "A2"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "causes",
+                  "terms": [
+                    "A2",
+                    "A3"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "causes",
+                  "terms": [
+                    "A1",
+                    "A3"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "under-description",
+                  "terms": [
+                    "A3",
+                    "A1"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "under-description",
+                  "terms": [
+                    "A3",
+                    "A5"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "begins",
+                  "terms": [
+                    "A3",
+                    "A4"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "answers-for",
+                  "terms": [
+                    "A5",
+                    "A3"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "answers-for",
+                  "terms": [
+                    "A5",
+                    "A2"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "grounds",
+                  "terms": [
+                    "A2",
+                    "A1"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "grounds",
+                  "terms": [
+                    "A4",
+                    "A5"
+                  ],
+                  "polarity": "holds"
+                },
+                {
+                  "type": "grounds",
+                  "terms": [
+                    "A3",
+                    "A2"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "A3",
+                    "A2"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "A4",
+                    "A1"
+                  ],
+                  "polarity": "does-not-hold"
+                },
+                {
+                  "type": "independent-of",
+                  "terms": [
+                    "A5",
+                    "A4"
+                  ],
+                  "polarity": "does-not-hold"
+                }
+              ],
+              "axioms": [],
+              "subject": "Action — the concept space of action in philosophical discourse: intention, reason, the deed, the communicative act, imputation",
+              "warrant": {
+                "file": {
+                  "source": "Anscombe, Intention (1957); Davidson, 'Actions, Reasons, and Causes' (1963); Arendt, The Human Condition (1958); Nietzsche, On the Genealogy of Morals I §13; Hegel, Philosophy of Right §§115–118; Austin, How to Do Things with Words (1962); Habermas, The Theory of Communicative Action (1981); Kant, Metaphysics of Morals 6:227 (Zurechnung); Ricoeur, Oneself as Another (1990)"
+                },
+                "signature": {
+                  "rationalizes": {
+                    "meaning": "the first rationalizes the second (a primary reason shows the action in a favourable light)"
+                  },
+                  "causes": {
+                    "meaning": "the first causes the second"
+                  },
+                  "under-description": {
+                    "meaning": "the first is what it is under the description the second gives"
+                  },
+                  "begins": {
+                    "meaning": "the first begins the second (natality: action starts a new chain among others)"
+                  },
+                  "answers-for": {
+                    "meaning": "the first answers for the second (ascription, responsibility)"
+                  },
+                  "grounds": {
+                    "meaning": "the first grounds the second"
+                  },
+                  "independent-of": {
+                    "meaning": "the first holds independently of the second"
+                  }
+                }
+              }
+            }
+          },
+          "createdBy": {
+            "shapeId": "shape:seed:tetrahedron",
+            "operation": "seed",
+            "sourceVertexIds": []
+          }
+        }
+      },
+      "edges": [
+        {
+          "id": "edge:mf5p2o",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b"
+          ]
+        },
+        {
+          "id": "edge:14twcmk",
+          "vertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c"
+          ]
+        },
+        {
+          "id": "edge:mp5arn",
+          "vertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:a"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:a"
+          ]
+        },
+        {
+          "id": "edge:o33b8i",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:d"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:d"
+          ]
+        },
+        {
+          "id": "edge:14jwqxl",
+          "vertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:b"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:b"
+          ]
+        },
+        {
+          "id": "edge:66zr7w",
+          "vertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "sourceVertexIds": [
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ]
+        }
+      ],
+      "faces": [
+        {
+          "id": "face:tetrahedron:abc",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c"
+          ],
+          "role": "seed-face",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "seed-face-vertex"
+              }
+            ],
+            "operationId": "shape:seed:tetrahedron"
+          }
+        },
+        {
+          "id": "face:tetrahedron:adb",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:b"
+          ],
+          "role": "seed-face",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "seed-face-vertex"
+              }
+            ],
+            "operationId": "shape:seed:tetrahedron"
+          }
+        },
+        {
+          "id": "face:tetrahedron:acd",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "role": "seed-face",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:a",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "seed-face-vertex"
+              }
+            ],
+            "operationId": "shape:seed:tetrahedron"
+          }
+        },
+        {
+          "id": "face:tetrahedron:bdc",
+          "vertexIds": [
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:d",
+            "vertex:tetrahedron:c"
+          ],
+          "role": "seed-face",
+          "lineage": {
+            "inheritanceMode": "composite",
+            "sources": [
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:b",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:d",
+                "role": "seed-face-vertex"
+              },
+              {
+                "kind": "vertex",
+                "id": "vertex:tetrahedron:c",
+                "role": "seed-face-vertex"
+              }
+            ],
+            "operationId": "shape:seed:tetrahedron"
+          }
+        }
+      ],
+      "cells": [
+        {
+          "id": "cell:seed:e7g5rs",
+          "kind": "seed",
+          "topology": "tetrahedron",
+          "generationDepth": 0,
+          "parentCellId": null,
+          "sourceOperation": "seed",
+          "vertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "faceIds": [
+            "face:tetrahedron:abc",
+            "face:tetrahedron:adb",
+            "face:tetrahedron:acd",
+            "face:tetrahedron:bdc"
+          ],
+          "sourceVertexIds": [],
+          "sourceEdgeIds": [],
+          "lineage": {
+            "inheritanceMode": "default",
+            "sources": []
+          }
+        }
+      ],
+      "generations": [
+        {
+          "id": "generation:1nuvdco",
+          "depth": 0,
+          "sourceOperation": "seed",
+          "parentShapeId": null,
+          "parentCellIds": [],
+          "createdCellIds": [
+            "cell:seed:e7g5rs"
+          ],
+          "createdVertexIds": [
+            "vertex:tetrahedron:a",
+            "vertex:tetrahedron:b",
+            "vertex:tetrahedron:c",
+            "vertex:tetrahedron:d"
+          ],
+          "createdAt": "2026-09-28T21:42:08.710Z"
+        }
+      ],
+      "genealogy": {
+        "parentShapeId": null,
+        "operation": "seed",
+        "generationDepth": 0,
+        "sourceVertexIds": [],
+        "createdVertexIds": [
+          "vertex:tetrahedron:a",
+          "vertex:tetrahedron:b",
+          "vertex:tetrahedron:c",
+          "vertex:tetrahedron:d"
+        ],
+        "createdAt": "2026-09-28T21:42:08.710Z"
+      }
+    }
+  },
+  "shapeOrder": [
+    "shape:seed:tetrahedron"
+  ],
+  "currentShapeId": "shape:seed:tetrahedron",
+  "selectedCellId": null,
+  "selectedVertexId": "vertex:tetrahedron:d",
+  "operationHistory": [
+    {
+      "id": "history:0",
+      "label": "Seed: Tetrahedron",
+      "operationId": "seed",
+      "targetCellId": "cell:seed:e7g5rs",
+      "targetTopology": "tetrahedron",
+      "generationDepth": 0,
+      "producedCellCount": 1,
+      "shapeId": "shape:seed:tetrahedron",
+      "createdAt": "2026-09-28T21:42:08.710Z"
+    }
+  ],
+  "historySequence": 0,
+  "cellVisibility": {
+    "showCoreCells": true,
+    "showResidueCells": true,
+    "showParentCells": false
+  },
+  "viewLayout": {
+    "explodeAmount": 0,
+    "dualViewEnabled": false,
+    "isolateSelectedCell": false,
+    "showFieldAtlasSamples": false
+  },
+  "edgeTauDrafts": {},
+  "lexicon": [],
+  "rules": []
+}

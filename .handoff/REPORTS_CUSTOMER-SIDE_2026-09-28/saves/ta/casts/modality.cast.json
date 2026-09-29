@@ -1,0 +1,191 @@
+{
+ "subject_matter": "Modality — the fourth heading: the relation of the concept to the faculty of cognition",
+ "source": "Kant, Critique of Pure Reason, the table of categories A80/B106; the schemata A142–145/B182–184; B110 on the third category of each class",
+ "roles": [
+  {
+   "id": "M1",
+   "label": "Possibility",
+   "types": {
+    "member_status": "has"
+   }
+  },
+  {
+   "id": "M2",
+   "label": "Existence",
+   "types": {
+    "member_status": "has"
+   }
+  },
+  {
+   "id": "M3",
+   "label": "Necessity",
+   "types": {
+    "member_status": "has"
+   }
+  }
+ ],
+ "signature": [
+  {
+   "type": "synthesis",
+   "arity": 3,
+   "meaning": "the third arises from the combination of the second with the first (B110): synthesis(third, second, first)"
+  },
+  {
+   "type": "correlate",
+   "arity": 1,
+   "meaning": "the category has a correlate (B110: the dynamical classes have correlates, the mathematical do not)"
+  },
+  {
+   "type": "some-time",
+   "arity": 1
+  },
+  {
+   "type": "determinate-time",
+   "arity": 1
+  },
+  {
+   "type": "all-times",
+   "arity": 1
+  }
+ ],
+ "relations": [
+  {
+   "type": "synthesis",
+   "terms": [
+    "M1",
+    "M2",
+    "M3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "M1",
+    "M3",
+    "M2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "M2",
+    "M1",
+    "M3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "M2",
+    "M3",
+    "M1"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "M3",
+    "M1",
+    "M2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "synthesis",
+   "terms": [
+    "M3",
+    "M2",
+    "M1"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "correlate",
+   "terms": [
+    "M1"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "correlate",
+   "terms": [
+    "M2"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "correlate",
+   "terms": [
+    "M3"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "some-time",
+   "terms": [
+    "M1"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "some-time",
+   "terms": [
+    "M2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "some-time",
+   "terms": [
+    "M3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "determinate-time",
+   "terms": [
+    "M1"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "determinate-time",
+   "terms": [
+    "M2"
+   ],
+   "polarity": "holds"
+  },
+  {
+   "type": "determinate-time",
+   "terms": [
+    "M3"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "all-times",
+   "terms": [
+    "M1"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "all-times",
+   "terms": [
+    "M2"
+   ],
+   "polarity": "does-not-hold"
+  },
+  {
+   "type": "all-times",
+   "terms": [
+    "M3"
+   ],
+   "polarity": "holds"
+  }
+ ]
+}

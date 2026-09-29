@@ -1,0 +1,242 @@
+{
+ "FactAdequation": {
+  "kind": "corner",
+  "name": "Truth-condition",
+  "why": "OWN (Fact in Adequation alone): the truth-maker conditioning sense; the state of affairs corresponded to; the state of affairs withheld — the fact as what makes true (Davidson, Russell, Derrida's withheld presence).",
+  "state": "OPEN",
+  "own": "Fact and Adequation's alone — no passage through Value-relevance or Event comes to it: Truth-maker figures-in M1 conditioned-by F2 · State of affairs figures-in M2 corresponds-to F1 · State of affairs figures-in M4 withholds F1",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Fact and Adequation — 140 modes · 5 × 7 roles · 4900 could be related · 7 related · 0 barred",
+  "named": "named when it was: Truth-condition — given when 7 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "FactValue-relevance": {
+  "kind": "corner",
+  "name": "Construction",
+  "why": "OWN (Fact in Value-relevance alone): the constituted fact as set by positing and selected by fittingness — the social construction of facts (Fleck 1935, Latour & Woolgar 1979, Hacking 1999).",
+  "state": "OPEN",
+  "own": "Value-relevance and Fact's alone — no passage through Adequation or Event comes to it: F5 set-by V3 figured-by Constituted fact · F5 selected-by V4 figured-by Constituted fact",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Value-relevance and Fact — 140 modes · 4 × 5 roles · 2800 could be related · 4 related · 0 barred",
+  "named": "named when it was: Construction — given when 4 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "FactEvent": {
+  "kind": "corner",
+  "name": "History",
+  "why": "OWN (Fact in Event alone): the social fact that receives the deed; the state of affairs imputation presupposes — the fact as what was done, res gestae (Arendt HC §25, Ricoeur).",
+  "state": "OPEN",
+  "own": "Event and Fact's alone — no passage through Value-relevance or Adequation comes to it: F3 receives A3 figured-by Social fact · F1 presupposed-by A5 figured-by State of affairs",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Event and Fact — 140 modes · 6 × 5 roles · 4200 could be related · 6 related · 0 barred",
+  "named": "named when it was: History — given when 6 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "AdequationValue-relevance": {
+  "kind": "medial",
+  "name": "Value-freedom",
+  "why": "POCKET — named across the pocket. Nothing theirs alone; the site's bars are its mark: correspondence is not selected by value, the picture is not conditioned by it (Weber 1904/1917, TLP 6.41) while the stating is delimited by value-relevance and the constitution expresses the entangled fittingness — Wertfreiheit as the boundary of Wertbeziehung.",
+  "state": "POCKET",
+  "own": "nothing theirs alone — all 4 relatings are also said through Import or Event or Fact",
+  "stateLine": "the views leave different things alone — through Import, M3 constitutes F3 expresses F3 entangled-with V4 is theirs alone; through Event, M3 constitutes F3 expresses F3 entangled-with V4 is theirs alone; through Fact, M1 states F1 delimited-by F5 selected-by V4 is theirs alone — nothing is theirs alone under both",
+  "head": "between Adequation and Value-relevance — 140 modes · 7 × 4 roles · 3920 could be related · 4 related · 2 barred",
+  "named": "named when it was: Value-freedom — given when 4 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "AdequationEvent": {
+  "kind": "medial",
+  "name": "Background",
+  "why": "OWN: practical knowledge presupposes the constitution of social facts (Anscombe 1958); the rationalizing explanation rests on the disclosure of facticity (Taylor 1993, Dreyfus) — Searle's and Taylor's Background: what the knowledge and explanation of the deed presuppose.",
+  "state": "OPEN",
+  "own": "Event and Adequation's alone — no passage through Institution or Value-relevance or Fact comes to it: F1 known-by A1 presupposes M3 constitutes F3 · F1 explained-by A2 rests-on M5 discloses F4",
+  "stateLine": "2 relatings theirs alone · 8 relatings the face's",
+  "head": "between Event and Adequation — 140 modes · 6 × 7 roles · 5880 could be related · 10 related · 9 barred",
+  "named": "named when it was: Background — given when 10 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "Value-relevanceEvent": {
+  "kind": "medial",
+  "name": "Responsibility",
+  "why": "OWN: the positing that sets a fact is performed as a declaration (Butler/Searle); imputation presupposes the freedom that surpasses facticity (Sartre BN IV.1, Ricoeur) — the deed one answers for because one posited it.",
+  "state": "OPEN",
+  "own": "Value-relevance and Event's alone — no passage through Practical reason or Adequation or Fact comes to it: F5 set-by V3 performed-as F3 created-by A4 · F4 surpassed-by V3 presupposed-by F1 presupposed-by A5",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Value-relevance and Event — 140 modes · 4 × 6 roles · 3360 could be related · 4 related · 3 barred",
+  "named": "named when it was: Responsibility — given when 4 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "ValueValue-relevance": {
+  "kind": "corner",
+  "name": "Standpoint",
+  "why": "POCKET — named across the pocket: nothing of Value is Value-relevance's alone; fittingness and positing enter fact-selection only as they enter Import and Practical reason too — Weber's Wertgesichtspunkt, the value-standpoint that is never proprietary to the facts it selects.",
+  "state": "POCKET",
+  "own": "nothing theirs alone — all 4 relatings are also said through Import or Practical reason",
+  "stateLine": "the views leave different things alone — through Import, Fittingness figures-in F3 entangled-with V4 is theirs alone; through Practical reason, Fittingness figures-in F5 selected-by V4 is theirs alone — nothing is theirs alone under both",
+  "head": "between Value and Value-relevance — 140 modes · 5 × 4 roles · 2800 could be related · 4 related · 0 barred",
+  "named": "named when it was: Standpoint — given when 4 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "ValueImport": {
+  "kind": "corner",
+  "name": "Ineffability",
+  "why": "OWN (Value in Import alone): the good withheld by différance; fittingness expressed in use rather than stated — value that cannot be put into words (TLP 6.421, Ayer, Derrida).",
+  "state": "OPEN",
+  "own": "Import and Value's alone — no passage through Value-relevance or Practical reason comes to it: V1 withheld-by M4 figured-by Good in itself · V4 expressed-in M3 figured-by Fittingness",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Import and Value — 140 modes · 5 × 5 roles · 3500 could be related · 5 related · 0 barred",
+  "named": "named when it was: Ineffability — given when 5 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "ValuePractical reason": {
+  "kind": "corner",
+  "name": "Normativity",
+  "why": "OWN (Value in Practical reason alone): the ought that requires the deed and judges imputation; the good aimed at; the useful that orients — value as norm of action (Kant, Aristotle, Korsgaard 1996).",
+  "state": "OPEN",
+  "own": "Practical reason and Value's alone — no passage through Import or Value-relevance comes to it: A3 required-by V5 figured-by Validity claim · A3 aims-at V1 figured-by Good in itself · A3 oriented-by V2 figured-by Instrumental value · A5 judged-by V5 figured-by Validity claim",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Practical reason and Value — 140 modes · 7 × 5 roles · 4900 could be related · 7 related · 0 barred",
+  "named": "named when it was: Normativity — given when 7 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "Value-relevanceImport": {
+  "kind": "medial",
+  "name": "Perspectivism",
+  "why": "OWN: the value-selected fact is interpreted by the positing that interprets significance (Weber after Nietzsche); the positing is deferred by the withheld good (Derrida, Spurs) — no fact outside a value-perspective, no final perspective.",
+  "state": "OPEN",
+  "own": "Value-relevance and Import's alone — no passage through Adequation or Practical reason or Value comes to it: F5 selected-by V4 interpreted-by V3 interprets M5 · F5 set-by V3 deferred-by V1 withheld-by M4",
+  "stateLine": "2 relatings theirs alone · 3 relatings the face's",
+  "head": "between Value-relevance and Import — 140 modes · 4 × 5 roles · 2800 could be related · 5 related · 4 barred",
+  "named": "named when it was: Perspectivism — given when 5 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "Value-relevancePractical reason": {
+  "kind": "medial",
+  "name": "Deliberation",
+  "why": "OWN: judgment draws on thick concepts (Williams, Putnam); instrumental orientation presupposes value-selected facts (Weber); reasons arise in the surpassing of facticity (Sartre) — practical reason working on the value-relevant situation (Aristotle NE III.3, Wiggins 1975).",
+  "state": "OPEN",
+  "own": "Practical reason and Value-relevance's alone — no passage through Event or Import or Value comes to it: A5 judged-by V5 draws-on F3 entangled-with V4 · A3 oriented-by V2 presupposes F5 selected-by V4 · A2 warranted-by V4 arises-in F4 surpassed-by V3",
+  "stateLine": "3 relatings theirs alone · 3 relatings the face's",
+  "head": "between Practical reason and Value-relevance — 140 modes · 7 × 4 roles · 3920 could be related · 6 related · 2 barred",
+  "named": "named when it was: Deliberation — given when 6 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "ImportPractical reason": {
+  "kind": "medial",
+  "name": "Moral space",
+  "why": "OWN: the import disclosed in feeling guides the deed toward the good (Scheler, Taylor); justice deferred exceeds judgment under law (Derrida 1990); the expressed attitude steers what to do (Gibbard) — Taylor's moral space: orientation to the good, its excess over rules, its steering of choice.",
+  "state": "OPEN",
+  "own": "Import and Practical reason's alone — no passage through Institution or Value-relevance or Value comes to it: V4 disclosed-in M5 guides A3 aims-at V1 · V1 withheld-by M4 exceeds A5 judged-by V5 · V4 expressed-in M3 steers A3 oriented-by V2",
+  "stateLine": "3 relatings theirs alone · 3 relatings the face's",
+  "head": "between Import and Practical reason — 140 modes · 5 × 7 roles · 4900 could be related · 6 related · 5 barred",
+  "named": "named when it was: Moral space — given when 6 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "MeaningImport": {
+  "kind": "corner",
+  "name": "Trace",
+  "why": "OWN (Meaning in Import alone): différance withholding the good — the good present in meaning only as a trace (Levinas 1963, Derrida).",
+  "state": "OPEN",
+  "own": "Meaning and Import's alone — no passage through Adequation or Institution comes to it: Différance figures-in V1 withheld-by M4",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Meaning and Import — 140 modes · 5 × 5 roles · 3500 could be related · 5 related · 0 barred",
+  "named": "named when it was: Trace — given when 5 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "MeaningAdequation": {
+  "kind": "corner",
+  "name": "Aboutness",
+  "why": "OWN (Meaning in Adequation alone): sense conditioned by truth-makers, reference corresponding to states of affairs, différance withholding them — meaning's directedness at what is the case (Brentano, Husserl, Searle 1983).",
+  "state": "OPEN",
+  "own": "Adequation and Meaning's alone — no passage through Import or Institution comes to it: M1 conditioned-by F2 figured-by Sense · M2 corresponds-to F1 figured-by Reference · M4 withholds F1 figured-by Différance",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Adequation and Meaning — 140 modes · 7 × 5 roles · 4900 could be related · 7 related · 0 barred",
+  "named": "named when it was: Aboutness — given when 7 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "MeaningInstitution": {
+  "kind": "corner",
+  "name": "Founding",
+  "why": "OWN (Meaning in Institution alone): sense instituted in a communicative act; reference baptized in one — Stiftung/Urstiftung: meaning founded in an originating act (Husserl, Merleau-Ponty, Kripke's baptism).",
+  "state": "OPEN",
+  "own": "Institution and Meaning's alone — no passage through Adequation or Import comes to it: M1 instituted-in A4 figured-by Sense · M2 baptized-in A4 figured-by Reference",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Institution and Meaning — 140 modes · 6 × 5 roles · 4200 could be related · 6 related · 0 barred",
+  "named": "named when it was: Founding — given when 6 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "ImportAdequation": {
+  "kind": "medial",
+  "name": "Unconcealment",
+  "why": "OWN: the validity claim encompasses truth-conditional sense (Habermas); interpretation precedes correspondence (Nietzsche, Heidegger); the withheld good escapes the picture (TLP 6.41, Derrida) — correctness derivative of a prior openness (Heidegger 1930), with Habermas's validity as its discursive form.",
+  "state": "OPEN",
+  "own": "Import and Adequation's alone — no passage through Value-relevance or Institution or Meaning comes to it: V5 raised-in M3 encompasses M1 conditioned-by F2 · V3 interprets M5 precedes M2 corresponds-to F1 · V1 withheld-by M4 escapes M1 pictures F1",
+  "stateLine": "3 relatings theirs alone · 4 relatings the face's",
+  "head": "between Import and Adequation — 140 modes · 5 × 7 roles · 4900 could be related · 7 related · 2 barred",
+  "named": "named when it was: Unconcealment — given when 7 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "ImportInstitution": {
+  "kind": "medial",
+  "name": "Ethical life",
+  "why": "OWN: instituted sense rests on attitudes expressed in practice (Brandom); narrative configuration aims at the withheld good (Ricoeur); the intention's description carries the import (Anscombe, Taylor) — Sittlichkeit: instituted meaning that carries imports and aims at the good (Hegel PR part 3).",
+  "state": "OPEN",
+  "own": "Institution and Import's alone — no passage through Practical reason or Adequation or Meaning comes to it: M1 instituted-in A4 rests-on V4 expressed-in M3 · M5 configures A5 aims-at V1 withheld-by M4 · M1 describes A1 carries V4 disclosed-in M5",
+  "stateLine": "3 relatings theirs alone · 3 relatings the face's",
+  "head": "between Institution and Import — 140 modes · 6 × 5 roles · 4200 could be related · 6 related · 2 barred",
+  "named": "named when it was: Ethical life — given when 6 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "AdequationInstitution": {
+  "kind": "medial",
+  "name": "Discourse",
+  "why": "OWN: correspondence is instituted in the practice of giving and asking for reasons (Brandom MIE ch. 8); significance is articulated in discourse performed in speech (Heidegger SZ §34) — Rede and discursive practice, one site.",
+  "state": "OPEN",
+  "own": "Adequation and Institution's alone — no passage through Event or Import or Meaning comes to it: M2 corresponds-to F1 instituted-in M1 instituted-in A4 · M5 discloses F4 articulated-in M3 performed-in A4",
+  "stateLine": "2 relatings theirs alone · 6 relatings the face's",
+  "head": "between Adequation and Institution — 140 modes · 7 × 6 roles · 5880 could be related · 8 related · 7 barred",
+  "named": "named when it was: Discourse — given when 8 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "ActionEvent": {
+  "kind": "corner",
+  "name": "Agency",
+  "why": "OWN (Action in Event alone): imputation presupposing the state of affairs; the reason as cause explaining it — the agent behind the happened fact (Davidson 1971, Ricoeur).",
+  "state": "OPEN",
+  "own": "Action and Event's alone — no passage through Practical reason or Institution comes to it: Imputation figures-in F1 presupposed-by A5 · Reason as cause figures-in F1 explained-by A2",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Action and Event — 140 modes · 5 × 6 roles · 4200 could be related · 6 related · 0 barred",
+  "named": "named when it was: Agency — given when 6 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "ActionPractical reason": {
+  "kind": "corner",
+  "name": "Conduct",
+  "why": "OWN (Action in Practical reason alone): the deed required, aiming, oriented; the reason warranted; imputation judged — action under practical reason, Lebensführung (Weber, Kant, Dewey).",
+  "state": "OPEN",
+  "own": "Practical reason and Action's alone — no passage through Event or Institution comes to it: A2 warranted-by V4 figured-by Reason as cause · A3 required-by V5 figured-by Deed as beginning · A3 aims-at V1 figured-by Deed as beginning · A3 oriented-by V2 figured-by Deed as beginning · A5 judged-by V5 figured-by Imputation",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Practical reason and Action — 140 modes · 7 × 5 roles · 4900 could be related · 7 related · 0 barred",
+  "named": "named when it was: Conduct — given when 7 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "ActionInstitution": {
+  "kind": "corner",
+  "name": "Understanding",
+  "why": "OWN (Action in Institution alone): the reason as interpreted by sense; imputation as configured by significance — Verstehen: action grasped through its meaning (Dilthey, Weber, Davidson 1973, Ricoeur).",
+  "state": "OPEN",
+  "own": "Institution and Action's alone — no passage through Practical reason or Event comes to it: M1 interprets A2 figured-by Reason as cause · M5 configures A5 figured-by Imputation",
+  "stateLine": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "head": "between Institution and Action — 140 modes · 6 × 5 roles · 4200 could be related · 6 related · 0 barred",
+  "named": "named when it was: Understanding — given when 6 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "EventPractical reason": {
+  "kind": "medial",
+  "name": "Accountability",
+  "why": "OWN: practical knowledge is responsive to reasons (Anscombe's \"Why?\", Scanlon); the imputed deed is measured against the requirement (Kant MM 6:227); the deed received in the web is subject to the spectators' judgment (Arendt) — the deed accountable to reasons, to the ought, to judgment.",
+  "state": "OPEN",
+  "own": "Event and Practical reason's alone — no passage through Value-relevance or Institution or Action comes to it: F1 known-by A1 responsive-to A2 warranted-by V4 · F1 presupposed-by A5 measured-against A3 required-by V5 · F3 receives A3 subject-to A5 judged-by V5",
+  "stateLine": "3 relatings theirs alone · 3 relatings the face's",
+  "head": "between Event and Practical reason — 140 modes · 6 × 7 roles · 5880 could be related · 6 related · 9 barred",
+  "named": "named when it was: Accountability — given when 6 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "EventInstitution": {
+  "kind": "medial",
+  "name": "Narrative",
+  "why": "OWN: narrative configuration emplots the deed become fact (Ricoeur T&N I); instituted sense is situated in facticity (Heidegger, Brandom 1983); the intended description is outrun by the deed become story (Arendt HC §25) — the story that institutes what the deed was.",
+  "state": "OPEN",
+  "own": "Institution and Event's alone — no passage through Adequation or Practical reason or Action comes to it: M5 configures A5 emplots F3 receives A3 · M1 instituted-in A4 situated-in F4 situates A3 · M1 describes A1 outrun-by F3 receives A3",
+  "stateLine": "3 relatings theirs alone · 4 relatings the face's",
+  "head": "between Institution and Event — 140 modes · 6 × 6 roles · 5040 could be related · 7 related · 2 barred",
+  "named": "named when it was: Narrative — given when 7 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ },
+ "Practical reasonInstitution": {
+  "kind": "medial",
+  "name": "Selfhood",
+  "why": "OWN: the aim of the good life is narratively configured (Ricoeur OA 6–7); imputation bears on the deed under its intended description (Anscombe, Kant); reasons are articulated in the practice that institutes content (Brandom) — ipseity: the self whose aims, imputations and reasons are instituted (Ricoeur, Oneself as Another).",
+  "state": "OPEN",
+  "own": "Practical reason and Institution's alone — no passage through Import or Event or Action comes to it: A3 aims-at V1 configured-by M5 configures A5 · A5 judged-by V5 bears-on M1 describes A1 · A2 warranted-by V4 articulated-in M1 instituted-in A4",
+  "stateLine": "3 relatings theirs alone · 2 relatings the face's",
+  "head": "between Practical reason and Institution — 140 modes · 7 × 6 roles · 5880 could be related · 5 related · 4 barred",
+  "named": "named when it was: Selfhood — given when 5 relatings were said; since then, 0 left what is theirs alone · 0 entered"
+ }
+}

@@ -1,0 +1,35 @@
+{
+ "subject_matter": "Meaning — the concept space of meaning in philosophical discourse: sense, reference, use, difference, significance",
+ "source": "Frege, 'On Sense and Reference' (1892); Husserl, Ideas I (noema); Russell, 'On Denoting' (1905); Wittgenstein, Philosophical Investigations §43; Austin, How to Do Things with Words (1962); Saussure, Course in General Linguistics (1916); Derrida, Of Grammatology (1967), 'Différance' (1968); Dilthey, The Formation of the Historical World; Heidegger, Being and Time §32; Gadamer, Truth and Method (1960)",
+ "roles": [
+  { "id": "M1", "label": "Sense", "types": { "world": "symbolic" } },
+  { "id": "M2", "label": "Reference", "types": { "world": "objective" } },
+  { "id": "M3", "label": "Use", "types": { "world": "social" } },
+  { "id": "M4", "label": "Différance", "types": { "world": "symbolic" } },
+  { "id": "M5", "label": "Significance", "types": { "world": "subjective" } }
+ ],
+ "signature": [
+  { "type": "determines", "arity": 2, "meaning": "the first determines the second (sense determines reference; difference determines sense)" },
+  { "type": "constituted-by", "arity": 2, "meaning": "the first is constituted by the second (meaning constituted by use)" },
+  { "type": "defers", "arity": 2, "meaning": "the first defers the second (presence, reference, significance postponed in the play of differences)" },
+  { "type": "projects", "arity": 2, "meaning": "the first is that upon which the second is projected (significance as the Woraufhin of understanding)" },
+  { "type": "grounds", "arity": 2, "meaning": "the first grounds the second" },
+  { "type": "independent-of", "arity": 2, "meaning": "the first holds independently of the second" }
+ ],
+ "relations": [
+  { "type": "determines", "terms": ["M1", "M2"], "polarity": "holds" },
+  { "type": "determines", "terms": ["M4", "M1"], "polarity": "holds" },
+  { "type": "determines", "terms": ["M3", "M2"], "polarity": "does-not-hold" },
+  { "type": "constituted-by", "terms": ["M1", "M3"], "polarity": "holds" },
+  { "type": "constituted-by", "terms": ["M2", "M3"], "polarity": "does-not-hold" },
+  { "type": "defers", "terms": ["M4", "M2"], "polarity": "holds" },
+  { "type": "defers", "terms": ["M4", "M5"], "polarity": "holds" },
+  { "type": "projects", "terms": ["M5", "M1"], "polarity": "holds" },
+  { "type": "projects", "terms": ["M1", "M5"], "polarity": "does-not-hold" },
+  { "type": "grounds", "terms": ["M5", "M3"], "polarity": "holds" },
+  { "type": "grounds", "terms": ["M2", "M1"], "polarity": "does-not-hold" },
+  { "type": "independent-of", "terms": ["M2", "M3"], "polarity": "holds" },
+  { "type": "independent-of", "terms": ["M1", "M4"], "polarity": "does-not-hold" },
+  { "type": "independent-of", "terms": ["M5", "M2"], "polarity": "holds" }
+ ]
+}

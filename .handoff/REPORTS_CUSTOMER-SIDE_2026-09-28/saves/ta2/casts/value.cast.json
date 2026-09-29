@@ -1,0 +1,34 @@
+{
+ "subject_matter": "Value — the concept space of value in philosophical discourse: the good in itself, the instrumental, the posited, the fitting, the valid",
+ "source": "Aristotle, Nicomachean Ethics I.7; Moore, Principia Ethica (1903); Dewey, Theory of Valuation (1939); Marx, Capital I ch. 1 (use value); Nietzsche, On the Genealogy of Morals (Wertsetzung); Heidegger, 'Nietzsche's Word: God is Dead'; Brentano, The Origin of our Knowledge of Right and Wrong (1889); Scheler, Formalism in Ethics (1913); Scanlon, What We Owe to Each Other (1998); Weber, 'Science as a Vocation' (1919); Habermas, The Theory of Communicative Action (1981); Kant, Groundwork",
+ "roles": [
+  { "id": "V1", "label": "Good in itself", "types": { "world": "objective" } },
+  { "id": "V2", "label": "Instrumental value", "types": { "world": "objective" } },
+  { "id": "V3", "label": "Value-positing", "types": { "world": "subjective" } },
+  { "id": "V4", "label": "Fittingness", "types": { "world": "subjective" } },
+  { "id": "V5", "label": "Validity claim", "types": { "world": "social" } }
+ ],
+ "signature": [
+  { "type": "for-the-sake-of", "arity": 2, "meaning": "the first is chosen or valued for the sake of the second" },
+  { "type": "posits", "arity": 2, "meaning": "the first posits the second as a value (a valuation sets it)" },
+  { "type": "merits", "arity": 2, "meaning": "the first merits the second (a fitting attitude, a correct love)" },
+  { "type": "binds", "arity": 2, "meaning": "the first binds the second (an ought, a validity claim that obliges)" },
+  { "type": "grounds", "arity": 2, "meaning": "the first grounds the second" },
+  { "type": "independent-of", "arity": 2, "meaning": "the first holds independently of the second" }
+ ],
+ "relations": [
+  { "type": "for-the-sake-of", "terms": ["V2", "V1"], "polarity": "holds" },
+  { "type": "for-the-sake-of", "terms": ["V1", "V2"], "polarity": "does-not-hold" },
+  { "type": "posits", "terms": ["V3", "V1"], "polarity": "holds" },
+  { "type": "merits", "terms": ["V1", "V4"], "polarity": "holds" },
+  { "type": "merits", "terms": ["V4", "V1"], "polarity": "does-not-hold" },
+  { "type": "binds", "terms": ["V5", "V3"], "polarity": "holds" },
+  { "type": "binds", "terms": ["V3", "V5"], "polarity": "does-not-hold" },
+  { "type": "grounds", "terms": ["V1", "V2"], "polarity": "holds" },
+  { "type": "grounds", "terms": ["V1", "V4"], "polarity": "holds" },
+  { "type": "grounds", "terms": ["V4", "V1"], "polarity": "does-not-hold" },
+  { "type": "independent-of", "terms": ["V1", "V3"], "polarity": "does-not-hold" },
+  { "type": "independent-of", "terms": ["V5", "V3"], "polarity": "holds" },
+  { "type": "independent-of", "terms": ["V2", "V1"], "polarity": "does-not-hold" }
+ ]
+}

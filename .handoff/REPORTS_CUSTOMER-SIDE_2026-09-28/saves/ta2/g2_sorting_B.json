@@ -1,0 +1,2606 @@
+{
+ "FactAdequation": {
+  "head": "between Fact and Adequation — 140 modes · 5 × 7 roles · 4900 could be related · 7 related · 0 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Fact and Adequation's alone — no passage through Value-relevance or Event comes to it: Truth-maker figures-in M1 conditioned-by F2 · State of affairs figures-in M2 corresponds-to F1 · State of affairs figures-in M4 withholds F1",
+  "faces": [
+   "the face's — said between them and through Value-relevance too: Social fact figures-in M3 constitutes F3 · Facticity figures-in M5 discloses F4",
+   "the face's — said between them and through Event too: State of affairs figures-in M1 pictures F1 · State of affairs figures-in M1 states F1 · Social fact figures-in M3 constitutes F3 · Facticity figures-in M5 discloses F4"
+  ],
+  "bars": [],
+  "views": [
+   "through Value-relevance: 4 passages",
+   "through Event: 10 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "F3|figured-by|F3 entangled-with V4|expresses|M3 constitutes F3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F5|figured-by|F5 set-by V3|enables|M4 withholds F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F5|figured-by|F5 selected-by V4|delimited-by|M1 states F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4|figured-by|F4 surpassed-by V3|interpreted-by|M5 discloses F4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1|figured-by|F1 known-by A1|described-by|M1 pictures F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1|figured-by|F1 known-by A1|described-by|M1 states F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1|figured-by|F1 known-by A1|presupposes|M3 constitutes F3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3|figured-by|F3 created-by A4|performs|M3 constitutes F3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3|figured-by|F3 created-by A4|deferred-by|M4 withholds F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3|figured-by|F3 receives A3|told-in|M1 states F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4|figured-by|F4 situates A3|situated-in|M5 discloses F4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1|figured-by|F1 explained-by A2|interpreted-by|M1 pictures F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1|figured-by|F1 explained-by A2|interpreted-by|M1 states F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1|figured-by|F1 explained-by A2|rests-on|M5 discloses F4",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "FactValue-relevance": {
+  "head": "between Value-relevance and Fact — 140 modes · 4 × 5 roles · 2800 could be related · 4 related · 0 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Value-relevance and Fact's alone — no passage through Adequation or Event comes to it: F5 set-by V3 figured-by Constituted fact · F5 selected-by V4 figured-by Constituted fact",
+  "faces": [
+   "the face's — said between them and through Adequation too: F3 entangled-with V4 figured-by Social fact · F4 surpassed-by V3 figured-by Facticity",
+   "the face's — said between them and through Event too: F4 surpassed-by V3 figured-by Facticity"
+  ],
+  "bars": [],
+  "views": [
+   "through Adequation: 4 passages",
+   "through Event: 4 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "F3 entangled-with V4|expresses|M3 constitutes F3|figures-in|F3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|interpreted-by|M5 discloses F4|figures-in|F4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F5 selected-by V4|delimited-by|M1 states F1|figures-in|F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F5 set-by V3|enables|M4 withholds F1|figures-in|F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|enacted-in|F4 situates A3|figured-by|F4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F5 set-by V3|performed-as|F3 created-by A4|figured-by|F3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|presupposed-by|F1 presupposed-by A5|figured-by|F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F5 selected-by V4|ranges-over|F3 receives A3|figured-by|F3",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "FactEvent": {
+  "head": "between Event and Fact — 140 modes · 6 × 5 roles · 4200 could be related · 6 related · 0 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Event and Fact's alone — no passage through Value-relevance or Adequation comes to it: F3 receives A3 figured-by Social fact · F1 presupposed-by A5 figured-by State of affairs",
+  "faces": [
+   "the face's — said between them and through Value-relevance too: F4 situates A3 figured-by Facticity",
+   "the face's — said between them and through Adequation too: F1 known-by A1 figured-by State of affairs · F3 created-by A4 figured-by Social fact · F4 situates A3 figured-by Facticity · F1 explained-by A2 figured-by State of affairs"
+  ],
+  "bars": [],
+  "views": [
+   "through Value-relevance: 4 passages",
+   "through Adequation: 10 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "F4 situates A3|enacted-in|F4 surpassed-by V3|figured-by|F4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3 created-by A4|performed-as|F5 set-by V3|figured-by|F5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 presupposed-by A5|presupposed-by|F4 surpassed-by V3|figured-by|F4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|ranges-over|F5 selected-by V4|figured-by|F5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 known-by A1|described-by|M1 pictures F1|figures-in|F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 known-by A1|described-by|M1 states F1|figures-in|F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3 created-by A4|performs|M3 constitutes F3|figures-in|F3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F4 situates A3|situated-in|M5 discloses F4|figures-in|F4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 explained-by A2|interpreted-by|M1 pictures F1|figures-in|F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 explained-by A2|interpreted-by|M1 states F1|figures-in|F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|told-in|M1 states F1|figures-in|F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 known-by A1|presupposes|M3 constitutes F3|figures-in|F3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 created-by A4|deferred-by|M4 withholds F1|figures-in|F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 explained-by A2|rests-on|M5 discloses F4|figures-in|F4",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "AdequationValue-relevance": {
+  "head": "between Adequation and Value-relevance — 140 modes · 7 × 4 roles · 3920 could be related · 4 related · 2 barred",
+  "state": "the views leave different things alone — through Import, M3 constitutes F3 expresses F3 entangled-with V4 is theirs alone; through Event, M3 constitutes F3 expresses F3 entangled-with V4 is theirs alone; through Fact, M1 states F1 delimited-by F5 selected-by V4 is theirs alone — nothing is theirs alone under both",
+  "stateAttr": "POCKET",
+  "own": "nothing theirs alone — all 4 relatings are also said through Import or Event or Fact",
+  "faces": [
+   "the face's — said between them and through Import too: M5 discloses F4 interpreted-by F4 surpassed-by V3",
+   "the face's — said between them and through Event too: M5 discloses F4 interpreted-by F4 surpassed-by V3 · M1 states F1 delimited-by F5 selected-by V4 · M4 withholds F1 enables F5 set-by V3",
+   "the face's — said between them and through Fact too: M3 constitutes F3 expresses F3 entangled-with V4 · M5 discloses F4 interpreted-by F4 surpassed-by V3"
+  ],
+  "bars": [
+   "barred by you: M1 pictures F1 conditioned-by F3 entangled-with V4 · withdraw",
+   "barred by you: M2 corresponds-to F1 selected-by F5 selected-by V4 · withdraw"
+  ],
+  "views": [
+   "through Import: 8 passages",
+   "through Event: 4 passages",
+   "through Fact: 2 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [
+   "your says differ across the faces: through Fact you said \"expresses\", through Fact you said \"interpreted-by\""
+  ],
+  "unruled": [],
+  "readings": [
+   [
+    "M5 discloses F4|surpasses|V3 interprets M5|posited-form-of|F5 set-by V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M5 discloses F4|surpasses|V3 interprets M5|disclosed-in|F4 surpassed-by V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 discloses F4|surpasses|V3 interprets M5|interpreted-by|F5 selected-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M5 discloses F4|attunes|V4 disclosed-in M5|selected-by|F5 selected-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M2 corresponds-to F1|precedes|V3 interprets M5|posited-form-of|F5 set-by V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M2 corresponds-to F1|precedes|V3 interprets M5|disclosed-in|F4 surpassed-by V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M2 corresponds-to F1|precedes|V3 interprets M5|interpreted-by|F5 selected-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 pictures F1|escapes|V1 withheld-by M4|deferred-by|F5 set-by V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|performs|F3 created-by A4|performed-as|F5 set-by V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M5 discloses F4|situated-in|F4 situates A3|enacted-in|F4 surpassed-by V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 states F1|told-in|F3 receives A3|ranges-over|F5 selected-by V4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M4 withholds F1|deferred-by|F3 created-by A4|performed-as|F5 set-by V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|figures-in|F3|figured-by|F3 entangled-with V4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 discloses F4|figures-in|F4|figured-by|F4 surpassed-by V3",
+    "COMPOSED",
+    "verdict"
+   ]
+  ]
+ },
+ "AdequationEvent": {
+  "head": "between Event and Adequation — 140 modes · 6 × 7 roles · 5880 could be related · 10 related · 9 barred",
+  "state": "2 relatings theirs alone · 8 relatings the face's",
+  "stateAttr": "OPEN",
+  "own": "Event and Adequation's alone — no passage through Institution or Value-relevance or Fact comes to it: F1 known-by A1 presupposes M3 constitutes F3 · F1 explained-by A2 rests-on M5 discloses F4",
+  "faces": [
+   "the face's — said between them and through Institution too: F1 known-by A1 described-by M1 pictures F1 · F1 known-by A1 described-by M1 states F1 · F3 created-by A4 performs M3 constitutes F3 · F3 created-by A4 deferred-by M4 withholds F1",
+   "the face's — said between them and through Value-relevance too: F4 situates A3 situated-in M5 discloses F4 · F3 receives A3 told-in M1 states F1 · F3 created-by A4 deferred-by M4 withholds F1",
+   "the face's — said between them and through Fact too: F1 known-by A1 described-by M1 pictures F1 · F1 known-by A1 described-by M1 states F1 · F3 created-by A4 performs M3 constitutes F3 · F4 situates A3 situated-in M5 discloses F4 · F1 explained-by A2 interpreted-by M1 pictures F1 · F1 explained-by A2 interpreted-by M1 states F1"
+  ],
+  "bars": [
+   "barred by you: F1 known-by A1 ≡ M2 corresponds-to F1 · withdraw",
+   "barred by you: F1 known-by A1 ≡ M4 withholds F1 · withdraw",
+   "barred by you: F3 receives A3 ≡ M3 constitutes F3 · withdraw",
+   "barred by you: F1 presupposed-by A5 ≡ M1 pictures F1 · withdraw",
+   "barred by you: F1 presupposed-by A5 ≡ M1 states F1 · withdraw",
+   "barred by you: F1 presupposed-by A5 ≡ M2 corresponds-to F1 · withdraw",
+   "barred by you: F1 presupposed-by A5 ≡ M4 withholds F1 · withdraw",
+   "barred by you: F1 explained-by A2 ≡ M2 corresponds-to F1 · withdraw",
+   "barred by you: F1 explained-by A2 ≡ M4 withholds F1 · withdraw"
+  ],
+  "views": [
+   "through Institution: 9 passages",
+   "through Value-relevance: 4 passages",
+   "through Fact: 15 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [
+   "your says differ across the faces: through Fact you said \"described-by\", through Fact you said \"described-by\", through Fact you said \"performs\", through Fact you said \"situated-in\", through Fact you said \"interpreted-by\", through Fact you said \"interpreted-by\""
+  ],
+  "unruled": [],
+  "readings": [
+   [
+    "F3 created-by A4|constitutes|M3 performed-in A4|created-by|M3 constitutes F3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3 created-by A4|constitutes|M3 performed-in A4|articulated-in|M5 discloses F4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 known-by A1|pictures|M1 describes A1|known-by|M1 pictures F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 known-by A1|pictures|M1 describes A1|known-by|M1 states F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3 created-by A4|instituted-as|M1 instituted-in A4|instituted-in|M2 corresponds-to F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 created-by A4|instituted-as|M2 baptized-in A4|divides|M4 withholds F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F4 situates A3|situated-in|M1 instituted-in A4|instituted-in|M2 corresponds-to F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|outrun-by|M1 describes A1|known-by|M1 pictures F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|outrun-by|M1 describes A1|known-by|M1 states F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 situates A3|enacted-in|F4 surpassed-by V3|interpreted-by|M5 discloses F4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3 created-by A4|performed-as|F5 set-by V3|enables|M4 withholds F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 presupposed-by A5|presupposed-by|F4 surpassed-by V3|interpreted-by|M5 discloses F4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|ranges-over|F5 selected-by V4|delimited-by|M1 states F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 known-by A1|figured-by|F1|figures-in|M1 pictures F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 known-by A1|figured-by|F1|figures-in|M1 states F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 known-by A1|figured-by|F1|figures-in|M2 corresponds-to F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 known-by A1|figured-by|F1|figures-in|M4 withholds F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 created-by A4|figured-by|F3|figures-in|M3 constitutes F3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|figured-by|F3|figures-in|M3 constitutes F3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 situates A3|figured-by|F4|figures-in|M5 discloses F4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 presupposed-by A5|figured-by|F1|figures-in|M1 pictures F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 presupposed-by A5|figured-by|F1|figures-in|M1 states F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 presupposed-by A5|figured-by|F1|figures-in|M2 corresponds-to F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 presupposed-by A5|figured-by|F1|figures-in|M4 withholds F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 explained-by A2|figured-by|F1|figures-in|M1 pictures F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 explained-by A2|figured-by|F1|figures-in|M1 states F1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 explained-by A2|figured-by|F1|figures-in|M2 corresponds-to F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 explained-by A2|figured-by|F1|figures-in|M4 withholds F1",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "Value-relevanceEvent": {
+  "head": "between Value-relevance and Event — 140 modes · 4 × 6 roles · 3360 could be related · 4 related · 3 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Value-relevance and Event's alone — no passage through Practical reason or Adequation or Fact comes to it: F5 set-by V3 performed-as F3 created-by A4 · F4 surpassed-by V3 presupposed-by F1 presupposed-by A5",
+  "faces": [
+   "the face's — said between them and through Practical reason too: F4 surpassed-by V3 enacted-in F4 situates A3",
+   "the face's — said between them and through Adequation too: F4 surpassed-by V3 enacted-in F4 situates A3 · F5 selected-by V4 ranges-over F3 receives A3",
+   "the face's — said between them and through Fact too: F4 surpassed-by V3 enacted-in F4 situates A3"
+  ],
+  "bars": [
+   "barred by you: F3 entangled-with V4 ≡ F3 created-by A4 · withdraw",
+   "barred by you: F3 entangled-with V4 ≡ F3 receives A3 · withdraw",
+   "barred by you: F5 set-by V3 explained-by F1 explained-by A2 · withdraw"
+  ],
+  "views": [
+   "through Practical reason: 7 passages",
+   "through Adequation: 8 passages",
+   "through Fact: 3 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "F3 entangled-with V4|warranted-by|A2 warranted-by V4|responsive-to|F1 known-by A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F5 set-by V3|makes|A3 enacts V3|sediments|F3 receives A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F5 set-by V3|makes|A3 enacts V3|surpassed-by|F4 situates A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|situated-in|A3 enacts V3|sediments|F3 receives A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|situated-in|A3 enacts V3|surpassed-by|F4 situates A3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3 entangled-with V4|draws-on|A5 judged-by V5|subject-to|F3 receives A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|arises-in|A2 warranted-by V4|responsive-to|F1 known-by A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 entangled-with V4|expresses|M3 constitutes F3|performs|F3 created-by A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 entangled-with V4|expresses|M3 constitutes F3|presupposes|F1 known-by A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|interpreted-by|M5 discloses F4|situated-in|F4 situates A3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|interpreted-by|M5 discloses F4|rests-on|F1 explained-by A2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F5 selected-by V4|delimited-by|M1 states F1|described-by|F1 known-by A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F5 selected-by V4|delimited-by|M1 states F1|interpreted-by|F1 explained-by A2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F5 selected-by V4|delimited-by|M1 states F1|told-in|F3 receives A3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F5 set-by V3|enables|M4 withholds F1|deferred-by|F3 created-by A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 entangled-with V4|figured-by|F3|figured-by|F3 created-by A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 entangled-with V4|figured-by|F3|figured-by|F3 receives A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|figured-by|F4|figured-by|F4 situates A3",
+    "COMPOSED",
+    "verdict"
+   ]
+  ]
+ },
+ "ValueValue-relevance": {
+  "head": "between Value and Value-relevance — 140 modes · 5 × 4 roles · 2800 could be related · 4 related · 0 barred",
+  "state": "the views leave different things alone — through Import, Fittingness figures-in F3 entangled-with V4 is theirs alone; through Practical reason, Fittingness figures-in F5 selected-by V4 is theirs alone — nothing is theirs alone under both",
+  "stateAttr": "POCKET",
+  "own": "nothing theirs alone — all 4 relatings are also said through Import or Practical reason",
+  "faces": [
+   "the face's — said between them and through Import too: Value-positing figures-in F5 set-by V3 · Fittingness figures-in F5 selected-by V4 · Value-positing figures-in F4 surpassed-by V3",
+   "the face's — said between them and through Practical reason too: Fittingness figures-in F3 entangled-with V4 · Value-positing figures-in F5 set-by V3 · Value-positing figures-in F4 surpassed-by V3"
+  ],
+  "bars": [],
+  "views": [
+   "through Import: 5 passages",
+   "through Practical reason: 6 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "V3|figured-by|V3 interprets M5|posited-form-of|F5 set-by V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V3|figured-by|V3 interprets M5|disclosed-in|F4 surpassed-by V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V3|figured-by|V3 interprets M5|interpreted-by|F5 selected-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4|figured-by|V4 disclosed-in M5|selected-by|F5 selected-by V4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V1|figured-by|V1 withheld-by M4|deferred-by|F5 set-by V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4|figured-by|A2 warranted-by V4|warranted-by|F3 entangled-with V4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V4|figured-by|A2 warranted-by V4|arises-in|F4 surpassed-by V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V2|figured-by|A3 oriented-by V2|presupposes|F5 selected-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V5|figured-by|A5 judged-by V5|draws-on|F3 entangled-with V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V3|figured-by|A3 enacts V3|makes|F5 set-by V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V3|figured-by|A3 enacts V3|situated-in|F4 surpassed-by V3",
+    "COMPOSED",
+    "verdict"
+   ]
+  ]
+ },
+ "ValueImport": {
+  "head": "between Import and Value — 140 modes · 5 × 5 roles · 3500 could be related · 5 related · 0 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Import and Value's alone — no passage through Value-relevance or Practical reason comes to it: V1 withheld-by M4 figured-by Good in itself · V4 expressed-in M3 figured-by Fittingness",
+  "faces": [
+   "the face's — said between them and through Value-relevance too: V3 interprets M5 figured-by Value-positing · V4 disclosed-in M5 figured-by Fittingness",
+   "the face's — said between them and through Practical reason too: V3 interprets M5 figured-by Value-positing · V5 raised-in M3 figured-by Validity claim · V4 disclosed-in M5 figured-by Fittingness"
+  ],
+  "bars": [],
+  "views": [
+   "through Value-relevance: 5 passages",
+   "through Practical reason: 6 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "V3 interprets M5|posited-form-of|F5 set-by V3|figures-in|V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V4 disclosed-in M5|selected-by|F5 selected-by V4|figures-in|V4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V3 interprets M5|disclosed-in|F4 surpassed-by V3|figures-in|V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V3 interprets M5|interpreted-by|F5 selected-by V4|figures-in|V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V1 withheld-by M4|deferred-by|F5 set-by V3|figures-in|V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V3 interprets M5|enacted-in|A3 enacts V3|figured-by|V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V5 raised-in M3|performed-in|A4 raises V5|figured-by|V5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V4 disclosed-in M5|warrants|A2 warranted-by V4|figured-by|V4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V4 disclosed-in M5|guides|A3 aims-at V1|figured-by|V1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V1 withheld-by M4|exceeds|A5 judged-by V5|figured-by|V5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4 expressed-in M3|steers|A3 oriented-by V2|figured-by|V2",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "ValuePractical reason": {
+  "head": "between Practical reason and Value — 140 modes · 7 × 5 roles · 4900 could be related · 7 related · 0 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Practical reason and Value's alone — no passage through Import or Value-relevance comes to it: A3 required-by V5 figured-by Validity claim · A3 aims-at V1 figured-by Good in itself · A3 oriented-by V2 figured-by Instrumental value · A5 judged-by V5 figured-by Validity claim",
+  "faces": [
+   "the face's — said between them and through Import too: A2 warranted-by V4 figured-by Fittingness · A4 raises V5 figured-by Validity claim · A3 enacts V3 figured-by Value-positing",
+   "the face's — said between them and through Value-relevance too: A2 warranted-by V4 figured-by Fittingness · A3 enacts V3 figured-by Value-positing"
+  ],
+  "bars": [],
+  "views": [
+   "through Import: 6 passages",
+   "through Value-relevance: 6 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "A3 enacts V3|enacted-in|V3 interprets M5|figured-by|V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A4 raises V5|performed-in|V5 raised-in M3|figured-by|V5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A2 warranted-by V4|warrants|V4 disclosed-in M5|figured-by|V4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A3 aims-at V1|guides|V4 disclosed-in M5|figured-by|V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A5 judged-by V5|exceeds|V1 withheld-by M4|figured-by|V1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 oriented-by V2|steers|V4 expressed-in M3|figured-by|V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A2 warranted-by V4|warranted-by|F3 entangled-with V4|figures-in|V4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|makes|F5 set-by V3|figures-in|V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|situated-in|F4 surpassed-by V3|figures-in|V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A5 judged-by V5|draws-on|F3 entangled-with V4|figures-in|V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 oriented-by V2|presupposes|F5 selected-by V4|figures-in|V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A2 warranted-by V4|arises-in|F4 surpassed-by V3|figures-in|V3",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "Value-relevanceImport": {
+  "head": "between Value-relevance and Import — 140 modes · 4 × 5 roles · 2800 could be related · 5 related · 4 barred",
+  "state": "2 relatings theirs alone · 3 relatings the face's",
+  "stateAttr": "OPEN",
+  "own": "Value-relevance and Import's alone — no passage through Adequation or Practical reason or Value comes to it: F5 selected-by V4 interpreted-by V3 interprets M5 · F5 set-by V3 deferred-by V1 withheld-by M4",
+  "faces": [
+   "the face's — said between them and through Adequation too: F4 surpassed-by V3 disclosed-in V3 interprets M5",
+   "the face's — said between them and through Practical reason too: F5 set-by V3 posited-form-of V3 interprets M5 · F4 surpassed-by V3 disclosed-in V3 interprets M5",
+   "the face's — said between them and through Value too: F5 set-by V3 posited-form-of V3 interprets M5 · F5 selected-by V4 selected-by V4 disclosed-in M5 · F4 surpassed-by V3 disclosed-in V3 interprets M5"
+  ],
+  "bars": [
+   "barred by you: F3 entangled-with V4 ≡ V4 disclosed-in M5 · withdraw",
+   "barred by you: F3 entangled-with V4 constituted-in V4 expressed-in M3 · withdraw",
+   "barred by you: F5 selected-by V4 ≡ V4 expressed-in M3 · withdraw",
+   "barred by you: F5 set-by V3 answerable-to V5 raised-in M3 · withdraw"
+  ],
+  "views": [
+   "through Adequation: 4 passages",
+   "through Practical reason: 6 passages",
+   "through Value: 6 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [
+   "your says differ across the faces: through Value you said \"posited-form-of\", through Value you said \"selected-by\", through Value you said \"disclosed-in\""
+  ],
+  "unruled": [],
+  "readings": [
+   [
+    "F3 entangled-with V4|expresses|M3 constitutes F3|has-claim-on|V5 raised-in M3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 entangled-with V4|expresses|M3 constitutes F3|entangled-with|V4 expressed-in M3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|interpreted-by|M5 discloses F4|surpasses|V3 interprets M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|interpreted-by|M5 discloses F4|attunes|V4 disclosed-in M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 entangled-with V4|warranted-by|A2 warranted-by V4|warrants|V4 disclosed-in M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F5 set-by V3|makes|A3 enacts V3|enacted-in|V3 interprets M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|situated-in|A3 enacts V3|enacted-in|V3 interprets M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3 entangled-with V4|draws-on|A5 judged-by V5|exceeds|V1 withheld-by M4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F5 selected-by V4|presupposes|A3 oriented-by V2|steers|V4 expressed-in M3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|arises-in|A2 warranted-by V4|warrants|V4 disclosed-in M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 entangled-with V4|figures-in|V4|figured-by|V4 disclosed-in M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 entangled-with V4|figures-in|V4|figured-by|V4 expressed-in M3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F5 set-by V3|figures-in|V3|figured-by|V3 interprets M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F5 selected-by V4|figures-in|V4|figured-by|V4 disclosed-in M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F5 selected-by V4|figures-in|V4|figured-by|V4 expressed-in M3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 surpassed-by V3|figures-in|V3|figured-by|V3 interprets M5",
+    "COMPOSED",
+    "verdict"
+   ]
+  ]
+ },
+ "Value-relevancePractical reason": {
+  "head": "between Practical reason and Value-relevance — 140 modes · 7 × 4 roles · 3920 could be related · 6 related · 2 barred",
+  "state": "3 relatings theirs alone · 3 relatings the face's",
+  "stateAttr": "OPEN",
+  "own": "Practical reason and Value-relevance's alone — no passage through Event or Import or Value comes to it: A5 judged-by V5 draws-on F3 entangled-with V4 · A3 oriented-by V2 presupposes F5 selected-by V4 · A2 warranted-by V4 arises-in F4 surpassed-by V3",
+  "faces": [
+   "the face's — said between them and through Event too: A3 enacts V3 situated-in F4 surpassed-by V3",
+   "the face's — said between them and through Import too: A3 enacts V3 makes F5 set-by V3 · A3 enacts V3 situated-in F4 surpassed-by V3",
+   "the face's — said between them and through Value too: A2 warranted-by V4 warranted-by F3 entangled-with V4 · A3 enacts V3 makes F5 set-by V3 · A3 enacts V3 situated-in F4 surpassed-by V3"
+  ],
+  "bars": [
+   "barred by you: A2 warranted-by V4 ≡ F5 selected-by V4 · withdraw",
+   "barred by you: A3 aims-at V1 set-by F5 set-by V3 · withdraw"
+  ],
+  "views": [
+   "through Event: 5 passages",
+   "through Import: 6 passages",
+   "through Value: 4 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [
+   "your says differ across the faces: through Value you said \"warranted-by\", through Value you said \"makes\", through Value you said \"situated-in\""
+  ],
+  "unruled": [],
+  "readings": [
+   [
+    "A4 raises V5|answerable-to|F3 created-by A4|performed-as|F5 set-by V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|sediments|F3 receives A3|ranges-over|F5 selected-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|surpassed-by|F4 situates A3|enacted-in|F4 surpassed-by V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A3 required-by V5|measured-against|F1 presupposed-by A5|presupposed-by|F4 surpassed-by V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A5 judged-by V5|subject-to|F3 receives A3|ranges-over|F5 selected-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|enacted-in|V3 interprets M5|posited-form-of|F5 set-by V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|enacted-in|V3 interprets M5|disclosed-in|F4 surpassed-by V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|enacted-in|V3 interprets M5|interpreted-by|F5 selected-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A2 warranted-by V4|warrants|V4 disclosed-in M5|selected-by|F5 selected-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 aims-at V1|guides|V4 disclosed-in M5|selected-by|F5 selected-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A5 judged-by V5|exceeds|V1 withheld-by M4|deferred-by|F5 set-by V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A2 warranted-by V4|figured-by|V4|figures-in|F3 entangled-with V4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A2 warranted-by V4|figured-by|V4|figures-in|F5 selected-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|figured-by|V3|figures-in|F5 set-by V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|figured-by|V3|figures-in|F4 surpassed-by V3",
+    "COMPOSED",
+    "verdict"
+   ]
+  ]
+ },
+ "ImportPractical reason": {
+  "head": "between Import and Practical reason — 140 modes · 5 × 7 roles · 4900 could be related · 6 related · 5 barred",
+  "state": "3 relatings theirs alone · 3 relatings the face's",
+  "stateAttr": "OPEN",
+  "own": "Import and Practical reason's alone — no passage through Institution or Value-relevance or Value comes to it: V4 disclosed-in M5 guides A3 aims-at V1 · V1 withheld-by M4 exceeds A5 judged-by V5 · V4 expressed-in M3 steers A3 oriented-by V2",
+  "faces": [
+   "the face's — said between them and through Institution too: V5 raised-in M3 performed-in A4 raises V5",
+   "the face's — said between them and through Value-relevance too: V3 interprets M5 enacted-in A3 enacts V3",
+   "the face's — said between them and through Value too: V3 interprets M5 enacted-in A3 enacts V3 · V5 raised-in M3 performed-in A4 raises V5 · V4 disclosed-in M5 warrants A2 warranted-by V4"
+  ],
+  "bars": [
+   "barred by you: V5 raised-in M3 ≡ A3 required-by V5 · withdraw",
+   "barred by you: V5 raised-in M3 ≡ A5 judged-by V5 · withdraw",
+   "barred by you: V1 withheld-by M4 ≡ A3 aims-at V1 · withdraw",
+   "barred by you: V4 expressed-in M3 ≡ A2 warranted-by V4 · withdraw",
+   "barred by you: V5 raised-in M3 enacted-in A3 enacts V3 · withdraw"
+  ],
+  "views": [
+   "through Institution: 7 passages",
+   "through Value-relevance: 6 passages",
+   "through Value: 7 passages"
+  ],
+  "lights": [
+   "V3 interprets M5 posited-by M5 configures A5 · M5 configures A5 configured-by A3 aims-at V1 — only in Institution's light — through Institution it would read: V3 interprets M5 posits A3 aims-at V1 — no relating between Import and Practical reason says so that is \"V3 interprets M5 posits A3 aims-at V1\" that is not it",
+   "V4 disclosed-in M5 carries M1 describes A1 · M1 describes A1 bears-on A5 judged-by V5 — only in Institution's light — through Institution it would read: V4 disclosed-in M5 drawn-on-by A5 judged-by V5 — no relating between Import and Practical reason says so that is \"V4 disclosed-in M5 drawn-on-by A5 judged-by V5\" that is not it"
+  ],
+  "tensions": [],
+  "differ": [
+   "your says differ across the faces: through Value you said \"enacted-in\", through Value you said \"performed-in\", through Value you said \"warrants\""
+  ],
+  "unruled": [],
+  "readings": [
+   [
+    "V5 raised-in M3|raises|M3 performed-in A4|raised-in|A4 raises V5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V4 expressed-in M3|expresses|M3 performed-in A4|raised-in|A4 raises V5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V3 interprets M5|posited-by|M5 configures A5|configured-by|A3 aims-at V1",
+    "LIGHT",
+    "rule"
+   ],
+   [
+    "V4 expressed-in M3|rests-on|M1 instituted-in A4|institutes|A4 raises V5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4 expressed-in M3|rests-on|M1 instituted-in A4|articulated-in|A2 warranted-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V1 withheld-by M4|aims-at|M5 configures A5|configured-by|A3 aims-at V1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4 disclosed-in M5|carries|M1 describes A1|bears-on|A5 judged-by V5",
+    "LIGHT",
+    "rule"
+   ],
+   [
+    "V3 interprets M5|posited-form-of|F5 set-by V3|makes|A3 enacts V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V4 disclosed-in M5|selected-by|F5 selected-by V4|presupposes|A3 oriented-by V2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V3 interprets M5|disclosed-in|F4 surpassed-by V3|situated-in|A3 enacts V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V3 interprets M5|disclosed-in|F4 surpassed-by V3|arises-in|A2 warranted-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V3 interprets M5|interpreted-by|F5 selected-by V4|presupposes|A3 oriented-by V2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V1 withheld-by M4|deferred-by|F5 set-by V3|makes|A3 enacts V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V3 interprets M5|figured-by|V3|figured-by|A3 enacts V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V5 raised-in M3|figured-by|V5|figured-by|A3 required-by V5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V5 raised-in M3|figured-by|V5|figured-by|A4 raises V5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V5 raised-in M3|figured-by|V5|figured-by|A5 judged-by V5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4 disclosed-in M5|figured-by|V4|figured-by|A2 warranted-by V4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V1 withheld-by M4|figured-by|V1|figured-by|A3 aims-at V1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4 expressed-in M3|figured-by|V4|figured-by|A2 warranted-by V4",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "MeaningImport": {
+  "head": "between Meaning and Import — 140 modes · 5 × 5 roles · 3500 could be related · 5 related · 0 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Meaning and Import's alone — no passage through Adequation or Institution comes to it: Différance figures-in V1 withheld-by M4",
+  "faces": [
+   "the face's — said between them and through Adequation too: Significance figures-in V3 interprets M5 · Use figures-in V5 raised-in M3 · Significance figures-in V4 disclosed-in M5 · Use figures-in V4 expressed-in M3",
+   "the face's — said between them and through Institution too: Significance figures-in V3 interprets M5 · Use figures-in V5 raised-in M3 · Use figures-in V4 expressed-in M3"
+  ],
+  "bars": [],
+  "views": [
+   "through Adequation: 7 passages",
+   "through Institution: 6 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "M1|figured-by|M1 pictures F1|escapes|V1 withheld-by M4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1|figured-by|M1 conditioned-by F2|encompasses|V5 raised-in M3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M2|figured-by|M2 corresponds-to F1|precedes|V3 interprets M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3|figured-by|M3 constitutes F3|has-claim-on|V5 raised-in M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3|figured-by|M3 constitutes F3|entangled-with|V4 expressed-in M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5|figured-by|M5 discloses F4|surpasses|V3 interprets M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5|figured-by|M5 discloses F4|attunes|V4 disclosed-in M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3|figured-by|M3 performed-in A4|raises|V5 raised-in M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3|figured-by|M3 performed-in A4|expresses|V4 expressed-in M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1|figured-by|M1 describes A1|carries|V4 disclosed-in M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1|figured-by|M1 instituted-in A4|rests-on|V4 expressed-in M3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M5|figured-by|M5 configures A5|posited-by|V3 interprets M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5|figured-by|M5 configures A5|aims-at|V1 withheld-by M4",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "MeaningAdequation": {
+  "head": "between Adequation and Meaning — 140 modes · 7 × 5 roles · 4900 could be related · 7 related · 0 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Adequation and Meaning's alone — no passage through Import or Institution comes to it: M1 conditioned-by F2 figured-by Sense · M2 corresponds-to F1 figured-by Reference · M4 withholds F1 figured-by Différance",
+  "faces": [
+   "the face's — said between them and through Import too: M3 constitutes F3 figured-by Use · M5 discloses F4 figured-by Significance",
+   "the face's — said between them and through Institution too: M1 pictures F1 figured-by Sense · M1 states F1 figured-by Sense · M3 constitutes F3 figured-by Use"
+  ],
+  "bars": [],
+  "views": [
+   "through Import: 7 passages",
+   "through Institution: 8 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "M5 discloses F4|surpasses|V3 interprets M5|figures-in|M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|has-claim-on|V5 raised-in M3|figures-in|M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 discloses F4|attunes|V4 disclosed-in M5|figures-in|M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|entangled-with|V4 expressed-in M3|figures-in|M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 conditioned-by F2|encompasses|V5 raised-in M3|figures-in|M3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M2 corresponds-to F1|precedes|V3 interprets M5|figures-in|M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 pictures F1|escapes|V1 withheld-by M4|figures-in|M4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 pictures F1|known-by|M1 describes A1|figured-by|M1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 pictures F1|explained-by|M1 interprets A2|figured-by|M1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 states F1|known-by|M1 describes A1|figured-by|M1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 states F1|explained-by|M1 interprets A2|figured-by|M1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|created-by|M3 performed-in A4|figured-by|M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M2 corresponds-to F1|instituted-in|M1 instituted-in A4|figured-by|M1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M5 discloses F4|articulated-in|M3 performed-in A4|figured-by|M3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M4 withholds F1|divides|M2 baptized-in A4|figured-by|M2",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "MeaningInstitution": {
+  "head": "between Institution and Meaning — 140 modes · 6 × 5 roles · 4200 could be related · 6 related · 0 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Institution and Meaning's alone — no passage through Adequation or Import comes to it: M1 instituted-in A4 figured-by Sense · M2 baptized-in A4 figured-by Reference",
+  "faces": [
+   "the face's — said between them and through Adequation too: M3 performed-in A4 figured-by Use · M1 describes A1 figured-by Sense · M1 interprets A2 figured-by Sense",
+   "the face's — said between them and through Import too: M3 performed-in A4 figured-by Use · M5 configures A5 figured-by Significance"
+  ],
+  "bars": [],
+  "views": [
+   "through Adequation: 8 passages",
+   "through Import: 6 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "M1 describes A1|known-by|M1 pictures F1|figured-by|M1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 interprets A2|explained-by|M1 pictures F1|figured-by|M1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|known-by|M1 states F1|figured-by|M1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 interprets A2|explained-by|M1 states F1|figured-by|M1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|created-by|M3 constitutes F3|figured-by|M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|instituted-in|M2 corresponds-to F1|figured-by|M2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|articulated-in|M5 discloses F4|figured-by|M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M2 baptized-in A4|divides|M4 withholds F1|figured-by|M4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|raises|V5 raised-in M3|figures-in|M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|expresses|V4 expressed-in M3|figures-in|M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 configures A5|posited-by|V3 interprets M5|figures-in|M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|rests-on|V4 expressed-in M3|figures-in|M3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M5 configures A5|aims-at|V1 withheld-by M4|figures-in|M4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|carries|V4 disclosed-in M5|figures-in|M5",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "ImportAdequation": {
+  "head": "between Import and Adequation — 140 modes · 5 × 7 roles · 4900 could be related · 7 related · 2 barred",
+  "state": "3 relatings theirs alone · 4 relatings the face's",
+  "stateAttr": "OPEN",
+  "own": "Import and Adequation's alone — no passage through Value-relevance or Institution or Meaning comes to it: V5 raised-in M3 encompasses M1 conditioned-by F2 · V3 interprets M5 precedes M2 corresponds-to F1 · V1 withheld-by M4 escapes M1 pictures F1",
+  "faces": [
+   "the face's — said between them and through Value-relevance too: V3 interprets M5 surpasses M5 discloses F4",
+   "the face's — said between them and through Institution too: V5 raised-in M3 has-claim-on M3 constitutes F3 · V4 expressed-in M3 entangled-with M3 constitutes F3",
+   "the face's — said between them and through Meaning too: V3 interprets M5 surpasses M5 discloses F4 · V5 raised-in M3 has-claim-on M3 constitutes F3 · V4 disclosed-in M5 attunes M5 discloses F4 · V4 expressed-in M3 entangled-with M3 constitutes F3"
+  ],
+  "bars": [
+   "barred by you: V1 withheld-by M4 ≡ M4 withholds F1 · withdraw",
+   "barred by you: V4 expressed-in M3 conditioned-by M1 conditioned-by F2 · withdraw"
+  ],
+  "views": [
+   "through Value-relevance: 5 passages",
+   "through Institution: 7 passages",
+   "through Meaning: 5 passages"
+  ],
+  "lights": [
+   "V4 disclosed-in M5 selected-by F5 selected-by V4 · F5 selected-by V4 delimited-by M1 states F1 — only in Value-relevance's light — through Value-relevance it would read: V4 disclosed-in M5 delimits M1 states F1 — no relating between Import and Adequation says so that is \"V4 disclosed-in M5 delimits M1 states F1\" that is not it",
+   "V4 expressed-in M3 rests-on M1 instituted-in A4 · M1 instituted-in A4 instituted-in M2 corresponds-to F1 — only in Institution's light — through Institution it would read: V4 expressed-in M3 underlies M2 corresponds-to F1 — no relating between Import and Adequation says so that is \"V4 expressed-in M3 underlies M2 corresponds-to F1\" that is not it"
+  ],
+  "tensions": [],
+  "differ": [
+   "your says differ across the faces: through Meaning you said \"surpasses\", through Meaning you said \"has-claim-on\", through Meaning you said \"attunes\", through Meaning you said \"entangled-with\""
+  ],
+  "unruled": [],
+  "readings": [
+   [
+    "V3 interprets M5|posited-form-of|F5 set-by V3|enables|M4 withholds F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4 disclosed-in M5|selected-by|F5 selected-by V4|delimited-by|M1 states F1",
+    "LIGHT",
+    "rule"
+   ],
+   [
+    "V3 interprets M5|disclosed-in|F4 surpassed-by V3|interpreted-by|M5 discloses F4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V3 interprets M5|interpreted-by|F5 selected-by V4|delimited-by|M1 states F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V1 withheld-by M4|deferred-by|F5 set-by V3|enables|M4 withholds F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V5 raised-in M3|raises|M3 performed-in A4|created-by|M3 constitutes F3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V5 raised-in M3|raises|M3 performed-in A4|articulated-in|M5 discloses F4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4 expressed-in M3|expresses|M3 performed-in A4|created-by|M3 constitutes F3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V4 expressed-in M3|expresses|M3 performed-in A4|articulated-in|M5 discloses F4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4 expressed-in M3|rests-on|M1 instituted-in A4|instituted-in|M2 corresponds-to F1",
+    "LIGHT",
+    "rule"
+   ],
+   [
+    "V4 disclosed-in M5|carries|M1 describes A1|known-by|M1 pictures F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4 disclosed-in M5|carries|M1 describes A1|known-by|M1 states F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V3 interprets M5|figures-in|M5|figured-by|M5 discloses F4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V5 raised-in M3|figures-in|M3|figured-by|M3 constitutes F3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V4 disclosed-in M5|figures-in|M5|figured-by|M5 discloses F4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "V1 withheld-by M4|figures-in|M4|figured-by|M4 withholds F1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "V4 expressed-in M3|figures-in|M3|figured-by|M3 constitutes F3",
+    "COMPOSED",
+    "verdict"
+   ]
+  ]
+ },
+ "ImportInstitution": {
+  "head": "between Institution and Import — 140 modes · 6 × 5 roles · 4200 could be related · 6 related · 2 barred",
+  "state": "3 relatings theirs alone · 3 relatings the face's",
+  "stateAttr": "OPEN",
+  "own": "Institution and Import's alone — no passage through Practical reason or Adequation or Meaning comes to it: M1 instituted-in A4 rests-on V4 expressed-in M3 · M5 configures A5 aims-at V1 withheld-by M4 · M1 describes A1 carries V4 disclosed-in M5",
+  "faces": [
+   "the face's — said between them and through Practical reason too: M3 performed-in A4 raises V5 raised-in M3",
+   "the face's — said between them and through Adequation too: M3 performed-in A4 raises V5 raised-in M3 · M3 performed-in A4 expresses V4 expressed-in M3",
+   "the face's — said between them and through Meaning too: M3 performed-in A4 raises V5 raised-in M3 · M3 performed-in A4 expresses V4 expressed-in M3 · M5 configures A5 posited-by V3 interprets M5"
+  ],
+  "bars": [
+   "barred by you: M5 configures A5 ≡ V4 disclosed-in M5 · withdraw",
+   "barred by you: M2 baptized-in A4 interpreted-by V3 interprets M5 · withdraw"
+  ],
+  "views": [
+   "through Practical reason: 5 passages",
+   "through Adequation: 7 passages",
+   "through Meaning: 4 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [
+   "your says differ across the faces: through Meaning you said \"raises\", through Meaning you said \"expresses\", through Meaning you said \"posited-by\""
+  ],
+  "unruled": [],
+  "readings": [
+   [
+    "M3 performed-in A4|raised-in|A4 raises V5|performed-in|V5 raised-in M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|institutes|A4 raises V5|performed-in|V5 raised-in M3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M5 configures A5|configured-by|A3 aims-at V1|guides|V4 disclosed-in M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|bears-on|A5 judged-by V5|exceeds|V1 withheld-by M4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|articulated-in|A2 warranted-by V4|warrants|V4 disclosed-in M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|known-by|M1 pictures F1|escapes|V1 withheld-by M4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 interprets A2|explained-by|M1 pictures F1|escapes|V1 withheld-by M4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|created-by|M3 constitutes F3|has-claim-on|V5 raised-in M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|created-by|M3 constitutes F3|entangled-with|V4 expressed-in M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|instituted-in|M2 corresponds-to F1|precedes|V3 interprets M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|articulated-in|M5 discloses F4|surpasses|V3 interprets M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|articulated-in|M5 discloses F4|attunes|V4 disclosed-in M5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|figured-by|M3|figures-in|V5 raised-in M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|figured-by|M3|figures-in|V4 expressed-in M3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 configures A5|figured-by|M5|figures-in|V3 interprets M5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 configures A5|figured-by|M5|figures-in|V4 disclosed-in M5",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "AdequationInstitution": {
+  "head": "between Adequation and Institution — 140 modes · 7 × 6 roles · 5880 could be related · 8 related · 7 barred",
+  "state": "2 relatings theirs alone · 6 relatings the face's",
+  "stateAttr": "OPEN",
+  "own": "Adequation and Institution's alone — no passage through Event or Import or Meaning comes to it: M2 corresponds-to F1 instituted-in M1 instituted-in A4 · M5 discloses F4 articulated-in M3 performed-in A4",
+  "faces": [
+   "the face's — said between them and through Event too: M1 pictures F1 known-by M1 describes A1 · M1 states F1 known-by M1 describes A1 · M3 constitutes F3 created-by M3 performed-in A4 · M4 withholds F1 divides M2 baptized-in A4",
+   "the face's — said between them and through Import too: M3 constitutes F3 created-by M3 performed-in A4",
+   "the face's — said between them and through Meaning too: M1 pictures F1 known-by M1 describes A1 · M1 pictures F1 explained-by M1 interprets A2 · M1 states F1 known-by M1 describes A1 · M1 states F1 explained-by M1 interprets A2 · M3 constitutes F3 created-by M3 performed-in A4"
+  ],
+  "bars": [
+   "barred by you: M1 pictures F1 ≡ M1 instituted-in A4 · withdraw",
+   "barred by you: M1 states F1 ≡ M1 instituted-in A4 · withdraw",
+   "barred by you: M1 conditioned-by F2 ≡ M1 describes A1 · withdraw",
+   "barred by you: M1 conditioned-by F2 ≡ M1 interprets A2 · withdraw",
+   "barred by you: M1 conditioned-by F2 ≡ M1 instituted-in A4 · withdraw",
+   "barred by you: M2 corresponds-to F1 ≡ M2 baptized-in A4 · withdraw",
+   "barred by you: M5 discloses F4 ≡ M5 configures A5 · withdraw"
+  ],
+  "views": [
+   "through Event: 12 passages",
+   "through Import: 8 passages",
+   "through Meaning: 12 passages"
+  ],
+  "lights": [
+   "M5 discloses F4 situated-in F4 situates A3 · F4 situates A3 situated-in M1 instituted-in A4 — only in Event's light — through Event it would read: M5 discloses F4 situates M1 instituted-in A4 — no relating between Adequation and Institution says so that is \"M5 discloses F4 situates M1 instituted-in A4\" that is not it",
+   "M1 states F1 told-in F3 receives A3 · F3 receives A3 emplots M5 configures A5 — only in Event's light — through Event it would read: M1 states F1 configured-by M5 configures A5 — no relating between Adequation and Institution says so that is \"M1 states F1 configured-by M5 configures A5\" that is not it",
+   "M1 conditioned-by F2 encompasses V5 raised-in M3 · V5 raised-in M3 raises M3 performed-in A4 — only in Import's light — through Import it would read: M1 conditioned-by F2 raised-in M3 performed-in A4 — no relating between Adequation and Institution says so that is \"M1 conditioned-by F2 raised-in M3 performed-in A4\" that is not it"
+  ],
+  "tensions": [],
+  "differ": [
+   "your says differ across the faces: through Meaning you said \"known-by\", through Meaning you said \"explained-by\", through Meaning you said \"known-by\", through Meaning you said \"explained-by\", through Meaning you said \"created-by\""
+  ],
+  "unruled": [],
+  "readings": [
+   [
+    "M1 pictures F1|described-by|F1 known-by A1|pictures|M1 describes A1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 states F1|described-by|F1 known-by A1|pictures|M1 describes A1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|performs|F3 created-by A4|constitutes|M3 performed-in A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|performs|F3 created-by A4|instituted-as|M1 instituted-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|performs|F3 created-by A4|instituted-as|M2 baptized-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M5 discloses F4|situated-in|F4 situates A3|situated-in|M1 instituted-in A4",
+    "LIGHT",
+    "rule"
+   ],
+   [
+    "M1 states F1|told-in|F3 receives A3|emplots|M5 configures A5",
+    "LIGHT",
+    "rule"
+   ],
+   [
+    "M1 states F1|told-in|F3 receives A3|outrun-by|M1 describes A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|presupposes|F1 known-by A1|pictures|M1 describes A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M4 withholds F1|deferred-by|F3 created-by A4|constitutes|M3 performed-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M4 withholds F1|deferred-by|F3 created-by A4|instituted-as|M1 instituted-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M4 withholds F1|deferred-by|F3 created-by A4|instituted-as|M2 baptized-in A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 discloses F4|surpasses|V3 interprets M5|posited-by|M5 configures A5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|has-claim-on|V5 raised-in M3|raises|M3 performed-in A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 discloses F4|attunes|V4 disclosed-in M5|carries|M1 describes A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|entangled-with|V4 expressed-in M3|expresses|M3 performed-in A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|entangled-with|V4 expressed-in M3|rests-on|M1 instituted-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 conditioned-by F2|encompasses|V5 raised-in M3|raises|M3 performed-in A4",
+    "LIGHT",
+    "rule"
+   ],
+   [
+    "M2 corresponds-to F1|precedes|V3 interprets M5|posited-by|M5 configures A5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 pictures F1|escapes|V1 withheld-by M4|aims-at|M5 configures A5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 pictures F1|figured-by|M1|figured-by|M1 describes A1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 pictures F1|figured-by|M1|figured-by|M1 interprets A2",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 pictures F1|figured-by|M1|figured-by|M1 instituted-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 states F1|figured-by|M1|figured-by|M1 describes A1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 states F1|figured-by|M1|figured-by|M1 interprets A2",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 states F1|figured-by|M1|figured-by|M1 instituted-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 conditioned-by F2|figured-by|M1|figured-by|M1 describes A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 conditioned-by F2|figured-by|M1|figured-by|M1 interprets A2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 conditioned-by F2|figured-by|M1|figured-by|M1 instituted-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M2 corresponds-to F1|figured-by|M2|figured-by|M2 baptized-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 constitutes F3|figured-by|M3|figured-by|M3 performed-in A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 discloses F4|figured-by|M5|figured-by|M5 configures A5",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "ActionEvent": {
+  "head": "between Action and Event — 140 modes · 5 × 6 roles · 4200 could be related · 6 related · 0 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Action and Event's alone — no passage through Practical reason or Institution comes to it: Imputation figures-in F1 presupposed-by A5 · Reason as cause figures-in F1 explained-by A2",
+  "faces": [
+   "the face's — said between them and through Practical reason too: Communicative act figures-in F3 created-by A4 · Deed as beginning figures-in F3 receives A3 · Deed as beginning figures-in F4 situates A3",
+   "the face's — said between them and through Institution too: Intention under a description figures-in F1 known-by A1 · Communicative act figures-in F3 created-by A4"
+  ],
+  "bars": [],
+  "views": [
+   "through Practical reason: 6 passages",
+   "through Institution: 7 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "A2|figured-by|A2 warranted-by V4|responsive-to|F1 known-by A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3|figured-by|A3 required-by V5|measured-against|F1 presupposed-by A5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A4|figured-by|A4 raises V5|answerable-to|F3 created-by A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A5|figured-by|A5 judged-by V5|subject-to|F3 receives A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3|figured-by|A3 enacts V3|sediments|F3 receives A3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A3|figured-by|A3 enacts V3|surpassed-by|F4 situates A3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A4|figured-by|M3 performed-in A4|constitutes|F3 created-by A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A1|figured-by|M1 describes A1|pictures|F1 known-by A1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A1|figured-by|M1 describes A1|outrun-by|F3 receives A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A4|figured-by|M1 instituted-in A4|instituted-as|F3 created-by A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A4|figured-by|M1 instituted-in A4|situated-in|F4 situates A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A5|figured-by|M5 configures A5|emplots|F3 receives A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A4|figured-by|M2 baptized-in A4|instituted-as|F3 created-by A4",
+    "COMPOSED",
+    "verdict"
+   ]
+  ]
+ },
+ "ActionPractical reason": {
+  "head": "between Practical reason and Action — 140 modes · 7 × 5 roles · 4900 could be related · 7 related · 0 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Practical reason and Action's alone — no passage through Event or Institution comes to it: A2 warranted-by V4 figured-by Reason as cause · A3 required-by V5 figured-by Deed as beginning · A3 aims-at V1 figured-by Deed as beginning · A3 oriented-by V2 figured-by Deed as beginning · A5 judged-by V5 figured-by Imputation",
+  "faces": [
+   "the face's — said between them and through Event too: A4 raises V5 figured-by Communicative act · A3 enacts V3 figured-by Deed as beginning",
+   "the face's — said between them and through Institution too: A4 raises V5 figured-by Communicative act"
+  ],
+  "bars": [],
+  "views": [
+   "through Event: 6 passages",
+   "through Institution: 5 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "A4 raises V5|answerable-to|F3 created-by A4|figures-in|A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|sediments|F3 receives A3|figures-in|A3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|surpassed-by|F4 situates A3|figures-in|A3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A2 warranted-by V4|responsive-to|F1 known-by A1|figures-in|A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 required-by V5|measured-against|F1 presupposed-by A5|figures-in|A5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A5 judged-by V5|subject-to|F3 receives A3|figures-in|A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A4 raises V5|raised-in|M3 performed-in A4|figured-by|A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A4 raises V5|institutes|M1 instituted-in A4|figured-by|A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A3 aims-at V1|configured-by|M5 configures A5|figured-by|A5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A5 judged-by V5|bears-on|M1 describes A1|figured-by|A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A2 warranted-by V4|articulated-in|M1 instituted-in A4|figured-by|A4",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "ActionInstitution": {
+  "head": "between Institution and Action — 140 modes · 6 × 5 roles · 4200 could be related · 6 related · 0 barred",
+  "state": "nothing against it — no bar pressed, no say differs, the views agree on what is theirs alone",
+  "stateAttr": "OPEN",
+  "own": "Institution and Action's alone — no passage through Practical reason or Event comes to it: M1 interprets A2 figured-by Reason as cause · M5 configures A5 figured-by Imputation",
+  "faces": [
+   "the face's — said between them and through Practical reason too: M3 performed-in A4 figured-by Communicative act · M1 instituted-in A4 figured-by Communicative act",
+   "the face's — said between them and through Event too: M3 performed-in A4 figured-by Communicative act · M1 describes A1 figured-by Intention under a description · M1 instituted-in A4 figured-by Communicative act · M2 baptized-in A4 figured-by Communicative act"
+  ],
+  "bars": [],
+  "views": [
+   "through Practical reason: 5 passages",
+   "through Event: 7 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [],
+  "unruled": [],
+  "readings": [
+   [
+    "M3 performed-in A4|raised-in|A4 raises V5|figured-by|A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|institutes|A4 raises V5|figured-by|A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 configures A5|configured-by|A3 aims-at V1|figured-by|A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|bears-on|A5 judged-by V5|figured-by|A5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|articulated-in|A2 warranted-by V4|figured-by|A2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|constitutes|F3 created-by A4|figures-in|A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|pictures|F1 known-by A1|figures-in|A1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|instituted-as|F3 created-by A4|figures-in|A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M2 baptized-in A4|instituted-as|F3 created-by A4|figures-in|A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 configures A5|emplots|F3 receives A3|figures-in|A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|situated-in|F4 situates A3|figures-in|A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|outrun-by|F3 receives A3|figures-in|A3",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "EventPractical reason": {
+  "head": "between Event and Practical reason — 140 modes · 6 × 7 roles · 5880 could be related · 6 related · 9 barred",
+  "state": "3 relatings theirs alone · 3 relatings the face's",
+  "stateAttr": "OPEN",
+  "own": "Event and Practical reason's alone — no passage through Value-relevance or Institution or Action comes to it: F1 known-by A1 responsive-to A2 warranted-by V4 · F1 presupposed-by A5 measured-against A3 required-by V5 · F3 receives A3 subject-to A5 judged-by V5",
+  "faces": [
+   "the face's — said between them and through Value-relevance too: F4 situates A3 surpassed-by A3 enacts V3",
+   "the face's — said between them and through Institution too: F3 created-by A4 answerable-to A4 raises V5",
+   "the face's — said between them and through Action too: F3 created-by A4 answerable-to A4 raises V5 · F3 receives A3 sediments A3 enacts V3 · F4 situates A3 surpassed-by A3 enacts V3"
+  ],
+  "bars": [
+   "barred by you: F3 receives A3 ≡ A3 required-by V5 · withdraw",
+   "barred by you: F3 receives A3 ≡ A3 aims-at V1 · withdraw",
+   "barred by you: F3 receives A3 ≡ A3 oriented-by V2 · withdraw",
+   "barred by you: F4 situates A3 ≡ A3 required-by V5 · withdraw",
+   "barred by you: F4 situates A3 ≡ A3 aims-at V1 · withdraw",
+   "barred by you: F4 situates A3 ≡ A3 oriented-by V2 · withdraw",
+   "barred by you: F1 presupposed-by A5 ≡ A5 judged-by V5 · withdraw",
+   "barred by you: F1 explained-by A2 ≡ A2 warranted-by V4 · withdraw",
+   "barred by you: F3 created-by A4 oriented-by A3 oriented-by V2 · withdraw"
+  ],
+  "views": [
+   "through Value-relevance: 6 passages",
+   "through Institution: 8 passages",
+   "through Action: 11 passages"
+  ],
+  "lights": [
+   "F4 situates A3 enacted-in F4 surpassed-by V3 · F4 surpassed-by V3 arises-in A2 warranted-by V4 — only in Value-relevance's light — through Value-relevance it would read: F4 situates A3 gives-rise-to A2 warranted-by V4 — no relating between Event and Practical reason says so that is \"F4 situates A3 gives-rise-to A2 warranted-by V4\" that is not it",
+   "F1 known-by A1 pictures M1 describes A1 · M1 describes A1 bears-on A5 judged-by V5 — only in Institution's light — through Institution it would read: F1 known-by A1 borne-on-by A5 judged-by V5 — no relating between Event and Practical reason says so that is \"F1 known-by A1 borne-on-by A5 judged-by V5\" that is not it"
+  ],
+  "tensions": [],
+  "differ": [
+   "your says differ across the faces: through Action you said \"answerable-to\", through Action you said \"sediments\", through Action you said \"surpassed-by\""
+  ],
+  "unruled": [],
+  "readings": [
+   [
+    "F4 situates A3|enacted-in|F4 surpassed-by V3|situated-in|A3 enacts V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F4 situates A3|enacted-in|F4 surpassed-by V3|arises-in|A2 warranted-by V4",
+    "LIGHT",
+    "rule"
+   ],
+   [
+    "F3 created-by A4|performed-as|F5 set-by V3|makes|A3 enacts V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 presupposed-by A5|presupposed-by|F4 surpassed-by V3|situated-in|A3 enacts V3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 presupposed-by A5|presupposed-by|F4 surpassed-by V3|arises-in|A2 warranted-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|ranges-over|F5 selected-by V4|presupposes|A3 oriented-by V2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 created-by A4|constitutes|M3 performed-in A4|raised-in|A4 raises V5",
+    "COMPOSED",
+    "rule"
+   ],
+   [
+    "F1 known-by A1|pictures|M1 describes A1|bears-on|A5 judged-by V5",
+    "LIGHT",
+    "rule"
+   ],
+   [
+    "F3 created-by A4|instituted-as|M1 instituted-in A4|institutes|A4 raises V5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3 created-by A4|instituted-as|M1 instituted-in A4|articulated-in|A2 warranted-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|emplots|M5 configures A5|configured-by|A3 aims-at V1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 situates A3|situated-in|M1 instituted-in A4|institutes|A4 raises V5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 situates A3|situated-in|M1 instituted-in A4|articulated-in|A2 warranted-by V4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|outrun-by|M1 describes A1|bears-on|A5 judged-by V5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 created-by A4|figures-in|A4|figured-by|A4 raises V5",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|figures-in|A3|figured-by|A3 required-by V5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|figures-in|A3|figured-by|A3 aims-at V1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|figures-in|A3|figured-by|A3 oriented-by V2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F3 receives A3|figures-in|A3|figured-by|A3 enacts V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F4 situates A3|figures-in|A3|figured-by|A3 required-by V5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 situates A3|figures-in|A3|figured-by|A3 aims-at V1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 situates A3|figures-in|A3|figured-by|A3 oriented-by V2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F4 situates A3|figures-in|A3|figured-by|A3 enacts V3",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "F1 presupposed-by A5|figures-in|A5|figured-by|A5 judged-by V5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "F1 explained-by A2|figures-in|A2|figured-by|A2 warranted-by V4",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ },
+ "EventInstitution": {
+  "head": "between Institution and Event — 140 modes · 6 × 6 roles · 5040 could be related · 7 related · 2 barred",
+  "state": "3 relatings theirs alone · 4 relatings the face's",
+  "stateAttr": "OPEN",
+  "own": "Institution and Event's alone — no passage through Adequation or Practical reason or Action comes to it: M5 configures A5 emplots F3 receives A3 · M1 instituted-in A4 situated-in F4 situates A3 · M1 describes A1 outrun-by F3 receives A3",
+  "faces": [
+   "the face's — said between them and through Adequation too: M3 performed-in A4 constitutes F3 created-by A4 · M1 describes A1 pictures F1 known-by A1",
+   "the face's — said between them and through Practical reason too: M3 performed-in A4 constitutes F3 created-by A4 · M1 instituted-in A4 instituted-as F3 created-by A4",
+   "the face's — said between them and through Action too: M3 performed-in A4 constitutes F3 created-by A4 · M1 describes A1 pictures F1 known-by A1 · M1 instituted-in A4 instituted-as F3 created-by A4 · M2 baptized-in A4 instituted-as F3 created-by A4"
+  ],
+  "bars": [
+   "barred by you: M1 interprets A2 pictures F1 explained-by A2 · withdraw",
+   "barred by you: M5 configures A5 ≡ F1 presupposed-by A5 · withdraw"
+  ],
+  "views": [
+   "through Adequation: 15 passages",
+   "through Practical reason: 4 passages",
+   "through Action: 6 passages"
+  ],
+  "lights": [],
+  "tensions": [],
+  "differ": [
+   "your says differ across the faces: through Action you said \"constitutes\", through Action you said \"pictures\", through Action you said \"instituted-as\", through Action you said \"instituted-as\""
+  ],
+  "unruled": [],
+  "readings": [
+   [
+    "M1 describes A1|known-by|M1 pictures F1|described-by|F1 known-by A1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|known-by|M1 pictures F1|interpreted-by|F1 explained-by A2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 interprets A2|explained-by|M1 pictures F1|described-by|F1 known-by A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 interprets A2|explained-by|M1 pictures F1|interpreted-by|F1 explained-by A2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|known-by|M1 states F1|described-by|F1 known-by A1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|known-by|M1 states F1|interpreted-by|F1 explained-by A2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|known-by|M1 states F1|told-in|F3 receives A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 interprets A2|explained-by|M1 states F1|described-by|F1 known-by A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 interprets A2|explained-by|M1 states F1|interpreted-by|F1 explained-by A2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 interprets A2|explained-by|M1 states F1|told-in|F3 receives A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|created-by|M3 constitutes F3|performs|F3 created-by A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|created-by|M3 constitutes F3|presupposes|F1 known-by A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|articulated-in|M5 discloses F4|situated-in|F4 situates A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|articulated-in|M5 discloses F4|rests-on|F1 explained-by A2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M2 baptized-in A4|divides|M4 withholds F1|deferred-by|F3 created-by A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|raised-in|A4 raises V5|answerable-to|F3 created-by A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|institutes|A4 raises V5|answerable-to|F3 created-by A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|bears-on|A5 judged-by V5|subject-to|F3 receives A3",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|articulated-in|A2 warranted-by V4|responsive-to|F1 known-by A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M3 performed-in A4|figured-by|A4|figures-in|F3 created-by A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 describes A1|figured-by|A1|figures-in|F1 known-by A1",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M1 interprets A2|figured-by|A2|figures-in|F1 explained-by A2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M1 instituted-in A4|figured-by|A4|figures-in|F3 created-by A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "M5 configures A5|figured-by|A5|figures-in|F1 presupposed-by A5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "M2 baptized-in A4|figured-by|A4|figures-in|F3 created-by A4",
+    "COMPOSED",
+    "verdict"
+   ]
+  ]
+ },
+ "Practical reasonInstitution": {
+  "head": "between Practical reason and Institution — 140 modes · 7 × 6 roles · 5880 could be related · 5 related · 4 barred",
+  "state": "3 relatings theirs alone · 2 relatings the face's",
+  "stateAttr": "OPEN",
+  "own": "Practical reason and Institution's alone — no passage through Import or Event or Action comes to it: A3 aims-at V1 configured-by M5 configures A5 · A5 judged-by V5 bears-on M1 describes A1 · A2 warranted-by V4 articulated-in M1 instituted-in A4",
+  "faces": [
+   "the face's — said between them and through Import too: A4 raises V5 raised-in M3 performed-in A4",
+   "the face's — said between them and through Event too: A4 raises V5 raised-in M3 performed-in A4 · A4 raises V5 institutes M1 instituted-in A4",
+   "the face's — said between them and through Action too: A4 raises V5 raised-in M3 performed-in A4 · A4 raises V5 institutes M1 instituted-in A4"
+  ],
+  "bars": [
+   "barred by you: A2 warranted-by V4 ≡ M1 interprets A2 · withdraw",
+   "barred by you: A4 raises V5 ≡ M2 baptized-in A4 · withdraw",
+   "barred by you: A5 judged-by V5 ≡ M5 configures A5 · withdraw",
+   "barred by you: A3 enacts V3 described-by M1 describes A1 · withdraw"
+  ],
+  "views": [
+   "through Import: 7 passages",
+   "through Event: 9 passages",
+   "through Action: 5 passages"
+  ],
+  "lights": [
+   "A2 warranted-by V4 warrants V4 disclosed-in M5 · V4 disclosed-in M5 carries M1 describes A1 — only in Import's light — through Import it would read: A2 warranted-by V4 carried-by M1 describes A1 — no relating between Practical reason and Institution says so that is \"A2 warranted-by V4 carried-by M1 describes A1\" that is not it",
+   "A3 enacts V3 sediments F3 receives A3 · F3 receives A3 emplots M5 configures A5 — only in Event's light — through Event it would read: A3 enacts V3 emplotted-in M5 configures A5 — no relating between Practical reason and Institution says so that is \"A3 enacts V3 emplotted-in M5 configures A5\" that is not it"
+  ],
+  "tensions": [],
+  "differ": [
+   "your says differ across the faces: through Action you said \"raised-in\", through Action you said \"institutes\""
+  ],
+  "unruled": [],
+  "readings": [
+   [
+    "A3 enacts V3|enacted-in|V3 interprets M5|posited-by|M5 configures A5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A4 raises V5|performed-in|V5 raised-in M3|raises|M3 performed-in A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A2 warranted-by V4|warrants|V4 disclosed-in M5|carries|M1 describes A1",
+    "LIGHT",
+    "rule"
+   ],
+   [
+    "A3 aims-at V1|guides|V4 disclosed-in M5|carries|M1 describes A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A5 judged-by V5|exceeds|V1 withheld-by M4|aims-at|M5 configures A5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 oriented-by V2|steers|V4 expressed-in M3|expresses|M3 performed-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 oriented-by V2|steers|V4 expressed-in M3|rests-on|M1 instituted-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A4 raises V5|answerable-to|F3 created-by A4|constitutes|M3 performed-in A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A4 raises V5|answerable-to|F3 created-by A4|instituted-as|M1 instituted-in A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A4 raises V5|answerable-to|F3 created-by A4|instituted-as|M2 baptized-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|sediments|F3 receives A3|emplots|M5 configures A5",
+    "LIGHT",
+    "rule"
+   ],
+   [
+    "A3 enacts V3|sediments|F3 receives A3|outrun-by|M1 describes A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A3 enacts V3|surpassed-by|F4 situates A3|situated-in|M1 instituted-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A2 warranted-by V4|responsive-to|F1 known-by A1|pictures|M1 describes A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A5 judged-by V5|subject-to|F3 receives A3|emplots|M5 configures A5",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A5 judged-by V5|subject-to|F3 receives A3|outrun-by|M1 describes A1",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A2 warranted-by V4|figured-by|A2|figured-by|M1 interprets A2",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A4 raises V5|figured-by|A4|figured-by|M3 performed-in A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A4 raises V5|figured-by|A4|figured-by|M1 instituted-in A4",
+    "COMPOSED",
+    "verdict"
+   ],
+   [
+    "A4 raises V5|figured-by|A4|figured-by|M2 baptized-in A4",
+    "NOT",
+    "verdict"
+   ],
+   [
+    "A5 judged-by V5|figured-by|A5|figured-by|M5 configures A5",
+    "NOT",
+    "verdict"
+   ]
+  ]
+ }
+}
