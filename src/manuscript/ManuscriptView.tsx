@@ -3493,8 +3493,11 @@ export default function ManuscriptView() {
       resolveAbsentLabel,
       parentShape ? sourceOrdinalByShape.get(parentShape.id) ?? null : null,
       sourceActWord,
+      // MODES-2 (e): a placed lift's source read from the record (its genealogy's parent, resolved against the sheet's shapes), never
+      // parsed out of its name
+      (id) => shapeById.get(id) ?? null,
     );
-  }, [selected, written, resolveAbsentLabel, sourceOrdinalByShape]);
+  }, [selected, written, resolveAbsentLabel, sourceOrdinalByShape, shapeById]);
   // THE RING ANCHOR RESOLVER — the TOTAL verdict for the selected specimen:
   // anchors (any rendering mode) or a DECLARED refusal the card speaks.
   const ringResolution = useMemo(() => {

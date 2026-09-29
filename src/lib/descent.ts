@@ -46,7 +46,7 @@ export interface Medium {
   child: InstanceSpace | null; // the medium's own child (D4) — the person's relatings on it
   sorting: Sorting | null; // B3's sorting of the person's relatings on it (its views are the faces through it)
   lights: DerivedLight[]; // the derivable links, light never relatings
-  state: 'UNDETECTED' | 'VACUOUS' | 'EXHAUSTED' | 'POCKET' | 'OPEN' | 'NO-SPACE';
+  state: Sorting['state'] | 'NO-SPACE'; // the sorting's state at §8's precedence, or NO-SPACE when a corner has no space
 }
 
 const parentsOf = (shape: Shape, v: VertexId): VertexId[] => {

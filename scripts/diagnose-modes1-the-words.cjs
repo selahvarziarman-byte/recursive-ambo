@@ -51,6 +51,7 @@ const { parseWorkspaceImport } = req('src/lib/workspacePersistence.ts');
 const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
 const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
 const { namedUnderOf } = req('src/components/MediumBlock.tsx');
+const { withVerdict } = req('src/lib/sorting.ts');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
 
@@ -196,6 +197,21 @@ const pDtext = (r3.lines('data-medium-passage').find(([k]) => k === 'F2|carries|
 check('§c S5 (a) a passage in two modes with the walk (through D) reads `F2 carries x · x resists r3 — not yet said` and offers `that is not it` ONLY — no `that is "F2 ≡ r3"` (the machine never fills the word); the rule gesture `name the two in a row: carries, then resists =` beside it', pDtext.startsWith('F2 carries x · x resists r3 — not yet said') && !/that is "/.test(pDtext) && / that is not it$/.test(pDtext) && r3.block.includes('data-medium-rule-gesture="carries|resists"') && /name the two in a row: carries, then resists =/.test(r3.text), pDtext);
 check('§c S4 THE FALSIFIER (the mothership\'s interim ruling): through C both legs run against the walk — the passage prints each leg AS HE SAID IT, `Φ3 carries F2 · r3 resists Φ3 — not yet said` (never `F2 carries Φ3 · Φ3 resists r3`), marked against, and offers no `that is` (`that is not it` only)', pC.length === 1 && /data-medium-passage-against="true"/.test(pC[0]) && /data-medium-passage-reading="UNRULED"/.test(pC[0]) && pCtext.startsWith('Φ3 carries F2 · r3 resists Φ3 — not yet said') && !/that is "/.test(pCtext) && / that is not it$/.test(pCtext) && !/F2 carries Φ3/.test(r3.text), pCtext);
 check('§c the unruled count per view: `1 passage through C you have not said what it comes to` and the same through D', r3.lines('data-medium-unruled').map(([, s]) => s).join(' | ') === '1 passage through C you have not said what it comes to | 1 passage through D you have not said what it comes to', J(r3.lines('data-medium-unruled')));
+check('§c MODES-2 (d) — the site\'s ONE token at §8\'s precedence: with a passage unsaid the site is UNRULED (her §3\'s per-view line says which), and the state line is the counts, never `nothing against it`', r3.attr('data-medium-state') === 'UNRULED' && /^\d+ relatings theirs alone · \d+ relatings? the face's$/.test(r3.lines('data-medium-state-line')[0][1]), J([r3.attr('data-medium-state'), r3.lines('data-medium-state-line')]));
+// 12:19 (ii): a composed say stored on an against-path BEFORE the interim ruling (the store refuses a new one; here written straight onto the face)
+{
+  const f = cur().faces.find((ff) => ff.vertexIds.length === 3 && ['A', 'B', 'C'].every((l) => ff.vertexIds.includes(byLabel(cur(), l))));
+  const base = [f.vertexIds.indexOf(byLabel(cur(), 'A')), f.vertexIds.indexOf(byLabel(cur(), 'B'))];
+  const shape = cur();
+  useGeometryStore.setState({ shapes: { ...S().shapes, [shape.id]: { ...shape, faces: shape.faces.map((ff) => (ff.id === f.id ? withVerdict(ff, { base, x: 'F2', w: 'carries', z: 'Φ3', w2: 'resists', y: 'r3', w3: 'carries', verdict: 'composed' }) : ff)) } } });
+  const rR = renderAt(cur(), AB.id);
+  const pR = (rR.lines('data-medium-passage').find(([k]) => k === 'F2|carries|Φ3|resists|r3') || [])[1] || '';
+  const pRattrs = (rR.block.match(/<span[^>]*data-medium-passage="F2\|carries\|Φ3\|resists\|r3"[^>]*>/) || [''])[0];
+  check('§c 12:19 (ii): a composed say he stored on an against-path before the ruling is PRINTED with its withdraw — `Φ3 carries F2 · r3 resists Φ3 — not yet said you said: that is "F2 carries r3" withdraw what you said` — read as `not yet said` (no composite), no `that is` hand, marked recorded', pR === 'Φ3 carries F2 · r3 resists Φ3 — not yet said you said: that is "F2 carries r3" withdraw what you said' && /data-medium-passage-reading="UNRULED"/.test(pRattrs) && /data-medium-said-recorded="true"/.test(rR.block) && !/data-medium-say="/.test((rR.block.match(/<span[^>]*data-medium-passage="F2\|carries\|Φ3\|resists\|r3"[\s\S]*?withdraw what you said<\/button>/) || [''])[0]), pR);
+  S().withdrawVerdict(f.id, { base, x: 'F2', w: 'carries', z: 'Φ3', w2: 'resists', y: 'r3' });
+  const rW = renderAt(cur(), AB.id);
+  check('§c … and withdrawn it is gone: the passage reads `not yet said` with `that is not it` only', ((rW.lines('data-medium-passage').find(([k]) => k === 'F2|carries|Φ3|resists|r3') || [])[1] || '').endsWith('— not yet said that is not it'), J(rW.lines('data-medium-passage').find(([k]) => k === 'F2|carries|Φ3|resists|r3')));
+}
 S().nameRule('carries', 'resists', 'carries');
 const r4 = renderAt(cur(), AB.id);
 const pD4 = (r4.lines('data-medium-passage').find(([k]) => k === 'F2|carries|x|resists|r3') || [])[1] || '';
@@ -253,13 +269,13 @@ give('A', 'B', { F9: 'r1' }); give('A', 'C', { F9: 'Φ1' }); give('C', 'B', { Φ
 S().applyAmboDissectionToCurrent();
 const Gx = cur(); const ABx = midOf(Gx, byLabel(Gx, 'A'), byLabel(Gx, 'B'));
 const x = renderAt(Gx, ABx.id);
-check('§d CLOSED (a finding, never a goal): the one relating is the face\'s through C — `all the face\'s — nothing theirs alone, nothing only in a corner\'s light`; R4: the own line reads `nothing theirs alone — its one relating is also said through C or D`', x.lines('data-medium-state-line')[0][1] === "all the face's — nothing theirs alone, nothing only in a corner's light" && x.attr('data-medium-closed') === 'true' && x.lines('data-medium-own')[0][1] === 'nothing theirs alone — its one relating is also said through C or D', J({ state: x.lines('data-medium-state-line'), own: x.lines('data-medium-own') }));
+check('§d CLOSED (a finding, never a goal): the one relating is the face\'s through C — `all the face\'s — nothing theirs alone, nothing only in a corner\'s light`; R4: the own line reads `nothing theirs alone — its one relating is also said through C or D`', x.lines('data-medium-state-line')[0][1] === "all the face's — nothing theirs alone, nothing only in a corner's light" && x.attr('data-medium-closed') === 'true' && x.attr('data-medium-state') === 'CLOSED' && x.lines('data-medium-own')[0][1] === 'nothing theirs alone — its one relating is also said through C or D', J({ state: x.lines('data-medium-state-line'), own: x.lines('data-medium-own') }));
 reset(seeded4());
 give('A', 'B', { F9: 'r1', F7: 'r0' }); give('A', 'C', { F9: 'Φ1' }); give('C', 'B', { Φ1: 'r1' });
 S().applyAmboDissectionToCurrent();
 const Gc = cur(); const ABc = midOf(Gc, byLabel(Gc, 'A'), byLabel(Gc, 'B'));
 const c = renderAt(Gc, ABc.id);
-check('§d COHERENT (M4 §2 — its two positive facts marked): one theirs alone and one the face\'s, the site looked at, nothing unsaid — `nothing against it — 1 passage through C, none unsaid; no bar pressed, no say differs, the views agree on what is theirs alone` (the count naming the corners that hold passages; no `no route you refused` — M4 corrected, ADR §9.11)', c.lines('data-medium-state-line')[0][1] === 'nothing against it — 1 passage through C, none unsaid; no bar pressed, no say differs, the views agree on what is theirs alone' && c.attr('data-medium-coherent') === 'true', J(c.lines('data-medium-state-line')));
+check('§d COHERENT (M4 §2 — its two positive facts marked): one theirs alone and one the face\'s, the site looked at, nothing unsaid — `nothing against it — 1 passage through C, none unsaid; no bar pressed, no say differs, the views agree on what is theirs alone` (the count naming the corners that hold passages; no `no route you refused` — M4 corrected, ADR §9.11)', c.lines('data-medium-state-line')[0][1] === 'nothing against it — 1 passage through C, none unsaid; no bar pressed, no say differs, the views agree on what is theirs alone' && c.attr('data-medium-coherent') === 'true' && c.attr('data-medium-state') === 'COHERENT', J(c.lines('data-medium-state-line')));
 reset(seeded4());
 give('A', 'B', { F9: 'r1' });
 S().applyAmboDissectionToCurrent();
@@ -280,7 +296,7 @@ give('A', 'B', { F9: 'r1', F7: 'r0' }); give('A', 'C', { F9: 'Φ1' }); give('C',
 S().applyAmboDissectionToCurrent();
 const Gp = cur(); const ABp = midOf(Gp, byLabel(Gp, 'A'), byLabel(Gp, 'B'));
 const p = renderAt(Gp, ABp.id);
-check('§d THE POCKET: through C, F7 ≡ r0 is theirs alone; through D, F9 ≡ r1 is — `the views leave different things alone — … — nothing is theirs alone under both`', /^the views leave different things alone — .* — nothing is theirs alone under both$/.test(p.lines('data-medium-state-line')[0][1]) && p.attr('data-medium-state') === 'POCKET', p.lines('data-medium-state-line')[0][1]);
+check('§d THE POCKET in her shape (MODES-2 · M1 (d), never a first): the head `the views leave different things alone — nothing is theirs alone under every view`, then ONE LINE PER RELATING some view leaves alone — `F9 ≡ r1 — theirs alone through D · the face\'s through C` · `F7 ≡ r0 — theirs alone through C · the face\'s through D`', p.lines('data-medium-state-line')[0][1] === 'the views leave different things alone — nothing is theirs alone under every view' && p.attr('data-medium-state') === 'POCKET' && J(p.lines('data-medium-pocket-line').map(([, s]) => s)) === J(["F9 ≡ r1 — theirs alone through D · the face's through C", "F7 ≡ r0 — theirs alone through C · the face's through D"]), J([p.lines('data-medium-state-line'), p.lines('data-medium-pocket-line')]));
 
 // ═══ §e the name kept with its state ═══
 console.log('\n----- §e the name kept with the state it was given under (D11); R3 -----');

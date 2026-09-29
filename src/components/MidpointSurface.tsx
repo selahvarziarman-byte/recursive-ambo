@@ -115,6 +115,7 @@ import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName'
 import { edgeBetween, faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
 import { barsOn, instancesOn, IS } from '../lib/relatings';
 import { sortingOf } from '../lib/sorting';
+import { childSpaceOf } from '../lib/instanceSpace';
 import { MediumBlock } from './MediumBlock';
 
 /** MODES-1 · B3 — the face reading reads the IS-instances through the one reader, never the plain record (defect 1) */
@@ -398,8 +399,12 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // C-8 item 5 — the record's HOME (the edge, its kind, its generation) and the SITE (where the person stands), derived from what made them
   const edgeGen = Math.max(generationOf(shape, site.a), generationOf(shape, site.b));
   const siteGen = generationOf(shape, site.siteId);
-  // the born room: what each side still holds beyond the solid's identity and the person's pairs
-  const bornRoom = { a: castA.roles.length - composed.roles.length - roles.length, b: castB.roles.length - composed.roles.length - roles.length };
+  // MODES-2 (a): the born-room sentence counts what the columns hold — each corner's CHILD (its relatings, `childSpaceOf`: the same reader
+  // the block's head counts with, so one card carries one count, §149) — and what is related here (every mode, the head's own word);
+  // at a corner site the seed is the carried side, whichever corner is stored first
+  const childCounts = useMemo(() => ({ a: childSpaceOf(shape, site.a)?.roles.length ?? 0, b: childSpaceOf(shape, site.b)?.roles.length ?? 0 }), [shape, site.a, site.b]);
+  const relatedHere = useMemo(() => (sourceEdge ? instancesOn(sourceEdge).length : 0), [sourceEdge]);
+  const seedFirst = shape.vertices[site.a]?.createdBy.operation === 'seed';
   // C-7d item 1 — the mapped midpoint's own space, the same presentation a corner gets
   // C-7h: the own column is the resolver's own amalgam (named by its rule) — the surface never re-glues (one derivation, never two readers agreeing)
   const own = useMemo(() => (M && state === 'glued' && edgeInfo ? edgeInfo.glued : null), [M, state, edgeInfo]);
@@ -714,8 +719,13 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
             ? kind === 'seed'
               ? `${roles.length} ${roles.length === 1 ? 'role pair' : 'role pairs'} · ${types.length} ${types.length === 1 ? 'word pair' : 'word pairs'} — yours`
               : kind === 'corner'
-                ? `${la}'s ${composed.roles.length} roles and ${composed.words.length} words carried into ${lb} as one — composed, not yours (their points hollow) · a corner edge holds no born room: nothing here is yours to pair`
-                : `corner ${cornersAll}'s ${composed.roles.length} roles and ${composed.words.length} words stand on both sides as one — composed, not yours (their points hollow) · the born room: ${bornRoom.a} roles of ${la} and ${bornRoom.b} of ${lb} together, as two${roles.length || types.length ? ` · ${roles.length} ${roles.length === 1 ? 'role pair' : 'role pairs'} · ${types.length} ${types.length === 1 ? 'word pair' : 'word pairs'} — yours, born here` : ' · no pair of yours yet'}`
+                // MODES-2 (a) + (c), the designer's M1 words: the SEED is what is carried, and it comes first whichever corner is first; the clause
+                // `a corner edge holds no born room: nothing here is yours to pair` is STRUCK with no replacement (under D2 the corner site is a medium
+                // like any other — its head, its two columns and the gesture line say what it is; the store takes the act)
+                ? `${seedFirst ? la : lb}'s ${composed.roles.length} roles and ${composed.words.length} words carried into ${seedFirst ? lb : la} as one — composed, not yours (their points hollow)`
+                // MODES-2 (a), her §1 words: the born-room sentence counts WHAT THE COLUMNS HOLD — the children's relatings (one reader with the
+                // head's count, `childSpaceOf`), never the parents' leftovers; the tail counts what is related here, in the head's own word
+                : `corner ${cornersAll}'s ${composed.roles.length} roles and ${composed.words.length} words stand on both sides as one — composed, not yours (their points hollow) · the born room: ${la}'s ${childCounts.a} relatings and ${lb}'s ${childCounts.b}, side by side · ${relatedHere ? `${relatedHere} related` : 'none related yet'}`
             : `the record on this edge contradicts itself${kind === 'medial' ? ' under the identity the solid fixed' : ''} — a pair given before this surface; withdraw a half`}
       </div>
       {/* §149 rider — the role half's pick words in their own reserved line, one line high, never wrapping: appended to the sentence

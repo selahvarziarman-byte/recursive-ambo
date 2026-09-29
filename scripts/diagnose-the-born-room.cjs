@@ -487,7 +487,7 @@ check('§4 ★★ THE SURFACE AT ABAC ON THE LAWFUL PATH: the unfolding PRESENT 
     const quiet = groups('data-midpoint-composed="').every((g) => !/data-inside-origin/.test(g) && /data-inside-solid="true"/.test(g)) && groups('data-midpoint-own-role="composed"').every((g) => !/data-inside-origin/.test(g) && /data-inside-solid="true"/.test(g));
     note(`ABAC: composed points ${composedPts.length} · own column composed ${ownComposed} · the word composed on the surface ${(text.match(/composed/g) || []).length} time(s) · the sentence: ${(text.match(/corner A's[^·]*·[^·]*·[^·]*/) || [''])[0]}`);
     return countOf(html, 'data-midpoint-surface') === 1 && composedPts.length === 2 * flow.roles.length && composedPts.every((c) => c === 'A') && countOf(html, 'data-midpoint-line') === 0 && quiet &&
-      /corner A's 14 roles and 11 words stand on both sides as one — composed, not yours \(their points hollow\) · the born room: \d+ roles of A[BC] and \d+ of A[BC] together, as two · no pair of yours yet/.test(text) && (text.match(/composed/g) || []).length === 1 &&
+      /corner A's 14 roles and 11 words stand on both sides as one — composed, not yours \(their points hollow\) · the born room: A[BC]'s \d+ relatings and A[BC]'s \d+, side by side · none related yet/.test(text) && (text.match(/composed/g) || []).length === 1 &&
       /the record's home: A[BC]–A[BC], a medial edge \(generation 1\) · this site: ABAC, generation 2 — a pair beyond the shared corner is born here, yours/.test(text) && ownComposed === flow.roles.length && !/data-midpoint-composed="[^"]*"[^>]*class="cursor-pointer"/.test(html);
   })(), visibleText(surfaceAt(ABAC)).slice(0, 500));
 check('§4 ★★ `≡` IS THE PERSON\'S ACT AND ONLY THAT (C-7h item 1, the designer\'s live drive: nine composed words wore `≡`, `r0 ≡ F1 ≡ F1` joined a role to itself): at ABAC every role\'s and word\'s name is a chain of DISTINCT seeds joined by `≡` — no seed printed twice (one reached through two parents is printed once), every `≡` joining two different seeds (the person\'s acts); the mold\'s own words plain; a chain with one spelling under two seeds carries its corners in brackets',
@@ -520,7 +520,8 @@ check('§4 ★★ A BORN PAIR IS TAKEN (item 3): a role of AB\'s own part paired
     const rec = cur().edges.find((e) => e.id === siteABAC.edge.id).identification;
     const R = spaceOf(cur(), ABAC);
     const html = surfaceAt(ABAC);
-    return rec && rec.roles.length === 1 && rec.roles[0][0] === xBorn && rec.roles[0][1] === yBorn && R.space.roles.length === before - 1 && countOf(html, 'data-midpoint-line') === 1 && /1 role pair · 0 word pairs — yours, born here/.test(visibleText(html)) && S().midpointRefusals[siteABAC.edge.id] === undefined;
+    // MODES-2 (a): the sentence counts what the columns hold and what is related here (`· 1 related`, the head's word); the born pair's own listing line still reads `yours, born here`
+    return rec && rec.roles.length === 1 && rec.roles[0][0] === xBorn && rec.roles[0][1] === yBorn && R.space.roles.length === before - 1 && countOf(html, 'data-midpoint-line') === 1 && /side by side · 1 related/.test(visibleText(html)) && /yours, born here/.test(visibleText(html)) && S().midpointRefusals[siteABAC.edge.id] === undefined;
   })());
 // the seed edge A–B in the gen-2 shape carries the gen-0 record; an act there that re-glues the role the born pair named
 const eAB2 = edgeBetween(cur().edges, A2, byLabel(cur(), 'B'));

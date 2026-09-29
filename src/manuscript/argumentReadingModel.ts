@@ -340,17 +340,20 @@ export function readPairDesignations(form: WrittenForm): Record<string, string> 
   return entries.length > 0 ? Object.fromEntries(entries) : null;
 }
 
-function sourceNameFor(form: WrittenForm, resolveAbsent?: AbsentLabelResolver): string {
+/** a shape by its id where the caller can see one (the universe's shapes) — the RECORD's route to a lift's source, never its name */
+export type ShapeResolver = (id: string) => Shape | null | undefined;
+
+function sourceNameFor(form: WrittenForm, resolveAbsent?: AbsentLabelResolver, resolveShape?: ShapeResolver): string {
   const parent = form.parentShape;
   if (!parent) {
-    // THE LIFT: a placed patch-lift has no parent on the sheet (the loader
-    // re-roots), but its NAME carries the source verbatim — the lift's own
-    // mint is `<entity> of <source universe>` (subComplexLift, this build's
-    // contract) — read it, never "invoked" for an import
+    // THE LIFT: a placed patch-lift has no parent on the sheet (the loader re-roots). MODES-2 (e), the designer's M1: A NAME IS
+    // NEVER PARSED — the machine does not read inside his name (a person's name may hold " of "; the old read split
+    // `Community of substances·…` at its first " of "). The source is read from the RECORD — the genealogy's parent shape
+    // resolved where the caller can see the universe — or it is `another universe`, said, never minted from the name
     if (form.shape.genealogy.operation === 'patch-lift') {
-      const name = form.shape.name ?? '';
-      const cut = name.indexOf(' of ');
-      return cut > -1 ? name.slice(cut + 4) : 'another universe';
+      const sourceId = form.shape.genealogy.parentShapeId;
+      const source = sourceId && resolveShape ? resolveShape(sourceId) ?? null : null;
+      return source?.name || 'another universe';
     }
     // DOOR 3: the open-lift's own mint is `open-lift(<source>)` (openLift.ts) —
     // read the terrain's name out of it; an import is never "invoked"
@@ -381,14 +384,9 @@ function resultNameFor(form: WrittenForm): string {
   // class-derived at the producer today (writtenFormModel's IMMERSION_TITLES
   // mint — frozen, unchartered) — the reader CARRIES it and the mint is
   // routed, not cured here.
-  // THE LIFT: the result is the lifted entity itself — the tag before the
-  // mint's own " of " (the full name would repeat the source already named
-  // on the left of the arrow)
-  if (form.shape.genealogy.operation === 'patch-lift') {
-    const name = form.shape.name ?? '';
-    const cut = name.indexOf(' of ');
-    if (cut > -1) return name.slice(0, cut);
-  }
+  // THE LIFT: the result slot takes the form's NAME ENTIRE (MODES-2 (e), the designer's M1: a name prints whole, never parsed —
+  // `… ⟶ Community of substances·…`; the old read cut it at the mint's " of " and printed `substances·… ⟶ Community`)
+  if (form.shape.genealogy.operation === 'patch-lift' && form.shape.name) return form.shape.name;
   // DOOR 3: the open-lift's result is the star itself; its source is already
   // named on the left of the arrow
   if (form.shape.genealogy.operation === 'open-lift') return 'the open star';
@@ -427,6 +425,9 @@ export function buildArgumentReading(
   // derives this — a class→word table would be the classifier minting the
   // act (the ruling's named fabrication).
   sourceActWord?: string | null,
+  // MODES-2 (e): the universe's shapes by id, so a placed lift's SOURCE is read from the record (its genealogy's parent), never
+  // parsed out of its name; absent, the source reads `another universe`
+  resolveShape?: ShapeResolver,
 ): ArgumentReading {
   const shape = form.shape;
   const parent = form.parentShape ?? null;
@@ -1017,13 +1018,13 @@ export function buildArgumentReading(
       // the name registers are untouched.
       source:
         sourceOrdinal && sourceOrdinal.total > 1
-          ? `the ${sourceActWord ?? sourceNameFor(form, resolveAbsent)} you made ${ordinalWord(sourceOrdinal.rank)}`
-          : (sourceActWord ?? sourceNameFor(form, resolveAbsent)),
+          ? `the ${sourceActWord ?? sourceNameFor(form, resolveAbsent, resolveShape)} you made ${ordinalWord(sourceOrdinal.rank)}`
+          : (sourceActWord ?? sourceNameFor(form, resolveAbsent, resolveShape)),
       result: resultNameFor(form),
       // the lift's gloss names its SPECIFIC source ("lifted from <source>" —
       // the sealed header phrase); every other op keeps its word, with the
       // reasoned `the <op> move` fall-through (never silent)
-      gloss: liftedForm ? `lifted from ${sourceNameFor(form, resolveAbsent)}` : (OP_WORDS[op] ?? `the ${op} move`),
+      gloss: liftedForm ? `lifted from ${sourceNameFor(form, resolveAbsent, resolveShape)}` : (OP_WORDS[op] ?? `the ${op} move`),
     },
     conceptRows,
     relationRows,

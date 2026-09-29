@@ -515,9 +515,17 @@ check('§10 (E-DISTINCT-ID + E-COSMETIC-ID) ★★ TWO different edges from ONE 
     loadedBD.placeable === true &&
     loadedAC.loaded.shape.id !== loadedBD.loaded.shape.id);
 const liftForm = placeShelfEntry(loadedAC, 511);
-const liftReading = buildArgumentReading(liftForm);
+// MODES-2 (e), the designer's M1: a NAME IS NEVER PARSED. The source is read from the record — the lifted shape's genealogy resolved
+// against the universe's shapes (the resolver the view passes) — never out of the name's ` of `; unresolvable, it reads `another universe`
+const liftResolver = (id) => (id === amboD.id ? amboD : null);
+const liftReading = buildArgumentReading(liftForm, undefined, null, null, liftResolver);
 const liftedShape = liftForm.shape;
 note(`lift card: ${liftReading.header.source} ⟶ ${liftReading.header.result} · "${liftReading.header.gloss}" · ${liftReading.conceptRows.map((r) => `${r.label}(${r.typing})`).join(' · ')}`);
+note(`the loaded lift's record: genealogy.parentShapeId ${JSON.stringify(liftedShape.genealogy.parentShapeId)} vs the source amboD.id ${JSON.stringify(amboD.id)} — ${liftedShape.genealogy.parentShapeId === amboD.id ? 'THE SAME (the source resolves from the record)' : 'DIFFERENT (the load re-rooted it: the record after a load does not name its source; the card says `another universe`)'}`);
+const liftSourceResolved = liftedShape.genealogy.parentShapeId === amboD.id;
+check('§10 (E-NAME-WHOLE, MODES-2 (e)) ★★ THE RESULT SLOT TAKES THE NAME ENTIRE — the machine does not read inside a name (a person\'s may hold " of "): the card\'s result is the lifted shape\'s own name whole, never cut at its first " of "; the source slot is read from the RECORD (the genealogy\'s parent, resolved) or reads `another universe`, never parsed from the name',
+  liftReading.header.result === liftedShape.name && /^edge:[^ ]+ of Ambo Dissection Tetrahedron$/.test(liftReading.header.result) && (liftSourceResolved ? liftReading.header.source === 'Ambo Dissection Tetrahedron' : liftReading.header.source === 'another universe'),
+  `result "${liftReading.header.result}" · source "${liftReading.header.source}" · resolved ${liftSourceResolved}`);
 const liftedPacketLabels = Object.values(liftedShape.vertices).map((v) => v.data.label);
 check('§10 (E-GRAIN) ★★ THE A-AC-C GRAIN RIDES THE EDGE LIFT (Arman\'s case): the lifted coarse A-C carries 3 vertices (the T-junction: both corners + the collinear midpoint, packets intact) + 3 edges (the coarse span + both half-edges) — and NOTHING was refused, so the card carries NO grain mark',
   Object.keys(liftedShape.vertices).length === 3 &&
@@ -537,8 +545,10 @@ check('§10 (E-LIFTED-TYPING, Phase-C recut) ★★ CONCEPTS TYPE `lifted` WITH 
     liftReading.relationRows.filter((r) => r.typing === 'derived').length === 2 &&
     liftReading.conceptRows.find((r) => r.label === 'C')?.origin?.display === 'seed corner of the tetrahedron' &&
     liftReading.conceptRows.find((r) => r.label === 'AC')?.origin?.op === 'ambo-dissection' &&
-    liftReading.header.source === 'Ambo Dissection Tetrahedron' &&
-    liftReading.header.gloss === 'lifted from Ambo Dissection Tetrahedron' &&
+    // MODES-2 (e): the source is the RECORD's, never parsed from the name — after a load the genealogy's parent is null (measured above),
+    // so the header speaks `lifted from another universe`; when the record resolves, the source's own name
+    liftReading.header.source === (liftSourceResolved ? 'Ambo Dissection Tetrahedron' : 'another universe') &&
+    liftReading.header.gloss === `lifted from ${liftSourceResolved ? 'Ambo Dissection Tetrahedron' : 'another universe'}` &&
     liftReading.words.includes('lifted whole'));
 // the FACE lift — slice 1's binding bar: the side grain (A-AC-C on every
 // side) is CARRIED, the strictly-2D interior (the mid-face + the residue

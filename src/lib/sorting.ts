@@ -82,6 +82,7 @@ export interface ReadPath {
   reading: PathReading;
   direct: string | null; // the direct instance's key it composes to (COMPOSED) or presses on (TENSION)
   end?: 'source' | 'target' | 'bar' | null; // a TENSION's end: the source's pairing, the target's, or the person's own bar (M2, §9.7)
+  recorded?: string | null; // a composed say he stored on an against-path BEFORE the interim ruling: read as UNRULED, printed with its withdraw (a record he cannot see is a fact with no mark — the mothership's 12:19 (ii)); honoured when D13 lands
 }
 export type FootKind = 'FIX' | 'DIS' | 'PRO' | 'UND';
 export interface ViewSorting {
@@ -104,7 +105,11 @@ export interface Sorting {
   views: ViewSorting[];
   own: string[]; // the intersection over the views
   centroid: string[]; // the union
-  state: 'UNDETECTED' | 'VACUOUS' | 'EXHAUSTED' | 'POCKET' | 'OPEN'; // VACUOUS: related, but no corner has seen it — no passage through any view (the second resolution §8; the designer's M4 §1)
+  // THE SITE'S STATE at §8's precedence (the second resolution; MODES-2 (d)): UNDETECTED (nothing related) · VACUOUS (related, no
+  // passage through any view) · UNRULED (a passage nobody has said what it comes to) · POCKET (D9) · EXHAUSTED (nothing theirs
+  // alone, a light stands) · CLOSED (nothing theirs alone, no light) · COHERENT (looked at, none unsaid, no tension, no
+  // disagreement, no pocket) · OPEN (otherwise — the counts)
+  state: 'UNDETECTED' | 'VACUOUS' | 'UNRULED' | 'POCKET' | 'EXHAUSTED' | 'CLOSED' | 'COHERENT' | 'OPEN';
   looked: boolean; // a passage through some view exists
   refusedRoutes: number; // NOT says on paths whose word (the one they would compose to) has a direct standing at the endpoints — D16's refused route, the instance's form, never a state (M4 corrected: it does not bar COHERENT)
   unruled: boolean;
@@ -190,7 +195,10 @@ export function sortFromRecords(
       if (verdict) {
         exception = Boolean(verdict.exception) || (named !== null && (verdict.verdict === 'not' || verdict.w3 !== named));
         if (verdict.verdict === 'not') return { path: p, composite: null, by: 'verdict', exception, reading: 'NOT', direct: null, end: null };
-        composite = p.against ? null : (verdict.w3 ?? null); // a composed say on an against-path is not read (the hand is absent; the record is kept, never rewritten)
+        // a composed say on an against-path (stored before the interim ruling; the store refuses a new one) is not read as a composite —
+        // the path stays `not yet said` — but it is CARRIED for printing with its withdraw, never hidden (12:19 (ii))
+        if (p.against) return { path: p, composite: null, by: null, exception, reading: 'UNRULED', direct: null, end: null, recorded: verdict.w3 ?? null };
+        composite = verdict.w3 ?? null;
         by = composite === null ? null : 'verdict';
       } else if (p.source === 'triad') {
         composite = IS;
@@ -234,7 +242,6 @@ export function sortFromRecords(
   const centroidAll = keys.filter((k) => !ownAll.includes(k));
   const pocket = out.length >= 2 && out.every((v) => v.own.length > 0) && ownAll.length === 0;
   const looked = out.some((v) => v.paths.length > 0);
-  const state: Sorting['state'] = instances.length === 0 && bars.length === 0 ? 'UNDETECTED' : !looked ? 'VACUOUS' : pocket ? 'POCKET' : ownAll.length === 0 && instances.length > 0 ? 'EXHAUSTED' : 'OPEN';
   const unruled = out.some((v) => v.unruled.length > 0);
   const tension = out.some((v) => v.tensions.length > 0);
   // D16's refused route (the second resolution §4): a NOT on a path whose word (the one it would compose to) has a direct standing
@@ -249,8 +256,17 @@ export function sortFromRecords(
   const light = out.some((v) => v.lights.length > 0);
   // the second resolution §8 (D8 amended): COHERENT presupposes that the site has been LOOKED AT — a passage through some view —
   // and that no passage is UNRULED; then no tension, no disagreement, no pocket. With no passage at all the site is VACUOUS (its
-  // own state; the designer's line for it is asked — no coherence line prints there)
-  return { edge, instances, bars, views: out, own: ownAll, centroid: centroidAll, state, looked, refusedRoutes, unruled, coherent: looked && !unruled && !tension && !disagreement && !pocket, closed: instances.length > 0 && ownAll.length === 0 && !light };
+  // own state). THE STATE is one token at §8's precedence (MODES-2 (d)); the flags beside it stay for the readers that hold them
+  const coherent = looked && !unruled && !tension && !disagreement && !pocket;
+  const closed = instances.length > 0 && ownAll.length === 0 && !light;
+  const state: Sorting['state'] = instances.length === 0 && bars.length === 0 ? 'UNDETECTED'
+    : !looked ? 'VACUOUS'
+      : unruled ? 'UNRULED'
+        : pocket ? 'POCKET'
+          : ownAll.length === 0 && instances.length > 0 ? (light ? 'EXHAUSTED' : 'CLOSED')
+            : coherent ? 'COHERENT'
+              : 'OPEN';
+  return { edge, instances, bars, views: out, own: ownAll, centroid: centroidAll, state, looked, refusedRoutes, unruled, coherent, closed };
 }
 
 /** the verdicts a face holds, positional (well-formed items only) */

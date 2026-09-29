@@ -139,15 +139,32 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
     const through = corners.length <= 1 ? corners[0] ?? '' : `${corners.slice(0, -1).join(', ')} and ${corners[corners.length - 1]}`;
     return `nothing against it — ${plural(count, 'passage', 'passages')} through ${through}, none unsaid; no bar pressed, no say differs, the views agree on what is theirs alone`;
   };
+  // THE STATE LINE reads the sorting's ONE token at §8's precedence (MODES-2 (d)): UNDETECTED · VACUOUS · UNRULED (the counts; the
+  // per-view line says which passage is unsaid — her §3) · POCKET · EXHAUSTED · CLOSED · COHERENT · otherwise the counts
+  const countsLine = (): string => `${plural(sorting.own.length, 'relating', 'relatings')} theirs alone · ${plural(sorting.centroid.length, 'relating', 'relatings')} the face's`;
   const stateLine = (): string => {
-    if (sorting.state === 'UNDETECTED') return `${la} and ${lb} together, as two — not yet looked into: nothing related between them yet`;
-    if (sorting.state === 'VACUOUS') return vacuousLine();
-    if (sorting.state === 'POCKET') return `the views leave different things alone — ${sorting.views.map((v) => `through ${viewLabel(v)}, ${v.own.length ? sentence(sorting.instances.find((r) => relKey(r) === v.own[0]) as Relating) : 'nothing'} is theirs alone`).join('; ')} — nothing is theirs alone under both`;
-    if (sorting.closed) return `all the face's — nothing theirs alone, nothing only in a corner's light`;
-    if (sorting.state === 'EXHAUSTED') return alsoSaid();
-    if (sorting.coherent) return coherentLine();
-    return `${plural(sorting.own.length, 'relating', 'relatings')} theirs alone · ${plural(sorting.centroid.length, 'relating', 'relatings')} the face's`;
+    switch (sorting.state) {
+      case 'UNDETECTED': return `${la} and ${lb} together, as two — not yet looked into: nothing related between them yet`;
+      case 'VACUOUS': return vacuousLine();
+      case 'UNRULED': return countsLine();
+      case 'POCKET': return 'the views leave different things alone — nothing is theirs alone under every view'; // M1 (d): the head; one line per relating below, never a first
+      case 'EXHAUSTED': return alsoSaid();
+      case 'CLOSED': return `all the face's — nothing theirs alone, nothing only in a corner's light`;
+      case 'COHERENT': return coherentLine();
+      default: return countsLine();
+    }
   };
+  // M1 (d) — in a POCKET, one line per relating some view leaves alone: where it is theirs alone and where it is the face's, by corner
+  const pocketLines = (): Array<[string, string]> => (sorting.state !== 'POCKET' ? [] : sorting.instances
+    .map((r): [string, Relating] => [relKey(r), r])
+    .filter(([k]) => sorting.views.some((v) => v.own.includes(k)))
+    .map(([k, r]) => {
+      const alone = sorting.views.filter((v) => v.own.includes(k)).map(viewLabel);
+      const faces = sorting.views.filter((v) => v.centroid.includes(k)).map(viewLabel);
+      const list = (xs: string[]): string => (xs.length <= 1 ? xs[0] ?? '' : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
+      const facesPart = faces.length ? " · the face's through " + list(faces) : '';
+      return [k, `${sentence(r)} — theirs alone through ${list(alone)}${facesPart}`];
+    }));
   const named = namedUnderOf(shape, siteId);
   const siteName = siteId ? labelOf(siteId) : null;
   const left = named ? named.own.filter((k) => !sorting.own.includes(k)).length : 0;
@@ -247,9 +264,11 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
               return (
                 <span key={`${p.path.x}|${p.path.w}|${p.path.z}|${p.path.w2}|${p.path.y}`} data-medium-passage={`${p.path.x}|${p.path.w}|${p.path.z}|${p.path.w2}|${p.path.y}`} data-medium-passage-reading={p.reading} data-medium-passage-by={p.by ?? undefined} data-medium-passage-end={p.end ?? undefined} data-medium-passage-against={p.path.against ? 'true' : undefined} className="flex flex-wrap gap-x-2">
                   <span>{`${passageWords(p)} — ${readingWords(p, lz)}`}</span>
-                  {p.by === 'verdict' ? (
+                  {p.by === 'verdict' || p.recorded ? (
                     <>
-                      {p.reading === 'NOT' ? null : <span data-medium-said="true">{`you said: that is "${compositeWords(p)}"`}</span>}
+                      {/* a composed say stored on an against-path before the interim ruling is read as `not yet said` but PRINTED with its
+                          withdraw (12:19 (ii): a record he cannot see is a fact with no mark) */}
+                      {p.reading === 'NOT' ? null : <span data-medium-said="true" data-medium-said-recorded={p.recorded ? 'true' : undefined}>{`you said: that is "${p.recorded ? `${nameA(p.path.x)} ${modeWord(p.recorded)} ${nameB(p.path.y)}` : compositeWords(p)}"`}</span>}
                       {p.exception && p.composite !== null ? <span data-medium-exception="true">{`except here — you said this passage is "${p.composite}"`}</span> : null}
                       <button type="button" data-medium-say-withdraw="true" className="underline" onClick={() => { const r = verdictRecord(v, p, 'not'); if (r) withdrawVerdict(v.faceId, r); }}>withdraw what you said</button>
                     </>
@@ -298,6 +317,7 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
         <span key={`c-${v.view}`} data-medium-faces={viewLabel(v)}>{`the face's — said between them and through ${viewLabel(v)} too: ${join(v.centroid.map((k) => sentence(sorting.instances.find((r) => relKey(r) === k) as Relating)))}`}</span>
       ))}
       <span data-medium-state-line="true" className="text-stone-400">{stateLine()}</span>
+      {pocketLines().map(([k, text]) => <span key={`p-${k}`} data-medium-pocket-line={k} className="text-stone-400">{text}</span>)}
       {named && siteName ? <span data-medium-named-under="true">{`named when it was: ${siteName} — given when ${plural(named.relatings, 'relating was', 'relatings were')} said${left || entered ? `; since then, ${left} left what is theirs alone · ${entered} entered` : ''}`}</span> : null}
       {lights.map((l) => { const w = derivedWords(l); return w ? <span key={`${l.kind}|${l.x}|${l.y}|${l.through}|${l.via}`} data-medium-light-derived={l.kind} data-medium-light-held={l.held ? 'true' : undefined} data-medium-light-inherited={w.inherited ?? undefined}>{w.text}</span> : null; })}
     </div>
