@@ -259,8 +259,13 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
               // against the walk (S4, interim). `that is not it` stays on a MODE tension (an exception to his rule on this path —
               // the second resolution §6) and is absent on an IS tension (the one-to-one law, IS ; IS = IS, substitution are the
               // transport's, not his rules: no say at all; the route is the pairing)
-              const sayable = p.composite !== null && p.reading !== 'TENSION' && !p.path.against;
-              const notSayable = !(p.reading === 'TENSION' && p.composite === IS);
+              // M5 (the researcher's 12:21, ADR 0031 §9.12): the verdict hands of D6 live on paths of TWO MODE LEGS only — on every
+              // path with an IS leg the composite is the transport's law (two IS legs compose to IS; one IS leg and a mode leg
+              // compose by substitution), and a law is not his to except: an IS light, a mixed light, an IS or mixed tension carry
+              // no hand; the store refuses a say there by name — the guard is the rule, the absence follows from it
+              const twoModeLegs = p.path.w !== IS && p.path.w2 !== IS;
+              const sayable = twoModeLegs && p.composite !== null && p.reading !== 'TENSION' && !p.path.against;
+              const notSayable = twoModeLegs;
               return (
                 <span key={`${p.path.x}|${p.path.w}|${p.path.z}|${p.path.w2}|${p.path.y}`} data-medium-passage={`${p.path.x}|${p.path.w}|${p.path.z}|${p.path.w2}|${p.path.y}`} data-medium-passage-reading={p.reading} data-medium-passage-by={p.by ?? undefined} data-medium-passage-end={p.end ?? undefined} data-medium-passage-against={p.path.against ? 'true' : undefined} className="flex flex-wrap gap-x-2">
                   <span>{`${passageWords(p)} — ${readingWords(p, lz)}`}</span>
@@ -284,7 +289,7 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
             {pairsSeen.map((pair) => {
               const [w, w2] = pair.split('|');
               const rule = rules.find((r) => r[0] === w && r[1] === w2);
-              const builtIn = w === IS && w2 === IS;
+              const builtIn = w === IS || w2 === IS; // M5: a word pair with an IS leg composes by the transport's law — no rule of his keys on it, no gesture offers one
               const exceptions = v.paths.filter((p) => p.path.w === w && p.path.w2 === w2 && p.exception).length;
               if (builtIn) return null;
               return rule ? (

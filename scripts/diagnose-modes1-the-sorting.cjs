@@ -244,8 +244,11 @@ check('§f a rule re-named replaces the composite for its word-pair', J(S().rule
 const fABC = cur().faces.find((f) => f.vertexIds.length === 3 && ['A', 'B', 'C'].every((l) => f.vertexIds.includes(byLabel(cur(), l))));
 const iA = fABC.vertexIds.indexOf(byLabel(cur(), 'A')); const iB = fABC.vertexIds.indexOf(byLabel(cur(), 'B'));
 const rec = { base: [iA, iB], x: 'F13', w: 'IS', z: 'Φ8', w2: 'IS', y: 'r0', w3: 'IS', verdict: 'not' };
+// M5 (ADR §9.12): the store refuses a say on any path with an IS leg by name — so this IS ; IS record is WRITTEN onto the face
+// directly (a record a person could hold from before the ruling), and the act's refusal is pinned beside it
 const r1 = S().giveVerdict(fABC.id, rec);
-check('§f giveVerdict writes ONE verdict on the face packet, positional; verdictsOn reads it back', r1 === null && J(SO.verdictsOn(cur().faces.find((f) => f.id === fABC.id))) === J([rec]));
+{ const sh = cur(); useGeometryStore.setState({ shapes: { ...S().shapes, [sh.id]: { ...sh, faces: sh.faces.map((f) => (f.id === fABC.id ? SO.withVerdict(f, rec) : f)) } } }); }
+check('§f M5: giveVerdict REFUSES a say on a path with an IS leg by name (`nothing is yours to say on this passage — a leg of it is ≡ …`); written onto the face directly, ONE verdict, positional; verdictsOn reads it back', typeof r1 === 'string' && /a leg of it is ≡/.test(r1) && J(SO.verdictsOn(cur().faces.find((f) => f.id === fABC.id))) === J([rec]), String(r1));
 check('§f a verdict refused by name: a face of four corners, positions out of range, a blank word', typeof S().giveVerdict(fABC.id, { ...rec, base: [0, 0] }) === 'string' && typeof S().giveVerdict('face:none', rec) === 'string' && typeof S().giveVerdict(fABC.id, { ...rec, x: ' ' }) === 'string');
 give('A', 'B', { F13: 'r0' }); give('A', 'C', { F13: 'Φ8' }); give('C', 'B', { Φ8: 'r0' });
 const sV = SO.sortingOf(cur(), E(cur(), 'A', 'B'), {}, S().rules);
@@ -262,7 +265,7 @@ check('§f withdrawVerdict takes it off the face (no key left behind when nothin
 S().withdrawRule('carries', 'resists');
 check('§f withdrawRule', J(S().rules) === '[]');
 reset(seeded4());
-S().giveVerdict(cur().faces.find((f) => f.id === fABC.id) ? fABC.id : cur().faces[0].id, rec);
+{ const sh = cur(); const fid = sh.faces.find((f) => f.id === fABC.id) ? fABC.id : sh.faces[0].id; useGeometryStore.setState({ shapes: { ...S().shapes, [sh.id]: { ...sh, faces: sh.faces.map((f) => (f.id === fid ? SO.withVerdict(f, rec) : f)) } } }); } // written onto the face (M5 refuses the IS ; IS act)
 S().applyAmboDissectionToCurrent();
 const carried = cur().faces.filter((f) => SO.verdictsOn(f).length > 0);
 check('§f THE DISSECTION CARRIES THE VERDICTS with the triads: the dissected cell\'s face record rides onto its parent-cell-face, positional in the same corner order — one face holds it in the child', carried.length === 1 && carried[0].role === 'parent-cell-face' && J(SO.verdictsOn(carried[0])) === J([rec]), J(carried.map((f) => [f.role, SO.verdictsOn(f)])));

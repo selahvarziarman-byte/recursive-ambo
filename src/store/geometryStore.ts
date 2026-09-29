@@ -1187,6 +1187,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       const path = view ? view.paths.find((p) => p.path.x === record.x && p.path.w === record.w && p.path.z === record.z && p.path.w2 === record.w2 && p.path.y === record.y) : undefined;
       const la = shape.vertices[face.vertexIds[i]]?.data.label || face.vertexIds[i];
       const lb = shape.vertices[face.vertexIds[j]]?.data.label || face.vertexIds[j];
+      // M5 (the researcher's 12:21, ADR 0031 §9.12): NO SAY on any path with an IS leg — its composite is the transport's law (two IS
+      // legs compose to IS; one IS leg and a mode leg compose by substitution), never his to except; the verdict hands of D6 live on
+      // paths of two mode legs only. Refused by name at the act; the surface offers no hand there
+      // (the record names its legs' modes itself, so the refusal holds whether or not the path stands yet)
+      if (record.w === IS || record.w2 === IS) return `nothing is yours to say on this passage — a leg of it is ≡, and what ≡ carries through is the transport's law, not a rule of yours; a say lives on a passage of two of your modes (${la}–${lb})`;
       if (path && path.reading === 'TENSION') {
         const key = (path.direct ?? '').split('|');
         // the second resolution §6: on an IS tension NO say at all (the one-to-one law, IS ; IS = IS and substitution are the
