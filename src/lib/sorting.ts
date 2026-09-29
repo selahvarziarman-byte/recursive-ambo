@@ -122,12 +122,12 @@ export interface ReadPath {
   direct: string | null; // the direct instance's key it composes to (COMPOSED) or presses on (TENSION)
   end?: 'source' | 'target' | 'bar' | null; // a TENSION's end: the source's pairing, the target's, or the person's own bar (M2, §9.7)
   recorded?: string | null; // a composed say he stored on a path no rule can read now: read as UNRULED, printed with its withdraw (12:19 (ii))
-  inherited?: { edge: [VertexId, VertexId]; q: string; r: string; path: ReadPath | null }; // a coordinate path's generation-1 passage (D14): the parent edge as stored, q of its first corner and r of its second, its reading there (null where the passage is not found)
+  inherited?: { edge: [VertexId, VertexId]; corners: [VertexId, VertexId]; q: string; r: string; path: ReadPath | null }; // a coordinate path's generation-1 passage (D14): the parent edge AS STORED (its name), the two corners in the PASSAGE's order (X's other parent, then Y's) with their roles q and r, its reading there (null where the passage is not found)
 }
-/** D14 — a coordinate path at a medial site, as `sortingOf` hands it to the core: X's instance i, the shared role p of P, Y's instance j; the parent edge Q–R (as stored) with q, r; the generation-1 passage's reading there */
-export interface CoordinatePath { x: string; z: string; y: string; edge: [VertexId, VertexId]; q: string; r: string; path: ReadPath | null; }
-/** D15 — an inherited IS-instance: the person's pairing q ≡ r at generation n−1 read at the child's resolution as (IS, i, j), the face's (P's), never own */
-export interface InheritedIS { key: string; x: string; y: string; through: VertexId; edge: [VertexId, VertexId]; q: string; r: string; }
+/** D14 — a coordinate path at a medial site, as `sortingOf` hands it to the core: X's instance i, the shared role p of P, Y's instance j; the parent edge Q–R as stored (its name) and its corners in the passage's order with q of Q and r of R; the generation-1 passage's reading there */
+export interface CoordinatePath { x: string; z: string; y: string; edge: [VertexId, VertexId]; corners: [VertexId, VertexId]; q: string; r: string; path: ReadPath | null; }
+/** D15 — an inherited IS-instance: the person's pairing q ≡ r at generation n−1 read at the child's resolution as (IS, i, j), the face's (P's), never own — q of X's other parent, r of Y's (the passage's order), the edge as stored */
+export interface InheritedIS { key: string; x: string; y: string; through: VertexId; edge: [VertexId, VertexId]; corners: [VertexId, VertexId]; q: string; r: string; }
 export type FootKind = 'FIX' | 'DIS' | 'PRO' | 'UND';
 export interface ViewSorting {
   view: VertexId;
@@ -249,7 +249,7 @@ export function sortFromRecords(
       for (const c of v.coordinate.paths) {
         const p: Path = { view: v.view, faceId: v.faceId, x: c.x, w: '', z: c.z, w2: '', y: c.y, source: 'coordinate', said: [[c.x, '', c.z], [c.z, '', c.y]], dirs: [ALONG, ALONG], shape: 'chain', from: 'x', keys: [], against: false, mixed: false, readable: false };
         const g = c.path;
-        const inh = { edge: c.edge, q: c.q, r: c.r, path: g };
+        const inh = { edge: c.edge, corners: c.corners, q: c.q, r: c.r, path: g };
         if (!g) { read.push({ path: p, composite: null, compositeDir: null, by: null, exception: false, reading: 'UNRULED', direct: null, end: null, inherited: inh }); continue; }
         // the generation-1 path may run r → q where the parent edge is stored R first: its composite's direction is read back onto i → j
         const forward = g.path.x === c.q;
@@ -260,7 +260,7 @@ export function sortFromRecords(
         if (g.reading === 'COMPOSED' && w === IS) {
           // the stone's FIX at generation n−1: the person's pairing q ≡ r read here as (IS, i, j) — inherited, the face's
           const key = isKey(c.x, c.y);
-          inheritedHere.push({ key, x: c.x, y: c.y, through: v.view, edge: c.edge, q: c.q, r: c.r });
+          inheritedHere.push({ key, x: c.x, y: c.y, through: v.view, edge: c.edge, corners: c.corners, q: c.q, r: c.r });
           read.push({ path: p, composite: IS, compositeDir: ALONG, by: 'inherited', exception: false, reading: 'COMPOSED', direct: key, end: null, inherited: inh });
           continue;
         }
@@ -490,7 +490,8 @@ export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOf
       const pToJ = ePR.vertexIds[0] === P ? j.rel : mirrored(j.rel); // j's walked P → R
       const [leg1, leg2] = qFirst ? [iToP, pToJ] : [mirrored(pToJ), mirrored(iToP)];
       const g = view ? view.paths.find((pp) => pp.path.z === i.p && (pp.path.source === 'triad' ? (pp.path.x === leg1[1] && pp.path.y === leg2[2] && leg1[0] === IS && leg2[0] === IS) : (sameEntry(legOf(pp.path, 0), leg1) && sameEntry(legOf(pp.path, 1), leg2)))) ?? null : null;
-      paths.push({ x: i.key, z: i.p, y: j.key, edge: [eQR.vertexIds[0] as VertexId, eQR.vertexIds[1] as VertexId], q: qFirst ? i.q : j.q, r: qFirst ? j.q : i.q, path: g });
+      // the pair in the PASSAGE's own order (her 10:57 §3: `your pair r0 ≡ Φ8` — X's side first): q of Q (X's other parent), r of R (Y's)
+      paths.push({ x: i.key, z: i.p, y: j.key, edge: [eQR.vertexIds[0] as VertexId, eQR.vertexIds[1] as VertexId], corners: [Q, R], q: i.q, r: j.q, path: g });
     }
     return { edge: [eQR.vertexIds[0] as VertexId, eQR.vertexIds[1] as VertexId], paths };
   };

@@ -1007,7 +1007,7 @@ def light_leaves_arm(page, args):
     return res
 
 
-MEDIUM_STATE = """() => { const s = document.querySelector('[data-medium]'); if (!s) return null; const t = (sel) => [...s.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); const a = (sel, attr) => [...s.querySelectorAll(sel)].map((e) => e.getAttribute(attr)); const d = (sel) => [...document.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); return { state: s.getAttribute('data-medium-state'), head: t('[data-medium-head]')[0] || null, modesLine: t('[data-medium-modes]')[0] || null, modes: a('[data-medium-mode]', 'data-medium-mode'), chosen: a('[data-medium-mode-chosen]', 'data-medium-mode-chosen').length ? a('[data-medium-mode][data-medium-mode-chosen]', 'data-medium-mode')[0] : null, gesture: t('[data-medium-gesture]')[0] || null, holdChosen: a('[data-medium-hold][data-medium-hold-chosen]', 'data-medium-hold')[0] || null, dirChosen: a('[data-medium-dir][data-medium-dir-chosen]', 'data-medium-dir')[0] || null, converseLine: t('[data-medium-converse]')[0] || null, converseHand: t('[data-medium-converse-name]'), opaqueLine: t('[data-medium-opaque-line]')[0] || null, opaqueChosen: a('[data-medium-opaque][data-medium-opaque-chosen]', 'data-medium-opaque')[0] || null, passageShapes: a('[data-medium-passage]', 'data-medium-passage-shape'), declareHand: t('[data-medium-mode-declare]'), relatings: d('[data-medium-relating]'), relatingsInBlock: t('[data-medium-relating]').length, bars: d('[data-medium-bar]'), child: t('[data-medium-child]')[0] || null, viewHeads: t('[data-medium-view-head]'), passages: a('[data-medium-passage]', 'data-medium-passage-reading'), passageTexts: t('[data-medium-passage]'), own: t('[data-medium-own]')[0] || null, faces: t('[data-medium-faces]'), stateLine: t('[data-medium-state-line]')[0] || null, refusal: t('[data-medium-refusal]')[0] || null, text: s.textContent.replace(/\\s+/g, ' ').trim(), box: (() => { const b = s.getBoundingClientRect(); return { y: Math.round(b.y), h: Math.round(b.height) }; })() }; }"""
+MEDIUM_STATE = """() => { const s = document.querySelector('[data-medium]'); if (!s) return null; const t = (sel) => [...s.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); const a = (sel, attr) => [...s.querySelectorAll(sel)].map((e) => e.getAttribute(attr)); const d = (sel) => [...document.querySelectorAll(sel)].map((e) => e.textContent.replace(/\\s+/g, ' ').trim()); return { state: s.getAttribute('data-medium-state'), head: t('[data-medium-head]')[0] || null, modesLine: t('[data-medium-modes]')[0] || null, modes: a('[data-medium-mode]', 'data-medium-mode'), chosen: a('[data-medium-mode-chosen]', 'data-medium-mode-chosen').length ? a('[data-medium-mode][data-medium-mode-chosen]', 'data-medium-mode')[0] : null, gesture: t('[data-medium-gesture]')[0] || null, holdChosen: a('[data-medium-hold][data-medium-hold-chosen]', 'data-medium-hold')[0] || null, dirChosen: a('[data-medium-dir][data-medium-dir-chosen]', 'data-medium-dir')[0] || null, converseLine: t('[data-medium-converse]')[0] || null, converseHand: t('[data-medium-converse-name]'), opaqueLine: t('[data-medium-opaque-line]')[0] || null, opaqueChosen: a('[data-medium-opaque][data-medium-opaque-chosen]', 'data-medium-opaque')[0] || null, passageShapes: a('[data-medium-passage]', 'data-medium-passage-shape'), passageInherited: a('[data-medium-passage]', 'data-medium-passage-inherited'), passageHands: [...s.querySelectorAll('[data-medium-passage] button')].map((b) => b.textContent.replace(/\\s+/g, ' ').trim()), facesInherited: t('[data-medium-faces-inherited]'), lightLines: t('[data-medium-light-derived]'), declareHand: t('[data-medium-mode-declare]'), relatings: d('[data-medium-relating]'), relatingsInBlock: t('[data-medium-relating]').length, bars: d('[data-medium-bar]'), child: t('[data-medium-child]')[0] || null, viewHeads: t('[data-medium-view-head]'), passages: a('[data-medium-passage]', 'data-medium-passage-reading'), passageTexts: t('[data-medium-passage]'), own: t('[data-medium-own]')[0] || null, faces: t('[data-medium-faces]'), stateLine: t('[data-medium-state-line]')[0] || null, refusal: t('[data-medium-refusal]')[0] || null, text: s.textContent.replace(/\\s+/g, ' ').trim(), box: (() => { const b = s.getBoundingClientRect(); return { y: Math.round(b.y), h: Math.round(b.height) }; })() }; }"""
 
 
 def medium_arm(page, args):
@@ -1044,6 +1044,44 @@ def medium_arm(page, args):
     res['withdrawn'] = page.evaluate(MEDIUM_STATE)
     page.locator('[data-medium-mode="IS"]').first.click(); page.wait_for_timeout(300)
     res['after'] = page.evaluate(MEDIUM_STATE)
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
+    return res
+
+
+def medium_gen2_arm(page, args):
+    """MODES-4 · rows 3–4 at the eye — the medium's block at the generation-2 medial site ABAC (selected by the caller): the seed corner A's
+    view read from the COORDINATE MAP (D14), the generation-1 passage's reading inherited, in the designer's 10:57 §3 words, NO hand, no
+    derived-light line. As the fixture stands one passage — (r8 ≡ F7) · (F7 ≡ Φ1), a tension on B–C (Φ1 paired with r1); then two pairs
+    given on the seed edge A–B at generation 2 — F13 ≡ Φ8 (composed there: Φ8 ≡ r0 on B–C) and F12 ≡ Φ3 (a light: r4 and Φ3 unpaired
+    there) — read at ABAC, then withdrawn (the state as found)."""
+    res = {}
+    def read_abac():
+        select_cell(page, r"^cuboctahedron"); select_vertex_labelled(page, "ABAC")
+        page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+        return page.evaluate(MEDIUM_STATE)
+    def at_gen1(label):
+        select_cell(page, r"^octahedron"); return select_vertex_labelled(page, label)
+    def withdraw_pair(x, y):
+        h = page.locator(f'[data-midpoint-withdraw="role|{x}|{y}"], [data-midpoint-withdraw="role|{y}|{x}"]')
+        if h.count():
+            h.first.click(); page.wait_for_timeout(400)
+    page.locator('[data-midpoint-surface]').first.evaluate("(el) => { const m = el.querySelector('[data-medium]'); if (m) m.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
+    res['asFound'] = page.evaluate(MEDIUM_STATE)  # as the fixture stands: no role of A held on both sides
+    # r8 ≡ F7 on A–C (the seed edge, at the generation-1 midpoint AC — a corner of the octahedron, listed as the parent): AB holds F7 ≡ Φ1 — her tension
+    res['selectAC'] = at_gen1("AC"); pair(page, "r8", "F7")
+    res['tension'] = read_abac()
+    page.screenshot(path=f"{args.frames}/concept-layer-medium-gen2-tension-{args.width}x{args.height}.png")
+    # then two pairs on A–B: F13 ≡ Φ8 (Φ8 ≡ r0 stands on B–C: composed there) and F12 ≡ Φ3 (r4 and Φ3 unpaired there: a light)
+    res['selectAB'] = at_gen1("AB"); pair(page, "F13", "Φ8"); pair(page, "F12", "Φ3")
+    res['abAfterPairs'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines',)}
+    res['withPairs'] = read_abac()
+    page.screenshot(path=f"{args.frames}/concept-layer-medium-gen2-{args.width}x{args.height}.png")
+    # the three pairs withdrawn — the state as found
+    at_gen1("AB"); withdraw_pair("F13", "Φ8"); withdraw_pair("F12", "Φ3")
+    res['abRestored'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines',)}
+    at_gen1("AC"); withdraw_pair("r8", "F7")
+    res['acRestored'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines',)}
+    res['after'] = read_abac()
     page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
     return res
 
@@ -1693,6 +1731,8 @@ def main():
         out['bornRoom'] = page.evaluate(MEASURE)
         page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
         page.screenshot(path=f"{args.frames}/concept-layer-born-room-{args.width}x{args.height}.png")
+        out['mediumGen2'] = medium_gen2_arm(page, args)  # MODES-4 · rows 3–4 — the coordinate view at ABAC (ends back at ABAC, the pairs withdrawn)
+        page.locator('[data-midpoint-surface]').first.evaluate("(el) => el.scrollTo(0, 0)"); page.wait_for_timeout(200)
         br = out['bornRoom']
         if br.get('present') and br.get('composedPoints'):
             # a composed point clicked: nothing picked (never a pair, never a control)

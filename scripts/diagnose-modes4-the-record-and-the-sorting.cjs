@@ -388,6 +388,7 @@ if (fs.existsSync(g2APath) && fs.existsSync(cardsBPath) && fs.existsSync(cardsAP
         else if (g.reading === 'NOT') cls = 'generation-1 said NOT';
         else if (g.composite === M.IS) cls = 'generation-1 an IS passage (' + g.reading + ')';
         else if (g.composite !== dir[0]) cls = 'generation-1 composed to ANOTHER word';
+        else if (cp.reading !== 'COMPOSED') cls = 'generation-1 composed in the OTHER direction (the same word, read the other way round)';
         else cls = 'other (' + g.reading + ' → ' + cp.reading + ')';
         break;
       }
@@ -425,7 +426,7 @@ const { composedOn, edgeKind, spaceOf: spaceOfR } = req('src/lib/spaceOf.ts');
   const s2 = SO.sortingOf(cur(), edgeBetween(cur().edges, ABc.id, ACc.id), {}, [], { converses: [], opaque: [] });
   const cv2 = s2.views.find((v) => v.coordinate);
   const m2 = req('src/lib/descent.ts').mediumOf(cur(), edgeBetween(cur().edges, ABc.id, ACc.id), {}, []);
-  check('§h F-D15a second arm: r0 ≡ Φ1 on B–C closes the loop of three pairings — ONE inherited ≡ `(IS, F7≡r0, Φ1≡F7)`, the face\'s (A\'s), seen through A (the coordinate view COMPOSED by inheritance) and through BC alike (the opposite-midpoint light through `r0≡Φ1`); derived, stored nowhere (the edge\'s packet holds nothing)', s2.inherited.length === 1 && s2.inherited[0].through === byLabel(cur(), 'A') && s2.inherited[0].q === (edgeBetween(cur().edges, byLabel(cur(), 'B'), byLabel(cur(), 'C')).vertexIds[0] === byLabel(cur(), 'B') ? 'r0' : 'Φ1') && !!cv2 && cv2.paths[0].reading === 'COMPOSED' && cv2.paths[0].by === 'inherited' && m2.lights.length === 1 && m2.lights[0].kind === 'opposite-midpoint' && M.relatingsHeld(edgeBetween(cur().edges, ABc.id, ACc.id)).length === 0, J({ inherited: s2.inherited, lights: m2.lights.map((l) => [l.kind, l.via]) }));
+  check('§h F-D15a second arm: r0 ≡ Φ1 on B–C closes the loop of three pairings — ONE inherited ≡ `(IS, F7≡r0, Φ1≡F7)`, the face\'s (A\'s), seen through A (the coordinate view COMPOSED by inheritance) and through BC alike (the opposite-midpoint light through `r0≡Φ1`); derived, stored nowhere (the edge\'s packet holds nothing); its pair named from X\'s side (the passage\'s own order, her §3) with the edge as stored', s2.inherited.length === 1 && s2.inherited[0].through === byLabel(cur(), 'A') && s2.inherited[0].q === (edgeBetween(cur().edges, ABc.id, ACc.id).vertexIds[0] === ACc.id ? 'Φ1' : 'r0') && s2.inherited[0].r === (edgeBetween(cur().edges, ABc.id, ACc.id).vertexIds[0] === ACc.id ? 'r0' : 'Φ1') && s2.inherited[0].corners[0] === byLabel(cur(), edgeBetween(cur().edges, ABc.id, ACc.id).vertexIds[0] === ACc.id ? 'C' : 'B') && !!cv2 && cv2.paths[0].reading === 'COMPOSED' && cv2.paths[0].by === 'inherited' && m2.lights.length === 1 && m2.lights[0].kind === 'opposite-midpoint' && M.relatingsHeld(edgeBetween(cur().edges, ABc.id, ACc.id)).length === 0, J({ inherited: s2.inherited, lights: m2.lights.map((l) => [l.kind, l.via]) }));
   // the pairing of two instances through a shared coordinate at the child is refused by name, composed or not (D15 — §210 generalized): the words today are the solid's
   const eM = edgeBetween(cur().edges, ABc.id, ACc.id);
   const [i0, j0] = eM.vertexIds[0] === ABc.id ? ['F7≡r0', 'Φ1≡F7'] : ['Φ1≡F7', 'F7≡r0'];

@@ -154,9 +154,10 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
   const inheritedWords = (p: ReadPath, lz: string): string => {
     const inh = p.inherited; const g = inh?.path;
     if (!inh || !g) return 'not yet said';
-    const [E0, E1] = inh.edge;
+    const [E0, E1] = inh.edge; // the generation-1 path as stored: x of E0, y of E1
+    const [Qc, Rc] = inh.corners; // the passage's own order: q of X's other parent, r of Y's (her §3: `your pair r0 ≡ Φ8`, `r4 and Φ3 not paired there`)
     const key = (g.direct ?? '').split('|');
-    const pair = `${nameZ(E0, g.path.x)} ≡ ${nameZ(E1, g.path.y)}`;
+    const pair = `${nameZ(Qc, inh.q)} ≡ ${nameZ(Rc, inh.r)}`;
     if (p.reading === 'TENSION') {
       if (g.reading === 'TENSION' && g.end === 'target' && key.length === 3) return `against your pair — you paired ${nameZ(E1, g.path.y)} with ${nameZ(E0, key[1])}`;
       if (g.reading === 'TENSION' && g.end === 'source' && key.length === 3) return `against your pair — you paired ${nameZ(E0, g.path.x)} with ${nameZ(E1, key[2])}`;
@@ -164,7 +165,7 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
       return `against your bar — through ${lz} it would say ${compositeWords(p)} — which you barred`;
     }
     if (p.reading === 'COMPOSED') return p.composite === IS ? `your pair ${pair} — so here ${nameA(p.path.x)} ≡ ${nameB(p.path.y)}, the face's` : `the face's — said between them and through ${lz} too: ${compositeWords(p)}`;
-    if (p.reading === 'LIGHT') return p.composite === IS ? `only in ${lz}'s light — ${nameZ(E0, g.path.x)} and ${nameZ(E1, g.path.y)} not paired there` : `only in ${lz}'s light — through ${lz} it would read: ${compositeWords(p)} — no relating between ${la} and ${lb} says so`;
+    if (p.reading === 'LIGHT') return p.composite === IS ? `only in ${lz}'s light — ${nameZ(Qc, inh.q)} and ${nameZ(Rc, inh.r)} not paired there` : `only in ${lz}'s light — through ${lz} it would read: ${compositeWords(p)} — no relating between ${la} and ${lb} says so`;
     if (p.reading === 'NOT') return 'you said: that is not it';
     if (p.reading === 'HELD') { const isLeg = g.path.w === IS ? `${nameZ(E0, g.path.x)} ≡ ${nameZ(p.path.view, g.path.z)}` : `${nameZ(p.path.view, g.path.z)} ≡ ${nameZ(E1, g.path.y)}`; return `held apart: the pair ${isLeg} stops at ${g.path.w === IS ? g.path.w2 : g.path.w}`; }
     return 'not yet said';
@@ -441,7 +442,7 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
       ))}
       {/* D15 — an inherited ≡ is the face's, never said between them (her 10:57 §3): one line per pairing read here */}
       {sorting.inherited.map((h) => (
-        <span key={`i-${h.key}`} data-medium-faces-inherited={labelOf(h.through)}>{`the face's — through ${labelOf(h.through)}, your pair ${nameZ(h.edge[0], h.q)} ≡ ${nameZ(h.edge[1], h.r)} on ${labelOf(h.edge[0])}–${labelOf(h.edge[1])}: ${nameA(h.x)} ≡ ${nameB(h.y)}`}</span>
+        <span key={`i-${h.key}`} data-medium-faces-inherited={labelOf(h.through)}>{`the face's — through ${labelOf(h.through)}, your pair ${nameZ(h.corners[0], h.q)} ≡ ${nameZ(h.corners[1], h.r)} on ${labelOf(h.edge[0])}–${labelOf(h.edge[1])}: ${nameA(h.x)} ≡ ${nameB(h.y)}`}</span>
       ))}
       <span data-medium-state-line="true" className="text-stone-400">{stateLine()}</span>
       {pocketLines().map(([k, text]) => <span key={`p-${k}`} data-medium-pocket-line={k} className="text-stone-400">{text}</span>)}
