@@ -24,6 +24,16 @@
 // §f F-D16 THE REFUSED ROUTE on the agent's final save (g2_verdicts.json): a NOT whose word has a direct standing at the endpoints
 //    is that instance's FORM (`— not by way of X, you said`), at Institution–Event, Event–Practical reason and Practical
 //    reason–Institution among others — the census printed; a NOT whose endpoints hold no direct in its word attaches to nothing.
+// §g D14 THE COORDINATE LEG (row 3): F-D14a — on the agent's A record (g2_verdicts_A.json, no corner act) the seed corner's view
+//    read from the coordinate map alone reproduces the own parts of the B record's cards (g2_sorting_B.json — the agent's 70
+//    hand-made coordinate relatings), per site, 29 in all; F-D14b — no coordinate passage's reading departs from the generation-1
+//    reading it inherits; F-D14c — on the C-14 fixture the medial edge AB–AC reads its A-view from the coordinate legs alone, one
+//    passage, B4's control.
+// §h D15 INHERITED IS (row 4): F-D15a both arms at ABAC — the PROPOSAL reads as A's light and composes to no inherited ≡ while the
+//    solid composes the pair (the over-composition, side by side); r0 ≡ Φ1 on B–C makes one inherited ≡ seen through A and through
+//    BC alike; F-D15b on run 1's g2_named_all.json — at every medial edge the inherited ≡ = the FIX generation-1 passages through
+//    the shared corner, and the solid's composed instance pairs exceed them by exactly the PROPOSAL and DISAGREEMENT passages,
+//    counted both ways; the identity regime's readers at generation ≥ 2 measured and printed (remove nothing; the mothership rules).
 //
 // Run: node scripts/diagnose-modes4-the-record-and-the-sorting.cjs
 
@@ -314,6 +324,161 @@ if (fs.existsSync(g2Path)) {
   const formLines = rF ? [...rF.lines('data-medium-own'), ...rF.lines('data-medium-faces'), ...rF.lines('data-medium-pocket-line')].filter(([, s]) => /— not by way of .*, you said/.test(s)) : [];
   check('§f her §6 ON THE PAGE at Institution–Event: wherever the refused instance is listed in the sorting it carries its form — `… — not by way of X, you said` — the passage line keeps `you said: that is not it`; the state line names no refused route', !!ie && !!rF && formLines.length > 0 && /you said: that is not it/.test(rF.text) && !/not by way of/.test(rF.lines('data-medium-state-line')[0][1]), J({ ie, formLines: formLines.map(([, s]) => s.slice(0, 200)), state: rF && rF.lines('data-medium-state-line') }));
 } else note('the customer-side save g2_verdicts.json is not on this checkout — §f skipped');
+
+// ═══ §g D14 — the coordinate leg ═══
+console.log('\n----- §g D14: the seed corner\'s view from the coordinate map — F-D14a on the agent\'s A record against its B cards · F-D14b · F-D14c -----');
+const g2APath = path.join(repoRoot, '.handoff/REPORTS_CUSTOMER-SIDE_2026-09-28/saves/ta2/saves/g2_verdicts_A.json');
+const cardsBPath = path.join(repoRoot, '.handoff/REPORTS_CUSTOMER-SIDE_2026-09-28/saves/ta2/g2_sorting_B.json');
+const cardsAPath = path.join(repoRoot, '.handoff/REPORTS_CUSTOMER-SIDE_2026-09-28/saves/ta2/g2_sorting_A.json');
+if (fs.existsSync(g2APath) && fs.existsSync(cardsBPath) && fs.existsSync(cardsAPath)) {
+  const cardsB = JSON.parse(fs.readFileSync(cardsBPath, 'utf8'));
+  const cardsA = JSON.parse(fs.readFileSync(cardsAPath, 'utf8'));
+  const itemsAfterColon = (t) => { if (!t) return []; const i = t.lastIndexOf(': '); return i < 0 ? [] : t.slice(i + 2).split(' · ').map((x) => x.trim()).filter(Boolean); };
+  const noParens = (t) => t.replace(/[()]/g, '').replace(/ — not by way of .*$/, '').trim();
+  S().importWorkspace(parseWorkspaceImport(JSON.parse(fs.readFileSync(g2APath, 'utf8'))));
+  const shapeA = cur();
+  const factsA = { converses: S().converses, opaque: S().opaque };
+  const medialSites = Object.keys(cardsB).filter((k) => cardsB[k].views.length === 3);
+  const viewName = (v) => { const m = v.match(/^through (.+?): (\d+) passages?$/); if (m) return { name: m[1], n: Number(m[2]) }; const m2 = v.match(/^(.+?) — no passage yet/); return m2 ? { name: m2[1], n: 0 } : { name: v, n: null }; };
+  const faceOf = (faces, name) => { const f = faces.find((t) => t.includes(`through ${name} too:`)); return f ? itemsAfterColon(f).map(noParens) : []; };
+  let totalB = 0; let totalA = 0; let totalMine = 0; let seedPassagesB = 0; let seedPassagesMine = 0; let seedComposedB = 0; let seedComposedMine = 0; let seedMismatch = []; let coordinateViews = 0; let unfound = 0; let departures = []; const affirmations = {}; const d14NotInB = [];
+  const perSite = [];
+  for (const name of medialSites) {
+    const site = Object.values(shapeA.vertices).find((v) => v.data.label === name);
+    if (!site || site.createdBy.sourceVertexIds.length !== 2) { seedMismatch.push(`${name}: no site`); continue; }
+    const [pa, pb] = site.createdBy.sourceVertexIds;
+    const e = edgeBetween(shapeA.edges, pa, pb);
+    const so = SO.sortingOf(shapeA, e, {}, S().rules, factsA);
+    const cv = so.views.find((v) => v.coordinate);
+    const seedName = (cardsA[name].views.map(viewName).find((v) => v.n === 0) || {}).name; // the view with no passage in the A card: the seed corner (the probe's reading)
+    const seedViewB = cardsB[name].views.map(viewName).find((v) => v.name === seedName);
+    if (cv) {
+      coordinateViews += 1; seedPassagesMine += cv.paths.length; seedPassagesB += seedViewB ? seedViewB.n : 0;
+      for (const rp of cv.paths) {
+        if (!rp.inherited || !rp.inherited.path) { unfound += 1; continue; }
+        const g = rp.inherited.path; const h = rp.reading;
+        // an IS composite inherits its class whole; a mode word carried across is read against the child's own relatings and bars
+        const ok = g.composite === M.IS || g.reading === 'NOT' || g.reading === 'UNRULED' || g.reading === 'HELD' ? g.reading === h : (h === 'COMPOSED' || h === 'LIGHT' || h === 'TENSION');
+        if (!ok) departures.push(`${name}: ${g.reading} → ${h}`);
+      }
+    }
+    const r = renderAt(shapeA, site.id);
+    const ownMine = itemsAfterColon(r.lines('data-medium-own')[0] ? r.lines('data-medium-own')[0][1] : '').map(noParens);
+    const ownB = itemsAfterColon(cardsB[name].own).map(noParens);
+    const ownA = itemsAfterColon(cardsA[name].own).map(noParens);
+    totalB += ownB.length; totalA += ownA.length; totalMine += ownMine.length;
+    // the seed view's face line: what the seed corner composes — the B card's (the agent's 70 hand-made coordinate relatings, each passage
+    // AFFIRMED to the word of the direct standing at the child) against D14's from the A record (the generation-1 composite carried across)
+    const seedFaceB = seedName ? faceOf(cardsB[name].faces, seedName) : [];
+    // D14's composed set in the B cards' own form (instance keys, the agent's `→` entries): the coordinate view's centroid keys read back as `x w y`
+    const seedFaceMine = cv ? cv.centroid.map((k) => { const [w, x, y, d] = k.split('|'); return d === '←' ? `${y} ${w} ${x}` : `${x} ${w} ${y}`; }) : [];
+    seedComposedB += seedFaceB.length; seedComposedMine += seedFaceMine.length;
+    // every B affirmation classified by the generation-1 passage D14 inherits for that pair: composed the same (D14 composes it too) ·
+    // the generation-1 passage UNSAID · said NOT there · composed to ANOTHER word there (the child reads a light in that word) · an IS
+    // passage there (a pairing's proposal or fix, never the agent's mode word)
+    for (const item of seedFaceB) {
+      let cls = 'unmatched';
+      if (cv) for (const cp of cv.paths) {
+        const dir = so.instances.find((rr) => rr[1] === cp.path.x && rr[2] === cp.path.y && noParens(`${cp.path.x} ${rr[0]} ${cp.path.y}`) === item);
+        if (!dir) continue;
+        const g = cp.inherited && cp.inherited.path;
+        if (cp.reading === 'COMPOSED' && cp.direct === `${dir[0]}|${cp.path.x}|${cp.path.y}`) cls = 'composed by D14 too';
+        else if (!g) cls = 'generation-1 passage not found';
+        else if (g.reading === 'UNRULED') cls = 'generation-1 passage UNSAID';
+        else if (g.reading === 'NOT') cls = 'generation-1 said NOT';
+        else if (g.composite === M.IS) cls = 'generation-1 an IS passage (' + g.reading + ')';
+        else if (g.composite !== dir[0]) cls = 'generation-1 composed to ANOTHER word';
+        else cls = 'other (' + g.reading + ' → ' + cp.reading + ')';
+        break;
+      }
+      affirmations[cls] = (affirmations[cls] || 0) + 1;
+    }
+    if (!(seedFaceMine.length === seedFaceB.length && seedFaceMine.every((x) => seedFaceB.includes(x)))) seedMismatch.push(`${name}: D14 ${J(seedFaceMine)} · B ${J(seedFaceB)}`);
+    for (const x of seedFaceMine) if (!seedFaceB.includes(x)) d14NotInB.push(`${name}: ${x}`);
+    perSite.push(`${name}: own A-card ${ownA.length} · B-card ${ownB.length} · D14 on the A record ${ownMine.length} · the seed view ${seedName || '?'}: B ${seedViewB ? seedViewB.n : '?'} passages, D14 ${cv ? cv.paths.length : 0}; composes B ${seedFaceB.length} · D14 ${seedFaceMine.length}`);
+  }
+  for (const l of perSite) note(l);
+  note(`own parts over the 12 medial sites — the A card (the device at 925a177, no corner act) ${totalA} · the B card (after the agent's 70 coordinate relatings) ${totalB} · D14 from the A record under D13 ${totalMine}: the third is not the second's twin — D13 re-read the OTHER views too (the agent's chain rules, named on the swapped reading, no longer read the passages that are forks, joins or chains from the far corner; its says on them still do), and the seed view composes the GENERATION-1 composite, not the word the agent affirmed by hand`);
+  note(`the B cards' ${seedComposedB} seed-view affirmations, each classified by the generation-1 passage D14 inherits for its pair: ${J(affirmations)}; D14 composes ${seedComposedMine}, of which not in B: ${d14NotInB.length} ${J(d14NotInB.slice(0, 3))}`);
+  const grounded = affirmations['composed by D14 too'] || 0;
+  const ungrounded = seedComposedB - grounded - (affirmations['unmatched'] || 0);
+  check(`§g F-D14a, THE SEED VIEW'S ARM (measured, the ruling's 29 NOT reproduced — said): on the agent\'s A record (NO coordinate relating present) the seed corner\'s view read from the coordinate map alone holds the passages the agent opened by hand in B — ${seedPassagesMine} against the B cards\' ${seedPassagesB} (the ruling\'s 80 = 80) — but composes the GENERATION-1 composite carried across (D14's letter), ${seedComposedMine} instances, where the agent affirmed ${seedComposedB} by hand to the word of whatever direct stood at the child: every affirmation D14 does not compose is one whose generation-1 passage was UNSAID, said NOT, an IS passage, or composed to another word there — the ${ungrounded} ungrounded affirmations were never his to answer at the child (the ruling §2 (ii)); every one D14 composes, B affirmed too`, medialSites.length === 12 && coordinateViews === 12 && seedPassagesMine === seedPassagesB && seedPassagesMine === 80 && (affirmations['unmatched'] || 0) === 0 && !Object.keys(affirmations).some((k) => k.startsWith('other')) && d14NotInB.length === 0, J({ seedPassagesB, seedPassagesMine, seedComposedB, seedComposedMine, affirmations, d14NotInB: d14NotInB.slice(0, 3) }));
+  check(`§g F-D14b: no coordinate passage\'s reading departs from the generation-1 reading it inherits — an IS composite inherits its class whole (a FIX composed, a PROPOSAL a light, a DISAGREEMENT a tension), NOT not, unsaid unsaid; a mode word carried across is read against the child\'s own relatings and bars — ${seedPassagesMine} passages through the seed corners at ${coordinateViews} sites, ${unfound} whose generation-1 passage was not found`, coordinateViews === 12 && seedPassagesMine > 0 && unfound === 0 && departures.length === 0, J({ coordinateViews, unfound, departures: departures.slice(0, 5) }));
+} else note('the agent\'s A record or the B cards are not on this checkout — §g F-D14a/b skipped');
+// F-D14c — B4's control on the C-14 fixture
+reset(seededWords());
+give('A', 'B', { F7: 'r0' }); give('A', 'C', { F7: 'Φ1' });
+S().applyAmboDissectionToCurrent();
+const Gc = cur(); const ABc = midOf(Gc, byLabel(Gc, 'A'), byLabel(Gc, 'B')); const ACc = midOf(Gc, byLabel(Gc, 'A'), byLabel(Gc, 'C'));
+const eABAC = edgeBetween(Gc.edges, ABc.id, ACc.id);
+const sABAC = SO.sortingOf(Gc, eABAC, {}, [], { converses: [], opaque: [] });
+const cvc = sABAC.views.find((v) => v.coordinate);
+check('§g F-D14c: on the C-14 fixture after one dissection the medial edge AB–AC reads its A-view from the coordinate legs ALONE (no relating on A–AB or A–AC): one passage, `F7≡r0` · `Φ1≡F7` holding F7, its generation-1 passage r0 → F7 → Φ1 on B–C a light there — B4\'s single light through A is that view\'s one path; the other views hold no passage', !!cvc && cvc.view === byLabel(Gc, 'A') && cvc.paths.length === 1 && cvc.paths[0].path.source === 'coordinate' && cvc.paths[0].path.z === 'F7' && cvc.paths[0].reading === 'LIGHT' && M.relatingsHeld(edgeBetween(Gc.edges, byLabel(Gc, 'A'), ABc.id)).length === 0 && M.relatingsHeld(edgeBetween(Gc.edges, byLabel(Gc, 'A'), ACc.id)).length === 0 && sABAC.views.filter((v) => !v.coordinate).every((v) => v.paths.length === 0), J(sABAC.views.map((v) => [v.view, !!v.coordinate, v.paths.length])));
+
+// ═══ §h D15 — the inherited IS, beside the solid's over-composition ═══
+console.log('\n----- §h D15: inherited ≡ = FIX only; the solid\'s over-composition beside it; the identity regime\'s readers at generation ≥ 2 measured -----');
+const { composedOn, edgeKind, spaceOf: spaceOfR } = req('src/lib/spaceOf.ts');
+{
+  const built0 = composedOn(Gc, spaceOfR(Gc, ABc.id), spaceOfR(Gc, ACc.id), [ABc.id, ACc.id], edgeKind(Gc, ABc.id, ACc.id));
+  check('§h F-D15a first arm: the PROPOSAL reads as A\'s light and composes to NO inherited ≡, while the solid composes the pair `F7≡r0` with `Φ1≡F7` into a class (`composedOn`, anchored) — the over-composition read beside D15, neither made to agree', sABAC.inherited.length === 0 && cvc.paths[0].reading === 'LIGHT' && built0.by === 'anchored' && built0.roles.some(([x, y]) => (x === 'F7≡r0' && y === 'Φ1≡F7') || (x === 'Φ1≡F7' && y === 'F7≡r0')), J({ inherited: sABAC.inherited.length, by: built0.by, classes: built0.roles.length }));
+  give('B', 'C', { r0: 'Φ1' });
+  const s2 = SO.sortingOf(cur(), edgeBetween(cur().edges, ABc.id, ACc.id), {}, [], { converses: [], opaque: [] });
+  const cv2 = s2.views.find((v) => v.coordinate);
+  const m2 = req('src/lib/descent.ts').mediumOf(cur(), edgeBetween(cur().edges, ABc.id, ACc.id), {}, []);
+  check('§h F-D15a second arm: r0 ≡ Φ1 on B–C closes the loop of three pairings — ONE inherited ≡ `(IS, F7≡r0, Φ1≡F7)`, the face\'s (A\'s), seen through A (the coordinate view COMPOSED by inheritance) and through BC alike (the opposite-midpoint light through `r0≡Φ1`); derived, stored nowhere (the edge\'s packet holds nothing)', s2.inherited.length === 1 && s2.inherited[0].through === byLabel(cur(), 'A') && s2.inherited[0].q === (edgeBetween(cur().edges, byLabel(cur(), 'B'), byLabel(cur(), 'C')).vertexIds[0] === byLabel(cur(), 'B') ? 'r0' : 'Φ1') && !!cv2 && cv2.paths[0].reading === 'COMPOSED' && cv2.paths[0].by === 'inherited' && m2.lights.length === 1 && m2.lights[0].kind === 'opposite-midpoint' && M.relatingsHeld(edgeBetween(cur().edges, ABc.id, ACc.id)).length === 0, J({ inherited: s2.inherited, lights: m2.lights.map((l) => [l.kind, l.via]) }));
+  // the pairing of two instances through a shared coordinate at the child is refused by name, composed or not (D15 — §210 generalized): the words today are the solid's
+  const eM = edgeBetween(cur().edges, ABc.id, ACc.id);
+  const [i0, j0] = eM.vertexIds[0] === ABc.id ? ['F7≡r0', 'Φ1≡F7'] : ['Φ1≡F7', 'F7≡r0'];
+  const why = S().giveRelating(eM.id, 'IS', i0, j0, '+');
+  check('§h D15 — the act at the child refused by name at every shared-coordinate pair, composed or not: the IS act on `F7≡r0` · `Φ1≡F7` at AB–AC is refused; its words are the SOLID\'s today (`already one with … by the solid — composed · corner A`) — D15\'s reason (the pairing lives one generation down, on B–C) has no form yet: reported, not built', !!why && /by the solid/.test(why.why), J(why));
+  S().withdrawMidpointAttempt(eM.id);
+}
+// F-D15b on run 1's final save: inherited ≡ = FIX; the solid's composed instance pairs = FIX + PROPOSAL + DISAGREEMENT, counted both ways
+const run1Path = path.join(repoRoot, '.handoff/REPORTS_CUSTOMER-SIDE_2026-09-28/saves/ta/saves/g2_named_all.json');
+if (fs.existsSync(run1Path)) {
+  S().importWorkspace(parseWorkspaceImport(JSON.parse(fs.readFileSync(run1Path, 'utf8'))));
+  const sh = cur(); const f1 = { converses: S().converses, opaque: S().opaque };
+  const isSeed = (v) => sh.vertices[v] && sh.vertices[v].createdBy.operation === 'seed';
+  let edges = 0; let fix = 0; let pro = 0; let dis = 0; let composedPairs = 0; let exact = 0; let off = [];
+  for (const e of sh.edges) {
+    const [a, b] = e.vertexIds;
+    if (isSeed(a) || isSeed(b)) continue;
+    const so = SO.sortingOf(sh, e, {}, S().rules, f1);
+    if (!so) continue;
+    const cv = so.views.find((v) => v.coordinate);
+    if (!cv) continue;
+    edges += 1;
+    const F = so.inherited.length;
+    const P = cv.paths.filter((p) => p.reading === 'LIGHT' && p.composite === M.IS).length;
+    const D = cv.paths.filter((p) => p.reading === 'TENSION' && p.composite === M.IS).length;
+    fix += F; pro += P; dis += D;
+    const built = composedOn(sh, spaceOfR(sh, a), spaceOfR(sh, b), [a, b], edgeKind(sh, a, b));
+    const keysA = new Set(cv.paths.map((p) => p.path.x)); const keysB = new Set(cv.paths.map((p) => p.path.y));
+    const pairs = built.roles.filter(([x, y]) => keysA.has(x) && keysB.has(y)).length;
+    composedPairs += pairs;
+    if (pairs === F + P + D) exact += 1; else off.push(`${sh.vertices[a].data.label}–${sh.vertices[b].data.label}: solid ${pairs} · FIX ${F} + PRO ${P} + DIS ${D}`);
+  }
+  note(`run 1\'s final save: ${edges} medial edges with a seed corner\'s view · inherited ≡ (FIX) ${fix} · PROPOSAL ${pro} · DISAGREEMENT ${dis} · the solid\'s composed instance pairs ${composedPairs} · edges where solid = FIX + PRO + DIS: ${exact} of ${edges}`);
+  check('§h F-D15b (measured both ways on run 1\'s g2_named_all.json): at every medial edge the inherited ≡ are exactly the FIX generation-1 passages through the shared corner, and the solid\'s composed instance pairs exceed them by exactly the PROPOSAL and DISAGREEMENT passages there (a derivable count — where it is not exact, the edge is printed)', edges > 0 && exact === edges, J({ edges, fix, pro, dis, composedPairs, off: off.slice(0, 6) }));
+} else note('run 1\'s g2_named_all.json is not on this checkout — F-D15b skipped');
+// the identity regime's readers at generation ≥ 2 under D15 — MEASURED, nothing removed (the mothership rules)
+{
+  reset(seededWords());
+  give('A', 'B', { F7: 'r0', F13: 'r8' }); give('A', 'C', { F7: 'Φ1', F13: 'Φ8' }); give('B', 'C', { r0: 'Φ1' });
+  S().applyAmboDissectionToCurrent();
+  S().selectCell(cur().cells.find((cc) => cc.kind === 'core').id);
+  S().applyAmboDissectionToCurrent();
+  const G2 = cur(); const AB2 = midOf(G2, byLabel(G2, 'A'), byLabel(G2, 'B')); const AC2 = midOf(G2, byLabel(G2, 'A'), byLabel(G2, 'C')); const ABAC2 = midOf(G2, AB2.id, AC2.id);
+  const e2 = edgeBetween(G2.edges, AB2.id, AC2.id);
+  const so2 = SO.sortingOf(G2, e2, {}, [], { converses: [], opaque: [] });
+  const cv = so2.views.find((v) => v.coordinate);
+  const res = spaceOfR(G2, ABAC2.id);
+  const built = composedOn(G2, spaceOfR(G2, AB2.id), spaceOfR(G2, AC2.id), [AB2.id, AC2.id], edgeKind(G2, AB2.id, AC2.id));
+  const { brokenBornActs } = req('src/lib/spaceOf.ts');
+  const broken = brokenBornActs ? brokenBornActs(G2, ABAC2.id) : null;
+  note(`generation 2 at ABAC (F7 ≡ r0, F13 ≡ r8 on A–B; F7 ≡ Φ1, F13 ≡ Φ8 on A–C; r0 ≡ Φ1 on B–C): D15 reads ${so2.inherited.length} inherited ≡ (FIX) and the coordinate view ${cv ? cv.paths.map((p) => p.reading).join(' · ') : 'none'}; the RESOLVER at the same edge composes ${built.roles.length} classes (${built.by}, anchored pairs ${built.anchoredPairs}) — its space at ABAC holds ${res ? res.space.roles.length : '?'} roles, ${res && res.feet ? res.feet.length : '?'} feet; the born-act reading ${broken ? J(broken).slice(0, 120) : 'not read'}`);
+  check('§h the readers at generation ≥ 2 MEASURED under D15 (the resolver DIVERGES from the child at generation ≥ 1, §3): the resolver composes the PROPOSAL pair `F13≡r8`·`Φ8≡F13` as well as the FIX pair, while D15 inherits the FIX alone (1 inherited ≡; the proposal a light) — the divergence is real and printed; nothing removed here, the mothership rules', so2.inherited.length === 1 && !!cv && cv.paths.some((p) => p.reading === 'LIGHT') && cv.paths.some((p) => p.reading === 'COMPOSED') && built.roles.length >= 2, J({ inherited: so2.inherited.map((h) => h.key), view: cv && cv.paths.map((p) => [p.path.x, p.path.y, p.reading]), classes: built.roles.length }));
+}
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-MODES4-THE-RECORD-AND-THE-SORTING: ALL PASS — the direction rides the record positionally and the carry keeps the sentence; the agent\'s converse words reproduce as direction bits with no new word; a chain is one key whichever way it crosses the edge, in its own order and direction, a fork and a join their own keys, a converse reads them as a chain; the shape is said in words and never as an arrow; an opaque mode holds the pair apart; the coordinate pair is refused in her words; a refused route is the instance\'s form' : `DIAGNOSE-MODES4-THE-RECORD-AND-THE-SORTING: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

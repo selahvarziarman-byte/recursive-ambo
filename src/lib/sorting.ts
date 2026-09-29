@@ -46,10 +46,23 @@
 // or the word the NOT record itself names) has a direct standing at the endpoints is that instance's FORM, kept per instance
 // (`refused`), never a state, never a tension (§9.11). Pinned by scripts/diagnose-modes4-the-record-and-the-sorting.cjs beside
 // the B3 witness.
+// STAMP MODES-4 · rows 3 and 4 (the second resolution §2 D14 and §3 D15; ADR 0031 §9.8): THE COORDINATE LEG AND THE INHERITED IS.
+// At a MEDIAL site — X = ⟨P, Q⟩, Y = ⟨P, R⟩ — the seed corner P's view is read FROM THE COORDINATE MAP with no act (D14): a path
+// from X's instance i to Y's instance j through P exists iff π_P(i) = π_P(j), and it IS the generation-1 passage from q to r
+// through P on the edge Q–R, read at the child's resolution — its verdict INHERITED (composed to that passage's composite by his
+// rule or say at generation 1; NOT if he said so there; unruled if unruled there). The coordinate leg has NO WORD: a `coordinate`
+// path carries `''` where a leg's mode would be, offers no rule key and takes no hand (the person answers a passage once, at the
+// generation it belongs to). The composite of such a path is the generation-1 composite carried across: under IS ; IS = IS (the
+// stone's FIX) it is an INHERITED IS-instance of the medial edge (D15 (b)) — derived at every read, stored nowhere, the face's
+// (P's), never own — listed beside the sorting (`inherited`) and not counted among his relatings until the child holds it as
+// record (row 5, D11 as defined); a mode word does not inherit — the path composes to it and reads COMPOSED only where he
+// related it here, else a light. A generation-1 PROPOSAL is P's light here (where the pairing lives is one generation down);
+// a DISAGREEMENT a tension. Pinned by scripts/diagnose-modes4-the-record-and-the-sorting.cjs §g–§h.
 
 import type { Edge, Face, JsonValue, PacketData, Shape, VertexId } from '../types/geometry';
 import { edgeBetween } from './faceReading';
-import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isOpaque, mirrored, NO_FACTS, type Dir, type LexiconFacts, type Relating } from './relatings';
+import { instancesFrom } from './instanceSpace';
+import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isOpaque, mirrored, NO_FACTS, relating, sameEntry, type Dir, type LexiconFacts, type Relating } from './relatings';
 import { facesThrough, respectsOn } from './respects';
 import type { SpaceOfOptions } from './spaceOf';
 
@@ -88,7 +101,7 @@ export interface Path {
   z: string;
   w2: string;
   y: string;
-  source: 'legs' | 'triad'; // two instances on the legs, or a C-14 triad (a path given whole with `composed`)
+  source: 'legs' | 'triad' | 'coordinate'; // two instances on the legs, a C-14 triad (a path given whole with `composed`), or the coordinate map at a medial site (D14: two instances holding one role of the seed corner — wordless legs, the generation-1 passage inherited)
   said: [[string, string, string], [string, string, string]]; // each leg AS HE SAID IT — (subject, mode, object) (M3 S4; D13)
   dirs: [Dir, Dir]; // the two legs' senses along the walk x → z → y (D13) — part of the path; an IS leg reads `→`
   shape: Shape3; // the path's intrinsic shape (§9.14): chain · fork · join
@@ -103,17 +116,23 @@ export interface ReadPath {
   path: Path;
   composite: string | null; // w‴ when a rule, a verdict, a triad or substitution gives it
   compositeDir: Dir | null; // the composite's direction (D13): `→` x w‴ y · `←` y w‴ x
-  by: 'rule' | 'verdict' | 'triad' | 'substitution' | null;
+  by: 'rule' | 'verdict' | 'triad' | 'substitution' | 'inherited' | null;
   exception: boolean;
   reading: PathReading;
   direct: string | null; // the direct instance's key it composes to (COMPOSED) or presses on (TENSION)
   end?: 'source' | 'target' | 'bar' | null; // a TENSION's end: the source's pairing, the target's, or the person's own bar (M2, §9.7)
   recorded?: string | null; // a composed say he stored on a path no rule can read now: read as UNRULED, printed with its withdraw (12:19 (ii))
+  inherited?: { edge: [VertexId, VertexId]; q: string; r: string; path: ReadPath | null }; // a coordinate path's generation-1 passage (D14): the parent edge as stored, q of its first corner and r of its second, its reading there (null where the passage is not found)
 }
+/** D14 — a coordinate path at a medial site, as `sortingOf` hands it to the core: X's instance i, the shared role p of P, Y's instance j; the parent edge Q–R (as stored) with q, r; the generation-1 passage's reading there */
+export interface CoordinatePath { x: string; z: string; y: string; edge: [VertexId, VertexId]; q: string; r: string; path: ReadPath | null; }
+/** D15 — an inherited IS-instance: the person's pairing q ≡ r at generation n−1 read at the child's resolution as (IS, i, j), the face's (P's), never own */
+export interface InheritedIS { key: string; x: string; y: string; through: VertexId; edge: [VertexId, VertexId]; q: string; r: string; }
 export type FootKind = 'FIX' | 'DIS' | 'PRO' | 'UND';
 export interface ViewSorting {
   view: VertexId;
   faceId: string;
+  coordinate: { edge: [VertexId, VertexId] } | null; // D14 — this view is the seed corner's, read from the coordinate map; the parent edge its passages live on
   vacuous: boolean; // no relating from X or Y to Z
   legs: [boolean, boolean]; // which legs hold a relating: X–Z, Z–Y (a triad counts for both) — R1's reason for a zero count
   paths: ReadPath[];
@@ -131,6 +150,7 @@ export interface Sorting {
   views: ViewSorting[];
   own: string[]; // the intersection over the views
   centroid: string[]; // the union
+  inherited: InheritedIS[]; // D15 — the inherited IS-instances (FIX at generation n−1), derived, the face's; not among `instances` until the child holds them as record (row 5)
   // THE SITE'S STATE at §8's precedence (the second resolution; MODES-2 (d)): UNDETECTED (nothing related) · VACUOUS (related, no
   // passage through any view) · UNRULED (a passage nobody has said what it comes to) · POCKET (D9) · EXHAUSTED (nothing theirs
   // alone, a light stands) · CLOSED (nothing theirs alone, no light) · COHERENT (looked at, none unsaid, no tension, no
@@ -189,7 +209,7 @@ export function ruleKeysOf(w: string, w2: string, s1: Dir, s2: Dir, facts: Lexic
 export function sortFromRecords(
   edge: [VertexId, VertexId],
   direct: Relating[],
-  views: Array<{ view: VertexId; faceId: string; xz: Relating[]; zy: Relating[]; triads: Array<[string, string, string]>; verdicts: Array<Omit<VerdictRecord, 'base'>> }>,
+  views: Array<{ view: VertexId; faceId: string; xz: Relating[]; zy: Relating[]; triads: Array<[string, string, string]>; verdicts: Array<Omit<VerdictRecord, 'base'>>; coordinate?: { edge: [VertexId, VertexId]; paths: CoordinatePath[] } }>,
   rules: readonly Rule[],
   facts: LexiconFacts = NO_FACTS,
 ): Sorting {
@@ -219,7 +239,45 @@ export function sortFromRecords(
     return w === IS && pressedOn(x, y) !== null;
   };
   const out: ViewSorting[] = [];
+  const inheritedAll: InheritedIS[] = [];
   for (const v of views) {
+    if (v.coordinate) {
+      // D14 — THE COORDINATE VIEW: every path is two instances holding one role of the seed corner; its reading is the generation-1
+      // passage's, carried across; no key, no hand. D15 — a FIX there is an inherited IS-instance here, the face's
+      const read: ReadPath[] = [];
+      const inheritedHere: InheritedIS[] = [];
+      for (const c of v.coordinate.paths) {
+        const p: Path = { view: v.view, faceId: v.faceId, x: c.x, w: '', z: c.z, w2: '', y: c.y, source: 'coordinate', said: [[c.x, '', c.z], [c.z, '', c.y]], dirs: [ALONG, ALONG], shape: 'chain', from: 'x', keys: [], against: false, mixed: false, readable: false };
+        const g = c.path;
+        const inh = { edge: c.edge, q: c.q, r: c.r, path: g };
+        if (!g) { read.push({ path: p, composite: null, compositeDir: null, by: null, exception: false, reading: 'UNRULED', direct: null, end: null, inherited: inh }); continue; }
+        // the generation-1 path may run r → q where the parent edge is stored R first: its composite's direction is read back onto i → j
+        const forward = g.path.x === c.q;
+        const dirHere = (d: Dir | null): Dir | null => (d === null ? null : forward ? d : d === ALONG ? AGAINST : ALONG);
+        if (g.reading === 'NOT' || g.reading === 'UNRULED' || g.reading === 'HELD') { read.push({ path: p, composite: g.composite, compositeDir: dirHere(g.compositeDir), by: g.reading === 'NOT' ? 'verdict' : null, exception: false, reading: g.reading, direct: null, end: null, inherited: inh }); continue; }
+        if (g.reading === 'TENSION') { read.push({ path: p, composite: g.composite, compositeDir: dirHere(g.compositeDir), by: 'inherited', exception: false, reading: 'TENSION', direct: g.direct, end: g.end, inherited: inh }); continue; }
+        const w = g.composite as string; const d = dirHere(g.compositeDir) as Dir;
+        if (g.reading === 'COMPOSED' && w === IS) {
+          // the stone's FIX at generation n−1: the person's pairing q ≡ r read here as (IS, i, j) — inherited, the face's
+          const key = isKey(c.x, c.y);
+          inheritedHere.push({ key, x: c.x, y: c.y, through: v.view, edge: c.edge, q: c.q, r: c.r });
+          read.push({ path: p, composite: IS, compositeDir: ALONG, by: 'inherited', exception: false, reading: 'COMPOSED', direct: key, end: null, inherited: inh });
+          continue;
+        }
+        if (g.reading === 'LIGHT' && w === IS) { read.push({ path: p, composite: IS, compositeDir: ALONG, by: 'inherited', exception: false, reading: 'LIGHT', direct: null, end: null, inherited: inh }); continue; }
+        // a mode word carried across does not inherit: the face's only where he related it here, else P's light; barred here, a tension
+        const k = keyOf(w, c.x, c.y, d);
+        if (directKeys.has(k)) read.push({ path: p, composite: w, compositeDir: d, by: 'inherited', exception: false, reading: 'COMPOSED', direct: k, end: null, inherited: inh });
+        else if (barred(w, c.x, c.y, d)) read.push({ path: p, composite: w, compositeDir: d, by: 'inherited', exception: false, reading: 'TENSION', direct: k, end: 'bar', inherited: inh });
+        else read.push({ path: p, composite: w, compositeDir: d, by: 'inherited', exception: false, reading: 'LIGHT', direct: null, end: null, inherited: inh });
+      }
+      inheritedAll.push(...inheritedHere);
+      const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').map((r) => r.direct as string));
+      const own = instances.map(relKey).filter((k) => !composedTo.has(k));
+      const centroid = instances.map(relKey).filter((k) => composedTo.has(k));
+      out.push({ view: v.view, faceId: v.faceId, coordinate: { edge: v.coordinate.edge }, vacuous: false, legs: [true, true], paths: read, own, centroid, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet: new Map() });
+      continue;
+    }
     const xzIn = v.xz.filter((r) => r[3] === '+');
     const zyIn = v.zy.filter((r) => r[3] === '+');
     const paths: Path[] = [];
@@ -256,7 +314,8 @@ export function sortFromRecords(
         // composite — the path stays `not yet said` — but it is CARRIED for printing with its withdraw, never hidden (12:19 (ii))
         if (!p.readable && p.source !== 'triad') return { path: p, composite: null, compositeDir: null, by: null, exception, reading: 'UNRULED', direct: null, end: null, recorded: verdict.w3 ?? null };
         composite = verdict.w3 ?? null;
-        compositeDir = composite === null ? null : verdictDir(p);
+        // a record with the legs' senses speaks in the path's own direction; one without them (before D13) was said along the walk, `x w3 y`
+        compositeDir = composite === null ? null : verdict.dirs ? verdictDir(p) : ALONG;
         by = composite === null ? null : 'verdict';
       } else if (p.source === 'triad') {
         composite = IS; compositeDir = ALONG;
@@ -296,7 +355,7 @@ export function sortFromRecords(
       else feet.set(a[1], { kind: kindOf(p), y: p.path.y });
     }
     for (const [x, y, z] of v.triads) if (!feet.has(x)) { const p = read.find((r) => r.path.x === x && r.path.z === z && r.path.y === y); if (p) feet.set(x, { kind: kindOf(p), y }); }
-    out.push({ view: v.view, faceId: v.faceId, vacuous: xzIn.length === 0 && zyIn.length === 0 && v.triads.length === 0, legs: [xzIn.length > 0 || v.triads.length > 0, zyIn.length > 0 || v.triads.length > 0], paths: read, own, centroid, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet });
+    out.push({ view: v.view, faceId: v.faceId, coordinate: null, vacuous: xzIn.length === 0 && zyIn.length === 0 && v.triads.length === 0, legs: [xzIn.length > 0 || v.triads.length > 0, zyIn.length > 0 || v.triads.length > 0], paths: read, own, centroid, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet });
   }
   const keys = instances.map(relKey);
   const ownAll = out.length === 0 ? keys : keys.filter((k) => out.every((v) => v.own.includes(k)));
@@ -343,7 +402,7 @@ export function sortFromRecords(
           : ownAll.length === 0 && instances.length > 0 ? (light ? 'EXHAUSTED' : 'CLOSED')
             : coherent ? 'COHERENT'
               : 'OPEN';
-  return { edge, instances, bars, views: out, own: ownAll, centroid: centroidAll, state, looked, refusedRoutes, refused, unruled, coherent, closed };
+  return { edge, instances, bars, views: out, own: ownAll, centroid: centroidAll, inherited: inheritedAll, state, looked, refusedRoutes, refused, unruled, coherent, closed };
 }
 
 /** whether a verdict record names a path: by its five names and, where the record carries them, the legs' senses; a record WITHOUT
@@ -408,10 +467,38 @@ export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOf
   const [X, Y] = edge.vertexIds as [VertexId, VertexId];
   const direct = [...instancesOn(edge, options), ...barsOn(edge, options)];
   const triadsBy = respectsOn(shape, edge);
+  // D14 — a MEDIAL edge's shared parent P (X = ⟨P, Q⟩, Y = ⟨P, R⟩): P's view is read from the coordinate map, not from relatings
+  const parentsOf = (v: VertexId): VertexId[] => { const w = shape.vertices[v]; return !w || w.createdBy.operation === 'seed' ? [] : [...w.createdBy.sourceVertexIds]; };
+  const px = parentsOf(X); const py = parentsOf(Y);
+  const P = px.length === 2 && py.length === 2 ? (px.find((v) => py.includes(v)) ?? null) : null;
+  const coordinateView = (): { edge: [VertexId, VertexId]; paths: CoordinatePath[] } | null => {
+    if (P === null) return null;
+    const Q = px.find((v) => v !== P) as VertexId; const R = py.find((v) => v !== P) as VertexId;
+    const eQR = edgeBetween(shape.edges, Q, R);
+    if (!eQR) return null;
+    const ePQ = edgeBetween(shape.edges, P, Q); const ePR = edgeBetween(shape.edges, P, R);
+    if (!ePQ || !ePR) return null;
+    const xs = instancesFrom(shape, P, Q, options); const ys = instancesFrom(shape, P, R, options);
+    const parent = sortingOf(shape, eQR, options, rules, facts);
+    const view = parent ? parent.views.find((v) => v.view === P) : undefined;
+    const qFirst = eQR.vertexIds[0] === Q;
+    // the generation-1 path from q to r through P is the one whose two legs ARE i's and j's relatings walked along the parent edge
+    const legOf = (g: Path, n: 0 | 1): Relating => (n === 0 ? relating(g.w, g.x, g.z, '+', g.dirs[0]) : relating(g.w2, g.z, g.y, '+', g.dirs[1]));
+    const paths: CoordinatePath[] = [];
+    for (const i of xs) for (const j of ys) if (i.p === j.p) {
+      const iToP = ePQ.vertexIds[0] === Q ? i.rel : mirrored(i.rel); // i's relating walked Q → P
+      const pToJ = ePR.vertexIds[0] === P ? j.rel : mirrored(j.rel); // j's walked P → R
+      const [leg1, leg2] = qFirst ? [iToP, pToJ] : [mirrored(pToJ), mirrored(iToP)];
+      const g = view ? view.paths.find((pp) => pp.path.z === i.p && (pp.path.source === 'triad' ? (pp.path.x === leg1[1] && pp.path.y === leg2[2] && leg1[0] === IS && leg2[0] === IS) : (sameEntry(legOf(pp.path, 0), leg1) && sameEntry(legOf(pp.path, 1), leg2)))) ?? null : null;
+      paths.push({ x: i.key, z: i.p, y: j.key, edge: [eQR.vertexIds[0] as VertexId, eQR.vertexIds[1] as VertexId], q: qFirst ? i.q : j.q, r: qFirst ? j.q : i.q, path: g });
+    }
+    return { edge: [eQR.vertexIds[0] as VertexId, eQR.vertexIds[1] as VertexId], paths };
+  };
   const views = facesThrough(shape, edge).map((f) => {
     const Z = f.vertexIds.find((v) => v !== X && v !== Y) as VertexId;
     const iX = f.vertexIds.indexOf(X);
     const iY = f.vertexIds.indexOf(Y);
+    if (Z === P) { const cv = coordinateView(); if (cv) return { view: Z, faceId: f.id, xz: [], zy: [], triads: [], verdicts: [], coordinate: cv }; }
     const rec = triadsBy.get(Z);
     // the triad's tuple reads a of the edge's first corner, b of its second, c of the light — the edge's own orientation already
     const triads: Array<[string, string, string]> = rec ? rec.roles.map((t) => [t[0], t[1], t[2]] as [string, string, string]) : [];

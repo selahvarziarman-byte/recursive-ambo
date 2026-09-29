@@ -31,7 +31,7 @@ import { isMoldType } from './castLoader';
 import { edgeBetween } from './faceReading';
 import { recordOf, sharedSignature } from './jRegister';
 import type { Polarity, Side } from './midpointGlue';
-import { ALONG, barsOn, dirOf, instancesOn, IS, type Dir, type Relating } from './relatings';
+import { ALONG, barsOn, dirOf, instancesOn, IS, relating, type Dir, type Relating } from './relatings';
 import { unconditionalOn } from './respects';
 import { nameIn, spaceOf, type SpaceOfOptions } from './spaceOf';
 
@@ -246,6 +246,17 @@ export function childSpaceOf(shape: Shape, v: VertexId, options: SpaceOfOptions 
   }
   memo.set(v, out);
   return out;
+}
+
+/** THE COORDINATE MAP READ OFF THE CHILD (D4, D14): the instances of the born vertex ⟨P, Q⟩ oriented from P to Q — each with its
+ *  P-coordinate `p`, its Q-coordinate `q`, its mode, and the relating it IS as the edge P–Q stores it (`rel`, with its direction) */
+export function instancesFrom(shape: Shape, P: VertexId, Q: VertexId, options: SpaceOfOptions = {}): Array<{ key: string; p: string; q: string; mode: string; rel: Relating }> {
+  const e = edgeBetween(shape.edges, P, Q);
+  if (!e) return [];
+  const child = instanceSpaceOf(shape, e, options);
+  if (!child) return [];
+  const flipped = e.vertexIds[0] !== P;
+  return child.instances.map((i: Instance) => ({ key: i.key, p: flipped ? i.y : i.x, q: flipped ? i.x : i.y, mode: i.mode, rel: relating(i.mode, i.x, i.y, '+', i.dir) }));
 }
 
 /** THE CHILD of an edge on a shape: the corners' spaces through the modes layer's reader (a seed's cast; a born corner's own child — B4), the relatings through B1's one reader, τ from the pairing in force (the drafts where none stands) */

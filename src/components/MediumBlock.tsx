@@ -38,12 +38,21 @@
 //   §5 the per-passage word on a two-mode-leg passage, beside `that is not it`: `that is F2 [your word] Φ4 · say it`.
 //   §6 the refused route on the instance wherever it is listed: `F2 carries Φ3 — not by way of C, you said`.
 //   §8 `both relatings are also said through C or D` in the own line and EXHAUSTED's line alike.
+// STAMP MODES-4 · rows 3–4 (D14, D15; the designer's 10:57 §3, ratified §218): THE INHERITED PASSAGE, placed where it lives. At
+//   a generation-2 medial site the corner both sides hold is the coordinate view — two instances holding one role of A form a
+//   passage through A that IS the generation-1 passage between their other terms, answered once, where it was made: the head
+//   `through A — both sides hold A: 1 passage, answered on B–C`; each line names the two roles here, the role they share, the edge
+//   where the passage lives and its reading there in the words already ratified for that edge — a tension `— on B–C, through A:
+//   against your pair — you paired Φ1 with r1`; composed (an inherited ≡, the face's) `… your pair r0 ≡ Φ8 — so here (r0 ≡ F13) ≡
+//   (F13 ≡ Φ8), the face's`, in the sorting's face's line `the face's — through A, your pair r0 ≡ Φ8 on B–C: (r0 ≡ F13) ≡ (F13 ≡ Φ8)`
+//   (never *said between them*); a light `… only in A's light — r4 and Φ3 not paired there` (no tail inviting the act D15
+//   refuses); said not-it `… you said: that is not it`; unsaid `… not yet said`. `holds` is structure, never a mode. NO HAND.
 
 import { Fragment, useState } from 'react';
 import type { Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore } from '../store/geometryStore';
 import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
-import { inheritedReadingOf, mediumOf, type DerivedLight } from '../lib/descent';
+import { mediumOf, type DerivedLight } from '../lib/descent';
 import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, type Dir, type Relating } from '../lib/relatings';
 import { relKey, type ReadPath, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
 import type { SpaceOfOptions } from '../lib/spaceOf';
@@ -133,8 +142,33 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
     if (p.path.shape === 'chain') return p.path.from === 'y' ? `from ${lb} to ${la}: ` : '';
     return p.path.shape === 'fork' ? `both from ${nameZ(p.path.view, p.path.z)}: ` : `both into ${nameZ(p.path.view, p.path.z)}: `;
   };
-  // a chain from B to A prints its legs in the CHAIN's own order (B's leg first — her §3); every other shape as the walk meets them
-  const passageWords = (p: ReadPath): string => (p.path.from === 'y' && p.path.source !== 'triad' ? `${shapeWords(p)}${legWords(p, 1)} · ${legWords(p, 0)}` : `${shapeWords(p)}${legWords(p, 0)} · ${legWords(p, 1)}`);
+  // a chain from B to A prints its legs in the CHAIN's own order (B's leg first — her §3); every other shape as the walk meets them;
+  // a coordinate path (D14) names the two roles here, the role they share and the edge where the passage lives (her 10:57 §3)
+  const passageWords = (p: ReadPath): string => {
+    if (p.path.source === 'coordinate' && p.inherited) return `${nameA(p.path.x)} · ${nameB(p.path.y)} — both hold ${nameZ(p.path.view, p.path.z)} — on ${labelOf(p.inherited.edge[0])}–${labelOf(p.inherited.edge[1])}, through ${labelOf(p.path.view)}`;
+    return p.path.from === 'y' && p.path.source !== 'triad' ? `${shapeWords(p)}${legWords(p, 1)} · ${legWords(p, 0)}` : `${shapeWords(p)}${legWords(p, 0)} · ${legWords(p, 1)}`;
+  };
+  // D14/D15 — the inherited passage's reading, in the words ratified for the edge it lives on (her 10:57 §3): the generation-1
+  // path's pair named at its own corners; an inherited ≡ `your pair q ≡ r — so here i ≡ j, the face's`; a light `q and r not
+  // paired there` (no tail inviting the act refused at the child); a mode word carried across in the existing forms
+  const inheritedWords = (p: ReadPath, lz: string): string => {
+    const inh = p.inherited; const g = inh?.path;
+    if (!inh || !g) return 'not yet said';
+    const [E0, E1] = inh.edge;
+    const key = (g.direct ?? '').split('|');
+    const pair = `${nameZ(E0, g.path.x)} ≡ ${nameZ(E1, g.path.y)}`;
+    if (p.reading === 'TENSION') {
+      if (g.reading === 'TENSION' && g.end === 'target' && key.length === 3) return `against your pair — you paired ${nameZ(E1, g.path.y)} with ${nameZ(E0, key[1])}`;
+      if (g.reading === 'TENSION' && g.end === 'source' && key.length === 3) return `against your pair — you paired ${nameZ(E0, g.path.x)} with ${nameZ(E1, key[2])}`;
+      if (g.reading === 'TENSION') return 'against your bar — which you barred';
+      return `against your bar — through ${lz} it would say ${compositeWords(p)} — which you barred`;
+    }
+    if (p.reading === 'COMPOSED') return p.composite === IS ? `your pair ${pair} — so here ${nameA(p.path.x)} ≡ ${nameB(p.path.y)}, the face's` : `the face's — said between them and through ${lz} too: ${compositeWords(p)}`;
+    if (p.reading === 'LIGHT') return p.composite === IS ? `only in ${lz}'s light — ${nameZ(E0, g.path.x)} and ${nameZ(E1, g.path.y)} not paired there` : `only in ${lz}'s light — through ${lz} it would read: ${compositeWords(p)} — no relating between ${la} and ${lb} says so`;
+    if (p.reading === 'NOT') return 'you said: that is not it';
+    if (p.reading === 'HELD') { const isLeg = g.path.w === IS ? `${nameZ(E0, g.path.x)} ≡ ${nameZ(p.path.view, g.path.z)}` : `${nameZ(p.path.view, g.path.z)} ≡ ${nameZ(E1, g.path.y)}`; return `held apart: the pair ${isLeg} stops at ${g.path.w === IS ? g.path.w2 : g.path.w}`; }
+    return 'not yet said';
+  };
   // the composite in ITS OWN direction (D13, §9.14): a chain's, the mode leg's under substitution, the rule's for a fork or a join —
   // never a word on swapped coordinates
   const compositeWords = (p: ReadPath): string => (p.compositeDir === AGAINST ? `${nameB(p.path.y)} ${p.composite === null ? '?' : modeWord(p.composite)} ${nameA(p.path.x)}` : `${nameA(p.path.x)} ${p.composite === null ? '?' : modeWord(p.composite)} ${nameB(p.path.y)}`);
@@ -148,6 +182,7 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
   // §3 — held apart (§9.13): the pair named as he said it, the mode's declaration's own words
   const heldWords = (p: ReadPath): string => { const pair = p.path.w === IS ? legWords(p, 0) : legWords(p, 1); const w = p.path.w === IS ? p.path.w2 : p.path.w; return `held apart: the pair ${pair} stops at ${w}`; };
   const readingWords = (p: ReadPath, lz: string): string => {
+    if (p.path.source === 'coordinate') return inheritedWords(p, lz);
     if (p.reading === 'COMPOSED') return `the face's — said between them and through ${lz} too: ${compositeWords(p)}`;
     if (p.reading === 'LIGHT') return `only in ${lz}'s light — through ${lz} it would read: ${compositeWords(p)} — no relating between ${la} and ${lb} says so`;
     if (p.reading === 'TENSION') return pressWords(p, lz);
@@ -160,6 +195,8 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
   // R1 — a zero passage count gives its reason: the empty leg named, or the two legs that do not meet
   const viewHead = (v: ViewSorting): string => {
     const lz = viewLabel(v);
+    // D14 — the coordinate view (her 10:57 §3): its passages live on the parent edge; with none, the reason (R1) — no role of the corner held on both sides
+    if (v.coordinate) return v.paths.length > 0 ? `through ${lz} — both sides hold ${lz}: ${plural(v.paths.length, 'passage', 'passages')}, answered on ${labelOf(v.coordinate.edge[0])}–${labelOf(v.coordinate.edge[1])}` : `${lz} — no passage yet: no role of ${lz} is held on both sides`;
     if (v.paths.length > 0) return `through ${lz}: ${plural(v.paths.length, 'passage', 'passages')}`;
     const empty = [!v.legs[0] ? `${la}–${lz}` : null, !v.legs[1] ? `${lz}–${lb}` : null].filter((s): s is string => s !== null);
     if (empty.length === 2) return `${lz} — no passage yet: nothing related on ${empty[0]} or ${empty[1]}`;
@@ -226,28 +263,11 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
   };
   const passageKey = (p: ReadPath): string => { const { x, w, z, w2, y, dirs } = p.path; return `${x}|${w}|${z}|${w2}|${y}${dirs[0] === ALONG && dirs[1] === ALONG ? '' : `|${dirs.join('')}`}`; };
   // S11 with her §4 — a light through a relating of the third corner says what it goes through (the opposite-midpoint kind, a
-  // light still); the shared-coordinate kind is NOT a light (the second resolution D14/D15, the mothership's amendment to M3): it is
-  // the parent's passage INHERITED, read at the child's resolution with the EXISTING forms (the face's · the light · the tension ·
-  // his say · not yet said) and no new copy until the designer's words; the coordinate kind on a corner edge is the child's
-  // structure, shown by the surface (MODES-3), never a light — no line here
+  // light still); the shared-coordinate pairs are the seed corner's VIEW now (D14 — the sorting's coordinate view above, in her
+  // 10:57 §3 words); the coordinate kind on a corner edge is the child's structure, shown by the surface (MODES-3), never a
+  // light — no line here
   const linkWords = (l: DerivedLight): string => ('role' in l.link ? `both hold ${nameZ(l.through, l.link.role)}` : `by ${nameZ(l.link.corners[0], l.link.relating[0])} ${modeWord(l.link.relating[1])} ${nameZ(l.link.corners[1], l.link.relating[2])}`);
-  const inheritedWords = (l: DerivedLight): { text: string; reading: string } | null => {
-    const got = inheritedReadingOf(shape, l, options, rules, facts);
-    if (!got) return null;
-    const { path: rp, edge: [E0, E1] } = got;
-    const lt = labelOf(l.through);
-    const composite = `${nameA(l.x)} ≡ ${nameB(l.y)}`;
-    const key = (rp.direct ?? '').split('|');
-    const reading = rp.reading === 'COMPOSED' ? `the face's — said between them and through ${lt} too: ${composite}`
-      : rp.reading === 'LIGHT' ? `only in ${lt}'s light — through ${lt} it would read: ${composite} — no relating between ${la} and ${lb} says so`
-        : rp.reading === 'TENSION' ? (rp.end === 'target' && key.length === 3 ? `against your pair — through ${lt} it would say ${composite} — you paired ${nameZ(E1, rp.path.y)} with ${nameZ(E0, key[1])}`
-          : rp.end === 'source' && key.length === 3 ? `against your pair — through ${lt} it would say ${composite} — you paired ${nameZ(E0, rp.path.x)} with ${nameZ(E1, key[2])}`
-            : `against your bar — through ${lt} it would say ${composite} — which you barred`)
-          : rp.reading === 'NOT' ? 'you said: that is not it' : 'not yet said';
-    return { text: `${nameA(l.x)} · ${nameB(l.y)} — ${reading}`, reading: rp.reading };
-  };
   const derivedWords = (l: DerivedLight): { text: string; inherited: string | null } | null => {
-    if (l.kind === 'shared-coordinate') { const w = inheritedWords(l); return w ? { text: w.text, inherited: w.reading } : null; }
     if (l.kind === 'coordinate') return null;
     return { text: l.held ? `in ${labelOf(l.through)}'s light too: ${nameA(l.x)} with ${nameB(l.y)} — ${linkWords(l)} — you related them` : `only in ${labelOf(l.through)}'s light: ${nameA(l.x)} with ${nameB(l.y)} — ${linkWords(l)} — no relating between ${la} and ${lb} says so`, inherited: null };
   };
@@ -361,8 +381,8 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
               const pk = passageKey(p);
               const [sx, sy] = sayEnds(p);
               return (
-                <span key={pk} data-medium-passage={pk} data-medium-passage-reading={p.reading} data-medium-passage-by={p.by ?? undefined} data-medium-passage-end={p.end ?? undefined} data-medium-passage-against={p.path.against ? 'true' : undefined} data-medium-passage-shape={p.path.source === 'triad' ? undefined : p.path.shape} data-medium-passage-from={p.path.from ?? undefined} className="flex flex-wrap items-center gap-x-2">
-                  <span>{`${passageWords(p)} — ${readingWords(p, lz)}`}</span>
+                <span key={pk} data-medium-passage={pk} data-medium-passage-reading={p.reading} data-medium-passage-by={p.by ?? undefined} data-medium-passage-end={p.end ?? undefined} data-medium-passage-against={p.path.against ? 'true' : undefined} data-medium-passage-shape={p.path.source === 'triad' || p.path.source === 'coordinate' ? undefined : p.path.shape} data-medium-passage-from={p.path.source === 'coordinate' ? undefined : p.path.from ?? undefined} data-medium-passage-inherited={p.inherited ? (p.inherited.path ? p.inherited.path.reading : 'none') : undefined} className="flex flex-wrap items-center gap-x-2">
+                  <span>{`${passageWords(p)}${p.path.source === 'coordinate' ? ': ' : ' — '}${readingWords(p, lz)}`}</span>
                   {p.by === 'verdict' || p.recorded ? (
                     <>
                       {/* a composed say stored on a passage no hand of his reaches (a mixed path, before §9.12) is read as `not yet said` but
@@ -418,6 +438,10 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
       ) : null}
       {sorting.views.filter((v) => v.centroid.length > 0).map((v) => (
         <span key={`c-${v.view}`} data-medium-faces={viewLabel(v)}>{`the face's — said between them and through ${viewLabel(v)} too: ${join(v.centroid.map(withForm))}`}</span>
+      ))}
+      {/* D15 — an inherited ≡ is the face's, never said between them (her 10:57 §3): one line per pairing read here */}
+      {sorting.inherited.map((h) => (
+        <span key={`i-${h.key}`} data-medium-faces-inherited={labelOf(h.through)}>{`the face's — through ${labelOf(h.through)}, your pair ${nameZ(h.edge[0], h.q)} ≡ ${nameZ(h.edge[1], h.r)} on ${labelOf(h.edge[0])}–${labelOf(h.edge[1])}: ${nameA(h.x)} ≡ ${nameB(h.y)}`}</span>
       ))}
       <span data-medium-state-line="true" className="text-stone-400">{stateLine()}</span>
       {pocketLines().map(([k, text]) => <span key={`p-${k}`} data-medium-pocket-line={k} className="text-stone-400">{text}</span>)}

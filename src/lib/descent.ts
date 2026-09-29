@@ -7,15 +7,17 @@
 // EVERY NEW EDGE IS A MEDIUM (D2), half-edges included: a medial edge between two born vertices, and a corner edge between a
 // born vertex and its own parent, take the person's relatings by the same act as at generation 0 (`giveRelating` names the
 // child's instance-roles, `x≡y` for IS, `x w y` otherwise); its sorting (B3) reads them as on any edge.
-// THE DERIVABLE LINKS ARE LIGHT, NEVER RELATINGS (D10). On a medium the device can derive two kinds of link and derives them:
-//   · SHARED COORDINATE — two instances sharing a coordinate: on the medial edge XY with X = ⟨P, Q⟩ and Y = ⟨P, R⟩, X's instance
-//     (p, q) and Y's instance (p′, r) with p = p′ — the passage through the shared parent P; on a corner edge P–X, the parent's
-//     role p and every instance of X whose P-coordinate is p — the coordinate map itself;
+// THE DERIVABLE LINKS ARE LIGHT, NEVER RELATINGS (D10, as D14 corrects it — STAMP MODES-4 · row 3, the second resolution §2):
+//   · THE COORDINATE MAP is not a light but the child's STRUCTURE (D14): on the medial edge XY with X = ⟨P, Q⟩ and Y = ⟨P, R⟩ two
+//     instances holding one role of P form a PASSAGE through P — the seed corner's view, read by the SORTING from the coordinate map
+//     with the generation-1 passage's verdict inherited (`sortingOf`, `source: 'coordinate'`); on a corner edge P–X the parent's role
+//     p and every instance of X whose P-coordinate is p — the coordinate map itself, listed here as `coordinate` structure for the
+//     corner site (MODES-3), never a light;
 //   · THROUGH THE OPPOSITE MIDPOINT — X's instance (p, q) and Y's instance (p′, r) linked by an instance (q, r) of the opposite
-//     midpoint Z = ⟨Q, R⟩ (the edge Q–R's own relatings): the passage AB → BC → AC.
-// Each is shown as a LIGHT with its passage named, and is never an instance of the medium: an inner edge with only derivable
-// links reads UNDETECTED with its lights shown (the control), and a person's relating at the same endpoints is an instance
-// beside the light (`held`), never made by it. THE DEVICE HAS NO READER: it lays the lights, the paths, the tensions and the
+//     midpoint Z = ⟨Q, R⟩ (the edge Q–R's own relatings): the passage AB → BC → AC — a LIGHT, shown with its passage named, never
+//     an instance of the medium.
+// An inner edge with only derivable links reads UNDETECTED with its light shown (the control), and a person's relating at the
+// same endpoints is an instance beside the light (`held`), never made by it. THE DEVICE HAS NO READER: it lays the lights, the paths, the tensions and the
 // disagreements side by side; facing them is the person's. Nothing here glues — the built resolver's composed classes on a
 // medial edge (C-8b's structural meet, measured at ABAC: `Φ1≡F7≡F7≡r0` glued with no person's record) stand as the identity
 // regime's built behaviour until B5 shows D10's reading and B6 measures the transport; this module reads beside them.
@@ -23,19 +25,19 @@
 
 import type { Edge, Shape, VertexId } from '../types/geometry';
 import { edgeBetween } from './faceReading';
-import { childSpaceOf, instanceSpaceOf, type Instance, type InstanceSpace } from './instanceSpace';
+import { childSpaceOf, instanceSpaceOf, instancesFrom, type InstanceSpace } from './instanceSpace';
 import { ALONG, dirOf, instancesOn, IS, NO_FACTS, type LexiconFacts, type Relating } from './relatings';
-import { relatingsFrom, sortingOf, type ReadPath, type Rule, type Sorting } from './sorting';
+import { relatingsFrom, sortingOf, type Rule, type Sorting } from './sorting';
 import { edgeKind, type EdgeKind, type SpaceOfOptions } from './spaceOf';
 
-export type LinkKind = 'shared-coordinate' | 'opposite-midpoint' | 'coordinate';
+export type LinkKind = 'opposite-midpoint' | 'coordinate';
 export interface DerivedLight {
   kind: LinkKind;
   x: string; // the first corner's role (a parent's role on a corner edge; an instance key on a medial edge)
   y: string; // the second corner's role
   through: VertexId; // the shared parent, the opposite midpoint's edge's corners' … — the passage, named by its vertex
   via: string; // WHAT THE LINK GOES THROUGH, as a key: the role both hold (shared-coordinate · coordinate) or the opposite midpoint's instance key — two lights with one pair of ends and different links are two lights (M3 S11 with her §4; MODES-2 (b))
-  link: { role: string; restates?: { edge: [VertexId, VertexId]; q: string; r: string } } | { relating: [string, string, string]; corners: [VertexId, VertexId] }; // the same, for the words: the role of `through` — on a medial edge with the generation-1 passage it RESTATES (q of Q, r of R, through P: the second resolution D14) — or the linking relating AS HE SAID IT (subject, mode, object) with its corners
+  link: { role: string } | { relating: [string, string, string]; corners: [VertexId, VertexId] }; // the same, for the words: the role of `through` (the coordinate structure on a corner edge) or the linking relating AS HE SAID IT (subject, mode, object) with its corners
   held: boolean; // a person's IS-instance stands at these endpoints on the medium (beside the light, never made by it)
 }
 export interface Medium {
@@ -54,16 +56,6 @@ const parentsOf = (shape: Shape, v: VertexId): VertexId[] => {
   if (!x || x.createdBy.operation === 'seed') return [];
   return [...x.createdBy.sourceVertexIds];
 };
-/** the instances of the born vertex ⟨P, Q⟩ oriented from P to Q — (w, p, q) — as the child of the edge P–Q holds them */
-function instancesFrom(shape: Shape, P: VertexId, Q: VertexId, options: SpaceOfOptions): Array<{ key: string; p: string; q: string; mode: string }> {
-  const e = edgeBetween(shape.edges, P, Q);
-  if (!e) return [];
-  const child = instanceSpaceOf(shape, e, options);
-  if (!child) return [];
-  const flipped = e.vertexIds[0] !== P;
-  return child.instances.map((i: Instance) => ({ key: i.key, p: flipped ? i.y : i.x, q: flipped ? i.x : i.y, mode: i.mode }));
-}
-
 /** THE DERIVABLE LINKS on a medium, as lights */
 export function derivedLightsOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}): DerivedLight[] {
   if (!edge) return [];
@@ -93,10 +85,7 @@ export function derivedLightsOf(shape: Shape, edge: Edge | undefined, options: S
   const R = py.find((v) => v !== shared) as VertexId;
   const xs = instancesFrom(shape, shared, Q, options); // (w, p, q)
   const ys = instancesFrom(shape, shared, R, options); // (w′, p′, r)
-  // shared coordinate — the passage through the shared parent: the link is the role both hold, and what it RESTATES is the
-  // generation-1 passage from q (of Q) to r (of R) through P (the second resolution D14: read at the child's resolution, its
-  // verdict inherited — never a light of its own, never an entry of the medium; the printing reads `inheritedReadingOf`)
-  for (const i of xs) for (const j of ys) if (i.p === j.p) push('shared-coordinate', i.key, j.key, shared, i.p, { role: i.p, restates: { edge: [Q, R], q: i.q, r: j.q } });
+  // (the shared-coordinate pairs are the seed corner's VIEW, read by the sorting from the coordinate map — D14; no light here)
   // through the opposite midpoint ⟨Q, R⟩ — an instance (q, r) on Q–R links (p, q) and (p′, r); the link is that relating, AS HE
   // SAID IT — `relatingsFrom` walks Q → R mirroring x ↔ y AND the direction where the stored order runs the other way (D13), so the
   // subject is read off the direction bit, never off the stored order; the key is the sentence he said (the instance's own key)
@@ -134,26 +123,4 @@ export function mediumOf(shape: Shape, edge: Edge | undefined, options: SpaceOfO
     lights,
     state: !spaceX || !spaceY ? 'NO-SPACE' : sorting ? sorting.state : 'UNDETECTED',
   };
-}
-
-/**
- * THE INHERITED READING of a shared-coordinate link (the second resolution D14, chartered for M3 by amendment): the passage from
- * q to r through P at generation n−1, read from the PARENT edge Q–R's own sorting — composed there (the person paired q ≡ r: an
- * inherited IS-instance, the face's), a light there (P's light — where the pairing would live), a tension there (his pair at q or
- * r presses), NOT if he said so there, UNRULED if unruled there. The person answers a passage once, at the generation it belongs
- * to. Null for a link that restates nothing (the opposite-midpoint kind, a corner edge's coordinate structure) or where the passage
- * is not found. A reader of the parent's sorting, never of this medium's: the lights and the medium's sorting stay side by side.
- */
-export function inheritedReadingOf(shape: Shape, light: DerivedLight, options: SpaceOfOptions = {}, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS): { path: ReadPath; edge: [VertexId, VertexId] } | null {
-  if (!('role' in light.link) || !light.link.restates) return null;
-  const { edge: [Q, R], q, r } = light.link.restates;
-  const e = edgeBetween(shape.edges, Q, R);
-  if (!e) return null;
-  const parent = sortingOf(shape, e, options, rules, facts);
-  const view = parent ? parent.views.find((v) => v.view === light.through) : undefined;
-  if (!view) return null;
-  const qFirst = e.vertexIds[0] === Q;
-  const [x, y] = qFirst ? [q, r] : [r, q];
-  const path = view.paths.find((p) => p.path.x === x && p.path.y === y && p.path.w === IS && p.path.w2 === IS);
-  return path ? { path, edge: [e.vertexIds[0] as VertexId, e.vertexIds[1] as VertexId] } : null;
 }
