@@ -45,7 +45,8 @@
 // paths of two mode legs, whatever their shape (§9.12). D16 · THE REFUSED ROUTE: a NOT on a path whose word (the rule's composite,
 // or the word the NOT record itself names) has a direct standing at the endpoints is that instance's FORM, kept per instance
 // (`refused`), never a state, never a tension (§9.11). Pinned by scripts/diagnose-modes4-the-record-and-the-sorting.cjs beside
-// the B3 witness.
+// the B3 witness. Row 5 (D11): the medium's instances include the inherited IS (`instancesWithInherited`) — counted, the face's,
+// never own (the coordinate view composes exactly them).
 // STAMP MODES-4 · rows 3 and 4 (the second resolution §2 D14 and §3 D15; ADR 0031 §9.8): THE COORDINATE LEG AND THE INHERITED IS.
 // At a MEDIAL site — X = ⟨P, Q⟩, Y = ⟨P, R⟩ — the seed corner P's view is read FROM THE COORDINATE MAP with no act (D14): a path
 // from X's instance i to Y's instance j through P exists iff π_P(i) = π_P(j), and it IS the generation-1 passage from q to r
@@ -61,7 +62,7 @@
 
 import type { Edge, Face, JsonValue, PacketData, Shape, VertexId } from '../types/geometry';
 import { edgeBetween } from './faceReading';
-import { instancesFrom } from './instanceSpace';
+import { instancesFrom, instancesWithInherited } from './instanceSpace';
 import { AGAINST, ALONG, barsOn, converseOf, dirOf, instancesOn, IS, isOpaque, mirrored, NO_FACTS, relating, sameEntry, type Dir, type LexiconFacts, type Relating } from './relatings';
 import { facesThrough, respectsOn } from './respects';
 import type { SpaceOfOptions } from './spaceOf';
@@ -215,8 +216,14 @@ export function sortFromRecords(
 ): Sorting {
   const instances = direct.filter((r) => r[3] === '+');
   const bars = direct.filter((r) => r[3] === '-');
-  const directKeys = new Set(instances.map(relKey));
-  const barKeys = new Set(bars.map(relKey));
+  // D13 — a declared converse is an EQUATION in the lexicon, `y w′ x ≡ x w y`: a direct (or a bar) `x c y` IS the entry `y w x`, so
+  // the keys a composite is read against are CLOSED under his equations, and a composite met in the converse spelling composes
+  // onto the instance he made (the mothership's 19:28: the inherited composite compared with the direct THROUGH the converses)
+  const spellings = (r: Relating): string[] => { const k = relKey(r); if (r[0] === IS) return [k]; const c = converseOf(facts, r[0]); return c === null ? [k] : [k, keyOf(c, r[1], r[2], dirOf(r) === ALONG ? AGAINST : ALONG)]; };
+  const ownerOf = new Map<string, string>(); // every spelling of an instance → the instance's own key
+  for (const r of instances) for (const k of spellings(r)) if (!ownerOf.has(k)) ownerOf.set(k, relKey(r));
+  const directKeys = new Set(ownerOf.keys());
+  const barKeys = new Set(bars.flatMap(spellings));
   // IS's one-to-one law as an implicit bar AT BOTH ENDS (ADR 0031 §9.7, M2 — the researcher's probe the_far_end_collision, ALL
   // SEALS HELD): the person's IS-instance (x, y′), y′ ≠ y, bars (IS, x, y), and so does (x′, y), x′ ≠ x. The law is the mode's and
   // symmetric, not the reading's direction. A path composing to a barred entry is a TENSION whichever end bars it, and the reading
@@ -272,7 +279,7 @@ export function sortFromRecords(
         else read.push({ path: p, composite: w, compositeDir: d, by: 'inherited', exception: false, reading: 'LIGHT', direct: null, end: null, inherited: inh });
       }
       inheritedAll.push(...inheritedHere);
-      const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').map((r) => r.direct as string));
+      const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').map((r) => ownerOf.get(r.direct as string) ?? (r.direct as string)));
       const own = instances.map(relKey).filter((k) => !composedTo.has(k));
       const centroid = instances.map(relKey).filter((k) => composedTo.has(k));
       out.push({ view: v.view, faceId: v.faceId, coordinate: { edge: v.coordinate.edge }, vacuous: false, legs: [true, true], paths: read, own, centroid, lights: read.filter((r) => r.reading === 'LIGHT'), tensions: read.filter((r) => r.reading === 'TENSION'), unruled: read.filter((r) => r.reading === 'UNRULED'), feet: new Map() });
@@ -342,7 +349,7 @@ export function sortFromRecords(
       }
       return { path: p, composite, compositeDir, by, exception, reading: 'LIGHT', direct: null, end: null };
     });
-    const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').map((r) => r.direct as string));
+    const composedTo = new Set(read.filter((r) => r.reading === 'COMPOSED').map((r) => ownerOf.get(r.direct as string) ?? (r.direct as string)));
     const own = instances.map(relKey).filter((k) => !composedTo.has(k));
     const centroid = instances.map(relKey).filter((k) => composedTo.has(k));
     // the identity regime's kinds per x of X in Z's shadow (an IS-instance from x to Z)
@@ -382,7 +389,7 @@ export function sortFromRecords(
     })();
     if (!wordOfNot) continue;
     const key = keyOf(wordOfNot.word, r.path.x, r.path.y, wordOfNot.dir);
-    if (directKeys.has(key)) refused.set(key, [...(refused.get(key) ?? []), v.view]);
+    if (directKeys.has(key)) { const own = ownerOf.get(key) ?? key; refused.set(own, [...(refused.get(own) ?? []), v.view]); }
   }
   const refusedRoutes = [...refused.values()].reduce((n, vs) => n + vs.length, 0);
   // a verdict disagreement: one word-pair composed to different words across faces
@@ -465,7 +472,9 @@ export function legAgainst(shape: Shape, from: VertexId, to: VertexId): boolean 
 export function sortingOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, rules: readonly Rule[] = [], facts: LexiconFacts = NO_FACTS): Sorting | null {
   if (!edge) return null;
   const [X, Y] = edge.vertexIds as [VertexId, VertexId];
-  const direct = [...instancesOn(edge, options), ...barsOn(edge, options)];
+  // D15 (b): the medium's IS-instances are his pairings AND the inherited ones (a FIX one generation down, read here) — the same
+  // reader the child uses, so the head, the child line and the born-room sentence count as one (§149)
+  const direct = [...instancesWithInherited(shape, edge, options), ...barsOn(edge, options)];
   const triadsBy = respectsOn(shape, edge);
   // D14 — a MEDIAL edge's shared parent P (X = ⟨P, Q⟩, Y = ⟨P, R⟩): P's view is read from the coordinate map, not from relatings
   const parentsOf = (v: VertexId): VertexId[] => { const w = shape.vertices[v]; return !w || w.createdBy.operation === 'seed' ? [] : [...w.createdBy.sourceVertexIds]; };

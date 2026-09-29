@@ -27,6 +27,7 @@
 
 import type { Face, Shape, VertexId } from '../types/geometry';
 import { isSeedVertex, spaceCounts, spaceOf, TRANSPORT_OPTIONS, type Resolved } from '../lib/spaceOf';
+import { transportSpaceOf } from '../lib/transport';
 import { faceReferenceName } from './apertureModel';
 
 export type AbsentResolver = Parameters<typeof faceReferenceName>[2];
@@ -93,9 +94,10 @@ export function liftedConceptOf(form: { shape: Shape; opId: string | null; prove
   }
   if (!record || best === 0) return { state: 'no-record', provenance: form.provenance };
   const memo = new Map<VertexId, Resolved | null>();
+  const childMemo: Parameters<typeof transportSpaceOf>[3] = new Map();
   const vertices: LiftedVertexRow[] = ids.map((id) => {
     const held = Boolean((record as Shape).vertices[id]);
-    const r = held ? spaceOf(record as Shape, id, TRANSPORT_OPTIONS, memo) : null; // B6 (D12): the lift rides IS-instances only
+    const r = held ? transportSpaceOf(record as Shape, id, memo, childMemo) : null; // MODES-4 · row 5 (D11 as defined): a seed its cast, a born corner its CHILD — his instances in every mode, the inherited IS among them
     let absence: string | null = null;
     if (held && !r) {
       // through the ONE resolver: a seed resolves to nothing exactly when it holds no cast — this file reads no cast itself

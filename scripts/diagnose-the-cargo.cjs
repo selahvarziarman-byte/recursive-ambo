@@ -15,9 +15,12 @@
 // §2 THE LAWFUL PATH — the residue at A lifted from gen 1, the hinge door with C-11a's transport (F1's whole line), the room
 //    built and its cell surface read; the cargo's room from the built record and the carried record: the entry corner, the
 //    rods by the seed's edges, the faces by their corners, the door by the row's correspondence and transport; the walks —
-//    F1 out along a rod, through the door, home along a rod (Fix, the reduced word); F2 the same route, lost at the door
+//    F1 out along a rod, through the door, home along a rod (Fix, the reduced word); F7 the same route, lost at the door
 //    (away, by the route); a cargo left behind by a face that does not hold its corner; a spur that returns; a rod the J does
 //    not carry — broke, withdrawable by its one hand; the walker's word going on after a loss (a spur told from a residue).
+//    MODES-4 · row 5 (D12 amended, D11): the room's corners hold the TRANSPORT's spaces (a seed its cast, a born corner its
+//    CHILD — his sentences), a corner rod carries by the coordinate map (a role to the one IS-instance holding it; an
+//    instance back to its coordinate), a medial rod by the IS-instances his and inherited — never the resolver's classes.
 // §3 THE SURFACE — the window's fourth seam field, the crossing hook at BOTH crossing sites, the line mounted once beside the
 //    sentence, the legend's clause; the view hands the walk its room from the built record; the reading's words per state;
 //    purity and the manifest row.
@@ -50,7 +53,6 @@ const note = (line) => console.log(`      ${line}`);
 
 const C = req('src/manuscript/cargoModel.ts');
 const D = req('src/manuscript/doorTransportModel.ts');
-const { spaceOf, composedOn, nameIn } = req('src/lib/spaceOf.ts');
 const { readCastFile } = req('src/lib/castLoader.ts');
 const { createSeedShape } = req('src/data/seeds.ts');
 const { edgeBetween } = req('src/lib/faceReading.ts');
@@ -204,21 +206,15 @@ const give = (X, Y, map) => { const e = edgeBetween(cur().edges, byLabel(cur(), 
 const giveWord = (X, Y, s, t) => { const e = edgeBetween(cur().edges, byLabel(cur(), X), byLabel(cur(), Y)); if (e.vertexIds[0] === byLabel(cur(), X)) S().giveWordPair(e.id, s, t); else S().giveWordPair(e.id, t, s); };
 give('A', 'B', { F1: 'r0', F5: 'r2', F7: 'r8' }); giveWord('A', 'B', 'sustains', 'sustains');
 give('A', 'C', { F1: 'Φ1', F7: 'Φ3' });
-S().selectCell(cur().cells.find((x) => x.kind === 'core').id);
-S().applyAmboDissectionToCurrent();
-const bornPairOn = (X, Y) => {
-  const e = edgeBetween(cur().edges, byLabel(cur(), X), byLabel(cur(), Y));
-  const R0 = spaceOf(cur(), e.vertexIds[0]); const R1 = spaceOf(cur(), e.vertexIds[1]);
-  const c = composedOn(cur(), R0, R1, [e.vertexIds[0], e.vertexIds[1]], 'medial');
-  const dom = new Set(c.roles.map(([x]) => x)); const im = new Set(c.roles.map(([, y]) => y));
-  for (const x of R0.space.roles.map((r) => r.id).filter((id) => !dom.has(id))) for (const y of R1.space.roles.map((r) => r.id).filter((id) => !im.has(id))) {
-    S().giveRolePair(e.id, x, y);
-    if (cur().edges.find((f) => f.id === e.id).identification?.roles.some(([a, b]) => a === x && b === y)) return `${nameIn(R0.space, x)} ↦ ${nameIn(R1.space, y)}`;
-    S().withdrawMidpointAttempt(e.id);
-  }
-  return null;
-};
-note(`the born pair on AB–AC: ${bornPairOn('AB', 'AC')}`);
+// MODES-4 · row 5 (D12 amended, D11): the door and the walk ride the IDENTIFICATION STRUCTURE alone — F1's line closes round
+// either face of the hinge only where HIS pairings close the loop: F1 ≡ Φ1 on A–D as on A–C, and r0 ≡ Φ1 on B–C and on B–D (the
+// inherited ≡ of AB–AC and of AB–AD, D15); F7 ≡ Φ3 stands on A–C with no loop — a cargo that reaches AC and is not carried on.
+// (The second dissection and the born pair on the leftovers of AB–AC that stood here were never the record this room walks.)
+give('A', 'D', { F1: 'Φ1' });
+give('B', 'C', { r0: 'Φ1' });
+give('B', 'D', { r0: 'Φ1' });
+const storedOrder = (X, Y) => { const e = edgeBetween(cur().edges, byLabel(cur(), X), byLabel(cur(), Y)); return `${X}–${Y} ${e.vertexIds[0] === byLabel(cur(), X) ? X : Y} first`; };
+note(`his pairings: A–B F1 ≡ r0 · F5 ≡ r2 · F7 ≡ r8 · A–C F1 ≡ Φ1 · F7 ≡ Φ3 · A–D F1 ≡ Φ1 · B–C r0 ≡ Φ1 · B–D r0 ≡ Φ1 — the edges as stored: ${['A–B', 'A–C', 'A–D', 'B–C', 'B–D'].map((s) => storedOrder(...s.split('–'))).join(' · ')} (an instance is his sentence in the edge's stored order: at AC \`Φ1 ≡ F1\`, at AD \`F1 ≡ Φ1\`)`);
 S().selectShape(G1id); S().selectVertex(null); S().selectEdge(null); S().clearLiftSelection();
 S().selectCell(cur().cells.find((c) => c.kind === 'residue' && c.vertexIds.includes(byLabel(cur(), 'A')) && c.vertexIds.length === 4).id);
 const before = useLiftStore.getState().queue.length;
@@ -246,9 +242,9 @@ const idOf = (label) => byLabel(shape, label);
 const faceIndexOf = (labels) => surface.faces.findIndex((f) => f.corners && sameSet(f.corners.map(lab), labels));
 const doorFace = faceIndexOf(['A', 'AC', 'AB']);
 note(`the room: ${surface.faces.length} faces (${surface.faces.map((f) => `${(f.corners || []).map(lab).join('·')}${f.door ? `=${f.door.pair}${f.door.side}` : ''}`).join(' ')}) · ${surface.rods.length} rods (${surface.rods.map((r) => (r.ends ? r.ends.map(lab).join('–') : '?')).join(' ')}) · entry ${room && lab(room.entry)} · door a ${room && room.doors[0] && room.doors[0].a.map(lab).join('·')} → ${room && room.doors[0] && room.doors[0].b.map(lab).join('·')} · e sizes ${room && room.doors[0] && room.doors[0].e.map((m) => m.size)}`);
-check('§2 ★★ THE CARGO\'S ROOM from the built record and the carried record: the residue\'s four faces carry their corners and its six rods their ends (C-11b\'s additive fields on the cell surface); the entry corner is A (the first in D14 order); the one door pairs A · AC · AB with A · AD · AB (the candidate\'s order) and its transport holds ONE pair at each of the three corners (F1\'s whole line from C-11a); the crossed face A·AC·AB is the door\'s side a',
-  room !== null && surface.faces.length === 4 && surface.faces.every((f) => f.corners && f.corners.length === 3) && surface.rods.length === 6 && surface.rods.every((r) => r.ends) && lab(room.entry) === 'A' && room.doors.length === 1 && room.doors[0] && J(room.doors[0].a.map(lab)) === J(['A', 'AC', 'AB']) && J(room.doors[0].b.map(lab)) === J(['A', 'AD', 'AB']) && room.doors[0].e.every((m) => m.size === 1) && doorFace >= 0 && surface.faces[doorFace].door && surface.faces[doorFace].door.pair === 0 && surface.faces[doorFace].door.side === 'a',
-  J({ room: room !== null, faces: surface.faces.length, rods: surface.rods.length, entry: room && lab(room.entry), doorFace, door: doorFace >= 0 && surface.faces[doorFace].door }));
+check('§2 ★★ THE CARGO\'S ROOM from the built record and the carried record: the residue\'s four faces carry their corners and its six rods their ends (C-11b\'s additive fields on the cell surface); the entry corner is A (the first in D14 order); the one door pairs A · AC · AB with A · AD · AB (the candidate\'s order) and its transport holds ONE pair at each of the three corners (F1\'s whole line from C-11a — at AC `Φ1 ≡ F1 ↦ F1 ≡ Φ1`, AD\'s instance); the crossed face A·AC·AB is the door\'s side a; THE CORNERS\' ROLES ARE THE TRANSPORT\'S (MODES-4 · row 5, D11): A its 14 flow roles, AB the three instances `F1 ≡ r0` · `F5 ≡ r2` · `F7 ≡ r8`, AC the two `Φ1 ≡ F1` · `Φ3 ≡ F7` (C first — A–C as stored), AD the one `F1 ≡ Φ1` — his sentences, never the resolver\'s merged space with the leftovers',
+  room !== null && surface.faces.length === 4 && surface.faces.every((f) => f.corners && f.corners.length === 3) && surface.rods.length === 6 && surface.rods.every((r) => r.ends) && lab(room.entry) === 'A' && room.doors.length === 1 && room.doors[0] && J(room.doors[0].a.map(lab)) === J(['A', 'AC', 'AB']) && J(room.doors[0].b.map(lab)) === J(['A', 'AD', 'AB']) && room.doors[0].e.every((m) => m.size === 1) && room.doors[0].e[1].get('Φ1≡F1') === 'F1≡Φ1' && doorFace >= 0 && surface.faces[doorFace].door && surface.faces[doorFace].door.pair === 0 && surface.faces[doorFace].door.side === 'a' && room.rolesAt(idOf('A')).length === 14 && J(room.rolesAt(idOf('AB')).map((r) => r.name)) === J(['F1 ≡ r0', 'F5 ≡ r2', 'F7 ≡ r8']) && J(room.rolesAt(idOf('AC')).map((r) => r.name)) === J(['Φ1 ≡ F1', 'Φ3 ≡ F7']) && J(room.rolesAt(idOf('AD')).map((r) => r.name)) === J(['F1 ≡ Φ1']),
+  J({ room: room !== null, faces: surface.faces.length, rods: surface.rods.length, entry: room && lab(room.entry), doorFace, door: doorFace >= 0 && surface.faces[doorFace].door, e: room && room.doors[0] && room.doors[0].e.map((m) => [...m]), roles: room && ['A', 'AB', 'AC', 'AD'].map((c) => [c, room.rolesAt(idOf(c)).map((r) => r.name)]) }));
 const words = (st) => C.cargoReading(room, st);
 const pick = words(null);
 check('§2 ★ THE PICK at the entry corner: `carry from the corner A:` with A\'s 14 flow roles in the caster\'s order (F1 first), no line yet', pick.state === 'pick' && pick.pickWords === 'carry from the corner A:' && pick.picks.length === 14 && pick.picks[0].name === 'F1' && pick.words === '' && pick.rods.length === 0, J(pick));
@@ -258,21 +254,27 @@ note(`carrying: ${carrying.words} · rods ${J(carrying.rods.map((r) => r.words))
 check('§2 ★ CARRYING at the entry corner: `carrying F1 — at the corner A`, the rods from A listed by their two corners in the cell\'s own order — A–AC · A–AB · A–AD (nothing lit, nothing marked as carrying or losing)', carrying.state === 'carrying' && carrying.words === 'carrying F1 — at the corner A' && J(carrying.rods.map((r) => r.words).sort()) === J(['A–AB', 'A–AC', 'A–AD']) && carrying.hand === null, J(carrying));
 st = C.stepRod(room, st, idOf('AC'));
 const afterRod = words(st);
-check('§2 ★★ THE PERSON\'S PRESS along A–AC: the cargo arrives by the rod\'s J (the corner edge\'s carried coprojection — F1 becomes AC\'s own class `Φ1 ≡ F1`): `carrying F1 — at the corner AC, came along A–AC as Φ1 ≡ F1`; the rods from AC offered', afterRod.state === 'away' && afterRod.words === 'carrying F1 — at the corner AC, came along A–AC as Φ1 ≡ F1' && afterRod.rods.length === 3, J(afterRod));
+check('§2 ★★ THE PERSON\'S PRESS along A–AC: the cargo arrives by the rod\'s J — the corner edge\'s COORDINATE MAP (MODES-4 · row 5, D12 amended): F1 to the one IS-instance holding it, his sentence `Φ1 ≡ F1` in A–C\'s stored order — `carrying F1 — at the corner AC, came along A–AC as Φ1 ≡ F1`; the rods from AC offered', afterRod.state === 'away' && afterRod.words === 'carrying F1 — at the corner AC, came along A–AC as Φ1 ≡ F1' && afterRod.rods.length === 3, J(afterRod));
 st = C.crossDoor(room, st, doorFace, { pair: 0, side: 'a' });
 const afterDoor = words(st);
-check('§2 ★★ THE WALK\'S CROSSING of the door at AC → AD: the transport at that corner carries `Φ1 ≡ F1 ↦ F1` — `carrying F1 — at the corner AD as F1, by A–AC · a` (identity AND position by the route printed; the route carries the rod step beside the door letter)', afterDoor.state === 'away' && afterDoor.words === 'carrying F1 — at the corner AD as F1, by A–AC · a' && afterDoor.route === 'A–AC · a', J(afterDoor));
+check('§2 ★★ THE WALK\'S CROSSING of the door at AC → AD: the transport at that corner carries `Φ1 ≡ F1 ↦ F1 ≡ Φ1` (AD\'s instance — his sentence on A–D) — `carrying F1 — at the corner AD as F1 ≡ Φ1, by A–AC · a` (identity AND position by the route printed; the route carries the rod step beside the door letter)', afterDoor.state === 'away' && afterDoor.words === 'carrying F1 — at the corner AD as F1 ≡ Φ1, by A–AC · a' && afterDoor.route === 'A–AC · a', J(afterDoor));
 st = C.stepRod(room, st, idOf('A'));
 const home = words(st);
-check('§2 ★★ HOME — Fix: along AD–A the coprojection\'s inverse carries F1 back to A itself — `carrying F1 — returned to itself by A–AC · a · AD–A` (the reduced route printed; the walk closed at its starting corner)', home.state === 'home-fix' && home.words === 'carrying F1 — returned to itself by A–AC · a · AD–A', J(home));
-// F2: the same route, lost at the door
-let s2 = C.pickCargo(room, room.entry, 'F2');
+check('§2 ★★ HOME — Fix: along AD–A the coordinate map carries the instance back to F1 itself — `carrying F1 — returned to itself by A–AC · a · AD–A` (the reduced route printed; the walk closed at its starting corner)', home.state === 'home-fix' && home.words === 'carrying F1 — returned to itself by A–AC · a · AD–A', J(home));
+// F1 round the face by the rods alone — the medial rod AC–AB carries by the INHERITED ≡ (D15 (b), row 5: the child holds it)
+let sM = C.pickCargo(room, room.entry, 'F1');
+sM = C.stepRod(room, sM, idOf('AC')); sM = C.stepRod(room, sM, idOf('AB'));
+const atAB = words(sM);
+const homeM = words(C.stepRod(room, sM, idOf('A')));
+check('§2 ★★ THE INHERITED ≡ ON THE WALK (D15 (b) · D11, MODES-4 · row 5): along the medial rod AC–AB the cargo `Φ1 ≡ F1` arrives as `F1 ≡ r0` by the inherited ≡ of AB–AC — his r0 ≡ Φ1 on B–C closing F1\'s loop, derived at the read, stored nowhere — `carrying F1 — at the corner AB as F1 ≡ r0, by A–AC · AC–AB`; home along AB–A: `carrying F1 — returned to itself by A–AC · AC–AB · AB–A`', atAB.state === 'away' && atAB.words === 'carrying F1 — at the corner AB as F1 ≡ r0, by A–AC · AC–AB' && homeM.state === 'home-fix' && homeM.words === 'carrying F1 — returned to itself by A–AC · AC–AB · AB–A', J([atAB.words, homeM.words]));
+// F7: the same route as F1, lost at the door — it reaches AC (F7 ≡ Φ3 on A–C) and the door's transport at AC holds F1's instance alone
+let s2 = C.pickCargo(room, room.entry, 'F7');
 s2 = C.stepRod(room, s2, idOf('AC'));
-const f2AtAC = words(s2);
+const f7AtAC = words(s2);
 s2 = C.crossDoor(room, s2, doorFace, { pair: 0, side: 'a' });
 const lostAway = words(s2);
-note(`F2: ${f2AtAC.words} → ${lostAway.words} · picks again ${lostAway.pickWords} (${lostAway.picks.length})`);
-check('§2 ★★ REFUSED BY THE DOOR — presence by the route: F2 rides A–AC as itself, and the door at AC does not carry it (the transport holds F1\'s line alone): `carrying F2 — not here by A–AC · a: lost at the door a, which does not carry it` — away (the door\'s net count is one); the picks return: `carry again from the corner A:`', f2AtAC.words === 'carrying F2 — at the corner AC, came along A–AC as F2' && lostAway.state === 'lost-door' && lostAway.words === 'carrying F2 — not here by A–AC · a: lost at the door a, which does not carry it' && lostAway.pickWords === 'carry again from the corner A:' && lostAway.picks.length === 14, J(lostAway));
+note(`F7: ${f7AtAC.words} → ${lostAway.words} · picks again ${lostAway.pickWords} (${lostAway.picks.length})`);
+check('§2 ★★ REFUSED BY THE DOOR — presence by the route: F7 rides A–AC as `Φ3 ≡ F7` (his pairing on A–C), and the door at AC does not carry it (the transport holds F1\'s line alone): `carrying F7 — not here by A–AC · a: lost at the door a, which does not carry it` — away (the door\'s net count is one); the picks return: `carry again from the corner A:` (MODES-4 · row 5: F2, with no pairing on A–C, no longer reaches AC at all — it breaks at the rod, below)', f7AtAC.words === 'carrying F7 — at the corner AC, came along A–AC as Φ3 ≡ F7' && lostAway.state === 'lost-door' && lostAway.words === 'carrying F7 — not here by A–AC · a: lost at the door a, which does not carry it' && lostAway.pickWords === 'carry again from the corner A:' && lostAway.picks.length === 14, J(lostAway));
 // the walker goes on: crossing back (side b at the partner face) cancels the letter — the loss is a RESIDUE at home
 const partnerFace = faceIndexOf(['A', 'AB', 'AD']);
 const s2back = C.crossDoor(room, s2, partnerFace, { pair: 0, side: 'b' });
@@ -283,25 +285,29 @@ s3 = C.crossDoor(room, s3, doorFace, { pair: 0, side: 'a' });
 const s3back = C.crossDoor(room, s3, partnerFace, { pair: 0, side: 'b' });
 const lostSpur = words(s3back);
 note(`after the walker crosses back: ${lostHome.words} · the spur: ${lostSpur.words}`);
-check('§2 ★★ A SPUR TOLD FROM A RESIDUE BY THE REDUCED WORD: the walker\'s word goes on after the loss — crossing back through the partner face cancels the letter: with the rod step standing the loss reads `carrying nothing — F2 did not return: lost around A–AC, at the door a, which does not carry it` (home by the door count); lost at the first crossing from A itself (e_A holds F1\'s pair alone) and the walker back through the door, the route a · A reduces to nothing: `carrying nothing — F2 did not return: a spur — the route reduces to nothing; lost at the door a, which does not carry it`',
-  lostHome.state === 'lost-door' && lostHome.words === 'carrying nothing — F2 did not return: lost around A–AC, at the door a, which does not carry it' && lostSpur.state === 'lost-spur' && lostSpur.words === 'carrying nothing — F2 did not return: a spur — the route reduces to nothing; lost at the door a, which does not carry it', J([lostHome.words, lostSpur.words]));
+check('§2 ★★ A SPUR TOLD FROM A RESIDUE BY THE REDUCED WORD: the walker\'s word goes on after the loss — crossing back through the partner face cancels the letter: with the rod step standing the loss reads `carrying nothing — F7 did not return: lost around A–AC, at the door a, which does not carry it` (home by the door count); F2 lost at the first crossing from A itself (e_A holds F1\'s pair alone) and the walker back through the door, the route a · A reduces to nothing: `carrying nothing — F2 did not return: a spur — the route reduces to nothing; lost at the door a, which does not carry it`',
+  lostHome.state === 'lost-door' && lostHome.words === 'carrying nothing — F7 did not return: lost around A–AC, at the door a, which does not carry it' && lostSpur.state === 'lost-spur' && lostSpur.words === 'carrying nothing — F2 did not return: a spur — the route reduces to nothing; lost at the door a, which does not carry it', J([lostHome.words, lostSpur.words]));
 // left behind: the cargo at AD, the walker leaves by A·AC·AB (which does not hold AD)
 let s4 = C.pickCargo(room, room.entry, 'F1');
 s4 = C.stepRod(room, s4, idOf('AD'));
 s4 = C.crossDoor(room, s4, doorFace, { pair: 0, side: 'a' });
 const stayed = words(s4);
-check('§2 ★★ LEFT BEHIND (§24): the cargo carried to AD, the walker leaving by the face A·AC·AB — `carrying nothing — F1 stayed at AD, in the cell you left: the face you left by, A·AC·AB, does not hold AD` (a positive mark for a loss that is still a presence elsewhere; the face by its D14 name)', stayed.state === 'stayed' && stayed.words === 'carrying nothing — F1 stayed at AD, in the cell you left: the face you left by, A·AC·AB, does not hold AD' && stayed.pickWords === 'carry again from the corner A:', J(stayed));
-// a rod the J does not carry: a C-role at AC (a cargo of AC's own — the model allows a pick anywhere; the window picks at the entry corner) along AC → A: the corner edge's inverse coprojection does not hold it
-const phiAtAC = room.rolesAt(idOf('AC')).find((r) => /^Φ\d+$/.test(r.name));
-let s5 = C.pickCargo(room, idOf('AC'), phiAtAC.id);
-const s5b = C.stepRod(room, s5, idOf('A'));
+check('§2 ★★ LEFT BEHIND (§24): the cargo carried to AD (as `F1 ≡ Φ1`, his pairing on A–D), the walker leaving by the face A·AC·AB — `carrying nothing — F1 stayed at AD, in the cell you left: the face you left by, A·AC·AB, does not hold AD` (a positive mark for a loss that is still a presence elsewhere; the face by its D14 name)', stayed.state === 'stayed' && stayed.words === 'carrying nothing — F1 stayed at AD, in the cell you left: the face you left by, A·AC·AB, does not hold AD' && stayed.pickWords === 'carry again from the corner A:', J(stayed));
+// a rod the J does not carry (MODES-4 · row 5, D12 amended): F2 along A → AC — no pairing of F2 on A–C, the coordinate map's IS fibre over F2 empty; an instance of AC's own, `Φ3 ≡ F7`, along AC → AB — no inherited ≡ carries it (r8 ≡ Φ3 never paired on B–C); every instance carries BACK to its coordinate (AC → A). (Before row 5 this case was a leftover Φ of the resolver's merged space at AC along AC–A; the child holds no such role.)
+let s5 = C.pickCargo(room, room.entry, 'F2');
+const s5b = C.stepRod(room, s5, idOf('AC'));
 const broke = words(s5b);
 const restored = words(C.withdrawStep(s5b));
-note(`a C-role ${phiAtAC.name} at AC along AC–A: ${broke.words} · hand ${broke.hand} · withdrawn: ${restored.words}`);
-check('§2 ★★ BROKE AT THE ROD, withdrawable by its ONE HAND (the designer\'s 1520 §4 — the face block\'s own phrase; nothing was refused, the step was made and the J answered): a role of AC\'s own (C\'s Φ) along AC–A — `carrying nothing — Φ… broke at the rod AC–A: its J does not carry Φ…` · `here, on AC–A: withdraw this step`; the hand restores the cargo to AC and strikes the step from the route',
-  broke.state === 'lost-rod' && broke.words === `carrying nothing — ${phiAtAC.name} broke at the rod AC–A: its J does not carry ${phiAtAC.name}` && broke.hand === 'here, on AC–A: withdraw this step' && restored.state === 'carrying' && restored.words === `carrying ${phiAtAC.name} — at the corner AC` && restored.route === '', J([broke, restored.words]));
-check('§2 ★ A ROD THE J CARRIES moves the cargo by EXACTLY that J: along A–AC every one of A\'s 14 roles arrives as the class the corner edge\'s coprojection names (the same map bornStepOf reads), and along AC–A it comes back to itself (K1 on the record)',
-  room.rolesAt(room.entry).every((r) => { const a = C.stepRod(room, C.pickCargo(room, room.entry, r.id), idOf('AC')); const Jm = room.J(room.entry, idOf('AC')); if (!a.at || a.at.role !== Jm.get(r.id)) return false; const b = C.stepRod(room, a, room.entry); return b.at && b.at.role === r.id; }));
+const onward = words(C.crossDoor(room, s5b, doorFace, { pair: 0, side: 'a' }));
+const phi3 = room.rolesAt(idOf('AC')).find((r) => r.name === 'Φ3 ≡ F7');
+const brokeMedial = phi3 ? words(C.stepRod(room, C.pickCargo(room, idOf('AC'), phi3.id), idOf('AB'))) : null;
+const backs = room.rolesAt(idOf('AC')).map((r) => { const b = C.stepRod(room, C.pickCargo(room, idOf('AC'), r.id), idOf('A')); return [r.name, b.at ? room.nameAt(b.at.corner, b.at.role) : null]; });
+note(`F2 along A–AC: ${broke.words} · hand ${broke.hand} · withdrawn: ${restored.words} · the door pressed while carrying nothing: ${onward.words} (route ${onward.route}) · Φ3 ≡ F7 along AC–AB: ${brokeMedial && brokeMedial.words} · AC's instances back to A: ${J(backs)}`);
+check('§2 ★★ BROKE AT THE ROD, withdrawable by its ONE HAND (the designer\'s 1520 §4 — the face block\'s own phrase; nothing was refused, the step was made and the J answered): F2 along A–AC — no pairing of F2 on A–C, so the coordinate map carries it nowhere (D12 amended) — `carrying nothing — F2 broke at the rod A–AC: its J does not carry F2` · `here, on A–AC: withdraw this step`; the hand restores the cargo to A and strikes the step from the route; a door pressed while carrying nothing leaves the loss standing and the walk\'s word going on (the route grows); an instance of AC\'s own breaks along AC–AB where no inherited ≡ carries it (`Φ3 ≡ F7` — r8 ≡ Φ3 never paired on B–C); and every instance at AC carries back to its coordinate along AC–A (`Φ1 ≡ F1` → F1 · `Φ3 ≡ F7` → F7)',
+  broke.state === 'lost-rod' && broke.words === 'carrying nothing — F2 broke at the rod A–AC: its J does not carry F2' && broke.hand === 'here, on A–AC: withdraw this step' && restored.state === 'carrying' && restored.words === 'carrying F2 — at the corner A' && restored.route === '' && onward.state === 'lost-rod' && onward.words === broke.words && onward.route === 'A–AC · a' && !!brokeMedial && brokeMedial.state === 'lost-rod' && brokeMedial.words === 'carrying nothing — Φ3 ≡ F7 broke at the rod AC–AB: its J does not carry Φ3 ≡ F7' && brokeMedial.hand === 'here, on AC–AB: withdraw this step' && J(backs) === J([['Φ1 ≡ F1', 'F1'], ['Φ3 ≡ F7', 'F7']]), J([broke, restored.words, onward.words, brokeMedial && brokeMedial.words, backs]));
+const roundTrips = room.rolesAt(room.entry).map((r) => { const a = C.stepRod(room, C.pickCargo(room, room.entry, r.id), idOf('AC')); if (!a.at) return [r.name, null]; const b = C.stepRod(room, a, room.entry); return [r.name, room.nameAt(a.at.corner, a.at.role), b.at ? room.nameAt(b.at.corner, b.at.role) : null]; });
+check('§2 ★ A ROD THE J CARRIES moves the cargo by EXACTLY that J (D12 amended — the same map the door\'s side reads, one reader): along A–AC the roles of A that HIS PAIRINGS on A–C hold arrive as their instances — F1 as `Φ1 ≡ F1`, F7 as `Φ3 ≡ F7` — and come back to themselves along AC–A (K1 on the record); the other twelve break at the rod',
+  roundTrips.filter((t) => t[1] !== null).length === 2 && J(roundTrips.find((t) => t[0] === 'F1')) === J(['F1', 'Φ1 ≡ F1', 'F1']) && J(roundTrips.find((t) => t[0] === 'F7')) === J(['F7', 'Φ3 ≡ F7', 'F7']) && roundTrips.filter((t) => t[1] === null).length === 12 && room.rolesAt(room.entry).every((r) => { const a = C.stepRod(room, C.pickCargo(room, room.entry, r.id), idOf('AC')); const Jm = room.J(room.entry, idOf('AC')); return a.at ? a.at.role === Jm.get(r.id) : !Jm.has(r.id); }), J(roundTrips));
 check('§2 ★ THE FREE REDUCTION: a rod walked back cancels (A–AC · AC–A → nothing), a door re-crossed the other way cancels (a · A → nothing), and an unmatched step stays (A–AC · a · AD–A stays whole)',
   C.reduceRoute([{ kind: 'rod', from: 'x', to: 'y' }, { kind: 'rod', from: 'y', to: 'x' }]).length === 0 && C.reduceRoute([{ kind: 'door', pair: 0, side: 'a' }, { kind: 'door', pair: 0, side: 'b' }]).length === 0 && C.reduceRoute([{ kind: 'rod', from: 'x', to: 'y' }, { kind: 'door', pair: 0, side: 'a' }, { kind: 'rod', from: 'z', to: 'x' }]).length === 3);
 
@@ -320,7 +326,7 @@ const readModule = readLf('src/manuscript/exploreRead.ts');
 check('§3 ★ THE VIEW hands the walk its room from the BUILT RECORD (seed + rows) and the carried record by the seed\'s own shape id — since C-12a item 7 through the guarded read module: the view calls `exploreReadOf({ … built, ancestors: built ? shelfAncestors.get(built.seed.id) ?? [] : [], resolveAbsent: resolveAbsentLabel })` once and exploreRead.ts calls `cargoRoomOf(args.built.seed, args.ancestors, args.built.rows, cellSurface, args.resolveAbsent)` once (null on a room with no record); the prop passed once',
   countOf(view, /const built = builtRecords\.find\(\(r\) => r\.key === domain\.key\) \?\? null;/g) === 1 && countOf(view, /exploreReadOf\(\{/g) === 1 && /ancestors: built \? shelfAncestors\.get\(built\.seed\.id\) \?\? \[\] : \[\],/.test(view) && /resolveAbsent: resolveAbsentLabel,/.test(view) && countOf(readModule, /cargoRoomOf\(args\.built\.seed, args\.ancestors, args\.built\.rows, cellSurface, args\.resolveAbsent\)/g) === 1 && !/cargoRoomOf\(/.test(view) && countOf(view, /cargoRoom=\{exploreRoom\.cargoRoom\}/g) === 1);
 check('§3 ★ THE CELL SURFACE carries the corners and the ends ADDITIVELY (`corners?: string[]` on a face, `ends?: [string, string]` on a rod), set on the euclidean and the sealed-model reads; the developed cone surface names none (a multi-cell room carries no cargo — said)', /corners\?: string\[\];/.test(aperture) && /ends\?: \[string, string\];/.test(aperture) && countOf(aperture, /corners: \[\.\.\.face\.cycle\]/g) === 2 && countOf(aperture, /ends: \[edge\.vertexIds\[0\], edge\.vertexIds\[1\]\]/g) === 2 && /const corners = face\.cycle\.map\(stripId\);/.test(aperture));
-check('§3 ★ PURITY: the model imports the types, the resolver, the born step, the face-reading type, the trace\'s letter, the aperture model and the C-10 reader — no react, no store, no component; classified NOT_FROZEN in the manifest', J(froms(model)) === J(['../types/geometry', '../lib/spaceOf', '../lib/bornFace', '../lib/faceReading', './orderTrace', './apertureModel', './liftedConceptModel']) && !/from 'react'|store\//.test(model) && /^NOT_FROZEN src\/manuscript\/cargoModel\.ts — STAMP C-11b/m.test(manifest), J(froms(model)));
+check('§3 ★ PURITY: the model imports the types, the resolver\'s name reader, the TRANSPORT (MODES-4 · row 5 — in place of the born step: the corner\'s space and the rod\'s J are the transport\'s), the face-reading type, the trace\'s letter, the aperture model and the C-10 reader — no react, no store, no component; classified NOT_FROZEN in the manifest', J(froms(model)) === J(['../types/geometry', '../lib/spaceOf', '../lib/transport', '../lib/faceReading', './orderTrace', './apertureModel', './liftedConceptModel']) && !/from 'react'|store\//.test(model) && /^NOT_FROZEN src\/manuscript\/cargoModel\.ts — STAMP C-11b/m.test(manifest), J(froms(model)));
 check('§3 the model mentions neither `.cast` nor `ConceptSpace` (the ten readers stand — the corner space is the resolver\'s output)', !/\.cast\b|\bConceptSpace\b/.test(model));
 
 console.log(`\nDIAGNOSE-THE-CARGO: ${failures === 0 ? 'ALL PASS' : `${failures} FAILED`}`);

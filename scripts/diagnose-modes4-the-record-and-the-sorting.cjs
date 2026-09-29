@@ -34,6 +34,12 @@
 //    BC alike; F-D15b on run 1's g2_named_all.json — at every medial edge the inherited ≡ = the FIX generation-1 passages through
 //    the shared corner, and the solid's composed instance pairs exceed them by exactly the PROPOSAL and DISAGREEMENT passages,
 //    counted both ways; the identity regime's readers at generation ≥ 2 measured and printed (remove nothing; the mothership rules).
+//    §g's ONE CHECK (the mothership's 19:28, ADR §9.16): the inherited composite compared with the direct THROUGH the agent's declared
+//    converses (D13's equation) — the own parts after that check are F-D14a's number.
+// §i ROW 5 — THE TRANSPORT (D12 amended, D11): the lift carries the CHILD; a step across a seed or medial edge is the IS-instances,
+//    his and inherited (F-D15c: across a lifted generation-2 medial edge the FIX pairs ride and nothing of the mode relatings); a
+//    corner edge's road is the IS fibre, at most one — the fibre census on the fixture and on the agent's save (no role held by two
+//    IS-instances, or the witness names it and STOPS); a mode instance counted, never walked; an empty fibre stops the cargo at the rod.
 //
 // Run: node scripts/diagnose-modes4-the-record-and-the-sorting.cjs
 
@@ -405,6 +411,52 @@ if (fs.existsSync(g2APath) && fs.existsSync(cardsBPath) && fs.existsSync(cardsAP
   const ungrounded = seedComposedB - grounded - (affirmations['unmatched'] || 0);
   check(`§g F-D14a, THE SEED VIEW'S ARM (measured, the ruling's 29 NOT reproduced — said): on the agent\'s A record (NO coordinate relating present) the seed corner\'s view read from the coordinate map alone holds the passages the agent opened by hand in B — ${seedPassagesMine} against the B cards\' ${seedPassagesB} (the ruling\'s 80 = 80) — but composes the GENERATION-1 composite carried across (D14's letter), ${seedComposedMine} instances, where the agent affirmed ${seedComposedB} by hand to the word of whatever direct stood at the child: every affirmation D14 does not compose is one whose generation-1 passage was UNSAID, said NOT, an IS passage, or composed to another word there — the ${ungrounded} ungrounded affirmations were never his to answer at the child (the ruling §2 (ii)); every one D14 composes, B affirmed too`, medialSites.length === 12 && coordinateViews === 12 && seedPassagesMine === seedPassagesB && seedPassagesMine === 80 && (affirmations['unmatched'] || 0) === 0 && !Object.keys(affirmations).some((k) => k.startsWith('other')) && d14NotInB.length === 0, J({ seedPassagesB, seedPassagesMine, seedComposedB, seedComposedMine, affirmations, d14NotInB: d14NotInB.slice(0, 3) }));
   check(`§g F-D14b: no coordinate passage\'s reading departs from the generation-1 reading it inherits — an IS composite inherits its class whole (a FIX composed, a PROPOSAL a light, a DISAGREEMENT a tension), NOT not, unsaid unsaid; a mode word carried across is read against the child\'s own relatings and bars — ${seedPassagesMine} passages through the seed corners at ${coordinateViews} sites, ${unfound} whose generation-1 passage was not found`, coordinateViews === 12 && seedPassagesMine > 0 && unfound === 0 && departures.length === 0, J({ coordinateViews, unfound, departures: departures.slice(0, 5) }));
+  // THE ONE CHECK (the mothership's 19:28; the researcher's 19:26; ADR 0031 §9.16): the agent declared converse words by hand (record2.cjs's
+  // CONVERSE table); D13 makes a declared converse an EQUATION and §9.14 reads a fork or a join through it as a chain — so the inherited
+  // composite is compared with the direct THROUGH those equations, and the own parts after that are F-D14a's number
+  const { CONVERSE: CONV } = require(recordPath);
+  const declared = []; const seenPair = new Set();
+  for (const [w, c] of Object.entries(CONV)) { if (w === c) continue; const k = [w, c].sort().join('|'); if (seenPair.has(k)) continue; seenPair.add(k); declared.push([w, c]); }
+  const rulesRead = (facts) => { const per = new Map(); for (const e of shapeA.edges) { const so = SO.sortingOf(shapeA, e, {}, S().rules, facts); if (!so) continue; for (const v of so.views) for (const rp of v.paths) if (rp.by === 'rule' && rp.path.readable) { const r = S().rules.find((ru) => rp.path.keys.some((k) => SO.ruleReads(ru, k))); if (r) per.set(r.join('|'), (per.get(r.join('|')) || 0) + 1); } } return per; };
+  const readBefore = rulesRead(factsA);
+  useGeometryStore.setState({ converses: declared });
+  const factsC = { converses: S().converses, opaque: S().opaque };
+  const readAfter = rulesRead(factsC);
+  let ownAfter = 0; let composedAfter = 0; const affirmationsC = {}; const perSiteC = [];
+  for (const name of medialSites) {
+    const site = Object.values(shapeA.vertices).find((v) => v.data.label === name);
+    const [pa, pb] = site.createdBy.sourceVertexIds;
+    const e = edgeBetween(shapeA.edges, pa, pb);
+    const so = SO.sortingOf(shapeA, e, {}, S().rules, factsC);
+    const cv = so.views.find((v) => v.coordinate);
+    ownAfter += so.own.length; composedAfter += cv ? cv.centroid.length : 0;
+    const seedName = (cardsA[name].views.map(viewName).find((v) => v.n === 0) || {}).name;
+    const seedFaceB = seedName ? faceOf(cardsB[name].faces, seedName) : [];
+    for (const item of seedFaceB) {
+      let cls = 'unmatched';
+      if (cv) for (const cp of cv.paths) {
+        const dir = so.instances.find((rr) => rr[1] === cp.path.x && rr[2] === cp.path.y && noParens(`${cp.path.x} ${rr[0]} ${cp.path.y}`) === item);
+        if (!dir) continue;
+        const g = cp.inherited && cp.inherited.path;
+        if (cp.reading === 'COMPOSED' && (so.centroid.includes(`${dir[0]}|${cp.path.x}|${cp.path.y}`) || so.centroid.includes(`${dir[0]}|${cp.path.x}|${cp.path.y}|←`))) cls = 'composed by D14 too';
+        else if (!g) cls = 'generation-1 passage not found';
+        else if (g.reading === 'UNRULED') cls = 'generation-1 passage UNSAID';
+        else if (g.reading === 'NOT') cls = 'generation-1 said NOT';
+        else if (g.composite === M.IS) cls = 'generation-1 an IS passage (' + g.reading + ')';
+        else if (g.composite !== dir[0]) cls = 'generation-1 composed to ANOTHER word';
+        else if (cp.reading !== 'COMPOSED') cls = 'generation-1 composed in the OTHER direction (the same word, read the other way round)';
+        else cls = 'other (' + g.reading + ' → ' + cp.reading + ')';
+        break;
+      }
+      affirmationsC[cls] = (affirmationsC[cls] || 0) + 1;
+    }
+    perSiteC.push(`${name}: own ${so.own.length} · the seed view composes ${cv ? cv.centroid.length : 0}`);
+  }
+  const sum = (m) => [...m.values()].reduce((a, b) => a + b, 0);
+  note(`THE ONE CHECK — ${declared.length} converse equations declared from the agent's table (as D13's equations, not words): the own parts over the 12 medial sites ${totalMine} → ${ownAfter}; the seed view composes ${seedComposedMine} → ${composedAfter}; the B affirmations by class: ${J(affirmationsC)}; the agent's ${S().rules.length} chain rules read ${readBefore.size} rule(s) on ${sum(readBefore)} passage(s) without the equations and ${readAfter.size} rule(s) on ${sum(readAfter)} passage(s) with them`);
+  for (const l of perSiteC) note(l);
+  check(`§g THE ONE CHECK (ADR §9.16; the mothership\'s 19:28): the inherited composite compared with the direct THROUGH the agent\'s declared converses — its table holds ${declared.length} equations after deduplication (the report said 24, ⚠ its own count) — D13\'s equations: a direct in the converse word is the same relating and composes; a fork or a join reads as a chain through them. F-D14a\'s NUMBER is the own parts AFTER the check: **35** over the 12 medial sites (38 before it; the B card\'s 29 was the agent\'s hand reading; the A card 41); the seed view composes 25 of the B cards\' 39 affirmations (13 before the check — 12 of the "another word" affirmations were the converse spelling of the generation-1 composite), the 13 restating an UNSAID passage stay ungrounded, 1 is the same word read the other way round; the agent\'s 27 chain rules read 4 passages, with or without the equations (the rest were named on the swapped printing)`, declared.length === 37 && ownAfter === 35 && composedAfter === 25 && (affirmationsC['composed by D14 too'] || 0) === 25 && (affirmationsC['generation-1 passage UNSAID'] || 0) === 13 && (affirmationsC['unmatched'] || 0) === 0 && !Object.keys(affirmationsC).some((k) => k.startsWith('other')) && sum(readBefore) === 4 && sum(readAfter) === 4, J({ declared: declared.length, ownAfter, composedAfter, affirmationsC, rulesBefore: sum(readBefore), rulesAfter: sum(readAfter) }));
+  useGeometryStore.setState({ converses: [] });
 } else note('the agent\'s A record or the B cards are not on this checkout — §g F-D14a/b skipped');
 // F-D14c — B4's control on the C-14 fixture
 reset(seededWords());
@@ -480,6 +532,61 @@ if (fs.existsSync(run1Path)) {
   note(`generation 2 at ABAC (F7 ≡ r0, F13 ≡ r8 on A–B; F7 ≡ Φ1, F13 ≡ Φ8 on A–C; r0 ≡ Φ1 on B–C): D15 reads ${so2.inherited.length} inherited ≡ (FIX) and the coordinate view ${cv ? cv.paths.map((p) => p.reading).join(' · ') : 'none'}; the RESOLVER at the same edge composes ${built.roles.length} classes (${built.by}, anchored pairs ${built.anchoredPairs}) — its space at ABAC holds ${res ? res.space.roles.length : '?'} roles, ${res && res.feet ? res.feet.length : '?'} feet; the born-act reading ${broken ? J(broken).slice(0, 120) : 'not read'}`);
   check('§h the readers at generation ≥ 2 MEASURED under D15 (the resolver DIVERGES from the child at generation ≥ 1, §3): the resolver composes the PROPOSAL pair `F13≡r8`·`Φ8≡F13` as well as the FIX pair, while D15 inherits the FIX alone (1 inherited ≡; the proposal a light) — the divergence is real and printed; nothing removed here, the mothership rules', so2.inherited.length === 1 && !!cv && cv.paths.some((p) => p.reading === 'LIGHT') && cv.paths.some((p) => p.reading === 'COMPOSED') && built.roles.length >= 2, J({ inherited: so2.inherited.map((h) => h.key), view: cv && cv.paths.map((p) => [p.path.x, p.path.y, p.reading]), classes: built.roles.length }));
 }
+
+// ═══ §i ROW 5 — the transport rides the identification structure; the lift carries the child ═══
+console.log('\n----- §i row 5: the transport — IS his and inherited across a seed or medial edge, the IS fibre across a corner edge, the child at a born corner; F-D15c; the fibre census -----');
+const T = req('src/lib/transport.ts');
+{
+  reset(seededWords());
+  give('A', 'B', { F7: 'r0', F13: 'r8' }); give('A', 'C', { F7: 'Φ1', F13: 'Φ8' }); give('B', 'C', { r0: 'Φ1' });
+  said('A', 'F2', 'carries', 'B', 'r3');
+  S().applyAmboDissectionToCurrent();
+  S().selectCell(cur().cells.find((cc) => cc.kind === 'core').id);
+  S().applyAmboDissectionToCurrent();
+  const G2 = cur(); const A2 = byLabel(G2, 'A'); const AB2 = midOf(G2, A2, byLabel(G2, 'B')); const AC2 = midOf(G2, A2, byLabel(G2, 'C'));
+  const eM = edgeBetween(G2.edges, AB2.id, AC2.id);
+  // a mode relating on the medial edge AB–AC — never ridden
+  const [i0, j0] = eM.vertexIds[0] === AB2.id ? ['F13≡r8', 'Φ8≡F13'] : ['Φ8≡F13', 'F13≡r8'];
+  const okMode = S().giveRelating(eM.id, 'carries', i0, j0, '+');
+  const step = T.transportStepOf(cur(), AB2.id, AC2.id);
+  const back = T.transportStepOf(cur(), AC2.id, AB2.id);
+  const childAB = T.transportSpaceOf(cur(), AB2.id);
+  check('§i F-D15c: across the generation-2 medial edge AB–AC the transport carries the FIX pair and NOTHING of the mode relating — the step AB → AC is ONE entry, the inherited ≡ `F7≡r0 ↦ Φ1≡F7` (his pairings F7 ≡ r0, F7 ≡ Φ1, r0 ≡ Φ1 closing the loop); the mode relating `(F13≡r8) carries (Φ8≡F13)` he made on the edge rides nowhere; the step back is its inverse', okMode === null && !!step && step.size === 1 && step.get('F7≡r0') === 'Φ1≡F7' && !!back && back.size === 1 && back.get('Φ1≡F7') === 'F7≡r0' && !step.has('F13≡r8'), J({ okMode, step: step && [...step], back: back && [...back] }));
+  check('§i D11 — the transport\'s space at a born corner is the CHILD: AB\'s three instances `F7≡r0`, `F13≡r8` and `F2 carries r3` (his relatings in every mode), labelled by his sentences (`F7 ≡ r0`, `F2 carries r3`), never the resolver\'s merged space with the leftovers; a seed\'s is its cast (A\'s 14 roles)', !!childAB && childAB.origin === 'derived' && childAB.space.roles.length === 3 && childAB.space.roles.some((r) => r.id === 'F7≡r0' && r.label === 'F7 ≡ r0') && childAB.space.roles.some((r) => r.id === 'F2 carries r3' && r.label === 'F2 carries r3') && T.transportSpaceOf(cur(), A2).origin === 'seed' && T.transportSpaceOf(cur(), A2).space.roles.length === 14, J(childAB && childAB.space.roles.map((r) => [r.id, r.label])));
+  // the corner edge A–AB: the IS fibre, at most one; the mode instance counted, never walked; the empty fibre stops the cargo
+  const stepA = T.transportStepOf(cur(), A2, AB2.id);
+  const census = T.fibreCensus(cur(), A2, AB2.id);
+  check('§i THE FIBRE (the mothership\'s 19:23 (2), held 19:28): across the corner edge A–AB the road from A is the IS-instance holding the role, at most one — F7 ↦ `F7≡r0`, F13 ↦ `F13≡r8`; F2, held only by the mode instance `F2 carries r3`, is COUNTED (mode-only) and never walked; the eleven roles no instance holds have an empty fibre (the cargo stops at the rod); back from AB every instance goes to its A-coordinate (the mode instance too — a coordinate is structure)', !!stepA && stepA.size === 2 && stepA.get('F7') === 'F7≡r0' && stepA.get('F13') === 'F13≡r8' && !stepA.has('F2') && census.one === 2 && census.modeOnly === 1 && census.none === 11 && census.severalIS.length === 0 && T.transportStepOf(cur(), AB2.id, A2).get('F2 carries r3') === 'F2', J({ step: stepA && [...stepA], census }));
+  S().withdrawRelating(eM.id, 'carries', i0, j0);
+}
+// the fibre census on the agent's final save: no role held by two IS-instances on any corner edge, or the witness names it and STOPS
+if (fs.existsSync(g2Path)) {
+  S().importWorkspace(parseWorkspaceImport(JSON.parse(fs.readFileSync(g2Path, 'utf8'))));
+  const sh = cur();
+  const tot = { edges: 0, toGen1: 0, toGen2: 0, roles: 0, none: 0, one: 0, modeOnly: 0, severalIS: [] };
+  const born = { edges: 0, roles: 0, none: 0, one: 0, modeOnly: 0, severalIS: 0 };
+  const perSeed = new Map();
+  const seenPC = new Set(); // a corner edge held by two cells is one edge (each cell holds its own record of a shared face)
+  for (const e of sh.edges) {
+    const [a, b] = e.vertexIds;
+    const P = sh.vertices[b]?.createdBy.sourceVertexIds.includes(a) ? a : sh.vertices[a]?.createdBy.sourceVertexIds.includes(b) ? b : null;
+    if (!P) continue;
+    const C = P === a ? b : a;
+    if (seenPC.has(`${P}|${C}`)) continue;
+    seenPC.add(`${P}|${C}`);
+    const c = T.fibreCensus(sh, P, C);
+    const roles = T.transportSpaceOf(sh, P)?.space.roles.length ?? 0;
+    if (sh.vertices[P].createdBy.operation !== 'seed') { born.edges += 1; born.roles += roles; born.none += c.none; born.one += c.one; born.modeOnly += c.modeOnly; born.severalIS += c.severalIS.length; continue; } // a born parent's roles are its child's instances (D11) — counted apart, below
+    const bothSeeds = sh.vertices[C].createdBy.sourceVertexIds.every((v) => sh.vertices[v]?.createdBy.operation === 'seed');
+    tot.edges += 1; tot[bothSeeds ? 'toGen1' : 'toGen2'] += 1; tot.roles += roles; tot.none += c.none; tot.one += c.one; tot.modeOnly += c.modeOnly; for (const x of c.severalIS) tot.severalIS.push({ edge: `${sh.vertices[P].data.label}–${sh.vertices[C].data.label}`, ...x });
+    const ls = sh.vertices[P].data.label;
+    (perSeed.get(ls) ?? perSeed.set(ls, { roles, rows: [] }).get(ls)).rows.push(`${sh.vertices[C].data.label} ${c.one}/${c.modeOnly}/${c.none}`);
+  }
+  note(`the agent's save: ${tot.edges} corner edges from the four seeds (${tot.toGen1} to their generation-1 midpoints, ${tot.toGen2} to the generation-2 children on their own edges) · ${tot.roles} roles — held by one IS-instance ${tot.one} · by mode instances only ${tot.modeOnly} · by nothing ${tot.none} · by TWO IS-instances ${tot.severalIS.length}`);
+  for (const [s, v] of perSeed) note(`  ${s} (${v.roles} roles) → ${v.rows.join(' · ')}   (one IS / mode only / nothing, per child)`);
+  note(`  the ${born.edges} corner edges from BORN parents (their roles their children's instances, D11): ${born.roles} roles — one ${born.one} · mode only ${born.modeOnly} · nothing ${born.none} · two ${born.severalIS} (measured, not pinned: the born parents hold his MODE instances on the generation-1 edges, none of them held by an IS-instance of a generation-2 child)`);
+  check('§i THE FIBRE CENSUS on the agent\'s final save (run 2, g2_verdicts.json — four seeds Action · Fact · Meaning · Value of 5 roles each; the four residues dissected too): the 24 corner edges from the seeds — 3 from each seed to its generation-1 midpoints and 3 to the generation-2 children on its own edges — hold 120 roles: NONE held by one IS-instance (the agent paired nothing on a seed edge in run 2, so the transport\'s road across every one of these edges is EMPTY), 92 held by mode instances only (counted, never walked), 28 held by nothing; NONE held by two IS-instances (the one-to-one law kept under D15 — were it broken the transport would STOP and name the edge and the two instances): measured, said', tot.edges === 24 && tot.toGen1 === 12 && tot.toGen2 === 12 && tot.roles === 120 && tot.severalIS.length === 0 && tot.one === 0 && tot.modeOnly === 92 && tot.none === 28, J(tot));
+} else note('g2_verdicts.json not on this checkout — the fibre census skipped');
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-MODES4-THE-RECORD-AND-THE-SORTING: ALL PASS — the direction rides the record positionally and the carry keeps the sentence; the agent\'s converse words reproduce as direction bits with no new word; a chain is one key whichever way it crosses the edge, in its own order and direction, a fork and a join their own keys, a converse reads them as a chain; the shape is said in words and never as an arrow; an opaque mode holds the pair apart; the coordinate pair is refused in her words; a refused route is the instance\'s form' : `DIAGNOSE-MODES4-THE-RECORD-AND-THE-SORTING: ${failures} FAILED`}`);
 process.exit(failures === 0 ? 0 : 1);

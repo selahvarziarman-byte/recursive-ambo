@@ -40,8 +40,8 @@
 // trace). ADDITIVE · DERIVE-ONLY · react-free (the window draws what this returns; the witness runs this under node).
 
 import type { Shape } from '../types/geometry';
-import { nameIn, spaceOf, TRANSPORT_OPTIONS, type Resolved } from '../lib/spaceOf';
-import { bornStepOf } from '../lib/bornFace';
+import { nameIn, type Resolved } from '../lib/spaceOf';
+import { transportSpaceOf, transportStepOf } from '../lib/transport';
 import type { RoleMap } from '../lib/faceReading';
 import { doorLetter } from './orderTrace';
 import {
@@ -145,7 +145,8 @@ export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow
   const memo = new Map<string, Resolved | null>();
   const corners = seed.cells[0].vertexIds;
   const label = (v: string): string => cornerDisplayName(seed, v, resolveAbsent) ?? (v.split(':').pop() ?? v);
-  const spaceAt = (v: string): CornerSpace | null => (record.vertices[v] ? spaceOf(record, v, TRANSPORT_OPTIONS, memo)?.space ?? null : null); // B6 (D12): the cargo rides IS-instances only
+  const childMemo: Parameters<typeof transportSpaceOf>[3] = new Map();
+  const spaceAt = (v: string): CornerSpace | null => (record.vertices[v] ? transportSpaceOf(record, v, memo, childMemo)?.space ?? null : null); // MODES-4 · row 5 (D11): a born corner's space is its child
   const strip = (id: string): string => id.replace(/^c\d+:/, '');
   const roles: Record<string, Array<{ id: string; name: string }>> = {};
   for (const v of corners) { const s = spaceAt(v); roles[v] = s ? s.roles.map((r) => ({ id: r.id, name: nameIn(s, r.id) })) : []; }
@@ -176,7 +177,7 @@ export function cargoRoomOf(seed: Shape, carried: Shape[], rows: AperturePairRow
     corners,
     label,
     roles,
-    J: (from, to) => (record.vertices[from] && record.vertices[to] ? bornStepOf(record, from, to, TRANSPORT_OPTIONS, memo)?.map ?? null : null),
+    J: (from, to) => (record.vertices[from] && record.vertices[to] ? transportStepOf(record, from, to) : null), // D12 amended: IS (his and inherited) on a seed or medial edge; the coordinate map on a corner edge
     rods: cellSurface.rods.flatMap((r) => (r.ends ? [{ a: r.ends[0], b: r.ends[1] }] : [])),
     faces,
     doors,

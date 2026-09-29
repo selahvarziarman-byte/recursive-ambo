@@ -459,6 +459,11 @@ def door_chip(page, corner, side, name):
     return page.locator(f'[data-door-corner="{corner}"] [data-door-side="{side}"] [data-door-role-name="{name}"]')
 
 
+def door_chip_named(page, corner, side, pattern):
+    """a chip by a regex on its name — a born corner's chips are the CHILD's instances, his sentences in the edge's stored order (MODES-4 · row 5)"""
+    return page.locator(f'[data-door-corner="{corner}"] [data-door-side="{side}"] [data-door-role]').filter(has_text=re.compile(pattern))
+
+
 def door_arm(page, args):
     """C-11a: the door's act at the eye — the gen-1 residue placed, the aperture opened on it, the hinge door A·AC·AB ~ A·AB·AD
     given, F1 ↦ F1 taken with its whole line, a pair refused by the lines, a pair refused by the record, the line withdrawn
@@ -524,39 +529,52 @@ def door_arm(page, args):
     page.evaluate("() => { const d = document.querySelector('[data-door]'); if (d) d.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
     res['scrolled'] = page.evaluate(MEASURE_DOOR)
     # TAKEN — F1 ↦ F1 at A, the whole line with it
-    door_chip(page, 0, 'A', 'F1').first.click(); page.wait_for_timeout(200)
+    def click_chip(corner, side, pattern):
+        c = door_chip_named(page, corner, side, pattern)
+        if not c.count():
+            res.setdefault('missingChips', []).append([corner, side, pattern]); return False
+        c.first.click(); page.wait_for_timeout(200); return True
+    # TAKEN — F13 ↦ F13 at A, the whole line with it (MODES-4 · row 5: F13's loop closed by his pairings — see main)
+    click_chip(0, 'A', r'^F13$')
     res['picked'] = page.evaluate(MEASURE_DOOR)
-    door_chip(page, 0, 'B', 'F1').first.click(); page.wait_for_timeout(500)
+    click_chip(0, 'B', r'^F13$'); page.wait_for_timeout(300)
     res['taken'] = page.evaluate(MEASURE_DOOR)
     page.screenshot(path=f"{args.frames}/concept-layer-door-taken-{args.width}x{args.height}.png")
-    # REFUSED BY THE LINES — at AC → AD, an A-role (on a cycle: A's roles ride A→AC→AB→A through the corner edges) pointed at a
-    # D-role (a line of one): one continues and the other stops. At the eye C holds the T cell and D holds Φ; F2 is glued
-    # nowhere on the path, Φ1 is D's own.
-    door_chip(page, 1, 'A', 'F2').first.click(); page.wait_for_timeout(200)
-    door_chip(page, 1, 'B', 'Φ1').first.click(); page.wait_for_timeout(500)
+    # REFUSED BY THE LINES — at A → AC, the corner edge (MODES-4 · row 5: the coordinate map carries F1 to AC as r2 ≡ F1 — his S1 pair
+    # on A–C — and carries F2, paired nowhere, to nothing): F1 at A pointed at F2 at A on the other face — one continues and the other
+    # stops. Neither is on F13's standing line (AD's one chip, F13 ≡ Φ8, IS on it: pointing at it meets the FORM's refusal, measured).
+    click_chip(0, 'A', r'^F1$')
+    click_chip(0, 'B', r'^F2$'); page.wait_for_timeout(300)
     res['refusedLines'] = page.evaluate(MEASURE_DOOR)
     page.screenshot(path=f"{args.frames}/concept-layer-door-refused-{args.width}x{args.height}.png")
     hand = page.locator('[data-door-withdraw-attempt]')
     if hand.count():
         hand.first.click(); page.wait_for_timeout(300)
     res['afterHand'] = page.evaluate(MEASURE_DOOR)
-    # REFUSED BY THE RECORD — at AB → AB (the hinge corner the two faces share; B holds Φ), Φ4 ↦ Φ9: two lines of one, equal in
-    # shape, and the record refuses — the mold's member_status said two ways on the glued tuple (Φ4 has · Φ9 none-by-nature)
-    door_chip(page, 2, 'A', 'Φ4').first.click(); page.wait_for_timeout(200)
-    door_chip(page, 2, 'B', 'Φ9').first.click(); page.wait_for_timeout(500)
-    res['refusedRecord'] = page.evaluate(MEASURE_DOOR)
+    # AT THE HINGE CORNER AB (shared by the two faces; its chips his four instances on A–B): F5 ≡ Φ7 pointed at F8 ≡ Φ2 — two paths of
+    # one from AB, equal in shape — the record's word on the glued tuple MEASURED: refused by the RECORD (the tuple named) or taken;
+    # the attempt (or the line) withdrawn either way. The Φ4 ↦ Φ9 refusal of the leftovers has no instance under D11 — the chips are
+    # the children's; the record refusal's mechanism is pinned under node on the reference's fixture (diagnose-the-doors-act §1).
+    click_chip(2, 'A', r'^(F5 ≡ Φ7|Φ7 ≡ F5)$')
+    click_chip(2, 'B', r'^(F8 ≡ Φ2|Φ2 ≡ F8)$'); page.wait_for_timeout(300)
+    res['hingePair'] = page.evaluate(MEASURE_DOOR)
     page.screenshot(path=f"{args.frames}/concept-layer-door-record-{args.width}x{args.height}.png")
     hand = page.locator('[data-door-withdraw-attempt]')
     if hand.count():
         hand.first.click(); page.wait_for_timeout(300)
+    else:
+        wl2 = page.locator('[data-door-withdraw-line]').filter(has_text=re.compile(r'F5 ≡ Φ7|Φ7 ≡ F5'))
+        if wl2.count():
+            wl2.first.click(); page.wait_for_timeout(300)
+    res['afterHinge'] = page.evaluate(MEASURE_DOOR)
     # the ONE hand: the whole line withdrawn — the empty state again; then given again for the room
     wl = page.locator('[data-door-withdraw-line]')
     res['lineHands'] = wl.count()
     if wl.count():
         wl.first.click(); page.wait_for_timeout(400)
     res['withdrawn'] = page.evaluate(MEASURE_DOOR)
-    door_chip(page, 0, 'A', 'F1').first.click(); page.wait_for_timeout(200)
-    door_chip(page, 0, 'B', 'F1').first.click(); page.wait_for_timeout(500)
+    click_chip(0, 'A', r'^F13$')
+    click_chip(0, 'B', r'^F13$'); page.wait_for_timeout(300)
     res['givenAgain'] = page.evaluate(MEASURE_DOOR)
     # the GLUE — the S² gate judges; the room joins the dim-3 band; the rows reset
     glue = page.get_by_role("button", name=re.compile(r"^glue — the S² gate judges$"))
@@ -1302,7 +1320,7 @@ def cargo_arm_body(page, args, res, prefix='written:dim3:built-', tag='cargo'):
     res['threshold'] = page.evaluate("() => ({ seam: Boolean(window.__exploreWindow), seamOpen: window.__exploreWindow ? window.__exploreWindow.open : null, gpu: window.__exploreWindow ? window.__exploreWindow.gpu : null, frames: window.__exploreWindow ? window.__exploreWindow.renderFrames : null, windows: document.querySelectorAll('[data-explore-window]').length, refusals: [...document.querySelectorAll('div, p, span')].map((e) => e.textContent.trim()).filter((t) => /refus|no walk|nothing recurs|does not open|there is no/i.test(t) && t.length < 400).slice(0, 4) })")
     res['opened'] = page.evaluate(MEASURE_CARGO)
     page.screenshot(path=f"{args.frames}/concept-layer-{tag}-pick-{args.width}x{args.height}.png")
-    pick = page.locator('[data-explore-cargo-pick]').filter(has_text=re.compile(r'^F1$'))
+    pick = page.locator('[data-explore-cargo-pick]').filter(has_text=re.compile(r'^F13$'))  # MODES-4 · row 5: the role whose loop his pairings close
     if not pick.count():
         return
     pick.first.click(); page.wait_for_timeout(400)
@@ -1330,7 +1348,8 @@ def cargo_arm_body(page, args, res, prefix='written:dim3:built-', tag='cargo'):
         r.first.click(); page.wait_for_timeout(400)
     res['home'] = page.evaluate(MEASURE_CARGO)
     page.screenshot(path=f"{args.frames}/concept-layer-{tag}-home-{args.width}x{args.height}.png")
-    # a second cargo the door does not carry: the window closed and reopened (a room opened is a walk begun), F2 picked
+    # a second cargo the door does not carry: the window closed and reopened (a room opened is a walk begun), F1 picked — r2 ≡ F1
+    # on A–C carries it to AC, where the door's transport holds F13's instance alone (MODES-4 · row 5)
     page.keyboard.press("Escape"); page.wait_for_timeout(500)
     chip = page.locator('button[aria-label="explore inside"]')
     if chip.count():
@@ -1340,12 +1359,13 @@ def cargo_arm_body(page, args, res, prefix='written:dim3:built-', tag='cargo'):
         except Exception as e:
             res['reopenWait'] = str(e)[:200]
         res['reopened'] = page.evaluate(MEASURE_CARGO)
-        pick = page.locator('[data-explore-cargo-pick]').filter(has_text=re.compile(r'^F2$'))
+        pick = page.locator('[data-explore-cargo-pick]').filter(has_text=re.compile(r'^F1$'))
         if pick.count():
             pick.first.click(); page.wait_for_timeout(300)
             r = cargo_rod(page, 'A–AC')
             if r.count():
                 r.first.click(); page.wait_for_timeout(300)
+            res['lostAtAC'] = page.evaluate(MEASURE_CARGO)
             page.evaluate("() => { window.__exploreWindow.paceOverride = 0.6; }")
             page.locator('[data-explore-window] canvas').first.hover(); page.wait_for_timeout(200)
             page.keyboard.press('a')
@@ -1356,6 +1376,20 @@ def cargo_arm_body(page, args, res, prefix='written:dim3:built-', tag='cargo'):
             page.wait_for_timeout(800)
             res['lost'] = page.evaluate(MEASURE_CARGO)
             page.screenshot(path=f"{args.frames}/concept-layer-{tag}-lost-{args.width}x{args.height}.png")
+            # MODES-4 · row 5 — a role no pairing on A–C holds BREAKS AT THE ROD (the coordinate map's IS fibre over F2 is empty): F2
+            # picked from the returned picks, the rod A–AC pressed — `broke at the rod A–AC` with its one hand, which withdraws the step
+            pick2 = page.locator('[data-explore-cargo-pick]').filter(has_text=re.compile(r'^F2$'))
+            if pick2.count():
+                pick2.first.click(); page.wait_for_timeout(300)
+                r = cargo_rod(page, 'A–AC')
+                if r.count():
+                    r.first.click(); page.wait_for_timeout(300)
+                res['brokeRod'] = page.evaluate(MEASURE_CARGO)
+                page.screenshot(path=f"{args.frames}/concept-layer-{tag}-broke-{args.width}x{args.height}.png")
+                hand = page.locator('[data-explore-cargo-withdraw]')
+                if hand.count():
+                    hand.first.click(); page.wait_for_timeout(300)
+                res['brokeWithdrawn'] = page.evaluate(MEASURE_CARGO)
 
 
 
@@ -1459,8 +1493,8 @@ def door_arm_gen2(page, args):
         sel_m.select_option(hinge['value']); page.wait_for_timeout(700)
         res['empty'] = page.evaluate(MEASURE_DOOR)
         page.evaluate("() => { const d = document.querySelector('[data-door]'); if (d) d.scrollIntoView({ block: 'start' }); }"); page.wait_for_timeout(300)
-        door_chip(page, 0, 'A', 'F1').first.click(); page.wait_for_timeout(200)
-        door_chip(page, 0, 'B', 'F1').first.click(); page.wait_for_timeout(500)
+        door_chip(page, 0, 'A', 'F13').first.click(); page.wait_for_timeout(200)  # MODES-4 · row 5: F13's cycle runs through ABAC and ABAD by the inherited ≡
+        door_chip(page, 0, 'B', 'F13').first.click(); page.wait_for_timeout(500)
         res['taken'] = page.evaluate(MEASURE_DOOR)
         page.screenshot(path=f"{args.frames}/concept-layer-gen2-door-taken-{args.width}x{args.height}.png")
         glue = page.get_by_role("button", name=re.compile(r"^glue — the S² gate judges$"))
@@ -1704,8 +1738,23 @@ def main():
         out['abBefore'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs', 'own', 'ownPoints', 'ownBoth')}
         out['selectAC4'] = select_vertex_labelled(page, "AC")
         out['acBefore'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'wordPairs')}
+        # MODES-4 · row 5 (D12 amended, D11): the door and the cargo ride the IDENTIFICATION STRUCTURE — a role crosses the room's
+        # door only where HIS pairings close its loop on BOTH faces of the hinge. F13's loop: F13 ≡ Φ8 on A–B (Φ8 ≡ r0 stands on B–C
+        # and r0 ≡ F13 on A–C — the inherited ≡ of AB–AC), F13 ≡ Φ8 on A–D and Φ8 ≡ Φ8 on B–D (both hold Φ — the inherited ≡ of
+        # AB–AD). Given at the octahedron's midpoints before the gen-1 lift (the lifted record is the file as it stands); A–B's pair
+        # is withdrawn after the lift so the gen-2 readings against abBefore stand; A–D's and B–D's, read by no other arm, stay.
+        select_core(page)
+        out['loopGiven'] = {}
+        for label, x, y in (("AB", "F13", "Φ8"), ("AD", "F13", "Φ8"), ("BD", "Φ8", "Φ8")):
+            select_vertex_labelled(page, label); pair(page, x, y)
+            out['loopGiven'][label] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'refusal')}
         # C-11a — the gen-1 residue at A lifted NOW, before the second dissection (the door arm builds a room from it)
         out['liftGen1'] = lift_gen1_arm(page, args)
+        select_core(page); select_vertex_labelled(page, "AB")
+        h = page.locator('[data-midpoint-withdraw="role|F13|Φ8"], [data-midpoint-withdraw="role|Φ8|F13"]')
+        if h.count():
+            h.first.click(); page.wait_for_timeout(400)
+        out['loopWithdrawnAB'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines',)}
         # C-7e (Δ84 "pay the price") — THE SECOND DISSECTION AT THE EYE: with the pairs given at AB (3 + τ₃) and at AC
         # (1 + 1), the core dissected again; at gen 2 the octahedron (the gen-1 core, now the parent) holds the gen-1
         # midpoints as its corners — AB selected from it, and what the person sees read: the pairs, the own diagram, the
@@ -1753,7 +1802,16 @@ def main():
                 out['canvasFace'] = canvas_face_arm(page, args)
                 out['selectABAC5'] = select_vertex_labelled(page, "ABAC")
                 # C-10 — THE LIFT CARRIES: with the born pair standing on AB–AC, lift the gen-1 residue at A and read it on the Manuscript
+                # (MODES-4 · row 5: F13 ≡ Φ8 given on A–B again for the lift — the gen-2 room's door rides F13's cycle through ABAC and
+                # ABAD by the inherited ≡ — and withdrawn after it, the fixture as the later arms expect it)
+                select_cell(page, r"^octahedron"); select_vertex_labelled(page, "AB"); pair(page, "F13", "Φ8")
+                out['loopGivenGen2'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines', 'refusal')}
                 out['lift'] = lift_arm(page, args)
+                select_cell(page, r"^octahedron"); select_vertex_labelled(page, "AB")
+                h2 = page.locator('[data-midpoint-withdraw="role|F13|Φ8"], [data-midpoint-withdraw="role|Φ8|F13"]')
+                if h2.count():
+                    h2.first.click(); page.wait_for_timeout(400)
+                out['loopWithdrawnGen2'] = {k: v for k, v in page.evaluate(MEASURE).items() if k in ('lines',)}
                 # C-11a — THE DOOR's ACT at the aperture's pairing row, on the gen-1 residue placed beside the C-10 form
                 out['door'] = door_arm(page, args)
                 # C-11b — THE CARGO ON THE WALK: the room just built, walked with F1 in hand

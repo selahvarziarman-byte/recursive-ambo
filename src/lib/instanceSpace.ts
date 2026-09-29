@@ -32,6 +32,7 @@ import { edgeBetween } from './faceReading';
 import { recordOf, sharedSignature } from './jRegister';
 import type { Polarity, Side } from './midpointGlue';
 import { ALONG, barsOn, dirOf, instancesOn, IS, relating, type Dir, type Relating } from './relatings';
+import type { Edge as EdgeT } from '../types/geometry';
 import { unconditionalOn } from './respects';
 import { nameIn, spaceOf, type SpaceOfOptions } from './spaceOf';
 
@@ -41,6 +42,7 @@ export interface Instance {
   x: string; // the role of the edge's first corner
   y: string; // the role of its second
   dir: Dir; // the direction, positional (D13): `→` x is the subject, `←` y is; IS carries `→` (symmetric)
+  inherited?: true; // D15 — an IS-instance read from a FIX one generation down (his pairing at the child's resolution), derived at every read, stored nowhere
 }
 export interface InducedEntry {
   word: string; // the child's word key: `s≡t`, `A:s` or `B:t`
@@ -85,7 +87,7 @@ export interface InstanceSpace {
 export const instanceKey = (mode: string, x: string, y: string, dir: Dir = ALONG): string => (mode === IS ? `${x}≡${y}` : dir === ALONG ? `${x} ${mode} ${y}` : `${y} ${mode} ${x}`);
 
 /** THE CHILD from two casts and the relatings across them (the pure core; `instanceSpaceOf` reads them off a shape) */
-export function instanceSpaceFromCasts(A: ConceptSpace, B: ConceptSpace, relatings: Relating[], tau: Array<[string, string]>): InstanceSpace {
+export function instanceSpaceFromCasts(A: ConceptSpace, B: ConceptSpace, relatings: Relating[], tau: Array<[string, string]>, inherited: ReadonlySet<string> = new Set()): InstanceSpace {
   const X = recordOf(A);
   const Y = recordOf(B);
   const shared = sharedSignature(X, Y, tau, { propose: false });
@@ -119,7 +121,7 @@ export function instanceSpaceFromCasts(A: ConceptSpace, B: ConceptSpace, relatin
       continue;
     }
     const key = instanceKey(r[0], r[1], r[2], dirOf(r));
-    if (!instances.some((i) => i.key === key)) instances.push({ key, mode: r[0], x: r[1], y: r[2], dir: dirOf(r) });
+    if (!instances.some((i) => i.key === key)) instances.push({ key, mode: r[0], x: r[1], y: r[2], dir: dirOf(r), ...(inherited.has(key) ? { inherited: true as const } : {}) });
   }
   const byX = new Map<string, Instance[]>();
   const byY = new Map<string, Instance[]>();
@@ -259,15 +261,52 @@ export function instancesFrom(shape: Shape, P: VertexId, Q: VertexId, options: S
   return child.instances.map((i: Instance) => ({ key: i.key, p: flipped ? i.y : i.x, q: flipped ? i.x : i.y, mode: i.mode, rel: relating(i.mode, i.x, i.y, '+', i.dir) }));
 }
 
-/** THE CHILD of an edge on a shape: the corners' spaces through the modes layer's reader (a seed's cast; a born corner's own child — B4), the relatings through B1's one reader, τ from the pairing in force (the drafts where none stands) */
+/**
+ * D15 — THE INHERITED IS-INSTANCES of a medial edge XY (X = ⟨P, Q⟩, Y = ⟨P, R⟩): `(IS, i, j)` holds by inheritance iff i and j share a
+ * coordinate p at the parent P and the passage they restate one generation down is the stone's FIX — his pairing q ≡ r on Q–R
+ * (read through this reader too, so a FIX two generations down inherits twice). Derived at every read, stored nowhere; the
+ * face's (P's), never own. Nothing on a seed or a corner edge (the coordinate map is structure, not an instance — D14).
+ */
+export function inheritedISOn(shape: Shape, edge: EdgeT | undefined, options: SpaceOfOptions = {}, seen: Set<string> = new Set()): Relating[] {
+  if (!edge || seen.has(edge.id)) return [];
+  seen.add(edge.id);
+  const [X, Y] = edge.vertexIds as [VertexId, VertexId];
+  const parentsOf = (v: VertexId): VertexId[] => { const w = shape.vertices[v]; return !w || w.createdBy.operation === 'seed' ? [] : [...w.createdBy.sourceVertexIds]; };
+  const px = parentsOf(X); const py = parentsOf(Y);
+  if (px.length !== 2 || py.length !== 2) return [];
+  const P = px.find((v) => py.includes(v));
+  if (P === undefined) return [];
+  const Q = px.find((v) => v !== P) as VertexId; const R = py.find((v) => v !== P) as VertexId;
+  const eQR = edgeBetween(shape.edges, Q, R);
+  if (!eQR) return [];
+  // his pairings on Q–R and the ones inherited there, oriented Q → R
+  const qr = new Set<string>();
+  for (const r of instancesWithInherited(shape, eQR, options, seen)) if (r[0] === IS) qr.add(eQR.vertexIds[0] === Q ? `${r[1]}|${r[2]}` : `${r[2]}|${r[1]}`);
+  const xs = instancesFrom(shape, P, Q, options).filter((i) => i.mode === IS);
+  const ys = instancesFrom(shape, P, R, options).filter((j) => j.mode === IS);
+  const out: Relating[] = [];
+  for (const i of xs) for (const j of ys) if (i.p === j.p && qr.has(`${i.q}|${j.q}`)) out.push([IS, i.key, j.key, '+']);
+  return out;
+}
+
+/** THE IS-INSTANCES AND THE REST of an edge as the medium holds them (D15 (b)): B1's one reader — the pairing in force and the packet — and the inherited IS beside it */
+export function instancesWithInherited(shape: Shape, edge: EdgeT | undefined, options: SpaceOfOptions = {}, seen: Set<string> = new Set()): Relating[] {
+  if (!edge) return [];
+  const held = instancesOn(edge, options);
+  const inherited = inheritedISOn(shape, edge, options, seen).filter((r) => !held.some((h) => h[0] === IS && h[1] === r[1] && h[2] === r[2]));
+  return [...held, ...inherited];
+}
+
+/** THE CHILD of an edge on a shape: the corners' spaces through the modes layer's reader (a seed's cast; a born corner's own child — B4), the relatings through B1's one reader with the inherited IS beside them (D15, D11), τ from the pairing in force (the drafts where none stands) */
 export function instanceSpaceOf(shape: Shape, edge: Edge | undefined, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): InstanceSpace | null {
   if (!edge) return null;
   const [p, q] = edge.vertexIds as [VertexId, VertexId];
   const U = childSpaceOf(shape, p, options, memo);
   const V = childSpaceOf(shape, q, options, memo);
   if (!U || !V) return null;
-  const relatings = [...instancesOn(edge, options), ...barsOn(edge, options)];
-  return instanceSpaceFromCasts(U, V, relatings, unconditionalOn(edge, options).types);
+  const inherited = inheritedISOn(shape, edge, options);
+  const relatings = [...instancesOn(edge, options), ...inherited.filter((r) => !instancesOn(edge, options).some((h) => h[0] === IS && h[1] === r[1] && h[2] === r[2])), ...barsOn(edge, options)];
+  return instanceSpaceFromCasts(U, V, relatings, unconditionalOn(edge, options).types, new Set(inherited.map((r) => instanceKey(IS, r[1], r[2]))));
 }
 
 /**
@@ -279,9 +318,13 @@ export function instanceSpaceOf(shape: Shape, edge: Edge | undefined, options: S
 export function termWordsOf(shape: Shape, corner: VertexId, id: string, options: SpaceOfOptions = {}, memo: Map<VertexId, ConceptSpace | null> = new Map()): string {
   const v = shape.vertices[corner];
   if (v && v.createdBy.operation !== 'seed' && v.createdBy.sourceVertexIds.length === 2) {
-    const [p, q] = v.createdBy.sourceVertexIds;
-    const child = instanceSpaceOf(shape, edgeBetween(shape.edges, p, q), options, memo);
+    const [p0, q0] = v.createdBy.sourceVertexIds;
+    const e = edgeBetween(shape.edges, p0, q0);
+    const child = instanceSpaceOf(shape, e, options, memo);
     const inst = child ? child.instances.find((i) => i.key === id) : undefined;
+    // an instance's x is the role of the edge's FIRST STORED corner and its y of the second (never the parents' listed order,
+    // which may run the other way — at generation ≥ 2 the two orders differ and a seed's label no longer masks it)
+    const [p, q] = e ? (e.vertexIds as [VertexId, VertexId]) : [p0, q0];
     // the sentence as he said it (D13): from the first corner `x w y`, from the second `y w x`; IS symmetric
     if (inst) return inst.dir === ALONG ? `(${termWordsOf(shape, p, inst.x, options, memo)} ${inst.mode === IS ? '≡' : inst.mode} ${termWordsOf(shape, q, inst.y, options, memo)})` : `(${termWordsOf(shape, q, inst.y, options, memo)} ${inst.mode} ${termWordsOf(shape, p, inst.x, options, memo)})`;
   }

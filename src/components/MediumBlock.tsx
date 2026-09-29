@@ -437,8 +437,9 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
       {sorting.instances.length > 0 && sorting.state !== 'VACUOUS' ? (
         <span data-medium-own={String(sorting.own.length)}>{sorting.own.length ? `${la} and ${lb}'s alone — no passage through ${cornersWords || 'any corner'} comes to it: ${join(sorting.own.map(withForm))}` : alsoSaid()}</span>
       ) : null}
-      {sorting.views.filter((v) => v.centroid.length > 0).map((v) => (
-        <span key={`c-${v.view}`} data-medium-faces={viewLabel(v)}>{`the face's — said between them and through ${viewLabel(v)} too: ${join(v.centroid.map(withForm))}`}</span>
+      {/* the face's, said between them — his own relatings composed through a view; an inherited ≡ is never "said between them" and takes its own line below */}
+      {sorting.views.map((v) => ({ v, own: v.centroid.filter((k) => !sorting.inherited.some((h) => h.key === k)) })).filter(({ own }) => own.length > 0).map(({ v, own }) => (
+        <span key={`c-${v.view}`} data-medium-faces={viewLabel(v)}>{`the face's — said between them and through ${viewLabel(v)} too: ${join(own.map(withForm))}`}</span>
       ))}
       {/* D15 — an inherited ≡ is the face's, never said between them (her 10:57 §3): one line per pairing read here */}
       {sorting.inherited.map((h) => (

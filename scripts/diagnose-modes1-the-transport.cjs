@@ -38,6 +38,8 @@ const check = (name, ok, detail) => {
 const note = (text) => console.log(`      · ${text}`);
 
 const { spaceOf, TRANSPORT_OPTIONS } = req('src/lib/spaceOf.ts');
+const { transportSpaceOf, transportStepOf } = req('src/lib/transport.ts');
+const { childSpaceOf } = req('src/lib/instanceSpace.ts');
 const { isFootType, isRespectType } = req('src/lib/feet.ts');
 const { edgeBetween } = req('src/lib/faceReading.ts');
 const { bornStepOf } = req('src/lib/bornFace.ts');
@@ -70,12 +72,21 @@ const foreign = (space) => space.signature.map((s) => s.type).filter((t) => isFo
 // ═══ §0 the option and the hands ═══
 console.log('THE TRANSPORT — B6 (MODES-1)\n\n----- §0 the option, and the three models hand it to every resolver call -----');
 check('§0 TRANSPORT_OPTIONS is the resolver\'s named reading: no respect read, no foot composed — and nothing else', J(TRANSPORT_OPTIONS) === J({ respects: false, feet: false }));
-for (const [file, calls] of [['src/manuscript/doorTransportModel.ts', 2], ['src/manuscript/cargoModel.ts', 2], ['src/manuscript/liftedConceptModel.ts', 2]]) {
+// MODES-4 · row 5 (D12 amended, D11): the three models read every corner and every step through src/lib/transport.ts — a seed's cast
+// through the resolver with TRANSPORT_OPTIONS (there alone), a born corner's CHILD, the IS-instances (his and inherited) on a seed or
+// medial edge, the coordinate map's IS fibre on a corner edge; the identity regime's `bornStepOf` and the resolver's merged space are
+// no model's reading any more
+for (const [file, corner, step] of [['src/manuscript/doorTransportModel.ts', 1, 1], ['src/manuscript/cargoModel.ts', 1, 1], ['src/manuscript/liftedConceptModel.ts', 1, 0]]) {
   const src = readLf(file);
-  const resolverCalls = (src.match(/\b(spaceOf|bornStepOf)\(/g) || []).length;
-  const handed = src.split('\n').filter((l) => /\b(spaceOf|bornStepOf)\(/.test(l) && /TRANSPORT_OPTIONS/.test(l)).length;
-  check(`§0 ${file.split('/').pop()} hands TRANSPORT_OPTIONS to every resolver call (${calls} of ${calls}) and imports it from the resolver`, resolverCalls === calls && handed === calls && /TRANSPORT_OPTIONS.*from '\.\.\/lib\/spaceOf'/.test(src), J({ resolverCalls, handed }));
+  const bodyOnly = src.replace(/\/\/.*$/gm, '');
+  const corners = (bodyOnly.match(/\btransportSpaceOf\(/g) || []).length;
+  const steps = (bodyOnly.match(/\btransportStepOf\(/g) || []).length;
+  const resolverReadsOfBorn = (bodyOnly.match(/\bspaceOf\((?!record as Shape, s\b)/g) || []).length; // the lift keeps one resolver read, of SEEDS under a vertex, for the absence's words
+  const bornStep = (bodyOnly.match(/\bbornStepOf\(/g) || []).length;
+  check(`§0 ${file.split('/').pop()} rides the transport's reading (row 5): ${corner} corner read${corner === 1 ? '' : 's'} through transportSpaceOf, ${step} step${step === 1 ? '' : 's'} through transportStepOf, no bornStepOf, no resolver read of a born corner`, corners === corner && steps === step && bornStep === 0 && resolverReadsOfBorn === 0 && /from '\.\.\/lib\/transport'/.test(src), J({ corners, steps, bornStep, resolverReadsOfBorn }));
 }
+const trSrc = readLf('src/lib/transport.ts');
+check('§0 transport.ts alone hands TRANSPORT_OPTIONS to the resolver, for a seed\'s cast (no foot, no respect); a born corner is its child; a corner edge\'s road is the IS fibre, at most one — several a contradiction that STOPS and names the edge (the mothership\'s 19:23 (2))', (trSrc.match(/TRANSPORT_OPTIONS/g) || []).length >= 2 && /childSpaceOf\(record, v/.test(trSrc) && /if \(f\.is\.length > 1\) \{/.test(trSrc) && /a contradiction of the record, not a road/.test(trSrc) && /if \(f\.is\.length === 1\) map\.set\(p, f\.is\[0\]\);/.test(trSrc) && !/others/.test(trSrc.slice(trSrc.indexOf('export function transportStepOf'))));
 
 // ═══ §a the measurement: what rode before B6 ═══
 console.log('\n----- §a what rode the transport before B6, named and counted -----');
@@ -110,7 +121,8 @@ const liftedAB = byLabel(concept.record, 'AB');
 const row = concept.vertices.find((v) => v.id === liftedAB);
 const liftedTr = spaceOf(concept.record, liftedAB, TRANSPORT_OPTIONS);
 const liftedFull = spaceOf(concept.record, liftedAB);
-check('§b ★★ THE LIFT: the lifted concept\'s card at AB carries the TRANSPORT\'s counts of the carried record — roles · words · tuples equal to `spaceOf(record, AB, TRANSPORT_OPTIONS)`, fewer words than the full reading (no `≡_`/`⟨` word, no meet pair); the same record read without the option still carries them (the reading is restricted, the record is not stripped — its faces still hold the two triads)', concept.state === 'read' && !!row && row.space === 'derived' && row.roles === liftedTr.space.roles.length && row.words === liftedTr.space.signature.length && row.tuples === liftedTr.space.relations.length && row.words < liftedFull.space.signature.length && foreign(liftedTr.space).length === 0 && foreign(liftedFull.space).length === 4 && concept.record.faces.filter((f) => R.triadsOn(f).roles.length > 0).length === 2, J({ state: concept.state, row: row && [row.space, row.roles, row.words, row.tuples], transport: [liftedTr.space.roles.length, liftedTr.space.signature.length, liftedTr.space.relations.length], fullWords: liftedFull.space.signature.length, recordForeign: foreign(liftedFull.space) }));
+const liftedChild = childSpaceOf(concept.record, liftedAB);
+check('§b ★★ THE LIFT CARRIES THE CHILD (row 5, D11 as defined): the lifted concept\'s card at AB carries the CHILD\'s counts — roles · words · tuples equal to `childSpaceOf(record, AB)` (his two IS-instances as roles, the parents\' words pulled back, the induced record) — never the resolver\'s merged space with the parents\' leftovers (its 22 roles with the meet pair); no `≡_`/`⟨` word; the record itself still holds the two triads (the reading is restricted, the record is not stripped)', concept.state === 'read' && !!row && row.space === 'derived' && !!liftedChild && row.roles === liftedChild.roles.length && row.words === liftedChild.signature.length && row.tuples === liftedChild.relations.length && row.roles === 2 && row.roles < liftedTr.space.roles.length && foreign(liftedChild).length === 0 && foreign(liftedFull.space).length === 4 && concept.record.faces.filter((f) => R.triadsOn(f).roles.length > 0).length === 2, J({ state: concept.state, row: row && [row.space, row.roles, row.words, row.tuples], child: liftedChild && [liftedChild.roles.length, liftedChild.signature.length, liftedChild.relations.length], resolver: [liftedTr.space.roles.length, liftedTr.space.signature.length, liftedTr.space.relations.length] }));
 
 // ═══ §c the door ═══
 console.log('\n----- §c the door -----');
@@ -119,14 +131,15 @@ const cycle = [A1, mAB.id, mAC.id];
 const side = sideOf(G1, cycle);
 const struck = { ...G1, faces: G1.faces.map((f) => { if (!f.data || f.data.triads === undefined) return f; const { triads: _t, ...rest } = f.data; void _t; return Object.keys(rest).length ? { ...f, data: rest } : (({ data: _d, ...g }) => { void _d; return g; })(f); }) };
 const sideStruck = sideOf(struck, cycle);
-check('§c ★★ THE DOOR rides IS-instances only: the side A·AB·AC read on the record carries no foot or respect type in any corner\'s space, and its LINES are byte-equal to the same side read with every triad struck', side.state === 'read' && side.side.spaces.every((s) => foreign(s).length === 0) && sideStruck.state === 'read' && J(side.side.lines) === J(sideStruck.side.lines) && side.side.lines.length > 0, J({ state: side.state, foreign: side.state === 'read' ? side.side.spaces.map((s) => foreign(s).length) : null, lines: side.state === 'read' ? side.side.lines.length : null }));
+check('§c ★★ THE DOOR rides the identification structure (row 5): the side A·AB·AC read on the record has the CHILD at each born corner (AB: 2 instances · AC: 3), no foot or respect type anywhere, and its LINES are byte-equal to the same side read with every triad struck; every line runs through IS-instances and the coordinate map alone', side.state === 'read' && side.side.spaces.every((s) => foreign(s).length === 0) && side.side.spaces[1].roles.length === 2 && side.side.spaces[2].roles.length === 3 && sideStruck.state === 'read' && J(side.side.lines) === J(sideStruck.side.lines) && side.side.lines.length > 0, J({ state: side.state, roles: side.state === 'read' ? side.side.spaces.map((s) => s.roles.length) : null, lines: side.state === 'read' ? side.side.lines.length : null }));
 
 // ═══ §d the cargo ═══
 console.log('\n----- §d the cargo -----');
-const roomOf = (shape) => cargoRoomFrom({ corners: cycle, roles: Object.fromEntries(cycle.map((v) => [v, spaceOf(shape, v, TRANSPORT_OPTIONS).space.roles])), J: (from, to) => bornStepOf(shape, from, to, TRANSPORT_OPTIONS, new Map())?.map ?? null, rods: [{ a: A1, b: mAB.id }, { a: mAB.id, b: mAC.id }, { a: mAC.id, b: A1 }], faces: [], doors: [] });
+const roomOf = (shape) => cargoRoomFrom({ corners: cycle, roles: Object.fromEntries(cycle.map((v) => [v, transportSpaceOf(shape, v).space.roles])), J: (from, to) => transportStepOf(shape, from, to), rods: [{ a: A1, b: mAB.id }, { a: mAB.id, b: mAC.id }, { a: mAC.id, b: A1 }], faces: [], doors: [] });
 const room = roomOf(G1);
 const carried = stepRod(room, pickCargo(room, A1, 'F13'), mAB.id);
-check('§d ★★ THE CARGO rides IS-instances only: F13 carried along A–AB arrives as AB\'s class of F13 (a role of the far corner, never a `⟨X⟩` or `≡_X` word); the room\'s roles at AB are the transport\'s', carried.at !== null && carried.at.corner === mAB.id && tr.space.roles.some((r) => r.id === carried.at.role) && !isRespectType(carried.at.role) && !isFootType(carried.at.role), J(carried.at));
+const unpaired = stepRod(room, pickCargo(room, A1, 'F1'), mAB.id);
+check('§d ★★ THE CARGO rides the identification structure (row 5): F13 carried along A–AB arrives as the INSTANCE holding it, `F13≡r8` (the IS fibre of F13, one), a role of AB\'s child; F1, paired on neither edge, has an EMPTY IS fibre — the cargo stops at the rod A–AB and says so (`loss: rod`); the room\'s roles at AB are the child\'s two instances', carried.at !== null && carried.at.corner === mAB.id && carried.at.role === 'F13≡r8' && room.rolesAt(mAB.id).length === 2 && !isRespectType(carried.at.role) && !isFootType(carried.at.role) && unpaired.at === null && unpaired.loss && unpaired.loss.kind === 'rod' && unpaired.loss.role === 'F1', J({ carried: carried.at, unpaired: unpaired.loss, roles: room.rolesAt(mAB.id) }));
 
 // ═══ §e the seal ═══
 console.log('\n----- §e the seal: the Ambo\'s own reading stands -----');

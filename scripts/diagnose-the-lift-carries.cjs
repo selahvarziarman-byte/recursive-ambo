@@ -50,6 +50,7 @@ const { deserializeSnapshot } = req('src/playground/snapshot.ts');
 const { loadUniverseSnapshot, placeShelfEntry } = req('src/manuscript/genesisModel.ts');
 const { directComplexOf } = req('src/lib/complexIdentification.ts');
 const { liftedConceptOf, seedsUnder } = req('src/manuscript/liftedConceptModel.ts');
+const T = req('src/lib/transport.ts');
 const { LiftedConceptSection } = req('src/manuscript/LiftedConceptSection.tsx');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
@@ -275,14 +276,14 @@ const visibleText = (html) => unescapeHtml(html.replace(/<[^>]+>/g, ' ')).replac
 {
   const c = C1b.concept; const ab = c.vertices.find((v) => v.label === 'AB');
   const h = render(c, { vertex: ab.id, face: null });
-  // MODES-1 · B6 (D12): the lift rides IS-instances only — the card's counts are the TRANSPORT's reading of the Ambo (no foot word, no respect word, no meet pair), not the Ambo's own surface reading
-  const ambo = spaceOf(region('R1b').source, byLabel(region('R1b').source, 'AB'), TRANSPORT_OPTIONS);
+  // MODES-1 · B6 (D12) then MODES-4 · row 5 (D11): the card's counts are the TRANSPORT's reading — at a born corner the CHILD (his pairings as roles, the parents' words pulled back, the induced record), never the resolver's merged space with the leftovers and the meet pair
+  const ambo = T.transportSpaceOf(region('R1b').source, byLabel(region('R1b').source, 'AB'));
   const n = c.vertices.length;
   note(`R1b lifted from gen 2 carries the finer grain on its shared face (the grain law): ${n} corners — ${c.vertices.map((v) => v.label).join(' ')}`);
   const rowTexts = h.split('data-lifted-vertex-row="').slice(1).map((x) => visibleText(x.slice(x.indexOf('>') + 1, x.indexOf('</div>'))).trim());
   const abRow = rowTexts.find((t) => /^AB /.test(t)) || '';
-  check(`§6 ★★ THE LIFTED INSIDE IS WHOLE OR WORDS (C-10b, §131 item 1, the designer's blocker — the inside CLIPPED in the card's 232 px column; MODES-1 · B6: the counts are the transport's, IS-instances only — the feet's words do not ride the lift): on the card each corner is ONE LINE OF WORDS — AB's reads \`AB · holds a space of ${ambo.space.roles.length} roles · ${ambo.space.signature.length} words · ${ambo.space.relations.length} tuples · close the drawing\` with AB picked (\`open the drawing\` otherwise) — and NO drawing mounts in the column (the drawing opens on the sheet at its own size, the view's overlay); the record line says ${n} of ${n} corners hold a space`,
-    /data-lifted-concept="read"/.test(h) && !/data-inside-panel=/.test(h) && !/data-lifted-inside=/.test(h) && new RegExp(`^AB · holds a space of ${ambo.space.roles.length} roles · ${ambo.space.signature.length} words · ${ambo.space.relations.length} tuples · close the drawing$`).test(abRow) && countOf(h, /data-lifted-open-drawing="/g) === n && countOf(h, /data-lifted-drawing-state="open"/g) === 1 && new RegExp(`read from the record the lift carried — [^<]*: ${n} of ${n} corners hold a space · the acts are the Ambo's, at the sites the words name`).test(visibleText(h)) && countOf(h, /data-lifted-vertex-row="/g) === n && n === 7 && ['A', 'AB', 'AC', 'AD', 'ABAC', 'ACAD', 'ABAD'].every((l) => c.vertices.some((v) => v.label === l)),
+  check(`§6 ★★ THE LIFTED INSIDE IS WHOLE OR WORDS (C-10b, §131 item 1, the designer's blocker — the inside CLIPPED in the card's 232 px column; MODES-1 · B6 then MODES-4 · row 5 (D11): the counts are the transport's — at a born corner the CHILD's, his three pairings on A–B as roles, the two parents' words pulled back, the induced record — never the resolver's 21 roles with the leftovers): on the card each corner is ONE LINE OF WORDS — AB's reads \`AB · holds a space of ${ambo.space.roles.length} roles · ${ambo.space.signature.length} words · ${ambo.space.relations.length} tuples · close the drawing\` (3 · 16 · 9) with AB picked (\`open the drawing\` otherwise) — and NO drawing mounts in the column (the drawing opens on the sheet at its own size, the view's overlay); the record line says ${n} of ${n} corners hold a space`,
+    /data-lifted-concept="read"/.test(h) && !/data-inside-panel=/.test(h) && !/data-lifted-inside=/.test(h) && new RegExp(`^AB · holds a space of ${ambo.space.roles.length} roles · ${ambo.space.signature.length} words · ${ambo.space.relations.length} tuples · close the drawing$`).test(abRow) && ambo.origin === 'derived' && ambo.space.roles.length === 3 && ambo.space.signature.length === 16 && ambo.space.relations.length === 9 && countOf(h, /data-lifted-open-drawing="/g) === n && countOf(h, /data-lifted-drawing-state="open"/g) === 1 && new RegExp(`read from the record the lift carried — [^<]*: ${n} of ${n} corners hold a space · the acts are the Ambo's, at the sites the words name`).test(visibleText(h)) && countOf(h, /data-lifted-vertex-row="/g) === n && n === 7 && ['A', 'AB', 'AC', 'AD', 'ABAC', 'ACAD', 'ABAD'].every((l) => c.vertices.some((v) => v.label === l)),
     J({ abRow, n, opens: countOf(h, /data-lifted-open-drawing="/g), text: visibleText(h).slice(0, 300) }));
   // §148 ruling 1: the gen-2 residue lifts at the FINER grain — its three sides are opened through the midpoints (A·AC·ABAC·AB…) and
   // the medial face is the finer ABAC·ABAD·ACAD; the lifted shape no longer holds the coarse edge AB–AC, so the face's edges are
@@ -325,7 +326,7 @@ console.log('\n----- §7 purity, the manifest, the mounts -----');
 {
   const model = readLf('src/manuscript/liftedConceptModel.ts');
   const froms = [...model.matchAll(/from '([^']+)'/g)].map((m) => m[1]);
-  check('§7 ★ THE MODEL IS PURE: it imports the types, the one resolver and the D14 face name and nothing else — no store, no React, no snapshot layer', J(froms.sort()) === J(['../lib/spaceOf', '../types/geometry', './apertureModel']) && !/useGeometryStore|from 'react'|zustand/.test(model), J(froms));
+  check('§7 ★ THE MODEL IS PURE: it imports the types, the one resolver, the transport\'s reading (MODES-4 · row 5 — a born corner\'s space is its child) and the D14 face name and nothing else — no store, no React, no snapshot layer', J(froms.sort()) === J(['../lib/spaceOf', '../lib/transport', '../types/geometry', './apertureModel']) && !/useGeometryStore|from 'react'|zustand/.test(model), J(froms));
   const manifest = readLf('docs/governance/ENGINE_FREEZE_MANIFEST.txt');
   check('§7 ★ THE MANIFEST classifies both new files NOT_FROZEN (the completeness law, in the landing commit)', /^NOT_FROZEN src\/manuscript\/liftedConceptModel\.ts — STAMP C-10/m.test(manifest) && /^NOT_FROZEN src\/manuscript\/LiftedConceptSection\.tsx — STAMP C-10/m.test(manifest));
   const view = readLf('src/manuscript/ManuscriptView.tsx');

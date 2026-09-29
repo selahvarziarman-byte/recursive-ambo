@@ -38,8 +38,8 @@
 // ADDITIVE · DERIVE-ONLY · react-free (the section draws what this returns; the witness runs this under node).
 
 import type { Shape, VertexId } from '../types/geometry';
-import { nameIn, spaceOf, TRANSPORT_OPTIONS, type Resolved } from '../lib/spaceOf';
-import { bornStepOf } from '../lib/bornFace';
+import { nameIn, type Resolved } from '../lib/spaceOf';
+import { transportSpaceOf, transportStepOf } from '../lib/transport';
 import type { RoleMap } from '../lib/faceReading';
 import { refusalOf, type Conflict } from '../lib/jRegister';
 import type { DoorTransport } from './apertureModel';
@@ -133,17 +133,18 @@ export function sideOf(record: Shape, cycle: VertexId[], memo: Map<VertexId, Res
   const k = cycle.length;
   const spaces: CornerSpace[] = [];
   const missing: string[] = [];
+  const childMemo: Parameters<typeof transportSpaceOf>[3] = new Map();
   for (const v of cycle) {
-    const r = record.vertices[v] ? spaceOf(record, v, TRANSPORT_OPTIONS, memo) : null; // B6 (D12): the door rides IS-instances only
+    const r = record.vertices[v] ? transportSpaceOf(record, v, memo, childMemo) : null; // MODES-4 · row 5 (D12 amended, D11): the door reads the child at a born corner
     if (r) spaces.push(r.space);
     else missing.push(v);
   }
   if (missing.length) return { state: 'absent', missing };
   const J: RoleMap[] = [];
   for (let i = 0; i < k; i += 1) {
-    const step = bornStepOf(record, cycle[i], cycle[(i + 1) % k], TRANSPORT_OPTIONS, memo);
+    const step = transportStepOf(record, cycle[i], cycle[(i + 1) % k]); // D12 amended: the IS-instances (his and inherited) on a seed or medial edge; the coordinate map on a corner edge
     if (!step) return { state: 'absent', missing: [`${cycle[i]}→${cycle[(i + 1) % k]}`] };
-    J.push(step.map);
+    J.push(step);
   }
   return { state: 'read', side: sideFrom(cycle, spaces, J, name) };
 }

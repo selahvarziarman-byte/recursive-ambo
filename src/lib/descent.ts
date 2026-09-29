@@ -25,7 +25,7 @@
 
 import type { Edge, Shape, VertexId } from '../types/geometry';
 import { edgeBetween } from './faceReading';
-import { childSpaceOf, instanceSpaceOf, instancesFrom, type InstanceSpace } from './instanceSpace';
+import { childSpaceOf, instanceSpaceOf, instancesFrom, instancesWithInherited, type InstanceSpace } from './instanceSpace';
 import { ALONG, dirOf, instancesOn, IS, NO_FACTS, type LexiconFacts, type Relating } from './relatings';
 import { relatingsFrom, sortingOf, type Rule, type Sorting } from './sorting';
 import { edgeKind, type EdgeKind, type SpaceOfOptions } from './spaceOf';
@@ -62,7 +62,7 @@ export function derivedLightsOf(shape: Shape, edge: Edge | undefined, options: S
   const [X, Y] = edge.vertexIds as [VertexId, VertexId];
   const px = parentsOf(shape, X);
   const py = parentsOf(shape, Y);
-  const held = new Set(instancesOn(edge, options).filter((r) => r[0] === IS).map((r) => `${r[1]}|${r[2]}`));
+  const held = new Set(instancesWithInherited(shape, edge, options).filter((r) => r[0] === IS).map((r) => `${r[1]}|${r[2]}`)); // D15 (b): his pairings and the inherited ≡ alike stand at the endpoints
   const out: DerivedLight[] = [];
   const push = (kind: LinkKind, x: string, y: string, through: VertexId, via: string, link: DerivedLight['link']): void => {
     if (!out.some((l) => l.kind === kind && l.x === x && l.y === y && l.through === through && l.via === via)) out.push({ kind, x, y, through, via, link, held: held.has(`${x}|${y}`) });

@@ -115,7 +115,7 @@ import { composeCornerCycleName, d14NameRotation } from '../lib/cornerCycleName'
 import { edgeBetween, faceOf, undByStep, type FaceTuple } from '../lib/faceReading';
 import { ALONG, barsOn, dirOf, instancesOn, IS, type Dir } from '../lib/relatings';
 import { sortingOf } from '../lib/sorting';
-import { childSpaceOf } from '../lib/instanceSpace';
+import { childSpaceOf, instancesWithInherited } from '../lib/instanceSpace';
 import { MediumBlock } from './MediumBlock';
 
 /** MODES-1 · B3 — the face reading reads the IS-instances through the one reader, never the plain record (defect 1) */
@@ -406,7 +406,7 @@ export function MidpointSurface({ shape, site, parents, resolved, refusal, remad
   // the block's head counts with, so one card carries one count, §149) — and what is related here (every mode, the head's own word);
   // at a corner site the seed is the carried side, whichever corner is stored first
   const childCounts = useMemo(() => ({ a: childSpaceOf(shape, site.a)?.roles.length ?? 0, b: childSpaceOf(shape, site.b)?.roles.length ?? 0 }), [shape, site.a, site.b]);
-  const relatedHere = useMemo(() => (sourceEdge ? instancesOn(sourceEdge).length : 0), [sourceEdge]);
+  const relatedHere = useMemo(() => (sourceEdge ? instancesWithInherited(shape, sourceEdge).length : 0), [shape, sourceEdge]); // D15: his relatings and the inherited ≡ — the head's own reader
   const seedFirst = shape.vertices[site.a]?.createdBy.operation === 'seed';
   // C-7d item 1 — the mapped midpoint's own space, the same presentation a corner gets
   // C-7h: the own column is the resolver's own amalgam (named by its rule) — the surface never re-glues (one derivation, never two readers agreeing)

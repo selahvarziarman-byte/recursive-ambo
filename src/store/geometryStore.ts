@@ -28,7 +28,7 @@ import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChr
 import { triadLegsOf, triadOf, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import { ALONG, IS, relating, relatingOf, relatingsHeld, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
 import { IS_RULE, ruleReads, verdictNamesPath, withVerdict, withoutVerdict, type Rule, type Shape3, type VerdictRecord } from '../lib/sorting';
-import { childSpaceOf, instanceSpaceOf, termWordsOf } from '../lib/instanceSpace';
+import { childSpaceOf, instancesFrom, termWordsOf } from '../lib/instanceSpace';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
 import type {
@@ -1538,10 +1538,10 @@ function midpointAct(set: Setter, get: Getter, edgeId: EdgeId, act: MidpointAct)
       const P = parentFirst ? edge.vertexIds[0] : edge.vertexIds[1];
       const C = parentFirst ? edge.vertexIds[1] : edge.vertexIds[0];
       const [a, i] = parentFirst ? [x, y] : [y, x];
-      const [p0, p1] = shape.vertices[C]?.createdBy.sourceVertexIds ?? [];
-      const child = p0 !== undefined && p1 !== undefined ? instanceSpaceOf(shape, edgeBetween(shape.edges, p0, p1), { tauDrafts: get().edgeTauDrafts }) : null;
-      const inst = child?.instances.find((k) => k.key === i);
-      if (inst && ((p0 === P && inst.x === a) || (p1 === P && inst.y === a))) return refuse(`${termWordsOf(shape, C, i, { tauDrafts: get().edgeTauDrafts })} already holds ${nameIn(parentFirst ? A : B, a)} — it is carried there`, []);
+      const Q = shape.vertices[C]?.createdBy.sourceVertexIds.find((v) => v !== P);
+      // the instance's P-coordinate read off the edge P–Q's own stored order (instancesFrom), never off the sources' listed order
+      const inst = Q !== undefined ? instancesFrom(shape, P, Q, { tauDrafts: get().edgeTauDrafts }).find((k) => k.key === i) : undefined;
+      if (inst && inst.p === a) return refuse(`${termWordsOf(shape, C, i, { tauDrafts: get().edgeTauDrafts })} already holds ${nameIn(parentFirst ? A : B, a)} — it is carried there`, []);
     }
     if (composed) {
       const cx = composed.roles.find(([a]) => a === x);
