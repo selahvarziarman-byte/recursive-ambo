@@ -54,7 +54,7 @@ const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacket
 const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
 const { namedUnderOf } = req('src/components/MediumBlock.tsx');
 const { nameStageOf } = req('src/lib/stage.ts');
-const { withVerdict } = req('src/lib/sorting.ts');
+const { withVerdict, sortingOf } = req('src/lib/sorting.ts');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
 
@@ -301,13 +301,20 @@ give('A', 'B', { F9: 'r1' }); give('A', 'C', { F9: 'Φ1' }); give('C', 'B', { Φ
 S().applyAmboDissectionToCurrent();
 const Gx = cur(); const ABx = midOf(Gx, byLabel(Gx, 'A'), byLabel(Gx, 'B'));
 const x = renderAt(Gx, ABx.id);
-check('§d CLOSED (a finding, never a goal): the one relating is the face\'s through C — `all the face\'s — nothing theirs alone, nothing only in a corner\'s light`; R4: the own line reads `nothing theirs alone — its one relating is also said through C or D`', x.lines('data-medium-state-line')[0][1] === "all the face's — nothing theirs alone, nothing only in a corner's light" && x.attr('data-medium-closed') === 'true' && x.attr('data-medium-state') === 'CLOSED' && x.lines('data-medium-own')[0][1] === 'nothing theirs alone — its one relating is also said through C or D', J({ state: x.lines('data-medium-state-line'), own: x.lines('data-medium-own') }));
+check('§d CLOSED (a finding, never a goal): the one relating is the face\'s through C — `all the face\'s — nothing theirs alone, nothing only in a corner\'s light`; R4: the own line reads `nothing theirs alone — its one relating is also said through C` — M5 (COPY-1 §11.1): the CARRYING corner alone, C; D carries nothing and is not named', x.lines('data-medium-state-line')[0][1] === "all the face's — nothing theirs alone, nothing only in a corner's light" && x.attr('data-medium-closed') === 'true' && x.attr('data-medium-state') === 'CLOSED' && x.lines('data-medium-own')[0][1] === 'nothing theirs alone — its one relating is also said through C', J({ state: x.lines('data-medium-state-line'), own: x.lines('data-medium-own') }));
 reset(seeded4());
 give('A', 'B', { F9: 'r1', F7: 'r0' }); give('A', 'C', { F9: 'Φ1' }); give('C', 'B', { Φ1: 'r1' });
 S().applyAmboDissectionToCurrent();
 const Gc = cur(); const ABc = midOf(Gc, byLabel(Gc, 'A'), byLabel(Gc, 'B'));
 const c = renderAt(Gc, ABc.id);
-check('§d COHERENT (M4 §2 — its two positive facts marked): one theirs alone and one the face\'s, the site looked at, nothing unsaid — `nothing against it — 1 passage through C, none unsaid; no bar pressed, no say differs, the views agree on what is theirs alone` (the count naming the corners that hold passages; no `no route you refused` — M4 corrected, ADR §9.11)', c.lines('data-medium-state-line')[0][1] === 'nothing against it — 1 passage through C, none unsaid; no bar pressed, no say differs, the views agree on what is theirs alone' && c.attr('data-medium-coherent') === 'true' && c.attr('data-medium-state') === 'COHERENT', J(c.lines('data-medium-state-line')));
+check('§d COHERENT (M4 §2 — its two positive facts marked): one theirs alone and one the face\'s, the site looked at, nothing unsaid — `nothing against it — 1 passage through C, none unsaid; no bar pressed, no say differs, 1 relating comes through neither C nor D` (the count naming the corners that hold passages; no `no route you refused` — M4 corrected, ADR §9.11). M5 (COPY-1 §11.2): the last clause was `the views agree on what is theirs alone` and was FALSE here — C\'s own part is F7 ≡ r0 alone, D\'s (no passage) is both relatings; COHERENT shows because one relating comes through no corner, and the clause now says so with its count, every corner named', c.lines('data-medium-state-line')[0][1] === 'nothing against it — 1 passage through C, none unsaid; no bar pressed, no say differs, 1 relating comes through neither C nor D' && c.attr('data-medium-coherent') === 'true' && c.attr('data-medium-state') === 'COHERENT' && (() => { const v = c.attr('data-medium-state') && sortingOf(Gc, edgeBetween(Gc.edges, byLabel(Gc, 'A'), byLabel(Gc, 'B')), {}, S().rules, { converses: S().converses, opaque: S().opaque }); return !!v && v.views.length === 2 && J(v.views.map((w) => w.own.length).sort()) === J([1, 2]); })(), J(c.lines('data-medium-state-line')));
+// M5 — an EXHAUSTED site with ONE carrying corner of two: F9 ≡ r1 the face's through C; a light through C (F7 ≡ Φ2 · Φ2 ≡ r0, F7 ≡ r0 not paired); D carries nothing — the line names C alone
+reset(seeded4());
+give('A', 'B', { F9: 'r1' }); give('A', 'C', { F9: 'Φ1', F7: 'Φ2' }); give('C', 'B', { Φ1: 'r1', Φ2: 'r0' });
+S().applyAmboDissectionToCurrent();
+const Ge = cur(); const ABe = midOf(Ge, byLabel(Ge, 'A'), byLabel(Ge, 'B'));
+const ex = renderAt(Ge, ABe.id);
+check('§d M5 (COPY-1 §11.1) — EXHAUSTED with ONE carrying corner of two: `nothing theirs alone — its one relating is also said through C` names C alone (D holds no passage; before M5 the line read `through C or D`, as Virgin Land read `Meaning or Action` at ValueFact where only Action carried it)', ex.attr('data-medium-state') === 'EXHAUSTED' && ex.lines('data-medium-state-line')[0][1] === 'nothing theirs alone — its one relating is also said through C', J({ state: ex.attr('data-medium-state'), line: ex.lines('data-medium-state-line') }));
 reset(seeded4());
 give('A', 'B', { F9: 'r1' });
 S().applyAmboDissectionToCurrent();

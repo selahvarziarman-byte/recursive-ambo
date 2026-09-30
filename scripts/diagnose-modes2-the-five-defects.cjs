@@ -144,7 +144,7 @@ if (fs.existsSync(G2V)) {
     POCKET: /^the views leave different things alone — nothing is theirs alone under every view$/,
     EXHAUSTED: /^nothing theirs alone — (its one relating is|all \d+ relatings are) also said through .+$/,
     CLOSED: /^all the face's — nothing theirs alone, nothing only in a corner's light$/,
-    COHERENT: /^nothing against it — \d+ passages? through .+, none unsaid; no bar pressed, no say differs, the views agree on what is theirs alone$/,
+    COHERENT: /^nothing against it — \d+ passages? through .+, none unsaid; no bar pressed, no say differs, \d+ relatings? (comes?|doesn't come|don't come) through (neither .+ nor .+|none of .+|.+)$/, // M5: the count of relatings through no corner
     OPEN: /^\d+ relatings? theirs alone · \d+ relatings? the face's$/,
   };
   const states = sites.map((v) => { const r = renderAt(shape, v.id); return { site: v.data.label || v.id, state: r.state, line: r.stateLine, ok: !!r.state && FORMS[r.state] && FORMS[r.state].test(r.stateLine), pocketLines: r.pocketLines }; });

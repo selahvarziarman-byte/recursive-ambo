@@ -127,6 +127,10 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
   const instanceOf = (k: string): Relating => sorting.instances.find((r) => relKey(r) === k) as Relating;
   const viewLabel = (v: ViewSorting): string => labelOf(v.view);
   const cornersWords = sorting.views.length === 0 ? '' : sorting.views.map(viewLabel).join(' or ');
+  // MODES-4 · M5 (COPY-1 §11.1, the designer's 10:59; the mothership's 11:02): a line that says relatings come THROUGH corners names only
+  // the corners whose passages come to at least one of them — the carrying corners (the predicate the christening line reads, D17); a
+  // line that says relatings come through NO corner names every corner, because it speaks of all of them (`cornersWords` stays for it)
+  const carryingWords = orList(sorting.views.filter((v) => v.centroid.length > 0).map(viewLabel));
   // §6 — the refused route is the instance's FORM wherever it is listed (D16): `F2 carries Φ3 — not by way of C, you said`
   const withForm = (k: string): string => { const vs = sorting.refused.get(k); return `${sentence(instanceOf(k))}${vs && vs.length ? ` — not by way of ${orList(vs.map(labelOf))}, you said` : ''}`; };
   // S4 — each leg as he said it: the sorting hands the leg as (subject, mode, object) with its sense along the walk; its two terms
@@ -209,18 +213,30 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
   };
   const related = sorting.instances.length;
   // R4 with her §8: one · both · all N
-  const alsoSaid = (): string => `nothing theirs alone — ${related === 1 ? 'its one relating is' : related === 2 ? 'both relatings are' : 'all ' + related + ' relatings are'} also said through ${cornersWords}`;
+  const alsoSaid = (): string => `nothing theirs alone — ${related === 1 ? 'its one relating is' : related === 2 ? 'both relatings are' : 'all ' + related + ' relatings are'} also said through ${carryingWords}`; // M5: the carrying corners
   // M4 §1 — VACUOUS in the undetected line's shape: he has related, no corner has seen it (`seen through` is the light's own sense)
   const vacuousLine = (): string => {
     const names = sorting.views.map(viewLabel);
     const which = names.length <= 1 ? 'it' : names.length === 2 ? 'either' : 'any';
     return `${la} and ${lb}, ${plural(related, 'relating', 'relatings')} — not yet seen through ${orList(names)}: no passage through ${which} yet`;
   };
-  // M4 §2 — COHERENT names its two positive facts: the passages counted at the corners that hold them, none unsaid; then the negations
+  // M4 §2 — COHERENT names its two positive facts: the passages counted at the corners that hold them, none unsaid; then the negations.
+  // M5 (COPY-1 §11.2): its last clause was `the views agree on what is theirs alone` — FALSE whenever the views' own parts differ (one
+  // corner composes a relating, the other composes nothing: a corner with no passage, the common case). COHERENT is reached only when
+  // some relating comes through NO corner (else POCKET, EXHAUSTED or CLOSED, the sorting's order), so the clause states that fact with
+  // its count, every corner named as the `not through` label does: `2 relatings come through neither C nor D` · `don't come through C`
+  // · `come through none of C, D and E` — today's sentence otherwise, until COPY-1's words come with LAYOUT-1
+  const throughNone = (): string => {
+    const n = sorting.own.length; const names = sorting.views.map(viewLabel);
+    const verb = (yes: string, no: string): string => (n === 1 ? yes : no);
+    if (names.length === 1) return `${plural(n, 'relating', 'relatings')} ${verb("doesn't", "don't")} come through ${names[0]}`;
+    if (names.length === 2) return `${plural(n, 'relating', 'relatings')} ${verb('comes', 'come')} through neither ${names[0]} nor ${names[1]}`;
+    return `${plural(n, 'relating', 'relatings')} ${verb('comes', 'come')} through none of ${andList(names)}`;
+  };
   const coherentLine = (): string => {
     const holding = sorting.views.filter((v) => v.paths.length > 0);
     const count = holding.reduce((n, v) => n + v.paths.length, 0);
-    return `nothing against it — ${plural(count, 'passage', 'passages')} through ${andList(holding.map(viewLabel))}, none unsaid; no bar pressed, no say differs, the views agree on what is theirs alone`;
+    return `nothing against it — ${plural(count, 'passage', 'passages')} through ${andList(holding.map(viewLabel))}, none unsaid; no bar pressed, no say differs, ${throughNone()}`;
   };
   // THE STATE LINE reads the sorting's ONE token at §8's precedence (MODES-2 (d)): UNDETECTED · VACUOUS · UNRULED (the counts; the
   // per-view line says which passage is unsaid — her §3) · POCKET · EXHAUSTED · CLOSED · COHERENT · otherwise the counts
