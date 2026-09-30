@@ -53,6 +53,7 @@ import type { Edge, Shape, VertexId } from '../types/geometry';
 import { useGeometryStore } from '../store/geometryStore';
 import { childSpaceOf, termWordsOf } from '../lib/instanceSpace';
 import { mediumOf, type DerivedLight } from '../lib/descent';
+import { nameStageOf, recordAtStage } from '../lib/stage';
 import { AGAINST, ALONG, converseOf, dirOf, isOpaque, lexiconOf, IS, type Dir, type Relating } from '../lib/relatings';
 import { relKey, type ReadPath, type RuleKey, type Sorting, type ViewSorting } from '../lib/sorting';
 import type { SpaceOfOptions } from '../lib/spaceOf';
@@ -89,7 +90,9 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
   useGeometryStore((s) => s.relatingRefusals);
   useGeometryStore((s) => s.converses);
   useGeometryStore((s) => s.opaque);
-  const { lexicon, rules, relatingRefusals, converses, opaque } = useGeometryStore.getState();
+  useGeometryStore((s) => s.log);
+  useGeometryStore((s) => s.edgeTauDrafts);
+  const { lexicon, rules, relatingRefusals, converses, opaque, log, edgeTauDrafts } = useGeometryStore.getState();
   const declareMode = useGeometryStore((s) => s.declareMode);
   const nameRule = useGeometryStore((s) => s.nameRule);
   const withdrawRule = useGeometryStore((s) => s.withdrawRule);
@@ -244,10 +247,39 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
       const facesPart = faces.length ? " · the face's through " + andList(faces) : '';
       return [k, `${withForm(k)} — theirs alone through ${andList(alone)}${facesPart}`];
     }));
-  const named = namedUnderOf(shape, siteId);
+  // MODES-4 · D17 (the second resolution §9; her 17:32 §7): the state the name was given under is RE-DERIVED at the name's stage of
+  // the log — the record as it stood then (every later act unapplied), read by the same reader as now — in the state's own words;
+  // *since then* is the difference of the two derived sortings' own keys (R3: nothing at the christening). A name given under a
+  // snapshot before D17 keeps its snapshot's numbers, marked `(counted then)` — the one mark that they were kept, not re-read.
+  const stageN = nameStageOf(shape, siteId);
+  const snapshot = stageN === null ? namedUnderOf(shape, siteId) : null;
+  const then = ((): Sorting | null => {
+    if (stageN === null) return null;
+    const rec = recordAtStage({ shape, rules, facts, lexicon, tauDrafts: edgeTauDrafts }, log, stageN);
+    const e = rec.shape.edges.find((c) => c.id === edge.id);
+    const m = e ? mediumOf(rec.shape, e, { ...options, tauDrafts: rec.tauDrafts }, rec.rules, rec.facts) : null;
+    return m ? m.sorting : null;
+  })();
   const siteName = siteId ? labelOf(siteId) : null;
-  const left = named ? named.own.filter((k) => !sorting.own.includes(k)).length : 0;
-  const entered = named ? sorting.own.filter((k) => !named.own.includes(k)).length : 0;
+  const ownThen = then ? then.own : snapshot ? snapshot.own : null;
+  const left = ownThen ? ownThen.filter((k) => !sorting.own.includes(k)).length : 0;
+  const entered = ownThen ? sorting.own.filter((k) => !ownThen.includes(k)).length : 0;
+  const givenWhen = ((): string | null => {
+    if (then) {
+      const n = then.instances.length;
+      const rel = plural(n, 'relating was', 'relatings were');
+      switch (then.state) {
+        case 'UNDETECTED': return 'given when nothing was related here yet';
+        case 'VACUOUS': return `given before any corner had seen it (${plural(n, 'relating', 'relatings')}, no passage)`;
+        case 'UNRULED': { const k = then.views.reduce((t, v) => t + v.unruled.length, 0); return `given when ${rel} said and ${plural(k, 'passage was', 'passages were')} not yet said`; }
+        case 'POCKET': return 'given when the views left different things alone';
+        case 'EXHAUSTED': { const through = orList(then.views.filter((v) => v.centroid.length > 0).map(viewLabel)); return `given when nothing was theirs alone (${n === 1 ? 'its one relating' : n === 2 ? 'both relatings' : `all ${n} relatings`} also said through ${through})`; }
+        default: return `given when ${rel} said`;
+      }
+    }
+    if (snapshot) return `given when ${plural(snapshot.relatings, 'relating was', 'relatings were')} said (counted then)`;
+    return null;
+  })();
   const refusal = relatingRefusals[edge.id];
   const facePositions = (v: ViewSorting): [number, number] | null => {
     const f = shape.faces.find((x) => x.id === v.faceId);
@@ -447,7 +479,7 @@ export function MediumBlock({ shape, edge, siteId, la, lb, options, mode, setMod
       ))}
       <span data-medium-state-line="true" className="text-stone-400">{stateLine()}</span>
       {pocketLines().map(([k, text]) => <span key={`p-${k}`} data-medium-pocket-line={k} className="text-stone-400">{text}</span>)}
-      {named && siteName ? <span data-medium-named-under="true">{`named when it was: ${siteName} — given when ${plural(named.relatings, 'relating was', 'relatings were')} said${left || entered ? `; since then, ${left} left what is theirs alone · ${entered} entered` : ''}`}</span> : null}
+      {givenWhen && siteName ? <span data-medium-named-under="true" data-medium-named-stage={stageN ?? undefined} data-medium-named-snapshot={snapshot ? 'true' : undefined}>{`named when it was: ${siteName} — ${givenWhen}${left || entered ? `; since then, ${left} left what is theirs alone · ${entered} entered` : ''}`}</span> : null}
       {lights.map((l) => { const w = derivedWords(l); return w ? <span key={`${l.kind}|${l.x}|${l.y}|${l.through}|${l.via}`} data-medium-light-derived={l.kind} data-medium-light-held={l.held ? 'true' : undefined} data-medium-light-inherited={w.inherited ?? undefined}>{w.text}</span> : null; })}
     </div>
   );

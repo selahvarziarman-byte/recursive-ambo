@@ -53,6 +53,7 @@ const { parseWorkspaceImport } = req('src/lib/workspacePersistence.ts');
 const { buildGeneralSitePacketPresenterReport } = req('src/lib/generalSitePacketPresenterV0.ts');
 const { MidpointSurface, midpointSiteOf } = req('src/components/MidpointSurface.tsx');
 const { namedUnderOf } = req('src/components/MediumBlock.tsx');
+const { nameStageOf } = req('src/lib/stage.ts');
 const { withVerdict } = req('src/lib/sorting.ts');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
@@ -64,7 +65,7 @@ const withCast = (shape, id, c) => ({ ...shape, vertices: { ...shape.vertices, [
 const S = () => useGeometryStore.getState();
 const cur = () => S().shapes[S().currentShapeId];
 const seeded4 = () => { let s = createSeedShape('tetrahedron'); for (const [l, c] of [['A', flow], ['B', tcell], ['C', phi], ['D', triangle]]) s = withCast(s, byLabel(s, l), c); return s; };
-const reset = (seeded) => useGeometryStore.setState({ shapes: { [seeded.id]: seeded }, shapeOrder: [seeded.id], currentShapeId: seeded.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {}, triadRefusals: {}, relatingRefusals: {}, lexicon: [], rules: [], liftSelection: [], selectedCellId: null, selectedVertexId: null, selectedEdgeId: null, selectedFaceId: null });
+const reset = (seeded) => useGeometryStore.setState({ shapes: { [seeded.id]: seeded }, shapeOrder: [seeded.id], currentShapeId: seeded.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {}, triadRefusals: {}, relatingRefusals: {}, lexicon: [], rules: [], log: [], liftSelection: [], selectedCellId: null, selectedVertexId: null, selectedEdgeId: null, selectedFaceId: null });
 const E = (shape, X, Y) => edgeBetween(shape.edges, byLabel(shape, X), byLabel(shape, Y));
 const give = (X, Y, map) => { const e = E(cur(), X, Y); for (const [x, y] of Object.entries(map)) { if (e.vertexIds[0] === byLabel(cur(), X)) S().giveRolePair(e.id, x, y); else S().giveRolePair(e.id, y, x); } };
 /** a relating AS HE SAYS IT on an edge: the record's x is its FIRST corner's role — `said(first, w, second)` */
@@ -337,15 +338,15 @@ S().applyAmboDissectionToCurrent();
 const Gn = cur(); const ABn = midOf(Gn, byLabel(Gn, 'A'), byLabel(Gn, 'B'));
 useGeometryStore.setState({ selectedVertexId: ABn.id });
 S().updateSelectedVertexData({ label: 'Honesty' });
-const named0 = namedUnderOf(cur(), ABn.id);
-check('§e christening the midpoint records the state the name was given under — 2 relatings, both theirs alone (role keys, no id)', !!named0 && named0.relatings === 2 && named0.own.length === 2 && named0.own.every((k) => /^IS\|/.test(k)), J(named0));
+const stage0 = nameStageOf(cur(), ABn.id);
+check('§e D17 (MODES-4 · row 8): christening the midpoint APPENDS the naming act to the LOG and keeps its STAGE on the vertex as input (`namedAt` = the act\'s position); no snapshot of derived values is written (`namedUnder` absent — B5\'s snapshot retired at the act)', stage0 === S().log.length && S().log[S().log.length - 1].act === 'name' && S().log[S().log.length - 1].label === 'Honesty' && namedUnderOf(cur(), ABn.id) === null, J([stage0, S().log.length, S().log.slice(-1)]));
 const n0 = renderAt(cur(), ABn.id);
-check('§e R3 at the christening the line reads `named when it was: Honesty — given when 2 relatings were said` — no `since then` (the ordinary is not marked)', n0.lines('data-medium-named-under')[0] && n0.lines('data-medium-named-under')[0][1] === 'named when it was: Honesty — given when 2 relatings were said', J(n0.lines('data-medium-named-under')));
+check('§e R3 at the christening the line reads the state RE-DERIVED at the name\'s stage, in her 17:32 §7 words — two relatings and no passage through any corner is VACUOUS: `named when it was: Honesty — given before any corner had seen it (2 relatings, no passage)` — no `since then` (the ordinary is not marked); the stage on the line', n0.lines('data-medium-named-under')[0] && n0.lines('data-medium-named-under')[0][1] === 'named when it was: Honesty — given before any corner had seen it (2 relatings, no passage)' && new RegExp(`data-medium-named-stage="${stage0}"`).test(n0.block), J(n0.lines('data-medium-named-under')));
 give('A', 'C', { F9: 'Φ1' }); give('C', 'B', { Φ1: 'r1' }); give('A', 'B', { F13: 'r8' });
 const n1 = renderAt(cur(), ABn.id);
-check('§e from the first move on: `named when it was: Honesty — given when 2 relatings were said; since then, 1 left what is theirs alone · 1 entered` — the name kept, what moved listed, never renamed', n1.lines('data-medium-named-under')[0] && n1.lines('data-medium-named-under')[0][1] === 'named when it was: Honesty — given when 2 relatings were said; since then, 1 left what is theirs alone · 1 entered', J(n1.lines('data-medium-named-under')));
+check('§e from the first move on: `named when it was: Honesty — given before any corner had seen it (2 relatings, no passage); since then, 1 left what is theirs alone · 1 entered` — the state then re-derived from the log with the three later acts unapplied, the name kept, what moved listed, never renamed', n1.lines('data-medium-named-under')[0] && n1.lines('data-medium-named-under')[0][1] === 'named when it was: Honesty — given before any corner had seen it (2 relatings, no passage); since then, 1 left what is theirs alone · 1 entered', J(n1.lines('data-medium-named-under')));
 S().updateSelectedVertexData({ label: '' });
-check('§e un-christened, the state is dropped with the mark', namedUnderOf(cur(), ABn.id) === null);
+check('§e un-christened, the stage is dropped with the mark (the naming act and its clearing both in the log)', nameStageOf(cur(), ABn.id) === null && namedUnderOf(cur(), ABn.id) === null && S().log[S().log.length - 1].act === 'name' && S().log[S().log.length - 1].christened === false, J(S().log.slice(-1)));
 
 // ═══ §f the device's own lights at a deeper generation ═══
 console.log('\n----- §f the deeper light (S11 with her §4): what it links, what it goes through, nobody said it -----');

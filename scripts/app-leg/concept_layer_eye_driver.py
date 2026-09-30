@@ -1104,6 +1104,42 @@ def medium_gen2_arm(page, args):
     return res
 
 
+def christening_arm(page, args):
+    """MODES-4 · row 8 (D17) at the eye — at AB (gen 1, as the run's earlier acts left it: (i) on A–B, S1 on A–C, Q on B–C): the midpoint
+    christened `Honesty` by the packet editor's Save; the block's line `named when it was: Honesty — given when N relatings were said`
+    read from the LOG at the name's stage (no snapshot written — the stage a positive number on the line); then two pairs given
+    (F5 ≡ r3 on A–C, r3 ≡ Φ7 on B–C) that move F5 ≡ Φ7 into the face's — `; since then, 1 left what is theirs alone · 0 entered`;
+    the pairs withdrawn and the name cleared — the slot `AB` again, no line: the state as found."""
+    res = {}
+    NAMED = "() => { const e = document.querySelector('[data-medium-named-under]'); return e ? { text: e.textContent.replace(/\\s+/g, ' ').trim(), stage: e.getAttribute('data-medium-named-stage'), snapshot: e.getAttribute('data-medium-named-snapshot') } : null; }"
+    def withdraw_pair(x, y):
+        h = page.locator(f'[data-midpoint-withdraw="role|{x}|{y}"], [data-midpoint-withdraw="role|{y}|{x}"]')
+        if h.count():
+            h.first.click(); page.wait_for_timeout(400)
+    try:
+        select_core(page); select_vertex_labelled(page, 'AB')
+        res['before'] = page.evaluate(NAMED)
+        rename_selected(page, 'Honesty')
+        tab(page, "selection"); page.wait_for_timeout(300)
+        res['named'] = page.evaluate(NAMED)
+        select_vertex_labelled(page, 'AC'); pair(page, 'F5', 'r3')
+        select_vertex_labelled(page, 'BC'); pair(page, 'r3', 'Φ7')
+        select_vertex_labelled(page, 'Honesty')
+        res['moved'] = page.evaluate(NAMED)
+        select_vertex_labelled(page, 'BC'); withdraw_pair('r3', 'Φ7')
+        select_vertex_labelled(page, 'AC'); withdraw_pair('F5', 'r3')
+        select_vertex_labelled(page, 'Honesty')
+        res['restored'] = page.evaluate(NAMED)
+        rename_selected(page, '')
+        tab(page, "selection"); page.wait_for_timeout(300)
+        res['after'] = page.evaluate(NAMED)
+        res['labelBack'] = page.evaluate("() => { const s = document.querySelector('[data-midpoint-surface]'); return s ? (s.getAttribute('data-midpoint-label') || null) : null; }")
+        res['rowAB'] = select_vertex_labelled(page, 'AB')
+    except Exception as e:
+        res['error'] = str(e)[:400]
+    return res
+
+
 def light_word(page, w):
     page.locator(f'[data-midpoint-light-word="{w}"]').first.click(); page.wait_for_timeout(350)
 
@@ -1724,6 +1760,7 @@ def main():
         out['triad'] = triad_arm(page, args)  # C-14 f — the triad in the light; the word pair below the drawing; the copy
         out['lightLeaves'] = light_leaves_arm(page, args)  # MODES-1 · M1 — a light is opened AT a midpoint and FOR it; leaving closes it
         out['medium'] = medium_arm(page, args)  # MODES-1 · B5 — the medium in the designer's words
+        out['christening'] = christening_arm(page, args)  # MODES-4 · row 8 — D17: the name's state re-derived at its stage of the log
         out['wordTriad'] = word_triad_arm(page, args)  # C-14g — the word triad in the light's word row
         out['importRoundTrip'] = import_arm(page, args)  # C-14g · M1 — export → a later pair → import through the input's new construction
         # C-8 item 2 at the eye — the loader ABSENT at a midpoint (the packets tab with AB selected shows no file input, no word), PRESENT at a corner

@@ -1,4 +1,5 @@
 import type { CellId, SeedKey, Shape, ShapeId, VertexId } from '../types/geometry';
+import type { LogEntry } from './stage';
 
 export const WORKSPACE_PERSISTENCE_SCHEMA = 'platonic-engine.workspace';
 export const WORKSPACE_PERSISTENCE_VERSION = 1;
@@ -55,6 +56,7 @@ export interface PersistedWorkspaceV1 {
   rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape, a 3-tuple the chain
   converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations, `y w′ x ≡ x w y`
   opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque (substitution does not ride through them)
+  log?: LogEntry[]; // MODES-4 · D17 — the person's acts in the order he made them, INPUT (src/lib/stage.ts); absent on files saved before row 8
 }
 
 export interface WorkspacePersistenceSnapshot {
@@ -73,6 +75,7 @@ export interface WorkspacePersistenceSnapshot {
   rules?: Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']>; // MODES-1 · B3 — the person's rules (the verdicts ride the faces' packets inside `shapes`); MODES-4 — keyed on the path's shape
   converses?: Array<[string, string]>; // MODES-4 · D13 — the person's converse equations
   opaque?: string[]; // MODES-4 · §9.13 — the modes the person declared opaque
+  log?: LogEntry[]; // MODES-4 · D17 — the log rides the file beside the sets
 }
 
 export type WorkspaceImportValidationResult =
@@ -103,6 +106,7 @@ export function serializeWorkspaceSnapshot(
     rules: snapshot.rules ?? [],
     converses: snapshot.converses ?? [],
     opaque: snapshot.opaque ?? [],
+    log: snapshot.log ?? [],
   };
 }
 
@@ -230,6 +234,10 @@ export function validateWorkspaceImport(input: unknown): WorkspaceImportValidati
     errors.push('Workspace rules is malformed.');
   }
 
+  if (input.log !== undefined && !isLog(input.log)) {
+    errors.push('Workspace log is malformed.');
+  }
+
   if (input.converses !== undefined && !isConverses(input.converses)) {
     errors.push('Workspace converses is malformed.');
   }
@@ -310,6 +318,11 @@ function isLexicon(value: unknown): value is string[] {
 }
 
 /** MODES-1 · B3 — the person's rules (w, w′) ↦ w‴: triples of words, or (MODES-4) a triple with the path's shape — chain · fork · join; a file saved before B3 has no field (accepted) */
+/** MODES-4 · D17 — the log: a sequence of acts numbered 1, 2, … in order, each naming its act (the entries' bodies are the store's own; a malformed one is refused whole) */
+function isLog(value: unknown): value is LogEntry[] {
+  return Array.isArray(value) && value.every((e, i) => isRecord(e) && e.n === i + 1 && typeof e.act === 'string' && e.act.length > 0);
+}
+
 function isRules(value: unknown): value is Array<[string, string, string] | [string, string, string, 'chain' | 'fork' | 'join']> {
   const word = (w: unknown): boolean => typeof w === 'string' && w.trim().length > 0;
   return Array.isArray(value) && value.every((r) => Array.isArray(r) && ((r.length === 3 && r.every(word)) || (r.length === 4 && r.slice(0, 3).every(word) && ['chain', 'fork', 'join'].includes(r[3]))));

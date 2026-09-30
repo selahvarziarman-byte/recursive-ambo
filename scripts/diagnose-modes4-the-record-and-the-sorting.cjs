@@ -89,7 +89,7 @@ const cur = () => S().shapes[S().currentShapeId];
 const seededEye = () => { let s = createSeedShape('tetrahedron'); for (const [l, c] of [['A', flow], ['B', phi], ['C', tcell], ['D', phi]]) s = withCast(s, byLabel(s, l), c); return s; };
 // the words witness's fixture: A the flow, B the T cell, C Φ
 const seededWords = () => { let s = createSeedShape('tetrahedron'); for (const [l, c] of [['A', flow], ['B', tcell], ['C', phi]]) s = withCast(s, byLabel(s, l), c); return s; };
-const reset = (seeded) => useGeometryStore.setState({ shapes: { [seeded.id]: seeded }, shapeOrder: [seeded.id], currentShapeId: seeded.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {}, triadRefusals: {}, relatingRefusals: {}, lexicon: [], rules: [], converses: [], opaque: [], liftSelection: [], selectedCellId: null, selectedVertexId: null, selectedEdgeId: null, selectedFaceId: null });
+const reset = (seeded) => useGeometryStore.setState({ shapes: { [seeded.id]: seeded }, shapeOrder: [seeded.id], currentShapeId: seeded.id, edgeTauDrafts: {}, midpointRefusals: {}, midpointRemade: {}, triadRefusals: {}, relatingRefusals: {}, lexicon: [], rules: [], converses: [], opaque: [], log: [], liftSelection: [], selectedCellId: null, selectedVertexId: null, selectedEdgeId: null, selectedFaceId: null });
 const E = (shape, X, Y) => edgeBetween(shape.edges, byLabel(shape, X), byLabel(shape, Y));
 const give = (X, Y, map) => { const e = E(cur(), X, Y); for (const [x, y] of Object.entries(map)) { if (e.vertexIds[0] === byLabel(cur(), X)) S().giveRolePair(e.id, x, y); else S().giveRolePair(e.id, y, x); } };
 /** a relating AS HE SAYS IT — the SUBJECT's corner named first: `said('C', 'r3', 'carries', 'A', 'F2')` is C's r3 carries A's F2; the record's x is the edge's first corner's role and the direction follows */
@@ -645,6 +645,108 @@ console.log('\n----- §j row 7: §6 no say against his own bar or pair (an IS te
   // MEASURED, not built here: the block discards the store's refusal of a say — LAYOUT-1 §7 / COPY-1 §7 (7) show the refused decision where it was made
   const mb = fs.readFileSync(path.join(repoRoot, 'src/components/MediumBlock.tsx'), 'utf8').split('\r\n').join('\n');
   check('§j MEASURED, not built here: the block DISCARDS the store\'s refusal of a say (`if (r) giveVerdict(v.faceId, r)` — the returned sentence unread, at both hands), so a say the store refuses shows nothing on the surface today; LAYOUT-1 §7 shows the refused decision where it was made and COPY-1 §7 (7) gives it words — that cut\'s, said in the report', (mb.match(/if \(r\) giveVerdict\(v\.faceId, r\)/g) || []).length === 2 && !/data-medium-say-refusal/.test(mb));
+}
+
+// ═══ §k ROW 8 — D17 THE STAGE: the log is input; a name's state re-derived at its stage; the snapshot marked; the log rides the file ═══
+console.log('\n----- §k row 8: D17 — the person\'s acts appended as they land (a refusal appends nothing); a name\'s stage kept as input; the state the name was given under RE-DERIVED at that stage — F-D17a: the record re-derived equals the record as it stood, at every stage; her 17:32 §7 forms at every state; a snapshot name marked `(counted then)`; the log rides the file -----');
+{
+  const ST = req('src/lib/stage.ts');
+  const { sortingOf } = req('src/lib/sorting.ts');
+  const { validateWorkspaceImport } = req('src/lib/workspacePersistence.ts');
+  const { namedUnderOf } = req('src/components/MediumBlock.tsx');
+  const factsNow = () => ({ converses: S().converses, opaque: S().opaque });
+  const sortAB = () => sortingOf(cur(), E(cur(), 'A', 'B'), { tauDrafts: S().edgeTauDrafts }, S().rules, factsNow());
+  const sig = (s2) => J({ n: s2.instances.length, own: [...s2.own].sort(), state: s2.state, unruled: s2.views.reduce((t, v) => t + v.unruled.length, 0) });
+  // ── F-D17a: sixteen acts on A–B and its face through C, the sorting measured after each; then every stage re-derived from the log ──
+  reset(seededWords());
+  S().applyAmboDissectionToCurrent();
+  const A = byLabel(cur(), 'A'); const B = byLabel(cur(), 'B');
+  const site = midOf(cur(), A, B); const eAB = E(cur(), 'A', 'B');
+  const f = cur().faces.find((ff) => ff.vertexIds.length === 3 && ['A', 'B', 'C'].every((l) => ff.vertexIds.includes(byLabel(cur(), l))));
+  const base = [f.vertexIds.indexOf(A), f.vertexIds.indexOf(B)];
+  const stages = [];
+  const mark = () => stages.push([S().log.length, sig(sortAB())]);
+  mark();
+  give('A', 'B', { F1: 'r0' }); mark();
+  S().declareMode('carries'); mark();
+  said('A', 'F2', 'carries', 'B', 'r3'); mark();
+  said('A', 'F4', 'resists', 'B', 'r5', '-'); mark();
+  give('A', 'C', { F1: 'Φ1' }); give('C', 'B', { Φ1: 'r0' }); mark();
+  said('A', 'F2', 'carries', 'C', 'Φ2'); said('C', 'Φ2', 'resists', 'B', 'r3'); mark();
+  S().nameRule('carries', 'resists', 'carries'); mark();
+  const okNot = S().giveVerdict(f.id, { base, x: 'F2', w: 'carries', z: 'Φ2', w2: 'resists', y: 'r3', dirs: ['→', '→'], verdict: 'not' }); mark();
+  S().withdrawVerdict(f.id, { base, x: 'F2', w: 'carries', z: 'Φ2', w2: 'resists', y: 'r3', dirs: ['→', '→'] }); mark();
+  unsay('A', 'F4', 'resists', 'B', 'r5'); mark();
+  S().withdrawRule('carries', 'resists'); mark();
+  S().declareConverse('carries', 'carried-by'); mark();
+  S().setOpaque('carries', true); mark();
+  S().setOpaque('carries', false); S().withdrawConverse('carries'); mark();
+  S().withdrawRolePair(eAB.id, 'F1', 'r0'); mark();
+  const log = S().log;
+  const recNow = () => ({ shape: cur(), rules: S().rules, facts: factsNow(), lexicon: S().lexicon, tauDrafts: S().edgeTauDrafts });
+  const rederived = stages.map(([n]) => { const r = ST.recordAtStage(recNow(), log, n); const e = r.shape.edges.find((c) => c.id === eAB.id); return sig(sortingOf(r.shape, e, { tauDrafts: r.tauDrafts }, r.rules, r.facts)); });
+  const off = stages.map(([n, s2], i) => [n, s2, rederived[i]]).filter(([, s2, r]) => s2 !== r);
+  const acts = log.map((e) => e.act);
+  check('§k ★★ F-D17a — THE RECORD RE-DERIVED AT A STAGE IS THE RECORD AS IT STOOD: over the acts on A–B and its face through C (a pairing, a mode, a relating, a bar, two pairings closing a loop, two relatings through C, a rule, a say taken, its withdrawal, the bar\'s withdrawal, the rule\'s, a converse, an opaque bit and its lifting with the converse\'s withdrawal, the pairing\'s withdrawal) every act landed in the log, numbered in order, and with every later entry unapplied the sorting at each stage (its relatings, its own keys, its state, its unruled count) is EXACTLY the sorting measured at that moment — 0 stages off', okNot === null && log.length >= 18 && log.every((e, i) => e.n === i + 1) && ['pair', 'mode', 'relate', 'say', 'rule', 'converse', 'opaque'].every((a) => acts.includes(a)) && stages.length === 16 && off.length === 0, J({ entries: log.length, acts, stages: stages.length, off: off.slice(0, 3) }));
+  // ── a refused act appends nothing (a refusal is a reading) ──
+  const before = S().log.length;
+  give('A', 'B', { F1: 'r0' }); S().giveRolePair(eAB.id, 'F1', 'r9');
+  const refusedPair = S().midpointRefusals[eAB.id];
+  const whyIS = S().giveVerdict(f.id, { base, x: 'F1', w: 'IS', z: 'Φ1', w2: 'IS', y: 'r0', verdict: 'not' });
+  check('§k a REFUSED act appends nothing: F1 ↦ r9 refused (F1 paired with r0 — one role, one partner) and a say on an IS passage refused by name leave the log where the pairing F1 ≡ r0 left it (one entry for the pairing, none for the refusals)', S().log.length === before + 1 && !!refusedPair && typeof whyIS === 'string', J([before, S().log.length, refusedPair && refusedPair.form, whyIS]));
+  // ── THE CHRISTENING LINE at every state, re-derived at the name's stage (her 17:32 §7) ──
+  const name = (label) => { useGeometryStore.setState({ selectedVertexId: site.id }); S().updateSelectedVertexData({ label }); };
+  const line = () => { const r = renderAt(cur(), site.id); return (r.lines('data-medium-named-under')[0] || [])[1] || null; };
+  reset(seededWords()); S().applyAmboDissectionToCurrent();
+  const site2 = midOf(cur(), byLabel(cur(), 'A'), byLabel(cur(), 'B'));
+  const name2 = (label) => { useGeometryStore.setState({ selectedVertexId: site2.id }); S().updateSelectedVertexData({ label }); };
+  const line2 = () => { const r = renderAt(cur(), site2.id); return (r.lines('data-medium-named-under')[0] || [])[1] || null; };
+  name2('Honesty'); const lUndetected = line2();
+  give('A', 'B', { F1: 'r0' }); const lUndetectedMoved = line2();
+  name2(''); name2('Honesty'); const lVacuous = line2();
+  S().declareMode('carries'); said('A', 'F2', 'carries', 'B', 'r3'); said('A', 'F2', 'carries', 'C', 'Φ2'); said('C', 'Φ2', 'resists', 'B', 'r3');
+  name2(''); name2('Honesty'); const lUnruled = line2();
+  S().nameRule('carries', 'resists', 'carries');
+  name2(''); name2('Honesty'); const lOpen = line2();
+  give('A', 'C', { F1: 'Φ1' }); give('C', 'B', { Φ1: 'r0' }); said('A', 'F4', 'carries', 'C', 'Φ4'); said('C', 'Φ4', 'resists', 'B', 'r5');
+  name2(''); name2('Honesty'); const lExhausted = line2();
+  const stExhausted = sortAB().state;
+  check('§k ★★ HER 17:32 §7 — THE STATE\'S OWN WORDS AT THE STAGE, one line, the same procedure at every midpoint: nothing related yet → `given when nothing was related here yet` (and, one pairing later, `; since then, 0 left what is theirs alone · 1 entered`); relatings and no passage → `given before any corner had seen it (1 relating, no passage)`; a passage unsaid → `given when 2 relatings were said and 1 passage was not yet said`; the passage ruled, one relating theirs alone → `given when 2 relatings were said`; nothing theirs alone with a light standing → `given when nothing was theirs alone (both relatings also said through C)`', lUndetected === 'named when it was: Honesty — given when nothing was related here yet' && lUndetectedMoved === 'named when it was: Honesty — given when nothing was related here yet; since then, 0 left what is theirs alone · 1 entered' && lVacuous === 'named when it was: Honesty — given before any corner had seen it (1 relating, no passage)' && lUnruled === 'named when it was: Honesty — given when 2 relatings were said and 1 passage was not yet said' && lOpen === 'named when it was: Honesty — given when 2 relatings were said' && stExhausted === 'EXHAUSTED' && lExhausted === 'named when it was: Honesty — given when nothing was theirs alone (both relatings also said through C)', J([lUndetected, lUndetectedMoved, lVacuous, lUnruled, lOpen, stExhausted, lExhausted]));
+  // ── the POCKET, on the eye's fixture (D holds Φ): F9 ≡ Φ1 the face's through C alone, F7 ≡ Φ2 through D alone ──
+  reset(seededEye()); S().applyAmboDissectionToCurrent();
+  give('A', 'B', { F9: 'Φ1', F7: 'Φ2' }); give('A', 'C', { F9: 'r1' }); give('C', 'B', { r1: 'Φ1' }); give('A', 'D', { F7: 'Φ5' }); give('D', 'B', { Φ5: 'Φ2' });
+  const site3 = midOf(cur(), byLabel(cur(), 'A'), byLabel(cur(), 'B'));
+  useGeometryStore.setState({ selectedVertexId: site3.id }); S().updateSelectedVertexData({ label: 'Honesty' });
+  const r3 = renderAt(cur(), site3.id);
+  check('§k her §7 — a POCKET at the stage: `named when it was: Honesty — given when the views left different things alone`', sortAB().state === 'POCKET' && (r3.lines('data-medium-named-under')[0] || [])[1] === 'named when it was: Honesty — given when the views left different things alone', J([sortAB().state, r3.lines('data-medium-named-under')]));
+  // ── a SNAPSHOT name (given before D17 — `namedUnder` as the record, no stage): the same line with `(counted then)`, its since-then from the snapshot's own list ──
+  reset(seededWords()); S().applyAmboDissectionToCurrent();
+  give('A', 'B', { F1: 'r0', F5: 'r2', F7: 'r8', F9: 'r1' });
+  const site4 = midOf(cur(), byLabel(cur(), 'A'), byLabel(cur(), 'B'));
+  {
+    const sh = cur(); const v = sh.vertices[site4.id];
+    const custom = { ...(v.data.custom ?? {}), christened: true, namedUnder: { relatings: 4, own: ['IS|F1|r0', 'IS|F5|r2', 'IS|F7|r8', 'IS|F9|r1'] } };
+    useGeometryStore.setState({ shapes: { ...S().shapes, [sh.id]: { ...sh, vertices: { ...sh.vertices, [site4.id]: { ...v, data: { ...v.data, label: 'Honesty', custom } } } } } });
+  }
+  const r4 = renderAt(cur(), site4.id);
+  give('A', 'C', { F1: 'Φ1' }); give('C', 'B', { Φ1: 'r0' });
+  const r5 = renderAt(cur(), site4.id);
+  check('§k ★ A SNAPSHOT NAME stands as the record of that name, MARKED: with `namedUnder` (relatings 4, the four own keys) and no stage on the vertex the line reads `named when it was: Honesty — given when 4 relatings were said (counted then)` — the one mark that its numbers were kept, not re-read — and its since-then from the snapshot\'s own list: `; since then, 1 left what is theirs alone · 0 entered`', ST.nameStageOf(cur(), site4.id) === null && !!namedUnderOf(cur(), site4.id) && (r4.lines('data-medium-named-under')[0] || [])[1] === 'named when it was: Honesty — given when 4 relatings were said (counted then)' && /data-medium-named-snapshot="true"/.test(r4.block) && (r5.lines('data-medium-named-under')[0] || [])[1] === 'named when it was: Honesty — given when 4 relatings were said (counted then); since then, 1 left what is theirs alone · 0 entered', J([r4.lines('data-medium-named-under'), r5.lines('data-medium-named-under')]));
+  // ── the log rides the file: export → import into a bare store → the same log, the same line re-derived from the file's log ──
+  reset(seededWords()); S().applyAmboDissectionToCurrent();
+  const site5 = midOf(cur(), byLabel(cur(), 'A'), byLabel(cur(), 'B'));
+  give('A', 'B', { F1: 'r0', F5: 'r2' });
+  useGeometryStore.setState({ selectedVertexId: site5.id }); S().updateSelectedVertexData({ label: 'Honesty' });
+  give('A', 'C', { F1: 'Φ1' }); give('C', 'B', { Φ1: 'r0' });
+  const lineBefore = (renderAt(cur(), site5.id).lines('data-medium-named-under')[0] || [])[1];
+  const file = S().exportWorkspace();
+  const logBefore = J(S().log);
+  reset(seededWords()); useGeometryStore.setState({ log: [] });
+  S().importWorkspace(JSON.parse(JSON.stringify(file)));
+  const lineAfter = (renderAt(cur(), site5.id).lines('data-medium-named-under')[0] || [])[1];
+  const bad = validateWorkspaceImport({ ...file, log: [{ n: 2, act: 'pair' }] });
+  check('§k ★★ THE LOG RIDES THE FILE (D17: the log is input): the workspace exported carries `log` (' + (file.log || []).length + ' entries, the naming act among them) and imported into a bare store restores it byte-equal; the christening line re-derived from the file\'s log reads the same — `' + lineBefore + '`; a file whose log is not numbered in order is refused at import (`Workspace log is malformed.`)', Array.isArray(file.log) && file.log.length >= 5 && file.log.some((e) => e.act === 'name') && J(S().log) === logBefore && lineAfter === lineBefore && lineBefore === 'named when it was: Honesty — given before any corner had seen it (2 relatings, no passage); since then, 1 left what is theirs alone · 0 entered' && !bad.ok && bad.errors.includes('Workspace log is malformed.'), J([file.log && file.log.length, lineBefore, lineAfter, bad]));
+  useGeometryStore.setState({ log: [] });
 }
 
 console.log(`\n${failures === 0 ? 'DIAGNOSE-MODES4-THE-RECORD-AND-THE-SORTING: ALL PASS — the direction rides the record positionally and the carry keeps the sentence; the agent\'s converse words reproduce as direction bits with no new word; a chain is one key whichever way it crosses the edge, in its own order and direction, a fork and a join their own keys, a converse reads them as a chain; the shape is said in words and never as an arrow; an opaque mode holds the pair apart; the coordinate pair is refused in her words; a refused route is the instance\'s form' : `DIAGNOSE-MODES4-THE-RECORD-AND-THE-SORTING: ${failures} FAILED`}`);

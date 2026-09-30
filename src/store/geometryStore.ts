@@ -25,9 +25,10 @@ import { refusalOf, wordPairForm, type Conflict } from '../lib/jRegister';
 // the shape an act would leave (the dependency refusal, item 4)
 import { brokenBornActs, composedOn, edgeKind, generationOf, nameIn, spaceOf, stoneOn, stoneWords, type BrokenBornAct, type Resolved } from '../lib/spaceOf';
 import { isGeneratedMidpoint, migrateChristening, recomposeUnchristened, withChristened } from '../lib/christening';
-import { triadLegsOf, triadOf, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
+import { triadLegsOf, triadOf, triadsOn, withTriad, withoutTriad, type RespectKind, type TriadPick, type TriadRefusal } from '../lib/respects';
 import { AGAINST, ALONG, IS, relating, relatingOf, relatingsHeld, withRelating, withoutRelating, type Dir, type Relating, type RelatingRefusal, type Sign } from '../lib/relatings';
-import { IS_RULE, barredAt, ruleReads, shapeOf, verdictNamesPath, withVerdict, withoutVerdict, type Rule, type Shape3, type VerdictRecord } from '../lib/sorting';
+import { IS_RULE, barredAt, ruleReads, shapeOf, verdictNamesPath, verdictsOn, withVerdict, withoutVerdict, type Rule, type Shape3, type VerdictRecord } from '../lib/sorting';
+import { NAMED_AT_KEY, appendLog, pairDiff, relatingDiff, ruleDiff, tupleDiff, verdictDiff, type LogEntry } from '../lib/stage';
 import { childSpaceOf, instancesFrom, termWordsOf } from '../lib/instanceSpace';
 import { sortingOf } from '../lib/sorting';
 import { edgeBetween } from '../lib/faceReading';
@@ -319,6 +320,10 @@ interface GeometryState {
   // (w, w′) ↦ w‴ names a composite for every path with that word-pair, mesh-wide (the store; persisted); a verdict against a rule
   // is an EXCEPTION, recorded as the verdict it is. IS ; IS = IS is built in and never stored. Nothing here proposes either.
   rules: Rule[];
+  // MODES-4 · D17 (the second resolution §9; src/lib/stage.ts) — THE LOG: the person's acts in the order he made them, each appended by
+  // the writer it lands through (a refusal appends nothing), INPUT, persisted with the workspace; a name's STAGE is its naming act's
+  // position, kept on the vertex (`namedAt`); the state a name was given under is re-derived from the log at that stage, never stored
+  log: LogEntry[];
   // MODES-4 · M3 (ADR 0031 §9.14): a rule is keyed on the word pair and the path's SHAPE — chain (a 3-tuple; one key whichever way
   // the chain crosses the edge) · fork · join (the pair order-free)
   nameRule: (w: string, w2: string, w3: string, shape?: Shape3) => void;
@@ -359,6 +364,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
   converses: [],
   opaque: [],
   rules: [],
+  log: [],
   midpointRefusals: {},
   midpointRemade: {},
   triadRefusals: {},
@@ -964,21 +970,20 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (patch.label !== undefined && patch.label !== vertex.data.label) {
       const label = patch.label;
       const christened = isGeneratedMidpoint(vertex) ? label.trim().length > 0 : null;
-      // MODES-1 · B5 (D11): a name is kept WITH THE STATE IT WAS GIVEN UNDER — the relatings on the parents' edge and what was theirs
-      // alone at that moment (role keys and a count; no id) — so the surface can say `named when it was: …` and list what moved;
-      // an un-christened midpoint keeps no such state
-      const namedUnder = ((): Record<string, unknown> | null => {
-        if (christened !== true || vertex.createdBy.sourceVertexIds.length !== 2) return null;
-        const [p, q] = vertex.createdBy.sourceVertexIds;
-        const e = shape.edges.find((c) => (c.vertexIds[0] === p && c.vertexIds[1] === q) || (c.vertexIds[0] === q && c.vertexIds[1] === p));
-        const s = sortingOf(shape, e, { tauDrafts: get().edgeTauDrafts }, get().rules);
-        return s ? { relatings: s.instances.length, own: [...s.own] } : { relatings: 0, own: [] };
-      })();
+      // MODES-4 · D17 (the second resolution §9; src/lib/stage.ts), sharpening MODES-1 · B5 (D11): the naming act is APPENDED TO THE LOG
+      // and its position is the name's STAGE, kept on the vertex as input (`namedAt`); the state the name was given under is re-derived
+      // from the log at that stage, and *since then* is the difference of two derived sortings. B5's snapshot of derived values
+      // (`namedUnder`) is written no more — a stored derived value is a stamp that drifts from the code that made it; one taken before
+      // D17 stands as the record of that name, marked on the surface. A name given anew takes a new stage and lets the old snapshot go
+      // with the old name; an un-christened midpoint keeps no stage
+      const log = appendLog(get().log, { act: 'name', vertex: selectedVertexId, label, was: vertex.data.label, christened: christened === true });
+      const stage = log.length;
       const marked = (data: VertexDataPacket): VertexDataPacket => {
         if (christened === null) return data;
         const custom = { ...withChristened(data.custom, christened) };
-        if (namedUnder) custom['namedUnder'] = namedUnder as unknown as VertexDataPacket['custom'][string];
-        else delete custom['namedUnder'];
+        delete custom['namedUnder'];
+        if (christened) custom[NAMED_AT_KEY] = stage as unknown as VertexDataPacket['custom'][string];
+        else delete custom[NAMED_AT_KEY];
         return { ...data, custom };
       };
       const next: Record<ShapeId, Shape> = {};
@@ -992,7 +997,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
         }
         next[id] = recomposeUnchristened(target);
       }
-      set({ shapes: next });
+      set({ shapes: next, log });
       return;
     }
 
@@ -1026,10 +1031,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     }
     if (edge.identification) {
       // a TAKEN J survives a τ change as the person's record: the roles stay, τ changes, the marks re-derive
-      writeEdgeIdentification(set, state, shape, edgeId, { roles: edge.identification.roles, types });
+      writeEdgeIdentification(set, state, shape, edgeId, { roles: edge.identification.roles, types }, state.edgeTauDrafts[edgeId] ?? null);
       return;
     }
     const edgeTauDrafts = { ...state.edgeTauDrafts };
+    const draftWas = state.edgeTauDrafts[edgeId] ?? null;
     if (types.length) {
       edgeTauDrafts[edgeId] = types;
     } else {
@@ -1048,7 +1054,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const types = edge.identification ? edge.identification.types : state.edgeTauDrafts[edgeId] ?? [];
     const edgeTauDrafts = { ...state.edgeTauDrafts };
     delete edgeTauDrafts[edgeId];
-    writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edgeId, { roles, types });
+    writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edgeId, { roles, types }, state.edgeTauDrafts[edgeId] ?? null);
   },
   withdrawEdgeIdentification: (edgeId) => {
     const state = get();
@@ -1064,7 +1070,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     } else {
       delete edgeTauDrafts[edgeId];
     }
-    writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edgeId, undefined);
+    writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edgeId, undefined, state.edgeTauDrafts[edgeId] ?? null);
   },
   // ═══ C-7b — THE MIDPOINT'S ACTS (the record placement stands, 0031 §5: `identification`
   // on the source edge between the two parents, in the current shape; the midpoint READS it).
@@ -1090,7 +1096,8 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const faces = shape.faces.map((f) => (f.id === faceId ? withTriad(f, kind, triad.record) : f));
     const triadRefusals = { ...state.triadRefusals };
     delete triadRefusals[faceId];
-    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, triadRefusals });
+    // D17 — the log: the triad as it landed
+    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, triadRefusals, log: appendLog(state.log, { act: 'triad', face: faceId, kind, added: [triad.record], removed: [] }) });
     return null;
   },
   withdrawTriad: (faceId, kind, picks) => {
@@ -1102,12 +1109,18 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     // the structure alone: a triad withdraws whole even when a corner's space has since changed — from every face record of
     // this vertex set (a face two cells hold is two records; the readers gather them as one light)
     const twin = (f: Shape['faces'][number]): boolean => f.vertexIds.length === face.vertexIds.length && face.vertexIds.every((v) => f.vertexIds.includes(v));
+    let log = state.log;
     const faces = shape.faces.map((f) => {
       if (!twin(f)) return f;
       const t = triadLegsOf(shape, f.id, picks);
-      return t.refused ? f : withoutTriad(f, kind, t.record);
+      if (t.refused) return f;
+      const next = withoutTriad(f, kind, t.record);
+      // D17 — the log: the withdrawal, per face record it left
+      const diff = tupleDiff(kind === 'role' ? triadsOn(f).roles : triadsOn(f).words, kind === 'role' ? triadsOn(next).roles : triadsOn(next).words);
+      if (diff.removed.length) log = appendLog(log, { act: 'triad', face: f.id, kind, added: [], removed: diff.removed });
+      return next;
     });
-    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } } });
+    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, log });
   },
   withdrawTriadAttempt: (faceId) => {
     const triadRefusals = { ...get().triadRefusals };
@@ -1119,12 +1132,12 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const mode = word.trim();
     const { lexicon } = get();
     if (!mode || mode === IS || lexicon.includes(mode)) return;
-    set({ lexicon: [...lexicon, mode] });
+    set({ lexicon: [...lexicon, mode], log: appendLog(get().log, { act: 'mode', word: mode, on: true }) }); // D17 — the log
   },
   withdrawMode: (word) => {
     const { lexicon } = get();
     if (!lexicon.includes(word)) return;
-    set({ lexicon: lexicon.filter((w) => w !== word) }); // the relatings in it stay — they are the person's record; the word stays in use
+    set({ lexicon: lexicon.filter((w) => w !== word), log: appendLog(get().log, { act: 'mode', word, on: false }) }); // the relatings in it stay — they are the person's record; the word stays in use; D17 — the log
   },
   giveRelating: (edgeId, w, x, y, sign, dir = ALONG) => {
     const state = get();
@@ -1165,18 +1178,20 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     const a = w.trim(); const b = w2.trim();
     if (!a || !b || a === IS || b === IS) return; // IS is symmetric and its law is fixed: no converse of it
     const converses = get().converses.filter(([p, q]) => p !== a && q !== a && p !== b && q !== b); // one equation per word
-    set({ converses: [...converses, [a, b]] });
+    const next: Array<[string, string]> = [...converses, [a, b]];
+    const diff = pairDiff(get().converses, next);
+    set({ converses: next, log: appendLog(get().log, { act: 'converse', added: diff.added, removed: diff.removed }) }); // D17 — the log
   },
   withdrawConverse: (w) => {
     const converses = get().converses.filter(([p, q]) => p !== w && q !== w);
-    if (converses.length !== get().converses.length) set({ converses });
+    if (converses.length !== get().converses.length) set({ converses, log: appendLog(get().log, { act: 'converse', added: [], removed: pairDiff(get().converses, converses).removed }) }); // D17 — the log
   },
   setOpaque: (w, opaque) => {
     const a = w.trim();
     if (!a || a === IS) return; // the pairing carries no opaque bit
     const held = get().opaque.includes(a);
-    if (opaque && !held) set({ opaque: [...get().opaque, a] });
-    if (!opaque && held) set({ opaque: get().opaque.filter((m) => m !== a) });
+    if (opaque && !held) set({ opaque: [...get().opaque, a], log: appendLog(get().log, { act: 'opaque', word: a, on: true }) }); // D17 — the log
+    if (!opaque && held) set({ opaque: get().opaque.filter((m) => m !== a), log: appendLog(get().log, { act: 'opaque', word: a, on: false }) });
   },
   withdrawRelatingAttempt: (edgeId) => {
     const relatingRefusals = { ...get().relatingRefusals };
@@ -1193,11 +1208,13 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (a === IS || b === IS) return;
     // MODES-4 · M3 (§9.14): one rule per (pair, shape) — a chain in its own order; a fork or a join order-free
     const rules = get().rules.filter((r) => !ruleReads(r, { w: a, w2: b, shape }));
-    set({ rules: [...rules, shape === 'chain' ? [a, b, c] : [a, b, c, shape]] });
+    const next: Rule[] = [...rules, shape === 'chain' ? [a, b, c] : [a, b, c, shape]];
+    const diff = ruleDiff(get().rules, next);
+    set({ rules: next, log: appendLog(get().log, { act: 'rule', added: diff.added, removed: diff.removed }) }); // D17 — the log
   },
   withdrawRule: (w, w2, shape = 'chain') => {
     const rules = get().rules.filter((r) => !ruleReads(r, { w, w2, shape }));
-    if (rules.length !== get().rules.length) set({ rules });
+    if (rules.length !== get().rules.length) set({ rules, log: appendLog(get().log, { act: 'rule', added: [], removed: ruleDiff(get().rules, rules).removed }) }); // D17 — the log
   },
   giveVerdict: (faceId, record) => {
     const state = get();
@@ -1233,8 +1250,10 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       // "a ≡ z, z ≡ c, but not a ≡ c" denies what ≡ means)
       if (path && path.reading === 'TENSION' && path.composite === IS && record.verdict === 'not') return `nothing is yours to say against ≡ here — ${record.x} ≡ ${record.y} is barred by your own pairing on ${la}–${lb}; the route is the pair`;
       if (record.w === IS || record.w2 === IS) return `nothing is yours to say on this passage — a leg of it is ≡, and what ≡ carries through is the transport's law, not a rule of yours; a say lives on a passage of two of your modes (${la}–${lb})`;
-      // THE SECOND RESOLUTION §6/§7 (MODES-4 · row 7), BY CONSTRUCTION: a composed say is TO A WORD OF HIS — never ≡ (one glyph, one
-      // meaning: ≡ is the transport's) — and never to a word he has BARRED at the endpoints, WHATEVER the passage reads at the act
+      // THE SECOND RESOLUTION §6/§7 (MODES-4 · row 7), BY CONSTRUCTION: a composed say is TO A WORD OF HIS — never ≡ (IS's ONE HOME:
+      // sameness enters the record only by the pairing act, B4 · §210, as `relatingOf` refuses an IS relating; ratified §247 — its
+      // sentence names the pairing as the route in COPY-1's pass) — and never to a word he has BARRED at the endpoints, WHATEVER the
+      // passage reads at the act
       // (on an unruled passage the say would set the barred entry by a verdict — the bar's refusal taken by the back door, and the
       // passage would then read a tension between his say and his own bar). The store reads the sorting's own bar predicate
       // (`barredAt`: his bars in every converse spelling; ≡'s one-to-one law), so the rule is a mechanism, not a hand's absence.
@@ -1259,8 +1278,11 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       }
       // (the interim fence on a leg read against the walk is lifted by D13 — a path of any shape takes his say, §9.14)
     }
-    const faces = shape.faces.map((f) => (f.id === faceId ? withVerdict(f, { ...record, base: [i, j] }) : f));
-    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } } });
+    const stored: VerdictRecord = { ...record, base: [i, j] };
+    const faces = shape.faces.map((f) => (f.id === faceId ? withVerdict(f, stored) : f));
+    // D17 — the log: the say as it landed (a same-path say it replaces taken out with it)
+    const diff = verdictDiff(verdictsOn(face), verdictsOn(faces.find((f) => f.id === faceId)));
+    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, log: appendLog(state.log, { act: 'say', face: faceId, added: diff.added, removed: diff.removed }) });
     return null;
   },
   withdrawVerdict: (faceId, record) => {
@@ -1271,7 +1293,10 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
     if (!face) return;
     const twin = (f: Shape['faces'][number]): boolean => f.vertexIds.length === face.vertexIds.length && face.vertexIds.every((v, k) => f.vertexIds[k] === v);
     const faces = shape.faces.map((f) => (twin(f) ? withoutVerdict(f, record) : f));
-    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } } });
+    // D17 — the log: the withdrawal, per face record it left (a face two cells hold is two records)
+    let log = state.log;
+    shape.faces.forEach((f, k) => { if (!twin(f)) return; const diff = verdictDiff(verdictsOn(f), verdictsOn(faces[k])); if (diff.added.length || diff.removed.length) log = appendLog(log, { act: 'say', face: f.id, added: diff.added, removed: diff.removed }); });
+    set({ shapes: { ...state.shapes, [shape.id]: { ...shape, faces } }, log });
   },
   withdrawMidpointAttempt: (edgeId) => {
     const midpointRefusals = { ...get().midpointRefusals };
@@ -1297,6 +1322,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       rules: state.rules, // B3 — the person's rules ride the file (the verdicts ride the faces' packets inside `shapes`)
       converses: state.converses, // MODES-4 · D13 — his converse equations ride the file
       opaque: state.opaque, // MODES-4 · §9.13 — the modes he declared opaque ride the file
+      log: state.log, // MODES-4 · D17 — the person's acts in order, INPUT: the file carries the log beside the sets
     });
   },
   importWorkspace: (workspace) => {
@@ -1330,6 +1356,7 @@ export const useGeometryStore = create<GeometryState>((set, get) => ({
       rules: importedWorkspace.rules ?? [], // B3 — the file's rules restored; the session's dropped
       converses: importedWorkspace.converses ?? [], // MODES-4 — the file's converse equations restored (a file saved before MODES-4 carries none)
       opaque: importedWorkspace.opaque ?? [], // MODES-4 — the file's opaque modes restored
+      log: importedWorkspace.log ?? [], // MODES-4 · D17 — the file's log restored, the session's dropped (a file saved before row 8 carries none: its names stand as snapshots, marked)
       relatingRefusals: {},
       liftSelection: [],
       selectedCellId,
@@ -1408,7 +1435,9 @@ function writeEdgeIdentification(
   shape: Shape,
   edgeId: EdgeId,
   next: { roles: EdgeIdentification['roles']; types: EdgeIdentification['types'] } | undefined,
+  draftWas: EdgeIdentification['types'] | null = null,
 ): void {
+  const before = shape.edges.find((edge) => edge.id === edgeId);
   const edges = shape.edges.map((edge) => {
     if (edge.id !== edgeId) {
       return edge;
@@ -1426,9 +1455,17 @@ function writeEdgeIdentification(
       },
     };
   });
+  // D17 — THE LOG (src/lib/stage.ts): the one writer of the identification packet appends what this act put into and took out of the
+  // record — the role pairs, the τ pairs, the draft it moved (`draftWas` the draft before the act, the caller's pre-state) — as it lands
+  const heldRoles = before?.identification ? before.identification.roles : [];
+  const heldTypes = before?.identification ? before.identification.types : draftWas ?? [];
+  const draftNow = state.edgeTauDrafts[edgeId] ?? null;
+  const entry = { act: 'pair' as const, edge: edgeId, roles: pairDiff(heldRoles, next ? next.roles : []), types: pairDiff(heldTypes, next ? next.types : draftNow ?? []), draft: { was: draftWas, now: draftNow } };
+  const moved = entry.roles.added.length > 0 || entry.roles.removed.length > 0 || entry.types.added.length > 0 || entry.types.removed.length > 0 || JSON.stringify(draftWas) !== JSON.stringify(draftNow);
   set({
     edgeTauDrafts: state.edgeTauDrafts,
     midpointRefusals: state.midpointRefusals,
+    log: moved ? appendLog(state.log, entry) : state.log,
     shapes: {
       ...state.shapes,
       [shape.id]: {
@@ -1442,8 +1479,12 @@ function writeEdgeIdentification(
 // MODES-1 · B1: THE ONE WRITER of an edge's relatings (the packet, `edge.data.relatings`) — every act routes here; the
 // module's pure `withRelating`/`withoutRelating` shape the packet, this site alone puts it on a shape.
 function writeEdgeRelatings(set: (partial: Partial<GeometryState>) => void, state: GeometryState, shape: Shape, edgeId: EdgeId, change: (edge: Edge) => Edge): void {
+  const held = shape.edges.find((edge) => edge.id === edgeId);
   const edges = shape.edges.map((edge) => (edge.id === edgeId ? change(edge) : edge));
-  set({ relatingRefusals: state.relatingRefusals, shapes: { ...state.shapes, [shape.id]: { ...shape, edges } } });
+  // D17 — the log: the relatings this act put in and took out (a bar is a relating with its sign; a withdrawal takes out)
+  const diff = relatingDiff(relatingsHeld(held), relatingsHeld(edges.find((edge) => edge.id === edgeId)));
+  const log = diff.added.length || diff.removed.length ? appendLog(state.log, { act: 'relate', edge: edgeId, added: diff.added, removed: diff.removed }) : state.log;
+  set({ relatingRefusals: state.relatingRefusals, log, shapes: { ...state.shapes, [shape.id]: { ...shape, edges } } });
 }
 
 // ─── C-7b — the midpoint's acts, behind the one writer ───
@@ -1459,14 +1500,15 @@ function midpointRecord(state: GeometryState, edge: Edge): { roles: EdgeIdentifi
 /** the roles and τ written as the record when a role pair stands; τ alone goes to the draft; nothing at all clears both */
 function midpointWrite(set: Setter, state: GeometryState, shape: Shape, edge: Edge, roles: EdgeIdentification['roles'], types: EdgeIdentification['types']): void {
   const edgeTauDrafts = { ...state.edgeTauDrafts };
+  const draftWas = state.edgeTauDrafts[edge.id] ?? null;
   if (roles.length === 0) {
     if (types.length) edgeTauDrafts[edge.id] = types;
     else delete edgeTauDrafts[edge.id];
-    writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edge.id, undefined);
+    writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edge.id, undefined, draftWas);
     return;
   }
   delete edgeTauDrafts[edge.id];
-  writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edge.id, { roles, types });
+  writeEdgeIdentification(set, { ...state, edgeTauDrafts }, shape, edge.id, { roles, types }, draftWas);
 }
 
 // C-7e (Δ84, 2026-09-22) — THE DRAFTS RIDE THE DISSECTION BY PAIR: `edgeTauDrafts` (a τ before the first role
